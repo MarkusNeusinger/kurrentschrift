@@ -1,0 +1,30 @@
+# Default: auto-detect, normalize to LF in repo.
+* text=auto eol=lf
+
+# Source code — explicit for clarity even though auto would catch them.
+*.py    text diff=python
+*.md    text
+*.yml   text
+*.yaml  text
+*.toml  text
+*.json  text
+*.cff   text
+
+# SVG is XML text — keep diffable.
+*.svg   text
+
+# Binary assets — never CRLF-normalize, never line-diff.
+*.jpg   binary
+*.jpeg  binary
+*.png   binary
+*.gif   binary
+*.webp  binary
+*.pdf   binary
+*.ico   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.otf   binary
+*.zip   binary
+*.tar   binary
+*.gz    binary

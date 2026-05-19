@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: >-
+  If you use this work or its methodology, please cite it as below.
+title: kurrentschrift
+abstract: >-
+  Analysis-by-synthesis ductus-template extraction and re-inking for
+  normed pre-1900 German Kurrent script. Reading via existing HTR;
+  writing via a canonical ductus prior fitted to scan skeleton and
+  stroke-width profile, with allographs and the closed set of taught
+  ligature units modeled as first-class library entries.
+type: software
+authors:
+  - family-names: Neusinger
+    given-names: Markus
+    email: admin@kurrentschrift.ink
+license: MIT
+repository-code: "https://github.com/MarkusNeusinger/kurrentschrift"
+url: "https://kurrentschrift.ink"
+keywords:
+  - kurrent
+  - paleography
+  - german-cursive
+  - historical-handwriting
+  - handwriting-synthesis
+  - analysis-by-synthesis
+  - ductus

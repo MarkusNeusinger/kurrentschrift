@@ -1,0 +1,67 @@
+# pyproject.toml
+[project]
+name = "kurrentschrift"
+version = "0.1.0"
+description = "Analysis-by-synthesis ductus-template extraction and re-inking for normed pre-1900 German Kurrent script."
+authors = [{ name = "Markus Neusinger", email = "admin@kurrentschrift.ink" }]
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.13"
+keywords = [
+    "kurrent",
+    "paleography",
+    "german-cursive",
+    "historical-handwriting",
+    "handwriting-synthesis",
+    "analysis-by-synthesis",
+    "ductus",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.15.12",
+]
+
+[project.urls]
+Homepage = "https://kurrentschrift.ink"
+Repository = "https://github.com/MarkusNeusinger/kurrentschrift"
+
+# ===== Ruff Configuration =====
+
+[tool.ruff]
+line-length = 120
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "dist",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",       # pycodestyle errors
+    "F",       # pyflakes
+    "W",       # pycodestyle warnings
+    "I",       # isort
+    "C",       # flake8-comprehensions
+    "B",       # flake8-bugbear
+    "UP007",   # pyupgrade: use X | Y instead of Optional[X] / Union[X, Y]
+    "UP045",   # pyupgrade: use X | None instead of Optional[X]
+]
+ignore = [
+    "E501",  # Line too long (formatter handles where sensible)
+    "C901",  # Too complex
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+skip-magic-trailing-comma = true
+
+[tool.ruff.lint.isort]
+force-single-line = false
+lines-after-imports = 2
+known-first-party = ["core", "api", "spike"]
+split-on-trailing-comma = false

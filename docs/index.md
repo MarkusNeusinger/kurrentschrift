@@ -1,0 +1,76 @@
+# Documentation
+
+Interne Design-Docs für das Kurrentschrift-Projekt. Sprache: Deutsch
+(siehe [`reference/sprachregelung.md`](reference/sprachregelung.md) zur
+Begründung). Stand: pre-spike, Code existiert noch nicht.
+
+---
+
+## Quick Links
+
+| Ich will… | Gehe zu |
+|---|---|
+| Den Architekturkern verstehen | [Architektur-Referenz](concepts/architektur.md) |
+| Wissen, warum Name/Domain/Lizenz so gewählt sind | [Naming und OSS-Setup](concepts/naming-und-setup.md) |
+| Sprache für Code, Docs, README nachschlagen | [Sprachregelung](reference/sprachregelung.md) |
+| Wissen, was ins öffentliche Repo darf | [Quellen- und Rechte-Policy](reference/quellen-und-rechte.md) |
+| Den `/data`-Baum verstehen | [Datenablage](reference/datenablage.md) |
+
+---
+
+## Documentation Structure
+
+```
+docs/
+├── index.md                      # You are here
+├── concepts/                     # Architektur, Philosophie, getroffene Entscheidungen
+│   ├── architektur.md            # Analysis-by-synthesis, Ductus-Prior, Library-Schema, Spike
+│   └── naming-und-setup.md       # Repo-Name, Domain, Lizenz, Verzeichnis-Split
+└── reference/                    # Policy-Dokumente mit Begründung
+    ├── sprachregelung.md         # Deutsch/Englisch pro Artefakt
+    ├── quellen-und-rechte.md     # Was darf rein, was nicht; PD/CC/NC-SA
+    └── datenablage.md            # `/data`-Baum, SOURCE.md, Commit-Klassen
+```
+
+`docs/notes/` enthält zusätzlich Recherchematerial, das nicht zum
+Designkern gehört (z. B. Stift-Recherche).
+
+---
+
+## Concepts
+
+Architektur und Entscheidungen mit ihrer Begründung — was bewusst gewählt
+und was bewusst verworfen wurde.
+
+- **[Architektur-Referenz](concepts/architektur.md)** — Analysis-by-Synthesis,
+  Ductus-Prior, Library-Einheit `(glyph, position, variant)`, Schwellzug
+  vs. Tinte, dreistufige Qualitätspipeline, Spike, Testwörter, Reihenfolge
+- **[Naming und OSS-Setup](concepts/naming-und-setup.md)** — Name, Domain
+  `kurrentschrift.ink`, Monorepo-Layout, MIT-Lizenz, README als Pitch
+
+---
+
+## Reference
+
+Policy-Festlegungen und Konventionen.
+
+- **[Sprachregelung](reference/sprachregelung.md)** — Code immer Englisch,
+  interne Docs Deutsch, README Englisch, Website v1 Deutsch
+- **[Quellen- und Rechte-Policy](reference/quellen-und-rechte.md)** — Süß
+  nie ins Repo, §72 UrhG, gemischte Lizenzen in Korpora, Variante 0 = Loth 1866
+- **[Datenablage](reference/datenablage.md)** — `/data`-Baum, drei
+  Commit-Klassen, `SOURCE.md`-Pflichtfelder, Verlinkungsregel
+
+---
+
+## Mitmachen
+
+- **[Contributing Guide](contributing.md)** — was aktuell hilfreich ist und was noch zu früh ist
+
+---
+
+## Weitere Ressourcen
+
+- **[README](../README.md)** — Projekt-Pitch (Englisch, öffentlich)
+- **[CITATION.cff](../CITATION.cff)** — Zitations-Metadaten
+- **[CLAUDE.md](../CLAUDE.md)** — Hinweise für Claude Code
