@@ -12,6 +12,7 @@ source for the pipeline; this script only uses the SVG for visual review.)
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import cairosvg
@@ -25,19 +26,21 @@ from mvp import template
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CANONICAL_DIR = REPO_ROOT / "mvp" / "canonical"
 LOTH_SVG = REPO_ROOT / "data" / "sources" / "loth-1866" / "chart.svg"
+BBOXES_JSON = CANONICAL_DIR / "loth_bboxes.json"
 OUTPUT_DIR = REPO_ROOT / "mvp" / "out"
 SVG_RENDER_PATH = OUTPUT_DIR / "chart-svg-render-white.png"
 
 
-# Crop windows on the 1633x1869 SVG rasterisation. The s-row carries the
-# s-allograph split as four sub-cells (printed-s | medial-ſ | final-s | capital-S);
-# the e-row has the standard three (printed-e | lowercase-cursive | capital-E).
-# Coordinates are (y0, y1, x0, x1).
-LOTH_CROPS = {
-    "s-medial": (60, 220, 1280, 1430),
-    "s-final": (60, 220, 1410, 1540),
-    "e-medial": (720, 870, 140, 270),
-}
+def load_bboxes() -> dict[str, tuple[int, int, int, int] | None]:
+    """Read the editable bbox table; missing/null entries become None."""
+    data = json.loads(BBOXES_JSON.read_text(encoding="utf-8"))
+    out: dict[str, tuple[int, int, int, int] | None] = {}
+    for name, bbox in data["bboxes"].items():
+        if bbox is None:
+            out[name] = None
+        else:
+            out[name] = (bbox["y0"], bbox["y1"], bbox["x0"], bbox["x1"])
+    return out
 
 
 def rasterise_svg() -> np.ndarray:
@@ -64,6 +67,7 @@ def main() -> None:
     ]
 
     chart = rasterise_svg()
+    bboxes = load_bboxes()
 
     fig, axes = plt.subplots(2, 3, figsize=(15, 9))
 
@@ -71,8 +75,12 @@ def main() -> None:
         tpl = template.load(path)
         template.render(tpl, ax=axes[0, col])
 
-        y0, y1, x0, x1 = LOTH_CROPS[key]
-        axes[1, col].imshow(chart[y0:y1, x0:x1], cmap="gray", vmin=0, vmax=255)
+        bbox = bboxes.get(key)
+        if bbox is None:
+            axes[1, col].text(0.5, 0.5, f"no bbox for {key}\nedit mvp/canonical/loth_bboxes.json", ha="center", va="center", fontsize=10, color="gray", transform=axes[1, col].transAxes)
+        else:
+            y0, y1, x0, x1 = bbox
+            axes[1, col].imshow(chart[y0:y1, x0:x1], cmap="gray", vmin=0, vmax=255)
         axes[1, col].set_title(f"Loth 1866 reference  ({key})", fontsize=10)
         axes[1, col].axis("off")
 

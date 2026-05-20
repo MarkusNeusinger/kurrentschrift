@@ -1,0 +1,17 @@
+{
+  "_note": "Bounding boxes of MVP glyphs on data/sources/loth-1866/chart.svg (rendered at 1633x1869). Coordinates are pixel ranges (y0, y1, x0, x1) on the rasterised SVG. Edit any entry and re-run `uv run python -m mvp.tools.annotate_chart` to see the overlay; `uv run python -m mvp.render_canonicals` will pick them up for the side-by-side review.",
+  "image_size": [1633, 1869],
+  "bboxes": {
+    "s-medial": {"y0": 60, "y1": 220, "x0": 1280, "x1": 1400},
+    "s-final": {"y0": 60, "y1": 220, "x0": 1395, "x1": 1525},
+    "e-medial": {"y0": 720, "y1": 870, "x0": 140, "x1": 270},
+    "a-initial": null,
+    "a-medial": null,
+    "d-initial": null,
+    "l-initial": null,
+    "l-medial": null,
+    "n-medial": null,
+    "n-final": null,
+    "e-final": null
+  }
+}
