@@ -4,21 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository state
 
-Pre-spike: only design docs exist so far. No code, no build, no tests. The planned monorepo layout (per `docs/concepts/naming-und-setup.md` §3) is:
+Pre-MVP: only design docs exist so far. No code, no build, no tests. The planned monorepo layout (per `docs/concepts/naming-und-setup.md` §3) is:
 
 - `/core` — Python: extractor, library, connection engine
 - `/api` — Backend (FastAPI), mirrors anyplot's `api/`
 - `/app` — Reading/practice frontend (Transkribus integration first)
-- `/spike` — The minimal validating experiment (`docs/concepts/architektur.md` §8)
+- `/mvp` — The minimal viable render kernel (`docs/concepts/architektur.md` §8)
 - `/data` — Sources, corpora, variants, samples, derived stats (see Data & licensing below)
 
-The first thing to build is **the spike**, not the library or website. See `docs/concepts/architektur.md` §8 and §10 — order matters.
+The first thing to build is **the MVP**, not the library or website. See `docs/concepts/architektur.md` §8 and §10 — order matters. The actionable breakdown lives in `docs/concepts/mvp-roadmap.md`.
 
 ## Read these before substantive work
 
 The design is already settled in the docs; do not re-litigate decisions that have an explicit "verworfen" (rejected) section. Start at `docs/index.md`.
 
-- `docs/concepts/architektur.md` — architecture. §2 (analysis-by-synthesis), §3 (library schema), §4 (ligature exception), §5 (Schwellzug vs ink), §6 (3-stage quality pipeline), §7 (the one real research risk), §8 (spike), §9 (test words), §10 (build order)
+- `docs/concepts/architektur.md` — architecture. §2 (analysis-by-synthesis), §3 (library schema), §4 (ligature exception), §5 (Schwellzug vs ink), §6 (3-stage quality pipeline), §7 (the one real research risk), §8 (MVP), §9 (test words), §10 (build order)
+- `docs/concepts/mvp-roadmap.md` — actionable breakdown of §8 into Schritt 0 + M0–M6 milestones
 - `docs/concepts/naming-und-setup.md` — repo/name/license/layout decisions
 - `docs/reference/sprachregelung.md` — language rules (see below)
 - `docs/reference/quellen-und-rechte.md` + `docs/reference/datenablage.md` — data/licensing rules (see below)
@@ -46,7 +47,7 @@ When in doubt about what's a glyph vs. a variant vs. a deviation, re-read `docs/
 
 ## Data & licensing (this repo is unusual here)
 
-Code is MIT. **Data is not covered by the code license** — each source carries its own. The `/data` tree lives outside `/core`, `/api`, `/app`, `/spike` precisely to keep this boundary visible.
+Code is MIT. **Data is not covered by the code license** — each source carries its own. The `/data` tree lives outside `/core`, `/api`, `/app`, `/mvp` precisely to keep this boundary visible.
 
 Three commit classes, kept strictly separate (see `docs/reference/datenablage.md` §1):
 
@@ -65,7 +66,7 @@ Before any data commit: *is this my expression or the expression of a protected 
 
 ## Test words
 
-`lesen` (medial ſ, repeated e, ascender, u/n confusable final n) + `das` (final s) is the minimal allograph test pair for the spike. See `docs/concepts/architektur.md` §9.
+`lesen` (medial ſ, repeated e, ascender, u/n confusable final n) + `das` (final s) is the §9 Pflicht-Anker pair for the MVP. See `docs/concepts/architektur.md` §9 for the full MVP word set (incl. `denen` as the generalisation target).
 
 ## Two channels, kept separate
 

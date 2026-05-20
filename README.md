@@ -3,7 +3,7 @@
 **→ [kurrentschrift.ink](https://kurrentschrift.ink)**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-pre--spike-orange.svg)](docs/concepts/architektur.md)
+[![Status](https://img.shields.io/badge/status-pre--MVP-orange.svg)](docs/concepts/architektur.md)
 
 > Reading and re-inking historical German Kurrent script via ductus-model template fitting on scans.
 
@@ -39,15 +39,15 @@ How tight to make the template:
 - Too rigid → won't fit real historical hands (every scribe breaks the norm).
 - Too loose → crossing resolution becomes ambiguous again — the very problem the prior was supposed to solve.
 
-This trade-off has to be found empirically. It's the project's research kernel; the spike below is designed to find or falsify it cheaply.
+This trade-off has to be found empirically. It's the project's research kernel; the MVP below is designed to find or falsify it cheaply.
 
 ## Status
 
-Pre-spike. Design docs are settled; no code yet.
+Pre-MVP. Design docs are settled; no code yet.
 
-**Next: the [§8 spike](docs/concepts/architektur.md#8-der-spike-kleinster-validierender-schritt).** Model medial `ſ` and final `s` as two ductus templates, fit both across ~10 instances of the author's own hand, check that the norm-generated transition curve connects cleanly to the next glyph. A weekend, not a quarter. If it holds → kernel validated, rest is engineering. If not → valuable negative result in days.
+**Next: the [§8 MVP](docs/concepts/architektur.md#8-der-mvp-kleinster-lauffaehiger-renderkern).** A six-letter lowercase Kurrent alphabet (`a · d · e · l · n · ſ · s`) plus seven short words covering all three positions (initial/medial/final). Scan the author's own hand, fit the canonical ductus templates per glyph, aggregate the per-glyph cluster stats, then re-render both the seven input words *and at least one new word* (e.g. `denen`) in the same hand. One to two weekends, not a quarter. If the three validation gates (stability, allograph separation, word rendering) hold → kernel validated, rest is engineering. If not → valuable negative result in days.
 
-Test pair: `lesen` (medial ſ, repeated `e`, ascender, u/n-confusable final `n`) + `das` (final `s`).
+Pflicht-Anker pair: `lesen` (medial ſ, repeated `e`, ascender, u/n-confusable final `n`) + `das` (final `s`). See [`docs/concepts/mvp-roadmap.md`](docs/concepts/mvp-roadmap.md) for the actionable breakdown.
 
 ## Project structure (planned)
 
@@ -56,7 +56,7 @@ kurrentschrift/
 ├── core/       # Python: extractor, library, connection engine
 ├── api/        # Backend (FastAPI)
 ├── app/        # Reading/practice frontend (Transkribus integration first)
-├── spike/      # The minimal validating experiment
+├── mvp/        # The minimal viable render kernel
 ├── data/       # Sources, variants, samples (own licensing — see below)
 └── docs/       # Design rationale (German)
 ```
@@ -75,11 +75,11 @@ Docs are in German (the domain is German). Code, commit messages, and this READM
 
 Code is MIT. **Data is not.** Each source under `/data/sources/` carries its own license (see its `SOURCE.md`); corpora live outside git; NC-SA-derived materials never reach committed outputs.
 
-First source: the [Loth 1866 Kurrent table](data/sources/loth-1866/SOURCE.md) — Public Domain Mark 1.0, via Wikimedia Commons — the geometry baseline for the spike. Modern copyrighted teaching books (Süß and similar) stay out of the repo entirely; bibliographic reference only.
+First source: the [Loth 1866 Kurrent table](data/sources/loth-1866/SOURCE.md) — Public Domain Mark 1.0, via Wikimedia Commons — the geometry baseline for the MVP. Modern copyrighted teaching books (Süß and similar) stay out of the repo entirely; bibliographic reference only.
 
 ## Contributing
 
-This is a pre-spike portfolio project — issues and discussion are welcome, PRs are premature. See **[Contributing Guide](docs/contributing.md)** for what's useful to send right now.
+This is a pre-MVP portfolio project — issues and discussion are welcome, PRs are premature. See **[Contributing Guide](docs/contributing.md)** for what's useful to send right now.
 
 ## Citation
 

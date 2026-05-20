@@ -2,13 +2,13 @@
 
 Kurzspezifikation zu [`quellen-und-rechte.md`](quellen-und-rechte.md): *wo* Quellen
 und Varianten physisch liegen und *wie* verlinkt wird. Variante 0
-(Loth 1866) ist die Basis für alle ersten Tests (Spike §8, Testwörter §9).
+(Loth 1866) ist die Basis für alle ersten Tests (MVP §8, Testwörter §9).
 
 ---
 
 ## 1. Trennung Code ↔ Daten
 
-Daten liegen **außerhalb** von `/core`, `/api`, `/app`, `/spike`
+Daten liegen **außerhalb** von `/core`, `/api`, `/app`, `/mvp`
 (Naming-Setup §3) in einem eigenen `/data`-Baum. Grund: die MIT-Lizenz
 gilt für Code, **nicht** automatisch für Daten — jede Quelle trägt ihre
 eigene Lizenz (Quellen-Rechte §5).
@@ -114,11 +114,13 @@ gemischte Lizenz explizit pro Teilkorpus:
 - Variante 0 = `v0-loth-1866`. Daraus die **Geometrie** für `canonical`;
   der Ductus-Prior wird selbst darübergelegt (Referenz §2 — Bild liefert
   Geometrie, nicht Strichreihenfolge).
-- Spike §8 (medial ſ vs. finales s, ~10 Fits): gegen `own-hand` fitten,
-  Formreferenz = Loth 1866. Rechtlich vollständig sauber, da PD + eigene
-  Hand.
-- Testwörter §9 (`lesen`, `das`) liegen unter `/samples/own-hand` und
-  hängen an Variante 0.
+- MVP §8 (6-Buchstaben-Kern-Alphabet, sieben Wörter + ein
+  generalisierendes Wort, drei Validierungs-Gates): gegen `own-hand`
+  fitten, Formreferenz = Loth 1866. Rechtlich vollständig sauber, da
+  PD + eigene Hand.
+- Testwörter §9 (Pflicht-Anker `lesen`, `das` + Coverage-Wörter `den`,
+  `lese`, `lasen`, `als`, `dann` + Generalisierungs-Wort `denen`)
+  liegen unter `/samples/own-hand` und hängen an Variante 0.
 - Spätere historische Hände = neue `/variants/vN-...` über demselben
   Kanon (Varianten-Auswahlvektor, Referenz §10) — gleiche Ablage- und
   Lizenzregel, kein Sonderfall.

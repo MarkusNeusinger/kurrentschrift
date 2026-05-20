@@ -1,6 +1,6 @@
 # Contributing
 
-**kurrentschrift is a portfolio project**, currently pre-spike. Code doesn't exist yet; the design docs are settled. That shapes what's useful to send right now.
+**kurrentschrift is a portfolio project**, currently pre-MVP. Code doesn't exist yet; the design docs are settled. That shapes what's useful to send right now.
 
 ## Welcome
 
@@ -10,8 +10,8 @@
 
 ## Not yet useful
 
-- **Pull requests** — there's no code to PR against. Once the [§8 spike](concepts/architektur.md) runs and produces its first artifacts under `/spike/` and `/core/`, this changes.
-- **Feature requests for the future website / engine.** The build order in [Architektur §10](concepts/architektur.md) is intentional: spike first, library after, website last.
+- **Pull requests** — there's no code to PR against. Once the [§8 MVP](concepts/architektur.md) runs and produces its first artifacts under `/mvp/` and `/core/`, this changes.
+- **Feature requests for the future website / engine.** The build order in [Architektur §10](concepts/architektur.md) is intentional: MVP first, library after, website last.
 
 ## Data contributions
 

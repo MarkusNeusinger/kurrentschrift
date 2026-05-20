@@ -29,4 +29,4 @@ Siehe [`docs/reference/datenablage.md`](../docs/reference/datenablage.md) §1.
 
 | Variante | Basisquelle | Status |
 |---|---|---|
-| `v0-loth-1866` ([README](variants/v0-loth-1866/README.md)) | `loth-1866` | aktiv (Spike-Basis) |
+| `v0-loth-1866` ([README](variants/v0-loth-1866/README.md)) | `loth-1866` | aktiv (MVP-Basis) |

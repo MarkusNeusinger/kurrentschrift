@@ -90,10 +90,10 @@ einen Open-Source-MCP-Server.
 | **Domain** | `kurrentschrift.ink` |
 | **Repo-Ort** | persönlicher GitHub-Account (Portfolio-Projekt, wie anyplot.ai) |
 | **Repo-Name** | `kurrentschrift` (Monorepo: Code + Website) |
-| **Struktur** | `/core` (Python: extractor, library, connection engine) · `/api` (FastAPI-Backend) · `/app` (Frontend für Lesen/Üben) · `/spike` |
+| **Struktur** | `/core` (Python: extractor, library, connection engine) · `/api` (FastAPI-Backend) · `/app` (Frontend für Lesen/Üben) · `/mvp` |
 | **Lizenz** | MIT |
 | **README** | = Pitch, nicht Doku; Rohmaterial aus [`architektur.md`](architektur.md) |
-| **Erste Demo** | der Spike aus §8 (ſ vs. s, ~10 Fits, Übergangskurve) |
+| **Erste Demo** | der MVP aus §8 (6-Buchstaben-Kern-Alphabet, sieben Wörter, drei Validierungs-Gates inkl. Render eines neuen Wortes aus aggregierten Stats) |
 
 ### Begründung der Kernpunkte
 
@@ -118,10 +118,10 @@ Referenz: Analysis-by-Synthesis-Kern (§2), die *bewusst verworfenen*
 Alternativen, der ehrlich benannte offene Forschungskern (§7). Genau dieses
 „ich kenne die Trade-offs und benenne das Ungelöste" demonstriert Tiefe.
 
-**Spike als Demo.** Ein Portfolio-Projekt überzeugt durch *ein sichtbares
+**MVP als Demo.** Ein Portfolio-Projekt überzeugt durch *ein sichtbares
 funktionierendes Stück*, nicht durch Vollständigkeit. §8 ist klein genug
 zum Fertigstellen und visuell genug für ein GIF/Bild in der README. Die
-Reihenfolge aus §10 (Spike zuerst) ist damit auch portfolio-strategisch
+Reihenfolge aus §10 (MVP zuerst) ist damit auch portfolio-strategisch
 richtig, nicht nur technisch.
 
 ---

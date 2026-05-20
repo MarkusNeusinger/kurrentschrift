@@ -2,7 +2,7 @@
 
 Interne Design-Docs für das Kurrentschrift-Projekt. Sprache: Deutsch
 (siehe [`reference/sprachregelung.md`](reference/sprachregelung.md) zur
-Begründung). Stand: pre-spike, Code existiert noch nicht.
+Begründung). Stand: pre-MVP, Code existiert noch nicht.
 
 ---
 
@@ -11,6 +11,7 @@ Begründung). Stand: pre-spike, Code existiert noch nicht.
 | Ich will… | Gehe zu |
 |---|---|
 | Den Architekturkern verstehen | [Architektur-Referenz](concepts/architektur.md) |
+| Wissen, wie der MVP konkret zerlegt ist | [MVP-Roadmap](concepts/mvp-roadmap.md) |
 | Wissen, warum Name/Domain/Lizenz so gewählt sind | [Naming und OSS-Setup](concepts/naming-und-setup.md) |
 | Sprache für Code, Docs, README nachschlagen | [Sprachregelung](reference/sprachregelung.md) |
 | Wissen, was ins öffentliche Repo darf | [Quellen- und Rechte-Policy](reference/quellen-und-rechte.md) |
@@ -24,7 +25,8 @@ Begründung). Stand: pre-spike, Code existiert noch nicht.
 docs/
 ├── index.md                      # You are here
 ├── concepts/                     # Architektur, Philosophie, getroffene Entscheidungen
-│   ├── architektur.md            # Analysis-by-synthesis, Ductus-Prior, Library-Schema, Spike
+│   ├── architektur.md            # Analysis-by-synthesis, Ductus-Prior, Library-Schema, MVP
+│   ├── mvp-roadmap.md            # Operative Zerlegung des MVP (§8) in Schritt 0 + M0–M6
 │   └── naming-und-setup.md       # Repo-Name, Domain, Lizenz, Verzeichnis-Split
 └── reference/                    # Policy-Dokumente mit Begründung
     ├── sprachregelung.md         # Deutsch/Englisch pro Artefakt
@@ -44,7 +46,9 @@ und was bewusst verworfen wurde.
 
 - **[Architektur-Referenz](concepts/architektur.md)** — Analysis-by-Synthesis,
   Ductus-Prior, Library-Einheit `(glyph, position, variant)`, Schwellzug
-  vs. Tinte, dreistufige Qualitätspipeline, Spike, Testwörter, Reihenfolge
+  vs. Tinte, dreistufige Qualitätspipeline, MVP, Testwörter, Reihenfolge
+- **[MVP-Roadmap](concepts/mvp-roadmap.md)** — operative Zerlegung von §8
+  in Schritt 0 + M0–M6 mit Validierungs-Gates und Verifikations-Plan
 - **[Naming und OSS-Setup](concepts/naming-und-setup.md)** — Name, Domain
   `kurrentschrift.ink`, Monorepo-Layout, MIT-Lizenz, README als Pitch
 

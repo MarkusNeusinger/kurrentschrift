@@ -63,5 +63,5 @@ skip-magic-trailing-comma = true
 [tool.ruff.lint.isort]
 force-single-line = false
 lines-after-imports = 2
-known-first-party = ["core", "api", "spike"]
+known-first-party = ["core", "api", "mvp"]
 split-on-trailing-comma = false

@@ -14,6 +14,6 @@ Hier landet das Gelernte über dieser Quelle:
 Ductus (Strichreihenfolge, Absetzpunkte) wird modelliert, nicht aus der
 Tafel abgelesen — siehe [`architektur.md`](../../../docs/concepts/architektur.md) §2.
 
-Stand: leer. Erstbefüllung durch den Spike
-([`architektur.md`](../../../docs/concepts/architektur.md) §8) für die zwei
-s-Allographe.
+Stand: leer. Erstbefüllung durch den MVP
+([`architektur.md`](../../../docs/concepts/architektur.md) §8) für das
+6-Buchstaben-Kern-Alphabet (a, d, e, l, n, ſ/s).

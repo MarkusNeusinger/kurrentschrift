@@ -100,7 +100,7 @@ Deutschland ein eigenes Leistungsschutzrecht des Digitalisierers tragen
 Deshalb in dieser Reihenfolge bevorzugen:
 
 1. **Eigene Hand** — eliminiert das Thema vollständig (empfohlen für den
-   Spike, §8).
+   MVP, §8).
 2. Quelle **explizit** als PD/CC0 ausgezeichnet.
 3. **Eigenes Foto** eines gemeinfreien Originals (PD-Werk → dein Foto,
    du lizenzierst).
