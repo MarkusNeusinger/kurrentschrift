@@ -16,7 +16,13 @@ keywords = [
     "analysis-by-synthesis",
     "ductus",
 ]
-dependencies = []
+dependencies = [
+    "numpy>=2.1",
+    "scipy>=1.14",
+    "scikit-image>=0.24",
+    "pillow>=11.0",
+    "matplotlib>=3.9",
+]
 
 [project.optional-dependencies]
 dev = [

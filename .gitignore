@@ -193,6 +193,9 @@ cython_debug/
 /data/corpora/
 /data/derived/from-nc-sa/
 
+# MVP demo output (regenerated on each run).
+/mvp/out/
+
 # Abstra
 #   Abstra is an AI-powered process automation framework.
 #   Ignore directories containing user credentials, local state, and settings.
