@@ -1,0 +1,37 @@
+{
+  "version": "v0",
+  "glyph": "s",
+  "position": "final",
+  "variant": 0,
+  "advance": 0.65,
+  "_note": "Final s: a round-s at word end. One stroke that rises from baseline (entry from previous letter), tops out a touch above midband, curls right-and-down, folds back left through a tight S-curl with the crossing slightly off-centre, then runs out to baseline with a small forward exit. Distinct allograph from medial ſ — different topology, not a positional skin.",
+  "entry": {
+    "xy": [0.0, 0.0],
+    "tangent_deg": 70,
+    "coupling": "baseline"
+  },
+  "exit": {
+    "xy": [0.6, 0.0],
+    "tangent_deg": 12,
+    "coupling": "baseline"
+  },
+  "strokes": [
+    {
+      "curve_type": "bspline",
+      "anchors": [
+        [0.0, 0.0],
+        [0.08, 0.45],
+        [0.22, 0.85],
+        [0.38, 1.0],
+        [0.44, 0.85],
+        [0.38, 0.65],
+        [0.22, 0.55],
+        [0.15, 0.5],
+        [0.2, 0.35],
+        [0.4, 0.1],
+        [0.6, 0.0]
+      ],
+      "half_widths": [0.04, 0.05, 0.06, 0.07, 0.1, 0.12, 0.13, 0.1, 0.08, 0.06, 0.05]
+    }
+  ]
+}

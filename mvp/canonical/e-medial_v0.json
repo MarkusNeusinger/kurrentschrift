@@ -1,0 +1,37 @@
+{
+  "version": "v0",
+  "glyph": "e",
+  "position": "medial",
+  "variant": 0,
+  "advance": 0.5,
+  "_note": "Medial e: the Kurrent-e with the famous 'kleine Schleife' — a tight upward loop where the path crosses itself between baseline and midband. Architektur §9 explicitly flags this as the canonical Kreuzungsfall that the ductus prior resolves. Anchors are densely placed inside the loop so the chord-length cubic spline actually traces the doubling-back instead of smoothing it away.",
+  "entry": {
+    "xy": [0.0, 0.0],
+    "tangent_deg": 68,
+    "coupling": "baseline"
+  },
+  "exit": {
+    "xy": [0.5, 0.0],
+    "tangent_deg": 25,
+    "coupling": "baseline"
+  },
+  "strokes": [
+    {
+      "curve_type": "bspline",
+      "anchors": [
+        [0.0, 0.0],
+        [0.1, 0.45],
+        [0.25, 0.9],
+        [0.36, 1.0],
+        [0.32, 0.85],
+        [0.2, 0.7],
+        [0.1, 0.6],
+        [0.08, 0.45],
+        [0.18, 0.35],
+        [0.32, 0.2],
+        [0.5, 0.0]
+      ],
+      "half_widths": [0.04, 0.05, 0.05, 0.06, 0.07, 0.08, 0.08, 0.07, 0.13, 0.15, 0.05]
+    }
+  ]
+}
