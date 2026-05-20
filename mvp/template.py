@@ -167,7 +167,13 @@ def render(template: CanonicalTemplate, ax=None, show_guides: bool = True, show_
         ax.fill(poly_x, poly_y, color="black", zorder=3)
 
     if show_coupling:
-        for cp, color, label in [(template.entry, "tab:green", "in"), (template.exit, "tab:red", "out")]:
+        # Final letters have no forward coupling — the exit is a terminus, not
+        # a connection to a next glyph. Hide the "out" marker so the render
+        # reflects the connection-engine semantics.
+        markers = [(template.entry, "tab:green", "in")]
+        if template.position != "final":
+            markers.append((template.exit, "tab:red", "out"))
+        for cp, color, label in markers:
             cx, cy = cp.xy
             ax.plot(cx, cy, "o", color=color, markersize=8, zorder=5, mfc="white", mew=1.5)
             theta = np.deg2rad(cp.tangent_deg)

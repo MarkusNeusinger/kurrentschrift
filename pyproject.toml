@@ -22,6 +22,7 @@ dependencies = [
     "scikit-image>=0.24",
     "pillow>=11.0",
     "matplotlib>=3.9",
+    "cairosvg>=2.9.0",
 ]
 
 [project.optional-dependencies]
