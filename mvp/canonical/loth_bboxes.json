@@ -1,10 +1,10 @@
 {
-  "_note": "Bounding boxes of MVP glyphs on data/sources/loth-1866/chart.svg (rendered at 1633x1869). Coordinates are pixel ranges (y0, y1, x0, x1) on the rasterised SVG. Edit any entry and re-run `uv run python -m mvp.tools.annotate_chart` to see the overlay; `uv run python -m mvp.render_canonicals` will pick them up for the side-by-side review.",
+  "_note": "Bounding boxes of MVP glyphs on data/sources/loth-1866/chart.svg (rendered at 1633x1869). Each bbox has y0/y1/x0/x1 in pixels. Because Kurrent glyphs slant and overlap into neighbouring cells, a plain rectangle often catches a sliver of the next letter — the optional `exclude` list is a list of sub-rectangles that get whited out within the main crop. Edit any entry and re-run `uv run python -m mvp.tools.annotate_chart` to verify; `uv run python -m mvp.render_canonicals` picks the same JSON up for the side-by-side review.",
   "image_size": [1633, 1869],
   "bboxes": {
-    "s-medial": {"y0": 60, "y1": 220, "x0": 1280, "x1": 1400},
-    "s-final": {"y0": 60, "y1": 220, "x0": 1395, "x1": 1525},
-    "e-medial": {"y0": 720, "y1": 870, "x0": 140, "x1": 270},
+    "s-medial": {"y0": 70, "y1": 240, "x0": 1250, "x1": 1380, "exclude": []},
+    "s-final": {"y0": 70, "y1": 180, "x0": 1330, "x1": 1480, "exclude": []},
+    "e-medial": {"y0": 700, "y1": 770, "x0": 140, "x1": 270, "exclude": []},
     "a-initial": null,
     "a-medial": null,
     "d-initial": null,

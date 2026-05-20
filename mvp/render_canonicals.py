@@ -31,16 +31,39 @@ OUTPUT_DIR = REPO_ROOT / "mvp" / "out"
 SVG_RENDER_PATH = OUTPUT_DIR / "chart-svg-render-white.png"
 
 
-def load_bboxes() -> dict[str, tuple[int, int, int, int] | None]:
-    """Read the editable bbox table; missing/null entries become None."""
+def load_bboxes() -> dict[str, dict | None]:
+    """Read the editable bbox table; missing/null entries become None.
+
+    Each non-null entry is {y0, y1, x0, x1, exclude} where exclude is a list
+    of sub-rectangles (same shape) that get whited out within the main crop —
+    used to remove bleed from neighbouring glyphs without leaving the
+    rectangular bbox schema.
+    """
     data = json.loads(BBOXES_JSON.read_text(encoding="utf-8"))
-    out: dict[str, tuple[int, int, int, int] | None] = {}
+    out: dict[str, dict | None] = {}
     for name, bbox in data["bboxes"].items():
         if bbox is None:
             out[name] = None
         else:
-            out[name] = (bbox["y0"], bbox["y1"], bbox["x0"], bbox["x1"])
+            out[name] = {
+                "y0": bbox["y0"], "y1": bbox["y1"], "x0": bbox["x0"], "x1": bbox["x1"],
+                "exclude": bbox.get("exclude", []),
+            }
     return out
+
+
+def crop_with_excludes(chart: np.ndarray, bbox: dict) -> np.ndarray:
+    """Slice the main rect and white out any exclude sub-rectangles."""
+    y0, y1, x0, x1 = bbox["y0"], bbox["y1"], bbox["x0"], bbox["x1"]
+    crop = chart[y0:y1, x0:x1].copy()
+    for ex in bbox["exclude"]:
+        ey0 = max(0, ex["y0"] - y0)
+        ey1 = min(y1 - y0, ex["y1"] - y0)
+        ex0 = max(0, ex["x0"] - x0)
+        ex1 = min(x1 - x0, ex["x1"] - x0)
+        if ey1 > ey0 and ex1 > ex0:
+            crop[ey0:ey1, ex0:ex1] = 255
+    return crop
 
 
 def rasterise_svg() -> np.ndarray:
@@ -79,8 +102,7 @@ def main() -> None:
         if bbox is None:
             axes[1, col].text(0.5, 0.5, f"no bbox for {key}\nedit mvp/canonical/loth_bboxes.json", ha="center", va="center", fontsize=10, color="gray", transform=axes[1, col].transAxes)
         else:
-            y0, y1, x0, x1 = bbox
-            axes[1, col].imshow(chart[y0:y1, x0:x1], cmap="gray", vmin=0, vmax=255)
+            axes[1, col].imshow(crop_with_excludes(chart, bbox), cmap="gray", vmin=0, vmax=255)
         axes[1, col].set_title(f"Loth 1866 reference  ({key})", fontsize=10)
         axes[1, col].axis("off")
 

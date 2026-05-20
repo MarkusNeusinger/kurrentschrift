@@ -81,6 +81,11 @@ def main() -> None:
         rect = Rectangle((x0, y0), x1 - x0, y1 - y0, linewidth=2.5, edgecolor=color, facecolor="none", zorder=4)
         ax.add_patch(rect)
         ax.text(x0, y0 - 8, f"{name}  ({x0},{y0})→({x1},{y1})", fontsize=9, color=color, weight="bold", zorder=5)
+        for ex in bbox.get("exclude", []):
+            ey0, ey1, ex0, ex1 = ex["y0"], ex["y1"], ex["x0"], ex["x1"]
+            ex_rect = Rectangle((ex0, ey0), ex1 - ex0, ey1 - ey0, linewidth=1.5, edgecolor=color, facecolor=color, alpha=0.25, linestyle="--", zorder=4)
+            ax.add_patch(ex_rect)
+            ax.text(ex0, ey1 + 2, "exclude", fontsize=7, color=color, style="italic", zorder=5)
 
     if unset:
         ax.text(20, h - 20, f"unset (no bbox yet): {', '.join(unset)}", fontsize=11, color="dimgray", style="italic")
