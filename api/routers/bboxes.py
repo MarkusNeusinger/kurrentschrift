@@ -1,40 +1,73 @@
-"""Bbox endpoints — read/write loth_bboxes.json."""
+"""Bbox CRUD per source."""
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.core.pipeline import read_bboxes_file, write_bboxes_file
-from api.core.schemas import GlyphBbox
-from api.core.settings import settings
-
-
-router = APIRouter(tags=["bboxes"])
+from api.dependencies import require_db, require_source
+from api.schemas import BboxIn, BboxOut
+from core.database import Bbox, BboxRepository, Source
 
 
-@router.get("/bboxes")
-async def get_bboxes() -> dict:
-    """Full content of loth_bboxes.json — returned verbatim.
-
-    Returned shape matches the file: `{_note, image_size, bboxes: {key: dict|null}}`.
-    The frontend reads `bboxes` directly; `image_size` lets it set the canvas.
-    """
-    return read_bboxes_file(settings.bboxes_json)
+router = APIRouter(prefix="/sources/{source_id}/bboxes", tags=["bboxes"])
 
 
-@router.put("/bboxes/{glyph_key}")
-async def put_bbox(glyph_key: str, bbox: GlyphBbox) -> dict:
-    """Upsert one glyph's bbox + calibration + excludes into loth_bboxes.json.
+def _to_out(bbox: Bbox) -> BboxOut:
+    return BboxOut(
+        glyph_key=bbox.glyph_key,
+        y0=bbox.y0,
+        y1=bbox.y1,
+        x0=bbox.x0,
+        x1=bbox.x1,
+        excludes=list(bbox.excludes),
+        baseline_y=bbox.baseline_y,
+        midband_y=bbox.midband_y,
+        n_anchors=bbox.n_anchors,
+    )
 
-    Returns the persisted entry. The request body must be a complete
-    GlyphBbox — partial updates aren't supported (frontend always has the
-    full state for the selected glyph).
-    """
-    data = read_bboxes_file(settings.bboxes_json)
-    if glyph_key not in data.get("bboxes", {}):
-        raise HTTPException(status_code=404, detail=f"unknown glyph_key {glyph_key!r}")
-    entry = bbox.model_dump(exclude_none=True)
-    # Tuples (start_xy) become lists in JSON — normalise for consistency with manual edits.
-    if "start_xy" in entry and isinstance(entry["start_xy"], tuple):
-        entry["start_xy"] = list(entry["start_xy"])
-    data["bboxes"][glyph_key] = entry
-    write_bboxes_file(settings.bboxes_json, data)
-    return entry
+
+@router.get("", response_model=list[BboxOut])
+async def list_bboxes(source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)):
+    rows = await BboxRepository(db).list(source.id)
+    return [_to_out(b) for b in rows]
+
+
+@router.get("/{glyph_key}", response_model=BboxOut)
+async def get_bbox(
+    glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
+):
+    bbox = await BboxRepository(db).get(source.id, glyph_key)
+    if bbox is None:
+        raise HTTPException(404, detail=f"bbox not set for {glyph_key!r}")
+    return _to_out(bbox)
+
+
+@router.put("/{glyph_key}", response_model=BboxOut)
+async def put_bbox(
+    glyph_key: str,
+    payload: BboxIn,
+    source: Source = Depends(require_source),
+    db: AsyncSession = Depends(require_db),
+):
+    if payload.baseline_y <= payload.midband_y:
+        raise HTTPException(422, detail="baseline_y must be greater than midband_y (baseline is below midband)")
+    repo = BboxRepository(db)
+    bbox = await repo.upsert(
+        source.id,
+        glyph_key,
+        y0=payload.y0,
+        y1=payload.y1,
+        x0=payload.x0,
+        x1=payload.x1,
+        excludes=[e.model_dump() for e in payload.excludes],
+        baseline_y=payload.baseline_y,
+        midband_y=payload.midband_y,
+        n_anchors=payload.n_anchors,
+    )
+    return _to_out(bbox)
+
+
+@router.delete("/{glyph_key}", status_code=204)
+async def delete_bbox(
+    glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
+):
+    await BboxRepository(db).delete(source.id, glyph_key)

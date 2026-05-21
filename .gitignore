@@ -187,14 +187,14 @@ cython_debug/
 # Serena MCP server local state
 .serena/
 
+# Playwright MCP — per-session snapshots/console logs
+.playwright-mcp/
+
 # Project data: never commit corpora bytes or NC-SA derivatives.
 # See docs/reference/datenablage.md §1 (three commit classes) and
 # docs/reference/quellen-und-rechte.md §7 (NC-SA vs MIT collision).
 /data/corpora/
 /data/derived/from-nc-sa/
-
-# MVP demo output (regenerated on each run).
-/mvp/out/
 
 # Abstra
 #   Abstra is an AI-powered process automation framework.

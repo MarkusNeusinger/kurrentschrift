@@ -1,20 +1,19 @@
 // Persistent layout shell: sidebar on the left, page content on the right.
-// Sidebar is always-visible so the user can jump between glyphs without
-// going back to the chart. Page-specific actions render inside the page.
 
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { Outlet } from 'react-router-dom';
+
 import { GlyphSidebar } from '../components/GlyphSidebar';
 import { useAdmin } from '../state';
 
 export function AppLayout() {
-  const { bboxes, loadError } = useAdmin();
+  const { source, loadError } = useAdmin();
 
   if (loadError) {
     return (
       <Box sx={{ p: 4 }}>
         <Typography variant="h5" gutterBottom>
-          /api/bboxes konnte nicht geladen werden
+          API nicht erreichbar
         </Typography>
         <Typography color="text.secondary">{loadError}</Typography>
         <Typography sx={{ mt: 2 }}>
@@ -24,17 +23,17 @@ export function AppLayout() {
     );
   }
 
-  if (!bboxes) {
+  if (!source) {
     return (
       <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
         <CircularProgress />
-        <Typography color="text.secondary">lade…</Typography>
+        <Typography color="text.secondary">lade Quelle…</Typography>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: '260px 1fr', height: '100vh' }}>
+    <Box sx={{ display: 'grid', gridTemplateColumns: '280px 1fr', height: '100vh' }}>
       <GlyphSidebar />
       <Box sx={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <Outlet />

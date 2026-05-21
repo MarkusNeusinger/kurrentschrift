@@ -90,7 +90,7 @@ einen Open-Source-MCP-Server.
 | **Domain** | `kurrentschrift.ink` |
 | **Repo-Ort** | persönlicher GitHub-Account (Portfolio-Projekt, wie anyplot.ai) |
 | **Repo-Name** | `kurrentschrift` (Monorepo: Code + Website) |
-| **Struktur** | `/core` (Python: extractor, library, connection engine) · `/api` (FastAPI-Backend) · `/app` (Frontend für Lesen/Üben) · `/mvp` |
+| **Struktur** | `/core` (Python: extractor, template, DB-Models + Repositories) · `/api` (FastAPI-Backend, dünn) · `/app` (React-Admin-/Lese-UI) · `/alembic` (Postgres-Migrationen) |
 | **Lizenz** | MIT |
 | **README** | = Pitch, nicht Doku; Rohmaterial aus [`architektur.md`](architektur.md) |
 | **Erste Demo** | der MVP aus §8 (6-Buchstaben-Kern-Alphabet, sieben Wörter, drei Validierungs-Gates inkl. Render eines neuen Wortes aus aggregierten Stats) |

@@ -10,7 +10,7 @@
 
 ## Not yet useful
 
-- **Pull requests** — there's no code to PR against. Once the [§8 MVP](concepts/architektur.md) runs and produces its first artifacts under `/mvp/` and `/core/`, this changes.
+- **Pull requests** — there's no code to PR against. Once the [§8 MVP](concepts/architektur.md) runs end-to-end through `/api/` + `/app/` + `/core/` and the database is populated with the first canonicals, this changes.
 - **Feature requests for the future website / engine.** The build order in [Architektur §10](concepts/architektur.md) is intentional: MVP first, library after, website last.
 
 ## Data contributions

@@ -53,10 +53,10 @@ Pflicht-Anker pair: `lesen` (medial ſ, repeated `e`, ascender, u/n-confusable f
 
 ```
 kurrentschrift/
-├── core/       # Python: extractor, library, connection engine (not yet)
-├── api/        # FastAPI backend for the admin UI (reads/writes mvp/canonical/*.json)
-├── app/        # React + Vite admin UI — canonical extraction with mouse + stylus
-├── mvp/        # The minimal viable render kernel + supporting CLI tools
+├── core/       # Pure-Python compute + DB layer (extractor, template, Postgres models)
+├── api/        # FastAPI service (thin routing over /core)
+├── app/        # React + Vite + MUI admin UI — bbox/exclude editor + stylus tracing
+├── alembic/    # Schema migrations (sources, bboxes, glyphs)
 ├── data/       # Sources, variants, samples (own licensing — see below)
 └── docs/       # Design rationale (German)
 ```
@@ -66,6 +66,9 @@ kurrentschrift/
 Two terminals:
 
 ```bash
+# Terminal 0 — once, or whenever the schema changes
+uv run alembic upgrade head
+
 # Terminal 1 — Python backend on :8000
 uv run uvicorn api.main:app --reload --port 8000
 
@@ -73,7 +76,7 @@ uv run uvicorn api.main:app --reload --port 8000
 cd app && npm install && npm run dev
 ```
 
-Browser at `http://localhost:3000`; the admin UI loads the Loth chart, lets you drag bboxes/excludes per glyph, set baseline/midband, and trace the stroke with a stylus. Canonicals are saved as `mvp/canonical/<glyph>_v0.json` and visualised in a side-by-side preview against the Loth source.
+Browser at `http://localhost:3000`; the admin UI loads the Loth chart, lets you drag bboxes/excludes per glyph, set baseline/midband, and trace the stroke with a stylus. All canonicals live in Postgres (the `kurrentschrift` DB on the anyplot Cloud SQL instance — see `.env`) and the editor's SVG diagnostic view renders Loth-crop, skeleton+anchors, and the canonical template side by side from JSON the backend serves.
 
 ## Documentation
 

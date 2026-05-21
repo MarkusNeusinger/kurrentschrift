@@ -6,6 +6,18 @@ Schema, Pfade — siehe [Sprachregelung](../reference/sprachregelung.md)).
 
 ---
 
+## Status (2026-05-21)
+
+Die Implementierung läuft jetzt durchgängig über die Web-Admin-UI (`/app/`)
+gegen das FastAPI-Backend (`/api/`) und Postgres (`/core/database/` +
+`/alembic/`). Der frühere `/mvp/`-Ordner mit JSON-Files und Konsolenskripten
+(`trace_skeleton.py`, `inspect_crop.py`, `render_canonicals.py`) ist aufgelöst
+— alle Berechnungen passieren im Backend, alle Canonicals werden in der
+`glyphs`-Tabelle gespeichert. Die unten beschriebenen Meilensteine M0–M6
+bleiben inhaltlich gültig (Scope, Glyphen, Wortset, Validierungs-Gates), nur
+das *wie* wechselt: ein neuer Trace startet als Stylus-Strich im Editor und
+endet als Row in der Datenbank, nicht als JSON-Diff.
+
 ## Context
 
 Die Design-Docs sind abgeschlossen, Code existiert noch nicht. §10 sagt:

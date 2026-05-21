@@ -8,7 +8,7 @@ und Varianten physisch liegen und *wie* verlinkt wird. Variante 0
 
 ## 1. Trennung Code ↔ Daten
 
-Daten liegen **außerhalb** von `/core`, `/api`, `/app`, `/mvp`
+Daten liegen **außerhalb** von `/core`, `/api`, `/app`, `/alembic`
 (Naming-Setup §3) in einem eigenen `/data`-Baum. Grund: die MIT-Lizenz
 gilt für Code, **nicht** automatisch für Daten — jede Quelle trägt ihre
 eigene Lizenz (Quellen-Rechte §5).

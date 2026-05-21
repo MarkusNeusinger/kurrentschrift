@@ -1,15 +1,6 @@
-// Sidebar — one click per row does the obvious thing:
-//   - Click the row: activate this glyph (also makes it visible if it
-//     wasn't yet). The active glyph is what bbox/exclude drags on the
-//     chart target, and what the editor page opens.
-//   - Click the edit icon on the right: same as row click + navigate
-//     to the editor page.
-//   - Bulk visibility: the "alle / keine" buttons at the top.
-//
-// Status column shows two pieces of info:
-//   - whether this glyph is currently visible on the chart (filled vs
-//     hollow circle on the left)
-//   - whether the canonical has been traced (check vs hollow circle)
+// Sidebar — one click activates + shows. Iterates over the KNOWN_GLYPHS list
+// (the v1 MVP target set), looking up bboxes and traced-canonical status
+// from the admin state.
 
 import CircleIcon from '@mui/icons-material/Circle';
 import EditIcon from '@mui/icons-material/Edit';
@@ -30,24 +21,17 @@ import {
   Typography,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+
+import { KNOWN_GLYPHS } from '../constants';
 import { useAdmin } from '../state';
 
 export function GlyphSidebar() {
-  const {
-    bboxes,
-    activeGlyph,
-    visibleGlyphs,
-    canonStatus,
-    toggleVisible,
-    setOnlyVisible,
-    setActiveGlyph,
-  } = useAdmin();
+  const { source, bboxesByKey, glyphsByKey, activeGlyph, visibleGlyphs, toggleVisible, setOnlyVisible, setActiveGlyph } =
+    useAdmin();
   const navigate = useNavigate();
 
-  if (!bboxes) return null;
-  const keys = Object.keys(bboxes.bboxes);
-  const visibleCount = visibleGlyphs.size;
-  const setKeys = keys.filter((k) => bboxes.bboxes[k] !== null);
+  if (!source) return null;
+  const keysWithBbox = KNOWN_GLYPHS.filter((g) => g.key in bboxesByKey).map((g) => g.key);
 
   const activateGlyph = (k: string) => {
     setActiveGlyph(k);
@@ -56,21 +40,28 @@ export function GlyphSidebar() {
 
   return (
     <Box sx={{ borderRight: 1, borderColor: 'divider', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-      <Box sx={{ p: 2, pb: 1 }}>
+      <Box sx={{ p: 2, pb: 0.5 }}>
         <Typography variant="overline" color="text.secondary">
-          Glyphen ({visibleCount}/{keys.length})
+          {source.title}
+        </Typography>
+        <Typography variant="caption" color="text.disabled" sx={{ display: 'block' }}>
+          {source.style_ratio.join(':')} · slant {source.slant_deg}°
         </Typography>
       </Box>
-      <Box sx={{ px: 2, pb: 1, display: 'flex', gap: 1 }}>
-        <Button size="small" variant="outlined" onClick={() => setOnlyVisible(setKeys)}>alle</Button>
-        <Button size="small" variant="outlined" onClick={() => setOnlyVisible([])}>keine</Button>
+      <Box sx={{ px: 2, py: 1, display: 'flex', gap: 1 }}>
+        <Button size="small" variant="outlined" onClick={() => setOnlyVisible(keysWithBbox)}>
+          alle
+        </Button>
+        <Button size="small" variant="outlined" onClick={() => setOnlyVisible([])}>
+          keine
+        </Button>
       </Box>
       <Divider />
       <List dense sx={{ flex: 1, overflowY: 'auto', py: 0 }}>
-        {keys.map((k) => {
-          const bbox = bboxes.bboxes[k];
-          const hasBbox = bbox !== null;
-          const hasCanon = canonStatus[k] === true;
+        {KNOWN_GLYPHS.map((kg) => {
+          const k = kg.key;
+          const hasBbox = k in bboxesByKey;
+          const hasCanon = glyphsByKey[k]?.has_data === true;
           const visible = visibleGlyphs.has(k);
           const isActive = activeGlyph === k;
           return (
@@ -101,18 +92,9 @@ export function GlyphSidebar() {
               }}
             >
               <ListItemButton onClick={() => activateGlyph(k)} sx={{ py: 0.5 }}>
-                {/* visibility indicator */}
-                <Box
-                  sx={{
-                    width: 26,
-                    display: 'flex',
-                    alignItems: 'center',
-                    color: visible ? 'secondary.main' : 'text.disabled',
-                  }}
-                >
+                <Box sx={{ width: 26, display: 'flex', alignItems: 'center', color: visible ? 'secondary.main' : 'text.disabled' }}>
                   {visible ? <VisibilityIcon fontSize="small" /> : <VisibilityOffIcon fontSize="small" />}
                 </Box>
-                {/* canonical status */}
                 <Box
                   sx={{
                     width: 22,
@@ -121,10 +103,17 @@ export function GlyphSidebar() {
                     color: hasCanon ? 'success.main' : hasBbox ? 'text.secondary' : 'text.disabled',
                   }}
                 >
-                  {hasCanon ? <TaskAltIcon fontSize="small" /> : hasBbox ? <CircleIcon sx={{ fontSize: 10 }} /> : <RadioButtonUncheckedIcon fontSize="small" />}
+                  {hasCanon ? (
+                    <TaskAltIcon fontSize="small" />
+                  ) : hasBbox ? (
+                    <CircleIcon sx={{ fontSize: 10 }} />
+                  ) : (
+                    <RadioButtonUncheckedIcon fontSize="small" />
+                  )}
                 </Box>
                 <ListItemText
-                  primary={k}
+                  primary={kg.label}
+                  secondary={k}
                   slotProps={{
                     primary: {
                       sx: {
@@ -133,6 +122,7 @@ export function GlyphSidebar() {
                         color: hasBbox ? 'text.primary' : 'text.disabled',
                       },
                     },
+                    secondary: { sx: { fontSize: 10, fontFamily: 'ui-monospace, Menlo, monospace' } },
                   }}
                 />
               </ListItemButton>

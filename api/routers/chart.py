@@ -1,36 +1,40 @@
-"""Chart image endpoints — serves the raw Loth chart and per-glyph crops."""
+"""Chart-image endpoints — full chart + per-bbox crop (binary responses)."""
 
-from fastapi import APIRouter, HTTPException
-from fastapi.responses import FileResponse, Response
+from fastapi import APIRouter, Depends, HTTPException, Response
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.core.pipeline import get_bbox, render_crop_png
-from api.core.settings import settings
+from api.dependencies import require_db, require_source
+from core.chart import crop_to_png_bytes, load_chart_grayscale, resolve_chart_path
+from core.database import BboxRepository, Source
 
 
-router = APIRouter(tags=["chart"])
+router = APIRouter(prefix="/sources/{source_id}", tags=["chart"])
 
 
 @router.get("/chart")
-async def get_chart():
-    """Return the source Loth 1866 chart JPG.
-
-    Frontend renders this as the main canvas background; bboxes overlay
-    on top of it in screen coords that map 1:1 to chart-pixel coords
-    (no resize on the server).
-    """
-    if not settings.chart_path.exists():
-        raise HTTPException(status_code=404, detail=f"chart not found at {settings.chart_path}")
-    return FileResponse(settings.chart_path, media_type="image/jpeg")
+async def get_chart(source: Source = Depends(require_source)) -> Response:
+    """Stream the source chart image (`chart_path` bytes from disk)."""
+    path = resolve_chart_path(source.chart_path)
+    if not path.exists():
+        raise HTTPException(404, detail=f"chart file missing on disk: {path}")
+    media_type = "image/jpeg" if path.suffix.lower() in (".jpg", ".jpeg") else "image/png"
+    return Response(content=path.read_bytes(), media_type=media_type)
 
 
-@router.get("/chart/crop/{glyph_key}")
-async def get_chart_crop(glyph_key: str):
-    """Return the bbox-cropped chart with exclude-rects whited out, as PNG."""
-    try:
-        bbox = get_bbox(glyph_key)
-    except KeyError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+@router.get("/bboxes/{glyph_key}/crop")
+async def get_crop(
+    glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
+) -> Response:
+    bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
-        raise HTTPException(status_code=409, detail=f"{glyph_key}: bbox not yet set")
-    png_bytes = render_crop_png(bbox)
-    return Response(content=png_bytes, media_type="image/png")
+        raise HTTPException(404, detail=f"bbox not set for {glyph_key!r}")
+    chart = load_chart_grayscale(source.chart_path)
+    bbox_dict = {
+        "y0": bbox.y0,
+        "y1": bbox.y1,
+        "x0": bbox.x0,
+        "x1": bbox.x1,
+        "excludes": list(bbox.excludes),
+    }
+    png = crop_to_png_bytes(chart, bbox_dict)
+    return Response(content=png, media_type="image/png")

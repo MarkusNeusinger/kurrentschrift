@@ -1,80 +1,66 @@
-// Shared admin state: bboxes/canonical status/active glyph/visible glyphs.
-// Loaded once at app start; mutations go through these setters so both
-// the chart page and the editor page see consistent data without prop
-// drilling. Cache-bust ints force <img src="/api/chart/crop/..."> to
-// reload after a bbox change.
+// Shared admin state — source metadata, bboxes-by-key, traced-glyph-status.
+//
+// The list of known glyph_keys is in `constants.ts` (the MVP target set), so
+// the sidebar can show all expected glyphs even before any bboxes exist. The
+// DB only stores rows for glyphs that have actually been bbox'd or traced.
 
-import {
-  createContext,
-  ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
-import { getBboxes, getCanonical } from './api';
-import type { BboxesResponse, Canonical, GlyphBbox } from './types';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+
+import { getBboxes, getGlyphs, getSource } from './api';
+import { KNOWN_GLYPHS } from './constants';
+import type { BboxOut, GlyphSummary, SourceOut } from './types';
 
 interface AdminState {
-  bboxes: BboxesResponse | null;
+  source: SourceOut | null;
+  bboxesByKey: Record<string, BboxOut>;
+  glyphsByKey: Record<string, GlyphSummary>;
   loadError: string | null;
   activeGlyph: string | null;
   visibleGlyphs: Set<string>;
-  canonStatus: Record<string, boolean>;
   cropCacheBust: number;
   setActiveGlyph: (key: string | null) => void;
   toggleVisible: (key: string) => void;
   setOnlyVisible: (keys: string[]) => void;
-  updateBbox: (key: string, next: GlyphBbox | null) => void;
-  markCanonical: (key: string, canon: Canonical) => void;
+  upsertBbox: (key: string, bbox: BboxOut) => void;
+  removeBbox: (key: string) => void;
+  markGlyphTraced: (key: string, summary: GlyphSummary) => void;
+  removeGlyph: (key: string) => void;
   refreshCrop: () => void;
 }
 
 const Ctx = createContext<AdminState | null>(null);
 
 export function AdminProvider({ children }: { children: ReactNode }) {
-  const [bboxes, setBboxes] = useState<BboxesResponse | null>(null);
+  const [source, setSource] = useState<SourceOut | null>(null);
+  const [bboxesByKey, setBboxesByKey] = useState<Record<string, BboxOut>>({});
+  const [glyphsByKey, setGlyphsByKey] = useState<Record<string, GlyphSummary>>({});
   const [loadError, setLoadError] = useState<string | null>(null);
   const [activeGlyph, setActiveGlyph] = useState<string | null>(null);
   const [visibleGlyphs, setVisibleGlyphs] = useState<Set<string>>(new Set());
-  const [canonStatus, setCanonStatus] = useState<Record<string, boolean>>({});
   const [cropCacheBust, setCropCacheBust] = useState<number>(0);
 
   useEffect(() => {
-    getBboxes()
-      .then((res) => {
-        setBboxes(res);
-        // Default visibility: any glyph that has a bbox is shown.
-        const initiallyVisible = new Set<string>();
-        for (const [k, v] of Object.entries(res.bboxes)) {
-          if (v !== null) initiallyVisible.add(k);
-        }
-        setVisibleGlyphs(initiallyVisible);
-      })
-      .catch((e) => setLoadError(String(e)));
-  }, []);
-
-  useEffect(() => {
-    if (!bboxes) return;
     let cancelled = false;
     (async () => {
-      const next: Record<string, boolean> = {};
-      for (const k of Object.keys(bboxes.bboxes)) {
-        try {
-          const c = await getCanonical(k);
-          next[k] = c !== null;
-        } catch {
-          next[k] = false;
-        }
+      try {
+        const [s, bboxes, glyphs] = await Promise.all([getSource(), getBboxes(), getGlyphs()]);
         if (cancelled) return;
+        setSource(s);
+        const bm: Record<string, BboxOut> = {};
+        for (const b of bboxes) bm[b.glyph_key] = b;
+        setBboxesByKey(bm);
+        const gm: Record<string, GlyphSummary> = {};
+        for (const g of glyphs) gm[g.glyph_key] = g;
+        setGlyphsByKey(gm);
+        setVisibleGlyphs(new Set(bboxes.map((b) => b.glyph_key)));
+      } catch (e) {
+        if (!cancelled) setLoadError(String(e));
       }
-      if (!cancelled) setCanonStatus(next);
     })();
     return () => {
       cancelled = true;
     };
-  }, [bboxes]);
+  }, []);
 
   const toggleVisible = useCallback((key: string) => {
     setVisibleGlyphs((prev) => {
@@ -89,54 +75,71 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     setVisibleGlyphs(new Set(keys));
   }, []);
 
-  const updateBbox = useCallback((key: string, next: GlyphBbox | null) => {
-    setBboxes((prev) => {
-      if (!prev) return prev;
-      return { ...prev, bboxes: { ...prev.bboxes, [key]: next } };
-    });
+  const upsertBbox = useCallback((key: string, bbox: BboxOut) => {
+    setBboxesByKey((prev) => ({ ...prev, [key]: bbox }));
     setCropCacheBust(Date.now());
-    if (next !== null) {
-      setVisibleGlyphs((prev) => {
-        if (prev.has(key)) return prev;
-        const cp = new Set(prev);
-        cp.add(key);
-        return cp;
-      });
-    }
+    setVisibleGlyphs((prev) => {
+      if (prev.has(key)) return prev;
+      const next = new Set(prev);
+      next.add(key);
+      return next;
+    });
   }, []);
 
-  const markCanonical = useCallback((key: string, _canon: Canonical) => {
-    setCanonStatus((s) => ({ ...s, [key]: true }));
+  const removeBbox = useCallback((key: string) => {
+    setBboxesByKey((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }, []);
+
+  const markGlyphTraced = useCallback((key: string, summary: GlyphSummary) => {
+    setGlyphsByKey((prev) => ({ ...prev, [key]: summary }));
+  }, []);
+
+  const removeGlyph = useCallback((key: string) => {
+    setGlyphsByKey((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
   }, []);
 
   const refreshCrop = useCallback(() => setCropCacheBust(Date.now()), []);
 
   const value = useMemo<AdminState>(
     () => ({
-      bboxes,
+      source,
+      bboxesByKey,
+      glyphsByKey,
       loadError,
       activeGlyph,
       visibleGlyphs,
-      canonStatus,
       cropCacheBust,
       setActiveGlyph,
       toggleVisible,
       setOnlyVisible,
-      updateBbox,
-      markCanonical,
+      upsertBbox,
+      removeBbox,
+      markGlyphTraced,
+      removeGlyph,
       refreshCrop,
     }),
     [
-      bboxes,
+      source,
+      bboxesByKey,
+      glyphsByKey,
       loadError,
       activeGlyph,
       visibleGlyphs,
-      canonStatus,
       cropCacheBust,
       toggleVisible,
       setOnlyVisible,
-      updateBbox,
-      markCanonical,
+      upsertBbox,
+      removeBbox,
+      markGlyphTraced,
+      removeGlyph,
       refreshCrop,
     ],
   );
@@ -149,3 +152,5 @@ export function useAdmin(): AdminState {
   if (!v) throw new Error('useAdmin must be used inside <AdminProvider>');
   return v;
 }
+
+export { KNOWN_GLYPHS };

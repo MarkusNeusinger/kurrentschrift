@@ -1,34 +1,24 @@
-// ChartPage — chart.jpg with bbox/exclude overlays for the currently
-// visible glyphs. Top toolbar selects the interaction mode and zoom.
+// ChartPage — chart.jpg with bbox/exclude overlays for the visible glyphs.
 //
 // Modes:
-//   - PAN: drag (mouse/finger/pen) scrolls the chart container.
-//   - BBOX: drag creates the bbox for the active glyph (replaces existing).
-//   - EXCLUDE: drag adds an exclude rect to the active glyph (must already
-//             have a bbox; the drag must start inside it).
-//
-// The interaction overlay is always present and handles all three modes,
-// so the S-Pen on a tablet works the same as a mouse on desktop.
+//   - PAN: drag scrolls the chart container.
+//   - BBOX: drag creates a bbox for the active glyph (replaces any existing).
+//          Requires baseline_y/midband_y to be set before saving; if the
+//          glyph doesn't have those yet, the new bbox seeds reasonable
+//          defaults (top quarter as midband, bottom quarter as baseline).
+//   - EXCLUDE: drag adds an exclude rect (must start inside existing bbox).
 
 import AddBoxIcon from '@mui/icons-material/AddBox';
-import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
 import ContentCutIcon from '@mui/icons-material/ContentCut';
+import EditIcon from '@mui/icons-material/Edit';
 import OpenWithIcon from '@mui/icons-material/OpenWith';
 import RemoveIcon from '@mui/icons-material/Remove';
-import AddIcon from '@mui/icons-material/Add';
-import PreviewIcon from '@mui/icons-material/Preview';
-import CloseIcon from '@mui/icons-material/Close';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import {
   Alert,
   Box,
   Button,
   Chip,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   IconButton,
   Paper,
   Slider,
@@ -40,9 +30,10 @@ import {
 } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { chartUrl, putBbox, renderCanonicalsUrl } from '../api';
+
+import { chartUrl, putBbox } from '../api';
 import { useAdmin } from '../state';
-import type { ExcludeRect, GlyphBbox } from '../types';
+import type { BboxIn, BboxOut, ExcludeRect } from '../types';
 
 type Mode = 'pan' | 'bbox' | 'exclude';
 
@@ -63,8 +54,21 @@ interface PanState {
 
 const ZOOM_PRESETS = [0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
 
+function bboxInFromOut(b: BboxOut): BboxIn {
+  return {
+    y0: b.y0,
+    y1: b.y1,
+    x0: b.x0,
+    x1: b.x1,
+    excludes: b.excludes,
+    baseline_y: b.baseline_y,
+    midband_y: b.midband_y,
+    n_anchors: b.n_anchors,
+  };
+}
+
 export function ChartPage() {
-  const { bboxes, activeGlyph, visibleGlyphs, updateBbox } = useAdmin();
+  const { source, bboxesByKey, activeGlyph, visibleGlyphs, upsertBbox } = useAdmin();
   const navigate = useNavigate();
   const stageRef = useRef<HTMLDivElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -73,12 +77,9 @@ export function ChartPage() {
   const [drag, setDrag] = useState<DragState | null>(null);
   const [pan, setPan] = useState<PanState | null>(null);
   const [snack, setSnack] = useState<string | null>(null);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewBust, setPreviewBust] = useState<number>(Date.now());
-  const [previewLoading, setPreviewLoading] = useState(false);
 
-  if (!bboxes) return null;
-  const [width, height] = bboxes.image_size;
+  if (!source) return null;
+  const { w: width, h: height } = source.chart_size;
 
   const pointToImage = useCallback(
     (clientX: number, clientY: number) => {
@@ -87,19 +88,14 @@ export function ChartPage() {
       const rect = el.getBoundingClientRect();
       const x = Math.round((clientX - rect.left) / zoom);
       const y = Math.round((clientY - rect.top) / zoom);
-      return {
-        x: Math.max(0, Math.min(width, x)),
-        y: Math.max(0, Math.min(height, y)),
-      };
+      return { x: Math.max(0, Math.min(width, x)), y: Math.max(0, Math.min(height, y)) };
     },
     [zoom, width, height],
   );
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
-      // Allow primary-button mouse, stylus, and finger touch.
       if (e.button !== 0 && e.pointerType !== 'pen' && e.pointerType !== 'touch') return;
-
       if (mode === 'pan') {
         const sc = scrollRef.current;
         if (!sc) return;
@@ -113,14 +109,13 @@ export function ChartPage() {
         e.preventDefault();
         return;
       }
-
       if (!activeGlyph) {
         setSnack('Wähle erst einen Glyph in der Liste links.');
         return;
       }
       const { x, y } = pointToImage(e.clientX, e.clientY);
       if (mode === 'exclude') {
-        const current = bboxes.bboxes[activeGlyph];
+        const current = bboxesByKey[activeGlyph];
         if (!current) {
           setSnack(`${activeGlyph}: hat noch keine Bbox — erst im Modus „Bbox" zeichnen.`);
           return;
@@ -136,7 +131,7 @@ export function ChartPage() {
       (e.target as Element).setPointerCapture?.(e.pointerId);
       e.preventDefault();
     },
-    [mode, activeGlyph, bboxes, pointToImage],
+    [mode, activeGlyph, bboxesByKey, pointToImage],
   );
 
   const onPointerMove = useCallback(
@@ -172,35 +167,38 @@ export function ChartPage() {
       setDrag(null);
       return;
     }
-    const current = bboxes.bboxes[activeGlyph];
-    let next: GlyphBbox;
+    const current = bboxesByKey[activeGlyph];
+    let next: BboxIn;
     if (drag.mode === 'exclude' && current) {
       const ex: ExcludeRect = { x0, y0, x1, y1 };
-      next = { ...current, exclude: [...current.exclude, ex] };
+      next = { ...bboxInFromOut(current), excludes: [...current.excludes, ex] };
     } else {
+      // New bbox: seed midband/baseline at sensible defaults (caller refines
+      // them in the editor). Midband at top quarter, baseline 5px above the
+      // bottom edge so the calibration drag handles are visible immediately.
+      const h = y1 - y0;
       next = {
         x0,
         y0,
         x1,
         y1,
-        exclude: [],
-        baseline_y: current?.baseline_y ?? null,
-        midband_y: current?.midband_y ?? null,
-        start_xy: current?.start_xy ?? null,
-        n_anchors: current?.n_anchors ?? null,
+        excludes: [],
+        baseline_y: current?.baseline_y ?? Math.round(y0 + h * 0.7),
+        midband_y: current?.midband_y ?? Math.round(y0 + h * 0.35),
+        n_anchors: current?.n_anchors ?? 50,
       };
     }
     setDrag(null);
     try {
       const saved = await putBbox(activeGlyph, next);
-      updateBbox(activeGlyph, saved);
+      upsertBbox(activeGlyph, saved);
       setSnack(drag.mode === 'bbox' ? `${activeGlyph}: Bbox gespeichert.` : `${activeGlyph}: Ausschluss hinzugefügt.`);
     } catch (err) {
       setSnack(`Speichern fehlgeschlagen: ${err}`);
     }
-  }, [drag, pan, activeGlyph, bboxes, updateBbox]);
+  }, [drag, pan, activeGlyph, bboxesByKey, upsertBbox]);
 
-  // Ctrl/Cmd + wheel to zoom (no preventDefault inside React; passive option).
+  // Ctrl/Cmd + wheel to zoom.
   useEffect(() => {
     const el = stageRef.current?.parentElement;
     if (!el) return;
@@ -231,19 +229,28 @@ export function ChartPage() {
   return (
     <>
       <Paper square sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1, borderBottom: 1, borderColor: 'divider', flexWrap: 'wrap' }}>
-        <ToggleButtonGroup
-          size="small"
-          value={mode}
-          exclusive
-          onChange={(_e, v: Mode | null) => v && setMode(v)}
-        >
-          <ToggleButton value="pan"><OpenWithIcon fontSize="small" />&nbsp;Schwenken</ToggleButton>
-          <ToggleButton value="bbox"><AddBoxIcon fontSize="small" />&nbsp;Bbox</ToggleButton>
-          <ToggleButton value="exclude"><ContentCutIcon fontSize="small" />&nbsp;Ausschluss</ToggleButton>
+        <ToggleButtonGroup size="small" value={mode} exclusive onChange={(_e, v: Mode | null) => v && setMode(v)}>
+          <ToggleButton value="pan">
+            <OpenWithIcon fontSize="small" />
+            &nbsp;Schwenken
+          </ToggleButton>
+          <ToggleButton value="bbox">
+            <AddBoxIcon fontSize="small" />
+            &nbsp;Bbox
+          </ToggleButton>
+          <ToggleButton value="exclude">
+            <ContentCutIcon fontSize="small" />
+            &nbsp;Ausschluss
+          </ToggleButton>
         </ToggleButtonGroup>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 300 }}>
-          <IconButton size="small" onClick={() => setZoom((z) => Math.max(ZOOM_PRESETS[0], ZOOM_PRESETS[Math.max(0, ZOOM_PRESETS.findIndex((p) => p >= z) - 1)]))}><RemoveIcon /></IconButton>
+          <IconButton
+            size="small"
+            onClick={() => setZoom((z) => Math.max(ZOOM_PRESETS[0], ZOOM_PRESETS[Math.max(0, ZOOM_PRESETS.findIndex((p) => p >= z) - 1)]))}
+          >
+            <RemoveIcon />
+          </IconButton>
           <Slider
             size="small"
             sx={{ width: 160 }}
@@ -254,42 +261,37 @@ export function ChartPage() {
             marks={ZOOM_PRESETS.map((p) => ({ value: p }))}
             onChange={(_e, v) => typeof v === 'number' && setZoom(v)}
           />
-          <IconButton size="small" onClick={() => setZoom((z) => ZOOM_PRESETS[Math.min(ZOOM_PRESETS.length - 1, ZOOM_PRESETS.findIndex((p) => p > z) === -1 ? ZOOM_PRESETS.length - 1 : ZOOM_PRESETS.findIndex((p) => p > z))])}><AddIcon /></IconButton>
-          <Typography variant="caption" sx={{ minWidth: 50 }}>{Math.round(zoom * 100)}%</Typography>
+          <IconButton
+            size="small"
+            onClick={() =>
+              setZoom(
+                (z) =>
+                  ZOOM_PRESETS[
+                    Math.min(
+                      ZOOM_PRESETS.length - 1,
+                      ZOOM_PRESETS.findIndex((p) => p > z) === -1 ? ZOOM_PRESETS.length - 1 : ZOOM_PRESETS.findIndex((p) => p > z),
+                    )
+                  ],
+              )
+            }
+          >
+            <AddIcon />
+          </IconButton>
+          <Typography variant="caption" sx={{ minWidth: 50 }}>
+            {Math.round(zoom * 100)}%
+          </Typography>
         </Box>
 
         <Box sx={{ flex: 1 }} />
 
-        {activeGlyph ? (
-          <Chip
-            label={`aktiv: ${activeGlyph}`}
-            color="primary"
-            size="small"
-          />
-        ) : (
-          <Chip label="kein aktiver Glyph" size="small" variant="outlined" />
-        )}
-        <Tooltip title="Side-by-Side-Vergleich aller Canonicals mit Loth rendern">
-          <Button
-            size="small"
-            variant="outlined"
-            startIcon={<PreviewIcon />}
-            onClick={() => {
-              setPreviewBust(Date.now());
-              setPreviewLoading(true);
-              setPreviewOpen(true);
-            }}
-          >
-            Vorschau
-          </Button>
-        </Tooltip>
+        {activeGlyph ? <Chip label={`aktiv: ${activeGlyph}`} color="primary" size="small" /> : <Chip label="kein aktiver Glyph" size="small" variant="outlined" />}
         <Tooltip title="Editor für den aktiven Glyph öffnen">
           <span>
             <Button
               size="small"
               variant="contained"
               startIcon={<EditIcon />}
-              disabled={!activeGlyph || !bboxes.bboxes[activeGlyph]}
+              disabled={!activeGlyph || !(activeGlyph in bboxesByKey)}
               onClick={() => activeGlyph && navigate(`/edit/${encodeURIComponent(activeGlyph)}`)}
             >
               Bearbeiten
@@ -299,18 +301,10 @@ export function ChartPage() {
       </Paper>
 
       <Box ref={scrollRef} sx={{ flex: 1, overflow: 'auto', bgcolor: '#111', position: 'relative' }}>
-        <Box
-          ref={stageRef}
-          sx={{
-            width: stageWidthCss,
-            height: stageHeightCss,
-            position: 'relative',
-            ...cursorStyle,
-          }}
-        >
+        <Box ref={stageRef} sx={{ width: stageWidthCss, height: stageHeightCss, position: 'relative', ...cursorStyle }}>
           <img
             src={chartUrl()}
-            alt="Loth 1866 chart"
+            alt={source.title}
             width={stageWidthCss}
             height={stageHeightCss}
             draggable={false}
@@ -322,8 +316,7 @@ export function ChartPage() {
             viewBox={`0 0 ${width} ${height}`}
             style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
           >
-            {Object.entries(bboxes.bboxes).map(([key, b]) => {
-              if (!b) return null;
+            {Object.entries(bboxesByKey).map(([key, b]) => {
               if (!visibleGlyphs.has(key)) return null;
               const isActive = key === activeGlyph;
               const stroke = isActive ? '#ffae00' : '#5da8ff';
@@ -339,16 +332,10 @@ export function ChartPage() {
                     strokeWidth={isActive ? 3 : 1.5}
                     strokeDasharray={isActive ? undefined : '4 4'}
                   />
-                  <text
-                    x={b.x0}
-                    y={b.y0 - 4}
-                    fontSize={14}
-                    fill={stroke}
-                    style={{ userSelect: 'none' }}
-                  >
+                  <text x={b.x0} y={b.y0 - 4} fontSize={14} fill={stroke} style={{ userSelect: 'none' }}>
                     {key}
                   </text>
-                  {b.exclude.map((ex, i) => (
+                  {b.excludes.map((ex, i) => (
                     <rect
                       key={i}
                       x={ex.x0}
@@ -383,61 +370,20 @@ export function ChartPage() {
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
-            onPointerCancel={() => { setDrag(null); setPan(null); }}
+            onPointerCancel={() => {
+              setDrag(null);
+              setPan(null);
+            }}
             sx={{ position: 'absolute', inset: 0, touchAction: 'none' }}
           />
         </Box>
       </Box>
 
-      <Snackbar
-        open={snack !== null}
-        autoHideDuration={3000}
-        onClose={() => setSnack(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
+      <Snackbar open={snack !== null} autoHideDuration={3000} onClose={() => setSnack(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
         <Alert severity="info" onClose={() => setSnack(null)} variant="filled">
           {snack}
         </Alert>
       </Snackbar>
-
-      <Dialog
-        open={previewOpen}
-        onClose={() => setPreviewOpen(false)}
-        maxWidth="lg"
-        fullWidth
-      >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <PreviewIcon />
-          <Box sx={{ flex: 1 }}>Canonicals-Vorschau (M3 Phase A)</Box>
-          <Tooltip title="Neu rendern">
-            <IconButton size="small" onClick={() => { setPreviewBust(Date.now()); setPreviewLoading(true); }}>
-              <RefreshIcon />
-            </IconButton>
-          </Tooltip>
-          <IconButton size="small" onClick={() => setPreviewOpen(false)}><CloseIcon /></IconButton>
-        </DialogTitle>
-        <DialogContent sx={{ position: 'relative', minHeight: 400, bgcolor: '#0a0a0a' }}>
-          {previewLoading && (
-            <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 1, zIndex: 2, bgcolor: 'rgba(0,0,0,0.6)' }}>
-              <CircularProgress />
-              <Typography variant="caption" color="text.secondary">rendere · matplotlib + skimage…</Typography>
-            </Box>
-          )}
-          <img
-            src={renderCanonicalsUrl(previewBust)}
-            alt="Canonicals-Vorschau"
-            style={{ display: 'block', width: '100%', height: 'auto', background: '#fff' }}
-            onLoad={() => setPreviewLoading(false)}
-            onError={() => setPreviewLoading(false)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Typography variant="caption" color="text.secondary" sx={{ flex: 1, pl: 2 }}>
-            Reihe 1: getracteter Canonical · Reihe 2: Loth-Crop + Skelett + Anker · Reihe 3: Loth pur
-          </Typography>
-          <Button onClick={() => setPreviewOpen(false)}>Schließen</Button>
-        </DialogActions>
-      </Dialog>
     </>
   );
 }

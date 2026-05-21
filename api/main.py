@@ -1,17 +1,22 @@
-"""FastAPI app for the kurrentschrift canonical-extraction admin tool.
+"""FastAPI entry point — lifespan-managed DB + router registration.
 
-Same scaffolding pattern as anyplot: lifespan context, CORS, router
-registration. No DB, no auth in v1 — local dev only.
+Load `.env` FIRST so all subsequent imports see DATABASE_URL etc.
 """
 
-import logging
-from contextlib import asynccontextmanager
+from dotenv import load_dotenv  # noqa: I001
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
-from api.core.settings import settings
-from api.routers import bboxes_router, canonical_router, chart_router, health_router, render_router
+load_dotenv()
+
+import logging  # noqa: E402
+from contextlib import asynccontextmanager  # noqa: E402
+
+from fastapi import FastAPI  # noqa: E402
+from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+
+from api.routers import bboxes_router, chart_router, glyphs_router, health_router, sources_router  # noqa: E402
+from core.config import settings  # noqa: E402
+from core.database import close_db, init_db, is_db_configured  # noqa: E402
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -20,19 +25,24 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    """Sanity-check critical paths at startup and log them once."""
-    logger.info("kurrentschrift admin API starting")
-    logger.info("  chart_path    : %s (%s)", settings.chart_path, "ok" if settings.chart_path.exists() else "MISSING")
-    logger.info("  bboxes_json   : %s (%s)", settings.bboxes_json, "ok" if settings.bboxes_json.exists() else "MISSING")
-    logger.info("  canonical_dir : %s", settings.canonical_dir)
+    logger.info("kurrentschrift API starting (env=%s)", settings.environment)
+    if is_db_configured():
+        try:
+            await init_db()
+            logger.info("Database connection initialised")
+        except Exception:
+            logger.exception("Failed to initialise database")
+    else:
+        logger.warning("No DATABASE_URL / INSTANCE_CONNECTION_NAME — running without DB")
     yield
-    logger.info("kurrentschrift admin API stopping")
+    await close_db()
+    logger.info("kurrentschrift API stopped")
 
 
 app = FastAPI(
     title="kurrentschrift admin API",
-    description="Canonical-extraction backend for the Loth 1866 chart and (later) own-hand strokes.",
-    version="0.1.0",
+    description="Canonical ductus-template extraction for normed pre-1900 German Kurrent script.",
+    version="0.2.0",
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
@@ -48,13 +58,13 @@ app.add_middleware(
 )
 
 app.include_router(health_router)
+app.include_router(sources_router)
 app.include_router(chart_router)
 app.include_router(bboxes_router)
-app.include_router(canonical_router)
-app.include_router(render_router)
+app.include_router(glyphs_router)
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=settings.port)

@@ -1,19 +1,18 @@
-"""Health and info endpoints."""
+"""Health + root endpoints."""
 
 from fastapi import APIRouter
-from fastapi.responses import JSONResponse
+
+from core.database import is_db_configured
 
 
 router = APIRouter(tags=["health"])
 
 
 @router.get("/")
-async def root():
-    """Root endpoint — points to /docs and /health."""
-    return {"message": "kurrentschrift admin API", "docs": "/docs", "health": "/health"}
+async def root() -> dict:
+    return {"name": "kurrentschrift admin API", "docs": "/docs"}
 
 
 @router.get("/health")
-async def health_check():
-    """Health check endpoint (Cloud Run readiness probe)."""
-    return JSONResponse(content={"status": "healthy", "service": "kurrentschrift-api"}, status_code=200)
+async def health() -> dict:
+    return {"status": "healthy", "database_configured": is_db_configured()}

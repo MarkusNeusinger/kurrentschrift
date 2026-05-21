@@ -1,9 +1,11 @@
 """Two-channel ink extraction: skeleton (geometry) + half-width (Schwellzug).
 
-Implements the §5 separation: width is measured on the binarized mask via
-distance transform — independent of darkness, robust to fading. Grayscale
-intensity (the ink-quantity trace of the dip-pen refill cycle) is preserved
-separately by callers; the routines here operate on the binarized geometry.
+Width is measured on the binarized mask via distance transform — independent
+of darkness, robust to fading. The grayscale intensity channel (ink quantity
+from the dip-pen refill cycle) is kept separately by callers; the routines
+here operate on the binarized geometry.
+
+See `docs/concepts/architektur.md` §5 for the two-channel separation rationale.
 """
 
 from __future__ import annotations
@@ -26,9 +28,9 @@ def load_grayscale(path: Path | str) -> np.ndarray:
 def binarize_adaptive(gray: np.ndarray, block_size: int = 51, offset: float = 0.03) -> np.ndarray:
     """Adaptive local threshold; True where the pixel is ink (darker than local).
 
-    block_size is in pixels and forced odd. A higher offset is more conservative
-    (only clearly-darker-than-local pixels count as ink) — useful for clean
-    scans, dangerous on faded strokes (§5 Binarisierungsfalle).
+    block_size is in pixels and forced odd. Higher offset is more conservative
+    (only clearly-darker-than-local pixels count as ink) — useful on clean
+    scans, dangerous on faded strokes.
     """
     block = block_size if block_size % 2 == 1 else block_size + 1
     threshold = threshold_local(gray, block_size=block, method="gaussian", offset=offset)
@@ -36,11 +38,11 @@ def binarize_adaptive(gray: np.ndarray, block_size: int = 51, offset: float = 0.
 
 
 def skeleton_and_width(mask: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """Skeleton (boolean medial axis) + half-stroke-width at every mask pixel.
+    """Skeleton (boolean medial axis) + half-stroke-width map.
 
-    distance_transform_edt(mask) returns the distance from each foreground
-    (ink) pixel to the nearest background pixel, which on the skeleton equals
-    the half stroke width at that point.
+    `distance_transform_edt(mask)` returns the distance from each ink pixel
+    to the nearest background pixel; on the skeleton that equals the half
+    stroke width at that point.
     """
     skel = skeletonize(mask)
     width = distance_transform_edt(mask).astype(np.float32)

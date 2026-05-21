@@ -17,22 +17,35 @@ keywords = [
     "ductus",
 ]
 dependencies = [
+    # Scientific stack — ductus extraction, distance transform, skeletonisation
     "numpy>=2.1",
     "scipy>=1.14",
     "scikit-image>=0.24",
     "pillow>=11.0",
-    "matplotlib>=3.9",
     "cairosvg>=2.9.0",
+    # API
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
     "pydantic>=2.10",
     "pydantic-settings>=2.7",
     "python-multipart>=0.0.20",
+    "python-dotenv>=1.0.0",
+    # Database — Postgres (Cloud SQL on the anyplot instance for now)
+    "sqlalchemy[asyncio]>=2.0.49",
+    "asyncpg>=0.30.0",
+    "pg8000>=1.31.0",
+    "alembic>=1.14.0",
+    "cloud-sql-python-connector[asyncpg,pg8000]>=1.20.2",
 ]
 
 [project.optional-dependencies]
 dev = [
     "ruff>=0.15.12",
+]
+test = [
+    "pytest>=8.4",
+    "pytest-asyncio>=1.0",
+    "aiosqlite>=0.20",
 ]
 
 [project.urls]
@@ -75,5 +88,12 @@ skip-magic-trailing-comma = true
 [tool.ruff.lint.isort]
 force-single-line = false
 lines-after-imports = 2
-known-first-party = ["core", "api", "mvp"]
+known-first-party = ["core", "api"]
 split-on-trailing-comma = false
+
+# ===== Pytest =====
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = ["--strict-markers", "-ra"]

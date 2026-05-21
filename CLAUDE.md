@@ -6,15 +6,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 In-progress MVP. The monorepo layout (per `docs/concepts/naming-und-setup.md` §3):
 
-- `/core` — Python: extractor, library, connection engine (not yet)
-- `/api` — FastAPI backend for the admin UI (canonical extraction). Reads/writes `mvp/canonical/*.json`. See `docs/concepts/mvp-roadmap.md` step **M-Admin**.
-- `/app` — React + Vite admin frontend. Single-page UI: drag bboxes/excludes on the Loth chart with mouse, draw stroke paths with stylus (Samsung S-Pen). v1 only does canonical extraction; reading/practice is future work.
-- `/mvp` — The minimal viable render kernel (`docs/concepts/architektur.md` §8) and supporting CLI tools (`mvp/tools/trace_skeleton.py`, `mvp/tools/inspect_crop.py`, `mvp/render_canonicals.py`). Still useful for verification; the web admin produces the same canonical JSON files in `mvp/canonical/`.
-- `/data` — Sources, corpora, variants, samples, derived stats (see Data & licensing below)
+- `/core` — Pure-Python compute + DB layer. `core/extract.py` (skeleton + distance transform), `core/template.py` (canonical sampling + outline + slant), `core/chart.py` (load + crop with excludes), `core/pipeline.py` (`canonical_from_path`, `diagnostic_for_glyph`), `core/database/` (SQLAlchemy `Source` + `Bbox` + `Glyph` + repositories).
+- `/api` — FastAPI service. Routers in `api/routers/`: `health`, `sources`, `chart`, `bboxes`, `glyphs`. All data lives in Postgres (DB `kurrentschrift` on the anyplot Cloud SQL instance, see `.env`).
+- `/app` — React + Vite admin frontend (MUI). Single-page UI: drag bboxes/excludes on the Loth chart with mouse, draw stroke paths with stylus (Samsung S-Pen). Editor shows the 3-column SVG diagnostic (Loth crop · skeleton+anchors · canonical template) rendered from `/diagnostic` JSON. v1 only does canonical extraction.
+- `/alembic` — Schema migrations. `0001_initial_schema.py` creates `sources` + `bboxes` + `glyphs` and seeds the Loth 1866 source row.
+- `/data` — Sources, corpora, variants, samples, derived stats (see Data & licensing below). PD source bytes (Loth chart.jpg) stay on disk; the DB only stores the relative `chart_path`.
 
-Order: MVP-Renderkernel + the M-Admin tool come before everything else. See `docs/concepts/architektur.md` §8/§10 and the milestone breakdown in `docs/concepts/mvp-roadmap.md`.
+The earlier `/mvp/` folder (CLI tools + JSON files in the repo) was retired in favour of this DB-backed architecture. All canonicals now live in `glyphs.anchors`/`half_widths`/`raw_path`/`measurements` (JSONB columns), so `n_anchors` can be changed retroactively and per-instance stats are aggregatable in SQL.
 
-**Local dev** (two terminals): `uv run uvicorn api.main:app --reload --port 8000` and `cd app && npm install && npm run dev` (Vite on :3000 with `/api` proxy to the API).
+**Local dev** (three steps): `uv run alembic upgrade head` (schema), `uv run uvicorn api.main:app --reload --port 8000`, then `cd app && npm install && npm run dev` (Vite on :3000 with `/api` proxy to the API). See `.claude/commands/start.md` for the slash command.
 
 ## Read these before substantive work
 
@@ -49,7 +49,7 @@ When in doubt about what's a glyph vs. a variant vs. a deviation, re-read `docs/
 
 ## Data & licensing (this repo is unusual here)
 
-Code is MIT. **Data is not covered by the code license** — each source carries its own. The `/data` tree lives outside `/core`, `/api`, `/app`, `/mvp` precisely to keep this boundary visible.
+Code is MIT. **Data is not covered by the code license** — each source carries its own. The `/data` tree lives outside `/core`, `/api`, `/app` precisely to keep this boundary visible.
 
 Three commit classes, kept strictly separate (see `docs/reference/datenablage.md` §1):
 
