@@ -95,11 +95,16 @@ def _sample_width_at(x_local: float, y_local: float, mask: np.ndarray, width_map
 
 def canonical_from_path(
     glyph_key: str,
-    path_chart_xy: list[tuple[float, float]],
-    pressures: list[float | None],
+    raw_path: list[dict],
     n_anchors: int | None = None,
 ) -> dict:
     """Build a canonical JSON dict from a user-drawn stylus path on the Loth chart.
+
+    `raw_path` is the dense, sample-rate path captured from PointerEvents.
+    Each entry: {x, y, pressure, t} in chart-global pixel coords. The full
+    path is stored in the canonical's `_trace.raw_path` so callers can
+    later re-sample with a different `n_anchors` (POST /resample) without
+    the user needing to re-draw.
 
     Steps:
       1. Crop the chart with bbox + excludes (mvp.tools.loth.crop_with_excludes)
@@ -110,6 +115,7 @@ def canonical_from_path(
       6. Normalise pixel coords to template coords (baseline=0, midband=1)
       7. Compute entry/exit tangents from first/last anchor pair
       8. Merge with any existing canonical to preserve _note + coupling enums
+      9. Persist the dense raw_path inside _trace for future resampling
     """
     bbox = get_bbox(glyph_key)
     if bbox is None:
@@ -117,7 +123,7 @@ def canonical_from_path(
     for required in ("baseline_y", "midband_y"):
         if bbox.get(required) is None:
             raise ValueError(f"{glyph_key}: missing calibration field '{required}'")
-    if len(path_chart_xy) < 2:
+    if len(raw_path) < 2:
         raise ValueError("stylus path needs at least 2 points")
 
     chart_gray = load_chart_grayscale()
@@ -126,7 +132,7 @@ def canonical_from_path(
     _, width_map = skeleton_and_width(mask)
 
     x0, y0 = bbox["x0"], bbox["y0"]
-    local = np.array([(x - x0, y - y0) for x, y in path_chart_xy], dtype=float)
+    local = np.array([(p["x"] - x0, p["y"] - y0) for p in raw_path], dtype=float)
 
     n = int(n_anchors or bbox.get("n_anchors") or DEFAULT_N_ANCHORS)
     resampled_local, path_length_px = _resample_polyline(local, n)
@@ -164,6 +170,18 @@ def canonical_from_path(
     exit_coupling = (prev.get("exit") or {}).get("coupling", "baseline")
     note = prev.get("_note", "")
 
+    # Persist the dense raw path so a later /resample call can re-derive
+    # anchors with a different n_anchors without the user redrawing.
+    raw_stored = [
+        {
+            "x": round(float(p["x"]), 2),
+            "y": round(float(p["y"]), 2),
+            "pressure": None if p.get("pressure") is None else round(float(p["pressure"]), 4),
+            "t": None if p.get("t") is None else round(float(p["t"]), 2),
+        }
+        for p in raw_path
+    ]
+
     canonical = {
         "version": "v0",
         "glyph": glyph_name,
@@ -183,7 +201,7 @@ def canonical_from_path(
             "path_length_px": round(path_length_px, 1),
             "pixel_anchors": [[round(float(x), 2), round(float(y), 2)] for x, y in pixel_global],
             "half_widths_px": [round(h, 2) for h in hw_px.tolist()],
-            "pen_pressure_raw": [None if p is None else round(float(p), 4) for p in pressures],
+            "raw_path": raw_stored,
         },
         "entry": {
             "xy": entry_xy,

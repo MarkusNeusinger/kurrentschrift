@@ -41,3 +41,13 @@ export const postTrace = (glyphKey: string, body: TraceRequest): Promise<Canonic
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   }).then(asJson<Canonical>);
+
+export const postResample = (glyphKey: string, nAnchors: number): Promise<Canonical> =>
+  fetch(`${API}/canonical/${encodeURIComponent(glyphKey)}/resample`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ n_anchors: nAnchors }),
+  }).then(asJson<Canonical>);
+
+export const renderCanonicalsUrl = (cacheBust?: number): string =>
+  `${API}/render/canonicals${cacheBust ? `?t=${cacheBust}` : ''}`;

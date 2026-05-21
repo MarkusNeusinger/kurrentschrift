@@ -1,12 +1,20 @@
+import { CssBaseline, ThemeProvider } from '@mui/material';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import './styles.css';
-import { App } from './App';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './router';
+import { AdminProvider } from './state';
+import { theme } from './theme';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('no #root');
 createRoot(root).render(
   <React.StrictMode>
-    <App />
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AdminProvider>
+        <RouterProvider router={router} />
+      </AdminProvider>
+    </ThemeProvider>
   </React.StrictMode>,
 );

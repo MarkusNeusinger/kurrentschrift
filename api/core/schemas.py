@@ -60,3 +60,9 @@ class TraceRequest(BaseModel):
 
     path: list[StrokePoint]
     n_anchors: int | None = None  # falls back to bbox.n_anchors or 14
+
+
+class ResampleRequest(BaseModel):
+    """POST /canonical/{glyph_key}/resample body."""
+
+    n_anchors: int

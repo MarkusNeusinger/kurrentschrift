@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.core.settings import settings
-from api.routers import bboxes_router, canonical_router, chart_router, health_router
+from api.routers import bboxes_router, canonical_router, chart_router, health_router, render_router
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -51,6 +51,7 @@ app.include_router(health_router)
 app.include_router(chart_router)
 app.include_router(bboxes_router)
 app.include_router(canonical_router)
+app.include_router(render_router)
 
 
 if __name__ == "__main__":

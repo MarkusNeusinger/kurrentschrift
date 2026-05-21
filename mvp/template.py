@@ -6,11 +6,13 @@ It carries the stroke order, control anchors, entry/exit coupling, and a
 half-width profile (the Schwellzug — architektur.md §5). Per-instance fits
 deform from the canonical; the deformation is captured separately.
 
-Coordinate convention:
-    baseline   y = 0       (anchor of most glyphs' start/end)
-    midband    y = 1       (top of x-height region)
-    ascender   y = 2       (top of l, h, ſ, ...)
-    descender  y = -1      (bottom of g, p, ...)
+Coordinate convention (Loth Kurrent 2:1:2 ratio: ascender region and
+descender region each span twice the x-height, so the full writing band
+runs from y=-2 to y=+3 — descender (2) + x-height (1) + ascender (2) = 5):
+    baseline   y =  0      (anchor of most glyphs' start/end)
+    midband    y =  1      (top of x-height region)
+    ascender   y =  3      (top of l, h, ſ, ... — midband + 2× x-height)
+    descender  y = -2      (bottom of g, p, ... — baseline − 2× x-height)
     x          left-to-right, glyph spans roughly [0, advance].
 
 Half-widths are in the same units as xy. A typical Schwellzug downstroke is
@@ -153,10 +155,10 @@ def render(template: CanonicalTemplate, ax=None, show_guides: bool = True, show_
 
     if show_guides:
         for y, style, label in [
-            (2.0, ":", "ascender"),
+            (3.0, ":", "ascender"),
             (1.0, "--", "midband"),
             (0.0, "-", "baseline"),
-            (-1.0, ":", "descender"),
+            (-2.0, ":", "descender"),
         ]:
             ax.axhline(y, color="lightgray", lw=0.5, ls=style, zorder=1)
             ax.text(-0.25, y, label, fontsize=6, color="lightgray", va="center", ha="right")
@@ -188,7 +190,20 @@ def render(template: CanonicalTemplate, ax=None, show_guides: bool = True, show_
             )
             ax.text(cx + 0.08, cy + 0.08, label, fontsize=8, color=color, zorder=5)
 
+    # Frame the plot around the ACTUAL anchor extent — not template.advance,
+    # because for strokes that lean left at the start (e.g. the medial-ſ
+    # whose first anchor isn't the leftmost point) anchors with negative x
+    # would otherwise be clipped. We still keep [0, advance] visible so the
+    # entry marker and the implied "next-letter start" are in view.
+    all_x: list[float] = [p[0] for s in template.strokes for p in s.anchors]
+    all_x.extend([template.entry.xy[0], template.exit.xy[0], 0.0, template.advance])
+    all_y: list[float] = [p[1] for s in template.strokes for p in s.anchors]
+    all_y.extend([template.entry.xy[1], template.exit.xy[1]])
+    xmin = min(all_x) - 0.4
+    xmax = max(all_x) + 0.4
+    ymin = min(-2.3, min(all_y) - 0.3)
+    ymax = max(3.4, max(all_y) + 0.3)
     ax.set_aspect("equal", "box")
     ax.set_title(f"{template.glyph}  ({template.position}, v{template.variant})", fontsize=12)
-    ax.set_xlim(-0.4, template.advance + 0.4)
-    ax.set_ylim(-1.3, 2.4)
+    ax.set_xlim(xmin, xmax)
+    ax.set_ylim(ymin, ymax)
