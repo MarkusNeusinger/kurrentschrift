@@ -3,38 +3,273 @@
   "glyph": "s",
   "position": "final",
   "variant": 0,
-  "advance": 0.65,
-  "_note": "Final s per Loth 1866: single continuous stroke with TWO kringels. Top kringel = the round-S body crossing itself near midband. Bottom kringel = a descender curl below baseline that loops back on itself before the pen lifts. There is NO forward coupling — final position only — so the renderer hides the 'out' marker; the exit field stores the terminus point for the visualisation but the connection engine ignores it.",
+  "advance": 1.3,
+  "_note": "Final s per Loth 1866 (traced from chart): single continuous stroke from baseline-left up through a lower curl, then around an upper loop, terminating inside that loop. Both 'kringels' are within or above baseline — there is no descender in this Loth depiction. No forward coupling — final position only — so the renderer hides the 'out' marker; the exit field stores the terminus point for visualisation, the connection engine ignores it.",
+  "_trace": {
+    "source": "loth-1866",
+    "chart_size": [
+      1633,
+      1869
+    ],
+    "bbox": {
+      "y0": 70,
+      "y1": 180,
+      "x0": 1330,
+      "x1": 1480
+    },
+    "baseline_y": 180,
+    "midband_y": 110,
+    "unit_px": 70.0,
+    "n_anchors": 14,
+    "path_length_px": 189.8,
+    "pixel_anchors": [
+      [
+        1347.0,
+        164.0
+      ],
+      [
+        1359.37,
+        158.63
+      ],
+      [
+        1371.45,
+        152.55
+      ],
+      [
+        1383.54,
+        146.46
+      ],
+      [
+        1384.0,
+        155.7
+      ],
+      [
+        1391.04,
+        164.96
+      ],
+      [
+        1401.83,
+        157.17
+      ],
+      [
+        1412.0,
+        146.79
+      ],
+      [
+        1411.18,
+        134.18
+      ],
+      [
+        1403.0,
+        129.9
+      ],
+      [
+        1411.98,
+        119.02
+      ],
+      [
+        1420.89,
+        108.11
+      ],
+      [
+        1429.8,
+        97.2
+      ],
+      [
+        1438.0,
+        86.0
+      ]
+    ],
+    "half_widths_px": [
+      2.24,
+      2.83,
+      2.24,
+      2.24,
+      2.0,
+      3.0,
+      5.0,
+      5.0,
+      2.83,
+      2.0,
+      2.24,
+      2.83,
+      2.83,
+      1.0
+    ],
+    "junctions": [
+      {
+        "at_px": [
+          56,
+          76
+        ],
+        "chosen_tangent_deg": 0.0,
+        "alternatives_deg": [
+          -45.0
+        ],
+        "source": "longest-path-dfs"
+      },
+      {
+        "at_px": [
+          57,
+          76
+        ],
+        "chosen_tangent_deg": -90.0,
+        "alternatives_deg": [
+          45.0
+        ],
+        "source": "longest-path-dfs"
+      },
+      {
+        "at_px": [
+          57,
+          77
+        ],
+        "chosen_tangent_deg": -90.0,
+        "alternatives_deg": [
+          135.0
+        ],
+        "source": "longest-path-dfs"
+      },
+      {
+        "at_px": [
+          73,
+          63
+        ],
+        "chosen_tangent_deg": 180.0,
+        "alternatives_deg": [
+          135.0
+        ],
+        "source": "longest-path-dfs"
+      },
+      {
+        "at_px": [
+          72,
+          63
+        ],
+        "chosen_tangent_deg": 180.0,
+        "alternatives_deg": [
+          90.0
+        ],
+        "source": "longest-path-dfs"
+      },
+      {
+        "at_px": [
+          71,
+          63
+        ],
+        "chosen_tangent_deg": 45.0,
+        "alternatives_deg": [
+          -135.0
+        ],
+        "source": "longest-path-dfs"
+      },
+      {
+        "at_px": [
+          72,
+          62
+        ],
+        "chosen_tangent_deg": 90.0,
+        "alternatives_deg": [
+          -90.0,
+          -45.0
+        ],
+        "source": "longest-path-dfs"
+      }
+    ]
+  },
   "entry": {
-    "xy": [0.0, 0.0],
-    "tangent_deg": 70,
+    "xy": [
+      0.0,
+      0.2286
+    ],
+    "tangent_deg": 23.5,
     "coupling": "baseline"
   },
   "exit": {
-    "xy": [0.35, -0.3],
-    "tangent_deg": 180,
-    "coupling": "descender"
+    "xy": [
+      1.3,
+      1.3429
+    ],
+    "tangent_deg": 53.8,
+    "coupling": "midband"
   },
   "strokes": [
     {
       "curve_type": "bspline",
       "anchors": [
-        [0.0, 0.0],
-        [0.05, 0.4],
-        [0.18, 0.85],
-        [0.35, 1.0],
-        [0.45, 0.85],
-        [0.4, 0.65],
-        [0.22, 0.55],
-        [0.18, 0.4],
-        [0.3, 0.1],
-        [0.5, -0.05],
-        [0.6, -0.3],
-        [0.55, -0.5],
-        [0.35, -0.5],
-        [0.3, -0.3]
+        [
+          0.0,
+          0.2286
+        ],
+        [
+          0.1768,
+          0.3053
+        ],
+        [
+          0.3493,
+          0.3922
+        ],
+        [
+          0.5219,
+          0.4791
+        ],
+        [
+          0.5286,
+          0.3471
+        ],
+        [
+          0.6291,
+          0.2149
+        ],
+        [
+          0.7833,
+          0.3261
+        ],
+        [
+          0.9286,
+          0.4745
+        ],
+        [
+          0.9169,
+          0.6545
+        ],
+        [
+          0.8,
+          0.7157
+        ],
+        [
+          0.9283,
+          0.8711
+        ],
+        [
+          1.0556,
+          1.027
+        ],
+        [
+          1.1828,
+          1.1828
+        ],
+        [
+          1.3,
+          1.3429
+        ]
       ],
-      "half_widths": [0.04, 0.05, 0.06, 0.07, 0.1, 0.12, 0.12, 0.1, 0.09, 0.08, 0.07, 0.06, 0.05, 0.04]
+      "half_widths": [
+        0.0319,
+        0.0404,
+        0.0319,
+        0.0319,
+        0.0286,
+        0.0429,
+        0.0714,
+        0.0714,
+        0.0404,
+        0.0286,
+        0.0319,
+        0.0404,
+        0.0404,
+        0.0143
+      ]
     }
   ]
 }

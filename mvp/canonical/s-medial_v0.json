@@ -3,34 +3,228 @@
   "glyph": "ſ",
   "position": "medial",
   "variant": 0,
-  "advance": 0.7,
-  "_note": "Medial long-s (ſ) per Loth 1866: single stroke. Hairline rise from baseline to ascender top, thick Schwellzug descent back through midband, continues BELOW baseline with a small descender flick — the stroke terminates in the descender zone, not at baseline. M6's connection engine has to draw a transition curve from this descender exit back up to the next letter's baseline-entry.",
+  "advance": 1.7,
+  "_note": "Medial long-s (ſ) per Loth 1866 (traced from chart): a SINGLE ascending diagonal stroke from baseline-left to ascender-right. Contrary to an earlier hand-drawn version, the Loth ſ does NOT return to baseline or have a descender — it is one slanted stroke, thick in the middle (Schwellzug) and thin at the tips. The next letter starts independently at baseline (pen-lift between ſ and its successor); M6's connection engine treats this as a discontinuous coupling.",
+  "_trace": {
+    "source": "loth-1866",
+    "chart_size": [
+      1633,
+      1869
+    ],
+    "bbox": {
+      "y0": 70,
+      "y1": 240,
+      "x0": 1250,
+      "x1": 1380
+    },
+    "baseline_y": 205,
+    "midband_y": 135,
+    "unit_px": 70.0,
+    "n_anchors": 14,
+    "path_length_px": 193.6,
+    "pixel_anchors": [
+      [
+        1253.0,
+        218.0
+      ],
+      [
+        1263.7,
+        209.3
+      ],
+      [
+        1273.53,
+        198.47
+      ],
+      [
+        1281.94,
+        187.06
+      ],
+      [
+        1290.35,
+        175.65
+      ],
+      [
+        1300.18,
+        164.82
+      ],
+      [
+        1309.29,
+        153.71
+      ],
+      [
+        1318.0,
+        142.42
+      ],
+      [
+        1324.7,
+        132.3
+      ],
+      [
+        1333.82,
+        121.18
+      ],
+      [
+        1343.65,
+        110.35
+      ],
+      [
+        1353.47,
+        99.53
+      ],
+      [
+        1362.59,
+        88.41
+      ],
+      [
+        1372.0,
+        78.0
+      ]
+    ],
+    "half_widths_px": [
+      2.0,
+      5.66,
+      5.0,
+      5.0,
+      4.47,
+      5.0,
+      5.0,
+      3.61,
+      5.39,
+      5.0,
+      3.61,
+      3.61,
+      2.83,
+      1.0
+    ],
+    "junctions": [
+      {
+        "at_px": [
+          70,
+          67
+        ],
+        "chosen_tangent_deg": 135.0,
+        "alternatives_deg": [
+          90.0
+        ],
+        "source": "longest-path-dfs"
+      },
+      {
+        "at_px": [
+          69,
+          66
+        ],
+        "chosen_tangent_deg": 0.0,
+        "alternatives_deg": [
+          180.0
+        ],
+        "source": "longest-path-dfs"
+      },
+      {
+        "at_px": [
+          70,
+          66
+        ],
+        "chosen_tangent_deg": 45.0,
+        "alternatives_deg": [
+          -90.0
+        ],
+        "source": "longest-path-dfs"
+      }
+    ]
+  },
   "entry": {
-    "xy": [0.0, 0.0],
-    "tangent_deg": 75,
+    "xy": [
+      0.0,
+      -0.1857
+    ],
+    "tangent_deg": 39.1,
     "coupling": "baseline"
   },
   "exit": {
-    "xy": [0.7, -0.55],
-    "tangent_deg": 35,
-    "coupling": "descender"
+    "xy": [
+      1.7,
+      1.8143
+    ],
+    "tangent_deg": 47.9,
+    "coupling": "ascender"
   },
   "strokes": [
     {
       "curve_type": "bspline",
       "anchors": [
-        [0.0, 0.0],
-        [0.05, 0.35],
-        [0.15, 1.0],
-        [0.3, 1.7],
-        [0.4, 1.95],
-        [0.46, 1.7],
-        [0.55, 1.0],
-        [0.6, 0.0],
-        [0.65, -0.4],
-        [0.7, -0.55]
+        [
+          0.0,
+          -0.1857
+        ],
+        [
+          0.1529,
+          -0.0614
+        ],
+        [
+          0.2933,
+          0.0933
+        ],
+        [
+          0.4134,
+          0.2563
+        ],
+        [
+          0.5336,
+          0.4193
+        ],
+        [
+          0.6739,
+          0.5739
+        ],
+        [
+          0.8042,
+          0.7328
+        ],
+        [
+          0.9286,
+          0.8941
+        ],
+        [
+          1.0243,
+          1.0386
+        ],
+        [
+          1.1546,
+          1.1974
+        ],
+        [
+          1.2949,
+          1.3521
+        ],
+        [
+          1.4353,
+          1.5067
+        ],
+        [
+          1.5656,
+          1.6656
+        ],
+        [
+          1.7,
+          1.8143
+        ]
       ],
-      "half_widths": [0.04, 0.04, 0.05, 0.06, 0.07, 0.14, 0.17, 0.13, 0.07, 0.04]
+      "half_widths": [
+        0.0286,
+        0.0808,
+        0.0714,
+        0.0714,
+        0.0639,
+        0.0714,
+        0.0714,
+        0.0515,
+        0.0769,
+        0.0714,
+        0.0515,
+        0.0515,
+        0.0404,
+        0.0143
+      ]
     }
   ]
 }

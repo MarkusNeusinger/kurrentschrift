@@ -4,15 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository state
 
-Pre-MVP: only design docs exist so far. No code, no build, no tests. The planned monorepo layout (per `docs/concepts/naming-und-setup.md` §3) is:
+In-progress MVP. The monorepo layout (per `docs/concepts/naming-und-setup.md` §3):
 
-- `/core` — Python: extractor, library, connection engine
-- `/api` — Backend (FastAPI), mirrors anyplot's `api/`
-- `/app` — Reading/practice frontend (Transkribus integration first)
-- `/mvp` — The minimal viable render kernel (`docs/concepts/architektur.md` §8)
+- `/core` — Python: extractor, library, connection engine (not yet)
+- `/api` — FastAPI backend for the admin UI (canonical extraction). Reads/writes `mvp/canonical/*.json`. See `docs/concepts/mvp-roadmap.md` step **M-Admin**.
+- `/app` — React + Vite admin frontend. Single-page UI: drag bboxes/excludes on the Loth chart with mouse, draw stroke paths with stylus (Samsung S-Pen). v1 only does canonical extraction; reading/practice is future work.
+- `/mvp` — The minimal viable render kernel (`docs/concepts/architektur.md` §8) and supporting CLI tools (`mvp/tools/trace_skeleton.py`, `mvp/tools/inspect_crop.py`, `mvp/render_canonicals.py`). Still useful for verification; the web admin produces the same canonical JSON files in `mvp/canonical/`.
 - `/data` — Sources, corpora, variants, samples, derived stats (see Data & licensing below)
 
-The first thing to build is **the MVP**, not the library or website. See `docs/concepts/architektur.md` §8 and §10 — order matters. The actionable breakdown lives in `docs/concepts/mvp-roadmap.md`.
+Order: MVP-Renderkernel + the M-Admin tool come before everything else. See `docs/concepts/architektur.md` §8/§10 and the milestone breakdown in `docs/concepts/mvp-roadmap.md`.
+
+**Local dev** (two terminals): `uv run uvicorn api.main:app --reload --port 8000` and `cd app && npm install && npm run dev` (Vite on :3000 with `/api` proxy to the API).
 
 ## Read these before substantive work
 

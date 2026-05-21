@@ -1,13 +1,18 @@
 """Render the M3 Phase A canonicals side-by-side with their Loth-1866 reference.
 
-Top row: the three handmodelled templates (medial ſ, final s, medial e) drawn
-from /mvp/canonical/*.json — these are the §9 MVP-Gate-Tragenden.
+3x3 layout:
+  - Row 1: handmodelled/traced canonical (mvp/canonical/<glyph>_v0.json)
+    rendered via mvp.template.render.
+  - Row 2: Loth chart crop with the M0 skeleton overlaid in red and the
+    canonical's pixel anchors (from the _trace block written by
+    mvp.tools.trace_skeleton) plotted on top in yellow — sanity-checks
+    that the anchors actually sit on the ink.
+  - Row 3: Loth chart crop pure — visual reference for eyeballing whether
+    the canonical (row 1) recreates what the chart (row 3) shows.
 
-Bottom row: corresponding crops from a cairosvg-rasterised version of
-data/sources/loth-1866/chart.svg as visual reference. SVG is preferred over
-the JPG here because the vector source has no JPEG artefacts, so the
-silhouettes are crisp at any zoom. (The JPG remains the canonical data
-source for the pipeline; this script only uses the SVG for visual review.)
+The bottom-row reference uses the JPG source (same as the trace pipeline)
+rather than the SVG render, so what you see is exactly what trace_skeleton
+processed.
 """
 
 from __future__ import annotations
@@ -15,69 +20,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import cairosvg
 import matplotlib.pyplot as plt
 import numpy as np
-from PIL import Image
 
 from mvp import template
-
-
-REPO_ROOT = Path(__file__).resolve().parent.parent
-CANONICAL_DIR = REPO_ROOT / "mvp" / "canonical"
-LOTH_SVG = REPO_ROOT / "data" / "sources" / "loth-1866" / "chart.svg"
-BBOXES_JSON = CANONICAL_DIR / "loth_bboxes.json"
-OUTPUT_DIR = REPO_ROOT / "mvp" / "out"
-SVG_RENDER_PATH = OUTPUT_DIR / "chart-svg-render-white.png"
-
-
-def load_bboxes() -> dict[str, dict | None]:
-    """Read the editable bbox table; missing/null entries become None.
-
-    Each non-null entry is {y0, y1, x0, x1, exclude} where exclude is a list
-    of sub-rectangles (same shape) that get whited out within the main crop —
-    used to remove bleed from neighbouring glyphs without leaving the
-    rectangular bbox schema.
-    """
-    data = json.loads(BBOXES_JSON.read_text(encoding="utf-8"))
-    out: dict[str, dict | None] = {}
-    for name, bbox in data["bboxes"].items():
-        if bbox is None:
-            out[name] = None
-        else:
-            out[name] = {
-                "y0": bbox["y0"], "y1": bbox["y1"], "x0": bbox["x0"], "x1": bbox["x1"],
-                "exclude": bbox.get("exclude", []),
-            }
-    return out
-
-
-def crop_with_excludes(chart: np.ndarray, bbox: dict) -> np.ndarray:
-    """Slice the main rect and white out any exclude sub-rectangles."""
-    y0, y1, x0, x1 = bbox["y0"], bbox["y1"], bbox["x0"], bbox["x1"]
-    crop = chart[y0:y1, x0:x1].copy()
-    for ex in bbox["exclude"]:
-        ey0 = max(0, ex["y0"] - y0)
-        ey1 = min(y1 - y0, ex["y1"] - y0)
-        ex0 = max(0, ex["x0"] - x0)
-        ex1 = min(x1 - x0, ex["x1"] - x0)
-        if ey1 > ey0 and ex1 > ex0:
-            crop[ey0:ey1, ex0:ex1] = 255
-    return crop
-
-
-def rasterise_svg() -> np.ndarray:
-    """Render chart.svg onto a white background as grayscale; cache to disk."""
-    if not SVG_RENDER_PATH.exists():
-        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-        # cairosvg renders to RGBA with transparent background; composite onto
-        # white so the grayscale conversion produces the expected ink-on-paper.
-        cairosvg.svg2png(url=str(LOTH_SVG), write_to=str(SVG_RENDER_PATH), output_width=1633, output_height=1869)
-        rgba = Image.open(SVG_RENDER_PATH)
-        white = Image.new("RGB", rgba.size, (255, 255, 255))
-        white.paste(rgba, mask=rgba.split()[3])
-        white.convert("L").save(SVG_RENDER_PATH)
-    return np.asarray(Image.open(SVG_RENDER_PATH).convert("L"))
+from mvp.extract import binarize_adaptive, skeleton_and_width
+from mvp.tools.loth import CANONICAL_DIR, OUTPUT_DIR, REPO_ROOT, crop_with_excludes, load_bboxes, load_chart_grayscale
 
 
 def main() -> None:
@@ -89,24 +37,50 @@ def main() -> None:
         ("e-medial", CANONICAL_DIR / "e-medial_v0.json"),
     ]
 
-    chart = rasterise_svg()
+    chart_gray = load_chart_grayscale()
     bboxes = load_bboxes()
 
-    fig, axes = plt.subplots(2, 3, figsize=(15, 9))
+    fig, axes = plt.subplots(3, 3, figsize=(15, 13))
 
     for col, (key, path) in enumerate(files):
+        # Row 1: canonical template render
         tpl = template.load(path)
         template.render(tpl, ax=axes[0, col])
 
         bbox = bboxes.get(key)
         if bbox is None:
-            axes[1, col].text(0.5, 0.5, f"no bbox for {key}\nedit mvp/canonical/loth_bboxes.json", ha="center", va="center", fontsize=10, color="gray", transform=axes[1, col].transAxes)
-        else:
-            axes[1, col].imshow(crop_with_excludes(chart, bbox), cmap="gray", vmin=0, vmax=255)
-        axes[1, col].set_title(f"Loth 1866 reference  ({key})", fontsize=10)
+            for row in (1, 2):
+                axes[row, col].text(0.5, 0.5, f"no bbox for {key}", ha="center", va="center", fontsize=10, color="gray", transform=axes[row, col].transAxes)
+                axes[row, col].axis("off")
+            continue
+
+        crop = crop_with_excludes(chart_gray, bbox, fill=1.0)
+
+        # Row 2: Loth crop + skeleton overlay + anchor markers (if trace exists)
+        mask = binarize_adaptive(crop)
+        skel, _ = skeleton_and_width(mask)
+        overlay = np.stack([crop, crop, crop], axis=-1)  # float [0,1] RGB
+        overlay[skel] = [1.0, 0.1, 0.1]
+        axes[1, col].imshow(overlay)
+        axes[1, col].set_title(f"Loth crop + skeleton + anchors  ({key})", fontsize=10)
         axes[1, col].axis("off")
 
-    fig.suptitle("M3 Phase A — canonical templates vs. Loth reference (SVG)", fontsize=14)
+        # Anchor markers from the trace block of the canonical JSON
+        data = json.loads(path.read_text(encoding="utf-8"))
+        trace = data.get("_trace")
+        if trace is not None and "pixel_anchors" in trace:
+            anchors_global = np.array(trace["pixel_anchors"])
+            anchors_local = anchors_global - np.array([bbox["x0"], bbox["y0"]])
+            axes[1, col].plot(anchors_local[:, 0], anchors_local[:, 1], "o", color="gold", markersize=6, markeredgecolor="black", markeredgewidth=0.6, zorder=5)
+            # connect with a thin line so the stroke order is visible
+            axes[1, col].plot(anchors_local[:, 0], anchors_local[:, 1], "-", color="gold", lw=0.8, alpha=0.7, zorder=4)
+
+        # Row 3: Loth crop pure
+        axes[2, col].imshow(crop, cmap="gray", vmin=0, vmax=1)
+        axes[2, col].set_title(f"Loth 1866 reference (pure)  ({key})", fontsize=10)
+        axes[2, col].axis("off")
+
+    fig.suptitle("M3 Phase A v0.2 — traced canonical (row 1) vs. Loth crop with skeleton + anchors (row 2) vs. Loth pure (row 3)", fontsize=13)
     fig.tight_layout()
     out_path = OUTPUT_DIR / "canonicals-phase-a.png"
     fig.savefig(out_path, dpi=140, bbox_inches="tight")

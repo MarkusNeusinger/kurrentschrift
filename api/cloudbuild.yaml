@@ -1,0 +1,60 @@
+# Cloud Build configuration for kurrentschrift backend API.
+# Placeholder for v1 — mirrors ~/projects/anyplot/api/cloudbuild.yaml so the
+# deployment story is "fill in the substitutions, run gcloud builds submit".
+substitutions:
+  _SERVICE_NAME: kurrentschrift-api
+  _REGION: europe-west4
+  _MEMORY: 1Gi
+  _CPU: "1"
+  _MIN_INSTANCES: "0"
+  _MAX_INSTANCES: "2"
+
+steps:
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "build"
+      - "-t"
+      - "europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}:$BUILD_ID"
+      - "-t"
+      - "europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}:latest"
+      - "-f"
+      - "api/Dockerfile"
+      - "."
+    id: "build-image"
+
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "push"
+      - "europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}:$BUILD_ID"
+    id: "push-image"
+    waitFor: ["build-image"]
+
+  - name: "gcr.io/cloud-builders/gcloud"
+    args:
+      - "run"
+      - "deploy"
+      - "${_SERVICE_NAME}"
+      - "--image=europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}:$BUILD_ID"
+      - "--region=${_REGION}"
+      - "--platform=managed"
+      - "--memory=${_MEMORY}"
+      - "--cpu=${_CPU}"
+      - "--min-instances=${_MIN_INSTANCES}"
+      - "--max-instances=${_MAX_INSTANCES}"
+      - "--port=8000"
+      - "--allow-unauthenticated"
+      - "--execution-environment=gen2"
+      - "--cpu-throttling"
+      - "--concurrency=15"
+      - "--timeout=600"
+    id: "deploy"
+    waitFor: ["push-image"]
+
+images:
+  - "europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}:$BUILD_ID"
+  - "europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}:latest"
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: "1200s"

@@ -137,6 +137,47 @@ geprüft, bevor sie auf eigene Hand zuschlägt.)
 
 ---
 
+### M-Admin — Web-Admin-UI für Canonical-Extraktion
+
+**Was:** FastAPI Backend (`/api/`) plus React-Frontend (`/app/`) für die
+interaktive Canonical-Erzeugung. Maus zieht Bbox- und Exclude-Rechtecke
+direkt auf `chart.jpg`, baseline/midband sind draggable Linien, der
+Ductus-Pfad wird mit Stylus (S-Pen) auf einem Samsung-Tablet
+gezeichnet. Backend liest/schreibt die existierenden Files in
+`mvp/canonical/`, sodass die CLI-Werkzeuge (`mvp.tools.trace_skeleton`,
+`mvp.render_canonicals`) weiter funktionieren.
+
+**Begründung der Einschiebung:** Die ursprüngliche Reihenfolge nach §10
+war „M3 zuerst, Tools danach". In der Umsetzung von M3 Phase A wurde
+klar, dass das per-JSON-Eintippen von Bboxes, Excludes und
+(Multi-Stroke-)Waypoints nicht auf die 8 Phase-B-Templates skaliert,
+geschweige denn auf das Voll-Alphabet. Die Web-Admin-UI ist
+Tool-Investition mit positivem Hebel: M3 Phase B, alle späteren
+Allograph-Erweiterungen und (mit minimaler Erweiterung) das M1
+own-hand-Schreiben profitieren davon.
+
+**Architektur:** spiegelt anyplot (`~/projects/anyplot/`) — `/api/`
+FastAPI mit Routern pro Resource (`health`, `chart`, `bboxes`,
+`canonical`), `/app/` React + Vite + TypeScript, lokal über zwei
+Terminals (`uvicorn` :8000, `npm run dev` :3000 mit `/api`-Proxy).
+Dockerfiles und `cloudbuild.yaml` werden als Platzhalter angelegt für
+spätere Cloud-Run-Migration; in v1 nicht ausgeführt.
+
+**Schwellzug:** Die `half_widths` kommen weiterhin aus dem M0
+Distance-Transform der Loth-Tinte — die geometrische Wahrheit kommt
+vom Bild, nicht vom Tablet. `event.pressure` wird parallel aufgezeichnet
+und unter `_trace.pen_pressure_raw` gespeichert (für M1
+Own-Hand-Modus, wo es die primäre Schwellzug-Quelle wird).
+
+**Fertig wenn:** Alle 11 MVP-Canonicals (Phase A + B) sind über die
+Web-UI traced, identisches Schema wie CLI-Output, `mvp.render_canonicals`
+zeigt sie korrekt im Side-by-Side mit Loth.
+
+**Abhängigkeiten:** M0 (Pipeline existiert). Blockiert dann effektiv
+M3 Phase B — wird stattdessen *als* Phase B durchgeführt.
+
+---
+
 ### M1 — Eigenhandvorlagen schreiben & einscannen
 
 Das Wortset ist mit §9 fixiert. Hier nur noch ausführen:

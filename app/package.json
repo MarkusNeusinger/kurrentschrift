@@ -1,0 +1,27 @@
+{
+  "name": "kurrentschrift-app",
+  "version": "0.1.0",
+  "description": "kurrentschrift admin UI — canonical extraction from the Loth 1866 chart with stylus input.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "tsc && vite build",
+    "preview": "vite preview --host",
+    "type-check": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react-swc": "^4.3.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.13"
+  }
+}
