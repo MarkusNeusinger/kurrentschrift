@@ -18,6 +18,14 @@ export interface KnownGlyph {
 }
 
 // MVP set per `docs/concepts/architektur.md` §9 + medial-ſ allograph split.
+//
+// `position` here is the *chart role* of the allograph form (where Loth shows
+// it on the teaching plate), NOT the position the form must occupy in running
+// text. The round-s (`s` / `s-final`) for example also occurs word-internally
+// at morpheme boundaries in compounds (`Aus-flug`, `Haus-thür`); the text→
+// template mapping is a separate orthography layer planned for M4+
+// (`core/orthography.py`). See `docs/reference/orthographie-regeln.md` §1 and
+// `docs/proposals/planaenderungen.md` Vorschlag A.
 export const KNOWN_GLYPHS: KnownGlyph[] = [
   { key: 'a-initial', glyph: 'a', position: 'initial', label: 'a · initial' },
   { key: 'a-medial', glyph: 'a', position: 'medial', label: 'a · medial' },
