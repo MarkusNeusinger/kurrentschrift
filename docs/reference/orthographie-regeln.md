@@ -1,8 +1,8 @@
 # Orthographie-Regeln (Kurrent, ca. 1850–1941)
 
 Sammlung typischer Lese- und Schreibregeln der deutschen Kurrentschrift
-des 19. und frühen 20. Jahrhunderts. Geltungsbereich: vor der
-Rechtschreibreform von 1901 bis zur Umstellung auf Lateinschrift 1941.
+des 19. und frühen 20. Jahrhunderts. Geltungsbereich: ca. 1850 bis
+zur Umstellung auf Lateinschrift 1941.
 
 Diese Datei katalogisiert Regeln, die später vom geplanten
 Text→Template-Mapping-Modul `core/orthography.py` (M4+, siehe
@@ -39,11 +39,12 @@ Beispiele: `leſen`, `Haus`, `ſein`.
 
 ### 1.2 Sonderfall A — Rund-s an Morphem-/Silbengrenze in Komposita
 
-Im Inneren eines zusammengesetzten Wortes steht am Silbenschluss
-**Rund-s** statt ſ, wenn die folgende Silbe mit `s` oder `p` beginnt und
-**keine echte Wortfuge** zwischen den Bestandteilen liegt. Operativ
-gemeint sind echte Komposita, in denen das Rund-s das Ende einer
-Bestandteilseinheit markiert.
+Im Inneren eines zusammengesetzten oder abgeleiteten Wortes steht am
+Silbenschluss **Rund-s** statt ſ, wenn es das Ende einer
+Bestandteilseinheit markiert und die folgende Silbe mit einem
+Konsonanten beginnt. Operativ gemeint sind Komposita und Ableitungen,
+in denen das Rund-s eine Morphem- oder Silbengrenze innerhalb des
+Wortes sichtbar macht.
 
 Beispiele: `Aus-flug`, `Aus-ſpruch`, `Haus-thür`, `häus-lich`.
 
@@ -90,7 +91,7 @@ Keine Regel, sondern Hinweis für die Erkennungs-Closed-Loop in
 Verwechslungspaare in flüchtiger Schrift:
 
 - `n` / `u` — bei zügiger Schrift formgleich; nur Kontext entscheidet.
-- `e` / `n` — der kleine Bogen über `D` und der spitze Fuß bei `u`
+- `D` / `u` — der kleine Bogen über `D` und der spitze Fuß bei `u`
   liefern manchmal die einzigen Unterscheidungsmerkmale.
 - `B` / `V` — beide mit ähnlicher Schleifen-Topologie.
 - `L`, `K`, `R` sowie `N`, `M` — als Verwechslungs-Cluster bekannt.
