@@ -22,6 +22,9 @@ behandelt werden:
 - **Schreiben:** kein integrierbares Standardprodukt. Hier liegt der echte
   Mehrwert (siehe §7).
 
+Produkt- und Zielgruppen-Bild dazu — *was* die Endnutzer-Website damit
+sein soll — steht in [`vision.md`](vision.md).
+
 ---
 
 ## 2. Architekturentscheidung: ductus-modellbasierte Extraktion

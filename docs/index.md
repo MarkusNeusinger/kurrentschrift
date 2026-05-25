@@ -10,6 +10,7 @@ Begründung). Stand: pre-MVP, Code existiert noch nicht.
 
 | Ich will… | Gehe zu |
 |---|---|
+| Wissen, was die Endnutzer-Website sein soll | [Vision der Website](concepts/vision.md) |
 | Den Architekturkern verstehen | [Architektur-Referenz](concepts/architektur.md) |
 | Wissen, wie der MVP konkret zerlegt ist | [MVP-Roadmap](concepts/mvp-roadmap.md) |
 | Wissen, warum Name/Domain/Lizenz so gewählt sind | [Naming und OSS-Setup](concepts/naming-und-setup.md) |
@@ -27,6 +28,7 @@ Begründung). Stand: pre-MVP, Code existiert noch nicht.
 docs/
 ├── index.md                      # You are here
 ├── concepts/                     # Architektur, Philosophie, getroffene Entscheidungen
+│   ├── vision.md                 # Was die Endnutzer-Website sein soll (Pitch + Zielgruppe + Ziele/Nicht-Ziele)
 │   ├── architektur.md            # Analysis-by-synthesis, Ductus-Prior, Library-Schema, MVP
 │   ├── mvp-roadmap.md            # Operative Zerlegung des MVP (§8) in Schritt 0 + M0–M6
 │   └── naming-und-setup.md       # Repo-Name, Domain, Lizenz, Verzeichnis-Split
@@ -49,6 +51,10 @@ Designkern gehört (z. B. Stift-Recherche).
 Architektur und Entscheidungen mit ihrer Begründung — was bewusst gewählt
 und was bewusst verworfen wurde.
 
+- **[Vision der Website](concepts/vision.md)** — was die Endnutzer-Website
+  unter `kurrentschrift.ink` sein soll: Pitch, Zielgruppe, fünf Ziele
+  (Einstieg, Schreiben üben, Lesen üben, eigene Schrift analysieren,
+  Lese-Hilfe), Nicht-Ziele, Verhältnis zur bestehenden Landschaft, Ausblick
 - **[Architektur-Referenz](concepts/architektur.md)** — Analysis-by-Synthesis,
   Ductus-Prior, Library-Einheit `(glyph, position, variant)`, Schwellzug
   vs. Tinte, dreistufige Qualitätspipeline, MVP, Testwörter, Reihenfolge

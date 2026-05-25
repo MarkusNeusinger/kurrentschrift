@@ -18,6 +18,13 @@ bleiben inhaltlich gültig (Scope, Glyphen, Wortset, Validierungs-Gates), nur
 das *wie* wechselt: ein neuer Trace startet als Stylus-Strich im Editor und
 endet als Row in der Datenbank, nicht als JSON-Diff.
 
+Der MVP validiert den Render-Kern (Falsifikations-Test aus §7). Die
+Endnutzer-Website mit ihren fünf Zielen (Einstieg, Schreiben üben, Lesen
+üben, eigene Schrift analysieren, Lese-Hilfe) liegt fast komplett *nach*
+dem MVP — siehe [`vision.md`](vision.md). Einzige Ausnahme: das Lese-Feature
+ist laut [`architektur.md`](architektur.md) §10 ein früher, paralleler Win
+mit geringem Risiko.
+
 ## Context
 
 Die Design-Docs sind abgeschlossen, Code existiert noch nicht. §10 sagt:
