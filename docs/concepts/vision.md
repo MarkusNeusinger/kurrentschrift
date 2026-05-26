@@ -9,14 +9,19 @@ sein soll — getrennt vom *Wie* (Architektur) und vom *Wann* (MVP-Roadmap).
 
 ## Pitch (für Landing-Page-Aufmacher)
 
-Zur Kurrentschrift gibt es im Web schon einiges Gutes: Alphabet-Tafeln,
-PDF-Übungsblätter, Font-Generatoren, HTR-Dienste. Was noch fehlt, ist
-ein Auftritt, der ductus-treues Rendering, inhaltsbewusste
-Übungsblätter und Stil-Analyse im selben Werkzeug zusammenbringt.
+Drei Dinge an einem Ort, die es heute nirgends in Kombination gibt:
 
-Diese Seite schließt diese Lücke: ein moderner Zugang zur deutschen
-Kurrent — **Synthese in echter Hand**, **Statistik über die eigene
-Schrift**, **Werkzeug statt Lehrbuch**.
+- **Ductus-treues Rendering mit Schwellzug** — Hand-Synthese statt
+  Font, mit Schreibreihenfolge und druckabhängiger Strichstärke.
+- **Stil-Analyse der eigenen Schrift** — Statistik über Schräglage,
+  Schwellzug, Glyph-Verteilung statt Bauchgefühl.
+- **Inhaltsbewusste Übungsblätter** — beliebiger Text mit passender
+  Lineatur in einem Schritt.
+
+Die etablierten Angebote (Alphabet-Tafeln, PDF-Übungsblätter,
+Font-Generatoren, HTR-Dienste) decken jeweils einen Teil ab.
+[kurrentschrift.ink](https://kurrentschrift.ink) bringt sie zusammen
+und ergänzt sie um die Synthese in echter Hand.
 
 ---
 
@@ -35,7 +40,29 @@ Kern (siehe `architektur.md` §1).
 
 ---
 
+## Leitprinzipien
+
+- **Werkzeug statt Lehrbuch.** Die Seite ist das interaktive Pendant
+  zur vorhandenen Lehrbuch-Landschaft, nicht ihr Ersatz. Tiefe gibt's
+  in den verlinkten Quellen.
+- **Synthese statt Font.** Schwellzug, Schreibreihenfolge und
+  Allographen sind Erstklassen-Bürger, nicht eine Glyphe pro
+  Codepoint (siehe `architektur.md` §2/§5).
+- **Offene Daten.** Kanonische Glyph-Daten unter zitierfähiger Lizenz
+  (`quellen-und-rechte.md`).
+- **Zweisprachig.** Deutscher Kern zuerst (`sprachregelung.md` §1),
+  englische Erweiterung folgt — die Genealogie-Zielgruppe ist
+  überwiegend englischsprachig (`naming-und-setup.md` §1).
+- **Synthese ist als solche erkennbar.** Eine in unserer Hand
+  gerenderte Seite wird nie als historisches Original ausgegeben:
+  explizite Kennzeichnung (Wasserzeichen, Metadaten). Wir simulieren
+  Schrift, nicht Provenienz.
+
+---
+
 ## Was die Seite leistet (Ziele)
+
+### Schreiben
 
 1. **Einstieg in wenigen Minuten.** Geschichte in zwei Sätzen,
    Alphabet-Tafel, die wichtigsten Lese- und Schreibregeln (Rund-s,
@@ -58,48 +85,42 @@ Kern (siehe `architektur.md` §1).
    sondern auch *wie es entsteht*. Ligaturen (`ch`, `ck`, `ſt`, `tz`,
    `qu`, `ß`) als eigene Animationen.
 
+### Lesen
+
 4. **Lesen üben.** Beliebiger heutiger Text — eine Zeitungsmeldung,
    ein eigenes Memo — gerendert in einer trainierten Kurrent-Hand,
    damit Üben nicht am Nachschub historischer Beispiele scheitert.
 
-5. **Eigene Schrift analysieren.** Handschriftliche Probe hochladen,
-   Statistik zurückbekommen: Glyphen-Verteilung, Übergangswinkel,
-   Schräglagen-Verteilung, Schwellzug-Profile. Zwei Anschluss-Pfade:
-   - **Optimieren** — wo weicht die eigene Hand stark von der Norm ab?
-     Wo ist sie inkonsistent? Konkretes statt allgemeines Feedback.
-   - **Neuer Stil als Basis** — aus genug eigenen Proben einen Hand-Stil
-     extrahieren und damit weitere Texte synthetisieren. „In meiner
-     Hand, aber jeden Text."
-
-6. **Lesen historischer Texte (Lese-Hilfe).** Transkription über
-   bestehende HTR-Modelle (Transkribus & Co. — siehe `architektur.md`
-   §1). Kein eigenes Forschungsfeld, aber motivierender Sofort-Nutzen
-   und Einstieg für die Genealogie-Zielgruppe.
-
-7. **Hände vergleichen.** Side-by-side mehrerer trainierter Hände
-   (Loth 1866 vs. eigene Probe vs. historische Quelle X) — Heatmaps
-   für Schräglage, Schwellzug, Glyph-Frequenz. Natürliche Verlängerung
-   von Feature 5, sobald mehrere Stile vorliegen; zeigt konkret, *wo*
-   sich Hände unterscheiden, nicht nur *dass* sie es tun. Kombiniert
-   mit Feature 3 lassen sich Animationen derselben Glyphe in mehreren
-   Händen direkt nebeneinander abspielen.
-
-8. **Lese-Lupe.** Bild plus Overlay zur Lese-Hilfe (Feature 6):
-   Klick auf einen verwirrenden Buchstaben → strukturierte Erklärung
-   („das ist medial ſ, kein f — hier fehlt der Querstrich").
-   Verbindet HTR-Output mit den Regel-Erklärungen aus
+5. **Lese-Hilfe für historische Texte.** Transkription über
+   bestehende HTR-Modelle (Transkribus & Co. — `architektur.md` §1).
+   Kein eigenes Forschungsfeld, aber motivierender Sofort-Nutzen und
+   Einstieg für die Genealogie-Zielgruppe. Erweitert um eine
+   **Lese-Lupe**: Bild plus Overlay; Klick auf einen verwirrenden
+   Buchstaben → strukturierte Erklärung („das ist medial ſ, kein f —
+   hier fehlt der Querstrich") aus
    [`orthographie-regeln.md`](../reference/orthographie-regeln.md).
 
-9. **Offene Datensätze.** Kanonische Glyph-Daten (Anker, Schwellzug,
+### Forschung
+
+6. **Eigene Schrift analysieren.** Handschriftliche Probe hochladen,
+   Statistik zurückbekommen: Glyphen-Verteilung, Übergangswinkel,
+   Schräglagen-Verteilung, Schwellzug-Profile. Drei Anschluss-Pfade:
+   - **Optimieren** — wo weicht die eigene Hand stark von der Norm ab?
+     Wo ist sie inkonsistent? Konkretes statt allgemeines Feedback.
+   - **Neuer Stil als Basis** — aus genug eigenen Proben einen
+     Hand-Stil extrahieren und damit weitere Texte synthetisieren.
+     „In meiner Hand, aber jeden Text."
+   - **Hände vergleichen** — sobald mehrere Stile vorliegen,
+     Side-by-side-Vergleich (Loth 1866 vs. eigene Probe vs.
+     historische Quelle X) mit Heatmaps für Schräglage, Schwellzug,
+     Glyph-Frequenz. Kombiniert mit Feature 3 lassen sich Animationen
+     derselben Glyphe in mehreren Händen direkt nebeneinander
+     abspielen.
+
+7. **Offene Datensätze.** Kanonische Glyph-Daten (Anker, Schwellzug,
    Ductus-Reihenfolge) als zitierbares Open-Data-Paket für die
    Forschungs-Zielgruppe. Heute nirgends öffentlich verfügbar; passt
    zur MIT-Code-Linie und zur PD-Datenlinie (`quellen-und-rechte.md`).
-
-10. **Zweisprachig (DE/EN).** Die Genealogie-Zielgruppe ist überwiegend
-    englischsprachig (`naming-und-setup.md` §1). Deutscher Kern zuerst
-    (`sprachregelung.md` §1), englische Version oder mindestens
-    englische Glossar-Tooltips als nächster Hebel, sobald der deutsche
-    Kern steht.
 
 ---
 
@@ -125,9 +146,9 @@ Kern (siehe `architektur.md` §1).
 ## Verhältnis zur bestehenden Landschaft
 
 Es gibt eine lebendige Landschaft an Angeboten rund um die Kurrent.
-Diese Seite ersetzt sie nicht, sondern setzt einen Baustein dazu — die
-ductus-treue Synthese — und kombiniert ihn mit Übungsmaterial und
-Stil-Analyse. Wo wir uns einsortieren:
+Diese Seite ersetzt sie nicht — sie schließt die offene Stelle: die
+Kombination aus ductus-treuer Synthese, Stil-Analyse und
+inhaltsbewusster Übung im selben Werkzeug.
 
 | Kategorie | Beispiele | Was diese Seite ergänzt |
 |---|---|---|
@@ -137,9 +158,9 @@ Stil-Analyse. Wo wir uns einsortieren:
 | HTR | Transkribus | Schreib-Synthese als Pendant zur Lese-Hilfe |
 | Foren | CompGen, ahnenforschung.net | (eigene Domäne — kein Anspruch hier) |
 
-Die Kombination — Rendering, Stil-Analyse und Übungsmaterial im selben
-Auftritt mit echter Tinte-statt-Font-Synthese — gibt es heute so noch
-nicht. Genau da soll diese Seite ansetzen.
+Die Dreierkombination — Tinte statt Font, Statistik statt Bauchgefühl,
+Lineatur passend zum Text — gibt es heute nirgends. Genau dort setzt
+diese Seite an.
 
 ---
 
@@ -150,14 +171,16 @@ nicht. Genau da soll diese Seite ansetzen.
   Synthese-Pipeline (vier Validierungs-Gates inkl. abgespeckter
   Animation). Die hier beschriebene Website liegt fast komplett *nach*
   dem MVP und ist in `architektur.md` §10 als Fünf-Phasen-Plan
-  sequenziert: P1 Lesen-Hilfe (Punkt 6) → P2 Lineatur/Print (Punkt 2) →
-  P3 Stil-Analyse (Punkt 5) → P4 Hände-Vergleich (Punkt 7) → P5 Open-
-  Data (Punkt 9). Animation (Punkt 3) und Frontend/i18n (Punkt 10)
+  sequenziert: P1 Lese-Hilfe (Punkt 5) → P2 Lineatur/Print (Punkt 2) →
+  P3 Stil-Analyse (Punkt 6) → P4 Hände-Vergleich (Anwendung von Punkt 6,
+  sobald mehrere Stile vorliegen) → P5 Open-Data (Punkt 7). Animation
+  (Punkt 3) und Frontend/i18n (siehe Leitprinzipien — Zweisprachig)
   laufen als Querschnitt parallel zur ersten Phase.
 - [`naming-und-setup.md`](naming-und-setup.md) — Reichweite (gotische
   Kursive vor 1900, optional Skandinavien), Lizenz (MIT), Domain
   (`kurrentschrift.ink`).
 - [`reference/sprachregelung.md`](../reference/sprachregelung.md) —
-  Website v1 deutsch; englische Erweiterung folgt (Feature 10).
+  Website v1 deutsch; englische Erweiterung folgt (siehe
+  Leitprinzipien).
 - [`reference/orthographie-regeln.md`](../reference/orthographie-regeln.md) —
-  Inhalts-Grundlage für Feature 1 (Einstieg) und Feature 8 (Lese-Lupe).
+  Inhalts-Grundlage für Feature 1 (Einstieg) und Feature 5 (Lese-Lupe).

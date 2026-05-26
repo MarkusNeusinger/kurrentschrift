@@ -213,7 +213,8 @@ gleiche Glyphe in jeder Hand ihre eigene Animation:
 - Unterschiedliche `anchors`/`half_widths` (Hand-spezifisch).
 - Unterschiedlicher Width-Profile-Resolver (falls verschiedene Schriftfamilien).
 
-→ Side-by-Side-Animation-Vergleich als Hand-Vergleichs-Feature (Vision §7).
+→ Side-by-Side-Animation-Vergleich als Hand-Vergleichs-Feature (Vision §6,
+Hände-vergleichen-Pfad).
 
 ---
 

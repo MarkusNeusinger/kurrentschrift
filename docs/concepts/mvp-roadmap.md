@@ -20,11 +20,12 @@ startet als Stylus-Strich im Editor und endet als Row in der Datenbank, nicht
 als JSON-Diff.
 
 Der MVP validiert den Render-Kern (Falsifikations-Test aus §7). Die
-Endnutzer-Website mit ihren zehn Zielen (Einstieg, Schreiben üben +
-Lineatur, animierte Buchstaben-Tafel, Lesen üben, eigene Schrift
-analysieren, Lese-Hilfe via HTR, Hände vergleichen, Lese-Lupe, offene
-Datensätze, DE/EN — siehe [`vision.md`](vision.md)) liegt fast komplett
-*nach* dem MVP. Frühe Parallel-Wins laut
+Endnutzer-Website mit ihren sieben Zielen in drei Clustern (Schreiben:
+Einstieg · Schreiben üben + Lineatur · animierte Buchstaben-Tafel;
+Lesen: Lesen üben · Lese-Hilfe via HTR inkl. Lese-Lupe; Forschung:
+Stil-Analyse inkl. Hände-Vergleich · offene Datensätze; plus
+Zweisprachig-Leitprinzip — siehe [`vision.md`](vision.md)) liegt fast
+komplett *nach* dem MVP. Frühe Parallel-Wins laut
 [`architektur.md`](architektur.md) §10: Lese-Hilfe (P1) und die
 Frontend-Infrastruktur (§16) parallel zur ersten Phase.
 

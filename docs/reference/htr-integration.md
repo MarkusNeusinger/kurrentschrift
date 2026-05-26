@@ -1,7 +1,7 @@
 # HTR-Integration
 
-Technische Spezifikation des Recognition-Stacks für Volltext aus Vision §6
-(„Lese-Hilfe") und Vision §8 („Lese-Lupe"). Ergänzt
+Technische Spezifikation des Recognition-Stacks für Volltext aus Vision §5
+(„Lese-Hilfe für historische Texte" inkl. Lese-Lupe). Ergänzt
 [`architektur.md`](../concepts/architektur.md) §13 und §14.
 
 **Kernprinzip:** kein Eigenbau. „Lesen ist gelöst, keine Forschung"
@@ -43,7 +43,7 @@ Default: `German Kurrent 17th–20th c.`.
 ### Latenz
 
 - Queue-basiert, in der Praxis Sekunden bis wenige Minuten pro Seite.
-- Interaktiv genug für Vision §6 („Sofort-Nutzen" für Genealogie-
+- Interaktiv genug für Vision §5 („Sofort-Nutzen" für Genealogie-
   Zielgruppe).
 
 ### Output-Formate

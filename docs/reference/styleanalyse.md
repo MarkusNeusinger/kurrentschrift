@@ -1,7 +1,7 @@
 # Stil-Analyse
 
-Technische Spezifikation der Stil-Analyse-Pipeline aus Vision §5 (Eigene
-Schrift analysieren) und Vision §7 (Hände vergleichen). Ergänzt
+Technische Spezifikation der Stil-Analyse-Pipeline aus Vision §6 (Eigene
+Schrift analysieren, inkl. Hände-vergleichen-Pfad). Ergänzt
 [`architektur.md`](../concepts/architektur.md) §6 (Qualitätspipeline) und
 §12 (Stil-Analyse-Pipeline).
 
@@ -85,7 +85,7 @@ Feedback-Geber für „Optimieren"-Pfad.
 
 ## 2. Vision-Anwendungspfade
 
-### „Optimieren" (Vision §5a)
+### „Optimieren" (Vision §6, Pfad „Optimieren")
 
 Pro Glyph-Instanz die Abweichung von der Per-Hand-Aggregation (Schicht 2)
 visualisieren:
@@ -96,7 +96,7 @@ visualisieren:
   Personal Canonical → Loth Canonical, pro Glyph.
 - Konkretes Feedback, keine pauschalen Tipps.
 
-### „Neuer Stil als Basis" (Vision §5b)
+### „Neuer Stil als Basis" (Vision §6, Pfad „Neuer Stil als Basis")
 
 Sobald die Per-Hand-Aggregation genug Datenpunkte hat (`≥ 10` Instanzen
 pro Glyph-Bucket): die aggregierte Personal Canonical wird selbst zum
@@ -104,7 +104,7 @@ Template für die Synthese-Pipeline. „In meiner Hand, aber jeden Text" —
 das ist exakt der MVP-Gate-3-Mechanismus (`denen` aus aggregierten Stats),
 nur jetzt produktiv für beliebige Wörter.
 
-### „Hände vergleichen" (Vision §7)
+### „Hände vergleichen" (Vision §6, Pfad „Hände vergleichen")
 
 Side-by-Side mehrerer Sources mit Heatmaps:
 

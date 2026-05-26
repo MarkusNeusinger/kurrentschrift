@@ -19,7 +19,8 @@ change one, check the other.
     speaking genealogy).
   - **Internal docs under `docs/`: German.** Deliberate — the domain is
     German.
-  - **Website v1: German;** English follows (Vision §10).
+  - **Website v1: German;** English follows (Vision Leitprinzip
+    „Zweisprachig").
   - German technical terms without an established English translation get
     an English identifier and one explanatory comment, e.g.
     `width_profile  # Schwellzug: pressure-driven stroke-width modulation`.
@@ -77,27 +78,38 @@ change one, check the other.
 (pre-1900 normed handwriting). The vision is a single web app at
 [kurrentschrift.ink](https://kurrentschrift.ink) that combines:
 
-1. **Ductus-faithful synthesis** — re-rendering modern text in a trained
-   Kurrent hand, with true variable stroke width (Schwellzug) instead of
-   font-style constant strokes.
+**Writing pillar**
+
+1. **Onboarding** — history in two sentences, alphabet table, key reading
+   and writing rules.
 2. **Content-aware practice sheets** — configurable lineature ratios,
    arbitrary input text, printable PDFs.
 3. **Animated letter tables** — every letter played back with stroke order
-   and pressure build-up.
-4. **Style analysis** — upload a sample, get statistics (slant, swell,
-   transition angles, per-glyph cluster spread).
-5. **Reading help** — historical letters transcribed via HTR (Transkribus
-   integration).
-6. **Reading magnifier (Lese-Lupe)** — click on a confusing letter, get a
-   structured explanation referencing orthography rules.
-7. **Hand comparison** — heatmaps for slant, swell, glyph frequency
-   side-by-side.
-8. **Open data** — canonical glyph data (anchors, swell profiles, ductus
+   and pressure build-up (true Schwellzug).
+
+**Reading pillar**
+
+4. **Modern text rendered in a trained Kurrent hand** — practice reading
+   without depending on a stream of historical examples.
+5. **Reading help for historical texts via HTR** (Transkribus default,
+   TrOCR fallback) — extended with a **reading magnifier (Lese-Lupe)**:
+   click on a confusing letter, get a structured explanation referencing
+   orthography rules.
+
+**Research pillar**
+
+6. **Style analysis** — upload a sample, get statistics (slant, swell,
+   transition angles, per-glyph cluster spread), with three follow-on
+   paths: optimise, new-style-as-basis, hand comparison (heatmaps).
+7. **Open data** — canonical glyph data (anchors, swell profiles, ductus
    order) as a citable Zenodo release.
 
-The full vision is in `docs/concepts/vision.md` (10 goals). The settled
-architecture (§1–§17) is in `docs/concepts/architektur.md`. **Read those
-two before substantive work.**
+Bilingual DE/EN is a cross-cutting guiding principle (German first;
+English follows).
+
+The full vision is in `docs/concepts/vision.md` (seven goals, three
+pillars). The settled architecture (§1–§17) is in
+`docs/concepts/architektur.md`. **Read those two before substantive work.**
 
 ### The core architectural commitment
 

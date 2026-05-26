@@ -1,9 +1,10 @@
 # Frontend-Stack
 
-Technische Spezifikation des Endnutzer-Frontends aus Vision §1, §2 (Lineatur-
-Konfigurator), §3 (Animation), §4 (Lesen üben), §5 (Stil-Analyse-Upload),
-§6 (Lese-Hilfe), §7 (Hände-Vergleich), §8 (Lese-Lupe), §9 (Open-Data) und
-§10 (DE/EN). Ergänzt [`architektur.md`](../concepts/architektur.md) §16.
+Technische Spezifikation des Endnutzer-Frontends aus Vision §1 (Einstieg),
+§2 (Lineatur-Konfigurator), §3 (Animation), §4 (Lesen üben), §5 (Lese-Hilfe
+inkl. Lupe), §6 (Stil-Analyse-Upload + Hände-Vergleich), §7 (Open-Data) und
+dem Zweisprachig-Leitprinzip (DE/EN). Ergänzt
+[`architektur.md`](../concepts/architektur.md) §16.
 
 **Kernprinzip:** anyplot-Stil — das gleiche Setup wie
 `~/projects/anyplot/app/`, das anyplot.ai auf Cloud Run trägt. Eine SPA,

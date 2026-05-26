@@ -51,18 +51,25 @@ Pflicht-Anker pair: `lesen` (medial ſ, repeated `e`, ascender, u/n-confusable f
 
 ## What sits around the engine
 
-The render kernel is the hard part. Around it, [`kurrentschrift.ink`](https://kurrentschrift.ink) wraps ten end-user goals (see [`docs/concepts/vision.md`](docs/concepts/vision.md)):
+The render kernel is the hard part. Around it, [`kurrentschrift.ink`](https://kurrentschrift.ink) wraps seven end-user goals clustered into Writing / Reading / Research (see [`docs/concepts/vision.md`](docs/concepts/vision.md)):
+
+**Writing**
 
 1. Onboarding (history, alphabet table, reading rules).
 2. Practice sheets with configurable lineature and content-aware text.
 3. Animated letter table (stroke order + Schwellzug build-up, live).
+
+**Reading**
+
 4. Render arbitrary modern text in a trained Kurrent hand.
-5. Style analysis of your own hand (glyph spread, slant, swell, transition angles).
-6. Reading help for historical letters via HTR (Transkribus + free-tier).
-7. Hand comparison with side-by-side heatmaps.
-8. Reading magnifier — click a confusing letter, get a structured explanation.
-9. Open-data release of the canonical glyph dataset (Zenodo DOI, CC-BY 4.0).
-10. Bilingual DE/EN (German first; English follows).
+5. Reading help for historical letters via HTR (Transkribus + free-tier) — including a reading magnifier that explains confusing letters with structured rules.
+
+**Research**
+
+6. Style analysis of your own hand (glyph spread, slant, swell, transition angles) — with optimise / new-style-as-basis / hand-comparison paths.
+7. Open-data release of the canonical glyph dataset (Zenodo DOI, CC-BY 4.0).
+
+Bilingual DE/EN is a cross-cutting guiding principle (German first; English follows).
 
 The post-MVP roadmap in [`architektur.md` §10](docs/concepts/architektur.md#10-reihenfolge--post-mvp-roadmap) sequences these as five phases: Reading help → Practice sheets → Style analysis → Hand comparison → Open data.
 
@@ -102,7 +109,7 @@ Start at [`docs/index.md`](docs/index.md). Highlights:
 
 **Concepts** (the *why*):
 
-- **[Vision der Website](docs/concepts/vision.md)** — ten end-user goals, target audiences, non-goals, position relative to existing tools
+- **[Vision der Website](docs/concepts/vision.md)** — seven end-user goals in three clusters (Writing / Reading / Research), guiding principles, target audiences, non-goals, position relative to existing tools
 - **[Architektur-Referenz](docs/concepts/architektur.md)** — §1–§17: analysis-by-synthesis, library schema, three-stage quality pipeline, research risk, MVP (four gates), post-MVP phases, animation, style analysis, HTR, Lese-Lupe, print, frontend, open-data
 - **[MVP-Roadmap](docs/concepts/mvp-roadmap.md)** — Schritt 0 + M0–M7 milestones, validation gates, verification plan
 - **[Naming und OSS-Setup](docs/concepts/naming-und-setup.md)** — name, domain, license, frontend stack, hosting

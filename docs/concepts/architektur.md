@@ -17,11 +17,11 @@ genau einer (oder zwei) Sektion(en) zugeordnet.
 
 | Säule | Vision-Bezug | Status | Charakter | Architektur-Sektionen |
 |---|---|---|---|---|
-| **Synthese** (Schreiben + Animation) | Vision §2, §3, §4, §7 | offen | Forschungskern | §2 · §3 · §4 · §5 · §6 · §7 · §8 · §11 |
-| **Erkennung** (Lesen + Lese-Hilfe) | Vision §6, §8 | gelöst (Integration) | Adapter | §13 · §14 |
-| **Analyse** (Stil-Statistik, Hände-Vergleich) | Vision §5, §7 | teil-gelöst | Statistik | §6 · §12 |
+| **Synthese** (Schreiben + Animation) | Vision §2, §3, §4 | offen | Forschungskern | §2 · §3 · §4 · §5 · §6 · §7 · §8 · §11 |
+| **Erkennung** (Lesen + Lese-Lupe) | Vision §5 | gelöst (Integration) | Adapter | §13 · §14 |
+| **Analyse** (Stil-Statistik, Hände-Vergleich) | Vision §6 | teil-gelöst | Statistik | §6 · §12 |
 | **Inhalt** (Einstieg, Lese-Regeln, Glossar) | Vision §1 | Redaktion | Content | §16 (Frontend) |
-| **Datenexport** (Open Data) | Vision §9 | offen | Release-Engineering | §17 |
+| **Datenexport** (Open Data) | Vision §7 | offen | Release-Engineering | §17 |
 
 **Schreiben (Synthese) — der Forschungskern.** Kein integrierbares
 Standardprodukt; hier liegt der eigentliche Mehrwert (siehe §7). Die
@@ -381,11 +381,11 @@ verzahnt mit Frontend-Infrastruktur (§16) als Querschnitt:
 
 | Phase | Inhalt | Architektur | Vision-Bezug |
 |---|---|---|---|
-| **P1 — Lesen-Hilfe** | HTR-Integration über Transkribus-API mit Free-Tier; Lese-Lupe (Wort-Granularität) als didaktische Anwendung. | §13 · §14 | Vision §6, §8 |
+| **P1 — Lese-Hilfe** | HTR-Integration über Transkribus-API mit Free-Tier; Lese-Lupe (Wort-Granularität) als didaktische Anwendung. | §13 · §14 | Vision §5 |
 | **P2 — Lineatur & Print** | Inhaltsbewusste Übungsblätter mit konfigurierbarer Lineatur; WeasyPrint im Backend; SVG-Glyph-Embedding. | §15 | Vision §2 |
-| **P3 — Stil-Analyse** | Per-Hand-Aggregation der Per-Instanz-Stats (M5(C) ausbauen); optional Hinge-/Δn-Hinge-Features. „Optimieren"-Pfad der Vision §5. | §12 | Vision §5 |
-| **P4 — Hände vergleichen** | Side-by-Side mehrerer trainierter Hände, Heatmaps für Schräglage/Schwellzug/Glyph-Frequenz; Animation derselben Glyphe in mehreren Händen (Anwendung von §11 + §12). | §11 · §12 | Vision §7 |
-| **P5 — Open-Data-Export** | Zenodo + GitHub-Release-Integration, CC-BY 4.0; JSON-Schema des Library-Eintrags primär, TEI-XML optional; HTR-United-Eintrag. | §17 | Vision §9 |
+| **P3 — Stil-Analyse** | Per-Hand-Aggregation der Per-Instanz-Stats (M5(C) ausbauen); optional Hinge-/Δn-Hinge-Features. „Optimieren"-Pfad der Vision §6. | §12 | Vision §6 |
+| **P4 — Hände vergleichen** | Side-by-Side mehrerer trainierter Hände, Heatmaps für Schräglage/Schwellzug/Glyph-Frequenz; Animation derselben Glyphe in mehreren Händen (Anwendung von §11 + §12). | §11 · §12 | Vision §6 (Hände-Vergleich) |
+| **P5 — Open-Data-Export** | Zenodo + GitHub-Release-Integration, CC-BY 4.0; JSON-Schema des Library-Eintrags primär, TEI-XML optional; HTR-United-Eintrag. | §17 | Vision §7 |
 
 **Querschnitt:** Frontend-Infrastruktur (§16) wird parallel zu P1 aufgebaut.
 Voller Animation-Render (§11) — Canvas-2D-Stroker mit Schwellzug — kommt
@@ -444,9 +444,9 @@ Pfade).
 
 ## 12. Stil-Analyse-Pipeline
 
-Vision §5 verlangt: Statistik über die eigene Hand zurückbekommen —
+Vision §6 verlangt: Statistik über die eigene Hand zurückbekommen —
 Glyphen-Verteilung, Übergangswinkel, Schräglagen-Verteilung, Schwellzug-
-Profile. Vision §7 verlangt: Hände nebeneinander vergleichen, Heatmaps.
+Profile. Derselbe §6 deckt Hände nebeneinander vergleichen mit Heatmaps ab.
 
 **Drei Schichten:**
 
@@ -473,7 +473,7 @@ Profile. Vision §7 verlangt: Hände nebeneinander vergleichen, Heatmaps.
 - **D3.js** für maßgeschneiderte 2D-Heatmaps (Hinge-Joint-Distributions als
   2D-Histogramm) und Side-by-Side-Vergleiche „Hand A vs. Hand B".
 
-**Anwendungs-Pfade aus Vision §5:**
+**Anwendungs-Pfade aus Vision §6:**
 
 - **„Optimieren":** Per-Instanz-Abweichung von der Per-Hand-Aggregation
   visualisieren („wo bist du am inkonsistensten?", „wo weichst du am
@@ -494,7 +494,7 @@ Dependency übernehmen (Wartungslage unklar), aber als Referenz.
 
 ## 13. Recognition-Stack für Volltext (HTR-Integration)
 
-Vision §6: Lese-Hilfe als motivierender Sofort-Nutzen für die Genealogie-
+Vision §5: Lese-Hilfe als motivierender Sofort-Nutzen für die Genealogie-
 Zielgruppe. **Kein Eigenbau** — Integration vorhandener Modelle (siehe §1
 „Lesen ist gelöst").
 
@@ -505,7 +505,7 @@ Zielgruppe. **Kein Eigenbau** — Integration vorhandener Modelle (siehe §1
   `German_Kurrent_XIX_pylaia` (CER ≈ 6,9 %), Supermodel `German Genius`.
 - Outputs: PAGE-XML (interne Repräsentation), ALTO, TEI, Plaintext.
 - Kosten: ≈ **0,12 €/Seite** über API (50 % des UI-Credit-Preises).
-- Latenz: Sekunden bis wenige Minuten/Seite — *interaktiv genug* für Vision §6.
+- Latenz: Sekunden bis wenige Minuten/Seite — *interaktiv genug* für Vision §5.
 
 **Free-Tier in unserer App:**
 
@@ -539,10 +539,10 @@ Zielgruppe. **Kein Eigenbau** — Integration vorhandener Modelle (siehe §1
 
 ## 14. Lese-Lupe (didaktisches Killer-Feature)
 
-Vision §8: Bild plus Overlay zur Lese-Hilfe (§13): Klick auf einen
-verwirrenden Buchstaben → strukturierte Erklärung („das ist medial ſ, kein
-f — hier fehlt der Querstrich"). Verbindet HTR-Output mit den Regel-
-Erklärungen aus
+Vision §5 (Lese-Lupe-Teil): Bild plus Overlay zur Lese-Hilfe (§13):
+Klick auf einen verwirrenden Buchstaben → strukturierte Erklärung („das
+ist medial ſ, kein f — hier fehlt der Querstrich"). Verbindet HTR-Output
+mit den Regel-Erklärungen aus
 [`orthographie-regeln.md`](../reference/orthographie-regeln.md).
 
 **Display-Schicht:**
@@ -650,7 +650,7 @@ anyplot.ai auf Cloud Run trägt:
 
 ## 17. Open-Data-Export
 
-Vision §9: kanonische Glyph-Daten (Anker, Schwellzug, Ductus-Reihenfolge)
+Vision §7: kanonische Glyph-Daten (Anker, Schwellzug, Ductus-Reihenfolge)
 als zitierbares Open-Data-Paket für die Forschungs-Zielgruppe. Heute
 nirgends öffentlich verfügbar — die ehrliche Lücke, die wir füllen können.
 

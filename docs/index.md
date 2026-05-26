@@ -34,7 +34,7 @@ nächsten Meilensteine.
 docs/
 ├── index.md                      # You are here
 ├── concepts/                     # Architektur, Philosophie, getroffene Entscheidungen
-│   ├── vision.md                 # Was die Endnutzer-Website sein soll (Pitch + Zielgruppe + 10 Ziele/Nicht-Ziele)
+│   ├── vision.md                 # Was die Endnutzer-Website sein soll (Pitch + Zielgruppe + 7 Ziele in 3 Clustern + Leitprinzipien + Nicht-Ziele)
 │   ├── architektur.md            # §1–§17: Analysis-by-Synthesis, Schema, MVP, Animation, HTR, Lese-Lupe, Print, Frontend, Open-Data
 │   ├── mvp-roadmap.md            # Operative Zerlegung des MVP (§8) in Schritt 0 + M0–M7
 │   └── naming-und-setup.md       # Repo-Name, Domain, Lizenz, Verzeichnis-Split, Frontend-Stack, Hosting
@@ -62,10 +62,11 @@ Architektur und Entscheidungen mit ihrer Begründung — was bewusst gewählt
 und was bewusst verworfen wurde.
 
 - **[Vision der Website](concepts/vision.md)** — was die Endnutzer-Website
-  unter `kurrentschrift.ink` sein soll: Pitch, Zielgruppe, zehn Ziele
-  (Einstieg, Schreiben üben, animierte Buchstaben, Lesen üben, eigene
-  Schrift analysieren, Lese-Hilfe, Hände vergleichen, Lese-Lupe, offene
-  Datensätze, DE/EN), Nicht-Ziele, Verhältnis zur bestehenden Landschaft
+  unter `kurrentschrift.ink` sein soll: Pitch, Zielgruppe, **Leitprinzipien**,
+  **sieben Ziele in drei Clustern** — Schreiben (Einstieg · Schreiben üben ·
+  animierte Buchstaben), Lesen (Lesen üben · Lese-Hilfe + Lese-Lupe),
+  Forschung (Stil-Analyse + Hände vergleichen · Offene Datensätze) —
+  Nicht-Ziele, Verhältnis zur bestehenden Landschaft
 - **[Architektur-Referenz](concepts/architektur.md)** — §1–§17:
   Analysis-by-Synthesis, Ductus-Prior, Library-Einheit
   `(glyph, position, variant)`, Schwellzug vs. Tinte, dreistufige
