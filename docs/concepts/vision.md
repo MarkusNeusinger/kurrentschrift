@@ -9,14 +9,14 @@ sein soll — getrennt vom *Wie* (Architektur) und vom *Wann* (MVP-Roadmap).
 
 ## Pitch (für Landing-Page-Aufmacher)
 
-Die Kurrentschrift ist im Web stehengeblieben. Wer sie heute lesen oder
-schreiben lernen will, klickt sich durch statische GIF-Tabellen aus den
-frühen 2000ern, lädt PDF-Übungsblätter herunter und tippt seinen Namen
-in einen TrueType-Generator, der wie Maschinenschrift aussieht.
+Zur Kurrentschrift gibt es im Web schon einiges Gutes: Alphabet-Tafeln,
+PDF-Übungsblätter, Font-Generatoren, HTR-Dienste. Was noch fehlt, ist
+ein Auftritt, der ductus-treues Rendering, inhaltsbewusste
+Übungsblätter und Stil-Analyse im selben Werkzeug zusammenbringt.
 
-Diese Seite ist der Gegenentwurf: ein moderner Zugang zur deutschen
-Kurrent — **Synthese in echter Hand** statt Font, **Statistik über die
-eigene Schrift** statt pauschaler Tipps, **Werkzeug** statt Lehrbuch.
+Diese Seite schließt diese Lücke: ein moderner Zugang zur deutschen
+Kurrent — **Synthese in echter Hand**, **Statistik über die eigene
+Schrift**, **Werkzeug statt Lehrbuch**.
 
 ---
 
@@ -43,16 +43,26 @@ Kern (siehe `architektur.md` §1).
    [`orthographie-regeln.md`](../reference/orthographie-regeln.md)).
    Für Tiefe: Literatur- und Quellverweise, kein eigenes Lehrbuch.
 
-2. **Schreiben üben.** Generierte Vorlagenblätter mit 2:1:2-Lineatur
-   (Ober-/Mittel-/Unterband), beliebiger Eingabetext als Vorlage,
-   druckbar. Nicht „leere Lineatur zum selber Beschreiben" (das gibt
-   es schon woanders), sondern **inhaltsbewusste Vorlagen**.
+2. **Schreiben üben.** Generierte Vorlagenblätter mit einstellbarer
+   Lineatur — Verhältnis Ober-/Mittel-/Unterband frei wählbar
+   (2:1:2 als Standard, 3:2:3, 1:1:1 oder was man je nach Lernstand
+   und Stift braucht), beliebiger Eingabetext als Vorlage, druckbar.
+   Schwerpunkt: **inhaltsbewusste Vorlagen** — Text und passende
+   Lineatur in einem Schritt.
 
-3. **Lesen üben.** Beliebiger heutiger Text — eine Zeitungsmeldung,
+3. **Buchstaben in Aktion (animierte Tafel).** Jeder Buchstabe lässt
+   sich animiert abspielen — Schreibreihenfolge, Ansatzpunkte,
+   Schwellzug-Aufbau live, für jede trainierte Hand (Loth 1866, eigene
+   Probe, historische Quellen). Direkter Effekt des Ductus-Priors
+   (`architektur.md` §2): Synthese liefert nicht nur das fertige Bild,
+   sondern auch *wie es entsteht*. Ligaturen (`ch`, `ck`, `ſt`, `tz`,
+   `qu`, `ß`) als eigene Animationen.
+
+4. **Lesen üben.** Beliebiger heutiger Text — eine Zeitungsmeldung,
    ein eigenes Memo — gerendert in einer trainierten Kurrent-Hand,
    damit Üben nicht am Nachschub historischer Beispiele scheitert.
 
-4. **Eigene Schrift analysieren.** Handschriftliche Probe hochladen,
+5. **Eigene Schrift analysieren.** Handschriftliche Probe hochladen,
    Statistik zurückbekommen: Glyphen-Verteilung, Übergangswinkel,
    Schräglagen-Verteilung, Schwellzug-Profile. Zwei Anschluss-Pfade:
    - **Optimieren** — wo weicht die eigene Hand stark von der Norm ab?
@@ -61,10 +71,35 @@ Kern (siehe `architektur.md` §1).
      extrahieren und damit weitere Texte synthetisieren. „In meiner
      Hand, aber jeden Text."
 
-5. **Lesen historischer Texte (Lese-Hilfe).** Transkription über
+6. **Lesen historischer Texte (Lese-Hilfe).** Transkription über
    bestehende HTR-Modelle (Transkribus & Co. — siehe `architektur.md`
    §1). Kein eigenes Forschungsfeld, aber motivierender Sofort-Nutzen
    und Einstieg für die Genealogie-Zielgruppe.
+
+7. **Hände vergleichen.** Side-by-side mehrerer trainierter Hände
+   (Loth 1866 vs. eigene Probe vs. historische Quelle X) — Heatmaps
+   für Schräglage, Schwellzug, Glyph-Frequenz. Natürliche Verlängerung
+   von Feature 5, sobald mehrere Stile vorliegen; zeigt konkret, *wo*
+   sich Hände unterscheiden, nicht nur *dass* sie es tun. Kombiniert
+   mit Feature 3 lassen sich Animationen derselben Glyphe in mehreren
+   Händen direkt nebeneinander abspielen.
+
+8. **Lese-Lupe.** Bild plus Overlay zur Lese-Hilfe (Feature 6):
+   Klick auf einen verwirrenden Buchstaben → strukturierte Erklärung
+   („das ist medial ſ, kein f — hier fehlt der Querstrich").
+   Verbindet HTR-Output mit den Regel-Erklärungen aus
+   [`orthographie-regeln.md`](../reference/orthographie-regeln.md).
+
+9. **Offene Datensätze.** Kanonische Glyph-Daten (Anker, Schwellzug,
+   Ductus-Reihenfolge) als zitierbares Open-Data-Paket für die
+   Forschungs-Zielgruppe. Heute nirgends öffentlich verfügbar; passt
+   zur MIT-Code-Linie und zur PD-Datenlinie (`quellen-und-rechte.md`).
+
+10. **Zweisprachig (DE/EN).** Die Genealogie-Zielgruppe ist überwiegend
+    englischsprachig (`naming-und-setup.md` §1). Deutscher Kern zuerst
+    (`sprachregelung.md` §1), englische Version oder mindestens
+    englische Glossar-Tooltips als nächster Hebel, sobald der deutsche
+    Kern steht.
 
 ---
 
@@ -73,58 +108,38 @@ Kern (siehe `architektur.md` §1).
 - **Kein umfassendes Lehrbuch.** Wer Tiefe sucht, bekommt verlinkte
   Quellen. Inhalt der Seite endet bei dem, was zum sinnvollen Einstieg
   und Üben nötig ist.
-- **Kein TrueType-Font-Generator.** Rendering ist ductus-treu mit
-  Schwellzug (`architektur.md` §2/§5) — sonst wäre die Seite
-  redundant zu kostenlosen Font-Diensten.
+- **Kein TrueType-Font-Generator.** Für statische Font-Ausgabe gibt es
+  etablierte kostenlose Dienste; unser Fokus ist ductus-treues
+  Rendering mit Schwellzug (`architektur.md` §2/§5) — eine andere
+  Aufgabe.
 - **Keine Datenbank historischer Korrespondenz / kein Archiv.**
   Fokus ist Schrift, nicht Inhalt.
-- **Kein Forum / Community-Hub.** Diskussion findet in bestehenden
+- **Kein Forum / Community-Hub.** Diskussion findet gut in bestehenden
   Foren (CompGen, ahnenforschung.net) und auf GitHub statt.
-- **Keine Bezahl-Transkription auf Auftrag.** Das machen
-  entzifferer.de und metascriptum.de; Konkurrenz dort ist nicht das Ziel.
+- **Keine Bezahl-Transkription auf Auftrag.** Wer eine fachliche
+  Entzifferung historischer Dokumente braucht, ist bei spezialisierten
+  Diensten wie entzifferer.de oder metascriptum.de richtig aufgehoben.
 
 ---
 
 ## Verhältnis zur bestehenden Landschaft
 
-| Kategorie | Beispiele | Was fehlt heute |
+Es gibt eine lebendige Landschaft an Angeboten rund um die Kurrent.
+Diese Seite ersetzt sie nicht, sondern setzt einen Baustein dazu — die
+ductus-treue Synthese — und kombiniert ihn mit Übungsmaterial und
+Stil-Analyse. Wo wir uns einsortieren:
+
+| Kategorie | Beispiele | Was diese Seite ergänzt |
 |---|---|---|
-| Lern-Seiten | kurrentschrift.net, suetterlinschrift.de, suetterlinstube.de | Modernes Design, mobil/tablet-tauglich, dynamisches Rendering |
-| Schrift-Generatoren | ahnenforschung-ledermann, fontmeme | Echte Hand statt TTF-Maschinenschrift |
-| Lineatur-Generatoren | paper.click, frickelmeister | Inhaltsbewusste Vorlagen statt leerer Lineatur |
-| HTR | Transkribus | Schreib-Synthese fehlt; rein lesend |
-| Foren | CompGen, ahnenforschung.net | (kein Anspruch hier) |
+| Lern-Seiten | kurrentschrift.net, suetterlinschrift.de, suetterlinstube.de | Mobil/Tablet-Bedienung und dynamisches Rendering zusätzlich zu statischen Inhalten |
+| Schrift-Generatoren | ahnenforschung-ledermann, fontmeme | Hand-Synthese mit Schwellzug als Ergänzung zur Font-Ausgabe |
+| Lineatur-Generatoren | paper.click, frickelmeister | Inhaltsbewusste Vorlagen (Text + passende Lineatur in einem Schritt) |
+| HTR | Transkribus | Schreib-Synthese als Pendant zur Lese-Hilfe |
+| Foren | CompGen, ahnenforschung.net | (eigene Domäne — kein Anspruch hier) |
 
-Die Lücke liegt **zwischen** den vorhandenen Angeboten: ein modernes
-Lern-Werkzeug, das Rendering, Stil-Analyse und Übungsmaterial im selben
-Auftritt kombiniert und dabei die echte Tinte-statt-Font-Synthese
-mitbringt. Das gibt es heute weder kostenlos noch bezahlt zu kaufen.
-
----
-
-## Ausblick (nicht entschieden)
-
-Diese Ideen sind aus der Recherche zu vorhandenen Seiten entstanden,
-passen ins Konzept, sind aber **bewusst nicht Teil der Vision-Festlegung**.
-Kandidaten für spätere Aufnahme oder Verwerfen:
-
-- **Hände-/Stil-Vergleich.** Side-by-side mehrerer trainierter Hände
-  (Loth 1866 vs. eigene Probe vs. historische Quelle X) — Heatmaps für
-  Schräglage, Schwellzug, Glyph-Frequenz. Wäre die natürliche
-  Verlängerung von Feature 4, sobald mehrere Stile vorliegen.
-- **Lese-Lupe.** Bild plus Overlay: Klick auf einen verwirrenden
-  Buchstaben → strukturierte Erklärung („das ist medial ſ, kein f —
-  hier fehlt der Querstrich"). Verbindet HTR-Output mit den
-  Regel-Erklärungen aus `orthographie-regeln.md`.
-- **Offene Datensätze.** Kanonische Glyph-Daten (Anker, Schwellzug,
-  Ductus-Reihenfolge) als zitierbares Open-Data-Paket. Heute nirgends
-  öffentlich verfügbar; passt zur MIT-Code-Linie und zur PD-Datenlinie
-  (`quellen-und-rechte.md`).
-- **DE/EN parallel.** Die Genealogie-Zielgruppe ist überwiegend
-  englischsprachig (`naming-und-setup.md` §1). Website v1 ist deutsch
-  (`sprachregelung.md` §1) — eine englische Version oder mindestens
-  englische Glossar-Tooltips wäre der nächste Hebel, sobald deutscher
-  Kern steht.
+Die Kombination — Rendering, Stil-Analyse und Übungsmaterial im selben
+Auftritt mit echter Tinte-statt-Font-Synthese — gibt es heute so noch
+nicht. Genau da soll diese Seite ansetzen.
 
 ---
 
@@ -133,12 +148,12 @@ Kandidaten für spätere Aufnahme oder Verwerfen:
 - [`architektur.md`](architektur.md) — das *Wie* der Synthese-Pipeline.
 - [`mvp-roadmap.md`](mvp-roadmap.md) — der MVP validiert nur die
   Synthese-Pipeline. Die hier beschriebene Website liegt fast komplett
-  *nach* dem MVP. Ausnahme: das Lese-Feature (Punkt 5) ist laut
+  *nach* dem MVP. Ausnahme: das Lese-Feature (Punkt 6) ist laut
   `architektur.md` §10 ein früher, paralleler Win mit geringem Risiko.
 - [`naming-und-setup.md`](naming-und-setup.md) — Reichweite (gotische
   Kursive vor 1900, optional Skandinavien), Lizenz (MIT), Domain
   (`kurrentschrift.ink`).
 - [`reference/sprachregelung.md`](../reference/sprachregelung.md) —
-  Website v1 deutsch. Englische Erweiterung ist Ausblick-Kandidat.
+  Website v1 deutsch; englische Erweiterung folgt (Feature 10).
 - [`reference/orthographie-regeln.md`](../reference/orthographie-regeln.md) —
-  Inhalts-Grundlage für Feature 1 (Einstieg) und Ausblick „Lese-Lupe".
+  Inhalts-Grundlage für Feature 1 (Einstieg) und Feature 8 (Lese-Lupe).

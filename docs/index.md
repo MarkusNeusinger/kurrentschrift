@@ -52,9 +52,10 @@ Architektur und Entscheidungen mit ihrer Begründung — was bewusst gewählt
 und was bewusst verworfen wurde.
 
 - **[Vision der Website](concepts/vision.md)** — was die Endnutzer-Website
-  unter `kurrentschrift.ink` sein soll: Pitch, Zielgruppe, fünf Ziele
-  (Einstieg, Schreiben üben, Lesen üben, eigene Schrift analysieren,
-  Lese-Hilfe), Nicht-Ziele, Verhältnis zur bestehenden Landschaft, Ausblick
+  unter `kurrentschrift.ink` sein soll: Pitch, Zielgruppe, zehn Ziele
+  (Einstieg, Schreiben üben, animierte Buchstaben, Lesen üben, eigene
+  Schrift analysieren, Lese-Hilfe, Hände vergleichen, Lese-Lupe, offene
+  Datensätze, DE/EN), Nicht-Ziele, Verhältnis zur bestehenden Landschaft
 - **[Architektur-Referenz](concepts/architektur.md)** — Analysis-by-Synthesis,
   Ductus-Prior, Library-Einheit `(glyph, position, variant)`, Schwellzug
   vs. Tinte, dreistufige Qualitätspipeline, MVP, Testwörter, Reihenfolge
