@@ -43,10 +43,12 @@ Kern (siehe `architektur.md` §1).
    [`orthographie-regeln.md`](../reference/orthographie-regeln.md)).
    Für Tiefe: Literatur- und Quellverweise, kein eigenes Lehrbuch.
 
-2. **Schreiben üben.** Generierte Vorlagenblätter mit 2:1:2-Lineatur
-   (Ober-/Mittel-/Unterband), beliebiger Eingabetext als Vorlage,
-   druckbar. Nicht „leere Lineatur zum selber Beschreiben" (das gibt
-   es schon woanders), sondern **inhaltsbewusste Vorlagen**.
+2. **Schreiben üben.** Generierte Vorlagenblätter mit einstellbarer
+   Lineatur — Verhältnis Ober-/Mittel-/Unterband frei wählbar
+   (2:1:2 als Standard, 3:2:3, 1:1:1 oder was man je nach Lernstand
+   und Stift braucht), beliebiger Eingabetext als Vorlage, druckbar.
+   Nicht „leere Lineatur zum selber Beschreiben" (das gibt es schon
+   woanders), sondern **inhaltsbewusste Vorlagen**.
 
 3. **Lesen üben.** Beliebiger heutiger Text — eine Zeitungsmeldung,
    ein eigenes Memo — gerendert in einer trainierten Kurrent-Hand,
@@ -65,6 +67,29 @@ Kern (siehe `architektur.md` §1).
    bestehende HTR-Modelle (Transkribus & Co. — siehe `architektur.md`
    §1). Kein eigenes Forschungsfeld, aber motivierender Sofort-Nutzen
    und Einstieg für die Genealogie-Zielgruppe.
+
+6. **Hände vergleichen.** Side-by-side mehrerer trainierter Hände
+   (Loth 1866 vs. eigene Probe vs. historische Quelle X) — Heatmaps
+   für Schräglage, Schwellzug, Glyph-Frequenz. Natürliche Verlängerung
+   von Feature 4, sobald mehrere Stile vorliegen; zeigt konkret, *wo*
+   sich Hände unterscheiden, nicht nur *dass* sie es tun.
+
+7. **Lese-Lupe.** Bild plus Overlay zur Lese-Hilfe (Feature 5):
+   Klick auf einen verwirrenden Buchstaben → strukturierte Erklärung
+   („das ist medial ſ, kein f — hier fehlt der Querstrich").
+   Verbindet HTR-Output mit den Regel-Erklärungen aus
+   [`orthographie-regeln.md`](../reference/orthographie-regeln.md).
+
+8. **Offene Datensätze.** Kanonische Glyph-Daten (Anker, Schwellzug,
+   Ductus-Reihenfolge) als zitierbares Open-Data-Paket für die
+   Forschungs-Zielgruppe. Heute nirgends öffentlich verfügbar; passt
+   zur MIT-Code-Linie und zur PD-Datenlinie (`quellen-und-rechte.md`).
+
+9. **Zweisprachig (DE/EN).** Die Genealogie-Zielgruppe ist überwiegend
+   englischsprachig (`naming-und-setup.md` §1). Deutscher Kern zuerst
+   (`sprachregelung.md` §1), englische Version oder mindestens
+   englische Glossar-Tooltips als nächster Hebel, sobald der deutsche
+   Kern steht.
 
 ---
 
@@ -102,32 +127,6 @@ mitbringt. Das gibt es heute weder kostenlos noch bezahlt zu kaufen.
 
 ---
 
-## Ausblick (nicht entschieden)
-
-Diese Ideen sind aus der Recherche zu vorhandenen Seiten entstanden,
-passen ins Konzept, sind aber **bewusst nicht Teil der Vision-Festlegung**.
-Kandidaten für spätere Aufnahme oder Verwerfen:
-
-- **Hände-/Stil-Vergleich.** Side-by-side mehrerer trainierter Hände
-  (Loth 1866 vs. eigene Probe vs. historische Quelle X) — Heatmaps für
-  Schräglage, Schwellzug, Glyph-Frequenz. Wäre die natürliche
-  Verlängerung von Feature 4, sobald mehrere Stile vorliegen.
-- **Lese-Lupe.** Bild plus Overlay: Klick auf einen verwirrenden
-  Buchstaben → strukturierte Erklärung („das ist medial ſ, kein f —
-  hier fehlt der Querstrich"). Verbindet HTR-Output mit den
-  Regel-Erklärungen aus `orthographie-regeln.md`.
-- **Offene Datensätze.** Kanonische Glyph-Daten (Anker, Schwellzug,
-  Ductus-Reihenfolge) als zitierbares Open-Data-Paket. Heute nirgends
-  öffentlich verfügbar; passt zur MIT-Code-Linie und zur PD-Datenlinie
-  (`quellen-und-rechte.md`).
-- **DE/EN parallel.** Die Genealogie-Zielgruppe ist überwiegend
-  englischsprachig (`naming-und-setup.md` §1). Website v1 ist deutsch
-  (`sprachregelung.md` §1) — eine englische Version oder mindestens
-  englische Glossar-Tooltips wäre der nächste Hebel, sobald deutscher
-  Kern steht.
-
----
-
 ## Verhältnis zu anderen Docs
 
 - [`architektur.md`](architektur.md) — das *Wie* der Synthese-Pipeline.
@@ -139,6 +138,6 @@ Kandidaten für spätere Aufnahme oder Verwerfen:
   Kursive vor 1900, optional Skandinavien), Lizenz (MIT), Domain
   (`kurrentschrift.ink`).
 - [`reference/sprachregelung.md`](../reference/sprachregelung.md) —
-  Website v1 deutsch. Englische Erweiterung ist Ausblick-Kandidat.
+  Website v1 deutsch; englische Erweiterung folgt (Feature 9).
 - [`reference/orthographie-regeln.md`](../reference/orthographie-regeln.md) —
-  Inhalts-Grundlage für Feature 1 (Einstieg) und Ausblick „Lese-Lupe".
+  Inhalts-Grundlage für Feature 1 (Einstieg) und Feature 7 (Lese-Lupe).
