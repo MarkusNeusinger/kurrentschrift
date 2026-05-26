@@ -115,9 +115,9 @@ gemischte Lizenz explizit pro Teilkorpus:
   der Ductus-Prior wird selbst darübergelegt (Referenz §2 — Bild liefert
   Geometrie, nicht Strichreihenfolge).
 - MVP §8 (6-Buchstaben-Kern-Alphabet, sieben Wörter + ein
-  generalisierendes Wort, drei Validierungs-Gates): gegen `own-hand`
-  fitten, Formreferenz = Loth 1866. Rechtlich vollständig sauber, da
-  PD + eigene Hand.
+  generalisierendes Wort, vier Validierungs-Gates inkl. abgespeckter
+  Animation): gegen `own-hand` fitten, Formreferenz = Loth 1866.
+  Rechtlich vollständig sauber, da PD + eigene Hand.
 - Testwörter §9 (Pflicht-Anker `lesen`, `das` + Coverage-Wörter `den`,
   `lese`, `lasen`, `als`, `dann` + Generalisierungs-Wort `denen`)
   liegen unter `/samples/own-hand` und hängen an Variante 0.

@@ -13,32 +13,36 @@ gegen das FastAPI-Backend (`/api/`) und Postgres (`/core/database/` +
 `/alembic/`). Der frühere `/mvp/`-Ordner mit JSON-Files und Konsolenskripten
 (`trace_skeleton.py`, `inspect_crop.py`, `render_canonicals.py`) ist aufgelöst
 — alle Berechnungen passieren im Backend, alle Canonicals werden in der
-`glyphs`-Tabelle gespeichert. Die unten beschriebenen Meilensteine M0–M6
-bleiben inhaltlich gültig (Scope, Glyphen, Wortset, Validierungs-Gates), nur
-das *wie* wechselt: ein neuer Trace startet als Stylus-Strich im Editor und
-endet als Row in der Datenbank, nicht als JSON-Diff.
+`glyphs`-Tabelle gespeichert. Die unten beschriebenen Meilensteine M0–M7
+bleiben inhaltlich gültig (Scope, Glyphen, Wortset, vier Validierungs-Gates
+inkl. abgespeckter Animation in M7), nur das *wie* wechselt: ein neuer Trace
+startet als Stylus-Strich im Editor und endet als Row in der Datenbank, nicht
+als JSON-Diff.
 
 Der MVP validiert den Render-Kern (Falsifikations-Test aus §7). Die
-Endnutzer-Website mit ihren fünf Zielen (Einstieg, Schreiben üben, Lesen
-üben, eigene Schrift analysieren, Lese-Hilfe) liegt fast komplett *nach*
-dem MVP — siehe [`vision.md`](vision.md). Einzige Ausnahme: das Lese-Feature
-ist laut [`architektur.md`](architektur.md) §10 ein früher, paralleler Win
-mit geringem Risiko.
+Endnutzer-Website mit ihren zehn Zielen (Einstieg, Schreiben üben +
+Lineatur, animierte Buchstaben-Tafel, Lesen üben, eigene Schrift
+analysieren, Lese-Hilfe via HTR, Hände vergleichen, Lese-Lupe, offene
+Datensätze, DE/EN — siehe [`vision.md`](vision.md)) liegt fast komplett
+*nach* dem MVP. Frühe Parallel-Wins laut
+[`architektur.md`](architektur.md) §10: Lese-Hilfe (P1) und die
+Frontend-Infrastruktur (§16) parallel zur ersten Phase.
 
 ## Context
 
 Die Design-Docs sind abgeschlossen, Code existiert noch nicht. §10 sagt:
 **erst der kleinste lauffähige Kern, dann alles andere.** Mit dem in §8
 festgelegten Scope (Lowercase-Kern-Alphabet, sieben Wörter, ein
-zusätzliches generalisiertes Wort, drei Validierungs-Gates) ist das kein
-Wegwerf-Spike mehr, sondern ein **MVP**: vorzeigbares Render-Ergebnis
-statt Throwaway-Probe. Spike-Essenz (billige Risiko-Falsifikation aus
-§7) bleibt erhalten — als drei harte Gates *innerhalb* des MVP, die wie
-der ursprüngliche Spike funktionieren: erfüllen sie sich nicht, ist der
-Kernel falsifiziert und das Ergebnis ist trotzdem in Tagen statt
-Monaten klar.
+zusätzliches generalisiertes Wort, vier Validierungs-Gates inkl.
+abgespeckter Animation) ist das kein Wegwerf-Spike mehr, sondern ein
+**MVP**: vorzeigbares Render-Ergebnis statt Throwaway-Probe.
+Spike-Essenz (billige Risiko-Falsifikation aus §7) bleibt erhalten —
+als vier harte Gates *innerhalb* des MVP, die wie der ursprüngliche
+Spike funktionieren: erfüllen sie sich nicht, ist der Kernel
+falsifiziert und das Ergebnis ist trotzdem in Tagen statt Monaten
+klar.
 
-Diese Roadmap zerlegt den MVP in Schritt 0 + M0–M6, jeder Meilenstein
+Diese Roadmap zerlegt den MVP in Schritt 0 + M0–M7, jeder Meilenstein
 einzeln in einer Sitzung erledigbar, jeder mit klarem
 Abschlusskriterium.
 
@@ -94,7 +98,7 @@ komplett.
 
 ### MVP-Validierungs-Gates
 
-Alle drei erfüllt → Kernel validiert; sonst Negativergebnis (§8
+Alle vier erfüllt → Kernel validiert; sonst Negativergebnis (§8
 Schlusssatz: „in Tagen statt Monaten geklärt").
 
 1. **Stabilität:** Die drei §9-Kernglyphen (medial ſ, finales s,
@@ -106,6 +110,10 @@ Schlusssatz: „in Tagen statt Monaten geklärt").
    eigene Vorlage rekonstruiert *und* `denen` (oder ein vergleichbares
    neues Wort) wird aus aggregierten Per-Glyph-Stats erkennbar in
    derselben Hand gerendert.
+4. **Animation (abgespeckt):** Eines der MVP-Glyphen spielt mit korrekter
+   Schreibreihenfolge ab — `stroke-dashoffset` auf der Centerline,
+   konstante Breite. Voller Schwellzug-Aufbau ist Post-MVP (siehe
+   [`architektur.md`](architektur.md) §11). Implementiert in M7.
 
 Aufwand: ein bis zwei Wochenenden — bewusst klein gehalten.
 
@@ -401,12 +409,46 @@ aussehen — diagnostisch, kein MVP-Fehlschlag.
 
 ---
 
+### M7 — Animation (abgespeckt, MVP-Gate 4)
+
+**Was:** Eines der MVP-Glyphen spielt mit korrekter Schreibreihenfolge ab.
+`stroke-dashoffset` auf der Centerline, konstante Breite. WAAPI-Timeline
+für die Stroke-Sequenz. Keine Schwellzug-Animation (kommt post-MVP
+zusammen mit dem Canvas-2D-Stroker, siehe
+[`architektur.md`](architektur.md) §11).
+
+**Wo:** Frontend-Komponente, eingebettet in den Editor (`/app/`) als
+„Animation"-Tab im EditorPage. Render-Daten kommen aus `/diagnostic` —
+`skeleton_polyline_px` für die Centerline, die existierenden Anker als
+Stroke-Start/-End-Marker.
+
+**Skizze:** Eine React-Komponente, die das `skeleton_polyline_px` aus dem
+Diagnostic-Endpoint nimmt, einen SVG-`<path>` baut, dessen
+`stroke-dasharray` = Pfadlänge und `stroke-dashoffset` von Pfadlänge auf
+0 animiert wird. Play-/Pause-/Replay-Buttons; Geschwindigkeit
+einstellbar (200 ms bis 2000 ms pro Stroke). WAAPI über
+`element.animate(...)`.
+
+**Fertig wenn:** Eines der MVP-Glyphen (vorzugsweise eine
+Pflicht-Anker-Glyph: medial ſ, finales s oder medial e) spielt ab — Klick
+auf einen Play-Button startet die Animation, der Strich entsteht in
+sichtbarer Reihenfolge. Demo-Wirkung steht; voller Schwellzug-Aufbau ist
+ausdrücklich nicht im Scope.
+
+**Abhängigkeiten:** M3 Phase A (Templates für mindestens eine
+Pflicht-Anker-Glyph vorhanden). Kann parallel zu M4/M5 laufen, weil es
+nur die Centerline visualisiert, keinen Fit nutzt. Idealerweise nach M3
+Phase A, damit echte Daten zum Animieren da sind.
+
+---
+
 ## Kritischer Pfad & Parallelisierung
 
 ```
 M0 ──┬──► M2 ──► M4 ──► M5 ──► M6
 M1 ──┘                    ▲
-M3 (Phase A) ─────────────┘
+M3 (Phase A) ──────┬──────┘
+                   └──► M7
 M3 (Phase B)
 ```
 
@@ -417,6 +459,8 @@ M3 (Phase B)
 - **M3 Phase A** (Kernglyphen-Templates, mit der §8/§9-Doc als Spec).
 
 M2 erst, wenn M1 fertig. M4 fasst alles zusammen. M5/M6 sequenziell.
+M7 (Animation) hängt nur an M3 Phase A — kann sehr früh parallel zu
+M4/M5 starten, weil es nur die Centerline-Visualisierung braucht.
 
 ---
 
@@ -458,9 +502,11 @@ M2 erst, wenn M1 fertig. M4 fasst alles zusammen. M5/M6 sequenziell.
 | M5(B) | Welche Glyphen M6-tauglich | Bucket-Report |
 | M5(C) | Personal-Canonical pro Template aggregiert | `mvp/personal/`-Inhalt + Render |
 | M6 | MVP-Gate 3: Pflicht-Anker kontinuierlich, Mehrheit der 7 Wörter erkennbar, `denen` aus Stats plausibel | Side-by-Side-PNGs |
+| M7 | MVP-Gate 4: ein MVP-Glyph spielt mit korrekter Schreibreihenfolge ab | Demo im Editor (Play-Button → Centerline-Animation) |
 
-**MVP-Gesamtverifikation:** alle drei MVP-Gates erfüllt (Stabilität,
-Allograph-Trennung, Wort-Rendering inkl. Generalisierung).
+**MVP-Gesamtverifikation:** alle vier MVP-Gates erfüllt (Stabilität,
+Allograph-Trennung, Wort-Rendering inkl. Generalisierung, Animation
+abgespeckt).
 
 ---
 

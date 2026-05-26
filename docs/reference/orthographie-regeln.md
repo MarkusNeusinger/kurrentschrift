@@ -152,12 +152,16 @@ varianten sind eigene Templates, nicht Auslenkung").
 Die Regeln aus §1 (Rund-s an Morphemgrenze) und §5 (vor-1901-Schreibung)
 sind der Anlass, warum `glyphs.position` ([`architektur.md`](../concepts/architektur.md)
 §3) **nicht** als Text-Position interpretiert werden darf, sondern als
-Lehrtafel-Rolle der Allograph-Form. Die Abbildung Text-Slot → Template
-ist eine separate Schicht und gehört genau hier — in eine
+Lehrtafel-Rolle der Allograph-Form. Diese Klarstellung steht seit der
+holistischen Überarbeitung im Mai 2026 direkt in `architektur.md` §3
+(„Position (Allograph) — als Lehrtafel-Rolle"). Die Abbildung Text-Slot
+→ Template ist eine separate Schicht und gehört genau hier — in eine
 maschinenlesbare Encodierung dieser Datei.
 
-Für Vorschläge zur Schärfung dieses Punkts in `architektur.md` siehe
-[`planaenderungen.md`](../proposals/planaenderungen.md).
+Verbleibende Vorschläge in
+[`planaenderungen.md`](../proposals/planaenderungen.md) (Vorschläge B,
+C, D) bauen auf dieser Klarstellung auf und werden mit dem geplanten
+`core/orthography.py` (M4+) konkretisiert.
 
 ---
 

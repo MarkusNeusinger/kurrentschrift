@@ -90,10 +90,12 @@ einen Open-Source-MCP-Server.
 | **Domain** | `kurrentschrift.ink` |
 | **Repo-Ort** | persönlicher GitHub-Account (Portfolio-Projekt, wie anyplot.ai) |
 | **Repo-Name** | `kurrentschrift` (Monorepo: Code + Website) |
-| **Struktur** | `/core` (Python: extractor, template, DB-Models + Repositories) · `/api` (FastAPI-Backend, dünn) · `/app` (React-Admin-/Lese-UI) · `/alembic` (Postgres-Migrationen) |
+| **Struktur** | `/core` (Python: extractor, template, DB-Models + Repositories) · `/api` (FastAPI-Backend, dünn) · `/app` (React 19 + Vite SPA — Admin- *und* User-UI, Admin-Routen hinter Auth) · `/alembic` (Postgres-Migrationen) |
+| **Frontend-Stack** | anyplot-Stil: React 19 + Vite (SWC) + MUI 9 + React Router 7 + `react-helmet-async` (SEO) + `react-i18next` (DE/EN). Details in [`reference/frontend-stack.md`](../reference/frontend-stack.md) und [`architektur.md`](architektur.md) §16. |
+| **Hosting** | GCP / Cloud Run wie anyplot.ai — ein Container für FastAPI + Vite-Build, CI/CD via Cloud Build. Eigenes GCP-Projekt. |
 | **Lizenz** | MIT |
 | **README** | = Pitch, nicht Doku; Rohmaterial aus [`architektur.md`](architektur.md) |
-| **Erste Demo** | der MVP aus §8 (6-Buchstaben-Kern-Alphabet, sieben Wörter, drei Validierungs-Gates inkl. Render eines neuen Wortes aus aggregierten Stats) |
+| **Erste Demo** | der MVP aus §8 (6-Buchstaben-Kern-Alphabet, sieben Wörter, vier Validierungs-Gates inkl. Render eines neuen Wortes aus aggregierten Stats und einer abgespeckten Animation) |
 
 ### Begründung der Kernpunkte
 
