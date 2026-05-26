@@ -25,13 +25,24 @@ Breite*, kein Schwellzug-Aufbau.
 
 ### Algorithmus
 
-1. Hole `/diagnostic/{glyph_key}` aus dem Backend → liefert
-   `skeleton_polyline_px` (Centerline als Polyline im Crop-Pixelraum).
-2. Im Frontend: SVG-`<path>` aus der Polyline bauen (`M x0 y0 L x1 y1 …`).
+1. Hole `GET /sources/{source_id}/glyphs/{glyph_key}/diagnostic` aus dem
+   Backend → liefert u.a. `anchors_px` (die **geordnete** Anker-Sequenz
+   des gefitteten Ductus im Crop-Pixelraum). **Nicht**
+   `skeleton_polyline_px` — das ist eine Pixel-Wolke aus `np.where(skel)`
+   in Row-Major-Reihenfolge, also unsortiert entlang des Strichs und für
+   einen `stroke-dashoffset`-Pfad ungeeignet.
+2. Im Frontend: SVG-`<path>` aus den Ankern bauen
+   (`M ax0 ay0 L ax1 ay1 …`).
 3. Pfadlänge `L` via `path.getTotalLength()`.
 4. `stroke-dasharray = L`, `stroke-dashoffset = L`.
 5. WAAPI-Animation: `stroke-dashoffset` von `L` auf `0` über `T`
    Millisekunden — Linie *entsteht* vom Anfang zum Ende.
+
+*Spätere Verfeinerung:* sobald M3-Templates eine dichter abgetastete,
+ordentlich geordnete Centerline brauchen, kann der `/diagnostic`-Endpoint
+ein eigenes Feld liefern (z.B. `centerline_px` aus
+`sample_polyline(anchors, half_widths, n=240)` + Crop-Offset). Im
+MVP-Stand sind die rohen Anker als Polyline ausreichend.
 
 ### Code-Skizze
 

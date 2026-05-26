@@ -630,7 +630,10 @@ anyplot.ai auf Cloud Run trägt:
   Buchstaben-Tafel, Schreiben-üben (Lineatur-Konfigurator), Lese-Hilfe
   (Upload), Hände vergleichen, Open-Data-Export-Seite.
 - **Admin-Routen (Auth-geschützt):** Bbox-Editor, Stylus-Trace,
-  3-Spalten-Diagnostic, Source-Verwaltung. Bleiben wie heute in `/app/`.
+  3-Spalten-Diagnostic, Source-Verwaltung. Code lebt weiter im
+  Verzeichnis `/app/` (kein zweites Frontend); im URL-Raum wandern sie
+  unter `/admin/*` mit Auth-Gate. Details:
+  [`reference/frontend-stack.md`](../reference/frontend-stack.md) §2.
 
 **Hosting & Deploy:**
 

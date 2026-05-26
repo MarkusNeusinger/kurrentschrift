@@ -30,8 +30,9 @@ Frontend-Infrastruktur (§16) parallel zur ersten Phase.
 
 ## Context
 
-Die Design-Docs sind abgeschlossen, Code existiert noch nicht. §10 sagt:
-**erst der kleinste lauffähige Kern, dann alles andere.** Mit dem in §8
+Die Design-Docs sind abgeschlossen; der Code wächst entlang dieser
+Roadmap (Stand siehe „Status" oben — Admin-UI + Backend laufen). §10
+sagt: **erst der kleinste lauffähige Kern, dann alles andere.** Mit dem in §8
 festgelegten Scope (Lowercase-Kern-Alphabet, sieben Wörter, ein
 zusätzliches generalisiertes Wort, vier Validierungs-Gates inkl.
 abgespeckter Animation) ist das kein Wegwerf-Spike mehr, sondern ein
@@ -418,15 +419,19 @@ zusammen mit dem Canvas-2D-Stroker, siehe
 [`architektur.md`](architektur.md) §11).
 
 **Wo:** Frontend-Komponente, eingebettet in den Editor (`/app/`) als
-„Animation"-Tab im EditorPage. Render-Daten kommen aus `/diagnostic` —
-`skeleton_polyline_px` für die Centerline, die existierenden Anker als
-Stroke-Start/-End-Marker.
+„Animation"-Tab im EditorPage. Render-Daten kommen aus
+`GET /sources/{source_id}/glyphs/{glyph_key}/diagnostic` —
+**`anchors_px`** (die geordnete Ductus-Sequenz im Crop-Pixelraum) ist
+die Polyline-Quelle. **Nicht** `skeleton_polyline_px`: das Feld trägt
+die unsortierten Skelett-Pixel aus `np.where(skel)` und ergibt als
+SVG-Pfad nur eine Pixelwolke (siehe
+[`reference/animation-rendering.md`](../reference/animation-rendering.md)).
 
-**Skizze:** Eine React-Komponente, die das `skeleton_polyline_px` aus dem
-Diagnostic-Endpoint nimmt, einen SVG-`<path>` baut, dessen
-`stroke-dasharray` = Pfadlänge und `stroke-dashoffset` von Pfadlänge auf
-0 animiert wird. Play-/Pause-/Replay-Buttons; Geschwindigkeit
-einstellbar (200 ms bis 2000 ms pro Stroke). WAAPI über
+**Skizze:** Eine React-Komponente, die `anchors_px` aus dem
+Diagnostic-Endpoint nimmt, einen SVG-`<path>` (`M ax0 ay0 L ax1 ay1 …`)
+baut, dessen `stroke-dasharray` = Pfadlänge und `stroke-dashoffset` von
+Pfadlänge auf 0 animiert wird. Play-/Pause-/Replay-Buttons;
+Geschwindigkeit einstellbar (200 ms bis 2000 ms pro Stroke). WAAPI über
 `element.animate(...)`.
 
 **Fertig wenn:** Eines der MVP-Glyphen (vorzugsweise eine

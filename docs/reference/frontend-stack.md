@@ -24,7 +24,8 @@ gemeinsam für Endnutzer und Admin, mit Auth-Gate für sensible Routen.
 | **TypeScript** | 6.x | Typsicherheit. |
 | **`vite-plugin-compression2`** | 2.x | Gzip + Brotli-Pre-Compression. |
 
-**Package Manager:** Yarn (wie anyplot).
+**Package Manager:** npm (wie heute im Repo — `app/package-lock.json` ist
+checked in; anyplot nutzt yarn, wir bewusst nicht).
 
 **Begründung gegen andere Stacks (Verworfen-Sektion):**
 
@@ -43,13 +44,18 @@ gemeinsam für Endnutzer und Admin, mit Auth-Gate für sensible Routen.
 
 ### Öffentliche Routen (kein Auth)
 
+Die Pfade unten sind **ohne** Sprachpräfix notiert. Im Routing liegen sie
+unter `/de/…` (Default) bzw. `/en/…` (siehe i18n unten) — `/lernen` wird
+also als `/de/lernen` und `/en/learn` ausgeliefert. Die englischen
+Slug-Varianten werden mit dem `locales/en/`-Bundle definiert (P1-Arbeit).
+
 | Pfad | Inhalt | Vision-Bezug |
 |---|---|---|
 | `/` | Landing-Page mit Pitch und Quick-Links | §1 |
 | `/lernen` | Einstieg (Geschichte, Alphabet-Tafel, Lese-Regeln) | §1 |
 | `/animation` | Animierte Buchstaben-Tafel | §3 |
 | `/schreiben` | Lineatur-Konfigurator + Übungsblatt-Generator | §2 |
-| `/lesen-uben` | Beliebiger Text → Kurrent-Rendering | §4 |
+| `/lesen-ueben` | Beliebiger Text → Kurrent-Rendering | §4 |
 | `/lese-hilfe` | Upload historischer Brief → HTR-Job | §6 |
 | `/lese-lupe/:job` | Lese-Lupe für transkribierten Brief | §8 |
 | `/stil-analyse` | Upload Schrift-Probe → Statistik-Report | §5 |
@@ -194,7 +200,8 @@ Funktionsweise identisch.
 
 ### Build
 
-- `cd app && yarn build` → statisches `dist/` mit JS-Chunks + Assets.
+- `cd app && npm install && npm run build` → statisches `dist/` mit
+  JS-Chunks + Assets.
 - Manual-Chunks (wie anyplot):
   - `mui-icons` separat (large, oft gecached).
   - `mui` (MUI + Emotion).

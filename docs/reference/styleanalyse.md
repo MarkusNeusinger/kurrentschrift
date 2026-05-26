@@ -48,13 +48,13 @@ beliebige neue Wörter dient (Multi-Stil-Konsequenz aus
 Hand. Voller Ausbau zur P3-Phase.
 
 **Speicherung:** entweder als JSONB-Feld auf `sources` (kleiner Footprint)
-oder als separate `hand_stats`-Tabelle (besser bei viele Sources). Detail
+oder als separate `hand_stats`-Tabelle (besser bei vielen Sources). Detail
 bei P3-Implementierung.
 
 ### Schicht 3 — Textunabhängige Writer-ID *(optional, post-P4)*
 
 Klassische **Hinge-Features** nach Bulacu/Schomaker. *Textunabhängig*
-heisst: zwei Texte derselben Hand werden ähnlich, *ohne* dass dieselben
+heißt: zwei Texte derselben Hand werden ähnlich, *ohne* dass dieselben
 Wörter darin stehen müssen. Goldstandard für forensische Writer-ID.
 
 #### Hinge-Feature
