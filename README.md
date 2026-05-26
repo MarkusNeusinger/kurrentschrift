@@ -43,11 +43,35 @@ This trade-off has to be found empirically. It's the project's research kernel; 
 
 ## Status
 
-Pre-MVP. Design docs are settled; no code yet.
+In-progress MVP. Design docs are settled; admin UI is up; canonical extraction works; per-instance fitting and aggregation are the next milestones.
 
-**Next: the [§8 MVP](docs/concepts/architektur.md#8-der-mvp-kleinster-lauffaehiger-renderkern).** A six-letter lowercase Kurrent alphabet (`a · d · e · l · n · ſ · s`) plus seven short words covering all three positions (initial/medial/final). Scan the author's own hand, fit the canonical ductus templates per glyph, aggregate the per-glyph cluster stats, then re-render both the seven input words *and at least one new word* (e.g. `denen`) in the same hand. One to two weekends, not a quarter. If the three validation gates (stability, allograph separation, word rendering) hold → kernel validated, rest is engineering. If not → valuable negative result in days.
+**Next: the [§8 MVP](docs/concepts/architektur.md#8-der-mvp-kleinster-lauffähiger-renderkern).** A six-letter lowercase Kurrent alphabet (`a · d · e · l · n · ſ · s`) plus seven short words covering all three positions (initial/medial/final). Scan the author's own hand, fit the canonical ductus templates per glyph, aggregate the per-glyph cluster stats, then re-render both the seven input words *and at least one new word* (e.g. `denen`) in the same hand. One to two weekends, not a quarter. If the **four** validation gates (stability, allograph separation, word rendering, slim animation playback) hold → kernel validated, rest is engineering. If not → valuable negative result in days.
 
 Pflicht-Anker pair: `lesen` (medial ſ, repeated `e`, ascender, u/n-confusable final `n`) + `das` (final `s`). See [`docs/concepts/mvp-roadmap.md`](docs/concepts/mvp-roadmap.md) for the actionable breakdown.
+
+## What sits around the engine
+
+The render kernel is the hard part. Around it, [`kurrentschrift.ink`](https://kurrentschrift.ink) wraps seven end-user goals clustered into Writing / Reading / Research (see [`docs/concepts/vision.md`](docs/concepts/vision.md)):
+
+**Writing**
+
+1. Onboarding (history, alphabet table, reading rules).
+2. Practice sheets with configurable lineature and content-aware text.
+3. Animated letter table (stroke order + Schwellzug build-up, live).
+
+**Reading**
+
+4. Render arbitrary modern text in a trained Kurrent hand.
+5. Reading help for historical letters via HTR (Transkribus + free-tier) — including a reading magnifier that explains confusing letters with structured rules.
+
+**Research**
+
+6. Style analysis of your own hand (glyph spread, slant, swell, transition angles) — with optimise / new-style-as-basis / hand-comparison paths.
+7. Open-data release of the canonical glyph dataset (Zenodo DOI, CC-BY 4.0).
+
+Bilingual DE/EN is a cross-cutting guiding principle (German first; English follows).
+
+The post-MVP roadmap in [`architektur.md` §10](docs/concepts/architektur.md#10-reihenfolge--post-mvp-roadmap) sequences these as five phases: Reading help → Practice sheets → Style analysis → Hand comparison → Open data.
 
 ## Project structure
 
@@ -55,10 +79,11 @@ Pflicht-Anker pair: `lesen` (medial ſ, repeated `e`, ascender, u/n-confusable f
 kurrentschrift/
 ├── core/       # Pure-Python compute + DB layer (extractor, template, Postgres models)
 ├── api/        # FastAPI service (thin routing over /core)
-├── app/        # React + Vite + MUI admin UI — bbox/exclude editor + stylus tracing
+├── app/        # React 19 + Vite + MUI SPA — today admin-only (bbox editor + stylus trace);
+│               # post-MVP it grows to host the end-user website, admin moves behind /admin/* with auth
 ├── alembic/    # Schema migrations (sources, bboxes, glyphs)
-├── data/       # Sources, variants, samples (own licensing — see below)
-└── docs/       # Design rationale (German)
+├── data/       # Sources, variants, samples (separate licensing — see below)
+└── docs/       # Design rationale (German); references with technical specs
 ```
 
 ### Local dev
@@ -80,13 +105,29 @@ Browser at `http://localhost:3000`; the admin UI loads the Loth chart, lets you 
 
 ## Documentation
 
-- **[Architektur-Referenz](docs/concepts/architektur.md)** — schema, three-stage quality pipeline, research risk, build order
-- **[Naming und OSS-Setup](docs/concepts/naming-und-setup.md)** — name, domain, license rationale, what was rejected and why
+Start at [`docs/index.md`](docs/index.md). Highlights:
+
+**Concepts** (the *why*):
+
+- **[Vision der Website](docs/concepts/vision.md)** — seven end-user goals in three clusters (Writing / Reading / Research), guiding principles, target audiences, non-goals, position relative to existing tools
+- **[Architektur-Referenz](docs/concepts/architektur.md)** — §1–§17: analysis-by-synthesis, library schema, three-stage quality pipeline, research risk, MVP (four gates), post-MVP phases, animation, style analysis, HTR, Lese-Lupe, print, frontend, open-data
+- **[MVP-Roadmap](docs/concepts/mvp-roadmap.md)** — Schritt 0 + M0–M7 milestones, validation gates, verification plan
+- **[Naming und OSS-Setup](docs/concepts/naming-und-setup.md)** — name, domain, license, frontend stack, hosting
+
+**Reference** (the *how*):
+
+- **[Sprachregelung](docs/reference/sprachregelung.md)** — German/English per artifact
 - **[Quellen- und Rechte-Policy](docs/reference/quellen-und-rechte.md)** — what may enter the public repo
 - **[Datenablage](docs/reference/datenablage.md)** — `/data` layout, commit classes, `SOURCE.md` fields
-- **[Sprachregelung](docs/reference/sprachregelung.md)** — German/English per artifact
+- **[Orthographie-Regeln](docs/reference/orthographie-regeln.md)** — Rund-s, ligatures, mixed-script reading rules
+- **[HTR-Integration](docs/reference/htr-integration.md)** — Transkribus API (free-tier ≈ €0.12/page, CER 5–7%), TrOCR fallback (CER 2.65%), PAGE-XML
+- **[Animation-Rendering](docs/reference/animation-rendering.md)** — `stroke-dashoffset` (MVP) and Canvas-2D stroker (post-MVP), Schwellzug sampling, WAAPI choreography
+- **[Stil-Analyse](docs/reference/styleanalyse.md)** — per-instance / per-hand / Hinge-feature layers, heatmap layouts
+- **[Frontend-Stack](docs/reference/frontend-stack.md)** — React+Vite+MUI build, deploy on Cloud Run, i18n, auth-gated admin routes
 
-Docs are in German (the domain is German). Code, commit messages, and this README are English.
+**For AI agents:** [`CLAUDE.md`](CLAUDE.md) (Claude Code) and [`.github/copilot-instructions.md`](.github/copilot-instructions.md) (GitHub Copilot) — kept in sync.
+
+Internal docs are in German (the domain is German). Code, commit messages, and this README are English.
 
 ## Data & licensing
 
@@ -96,7 +137,7 @@ First source: the [Loth 1866 Kurrent table](data/sources/loth-1866/SOURCE.md) �
 
 ## Contributing
 
-This is a pre-MVP portfolio project — issues and discussion are welcome, PRs are premature. See **[Contributing Guide](docs/contributing.md)** for what's useful to send right now.
+This is an in-progress MVP portfolio project — issues and discussion are welcome, external PRs are premature until the four MVP gates land. See **[Contributing Guide](docs/contributing.md)** for what's useful to send right now.
 
 ## Citation
 

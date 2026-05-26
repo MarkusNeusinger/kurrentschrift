@@ -168,9 +168,14 @@ diese Seite an.
 
 - [`architektur.md`](architektur.md) — das *Wie* der Synthese-Pipeline.
 - [`mvp-roadmap.md`](mvp-roadmap.md) — der MVP validiert nur die
-  Synthese-Pipeline. Die hier beschriebene Website liegt fast komplett
-  *nach* dem MVP. Ausnahme: die Lese-Hilfe (Feature 5) ist laut
-  `architektur.md` §10 ein früher, paralleler Win mit geringem Risiko.
+  Synthese-Pipeline (vier Validierungs-Gates inkl. abgespeckter
+  Animation). Die hier beschriebene Website liegt fast komplett *nach*
+  dem MVP und ist in `architektur.md` §10 als Fünf-Phasen-Plan
+  sequenziert: P1 Lese-Hilfe (Punkt 5) → P2 Lineatur/Print (Punkt 2) →
+  P3 Stil-Analyse (Punkt 6) → P4 Hände-Vergleich (Anwendung von Punkt 6,
+  sobald mehrere Stile vorliegen) → P5 Open-Data (Punkt 7). Animation
+  (Punkt 3) und Frontend/i18n (siehe Leitprinzipien — Zweisprachig)
+  laufen als Querschnitt parallel zur ersten Phase.
 - [`naming-und-setup.md`](naming-und-setup.md) — Reichweite (gotische
   Kursive vor 1900, optional Skandinavien), Lizenz (MIT), Domain
   (`kurrentschrift.ink`).

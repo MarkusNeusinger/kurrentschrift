@@ -20,44 +20,17 @@ nur am Wortende, sondern auch an Morphemgrenzen in Komposita auftritt
 
 ---
 
-## Vorschlag A — `architektur.md` §3: `position` als Lehrtafel-Rolle präzisieren
+## Vorschlag A — `architektur.md` §3: `position` als Lehrtafel-Rolle präzisieren ✓ FREIGEGEBEN
 
-**Status:** offen, klein, isoliert umsetzbar.
+**Status:** in `architektur.md` §3 (Mai 2026) eingearbeitet. Hier nur zur
+Nachvollziehbarkeit aufgeführt; **nicht mehr offen**.
 
-### Heutiger Wortlaut (§3, Punkt 1)
-
-> **Position (Allograph):** initial/medial/final — z. B. ſ vs. finales s.
-> *Aus dem Kontext bekannt* (s mitten im Wort → medial).
-
-### Problem
-
-Die Klammerbemerkung „s mitten im Wort → medial" suggeriert eine
-1:1-Abbildung zwischen Lehrtafel-Position und Text-Position. Die in
-[`orthographie-regeln.md`](../reference/orthographie-regeln.md) §1.2/§1.3
-gesammelten Sonderfälle (Rund-s an Morphemgrenze, Rund-s vor elidiertem
-`h`) brechen diese Identität: das Rund-s erscheint in echtem Text auch
-wortintern.
-
-### Vorgeschlagener neuer Wortlaut
-
-`position` (initial/medial/final) als **Lehrtafel-Rolle** der Allograph-
-Form benennen — also: *wo Loth (oder eine vergleichbare Vorlage) diese
-Form auf der Tafel zeigt*. Die Frage „welche Vorlage gilt für einen
-konkreten Slot im Lauftext" ist eine separate Schicht, die in
-[`orthographie-regeln.md`](../reference/orthographie-regeln.md)
-beschrieben ist und vom geplanten Modul `core/orthography.py` (siehe
-Vorschlag D) konsumiert wird.
-
-„Allographe sind getrennte Glyphen" (§3, Folge-Festlegung) bleibt
-unverändert gültig — präzisiert wird nur, *was* die Achse `position`
-genau bezeichnet.
-
-### Blast Radius bei Freigabe
-
-- 3–5 Zeilen Prosa in `architektur.md` §3.
-- Kein Code, kein Schema, keine Migration.
-- Bereits umgesetzt im Plan dieses PRs: Klarstellungs-Kommentar in
-  [`app/src/constants.ts`](../../app/src/constants.ts) über `KNOWN_GLYPHS`.
+`position` (initial/medial/final) ist jetzt als **Lehrtafel-Rolle** der
+Allograph-Form definiert — *wo Loth (oder eine vergleichbare Vorlage) diese
+Form auf der Tafel zeigt*. Die orthographische Frage „welche Vorlage gilt
+für einen konkreten Slot im Lauftext" liegt in
+[`orthographie-regeln.md`](../reference/orthographie-regeln.md) und wird
+von Vorschlag D (`core/orthography.py`) konsumiert.
 
 ---
 

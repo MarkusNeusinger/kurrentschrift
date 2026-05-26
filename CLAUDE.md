@@ -2,13 +2,18 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+A companion guide `.github/copilot-instructions.md` carries the same domain
+rules targeted at GitHub Copilot (and any other agent that reads that
+standard path). Both files MUST stay in sync — if you change one, check
+the other.
+
 ## Repository state
 
 In-progress MVP. The monorepo layout (per `docs/concepts/naming-und-setup.md` §3):
 
 - `/core` — Pure-Python compute + DB layer. `core/extract.py` (skeleton + distance transform), `core/template.py` (canonical sampling + outline + slant), `core/chart.py` (load + crop with excludes), `core/pipeline.py` (`canonical_from_path`, `diagnostic_for_glyph`), `core/database/` (SQLAlchemy `Source` + `Bbox` + `Glyph` + repositories).
 - `/api` — FastAPI service. Routers in `api/routers/`: `health`, `sources`, `chart`, `bboxes`, `glyphs`. All data lives in Postgres (DB `kurrentschrift` on the anyplot Cloud SQL instance, see `.env`).
-- `/app` — React + Vite admin frontend (MUI). Single-page UI: drag bboxes/excludes on the Loth chart with mouse, draw stroke paths with stylus (Samsung S-Pen). Editor shows the 3-column SVG diagnostic (Loth crop · skeleton+anchors · canonical template) rendered from `/diagnostic` JSON. v1 only does canonical extraction.
+- `/app` — React 19 + Vite + MUI SPA (anyplot-stil). Today admin-only: drag bboxes/excludes on the Loth chart with mouse, draw stroke paths with stylus (Samsung S-Pen). Editor shows the 3-column SVG diagnostic (Loth crop · skeleton+anchors · canonical template) rendered from `/diagnostic` JSON. Post-MVP it grows to host the end-user website (animation, lineature configurator, HTR upload, Lese-Lupe, style analysis, hands comparison, open-data page) — admin routes will move behind `/admin/*` with auth (Cloudflare Access or GCP IAP). See `docs/concepts/architektur.md` §16 and `docs/reference/frontend-stack.md`.
 - `/alembic` — Schema migrations. `0001_initial_schema.py` creates `sources` + `bboxes` + `glyphs` and seeds the Loth 1866 source row.
 - `/data` — Sources, corpora, variants, samples, derived stats (see Data & licensing below). PD source bytes (Loth chart.jpg) stay on disk; the DB only stores the relative `chart_path`.
 
@@ -20,11 +25,17 @@ The earlier `/mvp/` folder (CLI tools + JSON files in the repo) was retired in f
 
 The design is already settled in the docs; do not re-litigate decisions that have an explicit "verworfen" (rejected) section. Start at `docs/index.md`.
 
-- `docs/concepts/architektur.md` — architecture. §2 (analysis-by-synthesis), §3 (library schema), §4 (ligature exception), §5 (Schwellzug vs ink), §6 (3-stage quality pipeline), §7 (the one real research risk), §8 (MVP), §9 (test words), §10 (build order)
-- `docs/concepts/mvp-roadmap.md` — actionable breakdown of §8 into Schritt 0 + M0–M6 milestones
-- `docs/concepts/naming-und-setup.md` — repo/name/license/layout decisions
+- `docs/concepts/architektur.md` — architecture. §1 (problem split, indexes all sections), §2 (analysis-by-synthesis), §3 (library schema), §4 (ligature exception), §5 (Schwellzug vs ink + width-profile resolver), §6 (3-stage quality pipeline), §7 (the one real research risk), §8 (MVP — four gates), §9 (test words), §10 (build order, post-MVP phases P1–P5). Post-MVP sections: §11 (animation render path), §12 (style analysis pipeline), §13 (HTR integration), §14 (Lese-Lupe), §15 (print pipeline), §16 (frontend architecture), §17 (open-data export).
+- `docs/concepts/mvp-roadmap.md` — actionable breakdown of §8 into Schritt 0 + M0–M7 milestones (M7 = abgespeckte animation, MVP gate 4)
+- `docs/concepts/naming-und-setup.md` — repo/name/license/layout/frontend-stack/hosting decisions
 - `docs/reference/sprachregelung.md` — language rules (see below)
 - `docs/reference/quellen-und-rechte.md` + `docs/reference/datenablage.md` — data/licensing rules (see below)
+
+**Read situatively** (only when working on the respective section):
+- `docs/reference/htr-integration.md` — Transkribus API + TrOCR fallback details, PAGE-XML, free-tier logic
+- `docs/reference/animation-rendering.md` — stroke-dashoffset (MVP) and Canvas-2D-stroker (post-MVP) algorithms
+- `docs/reference/styleanalyse.md` — per-instance/per-hand/Hinge-feature layers, heatmap layouts
+- `docs/reference/frontend-stack.md` — React+Vite+MUI build, deploy, auth, route map
 
 ## Language conventions (strict)
 
@@ -65,6 +76,17 @@ Hard rules:
 - Variant 0 (`v0-loth-1866`) is the canonical geometry baseline for first tests. The ductus prior is *the author's own contribution layered over* this PD geometry — Loth supplies shapes, not stroke order.
 
 Before any data commit: *is this my expression or the expression of a protected source?* If unclear, link to the original rather than committing it.
+
+## MVP gates
+
+Four gates in `architektur.md` §8 — all four required for the kernel to count as validated:
+
+1. **Stability** — ≥10 fits per core glyph cluster cleanly (`ſ`-med, `s`-final, `e`-med).
+2. **Allograph separation** — cross-fit between medial ſ and final s separates per hand.
+3. **Word rendering** — majority of seven MVP words reconstructed *and* `denen` rendered from aggregated per-glyph stats in the same hand.
+4. **Animation (slim)** — one MVP glyph plays back with correct stroke order via `stroke-dashoffset` on the centerline (no Schwellzug yet; full Canvas-2D stroker is post-MVP §11).
+
+If gates 1–4 hold, kernel is validated; otherwise valuable negative result in days.
 
 ## Test words
 
