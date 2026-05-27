@@ -1,20 +1,23 @@
 # Cloud Build configuration for kurrentschrift admin app.
-# Placeholder for v1 — pattern mirrors ~/projects/anyplot/app/cloudbuild.yaml.
+# Pattern mirrors ~/anyplot/app/cloudbuild.yaml.
 substitutions:
-  _SERVICE_NAME: kurrentschrift-app
-  _REGION: europe-west4
+  _REGION: "europe-west4"
+  _SERVICE_NAME: "kurrentschrift-app"
+  _RUNTIME_SA: "kurrentschrift-runtime@kurrentschrift.iam.gserviceaccount.com"
 
 steps:
   - name: "gcr.io/cloud-builders/docker"
     args:
-      - "build"
-      - "-t"
-      - "europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}:$BUILD_ID"
-      - "-t"
-      - "europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}:latest"
-      - "-f"
-      - "app/Dockerfile"
-      - "app"
+      [
+        "build",
+        "-t",
+        "europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}:$BUILD_ID",
+        "-t",
+        "europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}:latest",
+        "-f",
+        "app/Dockerfile",
+        "app",
+      ]
 
   - name: "gcr.io/cloud-builders/docker"
     args: ["push", "--all-tags", "europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}"]
@@ -31,19 +34,28 @@ steps:
       - "${_REGION}"
       - "--platform"
       - "managed"
+      - "--service-account"
+      - "${_RUNTIME_SA}"
       - "--allow-unauthenticated"
       - "--memory"
       - "512Mi"
       - "--cpu"
       - "1"
+      - "--timeout"
+      - "60"
+      # min=0 keeps idle cost ~zero (cold start ~1s for nginx); max=1 caps
+      # blast radius for a personal-scale project.
       - "--min-instances"
       - "0"
       - "--max-instances"
-      - "2"
+      - "1"
       - "--port"
       - "8080"
       - "--execution-environment"
       - "gen2"
+      - "--cpu-throttling"
+      - "--concurrency"
+      - "15"
 
 images:
   - "europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}:$BUILD_ID"

@@ -21,9 +21,9 @@ RUN pip install --no-cache-dir uv && \
     uv venv && \
     uv sync --frozen
 
-# Application code + the existing /mvp/ tree the API imports from.
+# Application code. The compute layer lives in /core, the HTTP layer in /api.
 COPY api/ ./api/
-COPY mvp/ ./mvp/
+COPY core/ ./core/
 # Loth chart is read by the pipeline; ship it in the image.
 COPY data/sources/loth-1866/chart.jpg ./data/sources/loth-1866/chart.jpg
 

@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#1c1c1c" />
-    <title>kurrentschrift — Verwaltung</title>
+    <meta name="description" content="kurrentschrift.ink — offene Bibliothek der Kurrent-Ductus-Templates. Lesen und Re-Inken historischer deutscher Kurrentschrift." />
+    <title>kurrentschrift.ink</title>
     <!-- Touch-action manipulation on the body, finer-grained on the stylus
          canvas. Prevents the browser from swallowing pen events into
          scroll/zoom gestures. -->
@@ -12,6 +13,22 @@
       html, body { margin: 0; padding: 0; height: 100%; overscroll-behavior: none; }
       body { touch-action: manipulation; }
     </style>
+
+    <!-- Privacy-friendly analytics by Plausible (production only). The script
+         and event endpoint are both proxied through a Cloudflare Worker on
+         kurrentschrift.ink/{js/script.js,api/event} so requests stay
+         same-origin and aren't blocked by adblockers. The hostname gate keeps
+         dev/preview builds from polluting prod stats. -->
+    <script>
+      window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+      if (location.hostname === 'kurrentschrift.ink') {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = '/js/script.js';
+        document.head.appendChild(s);
+        plausible.init({ endpoint: '/api/event' });
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
