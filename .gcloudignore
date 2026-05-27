@@ -1,0 +1,35 @@
+# Honored by `gcloud builds submit` when uploading the source tarball. Without
+# this, .gitignore is used — but .gitignore doesn't cover JS build artefacts,
+# so the upload bloats with node_modules.
+
+.git
+.gitignore
+.idea
+.vscode
+.serena
+.claude
+
+# Python
+.venv
+venv
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.ruff_cache
+.mypy_cache
+
+# JS
+node_modules
+dist
+build
+
+# Editor / OS
+.DS_Store
+*.swp
+
+# Repo-local artefacts we never want in the image
+docs
+tests
+.github
+MEMORY.md

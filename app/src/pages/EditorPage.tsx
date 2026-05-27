@@ -288,7 +288,7 @@ export function EditorPage() {
         <Typography color="text.secondary">
           Noch keine Bbox — zurück zur Übersicht, Modus „Bbox" wählen, diesen Glyph aktivieren und ein Rechteck ziehen.
         </Typography>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/')} sx={{ mt: 2 }}>
+        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/admin/chart')} sx={{ mt: 2 }}>
           Zurück zur Übersicht
         </Button>
       </Box>
@@ -308,7 +308,7 @@ export function EditorPage() {
   return (
     <>
       <Paper square sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1, borderBottom: 1, borderColor: 'divider' }}>
-        <IconButton size="small" onClick={() => navigate('/')}>
+        <IconButton size="small" onClick={() => navigate('/admin/chart')}>
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h6" sx={{ fontFamily: 'ui-monospace, Menlo, monospace' }}>

@@ -292,7 +292,7 @@ export function ChartPage() {
               variant="contained"
               startIcon={<EditIcon />}
               disabled={!activeGlyph || !(activeGlyph in bboxesByKey)}
-              onClick={() => activeGlyph && navigate(`/edit/${encodeURIComponent(activeGlyph)}`)}
+              onClick={() => activeGlyph && navigate(`/admin/edit/${encodeURIComponent(activeGlyph)}`)}
             >
               Bearbeiten
             </Button>

@@ -1,13 +1,21 @@
 # Cloud Build configuration for kurrentschrift backend API.
-# Placeholder for v1 — mirrors ~/projects/anyplot/api/cloudbuild.yaml so the
-# deployment story is "fill in the substitutions, run gcloud builds submit".
+# Pattern mirrors ~/anyplot/api/cloudbuild.yaml.
 substitutions:
   _SERVICE_NAME: kurrentschrift-api
   _REGION: europe-west4
   _MEMORY: 1Gi
   _CPU: "1"
+  # min=0 keeps idle cost ~zero (cold start ~3s on first hit); max=1 caps the
+  # blast radius since this is a personal-scale project.
   _MIN_INSTANCES: "0"
-  _MAX_INSTANCES: "2"
+  _MAX_INSTANCES: "1"
+  _RUNTIME_SA: "kurrentschrift-runtime@kurrentschrift.iam.gserviceaccount.com"
+  # DB lives on the anyplot Cloud SQL instance; cross-project cloudsql.client
+  # is granted to the runtime SA in the anyplot project.
+  _CLOUDSQL_INSTANCE: "anyplot:europe-west4:anyplot-db"
+  # Comma-separated allow-list for the CF Access JWT path. Browser users with
+  # a valid JWT but an email not in this list get 403.
+  _ADMIN_ALLOWED_EMAILS: "meakeiok@gmail.com"
 
 steps:
   - name: "gcr.io/cloud-builders/docker"
@@ -29,6 +37,13 @@ steps:
     id: "push-image"
     waitFor: ["build-image"]
 
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "push"
+      - "europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}:latest"
+    id: "push-latest"
+    waitFor: ["build-image"]
+
   - name: "gcr.io/cloud-builders/gcloud"
     args:
       - "run"
@@ -37,18 +52,35 @@ steps:
       - "--image=europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}:$BUILD_ID"
       - "--region=${_REGION}"
       - "--platform=managed"
+      - "--service-account=${_RUNTIME_SA}"
       - "--memory=${_MEMORY}"
       - "--cpu=${_CPU}"
       - "--min-instances=${_MIN_INSTANCES}"
       - "--max-instances=${_MAX_INSTANCES}"
       - "--port=8000"
       - "--allow-unauthenticated"
+      - "--add-cloudsql-instances=${_CLOUDSQL_INSTANCE}"
+      - "--set-secrets=DATABASE_URL=DATABASE_URL:latest,ADMIN_TOKEN=ADMIN_TOKEN:latest,CF_ACCESS_TEAM_DOMAIN=CF_ACCESS_TEAM_DOMAIN:latest,CF_ACCESS_AUD=CF_ACCESS_AUD:latest"
       - "--execution-environment=gen2"
+      # ^|^ alt delimiter: ADMIN_ALLOWED_EMAILS_RAW contains @ and may contain ,
+      - "--set-env-vars=^|^ENVIRONMENT=production|ADMIN_ALLOWED_EMAILS_RAW=${_ADMIN_ALLOWED_EMAILS}"
       - "--cpu-throttling"
       - "--concurrency=15"
       - "--timeout=600"
     id: "deploy"
     waitFor: ["push-image"]
+
+  - name: "gcr.io/cloud-builders/gcloud"
+    args:
+      - "run"
+      - "services"
+      - "describe"
+      - "${_SERVICE_NAME}"
+      - "--region=${_REGION}"
+      - "--platform=managed"
+      - "--format=value(status.url)"
+    id: "get-url"
+    waitFor: ["deploy"]
 
 images:
   - "europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}:$BUILD_ID"

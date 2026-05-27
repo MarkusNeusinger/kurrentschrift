@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.auth import require_admin
 from api.dependencies import require_db, require_source
 from api.schemas import GlyphOut, GlyphSummary, ResampleRequest, TraceRequest
 from core.database import BboxRepository, Glyph, GlyphRepository, Source
@@ -68,7 +69,7 @@ async def get_glyph(
     return _glyph_to_out(glyph)
 
 
-@router.post("/{glyph_key}/trace", response_model=GlyphOut)
+@router.post("/{glyph_key}/trace", response_model=GlyphOut, dependencies=[Depends(require_admin)])
 async def post_trace(
     glyph_key: str,
     payload: TraceRequest,
@@ -90,7 +91,7 @@ async def post_trace(
     return _glyph_to_out(g)
 
 
-@router.post("/{glyph_key}/resample", response_model=GlyphOut)
+@router.post("/{glyph_key}/resample", response_model=GlyphOut, dependencies=[Depends(require_admin)])
 async def post_resample(
     glyph_key: str,
     payload: ResampleRequest,
@@ -138,7 +139,7 @@ async def get_diagnostic(
     )
 
 
-@router.delete("/{glyph_key}", status_code=204)
+@router.delete("/{glyph_key}", status_code=204, dependencies=[Depends(require_admin)])
 async def delete_glyph(
     glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
 ):

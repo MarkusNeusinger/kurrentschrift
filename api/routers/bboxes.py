@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.auth import require_admin
 from api.dependencies import require_db, require_source
 from api.schemas import BboxIn, BboxOut
 from core.database import Bbox, BboxRepository, Source
@@ -41,7 +42,7 @@ async def get_bbox(
     return _to_out(bbox)
 
 
-@router.put("/{glyph_key}", response_model=BboxOut)
+@router.put("/{glyph_key}", response_model=BboxOut, dependencies=[Depends(require_admin)])
 async def put_bbox(
     glyph_key: str,
     payload: BboxIn,
@@ -66,7 +67,7 @@ async def put_bbox(
     return _to_out(bbox)
 
 
-@router.delete("/{glyph_key}", status_code=204)
+@router.delete("/{glyph_key}", status_code=204, dependencies=[Depends(require_admin)])
 async def delete_bbox(
     glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
 ):
