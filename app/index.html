@@ -16,9 +16,11 @@
 
     <!-- Privacy-friendly analytics by Plausible (production only). The script
          and event endpoint are both proxied through a Cloudflare Worker on
-         kurrentschrift.ink/{js/script.js,api/event} so requests stay
-         same-origin and aren't blocked by adblockers. The hostname gate keeps
-         dev/preview builds from polluting prod stats. -->
+         kurrentschrift.ink/{js/script.js,pa/event} so requests stay same-origin
+         and aren't blocked by adblockers. Events go to /pa/event (not the
+         conventional /api/event) because /api/* is gated by Cloudflare Access
+         for the admin SPA. The hostname gate keeps dev/preview builds from
+         polluting prod stats. -->
     <script>
       window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
       if (location.hostname === 'kurrentschrift.ink') {
@@ -26,7 +28,7 @@
         s.async = true;
         s.src = '/js/script.js';
         document.head.appendChild(s);
-        plausible.init({ endpoint: '/api/event' });
+        plausible.init({ endpoint: '/pa/event' });
       }
     </script>
   </head>
