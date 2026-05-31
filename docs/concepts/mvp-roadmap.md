@@ -464,6 +464,18 @@ Pflicht-Anker-Glyph vorhanden). Kann parallel zu M4/M5 laufen, weil es
 nur die Centerline visualisiert, keinen Fit nutzt. Idealerweise nach M3
 Phase A, damit echte Daten zum Animieren da sind.
 
+**Früher Folge-Win (kein Gate): Lern-/Quiz-Modus.** Sobald M7 steht, ist
+ein gamifizierter Lese-Lern-Modus eine kleine Frontend-Erweiterung auf
+denselben Primitiven (siehe [`vision.md`](vision.md) Feature 4):
+ein animiert geschriebener Buchstabe wird abgespielt, die Lernende rät
+ihn, eine falsche Antwort zeigt die Regel-Erklärung
+([`orthographie-regeln.md`](../reference/orthographie-regeln.md)).
+Ausbaustufe mit ganzen Wörtern (z. B. den MVP-Wörtern `lesen`, `das`).
+Bewusst **außerhalb der vier Validierungs-Gates** — er validiert den
+Render-Kern nicht, sondern verwertet ihn; er ist hier notiert, damit der
+naheliegende Demo-/Nutzwert-Schritt direkt nach Gate 4 nicht verloren
+geht. Voller Ausbau liegt in der Post-MVP-Phase P1 (Lese-Cluster).
+
 ---
 
 ## Kritischer Pfad & Parallelisierung

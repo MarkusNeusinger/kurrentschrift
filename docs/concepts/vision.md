@@ -91,6 +91,20 @@ Kern (siehe `architektur.md` §1).
    ein eigenes Memo — gerendert in einer trainierten Kurrent-Hand,
    damit Üben nicht am Nachschub historischer Beispiele scheitert.
 
+   **Lern-/Quiz-Modus.** Gamifiziertes Lesetraining: ein Buchstabe
+   wird gezeigt — idealerweise *animiert geschrieben* (Feature 3:
+   Schreibreihenfolge sichtbar, nicht nur das fertige Bild) — und die
+   Lernende rät, welcher Buchstabe es ist. Falsche Antworten lösen die
+   strukturierte Erklärung aus dem Orthographie-Regelwerk aus (wie die
+   Lese-Lupe in Feature 5: „das ist medial ſ, kein f — der Querstrich
+   fehlt"). **Ausbaustufe: ganze Wörter** statt Einzelbuchstaben (etwa
+   die MVP-Wörter `lesen`, `das`), animiert geschrieben und zu
+   erraten bzw. zu transkribieren — vom Buchstaben- zum Wort- und
+   Satzlesen. Baut vollständig auf vorhandenen Primitiven auf
+   (Render-Kern + Animation aus Feature 3, Regeln aus
+   [`orthographie-regeln.md`](../reference/orthographie-regeln.md)) und
+   verlangt keine neue Synthese.
+
 5. **Lese-Hilfe für historische Texte.** Transkription über
    bestehende HTR-Modelle (Transkribus & Co. — `architektur.md` §1).
    Kein eigenes Forschungsfeld, aber motivierender Sofort-Nutzen und
