@@ -172,9 +172,11 @@ geprüft, bevor sie auf eigene Hand zuschlägt.)
 interaktive Canonical-Erzeugung. Maus zieht Bbox- und Exclude-Rechtecke
 direkt auf `chart.jpg`, baseline/midband sind draggable Linien, der
 Ductus-Pfad wird mit Stylus (S-Pen) auf einem Samsung-Tablet
-gezeichnet. Backend liest/schreibt die existierenden Files in
-`mvp/canonical/`, sodass die CLI-Werkzeuge (`mvp.tools.trace_skeleton`,
-`mvp.render_canonicals`) weiter funktionieren.
+gezeichnet. Backend persistiert alle Canonicals als Rows in der
+`glyphs`-Tabelle (`anchors`/`half_widths`/`raw_path`/`measurements` als
+JSONB) — siehe Status-Note oben; der ursprünglich hier beschriebene
+File-/CLI-Workflow (`mvp/canonical/`, `mvp.tools.trace_skeleton`,
+`mvp.render_canonicals`) ist mit dem `/mvp/`-Ordner aufgelöst.
 
 **Begründung der Einschiebung:** Die ursprüngliche Reihenfolge nach §10
 war „M3 zuerst, Tools danach". In der Umsetzung von M3 Phase A wurde
@@ -186,8 +188,8 @@ Allograph-Erweiterungen und (mit minimaler Erweiterung) das M1
 own-hand-Schreiben profitieren davon.
 
 **Architektur:** spiegelt anyplot (`~/projects/anyplot/`) — `/api/`
-FastAPI mit Routern pro Resource (`health`, `chart`, `bboxes`,
-`canonical`), `/app/` React + Vite + TypeScript, lokal über zwei
+FastAPI mit Routern pro Resource (`health`, `sources`, `chart`,
+`bboxes`, `glyphs`), `/app/` React + Vite + TypeScript, lokal über zwei
 Terminals (`uvicorn` :8000, `npm run dev` :3000 mit `/api`-Proxy).
 Dockerfiles und `cloudbuild.yaml` werden als Platzhalter angelegt für
 spätere Cloud-Run-Migration; in v1 nicht ausgeführt.
@@ -199,8 +201,9 @@ und unter `_trace.pen_pressure_raw` gespeichert (für M1
 Own-Hand-Modus, wo es die primäre Schwellzug-Quelle wird).
 
 **Fertig wenn:** Alle 11 MVP-Canonicals (Phase A + B) sind über die
-Web-UI traced, identisches Schema wie CLI-Output, `mvp.render_canonicals`
-zeigt sie korrekt im Side-by-Side mit Loth.
+Web-UI traced und als `glyphs`-Rows persistiert, der
+3-Spalten-SVG-Diagnostic-View (`/diagnostic`) zeigt sie korrekt im
+Side-by-Side mit dem Loth-Crop.
 
 **Abhängigkeiten:** M0 (Pipeline existiert). Blockiert dann effektiv
 M3 Phase B — wird stattdessen *als* Phase B durchgeführt.
