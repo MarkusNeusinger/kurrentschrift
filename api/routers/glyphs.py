@@ -7,6 +7,7 @@ from api.auth import require_admin
 from api.dependencies import require_db, require_source
 from api.schemas import GlyphOut, GlyphSummary, ResampleRequest, TraceRequest
 from core.database import BboxRepository, Glyph, GlyphRepository, Source
+from core.fit import fit_glyph_to_crop
 from core.pipeline import canonical_from_path, canonical_from_raw_path_only, diagnostic_for_glyph
 
 
@@ -60,9 +61,7 @@ async def list_glyphs(source: Source = Depends(require_source), db: AsyncSession
 
 
 @router.get("/{glyph_key}", response_model=GlyphOut)
-async def get_glyph(
-    glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
-):
+async def get_glyph(glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)):
     glyph = await GlyphRepository(db).get(source.id, glyph_key)
     if glyph is None:
         raise HTTPException(404, detail=f"no canonical for {glyph_key!r}")
@@ -136,6 +135,43 @@ async def get_diagnostic(
         chart_path=source.chart_path,
         style_ratio=list(source.style_ratio),
         slant_deg=float(source.slant_deg),
+    )
+
+
+@router.get("/{glyph_key}/fit")
+async def get_fit(
+    glyph_key: str,
+    lambda_reg: float = 1.0,
+    width_weight: float = 0.15,
+    source: Source = Depends(require_source),
+    db: AsyncSession = Depends(require_db),
+):
+    """M4: fit the stored canonical to its own crop skeleton (read-only).
+
+    Returns a filled library entry plus crop-local overlay polylines
+    (skeleton, canonical grey, fit red) and the `fit` diagnostic. `lambda_reg`
+    (Tikhonov weight) and `width_weight` are tunable so the editor can show the
+    regularisation trade-off live.
+    """
+    bbox = await BboxRepository(db).get(source.id, glyph_key)
+    if bbox is None:
+        raise HTTPException(404, detail=f"bbox not set for {glyph_key!r}")
+    glyph = await GlyphRepository(db).get(source.id, glyph_key)
+    if glyph is None:
+        raise HTTPException(404, detail=f"no canonical for {glyph_key!r}")
+    return fit_glyph_to_crop(
+        glyph_row={
+            "glyph": glyph.glyph,
+            "position": glyph.position,
+            "anchors": list(glyph.anchors),
+            "half_widths": list(glyph.half_widths),
+            "entry": dict(glyph.entry) if glyph.entry else {},
+            "exit_pt": dict(glyph.exit_pt) if glyph.exit_pt else {},
+        },
+        bbox=_bbox_to_dict(bbox),
+        chart_path=source.chart_path,
+        lambda_reg=lambda_reg,
+        width_weight=width_weight,
     )
 
 

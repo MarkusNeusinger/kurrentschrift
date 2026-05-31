@@ -78,9 +78,7 @@ def _measure_slant(anchors_norm: np.ndarray) -> float:
     return angle_from_vertical
 
 
-def _measurements(
-    anchors_norm: np.ndarray, half_widths_px: np.ndarray, path_length_px: float, bbox: dict
-) -> dict:
+def _measurements(anchors_norm: np.ndarray, half_widths_px: np.ndarray, path_length_px: float, bbox: dict) -> dict:
     """Per-instance derived statistics for the `glyphs.measurements` JSONB field."""
     width = bbox["x1"] - bbox["x0"]
     height = bbox["y1"] - bbox["y0"]
@@ -96,12 +94,7 @@ def _measurements(
 
 
 def canonical_from_path(
-    raw_path: list[dict],
-    bbox: dict,
-    chart_path: str,
-    glyph: str,
-    position: str,
-    n_anchors: int | None = None,
+    raw_path: list[dict], bbox: dict, chart_path: str, glyph: str, position: str, n_anchors: int | None = None
 ) -> dict:
     """Turn a dense stylus path into a canonical-template dict.
 
@@ -197,12 +190,7 @@ def canonical_from_path(
     }
 
 
-def canonical_from_raw_path_only(
-    glyph_row: dict,
-    bbox: dict,
-    chart_path: str,
-    n_anchors: int,
-) -> dict:
+def canonical_from_raw_path_only(glyph_row: dict, bbox: dict, chart_path: str, n_anchors: int) -> dict:
     """Re-derive a canonical from an existing glyph's stored `raw_path` with a new N.
 
     Used by the /resample endpoint: the user changes n_anchors in the editor

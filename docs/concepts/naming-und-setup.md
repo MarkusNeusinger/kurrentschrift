@@ -54,6 +54,18 @@ Schreibschule (17./18. Jh.) → 1714 preußische Normschrift (Hilmar Curas)
 ab 1915 in Preußen) → Offenbacher Schrift (1927, Rudolf Koch) → Deutsche
 Volksschrift (1935) → 1941 Ende durch den Normalschrifterlass.
 
+**Start-Schriftfamilien (Produkt-Scope):** Von den Stationen oben sind
+die drei für den Start relevantesten Familien **Kurrent · Sütterlin ·
+Offenbacher**. Kurrent ist die Projekt-Normform und MVP-Baseline (Loth
+1866, Spitzfeder, voller Schwellzug); Sütterlin (1911, aufrecht,
+gleichmäßigere Strichstärke) und die Offenbacher Schrift (1927, Rudolf
+Koch, Breitfeder) sind die ersten Erweiterungen auf demselben Kanon —
+unterschieden vor allem über Schräglage und den Width-Profile-Resolver
+pro Familie ([`architektur.md`](architektur.md) §5), nicht über ein
+eigenes Modell. Die schema-seitige Verankerung einer `script`-/
+Familien-Dimension ist bewusst auf *nach* dem MVP vertagt (der MVP
+validiert den Render-Kern an Kurrent allein).
+
 **Oberbegriffe** (für SEO / Texte / spätere Multi-Stil-Benennung):
 „Kurrent" · „deutsche Schreibschrift" · „deutsche Schrift" / „alte
 deutsche Schrift" (umgangssprachlich) · engl. „German cursive" /

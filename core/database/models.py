@@ -100,9 +100,7 @@ class Glyph(Base):
     """
 
     __tablename__ = "glyphs"
-    __table_args__ = (
-        UniqueConstraint("source_id", "glyph", "position", "variant", name="uq_glyph_source_gpv"),
-    )
+    __table_args__ = (UniqueConstraint("source_id", "glyph", "position", "variant", name="uq_glyph_source_gpv"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     source_id: Mapped[str] = mapped_column(

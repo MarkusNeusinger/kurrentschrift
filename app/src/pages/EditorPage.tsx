@@ -33,6 +33,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { cropUrl, postResample, postTrace, putBbox } from '../api';
 import { DiagnosticView } from '../components/DiagnosticView';
+import { FitView } from '../components/FitView';
 import { knownGlyph } from '../constants';
 import { useAdmin } from '../state';
 import type { BboxIn, BboxOut, StrokePoint } from '../types';
@@ -531,6 +532,23 @@ export function EditorPage() {
               ) : (
                 <Alert severity="info" sx={{ mt: 1 }}>
                   noch kein Canonical — erst einen Strich aufnehmen und speichern.
+                </Alert>
+              )}
+            </Box>
+
+            <Divider />
+
+            <Box>
+              <Typography variant="overline" color="text.secondary">
+                Fit (M4)
+              </Typography>
+              {hasCanonical ? (
+                <Box sx={{ mt: 1 }}>
+                  <FitView glyphKey={glyphKey} cropCacheBust={cropCacheBust} />
+                </Box>
+              ) : (
+                <Alert severity="info" sx={{ mt: 1 }}>
+                  noch kein Canonical — der Fit braucht eine gespeicherte Vorlage.
                 </Alert>
               )}
             </Box>

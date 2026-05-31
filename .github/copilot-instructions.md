@@ -140,6 +140,7 @@ kurrentschrift/
 │   ├── template.py   # canonical sampling + outline + slant
 │   ├── chart.py      # load + crop with excludes
 │   ├── pipeline.py   # canonical_from_path, diagnostic_for_glyph
+│   ├── fit.py        # M4: fit_template_to_instance, fit_glyph_to_crop
 │   └── database/     # SQLAlchemy Source + Bbox + Glyph + repositories
 ├── api/              # FastAPI service (thin)
 │   ├── main.py

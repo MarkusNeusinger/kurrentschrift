@@ -29,12 +29,6 @@ async def get_crop(
     if bbox is None:
         raise HTTPException(404, detail=f"bbox not set for {glyph_key!r}")
     chart = load_chart_grayscale(source.chart_path)
-    bbox_dict = {
-        "y0": bbox.y0,
-        "y1": bbox.y1,
-        "x0": bbox.x0,
-        "x1": bbox.x1,
-        "excludes": list(bbox.excludes),
-    }
+    bbox_dict = {"y0": bbox.y0, "y1": bbox.y1, "x0": bbox.x0, "x1": bbox.x1, "excludes": list(bbox.excludes)}
     png = crop_to_png_bytes(chart, bbox_dict)
     return Response(content=png, media_type="image/png")

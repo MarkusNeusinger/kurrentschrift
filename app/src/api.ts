@@ -11,6 +11,7 @@ import type {
   BboxIn,
   BboxOut,
   DiagnosticData,
+  FitData,
   GlyphOut,
   GlyphSummary,
   SourceOut,
@@ -79,6 +80,14 @@ export const postResample = (glyphKey: string, nAnchors: number): Promise<GlyphO
 
 export const getDiagnostic = (glyphKey: string): Promise<DiagnosticData> =>
   apiFetch(src(`/glyphs/${encodeURIComponent(glyphKey)}/diagnostic`)).then(asJson<DiagnosticData>);
+
+export const getFit = (glyphKey: string, lambdaReg?: number, widthWeight?: number): Promise<FitData> => {
+  const q = new URLSearchParams();
+  if (lambdaReg != null) q.set('lambda_reg', String(lambdaReg));
+  if (widthWeight != null) q.set('width_weight', String(widthWeight));
+  const qs = q.toString();
+  return apiFetch(src(`/glyphs/${encodeURIComponent(glyphKey)}/fit${qs ? `?${qs}` : ''}`)).then(asJson<FitData>);
+};
 
 export const deleteGlyph = (glyphKey: string): Promise<void> =>
   apiFetch(src(`/glyphs/${encodeURIComponent(glyphKey)}`), { method: 'DELETE' }).then(asJson<void>);

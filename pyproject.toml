@@ -93,6 +93,11 @@ lines-after-imports = 2
 known-first-party = ["core", "api"]
 split-on-trailing-comma = false
 
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's dependency-injection markers are designed to be evaluated once in
+# argument defaults — the idiomatic pattern, not a B008 mutable-default bug.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Header"]
+
 # ===== Pytest =====
 
 [tool.pytest.ini_options]

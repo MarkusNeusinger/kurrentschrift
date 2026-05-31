@@ -50,6 +50,16 @@ Kern (siehe `architektur.md` §1).
   Codepoint (siehe `architektur.md` §2/§5).
 - **Offene Daten.** Kanonische Glyph-Daten unter zitierfähiger Lizenz
   (`quellen-und-rechte.md`).
+- **Drei Schriftfamilien zum Start.** Die drei für den Start
+  relevantesten Familien sind **Kurrent** (die ältere Norm, Projekt-
+  Baseline), **Sütterlin** (aufrecht, gleichmäßige Strichstärke) und die
+  **Offenbacher Schrift** (Breitfeder, ausgeprägter Schwellzug). Sie
+  teilen denselben Render-Kern und Kanon — eine Familie ist im Kern ein
+  Varianten-Auswahlvektor + Width-Profile-Resolver über demselben
+  Apparat (`architektur.md` §5/§10), kein eigenes Modell. Der MVP
+  validiert den Kern an Kurrent allein; Sütterlin und Offenbacher sind
+  die ersten Erweiterungen danach (Scope-Herleitung:
+  `naming-und-setup.md` §1).
 - **Zweisprachig.** Deutscher Kern zuerst (`sprachregelung.md` §1),
   englische Erweiterung folgt — die Genealogie-Zielgruppe ist
   überwiegend englischsprachig (`naming-und-setup.md` §1).
@@ -90,6 +100,20 @@ Kern (siehe `architektur.md` §1).
 4. **Lesen üben.** Beliebiger heutiger Text — eine Zeitungsmeldung,
    ein eigenes Memo — gerendert in einer trainierten Kurrent-Hand,
    damit Üben nicht am Nachschub historischer Beispiele scheitert.
+
+   **Lern-/Quiz-Modus.** Gamifiziertes Lesetraining: ein Buchstabe
+   wird gezeigt — idealerweise *animiert geschrieben* (Feature 3:
+   Schreibreihenfolge sichtbar, nicht nur das fertige Bild) — und die
+   Lernende rät, welcher Buchstabe es ist. Falsche Antworten lösen die
+   strukturierte Erklärung aus dem Orthographie-Regelwerk aus (wie die
+   Lese-Lupe in Feature 5: „das ist medial ſ, kein f — der Querstrich
+   fehlt"). **Ausbaustufe: ganze Wörter** statt Einzelbuchstaben (etwa
+   die MVP-Wörter `lesen`, `das`), animiert geschrieben und zu
+   erraten bzw. zu transkribieren — vom Buchstaben- zum Wort- und
+   Satzlesen. Baut vollständig auf vorhandenen Primitiven auf
+   (Render-Kern + Animation aus Feature 3, Regeln aus
+   [`orthographie-regeln.md`](../reference/orthographie-regeln.md)) und
+   verlangt keine neue Synthese.
 
 5. **Lese-Hilfe für historische Texte.** Transkription über
    bestehende HTR-Modelle (Transkribus & Co. — `architektur.md` §1).

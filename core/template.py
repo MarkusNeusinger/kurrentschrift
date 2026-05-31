@@ -96,9 +96,4 @@ def template_guides(style_ratio: list[float]) -> dict[str, float]:
     yields baseline=0, midband=1, ascender=3, descender=-2.
     """
     a, x, d = style_ratio
-    return {
-        "baseline": 0.0,
-        "midband": 1.0,
-        "ascender": 1.0 + float(a) / float(x),
-        "descender": -float(d) / float(x),
-    }
+    return {"baseline": 0.0, "midband": 1.0, "ascender": 1.0 + float(a) / float(x), "descender": -float(d) / float(x)}
