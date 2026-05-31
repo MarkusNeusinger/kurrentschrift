@@ -50,6 +50,16 @@ Kern (siehe `architektur.md` §1).
   Codepoint (siehe `architektur.md` §2/§5).
 - **Offene Daten.** Kanonische Glyph-Daten unter zitierfähiger Lizenz
   (`quellen-und-rechte.md`).
+- **Drei Schriftfamilien zum Start.** Die drei für den Start
+  relevantesten Familien sind **Kurrent** (die ältere Norm, Projekt-
+  Baseline), **Sütterlin** (aufrecht, gleichmäßige Strichstärke) und die
+  **Offenbacher Schrift** (Breitfeder, ausgeprägter Schwellzug). Sie
+  teilen denselben Render-Kern und Kanon — eine Familie ist im Kern ein
+  Varianten-Auswahlvektor + Width-Profile-Resolver über demselben
+  Apparat (`architektur.md` §5/§10), kein eigenes Modell. Der MVP
+  validiert den Kern an Kurrent allein; Sütterlin und Offenbacher sind
+  die ersten Erweiterungen danach (Scope-Herleitung:
+  `naming-und-setup.md` §1).
 - **Zweisprachig.** Deutscher Kern zuerst (`sprachregelung.md` §1),
   englische Erweiterung folgt — die Genealogie-Zielgruppe ist
   überwiegend englischsprachig (`naming-und-setup.md` §1).
