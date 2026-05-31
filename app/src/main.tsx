@@ -1,3 +1,5 @@
+import '@fontsource/eb-garamond/400-italic.css';
+
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import React from 'react';
 import { createRoot } from 'react-dom/client';

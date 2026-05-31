@@ -1,12 +1,24 @@
 // Public landing page. Editorial paper aesthetic with anyplot's imprint
 // palette — warm off-white, warm grayscale type, brand green used sparingly
-// (a single accent dot + the admin-link hover state). No MonoLisa here; the
-// page is a quiet placeholder, not the catalogue itself.
+// (eyebrow dot, timeline nodes, admin-link hover). The hero headline is set in
+// EB Garamond italic (SIL OFL 1.1, self-hosted via @fontsource — imported in
+// main.tsx, attributed in THIRD_PARTY_NOTICES.md). Body and functional labels
+// stay in the sans stack so they don't compete with the hero.
 
 import { Box, Container, Link, Stack, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 
 import { tokens } from '../theme';
+
+const garamond = "'EB Garamond', Georgia, 'Times New Roman', serif";
+
+// The ductus pipeline, condensed to four steps for the landing timeline.
+const steps = [
+  { step: 'Scannen', detail: 'Geometrie & Strichbreite aus der Vorlage' },
+  { step: 'Fitten', detail: 'Ductus-Prior legt Reihenfolge & Kreuzungen fest' },
+  { step: 'Mitteln', detail: 'viele Proben → deine persönliche Buchstabenform' },
+  { step: 'Verbinden', detail: 'berechnete Übergänge statt Paar-Katalog' },
+];
 
 export function LandingPage() {
   return (
@@ -30,50 +42,85 @@ export function LandingPage() {
       }}
     >
       <Container maxWidth="sm" sx={{ py: 8 }}>
-        <Stack spacing={3}>
-          {/* Eyebrow: brand-green dot + lowercase domain, tracked */}
+        <Stack spacing={3.5}>
+          {/* Eyebrow: brand-green dot + lowercase domain */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-            <Box
-              sx={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                bgcolor: tokens.green,
-              }}
-            />
+            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: tokens.green }} />
             <Typography variant="overline" sx={{ color: 'text.secondary', lineHeight: 1 }}>
               kurrentschrift.ink
             </Typography>
           </Box>
 
-          {/* Headline — large, light weight, near-black ink */}
+          {/* Hero — EB Garamond italic, near-black ink */}
           <Typography
-            variant="h3"
             component="h1"
             sx={{
-              fontWeight: 300,
-              lineHeight: 1.2,
+              fontFamily: garamond,
+              fontStyle: 'italic',
+              fontWeight: 400,
+              fontSize: { xs: '2.25rem', sm: '2.75rem' },
+              lineHeight: 1.14,
               color: 'text.primary',
-              letterSpacing: '-0.02em',
             }}
           >
-            Eine offene Bibliothek der Kurrent-Ductus-Templates.
+            Wie aus Tinte Schrift wird.
           </Typography>
 
-          {/* Body — secondary ink, comfortable line-height */}
-          <Typography
-            variant="body1"
-            sx={{
-              color: 'text.secondary',
-              lineHeight: 1.7,
-              fontWeight: 400,
-            }}
-          >
-            Hier entsteht ein Werkzeug zum Lesen und Re-Inken historischer deutscher
-            Kurrentschrift. Analysis-by-synthesis: Geometrie aus der Vorlage,
-            Strich-Reihenfolge aus einem manuell kuratierten Ductus-Prior. MVP-Phase —
-            bald mehr.
+          {/* Body — secondary ink, sans, comfortable line-height */}
+          <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
+            Eine offene Bibliothek der deutschen Kurrentschrift — kein Font, sondern
+            der Schreibvorgang selbst. Geometrie aus historischen Vorlagen,
+            Strichreihenfolge aus einem handkuratierten Ductus. Lesen, animieren,
+            neu schreiben.
           </Typography>
+
+          {/* How it works — the ductus pipeline as a quiet timeline */}
+          <Box sx={{ pt: 1 }}>
+            <Typography
+              variant="overline"
+              sx={{ color: 'text.secondary', display: 'block', mb: 2 }}
+            >
+              In vier Schritten
+            </Typography>
+            <Box sx={{ position: 'relative', pl: 3 }}>
+              {/* connecting hairline */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  left: 5,
+                  top: 6,
+                  bottom: 6,
+                  width: '1px',
+                  bgcolor: 'divider',
+                }}
+              />
+              <Stack spacing={2.25}>
+                {steps.map(({ step, detail }) => (
+                  <Box key={step} sx={{ position: 'relative' }}>
+                    {/* node dot, masked over the hairline */}
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        left: -23,
+                        top: 5,
+                        width: 9,
+                        height: 9,
+                        borderRadius: '50%',
+                        bgcolor: tokens.green,
+                        boxShadow: (t) => `0 0 0 4px ${t.palette.background.default}`,
+                      }}
+                    />
+                    <Typography sx={{ color: 'text.primary', fontWeight: 500, lineHeight: 1.3 }}>
+                      {step}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>
+                      {detail}
+                    </Typography>
+                  </Box>
+                ))}
+              </Stack>
+            </Box>
+          </Box>
 
           {/* Footer row: muted links left + right, divider above */}
           <Box

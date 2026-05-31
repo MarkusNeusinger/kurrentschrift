@@ -255,6 +255,20 @@ committable, [`quellen-und-rechte.md`](../reference/quellen-und-rechte.md)
 Positions-Tag (`initial`/`medial`/`final`) und Kontext-Tag (umgebende
 Glyphen — für Übergangstest in M6).
 
+**Sieb-Disziplin (Sampling-Bias vermeiden):** Anders als beim *Lesen*
+(Recall-kritisch — jeder Glyph muss gefunden werden,
+[`architektur.md`](architektur.md) §13) ist die Statistik
+**Präzisions-kritisch**: nicht jede Instanz muss segmentiert werden, es
+zählen nur genügend *saubere* pro Bucket. Mehrdeutige oder überlappende
+Crops dürfen also wegfallen — die M1-Wort-Wiederholungen liefern Ersatz.
+**Bedingung:** der Miss muss *zufällig* sein, nicht *selektiv*. Wer
+systematisch die schwer-trennbaren — also *eng verbundenen* — Instanzen
+verwirft, sampelt genau die Ko-Artikulation weg, die §4/§7 interessiert
+(vorausschauender `exit`-Shift je nach Nachbar). Regel: Aussieben nur nach
+**Fit-Qualität** („verrutscht/topologisch falsch = raus"), **nie** nach
+Verbindungsenge („eng am Nachbarn" = Signal, nicht Müll). Gleiche Logik
+wie §6 Stufe 1 (robuste Statistik), nur eine Stufe früher beim Croppen.
+
 **Wo:** `/data/samples/own-hand/segmented/` mit Schema
 `<wort>-<runde>_pos<n>-<position>-<glyph>.png`, z. B.
 `lesen-03_pos03-medial-langs.png`. Index in `instances.json`: pro Crop
