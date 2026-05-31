@@ -33,9 +33,7 @@ async def list_bboxes(source: Source = Depends(require_source), db: AsyncSession
 
 
 @router.get("/{glyph_key}", response_model=BboxOut)
-async def get_bbox(
-    glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
-):
+async def get_bbox(glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)):
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
         raise HTTPException(404, detail=f"bbox not set for {glyph_key!r}")
@@ -44,10 +42,7 @@ async def get_bbox(
 
 @router.put("/{glyph_key}", response_model=BboxOut, dependencies=[Depends(require_admin)])
 async def put_bbox(
-    glyph_key: str,
-    payload: BboxIn,
-    source: Source = Depends(require_source),
-    db: AsyncSession = Depends(require_db),
+    glyph_key: str, payload: BboxIn, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
 ):
     if payload.baseline_y <= payload.midband_y:
         raise HTTPException(422, detail="baseline_y must be greater than midband_y (baseline is below midband)")
@@ -68,7 +63,5 @@ async def put_bbox(
 
 
 @router.delete("/{glyph_key}", status_code=204, dependencies=[Depends(require_admin)])
-async def delete_bbox(
-    glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
-):
+async def delete_bbox(glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)):
     await BboxRepository(db).delete(source.id, glyph_key)

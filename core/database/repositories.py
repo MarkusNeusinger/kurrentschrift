@@ -33,9 +33,7 @@ class BboxRepository:
         return result.scalar_one_or_none()
 
     async def list(self, source_id: str) -> list[Bbox]:
-        result = await self.session.execute(
-            select(Bbox).where(Bbox.source_id == source_id).order_by(Bbox.glyph_key)
-        )
+        result = await self.session.execute(select(Bbox).where(Bbox.source_id == source_id).order_by(Bbox.glyph_key))
         return list(result.scalars().all())
 
     async def upsert(self, source_id: str, glyph_key: str, **fields: Any) -> Bbox:
@@ -64,9 +62,7 @@ class GlyphRepository:
 
     async def get(self, source_id: str, glyph_key: str, variant: int = 0) -> Glyph | None:
         result = await self.session.execute(
-            select(Glyph).where(
-                Glyph.source_id == source_id, Glyph.glyph_key == glyph_key, Glyph.variant == variant
-            )
+            select(Glyph).where(Glyph.source_id == source_id, Glyph.glyph_key == glyph_key, Glyph.variant == variant)
         )
         return result.scalar_one_or_none()
 
@@ -115,8 +111,6 @@ class GlyphRepository:
 
     async def delete(self, source_id: str, glyph_key: str, variant: int = 0) -> bool:
         result = await self.session.execute(
-            delete(Glyph).where(
-                Glyph.source_id == source_id, Glyph.glyph_key == glyph_key, Glyph.variant == variant
-            )
+            delete(Glyph).where(Glyph.source_id == source_id, Glyph.glyph_key == glyph_key, Glyph.variant == variant)
         )
         return (result.rowcount or 0) > 0

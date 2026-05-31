@@ -61,9 +61,7 @@ async def list_glyphs(source: Source = Depends(require_source), db: AsyncSession
 
 
 @router.get("/{glyph_key}", response_model=GlyphOut)
-async def get_glyph(
-    glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
-):
+async def get_glyph(glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)):
     glyph = await GlyphRepository(db).get(source.id, glyph_key)
     if glyph is None:
         raise HTTPException(404, detail=f"no canonical for {glyph_key!r}")
