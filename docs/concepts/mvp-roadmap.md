@@ -318,7 +318,17 @@ deckt sich grob mit den entsprechenden Glyphen auf der Loth-Tafel;
 
 ---
 
-### M4 — Fit-Routine (Template → Instanz)
+### M4 — Fit-Routine (Template → Instanz) — Routine implementiert
+
+**Status:** Die Fit-Routine ist in `core/fit.py` implementiert
+(`fit_template_to_instance` low-level über Arrays, `fit_glyph_to_crop`
+high-level über eine `glyphs`-Row + Bbox — analog zu
+`diagnostic_for_glyph`). Tests in `tests/test_fit.py` (synthetischer
+Balken: Identitäts-Refit, Rückzug einer verschobenen Vorlage,
+Regularisierungs-Effekt, Library-Entry-Schema). Offen bleibt die
+Validierung an echten Eigenhand-Instanzen (hängt an M1/M2) und ein
+Frontend-Overlay (Crop · Canonical grau · Fit rot) aus den von
+`fit_glyph_to_crop` gelieferten `*_polyline_px`-Feldern.
 
 **Was:** Gegeben ein Canonical-Template + Skelett +
 Distanztransformation einer Instanz: optimiere Template-Kontrollpunkte,
@@ -331,14 +341,19 @@ ARAP-light).
 `scipy.spatial.cKDTree`, Breitenresidual als zweiter Term. Bewusst
 einfach — der MVP validiert das Prinzip, nicht den Optimierer.
 
-**Wo:** `mvp/fit.py`. Output pro Instanz: gefülltes `library entry`
-nach §3-Schema (`control_points`, `width_profile`, gefittete
-`entry/exit`).
+**Wo:** `core/fit.py`. Output pro Instanz: gefülltes `library entry`
+nach §3-Schema (gefittete `anchors`, aus der Distanztransformation
+gemessene `half_widths`, gefittete `entry`/`exit_pt`) plus
+`fit`-Diagnostik (Geometrie-/Breiten-RMSE, Iterationen, max.
+Anker-Verschiebung).
 
-**Fertig wenn:** Visualisierungs-PNG zeigt für eine Einzelinstanz:
+**Fertig wenn:** Visualisierung zeigt für eine Einzelinstanz:
 Original + Canonical (grau) + Fit (rot). Fit folgt sichtbar dem
 Skelett, sprengt aber nicht die Topologie (keine Schleife öffnet sich,
-keine Kreuzung dreht).
+keine Kreuzung dreht). `fit_glyph_to_crop` liefert die dafür nötigen
+crop-lokalen Polylines (`skeleton_polyline_px`, `canonical_polyline_px`,
+`fitted_polyline_px`); das SVG-Overlay im Editor ist der nächste Schritt
+(analog `DiagnosticView`).
 
 ---
 
