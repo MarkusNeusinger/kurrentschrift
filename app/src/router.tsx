@@ -3,9 +3,11 @@ import { AppLayout } from './layout/AppLayout';
 import { ChartPage } from './pages/ChartPage';
 import { EditorPage } from './pages/EditorPage';
 import { LandingPage } from './pages/LandingPage';
+import { QuizPage } from './pages/QuizPage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
+  { path: '/quiz', element: <QuizPage /> },
   {
     path: '/admin',
     element: <AppLayout />,

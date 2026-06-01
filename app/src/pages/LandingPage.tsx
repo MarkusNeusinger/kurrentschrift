@@ -74,6 +74,28 @@ export function LandingPage() {
             neu schreiben.
           </Typography>
 
+          {/* Primary CTA — the one thing a visitor can already do today */}
+          <Box>
+            <Link
+              component={RouterLink}
+              to="/quiz"
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.75,
+                fontWeight: 500,
+                color: tokens.green,
+                textDecoration: 'none',
+                '&:hover': { color: tokens.greenDark },
+              }}
+            >
+              Buchstaben-Quiz starten
+              <Box component="span" aria-hidden sx={{ fontSize: '1.1em' }}>
+                →
+              </Box>
+            </Link>
+          </Box>
+
           {/* How it works — the ductus pipeline as a quiet timeline */}
           <Box sx={{ pt: 1 }}>
             <Typography

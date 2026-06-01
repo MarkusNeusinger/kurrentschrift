@@ -1,0 +1,532 @@
+// QuizPage — public reading drill (`/quiz`). Shows a real letter crop from the
+// source chart and asks the learner which Latin letter it is. Deliberately
+// simple for now: it consumes whatever bboxes have been marked (via the admin
+// chart editor) and maps each glyph_key back to its `answer` letter, so the
+// vocabulary grows as letters get marked. The richer version (animated ductus
+// playback, whole words, orthography-rule explanations on a miss) is the P1
+// Lese-Cluster work — see docs/concepts/vision.md §4 and mvp-roadmap.md.
+
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Container,
+  Paper,
+  Stack,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
+
+import { cropUrl } from '../api';
+import { knownGlyph, SCRIPTS, type KnownGlyph } from '../constants';
+import { useAdmin } from '../state';
+import { tokens } from '../theme';
+
+const garamond = "'EB Garamond', Georgia, 'Times New Roman', serif";
+
+type CaseMode = 'lower' | 'upper' | 'mixed';
+type AnswerMode = 'type' | 'choice';
+
+interface QuizItem {
+  key: string;
+  kg: KnownGlyph;
+}
+
+const ALPHABET = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i));
+
+const sample = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+
+// Display the option/solution in the case of the shown glyph so the prompt and
+// the answer read consistently (a Versal crop → uppercase label).
+const inCase = (letter: string, kg: KnownGlyph): string =>
+  kg.letterCase === 'upper' ? letter.toUpperCase() : letter;
+
+export function QuizPage() {
+  const { source, bboxesByKey, loadError, waking } = useAdmin();
+
+  const [script, setScript] = useState('kurrent');
+  const [caseMode, setCaseMode] = useState<CaseMode>('lower');
+  const [answerMode, setAnswerMode] = useState<AnswerMode>('type');
+  const [started, setStarted] = useState(false);
+
+  const [current, setCurrent] = useState<QuizItem | null>(null);
+  const [choices, setChoices] = useState<string[]>([]);
+  const [input, setInput] = useState('');
+  const [verdict, setVerdict] = useState<'idle' | 'correct' | 'wrong' | 'revealed'>('idle');
+  const [wrongChoices, setWrongChoices] = useState<Set<string>>(new Set());
+  const [stats, setStats] = useState({ correct: 0, seen: 0, streak: 0 });
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // All marked letters that resolve to a known glyph (and therefore an answer).
+  const allItems = useMemo<QuizItem[]>(
+    () =>
+      Object.keys(bboxesByKey)
+        .map((key) => {
+          const kg = knownGlyph(key);
+          return kg ? { key, kg } : null;
+        })
+        .filter((x): x is QuizItem => x !== null),
+    [bboxesByKey],
+  );
+
+  const lowerCount = useMemo(() => allItems.filter((i) => i.kg.letterCase === 'lower').length, [allItems]);
+  const upperCount = useMemo(() => allItems.filter((i) => i.kg.letterCase === 'upper').length, [allItems]);
+
+  const pool = useMemo(
+    () => allItems.filter((i) => caseMode === 'mixed' || i.kg.letterCase === caseMode),
+    [allItems, caseMode],
+  );
+
+  const buildChoices = useCallback((item: QuizItem): string[] => {
+    const correct = item.kg.answer;
+    const distractors = ALPHABET.filter((c) => c !== correct);
+    const picked: string[] = [];
+    while (picked.length < 3 && distractors.length) {
+      const idx = Math.floor(Math.random() * distractors.length);
+      picked.push(distractors.splice(idx, 1)[0]);
+    }
+    return [correct, ...picked].sort(() => Math.random() - 0.5);
+  }, []);
+
+  const nextQuestion = useCallback(
+    (fromPool: QuizItem[], excludeKey?: string) => {
+      if (fromPool.length === 0) {
+        setCurrent(null);
+        return;
+      }
+      let pick = sample(fromPool);
+      // Avoid an immediate repeat when there's something else to show.
+      if (fromPool.length > 1 && excludeKey) {
+        let guard = 0;
+        while (pick.key === excludeKey && guard < 12) {
+          pick = sample(fromPool);
+          guard += 1;
+        }
+      }
+      setCurrent(pick);
+      setChoices(buildChoices(pick));
+      setInput('');
+      setVerdict('idle');
+      setWrongChoices(new Set());
+    },
+    [buildChoices],
+  );
+
+  const start = useCallback(() => {
+    setStats({ correct: 0, seen: 0, streak: 0 });
+    setStarted(true);
+    nextQuestion(pool);
+  }, [pool, nextQuestion]);
+
+  const advance = useCallback(() => {
+    nextQuestion(pool, current?.key);
+  }, [pool, current, nextQuestion]);
+
+  // Keep the typing field focused for a fast keyboard loop.
+  useEffect(() => {
+    if (started && answerMode === 'type' && verdict !== 'correct') inputRef.current?.focus();
+  }, [started, answerMode, current, verdict]);
+
+  const markResult = useCallback((ok: boolean) => {
+    setStats((s) => ({
+      correct: s.correct + (ok ? 1 : 0),
+      seen: s.seen + 1,
+      streak: ok ? s.streak + 1 : 0,
+    }));
+  }, []);
+
+  const submitTyped = useCallback(() => {
+    if (!current || verdict === 'correct') return;
+    const guess = input.trim().toLowerCase();
+    if (!guess) return;
+    if (guess === current.kg.answer) {
+      markResult(true);
+      setVerdict('correct');
+      window.setTimeout(advance, 650);
+    } else {
+      // Wrong → it does NOT advance; the same letter stays for another try.
+      setStats((s) => ({ ...s, streak: 0 }));
+      setVerdict('wrong');
+      setInput('');
+    }
+  }, [current, input, verdict, markResult, advance]);
+
+  const pickChoice = useCallback(
+    (choice: string) => {
+      if (!current || verdict === 'correct') return;
+      if (choice === current.kg.answer) {
+        markResult(true);
+        setVerdict('correct');
+        window.setTimeout(advance, 650);
+      } else {
+        setStats((s) => ({ ...s, streak: 0 }));
+        setVerdict('wrong');
+        setWrongChoices((prev) => new Set(prev).add(choice));
+      }
+    },
+    [current, verdict, markResult, advance],
+  );
+
+  const reveal = useCallback(() => {
+    if (!current) return;
+    markResult(false);
+    setVerdict('revealed');
+  }, [current, markResult]);
+
+  // ---- render helpers ----------------------------------------------------
+
+  if (loadError) {
+    return (
+      <CenterPage>
+        <Typography variant="h6" gutterBottom>
+          Vorlage nicht erreichbar
+        </Typography>
+        <Typography color="text.secondary" sx={{ mb: 2 }}>
+          {loadError}
+        </Typography>
+        <Button variant="outlined" onClick={() => window.location.reload()}>
+          Erneut versuchen
+        </Button>
+      </CenterPage>
+    );
+  }
+
+  if (!source) {
+    return (
+      <CenterPage>
+        <CircularProgress />
+        <Typography color="text.secondary" sx={{ mt: 2 }}>
+          {waking ? 'Vorlage startet (Cold Start), einen Moment…' : 'lade Vorlage…'}
+        </Typography>
+      </CenterPage>
+    );
+  }
+
+  return (
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: { xs: 4, sm: 6 } }}>
+      <Container maxWidth="sm">
+        <Stack spacing={3}>
+          {/* Header */}
+          <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 2 }}>
+            <Typography component="h1" sx={{ fontFamily: garamond, fontStyle: 'italic', fontSize: '2rem', lineHeight: 1.1 }}>
+              Buchstaben-Quiz
+            </Typography>
+            <RouterLink to="/" style={{ color: tokens.ink.muted, textDecoration: 'none', fontSize: 13 }}>
+              ← zurück
+            </RouterLink>
+          </Box>
+
+          {!started ? (
+            <SetupPanel
+              script={script}
+              setScript={setScript}
+              caseMode={caseMode}
+              setCaseMode={setCaseMode}
+              answerMode={answerMode}
+              setAnswerMode={setAnswerMode}
+              lowerCount={lowerCount}
+              upperCount={upperCount}
+              poolSize={pool.length}
+              onStart={start}
+            />
+          ) : (
+            <PlayPanel
+              current={current}
+              choices={choices}
+              input={input}
+              setInput={setInput}
+              verdict={verdict}
+              wrongChoices={wrongChoices}
+              answerMode={answerMode}
+              stats={stats}
+              inputRef={inputRef}
+              onSubmitTyped={submitTyped}
+              onPickChoice={pickChoice}
+              onReveal={reveal}
+              onAdvance={advance}
+              onQuit={() => setStarted(false)}
+            />
+          )}
+        </Stack>
+      </Container>
+    </Box>
+  );
+}
+
+// --- subcomponents --------------------------------------------------------
+
+function CenterPage({ children }: { children: React.ReactNode }) {
+  return (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        bgcolor: 'background.default',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        p: 4,
+      }}
+    >
+      {children}
+    </Box>
+  );
+}
+
+interface SetupProps {
+  script: string;
+  setScript: (s: string) => void;
+  caseMode: CaseMode;
+  setCaseMode: (c: CaseMode) => void;
+  answerMode: AnswerMode;
+  setAnswerMode: (a: AnswerMode) => void;
+  lowerCount: number;
+  upperCount: number;
+  poolSize: number;
+  onStart: () => void;
+}
+
+function SetupPanel(p: SetupProps) {
+  const noLetters = p.poolSize === 0;
+  return (
+    <Paper variant="outlined" sx={{ p: 3 }}>
+      <Stack spacing={3}>
+        <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
+          Erkenne die Kurrent-Buchstaben: Du siehst einen Buchstaben aus der historischen Vorlage und tippst (oder wählst),
+          welcher es ist. Richtig → weiter, falsch → noch einmal.
+        </Typography>
+
+        <Field label="Schrift">
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={p.script}
+            onChange={(_e, v: string | null) => v && p.setScript(v)}
+          >
+            {SCRIPTS.map((s) => (
+              <ToggleButton key={s.id} value={s.id} disabled={!s.available}>
+                {s.label}
+                {!s.available && (
+                  <Typography component="span" variant="caption" sx={{ ml: 0.75, color: 'text.disabled' }}>
+                    bald
+                  </Typography>
+                )}
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+        </Field>
+
+        <Field label="Buchstaben">
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={p.caseMode}
+            onChange={(_e, v: CaseMode | null) => v && p.setCaseMode(v)}
+          >
+            <ToggleButton value="lower">Klein ({p.lowerCount})</ToggleButton>
+            <ToggleButton value="upper">Groß ({p.upperCount})</ToggleButton>
+            <ToggleButton value="mixed">Gemischt</ToggleButton>
+          </ToggleButtonGroup>
+        </Field>
+
+        <Field label="Antwort">
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={p.answerMode}
+            onChange={(_e, v: AnswerMode | null) => v && p.setAnswerMode(v)}
+          >
+            <ToggleButton value="type">Tippen</ToggleButton>
+            <ToggleButton value="choice">Auswahl (Multiple Choice)</ToggleButton>
+          </ToggleButtonGroup>
+        </Field>
+
+        {noLetters ? (
+          <Alert severity="info">
+            Für diese Auswahl sind noch keine Buchstaben markiert.{' '}
+            {p.caseMode === 'upper'
+              ? 'Großbuchstaben kannst du im Admin-Bereich auf dem Blatt markieren — danach tauchen sie hier auf.'
+              : 'Markiere Buchstaben im Admin-Bereich auf dem Blatt.'}
+          </Alert>
+        ) : (
+          <Button variant="contained" size="large" onClick={p.onStart}>
+            Quiz starten
+          </Button>
+        )}
+      </Stack>
+    </Paper>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <Box>
+      <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 0.75 }}>
+        {label}
+      </Typography>
+      {children}
+    </Box>
+  );
+}
+
+interface PlayProps {
+  current: QuizItem | null;
+  choices: string[];
+  input: string;
+  setInput: (s: string) => void;
+  verdict: 'idle' | 'correct' | 'wrong' | 'revealed';
+  wrongChoices: Set<string>;
+  answerMode: AnswerMode;
+  stats: { correct: number; seen: number; streak: number };
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  onSubmitTyped: () => void;
+  onPickChoice: (c: string) => void;
+  onReveal: () => void;
+  onAdvance: () => void;
+  onQuit: () => void;
+}
+
+function PlayPanel(p: PlayProps) {
+  const { current, verdict } = p;
+  const solved = verdict === 'correct';
+  const showSolution = verdict === 'correct' || verdict === 'revealed';
+
+  if (!current) {
+    return (
+      <Alert severity="info">
+        Keine Buchstaben für diese Auswahl.{' '}
+        <Button size="small" onClick={p.onQuit}>
+          zurück
+        </Button>
+      </Alert>
+    );
+  }
+
+  return (
+    <Stack spacing={3}>
+      {/* Scoreboard */}
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        <Chip size="small" label={`Richtig ${p.stats.correct}/${p.stats.seen}`} />
+        <Chip size="small" color="primary" variant="outlined" label={`Serie ${p.stats.streak}`} />
+        <Box sx={{ flex: 1 }} />
+        <Button size="small" color="inherit" sx={{ color: 'text.secondary' }} onClick={p.onQuit}>
+          beenden
+        </Button>
+      </Box>
+
+      {/* The letter crop */}
+      <Paper
+        variant="outlined"
+        sx={{
+          p: 2,
+          minHeight: 200,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: '#fff',
+          borderColor:
+            verdict === 'correct' ? 'success.main' : verdict === 'wrong' ? 'error.main' : 'divider',
+          transition: 'border-color 120ms',
+        }}
+      >
+        <Box
+          component="img"
+          src={cropUrl(current.key)}
+          alt="Kurrent-Buchstabe"
+          sx={{ maxWidth: '100%', maxHeight: 260, objectFit: 'contain', userSelect: 'none' }}
+          draggable={false}
+        />
+      </Paper>
+
+      {/* Solution reveal */}
+      {showSolution && (
+        <Alert
+          icon={solved ? <CheckCircleIcon /> : <HighlightOffIcon />}
+          severity={solved ? 'success' : 'warning'}
+        >
+          Das ist{' '}
+          <Box component="span" sx={{ fontWeight: 600 }}>
+            {inCase(current.kg.answer, current.kg)}
+          </Box>{' '}
+          <Box component="span" sx={{ color: 'text.secondary' }}>
+            ({current.kg.label})
+          </Box>
+        </Alert>
+      )}
+
+      {verdict === 'wrong' && (
+        <Alert severity="error" sx={{ py: 0.25 }}>
+          Nicht richtig — versuch es nochmal.
+        </Alert>
+      )}
+
+      {/* Answer controls */}
+      {p.answerMode === 'type' ? (
+        <Stack direction="row" spacing={1}>
+          <TextField
+            inputRef={p.inputRef}
+            value={p.input}
+            onChange={(e) => p.setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') p.onSubmitTyped();
+            }}
+            placeholder="Welcher Buchstabe?"
+            disabled={solved}
+            autoComplete="off"
+            slotProps={{ htmlInput: { maxLength: 2, style: { textTransform: 'lowercase' } } }}
+            fullWidth
+          />
+          <Button variant="contained" onClick={p.onSubmitTyped} disabled={solved || !p.input.trim()}>
+            Prüfen
+          </Button>
+        </Stack>
+      ) : (
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+          {p.choices.map((c) => {
+            const isWrong = p.wrongChoices.has(c);
+            const isCorrect = solved && c === current.kg.answer;
+            return (
+              <Button
+                key={c}
+                variant={isCorrect ? 'contained' : 'outlined'}
+                color={isCorrect ? 'success' : isWrong ? 'error' : 'primary'}
+                disabled={isWrong || solved}
+                onClick={() => p.onPickChoice(c)}
+                sx={{ py: 1.25, fontSize: '1.05rem' }}
+              >
+                {inCase(c, current.kg)}
+              </Button>
+            );
+          })}
+        </Box>
+      )}
+
+      {/* Reveal / skip */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {showSolution ? (
+          <Tooltip title="Nächster Buchstabe">
+            <Button endIcon={<ArrowForwardIcon />} onClick={p.onAdvance}>
+              Weiter
+            </Button>
+          </Tooltip>
+        ) : (
+          <Button size="small" color="inherit" sx={{ color: 'text.secondary' }} onClick={p.onReveal}>
+            Lösung zeigen
+          </Button>
+        )}
+      </Box>
+    </Stack>
+  );
+}

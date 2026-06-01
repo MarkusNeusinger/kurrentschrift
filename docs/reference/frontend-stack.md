@@ -54,6 +54,7 @@ Slug-Varianten werden mit dem `locales/en/`-Bundle definiert (P1-Arbeit).
 |---|---|---|
 | `/` | Landing-Page mit Pitch und Quick-Links | §1 |
 | `/lernen` | Einstieg (Geschichte, Alphabet-Tafel, Lese-Regeln) | §1 |
+| `/quiz` | Buchstaben-Quiz (Crop aus der Vorlage → Latein-Buchstabe raten) | §4 |
 | `/animation` | Animierte Buchstaben-Tafel | §3 |
 | `/schreiben` | Lineatur-Konfigurator + Übungsblatt-Generator | §2 |
 | `/lesen-ueben` | Beliebiger Text → Kurrent-Rendering | §4 |
