@@ -46,10 +46,12 @@ const garamond = "'EB Garamond', Georgia, 'Times New Roman', serif";
 const ratioLabel = (c: LineatureConfig) =>
   `${c.ratioAscender} : ${c.ratioXHeight} : ${c.ratioDescender}`;
 
-// The printed footer line: the free-text caption (a title or name), then the
-// live spec (ratio + slant angle) and the site domain, always appended so a
-// printed sheet carries its settings and where it came from.
-function buildFooter(cfg: LineatureConfig, caption: string): string {
+const SITE_URL = 'kurrentschrift.ink';
+
+// The left footer string: the free-text caption (title/name) plus the live
+// spec (ratio + slant + pen angle), so a printed sheet carries its settings.
+// The site URL is placed in the opposite corner (see render below).
+function buildSpec(cfg: LineatureConfig, caption: string): string {
   const parts: string[] = [];
   const c = caption.trim();
   if (c) parts.push(c);
@@ -58,7 +60,6 @@ function buildFooter(cfg: LineatureConfig, caption: string): string {
   }
   if (cfg.showSlant && Number.isFinite(cfg.slantDeg)) parts.push(`Neigung ${cfg.slantDeg}°`);
   if (cfg.showPenAngle && Number.isFinite(cfg.penAngleDeg)) parts.push(`Feder ${cfg.penAngleDeg}°`);
-  parts.push('kurrentschrift.ink');
   return parts.join('  ·  ');
 }
 
@@ -119,10 +120,10 @@ export function WorksheetPage() {
   };
 
   const { segments, marks } = useMemo(() => buildLineature(cfg), [cfg]);
-  const footer = buildFooter(cfg, caption);
+  const spec = buildSpec(cfg, caption);
 
   const download = () => {
-    const blob = lineaturePdf(segments, { caption: footer, marks });
+    const blob = lineaturePdf(segments, { footerLeft: spec, footerRight: SITE_URL, marks });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -270,7 +271,7 @@ export function WorksheetPage() {
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 placeholder="z. B. Kurrent"
-                helperText="Verhältnis, Neigung, Federwinkel und kurrentschrift.ink werden automatisch ergänzt."
+                helperText="Erscheint mit Verhältnis/Neigung/Feder unten links; kurrentschrift.ink steht unten rechts."
               />
 
               <Button variant="contained" size="large" startIcon={<DownloadIcon />} onClick={download}>
@@ -293,7 +294,7 @@ export function WorksheetPage() {
                 justifyContent: 'center',
               }}
             >
-              <PreviewSvg segments={segments} marks={marks} footer={footer} />
+              <PreviewSvg segments={segments} marks={marks} footerLeft={spec} footerRight={SITE_URL} />
             </Paper>
           </Box>
         </Box>
@@ -314,11 +315,13 @@ function stripPreset(p: (typeof PRESETS)[number]): LineatureConfig {
 function PreviewSvg({
   segments,
   marks,
-  footer,
+  footerLeft,
+  footerRight,
 }: {
   segments: Segment[];
   marks: TextMark[];
-  footer: string;
+  footerLeft: string;
+  footerRight: string;
 }) {
   // Paint in the same role order the PDF uses, so crossings look identical in
   // preview and print (stable sort keeps per-row order within a role).
@@ -326,7 +329,6 @@ function PreviewSvg({
     () => [...segments].sort((a, b) => DRAW_ORDER.indexOf(a.role) - DRAW_ORDER.indexOf(b.role)),
     [segments],
   );
-  const trimmed = footer.trim();
   return (
     <Box
       component="svg"
@@ -369,9 +371,21 @@ function PreviewSvg({
           {m.text}
         </text>
       ))}
-      {trimmed && (
+      {footerLeft.trim() && (
         <text x={12} y={A4.heightMm - 9} fontSize={3.2} fill="#6B6A63" fontFamily="sans-serif">
-          {trimmed}
+          {footerLeft}
+        </text>
+      )}
+      {footerRight.trim() && (
+        <text
+          x={A4.widthMm - 12}
+          y={A4.heightMm - 9}
+          fontSize={3.2}
+          fill="#6B6A63"
+          fontFamily="sans-serif"
+          textAnchor="end"
+        >
+          {footerRight}
         </text>
       )}
     </Box>

@@ -40,9 +40,33 @@ function latin1Bytes(s: string): Uint8Array {
   return out;
 }
 
+// Helvetica (base-14) advance widths in 1000-unit em — enough to right-align
+// footer text without embedding a font. Unknown glyphs fall back to 556 (the
+// average lowercase advance), which is plenty accurate for a short caption.
+const HELV_WIDTH: Record<string, number> = {
+  ' ': 278, '!': 278, '"': 355, '#': 556, $: 556, '%': 889, '&': 667, "'": 191,
+  '(': 333, ')': 333, '*': 389, '+': 584, ',': 278, '-': 333, '.': 278, '/': 278,
+  ':': 278, ';': 278, '<': 584, '=': 584, '>': 584, '?': 556, '@': 1015, '[': 278,
+  '\\': 278, ']': 278, '^': 469, _: 556, '`': 333, '{': 334, '|': 260, '}': 334,
+  '~': 584, '°': 400, '·': 278,
+  A: 667, B: 667, C: 722, D: 722, E: 667, F: 611, G: 778, H: 722, I: 278, J: 500,
+  K: 667, L: 556, M: 833, N: 722, O: 778, P: 667, Q: 778, R: 722, S: 667, T: 611,
+  U: 722, V: 667, W: 944, X: 667, Y: 667, Z: 611,
+  a: 556, b: 556, c: 500, d: 556, e: 556, f: 278, g: 556, h: 556, i: 222, j: 222,
+  k: 500, l: 222, m: 833, n: 556, o: 556, p: 556, q: 556, r: 333, s: 500, t: 278,
+  u: 556, v: 500, w: 722, x: 500, y: 500, z: 500,
+  ä: 556, ö: 556, ü: 556, ß: 556, Ä: 667, Ö: 778, Ü: 722,
+};
+
+function helvWidthMm(text: string, fontPt: number): number {
+  let units = 0;
+  for (const ch of text) units += /[0-9]/.test(ch) ? 556 : (HELV_WIDTH[ch] ?? 556);
+  return ((units / 1000) * fontPt) / PT_PER_MM; // em-units → pt → mm
+}
+
 export function lineaturePdf(
   segments: Segment[],
-  opts: { caption?: string; marks?: TextMark[] } = {},
+  opts: { footerLeft?: string; footerRight?: string; marks?: TextMark[] } = {},
 ): Blob {
   const W = A4.widthMm * PT_PER_MM;
   const H = A4.heightMm * PT_PER_MM;
@@ -74,10 +98,15 @@ export function lineaturePdf(
     );
   }
 
-  if (opts.caption) {
-    // Quiet caption in the bottom margin.
-    ops.push('0.42 0.42 0.40 rg');
-    ops.push(`BT /F1 8 Tf ${px(12)} ${py(A4.heightMm - 9)} Td (${escapePdfText(opts.caption)}) Tj ET`);
+  // Footer in the bottom margin: spec on the left, site URL on the right.
+  const footY = A4.heightMm - 9;
+  if (opts.footerLeft || opts.footerRight) ops.push('0.42 0.42 0.40 rg');
+  if (opts.footerLeft) {
+    ops.push(`BT /F1 8 Tf ${px(12)} ${py(footY)} Td (${escapePdfText(opts.footerLeft)}) Tj ET`);
+  }
+  if (opts.footerRight) {
+    const rx = A4.widthMm - 12 - helvWidthMm(opts.footerRight, 8);
+    ops.push(`BT /F1 8 Tf ${px(rx)} ${py(footY)} Td (${escapePdfText(opts.footerRight)}) Tj ET`);
   }
 
   const content = ops.join('\n');
