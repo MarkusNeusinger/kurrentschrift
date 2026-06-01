@@ -101,3 +101,26 @@ export const SCRIPTS: ScriptOption[] = [
   { id: 'suetterlin', label: 'Sütterlin', available: false },
   { id: 'offenbacher', label: 'Offenbacher', available: false },
 ];
+
+// Difficulty levels for the quiz. The idea: show each letter in progressively
+// less-clean hands so the learner trains beyond copybook-perfect forms. v1 only
+// has the clean Loth 1866 teaching plate, so the rougher levels are listed but
+// disabled ("bald") until real, messier handwriting sources are added to the DB
+// (a post-MVP data task — see docs/concepts/architektur.md §12). Once those
+// sources exist the quiz picks crops by difficulty instead of always Loth; the
+// `difficulty` state already threads through QuizPage so only the crop source
+// has to change here.
+export type Difficulty = 'clean' | 'worn' | 'messy';
+
+export interface DifficultyOption {
+  id: Difficulty;
+  label: string;
+  hint: string;
+  available: boolean;
+}
+
+export const DIFFICULTIES: DifficultyOption[] = [
+  { id: 'clean', label: 'Sauber', hint: 'klare Lehrtafel', available: true },
+  { id: 'worn', label: 'Geübt', hint: 'flüssige Alltagshand', available: false },
+  { id: 'messy', label: 'Krakelig', hint: 'unsaubere, schwer lesbare Hand', available: false },
+];
