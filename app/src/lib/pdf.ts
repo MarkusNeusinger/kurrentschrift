@@ -9,7 +9,7 @@
 // Everything is encoded as Latin-1 (one char → one byte), which keeps xref
 // byte offsets equal to string lengths and covers Western-European text.
 
-import { A4, DRAW_ORDER, ROLE_STYLES, type Segment } from './lineatur';
+import { A4, DRAW_ORDER, ROLE_STYLES, type Segment, type TextMark } from './lineatur';
 
 const PT_PER_MM = 72 / 25.4;
 
@@ -40,7 +40,10 @@ function latin1Bytes(s: string): Uint8Array {
   return out;
 }
 
-export function lineaturePdf(segments: Segment[], opts: { caption?: string } = {}): Blob {
+export function lineaturePdf(
+  segments: Segment[],
+  opts: { caption?: string; marks?: TextMark[] } = {},
+): Blob {
   const W = A4.widthMm * PT_PER_MM;
   const H = A4.heightMm * PT_PER_MM;
   // mm (top-left origin, y down) → pt (bottom-left origin, y up)
@@ -62,9 +65,17 @@ export function lineaturePdf(segments: Segment[], opts: { caption?: string } = {
     }
   }
 
+  // Standalone labels (e.g. the pen-angle gauge degree).
+  for (const m of opts.marks ?? []) {
+    const mc = hexToRgb(m.color ?? '#6B6A63');
+    ops.push(`${mc.r.toFixed(3)} ${mc.g.toFixed(3)} ${mc.b.toFixed(3)} rg`);
+    ops.push(
+      `BT /F1 ${(m.sizeMm * PT_PER_MM).toFixed(2)} Tf ${px(m.x)} ${py(m.y)} Td (${escapePdfText(m.text)}) Tj ET`,
+    );
+  }
+
   if (opts.caption) {
     // Quiet caption in the bottom margin.
-    ops.push('[] 0 d');
     ops.push('0.42 0.42 0.40 rg');
     ops.push(`BT /F1 8 Tf ${px(12)} ${py(A4.heightMm - 9)} Td (${escapePdfText(opts.caption)}) Tj ET`);
   }

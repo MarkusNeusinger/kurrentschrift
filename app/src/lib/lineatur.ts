@@ -20,7 +20,7 @@
 
 export const A4 = { widthMm: 210, heightMm: 297 } as const;
 
-export type LineRole = 'baseline' | 'waist' | 'ascender' | 'descender' | 'slant';
+export type LineRole = 'baseline' | 'waist' | 'ascender' | 'descender' | 'slant' | 'pen';
 
 export interface Segment {
   x1: number;
@@ -28,6 +28,21 @@ export interface Segment {
   x2: number;
   y2: number;
   role: LineRole;
+}
+
+// A small positioned text label (e.g. the pen-angle gauge degree).
+export interface TextMark {
+  x: number;
+  y: number; // text baseline, mm (top-left origin)
+  sizeMm: number;
+  text: string;
+  color?: string;
+}
+
+// Everything needed to render one page: line segments plus standalone labels.
+export interface Lineature {
+  segments: Segment[];
+  marks: TextMark[];
 }
 
 export interface LineatureConfig {
@@ -41,6 +56,8 @@ export interface LineatureConfig {
   showSlant: boolean;
   slantDeg: number; // slant from vertical; 0 = upright, positive = leans right
   slantSpacingMm: number; // horizontal spacing between slant guides
+  showPenAngle: boolean;
+  penAngleDeg: number; // nib/pen-hold angle from the writing line (horizontal)
 }
 
 export interface ScriptPreset extends LineatureConfig {
@@ -67,6 +84,10 @@ export const PRESETS: ScriptPreset[] = [
     showSlant: true,
     slantDeg: 30,
     slantSpacingMm: 10,
+    // Pointed pen: stroke width comes from pressure (Schwellzug), not nib
+    // angle, so the pen-angle gauge is off by default here.
+    showPenAngle: false,
+    penAngleDeg: 45,
   },
   {
     id: 'suetterlin',
@@ -81,11 +102,13 @@ export const PRESETS: ScriptPreset[] = [
     showSlant: false,
     slantDeg: 0,
     slantSpacingMm: 10,
+    showPenAngle: false,
+    penAngleDeg: 30,
   },
   {
     id: 'offenbacher',
     label: 'Offenbacher',
-    note: '2 : 1 : 2 · leicht geneigt · Breitfeder',
+    note: '2 : 1 : 2 · leicht geneigt · Breitfeder ~35°',
     ratioAscender: 2,
     ratioXHeight: 1,
     ratioDescender: 2,
@@ -95,6 +118,9 @@ export const PRESETS: ScriptPreset[] = [
     showSlant: true,
     slantDeg: 12,
     slantSpacingMm: 12,
+    // Broad nib: the pen-hold angle defines the thick/thin distribution.
+    showPenAngle: true,
+    penAngleDeg: 35,
   },
 ];
 
@@ -114,11 +140,21 @@ export const ROLE_STYLES: Record<LineRole, RoleStyle> = {
   ascender: { color: '#B8B6AE', widthMm: 0.18, dash: [1.6, 1.6] },
   descender: { color: '#B8B6AE', widthMm: 0.18, dash: [1.6, 1.6] },
   slant: { color: '#D6D4CB', widthMm: 0.15, dash: [1, 1.6] },
+  // Instructional reference (the pen-angle gauge): brand green so it reads as
+  // "guidance", distinct from the warm-grey writing lines.
+  pen: { color: '#009E73', widthMm: 0.3 },
 };
 
 // Render order: faint layers first so darker lines sit on top at crossings.
 // Shared by the SVG preview and the PDF writer so the two never diverge.
-export const DRAW_ORDER: LineRole[] = ['slant', 'ascender', 'descender', 'waist', 'baseline'];
+export const DRAW_ORDER: LineRole[] = [
+  'slant',
+  'ascender',
+  'descender',
+  'waist',
+  'baseline',
+  'pen',
+];
 
 // Liang–Barsky segment clip against an axis-aligned rectangle (xmin<xmax,
 // ymin<ymax). Returns the clipped segment, or null if it lies fully outside.
@@ -155,11 +191,42 @@ function clipToRect(
   return { x1: x1 + t0 * dx, y1: y1 + t0 * dy, x2: x1 + t1 * dx, y2: y1 + t1 * dy };
 }
 
-// Build all line segments for one A4 page from a config. Defensive against
-// pathological input (zero/negative sizes, extreme slants) so the live preview
-// never hangs while the user is typing.
-export function buildLineature(cfg: LineatureConfig): Segment[] {
+// Pen-angle gauge: a small reference mark in the top-left margin showing the
+// nib/pen-hold angle relative to the writing line (horizontal), with a degree
+// label. Returns null if disabled, non-finite, or the margin is too tight to
+// show it legibly. The pivot sits just above the first row, so the mark lives
+// in the top margin and never crosses the writing lines.
+function penGauge(cfg: LineatureConfig, left: number, top: number): Lineature | null {
+  if (!cfg.showPenAngle || !Number.isFinite(cfg.penAngleDeg)) return null;
+  const gap = 1.5; // sit just above the first ascender line
+  const baseY = top - gap;
+  const theta = (cfg.penAngleDeg * Math.PI) / 180;
+  const sin = Math.sin(theta);
+  const cos = Math.cos(theta);
+  // Longest mark whose tip still clears the page top edge (≥2 mm), capped 8 mm.
+  const maxByEdge = sin > 1e-3 ? (baseY - 2) / sin : 8;
+  const len = Math.min(8, maxByEdge);
+  if (!(len >= 3)) return null;
+  return {
+    segments: [
+      // horizontal reference (the writing-line direction)
+      { x1: left, y1: baseY, x2: left + len, y2: baseY, role: 'pen' },
+      // pen edge at the nib angle, opening up-right from the pivot
+      { x1: left, y1: baseY, x2: left + len * cos, y2: baseY - len * sin, role: 'pen' },
+    ],
+    marks: [
+      { x: left + len + 2, y: baseY, sizeMm: 3, text: `${cfg.penAngleDeg}°`, color: ROLE_STYLES.pen.color },
+    ],
+  };
+}
+
+// Build all line segments + labels for one A4 page from a config. Defensive
+// against pathological input (zero/negative sizes, extreme slants) so the live
+// preview never hangs while the user is typing.
+export function buildLineature(cfg: LineatureConfig): Lineature {
   const segs: Segment[] = [];
+  const marks: TextMark[] = [];
+  const empty: Lineature = { segments: segs, marks };
 
   // Bail out on non-finite input (e.g. a field the user has cleared mid-edit);
   // the preview just goes blank until the value is valid again.
@@ -171,7 +238,7 @@ export function buildLineature(cfg: LineatureConfig): Segment[] {
     cfg.rowGapMm,
     cfg.marginMm,
   ];
-  if (!inputs.every(Number.isFinite)) return segs;
+  if (!inputs.every(Number.isFinite)) return empty;
 
   const left = cfg.marginMm;
   const right = A4.widthMm - cfg.marginMm;
@@ -183,7 +250,7 @@ export function buildLineature(cfg: LineatureConfig): Segment[] {
   const desc = cfg.ratioDescender * unit;
   const rowH = asc + cfg.xHeightMm + desc;
 
-  if (!(unit > 0) || !(rowH > 0) || right <= left || bottom <= top) return segs;
+  if (!(unit > 0) || !(rowH > 0) || right <= left || bottom <= top) return empty;
 
   const tan = Math.tan((cfg.slantDeg * Math.PI) / 180);
 
@@ -228,5 +295,11 @@ export function buildLineature(cfg: LineatureConfig): Segment[] {
     rowTop = yDescBot + cfg.rowGapMm;
   }
 
-  return segs;
+  const gauge = penGauge(cfg, left, top);
+  if (gauge) {
+    segs.push(...gauge.segments);
+    marks.push(...gauge.marks);
+  }
+
+  return { segments: segs, marks };
 }

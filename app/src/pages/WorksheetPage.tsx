@@ -35,6 +35,8 @@ import {
   ROLE_STYLES,
   buildLineature,
   type LineatureConfig,
+  type Segment,
+  type TextMark,
 } from '../lib/lineatur';
 import { lineaturePdf } from '../lib/pdf';
 import { tokens } from '../theme';
@@ -55,6 +57,7 @@ function buildFooter(cfg: LineatureConfig, caption: string): string {
     parts.push(ratioLabel(cfg));
   }
   if (cfg.showSlant && Number.isFinite(cfg.slantDeg)) parts.push(`Neigung ${cfg.slantDeg}°`);
+  if (cfg.showPenAngle && Number.isFinite(cfg.penAngleDeg)) parts.push(`Feder ${cfg.penAngleDeg}°`);
   parts.push('kurrentschrift.ink');
   return parts.join('  ·  ');
 }
@@ -115,11 +118,11 @@ export function WorksheetPage() {
     setCaption(p.label);
   };
 
-  const segments = useMemo(() => buildLineature(cfg), [cfg]);
+  const { segments, marks } = useMemo(() => buildLineature(cfg), [cfg]);
   const footer = buildFooter(cfg, caption);
 
   const download = () => {
-    const blob = lineaturePdf(segments, { caption: footer });
+    const blob = lineaturePdf(segments, { caption: footer, marks });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -240,6 +243,26 @@ export function WorksheetPage() {
 
               <Divider />
 
+              <Box>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={cfg.showPenAngle}
+                      onChange={(e) => set({ showPenAngle: e.target.checked })}
+                    />
+                  }
+                  label="Federwinkel (Stifthaltung)"
+                />
+                <Box sx={{ mt: 1 }}>
+                  <NumField label="Federwinkel" value={cfg.penAngleDeg} onChange={(v) => set({ penAngleDeg: v })} min={0} max={90} step={1} unit="°" disabled={!cfg.showPenAngle} />
+                </Box>
+                <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mt: 1 }}>
+                  Anstellwinkel der Feder zur Schreiblinie — als Winkelmarke oben links. Bei der Spitzfeder (Kurrent) kommt die Strichstärke aus dem Druck, nicht aus dem Winkel.
+                </Typography>
+              </Box>
+
+              <Divider />
+
               <TextField
                 label="Titel / Name (optional)"
                 size="small"
@@ -247,7 +270,7 @@ export function WorksheetPage() {
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 placeholder="z. B. Kurrent"
-                helperText="Verhältnis, Neigung und kurrentschrift.ink werden automatisch ergänzt."
+                helperText="Verhältnis, Neigung, Federwinkel und kurrentschrift.ink werden automatisch ergänzt."
               />
 
               <Button variant="contained" size="large" startIcon={<DownloadIcon />} onClick={download}>
@@ -270,7 +293,7 @@ export function WorksheetPage() {
                 justifyContent: 'center',
               }}
             >
-              <PreviewSvg cfg={cfg} caption={footer} />
+              <PreviewSvg segments={segments} marks={marks} footer={footer} />
             </Paper>
           </Box>
         </Box>
@@ -288,14 +311,22 @@ function stripPreset(p: (typeof PRESETS)[number]): LineatureConfig {
   return cfg;
 }
 
-function PreviewSvg({ cfg, caption }: { cfg: LineatureConfig; caption: string }) {
+function PreviewSvg({
+  segments,
+  marks,
+  footer,
+}: {
+  segments: Segment[];
+  marks: TextMark[];
+  footer: string;
+}) {
   // Paint in the same role order the PDF uses, so crossings look identical in
   // preview and print (stable sort keeps per-row order within a role).
-  const segments = useMemo(() => {
-    const segs = buildLineature(cfg);
-    return [...segs].sort((a, b) => DRAW_ORDER.indexOf(a.role) - DRAW_ORDER.indexOf(b.role));
-  }, [cfg]);
-  const trimmed = caption.trim();
+  const ordered = useMemo(
+    () => [...segments].sort((a, b) => DRAW_ORDER.indexOf(a.role) - DRAW_ORDER.indexOf(b.role)),
+    [segments],
+  );
+  const trimmed = footer.trim();
   return (
     <Box
       component="svg"
@@ -310,7 +341,7 @@ function PreviewSvg({ cfg, caption }: { cfg: LineatureConfig; caption: string })
       }}
     >
       <rect x={0} y={0} width={A4.widthMm} height={A4.heightMm} fill="#FFFFFF" stroke="none" />
-      {segments.map((s, i) => {
+      {ordered.map((s, i) => {
         const st = ROLE_STYLES[s.role];
         return (
           <line
@@ -326,6 +357,18 @@ function PreviewSvg({ cfg, caption }: { cfg: LineatureConfig; caption: string })
           />
         );
       })}
+      {marks.map((m, i) => (
+        <text
+          key={`m${i}`}
+          x={m.x}
+          y={m.y}
+          fontSize={m.sizeMm}
+          fill={m.color ?? '#6B6A63'}
+          fontFamily="sans-serif"
+        >
+          {m.text}
+        </text>
+      ))}
       {trimmed && (
         <text x={12} y={A4.heightMm - 9} fontSize={3.2} fill="#6B6A63" fontFamily="sans-serif">
           {trimmed}
