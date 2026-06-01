@@ -74,27 +74,33 @@ export function LandingPage() {
             neu schreiben.
           </Typography>
 
-          {/* Primary CTA — the one thing a visitor can already do today */}
-          <Box>
+          {/* Primary CTAs — the tools a visitor can already use today */}
+          <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
             <Link
               component={RouterLink}
               to="/quiz"
               sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 0.75,
-                fontWeight: 500,
                 color: tokens.green,
+                fontWeight: 500,
                 textDecoration: 'none',
                 '&:hover': { color: tokens.greenDark },
               }}
             >
-              Buchstaben-Quiz starten
-              <Box component="span" aria-hidden sx={{ fontSize: '1.1em' }}>
-                →
-              </Box>
+              Buchstaben-Quiz starten →
             </Link>
-          </Box>
+            <Link
+              component={RouterLink}
+              to="/schreiben"
+              sx={{
+                color: tokens.green,
+                fontWeight: 500,
+                textDecoration: 'none',
+                '&:hover': { color: tokens.greenDark },
+              }}
+            >
+              Übungsblatt erstellen →
+            </Link>
+          </Stack>
 
           {/* How it works — the ductus pipeline as a quiet timeline */}
           <Box sx={{ pt: 1 }}>
