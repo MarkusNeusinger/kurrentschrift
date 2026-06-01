@@ -9,7 +9,7 @@
 // Everything is encoded as Latin-1 (one char → one byte), which keeps xref
 // byte offsets equal to string lengths and covers Western-European text.
 
-import { A4, ROLE_STYLES, type LineRole, type Segment } from './lineatur';
+import { A4, DRAW_ORDER, ROLE_STYLES, type Segment } from './lineatur';
 
 const PT_PER_MM = 72 / 25.4;
 
@@ -39,9 +39,6 @@ function latin1Bytes(s: string): Uint8Array {
   for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i) & 0xff;
   return out;
 }
-
-// Draw order: faint layers first so darker lines sit on top at crossings.
-const DRAW_ORDER: LineRole[] = ['slant', 'ascender', 'descender', 'waist', 'baseline'];
 
 export function lineaturePdf(segments: Segment[], opts: { caption?: string } = {}): Blob {
   const W = A4.widthMm * PT_PER_MM;
@@ -79,6 +76,10 @@ export function lineaturePdf(segments: Segment[], opts: { caption?: string } = {
     '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
     `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W.toFixed(2)} ${H.toFixed(2)}] ` +
       `/Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>`,
+    // /Length counts only the stream data; the EOL marker before `endstream`
+    // is excluded per ISO 32000-1 §7.3.8.1 ("an additional EOL marker,
+    // preceding endstream, that is not included in the count"), so the trailing
+    // "\n" here is correct and content.length is the right length.
     `<< /Length ${content.length} >>\nstream\n${content}\nendstream`,
     '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>',
   ];

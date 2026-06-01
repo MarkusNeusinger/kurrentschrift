@@ -1,4 +1,5 @@
-// Lineature (Hilfslinien) geometry for German cursive practice sheets.
+// Geometry for German-cursive practice sheets: the ruled guide lines
+// (German: Hilfslinien) of a writing worksheet.
 //
 // Pure and framework-free: emits line primitives in millimetre page
 // coordinates (origin top-left, y downwards — the SVG/screen convention).
@@ -7,15 +8,15 @@
 //
 // The writing row is the classic four-line system:
 //   ascender top ── waist (x-height top) ── baseline ── descender bottom
-// The waist+baseline pair bounds the Mittelband (x-height); the ascender and
-// descender bands sit above and below. Band heights follow a configurable
-// ratio ascender : x-height : descender (architektur.md §15, vision.md §2):
-// 2:1:2 is the default, with per-script presets below.
+// The waist+baseline pair bounds the x-height band (German: Mittelband); the
+// ascender and descender bands sit above and below. Band heights follow a
+// configurable ratio ascender : x-height : descender (architektur.md §15,
+// vision.md §2): 2:1:2 is the default, with per-script presets below.
 //
-// Note: this is the geometry-only worksheet (Lineatur). The content-aware
-// variant that typesets Kurrent glyphs into the lines (WeasyPrint backend,
-// architektur.md §15 `POST /worksheet`) is a separate, later piece — this
-// tool ships now, fully client-side.
+// Note: this is the geometry-only worksheet. The content-aware variant that
+// typesets Kurrent glyphs into the lines (WeasyPrint backend, architektur.md
+// §15 `POST /worksheet`) is a separate, later piece — this tool ships now,
+// fully client-side.
 
 export const A4 = { widthMm: 210, heightMm: 297 } as const;
 
@@ -115,6 +116,10 @@ export const ROLE_STYLES: Record<LineRole, RoleStyle> = {
   slant: { color: '#D6D4CB', widthMm: 0.15, dash: [1, 1.6] },
 };
 
+// Render order: faint layers first so darker lines sit on top at crossings.
+// Shared by the SVG preview and the PDF writer so the two never diverge.
+export const DRAW_ORDER: LineRole[] = ['slant', 'ascender', 'descender', 'waist', 'baseline'];
+
 // Liang–Barsky segment clip against an axis-aligned rectangle (xmin<xmax,
 // ymin<ymax). Returns the clipped segment, or null if it lies fully outside.
 function clipToRect(
@@ -155,6 +160,18 @@ function clipToRect(
 // never hangs while the user is typing.
 export function buildLineature(cfg: LineatureConfig): Segment[] {
   const segs: Segment[] = [];
+
+  // Bail out on non-finite input (e.g. a field the user has cleared mid-edit);
+  // the preview just goes blank until the value is valid again.
+  const inputs = [
+    cfg.ratioAscender,
+    cfg.ratioXHeight,
+    cfg.ratioDescender,
+    cfg.xHeightMm,
+    cfg.rowGapMm,
+    cfg.marginMm,
+  ];
+  if (!inputs.every(Number.isFinite)) return segs;
 
   const left = cfg.marginMm;
   const right = A4.widthMm - cfg.marginMm;

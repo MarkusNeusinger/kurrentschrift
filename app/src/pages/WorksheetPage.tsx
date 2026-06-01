@@ -1,7 +1,7 @@
-// Public worksheet generator (/schreiben): a configurable lineature (Hilfslinien)
-// for practising German cursive, rendered live as A4 and downloadable as a
-// print-ready PDF. Geometry lives in lib/lineatur.ts, the PDF in lib/pdf.ts;
-// this file is the UI shell only.
+// Public worksheet generator (/schreiben): a configurable set of ruled guide
+// lines (German: Hilfslinien) for practising German cursive, rendered live as
+// A4 and downloadable as a print-ready PDF. Geometry lives in lib/lineatur.ts,
+// the PDF in lib/pdf.ts; this file is the UI shell only.
 //
 // Scope per vision.md §2 / architektur.md §15: ratio ascender:x-height:descender
 // freely configurable with the three start-script presets (Kurrent · Sütterlin ·
@@ -30,6 +30,7 @@ import {
 
 import {
   A4,
+  DRAW_ORDER,
   PRESETS,
   ROLE_STYLES,
   buildLineature,
@@ -61,11 +62,11 @@ function NumField(props: {
       size="small"
       fullWidth
       disabled={disabled}
+      // Store NaN for an empty/partial entry so the field can actually be
+      // cleared while editing (rendered as '' above); buildLineature treats a
+      // non-finite config as "blank preview" rather than snapping the value back.
       value={Number.isFinite(value) ? value : ''}
-      onChange={(e) => {
-        const v = parseFloat(e.target.value);
-        if (!Number.isNaN(v)) onChange(v);
-      }}
+      onChange={(e) => onChange(parseFloat(e.target.value))}
       slotProps={{
         htmlInput: { min, max, step },
         input: unit
@@ -110,7 +111,8 @@ export function WorksheetPage() {
     document.body.appendChild(a);
     a.click();
     a.remove();
-    URL.revokeObjectURL(url);
+    // Defer revocation so it can't race the download start on slower devices.
+    setTimeout(() => URL.revokeObjectURL(url), 0);
   };
 
   return (
@@ -270,7 +272,12 @@ function stripPreset(p: (typeof PRESETS)[number]): LineatureConfig {
 }
 
 function PreviewSvg({ cfg, caption }: { cfg: LineatureConfig; caption: string }) {
-  const segments = useMemo(() => buildLineature(cfg), [cfg]);
+  // Paint in the same role order the PDF uses, so crossings look identical in
+  // preview and print (stable sort keeps per-row order within a role).
+  const segments = useMemo(() => {
+    const segs = buildLineature(cfg);
+    return [...segs].sort((a, b) => DRAW_ORDER.indexOf(a.role) - DRAW_ORDER.indexOf(b.role));
+  }, [cfg]);
   const trimmed = caption.trim();
   return (
     <Box

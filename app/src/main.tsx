@@ -5,7 +5,6 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './router';
-import { AdminProvider } from './state';
 import { theme } from './theme';
 
 const root = document.getElementById('root');
@@ -14,9 +13,7 @@ createRoot(root).render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AdminProvider>
-        <RouterProvider router={router} />
-      </AdminProvider>
+      <RouterProvider router={router} />
     </ThemeProvider>
   </React.StrictMode>,
 );
