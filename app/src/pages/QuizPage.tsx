@@ -147,7 +147,9 @@ export function QuizPage() {
   }, []);
 
   const submitTyped = useCallback(() => {
-    if (!current || verdict === 'correct') return;
+    // 'correct' and 'revealed' are both terminal for the current question — a
+    // late submit must not mark (and double-count) it again.
+    if (!current || verdict === 'correct' || verdict === 'revealed') return;
     const guess = input.trim().toLowerCase();
     if (!guess) return;
     if (guess === current.kg.answer) {
@@ -164,7 +166,8 @@ export function QuizPage() {
 
   const pickChoice = useCallback(
     (choice: string) => {
-      if (!current || verdict === 'correct') return;
+      // Terminal once correct or revealed — guard against a late double-count.
+      if (!current || verdict === 'correct' || verdict === 'revealed') return;
       if (choice === current.kg.answer) {
         markResult(true);
         setVerdict('correct');
@@ -483,12 +486,12 @@ function PlayPanel(p: PlayProps) {
               if (e.key === 'Enter') p.onSubmitTyped();
             }}
             placeholder="Welcher Buchstabe?"
-            disabled={solved}
+            disabled={showSolution}
             autoComplete="off"
             slotProps={{ htmlInput: { maxLength: 2, style: { textTransform: 'lowercase' } } }}
             fullWidth
           />
-          <Button variant="contained" onClick={p.onSubmitTyped} disabled={solved || !p.input.trim()}>
+          <Button variant="contained" onClick={p.onSubmitTyped} disabled={showSolution || !p.input.trim()}>
             Prüfen
           </Button>
         </Stack>
@@ -496,13 +499,15 @@ function PlayPanel(p: PlayProps) {
         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
           {p.choices.map((c) => {
             const isWrong = p.wrongChoices.has(c);
-            const isCorrect = solved && c === current.kg.answer;
+            // Highlight the right answer green whether the learner got it or
+            // revealed it.
+            const isCorrect = showSolution && c === current.kg.answer;
             return (
               <Button
                 key={c}
                 variant={isCorrect ? 'contained' : 'outlined'}
                 color={isCorrect ? 'success' : isWrong ? 'error' : 'primary'}
-                disabled={isWrong || solved}
+                disabled={isWrong || showSolution}
                 onClick={() => p.onPickChoice(c)}
                 sx={{ py: 1.25, fontSize: '1.05rem' }}
               >
