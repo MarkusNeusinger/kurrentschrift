@@ -94,6 +94,18 @@ export function QuizPage() {
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  // Pending "advance after a correct answer" timer, tracked so it can be
+  // cancelled when the learner quits/restarts (or the page unmounts) before it
+  // fires — otherwise a late advance would mutate quiz state off the play screen.
+  const advanceTimer = useRef<number | null>(null);
+
+  const clearAdvance = useCallback(() => {
+    if (advanceTimer.current !== null) {
+      window.clearTimeout(advanceTimer.current);
+      advanceTimer.current = null;
+    }
+  }, []);
+
   // All marked letters that resolve to a known glyph (and therefore an answer).
   const allItems = useMemo<QuizItem[]>(
     () =>
@@ -150,24 +162,40 @@ export function QuizPage() {
   );
 
   const start = useCallback(() => {
+    clearAdvance();
     setStats({ correct: 0, seen: 0, streak: 0, bestStreak: 0 });
     setMisses({});
     setConfusions({});
     setFinished(false);
     setStarted(true);
     nextQuestion(pool);
-  }, [pool, nextQuestion]);
+  }, [pool, nextQuestion, clearAdvance]);
 
   const advance = useCallback(() => {
     nextQuestion(pool, current?.key);
   }, [pool, current, nextQuestion]);
 
+  // Advance after a short pause so the green "correct" state stays visible;
+  // cancels any previous pending advance first.
+  const scheduleAdvance = useCallback(() => {
+    clearAdvance();
+    advanceTimer.current = window.setTimeout(() => {
+      advanceTimer.current = null;
+      advance();
+    }, 650);
+  }, [clearAdvance, advance]);
+
   // End the session: show the results screen if anything was answered, otherwise
-  // drop straight back to setup (nothing to report).
+  // drop straight back to setup (nothing to report). Either way, cancel a
+  // pending advance so it can't change the question after we leave the drill.
   const finish = useCallback(() => {
+    clearAdvance();
     if (stats.seen > 0) setFinished(true);
     else setStarted(false);
-  }, [stats.seen]);
+  }, [stats.seen, clearAdvance]);
+
+  // Cancel a pending advance on unmount.
+  useEffect(() => clearAdvance, [clearAdvance]);
 
   // Keep the typing field focused for a fast keyboard loop.
   useEffect(() => {
@@ -205,7 +233,7 @@ export function QuizPage() {
     if (guess === current.kg.answer) {
       markResult(true);
       setVerdict('correct');
-      window.setTimeout(advance, 650);
+      scheduleAdvance();
     } else {
       // Wrong → it does NOT advance; the same letter stays for another try.
       recordMiss(current.kg, guess);
@@ -213,7 +241,7 @@ export function QuizPage() {
       setVerdict('wrong');
       setInput('');
     }
-  }, [current, input, verdict, markResult, recordMiss, advance]);
+  }, [current, input, verdict, markResult, recordMiss, scheduleAdvance]);
 
   const pickChoice = useCallback(
     (choice: string) => {
@@ -222,7 +250,7 @@ export function QuizPage() {
       if (choice === current.kg.answer) {
         markResult(true);
         setVerdict('correct');
-        window.setTimeout(advance, 650);
+        scheduleAdvance();
       } else {
         recordMiss(current.kg, choice);
         setStats((s) => ({ ...s, streak: 0 }));
@@ -230,7 +258,7 @@ export function QuizPage() {
         setWrongChoices((prev) => new Set(prev).add(choice));
       }
     },
-    [current, verdict, markResult, recordMiss, advance],
+    [current, verdict, markResult, recordMiss, scheduleAdvance],
   );
 
   const reveal = useCallback(() => {
