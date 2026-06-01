@@ -1,13 +1,13 @@
 // Persistent layout shell: sidebar on the left, page content on the right.
 
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 
 import { GlyphSidebar } from '../components/GlyphSidebar';
 import { useAdmin } from '../state';
 
 export function AppLayout() {
-  const { source, loadError } = useAdmin();
+  const { source, loadError, waking } = useAdmin();
 
   if (loadError) {
     return (
@@ -17,8 +17,12 @@ export function AppLayout() {
         </Typography>
         <Typography color="text.secondary">{loadError}</Typography>
         <Typography sx={{ mt: 2 }}>
-          Läuft die API? <code>uv run uvicorn api.main:app --reload --port 8000</code>
+          Die API (Cloud Run) konnte auch nach mehreren Versuchen nicht erreicht werden.
+          Im lokalen Dev läuft sie über <code>uv run uvicorn api.main:app --reload --port 8000</code>.
         </Typography>
+        <Button variant="outlined" sx={{ mt: 2 }} onClick={() => window.location.reload()}>
+          Erneut versuchen
+        </Button>
       </Box>
     );
   }
@@ -27,7 +31,9 @@ export function AppLayout() {
     return (
       <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
         <CircularProgress />
-        <Typography color="text.secondary">lade Quelle…</Typography>
+        <Typography color="text.secondary">
+          {waking ? 'API startet (Cold Start), einen Moment…' : 'lade Quelle…'}
+        </Typography>
       </Box>
     );
   }

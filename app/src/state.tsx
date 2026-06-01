@@ -15,6 +15,8 @@ interface AdminState {
   bboxesByKey: Record<string, BboxOut>;
   glyphsByKey: Record<string, GlyphSummary>;
   loadError: string | null;
+  // True while the boot load is retrying through a Cloud Run cold start.
+  waking: boolean;
   activeGlyph: string | null;
   visibleGlyphs: Set<string>;
   cropCacheBust: number;
@@ -35,6 +37,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [bboxesByKey, setBboxesByKey] = useState<Record<string, BboxOut>>({});
   const [glyphsByKey, setGlyphsByKey] = useState<Record<string, GlyphSummary>>({});
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [waking, setWaking] = useState<boolean>(false);
   const [activeGlyph, setActiveGlyph] = useState<string | null>(null);
   const [visibleGlyphs, setVisibleGlyphs] = useState<Set<string>>(new Set());
   const [cropCacheBust, setCropCacheBust] = useState<number>(0);
@@ -42,9 +45,20 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      // Cloud Run cold start: retry the boot load with backoff (~47s budget)
+      // and flag `waking` on the first retry so the UI can say "API startet…".
+      const onRetry = () => {
+        if (!cancelled) setWaking(true);
+      };
+      const retry = { retries: 8, onRetry };
       try {
-        const [s, bboxes, glyphs] = await Promise.all([getSource(), getBboxes(), getGlyphs()]);
+        const [s, bboxes, glyphs] = await Promise.all([
+          getSource(retry),
+          getBboxes(retry),
+          getGlyphs(retry),
+        ]);
         if (cancelled) return;
+        setWaking(false);
         setSource(s);
         const bm: Record<string, BboxOut> = {};
         for (const b of bboxes) bm[b.glyph_key] = b;
@@ -54,7 +68,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         setGlyphsByKey(gm);
         setVisibleGlyphs(new Set(bboxes.map((b) => b.glyph_key)));
       } catch (e) {
-        if (!cancelled) setLoadError(String(e));
+        if (!cancelled) {
+          setWaking(false);
+          setLoadError(String(e));
+        }
       }
     })();
     return () => {
@@ -114,6 +131,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       bboxesByKey,
       glyphsByKey,
       loadError,
+      waking,
       activeGlyph,
       visibleGlyphs,
       cropCacheBust,
@@ -131,6 +149,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       bboxesByKey,
       glyphsByKey,
       loadError,
+      waking,
       activeGlyph,
       visibleGlyphs,
       cropCacheBust,
