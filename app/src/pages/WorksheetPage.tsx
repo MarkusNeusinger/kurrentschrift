@@ -44,6 +44,21 @@ const garamond = "'EB Garamond', Georgia, 'Times New Roman', serif";
 const ratioLabel = (c: LineatureConfig) =>
   `${c.ratioAscender} : ${c.ratioXHeight} : ${c.ratioDescender}`;
 
+// The printed footer line: the free-text caption (a title or name), then the
+// live spec (ratio + slant angle) and the site domain, always appended so a
+// printed sheet carries its settings and where it came from.
+function buildFooter(cfg: LineatureConfig, caption: string): string {
+  const parts: string[] = [];
+  const c = caption.trim();
+  if (c) parts.push(c);
+  if ([cfg.ratioAscender, cfg.ratioXHeight, cfg.ratioDescender].every(Number.isFinite)) {
+    parts.push(ratioLabel(cfg));
+  }
+  if (cfg.showSlant && Number.isFinite(cfg.slantDeg)) parts.push(`Neigung ${cfg.slantDeg}°`);
+  parts.push('kurrentschrift.ink');
+  return parts.join('  ·  ');
+}
+
 function NumField(props: {
   label: string;
   value: number;
@@ -80,7 +95,7 @@ function NumField(props: {
 export function WorksheetPage() {
   const [cfg, setCfg] = useState<LineatureConfig>(() => stripPreset(PRESETS[0]));
   const [presetId, setPresetId] = useState<string>(PRESETS[0].id);
-  const [caption, setCaption] = useState<string>(`${PRESETS[0].label} · ${ratioLabel(PRESETS[0])}`);
+  const [caption, setCaption] = useState<string>(PRESETS[0].label);
 
   useEffect(() => {
     document.title = 'Lineatur-Vorlage · kurrentschrift';
@@ -97,13 +112,14 @@ export function WorksheetPage() {
     if (!p) return;
     setCfg(stripPreset(p));
     setPresetId(p.id);
-    setCaption(`${p.label} · ${ratioLabel(p)}`);
+    setCaption(p.label);
   };
 
   const segments = useMemo(() => buildLineature(cfg), [cfg]);
+  const footer = buildFooter(cfg, caption);
 
   const download = () => {
-    const blob = lineaturePdf(segments, { caption: caption.trim() || undefined });
+    const blob = lineaturePdf(segments, { caption: footer });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -225,12 +241,13 @@ export function WorksheetPage() {
               <Divider />
 
               <TextField
-                label="Beschriftung (optional)"
+                label="Titel / Name (optional)"
                 size="small"
                 fullWidth
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
-                placeholder="z. B. Kurrent · 2 : 1 : 2"
+                placeholder="z. B. Kurrent"
+                helperText="Verhältnis, Neigung und kurrentschrift.ink werden automatisch ergänzt."
               />
 
               <Button variant="contained" size="large" startIcon={<DownloadIcon />} onClick={download}>
@@ -253,7 +270,7 @@ export function WorksheetPage() {
                 justifyContent: 'center',
               }}
             >
-              <PreviewSvg cfg={cfg} caption={caption} />
+              <PreviewSvg cfg={cfg} caption={footer} />
             </Paper>
           </Box>
         </Box>
