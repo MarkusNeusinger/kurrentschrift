@@ -60,6 +60,8 @@ function apiFetch(input: string, init: RequestInit = {}, retry?: RetryOptions): 
     try {
       const res = await fetch(input, { credentials: 'include', ...init });
       if (COLD_START_STATUS.has(res.status) && attempt < retries) {
+        // Release the connection before backing off — we won't read this body.
+        await res.body?.cancel().catch(() => {});
         const ms = backoffMs(attempt);
         retry?.onRetry?.(attempt + 1, ms);
         await wait(ms);
