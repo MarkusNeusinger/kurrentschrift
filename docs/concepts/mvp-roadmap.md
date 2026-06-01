@@ -490,6 +490,15 @@ Render-Kern nicht, sondern verwertet ihn; er ist hier notiert, damit der
 naheliegende Demo-/Nutzwert-Schritt direkt nach Gate 4 nicht verloren
 geht. Voller Ausbau liegt in der Post-MVP-Phase P1 (Lese-Cluster).
 
+**Status:** Eine bewusst einfache *erste Scheibe* steht bereits unter
+`/quiz` (öffentlich, kein Auth): Sie zeigt nicht den animierten Ductus,
+sondern den **Crop direkt aus der Vorlage** und lässt den lateinischen
+Buchstaben raten (Tippen oder Multiple-Choice; Klein/Groß/Gemischt). Sie
+zieht ihren Vorrat aus den markierten Bboxes — jeder neu auf dem Blatt
+markierte Buchstabe wird sofort quizfähig (das markierbare Set ist dafür
+auf das volle Alphabet inkl. Versalien erweitert). Animierter Ductus,
+Regel-Erklärung bei Fehlern und ganze Wörter bleiben der P1-Ausbau.
+
 ---
 
 ## Kritischer Pfad & Parallelisierung

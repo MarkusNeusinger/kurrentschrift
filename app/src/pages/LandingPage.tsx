@@ -74,20 +74,33 @@ export function LandingPage() {
             neu schreiben.
           </Typography>
 
-          {/* Quiet CTA — the first usable tool: the lineature worksheet generator */}
-          <Link
-            component={RouterLink}
-            to="/schreiben"
-            sx={{
-              alignSelf: 'flex-start',
-              color: tokens.green,
-              fontWeight: 500,
-              textDecoration: 'none',
-              '&:hover': { color: tokens.greenDark },
-            }}
-          >
-            Übungsblatt erstellen →
-          </Link>
+          {/* Primary CTAs — the tools a visitor can already use today */}
+          <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+            <Link
+              component={RouterLink}
+              to="/quiz"
+              sx={{
+                color: tokens.green,
+                fontWeight: 500,
+                textDecoration: 'none',
+                '&:hover': { color: tokens.greenDark },
+              }}
+            >
+              Buchstaben-Quiz starten →
+            </Link>
+            <Link
+              component={RouterLink}
+              to="/schreiben"
+              sx={{
+                color: tokens.green,
+                fontWeight: 500,
+                textDecoration: 'none',
+                '&:hover': { color: tokens.greenDark },
+              }}
+            >
+              Übungsblatt erstellen →
+            </Link>
+          </Stack>
 
           {/* How it works — the ductus pipeline as a quiet timeline */}
           <Box sx={{ pt: 1 }}>
