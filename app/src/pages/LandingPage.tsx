@@ -74,6 +74,21 @@ export function LandingPage() {
             neu schreiben.
           </Typography>
 
+          {/* Quiet CTA — the first usable tool: the lineature worksheet generator */}
+          <Link
+            component={RouterLink}
+            to="/schreiben"
+            sx={{
+              alignSelf: 'flex-start',
+              color: tokens.green,
+              fontWeight: 500,
+              textDecoration: 'none',
+              '&:hover': { color: tokens.greenDark },
+            }}
+          >
+            Übungsblatt erstellen →
+          </Link>
+
           {/* How it works — the ductus pipeline as a quiet timeline */}
           <Box sx={{ pt: 1 }}>
             <Typography
