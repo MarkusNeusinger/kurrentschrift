@@ -5,10 +5,16 @@
 // vocabulary grows as letters get marked. The richer version (animated ductus
 // playback, whole words, orthography-rule explanations on a miss) is the P1
 // Lese-Cluster work — see docs/concepts/vision.md §4 and mvp-roadmap.md.
+//
+// Ending a session ("beenden") opens a results screen that surfaces which
+// letters were missed most and which ones the learner tends to confuse, so the
+// drill turns into targeted feedback rather than an endless stream.
 
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import ReplayIcon from '@mui/icons-material/Replay';
+import TuneIcon from '@mui/icons-material/Tune';
 import {
   Alert,
   Box,
@@ -16,6 +22,8 @@ import {
   Chip,
   CircularProgress,
   Container,
+  Divider,
+  LinearProgress,
   Paper,
   Stack,
   TextField,
@@ -28,7 +36,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 
 import { cropUrl } from '../api';
-import { knownGlyph, SCRIPTS, type KnownGlyph } from '../constants';
+import { DIFFICULTIES, knownGlyph, SCRIPTS, type Difficulty, type KnownGlyph } from '../constants';
 import { useAdmin } from '../state';
 import { tokens } from '../theme';
 
@@ -42,6 +50,14 @@ interface QuizItem {
   kg: KnownGlyph;
 }
 
+// Per-letter miss counts (keyed by the rendered glyph the learner saw, e.g. `ſ`)
+// and confusion tallies (keyed `seen→guessed`). Both accumulate across a session
+// and feed the end screen.
+type MissMap = Record<string, number>;
+type ConfusionMap = Record<string, number>;
+
+const CONFUSION_SEP = '→';
+
 const ALPHABET = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i));
 
 const sample = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
@@ -51,22 +67,44 @@ const sample = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 const inCase = (letter: string, kg: KnownGlyph): string =>
   kg.letterCase === 'upper' ? letter.toUpperCase() : letter;
 
+// Pick the crop for a question. Difficulty is threaded in already: once messier
+// handwriting sources land in the DB, this is the single place that branches on
+// it to pull a less-clean hand instead of the clean Loth plate. Today every
+// level resolves to the same Loth crop (rough levels are disabled in setup).
+const questionCropUrl = (key: string, _difficulty: Difficulty): string => cropUrl(key);
+
 export function QuizPage() {
   const { source, bboxesByKey, loadError, waking } = useAdmin();
 
   const [script, setScript] = useState('kurrent');
   const [caseMode, setCaseMode] = useState<CaseMode>('lower');
   const [answerMode, setAnswerMode] = useState<AnswerMode>('type');
+  const [difficulty, setDifficulty] = useState<Difficulty>('clean');
   const [started, setStarted] = useState(false);
+  const [finished, setFinished] = useState(false);
 
   const [current, setCurrent] = useState<QuizItem | null>(null);
   const [choices, setChoices] = useState<string[]>([]);
   const [input, setInput] = useState('');
   const [verdict, setVerdict] = useState<'idle' | 'correct' | 'wrong' | 'revealed'>('idle');
   const [wrongChoices, setWrongChoices] = useState<Set<string>>(new Set());
-  const [stats, setStats] = useState({ correct: 0, seen: 0, streak: 0 });
+  const [stats, setStats] = useState({ correct: 0, seen: 0, streak: 0, bestStreak: 0 });
+  const [misses, setMisses] = useState<MissMap>({});
+  const [confusions, setConfusions] = useState<ConfusionMap>({});
 
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Pending "advance after a correct answer" timer, tracked so it can be
+  // cancelled when the learner quits/restarts (or the page unmounts) before it
+  // fires — otherwise a late advance would mutate quiz state off the play screen.
+  const advanceTimer = useRef<number | null>(null);
+
+  const clearAdvance = useCallback(() => {
+    if (advanceTimer.current !== null) {
+      window.clearTimeout(advanceTimer.current);
+      advanceTimer.current = null;
+    }
+  }, []);
 
   // All marked letters that resolve to a known glyph (and therefore an answer).
   const allItems = useMemo<QuizItem[]>(
@@ -124,26 +162,66 @@ export function QuizPage() {
   );
 
   const start = useCallback(() => {
-    setStats({ correct: 0, seen: 0, streak: 0 });
+    clearAdvance();
+    setStats({ correct: 0, seen: 0, streak: 0, bestStreak: 0 });
+    setMisses({});
+    setConfusions({});
+    setFinished(false);
     setStarted(true);
     nextQuestion(pool);
-  }, [pool, nextQuestion]);
+  }, [pool, nextQuestion, clearAdvance]);
 
   const advance = useCallback(() => {
     nextQuestion(pool, current?.key);
   }, [pool, current, nextQuestion]);
 
+  // Advance after a short pause so the green "correct" state stays visible;
+  // cancels any previous pending advance first.
+  const scheduleAdvance = useCallback(() => {
+    clearAdvance();
+    advanceTimer.current = window.setTimeout(() => {
+      advanceTimer.current = null;
+      advance();
+    }, 650);
+  }, [clearAdvance, advance]);
+
+  // End the session: show the results screen if anything was answered, otherwise
+  // drop straight back to setup (nothing to report). Either way, cancel a
+  // pending advance so it can't change the question after we leave the drill.
+  const finish = useCallback(() => {
+    clearAdvance();
+    if (stats.seen > 0) setFinished(true);
+    else setStarted(false);
+  }, [stats.seen, clearAdvance]);
+
+  // Cancel a pending advance on unmount.
+  useEffect(() => clearAdvance, [clearAdvance]);
+
   // Keep the typing field focused for a fast keyboard loop.
   useEffect(() => {
-    if (started && answerMode === 'type' && verdict !== 'correct') inputRef.current?.focus();
-  }, [started, answerMode, current, verdict]);
+    if (started && !finished && answerMode === 'type' && verdict !== 'correct') inputRef.current?.focus();
+  }, [started, finished, answerMode, current, verdict]);
 
   const markResult = useCallback((ok: boolean) => {
-    setStats((s) => ({
-      correct: s.correct + (ok ? 1 : 0),
-      seen: s.seen + 1,
-      streak: ok ? s.streak + 1 : 0,
-    }));
+    setStats((s) => {
+      const streak = ok ? s.streak + 1 : 0;
+      return {
+        correct: s.correct + (ok ? 1 : 0),
+        seen: s.seen + 1,
+        streak,
+        bestStreak: Math.max(s.bestStreak, streak),
+      };
+    });
+  }, []);
+
+  // Tally a miss for the shown glyph, plus the specific confusion when the
+  // learner offered a concrete (single-letter) wrong guess.
+  const recordMiss = useCallback((kg: KnownGlyph, guess?: string) => {
+    setMisses((m) => ({ ...m, [kg.glyph]: (m[kg.glyph] ?? 0) + 1 }));
+    if (guess && /^[a-z]$/.test(guess) && guess !== kg.answer) {
+      const key = `${kg.glyph}${CONFUSION_SEP}${inCase(guess, kg)}`;
+      setConfusions((c) => ({ ...c, [key]: (c[key] ?? 0) + 1 }));
+    }
   }, []);
 
   const submitTyped = useCallback(() => {
@@ -155,14 +233,15 @@ export function QuizPage() {
     if (guess === current.kg.answer) {
       markResult(true);
       setVerdict('correct');
-      window.setTimeout(advance, 650);
+      scheduleAdvance();
     } else {
       // Wrong → it does NOT advance; the same letter stays for another try.
+      recordMiss(current.kg, guess);
       setStats((s) => ({ ...s, streak: 0 }));
       setVerdict('wrong');
       setInput('');
     }
-  }, [current, input, verdict, markResult, advance]);
+  }, [current, input, verdict, markResult, recordMiss, scheduleAdvance]);
 
   const pickChoice = useCallback(
     (choice: string) => {
@@ -171,21 +250,23 @@ export function QuizPage() {
       if (choice === current.kg.answer) {
         markResult(true);
         setVerdict('correct');
-        window.setTimeout(advance, 650);
+        scheduleAdvance();
       } else {
+        recordMiss(current.kg, choice);
         setStats((s) => ({ ...s, streak: 0 }));
         setVerdict('wrong');
         setWrongChoices((prev) => new Set(prev).add(choice));
       }
     },
-    [current, verdict, markResult, advance],
+    [current, verdict, markResult, recordMiss, scheduleAdvance],
   );
 
   const reveal = useCallback(() => {
     if (!current) return;
+    recordMiss(current.kg);
     markResult(false);
     setVerdict('revealed');
-  }, [current, markResult]);
+  }, [current, markResult, recordMiss]);
 
   // ---- render helpers ----------------------------------------------------
 
@@ -238,10 +319,23 @@ export function QuizPage() {
               setCaseMode={setCaseMode}
               answerMode={answerMode}
               setAnswerMode={setAnswerMode}
+              difficulty={difficulty}
+              setDifficulty={setDifficulty}
               lowerCount={lowerCount}
               upperCount={upperCount}
               poolSize={pool.length}
               onStart={start}
+            />
+          ) : finished ? (
+            <ResultsPanel
+              stats={stats}
+              misses={misses}
+              confusions={confusions}
+              onReplay={start}
+              onSetup={() => {
+                setStarted(false);
+                setFinished(false);
+              }}
             />
           ) : (
             <PlayPanel
@@ -252,13 +346,14 @@ export function QuizPage() {
               verdict={verdict}
               wrongChoices={wrongChoices}
               answerMode={answerMode}
+              difficulty={difficulty}
               stats={stats}
               inputRef={inputRef}
               onSubmitTyped={submitTyped}
               onPickChoice={pickChoice}
               onReveal={reveal}
               onAdvance={advance}
-              onQuit={() => setStarted(false)}
+              onQuit={finish}
             />
           )}
         </Stack>
@@ -295,6 +390,8 @@ interface SetupProps {
   setCaseMode: (c: CaseMode) => void;
   answerMode: AnswerMode;
   setAnswerMode: (a: AnswerMode) => void;
+  difficulty: Difficulty;
+  setDifficulty: (d: Difficulty) => void;
   lowerCount: number;
   upperCount: number;
   poolSize: number;
@@ -308,7 +405,8 @@ function SetupPanel(p: SetupProps) {
       <Stack spacing={3}>
         <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
           Erkenne die Kurrent-Buchstaben: Du siehst einen Buchstaben aus der historischen Vorlage und tippst (oder wählst),
-          welcher es ist. Richtig → weiter, falsch → noch einmal.
+          welcher es ist. Richtig → weiter, falsch → noch einmal. Am Ende zeigt dir die Auswertung, welche Buchstaben dir
+          schwerfielen.
         </Typography>
 
         <Field label="Schrift">
@@ -356,6 +454,29 @@ function SetupPanel(p: SetupProps) {
           </ToggleButtonGroup>
         </Field>
 
+        <Field label="Schwierigkeit">
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={p.difficulty}
+            onChange={(_e, v: Difficulty | null) => v && p.setDifficulty(v)}
+          >
+            {DIFFICULTIES.map((d) => (
+              <ToggleButton key={d.id} value={d.id} disabled={!d.available}>
+                {d.label}
+                {!d.available && (
+                  <Typography component="span" variant="caption" sx={{ ml: 0.75, color: 'text.disabled' }}>
+                    bald
+                  </Typography>
+                )}
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.75 }}>
+            Höhere Stufen zeigen denselben Buchstaben in unsaubereren Handschriften — sobald solche Vorlagen verfügbar sind.
+          </Typography>
+        </Field>
+
         {noLetters ? (
           <Alert severity="info">
             Für diese Auswahl sind noch keine Buchstaben markiert.{' '}
@@ -392,7 +513,8 @@ interface PlayProps {
   verdict: 'idle' | 'correct' | 'wrong' | 'revealed';
   wrongChoices: Set<string>;
   answerMode: AnswerMode;
-  stats: { correct: number; seen: number; streak: number };
+  difficulty: Difficulty;
+  stats: { correct: number; seen: number; streak: number; bestStreak: number };
   inputRef: React.RefObject<HTMLInputElement | null>;
   onSubmitTyped: () => void;
   onPickChoice: (c: string) => void;
@@ -446,7 +568,7 @@ function PlayPanel(p: PlayProps) {
       >
         <Box
           component="img"
-          src={cropUrl(current.key)}
+          src={questionCropUrl(current.key, p.difficulty)}
           alt="Kurrent-Buchstabe"
           sx={{ maxWidth: '100%', maxHeight: 260, objectFit: 'contain', userSelect: 'none' }}
           draggable={false}
@@ -533,5 +655,154 @@ function PlayPanel(p: PlayProps) {
         )}
       </Box>
     </Stack>
+  );
+}
+
+interface ResultsProps {
+  stats: { correct: number; seen: number; streak: number; bestStreak: number };
+  misses: MissMap;
+  confusions: ConfusionMap;
+  onReplay: () => void;
+  onSetup: () => void;
+}
+
+function ResultsPanel(p: ResultsProps) {
+  const pct = p.stats.seen > 0 ? Math.round((p.stats.correct / p.stats.seen) * 100) : 0;
+
+  // Worst letters first; cap the list so the screen stays scannable.
+  const topMisses = useMemo(
+    () =>
+      Object.entries(p.misses)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6),
+    [p.misses],
+  );
+  const maxMiss = topMisses.length ? topMisses[0][1] : 0;
+
+  const topConfusions = useMemo(
+    () =>
+      Object.entries(p.confusions)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([key, count]) => {
+          const [seen, guessed] = key.split(CONFUSION_SEP);
+          return { seen, guessed, count };
+        }),
+    [p.confusions],
+  );
+
+  return (
+    <Paper variant="outlined" sx={{ p: 3 }}>
+      <Stack spacing={3}>
+        <Box>
+          <Typography variant="overline" color="text.secondary">
+            Auswertung
+          </Typography>
+          <Typography sx={{ fontFamily: garamond, fontSize: '1.75rem', lineHeight: 1.2 }}>
+            {p.stats.correct} von {p.stats.seen} richtig
+          </Typography>
+          <LinearProgress
+            variant="determinate"
+            value={pct}
+            color={pct >= 80 ? 'success' : pct >= 50 ? 'primary' : 'warning'}
+            sx={{ mt: 1.5, height: 8, borderRadius: 4 }}
+          />
+          <Box sx={{ display: 'flex', gap: 1, mt: 1.5, flexWrap: 'wrap' }}>
+            <Chip size="small" label={`${pct}% Trefferquote`} />
+            <Chip size="small" variant="outlined" color="primary" label={`Beste Serie ${p.stats.bestStreak}`} />
+          </Box>
+        </Box>
+
+        <Divider />
+
+        {/* Letters that were missed most */}
+        <Box>
+          <Typography variant="subtitle2" gutterBottom>
+            Diese Buchstaben fielen schwer
+          </Typography>
+          {topMisses.length === 0 ? (
+            <Alert severity="success" icon={<CheckCircleIcon />} sx={{ py: 0.5 }}>
+              Kein einziger Fehler — sauber gelesen!
+            </Alert>
+          ) : (
+            <Stack spacing={1}>
+              {topMisses.map(([glyph, count]) => (
+                <Box key={glyph} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Box
+                    sx={{
+                      fontFamily: garamond,
+                      fontSize: '1.6rem',
+                      width: 36,
+                      textAlign: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {glyph}
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Box
+                      sx={{
+                        height: 10,
+                        borderRadius: 5,
+                        bgcolor: 'error.main',
+                        opacity: 0.85,
+                        width: `${maxMiss ? Math.max(8, (count / maxMiss) * 100) : 0}%`,
+                        transition: 'width 200ms',
+                      }}
+                    />
+                  </Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ width: 64, textAlign: 'right' }}>
+                    {count}× falsch
+                  </Typography>
+                </Box>
+              ))}
+            </Stack>
+          )}
+        </Box>
+
+        {/* Confusion pairs */}
+        {topConfusions.length > 0 && (
+          <>
+            <Divider />
+            <Box>
+              <Typography variant="subtitle2" gutterBottom>
+                Häufig verwechselt
+              </Typography>
+              <Stack spacing={1}>
+                {topConfusions.map(({ seen, guessed, count }) => (
+                  <Box key={`${seen}${CONFUSION_SEP}${guessed}`} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box component="span" sx={{ fontFamily: garamond, fontSize: '1.4rem' }}>
+                      {seen}
+                    </Box>
+                    <Typography component="span" color="text.secondary">
+                      für
+                    </Typography>
+                    <Box component="span" sx={{ fontFamily: garamond, fontSize: '1.4rem' }}>
+                      {guessed}
+                    </Box>
+                    <Typography component="span" color="text.secondary">
+                      gehalten
+                    </Typography>
+                    <Box sx={{ flex: 1 }} />
+                    <Chip size="small" variant="outlined" label={`${count}×`} />
+                  </Box>
+                ))}
+              </Stack>
+            </Box>
+          </>
+        )}
+
+        <Divider />
+
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+          <Button variant="contained" startIcon={<ReplayIcon />} onClick={p.onReplay} fullWidth>
+            Nochmal
+          </Button>
+          <Button variant="outlined" startIcon={<TuneIcon />} onClick={p.onSetup} fullWidth>
+            Einstellungen
+          </Button>
+        </Stack>
+      </Stack>
+    </Paper>
   );
 }
