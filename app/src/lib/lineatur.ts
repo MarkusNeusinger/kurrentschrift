@@ -140,9 +140,10 @@ export const ROLE_STYLES: Record<LineRole, RoleStyle> = {
   ascender: { color: '#B8B6AE', widthMm: 0.18, dash: [1.6, 1.6] },
   descender: { color: '#B8B6AE', widthMm: 0.18, dash: [1.6, 1.6] },
   slant: { color: '#D6D4CB', widthMm: 0.15, dash: [1, 1.6] },
-  // Instructional reference (the pen-angle gauge): brand green so it reads as
-  // "guidance", distinct from the warm-grey writing lines.
-  pen: { color: '#009E73', widthMm: 0.3 },
+  // Instructional reference (the pen-angle gauge): dark ink so it prints
+  // reliably in black & white (the worksheet's normal output) — no brand
+  // colour, which would just become a faint grey on a mono printer.
+  pen: { color: '#1A1A17', widthMm: 0.35 },
 };
 
 // Render order: faint layers first so darker lines sit on top at crossings.
@@ -193,29 +194,33 @@ function clipToRect(
 
 // Pen-angle gauge: a small reference mark in the top-left margin showing the
 // nib/pen-hold angle relative to the writing line (horizontal), with a degree
-// label. Returns null if disabled, non-finite, or the margin is too tight to
-// show it legibly. The pivot sits just above the first row, so the mark lives
-// in the top margin and never crosses the writing lines.
+// label. The nib edge tilts *downward* toward the first writing line (its tip
+// just above the line), mirroring how the pen actually meets the paper so it
+// can guide the hand. Lives entirely in the top margin (never crosses the
+// writing lines). Returns null if disabled, non-finite, or the margin is too
+// tight to show it legibly.
 function penGauge(cfg: LineatureConfig, left: number, top: number): Lineature | null {
   if (!cfg.showPenAngle || !Number.isFinite(cfg.penAngleDeg)) return null;
-  const gap = 1.5; // sit just above the first ascender line
-  const baseY = top - gap;
+  const gap = 1.5; // clearance between the gauge tip and the first line
+  const edgeClear = 3; // clearance from the page top edge
   const theta = (cfg.penAngleDeg * Math.PI) / 180;
   const sin = Math.sin(theta);
   const cos = Math.cos(theta);
-  // Longest mark whose tip still clears the page top edge (≥2 mm), capped 8 mm.
-  const maxByEdge = sin > 1e-3 ? (baseY - 2) / sin : 8;
+  const tipY = top - gap; // lowest point, just above the first writing line
+  // Longest mark whose pivot still clears the page top edge, capped at 8 mm.
+  const maxByEdge = sin > 1e-3 ? (tipY - edgeClear) / sin : 8;
   const len = Math.min(8, maxByEdge);
   if (!(len >= 3)) return null;
+  const pivotY = tipY - len * sin; // pivot sits above the tip by the drop
   return {
     segments: [
       // horizontal reference (the writing-line direction)
-      { x1: left, y1: baseY, x2: left + len, y2: baseY, role: 'pen' },
-      // pen edge at the nib angle, opening up-right from the pivot
-      { x1: left, y1: baseY, x2: left + len * cos, y2: baseY - len * sin, role: 'pen' },
+      { x1: left, y1: pivotY, x2: left + len, y2: pivotY, role: 'pen' },
+      // nib edge tilting down-right from the pivot to the tip near the line
+      { x1: left, y1: pivotY, x2: left + len * cos, y2: tipY, role: 'pen' },
     ],
     marks: [
-      { x: left + len + 2, y: baseY, sizeMm: 3, text: `${cfg.penAngleDeg}°`, color: ROLE_STYLES.pen.color },
+      { x: left + len + 2, y: pivotY + 1, sizeMm: 3, text: `${cfg.penAngleDeg}°`, color: ROLE_STYLES.pen.color },
     ],
   };
 }
