@@ -19,10 +19,9 @@ export const SOURCE_ID = 'loth-1866';
 
 export type Position = 'initial' | 'medial' | 'final';
 
-// `forne · mitte · hinten` — initial/medial/final. On a teaching plate like
-// Loth 1866 there is usually a single specimen per letter, so the three
-// positions start out identical; they diverge only as distinct ductus get
-// traced.
+// Front · middle · end of a word. On a teaching plate like Loth 1866 there is
+// usually a single specimen per letter, so the three positions start out
+// identical; they diverge only as distinct ductus get traced.
 export const POSITIONS: Position[] = ['initial', 'medial', 'final'];
 
 export type LetterGroup = 'lower' | 'upper' | 'comb';

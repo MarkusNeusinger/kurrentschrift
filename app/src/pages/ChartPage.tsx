@@ -264,9 +264,9 @@ export function ChartPage() {
             size="small"
             sx={{ width: 160 }}
             value={zoom}
-            min={ZOOM_PRESETS[0]}
-            max={ZOOM_PRESETS[ZOOM_PRESETS.length - 1]}
-            step={null}
+            min={ZOOM_MIN}
+            max={ZOOM_MAX}
+            step={0.05}
             marks={ZOOM_PRESETS.map((p) => ({ value: p }))}
             onChange={(_e, v) => typeof v === 'number' && setZoom(v)}
           />
