@@ -94,6 +94,12 @@ export function QuizPage() {
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  // Whether the current question has already been answered wrong at least once.
+  // A question only counts as "correct" in the tally if it was solved on the
+  // first attempt — otherwise a wrong-then-right run would inflate the score and
+  // contradict the per-letter miss breakdown shown on the results screen.
+  const missedCurrent = useRef(false);
+
   // Pending "advance after a correct answer" timer, tracked so it can be
   // cancelled when the learner quits/restarts (or the page unmounts) before it
   // fires — otherwise a late advance would mutate quiz state off the play screen.
@@ -157,6 +163,7 @@ export function QuizPage() {
       setInput('');
       setVerdict('idle');
       setWrongChoices(new Set());
+      missedCurrent.current = false;
     },
     [buildChoices],
   );
@@ -231,11 +238,13 @@ export function QuizPage() {
     const guess = input.trim().toLowerCase();
     if (!guess) return;
     if (guess === current.kg.answer) {
-      markResult(true);
+      // Right only counts toward the score if no earlier attempt missed it.
+      markResult(!missedCurrent.current);
       setVerdict('correct');
       scheduleAdvance();
     } else {
       // Wrong → it does NOT advance; the same letter stays for another try.
+      missedCurrent.current = true;
       recordMiss(current.kg, guess);
       setStats((s) => ({ ...s, streak: 0 }));
       setVerdict('wrong');
@@ -248,10 +257,12 @@ export function QuizPage() {
       // Terminal once correct or revealed — guard against a late double-count.
       if (!current || verdict === 'correct' || verdict === 'revealed') return;
       if (choice === current.kg.answer) {
-        markResult(true);
+        // Right only counts toward the score if no earlier pick missed it.
+        markResult(!missedCurrent.current);
         setVerdict('correct');
         scheduleAdvance();
       } else {
+        missedCurrent.current = true;
         recordMiss(current.kg, choice);
         setStats((s) => ({ ...s, streak: 0 }));
         setVerdict('wrong');
