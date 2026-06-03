@@ -33,12 +33,11 @@ import {
   Typography,
 } from '@mui/material';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
 
 import { cropUrl } from '../api';
+import { PublicHeader } from '../components/PublicHeader';
 import { DIFFICULTIES, knownGlyph, SCRIPTS, type Difficulty, type KnownGlyph } from '../constants';
 import { useAdmin } from '../state';
-import { tokens } from '../theme';
 
 const garamond = "'EB Garamond', Georgia, 'Times New Roman', serif";
 
@@ -309,18 +308,13 @@ export function QuizPage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: { xs: 4, sm: 6 } }}>
-      <Container maxWidth="sm">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      <PublicHeader />
+      <Container maxWidth="sm" sx={{ py: { xs: 4, sm: 6 } }}>
         <Stack spacing={3}>
-          {/* Header */}
-          <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 2 }}>
-            <Typography component="h1" sx={{ fontFamily: garamond, fontStyle: 'italic', fontSize: '2rem', lineHeight: 1.1 }}>
-              Buchstaben-Quiz
-            </Typography>
-            <RouterLink to="/" style={{ color: tokens.ink.muted, textDecoration: 'none', fontSize: 13 }}>
-              ← zurück
-            </RouterLink>
-          </Box>
+          <Typography component="h1" sx={{ fontFamily: garamond, fontStyle: 'italic', fontSize: '2rem', lineHeight: 1.1 }}>
+            Buchstaben-Quiz
+          </Typography>
 
           {!started ? (
             <SetupPanel
