@@ -75,11 +75,17 @@ class BboxIn(BaseModel):
     baseline_y: int
     midband_y: int
     n_anchors: int = 50
-    guides: GuideConfig = Field(default_factory=GuideConfig)
+    # Optional so an omitted `guides` (older clients, scripts, a plain bbox
+    # save) is distinguishable from an explicit value: PUT then preserves the
+    # stored guides instead of resetting them. See put_bbox.
+    guides: GuideConfig | None = None
 
 
 class BboxOut(BboxIn):
     glyph_key: str
+    # Always materialised on the way out (see _to_out), so the response keeps a
+    # concrete object even though the request body may omit it.
+    guides: GuideConfig
 
 
 # ----------------------------------------------------------------------- Glyph
