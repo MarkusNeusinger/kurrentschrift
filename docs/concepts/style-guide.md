@@ -1,12 +1,13 @@
 # Style-Guide — kurrentschrift.ink
 
 Visuelle Identität der Endnutzer-Website. Begleitdokument zu
-[`vision.md`](concepts/vision.md). Hält fest, *welcher* Look gilt und
+[`vision.md`](vision.md). Hält fest, *welcher* Look gilt und
 **warum** — getrennt vom *Was* (Vision) und *Wie* (Architektur).
 
-Die Tokens leben lokal in `LandingPage.tsx` (`const paper = …`), bewusst
-**nicht** im globalen Theme — die Landing hat eine eigene Identität, die
-Tool-Seiten bleiben auf dem ruhigen Light-Theme (siehe §8).
+Die Tokens leben in `app/src/styles/paper.ts` (`const paper = …`, geteilt von
+`LandingPage` und `PublicHeader`), bewusst **nicht** im globalen Theme — die
+Landing hat eine eigene Identität, die Tool-Seiten bleiben auf dem ruhigen
+Light-Theme (siehe §8).
 
 ---
 

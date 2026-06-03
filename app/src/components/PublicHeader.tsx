@@ -10,7 +10,7 @@
 // admin link anywhere). The brand still navigates home on a normal single click.
 // Render this OUTSIDE the page's content Container so the bar spans full width.
 
-import { type MouseEvent } from 'react';
+import { type MouseEvent, useRef } from 'react';
 import { Box, Link, Stack } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
@@ -19,8 +19,6 @@ import { display, paper } from '../styles/paper';
 
 const ADMIN_TAPS = 5;
 const TAP_WINDOW_MS = 800;
-let tapCount = 0;
-let lastTap = 0;
 
 const NAV = [
   { label: 'Schreiben', to: '/schreiben' },
@@ -34,6 +32,7 @@ interface PublicHeaderProps {
 
 export function PublicHeader({ tone = 'plain', sx }: PublicHeaderProps) {
   const navigate = useNavigate();
+  const tap = useRef({ count: 0, last: 0 });
   const isPaper = tone === 'paper';
   const textMain = isPaper ? paper.ink : 'text.primary';
   const textSoft = isPaper ? paper.inkSoft : 'text.secondary';
@@ -42,13 +41,15 @@ export function PublicHeader({ tone = 'plain', sx }: PublicHeaderProps) {
   const border = isPaper ? paper.line : 'divider';
 
   // Count quick successive taps on the wordmark; the 5th within the window opens
-  // admin instead of following the home link.
+  // admin instead of following the home link. Per-instance state (useRef) — the
+  // landing header stays mounted while you tap, so the gesture accumulates fine.
   const handleWordmark = (e: MouseEvent) => {
     const now = Date.now();
-    tapCount = now - lastTap < TAP_WINDOW_MS ? tapCount + 1 : 1;
-    lastTap = now;
-    if (tapCount >= ADMIN_TAPS) {
-      tapCount = 0;
+    const t = tap.current;
+    t.count = now - t.last < TAP_WINDOW_MS ? t.count + 1 : 1;
+    t.last = now;
+    if (t.count >= ADMIN_TAPS) {
+      t.count = 0;
       e.preventDefault();
       navigate('/admin/chart');
     }
