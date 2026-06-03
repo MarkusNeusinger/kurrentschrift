@@ -25,10 +25,7 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    op.add_column(
-        "bboxes",
-        sa.Column("guides", JSONB(), nullable=False, server_default="{}"),
-    )
+    op.add_column("bboxes", sa.Column("guides", JSONB(), nullable=False, server_default="{}"))
 
 
 def downgrade() -> None:
