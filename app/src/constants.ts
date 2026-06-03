@@ -1,21 +1,95 @@
 // Static client-side constants. The frontend hardcodes a single source for v1
-// (multi-source is in the DB schema but out of UI scope) and the known set of
-// markable glyph_keys so the sidebar can list expected glyphs even before
-// bboxes have been drawn for them.
+// (multi-source is in the DB schema but out of UI scope) and the full alphabet
+// of glyphs the admin can curate, so the sidebar can list every letter even
+// before bboxes have been drawn for them.
 //
-// The (glyph, position) tuple is sent with /trace requests; the glyph_key is
-// just an opaque URL/UI identifier. The quiz (`/quiz`) reads whatever bboxes
-// exist in the DB and maps each glyph_key back to its `answer` letter via this
-// table, so marking a new letter on the chart immediately makes it quizzable.
+// The admin sidebar groups by *letter*; the (initial/medial/final) position is
+// a secondary choice surfaced only once a letter is selected. The (glyph,
+// position) tuple is sent with /trace requests; the glyph_key is just an opaque
+// URL/UI identifier the DB stores rows under.
+//
+// glyph_key convention: `${letter.base}-${position}` (e.g. `a-initial`). A few
+// letters carry `keyOverrides` to preserve historical keys that already hold
+// data in the DB — never change those, or existing bboxes/canonicals orphan.
+// The long-s (ſ) and round-s (s) allographs are *separate letters* (per
+// `docs/concepts/architektur.md` §3) that happen to share the `s-` prefix
+// historically: ſ-medial → `s-medial`, s-final → `s-final`.
+//
+// The quiz (`/quiz`) reads whatever bboxes exist in the DB and maps each
+// glyph_key back to its `answer` letter via KNOWN_GLYPHS, so marking a new
+// letter on the chart immediately makes it quizzable.
 
 export const SOURCE_ID = 'loth-1866';
 
 export type Position = 'initial' | 'medial' | 'final';
 export type LetterCase = 'upper' | 'lower';
-// `mvp` = the curated §9 anchor set (allograph-aware, trace targets).
-// `alphabet` = the rest of A–Z / a–z, markable so the quiz vocabulary can grow.
+// `mvp` = the curated §9 anchor set (allograph-aware trace targets).
+// `alphabet` = the rest of the alphabet, markable so the quiz vocabulary grows.
 export type GlyphGroup = 'mvp' | 'alphabet';
 
+// Front · middle · end of a word. On a teaching plate like Loth 1866 there is
+// usually a single specimen per letter, so the three positions start out
+// identical; they diverge only as distinct ductus get traced.
+export const POSITIONS: Position[] = ['initial', 'medial', 'final'];
+
+export type LetterGroup = 'lower' | 'upper' | 'comb';
+
+export interface Letter {
+  glyph: string; // the actual character(s); sent as TraceRequest.glyph
+  group: LetterGroup;
+  base: string; // ascii-safe glyph_key base
+  note?: string; // short descriptor shown in tooltips
+  keyOverrides?: Partial<Record<Position, string>>; // historical keys to preserve
+}
+
+function range(start: string, end: string): string[] {
+  const out: string[] = [];
+  for (let c = start.charCodeAt(0); c <= end.charCodeAt(0); c++) out.push(String.fromCharCode(c));
+  return out;
+}
+
+const LOWER_SINGLE: Letter[] = range('a', 'z').map((c): Letter => {
+  if (c === 's') {
+    // Round s. Historical final key `s-final` must stay; its medial gets a
+    // distinct key so it never collides with long-s' historical `s-medial`.
+    return { glyph: 's', group: 'lower', base: 's', note: 'rundes s', keyOverrides: { medial: 's-round-medial' } };
+  }
+  return { glyph: c, group: 'lower', base: c };
+});
+
+const LOWER_EXTRA: Letter[] = [
+  { glyph: 'ä', group: 'lower', base: 'ae' },
+  { glyph: 'ö', group: 'lower', base: 'oe' },
+  { glyph: 'ü', group: 'lower', base: 'ue' },
+  { glyph: 'ſ', group: 'lower', base: 'longs', note: 'langes s', keyOverrides: { medial: 's-medial' } },
+];
+
+const UPPER: Letter[] = [
+  ...range('A', 'Z').map((c): Letter => ({ glyph: c, group: 'upper', base: c })),
+  { glyph: 'Ä', group: 'upper', base: 'Ae' },
+  { glyph: 'Ö', group: 'upper', base: 'Oe' },
+  { glyph: 'Ü', group: 'upper', base: 'Ue' },
+];
+
+// Closed ligature set per `docs/concepts/architektur.md` §4 / CLAUDE.md.
+const COMB: Letter[] = [
+  { glyph: 'ch', group: 'comb', base: 'ch' },
+  { glyph: 'ck', group: 'comb', base: 'ck' },
+  { glyph: 'tz', group: 'comb', base: 'tz' },
+  { glyph: 'ſt', group: 'comb', base: 'longst', note: 'ſt-Ligatur' },
+  { glyph: 'qu', group: 'comb', base: 'qu' },
+  { glyph: 'ß', group: 'comb', base: 'sz', note: 'Eszett' },
+];
+
+export const LETTERS: Letter[] = [...LOWER_SINGLE, ...LOWER_EXTRA, ...UPPER, ...COMB];
+
+export function glyphKeyFor(letter: Letter, position: Position): string {
+  return letter.keyOverrides?.[position] ?? `${letter.base}-${position}`;
+}
+
+// Flat (glyph, position) registry derived from LETTERS. Carries the quiz fields
+// (`answer`, `letterCase`, `group`) so the quiz can map any marked bbox back to
+// a Latin letter, and keeps the KnownGlyph shape callers look up by key.
 export interface KnownGlyph {
   key: string;
   glyph: string; // the rendered form shown as the solution (ſ, A, …)
@@ -28,61 +102,61 @@ export interface KnownGlyph {
   group: GlyphGroup;
 }
 
-// MVP set per `docs/concepts/architektur.md` §9 + medial-ſ allograph split.
-//
-// `position` here is the *chart role* of the allograph form (where Loth shows
-// it on the teaching plate), NOT the position the form must occupy in running
-// text. The round-s (`s` / `s-final`) for example also occurs word-internally
-// at morpheme boundaries in compounds (`Aus-flug`, `Haus-thür`); the text→
-// template mapping is a separate orthography layer planned for M4+
-// (`core/orthography.py`). See `docs/reference/orthographie-regeln.md` §1 and
-// `docs/proposals/planaenderungen.md` Vorschlag A.
-const MVP_GLYPHS: KnownGlyph[] = [
-  { key: 'a-initial', glyph: 'a', position: 'initial', label: 'a · initial', answer: 'a', letterCase: 'lower', group: 'mvp' },
-  { key: 'a-medial', glyph: 'a', position: 'medial', label: 'a · medial', answer: 'a', letterCase: 'lower', group: 'mvp' },
-  { key: 'd-initial', glyph: 'd', position: 'initial', label: 'd · initial', answer: 'd', letterCase: 'lower', group: 'mvp' },
-  { key: 'e-medial', glyph: 'e', position: 'medial', label: 'e · medial', answer: 'e', letterCase: 'lower', group: 'mvp' },
-  { key: 'e-final', glyph: 'e', position: 'final', label: 'e · final', answer: 'e', letterCase: 'lower', group: 'mvp' },
-  { key: 'l-initial', glyph: 'l', position: 'initial', label: 'l · initial', answer: 'l', letterCase: 'lower', group: 'mvp' },
-  { key: 'l-medial', glyph: 'l', position: 'medial', label: 'l · medial', answer: 'l', letterCase: 'lower', group: 'mvp' },
-  { key: 'n-medial', glyph: 'n', position: 'medial', label: 'n · medial', answer: 'n', letterCase: 'lower', group: 'mvp' },
-  { key: 'n-final', glyph: 'n', position: 'final', label: 'n · final', answer: 'n', letterCase: 'lower', group: 'mvp' },
-  { key: 's-medial', glyph: 'ſ', position: 'medial', label: 'ſ · medial (long s)', answer: 's', letterCase: 'lower', group: 'mvp' },
-  { key: 's-final', glyph: 's', position: 'final', label: 's · final', answer: 's', letterCase: 'lower', group: 'mvp' },
-];
+// Historical §9 anchor keys — they hold real traced data, so they keep the
+// `mvp` group; every other derived key is `alphabet`.
+const MVP_KEYS = new Set([
+  'a-initial',
+  'a-medial',
+  'd-initial',
+  'e-medial',
+  'e-final',
+  'l-initial',
+  'l-medial',
+  'n-medial',
+  'n-final',
+  's-medial',
+  's-final',
+]);
 
-// Lowercase letters already covered (as allographs) by the MVP set above — we
-// don't re-add a generic form for them, so the sidebar stays unambiguous.
-const MVP_LOWER = new Set(MVP_GLYPHS.filter((g) => g.letterCase === 'lower').map((g) => g.answer));
+// Glyphs whose lowercase form is not the letter a learner would type.
+const ANSWER_OVERRIDE: Record<string, string> = { ſ: 's', ſt: 'st' };
 
-const A_TO_Z = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i)); // 'a'…'z'
+function makeLabel(letter: Letter, position: Position): string {
+  return letter.note ? `${letter.glyph} · ${position} · ${letter.note}` : `${letter.glyph} · ${position}`;
+}
 
-// Full alphabet, markable so the quiz vocabulary can grow beyond the MVP
-// anchors. Capitals are the learner's main pain point (recognising Kurrent
-// majuscules), so all 26 are listed; lowercase only fills the gaps the MVP set
-// doesn't already cover. Position is a sensible default for an eventual trace,
-// not a hard constraint (capitals open words → `initial`).
-const UPPER_GLYPHS: KnownGlyph[] = A_TO_Z.map((c) => ({
-  key: `uc-${c}`,
-  glyph: c.toUpperCase(),
-  position: 'initial',
-  label: `${c.toUpperCase()} · Versal`,
-  answer: c,
-  letterCase: 'upper',
-  group: 'alphabet',
-}));
+function answerOf(glyph: string): string {
+  return ANSWER_OVERRIDE[glyph] ?? glyph.toLowerCase();
+}
 
-const LOWER_GLYPHS: KnownGlyph[] = A_TO_Z.filter((c) => !MVP_LOWER.has(c)).map((c) => ({
-  key: `lc-${c}`,
-  glyph: c,
-  position: 'medial',
-  label: `${c} · klein`,
-  answer: c,
-  letterCase: 'lower',
-  group: 'alphabet',
-}));
+const DERIVED_GLYPHS: KnownGlyph[] = LETTERS.flatMap((letter) =>
+  POSITIONS.map((position): KnownGlyph => {
+    const key = glyphKeyFor(letter, position);
+    return {
+      key,
+      glyph: letter.glyph,
+      position,
+      label: makeLabel(letter, position),
+      answer: answerOf(letter.glyph),
+      letterCase: letter.group === 'upper' ? 'upper' : 'lower',
+      group: MVP_KEYS.has(key) ? 'mvp' : 'alphabet',
+    };
+  }),
+);
 
-export const KNOWN_GLYPHS: KnownGlyph[] = [...MVP_GLYPHS, ...UPPER_GLYPHS, ...LOWER_GLYPHS];
+// Read-only back-compat: an earlier full-alphabet scheme keyed capitals as
+// `uc-<letter>` and lowercase gaps as `lc-<letter>` (single chart role). The
+// admin sidebar now writes position-based keys, but any bbox already marked
+// under the old scheme stays resolvable here so the quiz keeps recognising it.
+const LEGACY_ALIASES: KnownGlyph[] = range('a', 'z').flatMap((c): KnownGlyph[] => [
+  { key: `uc-${c}`, glyph: c.toUpperCase(), position: 'initial', label: `${c.toUpperCase()} · Versal`, answer: c, letterCase: 'upper', group: 'alphabet' },
+  { key: `lc-${c}`, glyph: c, position: 'medial', label: `${c} · klein`, answer: c, letterCase: 'lower', group: 'alphabet' },
+]);
+
+export const KNOWN_GLYPHS: KnownGlyph[] = [...DERIVED_GLYPHS, ...LEGACY_ALIASES];
+
+export const LETTER_BY_KEY: Record<string, Letter> = {};
+for (const letter of LETTERS) for (const p of POSITIONS) LETTER_BY_KEY[glyphKeyFor(letter, p)] = letter;
 
 const BY_KEY: Map<string, KnownGlyph> = new Map(KNOWN_GLYPHS.map((g) => [g.key, g]));
 

@@ -53,6 +53,8 @@ interface PanState {
 }
 
 const ZOOM_PRESETS = [0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
+const ZOOM_MIN = ZOOM_PRESETS[0];
+const ZOOM_MAX = ZOOM_PRESETS[ZOOM_PRESETS.length - 1];
 
 function bboxInFromOut(b: BboxOut): BboxIn {
   return {
@@ -198,20 +200,27 @@ export function ChartPage() {
     }
   }, [drag, pan, activeGlyph, bboxesByKey, upsertBbox]);
 
-  // Ctrl/Cmd + wheel to zoom.
+  // Mouse-wheel zooms (centered on the cursor); no modifier key needed.
   useEffect(() => {
-    const el = stageRef.current?.parentElement;
-    if (!el) return;
+    const sc = scrollRef.current;
+    if (!sc) return;
     const onWheel = (e: WheelEvent) => {
-      if (!e.ctrlKey && !e.metaKey) return;
       e.preventDefault();
-      const idx = ZOOM_PRESETS.findIndex((z) => Math.abs(z - zoom) < 0.01);
-      const dir = e.deltaY < 0 ? 1 : -1;
-      const newIdx = Math.max(0, Math.min(ZOOM_PRESETS.length - 1, (idx >= 0 ? idx : 3) + dir));
-      setZoom(ZOOM_PRESETS[newIdx]);
+      const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+      const newZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoom * factor));
+      if (newZoom === zoom) return;
+      const rect = sc.getBoundingClientRect();
+      // Image-space point under the cursor, kept fixed across the zoom.
+      const imgX = (e.clientX - rect.left + sc.scrollLeft) / zoom;
+      const imgY = (e.clientY - rect.top + sc.scrollTop) / zoom;
+      setZoom(newZoom);
+      requestAnimationFrame(() => {
+        sc.scrollLeft = imgX * newZoom - (e.clientX - rect.left);
+        sc.scrollTop = imgY * newZoom - (e.clientY - rect.top);
+      });
     };
-    el.addEventListener('wheel', onWheel, { passive: false });
-    return () => el.removeEventListener('wheel', onWheel);
+    sc.addEventListener('wheel', onWheel, { passive: false });
+    return () => sc.removeEventListener('wheel', onWheel);
   }, [zoom]);
 
   useEffect(() => {
@@ -255,9 +264,9 @@ export function ChartPage() {
             size="small"
             sx={{ width: 160 }}
             value={zoom}
-            min={ZOOM_PRESETS[0]}
-            max={ZOOM_PRESETS[ZOOM_PRESETS.length - 1]}
-            step={null}
+            min={ZOOM_MIN}
+            max={ZOOM_MAX}
+            step={0.05}
             marks={ZOOM_PRESETS.map((p) => ({ value: p }))}
             onChange={(_e, v) => typeof v === 'number' && setZoom(v)}
           />

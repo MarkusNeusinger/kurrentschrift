@@ -1,121 +1,101 @@
-// Sidebar — one click activates + shows. Iterates over the KNOWN_GLYPHS list
-// (the v1 MVP target set), looking up bboxes and traced-canonical status
-// from the admin state.
+// Sidebar — navigation + a letter grid. Letters are grouped (lowercase /
+// uppercase / combinations); the initial/medial/final position is hidden until
+// a letter is selected, then offered as a toggle in the panel at the bottom.
+// One click on a letter activates it (and a sensible default position) and
+// makes its bboxes visible on the chart.
 
-import CircleIcon from '@mui/icons-material/Circle';
+import CreateIcon from '@mui/icons-material/Create';
 import EditIcon from '@mui/icons-material/Edit';
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
-import TaskAltIcon from '@mui/icons-material/TaskAlt';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import GridViewIcon from '@mui/icons-material/GridView';
+import HomeIcon from '@mui/icons-material/Home';
 import {
   Box,
   Button,
+  ButtonBase,
   Divider,
   IconButton,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  ListSubheader,
+  ToggleButton,
+  ToggleButtonGroup,
   Tooltip,
   Typography,
 } from '@mui/material';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { KNOWN_GLYPHS, type KnownGlyph } from '../constants';
+import { glyphKeyFor, LETTERS, LETTER_BY_KEY, POSITIONS } from '../constants';
+import type { Letter, LetterGroup, Position } from '../constants';
 import { useAdmin } from '../state';
+
+const GROUP_LABELS: Record<LetterGroup, string> = {
+  lower: 'Kleinbuchstaben',
+  upper: 'Großbuchstaben',
+  comb: 'Kombinationen',
+};
+const GROUP_ORDER: LetterGroup[] = ['lower', 'upper', 'comb'];
 
 export function GlyphSidebar() {
   const { source, bboxesByKey, glyphsByKey, activeGlyph, visibleGlyphs, toggleVisible, setOnlyVisible, setActiveGlyph } =
     useAdmin();
   const navigate = useNavigate();
+  const [openBase, setOpenBase] = useState<string | null>(null);
+
+  // Keep the open letter in sync when the active glyph changes elsewhere (e.g.
+  // when the editor route sets it on load).
+  useEffect(() => {
+    if (activeGlyph && LETTER_BY_KEY[activeGlyph]) setOpenBase(LETTER_BY_KEY[activeGlyph].base);
+  }, [activeGlyph]);
 
   if (!source) return null;
-  const keysWithBbox = KNOWN_GLYPHS.filter((g) => g.key in bboxesByKey).map((g) => g.key);
 
-  const activateGlyph = (k: string) => {
-    setActiveGlyph(k);
-    if (!visibleGlyphs.has(k)) toggleVisible(k);
+  const hasBbox = (key: string) => key in bboxesByKey;
+  const hasCanon = (key: string) => glyphsByKey[key]?.has_data === true;
+
+  const activatePosition = (letter: Letter, pos: Position) => {
+    const key = glyphKeyFor(letter, pos);
+    setActiveGlyph(key);
+    if (!visibleGlyphs.has(key)) toggleVisible(key);
   };
 
-  const renderRow = (kg: KnownGlyph) => {
-    const k = kg.key;
-    const hasBbox = k in bboxesByKey;
-    const hasCanon = glyphsByKey[k]?.has_data === true;
-    const visible = visibleGlyphs.has(k);
-    const isActive = activeGlyph === k;
-    return (
-      <ListItem
-        key={k}
-        disablePadding
-        secondaryAction={
-          <Tooltip title="Editor öffnen">
-            <span>
-              <IconButton
-                size="small"
-                edge="end"
-                onClick={() => {
-                  activateGlyph(k);
-                  navigate(`/admin/edit/${encodeURIComponent(k)}`);
-                }}
-                disabled={!hasBbox}
-              >
-                <EditIcon fontSize="small" />
-              </IconButton>
-            </span>
-          </Tooltip>
-        }
-        sx={{
-          bgcolor: isActive ? 'action.selected' : 'transparent',
-          borderLeft: '3px solid',
-          borderLeftColor: isActive ? 'primary.main' : 'transparent',
-        }}
-      >
-        <ListItemButton onClick={() => activateGlyph(k)} sx={{ py: 0.5 }}>
-          <Box sx={{ width: 26, display: 'flex', alignItems: 'center', color: visible ? 'secondary.main' : 'text.disabled' }}>
-            {visible ? <VisibilityIcon fontSize="small" /> : <VisibilityOffIcon fontSize="small" />}
-          </Box>
-          <Box
-            sx={{
-              width: 22,
-              display: 'flex',
-              alignItems: 'center',
-              color: hasCanon ? 'success.main' : hasBbox ? 'text.secondary' : 'text.disabled',
-            }}
-          >
-            {hasCanon ? (
-              <TaskAltIcon fontSize="small" />
-            ) : hasBbox ? (
-              <CircleIcon sx={{ fontSize: 10 }} />
-            ) : (
-              <RadioButtonUncheckedIcon fontSize="small" />
-            )}
-          </Box>
-          <ListItemText
-            primary={kg.label}
-            secondary={k}
-            slotProps={{
-              primary: {
-                sx: {
-                  fontFamily: 'ui-monospace, Menlo, monospace',
-                  fontSize: 13,
-                  color: hasBbox ? 'text.primary' : 'text.disabled',
-                },
-              },
-              secondary: { sx: { fontSize: 10, fontFamily: 'ui-monospace, Menlo, monospace' } },
-            }}
-          />
-        </ListItemButton>
-      </ListItem>
-    );
+  const selectLetter = (letter: Letter) => {
+    setOpenBase(letter.base);
+    // Prefer a position that already has data, then one with a bbox, else medial.
+    const pos =
+      POSITIONS.find((p) => hasCanon(glyphKeyFor(letter, p))) ??
+      POSITIONS.find((p) => hasBbox(glyphKeyFor(letter, p))) ??
+      'medial';
+    activatePosition(letter, pos);
   };
 
-  const mvpGlyphs = KNOWN_GLYPHS.filter((g) => g.group === 'mvp');
-  const alphabetGlyphs = KNOWN_GLYPHS.filter((g) => g.group === 'alphabet');
+  const openLetter = openBase ? (LETTERS.find((l) => l.base === openBase) ?? null) : null;
+  const activePos: Position | null =
+    openLetter && activeGlyph
+      ? (POSITIONS.find((p) => glyphKeyFor(openLetter, p) === activeGlyph) ?? null)
+      : null;
+  const keysWithBbox = Object.keys(bboxesByKey);
 
   return (
     <Box sx={{ borderRight: 1, borderColor: 'divider', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+      {/* Navigation — get back out of the admin area / over to the overview. */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 1, py: 1, borderBottom: 1, borderColor: 'divider' }}>
+        <Tooltip title="Zur Startseite">
+          <IconButton size="small" onClick={() => navigate('/')}>
+            <HomeIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        <Typography
+          variant="subtitle2"
+          sx={{ flex: 1, cursor: 'pointer', fontWeight: 600 }}
+          onClick={() => navigate('/')}
+        >
+          kurrentschrift
+        </Typography>
+        <Tooltip title="Chart-Übersicht">
+          <IconButton size="small" onClick={() => navigate('/admin/chart')}>
+            <GridViewIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </Box>
+
       <Box sx={{ p: 2, pb: 0.5 }}>
         <Typography variant="overline" color="text.secondary">
           {source.title}
@@ -124,7 +104,10 @@ export function GlyphSidebar() {
           {source.style_ratio.join(':')} · slant {source.slant_deg}°
         </Typography>
       </Box>
-      <Box sx={{ px: 2, py: 1, display: 'flex', gap: 1 }}>
+      <Box sx={{ px: 2, py: 1, display: 'flex', gap: 1, alignItems: 'center' }}>
+        <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
+          Overlays
+        </Typography>
         <Button size="small" variant="outlined" onClick={() => setOnlyVisible(keysWithBbox)}>
           alle
         </Button>
@@ -133,20 +116,125 @@ export function GlyphSidebar() {
         </Button>
       </Box>
       <Divider />
-      <List dense sx={{ flex: 1, overflowY: 'auto', py: 0 }} subheader={<li />}>
-        <li>
-          <ul style={{ padding: 0 }}>
-            <ListSubheader sx={{ bgcolor: 'background.paper', lineHeight: '2.2em' }}>MVP-Anker</ListSubheader>
-            {mvpGlyphs.map(renderRow)}
-          </ul>
-        </li>
-        <li>
-          <ul style={{ padding: 0 }}>
-            <ListSubheader sx={{ bgcolor: 'background.paper', lineHeight: '2.2em' }}>Alphabet (markieren fürs Quiz)</ListSubheader>
-            {alphabetGlyphs.map(renderRow)}
-          </ul>
-        </li>
-      </List>
+
+      {/* Letter grid — every letter, status dot in the corner. */}
+      <Box sx={{ flex: 1, overflowY: 'auto', px: 2, py: 1 }}>
+        {GROUP_ORDER.map((group) => {
+          const letters = LETTERS.filter((l) => l.group === group);
+          if (letters.length === 0) return null;
+          return (
+            <Box key={group} sx={{ mb: 2 }}>
+              <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                {GROUP_LABELS[group]}
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                {letters.map((letter) => {
+                  const canon = POSITIONS.some((p) => hasCanon(glyphKeyFor(letter, p)));
+                  const bbox = POSITIONS.some((p) => hasBbox(glyphKeyFor(letter, p)));
+                  const isOpen = openBase === letter.base;
+                  return (
+                    <Tooltip
+                      key={letter.base}
+                      title={`${letter.glyph}${letter.note ? ` · ${letter.note}` : ''}${
+                        canon ? ' · Canonical vorhanden' : bbox ? ' · Bbox gesetzt' : ' · leer'
+                      }`}
+                    >
+                      <ButtonBase
+                        onClick={() => selectLetter(letter)}
+                        sx={{
+                          position: 'relative',
+                          width: 34,
+                          height: 34,
+                          borderRadius: 1,
+                          border: '1px solid',
+                          borderColor: isOpen ? 'primary.main' : 'divider',
+                          bgcolor: isOpen ? 'action.selected' : 'transparent',
+                          fontFamily: 'Georgia, "Times New Roman", serif',
+                          fontSize: letter.glyph.length > 1 ? 14 : 19,
+                          lineHeight: 1,
+                          color: canon || bbox ? 'text.primary' : 'text.disabled',
+                          '&:hover': { borderColor: 'primary.light', bgcolor: 'action.hover' },
+                        }}
+                      >
+                        {letter.glyph}
+                        {(canon || bbox) && (
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              top: 2,
+                              right: 2,
+                              width: 7,
+                              height: 7,
+                              borderRadius: '50%',
+                              bgcolor: canon ? 'success.main' : 'warning.main',
+                            }}
+                          />
+                        )}
+                      </ButtonBase>
+                    </Tooltip>
+                  );
+                })}
+              </Box>
+            </Box>
+          );
+        })}
+      </Box>
+
+      {/* Position panel — only shown once a letter is selected. */}
+      {openLetter && (
+        <Box sx={{ borderTop: 1, borderColor: 'divider', p: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 1 }}>
+            <Typography sx={{ fontFamily: 'Georgia, serif', fontSize: 22, lineHeight: 1 }}>{openLetter.glyph}</Typography>
+            <Typography variant="caption" color="text.secondary">
+              Position {openLetter.note ? `· ${openLetter.note}` : ''}
+            </Typography>
+          </Box>
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={activePos}
+            onChange={(_e, p: Position | null) => p && activatePosition(openLetter, p)}
+            fullWidth
+          >
+            {POSITIONS.map((p) => {
+              const key = glyphKeyFor(openLetter, p);
+              const canon = hasCanon(key);
+              const bbox = hasBbox(key);
+              return (
+                <ToggleButton key={p} value={p} sx={{ textTransform: 'none', flexDirection: 'column', gap: 0.25, py: 0.5 }}>
+                  <Box
+                    sx={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: '50%',
+                      bgcolor: canon ? 'success.main' : bbox ? 'warning.main' : 'transparent',
+                      border: canon || bbox ? 'none' : '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  />
+                  <Typography variant="caption">{p}</Typography>
+                </ToggleButton>
+              );
+            })}
+          </ToggleButtonGroup>
+          <Button
+            fullWidth
+            size="small"
+            variant="contained"
+            startIcon={activePos && hasCanon(glyphKeyFor(openLetter, activePos)) ? <EditIcon /> : <CreateIcon />}
+            disabled={!activeGlyph || !hasBbox(activeGlyph)}
+            onClick={() => activeGlyph && navigate(`/admin/edit/${encodeURIComponent(activeGlyph)}`)}
+            sx={{ mt: 1.5 }}
+          >
+            {activePos && hasCanon(glyphKeyFor(openLetter, activePos)) ? 'Editor öffnen' : 'Strich zeichnen'}
+          </Button>
+          {activeGlyph && !hasBbox(activeGlyph) && (
+            <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1 }}>
+              Noch keine Bbox — im Modus „Bbox“ ein Rechteck auf der Vorlage ziehen.
+            </Typography>
+          )}
+        </Box>
+      )}
     </Box>
   );
 }
