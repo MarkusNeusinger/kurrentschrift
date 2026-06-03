@@ -34,6 +34,34 @@ class ExcludeRect(BaseModel):
     x1: int
 
 
+class GuideConfig(BaseModel):
+    """Practice-sheet-style guide lines (Hilfslinien) drawn over a glyph crop.
+
+    Mirrors the worksheet rulers in `app/src/lib/lineatur.ts`: the horizontal
+    four-line system (baseline/waist/ascender/descender — baseline and waist
+    come from the bbox calibration, the outer two are toggled per glyph) plus a
+    positionable, angled main line (slant). Some letters need several parallel
+    main lines, hence `slant_count`/`slant_spacing`. Kept here (not on the
+    Source) because placement is per glyph; reused later to draw letters and to
+    render explanatory diagrams.
+    """
+
+    model_config = ConfigDict(extra="ignore")
+
+    # Main-line angle in degrees from vertical, worksheet convention (0 =
+    # upright, positive leans right). null => derive from the source slant.
+    slant_deg: float | None = None
+    # Chart-x where the (centre) main line crosses baseline_y; the drag handle.
+    # null => crop centre.
+    slant_x: float | None = None
+    # Number of parallel main lines and their horizontal spacing in chart px.
+    slant_count: int = 1
+    slant_spacing: float = 0.0
+    # Whether the ascender/descender rulers apply to this glyph.
+    show_ascender: bool = True
+    show_descender: bool = True
+
+
 class BboxIn(BaseModel):
     """Body of `PUT /sources/{id}/bboxes/{glyph_key}`."""
 
@@ -47,6 +75,7 @@ class BboxIn(BaseModel):
     baseline_y: int
     midband_y: int
     n_anchors: int = 50
+    guides: GuideConfig = Field(default_factory=GuideConfig)
 
 
 class BboxOut(BboxIn):

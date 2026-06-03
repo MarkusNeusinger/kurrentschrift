@@ -17,7 +17,9 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   Divider,
+  FormControlLabel,
   IconButton,
   Paper,
   Snackbar,
@@ -36,7 +38,7 @@ import { DiagnosticView } from '../components/DiagnosticView';
 import { FitView } from '../components/FitView';
 import { knownGlyph } from '../constants';
 import { useAdmin } from '../state';
-import type { BboxIn, BboxOut, StrokePoint } from '../types';
+import type { BboxIn, BboxOut, GuideConfig, StrokePoint } from '../types';
 
 type Mode = 'view' | 'trace';
 type CalibField = 'baseline_y' | 'midband_y';
@@ -51,6 +53,7 @@ function bboxInFromOut(b: BboxOut): BboxIn {
     baseline_y: b.baseline_y,
     midband_y: b.midband_y,
     n_anchors: b.n_anchors,
+    guides: b.guides,
   };
 }
 
@@ -95,6 +98,14 @@ interface CalibDragState {
   curY: number;
 }
 
+// Drag state for the angled main line (slant): we move it horizontally, so we
+// track the chart-x of its baseline crossing.
+interface GuideDragState {
+  curX: number;
+}
+
+const SLANT_COLOR = '#30d070';
+
 export function EditorPage() {
   const { glyphKey: raw } = useParams();
   const glyphKey = raw ? decodeURIComponent(raw) : null;
@@ -109,6 +120,7 @@ export function EditorPage() {
   const [pathPts, setPathPts] = useState<StrokePoint[]>([]);
   const [drawing, setDrawing] = useState(false);
   const [calibDrag, setCalibDrag] = useState<CalibDragState | null>(null);
+  const [guideDrag, setGuideDrag] = useState<GuideDragState | null>(null);
   const [snack, setSnack] = useState<{ kind: 'info' | 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
@@ -120,6 +132,7 @@ export function EditorPage() {
     setPathPts([]);
     setDrawing(false);
     setCalibDrag(null);
+    setGuideDrag(null);
   }, [glyphKey]);
 
   useLayoutEffect(() => {
@@ -140,6 +153,23 @@ export function EditorPage() {
   }, [cropW, cropH, hostSize]);
   const displayW = cropW * scale;
   const displayH = cropH * scale;
+
+  // Resolved guide-line values: per-glyph overrides from bbox.guides with
+  // sensible fallbacks. The main-line angle defaults to the source slant
+  // converted to the worksheet's degrees-from-vertical convention; the line
+  // sits at the crop centre until placed.
+  const guideVals = useMemo(() => {
+    const g: GuideConfig = bbox?.guides ?? {};
+    const srcSlantFromVertical = source ? 90 - source.slant_deg : 25;
+    return {
+      slantDeg: g.slant_deg ?? srcSlantFromVertical,
+      slantX: g.slant_x ?? (bbox ? (bbox.x0 + bbox.x1) / 2 : 0),
+      slantCount: Math.max(1, g.slant_count ?? 1),
+      slantSpacing: g.slant_spacing ?? 0,
+      showAscender: g.show_ascender ?? true,
+      showDescender: g.show_descender ?? true,
+    };
+  }, [bbox, source]);
 
   const cssToChartY = useCallback(
     (clientY: number, host: Element | null) => {
@@ -181,6 +211,29 @@ export function EditorPage() {
     [calibDrag, cssToChartY],
   );
 
+  // The angled main line is dragged horizontally to its place over the glyph.
+  const startGuideDrag = useCallback(
+    (e: React.PointerEvent<SVGElement>) => {
+      e.stopPropagation();
+      e.preventDefault();
+      const svg = e.currentTarget.ownerSVGElement;
+      if (!svg) return;
+      const { x } = cssToChartXY(e.clientX, e.clientY, svg);
+      setGuideDrag({ curX: x });
+      svg.setPointerCapture(e.pointerId);
+    },
+    [cssToChartXY],
+  );
+
+  const onGuideMove = useCallback(
+    (e: React.PointerEvent<SVGSVGElement>) => {
+      if (!guideDrag) return;
+      const { x } = cssToChartXY(e.clientX, e.clientY, e.currentTarget);
+      setGuideDrag({ curX: x });
+    },
+    [guideDrag, cssToChartXY],
+  );
+
   const updateBboxField = useCallback(
     async (patch: Partial<BboxIn>) => {
       if (!glyphKey || !bbox) return;
@@ -206,6 +259,34 @@ export function EditorPage() {
     await updateBboxField({ [field]: value });
   }, [calibDrag, glyphKey, bbox, updateBboxField]);
 
+  // Persist a partial guide change on top of the currently resolved values, so
+  // a single tweak (e.g. the angle) doesn't drop the other concrete fields.
+  const updateGuides = useCallback(
+    (patch: Partial<GuideConfig>) => {
+      const next: GuideConfig = {
+        slant_deg: guideVals.slantDeg,
+        slant_x: guideVals.slantX,
+        slant_count: guideVals.slantCount,
+        slant_spacing: guideVals.slantSpacing,
+        show_ascender: guideVals.showAscender,
+        show_descender: guideVals.showDescender,
+        ...patch,
+      };
+      return updateBboxField({ guides: next });
+    },
+    [guideVals, updateBboxField],
+  );
+
+  const onGuideUp = useCallback(async () => {
+    if (!guideDrag) {
+      setGuideDrag(null);
+      return;
+    }
+    const value = Math.round(guideDrag.curX);
+    setGuideDrag(null);
+    await updateGuides({ slant_x: value });
+  }, [guideDrag, updateGuides]);
+
   const onStylusDown = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
       if (mode !== 'trace') return;
@@ -221,6 +302,7 @@ export function EditorPage() {
 
   const onStylusMove = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
+      if (guideDrag) return onGuideMove(e);
       if (calibDrag) return onCalibMove(e);
       if (!drawing) return;
       const { x, y } = cssToChartXY(e.clientX, e.clientY, e.currentTarget);
@@ -234,16 +316,17 @@ export function EditorPage() {
         return [...prev, { x, y, pressure: e.pressure || null, t: performance.now() }];
       });
     },
-    [calibDrag, drawing, cssToChartXY, onCalibMove],
+    [guideDrag, calibDrag, drawing, cssToChartXY, onCalibMove, onGuideMove],
   );
 
   const onStylusUp = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
+      if (guideDrag) return onGuideUp();
       if (calibDrag) return onCalibUp();
       setDrawing(false);
       e.preventDefault();
     },
-    [calibDrag, onCalibUp],
+    [guideDrag, calibDrag, onCalibUp, onGuideUp],
   );
 
   const saveTrace = useCallback(async () => {
@@ -306,6 +389,22 @@ export function EditorPage() {
   const ascenderCss = (ascenderY - bbox.y0) * scale;
   const descenderCss = (descenderY - bbox.y0) * scale;
 
+  // Angled main line(s): degrees from vertical, positive leaning right (top
+  // moves right of bottom). Screen y grows downward, so x grows as y shrinks.
+  const tanSlant = Math.tan((guideVals.slantDeg * Math.PI) / 180);
+  const slantLineCss = (xBase: number) => {
+    const xTop = xBase + tanSlant * (bbox.baseline_y - bbox.y0);
+    const xBot = xBase + tanSlant * (bbox.baseline_y - bbox.y1);
+    return { x1: (xTop - bbox.x0) * scale, y1: 0, x2: (xBot - bbox.x0) * scale, y2: displayH };
+  };
+  const slantBases: number[] = [];
+  for (let k = 0; k < guideVals.slantCount; k++) {
+    const offset = (k - (guideVals.slantCount - 1) / 2) * guideVals.slantSpacing;
+    slantBases.push(guideVals.slantX + offset);
+  }
+  const slantHandleCss = (guideVals.slantX - bbox.x0) * scale;
+  const guideDragLine = guideDrag ? slantLineCss(guideDrag.curX) : null;
+
   return (
     <>
       <Paper square sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1, borderBottom: 1, borderColor: 'divider' }}>
@@ -350,10 +449,11 @@ export function EditorPage() {
                 onPointerCancel={() => {
                   setDrawing(false);
                   setCalibDrag(null);
+                  setGuideDrag(null);
                 }}
                 style={{ position: 'absolute', inset: 0, touchAction: 'none' }}
               >
-                {ascenderCss >= 0 && ascenderCss <= displayH && (
+                {guideVals.showAscender && ascenderCss >= 0 && ascenderCss <= displayH && (
                   <g style={{ pointerEvents: 'none' }}>
                     <line x1={0} y1={ascenderCss} x2={displayW} y2={ascenderCss} stroke="#888" strokeWidth={1} strokeDasharray="2 4" opacity={0.6} />
                     <text x={displayW - 90} y={ascenderCss - 3} fontSize={10} fill="#888" opacity={0.8}>
@@ -361,7 +461,7 @@ export function EditorPage() {
                     </text>
                   </g>
                 )}
-                {descenderCss >= 0 && descenderCss <= displayH && (
+                {guideVals.showDescender && descenderCss >= 0 && descenderCss <= displayH && (
                   <g style={{ pointerEvents: 'none' }}>
                     <line x1={0} y1={descenderCss} x2={displayW} y2={descenderCss} stroke="#888" strokeWidth={1} strokeDasharray="2 4" opacity={0.6} />
                     <text x={displayW - 100} y={descenderCss - 3} fontSize={10} fill="#888" opacity={0.8}>
@@ -383,6 +483,30 @@ export function EditorPage() {
                     midband {bbox.midband_y}
                   </text>
                 </g>
+                <g style={{ pointerEvents: 'none' }}>
+                  {slantBases.map((xb, i) => {
+                    const ln = slantLineCss(xb);
+                    return (
+                      <line key={i} x1={ln.x1} y1={ln.y1} x2={ln.x2} y2={ln.y2} stroke={SLANT_COLOR} strokeWidth={1.2} strokeDasharray="5 4" opacity={0.85} />
+                    );
+                  })}
+                  <text x={4} y={14} fontSize={10} fill={SLANT_COLOR} fontWeight="bold">
+                    slant {guideVals.slantDeg.toFixed(0)}°{slantBases.length > 1 ? ` ×${slantBases.length}` : ''}
+                  </text>
+                </g>
+                <circle
+                  cx={slantHandleCss}
+                  cy={baselineCss}
+                  r={7}
+                  fill={SLANT_COLOR}
+                  stroke="#0a2a14"
+                  strokeWidth={1}
+                  style={{ cursor: 'ew-resize' }}
+                  onPointerDown={startGuideDrag}
+                />
+                {guideDragLine && (
+                  <line x1={guideDragLine.x1} y1={guideDragLine.y1} x2={guideDragLine.x2} y2={guideDragLine.y2} stroke={SLANT_COLOR} strokeWidth={2} opacity={0.6} style={{ pointerEvents: 'none' }} />
+                )}
                 {dragCss != null && calibDrag && (
                   <line x1={0} y1={dragCss} x2={displayW} y2={dragCss} stroke={calibDrag.field === 'baseline_y' ? '#ff5060' : '#c060ff'} strokeWidth={2} opacity={0.6} />
                 )}
@@ -410,6 +534,71 @@ export function EditorPage() {
                 <CalibrationRow label="midband_y" value={bbox.midband_y} color="#c060ff" onSet={(v) => updateBboxField({ midband_y: v })} />
                 <Typography variant="caption" color="text.secondary">
                   x-Höhe = {xHeightPx} px
+                </Typography>
+              </Stack>
+            </Box>
+
+            <Divider />
+
+            <Box>
+              <Typography variant="overline" color="text.secondary">
+                Hilfslinien
+              </Typography>
+              <Stack spacing={1.5} sx={{ mt: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <TextField
+                    label="Neigung Hauptlinie"
+                    type="number"
+                    size="small"
+                    value={Math.round(guideVals.slantDeg)}
+                    onChange={(e) => updateGuides({ slant_deg: Number(e.target.value) })}
+                    slotProps={{ input: { sx: { color: SLANT_COLOR, fontFamily: 'monospace' }, endAdornment: '°' } }}
+                    sx={{ flex: 1 }}
+                  />
+                  <Tooltip title="1° aufrechter">
+                    <IconButton size="small" onClick={() => updateGuides({ slant_deg: Math.round(guideVals.slantDeg) - 1 })} sx={{ color: SLANT_COLOR }}>
+                      <ArrowUpwardIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="1° schräger">
+                    <IconButton size="small" onClick={() => updateGuides({ slant_deg: Math.round(guideVals.slantDeg) + 1 })} sx={{ color: SLANT_COLOR }}>
+                      <ArrowDownwardIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <TextField
+                    label="Linien"
+                    type="number"
+                    size="small"
+                    value={guideVals.slantCount}
+                    onChange={(e) => updateGuides({ slant_count: Math.max(1, Math.round(Number(e.target.value))) })}
+                    sx={{ flex: 1 }}
+                  />
+                  <TextField
+                    label="Abstand px"
+                    type="number"
+                    size="small"
+                    value={guideVals.slantSpacing}
+                    onChange={(e) => updateGuides({ slant_spacing: Math.max(0, Number(e.target.value)) })}
+                    disabled={guideVals.slantCount < 2}
+                    sx={{ flex: 1 }}
+                  />
+                </Box>
+                <Stack direction="row" spacing={1}>
+                  <FormControlLabel
+                    control={<Checkbox size="small" checked={guideVals.showAscender} onChange={(e) => updateGuides({ show_ascender: e.target.checked })} />}
+                    label="ascender"
+                    slotProps={{ typography: { variant: 'caption' } }}
+                  />
+                  <FormControlLabel
+                    control={<Checkbox size="small" checked={guideVals.showDescender} onChange={(e) => updateGuides({ show_descender: e.target.checked })} />}
+                    label="descender"
+                    slotProps={{ typography: { variant: 'caption' } }}
+                  />
+                </Stack>
+                <Typography variant="caption" color="text.secondary">
+                  Gleiche Linien wie das Übungsblatt: baseline · waist (= midband) · ascender · descender · slant. Den grünen Punkt ziehen, um die Hauptlinie im Bild zu platzieren.
                 </Typography>
               </Stack>
             </Box>

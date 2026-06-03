@@ -78,6 +78,13 @@ class Bbox(Base):
     baseline_y: Mapped[int] = mapped_column(Integer, nullable=False)
     midband_y: Mapped[int] = mapped_column(Integer, nullable=False)
     n_anchors: Mapped[int] = mapped_column(Integer, nullable=False, server_default="50")
+    # Guide lines drawn over the crop (German: Hilfslinien), shaped like the
+    # practice-sheet rulers in app/src/lib/lineatur.ts: the four-line system
+    # (baseline/waist/ascender/descender) plus a positionable, angled main
+    # line (slant). Open JSONB so the per-glyph set can grow; see GuideConfig
+    # in api/schemas.py for the keys. Reused later for drawing letters and for
+    # explanatory diagrams.
+    guides: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default="{}")
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

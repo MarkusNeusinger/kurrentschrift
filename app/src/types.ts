@@ -19,6 +19,21 @@ export interface SourceOut {
   attribution: string | null;
 }
 
+// Practice-sheet-style guide lines (Hilfslinien) drawn over a glyph crop —
+// same vocabulary as the worksheet rulers in lib/lineatur.ts. baseline + waist
+// come from the bbox calibration; ascender/descender are toggleable; slant is
+// the positionable, angled main line (degrees from vertical, worksheet
+// convention). slant_count/slant_spacing allow the few letters that need
+// several parallel main lines. Mirrors GuideConfig in api/schemas.py.
+export interface GuideConfig {
+  slant_deg?: number | null;
+  slant_x?: number | null;
+  slant_count?: number;
+  slant_spacing?: number;
+  show_ascender?: boolean;
+  show_descender?: boolean;
+}
+
 export interface BboxOut {
   glyph_key: string;
   y0: number;
@@ -29,6 +44,7 @@ export interface BboxOut {
   baseline_y: number;
   midband_y: number;
   n_anchors: number;
+  guides: GuideConfig;
 }
 
 export interface BboxIn {
@@ -40,6 +56,7 @@ export interface BboxIn {
   baseline_y: number;
   midband_y: number;
   n_anchors: number;
+  guides?: GuideConfig;
 }
 
 export interface StrokePoint {
