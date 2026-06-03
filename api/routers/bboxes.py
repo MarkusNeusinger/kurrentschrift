@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_admin
 from api.dependencies import require_db, require_source
-from api.schemas import BboxIn, BboxOut
+from api.schemas import BboxIn, BboxOut, GuideConfig
 from core.database import Bbox, BboxRepository, Source
 
 
@@ -23,6 +23,7 @@ def _to_out(bbox: Bbox) -> BboxOut:
         baseline_y=bbox.baseline_y,
         midband_y=bbox.midband_y,
         n_anchors=bbox.n_anchors,
+        guides=GuideConfig(**(bbox.guides or {})),
     )
 
 
@@ -47,6 +48,13 @@ async def put_bbox(
     if payload.baseline_y <= payload.midband_y:
         raise HTTPException(422, detail="baseline_y must be greater than midband_y (baseline is below midband)")
     repo = BboxRepository(db)
+    # `guides` is optional: when the client omits it, keep whatever is already
+    # stored (a plain bbox/calibration save must not wipe the guide lines).
+    if payload.guides is not None:
+        guides = payload.guides.model_dump()
+    else:
+        existing = await repo.get(source.id, glyph_key)
+        guides = existing.guides if existing is not None else {}
     bbox = await repo.upsert(
         source.id,
         glyph_key,
@@ -58,6 +66,7 @@ async def put_bbox(
         baseline_y=payload.baseline_y,
         midband_y=payload.midband_y,
         n_anchors=payload.n_anchors,
+        guides=guides,
     )
     return _to_out(bbox)
 

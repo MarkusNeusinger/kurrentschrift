@@ -66,6 +66,7 @@ function bboxInFromOut(b: BboxOut): BboxIn {
     baseline_y: b.baseline_y,
     midband_y: b.midband_y,
     n_anchors: b.n_anchors,
+    guides: b.guides,
   };
 }
 
