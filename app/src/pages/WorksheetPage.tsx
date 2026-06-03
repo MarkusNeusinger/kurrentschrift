@@ -9,7 +9,6 @@
 // typesets Kurrent glyphs into the lines is the later WeasyPrint piece.
 
 import { useEffect, useMemo, useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
 import DownloadIcon from '@mui/icons-material/Download';
 import {
   Box,
@@ -18,7 +17,6 @@ import {
   Divider,
   FormControlLabel,
   InputAdornment,
-  Link,
   Paper,
   Stack,
   Switch,
@@ -40,6 +38,7 @@ import {
 } from '../lib/lineatur';
 import { lineaturePdf } from '../lib/pdf';
 import { tokens } from '../theme';
+import { PublicHeader } from '../components/PublicHeader';
 
 const garamond = "'EB Garamond', Georgia, 'Times New Roman', serif";
 
@@ -136,21 +135,10 @@ export function WorksheetPage() {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: { xs: 4, md: 6 } }}>
-      <Container maxWidth="lg">
-        {/* Header */}
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      <PublicHeader />
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         <Stack spacing={1.5} sx={{ mb: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: tokens.green }} />
-            <Link
-              component={RouterLink}
-              to="/"
-              variant="overline"
-              sx={{ color: 'text.secondary', textDecoration: 'none', lineHeight: 1 }}
-            >
-              kurrentschrift.ink
-            </Link>
-          </Box>
           <Typography
             component="h1"
             sx={{

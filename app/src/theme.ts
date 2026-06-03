@@ -2,9 +2,9 @@
 // (Roboto/system stack, NOT MonoLisa). Light mode only for now; dark theme
 // can be added later if needed.
 //
-// Discipline (per anyplot's style-guide.md §4.4): brand green is a *signal*
-// colour — used on accents, hover states, CTAs. The rest of the chrome is
-// warm grayscale on an off-white paper background.
+// Discipline (per anyplot's style-guide.md §4.4): the brand accent (viridian) is
+// a *signal* colour — used on accents, hover states, CTAs. The rest of the chrome
+// is warm grayscale on an off-white paper background.
 
 import { createTheme } from '@mui/material/styles';
 
@@ -17,10 +17,13 @@ const ink = {
 } as const;
 
 const imprint = {
-  // anyplot §4.1 — categorical palette + semantic anchors
-  green: '#009E73', // brand
-  greenDark: '#007A59', // hover / accent-dark
-  greenTint: 'rgba(0, 158, 115, 0.12)',
+  // Brand accent = viridian (chromium-oxide green, ~1859) — the single sharp accent
+  // of the "paper & ink" identity (see docs/concepts/style-guide.md §2). Replaces
+  // anyplot's emerald #009E73, which the guide rejects (reads digital, too light as
+  // body text). Semantic anchors (red/amber/blue) stay.
+  viridian: '#40826d', // brand
+  viridianDark: '#336152', // hover / accent-dark
+  viridianTint: 'rgba(64, 130, 109, 0.12)',
   red: '#AE3030',
   amber: '#DDCC77',
   blue: '#4467A3',
@@ -39,12 +42,14 @@ const sansStack =
 export const theme = createTheme({
   palette: {
     mode: 'light',
-    primary: { main: imprint.green, dark: imprint.greenDark, contrastText: '#FFFFFF' },
+    primary: { main: imprint.viridian, dark: imprint.viridianDark, contrastText: '#FFFFFF' },
     secondary: { main: imprint.blue },
     error: { main: imprint.red },
     warning: { main: imprint.amber },
     info: { main: imprint.blue },
-    success: { main: imprint.green },
+    // success / "correct" also runs on viridian — one accent across the site; the
+    // quiz still pairs it with red for "falsch", so the two stay distinguishable.
+    success: { main: imprint.viridian, dark: imprint.viridianDark },
     background: { default: surface.page, paper: surface.card },
     text: { primary: ink.primary, secondary: ink.soft, disabled: ink.muted },
     divider: ink.rule,
@@ -84,9 +89,9 @@ export const theme = createTheme({
 // reach for something not here, add it deliberately rather than re-exporting
 // the entire object.
 export const tokens = {
-  green: imprint.green,
-  greenDark: imprint.greenDark,
-  greenTint: imprint.greenTint,
+  viridian: imprint.viridian,
+  viridianDark: imprint.viridianDark,
+  viridianTint: imprint.viridianTint,
   ink,
   surface,
 } as const;
