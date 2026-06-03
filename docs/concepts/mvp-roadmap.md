@@ -172,9 +172,11 @@ geprüft, bevor sie auf eigene Hand zuschlägt.)
 interaktive Canonical-Erzeugung. Maus zieht Bbox- und Exclude-Rechtecke
 direkt auf `chart.jpg`, baseline/midband sind draggable Linien, der
 Ductus-Pfad wird mit Stylus (S-Pen) auf einem Samsung-Tablet
-gezeichnet. Backend liest/schreibt die existierenden Files in
-`mvp/canonical/`, sodass die CLI-Werkzeuge (`mvp.tools.trace_skeleton`,
-`mvp.render_canonicals`) weiter funktionieren.
+gezeichnet. Backend persistiert alle Canonicals als Rows in der
+`glyphs`-Tabelle (`anchors`/`half_widths`/`raw_path`/`measurements` als
+JSONB) — siehe Status-Note oben; der ursprünglich hier beschriebene
+File-/CLI-Workflow (`mvp/canonical/`, `mvp.tools.trace_skeleton`,
+`mvp.render_canonicals`) ist mit dem `/mvp/`-Ordner aufgelöst.
 
 **Begründung der Einschiebung:** Die ursprüngliche Reihenfolge nach §10
 war „M3 zuerst, Tools danach". In der Umsetzung von M3 Phase A wurde
@@ -186,8 +188,8 @@ Allograph-Erweiterungen und (mit minimaler Erweiterung) das M1
 own-hand-Schreiben profitieren davon.
 
 **Architektur:** spiegelt anyplot (`~/projects/anyplot/`) — `/api/`
-FastAPI mit Routern pro Resource (`health`, `chart`, `bboxes`,
-`canonical`), `/app/` React + Vite + TypeScript, lokal über zwei
+FastAPI mit Routern pro Resource (`health`, `sources`, `chart`,
+`bboxes`, `glyphs`), `/app/` React + Vite + TypeScript, lokal über zwei
 Terminals (`uvicorn` :8000, `npm run dev` :3000 mit `/api`-Proxy).
 Dockerfiles und `cloudbuild.yaml` werden als Platzhalter angelegt für
 spätere Cloud-Run-Migration; in v1 nicht ausgeführt.
@@ -199,8 +201,9 @@ und unter `_trace.pen_pressure_raw` gespeichert (für M1
 Own-Hand-Modus, wo es die primäre Schwellzug-Quelle wird).
 
 **Fertig wenn:** Alle 11 MVP-Canonicals (Phase A + B) sind über die
-Web-UI traced, identisches Schema wie CLI-Output, `mvp.render_canonicals`
-zeigt sie korrekt im Side-by-Side mit Loth.
+Web-UI traced und als `glyphs`-Rows persistiert, der
+3-Spalten-SVG-Diagnostic-View (`/diagnostic`) zeigt sie korrekt im
+Side-by-Side mit dem Loth-Crop.
 
 **Abhängigkeiten:** M0 (Pipeline existiert). Blockiert dann effektiv
 M3 Phase B — wird stattdessen *als* Phase B durchgeführt.
@@ -251,6 +254,20 @@ committable, [`quellen-und-rechte.md`](../reference/quellen-und-rechte.md)
 **Was:** Manuelle Crops jeder Glyph-Instanz aus den M1-Scans, mit
 Positions-Tag (`initial`/`medial`/`final`) und Kontext-Tag (umgebende
 Glyphen — für Übergangstest in M6).
+
+**Sieb-Disziplin (Sampling-Bias vermeiden):** Anders als beim *Lesen*
+(Recall-kritisch — jeder Glyph muss gefunden werden,
+[`architektur.md`](architektur.md) §13) ist die Statistik
+**Präzisions-kritisch**: nicht jede Instanz muss segmentiert werden, es
+zählen nur genügend *saubere* pro Bucket. Mehrdeutige oder überlappende
+Crops dürfen also wegfallen — die M1-Wort-Wiederholungen liefern Ersatz.
+**Bedingung:** der Miss muss *zufällig* sein, nicht *selektiv*. Wer
+systematisch die schwer-trennbaren — also *eng verbundenen* — Instanzen
+verwirft, sampelt genau die Ko-Artikulation weg, die §4/§7 interessiert
+(vorausschauender `exit`-Shift je nach Nachbar). Regel: Aussieben nur nach
+**Fit-Qualität** („verrutscht/topologisch falsch = raus"), **nie** nach
+Verbindungsenge („eng am Nachbarn" = Signal, nicht Müll). Gleiche Logik
+wie §6 Stufe 1 (robuste Statistik), nur eine Stufe früher beim Croppen.
 
 **Wo:** `/data/samples/own-hand/segmented/` mit Schema
 `<wort>-<runde>_pos<n>-<position>-<glyph>.png`, z. B.
@@ -315,7 +332,17 @@ deckt sich grob mit den entsprechenden Glyphen auf der Loth-Tafel;
 
 ---
 
-### M4 — Fit-Routine (Template → Instanz)
+### M4 — Fit-Routine (Template → Instanz) — Routine implementiert
+
+**Status:** Die Fit-Routine ist in `core/fit.py` implementiert
+(`fit_template_to_instance` low-level über Arrays, `fit_glyph_to_crop`
+high-level über eine `glyphs`-Row + Bbox — analog zu
+`diagnostic_for_glyph`). Tests in `tests/test_fit.py` (synthetischer
+Balken: Identitäts-Refit, Rückzug einer verschobenen Vorlage,
+Regularisierungs-Effekt, Library-Entry-Schema). Offen bleibt die
+Validierung an echten Eigenhand-Instanzen (hängt an M1/M2) und ein
+Frontend-Overlay (Crop · Canonical grau · Fit rot) aus den von
+`fit_glyph_to_crop` gelieferten `*_polyline_px`-Feldern.
 
 **Was:** Gegeben ein Canonical-Template + Skelett +
 Distanztransformation einer Instanz: optimiere Template-Kontrollpunkte,
@@ -328,14 +355,19 @@ ARAP-light).
 `scipy.spatial.cKDTree`, Breitenresidual als zweiter Term. Bewusst
 einfach — der MVP validiert das Prinzip, nicht den Optimierer.
 
-**Wo:** `mvp/fit.py`. Output pro Instanz: gefülltes `library entry`
-nach §3-Schema (`control_points`, `width_profile`, gefittete
-`entry/exit`).
+**Wo:** `core/fit.py`. Output pro Instanz: gefülltes `library entry`
+nach §3-Schema (gefittete `anchors`, aus der Distanztransformation
+gemessene `half_widths`, gefittete `entry`/`exit_pt`) plus
+`fit`-Diagnostik (Geometrie-/Breiten-RMSE, Iterationen, max.
+Anker-Verschiebung).
 
-**Fertig wenn:** Visualisierungs-PNG zeigt für eine Einzelinstanz:
+**Fertig wenn:** Visualisierung zeigt für eine Einzelinstanz:
 Original + Canonical (grau) + Fit (rot). Fit folgt sichtbar dem
 Skelett, sprengt aber nicht die Topologie (keine Schleife öffnet sich,
-keine Kreuzung dreht).
+keine Kreuzung dreht). `fit_glyph_to_crop` liefert die dafür nötigen
+crop-lokalen Polylines (`skeleton_polyline_px`, `canonical_polyline_px`,
+`fitted_polyline_px`); das SVG-Overlay im Editor ist der nächste Schritt
+(analog `DiagnosticView`).
 
 ---
 
@@ -445,6 +477,27 @@ ausdrücklich nicht im Scope.
 Pflicht-Anker-Glyph vorhanden). Kann parallel zu M4/M5 laufen, weil es
 nur die Centerline visualisiert, keinen Fit nutzt. Idealerweise nach M3
 Phase A, damit echte Daten zum Animieren da sind.
+
+**Früher Folge-Win (kein Gate): Lern-/Quiz-Modus.** Sobald M7 steht, ist
+ein gamifizierter Lese-Lern-Modus eine kleine Frontend-Erweiterung auf
+denselben Primitiven (siehe [`vision.md`](vision.md) Feature 4):
+ein animiert geschriebener Buchstabe wird abgespielt, die Lernende rät
+ihn, eine falsche Antwort zeigt die Regel-Erklärung
+([`orthographie-regeln.md`](../reference/orthographie-regeln.md)).
+Ausbaustufe mit ganzen Wörtern (z. B. den MVP-Wörtern `lesen`, `das`).
+Bewusst **außerhalb der vier Validierungs-Gates** — er validiert den
+Render-Kern nicht, sondern verwertet ihn; er ist hier notiert, damit der
+naheliegende Demo-/Nutzwert-Schritt direkt nach Gate 4 nicht verloren
+geht. Voller Ausbau liegt in der Post-MVP-Phase P1 (Lese-Cluster).
+
+**Status:** Eine bewusst einfache *erste Scheibe* steht bereits unter
+`/quiz` (öffentlich, kein Auth): Sie zeigt nicht den animierten Ductus,
+sondern den **Crop direkt aus der Vorlage** und lässt den lateinischen
+Buchstaben raten (Tippen oder Multiple-Choice; Klein/Groß/Gemischt). Sie
+zieht ihren Vorrat aus den markierten Bboxes — jeder neu auf dem Blatt
+markierte Buchstabe wird sofort quizfähig (das markierbare Set ist dafür
+auf das volle Alphabet inkl. Versalien erweitert). Animierter Ductus,
+Regel-Erklärung bei Fehlern und ganze Wörter bleiben der P1-Ausbau.
 
 ---
 

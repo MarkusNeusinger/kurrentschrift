@@ -3,7 +3,7 @@
 **→ [kurrentschrift.ink](https://kurrentschrift.ink)**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-pre--MVP-orange.svg)](docs/concepts/architektur.md)
+[![Status](https://img.shields.io/badge/status-in--progress%20MVP-orange.svg)](docs/concepts/architektur.md)
 
 > Reading and re-inking historical German Kurrent script via ductus-model template fitting on scans.
 

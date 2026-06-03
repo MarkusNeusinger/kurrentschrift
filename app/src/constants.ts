@@ -3,10 +3,10 @@
 // of glyphs the admin can curate, so the sidebar can list every letter even
 // before bboxes have been drawn for them.
 //
-// The sidebar groups by *letter*; the (initial/medial/final) position is a
-// secondary choice surfaced only once a letter is selected. The (glyph,
-// position) tuple is sent with /trace requests; the glyph_key is just an
-// opaque URL/UI identifier the DB stores rows under.
+// The admin sidebar groups by *letter*; the (initial/medial/final) position is
+// a secondary choice surfaced only once a letter is selected. The (glyph,
+// position) tuple is sent with /trace requests; the glyph_key is just an opaque
+// URL/UI identifier the DB stores rows under.
 //
 // glyph_key convention: `${letter.base}-${position}` (e.g. `a-initial`). A few
 // letters carry `keyOverrides` to preserve historical keys that already hold
@@ -14,10 +14,18 @@
 // The long-s (ſ) and round-s (s) allographs are *separate letters* (per
 // `docs/concepts/architektur.md` §3) that happen to share the `s-` prefix
 // historically: ſ-medial → `s-medial`, s-final → `s-final`.
+//
+// The quiz (`/quiz`) reads whatever bboxes exist in the DB and maps each
+// glyph_key back to its `answer` letter via KNOWN_GLYPHS, so marking a new
+// letter on the chart immediately makes it quizzable.
 
 export const SOURCE_ID = 'loth-1866';
 
 export type Position = 'initial' | 'medial' | 'final';
+export type LetterCase = 'upper' | 'lower';
+// `mvp` = the curated §9 anchor set (allograph-aware trace targets).
+// `alphabet` = the rest of the alphabet, markable so the quiz vocabulary grows.
+export type GlyphGroup = 'mvp' | 'alphabet';
 
 // Front · middle · end of a word. On a teaching plate like Loth 1866 there is
 // usually a single specimen per letter, so the three positions start out
@@ -79,32 +87,114 @@ export function glyphKeyFor(letter: Letter, position: Position): string {
   return letter.keyOverrides?.[position] ?? `${letter.base}-${position}`;
 }
 
-// Flat (glyph, position) registry derived from LETTERS — keeps the old
-// KnownGlyph shape so callers that look up by key keep working.
+// Flat (glyph, position) registry derived from LETTERS. Carries the quiz fields
+// (`answer`, `letterCase`, `group`) so the quiz can map any marked bbox back to
+// a Latin letter, and keeps the KnownGlyph shape callers look up by key.
 export interface KnownGlyph {
   key: string;
-  glyph: string;
+  glyph: string; // the rendered form shown as the solution (ſ, A, …)
   position: Position;
   label: string;
+  // The Latin letter the learner types in the quiz, normalised to lowercase
+  // (long-s `ſ` and round-s `s` both answer `s`).
+  answer: string;
+  letterCase: LetterCase;
+  group: GlyphGroup;
 }
+
+// Historical §9 anchor keys — they hold real traced data, so they keep the
+// `mvp` group; every other derived key is `alphabet`.
+const MVP_KEYS = new Set([
+  'a-initial',
+  'a-medial',
+  'd-initial',
+  'e-medial',
+  'e-final',
+  'l-initial',
+  'l-medial',
+  'n-medial',
+  'n-final',
+  's-medial',
+  's-final',
+]);
+
+// Glyphs whose lowercase form is not the letter a learner would type.
+const ANSWER_OVERRIDE: Record<string, string> = { ſ: 's', ſt: 'st' };
 
 function makeLabel(letter: Letter, position: Position): string {
   return letter.note ? `${letter.glyph} · ${position} · ${letter.note}` : `${letter.glyph} · ${position}`;
 }
 
-export const KNOWN_GLYPHS: KnownGlyph[] = LETTERS.flatMap((letter) =>
-  POSITIONS.map((position) => ({
-    key: glyphKeyFor(letter, position),
-    glyph: letter.glyph,
-    position,
-    label: makeLabel(letter, position),
-  })),
+function answerOf(glyph: string): string {
+  return ANSWER_OVERRIDE[glyph] ?? glyph.toLowerCase();
+}
+
+const DERIVED_GLYPHS: KnownGlyph[] = LETTERS.flatMap((letter) =>
+  POSITIONS.map((position): KnownGlyph => {
+    const key = glyphKeyFor(letter, position);
+    return {
+      key,
+      glyph: letter.glyph,
+      position,
+      label: makeLabel(letter, position),
+      answer: answerOf(letter.glyph),
+      letterCase: letter.group === 'upper' ? 'upper' : 'lower',
+      group: MVP_KEYS.has(key) ? 'mvp' : 'alphabet',
+    };
+  }),
 );
+
+// Read-only back-compat: an earlier full-alphabet scheme keyed capitals as
+// `uc-<letter>` and lowercase gaps as `lc-<letter>` (single chart role). The
+// admin sidebar now writes position-based keys, but any bbox already marked
+// under the old scheme stays resolvable here so the quiz keeps recognising it.
+const LEGACY_ALIASES: KnownGlyph[] = range('a', 'z').flatMap((c): KnownGlyph[] => [
+  { key: `uc-${c}`, glyph: c.toUpperCase(), position: 'initial', label: `${c.toUpperCase()} · Versal`, answer: c, letterCase: 'upper', group: 'alphabet' },
+  { key: `lc-${c}`, glyph: c, position: 'medial', label: `${c} · klein`, answer: c, letterCase: 'lower', group: 'alphabet' },
+]);
+
+export const KNOWN_GLYPHS: KnownGlyph[] = [...DERIVED_GLYPHS, ...LEGACY_ALIASES];
 
 export const LETTER_BY_KEY: Record<string, Letter> = {};
 for (const letter of LETTERS) for (const p of POSITIONS) LETTER_BY_KEY[glyphKeyFor(letter, p)] = letter;
 
-const GLYPH_BY_KEY: Record<string, KnownGlyph> = {};
-for (const kg of KNOWN_GLYPHS) GLYPH_BY_KEY[kg.key] = kg;
+const BY_KEY: Map<string, KnownGlyph> = new Map(KNOWN_GLYPHS.map((g) => [g.key, g]));
 
-export const knownGlyph = (key: string): KnownGlyph | undefined => GLYPH_BY_KEY[key];
+export const knownGlyph = (key: string): KnownGlyph | undefined => BY_KEY.get(key);
+
+// Scripts selectable in the quiz. Only Kurrent (the Loth 1866 source) has data
+// today; the others are shown disabled so the menu reflects the planned scope.
+export interface ScriptOption {
+  id: string;
+  label: string;
+  available: boolean;
+}
+
+export const SCRIPTS: ScriptOption[] = [
+  { id: 'kurrent', label: 'Kurrent', available: true },
+  { id: 'suetterlin', label: 'Sütterlin', available: false },
+  { id: 'offenbacher', label: 'Offenbacher', available: false },
+];
+
+// Difficulty levels for the quiz. The idea: show each letter in progressively
+// less-clean hands so the learner trains beyond copybook-perfect forms. v1 only
+// has the clean Loth 1866 teaching plate, so the rougher levels are listed but
+// disabled ("bald") until real, messier handwriting sources are added to the DB
+// (a post-MVP data task — see docs/concepts/architektur.md §12). Once those
+// sources exist the quiz picks crops by difficulty instead of always Loth; the
+// `difficulty` state already threads through QuizPage so only the crop source
+// has to change here.
+export type Difficulty = 'clean' | 'worn' | 'messy';
+
+export interface DifficultyOption {
+  id: Difficulty;
+  label: string;
+  hint: string;
+  available: boolean;
+}
+
+export const DIFFICULTIES: DifficultyOption[] = [
+  { id: 'clean', label: 'Sauber', hint: 'klare Lehrtafel', available: true },
+  { id: 'worn', label: 'Geübt', hint: 'flüssige Alltagshand', available: false },
+  { id: 'messy', label: 'Krakelig', hint: 'unsaubere, schwer lesbare Hand', available: false },
+];

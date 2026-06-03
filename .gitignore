@@ -224,3 +224,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Frontend overrides
+#   The Python-template ignores above are unanchored, so `lib/` (line 17) also
+#   swallows the SPA's source folder `app/src/lib/`. Re-include it. The build
+#   output (`app/dist/`) stays ignored via the `dist/` rule above.
+!app/src/lib/
+!app/src/lib/**

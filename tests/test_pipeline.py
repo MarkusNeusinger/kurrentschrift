@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
-import numpy as np
-
 from core.pipeline import canonical_from_path, diagnostic_for_glyph
 
 
 def _vertical_stylus_path(num: int = 40, x_global: int = 400) -> list[dict]:
     """Pen path mimicking a straight downstroke on the synthetic chart."""
-    return [{"x": float(x_global), "y": float(200 + 400 * i / (num - 1)), "pressure": 0.5, "t": float(i)} for i in range(num)]
+    return [
+        {"x": float(x_global), "y": float(200 + 400 * i / (num - 1)), "pressure": 0.5, "t": float(i)}
+        for i in range(num)
+    ]
 
 
 def test_canonical_from_path_produces_expected_shape(synthetic_chart_path, synthetic_bbox):
@@ -69,17 +70,9 @@ def test_diagnostic_contains_render_fields(synthetic_chart_path, synthetic_bbox)
         position="initial",
         n_anchors=20,
     )
-    glyph_row = {
-        "anchors": canon["anchors"],
-        "half_widths": canon["half_widths"],
-        "trace_meta": canon["trace_meta"],
-    }
+    glyph_row = {"anchors": canon["anchors"], "half_widths": canon["half_widths"], "trace_meta": canon["trace_meta"]}
     diag = diagnostic_for_glyph(
-        glyph_row=glyph_row,
-        bbox=synthetic_bbox,
-        chart_path=synthetic_chart_path,
-        style_ratio=[2, 1, 2],
-        slant_deg=65.0,
+        glyph_row=glyph_row, bbox=synthetic_bbox, chart_path=synthetic_chart_path, style_ratio=[2, 1, 2], slant_deg=65.0
     )
     assert diag["crop_size"] == {"w": 200, "h": 600}
     assert diag["template_guides"]["ascender"] == 3.0

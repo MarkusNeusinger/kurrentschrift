@@ -100,3 +100,34 @@ export interface DiagnosticData {
   template_guides: { baseline: number; midband: number; ascender: number; descender: number };
   slant_deg: number;
 }
+
+export interface FitMeta {
+  success: boolean;
+  message: string;
+  iterations: number;
+  geo_rmse_px: number;
+  geo_rmse_px_initial: number;
+  width_rmse_px: number;
+  reg_energy: number;
+  max_anchor_delta: number;
+  lambda_reg: number;
+  width_weight: number;
+  n_samples: number;
+}
+
+export interface FitData {
+  glyph: string;
+  position: string;
+  advance: number;
+  anchors: Array<[number, number]>;
+  half_widths: number[];
+  entry: CouplingPointOut;
+  exit_pt: CouplingPointOut;
+  fit: FitMeta;
+  half_widths_px: number[];
+  crop_size: { w: number; h: number };
+  skeleton_polyline_px: Array<[number, number]>;
+  fitted_polyline_px: Array<[number, number]>;
+  canonical_polyline_px: Array<[number, number]>;
+  placement: { x_origin_px: number; baseline_y_px: number; unit_px: number };
+}
