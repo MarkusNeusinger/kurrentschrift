@@ -26,6 +26,10 @@ COPY api/ ./api/
 COPY core/ ./core/
 # Loth chart is read by the pipeline; ship it in the image.
 COPY data/sources/loth-1866/chart.jpg ./data/sources/loth-1866/chart.jpg
+# Alembic migrations — shipped so the same image can run `alembic upgrade head`
+# as the pre-deploy migrate Cloud Run Job (see api/cloudbuild.yaml).
+COPY alembic.ini ./
+COPY alembic/ ./alembic/
 
 # Non-root user.
 RUN useradd -m -u 1000 appuser && \

@@ -44,6 +44,33 @@ steps:
     id: "push-latest"
     waitFor: ["build-image"]
 
+  # Apply DB migrations BEFORE the new code serves traffic. Runs as a Cloud Run
+  # Job under the runtime SA, so it reaches Cloud SQL as the kurrentschrift role
+  # (which owns its tables — see docs/notes/deploy-bootstrap-status.md). The job
+  # image is the same one we just built, so it carries the latest alembic/
+  # revisions. --wait blocks the build (and thus the deploy) on the migration's
+  # success, so a failed migration never ships a schema-mismatched service.
+  - name: "gcr.io/cloud-builders/gcloud"
+    args:
+      - "run"
+      - "jobs"
+      - "deploy"
+      - "kurrentschrift-migrate"
+      - "--image=europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}:$BUILD_ID"
+      - "--region=${_REGION}"
+      - "--service-account=${_RUNTIME_SA}"
+      - "--set-secrets=DATABASE_URL=DATABASE_URL:latest"
+      - "--set-cloudsql-instances=${_CLOUDSQL_INSTANCE}"
+      - "--set-env-vars=ENVIRONMENT=production"
+      - "--command=.venv/bin/alembic"
+      - "--args=upgrade,head"
+      - "--max-retries=0"
+      - "--task-timeout=300"
+      - "--execute-now"
+      - "--wait"
+    id: "migrate"
+    waitFor: ["push-image"]
+
   - name: "gcr.io/cloud-builders/gcloud"
     args:
       - "run"
@@ -68,7 +95,7 @@ steps:
       - "--concurrency=15"
       - "--timeout=600"
     id: "deploy"
-    waitFor: ["push-image"]
+    waitFor: ["migrate"]
 
   - name: "gcr.io/cloud-builders/gcloud"
     args:
