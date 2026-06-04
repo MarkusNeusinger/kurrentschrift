@@ -466,14 +466,37 @@ export function LandingPage() {
           <Stack spacing={0}>
             {roadmap.map((r, i) => (
               <Reveal key={r.title} delay={i * 0.05}>
-                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, py: 1.25, borderBottom: `1px solid ${paper.line}` }}>
-                  <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: '1.2rem', color: paper.ink, minWidth: { sm: 210 } }}>
-                    {r.title}
-                  </Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    alignItems: { sm: 'baseline' },
+                    gap: { xs: 0.5, sm: 1.5 },
+                    py: 1.25,
+                    borderBottom: `1px solid ${paper.line}`,
+                  }}
+                >
+                  {/* title + badge share one line on mobile, badge moves to the far right on sm+ */}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'baseline',
+                      justifyContent: 'space-between',
+                      gap: 1.5,
+                      width: { xs: '100%', sm: 'auto' },
+                    }}
+                  >
+                    <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: '1.2rem', color: paper.ink, minWidth: { sm: 210 } }}>
+                      {r.title}
+                    </Typography>
+                    <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontStyle: 'italic', fontSize: '.85rem', color: paper.sepiaFaint, whiteSpace: 'nowrap' }}>
+                      bald
+                    </Box>
+                  </Box>
                   <Typography variant="body2" sx={{ color: paper.inkSoft, flex: 1 }}>
                     {r.desc}
                   </Typography>
-                  <Box component="span" sx={{ fontStyle: 'italic', fontSize: '.85rem', color: paper.sepiaFaint, whiteSpace: 'nowrap' }}>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, fontStyle: 'italic', fontSize: '.85rem', color: paper.sepiaFaint, whiteSpace: 'nowrap' }}>
                     bald
                   </Box>
                 </Box>
@@ -489,9 +512,9 @@ export function LandingPage() {
             pt: 4,
             borderTop: `1px solid ${paper.line}`,
             display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
             justifyContent: 'space-between',
-            alignItems: 'flex-end',
-            flexWrap: 'wrap',
+            alignItems: { xs: 'flex-start', sm: 'flex-end' },
             gap: 2,
           }}
         >
