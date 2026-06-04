@@ -26,7 +26,9 @@ const GRAIN =
 
 // --- animations -----------------------------------------------------------
 const writeIn = keyframes`from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); }`;
-const drawStroke = keyframes`from { stroke-dashoffset: 332; } to { stroke-dashoffset: 0; }`;
+// Only a `to` rule: the draw-in starts from each line's own strokeDashoffset
+// (set to SPECIMEN_VB.w below), so nothing here is coupled to the viewBox width.
+const drawStroke = keyframes`to { stroke-dashoffset: 0; }`;
 const fadeUp = keyframes`from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; }`;
 const fadeIn = keyframes`from { opacity: 0; } to { opacity: 1; }`;
 const reduce = '@media (prefers-reduced-motion: reduce)';
@@ -83,7 +85,7 @@ const pillars = [
 // the ascenders of K and t top out at ~0.593em, so the Oberlinie sits one band
 // (~0.6em) above the baseline and the t actually reaches it. The word advance is
 // ~2.94em → ~294 units, so the lines hug the word instead of running off wide.
-const SPECIMEN_VB = { w: 332, h: 100 }; // viewBox; stroke-dasharray below must match w
+const SPECIMEN_VB = { w: 332, h: 100 }; // viewBox; lines use w as both dasharray and start offset
 const SPECIMEN_BASELINE = 66; // y of the Grundlinie = the text baseline
 const ruleLines = [
   { y: 7, delay: 0.15, color: paper.line, opacity: 0.95 }, // Oberlinie — ascenders (K, t) touch
