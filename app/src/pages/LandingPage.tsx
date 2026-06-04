@@ -26,7 +26,7 @@ const GRAIN =
 
 // --- animations -----------------------------------------------------------
 const writeIn = keyframes`from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); }`;
-const drawLine = keyframes`from { transform: scaleX(0); } to { transform: scaleX(1); }`;
+const drawStroke = keyframes`from { stroke-dashoffset: 332; } to { stroke-dashoffset: 0; }`;
 const fadeUp = keyframes`from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; }`;
 const fadeIn = keyframes`from { opacity: 0; } to { opacity: 1; }`;
 const reduce = '@media (prefers-reduced-motion: reduce)';
@@ -77,12 +77,19 @@ const pillars = [
   { num: 'iii.', title: 'Lineatur zum Text', desc: 'Beliebiger Text mit passender Lineatur in einem Schritt — druckbare Vorlagen, inhaltsbewusst.' },
 ];
 
-// Hero specimen baseline (top %, whether it's an inner mid-line, draw delay).
+// Hero specimen — the word written onto a real German Kurrent lineature (four
+// guide lines, three roughly equal bands). Coordinates are SVG viewBox units at
+// font-size 100; the y-values come from GL-GermanCursive's own metrics (upm 1000):
+// the ascenders of K and t top out at ~0.593em, so the Oberlinie sits one band
+// (~0.6em) above the baseline and the t actually reaches it. The word advance is
+// ~2.94em → ~294 units, so the lines hug the word instead of running off wide.
+const SPECIMEN_VB = { w: 332, h: 100 }; // viewBox; stroke-dasharray below must match w
+const SPECIMEN_BASELINE = 66; // y of the Grundlinie = the text baseline
 const ruleLines = [
-  { top: '14%', mid: false, delay: 0.15 },
-  { top: '42%', mid: true, delay: 0.25 },
-  { top: '70%', mid: true, delay: 0.35 },
-  { top: '90%', mid: false, delay: 0.45 },
+  { y: 7, delay: 0.15, color: paper.line, opacity: 0.95 }, // Oberlinie — ascenders (K, t) touch
+  { y: 36, delay: 0.25, color: paper.sepiaFaint, opacity: 0.7 }, // Mittellinie — x-height (Mittellänge)
+  { y: SPECIMEN_BASELINE, delay: 0.35, color: paper.line, opacity: 1 }, // Grundlinie — baseline
+  { y: 96, delay: 0.45, color: paper.sepiaFaint, opacity: 0.7 }, // Unterlinie — descender band
 ];
 
 // Small scroll-reveal wrapper (IntersectionObserver, fires once).
@@ -279,43 +286,52 @@ export function LandingPage() {
             </Box>
           </Box>
 
-          {/* right: giant script specimen that writes itself */}
-          <Box sx={{ order: { xs: -1, md: 0 }, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-            <Box sx={{ position: 'relative', width: '100%', pt: '2.6rem', pb: '1.2rem' }}>
+          {/* right (below the copy on phones): the word written onto a real Kurrent
+              lineature. Rendered as SVG so the baseline is an exact coordinate and
+              the ascenders land on the Oberlinie regardless of viewport/font box. */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', mt: { xs: 1, md: 0 } }}>
+            <Box
+              key={`word-${replayKey}`}
+              component="svg"
+              viewBox={`0 0 ${SPECIMEN_VB.w} ${SPECIMEN_VB.h}`}
+              role="img"
+              aria-label="Kurrent"
+              sx={{
+                width: '100%',
+                maxWidth: { xs: 360, md: 520 },
+                height: 'auto',
+                display: 'block',
+                overflow: 'visible',
+              }}
+            >
               {ruleLines.map((l, i) => (
                 <Box
                   key={i}
+                  component="line"
+                  x1={0}
+                  y1={l.y}
+                  x2={SPECIMEN_VB.w}
+                  y2={l.y}
                   sx={{
-                    position: 'absolute',
-                    left: 0,
-                    right: 0,
-                    top: l.top,
-                    height: '1px',
-                    bgcolor: l.mid ? paper.sepiaFaint : paper.line,
-                    opacity: l.mid ? 0.8 : 1,
-                    transformOrigin: 'left',
-                    transform: 'scaleX(0)',
-                    animation: `${drawLine} .7s ease ${l.delay}s forwards`,
-                    [reduce]: { transform: 'scaleX(1)', animation: 'none' },
+                    stroke: l.color,
+                    strokeWidth: 1,
+                    opacity: l.opacity,
+                    strokeDasharray: SPECIMEN_VB.w,
+                    strokeDashoffset: SPECIMEN_VB.w,
+                    animation: `${drawStroke} .7s ease ${l.delay}s forwards`,
+                    [reduce]: { strokeDashoffset: 0, animation: 'none' },
                   }}
                 />
               ))}
               <Box
-                key={`word-${replayKey}`}
-                component="span"
+                component="text"
+                x={14}
+                y={SPECIMEN_BASELINE}
                 sx={{
-                  display: 'block',
                   fontFamily: script,
-                  fontSize: 'clamp(3.5rem, 11vw, 9.5rem)',
-                  lineHeight: 0.8,
-                  color: paper.ink,
-                  whiteSpace: 'nowrap',
-                  transform: 'rotate(-2.2deg)',
-                  transformOrigin: 'left center',
-                  pl: '0.06em',
-                  pr: '0.12em',
+                  fontSize: 100,
+                  fill: paper.ink,
                   clipPath: 'inset(0 100% 0 0)',
-                  textShadow: '0 1px 0 rgba(60,40,20,.15)',
                   animation: `${writeIn} 1.9s cubic-bezier(.6,.02,.2,1) .5s forwards`,
                   [reduce]: { clipPath: 'none', animation: 'none' },
                 }}
