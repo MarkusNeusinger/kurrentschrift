@@ -80,6 +80,9 @@ export function ChartPage() {
   const [drag, setDrag] = useState<DragState | null>(null);
   const [pan, setPan] = useState<PanState | null>(null);
   const [snack, setSnack] = useState<string | null>(null);
+  // Two-finger pinch-zoom (touch): track live pointers and the gesture anchor.
+  const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const pinchRef = useRef<{ startDist: number; startZoom: number } | null>(null);
 
   if (!source) return null;
   const { w: width, h: height } = source.chart_size;
@@ -99,6 +102,19 @@ export function ChartPage() {
   const onPointerDown = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       if (e.button !== 0 && e.pointerType !== 'pen' && e.pointerType !== 'touch') return;
+      pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      // Second finger down → switch to a pinch-zoom gesture, dropping any
+      // pan/drag the first finger started.
+      if (pointersRef.current.size === 2) {
+        setPan(null);
+        setDrag(null);
+        const [a, b] = [...pointersRef.current.values()];
+        pinchRef.current = { startDist: Math.hypot(a.x - b.x, a.y - b.y), startZoom: zoom };
+        (e.target as Element).setPointerCapture?.(e.pointerId);
+        e.preventDefault();
+        return;
+      }
+      if (pinchRef.current) return; // already pinching — ignore extra contacts
       if (mode === 'pan') {
         const sc = scrollRef.current;
         if (!sc) return;
@@ -134,11 +150,38 @@ export function ChartPage() {
       (e.target as Element).setPointerCapture?.(e.pointerId);
       e.preventDefault();
     },
-    [mode, activeGlyph, bboxesByKey, pointToImage],
+    [mode, activeGlyph, bboxesByKey, pointToImage, zoom],
   );
 
   const onPointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
+      const pinch = pinchRef.current;
+      if (pinch && pointersRef.current.has(e.pointerId)) {
+        pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        const pts = [...pointersRef.current.values()];
+        if (pts.length < 2 || pinch.startDist === 0) return;
+        const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+        const midX = (pts[0].x + pts[1].x) / 2;
+        const midY = (pts[0].y + pts[1].y) / 2;
+        const sc = scrollRef.current;
+        if (!sc) return;
+        const rect = sc.getBoundingClientRect();
+        setZoom((prevZoom) => {
+          // Read pinch geometry from the captured local, not pinchRef.current:
+          // the ref may have been cleared by pointerup before this runs.
+          const target = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, pinch.startZoom * (dist / pinch.startDist)));
+          if (target === prevZoom) return prevZoom;
+          // Keep the image point under the pinch midpoint fixed across the zoom.
+          const imgX = (midX - rect.left + sc.scrollLeft) / prevZoom;
+          const imgY = (midY - rect.top + sc.scrollTop) / prevZoom;
+          requestAnimationFrame(() => {
+            sc.scrollLeft = imgX * target - (midX - rect.left);
+            sc.scrollTop = imgY * target - (midY - rect.top);
+          });
+          return target;
+        });
+        return;
+      }
       if (pan) {
         const sc = scrollRef.current;
         if (!sc) return;
@@ -153,7 +196,12 @@ export function ChartPage() {
     [drag, pan, pointToImage],
   );
 
-  const onPointerUp = useCallback(async () => {
+  const onPointerUp = useCallback(async (e: React.PointerEvent<HTMLDivElement>) => {
+    pointersRef.current.delete(e.pointerId);
+    if (pinchRef.current) {
+      if (pointersRef.current.size < 2) pinchRef.current = null;
+      return;
+    }
     if (pan) {
       setPan(null);
       return;
@@ -254,7 +302,7 @@ export function ChartPage() {
           </ToggleButton>
         </ToggleButtonGroup>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 300 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: { xs: 0, sm: 300 }, flex: { xs: 1, sm: 'none' } }}>
           <IconButton
             size="small"
             onClick={() => setZoom((z) => Math.max(ZOOM_PRESETS[0], ZOOM_PRESETS[Math.max(0, ZOOM_PRESETS.findIndex((p) => p >= z) - 1)]))}
@@ -263,7 +311,7 @@ export function ChartPage() {
           </IconButton>
           <Slider
             size="small"
-            sx={{ width: 160 }}
+            sx={{ width: { xs: 'auto', sm: 160 }, flex: { xs: 1, sm: 'none' } }}
             value={zoom}
             min={ZOOM_MIN}
             max={ZOOM_MAX}
@@ -380,7 +428,9 @@ export function ChartPage() {
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
-            onPointerCancel={() => {
+            onPointerCancel={(e) => {
+              pointersRef.current.delete(e.pointerId);
+              pinchRef.current = null;
               setDrag(null);
               setPan(null);
             }}
