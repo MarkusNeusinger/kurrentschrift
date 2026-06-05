@@ -22,8 +22,9 @@ export interface SourceOut {
 // Practice-sheet-style guide lines (Hilfslinien) drawn over a glyph crop —
 // same vocabulary as the worksheet rulers in lib/lineatur.ts. baseline + waist
 // come from the bbox calibration; ascender/descender are toggleable; slant is
-// the positionable, angled main line (degrees from vertical, worksheet
-// convention). slant_count/slant_spacing allow the few letters that need
+// the positionable, angled main line. slant_deg is measured from the
+// horizontal baseline (≈65° = typical Kurrent; 90° = upright), matching
+// source.slant_deg. slant_count/slant_spacing allow the few letters that need
 // several parallel main lines. Mirrors GuideConfig in api/schemas.py.
 export interface GuideConfig {
   slant_deg?: number | null;

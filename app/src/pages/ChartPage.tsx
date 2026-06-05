@@ -11,6 +11,8 @@
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import AddIcon from '@mui/icons-material/Add';
 import ContentCutIcon from '@mui/icons-material/ContentCut';
+import ControlCameraIcon from '@mui/icons-material/ControlCamera';
+import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import OpenWithIcon from '@mui/icons-material/OpenWith';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -31,11 +33,11 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { chartUrl, putBbox } from '../api';
+import { chartUrl, deleteBbox, deleteGlyph, putBbox } from '../api';
 import { useAdmin } from '../state';
 import type { BboxIn, BboxOut, ExcludeRect } from '../types';
 
-type Mode = 'pan' | 'bbox' | 'exclude';
+type Mode = 'pan' | 'bbox' | 'exclude' | 'edit';
 
 interface DragState {
   mode: 'bbox' | 'exclude';
@@ -44,6 +46,26 @@ interface DragState {
   curX: number;
   curY: number;
 }
+
+// Move/resize of an existing bbox. `handle` is which grip was grabbed ('move'
+// = the body, the rest are edges/corners). We keep the original rect so each
+// move recomputes from a fixed origin, and a live `cur` rect for the preview.
+type EditHandle = 'move' | 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
+interface Rect {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+}
+interface EditState {
+  handle: EditHandle;
+  startX: number;
+  startY: number;
+  orig: Rect;
+  cur: Rect;
+}
+
+const MIN_BOX = 6;
 
 interface PanState {
   startClientX: number;
@@ -70,14 +92,82 @@ function bboxInFromOut(b: BboxOut): BboxIn {
   };
 }
 
+const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
+
+// Which grip of rect `b` sits at image point (x,y)? Corners beat edges beat the
+// body; `tol` is the hit tolerance in image px (the caller scales it by zoom).
+function hitHandle(b: Rect, x: number, y: number, tol: number): EditHandle | null {
+  const nearX0 = Math.abs(x - b.x0) <= tol;
+  const nearX1 = Math.abs(x - b.x1) <= tol;
+  const nearY0 = Math.abs(y - b.y0) <= tol;
+  const nearY1 = Math.abs(y - b.y1) <= tol;
+  const inX = x >= b.x0 - tol && x <= b.x1 + tol;
+  const inY = y >= b.y0 - tol && y <= b.y1 + tol;
+  if (nearX0 && nearY0) return 'nw';
+  if (nearX1 && nearY0) return 'ne';
+  if (nearX0 && nearY1) return 'sw';
+  if (nearX1 && nearY1) return 'se';
+  if (nearY0 && inX) return 'n';
+  if (nearY1 && inX) return 's';
+  if (nearX0 && inY) return 'w';
+  if (nearX1 && inY) return 'e';
+  if (x > b.x0 && x < b.x1 && y > b.y0 && y < b.y1) return 'move';
+  return null;
+}
+
+// Apply a drag delta to the original rect for the grabbed handle, clamped to
+// the chart bounds and a minimum size.
+function applyHandle(handle: EditHandle, orig: Rect, dx: number, dy: number, w: number, h: number): Rect {
+  if (handle === 'move') {
+    const tx = clamp(dx, -orig.x0, w - orig.x1);
+    const ty = clamp(dy, -orig.y0, h - orig.y1);
+    return { x0: orig.x0 + tx, y0: orig.y0 + ty, x1: orig.x1 + tx, y1: orig.y1 + ty };
+  }
+  let { x0, y0, x1, y1 } = orig;
+  if (handle.includes('n')) y0 = clamp(y0 + dy, 0, y1 - MIN_BOX);
+  if (handle.includes('s')) y1 = clamp(y1 + dy, y0 + MIN_BOX, h);
+  if (handle.includes('w')) x0 = clamp(x0 + dx, 0, x1 - MIN_BOX);
+  if (handle.includes('e')) x1 = clamp(x1 + dx, x0 + MIN_BOX, w);
+  return { x0, y0, x1, y1 };
+}
+
+// Build the BboxIn for a finished move/resize. A move carries the baseline,
+// midband and excludes along by the same offset; a resize keeps the guide
+// lines but clamps them (and clips the excludes) into the new bounds.
+function editedBbox(current: BboxOut, handle: EditHandle, cur: Rect): BboxIn {
+  const r = { x0: Math.round(cur.x0), y0: Math.round(cur.y0), x1: Math.round(cur.x1), y1: Math.round(cur.y1) };
+  const base = bboxInFromOut(current);
+  if (handle === 'move') {
+    const dx = r.x0 - current.x0;
+    const dy = r.y0 - current.y0;
+    return {
+      ...base,
+      ...r,
+      baseline_y: current.baseline_y + dy,
+      midband_y: current.midband_y + dy,
+      excludes: current.excludes.map((ex) => ({ x0: ex.x0 + dx, y0: ex.y0 + dy, x1: ex.x1 + dx, y1: ex.y1 + dy })),
+    };
+  }
+  const excludes = current.excludes
+    .map((ex) => ({
+      x0: clamp(ex.x0, r.x0, r.x1),
+      y0: clamp(ex.y0, r.y0, r.y1),
+      x1: clamp(ex.x1, r.x0, r.x1),
+      y1: clamp(ex.y1, r.y0, r.y1),
+    }))
+    .filter((ex) => ex.x1 - ex.x0 >= 1 && ex.y1 - ex.y0 >= 1);
+  return { ...base, ...r, baseline_y: clamp(current.baseline_y, r.y0, r.y1), midband_y: clamp(current.midband_y, r.y0, r.y1), excludes };
+}
+
 export function ChartPage() {
-  const { source, bboxesByKey, activeGlyph, visibleGlyphs, upsertBbox } = useAdmin();
+  const { source, bboxesByKey, glyphsByKey, activeGlyph, visibleGlyphs, upsertBbox, removeBbox, removeGlyph } = useAdmin();
   const navigate = useNavigate();
   const stageRef = useRef<HTMLDivElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [mode, setMode] = useState<Mode>('pan');
   const [zoom, setZoom] = useState(0.75);
   const [drag, setDrag] = useState<DragState | null>(null);
+  const [edit, setEdit] = useState<EditState | null>(null);
   const [pan, setPan] = useState<PanState | null>(null);
   const [snack, setSnack] = useState<string | null>(null);
   // Two-finger pinch-zoom (touch): track live pointers and the gesture anchor.
@@ -133,7 +223,20 @@ export function ChartPage() {
         return;
       }
       const { x, y } = pointToImage(e.clientX, e.clientY);
-      if (mode === 'exclude') {
+      if (mode === 'edit') {
+        const current = bboxesByKey[activeGlyph];
+        if (!current) {
+          setSnack(`${activeGlyph}: hat noch keine Bbox — erst im Modus „Bbox" zeichnen.`);
+          return;
+        }
+        const handle = hitHandle(current, x, y, 10 / zoom);
+        if (!handle) {
+          setSnack('Zum Verschieben in die Box fassen, zum Skalieren an Rand oder Ecke.');
+          return;
+        }
+        const r: Rect = { x0: current.x0, y0: current.y0, x1: current.x1, y1: current.y1 };
+        setEdit({ handle, startX: x, startY: y, orig: r, cur: r });
+      } else if (mode === 'exclude') {
         const current = bboxesByKey[activeGlyph];
         if (!current) {
           setSnack(`${activeGlyph}: hat noch keine Bbox — erst im Modus „Bbox" zeichnen.`);
@@ -189,11 +292,17 @@ export function ChartPage() {
         sc.scrollTop = pan.startScrollTop - (e.clientY - pan.startClientY);
         return;
       }
+      if (edit) {
+        const { x, y } = pointToImage(e.clientX, e.clientY);
+        const cur = applyHandle(edit.handle, edit.orig, x - edit.startX, y - edit.startY, width, height);
+        setEdit({ ...edit, cur });
+        return;
+      }
       if (!drag) return;
       const { x, y } = pointToImage(e.clientX, e.clientY);
       setDrag({ ...drag, curX: x, curY: y });
     },
-    [drag, pan, pointToImage],
+    [drag, edit, pan, pointToImage, width, height],
   );
 
   const onPointerUp = useCallback(async (e: React.PointerEvent<HTMLDivElement>) => {
@@ -204,6 +313,26 @@ export function ChartPage() {
     }
     if (pan) {
       setPan(null);
+      return;
+    }
+    if (edit) {
+      const ed = edit;
+      setEdit(null);
+      const current = activeGlyph ? bboxesByKey[activeGlyph] : null;
+      if (!activeGlyph || !current) return;
+      const unchanged =
+        Math.round(ed.cur.x0) === current.x0 &&
+        Math.round(ed.cur.y0) === current.y0 &&
+        Math.round(ed.cur.x1) === current.x1 &&
+        Math.round(ed.cur.y1) === current.y1;
+      if (unchanged) return;
+      try {
+        const saved = await putBbox(activeGlyph, editedBbox(current, ed.handle, ed.cur));
+        upsertBbox(activeGlyph, saved);
+        setSnack(`${activeGlyph}: Box ${ed.handle === 'move' ? 'verschoben' : 'angepasst'}.`);
+      } catch (err) {
+        setSnack(`Speichern fehlgeschlagen: ${err}`);
+      }
       return;
     }
     if (!drag || !activeGlyph) {
@@ -247,7 +376,27 @@ export function ChartPage() {
     } catch (err) {
       setSnack(`Speichern fehlgeschlagen: ${err}`);
     }
-  }, [drag, pan, activeGlyph, bboxesByKey, upsertBbox]);
+  }, [drag, edit, pan, activeGlyph, bboxesByKey, upsertBbox]);
+
+  const deleteActive = useCallback(async () => {
+    if (!activeGlyph || !(activeGlyph in bboxesByKey)) return;
+    const hasGlyph = glyphsByKey[activeGlyph]?.has_data === true;
+    const ok = window.confirm(
+      `Bbox für „${activeGlyph}" löschen?${hasGlyph ? ' Das gespeicherte Canonical wird mit entfernt.' : ''}`,
+    );
+    if (!ok) return;
+    try {
+      if (hasGlyph) {
+        await deleteGlyph(activeGlyph);
+        removeGlyph(activeGlyph);
+      }
+      await deleteBbox(activeGlyph);
+      removeBbox(activeGlyph);
+      setSnack(`${activeGlyph}: gelöscht.`);
+    } catch (err) {
+      setSnack(`Löschen fehlgeschlagen: ${err}`);
+    }
+  }, [activeGlyph, bboxesByKey, glyphsByKey, removeBbox, removeGlyph]);
 
   // Mouse-wheel zooms (centered on the cursor); no modifier key needed.
   useEffect(() => {
@@ -274,13 +423,17 @@ export function ChartPage() {
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setDrag(null);
+      if (e.key === 'Escape') {
+        setDrag(null);
+        setEdit(null);
+      }
     };
     window.addEventListener('keydown', h);
     return () => window.removeEventListener('keydown', h);
   }, []);
 
-  const cursorStyle: React.CSSProperties = mode === 'pan' ? { cursor: pan ? 'grabbing' : 'grab' } : { cursor: 'crosshair' };
+  const cursorStyle: React.CSSProperties =
+    mode === 'pan' ? { cursor: pan ? 'grabbing' : 'grab' } : mode === 'edit' ? { cursor: 'move' } : { cursor: 'crosshair' };
   const stageWidthCss = width * zoom;
   const stageHeightCss = height * zoom;
 
@@ -295,6 +448,10 @@ export function ChartPage() {
           <ToggleButton value="bbox">
             <AddBoxIcon fontSize="small" />
             &nbsp;Bbox
+          </ToggleButton>
+          <ToggleButton value="edit">
+            <ControlCameraIcon fontSize="small" />
+            &nbsp;Verschieben
           </ToggleButton>
           <ToggleButton value="exclude">
             <ContentCutIcon fontSize="small" />
@@ -343,6 +500,18 @@ export function ChartPage() {
         <Box sx={{ flex: 1 }} />
 
         {activeGlyph ? <Chip label={`aktiv: ${activeGlyph}`} color="primary" size="small" /> : <Chip label="kein aktiver Glyph" size="small" variant="outlined" />}
+        <Tooltip title="Bbox des aktiven Glyphs löschen">
+          <span>
+            <IconButton
+              size="small"
+              color="error"
+              disabled={!activeGlyph || !(activeGlyph in bboxesByKey)}
+              onClick={deleteActive}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </span>
+        </Tooltip>
         <Tooltip title="Editor für den aktiven Glyph öffnen">
           <span>
             <Button
@@ -423,6 +592,51 @@ export function ChartPage() {
                 strokeDasharray="5 3"
               />
             )}
+            {mode === 'edit' &&
+              activeGlyph &&
+              bboxesByKey[activeGlyph] &&
+              (() => {
+                const b: Rect = edit ? edit.cur : bboxesByKey[activeGlyph];
+                const hs = 9 / zoom; // handle half-size in image px (≈18px on screen)
+                const mx = (b.x0 + b.x1) / 2;
+                const my = (b.y0 + b.y1) / 2;
+                const grips: Array<[number, number]> = [
+                  [b.x0, b.y0],
+                  [b.x1, b.y0],
+                  [b.x0, b.y1],
+                  [b.x1, b.y1],
+                  [mx, b.y0],
+                  [mx, b.y1],
+                  [b.x0, my],
+                  [b.x1, my],
+                ];
+                return (
+                  <g style={{ pointerEvents: 'none' }}>
+                    <rect
+                      x={b.x0}
+                      y={b.y0}
+                      width={b.x1 - b.x0}
+                      height={b.y1 - b.y0}
+                      fill="#ffae00"
+                      fillOpacity={0.1}
+                      stroke="#ffae00"
+                      strokeWidth={2 / zoom}
+                    />
+                    {grips.map(([gx, gy], i) => (
+                      <rect
+                        key={i}
+                        x={gx - hs}
+                        y={gy - hs}
+                        width={hs * 2}
+                        height={hs * 2}
+                        fill="#ffae00"
+                        stroke="#1a1200"
+                        strokeWidth={1 / zoom}
+                      />
+                    ))}
+                  </g>
+                );
+              })()}
           </svg>
           <Box
             onPointerDown={onPointerDown}
@@ -432,6 +646,7 @@ export function ChartPage() {
               pointersRef.current.delete(e.pointerId);
               pinchRef.current = null;
               setDrag(null);
+              setEdit(null);
               setPan(null);
             }}
             sx={{ position: 'absolute', inset: 0, touchAction: 'none' }}

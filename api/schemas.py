@@ -48,8 +48,9 @@ class GuideConfig(BaseModel):
 
     model_config = ConfigDict(extra="ignore")
 
-    # Main-line angle in degrees from vertical, worksheet convention (0 =
-    # upright, positive leans right). null => derive from the source slant.
+    # Main-line angle in degrees from the horizontal baseline, matching
+    # `Source.slant_deg` (≈65° = typical Kurrent lean; 90° = upright). null =>
+    # derive from the source slant.
     slant_deg: float | None = None
     # Chart-x where the (centre) main line crosses baseline_y; the drag handle.
     # null => crop centre.
