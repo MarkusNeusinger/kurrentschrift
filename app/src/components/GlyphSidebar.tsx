@@ -33,11 +33,17 @@ const GROUP_LABELS: Record<LetterGroup, string> = {
 };
 const GROUP_ORDER: LetterGroup[] = ['lower', 'upper', 'comb'];
 
-export function GlyphSidebar() {
+export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
   const { source, bboxesByKey, glyphsByKey, activeGlyph, visibleGlyphs, toggleVisible, setOnlyVisible, setActiveGlyph } =
     useAdmin();
   const navigate = useNavigate();
   const [openBase, setOpenBase] = useState<string | null>(null);
+
+  // On mobile the sidebar lives in a Drawer; navigating away should close it.
+  const go = (path: string) => {
+    navigate(path);
+    onNavigate?.();
+  };
 
   // Keep the open letter in sync when the active glyph changes elsewhere (e.g.
   // when the editor route sets it on load).
@@ -78,19 +84,19 @@ export function GlyphSidebar() {
       {/* Navigation — get back out of the admin area / over to the overview. */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 1, py: 1, borderBottom: 1, borderColor: 'divider' }}>
         <Tooltip title="Zur Startseite">
-          <IconButton size="small" onClick={() => navigate('/')}>
+          <IconButton size="small" onClick={() => go('/')}>
             <HomeIcon fontSize="small" />
           </IconButton>
         </Tooltip>
         <Typography
           variant="subtitle2"
           sx={{ flex: 1, cursor: 'pointer', fontWeight: 600 }}
-          onClick={() => navigate('/')}
+          onClick={() => go('/')}
         >
           kurrentschrift
         </Typography>
         <Tooltip title="Chart-Übersicht">
-          <IconButton size="small" onClick={() => navigate('/admin/chart')}>
+          <IconButton size="small" onClick={() => go('/admin/chart')}>
             <GridViewIcon fontSize="small" />
           </IconButton>
         </Tooltip>
@@ -223,7 +229,7 @@ export function GlyphSidebar() {
             variant="contained"
             startIcon={activePos && hasCanon(glyphKeyFor(openLetter, activePos)) ? <EditIcon /> : <CreateIcon />}
             disabled={!activeGlyph || !hasBbox(activeGlyph)}
-            onClick={() => activeGlyph && navigate(`/admin/edit/${encodeURIComponent(activeGlyph)}`)}
+            onClick={() => activeGlyph && go(`/admin/edit/${encodeURIComponent(activeGlyph)}`)}
             sx={{ mt: 1.5 }}
           >
             {activePos && hasCanon(glyphKeyFor(openLetter, activePos)) ? 'Editor öffnen' : 'Strich zeichnen'}

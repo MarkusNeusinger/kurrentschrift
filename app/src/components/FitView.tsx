@@ -18,14 +18,25 @@ interface Props {
   cropCacheBust?: number;
 }
 
-const COL_W = 320;
 const COL_H = 360;
 
 function polylinePoints(pts: Array<[number, number]>): string {
   return pts.map(([x, y]) => `${x},${y}`).join(' ');
 }
 
+// Cap the overlay width to the viewport so it fits on narrow phones.
+function useColumnWidth() {
+  const [w, setW] = useState(() => Math.min(320, (typeof window !== 'undefined' ? window.innerWidth : 360) - 64));
+  useEffect(() => {
+    const onResize = () => setW(Math.min(320, window.innerWidth - 64));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return w;
+}
+
 export function FitView({ glyphKey, cropCacheBust }: Props) {
+  const COL_W = useColumnWidth();
   const [data, setData] = useState<FitData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -16,10 +16,22 @@ interface Props {
   cropCacheBust?: number;
 }
 
-const COL_W = 320;
 const COL_H = 360;
 
+// Cap the column width to the viewport so the three columns wrap and fit on
+// narrow phones instead of forcing horizontal scroll.
+function useColumnWidth() {
+  const [w, setW] = useState(() => Math.min(320, (typeof window !== 'undefined' ? window.innerWidth : 360) - 64));
+  useEffect(() => {
+    const onResize = () => setW(Math.min(320, window.innerWidth - 64));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return w;
+}
+
 export function DiagnosticView({ glyphKey, cropCacheBust }: Props) {
+  const COL_W = useColumnWidth();
   const [data, setData] = useState<DiagnosticData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

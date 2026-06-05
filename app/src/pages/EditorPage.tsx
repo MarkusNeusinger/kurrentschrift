@@ -290,7 +290,9 @@ export function EditorPage() {
   const onStylusDown = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
       if (mode !== 'trace') return;
-      if (e.pointerType !== 'pen' && e.pointerType !== 'mouse') return;
+      // Pen + mouse on desktop, finger on mobile/tablet. touchAction:none on the
+      // SVG keeps the gesture from scrolling the page while tracing.
+      if (e.pointerType !== 'pen' && e.pointerType !== 'mouse' && e.pointerType !== 'touch') return;
       e.preventDefault();
       const { x, y } = cssToChartXY(e.clientX, e.clientY, e.currentTarget);
       setDrawing(true);
@@ -407,14 +409,14 @@ export function EditorPage() {
 
   return (
     <>
-      <Paper square sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1, borderBottom: 1, borderColor: 'divider' }}>
+      <Paper square sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 }, p: 1, borderBottom: 1, borderColor: 'divider', flexWrap: 'wrap' }}>
         <IconButton size="small" onClick={() => navigate('/admin/chart')}>
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h6" sx={{ fontFamily: 'ui-monospace, Menlo, monospace' }}>
           {known.label}
         </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ ml: 1, display: { xs: 'none', sm: 'block' } }}>
           {glyphKey}
         </Typography>
         <Box sx={{ flex: 1 }} />
@@ -427,8 +429,17 @@ export function EditorPage() {
         </ToggleButtonGroup>
       </Paper>
 
-      <Box sx={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 380px', overflow: 'hidden' }}>
-        <Box ref={hostRef} sx={{ position: 'relative', bgcolor: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', p: 2 }}>
+      <Box
+        sx={{
+          flex: 1,
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: '1fr 380px' },
+          gridTemplateRows: { xs: 'minmax(0, 42vh) 1fr', md: '1fr' },
+          overflow: 'hidden',
+          minHeight: 0,
+        }}
+      >
+        <Box ref={hostRef} sx={{ position: 'relative', bgcolor: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', p: 2, minHeight: 0 }}>
           {displayW > 0 && (
             <Box sx={{ position: 'relative', width: displayW, height: displayH, boxShadow: 4 }}>
               <img
@@ -523,7 +534,7 @@ export function EditorPage() {
           )}
         </Box>
 
-        <Box sx={{ borderLeft: 1, borderColor: 'divider', overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ borderColor: 'divider', borderLeft: { md: 1 }, borderTop: { xs: 1, md: 0 }, overflow: 'auto', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           <Stack spacing={2} sx={{ p: 2 }}>
             <Box>
               <Typography variant="overline" color="text.secondary">
