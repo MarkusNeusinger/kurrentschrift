@@ -155,10 +155,11 @@ export function ChartPage() {
 
   const onPointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
-      if (pinchRef.current && pointersRef.current.has(e.pointerId)) {
+      const pinch = pinchRef.current;
+      if (pinch && pointersRef.current.has(e.pointerId)) {
         pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
         const pts = [...pointersRef.current.values()];
-        if (pts.length < 2) return;
+        if (pts.length < 2 || pinch.startDist === 0) return;
         const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
         const midX = (pts[0].x + pts[1].x) / 2;
         const midY = (pts[0].y + pts[1].y) / 2;
@@ -166,10 +167,9 @@ export function ChartPage() {
         if (!sc) return;
         const rect = sc.getBoundingClientRect();
         setZoom((prevZoom) => {
-          const target = Math.max(
-            ZOOM_MIN,
-            Math.min(ZOOM_MAX, pinchRef.current!.startZoom * (dist / pinchRef.current!.startDist)),
-          );
+          // Read pinch geometry from the captured local, not pinchRef.current:
+          // the ref may have been cleared by pointerup before this runs.
+          const target = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, pinch.startZoom * (dist / pinch.startDist)));
           if (target === prevZoom) return prevZoom;
           // Keep the image point under the pinch midpoint fixed across the zoom.
           const imgX = (midX - rect.left + sc.scrollLeft) / prevZoom;

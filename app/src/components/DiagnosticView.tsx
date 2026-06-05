@@ -20,10 +20,16 @@ const COL_H = 360;
 
 // Cap the column width to the viewport so the three columns wrap and fit on
 // narrow phones instead of forcing horizontal scroll.
+function clampColumnWidth(viewport: number) {
+  // Stay positive even on absurdly narrow viewports so the derived scale and
+  // SVG/image width/height never go to 0 or negative.
+  return Math.max(120, Math.min(320, viewport - 64));
+}
+
 function useColumnWidth() {
-  const [w, setW] = useState(() => Math.min(320, (typeof window !== 'undefined' ? window.innerWidth : 360) - 64));
+  const [w, setW] = useState(() => clampColumnWidth(typeof window !== 'undefined' ? window.innerWidth : 360));
   useEffect(() => {
-    const onResize = () => setW(Math.min(320, window.innerWidth - 64));
+    const onResize = () => setW(clampColumnWidth(window.innerWidth));
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
