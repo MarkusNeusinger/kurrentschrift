@@ -366,7 +366,7 @@ export function EditorPage() {
     } catch (err) {
       setSnack({ kind: 'error', text: `Löschen fehlgeschlagen: ${err}` });
     }
-  }, [glyphKey, bbox, hasCanonical, removeBbox, removeGlyph, navigate]);
+  }, [glyphKey, bbox, hasCanonical, removeBbox, removeGlyph, navigate, deleteBbox, deleteGlyph]);
 
   const saveTrace = useCallback(async () => {
     if (!glyphKey || pathPts.length < 2 || !known) return;
@@ -460,7 +460,7 @@ export function EditorPage() {
         </Typography>
         <Box sx={{ flex: 1 }} />
         <Tooltip title="Bbox (und Canonical) löschen">
-          <IconButton size="small" color="error" onClick={deleteThisBox}>
+          <IconButton size="small" color="error" aria-label="Bbox und Canonical löschen" onClick={deleteThisBox}>
             <DeleteIcon fontSize="small" />
           </IconButton>
         </Tooltip>

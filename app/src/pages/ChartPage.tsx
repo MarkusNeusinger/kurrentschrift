@@ -396,7 +396,7 @@ export function ChartPage() {
     } catch (err) {
       setSnack(`Löschen fehlgeschlagen: ${err}`);
     }
-  }, [activeGlyph, bboxesByKey, glyphsByKey, removeBbox, removeGlyph]);
+  }, [activeGlyph, bboxesByKey, glyphsByKey, removeBbox, removeGlyph, deleteBbox, deleteGlyph]);
 
   // Mouse-wheel zooms (centered on the cursor); no modifier key needed.
   useEffect(() => {
@@ -505,6 +505,7 @@ export function ChartPage() {
             <IconButton
               size="small"
               color="error"
+              aria-label="Bbox des aktiven Glyphs löschen"
               disabled={!activeGlyph || !(activeGlyph in bboxesByKey)}
               onClick={deleteActive}
             >
