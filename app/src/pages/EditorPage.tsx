@@ -10,6 +10,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ClearIcon from '@mui/icons-material/Clear';
 import CreateIcon from '@mui/icons-material/Create';
+import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SaveIcon from '@mui/icons-material/Save';
 import UndoIcon from '@mui/icons-material/Undo';
@@ -21,6 +22,7 @@ import {
   Divider,
   FormControlLabel,
   IconButton,
+  MenuItem,
   Paper,
   Snackbar,
   Stack,
@@ -33,12 +35,14 @@ import {
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { cropUrl, postResample, postTrace, putBbox } from '../api';
+import { cropUrl, deleteBbox, deleteGlyph, postResample, postTrace, putBbox } from '../api';
 import { DiagnosticView } from '../components/DiagnosticView';
 import { FitView } from '../components/FitView';
 import { knownGlyph } from '../constants';
 import { useAdmin } from '../state';
-import type { BboxIn, BboxOut, GuideConfig, StrokePoint } from '../types';
+import type { BboxIn, BboxOut, CouplingHeight, GuideConfig, StrokePoint } from '../types';
+
+const COUPLING_OPTIONS: CouplingHeight[] = ['baseline', 'midband', 'ascender', 'descender'];
 
 type Mode = 'view' | 'trace';
 type CalibField = 'baseline_y' | 'midband_y';
@@ -110,7 +114,7 @@ export function EditorPage() {
   const { glyphKey: raw } = useParams();
   const glyphKey = raw ? decodeURIComponent(raw) : null;
   const navigate = useNavigate();
-  const { source, bboxesByKey, glyphsByKey, cropCacheBust, upsertBbox, markGlyphTraced, setActiveGlyph } = useAdmin();
+  const { source, bboxesByKey, glyphsByKey, cropCacheBust, upsertBbox, removeBbox, markGlyphTraced, removeGlyph, setActiveGlyph } = useAdmin();
   const bbox = glyphKey ? (bboxesByKey[glyphKey] ?? null) : null;
   const known = glyphKey ? knownGlyph(glyphKey) : null;
   const hasCanonical = glyphKey ? glyphsByKey[glyphKey]?.has_data === true : false;
@@ -119,6 +123,9 @@ export function EditorPage() {
   const [mode, setMode] = useState<Mode>('view');
   const [pathPts, setPathPts] = useState<StrokePoint[]>([]);
   const [drawing, setDrawing] = useState(false);
+  // Live pointer position in trace mode (chart coords) so we can draw a cursor
+  // that stays visible next to the fingertip/stylus tip.
+  const [penPos, setPenPos] = useState<{ x: number; y: number } | null>(null);
   const [calibDrag, setCalibDrag] = useState<CalibDragState | null>(null);
   const [guideDrag, setGuideDrag] = useState<GuideDragState | null>(null);
   const [snack, setSnack] = useState<{ kind: 'info' | 'success' | 'error'; text: string } | null>(null);
@@ -131,6 +138,7 @@ export function EditorPage() {
     setMode('view');
     setPathPts([]);
     setDrawing(false);
+    setPenPos(null);
     setCalibDrag(null);
     setGuideDrag(null);
   }, [glyphKey]);
@@ -155,19 +163,22 @@ export function EditorPage() {
   const displayH = cropH * scale;
 
   // Resolved guide-line values: per-glyph overrides from bbox.guides with
-  // sensible fallbacks. The main-line angle defaults to the source slant
-  // converted to the worksheet's degrees-from-vertical convention; the line
-  // sits at the crop centre until placed.
+  // sensible fallbacks. The main-line angle is measured from the horizontal
+  // baseline (≈65° for Kurrent, matching source.slant_deg) — higher = more
+  // upright, lower = more reclined. It defaults straight to the source slant;
+  // the line sits at the crop centre until placed.
   const guideVals = useMemo(() => {
     const g: GuideConfig = bbox?.guides ?? {};
-    const srcSlantFromVertical = source ? 90 - source.slant_deg : 25;
+    const srcSlantFromBaseline = source ? source.slant_deg : 65;
     return {
-      slantDeg: g.slant_deg ?? srcSlantFromVertical,
+      slantDeg: g.slant_deg ?? srcSlantFromBaseline,
       slantX: g.slant_x ?? (bbox ? (bbox.x0 + bbox.x1) / 2 : 0),
       slantCount: Math.max(1, g.slant_count ?? 1),
       slantSpacing: g.slant_spacing ?? 0,
       showAscender: g.show_ascender ?? true,
       showDescender: g.show_descender ?? true,
+      entryCoupling: g.entry_coupling ?? 'baseline',
+      exitCoupling: g.exit_coupling ?? 'baseline',
     };
   }, [bbox, source]);
 
@@ -270,6 +281,8 @@ export function EditorPage() {
         slant_spacing: guideVals.slantSpacing,
         show_ascender: guideVals.showAscender,
         show_descender: guideVals.showDescender,
+        entry_coupling: guideVals.entryCoupling,
+        exit_coupling: guideVals.exitCoupling,
         ...patch,
       };
       return updateBboxField({ guides: next });
@@ -287,6 +300,31 @@ export function EditorPage() {
     await updateGuides({ slant_x: value });
   }, [guideDrag, updateGuides]);
 
+  // Persist the coupling height and, if a canonical already exists, re-derive it
+  // from its stored raw_path so the new entry/exit coupling takes effect without
+  // re-drawing the stroke.
+  const setCoupling = useCallback(
+    async (which: 'entry' | 'exit', value: CouplingHeight) => {
+      await updateGuides(which === 'entry' ? { entry_coupling: value } : { exit_coupling: value });
+      if (!hasCanonical || !glyphKey || !bbox) return;
+      try {
+        const g = await postResample(glyphKey, bbox.n_anchors);
+        markGlyphTraced(glyphKey, {
+          glyph_key: g.glyph_key,
+          glyph: g.glyph,
+          position: g.position,
+          variant: g.variant,
+          advance: g.advance,
+          has_data: true,
+        });
+        setSnack({ kind: 'success', text: `Kopplung ${which === 'entry' ? 'Anfang' : 'Ende'} = ${value}` });
+      } catch (err) {
+        setSnack({ kind: 'error', text: String(err) });
+      }
+    },
+    [updateGuides, hasCanonical, glyphKey, bbox, markGlyphTraced],
+  );
+
   const onStylusDown = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
       if (mode !== 'trace') return;
@@ -296,7 +334,15 @@ export function EditorPage() {
       e.preventDefault();
       const { x, y } = cssToChartXY(e.clientX, e.clientY, e.currentTarget);
       setDrawing(true);
-      setPathPts([{ x, y, pressure: e.pressure || null, t: 0 }]);
+      setPenPos({ x, y });
+      // Setting the pen down continues the existing path instead of wiping it,
+      // so a stroke can be drawn in several touches — set down on the endpoint
+      // marker (the ring) to resume seamlessly. Use „Verwerfen" to start over.
+      setPathPts((prev) =>
+        prev.length > 0
+          ? [...prev, { x, y, pressure: e.pressure || null, t: performance.now() }]
+          : [{ x, y, pressure: e.pressure || null, t: 0 }],
+      );
       e.currentTarget.setPointerCapture(e.pointerId);
     },
     [mode, cssToChartXY],
@@ -306,8 +352,12 @@ export function EditorPage() {
     (e: React.PointerEvent<SVGSVGElement>) => {
       if (guideDrag) return onGuideMove(e);
       if (calibDrag) return onCalibMove(e);
-      if (!drawing) return;
+      if (mode !== 'trace') return;
       const { x, y } = cssToChartXY(e.clientX, e.clientY, e.currentTarget);
+      // Track the live position even while hovering (pen) so the cursor shows
+      // where the next point will land before the tip touches down.
+      setPenPos({ x, y });
+      if (!drawing) return;
       setPathPts((prev) => {
         const last = prev[prev.length - 1];
         if (last) {
@@ -318,7 +368,7 @@ export function EditorPage() {
         return [...prev, { x, y, pressure: e.pressure || null, t: performance.now() }];
       });
     },
-    [guideDrag, calibDrag, drawing, cssToChartXY, onCalibMove, onGuideMove],
+    [guideDrag, calibDrag, mode, drawing, cssToChartXY, onCalibMove, onGuideMove],
   );
 
   const onStylusUp = useCallback(
@@ -330,6 +380,25 @@ export function EditorPage() {
     },
     [guideDrag, calibDrag, onCalibUp, onGuideUp],
   );
+
+  const deleteThisBox = useCallback(async () => {
+    if (!glyphKey || !bbox) return;
+    const ok = window.confirm(
+      `Bbox für „${glyphKey}" löschen?${hasCanonical ? ' Das gespeicherte Canonical wird mit entfernt.' : ''}`,
+    );
+    if (!ok) return;
+    try {
+      if (hasCanonical) {
+        await deleteGlyph(glyphKey);
+        removeGlyph(glyphKey);
+      }
+      await deleteBbox(glyphKey);
+      removeBbox(glyphKey);
+      navigate('/admin/chart');
+    } catch (err) {
+      setSnack({ kind: 'error', text: `Löschen fehlgeschlagen: ${err}` });
+    }
+  }, [glyphKey, bbox, hasCanonical, removeBbox, removeGlyph, navigate, deleteBbox, deleteGlyph]);
 
   const saveTrace = useCallback(async () => {
     if (!glyphKey || pathPts.length < 2 || !known) return;
@@ -391,9 +460,11 @@ export function EditorPage() {
   const ascenderCss = (ascenderY - bbox.y0) * scale;
   const descenderCss = (descenderY - bbox.y0) * scale;
 
-  // Angled main line(s): degrees from vertical, positive leaning right (top
-  // moves right of bottom). Screen y grows downward, so x grows as y shrinks.
-  const tanSlant = Math.tan((guideVals.slantDeg * Math.PI) / 180);
+  // Angled main line(s): slantDeg is measured from the horizontal baseline
+  // (≈65° = typical Kurrent lean to the right). The per-unit-height horizontal
+  // offset is cot(slant) = tan(90 − slant); screen y grows downward, so x grows
+  // as y shrinks (top moves right of bottom).
+  const tanSlant = Math.tan(((90 - guideVals.slantDeg) * Math.PI) / 180);
   const slantLineCss = (xBase: number) => {
     const xTop = xBase + tanSlant * (bbox.baseline_y - bbox.y0);
     const xBot = xBase + tanSlant * (bbox.baseline_y - bbox.y1);
@@ -420,6 +491,11 @@ export function EditorPage() {
           {glyphKey}
         </Typography>
         <Box sx={{ flex: 1 }} />
+        <Tooltip title="Bbox (und Canonical) löschen">
+          <IconButton size="small" color="error" aria-label="Bbox und Canonical löschen" onClick={deleteThisBox}>
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
         <ToggleButtonGroup size="small" value={mode} exclusive onChange={(_e, v: Mode | null) => v && setMode(v)}>
           <ToggleButton value="view">Ansicht</ToggleButton>
           <ToggleButton value="trace">
@@ -457,8 +533,12 @@ export function EditorPage() {
                 onPointerDown={onStylusDown}
                 onPointerMove={onStylusMove}
                 onPointerUp={onStylusUp}
+                onPointerLeave={() => {
+                  if (!drawing) setPenPos(null);
+                }}
                 onPointerCancel={() => {
                   setDrawing(false);
+                  setPenPos(null);
                   setCalibDrag(null);
                   setGuideDrag(null);
                 }}
@@ -529,6 +609,52 @@ export function EditorPage() {
                     points={pathPts.map((p) => `${(p.x - bbox.x0) * scale},${(p.y - bbox.y0) * scale}`).join(' ')}
                   />
                 )}
+                {/* Start marker so the stroke's origin stays locatable. */}
+                {pathPts.length > 1 && (
+                  <circle
+                    cx={(pathPts[0].x - bbox.x0) * scale}
+                    cy={(pathPts[0].y - bbox.y0) * scale}
+                    r={4}
+                    fill="#fff"
+                    stroke="#00d2ff"
+                    strokeWidth={1.5}
+                    style={{ pointerEvents: 'none' }}
+                  />
+                )}
+                {/* Endpoint marker: a ring with crosshair arms that reach past
+                    the fingertip, so you can see where the line currently ends
+                    and where to set the pen down again to continue. */}
+                {pathPts.length > 0 &&
+                  (() => {
+                    const last = pathPts[pathPts.length - 1];
+                    const cx = (last.x - bbox.x0) * scale;
+                    const cy = (last.y - bbox.y0) * scale;
+                    return (
+                      <g style={{ pointerEvents: 'none' }}>
+                        <circle cx={cx} cy={cy} r={9} fill="none" stroke="#00d2ff" strokeWidth={2} />
+                        <circle cx={cx} cy={cy} r={2.5} fill="#00d2ff" />
+                        <line x1={cx - 16} y1={cy} x2={cx - 10} y2={cy} stroke="#00d2ff" strokeWidth={2} />
+                        <line x1={cx + 10} y1={cy} x2={cx + 16} y2={cy} stroke="#00d2ff" strokeWidth={2} />
+                        <line x1={cx} y1={cy - 16} x2={cx} y2={cy - 10} stroke="#00d2ff" strokeWidth={2} />
+                        <line x1={cx} y1={cy + 10} x2={cx} y2={cy + 16} stroke="#00d2ff" strokeWidth={2} />
+                      </g>
+                    );
+                  })()}
+                {/* Hover cursor (pen/mouse): previews where the next point lands
+                    before the tip touches down. */}
+                {mode === 'trace' && penPos && !drawing && (
+                  <circle
+                    cx={(penPos.x - bbox.x0) * scale}
+                    cy={(penPos.y - bbox.y0) * scale}
+                    r={5}
+                    fill="none"
+                    stroke="#00d2ff"
+                    strokeWidth={1}
+                    strokeDasharray="2 2"
+                    opacity={0.7}
+                    style={{ pointerEvents: 'none' }}
+                  />
+                )}
               </svg>
             </Box>
           )}
@@ -558,7 +684,7 @@ export function EditorPage() {
               <Stack spacing={1.5} sx={{ mt: 1 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <TextField
-                    label="Neigung Hauptlinie"
+                    label="Neigung z. Grundlinie"
                     type="number"
                     size="small"
                     value={Math.round(guideVals.slantDeg)}
@@ -567,12 +693,12 @@ export function EditorPage() {
                     sx={{ flex: 1 }}
                   />
                   <Tooltip title="1° aufrechter">
-                    <IconButton size="small" onClick={() => updateGuides({ slant_deg: Math.round(guideVals.slantDeg) - 1 })} sx={{ color: SLANT_COLOR }}>
+                    <IconButton size="small" onClick={() => updateGuides({ slant_deg: Math.round(guideVals.slantDeg) + 1 })} sx={{ color: SLANT_COLOR }}>
                       <ArrowUpwardIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="1° schräger">
-                    <IconButton size="small" onClick={() => updateGuides({ slant_deg: Math.round(guideVals.slantDeg) + 1 })} sx={{ color: SLANT_COLOR }}>
+                    <IconButton size="small" onClick={() => updateGuides({ slant_deg: Math.round(guideVals.slantDeg) - 1 })} sx={{ color: SLANT_COLOR }}>
                       <ArrowDownwardIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
@@ -609,7 +735,40 @@ export function EditorPage() {
                   />
                 </Stack>
                 <Typography variant="caption" color="text.secondary">
-                  Gleiche Linien wie das Übungsblatt: baseline · waist (= midband) · ascender · descender · slant. Den grünen Punkt ziehen, um die Hauptlinie im Bild zu platzieren.
+                  Gleiche Linien wie das Übungsblatt: baseline · waist (= midband) · ascender · descender · slant. Der Winkel wird von der Grundlinie aus gemessen (≈65° = typisches Kurrent; 90° = senkrecht). Den grünen Punkt ziehen, um die Hauptlinie im Bild zu platzieren.
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <TextField
+                    select
+                    label="Kopplung Anfang"
+                    size="small"
+                    value={guideVals.entryCoupling}
+                    onChange={(e) => setCoupling('entry', e.target.value as CouplingHeight)}
+                    sx={{ flex: 1 }}
+                  >
+                    {COUPLING_OPTIONS.map((c) => (
+                      <MenuItem key={c} value={c}>
+                        {c}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <TextField
+                    select
+                    label="Kopplung Ende"
+                    size="small"
+                    value={guideVals.exitCoupling}
+                    onChange={(e) => setCoupling('exit', e.target.value as CouplingHeight)}
+                    sx={{ flex: 1 }}
+                  >
+                    {COUPLING_OPTIONS.map((c) => (
+                      <MenuItem key={c} value={c}>
+                        {c}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Box>
+                <Typography variant="caption" color="text.secondary">
+                  Höhe, auf der der Nachbarbuchstabe ansetzt (entry) bzw. weiterläuft (exit). Greift bei bestehendem Canonical sofort — sonst beim nächsten Speichern des Strichs.
                 </Typography>
               </Stack>
             </Box>
@@ -715,7 +874,7 @@ export function EditorPage() {
                 </Button>
               </Stack>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                {pathPts.length} Pen-Punkte aufgenommen · oben auf „Strich zeichnen" wechseln, dann mit dem S-Pen (oder der Maus) den Buchstaben nachfahren.
+                {pathPts.length} Pen-Punkte aufgenommen · oben auf „Strich zeichnen" wechseln, dann mit dem S-Pen (oder der Maus) den Buchstaben nachfahren. Der blaue Ring zeigt das Strich-Ende — dort wieder absetzen, um den Strich fortzusetzen.
               </Typography>
             </Box>
 

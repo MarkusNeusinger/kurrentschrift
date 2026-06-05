@@ -15,6 +15,7 @@ router = APIRouter(prefix="/sources/{source_id}/glyphs", tags=["glyphs"])
 
 
 def _bbox_to_dict(bbox) -> dict:
+    guides = bbox.guides or {}
     return {
         "y0": bbox.y0,
         "y1": bbox.y1,
@@ -24,6 +25,10 @@ def _bbox_to_dict(bbox) -> dict:
         "baseline_y": bbox.baseline_y,
         "midband_y": bbox.midband_y,
         "n_anchors": bbox.n_anchors,
+        # Coupling height travels with the bbox so trace/resample can stamp it
+        # onto the canonical's entry/exit (default baseline when unset).
+        "entry_coupling": guides.get("entry_coupling", "baseline"),
+        "exit_coupling": guides.get("exit_coupling", "baseline"),
     }
 
 

@@ -48,8 +48,9 @@ class GuideConfig(BaseModel):
 
     model_config = ConfigDict(extra="ignore")
 
-    # Main-line angle in degrees from vertical, worksheet convention (0 =
-    # upright, positive leans right). null => derive from the source slant.
+    # Main-line angle in degrees from the horizontal baseline, matching
+    # `Source.slant_deg` (≈65° = typical Kurrent lean; 90° = upright). null =>
+    # derive from the source slant.
     slant_deg: float | None = None
     # Chart-x where the (centre) main line crosses baseline_y; the drag handle.
     # null => crop centre.
@@ -60,6 +61,12 @@ class GuideConfig(BaseModel):
     # Whether the ascender/descender rulers apply to this glyph.
     show_ascender: bool = True
     show_descender: bool = True
+    # Coupling height of the stroke's entry/exit — the guide line a neighbouring
+    # letter joins at (architektur.md §3/§4). Persisted per glyph so the chosen
+    # height survives without re-tracing; the trace/resample pipeline writes it
+    # onto entry.coupling / exit_pt.coupling.
+    entry_coupling: Literal["baseline", "midband", "ascender", "descender"] = "baseline"
+    exit_coupling: Literal["baseline", "midband", "ascender", "descender"] = "baseline"
 
 
 class BboxIn(BaseModel):

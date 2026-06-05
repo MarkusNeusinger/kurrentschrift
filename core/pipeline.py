@@ -154,6 +154,10 @@ def canonical_from_path(
     exit_xy = [round(float(x_norm[-1]), 4), round(float(y_norm[-1]), 4)]
     entry_tan = float(np.degrees(np.arctan2(y_norm[1] - y_norm[0], x_norm[1] - x_norm[0])))
     exit_tan = float(np.degrees(np.arctan2(y_norm[-1] - y_norm[-2], x_norm[-1] - x_norm[-2])))
+    # Coupling height (where a neighbour joins) is configured per glyph on the
+    # bbox guides; default to the baseline when unset.
+    entry_coupling = bbox.get("entry_coupling", "baseline")
+    exit_coupling = bbox.get("exit_coupling", "baseline")
     advance = float(max(0.1, x_norm.max() - x_norm.min()))
 
     raw_stored = [
@@ -172,8 +176,8 @@ def canonical_from_path(
         "advance": round(advance, 4),
         "anchors": [[round(float(x), 4), round(float(y), 4)] for x, y in anchors_norm],
         "half_widths": [round(float(h), 4) for h in hw_norm],
-        "entry": {"xy": entry_xy, "tangent_deg": round(entry_tan, 1), "coupling": "baseline"},
-        "exit_pt": {"xy": exit_xy, "tangent_deg": round(exit_tan, 1), "coupling": "baseline"},
+        "entry": {"xy": entry_xy, "tangent_deg": round(entry_tan, 1), "coupling": entry_coupling},
+        "exit_pt": {"xy": exit_xy, "tangent_deg": round(exit_tan, 1), "coupling": exit_coupling},
         "raw_path": raw_stored,
         "trace_meta": {
             "method": "web-stylus",
