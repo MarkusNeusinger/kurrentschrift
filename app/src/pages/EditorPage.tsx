@@ -22,6 +22,7 @@ import {
   Divider,
   FormControlLabel,
   IconButton,
+  MenuItem,
   Paper,
   Snackbar,
   Stack,
@@ -39,7 +40,9 @@ import { DiagnosticView } from '../components/DiagnosticView';
 import { FitView } from '../components/FitView';
 import { knownGlyph } from '../constants';
 import { useAdmin } from '../state';
-import type { BboxIn, BboxOut, GuideConfig, StrokePoint } from '../types';
+import type { BboxIn, BboxOut, CouplingHeight, GuideConfig, StrokePoint } from '../types';
+
+const COUPLING_OPTIONS: CouplingHeight[] = ['baseline', 'midband', 'ascender', 'descender'];
 
 type Mode = 'view' | 'trace';
 type CalibField = 'baseline_y' | 'midband_y';
@@ -174,6 +177,8 @@ export function EditorPage() {
       slantSpacing: g.slant_spacing ?? 0,
       showAscender: g.show_ascender ?? true,
       showDescender: g.show_descender ?? true,
+      entryCoupling: g.entry_coupling ?? 'baseline',
+      exitCoupling: g.exit_coupling ?? 'baseline',
     };
   }, [bbox, source]);
 
@@ -276,6 +281,8 @@ export function EditorPage() {
         slant_spacing: guideVals.slantSpacing,
         show_ascender: guideVals.showAscender,
         show_descender: guideVals.showDescender,
+        entry_coupling: guideVals.entryCoupling,
+        exit_coupling: guideVals.exitCoupling,
         ...patch,
       };
       return updateBboxField({ guides: next });
@@ -292,6 +299,31 @@ export function EditorPage() {
     setGuideDrag(null);
     await updateGuides({ slant_x: value });
   }, [guideDrag, updateGuides]);
+
+  // Persist the coupling height and, if a canonical already exists, re-derive it
+  // from its stored raw_path so the new entry/exit coupling takes effect without
+  // re-drawing the stroke.
+  const setCoupling = useCallback(
+    async (which: 'entry' | 'exit', value: CouplingHeight) => {
+      await updateGuides(which === 'entry' ? { entry_coupling: value } : { exit_coupling: value });
+      if (!hasCanonical || !glyphKey || !bbox) return;
+      try {
+        const g = await postResample(glyphKey, bbox.n_anchors);
+        markGlyphTraced(glyphKey, {
+          glyph_key: g.glyph_key,
+          glyph: g.glyph,
+          position: g.position,
+          variant: g.variant,
+          advance: g.advance,
+          has_data: true,
+        });
+        setSnack({ kind: 'success', text: `Kopplung ${which === 'entry' ? 'Anfang' : 'Ende'} = ${value}` });
+      } catch (err) {
+        setSnack({ kind: 'error', text: String(err) });
+      }
+    },
+    [updateGuides, hasCanonical, glyphKey, bbox, markGlyphTraced],
+  );
 
   const onStylusDown = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
@@ -704,6 +736,39 @@ export function EditorPage() {
                 </Stack>
                 <Typography variant="caption" color="text.secondary">
                   Gleiche Linien wie das Übungsblatt: baseline · waist (= midband) · ascender · descender · slant. Der Winkel wird von der Grundlinie aus gemessen (≈65° = typisches Kurrent; 90° = senkrecht). Den grünen Punkt ziehen, um die Hauptlinie im Bild zu platzieren.
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <TextField
+                    select
+                    label="Kopplung Anfang"
+                    size="small"
+                    value={guideVals.entryCoupling}
+                    onChange={(e) => setCoupling('entry', e.target.value as CouplingHeight)}
+                    sx={{ flex: 1 }}
+                  >
+                    {COUPLING_OPTIONS.map((c) => (
+                      <MenuItem key={c} value={c}>
+                        {c}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <TextField
+                    select
+                    label="Kopplung Ende"
+                    size="small"
+                    value={guideVals.exitCoupling}
+                    onChange={(e) => setCoupling('exit', e.target.value as CouplingHeight)}
+                    sx={{ flex: 1 }}
+                  >
+                    {COUPLING_OPTIONS.map((c) => (
+                      <MenuItem key={c} value={c}>
+                        {c}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Box>
+                <Typography variant="caption" color="text.secondary">
+                  Höhe, auf der der Nachbarbuchstabe ansetzt (entry) bzw. weiterläuft (exit). Greift bei bestehendem Canonical sofort — sonst beim nächsten Speichern des Strichs.
                 </Typography>
               </Stack>
             </Box>
