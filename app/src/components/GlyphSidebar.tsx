@@ -8,6 +8,7 @@ import CreateIcon from '@mui/icons-material/Create';
 import EditIcon from '@mui/icons-material/Edit';
 import GridViewIcon from '@mui/icons-material/GridView';
 import HomeIcon from '@mui/icons-material/Home';
+import LockIcon from '@mui/icons-material/Lock';
 import {
   Box,
   Button,
@@ -55,6 +56,7 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
 
   const hasBbox = (key: string) => key in bboxesByKey;
   const hasCanon = (key: string) => glyphsByKey[key]?.has_data === true;
+  const isLocked = (key: string) => bboxesByKey[key]?.locked === true;
 
   const activatePosition = (letter: Letter, pos: Position) => {
     const key = glyphKeyFor(letter, pos);
@@ -137,13 +139,14 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
                 {letters.map((letter) => {
                   const canon = POSITIONS.some((p) => hasCanon(glyphKeyFor(letter, p)));
                   const bbox = POSITIONS.some((p) => hasBbox(glyphKeyFor(letter, p)));
+                  const locked = POSITIONS.some((p) => isLocked(glyphKeyFor(letter, p)));
                   const isOpen = openBase === letter.base;
                   return (
                     <Tooltip
                       key={letter.base}
                       title={`${letter.glyph}${letter.note ? ` · ${letter.note}` : ''}${
                         canon ? ' · Canonical vorhanden' : bbox ? ' · Bbox gesetzt' : ' · leer'
-                      }`}
+                      }${locked ? ' · gesperrt (fertig)' : ''}`}
                     >
                       <ButtonBase
                         onClick={() => selectLetter(letter)}
@@ -174,6 +177,11 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
                               borderRadius: '50%',
                               bgcolor: canon ? 'success.main' : 'warning.main',
                             }}
+                          />
+                        )}
+                        {locked && (
+                          <LockIcon
+                            sx={{ position: 'absolute', bottom: 1, right: 1, fontSize: 10, color: 'success.main' }}
                           />
                         )}
                       </ButtonBase>

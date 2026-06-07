@@ -53,6 +53,9 @@ export interface BboxOut {
   midband_y: number;
   n_anchors: number;
   guides: GuideConfig;
+  // Manual "done" marker: the glyph is finished, shown as complete on the chart
+  // and protected from accidental edits. See ChartPage.
+  locked: boolean;
 }
 
 export interface BboxIn {
@@ -65,6 +68,8 @@ export interface BboxIn {
   midband_y: number;
   n_anchors: number;
   guides?: GuideConfig;
+  // Optional so an omitted value preserves the stored flag (mirrors guides).
+  locked?: boolean;
 }
 
 export interface StrokePoint {

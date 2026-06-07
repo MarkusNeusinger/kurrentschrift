@@ -86,6 +86,10 @@ class BboxIn(BaseModel):
     # save) is distinguishable from an explicit value: PUT then preserves the
     # stored guides instead of resetting them. See put_bbox.
     guides: GuideConfig | None = None
+    # Manual "done" marker (German: gesperrt): the glyph is finished and should
+    # not be edited. Optional so an omitted value preserves the stored flag,
+    # like `guides`. See put_bbox.
+    locked: bool | None = None
 
 
 class BboxOut(BboxIn):
@@ -93,6 +97,7 @@ class BboxOut(BboxIn):
     # Always materialised on the way out (see _to_out), so the response keeps a
     # concrete object even though the request body may omit it.
     guides: GuideConfig
+    locked: bool
 
 
 # ----------------------------------------------------------------------- Glyph
