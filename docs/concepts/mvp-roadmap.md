@@ -169,14 +169,17 @@ geprüft, bevor sie auf eigene Hand zuschlägt.)
 ### M-Admin — Web-Admin-UI für Canonical-Extraktion
 
 **Was:** FastAPI Backend (`/api/`) plus React-Frontend (`/app/`) für die
-interaktive Canonical-Erzeugung. Maus zieht Bbox- und Exclude-Rechtecke
-direkt auf `chart.jpg`, baseline/midband sind draggable Linien, der
-Ductus-Pfad wird mit Stylus (S-Pen) auf einem Samsung-Tablet
-gezeichnet. Backend persistiert alle Canonicals als Rows in der
-`glyphs`-Tabelle (`anchors`/`half_widths`/`raw_path`/`measurements` als
-JSONB) — siehe Status-Note oben; der ursprünglich hier beschriebene
-File-/CLI-Workflow (`mvp/canonical/`, `mvp.tools.trace_skeleton`,
-`mvp.render_canonicals`) ist mit dem `/mvp/`-Ordner aufgelöst.
+interaktive Canonical-Erzeugung. Maus zieht eine grobe Bbox direkt auf
+`chart.jpg`; ein Schritt-für-Schritt-**Einrichtungs-Wizard** (Ausschluss/
+Freihand-Radierer → Lineatur → Schräge → Weg → Übersicht/Approve→Schloss)
+setzt baseline/midband (Grund-/Mittellinie), Schräge und den Ductus-Pfad
+(Stylus/S-Pen auf einem Samsung-Tablet). Backend persistiert die kanonischen
+Grundvorlagen als Rows in der `templates`-Tabelle (`anchors`/`half_widths`/
+`raw_path` als JSONB, Schlüssel `(style, glyph, position, variant)`);
+Per-Text-Belege + `measurements` kommen post-MVP in `instances` (§12). Der
+ursprünglich hier beschriebene File-/CLI-Workflow (`mvp/canonical/`,
+`mvp.tools.trace_skeleton`, `mvp.render_canonicals`) ist mit dem
+`/mvp/`-Ordner aufgelöst.
 
 **Begründung der Einschiebung:** Die ursprüngliche Reihenfolge nach §10
 war „M3 zuerst, Tools danach". In der Umsetzung von M3 Phase A wurde

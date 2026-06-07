@@ -1,22 +1,41 @@
 // Wire types — hand-synced with `api/schemas.py`. The API is small enough
 // that codegen would be more bookkeeping than it saves.
 
-export interface ExcludeRect {
-  y0: number;
-  y1: number;
-  x0: number;
-  x1: number;
+// One freeform eraser stroke (German: Radierer): a brush polyline + radius, in
+// chart-pixel coords. Replaces the old rectangle excludes. Mirrors MaskStroke
+// in api/schemas.py.
+export interface MaskStroke {
+  points: Array<[number, number]>;
+  radius: number;
+}
+
+export interface StyleOut {
+  id: string;
+  name: string;
+  width_resolver: string;
+  default_slant_deg: number;
+  default_style_ratio: number[];
+  description: string | null;
+  // Whether a teaching-chart source exists for this style yet (only then can
+  // templates be authored against it).
+  authorable: boolean;
 }
 
 export interface SourceOut {
   id: string;
+  style_id: string;
+  hand_id: string | null;
+  kind: string;
   title: string;
   license: string;
   chart_path: string;
   chart_size: { w: number; h: number };
+  // Resolved: per-source override if set, else the style default.
   style_ratio: number[];
   slant_deg: number;
   attribution: string | null;
+  origin_url?: string | null;
+  note?: string | null;
 }
 
 // Practice-sheet-style guide lines (Hilfslinien) drawn over a glyph crop —
@@ -48,13 +67,13 @@ export interface BboxOut {
   y1: number;
   x0: number;
   x1: number;
-  excludes: ExcludeRect[];
+  mask_strokes: MaskStroke[];
   baseline_y: number;
   midband_y: number;
   n_anchors: number;
   guides: GuideConfig;
   // Manual "done" marker: the glyph is finished, shown as complete on the chart
-  // and protected from accidental edits. See ChartPage.
+  // and protected from accidental edits. See ChartPage / the wizard's lock step.
   locked: boolean;
 }
 
@@ -63,7 +82,7 @@ export interface BboxIn {
   y1: number;
   x0: number;
   x1: number;
-  excludes: ExcludeRect[];
+  mask_strokes: MaskStroke[];
   baseline_y: number;
   midband_y: number;
   n_anchors: number;

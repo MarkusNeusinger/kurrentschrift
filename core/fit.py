@@ -34,7 +34,7 @@ import numpy as np
 from scipy.optimize import minimize
 from scipy.spatial import cKDTree
 
-from core.chart import crop_with_excludes, load_chart_grayscale
+from core.chart import crop_with_mask, load_chart_grayscale
 from core.extract import binarize_adaptive, skeleton_and_width
 from core.template import sample_polyline
 
@@ -282,7 +282,7 @@ def fit_glyph_to_crop(
     """Fit a stored canonical (`glyph_row`) to the instance crop of `bbox`.
 
     Mirrors `core.pipeline.diagnostic_for_glyph`: loads the chart, crops with
-    excludes, binarises, extracts skeleton + distance transform, then fits.
+    the eraser mask, binarises, extracts skeleton + distance transform, then fits.
     Returns a JSON-ready overlay dict — a filled library entry plus crop-local
     polylines for the three-way visual check (crop · canonical grey · fit red)
     and the skeleton it was fitted to.
@@ -292,7 +292,7 @@ def fit_glyph_to_crop(
             raise ValueError(f"bbox missing required field {required!r}")
 
     chart_gray = load_chart_grayscale(chart_path)
-    crop = crop_with_excludes(chart_gray, bbox, fill=1.0)
+    crop = crop_with_mask(chart_gray, bbox, fill=1.0)
     mask = binarize_adaptive(crop)
     skel, width_map = skeleton_and_width(mask)
 

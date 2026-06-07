@@ -20,7 +20,16 @@ from alembic import context
 load_dotenv()
 
 # Import models so Base.metadata is populated for autogenerate
-from core.database import Base, Bbox, Glyph, Source  # noqa: E402, F401
+from core.database import (  # noqa: E402, F401
+    Aggregate,
+    Base,
+    Bbox,
+    Hand,
+    Instance,
+    Source,
+    Style,
+    Template,
+)
 
 
 config = context.config

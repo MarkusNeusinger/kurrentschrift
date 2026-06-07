@@ -5,6 +5,34 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 
+# ----------------------------------------------------------------------- Style / Hand
+
+
+class StyleOut(BaseModel):
+    """A script family / base template (Grundvorlage): Kurrent, Sütterlin, Offenbacher."""
+
+    id: str
+    name: str
+    width_resolver: str
+    default_slant_deg: float
+    default_style_ratio: list[float]
+    description: str | None = None
+    # Whether a teaching-chart source exists for this style yet (only then can
+    # the admin author templates against it). Kurrent (Loth 1866) is authorable;
+    # Sütterlin/Offenbacher exist as rows but have no chart bytes yet.
+    authorable: bool = False
+
+
+class HandOut(BaseModel):
+    """One writer."""
+
+    id: str
+    style_id: str | None = None
+    label: str
+    era: str | None = None
+    note: str | None = None
+
+
 # ----------------------------------------------------------------------- Source
 
 
@@ -15,23 +43,35 @@ class ChartSize(BaseModel):
 
 class SourceOut(BaseModel):
     id: str
+    style_id: str
+    hand_id: str | None = None
+    kind: str
     title: str
     license: str
     chart_path: str
     chart_size: ChartSize
+    # Resolved: the per-source override if set, else the style default.
     style_ratio: list[float]
     slant_deg: float
     attribution: str | None = None
+    origin_url: str | None = None
+    note: str | None = None
 
 
 # ----------------------------------------------------------------------- Bbox
 
 
-class ExcludeRect(BaseModel):
-    y0: int
-    y1: int
-    x0: int
-    x1: int
+class MaskStroke(BaseModel):
+    """One freeform eraser stroke (German: Radierer): a brush polyline + radius.
+
+    `points` are (x, y) in chart-pixel coords; `radius` is the brush radius in
+    chart px. The crop pipeline rasterises these and blanks the covered pixels.
+    The fixed-length tuple + positive radius reject malformed payloads with 422
+    instead of letting `crop_with_mask` 500 on a bad index.
+    """
+
+    points: list[tuple[float, float]]
+    radius: float = Field(default=4.0, gt=0)
 
 
 class GuideConfig(BaseModel):
@@ -78,7 +118,7 @@ class BboxIn(BaseModel):
     y1: int
     x0: int
     x1: int
-    excludes: list[ExcludeRect] = Field(default_factory=list)
+    mask_strokes: list[MaskStroke] = Field(default_factory=list)
     baseline_y: int
     midband_y: int
     n_anchors: int = 50
@@ -100,7 +140,7 @@ class BboxOut(BboxIn):
     locked: bool
 
 
-# ----------------------------------------------------------------------- Glyph
+# ----------------------------------------------------------------------- Template
 
 
 class StrokePoint(BaseModel):
@@ -119,7 +159,7 @@ class CouplingPointOut(BaseModel):
 
 
 class TraceRequest(BaseModel):
-    """Body of `POST /sources/{id}/glyphs/{glyph_key}/trace`."""
+    """Body of `POST /sources/{id}/templates/{glyph_key}/trace`."""
 
     glyph: str
     position: Literal["initial", "medial", "final"]
@@ -132,7 +172,7 @@ class ResampleRequest(BaseModel):
     n_anchors: int
 
 
-class GlyphSummary(BaseModel):
+class TemplateSummary(BaseModel):
     """List item for the sidebar; `has_data` distinguishes traced vs empty."""
 
     glyph_key: str
@@ -143,7 +183,7 @@ class GlyphSummary(BaseModel):
     has_data: bool
 
 
-class GlyphOut(BaseModel):
+class TemplateOut(BaseModel):
     glyph_key: str
     glyph: str
     position: str

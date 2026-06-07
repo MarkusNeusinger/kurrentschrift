@@ -145,7 +145,7 @@ export function DiagnosticView({ glyphKey, cropCacheBust }: Props) {
       {/* Column 3 — Canonical template */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
         <Typography variant="caption" color="text.secondary">
-          Canonical (template-Koords, slant {data.slant_deg}°)
+          Canonical (Template-Koords, Schräge {data.slant_deg}°)
         </Typography>
         <Box sx={{ width: COL_W, height: COL_H, bgcolor: '#fff' }}>
           <svg
@@ -177,7 +177,7 @@ export function DiagnosticView({ glyphKey, cropCacheBust }: Props) {
           </svg>
         </Box>
         <Typography variant="caption" color="text.disabled" sx={{ fontFamily: 'monospace' }}>
-          baseline=0 · midband=1 · ascender={tpl.ascender.toFixed(2)} · descender={tpl.descender.toFixed(2)}
+          Grundlinie=0 · Mittellinie=1 · Oberlinie={tpl.ascender.toFixed(2)} · Unterlinie={tpl.descender.toFixed(2)}
         </Typography>
       </Box>
     </Box>

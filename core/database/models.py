@@ -1,20 +1,33 @@
-"""SQLAlchemy models — Source, Bbox, Glyph.
+"""SQLAlchemy models — Style, Hand, Source, Bbox, Template, Instance, Aggregate.
 
-Schema (see `docs/concepts/architektur.md` §3 for the library unit):
-- `Source` is a PD geometry reference (e.g. Loth 1866) or, later, a user-hand
-  upload variant. Style parameters live here (`style_ratio`, `slant_deg`) so
-  the render code reads them from data, not from constants.
-- `Bbox` is the per-source crop config for one glyph (rectangle, excludes,
-  baseline/midband calibration). One row per (source, glyph_key).
-- `Glyph` is the canonical ductus template for a (source, glyph, position,
-  variant) combination — anchors, half-widths, raw stylus path, plus a
-  `measurements` blob for per-instance derived statistics that future
-  aggregation queries can plot as histograms.
+Schema (see `docs/concepts/architektur.md` §3 for the library unit, §5 for the
+width resolver, §12 for the statistics layers):
+
+- `Style` is a script family / base template (Grundvorlage): Kurrent, Sütterlin,
+  Offenbacher. It carries the `width_resolver` (§5) and the default lineature
+  ratio + slant. The canonical templates hang off a style, not a single source.
+- `Hand` is one writer. Manuscript sources and per-glyph instances reference a
+  hand so statistics aggregate per hand (§12, MVP gate 2 allograph separation).
+- `Source` is where bytes come from: a teaching chart (`kind="chart"`, e.g. Loth
+  1866) or a manuscript page (`kind="manuscript"`). `chart_path` is relative to
+  the repo root and points at the bytes on disk; the DB never stores the image.
+- `Bbox` is the per-source crop config for one glyph_key on a chart: rectangle,
+  freeform eraser `mask_strokes`, baseline/midband calibration, guides, lock.
+- `Template` is the canonical ductus prior for a (style, glyph, position,
+  variant) — anchors, half-widths, raw stylus path, entry/exit. This is §3's
+  shared `canonical`. One template per style; `provenance_source_id` records the
+  chart it was traced from.
+- `Instance` is one glyph occurrence extracted from a real text (a manuscript
+  source / hand). It holds the per-instance fit (§3 `control_points`) plus
+  `measurements` for the §12 layer-1 statistics. Many rows per (glyph, position,
+  variant). Defined now; the import pipeline that fills it is post-MVP.
+- `Aggregate` is the §12 layer-2 per-hand aggregate (cluster centre + hull) per
+  (hand, glyph, position, variant). Defined now; filled later.
 """
 
-from datetime import datetime
+from datetime import date, datetime
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
@@ -26,40 +39,96 @@ GLYPH_KEY_MAX = 32
 GLYPH_CHAR_MAX = 8
 POSITION_MAX = 16
 SOURCE_ID_MAX = 64
+STYLE_ID_MAX = 32
+HAND_ID_MAX = 64
+KIND_MAX = 16
+WIDTH_RESOLVER_MAX = 16
+
+
+class Style(Base):
+    """A script family / base template (Grundvorlage).
+
+    `width_resolver` selects how `half_widths` is rendered (architektur.md §5):
+    `pressure` = Kurrent Spitzfeder Schwellzug, `constant` = Sütterlin uniform,
+    `broad_nib` = Offenbacher Breitfeder. `default_style_ratio` is
+    [ascender, x_height, descender] (Kurrent = [2, 1, 2]); `default_slant_deg`
+    is the dominant slant from the baseline (≈65° Kurrent, 90° upright). A source
+    may override both per chart.
+    """
+
+    __tablename__ = "styles"
+
+    id: Mapped[str] = mapped_column(String(STYLE_ID_MAX), primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    width_resolver: Mapped[str] = mapped_column(String(WIDTH_RESOLVER_MAX), nullable=False, server_default="pressure")
+    default_slant_deg: Mapped[float] = mapped_column(Float, nullable=False, server_default="65")
+    default_style_ratio: Mapped[list] = mapped_column(JSONB, nullable=False, server_default="[2, 1, 2]")
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    sources: Mapped[list["Source"]] = relationship(back_populates="style", cascade="all, delete-orphan")
+    templates: Mapped[list["Template"]] = relationship(back_populates="style", cascade="all, delete-orphan")
+
+
+class Hand(Base):
+    """One writer. Groups manuscript sources + instances of a single hand."""
+
+    __tablename__ = "hands"
+
+    id: Mapped[str] = mapped_column(String(HAND_ID_MAX), primary_key=True)
+    style_id: Mapped[str | None] = mapped_column(
+        String(STYLE_ID_MAX), ForeignKey("styles.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    label: Mapped[str] = mapped_column(String(255), nullable=False)
+    era: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 class Source(Base):
-    """A geometry reference (PD original or own-hand upload).
+    """Where bytes come from: a teaching chart or a manuscript page.
 
-    `chart_path` is relative to the repo root and points to the bytes on disk
-    (e.g. `data/sources/loth-1866/chart.jpg`). We deliberately don't store the
-    image bytes themselves in the DB; PD sources live in /data/ under git,
-    user-hand uploads will land in GCS later.
-
-    `style_ratio` is [ascender, x_height, descender]; Loth Kurrent = [2, 1, 2].
-    `slant_deg` is the dominant writing slant (0 = upright; ~65° = typical
-    Kurrent). Both are used by the diagnostic renderer to draw guide lines and
-    apply a shear transform to the canonical preview.
+    `chart_path` is relative to the repo root (e.g. `data/sources/loth-1866/
+    chart.jpg`). `style_ratio` / `slant_deg` are optional per-source overrides of
+    the style defaults (a particular chart may be measured precisely); null =>
+    fall back to the style.
     """
 
     __tablename__ = "sources"
 
     id: Mapped[str] = mapped_column(String(SOURCE_ID_MAX), primary_key=True)
+    style_id: Mapped[str] = mapped_column(
+        String(STYLE_ID_MAX), ForeignKey("styles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    hand_id: Mapped[str | None] = mapped_column(
+        String(HAND_ID_MAX), ForeignKey("hands.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    kind: Mapped[str] = mapped_column(String(KIND_MAX), nullable=False, server_default="chart")
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     license: Mapped[str] = mapped_column(String(64), nullable=False)
     chart_path: Mapped[str] = mapped_column(String(512), nullable=False)
     chart_size: Mapped[dict] = mapped_column(JSONB, nullable=False)
-    style_ratio: Mapped[list] = mapped_column(JSONB, nullable=False)
-    slant_deg: Mapped[float] = mapped_column(Float, nullable=False)
+    # Per-source overrides of the style defaults; null => use the style's values.
+    style_ratio: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    slant_deg: Mapped[float | None] = mapped_column(Float, nullable=True)
     attribution: Mapped[str | None] = mapped_column(Text, nullable=True)
+    origin_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    retrieved_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    bboxes: Mapped[list["Bbox"]] = relationship("Bbox", back_populates="source", cascade="all, delete-orphan")
-    glyphs: Mapped[list["Glyph"]] = relationship("Glyph", back_populates="source", cascade="all, delete-orphan")
+    style: Mapped[Style] = relationship(back_populates="sources")
+    bboxes: Mapped[list["Bbox"]] = relationship(back_populates="source", cascade="all, delete-orphan")
 
 
 class Bbox(Base):
-    """Crop rectangle + excludes + baseline/midband calibration for one glyph."""
+    """Crop rectangle + eraser mask + baseline/midband calibration for one glyph.
+
+    `mask_strokes` is the freeform eraser (German: Radierer): a list of brush
+    strokes `[{points: [[x, y], ...], radius}]` in chart-pixel coords. The crop
+    pipeline rasterises them to a boolean mask and blanks those pixels *before*
+    skeletonisation, so neighbouring-letter ink can't pollute the skeleton.
+    """
 
     __tablename__ = "bboxes"
     __table_args__ = (UniqueConstraint("source_id", "glyph_key", name="uq_bbox_source_glyph"),)
@@ -74,49 +143,49 @@ class Bbox(Base):
     y1: Mapped[int] = mapped_column(Integer, nullable=False)
     x0: Mapped[int] = mapped_column(Integer, nullable=False)
     x1: Mapped[int] = mapped_column(Integer, nullable=False)
-    excludes: Mapped[list] = mapped_column(JSONB, nullable=False, server_default="[]")
+    # Freeform eraser strokes (German: Radierer); see class docstring. JSONB list
+    # of {points: [[x, y], ...], radius}. Replaces the old rectangle `excludes`.
+    mask_strokes: Mapped[list] = mapped_column(JSONB, nullable=False, server_default="[]")
     baseline_y: Mapped[int] = mapped_column(Integer, nullable=False)
     midband_y: Mapped[int] = mapped_column(Integer, nullable=False)
     n_anchors: Mapped[int] = mapped_column(Integer, nullable=False, server_default="50")
-    # Guide lines drawn over the crop (German: Hilfslinien), shaped like the
-    # practice-sheet rulers in app/src/lib/lineatur.ts: the four-line system
-    # (baseline/waist/ascender/descender) plus a positionable, angled main
-    # line (slant). Open JSONB so the per-glyph set can grow; see GuideConfig
-    # in api/schemas.py for the keys. Reused later for drawing letters and for
-    # explanatory diagrams.
+    # Guide lines drawn over the crop (German: Hilfslinien): the four-line system
+    # (Grundlinie/Mittellinie/Oberlinie/Unterlinie) plus a positionable, angled
+    # main line (slant). Open JSONB; see GuideConfig in api/schemas.py.
     guides: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default="{}")
-    # Manual "done" marker: a finished glyph is locked so it reads as complete
-    # and is protected from accidental move/resize/redraw in the admin chart.
-    # Distinct from having a canonical (a stroke can exist while still being
-    # worked on); this is the human's "this one is final".
+    # Manual "done" marker (German: gesperrt): a finished glyph is locked so it
+    # reads as complete and is protected from accidental move/resize/redraw. The
+    # wizard's final "approve" step sets this; unlocking re-enables editing.
     locked: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
-    source: Mapped[Source] = relationship("Source", back_populates="bboxes")
+    source: Mapped[Source] = relationship(back_populates="bboxes")
 
 
-class Glyph(Base):
-    """Canonical ductus template for a (glyph, position, variant) in one source.
+class Template(Base):
+    """Canonical ductus template (Grundvorlage) for a (style, glyph, position, variant).
 
-    `anchors` + `half_widths` are in normalised template coordinates
-    (baseline=0, midband=1). `raw_path` is the dense stylus capture in
-    chart-pixel coords, kept so /resample can re-derive anchors with a
-    different n_anchors without the user redrawing.
-
-    `measurements` is open-schema JSONB: initial keys are `slant_deg`,
-    `mean_half_width_px`, `path_length_px`, `aspect_ratio`. Designed for
-    aggregation queries like `SELECT (measurements->>'slant_deg')::float ...`.
+    `anchors` + `half_widths` are in normalised template coordinates (baseline=0,
+    midband=1). `raw_path` is the dense stylus capture in chart-pixel coords, kept
+    so /resample can re-derive anchors with a different n_anchors without the user
+    redrawing. `provenance_source_id` is the teaching chart this canonical was
+    traced from. `measurements` holds the authored trace's own derived stats
+    (slant_deg, mean_half_width_px, …); per-text-occurrence statistics live on
+    `Instance`, not here (§12 layer 1).
     """
 
-    __tablename__ = "glyphs"
-    __table_args__ = (UniqueConstraint("source_id", "glyph", "position", "variant", name="uq_glyph_source_gpv"),)
+    __tablename__ = "templates"
+    __table_args__ = (UniqueConstraint("style_id", "glyph", "position", "variant", name="uq_template_style_gpv"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    source_id: Mapped[str] = mapped_column(
-        String(SOURCE_ID_MAX), ForeignKey("sources.id", ondelete="CASCADE"), nullable=False, index=True
+    style_id: Mapped[str] = mapped_column(
+        String(STYLE_ID_MAX), ForeignKey("styles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    provenance_source_id: Mapped[str | None] = mapped_column(
+        String(SOURCE_ID_MAX), ForeignKey("sources.id", ondelete="SET NULL"), nullable=True
     )
     glyph_key: Mapped[str] = mapped_column(String(GLYPH_KEY_MAX), nullable=False, index=True)
     glyph: Mapped[str] = mapped_column(String(GLYPH_CHAR_MAX), nullable=False)
@@ -139,4 +208,79 @@ class Glyph(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
-    source: Mapped[Source] = relationship("Source", back_populates="glyphs")
+    style: Mapped[Style] = relationship(back_populates="templates")
+
+
+class Instance(Base):
+    """One glyph occurrence extracted from a real text (post-MVP import target).
+
+    Holds the per-instance fit (§3 `control_points`) and `measurements` for the
+    §12 layer-1 statistics. `template_id` links to the canonical it was fitted
+    against. Defined now so the schema is ready; the extraction pipeline is
+    post-MVP. Crop region (y0/y1/x0/x1) locates the occurrence on the page.
+    """
+
+    __tablename__ = "instances"
+    __table_args__ = (
+        UniqueConstraint("source_id", "glyph", "position", "variant", "y0", "x0", name="uq_instance_loc"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_id: Mapped[str] = mapped_column(
+        String(SOURCE_ID_MAX), ForeignKey("sources.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    hand_id: Mapped[str | None] = mapped_column(
+        String(HAND_ID_MAX), ForeignKey("hands.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    template_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("templates.id", ondelete="SET NULL"), nullable=True
+    )
+    glyph_key: Mapped[str] = mapped_column(String(GLYPH_KEY_MAX), nullable=False, index=True)
+    glyph: Mapped[str] = mapped_column(String(GLYPH_CHAR_MAX), nullable=False)
+    position: Mapped[str] = mapped_column(String(POSITION_MAX), nullable=False)
+    variant: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+
+    y0: Mapped[int] = mapped_column(Integer, nullable=False)
+    y1: Mapped[int] = mapped_column(Integer, nullable=False)
+    x0: Mapped[int] = mapped_column(Integer, nullable=False)
+    x1: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    anchors: Mapped[list] = mapped_column(JSONB, nullable=False)
+    half_widths: Mapped[list] = mapped_column(JSONB, nullable=False)
+    raw_path: Mapped[list] = mapped_column(JSONB, nullable=False, server_default="[]")
+    measurements: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default="{}")
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class Aggregate(Base):
+    """Per-hand aggregate (§12 layer 2) per (hand, glyph, position, variant).
+
+    Cluster centre of the control points, deviation hull (MAD/covariance), and
+    mean of the layer-1 stats. Defined now; populated by the aggregation job
+    later. Statistics are computed per hand, never averaged across hands
+    (quellen-und-rechte.md §7).
+    """
+
+    __tablename__ = "aggregates"
+    __table_args__ = (UniqueConstraint("hand_id", "glyph", "position", "variant", name="uq_aggregate_hand_gpv"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    hand_id: Mapped[str] = mapped_column(
+        String(HAND_ID_MAX), ForeignKey("hands.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    glyph: Mapped[str] = mapped_column(String(GLYPH_CHAR_MAX), nullable=False)
+    position: Mapped[str] = mapped_column(String(POSITION_MAX), nullable=False)
+    variant: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+
+    cluster_center: Mapped[list] = mapped_column(JSONB, nullable=False, server_default="[]")
+    hull: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default="{}")
+    mean_stats: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default="{}")
+    n_instances: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
