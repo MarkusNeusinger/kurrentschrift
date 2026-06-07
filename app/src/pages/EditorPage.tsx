@@ -11,6 +11,8 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ClearIcon from '@mui/icons-material/Clear';
 import CreateIcon from '@mui/icons-material/Create';
 import DeleteIcon from '@mui/icons-material/Delete';
+import LockIcon from '@mui/icons-material/Lock';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SaveIcon from '@mui/icons-material/Save';
 import UndoIcon from '@mui/icons-material/Undo';
@@ -58,6 +60,7 @@ function bboxInFromOut(b: BboxOut): BboxIn {
     midband_y: b.midband_y,
     n_anchors: b.n_anchors,
     guides: b.guides,
+    locked: b.locked,
   };
 }
 
@@ -66,11 +69,13 @@ function CalibrationRow({
   value,
   color,
   onSet,
+  disabled = false,
 }: {
   label: string;
   value: number;
   color: string;
   onSet: (v: number) => void;
+  disabled?: boolean;
 }) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -79,19 +84,24 @@ function CalibrationRow({
         type="number"
         size="small"
         value={value}
+        disabled={disabled}
         onChange={(e) => onSet(Number(e.target.value))}
         slotProps={{ input: { sx: { color, fontFamily: 'monospace' } } }}
         sx={{ flex: 1 }}
       />
       <Tooltip title="Linie 1 Pixel nach oben">
-        <IconButton size="small" onClick={() => onSet(value - 1)} sx={{ color }}>
-          <ArrowUpwardIcon fontSize="small" />
-        </IconButton>
+        <span>
+          <IconButton size="small" disabled={disabled} onClick={() => onSet(value - 1)} sx={{ color }}>
+            <ArrowUpwardIcon fontSize="small" />
+          </IconButton>
+        </span>
       </Tooltip>
       <Tooltip title="Linie 1 Pixel nach unten">
-        <IconButton size="small" onClick={() => onSet(value + 1)} sx={{ color }}>
-          <ArrowDownwardIcon fontSize="small" />
-        </IconButton>
+        <span>
+          <IconButton size="small" disabled={disabled} onClick={() => onSet(value + 1)} sx={{ color }}>
+            <ArrowDownwardIcon fontSize="small" />
+          </IconButton>
+        </span>
       </Tooltip>
     </Box>
   );
@@ -118,6 +128,9 @@ export function EditorPage() {
   const bbox = glyphKey ? (bboxesByKey[glyphKey] ?? null) : null;
   const known = glyphKey ? knownGlyph(glyphKey) : null;
   const hasCanonical = glyphKey ? glyphsByKey[glyphKey]?.has_data === true : false;
+  // Locked = finished: the lines (baseline/midband/slant/ascender/descender)
+  // and the trace are fixed; the whole editor is read-only until unlocked.
+  const locked = bbox?.locked === true;
   const hostRef = useRef<HTMLDivElement | null>(null);
   const [hostSize, setHostSize] = useState({ w: 0, h: 0 });
   const [mode, setMode] = useState<Mode>('view');
@@ -133,6 +146,12 @@ export function EditorPage() {
   useEffect(() => {
     if (glyphKey) setActiveGlyph(glyphKey);
   }, [glyphKey, setActiveGlyph]);
+
+  // A locked glyph can't be traced; drop back to view so the capture overlay
+  // and pen cursor go inert.
+  useEffect(() => {
+    if (locked) setMode('view');
+  }, [locked]);
 
   useEffect(() => {
     setMode('view');
@@ -202,6 +221,7 @@ export function EditorPage() {
 
   const startCalibDrag = useCallback(
     (field: CalibField) => (e: React.PointerEvent<SVGElement>) => {
+      if (locked) return; // lines are fixed on a finished glyph
       e.stopPropagation();
       e.preventDefault();
       const svg = e.currentTarget.ownerSVGElement;
@@ -210,7 +230,7 @@ export function EditorPage() {
       setCalibDrag({ field, curY: y });
       svg.setPointerCapture(e.pointerId);
     },
-    [cssToChartY],
+    [cssToChartY, locked],
   );
 
   const onCalibMove = useCallback(
@@ -225,6 +245,7 @@ export function EditorPage() {
   // The angled main line is dragged horizontally to its place over the glyph.
   const startGuideDrag = useCallback(
     (e: React.PointerEvent<SVGElement>) => {
+      if (locked) return; // slant line is fixed on a finished glyph
       e.stopPropagation();
       e.preventDefault();
       const svg = e.currentTarget.ownerSVGElement;
@@ -233,7 +254,7 @@ export function EditorPage() {
       setGuideDrag({ curX: x });
       svg.setPointerCapture(e.pointerId);
     },
-    [cssToChartXY],
+    [cssToChartXY, locked],
   );
 
   const onGuideMove = useCallback(
@@ -381,6 +402,19 @@ export function EditorPage() {
     [guideDrag, calibDrag, onCalibUp, onGuideUp],
   );
 
+  // Flip the "done" lock. Resends the full bbox with locked toggled, so it
+  // persists like any other field and the editor switches to/from read-only.
+  const toggleLock = useCallback(async () => {
+    if (!glyphKey || !bbox) return;
+    try {
+      const saved = await putBbox(glyphKey, { ...bboxInFromOut(bbox), locked: !bbox.locked });
+      upsertBbox(glyphKey, saved);
+      setSnack({ kind: 'success', text: saved.locked ? '🔒 gesperrt (fertig)' : '🔓 entsperrt' });
+    } catch (err) {
+      setSnack({ kind: 'error', text: `Speichern fehlgeschlagen: ${err}` });
+    }
+  }, [glyphKey, bbox, upsertBbox]);
+
   const deleteThisBox = useCallback(async () => {
     if (!glyphKey || !bbox) return;
     const ok = window.confirm(
@@ -491,14 +525,35 @@ export function EditorPage() {
           {glyphKey}
         </Typography>
         <Box sx={{ flex: 1 }} />
+        <Tooltip title={locked ? 'Entsperren (wieder bearbeitbar)' : 'Als fertig sperren (Linien & Strich schützen)'}>
+          <ToggleButton
+            size="small"
+            value="lock"
+            selected={locked}
+            color="success"
+            aria-label={locked ? 'Glyph entsperren' : 'Glyph als fertig sperren'}
+            onChange={toggleLock}
+            sx={{ border: 'none' }}
+          >
+            {locked ? <LockIcon fontSize="small" /> : <LockOpenIcon fontSize="small" />}
+          </ToggleButton>
+        </Tooltip>
         <Tooltip title="Bbox (und Canonical) löschen">
-          <IconButton size="small" color="error" aria-label="Bbox und Canonical löschen" onClick={deleteThisBox}>
-            <DeleteIcon fontSize="small" />
-          </IconButton>
+          <span>
+            <IconButton
+              size="small"
+              color="error"
+              aria-label="Bbox und Canonical löschen"
+              disabled={locked}
+              onClick={deleteThisBox}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </span>
         </Tooltip>
         <ToggleButtonGroup size="small" value={mode} exclusive onChange={(_e, v: Mode | null) => v && setMode(v)}>
           <ToggleButton value="view">Ansicht</ToggleButton>
-          <ToggleButton value="trace">
+          <ToggleButton value="trace" disabled={locked}>
             <CreateIcon fontSize="small" />
             &nbsp;Strich zeichnen
           </ToggleButton>
@@ -561,15 +616,15 @@ export function EditorPage() {
                   </g>
                 )}
                 <g>
-                  <line x1={0} y1={baselineCss} x2={displayW} y2={baselineCss} stroke="#ff5060" strokeWidth={1.5} strokeDasharray="6 4" style={{ cursor: 'ns-resize', pointerEvents: 'stroke' }} onPointerDown={startCalibDrag('baseline_y')} />
-                  <rect x={4} y={baselineCss - 9} width={86} height={16} fill="#ff5060" style={{ cursor: 'ns-resize' }} onPointerDown={startCalibDrag('baseline_y')} />
+                  <line x1={0} y1={baselineCss} x2={displayW} y2={baselineCss} stroke="#ff5060" strokeWidth={1.5} strokeDasharray="6 4" style={{ cursor: locked ? 'default' : 'ns-resize', pointerEvents: locked ? 'none' : 'stroke' }} onPointerDown={startCalibDrag('baseline_y')} />
+                  <rect x={4} y={baselineCss - 9} width={86} height={16} fill="#ff5060" style={{ cursor: locked ? 'default' : 'ns-resize', pointerEvents: locked ? 'none' : undefined }} onPointerDown={startCalibDrag('baseline_y')} />
                   <text x={8} y={baselineCss + 3} fontSize={11} fill="#1a0000" fontWeight="bold" style={{ pointerEvents: 'none' }}>
                     baseline {bbox.baseline_y}
                   </text>
                 </g>
                 <g>
-                  <line x1={0} y1={midbandCss} x2={displayW} y2={midbandCss} stroke="#c060ff" strokeWidth={1.5} strokeDasharray="3 3" style={{ cursor: 'ns-resize', pointerEvents: 'stroke' }} onPointerDown={startCalibDrag('midband_y')} />
-                  <rect x={4} y={midbandCss - 9} width={86} height={16} fill="#c060ff" style={{ cursor: 'ns-resize' }} onPointerDown={startCalibDrag('midband_y')} />
+                  <line x1={0} y1={midbandCss} x2={displayW} y2={midbandCss} stroke="#c060ff" strokeWidth={1.5} strokeDasharray="3 3" style={{ cursor: locked ? 'default' : 'ns-resize', pointerEvents: locked ? 'none' : 'stroke' }} onPointerDown={startCalibDrag('midband_y')} />
+                  <rect x={4} y={midbandCss - 9} width={86} height={16} fill="#c060ff" style={{ cursor: locked ? 'default' : 'ns-resize', pointerEvents: locked ? 'none' : undefined }} onPointerDown={startCalibDrag('midband_y')} />
                   <text x={8} y={midbandCss + 3} fontSize={11} fill="#1a001a" fontWeight="bold" style={{ pointerEvents: 'none' }}>
                     midband {bbox.midband_y}
                   </text>
@@ -592,7 +647,7 @@ export function EditorPage() {
                   fill={SLANT_COLOR}
                   stroke="#0a2a14"
                   strokeWidth={1}
-                  style={{ cursor: 'ew-resize' }}
+                  style={{ cursor: locked ? 'default' : 'ew-resize', pointerEvents: locked ? 'none' : undefined }}
                   onPointerDown={startGuideDrag}
                 />
                 {guideDragLine && (
@@ -662,13 +717,26 @@ export function EditorPage() {
 
         <Box sx={{ borderColor: 'divider', borderLeft: { md: 1 }, borderTop: { xs: 1, md: 0 }, overflow: 'auto', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           <Stack spacing={2} sx={{ p: 2 }}>
+            {locked && (
+              <Alert
+                severity="success"
+                icon={<LockIcon fontSize="inherit" />}
+                action={
+                  <Button color="inherit" size="small" startIcon={<LockOpenIcon />} onClick={toggleLock}>
+                    Entsperren
+                  </Button>
+                }
+              >
+                Gesperrt (fertig) — Linien und Strich sind fest. Zum Ändern erst entsperren.
+              </Alert>
+            )}
             <Box>
               <Typography variant="overline" color="text.secondary">
                 Kalibrierung
               </Typography>
               <Stack spacing={1.5} sx={{ mt: 1 }}>
-                <CalibrationRow label="baseline_y" value={bbox.baseline_y} color="#ff5060" onSet={(v) => updateBboxField({ baseline_y: v })} />
-                <CalibrationRow label="midband_y" value={bbox.midband_y} color="#c060ff" onSet={(v) => updateBboxField({ midband_y: v })} />
+                <CalibrationRow label="baseline_y" value={bbox.baseline_y} color="#ff5060" disabled={locked} onSet={(v) => updateBboxField({ baseline_y: v })} />
+                <CalibrationRow label="midband_y" value={bbox.midband_y} color="#c060ff" disabled={locked} onSet={(v) => updateBboxField({ midband_y: v })} />
                 <Typography variant="caption" color="text.secondary">
                   x-Höhe = {xHeightPx} px
                 </Typography>
@@ -688,19 +756,24 @@ export function EditorPage() {
                     type="number"
                     size="small"
                     value={Math.round(guideVals.slantDeg)}
+                    disabled={locked}
                     onChange={(e) => updateGuides({ slant_deg: Number(e.target.value) })}
                     slotProps={{ input: { sx: { color: SLANT_COLOR, fontFamily: 'monospace' }, endAdornment: '°' } }}
                     sx={{ flex: 1 }}
                   />
                   <Tooltip title="1° aufrechter">
-                    <IconButton size="small" onClick={() => updateGuides({ slant_deg: Math.round(guideVals.slantDeg) + 1 })} sx={{ color: SLANT_COLOR }}>
-                      <ArrowUpwardIcon fontSize="small" />
-                    </IconButton>
+                    <span>
+                      <IconButton size="small" disabled={locked} onClick={() => updateGuides({ slant_deg: Math.round(guideVals.slantDeg) + 1 })} sx={{ color: SLANT_COLOR }}>
+                        <ArrowUpwardIcon fontSize="small" />
+                      </IconButton>
+                    </span>
                   </Tooltip>
                   <Tooltip title="1° schräger">
-                    <IconButton size="small" onClick={() => updateGuides({ slant_deg: Math.round(guideVals.slantDeg) - 1 })} sx={{ color: SLANT_COLOR }}>
-                      <ArrowDownwardIcon fontSize="small" />
-                    </IconButton>
+                    <span>
+                      <IconButton size="small" disabled={locked} onClick={() => updateGuides({ slant_deg: Math.round(guideVals.slantDeg) - 1 })} sx={{ color: SLANT_COLOR }}>
+                        <ArrowDownwardIcon fontSize="small" />
+                      </IconButton>
+                    </span>
                   </Tooltip>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1 }}>
@@ -709,6 +782,7 @@ export function EditorPage() {
                     type="number"
                     size="small"
                     value={guideVals.slantCount}
+                    disabled={locked}
                     onChange={(e) => updateGuides({ slant_count: Math.max(1, Math.round(Number(e.target.value))) })}
                     sx={{ flex: 1 }}
                   />
@@ -718,18 +792,18 @@ export function EditorPage() {
                     size="small"
                     value={guideVals.slantSpacing}
                     onChange={(e) => updateGuides({ slant_spacing: Math.max(0, Number(e.target.value)) })}
-                    disabled={guideVals.slantCount < 2}
+                    disabled={locked || guideVals.slantCount < 2}
                     sx={{ flex: 1 }}
                   />
                 </Box>
                 <Stack direction="row" spacing={1}>
                   <FormControlLabel
-                    control={<Checkbox size="small" checked={guideVals.showAscender} onChange={(e) => updateGuides({ show_ascender: e.target.checked })} />}
+                    control={<Checkbox size="small" disabled={locked} checked={guideVals.showAscender} onChange={(e) => updateGuides({ show_ascender: e.target.checked })} />}
                     label="ascender"
                     slotProps={{ typography: { variant: 'caption' } }}
                   />
                   <FormControlLabel
-                    control={<Checkbox size="small" checked={guideVals.showDescender} onChange={(e) => updateGuides({ show_descender: e.target.checked })} />}
+                    control={<Checkbox size="small" disabled={locked} checked={guideVals.showDescender} onChange={(e) => updateGuides({ show_descender: e.target.checked })} />}
                     label="descender"
                     slotProps={{ typography: { variant: 'caption' } }}
                   />
@@ -743,6 +817,7 @@ export function EditorPage() {
                     label="Kopplung Anfang"
                     size="small"
                     value={guideVals.entryCoupling}
+                    disabled={locked}
                     onChange={(e) => setCoupling('entry', e.target.value as CouplingHeight)}
                     sx={{ flex: 1 }}
                   >
@@ -757,6 +832,7 @@ export function EditorPage() {
                     label="Kopplung Ende"
                     size="small"
                     value={guideVals.exitCoupling}
+                    disabled={locked}
                     onChange={(e) => setCoupling('exit', e.target.value as CouplingHeight)}
                     sx={{ flex: 1 }}
                   >
@@ -785,6 +861,7 @@ export function EditorPage() {
                   type="number"
                   size="small"
                   value={bbox.n_anchors}
+                  disabled={locked}
                   onChange={(e) => updateBboxField({ n_anchors: Math.max(4, Number(e.target.value)) })}
                   sx={{ flex: 1 }}
                 />
@@ -794,7 +871,7 @@ export function EditorPage() {
                       size="small"
                       variant="outlined"
                       startIcon={<RefreshIcon />}
-                      disabled={!hasCanonical}
+                      disabled={!hasCanonical || locked}
                       onClick={async () => {
                         try {
                           const g = await postResample(glyphKey, bbox.n_anchors);
@@ -835,12 +912,15 @@ export function EditorPage() {
                       ({ex.x0},{ex.y0})→({ex.x1},{ex.y1})
                     </Typography>
                     <Tooltip title="diesen Ausschluss entfernen">
-                      <IconButton
-                        size="small"
-                        onClick={() => updateBboxField({ excludes: bbox.excludes.filter((_, j) => j !== i) })}
-                      >
-                        <ClearIcon fontSize="inherit" />
-                      </IconButton>
+                      <span>
+                        <IconButton
+                          size="small"
+                          disabled={locked}
+                          onClick={() => updateBboxField({ excludes: bbox.excludes.filter((_, j) => j !== i) })}
+                        >
+                          <ClearIcon fontSize="inherit" />
+                        </IconButton>
+                      </span>
                     </Tooltip>
                   </Paper>
                 ))}
@@ -861,15 +941,15 @@ export function EditorPage() {
               <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap' }}>
                 <Tooltip title="letzten Pen-Punkt rückgängig">
                   <span>
-                    <IconButton size="small" disabled={pathPts.length === 0} onClick={() => setPathPts((p) => p.slice(0, -1))}>
+                    <IconButton size="small" disabled={locked || pathPts.length === 0} onClick={() => setPathPts((p) => p.slice(0, -1))}>
                       <UndoIcon />
                     </IconButton>
                   </span>
                 </Tooltip>
-                <Button size="small" variant="outlined" color="warning" startIcon={<ClearIcon />} disabled={pathPts.length === 0} onClick={() => setPathPts([])}>
+                <Button size="small" variant="outlined" color="warning" startIcon={<ClearIcon />} disabled={locked || pathPts.length === 0} onClick={() => setPathPts([])}>
                   Verwerfen
                 </Button>
-                <Button size="small" variant="contained" startIcon={<SaveIcon />} disabled={pathPts.length < 2} onClick={saveTrace}>
+                <Button size="small" variant="contained" startIcon={<SaveIcon />} disabled={locked || pathPts.length < 2} onClick={saveTrace}>
                   Canonical speichern
                 </Button>
               </Stack>

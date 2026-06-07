@@ -24,6 +24,7 @@ def _to_out(bbox: Bbox) -> BboxOut:
         midband_y=bbox.midband_y,
         n_anchors=bbox.n_anchors,
         guides=GuideConfig(**(bbox.guides or {})),
+        locked=bool(bbox.locked),
     )
 
 
@@ -48,13 +49,21 @@ async def put_bbox(
     if payload.baseline_y <= payload.midband_y:
         raise HTTPException(422, detail="baseline_y must be greater than midband_y (baseline is below midband)")
     repo = BboxRepository(db)
-    # `guides` is optional: when the client omits it, keep whatever is already
-    # stored (a plain bbox/calibration save must not wipe the guide lines).
+    # `guides` and `locked` are optional: when the client omits one, keep
+    # whatever is already stored (a plain bbox/calibration save must not wipe
+    # the guide lines, and toggling the lock must not require resending guides).
+    existing = None
     if payload.guides is not None:
         guides = payload.guides.model_dump()
     else:
         existing = await repo.get(source.id, glyph_key)
         guides = existing.guides if existing is not None else {}
+    if payload.locked is not None:
+        locked = payload.locked
+    else:
+        if existing is None:
+            existing = await repo.get(source.id, glyph_key)
+        locked = bool(existing.locked) if existing is not None else False
     bbox = await repo.upsert(
         source.id,
         glyph_key,
@@ -67,6 +76,7 @@ async def put_bbox(
         midband_y=payload.midband_y,
         n_anchors=payload.n_anchors,
         guides=guides,
+        locked=locked,
     )
     return _to_out(bbox)
 

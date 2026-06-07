@@ -14,6 +14,8 @@ import ContentCutIcon from '@mui/icons-material/ContentCut';
 import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import LockIcon from '@mui/icons-material/Lock';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
 import OpenWithIcon from '@mui/icons-material/OpenWith';
 import RemoveIcon from '@mui/icons-material/Remove';
 import {
@@ -66,6 +68,10 @@ interface EditState {
 }
 
 const MIN_BOX = 6;
+// Resize grips are only the eight little squares (corners + edge midpoints).
+// GRIP_HIT is their hit half-size in screen px (the caller divides by zoom),
+// kept a touch larger than the drawn handle so it stays easy to grab on touch.
+const GRIP_HIT = 12;
 
 interface PanState {
   startClientX: number;
@@ -89,29 +95,30 @@ function bboxInFromOut(b: BboxOut): BboxIn {
     midband_y: b.midband_y,
     n_anchors: b.n_anchors,
     guides: b.guides,
+    locked: b.locked,
   };
 }
 
 const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 
-// Which grip of rect `b` sits at image point (x,y)? Corners beat edges beat the
-// body; `tol` is the hit tolerance in image px (the caller scales it by zoom).
+// Which grip of rect `b` sits at image point (x,y)? Resize only triggers on the
+// eight little grip squares (corners + edge midpoints); the rest of the box body
+// — edges included — moves, so the border lines never block a drag. `tol` is the
+// grip hit half-size in image px (the caller scales it by zoom).
 function hitHandle(b: Rect, x: number, y: number, tol: number): EditHandle | null {
-  const nearX0 = Math.abs(x - b.x0) <= tol;
-  const nearX1 = Math.abs(x - b.x1) <= tol;
-  const nearY0 = Math.abs(y - b.y0) <= tol;
-  const nearY1 = Math.abs(y - b.y1) <= tol;
-  const inX = x >= b.x0 - tol && x <= b.x1 + tol;
-  const inY = y >= b.y0 - tol && y <= b.y1 + tol;
-  if (nearX0 && nearY0) return 'nw';
-  if (nearX1 && nearY0) return 'ne';
-  if (nearX0 && nearY1) return 'sw';
-  if (nearX1 && nearY1) return 'se';
-  if (nearY0 && inX) return 'n';
-  if (nearY1 && inX) return 's';
-  if (nearX0 && inY) return 'w';
-  if (nearX1 && inY) return 'e';
-  if (x > b.x0 && x < b.x1 && y > b.y0 && y < b.y1) return 'move';
+  const mx = (b.x0 + b.x1) / 2;
+  const my = (b.y0 + b.y1) / 2;
+  const onGrip = (gx: number, gy: number) => Math.abs(x - gx) <= tol && Math.abs(y - gy) <= tol;
+  if (onGrip(b.x0, b.y0)) return 'nw';
+  if (onGrip(b.x1, b.y0)) return 'ne';
+  if (onGrip(b.x0, b.y1)) return 'sw';
+  if (onGrip(b.x1, b.y1)) return 'se';
+  if (onGrip(mx, b.y0)) return 'n';
+  if (onGrip(mx, b.y1)) return 's';
+  if (onGrip(b.x0, my)) return 'w';
+  if (onGrip(b.x1, my)) return 'e';
+  // Inclusive bounds so grabbing exactly on a border (between grips) still moves.
+  if (x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1) return 'move';
   return null;
 }
 
@@ -222,6 +229,11 @@ export function ChartPage() {
         setSnack('Wähle erst einen Glyph in der Liste links.');
         return;
       }
+      // A locked (finished) glyph is protected: no move/resize/exclude/redraw.
+      if (bboxesByKey[activeGlyph]?.locked) {
+        setSnack(`🔒 ${activeGlyph} ist gesperrt — oben entsperren, um zu ändern.`);
+        return;
+      }
       const { x, y } = pointToImage(e.clientX, e.clientY);
       if (mode === 'edit') {
         const current = bboxesByKey[activeGlyph];
@@ -229,9 +241,9 @@ export function ChartPage() {
           setSnack(`${activeGlyph}: hat noch keine Bbox — erst im Modus „Bbox" zeichnen.`);
           return;
         }
-        const handle = hitHandle(current, x, y, 10 / zoom);
+        const handle = hitHandle(current, x, y, GRIP_HIT / zoom);
         if (!handle) {
-          setSnack('Zum Verschieben in die Box fassen, zum Skalieren an Rand oder Ecke.');
+          setSnack('Zum Verschieben in die Box fassen, zum Skalieren an einen Griffpunkt (Ecke/Kantenmitte).');
           return;
         }
         const r: Rect = { x0: current.x0, y0: current.y0, x1: current.x1, y1: current.y1 };
@@ -378,6 +390,24 @@ export function ChartPage() {
     }
   }, [drag, edit, pan, activeGlyph, bboxesByKey, upsertBbox]);
 
+  // Toggle the active glyph's "done" lock. Resends the full bbox with the
+  // flag flipped (the rest unchanged), so it persists like any other field.
+  const toggleLock = useCallback(async () => {
+    if (!activeGlyph) return;
+    const current = bboxesByKey[activeGlyph];
+    if (!current) {
+      setSnack(`${activeGlyph}: noch keine Bbox.`);
+      return;
+    }
+    try {
+      const saved = await putBbox(activeGlyph, { ...bboxInFromOut(current), locked: !current.locked });
+      upsertBbox(activeGlyph, saved);
+      setSnack(saved.locked ? `🔒 ${activeGlyph} gesperrt (fertig).` : `🔓 ${activeGlyph} entsperrt.`);
+    } catch (err) {
+      setSnack(`Speichern fehlgeschlagen: ${err}`);
+    }
+  }, [activeGlyph, bboxesByKey, upsertBbox]);
+
   const deleteActive = useCallback(async () => {
     if (!activeGlyph || !(activeGlyph in bboxesByKey)) return;
     const hasGlyph = glyphsByKey[activeGlyph]?.has_data === true;
@@ -432,8 +462,16 @@ export function ChartPage() {
     return () => window.removeEventListener('keydown', h);
   }, []);
 
+  const activeBbox = activeGlyph ? bboxesByKey[activeGlyph] : undefined;
+  const activeLocked = activeBbox?.locked === true;
   const cursorStyle: React.CSSProperties =
-    mode === 'pan' ? { cursor: pan ? 'grabbing' : 'grab' } : mode === 'edit' ? { cursor: 'move' } : { cursor: 'crosshair' };
+    mode === 'pan'
+      ? { cursor: pan ? 'grabbing' : 'grab' }
+      : activeLocked
+        ? { cursor: 'not-allowed' }
+        : mode === 'edit'
+          ? { cursor: 'move' }
+          : { cursor: 'crosshair' };
   const stageWidthCss = width * zoom;
   const stageHeightCss = height * zoom;
 
@@ -458,6 +496,30 @@ export function ChartPage() {
             &nbsp;Ausschluss
           </ToggleButton>
         </ToggleButtonGroup>
+
+        <Tooltip
+          title={
+            !activeGlyph || !(activeGlyph in bboxesByKey)
+              ? 'Glyph mit Bbox wählen, um ihn als fertig zu sperren'
+              : activeLocked
+                ? `${activeGlyph} entsperren (wieder bearbeitbar)`
+                : `${activeGlyph} als fertig sperren (vor Änderungen schützen)`
+          }
+        >
+          <span>
+            <ToggleButton
+              size="small"
+              value="lock"
+              selected={activeLocked}
+              color="success"
+              disabled={!activeGlyph || !(activeGlyph in bboxesByKey)}
+              aria-label={activeLocked ? 'Glyph entsperren' : 'Glyph als fertig sperren'}
+              onChange={toggleLock}
+            >
+              {activeLocked ? <LockIcon fontSize="small" /> : <LockOpenIcon fontSize="small" />}
+            </ToggleButton>
+          </span>
+        </Tooltip>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: { xs: 0, sm: 300 }, flex: { xs: 1, sm: 'none' } }}>
           <IconButton
@@ -506,7 +568,7 @@ export function ChartPage() {
               size="small"
               color="error"
               aria-label="Bbox des aktiven Glyphs löschen"
-              disabled={!activeGlyph || !(activeGlyph in bboxesByKey)}
+              disabled={activeLocked || !activeGlyph || !(activeGlyph in bboxesByKey)}
               onClick={deleteActive}
             >
               <DeleteIcon fontSize="small" />
@@ -547,7 +609,10 @@ export function ChartPage() {
             {Object.entries(bboxesByKey).map(([key, b]) => {
               if (!visibleGlyphs.has(key)) return null;
               const isActive = key === activeGlyph;
-              const stroke = isActive ? '#ffae00' : '#5da8ff';
+              // Locked (finished) glyphs read green; the active one stays orange
+              // (thicker), unfinished ones are dashed blue. A locked glyph keeps
+              // a solid outline so "done" is legible even when not selected.
+              const stroke = b.locked ? '#37c871' : isActive ? '#ffae00' : '#5da8ff';
               return (
                 <g key={key}>
                   <rect
@@ -555,13 +620,14 @@ export function ChartPage() {
                     y={b.y0}
                     width={b.x1 - b.x0}
                     height={b.y1 - b.y0}
-                    fill="none"
+                    fill={b.locked ? '#37c871' : 'none'}
+                    fillOpacity={b.locked ? 0.08 : undefined}
                     stroke={stroke}
                     strokeWidth={isActive ? 3 : 1.5}
-                    strokeDasharray={isActive ? undefined : '4 4'}
+                    strokeDasharray={isActive || b.locked ? undefined : '4 4'}
                   />
                   <text x={b.x0} y={b.y0 - 4} fontSize={14} fill={stroke} style={{ userSelect: 'none' }}>
-                    {key}
+                    {b.locked ? `🔒 ${key}` : key}
                   </text>
                   {b.excludes.map((ex, i) => (
                     <rect
@@ -594,6 +660,7 @@ export function ChartPage() {
               />
             )}
             {mode === 'edit' &&
+              !activeLocked &&
               activeGlyph &&
               bboxesByKey[activeGlyph] &&
               (() => {

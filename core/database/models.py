@@ -14,7 +14,7 @@ Schema (see `docs/concepts/architektur.md` §3 for the library unit):
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
@@ -85,6 +85,11 @@ class Bbox(Base):
     # in api/schemas.py for the keys. Reused later for drawing letters and for
     # explanatory diagrams.
     guides: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default="{}")
+    # Manual "done" marker: a finished glyph is locked so it reads as complete
+    # and is protected from accidental move/resize/redraw in the admin chart.
+    # Distinct from having a canonical (a stroke can exist while still being
+    # worked on); this is the human's "this one is final".
+    locked: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
