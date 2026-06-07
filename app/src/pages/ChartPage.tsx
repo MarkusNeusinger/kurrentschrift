@@ -14,6 +14,8 @@ import ContentCutIcon from '@mui/icons-material/ContentCut';
 import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import LockIcon from '@mui/icons-material/Lock';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
 import OpenWithIcon from '@mui/icons-material/OpenWith';
 import RemoveIcon from '@mui/icons-material/Remove';
 import {
@@ -66,6 +68,10 @@ interface EditState {
 }
 
 const MIN_BOX = 6;
+// Resize grips are only the eight little squares (corners + edge midpoints).
+// GRIP_HIT is their hit half-size in screen px (the caller divides by zoom),
+// kept a touch larger than the drawn handle so it stays easy to grab on touch.
+const GRIP_HIT = 12;
 
 interface PanState {
   startClientX: number;
@@ -94,23 +100,22 @@ function bboxInFromOut(b: BboxOut): BboxIn {
 
 const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 
-// Which grip of rect `b` sits at image point (x,y)? Corners beat edges beat the
-// body; `tol` is the hit tolerance in image px (the caller scales it by zoom).
+// Which grip of rect `b` sits at image point (x,y)? Resize only triggers on the
+// eight little grip squares (corners + edge midpoints); the rest of the box body
+// — edges included — moves, so the border lines never block a drag. `tol` is the
+// grip hit half-size in image px (the caller scales it by zoom).
 function hitHandle(b: Rect, x: number, y: number, tol: number): EditHandle | null {
-  const nearX0 = Math.abs(x - b.x0) <= tol;
-  const nearX1 = Math.abs(x - b.x1) <= tol;
-  const nearY0 = Math.abs(y - b.y0) <= tol;
-  const nearY1 = Math.abs(y - b.y1) <= tol;
-  const inX = x >= b.x0 - tol && x <= b.x1 + tol;
-  const inY = y >= b.y0 - tol && y <= b.y1 + tol;
-  if (nearX0 && nearY0) return 'nw';
-  if (nearX1 && nearY0) return 'ne';
-  if (nearX0 && nearY1) return 'sw';
-  if (nearX1 && nearY1) return 'se';
-  if (nearY0 && inX) return 'n';
-  if (nearY1 && inX) return 's';
-  if (nearX0 && inY) return 'w';
-  if (nearX1 && inY) return 'e';
+  const mx = (b.x0 + b.x1) / 2;
+  const my = (b.y0 + b.y1) / 2;
+  const onGrip = (gx: number, gy: number) => Math.abs(x - gx) <= tol && Math.abs(y - gy) <= tol;
+  if (onGrip(b.x0, b.y0)) return 'nw';
+  if (onGrip(b.x1, b.y0)) return 'ne';
+  if (onGrip(b.x0, b.y1)) return 'sw';
+  if (onGrip(b.x1, b.y1)) return 'se';
+  if (onGrip(mx, b.y0)) return 'n';
+  if (onGrip(mx, b.y1)) return 's';
+  if (onGrip(b.x0, my)) return 'w';
+  if (onGrip(b.x1, my)) return 'e';
   if (x > b.x0 && x < b.x1 && y > b.y0 && y < b.y1) return 'move';
   return null;
 }
@@ -165,6 +170,10 @@ export function ChartPage() {
   const stageRef = useRef<HTMLDivElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [mode, setMode] = useState<Mode>('pan');
+  // Lock freezes every box: no move/resize/draw, grips hidden — only pan/zoom.
+  // "Alles aktiv = verändern gesperrt": flip it on once boxes are placed so a
+  // stray drag can't nudge them.
+  const [locked, setLocked] = useState(false);
   const [zoom, setZoom] = useState(0.75);
   const [drag, setDrag] = useState<DragState | null>(null);
   const [edit, setEdit] = useState<EditState | null>(null);
@@ -205,7 +214,8 @@ export function ChartPage() {
         return;
       }
       if (pinchRef.current) return; // already pinching — ignore extra contacts
-      if (mode === 'pan') {
+      // Locked: only pan/zoom, never edit — drag the chart instead of a box.
+      if (mode === 'pan' || locked) {
         const sc = scrollRef.current;
         if (!sc) return;
         setPan({
@@ -229,9 +239,9 @@ export function ChartPage() {
           setSnack(`${activeGlyph}: hat noch keine Bbox — erst im Modus „Bbox" zeichnen.`);
           return;
         }
-        const handle = hitHandle(current, x, y, 10 / zoom);
+        const handle = hitHandle(current, x, y, GRIP_HIT / zoom);
         if (!handle) {
-          setSnack('Zum Verschieben in die Box fassen, zum Skalieren an Rand oder Ecke.');
+          setSnack('Zum Verschieben in die Box fassen, zum Skalieren an einen Griffpunkt (Ecke/Kantenmitte).');
           return;
         }
         const r: Rect = { x0: current.x0, y0: current.y0, x1: current.x1, y1: current.y1 };
@@ -253,7 +263,7 @@ export function ChartPage() {
       (e.target as Element).setPointerCapture?.(e.pointerId);
       e.preventDefault();
     },
-    [mode, activeGlyph, bboxesByKey, pointToImage, zoom],
+    [mode, locked, activeGlyph, bboxesByKey, pointToImage, zoom],
   );
 
   const onPointerMove = useCallback(
@@ -433,7 +443,11 @@ export function ChartPage() {
   }, []);
 
   const cursorStyle: React.CSSProperties =
-    mode === 'pan' ? { cursor: pan ? 'grabbing' : 'grab' } : mode === 'edit' ? { cursor: 'move' } : { cursor: 'crosshair' };
+    locked || mode === 'pan'
+      ? { cursor: pan ? 'grabbing' : 'grab' }
+      : mode === 'edit'
+        ? { cursor: 'move' }
+        : { cursor: 'crosshair' };
   const stageWidthCss = width * zoom;
   const stageHeightCss = height * zoom;
 
@@ -445,19 +459,32 @@ export function ChartPage() {
             <OpenWithIcon fontSize="small" />
             &nbsp;Schwenken
           </ToggleButton>
-          <ToggleButton value="bbox">
+          <ToggleButton value="bbox" disabled={locked}>
             <AddBoxIcon fontSize="small" />
             &nbsp;Bbox
           </ToggleButton>
-          <ToggleButton value="edit">
+          <ToggleButton value="edit" disabled={locked}>
             <ControlCameraIcon fontSize="small" />
             &nbsp;Verschieben
           </ToggleButton>
-          <ToggleButton value="exclude">
+          <ToggleButton value="exclude" disabled={locked}>
             <ContentCutIcon fontSize="small" />
             &nbsp;Ausschluss
           </ToggleButton>
         </ToggleButtonGroup>
+
+        <Tooltip title={locked ? 'Boxen gesperrt — zum Bearbeiten entsperren' : 'Boxen sperren (nur Schwenken/Zoomen)'}>
+          <ToggleButton
+            size="small"
+            value="lock"
+            selected={locked}
+            color="warning"
+            aria-label={locked ? 'Boxen entsperren' : 'Boxen sperren'}
+            onChange={() => setLocked((v) => !v)}
+          >
+            {locked ? <LockIcon fontSize="small" /> : <LockOpenIcon fontSize="small" />}
+          </ToggleButton>
+        </Tooltip>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: { xs: 0, sm: 300 }, flex: { xs: 1, sm: 'none' } }}>
           <IconButton
@@ -506,7 +533,7 @@ export function ChartPage() {
               size="small"
               color="error"
               aria-label="Bbox des aktiven Glyphs löschen"
-              disabled={!activeGlyph || !(activeGlyph in bboxesByKey)}
+              disabled={locked || !activeGlyph || !(activeGlyph in bboxesByKey)}
               onClick={deleteActive}
             >
               <DeleteIcon fontSize="small" />
@@ -594,6 +621,7 @@ export function ChartPage() {
               />
             )}
             {mode === 'edit' &&
+              !locked &&
               activeGlyph &&
               bboxesByKey[activeGlyph] &&
               (() => {
