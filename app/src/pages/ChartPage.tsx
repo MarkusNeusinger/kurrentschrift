@@ -116,7 +116,8 @@ function hitHandle(b: Rect, x: number, y: number, tol: number): EditHandle | nul
   if (onGrip(mx, b.y1)) return 's';
   if (onGrip(b.x0, my)) return 'w';
   if (onGrip(b.x1, my)) return 'e';
-  if (x > b.x0 && x < b.x1 && y > b.y0 && y < b.y1) return 'move';
+  // Inclusive bounds so grabbing exactly on a border (between grips) still moves.
+  if (x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1) return 'move';
   return null;
 }
 
@@ -171,8 +172,7 @@ export function ChartPage() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [mode, setMode] = useState<Mode>('pan');
   // Lock freezes every box: no move/resize/draw, grips hidden — only pan/zoom.
-  // "Alles aktiv = verändern gesperrt": flip it on once boxes are placed so a
-  // stray drag can't nudge them.
+  // Flip it on once boxes are placed so a stray drag can't nudge them.
   const [locked, setLocked] = useState(false);
   const [zoom, setZoom] = useState(0.75);
   const [drag, setDrag] = useState<DragState | null>(null);
