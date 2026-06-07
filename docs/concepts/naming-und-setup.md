@@ -62,9 +62,13 @@ gleichmäßigere Strichstärke) und die Offenbacher Schrift (1927, Rudolf
 Koch, Breitfeder) sind die ersten Erweiterungen auf demselben Kanon —
 unterschieden vor allem über Schräglage und den Width-Profile-Resolver
 pro Familie ([`architektur.md`](architektur.md) §5), nicht über ein
-eigenes Modell. Die schema-seitige Verankerung einer `script`-/
-Familien-Dimension ist bewusst auf *nach* dem MVP vertagt (der MVP
-validiert den Render-Kern an Kurrent allein).
+eigenes Modell. Die schema-seitige Verankerung dieser Stil-Dimension ist
+**umgesetzt** (Tabelle `styles`, Migration `0004`; alle drei Grundvorlagen
+sind geseedet) — die ursprüngliche Vertagung auf nach dem MVP ist damit
+aufgehoben (Owner-Entscheidung). Der MVP validiert den Render-Kern
+weiterhin an Kurrent allein: nur Loth 1866 hat Tafel-Bytes, also ist
+zunächst nur Kurrent bebaubar; Sütterlin/Offenbacher existieren als
+Stil-Zeilen und werden autorierbar, sobald Tafeln vorliegen.
 
 **Oberbegriffe** (für SEO / Texte / spätere Multi-Stil-Benennung):
 „Kurrent" · „deutsche Schreibschrift" · „deutsche Schrift" / „alte

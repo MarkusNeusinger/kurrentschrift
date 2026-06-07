@@ -43,8 +43,8 @@ change one, check the other.
 
 - Frontend feature work that follows the existing `/app/` patterns
   (drag-on-canvas, stylus capture, diagnostic panels).
-- New FastAPI routes that mirror the `api/routers/{health,sources,chart,
-  bboxes,glyphs}.py` shape.
+- New FastAPI routes that mirror the `api/routers/{health,styles,hands,
+  sources,chart,bboxes,templates}.py` shape.
 - Adding numpy/scipy/scikit-image pipeline steps inside `core/`.
 - Writing/improving unit tests under `tests/` (no tests exist yet — adding
   them is welcome).
@@ -115,11 +115,15 @@ pillars). The settled architecture (§1–§17) is in
 
 **Analysis-by-synthesis with a ductus prior.** The image supplies geometry
 + ink width; the canonical ductus template supplies stroke order and
-crossing resolution. The library unit is `(glyph, position, variant)`,
-not just glyph. Allographs (e.g. medial ſ vs. final s) are *separate
-glyphs* with separate ductus, not one glyph with variants. Positionally-
-sanctioned form variants (the "A = A" on teaching charts) are separate
-templates, not parameter deviations.
+crossing resolution. A canonical template's key is `(style, glyph,
+position, variant)` — `style` is the Grundvorlage/script family (Kurrent ·
+Sütterlin · Offenbacher), the rest is the library unit within a style, not
+just glyph. Allographs (e.g. medial ſ vs. final s) are *separate glyphs*
+with separate ductus, not one glyph with variants. Positionally-sanctioned
+form variants (the "A = A" on teaching charts) are separate templates, not
+parameter deviations. In the admin the authored form applies to all
+positions by default (fan-out across initial/medial/final); positional
+connection strokes are *generated* from `entry`/`exit` tangents.
 
 The closed ligature set (`ch`, `ck`, `tz`, `ſt`, `qu`, `ß`) are first-
 class library entries, not exit→entry chains. Enumerate, don't generate.
@@ -138,22 +142,22 @@ kurrentschrift/
 ├── core/             # Pure-Python compute + DB layer
 │   ├── extract.py    # skeleton + distance transform
 │   ├── template.py   # canonical sampling + outline + slant
-│   ├── chart.py      # load + crop with excludes
+│   ├── chart.py      # load + crop_with_mask (freeform eraser)
 │   ├── pipeline.py   # canonical_from_path, diagnostic_for_glyph
 │   ├── fit.py        # M4: fit_template_to_instance, fit_glyph_to_crop
-│   └── database/     # SQLAlchemy Source + Bbox + Glyph + repositories
+│   └── database/     # SQLAlchemy Style + Hand + Source + Bbox + Template + Instance + Aggregate + repos
 ├── api/              # FastAPI service (thin)
 │   ├── main.py
 │   ├── schemas.py
 │   ├── dependencies.py
-│   └── routers/      # health, sources, chart, bboxes, glyphs
+│   └── routers/      # health, styles, hands, sources, chart, bboxes, templates
 ├── app/              # React 19 + Vite + MUI SPA (anyplot-style)
 │   └── src/
-│       ├── pages/    # ChartPage (bbox editor), EditorPage (stylus trace)
-│       ├── components/  # DiagnosticView (3-column SVG), GlyphSidebar
+│       ├── pages/    # ChartPage (bbox editor + Einrichtungs-Wizard), EditorPage (advanced)
+│       ├── components/  # DiagnosticView (3-column SVG), GlyphSidebar, GlyphCanvas, wizard/
 │       └── constants.ts # KNOWN_GLYPHS, Position type
 ├── alembic/          # Postgres migrations
-│   └── versions/0001_initial_schema.py
+│   └── versions/0004_library_schema.py
 ├── data/             # Sources, samples, derived — SEPARATE LICENSING
 │   ├── sources/      # public-domain originals (Loth 1866, …)
 │   ├── samples/      # own-hand scans
@@ -193,9 +197,12 @@ cd app && npm install && npm run dev
 Python package manager: **uv**. Frontend: **npm** (note: anyplot uses
 yarn, kurrentschrift uses npm — `package-lock.json` is checked in).
 
-Browser at `http://localhost:3000` loads the admin UI: Loth chart with
-draggable bboxes/excludes, stylus-trace mode for canonical extraction,
-3-column SVG diagnostic from `/diagnostic` JSON.
+Browser at `http://localhost:3000` loads the admin UI: Loth chart with a
+draggable rough bbox, then the step-by-step Einrichtungs-Wizard (Ausschluss/
+freehand eraser → Lineatur → Schräge → Weg → Übersicht/approve→lock) for
+canonical extraction, and the 3-column SVG diagnostic from `/diagnostic`
+JSON. UI labels are German per DIN/Süß lineature (Grundlinie · Mittellinie ·
+Oberlinie · Unterlinie; zones Oberlänge · Mittellänge · Unterlänge).
 
 ---
 
@@ -224,16 +231,21 @@ draggable bboxes/excludes, stylus-trace mode for canonical extraction,
 
 ### Database Schema (Postgres + SQLAlchemy async)
 
-- Tables: `sources`, `bboxes`, `glyphs` (+ future `transcriptions`,
-  optional `hand_stats`).
-- Unique constraint on glyphs: `(source_id, glyph, position, variant)` —
-  this is the identifying tuple, **not** `glyph_key` (UI-only).
+- Tables: `styles`, `hands`, `sources`, `bboxes`, `templates`,
+  `instances`, `aggregates`.
+- `styles` is the Grundvorlage/script family (Kurrent · Sütterlin ·
+  Offenbacher); it carries `width_resolver` (§5) + lineature defaults.
+- `templates` are the canonical Grundvorlagen, unique on
+  `(style_id, glyph, position, variant)` — the identifying tuple, **not**
+  `glyph_key` (UI-only). `instances` hold per-text occurrences (the fit +
+  `measurements`, §12 layer 1, filled by the post-MVP import); `aggregates`
+  are per-hand stats (§12 layer 2).
 - `position` is the **chart role** (where Loth teaches it), not the
   text-position — see `app/src/constants.ts` comments and architektur.md
-  §3.
-- JSONB columns (`anchors`, `half_widths`, `raw_path`, `trace_meta`,
-  `measurements`) hold structured per-instance data. Change number of
-  anchors retroactively; aggregate stats in SQL.
+  §3. The admin authors one form for all positions by default (fan-out).
+- `bboxes` carries the chart crop + freeform eraser `mask_strokes` (replaces
+  the old rectangle `excludes`) + baseline/midband calibration + `guides` +
+  `locked`. JSONB columns hold structured data; aggregate stats in SQL.
 
 ### Testing Standards
 

@@ -74,6 +74,14 @@ Eine Datei je Quelle unter `/data/sources/<id>/SOURCE.md`:
 `DATA_PROVENANCE.md` ist nur der **Index** darüber (eine Tabellenzeile
 pro Artefakt, verweist auf das jeweilige `SOURCE.md`).
 
+**DB-Spiegel (Migration `0004`).** Diese Felder landen in der `sources`-Tabelle
+(`title`, `license`, `attribution`, `origin_url`, `retrieved_date`, `note`,
+`chart_path`). Jede Quelle hängt an einem Stil (`style_id` → `styles`) und hat
+ein `kind ∈ {chart, manuscript}`: Lehrtafeln wie Loth 1866 sind `chart`,
+Originalseiten `manuscript`. Manuskript-Quellen verweisen optional auf eine
+`hands`-Zeile (ein Schreiber) — so rechnet die Statistik pro Hand (§7,
+[`styleanalyse.md`](styleanalyse.md)), nicht über Hände gemittelt.
+
 Für ein **Korpus** (gitignored, nur Metadaten committet) zusätzlich die
 gemischte Lizenz explizit pro Teilkorpus:
 

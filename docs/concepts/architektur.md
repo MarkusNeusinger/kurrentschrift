@@ -131,17 +131,37 @@ Wichtige Festlegungen:
 - **Formvarianten sind eigene Templates, nicht Auslenkung.** Die zwei F-
   oder c-Formen der Lehrtafel unterscheiden sich *strukturell* (andere
   Topologie/Strichfolge), nicht nur in der Kontrollpunkt-Auslenkung.
-  Bibliotheksschlüssel ist daher `(glyph, position, variant)`.
-- **Width-Profile-Resolver pro Source.** Eine Source-Eigenschaft entscheidet,
+  Bibliotheksschlüssel ist daher `(style, glyph, position, variant)` — der
+  Stil (Grundvorlage) ist die vierte, äußerste Achse (siehe unten).
+- **Width-Profile-Resolver pro Stil.** Eine Stil-Eigenschaft entscheidet,
   wie das Breitenprofil interpretiert wird: **Kurrent** = druckabhängiger
-  Schwellzug (Spitzfeder), **Sütterlin** = annähernd konstant (Redisfeder).
-  Gleiches Ductus-Template, austauschbarer Resolver beim Rendern (§5, §11).
+  Schwellzug (Spitzfeder, `pressure`), **Sütterlin** = annähernd konstant
+  (`constant`, Redisfeder), **Offenbacher** = winkelabhängig (`broad_nib`,
+  Breitfeder). Gleiches Ductus-Template, austauschbarer Resolver beim
+  Rendern (§5, §11). Liegt als `styles.width_resolver`.
 
-**Zukünftige Aggregat-Schicht** (kommt mit §12-Implementierung): eine
-optionale `hand_stats`-Schicht pro Source hält Cluster-Mittelpunkt +
-Hüllkurve pro `(glyph, position, variant)` (M5(C)-Output der Roadmap) sowie
-optional textunabhängige Hand-Features (Hinge/Δn-Hinge nach Bulacu/
-Schomaker). Schema-Detail kommt bei §12-Implementierung.
+**Datenbankschema (implementiert, Migration `0004`).** Die in §3 angelegte
+Trennung *canonical ↔ control_points* ist jetzt schema-seitig verankert,
+ebenso die früher (naming-und-setup §1) vertagte Stil-Dimension:
+
+- `styles` — Grundvorlage / Schriftfamilie (Kurrent · Sütterlin · Offenbacher):
+  `width_resolver`, `default_slant_deg`, `default_style_ratio`.
+- `sources` — Herkunft der Bytes, `kind ∈ {chart, manuscript}`, hängt an einem
+  Stil und optional an einer Hand; `style_ratio`/`slant_deg` überschreiben den
+  Stil-Default pro Tafel.
+- `templates` — das kanonische `canonical` pro `(style, glyph, position,
+  variant)`; `provenance_source_id` zeigt auf die getuschte Lehrtafel.
+- `instances` — die `control_points`-Fits pro Beleg aus Originaltexten
+  (§12 Schicht 1, `measurements`); viele pro `(glyph, position, variant)`.
+- `aggregates` — Per-Hand-Aggregat (§12 Schicht 2): Cluster-Mittelpunkt +
+  Hüllkurve pro `(hand, glyph, position, variant)`. Optional später
+  textunabhängige Hand-Features (Hinge/Δn-Hinge nach Bulacu/Schomaker).
+
+`instances`/`aggregates` sind angelegt, aber erst der post-MVP-Import füllt
+sie. Im Admin gilt eine getuschte Form per Default für alle drei Positionen
+(Fan-out über initial/medial/final); eine Position wird bei Bedarf später
+differenziert — die positionsabhängigen Verbindungsstriche werden ohnehin aus
+`entry`/`exit`-Tangenten *generiert* (§4).
 
 ---
 
