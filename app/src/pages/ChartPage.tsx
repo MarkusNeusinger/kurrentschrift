@@ -1,4 +1,4 @@
-// ChartPage — chart.jpg with bbox/exclude overlays for the visible glyphs.
+// ChartPage — chart.jpg with bbox overlays for the visible glyphs.
 //
 // Modes:
 //   - PAN: drag scrolls the chart container.
@@ -6,11 +6,13 @@
 //          Requires baseline_y/midband_y to be set before saving; if the
 //          glyph doesn't have those yet, the new bbox seeds reasonable
 //          defaults (top quarter as midband, bottom quarter as baseline).
-//   - EXCLUDE: drag adds an exclude rect (must start inside existing bbox).
+//   - EDIT: move/resize an existing bbox via grips.
+// The freeform eraser (Ausschluss/Radierer), Lineatur, Schräge and Weg now live
+// in the step-by-step Einrichtungs-Wizard, opened with "Einrichten".
 
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import AddIcon from '@mui/icons-material/Add';
-import ContentCutIcon from '@mui/icons-material/ContentCut';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -36,13 +38,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { chartUrl, deleteBbox, deleteGlyph, putBbox } from '../api';
+import { SetupWizard } from '../components/wizard/SetupWizard';
 import { useAdmin } from '../state';
-import type { BboxIn, BboxOut, ExcludeRect } from '../types';
+import type { BboxIn, BboxOut } from '../types';
 
-type Mode = 'pan' | 'bbox' | 'exclude' | 'edit';
+type Mode = 'pan' | 'bbox' | 'edit';
 
 interface DragState {
-  mode: 'bbox' | 'exclude';
+  mode: 'bbox';
   startX: number;
   startY: number;
   curX: number;
@@ -90,7 +93,7 @@ function bboxInFromOut(b: BboxOut): BboxIn {
     y1: b.y1,
     x0: b.x0,
     x1: b.x1,
-    excludes: b.excludes,
+    mask_strokes: b.mask_strokes,
     baseline_y: b.baseline_y,
     midband_y: b.midband_y,
     n_anchors: b.n_anchors,
@@ -139,8 +142,9 @@ function applyHandle(handle: EditHandle, orig: Rect, dx: number, dy: number, w: 
 }
 
 // Build the BboxIn for a finished move/resize. A move carries the baseline,
-// midband and excludes along by the same offset; a resize keeps the guide
-// lines but clamps them (and clips the excludes) into the new bounds.
+// midband and eraser strokes along by the same offset; a resize keeps the guide
+// lines but clamps them into the new bounds (eraser strokes stay in their
+// absolute chart-pixel positions — the content under them didn't move).
 function editedBbox(current: BboxOut, handle: EditHandle, cur: Rect): BboxIn {
   const r = { x0: Math.round(cur.x0), y0: Math.round(cur.y0), x1: Math.round(cur.x1), y1: Math.round(cur.y1) };
   const base = bboxInFromOut(current);
@@ -152,18 +156,18 @@ function editedBbox(current: BboxOut, handle: EditHandle, cur: Rect): BboxIn {
       ...r,
       baseline_y: current.baseline_y + dy,
       midband_y: current.midband_y + dy,
-      excludes: current.excludes.map((ex) => ({ x0: ex.x0 + dx, y0: ex.y0 + dy, x1: ex.x1 + dx, y1: ex.y1 + dy })),
+      mask_strokes: current.mask_strokes.map((m) => ({
+        ...m,
+        points: m.points.map(([x, y]) => [x + dx, y + dy] as [number, number]),
+      })),
     };
   }
-  const excludes = current.excludes
-    .map((ex) => ({
-      x0: clamp(ex.x0, r.x0, r.x1),
-      y0: clamp(ex.y0, r.y0, r.y1),
-      x1: clamp(ex.x1, r.x0, r.x1),
-      y1: clamp(ex.y1, r.y0, r.y1),
-    }))
-    .filter((ex) => ex.x1 - ex.x0 >= 1 && ex.y1 - ex.y0 >= 1);
-  return { ...base, ...r, baseline_y: clamp(current.baseline_y, r.y0, r.y1), midband_y: clamp(current.midband_y, r.y0, r.y1), excludes };
+  return {
+    ...base,
+    ...r,
+    baseline_y: clamp(current.baseline_y, r.y0, r.y1),
+    midband_y: clamp(current.midband_y, r.y0, r.y1),
+  };
 }
 
 export function ChartPage() {
@@ -177,6 +181,7 @@ export function ChartPage() {
   const [edit, setEdit] = useState<EditState | null>(null);
   const [pan, setPan] = useState<PanState | null>(null);
   const [snack, setSnack] = useState<string | null>(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
   // Two-finger pinch-zoom (touch): track live pointers and the gesture anchor.
   const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
   const pinchRef = useRef<{ startDist: number; startZoom: number } | null>(null);
@@ -248,17 +253,6 @@ export function ChartPage() {
         }
         const r: Rect = { x0: current.x0, y0: current.y0, x1: current.x1, y1: current.y1 };
         setEdit({ handle, startX: x, startY: y, orig: r, cur: r });
-      } else if (mode === 'exclude') {
-        const current = bboxesByKey[activeGlyph];
-        if (!current) {
-          setSnack(`${activeGlyph}: hat noch keine Bbox — erst im Modus „Bbox" zeichnen.`);
-          return;
-        }
-        if (x < current.x0 || x > current.x1 || y < current.y0 || y > current.y1) {
-          setSnack('Ausschluss muss innerhalb der aktiven Bbox starten.');
-          return;
-        }
-        setDrag({ mode: 'exclude', startX: x, startY: y, curX: x, curY: y });
       } else {
         setDrag({ mode: 'bbox', startX: x, startY: y, curX: x, curY: y });
       }
@@ -360,31 +354,25 @@ export function ChartPage() {
       return;
     }
     const current = bboxesByKey[activeGlyph];
-    let next: BboxIn;
-    if (drag.mode === 'exclude' && current) {
-      const ex: ExcludeRect = { x0, y0, x1, y1 };
-      next = { ...bboxInFromOut(current), excludes: [...current.excludes, ex] };
-    } else {
-      // New bbox: seed midband/baseline at sensible defaults (caller refines
-      // them in the editor). Midband at top quarter, baseline 5px above the
-      // bottom edge so the calibration drag handles are visible immediately.
-      const h = y1 - y0;
-      next = {
-        x0,
-        y0,
-        x1,
-        y1,
-        excludes: [],
-        baseline_y: current?.baseline_y ?? Math.round(y0 + h * 0.7),
-        midband_y: current?.midband_y ?? Math.round(y0 + h * 0.35),
-        n_anchors: current?.n_anchors ?? 50,
-      };
-    }
+    // New (rough) bbox: seed midband/baseline at sensible defaults — the wizard
+    // refines them. Midband at top third, baseline at ~70% so the calibration
+    // handles are visible immediately. A fresh draw resets the eraser strokes.
+    const h = y1 - y0;
+    const next: BboxIn = {
+      x0,
+      y0,
+      x1,
+      y1,
+      mask_strokes: [],
+      baseline_y: current?.baseline_y ?? Math.round(y0 + h * 0.7),
+      midband_y: current?.midband_y ?? Math.round(y0 + h * 0.35),
+      n_anchors: current?.n_anchors ?? 50,
+    };
     setDrag(null);
     try {
       const saved = await putBbox(activeGlyph, next);
       upsertBbox(activeGlyph, saved);
-      setSnack(drag.mode === 'bbox' ? `${activeGlyph}: Bbox gespeichert.` : `${activeGlyph}: Ausschluss hinzugefügt.`);
+      setSnack(`${activeGlyph}: Bbox gespeichert.`);
     } catch (err) {
       setSnack(`Speichern fehlgeschlagen: ${err}`);
     }
@@ -491,10 +479,6 @@ export function ChartPage() {
             <ControlCameraIcon fontSize="small" />
             &nbsp;Verschieben
           </ToggleButton>
-          <ToggleButton value="exclude">
-            <ContentCutIcon fontSize="small" />
-            &nbsp;Ausschluss
-          </ToggleButton>
         </ToggleButtonGroup>
 
         <Tooltip
@@ -575,20 +559,37 @@ export function ChartPage() {
             </IconButton>
           </span>
         </Tooltip>
-        <Tooltip title="Editor für den aktiven Glyph öffnen">
+        <Tooltip title={activeLocked ? `${activeGlyph} ist gesperrt — erst entsperren` : 'Einrichtungs-Wizard für den aktiven Glyph öffnen'}>
           <span>
             <Button
               size="small"
               variant="contained"
+              startIcon={<AutoFixHighIcon />}
+              disabled={activeLocked || !activeGlyph || !(activeGlyph in bboxesByKey)}
+              onClick={() => setWizardOpen(true)}
+            >
+              Einrichten
+            </Button>
+          </span>
+        </Tooltip>
+        <Tooltip title="Erweiterten Editor für den aktiven Glyph öffnen">
+          <span>
+            <Button
+              size="small"
+              variant="outlined"
               startIcon={<EditIcon />}
               disabled={!activeGlyph || !(activeGlyph in bboxesByKey)}
               onClick={() => activeGlyph && navigate(`/admin/edit/${encodeURIComponent(activeGlyph)}`)}
             >
-              Bearbeiten
+              Editor
             </Button>
           </span>
         </Tooltip>
       </Paper>
+
+      {activeGlyph && activeGlyph in bboxesByKey && (
+        <SetupWizard glyphKey={activeGlyph} open={wizardOpen} onClose={() => setWizardOpen(false)} />
+      )}
 
       <Box ref={scrollRef} sx={{ flex: 1, overflow: 'auto', bgcolor: '#111', position: 'relative' }}>
         <Box ref={stageRef} sx={{ width: stageWidthCss, height: stageHeightCss, position: 'relative', ...cursorStyle }}>
@@ -629,18 +630,16 @@ export function ChartPage() {
                   <text x={b.x0} y={b.y0 - 4} fontSize={14} fill={stroke} style={{ userSelect: 'none' }}>
                     {b.locked ? `🔒 ${key}` : key}
                   </text>
-                  {b.excludes.map((ex, i) => (
-                    <rect
+                  {b.mask_strokes.map((m, i) => (
+                    <polyline
                       key={i}
-                      x={ex.x0}
-                      y={ex.y0}
-                      width={ex.x1 - ex.x0}
-                      height={ex.y1 - ex.y0}
-                      fill={stroke}
-                      fillOpacity={0.18}
-                      stroke={stroke}
-                      strokeDasharray="3 3"
-                      strokeWidth={1}
+                      points={m.points.map(([x, y]) => `${x},${y}`).join(' ')}
+                      fill="none"
+                      stroke="#ff6b35"
+                      strokeOpacity={0.5}
+                      strokeWidth={Math.max(1, m.radius * 2)}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     />
                   ))}
                 </g>
@@ -652,9 +651,9 @@ export function ChartPage() {
                 y={Math.min(drag.startY, drag.curY)}
                 width={Math.abs(drag.curX - drag.startX)}
                 height={Math.abs(drag.curY - drag.startY)}
-                fill={drag.mode === 'exclude' ? '#ff6b35' : '#00d2ff'}
+                fill="#00d2ff"
                 fillOpacity={0.18}
-                stroke={drag.mode === 'exclude' ? '#ff6b35' : '#00d2ff'}
+                stroke="#00d2ff"
                 strokeWidth={1.5}
                 strokeDasharray="5 3"
               />

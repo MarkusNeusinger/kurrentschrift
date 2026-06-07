@@ -15,10 +15,18 @@ import type {
   GlyphOut,
   GlyphSummary,
   SourceOut,
+  StyleOut,
   TraceRequest,
 } from './types';
 
 const API = '/api';
+
+// Local-dev write auth: in production the admin write endpoints are gated by the
+// Cloudflare Access cookie (forwarded by the CF Worker), so the browser sends
+// nothing extra. For local dev there is no CF Access, so set VITE_ADMIN_TOKEN in
+// app/.env (matching the API's ADMIN_TOKEN) and it's sent as X-Admin-Token. Unset
+// in prod builds → no header, cookie-based auth as before.
+const ADMIN_TOKEN = import.meta.env.VITE_ADMIN_TOKEN as string | undefined;
 
 async function asJson<T>(res: Response): Promise<T> {
   if (!res.ok) {
@@ -58,7 +66,8 @@ function apiFetch(input: string, init: RequestInit = {}, retry?: RetryOptions): 
   const retries = retry?.retries ?? 0;
   const attemptFetch = async (attempt: number): Promise<Response> => {
     try {
-      const res = await fetch(input, { credentials: 'include', ...init });
+      const headers = { ...(init.headers as Record<string, string> | undefined), ...(ADMIN_TOKEN ? { 'X-Admin-Token': ADMIN_TOKEN } : {}) };
+      const res = await fetch(input, { credentials: 'include', ...init, headers });
       if (COLD_START_STATUS.has(res.status) && attempt < retries) {
         // Release the connection before backing off — we won't read this body.
         await res.body?.cancel().catch(() => {});
@@ -84,6 +93,9 @@ function apiFetch(input: string, init: RequestInit = {}, retry?: RetryOptions): 
 
 const src = (path: string) => `${API}/sources/${SOURCE_ID}${path}`;
 
+export const getStyles = (retry?: RetryOptions): Promise<StyleOut[]> =>
+  apiFetch(`${API}/styles`, {}, retry).then(asJson<StyleOut[]>);
+
 export const getSource = (retry?: RetryOptions): Promise<SourceOut> =>
   apiFetch(src(''), {}, retry).then(asJson<SourceOut>);
 
@@ -105,35 +117,35 @@ export const deleteBbox = (glyphKey: string): Promise<void> =>
   apiFetch(src(`/bboxes/${encodeURIComponent(glyphKey)}`), { method: 'DELETE' }).then(asJson<void>);
 
 export const getGlyphs = (retry?: RetryOptions): Promise<GlyphSummary[]> =>
-  apiFetch(src('/glyphs'), {}, retry).then(asJson<GlyphSummary[]>);
+  apiFetch(src('/templates'), {}, retry).then(asJson<GlyphSummary[]>);
 
 export const getGlyph = (glyphKey: string): Promise<GlyphOut> =>
-  apiFetch(src(`/glyphs/${encodeURIComponent(glyphKey)}`)).then(asJson<GlyphOut>);
+  apiFetch(src(`/templates/${encodeURIComponent(glyphKey)}`)).then(asJson<GlyphOut>);
 
 export const postTrace = (glyphKey: string, body: TraceRequest): Promise<GlyphOut> =>
-  apiFetch(src(`/glyphs/${encodeURIComponent(glyphKey)}/trace`), {
+  apiFetch(src(`/templates/${encodeURIComponent(glyphKey)}/trace`), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   }).then(asJson<GlyphOut>);
 
 export const postResample = (glyphKey: string, nAnchors: number): Promise<GlyphOut> =>
-  apiFetch(src(`/glyphs/${encodeURIComponent(glyphKey)}/resample`), {
+  apiFetch(src(`/templates/${encodeURIComponent(glyphKey)}/resample`), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ n_anchors: nAnchors }),
   }).then(asJson<GlyphOut>);
 
 export const getDiagnostic = (glyphKey: string): Promise<DiagnosticData> =>
-  apiFetch(src(`/glyphs/${encodeURIComponent(glyphKey)}/diagnostic`)).then(asJson<DiagnosticData>);
+  apiFetch(src(`/templates/${encodeURIComponent(glyphKey)}/diagnostic`)).then(asJson<DiagnosticData>);
 
 export const getFit = (glyphKey: string, lambdaReg?: number, widthWeight?: number): Promise<FitData> => {
   const q = new URLSearchParams();
   if (lambdaReg != null) q.set('lambda_reg', String(lambdaReg));
   if (widthWeight != null) q.set('width_weight', String(widthWeight));
   const qs = q.toString();
-  return apiFetch(src(`/glyphs/${encodeURIComponent(glyphKey)}/fit${qs ? `?${qs}` : ''}`)).then(asJson<FitData>);
+  return apiFetch(src(`/templates/${encodeURIComponent(glyphKey)}/fit${qs ? `?${qs}` : ''}`)).then(asJson<FitData>);
 };
 
 export const deleteGlyph = (glyphKey: string): Promise<void> =>
-  apiFetch(src(`/glyphs/${encodeURIComponent(glyphKey)}`), { method: 'DELETE' }).then(asJson<void>);
+  apiFetch(src(`/templates/${encodeURIComponent(glyphKey)}`), { method: 'DELETE' }).then(asJson<void>);

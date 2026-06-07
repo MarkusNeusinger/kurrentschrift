@@ -41,6 +41,7 @@ import { cropUrl, deleteBbox, deleteGlyph, postResample, postTrace, putBbox } fr
 import { DiagnosticView } from '../components/DiagnosticView';
 import { FitView } from '../components/FitView';
 import { knownGlyph } from '../constants';
+import { couplingLabel } from '../lib/labels';
 import { useAdmin } from '../state';
 import type { BboxIn, BboxOut, CouplingHeight, GuideConfig, StrokePoint } from '../types';
 
@@ -55,7 +56,7 @@ function bboxInFromOut(b: BboxOut): BboxIn {
     y1: b.y1,
     x0: b.x0,
     x1: b.x1,
-    excludes: b.excludes,
+    mask_strokes: b.mask_strokes,
     baseline_y: b.baseline_y,
     midband_y: b.midband_y,
     n_anchors: b.n_anchors,
@@ -602,8 +603,8 @@ export function EditorPage() {
                 {guideVals.showAscender && ascenderCss >= 0 && ascenderCss <= displayH && (
                   <g style={{ pointerEvents: 'none' }}>
                     <line x1={0} y1={ascenderCss} x2={displayW} y2={ascenderCss} stroke="#888" strokeWidth={1} strokeDasharray="2 4" opacity={0.6} />
-                    <text x={displayW - 90} y={ascenderCss - 3} fontSize={10} fill="#888" opacity={0.8}>
-                      ascender ({source.style_ratio.join(':')})
+                    <text x={displayW - 100} y={ascenderCss - 3} fontSize={10} fill="#888" opacity={0.8}>
+                      Oberlinie ({source.style_ratio.join(':')})
                     </text>
                   </g>
                 )}
@@ -611,7 +612,7 @@ export function EditorPage() {
                   <g style={{ pointerEvents: 'none' }}>
                     <line x1={0} y1={descenderCss} x2={displayW} y2={descenderCss} stroke="#888" strokeWidth={1} strokeDasharray="2 4" opacity={0.6} />
                     <text x={displayW - 100} y={descenderCss - 3} fontSize={10} fill="#888" opacity={0.8}>
-                      descender ({source.style_ratio.join(':')})
+                      Unterlinie ({source.style_ratio.join(':')})
                     </text>
                   </g>
                 )}
@@ -619,14 +620,14 @@ export function EditorPage() {
                   <line x1={0} y1={baselineCss} x2={displayW} y2={baselineCss} stroke="#ff5060" strokeWidth={1.5} strokeDasharray="6 4" style={{ cursor: locked ? 'default' : 'ns-resize', pointerEvents: locked ? 'none' : 'stroke' }} onPointerDown={startCalibDrag('baseline_y')} />
                   <rect x={4} y={baselineCss - 9} width={86} height={16} fill="#ff5060" style={{ cursor: locked ? 'default' : 'ns-resize', pointerEvents: locked ? 'none' : undefined }} onPointerDown={startCalibDrag('baseline_y')} />
                   <text x={8} y={baselineCss + 3} fontSize={11} fill="#1a0000" fontWeight="bold" style={{ pointerEvents: 'none' }}>
-                    baseline {bbox.baseline_y}
+                    Grundlinie {bbox.baseline_y}
                   </text>
                 </g>
                 <g>
                   <line x1={0} y1={midbandCss} x2={displayW} y2={midbandCss} stroke="#c060ff" strokeWidth={1.5} strokeDasharray="3 3" style={{ cursor: locked ? 'default' : 'ns-resize', pointerEvents: locked ? 'none' : 'stroke' }} onPointerDown={startCalibDrag('midband_y')} />
                   <rect x={4} y={midbandCss - 9} width={86} height={16} fill="#c060ff" style={{ cursor: locked ? 'default' : 'ns-resize', pointerEvents: locked ? 'none' : undefined }} onPointerDown={startCalibDrag('midband_y')} />
                   <text x={8} y={midbandCss + 3} fontSize={11} fill="#1a001a" fontWeight="bold" style={{ pointerEvents: 'none' }}>
-                    midband {bbox.midband_y}
+                    Mittellinie {bbox.midband_y}
                   </text>
                 </g>
                 <g style={{ pointerEvents: 'none' }}>
@@ -637,7 +638,7 @@ export function EditorPage() {
                     );
                   })}
                   <text x={4} y={14} fontSize={10} fill={SLANT_COLOR} fontWeight="bold">
-                    slant {guideVals.slantDeg.toFixed(0)}°{slantBases.length > 1 ? ` ×${slantBases.length}` : ''}
+                    Schräge {guideVals.slantDeg.toFixed(0)}°{slantBases.length > 1 ? ` ×${slantBases.length}` : ''}
                   </text>
                 </g>
                 <circle
@@ -732,13 +733,13 @@ export function EditorPage() {
             )}
             <Box>
               <Typography variant="overline" color="text.secondary">
-                Kalibrierung
+                Lineatur
               </Typography>
               <Stack spacing={1.5} sx={{ mt: 1 }}>
-                <CalibrationRow label="baseline_y" value={bbox.baseline_y} color="#ff5060" disabled={locked} onSet={(v) => updateBboxField({ baseline_y: v })} />
-                <CalibrationRow label="midband_y" value={bbox.midband_y} color="#c060ff" disabled={locked} onSet={(v) => updateBboxField({ midband_y: v })} />
+                <CalibrationRow label="Grundlinie" value={bbox.baseline_y} color="#ff5060" disabled={locked} onSet={(v) => updateBboxField({ baseline_y: v })} />
+                <CalibrationRow label="Mittellinie" value={bbox.midband_y} color="#c060ff" disabled={locked} onSet={(v) => updateBboxField({ midband_y: v })} />
                 <Typography variant="caption" color="text.secondary">
-                  x-Höhe = {xHeightPx} px
+                  Mittellänge (x-Höhe) = {xHeightPx} px
                 </Typography>
               </Stack>
             </Box>
@@ -799,17 +800,17 @@ export function EditorPage() {
                 <Stack direction="row" spacing={1}>
                   <FormControlLabel
                     control={<Checkbox size="small" disabled={locked} checked={guideVals.showAscender} onChange={(e) => updateGuides({ show_ascender: e.target.checked })} />}
-                    label="ascender"
+                    label="Oberlinie"
                     slotProps={{ typography: { variant: 'caption' } }}
                   />
                   <FormControlLabel
                     control={<Checkbox size="small" disabled={locked} checked={guideVals.showDescender} onChange={(e) => updateGuides({ show_descender: e.target.checked })} />}
-                    label="descender"
+                    label="Unterlinie"
                     slotProps={{ typography: { variant: 'caption' } }}
                   />
                 </Stack>
                 <Typography variant="caption" color="text.secondary">
-                  Gleiche Linien wie das Übungsblatt: baseline · waist (= midband) · ascender · descender · slant. Der Winkel wird von der Grundlinie aus gemessen (≈65° = typisches Kurrent; 90° = senkrecht). Den grünen Punkt ziehen, um die Hauptlinie im Bild zu platzieren.
+                  Lineatur wie im Übungsblatt: Grundlinie · Mittellinie · Oberlinie · Unterlinie · Schräge (Zonen: Oberlänge · Mittellänge · Unterlänge). Der Winkel wird von der Grundlinie aus gemessen (≈65° = typisches Kurrent; 90° = senkrecht). Den grünen Punkt ziehen, um die Schräge im Bild zu platzieren.
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   <TextField
@@ -823,7 +824,7 @@ export function EditorPage() {
                   >
                     {COUPLING_OPTIONS.map((c) => (
                       <MenuItem key={c} value={c}>
-                        {c}
+                        {couplingLabel(c)}
                       </MenuItem>
                     ))}
                   </TextField>
@@ -838,7 +839,7 @@ export function EditorPage() {
                   >
                     {COUPLING_OPTIONS.map((c) => (
                       <MenuItem key={c} value={c}>
-                        {c}
+                        {couplingLabel(c)}
                       </MenuItem>
                     ))}
                   </TextField>
@@ -903,33 +904,13 @@ export function EditorPage() {
 
             <Box>
               <Typography variant="overline" color="text.secondary">
-                Ausschluss-Rechtecke ({bbox.excludes.length})
+                Ausschluss (Radierer)
               </Typography>
-              <Stack spacing={0.5} sx={{ mt: 1, maxHeight: 120, overflowY: 'auto' }}>
-                {bbox.excludes.map((ex, i) => (
-                  <Paper key={i} variant="outlined" sx={{ p: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>
-                      ({ex.x0},{ex.y0})→({ex.x1},{ex.y1})
-                    </Typography>
-                    <Tooltip title="diesen Ausschluss entfernen">
-                      <span>
-                        <IconButton
-                          size="small"
-                          disabled={locked}
-                          onClick={() => updateBboxField({ excludes: bbox.excludes.filter((_, j) => j !== i) })}
-                        >
-                          <ClearIcon fontSize="inherit" />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                  </Paper>
-                ))}
-                {bbox.excludes.length === 0 && (
-                  <Typography variant="caption" color="text.disabled">
-                    keine
-                  </Typography>
-                )}
-              </Stack>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                {bbox.mask_strokes.length === 0
+                  ? 'Keine Radiererstriche. Überlappendes Nachbar-Ink wird im Einrichtungs-Wizard (Schritt „Ausschluss") freihändig wegradiert.'
+                  : `${bbox.mask_strokes.length} Radiererstrich(e) gesetzt — bearbeitbar im Einrichtungs-Wizard.`}
+              </Typography>
             </Box>
 
             <Divider />
