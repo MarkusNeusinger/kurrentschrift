@@ -111,11 +111,14 @@ export function QuizPage() {
     }
   }, []);
 
-  // All marked letters that resolve to a known glyph (and therefore an answer).
+  // Only locked (finished) letters that resolve to a known glyph. Locking is
+  // the admin's "this one is final" marker, so the public quiz never surfaces
+  // a half-calibrated crop — the vocabulary grows as letters get locked.
   const allItems = useMemo<QuizItem[]>(
     () =>
-      Object.keys(bboxesByKey)
-        .map((key) => {
+      Object.entries(bboxesByKey)
+        .filter(([, b]) => b.locked)
+        .map(([key]) => {
           const kg = knownGlyph(key);
           return kg ? { key, kg } : null;
         })
@@ -484,10 +487,10 @@ function SetupPanel(p: SetupProps) {
 
         {noLetters ? (
           <Alert severity="info">
-            Für diese Auswahl sind noch keine Buchstaben markiert.{' '}
+            Für diese Auswahl sind noch keine Buchstaben freigegeben.{' '}
             {p.caseMode === 'upper'
-              ? 'Großbuchstaben kannst du im Admin-Bereich auf dem Blatt markieren — danach tauchen sie hier auf.'
-              : 'Markiere Buchstaben im Admin-Bereich auf dem Blatt.'}
+              ? 'Großbuchstaben erscheinen hier, sobald sie im Admin-Bereich fertig kalibriert und gesperrt sind.'
+              : 'Buchstaben erscheinen hier, sobald sie im Admin-Bereich fertig kalibriert und gesperrt sind.'}
           </Alert>
         ) : (
           <Button variant="contained" size="large" onClick={p.onStart}>
