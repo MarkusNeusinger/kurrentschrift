@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from core.chart import crop_with_excludes, load_chart_grayscale
+from core.chart import crop_with_mask, load_chart_grayscale
 from core.extract import binarize_adaptive, skeleton_and_width
 from core.template import apply_slant, sample_polyline, stroke_outline, template_guides
 
@@ -99,14 +99,14 @@ def canonical_from_path(
     """Turn a dense stylus path into a canonical-template dict.
 
     `raw_path` items: `{x, y, pressure?, t?}` in *chart-global* pixel coords.
-    `bbox` is a dict carrying y0/y1/x0/x1, excludes, baseline_y, midband_y,
+    `bbox` is a dict carrying y0/y1/x0/x1, mask_strokes, baseline_y, midband_y,
     (optional) n_anchors. `chart_path` is the on-disk path (resolvable via
     `core.chart.resolve_chart_path`). The grading characters identifying the
     glyph (`glyph`, `position`) are passed explicitly because they live on the
     canonical itself, not on the bbox row.
 
     Steps:
-      1. Load chart + crop with excludes (M0 input).
+      1. Load chart + crop with eraser mask (M0 input).
       2. Binarize + skeleton + distance-transform on the crop.
       3. Convert raw_path from chart-global → crop-local pixel coords.
       4. Resample the polyline by chord length to N anchors.
@@ -122,7 +122,7 @@ def canonical_from_path(
         raise ValueError("stylus path needs at least 2 points")
 
     chart_gray = load_chart_grayscale(chart_path)
-    crop = crop_with_excludes(chart_gray, bbox, fill=1.0)
+    crop = crop_with_mask(chart_gray, bbox, fill=1.0)
     mask = binarize_adaptive(crop)
     _, width_map = skeleton_and_width(mask)
 
@@ -222,7 +222,7 @@ def diagnostic_for_glyph(
     polygon construction) so the frontend just renders polylines + polygons.
     """
     chart_gray = load_chart_grayscale(chart_path)
-    crop = crop_with_excludes(chart_gray, bbox, fill=1.0)
+    crop = crop_with_mask(chart_gray, bbox, fill=1.0)
     mask = binarize_adaptive(crop)
     skel, _ = skeleton_and_width(mask)
 

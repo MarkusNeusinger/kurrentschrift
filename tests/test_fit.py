@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from core.chart import crop_with_excludes, load_chart_grayscale
+from core.chart import crop_with_mask, load_chart_grayscale
 from core.extract import binarize_adaptive, skeleton_and_width
 from core.fit import fit_glyph_to_crop, fit_template_to_instance
 from core.pipeline import canonical_from_path
@@ -37,7 +37,7 @@ def _canonical_on_synthetic(chart_path, bbox, n_anchors: int = 16) -> dict:
 
 def _crop_skeleton(chart_path, bbox):
     chart_gray = load_chart_grayscale(chart_path)
-    crop = crop_with_excludes(chart_gray, bbox, fill=1.0)
+    crop = crop_with_mask(chart_gray, bbox, fill=1.0)
     mask = binarize_adaptive(crop)
     skel, width_map = skeleton_and_width(mask)
     return skel, width_map

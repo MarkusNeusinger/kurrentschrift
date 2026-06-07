@@ -10,19 +10,35 @@ from core.database.connection import (
     init_db,
     is_db_configured,
 )
-from core.database.models import Bbox, Glyph, Source
-from core.database.repositories import BboxRepository, GlyphRepository, SourceRepository
+from core.database.models import Aggregate, Bbox, Hand, Instance, Source, Style, Template
+from core.database.repositories import (
+    AggregateRepository,
+    BboxRepository,
+    HandRepository,
+    InstanceRepository,
+    SourceRepository,
+    StyleRepository,
+    TemplateRepository,
+)
 
 
 __all__ = [
+    "Aggregate",
+    "AggregateRepository",
     "AsyncSessionLocal",
     "Base",
     "Bbox",
     "BboxRepository",
-    "Glyph",
-    "GlyphRepository",
+    "Hand",
+    "HandRepository",
+    "Instance",
+    "InstanceRepository",
     "Source",
     "SourceRepository",
+    "Style",
+    "StyleRepository",
+    "Template",
+    "TemplateRepository",
     "close_db",
     "engine",
     "get_db",

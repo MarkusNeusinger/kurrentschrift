@@ -26,7 +26,7 @@ def synthetic_bbox() -> dict:
         "y1": 700,
         "x0": 300,
         "x1": 500,
-        "excludes": [],
+        "mask_strokes": [],
         "baseline_y": 600,
         "midband_y": 500,
         "n_anchors": 30,
