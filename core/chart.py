@@ -48,7 +48,10 @@ def crop_with_mask(chart: np.ndarray, bbox: dict, fill: float | int = 1.0) -> np
     mask_img = Image.new("1", (w, h), 0)
     draw = ImageDraw.Draw(mask_img)
     for stroke in strokes:
-        pts = [(float(p[0]) - x0, float(p[1]) - y0) for p in (stroke.get("points") or [])]
+        # Defensive: tolerate stray short points so a malformed row can't crash
+        # the crop (the API schema already enforces (x, y) pairs on new writes).
+        raw_points = stroke.get("points") or []
+        pts = [(float(p[0]) - x0, float(p[1]) - y0) for p in raw_points if len(p) >= 2]
         if not pts:
             continue
         radius = max(0.5, float(stroke.get("radius", 4.0)))

@@ -306,8 +306,10 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
           if (k === glyphKey) continue;
           const kg = knownGlyph(k);
           if (!kg) continue;
-          const savedB = await putBbox(k, { ...bboxInFromOut(bbox), locked: true });
-          upsertBbox(k, savedB);
+          // Create the bbox UNLOCKED first (the trace precondition needs a bbox),
+          // post the trace, and only THEN lock — so a mid-loop failure never
+          // leaves a locked-but-empty sibling that can't be reopened in the wizard.
+          await putBbox(k, { ...bboxInFromOut(bbox), locked: false });
           const g = await postTrace(k, {
             glyph: kg.glyph,
             position: kg.position,
@@ -315,6 +317,8 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
             n_anchors: bbox.n_anchors,
           });
           markGlyphTraced(k, summaryOf(g));
+          const savedB = await putBbox(k, { ...bboxInFromOut(bbox), locked: true });
+          upsertBbox(k, savedB);
         }
       }
       const saved = await putBbox(glyphKey, { ...bboxInFromOut(bbox), locked: true });
@@ -388,38 +392,44 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
             {guideVals.showDescender && descenderCss >= 0 && descenderCss <= displayH && (
               <line x1={0} y1={descenderCss} x2={displayW} y2={descenderCss} stroke="#888" strokeWidth={1} strokeDasharray="2 4" opacity={0.6} />
             )}
-            <line
-              x1={0}
-              y1={baselineCss}
-              x2={displayW}
-              y2={baselineCss}
-              stroke="#ff5060"
-              strokeWidth={1.5}
-              strokeDasharray="6 4"
-              style={{ cursor: stepId === 'lineatur' ? 'ns-resize' : 'default', pointerEvents: stepId === 'lineatur' ? 'stroke' : 'none' }}
-              onPointerDown={(e) => {
-                if (stepId !== 'lineatur') return;
-                e.stopPropagation();
-                setCalibDrag({ field: 'baseline_y', curY: bbox.baseline_y });
-                e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
-              }}
-            />
-            <line
-              x1={0}
-              y1={midbandCss}
-              x2={displayW}
-              y2={midbandCss}
-              stroke="#c060ff"
-              strokeWidth={1.5}
-              strokeDasharray="3 3"
-              style={{ cursor: stepId === 'lineatur' ? 'ns-resize' : 'default', pointerEvents: stepId === 'lineatur' ? 'stroke' : 'none' }}
-              onPointerDown={(e) => {
-                if (stepId !== 'lineatur') return;
-                e.stopPropagation();
-                setCalibDrag({ field: 'midband_y', curY: bbox.midband_y });
-                e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
-              }}
-            />
+            <g>
+              {stepId === 'lineatur' && (
+                <line
+                  x1={0}
+                  y1={baselineCss}
+                  x2={displayW}
+                  y2={baselineCss}
+                  stroke="transparent"
+                  strokeWidth={22}
+                  style={{ cursor: 'ns-resize', pointerEvents: 'stroke' }}
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    setCalibDrag({ field: 'baseline_y', curY: bbox.baseline_y });
+                    e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
+                  }}
+                />
+              )}
+              <line x1={0} y1={baselineCss} x2={displayW} y2={baselineCss} stroke="#ff5060" strokeWidth={1.5} strokeDasharray="6 4" style={{ pointerEvents: 'none' }} />
+            </g>
+            <g>
+              {stepId === 'lineatur' && (
+                <line
+                  x1={0}
+                  y1={midbandCss}
+                  x2={displayW}
+                  y2={midbandCss}
+                  stroke="transparent"
+                  strokeWidth={22}
+                  style={{ cursor: 'ns-resize', pointerEvents: 'stroke' }}
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    setCalibDrag({ field: 'midband_y', curY: bbox.midband_y });
+                    e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
+                  }}
+                />
+              )}
+              <line x1={0} y1={midbandCss} x2={displayW} y2={midbandCss} stroke="#c060ff" strokeWidth={1.5} strokeDasharray="3 3" style={{ pointerEvents: 'none' }} />
+            </g>
             {dragCss != null && (
               <line x1={0} y1={dragCss} x2={displayW} y2={dragCss} stroke={calibDrag?.field === 'baseline_y' ? '#ff5060' : '#c060ff'} strokeWidth={2} opacity={0.6} style={{ pointerEvents: 'none' }} />
             )}

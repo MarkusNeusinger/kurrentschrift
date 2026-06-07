@@ -64,12 +64,14 @@ class SourceOut(BaseModel):
 class MaskStroke(BaseModel):
     """One freeform eraser stroke (German: Radierer): a brush polyline + radius.
 
-    `points` are [x, y] in chart-pixel coords; `radius` is the brush radius in
+    `points` are (x, y) in chart-pixel coords; `radius` is the brush radius in
     chart px. The crop pipeline rasterises these and blanks the covered pixels.
+    The fixed-length tuple + positive radius reject malformed payloads with 422
+    instead of letting `crop_with_mask` 500 on a bad index.
     """
 
-    points: list[list[float]]
-    radius: float = 4.0
+    points: list[tuple[float, float]]
+    radius: float = Field(default=4.0, gt=0)
 
 
 class GuideConfig(BaseModel):
