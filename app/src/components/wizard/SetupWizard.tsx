@@ -97,22 +97,33 @@ function siblingKeys(glyphKey: string): string[] {
   return Array.from(new Set(POSITIONS.map((p) => glyphKeyFor(letter, p))));
 }
 
+// A real stroke needs at least two points; a single point is a stray tap (pointer
+// down/up without moving) and must not become its own stroke.
+const MIN_STROKE_POINTS = 2;
+
 // Flatten the captured per-stroke points into one raw_path, marking the last
 // sample of every stroke but the final one with pen_up. The backend splits there
 // so a pen lift (Absetzen) stays a real gap — no connecting line from the end of
-// one stroke to the start of the next (e.g. the two downstrokes of a u).
+// one stroke to the start of the next (e.g. the two downstrokes of a u). Strokes
+// shorter than MIN_STROKE_POINTS are dropped first, so a stray tap never reaches
+// the backend as a degenerate zero-length segment (and the pen_up boundaries are
+// computed over the real strokes only).
 function flattenStrokes(strokes: StrokePoint[][]): StrokePoint[] {
+  const real = strokes.filter((s) => s.length >= MIN_STROKE_POINTS);
   const out: StrokePoint[] = [];
-  strokes.forEach((stroke, si) => {
+  real.forEach((stroke, si) => {
     stroke.forEach((p, pi) => {
-      const isLiftPoint = pi === stroke.length - 1 && si < strokes.length - 1;
+      const isLiftPoint = pi === stroke.length - 1 && si < real.length - 1;
       out.push(isLiftPoint ? { ...p, pen_up: true } : p);
     });
   });
   return out;
 }
 
-const countPoints = (strokes: StrokePoint[][]): number => strokes.reduce((n, s) => n + s.length, 0);
+// Points that will actually be saved (stray taps dropped) — gates "save" so the
+// button matches what flattenStrokes would send.
+const savablePointCount = (strokes: StrokePoint[][]): number =>
+  strokes.reduce((n, s) => n + (s.length >= MIN_STROKE_POINTS ? s.length : 0), 0);
 
 export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; open: boolean; onClose: () => void }) {
   const { source, bboxesByKey, glyphsByKey, cropCacheBust, upsertBbox, markGlyphTraced, refreshCrop, openDiagnose } = useAdmin();
@@ -161,8 +172,8 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
     setSlantDrag(null);
   }, [glyphKey, open]);
 
-  // Total captured points across all strokes — gates "save" (need ≥2).
-  const totalPathPoints = countPoints(strokes);
+  // Savable points (strokes with ≥2 points; stray taps excluded) — gates "save".
+  const savablePoints = savablePointCount(strokes);
 
   const cropW = bbox ? bbox.x1 - bbox.x0 : 0;
   const cropH = bbox ? bbox.y1 - bbox.y0 : 0;
@@ -712,7 +723,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
               <Button size="small" color="inherit" disabled={strokes.length === 0} onClick={() => setStrokes([])}>
                 Alles verwerfen
               </Button>
-              <Button size="small" variant="contained" disabled={totalPathPoints < 2 || busy} onClick={saveTrace}>
+              <Button size="small" variant="contained" disabled={savablePoints < 2 || busy} onClick={saveTrace}>
                 Weg speichern
               </Button>
             </Stack>
