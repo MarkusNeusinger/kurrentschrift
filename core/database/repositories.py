@@ -107,19 +107,12 @@ class TemplateRepository:
 
     async def list(self, style_id: str) -> list[Template]:
         result = await self.session.execute(
-            select(Template)
-            .where(Template.style_id == style_id)
-            .order_by(Template.glyph_key, Template.variant)
+            select(Template).where(Template.style_id == style_id).order_by(Template.glyph_key, Template.variant)
         )
         return list(result.scalars().all())
 
     async def upsert(
-        self,
-        style_id: str,
-        glyph_key: str,
-        canonical: dict,
-        variant: int = 0,
-        provenance_source_id: str | None = None,
+        self, style_id: str, glyph_key: str, canonical: dict, variant: int = 0, provenance_source_id: str | None = None
     ) -> Template:
         """Insert-or-update by (style_id, glyph, position, variant).
 
