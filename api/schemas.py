@@ -79,11 +79,12 @@ class GuideConfig(BaseModel):
 
     Mirrors the worksheet rulers in `app/src/lib/lineatur.ts`: the horizontal
     four-line system (baseline/waist/ascender/descender — baseline and waist
-    come from the bbox calibration, the outer two are toggled per glyph) plus a
-    positionable, angled main line (slant). Some letters need several parallel
-    main lines, hence `slant_count`/`slant_spacing`. Kept here (not on the
-    Source) because placement is per glyph; reused later to draw letters and to
-    render explanatory diagrams.
+    come from the bbox calibration, the outer two are toggled per glyph) plus
+    one or more positionable, angled main lines (slant). Letters like m/n/u need
+    several individually-placed slants, hence `slant_xs` (a list of baseline
+    crossings; they all share `slant_deg`). Kept here (not on the Source)
+    because placement is per glyph; reused later to draw letters and to render
+    explanatory diagrams.
     """
 
     model_config = ConfigDict(extra="ignore")
@@ -92,12 +93,13 @@ class GuideConfig(BaseModel):
     # `Source.slant_deg` (≈65° = typical Kurrent lean; 90° = upright). null =>
     # derive from the source slant.
     slant_deg: float | None = None
-    # Chart-x where the (centre) main line crosses baseline_y; the drag handle.
-    # null => crop centre.
+    # Chart-x where the (first/only) main line crosses baseline_y; kept for
+    # backward compat as the single-line fallback when `slant_xs` is unset.
     slant_x: float | None = None
-    # Number of parallel main lines and their horizontal spacing in chart px.
-    slant_count: int = 1
-    slant_spacing: float = 0.0
+    # Baseline crossings of the slant guide lines (each individually draggable in
+    # the wizard). null/empty => fall back to a single line at `slant_x`. All
+    # lines share `slant_deg`.
+    slant_xs: list[float] | None = None
     # Whether the ascender/descender rulers apply to this glyph.
     show_ascender: bool = True
     show_descender: bool = True

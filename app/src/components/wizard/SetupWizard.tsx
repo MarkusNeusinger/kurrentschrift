@@ -3,28 +3,37 @@
 // Back/Next and free jumping to earlier steps):
 //   1. Ausschluss  — freehand eraser (Radierer): paint over neighbouring ink so
 //                    it can't pollute the skeleton. Strokes → bbox.mask_strokes.
-//   2. Lineatur    — drag Grundlinie / Mittellinie; Oberlinie/Unterlinie derive.
-//   3. Schräge     — place + angle the slant guide.
-//   4. Weg         — draw the ductus with the stylus; saves the canonical.
-//   5. Übersicht   — review the 3-column diagnostic, optionally apply to all
-//                    positions, then approve → lock (the bbox's `locked` flag).
+//   2. Lineatur    — drag Grundlinie / Mittellinie; Oberlinie/Unterlinie derive,
+//                    each toggleable per glyph.
+//   3. Schräge     — place + angle one or more slant guides (several individually
+//                    placed lines for m/n/u; all share the angle).
+//   4. Weg         — draw the ductus with the stylus; saves the canonical and
+//                    lets you re-sample it to a different anchor count.
+//   5. Übersicht   — open the (large) Diagnose modal to review, optionally apply
+//                    to all positions, then approve → lock (the bbox's `locked`).
 //
-// Changes live-commit (PUT bbox / POST trace) as in the editor; the lock IS the
-// commit gesture, so there is no separate cancel-revert. The canvas mirrors the
-// editor's coordinate math but is purpose-built per step. This is the wizard's
-// own GlyphCanvas; EditorPage keeps its inline canvas as the advanced surface.
+// This is the single editing surface — the advanced EditorPage was retired, so
+// everything that used to live there (ascender/descender toggles, n_anchors
+// resample, the diagnostic + M4 fit) is reachable from here. Changes live-commit
+// (PUT bbox / POST trace); the lock IS the commit gesture, so there is no
+// separate cancel-revert. Mounted once in AppLayout and driven by `wizardGlyph`
+// in the admin context.
 
+import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import LockIcon from '@mui/icons-material/Lock';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import UndoIcon from '@mui/icons-material/Undo';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import {
   Alert,
   Box,
   Button,
   Checkbox,
+  Chip,
   Dialog,
   FormControlLabel,
   IconButton,
@@ -36,14 +45,13 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import { cropUrl, getGlyph, postTrace, putBbox } from '../../api';
+import { cropUrl, getGlyph, postResample, postTrace, putBbox } from '../../api';
 import { glyphKeyFor, knownGlyph, LETTER_BY_KEY, POSITIONS } from '../../constants';
 import { couplingLabel } from '../../lib/labels';
 import { useAdmin } from '../../state';
 import type { BboxIn, BboxOut, CouplingHeight, GlyphSummary, GuideConfig, MaskStroke, StrokePoint } from '../../types';
-import { DiagnosticView } from '../DiagnosticView';
 
 const SLANT_COLOR = '#39d98a';
 const COUPLING_OPTIONS: CouplingHeight[] = ['baseline', 'midband', 'ascender', 'descender'];
@@ -90,7 +98,7 @@ function siblingKeys(glyphKey: string): string[] {
 }
 
 export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; open: boolean; onClose: () => void }) {
-  const { source, bboxesByKey, glyphsByKey, cropCacheBust, upsertBbox, markGlyphTraced, refreshCrop } = useAdmin();
+  const { source, bboxesByKey, glyphsByKey, cropCacheBust, upsertBbox, markGlyphTraced, refreshCrop, openDiagnose } = useAdmin();
   const bbox = bboxesByKey[glyphKey] ?? null;
   const known = knownGlyph(glyphKey);
   const hasCanonical = glyphsByKey[glyphKey]?.has_data === true;
@@ -107,7 +115,8 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
   const [maskRadius, setMaskRadius] = useState(8);
   const [maskDraft, setMaskDraft] = useState<Array<[number, number]> | null>(null);
   const [calibDrag, setCalibDrag] = useState<{ field: 'baseline_y' | 'midband_y'; curY: number } | null>(null);
-  const [slantDrag, setSlantDrag] = useState<{ curX: number } | null>(null);
+  // Which slant line is being dragged (index into slant_xs) and its live x.
+  const [slantDrag, setSlantDrag] = useState<{ index: number; curX: number } | null>(null);
   const [applyAll, setApplyAll] = useState(true);
   const [busy, setBusy] = useState(false);
   const [snack, setSnack] = useState<string | null>(null);
@@ -121,6 +130,18 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
     return () => ro.disconnect();
   }, [open, step]);
 
+  // Mounted once and reused for every glyph: when a different glyph opens (or the
+  // dialog reopens), drop transient state so one glyph's draft never leaks onto
+  // the next.
+  useEffect(() => {
+    setStep(0);
+    setPathPts([]);
+    setDrawing(false);
+    setMaskDraft(null);
+    setCalibDrag(null);
+    setSlantDrag(null);
+  }, [glyphKey, open]);
+
   const cropW = bbox ? bbox.x1 - bbox.x0 : 0;
   const cropH = bbox ? bbox.y1 - bbox.y0 : 0;
   const scale = useMemo(() => {
@@ -133,11 +154,13 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
 
   const guideVals = useMemo(() => {
     const g: GuideConfig = bbox?.guides ?? {};
+    const center = bbox ? (bbox.x0 + bbox.x1) / 2 : 0;
+    // slant_xs is the source of truth; fall back to the legacy single slant_x so
+    // glyphs authored before multi-line still show their one line.
+    const xs = g.slant_xs && g.slant_xs.length > 0 ? g.slant_xs : [g.slant_x ?? center];
     return {
       slantDeg: g.slant_deg ?? (source ? source.slant_deg : 65),
-      slantX: g.slant_x ?? (bbox ? (bbox.x0 + bbox.x1) / 2 : 0),
-      slantCount: Math.max(1, g.slant_count ?? 1),
-      slantSpacing: g.slant_spacing ?? 0,
+      slantXs: xs,
       showAscender: g.show_ascender ?? true,
       showDescender: g.show_descender ?? true,
       entryCoupling: g.entry_coupling ?? 'baseline',
@@ -169,17 +192,19 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
 
   const updateGuides = useCallback(
     (patch: Partial<GuideConfig>) => {
-      const next: GuideConfig = {
+      const merged: GuideConfig = {
         slant_deg: guideVals.slantDeg,
-        slant_x: guideVals.slantX,
-        slant_count: guideVals.slantCount,
-        slant_spacing: guideVals.slantSpacing,
+        slant_xs: guideVals.slantXs,
         show_ascender: guideVals.showAscender,
         show_descender: guideVals.showDescender,
         entry_coupling: guideVals.entryCoupling,
         exit_coupling: guideVals.exitCoupling,
         ...patch,
       };
+      // Derive the legacy single-line fallback from the RESOLVED slant_xs (after
+      // the patch), so slant_x always mirrors slant_xs[0] even when a line is
+      // dragged or the first line is removed.
+      const next: GuideConfig = { ...merged, slant_x: merged.slant_xs?.[0] ?? null };
       return updateBboxField({ guides: next });
     },
     [guideVals, updateBboxField],
@@ -218,7 +243,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
         return;
       }
       if (slantDrag) {
-        setSlantDrag({ curX: x });
+        setSlantDrag({ ...slantDrag, curX: x });
         return;
       }
       if (stepId === 'mask' && maskDraft) {
@@ -252,9 +277,11 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
       return;
     }
     if (slantDrag) {
-      const v = Math.round(slantDrag.curX);
+      const { index, curX } = slantDrag;
       setSlantDrag(null);
-      await updateGuides({ slant_x: v });
+      const xs = guideVals.slantXs.slice();
+      xs[index] = Math.round(curX);
+      await updateGuides({ slant_xs: xs });
       return;
     }
     if (stepId === 'mask' && maskDraft) {
@@ -267,13 +294,27 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
       return;
     }
     if (stepId === 'weg') setDrawing(false);
-  }, [calibDrag, slantDrag, stepId, maskDraft, maskRadius, bbox, updateBboxField, updateGuides, refreshCrop]);
+  }, [calibDrag, slantDrag, stepId, maskDraft, maskRadius, bbox, guideVals, updateBboxField, updateGuides, refreshCrop]);
 
   const undoMask = useCallback(async () => {
     if (!bbox || bbox.mask_strokes.length === 0) return;
     await updateBboxField({ mask_strokes: bbox.mask_strokes.slice(0, -1) });
     refreshCrop();
   }, [bbox, updateBboxField, refreshCrop]);
+
+  const addSlantLine = useCallback(() => {
+    const xs = guideVals.slantXs;
+    const last = xs.length ? xs[xs.length - 1] : bbox ? (bbox.x0 + bbox.x1) / 2 : 0;
+    void updateGuides({ slant_xs: [...xs, Math.round(last + 24)] });
+  }, [guideVals, bbox, updateGuides]);
+
+  const removeSlantLine = useCallback(
+    (i: number) => {
+      if (guideVals.slantXs.length <= 1) return;
+      void updateGuides({ slant_xs: guideVals.slantXs.filter((_, k) => k !== i) });
+    },
+    [guideVals, updateGuides],
+  );
 
   const saveTrace = useCallback(async () => {
     if (pathPts.length < 2 || !known || !bbox) return;
@@ -294,6 +335,21 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
       setBusy(false);
     }
   }, [pathPts, known, bbox, glyphKey, markGlyphTraced]);
+
+  // Re-sample the stored canonical to the current n_anchors without re-drawing.
+  const resample = useCallback(async () => {
+    if (!bbox || !hasCanonical) return;
+    setBusy(true);
+    try {
+      const g = await postResample(glyphKey, bbox.n_anchors);
+      markGlyphTraced(glyphKey, summaryOf(g));
+      setSnack(`neu abgetastet · ${g.anchors.length} Anker`);
+    } catch (err) {
+      setSnack(String(err));
+    } finally {
+      setBusy(false);
+    }
+  }, [bbox, hasCanonical, glyphKey, markGlyphTraced]);
 
   // Approve → fan out to all positions (optional) and lock.
   const finish = useCallback(async () => {
@@ -349,12 +405,10 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
     x2: (xBase + tanSlant * (bbox.baseline_y - bbox.y1) - bbox.x0) * scale,
     y2: displayH,
   });
-  const slantBases: number[] = [];
-  for (let k = 0; k < guideVals.slantCount; k++) {
-    slantBases.push(guideVals.slantX + (k - (guideVals.slantCount - 1) / 2) * guideVals.slantSpacing);
-  }
-  const slantHandleCss = (guideVals.slantX - bbox.x0) * scale;
-  const slantDragLine = slantDrag ? slantLineCss(slantDrag.curX) : null;
+  // Live positions: the dragged line follows the pointer; the rest stay put.
+  const slantXsLive = slantDrag
+    ? guideVals.slantXs.map((x, i) => (i === slantDrag.index ? slantDrag.curX : x))
+    : guideVals.slantXs;
 
   const toLocal = (pts: Array<[number, number]>) =>
     pts.map(([x, y]) => `${(x - bbox.x0) * scale},${(y - bbox.y0) * scale}`).join(' ');
@@ -434,29 +488,44 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
               <line x1={0} y1={dragCss} x2={displayW} y2={dragCss} stroke={calibDrag?.field === 'baseline_y' ? '#ff5060' : '#c060ff'} strokeWidth={2} opacity={0.6} style={{ pointerEvents: 'none' }} />
             )}
 
-            {/* Slant guide(s) */}
-            {(stepId === 'slant' || stepId === 'weg' || stepId === 'overview') &&
-              slantBases.map((xb, i) => {
+            {/* Slant guide(s) — one or more parallel lines, each draggable on the slant step */}
+            {(stepId === 'slant' || stepId === 'weg') &&
+              slantXsLive.map((xb, i) => {
                 const ln = slantLineCss(xb);
-                return <line key={i} x1={ln.x1} y1={ln.y1} x2={ln.x2} y2={ln.y2} stroke={SLANT_COLOR} strokeWidth={1.2} strokeDasharray="5 4" opacity={0.85} style={{ pointerEvents: 'none' }} />;
+                const dragging = slantDrag?.index === i;
+                return (
+                  <line
+                    key={i}
+                    x1={ln.x1}
+                    y1={ln.y1}
+                    x2={ln.x2}
+                    y2={ln.y2}
+                    stroke={SLANT_COLOR}
+                    strokeWidth={dragging ? 2 : 1.2}
+                    strokeDasharray="5 4"
+                    opacity={dragging ? 0.6 : 0.85}
+                    style={{ pointerEvents: 'none' }}
+                  />
+                );
               })}
-            {stepId === 'slant' && (
-              <circle
-                cx={slantHandleCss}
-                cy={baselineCss}
-                r={8}
-                fill={SLANT_COLOR}
-                stroke="#0a2a14"
-                strokeWidth={1}
-                style={{ cursor: 'ew-resize' }}
-                onPointerDown={(e) => {
-                  e.stopPropagation();
-                  setSlantDrag({ curX: guideVals.slantX });
-                  e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
-                }}
-              />
-            )}
-            {slantDragLine && <line x1={slantDragLine.x1} y1={slantDragLine.y1} x2={slantDragLine.x2} y2={slantDragLine.y2} stroke={SLANT_COLOR} strokeWidth={2} opacity={0.6} style={{ pointerEvents: 'none' }} />}
+            {stepId === 'slant' &&
+              slantXsLive.map((xb, i) => (
+                <circle
+                  key={i}
+                  cx={(xb - bbox.x0) * scale}
+                  cy={baselineCss}
+                  r={8}
+                  fill={SLANT_COLOR}
+                  stroke="#0a2a14"
+                  strokeWidth={1}
+                  style={{ cursor: 'ew-resize' }}
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    setSlantDrag({ index: i, curX: guideVals.slantXs[i] });
+                    e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
+                  }}
+                />
+              ))}
 
             {/* Eraser strokes (committed + in-progress) */}
             {bbox.mask_strokes.map((m, i) => (
@@ -479,8 +548,14 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
       case 'mask':
         return (
           <Stack spacing={1.5}>
+            <Typography variant="subtitle2">Schritt 1 · Ausschluss (Radierer)</Typography>
             <Typography variant="body2" color="text.secondary">
-              Überlappendes Nachbar-Ink wegradieren, damit es das Skelett nicht stört. Über die störenden Stellen malen.
+              Auf den Lehrtafeln stehen die Buchstaben dicht beieinander — ragt Tinte vom Nachbarn
+              in diesen Ausschnitt, verfälscht sie später Skelett und Anker. Mit dem Pinsel direkt
+              über die störenden Stellen malen; das Übermalte wird vor der Skelettberechnung entfernt.
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Nur fremde Tinte ausschließen — vom eigentlichen Buchstaben nichts wegradieren.
             </Typography>
             <Box>
               <Typography variant="caption">Pinselgröße: {maskRadius}px</Typography>
@@ -494,9 +569,29 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
       case 'lineatur':
         return (
           <Stack spacing={1.5}>
+            <Typography variant="subtitle2">Schritt 2 · Lineatur</Typography>
             <Typography variant="body2" color="text.secondary">
-              Die <b style={{ color: '#ff5060' }}>Grundlinie</b> und <b style={{ color: '#c060ff' }}>Mittellinie</b> ziehen. Oberlinie/Unterlinie (grau) ergeben sich aus dem Stil-Verhältnis.
+              Die <b style={{ color: '#ff5060' }}>Grundlinie</b> (auf der die Mittellänge aufsitzt)
+              und die <b style={{ color: '#c060ff' }}>Mittellinie</b> (Oberkante der Mittellänge)
+              direkt im Bild an die richtige Höhe ziehen. <b>Oberlinie</b> und <b>Unterlinie</b> (grau)
+              ergeben sich automatisch aus dem Stil-Verhältnis ({source.style_ratio.join(':')}).
             </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Diese vier Linien sind das Lineatur-System (Zonen: Oberlänge · Mittellänge · Unterlänge)
+              und der Bezug für alle weiteren Maße.
+            </Typography>
+            <Stack direction="row" spacing={1}>
+              <FormControlLabel
+                control={<Checkbox size="small" checked={guideVals.showAscender} onChange={(e) => updateGuides({ show_ascender: e.target.checked })} />}
+                label="Oberlinie"
+                slotProps={{ typography: { variant: 'caption' } }}
+              />
+              <FormControlLabel
+                control={<Checkbox size="small" checked={guideVals.showDescender} onChange={(e) => updateGuides({ show_descender: e.target.checked })} />}
+                label="Unterlinie"
+                slotProps={{ typography: { variant: 'caption' } }}
+              />
+            </Stack>
             <Typography variant="caption" color="text.secondary">
               Grundlinie {bbox.baseline_y} · Mittellinie {bbox.midband_y} · Mittellänge (x-Höhe) {xHeightPx}px
             </Typography>
@@ -505,8 +600,16 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
       case 'slant':
         return (
           <Stack spacing={1.5}>
+            <Typography variant="subtitle2">Schritt 3 · Schräge</Typography>
             <Typography variant="body2" color="text.secondary">
-              Den grünen Punkt ziehen, um die Schräge über den Buchstaben zu legen; Winkel von der Grundlinie aus.
+              Die Schräge ist die Neigung der Hauptstriche, gemessen von der Grundlinie aus
+              (≈65° = typisches Kurrent, 90° = senkrecht). Den grünen Punkt ziehen, um eine Linie
+              über den Buchstaben zu legen.
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Für die meisten Buchstaben reicht <b>eine</b> Linie. Bei mehreren gleich geneigten
+              Hauptstrichen (m · n · u) kannst du weitere Linien hinzufügen und jede einzeln
+              platzieren — alle teilen denselben Winkel.
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <TextField label="Schräge" type="number" size="small" value={Math.round(guideVals.slantDeg)} onChange={(e) => updateGuides({ slant_deg: Number(e.target.value) })} slotProps={{ input: { sx: { color: SLANT_COLOR, fontFamily: 'monospace' }, endAdornment: '°' } }} sx={{ flex: 1 }} />
@@ -517,17 +620,39 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
                 <ArrowDownwardIcon fontSize="small" />
               </IconButton>
             </Box>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <TextField label="Linien" type="number" size="small" value={guideVals.slantCount} onChange={(e) => updateGuides({ slant_count: Math.max(1, Math.round(Number(e.target.value))) })} sx={{ flex: 1 }} />
-              <TextField label="Abstand px" type="number" size="small" value={guideVals.slantSpacing} disabled={guideVals.slantCount < 2} onChange={(e) => updateGuides({ slant_spacing: Math.max(0, Number(e.target.value)) })} sx={{ flex: 1 }} />
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography variant="caption" color="text.secondary">
+                Schräglinien ({guideVals.slantXs.length})
+              </Typography>
+              <Button size="small" startIcon={<AddIcon />} onClick={addSlantLine}>
+                Linie hinzufügen
+              </Button>
             </Box>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              {guideVals.slantXs.map((_, i) => (
+                <Chip
+                  key={i}
+                  size="small"
+                  label={`Linie ${i + 1}`}
+                  onDelete={guideVals.slantXs.length > 1 ? () => removeSlantLine(i) : undefined}
+                  sx={{ borderColor: SLANT_COLOR }}
+                  variant="outlined"
+                />
+              ))}
+            </Box>
+            <Typography variant="caption" color="text.secondary">
+              Den grünen Punkt einer Linie ziehen, um sie zu verschieben; das ✕ am Chip entfernt sie.
+            </Typography>
           </Stack>
         );
       case 'weg':
         return (
           <Stack spacing={1.5}>
+            <Typography variant="subtitle2">Schritt 4 · Weg (Ductus)</Typography>
             <Typography variant="body2" color="text.secondary">
-              Den Buchstaben in Schreibrichtung mit dem Stift nachziehen. Auf den Startpunkt setzen, um fortzusetzen.
+              Den Buchstaben in Schreibrichtung mit dem Stift (S-Pen) oder der Maus nachziehen — das
+              ist der Ductus, die eigentliche Vorlage über der Loth-Geometrie. Auf den weißen
+              Startpunkt setzen, um einen unterbrochenen Strich fortzusetzen.
             </Typography>
             <Stack direction="row" spacing={1}>
               <Button size="small" startIcon={<UndoIcon />} disabled={pathPts.length === 0} onClick={() => setPathPts([])}>
@@ -538,6 +663,23 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
               </Button>
             </Stack>
             {hasCanonical && pathPts.length === 0 && <Alert severity="success" variant="outlined">Weg gespeichert. Weiter zur Übersicht.</Alert>}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <TextField
+                label="Anker (n_anchors)"
+                type="number"
+                size="small"
+                value={bbox.n_anchors}
+                onChange={(e) => updateBboxField({ n_anchors: Math.max(4, Number(e.target.value)) })}
+                sx={{ flex: 1 }}
+              />
+              <Button size="small" variant="outlined" startIcon={<RefreshIcon />} disabled={!hasCanonical || busy} onClick={resample}>
+                Neu abtasten
+              </Button>
+            </Box>
+            <Typography variant="caption" color="text.secondary">
+              n_anchors = Zahl der Stützpunkte, auf die der Pen-Pfad abgetastet wird. Der Originalpfad
+              bleibt erhalten, also jederzeit ohne Neuzeichnen neu abtastbar.
+            </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <TextField select size="small" label="Kopplung Anfang" value={guideVals.entryCoupling} onChange={(e) => updateGuides({ entry_coupling: e.target.value as CouplingHeight })} sx={{ flex: 1 }} slotProps={{ select: { native: true } }}>
                 {COUPLING_OPTIONS.map((c) => (
@@ -554,16 +696,33 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
                 ))}
               </TextField>
             </Box>
+            <Typography variant="caption" color="text.secondary">
+              Höhe, auf der ein Nachbarbuchstabe ansetzt (Anfang) bzw. weiterläuft (Ende). Greift bei
+              bestehendem Canonical sofort beim nächsten Speichern.
+            </Typography>
           </Stack>
         );
       case 'overview':
         return (
-          <Stack spacing={1.5}>
+          <Stack spacing={2} sx={{ maxWidth: 640 }}>
+            <Typography variant="subtitle2">Schritt 5 · Übersicht & Freigabe</Typography>
             <Typography variant="body2" color="text.secondary">
-              Alles auf einen Blick prüfen. Passt es, abschließen — dann wird der Glyph gesperrt (🔒) und ist erst nach Entsperren wieder änderbar.
+              Alles geprüft? Mit der <b>Diagnose</b> kannst du das Ergebnis groß ansehen: der reine
+              Crop, das Skelett mit Ankern und die kanonische Vorlage nebeneinander (plus den M4-Fit).
             </Typography>
-            {hasCanonical ? <DiagnosticView glyphKey={glyphKey} /> : <Alert severity="warning">Noch kein Weg gezeichnet — Schritt „Weg" zuerst.</Alert>}
+            {hasCanonical ? (
+              <Button variant="outlined" startIcon={<VisibilityIcon />} onClick={() => openDiagnose(glyphKey)} sx={{ alignSelf: 'flex-start' }}>
+                Diagnose öffnen
+              </Button>
+            ) : (
+              <Alert severity="warning">Noch kein Weg gezeichnet — Schritt „Weg" zuerst.</Alert>
+            )}
             <FormControlLabel control={<Checkbox checked={applyAll} onChange={(e) => setApplyAll(e.target.checked)} />} label="Gilt für alle Positionen (Anfang · Mitte · Ende)" />
+            <Typography variant="caption" color="text.secondary">
+              Übernimmt dieselbe Form für alle drei Positionen — die Anschlussstriche werden je Position
+              aus Anfang/Ende erzeugt. Mit „Abschließen & sperren" wird der Glyph gesperrt (🔒) und ist
+              erst nach Entsperren wieder änderbar.
+            </Typography>
           </Stack>
         );
     }
@@ -586,8 +745,14 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
         </Stepper>
       </Box>
       <Box sx={{ display: 'flex', flex: 1, minHeight: 0, gap: 2, p: 2 }}>
-        {canvas}
-        <Box sx={{ width: 320, flexShrink: 0, overflowY: 'auto' }}>{panel}</Box>
+        {stepId === 'overview' ? (
+          <Box sx={{ flex: 1, overflowY: 'auto' }}>{panel}</Box>
+        ) : (
+          <>
+            {canvas}
+            <Box sx={{ width: 340, flexShrink: 0, overflowY: 'auto' }}>{panel}</Box>
+          </>
+        )}
       </Box>
       {snack && (
         <Alert severity="info" onClose={() => setSnack(null)} sx={{ mx: 2 }}>

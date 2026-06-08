@@ -153,8 +153,8 @@ kurrentschrift/
 │   └── routers/      # health, styles, hands, sources, chart, bboxes, templates
 ├── app/              # React 19 + Vite + MUI SPA (anyplot-style)
 │   └── src/
-│       ├── pages/    # ChartPage (bbox editor + Einrichtungs-Wizard), EditorPage (advanced)
-│       ├── components/  # DiagnosticView (3-column SVG), GlyphSidebar, GlyphCanvas, wizard/
+│       ├── pages/    # ChartPage (bbox editor; opens the Einrichtungs-Wizard + Diagnose modals)
+│       ├── components/  # DiagnosticView/FitView (SVG), DiagnosticDialog (modal), GlyphSidebar, wizard/
 │       └── constants.ts # KNOWN_GLYPHS, Position type
 ├── alembic/          # Postgres migrations
 │   └── versions/0004_library_schema.py
@@ -428,9 +428,9 @@ Before completing any task:
 ## Getting Help
 
 - **Documentation:** start at `docs/index.md`.
-- **Code patterns:** the existing `/app/src/pages/EditorPage.tsx` shows
-  the canonical pattern for an interactive tool route; `core/pipeline.py`
-  shows the pipeline composition pattern.
+- **Code patterns:** the existing `/app/src/components/wizard/SetupWizard.tsx`
+  shows the canonical pattern for an interactive stylus/guide tool;
+  `core/pipeline.py` shows the pipeline composition pattern.
 - **Sibling AI guide:** `CLAUDE.md` (this file's twin for Claude Code).
 - **Vision-to-architecture mapping:** `docs/concepts/architektur.md` §1
   is the index — every Vision pillar points to a specific architecture

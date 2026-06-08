@@ -240,10 +240,13 @@ Funktionsweise identisch.
 ### Existierend (im jetzigen `/app/`)
 
 - `App.tsx` — Top-Level mit MUI-Theme, Router-Setup.
-- `pages/ChartPage.tsx` — Bbox-Editor (wird zu `/admin/chart`).
-- `pages/EditorPage.tsx` — Stylus-Trace + Diagnostic (wird zu
-  `/admin/edit/:glyphKey`).
-- `components/DiagnosticView.tsx` — 3-Spalten-Diagnostic-Rendering.
+- `pages/ChartPage.tsx` — Bbox-Editor (`/admin/chart`); öffnet von der
+  Werkzeugleiste aus den Einrichtungs-Wizard und das Diagnose-Modal.
+- `components/wizard/SetupWizard.tsx` — schrittweises Modal: Ausschluss ·
+  Lineatur · Schräge · Weg (Stylus-Trace) · Übersicht. Einzige Autoren-Fläche.
+- `components/DiagnosticDialog.tsx` — großes Diagnose-Modal (3-Spalten-Diagnostic
+  + M4-Fit), per „Diagnose"-Knopf erreichbar.
+- `components/DiagnosticView.tsx` / `FitView.tsx` — Diagnostic- und Fit-Rendering.
 - `components/GlyphSidebar.tsx` — Liste der `KNOWN_GLYPHS`.
 
 ### Neu (kommt mit Phasen P1–P5)

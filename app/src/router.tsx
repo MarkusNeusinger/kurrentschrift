@@ -1,7 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppLayout } from './layout/AppLayout';
 import { ChartPage } from './pages/ChartPage';
-import { EditorPage } from './pages/EditorPage';
 import { LandingPage } from './pages/LandingPage';
 import { QuizPage } from './pages/QuizPage';
 import { WorksheetPage } from './pages/WorksheetPage';
@@ -34,7 +33,9 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/admin/chart" replace /> },
       { path: 'chart', element: <ChartPage /> },
-      { path: 'edit/:glyphKey', element: <EditorPage /> },
+      // Legacy editor deep-links land back on the chart; editing is now wholly
+      // in the Einrichtungs-Wizard / Diagnose modals (opened from the toolbar).
+      { path: 'edit/:glyphKey', element: <Navigate to="/admin/chart" replace /> },
     ],
   },
   { path: '*', element: <Navigate to="/" replace /> },

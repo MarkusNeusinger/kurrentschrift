@@ -18,10 +18,25 @@ import { useTheme } from '@mui/material/styles';
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 
+import { DiagnosticDialog } from '../components/DiagnosticDialog';
 import { GlyphSidebar } from '../components/GlyphSidebar';
+import { SetupWizard } from '../components/wizard/SetupWizard';
 import { useAdmin } from '../state';
 
 const DRAWER_WIDTH = 280;
+
+// The Einrichtungs-Wizard and the Diagnose modal are mounted once here — driven
+// by `wizardGlyph` / `diagnoseGlyph` in the admin context — so the chart
+// toolbar AND the sidebar can open them for any glyph from a single instance.
+function AdminModals() {
+  const { wizardGlyph, closeWizard, diagnoseGlyph } = useAdmin();
+  return (
+    <>
+      <SetupWizard glyphKey={wizardGlyph ?? ''} open={wizardGlyph != null} onClose={closeWizard} />
+      <DiagnosticDialog key={diagnoseGlyph ?? 'none'} />
+    </>
+  );
+}
 
 export function AppLayout() {
   const { source, loadError, waking } = useAdmin();
@@ -82,6 +97,7 @@ export function AppLayout() {
         <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <Outlet />
         </Box>
+        <AdminModals />
       </Box>
     );
   }
@@ -92,6 +108,7 @@ export function AppLayout() {
       <Box sx={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <Outlet />
       </Box>
+      <AdminModals />
     </Box>
   );
 }

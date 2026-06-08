@@ -41,17 +41,17 @@ export interface SourceOut {
 // Practice-sheet-style guide lines (Hilfslinien) drawn over a glyph crop —
 // same vocabulary as the worksheet rulers in lib/lineatur.ts. baseline + waist
 // come from the bbox calibration; ascender/descender are toggleable; slant is
-// the positionable, angled main line. slant_deg is measured from the
+// one or more positionable, angled main lines. slant_deg is measured from the
 // horizontal baseline (≈65° = typical Kurrent; 90° = upright), matching
-// source.slant_deg. slant_count/slant_spacing allow the few letters that need
-// several parallel main lines. Mirrors GuideConfig in api/schemas.py.
+// source.slant_deg. slant_xs lists the baseline crossing of each slant line
+// (all share slant_deg) — individually draggable for letters like m/n/u;
+// slant_x is the single-line fallback. Mirrors GuideConfig in api/schemas.py.
 export type CouplingHeight = 'baseline' | 'midband' | 'ascender' | 'descender';
 
 export interface GuideConfig {
   slant_deg?: number | null;
   slant_x?: number | null;
-  slant_count?: number;
-  slant_spacing?: number;
+  slant_xs?: number[] | null;
   show_ascender?: boolean;
   show_descender?: boolean;
   // Coupling height of the stroke's entry/exit — the guide line a neighbouring

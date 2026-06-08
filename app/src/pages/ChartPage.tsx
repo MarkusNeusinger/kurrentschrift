@@ -15,11 +15,11 @@ import AddIcon from '@mui/icons-material/Add';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import OpenWithIcon from '@mui/icons-material/OpenWith';
 import RemoveIcon from '@mui/icons-material/Remove';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import {
   Alert,
   Box,
@@ -35,10 +35,8 @@ import {
   Typography,
 } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import { chartUrl, deleteBbox, deleteGlyph, putBbox } from '../api';
-import { SetupWizard } from '../components/wizard/SetupWizard';
 import { useAdmin } from '../state';
 import type { BboxIn, BboxOut } from '../types';
 
@@ -171,8 +169,8 @@ function editedBbox(current: BboxOut, handle: EditHandle, cur: Rect): BboxIn {
 }
 
 export function ChartPage() {
-  const { source, bboxesByKey, glyphsByKey, activeGlyph, visibleGlyphs, upsertBbox, removeBbox, removeGlyph } = useAdmin();
-  const navigate = useNavigate();
+  const { source, bboxesByKey, glyphsByKey, activeGlyph, visibleGlyphs, upsertBbox, removeBbox, removeGlyph, openWizard, openDiagnose } =
+    useAdmin();
   const stageRef = useRef<HTMLDivElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [mode, setMode] = useState<Mode>('pan');
@@ -181,7 +179,6 @@ export function ChartPage() {
   const [edit, setEdit] = useState<EditState | null>(null);
   const [pan, setPan] = useState<PanState | null>(null);
   const [snack, setSnack] = useState<string | null>(null);
-  const [wizardOpen, setWizardOpen] = useState(false);
   // Two-finger pinch-zoom (touch): track live pointers and the gesture anchor.
   const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
   const pinchRef = useRef<{ startDist: number; startZoom: number } | null>(null);
@@ -452,6 +449,7 @@ export function ChartPage() {
 
   const activeBbox = activeGlyph ? bboxesByKey[activeGlyph] : undefined;
   const activeLocked = activeBbox?.locked === true;
+  const activeHasCanonical = activeGlyph ? glyphsByKey[activeGlyph]?.has_data === true : false;
   const cursorStyle: React.CSSProperties =
     mode === 'pan'
       ? { cursor: pan ? 'grabbing' : 'grab' }
@@ -566,30 +564,26 @@ export function ChartPage() {
               variant="contained"
               startIcon={<AutoFixHighIcon />}
               disabled={activeLocked || !activeGlyph || !(activeGlyph in bboxesByKey)}
-              onClick={() => setWizardOpen(true)}
+              onClick={() => activeGlyph && openWizard(activeGlyph)}
             >
               Einrichten
             </Button>
           </span>
         </Tooltip>
-        <Tooltip title="Erweiterten Editor für den aktiven Glyph öffnen">
+        <Tooltip title={activeHasCanonical ? 'Diagnose (Skelett · Canonical · Fit) groß ansehen' : 'Noch kein Canonical — erst im Wizard einen Weg zeichnen'}>
           <span>
             <Button
               size="small"
               variant="outlined"
-              startIcon={<EditIcon />}
-              disabled={!activeGlyph || !(activeGlyph in bboxesByKey)}
-              onClick={() => activeGlyph && navigate(`/admin/edit/${encodeURIComponent(activeGlyph)}`)}
+              startIcon={<VisibilityIcon />}
+              disabled={!activeGlyph || !activeHasCanonical}
+              onClick={() => activeGlyph && openDiagnose(activeGlyph)}
             >
-              Editor
+              Diagnose
             </Button>
           </span>
         </Tooltip>
       </Paper>
-
-      {activeGlyph && activeGlyph in bboxesByKey && (
-        <SetupWizard glyphKey={activeGlyph} open={wizardOpen} onClose={() => setWizardOpen(false)} />
-      )}
 
       <Box ref={scrollRef} sx={{ flex: 1, overflow: 'auto', bgcolor: '#111', position: 'relative' }}>
         <Box ref={stageRef} sx={{ width: stageWidthCss, height: stageHeightCss, position: 'relative', ...cursorStyle }}>
