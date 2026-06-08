@@ -5,8 +5,8 @@
 //                    it can't pollute the skeleton. Strokes → bbox.mask_strokes.
 //   2. Lineatur    — drag Grundlinie / Mittellinie; Oberlinie/Unterlinie derive,
 //                    each toggleable per glyph.
-//   3. Schräge     — place + angle one or more slant guides (mehrere Einzellinien
-//                    für m/n/u; alle teilen den Winkel).
+//   3. Schräge     — place + angle one or more slant guides (several individually
+//                    placed lines for m/n/u; all share the angle).
 //   4. Weg         — draw the ductus with the stylus; saves the canonical and
 //                    lets you re-sample it to a different anchor count.
 //   5. Übersicht   — open the (large) Diagnose modal to review, optionally apply
@@ -192,11 +192,8 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
 
   const updateGuides = useCallback(
     (patch: Partial<GuideConfig>) => {
-      const next: GuideConfig = {
+      const merged: GuideConfig = {
         slant_deg: guideVals.slantDeg,
-        // Keep slant_x as the first line so older readers still get a sane single
-        // line; slant_xs carries the full set.
-        slant_x: guideVals.slantXs[0] ?? null,
         slant_xs: guideVals.slantXs,
         show_ascender: guideVals.showAscender,
         show_descender: guideVals.showDescender,
@@ -204,6 +201,10 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
         exit_coupling: guideVals.exitCoupling,
         ...patch,
       };
+      // Derive the legacy single-line fallback from the RESOLVED slant_xs (after
+      // the patch), so slant_x always mirrors slant_xs[0] even when a line is
+      // dragged or the first line is removed.
+      const next: GuideConfig = { ...merged, slant_x: merged.slant_xs?.[0] ?? null };
       return updateBboxField({ guides: next });
     },
     [guideVals, updateBboxField],
