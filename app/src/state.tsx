@@ -28,6 +28,15 @@ interface AdminState {
   markGlyphTraced: (key: string, summary: GlyphSummary) => void;
   removeGlyph: (key: string) => void;
   refreshCrop: () => void;
+  // Glyph currently open in the Einrichtungs-Wizard / the Diagnose modal, or
+  // null when closed. Both modals are mounted once in AppLayout and driven from
+  // here so any surface (chart toolbar, sidebar) can open them by glyph key.
+  wizardGlyph: string | null;
+  openWizard: (key: string) => void;
+  closeWizard: () => void;
+  diagnoseGlyph: string | null;
+  openDiagnose: (key: string) => void;
+  closeDiagnose: () => void;
 }
 
 const Ctx = createContext<AdminState | null>(null);
@@ -41,6 +50,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [activeGlyph, setActiveGlyph] = useState<string | null>(null);
   const [visibleGlyphs, setVisibleGlyphs] = useState<Set<string>>(new Set());
   const [cropCacheBust, setCropCacheBust] = useState<number>(0);
+  const [wizardGlyph, setWizardGlyph] = useState<string | null>(null);
+  const [diagnoseGlyph, setDiagnoseGlyph] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -125,6 +136,19 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   const refreshCrop = useCallback(() => setCropCacheBust(Date.now()), []);
 
+  // Opening either modal also activates the glyph, so the sidebar/chart stay in
+  // sync with whatever is being authored or inspected.
+  const openWizard = useCallback((key: string) => {
+    setActiveGlyph(key);
+    setWizardGlyph(key);
+  }, []);
+  const closeWizard = useCallback(() => setWizardGlyph(null), []);
+  const openDiagnose = useCallback((key: string) => {
+    setActiveGlyph(key);
+    setDiagnoseGlyph(key);
+  }, []);
+  const closeDiagnose = useCallback(() => setDiagnoseGlyph(null), []);
+
   const value = useMemo<AdminState>(
     () => ({
       source,
@@ -143,6 +167,12 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       markGlyphTraced,
       removeGlyph,
       refreshCrop,
+      wizardGlyph,
+      openWizard,
+      closeWizard,
+      diagnoseGlyph,
+      openDiagnose,
+      closeDiagnose,
     }),
     [
       source,
@@ -160,6 +190,12 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       markGlyphTraced,
       removeGlyph,
       refreshCrop,
+      wizardGlyph,
+      openWizard,
+      closeWizard,
+      diagnoseGlyph,
+      openDiagnose,
+      closeDiagnose,
     ],
   );
 

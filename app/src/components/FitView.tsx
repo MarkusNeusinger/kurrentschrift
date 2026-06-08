@@ -16,6 +16,10 @@ import type { FitData } from '../types';
 interface Props {
   glyphKey: string;
   cropCacheBust?: number;
+  // Override the responsive default overlay width (the Diagnose modal goes big);
+  // still clamped to the viewport.
+  colWidth?: number;
+  colHeight?: number;
 }
 
 const COL_H = 360;
@@ -24,25 +28,27 @@ function polylinePoints(pts: Array<[number, number]>): string {
   return pts.map(([x, y]) => `${x},${y}`).join(' ');
 }
 
-// Cap the overlay width to the viewport so it fits on narrow phones.
-function clampColumnWidth(viewport: number) {
+// Cap the overlay width to the viewport so it fits on narrow phones. `cap` is
+// the desktop ceiling (320 by default; the Diagnose modal passes a larger one).
+function clampColumnWidth(viewport: number, cap = 320) {
   // Stay positive even on absurdly narrow viewports so the derived scale and
   // SVG/image width/height never go to 0 or negative.
-  return Math.max(120, Math.min(320, viewport - 64));
+  return Math.max(120, Math.min(cap, viewport - 64));
 }
 
-function useColumnWidth() {
-  const [w, setW] = useState(() => clampColumnWidth(typeof window !== 'undefined' ? window.innerWidth : 360));
+function useColumnWidth(cap?: number) {
+  const [w, setW] = useState(() => clampColumnWidth(typeof window !== 'undefined' ? window.innerWidth : 360, cap));
   useEffect(() => {
-    const onResize = () => setW(clampColumnWidth(window.innerWidth));
+    const onResize = () => setW(clampColumnWidth(window.innerWidth, cap));
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
-  }, []);
+  }, [cap]);
   return w;
 }
 
-export function FitView({ glyphKey, cropCacheBust }: Props) {
-  const COL_W = useColumnWidth();
+export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props) {
+  const COL_W = useColumnWidth(colWidth);
+  const COL_H_PX = colHeight ?? COL_H;
   const [data, setData] = useState<FitData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -94,7 +100,7 @@ export function FitView({ glyphKey, cropCacheBust }: Props) {
 
   const cropW = data.crop_size.w;
   const cropH = data.crop_size.h;
-  const scale = Math.min(COL_W / cropW, COL_H / cropH);
+  const scale = Math.min(COL_W / cropW, COL_H_PX / cropH);
   const displayW = cropW * scale;
   const displayH = cropH * scale;
   const m = data.fit;

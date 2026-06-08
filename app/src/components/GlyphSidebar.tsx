@@ -4,11 +4,11 @@
 // One click on a letter activates it (and a sensible default position) and
 // makes its bboxes visible on the chart.
 
-import CreateIcon from '@mui/icons-material/Create';
-import EditIcon from '@mui/icons-material/Edit';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import GridViewIcon from '@mui/icons-material/GridView';
 import HomeIcon from '@mui/icons-material/Home';
 import LockIcon from '@mui/icons-material/Lock';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import {
   Box,
   Button,
@@ -35,7 +35,7 @@ const GROUP_LABELS: Record<LetterGroup, string> = {
 const GROUP_ORDER: LetterGroup[] = ['lower', 'upper', 'comb'];
 
 export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
-  const { source, bboxesByKey, glyphsByKey, activeGlyph, visibleGlyphs, toggleVisible, setOnlyVisible, setActiveGlyph } =
+  const { source, bboxesByKey, glyphsByKey, activeGlyph, visibleGlyphs, toggleVisible, setOnlyVisible, setActiveGlyph, openWizard, openDiagnose } =
     useAdmin();
   const navigate = useNavigate();
   const [openBase, setOpenBase] = useState<string | null>(null);
@@ -43,6 +43,19 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
   // On mobile the sidebar lives in a Drawer; navigating away should close it.
   const go = (path: string) => {
     navigate(path);
+    onNavigate?.();
+  };
+
+  // The wizard / diagnose modals are mounted in AppLayout; opening one also
+  // closes the mobile drawer so the full width is free.
+  const launchWizard = () => {
+    if (!activeGlyph) return;
+    openWizard(activeGlyph);
+    onNavigate?.();
+  };
+  const launchDiagnose = () => {
+    if (!activeGlyph) return;
+    openDiagnose(activeGlyph);
     onNavigate?.();
   };
 
@@ -235,13 +248,25 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
             fullWidth
             size="small"
             variant="contained"
-            startIcon={activePos && hasCanon(glyphKeyFor(openLetter, activePos)) ? <EditIcon /> : <CreateIcon />}
+            startIcon={<AutoFixHighIcon />}
             disabled={!activeGlyph || !hasBbox(activeGlyph)}
-            onClick={() => activeGlyph && go(`/admin/edit/${encodeURIComponent(activeGlyph)}`)}
+            onClick={launchWizard}
             sx={{ mt: 1.5 }}
           >
-            {activePos && hasCanon(glyphKeyFor(openLetter, activePos)) ? 'Editor öffnen' : 'Strich zeichnen'}
+            Einrichten
           </Button>
+          {activeGlyph && hasCanon(activeGlyph) && (
+            <Button
+              fullWidth
+              size="small"
+              variant="outlined"
+              startIcon={<VisibilityIcon />}
+              onClick={launchDiagnose}
+              sx={{ mt: 1 }}
+            >
+              Diagnose
+            </Button>
+          )}
           {activeGlyph && !hasBbox(activeGlyph) && (
             <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1 }}>
               Noch keine Bbox — im Modus „Bbox“ ein Rechteck auf der Vorlage ziehen.

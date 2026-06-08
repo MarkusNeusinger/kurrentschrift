@@ -29,8 +29,8 @@ gh pr list --limit 5 2>/dev/null || echo "(gh CLI not available)"
 - `app/` — React + Vite + TS + MUI admin UI:
   - `app/src/constants.ts` — `SOURCE_ID` + `KNOWN_GLYPHS`
   - `app/src/state.tsx` — admin context
-  - `app/src/components/{GlyphSidebar,DiagnosticView}.tsx`
-  - `app/src/pages/{ChartPage,EditorPage}.tsx`
+  - `app/src/components/{GlyphSidebar,DiagnosticView,FitView,DiagnosticDialog}.tsx` + `components/wizard/SetupWizard.tsx`
+  - `app/src/pages/ChartPage.tsx`
 - `alembic/` — schema migrations (`versions/0001_initial_schema.py` is the genesis)
 - `data/sources/loth-1866/` — Public Domain chart + `SOURCE.md` (bytes on disk; DB only stores the relative path)
 - `docs/` — German design docs; `docs/concepts/architektur.md` is the canonical reference

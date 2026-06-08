@@ -14,30 +14,37 @@ import type { DiagnosticData } from '../types';
 interface Props {
   glyphKey: string;
   cropCacheBust?: number;
+  // Override the responsive default column width (e.g. the Diagnose modal wants
+  // big columns); still clamped to the viewport so it never overflows a phone.
+  colWidth?: number;
+  // Height of each column box; defaults to COL_H but the big modal goes taller.
+  colHeight?: number;
 }
 
 const COL_H = 360;
 
 // Cap the column width to the viewport so the three columns wrap and fit on
-// narrow phones instead of forcing horizontal scroll.
-function clampColumnWidth(viewport: number) {
+// narrow phones instead of forcing horizontal scroll. `cap` is the desktop
+// ceiling (320 by default; the Diagnose modal passes a larger one).
+function clampColumnWidth(viewport: number, cap = 320) {
   // Stay positive even on absurdly narrow viewports so the derived scale and
   // SVG/image width/height never go to 0 or negative.
-  return Math.max(120, Math.min(320, viewport - 64));
+  return Math.max(120, Math.min(cap, viewport - 64));
 }
 
-function useColumnWidth() {
-  const [w, setW] = useState(() => clampColumnWidth(typeof window !== 'undefined' ? window.innerWidth : 360));
+function useColumnWidth(cap?: number) {
+  const [w, setW] = useState(() => clampColumnWidth(typeof window !== 'undefined' ? window.innerWidth : 360, cap));
   useEffect(() => {
-    const onResize = () => setW(clampColumnWidth(window.innerWidth));
+    const onResize = () => setW(clampColumnWidth(window.innerWidth, cap));
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
-  }, []);
+  }, [cap]);
   return w;
 }
 
-export function DiagnosticView({ glyphKey, cropCacheBust }: Props) {
-  const COL_W = useColumnWidth();
+export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props) {
+  const COL_W = useColumnWidth(colWidth);
+  const COL_H_PX = colHeight ?? COL_H;
   const [data, setData] = useState<DiagnosticData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -83,7 +90,7 @@ export function DiagnosticView({ glyphKey, cropCacheBust }: Props) {
 
   const cropW = data.crop_size.w;
   const cropH = data.crop_size.h;
-  const cropScale = Math.min(COL_W / cropW, COL_H / cropH);
+  const cropScale = Math.min(COL_W / cropW, COL_H_PX / cropH);
   const cropDisplayW = cropW * cropScale;
   const cropDisplayH = cropH * cropScale;
 
@@ -147,10 +154,10 @@ export function DiagnosticView({ glyphKey, cropCacheBust }: Props) {
         <Typography variant="caption" color="text.secondary">
           Canonical (Template-Koords, Schräge {data.slant_deg}°)
         </Typography>
-        <Box sx={{ width: COL_W, height: COL_H, bgcolor: '#fff' }}>
+        <Box sx={{ width: COL_W, height: COL_H_PX, bgcolor: '#fff' }}>
           <svg
             width={COL_W}
-            height={COL_H}
+            height={COL_H_PX}
             viewBox={tplViewBox}
             preserveAspectRatio="xMidYMid meet"
             style={{ display: 'block', background: '#fff' }}
