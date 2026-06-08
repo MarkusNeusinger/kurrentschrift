@@ -97,6 +97,23 @@ function siblingKeys(glyphKey: string): string[] {
   return Array.from(new Set(POSITIONS.map((p) => glyphKeyFor(letter, p))));
 }
 
+// Flatten the captured per-stroke points into one raw_path, marking the last
+// sample of every stroke but the final one with pen_up. The backend splits there
+// so a pen lift (Absetzen) stays a real gap — no connecting line from the end of
+// one stroke to the start of the next (e.g. the two downstrokes of a u).
+function flattenStrokes(strokes: StrokePoint[][]): StrokePoint[] {
+  const out: StrokePoint[] = [];
+  strokes.forEach((stroke, si) => {
+    stroke.forEach((p, pi) => {
+      const isLiftPoint = pi === stroke.length - 1 && si < strokes.length - 1;
+      out.push(isLiftPoint ? { ...p, pen_up: true } : p);
+    });
+  });
+  return out;
+}
+
+const countPoints = (strokes: StrokePoint[][]): number => strokes.reduce((n, s) => n + s.length, 0);
+
 export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; open: boolean; onClose: () => void }) {
   const { source, bboxesByKey, glyphsByKey, cropCacheBust, upsertBbox, markGlyphTraced, refreshCrop, openDiagnose } = useAdmin();
   const bbox = bboxesByKey[glyphKey] ?? null;
@@ -109,8 +126,10 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
   const hostRef = useRef<HTMLDivElement | null>(null);
   const [hostSize, setHostSize] = useState({ w: 0, h: 0 });
 
-  // Per-step interaction state.
-  const [pathPts, setPathPts] = useState<StrokePoint[]>([]);
+  // Per-step interaction state. The Weg path is captured as a list of strokes
+  // (one per pen-down→pen-up); a pen lift starts a new stroke instead of
+  // extending the last one, so separate strokes never get joined by a line.
+  const [strokes, setStrokes] = useState<StrokePoint[][]>([]);
   const [drawing, setDrawing] = useState(false);
   const [maskRadius, setMaskRadius] = useState(8);
   const [maskDraft, setMaskDraft] = useState<Array<[number, number]> | null>(null);
@@ -135,12 +154,15 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
   // the next.
   useEffect(() => {
     setStep(0);
-    setPathPts([]);
+    setStrokes([]);
     setDrawing(false);
     setMaskDraft(null);
     setCalibDrag(null);
     setSlantDrag(null);
   }, [glyphKey, open]);
+
+  // Total captured points across all strokes — gates "save" (need ≥2).
+  const totalPathPoints = countPoints(strokes);
 
   const cropW = bbox ? bbox.x1 - bbox.x0 : 0;
   const cropH = bbox ? bbox.y1 - bbox.y0 : 0;
@@ -223,11 +245,9 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
         if (e.pointerType !== 'pen' && e.pointerType !== 'mouse' && e.pointerType !== 'touch') return;
         e.preventDefault();
         setDrawing(true);
-        setPathPts((prev) =>
-          prev.length > 0
-            ? [...prev, { x, y, pressure: e.pressure || null, t: performance.now() }]
-            : [{ x, y, pressure: e.pressure || null, t: 0 }],
-        );
+        // Each pen-down opens a new stroke; the previous one is left as-is, so a
+        // pen lift never draws a line to the next stroke's start.
+        setStrokes((prev) => [...prev, [{ x, y, pressure: e.pressure || null, t: prev.length === 0 ? 0 : performance.now() }]]);
         e.currentTarget.setPointerCapture(e.pointerId);
       }
     },
@@ -253,10 +273,13 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
         return;
       }
       if (stepId === 'weg' && drawing) {
-        setPathPts((prev) => {
-          const last = prev[prev.length - 1];
+        setStrokes((prev) => {
+          if (prev.length === 0) return prev;
+          const stroke = prev[prev.length - 1];
+          const last = stroke[stroke.length - 1];
           if (last && (x - last.x) ** 2 + (y - last.y) ** 2 < 0.36) return prev;
-          return [...prev, { x, y, pressure: e.pressure || null, t: performance.now() }];
+          const extended = [...stroke, { x, y, pressure: e.pressure || null, t: performance.now() }];
+          return [...prev.slice(0, -1), extended];
         });
       }
     },
@@ -317,24 +340,25 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
   );
 
   const saveTrace = useCallback(async () => {
-    if (pathPts.length < 2 || !known || !bbox) return;
+    const rawPath = flattenStrokes(strokes);
+    if (rawPath.length < 2 || !known || !bbox) return;
     setBusy(true);
     try {
       const g = await postTrace(glyphKey, {
         glyph: known.glyph,
         position: known.position,
-        raw_path: pathPts,
+        raw_path: rawPath,
         n_anchors: bbox.n_anchors,
       });
       markGlyphTraced(glyphKey, summaryOf(g));
       setSnack(`Weg gespeichert · ${g.anchors.length} Anker`);
-      setPathPts([]);
+      setStrokes([]);
     } catch (err) {
       setSnack(String(err));
     } finally {
       setBusy(false);
     }
-  }, [pathPts, known, bbox, glyphKey, markGlyphTraced]);
+  }, [strokes, known, bbox, glyphKey, markGlyphTraced]);
 
   // Re-sample the stored canonical to the current n_anchors without re-drawing.
   const resample = useCallback(async () => {
@@ -533,9 +557,32 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
             ))}
             {maskDraft && <polyline points={toLocal(maskDraft)} fill="none" stroke="#ff6b35" strokeOpacity={0.8} strokeWidth={Math.max(1, maskRadius * 2 * scale)} strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: 'none' }} />}
 
-            {/* Trace draft */}
-            {pathPts.length > 1 && <polyline points={pathPts.map((p) => `${(p.x - bbox.x0) * scale},${(p.y - bbox.y0) * scale}`).join(' ')} fill="none" stroke="#00d2ff" strokeWidth={2} style={{ pointerEvents: 'none' }} />}
-            {pathPts.length > 0 && <circle cx={(pathPts[0].x - bbox.x0) * scale} cy={(pathPts[0].y - bbox.y0) * scale} r={4} fill="#fff" stroke="#00d2ff" style={{ pointerEvents: 'none' }} />}
+            {/* Trace draft — one polyline + start dot per stroke; pen lifts stay gaps */}
+            {strokes.map((stroke, i) =>
+              stroke.length > 1 ? (
+                <polyline
+                  key={`stroke-${i}`}
+                  points={stroke.map((p) => `${(p.x - bbox.x0) * scale},${(p.y - bbox.y0) * scale}`).join(' ')}
+                  fill="none"
+                  stroke="#00d2ff"
+                  strokeWidth={2}
+                  style={{ pointerEvents: 'none' }}
+                />
+              ) : null,
+            )}
+            {strokes.map((stroke, i) =>
+              stroke.length > 0 ? (
+                <circle
+                  key={`start-${i}`}
+                  cx={(stroke[0].x - bbox.x0) * scale}
+                  cy={(stroke[0].y - bbox.y0) * scale}
+                  r={4}
+                  fill="#fff"
+                  stroke="#00d2ff"
+                  style={{ pointerEvents: 'none' }}
+                />
+              ) : null,
+            )}
           </svg>
         </Box>
       )}
@@ -651,18 +698,25 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
             <Typography variant="subtitle2">Schritt 4 · Weg (Ductus)</Typography>
             <Typography variant="body2" color="text.secondary">
               Den Buchstaben in Schreibrichtung mit dem Stift (S-Pen) oder der Maus nachziehen — das
-              ist der Ductus, die eigentliche Vorlage über der Loth-Geometrie. Auf den weißen
-              Startpunkt setzen, um einen unterbrochenen Strich fortzusetzen.
+              ist der Ductus, die eigentliche Vorlage über der Loth-Geometrie.
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              <b>Jedes Absetzen beginnt einen neuen Strich</b> — zwischen den Strichen wird keine
+              Verbindungslinie gezogen. Beim <b>u</b> also erst den ersten Abstrich, absetzen, dann den
+              zweiten — nacheinander, nicht in einem Zug.
             </Typography>
             <Stack direction="row" spacing={1}>
-              <Button size="small" startIcon={<UndoIcon />} disabled={pathPts.length === 0} onClick={() => setPathPts([])}>
-                Verwerfen
+              <Button size="small" startIcon={<UndoIcon />} disabled={strokes.length === 0} onClick={() => setStrokes((s) => s.slice(0, -1))}>
+                Letzter Strich ({strokes.length})
               </Button>
-              <Button size="small" variant="contained" disabled={pathPts.length < 2 || busy} onClick={saveTrace}>
+              <Button size="small" color="inherit" disabled={strokes.length === 0} onClick={() => setStrokes([])}>
+                Alles verwerfen
+              </Button>
+              <Button size="small" variant="contained" disabled={totalPathPoints < 2 || busy} onClick={saveTrace}>
                 Weg speichern
               </Button>
             </Stack>
-            {hasCanonical && pathPts.length === 0 && <Alert severity="success" variant="outlined">Weg gespeichert. Weiter zur Übersicht.</Alert>}
+            {hasCanonical && strokes.length === 0 && <Alert severity="success" variant="outlined">Weg gespeichert. Weiter zur Übersicht.</Alert>}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <TextField
                 label="Anker (n_anchors)"

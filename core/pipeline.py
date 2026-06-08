@@ -17,7 +17,7 @@ import numpy as np
 
 from core.chart import crop_with_mask, load_chart_grayscale
 from core.extract import binarize_adaptive, skeleton_and_width
-from core.template import apply_slant, sample_polyline, stroke_outline, template_guides
+from core.template import allocate_samples, chord_length, multi_stroke_outline, template_guides
 
 
 DEFAULT_N_ANCHORS = 50
@@ -42,6 +42,54 @@ def _resample_polyline(points: np.ndarray, n: int) -> tuple[np.ndarray, float]:
     x = np.interp(t, cum, points[:, 0])
     y = np.interp(t, cum, points[:, 1])
     return np.column_stack([x, y]), total
+
+
+def _split_raw_strokes(raw_path: list[dict]) -> list[list[dict]]:
+    """Split a flat stylus path into per-stroke segments at pen-lift markers.
+
+    A point carrying ``pen_up: true`` is the last sample before the pen left the
+    paper (German: Absetzen); the next point starts a new stroke. Legacy paths
+    carry no markers and yield a single stroke, so old templates re-derive
+    identically.
+    """
+    strokes: list[list[dict]] = []
+    current: list[dict] = []
+    for p in raw_path:
+        current.append(p)
+        if p.get("pen_up"):
+            strokes.append(current)
+            current = []
+    if current:
+        strokes.append(current)
+    return [s for s in strokes if s]
+
+
+def _resample_strokes(strokes: list[np.ndarray], n: int) -> tuple[np.ndarray, list[int], float]:
+    """Resample each pen-stroke independently by chord length and concatenate.
+
+    Returns the concatenated `(N, 2)` anchor array, `stroke_starts` (the anchor
+    index where each stroke begins, first is 0), and the summed path length in
+    pixels — the pen-lift bridges *between* strokes are excluded, so a u's two
+    downstrokes never get joined by a phantom anchor across the gap. `N` equals
+    `n` except when `n` is too small to give every stroke two anchors, when it
+    grows to `2 * num_strokes`.
+    """
+    strokes = [s for s in strokes if len(s) >= 1]
+    if not strokes:
+        raise ValueError("empty path")
+    if len(strokes) == 1:
+        resampled, length = _resample_polyline(strokes[0], n)
+        return resampled, [0], length
+    seg_lengths = [chord_length(s) for s in strokes]
+    alloc = allocate_samples(seg_lengths, n)
+    parts, starts, total, cursor = [], [], 0.0, 0
+    for stroke, k, length in zip(strokes, alloc, seg_lengths, strict=True):
+        resampled, _ = _resample_polyline(stroke, max(2, k))
+        starts.append(cursor)
+        parts.append(resampled)
+        cursor += len(resampled)
+        total += length
+    return np.concatenate(parts, axis=0), starts, total
 
 
 def _sample_width_at(x_local: float, y_local: float, mask: np.ndarray, width_map: np.ndarray) -> float:
@@ -127,10 +175,14 @@ def canonical_from_path(
     _, width_map = skeleton_and_width(mask)
 
     x0, y0 = bbox["x0"], bbox["y0"]
-    local = np.array([(p["x"] - x0, p["y"] - y0) for p in raw_path], dtype=float)
+    strokes_local = [
+        np.array([(p["x"] - x0, p["y"] - y0) for p in stroke], dtype=float) for stroke in _split_raw_strokes(raw_path)
+    ]
 
     n = int(n_anchors or bbox.get("n_anchors") or DEFAULT_N_ANCHORS)
-    resampled_local, path_length_px = _resample_polyline(local, n)
+    # Resample stroke-by-stroke so a pen lift never gets a phantom anchor bridging
+    # the gap; `stroke_starts` records where each stroke begins in the anchor list.
+    resampled_local, stroke_starts, path_length_px = _resample_strokes(strokes_local, n)
 
     hw_px = np.array(
         [_sample_width_at(float(rx), float(ry), mask, width_map) for rx, ry in resampled_local], dtype=float
@@ -160,15 +212,19 @@ def canonical_from_path(
     exit_coupling = bbox.get("exit_coupling", "baseline")
     advance = float(max(0.1, x_norm.max() - x_norm.min()))
 
-    raw_stored = [
-        {
+    raw_stored = []
+    for p in raw_path:
+        item: dict = {
             "x": round(float(p["x"]), 2),
             "y": round(float(p["y"]), 2),
             "pressure": None if p.get("pressure") is None else round(float(p["pressure"]), 4),
             "t": None if p.get("t") is None else round(float(p["t"]), 2),
         }
-        for p in raw_path
-    ]
+        # Keep the pen-lift markers sparse (only the last sample of each stroke
+        # but the final one) so /resample re-splits the path identically.
+        if p.get("pen_up"):
+            item["pen_up"] = True
+        raw_stored.append(item)
 
     return {
         "glyph": glyph,
@@ -185,7 +241,10 @@ def canonical_from_path(
             "baseline_y": baseline_y,
             "midband_y": midband_y,
             "unit_px": unit_px,
-            "n_anchors": n,
+            "n_anchors": len(anchors_norm),
+            # Anchor indices where each pen-stroke begins (first is 0). A single
+            # entry means one continuous stroke; the diagnostic + fit split here.
+            "stroke_starts": stroke_starts,
             "path_length_px": round(path_length_px, 1),
             "pixel_anchors": [[round(float(x), 2), round(float(y), 2)] for x, y in pixel_global],
             "half_widths_px": [round(float(h), 2) for h in hw_px],
@@ -233,19 +292,16 @@ def diagnostic_for_glyph(
     anchors_template = np.asarray(glyph_row["anchors"], dtype=float)
     half_widths_template = np.asarray(glyph_row["half_widths"], dtype=float)
 
-    pixel_anchors = glyph_row.get("trace_meta", {}).get("pixel_anchors") or []
-    half_widths_px = glyph_row.get("trace_meta", {}).get("half_widths_px") or []
+    trace_meta = glyph_row.get("trace_meta", {})
+    pixel_anchors = trace_meta.get("pixel_anchors") or []
+    half_widths_px = trace_meta.get("half_widths_px") or []
+    stroke_starts = trace_meta.get("stroke_starts")
     x0, y0 = bbox["x0"], bbox["y0"]
     anchors_px = [[round(px - x0, 2), round(py - y0, 2)] for px, py in pixel_anchors]
 
-    # Outline polygon in template coords, slant applied.
-    if len(anchors_template) >= 2:
-        sx, sy, sw = sample_polyline(anchors_template, half_widths_template, n=240)
-        sx, sy = apply_slant(sx, sy, slant_deg)
-        poly_x, poly_y = stroke_outline(sx, sy, sw)
-        outline_polygon = [[round(float(x), 4), round(float(y), 4)] for x, y in zip(poly_x, poly_y, strict=True)]
-    else:
-        outline_polygon = []
+    # One outline polygon per pen-stroke (slant applied) so a pen lift reads as a
+    # real gap instead of a filled bar bridging the two strokes.
+    outline_polygons = multi_stroke_outline(anchors_template, half_widths_template, stroke_starts, slant_deg, n=240)
 
     return {
         "crop_size": {"w": int(w), "h": int(h)},
@@ -254,7 +310,10 @@ def diagnostic_for_glyph(
         "half_widths_px": [round(float(v), 2) for v in half_widths_px],
         "anchors_template": [[round(float(x), 4), round(float(y), 4)] for x, y in anchors_template],
         "half_widths_template": [round(float(v), 4) for v in half_widths_template],
-        "outline_polygon": outline_polygon,
+        # `outline_polygons` is the stroke-aware list; `outline_polygon` stays as
+        # the first polygon for older clients (identical when there is one stroke).
+        "outline_polygon": outline_polygons[0] if outline_polygons else [],
+        "outline_polygons": outline_polygons,
         "baseline_y_crop": int(bbox["baseline_y"]) - y0,
         "midband_y_crop": int(bbox["midband_y"]) - y0,
         "template_guides": template_guides(style_ratio),

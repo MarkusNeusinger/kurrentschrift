@@ -169,12 +169,12 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight }:
               <line x1={-0.5} y1={tpl.midband} x2={advance + 0.5} y2={tpl.midband} stroke="#ddd" strokeWidth={0.015} strokeDasharray="0.08 0.06" />
               <line x1={-0.5} y1={tpl.ascender} x2={advance + 0.5} y2={tpl.ascender} stroke="#eee" strokeWidth={0.015} strokeDasharray="0.04 0.05" />
               <line x1={-0.5} y1={tpl.descender} x2={advance + 0.5} y2={tpl.descender} stroke="#eee" strokeWidth={0.015} strokeDasharray="0.04 0.05" />
-              {/* Outline polygon (slant already applied server-side) */}
-              {data.outline_polygon.length > 2 && (
-                <polygon
-                  points={data.outline_polygon.map(([x, y]) => `${x},${y}`).join(' ')}
-                  fill="#111"
-                />
+              {/* Outline polygons — one per pen-stroke (slant applied server-side),
+                  so a pen lift is a real gap, not a bar bridging the strokes */}
+              {(data.outline_polygons ?? (data.outline_polygon.length > 2 ? [data.outline_polygon] : [])).map((poly, i) =>
+                poly.length > 2 ? (
+                  <polygon key={i} points={poly.map(([x, y]) => `${x},${y}`).join(' ')} fill="#111" />
+                ) : null,
               )}
               {/* Anchor dots */}
               {data.anchors_template.map(([x, y], i) => (

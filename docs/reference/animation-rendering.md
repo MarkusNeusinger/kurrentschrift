@@ -37,6 +37,14 @@ Breite*, kein Schwellzug-Aufbau.
 4. `stroke-dasharray = L`, `stroke-dashoffset = L`.
 5. WAAPI-Animation: `stroke-dashoffset` von `L` auf `0` über `T`
    Millisekunden — Linie *entsteht* vom Anfang zum Ende.
+6. **Mehrstrich-Ductus (Absetzen):** Hebt die Vorlage den Stift, liegt der
+   Weg als mehrere Teilstriche vor — `trace_meta.stroke_starts` (gespeist aus
+   den `pen_up`-Markern im `raw_path`) nennt die Anker-Indizes, an denen ein
+   neuer Strich beginnt. Dann **pro Teilstrich einen eigenen `<path>` bauen**
+   und die Striche *nacheinander* abspielen (kein `dashoffset`-Pfad über die
+   Lücke) — so entsteht z.B. das *u* als erster Abstrich → zweiter Abstrich,
+   nicht in einem Zug. Bei genau einem Strich (`stroke_starts == [0]`) bleibt
+   es beim einfachen Pfad oben.
 
 *Spätere Verfeinerung:* sobald M3-Templates eine dichter abgetastete,
 ordentlich geordnete Centerline brauchen, kann der `/diagnostic`-Endpoint

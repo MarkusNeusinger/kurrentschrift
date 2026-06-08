@@ -96,6 +96,10 @@ export interface StrokePoint {
   y: number;
   pressure?: number | null;
   t?: number | null;
+  // Last sample of a stroke before the pen is lifted (German: Absetzen); the
+  // next point starts a new stroke. Absent/false continues the stroke, so a
+  // single-stroke path carries no markers. Mirrors StrokePoint in schemas.py.
+  pen_up?: boolean;
 }
 
 export interface TraceRequest {
@@ -143,7 +147,11 @@ export interface DiagnosticData {
   half_widths_px: number[];
   anchors_template: Array<[number, number]>;
   half_widths_template: number[];
+  // First polygon, kept for older clients (identical to outline_polygons[0]).
   outline_polygon: Array<[number, number]>;
+  // One filled outline polygon per pen-stroke — a pen lift is a real gap, not a
+  // bar bridging the two strokes.
+  outline_polygons: Array<Array<[number, number]>>;
   baseline_y_crop: number;
   midband_y_crop: number;
   template_guides: { baseline: number; midband: number; ascender: number; descender: number };
@@ -178,5 +186,8 @@ export interface FitData {
   skeleton_polyline_px: Array<[number, number]>;
   fitted_polyline_px: Array<[number, number]>;
   canonical_polyline_px: Array<[number, number]>;
+  // Index of each pen-stroke's first sample in the polylines, so the overlay can
+  // draw separate strokes instead of bridging a pen lift. [0] => one stroke.
+  polyline_stroke_starts: number[];
   placement: { x_origin_px: number; baseline_y_px: number; unit_px: number };
 }
