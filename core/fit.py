@@ -28,6 +28,7 @@ terms share one scale and the weights are dimensionless.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -36,7 +37,7 @@ from scipy.spatial import cKDTree
 
 from core.chart import crop_with_mask, load_chart_grayscale
 from core.extract import binarize_adaptive, skeleton_and_width
-from core.template import sample_polyline
+from core.template import sample_with_plan, stroke_sample_plan
 
 
 DEFAULT_LAMBDA_REG = 1.0
@@ -65,6 +66,9 @@ class FitResult:
     fitted_polyline_px: np.ndarray  # (n_samples, 2) crop-local
     canonical_polyline_px: np.ndarray  # (n_samples, 2) crop-local, pre-fit placement
     placement: dict  # {x_origin_px, baseline_y_px, unit_px}
+    # Index of each pen-stroke's first sample in the polylines, so a caller can
+    # draw the overlay as separate strokes instead of bridging a pen lift.
+    polyline_stroke_starts: list[int] = field(default_factory=lambda: [0])
     fit_meta: dict = field(default_factory=dict)
 
     def to_entry(self, glyph: str, position: str) -> dict:
@@ -124,6 +128,7 @@ def fit_template_to_instance(
     unit_px: float,
     baseline_y_px: float,
     x_origin_px: float | None = None,
+    stroke_starts: Sequence[int] | None = None,
     n_samples: int = DEFAULT_N_SAMPLES,
     lambda_reg: float = DEFAULT_LAMBDA_REG,
     width_weight: float = DEFAULT_WIDTH_WEIGHT,
@@ -141,6 +146,9 @@ def fit_template_to_instance(
     baseline_y_px : crop-local y of the baseline (``baseline_y - y0``).
     x_origin_px : crop-local x of the template origin; if ``None`` it is placed
         so the template centroid aligns to the skeleton centroid in x.
+    stroke_starts : anchor indices where each pen-stroke begins (first is 0); each
+        stroke is sampled independently so a pen lift is not bridged. ``None`` =>
+        one continuous stroke (legacy).
     lambda_reg : Tikhonov weight on per-anchor displacement (topology guard).
     width_weight : weight of the half-width residual relative to geometry.
 
@@ -172,8 +180,13 @@ def fit_template_to_instance(
         templ_centroid_px = float(np.mean(x_norm0)) * unit_px
         x_origin_px = float(skel_pts[:, 0].mean()) - templ_centroid_px
 
+    # Fixed sampling plan (anchor count is constant through the fit): each pen
+    # stroke is sampled on its own, so no sample point lands on a pen-lift bridge
+    # and the geometry residual is never inflated by phantom-gap distances.
+    slices, alloc, sample_starts = stroke_sample_plan(template_anchors, stroke_starts, n_samples)
+
     def to_pixels(anchors_norm: np.ndarray, tx: float, ty: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        sx_n, sy_n, sw_n = sample_polyline(anchors_norm, template_half_widths, n=n_samples)
+        sx_n, sy_n, sw_n = sample_with_plan(anchors_norm, template_half_widths, slices, alloc)
         px = (x_origin_px + tx) + sx_n * unit_px
         py = (baseline_y_px + ty) - sy_n * unit_px
         return px, py, sw_n
@@ -262,6 +275,7 @@ def fit_template_to_instance(
             "baseline_y_px": float(baseline_y_px + ty),
             "unit_px": float(unit_px),
         },
+        polyline_stroke_starts=sample_starts,
         fit_meta=fit_meta,
     )
 
@@ -310,6 +324,9 @@ def fit_glyph_to_crop(
         width_map,
         unit_px=unit_px,
         baseline_y_px=baseline_y_px,
+        # Accept stroke_starts either top-level (router) or nested in trace_meta
+        # (a raw canonical dict straight from the pipeline).
+        stroke_starts=glyph_row.get("stroke_starts") or glyph_row.get("trace_meta", {}).get("stroke_starts"),
         lambda_reg=lambda_reg,
         width_weight=width_weight,
         n_samples=n_samples,
@@ -332,5 +349,6 @@ def fit_glyph_to_crop(
         "skeleton_polyline_px": [[int(x), int(y)] for x, y in skel_pts],
         "fitted_polyline_px": [[round(float(x), 2), round(float(y), 2)] for x, y in result.fitted_polyline_px],
         "canonical_polyline_px": [[round(float(x), 2), round(float(y), 2)] for x, y in result.canonical_polyline_px],
+        "polyline_stroke_starts": result.polyline_stroke_starts,
         "placement": result.placement,
     }

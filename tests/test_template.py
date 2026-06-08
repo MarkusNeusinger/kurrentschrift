@@ -2,7 +2,14 @@
 
 import numpy as np
 
-from core.template import apply_slant, sample_polyline, stroke_outline, template_guides
+from core.template import (
+    allocate_samples,
+    apply_slant,
+    multi_stroke_outline,
+    sample_polyline,
+    stroke_outline,
+    template_guides,
+)
 
 
 def test_template_guides_match_ratio():
@@ -49,3 +56,28 @@ def test_apply_slant_shears_along_x():
     # 45° slant means the top of a unit-height vertical moves by tan(45°)=1 in +x
     x2, _ = apply_slant(x, y, 45.0)
     assert np.isclose(x2[0], 1.0)
+
+
+def test_allocate_samples_proportional_with_floor():
+    alloc = allocate_samples([10.0, 30.0], 20)
+    assert sum(alloc) == 20
+    assert min(alloc) >= 2
+    # The longer segment gets more samples.
+    assert alloc[1] > alloc[0]
+
+
+def test_allocate_samples_grows_when_n_too_small():
+    # Three strokes need at least 2 each; n=4 is bumped up to 6.
+    alloc = allocate_samples([1.0, 1.0, 1.0], 4)
+    assert sum(alloc) == 6
+    assert all(a >= 2 for a in alloc)
+
+
+def test_multi_stroke_outline_one_polygon_per_stroke():
+    # Two separate vertical strokes (anchors 0–1 and 2–3), split at index 2.
+    anchors = np.array([[0.0, 1.0], [0.0, 0.0], [0.3, 1.0], [0.3, 0.0]])
+    widths = np.array([0.1, 0.1, 0.1, 0.1])
+    polys = multi_stroke_outline(anchors, widths, [0, 2], slant_deg=90.0)
+    assert len(polys) == 2
+    # No stroke_starts → a single continuous stroke → one polygon.
+    assert len(multi_stroke_outline(anchors, widths, None, slant_deg=90.0)) == 1

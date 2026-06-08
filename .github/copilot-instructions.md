@@ -201,8 +201,13 @@ Browser at `http://localhost:3000` loads the admin UI: Loth chart with a
 draggable rough bbox, then the step-by-step Einrichtungs-Wizard (Ausschluss/
 freehand eraser → Lineatur → Schräge → Weg → Übersicht/approve→lock) for
 canonical extraction, and the 3-column SVG diagnostic from `/diagnostic`
-JSON. UI labels are German per DIN/Süß lineature (Grundlinie · Mittellinie ·
-Oberlinie · Unterlinie; zones Oberlänge · Mittellänge · Unterlänge).
+JSON. The Weg step records the ductus as one or more pen-strokes — each pen
+lift (Absetzen, e.g. a u's two downstrokes) starts a new stroke rather than
+bridging it; the flat `raw_path` carries sparse `pen_up` markers and the
+canonical stores `stroke_starts` in `trace_meta`, so the diagnostic outline
+and the M4 fit keep the strokes separate. UI labels are German per DIN/Süß
+lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberlänge
+· Mittellänge · Unterlänge).
 
 ---
 

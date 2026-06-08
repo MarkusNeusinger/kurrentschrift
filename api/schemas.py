@@ -146,12 +146,18 @@ class BboxOut(BboxIn):
 
 
 class StrokePoint(BaseModel):
-    """One sample from the stylus capture."""
+    """One sample from the stylus capture.
+
+    `pen_up` marks the last sample of a stroke before the pen is lifted (German:
+    Absetzen); the next point starts a new stroke. Absent/false means the stroke
+    continues — so a legacy single-stroke path needs no markers at all.
+    """
 
     x: float
     y: float
     pressure: float | None = None
     t: float | None = None
+    pen_up: bool = False
 
 
 class CouplingPointOut(BaseModel):

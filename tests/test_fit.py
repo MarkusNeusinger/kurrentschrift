@@ -24,6 +24,16 @@ def _vertical_stylus_path(num: int = 40, x_global: int = 400) -> list[dict]:
     ]
 
 
+def _two_stroke_path(num: int = 10) -> list[dict]:
+    """Two separate downstrokes on the synthetic bar, pen lifted between them."""
+    first = [{"x": 400.0, "y": float(210 + 180 * i / (num - 1)), "pressure": 0.5, "t": float(i)} for i in range(num)]
+    first[-1]["pen_up"] = True
+    second = [
+        {"x": 400.0, "y": float(410 + 180 * i / (num - 1)), "pressure": 0.5, "t": float(num + i)} for i in range(num)
+    ]
+    return first + second
+
+
 def _canonical_on_synthetic(chart_path, bbox, n_anchors: int = 16) -> dict:
     return canonical_from_path(
         raw_path=_vertical_stylus_path(),
@@ -108,6 +118,24 @@ def test_regularisation_limits_deformation(synthetic_chart_path, synthetic_bbox)
     assert tight.fit_meta["reg_energy"] <= loose.fit_meta["reg_energy"]
     # And the loose fit lands closer to the skeleton (lower geometry residual).
     assert loose.fit_meta["geo_rmse_px"] <= tight.fit_meta["geo_rmse_px"] + 1e-6
+
+
+def test_multi_stroke_fit_carries_stroke_starts(synthetic_chart_path, synthetic_bbox):
+    """A two-stroke canonical fits with the strokes kept separate in the overlay."""
+    canon = canonical_from_path(
+        raw_path=_two_stroke_path(),
+        bbox=synthetic_bbox,
+        chart_path=synthetic_chart_path,
+        glyph="u",
+        position="medial",
+        n_anchors=20,
+    )
+    out = fit_glyph_to_crop(canon, synthetic_bbox, synthetic_chart_path)
+    # Two strokes → two polyline segments the frontend can draw without bridging.
+    assert len(out["polyline_stroke_starts"]) == 2
+    assert out["polyline_stroke_starts"][0] == 0
+    # Canonical + fitted overlays stay length-aligned so the split lines up.
+    assert len(out["fitted_polyline_px"]) == len(out["canonical_polyline_px"]) > 0
 
 
 def test_fit_returns_library_entry_shape(synthetic_chart_path, synthetic_bbox):

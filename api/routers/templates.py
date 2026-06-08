@@ -191,6 +191,8 @@ async def get_fit(
             "half_widths": list(template.half_widths),
             "entry": dict(template.entry) if template.entry else {},
             "exit_pt": dict(template.exit_pt) if template.exit_pt else {},
+            # Pen-stroke boundaries so the fit samples each stroke on its own.
+            "stroke_starts": (template.trace_meta or {}).get("stroke_starts"),
         },
         bbox=_bbox_to_dict(bbox),
         chart_path=source.chart_path,

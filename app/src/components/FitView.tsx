@@ -28,6 +28,13 @@ function polylinePoints(pts: Array<[number, number]>): string {
   return pts.map(([x, y]) => `${x},${y}`).join(' ');
 }
 
+// Split a sampled polyline at the pen-stroke boundaries so the overlay draws each
+// stroke on its own instead of bridging a pen lift. Missing/[0] => one stroke.
+function polylineSegments(pts: Array<[number, number]>, starts?: number[]): Array<Array<[number, number]>> {
+  if (!starts || starts.length <= 1) return [pts];
+  return starts.map((a, i) => pts.slice(a, i + 1 < starts.length ? starts[i + 1] : pts.length));
+}
+
 // Cap the overlay width to the viewport so it fits on narrow phones. `cap` is
 // the desktop ceiling (320 by default; the Diagnose modal passes a larger one).
 function clampColumnWidth(viewport: number, cap = 320) {
@@ -131,16 +138,14 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
               {data.skeleton_polyline_px.map(([x, y], i) => (
                 <circle key={i} cx={x} cy={y} r={0.6} fill="#ff8080" />
               ))}
-              {/* canonical placement (pre-fit) */}
-              <polyline
-                fill="none"
-                stroke="#888"
-                strokeWidth={1.4}
-                strokeDasharray="4 3"
-                points={polylinePoints(data.canonical_polyline_px)}
-              />
-              {/* fitted result */}
-              <polyline fill="none" stroke="#e02030" strokeWidth={2} points={polylinePoints(data.fitted_polyline_px)} />
+              {/* canonical placement (pre-fit) — one polyline per pen-stroke */}
+              {polylineSegments(data.canonical_polyline_px, data.polyline_stroke_starts).map((seg, i) => (
+                <polyline key={`canon-${i}`} fill="none" stroke="#888" strokeWidth={1.4} strokeDasharray="4 3" points={polylinePoints(seg)} />
+              ))}
+              {/* fitted result — one polyline per pen-stroke */}
+              {polylineSegments(data.fitted_polyline_px, data.polyline_stroke_starts).map((seg, i) => (
+                <polyline key={`fit-${i}`} fill="none" stroke="#e02030" strokeWidth={2} points={polylinePoints(seg)} />
+              ))}
             </svg>
           </Box>
         </Box>
