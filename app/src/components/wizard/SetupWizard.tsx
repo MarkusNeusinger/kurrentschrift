@@ -18,14 +18,23 @@
 // (PUT bbox / POST trace); the lock IS the commit gesture, so there is no
 // separate cancel-revert. Mounted once in AppLayout and driven by `wizardGlyph`
 // in the admin context.
+//
+// The crop canvas carries a shared zoom/pan on every step (wheel or the floating
+// −/slider/+ control; Schwenken toggle or a wheel-zoomed drag to pan). It opens
+// pre-zoomed (defaultZoomFor) so a small letter — a fresh bbox seeds its x-height
+// band at only ~35 % of the box height — already fills the frame on Ausschluss
+// instead of sitting tiny in the middle; Anpassen returns to the full crop.
 
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
 import LockIcon from '@mui/icons-material/Lock';
+import OpenWithIcon from '@mui/icons-material/OpenWith';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import RemoveIcon from '@mui/icons-material/Remove';
 import UndoIcon from '@mui/icons-material/Undo';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import {
@@ -43,6 +52,7 @@ import {
   StepButton,
   Stepper,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -55,6 +65,23 @@ import type { BboxIn, BboxOut, CouplingHeight, GlyphSummary, GuideConfig, MaskSt
 
 const SLANT_COLOR = '#39d98a';
 const COUPLING_OPTIONS: CouplingHeight[] = ['baseline', 'midband', 'ascender', 'descender'];
+
+// Wizard canvas zoom. 1 = fit-to-view (the whole bbox fills the frame); above
+// that the crop is magnified and can be panned (Schwenken) to reach the box
+// edges, where a neighbour's ink pokes in and needs erasing.
+const ZOOM_MIN = 1;
+const ZOOM_MAX = 6;
+
+const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
+
+// Keep the panned content from being dragged off-screen: the offset can move at
+// most half the overflow (content beyond the viewport) in each direction, so a
+// content edge never crosses past the matching viewport edge. When the content
+// fits (no overflow) the offset is pinned to 0 → centred.
+const clampPan = (offset: number, content: number, viewport: number): number => {
+  const limit = Math.max(0, (content - viewport) / 2);
+  return clamp(offset, -limit, limit);
+};
 
 type StepId = 'mask' | 'lineatur' | 'slant' | 'weg' | 'overview';
 const STEPS: { id: StepId; label: string }[] = [
@@ -125,9 +152,28 @@ function flattenStrokes(strokes: StrokePoint[][]): StrokePoint[] {
 const savablePointCount = (strokes: StrokePoint[][]): number =>
   strokes.reduce((n, s) => n + (s.length >= MIN_STROKE_POINTS ? s.length : 0), 0);
 
+// Pick a starting zoom so the letter already fills the frame on the first step
+// instead of sitting small in the middle. A fresh bbox seeds its x-height band
+// at ~35 % of the box height, so a letter without ascender/descender (e.g. `a`)
+// only paints that middle slice — fit-to-view then shows mostly empty margin.
+// We zoom roughly in inverse proportion to that band fraction, gently capped so
+// tall letters (ascender + descender) are never clipped hard; Anpassen (fit)
+// and the slider stay one tap away.
+function defaultZoomFor(b: BboxOut | null): number {
+  if (!b) return 1;
+  const h = b.y1 - b.y0;
+  if (h <= 0) return 1;
+  const bandFraction = Math.max(0.18, (b.baseline_y - b.midband_y) / h);
+  return clamp(0.62 / bandFraction, 1, 1.6);
+}
+
 export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; open: boolean; onClose: () => void }) {
   const { source, bboxesByKey, glyphsByKey, cropCacheBust, upsertBbox, markGlyphTraced, refreshCrop, openDiagnose } = useAdmin();
   const bbox = bboxesByKey[glyphKey] ?? null;
+  // Always-current bbox, read (not subscribed) by the open/reset effect so it can
+  // seed the default zoom without re-running on every mask/lineature edit.
+  const bboxRef = useRef(bbox);
+  bboxRef.current = bbox;
   const known = knownGlyph(glyphKey);
   const hasCanonical = glyphsByKey[glyphKey]?.has_data === true;
 
@@ -147,6 +193,14 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
   const [calibDrag, setCalibDrag] = useState<{ field: 'baseline_y' | 'midband_y'; curY: number } | null>(null);
   // Which slant line is being dragged (index into slant_xs) and its live x.
   const [slantDrag, setSlantDrag] = useState<{ index: number; curX: number } | null>(null);
+  // Canvas zoom/pan, shared by every step. `userZoom` multiplies the fit scale;
+  // pan{X,Y} translate the magnified crop in CSS px; `panning` is the Schwenken
+  // toggle (drags pan instead of draw); `panDrag` holds a live pan gesture.
+  const [userZoom, setUserZoom] = useState(1);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
+  const [panning, setPanning] = useState(false);
+  const [panDrag, setPanDrag] = useState<{ sx: number; sy: number; px: number; py: number } | null>(null);
   const [applyAll, setApplyAll] = useState(true);
   const [busy, setBusy] = useState(false);
   const [snack, setSnack] = useState<string | null>(null);
@@ -170,6 +224,12 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
     setMaskDraft(null);
     setCalibDrag(null);
     setSlantDrag(null);
+    // Fresh letter → re-centre and seed the auto-zoom from its bbox.
+    setPanX(0);
+    setPanY(0);
+    setPanning(false);
+    setPanDrag(null);
+    setUserZoom(defaultZoomFor(bboxRef.current));
   }, [glyphKey, open]);
 
   // Savable points (strokes with ≥2 points; stray taps excluded) — gates "save".
@@ -177,13 +237,78 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
 
   const cropW = bbox ? bbox.x1 - bbox.x0 : 0;
   const cropH = bbox ? bbox.y1 - bbox.y0 : 0;
-  const scale = useMemo(() => {
+  // baseScale fits the whole bbox into the host; `scale` is that times the user
+  // zoom and is what every coordinate transform below uses (so nothing else has
+  // to know about zoom). displayW/H are the on-screen crop size at that scale.
+  const baseScale = useMemo(() => {
     if (!cropW || !cropH || !hostSize.w || !hostSize.h) return 1;
     const padding = 24;
     return Math.max(0.4, Math.min((hostSize.w - padding) / cropW, (hostSize.h - padding) / cropH));
   }, [cropW, cropH, hostSize]);
+  const scale = baseScale * userZoom;
   const displayW = cropW * scale;
   const displayH = cropH * scale;
+
+  // Set the zoom and re-clamp the pan to the new crop size (so zooming out never
+  // leaves the crop stranded off-centre). Centred on the frame, not the cursor.
+  const applyZoom = useCallback(
+    (next: number) => {
+      const z = clamp(next, ZOOM_MIN, ZOOM_MAX);
+      setUserZoom(z);
+      setPanX((p) => clampPan(p, cropW * baseScale * z, hostSize.w));
+      setPanY((p) => clampPan(p, cropH * baseScale * z, hostSize.h));
+    },
+    [cropW, cropH, baseScale, hostSize],
+  );
+  const zoomBy = useCallback((factor: number) => applyZoom(userZoom * factor), [applyZoom, userZoom]);
+  const fitZoom = useCallback(() => {
+    setUserZoom(1);
+    setPanX(0);
+    setPanY(0);
+  }, []);
+
+  // Live view geometry for the wheel handler. Refreshed every render so the
+  // once-attached listener always reads current values, and rewritten within a
+  // wheel burst so several ticks before React re-renders compound (each anchors
+  // on the previous tick's zoom/pan) instead of all snapping off one stale frame.
+  const viewRef = useRef({ userZoom, panX, panY, baseScale, cropW, cropH });
+  viewRef.current = { userZoom, panX, panY, baseScale, cropW, cropH };
+
+  // Mouse-wheel zoom, anchored on the cursor so the point under it stays put
+  // (mirrors the chart). Needs a non-passive listener to preventDefault the page
+  // scroll, so it's attached imperatively. Re-attached only when the canvas host
+  // is (re)created — keyed on open/step like the resize observer — never on
+  // zoom/pan, which the handler reads from viewRef instead.
+  useEffect(() => {
+    const el = hostRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const v = viewRef.current;
+      const nz = clamp(v.userZoom * (e.deltaY < 0 ? 1.15 : 1 / 1.15), ZOOM_MIN, ZOOM_MAX);
+      if (nz === v.userZoom) return;
+      const rect = el.getBoundingClientRect();
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
+      const dW0 = v.cropW * v.baseScale * v.userZoom;
+      const dH0 = v.cropH * v.baseScale * v.userZoom;
+      // Fraction of the current crop under the cursor (crop is centred + panned).
+      const leftX = rect.width / 2 - dW0 / 2 + v.panX;
+      const topY = rect.height / 2 - dH0 / 2 + v.panY;
+      const fracX = dW0 > 0 ? clamp((cx - leftX) / dW0, 0, 1) : 0.5;
+      const fracY = dH0 > 0 ? clamp((cy - topY) / dH0, 0, 1) : 0.5;
+      const dW = v.cropW * v.baseScale * nz;
+      const dH = v.cropH * v.baseScale * nz;
+      const npx = clampPan(cx - rect.width / 2 + dW / 2 - fracX * dW, dW, rect.width);
+      const npy = clampPan(cy - rect.height / 2 + dH / 2 - fracY * dH, dH, rect.height);
+      viewRef.current = { ...v, userZoom: nz, panX: npx, panY: npy };
+      setUserZoom(nz);
+      setPanX(npx);
+      setPanY(npy);
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [open, step]);
 
   const guideVals = useMemo(() => {
     const g: GuideConfig = bbox?.guides ?? {};
@@ -247,6 +372,12 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
   const onSvgPointerDown = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
       if (!bbox) return;
+      if (panning) {
+        e.preventDefault();
+        setPanDrag({ sx: e.clientX, sy: e.clientY, px: panX, py: panY });
+        e.currentTarget.setPointerCapture(e.pointerId);
+        return;
+      }
       const { x, y } = cssToChart(e.clientX, e.clientY, e.currentTarget);
       if (stepId === 'mask') {
         e.preventDefault();
@@ -262,12 +393,17 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
         e.currentTarget.setPointerCapture(e.pointerId);
       }
     },
-    [bbox, stepId, cssToChart],
+    [bbox, stepId, cssToChart, panning, panX, panY],
   );
 
   const onSvgPointerMove = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
       if (!bbox) return;
+      if (panDrag) {
+        setPanX(clampPan(panDrag.px + (e.clientX - panDrag.sx), displayW, hostSize.w));
+        setPanY(clampPan(panDrag.py + (e.clientY - panDrag.sy), displayH, hostSize.h));
+        return;
+      }
       const { x, y } = cssToChart(e.clientX, e.clientY, e.currentTarget);
       if (calibDrag) {
         setCalibDrag({ ...calibDrag, curY: Math.round(y) });
@@ -294,10 +430,14 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
         });
       }
     },
-    [bbox, calibDrag, slantDrag, stepId, maskDraft, drawing, cssToChart],
+    [bbox, calibDrag, slantDrag, stepId, maskDraft, drawing, cssToChart, panDrag, displayW, displayH, hostSize],
   );
 
   const onSvgPointerUp = useCallback(async () => {
+    if (panDrag) {
+      setPanDrag(null);
+      return;
+    }
     if (calibDrag) {
       const { field, curY } = calibDrag;
       setCalibDrag(null);
@@ -328,7 +468,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
       return;
     }
     if (stepId === 'weg') setDrawing(false);
-  }, [calibDrag, slantDrag, stepId, maskDraft, maskRadius, bbox, guideVals, updateBboxField, updateGuides, refreshCrop]);
+  }, [panDrag, calibDrag, slantDrag, stepId, maskDraft, maskRadius, bbox, guideVals, updateBboxField, updateGuides, refreshCrop]);
 
   const undoMask = useCallback(async () => {
     if (!bbox || bbox.mask_strokes.length === 0) return;
@@ -449,9 +589,18 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
     pts.map(([x, y]) => `${(x - bbox.x0) * scale},${(y - bbox.y0) * scale}`).join(' ');
 
   const canvas = (
-    <Box ref={hostRef} sx={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#111', overflow: 'hidden' }}>
+    <Box ref={hostRef} sx={{ flex: 1, minHeight: 0, position: 'relative', bgcolor: '#111', overflow: 'hidden' }}>
       {displayW > 0 && (
-        <Box sx={{ position: 'relative', width: displayW, height: displayH }}>
+        <Box
+          sx={{
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            width: displayW,
+            height: displayH,
+            transform: `translate(-50%, -50%) translate(${panX}px, ${panY}px)`,
+          }}
+        >
           <img
             src={cropUrl(glyphKey, cropCacheBust)}
             alt={known.label}
@@ -463,11 +612,17 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
           <svg
             width={displayW}
             height={displayH}
-            style={{ position: 'absolute', inset: 0, touchAction: 'none', cursor: stepId === 'mask' || stepId === 'weg' ? 'crosshair' : 'default' }}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              touchAction: 'none',
+              cursor: panning ? (panDrag ? 'grabbing' : 'grab') : stepId === 'mask' || stepId === 'weg' ? 'crosshair' : 'default',
+            }}
             onPointerDown={onSvgPointerDown}
             onPointerMove={onSvgPointerMove}
             onPointerUp={onSvgPointerUp}
             onPointerCancel={() => {
+              setPanDrag(null);
               setCalibDrag(null);
               setSlantDrag(null);
               setMaskDraft(null);
@@ -492,6 +647,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
                   strokeWidth={22}
                   style={{ cursor: 'ns-resize', pointerEvents: 'stroke' }}
                   onPointerDown={(e) => {
+                    if (panning) return; // let the drag bubble to the SVG → pan
                     e.stopPropagation();
                     setCalibDrag({ field: 'baseline_y', curY: bbox.baseline_y });
                     e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
@@ -511,6 +667,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
                   strokeWidth={22}
                   style={{ cursor: 'ns-resize', pointerEvents: 'stroke' }}
                   onPointerDown={(e) => {
+                    if (panning) return; // let the drag bubble to the SVG → pan
                     e.stopPropagation();
                     setCalibDrag({ field: 'midband_y', curY: bbox.midband_y });
                     e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
@@ -555,6 +712,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
                   strokeWidth={1}
                   style={{ cursor: 'ew-resize' }}
                   onPointerDown={(e) => {
+                    if (panning) return; // let the drag bubble to the SVG → pan
                     e.stopPropagation();
                     setSlantDrag({ index: i, curX: guideVals.slantXs[i] });
                     e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
@@ -597,6 +755,56 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
           </svg>
         </Box>
       )}
+      {/* Floating zoom controls — Schwenken toggle · −/Slider/+ · Anpassen (fit) */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 8,
+          right: 8,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.25,
+          px: 0.5,
+          py: 0.25,
+          borderRadius: 1,
+          bgcolor: 'rgba(20, 20, 20, 0.78)',
+        }}
+      >
+        <Tooltip title="Schwenken — Ausschnitt verschieben">
+          <IconButton
+            size="small"
+            onClick={() => setPanning((p) => !p)}
+            sx={{ color: panning ? SLANT_COLOR : '#bbb' }}
+            aria-label="Schwenken"
+            aria-pressed={panning}
+          >
+            <OpenWithIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        <IconButton size="small" onClick={() => zoomBy(1 / 1.3)} sx={{ color: '#bbb' }} aria-label="herauszoomen">
+          <RemoveIcon fontSize="small" />
+        </IconButton>
+        <Slider
+          size="small"
+          sx={{ width: 84, color: '#ccc' }}
+          min={ZOOM_MIN}
+          max={ZOOM_MAX}
+          step={0.05}
+          value={userZoom}
+          onChange={(_e, v) => typeof v === 'number' && applyZoom(v)}
+        />
+        <IconButton size="small" onClick={() => zoomBy(1.3)} sx={{ color: '#bbb' }} aria-label="hineinzoomen">
+          <AddIcon fontSize="small" />
+        </IconButton>
+        <Tooltip title="Anpassen — ganzen Ausschnitt zeigen">
+          <IconButton size="small" onClick={fitZoom} sx={{ color: '#bbb' }} aria-label="Anpassen">
+            <CenterFocusStrongIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        <Typography variant="caption" sx={{ color: '#bbb', minWidth: 32, textAlign: 'right' }}>
+          {Math.round(userZoom * 100)}%
+        </Typography>
+      </Box>
     </Box>
   );
 
