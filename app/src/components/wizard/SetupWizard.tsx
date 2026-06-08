@@ -234,33 +234,48 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
     setPanY(0);
   }, []);
 
+  // Live view geometry for the wheel handler. Refreshed every render so the
+  // once-attached listener always reads current values, and rewritten within a
+  // wheel burst so several ticks before React re-renders compound (each anchors
+  // on the previous tick's zoom/pan) instead of all snapping off one stale frame.
+  const viewRef = useRef({ userZoom, panX, panY, baseScale, cropW, cropH });
+  viewRef.current = { userZoom, panX, panY, baseScale, cropW, cropH };
+
   // Mouse-wheel zoom, anchored on the cursor so the point under it stays put
   // (mirrors the chart). Needs a non-passive listener to preventDefault the page
-  // scroll, so it's attached imperatively rather than via onWheel.
+  // scroll, so it's attached imperatively. Re-attached only when the canvas host
+  // is (re)created — keyed on open/step like the resize observer — never on
+  // zoom/pan, which the handler reads from viewRef instead.
   useEffect(() => {
     const el = hostRef.current;
     if (!el) return;
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
-      const nz = clamp(userZoom * (e.deltaY < 0 ? 1.15 : 1 / 1.15), ZOOM_MIN, ZOOM_MAX);
-      if (nz === userZoom) return;
+      const v = viewRef.current;
+      const nz = clamp(v.userZoom * (e.deltaY < 0 ? 1.15 : 1 / 1.15), ZOOM_MIN, ZOOM_MAX);
+      if (nz === v.userZoom) return;
       const rect = el.getBoundingClientRect();
       const cx = e.clientX - rect.left;
       const cy = e.clientY - rect.top;
+      const dW0 = v.cropW * v.baseScale * v.userZoom;
+      const dH0 = v.cropH * v.baseScale * v.userZoom;
       // Fraction of the current crop under the cursor (crop is centred + panned).
-      const leftX = rect.width / 2 - displayW / 2 + panX;
-      const topY = rect.height / 2 - displayH / 2 + panY;
-      const fracX = displayW > 0 ? clamp((cx - leftX) / displayW, 0, 1) : 0.5;
-      const fracY = displayH > 0 ? clamp((cy - topY) / displayH, 0, 1) : 0.5;
-      const dW = cropW * baseScale * nz;
-      const dH = cropH * baseScale * nz;
+      const leftX = rect.width / 2 - dW0 / 2 + v.panX;
+      const topY = rect.height / 2 - dH0 / 2 + v.panY;
+      const fracX = dW0 > 0 ? clamp((cx - leftX) / dW0, 0, 1) : 0.5;
+      const fracY = dH0 > 0 ? clamp((cy - topY) / dH0, 0, 1) : 0.5;
+      const dW = v.cropW * v.baseScale * nz;
+      const dH = v.cropH * v.baseScale * nz;
+      const npx = clampPan(cx - rect.width / 2 + dW / 2 - fracX * dW, dW, rect.width);
+      const npy = clampPan(cy - rect.height / 2 + dH / 2 - fracY * dH, dH, rect.height);
+      viewRef.current = { ...v, userZoom: nz, panX: npx, panY: npy };
       setUserZoom(nz);
-      setPanX(clampPan(cx - rect.width / 2 + dW / 2 - fracX * dW, dW, rect.width));
-      setPanY(clampPan(cy - rect.height / 2 + dH / 2 - fracY * dH, dH, rect.height));
+      setPanX(npx);
+      setPanY(npy);
     };
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => el.removeEventListener('wheel', onWheel);
-  }, [userZoom, panX, panY, baseScale, cropW, cropH, displayW, displayH]);
+  }, [open, step]);
 
   const guideVals = useMemo(() => {
     const g: GuideConfig = bbox?.guides ?? {};
@@ -698,7 +713,13 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
         }}
       >
         <Tooltip title="Schwenken — Ausschnitt verschieben">
-          <IconButton size="small" onClick={() => setPanning((p) => !p)} sx={{ color: panning ? SLANT_COLOR : '#bbb' }}>
+          <IconButton
+            size="small"
+            onClick={() => setPanning((p) => !p)}
+            sx={{ color: panning ? SLANT_COLOR : '#bbb' }}
+            aria-label="Schwenken"
+            aria-pressed={panning}
+          >
             <OpenWithIcon fontSize="small" />
           </IconButton>
         </Tooltip>
@@ -718,7 +739,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
           <AddIcon fontSize="small" />
         </IconButton>
         <Tooltip title="Anpassen — ganzen Ausschnitt zeigen">
-          <IconButton size="small" onClick={fitZoom} sx={{ color: '#bbb' }}>
+          <IconButton size="small" onClick={fitZoom} sx={{ color: '#bbb' }} aria-label="Anpassen">
             <CenterFocusStrongIcon fontSize="small" />
           </IconButton>
         </Tooltip>
