@@ -54,6 +54,8 @@ import {
   TextField,
   Tooltip,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
@@ -176,6 +178,12 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
   bboxRef.current = bbox;
   const known = knownGlyph(glyphKey);
   const hasCanonical = glyphsByKey[glyphKey]?.has_data === true;
+
+  // On a portrait phone the fixed-width side panel used to squeeze the crop
+  // canvas to near-zero (only visible after rotating to landscape). Below `md`
+  // we go full-screen and stack canvas-over-panel so the crop always gets room.
+  const theme = useTheme();
+  const compact = useMediaQuery(theme.breakpoints.down('md'));
 
   const [step, setStep] = useState(0);
   const stepId = STEPS[step].id;
@@ -1004,7 +1012,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
   const canAdvance = stepId !== 'weg' || hasCanonical;
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg" slotProps={{ paper: { sx: { height: '92vh' } } }}>
+    <Dialog open={open} onClose={onClose} fullScreen={compact} fullWidth maxWidth="lg" slotProps={{ paper: { sx: { height: compact ? '100%' : '92vh' } } }}>
       <Box sx={{ px: 2, pt: 2 }}>
         <Typography variant="h6">Einrichten · {known.label}</Typography>
         <Stepper nonLinear activeStep={step} sx={{ mt: 1 }}>
@@ -1017,13 +1025,15 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
           ))}
         </Stepper>
       </Box>
-      <Box sx={{ display: 'flex', flex: 1, minHeight: 0, gap: 2, p: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, flex: 1, minHeight: 0, gap: { xs: 1, md: 2 }, p: { xs: 1, md: 2 } }}>
         {stepId === 'overview' ? (
           <Box sx={{ flex: 1, overflowY: 'auto' }}>{panel}</Box>
         ) : (
           <>
             {canvas}
-            <Box sx={{ width: 340, flexShrink: 0, overflowY: 'auto' }}>{panel}</Box>
+            {/* On mobile this drops below the canvas with a capped, scrollable
+                height so the crop above it always stays visible. */}
+            <Box sx={{ width: { xs: '100%', md: 340 }, flexShrink: 0, overflowY: 'auto', maxHeight: { xs: '40%', md: 'none' } }}>{panel}</Box>
           </>
         )}
       </Box>
