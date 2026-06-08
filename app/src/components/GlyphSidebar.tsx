@@ -249,7 +249,7 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
             size="small"
             variant="contained"
             startIcon={<AutoFixHighIcon />}
-            disabled={!activeGlyph || !hasBbox(activeGlyph)}
+            disabled={!activeGlyph || !hasBbox(activeGlyph) || isLocked(activeGlyph)}
             onClick={launchWizard}
             sx={{ mt: 1.5 }}
           >
@@ -270,6 +270,11 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
           {activeGlyph && !hasBbox(activeGlyph) && (
             <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1 }}>
               Noch keine Bbox — im Modus „Bbox“ ein Rechteck auf der Vorlage ziehen.
+            </Typography>
+          )}
+          {activeGlyph && hasBbox(activeGlyph) && isLocked(activeGlyph) && (
+            <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1 }}>
+              🔒 Gesperrt (fertig) — oben in der Leiste entsperren, um zu bearbeiten.
             </Typography>
           )}
         </Box>
