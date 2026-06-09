@@ -96,6 +96,9 @@ export function LandingView() {
                 lineHeight: 1.04,
                 letterSpacing: '-0.01em',
                 color: paper.ink,
+                // Letterpress deboss: a hairline of the paper's light tone
+                // below the ink, as pressed type catches the sheet's light.
+                textShadow: '0 1px 0 rgba(241, 232, 212, 0.35)',
                 mb: '1.5rem',
                 ...fu(0.18),
               }}
@@ -195,7 +198,7 @@ export function LandingView() {
                 }}
               >
                 <Box sx={{ fontFamily: display, fontStyle: 'italic', fontWeight: 500, color: paper.viridian, fontSize: '1.1rem', mb: '0.8rem' }}>{p.num}</Box>
-                <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: '1.5rem', color: paper.ink, mb: '0.5rem', lineHeight: 1.1 }}>
+                <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: '1.5rem', color: paper.ink, textShadow: '0 1px 0 rgba(241, 232, 212, 0.35)', mb: '0.5rem', lineHeight: 1.1 }}>
                   {p.title}
                 </Typography>
                 <Typography sx={{ color: paper.inkSoft, fontSize: '1.02rem', maxWidth: '30ch', lineHeight: 1.55 }}>{p.desc}</Typography>
