@@ -32,7 +32,7 @@ export const admin = {
   snack: {
     pickGlyphFirst: 'Wähle erst einen Glyph in der Liste links.',
     lockedNoEdit: '🔒 {{glyph}} ist gesperrt — oben entsperren, um zu ändern.',
-    noBboxDrawFirst: '{{glyph}}: hat noch keine Bbox — erst im Modus „Bbox" zeichnen.',
+    noBboxDrawFirst: '{{glyph}}: hat noch keine Bbox — erst im Modus „Bbox“ zeichnen.',
     editHandleHint: 'Zum Verschieben in die Box fassen, zum Skalieren an einen Griffpunkt (Ecke/Kantenmitte).',
     boxMoved: '{{glyph}}: Box verschoben.',
     boxResized: '{{glyph}}: Box angepasst.',
@@ -41,9 +41,9 @@ export const admin = {
     saveFailed: 'Speichern fehlgeschlagen:',
     noBboxYet: '{{glyph}}: noch keine Bbox.',
     scopeAllPositions: ' (alle Positionen)',
-    locked: '🔒 „{{name}}" gesperrt{{scope}}.',
-    unlocked: '🔓 „{{name}}" entsperrt{{scope}}.',
-    deleteConfirm: 'Bbox für „{{glyph}}" löschen?',
+    locked: '🔒 „{{name}}“ gesperrt{{scope}}.',
+    unlocked: '🔓 „{{name}}“ entsperrt{{scope}}.',
+    deleteConfirm: 'Bbox für „{{glyph}}“ löschen?',
     deleteConfirmCanonical: ' Das gespeicherte Canonical wird mit entfernt.',
     deleted: '{{glyph}}: gelöscht.',
     // Followed by the error in the snackbar message.

@@ -1,4 +1,4 @@
-// Schritt 5 · Übersicht & Freigabe — Diagnose link, the unified-vs-split
+// Step 5 "Übersicht & Freigabe" — Diagnose link, the unified-vs-split
 // (applyAll) choice and the lock summary. The lock button itself sits in the
 // wizard footer ("Abschließen & sperren").
 

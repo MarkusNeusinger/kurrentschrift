@@ -1,5 +1,5 @@
-// Schritt 1 · Ausschluss (Radierer) — brush radius + undo. The eraser strokes
-// themselves are painted on WizardCanvas and committed to bbox.mask_strokes.
+// Step 1 "Ausschluss" (the freeform eraser) — brush radius + undo. The eraser
+// strokes themselves are painted on WizardCanvas and committed to bbox.mask_strokes.
 
 import UndoIcon from '@mui/icons-material/Undo';
 import { Box, Button, Slider, Stack, Typography } from '@mui/material';

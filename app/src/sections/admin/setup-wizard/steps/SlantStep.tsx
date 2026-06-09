@@ -1,4 +1,4 @@
-// Schritt 3 · Schräge — the shared slant angle + add/remove of the individually
+// Step 3 "Schräge" — the shared slant angle + add/remove of the individually
 // placed slant lines. The green drag handles live on WizardCanvas.
 
 import AddIcon from '@mui/icons-material/Add';
@@ -32,7 +32,11 @@ export function SlantStep({
         {de.wizard.slant.body2BeforeBold} <b>{de.wizard.slant.body2Bold}</b> {de.wizard.slant.body2AfterBold}
       </Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <TextField label={de.wizard.slant.angleLabel} type="number" size="small" value={Math.round(guideVals.slantDeg)} onChange={(e) => updateGuides({ slant_deg: Number(e.target.value) })} slotProps={{ input: { sx: { color: SLANT_COLOR, fontFamily: 'monospace' }, endAdornment: '°' } }} sx={{ flex: 1 }} />
+        <TextField label={de.wizard.slant.angleLabel} type="number" size="small" value={Math.round(guideVals.slantDeg)} onChange={(e) => {
+            // Guard NaN (cleared field) — it would serialize to null and corrupt the guides.
+            const v = Number(e.target.value);
+            if (Number.isFinite(v)) updateGuides({ slant_deg: v });
+          }} slotProps={{ input: { sx: { color: SLANT_COLOR, fontFamily: 'monospace' }, endAdornment: '°' } }} sx={{ flex: 1 }} />
         <IconButton size="small" onClick={() => updateGuides({ slant_deg: Math.round(guideVals.slantDeg) + 1 })} sx={{ color: SLANT_COLOR }}>
           <ArrowUpwardIcon fontSize="small" />
         </IconButton>

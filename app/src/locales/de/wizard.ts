@@ -98,7 +98,7 @@ export const wizard = {
     bodyAfterBold:
       'kannst du das Ergebnis groß ansehen: der reine Crop, das Skelett mit Ankern und die kanonische Vorlage nebeneinander (plus den M4-Fit).',
     openDiagnose: 'Diagnose öffnen',
-    noTraceYet: 'Noch kein Weg gezeichnet — Schritt „Weg" zuerst.',
+    noTraceYet: 'Noch kein Weg gezeichnet — Schritt „Weg“ zuerst.',
     positionsHeading: 'Positionen (Anfang · Mitte · Ende)',
     unifiedOption: 'Eine Form für alle Positionen',
     splitOption: 'Nur „{{position}}“ getrennt einrichten (abweichende Form)',
