@@ -17,7 +17,13 @@ import numpy as np
 
 from core.chart import crop_with_mask, load_chart_grayscale
 from core.extract import binarize_adaptive, skeleton_and_width
-from core.template import allocate_samples, chord_length, multi_stroke_outline, template_guides
+from core.template import (
+    allocate_samples,
+    chord_length,
+    multi_stroke_centerlines,
+    multi_stroke_outline,
+    template_guides,
+)
 
 
 DEFAULT_N_ANCHORS = 50
@@ -302,6 +308,11 @@ def diagnostic_for_glyph(
     # One outline polygon per pen-stroke (slant applied) so a pen lift reads as a
     # real gap instead of a filled bar bridging the two strokes.
     outline_polygons = multi_stroke_outline(anchors_template, half_widths_template, stroke_starts, slant_deg, n=240)
+    # Matching per-stroke centerlines (same sampling) so the frontend can sweep a
+    # wide mask along the ductus and reveal the silhouette in writing order.
+    centerlines_template = multi_stroke_centerlines(
+        anchors_template, half_widths_template, stroke_starts, slant_deg, n=240
+    )
 
     return {
         "crop_size": {"w": int(w), "h": int(h)},
@@ -314,6 +325,8 @@ def diagnostic_for_glyph(
         # the first polygon for older clients (identical when there is one stroke).
         "outline_polygon": outline_polygons[0] if outline_polygons else [],
         "outline_polygons": outline_polygons,
+        # Per-stroke centerlines (writing order) for the animated "as written" render.
+        "centerlines_template": centerlines_template,
         "baseline_y_crop": int(bbox["baseline_y"]) - y0,
         "midband_y_crop": int(bbox["midband_y"]) - y0,
         "template_guides": template_guides(style_ratio),

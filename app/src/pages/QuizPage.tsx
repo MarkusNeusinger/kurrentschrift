@@ -37,6 +37,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cropUrl } from '../api';
 import { PaperBackground } from '../components/PaperBackground';
 import { PublicHeader } from '../components/PublicHeader';
+import { WrittenGlyph } from '../components/WrittenGlyph';
 import { DIFFICULTIES, knownGlyph, SCRIPTS, type Difficulty, type KnownGlyph } from '../constants';
 import { useAdmin } from '../state';
 
@@ -74,7 +75,7 @@ const inCase = (letter: string, kg: KnownGlyph): string =>
 const questionCropUrl = (key: string, _difficulty: Difficulty): string => cropUrl(key);
 
 export function QuizPage() {
-  const { source, bboxesByKey, loadError, waking } = useAdmin();
+  const { source, bboxesByKey, glyphsByKey, loadError, waking } = useAdmin();
 
   const [script, setScript] = useState('kurrent');
   const [caseMode, setCaseMode] = useState<CaseMode>('lower');
@@ -84,6 +85,9 @@ export function QuizPage() {
   const [finished, setFinished] = useState(false);
 
   const [current, setCurrent] = useState<QuizItem | null>(null);
+  // Bumped on every new question so the WrittenGlyph remounts and replays its
+  // writing animation even when the same letter happens to come up again.
+  const [qNonce, setQNonce] = useState(0);
   const [choices, setChoices] = useState<string[]>([]);
   const [input, setInput] = useState('');
   const [verdict, setVerdict] = useState<'idle' | 'correct' | 'wrong' | 'revealed'>('idle');
@@ -162,6 +166,7 @@ export function QuizPage() {
         }
       }
       setCurrent(pick);
+      setQNonce((n) => n + 1);
       setChoices(buildChoices(pick));
       setInput('');
       setVerdict('idle');
@@ -349,6 +354,8 @@ export function QuizPage() {
           ) : (
             <PlayPanel
               current={current}
+              hasDuctus={current ? glyphsByKey[current.key] != null : false}
+              qNonce={qNonce}
               choices={choices}
               input={input}
               setInput={setInput}
@@ -392,6 +399,61 @@ function CenterPage({ children }: { children: React.ReactNode }) {
   );
 }
 
+// The quiz prompt: the glyph "as written" (animated ductus) when it has a traced
+// canonical, else the static Loth crop. If the written render reports no canonical
+// (a 404 race), it falls back to the crop for this question.
+function QuestionVisual({
+  item,
+  hasDuctus,
+  qNonce,
+  difficulty,
+  verdict,
+}: {
+  item: QuizItem;
+  hasDuctus: boolean;
+  qNonce: number;
+  difficulty: Difficulty;
+  verdict: 'idle' | 'correct' | 'wrong' | 'revealed';
+}) {
+  const [fellBack, setFellBack] = useState(false);
+  // Reset the fallback whenever the question changes.
+  useEffect(() => setFellBack(false), [item.key, qNonce]);
+  const showWritten = hasDuctus && !fellBack;
+
+  return (
+    <Paper
+      variant="outlined"
+      sx={{
+        p: 2,
+        minHeight: 200,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: '#fff',
+        borderColor: verdict === 'correct' ? 'success.main' : verdict === 'wrong' ? 'error.main' : 'divider',
+        transition: 'border-color 120ms',
+      }}
+    >
+      {showWritten ? (
+        <WrittenGlyph
+          key={`${item.key}-${qNonce}`}
+          glyphKey={item.key}
+          height={220}
+          onUnavailable={() => setFellBack(true)}
+        />
+      ) : (
+        <Box
+          component="img"
+          src={questionCropUrl(item.key, difficulty)}
+          alt="Kurrent-Buchstabe"
+          sx={{ maxWidth: '100%', maxHeight: 260, objectFit: 'contain', userSelect: 'none' }}
+          draggable={false}
+        />
+      )}
+    </Paper>
+  );
+}
+
 interface SetupProps {
   script: string;
   setScript: (s: string) => void;
@@ -413,9 +475,9 @@ function SetupPanel(p: SetupProps) {
     <Paper variant="outlined" sx={{ p: 3 }}>
       <Stack spacing={3}>
         <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
-          Erkenne die Kurrent-Buchstaben: Du siehst einen Buchstaben aus der historischen Vorlage und tippst (oder wählst),
-          welcher es ist. Richtig → weiter, falsch → noch einmal. Am Ende zeigt dir die Auswertung, welche Buchstaben dir
-          schwerfielen.
+          Erkenne die Kurrent-Buchstaben: Jeder Buchstabe wird dir Zug um Zug geschrieben — in der Reihenfolge der Feder —
+          und du tippst (oder wählst), welcher es ist. Richtig → weiter, falsch → noch einmal. Am Ende zeigt dir die
+          Auswertung, welche Buchstaben dir schwerfielen.
         </Typography>
 
         <Field label="Schrift">
@@ -516,6 +578,11 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 interface PlayProps {
   current: QuizItem | null;
+  // Whether the shown glyph has a traced canonical, so it can be rendered "as
+  // written" (animated ductus) instead of the static crop.
+  hasDuctus: boolean;
+  // Per-question nonce; remounts the WrittenGlyph so the writing animation replays.
+  qNonce: number;
   choices: string[];
   input: string;
   setInput: (s: string) => void;
@@ -560,29 +627,9 @@ function PlayPanel(p: PlayProps) {
         </Button>
       </Box>
 
-      {/* The letter crop */}
-      <Paper
-        variant="outlined"
-        sx={{
-          p: 2,
-          minHeight: 200,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: '#fff',
-          borderColor:
-            verdict === 'correct' ? 'success.main' : verdict === 'wrong' ? 'error.main' : 'divider',
-          transition: 'border-color 120ms',
-        }}
-      >
-        <Box
-          component="img"
-          src={questionCropUrl(current.key, p.difficulty)}
-          alt="Kurrent-Buchstabe"
-          sx={{ maxWidth: '100%', maxHeight: 260, objectFit: 'contain', userSelect: 'none' }}
-          draggable={false}
-        />
-      </Paper>
+      {/* The letter — rendered "as written" (animated ductus) when a canonical
+          exists, otherwise the static Loth crop. */}
+      <QuestionVisual item={current} hasDuctus={p.hasDuctus} qNonce={p.qNonce} difficulty={p.difficulty} verdict={verdict} />
 
       {/* Solution reveal */}
       {showSolution && (
@@ -597,6 +644,22 @@ function PlayPanel(p: PlayProps) {
           <Box component="span" sx={{ color: 'text.secondary' }}>
             ({current.kg.label})
           </Box>
+          {/* When we showed the generated written form, surface the original Loth
+              crop so the learner can compare it against the cut-out specimen. */}
+          {p.hasDuctus && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+              <Typography variant="caption" color="text.secondary">
+                in der Vorlage:
+              </Typography>
+              <Box
+                component="img"
+                src={cropUrl(current.key)}
+                alt="Loth-Vorlage"
+                sx={{ height: 56, maxWidth: 120, objectFit: 'contain', bgcolor: '#fff', borderRadius: 0.5, p: 0.25 }}
+                draggable={false}
+              />
+            </Box>
+          )}
         </Alert>
       )}
 

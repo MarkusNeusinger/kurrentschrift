@@ -5,6 +5,7 @@ import numpy as np
 from core.template import (
     allocate_samples,
     apply_slant,
+    multi_stroke_centerlines,
     multi_stroke_outline,
     sample_polyline,
     stroke_outline,
@@ -81,3 +82,25 @@ def test_multi_stroke_outline_one_polygon_per_stroke():
     assert len(polys) == 2
     # No stroke_starts → a single continuous stroke → one polygon.
     assert len(multi_stroke_outline(anchors, widths, None, slant_deg=90.0)) == 1
+
+
+def test_multi_stroke_centerlines_one_line_per_stroke():
+    anchors = np.array([[0.0, 1.0], [0.0, 0.0], [0.3, 1.0], [0.3, 0.0]])
+    widths = np.array([0.1, 0.1, 0.1, 0.1])
+    lines = multi_stroke_centerlines(anchors, widths, [0, 2], slant_deg=90.0)
+    assert len(lines) == 2
+    # No stroke_starts → one continuous centerline.
+    assert len(multi_stroke_centerlines(anchors, widths, None, slant_deg=90.0)) == 1
+
+
+def test_centerline_runs_down_the_spine_of_its_outline():
+    # The outline is left+right offsets of the same centerline samples, so each
+    # outline polygon has exactly twice as many points as its centerline — proof
+    # they are sampled identically and stay aligned.
+    anchors = np.array([[0.0, 1.0], [0.0, 0.0], [0.3, 1.0], [0.3, 0.0]])
+    widths = np.array([0.1, 0.12, 0.1, 0.12])
+    lines = multi_stroke_centerlines(anchors, widths, [0, 2], slant_deg=65.0, n=40)
+    polys = multi_stroke_outline(anchors, widths, [0, 2], slant_deg=65.0, n=40)
+    assert len(lines) == len(polys) == 2
+    for line, poly in zip(lines, polys, strict=True):
+        assert len(poly) == 2 * len(line)
