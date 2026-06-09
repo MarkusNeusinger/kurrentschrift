@@ -61,11 +61,11 @@ import {
 } from '@mui/material';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import { cropUrl, getGlyph, postResample, postTrace, putBbox } from '../../api';
+import { cropUrl, getGlyph, postResample, postTrace, putBbox } from '@/lib/api';
 import { isLetterSplit, knownGlyph, POSITION_LABEL, siblingKeys } from '../../constants';
 import { couplingLabel } from '../../lib/labels';
 import { useAdmin } from '../../state';
-import type { BboxIn, BboxOut, CouplingHeight, GlyphSummary, GuideConfig, MaskStroke, StrokePoint } from '../../types';
+import type { BboxIn, BboxOut, CouplingHeight, GlyphSummary, GuideConfig, MaskStroke, StrokePoint } from '@/lib/api';
 
 const SLANT_COLOR = '#39d98a';
 const COUPLING_OPTIONS: CouplingHeight[] = ['baseline', 'midband', 'ascender', 'descender'];

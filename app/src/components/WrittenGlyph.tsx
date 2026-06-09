@@ -18,13 +18,7 @@ import ReplayIcon from '@mui/icons-material/Replay';
 import { Alert, Box, CircularProgress, IconButton, keyframes } from '@mui/material';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 
-import { getDiagnostic } from '../api';
-import type { DiagnosticData } from '../types';
-
-// `api.asJson` prefixes errors with the HTTP status (e.g. "404 Not Found: …") and
-// String(Error) prepends "Error: " — match the leading status token so a stray
-// "404" elsewhere in the message can't be mistaken for a missing canonical.
-const isNotFound = (msg: string): boolean => /^(?:Error:\s*)?404\b/.test(msg);
+import { ApiError, getDiagnostic, type DiagnosticData } from '@/lib/api';
 
 // Reveal a dashed path (pathLength=1, dasharray=1): offset 1 hides it, 0 draws it.
 const reveal = keyframes`from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; }`;
@@ -117,8 +111,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
         setData(d);
       })
       .catch((e) => {
-        const msg = String(e);
-        if (isNotFound(msg)) {
+        if (e instanceof ApiError && e.status === 404) {
           // No canonical traced yet → let the caller show the crop instead.
           cache.set(glyphKey, null);
           if (!cancelled) {
@@ -126,7 +119,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
             onUnavailableRef.current?.();
           }
         } else if (!cancelled) {
-          setError(msg);
+          setError(String(e));
         }
       });
     return () => {

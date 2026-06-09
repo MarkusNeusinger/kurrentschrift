@@ -36,10 +36,10 @@ import {
 } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { chartUrl, deleteBbox, deleteGlyph, putBbox } from '../api';
+import { chartUrl, deleteBbox, deleteGlyph, putBbox } from '@/lib/api';
 import { isLetterSplit, knownGlyph, siblingKeys } from '../constants';
 import { useAdmin } from '../state';
-import type { BboxIn, BboxOut } from '../types';
+import type { BboxIn, BboxOut } from '@/lib/api';
 
 type Mode = 'pan' | 'bbox' | 'edit';
 

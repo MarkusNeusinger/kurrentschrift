@@ -19,7 +19,6 @@
 // glyph_key back to its `answer` letter via KNOWN_GLYPHS, so marking a new
 // letter on the chart immediately makes it quizzable.
 
-export const SOURCE_ID = 'loth-1866';
 
 export type Position = 'initial' | 'medial' | 'final';
 export type LetterCase = 'upper' | 'lower';
