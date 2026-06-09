@@ -12,12 +12,18 @@ import { Box, GlobalStyles } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 import type { ReactNode } from 'react';
 
+import grainTile from '@/assets/paper-grain.png';
 import kurrentWoff2 from '@/assets/fonts/gl-germancursive.woff2';
 import { garamond, paper } from '@/styles/paper';
 
-// faint paper grain (greyscale fractal noise, multiplied over the warm base)
-const GRAIN =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E\")";
+// Faint paper grain. Pre-baked 128px PNG tile (deterministic noise, ~9 KB)
+// instead of the previous live feTurbulence data-URI under mix-blend multiply:
+// the live filter + viewport-sized blend layer cost ~18 fps while scrolling
+// (43 fps with the live filter, 61 fps with it disabled, 60 fps with this
+// tile). The multiply math is baked into the tile as
+// black-at-alpha pixels (alpha = a·(1−g)), so the rendered look stays the same
+// without any blend-mode compositing.
+const GRAIN = `url(${grainTile})`;
 
 interface PaperBackgroundProps {
   /** Optional so a bare ground can serve as a route Suspense fallback. */
@@ -49,8 +55,6 @@ export function PaperBackground({ children, minHeight = '100vh', sx }: PaperBack
             pointerEvents: 'none',
             zIndex: 0,
             backgroundImage: GRAIN,
-            mixBlendMode: 'multiply',
-            opacity: 0.5,
           },
           '&::after': {
             content: '""',
