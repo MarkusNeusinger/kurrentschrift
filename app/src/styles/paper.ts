@@ -44,7 +44,7 @@ export const inkState = {
 export const schulheft = {
   rulingBlue: '#8fa8c4', // printed writing-line blue (approx)
   rulingBlueFaded: '#a8bcd0', // recessive variant for context guides (approx)
-  randleiste: '#b03a3a', // aged printed vermilion-red margin bar (approx)
+  marginRed: '#b03a3a', // Randleiste: aged printed red margin bar (approx)
 } as const;
 
 // Period pigment set — the chromolithography palette of German school wall
@@ -53,12 +53,12 @@ export const schulheft = {
 // carry a "derived for contrast, not a period hex" comment (style-guide:
 // synthesis stays recognisable as such).
 export const pigment = {
-  zinnober: '#e34234', // vermilion / Zinnober (named) — alarm/error family
-  ochsenblut: '#6b2e2a', // oxblood / Ochsenblut — deep red, usable as text
-  ocker: '#cc7722', // ochre / Ocker (named) — warning family
-  preussisch: '#003153', // Prussian blue, Berlin ~1706 (named) — info family
-  chromgruen: '#4a6741', // chrome green (chrome yellow + Prussian blue mix)
-  altgold: '#c9a227', // old gold — Bronzedruck on charts and diplomas (approx)
+  vermilion: '#e34234', // Zinnober (named) — alarm/error family
+  oxblood: '#6b2e2a', // Ochsenblut — deep red, usable as text
+  ochre: '#cc7722', // Ocker (named) — warning family
+  prussianBlue: '#003153', // Preußischblau, Berlin ~1706 (named) — info family
+  chromeGreen: '#4a6741', // Chromgrün (chrome yellow + Prussian blue mix)
+  oldGold: '#c9a227', // Altgold — Bronzedruck on charts and diplomas (approx)
 } as const;
 
 export const garamond = "'EB Garamond', Georgia, 'Times New Roman', serif";

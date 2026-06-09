@@ -26,12 +26,12 @@ export const imprint = {
   viridian: paper.viridian, // brand
   viridianDark: '#336152', // hover / accent-dark
   viridianTint: 'rgba(64, 130, 109, 0.12)',
-  // Ocker text/icon shade where the raw pigment (2.44:1) is too light.
+  // Ochre text/icon shade where the raw pigment (2.44:1) is too light.
   // (derived for contrast, not a period hex)
-  ockerDark: '#a85f17',
+  ochreDark: '#a85f17',
   // Prussian blue lift for surfaces where #003153 sinks away.
   // (derived for contrast, not a period hex)
-  preussischLight: '#2a4a66',
+  prussianBlueLight: '#2a4a66',
 } as const;
 
 export const surface = {
@@ -45,17 +45,18 @@ export const surface = {
 export const palette: PaletteOptions = {
   mode: 'light',
   primary: { main: imprint.viridian, dark: imprint.viridianDark, contrastText: '#FFFFFF' },
-  secondary: { main: pigment.preussisch, light: imprint.preussischLight },
+  secondary: { main: pigment.prussianBlue, light: imprint.prussianBlueLight },
   // Oxblood error family (user decision, R1): deep period red with excellent
-  // legibility on the cream ground (7.41:1); raw Zinnober stays the light
-  // fill/border tone. A deepened-Zinnober alternative (#b5301f) was rejected
-  // in favour of the calmer, more paper-bound oxblood.
-  error: { main: pigment.ochsenblut, light: pigment.zinnober },
+  // legibility on the cream ground (7.41:1); raw vermilion (Zinnober) stays
+  // the light fill/border tone. A deepened-vermilion alternative (#b5301f)
+  // was rejected in favour of the calmer, more paper-bound oxblood.
+  error: { main: pigment.oxblood, light: pigment.vermilion },
   // Ochre replaces the old amber (#DDCC77 was 1.17:1 on cream — invisible).
-  warning: { main: pigment.ocker, dark: imprint.ockerDark },
-  info: { main: pigment.preussisch, light: imprint.preussischLight },
+  warning: { main: pigment.ochre, dark: imprint.ochreDark },
+  info: { main: pigment.prussianBlue, light: imprint.prussianBlueLight },
   // success / "correct" also runs on viridian — one accent across the site; the
-  // quiz still pairs it with red for "falsch", so the two stay distinguishable.
+  // quiz still pairs it with red for the wrong-answer state, so the two stay
+  // distinguishable.
   success: { main: imprint.viridian, dark: imprint.viridianDark },
   background: { default: surface.page, paper: surface.card },
   text: { primary: ink.primary, secondary: ink.soft, disabled: ink.muted },
