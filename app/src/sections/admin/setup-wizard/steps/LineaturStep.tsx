@@ -1,5 +1,5 @@
-// Schritt 2 · Lineatur — Oberlinie/Unterlinie toggles + the current line
-// readout. Grundlinie/Mittellinie are dragged directly on WizardCanvas.
+// Step 2 "Lineatur" — Oberlinie/Unterlinie toggles + the current line readout.
+// Grundlinie/Mittellinie are dragged directly on WizardCanvas.
 
 import { Checkbox, FormControlLabel, Stack, Typography } from '@mui/material';
 

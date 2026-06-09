@@ -1,5 +1,5 @@
-// Schritt 4 · Weg (Ductus) — stroke undo/discard/save, n_anchors + resample,
-// and the entry/exit coupling heights. The strokes are drawn on WizardCanvas.
+// Step 4 "Weg" (the ductus trace) — stroke undo/discard/save, n_anchors +
+// resample, and the entry/exit coupling heights. Strokes are drawn on WizardCanvas.
 
 import RefreshIcon from '@mui/icons-material/Refresh';
 import UndoIcon from '@mui/icons-material/Undo';
@@ -64,7 +64,11 @@ export function TraceStep({
           type="number"
           size="small"
           value={bbox.n_anchors}
-          onChange={(e) => updateBboxField({ n_anchors: Math.max(4, Number(e.target.value)) })}
+          onChange={(e) => {
+            // Guard NaN (cleared field) — it would serialize to null and corrupt n_anchors.
+            const v = Number(e.target.value);
+            if (Number.isFinite(v)) updateBboxField({ n_anchors: Math.max(4, v) });
+          }}
           sx={{ flex: 1 }}
         />
         <Button size="small" variant="outlined" startIcon={<RefreshIcon />} disabled={!hasCanonical || busy} onClick={resample}>

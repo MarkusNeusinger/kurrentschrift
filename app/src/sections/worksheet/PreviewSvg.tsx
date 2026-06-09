@@ -1,18 +1,22 @@
 import { Box } from '@mui/material';
 import { useMemo } from 'react';
 
-import { A4, DRAW_ORDER, ROLE_STYLES, type Segment, type TextMark } from '@/lib/lineatur';
+import { A4, DRAW_ORDER, ROLE_STYLES, type LineRole, type RoleStyle, type Segment, type TextMark } from '@/lib/lineatur';
 
 export function PreviewSvg({
   segments,
   marks,
   footerLeft,
   footerRight,
+  // Ruling colour scheme; pass the same map to lineaturePdf so preview and
+  // print never diverge (defaults to the standard print look).
+  styles = ROLE_STYLES,
 }: {
   segments: Segment[];
   marks: TextMark[];
   footerLeft: string;
   footerRight: string;
+  styles?: Record<LineRole, RoleStyle>;
 }) {
   // Paint in the same role order the PDF uses, so crossings look identical in
   // preview and print (stable sort keeps per-row order within a role).
@@ -35,7 +39,7 @@ export function PreviewSvg({
     >
       <rect x={0} y={0} width={A4.widthMm} height={A4.heightMm} fill="#FFFFFF" stroke="none" />
       {ordered.map((s, i) => {
-        const st = ROLE_STYLES[s.role];
+        const st = styles[s.role];
         return (
           <line
             key={i}

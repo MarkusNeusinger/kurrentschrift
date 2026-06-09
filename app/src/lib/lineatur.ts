@@ -19,10 +19,14 @@
 // fully client-side.
 
 import { de } from '@/locales';
+import { schulheft } from '@/styles/paper';
 
 export const A4 = { widthMm: 210, heightMm: 297 } as const;
 
-export type LineRole = 'baseline' | 'waist' | 'ascender' | 'descender' | 'slant' | 'pen';
+// `margin` is the vertical Randleiste of historical exercise books (printed
+// red margin bars are documented from ~1900); it only renders when a config
+// turns it on (`showMarginLine`).
+export type LineRole = 'baseline' | 'waist' | 'ascender' | 'descender' | 'slant' | 'pen' | 'margin';
 
 export interface Segment {
   x1: number;
@@ -60,6 +64,10 @@ export interface LineatureConfig {
   slantSpacingMm: number; // horizontal spacing between slant guides
   showPenAngle: boolean;
   penAngleDeg: number; // nib/pen-hold angle from the writing line (horizontal)
+  // Vertical Randleiste (historical printed margin bar, ~1900): off by
+  // default; x is measured from the left page edge like the printed original.
+  showMarginLine: boolean;
+  marginLineXMm: number;
 }
 
 export interface ScriptPreset extends LineatureConfig {
@@ -91,6 +99,8 @@ export const PRESETS: ScriptPreset[] = [
     // angle, so the pen-angle gauge is off by default here.
     showPenAngle: false,
     penAngleDeg: 45,
+    showMarginLine: false,
+    marginLineXMm: 20,
   },
   {
     id: 'suetterlin',
@@ -107,6 +117,8 @@ export const PRESETS: ScriptPreset[] = [
     slantSpacingMm: 10,
     showPenAngle: false,
     penAngleDeg: 30,
+    showMarginLine: false,
+    marginLineXMm: 20,
   },
   {
     id: 'offenbacher',
@@ -124,6 +136,8 @@ export const PRESETS: ScriptPreset[] = [
     // Broad nib: the pen-hold angle defines the thick/thin distribution.
     showPenAngle: true,
     penAngleDeg: 35,
+    showMarginLine: false,
+    marginLineXMm: 20,
   },
 ];
 
@@ -133,24 +147,46 @@ export interface RoleStyle {
   dash?: [number, number]; // dash pattern in mm (on, off)
 }
 
-// Typographic hierarchy: the baseline is the anchor (darkest, thickest), the
-// waist marks the x-height (medium), ascender/descender bounds are quiet dashed
-// hairlines, and slant guides are the faintest layer. Colours track the
-// warm-paper palette in theme.ts.
-export const ROLE_STYLES: Record<LineRole, RoleStyle> = {
-  baseline: { color: '#1A1A17', widthMm: 0.35 },
-  waist: { color: '#6B6A63', widthMm: 0.25 },
-  ascender: { color: '#B8B6AE', widthMm: 0.18, dash: [1.6, 1.6] },
-  descender: { color: '#B8B6AE', widthMm: 0.18, dash: [1.6, 1.6] },
-  slant: { color: '#D6D4CB', widthMm: 0.15, dash: [1, 1.6] },
-  // Instructional reference (the pen-angle gauge): dark ink so it prints
-  // reliably in black & white (the worksheet's normal output) — no brand
-  // colour, which would just become a faint grey on a mono printer.
-  pen: { color: '#1A1A17', widthMm: 0.35 },
-};
+// A complete ruling colour scheme. Preview and PDF consume the same styles
+// map, so the printout always matches the preview. Ruling colours are printed
+// CONTENT (a real ~1900 Schulheft printed blue lines + a red margin bar), so a
+// coloured ruling in the PDF is correct — the page ground itself stays white
+// and texture-free (style-guide §8 PDF neutrality).
+export interface RulingTheme {
+  id: string;
+  styles: Record<LineRole, RoleStyle>;
+}
+
+export const RULING_THEMES: RulingTheme[] = [
+  {
+    // Today's print look. Typographic hierarchy: the baseline is the anchor
+    // (darkest, thickest), the waist marks the x-height (medium), ascender/
+    // descender bounds are quiet dashed hairlines, and slant guides are the
+    // faintest layer. Colours track the warm-paper palette in theme/.
+    id: 'druck',
+    styles: {
+      baseline: { color: '#1A1A17', widthMm: 0.35 },
+      waist: { color: '#6B6A63', widthMm: 0.25 },
+      ascender: { color: '#B8B6AE', widthMm: 0.18, dash: [1.6, 1.6] },
+      descender: { color: '#B8B6AE', widthMm: 0.18, dash: [1.6, 1.6] },
+      slant: { color: '#D6D4CB', widthMm: 0.15, dash: [1, 1.6] },
+      // Instructional reference (the pen-angle gauge): dark ink so it prints
+      // reliably in black & white (the worksheet's normal output) — no brand
+      // colour, which would just become a faint grey on a mono printer.
+      pen: { color: '#1A1A17', widthMm: 0.35 },
+      // The historical Randleiste was red even alongside black/grey print;
+      // unused until showMarginLine is exposed in the UI.
+      margin: { color: schulheft.randleiste, widthMm: 0.4 },
+    },
+  },
+];
+
+// Default scheme — alias kept so existing imports stay valid.
+export const ROLE_STYLES: Record<LineRole, RoleStyle> = RULING_THEMES[0].styles;
 
 // Render order: faint layers first so darker lines sit on top at crossings.
-// Shared by the SVG preview and the PDF writer so the two never diverge.
+// Shared by the SVG preview and the PDF writer so the two never diverge. The
+// margin bar draws last: printed Randleisten sit on top of the ruling.
 export const DRAW_ORDER: LineRole[] = [
   'slant',
   'ascender',
@@ -158,6 +194,7 @@ export const DRAW_ORDER: LineRole[] = [
   'waist',
   'baseline',
   'pen',
+  'margin',
 ];
 
 // Liang–Barsky segment clip against an axis-aligned rectangle (xmin<xmax,
@@ -301,6 +338,15 @@ export function buildLineature(cfg: LineatureConfig): Lineature {
     }
 
     rowTop = yDescBot + cfg.rowGapMm;
+  }
+
+  // Vertical Randleiste: full writing height at a fixed distance from the
+  // left page edge, like the printed original.
+  if (cfg.showMarginLine && Number.isFinite(cfg.marginLineXMm)) {
+    const x = cfg.marginLineXMm;
+    if (x > 0 && x < A4.widthMm) {
+      segs.push({ x1: x, y1: top, x2: x, y2: bottom, role: 'margin' });
+    }
   }
 
   const gauge = penGauge(cfg, left, top);
