@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 
 import { knownGlyph } from '@/domain/glyphs';
 import { useAdmin } from '@/context/AdminContext';
+import { de } from '@/locales';
 import { DiagnosticView } from './DiagnosticView';
 import { FitView } from './FitView';
 
@@ -37,34 +38,30 @@ export function DiagnosticDialog() {
     <Dialog open={open} onClose={closeDiagnose} fullWidth maxWidth="xl" slotProps={{ paper: { sx: { height: '92vh' } } }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.5 }}>
         <Typography variant="h6" sx={{ flex: 1 }}>
-          Diagnose · {known?.label ?? glyphKey}
+          {de.admin.diagnostics.title} {known?.label ?? glyphKey}
         </Typography>
-        <IconButton size="small" onClick={closeDiagnose} aria-label="Diagnose schließen">
+        <IconButton size="small" onClick={closeDiagnose} aria-label={de.admin.diagnostics.close}>
           <CloseIcon />
         </IconButton>
       </Box>
       <Tabs value={tab} onChange={(_e, v) => setTab(v)} sx={{ px: 2, borderBottom: 1, borderColor: 'divider' }}>
-        <Tab value="diagnostic" label="Skelett & Canonical" />
-        <Tab value="fit" label="Fit (M4)" />
+        <Tab value="diagnostic" label={de.admin.diagnostics.tabDiagnostic} />
+        <Tab value="fit" label={de.admin.diagnostics.tabFit} />
       </Tabs>
       <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', p: 2 }}>
         {!hasCanonical ? (
-          <Alert severity="info">Noch kein Canonical — erst im Einrichten-Wizard einen Weg zeichnen und speichern.</Alert>
+          <Alert severity="info">{de.admin.diagnostics.noCanonical}</Alert>
         ) : tab === 'diagnostic' ? (
           <>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-              Die drei Verarbeitungsschritte nebeneinander: der reine Loth-Crop, das daraus
-              gewonnene Skelett mit den abgetasteten Ankern und schließlich die kanonische Vorlage
-              in Template-Koordinaten (Grundlinie = 0, Mittellinie = 1).
+              {de.admin.diagnostics.diagnosticIntro}
             </Typography>
             <DiagnosticView glyphKey={glyphKey} cropCacheBust={cropCacheBust} colWidth={COL_W} colHeight={COL_H} />
           </>
         ) : (
           <>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-              Die kanonische Vorlage auf ihr eigenes Skelett gefittet (M4): Skelett, Vorlage (grau)
-              und Fit (rot) übereinander, dazu die Fehlermaße. Mit dem λ-Regler die
-              Regularisierung abwägen — niedrig folgt dem Skelett, hoch hält die Form zusammen.
+              {de.admin.diagnostics.fitIntro}
             </Typography>
             <FitView glyphKey={glyphKey} cropCacheBust={cropCacheBust} colWidth={COL_W} colHeight={COL_H} />
           </>

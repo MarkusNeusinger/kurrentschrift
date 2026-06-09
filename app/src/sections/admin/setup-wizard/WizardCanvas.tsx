@@ -14,6 +14,7 @@ import { Box, IconButton, Slider, Tooltip, Typography } from '@mui/material';
 import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { cropUrl } from '@/lib/api';
+import { de } from '@/locales';
 import { overlay } from '@/sections/admin/overlayColors';
 import type { KnownGlyph } from '@/domain/glyphs';
 import type { BboxOut, SourceOut, StrokePoint } from '@/lib/api';
@@ -374,18 +375,18 @@ export function WizardCanvas({
           bgcolor: 'rgba(20, 20, 20, 0.78)',
         }}
       >
-        <Tooltip title="Schwenken — Ausschnitt verschieben">
+        <Tooltip title={de.wizard.canvas.panTooltip}>
           <IconButton
             size="small"
             onClick={() => setPanning((p) => !p)}
             sx={{ color: panning ? SLANT_COLOR : '#bbb' }}
-            aria-label="Schwenken"
+            aria-label={de.wizard.canvas.pan}
             aria-pressed={panning}
           >
             <OpenWithIcon fontSize="small" />
           </IconButton>
         </Tooltip>
-        <IconButton size="small" onClick={() => zoomBy(1 / 1.3)} sx={{ color: '#bbb' }} aria-label="herauszoomen">
+        <IconButton size="small" onClick={() => zoomBy(1 / 1.3)} sx={{ color: '#bbb' }} aria-label={de.wizard.canvas.zoomOut}>
           <RemoveIcon fontSize="small" />
         </IconButton>
         <Slider
@@ -397,11 +398,11 @@ export function WizardCanvas({
           value={userZoom}
           onChange={(_e, v) => typeof v === 'number' && applyZoom(v)}
         />
-        <IconButton size="small" onClick={() => zoomBy(1.3)} sx={{ color: '#bbb' }} aria-label="hineinzoomen">
+        <IconButton size="small" onClick={() => zoomBy(1.3)} sx={{ color: '#bbb' }} aria-label={de.wizard.canvas.zoomIn}>
           <AddIcon fontSize="small" />
         </IconButton>
-        <Tooltip title="Anpassen — ganzen Ausschnitt zeigen">
-          <IconButton size="small" onClick={fitZoom} sx={{ color: '#bbb' }} aria-label="Anpassen">
+        <Tooltip title={de.wizard.canvas.fitTooltip}>
+          <IconButton size="small" onClick={fitZoom} sx={{ color: '#bbb' }} aria-label={de.wizard.canvas.fit}>
             <CenterFocusStrongIcon fontSize="small" />
           </IconButton>
         </Tooltip>

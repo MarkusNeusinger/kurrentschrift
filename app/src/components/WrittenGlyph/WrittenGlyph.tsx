@@ -20,6 +20,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { ApiError, getDiagnostic, type DiagnosticData } from '@/lib/api';
+import { de } from '@/locales';
 
 // Reveal a dashed path (pathLength=1, dasharray=1): offset 1 hides it, 0 draws it.
 const reveal = keyframes`from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; }`;
@@ -181,7 +182,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
         viewBox={`${minX} ${vbY} ${vbW} ${vbH}`}
         preserveAspectRatio="xMidYMid meet"
         role="img"
-        aria-label="Kurrent-Buchstabe, wie geschrieben"
+        aria-label={de.common.writtenGlyph.ariaLabel}
         style={{ display: 'block', background: '#fff' }}
       >
         <defs>
@@ -235,7 +236,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
         <IconButton
           size="small"
           onClick={replay}
-          aria-label="noch einmal schreiben"
+          aria-label={de.common.writtenGlyph.replay}
           sx={{ position: 'absolute', bottom: 4, right: 4, color: 'text.disabled', '&:hover': { color: 'text.secondary' } }}
         >
           <ReplayIcon fontSize="small" />

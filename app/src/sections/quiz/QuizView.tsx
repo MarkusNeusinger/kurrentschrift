@@ -19,6 +19,7 @@ import { Container, Stack, Typography } from '@mui/material';
 import { BootStatus } from '@/components/BootStatus';
 import { PaperBackground } from '@/components/PaperBackground';
 import { PublicHeader } from '@/components/PublicHeader';
+import { de } from '@/locales';
 import { QuizPlayPanel } from '@/sections/quiz/QuizPlayPanel';
 import { QuizResultsPanel } from '@/sections/quiz/QuizResultsPanel';
 import { QuizSetupPanel } from '@/sections/quiz/QuizSetupPanel';
@@ -34,10 +35,10 @@ export function QuizView() {
     return (
       <BootStatus
         variant="error"
-        title="Vorlage nicht erreichbar"
+        title={de.common.boot.sourceUnreachable}
         message={loadError}
         onRetry={() => window.location.reload()}
-        retryLabel="Erneut versuchen"
+        retryLabel={de.common.boot.retry}
       />
     );
   }
@@ -46,7 +47,7 @@ export function QuizView() {
     return (
       <BootStatus
         variant="loading"
-        message={waking ? 'Vorlage startet (Cold Start), einen Moment…' : 'lade Vorlage…'}
+        message={waking ? de.common.boot.sourceColdStart : de.common.boot.loadingTemplate}
       />
     );
   }
@@ -57,7 +58,7 @@ export function QuizView() {
       <Container maxWidth="sm" sx={{ py: { xs: 4, sm: 6 } }}>
         <Stack spacing={3}>
           <Typography component="h1" sx={{ fontFamily: garamond, fontStyle: 'italic', fontSize: '2rem', lineHeight: 1.1 }}>
-            Buchstaben-Quiz
+            {de.quiz.title}
           </Typography>
 
           {!quiz.started ? (

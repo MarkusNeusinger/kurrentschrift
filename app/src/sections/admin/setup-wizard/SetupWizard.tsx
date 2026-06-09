@@ -34,6 +34,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import LockIcon from '@mui/icons-material/Lock';
 import { Alert, Box, Button, Dialog, Step, StepButton, Stepper, Typography, useMediaQuery, useTheme } from '@mui/material';
 
+import { de } from '@/locales';
 import { useCropView } from './useCropView';
 import { useWizard } from './useWizard';
 import { WizardCanvas } from './WizardCanvas';
@@ -103,7 +104,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
   return (
     <Dialog open={open} onClose={onClose} fullScreen={compact} fullWidth maxWidth="lg" slotProps={{ paper: { sx: { height: compact ? '100%' : '92vh' } } }}>
       <Box sx={{ px: 2, pt: 2 }}>
-        <Typography variant="h6">Einrichten · {known.label}</Typography>
+        <Typography variant="h6">{de.wizard.title} {known.label}</Typography>
         <Stepper nonLinear activeStep={step} sx={{ mt: 1 }}>
           {STEPS.map((s, i) => (
             <Step key={s.id} completed={false}>
@@ -149,17 +150,17 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
       )}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderTop: 1, borderColor: 'divider' }}>
         <Button startIcon={<ArrowBackIcon />} disabled={step === 0} onClick={() => setStep((s) => Math.max(0, s - 1))}>
-          Zurück
+          {de.wizard.footer.back}
         </Button>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button onClick={onClose}>Schließen</Button>
+          <Button onClick={onClose}>{de.wizard.footer.close}</Button>
           {step < STEPS.length - 1 ? (
             <Button variant="contained" endIcon={<ArrowForwardIcon />} disabled={!canAdvance} onClick={() => setStep((s) => Math.min(STEPS.length - 1, s + 1))}>
-              Weiter
+              {de.wizard.footer.next}
             </Button>
           ) : (
             <Button variant="contained" color="success" startIcon={<LockIcon />} disabled={!hasCanonical || busy} onClick={finish}>
-              Abschließen & sperren
+              {de.wizard.footer.finish}
             </Button>
           )}
         </Box>

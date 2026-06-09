@@ -28,16 +28,8 @@ export type GlyphGroup = 'mvp' | 'alphabet';
 // Front · middle · end of a word. On a teaching plate like Loth 1866 there is
 // usually a single specimen per letter, so the three positions start out
 // identical; they diverge only as distinct ductus get traced.
+// (The German per-position UI label lives in `@/locales` as POSITION_LABEL.)
 export const POSITIONS: Position[] = ['initial', 'medial', 'final'];
-
-// German label per position, shown wherever a position surfaces to the user (the
-// wizard's unified/split choice, the sidebar's per-position sub-entries of a
-// split letter). Front · middle · end of a word.
-export const POSITION_LABEL: Record<Position, string> = {
-  initial: 'Anfang',
-  medial: 'Mitte',
-  final: 'Ende',
-};
 
 export type LetterGroup = 'lower' | 'upper' | 'comb';
 

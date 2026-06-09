@@ -12,6 +12,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { cropUrl, getFit } from '@/lib/api';
 import type { FitData } from '@/lib/api';
+import { de } from '@/locales';
 import { useColumnWidth } from '@/sections/admin/diagnostics/useColumnWidth';
 
 interface Props {
@@ -67,7 +68,7 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 2 }}>
         <CircularProgress size={16} />
         <Typography variant="caption" color="text.secondary">
-          Fit wird gerechnet…
+          {de.admin.fit.computing}
         </Typography>
       </Box>
     );
@@ -77,10 +78,10 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
     return (
       <Box sx={{ p: 2 }}>
         <Alert severity={error.includes('404') ? 'info' : 'error'}>
-          {error.includes('404') ? 'noch kein Canonical — erst Strich aufnehmen' : error}
+          {error.includes('404') ? de.admin.diagnostics.noCanonicalShort : error}
         </Alert>
         <Button size="small" startIcon={<RefreshIcon />} onClick={() => fetchFit(lambda)} sx={{ mt: 1 }}>
-          neu laden
+          {de.admin.diagnostics.reload}
         </Button>
       </Box>
     );
@@ -101,7 +102,7 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
         {/* Overlay: crop + skeleton + canonical (grey) + fit (red) */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           <Typography variant="caption" color="text.secondary">
-            Crop · Skelett · Canonical (grau) · Fit (rot)
+            {de.admin.fit.overlayHeading}
           </Typography>
           <Box sx={{ position: 'relative', width: displayW, height: displayH, bgcolor: '#fff' }}>
             <img
@@ -139,21 +140,21 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
             <Chip
               size="small"
               color={m.success ? 'success' : 'warning'}
-              label={m.success ? 'konvergiert' : 'nicht konvergiert'}
+              label={m.success ? de.admin.fit.converged : de.admin.fit.notConverged}
             />
-            <Chip size="small" variant="outlined" label={`${m.iterations} Iter.`} />
+            <Chip size="small" variant="outlined" label={`${m.iterations} ${de.admin.fit.iterations}`} />
           </Box>
           <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
-            Geometrie-RMSE: {m.geo_rmse_px_initial} → <strong>{m.geo_rmse_px}</strong> px
+            {de.admin.fit.geoRmse} {m.geo_rmse_px_initial} → <strong>{m.geo_rmse_px}</strong> px
           </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
-            Breiten-RMSE: {m.width_rmse_px} px
+            {de.admin.fit.widthRmse} {m.width_rmse_px} px
           </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
-            max. Anker-Δ: {m.max_anchor_delta} · λ={m.lambda_reg}
+            {de.admin.fit.maxAnchorDelta} {m.max_anchor_delta} · λ={m.lambda_reg}
           </Typography>
           <Typography variant="caption" color="text.disabled">
-            Geometrie folgt dem Skelett; λ (Tikhonov) hält die Vorlage zusammen — niedrig = näher am Skelett, hoch = formtreuer.
+            {de.admin.fit.lambdaHint}
           </Typography>
         </Stack>
       </Box>
@@ -161,7 +162,7 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
       {/* lambda_reg slider */}
       <Box sx={{ px: 1 }}>
         <Typography variant="caption" color="text.secondary">
-          Regularisierung λ = {lambda.toFixed(2)}
+          {de.admin.fit.regularization} {lambda.toFixed(2)}
         </Typography>
         <Slider
           size="small"

@@ -26,6 +26,7 @@ import {
   Typography,
 } from '@mui/material';
 
+import { de, fmt } from '@/locales';
 import { ZOOM_MAX, ZOOM_MIN, ZOOM_PRESETS } from './chartConstants';
 import type { Mode } from './chartConstants';
 
@@ -75,29 +76,29 @@ export function ChartToolbar({
       <ToggleButtonGroup size="small" value={mode} exclusive onChange={(_e, v: Mode | null) => v && onModeChange(v)}>
         <ToggleButton value="pan">
           <OpenWithIcon fontSize="small" />
-          &nbsp;Schwenken
+          &nbsp;{de.admin.toolbar.pan}
         </ToggleButton>
         <ToggleButton value="bbox">
           <AddBoxIcon fontSize="small" />
-          &nbsp;Bbox
+          &nbsp;{de.admin.toolbar.bbox}
         </ToggleButton>
         <ToggleButton value="edit">
           <ControlCameraIcon fontSize="small" />
-          &nbsp;Verschieben
+          &nbsp;{de.admin.toolbar.edit}
         </ToggleButton>
       </ToggleButtonGroup>
 
       <Tooltip
         title={
           !hasLockableBbox
-            ? 'Glyph mit Bbox wählen, um ihn als fertig zu sperren'
+            ? de.admin.toolbar.lockNeedsBbox
             : activeSplit
               ? activeLocked
-                ? 'Entsperren (nur diese Position — aufgetrennt)'
-                : 'Als fertig sperren (nur diese Position — aufgetrennt)'
+                ? de.admin.toolbar.unlockSplit
+                : de.admin.toolbar.lockSplit
               : activeLocked
-                ? 'Entsperren (alle Positionen, wieder bearbeitbar)'
-                : 'Als fertig sperren (alle Positionen, vor Änderungen schützen)'
+                ? de.admin.toolbar.unlockUnified
+                : de.admin.toolbar.lockUnified
         }
       >
         <span>
@@ -107,7 +108,7 @@ export function ChartToolbar({
             selected={activeLocked}
             color="success"
             disabled={!hasLockableBbox}
-            aria-label={activeLocked ? 'Glyph entsperren' : 'Glyph als fertig sperren'}
+            aria-label={activeLocked ? de.admin.toolbar.unlockAria : de.admin.toolbar.lockAria}
             onChange={onToggleLock}
           >
             {activeLocked ? <LockIcon fontSize="small" /> : <LockOpenIcon fontSize="small" />}
@@ -139,13 +140,13 @@ export function ChartToolbar({
 
       <Box sx={{ flex: 1 }} />
 
-      {activeGlyph ? <Chip label={`aktiv: ${activeGlyph}`} color="primary" size="small" /> : <Chip label="kein aktiver Glyph" size="small" variant="outlined" />}
-      <Tooltip title="Bbox des aktiven Glyphs löschen">
+      {activeGlyph ? <Chip label={`${de.admin.toolbar.activeGlyph} ${activeGlyph}`} color="primary" size="small" /> : <Chip label={de.admin.toolbar.noActiveGlyph} size="small" variant="outlined" />}
+      <Tooltip title={de.admin.toolbar.deleteBbox}>
         <span>
           <IconButton
             size="small"
             color="error"
-            aria-label="Bbox des aktiven Glyphs löschen"
+            aria-label={de.admin.toolbar.deleteBbox}
             disabled={activeLocked || !activeGlyph || !hasActiveBbox}
             onClick={onDelete}
           >
@@ -153,7 +154,7 @@ export function ChartToolbar({
           </IconButton>
         </span>
       </Tooltip>
-      <Tooltip title={activeLocked ? `${activeGlyph} ist gesperrt — erst entsperren` : 'Einrichtungs-Wizard für den aktiven Glyph öffnen'}>
+      <Tooltip title={activeLocked ? fmt(de.admin.toolbar.lockedFirstUnlock, { glyph: activeGlyph ?? '' }) : de.admin.toolbar.openWizard}>
         <span>
           <Button
             size="small"
@@ -162,11 +163,11 @@ export function ChartToolbar({
             disabled={activeLocked || !activeGlyph || !hasActiveBbox}
             onClick={onOpenWizard}
           >
-            Einrichten
+            {de.admin.toolbar.setup}
           </Button>
         </span>
       </Tooltip>
-      <Tooltip title={activeHasCanonical ? 'Diagnose (Skelett · Canonical · Fit) groß ansehen' : 'Noch kein Canonical — erst im Wizard einen Weg zeichnen'}>
+      <Tooltip title={activeHasCanonical ? de.admin.toolbar.diagnoseTooltip : de.admin.toolbar.diagnoseNeedsCanonical}>
         <span>
           <Button
             size="small"
@@ -175,7 +176,7 @@ export function ChartToolbar({
             disabled={!activeGlyph || !activeHasCanonical}
             onClick={onOpenDiagnose}
           >
-            Diagnose
+            {de.admin.toolbar.diagnose}
           </Button>
         </span>
       </Tooltip>

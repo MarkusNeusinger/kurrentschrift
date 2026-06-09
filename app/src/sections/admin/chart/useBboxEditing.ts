@@ -10,6 +10,7 @@ import { deleteBbox, deleteGlyph, putBbox } from '@/lib/api';
 import { bboxInFromOut } from '@/lib/bbox';
 import { isLetterSplit, knownGlyph, siblingKeys } from '@/domain/glyphs';
 import { useAdmin } from '@/context/AdminContext';
+import { de, fmt } from '@/locales';
 import { applyHandle, editedBbox, hitHandle } from './bboxGeometry';
 import {
   GRIP_HIT,
@@ -60,24 +61,24 @@ export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseB
   const startEditOrDraw = useCallback(
     (e: React.PointerEvent<HTMLDivElement>): boolean => {
       if (!activeGlyph) {
-        setSnack('Wähle erst einen Glyph in der Liste links.');
+        setSnack(de.admin.snack.pickGlyphFirst);
         return false;
       }
       // A locked (finished) glyph is protected: no move/resize/exclude/redraw.
       if (bboxesByKey[activeGlyph]?.locked) {
-        setSnack(`🔒 ${activeGlyph} ist gesperrt — oben entsperren, um zu ändern.`);
+        setSnack(fmt(de.admin.snack.lockedNoEdit, { glyph: activeGlyph }));
         return false;
       }
       const { x, y } = pointToImage(e.clientX, e.clientY);
       if (mode === 'edit') {
         const current = bboxesByKey[activeGlyph];
         if (!current) {
-          setSnack(`${activeGlyph}: hat noch keine Bbox — erst im Modus „Bbox" zeichnen.`);
+          setSnack(fmt(de.admin.snack.noBboxDrawFirst, { glyph: activeGlyph }));
           return false;
         }
         const handle = hitHandle(current, x, y, GRIP_HIT / zoom);
         if (!handle) {
-          setSnack('Zum Verschieben in die Box fassen, zum Skalieren an einen Griffpunkt (Ecke/Kantenmitte).');
+          setSnack(de.admin.snack.editHandleHint);
           return false;
         }
         const r: Rect = { x0: current.x0, y0: current.y0, x1: current.x1, y1: current.y1 };
@@ -124,9 +125,9 @@ export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseB
       try {
         const saved = await putBbox(activeGlyph, editedBbox(current, ed.handle, ed.cur));
         upsertBbox(activeGlyph, saved);
-        setSnack(`${activeGlyph}: Box ${ed.handle === 'move' ? 'verschoben' : 'angepasst'}.`);
+        setSnack(fmt(ed.handle === 'move' ? de.admin.snack.boxMoved : de.admin.snack.boxResized, { glyph: activeGlyph }));
       } catch (err) {
-        setSnack(`Speichern fehlgeschlagen: ${err}`);
+        setSnack(`${de.admin.snack.saveFailed} ${err}`);
       }
       return;
     }
@@ -161,9 +162,9 @@ export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseB
     try {
       const saved = await putBbox(activeGlyph, next);
       upsertBbox(activeGlyph, saved);
-      setSnack(`${activeGlyph}: Bbox gespeichert.`);
+      setSnack(fmt(de.admin.snack.bboxSaved, { glyph: activeGlyph }));
     } catch (err) {
-      setSnack(`Speichern fehlgeschlagen: ${err}`);
+      setSnack(`${de.admin.snack.saveFailed} ${err}`);
     }
   }, [drag, edit, activeGlyph, bboxesByKey, upsertBbox]);
 
@@ -189,7 +190,7 @@ export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseB
     const scopeKeys = isLetterSplit(activeGlyph, bboxesByKey) ? [activeGlyph] : siblingKeys(activeGlyph);
     const keys = scopeKeys.filter((k) => k in bboxesByKey);
     if (keys.length === 0) {
-      setSnack(`${activeGlyph}: noch keine Bbox.`);
+      setSnack(fmt(de.admin.snack.noBboxYet, { glyph: activeGlyph }));
       return;
     }
     const nextLocked = !keys.some((k) => bboxesByKey[k]?.locked === true);
@@ -199,10 +200,10 @@ export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseB
         upsertBbox(k, saved);
       }
       const name = knownGlyph(activeGlyph)?.glyph ?? activeGlyph;
-      const scope = keys.length > 1 ? ' (alle Positionen)' : '';
-      setSnack(nextLocked ? `🔒 „${name}" gesperrt${scope}.` : `🔓 „${name}" entsperrt${scope}.`);
+      const scope = keys.length > 1 ? de.admin.snack.scopeAllPositions : '';
+      setSnack(fmt(nextLocked ? de.admin.snack.locked : de.admin.snack.unlocked, { name, scope }));
     } catch (err) {
-      setSnack(`Speichern fehlgeschlagen: ${err}`);
+      setSnack(`${de.admin.snack.saveFailed} ${err}`);
     }
   }, [activeGlyph, bboxesByKey, upsertBbox]);
 
@@ -210,7 +211,7 @@ export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseB
     if (!activeGlyph || !(activeGlyph in bboxesByKey)) return;
     const hasGlyph = glyphsByKey[activeGlyph]?.has_data === true;
     const ok = window.confirm(
-      `Bbox für „${activeGlyph}" löschen?${hasGlyph ? ' Das gespeicherte Canonical wird mit entfernt.' : ''}`,
+      `${fmt(de.admin.snack.deleteConfirm, { glyph: activeGlyph })}${hasGlyph ? de.admin.snack.deleteConfirmCanonical : ''}`,
     );
     if (!ok) return;
     try {
@@ -220,9 +221,9 @@ export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseB
       }
       await deleteBbox(activeGlyph);
       removeBbox(activeGlyph);
-      setSnack(`${activeGlyph}: gelöscht.`);
+      setSnack(fmt(de.admin.snack.deleted, { glyph: activeGlyph }));
     } catch (err) {
-      setSnack(`Löschen fehlgeschlagen: ${err}`);
+      setSnack(`${de.admin.snack.deleteFailed} ${err}`);
     }
   }, [activeGlyph, bboxesByKey, glyphsByKey, removeBbox, removeGlyph, deleteBbox, deleteGlyph]);
 

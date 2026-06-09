@@ -3,6 +3,7 @@
 // surface itself offers the learner.
 
 import { cropUrl } from '@/lib/api';
+import { de } from '@/locales';
 
 // Scripts selectable in the quiz. Only Kurrent (the Loth 1866 source) has data
 // today; the others are shown disabled so the menu reflects the planned scope.
@@ -13,9 +14,9 @@ export interface ScriptOption {
 }
 
 export const SCRIPTS: ScriptOption[] = [
-  { id: 'kurrent', label: 'Kurrent', available: true },
-  { id: 'suetterlin', label: 'Sütterlin', available: false },
-  { id: 'offenbacher', label: 'Offenbacher', available: false },
+  { id: 'kurrent', label: de.quiz.scripts.kurrent, available: true },
+  { id: 'suetterlin', label: de.quiz.scripts.suetterlin, available: false },
+  { id: 'offenbacher', label: de.quiz.scripts.offenbacher, available: false },
 ];
 
 // Difficulty levels for the quiz. The idea: show each letter in progressively
@@ -36,9 +37,9 @@ export interface DifficultyOption {
 }
 
 export const DIFFICULTIES: DifficultyOption[] = [
-  { id: 'clean', label: 'Sauber', hint: 'klare Lehrtafel', available: true },
-  { id: 'worn', label: 'Geübt', hint: 'flüssige Alltagshand', available: false },
-  { id: 'messy', label: 'Krakelig', hint: 'unsaubere, schwer lesbare Hand', available: false },
+  { id: 'clean', label: de.quiz.difficulties.clean.label, hint: de.quiz.difficulties.clean.hint, available: true },
+  { id: 'worn', label: de.quiz.difficulties.worn.label, hint: de.quiz.difficulties.worn.hint, available: false },
+  { id: 'messy', label: de.quiz.difficulties.messy.label, hint: de.quiz.difficulties.messy.hint, available: false },
 ];
 
 // Pick the crop for a question. Difficulty is threaded in already: once messier

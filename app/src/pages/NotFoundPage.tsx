@@ -6,6 +6,7 @@ import { Link as RouterLink } from 'react-router-dom';
 
 import { PaperBackground } from '@/components/PaperBackground';
 import { PublicHeader } from '@/components/PublicHeader';
+import { de } from '@/locales';
 import { paths } from '@/routes/paths';
 
 export function NotFoundPage() {
@@ -25,13 +26,13 @@ export function NotFoundPage() {
         }}
       >
         <Typography variant="h4" component="h1">
-          Seite nicht gefunden
+          {de.common.notFound.title}
         </Typography>
         <Typography color="text.secondary" sx={{ maxWidth: 480 }}>
-          Unter dieser Adresse liegt nichts — der Link ist veraltet oder vertippt.
+          {de.common.notFound.body}
         </Typography>
         <Button component={RouterLink} to={paths.home} variant="outlined" sx={{ mt: 1 }}>
-          Zur Startseite
+          {de.common.notFound.toHome}
         </Button>
       </Box>
     </PaperBackground>

@@ -16,6 +16,7 @@ import { Box, Link, Stack } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 
+import { de } from '@/locales';
 import { paths } from '@/routes/paths';
 import { display, paper } from '@/styles/paper';
 
@@ -23,8 +24,8 @@ const ADMIN_TAPS = 5;
 const TAP_WINDOW_MS = 800;
 
 const NAV = [
-  { label: 'Schreiben', to: paths.worksheet },
-  { label: 'Lesen', to: paths.quiz },
+  { label: de.common.nav.write, to: paths.worksheet },
+  { label: de.common.nav.read, to: paths.quiz },
 ];
 
 interface PublicHeaderProps {
@@ -111,9 +112,9 @@ export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
               boxShadow: `0 0 6px ${accent}80`,
             }}
           />
-          kurrentschrift
+          {de.common.brand.name}
           <Box component="span" sx={{ color: accent, fontStyle: 'italic' }}>
-            .ink
+            {de.common.brand.tld}
           </Box>
         </Box>
 

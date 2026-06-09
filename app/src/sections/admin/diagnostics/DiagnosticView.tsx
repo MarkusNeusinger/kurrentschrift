@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { cropUrl, getDiagnostic } from '@/lib/api';
 import type { DiagnosticData } from '@/lib/api';
+import { de, fmt } from '@/locales';
 import { useColumnWidth } from '@/sections/admin/diagnostics/useColumnWidth';
 
 interface Props {
@@ -49,7 +50,7 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight }:
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 2 }}>
         <CircularProgress size={16} />
         <Typography variant="caption" color="text.secondary">
-          Diagnose wird gerechnet…
+          {de.admin.diagnostics.computing}
         </Typography>
       </Box>
     );
@@ -59,10 +60,10 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight }:
     return (
       <Box sx={{ p: 2 }}>
         <Alert severity={error.includes('404') ? 'info' : 'error'}>
-          {error.includes('404') ? 'noch kein Canonical — erst Strich aufnehmen' : error}
+          {error.includes('404') ? de.admin.diagnostics.noCanonicalShort : error}
         </Alert>
         <Button size="small" startIcon={<RefreshIcon />} onClick={fetch} sx={{ mt: 1 }}>
-          neu laden
+          {de.admin.diagnostics.reload}
         </Button>
       </Box>
     );
@@ -89,7 +90,7 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight }:
       {/* Column 1 — Crop pur */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
         <Typography variant="caption" color="text.secondary">
-          Loth-Crop
+          {de.admin.diagnostics.cropHeading}
         </Typography>
         <Box sx={{ width: cropDisplayW, height: cropDisplayH, bgcolor: '#fff' }}>
           <img
@@ -105,7 +106,7 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight }:
       {/* Column 2 — Crop + skeleton + anchors */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
         <Typography variant="caption" color="text.secondary">
-          Skelett + Anker ({data.anchors_px.length})
+          {de.admin.diagnostics.skeletonHeading} ({data.anchors_px.length})
         </Typography>
         <Box sx={{ position: 'relative', width: cropDisplayW, height: cropDisplayH, bgcolor: '#fff' }}>
           <img
@@ -134,7 +135,7 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight }:
       {/* Column 3 — Canonical template */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
         <Typography variant="caption" color="text.secondary">
-          Canonical (Template-Koords, Schräge {data.slant_deg}°)
+          {de.admin.diagnostics.canonicalHeading} {data.slant_deg}°)
         </Typography>
         <Box sx={{ width: COL_W, height: COL_H_PX, bgcolor: '#fff' }}>
           <svg
@@ -166,7 +167,7 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight }:
           </svg>
         </Box>
         <Typography variant="caption" color="text.disabled" sx={{ fontFamily: 'monospace' }}>
-          Grundlinie=0 · Mittellinie=1 · Oberlinie={tpl.ascender.toFixed(2)} · Unterlinie={tpl.descender.toFixed(2)}
+          {fmt(de.admin.diagnostics.guidesReadout, { ascender: tpl.ascender.toFixed(2), descender: tpl.descender.toFixed(2) })}
         </Typography>
       </Box>
     </Box>

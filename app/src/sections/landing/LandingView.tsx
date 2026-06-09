@@ -19,6 +19,7 @@ import { keyframes } from '@mui/system';
 
 import { PaperBackground } from '@/components/PaperBackground';
 import { PublicHeader } from '@/components/PublicHeader';
+import { de } from '@/locales';
 import { paths } from '@/routes/paths';
 import { HeroSpecimen } from '@/sections/landing/HeroSpecimen';
 import { Reveal } from '@/sections/landing/Reveal';
@@ -35,38 +36,20 @@ const fu = (delay: number) => ({
   [reduce]: { opacity: 1, transform: 'none', animation: 'none' },
 });
 
-// Tools that exist today → real RouterLinks. Staged features → "bald", no link.
+// Tools that exist today → real RouterLinks. Staged features → common.soon, no
+// link. German copy lives in @/locales (landing.tools / landing.roadmap /
+// landing.pillars); here we only attach the route targets.
 const tools = [
-  {
-    title: 'Lineatur-Vorlage',
-    to: paths.worksheet,
-    cta: 'Übungsblatt erstellen →',
-    desc: 'Hilfslinien für deutsche Schreibschrift auf A4 — Verhältnis frei wählbar, optional Schräglinien, als druckfertiges PDF.',
-  },
-  {
-    title: 'Buchstaben-Quiz',
-    to: paths.quiz,
-    cta: 'Quiz starten →',
-    desc: 'Lies echte Kurrent-Buchstaben aus historischer Vorlage; am Ende zeigt die Auswertung, was dir schwerfiel.',
-  },
+  { ...de.landing.tools.worksheet, to: paths.worksheet },
+  { ...de.landing.tools.quiz, to: paths.quiz },
 ];
 
-const roadmap = [
-  { title: 'Einstieg & Alphabet', desc: 'Geschichte in zwei Sätzen, Alphabet-Tafel, die wichtigsten Regeln.' },
-  { title: 'Animierte Tafel', desc: 'Schreibreihenfolge, Ansatzpunkte und Schwellzug-Aufbau live.' },
-  { title: 'Lese-Lupe', desc: 'Historische Scans transkribiert, mit Erklärung pro Buchstabe.' },
-  { title: 'Schrift-Analyse', desc: 'Statistik über die eigene Hand — Schräglage, Schwellzug, Verteilung.' },
-  { title: 'Offene Daten', desc: 'Kanonische Glyph-Daten — Anker, Schwellzug, Ductus — zitierbar.' },
-];
+const roadmap = de.landing.roadmap;
 
 // The thesis — the three-way combination that makes this project different. Vision
-// prose (not interactive promises); what's usable today lives under "Jetzt schon
-// nutzbar", planned work under "In Arbeit".
-const pillars = [
-  { num: 'i.', title: 'Tinte statt Font', desc: 'Schwellzug, Schreibreihenfolge und Allographen — Hand-Synthese, keine Glyphe pro Codepoint.' },
-  { num: 'ii.', title: 'Statistik statt Bauchgefühl', desc: 'Schräglage, Schwellzug-Profile und Glyph-Verteilung der eigenen Schrift, gemessen statt geschätzt.' },
-  { num: 'iii.', title: 'Lineatur zum Text', desc: 'Beliebiger Text mit passender Lineatur in einem Schritt — druckbare Vorlagen, inhaltsbewusst.' },
-];
+// prose (not interactive promises); what's usable today lives under
+// landing.toolsHeading, planned work under landing.roadmapHeading.
+const pillars = de.landing.pillars;
 
 export function LandingView() {
   return (
@@ -101,7 +84,7 @@ export function LandingView() {
               }}
             >
               <Box component="span" sx={{ width: 42, height: '1px', bgcolor: paper.sepia }} />
-              Gotische Kursive · seit jeher von Hand
+              {de.landing.hero.eyebrow}
             </Box>
 
             <Typography
@@ -117,12 +100,12 @@ export function LandingView() {
                 ...fu(0.18),
               }}
             >
-              In echter Tinte<br />
-              geschrieben.<br />
+              {de.landing.hero.titleLine1}<br />
+              {de.landing.hero.titleLine2}<br />
               <Box component="em" sx={{ fontStyle: 'italic', color: paper.viridian }}>
-                Nicht
+                {de.landing.hero.titleEm}
               </Box>{' '}
-              als Font gesetzt.
+              {de.landing.hero.titleLine3}
             </Typography>
 
             <Typography
@@ -135,11 +118,11 @@ export function LandingView() {
                 ...fu(0.32),
               }}
             >
-              Eine offene Bibliothek der deutschen Kurrentschrift —{' '}
+              {de.landing.hero.leadBeforeBold}{' '}
               <Box component="b" sx={{ fontWeight: 600, color: paper.ink }}>
-                kein Font, sondern der Schreibvorgang selbst
+                {de.landing.hero.leadBold}
               </Box>
-              : Geometrie aus historischen Vorlagen, Strichreihenfolge aus handkuratiertem Ductus.
+              {de.landing.hero.leadAfterBold}
             </Typography>
 
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', ...fu(0.46) }}>
@@ -160,7 +143,7 @@ export function LandingView() {
                   '&:hover': { bgcolor: '#000', transform: 'translateY(-2px)', boxShadow: '0 8px 22px rgba(36,26,16,.4)' },
                 }}
               >
-                Schreiben üben
+                {de.landing.hero.ctaWrite}
               </Box>
               <Box
                 component={RouterLink}
@@ -179,7 +162,7 @@ export function LandingView() {
                   '&:hover .arrow': { transform: 'translateX(5px)' },
                 }}
               >
-                Buchstaben lesen{' '}
+                {de.landing.hero.ctaRead}{' '}
                 <Box component="span" className="arrow">
                   →
                 </Box>
@@ -197,7 +180,7 @@ export function LandingView() {
       {/* thesis — three pillars, framed as the goal (not as shipped features) */}
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, px: { xs: 2.5, sm: 4, md: 6 }, pt: { xs: 4, md: 6 } }}>
         <Typography variant="overline" sx={{ color: paper.sepia, display: 'block', mb: 2.5 }}>
-          Wohin das Projekt zielt
+          {de.landing.pillarsHeading}
         </Typography>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, borderTop: `1px solid ${paper.line}` }}>
           {pillars.map((p, i) => (
@@ -227,7 +210,7 @@ export function LandingView() {
         {/* live tools */}
         <Box sx={{ pt: { xs: 2, md: 3 } }}>
           <Typography variant="overline" sx={{ color: paper.sepia, display: 'block', mb: 2 }}>
-            Jetzt schon nutzbar
+            {de.landing.toolsHeading}
           </Typography>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2.5 }}>
             {tools.map((t, i) => (
@@ -260,7 +243,7 @@ export function LandingView() {
         {/* roadmap — staged honestly, no dead links */}
         <Box sx={{ mt: { xs: 6, md: 9 } }}>
           <Typography variant="overline" sx={{ color: paper.sepia, display: 'block', mb: 2 }}>
-            In Arbeit
+            {de.landing.roadmapHeading}
           </Typography>
           <Stack spacing={0}>
             {roadmap.map((r, i) => (
@@ -289,14 +272,14 @@ export function LandingView() {
                       {r.title}
                     </Typography>
                     <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontStyle: 'italic', fontSize: '.85rem', color: paper.sepiaFaint, whiteSpace: 'nowrap' }}>
-                      bald
+                      {de.common.soon}
                     </Box>
                   </Box>
                   <Typography variant="body2" sx={{ color: paper.inkSoft, flex: 1 }}>
                     {r.desc}
                   </Typography>
                   <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, fontStyle: 'italic', fontSize: '.85rem', color: paper.sepiaFaint, whiteSpace: 'nowrap' }}>
-                    bald
+                    {de.common.soon}
                   </Box>
                 </Box>
               </Reveal>
@@ -319,10 +302,10 @@ export function LandingView() {
         >
           <Box>
             <Typography sx={{ fontFamily: garamond, fontStyle: 'italic', color: paper.inkSoft, fontSize: '1.1rem' }}>
-              Kurrent · Sütterlin · Offenbacher Schrift
+              {de.landing.footer.scripts}
             </Typography>
             <Typography variant="caption" sx={{ color: paper.sepia, fontStyle: 'italic' }}>
-              Synthese, klar gekennzeichnet — wir simulieren Schrift, nicht Provenienz.
+              {de.landing.footer.disclaimer}
             </Typography>
           </Box>
           <Link

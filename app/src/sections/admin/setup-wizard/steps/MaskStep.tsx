@@ -4,6 +4,7 @@
 import UndoIcon from '@mui/icons-material/Undo';
 import { Box, Button, Slider, Stack, Typography } from '@mui/material';
 
+import { de } from '@/locales';
 import type { BboxOut } from '@/lib/api';
 
 export function MaskStep({
@@ -19,21 +20,19 @@ export function MaskStep({
 }) {
   return (
     <Stack spacing={1.5}>
-      <Typography variant="subtitle2">Schritt 1 · Ausschluss (Radierer)</Typography>
+      <Typography variant="subtitle2">{de.wizard.mask.title}</Typography>
       <Typography variant="body2" color="text.secondary">
-        Auf den Lehrtafeln stehen die Buchstaben dicht beieinander — ragt Tinte vom Nachbarn
-        in diesen Ausschnitt, verfälscht sie später Skelett und Anker. Mit dem Pinsel direkt
-        über die störenden Stellen malen; das Übermalte wird vor der Skelettberechnung entfernt.
+        {de.wizard.mask.body1}
       </Typography>
       <Typography variant="body2" color="text.secondary">
-        Nur fremde Tinte ausschließen — vom eigentlichen Buchstaben nichts wegradieren.
+        {de.wizard.mask.body2}
       </Typography>
       <Box>
-        <Typography variant="caption">Pinselgröße: {maskRadius}px</Typography>
+        <Typography variant="caption">{de.wizard.mask.brushSize} {maskRadius}px</Typography>
         <Slider size="small" min={2} max={30} value={maskRadius} onChange={(_e, v) => typeof v === 'number' && setMaskRadius(v)} />
       </Box>
       <Button size="small" startIcon={<UndoIcon />} disabled={bbox.mask_strokes.length === 0} onClick={undoMask}>
-        Letzten Strich zurück ({bbox.mask_strokes.length})
+        {de.wizard.mask.undo} ({bbox.mask_strokes.length})
       </Button>
     </Stack>
   );

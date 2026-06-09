@@ -5,6 +5,7 @@ import { Box, Button, Typography } from '@mui/material';
 import { useRouteError } from 'react-router-dom';
 
 import { PaperBackground } from '@/components/PaperBackground';
+import { de } from '@/locales';
 
 export function RouteError() {
   const error = useRouteError();
@@ -22,10 +23,9 @@ export function RouteError() {
           textAlign: 'center',
         }}
       >
-        <Typography variant="h5">Da ist etwas schiefgegangen.</Typography>
+        <Typography variant="h5">{de.common.routeError.title}</Typography>
         <Typography color="text.secondary" sx={{ maxWidth: 480 }}>
-          Vermutlich ist die Seite veraltet (neue Version veröffentlicht). Ein Neuladen behebt das
-          in der Regel.
+          {de.common.routeError.body}
         </Typography>
         {error instanceof Error && (
           <Typography variant="body2" color="text.disabled">
@@ -33,7 +33,7 @@ export function RouteError() {
           </Typography>
         )}
         <Button variant="outlined" onClick={() => window.location.reload()}>
-          Seite neu laden
+          {de.common.routeError.reload}
         </Button>
       </Box>
     </PaperBackground>
