@@ -75,6 +75,12 @@ export interface BboxOut {
   // Manual "done" marker: the glyph is finished, shown as complete on the chart
   // and protected from accidental edits. See ChartPage / the wizard's lock step.
   locked: boolean;
+  // Per-letter "positions authored separately" marker (German: aufgetrennt).
+  // false (default): the three positional forms share one authored form and the
+  // sidebar/quiz/lock treat the letter as one unit. true: positions differ and
+  // are authored/locked/quizzed independently. Stored on all three sibling rows
+  // and read with `.some` via isLetterSplit (constants.ts). See the wizard.
+  split: boolean;
 }
 
 export interface BboxIn {
@@ -89,6 +95,9 @@ export interface BboxIn {
   guides?: GuideConfig;
   // Optional so an omitted value preserves the stored flag (mirrors guides).
   locked?: boolean;
+  // Optional so an omitted value preserves the stored flag (mirrors locked).
+  // Written fanned out across the three sibling positions; see the wizard.
+  split?: boolean;
 }
 
 export interface StrokePoint {

@@ -232,3 +232,4 @@ __marimo__/
 #   output (`app/dist/`) stays ignored via the `dist/` rule above.
 !app/src/lib/
 !app/src/lib/**
+/temp/

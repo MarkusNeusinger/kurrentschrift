@@ -46,6 +46,8 @@ import {
   Dialog,
   FormControlLabel,
   IconButton,
+  Radio,
+  RadioGroup,
   Slider,
   Stack,
   Step,
@@ -60,7 +62,7 @@ import {
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { cropUrl, getGlyph, postResample, postTrace, putBbox } from '../../api';
-import { glyphKeyFor, knownGlyph, LETTER_BY_KEY, POSITIONS } from '../../constants';
+import { isLetterSplit, knownGlyph, POSITION_LABEL, siblingKeys } from '../../constants';
 import { couplingLabel } from '../../lib/labels';
 import { useAdmin } from '../../state';
 import type { BboxIn, BboxOut, CouplingHeight, GlyphSummary, GuideConfig, MaskStroke, StrokePoint } from '../../types';
@@ -106,6 +108,7 @@ function bboxInFromOut(b: BboxOut): BboxIn {
     n_anchors: b.n_anchors,
     guides: b.guides,
     locked: b.locked,
+    split: b.split,
   };
 }
 
@@ -117,14 +120,6 @@ const summaryOf = (g: { glyph_key: string; glyph: string; position: string; vari
   advance: g.advance,
   has_data: true,
 });
-
-// All three position keys for the letter behind `glyphKey` (deduped, via the
-// override-aware glyphKeyFor so s / ſ map correctly). Used by the fan-out.
-function siblingKeys(glyphKey: string): string[] {
-  const letter = LETTER_BY_KEY[glyphKey];
-  if (!letter) return [glyphKey];
-  return Array.from(new Set(POSITIONS.map((p) => glyphKeyFor(letter, p))));
-}
 
 // A real stroke needs at least two points; a single point is a stray tap (pointer
 // down/up without moving) and must not become its own stroke.
@@ -176,6 +171,10 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
   // seed the default zoom without re-running on every mask/lineature edit.
   const bboxRef = useRef(bbox);
   bboxRef.current = bbox;
+  // Always-current bbox map, read (not subscribed) by the open/reset effect so it
+  // can seed applyAll from the letter's split state without re-running on edits.
+  const bboxesByKeyRef = useRef(bboxesByKey);
+  bboxesByKeyRef.current = bboxesByKey;
   const known = knownGlyph(glyphKey);
   const hasCanonical = glyphsByKey[glyphKey]?.has_data === true;
 
@@ -238,6 +237,10 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
     setPanning(false);
     setPanDrag(null);
     setUserZoom(defaultZoomFor(bboxRef.current));
+    // Seed the unified/split choice from the letter's current state: an already
+    // split letter defaults to keeping this position separate; a unified letter
+    // defaults to "one form for all". The user can still flip it before finishing.
+    setApplyAll(!isLetterSplit(glyphKey, bboxesByKeyRef.current));
   }, [glyphKey, open]);
 
   // Savable points (strokes with ≥2 points; stray taps excluded) — gates "save".
@@ -534,7 +537,13 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
     }
   }, [bbox, hasCanonical, glyphKey, markGlyphTraced]);
 
-  // Approve → fan out to all positions (optional) and lock.
+  // Approve → lock. applyAll is the unified-vs-split decision:
+  //   true  (unified) — THIS position's form is the one form for the letter. Fan
+  //                     it out to every sibling (overwriting any divergent split
+  //                     forms — "eine Form übernehmen") and clear `split` on all.
+  //   false (split)   — author only this position; flag the letter `split` across
+  //                     every sibling-with-bbox so isLetterSplit (a `.some` read)
+  //                     stays consistent and the siblings keep their own forms.
   const finish = useCallback(async () => {
     if (!bbox || !known) return;
     setBusy(true);
@@ -548,7 +557,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
           // Create the bbox UNLOCKED first (the trace precondition needs a bbox),
           // post the trace, and only THEN lock — so a mid-loop failure never
           // leaves a locked-but-empty sibling that can't be reopened in the wizard.
-          await putBbox(k, { ...bboxInFromOut(bbox), locked: false });
+          await putBbox(k, { ...bboxInFromOut(bbox), locked: false, split: false });
           const g = await postTrace(k, {
             glyph: kg.glyph,
             position: kg.position,
@@ -556,19 +565,31 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
             n_anchors: bbox.n_anchors,
           });
           markGlyphTraced(k, summaryOf(g));
-          const savedB = await putBbox(k, { ...bboxInFromOut(bbox), locked: true });
+          const savedB = await putBbox(k, { ...bboxInFromOut(bbox), locked: true, split: false });
           upsertBbox(k, savedB);
         }
+        const saved = await putBbox(glyphKey, { ...bboxInFromOut(bbox), locked: true, split: false });
+        upsertBbox(glyphKey, saved);
+      } else {
+        // Split: flag every existing sibling so the letter reads as split, leaving
+        // their forms and lock state untouched; only this position is (re)authored.
+        for (const k of siblingKeys(glyphKey)) {
+          if (k === glyphKey) continue;
+          const sib = bboxesByKey[k];
+          if (!sib) continue;
+          const savedB = await putBbox(k, { ...bboxInFromOut(sib), split: true });
+          upsertBbox(k, savedB);
+        }
+        const saved = await putBbox(glyphKey, { ...bboxInFromOut(bbox), locked: true, split: true });
+        upsertBbox(glyphKey, saved);
       }
-      const saved = await putBbox(glyphKey, { ...bboxInFromOut(bbox), locked: true });
-      upsertBbox(glyphKey, saved);
       onClose();
     } catch (err) {
       setSnack(`Abschließen fehlgeschlagen: ${err}`);
     } finally {
       setBusy(false);
     }
-  }, [bbox, known, applyAll, glyphKey, upsertBbox, markGlyphTraced, onClose]);
+  }, [bbox, known, applyAll, glyphKey, bboxesByKey, upsertBbox, markGlyphTraced, onClose]);
 
   if (!source || !bbox || !known) return null;
 
@@ -998,11 +1019,29 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
             ) : (
               <Alert severity="warning">Noch kein Weg gezeichnet — Schritt „Weg" zuerst.</Alert>
             )}
-            <FormControlLabel control={<Checkbox checked={applyAll} onChange={(e) => setApplyAll(e.target.checked)} />} label="Gilt für alle Positionen (Anfang · Mitte · Ende)" />
+            <Box>
+              <Typography variant="subtitle2" gutterBottom>
+                Positionen (Anfang · Mitte · Ende)
+              </Typography>
+              <RadioGroup value={applyAll ? 'unified' : 'split'} onChange={(e) => setApplyAll(e.target.value === 'unified')}>
+                <FormControlLabel value="unified" control={<Radio />} label="Eine Form für alle Positionen" />
+                <FormControlLabel value="split" control={<Radio />} label={`Nur „${POSITION_LABEL[known.position]}“ getrennt einrichten (abweichende Form)`} />
+              </RadioGroup>
+              <Typography variant="caption" color="text.secondary" component="div">
+                {applyAll
+                  ? 'Diese Form gilt für alle drei Positionen; die Anschlussstriche werden je Position aus Anfang/Ende erzeugt. Im Quiz und in der Sidebar erscheint der Buchstabe einmal.'
+                  : `Nur „${POSITION_LABEL[known.position]}“ bekommt diese Form, die anderen Positionen behalten ihre eigene. Der Buchstabe erscheint dann pro Position getrennt.`}
+              </Typography>
+              {isLetterSplit(glyphKey, bboxesByKey) && applyAll && (
+                <Alert severity="warning" sx={{ mt: 1 }}>
+                  Der Buchstabe ist aktuell aufgetrennt — „Eine Form für alle“ überträgt <b>diese</b> Form auf
+                  alle drei Positionen und überschreibt die abweichenden.
+                </Alert>
+              )}
+            </Box>
             <Typography variant="caption" color="text.secondary">
-              Übernimmt dieselbe Form für alle drei Positionen — die Anschlussstriche werden je Position
-              aus Anfang/Ende erzeugt. Mit „Abschließen & sperren" wird der Glyph gesperrt (🔒) und ist
-              erst nach Entsperren wieder änderbar.
+              Mit „Abschließen & sperren“ wird der Glyph gesperrt (🔒) und ist erst nach Entsperren wieder
+              änderbar.
             </Typography>
           </Stack>
         );

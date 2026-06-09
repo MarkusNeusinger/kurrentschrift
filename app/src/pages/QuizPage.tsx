@@ -38,7 +38,7 @@ import { cropUrl } from '../api';
 import { PaperBackground } from '../components/PaperBackground';
 import { PublicHeader } from '../components/PublicHeader';
 import { WrittenGlyph } from '../components/WrittenGlyph';
-import { DIFFICULTIES, knownGlyph, SCRIPTS, type Difficulty, type KnownGlyph } from '../constants';
+import { DIFFICULTIES, knownGlyph, quizKeysFromLocked, SCRIPTS, type Difficulty, type KnownGlyph } from '../constants';
 import { useAdmin } from '../state';
 
 const garamond = "'EB Garamond', Georgia, 'Times New Roman', serif";
@@ -119,16 +119,21 @@ export function QuizPage() {
   // Only locked (finished) letters that resolve to a known glyph. Locking is
   // the admin's "this one is final" marker, so the public quiz never surfaces
   // a half-calibrated crop — the vocabulary grows as letters get locked.
+  //
+  // quizKeysFromLocked collapses each letter to ONE entry by default (its three
+  // positions share one form), so a unified letter appears once; only a letter
+  // explicitly split into per-position variants surfaces one entry per position.
+  // The representative key it returns prefers a position that owns a canonical,
+  // so WrittenGlyph/cropUrl resolve to a real form.
   const allItems = useMemo<QuizItem[]>(
     () =>
-      Object.entries(bboxesByKey)
-        .filter(([, b]) => b.locked)
-        .map(([key]) => {
+      quizKeysFromLocked(bboxesByKey, (key) => glyphsByKey[key]?.has_data === true)
+        .map((key) => {
           const kg = knownGlyph(key);
           return kg ? { key, kg } : null;
         })
         .filter((x): x is QuizItem => x !== null),
-    [bboxesByKey],
+    [bboxesByKey, glyphsByKey],
   );
 
   const lowerCount = useMemo(() => allItems.filter((i) => i.kg.letterCase === 'lower').length, [allItems]);

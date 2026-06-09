@@ -32,6 +32,15 @@ export type GlyphGroup = 'mvp' | 'alphabet';
 // identical; they diverge only as distinct ductus get traced.
 export const POSITIONS: Position[] = ['initial', 'medial', 'final'];
 
+// German label per position, shown wherever a position surfaces to the user (the
+// wizard's unified/split choice, the sidebar's per-position sub-entries of a
+// split letter). Front · middle · end of a word.
+export const POSITION_LABEL: Record<Position, string> = {
+  initial: 'Anfang',
+  medial: 'Mitte',
+  final: 'Ende',
+};
+
 export type LetterGroup = 'lower' | 'upper' | 'comb';
 
 export interface Letter {
@@ -157,6 +166,69 @@ export const KNOWN_GLYPHS: KnownGlyph[] = [...DERIVED_GLYPHS, ...LEGACY_ALIASES]
 
 export const LETTER_BY_KEY: Record<string, Letter> = {};
 for (const letter of LETTERS) for (const p of POSITIONS) LETTER_BY_KEY[glyphKeyFor(letter, p)] = letter;
+
+// All three position keys (Anfang/Mitte/Ende) for the letter behind `glyphKey`,
+// deduped via the override-aware glyphKeyFor (so s / ſ map correctly). Lock and
+// unlock fan out across these so a letter is locked "as one" — the sidebar's
+// lock icon and the quiz both treat the positions as a single unit.
+export function siblingKeys(glyphKey: string): string[] {
+  const letter = LETTER_BY_KEY[glyphKey];
+  if (!letter) return [glyphKey];
+  return Array.from(new Set(POSITIONS.map((p) => glyphKeyFor(letter, p))));
+}
+
+// Minimal shape of a stored bbox the split/group helpers need. Kept structural
+// (not the full BboxOut) so constants.ts stays free of a types.ts import.
+interface BboxFlags {
+  locked?: boolean;
+  split?: boolean;
+}
+
+// Is the letter behind `glyphKey` authored per-position (German: aufgetrennt)?
+// THE single source of truth for split state — read from the sibling bboxes with
+// `.some`, mirroring the lock aggregate: a letter counts as split if ANY of its
+// position rows carries the flag. The quiz, the sidebar and ChartPage MUST all
+// route through this; inlining a single-key or `.every` check would reintroduce
+// the mixed-state inconsistency the lock-as-one fix removed. `.some` also lets a
+// sibling added later (defaulting false) still read as split, self-healing.
+export function isLetterSplit(glyphKey: string, bboxesByKey: Record<string, BboxFlags>): boolean {
+  return siblingKeys(glyphKey).some((k) => bboxesByKey[k]?.split === true);
+}
+
+// Collapse the locked glyph keys into quiz units: a unified letter (default)
+// becomes ONE entry; a split letter keeps one entry per locked position; legacy
+// uc-/lc- aliases (not in LETTER_BY_KEY) stay singletons. For a unified letter
+// the representative key prefers has-canonical → medial → first-locked, so the
+// quiz crop/animation resolves to a real form. Routes through siblingKeys (hence
+// glyphKeyFor), so the s/ſ allographs never merge. THE one place quiz dedup lives.
+export function quizKeysFromLocked(
+  bboxesByKey: Record<string, BboxFlags>,
+  hasCanon: (key: string) => boolean,
+): string[] {
+  const out: string[] = [];
+  const seenGroups = new Set<string>();
+  for (const [key, b] of Object.entries(bboxesByKey)) {
+    if (!b?.locked) continue;
+    if (isLetterSplit(key, bboxesByKey)) {
+      out.push(key); // split: each locked position is its own quiz unit
+      continue;
+    }
+    const sibs = siblingKeys(key);
+    const groupId = sibs.join('|'); // stable per letter (same for every sibling)
+    if (seenGroups.has(groupId)) continue;
+    seenGroups.add(groupId);
+    const lockedSibs = sibs.filter((k) => bboxesByKey[k]?.locked);
+    const letter = LETTER_BY_KEY[key];
+    const medialKey = letter ? glyphKeyFor(letter, 'medial') : key;
+    const rep =
+      lockedSibs.find((k) => hasCanon(k)) ??
+      (lockedSibs.includes(medialKey) ? medialKey : undefined) ??
+      lockedSibs[0] ??
+      key;
+    out.push(rep);
+  }
+  return out;
+}
 
 const BY_KEY: Map<string, KnownGlyph> = new Map(KNOWN_GLYPHS.map((g) => [g.key, g]));
 

@@ -132,6 +132,10 @@ class BboxIn(BaseModel):
     # not be edited. Optional so an omitted value preserves the stored flag,
     # like `guides`. See put_bbox.
     locked: bool | None = None
+    # Per-letter "positions authored separately" marker (German: aufgetrennt).
+    # Optional so an omitted value preserves the stored flag, like `locked`.
+    # Written fanned out across the three sibling positions; see put_bbox.
+    split: bool | None = None
 
 
 class BboxOut(BboxIn):
@@ -140,6 +144,7 @@ class BboxOut(BboxIn):
     # concrete object even though the request body may omit it.
     guides: GuideConfig
     locked: bool
+    split: bool
 
 
 # ----------------------------------------------------------------------- Template
