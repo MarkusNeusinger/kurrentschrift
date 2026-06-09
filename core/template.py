@@ -15,7 +15,7 @@ draws the canonical preview as SVG from the data this module produces.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 
 import numpy as np
 from scipy.interpolate import CubicSpline
@@ -201,7 +201,7 @@ def sample_with_plan(
 
 def _multi_stroke_samples(
     anchors: np.ndarray, half_widths: np.ndarray, stroke_starts: Sequence[int] | None, slant_deg: float, n: int
-):
+) -> Iterator[tuple[np.ndarray, np.ndarray, np.ndarray]]:
     """Yield `(sx, sy, sw)` slant-applied centerline samples for each pen-stroke.
 
     Each stroke is sampled on its own (never across a pen lift) via a shared

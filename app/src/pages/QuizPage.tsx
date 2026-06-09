@@ -354,7 +354,7 @@ export function QuizPage() {
           ) : (
             <PlayPanel
               current={current}
-              hasDuctus={current ? glyphsByKey[current.key] != null : false}
+              hasDuctus={current ? glyphsByKey[current.key]?.has_data === true : false}
               qNonce={qNonce}
               choices={choices}
               input={input}

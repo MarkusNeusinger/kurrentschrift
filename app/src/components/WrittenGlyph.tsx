@@ -16,10 +16,15 @@
 
 import ReplayIcon from '@mui/icons-material/Replay';
 import { Alert, Box, CircularProgress, IconButton, keyframes } from '@mui/material';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { getDiagnostic } from '../api';
 import type { DiagnosticData } from '../types';
+
+// `api.asJson` prefixes errors with the HTTP status (e.g. "404 Not Found: …") and
+// String(Error) prepends "Error: " — match the leading status token so a stray
+// "404" elsewhere in the message can't be mistaken for a missing canonical.
+const isNotFound = (msg: string): boolean => /^(?:Error:\s*)?404\b/.test(msg);
 
 // Reveal a dashed path (pathLength=1, dasharray=1): offset 1 hides it, 0 draws it.
 const reveal = keyframes`from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; }`;
@@ -35,8 +40,14 @@ function usePrefersReducedMotion(): boolean {
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     const on = () => setReduced(mq.matches);
-    mq.addEventListener('change', on);
-    return () => mq.removeEventListener('change', on);
+    // `addEventListener` on MediaQueryList is missing on older Safari (<14);
+    // fall back to the deprecated `addListener` so the toggle never throws.
+    if (mq.addEventListener) {
+      mq.addEventListener('change', on);
+      return () => mq.removeEventListener('change', on);
+    }
+    mq.addListener(on);
+    return () => mq.removeListener(on);
   }, []);
   return reduced;
 }
@@ -60,8 +71,8 @@ interface Props {
   durationMs?: number;
   // Target rendered height in px (width follows the glyph's aspect, capped).
   height?: number;
-  // Called once if the glyph has no canonical yet (404) so the caller can fall
-  // back to the static crop. The component renders nothing in that case.
+  // Called if the glyph has no canonical yet (404) so the caller can fall back to
+  // the static crop. The component itself renders nothing once unavailable.
   onUnavailable?: () => void;
 }
 
@@ -70,8 +81,12 @@ const MAX_W = 300;
 
 export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnavailable }: Props) {
   const reducedMotion = usePrefersReducedMotion();
+  const uid = useId();
   const [data, setData] = useState<DiagnosticData | null>(() => cache.get(glyphKey) ?? null);
   const [error, setError] = useState<string | null>(null);
+  // True once a glyph turns out to have no canonical (404): the component then
+  // renders nothing and the caller (onUnavailable) swaps in the crop.
+  const [unavailable, setUnavailable] = useState(false);
   // Animation run counter — bumping it remounts the mask paths so the CSS
   // animation restarts (replay button / new mount).
   const [run, setRun] = useState(0);
@@ -80,12 +95,21 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
 
   useEffect(() => {
     let cancelled = false;
+    // Reset transient state so a stale error/unavailable from a previous glyph
+    // can't stick when the same instance is reused for a different glyph_key.
+    setError(null);
+    setUnavailable(false);
     const cached = cache.get(glyphKey);
     if (cached !== undefined) {
-      if (cached === null) onUnavailableRef.current?.();
-      else setData(cached);
+      if (cached === null) {
+        setUnavailable(true);
+        onUnavailableRef.current?.();
+      } else {
+        setData(cached);
+      }
       return;
     }
+    setData(null); // spinner while the new glyph loads
     getDiagnostic(glyphKey)
       .then((d) => {
         if (cancelled) return;
@@ -94,10 +118,13 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
       })
       .catch((e) => {
         const msg = String(e);
-        if (msg.includes('404')) {
+        if (isNotFound(msg)) {
           // No canonical traced yet → let the caller show the crop instead.
           cache.set(glyphKey, null);
-          if (!cancelled) onUnavailableRef.current?.();
+          if (!cancelled) {
+            setUnavailable(true);
+            onUnavailableRef.current?.();
+          }
         } else if (!cancelled) {
           setError(msg);
         }
@@ -150,6 +177,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
     return { tpl, minX, vbW, vbY, vbH, polygons, centerlines, maskWidth, timing };
   }, [data, durationMs]);
 
+  if (unavailable) return null;
   if (error) {
     return <Alert severity="error" sx={{ width: '100%' }}>{error}</Alert>;
   }
@@ -165,7 +193,9 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
     finalH = (MAX_W * vbH) / vbW;
     displayW = MAX_W;
   }
-  const maskId = `written-${glyphKey.replace(/[^a-zA-Z0-9_-]/g, '_')}-${run}`;
+  // useId() namespaces the mask per component instance so two WrittenGlyphs with
+  // the same glyph_key on screen at once can't collide on `url(#id)`.
+  const maskId = `written-${uid.replace(/[^a-zA-Z0-9_-]/g, '_')}-${run}`;
   const animate = !reducedMotion;
 
   return (
