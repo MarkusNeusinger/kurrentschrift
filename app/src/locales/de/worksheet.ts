@@ -37,6 +37,12 @@ export const worksheet = {
     penAngle: 'Federwinkel',
     penAngleHint:
       'Anstellwinkel der Feder zur Schreiblinie — als Winkelmarke oben links. Bei der Spitzfeder (Kurrent) kommt die Strichstärke aus dem Druck, nicht aus dem Winkel.',
+    rulingHeading: 'Druckfarbe',
+    rulingDruck: 'Schwarz (Druck)',
+    rulingSchulheft: 'Schulheft um 1900',
+    rulingNote:
+      'Gedruckte Schulheft-Lineatur ist ab 1871 belegt: blaue Schreiblinien, ab etwa 1900 mit roter Randleiste — sie hielt den Korrekturrand für den Lehrer frei.',
+    marginToggle: 'Rote Randleiste (Korrekturrand)',
     captionLabel: 'Titel / Name (optional)',
     captionPlaceholder: 'z. B. Kurrent',
     captionHelp: 'Erscheint mit Verhältnis/Neigung/Feder unten links; kurrentschrift.ink steht unten rechts.',

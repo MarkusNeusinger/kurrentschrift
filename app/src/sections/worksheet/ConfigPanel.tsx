@@ -59,9 +59,12 @@ interface ConfigPanelProps {
   caption: string;
   setCaption: (s: string) => void;
   onDownload: () => void;
+  rulingThemeId: string;
+  setRulingThemeId: (id: string) => void;
 }
 
-export function ConfigPanel({ cfg, set, presetId, applyPreset, caption, setCaption, onDownload }: ConfigPanelProps) {
+export function ConfigPanel({ cfg, set, presetId, applyPreset, caption, setCaption, onDownload, rulingThemeId, setRulingThemeId }: ConfigPanelProps) {
+  const isSchulheft = rulingThemeId === 'schulheft';
   return (
     <Paper variant="outlined" sx={{ p: 2.5, bgcolor: tokens.surface.elevated }}>
       <Stack spacing={3}>
@@ -141,6 +144,43 @@ export function ConfigPanel({ cfg, set, presetId, applyPreset, caption, setCapti
           </Box>
           <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mt: 1 }}>
             {de.worksheet.config.penAngleHint}
+          </Typography>
+        </Box>
+
+        <Divider />
+
+        <Box>
+          <Typography variant="overline" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
+            {de.worksheet.config.rulingHeading}
+          </Typography>
+          <ToggleButtonGroup
+            exclusive
+            fullWidth
+            size="small"
+            value={rulingThemeId}
+            onChange={(_, v) => v && setRulingThemeId(v)}
+          >
+            <ToggleButton value="druck" sx={{ textTransform: 'none' }}>
+              {de.worksheet.config.rulingDruck}
+            </ToggleButton>
+            <ToggleButton value="schulheft" sx={{ textTransform: 'none' }}>
+              {de.worksheet.config.rulingSchulheft}
+            </ToggleButton>
+          </ToggleButtonGroup>
+          {isSchulheft && (
+            <FormControlLabel
+              sx={{ mt: 1 }}
+              control={
+                <Switch
+                  checked={cfg.showMarginLine}
+                  onChange={(e) => set({ showMarginLine: e.target.checked })}
+                />
+              }
+              label={de.worksheet.config.marginToggle}
+            />
+          )}
+          <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mt: 1 }}>
+            {de.worksheet.config.rulingNote}
           </Typography>
         </Box>
 

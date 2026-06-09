@@ -89,7 +89,9 @@ export const PRESETS: ScriptPreset[] = [
     ratioAscender: 2,
     ratioXHeight: 1,
     ratioDescender: 2,
-    xHeightMm: 5,
+    // 5/2.5/5 mm — the band sizes printed in a period Kurrent practice book
+    // (user-owned artifact), i.e. the 2:1:2 ratio at a 2.5 mm x-height.
+    xHeightMm: 2.5,
     rowGapMm: 6,
     marginMm: 15,
     showSlant: true,
@@ -176,6 +178,24 @@ export const RULING_THEMES: RulingTheme[] = [
       pen: { color: '#1A1A17', widthMm: 0.35 },
       // The historical Randleiste was red even alongside black/grey print;
       // unused until showMarginLine is exposed in the UI.
+      margin: { color: schulheft.marginRed, widthMm: 0.4 },
+    },
+  },
+  {
+    // The ~1900 exercise-book print (Schulheft): printed ruling is documented
+    // from 1871, the red margin bar from ~1900 (Schulmuseum Ottweiler). Real
+    // exercise books ruled every writing line in the same printed blue; the
+    // baseline keeps a touch more weight and the ascender/descender bounds
+    // keep their dashes so the four-line system stays readable for learners.
+    // The pen gauge stays dark ink — it must survive mono printing.
+    id: 'schulheft',
+    styles: {
+      baseline: { color: schulheft.rulingBlue, widthMm: 0.3 },
+      waist: { color: schulheft.rulingBlue, widthMm: 0.2 },
+      ascender: { color: schulheft.rulingBlue, widthMm: 0.2, dash: [1.6, 1.6] },
+      descender: { color: schulheft.rulingBlue, widthMm: 0.2, dash: [1.6, 1.6] },
+      slant: { color: schulheft.rulingBlueFaded, widthMm: 0.15, dash: [1, 1.6] },
+      pen: { color: '#1A1A17', widthMm: 0.35 },
       margin: { color: schulheft.marginRed, widthMm: 0.4 },
     },
   },
