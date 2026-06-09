@@ -59,11 +59,13 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { useElementSize } from '@/hooks/useElementSize';
 import { cropUrl, getGlyph, postResample, postTrace, putBbox } from '@/lib/api';
+import { bboxInFromOut } from '@/lib/bbox';
 import { isLetterSplit, knownGlyph, POSITION_LABEL, siblingKeys } from '@/domain/glyphs';
-import { couplingLabel } from '../../lib/labels';
+import { couplingLabel } from '@/lib/labels';
 import { useAdmin } from '@/context/AdminContext';
 import type { BboxIn, BboxOut, CouplingHeight, GlyphSummary, GuideConfig, MaskStroke, StrokePoint } from '@/lib/api';
 
@@ -95,22 +97,6 @@ const STEPS: { id: StepId; label: string }[] = [
   { id: 'weg', label: 'Weg' },
   { id: 'overview', label: 'Übersicht' },
 ];
-
-function bboxInFromOut(b: BboxOut): BboxIn {
-  return {
-    y0: b.y0,
-    y1: b.y1,
-    x0: b.x0,
-    x1: b.x1,
-    mask_strokes: b.mask_strokes,
-    baseline_y: b.baseline_y,
-    midband_y: b.midband_y,
-    n_anchors: b.n_anchors,
-    guides: b.guides,
-    locked: b.locked,
-    split: b.split,
-  };
-}
 
 const summaryOf = (g: { glyph_key: string; glyph: string; position: string; variant: number; advance: number }): GlyphSummary => ({
   glyph_key: g.glyph_key,
@@ -188,7 +174,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
   const stepId = STEPS[step].id;
 
   const hostRef = useRef<HTMLDivElement | null>(null);
-  const [hostSize, setHostSize] = useState({ w: 0, h: 0 });
+  const hostSize = useElementSize(hostRef, [open, step]);
 
   // Per-step interaction state. The Weg path is captured as a list of strokes
   // (one per pen-down→pen-up); a pen lift starts a new stroke instead of
@@ -211,15 +197,6 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
   const [applyAll, setApplyAll] = useState(true);
   const [busy, setBusy] = useState(false);
   const [snack, setSnack] = useState<string | null>(null);
-
-  useLayoutEffect(() => {
-    const el = hostRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => setHostSize({ w: el.clientWidth, h: el.clientHeight }));
-    ro.observe(el);
-    setHostSize({ w: el.clientWidth, h: el.clientHeight });
-    return () => ro.disconnect();
-  }, [open, step]);
 
   // Mounted once and reused for every glyph: when a different glyph opens (or the
   // dialog reopens), drop transient state so one glyph's draft never leaks onto

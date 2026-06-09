@@ -18,6 +18,7 @@ import ReplayIcon from '@mui/icons-material/Replay';
 import { Alert, Box, CircularProgress, IconButton, keyframes } from '@mui/material';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { ApiError, getDiagnostic, type DiagnosticData } from '@/lib/api';
 
 // Reveal a dashed path (pathLength=1, dasharray=1): offset 1 hides it, 0 draws it.
@@ -26,25 +27,6 @@ const reveal = keyframes`from { stroke-dashoffset: 1; } to { stroke-dashoffset: 
 // Diagnostics are a backend compute (skeleton extraction); cache per glyph_key so
 // replays and repeat questions don't refetch. `null` records a 404 (no ductus).
 const cache = new Map<string, DiagnosticData | null>();
-
-function usePrefersReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-  );
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const on = () => setReduced(mq.matches);
-    // `addEventListener` on MediaQueryList is missing on older Safari (<14);
-    // fall back to the deprecated `addListener` so the toggle never throws.
-    if (mq.addEventListener) {
-      mq.addEventListener('change', on);
-      return () => mq.removeEventListener('change', on);
-    }
-    mq.addListener(on);
-    return () => mq.removeListener(on);
-  }, []);
-  return reduced;
-}
 
 function chordLength(points: Array<[number, number]>): number {
   let total = 0;

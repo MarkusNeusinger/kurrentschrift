@@ -5,10 +5,10 @@ import { AdminProvider } from '@/context/AdminContext';
 import { paths } from '@/routes/paths';
 
 // The layout is a named export; lazy() needs a default-shaped module.
-const AppLayout = lazy(() =>
-  import('@/layout/AppLayout').then((m) => ({ default: m.AppLayout })),
+const AdminLayout = lazy(() =>
+  import('@/layouts/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })),
 );
-const ChartPage = lazy(() => import('@/pages/ChartPage'));
+const ChartPage = lazy(() => import('@/pages/admin/ChartPage'));
 
 export const adminRoutes: RouteObject[] = [
   {
@@ -18,7 +18,7 @@ export const adminRoutes: RouteObject[] = [
     path: paths.admin.root,
     element: (
       <AdminProvider>
-        <AppLayout />
+        <AdminLayout />
       </AdminProvider>
     ),
     children: [

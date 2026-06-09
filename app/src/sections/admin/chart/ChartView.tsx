@@ -1,4 +1,4 @@
-// ChartPage — chart.jpg with bbox overlays for the visible glyphs.
+// ChartView — chart.jpg with bbox overlays for the visible glyphs.
 //
 // Modes:
 //   - PAN: drag scrolls the chart container.
@@ -37,6 +37,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { chartUrl, deleteBbox, deleteGlyph, putBbox } from '@/lib/api';
+import { bboxInFromOut } from '@/lib/bbox';
 import { isLetterSplit, knownGlyph, siblingKeys } from '@/domain/glyphs';
 import { useAdmin } from '@/context/AdminContext';
 import type { BboxIn, BboxOut } from '@/lib/api';
@@ -85,21 +86,6 @@ interface PanState {
 const ZOOM_PRESETS = [0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
 const ZOOM_MIN = ZOOM_PRESETS[0];
 const ZOOM_MAX = ZOOM_PRESETS[ZOOM_PRESETS.length - 1];
-
-function bboxInFromOut(b: BboxOut): BboxIn {
-  return {
-    y0: b.y0,
-    y1: b.y1,
-    x0: b.x0,
-    x1: b.x1,
-    mask_strokes: b.mask_strokes,
-    baseline_y: b.baseline_y,
-    midband_y: b.midband_y,
-    n_anchors: b.n_anchors,
-    guides: b.guides,
-    locked: b.locked,
-  };
-}
 
 const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 
@@ -169,7 +155,7 @@ function editedBbox(current: BboxOut, handle: EditHandle, cur: Rect): BboxIn {
   };
 }
 
-export function ChartPage() {
+export function ChartView() {
   const { source, bboxesByKey, glyphsByKey, activeGlyph, visibleGlyphs, upsertBbox, removeBbox, removeGlyph, openWizard, openDiagnose } =
     useAdmin();
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -746,6 +732,3 @@ export function ChartPage() {
     </>
   );
 }
-
-// Default export for React.lazy route splitting (routes/sections).
-export default ChartPage;

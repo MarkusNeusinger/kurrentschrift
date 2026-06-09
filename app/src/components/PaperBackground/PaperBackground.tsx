@@ -12,8 +12,8 @@ import { Box, GlobalStyles } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 import type { ReactNode } from 'react';
 
-import kurrentWoff2 from '../assets/fonts/gl-germancursive.woff2';
-import { garamond, paper } from '../styles/paper';
+import kurrentWoff2 from '@/assets/fonts/gl-germancursive.woff2';
+import { garamond, paper } from '@/styles/paper';
 
 // faint paper grain (greyscale fractal noise, multiplied over the warm base)
 const GRAIN =
