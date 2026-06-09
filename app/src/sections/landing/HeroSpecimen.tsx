@@ -3,10 +3,16 @@ import { keyframes } from '@mui/system';
 import { useState } from 'react';
 
 import { de } from '@/locales';
-import { garamond, paper, script } from '@/styles/paper';
+import { garamond, inkState, paper, script } from '@/styles/paper';
 
 // --- animations -----------------------------------------------------------
 const writeIn = keyframes`from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); }`;
+// Iron-gall ink settle: the word is written in fresh blue-black (blauschwarz,
+// the regulated German school ink) and settles toward the aged manuscript
+// brown the rest of the page wears — decades compressed into seconds. The
+// settle starts at 2.6s: a deliberate ~200ms breath after the write-in ends
+// (0.5s delay + 1.9s writeIn) so the fresh ink registers before it ages.
+const inkSettle = keyframes`from { fill: ${inkState.fresh}; } to { fill: ${paper.ink}; }`;
 // Only a `to` rule: the draw-in starts from each line's own strokeDashoffset
 // (set to SPECIMEN_VB.w below), so nothing here is coupled to the viewBox width.
 const drawStroke = keyframes`to { stroke-dashoffset: 0; }`;
@@ -84,10 +90,10 @@ export function HeroSpecimen() {
           sx={{
             fontFamily: script,
             fontSize: 100,
-            fill: paper.ink,
+            fill: inkState.fresh,
             clipPath: 'inset(0 100% 0 0)',
-            animation: `${writeIn} 1.9s cubic-bezier(.6,.02,.2,1) .5s forwards`,
-            [reduce]: { clipPath: 'none', animation: 'none' },
+            animation: `${writeIn} 1.9s cubic-bezier(.6,.02,.2,1) .5s forwards, ${inkSettle} 2.5s ease 2.6s forwards`,
+            [reduce]: { clipPath: 'none', animation: 'none', fill: paper.ink },
           }}
         >
           {de.landing.specimen.word}
