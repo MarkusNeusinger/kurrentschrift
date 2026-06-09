@@ -56,7 +56,13 @@ export function WorksheetView() {
   const [caption, setCaption] = useState<string>(PRESETS[0].label);
   // Ruling colour scheme: today's print look vs the ~1900 Schulheft print
   // (blue lines, optional red Randleiste). Preview and PDF read the same map.
-  const [rulingThemeId, setRulingThemeId] = useState<string>(RULING_THEMES[0].id);
+  const [rulingThemeId, setRulingThemeIdRaw] = useState<string>(RULING_THEMES[0].id);
+  // Leaving the Schulheft theme also clears the Randleiste — its toggle only
+  // renders there, so a stuck-on margin line would otherwise be uncontrollable.
+  const setRulingThemeId = (id: string) => {
+    setRulingThemeIdRaw(id);
+    if (id !== 'schulheft') setCfg((c) => ({ ...c, showMarginLine: false }));
+  };
   const rulingStyles = (RULING_THEMES.find((t) => t.id === rulingThemeId) ?? RULING_THEMES[0]).styles;
 
   // Manual edits drop the preset highlight (the config no longer "is" a preset).
