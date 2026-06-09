@@ -6,8 +6,6 @@ import MenuIcon from '@mui/icons-material/Menu';
 import {
   AppBar,
   Box,
-  Button,
-  CircularProgress,
   Drawer,
   IconButton,
   Toolbar,
@@ -18,28 +16,15 @@ import { useTheme } from '@mui/material/styles';
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 
-import { DiagnosticDialog } from '../components/DiagnosticDialog';
-import { GlyphSidebar } from '../components/GlyphSidebar';
-import { PaperBackground } from '../components/PaperBackground';
-import { SetupWizard } from '../components/wizard/SetupWizard';
+import { BootStatus } from '@/components/BootStatus';
+import { PaperBackground } from '@/components/PaperBackground';
 import { useAdmin } from '@/context/AdminContext';
+import { AdminModals } from '@/layouts/admin/AdminModals';
+import { GlyphSidebar } from '@/sections/admin/sidebar/GlyphSidebar';
 
 const DRAWER_WIDTH = 280;
 
-// The Einrichtungs-Wizard and the Diagnose modal are mounted once here — driven
-// by `wizardGlyph` / `diagnoseGlyph` in the admin context — so the chart
-// toolbar AND the sidebar can open them for any glyph from a single instance.
-function AdminModals() {
-  const { wizardGlyph, closeWizard, diagnoseGlyph } = useAdmin();
-  return (
-    <>
-      <SetupWizard glyphKey={wizardGlyph ?? ''} open={wizardGlyph != null} onClose={closeWizard} />
-      <DiagnosticDialog key={diagnoseGlyph ?? 'none'} />
-    </>
-  );
-}
-
-export function AppLayout() {
+export function AdminLayout() {
   const { source, loadError, waking } = useAdmin();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -47,34 +32,30 @@ export function AppLayout() {
 
   if (loadError) {
     return (
-      <PaperBackground minHeight="100dvh">
-        <Box sx={{ p: 4 }}>
-          <Typography variant="h5" gutterBottom>
-            API nicht erreichbar
-          </Typography>
-          <Typography color="text.secondary">{loadError}</Typography>
-          <Typography sx={{ mt: 2 }}>
+      <BootStatus
+        shell="paper"
+        variant="error"
+        title="API nicht erreichbar"
+        message={loadError}
+        detail={
+          <>
             Die API (Cloud Run) konnte auch nach mehreren Versuchen nicht erreicht werden.
             Im lokalen Dev läuft sie über <code>uv run uvicorn api.main:app --reload --port 8000</code>.
-          </Typography>
-          <Button variant="outlined" sx={{ mt: 2 }} onClick={() => window.location.reload()}>
-            Erneut versuchen
-          </Button>
-        </Box>
-      </PaperBackground>
+          </>
+        }
+        onRetry={() => window.location.reload()}
+        retryLabel="Erneut versuchen"
+      />
     );
   }
 
   if (!source) {
     return (
-      <PaperBackground minHeight="100dvh">
-        <Box sx={{ height: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-          <CircularProgress />
-          <Typography color="text.secondary">
-            {waking ? 'API startet (Cold Start), einen Moment…' : 'lade Quelle…'}
-          </Typography>
-        </Box>
-      </PaperBackground>
+      <BootStatus
+        shell="paper"
+        variant="loading"
+        message={waking ? 'API startet (Cold Start), einen Moment…' : 'lade Quelle…'}
+      />
     );
   }
 

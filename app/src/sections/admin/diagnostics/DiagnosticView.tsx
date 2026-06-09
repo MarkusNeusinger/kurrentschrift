@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { cropUrl, getDiagnostic } from '@/lib/api';
 import type { DiagnosticData } from '@/lib/api';
+import { useColumnWidth } from '@/sections/admin/diagnostics/useColumnWidth';
 
 interface Props {
   glyphKey: string;
@@ -22,25 +23,6 @@ interface Props {
 }
 
 const COL_H = 360;
-
-// Cap the column width to the viewport so the three columns wrap and fit on
-// narrow phones instead of forcing horizontal scroll. `cap` is the desktop
-// ceiling (320 by default; the Diagnose modal passes a larger one).
-function clampColumnWidth(viewport: number, cap = 320) {
-  // Stay positive even on absurdly narrow viewports so the derived scale and
-  // SVG/image width/height never go to 0 or negative.
-  return Math.max(120, Math.min(cap, viewport - 64));
-}
-
-function useColumnWidth(cap?: number) {
-  const [w, setW] = useState(() => clampColumnWidth(typeof window !== 'undefined' ? window.innerWidth : 360, cap));
-  useEffect(() => {
-    const onResize = () => setW(clampColumnWidth(window.innerWidth, cap));
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, [cap]);
-  return w;
-}
 
 export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props) {
   const COL_W = useColumnWidth(colWidth);

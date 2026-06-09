@@ -1,0 +1,153 @@
+// Public worksheet generator (/schreiben): a configurable set of ruled guide
+// lines (German: Hilfslinien) for practising German cursive, rendered live as
+// A4 and downloadable as a print-ready PDF. Geometry lives in lib/lineatur.ts,
+// the PDF in lib/pdf.ts; this file is the UI shell only.
+//
+// Scope per vision.md §2 / architektur.md §15: ratio ascender:x-height:descender
+// freely configurable with the three start-script presets (Kurrent · Sütterlin ·
+// Offenbacher), plus optional slant guides. The content-aware variant that
+// typesets Kurrent glyphs into the lines is the later WeasyPrint piece.
+
+import { useMemo, useState } from 'react';
+import { Box, Container, Paper, Stack, Typography } from '@mui/material';
+
+import { PaperBackground } from '@/components/PaperBackground';
+import { PublicHeader } from '@/components/PublicHeader';
+import { PRESETS, buildLineature, type LineatureConfig } from '@/lib/lineatur';
+import { lineaturePdf } from '@/lib/pdf';
+import { ConfigPanel } from '@/sections/worksheet/ConfigPanel';
+import { PreviewSvg } from '@/sections/worksheet/PreviewSvg';
+import { garamond } from '@/styles/paper';
+import { tokens } from '@/theme';
+
+const ratioLabel = (c: LineatureConfig) =>
+  `${c.ratioAscender} : ${c.ratioXHeight} : ${c.ratioDescender}`;
+
+const SITE_URL = 'kurrentschrift.ink';
+
+// The left footer string: the free-text caption (title/name) plus the live
+// spec (ratio + slant + pen angle), so a printed sheet carries its settings.
+// The site URL is placed in the opposite corner (see render below).
+function buildSpec(cfg: LineatureConfig, caption: string): string {
+  const parts: string[] = [];
+  const c = caption.trim();
+  if (c) parts.push(c);
+  if ([cfg.ratioAscender, cfg.ratioXHeight, cfg.ratioDescender].every(Number.isFinite)) {
+    parts.push(ratioLabel(cfg));
+  }
+  if (cfg.showSlant && Number.isFinite(cfg.slantDeg)) parts.push(`Neigung ${cfg.slantDeg}°`);
+  if (cfg.showPenAngle && Number.isFinite(cfg.penAngleDeg)) parts.push(`Feder ${cfg.penAngleDeg}°`);
+  return parts.join('  ·  ');
+}
+
+function stripPreset(p: (typeof PRESETS)[number]): LineatureConfig {
+  // Drop the preset-only metadata, keep just the config knobs.
+  const { id: _id, label: _label, note: _note, ...cfg } = p;
+  void _id;
+  void _label;
+  void _note;
+  return cfg;
+}
+
+export function WorksheetView() {
+  const [cfg, setCfg] = useState<LineatureConfig>(() => stripPreset(PRESETS[0]));
+  const [presetId, setPresetId] = useState<string>(PRESETS[0].id);
+  const [caption, setCaption] = useState<string>(PRESETS[0].label);
+
+  // Manual edits drop the preset highlight (the config no longer "is" a preset).
+  const set = (patch: Partial<LineatureConfig>) => {
+    setCfg((c) => ({ ...c, ...patch }));
+    setPresetId('');
+  };
+
+  const applyPreset = (id: string) => {
+    const p = PRESETS.find((x) => x.id === id);
+    if (!p) return;
+    setCfg(stripPreset(p));
+    setPresetId(p.id);
+    setCaption(p.label);
+  };
+
+  const { segments, marks } = useMemo(() => buildLineature(cfg), [cfg]);
+  const spec = buildSpec(cfg, caption);
+
+  const download = () => {
+    const blob = lineaturePdf(segments, { footerLeft: spec, footerRight: SITE_URL, marks });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `lineatur-${presetId || 'eigen'}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    // Defer revocation so it can't race the download start on slower devices.
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  };
+
+  return (
+    <PaperBackground>
+      <PublicHeader tone="paper" />
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+        <Stack spacing={1.5} sx={{ mb: 4 }}>
+          <Typography
+            component="h1"
+            sx={{
+              fontFamily: garamond,
+              fontStyle: 'italic',
+              fontWeight: 400,
+              fontSize: { xs: '1.9rem', sm: '2.3rem' },
+              lineHeight: 1.15,
+              color: 'text.primary',
+            }}
+          >
+            Lineatur-Vorlage zum Schreiben üben
+          </Typography>
+          <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.7, maxWidth: 560 }}>
+            Hilfslinien für deutsche Schreibschrift auf DIN&nbsp;A4. Wähle eine der drei
+            Start-Schriften als Ausgangspunkt, passe das Verhältnis von Ober-, Mittel- und
+            Unterband frei an, schalte bei Bedarf Schräglinien dazu — und lade das Blatt als
+            PDF zum Ausdrucken.
+          </Typography>
+        </Stack>
+
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: '340px 1fr' },
+            gap: { xs: 3, md: 4 },
+            alignItems: 'start',
+          }}
+        >
+          {/* Controls */}
+          <ConfigPanel
+            cfg={cfg}
+            set={set}
+            presetId={presetId}
+            applyPreset={applyPreset}
+            caption={caption}
+            setCaption={setCaption}
+            onDownload={download}
+          />
+
+          {/* Preview */}
+          <Box>
+            <Typography variant="overline" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
+              Vorschau · DIN A4
+            </Typography>
+            <Paper
+              variant="outlined"
+              sx={{
+                p: { xs: 1.5, sm: 3 },
+                bgcolor: tokens.ink.rule,
+                display: 'flex',
+                justifyContent: 'center',
+              }}
+            >
+              <PreviewSvg segments={segments} marks={marks} footerLeft={spec} footerRight={SITE_URL} />
+            </Paper>
+          </Box>
+        </Box>
+      </Container>
+    </PaperBackground>
+  );
+}
