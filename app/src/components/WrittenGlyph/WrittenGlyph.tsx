@@ -205,10 +205,11 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
         style={{ display: 'block', background: SURFACE_BG }}
       >
         <defs>
-          {/* Ink bleed: fibre-wicking displacement, applied to the silhouette
-              once the writing is done (see the group below). The viewBox is in
-              template units (x-height = 1), so the displacement scale must be
-              tiny — pixel-space example values would be wildly off. */}
+          {/* Ink bleed: fibre-wicking displacement on the silhouette group —
+              deliberately active during the write-in too (ink wicks the moment
+              it touches paper). The viewBox is in template units (x-height = 1),
+              so the displacement scale must be tiny — pixel-space example
+              values would be wildly off. */}
           <filter id={`${maskId}-bleed`} x="-5%" y="-5%" width="110%" height="110%">
             <feTurbulence type="fractalNoise" baseFrequency="6" numOctaves="2" seed="7" result="noise" />
             <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.018" xChannelSelector="R" yChannelSelector="G" />
