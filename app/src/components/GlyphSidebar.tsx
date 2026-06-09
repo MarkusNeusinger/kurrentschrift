@@ -15,15 +15,14 @@ import {
   ButtonBase,
   Divider,
   IconButton,
-  ToggleButton,
-  ToggleButtonGroup,
+  Stack,
   Tooltip,
   Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { glyphKeyFor, LETTERS, LETTER_BY_KEY, POSITIONS } from '../constants';
+import { glyphKeyFor, isLetterSplit, LETTERS, LETTER_BY_KEY, POSITION_LABEL, POSITIONS } from '../constants';
 import type { Letter, LetterGroup, Position } from '../constants';
 import { useAdmin } from '../state';
 
@@ -88,10 +87,6 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
   };
 
   const openLetter = openBase ? (LETTERS.find((l) => l.base === openBase) ?? null) : null;
-  const activePos: Position | null =
-    openLetter && activeGlyph
-      ? (POSITIONS.find((p) => glyphKeyFor(openLetter, p) === activeGlyph) ?? null)
-      : null;
   const keysWithBbox = Object.keys(bboxesByKey);
 
   return (
@@ -153,13 +148,14 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
                   const canon = POSITIONS.some((p) => hasCanon(glyphKeyFor(letter, p)));
                   const bbox = POSITIONS.some((p) => hasBbox(glyphKeyFor(letter, p)));
                   const locked = POSITIONS.some((p) => isLocked(glyphKeyFor(letter, p)));
+                  const split = isLetterSplit(glyphKeyFor(letter, 'medial'), bboxesByKey);
                   const isOpen = openBase === letter.base;
                   return (
                     <Tooltip
                       key={letter.base}
                       title={`${letter.glyph}${letter.note ? ` · ${letter.note}` : ''}${
                         canon ? ' · Canonical vorhanden' : bbox ? ' · Bbox gesetzt' : ' · leer'
-                      }${locked ? ' · gesperrt (fertig)' : ''}`}
+                      }${locked ? ' · gesperrt (fertig)' : ''}${split ? ' · aufgetrennt (pro Position)' : ''}`}
                     >
                       <ButtonBase
                         onClick={() => selectLetter(letter)}
@@ -192,6 +188,23 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
                             }}
                           />
                         )}
+                        {/* Split marker (top-left, distinct from the status dot):
+                            this letter is authored per-position (aufgetrennt). */}
+                        {split && (
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              top: 1,
+                              left: 2,
+                              fontSize: 9,
+                              lineHeight: 1,
+                              fontWeight: 700,
+                              color: 'info.main',
+                            }}
+                          >
+                            ⫶
+                          </Box>
+                        )}
                         {locked && (
                           <LockIcon
                             sx={{ position: 'absolute', bottom: 1, right: 1, fontSize: 10, color: 'success.main' }}
@@ -207,78 +220,131 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
         })}
       </Box>
 
-      {/* Position panel — only shown once a letter is selected. */}
-      {openLetter && (
-        <Box sx={{ borderTop: 1, borderColor: 'divider', p: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 1 }}>
-            <Typography sx={{ fontFamily: 'Georgia, serif', fontSize: 22, lineHeight: 1 }}>{openLetter.glyph}</Typography>
-            <Typography variant="caption" color="text.secondary">
-              Position {openLetter.note ? `· ${openLetter.note}` : ''}
-            </Typography>
-          </Box>
-          <ToggleButtonGroup
-            size="small"
-            exclusive
-            value={activePos}
-            onChange={(_e, p: Position | null) => p && activatePosition(openLetter, p)}
-            fullWidth
-          >
-            {POSITIONS.map((p) => {
-              const key = glyphKeyFor(openLetter, p);
-              const canon = hasCanon(key);
-              const bbox = hasBbox(key);
-              return (
-                <ToggleButton key={p} value={p} sx={{ textTransform: 'none', flexDirection: 'column', gap: 0.25, py: 0.5 }}>
-                  <Box
-                    sx={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: '50%',
-                      bgcolor: canon ? 'success.main' : bbox ? 'warning.main' : 'transparent',
-                      border: canon || bbox ? 'none' : '1px solid',
-                      borderColor: 'divider',
-                    }}
-                  />
-                  <Typography variant="caption">{p}</Typography>
-                </ToggleButton>
-              );
-            })}
-          </ToggleButtonGroup>
-          <Button
-            fullWidth
-            size="small"
-            variant="contained"
-            startIcon={<AutoFixHighIcon />}
-            disabled={!activeGlyph || !hasBbox(activeGlyph) || isLocked(activeGlyph)}
-            onClick={launchWizard}
-            sx={{ mt: 1.5 }}
-          >
-            Einrichten
-          </Button>
-          {activeGlyph && hasCanon(activeGlyph) && (
-            <Button
-              fullWidth
-              size="small"
-              variant="outlined"
-              startIcon={<VisibilityIcon />}
-              onClick={launchDiagnose}
-              sx={{ mt: 1 }}
-            >
-              Diagnose
-            </Button>
-          )}
-          {activeGlyph && !hasBbox(activeGlyph) && (
-            <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1 }}>
-              Noch keine Bbox — im Modus „Bbox“ ein Rechteck auf der Vorlage ziehen.
-            </Typography>
-          )}
-          {activeGlyph && hasBbox(activeGlyph) && isLocked(activeGlyph) && (
-            <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1 }}>
-              🔒 Gesperrt (fertig) — oben in der Leiste entsperren, um zu bearbeiten.
-            </Typography>
-          )}
-        </Box>
-      )}
+      {/* Letter panel — shown once a letter is selected. A unified letter (the
+          default) hides position entirely: one "Einrichten" opens the wizard,
+          where the unified/split choice lives. A split letter (aufgetrennt)
+          lists its three positions so each can be edited on its own. */}
+      {openLetter &&
+        (() => {
+          const letter = openLetter;
+          const split = isLetterSplit(glyphKeyFor(letter, 'medial'), bboxesByKey);
+          const editPosition = (p: Position) => {
+            const key = glyphKeyFor(letter, p);
+            activatePosition(letter, p);
+            openWizard(key);
+            onNavigate?.();
+          };
+          const diagnosePosition = (p: Position) => {
+            const key = glyphKeyFor(letter, p);
+            activatePosition(letter, p);
+            openDiagnose(key);
+            onNavigate?.();
+          };
+          return (
+            <Box sx={{ borderTop: 1, borderColor: 'divider', p: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 1 }}>
+                <Typography sx={{ fontFamily: 'Georgia, serif', fontSize: 22, lineHeight: 1 }}>{letter.glyph}</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {split ? 'aufgetrennt · pro Position' : 'eine Form für alle Positionen'}
+                  {letter.note ? ` · ${letter.note}` : ''}
+                </Typography>
+              </Box>
+
+              {split ? (
+                <Stack spacing={0.5}>
+                  {POSITIONS.map((p) => {
+                    const key = glyphKeyFor(letter, p);
+                    const canon = hasCanon(key);
+                    const bbox = hasBbox(key);
+                    const locked = isLocked(key);
+                    const selected = activeGlyph === key;
+                    return (
+                      <Box
+                        key={p}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          border: '1px solid',
+                          borderColor: selected ? 'primary.main' : 'divider',
+                          borderRadius: 1,
+                          px: 1,
+                          py: 0.25,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: '50%',
+                            bgcolor: canon ? 'success.main' : bbox ? 'warning.main' : 'transparent',
+                            border: canon || bbox ? 'none' : '1px solid',
+                            borderColor: 'divider',
+                          }}
+                        />
+                        <ButtonBase onClick={() => activatePosition(letter, p)} sx={{ flex: 1, justifyContent: 'flex-start' }}>
+                          <Typography variant="caption">
+                            {POSITION_LABEL[p]}
+                            {locked ? ' 🔒' : ''}
+                          </Typography>
+                        </ButtonBase>
+                        <Tooltip title={!bbox ? 'Erst eine Bbox ziehen' : locked ? 'Gesperrt — oben entsperren' : 'Einrichten'}>
+                          <span>
+                            <IconButton size="small" disabled={!bbox || locked} onClick={() => editPosition(p)}>
+                              <AutoFixHighIcon fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                        {canon && (
+                          <Tooltip title="Diagnose">
+                            <IconButton size="small" onClick={() => diagnosePosition(p)}>
+                              <VisibilityIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </Box>
+                    );
+                  })}
+                </Stack>
+              ) : (
+                <>
+                  <Button
+                    fullWidth
+                    size="small"
+                    variant="contained"
+                    startIcon={<AutoFixHighIcon />}
+                    disabled={!activeGlyph || !hasBbox(activeGlyph) || isLocked(activeGlyph)}
+                    onClick={launchWizard}
+                  >
+                    Einrichten
+                  </Button>
+                  {activeGlyph && hasCanon(activeGlyph) && (
+                    <Button
+                      fullWidth
+                      size="small"
+                      variant="outlined"
+                      startIcon={<VisibilityIcon />}
+                      onClick={launchDiagnose}
+                      sx={{ mt: 1 }}
+                    >
+                      Diagnose
+                    </Button>
+                  )}
+                  {activeGlyph && !hasBbox(activeGlyph) && (
+                    <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1 }}>
+                      Noch keine Bbox — im Modus „Bbox“ ein Rechteck auf der Vorlage ziehen.
+                    </Typography>
+                  )}
+                  {activeGlyph && hasBbox(activeGlyph) && isLocked(activeGlyph) && (
+                    <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1 }}>
+                      🔒 Gesperrt (fertig) — oben in der Leiste entsperren, um zu bearbeiten.
+                    </Typography>
+                  )}
+                </>
+              )}
+            </Box>
+          );
+        })()}
     </Box>
   );
 }

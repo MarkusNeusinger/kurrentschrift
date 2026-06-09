@@ -37,6 +37,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { chartUrl, deleteBbox, deleteGlyph, putBbox } from '../api';
+import { isLetterSplit, knownGlyph, siblingKeys } from '../constants';
 import { useAdmin } from '../state';
 import type { BboxIn, BboxOut } from '../types';
 
@@ -375,19 +376,30 @@ export function ChartPage() {
     }
   }, [drag, edit, pan, activeGlyph, bboxesByKey, upsertBbox]);
 
-  // Toggle the active glyph's "done" lock. Resends the full bbox with the
-  // flag flipped (the rest unchanged), so it persists like any other field.
+  // Toggle the "done" lock. For a UNIFIED letter (the default) lock fans out
+  // across the three positions so they stay one unit — else the sidebar lock
+  // icon (`some position locked`) and the quiz keep firing on the siblings left
+  // behind. For a SPLIT letter the positions are independent, so we lock only
+  // the active position. The split decision routes through isLetterSplit (the
+  // one shared `.some` helper). Either way we flip the aggregate of the affected
+  // keys and keep each one's own geometry — positions without a bbox are skipped.
   const toggleLock = useCallback(async () => {
     if (!activeGlyph) return;
-    const current = bboxesByKey[activeGlyph];
-    if (!current) {
+    const scopeKeys = isLetterSplit(activeGlyph, bboxesByKey) ? [activeGlyph] : siblingKeys(activeGlyph);
+    const keys = scopeKeys.filter((k) => k in bboxesByKey);
+    if (keys.length === 0) {
       setSnack(`${activeGlyph}: noch keine Bbox.`);
       return;
     }
+    const nextLocked = !keys.some((k) => bboxesByKey[k]?.locked === true);
     try {
-      const saved = await putBbox(activeGlyph, { ...bboxInFromOut(current), locked: !current.locked });
-      upsertBbox(activeGlyph, saved);
-      setSnack(saved.locked ? `🔒 ${activeGlyph} gesperrt (fertig).` : `🔓 ${activeGlyph} entsperrt.`);
+      for (const k of keys) {
+        const saved = await putBbox(k, { ...bboxInFromOut(bboxesByKey[k]), locked: nextLocked });
+        upsertBbox(k, saved);
+      }
+      const name = knownGlyph(activeGlyph)?.glyph ?? activeGlyph;
+      const scope = keys.length > 1 ? ' (alle Positionen)' : '';
+      setSnack(nextLocked ? `🔒 „${name}" gesperrt${scope}.` : `🔓 „${name}" entsperrt${scope}.`);
     } catch (err) {
       setSnack(`Speichern fehlgeschlagen: ${err}`);
     }
@@ -447,8 +459,15 @@ export function ChartPage() {
     return () => window.removeEventListener('keydown', h);
   }, []);
 
-  const activeBbox = activeGlyph ? bboxesByKey[activeGlyph] : undefined;
-  const activeLocked = activeBbox?.locked === true;
+  // Lock state of the affected scope: the whole letter for a unified glyph (the
+  // three positions move as one, matching the sidebar icon and the fan-out
+  // toggle), or just the active position for a split letter. The button is
+  // reachable as long as a relevant position has a bbox.
+  const activeSplit = activeGlyph ? isLetterSplit(activeGlyph, bboxesByKey) : false;
+  const activeSiblings = activeGlyph
+    ? (activeSplit ? [activeGlyph] : siblingKeys(activeGlyph)).filter((k) => k in bboxesByKey)
+    : [];
+  const activeLocked = activeSiblings.some((k) => bboxesByKey[k]?.locked === true);
   const activeHasCanonical = activeGlyph ? glyphsByKey[activeGlyph]?.has_data === true : false;
   const cursorStyle: React.CSSProperties =
     mode === 'pan'
@@ -481,11 +500,15 @@ export function ChartPage() {
 
         <Tooltip
           title={
-            !activeGlyph || !(activeGlyph in bboxesByKey)
+            activeSiblings.length === 0
               ? 'Glyph mit Bbox wählen, um ihn als fertig zu sperren'
-              : activeLocked
-                ? `${activeGlyph} entsperren (wieder bearbeitbar)`
-                : `${activeGlyph} als fertig sperren (vor Änderungen schützen)`
+              : activeSplit
+                ? activeLocked
+                  ? 'Entsperren (nur diese Position — aufgetrennt)'
+                  : 'Als fertig sperren (nur diese Position — aufgetrennt)'
+                : activeLocked
+                  ? 'Entsperren (alle Positionen, wieder bearbeitbar)'
+                  : 'Als fertig sperren (alle Positionen, vor Änderungen schützen)'
           }
         >
           <span>
@@ -494,7 +517,7 @@ export function ChartPage() {
               value="lock"
               selected={activeLocked}
               color="success"
-              disabled={!activeGlyph || !(activeGlyph in bboxesByKey)}
+              disabled={activeSiblings.length === 0}
               aria-label={activeLocked ? 'Glyph entsperren' : 'Glyph als fertig sperren'}
               onChange={toggleLock}
             >

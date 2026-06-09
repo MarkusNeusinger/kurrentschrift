@@ -157,6 +157,14 @@ class Bbox(Base):
     # reads as complete and is protected from accidental move/resize/redraw. The
     # wizard's final "approve" step sets this; unlocking re-enables editing.
     locked: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
+    # Per-letter "positions authored separately" marker (German: aufgetrennt).
+    # Default false: the three positional forms share one authored form (the
+    # wizard fans the same trace across initial/medial/final) and the sidebar,
+    # quiz and lock treat the letter as one unit. true marks a letter whose
+    # positions genuinely differ, so each is authored/locked/quizzed on its own.
+    # A letter-level intent stored on all three sibling rows, read with `.some`;
+    # writes fan out across siblings exactly like `locked`.
+    split: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
