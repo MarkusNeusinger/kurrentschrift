@@ -11,14 +11,14 @@ export const worksheet = {
   preview: 'Vorschau · DIN A4',
   // Footer spec fragments printed on the sheet (fmt templates).
   spec: {
-    slant: 'Neigung {{deg}}°',
+    slant: 'Schräglage {{deg}}°',
     pen: 'Feder {{deg}}°',
   },
   // The three start-script presets (lib/lineatur.ts PRESETS).
   presets: {
-    kurrent: { label: 'Kurrent', note: '2 : 1 : 2 · ~30° geneigt · Spitzfeder' },
-    suetterlin: { label: 'Sütterlin', note: '1 : 1 : 1 · aufrecht · gleichmäßige Strichstärke' },
-    offenbacher: { label: 'Offenbacher', note: '2 : 1 : 2 · leicht geneigt · Breitfeder ~35°' },
+    kurrent: { label: 'Kurrent', note: '2 : 1 : 2 · Schräglage ~65° · Spitzfeder im Abstrich' },
+    suetterlin: { label: 'Sütterlin', note: '1 : 1 : 1 · senkrecht (90°) · Feder 40–45°' },
+    offenbacher: { label: 'Offenbacher', note: '2 : 3 : 2 · Schräglage 75–80° · Breitfeder 15–20°' },
   },
   config: {
     presetHeading: 'Start-Schrift',
@@ -30,8 +30,14 @@ export const worksheet = {
     xHeight: 'Mittelband (x-Höhe)',
     rowGap: 'Zeilenabstand',
     margin: 'Seitenrand',
-    slantToggle: 'Schräglinien (Neigung)',
-    slantAngle: 'Neigungswinkel',
+    lineSystemHeading: 'Liniensystem',
+    lineSystemFour: 'Vier Linien',
+    lineSystemTwo: 'Doppellinie',
+    lineSystemOne: 'Nur Grundlinie',
+    lineSystemHint:
+      'Die klassische Lern-Progression: vier Linien für den Anfang, die Doppellinie fürs Mittelband, später nur noch die Grundlinie.',
+    slantToggle: 'Schräglinien (Schräglage)',
+    slantAngle: 'Schräglage',
     slantSpacing: 'Abstand der Schräglinien',
     penAngleToggle: 'Federwinkel (Stifthaltung)',
     penAngle: 'Federwinkel',

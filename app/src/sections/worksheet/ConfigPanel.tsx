@@ -103,6 +103,26 @@ export function ConfigPanel({ cfg, set, presetId, applyPreset, caption, setCapti
           </Stack>
         </Box>
 
+        <Box>
+          <Typography variant="overline" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
+            {de.worksheet.config.lineSystemHeading}
+          </Typography>
+          <ToggleButtonGroup
+            exclusive
+            fullWidth
+            size="small"
+            value={cfg.lineSystem}
+            onChange={(_, v) => v && set({ lineSystem: v })}
+          >
+            <ToggleButton value="four" sx={{ textTransform: 'none' }}>{de.worksheet.config.lineSystemFour}</ToggleButton>
+            <ToggleButton value="two" sx={{ textTransform: 'none' }}>{de.worksheet.config.lineSystemTwo}</ToggleButton>
+            <ToggleButton value="one" sx={{ textTransform: 'none' }}>{de.worksheet.config.lineSystemOne}</ToggleButton>
+          </ToggleButtonGroup>
+          <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mt: 1 }}>
+            {de.worksheet.config.lineSystemHint}
+          </Typography>
+        </Box>
+
         <Stack spacing={2}>
           <NumField label={de.worksheet.config.xHeight} value={cfg.xHeightMm} onChange={(v) => set({ xHeightMm: v })} min={1} max={40} step={0.5} unit="mm" />
           <NumField label={de.worksheet.config.rowGap} value={cfg.rowGapMm} onChange={(v) => set({ rowGapMm: v })} min={0} max={60} step={0.5} unit="mm" />
@@ -122,7 +142,7 @@ export function ConfigPanel({ cfg, set, presetId, applyPreset, caption, setCapti
             label={de.worksheet.config.slantToggle}
           />
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <NumField label={de.worksheet.config.slantAngle} value={cfg.slantDeg} onChange={(v) => set({ slantDeg: v })} min={0} max={60} step={1} unit="°" disabled={!cfg.showSlant} />
+            <NumField label={de.worksheet.config.slantAngle} value={cfg.slantDeg} onChange={(v) => set({ slantDeg: v })} min={30} max={90} step={1} unit="°" disabled={!cfg.showSlant} />
             <NumField label={de.worksheet.config.slantSpacing} value={cfg.slantSpacingMm} onChange={(v) => set({ slantSpacingMm: v })} min={2} max={60} step={1} unit="mm" disabled={!cfg.showSlant} />
           </Stack>
         </Box>
