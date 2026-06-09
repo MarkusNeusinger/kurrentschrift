@@ -19,7 +19,8 @@ import { garamond, paper } from '@/styles/paper';
 // Faint paper grain. Pre-baked 128px PNG tile (deterministic noise, ~9 KB)
 // instead of the previous live feTurbulence data-URI under mix-blend multiply:
 // the live filter + viewport-sized blend layer cost ~18 fps while scrolling
-// (measured 43 → 61 fps without). The multiply math is baked into the tile as
+// (43 fps with the live filter, 61 fps with it disabled, 60 fps with this
+// tile). The multiply math is baked into the tile as
 // black-at-alpha pixels (alpha = a·(1−g)), so the rendered look stays the same
 // without any blend-mode compositing.
 const GRAIN = `url(${grainTile})`;
