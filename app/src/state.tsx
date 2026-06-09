@@ -6,9 +6,9 @@
 
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import { getBboxes, getGlyphs, getSource } from './api';
+import { getBboxes, getGlyphs, getSource } from '@/lib/api';
 import { KNOWN_GLYPHS } from './constants';
-import type { BboxOut, GlyphSummary, SourceOut } from './types';
+import type { BboxOut, GlyphSummary, SourceOut } from '@/lib/api';
 
 interface AdminState {
   source: SourceOut | null;

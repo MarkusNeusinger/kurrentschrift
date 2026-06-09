@@ -8,8 +8,8 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { Alert, Box, Button, CircularProgress, Typography } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 
-import { cropUrl, getDiagnostic } from '../api';
-import type { DiagnosticData } from '../types';
+import { cropUrl, getDiagnostic } from '@/lib/api';
+import type { DiagnosticData } from '@/lib/api';
 
 interface Props {
   glyphKey: string;

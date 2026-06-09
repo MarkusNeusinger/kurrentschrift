@@ -34,7 +34,7 @@ import {
 } from '@mui/material';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { cropUrl } from '../api';
+import { cropUrl } from '@/lib/api';
 import { PaperBackground } from '../components/PaperBackground';
 import { PublicHeader } from '../components/PublicHeader';
 import { WrittenGlyph } from '../components/WrittenGlyph';
