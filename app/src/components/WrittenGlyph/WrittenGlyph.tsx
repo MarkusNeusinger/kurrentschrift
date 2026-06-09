@@ -25,6 +25,14 @@ import { de } from '@/locales';
 // Reveal a dashed path (pathLength=1, dasharray=1): offset 1 hides it, 0 draws it.
 const reveal = keyframes`from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; }`;
 
+// Rendering colours of this work surface. The crop box is one of the neutral
+// surfaces that deliberately opt out of the paper identity (style-guide §8) —
+// these are local rendering constants, not theme tokens.
+const SURFACE_BG = '#fff'; // neutral white crop ground (binding)
+const GLYPH_INK = '#1b1b1b'; // filled silhouette
+const GUIDE_BASELINE = '#ddd'; // faint context baseline
+const GUIDE_MIDBAND = '#ebebeb'; // fainter dashed midband
+
 // Diagnostics are a backend compute (skeleton extraction); cache per glyph_key so
 // replays and repeat questions don't refetch. `null` records a 404 (no ductus).
 const cache = new Map<string, DiagnosticData | null>();
@@ -183,7 +191,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
         preserveAspectRatio="xMidYMid meet"
         role="img"
         aria-label={de.common.writtenGlyph.ariaLabel}
-        style={{ display: 'block', background: '#fff' }}
+        style={{ display: 'block', background: SURFACE_BG }}
       >
         <defs>
           <mask id={maskId} maskUnits="userSpaceOnUse" x={minX} y={vbY} width={vbW} height={vbH}>
@@ -213,13 +221,13 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
         </defs>
 
         {/* Faint Lineatur (baseline + midband) for reading context. */}
-        <line x1={minX} y1={-tpl.baseline} x2={minX + vbW} y2={-tpl.baseline} stroke="#ddd" strokeWidth={0.012} />
+        <line x1={minX} y1={-tpl.baseline} x2={minX + vbW} y2={-tpl.baseline} stroke={GUIDE_BASELINE} strokeWidth={0.012} />
         <line
           x1={minX}
           y1={-tpl.midband}
           x2={minX + vbW}
           y2={-tpl.midband}
-          stroke="#ebebeb"
+          stroke={GUIDE_MIDBAND}
           strokeWidth={0.012}
           strokeDasharray="0.08 0.06"
         />
@@ -227,7 +235,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
         {/* Filled silhouette, revealed by the swept mask. */}
         <g mask={`url(#${maskId})`}>
           {polygons.map((poly, i) => (
-            <polygon key={i} points={poly.map(([x, y]) => `${x},${-y}`).join(' ')} fill="#1b1b1b" />
+            <polygon key={i} points={poly.map(([x, y]) => `${x},${-y}`).join(' ')} fill={GLYPH_INK} />
           ))}
         </g>
       </svg>

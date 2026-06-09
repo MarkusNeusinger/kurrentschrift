@@ -9,7 +9,7 @@
 // Everything is encoded as Latin-1 (one char → one byte), which keeps xref
 // byte offsets equal to string lengths and covers Western-European text.
 
-import { A4, DRAW_ORDER, ROLE_STYLES, type Segment, type TextMark } from './lineatur';
+import { A4, DRAW_ORDER, ROLE_STYLES, type RoleStyle, type LineRole, type Segment, type TextMark } from './lineatur';
 
 const PT_PER_MM = 72 / 25.4;
 
@@ -66,8 +66,16 @@ function helvWidthMm(text: string, fontPt: number): number {
 
 export function lineaturePdf(
   segments: Segment[],
-  opts: { footerLeft?: string; footerRight?: string; marks?: TextMark[] } = {},
+  opts: {
+    footerLeft?: string;
+    footerRight?: string;
+    marks?: TextMark[];
+    // Ruling colour scheme; preview and PDF must receive the same map so the
+    // printout matches the screen (defaults to the standard print look).
+    styles?: Record<LineRole, RoleStyle>;
+  } = {},
 ): Blob {
+  const styles = opts.styles ?? ROLE_STYLES;
   const W = A4.widthMm * PT_PER_MM;
   const H = A4.heightMm * PT_PER_MM;
   // mm (top-left origin, y down) → pt (bottom-left origin, y up)
@@ -79,7 +87,7 @@ export function lineaturePdf(
   for (const role of DRAW_ORDER) {
     const segs = segments.filter((s) => s.role === role);
     if (!segs.length) continue;
-    const st = ROLE_STYLES[role];
+    const st = styles[role];
     const c = hexToRgb(st.color);
     ops.push(`${c.r.toFixed(3)} ${c.g.toFixed(3)} ${c.b.toFixed(3)} RG`);
     ops.push(`${w(st.widthMm)} w`);

@@ -19,6 +19,48 @@ export const paper = {
   line: '#b6a079',
 } as const;
 
+// ——— Period-grounded extension tokens ———
+// Every hex below is either a named real-world referent or marked `approx`
+// (screen approximation of described period behaviour / period artifacts —
+// tuning dials, to be refined against scans: UB Heidelberg "Jugend" run,
+// Pestalozzianum Schulwandbilder).
+
+// Iron-gall school ink states. German school ink was "blauschwarz" by
+// regulation (Reichs-Tintenprüfung 1888, supplemented 1912; Pelikan's 1892
+// catalogue lists Schwarze Schultinte and Deutsche Reichstinte): it writes
+// blue-black (an indigo provisional dye keeps it readable while wet),
+// oxidizes to near-black within weeks and browns over decades.
+// `paper.ink` above is the ~125-year aged state the site chrome wears.
+export const inkState = {
+  fresh: '#233044', // freshly written blue-black, indigo dye visible (approx)
+  oxidized: '#1c1a17', // fully oxidized, weeks old (approx)
+  aged: paper.ink, // decades-aged manuscript brown — the ambient text ink
+} as const;
+
+// Schulheft ruling — printed exercise-book ruling is documented from 1871,
+// the red printed margin bar (Randleiste) from ~1900 (Schulmuseum Ottweiler
+// collection survey; documented row spacings 7/11/15 mm). Hexes approximate
+// faded period prints, not fresh process colours.
+export const schulheft = {
+  rulingBlue: '#8fa8c4', // printed writing-line blue (approx)
+  rulingBlueFaded: '#a8bcd0', // recessive variant for context guides (approx)
+  randleiste: '#b03a3a', // aged printed vermilion-red margin bar (approx)
+} as const;
+
+// Period pigment set — the chromolithography palette of German school wall
+// charts (Schulwandbilder) and period print. Named real pigments; hexes
+// approximate aged prints. Any contrast derivative introduced downstream must
+// carry a "derived for contrast, not a period hex" comment (style-guide:
+// synthesis stays recognisable as such).
+export const pigment = {
+  zinnober: '#e34234', // vermilion / Zinnober (named) — alarm/error family
+  ochsenblut: '#6b2e2a', // oxblood / Ochsenblut — deep red, usable as text
+  ocker: '#cc7722', // ochre / Ocker (named) — warning family
+  preussisch: '#003153', // Prussian blue, Berlin ~1706 (named) — info family
+  chromgruen: '#4a6741', // chrome green (chrome yellow + Prussian blue mix)
+  altgold: '#c9a227', // old gold — Bronzedruck on charts and diplomas (approx)
+} as const;
+
 export const garamond = "'EB Garamond', Georgia, 'Times New Roman', serif";
 export const script = "'GLKurrent', cursive"; // showpiece only
 // Display / headline + brand wordmark — more contrast and character than EB Garamond
