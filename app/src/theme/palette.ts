@@ -6,7 +6,7 @@
 
 import type { PaletteOptions } from '@mui/material/styles';
 
-import { paper } from '@/styles/paper';
+import { paper, pigment } from '@/styles/paper';
 
 export const ink = {
   // aged iron-gall ink + sepia, from the paper token set
@@ -18,14 +18,20 @@ export const ink = {
 
 export const imprint = {
   // Brand accent = viridian — the single sharp accent of the "paper & ink"
-  // identity (see docs/concepts/style-guide.md §2). Semantic anchors (red/amber/
-  // blue) stay so quiz feedback and warnings read clearly against the cream.
+  // identity (see docs/concepts/style-guide.md §2). The semantic anchors are
+  // grounded in the period pigment set (styles/paper.ts `pigment`): vermilion
+  // for error, ochre for warning, Prussian blue for info/secondary — the
+  // chromolithography palette of period school charts instead of arbitrary
+  // modern picks.
   viridian: paper.viridian, // brand
   viridianDark: '#336152', // hover / accent-dark
   viridianTint: 'rgba(64, 130, 109, 0.12)',
-  red: '#AE3030',
-  amber: '#DDCC77',
-  blue: '#4467A3',
+  // Ocker text/icon shade where the raw pigment (2.44:1) is too light.
+  // (derived for contrast, not a period hex)
+  ockerDark: '#a85f17',
+  // Prussian blue lift for surfaces where #003153 sinks away.
+  // (derived for contrast, not a period hex)
+  preussischLight: '#2a4a66',
 } as const;
 
 export const surface = {
@@ -39,10 +45,15 @@ export const surface = {
 export const palette: PaletteOptions = {
   mode: 'light',
   primary: { main: imprint.viridian, dark: imprint.viridianDark, contrastText: '#FFFFFF' },
-  secondary: { main: imprint.blue },
-  error: { main: imprint.red },
-  warning: { main: imprint.amber },
-  info: { main: imprint.blue },
+  secondary: { main: pigment.preussisch, light: imprint.preussischLight },
+  // Oxblood error family (user decision, R1): deep period red with excellent
+  // legibility on the cream ground (7.41:1); raw Zinnober stays the light
+  // fill/border tone. A deepened-Zinnober alternative (#b5301f) was rejected
+  // in favour of the calmer, more paper-bound oxblood.
+  error: { main: pigment.ochsenblut, light: pigment.zinnober },
+  // Ochre replaces the old amber (#DDCC77 was 1.17:1 on cream — invisible).
+  warning: { main: pigment.ocker, dark: imprint.ockerDark },
+  info: { main: pigment.preussisch, light: imprint.preussischLight },
   // success / "correct" also runs on viridian — one accent across the site; the
   // quiz still pairs it with red for "falsch", so the two stay distinguishable.
   success: { main: imprint.viridian, dark: imprint.viridianDark },
