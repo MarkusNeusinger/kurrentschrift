@@ -20,6 +20,7 @@ import { Outlet } from 'react-router-dom';
 
 import { DiagnosticDialog } from '../components/DiagnosticDialog';
 import { GlyphSidebar } from '../components/GlyphSidebar';
+import { PaperBackground } from '../components/PaperBackground';
 import { SetupWizard } from '../components/wizard/SetupWizard';
 import { useAdmin } from '../state';
 
@@ -46,69 +47,77 @@ export function AppLayout() {
 
   if (loadError) {
     return (
-      <Box sx={{ p: 4 }}>
-        <Typography variant="h5" gutterBottom>
-          API nicht erreichbar
-        </Typography>
-        <Typography color="text.secondary">{loadError}</Typography>
-        <Typography sx={{ mt: 2 }}>
-          Die API (Cloud Run) konnte auch nach mehreren Versuchen nicht erreicht werden.
-          Im lokalen Dev läuft sie über <code>uv run uvicorn api.main:app --reload --port 8000</code>.
-        </Typography>
-        <Button variant="outlined" sx={{ mt: 2 }} onClick={() => window.location.reload()}>
-          Erneut versuchen
-        </Button>
-      </Box>
+      <PaperBackground minHeight="100dvh">
+        <Box sx={{ p: 4 }}>
+          <Typography variant="h5" gutterBottom>
+            API nicht erreichbar
+          </Typography>
+          <Typography color="text.secondary">{loadError}</Typography>
+          <Typography sx={{ mt: 2 }}>
+            Die API (Cloud Run) konnte auch nach mehreren Versuchen nicht erreicht werden.
+            Im lokalen Dev läuft sie über <code>uv run uvicorn api.main:app --reload --port 8000</code>.
+          </Typography>
+          <Button variant="outlined" sx={{ mt: 2 }} onClick={() => window.location.reload()}>
+            Erneut versuchen
+          </Button>
+        </Box>
+      </PaperBackground>
     );
   }
 
   if (!source) {
     return (
-      <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-        <CircularProgress />
-        <Typography color="text.secondary">
-          {waking ? 'API startet (Cold Start), einen Moment…' : 'lade Quelle…'}
-        </Typography>
-      </Box>
+      <PaperBackground minHeight="100dvh">
+        <Box sx={{ height: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+          <CircularProgress />
+          <Typography color="text.secondary">
+            {waking ? 'API startet (Cold Start), einen Moment…' : 'lade Quelle…'}
+          </Typography>
+        </Box>
+      </PaperBackground>
     );
   }
 
   if (isMobile) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
-        <AppBar position="static" color="default" elevation={1}>
-          <Toolbar variant="dense" sx={{ gap: 1 }}>
-            <IconButton edge="start" aria-label="Menü öffnen" onClick={() => setNavOpen(true)}>
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-              kurrentschrift
-            </Typography>
-          </Toolbar>
-        </AppBar>
-        <Drawer
-          open={navOpen}
-          onClose={() => setNavOpen(false)}
-          ModalProps={{ keepMounted: true }}
-          sx={{ '& .MuiDrawer-paper': { width: DRAWER_WIDTH, maxWidth: '85vw' } }}
-        >
-          <GlyphSidebar onNavigate={() => setNavOpen(false)} />
-        </Drawer>
-        <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <Outlet />
+      <PaperBackground minHeight="100dvh">
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
+          <AppBar position="static" color="transparent" elevation={0} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Toolbar variant="dense" sx={{ gap: 1 }}>
+              <IconButton edge="start" aria-label="Menü öffnen" onClick={() => setNavOpen(true)}>
+                <MenuIcon />
+              </IconButton>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                kurrentschrift
+              </Typography>
+            </Toolbar>
+          </AppBar>
+          <Drawer
+            open={navOpen}
+            onClose={() => setNavOpen(false)}
+            ModalProps={{ keepMounted: true }}
+            sx={{ '& .MuiDrawer-paper': { width: DRAWER_WIDTH, maxWidth: '85vw' } }}
+          >
+            <GlyphSidebar onNavigate={() => setNavOpen(false)} />
+          </Drawer>
+          <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <Outlet />
+          </Box>
+          <AdminModals />
         </Box>
-        <AdminModals />
-      </Box>
+      </PaperBackground>
     );
   }
 
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: `${DRAWER_WIDTH}px 1fr`, height: '100vh' }}>
-      <GlyphSidebar />
-      <Box sx={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <Outlet />
+    <PaperBackground minHeight="100vh">
+      <Box sx={{ display: 'grid', gridTemplateColumns: `${DRAWER_WIDTH}px 1fr`, height: '100vh' }}>
+        <GlyphSidebar />
+        <Box sx={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <Outlet />
+        </Box>
+        <AdminModals />
       </Box>
-      <AdminModals />
-    </Box>
+    </PaperBackground>
   );
 }

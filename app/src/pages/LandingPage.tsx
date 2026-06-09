@@ -9,20 +9,18 @@
 //
 // Headlines/brand use Cormorant Garamond (`display`); body/eyebrow use EB Garamond
 // (`garamond`); the showpiece uses GL-GermanCursive (`script`). All honour
-// prefers-reduced-motion. Tool pages stay clean/white — this look lives here only.
+// prefers-reduced-motion. The paper atmosphere (gradient + grain + vignette) is
+// shared via <PaperBackground> so the same look carries across every page; only
+// the work surfaces (A4 preview, letter crops, chart scan) stay neutral.
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Container, GlobalStyles, Link, Stack, Typography } from '@mui/material';
+import { Box, Container, Link, Stack, Typography } from '@mui/material';
 import { keyframes } from '@mui/system';
 
-import kurrentWoff2 from '../assets/fonts/gl-germancursive.woff2';
+import { PaperBackground } from '../components/PaperBackground';
 import { PublicHeader } from '../components/PublicHeader';
 import { display, garamond, paper, script } from '../styles/paper';
-
-// faint paper grain (greyscale fractal noise, multiplied over the warm base)
-const GRAIN =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E\")";
 
 // --- animations -----------------------------------------------------------
 const writeIn = keyframes`from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); }`;
@@ -133,45 +131,7 @@ export function LandingPage() {
   const [replayKey, setReplayKey] = useState(0);
 
   return (
-    <Box
-      sx={{
-        position: 'relative',
-        minHeight: '100vh',
-        color: paper.ink,
-        bgcolor: paper.bg,
-        fontFamily: garamond,
-        backgroundImage: `radial-gradient(130% 90% at 50% -15%, ${paper.hi} 0%, ${paper.bg} 52%, ${paper.lo} 100%)`,
-        // grain + vignette as fixed, non-interactive overlays
-        '&::before': {
-          content: '""',
-          position: 'fixed',
-          inset: 0,
-          pointerEvents: 'none',
-          zIndex: 0,
-          backgroundImage: GRAIN,
-          mixBlendMode: 'multiply',
-          opacity: 0.5,
-        },
-        '&::after': {
-          content: '""',
-          position: 'fixed',
-          inset: 0,
-          pointerEvents: 'none',
-          zIndex: 0,
-          boxShadow: 'inset 0 0 200px rgba(60,40,20,.26)',
-        },
-      }}
-    >
-      <GlobalStyles
-        styles={{
-          '@font-face': {
-            fontFamily: 'GLKurrent',
-            src: `url(${kurrentWoff2}) format('woff2')`,
-            fontDisplay: 'swap',
-          },
-        }}
-      />
-
+    <PaperBackground>
       <PublicHeader tone="paper" />
 
       {/* hero — copy left, giant script specimen right */}
@@ -537,6 +497,6 @@ export function LandingPage() {
           </Link>
         </Box>
       </Container>
-    </Box>
+    </PaperBackground>
   );
 }

@@ -3,8 +3,9 @@
 // (•kurrentschrift.ink, with ".ink" in viridian italic); right = the Schreiben/Lesen
 // nav with a viridian hover-underline. Modelled on the HTML mockup's nav.
 //
-// Two tones: `paper` for the landing's cream background, `plain` (default) for the
-// clean tool pages. The viridian accent is the same in both.
+// Two tones: `paper` (now the default everywhere, since the cream "paper & ink"
+// identity carries across all pages) and a slightly lighter `plain` fallback. The
+// viridian accent is the same in both.
 //
 // Hidden admin entry: 5 quick clicks on the wordmark → /admin/chart (no visible
 // admin link anywhere). The brand still navigates home on a normal single click.
@@ -30,7 +31,7 @@ interface PublicHeaderProps {
   sx?: SxProps<Theme>;
 }
 
-export function PublicHeader({ tone = 'plain', sx }: PublicHeaderProps) {
+export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
   const navigate = useNavigate();
   const tap = useRef({ count: 0, last: 0 });
   const isPaper = tone === 'paper';

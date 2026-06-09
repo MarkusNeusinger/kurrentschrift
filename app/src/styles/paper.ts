@@ -1,9 +1,11 @@
 // Identity tokens for the "paper & ink" look — aged cream paper, aged iron-gall
-// brown as the writing ink, viridian as the single sparing accent. Deliberately
-// kept OUT of the global MUI theme (per style-guide §intro) so the tool pages stay
-// on the clean light theme; the landing owns this expressive palette. Shared by
-// LandingPage and PublicHeader's `paper` tone. These are tunable dials — adjust
-// freely while the look settles, then mirror the chosen values into the guide.
+// brown as the writing ink, viridian as the single sparing accent. These are the
+// single source of truth for the palette: the global MUI theme (theme.ts), the
+// shared <PaperBackground> texture and PublicHeader all read from here, so the
+// identity carries across every page (style-guide §8). Only the work surfaces
+// (A4 preview, letter crops, chart scan) opt out with their own neutral ground.
+// These are tunable dials — adjust freely while the look settles, then mirror the
+// chosen values into the guide.
 
 export const paper = {
   bg: '#e7dabf',
