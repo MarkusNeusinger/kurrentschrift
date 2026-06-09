@@ -6,6 +6,11 @@ import react from '@vitejs/plugin-react-swc';
 // hits /api/... — production swaps the proxy for a real reverse proxy.
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    // Keep in sync with tsconfig.json "paths". URL instead of node:path so the
+    // config needs no @types/node.
+    alias: { '@': new URL('./src', import.meta.url).pathname },
+  },
   server: {
     port: 3000,
     host: true,

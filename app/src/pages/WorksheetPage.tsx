@@ -380,3 +380,6 @@ function PreviewSvg({
     </Box>
   );
 }
+
+// Default export for React.lazy route splitting (routes/sections).
+export default WorksheetPage;
