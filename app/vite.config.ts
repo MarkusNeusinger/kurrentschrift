@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 
@@ -7,9 +8,8 @@ import react from '@vitejs/plugin-react-swc';
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    // Keep in sync with tsconfig.json "paths". URL instead of node:path so the
-    // config needs no @types/node.
-    alias: { '@': new URL('./src', import.meta.url).pathname },
+    // Keep in sync with tsconfig.json "paths".
+    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
   server: {
     port: 3000,
