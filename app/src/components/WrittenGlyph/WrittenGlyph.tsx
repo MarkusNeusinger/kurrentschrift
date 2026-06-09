@@ -205,6 +205,15 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
         style={{ display: 'block', background: SURFACE_BG }}
       >
         <defs>
+          {/* Ink bleed: fibre-wicking displacement on the silhouette group —
+              deliberately active during the write-in too (ink wicks the moment
+              it touches paper). The viewBox is in template units (x-height = 1),
+              so the displacement scale must be tiny — pixel-space example
+              values would be wildly off. */}
+          <filter id={`${maskId}-bleed`} x="-5%" y="-5%" width="110%" height="110%">
+            <feTurbulence type="fractalNoise" baseFrequency="6" numOctaves="2" seed="7" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.018" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
           <mask id={maskId} maskUnits="userSpaceOnUse" x={minX} y={vbY} width={vbW} height={vbH}>
             {/* Black hides; the white sweep reveals the silhouette beneath it. */}
             <rect x={minX} y={vbY} width={vbW} height={vbH} fill="black" />
@@ -251,6 +260,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
           component="g"
           key={`ink-${run}`}
           mask={`url(#${maskId})`}
+          filter={`url(#${maskId}-bleed)`}
           sx={{
             fill: animate ? inkState.fresh : inkState.oxidized,
             animation: animate ? `${inkSettle} ${SETTLE_MS}ms ease ${writeEndMs}ms forwards` : undefined,
