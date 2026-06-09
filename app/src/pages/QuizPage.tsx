@@ -35,6 +35,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { cropUrl } from '../api';
+import { PaperBackground } from '../components/PaperBackground';
 import { PublicHeader } from '../components/PublicHeader';
 import { DIFFICULTIES, knownGlyph, SCRIPTS, type Difficulty, type KnownGlyph } from '../constants';
 import { useAdmin } from '../state';
@@ -311,8 +312,8 @@ export function QuizPage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      <PublicHeader />
+    <PaperBackground>
+      <PublicHeader tone="paper" />
       <Container maxWidth="sm" sx={{ py: { xs: 4, sm: 6 } }}>
         <Stack spacing={3}>
           <Typography component="h1" sx={{ fontFamily: garamond, fontStyle: 'italic', fontSize: '2rem', lineHeight: 1.1 }}>
@@ -366,7 +367,7 @@ export function QuizPage() {
           )}
         </Stack>
       </Container>
-    </Box>
+    </PaperBackground>
   );
 }
 

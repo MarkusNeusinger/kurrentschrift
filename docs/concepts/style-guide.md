@@ -4,10 +4,12 @@ Visuelle Identität der Endnutzer-Website. Begleitdokument zu
 [`vision.md`](vision.md). Hält fest, *welcher* Look gilt und
 **warum** — getrennt vom *Was* (Vision) und *Wie* (Architektur).
 
-Die Tokens leben in `app/src/styles/paper.ts` (`const paper = …`, geteilt von
-`LandingPage` und `PublicHeader`), bewusst **nicht** im globalen Theme — die
-Landing hat eine eigene Identität, die Tool-Seiten bleiben auf dem ruhigen
-Light-Theme (siehe §8).
+Die Tokens leben in `app/src/styles/paper.ts` (`const paper = …`) und sind die
+**einzige Quelle** der Palette: das globale MUI-Theme (`app/src/theme.ts`), die
+geteilte Papier-Textur (`PaperBackground`) und `PublicHeader` lesen alle von dort.
+Die Identität trägt damit über **alle** Seiten — Landing, Quiz, Lineatur und den
+Admin-Bereich. Neutral bleiben nur die **Arbeitsflächen** (A4-Vorschau,
+Buchstaben-Crops, Chart-Scan), und das erzeugte **PDF bleibt weiß** (siehe §8).
 
 ---
 
@@ -24,8 +26,11 @@ Light-Theme (siehe §8).
 - **Eine Tinte über alle Familien.** Kurrent · Sütterlin · Offenbacher
   unterscheiden sich in der *Form* (Schräglage, Strichstärke,
   Schwellzug), nicht in der Farbe. Keine familienspezifischen Tinten.
-- **Landing expressiv, Tools clean.** Die Papier-Textur lebt auf der
-  Landing; auf `/schreiben` und `/quiz` regiert neutrales Weiß (§8).
+- **Eine Identität über alle Seiten.** Die Papier-Textur (Verlauf + Korn
+  + Vignette) trägt über Landing, `/schreiben`, `/quiz` **und** den
+  Admin-Bereich, damit alles einheitlich wirkt. Neutral bleiben nur die
+  Arbeitsflächen (A4-Vorschau, Buchstaben-Crops, Chart-Scan); das
+  gedruckte PDF bleibt weiß (§8).
 
 ---
 
@@ -159,15 +164,26 @@ Der Signature-Moment ist das **Schreiben**:
 
 ---
 
-## 8. Architektur-Regel: Landing vs. Tools
+## 8. Architektur-Regel: Identität überall, Arbeitsflächen neutral
 
-- **Landing (`/`)** = expressives Papier-Tinte-Showcase. One-Pager, der
-  die *echten* Tools verlinkt und den Rest ehrlich als „bald" staged.
-- **Tool-Seiten (`/schreiben`, `/quiz`)** = **clean/weiß lassen.** Die
-  A4-Vorschau und die Buchstaben-Crops brauchen neutralen Hintergrund;
-  Papier-Textur würde mit dem Inhalt kämpfen.
-- Optionale Brücke: ein schlanker gemeinsamer Header, der die Identität
-  dezent trägt, ohne den Tool-Inhalt zu stören.
+Ursprünglich war der Look auf die Landing beschränkt und die Tool-Seiten
+blieben weiß. Das wurde **bewusst aufgehoben** — die Identität soll alles
+einheitlich tragen. Die neue Regel:
+
+- **Chrome trägt Papier.** Die Papier-Textur (`PaperBackground`) + das
+  warme MUI-Theme (cremefarbener Grund, Eisengallus-Tinte als Text, EB
+  Garamond, Viridian-Akzent) gelten auf **allen** Seiten: Landing,
+  `/schreiben`, `/quiz` und dem Admin-Bereich (Sidebar, Leiste, Wizard).
+- **Arbeitsflächen bleiben neutral.** Genau die Flächen, die einen ruhigen
+  Hintergrund brauchen, malen ihren eigenen Grund über die Textur:
+  - die **A4-Vorschau** im Lineatur-Tool (weiß),
+  - die **Buchstaben-Crops** im Quiz und in der Diagnose (weiß),
+  - der **Chart-Scan** und die **Wizard-Leinwand** im Admin (dunkles `#111`
+    für Kontrast zur Vorlage).
+- **Das gedruckte PDF bleibt weiß.** Die Textur ist reines Bildschirm-Atmo;
+  die Vorlage zum Ausdrucken trägt keinerlei Papier-Effekt.
+- Gemeinsamer Header (`PublicHeader`, Tone `paper`) trägt die Marke auf den
+  öffentlichen Seiten; der Admin nutzt seine eigene Sidebar/Leiste.
 - Tools werden **nicht** in die Landing inline-eingebaut (eigene Apps,
   eigener Viewport); höchstens ein read-only Live-Teaser (z. B.
   `PreviewSvg`).
@@ -177,7 +193,7 @@ Der Signature-Moment ist das **Schreiben**:
 ## 9. Token-Referenz (copy-paste)
 
 ```ts
-// Local to the landing — own identity, not the global theme.
+// Single source of the palette — read by theme.ts, PaperBackground and PublicHeader.
 const paper = {
   bg: '#e7dabf',
   hi: '#f1e8d4',
@@ -222,7 +238,7 @@ const script = "'GLKurrent', cursive"; // showpiece only
 - ✅ Tinte fürs Schreiben, Viridian nur als Akzent.
 - ✅ Script-Font nur als Showpiece, `prefers-reduced-motion` ehren.
 - ✅ Eine Tinte über alle drei Familien.
-- ❌ Kein Reinweiß-Hintergrund auf der Landing, kein Reinschwarz als Tinte.
+- ✅ Papier-Textur trägt überall; nur Arbeitsflächen (A4, Crops, Chart) und das PDF bleiben neutral/weiß.
+- ❌ Kein Reinweiß als Seitengrund, kein Reinschwarz als Tinte.
 - ❌ Viridian nicht als Fließtext.
-- ❌ Keine Papier-Textur auf den Tool-Seiten.
 - ❌ Keine toten „coming soon"-Buttons — „bald"-Marker stattdessen.

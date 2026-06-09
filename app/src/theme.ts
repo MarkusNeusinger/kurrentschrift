@@ -1,27 +1,32 @@
-// MUI theme — anyplot's imprint palette transposed onto a neutral sans
-// (Roboto/system stack, NOT MonoLisa). Light mode only for now; dark theme
-// can be added later if needed.
+// MUI theme — the "paper & ink" identity, applied site-wide (style-guide §8).
+// Aged cream paper as the page ground, aged iron-gall brown as the text ink,
+// EB Garamond as the body/UI face, viridian (chromium-oxide green, ~1859) as the
+// single sharp accent. The expressive paper *texture* (grain + vignette + radial
+// gradient) lives in <PaperBackground>; this theme carries the flat colours, type
+// and component defaults so every page — landing, quiz, worksheet and the admin —
+// shares one look. The only neutral exceptions are the work surfaces that need a
+// plain ground (the A4 worksheet preview, the letter crops, the chart scan); those
+// paint their own solid background on top.
 //
-// Discipline (per anyplot's style-guide.md §4.4): the brand accent (viridian) is
-// a *signal* colour — used on accents, hover states, CTAs. The rest of the chrome
-// is warm grayscale on an off-white paper background.
+// The palette tokens are sourced from styles/paper.ts so the theme and the
+// landing's expressive surfaces never drift apart.
 
 import { createTheme } from '@mui/material/styles';
+import { garamond, paper } from './styles/paper';
 
 const ink = {
-  // warm-tinted grayscale, anyplot §4.3
-  primary: '#1A1A17',
-  soft: '#4A4A44',
-  muted: '#6B6A63',
-  rule: 'rgba(26, 26, 23, 0.10)',
+  // aged iron-gall ink + sepia, from the paper token set
+  primary: paper.ink,
+  soft: paper.inkSoft,
+  muted: paper.sepia,
+  rule: 'rgba(36, 26, 16, 0.14)', // warm hairline / A4-preview mat
 } as const;
 
 const imprint = {
-  // Brand accent = viridian (chromium-oxide green, ~1859) — the single sharp accent
-  // of the "paper & ink" identity (see docs/concepts/style-guide.md §2). Replaces
-  // anyplot's emerald #009E73, which the guide rejects (reads digital, too light as
-  // body text). Semantic anchors (red/amber/blue) stay.
-  viridian: '#40826d', // brand
+  // Brand accent = viridian — the single sharp accent of the "paper & ink"
+  // identity (see docs/concepts/style-guide.md §2). Semantic anchors (red/amber/
+  // blue) stay so quiz feedback and warnings read clearly against the cream.
+  viridian: paper.viridian, // brand
   viridianDark: '#336152', // hover / accent-dark
   viridianTint: 'rgba(64, 130, 109, 0.12)',
   red: '#AE3030',
@@ -30,14 +35,12 @@ const imprint = {
 } as const;
 
 const surface = {
-  // anyplot §4.2
-  page: '#FAF8F1',
-  card: '#FAF8F1',
-  elevated: '#FFFDF6',
+  // Cream page ground; panels/cards sit on a lighter sheet (paper.hi) so an
+  // outlined Paper reads as a raised leaf over the page rather than a white box.
+  page: paper.bg,
+  card: paper.hi,
+  elevated: '#f4ecda',
 } as const;
-
-const sansStack =
-  '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Helvetica Neue", sans-serif';
 
 export const theme = createTheme({
   palette: {
@@ -52,14 +55,17 @@ export const theme = createTheme({
     success: { main: imprint.viridian, dark: imprint.viridianDark },
     background: { default: surface.page, paper: surface.card },
     text: { primary: ink.primary, secondary: ink.soft, disabled: ink.muted },
-    divider: ink.rule,
+    divider: paper.line,
   },
   shape: { borderRadius: 6 },
   typography: {
-    fontFamily: sansStack,
-    h1: { fontWeight: 300, letterSpacing: '-0.02em' },
-    h2: { fontWeight: 300, letterSpacing: '-0.015em' },
-    h3: { fontWeight: 300, letterSpacing: '-0.01em' },
+    // EB Garamond carries the body/UI now (style-guide §3 Phase-B dial), so the
+    // whole site shares the landing's editorial serif. Display headlines opt into
+    // Cormorant locally via the `display` token where they want more character.
+    fontFamily: garamond,
+    h1: { fontWeight: 400, letterSpacing: '-0.01em' },
+    h2: { fontWeight: 400, letterSpacing: '-0.01em' },
+    h3: { fontWeight: 400 },
     h4: { fontWeight: 400 },
     h5: { fontWeight: 500 },
     h6: { fontWeight: 500 },

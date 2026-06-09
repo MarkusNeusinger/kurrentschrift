@@ -38,6 +38,7 @@ import {
 } from '../lib/lineatur';
 import { lineaturePdf } from '../lib/pdf';
 import { tokens } from '../theme';
+import { PaperBackground } from '../components/PaperBackground';
 import { PublicHeader } from '../components/PublicHeader';
 
 const garamond = "'EB Garamond', Georgia, 'Times New Roman', serif";
@@ -135,8 +136,8 @@ export function WorksheetPage() {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      <PublicHeader />
+    <PaperBackground>
+      <PublicHeader tone="paper" />
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         <Stack spacing={1.5} sx={{ mb: 4 }}>
           <Typography
@@ -287,7 +288,7 @@ export function WorksheetPage() {
           </Box>
         </Box>
       </Container>
-    </Box>
+    </PaperBackground>
   );
 }
 
