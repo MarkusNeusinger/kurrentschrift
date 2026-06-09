@@ -152,6 +152,10 @@ export interface DiagnosticData {
   // One filled outline polygon per pen-stroke — a pen lift is a real gap, not a
   // bar bridging the two strokes.
   outline_polygons: Array<Array<[number, number]>>;
+  // One centerline polyline per pen-stroke, in writing order, running down the
+  // spine of the matching outline polygon. Drives the animated "as written"
+  // reveal in the quiz (WrittenGlyph). Optional for back-compat with older payloads.
+  centerlines_template?: Array<Array<[number, number]>>;
   baseline_y_crop: number;
   midband_y_crop: number;
   template_guides: { baseline: number; midband: number; ascender: number; descender: number };

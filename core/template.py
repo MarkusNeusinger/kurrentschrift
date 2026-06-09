@@ -15,7 +15,7 @@ draws the canonical preview as SVG from the data this module produces.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 
 import numpy as np
 from scipy.interpolate import CubicSpline
@@ -199,6 +199,31 @@ def sample_with_plan(
     return np.concatenate(xs), np.concatenate(ys), np.concatenate(ws)
 
 
+def _multi_stroke_samples(
+    anchors: np.ndarray, half_widths: np.ndarray, stroke_starts: Sequence[int] | None, slant_deg: float, n: int
+) -> Iterator[tuple[np.ndarray, np.ndarray, np.ndarray]]:
+    """Yield `(sx, sy, sw)` slant-applied centerline samples for each pen-stroke.
+
+    Each stroke is sampled on its own (never across a pen lift) via a shared
+    `stroke_sample_plan`, so an outline and a centerline derived from the *same*
+    call stay point-for-point aligned — the centerline runs down the spine of the
+    matching outline polygon.
+    """
+    anchors = np.asarray(anchors, dtype=float)
+    half_widths = np.asarray(half_widths, dtype=float)
+    if len(anchors) < 2:
+        return
+    slices, alloc, _ = stroke_sample_plan(anchors, stroke_starts, n)
+    for (a, b), k in zip(slices, alloc, strict=True):
+        seg_anchors = anchors[a:b]
+        seg_widths = half_widths[a:b]
+        if len(seg_anchors) < 2:
+            continue
+        sx, sy, sw = sample_polyline(seg_anchors, seg_widths, n=k)
+        sx, sy = apply_slant(sx, sy, slant_deg)
+        yield sx, sy, sw
+
+
 def multi_stroke_outline(
     anchors: np.ndarray, half_widths: np.ndarray, stroke_starts: Sequence[int] | None, slant_deg: float, n: int = 240
 ) -> list[list[list[float]]]:
@@ -208,22 +233,28 @@ def multi_stroke_outline(
     across the gap between two separate strokes. Returns a list of polygons (each a
     list of `[x, y]`); the legacy single-stroke case returns a one-element list.
     """
-    anchors = np.asarray(anchors, dtype=float)
-    half_widths = np.asarray(half_widths, dtype=float)
-    if len(anchors) < 2:
-        return []
-    slices, alloc, _ = stroke_sample_plan(anchors, stroke_starts, n)
     polygons: list[list[list[float]]] = []
-    for (a, b), k in zip(slices, alloc, strict=True):
-        seg_anchors = anchors[a:b]
-        seg_widths = half_widths[a:b]
-        if len(seg_anchors) < 2:
-            continue
-        sx, sy, sw = sample_polyline(seg_anchors, seg_widths, n=k)
-        sx, sy = apply_slant(sx, sy, slant_deg)
+    for sx, sy, sw in _multi_stroke_samples(anchors, half_widths, stroke_starts, slant_deg, n):
         poly_x, poly_y = stroke_outline(sx, sy, sw)
         polygons.append([[round(float(x), 4), round(float(y), 4)] for x, y in zip(poly_x, poly_y, strict=True)])
     return polygons
+
+
+def multi_stroke_centerlines(
+    anchors: np.ndarray, half_widths: np.ndarray, stroke_starts: Sequence[int] | None, slant_deg: float, n: int = 240
+) -> list[list[list[float]]]:
+    """One slant-applied centerline polyline per pen-stroke, in writing order.
+
+    Sampled identically to `multi_stroke_outline`, so each polyline runs down the
+    spine of its outline polygon. The frontend animates "as written" by sweeping a
+    wide stroke along these polylines stroke-by-stroke (the ductus), revealing the
+    filled silhouette in the order the pen drew it. Returns a list of `[x, y]`
+    point lists, one per stroke; the legacy single-stroke case is a one-element list.
+    """
+    lines: list[list[list[float]]] = []
+    for sx, sy, _sw in _multi_stroke_samples(anchors, half_widths, stroke_starts, slant_deg, n):
+        lines.append([[round(float(x), 4), round(float(y), 4)] for x, y in zip(sx, sy, strict=True)])
+    return lines
 
 
 def template_guides(style_ratio: list[float]) -> dict[str, float]:

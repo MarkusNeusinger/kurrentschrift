@@ -167,6 +167,10 @@ def test_diagnostic_has_one_outline_polygon_per_stroke(synthetic_chart_path, syn
     assert len(diag["outline_polygons"]) == 2
     # Back-compat single polygon still present (the first stroke's).
     assert len(diag["outline_polygon"]) > 0
+    # One centerline per stroke, each the spine of its outline (half the points).
+    assert len(diag["centerlines_template"]) == 2
+    for line, poly in zip(diag["centerlines_template"], diag["outline_polygons"], strict=True):
+        assert len(poly) == 2 * len(line)
 
 
 def test_diagnostic_contains_render_fields(synthetic_chart_path, synthetic_bbox):
