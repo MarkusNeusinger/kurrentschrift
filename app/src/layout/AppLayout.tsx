@@ -22,7 +22,7 @@ import { DiagnosticDialog } from '../components/DiagnosticDialog';
 import { GlyphSidebar } from '../components/GlyphSidebar';
 import { PaperBackground } from '../components/PaperBackground';
 import { SetupWizard } from '../components/wizard/SetupWizard';
-import { useAdmin } from '../state';
+import { useAdmin } from '@/context/AdminContext';
 
 const DRAWER_WIDTH = 280;
 

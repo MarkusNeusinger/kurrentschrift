@@ -1,7 +1,6 @@
-// Static client-side constants. The frontend hardcodes a single source for v1
-// (multi-source is in the DB schema but out of UI scope) and the full alphabet
-// of glyphs the admin can curate, so the sidebar can list every letter even
-// before bboxes have been drawn for them.
+// The glyph domain: the full alphabet the admin can curate (so the sidebar can
+// list every letter even before bboxes have been drawn), the glyph_key scheme,
+// and the lock/split/quiz-unit helpers. Framework-free — no React, no API.
 //
 // The admin sidebar groups by *letter*; the (initial/medial/final) position is
 // a secondary choice surfaced only once a letter is selected. The (glyph,
@@ -177,7 +176,7 @@ export function siblingKeys(glyphKey: string): string[] {
 }
 
 // Minimal shape of a stored bbox the split/group helpers need. Kept structural
-// (not the full BboxOut) so constants.ts stays free of a types.ts import.
+// (not the full BboxOut) so this module stays free of an API-types import.
 interface BboxFlags {
   locked?: boolean;
   split?: boolean;
@@ -232,40 +231,3 @@ export function quizKeysFromLocked(
 const BY_KEY: Map<string, KnownGlyph> = new Map(KNOWN_GLYPHS.map((g) => [g.key, g]));
 
 export const knownGlyph = (key: string): KnownGlyph | undefined => BY_KEY.get(key);
-
-// Scripts selectable in the quiz. Only Kurrent (the Loth 1866 source) has data
-// today; the others are shown disabled so the menu reflects the planned scope.
-export interface ScriptOption {
-  id: string;
-  label: string;
-  available: boolean;
-}
-
-export const SCRIPTS: ScriptOption[] = [
-  { id: 'kurrent', label: 'Kurrent', available: true },
-  { id: 'suetterlin', label: 'Sütterlin', available: false },
-  { id: 'offenbacher', label: 'Offenbacher', available: false },
-];
-
-// Difficulty levels for the quiz. The idea: show each letter in progressively
-// less-clean hands so the learner trains beyond copybook-perfect forms. v1 only
-// has the clean Loth 1866 teaching plate, so the rougher levels are listed but
-// disabled ("bald") until real, messier handwriting sources are added to the DB
-// (a post-MVP data task — see docs/concepts/architektur.md §12). Once those
-// sources exist the quiz picks crops by difficulty instead of always Loth; the
-// `difficulty` state already threads through QuizPage so only the crop source
-// has to change here.
-export type Difficulty = 'clean' | 'worn' | 'messy';
-
-export interface DifficultyOption {
-  id: Difficulty;
-  label: string;
-  hint: string;
-  available: boolean;
-}
-
-export const DIFFICULTIES: DifficultyOption[] = [
-  { id: 'clean', label: 'Sauber', hint: 'klare Lehrtafel', available: true },
-  { id: 'worn', label: 'Geübt', hint: 'flüssige Alltagshand', available: false },
-  { id: 'messy', label: 'Krakelig', hint: 'unsaubere, schwer lesbare Hand', available: false },
-];

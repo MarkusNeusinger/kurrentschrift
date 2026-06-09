@@ -1,13 +1,12 @@
 // Shared admin state — source metadata, bboxes-by-key, traced-glyph-status.
 //
-// The list of known glyph_keys is in `constants.ts` (the MVP target set), so
+// The list of known glyph_keys is in `domain/glyphs.ts` (the MVP target set), so
 // the sidebar can show all expected glyphs even before any bboxes exist. The
 // DB only stores rows for glyphs that have actually been bbox'd or traced.
 
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { getBboxes, getGlyphs, getSource } from '@/lib/api';
-import { KNOWN_GLYPHS } from './constants';
 import type { BboxOut, GlyphSummary, SourceOut } from '@/lib/api';
 
 interface AdminState {
@@ -208,4 +207,3 @@ export function useAdmin(): AdminState {
   return v;
 }
 
-export { KNOWN_GLYPHS };
