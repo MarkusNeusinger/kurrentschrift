@@ -64,6 +64,15 @@ export function HeroSpecimen() {
           overflow: 'visible',
         }}
       >
+        <defs>
+          {/* Ink bleed: fibre-wicking displacement on the script word. viewBox
+              units are ~pixels here (332×100), unlike WrittenGlyph's template
+              units, hence the much larger scale/baseFrequency pair. */}
+          <filter id="hero-ink-bleed" x="-5%" y="-15%" width="110%" height="130%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="7" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.1" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </defs>
         {ruleLines.map((l, i) => (
           <Box
             key={i}
@@ -87,6 +96,7 @@ export function HeroSpecimen() {
           component="text"
           x={14}
           y={SPECIMEN_BASELINE}
+          filter="url(#hero-ink-bleed)"
           sx={{
             fontFamily: script,
             fontSize: 100,
