@@ -39,15 +39,18 @@ requires.
 The font is a placeholder showpiece, not the project's ductus renderer; it is
 self-hosted and redistributed under the permissive grant above, unmodified.
 
-### Cormorant Garamond
+### Playfair Display
 
 - **Used for:** display type — the landing hero headline, the brand wordmark and the
   section/pillar titles.
-- **Copyright:** © 2015 The Cormorant Project Authors
-  (<https://github.com/CatharsisFonts/Cormorant>).
+- **Copyright:** © 2017 The Playfair Display Project Authors
+  (<https://github.com/clauseggers/Playfair-Display>), with Reserved Font Name
+  "Playfair Display".
 - **License:** SIL Open Font License, Version 1.1 (`OFL-1.1`).
-- **Packaged via:** [`@fontsource/cormorant-garamond`](https://www.npmjs.com/package/@fontsource/cormorant-garamond)
-  (weights 400, 500, 500-italic, 600, 600-italic imported).
+- **Full license text:** [`public/fonts/PlayfairDisplay-OFL.txt`](public/fonts/PlayfairDisplay-OFL.txt),
+  served in production at `/fonts/PlayfairDisplay-OFL.txt`.
+- **Packaged via:** [`@fontsource/playfair-display`](https://www.npmjs.com/package/@fontsource/playfair-display)
+  (weights `400`, `500`, `500-italic`, `600`, `600-italic` imported).
 
 The OFL permits self-hosting, embedding and redistribution (including commercial
 use); the font is unmodified.

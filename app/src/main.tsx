@@ -6,13 +6,17 @@
 import '@fontsource/eb-garamond/400.css';
 import '@fontsource/eb-garamond/400-italic.css';
 import '@fontsource/eb-garamond/600.css';
-// Cormorant Garamond — display/headline + brand wordmark. Faces used: 500 + 500-italic
-// (hero h1 + accent word), 600 + 600-italic (brand + ".ink"); 400 as the base.
-import '@fontsource/cormorant-garamond/400.css';
-import '@fontsource/cormorant-garamond/500.css';
-import '@fontsource/cormorant-garamond/500-italic.css';
-import '@fontsource/cormorant-garamond/600.css';
-import '@fontsource/cormorant-garamond/600-italic.css';
+// Playfair Display — display/headline + brand wordmark (user decision: the
+// Didone/Scotch register of 19th-century German Antiqua book print; Sorts Mill
+// Goudy — a genuine 1915 design — remains the open alternative if this proves
+// too sharp). Faces used: 500 + 500-italic (hero h1 + accent word),
+// 600 + 600-italic (brand + ".ink", pillar titles); 400 as the base so
+// default-weight `display` usages (header nav) don't synthesize.
+import '@fontsource/playfair-display/400.css';
+import '@fontsource/playfair-display/500.css';
+import '@fontsource/playfair-display/500-italic.css';
+import '@fontsource/playfair-display/600.css';
+import '@fontsource/playfair-display/600-italic.css';
 
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import React from 'react';

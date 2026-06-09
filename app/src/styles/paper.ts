@@ -63,6 +63,14 @@ export const pigment = {
 
 export const garamond = "'EB Garamond', Georgia, 'Times New Roman', serif";
 export const script = "'GLKurrent', cursive"; // showpiece only
-// Display / headline + brand wordmark — more contrast and character than EB Garamond
-// at large sizes. Falls back to EB Garamond if Cormorant fails to load.
-export const display = "'Cormorant Garamond', 'EB Garamond', Georgia, 'Times New Roman', serif";
+// Display / headline + brand wordmark — Playfair Display: the high-contrast
+// Didone/Scotch register of 19th-century (German) Antiqua book print, fully
+// legible for readers who can't read the old scripts. User decision with an
+// explicit open alternative: Sorts Mill Goudy (a genuine 1915 design, warmer
+// and quieter) stays on the table if Playfair proves too sharp.
+export const display = "'Playfair Display', 'EB Garamond', Georgia, 'Times New Roman', serif";
+
+// Letterpress deboss for display headlines: a hairline of the paper's light
+// tone below the ink, as pressed type catches the sheet's light. Derived from
+// paper.hi (8-digit hex, ~35% alpha) so palette tuning carries through.
+export const letterpress = `0 1px 0 ${paper.hi}59`;

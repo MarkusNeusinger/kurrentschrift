@@ -7,7 +7,7 @@
 // giant GL-GermanCursive specimen ("Kurrent") that writes itself on the right —
 // then the live tools, the ductus pipeline and the honest "bald" roadmap.
 //
-// Headlines/brand use Cormorant Garamond (`display`); body/eyebrow use EB Garamond
+// Headlines/brand use Playfair Display (`display`); body/eyebrow use EB Garamond
 // (`garamond`); the showpiece uses GL-GermanCursive (`script`). All honour
 // prefers-reduced-motion. The paper atmosphere (gradient + grain + vignette) is
 // shared via <PaperBackground> so the same look carries across every page; only
@@ -23,7 +23,7 @@ import { de } from '@/locales';
 import { paths } from '@/routes/paths';
 import { HeroSpecimen } from '@/sections/landing/HeroSpecimen';
 import { Reveal } from '@/sections/landing/Reveal';
-import { display, garamond, paper } from '@/styles/paper';
+import { display, garamond, letterpress, paper } from '@/styles/paper';
 
 // --- animations -----------------------------------------------------------
 const fadeUp = keyframes`from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; }`;
@@ -96,6 +96,7 @@ export function LandingView() {
                 lineHeight: 1.04,
                 letterSpacing: '-0.01em',
                 color: paper.ink,
+                textShadow: letterpress,
                 mb: '1.5rem',
                 ...fu(0.18),
               }}
@@ -195,7 +196,7 @@ export function LandingView() {
                 }}
               >
                 <Box sx={{ fontFamily: display, fontStyle: 'italic', fontWeight: 500, color: paper.viridian, fontSize: '1.1rem', mb: '0.8rem' }}>{p.num}</Box>
-                <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: '1.5rem', color: paper.ink, mb: '0.5rem', lineHeight: 1.1 }}>
+                <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: '1.5rem', color: paper.ink, textShadow: letterpress, mb: '0.5rem', lineHeight: 1.1 }}>
                   {p.title}
                 </Typography>
                 <Typography sx={{ color: paper.inkSoft, fontSize: '1.02rem', maxWidth: '30ch', lineHeight: 1.55 }}>{p.desc}</Typography>
