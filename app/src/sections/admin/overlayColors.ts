@@ -2,8 +2,8 @@
 // white glyph crops). These are deliberately OUTSIDE the paper & ink identity
 // tokens: per style-guide §8 the work surfaces stay neutral so the scan/crop
 // reads true, and the overlay colors are signal colors on top of that — state
-// markers, not identity. Shared by the chart overlay today; the setup wizard
-// uses the same eraser/draft/canvas literals and will adopt these exports later.
+// markers, not identity. Shared by the chart overlay and the setup wizard
+// canvas (eraser/draft/canvas background).
 
 export const overlay = {
   // Locked (finished) glyphs read green; the active one stays orange; unfinished
