@@ -5,7 +5,8 @@
 //   - BBOX: drag creates a bbox for the active glyph (replaces any existing).
 //          Requires baseline_y/midband_y to be set before saving; if the
 //          glyph doesn't have those yet, the new bbox seeds reasonable
-//          defaults (top quarter as midband, bottom quarter as baseline).
+//          defaults (NEW_BBOX_MIDBAND_RATIO/NEW_BBOX_BASELINE_RATIO of the
+//          box height, see chartConstants).
 //   - EDIT: move/resize an existing bbox via grips.
 // The freeform eraser (Ausschluss/Radierer), Lineatur, Schräge and Weg now live
 // in the step-by-step Einrichtungs-Wizard, opened with "Einrichten".

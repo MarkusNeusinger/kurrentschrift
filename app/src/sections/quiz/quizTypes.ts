@@ -21,7 +21,7 @@ export const SCRIPTS: ScriptOption[] = [
 // Difficulty levels for the quiz. The idea: show each letter in progressively
 // less-clean hands so the learner trains beyond copybook-perfect forms. v1 only
 // has the clean Loth 1866 teaching plate, so the rougher levels are listed but
-// disabled ("bald") until real, messier handwriting sources are added to the DB
+// disabled (the UI shows the German "bald" = "soon" marker) until real, messier handwriting sources are added to the DB
 // (a post-MVP data task — see docs/concepts/architektur.md §12). Once those
 // sources exist the quiz picks crops by difficulty instead of always Loth; the
 // `difficulty` state already threads through the quiz so only the crop source
