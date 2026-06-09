@@ -80,25 +80,108 @@ bleibt):
   Timeline-Knoten, Karten-Hover-Rahmen.
 - **Viridian niemals als Fließtextfarbe** (Kontrast auf Creme zu schwach).
 
+### Periodenpigmente als Semantikfarben (Runde R1, 2026-06)
+
+Die MUI-Semantikfarben (error/warning/info) sind keine Markenfarben,
+sondern Funktionssignale — und seit R1 in der **Chromolithographie-Palette
+der Schulwandbilder** geerdet statt willkürlich modern. Alle Hexes
+*approx* (gealterte Drucke), Ableitungen sind als solche markiert
+(`derived for contrast, not a period hex`):
+
+| Rolle | Pigment | Hex | Anmerkung |
+|---|---|---|---|
+| `error.main` | **Ochsenblut** | `#6b2e2a` | **Gewählt** (7.41:1 auf Creme) — ruhig, „sitzt im Papier". |
+| `error.light` | Zinnober | `#e34234` | Füllungen/Ränder; als Text zu hell (2.98:1). |
+| `warning.main` | Ocker | `#cc7722` | Ersetzt das alte Amber `#DDCC77` (**1.17:1** — praktisch unsichtbar). Text-Derivat `#a85f17`. |
+| `info`/`secondary` | Preußischblau | `#003153` | 9.70:1 auf Creme; Derivat `#2a4a66` für dunkle Flächen. |
+| reserviert | Chromgrün · Altgold | `#4a6741` · `#c9a227` | Noch ohne Rolle (success bleibt Viridian). |
+
+Verworfen in R1: **abgedunkelter Zinnober** `#b5301f` als `error.main` —
+liest zu sehr als modernes Alarm-Rot; Ochsenblut gewann als papier-
+gebundener Fehlerton.
+
+### Tintenzustände (Runde R2/R3, 2026-06)
+
+Deutsche Schultinte war per Reichs-Tintenprüfung (1888, ergänzt 1912)
+Eisengallus **blauschwarz** (Pelikan-Katalog 1892: „Schwarze Schultinte",
+„Deutsche Reichstinte"): Der Indigo-Provisionalfarbstoff machte Frisches
+lesbar, das Eisengallat oxidierte in Wochen nach Fast-Schwarz und
+braunte über Jahrzehnte. Tokens (`inkState`, Hexes approx):
+
+- `fresh` `#233044` — frisch geschrieben (blauschwarz)
+- `oxidized` `#1c1a17` — Wochen alt
+- `aged` = `ink` `#241a10` — das Jahrzehnte-Braun der Seite
+
+**Signature-Animation (R2, angenommen):** Hero-Wort und Quiz-Glyphen
+schreiben sich in `fresh` und setteln nach dem letzten Absetzen — der
+Hero zur gealterten Seiten-Tinte (Archiv-Fläche), Quiz-Glyphen nur bis
+`oxidized` („du schreibst jetzt"). Die Zeitachse ist bewusst gerafft —
+**Synthese, als solche erkennbar**; `prefers-reduced-motion` zeigt
+sofort den Endzustand. **Ink-Bleed (R3, angenommen):** feTurbulence +
+feDisplacementMap nur auf den kleinen Schrift-Flächen (nie ganzseitig)
+gibt den Strichen Faserkanten; gemessen kostenlos (61 fps).
+
+### Schulheft-Lineatur (Runden R4/R5, 2026-06)
+
+Gedruckte Schulheft-Lineatur ist **ab 1871** belegt, die **rote
+Randleiste ab ~1900** (Schulmuseum Ottweiler); sie hielt den
+Korrekturrand des Lehrers frei. Tokens (`schulheft`, Hexes approx):
+`rulingBlue #8fa8c4` · `rulingBlueFaded #a8bcd0` · `marginRed #b03a3a`.
+
+- **Worksheet-Modus „Schulheft um 1900" (R4, angenommen):** blaue
+  Schreiblinien + zuschaltbare rote Randleiste (Default aus). Die
+  Randleiste ist eine **dokumentierte Druck-Rolle**, kein Akzent — die
+  §2-Verwerfung von Rot als Markenakzent bleibt unberührt. Das PDF
+  druckt die Lineatur-Farben echt; die Seite bleibt weiß (§8).
+- **Kurrent-Preset = Artefakt-Maß:** 2:1:2 bei 2,5 mm Mittelband —
+  die in einem zeitgenössischen Kurrent-Übungsheft gedruckten
+  **5/2,5/5 mm**. Schräglage in traditioneller Notation (Winkel zur
+  Grundlinie, 90° = senkrecht): Kurrent ~65° (Loth-Tafel), Offenbacher
+  75–80° (Verhältnis **2:3:2**, Breitfeder 15–20°), Sütterlin 90°
+  (Feder 40–45°).
+- **Liniensystem-Progression:** Vier Linien (Anfang) · Doppellinie
+  (geübt) · Nur Grundlinie (frei) — Zeilenmetrik bleibt identisch.
+- **Quiz-Hilfslinien (R5, angenommen):** Grundlinie/Mittelband im Crop
+  in `rulingBlueFaded` statt neutralem Grau; die Crop-Fläche selbst
+  bleibt weiß (§8).
+- Verworfen in R4: 7/11/15-mm-Schnellwahl-Chips aufs Mittelband — die
+  belegten Werte sind **Zeilenabstände einfach linierter Hefte**, keine
+  Mittelband-Höhen des Vierliniensystems (Kategorienfehler; der Beleg
+  bleibt als Hinweistext).
+
 ---
 
 ## 3. Typografie
 
 | Rolle | Schrift | Hinweis |
 |---|---|---|
-| Headline / Display | **EB Garamond**, *italic* | Old-Style-Serife, zeitstimmig (~1900-Druck). Selbst-gehostet via `@fontsource` (OFL 1.1). |
-| Body / UI | EB Garamond / Sans-Stack | Ruhig, soll die Hero-Serife nicht konkurrenzieren. |
+| Headline / Display | **Playfair Display** | Didone-/Scotch-Register — der hohe Strichkontrast des Antiqua-Buchdrucks des 19. Jh., **voll lesbar** auch für Leser ohne Altschrift-Kenntnis. Via `@fontsource` (OFL 1.1). Mit Letterpress-Prägung (`letterpress`-Token, R8). |
+| Body / UI | **EB Garamond** | Old-Style-Serife; ruhig, soll die Display-Stimme nicht konkurrenzieren. `@fontsource` (OFL 1.1). |
 | Schau-Schrift (Script) | **GL-GermanCursive** (`'GLKurrent'`) | Kurrent/Sütterlin-Kursive. **Nur** dekorativ/Showpiece, **nie** UI. Siehe §4. |
 
 ```css
 --serif:   'EB Garamond', Georgia, 'Times New Roman', serif;
+--display: 'Playfair Display', 'EB Garamond', Georgia, serif;
 --script:  'GLKurrent', cursive;   /* showpiece only */
 ```
 
-> Im eigenständigen HTML-Mockup kamen Cormorant Garamond (Display) und
-> Courier Prime (Code) dazu. Für die echte App bleibe ich bei EB Garamond,
-> um deinen vorhandenen `@fontsource`-Stack nicht aufzublähen — Cormorant
-> ist eine optionale Aufwertung, falls die Headline mehr Charakter braucht.
+**Leitsatz (User-Entscheidung, 2026-06):** Bei aller Liebe fürs Alte —
+die Schrift muss **lesbar sein für Menschen, die die alten Schriften
+nicht beherrschen**. Keine gebrochene Schrift in UI, Headlines oder
+Body; historische Formen nur als gekennzeichnetes Schau-Material.
+
+**Offene Alternative:** *Sorts Mill Goudy* (OFL; Revival von Goudy
+Oldstyle, **1915** — echtes Periodendesign, wärmer/ruhiger) bleibt als
+Display-Kandidat dokumentiert, falls Playfair auf Dauer zu scharf wirkt.
+
+Verworfene Typografie-Kandidaten (Runden R6/R7, 2026-06):
+
+| Kandidat | Warum nicht |
+|---|---|
+| **Cormorant Garamond** (bisheriges Display) | 1530er-Garalde — elegant, aber zeitlich am wenigsten passend; von Playfair abgelöst. |
+| **UnifrakturMaguntia** (Fahrenwaldt 1901) als Quiz-„gedruckt um 1900"-Zeile | Gebaut, live gezeigt, **abgelehnt**: keine gebrochene Schrift auf der Seite — Lesbarkeits-Leitsatz. (Technik-Notiz fürs Archiv: das fontsource-Subset enthält **kein ſ** U+017F; nur Self-Subsetting des Original-TTF trägt das lange s.) |
+| **Alte DIN 1451 Mittelschrift** (Preuß. Musterzeichnung 1905) als Admin-Stimme | Übersprungen — konsequent keine weiteren Schriften; EB Garamond trägt auch den Admin. |
+| UnifrakturCook · CC Accidenz Commons · Theano Didot | Keine Rolle, die Garamond/Playfair nicht füllen; Accidenz zudem CC-BY-SA statt OFL. |
 
 ---
 
@@ -125,11 +208,21 @@ bleibt):
 Hintergrund nie als Flächenfarbe, sondern als Atmosphäre:
 
 - **Warmer Radial-Verlauf** `hi → bg → lo` (Lichtpunkt oben).
-- **Korn** — graustufiges SVG-`feTurbulence`, `mix-blend-mode: multiply`,
-  `opacity .5`. Feines Papierkorn.
+- **Korn** — seit R9 (2026-06) ein **vorgebackener 128-px-PNG-Tile**
+  (~9 KB, deterministisch, Seed 1866) statt des Live-`feTurbulence`
+  unter `mix-blend-mode: multiply`: Der Live-Filter samt viewport-großer
+  Blend-Ebene kostete gemessen **~18 fps beim Scrollen** (43 fps mit Live-Filter,
+  Kontrolle ohne Korn 61 fps, mit gebackenem Tile 60 fps). Die Multiply-Mathematik steckt als
+  Schwarz-mit-Alpha im Tile (`alpha = a·(1−g)`) — der Look ist
+  identisch, die Blend-Ebene entfällt.
+- **Letterpress (R8, angenommen)** — Display-Headlines tragen eine
+  1-px-Lichtkante unten (`letterpress`-Token, aus `hi` abgeleitet):
+  gepresste Type fängt das Licht des Papiers. Multiply-Compositing von
+  Loth-Crops (R8b) ist **aufgeschoben**, bis eine dekorative Crop-Fläche
+  existiert (Quiz/Diagnose sind Arbeitsflächen, §8).
 - **Vignette** — `box-shadow: inset 0 0 200px rgba(60,40,20,.26)`.
-- Alle drei als fixierte, nicht-interaktive Overlays (`pointer-events:
-  none`, `z-index: 0`), Inhalt liegt auf `z-index: 1`.
+- Alle Overlays fixiert und nicht-interaktiv (`pointer-events: none`,
+  `z-index: 0`), Inhalt liegt auf `z-index: 1`.
 
 ---
 
@@ -193,7 +286,7 @@ einheitlich tragen. Die neue Regel:
 ## 9. Token-Referenz (copy-paste)
 
 ```ts
-// Single source of the palette — read by theme.ts, PaperBackground and PublicHeader.
+// Single source of the palette — read by theme/, PaperBackground and PublicHeader.
 const paper = {
   bg: '#e7dabf',
   hi: '#f1e8d4',
@@ -206,8 +299,16 @@ const paper = {
   line: '#b6a079',
 };
 
+// Periodengeerdete Erweiterungen (R1–R5; Hexes approx, siehe §2/§2a)
+const inkState  = { fresh: '#233044', oxidized: '#1c1a17', aged: paper.ink };
+const schulheft = { rulingBlue: '#8fa8c4', rulingBlueFaded: '#a8bcd0', marginRed: '#b03a3a' };
+const pigment   = { vermilion: '#e34234', oxblood: '#6b2e2a', ochre: '#cc7722',
+                    prussianBlue: '#003153', chromeGreen: '#4a6741', oldGold: '#c9a227' };
+
 const garamond = "'EB Garamond', Georgia, 'Times New Roman', serif";
-const script = "'GLKurrent', cursive"; // showpiece only
+const display  = "'Playfair Display', 'EB Garamond', Georgia, 'Times New Roman', serif";
+const script   = "'GLKurrent', cursive"; // showpiece only
+const letterpress = `0 1px 0 ${paper.hi}59`; // Deboss der Display-Headlines
 ```
 
 ---
@@ -229,6 +330,7 @@ const script = "'GLKurrent', cursive"; // showpiece only
 | Code | MIT | Repo |
 | Kanonische Glyph-Daten | Public Domain / CC0 | Open-Data-Paket (Roadmap) |
 | EB Garamond | SIL OFL 1.1 | `@fontsource`, `THIRD_PARTY_NOTICES.md` |
+| Playfair Display | SIL OFL 1.1 | `@fontsource`, `THIRD_PARTY_NOTICES.md`, Lizenztext unter `app/public/fonts/` |
 | GL-GermanCursive | frei (Gutenberg-Labo) | `src/assets/fonts/`, `THIRD_PARTY_NOTICES.md` |
 
 ---
