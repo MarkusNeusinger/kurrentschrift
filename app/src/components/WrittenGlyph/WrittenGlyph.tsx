@@ -164,8 +164,9 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
       return { dur, delay };
     });
 
-    // Total writing time — the ink-settle animation starts once the pen lifts
-    // for the last time.
+    // End of the writing performance. Includes the trailing PEN_PAUSE_MS on
+    // purpose: the settle starts one pen-pause beat after the last stroke
+    // finishes, so the lift registers before the ink begins to age.
     const writeEndMs = cursor;
 
     return { tpl, minX, vbW, vbY, vbH, polygons, centerlines, maskWidth, timing, writeEndMs };
