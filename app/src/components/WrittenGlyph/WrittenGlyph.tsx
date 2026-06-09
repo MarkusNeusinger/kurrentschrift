@@ -21,15 +21,21 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { ApiError, getDiagnostic, type DiagnosticData } from '@/lib/api';
 import { de } from '@/locales';
+import { inkState } from '@/styles/paper';
 
 // Reveal a dashed path (pathLength=1, dasharray=1): offset 1 hides it, 0 draws it.
 const reveal = keyframes`from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; }`;
+
+// Iron-gall ink settle: German school ink wrote blue-black and oxidized to
+// near-black (Reichs-Tintenprüfung 1888/1912) — compressed here from weeks to
+// seconds after the write-in completes. Knowingly expressive synthesis.
+const inkSettle = keyframes`from { fill: ${inkState.fresh}; } to { fill: ${inkState.oxidized}; }`;
+const SETTLE_MS = 1800;
 
 // Rendering colours of this work surface. The crop box is one of the neutral
 // surfaces that deliberately opt out of the paper identity (style-guide §8) —
 // these are local rendering constants, not theme tokens.
 const SURFACE_BG = '#fff'; // neutral white crop ground (binding)
-const GLYPH_INK = '#1b1b1b'; // filled silhouette
 const GUIDE_BASELINE = '#ddd'; // faint context baseline
 const GUIDE_MIDBAND = '#ebebeb'; // fainter dashed midband
 
@@ -158,7 +164,11 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
       return { dur, delay };
     });
 
-    return { tpl, minX, vbW, vbY, vbH, polygons, centerlines, maskWidth, timing };
+    // Total writing time — the ink-settle animation starts once the pen lifts
+    // for the last time.
+    const writeEndMs = cursor;
+
+    return { tpl, minX, vbW, vbY, vbH, polygons, centerlines, maskWidth, timing, writeEndMs };
   }, [data, durationMs]);
 
   if (unavailable) return null;
@@ -169,7 +179,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
     return <CircularProgress size={28} />;
   }
 
-  const { tpl, minX, vbW, vbY, vbH, polygons, centerlines, maskWidth, timing } = geom;
+  const { tpl, minX, vbW, vbY, vbH, polygons, centerlines, maskWidth, timing, writeEndMs } = geom;
   const displayH = height;
   let displayW = (displayH * vbW) / vbH;
   let finalH = displayH;
@@ -232,12 +242,23 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
           strokeDasharray="0.08 0.06"
         />
 
-        {/* Filled silhouette, revealed by the swept mask. */}
-        <g mask={`url(#${maskId})`}>
+        {/* Filled silhouette, revealed by the swept mask. The group carries the
+            fill so the iron-gall settle (fresh blue-black → oxidized) animates
+            all strokes at once after the last pen lift; keyed by run so the
+            replay button restarts it together with the write-in. */}
+        <Box
+          component="g"
+          key={`ink-${run}`}
+          mask={`url(#${maskId})`}
+          sx={{
+            fill: animate ? inkState.fresh : inkState.oxidized,
+            animation: animate ? `${inkSettle} ${SETTLE_MS}ms ease ${writeEndMs}ms forwards` : undefined,
+          }}
+        >
           {polygons.map((poly, i) => (
-            <polygon key={i} points={poly.map(([x, y]) => `${x},${-y}`).join(' ')} fill={GLYPH_INK} />
+            <polygon key={i} points={poly.map(([x, y]) => `${x},${-y}`).join(' ')} />
           ))}
-        </g>
+        </Box>
       </svg>
 
       {animate && (
