@@ -20,6 +20,7 @@ import { BootStatus } from '@/components/BootStatus';
 import { PaperBackground } from '@/components/PaperBackground';
 import { useAdmin } from '@/context/AdminContext';
 import { AdminModals } from '@/layouts/admin/AdminModals';
+import { de } from '@/locales';
 import { GlyphSidebar } from '@/sections/admin/sidebar/GlyphSidebar';
 
 const DRAWER_WIDTH = 280;
@@ -35,16 +36,16 @@ export function AdminLayout() {
       <BootStatus
         shell="paper"
         variant="error"
-        title="API nicht erreichbar"
+        title={de.common.boot.apiUnreachable}
         message={loadError}
         detail={
           <>
-            Die API (Cloud Run) konnte auch nach mehreren Versuchen nicht erreicht werden.
-            Im lokalen Dev läuft sie über <code>uv run uvicorn api.main:app --reload --port 8000</code>.
+            {de.common.boot.apiUnreachableDetail}{' '}
+            {de.common.boot.apiUnreachableDevHint} <code>uv run uvicorn api.main:app --reload --port 8000</code>.
           </>
         }
         onRetry={() => window.location.reload()}
-        retryLabel="Erneut versuchen"
+        retryLabel={de.common.boot.retry}
       />
     );
   }
@@ -54,7 +55,7 @@ export function AdminLayout() {
       <BootStatus
         shell="paper"
         variant="loading"
-        message={waking ? 'API startet (Cold Start), einen Moment…' : 'lade Quelle…'}
+        message={waking ? de.common.boot.apiColdStart : de.common.boot.loadingSource}
       />
     );
   }
@@ -65,11 +66,11 @@ export function AdminLayout() {
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
           <AppBar position="static" color="transparent" elevation={0} sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Toolbar variant="dense" sx={{ gap: 1 }}>
-              <IconButton edge="start" aria-label="Menü öffnen" onClick={() => setNavOpen(true)}>
+              <IconButton edge="start" aria-label={de.admin.layout.openMenu} onClick={() => setNavOpen(true)}>
                 <MenuIcon />
               </IconButton>
               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                kurrentschrift
+                {de.common.brand.name}
               </Typography>
             </Toolbar>
           </AppBar>

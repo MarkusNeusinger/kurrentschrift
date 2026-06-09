@@ -10,6 +10,7 @@ import { getGlyph, postResample, postTrace, putBbox } from '@/lib/api';
 import { bboxInFromOut } from '@/lib/bbox';
 import { isLetterSplit, knownGlyph, siblingKeys } from '@/domain/glyphs';
 import { useAdmin } from '@/context/AdminContext';
+import { de, fmt } from '@/locales';
 import { flattenStrokes, savablePointCount } from './strokeUtils';
 import { STEPS } from './wizardTypes';
 import type { CalibField, GuideValues } from './wizardTypes';
@@ -84,7 +85,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
         const saved = await putBbox(glyphKey, { ...bboxInFromOut(bbox), ...patch });
         upsertBbox(glyphKey, saved);
       } catch (err) {
-        setSnack(`Speichern fehlgeschlagen: ${err}`);
+        setSnack(`${de.wizard.snack.saveFailed} ${err}`);
       }
     },
     [bbox, glyphKey, upsertBbox],
@@ -121,7 +122,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
         const other = field === 'baseline_y' ? bbox.midband_y : bbox.baseline_y;
         const ok = field === 'baseline_y' ? curY > other : curY < other;
         if (ok) await updateBboxField({ [field]: curY });
-        else setSnack('Grundlinie muss unter der Mittellinie liegen.');
+        else setSnack(de.wizard.snack.baselineBelowMidband);
       }
     },
     [bbox, updateBboxField],
@@ -181,7 +182,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
         n_anchors: bbox.n_anchors,
       });
       markGlyphTraced(glyphKey, summaryOf(g));
-      setSnack(`Weg gespeichert · ${g.anchors.length} Anker`);
+      setSnack(fmt(de.wizard.snack.traceSaved, { count: g.anchors.length }));
       setStrokes([]);
     } catch (err) {
       setSnack(String(err));
@@ -197,7 +198,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     try {
       const g = await postResample(glyphKey, bbox.n_anchors);
       markGlyphTraced(glyphKey, summaryOf(g));
-      setSnack(`neu abgetastet · ${g.anchors.length} Anker`);
+      setSnack(fmt(de.wizard.snack.resampled, { count: g.anchors.length }));
     } catch (err) {
       setSnack(String(err));
     } finally {
@@ -253,7 +254,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
       }
       onClose();
     } catch (err) {
-      setSnack(`Abschließen fehlgeschlagen: ${err}`);
+      setSnack(`${de.wizard.snack.finishFailed} ${err}`);
     } finally {
       setBusy(false);
     }

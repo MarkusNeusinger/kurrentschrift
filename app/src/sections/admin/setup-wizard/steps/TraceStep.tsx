@@ -6,7 +6,7 @@ import UndoIcon from '@mui/icons-material/Undo';
 import { Alert, Box, Button, Stack, TextField, Typography } from '@mui/material';
 import type { Dispatch, SetStateAction } from 'react';
 
-import { couplingLabel } from '@/lib/labels';
+import { couplingLabel, de } from '@/locales';
 import type { BboxIn, BboxOut, CouplingHeight, GuideConfig, StrokePoint } from '@/lib/api';
 import type { GuideValues } from '../wizardTypes';
 
@@ -39,31 +39,28 @@ export function TraceStep({
 }) {
   return (
     <Stack spacing={1.5}>
-      <Typography variant="subtitle2">Schritt 4 · Weg (Ductus)</Typography>
+      <Typography variant="subtitle2">{de.wizard.trace.title}</Typography>
       <Typography variant="body2" color="text.secondary">
-        Den Buchstaben in Schreibrichtung mit dem Stift (S-Pen) oder der Maus nachziehen — das
-        ist der Ductus, die eigentliche Vorlage über der Loth-Geometrie.
+        {de.wizard.trace.body1}
       </Typography>
       <Typography variant="body2" color="text.secondary">
-        <b>Jedes Absetzen beginnt einen neuen Strich</b> — zwischen den Strichen wird keine
-        Verbindungslinie gezogen. Beim <b>u</b> also erst den ersten Abstrich, absetzen, dann den
-        zweiten — nacheinander, nicht in einem Zug.
+        <b>{de.wizard.trace.penLiftBold}</b> {de.wizard.trace.penLiftAfterBold} <b>u</b> {de.wizard.trace.penLiftRest}
       </Typography>
       <Stack direction="row" spacing={1}>
         <Button size="small" startIcon={<UndoIcon />} disabled={strokes.length === 0} onClick={() => setStrokes((s) => s.slice(0, -1))}>
-          Letzter Strich ({strokes.length})
+          {de.wizard.trace.undoStroke} ({strokes.length})
         </Button>
         <Button size="small" color="inherit" disabled={strokes.length === 0} onClick={() => setStrokes([])}>
-          Alles verwerfen
+          {de.wizard.trace.discardAll}
         </Button>
         <Button size="small" variant="contained" disabled={savablePoints < 2 || busy} onClick={saveTrace}>
-          Weg speichern
+          {de.wizard.trace.save}
         </Button>
       </Stack>
-      {hasCanonical && strokes.length === 0 && <Alert severity="success" variant="outlined">Weg gespeichert. Weiter zur Übersicht.</Alert>}
+      {hasCanonical && strokes.length === 0 && <Alert severity="success" variant="outlined">{de.wizard.trace.saved}</Alert>}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <TextField
-          label="Anker (n_anchors)"
+          label={de.wizard.trace.anchorsLabel}
           type="number"
           size="small"
           value={bbox.n_anchors}
@@ -71,22 +68,21 @@ export function TraceStep({
           sx={{ flex: 1 }}
         />
         <Button size="small" variant="outlined" startIcon={<RefreshIcon />} disabled={!hasCanonical || busy} onClick={resample}>
-          Neu abtasten
+          {de.wizard.trace.resample}
         </Button>
       </Box>
       <Typography variant="caption" color="text.secondary">
-        n_anchors = Zahl der Stützpunkte, auf die der Pen-Pfad abgetastet wird. Der Originalpfad
-        bleibt erhalten, also jederzeit ohne Neuzeichnen neu abtastbar.
+        {de.wizard.trace.anchorsHint}
       </Typography>
       <Box sx={{ display: 'flex', gap: 1 }}>
-        <TextField select size="small" label="Kopplung Anfang" value={guideVals.entryCoupling} onChange={(e) => updateGuides({ entry_coupling: e.target.value as CouplingHeight })} sx={{ flex: 1 }} slotProps={{ select: { native: true } }}>
+        <TextField select size="small" label={de.wizard.trace.entryCoupling} value={guideVals.entryCoupling} onChange={(e) => updateGuides({ entry_coupling: e.target.value as CouplingHeight })} sx={{ flex: 1 }} slotProps={{ select: { native: true } }}>
           {COUPLING_OPTIONS.map((c) => (
             <option key={c} value={c}>
               {couplingLabel(c)}
             </option>
           ))}
         </TextField>
-        <TextField select size="small" label="Kopplung Ende" value={guideVals.exitCoupling} onChange={(e) => updateGuides({ exit_coupling: e.target.value as CouplingHeight })} sx={{ flex: 1 }} slotProps={{ select: { native: true } }}>
+        <TextField select size="small" label={de.wizard.trace.exitCoupling} value={guideVals.exitCoupling} onChange={(e) => updateGuides({ exit_coupling: e.target.value as CouplingHeight })} sx={{ flex: 1 }} slotProps={{ select: { native: true } }}>
           {COUPLING_OPTIONS.map((c) => (
             <option key={c} value={c}>
               {couplingLabel(c)}
@@ -95,8 +91,7 @@ export function TraceStep({
         </TextField>
       </Box>
       <Typography variant="caption" color="text.secondary">
-        Höhe, auf der ein Nachbarbuchstabe ansetzt (Anfang) bzw. weiterläuft (Ende). Greift bei
-        bestehendem Canonical sofort beim nächsten Speichern.
+        {de.wizard.trace.couplingHint}
       </Typography>
     </Stack>
   );

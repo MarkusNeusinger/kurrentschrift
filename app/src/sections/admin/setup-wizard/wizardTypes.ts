@@ -3,14 +3,15 @@
 // uses to hand a finished gesture to the wizard (which validates + persists).
 
 import type { CouplingHeight } from '@/lib/api';
+import { de } from '@/locales';
 
 export type StepId = 'mask' | 'lineatur' | 'slant' | 'weg' | 'overview';
 export const STEPS: { id: StepId; label: string }[] = [
-  { id: 'mask', label: 'Ausschluss' },
-  { id: 'lineatur', label: 'Lineatur' },
-  { id: 'slant', label: 'Schräge' },
-  { id: 'weg', label: 'Weg' },
-  { id: 'overview', label: 'Übersicht' },
+  { id: 'mask', label: de.wizard.steps.mask },
+  { id: 'lineatur', label: de.wizard.steps.lineatur },
+  { id: 'slant', label: de.wizard.steps.slant },
+  { id: 'weg', label: de.wizard.steps.weg },
+  { id: 'overview', label: de.wizard.steps.overview },
 ];
 
 // Signal green for the slant guides (canvas lines/handles and the Schräge

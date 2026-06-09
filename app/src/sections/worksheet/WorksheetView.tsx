@@ -15,6 +15,7 @@ import { PaperBackground } from '@/components/PaperBackground';
 import { PublicHeader } from '@/components/PublicHeader';
 import { PRESETS, buildLineature, type LineatureConfig } from '@/lib/lineatur';
 import { lineaturePdf } from '@/lib/pdf';
+import { de, fmt } from '@/locales';
 import { ConfigPanel } from '@/sections/worksheet/ConfigPanel';
 import { PreviewSvg } from '@/sections/worksheet/PreviewSvg';
 import { garamond } from '@/styles/paper';
@@ -35,8 +36,8 @@ function buildSpec(cfg: LineatureConfig, caption: string): string {
   if ([cfg.ratioAscender, cfg.ratioXHeight, cfg.ratioDescender].every(Number.isFinite)) {
     parts.push(ratioLabel(cfg));
   }
-  if (cfg.showSlant && Number.isFinite(cfg.slantDeg)) parts.push(`Neigung ${cfg.slantDeg}°`);
-  if (cfg.showPenAngle && Number.isFinite(cfg.penAngleDeg)) parts.push(`Feder ${cfg.penAngleDeg}°`);
+  if (cfg.showSlant && Number.isFinite(cfg.slantDeg)) parts.push(fmt(de.worksheet.spec.slant, { deg: cfg.slantDeg }));
+  if (cfg.showPenAngle && Number.isFinite(cfg.penAngleDeg)) parts.push(fmt(de.worksheet.spec.pen, { deg: cfg.penAngleDeg }));
   return parts.join('  ·  ');
 }
 
@@ -100,13 +101,10 @@ export function WorksheetView() {
               color: 'text.primary',
             }}
           >
-            Lineatur-Vorlage zum Schreiben üben
+            {de.worksheet.title}
           </Typography>
           <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.7, maxWidth: 560 }}>
-            Hilfslinien für deutsche Schreibschrift auf DIN&nbsp;A4. Wähle eine der drei
-            Start-Schriften als Ausgangspunkt, passe das Verhältnis von Ober-, Mittel- und
-            Unterband frei an, schalte bei Bedarf Schräglinien dazu — und lade das Blatt als
-            PDF zum Ausdrucken.
+            {de.worksheet.intro}
           </Typography>
         </Stack>
 
@@ -132,7 +130,7 @@ export function WorksheetView() {
           {/* Preview */}
           <Box>
             <Typography variant="overline" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
-              Vorschau · DIN A4
+              {de.worksheet.preview}
             </Typography>
             <Paper
               variant="outlined"

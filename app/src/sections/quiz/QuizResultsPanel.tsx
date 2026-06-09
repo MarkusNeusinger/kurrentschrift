@@ -9,6 +9,7 @@ import TuneIcon from '@mui/icons-material/Tune';
 import { Alert, Box, Button, Chip, Divider, LinearProgress, Paper, Stack, Typography } from '@mui/material';
 import { useMemo } from 'react';
 
+import { de, fmt } from '@/locales';
 import { CONFUSION_SEP, type ConfusionMap, type MissMap } from '@/sections/quiz/useQuizEngine';
 import { garamond } from '@/styles/paper';
 
@@ -50,10 +51,10 @@ export function QuizResultsPanel(p: ResultsProps) {
       <Stack spacing={3}>
         <Box>
           <Typography variant="overline" color="text.secondary">
-            Auswertung
+            {de.quiz.results.heading}
           </Typography>
           <Typography sx={{ fontFamily: garamond, fontSize: '1.75rem', lineHeight: 1.2 }}>
-            {p.stats.correct} von {p.stats.seen} richtig
+            {fmt(de.quiz.results.score, { correct: p.stats.correct, seen: p.stats.seen })}
           </Typography>
           <LinearProgress
             variant="determinate"
@@ -62,8 +63,8 @@ export function QuizResultsPanel(p: ResultsProps) {
             sx={{ mt: 1.5, height: 8, borderRadius: 4 }}
           />
           <Box sx={{ display: 'flex', gap: 1, mt: 1.5, flexWrap: 'wrap' }}>
-            <Chip size="small" label={`${pct}% Trefferquote`} />
-            <Chip size="small" variant="outlined" color="primary" label={`Beste Serie ${p.stats.bestStreak}`} />
+            <Chip size="small" label={fmt(de.quiz.results.hitRate, { pct })} />
+            <Chip size="small" variant="outlined" color="primary" label={`${de.quiz.results.bestStreak} ${p.stats.bestStreak}`} />
           </Box>
         </Box>
 
@@ -72,11 +73,11 @@ export function QuizResultsPanel(p: ResultsProps) {
         {/* Letters that were missed most */}
         <Box>
           <Typography variant="subtitle2" gutterBottom>
-            Diese Buchstaben fielen schwer
+            {de.quiz.results.missesHeading}
           </Typography>
           {topMisses.length === 0 ? (
             <Alert severity="success" icon={<CheckCircleIcon />} sx={{ py: 0.5 }}>
-              Kein einziger Fehler — sauber gelesen!
+              {de.quiz.results.noMisses}
             </Alert>
           ) : (
             <Stack spacing={1}>
@@ -106,7 +107,7 @@ export function QuizResultsPanel(p: ResultsProps) {
                     />
                   </Box>
                   <Typography variant="body2" color="text.secondary" sx={{ width: 64, textAlign: 'right' }}>
-                    {count}× falsch
+                    {count}{de.quiz.results.timesWrong}
                   </Typography>
                 </Box>
               ))}
@@ -120,7 +121,7 @@ export function QuizResultsPanel(p: ResultsProps) {
             <Divider />
             <Box>
               <Typography variant="subtitle2" gutterBottom>
-                Häufig verwechselt
+                {de.quiz.results.confusionsHeading}
               </Typography>
               <Stack spacing={1}>
                 {topConfusions.map(({ seen, guessed, count }) => (
@@ -129,13 +130,13 @@ export function QuizResultsPanel(p: ResultsProps) {
                       {seen}
                     </Box>
                     <Typography component="span" color="text.secondary">
-                      für
+                      {de.quiz.results.confusedFor}
                     </Typography>
                     <Box component="span" sx={{ fontFamily: garamond, fontSize: '1.4rem' }}>
                       {guessed}
                     </Box>
                     <Typography component="span" color="text.secondary">
-                      gehalten
+                      {de.quiz.results.confusedAs}
                     </Typography>
                     <Box sx={{ flex: 1 }} />
                     <Chip size="small" variant="outlined" label={`${count}×`} />
@@ -150,10 +151,10 @@ export function QuizResultsPanel(p: ResultsProps) {
 
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
           <Button variant="contained" startIcon={<ReplayIcon />} onClick={p.onReplay} fullWidth>
-            Nochmal
+            {de.quiz.results.replay}
           </Button>
           <Button variant="outlined" startIcon={<TuneIcon />} onClick={p.onSetup} fullWidth>
-            Einstellungen
+            {de.quiz.results.settings}
           </Button>
         </Stack>
       </Stack>

@@ -5,7 +5,8 @@
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Alert, Box, Button, FormControlLabel, Radio, RadioGroup, Stack, Typography } from '@mui/material';
 
-import { isLetterSplit, POSITION_LABEL } from '@/domain/glyphs';
+import { isLetterSplit } from '@/domain/glyphs';
+import { de, fmt, POSITION_LABEL } from '@/locales';
 import type { KnownGlyph } from '@/domain/glyphs';
 import type { BboxOut } from '@/lib/api';
 
@@ -28,41 +29,38 @@ export function OverviewStep({
 }) {
   return (
     <Stack spacing={2} sx={{ maxWidth: 640 }}>
-      <Typography variant="subtitle2">Schritt 5 · Übersicht & Freigabe</Typography>
+      <Typography variant="subtitle2">{de.wizard.overview.title}</Typography>
       <Typography variant="body2" color="text.secondary">
-        Alles geprüft? Mit der <b>Diagnose</b> kannst du das Ergebnis groß ansehen: der reine
-        Crop, das Skelett mit Ankern und die kanonische Vorlage nebeneinander (plus den M4-Fit).
+        {de.wizard.overview.bodyBeforeBold} <b>{de.wizard.overview.bodyBold}</b> {de.wizard.overview.bodyAfterBold}
       </Typography>
       {hasCanonical ? (
         <Button variant="outlined" startIcon={<VisibilityIcon />} onClick={() => openDiagnose(glyphKey)} sx={{ alignSelf: 'flex-start' }}>
-          Diagnose öffnen
+          {de.wizard.overview.openDiagnose}
         </Button>
       ) : (
-        <Alert severity="warning">Noch kein Weg gezeichnet — Schritt „Weg" zuerst.</Alert>
+        <Alert severity="warning">{de.wizard.overview.noTraceYet}</Alert>
       )}
       <Box>
         <Typography variant="subtitle2" gutterBottom>
-          Positionen (Anfang · Mitte · Ende)
+          {de.wizard.overview.positionsHeading}
         </Typography>
         <RadioGroup value={applyAll ? 'unified' : 'split'} onChange={(e) => setApplyAll(e.target.value === 'unified')}>
-          <FormControlLabel value="unified" control={<Radio />} label="Eine Form für alle Positionen" />
-          <FormControlLabel value="split" control={<Radio />} label={`Nur „${POSITION_LABEL[known.position]}“ getrennt einrichten (abweichende Form)`} />
+          <FormControlLabel value="unified" control={<Radio />} label={de.wizard.overview.unifiedOption} />
+          <FormControlLabel value="split" control={<Radio />} label={fmt(de.wizard.overview.splitOption, { position: POSITION_LABEL[known.position] })} />
         </RadioGroup>
         <Typography variant="caption" color="text.secondary" component="div">
           {applyAll
-            ? 'Diese Form gilt für alle drei Positionen; die Anschlussstriche werden je Position aus Anfang/Ende erzeugt. Im Quiz und in der Sidebar erscheint der Buchstabe einmal.'
-            : `Nur „${POSITION_LABEL[known.position]}“ bekommt diese Form, die anderen Positionen behalten ihre eigene. Der Buchstabe erscheint dann pro Position getrennt.`}
+            ? de.wizard.overview.unifiedCaption
+            : fmt(de.wizard.overview.splitCaption, { position: POSITION_LABEL[known.position] })}
         </Typography>
         {isLetterSplit(glyphKey, bboxesByKey) && applyAll && (
           <Alert severity="warning" sx={{ mt: 1 }}>
-            Der Buchstabe ist aktuell aufgetrennt — „Eine Form für alle“ überträgt <b>diese</b> Form auf
-            alle drei Positionen und überschreibt die abweichenden.
+            {de.wizard.overview.overwriteBeforeBold} <b>{de.wizard.overview.overwriteBold}</b> {de.wizard.overview.overwriteAfterBold}
           </Alert>
         )}
       </Box>
       <Typography variant="caption" color="text.secondary">
-        Mit „Abschließen & sperren“ wird der Glyph gesperrt (🔒) und ist erst nach Entsperren wieder
-        änderbar.
+        {de.wizard.overview.lockCaption}
       </Typography>
     </Stack>
   );

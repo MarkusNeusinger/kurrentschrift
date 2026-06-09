@@ -18,6 +18,8 @@
 // §15 `POST /worksheet`) is a separate, later piece — this tool ships now,
 // fully client-side.
 
+import { de } from '@/locales';
+
 export const A4 = { widthMm: 210, heightMm: 297 } as const;
 
 export type LineRole = 'baseline' | 'waist' | 'ascender' | 'descender' | 'slant' | 'pen';
@@ -70,11 +72,12 @@ export interface ScriptPreset extends LineatureConfig {
 // Kurrent is the project's baseline (pointed pen, strong slant); Sütterlin is
 // upright with an even stroke and the famous 1:1:1 proportion; the Offenbacher
 // script (Rudolf Koch, broad nib) sits between them with a gentle slant.
+// The German label/note UI strings live in @/locales (worksheet.presets).
 export const PRESETS: ScriptPreset[] = [
   {
     id: 'kurrent',
-    label: 'Kurrent',
-    note: '2 : 1 : 2 · ~30° geneigt · Spitzfeder',
+    label: de.worksheet.presets.kurrent.label,
+    note: de.worksheet.presets.kurrent.note,
     ratioAscender: 2,
     ratioXHeight: 1,
     ratioDescender: 2,
@@ -91,8 +94,8 @@ export const PRESETS: ScriptPreset[] = [
   },
   {
     id: 'suetterlin',
-    label: 'Sütterlin',
-    note: '1 : 1 : 1 · aufrecht · gleichmäßige Strichstärke',
+    label: de.worksheet.presets.suetterlin.label,
+    note: de.worksheet.presets.suetterlin.note,
     ratioAscender: 1,
     ratioXHeight: 1,
     ratioDescender: 1,
@@ -107,8 +110,8 @@ export const PRESETS: ScriptPreset[] = [
   },
   {
     id: 'offenbacher',
-    label: 'Offenbacher',
-    note: '2 : 1 : 2 · leicht geneigt · Breitfeder ~35°',
+    label: de.worksheet.presets.offenbacher.label,
+    note: de.worksheet.presets.offenbacher.note,
     ratioAscender: 2,
     ratioXHeight: 1,
     ratioDescender: 2,

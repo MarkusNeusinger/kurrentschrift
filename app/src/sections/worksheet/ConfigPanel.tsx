@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 
 import { PRESETS, type LineatureConfig } from '@/lib/lineatur';
+import { de } from '@/locales';
 import { tokens } from '@/theme';
 
 function NumField(props: {
@@ -66,7 +67,7 @@ export function ConfigPanel({ cfg, set, presetId, applyPreset, caption, setCapti
       <Stack spacing={3}>
         <Box>
           <Typography variant="overline" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
-            Start-Schrift
+            {de.worksheet.config.presetHeading}
           </Typography>
           <ToggleButtonGroup
             exclusive
@@ -82,7 +83,7 @@ export function ConfigPanel({ cfg, set, presetId, applyPreset, caption, setCapti
             ))}
           </ToggleButtonGroup>
           <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mt: 1, minHeight: '1.2em' }}>
-            {PRESETS.find((p) => p.id === presetId)?.note ?? 'Eigene Einstellung'}
+            {PRESETS.find((p) => p.id === presetId)?.note ?? de.worksheet.config.customSetting}
           </Typography>
         </Box>
 
@@ -90,19 +91,19 @@ export function ConfigPanel({ cfg, set, presetId, applyPreset, caption, setCapti
 
         <Box>
           <Typography variant="overline" sx={{ color: 'text.secondary', display: 'block', mb: 1.5 }}>
-            Verhältnis · Ober : Mittel : Unter
+            {de.worksheet.config.ratioHeading}
           </Typography>
           <Stack direction="row" spacing={1}>
-            <NumField label="Ober" value={cfg.ratioAscender} onChange={(v) => set({ ratioAscender: v })} min={0} step={0.5} />
-            <NumField label="Mittel" value={cfg.ratioXHeight} onChange={(v) => set({ ratioXHeight: v })} min={0.1} step={0.5} />
-            <NumField label="Unter" value={cfg.ratioDescender} onChange={(v) => set({ ratioDescender: v })} min={0} step={0.5} />
+            <NumField label={de.worksheet.config.ratioAscender} value={cfg.ratioAscender} onChange={(v) => set({ ratioAscender: v })} min={0} step={0.5} />
+            <NumField label={de.worksheet.config.ratioXHeight} value={cfg.ratioXHeight} onChange={(v) => set({ ratioXHeight: v })} min={0.1} step={0.5} />
+            <NumField label={de.worksheet.config.ratioDescender} value={cfg.ratioDescender} onChange={(v) => set({ ratioDescender: v })} min={0} step={0.5} />
           </Stack>
         </Box>
 
         <Stack spacing={2}>
-          <NumField label="Mittelband (x-Höhe)" value={cfg.xHeightMm} onChange={(v) => set({ xHeightMm: v })} min={1} max={40} step={0.5} unit="mm" />
-          <NumField label="Zeilenabstand" value={cfg.rowGapMm} onChange={(v) => set({ rowGapMm: v })} min={0} max={60} step={0.5} unit="mm" />
-          <NumField label="Seitenrand" value={cfg.marginMm} onChange={(v) => set({ marginMm: v })} min={5} max={40} step={1} unit="mm" />
+          <NumField label={de.worksheet.config.xHeight} value={cfg.xHeightMm} onChange={(v) => set({ xHeightMm: v })} min={1} max={40} step={0.5} unit="mm" />
+          <NumField label={de.worksheet.config.rowGap} value={cfg.rowGapMm} onChange={(v) => set({ rowGapMm: v })} min={0} max={60} step={0.5} unit="mm" />
+          <NumField label={de.worksheet.config.margin} value={cfg.marginMm} onChange={(v) => set({ marginMm: v })} min={5} max={40} step={1} unit="mm" />
         </Stack>
 
         <Divider />
@@ -115,11 +116,11 @@ export function ConfigPanel({ cfg, set, presetId, applyPreset, caption, setCapti
                 onChange={(e) => set({ showSlant: e.target.checked })}
               />
             }
-            label="Schräglinien (Neigung)"
+            label={de.worksheet.config.slantToggle}
           />
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <NumField label="Neigungswinkel" value={cfg.slantDeg} onChange={(v) => set({ slantDeg: v })} min={0} max={60} step={1} unit="°" disabled={!cfg.showSlant} />
-            <NumField label="Abstand der Schräglinien" value={cfg.slantSpacingMm} onChange={(v) => set({ slantSpacingMm: v })} min={2} max={60} step={1} unit="mm" disabled={!cfg.showSlant} />
+            <NumField label={de.worksheet.config.slantAngle} value={cfg.slantDeg} onChange={(v) => set({ slantDeg: v })} min={0} max={60} step={1} unit="°" disabled={!cfg.showSlant} />
+            <NumField label={de.worksheet.config.slantSpacing} value={cfg.slantSpacingMm} onChange={(v) => set({ slantSpacingMm: v })} min={2} max={60} step={1} unit="mm" disabled={!cfg.showSlant} />
           </Stack>
         </Box>
 
@@ -133,30 +134,30 @@ export function ConfigPanel({ cfg, set, presetId, applyPreset, caption, setCapti
                 onChange={(e) => set({ showPenAngle: e.target.checked })}
               />
             }
-            label="Federwinkel (Stifthaltung)"
+            label={de.worksheet.config.penAngleToggle}
           />
           <Box sx={{ mt: 1 }}>
-            <NumField label="Federwinkel" value={cfg.penAngleDeg} onChange={(v) => set({ penAngleDeg: v })} min={0} max={90} step={1} unit="°" disabled={!cfg.showPenAngle} />
+            <NumField label={de.worksheet.config.penAngle} value={cfg.penAngleDeg} onChange={(v) => set({ penAngleDeg: v })} min={0} max={90} step={1} unit="°" disabled={!cfg.showPenAngle} />
           </Box>
           <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mt: 1 }}>
-            Anstellwinkel der Feder zur Schreiblinie — als Winkelmarke oben links. Bei der Spitzfeder (Kurrent) kommt die Strichstärke aus dem Druck, nicht aus dem Winkel.
+            {de.worksheet.config.penAngleHint}
           </Typography>
         </Box>
 
         <Divider />
 
         <TextField
-          label="Titel / Name (optional)"
+          label={de.worksheet.config.captionLabel}
           size="small"
           fullWidth
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
-          placeholder="z. B. Kurrent"
-          helperText="Erscheint mit Verhältnis/Neigung/Feder unten links; kurrentschrift.ink steht unten rechts."
+          placeholder={de.worksheet.config.captionPlaceholder}
+          helperText={de.worksheet.config.captionHelp}
         />
 
         <Button variant="contained" size="large" startIcon={<DownloadIcon />} onClick={onDownload}>
-          Als PDF herunterladen
+          {de.worksheet.config.download}
         </Button>
       </Stack>
     </Paper>

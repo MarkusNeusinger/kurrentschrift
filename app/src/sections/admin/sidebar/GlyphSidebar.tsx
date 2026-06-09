@@ -22,14 +22,15 @@ import {
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { glyphKeyFor, isLetterSplit, LETTERS, LETTER_BY_KEY, POSITION_LABEL, POSITIONS } from '@/domain/glyphs';
+import { glyphKeyFor, isLetterSplit, LETTERS, LETTER_BY_KEY, POSITIONS } from '@/domain/glyphs';
 import type { Letter, LetterGroup, Position } from '@/domain/glyphs';
 import { useAdmin } from '@/context/AdminContext';
+import { de, POSITION_LABEL } from '@/locales';
 
 const GROUP_LABELS: Record<LetterGroup, string> = {
-  lower: 'Kleinbuchstaben',
-  upper: 'Großbuchstaben',
-  comb: 'Kombinationen',
+  lower: de.admin.sidebar.groupLower,
+  upper: de.admin.sidebar.groupUpper,
+  comb: de.admin.sidebar.groupComb,
 };
 const GROUP_ORDER: LetterGroup[] = ['lower', 'upper', 'comb'];
 
@@ -93,7 +94,7 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
     <Box sx={{ borderRight: 1, borderColor: 'divider', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
       {/* Navigation — get back out of the admin area / over to the overview. */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 1, py: 1, borderBottom: 1, borderColor: 'divider' }}>
-        <Tooltip title="Zur Startseite">
+        <Tooltip title={de.admin.sidebar.toHome}>
           <IconButton size="small" onClick={() => go('/')}>
             <HomeIcon fontSize="small" />
           </IconButton>
@@ -103,9 +104,9 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
           sx={{ flex: 1, cursor: 'pointer', fontWeight: 600 }}
           onClick={() => go('/')}
         >
-          kurrentschrift
+          {de.common.brand.name}
         </Typography>
-        <Tooltip title="Chart-Übersicht">
+        <Tooltip title={de.admin.sidebar.chartOverview}>
           <IconButton size="small" onClick={() => go('/admin/chart')}>
             <GridViewIcon fontSize="small" />
           </IconButton>
@@ -122,13 +123,13 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
       </Box>
       <Box sx={{ px: 2, py: 1, display: 'flex', gap: 1, alignItems: 'center' }}>
         <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
-          Overlays
+          {de.admin.sidebar.overlays}
         </Typography>
         <Button size="small" variant="outlined" onClick={() => setOnlyVisible(keysWithBbox)}>
-          alle
+          {de.admin.sidebar.all}
         </Button>
         <Button size="small" variant="outlined" onClick={() => setOnlyVisible([])}>
-          keine
+          {de.admin.sidebar.none}
         </Button>
       </Box>
       <Divider />
@@ -154,8 +155,8 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
                     <Tooltip
                       key={letter.base}
                       title={`${letter.glyph}${letter.note ? ` · ${letter.note}` : ''}${
-                        canon ? ' · Canonical vorhanden' : bbox ? ' · Bbox gesetzt' : ' · leer'
-                      }${locked ? ' · gesperrt (fertig)' : ''}${split ? ' · aufgetrennt (pro Position)' : ''}`}
+                        canon ? de.admin.sidebar.statusCanonical : bbox ? de.admin.sidebar.statusBbox : de.admin.sidebar.statusEmpty
+                      }${locked ? de.admin.sidebar.statusLocked : ''}${split ? de.admin.sidebar.statusSplit : ''}`}
                     >
                       <ButtonBase
                         onClick={() => selectLetter(letter)}
@@ -245,7 +246,7 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
               <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 1 }}>
                 <Typography sx={{ fontFamily: 'Georgia, serif', fontSize: 22, lineHeight: 1 }}>{letter.glyph}</Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {split ? 'aufgetrennt · pro Position' : 'eine Form für alle Positionen'}
+                  {split ? de.admin.sidebar.splitCaption : de.admin.sidebar.unifiedCaption}
                   {letter.note ? ` · ${letter.note}` : ''}
                 </Typography>
               </Box>
@@ -288,7 +289,7 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
                             {locked ? ' 🔒' : ''}
                           </Typography>
                         </ButtonBase>
-                        <Tooltip title={!bbox ? 'Erst eine Bbox ziehen' : locked ? 'Gesperrt — oben entsperren' : 'Einrichten'}>
+                        <Tooltip title={!bbox ? de.admin.sidebar.drawBboxFirst : locked ? de.admin.sidebar.lockedUnlockAbove : de.admin.sidebar.setup}>
                           <span>
                             <IconButton size="small" disabled={!bbox || locked} onClick={() => editPosition(p)}>
                               <AutoFixHighIcon fontSize="small" />
@@ -296,7 +297,7 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
                           </span>
                         </Tooltip>
                         {canon && (
-                          <Tooltip title="Diagnose">
+                          <Tooltip title={de.admin.sidebar.diagnose}>
                             <IconButton size="small" onClick={() => diagnosePosition(p)}>
                               <VisibilityIcon fontSize="small" />
                             </IconButton>
@@ -316,7 +317,7 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
                     disabled={!activeGlyph || !hasBbox(activeGlyph) || isLocked(activeGlyph)}
                     onClick={launchWizard}
                   >
-                    Einrichten
+                    {de.admin.sidebar.setup}
                   </Button>
                   {activeGlyph && hasCanon(activeGlyph) && (
                     <Button
@@ -327,17 +328,17 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
                       onClick={launchDiagnose}
                       sx={{ mt: 1 }}
                     >
-                      Diagnose
+                      {de.admin.sidebar.diagnose}
                     </Button>
                   )}
                   {activeGlyph && !hasBbox(activeGlyph) && (
                     <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1 }}>
-                      Noch keine Bbox — im Modus „Bbox“ ein Rechteck auf der Vorlage ziehen.
+                      {de.admin.sidebar.noBboxHint}
                     </Typography>
                   )}
                   {activeGlyph && hasBbox(activeGlyph) && isLocked(activeGlyph) && (
                     <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1 }}>
-                      🔒 Gesperrt (fertig) — oben in der Leiste entsperren, um zu bearbeiten.
+                      {de.admin.sidebar.lockedHint}
                     </Typography>
                   )}
                 </>

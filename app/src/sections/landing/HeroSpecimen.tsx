@@ -2,6 +2,7 @@ import { Box } from '@mui/material';
 import { keyframes } from '@mui/system';
 import { useState } from 'react';
 
+import { de } from '@/locales';
 import { garamond, paper, script } from '@/styles/paper';
 
 // --- animations -----------------------------------------------------------
@@ -48,7 +49,7 @@ export function HeroSpecimen() {
         component="svg"
         viewBox={`0 0 ${SPECIMEN_VB.w} ${SPECIMEN_VB.h}`}
         role="img"
-        aria-label="Kurrent"
+        aria-label={de.landing.specimen.word}
         sx={{
           width: '100%',
           maxWidth: { xs: 360, md: 520 },
@@ -89,7 +90,7 @@ export function HeroSpecimen() {
             [reduce]: { clipPath: 'none', animation: 'none' },
           }}
         >
-          Kurrent
+          {de.landing.specimen.word}
         </Box>
       </Box>
 
@@ -104,7 +105,7 @@ export function HeroSpecimen() {
           ...fi(2.2),
         }}
       >
-        leſen · ſchreiben · verſtehen
+        {de.landing.specimen.subline}
       </Box>
 
       <Box
@@ -120,7 +121,7 @@ export function HeroSpecimen() {
           ...fi(2.5),
         }}
       >
-        <Box component="span">Synthese in echter Hand — hier: Loth, 1866.</Box>
+        <Box component="span">{de.landing.specimen.caption}</Box>
         <Box
           component="button"
           onClick={() => setReplayKey((k) => k + 1)}
@@ -139,7 +140,7 @@ export function HeroSpecimen() {
             '&:hover': { borderColor: paper.viridian, color: paper.viridian },
           }}
         >
-          ↻ nochmal schreiben
+          {de.landing.specimen.replay}
         </Box>
       </Box>
     </Box>

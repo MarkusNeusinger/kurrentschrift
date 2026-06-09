@@ -6,6 +6,7 @@ import { Box, Paper } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 import { WrittenGlyph } from '@/components/WrittenGlyph';
+import { de } from '@/locales';
 import { questionCropUrl, type Difficulty } from '@/sections/quiz/quizTypes';
 import { type QuizItem } from '@/sections/quiz/useQuizEngine';
 
@@ -52,7 +53,7 @@ export function QuestionVisual({
         <Box
           component="img"
           src={questionCropUrl(item.key, difficulty)}
-          alt="Kurrent-Buchstabe"
+          alt={de.quiz.play.cropAlt}
           sx={{ maxWidth: '100%', maxHeight: 260, objectFit: 'contain', userSelect: 'none' }}
           draggable={false}
         />

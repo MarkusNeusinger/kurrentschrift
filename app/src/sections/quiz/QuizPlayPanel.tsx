@@ -11,6 +11,7 @@ import { Alert, Box, Button, Chip, Stack, TextField, Tooltip, Typography } from 
 import { useEffect, useRef } from 'react';
 
 import { cropUrl } from '@/lib/api';
+import { de, fmt } from '@/locales';
 import { QuestionVisual } from '@/sections/quiz/QuestionVisual';
 import { type Difficulty } from '@/sections/quiz/quizTypes';
 import { inCase, type AnswerMode, type QuizItem } from '@/sections/quiz/useQuizEngine';
@@ -53,9 +54,9 @@ export function QuizPlayPanel(p: PlayProps) {
   if (!current) {
     return (
       <Alert severity="info">
-        Keine Buchstaben für diese Auswahl.{' '}
+        {de.quiz.play.emptyPool}{' '}
         <Button size="small" onClick={p.onQuit}>
-          zurück
+          {de.quiz.play.back}
         </Button>
       </Alert>
     );
@@ -65,11 +66,11 @@ export function QuizPlayPanel(p: PlayProps) {
     <Stack spacing={3}>
       {/* Scoreboard */}
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-        <Chip size="small" label={`Richtig ${p.stats.correct}/${p.stats.seen}`} />
-        <Chip size="small" color="primary" variant="outlined" label={`Serie ${p.stats.streak}`} />
+        <Chip size="small" label={fmt(de.quiz.play.score, { correct: p.stats.correct, seen: p.stats.seen })} />
+        <Chip size="small" color="primary" variant="outlined" label={`${de.quiz.play.streak} ${p.stats.streak}`} />
         <Box sx={{ flex: 1 }} />
         <Button size="small" color="inherit" sx={{ color: 'text.secondary' }} onClick={p.onQuit}>
-          beenden
+          {de.quiz.play.quit}
         </Button>
       </Box>
 
@@ -83,7 +84,7 @@ export function QuizPlayPanel(p: PlayProps) {
           icon={solved ? <CheckCircleIcon /> : <HighlightOffIcon />}
           severity={solved ? 'success' : 'warning'}
         >
-          Das ist{' '}
+          {de.quiz.play.solutionIs}{' '}
           <Box component="span" sx={{ fontWeight: 600 }}>
             {inCase(current.kg.answer, current.kg)}
           </Box>{' '}
@@ -95,12 +96,12 @@ export function QuizPlayPanel(p: PlayProps) {
           {p.hasDuctus && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
               <Typography variant="caption" color="text.secondary">
-                in der Vorlage:
+                {de.quiz.play.inSource}
               </Typography>
               <Box
                 component="img"
                 src={cropUrl(current.key)}
-                alt="Loth-Vorlage"
+                alt={de.quiz.play.sourceCropAlt}
                 sx={{ height: 56, maxWidth: 120, objectFit: 'contain', bgcolor: '#fff', borderRadius: 0.5, p: 0.25 }}
                 draggable={false}
               />
@@ -111,7 +112,7 @@ export function QuizPlayPanel(p: PlayProps) {
 
       {verdict === 'wrong' && (
         <Alert severity="error" sx={{ py: 0.25 }}>
-          Nicht richtig — versuch es nochmal.
+          {de.quiz.play.wrong}
         </Alert>
       )}
 
@@ -125,14 +126,14 @@ export function QuizPlayPanel(p: PlayProps) {
             onKeyDown={(e) => {
               if (e.key === 'Enter') p.onSubmitTyped();
             }}
-            placeholder="Welcher Buchstabe?"
+            placeholder={de.quiz.play.inputPlaceholder}
             disabled={showSolution}
             autoComplete="off"
             slotProps={{ htmlInput: { maxLength: 2, style: { textTransform: 'lowercase' } } }}
             fullWidth
           />
           <Button variant="contained" onClick={p.onSubmitTyped} disabled={showSolution || !p.input.trim()}>
-            Prüfen
+            {de.quiz.play.check}
           </Button>
         </Stack>
       ) : (
@@ -161,14 +162,14 @@ export function QuizPlayPanel(p: PlayProps) {
       {/* Reveal / skip */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         {showSolution ? (
-          <Tooltip title="Nächster Buchstabe">
+          <Tooltip title={de.quiz.play.nextTooltip}>
             <Button endIcon={<ArrowForwardIcon />} onClick={p.onAdvance}>
-              Weiter
+              {de.quiz.play.next}
             </Button>
           </Tooltip>
         ) : (
           <Button size="small" color="inherit" sx={{ color: 'text.secondary' }} onClick={p.onReveal}>
-            Lösung zeigen
+            {de.quiz.play.reveal}
           </Button>
         )}
       </Box>

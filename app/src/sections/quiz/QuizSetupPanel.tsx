@@ -4,6 +4,7 @@
 
 import { Alert, Box, Button, Paper, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 
+import { de, fmt } from '@/locales';
 import { DIFFICULTIES, SCRIPTS, type Difficulty } from '@/sections/quiz/quizTypes';
 import { type AnswerMode, type CaseMode } from '@/sections/quiz/useQuizEngine';
 
@@ -28,12 +29,10 @@ export function QuizSetupPanel(p: SetupProps) {
     <Paper variant="outlined" sx={{ p: 3 }}>
       <Stack spacing={3}>
         <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
-          Erkenne die Kurrent-Buchstaben: Jeder Buchstabe wird dir Zug um Zug geschrieben — in der Reihenfolge der Feder —
-          und du tippst (oder wählst), welcher es ist. Richtig → weiter, falsch → noch einmal. Am Ende zeigt dir die
-          Auswertung, welche Buchstaben dir schwerfielen.
+          {de.quiz.setup.intro}
         </Typography>
 
-        <Field label="Schrift">
+        <Field label={de.quiz.setup.scriptLabel}>
           <ToggleButtonGroup
             size="small"
             exclusive
@@ -45,7 +44,7 @@ export function QuizSetupPanel(p: SetupProps) {
                 {s.label}
                 {!s.available && (
                   <Typography component="span" variant="caption" sx={{ ml: 0.75, color: 'text.disabled' }}>
-                    bald
+                    {de.common.soon}
                   </Typography>
                 )}
               </ToggleButton>
@@ -53,32 +52,32 @@ export function QuizSetupPanel(p: SetupProps) {
           </ToggleButtonGroup>
         </Field>
 
-        <Field label="Buchstaben">
+        <Field label={de.quiz.setup.lettersLabel}>
           <ToggleButtonGroup
             size="small"
             exclusive
             value={p.caseMode}
             onChange={(_e, v: CaseMode | null) => v && p.setCaseMode(v)}
           >
-            <ToggleButton value="lower">Klein ({p.lowerCount})</ToggleButton>
-            <ToggleButton value="upper">Groß ({p.upperCount})</ToggleButton>
-            <ToggleButton value="mixed">Gemischt</ToggleButton>
+            <ToggleButton value="lower">{fmt(de.quiz.setup.caseLower, { count: p.lowerCount })}</ToggleButton>
+            <ToggleButton value="upper">{fmt(de.quiz.setup.caseUpper, { count: p.upperCount })}</ToggleButton>
+            <ToggleButton value="mixed">{de.quiz.setup.caseMixed}</ToggleButton>
           </ToggleButtonGroup>
         </Field>
 
-        <Field label="Antwort">
+        <Field label={de.quiz.setup.answerLabel}>
           <ToggleButtonGroup
             size="small"
             exclusive
             value={p.answerMode}
             onChange={(_e, v: AnswerMode | null) => v && p.setAnswerMode(v)}
           >
-            <ToggleButton value="type">Tippen</ToggleButton>
-            <ToggleButton value="choice">Auswahl (Multiple Choice)</ToggleButton>
+            <ToggleButton value="type">{de.quiz.setup.answerType}</ToggleButton>
+            <ToggleButton value="choice">{de.quiz.setup.answerChoice}</ToggleButton>
           </ToggleButtonGroup>
         </Field>
 
-        <Field label="Schwierigkeit">
+        <Field label={de.quiz.setup.difficultyLabel}>
           <ToggleButtonGroup
             size="small"
             exclusive
@@ -90,27 +89,25 @@ export function QuizSetupPanel(p: SetupProps) {
                 {d.label}
                 {!d.available && (
                   <Typography component="span" variant="caption" sx={{ ml: 0.75, color: 'text.disabled' }}>
-                    bald
+                    {de.common.soon}
                   </Typography>
                 )}
               </ToggleButton>
             ))}
           </ToggleButtonGroup>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.75 }}>
-            Höhere Stufen zeigen denselben Buchstaben in unsaubereren Handschriften — sobald solche Vorlagen verfügbar sind.
+            {de.quiz.setup.difficultyHint}
           </Typography>
         </Field>
 
         {noLetters ? (
           <Alert severity="info">
-            Für diese Auswahl sind noch keine Buchstaben freigegeben.{' '}
-            {p.caseMode === 'upper'
-              ? 'Großbuchstaben erscheinen hier, sobald sie im Admin-Bereich fertig kalibriert und gesperrt sind.'
-              : 'Buchstaben erscheinen hier, sobald sie im Admin-Bereich fertig kalibriert und gesperrt sind.'}
+            {de.quiz.setup.noLetters}{' '}
+            {p.caseMode === 'upper' ? de.quiz.setup.noLettersUpper : de.quiz.setup.noLettersOther}
           </Alert>
         ) : (
           <Button variant="contained" size="large" onClick={p.onStart}>
-            Quiz starten
+            {de.quiz.setup.start}
           </Button>
         )}
       </Stack>
