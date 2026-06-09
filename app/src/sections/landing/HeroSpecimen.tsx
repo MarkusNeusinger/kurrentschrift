@@ -7,8 +7,8 @@ import { garamond, inkState, paper, script } from '@/styles/paper';
 
 // --- animations -----------------------------------------------------------
 const writeIn = keyframes`from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); }`;
-// Iron-gall ink settle: the word is written in fresh blue-black (blauschwarz,
-// the regulated German school ink) and settles toward the aged manuscript
+// Iron-gall ink settle: the word is written in fresh blue-black (German
+// "blauschwarz" — the regulated school ink) and settles toward the aged manuscript
 // brown the rest of the page wears — decades compressed into seconds. The
 // settle starts at 2.6s: a deliberate ~200ms breath after the write-in ends
 // (0.5s delay + 1.9s writeIn) so the fresh ink registers before it ages.
