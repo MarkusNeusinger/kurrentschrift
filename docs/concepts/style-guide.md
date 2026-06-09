@@ -211,8 +211,8 @@ Hintergrund nie als Flächenfarbe, sondern als Atmosphäre:
 - **Korn** — seit R9 (2026-06) ein **vorgebackener 128-px-PNG-Tile**
   (~9 KB, deterministisch, Seed 1866) statt des Live-`feTurbulence`
   unter `mix-blend-mode: multiply`: Der Live-Filter samt viewport-großer
-  Blend-Ebene kostete gemessen **~18 fps beim Scrollen** (43 → 60 fps
-  nach dem Backen). Die Multiply-Mathematik steckt als
+  Blend-Ebene kostete gemessen **~18 fps beim Scrollen** (43 fps mit Live-Filter,
+  Kontrolle ohne Korn 61 fps, mit gebackenem Tile 60 fps). Die Multiply-Mathematik steckt als
   Schwarz-mit-Alpha im Tile (`alpha = a·(1−g)`) — der Look ist
   identisch, die Blend-Ebene entfällt.
 - **Letterpress (R8, angenommen)** — Display-Headlines tragen eine
@@ -330,7 +330,7 @@ const letterpress = `0 1px 0 ${paper.hi}59`; // Deboss der Display-Headlines
 | Code | MIT | Repo |
 | Kanonische Glyph-Daten | Public Domain / CC0 | Open-Data-Paket (Roadmap) |
 | EB Garamond | SIL OFL 1.1 | `@fontsource`, `THIRD_PARTY_NOTICES.md` |
-| Playfair Display | SIL OFL 1.1 | `@fontsource`, `THIRD_PARTY_NOTICES.md`, Lizenztext unter `public/fonts/` |
+| Playfair Display | SIL OFL 1.1 | `@fontsource`, `THIRD_PARTY_NOTICES.md`, Lizenztext unter `app/public/fonts/` |
 | GL-GermanCursive | frei (Gutenberg-Labo) | `src/assets/fonts/`, `THIRD_PARTY_NOTICES.md` |
 
 ---
