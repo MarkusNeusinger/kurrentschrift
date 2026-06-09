@@ -51,6 +51,13 @@ export interface Lineature {
   marks: TextMark[];
 }
 
+// How many of the four guide lines are printed per row — the classic learning
+// progression: beginners get the full four-line system, practised writers the
+// double line (x-height band only), advanced writers just the baseline (the
+// plain ruling of period exercise books). Row metrics stay identical so
+// ascenders/descenders always have their room; only fewer lines are drawn.
+export type LineSystem = 'four' | 'two' | 'one';
+
 export interface LineatureConfig {
   // band ratio (ascender : x-height : descender)
   ratioAscender: number;
@@ -59,8 +66,12 @@ export interface LineatureConfig {
   xHeightMm: number; // physical height of the Mittelband (drives overall scale)
   rowGapMm: number; // blank gap between consecutive writing rows
   marginMm: number; // page margin on all four sides
+  lineSystem: LineSystem;
   showSlant: boolean;
-  slantDeg: number; // slant from vertical; 0 = upright, positive = leans right
+  // Slant as the traditional German Schräglage: the angle between downstroke
+  // and BASELINE — 90 = upright, Kurrent ~60-70. (The admin chart uses the
+  // same notation, e.g. Loth 1866 = 65.)
+  slantDeg: number;
   slantSpacingMm: number; // horizontal spacing between slant guides
   showPenAngle: boolean;
   penAngleDeg: number; // nib/pen-hold angle from the writing line (horizontal)
@@ -89,16 +100,20 @@ export const PRESETS: ScriptPreset[] = [
     ratioAscender: 2,
     ratioXHeight: 1,
     ratioDescender: 2,
-    xHeightMm: 5,
+    // 5/2.5/5 mm — the band sizes printed in a period Kurrent practice book
+    // (user-owned artifact), i.e. the 2:1:2 ratio at a 2.5 mm x-height.
+    xHeightMm: 2.5,
     rowGapMm: 6,
     marginMm: 15,
+    lineSystem: 'four',
     showSlant: true,
-    slantDeg: 30,
+    slantDeg: 65, // Schräglage 60-70; the Loth 1866 chart sits at 65
     slantSpacingMm: 10,
     // Pointed pen: stroke width comes from pressure (Schwellzug), not nib
-    // angle, so the pen-angle gauge is off by default here.
+    // angle, so the gauge is off by default; if enabled it shows the nib held
+    // in line with the downstroke (parallel to the Schräglage).
     showPenAngle: false,
-    penAngleDeg: 45,
+    penAngleDeg: 65,
     showMarginLine: false,
     marginLineXMm: 20,
   },
@@ -112,11 +127,12 @@ export const PRESETS: ScriptPreset[] = [
     xHeightMm: 6,
     rowGapMm: 6,
     marginMm: 15,
+    lineSystem: 'four',
     showSlant: false,
-    slantDeg: 0,
+    slantDeg: 90, // upright (Schräglage 90)
     slantSpacingMm: 10,
     showPenAngle: false,
-    penAngleDeg: 30,
+    penAngleDeg: 42, // Feder 40-45 to the writing line
     showMarginLine: false,
     marginLineXMm: 20,
   },
@@ -124,18 +140,20 @@ export const PRESETS: ScriptPreset[] = [
     id: 'offenbacher',
     label: de.worksheet.presets.offenbacher.label,
     note: de.worksheet.presets.offenbacher.note,
+    // Offenbacher (Koch): large middle band — 2:3:2, gently slanted.
     ratioAscender: 2,
-    ratioXHeight: 1,
+    ratioXHeight: 3,
     ratioDescender: 2,
     xHeightMm: 5,
     rowGapMm: 7,
     marginMm: 15,
+    lineSystem: 'four',
     showSlant: true,
-    slantDeg: 12,
+    slantDeg: 77, // Schräglage 75-80
     slantSpacingMm: 12,
     // Broad nib: the pen-hold angle defines the thick/thin distribution.
     showPenAngle: true,
-    penAngleDeg: 35,
+    penAngleDeg: 18, // Feder 15-20 to the writing line
     showMarginLine: false,
     marginLineXMm: 20,
   },
@@ -176,6 +194,24 @@ export const RULING_THEMES: RulingTheme[] = [
       pen: { color: '#1A1A17', widthMm: 0.35 },
       // The historical Randleiste was red even alongside black/grey print;
       // unused until showMarginLine is exposed in the UI.
+      margin: { color: schulheft.marginRed, widthMm: 0.4 },
+    },
+  },
+  {
+    // The ~1900 exercise-book print (Schulheft): printed ruling is documented
+    // from 1871, the red margin bar from ~1900 (Schulmuseum Ottweiler). Real
+    // exercise books ruled every writing line in the same printed blue; the
+    // baseline keeps a touch more weight and the ascender/descender bounds
+    // keep their dashes so the four-line system stays readable for learners.
+    // The pen gauge stays dark ink — it must survive mono printing.
+    id: 'schulheft',
+    styles: {
+      baseline: { color: schulheft.rulingBlue, widthMm: 0.3 },
+      waist: { color: schulheft.rulingBlue, widthMm: 0.2 },
+      ascender: { color: schulheft.rulingBlue, widthMm: 0.2, dash: [1.6, 1.6] },
+      descender: { color: schulheft.rulingBlue, widthMm: 0.2, dash: [1.6, 1.6] },
+      slant: { color: schulheft.rulingBlueFaded, widthMm: 0.15, dash: [1, 1.6] },
+      pen: { color: '#1A1A17', widthMm: 0.35 },
       margin: { color: schulheft.marginRed, widthMm: 0.4 },
     },
   },
@@ -297,7 +333,8 @@ export function buildLineature(cfg: LineatureConfig): Lineature {
 
   if (!(unit > 0) || !(rowH > 0) || right <= left || bottom <= top) return empty;
 
-  const tan = Math.tan((cfg.slantDeg * Math.PI) / 180);
+  // Schräglage (angle to the baseline) → horizontal shear from vertical.
+  const tan = Math.tan(((90 - cfg.slantDeg) * Math.PI) / 180);
 
   let rowTop = top;
   let rowGuard = 0;
@@ -308,10 +345,16 @@ export function buildLineature(cfg: LineatureConfig): Lineature {
     const yBase = yWaist + cfg.xHeightMm;
     const yDescBot = yBase + desc;
 
-    segs.push({ x1: left, y1: yAscTop, x2: right, y2: yAscTop, role: 'ascender' });
-    segs.push({ x1: left, y1: yWaist, x2: right, y2: yWaist, role: 'waist' });
+    // The learning progression draws fewer lines for practised writers; the
+    // row metrics stay identical so extenders keep their room.
+    if (cfg.lineSystem === 'four') {
+      segs.push({ x1: left, y1: yAscTop, x2: right, y2: yAscTop, role: 'ascender' });
+      segs.push({ x1: left, y1: yDescBot, x2: right, y2: yDescBot, role: 'descender' });
+    }
+    if (cfg.lineSystem !== 'one') {
+      segs.push({ x1: left, y1: yWaist, x2: right, y2: yWaist, role: 'waist' });
+    }
     segs.push({ x1: left, y1: yBase, x2: right, y2: yBase, role: 'baseline' });
-    segs.push({ x1: left, y1: yDescBot, x2: right, y2: yDescBot, role: 'descender' });
 
     if (cfg.showSlant && cfg.slantSpacingMm > 0) {
       // Slant guides span the full row height. Screen y grows downward, so the

@@ -13,7 +13,7 @@ import { Box, Container, Paper, Stack, Typography } from '@mui/material';
 
 import { PaperBackground } from '@/components/PaperBackground';
 import { PublicHeader } from '@/components/PublicHeader';
-import { PRESETS, buildLineature, type LineatureConfig } from '@/lib/lineatur';
+import { PRESETS, RULING_THEMES, buildLineature, type LineatureConfig } from '@/lib/lineatur';
 import { lineaturePdf } from '@/lib/pdf';
 import { de, fmt } from '@/locales';
 import { ConfigPanel } from '@/sections/worksheet/ConfigPanel';
@@ -54,6 +54,16 @@ export function WorksheetView() {
   const [cfg, setCfg] = useState<LineatureConfig>(() => stripPreset(PRESETS[0]));
   const [presetId, setPresetId] = useState<string>(PRESETS[0].id);
   const [caption, setCaption] = useState<string>(PRESETS[0].label);
+  // Ruling colour scheme: today's print look vs the ~1900 Schulheft print
+  // (blue lines, optional red Randleiste). Preview and PDF read the same map.
+  const [rulingThemeId, setRulingThemeIdRaw] = useState<string>(RULING_THEMES[0].id);
+  // Leaving the Schulheft theme also clears the Randleiste — its toggle only
+  // renders there, so a stuck-on margin line would otherwise be uncontrollable.
+  const setRulingThemeId = (id: string) => {
+    setRulingThemeIdRaw(id);
+    if (id !== 'schulheft') setCfg((c) => ({ ...c, showMarginLine: false }));
+  };
+  const rulingStyles = (RULING_THEMES.find((t) => t.id === rulingThemeId) ?? RULING_THEMES[0]).styles;
 
   // Manual edits drop the preset highlight (the config no longer "is" a preset).
   const set = (patch: Partial<LineatureConfig>) => {
@@ -73,7 +83,7 @@ export function WorksheetView() {
   const spec = buildSpec(cfg, caption);
 
   const download = () => {
-    const blob = lineaturePdf(segments, { footerLeft: spec, footerRight: SITE_URL, marks });
+    const blob = lineaturePdf(segments, { footerLeft: spec, footerRight: SITE_URL, marks, styles: rulingStyles });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -125,6 +135,8 @@ export function WorksheetView() {
             caption={caption}
             setCaption={setCaption}
             onDownload={download}
+            rulingThemeId={rulingThemeId}
+            setRulingThemeId={setRulingThemeId}
           />
 
           {/* Preview */}
@@ -141,7 +153,7 @@ export function WorksheetView() {
                 justifyContent: 'center',
               }}
             >
-              <PreviewSvg segments={segments} marks={marks} footerLeft={spec} footerRight={SITE_URL} />
+              <PreviewSvg segments={segments} marks={marks} footerLeft={spec} footerRight={SITE_URL} styles={rulingStyles} />
             </Paper>
           </Box>
         </Box>
