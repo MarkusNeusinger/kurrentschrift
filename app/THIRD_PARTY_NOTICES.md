@@ -50,7 +50,7 @@ self-hosted and redistributed under the permissive grant above, unmodified.
 - **Full license text:** [`public/fonts/PlayfairDisplay-OFL.txt`](public/fonts/PlayfairDisplay-OFL.txt),
   served in production at `/fonts/PlayfairDisplay-OFL.txt`.
 - **Packaged via:** [`@fontsource/playfair-display`](https://www.npmjs.com/package/@fontsource/playfair-display)
-  (weights 500, 500-italic, 600, 600-italic imported).
+  (weights `400`, `500`, `500-italic`, `600`, `600-italic` imported).
 
 The OFL permits self-hosting, embedding and redistribution (including commercial
 use); the font is unmodified.
