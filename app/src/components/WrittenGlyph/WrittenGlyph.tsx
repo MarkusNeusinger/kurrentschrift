@@ -21,7 +21,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { ApiError, getDiagnostic, type DiagnosticData } from '@/lib/api';
 import { de } from '@/locales';
-import { inkState } from '@/styles/paper';
+import { inkState, schulheft } from '@/styles/paper';
 
 // Reveal a dashed path (pathLength=1, dasharray=1): offset 1 hides it, 0 draws it.
 const reveal = keyframes`from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; }`;
@@ -36,8 +36,12 @@ const SETTLE_MS = 1800;
 // surfaces that deliberately opt out of the paper identity (style-guide §8) —
 // these are local rendering constants, not theme tokens.
 const SURFACE_BG = '#fff'; // neutral white crop ground (binding)
-const GUIDE_BASELINE = '#ddd'; // faint context baseline
-const GUIDE_MIDBAND = '#ebebeb'; // fainter dashed midband
+// Context guides in the faint exercise-book blue (schulheft tokens) so the
+// glyph sits on a whisper of period ruling, matching the fresh-ink narrative
+// of this surface; the midband stays the quieter of the two via opacity.
+const GUIDE_BASELINE = schulheft.rulingBlueFaded;
+const GUIDE_MIDBAND = schulheft.rulingBlueFaded;
+const GUIDE_MIDBAND_OPACITY = 0.55;
 
 // Diagnostics are a backend compute (skeleton extraction); cache per glyph_key so
 // replays and repeat questions don't refetch. `null` records a 404 (no ductus).
@@ -248,6 +252,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
           x2={minX + vbW}
           y2={-tpl.midband}
           stroke={GUIDE_MIDBAND}
+          strokeOpacity={GUIDE_MIDBAND_OPACITY}
           strokeWidth={0.012}
           strokeDasharray="0.08 0.06"
         />
