@@ -2,6 +2,8 @@
 // logic) lives in domain/glyphs.ts — this file only carries what the quiz
 // surface itself offers the learner.
 
+import { cropUrl } from '@/lib/api';
+
 // Scripts selectable in the quiz. Only Kurrent (the Loth 1866 source) has data
 // today; the others are shown disabled so the menu reflects the planned scope.
 export interface ScriptOption {
@@ -38,3 +40,9 @@ export const DIFFICULTIES: DifficultyOption[] = [
   { id: 'worn', label: 'Geübt', hint: 'flüssige Alltagshand', available: false },
   { id: 'messy', label: 'Krakelig', hint: 'unsaubere, schwer lesbare Hand', available: false },
 ];
+
+// Pick the crop for a question. Difficulty is threaded in already: once messier
+// handwriting sources land in the DB, this is the single place that branches on
+// it to pull a less-clean hand instead of the clean Loth plate. Today every
+// level resolves to the same Loth crop (rough levels are disabled in setup).
+export const questionCropUrl = (key: string, _difficulty: Difficulty): string => cropUrl(key);
