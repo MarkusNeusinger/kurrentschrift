@@ -150,8 +150,11 @@ export function useQuizEngine() {
   }, [pool, nextQuestion, clearAdvance]);
 
   const advance = useCallback(() => {
+    // Defensive: a manual advance cancels any pending auto-advance so the two
+    // can never stack into a double skip.
+    clearAdvance();
     nextQuestion(pool, current?.key);
-  }, [pool, current, nextQuestion]);
+  }, [pool, current, nextQuestion, clearAdvance]);
 
   // Advance after a short pause so the green "correct" state stays visible;
   // cancels any previous pending advance first.

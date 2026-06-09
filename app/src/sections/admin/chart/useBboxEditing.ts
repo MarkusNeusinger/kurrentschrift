@@ -13,6 +13,7 @@ import { useAdmin } from '@/context/AdminContext';
 import { applyHandle, editedBbox, hitHandle } from './bboxGeometry';
 import {
   GRIP_HIT,
+  MIN_BOX,
   NEW_BBOX_BASELINE_RATIO,
   NEW_BBOX_MIDBAND_RATIO,
   NEW_BBOX_N_ANCHORS,
@@ -137,7 +138,7 @@ export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseB
     const y0 = Math.min(drag.startY, drag.curY);
     const x1 = Math.max(drag.startX, drag.curX);
     const y1 = Math.max(drag.startY, drag.curY);
-    if (x1 - x0 < 6 || y1 - y0 < 6) {
+    if (x1 - x0 < MIN_BOX || y1 - y0 < MIN_BOX) {
       setDrag(null);
       return;
     }
