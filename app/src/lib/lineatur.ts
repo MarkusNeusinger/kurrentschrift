@@ -176,7 +176,7 @@ export const RULING_THEMES: RulingTheme[] = [
       pen: { color: '#1A1A17', widthMm: 0.35 },
       // The historical Randleiste was red even alongside black/grey print;
       // unused until showMarginLine is exposed in the UI.
-      margin: { color: schulheft.randleiste, widthMm: 0.4 },
+      margin: { color: schulheft.marginRed, widthMm: 0.4 },
     },
   },
 ];
