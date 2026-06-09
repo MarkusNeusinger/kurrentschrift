@@ -30,34 +30,38 @@ interface PaperBackgroundProps {
 export function PaperBackground({ children, minHeight = '100vh', sx }: PaperBackgroundProps) {
   return (
     <Box
-      sx={{
-        position: 'relative',
-        minHeight,
-        color: paper.ink,
-        bgcolor: paper.bg,
-        fontFamily: garamond,
-        backgroundImage: `radial-gradient(130% 90% at 50% -15%, ${paper.hi} 0%, ${paper.bg} 52%, ${paper.lo} 100%)`,
-        // grain + vignette as fixed, non-interactive overlays behind the content
-        '&::before': {
-          content: '""',
-          position: 'fixed',
-          inset: 0,
-          pointerEvents: 'none',
-          zIndex: 0,
-          backgroundImage: GRAIN,
-          mixBlendMode: 'multiply',
-          opacity: 0.5,
+      // Array form so every SxProps shape a caller might pass (object, array or
+      // theme callback) is flattened by MUI rather than dropped by object spread.
+      sx={[
+        {
+          position: 'relative',
+          minHeight,
+          color: paper.ink,
+          bgcolor: paper.bg,
+          fontFamily: garamond,
+          backgroundImage: `radial-gradient(130% 90% at 50% -15%, ${paper.hi} 0%, ${paper.bg} 52%, ${paper.lo} 100%)`,
+          // grain + vignette as fixed, non-interactive overlays behind the content
+          '&::before': {
+            content: '""',
+            position: 'fixed',
+            inset: 0,
+            pointerEvents: 'none',
+            zIndex: 0,
+            backgroundImage: GRAIN,
+            mixBlendMode: 'multiply',
+            opacity: 0.5,
+          },
+          '&::after': {
+            content: '""',
+            position: 'fixed',
+            inset: 0,
+            pointerEvents: 'none',
+            zIndex: 0,
+            boxShadow: 'inset 0 0 200px rgba(60,40,20,.26)',
+          },
         },
-        '&::after': {
-          content: '""',
-          position: 'fixed',
-          inset: 0,
-          pointerEvents: 'none',
-          zIndex: 0,
-          boxShadow: 'inset 0 0 200px rgba(60,40,20,.26)',
-        },
-        ...sx,
-      }}
+        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+      ]}
     >
       <GlobalStyles
         styles={{
