@@ -37,7 +37,7 @@ import {
   type TextMark,
 } from '../lib/lineatur';
 import { lineaturePdf } from '../lib/pdf';
-import { tokens } from '../theme';
+import { tokens } from '@/theme';
 import { PaperBackground } from '../components/PaperBackground';
 import { PublicHeader } from '../components/PublicHeader';
 
@@ -380,3 +380,6 @@ function PreviewSvg({
     </Box>
   );
 }
+
+// Default export for React.lazy route splitting (routes/sections).
+export default WorksheetPage;

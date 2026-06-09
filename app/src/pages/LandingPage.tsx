@@ -18,9 +18,10 @@ import { Link as RouterLink } from 'react-router-dom';
 import { Box, Container, Link, Stack, Typography } from '@mui/material';
 import { keyframes } from '@mui/system';
 
-import { PaperBackground } from '../components/PaperBackground';
-import { PublicHeader } from '../components/PublicHeader';
-import { display, garamond, paper, script } from '../styles/paper';
+import { PaperBackground } from '@/components/PaperBackground';
+import { PublicHeader } from '@/components/PublicHeader';
+import { paths } from '@/routes/paths';
+import { display, garamond, paper, script } from '@/styles/paper';
 
 // --- animations -----------------------------------------------------------
 const writeIn = keyframes`from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); }`;
@@ -48,13 +49,13 @@ const fi = (delay: number) => ({
 const tools = [
   {
     title: 'Lineatur-Vorlage',
-    to: '/schreiben',
+    to: paths.worksheet,
     cta: 'Übungsblatt erstellen →',
     desc: 'Hilfslinien für deutsche Schreibschrift auf A4 — Verhältnis frei wählbar, optional Schräglinien, als druckfertiges PDF.',
   },
   {
     title: 'Buchstaben-Quiz',
-    to: '/quiz',
+    to: paths.quiz,
     cta: 'Quiz starten →',
     desc: 'Lies echte Kurrent-Buchstaben aus historischer Vorlage; am Ende zeigt die Auswertung, was dir schwerfiel.',
   },
@@ -206,7 +207,7 @@ export function LandingPage() {
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', ...fu(0.46) }}>
               <Box
                 component={RouterLink}
-                to="/schreiben"
+                to={paths.worksheet}
                 sx={{
                   fontFamily: garamond,
                   fontSize: '1.06rem',
@@ -225,7 +226,7 @@ export function LandingPage() {
               </Box>
               <Box
                 component={RouterLink}
-                to="/quiz"
+                to={paths.quiz}
                 sx={{
                   fontFamily: garamond,
                   fontSize: '1.06rem',
@@ -500,3 +501,6 @@ export function LandingPage() {
     </PaperBackground>
   );
 }
+
+// Default export for React.lazy route splitting (routes/sections).
+export default LandingPage;

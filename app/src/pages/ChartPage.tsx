@@ -746,3 +746,6 @@ export function ChartPage() {
     </>
   );
 }
+
+// Default export for React.lazy route splitting (routes/sections).
+export default ChartPage;

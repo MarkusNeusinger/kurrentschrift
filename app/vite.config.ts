@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 
@@ -6,6 +7,10 @@ import react from '@vitejs/plugin-react-swc';
 // hits /api/... — production swaps the proxy for a real reverse proxy.
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    // Keep in sync with tsconfig.json "paths".
+    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+  },
   server: {
     port: 3000,
     host: true,

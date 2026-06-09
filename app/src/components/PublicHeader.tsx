@@ -16,14 +16,15 @@ import { Box, Link, Stack } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 
-import { display, paper } from '../styles/paper';
+import { paths } from '@/routes/paths';
+import { display, paper } from '@/styles/paper';
 
 const ADMIN_TAPS = 5;
 const TAP_WINDOW_MS = 800;
 
 const NAV = [
-  { label: 'Schreiben', to: '/schreiben' },
-  { label: 'Lesen', to: '/quiz' },
+  { label: 'Schreiben', to: paths.worksheet },
+  { label: 'Lesen', to: paths.quiz },
 ];
 
 interface PublicHeaderProps {
@@ -52,7 +53,7 @@ export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
     if (t.count >= ADMIN_TAPS) {
       t.count = 0;
       e.preventDefault();
-      navigate('/admin/chart');
+      navigate(paths.admin.chart);
     }
   };
 
@@ -85,7 +86,7 @@ export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
         {/* brand — dot + kurrentschrift + .ink (accent italic). 5 taps → admin. */}
         <Box
           component={RouterLink}
-          to="/"
+          to={paths.home}
           onClick={handleWordmark}
           sx={{
             display: 'inline-flex',

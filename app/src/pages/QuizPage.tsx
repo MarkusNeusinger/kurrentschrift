@@ -883,3 +883,6 @@ function ResultsPanel(p: ResultsProps) {
     </Paper>
   );
 }
+
+// Default export for React.lazy route splitting (routes/sections).
+export default QuizPage;
