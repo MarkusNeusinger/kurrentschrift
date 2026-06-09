@@ -38,8 +38,9 @@ import { cropUrl } from '@/lib/api';
 import { PaperBackground } from '../components/PaperBackground';
 import { PublicHeader } from '../components/PublicHeader';
 import { WrittenGlyph } from '../components/WrittenGlyph';
-import { DIFFICULTIES, knownGlyph, quizKeysFromLocked, SCRIPTS, type Difficulty, type KnownGlyph } from '../constants';
-import { useAdmin } from '../state';
+import { knownGlyph, quizKeysFromLocked, type KnownGlyph } from '@/domain/glyphs';
+import { DIFFICULTIES, SCRIPTS, type Difficulty } from '@/sections/quiz/quizTypes';
+import { useAdmin } from '@/context/AdminContext';
 
 const garamond = "'EB Garamond', Georgia, 'Times New Roman', serif";
 

@@ -1,7 +1,7 @@
 import { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
 
-import { AdminProvider } from '@/state';
+import { AdminProvider } from '@/context/AdminContext';
 import { paths } from '@/routes/paths';
 
 const LandingPage = lazy(() => import('@/pages/LandingPage'));

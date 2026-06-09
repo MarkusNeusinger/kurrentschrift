@@ -22,9 +22,9 @@ import {
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { glyphKeyFor, isLetterSplit, LETTERS, LETTER_BY_KEY, POSITION_LABEL, POSITIONS } from '../constants';
-import type { Letter, LetterGroup, Position } from '../constants';
-import { useAdmin } from '../state';
+import { glyphKeyFor, isLetterSplit, LETTERS, LETTER_BY_KEY, POSITION_LABEL, POSITIONS } from '@/domain/glyphs';
+import type { Letter, LetterGroup, Position } from '@/domain/glyphs';
+import { useAdmin } from '@/context/AdminContext';
 
 const GROUP_LABELS: Record<LetterGroup, string> = {
   lower: 'Kleinbuchstaben',

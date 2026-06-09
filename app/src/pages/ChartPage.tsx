@@ -37,8 +37,8 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { chartUrl, deleteBbox, deleteGlyph, putBbox } from '@/lib/api';
-import { isLetterSplit, knownGlyph, siblingKeys } from '../constants';
-import { useAdmin } from '../state';
+import { isLetterSplit, knownGlyph, siblingKeys } from '@/domain/glyphs';
+import { useAdmin } from '@/context/AdminContext';
 import type { BboxIn, BboxOut } from '@/lib/api';
 
 type Mode = 'pan' | 'bbox' | 'edit';

@@ -10,8 +10,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Alert, Box, Dialog, IconButton, Tab, Tabs, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-import { knownGlyph } from '../constants';
-import { useAdmin } from '../state';
+import { knownGlyph } from '@/domain/glyphs';
+import { useAdmin } from '@/context/AdminContext';
 import { DiagnosticView } from './DiagnosticView';
 import { FitView } from './FitView';
 

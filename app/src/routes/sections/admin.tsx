@@ -1,7 +1,7 @@
 import { lazy } from 'react';
 import { Navigate, type RouteObject } from 'react-router-dom';
 
-import { AdminProvider } from '@/state';
+import { AdminProvider } from '@/context/AdminContext';
 import { paths } from '@/routes/paths';
 
 // The layout is a named export; lazy() needs a default-shaped module.
