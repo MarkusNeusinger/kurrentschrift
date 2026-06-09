@@ -13,7 +13,8 @@ export const CONFIG = {
    * Local-dev write auth: in production the admin write endpoints are gated by
    * the Cloudflare Access cookie (forwarded by the CF Worker). For local dev
    * set VITE_ADMIN_TOKEN in app/.env (matching the API's ADMIN_TOKEN); it is
-   * sent as X-Admin-Token. Unset in prod builds → cookie-based auth only.
+   * sent as X-Admin-Token. Gated to dev builds so a token in the build env can
+   * never end up embedded in a production bundle.
    */
-  adminToken: import.meta.env.VITE_ADMIN_TOKEN as string | undefined,
+  adminToken: import.meta.env.DEV ? (import.meta.env.VITE_ADMIN_TOKEN as string | undefined) : undefined,
 } as const;
