@@ -239,33 +239,57 @@ Funktionsweise identisch.
 
 ### Existierend (im jetzigen `/app/`)
 
-- `App.tsx` — Top-Level mit MUI-Theme, Router-Setup.
-- `pages/ChartPage.tsx` — Bbox-Editor (`/admin/chart`); öffnet von der
-  Werkzeugleiste aus den Einrichtungs-Wizard und das Diagnose-Modal.
-- `components/wizard/SetupWizard.tsx` — schrittweises Modal: Ausschluss ·
-  Lineatur · Schräge · Weg (Stylus-Trace) · Übersicht. Einzige Autoren-Fläche.
-- `components/DiagnosticDialog.tsx` — großes Diagnose-Modal (3-Spalten-Diagnostic
-  + M4-Fit), per „Diagnose"-Knopf erreichbar.
-- `components/DiagnosticView.tsx` / `FitView.tsx` — Diagnostic- und Fit-Rendering.
-- `components/GlyphSidebar.tsx` — Liste der `KNOWN_GLYPHS`.
+Struktur seit dem Restructure (2026-06): `routes/` (Pfad-Konstanten +
+lazy Public/Admin-Sections) · `pages/` (dünne Route-Mounts) · `sections/`
+(Feature-Views mit Logik) · `components/` (wiederverwendbar) ·
+`layouts/admin/` · `theme/` (Farbwahrheit in `styles/paper.ts`) ·
+`lib/api/` (Fetch-Client mit Cold-Start-Retry + typisiertem `ApiError`,
+Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
+(Alphabet-Registry + Lock/Split-Helfer) · `context/AdminContext.tsx` ·
+`locales/de/` (alle deutschen UI-Strings als Pre-i18n-Namespaces) ·
+`hooks/`.
+
+- `routes/index.tsx` — Router-Assembly (Suspense-Fallback, errorElement);
+  `routes/paths.ts` ist die einzige Quelle der URLs.
+- `sections/landing/` — `LandingView` + `HeroSpecimen` (GLKurrent-Schreib-
+  Animation) + `Reveal` (Scroll-Reveal).
+- `sections/worksheet/` — `WorksheetView` + `ConfigPanel` + `PreviewSvg`
+  (Lineatur-Konfigurator, `/schreiben`).
+- `sections/quiz/` — `QuizView` + `useQuizEngine` (gesamte Quiz-Logik ohne
+  JSX) + Setup/Play/Results-Panels + `QuestionVisual`.
+- `sections/admin/chart/` — `ChartView` (Pointer-Routing) + `useChartViewport`
+  (Zoom/Pan/Pinch) + `useBboxEditing` (Bbox-Commits, Lock-Fan-out) +
+  `BboxOverlay`/`ChartToolbar` + pure `bboxGeometry`.
+- `sections/admin/setup-wizard/` — `SetupWizard` (Dialog-Shell) + `useWizard`
+  (State + Server-Mutationen) + `useCropView` (Crop-Viewport) + `WizardCanvas`
+  + `steps/{Mask,Lineatur,Slant,Trace,Overview}Step`. Einzige Autoren-Fläche.
+- `sections/admin/diagnostics/` — `DiagnosticDialog` (3-Spalten + M4-Fit),
+  `DiagnosticView`/`FitView`.
+- `sections/admin/sidebar/GlyphSidebar.tsx` — Buchstaben-Grid aus
+  `domain/glyphs.ts`.
+- `components/` — `PaperBackground` (Papier-Atmosphäre), `PublicHeader`,
+  `WrittenGlyph` (Ductus-Animation), `BootStatus` (Boot/Fehler-Screens).
 
 ### Neu (kommt mit Phasen P1–P5)
 
-- `pages/HomePage.tsx` — Landing.
-- `pages/LearnPage.tsx` — Einstieg.
-- `pages/AnimationPage.tsx` — Animierte Tafel (P1+).
-- `pages/WorksheetPage.tsx` — Lineatur-Konfigurator (P2).
-- `pages/RenderPage.tsx` — Text → Kurrent (P2).
-- `pages/HtrUploadPage.tsx` — Upload + Job-Polling (P1).
-- `pages/ReadingMagnifierPage.tsx` — Lese-Lupe (P1+).
-- `pages/StyleAnalysisPage.tsx` — Stil-Analyse-Upload (P3).
-- `pages/HandComparePage.tsx` — Heatmaps Side-by-Side (P4).
-- `pages/OpenDataPage.tsx` — Daten-Export-Seite (P5).
-- `components/GlyphAnimation.tsx` — abgespeckte MVP-Animation.
-- `components/KurrentRenderer.tsx` — Text → SVG-Render.
-- `components/LinearConfigurator.tsx` — Lineatur-Ratio-Wahl.
-- `components/HeatmapView.tsx` — D3.js-Heatmap-Komponente.
-- `components/IiifViewer.tsx` — Annotorious + OpenSeadragon wrapper.
+Bereits gebaut (siehe oben): Landing (`sections/landing/`),
+Lineatur-Konfigurator (`sections/worksheet/`, `/schreiben`),
+Buchstaben-Quiz (`sections/quiz/`). Neue Features kommen als je eine
+`sections/<feature>/`-View + dünner `pages/`-Mount + Eintrag in
+`routes/paths.ts`:
+
+- `sections/learn/` — Einstieg (P1+).
+- `sections/animation/` — Animierte Tafel (P1+).
+- `sections/render/` — Text → Kurrent (P2).
+- `sections/htr/` — Upload + Job-Polling (P1) und Lese-Lupe (P1+).
+- `sections/style-analysis/` — Stil-Analyse-Upload (P3).
+- `sections/hand-compare/` — Heatmaps Side-by-Side (P4).
+- `sections/open-data/` — Daten-Export-Seite (P5).
+- `components/GlyphAnimation` — abgespeckte MVP-Animation (heute schon
+  als `WrittenGlyph` im Quiz).
+- `components/KurrentRenderer` — Text → SVG-Render.
+- `components/HeatmapView` — D3.js-Heatmap-Komponente.
+- `components/IiifViewer` — Annotorious + OpenSeadragon wrapper.
 
 ---
 

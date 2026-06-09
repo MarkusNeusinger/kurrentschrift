@@ -153,9 +153,19 @@ kurrentschrift/
 │   └── routers/      # health, styles, hands, sources, chart, bboxes, templates
 ├── app/              # React 19 + Vite + MUI SPA (anyplot-style)
 │   └── src/
-│       ├── pages/    # ChartPage (bbox editor; opens the Einrichtungs-Wizard + Diagnose modals)
-│       ├── components/  # DiagnosticView/FitView (SVG), DiagnosticDialog (modal), GlyphSidebar, wizard/
-│       └── constants.ts # KNOWN_GLYPHS, Position type
+│       ├── routes/      # paths.ts route constants + lazy public/admin route sections
+│       ├── pages/       # thin default-export route mounts only
+│       ├── sections/    # feature views: landing/, worksheet/, quiz/ (useQuizEngine),
+│       │                #   admin/{chart,setup-wizard,diagnostics,sidebar} (hooks + panels)
+│       ├── components/  # reusable UI: PaperBackground, PublicHeader, WrittenGlyph, BootStatus
+│       ├── layouts/     # admin shell (AdminLayout + AdminModals)
+│       ├── theme/       # MUI theme split; colors sourced from styles/paper.ts (single source)
+│       ├── lib/api/     # fetch client (cold-start retry, typed ApiError), endpoints,
+│       │                #   wire types hand-synced with api/schemas.py
+│       ├── domain/      # glyphs.ts — alphabet/glyph-key registry + lock/split helpers
+│       ├── context/     # AdminContext (admin boot data + selection state)
+│       ├── locales/     # de/ namespaces — ALL German UI strings (pre-i18n layer)
+│       └── hooks/, styles/, global-config.ts
 ├── alembic/          # Postgres migrations
 │   └── versions/0004_library_schema.py
 ├── data/             # Sources, samples, derived — SEPARATE LICENSING
@@ -171,11 +181,12 @@ kurrentschrift/
 └── README.md         # public pitch (English)
 ```
 
-Today `/app/` is admin-only. **Post-MVP** it grows to host end-user routes
-(`/animation`, `/schreiben`, `/lese-hilfe`, `/lese-lupe/:job`,
-`/stil-analyse`, `/vergleich`, `/open-data`); admin routes move behind
-`/admin/*` with auth (Cloudflare Access or GCP IAP). See
-`docs/reference/frontend-stack.md`.
+`/app/` serves the public pages (`/` landing, `/schreiben` worksheet
+generator, `/quiz` letter quiz — paper-&-ink identity per
+`docs/concepts/style-guide.md`) and the admin behind `/admin/*`
+(Cloudflare Access in prod). **Post-MVP** the public side grows
+(`/animation`, `/lese-hilfe`, `/lese-lupe/:job`, `/stil-analyse`,
+`/vergleich`, `/open-data`). See `docs/reference/frontend-stack.md`.
 
 ---
 
