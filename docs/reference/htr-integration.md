@@ -22,6 +22,9 @@ Technische Spezifikation des Recognition-Stacks für Volltext aus Vision §5
 
 ### Modelle (Auswahl)
 
+*Stand: 2026-06 — Modellangebot und CER-Werte vor P1-Start neu
+verifizieren.*
+
 | Modell | Trainingsdaten | CER (publiziert) | Engine |
 |---|---|---|---|
 | **German Kurrent 17th–20th c.** | ~3 Mio. Wörter, gemischt | 5,4 % | PyLaia |
@@ -34,6 +37,9 @@ Modellwahl pro Source-Eigenschaft (Jahrhundert, Region) konfigurierbar.
 Default: `German Kurrent 17th–20th c.`.
 
 ### Kosten
+
+*Stand: 2026-06 — Vendor-Pricing ändert sich; vor P1-Start neu
+verifizieren.*
 
 - **Credit-Pack:** 250 Credits = **59,50 €** → 0,238 €/Credit.
 - UI: **1 Credit pro Seite Handschrift**.
@@ -146,9 +152,11 @@ mappen — bei Transkribus geht das nativ, bei TrOCR brauchen wir eine
 PAGE-XML-Konstruktion aus den Linien-Bounding-Boxes (Kraken liefert das)
 plus den TrOCR-Texten.
 
-Frontend konsumiert nur PAGE-XML (über Annotorious + `react-iiif-viewer`-
-ähnliche Komponente). Andere Formate (ALTO, TEI, Plaintext) werden
-on-demand aus PAGE-XML abgeleitet.
+Frontend konsumiert nur PAGE-XML — über **OpenSeadragon + Annotorious**
+(der `IiifViewer`-Wrapper, siehe
+[`architektur.md`](../concepts/architektur.md) §14 und
+[`frontend-stack.md`](frontend-stack.md) §7). Andere Formate (ALTO, TEI,
+Plaintext) werden on-demand aus PAGE-XML abgeleitet.
 
 ---
 
@@ -162,7 +170,7 @@ klickbare Annotorious-Annotations dargestellt. Bei Klick:
    Erkennung schicken (analysis-by-synthesis rückwärts —
    [`architektur.md`](../concepts/architektur.md) §14).
 3. Regel-Lookup aus
-   [`orthographie-regeln.md`](orthographie-regeln.md) (Daten-konsumierende
+   [`orthographie-regeln.md`](../schriftkunde/orthographie-regeln.md) (Daten-konsumierende
    Schicht): „warum sieht das so aus, wie es aussieht".
 
 ---

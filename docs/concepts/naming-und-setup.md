@@ -107,8 +107,8 @@ einen Open-Source-MCP-Server.
 | **Repo-Ort** | persönlicher GitHub-Account (Portfolio-Projekt, wie anyplot.ai) |
 | **Repo-Name** | `kurrentschrift` (Monorepo: Code + Website) |
 | **Struktur** | `/core` (Python: extractor, template, DB-Models + Repositories) · `/api` (FastAPI-Backend, dünn) · `/app` (React 19 + Vite SPA — Admin- *und* User-UI, Admin-Routen hinter Auth) · `/alembic` (Postgres-Migrationen) |
-| **Frontend-Stack** | anyplot-Stil: React 19 + Vite (SWC) + MUI 9 + React Router 7 + `react-helmet-async` (SEO) + `react-i18next` (DE/EN). Details in [`reference/frontend-stack.md`](../reference/frontend-stack.md) und [`architektur.md`](architektur.md) §16. |
-| **Hosting** | GCP / Cloud Run wie anyplot.ai — ein Container für FastAPI + Vite-Build, CI/CD via Cloud Build. Eigenes GCP-Projekt. |
+| **Frontend-Stack** | anyplot-Stil: React 19 + Vite (SWC) + MUI 9 + React Router 7; `react-helmet-async` (SEO) und `react-i18next` (DE/EN) sind post-MVP geplant, noch nicht eingebaut. Details in [`reference/frontend-stack.md`](../reference/frontend-stack.md) und [`architektur.md`](architektur.md) §16. |
+| **Hosting** | GCP / Cloud Run wie anyplot.ai — zwei Services (FastAPI-API + nginx-Static-App), CI/CD via Cloud Build mit getrennten Triggern; operative Wahrheit in `docs/notes/deploy-bootstrap-status.md`. Eigenes GCP-Projekt. |
 | **Lizenz** | MIT |
 | **README** | = Pitch, nicht Doku; Rohmaterial aus [`architektur.md`](architektur.md) |
 | **Erste Demo** | der MVP aus §8 (6-Buchstaben-Kern-Alphabet, sieben Wörter, vier Validierungs-Gates inkl. Render eines neuen Wortes aus aggregierten Stats und einer abgespeckten Animation) |

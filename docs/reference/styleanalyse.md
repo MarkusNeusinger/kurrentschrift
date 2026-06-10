@@ -12,11 +12,12 @@ Schrift analysieren, inkl. Hände-vergleichen-Pfad). Ergänzt
 ### Schicht 1 — Per-Instanz-Stats *(liegt vor)*
 
 Jede gefittete Glyph-Instanz hat statistische Größen direkt im
-DB-Schema (`glyphs.measurements` JSONB):
+DB-Schema (heute `templates.measurements` beim Canonical-Speichern;
+per Text-Vorkommen später `instances.measurements`, beides JSONB):
 
 | Feld | Bedeutung | Quelle |
 |---|---|---|
-| `slant_deg` | Schräglagen-Winkel der Hauptachse | `core/template.py:apply_slant` |
+| `slant_deg` | Schräglagen-Winkel der Hauptachse (zur Grundlinie, 90° = senkrecht) | `core/pipeline.py:_measurements` |
 | `mean_half_width_px` | mittlere halbe Strichbreite | `core/pipeline.py` |
 | `path_length_px` | Gesamtlänge des Strichs | `core/pipeline.py` |
 | `aspect_ratio` | Breite/Höhe-Verhältnis des Crops | `core/pipeline.py` |
@@ -31,7 +32,8 @@ DB-Schema (`glyphs.measurements` JSONB):
 
 ### Schicht 2 — Per-Hand-Aggregation
 
-Pro Source `s` und pro `(glyph, position, variant)`-Bucket:
+Pro **Hand** (ein Schreiber, ggf. über mehrere Sources) und pro
+`(glyph, position, variant)`-Bucket:
 
 - **Cluster-Mittelpunkt** der Kontrollpunkte (Median pro Punkt nach
   Ausreißer-Entfernung — §6 Stufe 1 in
@@ -47,9 +49,11 @@ beliebige neue Wörter dient (Multi-Stil-Konsequenz aus
 **M5(C) der MVP-Roadmap** liefert die erste Implementierung für die eigene
 Hand. Voller Ausbau zur P3-Phase.
 
-**Speicherung:** entweder als JSONB-Feld auf `sources` (kleiner Footprint)
-oder als separate `hand_stats`-Tabelle (besser bei vielen Sources). Detail
-bei P3-Implementierung.
+**Speicherung:** die Tabelle `aggregates` (Migration 0004,
+`core/database/models.py`), gekeyt pro `(hand, glyph, position, variant)`
+— die Hand ist die Aggregationseinheit, nicht die Source. Das Schema
+liegt bereits an; befüllt wird es durch den Post-MVP-Aggregationsjob
+(P3).
 
 ### Schicht 3 — Textunabhängige Writer-ID *(optional, post-P4)*
 
@@ -180,9 +184,10 @@ ist Übernahme-Aufwand), sondern als **konzeptionelle Vorlage**.
 
 ### Backend (Python)
 
-- **OpenCV** + **scikit-image** für Vorverarbeitung — `skeletonize`,
-  `medial_axis`, `distance_transform_edt` sind schon im Einsatz
-  (`core/extract.py`).
+- **PIL** + **scipy.ndimage** + **scikit-image** für Vorverarbeitung —
+  `skeletonize`, `threshold_local`, `distance_transform_edt` sind schon
+  im Einsatz (`core/extract.py`). OpenCV ist bewusst keine Dependency;
+  nur als Option, falls eine Vorverarbeitung es später erzwingt.
 - **NumPy** / **SciPy** für statistische Aggregation und Cluster-Analyse
   (Mahalanobis, MAD, KDE).
 - **scikit-learn** optional für Cluster-Diagnostik (Silhouette, GMM für

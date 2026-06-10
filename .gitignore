@@ -194,7 +194,12 @@ cython_debug/
 # Project data: never commit corpora bytes or NC-SA derivatives.
 # See docs/reference/datenablage.md §1 (three commit classes) and
 # docs/reference/quellen-und-rechte.md §7 (NC-SA vs MIT collision).
-/data/corpora/
+# Corpora: ignore the bytes but keep the promised metadata committable
+# (datenablage §1: "nur SOURCE.md + fetch_corpus.py werden committet").
+/data/corpora/**
+!/data/corpora/*/
+!/data/corpora/*/SOURCE.md
+!/data/corpora/*/fetch_*.py
 /data/derived/from-nc-sa/
 
 # Abstra

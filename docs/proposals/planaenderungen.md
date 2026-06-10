@@ -15,7 +15,7 @@ vorzeitig zu mutieren.
 
 Stand: Mai 2026. Anlass: Beobachtung des Nutzers, dass das Rund-s nicht
 nur am Wortende, sondern auch an Morphemgrenzen in Komposita auftritt
-(`Aus-flug`, `Haus-thür`); siehe [`orthographie-regeln.md`](../reference/orthographie-regeln.md)
+(`Aus-flug`, `Haus-thür`); siehe [`orthographie-regeln.md`](../schriftkunde/orthographie-regeln.md)
 §1.
 
 ---
@@ -29,7 +29,7 @@ Nachvollziehbarkeit aufgeführt; **nicht mehr offen**.
 Allograph-Form definiert — *wo Loth (oder eine vergleichbare Vorlage) diese
 Form auf der Tafel zeigt*. Die orthographische Frage „welche Vorlage gilt
 für einen konkreten Slot im Lauftext" liegt in
-[`orthographie-regeln.md`](../reference/orthographie-regeln.md) und wird
+[`orthographie-regeln.md`](../schriftkunde/orthographie-regeln.md) und wird
 von Vorschlag D (`core/orthography.py`) konsumiert.
 
 ---
@@ -157,7 +157,7 @@ Im Glyph-Statistik-Layer der dreistufigen Qualitätspipeline
 Statistik") zusätzlich die **Text-Positions-Verteilung** mitführen.
 Sichtbar im Editor und in Berichten — damit Abweichungen von der
 Lehrtafel-Annahme sofort erkennbar werden und in
-[`orthographie-regeln.md`](../reference/orthographie-regeln.md)
+[`orthographie-regeln.md`](../schriftkunde/orthographie-regeln.md)
 zurückfließen können.
 
 ### Verhältnis zu Vorschlag A
@@ -187,7 +187,7 @@ Voraus.
 Mappt einen Eingabetext (deutscher Text in moderner oder vor-1901-
 Schreibung) auf eine Sequenz von Glyph-Slots der Form
 `(glyph_key, allograph_role, segmentation_context)`. Konsumiert die
-Regeln aus [`orthographie-regeln.md`](../reference/orthographie-regeln.md)
+Regeln aus [`orthographie-regeln.md`](../schriftkunde/orthographie-regeln.md)
 als Daten.
 
 ### Skizzierte Signatur (nur als Diskussionsgrundlage)
@@ -214,7 +214,7 @@ jetzt**: ohne Aufrufer wäre die Schnittstelle geraten.
   gewählt), §3 (Schema), §4 (Übergänge), §6.1 (Statistik)
 - [`mvp-roadmap.md`](../concepts/mvp-roadmap.md) §MVP-Scope,
   §MVP-Validierungs-Gates
-- [`orthographie-regeln.md`](../reference/orthographie-regeln.md)
+- [`orthographie-regeln.md`](../schriftkunde/orthographie-regeln.md)
   (Quelle der Anlässe für die Vorschläge in dieser Datei)
 - [`CLAUDE.md`](../../CLAUDE.md) — „do not re-litigate decisions"-Regel
   begründet, warum Änderungen an settled docs den Umweg über diese Datei

@@ -6,14 +6,14 @@ Schema, Pfade — siehe [Sprachregelung](../reference/sprachregelung.md)).
 
 ---
 
-## Status (2026-05-21)
+## Status (2026-06-10)
 
 Die Implementierung läuft jetzt durchgängig über die Web-Admin-UI (`/app/`)
 gegen das FastAPI-Backend (`/api/`) und Postgres (`/core/database/` +
 `/alembic/`). Der frühere `/mvp/`-Ordner mit JSON-Files und Konsolenskripten
 (`trace_skeleton.py`, `inspect_crop.py`, `render_canonicals.py`) ist aufgelöst
 — alle Berechnungen passieren im Backend, alle Canonicals werden in der
-`glyphs`-Tabelle gespeichert. Die unten beschriebenen Meilensteine M0–M7
+`templates`-Tabelle gespeichert. Die unten beschriebenen Meilensteine M0–M7
 bleiben inhaltlich gültig (Scope, Glyphen, Wortset, vier Validierungs-Gates
 inkl. abgespeckter Animation in M7), nur das *wie* wechselt: ein neuer Trace
 startet als Stylus-Strich im Editor und endet als Row in der Datenbank, nicht
@@ -24,10 +24,12 @@ Endnutzer-Website mit ihren sieben Zielen in drei Clustern (Schreiben:
 Einstieg · Schreiben üben + Lineatur · animierte Buchstaben-Tafel;
 Lesen: Lesen üben · Lese-Hilfe via HTR inkl. Lese-Lupe; Forschung:
 Stil-Analyse inkl. Hände-Vergleich · offene Datensätze; plus
-Zweisprachig-Leitprinzip — siehe [`vision.md`](vision.md)) liegt fast
-komplett *nach* dem MVP. Frühe Parallel-Wins laut
-[`architektur.md`](architektur.md) §10: Lese-Hilfe (P1) und die
-Frontend-Infrastruktur (§16) parallel zur ersten Phase.
+Zweisprachig-Leitprinzip — siehe [`vision.md`](vision.md)) liegt im
+Schwerpunkt *nach* dem MVP. Erste Public-Seiten sind allerdings bereits
+auf kurrentschrift.ink live: die Landing, das Buchstaben-Quiz (`/quiz`)
+und der Lineatur-Übungsblatt-Generator (`/schreiben`). Frühe
+Parallel-Wins laut [`architektur.md`](architektur.md) §10: Lese-Hilfe
+(P1) und die Frontend-Infrastruktur (§16) parallel zur ersten Phase.
 
 ## Context
 
@@ -55,7 +57,7 @@ Abschlusskriterium.
 - **Keine Ligaturen** im MVP — die Ligatur-Mechanik aus §4 kommt mit
   dem Rest-Alphabet danach.
 - **Großbuchstaben** explizit ausgeklammert — eigene Allograph-Klasse
-  mit anderem Ductus.
+  mit anderem Duktus.
 
 ### MVP-Alphabet (6 lowercase Buchstaben + Allograph-Split = 7 Glyphen)
 
@@ -172,7 +174,7 @@ geprüft, bevor sie auf eigene Hand zuschlägt.)
 interaktive Canonical-Erzeugung. Maus zieht eine grobe Bbox direkt auf
 `chart.jpg`; ein Schritt-für-Schritt-**Einrichtungs-Wizard** (Ausschluss/
 Freihand-Radierer → Lineatur → Schräge → Weg → Übersicht/Approve→Schloss)
-setzt baseline/midband (Grund-/Mittellinie), Schräge und den Ductus-Pfad
+setzt baseline/midband (Grund-/Mittellinie), Schräge und den Duktus-Pfad
 (Stylus/S-Pen auf einem Samsung-Tablet). Backend persistiert die kanonischen
 Grundvorlagen als Rows in der `templates`-Tabelle (`anchors`/`half_widths`/
 `raw_path` als JSONB, Schlüssel `(style, glyph, position, variant)`);
@@ -191,20 +193,23 @@ Allograph-Erweiterungen und (mit minimaler Erweiterung) das M1
 own-hand-Schreiben profitieren davon.
 
 **Architektur:** spiegelt anyplot (`~/projects/anyplot/`) — `/api/`
-FastAPI mit Routern pro Resource (`health`, `sources`, `chart`,
-`bboxes`, `glyphs`), `/app/` React + Vite + TypeScript, lokal über zwei
-Terminals (`uvicorn` :8000, `npm run dev` :3000 mit `/api`-Proxy).
-Dockerfiles und `cloudbuild.yaml` werden als Platzhalter angelegt für
-spätere Cloud-Run-Migration; in v1 nicht ausgeführt.
+FastAPI mit Routern pro Resource (`health`, `styles`, `hands`,
+`sources`, `chart`, `bboxes`, `templates`), `/app/` React + Vite +
+TypeScript, lokal über zwei Terminals (`uvicorn` :8000, `npm run dev`
+:3000 mit `/api`-Proxy). Dockerfiles und `cloudbuild.yaml` existieren
+pro Service und sind produktiv: beide Services laufen seit 2026-05 auf
+Cloud Run hinter kurrentschrift.ink, deployed über Cloud-Build-Trigger
+(siehe [`deploy-bootstrap-status.md`](../notes/deploy-bootstrap-status.md)).
 
 **Schwellzug:** Die `half_widths` kommen weiterhin aus dem M0
 Distance-Transform der Loth-Tinte — die geometrische Wahrheit kommt
 vom Bild, nicht vom Tablet. `event.pressure` wird parallel aufgezeichnet
-und unter `_trace.pen_pressure_raw` gespeichert (für M1
-Own-Hand-Modus, wo es die primäre Schwellzug-Quelle wird).
+und als per-Punkt-Feld `pressure` im gespeicherten `raw_path`
+(`templates.raw_path`) abgelegt (für M1 Own-Hand-Modus, wo es die
+primäre Schwellzug-Quelle wird).
 
 **Fertig wenn:** Alle 11 MVP-Canonicals (Phase A + B) sind über die
-Web-UI traced und als `glyphs`-Rows persistiert, der
+Web-UI traced und als `templates`-Rows persistiert, der
 3-Spalten-SVG-Diagnostic-View (`/diagnostic`) zeigt sie korrekt im
 Side-by-Side mit dem Loth-Crop.
 
@@ -275,7 +280,9 @@ wie §6 Stufe 1 (robuste Statistik), nur eine Stufe früher beim Croppen.
 **Wo:** `/data/samples/own-hand/segmented/` mit Schema
 `<wort>-<runde>_pos<n>-<position>-<glyph>.png`, z. B.
 `lesen-03_pos03-medial-langs.png`. Index in `instances.json`: pro Crop
-`{file, glyph, position, source_word, source_image, neighbors: [prev, next]}`.
+`{file, glyph, position, source_word, source_image, neighbors: [prev, next]}`
+(heute: eine Row pro Crop in der `instances`-Tabelle statt eines
+JSON-Index unter `/mvp/`).
 
 **Skript:** `mvp/segment.py` (interaktives Croppen via matplotlib oder
 rein manuell mit GIMP — bei dieser Menge lohnt sich ein simpler
@@ -287,11 +294,11 @@ Skelettbruch; `instances.json` validiert.
 
 ---
 
-### M3 — Canonical-Ductus-Templates (11 Templates, handmodelliert)
+### M3 — Canonical-Duktus-Templates (11 Templates, handmodelliert)
 
 **Was:** `canonical`-Einträge nach Schema [`architektur.md`](architektur.md)
 §3 — handmodelliert, nicht aus Loth abgelesen. Loth-SVG nur geometrische
-Referenz; der **Ductus** ist eigene Autorenleistung (§2 / Quellen-Policy §6).
+Referenz; der **Duktus** ist eigene Autorenleistung (§2 / Quellen-Policy §6).
 
 **Scope v0 (fix, genau die im Wortset vorkommenden `(glyph, position)`-
 Kombinationen):**
@@ -312,7 +319,7 @@ Kombinationen):**
 
 **= 11 Templates.** Keine Ligatur in v0.
 
-**Arbeitsteilung Ductus-Modellierung:**
+**Arbeitsteilung Duktus-Modellierung:**
 
 1. **Phase A — §9-Kernglyphen** (medial ſ, finales s, medial e):
    penibel modellieren, das sind die MVP-Gate-Tragenden.
@@ -339,13 +346,14 @@ deckt sich grob mit den entsprechenden Glyphen auf der Loth-Tafel;
 
 **Status:** Die Fit-Routine ist in `core/fit.py` implementiert
 (`fit_template_to_instance` low-level über Arrays, `fit_glyph_to_crop`
-high-level über eine `glyphs`-Row + Bbox — analog zu
+high-level über eine `templates`-Row + Bbox — analog zu
 `diagnostic_for_glyph`). Tests in `tests/test_fit.py` (synthetischer
 Balken: Identitäts-Refit, Rückzug einer verschobenen Vorlage,
-Regularisierungs-Effekt, Library-Entry-Schema). Offen bleibt die
-Validierung an echten Eigenhand-Instanzen (hängt an M1/M2) und ein
-Frontend-Overlay (Crop · Canonical grau · Fit rot) aus den von
-`fit_glyph_to_crop` gelieferten `*_polyline_px`-Feldern.
+Regularisierungs-Effekt, Library-Entry-Schema). Das Frontend-Overlay
+(Crop · Canonical grau · Fit rot) existiert als Fit-Tab im
+`DiagnosticDialog` (`FitView`, gespeist aus dem `/fit`-Endpoint und den
+`*_polyline_px`-Feldern). Offen bleibt nur die Validierung an echten
+Eigenhand-Instanzen (hängt an M1/M2).
 
 **Was:** Gegeben ein Canonical-Template + Skelett +
 Distanztransformation einer Instanz: optimiere Template-Kontrollpunkte,
@@ -369,8 +377,8 @@ Original + Canonical (grau) + Fit (rot). Fit folgt sichtbar dem
 Skelett, sprengt aber nicht die Topologie (keine Schleife öffnet sich,
 keine Kreuzung dreht). `fit_glyph_to_crop` liefert die dafür nötigen
 crop-lokalen Polylines (`skeleton_polyline_px`, `canonical_polyline_px`,
-`fitted_polyline_px`); das SVG-Overlay im Editor ist der nächste Schritt
-(analog `DiagnosticView`).
+`fitted_polyline_px`); das SVG-Overlay darüber ist als `FitView` im
+`DiagnosticDialog` umgesetzt (analog `DiagnosticView`).
 
 ---
 
@@ -404,10 +412,12 @@ Gate 3.
    Abweichungs-Hüllkurve** (MAD oder Kovarianzmatrix). Das ergibt die
    „personal canonical" für *diese* Hand — eine Instanz pro Template,
    die direkt für M6 verwendbar ist, um beliebige Wörter zu rendern.
-   Speichern unter `/mvp/personal/<glyph>_<position>_aggregated.json`.
+   Speichern unter `/mvp/personal/<glyph>_<position>_aggregated.json`
+   (heute: eine Row pro Bucket in der `aggregates`-Tabelle).
 
 **Wo:** `mvp/stats.py` + `mvp/aggregate.py` + `mvp/out/stats-report.md`
-mit Plots und numerischen Ergebnissen.
+mit Plots und numerischen Ergebnissen (heute: Rows in der
+`aggregates`-Tabelle statt JSON unter `/mvp/`).
 
 **Fertig wenn:** (A) liefert klare Aussage zu beiden Gates. (B)
 markiert Buckets. (C) erzeugt pro Template eine aggregierte
@@ -435,7 +445,8 @@ Kopplungshöhe) die Verbindungslinie zum Folgebuchstaben generieren (§4
 
 **Wo:** `mvp/transition.py` + `mvp/render.py` + `mvp/out/<wort>-rendered.png`
 (eines pro Wort des Sets + `denen-generalized.png`, Side-by-Side zur
-Vorlage bzw. zu einem hand-geschriebenen Vergleichswort).
+Vorlage bzw. zu einem hand-geschriebenen Vergleichswort; heute: Input
+sind `templates`-/`aggregates`-Rows statt JSON unter `/mvp/`).
 
 **Fertig wenn:** MVP-Gate 3 erfüllt — die §9-Pflicht-Anker sehen
 kontinuierlich aus (kein Sprung, kein doppelter Strich an der Naht),
@@ -454,26 +465,30 @@ für die Stroke-Sequenz. Keine Schwellzug-Animation (kommt post-MVP
 zusammen mit dem Canvas-2D-Stroker, siehe
 [`architektur.md`](architektur.md) §11).
 
-**Wo:** Frontend-Komponente, eingebettet in den Editor (`/app/`) als
-„Animation"-Tab im EditorPage. Render-Daten kommen aus
-`GET /sources/{source_id}/glyphs/{glyph_key}/diagnostic` —
-**`anchors_px`** (die geordnete Ductus-Sequenz im Crop-Pixelraum) ist
-die Polyline-Quelle. **Nicht** `skeleton_polyline_px`: das Feld trägt
-die unsortierten Skelett-Pixel aus `np.where(skel)` und ergibt als
-SVG-Pfad nur eine Pixelwolke (siehe
+**Wo:** als wiederverwendbare `WrittenGlyph`-Komponente (`/app/`),
+eingebettet im Quiz-Prompt; die Admin-Diagnose lebt im
+`DiagnosticDialog` (die frühere EditorPage ist aufgelöst). Render-Daten
+kommen aus `GET /sources/{source_id}/templates/{glyph_key}/diagnostic`
+— **`centerlines_template`** (die geordneten Duktus-Polylines, eine pro
+Pen-Stroke) plus die gefüllten `outline_polygons` sind die Quelle.
+**Nicht** `skeleton_polyline_px`: das Feld trägt die unsortierten
+Skelett-Pixel aus `np.where(skel)` und ergibt als SVG-Pfad nur eine
+Pixelwolke (siehe
 [`reference/animation-rendering.md`](../reference/animation-rendering.md)).
 
-**Skizze:** Eine React-Komponente, die `anchors_px` aus dem
-Diagnostic-Endpoint nimmt, einen SVG-`<path>` (`M ax0 ay0 L ax1 ay1 …`)
-baut, dessen `stroke-dasharray` = Pfadlänge und `stroke-dashoffset` von
-Pfadlänge auf 0 animiert wird. Play-/Pause-/Replay-Buttons;
-Geschwindigkeit einstellbar (200 ms bis 2000 ms pro Stroke). WAAPI über
-`element.animate(...)`.
+**Skizze:** `WrittenGlyph` zeichnet pro Pen-Stroke die gefüllte
+Silhouette aus `outline_polygons` und deckt sie mit einer Maske auf:
+einem breit gestrokten Pfad entlang der jeweiligen
+`centerlines_template`-Polyline, dessen `stroke-dashoffset` von
+Pfadlänge auf 0 animiert wird — die Tinte erscheint entlang des echten
+Schreibwegs, mit echter Lücke beim Absetzen (jeder Stroke hat eigenes
+Polygon + eigene Centerline). Stroke-Dauern proportional zur Pfadlänge,
+Replay per Remount.
 
 **Fertig wenn:** Eines der MVP-Glyphen (vorzugsweise eine
-Pflicht-Anker-Glyph: medial ſ, finales s oder medial e) spielt ab — Klick
-auf einen Play-Button startet die Animation, der Strich entsteht in
-sichtbarer Reihenfolge. Demo-Wirkung steht; voller Schwellzug-Aufbau ist
+Pflicht-Anker-Glyph: medial ſ, finales s oder medial e) spielt ab — die
+Animation startet beim Einblenden, der Strich entsteht in sichtbarer
+Reihenfolge. Demo-Wirkung steht; voller Schwellzug-Aufbau ist
 ausdrücklich nicht im Scope.
 
 **Abhängigkeiten:** M3 Phase A (Templates für mindestens eine
@@ -486,21 +501,26 @@ ein gamifizierter Lese-Lern-Modus eine kleine Frontend-Erweiterung auf
 denselben Primitiven (siehe [`vision.md`](vision.md) Feature 4):
 ein animiert geschriebener Buchstabe wird abgespielt, die Lernende rät
 ihn, eine falsche Antwort zeigt die Regel-Erklärung
-([`orthographie-regeln.md`](../reference/orthographie-regeln.md)).
+([`orthographie-regeln.md`](../schriftkunde/orthographie-regeln.md)).
 Ausbaustufe mit ganzen Wörtern (z. B. den MVP-Wörtern `lesen`, `das`).
 Bewusst **außerhalb der vier Validierungs-Gates** — er validiert den
 Render-Kern nicht, sondern verwertet ihn; er ist hier notiert, damit der
 naheliegende Demo-/Nutzwert-Schritt direkt nach Gate 4 nicht verloren
 geht. Voller Ausbau liegt in der Post-MVP-Phase P1 (Lese-Cluster).
 
-**Status:** Eine bewusst einfache *erste Scheibe* steht bereits unter
-`/quiz` (öffentlich, kein Auth): Sie zeigt nicht den animierten Ductus,
-sondern den **Crop direkt aus der Vorlage** und lässt den lateinischen
-Buchstaben raten (Tippen oder Multiple-Choice; Klein/Groß/Gemischt). Sie
-zieht ihren Vorrat aus den markierten Bboxes — jeder neu auf dem Blatt
+**Status:** Das Quiz unter `/quiz` (öffentlich, kein Auth) spielt
+inzwischen bevorzugt den **animierten Duktus** ab: `WrittenGlyph`
+schreibt die Glyphe Stroke für Stroke wie oben skizziert; der **Crop
+direkt aus der Vorlage** ist nur noch der Fallback, wenn kein Canonical
+existiert (bzw. der Abruf 404 liefert). Geraten wird der lateinische
+Buchstabe (Tippen oder Multiple-Choice; Klein/Groß/Gemischt); der
+Vorrat kommt aus den markierten Bboxes — jeder neu auf dem Blatt
 markierte Buchstabe wird sofort quizfähig (das markierbare Set ist dafür
-auf das volle Alphabet inkl. Versalien erweitert). Animierter Ductus,
-Regel-Erklärung bei Fehlern und ganze Wörter bleiben der P1-Ausbau.
+auf das volle Alphabet inkl. Versalien erweitert). Die Gate-4-Mechanik
+(Abspielen in korrekter Schreibreihenfolge entlang der Centerline)
+existiert damit in der App; ob Gate 4 damit als erfüllt gilt, ist noch
+nicht entschieden. Regel-Erklärung bei Fehlern und ganze Wörter bleiben
+der P1-Ausbau.
 
 ---
 
@@ -533,15 +553,16 @@ M4/M5 starten, weil es nur die Centerline-Visualisierung braucht.
 - [`data/sources/loth-1866/chart.jpg`](../../data/sources/loth-1866/chart.jpg),
   [`chart.svg`](../../data/sources/loth-1866/chart.svg) — geometrische
   Referenz für M0 und M3.
-- [`pyproject.toml`](../../pyproject.toml) — `dependencies = []`; M0
-  ergänzt.
 
 **Wird angelegt:**
 
-- `/mvp/` — gesamter MVP-Code.
 - `/data/samples/own-hand/` — laut
   [`datenablage.md`](../reference/datenablage.md) §1 vorgesehene Lage;
   `SOURCE.md` pro Unterordner Pflicht.
+
+(Der ursprünglich hier vorgesehene `/mvp/`-Ordner ist überholt — der
+Code lebt in `/core` + `/api` + `/app`, die Canonicals als Rows in der
+`templates`-Tabelle; siehe „Status" oben.)
 
 **Schema-Referenz (1:1 abbilden, nicht neu erfinden):**
 
@@ -564,7 +585,7 @@ M4/M5 starten, weil es nur die Centerline-Visualisierung braucht.
 | M5(B) | Welche Glyphen M6-tauglich | Bucket-Report |
 | M5(C) | Personal-Canonical pro Template aggregiert | `mvp/personal/`-Inhalt + Render |
 | M6 | MVP-Gate 3: Pflicht-Anker kontinuierlich, Mehrheit der 7 Wörter erkennbar, `denen` aus Stats plausibel | Side-by-Side-PNGs |
-| M7 | MVP-Gate 4: ein MVP-Glyph spielt mit korrekter Schreibreihenfolge ab | Demo im Editor (Play-Button → Centerline-Animation) |
+| M7 | MVP-Gate 4: ein MVP-Glyph spielt mit korrekter Schreibreihenfolge ab | Demo in der App (`WrittenGlyph` → Centerline-Animation) |
 
 **MVP-Gesamtverifikation:** alle vier MVP-Gates erfüllt (Stabilität,
 Allograph-Trennung, Wort-Rendering inkl. Generalisierung, Animation
@@ -574,7 +595,7 @@ abgespeckt).
 
 ## Was diese Roadmap explizit aufschiebt
 
-- **Großbuchstaben** — eigene Allograph-Klasse mit anderem Ductus.
+- **Großbuchstaben** — eigene Allograph-Klasse mit anderem Duktus.
 - **Alle Ligaturen** des closed set (ch, ck, tz, ſt, qu, ß) — kommen
   mit dem Rest-Alphabet, sobald die nötigen Buchstaben dazukommen.
 - **Restliche Kleinbuchstaben** (b, c, f, g, h, i, j, k, m, o, p, q,
@@ -582,11 +603,13 @@ abgespeckt).
   MVP.
 - **ſ in initial-Position** — kein Wort des 6-Buchstaben-Sets startet
   mit ſ. Kommt automatisch mit dem Rest-Alphabet (`ſie`, `ſehen`, …).
-- **[architektur.md](architektur.md) §10-Schritte 2–7:** Extraktions-
-  Tool als Produktivsystem, formale Bibliothek unter `/core/library/`,
-  Verbindungs-Engine als Modul, dreistufige Qualitätspipeline
-  vollständig (M5 ist nur Stufe 1, ohne Closed-Loop/Handkuratierung),
-  Lese-Feature, Übe-Schleife.
+- **[architektur.md](architektur.md) §10-Phasen P1–P5:** alles nach dem
+  validierten MVP — Lese-Feature/HTR (P1), Übe-Schleife mit Lineatur &
+  Print (P2), Stil-Analyse (P3), Hände-Vergleich (P4), Open-Data-Export
+  (P5); dazu querschnittlich das Extraktions-Tool als Produktivsystem,
+  die formale Bibliothek unter `/core/library/`, die Verbindungs-Engine
+  als Modul und die dreistufige Qualitätspipeline vollständig (M5 ist
+  nur Stufe 1, ohne Closed-Loop/Handkuratierung).
 - **Korpus-Statistik** aus Zenodo — erst nach eigener Hand
   ([`datenablage.md`](../reference/datenablage.md) §4).
 - **Multi-Hand / Multi-Stil** — nach MVP, wenn der Varianten-
