@@ -117,5 +117,18 @@ gemessenen Wert als `sources.slant_deg`-Override (Architektur §3).
 - **Loth 1866** (`v0-loth-1866`) ist die kanonische Geometrie-Baseline
   (PD, [datenablage.md](../reference/datenablage.md) §4); der
   Duktus-Prior ist eigene Autorenleistung darüber.
-- Offen: eine zweite, gemeinfreie Referenztafel der **Kurrent um 1900**
-  (Schräglage 60–70°) als Ergänzung zur flacheren Loth-Tafel.
+- Stand der Suche nach einer gemeinfreien **60–70°-Tafel** (2026-06-10):
+  ergebnislos — alle messbaren PD-Tafeln 1866–1903 liegen bei ~45–58°
+  (steilster Anker: `petzendorfer-1889`, ~57°). Petzendorfers
+  „Schriftenatlas, Neue Folge" (1903–05) wurde am TIB-Volldigitalisat
+  komplett geprüft und **enthält keine Kurrent-Tafel** (die
+  Schreibschrift-Tafeln 53–63 sind durchweg lateinische Schriften;
+  [TIB/Goobi, PDM 1.0](https://goobi.tib.eu/viewer/image/1048764478/1/),
+  [DOI 10.14463/GBV:1048764478](https://doi.org/10.14463/GBV:1048764478)).
+  Moderne 60–70°-Belege existieren nur als CC-BY-SA
+  (Commons-Übungsblätter 2018, als Quelle wegen SA nicht committbar) —
+  deren **PD-Linienblätter** messen übrigens 64,9° Schräglinien.
+  Kandidat für historische Tiefe statt Steilheit: Tafel 2 des 1889er
+  Atlas, „Alte deutsche Kurrentschrift und Kanzleischrift nach
+  Baurenfeind, Nürnberg 1716"
+  ([SLUB, PDM](https://digital.slub-dresden.de/werkansicht/dlf/764888/17)).
