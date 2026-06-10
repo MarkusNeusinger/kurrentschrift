@@ -58,11 +58,12 @@ Library-Eintrag ([architektur.md §4](../concepts/architektur.md)).
   ([skaldic project](https://skaldic.org/m.php?p=doc&i=965)).
 - **Freie Kurrent-Fonts:** Peter Wiegel bietet mehrere Kurrent-Fonts mit
   ſ/s und Ligaturen an (18th Century Kurrent, Greifswalder Deutsche
-  Schrift u. a.); die Originalseite deklariert pauschal „Freeware",
-  die OFL-Angabe stammt nur von Aggregatoren — **vor einer Einbindung
-  Lizenz im Einzelfall klären**
-  ([peter-wiegel.de](https://www.peter-wiegel.de/Fonts/index.html);
-  Aggregator-Angabe: [1001fonts](https://www.1001fonts.com/wiegel-kurrent-font.html)).
+  Schrift u. a.). Für **18th Century Kurrent** ist die **SIL OFL 1.1 im
+  Original-Download verifiziert** (das Zip von peter-wiegel.de enthält
+  „Open Font License.txt", © 2009 Peter Wiegel; geprüft 2026-06-10) —
+  die Indexseite sagt nur pauschal „Freeware", daher bei den übrigen
+  Wiegel-Fonts die Lizenz weiterhin je Download prüfen
+  ([peter-wiegel.de](https://www.peter-wiegel.de/Fonts/index.html)).
   Das im Repo gebündelte GL-GermanCursive ist separat geregelt
   ([style-guide.md](../concepts/style-guide.md),
   `app/THIRD_PARTY_NOTICES.md`).
