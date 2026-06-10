@@ -418,6 +418,16 @@ pipelines for plot specifications). For now:
   optional (`docs:`, `feat:`, `fix:`, `refactor:`).
 - **Pre-commit hooks:** none configured yet — when added, do not bypass
   with `--no-verify`.
+- **Verification before a PR:** run the local CI equivalents first —
+  `uv run --extra test pytest`, `uv run --extra dev ruff check .`,
+  `uv run --extra dev ruff format --check .`, plus `npm run build` in
+  `app/` when the frontend changed. The pipeline should never fail on
+  tests or lint. (Claude Code sessions encode these loops as skills
+  under `.claude/skills/` — verify-frontend / verify-api / verify-core,
+  write-docs, audit-licenses, open-pr.)
+- **Never merge a PR yourself** — open it, get it green and
+  review-clean (address Copilot review comments, then resolve the
+  threads); merging is the maintainer's call.
 
 ---
 
