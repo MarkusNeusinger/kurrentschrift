@@ -5,6 +5,7 @@ import AddIcon from '@mui/icons-material/Add';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import { Box, Button, Chip, IconButton, Stack, TextField, Typography } from '@mui/material';
+import { useState } from 'react';
 
 import { de } from '@/locales';
 import type { GuideConfig } from '@/lib/api';
@@ -22,6 +23,11 @@ export function SlantStep({
   addSlantLine: () => void;
   removeSlantLine: (i: number) => void;
 }) {
+  // While the field is being edited the raw text lives here, so it can be
+  // cleared and retyped; valid values still commit per keystroke (live preview
+  // of the slant lines), and blur snaps back to the committed angle.
+  const [angleDraft, setAngleDraft] = useState<string | null>(null);
+
   return (
     <Stack spacing={1.5}>
       <Typography variant="subtitle2">{de.wizard.slant.title}</Typography>
@@ -32,11 +38,12 @@ export function SlantStep({
         {de.wizard.slant.body2BeforeBold} <b>{de.wizard.slant.body2Bold}</b> {de.wizard.slant.body2AfterBold}
       </Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <TextField label={de.wizard.slant.angleLabel} type="number" size="small" value={Math.round(guideVals.slantDeg)} onChange={(e) => {
-            // Guard NaN (cleared field) — it would serialize to null and corrupt the guides.
-            const v = Number(e.target.value);
-            if (Number.isFinite(v)) updateGuides({ slant_deg: v });
-          }} slotProps={{ input: { sx: { color: SLANT_COLOR, fontFamily: 'monospace' }, endAdornment: '°' } }} sx={{ flex: 1 }} />
+        <TextField label={de.wizard.slant.angleLabel} type="number" size="small" value={angleDraft ?? Math.round(guideVals.slantDeg)} onChange={(e) => {
+            const raw = e.target.value;
+            setAngleDraft(raw);
+            const v = Number(raw);
+            if (raw !== '' && Number.isFinite(v)) void updateGuides({ slant_deg: v });
+          }} onBlur={() => setAngleDraft(null)} slotProps={{ input: { sx: { color: SLANT_COLOR, fontFamily: 'monospace' }, endAdornment: '°' } }} sx={{ flex: 1 }} />
         <IconButton size="small" onClick={() => updateGuides({ slant_deg: Math.round(guideVals.slantDeg) + 1 })} sx={{ color: SLANT_COLOR }}>
           <ArrowUpwardIcon fontSize="small" />
         </IconButton>

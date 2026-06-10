@@ -3,14 +3,19 @@
 
 import RefreshIcon from '@mui/icons-material/Refresh';
 import UndoIcon from '@mui/icons-material/Undo';
-import { Alert, Box, Button, Stack, TextField, Typography } from '@mui/material';
-import type { Dispatch, SetStateAction } from 'react';
+import { Alert, Box, Button, FormControlLabel, Stack, Switch, TextField, Typography } from '@mui/material';
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { couplingLabel, de } from '@/locales';
 import type { BboxIn, BboxOut, CouplingHeight, GuideConfig, StrokePoint } from '@/lib/api';
 import type { GuideValues } from '../wizardTypes';
 
 const COUPLING_OPTIONS: CouplingHeight[] = ['baseline', 'midband', 'ascender', 'descender'];
+
+// Mirrors the server-side bounds on n_anchors (api/schemas.py) so a committed
+// value can never 422.
+const MIN_ANCHORS = 4;
+const MAX_ANCHORS = 1000;
 
 export function TraceStep({
   bbox,
@@ -20,6 +25,8 @@ export function TraceStep({
   hasCanonical,
   busy,
   guideVals,
+  showSaved,
+  setShowSaved,
   saveTrace,
   resample,
   updateBboxField,
@@ -32,11 +39,43 @@ export function TraceStep({
   hasCanonical: boolean;
   busy: boolean;
   guideVals: GuideValues;
-  saveTrace: () => Promise<void>;
-  resample: () => Promise<void>;
+  showSaved: boolean;
+  setShowSaved: (v: boolean) => void;
+  saveTrace: (nAnchors: number) => Promise<void>;
+  resample: (nAnchors: number) => Promise<void>;
   updateBboxField: (patch: Partial<BboxIn>) => Promise<void>;
   updateGuides: (patch: Partial<GuideConfig>) => Promise<void>;
 }) {
+  // n_anchors edits buffer in a local draft and commit on blur/Enter (or via the
+  // buttons): a field controlled straight by the server value can never be
+  // cleared — each keystroke would PUT and snap the text back mid-typing.
+  const [anchorsDraft, setAnchorsDraft] = useState(String(bbox.n_anchors));
+  const committedAnchors = useRef(bbox.n_anchors);
+  useEffect(() => {
+    committedAnchors.current = bbox.n_anchors;
+    setAnchorsDraft(String(bbox.n_anchors));
+  }, [bbox.n_anchors]);
+
+  // Commit the draft (clamped to ≥MIN_ANCHORS) and return the effective count;
+  // an empty/invalid draft snaps back to the last committed value. The buttons
+  // pass the returned count onward so save/resample never race the PUT.
+  const commitAnchors = (): number => {
+    // Number, not parseInt: the number input passes scientific notation ('1e3')
+    // through, which parseInt would silently truncate to 1. Empty → invalid.
+    const parsed = anchorsDraft.trim() === '' ? NaN : Math.trunc(Number(anchorsDraft));
+    if (!Number.isFinite(parsed)) {
+      setAnchorsDraft(String(committedAnchors.current));
+      return committedAnchors.current;
+    }
+    const v = Math.min(MAX_ANCHORS, Math.max(MIN_ANCHORS, parsed));
+    setAnchorsDraft(String(v));
+    if (v !== committedAnchors.current) {
+      committedAnchors.current = v;
+      void updateBboxField({ n_anchors: v });
+    }
+    return v;
+  };
+
   return (
     <Stack spacing={1.5}>
       <Typography variant="subtitle2">{de.wizard.trace.title}</Typography>
@@ -53,25 +92,32 @@ export function TraceStep({
         <Button size="small" color="inherit" disabled={strokes.length === 0} onClick={() => setStrokes([])}>
           {de.wizard.trace.discardAll}
         </Button>
-        <Button size="small" variant="contained" disabled={savablePoints < 2 || busy} onClick={saveTrace}>
+        <Button size="small" variant="contained" disabled={savablePoints < 2 || busy} onClick={() => void saveTrace(commitAnchors())}>
           {de.wizard.trace.save}
         </Button>
       </Stack>
       {hasCanonical && strokes.length === 0 && <Alert severity="success" variant="outlined">{de.wizard.trace.saved}</Alert>}
+      {hasCanonical && (
+        <FormControlLabel
+          control={<Switch size="small" checked={showSaved} onChange={(_e, v) => setShowSaved(v)} />}
+          label={<Typography variant="body2">{de.wizard.trace.showSaved}</Typography>}
+        />
+      )}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <TextField
           label={de.wizard.trace.anchorsLabel}
           type="number"
           size="small"
-          value={bbox.n_anchors}
-          onChange={(e) => {
-            // Guard NaN (cleared field) — it would serialize to null and corrupt n_anchors.
-            const v = Number(e.target.value);
-            if (Number.isFinite(v)) updateBboxField({ n_anchors: Math.max(4, v) });
+          value={anchorsDraft}
+          onChange={(e) => setAnchorsDraft(e.target.value)}
+          onBlur={commitAnchors}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') commitAnchors();
           }}
+          slotProps={{ htmlInput: { min: MIN_ANCHORS, max: MAX_ANCHORS } }}
           sx={{ flex: 1 }}
         />
-        <Button size="small" variant="outlined" startIcon={<RefreshIcon />} disabled={!hasCanonical || busy} onClick={resample}>
+        <Button size="small" variant="outlined" startIcon={<RefreshIcon />} disabled={!hasCanonical || busy} onClick={() => void resample(commitAnchors())}>
           {de.wizard.trace.resample}
         </Button>
       </Box>

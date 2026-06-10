@@ -78,12 +78,15 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight }:
   const cropDisplayH = cropH * cropScale;
 
   // Template-view viewBox: cover ascender..descender plus a bit of x-padding.
+  // Template x has its origin at the ductus' FIRST sample (pipeline x_origin),
+  // so a glyph drawn from the right (e.g. K) lies entirely in negative x — span
+  // the real anchor extent instead of assuming [0, advance].
   const tpl = data.template_guides;
-  const advance = data.anchors_template.length
-    ? Math.max(0.5, ...data.anchors_template.map((a) => a[0])) - Math.min(0, ...data.anchors_template.map((a) => a[0]))
-    : 1;
+  const tplXs = data.anchors_template.map((a) => a[0]);
+  const tplX0 = (tplXs.length ? Math.min(0, ...tplXs) : 0) - 0.5;
+  const tplX1 = (tplXs.length ? Math.max(0.5, ...tplXs) : 0.5) + 0.5;
   const tplViewH = tpl.ascender - tpl.descender;
-  const tplViewBox = `${-0.5} ${-tpl.ascender - 0.3} ${advance + 1.0} ${tplViewH + 0.6}`;
+  const tplViewBox = `${tplX0} ${-tpl.ascender - 0.3} ${tplX1 - tplX0} ${tplViewH + 0.6}`;
 
   return (
     <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -148,10 +151,10 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight }:
             {/* y is flipped in SVG; wrap in a group that flips Y around 0 */}
             <g transform="scale(1, -1)">
               {/* Guide lines */}
-              <line x1={-0.5} y1={tpl.baseline} x2={advance + 0.5} y2={tpl.baseline} stroke="#bbb" strokeWidth={0.015} />
-              <line x1={-0.5} y1={tpl.midband} x2={advance + 0.5} y2={tpl.midband} stroke="#ddd" strokeWidth={0.015} strokeDasharray="0.08 0.06" />
-              <line x1={-0.5} y1={tpl.ascender} x2={advance + 0.5} y2={tpl.ascender} stroke="#eee" strokeWidth={0.015} strokeDasharray="0.04 0.05" />
-              <line x1={-0.5} y1={tpl.descender} x2={advance + 0.5} y2={tpl.descender} stroke="#eee" strokeWidth={0.015} strokeDasharray="0.04 0.05" />
+              <line x1={tplX0} y1={tpl.baseline} x2={tplX1} y2={tpl.baseline} stroke="#bbb" strokeWidth={0.015} />
+              <line x1={tplX0} y1={tpl.midband} x2={tplX1} y2={tpl.midband} stroke="#ddd" strokeWidth={0.015} strokeDasharray="0.08 0.06" />
+              <line x1={tplX0} y1={tpl.ascender} x2={tplX1} y2={tpl.ascender} stroke="#eee" strokeWidth={0.015} strokeDasharray="0.04 0.05" />
+              <line x1={tplX0} y1={tpl.descender} x2={tplX1} y2={tpl.descender} stroke="#eee" strokeWidth={0.015} strokeDasharray="0.04 0.05" />
               {/* Outline polygons — one per pen-stroke (slant applied server-side),
                   so a pen lift is a real gap, not a bar bridging the strokes */}
               {(data.outline_polygons ?? (data.outline_polygon.length > 2 ? [data.outline_polygon] : [])).map((poly, i) =>

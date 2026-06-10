@@ -55,7 +55,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
   const theme = useTheme();
   const compact = useMediaQuery(theme.breakpoints.down('md'));
 
-  const view = useCropView(bbox, glyphKey, open, step);
+  const view = useCropView(bbox, glyphKey, open);
 
   if (!source || !bbox || !known) return null;
 
@@ -78,6 +78,8 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
             hasCanonical={hasCanonical}
             busy={busy}
             guideVals={wizard.guideVals}
+            showSaved={wizard.showSaved}
+            setShowSaved={wizard.setShowSaved}
             saveTrace={wizard.saveTrace}
             resample={wizard.resample}
             updateBboxField={wizard.updateBboxField}
@@ -133,6 +135,8 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
               maskRadius={wizard.maskRadius}
               strokes={wizard.strokes}
               setStrokes={wizard.setStrokes}
+              savedTrace={wizard.savedTrace}
+              showSaved={wizard.showSaved}
               commitCalib={wizard.commitCalib}
               commitSlant={wizard.commitSlant}
               commitMaskStroke={wizard.commitMaskStroke}

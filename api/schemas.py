@@ -123,7 +123,10 @@ class BboxIn(BaseModel):
     mask_strokes: list[MaskStroke] = Field(default_factory=list)
     baseline_y: int
     midband_y: int
-    n_anchors: int = 50
+    # Bounded server-side (the client clamps too): below 4 the resampler breaks
+    # (single-sample linspace / negative counts), far above it the anchor JSONB
+    # and the SVG renderers blow up. 1000 is generous headroom over the ~100 norm.
+    n_anchors: int = Field(default=100, ge=4, le=1000)
     # Optional so an omitted `guides` (older clients, scripts, a plain bbox
     # save) is distinguishable from an explicit value: PUT then preserves the
     # stored guides instead of resetting them. See put_bbox.
@@ -177,12 +180,13 @@ class TraceRequest(BaseModel):
     glyph: str
     position: Literal["initial", "medial", "final"]
     raw_path: list[StrokePoint]
-    n_anchors: int | None = None
+    # Same bounds as BboxIn.n_anchors; None falls back to the stored bbox value.
+    n_anchors: int | None = Field(default=None, ge=4, le=1000)
     variant: int = 0
 
 
 class ResampleRequest(BaseModel):
-    n_anchors: int
+    n_anchors: int = Field(ge=4, le=1000)
 
 
 class TemplateSummary(BaseModel):

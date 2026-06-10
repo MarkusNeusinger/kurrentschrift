@@ -3,7 +3,7 @@
 // committed view state (userZoom/pan/Schwenken toggle); the live pan-drag
 // gesture itself stays in WizardCanvas.
 
-import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type RefObject, type SetStateAction } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { useElementSize } from '@/hooks/useElementSize';
 import type { BboxOut } from '@/lib/api';
@@ -41,7 +41,7 @@ function defaultZoomFor(b: BboxOut | null): number {
 }
 
 export interface CropView {
-  hostRef: RefObject<HTMLDivElement | null>;
+  hostRef: (el: HTMLDivElement | null) => void;
   hostSize: { w: number; h: number };
   userZoom: number;
   panX: number;
@@ -59,14 +59,18 @@ export interface CropView {
   cssToChart: (clientX: number, clientY: number, host: Element | null) => { x: number; y: number };
 }
 
-export function useCropView(bbox: BboxOut | null, glyphKey: string, open: boolean, step: number): CropView {
+export function useCropView(bbox: BboxOut | null, glyphKey: string, open: boolean): CropView {
   // Always-current bbox, read (not subscribed) by the open/reset effect so it can
   // seed the default zoom without re-running on every mask/lineature edit.
   const bboxRef = useRef(bbox);
   bboxRef.current = bbox;
 
-  const hostRef = useRef<HTMLDivElement | null>(null);
-  const hostSize = useElementSize(hostRef, [open, step]);
+  // The canvas host node, held in STATE via a callback ref: the dialog's portal
+  // mounts it a render after this hook's effects first run, so effects key on the
+  // element itself (size measure + wheel listener) instead of open/step.
+  const [hostEl, setHostEl] = useState<HTMLDivElement | null>(null);
+  const hostRef = useCallback((el: HTMLDivElement | null) => setHostEl(el), []);
+  const hostSize = useElementSize(hostEl);
 
   // Canvas zoom/pan, shared by every step. `userZoom` multiplies the fit scale;
   // pan{X,Y} translate the magnified crop in CSS px; `panning` is the Schwenken
@@ -129,10 +133,10 @@ export function useCropView(bbox: BboxOut | null, glyphKey: string, open: boolea
   // Mouse-wheel zoom, anchored on the cursor so the point under it stays put
   // (mirrors the chart). Needs a non-passive listener to preventDefault the page
   // scroll, so it's attached imperatively. Re-attached only when the canvas host
-  // is (re)created — keyed on open/step like the resize observer — never on
+  // node (re)appears — keyed on the element like the resize observer — never on
   // zoom/pan, which the handler reads from viewRef instead.
   useEffect(() => {
-    const el = hostRef.current;
+    const el = hostEl;
     if (!el) return;
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -160,7 +164,7 @@ export function useCropView(bbox: BboxOut | null, glyphKey: string, open: boolea
     };
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => el.removeEventListener('wheel', onWheel);
-  }, [open, step]);
+  }, [hostEl]);
 
   const cssToChart = useCallback(
     (clientX: number, clientY: number, host: Element | null) => {
