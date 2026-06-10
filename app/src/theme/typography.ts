@@ -1,6 +1,6 @@
 // EB Garamond carries the body/UI (style-guide §3 Phase-B dial), so the whole
 // site shares the landing's editorial serif. Display headlines opt into
-// Cormorant locally via the `display` token where they want more character.
+// Playfair Display locally via the `display` token where they want more character.
 
 import type { TypographyVariantsOptions } from '@mui/material/styles';
 

@@ -1,4 +1,4 @@
-// Step 3 "Schräge" — the shared slant angle + add/remove of the individually
+// Step 3 "Schräglage" — the shared slant angle + add/remove of the individually
 // placed slant lines. The green drag handles live on WizardCanvas.
 
 import AddIcon from '@mui/icons-material/Add';

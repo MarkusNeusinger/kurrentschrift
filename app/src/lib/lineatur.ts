@@ -69,8 +69,9 @@ export interface LineatureConfig {
   lineSystem: LineSystem;
   showSlant: boolean;
   // Slant as the traditional German Schräglage: the angle between downstroke
-  // and BASELINE — 90 = upright, Kurrent ~60-70. (The admin chart uses the
-  // same notation, e.g. Loth 1866 = 65.)
+  // and BASELINE — 90 = upright, Kurrent um 1900 ~60-70 (Süß 2002). The admin
+  // chart uses the same notation; the Loth 1866 chart itself measures ~50°
+  // (thick-stroke skeleton measurement, 2026-06).
   slantDeg: number;
   slantSpacingMm: number; // horizontal spacing between slant guides
   showPenAngle: boolean;
@@ -107,7 +108,7 @@ export const PRESETS: ScriptPreset[] = [
     marginMm: 15,
     lineSystem: 'four',
     showSlant: true,
-    slantDeg: 65, // Schräglage 60-70; the Loth 1866 chart sits at 65
+    slantDeg: 65, // Schräglage 60-70 for Kurrent um 1900 (Süß); Loth 1866 measures ~50
     slantSpacingMm: 10,
     // Pointed pen: stroke width comes from pressure (Schwellzug), not nib
     // angle, so the gauge is off by default; if enabled it shows the nib held
@@ -132,7 +133,12 @@ export const PRESETS: ScriptPreset[] = [
     slantDeg: 90, // upright (Schräglage 90)
     slantSpacingMm: 10,
     showPenAngle: false,
-    penAngleDeg: 42, // Feder 40-45 to the writing line
+    // Sütterlin is written with the Gleichzugfeder (ball-tipped nib): stroke
+    // width is angle-independent, so a nib-angle gauge has no meaning here —
+    // the gauge stays off and the value is a neutral placeholder. (The 40-45°
+    // sometimes quoted is the holder's elevation above the desk, not a nib
+    // angle in the writing plane.)
+    penAngleDeg: 42,
     showMarginLine: false,
     marginLineXMm: 20,
   },

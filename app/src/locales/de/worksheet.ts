@@ -16,8 +16,8 @@ export const worksheet = {
   },
   // The three start-script presets (lib/lineatur.ts PRESETS).
   presets: {
-    kurrent: { label: 'Kurrent', note: '2 : 1 : 2 · Schräglage ~65° · Spitzfeder im Abstrich' },
-    suetterlin: { label: 'Sütterlin', note: '1 : 1 : 1 · senkrecht (90°) · Feder 40–45°' },
+    kurrent: { label: 'Kurrent', note: '2 : 1 : 2 · Schräglage 60–70° (um 1900) · Spitzfeder, Schwellzug im Abstrich' },
+    suetterlin: { label: 'Sütterlin', note: '1 : 1 : 1 · senkrecht (90°) · Gleichzugfeder (gleichmäßiger Strich)' },
     offenbacher: { label: 'Offenbacher', note: '2 : 3 : 2 · Schräglage 75–80° · Breitfeder 15–20°' },
   },
   config: {
@@ -42,7 +42,7 @@ export const worksheet = {
     penAngleToggle: 'Federwinkel (Stifthaltung)',
     penAngle: 'Federwinkel',
     penAngleHint:
-      'Anstellwinkel der Feder zur Schreiblinie — als Winkelmarke oben links. Bei der Spitzfeder (Kurrent) kommt die Strichstärke aus dem Druck, nicht aus dem Winkel.',
+      'Federwinkel: Winkel der Federkante zur Schreiblinie — als Winkelmarke oben links. Bei der Spitzfeder (Kurrent) kommt die Strichstärke aus dem Druck, nicht aus dem Winkel.',
     rulingHeading: 'Druckfarbe',
     rulingDruck: 'Schwarz (Druck)',
     rulingSchulheft: 'Schulheft um 1900',
@@ -51,7 +51,7 @@ export const worksheet = {
     marginToggle: 'Rote Randleiste (Korrekturrand)',
     captionLabel: 'Titel / Name (optional)',
     captionPlaceholder: 'z. B. Kurrent',
-    captionHelp: 'Erscheint mit Verhältnis/Neigung/Feder unten links; kurrentschrift.ink steht unten rechts.',
+    captionHelp: 'Erscheint mit Verhältnis/Schräglage/Federwinkel unten links; kurrentschrift.ink steht unten rechts.',
     download: 'Als PDF herunterladen',
   },
 } as const;

@@ -9,7 +9,8 @@ not affecting the MIT license of the source code.
 
 ### EB Garamond
 
-- **Used for:** the landing-page hero headline (italic).
+- **Used for:** the body and UI serif site-wide (display headlines use
+  Playfair Display, see below).
 - **Copyright:** © 2017 The EB Garamond Project Authors
   (<https://github.com/octaviopardo/EBGaramond12>).
 - **License:** SIL Open Font License, Version 1.1 (`OFL-1.1`).
@@ -34,7 +35,7 @@ requires.
   THIS FONT IS PROVIDED 'AS IS' WITHOUT WARRANTY."
 - **Packaged as:** a self-hosted WOFF2 (24 KB), bundled at
   `src/assets/fonts/gl-germancursive.woff2` and declared via `@font-face` in
-  `LandingPage.tsx`.
+  `PaperBackground.tsx`.
 
 The font is a placeholder showpiece, not the project's ductus renderer; it is
 self-hosted and redistributed under the permissive grant above, unmodified.

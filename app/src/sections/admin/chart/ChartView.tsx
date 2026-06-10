@@ -8,7 +8,7 @@
 //          defaults (NEW_BBOX_MIDBAND_RATIO/NEW_BBOX_BASELINE_RATIO of the
 //          box height, see chartConstants).
 //   - EDIT: move/resize an existing bbox via grips.
-// The freeform eraser (Ausschluss/Radierer), Lineatur, Schräge and Weg now live
+// The freeform eraser (Ausschluss/Radierer), Lineatur, Schräglage and Weg now live
 // in the step-by-step Einrichtungs-Wizard, opened with "Einrichten".
 //
 // This file is the composition: it owns the mode and the single pointer-routing
