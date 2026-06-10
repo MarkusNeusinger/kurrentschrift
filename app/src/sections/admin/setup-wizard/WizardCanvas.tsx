@@ -18,8 +18,10 @@ import { de } from '@/locales';
 import { overlay } from '@/sections/admin/overlayColors';
 import type { KnownGlyph } from '@/domain/glyphs';
 import type { BboxOut, SourceOut, StrokePoint } from '@/lib/api';
+import { splitRawPath } from './strokeUtils';
 import { clampPan, ZOOM_MAX, ZOOM_MIN, type CropView } from './useCropView';
 import { SLANT_COLOR } from './wizardTypes';
+import type { SavedTraceOverlay } from './useWizard';
 import type { CalibField, CommitCalib, CommitMaskStroke, CommitSlant, GuideValues, StepId } from './wizardTypes';
 
 export function WizardCanvas({
@@ -35,6 +37,8 @@ export function WizardCanvas({
   maskRadius,
   strokes,
   setStrokes,
+  savedTrace,
+  showSaved,
   commitCalib,
   commitSlant,
   commitMaskStroke,
@@ -51,6 +55,8 @@ export function WizardCanvas({
   maskRadius: number;
   strokes: StrokePoint[][];
   setStrokes: Dispatch<SetStateAction<StrokePoint[][]>>;
+  savedTrace: SavedTraceOverlay | null;
+  showSaved: boolean;
   commitCalib: CommitCalib;
   commitSlant: CommitSlant;
   commitMaskStroke: CommitMaskStroke;
@@ -234,55 +240,61 @@ export function WizardCanvas({
               setDrawing(false);
             }}
           >
-            {/* Lineature guides — read-only except on their own step */}
-            {guideVals.showAscender && ascenderCss >= 0 && ascenderCss <= displayH && (
-              <line x1={0} y1={ascenderCss} x2={displayW} y2={ascenderCss} stroke="#888" strokeWidth={1} strokeDasharray="2 4" opacity={0.6} />
-            )}
-            {guideVals.showDescender && descenderCss >= 0 && descenderCss <= displayH && (
-              <line x1={0} y1={descenderCss} x2={displayW} y2={descenderCss} stroke="#888" strokeWidth={1} strokeDasharray="2 4" opacity={0.6} />
-            )}
-            <g>
-              {stepId === 'lineatur' && (
-                <line
-                  x1={0}
-                  y1={baselineCss}
-                  x2={displayW}
-                  y2={baselineCss}
-                  stroke="transparent"
-                  strokeWidth={22}
-                  style={{ cursor: 'ns-resize', pointerEvents: 'stroke' }}
-                  onPointerDown={(e) => {
-                    if (panning) return; // let the drag bubble to the SVG → pan
-                    e.stopPropagation();
-                    setCalibDrag({ field: 'baseline_y', curY: bbox.baseline_y });
-                    e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
-                  }}
-                />
-              )}
-              <line x1={0} y1={baselineCss} x2={displayW} y2={baselineCss} stroke="#ff5060" strokeWidth={1.5} strokeDasharray="6 4" style={{ pointerEvents: 'none' }} />
-            </g>
-            <g>
-              {stepId === 'lineatur' && (
-                <line
-                  x1={0}
-                  y1={midbandCss}
-                  x2={displayW}
-                  y2={midbandCss}
-                  stroke="transparent"
-                  strokeWidth={22}
-                  style={{ cursor: 'ns-resize', pointerEvents: 'stroke' }}
-                  onPointerDown={(e) => {
-                    if (panning) return; // let the drag bubble to the SVG → pan
-                    e.stopPropagation();
-                    setCalibDrag({ field: 'midband_y', curY: bbox.midband_y });
-                    e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
-                  }}
-                />
-              )}
-              <line x1={0} y1={midbandCss} x2={displayW} y2={midbandCss} stroke="#c060ff" strokeWidth={1.5} strokeDasharray="3 3" style={{ pointerEvents: 'none' }} />
-            </g>
-            {dragCss != null && (
-              <line x1={0} y1={dragCss} x2={displayW} y2={dragCss} stroke={calibDrag?.field === 'baseline_y' ? '#ff5060' : '#c060ff'} strokeWidth={2} opacity={0.6} style={{ pointerEvents: 'none' }} />
+            {/* Lineature guides — hidden on the Ausschluss step (the eraser works
+                on the bare crop; the lines first appear on their own step) and
+                read-only except on that step */}
+            {stepId !== 'mask' && (
+              <>
+                {guideVals.showAscender && ascenderCss >= 0 && ascenderCss <= displayH && (
+                  <line x1={0} y1={ascenderCss} x2={displayW} y2={ascenderCss} stroke="#888" strokeWidth={1} strokeDasharray="2 4" opacity={0.6} />
+                )}
+                {guideVals.showDescender && descenderCss >= 0 && descenderCss <= displayH && (
+                  <line x1={0} y1={descenderCss} x2={displayW} y2={descenderCss} stroke="#888" strokeWidth={1} strokeDasharray="2 4" opacity={0.6} />
+                )}
+                <g>
+                  {stepId === 'lineatur' && (
+                    <line
+                      x1={0}
+                      y1={baselineCss}
+                      x2={displayW}
+                      y2={baselineCss}
+                      stroke="transparent"
+                      strokeWidth={22}
+                      style={{ cursor: 'ns-resize', pointerEvents: 'stroke' }}
+                      onPointerDown={(e) => {
+                        if (panning) return; // let the drag bubble to the SVG → pan
+                        e.stopPropagation();
+                        setCalibDrag({ field: 'baseline_y', curY: bbox.baseline_y });
+                        e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
+                      }}
+                    />
+                  )}
+                  <line x1={0} y1={baselineCss} x2={displayW} y2={baselineCss} stroke="#ff5060" strokeWidth={1.5} strokeDasharray="6 4" style={{ pointerEvents: 'none' }} />
+                </g>
+                <g>
+                  {stepId === 'lineatur' && (
+                    <line
+                      x1={0}
+                      y1={midbandCss}
+                      x2={displayW}
+                      y2={midbandCss}
+                      stroke="transparent"
+                      strokeWidth={22}
+                      style={{ cursor: 'ns-resize', pointerEvents: 'stroke' }}
+                      onPointerDown={(e) => {
+                        if (panning) return; // let the drag bubble to the SVG → pan
+                        e.stopPropagation();
+                        setCalibDrag({ field: 'midband_y', curY: bbox.midband_y });
+                        e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
+                      }}
+                    />
+                  )}
+                  <line x1={0} y1={midbandCss} x2={displayW} y2={midbandCss} stroke="#c060ff" strokeWidth={1.5} strokeDasharray="3 3" style={{ pointerEvents: 'none' }} />
+                </g>
+                {dragCss != null && (
+                  <line x1={0} y1={dragCss} x2={displayW} y2={dragCss} stroke={calibDrag?.field === 'baseline_y' ? '#ff5060' : '#c060ff'} strokeWidth={2} opacity={0.6} style={{ pointerEvents: 'none' }} />
+                )}
+              </>
             )}
 
             {/* Slant guide(s) — one or more parallel lines, each draggable on the slant step */}
@@ -330,6 +342,27 @@ export function WizardCanvas({
               <polyline key={i} points={toLocal(m.points)} fill="none" stroke={overlay.eraser} strokeOpacity={0.55} strokeWidth={Math.max(1, m.radius * 2 * scale)} strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: 'none' }} />
             ))}
             {maskDraft && <polyline points={toLocal(maskDraft)} fill="none" stroke={overlay.eraser} strokeOpacity={0.8} strokeWidth={Math.max(1, maskRadius * 2 * scale)} strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: 'none' }} />}
+
+            {/* Saved Weg + anchors (faint reference, toggleable): the committed
+                canonical under the in-progress draft. The raw path is in chart
+                coordinates, the anchors in crop-local pixels. */}
+            {stepId === 'weg' && showSaved && savedTrace && (
+              <g style={{ pointerEvents: 'none' }}>
+                {splitRawPath(savedTrace.rawPath).map((stroke, i) => (
+                  <polyline
+                    key={`saved-${i}`}
+                    points={stroke.map((p) => `${(p.x - bbox.x0) * scale},${(p.y - bbox.y0) * scale}`).join(' ')}
+                    fill="none"
+                    stroke={overlay.locked}
+                    strokeOpacity={0.4}
+                    strokeWidth={2}
+                  />
+                ))}
+                {savedTrace.anchorsPx.map(([x, y], i) => (
+                  <circle key={`anchor-${i}`} cx={x * scale} cy={y * scale} r={2.5} fill={overlay.active} fillOpacity={0.75} />
+                ))}
+              </g>
+            )}
 
             {/* Trace draft — one polyline + start dot per stroke; pen lifts stay gaps */}
             {strokes.map((stroke, i) =>

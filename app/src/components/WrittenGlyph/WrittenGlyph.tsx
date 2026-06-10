@@ -133,10 +133,12 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
   const geom = useMemo(() => {
     if (!data) return null;
     const tpl = data.template_guides;
+    // Template x has its origin at the ductus' FIRST sample (pipeline x_origin),
+    // so a glyph drawn from the right (e.g. K) lies entirely in negative x. Span
+    // the viewBox over the real anchor extent instead of assuming [0, advance].
     const xs = data.anchors_template.map((a) => a[0]);
-    const advance = xs.length ? Math.max(0.5, ...xs) - Math.min(0, ...xs) : 1;
-    const minX = -0.5;
-    const vbW = advance + 1.0;
+    const minX = (xs.length ? Math.min(0, ...xs) : 0) - 0.5;
+    const vbW = (xs.length ? Math.max(0.5, ...xs) : 0.5) + 0.5 - minX;
     const vbY = -tpl.ascender - 0.3;
     const vbH = tpl.ascender - tpl.descender + 0.6;
 

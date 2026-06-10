@@ -6,7 +6,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { getGlyph, postResample, postTrace, putBbox } from '@/lib/api';
+import { getDiagnostic, getGlyph, postResample, postTrace, putBbox } from '@/lib/api';
 import { bboxInFromOut } from '@/lib/bbox';
 import { isLetterSplit, knownGlyph, siblingKeys } from '@/domain/glyphs';
 import { useAdmin } from '@/context/AdminContext';
@@ -15,6 +15,13 @@ import { flattenStrokes, savablePointCount } from './strokeUtils';
 import { STEPS } from './wizardTypes';
 import type { CalibField, GuideValues } from './wizardTypes';
 import type { BboxIn, GlyphSummary, GuideConfig, MaskStroke, StrokePoint } from '@/lib/api';
+
+// The already-saved Weg, shown faintly on the Weg step for reference: the raw
+// pen path (chart coordinates) and the resampled anchors (crop-local pixels).
+export interface SavedTraceOverlay {
+  rawPath: StrokePoint[];
+  anchorsPx: Array<[number, number]>;
+}
 
 const summaryOf = (g: { glyph_key: string; glyph: string; position: string; variant: number; advance: number }): GlyphSummary => ({
   glyph_key: g.glyph_key,
@@ -46,6 +53,9 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
   const [applyAll, setApplyAll] = useState(true);
   const [busy, setBusy] = useState(false);
   const [snack, setSnack] = useState<string | null>(null);
+  // Saved-Weg reference overlay on the Weg step (toggleable, on by default).
+  const [showSaved, setShowSaved] = useState(true);
+  const [savedTrace, setSavedTrace] = useState<SavedTraceOverlay | null>(null);
 
   // Mounted once and reused for every glyph: when a different glyph opens (or the
   // dialog reopens), drop transient state so one glyph's draft never leaks onto
@@ -61,6 +71,30 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
 
   // Savable points (strokes with ≥2 points; stray taps excluded) — gates "save".
   const savablePoints = savablePointCount(strokes);
+
+  // Load the saved Weg + anchors for the reference overlay. Runs when the dialog
+  // opens on a glyph that already has a canonical (hasCanonical flips also right
+  // after the first save); save/resample refresh it explicitly, so the overlay
+  // always reflects the latest server state. The epoch counter discards slow
+  // responses that land after the wizard moved on to another glyph — the hook is
+  // mounted once and reused, so a stale setState would otherwise paint glyph A's
+  // Weg over glyph B's canvas.
+  const overlayEpoch = useRef(0);
+  const refreshSavedTrace = useCallback(async () => {
+    const epoch = ++overlayEpoch.current;
+    try {
+      const [tpl, diag] = await Promise.all([getGlyph(glyphKey), getDiagnostic(glyphKey)]);
+      if (overlayEpoch.current === epoch) setSavedTrace({ rawPath: tpl.raw_path, anchorsPx: diag.anchors_px });
+    } catch {
+      // 404 (no canonical) or transient error → no overlay.
+      if (overlayEpoch.current === epoch) setSavedTrace(null);
+    }
+  }, [glyphKey]);
+  useEffect(() => {
+    overlayEpoch.current++; // invalidate any in-flight fetch for the previous glyph
+    setSavedTrace(null);
+    if (open && hasCanonical) void refreshSavedTrace();
+  }, [open, hasCanonical, refreshSavedTrace]);
 
   const guideVals = useMemo<GuideValues>(() => {
     const g: GuideConfig = bbox?.guides ?? {};
@@ -170,7 +204,9 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     [guideVals, updateGuides],
   );
 
-  const saveTrace = useCallback(async () => {
+  // `nAnchors` comes from the TraceStep's just-committed draft so the call never
+  // races the PUT that persists the field (bbox in this closure may be stale).
+  const saveTrace = useCallback(async (nAnchors: number) => {
     const rawPath = flattenStrokes(strokes);
     if (rawPath.length < 2 || !known || !bbox) return;
     setBusy(true);
@@ -179,32 +215,34 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
         glyph: known.glyph,
         position: known.position,
         raw_path: rawPath,
-        n_anchors: bbox.n_anchors,
+        n_anchors: nAnchors,
       });
       markGlyphTraced(glyphKey, summaryOf(g));
       setSnack(fmt(de.wizard.snack.traceSaved, { count: g.anchors.length }));
       setStrokes([]);
+      void refreshSavedTrace();
     } catch (err) {
       setSnack(String(err));
     } finally {
       setBusy(false);
     }
-  }, [strokes, known, bbox, glyphKey, markGlyphTraced]);
+  }, [strokes, known, bbox, glyphKey, markGlyphTraced, refreshSavedTrace]);
 
-  // Re-sample the stored canonical to the current n_anchors without re-drawing.
-  const resample = useCallback(async () => {
+  // Re-sample the stored canonical to the given n_anchors without re-drawing.
+  const resample = useCallback(async (nAnchors: number) => {
     if (!bbox || !hasCanonical) return;
     setBusy(true);
     try {
-      const g = await postResample(glyphKey, bbox.n_anchors);
+      const g = await postResample(glyphKey, nAnchors);
       markGlyphTraced(glyphKey, summaryOf(g));
       setSnack(fmt(de.wizard.snack.resampled, { count: g.anchors.length }));
+      void refreshSavedTrace();
     } catch (err) {
       setSnack(String(err));
     } finally {
       setBusy(false);
     }
-  }, [bbox, hasCanonical, glyphKey, markGlyphTraced]);
+  }, [bbox, hasCanonical, glyphKey, markGlyphTraced, refreshSavedTrace]);
 
   // Approve → lock. applyAll is the unified-vs-split decision:
   //   true  (unified) — THIS position's form is the one form for the letter. Fan
@@ -231,7 +269,10 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
             glyph: kg.glyph,
             position: kg.position,
             raw_path: tpl.raw_path,
-            n_anchors: bbox.n_anchors,
+            // The fetched template's REAL count, not bbox.n_anchors: the bbox in
+            // this closure can lag a just-committed field edit, and the fan-out
+            // must reproduce exactly the form the user approved.
+            n_anchors: tpl.anchors.length,
           });
           markGlyphTraced(k, summaryOf(g));
           const savedB = await putBbox(k, { ...bboxInFromOut(bbox), locked: true, split: false });
@@ -277,6 +318,10 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     strokes,
     setStrokes,
     savablePoints,
+    // saved-Weg reference overlay (Weg step)
+    savedTrace,
+    showSaved,
+    setShowSaved,
     // per-step knobs + status
     maskRadius,
     setMaskRadius,

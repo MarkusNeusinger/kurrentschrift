@@ -29,3 +29,19 @@ export function flattenStrokes(strokes: StrokePoint[][]): StrokePoint[] {
 // button matches what flattenStrokes would send.
 export const savablePointCount = (strokes: StrokePoint[][]): number =>
   strokes.reduce((n, s) => n + (s.length >= MIN_STROKE_POINTS ? s.length : 0), 0);
+
+// Inverse of flattenStrokes: split a stored raw_path back into per-stroke
+// polylines at the pen_up markers, for overlaying the saved Weg on the canvas.
+export function splitRawPath(rawPath: StrokePoint[]): StrokePoint[][] {
+  const strokes: StrokePoint[][] = [];
+  let current: StrokePoint[] = [];
+  for (const p of rawPath) {
+    current.push(p);
+    if (p.pen_up) {
+      strokes.push(current);
+      current = [];
+    }
+  }
+  if (current.length > 0) strokes.push(current);
+  return strokes;
+}

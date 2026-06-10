@@ -26,7 +26,7 @@ from core.template import (
 )
 
 
-DEFAULT_N_ANCHORS = 50
+DEFAULT_N_ANCHORS = 100
 
 
 # -------------------------------------------------------------------- helpers

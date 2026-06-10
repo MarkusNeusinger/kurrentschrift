@@ -81,6 +81,7 @@ export const wizard = {
     discardAll: 'Alles verwerfen',
     save: 'Weg speichern',
     saved: 'Weg gespeichert. Weiter zur Übersicht.',
+    showSaved: 'Gespeicherten Weg & Anker einblenden',
     anchorsLabel: 'Anker (n_anchors)',
     resample: 'Neu abtasten',
     anchorsHint:
