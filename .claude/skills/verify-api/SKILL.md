@@ -108,8 +108,9 @@ see the `verify-core` skill for the lint commands.
   print(f'user={m.group(1)} db={m.group(2)}')"
   ```
 
-  Prod schema changes go through the migrate Cloud Run job, never
-  ad-hoc DDL (see `docs/notes/deploy-bootstrap-status.md`).
+  Prod schema changes go through the `kurrentschrift-migrate` Cloud
+  Run job that the deploy pipeline executes (`api/cloudbuild.yaml`),
+  never ad-hoc DDL.
 - **`hands` being empty is normal** at the current MVP stage — don't
   read it as a broken endpoint.
 - **`/diagnostic` and `/fit` are slow-ish by design** (they run
