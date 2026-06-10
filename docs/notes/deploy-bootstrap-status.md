@@ -2,7 +2,7 @@
 
 Stand: **2026-06-10**. Schritt 6 (Cloudflare Access) + Schritt 7 (Plausible-Proxy) sind seit **2026-05-29 live** — `kurrentschrift.ink` läuft hinter Cloudflare, Admin hinter Zero-Trust-Access (verifiziert; Edge-Checks am 2026-06-10 erneut grün: Landing 200, `/admin` 302, `/js/script.js` 200). Plausible empfängt Besucher (bestätigt 2026-06-10). Seit PR #18 führt die Deploy-Pipeline Migrationen automatisch aus (Job `kurrentschrift-migrate`, s. u.).
 
-Dieses Dokument ist ein operativer Schnappschuss: was läuft, was noch fehlt, welche IDs/URLs man im Kopf haben muss. Pendant zum Plan unter `/home/tirao/.claude/plans/was-w-ren-gute-n-chste-quizzical-scone.md`.
+Dieses Dokument ist ein operativer Schnappschuss: was läuft, was noch fehlt, welche IDs/URLs man im Kopf haben muss. Pendant zum ursprünglichen Bootstrap-Plan (lokale Plan-Notiz des Betreibers, nicht im Repo).
 
 ## Aktuell live
 
@@ -13,7 +13,7 @@ Dieses Dokument ist ein operativer Schnappschuss: was läuft, was noch fehlt, we
 | Direkt (break-glass) | `*-3yau3h6oyq-ez.a.run.app` (app + api) | weiterhin erreichbar, umgeht Cloudflare/Access |
 | DB | `kurrentschrift` auf `anyplot:europe-west4:anyplot-db` | Reachable via Cloud SQL Connector (Cross-Project IAM) |
 
-Schreib-Endpoints (PUT/POST/DELETE auf `bboxes` + `glyphs`) sind gegen `require_admin` (FastAPI Depends) gesichert. **Beide Pfade aktiv:** Cloudflare-Access-JWT (Google-Login via geteilte anyplot-Org, nur `meakeiok@gmail.com`) **und** `X-Admin-Token`-Fallback. Verifiziert am 2026-05-29 über die CF-Edge: eingeloggter Bbox-PUT → 200, gefälschtes JWT → 401.
+Schreib-Endpoints (PUT/POST/DELETE auf `bboxes` + `glyphs`) sind gegen `require_admin` (FastAPI Depends) gesichert. **Beide Pfade aktiv:** Cloudflare-Access-JWT (Google-Login via geteilte anyplot-Org, Allowlist = nur die Betreiber-E-Mail, s. Access-Policy) **und** `X-Admin-Token`-Fallback. Verifiziert am 2026-05-29 über die CF-Edge: eingeloggter Bbox-PUT → 200, gefälschtes JWT → 401.
 
 ## Was eingerichtet ist
 
@@ -51,7 +51,7 @@ Vier Secrets im `kurrentschrift`-Projekt:
 | `DATABASE_URL` | Cloud SQL Unix-Socket URL für `kurrentschrift`-User | ✅ |
 | `ADMIN_TOKEN` | Random 32-byte hex, fallback für `X-Admin-Token` | ✅ |
 | `CF_ACCESS_TEAM_DOMAIN` | `anyplot.cloudflareaccess.com` (geteilte Zero-Trust-Org — eine Org pro CF-Account) | ✅ v2 — korrigiert (war fälschl. `kurrentschrift.…`) |
-| `CF_ACCESS_AUD` | `a991baac…dc7ae` (AUD der Access-App „kurrentschrift admin") | ✅ v2 — befüllt |
+| `CF_ACCESS_AUD` | AUD der Access-App „kurrentschrift admin" (Wert nur im Secret) | ✅ v2 — befüllt |
 
 Alle Secrets sind dem Runtime-SA via `secretmanager.secretAccessor` zugänglich.
 
@@ -95,17 +95,17 @@ Beide nutzen den Compute-SA als Build-SA (2nd-gen verlangt user-managed SA — d
 
 Der Infomaniak-Anycast-Blocker hatte sich aufgelöst (NS standen am 29.05. auf Cloudflare: `ali`/`guss.ns.cloudflare.com`). Das Setup wurde per Cloudflare-API (Account-owned Token) als Spiegel von anyplot gebaut.
 
-**Topologie:** Beide Zonen liegen im **selben CF-Account** (`8951bff06379f506d96f827e0ab42f8b`, „Meakeiok@gmail.com's Account") → **eine** Zero-Trust-Org `anyplot` (Team-Domain `anyplot.cloudflareaccess.com`). Ein eigenes Team = ein eigener Account (eine Org pro Account); verworfen — rein kosmetisch (nur die Admin-Login-Seite zeigt das Team-Domain), und End-User-Login wäre ohnehin App-Ebene, unabhängig davon.
+**Topologie:** Beide Zonen liegen im **selben CF-Account** (Konto des Betreibers; Account-ID im CF-Dashboard) → **eine** Zero-Trust-Org `anyplot` (Team-Domain `anyplot.cloudflareaccess.com`). Ein eigenes Team = ein eigener Account (eine Org pro Account); verworfen — rein kosmetisch (nur die Admin-Login-Seite zeigt das Team-Domain), und End-User-Login wäre ohnehin App-Ebene, unabhängig davon.
 
 ### Schritt 6 — Cloudflare Access (Admin-Gate)
 
 1. **Cloud-Run-Domain-Mappings**: `kurrentschrift.ink`→`kurrentschrift-app`, `api.kurrentschrift.ink`→`kurrentschrift-api`. Apex bekam A/AAAA (Google-Frontend-IPs), `api` ein CNAME → `ghs.googlehosted.com`. Google-Managed-Certs ausgestellt (dafür war das DNS kurz **grau/DNS-only**).
 2. DNS dann auf **proxied (orange)** geflippt, **SSL-Mode `strict`**, `always_use_https` on.
 3. **Worker `kurrentschrift-api-proxy`** auf Route `kurrentschrift.ink/api/*` → rewrite `/api/X` zu `https://api.kurrentschrift.ink/X`, leitet alle Header inkl. `Cf-Access-Jwt-Assertion` weiter (so erreicht das JWT die API auf der Subdomain; Access sitzt davor und injiziert es). Spiegel von `anyplot-api-proxy`.
-4. **Access-App „kurrentschrift admin"** (`self_hosted`, ID `61c59c45-406d-4cbb-a6b1-d72c63ac54de`): Domains `kurrentschrift.ink/admin`, `/admin/*`, `/api/*`; Google-IdP `b253b807-12db-4fd8-8809-3c81c1b568ae` (wiederverwendet); Session 730h; Policy „Allow `meakeiok@gmail.com`". **AUD `a991baac…dc7ae`**.
+4. **Access-App „kurrentschrift admin"** (`self_hosted`; App-ID im CF-Dashboard): Domains `kurrentschrift.ink/admin`, `/admin/*`, `/api/*`; Google-IdP von anyplot wiederverwendet (UUID im CF-Dashboard); Session 730h; Policy „Allow <Betreiber-E-Mail>". **AUD**: vollständig im Secret `CF_ACCESS_AUD`.
 5. Secrets `CF_ACCESS_AUD` + `CF_ACCESS_TEAM_DOMAIN` befüllt (v2), `kurrentschrift-api` redeployt (rev `00003`).
 
-> **Guardrail:** anyplots App/Worker/Zone/DNS wurden nur **gelesen**, nie verändert; geschrieben wurde ausschließlich an der kurrentschrift-Zone (`b56894827a54beea4ea05b5493626db4`), den kurrentschrift-Secrets und einer **neuen** App in der geteilten Org.
+> **Guardrail:** anyplots App/Worker/Zone/DNS wurden nur **gelesen**, nie verändert; geschrieben wurde ausschließlich an der kurrentschrift-Zone (Zone-ID im CF-Dashboard), den kurrentschrift-Secrets und einer **neuen** App in der geteilten Org.
 
 ### Schritt 7 — Plausible (self-hosted Proxy)
 
@@ -130,7 +130,7 @@ Fix falls pending/failed: betroffene DNS-Records temporär auf **grau (DNS-only)
 
 Validiert am 2026-05-29 über die Cloudflare-Edge:
 - ✅ `https://kurrentschrift.ink/` → 200, `server: cloudflare` (proxied), Landing rendert
-- ✅ `/admin` → 302 → `anyplot.cloudflareaccess.com/cdn-cgi/access/login/…` (AUD = `a991baac…`)
+- ✅ `/admin` → 302 → `anyplot.cloudflareaccess.com/cdn-cgi/access/login/…` (AUD stimmt mit Secret `CF_ACCESS_AUD` überein)
 - ✅ `/api/*` ohne Auth → 302 (Access sitzt vor dem Worker)
 - ✅ Eingeloggter **Bbox-PUT → 200** (kompletter JWT-Pfad: Worker leitet Assertion weiter, FastAPI verifiziert AUD + Issuer + E-Mail-Allowlist — per API-Logs bestätigt)
 - ✅ Gefälschtes JWT auf api-Subdomain → 401 (Defense-in-Depth)
@@ -154,13 +154,13 @@ Cloud-SQL:         anyplot:europe-west4:anyplot-db (DB: kurrentschrift, User: ku
 GitHub:            MarkusNeusinger/kurrentschrift
 Cloud-Build-Conn:  kurrentschrift-github  (region europe-west4)
 Triggers:          deploy-api, deploy-app  (region europe-west4, branch ^main$)
-Anyplot-Referenz:  /home/tirao/anyplot/  + GCP-Projekt `anyplot`
+Anyplot-Referenz:  Schwester-Repo `anyplot` (lokales Checkout)  + GCP-Projekt `anyplot`
 
-CF-Account:        8951bff06379f506d96f827e0ab42f8b   (Meakeiok@gmail.com's Account)
-CF-Zone (ks):      b56894827a54beea4ea05b5493626db4   (kurrentschrift.ink)
+CF-Account:        Konto des Betreibers (Account-/Zone-IDs im CF-Dashboard)
+CF-Zone (ks):      kurrentschrift.ink (Zone-ID im CF-Dashboard)
 ZT-Team-Domain:    anyplot.cloudflareaccess.com   (geteilte Org, eine pro Account)
-Google-IdP:        b253b807-12db-4fd8-8809-3c81c1b568ae
-Access-App:        "kurrentschrift admin"  id 61c59c45-…  AUD a991baac…dc7ae
+Google-IdP:        von anyplot wiederverwendet (UUID im CF-Dashboard)
+Access-App:        "kurrentschrift admin"  (App-ID im CF-Dashboard, AUD im Secret CF_ACCESS_AUD)
 Worker (api):      kurrentschrift-api-proxy         route kurrentschrift.ink/api/*
 Worker (plausib):  kurrentschrift-plausible-proxy   routes /js/script.js + /pa/event
 ```
