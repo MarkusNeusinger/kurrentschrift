@@ -37,6 +37,29 @@ The design is already settled in the docs; do not re-litigate decisions that hav
 - `docs/reference/styleanalyse.md` — per-instance/per-hand/Hinge-feature layers, heatmap layouts
 - `docs/reference/frontend-stack.md` — React+Vite+MUI build, deploy, auth, route map
 
+## Self-verification (feedback loops)
+
+Every layer has a verified feedback-loop skill under `.claude/skills/` — use them instead of ad-hoc checking, picked by what the diff touches:
+
+- `/verify-frontend` — drive the UI via the chrome-devtools MCP: console + network clean, style fidelity & legibility judged at 1440×900 **and** 390×844, perf trace on demand.
+- `/verify-api` — curl sweep of the read endpoints against the live (shared!) Cloud SQL DB plus the admin-gate 401 probe; routine verification never sends authorized writes.
+- `/verify-core` — `uv run --extra test pytest`, ruff via `--extra dev`, direct-invocation smoke of the pipeline on a synthetic chart (no DB/HTTP).
+- `/write-docs` — docs conventions (German, index upkeep, CLAUDE.md ↔ copilot-instructions sync).
+- `/audit-licenses` — license/provenance battery before any `/data` commit and before going public.
+- `/open-pr` — diff → PR. The local gates are a hard precondition (the pipeline must never fail on pytest/ruff); after opening, watch CI **and** the Copilot review, fix sensible findings and resolve the threads. **Never merge unless explicitly asked.**
+- `/optimize-skills` — periodic retro: mine past session transcripts for recurring friction and fold the patterns back into skills/memory/this file.
+
+Routing is mandatory, not advisory: any "commit/push/PR this" request goes through `/open-pr`; never hand-roll the type-check/build/push/PR/Copilot loop, and check Copilot comments as part of the loop instead of waiting to be asked.
+
+Known gaps without a loop yet: Alembic/schema changes (shared DB, no scratch instance), admin write flows (they would mutate shared data), post-deploy prod smoke.
+
+## Working guardrails (from session retros)
+
+- **Never commit on `main`** — branch first, even for a quick "commit and push" outside `/open-pr`.
+- **Prod-touching actions need explicit in-session confirmation first** (Cloud SQL DDL/queries, Secret Manager access, Cloudflare Access policies): name the exact action, resource, and any email/secret id, and ask before acting.
+- **Never echo secret values into the transcript** — verify by exit code or metadata.
+- **Modify repo files only with the Edit/Write tools, never via Bash heredocs/sed.** When a Bash command legitimately mutates a tracked file (formatter, codegen, `git checkout`), Read the file again before the next Edit on it — stale-state errors cascade otherwise.
+
 ## Language conventions (strict)
 
 From `docs/reference/sprachregelung.md`:
