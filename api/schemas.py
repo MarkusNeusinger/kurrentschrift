@@ -146,8 +146,9 @@ class BboxIn(BaseModel):
 
 class BboxOut(BboxIn):
     glyph_key: str
-    # Always materialised on the way out (see _to_out), so the response keeps a
-    # concrete object even though the request body may omit it.
+    # Always materialised on the way out (see _to_out), so the response keeps
+    # concrete values even though the request body may omit them.
+    n_anchors: int
     guides: GuideConfig
     locked: bool
     split: bool

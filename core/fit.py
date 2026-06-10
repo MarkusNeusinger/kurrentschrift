@@ -139,7 +139,8 @@ def _bilinear_with_grad(
     The derivatives are those of the interpolant itself (not a resampled
     gradient map) — the optimiser's line search needs function and gradient to
     agree to machine precision, otherwise it aborts on phantom inconsistencies.
-    Outside the crop the value is clamped, so the derivative there is zero.
+    Clamping is per axis: a sample beyond the crop in x has a zero x-derivative
+    but keeps its y-derivative along the clamped border row (and vice versa).
     """
     h, w = field_map.shape
     x = np.clip(px, 0.0, w - 1.0)
