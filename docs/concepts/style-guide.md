@@ -5,7 +5,7 @@ Visuelle Identität der Endnutzer-Website. Begleitdokument zu
 **warum** — getrennt vom *Was* (Vision) und *Wie* (Architektur).
 
 Die Tokens leben in `app/src/styles/paper.ts` (`const paper = …`) und sind die
-**einzige Quelle** der Palette: das globale MUI-Theme (`app/src/theme.ts`), die
+**einzige Quelle** der Palette: das globale MUI-Theme (`app/src/theme/`), die
 geteilte Papier-Textur (`PaperBackground`) und `PublicHeader` lesen alle von dort.
 Die Identität trägt damit über **alle** Seiten — Landing, Quiz, Lineatur und den
 Admin-Bereich. Neutral bleiben nur die **Arbeitsflächen** (A4-Vorschau,
@@ -18,7 +18,7 @@ Buchstaben-Crops, Chart-Scan), und das erzeugte **PDF bleibt weiß** (siehe §8)
 - **Eigene Identität, nicht der anyplot/pyplots-Stil.** Für eine
   Schreibschrift-Seite ist das off-white-+-grün-Token-Set zu nüchtern.
   Diese Seite klingt nach **Papier und Tinte um 1900**.
-- **Tinte, nicht Font.** Der Look feiert den *Schreibvorgang* (Ductus,
+- **Tinte, nicht Font.** Der Look feiert den *Schreibvorgang* (Duktus,
   Schwellzug), nicht eine statische Glyphe — deshalb das schreibende
   Hero-Wort und die Lineatur.
 - **Synthese ist als solche erkennbar.** Wir simulieren Schrift, nicht
@@ -136,12 +136,13 @@ Korrekturrand des Lehrers frei. Tokens (`schulheft`, Hexes approx):
 - **Kurrent-Preset = Artefakt-Maß:** 2:1:2 bei 2,5 mm Mittelband —
   die in einem zeitgenössischen Kurrent-Übungsheft gedruckten
   **5/2,5/5 mm**. Schräglage in traditioneller Notation (Winkel zur
-  Grundlinie, 90° = senkrecht): Kurrent ~65° (Loth-Tafel), Offenbacher
+  Grundlinie, 90° = senkrecht): Kurrent um 1900 60–70° (die Loth-Tafel
+  1866 selbst misst ~50°, siehe `schriftkunde/kurrent.md`), Offenbacher
   75–80° (Verhältnis **2:3:2**, Breitfeder 15–20°), Sütterlin 90°
-  (Feder 40–45°).
+  (Gleichzugfeder, Strichbreite winkelunabhängig).
 - **Liniensystem-Progression:** Vier Linien (Anfang) · Doppellinie
   (geübt) · Nur Grundlinie (frei) — Zeilenmetrik bleibt identisch.
-- **Quiz-Hilfslinien (R5, angenommen):** Grundlinie/Mittelband im Crop
+- **Quiz-Hilfslinien (R5, angenommen):** Grundlinie/Mittellinie im Crop
   in `rulingBlueFaded` statt neutralem Grau; die Crop-Fläche selbst
   bleibt weiß (§8).
 - Verworfen in R4: 7/11/15-mm-Schnellwahl-Chips aufs Mittelband — die
@@ -194,10 +195,11 @@ Verworfene Typografie-Kandidaten (Runden R6/R7, 2026-06):
   Eintrag in `THIRD_PARTY_NOTICES.md` analog zu EB Garamond.
 - Format: TTF → **WOFF2** (24 KB) konvertiert; liegt in
   `src/assets/fonts/gl-germancursive.woff2`, `@font-face` via
-  `<GlobalStyles>` in `LandingPage.tsx`.
+  `<GlobalStyles>` in `PaperBackground.tsx` (geteilte Papier-Schicht —
+  Identität überall, §8).
 - Zeichenumfang geprüft: enthält langes **ſ** (U+017F), **ß** und alle
   Umlaute — kein Tofu bei deutschem Text.
-- Abgrenzung: ist ein **Font**, nicht der Ductus-Renderer. Genau die
+- Abgrenzung: ist ein **Font**, nicht der Duktus-Renderer. Genau die
   Lücke, die die echte Synthese später füllt — im Mockup nur Platzhalter
   für die Optik.
 

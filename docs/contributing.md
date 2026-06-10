@@ -1,6 +1,6 @@
 # Contributing
 
-**kurrentschrift is a portfolio project**, currently mid-MVP. The admin UI runs, canonical extraction works, the design docs (vision + architecture §1–§17 + roadmap) are settled. That shapes what's useful to send right now.
+**kurrentschrift is a portfolio project**, currently mid-MVP. The public site (worksheet generator, letter quiz) is live at [kurrentschrift.ink](https://kurrentschrift.ink), the admin UI runs, canonical extraction and the template fit routine work, the design docs (vision + architecture §1–§17 + roadmap) are settled. That shapes what's useful to send right now.
 
 ## Welcome
 
@@ -25,4 +25,4 @@ Code, comments, and commit messages: English. Internal design docs under `docs/`
 
 ## Contact
 
-GitHub Issues and Discussions are the primary channels. For substantial methodology questions, [LinkedIn](https://linkedin.com/in/markus-neusinger/) also works.
+GitHub Issues are the primary channel — for discussion of the approach as much as for bug reports. For substantial methodology questions, [LinkedIn](https://linkedin.com/in/markus-neusinger/) also works.

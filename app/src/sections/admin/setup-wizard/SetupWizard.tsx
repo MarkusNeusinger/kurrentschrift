@@ -5,7 +5,7 @@
 //                    it can't pollute the skeleton. Strokes → bbox.mask_strokes.
 //   2. Lineatur    — drag Grundlinie / Mittellinie; Oberlinie/Unterlinie derive,
 //                    each toggleable per glyph.
-//   3. Schräge     — place + angle one or more slant guides (several individually
+//   3. Schräglage  — place + angle one or more slant guides (several individually
 //                    placed lines for m/n/u; all share the angle).
 //   4. Weg         — draw the ductus with the stylus; saves the canonical and
 //                    lets you re-sample it to a different anchor count.

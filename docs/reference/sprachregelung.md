@@ -36,6 +36,10 @@ auf Deutsch. Das ist kein Bruch zur anyplot-Linie, sondern dieselbe Regel
 - International ohnehin englisch/lateinisch → unverändert übernehmen:
   `ductus`, `kurrent`, `allograph`, `glyph`, `position`, `variant`,
   `canonical`.
+  - Achtung Schreibweisen-Split: Der Code-Identifier bleibt `ductus`
+    (lateinisch/englisch, paläographischer Fachterminus), aber im
+    **deutschen Fließtext** (Docs, UI) gilt die Duden-Schreibung
+    **Duktus** ([duden.de/rechtschreibung/Duktus](https://www.duden.de/rechtschreibung/Duktus)).
 - Deutsche Fachbegriffe ohne etablierte Übersetzung → **englischer
   Identifier, Begriff einmal im Kommentar erklären**:
   - `Schwellzug` → `width_profile` / `stroke_width`

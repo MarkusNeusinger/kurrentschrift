@@ -17,9 +17,10 @@ eigene Lizenz (Quellen-Rechte §5).
 /data
   DATA_PROVENANCE.md          # Index: jedes Artefakt -> Herkunft + Lizenz
   /sources                    # nur PD/CC0 — darf committet werden
-    /loth-1866
+    /loth-1866                # (weitere Quellen analog: petzendorfer-1889, …)
       SOURCE.md               # Permalink, Lizenz, Attribution, Abrufdatum
-      chart.svg               # die PD-SVG (committet, weil PD)
+      chart.jpg               # die PD-Reproduktion (Pipeline-Input)
+      chart.svg               # die PD-SVG (Neuzeichnung)
   /corpora                    # GITIGNORED — nie committen (Größe + Lizenz)
     /zenodo-17252677
       SOURCE.md               # committet: nur Metadaten, kein Datenfile
@@ -59,17 +60,30 @@ Eine Datei je Quelle unter `/data/sources/<id>/SOURCE.md`:
 ```markdown
 # Source: loth-1866
 
-- Title:        Deutsche Kurrentschrift (aus „Der Damen-Briefsteller")
-- Author:       Johann Thomas Loth (zugeschrieben)
-- Year:         1866
-- File in repo: chart.svg  (redrawn SVG, not a scan)
-- Origin URL:   https://commons.wikimedia.org/wiki/File:Deutsche_Kurrentschrift.svg
-- License:      Public Domain (PD-old / Public Domain Mark 1.0)
-- Attribution:  Vektorisierung: AndreasPraefcke, Wikimedia Commons
-- Retrieved:    2026-05-19
-- Note:         Original 1866 gemeinfrei; SVG ist Neuzeichnung,
-                kein Reproduktionsfoto -> §72 UrhG unkritisch.
+- Title:     Deutsche Kurrentschrift (aus „Der Damen-Briefsteller")
+- Author:    Johann Thomas Loth (zugeschrieben)
+- Year:      1866
+- License:   Public Domain (PD-old / Public Domain Mark 1.0)
+- License-Rationale: WARUM gemeinfrei — Schutzfrist-Argument je
+             Rechtsraum (§64/§66/§68 UrhG; US-Stichjahr), nicht nur
+             die Behauptung.
+- Retrieved: 2026-05-19
+
+## chart.svg — vektoriell, 154 KB        # ein Block pro Datei
+
+- Origin:    https://commons.wikimedia.org/wiki/File:Deutsche_Kurrentschrift.svg
+- Direct:    https://upload.wikimedia.org/...   # direkte Datei-URL
+- SHA256:    <hash>                      # Integrität/Nachprüfbarkeit
+- Processing: keine | Rotation/Re-Encode/…  # was wir verändert haben
+- Note:      Attribution (Uploader/Vektorisierer), Inhalt, Messwerte.
 ```
+
+Pflichtfelder: Title, Author, Year, License, **License-Rationale**,
+Retrieved; pro Datei Origin, Direct, **SHA256**, **Processing**, Note
+(mit Attribution). Die Rationale- und Processing-Felder sind seit
+2026-06-10 Pflicht — eine PD-Behauptung ohne Begründung und ein
+verändertes Original ohne Vermerk sind die zwei Fehler, die ein
+öffentliches Repo später nicht mehr heilen kann.
 
 `DATA_PROVENANCE.md` ist nur der **Index** darüber (eine Tabellenzeile
 pro Artefakt, verweist auf das jeweilige `SOURCE.md`).
@@ -120,7 +134,7 @@ gemischte Lizenz explizit pro Teilkorpus:
 ## 4. Konsequenz für die ersten Tests
 
 - Variante 0 = `v0-loth-1866`. Daraus die **Geometrie** für `canonical`;
-  der Ductus-Prior wird selbst darübergelegt (Referenz §2 — Bild liefert
+  der Duktus-Prior wird selbst darübergelegt (Referenz §2 — Bild liefert
   Geometrie, nicht Strichreihenfolge).
 - MVP §8 (6-Buchstaben-Kern-Alphabet, sieben Wörter + ein
   generalisierendes Wort, vier Validierungs-Gates inkl. abgespeckter
@@ -128,7 +142,9 @@ gemischte Lizenz explizit pro Teilkorpus:
   Rechtlich vollständig sauber, da PD + eigene Hand.
 - Testwörter §9 (Pflicht-Anker `lesen`, `das` + Coverage-Wörter `den`,
   `lese`, `lasen`, `als`, `dann` + Generalisierungs-Wort `denen`)
-  liegen unter `/samples/own-hand` und hängen an Variante 0.
+  kommen unter `/samples/own-hand` und hängen an Variante 0 (Soll-Layout
+  aus §1; aktuell befüllt sind `sources/` und `variants/` — die
+  Eigenhand-Scans entstehen mit M1).
 - Spätere historische Hände = neue `/variants/vN-...` über demselben
   Kanon (Varianten-Auswahlvektor, Referenz §10) — gleiche Ablage- und
   Lizenzregel, kein Sonderfall.

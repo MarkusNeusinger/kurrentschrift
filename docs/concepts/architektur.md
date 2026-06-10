@@ -25,7 +25,7 @@ genau einer (oder zwei) Sektion(en) zugeordnet.
 
 **Schreiben (Synthese) — der Forschungskern.** Kein integrierbares
 Standardprodukt; hier liegt der eigentliche Mehrwert (siehe §7). Die
-Architektur-Entscheidung dazu — analysis-by-synthesis mit Ductus-Prior —
+Architektur-Entscheidung dazu — analysis-by-synthesis mit Duktus-Prior —
 steht in §2.
 
 **Lesen (Erkennung) — gelöst, keine Forschung.** Transkribus hat öffentliche
@@ -44,19 +44,19 @@ soll — steht in [`vision.md`](vision.md).
 
 ---
 
-## 2. Architekturentscheidung: ductus-modellbasierte Extraktion
+## 2. Architekturentscheidung: duktus-modellbasierte Extraktion
 
 Kernidee: **Analysis-by-Synthesis.** Pro Buchstabe ist a priori bekannt,
 in welcher Reihenfolge, mit welchen Absetzpunkten und mit welchem Lauf
-(= Ductus) er in der normierten Kurrent vor 1900 geschrieben wurde. Aus dem
+(= Duktus) er in der normierten Kurrent vor 1900 geschrieben wurde. Aus dem
 Foto/Scan wird *nicht* blind eine Polyline aus dem Skelett gezogen — stattdessen
-wird ein kanonisches Ductus-Template an Skelett + Breitenprofil **gefittet**.
+wird ein kanonisches Duktus-Template an Skelett + Breitenprofil **gefittet**.
 
 - Das **Bild** liefert: Geometrie + Tinten-*Breite*.
-- Das **Ductus-Modell** liefert: Strichreihenfolge + Auflösung der Kreuzungen.
+- Das **Duktus-Modell** liefert: Strichreihenfolge + Auflösung der Kreuzungen.
 
 Damit wird das aus einem Standbild *unterbestimmte* Kreuzungsproblem
-(welcher Ast gehört zu welchem Strich, was kam zuerst) durch den Ductus-Prior
+(welcher Ast gehört zu welchem Strich, was kam zuerst) durch den Duktus-Prior
 *eindeutig*. Persönliche Varianz = Abweichung von der Norm, nicht Beliebigkeit.
 
 **Bewusst NICHT gewählt — und warum:**
@@ -67,7 +67,7 @@ Damit wird das aus einem Standbild *unterbestimmte* Kreuzungsproblem
   (Stiftbahn über Zeit); historisches Material ist offline (nur Bild). Bleibt
   optionales Spätstadium, nicht der Einstieg.
 - *Blindes Skelett-Tracing:* genau hier liegt das Kreuzungsproblem, das der
-  Ductus-Prior löst.
+  Duktus-Prior löst.
 - *Bigram-Datenbank aller Buchstabenkombinationen:* kombinatorisch unmöglich
   und unnötig (siehe §4).
 - *SVG-Standardbibliotheken für Schreib-Animation* (Vivus.js, GSAP
@@ -84,19 +84,19 @@ Damit wird das aus einem Standbild *unterbestimmte* Kreuzungsproblem
 ## 3. Die Bibliothekseinheit (Schema)
 
 Die natürliche Einheit ist **nicht der Buchstabe**. Eine Einheit ist ein
-gefittetes Ductus-Template einer **(Allograph, Formvariante)**-Kombination,
+gefittetes Duktus-Template einer **(Allograph, Formvariante)**-Kombination,
 plus deren Abweichung von der Norm. Drei orthogonale Achsen:
 
 1. **Position (Allograph) — als Lehrtafel-Rolle:** initial/medial/final
    bezeichnet, *wo Loth (oder eine vergleichbare Vorlage) diese Form auf der
    Tafel zeigt*. Die orthographische Frage „welche Vorlage gilt für einen
    konkreten Slot im Lauftext" ist eine separate Schicht — sie wird in
-   [`orthographie-regeln.md`](../reference/orthographie-regeln.md)
+   [`orthographie-regeln.md`](../schriftkunde/orthographie-regeln.md)
    beschrieben und vom (zukünftigen) Modul `core/orthography.py` konsumiert.
    Das ist wichtig: Rund-s erscheint auch an Morphemgrenzen innerhalb eines
    Wortes (`Aus-flug`, `Haus-thür`), seine *Tafelrolle* bleibt aber „final".
 2. **Formvariante:** mehrere gleichberechtigte, **in der Norm sanktionierte**
-   Ductus für denselben Buchstaben an derselben Tafelrolle (auf Lehrtafeln als
+   Duktus für denselben Buchstaben an derselben Tafelrolle (auf Lehrtafeln als
    „A = A" notiert: beide gültig, Schreiber-/Lehrtraditions-Wahl). Keine
    Abweichung, kein Fehler — Teil des kanonischen Modells. *Aus dem Kontext
    NICHT bekannt* (siehe §7).
@@ -120,7 +120,7 @@ Wichtige Festlegungen:
 
 - **Allographe sind getrennte Glyphen.** Medial ſ (langes s im Wortinneren)
   und finales s (Wortende) sind nicht „dasselbe s mit anderem Übergang",
-  sondern verschiedene Ductus. Positionsregel wie in arabischer Schrift.
+  sondern verschiedene Duktus. Positionsregel wie in arabischer Schrift.
 - **entry/exit haben einen Punkt UND eine Tangente** (Richtung) UND eine
   **Kopplungshöhe** (Grundlinie vs. Mittelband). Manche Buchstaben (b, o, v, w)
   koppeln oben an — das ist eine Glyph-Eigenschaft, im Template festgelegt,
@@ -137,7 +137,7 @@ Wichtige Festlegungen:
   wie das Breitenprofil interpretiert wird: **Kurrent** = druckabhängiger
   Schwellzug (Spitzfeder, `pressure`), **Sütterlin** = annähernd konstant
   (`constant`, Redisfeder), **Offenbacher** = winkelabhängig (`broad_nib`,
-  Breitfeder). Gleiches Ductus-Template, austauschbarer Resolver beim
+  Breitfeder). Gleiches Duktus-Template, austauschbarer Resolver beim
   Rendern (§5, §11). Liegt als `styles.width_resolver`.
 
 **Datenbankschema (implementiert, Migration `0004`).** Die in §3 angelegte
@@ -146,9 +146,14 @@ ebenso die früher (naming-und-setup §1) vertagte Stil-Dimension:
 
 - `styles` — Grundvorlage / Schriftfamilie (Kurrent · Sütterlin · Offenbacher):
   `width_resolver`, `default_slant_deg`, `default_style_ratio`.
+- `hands` — ein Schreiber (optional einem Stil zugeordnet); Sources,
+  Instances und Aggregates hängen daran.
 - `sources` — Herkunft der Bytes, `kind ∈ {chart, manuscript}`, hängt an einem
   Stil und optional an einer Hand; `style_ratio`/`slant_deg` überschreiben den
   Stil-Default pro Tafel.
+- `bboxes` — die Admin-Crop-Konfiguration pro `(source, glyph_key)`:
+  Crop-Rechteck, Radierer-`mask_strokes`, Lineatur-Kalibrierung
+  (`baseline_y`/`midband_y`), `guides`, `n_anchors`, `locked`/`split`.
 - `templates` — das kanonische `canonical` pro `(style, glyph, position,
   variant)`; `provenance_source_id` zeigt auf die getuschte Lehrtafel.
 - `instances` — die `control_points`-Fits pro Beleg aus Originaltexten
@@ -171,7 +176,7 @@ differenziert — die positionsabhängigen Verbindungsstriche werden ohnehin aus
 und **kein zu sammelnder Datensatz**. Wenn `exit` von Glyph A und `entry` von
 Glyph B als Punkt **plus Tangente** durch die Norm definiert sind, ist der
 Verbindungsstrich eine kurze, geometrisch determinierte Kurve zwischen zwei
-festgelegten Punkten mit festgelegten Richtungen. Der Ductus *erzeugt* den
+festgelegten Punkten mit festgelegten Richtungen. Der Duktus *erzeugt* den
 Übergang — deshalb keine Bigram-Explosion. Varianz: mehrere echte Fits pro
 Glyph + leichtes Jitter auf der Verbindung.
 
@@ -179,7 +184,7 @@ Glyph + leichtes Jitter auf der Verbindung.
 zeigt `ch`, `ck`, `tz`, `ſt`, `qu`, `ß` als *eigene gelehrte Einheiten*, nicht
 als verbundene Einzelbuchstaben. „Übergang = Konsequenz" gilt für *beliebige*
 Buchstabenpaare — aber dieser **bekannte, endliche Satz** muss als eigene
-Primär-Glyphen mit eigenem Ductus in die Bibliothek, NICHT als
+Primär-Glyphen mit eigenem Duktus in die Bibliothek, NICHT als
 exit→entry-Verkettung. Enumerieren, nicht generieren.
 
 **Offene Erweiterung** (im Staging, siehe
@@ -193,7 +198,7 @@ vorliegen. Generator-Logik bleibt Default. Wird mit dem Beispieltext-Import
 
 ## 5. Schwellzug vs. Tinte — zwei getrennte Kanäle
 
-- **Breite = Druck (Schwellzug).** Aus `skeletonize` (Mittellinie) +
+- **Breite = Druck (Schwellzug).** Aus `skeletonize` (Strich-Centerline) +
   `distance_transform_edt` (halbe Strichbreite an jedem Punkt). Misst an der
   Maske, **unabhängig von der Schwärze** → robust gegen Ausbleichen.
 - **Schwärze = Tintenmenge.** Separater Graustufenkanal. Trägt die Spur des
@@ -211,15 +216,16 @@ trägt zwei Render-Modi:
 - **Kurrent (Spitzfeder, 19. Jh.):** `width_profile` wird als
   *druckabhängiger Schwellzug* interpretiert — variable Strichbreite über
   die Bahn, abrupte Wechsel an Ansatz- und Endpunkten, charakteristische
-  Haar/Bauch-Modulation pro Glyph.
+  Haar-/Schattenstrich-Modulation pro Glyph.
 - **Sütterlin (1911 ff., Redisfeder):** `width_profile` wird auf einen
   *konstanten* Wert (mittlere Breite pro Source) gesetzt — Sütterlin
-  verzichtet bewusst auf Schwellzug. Gleiches Ductus-Template, anderer
+  verzichtet bewusst auf Schwellzug. Gleiches Duktus-Template, anderer
   Resolver.
 
-Die Wahl ist eine `source`-Eigenschaft (siehe §3), keine `glyph`-
-Eigenschaft. Der Renderer (§11) liest sie aus der `Source` und wählt den
-passenden Resolver.
+Die Wahl ist eine Stil-Eigenschaft (`styles.width_resolver`, siehe §3),
+keine `glyph`-Eigenschaft. Der Renderer (§11) löst sie über den Stil der
+Source auf und wählt den passenden Resolver — die Source kann nur Lineatur
+(`style_ratio`) und Schräge (`slant_deg`) überschreiben, nicht den Resolver.
 
 ---
 
@@ -242,13 +248,13 @@ passenden Resolver.
 
 ## 7. Offener Forschungskern / das Risiko
 
-Der Mehrwert liegt **präzise in der Kombination** (Ductus-Prior + Skelett/
+Der Mehrwert liegt **präzise in der Kombination** (Duktus-Prior + Skelett/
 Distanztransformation + Allograph-Modell + getrennte Kanäle, für normierte
 Kurrent vor 1900). Einzeln ist nichts davon neu; die Verbindung mit dieser
 Domäne existiert nicht als fertiges Werkzeug.
 
 **Das eine ungelöste Risiko (empirisch, nicht vorab beweisbar):** wie *eng*
-das Ductus-Template gefasst wird.
+das Duktus-Template gefasst wird.
 
 - zu starr → fittet echte historische Hände nicht (jeder Schreiber bricht
   die Norm),
@@ -280,7 +286,7 @@ zugleich der Hebel für Multi-Stil (§10, §12).
 
 Nicht Bibliothek/Engine/Website zuerst, sondern der kleinste lauffähige
 Render-Kern: ein **6-Buchstaben-lowercase-Alphabet** plus der ſ/s-Allograph-
-Split, mit dem ein kleines Wortset (§9) aus gefitteten Ductus-Templates und
+Split, mit dem ein kleines Wortset (§9) aus gefitteten Duktus-Templates und
 norm-erzeugten Übergängen tatsächlich rekonstruiert wird — und ein darüber
 hinaus *neues* Wort aus aggregierten Per-Hand-Stats. Spike-Essenz (billige
 Risiko-Falsifikation aus §7) bleibt erhalten — als vier harte Validierungs-
@@ -336,8 +342,8 @@ ein bis zwei Wochenenden, kein Quartal.
 | Pos | Glyph | position | Besonderheit / Testet |
 |---|---|---|---|
 | 1 | l | initial | Oberlängen-Schleife (Ascender), Abstrich = dicker Schwellzug |
-| 2 | e | medial | Kurrent-e: kleine Schleife → **Kreuzungsfall** (Ductus-Prior) |
-| 3 | ſ | **medial** | langes s — **Allograph**, eigener Ductus |
+| 2 | e | medial | Kurrent-e: kleine Schleife → **Kreuzungsfall** (Duktus-Prior) |
+| 3 | ſ | **medial** | langes s — **Allograph**, eigener Duktus |
 | 4 | e | medial | **2. Instanz** desselben `canonical`, eigener Fit (Statistik) |
 | 5 | n | final | berühmte u/n-Verwechslung; Endposition |
 
@@ -426,21 +432,26 @@ Wort-Komposition in der gleichen Hand.
 ## 11. Animation-Render-Pfad
 
 Vision §3 verlangt animierte Buchstaben mit Schreibreihenfolge,
-Ansatzpunkten und **Schwellzug-Aufbau** live. Direkter Effekt des Ductus-
+Ansatzpunkten und **Schwellzug-Aufbau** live. Direkter Effekt des Duktus-
 Priors (§2): die Synthese liefert nicht nur das fertige Bild, sondern auch
 *wie es entsteht*.
 
-**MVP-Stand (Gate 4 in §8):** `stroke-dashoffset`-Trick auf der **Centerline**
-des Glyphs, konstante Strichbreite. WAAPI-Timeline für die Sequenz mehrerer
-Striche. Genügt für „Buchstabe entsteht in richtiger Reihenfolge", reicht
-nicht für Schwellzug-Aufbau.
+**MVP-Stand (Gate 4 in §8, implementiert als `WrittenGlyph`):** Die gefüllte
+Schwellzug-Silhouette (`outline_polygons` aus der Diagnose-Pipeline) wird per
+**Masken-Sweep** enthüllt — ein breiter Maskenpfad läuft via animiertem
+`stroke-dashoffset` entlang der per-Stroke-`centerlines_template`, sodass die
+Tinte in echter Schreibreihenfolge erscheint und an Absetzpunkten wirklich
+abhebt. Sequenziert über CSS-Keyframes (Emotion), nicht WAAPI. Genügt für
+„Buchstabe entsteht in richtiger Reihenfolge" mitsamt statischer
+Schwellzug-Form; der *zeitvariable* Schwellzug-Aufbau bleibt dem vollen
+Renderer vorbehalten.
 
 **Post-MVP — voller Renderer:**
 
 - **Pro Frame:** Centerline bis `t` abtasten, Width-Profile (`half_widths`)
   auswerten, zwei Offset-Kurven (links/rechts der Centerline) berechnen, als
   Canvas-2D-Polygon oder gefülltes SVG-`path` rendern.
-- **Width-Profile-Resolver pro Source** (§5): Kurrent = voller Schwellzug,
+- **Width-Profile-Resolver pro Stil** (§5): Kurrent = voller Schwellzug,
   Sütterlin = konstant.
 - **Choreographie:** WAAPI-Timeline; SMIL wird abgeraten (Chromium-Deprecation,
   MDN-Empfehlung). Pause/Geschwindigkeit/Wiederholung als
@@ -450,7 +461,7 @@ nicht für Schwellzug-Aufbau.
   `SkPaint::getFillPath()` für Profi-Qualität (~2–6 MB WASM-Payload, daher
   hinter Feature-Flag).
 - **Ligaturen** (`ch`, `ck`, `ſt`, `tz`, `qu`, `ß`) als eigene Animationen mit
-  eigenem Ductus (§4).
+  eigenem Duktus (§4).
 
 **UX-Vorlage (nicht Engine):** AnimCJK / Hanzi Writer — Quiz-Architektur,
 Stroke-Matching-Score, Callback-API (`onCorrectStroke`, `onMistake`). Wir
@@ -470,15 +481,16 @@ Profile. Derselbe §6 deckt Hände nebeneinander vergleichen mit Heatmaps ab.
 
 **Drei Schichten:**
 
-1. **Per-Instanz-Stats** — *liegt bereits vor.* `glyphs.measurements` hält
+1. **Per-Instanz-Stats** — *liegt bereits vor.* `templates.measurements`
+   (per Text-Vorkommen später `instances.measurements`) hält
    `slant_deg`, `mean_half_width_px`, `path_length_px`, `aspect_ratio` für
    jede gefittete Instanz. Erweiterungen pro neuer Größe folgen demselben
    JSONB-Pattern.
 2. **Per-Hand-Aggregation** — *teilweise vorhanden.* Cluster-Mittelpunkt +
-   Hüllkurve pro `(glyph, position, variant)` × Source. M5(C) der Roadmap
+   Hüllkurve pro `(hand, glyph, position, variant)`. M5(C) der Roadmap
    liefert die erste Implementierung; voller Ausbau zur „personal
-   canonical"-Schicht ist Phase-3-Aufgabe. Speicherung: optionale
-   `hand_stats`-Schicht (Schema-Detail bei Implementierung).
+   canonical"-Schicht ist Phase-3-Aufgabe. Speicherung: Tabelle `aggregates`
+   (siehe §3), gefüllt durch den Post-MVP-Aggregationsjob.
 3. **Textunabhängige Writer-ID (optional, post-Phase-3):** **Hinge-** und
    **Δn-Hinge-Features** nach Bulacu/Schomaker — Joint-Distributionen
    benachbarter Konturwinkel, Goldstandard für textunabhängige Writer-
@@ -563,7 +575,7 @@ Vision §5 (Lese-Lupe-Teil): Bild plus Overlay zur Lese-Hilfe (§13):
 Klick auf einen verwirrenden Buchstaben → strukturierte Erklärung („das
 ist medial ſ, kein f — hier fehlt der Querstrich"). Verbindet HTR-Output
 mit den Regel-Erklärungen aus
-[`orthographie-regeln.md`](../reference/orthographie-regeln.md).
+[`orthographie-regeln.md`](../schriftkunde/orthographie-regeln.md).
 
 **Display-Schicht:**
 
@@ -578,13 +590,13 @@ analysis-by-synthesis-rückwärts:**
 
 - Für jeden klickbaren Glyph-Bereich: alle Library-Templates fitten, bestes
   Match nehmen, strukturierte Erklärung aus
-  [`orthographie-regeln.md`](../reference/orthographie-regeln.md)
+  [`orthographie-regeln.md`](../schriftkunde/orthographie-regeln.md)
   zurückgeben.
 - *Funktioniert sinnvoll erst, wenn die Library breit genug ist* —
   MVP-Stand mit 11 Templates reicht für Demo, nicht für ganze Briefe.
 - Vorteil gegenüber fremden HTR: **Erklärbarkeit**. Wir können nicht nur
   *dass*, sondern *warum* dieser Buchstabe so erkannt wurde — direktes
-  Bonusprodukt unseres generativen Ductus-Modells.
+  Bonusprodukt unseres generativen Duktus-Modells.
 
 **Granularitäts-Stufen:**
 
@@ -619,7 +631,7 @@ Lineatur in einem Schritt, druckbar.
 
 - Verhältnis Ober-/Mittel-/Unterband frei wählbar (`style_ratio` auf
   `source` — siehe §3 / `core/template.template_guides`).
-- Default 2:1:2; 3:2:3 und 1:1:1 als Presets; alle Verhältnisse zugelassen.
+- Default 2:1:2; 2:3:2 (Offenbacher) und 1:1:1 (Sütterlin) als Presets; alle Verhältnisse zugelassen.
 - Beliebiger Eingabetext (von Tagebuch bis Übungsphrase) wird via Renderer
   in Kurrent gesetzt und in die Lineatur eingebettet.
 
@@ -637,12 +649,14 @@ anyplot.ai auf Cloud Run trägt:
 - **React 19** + **Vite (mit SWC-Plugin)** für schnellen Build/HMR.
 - **MUI 9** + **Emotion** für Komponenten.
 - **React Router 7** für Client-Side-Routing.
-- **`react-helmet-async`** für SEO-Meta-Tags pro Route. Google rendert JS
-  und indexiert SPAs gut; Bing/DuckDuckGo lesen Meta-Tags. Für unsere
-  Reichweite (Genealogie + Lernende) reicht das. SSG-Migration bleibt
-  Option, falls Tooling-Bedarf entsteht.
-- **`react-i18next`** für DE/EN-Internationalisierung mit URL-Präfix
-  (`/de/…`, `/en/…`); deutscher Default, englischer Pfad als zweiter Hebel.
+- **`react-helmet-async`** *(geplant, post-MVP)* für SEO-Meta-Tags pro
+  Route. Google rendert JS und indexiert SPAs gut; Bing/DuckDuckGo lesen
+  Meta-Tags. Für unsere Reichweite (Genealogie + Lernende) reicht das.
+  SSG-Migration bleibt Option, falls Tooling-Bedarf entsteht.
+- **`react-i18next`** *(geplant, post-MVP)* für DE/EN-Internationalisierung
+  mit URL-Präfix (`/de/…`, `/en/…`); deutscher Default, englischer Pfad als
+  zweiter Hebel. Bis dahin liegen die deutschen UI-Strings als
+  Pre-i18n-Namespaces unter `locales/de/`.
 
 **Routenstruktur:**
 
@@ -658,10 +672,13 @@ anyplot.ai auf Cloud Run trägt:
 **Hosting & Deploy:**
 
 - **GCP / Cloud Run** wie anyplot — eigenes GCP-Projekt.
-- **Ein Container** für FastAPI + statisches Vite-Build (Reverse-Proxy oder
-  StaticFiles-Mount im FastAPI). `Dockerfile` + `cloudbuild.yaml` liegen
-  bereits als Platzhalter im Repo, müssen aktiviert werden.
-- CI/CD über Cloud Build.
+- **Zwei Cloud-Run-Services** (live seit 2026-05-29): `kurrentschrift-app`
+  serviert das statische Vite-Build hinter nginx (kurrentschrift.ink),
+  `kurrentschrift-api` das FastAPI (api.kurrentschrift.ink) — je eigenes
+  `Dockerfile` + `cloudbuild.yaml` unter `app/` bzw. `api/`.
+- CI/CD über Cloud Build mit getrennten Triggern pro Service. Operativer
+  Ist-Zustand (Domains, Cloudflare Access, Migrate-Job):
+  [`notes/deploy-bootstrap-status.md`](../notes/deploy-bootstrap-status.md).
 
 > Build-Schritte, Komponenten-Map, Auth-Konfiguration:
 > [`reference/frontend-stack.md`](../reference/frontend-stack.md).
@@ -670,7 +687,7 @@ anyplot.ai auf Cloud Run trägt:
 
 ## 17. Open-Data-Export
 
-Vision §7: kanonische Glyph-Daten (Anker, Schwellzug, Ductus-Reihenfolge)
+Vision §7: kanonische Glyph-Daten (Anker, Schwellzug, Duktus-Reihenfolge)
 als zitierbares Open-Data-Paket für die Forschungs-Zielgruppe. Heute
 nirgends öffentlich verfügbar — die ehrliche Lücke, die wir füllen können.
 
@@ -689,8 +706,8 @@ maximale Nachnutzung. Konsistent mit
 **Formate:**
 
 - **Primär:** JSON-Schema unseres Library-Eintrags (Anker + Schwellzug-
-  Profil + Ductus-Reihenfolge + entry/exit/coupling). Direkt aus den
-  `glyphs`-Rows der DB exportierbar.
+  Profil + Duktus-Reihenfolge + entry/exit/coupling). Direkt aus den
+  `templates`-Rows der DB exportierbar.
 - **Optional zusätzlich:** TEI-XML mit `<msDesc>` / `<handDesc>` /
   `<scriptDesc>` für DH-Anschluss; **IIIF-Manifest** für Beispielzeilen, wo
   Bildmaterial mitveröffentlicht werden darf.

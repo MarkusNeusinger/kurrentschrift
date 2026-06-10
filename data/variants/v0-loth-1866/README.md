@@ -11,7 +11,7 @@ Hier landet das Gelernte über dieser Quelle:
 - Varianten-Auswahlvektor: welche der sanktionierten Formvarianten pro
   Glyph diese Scheibe abbildet.
 
-Ductus (Strichreihenfolge, Absetzpunkte) wird modelliert, nicht aus der
+Duktus (Strichreihenfolge, Absetzpunkte) wird modelliert, nicht aus der
 Tafel abgelesen — siehe [`architektur.md`](../../../docs/concepts/architektur.md) §2.
 
 Stand: leer. Erstbefüllung durch den MVP

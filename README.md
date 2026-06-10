@@ -43,11 +43,11 @@ This trade-off has to be found empirically. It's the project's research kernel; 
 
 ## Status
 
-In-progress MVP. Design docs are settled; admin UI is up; canonical extraction works; per-instance fitting and aggregation are the next milestones.
+In-progress MVP. Design docs are settled; the public site at [kurrentschrift.ink](https://kurrentschrift.ink) (worksheet generator + letter quiz) is live; the admin setup wizard, canonical extraction and the template-to-instance fit routine are implemented; own-hand scans, per-instance fit validation and aggregation are the next milestones.
 
-**Next: the [§8 MVP](docs/concepts/architektur.md#8-der-mvp-kleinster-lauffähiger-renderkern).** A six-letter lowercase Kurrent alphabet (`a · d · e · l · n · ſ · s`) plus seven short words covering all three positions (initial/medial/final). Scan the author's own hand, fit the canonical ductus templates per glyph, aggregate the per-glyph cluster stats, then re-render both the seven input words *and at least one new word* (e.g. `denen`) in the same hand. One to two weekends, not a quarter. If the **four** validation gates (stability, allograph separation, word rendering, slim animation playback) hold → kernel validated, rest is engineering. If not → valuable negative result in days.
+**Next: the [§8 MVP](docs/concepts/architektur.md#8-der-mvp-kleinster-lauffähiger-renderkern).** A six-letter lowercase Kurrent alphabet (`a · d · e · l · n · ſ · s` — seven glyphs, since medial `ſ` and final `s` are separate allographs of one letter) plus seven short words covering all three positions (initial/medial/final). Scan the author's own hand, fit the canonical ductus templates per glyph, aggregate the per-glyph cluster stats, then re-render both the seven input words *and at least one new word* (e.g. `denen`) in the same hand. One to two weekends, not a quarter. If the **four** validation gates (stability, allograph separation, word rendering, slim animation playback) hold → kernel validated, rest is engineering. If not → valuable negative result in days.
 
-Pflicht-Anker pair: `lesen` (medial ſ, repeated `e`, ascender, u/n-confusable final `n`) + `das` (final `s`). See [`docs/concepts/mvp-roadmap.md`](docs/concepts/mvp-roadmap.md) for the actionable breakdown.
+Mandatory anchor pair (Pflicht-Anker): `lesen` (medial ſ, repeated `e`, ascender, u/n-confusable final `n`) + `das` (final `s`). See [`docs/concepts/mvp-roadmap.md`](docs/concepts/mvp-roadmap.md) for the actionable breakdown.
 
 ## What sits around the engine
 
@@ -56,7 +56,7 @@ The render kernel is the hard part. Around it, [`kurrentschrift.ink`](https://ku
 **Writing**
 
 1. Onboarding (history, alphabet table, reading rules).
-2. Practice sheets with configurable lineature and content-aware text.
+2. Practice sheets with configurable ruling (Lineatur) and content-aware text.
 3. Animated letter table (stroke order + Schwellzug build-up, live).
 
 **Reading**
@@ -79,29 +79,29 @@ The post-MVP roadmap in [`architektur.md` §10](docs/concepts/architektur.md#10-
 kurrentschrift/
 ├── core/       # Pure-Python compute + DB layer (extractor, template, Postgres models)
 ├── api/        # FastAPI service (thin routing over /core)
-├── app/        # React 19 + Vite + MUI SPA — today admin-only (bbox editor + stylus trace);
-│               # post-MVP it grows to host the end-user website, admin moves behind /admin/* with auth
-├── alembic/    # Schema migrations (sources, bboxes, glyphs)
+├── app/        # React 19 + Vite + MUI SPA — public site (landing, worksheet generator,
+│               # letter quiz) + admin behind /admin/* (Cloudflare Access in prod)
+├── alembic/    # Schema migrations (styles, hands, sources, bboxes, templates, instances, aggregates)
 ├── data/       # Sources, variants, samples (separate licensing — see below)
 └── docs/       # Design rationale (German); references with technical specs
 ```
 
 ### Local dev
 
-Two terminals:
+Three steps:
 
 ```bash
-# Terminal 0 — once, or whenever the schema changes
+# Step 1 — once, or whenever the schema changes
 uv run alembic upgrade head
 
-# Terminal 1 — Python backend on :8000
+# Step 2 — Python backend on :8000
 uv run uvicorn api.main:app --reload --port 8000
 
-# Terminal 2 — Vite dev server on :3000 with /api proxy to :8000
+# Step 3 — Vite dev server on :3000 with /api proxy to :8000
 cd app && npm install && npm run dev
 ```
 
-Browser at `http://localhost:3000`; the admin UI loads the Loth chart, lets you drag bboxes/excludes per glyph, set baseline/midband, and trace the stroke with a stylus. All canonicals live in Postgres (the `kurrentschrift` DB on the anyplot Cloud SQL instance — see `.env`) and the editor's SVG diagnostic view renders Loth-crop, skeleton+anchors, and the canonical template side by side from JSON the backend serves.
+Browser at `http://localhost:3000` — that is the public landing page; the admin lives under `/admin` and loads the Loth chart, where a step-by-step setup wizard handles per-glyph excludes, ruling, slant and the stroke path (traced with a stylus). For local admin saves, set `ADMIN_TOKEN=<x>` for the API and the matching `VITE_ADMIN_TOKEN=<x>` in `app/.env` (without them, write requests return 401). All canonicals live in Postgres — point `DATABASE_URL` (see `.env.example`) at any empty PostgreSQL database; `alembic upgrade head` creates the schema and seeds the base styles. The admin's SVG diagnostic modal renders Loth-crop, skeleton+anchors, and the canonical template side by side from JSON the backend serves.
 
 ## Documentation
 
@@ -119,11 +119,15 @@ Start at [`docs/index.md`](docs/index.md). Highlights:
 - **[Sprachregelung](docs/reference/sprachregelung.md)** — German/English per artifact
 - **[Quellen- und Rechte-Policy](docs/reference/quellen-und-rechte.md)** — what may enter the public repo
 - **[Datenablage](docs/reference/datenablage.md)** — `/data` layout, commit classes, `SOURCE.md` fields
-- **[Orthographie-Regeln](docs/reference/orthographie-regeln.md)** — Rund-s, ligatures, mixed-script reading rules
-- **[HTR-Integration](docs/reference/htr-integration.md)** — Transkribus API (free-tier ≈ €0.12/page, CER 5–7%), TrOCR fallback (CER 2.65%), PAGE-XML
+- **[HTR-Integration](docs/reference/htr-integration.md)** — Transkribus API (≈ €0.12/page via paid credits, CER 5–7%; the free tier is app-side quota logic), TrOCR fallback (CER 2.65%), PAGE-XML
 - **[Animation-Rendering](docs/reference/animation-rendering.md)** — `stroke-dashoffset` (MVP) and Canvas-2D stroker (post-MVP), Schwellzug sampling, WAAPI choreography
 - **[Stil-Analyse](docs/reference/styleanalyse.md)** — per-instance / per-hand / Hinge-feature layers, heatmap layouts
 - **[Frontend-Stack](docs/reference/frontend-stack.md)** — React+Vite+MUI build, deploy on Cloud Run, i18n, auth-gated admin routes
+
+**Schriftkunde** (script facts):
+
+- **[Orthographie-Regeln](docs/schriftkunde/orthographie-regeln.md)** — Rund-s, ligatures, mixed-script reading rules
+- **Script families** — [overview](docs/schriftkunde/allgemein.md) · [Kurrent](docs/schriftkunde/kurrent.md) · [Sütterlin](docs/schriftkunde/suetterlin.md) · [Offenbacher](docs/schriftkunde/offenbacher.md)
 
 **For AI agents:** [`CLAUDE.md`](CLAUDE.md) (Claude Code) and [`.github/copilot-instructions.md`](.github/copilot-instructions.md) (GitHub Copilot) — kept in sync.
 
@@ -137,7 +141,7 @@ First source: the [Loth 1866 Kurrent table](data/sources/loth-1866/SOURCE.md) �
 
 ## Contributing
 
-This is an in-progress MVP portfolio project — issues and discussion are welcome, external PRs are premature until the four MVP gates land. See **[Contributing Guide](docs/contributing.md)** for what's useful to send right now.
+This is an in-progress MVP portfolio project — issues (including discussion of the approach) are welcome, external PRs are premature until the four MVP gates land. See **[Contributing Guide](docs/contributing.md)** for what's useful to send right now.
 
 ## Citation
 

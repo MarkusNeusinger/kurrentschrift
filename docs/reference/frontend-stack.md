@@ -20,10 +20,10 @@ gemeinsam für Endnutzer und Admin, mit Auth-Gate für sensible Routen.
 | **Vite** (mit `@vitejs/plugin-react-swc`) | 8.x | Build-Tool, schneller HMR. |
 | **MUI** + **Emotion** | 9.x | Komponenten-Bibliothek. |
 | **React Router** | 7.x | Client-Side-Routing. |
-| **`react-helmet-async`** | 3.x | SEO-Meta-Tags pro Route (Title, Description, Open Graph). |
-| **`react-i18next`** | aktuell | Internationalisierung DE/EN. |
+| **`react-helmet-async`** | geplant (P1) | SEO-Meta-Tags pro Route (Title, Description, Open Graph). Noch nicht installiert. |
+| **`react-i18next`** | geplant (P1) | Internationalisierung DE/EN. Noch nicht installiert (siehe i18n unten). |
 | **TypeScript** | 6.x | Typsicherheit. |
-| **`vite-plugin-compression2`** | 2.x | Gzip + Brotli-Pre-Compression. |
+| **`vite-plugin-compression2`** | geplant (P1) | Gzip + Brotli-Pre-Compression. Noch nicht installiert. |
 
 **Package Manager:** npm (wie heute im Repo — `app/package-lock.json` ist
 checked in; anyplot nutzt yarn, wir bewusst nicht).
@@ -45,10 +45,12 @@ checked in; anyplot nutzt yarn, wir bewusst nicht).
 
 ### Öffentliche Routen (kein Auth)
 
-Die Pfade unten sind **ohne** Sprachpräfix notiert. Im Routing liegen sie
-unter `/de/…` (Default) bzw. `/en/…` (siehe i18n unten) — `/lernen` wird
-also als `/de/lernen` und `/en/learn` ausgeliefert. Die englischen
-Slug-Varianten werden mit dem `locales/en/`-Bundle definiert (P1-Arbeit).
+Die Pfade unten sind **ohne** Sprachpräfix notiert — so liegen sie heute
+auch im Routing (`routes/paths.ts`: `/`, `/schreiben`, `/quiz`, ohne
+Präfix). Im Ziel-Design (P1, siehe i18n unten) wandern sie unter `/de/…`
+(Default) bzw. `/en/…` — `/lernen` wird dann als `/de/lernen` und
+`/en/learn` ausgeliefert. Die englischen Slug-Varianten werden mit dem
+`locales/en/`-Bundle definiert (P1-Arbeit).
 
 | Pfad | Inhalt | Vision-Bezug |
 |---|---|---|
@@ -58,29 +60,35 @@ Slug-Varianten werden mit dem `locales/en/`-Bundle definiert (P1-Arbeit).
 | `/animation` | Animierte Buchstaben-Tafel | §3 |
 | `/schreiben` | Lineatur-Konfigurator + Übungsblatt-Generator | §2 |
 | `/lesen-ueben` | Beliebiger Text → Kurrent-Rendering | §4 |
-| `/lese-hilfe` | Upload historischer Brief → HTR-Job | §6 |
-| `/lese-lupe/:job` | Lese-Lupe für transkribierten Brief | §8 |
-| `/stil-analyse` | Upload Schrift-Probe → Statistik-Report | §5 |
-| `/vergleich` | Hände vergleichen mit Heatmaps | §7 |
-| `/open-data` | Daten-Export-Seite mit DOI-Verweis | §9 |
-| `/glossar` | Erklärungen (Rund-s, Ligaturen, Schwellzug…) | §1, §8 |
+| `/lese-hilfe` | Upload historischer Brief → HTR-Job | §5 |
+| `/lese-lupe/:job` | Lese-Lupe für transkribierten Brief | §5 |
+| `/stil-analyse` | Upload Schrift-Probe → Statistik-Report | §6 |
+| `/vergleich` | Hände vergleichen mit Heatmaps | §6 |
+| `/open-data` | Daten-Export-Seite mit DOI-Verweis | §7 |
+| `/glossar` | Erklärungen (Rund-s, Ligaturen, Schwellzug…) | §1, §5 |
 
 ### Admin-Routen (hinter Auth)
 
 | Pfad | Inhalt | Status |
 |---|---|---|
-| `/admin/chart` | Bbox-Editor auf Source-Chart (heute `/`) | existiert |
-| `/admin/edit/:glyphKey` | Stylus-Trace + 3-Spalten-Diagnostic (heute `/edit/...`) | existiert |
+| `/admin/chart` | Bbox-Editor auf Source-Chart; enthält den Einrichtungs-Wizard (Dialog, einzige Autoren-Fläche inkl. Stylus-Trace) und das Diagnose-Modal (3-Spalten + M4-Fit) | existiert |
 | `/admin/sources` | Source-Verwaltung | post-MVP |
 | `/admin/jobs` | HTR-Job-Monitor (Quote-Übersicht) | post-MVP |
 
-**Migration der existierenden Routen:** Beim Implementieren werden die
-heutigen `/` und `/edit/:glyphKey` unter `/admin/` verschoben, neue
-Endnutzer-Routen kommen nach `/`.
+Die Routen-Migration ist erfolgt (Restructure 2026-06): `/` ist die
+öffentliche Landing, der Chart-Editor liegt unter `/admin/chart`
+(`routes/paths.ts`). Eine eigene `/admin/edit/:glyphKey`-Route gibt es
+nicht — die frühere EditorPage wurde durch Wizard + Diagnose-Modal
+innerhalb von `/admin/chart` ersetzt.
 
 ---
 
 ## 3. i18n
+
+**Status: Ziel-Design für P1, noch nicht eingebaut.** Ist-Stand:
+`react-i18next` ist nicht installiert; alle deutschen UI-Strings liegen
+als Pre-i18n-TS-Namespaces unter `app/src/locales/de/`, das Routing kennt
+keine Sprachpräfixe. Der Rest dieses Abschnitts beschreibt das Soll.
 
 ### Strategie
 
@@ -109,8 +117,8 @@ i18n
 
 ### Inhalts-Pflege
 
-- **MVP (DE only):** alle Strings nur in `locales/de/`. Englische Strings
-  bewusst leer, Routing leitet alles auf `/de/`.
+- **MVP (DE only, Ist-Stand):** alle Strings nur in `locales/de/` (als
+  TS-Namespaces, noch ohne i18n-Library); keine Sprachpräfixe im Routing.
 - **P1+ (EN folgt):** `locales/en/` füllen. Reihenfolge: Lese-Hilfe-UI
   zuerst (Genealogie-Zielgruppe), dann Inhalts-Seiten (Einstieg, Glossar).
 - **Hilfetexte und Pitch-Texte** bleiben in den Page-Komponenten als
@@ -183,6 +191,15 @@ Wie anyplot (`anyplot/api/routers/debug.py:require_admin`):
 - Keine Cookies, kein Session-Management im Backend.
 - Google-Login Out-of-the-Box.
 
+### Implementiert dazu: X-Admin-Token-Fallback + Fail-Closed
+
+`api/auth.py:require_admin` akzeptiert neben dem CF-Access-JWT einen
+`X-Admin-Token`-Header als Shared-Secret-Fallback (lokale Entwicklung /
+CI / Break-Glass): `ADMIN_TOKEN` im API-Env, das passende
+`VITE_ADMIN_TOKEN` im SPA-Env. Ist keiner der beiden Pfade konfiguriert,
+beantwortet das Gate jeden geschützten Request mit **503** — ein
+fehlkonfiguriertes Prod-Deploy schlägt geschlossen fehl statt offen.
+
 ### Alternative: GCP Identity-Aware Proxy (IAP)
 
 Wenn wir Cloudflare gar nicht im Stack haben wollen, ist GCP IAP die
@@ -204,34 +221,36 @@ Funktionsweise identisch.
 
 - `cd app && npm install && npm run build` → statisches `dist/` mit
   JS-Chunks + Assets.
-- Manual-Chunks (wie anyplot):
-  - `mui-icons` separat (large, oft gecached).
-  - `mui` (MUI + Emotion).
-  - `vendor` (React + Router).
-- Compression: Gzip + Brotli pre-compressed via `vite-plugin-compression2`.
+- Geplant (P1, noch nicht in `vite.config.ts`):
+  - Manual-Chunks wie anyplot — `mui-icons` separat (large, oft gecached),
+    `mui` (MUI + Emotion), `vendor` (React + Router).
+  - Gzip + Brotli pre-compressed via `vite-plugin-compression2`.
 
 ### Deploy auf Cloud Run
 
-- **Ein Container** für FastAPI + statisches Vite-Build:
-  ```dockerfile
-  FROM python:3.13-slim AS api
-  # … FastAPI install
-  COPY app/dist /app/static
-  CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8080"]
-  ```
-  FastAPI mountet `/app/static` als statisches Verzeichnis (`StaticFiles`).
-- **CI/CD:** Cloud Build (`cloudbuild.yaml` als Platzhalter im Repo, muss
-  aktiviert werden — wie bei anyplot).
-- **Region:** europe-west — niedrige Latenz für deutschsprachige
+**Zwei Services**, live seit 2026-05 — operativer Ist-Zustand in
+[`deploy-bootstrap-status.md`](../notes/deploy-bootstrap-status.md):
+
+- **`kurrentschrift-api`** — FastAPI (`api/Dockerfile`);
+  `api/cloudbuild.yaml` fährt vor dem Rollout einen
+  Alembic-Migrate-Job (`kurrentschrift-migrate`).
+- **`kurrentschrift-app`** — statisches Vite-Build hinter
+  nginx-unprivileged (`app/Dockerfile` + `app/cloudbuild.yaml`).
+- **CI/CD:** Cloud Build, je ein Trigger pro Service (deploy-api /
+  deploy-app), deployt aus `main`.
+- **Region:** europe-west4 — niedrige Latenz für deutschsprachige
   Hauptzielgruppe.
 - **Min instances:** 0 (Cold-Start akzeptabel für eine Lern-Webseite).
-- **Memory:** 1 Gi (für FastAPI + WeasyPrint + ggf. TrOCR später 2–4 Gi).
+- **Memory:** API 1 Gi (für FastAPI + WeasyPrint + ggf. TrOCR später
+  2–4 Gi), App 512 Mi.
 
 ### Reverse-Proxy / Routing
 
-- `/api/*` → FastAPI-Routes.
-- `/admin/*` → React-SPA (mit Auth-Check serverseitig).
-- alles andere → React-SPA mit Fallback `index.html`.
+- `/api/*` → der Cloudflare-Worker vor dem App-Service leitet auf
+  `api.kurrentschrift.ink` (FastAPI) um; nginx im App-Container kennt
+  kein `/api` (siehe Kopfkommentar `app/nginx.conf`).
+- `/admin/*` → React-SPA (Auth-Gate am Edge via Cloudflare Access, §5).
+- alles andere → React-SPA mit Fallback `index.html` (nginx).
 
 ---
 
@@ -268,7 +287,7 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
 - `sections/admin/sidebar/GlyphSidebar.tsx` — Buchstaben-Grid aus
   `domain/glyphs.ts`.
 - `components/` — `PaperBackground` (Papier-Atmosphäre), `PublicHeader`,
-  `WrittenGlyph` (Ductus-Animation), `BootStatus` (Boot/Fehler-Screens).
+  `WrittenGlyph` (Duktus-Animation), `BootStatus` (Boot/Fehler-Screens).
 
 ### Neu (kommt mit Phasen P1–P5)
 

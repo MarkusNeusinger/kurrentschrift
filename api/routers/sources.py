@@ -13,7 +13,9 @@ router = APIRouter(prefix="/sources", tags=["sources"])
 
 def _to_out(source: Source, style: Style | None) -> SourceOut:
     # Resolve the lineature ratio + slant: per-source override if set, else the
-    # style default. Falls back to Kurrent-ish constants if the style is missing.
+    # style default. Falls back to Kurrent-ish constants if the style is missing
+    # (65 mirrors styles.default_slant_deg's server default — the literature
+    # value for Kurrent um 1900, not a chart measurement).
     default_ratio = list(style.default_style_ratio) if style is not None else [2, 1, 2]
     default_slant = float(style.default_slant_deg) if style is not None else 65.0
     return SourceOut(

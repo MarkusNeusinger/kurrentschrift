@@ -1,6 +1,6 @@
 // Identity tokens for the "paper & ink" look — aged cream paper, aged iron-gall
 // brown as the writing ink, viridian as the single sparing accent. These are the
-// single source of truth for the palette: the global MUI theme (theme.ts), the
+// single source of truth for the palette: the global MUI theme (theme/), the
 // shared <PaperBackground> texture and PublicHeader all read from here, so the
 // identity carries across every page (style-guide §8). Only the work surfaces
 // (A4 preview, letter crops, chart scan) opt out with their own neutral ground.

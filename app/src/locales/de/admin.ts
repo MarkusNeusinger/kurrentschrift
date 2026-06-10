@@ -91,7 +91,7 @@ export const admin = {
     // Followed by the anchor count "(…)" in the column heading.
     skeletonHeading: 'Skelett + Anker',
     // Followed by "{deg}°)" in the column heading.
-    canonicalHeading: 'Canonical (Template-Koords, Schräge',
+    canonicalHeading: 'Canonical (Template-Koords, Stil-Schräglage',
     guidesReadout: 'Grundlinie=0 · Mittellinie=1 · Oberlinie={{ascender}} · Unterlinie={{descender}}',
   },
   fit: {

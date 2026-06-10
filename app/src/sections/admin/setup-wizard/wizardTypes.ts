@@ -14,7 +14,7 @@ export const STEPS: { id: StepId; label: string }[] = [
   { id: 'overview', label: de.wizard.steps.overview },
 ];
 
-// Signal green for the slant guides (canvas lines/handles and the Schräge
+// Signal green for the slant guides (canvas lines/handles and the Schräglage
 // panel's accents). Deliberately distinct from overlayColors' locked green.
 export const SLANT_COLOR = '#39d98a';
 

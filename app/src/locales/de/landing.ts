@@ -14,7 +14,7 @@ export const landing = {
     titleLine3: 'als Font gesetzt.',
     leadBeforeBold: 'Eine offene Bibliothek der deutschen Kurrentschrift —',
     leadBold: 'kein Font, sondern der Schreibvorgang selbst',
-    leadAfterBold: ': Geometrie aus historischen Vorlagen, Strichreihenfolge aus handkuratiertem Ductus.',
+    leadAfterBold: ': Geometrie aus historischen Vorlagen, Strichreihenfolge aus handkuratiertem Duktus.',
     ctaWrite: 'Schreiben üben',
     ctaRead: 'Buchstaben lesen',
   },
@@ -53,7 +53,7 @@ export const landing = {
     { title: 'Animierte Tafel', desc: 'Schreibreihenfolge, Ansatzpunkte und Schwellzug-Aufbau live.' },
     { title: 'Lese-Lupe', desc: 'Historische Scans transkribiert, mit Erklärung pro Buchstabe.' },
     { title: 'Schrift-Analyse', desc: 'Statistik über die eigene Hand — Schräglage, Schwellzug, Verteilung.' },
-    { title: 'Offene Daten', desc: 'Kanonische Glyph-Daten — Anker, Schwellzug, Ductus — zitierbar.' },
+    { title: 'Offene Daten', desc: 'Kanonische Glyph-Daten — Anker, Schwellzug, Duktus — zitierbar.' },
   ],
   footer: {
     scripts: 'Kurrent · Sütterlin · Offenbacher Schrift',

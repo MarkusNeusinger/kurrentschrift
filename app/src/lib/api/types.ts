@@ -42,8 +42,8 @@ export interface SourceOut {
 // same vocabulary as the worksheet rulers in lib/lineatur.ts. baseline + waist
 // come from the bbox calibration; ascender/descender are toggleable; slant is
 // one or more positionable, angled main lines. slant_deg is measured from the
-// horizontal baseline (≈65° = typical Kurrent; 90° = upright), matching
-// source.slant_deg. slant_xs lists the baseline crossing of each slant line
+// horizontal baseline (90° = upright; Kurrent um 1900 ~60-70°, the Loth 1866
+// chart measures ~50°), matching source.slant_deg. slant_xs lists the baseline crossing of each slant line
 // (all share slant_deg) — individually draggable for letters like m/n/u;
 // slant_x is the single-line fallback. Mirrors GuideConfig in api/schemas.py.
 export type CouplingHeight = 'baseline' | 'midband' | 'ascender' | 'descender';

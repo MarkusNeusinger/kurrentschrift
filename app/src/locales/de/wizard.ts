@@ -9,7 +9,7 @@ export const wizard = {
   steps: {
     mask: 'Ausschluss',
     lineatur: 'Lineatur',
-    slant: 'Schräge',
+    slant: 'Schräglage',
     weg: 'Weg',
     overview: 'Übersicht',
   },
@@ -48,19 +48,19 @@ export const wizard = {
     bodyAnd: 'und',
     bodyDerived: '(grau) ergeben sich automatisch aus dem Stil-Verhältnis',
     body2:
-      'Diese vier Linien sind das Lineatur-System (Zonen: Oberlänge · Mittellänge · Unterlänge) und der Bezug für alle weiteren Maße.',
+      'Diese vier Linien bilden das Vierliniensystem (Zonen: Oberlänge · Mittellänge · Unterlänge) und den Bezug für alle weiteren Maße.',
     readout: 'Grundlinie {{baseline}} · Mittellinie {{midband}} · Mittellänge (x-Höhe) {{xHeight}}px',
   },
   slant: {
-    title: 'Schritt 3 · Schräge',
+    title: 'Schritt 3 · Schräglage',
     body1:
-      'Die Schräge ist die Neigung der Hauptstriche, gemessen von der Grundlinie aus (≈65° = typisches Kurrent, 90° = senkrecht). Den grünen Punkt ziehen, um eine Linie über den Buchstaben zu legen.',
+      'Die Schräglage ist die Neigung der Grundstriche (Abstriche), gemessen von der Grundlinie aus — 90° = senkrecht. Die Loth-Tafel liegt bei ≈50°, die Kurrent um 1900 bei 60–70°. Den grünen Punkt ziehen, um eine Linie über den Buchstaben zu legen.',
     // Composed around <b>eine</b>.
     body2BeforeBold: 'Für die meisten Buchstaben reicht',
     body2Bold: 'eine',
     body2AfterBold:
-      'Linie. Bei mehreren gleich geneigten Hauptstrichen (m · n · u) kannst du weitere Linien hinzufügen und jede einzeln platzieren — alle teilen denselben Winkel.',
-    angleLabel: 'Schräge',
+      'Linie. Bei mehreren gleich geneigten Grundstrichen (m · n · u) kannst du weitere Linien hinzufügen und jede einzeln platzieren — alle teilen denselben Winkel.',
+    angleLabel: 'Schräglage',
     // Followed by the line count "(…)".
     linesHeading: 'Schräglinien',
     addLine: 'Linie hinzufügen',
@@ -69,9 +69,9 @@ export const wizard = {
     dragHint: 'Den grünen Punkt einer Linie ziehen, um sie zu verschieben; das ✕ am Chip entfernt sie.',
   },
   trace: {
-    title: 'Schritt 4 · Weg (Ductus)',
+    title: 'Schritt 4 · Weg (Duktus)',
     body1:
-      'Den Buchstaben in Schreibrichtung mit dem Stift (S-Pen) oder der Maus nachziehen — das ist der Ductus, die eigentliche Vorlage über der Loth-Geometrie.',
+      'Den Buchstaben in Schreibrichtung mit dem Stift (S-Pen) oder der Maus nachziehen — das ist der Duktus, die eigentliche Vorlage über der Loth-Geometrie.',
     // Composed around the inline <b>u</b>.
     penLiftBold: 'Jedes Absetzen beginnt einen neuen Strich',
     penLiftAfterBold: '— zwischen den Strichen wird keine Verbindungslinie gezogen. Beim',

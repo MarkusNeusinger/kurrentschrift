@@ -210,7 +210,7 @@ yarn, kurrentschrift uses npm — `package-lock.json` is checked in).
 
 Browser at `http://localhost:3000` loads the admin UI: Loth chart with a
 draggable rough bbox, then the step-by-step Einrichtungs-Wizard (Ausschluss/
-freehand eraser → Lineatur → Schräge → Weg → Übersicht/approve→lock) for
+freehand eraser → Lineatur → Schräglage → Weg → Übersicht/approve→lock) for
 canonical extraction, and the 3-column SVG diagnostic from `/diagnostic`
 JSON. The Weg step records the ductus as one or more pen-strokes — each pen
 lift (Absetzen, e.g. a u's two downstrokes) starts a new stroke rather than
@@ -304,6 +304,11 @@ Technical specs sit in `docs/reference/*.md`:
 - `animation-rendering.md` — stroke-dashoffset (MVP) + Canvas-2D (post-MVP)
 - `styleanalyse.md` — Hinge features, heatmap layouts
 - `frontend-stack.md` — build, deploy, auth, routes
+
+Source-backed script facts (lineature terms, Schräglage convention
+90° = upright, nib types, per-script data — incl. the measured ~50°
+slant of the Loth 1866 chart vs. 60–70° for Kurrent um 1900) live in
+`docs/schriftkunde/`.
 
 ---
 

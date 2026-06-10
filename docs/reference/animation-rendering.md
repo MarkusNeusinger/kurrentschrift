@@ -4,7 +4,7 @@ Technische Spezifikation der animierten Buchstaben-Tafel aus Vision §3.
 Ergänzt [`architektur.md`](../concepts/architektur.md) §11 (und §5 für den
 Width-Profile-Resolver).
 
-**Kernprinzip:** Die Animation ist *direkter Effekt des Ductus-Priors*
+**Kernprinzip:** Die Animation ist *direkter Effekt des Duktus-Priors*
 ([`architektur.md`](../concepts/architektur.md) §2). Sie zeigt nicht nur das
 fertige Bild, sondern auch *wie es entsteht* — Schreibreihenfolge,
 Ansatzpunkte, Schwellzug-Aufbau live.
@@ -17,76 +17,66 @@ brauchen einen eigenen Renderer.
 
 ---
 
-## 1. MVP-Stand: stroke-dashoffset auf der Centerline
+## 1. MVP-Stand: Silhouetten-Reveal per Masken-Sweep (`WrittenGlyph`)
 
 **Scope (Gate 4 in [`architektur.md`](../concepts/architektur.md) §8):**
-Genau ein MVP-Glyph spielt mit korrekter Schreibreihenfolge ab — *konstante
-Breite*, kein Schwellzug-Aufbau.
+Ein Glyph spielt mit korrekter Schreibreihenfolge ab. Implementiert als
+`app/src/components/WrittenGlyph/WrittenGlyph.tsx` (Quiz-Prompt und
+Landing-Hero). Der gelieferte Stand geht über das Gate-4-Minimum
+(konstante Breite auf der Centerline) hinaus: enthüllt wird die gefüllte
+**Schwellzug-Silhouette**.
 
-### Algorithmus
+### Algorithmus (implementiert)
 
-1. Hole `GET /sources/{source_id}/glyphs/{glyph_key}/diagnostic` aus dem
-   Backend → liefert u.a. `anchors_px` (die **geordnete** Anker-Sequenz
-   des gefitteten Ductus im Crop-Pixelraum). **Nicht**
-   `skeleton_polyline_px` — das ist eine Pixel-Wolke aus `np.where(skel)`
-   in Row-Major-Reihenfolge, also unsortiert entlang des Strichs und für
-   einen `stroke-dashoffset`-Pfad ungeeignet.
-2. Im Frontend: SVG-`<path>` aus den Ankern bauen
-   (`M ax0 ay0 L ax1 ay1 …`).
-3. Pfadlänge `L` via `path.getTotalLength()`.
-4. `stroke-dasharray = L`, `stroke-dashoffset = L`.
-5. WAAPI-Animation: `stroke-dashoffset` von `L` auf `0` über `T`
-   Millisekunden — Linie *entsteht* vom Anfang zum Ende.
-6. **Mehrstrich-Ductus (Absetzen):** Hebt die Vorlage den Stift, liegt der
-   Weg als mehrere Teilstriche vor — `trace_meta.stroke_starts` (gespeist aus
-   den `pen_up`-Markern im `raw_path`) nennt die Anker-Indizes, an denen ein
-   neuer Strich beginnt. Dann **pro Teilstrich einen eigenen `<path>` bauen**
-   und die Striche *nacheinander* abspielen (kein `dashoffset`-Pfad über die
-   Lücke) — so entsteht z.B. das *u* als erster Abstrich → zweiter Abstrich,
-   nicht in einem Zug. Bei genau einem Strich (`stroke_starts == [0]`) bleibt
-   es beim einfachen Pfad oben.
-
-*Spätere Verfeinerung:* sobald M3-Templates eine dichter abgetastete,
-ordentlich geordnete Centerline brauchen, kann der `/diagnostic`-Endpoint
-ein eigenes Feld liefern (z.B. `centerline_px` aus
-`sample_polyline(anchors, half_widths, n=240)` + Crop-Offset). Im
-MVP-Stand sind die rohen Anker als Polyline ausreichend.
+1. `GET /sources/{source_id}/templates/{glyph_key}/diagnostic` liefert pro
+   Pen-Stroke die gefüllte Schwellzug-Silhouette `outline_polygons` und
+   die zugehörige `centerlines_template` (das geordnete Rückgrat jedes
+   Polygons in Schreibreihenfolge, Template-Raum; `core/pipeline.py`).
+   **Nicht** `skeleton_polyline_px` verwenden — das ist eine Pixel-Wolke
+   aus `np.where(skel)` in Row-Major-Reihenfolge, also unsortiert entlang
+   des Strichs.
+2. Frontend füllt die Polygone und maskiert sie mit einem breit
+   gestrichelten Pfad, der entlang der jeweiligen Centerline gesweept
+   wird.
+3. Der Masken-Pfad nutzt `pathLength={1}` + `stroke-dasharray: 1`; ein
+   animierter `stroke-dashoffset` von `1` auf `0` lässt die Tinte entlang
+   des realen Schreibwegs erscheinen.
+4. Animation als **CSS-Keyframes** (Emotion), nicht WAAPI. Pro Teilstrich
+   ist die Dauer proportional zur Pfadlänge (die Feder bewegt sich mit
+   konstanter Geschwindigkeit), sequenziert über `animation-delay`; nach
+   dem Schreibende folgt der „Eisengallus-Settle" (Tintenfarbe frisch →
+   oxidiert).
+5. **Mehrstrich-Duktus (Absetzen):** jeder Pen-Stroke ist ein eigenes
+   Polygon mit eigener Centerline (`trace_meta.stroke_starts`, gespeist
+   aus den `pen_up`-Markern im `raw_path`). Die Striche spielen
+   *nacheinander*, eine Stiftabhebung bleibt eine echte Lücke (kein Pfad
+   über die Lücke) — so entsteht z.B. das *u* als erster Abstrich →
+   zweiter Abstrich, nicht in einem Zug.
 
 ### Code-Skizze
 
 ```typescript
-function animateStrokeOnce(
-  pathEl: SVGPathElement,
-  durationMs: number,
-): Animation {
-  const len = pathEl.getTotalLength();
-  pathEl.style.strokeDasharray = `${len}`;
-  pathEl.style.strokeDashoffset = `${len}`;
-  return pathEl.animate(
-    [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
-    { duration: durationMs, easing: 'linear', fill: 'forwards' },
-  );
-}
+// app/src/components/WrittenGlyph/WrittenGlyph.tsx (Auszug)
+// Maske: gestrichelter Pfad mit pathLength=1 — Offset 1 versteckt, 0 zeichnet.
+const reveal = keyframes`from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; }`;
+// pro Centerline i im <mask>:
+//   animation: `${reveal} ${dur_i}ms linear ${delay_i}ms forwards`
 ```
 
-### Multi-Stroke-Sequenz
+### UI-Controls (Ist-Stand)
 
-Wenn ein Glyph mehrere getrennte Striche hat (z.B. ein Kreuzbalken), wird
-pro Stroke ein eigenes `<path>` gebaut und mit einer Sequenz von
-WAAPI-`Animation`-Objekten orchestriert (`anim2.startTime = anim1.endTime`
-oder via `await anim1.finished`).
-
-### UI-Controls
-
-- **Play** / **Pause** / **Reverse** / **Restart** als Buttons.
-- **Speed-Slider:** 200 ms bis 2000 ms pro Stroke (User-Wahl).
-- **Loop-Toggle:** wiederholt nach kurzer Pause.
+- **Replay-Button** startet den Schreibvorgang neu.
+- **`prefers-reduced-motion`** wird respektiert: ohne Animation steht die
+  fertige Silhouette sofort da.
+- Die volle Control-Leiste (Play/Pause/Reverse, Speed-Slider, Loop-Toggle)
+  bleibt der animierten Tafel (`/animation`, P1) vorbehalten.
 
 ### Was MVP nicht macht
 
-- **Kein Schwellzug-Aufbau.** Die Animation läuft mit konstanter
-  Strichbreite. Schwellzug ist das Killer-Feature, kommt aber im post-MVP-
-  Renderer.
+- **Kein zeitvariabler Schwellzug-Aufbau.** Die Silhouette trägt zwar das
+  volle Schwellzug-Profil (variable Breite), wird aber als fertige Form
+  enthüllt — der generative Strichaufbau, bei dem die Breite mit dem Druck
+  über die Zeit *entsteht*, kommt im post-MVP-Renderer (§2).
 - **Keine Ligatur-Animation.** Ligaturen (`ch`, `ck`, `ſt`, `tz`, `qu`, `ß`)
   kommen mit der Erweiterung des Alphabets.
 
@@ -99,7 +89,7 @@ Stilen.
 
 ### Render-Paradigma
 
-Das Ductus-Template ist ein **generatives Kalligraphie-Modell** —
+Das Duktus-Template ist ein **generatives Kalligraphie-Modell** —
 Centerline + zeitvariables Width-Profile. Klassisches Pfad-Rendering passt
 nicht; korrekte Vorgehensweise:
 
@@ -122,7 +112,7 @@ nicht; korrekte Vorgehensweise:
 |---|---|---|
 | **Eigener Canvas-2D-Stroker** | Klein (~5 KB), volle Kontrolle, ~60 fps, Offscreen-Canvas möglich | Eigene Stroking-Mathematik (Offset-Kurven, Mitre/Round-Joins, Tangentenbehandlung an Übergängen) |
 | **CanvasKit (Skia-WASM)** | `SkPaint::getFillPath()` wandelt gestrickten Pfad in gefüllten; produktionsreife Anti-Aliasing-Qualität | ~2–6 MB WASM-Payload; Build-/Deploy-Komplexität |
-| **Variable Fonts** | Hardware-beschleunigt, Standard-CSS | Kein Ductus/Schreibreihenfolge; Animation von `font-variation-settings` zwingt Rasterizer in jedem Frame → Frame-Drops |
+| **Variable Fonts** | Hardware-beschleunigt, Standard-CSS | Kein Duktus/Schreibreihenfolge; Animation von `font-variation-settings` zwingt Rasterizer in jedem Frame → Frame-Drops |
 
 **Default-Wahl:** eigener Canvas-2D-Stroker im Frontend. CanvasKit als
 optionales Feature-Flag, wenn maximale Treue gewünscht ist.
@@ -156,7 +146,8 @@ class GlyphAnimation {
 ## 3. Width-Profile-Resolver pro Schriftfamilie
 
 Das **gleiche Library-Schema** ([`architektur.md`](../concepts/architektur.md)
-§3) trägt zwei Render-Modi. Eine `source`-Eigenschaft entscheidet:
+§3) trägt zwei Render-Modi. Die Stil-Eigenschaft `styles.width_resolver`
+entscheidet (§5):
 
 | Schriftfamilie | Width-Profile-Resolver | Begründung |
 |---|---|---|
@@ -191,9 +182,12 @@ Schriftzeichen. Wir übernehmen ihr UX-Modell:
 - **Stroke-Outline-Modus:** zeigt nur die Centerline als Hinweis, Nutzer
   füllt den Bauch selbst.
 
-**Was wir *nicht* übernehmen:** ihre Render-Engine. Hanzi Writer strickt
-fixbreite Pfade, AnimCJK nutzt vorgerenderte SVG-Outlines mit Mask-Trick —
-beides passt nicht zum generativen Schwellzug-Modell.
+**Render-Engine — Einordnung:** Hanzi Writer strickt fixbreite Pfade —
+das übernehmen wir nicht. AnimCJKs Mask-Trick (vorgerenderte SVG-Outlines,
+per Maske enthüllt) ist dagegen genau die bewusst gewählte
+MVP-Zwischenstufe in `WrittenGlyph` (§1). Was wir *nicht* übernehmen, ist
+der Mask-Trick als **finale** Render-Engine: den zeitvariablen
+Schwellzug-Aufbau kann er nicht, dafür kommt der Post-MVP-Stroker (§2).
 
 ---
 
@@ -217,7 +211,7 @@ Die Animation kann *unterschiedliche Hände* abspielen. Sobald mehrere
 Sources mit gefitteten Templates vorliegen (P3–P4 der Roadmap), zeigt die
 gleiche Glyphe in jeder Hand ihre eigene Animation:
 
-- Gleiche Centerline-Topologie (norm-gleicher Ductus).
+- Gleiche Centerline-Topologie (norm-gleicher Duktus).
 - Unterschiedliche `anchors`/`half_widths` (Hand-spezifisch).
 - Unterschiedlicher Width-Profile-Resolver (falls verschiedene Schriftfamilien).
 

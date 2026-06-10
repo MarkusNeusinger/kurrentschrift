@@ -17,7 +17,7 @@ Schreibschrift lesen und schreiben*; Grun, *Leseschlüssel zu unserer
 alten Schrift*). Es werden hier ausschließlich die Regeln selbst in
 eigener Formulierung wiedergegeben — keine Übernahme fremder Prosa, keine
 Scans oder redrawn Glyphen (siehe [Quellen- und
-Rechte-Policy](quellen-und-rechte.md) und `CLAUDE.md`).
+Rechte-Policy](../reference/quellen-und-rechte.md) und `CLAUDE.md`).
 
 ---
 
@@ -32,8 +32,9 @@ medialer Position, das runde s in finaler Position — das ist die
 
 ### 1.1 Grundregel
 
-- **ſ** steht wortintern und am Silbenanfang innerhalb des Wortes.
-- **s** (rund) steht am Wortende.
+- **ſ** steht am Wort- und Silbenanfang sowie im Silbeninneren — überall
+  außer am Silben-/Wortende.
+- **s** (rund) steht am Silben- und Wortende.
 
 Beispiele: `leſen`, `Haus`, `ſein`.
 
@@ -57,12 +58,12 @@ mindestens Silbenanalyse der Eingabe.
 Älterer Schreibgebrauch: wenn ein `h` nach dem `s` elidiert wurde, steht
 ebenfalls Rund-s statt ſ.
 
-Beispiel: `Aus-nahm` für (heutiges) `Ausnehmen`.
+Beispiel: `Aus-nahm` für (heutiges) `Ausnahme`.
 
 ### 1.4 Konsequenz für das Schema
 
 Es gibt weiterhin nur **eine** Rund-s-Vorlage und **eine** Lang-ſ-Vorlage
-pro Hand — der Ductus selbst ändert sich an der Morphemgrenze nicht. Die
+pro Hand — der Duktus selbst ändert sich an der Morphemgrenze nicht. Die
 Auswahl, welche Vorlage für einen Text-Slot gilt, ist eine Regel-Schicht
 (M4+), kein zusätzliches Template.
 
@@ -74,13 +75,15 @@ Bestimmte Buchstabenpaare werden in der Kurrentschrift als
 **eigenständige Lehreinheiten** geschrieben, nicht als verbundene
 Einzelbuchstaben. Sie sind in [`architektur.md`](../concepts/architektur.md)
 §4 als „Ausnahme — geschlossener Satz gelehrter Ligatur-Einheiten"
-fixiert: erste-Klasse-Bibliothekseinträge mit eigenem Ductus, nicht
+fixiert: erste-Klasse-Bibliothekseinträge mit eigenem Duktus, nicht
 durch `exit→entry`-Verkettung generiert.
 
 Der Satz: `ch · ck · tz · ſt · qu · ß`.
 
-`ß` ist genaugenommen eine ſ+s-Ligatur (langes ſ + rundes s) und folgt
-historisch derselben Logik wie die übrigen Einträge.
+`ß` ist in der Kurrent genaugenommen eine ſ+z-Ligatur (ſʒ, daher der
+Name „Eszett"; die ſ+s-Deutung gehört zur Antiqua-Tradition — die
+Loth-Tafel selbst beschriftet sie als `sz`) und folgt historisch
+derselben Logik wie die übrigen Einträge.
 
 ---
 
@@ -150,7 +153,7 @@ varianten sind eigene Templates, nicht Auslenkung").
 ## 7. Verhältnis zum Lehrtafel-Template-Schema
 
 Die Regeln aus §1 (Rund-s an Morphemgrenze) und §5 (vor-1901-Schreibung)
-sind der Anlass, warum `glyphs.position` ([`architektur.md`](../concepts/architektur.md)
+sind der Anlass, warum `templates.position` ([`architektur.md`](../concepts/architektur.md)
 §3) **nicht** als Text-Position interpretiert werden darf, sondern als
 Lehrtafel-Rolle der Allograph-Form. Diese Klarstellung steht seit der
 holistischen Überarbeitung im Mai 2026 direkt in `architektur.md` §3
@@ -174,5 +177,5 @@ C, D) bauen auf dieser Klarstellung auf und werden mit dem geplanten
   und Großbuchstaben außerhalb des MVP)
 - [`planaenderungen.md`](../proposals/planaenderungen.md) (Vorschläge zur
   Anpassung der Konzept-Docs, die sich aus dieser Regel-Sammlung ergeben)
-- [`quellen-und-rechte.md`](quellen-und-rechte.md) (keine Übernahme
+- [`quellen-und-rechte.md`](../reference/quellen-und-rechte.md) (keine Übernahme
   fremder Prosa oder redrawn Glyphen)

@@ -79,13 +79,15 @@ def stroke_outline(x: np.ndarray, y: np.ndarray, half_width: np.ndarray) -> tupl
 
 
 def apply_slant(x: np.ndarray, y: np.ndarray, slant_deg: float) -> tuple[np.ndarray, np.ndarray]:
-    """Shear so that vertical lines lean by `slant_deg` from upright.
+    """Shear so that vertical lines make `slant_deg` degrees with the baseline.
 
-    Slant 0 = upright, positive = leaning right (top moves right of bottom),
-    matching Kurrent's right-leaning style. The transform is x' = x + y*tan(theta),
-    where theta = 90° - slant_deg so that slant_deg=0 leaves x unchanged.
+    `slant_deg` is the Schräglage (slant angle measured from the baseline, the
+    convention used repo-wide): 90 = upright (identity), smaller = stronger
+    right lean. Operates in template coordinates (y up, baseline at y=0), so
+    x' = x + y*tan(90° - slant_deg) moves points above the baseline right and
+    descenders left — Kurrent's right-leaning look.
     """
-    if abs(slant_deg) < 1e-6:
+    if abs(slant_deg - 90.0) < 1e-6:
         return x, y
     theta = np.deg2rad(90.0 - slant_deg)
     return x + y * np.tan(theta), y
