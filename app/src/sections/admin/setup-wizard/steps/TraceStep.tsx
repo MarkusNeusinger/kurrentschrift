@@ -12,7 +12,10 @@ import type { GuideValues } from '../wizardTypes';
 
 const COUPLING_OPTIONS: CouplingHeight[] = ['baseline', 'midband', 'ascender', 'descender'];
 
+// Mirrors the server-side bounds on n_anchors (api/schemas.py) so a committed
+// value can never 422.
 const MIN_ANCHORS = 4;
+const MAX_ANCHORS = 1000;
 
 export function TraceStep({
   bbox,
@@ -64,7 +67,7 @@ export function TraceStep({
       setAnchorsDraft(String(committedAnchors.current));
       return committedAnchors.current;
     }
-    const v = Math.max(MIN_ANCHORS, parsed);
+    const v = Math.min(MAX_ANCHORS, Math.max(MIN_ANCHORS, parsed));
     setAnchorsDraft(String(v));
     if (v !== committedAnchors.current) {
       committedAnchors.current = v;
@@ -111,7 +114,7 @@ export function TraceStep({
           onKeyDown={(e) => {
             if (e.key === 'Enter') commitAnchors();
           }}
-          slotProps={{ htmlInput: { min: MIN_ANCHORS } }}
+          slotProps={{ htmlInput: { min: MIN_ANCHORS, max: MAX_ANCHORS } }}
           sx={{ flex: 1 }}
         />
         <Button size="small" variant="outlined" startIcon={<RefreshIcon />} disabled={!hasCanonical || busy} onClick={() => void resample(commitAnchors())}>
