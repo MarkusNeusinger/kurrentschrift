@@ -23,7 +23,7 @@ git diff --name-only main...
 | `core/`, `tests/` | `/verify-core` (pytest + direct-invocation smoke) |
 | `docs/`, `CLAUDE.md` | `/write-docs` checklist (index, sync duties) |
 | `data/`, new binaries, license files | `/audit-licenses` |
-| any code | `/simplify` for a quality pass when the change is non-trivial |
+| any code | `/simplify` (built-in Claude Code skill, not under `.claude/skills/`) for a quality pass when the change is non-trivial |
 
 A `/verify-*` gate only counts if the **diff's own flow** was driven —
 rendering a proxy or injecting state via the API is not verification

@@ -8,14 +8,16 @@ description: Mine past Claude Code session transcripts for recurring friction �
 Past sessions are data. This skill extracts friction signals from the
 transcript JSONL files and converts recurring patterns into fixes in
 the right place: a gotcha in an existing skill, a memory entry, or a
-CLAUDE.md rule. Transcripts live at
-`~/.claude/projects/-home-tirao-kurrentschrift/*.jsonl` (megabytes —
-**never read them raw**, always extract with jq).
+CLAUDE.md rule. Transcripts live under `~/.claude/projects/<slug>/`,
+where the slug is the absolute repo path with `/` replaced by `-` —
+derive it from the working directory instead of hardcoding a
+machine-specific path. The files are megabytes — **never read them
+raw**, always extract with jq.
 
 ## 1 · Extract (per transcript)
 
 ```bash
-ls -S ~/.claude/projects/-home-tirao-kurrentschrift/*.jsonl
+ls -S ~/.claude/projects/$(pwd | tr '/' '-')/*.jsonl
 ```
 
 Four extractors, each verified against real transcripts. `FILE` is one

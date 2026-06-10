@@ -41,8 +41,11 @@ cd app && npm install && npm run dev
 Expected: `{"status":"healthy","database_configured":true}` and
 `vite:200`. `curl -fsS http://localhost:8000/sources` must list
 `loth-1866` — that proves the DB path works. If the schema is stale:
-`uv run alembic upgrade head` first. Without `DATABASE_URL` every
-endpoint except `/health` and `/` returns 503.
+`uv run alembic upgrade head` — but **only after the DB-target
+preflight from `/verify-api`** (alembic is DDL against the shared
+Cloud SQL DB, and `.env` has pointed at the wrong database before).
+Without `DATABASE_URL` every endpoint except `/health` and `/`
+returns 503.
 
 Admin preflight — **mandatory whenever the flow under test writes**
 (saves, traces, wizard finish). Without both tokens every save fails
@@ -50,9 +53,12 @@ silently with 401; this has shipped "test it in the browser" advice
 that could not work:
 
 ```bash
-grep -q '^ADMIN_TOKEN=' .env && echo "OK: ADMIN_TOKEN in .env" || echo "MISSING: ADMIN_TOKEN in .env"
-grep -q '^VITE_ADMIN_TOKEN=' app/.env 2>/dev/null && echo "OK: VITE_ADMIN_TOKEN in app/.env" || echo "MISSING: VITE_ADMIN_TOKEN in app/.env"
+grep -q '^ADMIN_TOKEN=.' .env && echo "OK: ADMIN_TOKEN non-empty in .env" || echo "MISSING/EMPTY: ADMIN_TOKEN in .env"
+grep -q '^VITE_ADMIN_TOKEN=.' app/.env 2>/dev/null && echo "OK: VITE_ADMIN_TOKEN non-empty in app/.env" || echo "MISSING/EMPTY: VITE_ADMIN_TOKEN in app/.env"
 ```
+
+(The `=.` matters: a bare `ADMIN_TOKEN=` line would pass a key-only
+grep and still 401 every save.)
 
 If either is missing, stop and say so. During the browser run, confirm
 one real save returned 2xx in `list_network_requests` before telling

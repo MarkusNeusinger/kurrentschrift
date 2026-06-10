@@ -24,8 +24,10 @@ uv run uvicorn api.main:app --reload --port 8000
 ```
 
 Expected: `{"status":"healthy","database_configured":true}`. If the
-schema is stale: `uv run alembic upgrade head` first. Without
-`DATABASE_URL` every endpoint except `/` and `/health` returns 503.
+schema is stale: `uv run alembic upgrade head` — but **only after the
+DB-target preflight from the Gotchas below** (alembic is DDL against
+the shared DB). Without `DATABASE_URL` every endpoint except `/` and
+`/health` returns 503.
 OpenAPI UI: `http://localhost:8000/docs` (returns 200).
 
 ## 2 · Read-endpoint sweep (agent path, safe)
@@ -64,14 +66,17 @@ keys include `fitted_polyline_px`, `canonical_polyline_px`,
 
 Write endpoints (`PUT`/`DELETE` bboxes, `POST …/trace`,
 `POST …/resample`, `DELETE` templates) are gated by `require_admin`.
-The safe probe is the 401:
+The safe probe is the unauthorized request:
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' -X PUT -H 'Content-Type: application/json' -d '{}' http://localhost:8000/sources/loth-1866/bboxes/u-medial
 ```
 
-Expected: `401`. **Do not send authorized writes as part of routine
-verification** — with `ADMIN_TOKEN`/`X-Admin-Token` they mutate the
+Expected: `401` with `ADMIN_TOKEN` configured — or `503` when neither
+`ADMIN_TOKEN` nor Cloudflare Access is configured (`require_admin`
+fails closed, `api/auth.py`); a 503 here means the env is missing the
+token, not that the gate is broken. **Do not send authorized writes
+as part of routine verification** — with `ADMIN_TOKEN`/`X-Admin-Token` they mutate the
 shared Cloud SQL data that the admin UI authored. Only exercise an
 authorized write when the task explicitly is about that endpoint, and
 prefer a glyph key the user designates as scratch.
