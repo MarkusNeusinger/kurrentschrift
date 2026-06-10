@@ -18,7 +18,9 @@ from __future__ import annotations
 from collections.abc import Iterator, Sequence
 
 import numpy as np
+import shapely
 from scipy.interpolate import CubicSpline
+from shapely.geometry import LineString, Point
 
 
 def sample_polyline(
@@ -240,6 +242,62 @@ def multi_stroke_outline(
         poly_x, poly_y = stroke_outline(sx, sy, sw)
         polygons.append([[round(float(x), 4), round(float(y), 4)] for x, y in zip(poly_x, poly_y, strict=True)])
     return polygons
+
+
+def capsule_union_rings(
+    x: np.ndarray, y: np.ndarray, half_width: np.ndarray, simplify_tol: float = 0.0, decimals: int = 4
+) -> list[list[list[float]]]:
+    """Silhouette of a variable-width centerline as rings (exterior + holes).
+
+    Builds one round-capped capsule per sample segment (radius = mean of the
+    adjacent half-widths) and unions them. Unlike the ±normal ribbon of
+    `stroke_outline`, the union cannot self-intersect where the curvature
+    radius drops below the half-width (Kurrent loops), it keeps loop counters
+    (the e-eye) as real holes, and the stroke ends are round like a lifting
+    nib. Returns a flat list of rings as [x, y] lists; render all rings of one
+    stroke as a single path with fill-rule evenodd, so exterior/hole pairing
+    never needs to be resolved explicitly. `decimals` matches the coordinate
+    space: 4 for template units, 2 is plenty for crop pixels.
+    """
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    hw = np.maximum(np.asarray(half_width, dtype=float), 1e-3)
+    if len(x) == 0:
+        return []
+    if len(x) == 1:
+        shapes = [Point(x[0], y[0]).buffer(hw[0])]
+    else:
+        shapes = [
+            LineString([(x[i], y[i]), (x[i + 1], y[i + 1])]).buffer(float((hw[i] + hw[i + 1]) / 2.0))
+            for i in range(len(x) - 1)
+        ]
+    merged = shapely.union_all(shapes)
+    if simplify_tol > 0:
+        merged = merged.simplify(simplify_tol, preserve_topology=True)
+    polygons = merged.geoms if merged.geom_type == "MultiPolygon" else [merged]
+    rings: list[list[list[float]]] = []
+    for poly in polygons:
+        if poly.is_empty:
+            continue
+        for ring in (poly.exterior, *poly.interiors):
+            rings.append([[round(float(px), decimals), round(float(py), decimals)] for px, py in ring.coords])
+    return rings
+
+
+def multi_stroke_silhouettes(
+    anchors: np.ndarray, half_widths: np.ndarray, stroke_starts: Sequence[int] | None, slant_deg: float, n: int = 240
+) -> list[list[list[list[float]]]]:
+    """One capsule-union silhouette (ring list) per pen-stroke, slant applied.
+
+    Same sampling as `multi_stroke_outline`/`multi_stroke_centerlines`, so the
+    silhouettes stay aligned with the animated centerline sweep. The simplify
+    tolerance is in template units (x-height = 1): 0.002 ≈ a fifteenth of a
+    pixel at typical chart resolution — invisible, but it halves the payload.
+    """
+    return [
+        capsule_union_rings(sx, sy, sw, simplify_tol=0.002)
+        for sx, sy, sw in _multi_stroke_samples(anchors, half_widths, stroke_starts, slant_deg, n)
+    ]
 
 
 def multi_stroke_centerlines(

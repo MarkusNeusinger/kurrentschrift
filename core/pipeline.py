@@ -14,19 +14,24 @@ traced anchors carry the chart's natural slant) so the TS side only renders.
 from __future__ import annotations
 
 import numpy as np
+from scipy.ndimage import median_filter, uniform_filter1d
 
 from core.chart import crop_with_mask, load_chart_grayscale
-from core.extract import binarize_adaptive, skeleton_and_width
+from core.extract import binarize_adaptive, half_widths_on_medial_axis, skeleton_and_width
 from core.template import (
     allocate_samples,
     chord_length,
     multi_stroke_centerlines,
-    multi_stroke_outline,
+    multi_stroke_silhouettes,
     template_guides,
 )
 
 
-DEFAULT_N_ANCHORS = 100
+# 50 is the measured jitter knee across the authored glyphs (a, K, r, u): p95
+# deviation from the de-jittered trace ≤0.75px for every glyph, while ≥80
+# anchors start reproducing hand wobble instead of shape (error vs the smoothed
+# reference rises again) and double the fit's parameter count.
+DEFAULT_N_ANCHORS = 50
 
 
 # -------------------------------------------------------------------- helpers
@@ -98,19 +103,24 @@ def _resample_strokes(strokes: list[np.ndarray], n: int) -> tuple[np.ndarray, li
     return np.concatenate(parts, axis=0), starts, total
 
 
-def _sample_width_at(x_local: float, y_local: float, mask: np.ndarray, width_map: np.ndarray) -> float:
-    """Half-width at (x_local, y_local) on the crop. Falls back to nearest ink pixel."""
-    h, w = mask.shape
-    ix = int(np.clip(round(x_local), 0, w - 1))
-    iy = int(np.clip(round(y_local), 0, h - 1))
-    if mask[iy, ix]:
-        return float(width_map[iy, ix])
-    ys, xs = np.where(mask)
-    if len(ys) == 0:
-        return 0.0
-    d2 = (xs - x_local) ** 2 + (ys - y_local) ** 2
-    k = int(np.argmin(d2))
-    return float(width_map[ys[k], xs[k]])
+def _smooth_half_widths(hw_px: np.ndarray, stroke_starts: list[int]) -> np.ndarray:
+    """Median + box smoothing of the half-width profile, per pen-stroke.
+
+    The per-anchor distance-transform reads are noisy (±1px quantisation) and
+    spike at self-crossings, where the transform measures the crossing blob
+    instead of the stroke. A short median kills the spikes, the box pass evens
+    the survivors; smoothing never crosses a pen lift.
+    """
+    smoothed = hw_px.astype(float).copy()
+    bounds = [*stroke_starts, len(hw_px)]
+    for a, b in zip(bounds[:-1], bounds[1:], strict=True):
+        seg = smoothed[a:b]
+        if len(seg) >= 5:
+            seg = median_filter(seg, size=5, mode="nearest")
+        if len(seg) >= 3:
+            seg = uniform_filter1d(seg, size=3, mode="nearest")
+        smoothed[a:b] = seg
+    return smoothed
 
 
 def _measure_slant_from_vertical(anchors_norm: np.ndarray) -> float:
@@ -182,7 +192,7 @@ def canonical_from_path(
     chart_gray = load_chart_grayscale(chart_path)
     crop = crop_with_mask(chart_gray, bbox, fill=1.0)
     mask = binarize_adaptive(crop)
-    _, width_map = skeleton_and_width(mask)
+    skel, width_map = skeleton_and_width(mask)
 
     x0, y0 = bbox["x0"], bbox["y0"]
     strokes_local = [
@@ -194,15 +204,16 @@ def canonical_from_path(
     # the gap; `stroke_starts` records where each stroke begins in the anchor list.
     resampled_local, stroke_starts, path_length_px = _resample_strokes(strokes_local, n)
 
-    hw_px = np.array(
-        [_sample_width_at(float(rx), float(ry), mask, width_map) for rx, ry in resampled_local], dtype=float
-    )
-
     baseline_y = int(bbox["baseline_y"])
     midband_y = int(bbox["midband_y"])
     unit_px = float(baseline_y - midband_y)
     if unit_px <= 0:
         raise ValueError(f"baseline_y ({baseline_y}) must exceed midband_y ({midband_y})")
+
+    # Snap no farther than a quarter x-height: generous against trace wobble,
+    # tight enough not to jump to a neighbouring stroke.
+    hw_px = half_widths_on_medial_axis(resampled_local, skel, mask, width_map, snap_cap_px=max(3.0, 0.25 * unit_px))
+    hw_px = _smooth_half_widths(hw_px, stroke_starts)
 
     pixel_global = resampled_local + np.array([x0, y0])
     x_origin = float(pixel_global[0, 0])
@@ -317,7 +328,14 @@ def diagnostic_for_glyph(
     # 50° Loth downstroke came out at ~37.5°). `core.fit` maps template→pixels
     # unsheared for the same reason; `slant_deg` stays in the payload as the
     # style's nominal Schräglage (metadata, not a render transform).
-    outline_polygons = multi_stroke_outline(anchors_template, half_widths_template, stroke_starts, 90.0, n=240)
+    # Capsule-union silhouette per stroke (rings: exterior + holes, evenodd):
+    # unlike the legacy ±normal ribbon it cannot fold into bowties at tight
+    # loops, keeps loop counters open and rounds the stroke ends like a nib.
+    outline_paths = multi_stroke_silhouettes(anchors_template, half_widths_template, stroke_starts, 90.0, n=240)
+    # Legacy single-polygon fields derived from the rings (first ring of each
+    # stroke ≈ the outer contour) so a stale SPA bundle keeps rendering
+    # something sensible mid-deploy without paying a second geometry pass.
+    outline_polygons = [stroke[0] for stroke in outline_paths if stroke]
     # Matching per-stroke centerlines (same sampling) so the frontend can sweep a
     # wide mask along the ductus and reveal the silhouette in writing order.
     centerlines_template = multi_stroke_centerlines(anchors_template, half_widths_template, stroke_starts, 90.0, n=240)
@@ -333,6 +351,8 @@ def diagnostic_for_glyph(
         # the first polygon for older clients (identical when there is one stroke).
         "outline_polygon": outline_polygons[0] if outline_polygons else [],
         "outline_polygons": outline_polygons,
+        # Per-stroke ring lists (exterior + holes) — the preferred render path.
+        "outline_paths": outline_paths,
         # Per-stroke centerlines (writing order) for the animated "as written" render.
         "centerlines_template": centerlines_template,
         "baseline_y_crop": int(bbox["baseline_y"]) - y0,

@@ -21,16 +21,21 @@ brauchen einen eigenen Renderer.
 
 **Scope (Gate 4 in [`architektur.md`](../concepts/architektur.md) §8):**
 Ein Glyph spielt mit korrekter Schreibreihenfolge ab. Implementiert als
-`app/src/components/WrittenGlyph/WrittenGlyph.tsx` (Quiz-Prompt und
-Landing-Hero). Der gelieferte Stand geht über das Gate-4-Minimum
-(konstante Breite auf der Centerline) hinaus: enthüllt wird die gefüllte
-**Schwellzug-Silhouette**.
+`app/src/components/WrittenGlyph/WrittenGlyph.tsx` (Quiz-Prompt und die
+„Fertig geschrieben"-Stufe im Admin-Diagnose-Dialog; der Landing-Hero
+schreibt Stand heute noch den GLKurrent-Font per Clip-Path und wechselt
+erst nach der Wort-Komposition aus Templates auf diesen Renderer). Der
+gelieferte Stand geht über das Gate-4-Minimum (konstante Breite auf der
+Centerline) hinaus: enthüllt wird die gefüllte **Schwellzug-Silhouette**.
 
 ### Algorithmus (implementiert)
 
 1. `GET /sources/{source_id}/templates/{glyph_key}/diagnostic` liefert pro
-   Pen-Stroke die gefüllte Schwellzug-Silhouette `outline_polygons` und
-   die zugehörige `centerlines_template` (das geordnete Rückgrat jedes
+   Pen-Stroke die gefüllte Schwellzug-Silhouette — bevorzugt `outline_paths`
+   (Kapsel-Union als Ringlisten: Außenkontur + Löcher, gerendert als ein
+   Pfad mit `fill-rule: evenodd`, damit Schleifenaugen offen bleiben;
+   Fallback: die älteren `outline_polygons`) — und die zugehörige
+   `centerlines_template` (das geordnete Rückgrat jedes
    Polygons in Schreibreihenfolge, Template-Raum; `core/pipeline.py`).
    **Nicht** `skeleton_polyline_px` verwenden — das ist eine Pixel-Wolke
    aus `np.where(skel)` in Row-Major-Reihenfolge, also unsortiert entlang

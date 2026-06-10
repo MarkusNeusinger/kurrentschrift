@@ -6,6 +6,7 @@ the canonical there, recording the chart as `provenance_source_id`.
 """
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_admin
@@ -103,7 +104,9 @@ async def post_trace(
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
         raise HTTPException(409, detail=f"set bbox for {glyph_key!r} before tracing")
-    canonical = canonical_from_path(
+    # CPU-bound (binarize + skeleton + EDT) — keep it off the event loop.
+    canonical = await run_in_threadpool(
+        canonical_from_path,
         raw_path=[p.model_dump() for p in payload.raw_path],
         bbox=_bbox_to_dict(bbox),
         chart_path=source.chart_path,
@@ -132,7 +135,8 @@ async def post_resample(
         raise HTTPException(404, detail=f"no canonical to resample for {glyph_key!r}")
     if not existing.raw_path:
         raise HTTPException(409, detail="stored canonical has no raw_path; re-trace to enable resampling")
-    canonical = canonical_from_raw_path_only(
+    canonical = await run_in_threadpool(
+        canonical_from_raw_path_only,
         glyph_row={"raw_path": list(existing.raw_path), "glyph": existing.glyph, "position": existing.position},
         bbox=_bbox_to_dict(bbox),
         chart_path=source.chart_path,
@@ -155,7 +159,8 @@ async def get_diagnostic(
     if template is None:
         raise HTTPException(404, detail=f"no canonical for {glyph_key!r}")
     _, style_ratio, slant_deg = await _resolve_style(source, db)
-    return diagnostic_for_glyph(
+    return await run_in_threadpool(
+        diagnostic_for_glyph,
         glyph_row={
             "anchors": list(template.anchors),
             "half_widths": list(template.half_widths),
@@ -176,14 +181,19 @@ async def get_fit(
     source: Source = Depends(require_source),
     db: AsyncSession = Depends(require_db),
 ):
-    """M4: fit the stored canonical to its own crop skeleton (read-only)."""
+    """Fit the stored canonical to its own crop skeleton (read-only).
+
+    The optimisation takes seconds and is pure CPU — run it in the threadpool
+    so it cannot freeze every other request on the event loop.
+    """
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
         raise HTTPException(404, detail=f"bbox not set for {glyph_key!r}")
     template = await TemplateRepository(db).get(source.style_id, glyph_key)
     if template is None:
         raise HTTPException(404, detail=f"no canonical for {glyph_key!r}")
-    return fit_glyph_to_crop(
+    return await run_in_threadpool(
+        fit_glyph_to_crop,
         glyph_row={
             "glyph": template.glyph,
             "position": template.position,

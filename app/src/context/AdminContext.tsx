@@ -123,6 +123,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   const markGlyphTraced = useCallback((key: string, summary: GlyphSummary) => {
     setGlyphsByKey((prev) => ({ ...prev, [key]: summary }));
+    // A trace/resample changes the canonical, so every diagnostic-derived
+    // render (Diagnose stages, WrittenGlyph cache) must refetch — the crop
+    // bytes are unchanged, but the bust doubles as the "canonical version".
+    setCropCacheBust(Date.now());
   }, []);
 
   const removeGlyph = useCallback((key: string) => {

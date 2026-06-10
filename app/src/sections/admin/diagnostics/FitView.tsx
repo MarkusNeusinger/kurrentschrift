@@ -1,10 +1,11 @@
-// M4 fit overlay: the canonical template fitted to its own crop skeleton.
+// Einpassung overlay: the canonical template fitted to its own crop skeleton.
 //
 // Backend (`core.fit.fit_glyph_to_crop`) optimises the template control points
 // against the instance skeleton + distance transform and returns crop-local
-// overlay polylines. This view draws them over the crop — skeleton (faint),
-// canonical placement (grey), fitted result (red) — plus the fit diagnostics,
-// with a live lambda_reg slider showing the regularisation trade-off.
+// overlay polylines plus the fitted silhouette (rings). This view draws them
+// over the crop — skeleton (faint), canonical placement (grey), fitted result
+// (red fill + centerline) — plus the fit diagnostics, with a live lambda_reg
+// slider showing the regularisation trade-off.
 
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { Alert, Box, Button, Chip, CircularProgress, Slider, Stack, Typography } from '@mui/material';
@@ -12,6 +13,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { cropUrl, getFit } from '@/lib/api';
 import type { FitData } from '@/lib/api';
+import { ringsToPathD } from '@/lib/svg';
 import { de } from '@/locales';
 import { useColumnWidth } from '@/sections/admin/diagnostics/useColumnWidth';
 
@@ -122,16 +124,25 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
               {data.skeleton_polyline_px.map(([x, y], i) => (
                 <circle key={i} cx={x} cy={y} r={0.6} fill="#ff8080" />
               ))}
+              {/* fitted silhouette — the fitted template WITH its measured
+                  Schwellzug, semi-transparent so the original ink shows
+                  through: coverage is judged directly, not via a hairline */}
+              {data.fitted_outline_px?.map((rings, i) => (
+                <path key={`sil-${i}`} d={ringsToPathD(rings)} fill="#e02030" fillOpacity={0.4} fillRule="evenodd" />
+              ))}
               {/* canonical placement (pre-fit) — one polyline per pen-stroke */}
               {polylineSegments(data.canonical_polyline_px, data.polyline_stroke_starts).map((seg, i) => (
                 <polyline key={`canon-${i}`} fill="none" stroke="#888" strokeWidth={1.4} strokeDasharray="4 3" points={polylinePoints(seg)} />
               ))}
-              {/* fitted result — one polyline per pen-stroke */}
+              {/* fitted centerline — one polyline per pen-stroke */}
               {polylineSegments(data.fitted_polyline_px, data.polyline_stroke_starts).map((seg, i) => (
-                <polyline key={`fit-${i}`} fill="none" stroke="#e02030" strokeWidth={2} points={polylinePoints(seg)} />
+                <polyline key={`fit-${i}`} fill="none" stroke="#e02030" strokeWidth={1} points={polylinePoints(seg)} />
               ))}
             </svg>
           </Box>
+          <Typography variant="caption" color="text.disabled" sx={{ maxWidth: displayW }}>
+            {de.admin.fit.overlayCaption}
+          </Typography>
         </Box>
 
         {/* Fit diagnostics */}
@@ -139,8 +150,8 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
             <Chip
               size="small"
-              color={m.success ? 'success' : 'warning'}
-              label={m.success ? de.admin.fit.converged : de.admin.fit.notConverged}
+              color={(m.converged ?? m.success) ? 'success' : 'warning'}
+              label={(m.converged ?? m.success) ? de.admin.fit.converged : de.admin.fit.notConverged}
             />
             <Chip size="small" variant="outlined" label={`${m.iterations} ${de.admin.fit.iterations}`} />
           </Box>
@@ -150,6 +161,11 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
           <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
             {de.admin.fit.widthRmse} {m.width_rmse_px} px
           </Typography>
+          {m.coverage_rmse_px != null && (
+            <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
+              {de.admin.fit.coverageRmse} {m.coverage_rmse_px} px
+            </Typography>
+          )}
           <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
             {de.admin.fit.maxAnchorDelta} {m.max_anchor_delta} · λ={m.lambda_reg}
           </Typography>

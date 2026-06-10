@@ -3,12 +3,15 @@
 // order the pen drew it. Used as the quiz prompt instead of a static crop.
 //
 // Technique: the backend (`core.pipeline.diagnostic_for_glyph`) gives us, per
-// pen-stroke, the filled `outline_polygons` AND the matching `centerlines_template`
-// (the spine of each polygon, in writing order). We fill the polygons, then mask
-// them with a wide stroked path swept along each centerline via an animated
-// `stroke-dashoffset` — so the ink appears along the actual pen path, lifting
-// between strokes (no bar bridging an Absetzen). A pen lift is a real gap because
-// each stroke is its own polygon + its own centerline.
+// pen-stroke, the filled silhouette — preferred `outline_paths` (capsule-union
+// rings: exterior + holes, drawn as one evenodd path so loop counters stay
+// open; legacy ribbon `outline_polygons` as fallback) — AND the matching
+// `centerlines_template` (the spine of each silhouette, in writing order). We
+// fill the silhouettes, then mask them with a wide stroked path swept along
+// each centerline via an animated `stroke-dashoffset` — so the ink appears
+// along the actual pen path, lifting between strokes (no bar bridging an
+// Absetzen). A pen lift is a real gap because each stroke is its own
+// silhouette + its own centerline.
 //
 // Coordinates: template space (baseline=0, midband=1, y up). SVG y points down,
 // so we negate y in the rendered data (rather than a flipped <g>) to keep the
@@ -20,6 +23,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { ApiError, getDiagnostic, type DiagnosticData } from '@/lib/api';
+import { ringsToPathD, type Ring } from '@/lib/svg';
 import { de } from '@/locales';
 import { inkState, schulheft } from '@/styles/paper';
 
@@ -43,9 +47,25 @@ const GUIDE_BASELINE = schulheft.rulingBlueFaded;
 const GUIDE_MIDBAND = schulheft.rulingBlueFaded;
 const GUIDE_MIDBAND_OPACITY = 0.55;
 
-// Diagnostics are a backend compute (skeleton extraction); cache per glyph_key so
-// replays and repeat questions don't refetch. `null` records a 404 (no ductus).
-const cache = new Map<string, DiagnosticData | null>();
+// Diagnostics are a backend compute (skeleton extraction); cache per glyph so
+// replays and repeat questions don't refetch. One entry per glyph, stamped
+// with the canonical version (`bust`) it was fetched under: a mismatching
+// version overwrites the entry instead of forking the key, so the quiz
+// benefits from the admin's fresh fetch and stale payloads can't accumulate.
+// `data: null` records a 404 (no ductus).
+interface CacheEntry {
+  bust: number | null;
+  data: DiagnosticData | null;
+}
+const cache = new Map<string, CacheEntry>();
+
+// A caller without a version accepts whatever is cached; a versioned caller
+// (the admin dialog after a re-trace) requires its exact version.
+function cachedEntry(glyphKey: string, bust?: number): CacheEntry | undefined {
+  const entry = cache.get(glyphKey);
+  if (entry === undefined || (bust != null && entry.bust !== bust)) return undefined;
+  return entry;
+}
 
 function chordLength(points: Array<[number, number]>): number {
   let total = 0;
@@ -66,6 +86,13 @@ interface Props {
   durationMs?: number;
   // Target rendered height in px (width follows the glyph's aspect, capped).
   height?: number;
+  // Canonical version stamp: require a cache entry of exactly this version,
+  // refetching otherwise (the admin dialog after a re-trace). The quiz never
+  // passes it and accepts any cached entry.
+  cacheBust?: number;
+  // Already-fetched diagnostic payload — skips the internal fetch entirely
+  // (the Diagnose dialog shares one payload across its stages).
+  data?: DiagnosticData;
   // Called if the glyph has no canonical yet (404) so the caller can fall back to
   // the static crop. The component itself renders nothing once unavailable.
   onUnavailable?: () => void;
@@ -74,10 +101,11 @@ interface Props {
 const PEN_PAUSE_MS = 150; // pause at each Absetzen so the lift reads as a lift
 const MAX_W = 300;
 
-export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnavailable }: Props) {
+export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, cacheBust, data: dataProp, onUnavailable }: Props) {
   const reducedMotion = usePrefersReducedMotion();
   const uid = useId();
-  const [data, setData] = useState<DiagnosticData | null>(() => cache.get(glyphKey) ?? null);
+  const [fetched, setFetched] = useState<DiagnosticData | null>(() => cachedEntry(glyphKey, cacheBust)?.data ?? null);
+  const data = dataProp ?? fetched;
   const [error, setError] = useState<string | null>(null);
   // True once a glyph turns out to have no canonical (404): the component then
   // renders nothing and the caller (onUnavailable) swaps in the crop.
@@ -94,27 +122,33 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
     // can't stick when the same instance is reused for a different glyph_key.
     setError(null);
     setUnavailable(false);
-    const cached = cache.get(glyphKey);
-    if (cached !== undefined) {
-      if (cached === null) {
+    if (dataProp) {
+      // Externally supplied payload: sync the shared cache so other consumers
+      // (the quiz) see the freshest canonical without refetching.
+      cache.set(glyphKey, { bust: cacheBust ?? null, data: dataProp });
+      return;
+    }
+    const entry = cachedEntry(glyphKey, cacheBust);
+    if (entry !== undefined) {
+      if (entry.data === null) {
         setUnavailable(true);
         onUnavailableRef.current?.();
       } else {
-        setData(cached);
+        setFetched(entry.data);
       }
       return;
     }
-    setData(null); // spinner while the new glyph loads
+    setFetched(null); // spinner while the new glyph loads
     getDiagnostic(glyphKey)
       .then((d) => {
         if (cancelled) return;
-        cache.set(glyphKey, d);
-        setData(d);
+        cache.set(glyphKey, { bust: cacheBust ?? null, data: d });
+        setFetched(d);
       })
       .catch((e) => {
         if (e instanceof ApiError && e.status === 404) {
           // No canonical traced yet → let the caller show the crop instead.
-          cache.set(glyphKey, null);
+          cache.set(glyphKey, { bust: cacheBust ?? null, data: null });
           if (!cancelled) {
             setUnavailable(true);
             onUnavailableRef.current?.();
@@ -126,7 +160,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
     return () => {
       cancelled = true;
     };
-  }, [glyphKey]);
+  }, [glyphKey, cacheBust, dataProp]);
 
   const replay = useCallback(() => setRun((r) => r + 1), []);
 
@@ -142,6 +176,9 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
     const vbY = -tpl.ascender - 0.3;
     const vbH = tpl.ascender - tpl.descender + 0.6;
 
+    // Preferred: capsule-union rings per stroke (loop counters stay open via
+    // evenodd). Legacy ribbon polygons as fallback for older payloads.
+    const strokePaths: Ring[][] | null = data.outline_paths?.length ? data.outline_paths : null;
     const polygons = (data.outline_polygons ?? (data.outline_polygon?.length > 2 ? [data.outline_polygon] : [])).filter(
       (p) => p.length > 2,
     );
@@ -175,7 +212,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
     // finishes, so the lift registers before the ink begins to age.
     const writeEndMs = cursor;
 
-    return { tpl, minX, vbW, vbY, vbH, polygons, centerlines, maskWidth, timing, writeEndMs };
+    return { tpl, minX, vbW, vbY, vbH, strokePaths, polygons, centerlines, maskWidth, timing, writeEndMs };
   }, [data, durationMs]);
 
   if (unavailable) return null;
@@ -186,7 +223,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
     return <CircularProgress size={28} />;
   }
 
-  const { tpl, minX, vbW, vbY, vbH, polygons, centerlines, maskWidth, timing, writeEndMs } = geom;
+  const { tpl, minX, vbW, vbY, vbH, strokePaths, polygons, centerlines, maskWidth, timing, writeEndMs } = geom;
   const displayH = height;
   let displayW = (displayH * vbW) / vbH;
   let finalH = displayH;
@@ -273,9 +310,9 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, onUnav
             animation: animate ? `${inkSettle} ${SETTLE_MS}ms ease ${writeEndMs}ms forwards` : undefined,
           }}
         >
-          {polygons.map((poly, i) => (
-            <polygon key={i} points={poly.map(([x, y]) => `${x},${-y}`).join(' ')} />
-          ))}
+          {strokePaths
+            ? strokePaths.map((rings, i) => <path key={i} d={ringsToPathD(rings, true)} fillRule="evenodd" />)
+            : polygons.map((poly, i) => <polygon key={i} points={poly.map(([x, y]) => `${x},${-y}`).join(' ')} />)}
         </Box>
       </svg>
 

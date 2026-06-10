@@ -6,10 +6,11 @@
 
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { Alert, Box, Button, CircularProgress, Typography } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { cropUrl, getDiagnostic } from '@/lib/api';
 import type { DiagnosticData } from '@/lib/api';
+import { ringsToPathD } from '@/lib/svg';
 import { de, fmt } from '@/locales';
 import { useColumnWidth } from '@/sections/admin/diagnostics/useColumnWidth';
 
@@ -21,22 +22,30 @@ interface Props {
   colWidth?: number;
   // Height of each column box; defaults to COL_H but the big modal goes taller.
   colHeight?: number;
+  // Surfaces the fetched payload so the caller can reuse it (the Diagnose
+  // dialog hands it to WrittenGlyph instead of fetching the same data twice).
+  onData?: (data: DiagnosticData) => void;
 }
 
 const COL_H = 360;
 
-export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props) {
+export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, onData }: Props) {
   const COL_W = useColumnWidth(colWidth);
   const COL_H_PX = colHeight ?? COL_H;
   const [data, setData] = useState<DiagnosticData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const onDataRef = useRef(onData);
+  onDataRef.current = onData;
 
   const fetch = useCallback(() => {
     setLoading(true);
     setError(null);
     getDiagnostic(glyphKey)
-      .then((d) => setData(d))
+      .then((d) => {
+        setData(d);
+        onDataRef.current?.(d);
+      })
       .catch((e) => setError(String(e)))
       .finally(() => setLoading(false));
   }, [glyphKey]);
@@ -91,7 +100,7 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight }:
   return (
     <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
       {/* Column 1 — Crop pur */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, maxWidth: Math.max(cropDisplayW, 180) }}>
         <Typography variant="caption" color="text.secondary">
           {de.admin.diagnostics.cropHeading}
         </Typography>
@@ -104,10 +113,13 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight }:
             style={{ display: 'block' }}
           />
         </Box>
+        <Typography variant="caption" color="text.disabled">
+          {de.admin.diagnostics.cropCaption}
+        </Typography>
       </Box>
 
       {/* Column 2 — Crop + skeleton + anchors */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, maxWidth: Math.max(cropDisplayW, 180) }}>
         <Typography variant="caption" color="text.secondary">
           {de.admin.diagnostics.skeletonHeading} ({data.anchors_px.length})
         </Typography>
@@ -133,10 +145,13 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight }:
             ))}
           </svg>
         </Box>
+        <Typography variant="caption" color="text.disabled">
+          {de.admin.diagnostics.skeletonCaption}
+        </Typography>
       </Box>
 
       {/* Column 3 — Canonical template */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, maxWidth: Math.max(COL_W, 180) }}>
         <Typography variant="caption" color="text.secondary">
           {de.admin.diagnostics.canonicalHeading} {data.slant_deg}°)
         </Typography>
@@ -155,13 +170,18 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight }:
               <line x1={tplX0} y1={tpl.midband} x2={tplX1} y2={tpl.midband} stroke="#ddd" strokeWidth={0.015} strokeDasharray="0.08 0.06" />
               <line x1={tplX0} y1={tpl.ascender} x2={tplX1} y2={tpl.ascender} stroke="#eee" strokeWidth={0.015} strokeDasharray="0.04 0.05" />
               <line x1={tplX0} y1={tpl.descender} x2={tplX1} y2={tpl.descender} stroke="#eee" strokeWidth={0.015} strokeDasharray="0.04 0.05" />
-              {/* Outline polygons — one per pen-stroke (slant applied server-side),
-                  so a pen lift is a real gap, not a bar bridging the strokes */}
-              {(data.outline_polygons ?? (data.outline_polygon.length > 2 ? [data.outline_polygon] : [])).map((poly, i) =>
-                poly.length > 2 ? (
-                  <polygon key={i} points={poly.map(([x, y]) => `${x},${y}`).join(' ')} fill="#111" />
-                ) : null,
-              )}
+              {/* Filled silhouette — capsule-union rings per pen-stroke (holes
+                  stay open via evenodd); legacy ribbon polygons as fallback. */}
+              {data.outline_paths?.length
+                ? data.outline_paths.map((rings, i) => (
+                    <path key={i} d={ringsToPathD(rings)} fill="#111" fillRule="evenodd" />
+                  ))
+                : (data.outline_polygons ?? (data.outline_polygon.length > 2 ? [data.outline_polygon] : [])).map(
+                    (poly, i) =>
+                      poly.length > 2 ? (
+                        <polygon key={i} points={poly.map(([x, y]) => `${x},${y}`).join(' ')} fill="#111" />
+                      ) : null,
+                  )}
               {/* Anchor dots */}
               {data.anchors_template.map(([x, y], i) => (
                 <circle key={i} cx={x} cy={y} r={0.025} fill="#ffae00" />
@@ -169,6 +189,9 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight }:
             </g>
           </svg>
         </Box>
+        <Typography variant="caption" color="text.disabled">
+          {de.admin.diagnostics.canonicalCaption}
+        </Typography>
         <Typography variant="caption" color="text.disabled" sx={{ fontFamily: 'monospace' }}>
           {fmt(de.admin.diagnostics.guidesReadout, { ascender: tpl.ascender.toFixed(2), descender: tpl.descender.toFixed(2) })}
         </Typography>

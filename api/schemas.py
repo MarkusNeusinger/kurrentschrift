@@ -125,8 +125,11 @@ class BboxIn(BaseModel):
     midband_y: int
     # Bounded server-side (the client clamps too): below 4 the resampler breaks
     # (single-sample linspace / negative counts), far above it the anchor JSONB
-    # and the SVG renderers blow up. 1000 is generous headroom over the ~100 norm.
-    n_anchors: int = Field(default=100, ge=4, le=1000)
+    # and the SVG renderers blow up. 1000 is generous headroom over the ~50 norm
+    # (the measured jitter knee, see core.pipeline.DEFAULT_N_ANCHORS). Optional
+    # like `guides`/`locked`: an omitted value preserves the stored count
+    # instead of silently rewriting it on every bbox edit.
+    n_anchors: int | None = Field(default=None, ge=4, le=1000)
     # Optional so an omitted `guides` (older clients, scripts, a plain bbox
     # save) is distinguishable from an explicit value: PUT then preserves the
     # stored guides instead of resetting them. See put_bbox.
