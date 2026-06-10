@@ -1,6 +1,6 @@
 # Deploy-Bootstrap — Statusbericht
 
-Stand: **2026-05-27**, Branch `main` Commit `7a41af2` (Merge von PR #5 `feat/bootstrap-deploy`).
+Stand: **2026-06-10**. Schritt 6 (Cloudflare Access) + Schritt 7 (Plausible-Proxy) sind seit **2026-05-29 live** — `kurrentschrift.ink` läuft hinter Cloudflare, Admin hinter Zero-Trust-Access (verifiziert; Edge-Checks am 2026-06-10 erneut grün: Landing 200, `/admin` 302, `/js/script.js` 200). Plausible empfängt Besucher (bestätigt 2026-06-10). Seit PR #18 führt die Deploy-Pipeline Migrationen automatisch aus (Job `kurrentschrift-migrate`, s. u.).
 
 Dieses Dokument ist ein operativer Schnappschuss: was läuft, was noch fehlt, welche IDs/URLs man im Kopf haben muss. Pendant zum Plan unter `/home/tirao/.claude/plans/was-w-ren-gute-n-chste-quizzical-scone.md`.
 
@@ -8,11 +8,12 @@ Dieses Dokument ist ein operativer Schnappschuss: was läuft, was noch fehlt, we
 
 | Dienst | URL | Status |
 |---|---|---|
-| Landing + Admin-SPA | https://kurrentschrift-app-3yau3h6oyq-ez.a.run.app/ | 200 (Landing rendert) |
-| API | https://kurrentschrift-api-3yau3h6oyq-ez.a.run.app/ | `/health` → `{status:"healthy", database_configured:true}` |
+| Landing + Admin-SPA | https://kurrentschrift.ink/ | 200, proxied (Cloudflare); `/admin*` hinter Access |
+| API | https://api.kurrentschrift.ink/health | `{status:"healthy", database_configured:true}`, proxied |
+| Direkt (break-glass) | `*-3yau3h6oyq-ez.a.run.app` (app + api) | weiterhin erreichbar, umgeht Cloudflare/Access |
 | DB | `kurrentschrift` auf `anyplot:europe-west4:anyplot-db` | Reachable via Cloud SQL Connector (Cross-Project IAM) |
 
-Schreib-Endpoints (PUT/POST/DELETE auf `bboxes` + `glyphs`) sind gegen `require_admin` (FastAPI Depends) gesichert — ohne `Cf-Access-Jwt-Assertion`-Header oder `X-Admin-Token` → 401. Aktuell läuft nur der Token-Pfad (CF-Access-AUD ist noch Platzhalter).
+Schreib-Endpoints (PUT/POST/DELETE auf `bboxes` + `glyphs`) sind gegen `require_admin` (FastAPI Depends) gesichert. **Beide Pfade aktiv:** Cloudflare-Access-JWT (Google-Login via geteilte anyplot-Org, nur `meakeiok@gmail.com`) **und** `X-Admin-Token`-Fallback. Verifiziert am 2026-05-29 über die CF-Edge: eingeloggter Bbox-PUT → 200, gefälschtes JWT → 401.
 
 ## Was eingerichtet ist
 
@@ -39,7 +40,7 @@ Schreib-Endpoints (PUT/POST/DELETE auf `bboxes` + `glyphs`) sind gegen `require_
 
 - DB `kurrentschrift` liegt auf `anyplot:europe-west4:anyplot-db` (anyplot-Projekt).
 - Eigener Postgres-User `kurrentschrift` mit Ownership der Datenbank.
-- Bestehende Tabellen (alembic_version, sources, bboxes, glyphs) gehören noch dem `anyplot`-User; `kurrentschrift`-User hat per `GRANT ALL ON ALL TABLES IN SCHEMA public` Zugriff plus `ALTER DEFAULT PRIVILEGES` für künftige Migrationen.
+- Tabellen-Ownership wurde am **2026-06-04** vom `anyplot`- auf den `kurrentschrift`-User übertragen; zusätzlich `ALTER DEFAULT PRIVILEGES` für künftige Migrationen.
 
 ### Secret Manager
 
@@ -49,8 +50,8 @@ Vier Secrets im `kurrentschrift`-Projekt:
 |---|---|---|
 | `DATABASE_URL` | Cloud SQL Unix-Socket URL für `kurrentschrift`-User | ✅ |
 | `ADMIN_TOKEN` | Random 32-byte hex, fallback für `X-Admin-Token` | ✅ |
-| `CF_ACCESS_TEAM_DOMAIN` | `kurrentschrift.cloudflareaccess.com` | ✅ (Platzhalter — Team-Setup folgt in Schritt 6) |
-| `CF_ACCESS_AUD` | Application-UUID aus Cloudflare Zero Trust | ⚠️ `PLACEHOLDER_FILL_AFTER_CLOUDFLARE_SETUP` — muss noch befüllt werden |
+| `CF_ACCESS_TEAM_DOMAIN` | `anyplot.cloudflareaccess.com` (geteilte Zero-Trust-Org — eine Org pro CF-Account) | ✅ v2 — korrigiert (war fälschl. `kurrentschrift.…`) |
+| `CF_ACCESS_AUD` | `a991baac…dc7ae` (AUD der Access-App „kurrentschrift admin") | ✅ v2 — befüllt |
 
 Alle Secrets sind dem Runtime-SA via `secretmanager.secretAccessor` zugänglich.
 
@@ -61,7 +62,7 @@ Beide deployt aus `main` via die Trigger:
 - `kurrentschrift-api` — Python 3.13, FastAPI, port 8000, mem 1Gi, min=0, max=1, gen2, runtime SA = `kurrentschrift-runtime`, Cloud SQL connected
 - `kurrentschrift-app` — nginx-unprivileged auf statischem Vite-Build, port 8080, mem 512Mi, min=0, max=1
 
-Aktuelle Revisions: api `00002`, app `00003`. URLs siehe oben.
+Aktuelle Revisions: api `00003` (lädt CF-Access-Secrets v2), app `00004`+ (Plausible-Endpoint-Fix `0e00b03` im Deploy). URLs siehe oben.
 
 IAM: beide haben `allUsers:roles/run.invoker` (manuell gesetzt — `--allow-unauthenticated` im Deploy hat das im Cloud-Build-Lauf nicht gebunden, einmalige `gcloud run services add-iam-policy-binding`-Korrektur war nötig; bleibt bestehen über künftige Revisions).
 
@@ -74,6 +75,8 @@ Trigger (beide in `europe-west4`, Branch-Pattern `^main$`):
 - `deploy-api` → `api/cloudbuild.yaml`, included files: `api/**, core/**, pyproject.toml, uv.lock, .dockerignore, .gcloudignore`
 - `deploy-app` → `app/cloudbuild.yaml`, included files: `app/**`
 
+Migrationen: `api/cloudbuild.yaml` führt vor dem Deploy den Cloud-Run-Job **`kurrentschrift-migrate`** aus (`alembic upgrade head` im frisch gebauten Image, seit PR #18) — Schema-Änderungen laufen also automatisch mit dem API-Deploy, nie ad-hoc.
+
 Beide nutzen den Compute-SA als Build-SA (2nd-gen verlangt user-managed SA — die default Cloud-Build-SA wird abgelehnt).
 
 ### Code-Stand auf `main`
@@ -84,57 +87,60 @@ Beide nutzen den Compute-SA als Build-SA (2nd-gen verlangt user-managed SA — d
 - `app/src/router.tsx` — `/` Landing, `/admin/chart`, `/admin/edit/:glyphKey`
 - `app/src/pages/LandingPage.tsx` — schlichte Coming-Soon-Karte
 - `app/src/api.ts` — alle Fetches mit `credentials: 'include'` (für CF-Access-Cookie-Forwarding)
-- `app/index.html` — Plausible-Snippet (hostname-gated, Worker-proxied)
+- `app/index.html` — Plausible-Snippet (hostname-gated; Script `/js/script.js`, Events `/pa/event` — bewusst **nicht** `/api/event`, da `/api/*` Access-gated ist)
 - `.dockerignore` + `.gcloudignore` — Source-Upload von 157 MiB → 1.1 MiB
 - `.env.example` — saubere Vorlage (anyplot-Werte raus)
 
-## Was noch offen ist
+## Was erledigt ist — Cloudflare (Schritt 6 + 7, 2026-05-29)
 
-### Schritt 6 — Cloudflare (blockiert)
+Der Infomaniak-Anycast-Blocker hatte sich aufgelöst (NS standen am 29.05. auf Cloudflare: `ali`/`guss.ns.cloudflare.com`). Das Setup wurde per Cloudflare-API (Account-owned Token) als Spiegel von anyplot gebaut.
 
-Aktuell blockiert: Infomaniak lässt das Deaktivieren der Anycast-DNS nicht zu (vermutlich registrar-seitige Sperrzeit nach Neukauf, oder Mail/Hosting-Service hängt am Domain).
+**Topologie:** Beide Zonen liegen im **selben CF-Account** (`8951bff06379f506d96f827e0ab42f8b`, „Meakeiok@gmail.com's Account") → **eine** Zero-Trust-Org `anyplot` (Team-Domain `anyplot.cloudflareaccess.com`). Ein eigenes Team = ein eigener Account (eine Org pro Account); verworfen — rein kosmetisch (nur die Admin-Login-Seite zeigt das Team-Domain), und End-User-Login wäre ohnehin App-Ebene, unabhängig davon.
 
-Sobald Cloudflare-NS gesetzt werden können:
+### Schritt 6 — Cloudflare Access (Admin-Gate)
 
-1. Domain bei Cloudflare hinzufügen (Free Plan), Nameserver beim Registrar (Infomaniak) auf die zwei zugewiesenen Cloudflare-NS umstellen.
-2. SSL/TLS-Mode: "Full (strict)".
-3. DNS-Records (beide proxied / orange-cloud):
-   - `kurrentschrift.ink` CNAME → `ghs.googlehosted.com` (Cloud Run Custom Domain) ODER `kurrentschrift-app-3yau3h6oyq-ez.a.run.app`
-   - `api.kurrentschrift.ink` CNAME → analog für `kurrentschrift-api`
-4. Custom Domain Mapping in Cloud Run (geht erst wenn die Domain bei Cloudflare aktiv ist):
-   ```bash
-   gcloud beta run domain-mappings create --service=kurrentschrift-app --domain=kurrentschrift.ink --region=europe-west4 --project=kurrentschrift
-   gcloud beta run domain-mappings create --service=kurrentschrift-api --domain=api.kurrentschrift.ink --region=europe-west4 --project=kurrentschrift
-   ```
-5. Cloudflare Zero Trust:
-   - Team: `kurrentschrift` (ergibt `kurrentschrift.cloudflareaccess.com`)
-   - Identity Provider: Google (One-Click oder OAuth-Client aus GCP)
-   - Access-Application "Admin" für `kurrentschrift.ink/admin*` — Policy: Allow `meakeiok@gmail.com`
-   - Application Audience UUID kopieren → `CF_ACCESS_AUD` im Secret Manager befüllen, Service neu deployen
+1. **Cloud-Run-Domain-Mappings**: `kurrentschrift.ink`→`kurrentschrift-app`, `api.kurrentschrift.ink`→`kurrentschrift-api`. Apex bekam A/AAAA (Google-Frontend-IPs), `api` ein CNAME → `ghs.googlehosted.com`. Google-Managed-Certs ausgestellt (dafür war das DNS kurz **grau/DNS-only**).
+2. DNS dann auf **proxied (orange)** geflippt, **SSL-Mode `strict`**, `always_use_https` on.
+3. **Worker `kurrentschrift-api-proxy`** auf Route `kurrentschrift.ink/api/*` → rewrite `/api/X` zu `https://api.kurrentschrift.ink/X`, leitet alle Header inkl. `Cf-Access-Jwt-Assertion` weiter (so erreicht das JWT die API auf der Subdomain; Access sitzt davor und injiziert es). Spiegel von `anyplot-api-proxy`.
+4. **Access-App „kurrentschrift admin"** (`self_hosted`, ID `61c59c45-406d-4cbb-a6b1-d72c63ac54de`): Domains `kurrentschrift.ink/admin`, `/admin/*`, `/api/*`; Google-IdP `b253b807-12db-4fd8-8809-3c81c1b568ae` (wiederverwendet); Session 730h; Policy „Allow `meakeiok@gmail.com`". **AUD `a991baac…dc7ae`**.
+5. Secrets `CF_ACCESS_AUD` + `CF_ACCESS_TEAM_DOMAIN` befüllt (v2), `kurrentschrift-api` redeployt (rev `00003`).
 
-Plan-B falls Cloudflare partout nicht klappt: **GCP IAP** als Auth-Layer (in den docs erwähnt). Etwas weniger Komfort (kein Worker für Plausible-Adblock-Bypass), aber funktioniert mit Infomaniak-DNS direkt.
+> **Guardrail:** anyplots App/Worker/Zone/DNS wurden nur **gelesen**, nie verändert; geschrieben wurde ausschließlich an der kurrentschrift-Zone (`b56894827a54beea4ea05b5493626db4`), den kurrentschrift-Secrets und einer **neuen** App in der geteilten Org.
 
-### Schritt 7 — Plausible + Worker-Proxy
+### Schritt 7 — Plausible (self-hosted Proxy)
 
-- Im bestehenden Plausible-Account (gleicher Login wie anyplot) "+ Add a website" → `kurrentschrift.ink`.
-- Cloudflare-Worker-Routen einrichten (kann der gleiche Worker sein wie für anyplot, einfach Routes hinzufügen):
-  - `kurrentschrift.ink/js/script.js*` → fetch `https://plausible.io/js/pa-8wj7-QdkR8vj4z_19QBCd.js` (das Custom-Bundle aus dem Plausible-Dashboard)
-  - `kurrentschrift.ink/api/event*` → POST forward an `https://plausible.io/api/event` mit `X-Forwarded-For` aus `CF-Connecting-IP`
-- Worker-Routen müssen Vorrang vor dem `kurrentschrift.ink/api/*` → Cloud-Run-API-Routing haben (spezifischere Routes zuerst).
+- **Eigener** Worker `kurrentschrift-plausible-proxy` (getrennt vom API-Proxy → Blast-Radius isoliert, anyplots Worker bleibt unberührt). Routen:
+  - `kurrentschrift.ink/js/script.js` → fetch `https://plausible.io/js/pa-8wj7-QdkR8vj4z_19QBCd.js` (Custom-Bundle)
+  - `kurrentschrift.ink/pa/event` → forward an `https://plausible.io/api/event`, `X-Forwarded-For` aus `CF-Connecting-IP`
+- `app/index.html`: Events gehen auf **`/pa/event`** (Commit `0e00b03`) — **nicht** `/api/event`, da das mit der `/api/*`-Access-Sperre kollidiert hätte (öffentliche Besucher → 302 statt Tracking).
+- ✅ **Erledigt (2026-06-10):** Plausible-Site `kurrentschrift.ink` ist registriert, Besucher kommen im Dashboard an.
 
-### Schritt 8 — End-to-End-Smoke-Test (teilweise grün)
+### ⚠️ Cert-Renewal-Tripwire (prüfen ~2026-08-17)
 
-Bereits validiert (auf `*.run.app`-URLs):
-- ✅ Landing rendert
-- ✅ `/health` 200 + DB connected
-- ✅ Write-Endpoint ohne Auth → 401
-- ✅ Auto-Deploy via push auf main funktioniert
+Cloud-Run-Managed-Certs erneuern alle ~90 Tage und validieren über öffentliches DNS, das auf Google zeigt. Hinter **orange-cloud** sieht Google sich evtl. nicht selbst → Renewal kann **still** fehlschlagen → Full(strict) bricht mit 526. Check:
 
-Noch zu validieren (nach Cloudflare + Plausible):
-- [ ] `https://kurrentschrift.ink/` rendert Landing + Plausible-Pageview im Network-Tab
-- [ ] `https://kurrentschrift.ink/admin/chart` → CF-Access-Redirect → Google-Login → Chart lädt → Bbox speicherbar
-- [ ] Direkter `*.run.app/...` Hit auf Write-Endpoint mit gefälschtem JWT → weiterhin 401 (Defense-in-Depth check)
-- [ ] Plausible-Dashboard zeigt Pageview für `kurrentschrift.ink`
+```bash
+gcloud beta run domain-mappings describe --domain=kurrentschrift.ink --region=europe-west4 --project=kurrentschrift \
+  --format="value(status.conditions)" | grep -i Certificate
+```
+
+Fix falls pending/failed: betroffene DNS-Records temporär auf **grau (DNS-only)** stellen, Renewal abwarten, zurück auf orange.
+
+### Schritt 8 — End-to-End-Smoke-Test
+
+Validiert am 2026-05-29 über die Cloudflare-Edge:
+- ✅ `https://kurrentschrift.ink/` → 200, `server: cloudflare` (proxied), Landing rendert
+- ✅ `/admin` → 302 → `anyplot.cloudflareaccess.com/cdn-cgi/access/login/…` (AUD = `a991baac…`)
+- ✅ `/api/*` ohne Auth → 302 (Access sitzt vor dem Worker)
+- ✅ Eingeloggter **Bbox-PUT → 200** (kompletter JWT-Pfad: Worker leitet Assertion weiter, FastAPI verifiziert AUD + Issuer + E-Mail-Allowlist — per API-Logs bestätigt)
+- ✅ Gefälschtes JWT auf api-Subdomain → 401 (Defense-in-Depth)
+- ✅ `/js/script.js` → 200 `application/javascript`; `/pa/event` proxyt zu Plausible
+
+Nachgeprüft:
+- [x] Plausible-Dashboard zeigt Pageviews für `kurrentschrift.ink` (bestätigt 2026-06-10)
+- [x] Lokaler Browser: nach Ablauf der DNS-TTL (300 s) gegenstandslos — Admin lädt (Stand 2026-06-10)
+
+Einziger offener Punkt: der **Cert-Renewal-Check ~2026-08-17** (Tripwire oben).
 
 ## Wichtige IDs und Pfade (Cheat-Sheet)
 
@@ -149,6 +155,14 @@ GitHub:            MarkusNeusinger/kurrentschrift
 Cloud-Build-Conn:  kurrentschrift-github  (region europe-west4)
 Triggers:          deploy-api, deploy-app  (region europe-west4, branch ^main$)
 Anyplot-Referenz:  /home/tirao/anyplot/  + GCP-Projekt `anyplot`
+
+CF-Account:        8951bff06379f506d96f827e0ab42f8b   (Meakeiok@gmail.com's Account)
+CF-Zone (ks):      b56894827a54beea4ea05b5493626db4   (kurrentschrift.ink)
+ZT-Team-Domain:    anyplot.cloudflareaccess.com   (geteilte Org, eine pro Account)
+Google-IdP:        b253b807-12db-4fd8-8809-3c81c1b568ae
+Access-App:        "kurrentschrift admin"  id 61c59c45-…  AUD a991baac…dc7ae
+Worker (api):      kurrentschrift-api-proxy         route kurrentschrift.ink/api/*
+Worker (plausib):  kurrentschrift-plausible-proxy   routes /js/script.js + /pa/event
 ```
 
 Häufig gebrauchte Befehle:
@@ -172,8 +186,8 @@ gcloud run services update kurrentschrift-api --region=europe-west4 --project=ku
 
 ## Architektur-Entscheidungen die hier gefallen sind
 
-- **Auth-Pattern**: Cloudflare Access + JWT-Validation in FastAPI (Defense-in-Depth, identisch zu anyplot). `--allow-unauthenticated` auf Cloud Run, echte Autorisierung serverseitig.
+- **Auth-Pattern**: Cloudflare Access + JWT-Validation in FastAPI (Defense-in-Depth, identisch zu anyplot). `--allow-unauthenticated` auf Cloud Run, echte Autorisierung serverseitig. Geteilte Zero-Trust-Org (`anyplot.cloudflareaccess.com`); kurrentschrift ist eine **eigene** Access-App mit eigener AUD → Auth pro App isoliert trotz geteilter Org.
 - **DB-Boundary**: Eigener Postgres-User `kurrentschrift`, eigene Datenbank, aber gemeinsam mit anyplot auf einer Cloud-SQL-Instanz (Kosten). Cross-Project-IAM bindet das sauber.
 - **min=0, max=1 Instances**: Personal-Projekt, Cold-Start (~3s API, ~1s nginx) akzeptabel. Spart Idle-Kosten.
-- **Plausible via Worker**: Adblocker-Bypass, gleicher Worker-Code-Base wie anyplot (Routes additiv).
+- **Plausible via Worker**: Adblocker-Bypass via self-hosted Proxy. **Eigener** Worker `kurrentschrift-plausible-proxy` (nicht anyplots — Blast-Radius-Isolation). Events auf `/pa/event` statt `/api/event` (Kollision mit dem `/api/*`-Access-Gate).
 - **2nd-gen Cloud Build**: User-managed Compute-SA als Build-SA. Die Legacy `PROJECT_NUMBER@cloudbuild.gserviceaccount.com` wird von 2nd-gen-Triggern abgelehnt.
