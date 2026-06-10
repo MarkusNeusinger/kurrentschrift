@@ -42,12 +42,22 @@ def test_stroke_outline_is_closed_polygon():
     assert len(poly_x) == len(poly_y) == 6  # 3 top + 3 bottom
 
 
-def test_apply_slant_zero_is_identity():
+def test_apply_slant_90_is_identity():
+    # Schräglage convention: 90° = upright, so 90 must be the no-op.
     x = np.array([0.0, 0.0, 0.0])
     y = np.array([0.0, 1.0, 2.0])
-    x2, y2 = apply_slant(x, y, 0.0)
+    x2, y2 = apply_slant(x, y, 90.0)
     assert np.allclose(x2, x)
     assert np.allclose(y2, y)
+
+
+def test_apply_slant_makes_baseline_angle():
+    # A vertical sheared to Schräglage 65 must make 65° with the baseline.
+    x = np.array([0.0, 0.0])
+    y = np.array([0.0, 1.0])
+    x2, y2 = apply_slant(x, y, 65.0)
+    angle = np.degrees(np.arctan2(y2[1] - y2[0], x2[1] - x2[0]))
+    assert np.isclose(angle, 65.0)
 
 
 def test_apply_slant_shears_along_x():

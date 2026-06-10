@@ -52,8 +52,9 @@ class Style(Base):
     `pressure` = Kurrent Spitzfeder Schwellzug, `constant` = Sütterlin uniform,
     `broad_nib` = Offenbacher Breitfeder. `default_style_ratio` is
     [ascender, x_height, descender] (Kurrent = [2, 1, 2]); `default_slant_deg`
-    is the dominant slant from the baseline (≈65° Kurrent, 90° upright). A source
-    may override both per chart.
+    is the dominant slant from the baseline (90 = upright; 65 = literature
+    value for Kurrent um 1900 — individual charts differ, e.g. Loth 1866
+    measures ~50°). A source may override both per chart.
     """
 
     __tablename__ = "styles"

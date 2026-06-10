@@ -63,8 +63,8 @@ def test_canonical_contains_measurements(synthetic_chart_path, synthetic_bbox):
     m = canon["measurements"]
     for key in ("slant_deg", "mean_half_width_px", "path_length_px", "aspect_ratio"):
         assert key in m
-    # Vertical downstroke → slant ≈ 0°.
-    assert abs(m["slant_deg"]) < 5.0
+    # Vertical downstroke → Schräglage ≈ 90° (angle to the baseline, 90 = upright).
+    assert abs(m["slant_deg"] - 90.0) < 5.0
 
 
 def test_coupling_defaults_to_baseline(synthetic_chart_path, synthetic_bbox):

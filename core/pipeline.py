@@ -2,13 +2,13 @@
 
 `canonical_from_path` converts a dense stylus path on the source chart into
 a normalised canonical-template dict (advance, anchors, half-widths, entry,
-exit, raw_path, trace_meta, measurements) ready for upsert into the `glyphs`
-table.
+exit, raw_path, trace_meta, measurements) ready for upsert into the
+`templates` table.
 
 `diagnostic_for_glyph` returns the JSON the frontend needs to draw the
 three-column SVG diagnostic (Loth pur | Crop+skeleton+anchors | Canonical
-template) — already includes the slant-shear and the polygon outline so the
-TS side only renders.
+template) — already includes the polygon outline (rendered unsheared; the
+traced anchors carry the chart's natural slant) so the TS side only renders.
 """
 
 from __future__ import annotations
@@ -113,11 +113,13 @@ def _sample_width_at(x_local: float, y_local: float, mask: np.ndarray, width_map
     return float(width_map[ys[k], xs[k]])
 
 
-def _measure_slant(anchors_norm: np.ndarray) -> float:
-    """Dominant slant of the centerline in degrees (0 = upright, positive = leaning right).
+def _measure_slant_from_vertical(anchors_norm: np.ndarray) -> float:
+    """Dominant lean of the centerline in degrees FROM VERTICAL (0 = upright).
 
     PCA on anchor offsets: take the principal axis, convert to angle from
-    vertical. Robust to which side the stroke starts on.
+    vertical. Robust to which side the stroke starts on. NOTE: this is the
+    complement of the repo-wide `slant_deg` convention (Schräglage, angle to
+    the baseline, 90 = upright) — callers must convert before persisting.
     """
     if len(anchors_norm) < 2:
         return 0.0
@@ -133,11 +135,13 @@ def _measure_slant(anchors_norm: np.ndarray) -> float:
 
 
 def _measurements(anchors_norm: np.ndarray, half_widths_px: np.ndarray, path_length_px: float, bbox: dict) -> dict:
-    """Per-instance derived statistics for the `glyphs.measurements` JSONB field."""
+    """Per-instance derived statistics for the `templates.measurements` JSONB field."""
     width = bbox["x1"] - bbox["x0"]
     height = bbox["y1"] - bbox["y0"]
     return {
-        "slant_deg": round(_measure_slant(anchors_norm), 2),
+        # Stored in the repo-wide Schräglage convention (angle to the baseline,
+        # 90 = upright), converted from the PCA's angle-from-vertical.
+        "slant_deg": round(90.0 - _measure_slant_from_vertical(anchors_norm), 2),
         "mean_half_width_px": round(float(np.mean(half_widths_px)) if len(half_widths_px) else 0.0, 3),
         "path_length_px": round(float(path_length_px), 1),
         "aspect_ratio": round(width / height, 3) if height else 0.0,
@@ -283,8 +287,8 @@ def diagnostic_for_glyph(
 ) -> dict:
     """JSON for the 3-column SVG diagnostic (Loth pur | Crop+skeleton+anchors | Canonical).
 
-    Backend does all the heavy lifting (skeleton extraction, outline-with-slant
-    polygon construction) so the frontend just renders polylines + polygons.
+    Backend does all the heavy lifting (skeleton extraction, outline polygon
+    construction) so the frontend just renders polylines + polygons.
     """
     chart_gray = load_chart_grayscale(chart_path)
     crop = crop_with_mask(chart_gray, bbox, fill=1.0)
@@ -305,14 +309,18 @@ def diagnostic_for_glyph(
     x0, y0 = bbox["x0"], bbox["y0"]
     anchors_px = [[round(px - x0, 2), round(py - y0, 2)] for px, py in pixel_anchors]
 
-    # One outline polygon per pen-stroke (slant applied) so a pen lift reads as a
-    # real gap instead of a filled bar bridging the two strokes.
-    outline_polygons = multi_stroke_outline(anchors_template, half_widths_template, stroke_starts, slant_deg, n=240)
+    # One outline polygon per pen-stroke so a pen lift reads as a real gap
+    # instead of a filled bar bridging the two strokes. Rendered WITHOUT an
+    # extra shear (slant 90 = identity): the anchors were traced over the real
+    # chart ink and already carry its natural slant — shearing again by the
+    # style slant was a double application that rendered glyphs too flat (a
+    # 50° Loth downstroke came out at ~37.5°). `core.fit` maps template→pixels
+    # unsheared for the same reason; `slant_deg` stays in the payload as the
+    # style's nominal Schräglage (metadata, not a render transform).
+    outline_polygons = multi_stroke_outline(anchors_template, half_widths_template, stroke_starts, 90.0, n=240)
     # Matching per-stroke centerlines (same sampling) so the frontend can sweep a
     # wide mask along the ductus and reveal the silhouette in writing order.
-    centerlines_template = multi_stroke_centerlines(
-        anchors_template, half_widths_template, stroke_starts, slant_deg, n=240
-    )
+    centerlines_template = multi_stroke_centerlines(anchors_template, half_widths_template, stroke_starts, 90.0, n=240)
 
     return {
         "crop_size": {"w": int(w), "h": int(h)},
