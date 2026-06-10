@@ -121,8 +121,8 @@ gemessenen Wert als `sources.slant_deg`-Override (Architektur §3).
   ergebnislos — alle messbaren PD-Tafeln 1866–1903 liegen bei ~45–58°
   (steilster Anker: `petzendorfer-1889`, ~57°). Petzendorfers
   „Schriftenatlas, Neue Folge" (1903–05) wurde am TIB-Volldigitalisat
-  komplett geprüft und **enthält keine Kurrent-Tafel** (Schreibschrift-
-  Tafeln 53–63 sind durchweg lateinische Schriften;
+  komplett geprüft und **enthält keine Kurrent-Tafel** (die
+  Schreibschrift-Tafeln 53–63 sind durchweg lateinische Schriften;
   [TIB/Goobi, PDM 1.0](https://goobi.tib.eu/viewer/image/1048764478/1/),
   [DOI 10.14463/GBV:1048764478](https://doi.org/10.14463/GBV:1048764478)).
   Moderne 60–70°-Belege existieren nur als CC-BY-SA
