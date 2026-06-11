@@ -101,6 +101,15 @@ DEFAULT_WIDTH_SMOOTH_WEIGHT = 1e-4
 # boundary gradient is weak (hairlines); crossing-contaminated anchors are
 # exempt (their measurement is an interpolation, not a reading).
 DEFAULT_WIDTH_PRIOR_WEIGHT = 0.05
+# One-sided physical width cap (Spitzfeder mechanics): the tines spread only
+# while PULLING along the pressure axis — off-axis/upstroke widths beyond the
+# direction-dependent cap are measurement artifacts (crossing blobs, stair-step
+# noise), never real ink, because pressing on an up/side stroke digs the nib
+# into the paper. Self-calibrated per glyph (axis = width²-weighted axial mean
+# of the tangents, so wide downstrokes vote); exceedance is penalised
+# one-sidedly — thinner than the cap is always physical.
+PRESSURE_CONE_WEIGHT = 0.05
+PRESSURE_CONE_EXP = 2.0
 REFINE_OUTER_ROUNDS = 3
 REFINE_MAX_ITER = 100
 # Early-stop when a frozen-normal round improves the honest residual by less
@@ -612,6 +621,35 @@ def _unit_tangents_normals(
     return tx, ty, nx, ny
 
 
+def _pressure_cone_cap(anchors: np.ndarray, w0: np.ndarray, stroke_starts: Sequence[int] | None) -> np.ndarray:
+    """Per-anchor upper width bound from Spitzfeder physics (PRESSURE_CONE_WEIGHT).
+
+    The pressure axis is estimated from the data itself: the width²-weighted
+    circular mean of the DOUBLED tangent angles (axial statistics — a stroke
+    and its reverse are the same axis), so the wide downstrokes vote for the
+    axis. The cap interpolates hairline→max width with alignment^p; widths the
+    measurement claims beyond it on off-axis stretches are physically
+    impossible for a pointed nib.
+    """
+    k = len(anchors)
+    bounds = sorted({0, *(int(s) for s in (stroke_starts or []) if 0 < int(s) < k), k})
+    theta = np.zeros(k)
+    for a, b in zip(bounds[:-1], bounds[1:], strict=True):
+        seg = anchors[a:b]
+        if len(seg) < 2:
+            continue
+        g = np.gradient(seg, axis=0)
+        theta[a:b] = np.arctan2(g[:, 1], g[:, 0])
+    weight = w0**2
+    if float(weight.sum()) <= 0.0:
+        return np.full(k, np.inf)
+    axis = 0.5 * np.arctan2(float((weight * np.sin(2 * theta)).sum()), float((weight * np.cos(2 * theta)).sum()))
+    alignment = np.abs(np.cos(theta - axis))
+    w_hair = float(np.percentile(w0, 10))
+    w_max = float(np.percentile(w0, 95)) * 1.1
+    return w_hair + (w_max - w_hair) * alignment**PRESSURE_CONE_EXP
+
+
 def _width_curvature_operator(
     anchors: np.ndarray, stroke_starts: Sequence[int] | None, corner_anchors: Sequence[int] | None
 ) -> np.ndarray:
@@ -665,6 +703,7 @@ class _RefineContext:
     cov_pts: np.ndarray
     crossing_wide: np.ndarray  # crossing-contaminated anchor indices ±1, sorted
     c_prior: np.ndarray  # per-anchor width-prior mask (0 on crossing anchors)
+    w_cap: np.ndarray  # per-anchor physical width cap (pressure cone, template units)
     boundary_weight: float
     coverage_weight: float
     lambda_reg: float
@@ -801,11 +840,14 @@ class _RefineRound:
         g_px += ctx.coverage_weight * g_cov[:, 0]
         g_py += ctx.coverage_weight * g_cov[:, 1]
 
-        # Regularisers: anchor Tikhonov, width-profile curvature, width prior.
+        # Regularisers: anchor Tikhonov, width-profile curvature, width prior,
+        # and the one-sided pressure-cone cap (Spitzfeder physics).
         e_reg = float(np.mean(np.sum(da**2, axis=1)))
         r = self.d2 @ (ctx.w0 + dw)
         e_wsm = float((r**2).sum()) / self.m_d2
         e_wpr = float((ctx.c_prior * dw**2).mean())
+        excess = np.maximum(0.0, (ctx.w0 + dw) - ctx.w_cap)
+        e_phys = float((ctx.c_prior * excess**2).mean())
 
         f = (
             e_geo
@@ -814,6 +856,7 @@ class _RefineRound:
             + ctx.lambda_reg * e_reg
             + ctx.width_smooth_weight * e_wsm
             + ctx.width_prior_weight * e_wpr
+            + PRESSURE_CONE_WEIGHT * e_phys
         )
 
         grad = np.empty_like(p)
@@ -825,6 +868,7 @@ class _RefineRound:
             ctx.unit_px * (self.w_op.T @ g_h)
             + ctx.width_smooth_weight * 2.0 * (self.d2.T @ r) / self.m_d2
             + ctx.width_prior_weight * 2.0 * ctx.c_prior * dw / k
+            + PRESSURE_CONE_WEIGHT * 2.0 * ctx.c_prior * excess / k
         )
         return f, grad
 
@@ -962,6 +1006,7 @@ def refine_template_against_crop(
         cov_pts=cov_pts,
         crossing_wide=np.array(sorted(crossing_wide), dtype=int),
         c_prior=np.array([0.0 if j in crossing_set else 1.0 for j in range(k)]),
+        w_cap=_pressure_cone_cap(template_anchors, w0, stroke_starts),
         boundary_weight=boundary_weight,
         coverage_weight=coverage_weight,
         lambda_reg=lambda_reg,
