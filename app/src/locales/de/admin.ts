@@ -97,7 +97,7 @@ export const admin = {
     // Followed by the anchor count "(…)" in the column heading.
     skeletonHeading: 'Skelett & Stützstellen',
     skeletonCaption:
-      'Rot: die Mittelachse (Skelett) der binarisierten Tinte — auf ihr wird die Strichbreite (Schwellzug) gemessen. Orange: die Stützstellen des nachgezeichneten Wegs. Liegen sie neben der Tinte, leidet die Breitenmessung — dann den Weg im Wizard neu zeichnen.',
+      'Rot: die Mittelachse (Skelett) der binarisierten Tinte — auf ihr wird die Strichbreite (Schwellzug) gemessen. Orange: die Stützstellen des nachgezeichneten Wegs. Türkise Rauten: erkannte Umkehrpunkte (Ecken) — dort wird der Spline geteilt, damit die Ecke spitz bleibt. Liegen Stützstellen neben der Tinte, leidet die Breitenmessung — dann den Weg im Wizard neu zeichnen.',
     // Followed by "{deg}°)" in the column heading.
     canonicalHeading: 'Kanonische Form (Stil-Schräglage',
     canonicalCaption:
@@ -121,5 +121,26 @@ export const admin = {
     lambdaHint: 'Geometrie folgt dem Skelett; λ (Tikhonov) hält die Vorlage zusammen — niedrig = näher am Skelett, hoch = formtreuer.',
     // Followed by the current λ value.
     regularization: 'Regularisierung λ =',
+  },
+  quality: {
+    sectionTitle: 'Qualität & Neu ableiten',
+    intro:
+      'Bildraum-Vergleich: Wie gut deckt die gerenderte Silhouette die Originaltinte? Links der gespeicherte Stand, rechts was eine Neuableitung aus dem gezeichneten Weg mit dem aktuellen Code erreichen würde — erst vergleichen, dann übernehmen.',
+    computing: 'Qualität wird gerechnet…',
+    stored: 'Gespeichert',
+    candidate: 'Neu ableitbar',
+    noCandidate: 'Kein Roh-Weg gespeichert — Neuableitung nicht möglich.',
+    // Composed metric labels (values + units stay in the component).
+    score: 'Score',
+    iou: 'Deckung (IoU):',
+    chamfer: 'Randabstand:',
+    geoRmse: 'Mittellinien-RMSE:',
+    waviness: 'Welligkeit:',
+    // Followed by the score delta, e.g. "+2.3".
+    delta: 'Δ Score:',
+    apply: 'Neu ableiten & speichern',
+    applyHint:
+      'Überschreibt die gespeicherte Vorlage mit der Neuableitung aus dem Roh-Weg — bewusste Aktion, wirkt auch bei gesperrten Glyphen.',
+    applied: 'Vorlage neu abgeleitet und gespeichert.',
   },
 } as const;

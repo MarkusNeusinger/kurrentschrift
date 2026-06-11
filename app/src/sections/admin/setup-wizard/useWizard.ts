@@ -233,7 +233,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     if (!bbox || !hasCanonical) return;
     setBusy(true);
     try {
-      const g = await postResample(glyphKey, nAnchors);
+      const g = await postResample(glyphKey, { nAnchors });
       markGlyphTraced(glyphKey, summaryOf(g));
       setSnack(fmt(de.wizard.snack.resampled, { count: g.anchors.length }));
       void refreshSavedTrace();

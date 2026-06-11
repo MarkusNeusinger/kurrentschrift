@@ -187,10 +187,23 @@ class TraceRequest(BaseModel):
     # Same bounds as BboxIn.n_anchors; None falls back to the stored bbox value.
     n_anchors: int | None = Field(default=None, ge=4, le=1000)
     variant: int = 0
+    # A locked glyph (Bbox.locked) rejects writes unless this is set — the lock
+    # used to be a UI-only contract; the flag makes overriding it an explicit,
+    # deliberate decision (e.g. the diagnostics' "re-derive" button).
+    force: bool = False
 
 
 class ResampleRequest(BaseModel):
-    n_anchors: int = Field(ge=4, le=1000)
+    """Body of `POST /sources/{id}/templates/{glyph_key}/resample`.
+
+    `n_anchors=None` keeps the stored anchor count, so the request means
+    "re-derive this template from its raw_path with the CURRENT pipeline code"
+    — the admin's per-glyph refresh after pipeline improvements land.
+    """
+
+    n_anchors: int | None = Field(default=None, ge=4, le=1000)
+    # See TraceRequest.force — required to resample a locked glyph.
+    force: bool = False
 
 
 class TemplateSummary(BaseModel):
