@@ -5,12 +5,13 @@
 import type { CouplingHeight } from '@/lib/api';
 import { de } from '@/locales';
 
-export type StepId = 'mask' | 'lineatur' | 'slant' | 'weg' | 'overview';
+export type StepId = 'mask' | 'lineatur' | 'slant' | 'weg' | 'optimize' | 'overview';
 export const STEPS: { id: StepId; label: string }[] = [
   { id: 'mask', label: de.wizard.steps.mask },
   { id: 'lineatur', label: de.wizard.steps.lineatur },
   { id: 'slant', label: de.wizard.steps.slant },
   { id: 'weg', label: de.wizard.steps.weg },
+  { id: 'optimize', label: de.wizard.steps.optimize },
   { id: 'overview', label: de.wizard.steps.overview },
 ];
 

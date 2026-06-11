@@ -669,6 +669,52 @@ def canonical_from_raw_path_only(glyph_row: dict, bbox: dict, chart_path: str, n
     )
 
 
+def written_preview_for_canonical(canonical: dict, style_ratio: list[float], slant_deg: float) -> dict:
+    """DiagnosticData-shaped render payload for a NOT-yet-stored canonical.
+
+    Lets the wizard's Optimieren step show "as written" previews (raw vs
+    refined derivation) before anything is persisted — same outline/centerline
+    geometry as `diagnostic_for_glyph`, minus the crop/skeleton columns (the
+    skeleton recompute is wasted on a pure render). The image-space `quality`
+    and `refine` meta ride along for the score comparison.
+    """
+    anchors = np.asarray(canonical["anchors"], dtype=float)
+    half_widths = np.asarray(canonical["half_widths"], dtype=float)
+    trace_meta = canonical["trace_meta"]
+    stroke_starts = trace_meta.get("stroke_starts")
+    corner_anchors = trace_meta.get("corner_anchors") or []
+    snapshot = trace_meta["bbox_snapshot"]
+    x0, y0 = snapshot["x0"], snapshot["y0"]
+
+    outline_paths = multi_stroke_silhouettes(
+        anchors, half_widths, stroke_starts, 90.0, n=240, corner_anchors=corner_anchors
+    )
+    outline_polygons = [stroke[0] for stroke in outline_paths if stroke]
+    centerlines = multi_stroke_centerlines(
+        anchors, half_widths, stroke_starts, 90.0, n=240, corner_anchors=corner_anchors
+    )
+
+    return {
+        "crop_size": {"w": int(snapshot["x1"] - x0), "h": int(snapshot["y1"] - y0)},
+        "skeleton_polyline_px": [],
+        "anchors_px": [[round(px - x0, 2), round(py - y0, 2)] for px, py in trace_meta["pixel_anchors"]],
+        "half_widths_px": trace_meta["half_widths_px"],
+        "anchors_template": canonical["anchors"],
+        "half_widths_template": canonical["half_widths"],
+        "outline_polygon": outline_polygons[0] if outline_polygons else [],
+        "outline_polygons": outline_polygons,
+        "outline_paths": outline_paths,
+        "centerlines_template": centerlines,
+        "baseline_y_crop": int(trace_meta["baseline_y"]) - y0,
+        "midband_y_crop": int(trace_meta["midband_y"]) - y0,
+        "template_guides": template_guides(style_ratio),
+        "slant_deg": float(slant_deg),
+        "corner_anchors": [int(c) for c in corner_anchors],
+        "quality": trace_meta.get("quality"),
+        "refine": trace_meta.get("refine"),
+    }
+
+
 # ------------------------------------------------------------------ diagnostic
 
 

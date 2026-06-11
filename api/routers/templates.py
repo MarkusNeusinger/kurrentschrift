@@ -14,7 +14,13 @@ from api.dependencies import require_db, require_source
 from api.schemas import ResampleRequest, TemplateOut, TemplateSummary, TraceRequest
 from core.database import BboxRepository, Source, StyleRepository, Template, TemplateRepository
 from core.fit import fit_glyph_to_crop
-from core.pipeline import DEFAULT_N_ANCHORS, canonical_from_path, canonical_from_raw_path_only, diagnostic_for_glyph
+from core.pipeline import (
+    DEFAULT_N_ANCHORS,
+    canonical_from_path,
+    canonical_from_raw_path_only,
+    diagnostic_for_glyph,
+    written_preview_for_canonical,
+)
 from core.quality import quality_for_glyph
 
 
@@ -131,6 +137,45 @@ async def post_trace(
         source.style_id, glyph_key, canonical, variant=payload.variant, provenance_source_id=source.id
     )
     return _template_to_out(t)
+
+
+@router.post("/{glyph_key}/trace-preview", dependencies=[Depends(require_admin)])
+async def post_trace_preview(
+    glyph_key: str,
+    payload: TraceRequest,
+    source: Source = Depends(require_source),
+    db: AsyncSession = Depends(require_db),
+):
+    """Dry-run trace: derive the raw and the optimized variant, write NOTHING.
+
+    The wizard's Optimieren step renders both as written glyphs side by side
+    (with their image-space quality scores) so the user confirms the
+    optimization before the real /trace persists it. Admin-gated like /trace —
+    it costs the same CPU — but no lock check: nothing is stored.
+    """
+    bbox = await BboxRepository(db).get(source.id, glyph_key)
+    if bbox is None:
+        raise HTTPException(409, detail=f"set bbox for {glyph_key!r} before tracing")
+    _, style_ratio, slant_deg = await _resolve_style(source, db)
+    bbox_dict = _bbox_to_dict(bbox)
+    raw_path = [p.model_dump() for p in payload.raw_path]
+
+    def compute() -> dict:
+        out: dict = {}
+        for name, refine in (("raw", False), ("refined", True)):
+            canon = canonical_from_path(
+                raw_path=raw_path,
+                bbox=bbox_dict,
+                chart_path=source.chart_path,
+                glyph=payload.glyph,
+                position=payload.position,
+                n_anchors=payload.n_anchors,
+                refine=refine,
+            )
+            out[name] = written_preview_for_canonical(canon, style_ratio, slant_deg)
+        return out
+
+    return await run_in_threadpool(compute)
 
 
 @router.post("/{glyph_key}/resample", response_model=TemplateOut, dependencies=[Depends(require_admin)])

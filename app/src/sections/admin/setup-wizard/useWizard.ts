@@ -6,7 +6,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { getDiagnostic, getGlyph, postResample, postTrace, putBbox } from '@/lib/api';
+import { getDiagnostic, getGlyph, postResample, postTrace, postTracePreview, putBbox } from '@/lib/api';
 import { bboxInFromOut } from '@/lib/bbox';
 import { isLetterSplit, knownGlyph, siblingKeys } from '@/domain/glyphs';
 import { useAdmin } from '@/context/AdminContext';
@@ -14,7 +14,7 @@ import { de, fmt } from '@/locales';
 import { flattenStrokes, savablePointCount } from './strokeUtils';
 import { STEPS } from './wizardTypes';
 import type { CalibField, GuideValues } from './wizardTypes';
-import type { BboxIn, GlyphSummary, GuideConfig, MaskStroke, StrokePoint } from '@/lib/api';
+import type { BboxIn, GlyphSummary, GuideConfig, MaskStroke, StrokePoint, TracePreviewOut } from '@/lib/api';
 
 // The already-saved Weg, shown faintly on the Weg step for reference: the raw
 // pen path (chart coordinates) and the resampled anchors (crop-local pixels).
@@ -57,12 +57,26 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
   const [showSaved, setShowSaved] = useState(true);
   const [savedTrace, setSavedTrace] = useState<SavedTraceOverlay | null>(null);
 
+  // The Optimieren step's working set: the Weg to be saved (deferred — nothing
+  // is written until the user applies), the raw-vs-optimized dry run, and
+  // whether the current draft has been applied.
+  const [draft, setDraft] = useState<{ rawPath: StrokePoint[]; nAnchors: number } | null>(null);
+  const [preview, setPreview] = useState<TracePreviewOut | null>(null);
+  const [previewBusy, setPreviewBusy] = useState(false);
+  const [optimizeApplied, setOptimizeApplied] = useState(false);
+  const previewEpoch = useRef(0);
+
   // Mounted once and reused for every glyph: when a different glyph opens (or the
   // dialog reopens), drop transient state so one glyph's draft never leaks onto
   // the next.
   useEffect(() => {
     setStep(0);
     setStrokes([]);
+    previewEpoch.current++;
+    setDraft(null);
+    setPreview(null);
+    setPreviewBusy(false);
+    setOptimizeApplied(false);
     // Seed the unified/split choice from the letter's current state: an already
     // split letter defaults to keeping this position separate; a unified letter
     // defaults to "one form for all". The user can still flip it before finishing.
@@ -204,29 +218,66 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     [guideVals, updateGuides],
   );
 
-  // `nAnchors` comes from the TraceStep's just-committed draft so the call never
-  // races the PUT that persists the field (bbox in this closure may be stale).
-  const saveTrace = useCallback(async (nAnchors: number) => {
-    const rawPath = flattenStrokes(strokes);
-    if (rawPath.length < 2 || !known || !bbox) return;
-    setBusy(true);
+  // Move the drawn Weg (or, when nothing new was drawn, the stored raw_path)
+  // into the Optimieren step's draft and run the raw-vs-optimized dry run.
+  // NOTHING is saved here — persisting happens in applyOptimized, so the user
+  // confirms the optimization before it lands in the DB. `nAnchors` comes from
+  // the TraceStep's just-committed field so the call never races the PUT.
+  const prepareOptimize = useCallback(async (nAnchors: number) => {
+    if (!known || !bbox) return;
+    let rawPath = flattenStrokes(strokes);
+    if (rawPath.length < 2) {
+      if (!hasCanonical) return;
+      try {
+        rawPath = (await getGlyph(glyphKey)).raw_path; // re-optimize the stored Weg
+      } catch (err) {
+        setSnack(String(err));
+        return;
+      }
+    }
+    setDraft({ rawPath, nAnchors });
+    setOptimizeApplied(false);
+    setStep(STEPS.findIndex((s) => s.id === 'optimize'));
+    const epoch = ++previewEpoch.current;
+    setPreview(null);
+    setPreviewBusy(true);
     try {
-      const g = await postTrace(glyphKey, {
+      const p = await postTracePreview(glyphKey, {
         glyph: known.glyph,
         position: known.position,
         raw_path: rawPath,
         n_anchors: nAnchors,
       });
+      if (previewEpoch.current === epoch) setPreview(p);
+    } catch (err) {
+      if (previewEpoch.current === epoch) setSnack(String(err));
+    } finally {
+      if (previewEpoch.current === epoch) setPreviewBusy(false);
+    }
+  }, [strokes, known, bbox, hasCanonical, glyphKey]);
+
+  // Persist the previewed draft — the actual /trace (optimization always on).
+  const applyOptimized = useCallback(async () => {
+    if (!draft || !known) return;
+    setBusy(true);
+    try {
+      const g = await postTrace(glyphKey, {
+        glyph: known.glyph,
+        position: known.position,
+        raw_path: draft.rawPath,
+        n_anchors: draft.nAnchors,
+      });
       markGlyphTraced(glyphKey, summaryOf(g));
       setSnack(fmt(de.wizard.snack.traceSaved, { count: g.anchors.length }));
       setStrokes([]);
+      setOptimizeApplied(true);
       void refreshSavedTrace();
     } catch (err) {
       setSnack(String(err));
     } finally {
       setBusy(false);
     }
-  }, [strokes, known, bbox, glyphKey, markGlyphTraced, refreshSavedTrace]);
+  }, [draft, known, glyphKey, markGlyphTraced, refreshSavedTrace]);
 
   // Re-sample the stored canonical to the given n_anchors without re-drawing.
   const resample = useCallback(async (nAnchors: number) => {
@@ -331,6 +382,13 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     snack,
     setSnack,
     guideVals,
+    // Optimieren step (deferred save: prepare → preview → apply)
+    draft,
+    preview,
+    previewBusy,
+    optimizeApplied,
+    prepareOptimize,
+    applyOptimized,
     // mutations
     updateBboxField,
     updateGuides,
@@ -340,7 +398,6 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     undoMask,
     addSlantLine,
     removeSlantLine,
-    saveTrace,
     resample,
     finish,
   };

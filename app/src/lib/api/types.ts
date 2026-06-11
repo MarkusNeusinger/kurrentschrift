@@ -208,6 +208,20 @@ export interface QualityComparison {
   candidate_refine: Record<string, unknown> | null;
 }
 
+// One variant of the POST .../trace-preview dry run: a DiagnosticData-shaped
+// render payload (WrittenGlyph consumes it directly) plus its quality score.
+export interface WrittenPreviewData extends DiagnosticData {
+  quality?: QualityData | null;
+  refine?: Record<string, unknown> | null;
+}
+
+// POST .../trace-preview payload: the drawn Weg derived once raw (measured
+// only) and once optimized — nothing written; the wizard compares both.
+export interface TracePreviewOut {
+  raw: WrittenPreviewData;
+  refined: WrittenPreviewData;
+}
+
 export interface FitMeta {
   // Residual-based verdict (geo RMSE within tolerance) — what the UI shows.
   converged: boolean;
