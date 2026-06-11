@@ -56,7 +56,7 @@ from core.template import SamplePlan, build_sample_plan, capsule_union_rings, sa
 DEFAULT_LAMBDA_REG = 1.0
 DEFAULT_WIDTH_WEIGHT = 0.15
 DEFAULT_COVERAGE_WEIGHT = 0.3
-DEFAULT_N_SAMPLES = 120
+DEFAULT_N_SAMPLES = 180
 DEFAULT_MAX_ITER = 300
 # Cap per-anchor displacement (in template units) so the fit cannot fold the
 # ductus back on itself — a loose topology guard alongside the Tikhonov term.
