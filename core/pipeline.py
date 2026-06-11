@@ -22,9 +22,12 @@ from core.fit import fit_template_to_instance, refine_template_against_crop
 from core.quality import template_quality_metrics
 from core.template import (
     allocate_samples,
+    build_sample_plan,
+    capsule_union_rings,
     chord_length,
     multi_stroke_centerlines,
     multi_stroke_silhouettes,
+    sample_with_sample_plan,
     template_guides,
 )
 
@@ -694,11 +697,29 @@ def written_preview_for_canonical(canonical: dict, style_ratio: list[float], sla
         anchors, half_widths, stroke_starts, 90.0, n=240, corner_anchors=corner_anchors
     )
 
+    # Crop-pixel silhouette (per pen-stroke capsule-union rings) for the overlay:
+    # the wizard draws these over the crop image to show WHERE the rendering
+    # deviates from the ink — same space as `core.fit.fit_glyph_to_crop`'s
+    # `fitted_outline_px`, here from the canonical's own pixel anchors.
+    anchors_px_local = np.array([[px - x0, py - y0] for px, py in trace_meta["pixel_anchors"]], dtype=float)
+    hw_px = np.asarray(trace_meta["half_widths_px"], dtype=float)
+    silhouette_px: list[list[list[list[float]]]] = []
+    if len(anchors_px_local) >= 2:
+        plan = build_sample_plan(anchors_px_local, stroke_starts, corner_anchors, 240)
+        sx, sy, sw = sample_with_sample_plan(anchors_px_local, hw_px, plan)
+        bounds = [*plan.sample_starts, len(sx)]
+        silhouette_px = [
+            capsule_union_rings(sx[a:b], sy[a:b], sw[a:b], simplify_tol=0.2, decimals=2)
+            for a, b in zip(bounds[:-1], bounds[1:], strict=True)
+        ]
+
     return {
         "crop_size": {"w": int(snapshot["x1"] - x0), "h": int(snapshot["y1"] - y0)},
         "skeleton_polyline_px": [],
         "anchors_px": [[round(px - x0, 2), round(py - y0, 2)] for px, py in trace_meta["pixel_anchors"]],
         "half_widths_px": trace_meta["half_widths_px"],
+        # Per-stroke ring lists in crop pixels (exterior + holes, evenodd).
+        "silhouette_px": silhouette_px,
         "anchors_template": canonical["anchors"],
         "half_widths_template": canonical["half_widths"],
         "outline_polygon": outline_polygons[0] if outline_polygons else [],

@@ -1,7 +1,7 @@
 // Step 4 "Weg" (the ductus trace) — stroke undo/discard, n_anchors + resample,
-// and the entry/exit coupling heights. Strokes are drawn on WizardCanvas.
-// Saving is DEFERRED: the primary button hands the drawn Weg to the Optimieren
-// step (raw-vs-optimized dry run); only its "Anwenden & speichern" persists.
+// and the entry/exit coupling heights. Strokes are drawn on WizardCanvas. The
+// primary button saves the Weg (the pipeline optimizes on every save); the
+// next step ("Optimieren") then shows the raw-vs-optimized comparison.
 
 import RefreshIcon from '@mui/icons-material/Refresh';
 import UndoIcon from '@mui/icons-material/Undo';
@@ -29,7 +29,7 @@ export function TraceStep({
   guideVals,
   showSaved,
   setShowSaved,
-  prepareOptimize,
+  saveTrace,
   resample,
   updateBboxField,
   updateGuides,
@@ -43,7 +43,7 @@ export function TraceStep({
   guideVals: GuideValues;
   showSaved: boolean;
   setShowSaved: (v: boolean) => void;
-  prepareOptimize: (nAnchors: number) => Promise<void>;
+  saveTrace: (nAnchors: number) => Promise<void>;
   resample: (nAnchors: number) => Promise<void>;
   updateBboxField: (patch: Partial<BboxIn>) => Promise<void>;
   updateGuides: (patch: Partial<GuideConfig>) => Promise<void>;
@@ -94,7 +94,7 @@ export function TraceStep({
         <Button size="small" color="inherit" disabled={strokes.length === 0} onClick={() => setStrokes([])}>
           {de.wizard.trace.discardAll}
         </Button>
-        <Button size="small" variant="contained" disabled={savablePoints < 2 || busy} onClick={() => void prepareOptimize(commitAnchors())}>
+        <Button size="small" variant="contained" disabled={savablePoints < 2 || busy} onClick={() => void saveTrace(commitAnchors())}>
           {de.wizard.trace.save}
         </Button>
       </Stack>

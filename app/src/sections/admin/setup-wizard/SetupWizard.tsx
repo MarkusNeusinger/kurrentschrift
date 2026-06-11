@@ -81,7 +81,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
             guideVals={wizard.guideVals}
             showSaved={wizard.showSaved}
             setShowSaved={wizard.setShowSaved}
-            prepareOptimize={wizard.prepareOptimize}
+            saveTrace={wizard.saveTrace}
             resample={wizard.resample}
             updateBboxField={wizard.updateBboxField}
             updateGuides={wizard.updateGuides}
@@ -91,15 +91,12 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
         return (
           <OptimizeStep
             glyphKey={glyphKey}
+            cropCacheBust={wizard.cropCacheBust}
             hasDraftSource={wizard.savablePoints >= 2 || hasCanonical}
             nAnchors={bbox.n_anchors}
-            draftReady={wizard.draft != null}
             preview={wizard.preview}
             previewBusy={wizard.previewBusy}
-            optimizeApplied={wizard.optimizeApplied}
-            busy={busy}
-            prepareOptimize={wizard.prepareOptimize}
-            applyOptimized={wizard.applyOptimized}
+            computePreview={wizard.computePreview}
           />
         );
       case 'overview':
@@ -117,10 +114,9 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
     }
   })();
 
-  // Weg → Optimieren needs something to derive (new strokes or a stored Weg);
-  // Optimieren → Übersicht needs a SAVED canonical (the lock acts on the DB).
-  const canAdvance =
-    stepId === 'weg' ? wizard.savablePoints >= 2 || hasCanonical : stepId === 'optimize' ? hasCanonical : true;
+  // Weg → Optimieren needs the Weg SAVED first (the Optimieren step compares the
+  // stored canonical); Optimieren → Übersicht is free (pure review).
+  const canAdvance = stepId === 'weg' ? hasCanonical : true;
 
   return (
     <Dialog open={open} onClose={onClose} fullScreen={compact} fullWidth maxWidth="lg" slotProps={{ paper: { sx: { height: compact ? '100%' : '92vh' } } }}>

@@ -80,8 +80,8 @@ export const wizard = {
     // Followed by the stroke count "(…)".
     undoStroke: 'Letzter Strich',
     discardAll: 'Alles verwerfen',
-    save: 'Weiter: Optimieren',
-    saved: 'Weg gespeichert. Weiter zur Übersicht.',
+    save: 'Weg speichern',
+    saved: 'Weg gespeichert. Weiter zum Optimieren.',
     showSaved: 'Gespeicherten Weg & Anker einblenden',
     anchorsLabel: 'Anker (n_anchors)',
     resample: 'Neu abtasten',
@@ -95,15 +95,19 @@ export const wizard = {
   optimize: {
     title: 'Schritt 5 · Optimierung prüfen',
     body:
-      'Der gezeichnete Weg wird zweimal abgeleitet: einmal roh (nur gemessen) und einmal optimiert — Anker und Strichbreiten werden dabei auf die Tintenkante des Originals gezogen, Umkehrpunkte bleiben spitz. Erst „Anwenden & speichern“ schreibt die optimierte Vorlage in die Datenbank.',
-    computing: 'Optimierung wird gerechnet…',
+      'Der gespeicherte Weg wird zum Vergleich zweimal abgeleitet: einmal roh (nur gemessen) und einmal optimiert — bei der optimierten Variante werden Anker und Strichbreiten auf die Tintenkante des Originals gezogen, Umkehrpunkte bleiben spitz. Gespeichert ist bereits die optimierte Form (Schritt „Weg“); hier siehst du, was die Optimierung bringt und wo sie noch nicht perfekt passt.',
+    computing: 'Vergleich wird gerechnet…',
+    crop: 'Original (Crop)',
     before: 'Vorher (roh gemessen)',
     after: 'Nachher (optimiert)',
     score: 'Score',
+    viewSide: 'Nebeneinander',
+    viewOverlay: 'Überlagert',
+    overlayHeading: 'Optimierte Silhouette über dem Original',
+    overlayCaption:
+      'Rot = die gerenderte Form über dem Crop. Wo Tinte ohne Rot ist, deckt das Rendering nicht; wo Rot über hellem Papier liegt, rendert es zu viel — so siehst du die Stellen, die noch nicht passen.',
     // Followed by the score delta, e.g. "+3.1".
-    delta: 'Δ Score:',
-    apply: 'Anwenden & speichern',
-    applied: 'Optimierte Vorlage gespeichert. Weiter zur Übersicht.',
+    delta: 'Δ Score (optimiert − roh):',
     needTrace: 'Noch kein Weg vorhanden — erst im Schritt „Weg“ zeichnen.',
     recompute: 'Neu berechnen',
   },
