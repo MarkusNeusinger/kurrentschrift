@@ -147,4 +147,30 @@ export const admin = {
       'Der Buchstabe teilt eine Form über alle Positionen — die Neuableitung überschreibt alle {{count}} zusammen (bewusste Aktion, wirkt auch bei gesperrten Glyphen).',
     applied: 'Vorlage neu abgeleitet und gespeichert.',
   },
+  // Bulk re-derive of all authored glyphs (RederiveAllDialog).
+  rederive: {
+    button: 'Alle neu ableiten',
+    buttonTooltip:
+      'Alle erstellten Glyphen mit aktuellem Code und aktueller Ankerdichte neu berechnen und überschreiben — mit Vorher/Nachher-Tabelle pro Buchstabe',
+    title: 'Alle Glyphen neu ableiten',
+    intro:
+      'Berechnet jede erstellte Glyphe aus ihrem Roh-Weg neu (aktueller Code, aktuelle Ankerdichte) und überschreibt die gespeicherte Vorlage — mit Score vorher/nachher pro Buchstabe. Nicht aufgetrennte Buchstaben werden über alle Positionen zusammen aktualisiert. Rote Δ-Werte heißen: verschlechtert — in der Diagnose prüfen.',
+    start: 'Alle neu berechnen & überschreiben',
+    cancel: 'Abbrechen',
+    close: 'Schließen',
+    colLetter: 'Buchstabe',
+    colPositions: 'Pos.',
+    colBefore: 'vorher',
+    colAfter: 'nachher',
+    colDelta: 'Δ Score',
+    colStatus: 'Status',
+    statusPending: 'wartet',
+    statusScoring: 'rechnet…',
+    statusApplying: 'speichert…',
+    statusDone: 'fertig',
+    statusFailed: 'Fehler',
+    summary: '{{improved}} verbessert · {{worse}} verschlechtert · Ø Δ {{mean}}.',
+    worseHint: 'Verschlechterte Buchstaben in der Diagnose prüfen — ggf. den Weg neu zeichnen.',
+    empty: 'Keine erstellten Glyphen vorhanden.',
+  },
 } as const;

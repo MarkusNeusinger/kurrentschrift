@@ -1,0 +1,215 @@
+// RederiveAllDialog — bulk re-derive of every authored glyph, with a report.
+//
+// After pipeline/anchor-density improvements land, every stored template can
+// be recomputed from its raw stylus path. This dialog runs that over ALL
+// authored glyphs: per letter it first fetches the stored-vs-candidate score
+// (`GET .../quality`, a dry run), then applies via `/resample` (force, fanned
+// out over the sibling positions like the wizard's trace), and reports the
+// per-letter delta — regressions show red so a worsened letter is caught
+// immediately instead of discovered later in the quiz.
+
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  LinearProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Typography,
+} from '@mui/material';
+import { useCallback, useMemo, useRef, useState } from 'react';
+
+import { useAdmin } from '@/context/AdminContext';
+import { isLetterSplit, knownGlyph, siblingKeys } from '@/domain/glyphs';
+import { getQuality, postResample } from '@/lib/api';
+import { de, fmt } from '@/locales';
+
+interface Props {
+  open: boolean;
+  onClose: () => void;
+}
+
+type RowStatus = 'pending' | 'scoring' | 'applying' | 'done' | 'failed';
+
+interface RederiveRow {
+  label: string; // letter char, plus position for split letters
+  repKey: string; // representative key for the quality dry run
+  targets: string[]; // keys re-derived together (sibling positions)
+  status: RowStatus;
+  before?: number;
+  after?: number;
+  error?: string;
+}
+
+function deltaColor(delta: number): string {
+  if (delta > 0.05) return 'success.main';
+  if (delta < -0.05) return 'error.main';
+  return 'text.secondary';
+}
+
+export function RederiveAllDialog({ open, onClose }: Props) {
+  const { bboxesByKey, glyphsByKey, refreshCrop } = useAdmin();
+  const t = de.admin.rederive;
+  const [rows, setRows] = useState<RederiveRow[] | null>(null);
+  const [running, setRunning] = useState(false);
+  const cancelRef = useRef(false);
+
+  // One row per authored letter; non-split letters share one form, so their
+  // sibling positions form a single row that is scored once and applied to all.
+  const groups = useMemo<RederiveRow[]>(() => {
+    const seen = new Set<string>();
+    const out: RederiveRow[] = [];
+    for (const key of Object.keys(glyphsByKey).sort()) {
+      if (seen.has(key) || !glyphsByKey[key]?.has_data || !bboxesByKey[key]) continue;
+      const known = knownGlyph(key);
+      if (!known) continue;
+      if (isLetterSplit(key, bboxesByKey)) {
+        seen.add(key);
+        out.push({ label: `${known.glyph} (${known.position})`, repKey: key, targets: [key], status: 'pending' });
+      } else {
+        const sibs = siblingKeys(key).filter((k) => glyphsByKey[k]?.has_data && bboxesByKey[k]);
+        sibs.forEach((k) => seen.add(k));
+        out.push({ label: known.glyph, repKey: sibs[0] ?? key, targets: sibs.length ? sibs : [key], status: 'pending' });
+      }
+    }
+    return out;
+  }, [glyphsByKey, bboxesByKey]);
+
+  const effectiveRows = rows ?? groups;
+  const doneCount = effectiveRows.filter((r) => r.status === 'done' || r.status === 'failed').length;
+  const finished = !running && rows != null && doneCount === rows.length;
+
+  const updateRow = (index: number, patch: Partial<RederiveRow>) =>
+    setRows((prev) => (prev ? prev.map((r, i) => (i === index ? { ...r, ...patch } : r)) : prev));
+
+  const run = useCallback(async () => {
+    cancelRef.current = false;
+    setRunning(true);
+    const work = groups.map((g) => ({ ...g, status: 'pending' as RowStatus }));
+    setRows(work);
+    let applied = 0;
+    for (let i = 0; i < work.length; i++) {
+      if (cancelRef.current) break;
+      try {
+        updateRow(i, { status: 'scoring' });
+        const q = await getQuality(work[i].repKey);
+        const before = q.stored.score;
+        const after = q.candidate?.score;
+        updateRow(i, { status: 'applying', before, after });
+        for (const k of work[i].targets) {
+          // force: bulk refresh is the deliberate write the lock guard expects.
+          await postResample(k, { force: true });
+          applied += 1;
+        }
+        updateRow(i, { status: 'done' });
+      } catch (err) {
+        updateRow(i, { status: 'failed', error: String(err) });
+      }
+    }
+    if (applied > 0) refreshCrop();
+    setRunning(false);
+  }, [groups, refreshCrop]);
+
+  const handleClose = () => {
+    if (running) return; // cancel first — closing mid-run would hide the report
+    setRows(null);
+    onClose();
+  };
+
+  const doneRows = (rows ?? []).filter((r) => r.status === 'done' && r.before != null && r.after != null);
+  const improved = doneRows.filter((r) => (r.after ?? 0) - (r.before ?? 0) > 0.05).length;
+  const worse = doneRows.filter((r) => (r.after ?? 0) - (r.before ?? 0) < -0.05).length;
+  const meanDelta = doneRows.length
+    ? doneRows.reduce((s, r) => s + ((r.after ?? 0) - (r.before ?? 0)), 0) / doneRows.length
+    : 0;
+
+  return (
+    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+      <DialogTitle>{t.title}</DialogTitle>
+      <DialogContent>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+          {t.intro}
+        </Typography>
+        {running && <LinearProgress variant="determinate" value={(doneCount / Math.max(1, effectiveRows.length)) * 100} sx={{ mb: 1 }} />}
+        {effectiveRows.length === 0 ? (
+          <Alert severity="info">{t.empty}</Alert>
+        ) : (
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>{t.colLetter}</TableCell>
+                <TableCell align="right">{t.colPositions}</TableCell>
+                <TableCell align="right">{t.colBefore}</TableCell>
+                <TableCell align="right">{t.colAfter}</TableCell>
+                <TableCell align="right">{t.colDelta}</TableCell>
+                <TableCell>{t.colStatus}</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {effectiveRows.map((r) => {
+                const delta = r.before != null && r.after != null ? r.after - r.before : null;
+                return (
+                  <TableRow key={r.repKey}>
+                    <TableCell sx={{ fontFamily: 'monospace' }}>{r.label}</TableCell>
+                    <TableCell align="right">{r.targets.length}</TableCell>
+                    <TableCell align="right">{r.before?.toFixed(1) ?? '–'}</TableCell>
+                    <TableCell align="right">{r.after?.toFixed(1) ?? '–'}</TableCell>
+                    <TableCell align="right" sx={{ color: delta != null ? deltaColor(delta) : 'text.disabled', fontWeight: 600 }}>
+                      {delta != null ? `${delta >= 0 ? '+' : ''}${delta.toFixed(1)}` : '–'}
+                    </TableCell>
+                    <TableCell>
+                      {r.status === 'scoring' || r.status === 'applying' ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <CircularProgress size={12} />
+                          <Typography variant="caption">{r.status === 'scoring' ? t.statusScoring : t.statusApplying}</Typography>
+                        </Box>
+                      ) : (
+                        <Typography variant="caption" color={r.status === 'failed' ? 'error' : 'text.secondary'} title={r.error}>
+                          {r.status === 'pending' ? t.statusPending : r.status === 'done' ? t.statusDone : t.statusFailed}
+                        </Typography>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
+        {finished && doneRows.length > 0 && (
+          <Alert severity={worse > 0 ? 'warning' : 'success'} sx={{ mt: 1.5 }}>
+            {fmt(t.summary, {
+              improved: String(improved),
+              worse: String(worse),
+              mean: `${meanDelta >= 0 ? '+' : ''}${meanDelta.toFixed(1)}`,
+            })}
+            {worse > 0 ? ` ${t.worseHint}` : ''}
+          </Alert>
+        )}
+      </DialogContent>
+      <DialogActions>
+        {running ? (
+          <Button onClick={() => (cancelRef.current = true)}>{t.cancel}</Button>
+        ) : (
+          <Button onClick={handleClose}>{t.close}</Button>
+        )}
+        <Button
+          variant="contained"
+          startIcon={running ? <CircularProgress size={14} color="inherit" /> : <PlayArrowIcon />}
+          disabled={running || effectiveRows.length === 0}
+          onClick={run}
+        >
+          {t.start}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}

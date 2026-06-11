@@ -12,6 +12,7 @@ import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import OpenWithIcon from '@mui/icons-material/OpenWith';
 import RemoveIcon from '@mui/icons-material/Remove';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import {
   Box,
@@ -51,6 +52,7 @@ interface ChartToolbarProps {
   onDelete: () => void;
   onOpenWizard: () => void;
   onOpenDiagnose: () => void;
+  onOpenRederiveAll: () => void;
 }
 
 export function ChartToolbar({
@@ -70,6 +72,7 @@ export function ChartToolbar({
   onDelete,
   onOpenWizard,
   onOpenDiagnose,
+  onOpenRederiveAll,
 }: ChartToolbarProps) {
   return (
     <Paper square sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1, borderBottom: 1, borderColor: 'divider', flexWrap: 'wrap' }}>
@@ -179,6 +182,11 @@ export function ChartToolbar({
             {de.admin.toolbar.diagnose}
           </Button>
         </span>
+      </Tooltip>
+      <Tooltip title={de.admin.rederive.buttonTooltip}>
+        <Button size="small" variant="outlined" startIcon={<RestartAltIcon />} onClick={onOpenRederiveAll}>
+          {de.admin.rederive.button}
+        </Button>
       </Tooltip>
     </Paper>
   );
