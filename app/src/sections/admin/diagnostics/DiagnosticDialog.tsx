@@ -18,6 +18,7 @@ import type { DiagnosticData } from '@/lib/api';
 import { de } from '@/locales';
 import { DiagnosticView } from './DiagnosticView';
 import { FitView } from './FitView';
+import { QualityView } from './QualityView';
 
 // Big columns so the processing stages are legible; clamped to the viewport
 // inside the views, so this is only a ceiling on wide screens.
@@ -78,6 +79,10 @@ export function DiagnosticDialog() {
             <Divider />
             <Section title={de.admin.diagnostics.sectionFit} intro={de.admin.diagnostics.fitIntro}>
               <FitView glyphKey={glyphKey} cropCacheBust={cropCacheBust} colWidth={COL_W} colHeight={COL_H} />
+            </Section>
+            <Divider />
+            <Section title={de.admin.quality.sectionTitle} intro={de.admin.quality.intro}>
+              <QualityView glyphKey={glyphKey} cropCacheBust={cropCacheBust} />
             </Section>
             <Divider />
             <Section title={de.admin.diagnostics.sectionWritten} intro={de.admin.diagnostics.writtenCaption}>

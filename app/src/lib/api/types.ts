@@ -117,6 +117,9 @@ export interface TraceRequest {
   raw_path: StrokePoint[];
   n_anchors?: number | null;
   variant?: number;
+  // A locked glyph (Bbox.locked) rejects writes (423) unless this is set —
+  // overriding the lock is an explicit, deliberate decision.
+  force?: boolean;
 }
 
 export interface CouplingPointOut {
@@ -173,6 +176,36 @@ export interface DiagnosticData {
   midband_y_crop: number;
   template_guides: { baseline: number; midband: number; ascender: number; descender: number };
   slant_deg: number;
+  // Anchor indices sitting exactly on detected within-stroke reversal corners
+  // (Umkehrpunkte) — rendered with distinct markers. Optional for back-compat.
+  corner_anchors?: number[];
+}
+
+// Image-space quality of a template vs its crop — mirrors the dict returned by
+// core/quality.py::template_quality_metrics (served by GET .../quality).
+export interface QualityData {
+  iou: number;
+  dice: number;
+  chamfer_mean_px: number;
+  chamfer_p95_px: number;
+  geo_rmse_px: number;
+  width_tv_rendered_px: number;
+  width_tv_ink_px: number;
+  waviness_ratio: number;
+  pred_area_px: number;
+  ink_area_px: number;
+  // Aggregate 0–100 (higher better) and its complement (lower better).
+  score: number;
+  loss: number;
+  n_samples: number;
+}
+
+// GET .../quality payload: what the DB holds vs what a fresh re-derivation
+// with the current pipeline code would achieve (dry run, nothing written).
+export interface QualityComparison {
+  stored: QualityData;
+  candidate: QualityData | null;
+  candidate_refine: Record<string, unknown> | null;
 }
 
 export interface FitMeta {

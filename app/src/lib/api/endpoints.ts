@@ -10,6 +10,7 @@ import type {
   FitData,
   GlyphOut,
   GlyphSummary,
+  QualityComparison,
   SourceOut,
   StyleOut,
   TraceRequest,
@@ -55,12 +56,20 @@ export const postTrace = (glyphKey: string, body: TraceRequest): Promise<GlyphOu
     body: JSON.stringify(body),
   }).then(asJson<GlyphOut>);
 
-export const postResample = (glyphKey: string, nAnchors: number): Promise<GlyphOut> =>
+// nAnchors omitted => keep the stored anchor count ("re-derive with current
+// pipeline code"); force overrides the server-side lock guard (423 otherwise).
+export const postResample = (
+  glyphKey: string,
+  opts: { nAnchors?: number; force?: boolean } = {},
+): Promise<GlyphOut> =>
   apiFetch(src(`/templates/${encodeURIComponent(glyphKey)}/resample`), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ n_anchors: nAnchors }),
+    body: JSON.stringify({ n_anchors: opts.nAnchors ?? null, force: opts.force ?? false }),
   }).then(asJson<GlyphOut>);
+
+export const getQuality = (glyphKey: string): Promise<QualityComparison> =>
+  apiFetch(src(`/templates/${encodeURIComponent(glyphKey)}/quality`)).then(asJson<QualityComparison>);
 
 export const getDiagnostic = (glyphKey: string): Promise<DiagnosticData> =>
   apiFetch(src(`/templates/${encodeURIComponent(glyphKey)}/diagnostic`)).then(asJson<DiagnosticData>);

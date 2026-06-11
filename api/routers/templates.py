@@ -15,9 +15,21 @@ from api.schemas import ResampleRequest, TemplateOut, TemplateSummary, TraceRequ
 from core.database import BboxRepository, Source, StyleRepository, Template, TemplateRepository
 from core.fit import fit_glyph_to_crop
 from core.pipeline import canonical_from_path, canonical_from_raw_path_only, diagnostic_for_glyph
+from core.quality import quality_for_glyph
 
 
 router = APIRouter(prefix="/sources/{source_id}/templates", tags=["templates"])
+
+
+def _reject_locked_unless_forced(bbox, force: bool) -> None:
+    """Server-side backstop for the lock: writes to a locked glyph need `force`.
+
+    The lock (Bbox.locked) used to be a UI-only contract; this enforces it at
+    the API so an accidental write (stale tab, script) cannot mutate a
+    finished glyph. 423 Locked tells the client exactly what to do.
+    """
+    if bbox.locked and not force:
+        raise HTTPException(423, detail=f"glyph {bbox.glyph_key!r} is locked; pass force=true to overwrite")
 
 
 async def _resolve_style(source: Source, db: AsyncSession) -> tuple[str, list[float], float]:
@@ -104,6 +116,7 @@ async def post_trace(
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
         raise HTTPException(409, detail=f"set bbox for {glyph_key!r} before tracing")
+    _reject_locked_unless_forced(bbox, payload.force)
     # CPU-bound (binarize + skeleton + EDT) — keep it off the event loop.
     canonical = await run_in_threadpool(
         canonical_from_path,
@@ -130,17 +143,20 @@ async def post_resample(
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
         raise HTTPException(409, detail=f"bbox for {glyph_key!r} missing")
+    _reject_locked_unless_forced(bbox, payload.force)
     existing = await TemplateRepository(db).get(source.style_id, glyph_key)
     if existing is None:
         raise HTTPException(404, detail=f"no canonical to resample for {glyph_key!r}")
     if not existing.raw_path:
         raise HTTPException(409, detail="stored canonical has no raw_path; re-trace to enable resampling")
+    # None keeps the stored anchor count: "re-derive with current code".
+    n_anchors = payload.n_anchors or (existing.trace_meta or {}).get("n_anchors") or bbox.n_anchors
     canonical = await run_in_threadpool(
         canonical_from_raw_path_only,
         glyph_row={"raw_path": list(existing.raw_path), "glyph": existing.glyph, "position": existing.position},
         bbox=_bbox_to_dict(bbox),
         chart_path=source.chart_path,
-        n_anchors=payload.n_anchors,
+        n_anchors=n_anchors,
     )
     t = await TemplateRepository(db).upsert(
         source.style_id, glyph_key, canonical, variant=existing.variant, provenance_source_id=source.id
@@ -201,14 +217,61 @@ async def get_fit(
             "half_widths": list(template.half_widths),
             "entry": dict(template.entry) if template.entry else {},
             "exit_pt": dict(template.exit_pt) if template.exit_pt else {},
-            # Pen-stroke boundaries so the fit samples each stroke on its own.
+            # Pen-stroke boundaries so the fit samples each stroke on its own;
+            # corner knots so the fit's spline keeps the same kinks the render does.
             "stroke_starts": (template.trace_meta or {}).get("stroke_starts"),
+            "corner_anchors": (template.trace_meta or {}).get("corner_anchors"),
         },
         bbox=_bbox_to_dict(bbox),
         chart_path=source.chart_path,
         lambda_reg=lambda_reg,
         width_weight=width_weight,
     )
+
+
+@router.get("/{glyph_key}/quality")
+async def get_quality(glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)):
+    """Image-space quality of the stored template, plus a re-derive dry run.
+
+    `stored` scores what the DB currently holds against its crop; `candidate`
+    is the quality a fresh re-derivation from `raw_path` with the CURRENT
+    pipeline code would achieve (nothing is written — the admin compares both
+    before deciding to /resample). Pure CPU, threadpooled like /fit.
+    """
+    bbox = await BboxRepository(db).get(source.id, glyph_key)
+    if bbox is None:
+        raise HTTPException(404, detail=f"bbox not set for {glyph_key!r}")
+    template = await TemplateRepository(db).get(source.style_id, glyph_key)
+    if template is None:
+        raise HTTPException(404, detail=f"no canonical for {glyph_key!r}")
+    bbox_dict = _bbox_to_dict(bbox)
+    trace_meta = dict(template.trace_meta or {})
+    # Older templates predate the pixel-space trace meta the metric scores —
+    # a clear 409 beats the ValueError-turned-500 the metric would raise.
+    if not trace_meta.get("pixel_anchors") or not trace_meta.get("half_widths_px"):
+        raise HTTPException(
+            409, detail=f"stored template for {glyph_key!r} lacks pixel-space trace meta; resample or re-trace first"
+        )
+    raw_path = list(template.raw_path or [])
+    glyph, position = template.glyph, template.position
+    n_anchors = trace_meta.get("n_anchors") or bbox.n_anchors
+
+    def compute() -> dict:
+        stored = quality_for_glyph({"trace_meta": trace_meta}, bbox_dict, source.chart_path)
+        candidate = None
+        candidate_refine = None
+        if raw_path:
+            canon = canonical_from_raw_path_only(
+                glyph_row={"raw_path": raw_path, "glyph": glyph, "position": position},
+                bbox=bbox_dict,
+                chart_path=source.chart_path,
+                n_anchors=n_anchors,
+            )
+            candidate = canon["trace_meta"].get("quality")
+            candidate_refine = canon["trace_meta"].get("refine")
+        return {"stored": stored, "candidate": candidate, "candidate_refine": candidate_refine}
+
+    return await run_in_threadpool(compute)
 
 
 @router.delete("/{glyph_key}", status_code=204, dependencies=[Depends(require_admin)])

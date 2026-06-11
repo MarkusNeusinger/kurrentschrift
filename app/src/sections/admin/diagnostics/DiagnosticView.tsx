@@ -143,6 +143,25 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, o
             {data.anchors_px.map(([x, y], i) => (
               <circle key={i} cx={x} cy={y} r={2.2} fill="#ffae00" stroke="#fff" strokeWidth={0.6} />
             ))}
+            {/* corner knots (Umkehrpunkte) — diamonds where the spline splits */}
+            {(data.corner_anchors ?? []).map((ci) => {
+              const a = data.anchors_px[ci];
+              if (!a) return null;
+              const [x, y] = a;
+              return (
+                <rect
+                  key={`corner-${ci}`}
+                  x={x - 3}
+                  y={y - 3}
+                  width={6}
+                  height={6}
+                  transform={`rotate(45 ${x} ${y})`}
+                  fill="#00b8d4"
+                  stroke="#fff"
+                  strokeWidth={0.6}
+                />
+              );
+            })}
           </svg>
         </Box>
         <Typography variant="caption" color="text.disabled">
@@ -186,6 +205,23 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, o
               {data.anchors_template.map(([x, y], i) => (
                 <circle key={i} cx={x} cy={y} r={0.025} fill="#ffae00" />
               ))}
+              {/* corner knots — same diamonds as the skeleton column */}
+              {(data.corner_anchors ?? []).map((ci) => {
+                const a = data.anchors_template[ci];
+                if (!a) return null;
+                const [x, y] = a;
+                return (
+                  <rect
+                    key={`corner-${ci}`}
+                    x={x - 0.035}
+                    y={y - 0.035}
+                    width={0.07}
+                    height={0.07}
+                    transform={`rotate(45 ${x} ${y})`}
+                    fill="#00b8d4"
+                  />
+                );
+              })}
             </g>
           </svg>
         </Box>
