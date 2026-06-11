@@ -18,6 +18,7 @@ from scipy.ndimage import median_filter, uniform_filter1d
 
 from core.chart import crop_with_mask, load_chart_grayscale
 from core.extract import binarize_adaptive, half_widths_on_medial_axis, skeleton_and_width
+from core.fit import fit_template_to_instance
 from core.template import (
     allocate_samples,
     chord_length,
@@ -32,6 +33,30 @@ from core.template import (
 # anchors start reproducing hand wobble instead of shape (error vs the smoothed
 # reference rises again) and double the fit's parameter count.
 DEFAULT_N_ANCHORS = 50
+
+# Snapping the drawn Weg onto the ink: per-anchor displacement bound in
+# template units (x-height = 1). Generous against hand wobble, far below the
+# anchor spacing, so the drawn topology (loop direction, crossing order)
+# cannot fold during the snap.
+SNAP_MAX_ANCHOR_DELTA = 0.3
+# Tikhonov weight for the snap, softer than the M4 default (1.0): with equal
+# weights the quadratic equilibrium removes only half the hand wobble. The
+# trace already sits on the ink, so the displacement bound carries the
+# topology guard and the regulariser only needs to keep the blob-skeleton
+# ambiguity at crossings from wiggling the anchors.
+SNAP_LAMBDA_REG = 0.25
+
+# Crossing detection for the width channel. Two anchors of the trace count as
+# a crossing when ALL three hold: another pass comes within this factor of
+# their summed half-widths (the ink blobs overlap) …
+CROSSING_PROXIMITY_FACTOR = 1.5
+# … they are far apart along the path, in the same summed-half-width scale —
+# neighbouring anchors on one thick stroke are never their own crossing
+# (must exceed the proximity factor, so a straight run cannot self-mark) …
+CROSSING_MIN_ARC_FACTOR = 3.0
+# … and the passes are transversal. Below this angle they run (anti)parallel:
+# a retrace over the same ink, whose measured width is real and must be kept.
+CROSSING_MIN_ANGLE_DEG = 15.0
 
 
 # -------------------------------------------------------------------- helpers
@@ -123,6 +148,149 @@ def _smooth_half_widths(hw_px: np.ndarray, stroke_starts: list[int]) -> np.ndarr
     return smoothed
 
 
+def _snap_anchors_to_ink(
+    anchors_local: np.ndarray,
+    stroke_starts: list[int],
+    skel: np.ndarray,
+    width_map: np.ndarray,
+    unit_px: float,
+    baseline_y_local: float,
+) -> tuple[np.ndarray, dict]:
+    """Pull the resampled trace anchors onto the ink's medial axis (crop px).
+
+    The drawn Weg is the ductus prior — stroke order, pen lifts, crossing
+    resolution (architektur.md §2); the precise geometry belongs to the ink.
+    Reuses the regularised M4 fit against the trace's own crop: on clean
+    stretches the EDT field pulls the anchors onto the skeleton centerline and
+    hand wobble disappears; at a crossing the field is flat and ambiguous, so
+    the Tikhonov term lets the drawn path win — exactly where the drawing is
+    more trustworthy than the skeleton blob. Per-stroke sampling never bridges
+    a pen lift, and a retrace (same path down and back up) simply pulls both
+    passes onto the same centerline. Known bias: `skeletonize` erodes round
+    stroke ends by up to the half-width, so end anchors get pulled slightly
+    inward — the displacement bound and the regulariser keep it mild.
+
+    Returns the snapped crop-local anchors plus a meta dict for `trace_meta`.
+    """
+    if not bool(skel.any()):
+        return anchors_local, {"applied": False, "reason": "empty skeleton"}
+    x_origin_px = float(anchors_local[0, 0])
+    template_anchors = np.column_stack(
+        [(anchors_local[:, 0] - x_origin_px) / unit_px, (baseline_y_local - anchors_local[:, 1]) / unit_px]
+    )
+    result = fit_template_to_instance(
+        template_anchors,
+        np.zeros(len(template_anchors)),
+        skel,
+        width_map,
+        unit_px=unit_px,
+        baseline_y_px=baseline_y_local,
+        x_origin_px=x_origin_px,
+        stroke_starts=stroke_starts,
+        # Geometry-only refinement: half-widths are measured AFTER the snap
+        # (on the medial axis the anchors now sit on), so the width residual
+        # would only chase its own input here.
+        width_weight=0.0,
+        lambda_reg=SNAP_LAMBDA_REG,
+        max_anchor_delta=SNAP_MAX_ANCHOR_DELTA,
+    )
+    # Fold the fit's global translation back into pixel coordinates via the
+    # effective placement — the snapped positions are exact regardless of how
+    # the optimiser split the movement between translation and anchor deltas.
+    snapped = np.column_stack(
+        [
+            result.placement["x_origin_px"] + result.anchors[:, 0] * unit_px,
+            result.placement["baseline_y_px"] - result.anchors[:, 1] * unit_px,
+        ]
+    )
+    shift_px = np.hypot(snapped[:, 0] - anchors_local[:, 0], snapped[:, 1] - anchors_local[:, 1])
+    meta = {
+        "applied": True,
+        "geo_rmse_px": result.fit_meta["geo_rmse_px"],
+        "coverage_rmse_px": result.fit_meta["coverage_rmse_px"],
+        "max_shift_px": round(float(shift_px.max()), 2),
+        "mean_shift_px": round(float(shift_px.mean()), 2),
+    }
+    return snapped, meta
+
+
+def _resolve_crossing_widths(
+    anchors_px: np.ndarray, hw_px: np.ndarray, stroke_starts: list[int]
+) -> tuple[np.ndarray, list[int]]:
+    """Crossing resolution for the width channel — interpolate across blobs.
+
+    At a crossing the distance transform measures the union blob of both
+    passes, not the stroke the anchor belongs to: the width profile flares
+    out before/after the crossing (and only *looks* repaired once the second
+    pass visually covers the flare — the stored value stays wrong). The
+    ductus prior resolves this like it resolves the geometry: an anchor's
+    width reading is contaminated when another pass of the trace is proximate
+    (CROSSING_PROXIMITY_FACTOR), far away along the path
+    (CROSSING_MIN_ARC_FACTOR) and transversal (CROSSING_MIN_ANGLE_DEG — a
+    retrace runs parallel and its measured width is real ink). Note the
+    retrace caveat for a Spitzfeder: the measured value is the UNION of both
+    passes, i.e. the wide downstroke; a hairline pass underneath is invisible
+    in the static image. Both passes get the union width, which renders
+    identically — separating them needs a direction-dependent width prior
+    aggregated across glyphs (post-MVP style analysis, architektur.md §12).
+    Contaminated runs
+    are replaced by linear interpolation from the clean widths on either
+    side, per pass through the crossing; a stroke contaminated end-to-end
+    keeps its measured widths rather than inventing values. A merged tight
+    loop (filled counter) reads as parallel and is deliberately kept — the
+    blob there is what the eye sees.
+
+    Returns the resolved widths plus the contaminated anchor indices.
+    """
+    n = len(anchors_px)
+    if n < 3:
+        return hw_px, []
+    bounds = [*stroke_starts, n]
+    stroke_id = np.empty(n, dtype=int)
+    arc = np.zeros(n)
+    tangents = np.zeros((n, 2))
+    for s, (a, b) in enumerate(zip(bounds[:-1], bounds[1:], strict=True)):
+        stroke_id[a:b] = s
+        seg = anchors_px[a:b]
+        if len(seg) < 2:
+            continue
+        d = np.diff(seg, axis=0)
+        arc[a:b] = np.concatenate([[0.0], np.cumsum(np.hypot(d[:, 0], d[:, 1]))])
+        t = np.gradient(seg, axis=0)
+        norm = np.hypot(t[:, 0], t[:, 1])
+        norm[norm == 0] = 1.0
+        tangents[a:b] = t / norm[:, None]
+
+    # All-pairs tests — anchor counts are ~50, brute force beats a KD-tree.
+    diff = anchors_px[:, None, :] - anchors_px[None, :, :]
+    dist = np.hypot(diff[..., 0], diff[..., 1])
+    hw_sum = hw_px[:, None] + hw_px[None, :]
+    proximate = dist < CROSSING_PROXIMITY_FACTOR * hw_sum
+    same_stroke = stroke_id[:, None] == stroke_id[None, :]
+    arc_sep = np.abs(arc[:, None] - arc[None, :])
+    far_on_path = ~same_stroke | (arc_sep > CROSSING_MIN_ARC_FACTOR * hw_sum)
+    cross = np.abs(tangents[:, None, 0] * tangents[None, :, 1] - tangents[:, None, 1] * tangents[None, :, 0])
+    transversal = cross > np.sin(np.deg2rad(CROSSING_MIN_ANGLE_DEG))
+    contaminated = (proximate & far_on_path & transversal).any(axis=1)
+
+    resolved = hw_px.astype(float).copy()
+    indices: list[int] = []
+    for a, b in zip(bounds[:-1], bounds[1:], strict=True):
+        seg = contaminated[a:b].copy()
+        if not seg.any():
+            continue
+        # The blob inflates the reading a little beyond the geometric overlap
+        # — widen each run by one anchor on both sides (within its stroke).
+        seg[:-1] |= contaminated[a + 1 : b]
+        seg[1:] |= contaminated[a : b - 1]
+        if seg.all():
+            continue
+        pos = np.arange(b - a)
+        resolved[a:b][seg] = np.interp(pos[seg], pos[~seg], resolved[a:b][~seg])
+        indices.extend(int(i) for i in (a + pos[seg]))
+    return resolved, indices
+
+
 def _measure_slant_from_vertical(anchors_norm: np.ndarray) -> float:
     """Dominant lean of the centerline in degrees FROM VERTICAL (0 = upright).
 
@@ -162,7 +330,13 @@ def _measurements(anchors_norm: np.ndarray, half_widths_px: np.ndarray, path_len
 
 
 def canonical_from_path(
-    raw_path: list[dict], bbox: dict, chart_path: str, glyph: str, position: str, n_anchors: int | None = None
+    raw_path: list[dict],
+    bbox: dict,
+    chart_path: str,
+    glyph: str,
+    position: str,
+    n_anchors: int | None = None,
+    snap_to_ink: bool = True,
 ) -> dict:
     """Turn a dense stylus path into a canonical-template dict.
 
@@ -177,11 +351,15 @@ def canonical_from_path(
       1. Load chart + crop with eraser mask (M0 input).
       2. Binarize + skeleton + distance-transform on the crop.
       3. Convert raw_path from chart-global → crop-local pixel coords.
-      4. Resample the polyline by chord length to N anchors.
-      5. Sample half-width per anchor from the distance-transform.
-      6. Normalise pixel → template coords (baseline=0, midband=1).
-      7. Compute entry/exit tangents from first/last anchor pairs.
-      8. Derive per-instance measurements (slant, mean width, path length).
+      4. Resample the polyline by chord length to N anchors (per pen-stroke).
+      5. Snap the anchors onto the ink's medial axis (regularised fit): the
+         drawn Weg keeps stroke order + crossing resolution, the ink supplies
+         the precise geometry. `snap_to_ink=False` keeps the raw trace.
+      6. Sample half-width per anchor from the distance-transform; resolve
+         crossing-blob readings by interpolating across detected crossings.
+      7. Normalise pixel → template coords (baseline=0, midband=1).
+      8. Compute entry/exit tangents from first/last anchor pairs.
+      9. Derive per-instance measurements (slant, mean width, path length).
     """
     for required in ("baseline_y", "midband_y", "y0", "y1", "x0", "x1"):
         if bbox.get(required) is None:
@@ -210,9 +388,21 @@ def canonical_from_path(
     if unit_px <= 0:
         raise ValueError(f"baseline_y ({baseline_y}) must exceed midband_y ({midband_y})")
 
+    snap_meta: dict = {"applied": False}
+    if snap_to_ink:
+        resampled_local, snap_meta = _snap_anchors_to_ink(
+            resampled_local, stroke_starts, skel, width_map, unit_px, float(baseline_y - y0)
+        )
+        if snap_meta["applied"]:
+            seg_bounds = [*stroke_starts, len(resampled_local)]
+            path_length_px = sum(
+                chord_length(resampled_local[a:b]) for a, b in zip(seg_bounds[:-1], seg_bounds[1:], strict=True)
+            )
+
     # Snap no farther than a quarter x-height: generous against trace wobble,
     # tight enough not to jump to a neighbouring stroke.
     hw_px = half_widths_on_medial_axis(resampled_local, skel, mask, width_map, snap_cap_px=max(3.0, 0.25 * unit_px))
+    hw_px, crossing_anchors = _resolve_crossing_widths(resampled_local, hw_px, stroke_starts)
     hw_px = _smooth_half_widths(hw_px, stroke_starts)
 
     pixel_global = resampled_local + np.array([x0, y0])
@@ -266,6 +456,11 @@ def canonical_from_path(
             # Anchor indices where each pen-stroke begins (first is 0). A single
             # entry means one continuous stroke; the diagnostic + fit split here.
             "stroke_starts": stroke_starts,
+            # Medial-axis snap of the drawn Weg (applied flag + residuals/shift).
+            "snap": snap_meta,
+            # Anchor indices whose width reading was crossing-contaminated and
+            # replaced by interpolation (diagnostic visibility, not geometry).
+            "crossing_anchors": crossing_anchors,
             "path_length_px": round(path_length_px, 1),
             "pixel_anchors": [[round(float(x), 2), round(float(y), 2)] for x, y in pixel_global],
             "half_widths_px": [round(float(h), 2) for h in hw_px],
