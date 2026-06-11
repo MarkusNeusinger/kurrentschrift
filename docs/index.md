@@ -20,6 +20,7 @@ nächsten Meilensteine.
 | HTR-Pfad (Transkribus + TrOCR) nachschlagen | [HTR-Integration](reference/htr-integration.md) |
 | Animation-Render-Algorithmus nachschlagen | [Animation-Rendering](reference/animation-rendering.md) |
 | Stil-Analyse-Pipeline nachschlagen | [Stil-Analyse](reference/styleanalyse.md) |
+| Qualitätsmetrik, Glyph-Bench & Loop-Erkenntnisse nachschlagen | [Qualitätsmetrik](reference/qualitaetsmetrik.md) |
 | Frontend-Stack & Deploy nachschlagen | [Frontend-Stack](reference/frontend-stack.md) |
 | Sprache für Code, Docs, README nachschlagen | [Sprachregelung](reference/sprachregelung.md) |
 | Wissen, was ins öffentliche Repo darf | [Quellen- und Rechte-Policy](reference/quellen-und-rechte.md) |
@@ -50,6 +51,7 @@ docs/
 │   ├── htr-integration.md        # Transkribus-API + TrOCR-Fallback, PAGE-XML, Free-Tier
 │   ├── animation-rendering.md    # stroke-dashoffset (MVP), Canvas-2D-Stroker (post-MVP), WAAPI
 │   ├── styleanalyse.md           # Per-Hand-Aggregation, Hinge-Features, Heatmap-Layouts
+│   ├── qualitaetsmetrik.md       # Score/bench_loss, eingefrorene Referenzen, Baseline-Historie, Loop-Erkenntnisse + Verworfen
 │   └── frontend-stack.md         # React+Vite+MUI Build, Deploy auf Cloud Run, i18n, Auth-Routen
 ├── schriftkunde/                 # Quellengesicherte Fakten zu den Schriften (wächst inkrementell)
 │   ├── allgemein.md              # Lineatur, Schräglage, Striche, Federtypen, Chronologie, DACH

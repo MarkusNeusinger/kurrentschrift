@@ -303,6 +303,8 @@ Technical specs sit in `docs/reference/*.md`:
 - `htr-integration.md` — Transkribus API, TrOCR fallback, PAGE-XML
 - `animation-rendering.md` — stroke-dashoffset (MVP) + Canvas-2D (post-MVP)
 - `styleanalyse.md` — Hinge features, heatmap layouts
+- `qualitaetsmetrik.md` — score/bench_loss definition, frozen-reference
+  rule, baseline history, experiment learnings incl. verworfen items
 - `frontend-stack.md` — build, deploy, auth, routes
 
 Source-backed script facts (lineature terms, Schräglage convention
