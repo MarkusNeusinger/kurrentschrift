@@ -108,7 +108,7 @@ DEFAULT_WIDTH_PRIOR_WEIGHT = 0.05
 # into the paper. Self-calibrated per glyph (axis = width²-weighted axial mean
 # of the tangents, so wide downstrokes vote); exceedance is penalised
 # one-sidedly — thinner than the cap is always physical.
-PRESSURE_CONE_WEIGHT = 0.05
+PRESSURE_CONE_WEIGHT = 0.2
 PRESSURE_CONE_EXP = 2.0
 # Cap term weight relative to the edge term, with SEPARATE normalisers: under
 # a shared normaliser the handful of cap points was diluted whenever the
