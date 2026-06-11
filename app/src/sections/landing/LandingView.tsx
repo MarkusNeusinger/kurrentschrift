@@ -92,7 +92,7 @@ export function LandingView() {
               sx={{
                 fontFamily: display,
                 fontWeight: 500,
-                fontSize: 'clamp(2.5rem, 5.4vw, 4.4rem)',
+                fontSize: 'clamp(2.4rem, 5vw, 4rem)',
                 lineHeight: 1.04,
                 letterSpacing: '-0.01em',
                 color: paper.ink,
@@ -106,7 +106,8 @@ export function LandingView() {
               <Box component="em" sx={{ fontStyle: 'italic', color: paper.viridian }}>
                 {de.landing.hero.titleEm}
               </Box>{' '}
-              {de.landing.hero.titleLine3}
+              {de.landing.hero.titleLine3}<br />
+              {de.landing.hero.titleLine4}
             </Typography>
 
             <Typography
@@ -310,13 +311,12 @@ export function LandingView() {
             </Typography>
           </Box>
           <Link
-            href="https://github.com/MarkusNeusinger/kurrentschrift"
-            target="_blank"
-            rel="noopener"
+            component={RouterLink}
+            to={paths.impressum}
             variant="body2"
             sx={{ color: paper.sepia, textDecoration: 'none', '&:hover': { color: paper.viridian } }}
           >
-            GitHub
+            {de.impressum.footerLink}
           </Link>
         </Box>
       </Container>

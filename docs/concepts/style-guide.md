@@ -337,12 +337,65 @@ const letterpress = `0 1px 0 ${paper.hi}59`; // Deboss der Display-Headlines
 
 ---
 
+## 12. Sprachton der Website-Prosa (2026-06-12)
+
+**Leitgedanke: Die Website spricht im Ton der Briefe, die sie lesen
+lehrt.** Was in Kurrent überliefert ist, sind vor allem Briefe — die
+Prosa der Seite übernimmt deren Register: das gebildete
+Alltags-/Briefdeutsch um 1900. Warm, fließend, ein leicht
+altmodischer Satzrhythmus; die Du-Anrede bleibt. Erste Umsetzung:
+`/impressum`, danach Landing, Quiz und Lineatur-Vorlage
+(`app/src/locales/de/*.ts` — die Strings sind die einzige Textquelle,
+der Ton lebt also vollständig in den Locale-Dateien).
+
+Regeln:
+
+- **Patina in den Rahmen, nicht in die Fakten.** Einstiege, Übergänge
+  und Schlusszeilen tragen den Ton; rechtlich oder funktional
+  relevante Angaben (Datenschutz-Fakten, Fristen, Namen, Zahlen)
+  bleiben nüchtern und eindeutig. Das sprachliche Pendant zum
+  Lesbarkeits-Leitsatz der Typografie (§3): Verständlichkeit vor
+  Epoche.
+- **Funktionale UI-Labels bleiben knapp und modern** („Quiz starten",
+  „Als PDF herunterladen", Formularfelder, Chips). Der Ton lebt in
+  Fließtexten, Hinweisen und Überschriften-Prosa.
+- **Alte Wörter gern, wo sie passen und heute noch tragen:**
+  Liebhaberei · unbehelligt · tilgen · Setzkasten · Fibel · tadellos ·
+  vorschreiben („Zug um Zug vorgeschrieben" — die Lehrtafel *ist* eine
+  Vorschrift) · „ein paar Zeilen" · „ich freue mich über Post" ·
+  „nach Belieben" · „auf Wunsch". Datums-/Schlusszeilen nach Briefart:
+  „Visp, im Juni 2026" statt „Stand: 06/2026".
+- **Fachbegriffe behalten ihren Namen** (Cookies, PDF, Open Source,
+  Schwellzug, Lineatur) — keine Scherzverdeutschungen.
+
+Beispiele (Stand 2026-06, `locales/de/impressum.ts`):
+
+| Neutral-modern | Briefton |
+|---|---|
+| „Diese Website kommt ohne Cookies aus." | „Wer diese Seiten besucht, bleibt unbehelligt: kein Konto, keine Cookies, kein Verzeichnis der Besucher." |
+| „Wir erfassen nur anonyme Seitenaufrufe." | „Gezählt wird nur, was sich ohne Namen zählen lässt: Seitenaufrufe, nicht Personen." |
+| „Stand: Juni 2026" | „Visp, im Juni 2026" |
+
+**Verworfen** (live ausprobiert am 2026-06-12, als Gesamtregister
+abgelehnt — „ich würde ja auch keine Seite in Notar-Deutsch
+schreiben"):
+
+| Variante | Warum verworfen |
+|---|---|
+| Kanzlei-/Beamtendeutsch („Der Unterzeichnete …", „Verantwortlich zeichnet", „Zuschriften erbeten an", „Gegeben zu Visp", „hiermit wird zur Kenntnis gebracht") | Damalige *Amts*sprache ist nicht das Register der Seite — Briefe sind es. |
+| Alte Orthographie („daß") | Liest sich heute wie ein Tippfehler — kollidiert mit dem Lesbarkeits-Leitsatz. |
+| Scherzverdeutschung von Fachbegriffen (Cookies als „Süßgebäck") | Teil der verworfenen Kanzlei-Fassung; Rechtsseite muss belastbar bleiben, der Gag nutzt sich ab. |
+
+---
+
 ## Quick Do / Don't
 
 - ✅ Tinte fürs Schreiben, Viridian nur als Akzent.
 - ✅ Script-Font nur als Showpiece, `prefers-reduced-motion` ehren.
 - ✅ Eine Tinte über alle drei Familien.
 - ✅ Papier-Textur trägt überall; nur Arbeitsflächen (A4, Crops, Chart) und das PDF bleiben neutral/weiß.
+- ✅ Prosa im Briefton um 1900 (§12); UI-Labels und Fakten nüchtern.
 - ❌ Kein Reinweiß als Seitengrund, kein Reinschwarz als Tinte.
 - ❌ Viridian nicht als Fließtext.
 - ❌ Keine toten „coming soon"-Buttons — „bald"-Marker stattdessen.
+- ❌ Kein Kanzleideutsch, keine alte Orthographie („daß") in der Prosa (§12).
