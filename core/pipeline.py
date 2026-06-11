@@ -29,11 +29,16 @@ from core.template import (
 )
 
 
-# 50 is the measured jitter knee across the authored glyphs (a, K, r, u): p95
-# deviation from the de-jittered trace ≤0.75px for every glyph, while ≥80
-# anchors start reproducing hand wobble instead of shape (error vs the smoothed
-# reference rises again) and double the fit's parameter count.
-DEFAULT_N_ANCHORS = 50
+# Anchor-count default, calibrated on the glyph bench (12 authored Loth
+# glyphs, image-space loss vs frozen references): 50→0.1488, 80→0.1363,
+# 120→0.1339, 160→0.1321, 240→0.1563. The old 50-anchor "jitter knee" no
+# longer binds — the boundary refine de-noises anchors and widths, so extra
+# anchors buy width-profile and curve fidelity instead of reproducing hand
+# wobble (hairline glyphs gain most: u-final 0.204→0.115). Past ~160 quality
+# REGRESSES: the 240-sample render stops oversampling the spline and the
+# refine's parameter count outgrows its iteration budget. 120 is the knee
+# with the best worst-glyph balance.
+DEFAULT_N_ANCHORS = 120
 
 # Snapping the drawn Weg onto the ink: per-anchor displacement bound in
 # template units (x-height = 1). Generous against hand wobble, far below the

@@ -34,7 +34,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from core.pipeline import canonical_from_path
+from core.pipeline import DEFAULT_N_ANCHORS, canonical_from_path
 from core.quality import crop_local_anchors, silhouette_mask, template_quality_metrics
 
 from .overlay import write_overlay_png
@@ -64,6 +64,10 @@ def run_glyph(glyph_dir: Path, chart_path: str, artifacts_dir: Path | None, refi
         chart_path=chart_path,
         glyph=template["glyph"],
         position=template["position"],
+        # Mirror the /resample default (the production write-back path): the
+        # bench measures what a "Neu ableiten" would actually store, not the
+        # possibly stale per-bbox anchor count frozen into the fixture.
+        n_anchors=DEFAULT_N_ANCHORS,
         refine=refine,
     )
     tm = canon["trace_meta"]

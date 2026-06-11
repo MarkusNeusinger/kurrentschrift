@@ -196,9 +196,10 @@ class TraceRequest(BaseModel):
 class ResampleRequest(BaseModel):
     """Body of `POST /sources/{id}/templates/{glyph_key}/resample`.
 
-    `n_anchors=None` keeps the stored anchor count, so the request means
-    "re-derive this template from its raw_path with the CURRENT pipeline code"
-    — the admin's per-glyph refresh after pipeline improvements land.
+    `n_anchors=None` means "re-derive this template from its raw_path with the
+    CURRENT pipeline code and its current recommended anchor density"
+    (DEFAULT_N_ANCHORS, bench-calibrated) — the admin's per-glyph refresh after
+    pipeline improvements land. An explicit count still wins (wizard slider).
     """
 
     n_anchors: int | None = Field(default=None, ge=4, le=1000)
