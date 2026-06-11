@@ -18,6 +18,7 @@ import { Container, Stack, Typography } from '@mui/material';
 
 import { BootStatus } from '@/components/BootStatus';
 import { PaperBackground } from '@/components/PaperBackground';
+import { PublicFooter } from '@/components/PublicFooter';
 import { PublicHeader } from '@/components/PublicHeader';
 import { de } from '@/locales';
 import { QuizPlayPanel } from '@/sections/quiz/QuizPlayPanel';
@@ -106,6 +107,7 @@ export function QuizView() {
           )}
         </Stack>
       </Container>
+      <PublicFooter />
     </PaperBackground>
   );
 }

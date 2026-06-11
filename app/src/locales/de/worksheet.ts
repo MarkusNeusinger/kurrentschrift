@@ -7,7 +7,7 @@ export const worksheet = {
   title: 'Lineatur-Vorlage zum Schreiben üben',
   //   preserves the DIN&nbsp;A4 non-breaking space from the JSX original.
   intro:
-    'Hilfslinien für deutsche Schreibschrift auf DIN A4. Wähle eine der drei Start-Schriften als Ausgangspunkt, passe das Verhältnis von Ober-, Mittel- und Unterband frei an, schalte bei Bedarf Schräglinien dazu — und lade das Blatt als PDF zum Ausdrucken.',
+    'Hilfslinien für deutsche Schreibschrift auf DIN A4. Wähle eine der drei Start-Schriften, passe das Verhältnis von Ober-, Mittel- und Unterband nach Belieben an, nimm auf Wunsch Schräglinien dazu — und lade das Blatt als PDF zum Ausdrucken.',
   preview: 'Vorschau · DIN A4',
   // Footer spec fragments printed on the sheet (fmt templates).
   spec: {

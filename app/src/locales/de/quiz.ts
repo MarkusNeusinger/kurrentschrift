@@ -16,7 +16,7 @@ export const quiz = {
   },
   setup: {
     intro:
-      'Erkenne die Kurrent-Buchstaben: Jeder Buchstabe wird dir Zug um Zug geschrieben — in der Reihenfolge der Feder — und du tippst (oder wählst), welcher es ist. Richtig → weiter, falsch → noch einmal. Am Ende zeigt dir die Auswertung, welche Buchstaben dir schwerfielen.',
+      'Erkenne die Kurrent-Buchstaben: Jeder wird dir Zug um Zug vorgeschrieben — in der Reihenfolge der Feder — und du tippst oder wählst, welcher es ist. Ist es richtig, geht es weiter; wenn nicht, versuchst du es noch einmal. Am Ende siehst du, welche Buchstaben dir Mühe gemacht haben.',
     scriptLabel: 'Schrift',
     lettersLabel: 'Buchstaben',
     answerLabel: 'Antwort',
@@ -27,7 +27,7 @@ export const quiz = {
     answerType: 'Tippen',
     answerChoice: 'Auswahl (Multiple Choice)',
     difficultyHint:
-      'Höhere Stufen zeigen denselben Buchstaben in unsaubereren Handschriften — sobald solche Vorlagen verfügbar sind.',
+      'Höhere Stufen zeigen denselben Buchstaben in unsaubereren Handschriften — sobald solche Vorlagen vorliegen.',
     noLetters: 'Für diese Auswahl sind noch keine Buchstaben freigegeben.',
     noLettersUpper: 'Großbuchstaben erscheinen hier, sobald sie im Admin-Bereich fertig kalibriert und gesperrt sind.',
     noLettersOther: 'Buchstaben erscheinen hier, sobald sie im Admin-Bereich fertig kalibriert und gesperrt sind.',
@@ -44,7 +44,7 @@ export const quiz = {
     inSource: 'in der Vorlage:',
     sourceCropAlt: 'Loth-Vorlage',
     cropAlt: 'Kurrent-Buchstabe',
-    wrong: 'Nicht richtig — versuch es nochmal.',
+    wrong: 'Nicht ganz — versuch es noch einmal.',
     inputPlaceholder: 'Welcher Buchstabe?',
     check: 'Prüfen',
     nextTooltip: 'Nächster Buchstabe',
@@ -57,8 +57,8 @@ export const quiz = {
     hitRate: '{{pct}}% Trefferquote',
     // Followed by the best-streak count in the chip label.
     bestStreak: 'Beste Serie',
-    missesHeading: 'Diese Buchstaben fielen schwer',
-    noMisses: 'Kein einziger Fehler — sauber gelesen!',
+    missesHeading: 'Diese Buchstaben machten Mühe',
+    noMisses: 'Kein einziger Fehler — tadellos gelesen!',
     // Preceded by the miss count ("3× falsch").
     timesWrong: '× falsch',
     confusionsHeading: 'Häufig verwechselt',

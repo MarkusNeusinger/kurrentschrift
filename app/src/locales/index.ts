@@ -6,12 +6,13 @@
 
 import { admin } from './de/admin';
 import { common } from './de/common';
+import { impressum } from './de/impressum';
 import { landing } from './de/landing';
 import { quiz } from './de/quiz';
 import { wizard } from './de/wizard';
 import { worksheet } from './de/worksheet';
 
-export const de = { common, landing, worksheet, quiz, admin, wizard } as const;
+export const de = { common, landing, worksheet, quiz, admin, wizard, impressum } as const;
 
 // Tiny interpolation helper for messages with embedded variables, mirroring
 // i18next's {{name}} placeholder syntax.

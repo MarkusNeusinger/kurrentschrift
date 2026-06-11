@@ -7,14 +7,15 @@ export const landing = {
   hero: {
     eyebrow: 'Gotische Kursive · seit jeher von Hand',
     // Headline lines, separated by <br /> in the component; `titleEm` is the
-    // italic accent word.
-    titleLine1: 'In echter Tinte',
-    titleLine2: 'geschrieben.',
-    titleEm: 'Nicht',
-    titleLine3: 'als Font gesetzt.',
+    // italic accent word opening line 3.
+    titleLine1: 'Die Schrift',
+    titleLine2: 'unserer Briefe',
+    titleEm: 'wieder',
+    titleLine3: 'lesen',
+    titleLine4: '& schreiben.',
     leadBeforeBold: 'Eine offene Bibliothek der deutschen Kurrentschrift —',
     leadBold: 'kein Font, sondern der Schreibvorgang selbst',
-    leadAfterBold: ': Geometrie aus historischen Vorlagen, Strichreihenfolge aus handkuratiertem Duktus.',
+    leadAfterBold: ': die Gestalt der Buchstaben aus historischen Vorlagen, der Strich aus handkuratiertem Duktus.',
     ctaWrite: 'Schreiben üben',
     ctaRead: 'Buchstaben lesen',
   },
@@ -26,37 +27,37 @@ export const landing = {
     replay: '↻ nochmal schreiben',
   },
   // The thesis — the three-way combination that makes this project different.
-  pillarsHeading: 'Wohin das Projekt zielt',
+  pillarsHeading: 'Was hier entstehen soll',
   pillars: [
-    { num: 'i.', title: 'Tinte statt Font', desc: 'Schwellzug, Schreibreihenfolge und Allographen — Hand-Synthese, keine Glyphe pro Codepoint.' },
-    { num: 'ii.', title: 'Statistik statt Bauchgefühl', desc: 'Schräglage, Schwellzug-Profile und Glyph-Verteilung der eigenen Schrift, gemessen statt geschätzt.' },
-    { num: 'iii.', title: 'Lineatur zum Text', desc: 'Beliebiger Text mit passender Lineatur in einem Schritt — druckbare Vorlagen, inhaltsbewusst.' },
+    { num: 'i.', title: 'Tinte statt Font', desc: 'Schwellzug, Strichfolge und die Buchstabenformen je nach Stellung im Wort — Schrift wie aus der Feder, nicht aus dem Setzkasten.' },
+    { num: 'ii.', title: 'Statistik statt Bauchgefühl', desc: 'Schräglage, Schwellzug und Buchstabenformen der eigenen Hand — gemessen, nicht geschätzt.' },
+    { num: 'iii.', title: 'Lineatur zum Text', desc: 'Jeder Text mit der passenden Lineatur in einem Zug — druckfertige Vorlagen, dem Inhalt angemessen.' },
   ],
   // Tools that exist today (the component attaches the route paths).
-  toolsHeading: 'Jetzt schon nutzbar',
+  toolsHeading: 'Was heute schon bereitsteht',
   tools: {
     worksheet: {
       title: 'Lineatur-Vorlage',
       cta: 'Übungsblatt erstellen →',
-      desc: 'Hilfslinien für deutsche Schreibschrift auf A4 — Verhältnis frei wählbar, optional Schräglinien, als druckfertiges PDF.',
+      desc: 'Hilfslinien für deutsche Schreibschrift auf A4 — das Verhältnis frei wählbar, auf Wunsch mit Schräglinien, als druckfertiges PDF.',
     },
     quiz: {
       title: 'Buchstaben-Quiz',
       cta: 'Quiz starten →',
-      desc: 'Lies echte Kurrent-Buchstaben aus historischer Vorlage; am Ende zeigt die Auswertung, was dir schwerfiel.',
+      desc: 'Lies echte Kurrent-Buchstaben aus historischer Vorlage; am Ende zeigt die Auswertung, was dir Mühe machte.',
     },
   },
   // Roadmap — staged honestly, no dead links (badge: common.soon).
-  roadmapHeading: 'In Arbeit',
+  roadmapHeading: 'In Vorbereitung',
   roadmap: [
-    { title: 'Einstieg & Alphabet', desc: 'Geschichte in zwei Sätzen, Alphabet-Tafel, die wichtigsten Regeln.' },
-    { title: 'Animierte Tafel', desc: 'Schreibreihenfolge, Ansatzpunkte und Schwellzug-Aufbau live.' },
-    { title: 'Lese-Lupe', desc: 'Historische Scans transkribiert, mit Erklärung pro Buchstabe.' },
-    { title: 'Schrift-Analyse', desc: 'Statistik über die eigene Hand — Schräglage, Schwellzug, Verteilung.' },
-    { title: 'Offene Daten', desc: 'Kanonische Glyph-Daten — Anker, Schwellzug, Duktus — zitierbar.' },
+    { title: 'Einstieg & Alphabet', desc: 'Die Geschichte in zwei Sätzen, eine Alphabet-Tafel, die wichtigsten Regeln — eine kleine Fibel.' },
+    { title: 'Animierte Tafel', desc: 'Strichfolge, Ansatzpunkte und Schwellzug — der Feder beim Schreiben zugesehen.' },
+    { title: 'Lese-Lupe', desc: 'Historische Scans, Zeile für Zeile übertragen — mit Erklärung zu jedem Buchstaben.' },
+    { title: 'Schrift-Analyse', desc: 'Die eigene Hand in Zahlen — Schräglage, Schwellzug, Verteilung.' },
+    { title: 'Offene Daten', desc: 'Die Glyph-Daten — Anker, Schwellzug, Duktus — offen und zitierbar.' },
   ],
   footer: {
     scripts: 'Kurrent · Sütterlin · Offenbacher Schrift',
-    disclaimer: 'Synthese, klar gekennzeichnet — wir simulieren Schrift, nicht Provenienz.',
+    disclaimer: 'Synthese, klar gekennzeichnet — nachgebildete Schrift, kein historisches Original.',
   },
 } as const;
