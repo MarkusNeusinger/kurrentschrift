@@ -7,6 +7,7 @@ from api.auth import require_admin
 from api.dependencies import require_db, require_source
 from api.schemas import BboxIn, BboxOut, GuideConfig
 from core.database import Bbox, BboxRepository, Source
+from core.pipeline import DEFAULT_N_ANCHORS
 
 
 router = APIRouter(prefix="/sources/{source_id}/bboxes", tags=["bboxes"])
@@ -50,10 +51,10 @@ async def put_bbox(
     if payload.baseline_y <= payload.midband_y:
         raise HTTPException(422, detail="baseline_y must be greater than midband_y (baseline is below midband)")
     repo = BboxRepository(db)
-    # `guides`, `locked` and `split` are optional: when the client omits one,
-    # keep whatever is already stored (a plain bbox/calibration save must not
-    # wipe the guide lines, and toggling the lock or split must not require
-    # resending guides).
+    # `guides`, `locked`, `split` and `n_anchors` are optional: when the client
+    # omits one, keep whatever is already stored (a plain bbox/calibration save
+    # must not wipe the guide lines, silently rewrite the anchor count, or
+    # require resending unrelated fields).
     existing = None
     if payload.guides is not None:
         guides = payload.guides.model_dump()
@@ -72,6 +73,12 @@ async def put_bbox(
         if existing is None:
             existing = await repo.get(source.id, glyph_key)
         split = bool(existing.split) if existing is not None else False
+    if payload.n_anchors is not None:
+        n_anchors = payload.n_anchors
+    else:
+        if existing is None:
+            existing = await repo.get(source.id, glyph_key)
+        n_anchors = int(existing.n_anchors) if existing is not None else DEFAULT_N_ANCHORS
     bbox = await repo.upsert(
         source.id,
         glyph_key,
@@ -82,7 +89,7 @@ async def put_bbox(
         mask_strokes=[m.model_dump() for m in payload.mask_strokes],
         baseline_y=payload.baseline_y,
         midband_y=payload.midband_y,
-        n_anchors=payload.n_anchors,
+        n_anchors=n_anchors,
         guides=guides,
         locked=locked,
         split=split,

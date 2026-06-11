@@ -164,13 +164,14 @@ def test_diagnostic_has_one_outline_polygon_per_stroke(synthetic_chart_path, syn
     diag = diagnostic_for_glyph(
         glyph_row=glyph_row, bbox=synthetic_bbox, chart_path=synthetic_chart_path, style_ratio=[2, 1, 2], slant_deg=65.0
     )
+    # Preferred silhouettes: one ring list per pen-stroke (exterior + holes).
+    assert len(diag["outline_paths"]) == 2
+    assert all(len(stroke) >= 1 and len(stroke[0]) >= 4 for stroke in diag["outline_paths"])
+    # Legacy fields derived from the rings: one outer contour per stroke.
     assert len(diag["outline_polygons"]) == 2
-    # Back-compat single polygon still present (the first stroke's).
-    assert len(diag["outline_polygon"]) > 0
-    # One centerline per stroke, each the spine of its outline (half the points).
+    assert diag["outline_polygon"] == diag["outline_polygons"][0]
+    # One centerline per stroke, each the spine of its silhouette.
     assert len(diag["centerlines_template"]) == 2
-    for line, poly in zip(diag["centerlines_template"], diag["outline_polygons"], strict=True):
-        assert len(poly) == 2 * len(line)
 
 
 def test_diagnostic_contains_render_fields(synthetic_chart_path, synthetic_bbox):

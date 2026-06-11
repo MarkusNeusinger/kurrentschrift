@@ -38,6 +38,7 @@ dependencies = [
     "pg8000>=1.31.0",
     "alembic>=1.14.0",
     "cloud-sql-python-connector[asyncpg,pg8000]>=1.20.2",
+    "shapely>=2.1.2",
 ]
 
 [project.optional-dependencies]

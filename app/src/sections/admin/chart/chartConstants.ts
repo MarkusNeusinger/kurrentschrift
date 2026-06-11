@@ -18,5 +18,7 @@ export const ZOOM_MAX = ZOOM_PRESETS[ZOOM_PRESETS.length - 1];
 // handles are visible immediately.
 export const NEW_BBOX_MIDBAND_RATIO = 0.35;
 export const NEW_BBOX_BASELINE_RATIO = 0.7;
-// Default anchor count for a fresh bbox (templates.n_anchors; retunable later).
-export const NEW_BBOX_N_ANCHORS = 100;
+// Default anchor count for a fresh bbox (templates.n_anchors). 50 is the
+// measured jitter knee across the authored glyphs — see
+// core/pipeline.py DEFAULT_N_ANCHORS for the data.
+export const NEW_BBOX_N_ANCHORS = 50;

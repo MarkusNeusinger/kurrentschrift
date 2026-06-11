@@ -165,6 +165,10 @@ export interface DiagnosticData {
   // spine of the matching outline polygon. Drives the animated "as written"
   // reveal in the quiz (WrittenGlyph). Optional for back-compat with older payloads.
   centerlines_template?: Array<Array<[number, number]>>;
+  // Preferred silhouette: per pen-stroke a list of rings (exterior + holes)
+  // from the backend capsule union — render all rings of one stroke as a
+  // single path with fill-rule evenodd. Falls back to outline_polygons.
+  outline_paths?: Array<Array<Array<[number, number]>>>;
   baseline_y_crop: number;
   midband_y_crop: number;
   template_guides: { baseline: number; midband: number; ascender: number; descender: number };
@@ -172,16 +176,26 @@ export interface DiagnosticData {
 }
 
 export interface FitMeta {
+  // Residual-based verdict (geo RMSE within tolerance) — what the UI shows.
+  converged: boolean;
+  // Mirror of `converged` kept for older payload consumers.
   success: boolean;
+  // Raw scipy stop status — debugging only; it anti-correlates with quality.
+  optimizer_success: boolean;
   message: string;
   iterations: number;
+  n_evaluations: number;
   geo_rmse_px: number;
   geo_rmse_px_initial: number;
   width_rmse_px: number;
+  // Skeleton→template distance: high values mean parts of the original ink
+  // are not covered by the fitted template.
+  coverage_rmse_px: number;
   reg_energy: number;
   max_anchor_delta: number;
   lambda_reg: number;
   width_weight: number;
+  coverage_weight: number;
   n_samples: number;
 }
 
@@ -202,5 +216,9 @@ export interface FitData {
   // Index of each pen-stroke's first sample in the polylines, so the overlay can
   // draw separate strokes instead of bridging a pen lift. [0] => one stroke.
   polyline_stroke_starts: number[];
+  // Filled silhouette of the fit in crop pixels: per pen-stroke a list of
+  // rings (exterior + holes, evenodd) — overlay on the crop to judge whether
+  // the fitted ink covers the original.
+  fitted_outline_px?: Array<Array<Array<[number, number]>>>;
   placement: { x_origin_px: number; baseline_y_px: number; unit_px: number };
 }

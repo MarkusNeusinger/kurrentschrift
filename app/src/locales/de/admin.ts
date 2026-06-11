@@ -77,33 +77,46 @@ export const admin = {
     // Followed by the glyph label in the dialog title.
     title: 'Diagnose ·',
     close: 'Diagnose schließen',
-    tabDiagnostic: 'Skelett & Canonical',
-    tabFit: 'Fit (M4)',
     noCanonical: 'Noch kein Canonical — erst im Einrichten-Wizard einen Weg zeichnen und speichern.',
+    // Section headings of the single-page diagnostic flow.
+    sectionPipeline: 'Vom Original zur Vorlage',
+    sectionFit: 'Einpassung an das Original',
+    sectionWritten: 'Fertig geschrieben',
     diagnosticIntro:
-      'Die drei Verarbeitungsschritte nebeneinander: der reine Loth-Crop, das daraus gewonnene Skelett mit den abgetasteten Ankern und schließlich die kanonische Vorlage in Template-Koordinaten (Grundlinie = 0, Mittellinie = 1).',
+      'Alle Verarbeitungsstufen auf einen Blick: vom unveränderten Ausschnitt der Vorlage über das gemessene Skelett bis zur fertigen kanonischen Form — jede Stufe soll dem Original ähnlicher werden, nicht abstrakter.',
     fitIntro:
-      'Die kanonische Vorlage auf ihr eigenes Skelett gefittet (M4): Skelett, Vorlage (grau) und Fit (rot) übereinander, dazu die Fehlermaße. Mit dem λ-Regler die Regularisierung abwägen — niedrig folgt dem Skelett, hoch hält die Form zusammen.',
+      'Die Generalprobe der Bibliothek: Die kanonische Vorlage wird elastisch auf das Skelett des Originals gelegt — mit derselben Einpassung werden später echte Schreibproben vermessen. Mit dem λ-Regler die Regularisierung abwägen: niedrig folgt dem Skelett, hoch hält die Form zusammen.',
+    writtenCaption:
+      'Die Vorlage, wie der Duktus sie schreibt: Strich für Strich, mit echtem Absetzen zwischen den Zügen. Genau so erscheint der Buchstabe später im Quiz — und so soll er einmal auf der Startseite schreiben.',
     computing: 'Diagnose wird gerechnet…',
     noCanonicalShort: 'noch kein Canonical — erst Strich aufnehmen',
     reload: 'neu laden',
-    cropHeading: 'Loth-Crop',
+    cropHeading: 'Original (Loth-Ausschnitt)',
+    cropCaption:
+      'Der unveränderte Ausschnitt der Vorlage (nach Ausschluss-Maske). Er ist der Maßstab: Jede weitere Stufe wird an diesem Bild gemessen.',
     // Followed by the anchor count "(…)" in the column heading.
-    skeletonHeading: 'Skelett + Anker',
+    skeletonHeading: 'Skelett & Stützstellen',
+    skeletonCaption:
+      'Rot: die Mittelachse (Skelett) der binarisierten Tinte — auf ihr wird die Strichbreite (Schwellzug) gemessen. Orange: die Stützstellen des nachgezeichneten Wegs. Liegen sie neben der Tinte, leidet die Breitenmessung — dann den Weg im Wizard neu zeichnen.',
     // Followed by "{deg}°)" in the column heading.
-    canonicalHeading: 'Canonical (Template-Koords, Stil-Schräglage',
+    canonicalHeading: 'Kanonische Form (Stil-Schräglage',
+    canonicalCaption:
+      'Die fertige Vorlage in Schriftkoordinaten (Grundlinie = 0, Mittellinie = 1): Weg plus gemessene Strichbreite als gefüllte Silhouette, Schleifenaugen bleiben offen. Sie soll dem Original links zum Verwechseln ähnlich sehen.',
     guidesReadout: 'Grundlinie=0 · Mittellinie=1 · Oberlinie={{ascender}} · Unterlinie={{descender}}',
   },
   fit: {
-    computing: 'Fit wird gerechnet…',
-    overlayHeading: 'Crop · Skelett · Canonical (grau) · Fit (rot)',
-    converged: 'konvergiert',
-    notConverged: 'nicht konvergiert',
+    computing: 'Einpassung wird gerechnet…',
+    overlayHeading: 'Original · Skelett · Ausgangslage (grau) · Einpassung (rot)',
+    overlayCaption:
+      'Die rote Füllung ist die eingepasste Vorlage mit ihrer gemessenen Strichbreite — sie soll die Originaltinte decken. Grau gestrichelt: die Ausgangslage vor der Einpassung; blassrot: das Skelett, auf das eingepasst wird.',
+    converged: 'eingepasst',
+    notConverged: 'Abweichung zu groß',
     // Preceded by the iteration count in the chip label.
     iterations: 'Iter.',
     // Composed metric labels (values + units stay in the component).
     geoRmse: 'Geometrie-RMSE:',
     widthRmse: 'Breiten-RMSE:',
+    coverageRmse: 'Abdeckungs-RMSE:',
     maxAnchorDelta: 'max. Anker-Δ:',
     lambdaHint: 'Geometrie folgt dem Skelett; λ (Tikhonov) hält die Vorlage zusammen — niedrig = näher am Skelett, hoch = formtreuer.',
     // Followed by the current λ value.
