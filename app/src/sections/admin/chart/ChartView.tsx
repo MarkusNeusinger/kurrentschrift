@@ -25,6 +25,7 @@ import { useAdmin } from '@/context/AdminContext';
 import { overlay } from '@/sections/admin/overlayColors';
 import { BboxOverlay } from './BboxOverlay';
 import { ChartToolbar } from './ChartToolbar';
+import { RederiveAllDialog } from './RederiveAllDialog';
 import { useBboxEditing } from './useBboxEditing';
 import { useChartViewport } from './useChartViewport';
 import type { Mode } from './chartConstants';
@@ -39,6 +40,7 @@ interface ChartViewProps {
 export function ChartView({ source }: ChartViewProps) {
   const { bboxesByKey, glyphsByKey, activeGlyph, visibleGlyphs, openWizard, openDiagnose } = useAdmin();
   const [mode, setMode] = useState<Mode>('pan');
+  const [rederiveOpen, setRederiveOpen] = useState(false);
   const { w: width, h: height } = source.chart_size;
 
   const {
@@ -157,7 +159,9 @@ export function ChartView({ source }: ChartViewProps) {
         onDelete={deleteActive}
         onOpenWizard={() => activeGlyph && openWizard(activeGlyph)}
         onOpenDiagnose={() => activeGlyph && openDiagnose(activeGlyph)}
+        onOpenRederiveAll={() => setRederiveOpen(true)}
       />
+      <RederiveAllDialog open={rederiveOpen} onClose={() => setRederiveOpen(false)} />
 
       <Box ref={scrollRef} sx={{ flex: 1, overflow: 'auto', bgcolor: overlay.canvasBg, position: 'relative' }}>
         <Box ref={stageRef} sx={{ width: stageWidthCss, height: stageHeightCss, position: 'relative', ...cursorStyle }}>
