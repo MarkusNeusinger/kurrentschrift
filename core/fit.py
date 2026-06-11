@@ -111,7 +111,7 @@ DEFAULT_WIDTH_PRIOR_WEIGHT = 0.05
 PRESSURE_CONE_WEIGHT = 0.05
 PRESSURE_CONE_EXP = 2.0
 REFINE_OUTER_ROUNDS = 3
-REFINE_MAX_ITER = 100
+REFINE_MAX_ITER = 200
 # Early-stop when a frozen-normal round improves the honest residual by less
 # than this fraction.
 REFINE_EARLY_STOP_REL = 0.02
