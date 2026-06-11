@@ -250,6 +250,7 @@ def fit_template_to_instance(
     width_weight: float = DEFAULT_WIDTH_WEIGHT,
     coverage_weight: float = DEFAULT_COVERAGE_WEIGHT,
     max_iter: int = DEFAULT_MAX_ITER,
+    max_anchor_delta: float = MAX_ANCHOR_DELTA,
 ) -> FitResult:
     """Optimise template control points to match one instance skeleton + width.
 
@@ -269,6 +270,9 @@ def fit_template_to_instance(
     lambda_reg : Tikhonov weight on per-anchor displacement (topology guard).
     width_weight : weight of the half-width residual relative to geometry.
     coverage_weight : weight of the skeleton→template coverage residual.
+    max_anchor_delta : per-anchor displacement bound in template units. The
+        default suits the M4 instance fit; callers refining a trace that
+        already sits on the ink pass a tighter bound.
 
     Returns
     -------
@@ -402,7 +406,7 @@ def fit_template_to_instance(
     x0 = np.zeros(n_params)
     max_shift_units = float(max(crop_h, crop_w)) / unit_px
     bounds = [(-max_shift_units, max_shift_units)] * 2
-    bounds += [(-MAX_ANCHOR_DELTA, MAX_ANCHOR_DELTA)] * (2 * k)
+    bounds += [(-max_anchor_delta, max_anchor_delta)] * (2 * k)
 
     e_geo0, _, _ = report_energies(x0)
     res = minimize(
