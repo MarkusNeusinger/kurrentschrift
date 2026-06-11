@@ -13,6 +13,7 @@ import type {
   QualityComparison,
   SourceOut,
   StyleOut,
+  TracePreviewOut,
   TraceRequest,
 } from '@/lib/api/types';
 
@@ -56,8 +57,18 @@ export const postTrace = (glyphKey: string, body: TraceRequest): Promise<GlyphOu
     body: JSON.stringify(body),
   }).then(asJson<GlyphOut>);
 
-// nAnchors omitted => keep the stored anchor count ("re-derive with current
-// pipeline code"); force overrides the server-side lock guard (423 otherwise).
+// Dry run of /trace: derives the raw and the optimized variant for the
+// wizard's before/after comparison — nothing is written.
+export const postTracePreview = (glyphKey: string, body: TraceRequest): Promise<TracePreviewOut> =>
+  apiFetch(src(`/templates/${encodeURIComponent(glyphKey)}/trace-preview`), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }).then(asJson<TracePreviewOut>);
+
+// nAnchors omitted => re-derive with the current pipeline code AND its current
+// recommended anchor density (server DEFAULT_N_ANCHORS); force overrides the
+// server-side lock guard (423 otherwise).
 export const postResample = (
   glyphKey: string,
   opts: { nAnchors?: number; force?: boolean } = {},

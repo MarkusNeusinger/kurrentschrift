@@ -41,6 +41,7 @@ import { WizardCanvas } from './WizardCanvas';
 import { STEPS } from './wizardTypes';
 import { LineaturStep } from './steps/LineaturStep';
 import { MaskStep } from './steps/MaskStep';
+import { OptimizeStep } from './steps/OptimizeStep';
 import { OverviewStep } from './steps/OverviewStep';
 import { SlantStep } from './steps/SlantStep';
 import { TraceStep } from './steps/TraceStep';
@@ -80,10 +81,25 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
             guideVals={wizard.guideVals}
             showSaved={wizard.showSaved}
             setShowSaved={wizard.setShowSaved}
-            saveTrace={wizard.saveTrace}
+            prepareOptimize={wizard.prepareOptimize}
             resample={wizard.resample}
             updateBboxField={wizard.updateBboxField}
             updateGuides={wizard.updateGuides}
+          />
+        );
+      case 'optimize':
+        return (
+          <OptimizeStep
+            glyphKey={glyphKey}
+            hasDraftSource={wizard.savablePoints >= 2 || hasCanonical}
+            nAnchors={bbox.n_anchors}
+            draftReady={wizard.draft != null}
+            preview={wizard.preview}
+            previewBusy={wizard.previewBusy}
+            optimizeApplied={wizard.optimizeApplied}
+            busy={busy}
+            prepareOptimize={wizard.prepareOptimize}
+            applyOptimized={wizard.applyOptimized}
           />
         );
       case 'overview':
@@ -101,7 +117,10 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
     }
   })();
 
-  const canAdvance = stepId !== 'weg' || hasCanonical;
+  // Weg → Optimieren needs something to derive (new strokes or a stored Weg);
+  // Optimieren → Übersicht needs a SAVED canonical (the lock acts on the DB).
+  const canAdvance =
+    stepId === 'weg' ? wizard.savablePoints >= 2 || hasCanonical : stepId === 'optimize' ? hasCanonical : true;
 
   return (
     <Dialog open={open} onClose={onClose} fullScreen={compact} fullWidth maxWidth="lg" slotProps={{ paper: { sx: { height: compact ? '100%' : '92vh' } } }}>
@@ -118,7 +137,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
         </Stepper>
       </Box>
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, flex: 1, minHeight: 0, gap: { xs: 1, md: 2 }, p: { xs: 1, md: 2 } }}>
-        {stepId === 'overview' ? (
+        {stepId === 'overview' || stepId === 'optimize' ? (
           <Box sx={{ flex: 1, overflowY: 'auto' }}>{panel}</Box>
         ) : (
           <>

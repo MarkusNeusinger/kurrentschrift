@@ -11,6 +11,7 @@ export const wizard = {
     lineatur: 'Lineatur',
     slant: 'Schräglage',
     weg: 'Weg',
+    optimize: 'Optimieren',
     overview: 'Übersicht',
   },
   footer: {
@@ -79,7 +80,7 @@ export const wizard = {
     // Followed by the stroke count "(…)".
     undoStroke: 'Letzter Strich',
     discardAll: 'Alles verwerfen',
-    save: 'Weg speichern',
+    save: 'Weiter: Optimieren',
     saved: 'Weg gespeichert. Weiter zur Übersicht.',
     showSaved: 'Gespeicherten Weg & Anker einblenden',
     anchorsLabel: 'Anker (n_anchors)',
@@ -91,8 +92,23 @@ export const wizard = {
     couplingHint:
       'Höhe, auf der ein Nachbarbuchstabe ansetzt (Anfang) bzw. weiterläuft (Ende). Greift bei bestehendem Canonical sofort beim nächsten Speichern.',
   },
+  optimize: {
+    title: 'Schritt 5 · Optimierung prüfen',
+    body:
+      'Der gezeichnete Weg wird zweimal abgeleitet: einmal roh (nur gemessen) und einmal optimiert — Anker und Strichbreiten werden dabei auf die Tintenkante des Originals gezogen, Umkehrpunkte bleiben spitz. Erst „Anwenden & speichern“ schreibt die optimierte Vorlage in die Datenbank.',
+    computing: 'Optimierung wird gerechnet…',
+    before: 'Vorher (roh gemessen)',
+    after: 'Nachher (optimiert)',
+    score: 'Score',
+    // Followed by the score delta, e.g. "+3.1".
+    delta: 'Δ Score:',
+    apply: 'Anwenden & speichern',
+    applied: 'Optimierte Vorlage gespeichert. Weiter zur Übersicht.',
+    needTrace: 'Noch kein Weg vorhanden — erst im Schritt „Weg“ zeichnen.',
+    recompute: 'Neu berechnen',
+  },
   overview: {
-    title: 'Schritt 5 · Übersicht & Freigabe',
+    title: 'Schritt 6 · Übersicht & Freigabe',
     // Composed around the inline <b>Diagnose</b>.
     bodyBeforeBold: 'Alles geprüft? Mit der',
     bodyBold: 'Diagnose',
