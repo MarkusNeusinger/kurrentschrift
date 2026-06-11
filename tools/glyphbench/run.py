@@ -52,7 +52,7 @@ def _load_refs(glyph_dir: Path) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     return ref_mask, skel, width_map
 
 
-def run_glyph(glyph_dir: Path, chart_path: str, artifacts_dir: Path | None) -> dict:
+def run_glyph(glyph_dir: Path, chart_path: str, artifacts_dir: Path | None, refine: bool) -> dict:
     """Re-derive one glyph with current code and score it against its frozen refs."""
     template = json.loads((glyph_dir / "template.json").read_text())
     bbox = json.loads((glyph_dir / "bbox.json").read_text())
@@ -64,6 +64,7 @@ def run_glyph(glyph_dir: Path, chart_path: str, artifacts_dir: Path | None) -> d
         chart_path=chart_path,
         glyph=template["glyph"],
         position=template["position"],
+        refine=refine,
     )
     tm = canon["trace_meta"]
     anchors_px = crop_local_anchors(tm["pixel_anchors"], bbox)
@@ -77,11 +78,14 @@ def run_glyph(glyph_dir: Path, chart_path: str, artifacts_dir: Path | None) -> d
         width_map,
         unit_px=float(tm["unit_px"]),
         crossing_anchors=tm.get("crossing_anchors"),
+        corner_anchors=tm.get("corner_anchors"),
     )
 
     if artifacts_dir is not None:
         crop = np.asarray(Image.open(glyph_dir / "crop.png"), dtype=float) / 255.0
-        pred_mask = silhouette_mask(anchors_px, half_widths_px, tm["stroke_starts"], ref_mask.shape)
+        pred_mask = silhouette_mask(
+            anchors_px, half_widths_px, tm["stroke_starts"], ref_mask.shape, corner_anchors=tm.get("corner_anchors")
+        )
         write_overlay_png(artifacts_dir / f"{glyph_dir.name}.png", crop, pred_mask, ref_mask)
 
     return metrics
@@ -93,6 +97,9 @@ def main() -> None:
     parser.add_argument("--glyphs", default=None, help="comma-separated glyph_key filter (default: all)")
     parser.add_argument("--artifacts", type=Path, default=None, help="write per-glyph overlay PNGs to this dir")
     parser.add_argument("--json", dest="json_path", type=Path, default=None, help="write the full report as JSON")
+    parser.add_argument(
+        "--no-refine", action="store_true", help="skip the image-space refinement (isolates extraction changes)"
+    )
     args = parser.parse_args()
 
     manifests = sorted(args.fixtures.rglob("manifest.json"))
@@ -113,7 +120,7 @@ def main() -> None:
                 continue
             glyph_dir = manifest_path.parent / key
             try:
-                metrics = run_glyph(glyph_dir, chart_path, args.artifacts)
+                metrics = run_glyph(glyph_dir, chart_path, args.artifacts, not args.no_refine)
                 results.append({"glyph_key": key, "status": "scored", "metrics": metrics})
                 print(
                     f"glyph {key:<14} loss {metrics['loss']:.6f}  iou {metrics['iou']:.3f}  "

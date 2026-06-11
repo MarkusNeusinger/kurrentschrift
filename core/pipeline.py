@@ -18,7 +18,8 @@ from scipy.ndimage import median_filter, uniform_filter1d
 
 from core.chart import crop_with_mask, load_chart_grayscale
 from core.extract import binarize_adaptive, half_widths_on_medial_axis, skeleton_and_width
-from core.fit import fit_template_to_instance
+from core.fit import fit_template_to_instance, refine_template_against_crop
+from core.quality import template_quality_metrics
 from core.template import (
     allocate_samples,
     chord_length,
@@ -45,6 +46,21 @@ SNAP_MAX_ANCHOR_DELTA = 0.3
 # topology guard and the regulariser only needs to keep the blob-skeleton
 # ambiguity at crossings from wiggling the anchors.
 SNAP_LAMBDA_REG = 0.25
+
+# Corner-knot detection (German: Umkehrpunkt) on the dense raw trace. A corner
+# is a within-stroke reversal — pen stays down, direction changes sharply —
+# which a single chord-length spline rounds away. Tangents are estimated over
+# an arc-length window in x-height units so stylus jitter cannot fake a corner:
+CORNER_WINDOW_UNITS = 0.12
+# Turning angle (deviation from straight) above which a point is a corner
+# candidate. For a circular arc the deviation over the window is ~window/radius
+# radians, so 75° only triggers below radius ≈ 0.09 x-heights — far tighter
+# than any Kurrent loop (the small e-eye is ~0.15–0.25) — while true reversals
+# (retraces, the Loth K's angular joints) sit at 90–180°.
+CORNER_ANGLE_DEG = 75.0
+# Non-max suppression separation (in windows) and a per-stroke cap so jitter
+# bursts cannot shatter a stroke into sub-arc confetti.
+MAX_CORNERS_PER_STROKE = 4
 
 # Crossing detection for the width channel. Two anchors of the trace count as
 # a crossing when ALL three hold: another pass comes within this factor of
@@ -80,6 +96,54 @@ def _resample_polyline(points: np.ndarray, n: int) -> tuple[np.ndarray, float]:
     return np.column_stack([x, y]), total
 
 
+def _detect_corners(stroke_px: np.ndarray, unit_px: float) -> list[float]:
+    """Arc-length positions of within-stroke reversal corners on a dense stroke.
+
+    For each point, the incoming/outgoing tangents are chords spanning
+    CORNER_WINDOW_UNITS of arc on either side; the turning angle between them
+    (deviation from straight) marks a corner when it exceeds CORNER_ANGLE_DEG.
+    Candidates within a window of either stroke end are excluded by
+    construction (no full window fits), greedy non-max suppression keeps the
+    sharpest candidate per 2-window neighbourhood, and MAX_CORNERS_PER_STROKE
+    caps the result. Returns sorted arc positions (px) for knot-forced
+    resampling.
+    """
+    stroke_px = np.asarray(stroke_px, dtype=float)
+    if len(stroke_px) < 3:
+        return []
+    seg = np.hypot(*np.diff(stroke_px, axis=0).T)
+    s = np.concatenate([[0.0], np.cumsum(seg)])
+    total = float(s[-1])
+    window = max(3.0, CORNER_WINDOW_UNITS * unit_px)
+    if total < 2.0 * window:
+        return []
+
+    # Chord endpoints one window of arc behind/ahead of each point.
+    idx_in = np.searchsorted(s, s - window, side="left")
+    idx_out = np.searchsorted(s, s + window, side="left")
+    valid = (s >= window) & (s <= total - window) & (idx_out < len(s))
+    k = np.where(valid)[0]
+    if len(k) == 0:
+        return []
+    v_in = stroke_px[k] - stroke_px[idx_in[k]]
+    v_out = stroke_px[np.minimum(idx_out[k], len(s) - 1)] - stroke_px[k]
+    norms = np.hypot(v_in[:, 0], v_in[:, 1]) * np.hypot(v_out[:, 0], v_out[:, 1])
+    norms[norms == 0] = 1.0
+    cos_theta = np.clip((v_in * v_out).sum(axis=1) / norms, -1.0, 1.0)
+    theta_deg = np.degrees(np.arccos(cos_theta))
+
+    candidates = [
+        (float(theta_deg[i]), float(s[k[i]])) for i in np.argsort(-theta_deg) if theta_deg[i] >= CORNER_ANGLE_DEG
+    ]
+    accepted: list[float] = []
+    for _, arc in candidates:
+        if len(accepted) >= MAX_CORNERS_PER_STROKE:
+            break
+        if all(abs(arc - a) >= 2.0 * window for a in accepted):
+            accepted.append(arc)
+    return sorted(accepted)
+
+
 def _split_raw_strokes(raw_path: list[dict]) -> list[list[dict]]:
     """Split a flat stylus path into per-stroke segments at pen-lift markers.
 
@@ -100,32 +164,73 @@ def _split_raw_strokes(raw_path: list[dict]) -> list[list[dict]]:
     return [s for s in strokes if s]
 
 
-def _resample_strokes(strokes: list[np.ndarray], n: int) -> tuple[np.ndarray, list[int], float]:
+def _point_at_arc(points: np.ndarray, s: np.ndarray, arc: float) -> np.ndarray:
+    """Point on a polyline at cumulative arc length `arc` (linear interpolation)."""
+    j = int(np.clip(np.searchsorted(s, arc, side="right"), 1, len(points) - 1))
+    span = s[j] - s[j - 1]
+    t = 0.0 if span == 0 else (arc - s[j - 1]) / span
+    return points[j - 1] + t * (points[j] - points[j - 1])
+
+
+def _resample_polyline_with_knots(points: np.ndarray, n: int, knots_s: list[float]) -> tuple[np.ndarray, list[int]]:
+    """Chord-length resample with an anchor forced EXACTLY at each knot arc position.
+
+    The polyline is split at the knots, each segment resampled independently
+    (allocation proportional to length, ≥2 each), and the duplicated knot
+    points of the trailing segments dropped — so the total stays `n` and every
+    knot owns exactly one anchor. Returns `(anchors, local knot indices)`.
+    Without knots this is `_resample_polyline` unchanged.
+    """
+    if not knots_s:
+        resampled, _ = _resample_polyline(points, n)
+        return resampled, []
+    seg = np.hypot(*np.diff(points, axis=0).T)
+    s = np.concatenate([[0.0], np.cumsum(seg)])
+    bounds_s = [0.0, *sorted(knots_s), float(s[-1])]
+    alloc = allocate_samples(np.diff(bounds_s).tolist(), n + len(knots_s))
+    parts: list[np.ndarray] = []
+    knot_indices: list[int] = []
+    count = 0
+    for i, (a, b, k) in enumerate(zip(bounds_s[:-1], bounds_s[1:], alloc, strict=False)):
+        inner = points[(s > a) & (s < b)]
+        sub = np.vstack([_point_at_arc(points, s, a), *inner, _point_at_arc(points, s, b)])
+        resampled, _ = _resample_polyline(sub, max(2, k))
+        if i > 0:
+            resampled = resampled[1:]  # the knot point already ends the previous segment
+            knot_indices.append(count - 1)
+        parts.append(resampled)
+        count += len(resampled)
+    return np.concatenate(parts, axis=0), knot_indices
+
+
+def _resample_strokes(
+    strokes: list[np.ndarray], n: int, unit_px: float
+) -> tuple[np.ndarray, list[int], list[int], float]:
     """Resample each pen-stroke independently by chord length and concatenate.
 
     Returns the concatenated `(N, 2)` anchor array, `stroke_starts` (the anchor
-    index where each stroke begins, first is 0), and the summed path length in
-    pixels — the pen-lift bridges *between* strokes are excluded, so a u's two
-    downstrokes never get joined by a phantom anchor across the gap. `N` equals
-    `n` except when `n` is too small to give every stroke two anchors, when it
-    grows to `2 * num_strokes`.
+    index where each stroke begins, first is 0), the global indices of detected
+    corner-knot anchors (within-stroke reversals get an anchor exactly on the
+    corner), and the summed path length in pixels — the pen-lift bridges
+    *between* strokes are excluded, so a u's two downstrokes never get joined
+    by a phantom anchor across the gap. `N` equals `n` except when `n` is too
+    small to give every stroke two anchors, when it grows to `2 * num_strokes`.
     """
     strokes = [s for s in strokes if len(s) >= 1]
     if not strokes:
         raise ValueError("empty path")
-    if len(strokes) == 1:
-        resampled, length = _resample_polyline(strokes[0], n)
-        return resampled, [0], length
     seg_lengths = [chord_length(s) for s in strokes]
-    alloc = allocate_samples(seg_lengths, n)
-    parts, starts, total, cursor = [], [], 0.0, 0
+    alloc = [n] if len(strokes) == 1 else allocate_samples(seg_lengths, n)
+    parts, starts, corner_anchors, total, cursor = [], [], [], 0.0, 0
     for stroke, k, length in zip(strokes, alloc, seg_lengths, strict=True):
-        resampled, _ = _resample_polyline(stroke, max(2, k))
+        knots = _detect_corners(stroke, unit_px)
+        resampled, local_knots = _resample_polyline_with_knots(stroke, max(2, k), knots)
         starts.append(cursor)
+        corner_anchors.extend(cursor + c for c in local_knots)
         parts.append(resampled)
         cursor += len(resampled)
         total += length
-    return np.concatenate(parts, axis=0), starts, total
+    return np.concatenate(parts, axis=0), starts, corner_anchors, total
 
 
 def _smooth_half_widths(hw_px: np.ndarray, stroke_starts: list[int]) -> np.ndarray:
@@ -155,6 +260,7 @@ def _snap_anchors_to_ink(
     width_map: np.ndarray,
     unit_px: float,
     baseline_y_local: float,
+    corner_anchors: list[int] | None = None,
 ) -> tuple[np.ndarray, dict]:
     """Pull the resampled trace anchors onto the ink's medial axis (crop px).
 
@@ -187,6 +293,7 @@ def _snap_anchors_to_ink(
         baseline_y_px=baseline_y_local,
         x_origin_px=x_origin_px,
         stroke_starts=stroke_starts,
+        corner_anchors=corner_anchors,
         # Geometry-only refinement: half-widths are measured AFTER the snap
         # (on the medial axis the anchors now sit on), so the width residual
         # would only chase its own input here.
@@ -337,6 +444,7 @@ def canonical_from_path(
     position: str,
     n_anchors: int | None = None,
     snap_to_ink: bool = True,
+    refine: bool = True,
 ) -> dict:
     """Turn a dense stylus path into a canonical-template dict.
 
@@ -357,9 +465,16 @@ def canonical_from_path(
          the precise geometry. `snap_to_ink=False` keeps the raw trace.
       6. Sample half-width per anchor from the distance-transform; resolve
          crossing-blob readings by interpolating across detected crossings.
-      7. Normalise pixel → template coords (baseline=0, midband=1).
-      8. Compute entry/exit tangents from first/last anchor pairs.
-      9. Derive per-instance measurements (slant, mean width, path length).
+      7. Refine anchors AND half-widths against the ink edge itself
+         (`refine_template_against_crop`): the rendered silhouette boundary is
+         pulled onto the binarized ink edge, averaging out the per-point EDT
+         noise (quantisation, stair-stepping on slanted strokes, tilted
+         readings on tapers) that the point measurements cannot avoid.
+         `refine=False` keeps the measured values.
+      8. Score the result against the crop (`trace_meta["quality"]`).
+      9. Normalise pixel → template coords (baseline=0, midband=1).
+      10. Compute entry/exit tangents from first/last anchor pairs.
+      11. Derive per-instance measurements (slant, mean width, path length).
     """
     for required in ("baseline_y", "midband_y", "y0", "y1", "x0", "x1"):
         if bbox.get(required) is None:
@@ -377,21 +492,22 @@ def canonical_from_path(
         np.array([(p["x"] - x0, p["y"] - y0) for p in stroke], dtype=float) for stroke in _split_raw_strokes(raw_path)
     ]
 
-    n = int(n_anchors or bbox.get("n_anchors") or DEFAULT_N_ANCHORS)
-    # Resample stroke-by-stroke so a pen lift never gets a phantom anchor bridging
-    # the gap; `stroke_starts` records where each stroke begins in the anchor list.
-    resampled_local, stroke_starts, path_length_px = _resample_strokes(strokes_local, n)
-
     baseline_y = int(bbox["baseline_y"])
     midband_y = int(bbox["midband_y"])
     unit_px = float(baseline_y - midband_y)
     if unit_px <= 0:
         raise ValueError(f"baseline_y ({baseline_y}) must exceed midband_y ({midband_y})")
 
+    n = int(n_anchors or bbox.get("n_anchors") or DEFAULT_N_ANCHORS)
+    # Resample stroke-by-stroke so a pen lift never gets a phantom anchor bridging
+    # the gap; `stroke_starts` records where each stroke begins in the anchor list,
+    # `corner_anchors` which anchors sit exactly on detected within-stroke reversals.
+    resampled_local, stroke_starts, corner_anchors_idx, path_length_px = _resample_strokes(strokes_local, n, unit_px)
+
     snap_meta: dict = {"applied": False}
     if snap_to_ink:
         resampled_local, snap_meta = _snap_anchors_to_ink(
-            resampled_local, stroke_starts, skel, width_map, unit_px, float(baseline_y - y0)
+            resampled_local, stroke_starts, skel, width_map, unit_px, float(baseline_y - y0), corner_anchors_idx
         )
         if snap_meta["applied"]:
             seg_bounds = [*stroke_starts, len(resampled_local)]
@@ -403,7 +519,61 @@ def canonical_from_path(
     # tight enough not to jump to a neighbouring stroke.
     hw_px = half_widths_on_medial_axis(resampled_local, skel, mask, width_map, snap_cap_px=max(3.0, 0.25 * unit_px))
     hw_px, crossing_anchors = _resolve_crossing_widths(resampled_local, hw_px, stroke_starts)
+    # Median/box smoothing stays as INITIALISATION; the refine's per-chain
+    # curvature regulariser is the final arbiter of the width profile.
     hw_px = _smooth_half_widths(hw_px, stroke_starts)
+
+    # Refine is stage 2 of "fit the drawing to the ink": it only runs when the
+    # snap ran — a caller that disables snapping wants the drawn geometry kept.
+    refine_meta: dict = {"applied": False}
+    if refine and snap_meta.get("applied") and bool(skel.any()):
+        baseline_y_local = float(baseline_y - y0)
+        x_origin_local = float(resampled_local[0, 0])
+        refine_anchors = np.column_stack(
+            [(resampled_local[:, 0] - x_origin_local) / unit_px, (baseline_y_local - resampled_local[:, 1]) / unit_px]
+        )
+        try:
+            refined = refine_template_against_crop(
+                refine_anchors,
+                hw_px / unit_px,
+                skel,
+                width_map,
+                unit_px=unit_px,
+                baseline_y_px=baseline_y_local,
+                x_origin_px=x_origin_local,
+                stroke_starts=stroke_starts,
+                corner_anchors=corner_anchors_idx,
+                crossing_anchors=crossing_anchors,
+            )
+        except ValueError as exc:
+            refine_meta = {"applied": False, "reason": str(exc)}
+        else:
+            resampled_local = np.column_stack(
+                [x_origin_local + refined.anchors[:, 0] * unit_px, baseline_y_local - refined.anchors[:, 1] * unit_px]
+            )
+            hw_px = refined.half_widths * unit_px
+            seg_bounds = [*stroke_starts, len(resampled_local)]
+            path_length_px = sum(
+                chord_length(resampled_local[a:b]) for a, b in zip(seg_bounds[:-1], seg_bounds[1:], strict=True)
+            )
+            refine_meta = {"applied": True, **refined.fit_meta}
+
+    # Image-space self-check: how well does the rendered silhouette match the
+    # binarized crop (IoU/Dice, chamfer, centerline RMSE, waviness, score)?
+    try:
+        quality = template_quality_metrics(
+            resampled_local,
+            hw_px,
+            stroke_starts,
+            mask,
+            skel,
+            width_map,
+            unit_px=unit_px,
+            crossing_anchors=crossing_anchors,
+            corner_anchors=corner_anchors_idx,
+        )
+    except ValueError:
+        quality = None
 
     pixel_global = resampled_local + np.array([x0, y0])
     x_origin = float(pixel_global[0, 0])
@@ -458,9 +628,18 @@ def canonical_from_path(
             "stroke_starts": stroke_starts,
             # Medial-axis snap of the drawn Weg (applied flag + residuals/shift).
             "snap": snap_meta,
+            # Image-space refinement of anchors+widths against the ink edge
+            # (applied flag + residuals; see refine_template_against_crop).
+            "refine": refine_meta,
+            # Image-space quality of the stored result vs the binarized crop.
+            "quality": quality,
             # Anchor indices whose width reading was crossing-contaminated and
             # replaced by interpolation (diagnostic visibility, not geometry).
             "crossing_anchors": crossing_anchors,
+            # Anchor indices sitting exactly on detected within-stroke reversal
+            # corners (Umkehrpunkte) — sampling splits the spline there so the
+            # rendered centerline keeps a true kink instead of rounding it.
+            "corner_anchors": corner_anchors_idx,
             "path_length_px": round(path_length_px, 1),
             "pixel_anchors": [[round(float(x), 2), round(float(y), 2)] for x, y in pixel_global],
             "half_widths_px": [round(float(h), 2) for h in hw_px],
@@ -512,6 +691,7 @@ def diagnostic_for_glyph(
     pixel_anchors = trace_meta.get("pixel_anchors") or []
     half_widths_px = trace_meta.get("half_widths_px") or []
     stroke_starts = trace_meta.get("stroke_starts")
+    corner_anchors = trace_meta.get("corner_anchors") or []
     x0, y0 = bbox["x0"], bbox["y0"]
     anchors_px = [[round(px - x0, 2), round(py - y0, 2)] for px, py in pixel_anchors]
 
@@ -526,14 +706,18 @@ def diagnostic_for_glyph(
     # Capsule-union silhouette per stroke (rings: exterior + holes, evenodd):
     # unlike the legacy ±normal ribbon it cannot fold into bowties at tight
     # loops, keeps loop counters open and rounds the stroke ends like a nib.
-    outline_paths = multi_stroke_silhouettes(anchors_template, half_widths_template, stroke_starts, 90.0, n=240)
+    outline_paths = multi_stroke_silhouettes(
+        anchors_template, half_widths_template, stroke_starts, 90.0, n=240, corner_anchors=corner_anchors
+    )
     # Legacy single-polygon fields derived from the rings (first ring of each
     # stroke ≈ the outer contour) so a stale SPA bundle keeps rendering
     # something sensible mid-deploy without paying a second geometry pass.
     outline_polygons = [stroke[0] for stroke in outline_paths if stroke]
     # Matching per-stroke centerlines (same sampling) so the frontend can sweep a
     # wide mask along the ductus and reveal the silhouette in writing order.
-    centerlines_template = multi_stroke_centerlines(anchors_template, half_widths_template, stroke_starts, 90.0, n=240)
+    centerlines_template = multi_stroke_centerlines(
+        anchors_template, half_widths_template, stroke_starts, 90.0, n=240, corner_anchors=corner_anchors
+    )
 
     return {
         "crop_size": {"w": int(w), "h": int(h)},
@@ -554,4 +738,6 @@ def diagnostic_for_glyph(
         "midband_y_crop": int(bbox["midband_y"]) - y0,
         "template_guides": template_guides(style_ratio),
         "slant_deg": float(slant_deg),
+        # Anchor indices on within-stroke reversal corners (for distinct markers).
+        "corner_anchors": [int(c) for c in corner_anchors],
     }
