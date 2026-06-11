@@ -56,6 +56,11 @@ from core.template import SamplePlan, build_sample_plan, capsule_union_rings, sa
 DEFAULT_LAMBDA_REG = 1.0
 DEFAULT_WIDTH_WEIGHT = 0.15
 DEFAULT_COVERAGE_WEIGHT = 0.3
+# Centerline samples for the fit/refine objectives. Bench-tuned with the
+# K=120 anchor default: 180 gives the boundary term ~1.5 edge points per
+# anchor (bench 0.1293->0.1256); requires the sample-count-invariant cap
+# weighting below — under the old shared normaliser denser sampling diluted
+# the cap pull (caught by the cap-reach regression test).
 DEFAULT_N_SAMPLES = 180
 DEFAULT_MAX_ITER = 300
 # Cap per-anchor displacement (in template units) so the fit cannot fold the
@@ -107,7 +112,9 @@ DEFAULT_WIDTH_PRIOR_WEIGHT = 0.05
 # noise), never real ink, because pressing on an up/side stroke digs the nib
 # into the paper. Self-calibrated per glyph (axis = width²-weighted axial mean
 # of the tangents, so wide downstrokes vote); exceedance is penalised
-# one-sidedly — thinner than the cap is always physical.
+# one-sidedly — thinner than the cap is always physical. Bench-tuned weight:
+# 0.05 and 0.5 both lose to 0.2 (0.5 starts flattening genuine widths,
+# median IoU 0.893->0.887).
 PRESSURE_CONE_WEIGHT = 0.2
 PRESSURE_CONE_EXP = 2.0
 # Cap term weight relative to the edge term, with SEPARATE normalisers: under
@@ -117,6 +124,10 @@ PRESSURE_CONE_EXP = 2.0
 # (n_caps/(2·n_edges) ≈ 4/240) independent of the sample count.
 CAP_TERM_WEIGHT = 0.02
 REFINE_OUTER_ROUNDS = 3
+# Inner L-BFGS-B budget per round. 100 was sized for ~50 anchors; at the
+# K=120 default the parameter count tripled and 200 measurably converges
+# further (bench 0.1331->0.1324, worst glyph 0.197->0.190). A 4th outer
+# round is a no-op — the 2% early-stop already ends at 3.
 REFINE_MAX_ITER = 200
 # Early-stop when a frozen-normal round improves the honest residual by less
 # than this fraction.
