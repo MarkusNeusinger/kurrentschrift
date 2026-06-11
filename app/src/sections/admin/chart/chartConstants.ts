@@ -21,4 +21,5 @@ export const NEW_BBOX_BASELINE_RATIO = 0.7;
 // Default anchor count for a fresh bbox (templates.n_anchors). 50 is the
 // measured jitter knee across the authored glyphs — see
 // core/pipeline.py DEFAULT_N_ANCHORS for the data.
-export const NEW_BBOX_N_ANCHORS = 50;
+// Mirrors core/pipeline.py DEFAULT_N_ANCHORS (bench-calibrated; see there).
+export const NEW_BBOX_N_ANCHORS = 120;

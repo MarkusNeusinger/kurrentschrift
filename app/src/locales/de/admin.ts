@@ -139,8 +139,12 @@ export const admin = {
     // Followed by the score delta, e.g. "+2.3".
     delta: 'Δ Score:',
     apply: 'Neu ableiten & speichern',
+    // Non-split letters share one form — applying fans out over all positions.
+    applyAll: 'Neu ableiten & speichern (alle {{count}} Positionen)',
     applyHint:
       'Überschreibt die gespeicherte Vorlage mit der Neuableitung aus dem Roh-Weg — bewusste Aktion, wirkt auch bei gesperrten Glyphen.',
+    applyHintAll:
+      'Der Buchstabe teilt eine Form über alle Positionen — die Neuableitung überschreibt alle {{count}} zusammen (bewusste Aktion, wirkt auch bei gesperrten Glyphen).',
     applied: 'Vorlage neu abgeleitet und gespeichert.',
   },
 } as const;

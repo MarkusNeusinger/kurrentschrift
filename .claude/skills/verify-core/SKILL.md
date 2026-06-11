@@ -69,10 +69,10 @@ EOF
 
 Verified output: keys `['advance', 'anchors', 'entry', 'exit_pt',
 'glyph', 'half_widths', 'measurements', 'position', 'raw_path',
-'trace_meta']`, 50 anchors (the default), slant `0.0` for the
-vertical bar, mean half-width ≈ `0.077` template units — physically
-sensible: the bar is 16 px wide (8 px half-width) and the
-baseline→midband unit is 100 px.
+'trace_meta']`, 120 anchors (DEFAULT_N_ANCHORS, bench-calibrated),
+slant `0.0` for the vertical bar, mean half-width ≈ `0.08` template
+units — physically sensible: the bar is 16 px wide (8 px half-width)
+and the baseline→midband unit is 100 px.
 
 Sanity-check changed numerics the same way: pick an input whose
 expected value you can compute by hand (vertical bar → slant 0,

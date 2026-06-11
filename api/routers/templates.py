@@ -14,7 +14,7 @@ from api.dependencies import require_db, require_source
 from api.schemas import ResampleRequest, TemplateOut, TemplateSummary, TraceRequest
 from core.database import BboxRepository, Source, StyleRepository, Template, TemplateRepository
 from core.fit import fit_glyph_to_crop
-from core.pipeline import canonical_from_path, canonical_from_raw_path_only, diagnostic_for_glyph
+from core.pipeline import DEFAULT_N_ANCHORS, canonical_from_path, canonical_from_raw_path_only, diagnostic_for_glyph
 from core.quality import quality_for_glyph
 
 
@@ -149,8 +149,11 @@ async def post_resample(
         raise HTTPException(404, detail=f"no canonical to resample for {glyph_key!r}")
     if not existing.raw_path:
         raise HTTPException(409, detail="stored canonical has no raw_path; re-trace to enable resampling")
-    # None keeps the stored anchor count: "re-derive with current code".
-    n_anchors = payload.n_anchors or (existing.trace_meta or {}).get("n_anchors") or bbox.n_anchors
+    # None means "re-derive with current code AND its current recommended
+    # anchor density" — DEFAULT_N_ANCHORS is bench-calibrated; a deliberate
+    # per-glyph count still wins by sending n_anchors explicitly (the wizard
+    # slider does).
+    n_anchors = payload.n_anchors or DEFAULT_N_ANCHORS
     canonical = await run_in_threadpool(
         canonical_from_raw_path_only,
         glyph_row={"raw_path": list(existing.raw_path), "glyph": existing.glyph, "position": existing.position},
@@ -254,7 +257,9 @@ async def get_quality(glyph_key: str, source: Source = Depends(require_source), 
         )
     raw_path = list(template.raw_path or [])
     glyph, position = template.glyph, template.position
-    n_anchors = trace_meta.get("n_anchors") or bbox.n_anchors
+    # The candidate must preview exactly what apply (= /resample without an
+    # explicit count) would store: current code + recommended anchor density.
+    n_anchors = DEFAULT_N_ANCHORS
 
     def compute() -> dict:
         stored = quality_for_glyph({"trace_meta": trace_meta}, bbox_dict, source.chart_path)
