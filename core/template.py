@@ -16,6 +16,7 @@ draws the canonical preview as SVG from the data this module produces.
 from __future__ import annotations
 
 from collections.abc import Iterator, Sequence
+from dataclasses import dataclass
 
 import numpy as np
 import shapely
@@ -203,33 +204,161 @@ def sample_with_plan(
     return np.concatenate(xs), np.concatenate(ys), np.concatenate(ws)
 
 
+# ------------------------------------------------------------- corner knots
+#
+# A corner knot (German: Umkehrpunkt) is a within-stroke reversal — the pen
+# stays down but changes direction sharply (e.g. the angular joints of the
+# Loth K). A single chord-length spline through such a point rounds it away;
+# splitting the spline there (independent natural splines per sub-arc, shared
+# corner anchor, C0 but not C2 across) renders a true kink. Corner anchors are
+# detected on the dense raw trace (`core.pipeline`), stored as anchor indices
+# in `trace_meta["corner_anchors"]`, and consumed here. A missing/empty list
+# reproduces the old sampling bit for bit.
+
+
+@dataclass(frozen=True)
+class SamplePlan:
+    """Frozen sampling plan over sub-arcs (pen strokes split at corner knots).
+
+    `slices`/`alloc` are the sub-arc anchor ranges and their sample counts;
+    consecutive sub-arcs of one stroke SHARE the corner anchor, so the corner
+    sample is produced twice — `drop_rows` lists the duplicated rows (pre-drop
+    indices) to delete after concatenation. `sample_starts` indexes each PEN
+    STROKE's first sample in the post-drop arrays (the animation/outline
+    contract stays per stroke — the pen does not lift at a corner), and
+    `corner_sample_idx` the surviving sample of each corner.
+    """
+
+    slices: list[tuple[int, int]]
+    alloc: list[int]
+    sample_starts: list[int]
+    drop_rows: list[int]
+    corner_sample_idx: list[int]
+
+
+def build_sample_plan(
+    anchors: np.ndarray, stroke_starts: Sequence[int] | None, corner_anchors: Sequence[int] | None, n: int
+) -> SamplePlan:
+    """Sampling plan for a multi-stroke anchor set with optional corner knots.
+
+    Without corners this degenerates to `stroke_sample_plan` exactly (same
+    slices, same allocation, no dropped rows). With corners, each stroke is
+    split at its interior corner anchors; samples are allocated over all
+    sub-arcs proportional to chord length (`n` plus one per corner, so the
+    post-drop total is ≈ n).
+    """
+    anchors = np.asarray(anchors, dtype=float)
+    stroke_ranges = stroke_slices(len(anchors), stroke_starts)
+    corners = sorted({int(c) for c in (corner_anchors or [])})
+
+    sub_arcs: list[tuple[int, int]] = []
+    arc_stroke: list[int] = []  # which pen stroke each sub-arc belongs to
+    for s, (a, b) in enumerate(stroke_ranges):
+        start = a
+        for c in (c for c in corners if a < c < b - 1):
+            sub_arcs.append((start, c + 1))
+            arc_stroke.append(s)
+            start = c
+        sub_arcs.append((start, b))
+        arc_stroke.append(s)
+
+    n_corner_dups = len(sub_arcs) - len(stroke_ranges)
+    if len(sub_arcs) == 1:
+        alloc = [max(2, n)]
+    else:
+        seg_lengths = [chord_length(anchors[p:q]) for p, q in sub_arcs]
+        alloc = allocate_samples(seg_lengths, n + n_corner_dups)
+
+    sample_starts: list[int] = []
+    drop_rows: list[int] = []
+    corner_sample_idx: list[int] = []
+    cursor = dropped = 0
+    prev_stroke = -1
+    for k, s in zip(alloc, arc_stroke, strict=True):
+        if s != prev_stroke:
+            sample_starts.append(cursor - dropped)
+            prev_stroke = s
+        else:
+            # Same stroke continuing through a corner: the sub-arc's first
+            # sample duplicates the previous sub-arc's last (the shared
+            # corner anchor) — drop it, remember the surviving corner row.
+            drop_rows.append(cursor)
+            corner_sample_idx.append(cursor - dropped - 1)
+            dropped += 1
+        cursor += k
+    return SamplePlan(sub_arcs, alloc, sample_starts, drop_rows, corner_sample_idx)
+
+
+def sample_with_sample_plan(
+    anchors: np.ndarray, half_widths: np.ndarray, plan: SamplePlan
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Sample each sub-arc independently per a `SamplePlan` and concatenate.
+
+    Independent natural splines per sub-arc give a true C0 kink at each corner
+    knot; duplicated corner rows are removed per `plan.drop_rows`. Without
+    corners the output equals `sample_with_plan` bit for bit.
+    """
+    anchors = np.asarray(anchors, dtype=float)
+    half_widths = np.asarray(half_widths, dtype=float)
+    xs, ys, ws = [], [], []
+    for (a, b), k in zip(plan.slices, plan.alloc, strict=True):
+        if b - a < 2:
+            # Degenerate sub-arc: replicate so the plan's row bookkeeping holds.
+            xs.append(np.full(k, anchors[a, 0]))
+            ys.append(np.full(k, anchors[a, 1]))
+            ws.append(np.full(k, half_widths[a] if len(half_widths) > a else 0.0))
+            continue
+        sx, sy, sw = sample_polyline(anchors[a:b], half_widths[a:b], n=k)
+        xs.append(sx)
+        ys.append(sy)
+        ws.append(sw)
+    sx = np.concatenate(xs)
+    sy = np.concatenate(ys)
+    sw = np.concatenate(ws)
+    if plan.drop_rows:
+        sx = np.delete(sx, plan.drop_rows)
+        sy = np.delete(sy, plan.drop_rows)
+        sw = np.delete(sw, plan.drop_rows)
+    return sx, sy, sw
+
+
 def _multi_stroke_samples(
-    anchors: np.ndarray, half_widths: np.ndarray, stroke_starts: Sequence[int] | None, slant_deg: float, n: int
+    anchors: np.ndarray,
+    half_widths: np.ndarray,
+    stroke_starts: Sequence[int] | None,
+    slant_deg: float,
+    n: int,
+    corner_anchors: Sequence[int] | None = None,
 ) -> Iterator[tuple[np.ndarray, np.ndarray, np.ndarray]]:
     """Yield `(sx, sy, sw)` slant-applied centerline samples for each pen-stroke.
 
     Each stroke is sampled on its own (never across a pen lift) via a shared
-    `stroke_sample_plan`, so an outline and a centerline derived from the *same*
-    call stay point-for-point aligned — the centerline runs down the spine of the
-    matching outline polygon.
+    `SamplePlan`, so an outline and a centerline derived from the *same* call
+    stay point-for-point aligned — the centerline runs down the spine of the
+    matching outline polygon. Corner knots split the spline within a stroke
+    (true kink) without splitting the yielded stroke itself.
     """
     anchors = np.asarray(anchors, dtype=float)
     half_widths = np.asarray(half_widths, dtype=float)
     if len(anchors) < 2:
         return
-    slices, alloc, _ = stroke_sample_plan(anchors, stroke_starts, n)
-    for (a, b), k in zip(slices, alloc, strict=True):
-        seg_anchors = anchors[a:b]
-        seg_widths = half_widths[a:b]
-        if len(seg_anchors) < 2:
+    plan = build_sample_plan(anchors, stroke_starts, corner_anchors, n)
+    sx, sy, sw = sample_with_sample_plan(anchors, half_widths, plan)
+    bounds = [*plan.sample_starts, len(sx)]
+    for a, b in zip(bounds[:-1], bounds[1:], strict=True):
+        if b - a < 2:
             continue
-        sx, sy, sw = sample_polyline(seg_anchors, seg_widths, n=k)
-        sx, sy = apply_slant(sx, sy, slant_deg)
-        yield sx, sy, sw
+        x, y = apply_slant(sx[a:b], sy[a:b], slant_deg)
+        yield x, y, sw[a:b]
 
 
 def multi_stroke_outline(
-    anchors: np.ndarray, half_widths: np.ndarray, stroke_starts: Sequence[int] | None, slant_deg: float, n: int = 240
+    anchors: np.ndarray,
+    half_widths: np.ndarray,
+    stroke_starts: Sequence[int] | None,
+    slant_deg: float,
+    n: int = 240,
+    corner_anchors: Sequence[int] | None = None,
 ) -> list[list[list[float]]]:
     """One closed outline polygon per stroke (slant applied) — never bridging a lift.
 
@@ -238,7 +367,7 @@ def multi_stroke_outline(
     list of `[x, y]`); the legacy single-stroke case returns a one-element list.
     """
     polygons: list[list[list[float]]] = []
-    for sx, sy, sw in _multi_stroke_samples(anchors, half_widths, stroke_starts, slant_deg, n):
+    for sx, sy, sw in _multi_stroke_samples(anchors, half_widths, stroke_starts, slant_deg, n, corner_anchors):
         poly_x, poly_y = stroke_outline(sx, sy, sw)
         polygons.append([[round(float(x), 4), round(float(y), 4)] for x, y in zip(poly_x, poly_y, strict=True)])
     return polygons
@@ -285,7 +414,12 @@ def capsule_union_rings(
 
 
 def multi_stroke_silhouettes(
-    anchors: np.ndarray, half_widths: np.ndarray, stroke_starts: Sequence[int] | None, slant_deg: float, n: int = 240
+    anchors: np.ndarray,
+    half_widths: np.ndarray,
+    stroke_starts: Sequence[int] | None,
+    slant_deg: float,
+    n: int = 240,
+    corner_anchors: Sequence[int] | None = None,
 ) -> list[list[list[list[float]]]]:
     """One capsule-union silhouette (ring list) per pen-stroke, slant applied.
 
@@ -296,12 +430,17 @@ def multi_stroke_silhouettes(
     """
     return [
         capsule_union_rings(sx, sy, sw, simplify_tol=0.002)
-        for sx, sy, sw in _multi_stroke_samples(anchors, half_widths, stroke_starts, slant_deg, n)
+        for sx, sy, sw in _multi_stroke_samples(anchors, half_widths, stroke_starts, slant_deg, n, corner_anchors)
     ]
 
 
 def multi_stroke_centerlines(
-    anchors: np.ndarray, half_widths: np.ndarray, stroke_starts: Sequence[int] | None, slant_deg: float, n: int = 240
+    anchors: np.ndarray,
+    half_widths: np.ndarray,
+    stroke_starts: Sequence[int] | None,
+    slant_deg: float,
+    n: int = 240,
+    corner_anchors: Sequence[int] | None = None,
 ) -> list[list[list[float]]]:
     """One slant-applied centerline polyline per pen-stroke, in writing order.
 
@@ -312,7 +451,7 @@ def multi_stroke_centerlines(
     point lists, one per stroke; the legacy single-stroke case is a one-element list.
     """
     lines: list[list[list[float]]] = []
-    for sx, sy, _sw in _multi_stroke_samples(anchors, half_widths, stroke_starts, slant_deg, n):
+    for sx, sy, _sw in _multi_stroke_samples(anchors, half_widths, stroke_starts, slant_deg, n, corner_anchors):
         lines.append([[round(float(x), 4), round(float(y), 4)] for x, y in zip(sx, sy, strict=True)])
     return lines
 

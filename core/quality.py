@@ -35,7 +35,7 @@ from core.extract import binarize_adaptive, half_widths_on_medial_axis, skeleton
 # Bilinear field sampling shared with the fit — the metric reads the same EDT
 # interpolant the optimiser descends, so "converged" and "high score" agree.
 from core.fit import bilinear
-from core.template import capsule_union_rings, sample_with_plan, stroke_sample_plan
+from core.template import build_sample_plan, capsule_union_rings, sample_with_sample_plan
 
 
 # Sample count for silhouette + centerline — what the diagnostic/animation
@@ -90,21 +90,26 @@ def rasterize_silhouette(
 
 
 def _sample_and_rings(
-    anchors_px: np.ndarray, half_widths_px: np.ndarray, stroke_starts: Sequence[int] | None, n: int
+    anchors_px: np.ndarray,
+    half_widths_px: np.ndarray,
+    stroke_starts: Sequence[int] | None,
+    n: int,
+    corner_anchors: Sequence[int] | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, list[int], list[list[list[list[float]]]]]:
     """Shared sampling: centerline samples + per-stroke capsule-union rings.
 
-    One `stroke_sample_plan` drives both the rasterised silhouette and the
-    centerline/width measurements, so every metric scores the same geometry.
+    One `SamplePlan` (corner-aware, like the diagnostic render) drives both the
+    rasterised silhouette and the centerline/width measurements, so every
+    metric scores the same geometry.
     """
-    slices, alloc, sample_starts = stroke_sample_plan(anchors_px, stroke_starts, n)
-    sx, sy, sw = sample_with_plan(anchors_px, half_widths_px, slices, alloc)
-    bounds = [*sample_starts, len(sx)]
+    plan = build_sample_plan(anchors_px, stroke_starts, corner_anchors, n)
+    sx, sy, sw = sample_with_sample_plan(anchors_px, half_widths_px, plan)
+    bounds = [*plan.sample_starts, len(sx)]
     rings = [
         capsule_union_rings(sx[a:b], sy[a:b], sw[a:b], simplify_tol=RASTER_SIMPLIFY_PX, decimals=2)
         for a, b in zip(bounds[:-1], bounds[1:], strict=True)
     ]
-    return sx, sy, sw, sample_starts, rings
+    return sx, sy, sw, plan.sample_starts, rings
 
 
 def silhouette_mask(
@@ -113,6 +118,7 @@ def silhouette_mask(
     stroke_starts: Sequence[int] | None,
     shape: tuple[int, int],
     n: int = QUALITY_N_SAMPLES,
+    corner_anchors: Sequence[int] | None = None,
 ) -> np.ndarray:
     """Rasterised silhouette of a pixel-space template — the metric's pred mask.
 
@@ -120,7 +126,7 @@ def silhouette_mask(
     """
     anchors_px = np.asarray(anchors_px, dtype=float)
     half_widths_px = np.asarray(half_widths_px, dtype=float)
-    _, _, _, _, rings = _sample_and_rings(anchors_px, half_widths_px, stroke_starts, n)
+    _, _, _, _, rings = _sample_and_rings(anchors_px, half_widths_px, stroke_starts, n, corner_anchors)
     return rasterize_silhouette(rings, shape)
 
 
@@ -222,6 +228,7 @@ def template_quality_metrics(
     *,
     unit_px: float,
     crossing_anchors: Sequence[int] | None = None,
+    corner_anchors: Sequence[int] | None = None,
     n: int = QUALITY_N_SAMPLES,
 ) -> dict:
     """Score a template (crop-local pixel anchors + half-widths) against its crop.
@@ -242,7 +249,9 @@ def template_quality_metrics(
     h, w = mask.shape
     worst_px = float(np.hypot(h, w))
 
-    sx, sy, sw, sample_starts, stroke_rings = _sample_and_rings(anchors_px, half_widths_px, stroke_starts, n)
+    sx, sy, sw, sample_starts, stroke_rings = _sample_and_rings(
+        anchors_px, half_widths_px, stroke_starts, n, corner_anchors
+    )
     pred_mask = rasterize_silhouette(stroke_rings, (h, w))
 
     # Region overlap.
@@ -327,4 +336,5 @@ def quality_for_glyph(glyph_row: dict, bbox: dict, chart_path: str) -> dict:
         width_map,
         unit_px=unit_px,
         crossing_anchors=trace_meta.get("crossing_anchors"),
+        corner_anchors=trace_meta.get("corner_anchors"),
     )
