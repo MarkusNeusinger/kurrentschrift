@@ -1,32 +1,44 @@
-// Step 5 "Optimieren" — the raw-vs-optimized comparison before anything is saved.
+// Step 5 "Optimieren" — Crop · Vorher · Nachher comparison of the saved Weg.
 //
-// The drawn Weg is derived twice server-side (POST trace-preview, a dry run):
-// once raw (widths measured point-by-point, anchors only snapped) and once
-// optimized (anchors + widths pulled onto the ink edge, corner knots kept
-// sharp). Both render as written glyphs side by side with their image-space
-// quality scores; only "Anwenden & speichern" persists the optimized form.
+// The Weg is already saved on step 4 (the pipeline optimizes on every save).
+// This step derives the drawn/stored Weg twice server-side (POST trace-preview,
+// a dry run): once raw (widths measured point-by-point, anchors only snapped)
+// and once optimized (anchors + widths pulled onto the ink edge, corner knots
+// kept sharp). Two views:
+//   · Nebeneinander — Original crop, raw, optimized, all the same size, so the
+//     optimization is visible at a glance (with image-space quality scores).
+//   · Überlagert — the optimized silhouette drawn semi-transparent over the
+//     crop, so areas where it under-/over-covers the ink stand out.
 
-import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { Alert, Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material';
-import { useEffect, useRef } from 'react';
+import {
+  Alert,
+  Box,
+  Chip,
+  CircularProgress,
+  Stack,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from '@mui/material';
+import { useEffect, useRef, useState } from 'react';
 
-import { WrittenGlyph } from '@/components/WrittenGlyph';
-import { de } from '@/locales';
+import { cropUrl } from '@/lib/api';
 import type { TracePreviewOut, WrittenPreviewData } from '@/lib/api';
+import { ringsToPathD } from '@/lib/svg';
+import { de } from '@/locales';
 
 interface Props {
   glyphKey: string;
-  hasDraftSource: boolean; // strokes drawn OR a stored canonical to re-optimize
+  cropCacheBust?: number;
+  hasDraftSource: boolean; // strokes drawn OR a stored canonical to compare
   nAnchors: number;
-  draftReady: boolean;
   preview: TracePreviewOut | null;
   previewBusy: boolean;
-  optimizeApplied: boolean;
-  busy: boolean;
-  prepareOptimize: (nAnchors: number) => Promise<void>;
-  applyOptimized: () => Promise<void>;
+  computePreview: (nAnchors: number) => Promise<void>;
 }
+
+const PANEL_H = 240;
 
 function scoreColor(score: number): 'success' | 'warning' | 'error' {
   if (score >= 85) return 'success';
@@ -34,48 +46,67 @@ function scoreColor(score: number): 'success' | 'warning' | 'error' {
   return 'error';
 }
 
-function Variant({ title, cacheKey, data }: { title: string; cacheKey: string; data: WrittenPreviewData }) {
-  const t = de.wizard.optimize;
+// Silhouette rings (crop pixels) as one evenodd SVG path — loop counters stay
+// open. silhouette_px is the per-stroke ring list from the preview payload.
+function SilhouetteSvg({
+  data,
+  w,
+  h,
+  fill,
+  fillOpacity = 1,
+}: {
+  data: WrittenPreviewData;
+  w: number;
+  h: number;
+  fill: string;
+  fillOpacity?: number;
+}) {
+  const strokes = data.silhouette_px ?? [];
   return (
-    <Stack spacing={0.75} sx={{ alignItems: 'flex-start', minWidth: 220 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <svg width={w} height={h} viewBox={`0 0 ${data.crop_size.w} ${data.crop_size.h}`} style={{ display: 'block' }}>
+      {strokes.map((rings, i) => (
+        <path key={i} d={ringsToPathD(rings)} fill={fill} fillOpacity={fillOpacity} fillRule="evenodd" />
+      ))}
+    </svg>
+  );
+}
+
+function Panel({ title, chip, children, w }: { title: string; chip?: React.ReactNode; children: React.ReactNode; w: number }) {
+  return (
+    <Stack spacing={0.5} sx={{ alignItems: 'flex-start' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minHeight: 24 }}>
         <Typography variant="caption" color="text.secondary">
           {title}
         </Typography>
-        {data.quality && <Chip size="small" color={scoreColor(data.quality.score)} label={`${t.score} ${data.quality.score.toFixed(1)}`} />}
+        {chip}
       </Box>
-      {/* The synthetic cacheKey keeps preview payloads out of the real glyph's
-          WrittenGlyph cache (quiz/diagnostics must never see a raw variant). */}
-      <WrittenGlyph glyphKey={cacheKey} data={data} height={220} />
+      <Box sx={{ width: w, height: PANEL_H, bgcolor: '#fff', border: 1, borderColor: 'divider', position: 'relative' }}>
+        {children}
+      </Box>
     </Stack>
   );
 }
 
-export function OptimizeStep({
-  glyphKey,
-  hasDraftSource,
-  nAnchors,
-  draftReady,
-  preview,
-  previewBusy,
-  optimizeApplied,
-  busy,
-  prepareOptimize,
-  applyOptimized,
-}: Props) {
+export function OptimizeStep({ glyphKey, cropCacheBust, hasDraftSource, nAnchors, preview, previewBusy, computePreview }: Props) {
   const t = de.wizard.optimize;
+  const [view, setView] = useState<'side' | 'overlay'>('side');
 
-  // Entering the step without a prepared draft (footer "Weiter" instead of the
-  // Weg step's button) computes the comparison once automatically; failures
-  // fall through to the manual "Neu berechnen" button.
+  // Auto-compute the comparison once when the step is reached without a preview.
   const autoRan = useRef(false);
   useEffect(() => {
-    if (!autoRan.current && hasDraftSource && !draftReady && !previewBusy) {
+    if (!autoRan.current && hasDraftSource && !preview && !previewBusy) {
       autoRan.current = true;
-      void prepareOptimize(nAnchors);
+      void computePreview(nAnchors);
     }
-  }, [hasDraftSource, draftReady, previewBusy, nAnchors, prepareOptimize]);
+  }, [hasDraftSource, preview, previewBusy, nAnchors, computePreview]);
+  // Re-arm the auto-run when the glyph changes (the parent clears `preview`).
+  useEffect(() => {
+    if (!preview) autoRan.current = false;
+  }, [preview, glyphKey]);
 
+  const cropW = preview?.refined.crop_size.w ?? 1;
+  const cropH = preview?.refined.crop_size.h ?? 1;
+  const panelW = (PANEL_H * cropW) / cropH;
   const delta =
     preview?.raw.quality && preview?.refined.quality ? preview.refined.quality.score - preview.raw.quality.score : null;
 
@@ -99,10 +130,60 @@ export function OptimizeStep({
 
       {preview && !previewBusy && (
         <>
-          <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-            <Variant title={t.before} cacheKey={`${glyphKey}#preview-raw`} data={preview.raw} />
-            <Variant title={t.after} cacheKey={`${glyphKey}#preview-refined`} data={preview.refined} />
-          </Box>
+          <ToggleButtonGroup size="small" exclusive value={view} onChange={(_e, v: 'side' | 'overlay' | null) => v && setView(v)}>
+            <ToggleButton value="side">{t.viewSide}</ToggleButton>
+            <ToggleButton value="overlay">{t.viewOverlay}</ToggleButton>
+          </ToggleButtonGroup>
+
+          {view === 'side' ? (
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+              <Panel title={t.crop} w={panelW}>
+                <img
+                  src={cropUrl(glyphKey, cropCacheBust)}
+                  alt="crop"
+                  width={panelW}
+                  height={PANEL_H}
+                  style={{ display: 'block', objectFit: 'fill' }}
+                />
+              </Panel>
+              <Panel
+                title={t.before}
+                w={panelW}
+                chip={preview.raw.quality && <Chip size="small" color={scoreColor(preview.raw.quality.score)} label={`${t.score} ${preview.raw.quality.score.toFixed(1)}`} />}
+              >
+                <SilhouetteSvg data={preview.raw} w={panelW} h={PANEL_H} fill="#111" />
+              </Panel>
+              <Panel
+                title={t.after}
+                w={panelW}
+                chip={preview.refined.quality && <Chip size="small" color={scoreColor(preview.refined.quality.score)} label={`${t.score} ${preview.refined.quality.score.toFixed(1)}`} />}
+              >
+                <SilhouetteSvg data={preview.refined} w={panelW} h={PANEL_H} fill="#111" />
+              </Panel>
+            </Box>
+          ) : (
+            <Stack spacing={0.5} sx={{ alignItems: 'flex-start' }}>
+              <Typography variant="caption" color="text.secondary">
+                {t.overlayHeading}
+              </Typography>
+              <Box sx={{ width: panelW, height: PANEL_H, bgcolor: '#fff', border: 1, borderColor: 'divider', position: 'relative' }}>
+                <img
+                  src={cropUrl(glyphKey, cropCacheBust)}
+                  alt="crop"
+                  width={panelW}
+                  height={PANEL_H}
+                  style={{ display: 'block', position: 'absolute', inset: 0, objectFit: 'fill' }}
+                />
+                <Box sx={{ position: 'absolute', inset: 0 }}>
+                  <SilhouetteSvg data={preview.refined} w={panelW} h={PANEL_H} fill="#e02030" fillOpacity={0.45} />
+                </Box>
+              </Box>
+              <Typography variant="caption" color="text.disabled" sx={{ maxWidth: 420 }}>
+                {t.overlayCaption}
+              </Typography>
+            </Stack>
+          )}
+
           {delta != null && (
             <Typography variant="body2" sx={{ fontFamily: 'monospace' }} color={delta >= 0 ? 'success.main' : 'error.main'}>
               {t.delta} {delta >= 0 ? '+' : ''}
@@ -112,28 +193,14 @@ export function OptimizeStep({
         </>
       )}
 
-      {optimizeApplied && <Alert severity="success">{t.applied}</Alert>}
-
-      <Stack direction="row" spacing={1}>
-        <Button
-          size="small"
-          variant="contained"
-          startIcon={busy ? <CircularProgress size={14} color="inherit" /> : <AutoFixHighIcon />}
-          disabled={!draftReady || previewBusy || busy || optimizeApplied}
-          onClick={() => void applyOptimized()}
-        >
-          {t.apply}
-        </Button>
-        <Button
-          size="small"
-          variant="outlined"
-          startIcon={<RefreshIcon />}
-          disabled={!hasDraftSource || previewBusy || busy}
-          onClick={() => void prepareOptimize(nAnchors)}
-        >
-          {t.recompute}
-        </Button>
-      </Stack>
+      {hasDraftSource && (
+        <Box>
+          <ToggleButton value="recompute" size="small" selected={false} disabled={previewBusy} onChange={() => void computePreview(nAnchors)}>
+            <RefreshIcon fontSize="small" />
+            &nbsp;{t.recompute}
+          </ToggleButton>
+        </Box>
+      )}
     </Stack>
   );
 }

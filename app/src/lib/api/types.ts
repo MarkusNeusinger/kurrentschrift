@@ -209,10 +209,14 @@ export interface QualityComparison {
 }
 
 // One variant of the POST .../trace-preview dry run: a DiagnosticData-shaped
-// render payload (WrittenGlyph consumes it directly) plus its quality score.
+// render payload (WrittenGlyph consumes it directly) plus its quality score
+// and the crop-pixel silhouette (per-stroke rings) for the comparison/overlay.
 export interface WrittenPreviewData extends DiagnosticData {
   quality?: QualityData | null;
   refine?: Record<string, unknown> | null;
+  // Per pen-stroke a list of rings (exterior + holes, evenodd) in crop pixels —
+  // drawn beside / over the crop image in the wizard's Optimieren step.
+  silhouette_px?: Array<Array<Array<[number, number]>>>;
 }
 
 // POST .../trace-preview payload: the drawn Weg derived once raw (measured
