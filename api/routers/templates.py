@@ -38,6 +38,22 @@ def _reject_locked_unless_forced(bbox, force: bool) -> None:
         raise HTTPException(423, detail=f"glyph {bbox.glyph_key!r} is locked; pass force=true to overwrite")
 
 
+async def _sync_bbox_anchor_count(bbox, canonical: dict, db: AsyncSession) -> None:
+    """Keep bbox.n_anchors truthful to the canonical that was just derived.
+
+    The derivation count is `n_anchors or DEFAULT_N_ANCHORS`, not bbox.n_anchors
+    — so re-deriving at the recommended density (the bulk "Alle neu ableiten"
+    or a per-glyph "Neu ableiten") leaves the bbox field stale (the wizard's
+    Anker box would still show the old count, and a wizard resample from there
+    would revert the template). Mirror the actual count back; the bbox row is
+    already session-attached, so this is a single targeted UPDATE.
+    """
+    actual = int(canonical.get("trace_meta", {}).get("n_anchors") or len(canonical.get("anchors", [])))
+    if actual and actual != bbox.n_anchors:
+        bbox.n_anchors = actual
+        await db.flush()
+
+
 async def _resolve_style(source: Source, db: AsyncSession) -> tuple[str, list[float], float]:
     """Return (style_id, resolved style_ratio, resolved slant_deg) for a source.
 
@@ -136,6 +152,7 @@ async def post_trace(
     t = await TemplateRepository(db).upsert(
         source.style_id, glyph_key, canonical, variant=payload.variant, provenance_source_id=source.id
     )
+    await _sync_bbox_anchor_count(bbox, canonical, db)
     return _template_to_out(t)
 
 
@@ -209,6 +226,7 @@ async def post_resample(
     t = await TemplateRepository(db).upsert(
         source.style_id, glyph_key, canonical, variant=existing.variant, provenance_source_id=source.id
     )
+    await _sync_bbox_anchor_count(bbox, canonical, db)
     return _template_to_out(t)
 
 
