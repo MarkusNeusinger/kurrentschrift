@@ -368,7 +368,7 @@ Regeln:
 - **Fachbegriffe behalten ihren Namen** (Cookies, PDF, Open Source,
   Schwellzug, Lineatur) — keine Scherzverdeutschungen.
 
-Beispiele (Stand 2026-06, `locales/de/impressum.ts`):
+Beispiele (Stand 2026-06, `app/src/locales/de/impressum.ts`):
 
 | Neutral-modern | Briefton |
 |---|---|

@@ -1,7 +1,7 @@
 // ImpressumView — legal page (/impressum): Impressum, Datenschutz, Quellen &
 // Lizenzen, Transparenz. Same "paper & ink" identity as every public page
 // (PaperBackground + PublicHeader, tokens from styles/paper). All German prose
-// lives in locales/de/impressum.ts; this component is layout only.
+// lives in app/src/locales/de/impressum.ts; this component is layout only.
 //
 // Layout follows the anyplot legal page loosely (portrait next to the operator
 // block, hairline rows for the hosting table) but stays deliberately compact —
