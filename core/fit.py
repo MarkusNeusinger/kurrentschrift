@@ -125,8 +125,12 @@ def _skeleton_points(skel: np.ndarray) -> np.ndarray:
     return np.column_stack([xs.astype(float), ys.astype(float)])
 
 
-def _bilinear(field_map: np.ndarray, px: np.ndarray, py: np.ndarray) -> np.ndarray:
-    """Sample a (H, W) field at float pixel coordinates, clamped to the crop."""
+def bilinear(field_map: np.ndarray, px: np.ndarray, py: np.ndarray) -> np.ndarray:
+    """Sample a (H, W) field at float pixel coordinates, clamped to the crop.
+
+    Public shared facility: `core.quality` reads the same EDT interpolant the
+    optimiser descends, so "converged" and "high score" agree by construction.
+    """
     val, _, _ = _bilinear_with_grad(field_map, px, py)
     return val
 
@@ -395,9 +399,9 @@ def fit_template_to_instance(
         """
         px, py = to_pixels(params)
         ox, oy = out_of_crop(px, py)
-        d_eff = _bilinear(dist_raw, px, py) + np.hypot(ox, oy)
+        d_eff = bilinear(dist_raw, px, py) + np.hypot(ox, oy)
         e_geo = float(np.mean(d_eff**2)) / unit_sq
-        e_wid = float(np.mean((_bilinear(width_raw, px, py) - sw_px) ** 2)) / unit_sq
+        e_wid = float(np.mean((bilinear(width_raw, px, py) - sw_px) ** 2)) / unit_sq
         cdist, _ = cKDTree(np.column_stack([px, py])).query(cov_pts)
         e_cov = float(np.mean(cdist**2)) / unit_sq
         return e_geo, e_wid, e_cov
