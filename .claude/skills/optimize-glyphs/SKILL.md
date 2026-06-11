@@ -7,8 +7,11 @@ description: Autonomous keep/discard experiment loop on the glyph extraction/ren
 
 Iteratively improve the extraction/rendering code in `core/` against a
 fixed, fast, deterministic benchmark (`tools/glyphbench`, see its
-README for fixture format and output contract). Protocol modeled on
-autoresearch (MIT) — protocol ported, no code: one hypothesis → one
+README for fixture format and output contract). The experiment
+protocol is modeled on Andrej Karpathy's autoresearch
+(<https://github.com/karpathy/autoresearch>); only the workflow idea is
+ported, no code was copied — this credit is attribution courtesy, not
+a license obligation. The loop: one hypothesis → one
 commit → one bench run → keep if the metric improved, revert if not →
 loop. The bench re-derives every glyph from the committed chart bytes
 + snapshotted raw traces with the CURRENT code and scores the rendered
