@@ -246,6 +246,12 @@ async def get_quality(glyph_key: str, source: Source = Depends(require_source), 
         raise HTTPException(404, detail=f"no canonical for {glyph_key!r}")
     bbox_dict = _bbox_to_dict(bbox)
     trace_meta = dict(template.trace_meta or {})
+    # Older templates predate the pixel-space trace meta the metric scores —
+    # a clear 409 beats the ValueError-turned-500 the metric would raise.
+    if not trace_meta.get("pixel_anchors") or not trace_meta.get("half_widths_px"):
+        raise HTTPException(
+            409, detail=f"stored template for {glyph_key!r} lacks pixel-space trace meta; resample or re-trace first"
+        )
     raw_path = list(template.raw_path or [])
     glyph, position = template.glyph, template.position
     n_anchors = trace_meta.get("n_anchors") or bbox.n_anchors
