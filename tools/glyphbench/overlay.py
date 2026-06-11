@@ -8,6 +8,8 @@ with the blue edge hugging the red region's border.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 from PIL import Image
 
@@ -18,7 +20,7 @@ SILHOUETTE_RGB = np.array([220.0, 40.0, 40.0], dtype=np.float32)  # rendered tem
 INK_BOUNDARY_RGB = np.array([40.0, 90.0, 220.0], dtype=np.float32)  # frozen reference edge (opaque)
 
 
-def write_overlay_png(path, crop: np.ndarray, pred_mask: np.ndarray, ref_mask: np.ndarray) -> None:
+def write_overlay_png(path: Path | str, crop: np.ndarray, pred_mask: np.ndarray, ref_mask: np.ndarray) -> None:
     """Composite one glyph's bench result into a reviewable PNG."""
     base = (np.clip(crop, 0.0, 1.0) * 255.0).astype(np.float32)
     rgb = np.repeat(base[:, :, None], 3, axis=2)

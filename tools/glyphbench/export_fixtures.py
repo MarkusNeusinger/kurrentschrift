@@ -80,15 +80,25 @@ def _template_dict(template) -> dict:
 
 
 def _dedupe_templates(entries: list[tuple[dict, dict]]) -> tuple[list[tuple[dict, dict, list[str]]], int]:
-    """Collapse identical (glyph, raw_path) fan-out copies to one bench entry.
+    """Collapse identical fan-out copies (same glyph, raw_path AND crop config) to one entry.
 
     The wizard writes the same authored form across initial/medial/final by
     default — benching all three runs the identical computation three times.
-    Returns (kept entries with their covered positions, number dropped).
+    The digest covers everything the bench computation depends on: the raw
+    trace plus the computation-relevant bbox fields (rect, eraser mask,
+    calibration, anchor count) — positions that genuinely differ in any of
+    these stay separate entries. Returns (kept entries with their covered
+    positions, number dropped).
     """
     by_key: dict[tuple[str, str], tuple[dict, dict, list[str]]] = {}  # insertion order = first occurrence
     for template, bbox in sorted(entries, key=lambda e: e[0]["glyph_key"]):
-        digest = hashlib.sha256(json.dumps(template["raw_path"], sort_keys=True).encode()).hexdigest()
+        computation_inputs = {
+            "raw_path": template["raw_path"],
+            "bbox": {
+                k: bbox[k] for k in ("y0", "y1", "x0", "x1", "mask_strokes", "baseline_y", "midband_y", "n_anchors")
+            },
+        }
+        digest = hashlib.sha256(json.dumps(computation_inputs, sort_keys=True).encode()).hexdigest()
         key = (template["glyph"], digest)
         if key in by_key:
             by_key[key][2].append(template["position"])
