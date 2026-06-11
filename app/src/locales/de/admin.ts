@@ -169,6 +169,7 @@ export const admin = {
     statusApplying: 'speichert…',
     statusDone: 'fertig',
     statusFailed: 'Fehler',
+    noRawPath: 'Kein Roh-Weg gespeichert — im Wizard neu zeichnen.',
     summary: '{{improved}} verbessert · {{worse}} verschlechtert · Ø Δ {{mean}}.',
     worseHint: 'Verschlechterte Buchstaben in der Diagnose prüfen — ggf. den Weg neu zeichnen.',
     empty: 'Keine erstellten Glyphen vorhanden.',

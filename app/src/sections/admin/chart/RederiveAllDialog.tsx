@@ -50,9 +50,13 @@ interface RederiveRow {
   error?: string;
 }
 
+// Scores are 0–100 and the table rounds to 0.1 — below half a point is noise,
+// not a meaningful improvement/regression.
+const DELTA_EPSILON = 0.5;
+
 function deltaColor(delta: number): string {
-  if (delta > 0.05) return 'success.main';
-  if (delta < -0.05) return 'error.main';
+  if (delta > DELTA_EPSILON) return 'success.main';
+  if (delta < -DELTA_EPSILON) return 'error.main';
   return 'text.secondary';
 }
 
@@ -99,11 +103,27 @@ export function RederiveAllDialog({ open, onClose }: Props) {
     let applied = 0;
     for (let i = 0; i < work.length; i++) {
       if (cancelRef.current) break;
+      // Scoring and applying are decoupled: older templates without pixel-space
+      // trace meta 409 on /quality, and the re-derive below is exactly what
+      // repairs them — a failed score must not block the apply.
+      let before: number | undefined;
+      let after: number | undefined;
+      let rawPathMissing = false;
+      updateRow(i, { status: 'scoring' });
       try {
-        updateRow(i, { status: 'scoring' });
         const q = await getQuality(work[i].repKey);
-        const before = q.stored.score;
-        const after = q.candidate?.score;
+        before = q.stored.score;
+        after = q.candidate?.score;
+        rawPathMissing = q.candidate == null;
+      } catch {
+        // No before/after columns for this row; still re-derive.
+      }
+      if (rawPathMissing) {
+        // /resample would deterministically 409 without a stored raw_path.
+        updateRow(i, { status: 'failed', before, error: t.noRawPath });
+        continue;
+      }
+      try {
         updateRow(i, { status: 'applying', before, after });
         for (const k of work[i].targets) {
           // force: bulk refresh is the deliberate write the lock guard expects.
@@ -126,8 +146,8 @@ export function RederiveAllDialog({ open, onClose }: Props) {
   };
 
   const doneRows = (rows ?? []).filter((r) => r.status === 'done' && r.before != null && r.after != null);
-  const improved = doneRows.filter((r) => (r.after ?? 0) - (r.before ?? 0) > 0.05).length;
-  const worse = doneRows.filter((r) => (r.after ?? 0) - (r.before ?? 0) < -0.05).length;
+  const improved = doneRows.filter((r) => (r.after ?? 0) - (r.before ?? 0) > DELTA_EPSILON).length;
+  const worse = doneRows.filter((r) => (r.after ?? 0) - (r.before ?? 0) < -DELTA_EPSILON).length;
   const meanDelta = doneRows.length
     ? doneRows.reduce((s, r) => s + ((r.after ?? 0) - (r.before ?? 0)), 0) / doneRows.length
     : 0;
