@@ -35,6 +35,7 @@ The design is already settled in the docs; do not re-litigate decisions that hav
 - `docs/reference/htr-integration.md` — Transkribus API + TrOCR fallback details, PAGE-XML, free-tier logic
 - `docs/reference/animation-rendering.md` — stroke-dashoffset (MVP) and Canvas-2D-stroker (post-MVP) algorithms
 - `docs/reference/styleanalyse.md` — per-instance/per-hand/Hinge-feature layers, heatmap layouts
+- `docs/reference/qualitaetsmetrik.md` — score/bench_loss definition, frozen-reference rule, baseline history, experiment learnings incl. verworfen items (read BEFORE any /optimize-glyphs run or metric question)
 - `docs/reference/frontend-stack.md` — React+Vite+MUI build, deploy, auth, route map
 - `docs/schriftkunde/` — source-backed script facts (lineature, Schräglage convention 90°=upright, nib types, per-script data incl. the measured Loth-1866 slant ~50° vs. 60–70° for Kurrent um 1900)
 
