@@ -202,6 +202,11 @@ cython_debug/
 !/data/corpora/*/fetch_*.py
 /data/derived/from-nc-sa/
 
+# Glyph bench: DB fixture snapshots + per-run artifacts (regenerate via
+# tools/glyphbench/export_fixtures.py; see tools/glyphbench/README.md).
+/tools/glyphbench/fixtures/
+/tools/glyphbench/runs/
+
 # Abstra
 #   Abstra is an AI-powered process automation framework.
 #   Ignore directories containing user credentials, local state, and settings.
