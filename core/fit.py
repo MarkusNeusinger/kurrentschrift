@@ -56,7 +56,12 @@ from core.template import SamplePlan, build_sample_plan, capsule_union_rings, sa
 DEFAULT_LAMBDA_REG = 1.0
 DEFAULT_WIDTH_WEIGHT = 0.15
 DEFAULT_COVERAGE_WEIGHT = 0.3
-DEFAULT_N_SAMPLES = 120
+# Centerline samples for the fit/refine objectives. Bench-tuned with the
+# K=120 anchor default: 180 gives the boundary term ~1.5 edge points per
+# anchor (bench 0.1293->0.1256); requires the sample-count-invariant cap
+# weighting below — under the old shared normaliser denser sampling diluted
+# the cap pull (caught by the cap-reach regression test).
+DEFAULT_N_SAMPLES = 180
 DEFAULT_MAX_ITER = 300
 # Cap per-anchor displacement (in template units) so the fit cannot fold the
 # ductus back on itself — a loose topology guard alongside the Tikhonov term.
@@ -101,8 +106,29 @@ DEFAULT_WIDTH_SMOOTH_WEIGHT = 1e-4
 # boundary gradient is weak (hairlines); crossing-contaminated anchors are
 # exempt (their measurement is an interpolation, not a reading).
 DEFAULT_WIDTH_PRIOR_WEIGHT = 0.05
+# One-sided physical width cap (Spitzfeder mechanics): the tines spread only
+# while PULLING along the pressure axis — off-axis/upstroke widths beyond the
+# direction-dependent cap are measurement artifacts (crossing blobs, stair-step
+# noise), never real ink, because pressing on an up/side stroke digs the nib
+# into the paper. Self-calibrated per glyph (axis = width²-weighted axial mean
+# of the tangents, so wide downstrokes vote); exceedance is penalised
+# one-sidedly — thinner than the cap is always physical. Bench-tuned weight:
+# 0.05 and 0.5 both lose to 0.2 (0.5 starts flattening genuine widths,
+# median IoU 0.893->0.887).
+PRESSURE_CONE_WEIGHT = 0.2
+PRESSURE_CONE_EXP = 2.0
+# Cap term weight relative to the edge term, with SEPARATE normalisers: under
+# a shared normaliser the handful of cap points was diluted whenever the
+# sampling density grew (caught by the cap-reach regression test). 0.02
+# reproduces the per-cap-point pull of the original 120-sample formulation
+# (n_caps/(2·n_edges) ≈ 4/240) independent of the sample count.
+CAP_TERM_WEIGHT = 0.02
 REFINE_OUTER_ROUNDS = 3
-REFINE_MAX_ITER = 100
+# Inner L-BFGS-B budget per round. 100 was sized for ~50 anchors; at the
+# K=120 default the parameter count tripled and 200 measurably converges
+# further (bench 0.1331->0.1324, worst glyph 0.197->0.190). A 4th outer
+# round is a no-op — the 2% early-stop already ends at 3.
+REFINE_MAX_ITER = 200
 # Early-stop when a frozen-normal round improves the honest residual by less
 # than this fraction.
 REFINE_EARLY_STOP_REL = 0.02
@@ -612,6 +638,35 @@ def _unit_tangents_normals(
     return tx, ty, nx, ny
 
 
+def _pressure_cone_cap(anchors: np.ndarray, w0: np.ndarray, stroke_starts: Sequence[int] | None) -> np.ndarray:
+    """Per-anchor upper width bound from Spitzfeder physics (PRESSURE_CONE_WEIGHT).
+
+    The pressure axis is estimated from the data itself: the width²-weighted
+    circular mean of the DOUBLED tangent angles (axial statistics — a stroke
+    and its reverse are the same axis), so the wide downstrokes vote for the
+    axis. The cap interpolates hairline→max width with alignment^p; widths the
+    measurement claims beyond it on off-axis stretches are physically
+    impossible for a pointed nib.
+    """
+    k = len(anchors)
+    bounds = sorted({0, *(int(s) for s in (stroke_starts or []) if 0 < int(s) < k), k})
+    theta = np.zeros(k)
+    for a, b in zip(bounds[:-1], bounds[1:], strict=True):
+        seg = anchors[a:b]
+        if len(seg) < 2:
+            continue
+        g = np.gradient(seg, axis=0)
+        theta[a:b] = np.arctan2(g[:, 1], g[:, 0])
+    weight = w0**2
+    if float(weight.sum()) <= 0.0:
+        return np.full(k, np.inf)
+    axis = 0.5 * np.arctan2(float((weight * np.sin(2 * theta)).sum()), float((weight * np.cos(2 * theta)).sum()))
+    alignment = np.abs(np.cos(theta - axis))
+    w_hair = float(np.percentile(w0, 10))
+    w_max = float(np.percentile(w0, 95)) * 1.1
+    return w_hair + (w_max - w_hair) * alignment**PRESSURE_CONE_EXP
+
+
 def _width_curvature_operator(
     anchors: np.ndarray, stroke_starts: Sequence[int] | None, corner_anchors: Sequence[int] | None
 ) -> np.ndarray:
@@ -665,6 +720,7 @@ class _RefineContext:
     cov_pts: np.ndarray
     crossing_wide: np.ndarray  # crossing-contaminated anchor indices ±1, sorted
     c_prior: np.ndarray  # per-anchor width-prior mask (0 on crossing anchors)
+    w_cap: np.ndarray  # per-anchor physical width cap (pressure cone, template units)
     boundary_weight: float
     coverage_weight: float
     lambda_reg: float
@@ -723,7 +779,10 @@ class _RefineRound:
         self.cap_rows = np.array(cap_rows, dtype=int)
         self.cap_signs = np.array(cap_signs)
         self.n_v = max(1.0, float(self.v.sum()))
-        self.norm_b = max(1.0, 2.0 * float(self.u.sum()) + float(len(cap_rows)))
+        # SEPARATE normalisers: a shared one diluted the handful of cap points
+        # whenever the sampling density grew (see CAP_TERM_WEIGHT).
+        self.norm_edges = max(1.0, 2.0 * float(self.u.sum()))
+        self.norm_caps = max(1.0, float(len(cap_rows)))
 
         self.d2 = _width_curvature_operator(current_anchors, ctx.stroke_starts, ctx.corner_anchors)
         self.m_d2 = max(1, self.d2.shape[0])
@@ -775,21 +834,23 @@ class _RefineRound:
 
         # Boundary: edge points q± on the ink edge (u-weighted)…
         bw = ctx.boundary_weight
-        e_bnd_sum = 0.0
+        e_edge_sum = 0.0
         for sign in (1.0, -1.0):
             energy, dqx, dqy = self._boundary_eval(ctx.sgn_smooth, *self._edge_points(px, py, h, sign))
-            e_bnd_sum += float((self.u * energy).sum())
-            g_px += bw * self.u * dqx / (self.norm_b * unit_sq)
-            g_py += bw * self.u * dqy / (self.norm_b * unit_sq)
-            g_h += bw * sign * self.u * (dqx * self.nx + dqy * self.ny) / (self.norm_b * unit_sq)
-        # …and round caps pulled to the true stroke ends.
+            e_edge_sum += float((self.u * energy).sum())
+            g_px += bw * self.u * dqx / (self.norm_edges * unit_sq)
+            g_py += bw * self.u * dqy / (self.norm_edges * unit_sq)
+            g_h += bw * sign * self.u * (dqx * self.nx + dqy * self.ny) / (self.norm_edges * unit_sq)
+        # …and round caps pulled to the true stroke ends (own normaliser +
+        # CAP_TERM_WEIGHT, so the pull survives any sampling density).
+        cap_scale = CAP_TERM_WEIGHT / (self.norm_caps * unit_sq)
         energy, dqx, dqy = self._boundary_eval(ctx.sgn_smooth, *self._cap_points(px, py, h))
-        e_bnd_sum += float(energy.sum())
+        e_cap_sum = float(energy.sum())
         rows, signs = self.cap_rows, self.cap_signs
-        np.add.at(g_px, rows, bw * dqx / (self.norm_b * unit_sq))
-        np.add.at(g_py, rows, bw * dqy / (self.norm_b * unit_sq))
-        np.add.at(g_h, rows, bw * signs * (dqx * self.tdx[rows] + dqy * self.tdy[rows]) / (self.norm_b * unit_sq))
-        e_bnd = e_bnd_sum / (self.norm_b * unit_sq)
+        np.add.at(g_px, rows, bw * dqx * cap_scale)
+        np.add.at(g_py, rows, bw * dqy * cap_scale)
+        np.add.at(g_h, rows, bw * signs * (dqx * self.tdx[rows] + dqy * self.tdy[rows]) * cap_scale)
+        e_bnd = e_edge_sum / (self.norm_edges * unit_sq) + e_cap_sum * cap_scale
 
         # Coverage: skeleton → template (ICP-frozen assignment).
         pts = np.column_stack([px, py])
@@ -801,11 +862,14 @@ class _RefineRound:
         g_px += ctx.coverage_weight * g_cov[:, 0]
         g_py += ctx.coverage_weight * g_cov[:, 1]
 
-        # Regularisers: anchor Tikhonov, width-profile curvature, width prior.
+        # Regularisers: anchor Tikhonov, width-profile curvature, width prior,
+        # and the one-sided pressure-cone cap (Spitzfeder physics).
         e_reg = float(np.mean(np.sum(da**2, axis=1)))
         r = self.d2 @ (ctx.w0 + dw)
         e_wsm = float((r**2).sum()) / self.m_d2
         e_wpr = float((ctx.c_prior * dw**2).mean())
+        excess = np.maximum(0.0, (ctx.w0 + dw) - ctx.w_cap)
+        e_phys = float((ctx.c_prior * excess**2).mean())
 
         f = (
             e_geo
@@ -814,6 +878,7 @@ class _RefineRound:
             + ctx.lambda_reg * e_reg
             + ctx.width_smooth_weight * e_wsm
             + ctx.width_prior_weight * e_wpr
+            + PRESSURE_CONE_WEIGHT * e_phys
         )
 
         grad = np.empty_like(p)
@@ -825,6 +890,7 @@ class _RefineRound:
             ctx.unit_px * (self.w_op.T @ g_h)
             + ctx.width_smooth_weight * 2.0 * (self.d2.T @ r) / self.m_d2
             + ctx.width_prior_weight * 2.0 * ctx.c_prior * dw / k
+            + PRESSURE_CONE_WEIGHT * 2.0 * ctx.c_prior * excess / k
         )
         return f, grad
 
@@ -835,15 +901,15 @@ class _RefineRound:
         ox, oy = ctx.out_of_crop(px, py)
         d_eff = bilinear(ctx.dist_raw, px, py) + np.hypot(ox, oy)
         geo = float((self.v * d_eff**2).sum() / self.n_v)
-        bnd_sum = 0.0
+        e_edge_sum = 0.0
         for sign in (1.0, -1.0):
             energy, _, _ = self._boundary_eval(ctx.sgn_raw, *self._edge_points(px, py, h, sign))
-            bnd_sum += float((self.u * energy).sum())
+            e_edge_sum += float((self.u * energy).sum())
         energy, _, _ = self._boundary_eval(ctx.sgn_raw, *self._cap_points(px, py, h))
-        bnd_sum += float(energy.sum())
+        bnd = e_edge_sum / self.norm_edges + CAP_TERM_WEIGHT * float(energy.sum()) / self.norm_caps
         cdist, _ = cKDTree(np.column_stack([px, py])).query(ctx.cov_pts)
         cov = float(np.mean(cdist**2))
-        return float(np.sqrt(geo)), float(np.sqrt(bnd_sum / self.norm_b)), float(np.sqrt(cov))
+        return float(np.sqrt(geo)), float(np.sqrt(bnd)), float(np.sqrt(cov))
 
 
 def refine_template_against_crop(
@@ -962,6 +1028,7 @@ def refine_template_against_crop(
         cov_pts=cov_pts,
         crossing_wide=np.array(sorted(crossing_wide), dtype=int),
         c_prior=np.array([0.0 if j in crossing_set else 1.0 for j in range(k)]),
+        w_cap=_pressure_cone_cap(template_anchors, w0, stroke_starts),
         boundary_weight=boundary_weight,
         coverage_weight=coverage_weight,
         lambda_reg=lambda_reg,

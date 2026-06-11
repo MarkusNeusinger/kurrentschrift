@@ -186,6 +186,40 @@ def test_refine_keeps_crossing_widths_resolved(synthetic_bbox, tmp_path):
     assert float(np.max(hw[crossing])) < 13.5  # not the ~17px union blob
 
 
+# ------------------------------------------------------------------ pressure cone
+
+
+def test_pressure_cone_cap_follows_the_pressure_axis():
+    """The physical width cap is maximal along the dominant axis, decays off-axis,
+    and stays within [hairline, max] — Spitzfeder mechanics in numbers.
+    """
+    from core.fit import _pressure_cone_cap
+
+    # Wide vertical downstroke (the pressure axis), a medium 45° diagonal,
+    # and a thin horizontal crossbar — three separate pen strokes.
+    down = np.column_stack([np.zeros(10), np.linspace(2.0, 0.0, 10)])
+    diag = np.column_stack([np.linspace(0.2, 1.2, 10), np.linspace(0.0, 1.0, 10)])
+    across = np.column_stack([np.linspace(0.2, 1.2, 10), np.full(10, 1.5)])
+    anchors = np.concatenate([down, diag, across])
+    w0 = np.concatenate([np.full(10, 0.10), np.full(10, 0.05), np.full(10, 0.02)])
+
+    cap = _pressure_cone_cap(anchors, w0, [0, 10, 20])
+
+    w_hair = float(np.percentile(w0, 10))
+    w_max = float(np.percentile(w0, 95)) * 1.1
+    # (c) bounded by [hairline, max] everywhere.
+    assert float(cap.min()) >= w_hair - 1e-9
+    assert float(cap.max()) <= w_max + 1e-9
+    # (a) highest on the wide (axis-defining) stroke — near the max cap…
+    assert float(cap[:10].min()) > w_hair + 0.75 * (w_max - w_hair)
+    # (b) …decaying with misalignment: diagonal below vertical, crossbar near
+    # the hairline floor (alignment ≈ 0 for the orthogonal direction).
+    assert float(cap[:10].mean()) > float(cap[10:20].mean()) > float(cap[20:].mean())
+    assert float(cap[20:].max()) < w_hair + 0.25 * (w_max - w_hair)
+    # The cap permits every real (measured) width of the wide stroke.
+    assert np.all(cap[:10] >= w0[:10] - 1e-9)
+
+
 # ------------------------------------------------------------------ degenerates
 
 
