@@ -48,6 +48,7 @@ Every layer has a verified feedback-loop skill under `.claude/skills/` — use t
 - `/write-docs` — docs conventions (German, index upkeep, CLAUDE.md ↔ copilot-instructions sync).
 - `/audit-licenses` — license/provenance battery before any `/data` commit and before going public.
 - `/open-pr` — diff → PR. The local gates are a hard precondition (the pipeline must never fail on pytest/ruff); after opening, watch CI **and** the Copilot review, fix sensible findings and resolve the threads. **Never merge unless explicitly asked.**
+- `/optimize-glyphs` — autonomous keep/discard experiment loop on the glyph pipeline: hypothesize → edit `core/` → run the hermetic glyph bench (`tools/glyphbench`, frozen scoring references) → results.tsv → keep or revert. Never touches the DB; the bench/metric/tests are frozen during a run.
 - `/optimize-skills` — periodic retro: mine past session transcripts for recurring friction and fold the patterns back into skills/memory/this file.
 
 Routing is mandatory, not advisory: any "commit/push/PR this" request goes through `/open-pr`; never hand-roll the type-check/build/push/PR/Copilot loop, and check Copilot comments as part of the loop instead of waiting to be asked.
