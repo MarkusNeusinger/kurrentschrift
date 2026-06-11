@@ -429,7 +429,13 @@ pipelines for plot specifications). For now:
   `app/` when the frontend changed. The pipeline should never fail on
   tests or lint. (Claude Code sessions encode these loops as skills
   under `.claude/skills/` — verify-frontend / verify-api / verify-core,
-  write-docs, audit-licenses, open-pr.)
+  write-docs, audit-licenses, open-pr, optimize-glyphs.)
+- **Glyph-pipeline changes are benchmarked:** `tools/glyphbench` scores
+  the rendered silhouette of every authored glyph against frozen
+  references (`uv run python -m tools.glyphbench.run`, headline
+  `bench_loss:` — lower is better). A PR touching `core/` extraction or
+  rendering should quote before/after numbers; the bench never touches
+  the DB (fixtures are exported once, read-only).
 - **Never merge a PR yourself** — open it, get it green and
   review-clean (address Copilot review comments, then resolve the
   threads); merging is the maintainer's call.
