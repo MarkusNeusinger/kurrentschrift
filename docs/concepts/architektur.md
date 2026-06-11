@@ -227,6 +227,44 @@ keine `glyph`-Eigenschaft. Der Renderer (§11) löst sie über den Stil der
 Source auf und wählt den passenden Resolver — die Source kann nur Lineatur
 (`style_ratio`) und Schräge (`slant_deg`) überschreiben, nicht den Resolver.
 
+**Verfeinerung des gezeichneten Wegs (Snap + Kreuzungsauflösung der Breite).**
+Der im Wizard gezeichnete Weg liefert den Duktus-Prior (Strichreihenfolge,
+Absetzpunkte, Auflösung der Kreuzungen, §2), *nicht* die präzise Geometrie —
+die steckt in der Tinte. `core.pipeline.canonical_from_path` zieht die
+resampelten Anker deshalb in zwei Schritten auf die Tinte (beides nicht
+destruktiv: `raw_path` bleibt wie gezeichnet, alles ist re-derivierbar;
+`snap_to_ink=False` schaltet den Snap ab):
+
+- **Medial-Axis-Snap** (`_snap_anchors_to_ink`): nutzt den regularisierten
+  M4-Fit (§7) gegen den *eigenen* Crop des Traces. Auf sauberen Strecken zieht
+  das EDT-Feld die Anker auf die Skelett-Centerline und entfernt das
+  Handzittern; an einer Kreuzung ist das Feld flach und mehrdeutig, dort lässt
+  der Tikhonov-Term den gezeichneten Weg gewinnen — genau da, wo die Zeichnung
+  vertrauenswürdiger ist als der Skelett-Blob. Absetzpunkte werden nie
+  überbrückt.
+- **Kreuzungsauflösung des Breitenkanals** (`_resolve_crossing_widths`): An
+  einer Kreuzung misst die `distance_transform_edt` den *Vereinigungs-Blob*
+  beider Durchgänge statt des Strichs, zu dem der Anker gehört — das
+  Breitenprofil franst vor und nach der Kreuzung aus (und *sieht* erst sauber
+  aus, sobald der zweite Strich die Aufdickung optisch verdeckt; der
+  gespeicherte Wert bleibt falsch). Wie die Geometrie wird auch die Breite über
+  den Prior aufgelöst: Eine Messung gilt als kontaminiert, wenn ein anderer
+  Durchgang des Traces nah, *entlang der Bahn weit entfernt* **und transversal**
+  ist; kontaminierte Läufe werden aus den sauberen Breiten links und rechts
+  interpoliert, pro Durchgang durch die Kreuzung.
+
+**Sonderfall Retrace (gleicher Weg hin und zurück).** Läuft ein Durchgang
+(anti)parallel über dieselbe Tinte (Retrace, z. B. schmaler Aufstrich über dem
+breiten Abstrich — der Schwellzug der Spitzfeder), ist er *keine* Kreuzung: die
+gemessene Breite ist echt und bleibt erhalten (Winkelschwelle
+`CROSSING_MIN_ANGLE_DEG`). **Bekannte Grenze:** Der gemessene Wert ist die
+Vereinigung beider Durchgänge, also die *Abstrich*-Breite; der Haarstrich
+darunter ist im Standbild unsichtbar. Beide Durchgänge bekommen die
+Union-Breite — fürs Rendern identisch, fürs Breitenprofil eine Überzeichnung
+des Aufstrichs. Die Trennung braucht einen *richtungsabhängigen Breiten-Prior*
+(Strichbreite über Laufwinkel + Laufrichtung, aggregiert über mehrere Glyphen)
+— Post-MVP-Aufgabe in §12.
+
 ---
 
 ## 6. Qualitätspipeline (dreistufig, jede Stufe nachvollziehbar)
@@ -497,6 +535,18 @@ Profile. Derselbe §6 deckt Hände nebeneinander vergleichen mit Heatmaps ab.
    Identification. Speicherung als Source-Level-Vector. Optional zusätzlich
    EfficientNet/ResNet-Embeddings (Triplet-Loss) für Hand-Ähnlichkeits-
    Suche — ML, nur wenn Bedarf da ist.
+
+**Richtungsabhängiger Breiten-Prior (Folgearbeit aus §5).** Aus Schicht 1+2
+lässt sich ohne Schema-Änderung eine Verteilung *Strichbreite über Laufwinkel
++ Laufrichtung* sammeln (die Anker liegen in Schreibreihenfolge mit Halbbreiten
+vor, Tangente und Richtung sind daraus ableitbar). Zwei Anwendungen: (a) den im
+Standbild unsichtbaren Aufstrich eines Retrace mit der Haarstrich-Breite aus der
+Verteilung belegen statt mit der gemessenen Union-Breite (löst die in §5
+benannte Grenze); (b) als Plausibilitätscheck für die interpolierten
+Kreuzungs-Breiten und zum Flaggen von Profil-Ausreißern. Der Prior ist eine
+*Stil*-Eigenschaft — für Kurrent (Spitzfeder, druckabhängig) wertvoll, für
+Sütterlin (konstante Breite per Resolver) per Definition unnötig. Braucht eine
+belastbare Datenbasis (mehrere autorisierte Glyphen mit Weg), daher Post-MVP.
 
 **Heatmap-Output:**
 
