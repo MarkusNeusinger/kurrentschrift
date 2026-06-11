@@ -110,6 +110,12 @@ DEFAULT_WIDTH_PRIOR_WEIGHT = 0.05
 # one-sidedly — thinner than the cap is always physical.
 PRESSURE_CONE_WEIGHT = 0.05
 PRESSURE_CONE_EXP = 2.0
+# Cap term weight relative to the edge term, with SEPARATE normalisers: under
+# a shared normaliser the handful of cap points was diluted whenever the
+# sampling density grew (caught by the cap-reach regression test). 0.02
+# reproduces the per-cap-point pull of the original 120-sample formulation
+# (n_caps/(2·n_edges) ≈ 4/240) independent of the sample count.
+CAP_TERM_WEIGHT = 0.02
 REFINE_OUTER_ROUNDS = 3
 REFINE_MAX_ITER = 200
 # Early-stop when a frozen-normal round improves the honest residual by less
@@ -762,7 +768,10 @@ class _RefineRound:
         self.cap_rows = np.array(cap_rows, dtype=int)
         self.cap_signs = np.array(cap_signs)
         self.n_v = max(1.0, float(self.v.sum()))
-        self.norm_b = max(1.0, 2.0 * float(self.u.sum()) + float(len(cap_rows)))
+        # SEPARATE normalisers: a shared one diluted the handful of cap points
+        # whenever the sampling density grew (see CAP_TERM_WEIGHT).
+        self.norm_edges = max(1.0, 2.0 * float(self.u.sum()))
+        self.norm_caps = max(1.0, float(len(cap_rows)))
 
         self.d2 = _width_curvature_operator(current_anchors, ctx.stroke_starts, ctx.corner_anchors)
         self.m_d2 = max(1, self.d2.shape[0])
@@ -814,21 +823,23 @@ class _RefineRound:
 
         # Boundary: edge points q± on the ink edge (u-weighted)…
         bw = ctx.boundary_weight
-        e_bnd_sum = 0.0
+        e_edge_sum = 0.0
         for sign in (1.0, -1.0):
             energy, dqx, dqy = self._boundary_eval(ctx.sgn_smooth, *self._edge_points(px, py, h, sign))
-            e_bnd_sum += float((self.u * energy).sum())
-            g_px += bw * self.u * dqx / (self.norm_b * unit_sq)
-            g_py += bw * self.u * dqy / (self.norm_b * unit_sq)
-            g_h += bw * sign * self.u * (dqx * self.nx + dqy * self.ny) / (self.norm_b * unit_sq)
-        # …and round caps pulled to the true stroke ends.
+            e_edge_sum += float((self.u * energy).sum())
+            g_px += bw * self.u * dqx / (self.norm_edges * unit_sq)
+            g_py += bw * self.u * dqy / (self.norm_edges * unit_sq)
+            g_h += bw * sign * self.u * (dqx * self.nx + dqy * self.ny) / (self.norm_edges * unit_sq)
+        # …and round caps pulled to the true stroke ends (own normaliser +
+        # CAP_TERM_WEIGHT, so the pull survives any sampling density).
+        cap_scale = CAP_TERM_WEIGHT / (self.norm_caps * unit_sq)
         energy, dqx, dqy = self._boundary_eval(ctx.sgn_smooth, *self._cap_points(px, py, h))
-        e_bnd_sum += float(energy.sum())
+        e_cap_sum = float(energy.sum())
         rows, signs = self.cap_rows, self.cap_signs
-        np.add.at(g_px, rows, bw * dqx / (self.norm_b * unit_sq))
-        np.add.at(g_py, rows, bw * dqy / (self.norm_b * unit_sq))
-        np.add.at(g_h, rows, bw * signs * (dqx * self.tdx[rows] + dqy * self.tdy[rows]) / (self.norm_b * unit_sq))
-        e_bnd = e_bnd_sum / (self.norm_b * unit_sq)
+        np.add.at(g_px, rows, bw * dqx * cap_scale)
+        np.add.at(g_py, rows, bw * dqy * cap_scale)
+        np.add.at(g_h, rows, bw * signs * (dqx * self.tdx[rows] + dqy * self.tdy[rows]) * cap_scale)
+        e_bnd = e_edge_sum / (self.norm_edges * unit_sq) + e_cap_sum * cap_scale
 
         # Coverage: skeleton → template (ICP-frozen assignment).
         pts = np.column_stack([px, py])
@@ -879,15 +890,15 @@ class _RefineRound:
         ox, oy = ctx.out_of_crop(px, py)
         d_eff = bilinear(ctx.dist_raw, px, py) + np.hypot(ox, oy)
         geo = float((self.v * d_eff**2).sum() / self.n_v)
-        bnd_sum = 0.0
+        e_edge_sum = 0.0
         for sign in (1.0, -1.0):
             energy, _, _ = self._boundary_eval(ctx.sgn_raw, *self._edge_points(px, py, h, sign))
-            bnd_sum += float((self.u * energy).sum())
+            e_edge_sum += float((self.u * energy).sum())
         energy, _, _ = self._boundary_eval(ctx.sgn_raw, *self._cap_points(px, py, h))
-        bnd_sum += float(energy.sum())
+        bnd = e_edge_sum / self.norm_edges + CAP_TERM_WEIGHT * float(energy.sum()) / self.norm_caps
         cdist, _ = cKDTree(np.column_stack([px, py])).query(ctx.cov_pts)
         cov = float(np.mean(cdist**2))
-        return float(np.sqrt(geo)), float(np.sqrt(bnd_sum / self.norm_b)), float(np.sqrt(cov))
+        return float(np.sqrt(geo)), float(np.sqrt(bnd)), float(np.sqrt(cov))
 
 
 def refine_template_against_crop(
