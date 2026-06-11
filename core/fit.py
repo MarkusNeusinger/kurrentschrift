@@ -905,6 +905,8 @@ def refine_template_against_crop(
         raise ValueError("need at least 2 template anchors to refine")
     if unit_px <= 0:
         raise ValueError(f"unit_px must be positive, got {unit_px}")
+    if outer_rounds < 1:
+        raise ValueError(f"outer_rounds must be at least 1, got {outer_rounds}")
     skel_pts = _skeleton_points(skel)
     if len(skel_pts) == 0:
         raise ValueError("instance skeleton is empty — nothing to refine against")

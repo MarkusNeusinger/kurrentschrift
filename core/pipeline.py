@@ -191,7 +191,7 @@ def _resample_polyline_with_knots(points: np.ndarray, n: int, knots_s: list[floa
     parts: list[np.ndarray] = []
     knot_indices: list[int] = []
     count = 0
-    for i, (a, b, k) in enumerate(zip(bounds_s[:-1], bounds_s[1:], alloc, strict=False)):
+    for i, (a, b, k) in enumerate(zip(bounds_s[:-1], bounds_s[1:], alloc, strict=True)):
         inner = points[(s > a) & (s < b)]
         sub = np.vstack([_point_at_arc(points, s, a), *inner, _point_at_arc(points, s, b)])
         resampled, _ = _resample_polyline(sub, max(2, k))
