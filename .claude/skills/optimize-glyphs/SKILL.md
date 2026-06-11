@@ -55,7 +55,10 @@ first row with status `keep` and description `baseline`.
    small improvement that adds complexity is not worth it; deletions
    that hold the metric are always wins.
 2. **Edit** the allowed `core/` files.
-3. **Commit before running**: `git commit -am "bench: <hypothesis>"`.
+3. **Commit before running**: `git add -A && git commit -m "bench: <hypothesis>"`
+   — stage everything (`-am` misses newly added files; an uncommitted
+   file influencing the bench survives the discard-revert and poisons
+   later runs).
 4. **Run**:
    `uv run python -m tools.glyphbench.run > tools/glyphbench/runs/<tag>/run.log 2>&1`
 5. **Parse**: `grep "^bench_loss:" tools/glyphbench/runs/<tag>/run.log`
@@ -70,7 +73,10 @@ first row with status `keep` and description `baseline`.
    `commit  bench_loss  median_iou  worst_glyph  runtime_s  status  description`
    (status: `keep` | `discard` | `crash`).
 8. **Decide**: bench_loss strictly lower than the best kept row → keep
-   the commit; otherwise `git reset --hard HEAD~1`.
+   the commit; otherwise `git reset --hard HEAD~1 && git clean -fd` —
+   the clean removes untracked leftovers that would leak into the next
+   iteration (gitignored paths like `runs/` and `fixtures/` are not
+   touched by `clean -fd`).
 
 Run autonomously — do not stop to ask between iterations. Stop when
 the user interrupts, when ideas are exhausted (several discards in a
