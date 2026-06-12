@@ -30,14 +30,32 @@ export const wizard = {
     fit: 'Anpassen',
   },
   mask: {
-    title: 'Schritt 1 · Ausschluss (Radierer)',
+    title: 'Schritt 1 · Ausschluss & Tinte',
     body1:
       'Auf den Lehrtafeln stehen die Buchstaben dicht beieinander — ragt Tinte vom Nachbarn in diesen Ausschnitt, verfälscht sie später Skelett und Anker. Mit dem Pinsel direkt über die störenden Stellen malen; das Übermalte wird vor der Skelettberechnung entfernt.',
     body2: 'Nur fremde Tinte ausschließen — vom eigentlichen Buchstaben nichts wegradieren.',
+    // Tool toggle: the eraser blanks neighbour ink, the ink brush fills specks.
+    toolEraser: 'Radierer',
+    toolInk: 'Tinte',
+    // Shown when the ink brush is selected (replaces body1/2).
+    inkBody:
+      'Mit der Tinte weiße Flecken in einem sonst durchgehenden Strich auffüllen — das Gegenstück zum Radierer. Das Übermalte zählt vor der Skelettberechnung als Tinte.',
     // Followed by "{radius}px".
     brushSize: 'Pinselgröße:',
     // Followed by the stroke count "(…)".
     undo: 'Letzten Strich zurück',
+    // Per-glyph speck auto-fill slider. Followed by the value or "aus" at 0.
+    fillHoles: 'Lücken füllen:',
+    fillHolesOff: 'aus',
+    fillHolesHint:
+      'Füllt kleine eingeschlossene weiße Flecken automatisch (bis zur eingestellten Fleckgröße); echte Punzen bleiben offen. Pro Buchstabe — aus, wenn es mehr schadet als hilft.',
+    // "Maske zeigen" preview: swaps the raw scan for the binarised mask, with a
+    // legend so the auto-fill result and the gaps still to ink are readable.
+    showMask: 'Maske zeigen',
+    showMaskHint: 'Zeigt, was das Skelett sieht — so wird die Füllung sichtbar und du erkennst, wo noch Tinte fehlt.',
+    legendInk: 'Tinte',
+    legendAuto: 'automatisch gefüllt',
+    legendGap: 'Lücke → tinten',
   },
   lineatur: {
     title: 'Schritt 2 · Lineatur',

@@ -10,11 +10,13 @@ export function bboxInFromOut(b: BboxOut): BboxIn {
     x0: b.x0,
     x1: b.x1,
     mask_strokes: b.mask_strokes,
+    ink_strokes: b.ink_strokes,
     baseline_y: b.baseline_y,
     midband_y: b.midband_y,
     n_anchors: b.n_anchors,
     guides: b.guides,
     locked: b.locked,
     split: b.split,
+    fill_holes_max_area: b.fill_holes_max_area,
   };
 }

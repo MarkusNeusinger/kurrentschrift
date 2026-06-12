@@ -493,7 +493,7 @@ def canonical_from_path(
 
     chart_gray = load_chart_grayscale(chart_path)
     crop = crop_with_mask(chart_gray, bbox, fill=1.0)
-    mask = binarize_adaptive(crop)
+    mask = binarize_adaptive(crop, fill_holes_max_area=int(bbox.get("fill_holes_max_area") or 0))
     skel, width_map = skeleton_and_width(mask)
 
     x0, y0 = bbox["x0"], bbox["y0"]
@@ -770,7 +770,7 @@ def diagnostic_for_glyph(
     """
     chart_gray = load_chart_grayscale(chart_path)
     crop = crop_with_mask(chart_gray, bbox, fill=1.0)
-    mask = binarize_adaptive(crop)
+    mask = binarize_adaptive(crop, fill_holes_max_area=int(bbox.get("fill_holes_max_area") or 0))
     skel, _ = skeleton_and_width(mask)
 
     h, w = crop.shape

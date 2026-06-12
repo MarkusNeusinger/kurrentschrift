@@ -20,10 +20,11 @@
 // in the admin context.
 //
 // The crop canvas carries a shared zoom/pan on every step (wheel or the floating
-// −/slider/+ control; Schwenken toggle or a wheel-zoomed drag to pan). It opens
-// pre-zoomed (defaultZoomFor) so a small letter — a fresh bbox seeds its x-height
-// band at only ~35 % of the box height — already fills the frame on Ausschluss
-// instead of sitting tiny in the middle; Anpassen returns to the full crop.
+// −/slider/+ control; Schwenken toggle or a wheel-zoomed drag to pan). Ausschluss
+// opens fit-to-view so the whole crop incl. the box edges (where a neighbour's ink
+// pokes in) is visible; the tracing steps then auto-zoom (defaultZoomFor) so a
+// small letter — a fresh bbox seeds its x-height band at only ~35 % of the box
+// height — fills the frame for the stylus. Anpassen returns to the full crop.
 //
 // This file is only the Dialog shell (title, Stepper, canvas-vs-panel layout,
 // footer); the state + mutations live in useWizard, the viewport in useCropView,
@@ -56,7 +57,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
   const theme = useTheme();
   const compact = useMediaQuery(theme.breakpoints.down('md'));
 
-  const view = useCropView(bbox, glyphKey, open);
+  const view = useCropView(bbox, glyphKey, open, stepId);
 
   if (!source || !bbox || !known) return null;
 
@@ -64,7 +65,20 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
   const panel = (() => {
     switch (stepId) {
       case 'mask':
-        return <MaskStep bbox={bbox} maskRadius={wizard.maskRadius} setMaskRadius={wizard.setMaskRadius} undoMask={wizard.undoMask} />;
+        return (
+          <MaskStep
+            bbox={bbox}
+            maskRadius={wizard.maskRadius}
+            setMaskRadius={wizard.setMaskRadius}
+            tool={wizard.tool}
+            setTool={wizard.setTool}
+            showMask={wizard.showMask}
+            setShowMask={wizard.setShowMask}
+            undoMask={wizard.undoMask}
+            undoInk={wizard.undoInk}
+            setFillHoles={wizard.setFillHoles}
+          />
+        );
       case 'lineatur':
         return <LineaturStep bbox={bbox} source={source} guideVals={wizard.guideVals} updateGuides={wizard.updateGuides} />;
       case 'slant':
@@ -148,6 +162,8 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
               view={view}
               cropCacheBust={wizard.cropCacheBust}
               maskRadius={wizard.maskRadius}
+              tool={wizard.tool}
+              showMask={wizard.showMask}
               strokes={wizard.strokes}
               setStrokes={wizard.setStrokes}
               savedTrace={wizard.savedTrace}
@@ -155,6 +171,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
               commitCalib={wizard.commitCalib}
               commitSlant={wizard.commitSlant}
               commitMaskStroke={wizard.commitMaskStroke}
+              commitInkStroke={wizard.commitInkStroke}
             />
             {/* On mobile this drops below the canvas with a capped, scrollable
                 height so the crop above it always stays visible. */}

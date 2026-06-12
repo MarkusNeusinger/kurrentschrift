@@ -121,6 +121,11 @@ class BboxIn(BaseModel):
     x0: int
     x1: int
     mask_strokes: list[MaskStroke] = Field(default_factory=list)
+    # Manual ink brush (German: Tinten-Pinsel): the eraser's positive twin, same
+    # {points, radius} shape (reuses MaskStroke), painted as ink before
+    # binarisation. Replace-semantics like mask_strokes (the client resends the
+    # full list each save).
+    ink_strokes: list[MaskStroke] = Field(default_factory=list)
     baseline_y: int
     midband_y: int
     # Bounded server-side (the client clamps too): below 4 the resampler breaks
@@ -142,6 +147,10 @@ class BboxIn(BaseModel):
     # Optional so an omitted value preserves the stored flag, like `locked`.
     # Written fanned out across the three sibling positions; see put_bbox.
     split: bool | None = None
+    # Per-glyph speck auto-fill (German: Lücken füllen): max enclosed-hole area
+    # (px²) to swallow before skeletonisation; 0 = off. Optional so an omitted
+    # value preserves the stored setting, like `locked`. See put_bbox.
+    fill_holes_max_area: int | None = Field(default=None, ge=0, le=10000)
 
 
 class BboxOut(BboxIn):
@@ -152,6 +161,7 @@ class BboxOut(BboxIn):
     guides: GuideConfig
     locked: bool
     split: bool
+    fill_holes_max_area: int
 
 
 # ----------------------------------------------------------------------- Template

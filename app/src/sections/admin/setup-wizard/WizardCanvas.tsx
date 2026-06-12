@@ -35,6 +35,8 @@ export function WizardCanvas({
   view,
   cropCacheBust,
   maskRadius,
+  tool,
+  showMask,
   strokes,
   setStrokes,
   savedTrace,
@@ -42,6 +44,7 @@ export function WizardCanvas({
   commitCalib,
   commitSlant,
   commitMaskStroke,
+  commitInkStroke,
 }: {
   glyphKey: string;
   open: boolean;
@@ -53,6 +56,8 @@ export function WizardCanvas({
   view: CropView;
   cropCacheBust: number;
   maskRadius: number;
+  tool: 'eraser' | 'ink';
+  showMask: boolean;
   strokes: StrokePoint[][];
   setStrokes: Dispatch<SetStateAction<StrokePoint[][]>>;
   savedTrace: SavedTraceOverlay | null;
@@ -60,6 +65,7 @@ export function WizardCanvas({
   commitCalib: CommitCalib;
   commitSlant: CommitSlant;
   commitMaskStroke: CommitMaskStroke;
+  commitInkStroke: CommitMaskStroke;
 }) {
   const { hostRef, hostSize, userZoom, panX, panY, setPanX, setPanY, panning, setPanning, scale, displayW, displayH, applyZoom, zoomBy, fitZoom, cssToChart } = view;
 
@@ -67,6 +73,10 @@ export function WizardCanvas({
   // capture; the strokes themselves live in useWizard.
   const [drawing, setDrawing] = useState(false);
   const [maskDraft, setMaskDraft] = useState<Array<[number, number]> | null>(null);
+  // Live eraser cursor (chart coords): a ring drawn at the pointer on the
+  // Ausschluss step so the brush's real footprint relative to the crop is visible
+  // before painting — and it resizes live as the radius slider changes.
+  const [hoverPt, setHoverPt] = useState<{ x: number; y: number } | null>(null);
   const [calibDrag, setCalibDrag] = useState<{ field: CalibField; curY: number } | null>(null);
   // Which slant line is being dragged (index into slant_xs) and its live x.
   const [slantDrag, setSlantDrag] = useState<{ index: number; curX: number } | null>(null);
@@ -79,6 +89,7 @@ export function WizardCanvas({
   useEffect(() => {
     setDrawing(false);
     setMaskDraft(null);
+    setHoverPt(null);
     setCalibDrag(null);
     setSlantDrag(null);
     setPanDrag(null);
@@ -97,6 +108,7 @@ export function WizardCanvas({
       const { x, y } = cssToChart(e.clientX, e.clientY, e.currentTarget);
       if (stepId === 'mask') {
         e.preventDefault();
+        setHoverPt({ x, y });
         setMaskDraft([[x, y]]);
         e.currentTarget.setPointerCapture(e.pointerId);
       } else if (stepId === 'weg') {
@@ -121,6 +133,7 @@ export function WizardCanvas({
         return;
       }
       const { x, y } = cssToChart(e.clientX, e.clientY, e.currentTarget);
+      if (stepId === 'mask') setHoverPt({ x, y });
       if (calibDrag) {
         setCalibDrag({ ...calibDrag, curY: Math.round(y) });
         return;
@@ -169,11 +182,11 @@ export function WizardCanvas({
     if (stepId === 'mask' && maskDraft) {
       const points = maskDraft;
       setMaskDraft(null);
-      await commitMaskStroke(points);
+      await (tool === 'ink' ? commitInkStroke : commitMaskStroke)(points);
       return;
     }
     if (stepId === 'weg') setDrawing(false);
-  }, [panDrag, calibDrag, slantDrag, stepId, maskDraft, commitCalib, commitSlant, commitMaskStroke]);
+  }, [panDrag, calibDrag, slantDrag, stepId, maskDraft, tool, commitCalib, commitSlant, commitMaskStroke, commitInkStroke]);
 
   // ------------------------------------------------------------- geometry (css)
   const baselineCss = (bbox.baseline_y - bbox.y0) * scale;
@@ -199,6 +212,32 @@ export function WizardCanvas({
   const toLocal = (pts: Array<[number, number]>) =>
     pts.map(([x, y]) => `${(x - bbox.x0) * scale},${(y - bbox.y0) * scale}`).join(' ');
 
+  // Render one committed brush stroke (eraser or ink). A single-point stroke is
+  // a tap/dab — it bakes into the crop as a disc but a 1-point <polyline> draws
+  // nothing, so it gets a <circle> instead (otherwise taps show no overlay).
+  const renderStroke = (m: { points: Array<[number, number]>; radius: number }, key: string, color: string) => {
+    if (m.points.length >= 2) {
+      return (
+        <polyline
+          key={key}
+          points={toLocal(m.points)}
+          fill="none"
+          stroke={color}
+          strokeOpacity={0.55}
+          strokeWidth={Math.max(1, m.radius * 2 * scale)}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ pointerEvents: 'none' }}
+        />
+      );
+    }
+    const p = m.points[0];
+    if (!p) return null;
+    return (
+      <circle key={key} cx={(p[0] - bbox.x0) * scale} cy={(p[1] - bbox.y0) * scale} r={Math.max(0.5, m.radius * scale)} fill={color} fillOpacity={0.55} style={{ pointerEvents: 'none' }} />
+    );
+  };
+
   return (
     <Box ref={hostRef} sx={{ flex: 1, minHeight: 0, position: 'relative', bgcolor: overlay.canvasBg, overflow: 'hidden' }}>
       {displayW > 0 && (
@@ -213,7 +252,7 @@ export function WizardCanvas({
           }}
         >
           <img
-            src={cropUrl(source.id, glyphKey, cropCacheBust)}
+            src={cropUrl(source.id, glyphKey, cropCacheBust, stepId === 'mask' && showMask ? 'mask' : undefined)}
             alt={known.label}
             width={displayW}
             height={displayH}
@@ -237,7 +276,13 @@ export function WizardCanvas({
               setCalibDrag(null);
               setSlantDrag(null);
               setMaskDraft(null);
+              setHoverPt(null);
               setDrawing(false);
+            }}
+            // Hide the eraser ring when the pointer leaves the crop — but not
+            // mid-stroke (capture keeps the draft alive past the edge).
+            onPointerLeave={() => {
+              if (!maskDraft) setHoverPt(null);
             }}
           >
             {/* Lineature guides — hidden on the Ausschluss step (the eraser works
@@ -337,11 +382,27 @@ export function WizardCanvas({
                 />
               ))}
 
-            {/* Eraser strokes (committed + in-progress) */}
-            {bbox.mask_strokes.map((m, i) => (
-              <polyline key={i} points={toLocal(m.points)} fill="none" stroke={overlay.eraser} strokeOpacity={0.55} strokeWidth={Math.max(1, m.radius * 2 * scale)} strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: 'none' }} />
-            ))}
-            {maskDraft && <polyline points={toLocal(maskDraft)} fill="none" stroke={overlay.eraser} strokeOpacity={0.8} strokeWidth={Math.max(1, maskRadius * 2 * scale)} strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: 'none' }} />}
+            {/* Eraser strokes (Radierer) — committed; taps render as discs */}
+            {bbox.mask_strokes.map((m, i) => renderStroke(m, `m${i}`, overlay.eraser))}
+            {/* Ink strokes (Tinte) — committed */}
+            {bbox.ink_strokes.map((m, i) => renderStroke(m, `ink-${i}`, overlay.ink))}
+            {/* In-progress brush stroke — coloured by the active tool */}
+            {maskDraft && <polyline points={toLocal(maskDraft)} fill="none" stroke={tool === 'ink' ? overlay.ink : overlay.eraser} strokeOpacity={0.8} strokeWidth={Math.max(1, maskRadius * 2 * scale)} strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: 'none' }} />}
+            {/* Brush cursor: a ring at the pointer sized to the real footprint
+                (radius in chart px → CSS px via scale), coloured by the tool. */}
+            {stepId === 'mask' && !panning && hoverPt && (
+              <circle
+                cx={(hoverPt.x - bbox.x0) * scale}
+                cy={(hoverPt.y - bbox.y0) * scale}
+                r={maskRadius * scale}
+                fill={tool === 'ink' ? overlay.ink : overlay.eraser}
+                fillOpacity={0.12}
+                stroke={tool === 'ink' ? overlay.ink : overlay.eraser}
+                strokeOpacity={0.9}
+                strokeWidth={1}
+                style={{ pointerEvents: 'none' }}
+              />
+            )}
 
             {/* Saved Weg + anchors (faint reference, toggleable): the committed
                 canonical under the in-progress draft. The raw path is in chart

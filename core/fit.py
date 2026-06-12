@@ -1175,7 +1175,7 @@ def fit_glyph_to_crop(
 
     chart_gray = load_chart_grayscale(chart_path)
     crop = crop_with_mask(chart_gray, bbox, fill=1.0)
-    mask = binarize_adaptive(crop)
+    mask = binarize_adaptive(crop, fill_holes_max_area=int(bbox.get("fill_holes_max_area") or 0))
     skel, width_map = skeleton_and_width(mask)
 
     baseline_y = int(bbox["baseline_y"])

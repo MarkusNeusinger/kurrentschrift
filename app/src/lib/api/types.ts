@@ -68,6 +68,9 @@ export interface BboxOut {
   x0: number;
   x1: number;
   mask_strokes: MaskStroke[];
+  // Manual ink brush (German: Tinten-Pinsel): the eraser's positive twin, same
+  // {points, radius} shape, painted as ink before binarisation.
+  ink_strokes: MaskStroke[];
   baseline_y: number;
   midband_y: number;
   n_anchors: number;
@@ -81,6 +84,9 @@ export interface BboxOut {
   // are authored/locked/quizzed independently. Stored on all three sibling rows
   // and read with `.some` via isLetterSplit (constants.ts). See the wizard.
   split: boolean;
+  // Per-glyph speck auto-fill (German: Lücken füllen): max enclosed-hole area
+  // (px²) filled before skeletonisation; 0 = off.
+  fill_holes_max_area: number;
 }
 
 export interface BboxIn {
@@ -89,6 +95,7 @@ export interface BboxIn {
   x0: number;
   x1: number;
   mask_strokes: MaskStroke[];
+  ink_strokes: MaskStroke[];
   baseline_y: number;
   midband_y: number;
   n_anchors: number;
@@ -98,6 +105,8 @@ export interface BboxIn {
   // Optional so an omitted value preserves the stored flag (mirrors locked).
   // Written fanned out across the three sibling positions; see the wizard.
   split?: boolean;
+  // Optional so an omitted value preserves the stored setting (mirrors locked).
+  fill_holes_max_area?: number;
 }
 
 export interface StrokePoint {

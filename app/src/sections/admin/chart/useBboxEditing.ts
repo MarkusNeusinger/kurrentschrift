@@ -154,6 +154,7 @@ export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseB
       x1,
       y1,
       mask_strokes: [],
+      ink_strokes: [],
       baseline_y: current?.baseline_y ?? Math.round(y0 + h * NEW_BBOX_BASELINE_RATIO),
       midband_y: current?.midband_y ?? Math.round(y0 + h * NEW_BBOX_MIDBAND_RATIO),
       n_anchors: current?.n_anchors ?? NEW_BBOX_N_ANCHORS,
@@ -209,18 +210,28 @@ export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseB
 
   const deleteActive = useCallback(async () => {
     if (!activeGlyph || !(activeGlyph in bboxesByKey)) return;
-    const hasGlyph = glyphsByKey[activeGlyph]?.has_data === true;
+    // Scope mirrors the lock: a unified letter deletes all three positions (the
+    // fan-out), a split letter only the active one — so "delete" is a clean
+    // restart of exactly the unit the lock treats as one. Otherwise deleting
+    // a-initial leaves a-medial/a-final standing and the letter looks half-gone.
+    const split = isLetterSplit(activeGlyph, bboxesByKey);
+    const scope = (split ? [activeGlyph] : siblingKeys(activeGlyph)).filter((k) => k in bboxesByKey);
+    const anyCanonical = scope.some((k) => glyphsByKey[k]?.has_data === true);
     const ok = window.confirm(
-      `${fmt(de.admin.snack.deleteConfirm, { glyph: activeGlyph })}${hasGlyph ? de.admin.snack.deleteConfirmCanonical : ''}`,
+      `${fmt(de.admin.snack.deleteConfirm, { glyph: activeGlyph })}` +
+        `${scope.length > 1 ? de.admin.snack.deleteConfirmScope : ''}` +
+        `${anyCanonical ? de.admin.snack.deleteConfirmCanonical : ''}`,
     );
     if (!ok) return;
     try {
-      if (hasGlyph) {
-        await deleteGlyph(sourceId, activeGlyph);
-        removeGlyph(activeGlyph);
+      for (const key of scope) {
+        if (glyphsByKey[key]?.has_data === true) {
+          await deleteGlyph(sourceId, key);
+          removeGlyph(key);
+        }
+        await deleteBbox(sourceId, key);
+        removeBbox(key);
       }
-      await deleteBbox(sourceId, activeGlyph);
-      removeBbox(activeGlyph);
       setSnack(fmt(de.admin.snack.deleted, { glyph: activeGlyph }));
     } catch (err) {
       setSnack(`${de.admin.snack.deleteFailed} ${err}`);

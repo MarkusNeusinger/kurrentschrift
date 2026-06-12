@@ -13,6 +13,8 @@ export const overlay = {
   idle: '#5da8ff',
   // Freeform eraser strokes (Ausschluss/Radierer).
   eraser: '#ff6b35',
+  // Manual ink brush strokes (Tinten-Pinsel) — the eraser's positive twin.
+  ink: '#2b50e0',
   // In-progress drawing (the rubber-band rect while drawing a new bbox; the
   // wizard's slant handles use the same accent).
   draft: '#00d2ff',

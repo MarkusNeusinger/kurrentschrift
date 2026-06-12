@@ -14,10 +14,17 @@ from pathlib import Path
 
 import numpy as np
 from PIL import Image
-from scipy.ndimage import distance_transform_edt
+from scipy.ndimage import binary_fill_holes, distance_transform_edt, label
 from scipy.spatial import cKDTree
 from skimage.filters import threshold_local
 from skimage.morphology import skeletonize
+
+
+# Default speck-fill threshold (px²) when a bbox opts into `fill_holes`. Sits
+# well above the binarisation edge-noise (≤4 px) and the measured chart specks
+# (~36 px) yet far below any genuine counter (hundreds of px). Opt-in per glyph
+# precisely because the right value is letter-dependent — off by default.
+FILL_HOLES_MAX_AREA = 64
 
 
 def load_grayscale(path: Path | str) -> np.ndarray:
@@ -26,16 +33,50 @@ def load_grayscale(path: Path | str) -> np.ndarray:
     return np.asarray(img, dtype=np.float32) / 255.0
 
 
-def binarize_adaptive(gray: np.ndarray, block_size: int = 51, offset: float = 0.03) -> np.ndarray:
+def binarize_adaptive(
+    gray: np.ndarray, block_size: int = 51, offset: float = 0.03, fill_holes_max_area: int = 0
+) -> np.ndarray:
     """Adaptive local threshold; True where the pixel is ink (darker than local).
 
     block_size is in pixels and forced odd. Higher offset is more conservative
     (only clearly-darker-than-local pixels count as ink) — useful on clean
     scans, dangerous on faded strokes.
+
+    `fill_holes_max_area > 0` additionally fills interior background specks up to
+    that area (per-glyph opt-in; see `fill_small_holes`); 0 leaves the mask as-is.
     """
     block = block_size if block_size % 2 == 1 else block_size + 1
     threshold = threshold_local(gray, block_size=block, method="gaussian", offset=offset)
-    return gray < threshold
+    mask = gray < threshold
+    return fill_small_holes(mask, fill_holes_max_area)
+
+
+def fill_small_holes(mask: np.ndarray, max_area: int) -> np.ndarray:
+    """Fill interior background specks (holes fully enclosed by ink) up to
+    `max_area` px², leaving genuine counters (loops) open.
+
+    A scanned solid stroke often carries paper-coloured pinholes — a faded fleck
+    in an otherwise uniformly black letter. Each punches a spurious loop into the
+    skeleton and, because the distance transform then reads the hole as nearby
+    background, locally *under*-measures the stroke width there. Filling only the
+    small enclosed holes removes the specks while a real counter (hundreds of px)
+    stays open. `max_area <= 0` is a no-op, so the default pipeline is unchanged.
+    """
+    if max_area <= 0:
+        return mask
+    holes = binary_fill_holes(mask) & ~mask
+    if not holes.any():
+        return mask
+    lbl, _ = label(holes)
+    sizes = np.bincount(lbl.ravel())
+    # label 0 is the (huge) non-hole region; fill components at/below the cap.
+    small = np.flatnonzero(sizes <= max_area)
+    small = small[small != 0]
+    if small.size == 0:
+        return mask
+    out = mask.copy()
+    out[np.isin(lbl, small)] = True
+    return out
 
 
 def skeleton_and_width(mask: np.ndarray) -> tuple[np.ndarray, np.ndarray]:

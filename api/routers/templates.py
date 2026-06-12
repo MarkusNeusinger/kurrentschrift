@@ -76,6 +76,12 @@ def _bbox_to_dict(bbox) -> dict:
         "x0": bbox.x0,
         "x1": bbox.x1,
         "mask_strokes": list(bbox.mask_strokes),
+        # Ink brush + speck auto-fill must travel with the bbox too, or the
+        # anchor/width derivation (trace, resample, diagnostic, fit) binarises the
+        # UNfilled mask and silently ignores both — the crop preview alone would
+        # show them. Mirrors crop endpoint + crop_with_mask/binarize_adaptive.
+        "ink_strokes": list(bbox.ink_strokes),
+        "fill_holes_max_area": int(bbox.fill_holes_max_area),
         "baseline_y": bbox.baseline_y,
         "midband_y": bbox.midband_y,
         "n_anchors": bbox.n_anchors,

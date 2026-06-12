@@ -21,12 +21,14 @@ def _to_out(bbox: Bbox) -> BboxOut:
         x0=bbox.x0,
         x1=bbox.x1,
         mask_strokes=list(bbox.mask_strokes),
+        ink_strokes=list(bbox.ink_strokes),
         baseline_y=bbox.baseline_y,
         midband_y=bbox.midband_y,
         n_anchors=bbox.n_anchors,
         guides=GuideConfig(**(bbox.guides or {})),
         locked=bool(bbox.locked),
         split=bool(bbox.split),
+        fill_holes_max_area=int(bbox.fill_holes_max_area),
     )
 
 
@@ -79,6 +81,12 @@ async def put_bbox(
         if existing is None:
             existing = await repo.get(source.id, glyph_key)
         n_anchors = int(existing.n_anchors) if existing is not None else DEFAULT_N_ANCHORS
+    if payload.fill_holes_max_area is not None:
+        fill_holes_max_area = payload.fill_holes_max_area
+    else:
+        if existing is None:
+            existing = await repo.get(source.id, glyph_key)
+        fill_holes_max_area = int(existing.fill_holes_max_area) if existing is not None else 0
     bbox = await repo.upsert(
         source.id,
         glyph_key,
@@ -87,12 +95,14 @@ async def put_bbox(
         x0=payload.x0,
         x1=payload.x1,
         mask_strokes=[m.model_dump() for m in payload.mask_strokes],
+        ink_strokes=[m.model_dump() for m in payload.ink_strokes],
         baseline_y=payload.baseline_y,
         midband_y=payload.midband_y,
         n_anchors=n_anchors,
         guides=guides,
         locked=locked,
         split=split,
+        fill_holes_max_area=fill_holes_max_area,
     )
     return _to_out(bbox)
 

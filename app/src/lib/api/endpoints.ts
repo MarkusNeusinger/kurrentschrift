@@ -34,8 +34,15 @@ export const getSource = (sourceId: string, retry?: RetryOptions): Promise<Sourc
   apiFetch(src(sourceId, ''), {}, retry).then(asJson<SourceOut>);
 
 export const chartUrl = (sourceId: string): string => src(sourceId, '/chart');
-export const cropUrl = (sourceId: string, glyphKey: string, cacheBust?: number): string =>
-  src(sourceId, `/bboxes/${encodeURIComponent(glyphKey)}/crop${cacheBust ? `?t=${cacheBust}` : ''}`);
+// `view='mask'` returns the binarised mask the skeleton sees (auto-fill
+// colour-coded) instead of the raw grayscale scan — the wizard's "Maske zeigen".
+export const cropUrl = (sourceId: string, glyphKey: string, cacheBust?: number, view?: 'raw' | 'mask'): string => {
+  const qs = new URLSearchParams();
+  if (cacheBust) qs.set('t', String(cacheBust));
+  if (view === 'mask') qs.set('view', 'mask');
+  const s = qs.toString();
+  return src(sourceId, `/bboxes/${encodeURIComponent(glyphKey)}/crop${s ? `?${s}` : ''}`);
+};
 
 export const getBboxes = (sourceId: string, retry?: RetryOptions): Promise<BboxOut[]> =>
   apiFetch(src(sourceId, '/bboxes'), {}, retry).then(asJson<BboxOut[]>);

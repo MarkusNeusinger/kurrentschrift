@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type 
 
 import { useElementSize } from '@/hooks/useElementSize';
 import type { BboxOut } from '@/lib/api';
+import type { StepId } from './wizardTypes';
 
 // Wizard canvas zoom. 1 = fit-to-view (the whole bbox fills the frame); above
 // that the crop is magnified and can be panned (Schwenken) to reach the box
@@ -25,13 +26,15 @@ export const clampPan = (offset: number, content: number, viewport: number): num
   return clamp(offset, -limit, limit);
 };
 
-// Pick a starting zoom so the letter already fills the frame on the first step
-// instead of sitting small in the middle. A fresh bbox seeds its x-height band
-// at ~35 % of the box height, so a letter without ascender/descender (e.g. `a`)
-// only paints that middle slice — fit-to-view then shows mostly empty margin.
-// We zoom roughly in inverse proportion to that band fraction, gently capped so
-// tall letters (ascender + descender) are never clipped hard; Anpassen (fit)
-// and the slider stay one tap away.
+// Auto-zoom for the tracing steps so a small letter fills the frame instead of
+// sitting tiny in the middle (the stylus needs the room). A fresh bbox seeds its
+// x-height band at ~35 % of the box height, so a letter without ascender/descender
+// (e.g. `a`) only paints that middle slice — fit-to-view then shows mostly empty
+// margin. We zoom roughly in inverse proportion to that band fraction, gently
+// capped so tall letters (ascender + descender) are never clipped hard; Anpassen
+// (fit) and the slider stay one tap away. The Ausschluss step deliberately opts
+// out of this (it opens fit-to-view) so the whole crop incl. the box edges — where
+// a neighbour's ink pokes in and needs erasing — is visible from the start.
 function defaultZoomFor(b: BboxOut | null): number {
   if (!b) return 1;
   const h = b.y1 - b.y0;
@@ -59,7 +62,7 @@ export interface CropView {
   cssToChart: (clientX: number, clientY: number, host: Element | null) => { x: number; y: number };
 }
 
-export function useCropView(bbox: BboxOut | null, glyphKey: string, open: boolean): CropView {
+export function useCropView(bbox: BboxOut | null, glyphKey: string, open: boolean, stepId: StepId): CropView {
   // Always-current bbox, read (not subscribed) by the open/reset effect so it can
   // seed the default zoom without re-running on every mask/lineature edit.
   const bboxRef = useRef(bbox);
@@ -84,11 +87,13 @@ export function useCropView(bbox: BboxOut | null, glyphKey: string, open: boolea
   // dialog reopens), drop the view state so one glyph's zoom never leaks onto the
   // next.
   useEffect(() => {
-    // Fresh letter → re-centre and seed the auto-zoom from its bbox.
+    // Fresh letter → re-centre. The dialog always opens on the Ausschluss step,
+    // which opens fit-to-view (zoom 1); the step-transition effect below seeds
+    // the auto-zoom when the user moves on to the tracing steps.
     setPanX(0);
     setPanY(0);
     setPanning(false);
-    setUserZoom(defaultZoomFor(bboxRef.current));
+    setUserZoom(1);
   }, [glyphKey, open]);
 
   const cropW = bbox ? bbox.x1 - bbox.x0 : 0;
@@ -122,6 +127,19 @@ export function useCropView(bbox: BboxOut | null, glyphKey: string, open: boolea
     setPanX(0);
     setPanY(0);
   }, []);
+
+  // Zoom follows the step: the Ausschluss step fits the whole crop (see the box
+  // edges to erase), the tracing steps auto-zoom a small letter for the stylus.
+  // Only fires on an actual step change, so a manual zoom within a step is never
+  // clobbered; the initial seed is left to the open/reset effect above.
+  const prevStepRef = useRef(stepId);
+  useEffect(() => {
+    const prev = prevStepRef.current;
+    prevStepRef.current = stepId;
+    if (prev === stepId) return;
+    if (stepId === 'mask') fitZoom();
+    else if (prev === 'mask') applyZoom(defaultZoomFor(bboxRef.current));
+  }, [stepId, fitZoom, applyZoom]);
 
   // Live view geometry for the wheel handler. Refreshed every render so the
   // once-attached listener always reads current values, and rewritten within a
