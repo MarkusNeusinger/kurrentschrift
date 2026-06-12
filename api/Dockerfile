@@ -24,8 +24,9 @@ RUN pip install --no-cache-dir uv && \
 # Application code. The compute layer lives in /core, the HTTP layer in /api.
 COPY api/ ./api/
 COPY core/ ./core/
-# Loth chart is read by the pipeline; ship it in the image.
-COPY data/sources/loth-1866/chart.jpg ./data/sources/loth-1866/chart.jpg
+# Source charts are read by the pipeline; ship the whole tree (~6 MB) so a
+# CONFIG.sourceId flip never deploys an image missing its chart.
+COPY data/sources/ ./data/sources/
 # Alembic migrations — shipped so the same image can run `alembic upgrade head`
 # as the pre-deploy migrate Cloud Run Job (see api/cloudbuild.yaml).
 COPY alembic.ini ./
