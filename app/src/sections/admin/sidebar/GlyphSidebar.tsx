@@ -15,7 +15,9 @@ import {
   ButtonBase,
   Divider,
   IconButton,
+  MenuItem,
   Stack,
+  TextField,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -25,7 +27,7 @@ import { useNavigate } from 'react-router-dom';
 import { glyphKeyFor, isLetterSplit, LETTERS, LETTER_BY_KEY, POSITIONS } from '@/domain/glyphs';
 import type { Letter, LetterGroup, Position } from '@/domain/glyphs';
 import { useAdmin } from '@/context/AdminContext';
-import { de, POSITION_LABEL } from '@/locales';
+import { de, POSITION_LABEL, styleLabel } from '@/locales';
 
 const GROUP_LABELS: Record<LetterGroup, string> = {
   lower: de.admin.sidebar.groupLower,
@@ -35,7 +37,7 @@ const GROUP_LABELS: Record<LetterGroup, string> = {
 const GROUP_ORDER: LetterGroup[] = ['lower', 'upper', 'comb'];
 
 export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
-  const { source, bboxesByKey, glyphsByKey, activeGlyph, visibleGlyphs, toggleVisible, setOnlyVisible, setActiveGlyph, openWizard, openDiagnose } =
+  const { source, sourceId, sources, switchSource, bboxesByKey, glyphsByKey, activeGlyph, visibleGlyphs, toggleVisible, setOnlyVisible, setActiveGlyph, openWizard, openDiagnose } =
     useAdmin();
   const navigate = useNavigate();
   const [openBase, setOpenBase] = useState<string | null>(null);
@@ -114,10 +116,22 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
       </Box>
 
       <Box sx={{ p: 2, pb: 0.5 }}>
-        <Typography variant="overline" color="text.secondary">
-          {source.title}
-        </Typography>
-        <Typography variant="caption" color="text.disabled" sx={{ display: 'block' }}>
+        <TextField
+          select
+          fullWidth
+          size="small"
+          variant="standard"
+          label={de.admin.sidebar.sourceLabel}
+          value={sourceId}
+          onChange={(e) => switchSource(e.target.value)}
+        >
+          {sources.map((s) => (
+            <MenuItem key={s.id} value={s.id}>
+              {styleLabel(s.style_id)}
+            </MenuItem>
+          ))}
+        </TextField>
+        <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 0.5 }}>
           {source.style_ratio.join(':')} · slant {source.slant_deg}°
         </Typography>
       </Box>

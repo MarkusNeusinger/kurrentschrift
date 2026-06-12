@@ -50,8 +50,17 @@ export const POSITION_LABEL: Record<Position, string> = {
 
 export const POSITION_LABELS: Record<string, string> = POSITION_LABEL;
 
+// Short script names keyed by style_id — the admin's source switcher shows
+// these instead of the long source titles.
+export const STYLE_LABELS: Record<string, string> = {
+  kurrent: 'Kurrent',
+  suetterlin: 'Sütterlin',
+  offenbacher: 'Offenbacher',
+};
+
 export const couplingLabel = (key: string): string => COUPLING_LABELS[key] ?? key;
 export const positionLabel = (key: string): string => POSITION_LABELS[key] ?? key;
+export const styleLabel = (key: string): string => STYLE_LABELS[key] ?? key;
 
 // --- shared strings ---------------------------------------------------------
 

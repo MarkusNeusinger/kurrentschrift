@@ -1,16 +1,29 @@
-// Shared admin state — source metadata, bboxes-by-key, traced-glyph-status.
+// Shared admin state — active source, source metadata, bboxes-by-key,
+// traced-glyph-status.
 //
 // The list of known glyph_keys is in `domain/glyphs.ts` (the MVP target set), so
 // the sidebar can show all expected glyphs even before any bboxes exist. The
 // DB only stores rows for glyphs that have actually been bbox'd or traced.
+//
+// The active source is admin-only runtime state (persisted per browser); the
+// public pages stay pinned to CONFIG.sourceId. Switching remounts the whole
+// per-source subtree via the React key below, so bboxes, glyph status,
+// visibility, viewport and open modals reset without hand-written cleanup.
 
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import { getBboxes, getGlyphs, getSource } from '@/lib/api';
+import { CONFIG } from '@/global-config';
+import { ApiError, getBboxes, getGlyphs, getSource, getSources } from '@/lib/api';
 import type { BboxOut, GlyphSummary, SourceOut } from '@/lib/api';
 
+const SOURCE_STORAGE_KEY = 'kurrentschrift.admin.sourceId';
+
 interface AdminState {
+  sourceId: string;
   source: SourceOut | null;
+  // All chart sources, for the sidebar switcher.
+  sources: SourceOut[];
+  switchSource: (id: string) => void;
   bboxesByKey: Record<string, BboxOut>;
   glyphsByKey: Record<string, GlyphSummary>;
   loadError: string | null;
@@ -40,8 +53,55 @@ interface AdminState {
 
 const Ctx = createContext<AdminState | null>(null);
 
-export function AdminProvider({ children }: { children: ReactNode }) {
+export function AdminProvider({
+  children,
+  pinnedSourceId,
+}: {
+  children: ReactNode;
+  // Pin the provider to one source and ignore the persisted admin selection —
+  // for public mounts (the quiz) that must always show the site-wide source.
+  pinnedSourceId?: string;
+}) {
+  const [sourceId, setSourceId] = useState<string>(() => {
+    if (pinnedSourceId) return pinnedSourceId;
+    try {
+      return localStorage.getItem(SOURCE_STORAGE_KEY) ?? CONFIG.sourceId;
+    } catch {
+      return CONFIG.sourceId;
+    }
+  });
+
+  const switchSource = useCallback(
+    (id: string) => {
+      if (pinnedSourceId) return;
+      try {
+        localStorage.setItem(SOURCE_STORAGE_KEY, id);
+      } catch {
+        /* private mode — the switch still holds for this session */
+      }
+      setSourceId(id);
+    },
+    [pinnedSourceId],
+  );
+
+  return (
+    <SourceScopedProvider key={sourceId} sourceId={sourceId} switchSource={switchSource}>
+      {children}
+    </SourceScopedProvider>
+  );
+}
+
+function SourceScopedProvider({
+  sourceId,
+  switchSource,
+  children,
+}: {
+  sourceId: string;
+  switchSource: (id: string) => void;
+  children: ReactNode;
+}) {
   const [source, setSource] = useState<SourceOut | null>(null);
+  const [sources, setSources] = useState<SourceOut[]>([]);
   const [bboxesByKey, setBboxesByKey] = useState<Record<string, BboxOut>>({});
   const [glyphsByKey, setGlyphsByKey] = useState<Record<string, GlyphSummary>>({});
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -62,14 +122,16 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       };
       const retry = { retries: 8, onRetry };
       try {
-        const [s, bboxes, glyphs] = await Promise.all([
-          getSource(retry),
-          getBboxes(retry),
-          getGlyphs(retry),
+        const [s, allSources, bboxes, glyphs] = await Promise.all([
+          getSource(sourceId, retry),
+          getSources(retry),
+          getBboxes(sourceId, retry),
+          getGlyphs(sourceId, retry),
         ]);
         if (cancelled) return;
         setWaking(false);
         setSource(s);
+        setSources(allSources.filter((x) => x.kind === 'chart'));
         const bm: Record<string, BboxOut> = {};
         for (const b of bboxes) bm[b.glyph_key] = b;
         setBboxesByKey(bm);
@@ -78,16 +140,21 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         setGlyphsByKey(gm);
         setVisibleGlyphs(new Set(bboxes.map((b) => b.glyph_key)));
       } catch (e) {
-        if (!cancelled) {
-          setWaking(false);
-          setLoadError(String(e));
+        if (cancelled) return;
+        setWaking(false);
+        // A stale persisted source id (renamed/removed in the DB) must not
+        // brick the admin — fall back to the build default instead.
+        if (e instanceof ApiError && e.status === 404 && sourceId !== CONFIG.sourceId) {
+          switchSource(CONFIG.sourceId);
+          return;
         }
+        setLoadError(String(e));
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [sourceId, switchSource]);
 
   const toggleVisible = useCallback((key: string) => {
     setVisibleGlyphs((prev) => {
@@ -154,7 +221,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<AdminState>(
     () => ({
+      sourceId,
       source,
+      sources,
+      switchSource,
       bboxesByKey,
       glyphsByKey,
       loadError,
@@ -178,7 +248,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       closeDiagnose,
     }),
     [
+      sourceId,
       source,
+      sources,
+      switchSource,
       bboxesByKey,
       glyphsByKey,
       loadError,
@@ -210,4 +283,3 @@ export function useAdmin(): AdminState {
   if (!v) throw new Error('useAdmin must be used inside <AdminProvider>');
   return v;
 }
-

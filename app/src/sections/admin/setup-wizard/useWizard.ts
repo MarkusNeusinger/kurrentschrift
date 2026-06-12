@@ -33,7 +33,7 @@ const summaryOf = (g: { glyph_key: string; glyph: string; position: string; vari
 });
 
 export function useWizard(glyphKey: string, open: boolean, onClose: () => void) {
-  const { source, bboxesByKey, glyphsByKey, cropCacheBust, upsertBbox, markGlyphTraced, refreshCrop, openDiagnose } = useAdmin();
+  const { sourceId, source, bboxesByKey, glyphsByKey, cropCacheBust, upsertBbox, markGlyphTraced, refreshCrop, openDiagnose } = useAdmin();
   const bbox = bboxesByKey[glyphKey] ?? null;
   // Always-current bbox map, read (not subscribed) by the open/reset effect so it
   // can seed applyAll from the letter's split state without re-running on edits.
@@ -93,13 +93,13 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
   const refreshSavedTrace = useCallback(async () => {
     const epoch = ++overlayEpoch.current;
     try {
-      const [tpl, diag] = await Promise.all([getGlyph(glyphKey), getDiagnostic(glyphKey)]);
+      const [tpl, diag] = await Promise.all([getGlyph(sourceId, glyphKey), getDiagnostic(sourceId, glyphKey)]);
       if (overlayEpoch.current === epoch) setSavedTrace({ rawPath: tpl.raw_path, anchorsPx: diag.anchors_px });
     } catch {
       // 404 (no canonical) or transient error → no overlay.
       if (overlayEpoch.current === epoch) setSavedTrace(null);
     }
-  }, [glyphKey]);
+  }, [sourceId, glyphKey]);
   useEffect(() => {
     overlayEpoch.current++; // invalidate any in-flight fetch for the previous glyph
     setSavedTrace(null);
@@ -126,13 +126,13 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     async (patch: Partial<BboxIn>) => {
       if (!bbox) return;
       try {
-        const saved = await putBbox(glyphKey, { ...bboxInFromOut(bbox), ...patch });
+        const saved = await putBbox(sourceId, glyphKey, { ...bboxInFromOut(bbox), ...patch });
         upsertBbox(glyphKey, saved);
       } catch (err) {
         setSnack(`${de.wizard.snack.saveFailed} ${err}`);
       }
     },
-    [bbox, glyphKey, upsertBbox],
+    [sourceId, bbox, glyphKey, upsertBbox],
   );
 
   const updateGuides = useCallback(
@@ -223,7 +223,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     if (rawPath.length < 2 || !known || !bbox) return;
     setBusy(true);
     try {
-      const g = await postTrace(glyphKey, {
+      const g = await postTrace(sourceId, glyphKey, {
         glyph: known.glyph,
         position: known.position,
         raw_path: rawPath,
@@ -238,7 +238,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     } finally {
       setBusy(false);
     }
-  }, [strokes, known, bbox, glyphKey, markGlyphTraced, refreshSavedTrace]);
+  }, [sourceId, strokes, known, bbox, glyphKey, markGlyphTraced, refreshSavedTrace]);
 
   // Step 5: compute the raw-vs-optimized comparison from the freshly drawn Weg
   // (if any) or the stored raw_path. A pure dry run — nothing is written; the
@@ -249,7 +249,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     if (rawPath.length < 2) {
       if (!hasCanonical) return;
       try {
-        rawPath = (await getGlyph(glyphKey)).raw_path; // the saved Weg
+        rawPath = (await getGlyph(sourceId, glyphKey)).raw_path; // the saved Weg
       } catch (err) {
         setSnack(String(err));
         return;
@@ -259,7 +259,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     setPreview(null);
     setPreviewBusy(true);
     try {
-      const p = await postTracePreview(glyphKey, {
+      const p = await postTracePreview(sourceId, glyphKey, {
         glyph: known.glyph,
         position: known.position,
         raw_path: rawPath,
@@ -271,14 +271,14 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     } finally {
       if (previewEpoch.current === epoch) setPreviewBusy(false);
     }
-  }, [strokes, known, bbox, hasCanonical, glyphKey]);
+  }, [sourceId, strokes, known, bbox, hasCanonical, glyphKey]);
 
   // Re-sample the stored canonical to the given n_anchors without re-drawing.
   const resample = useCallback(async (nAnchors: number) => {
     if (!bbox || !hasCanonical) return;
     setBusy(true);
     try {
-      const g = await postResample(glyphKey, { nAnchors });
+      const g = await postResample(sourceId, glyphKey, { nAnchors });
       markGlyphTraced(glyphKey, summaryOf(g));
       setSnack(fmt(de.wizard.snack.resampled, { count: g.anchors.length }));
       void refreshSavedTrace();
@@ -287,7 +287,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     } finally {
       setBusy(false);
     }
-  }, [bbox, hasCanonical, glyphKey, markGlyphTraced, refreshSavedTrace]);
+  }, [sourceId, bbox, hasCanonical, glyphKey, markGlyphTraced, refreshSavedTrace]);
 
   // Approve → lock. applyAll is the unified-vs-split decision:
   //   true  (unified) — THIS position's form is the one form for the letter. Fan
@@ -301,7 +301,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     setBusy(true);
     try {
       if (applyAll) {
-        const tpl = await getGlyph(glyphKey); // carries the raw_path to copy
+        const tpl = await getGlyph(sourceId, glyphKey); // carries the raw_path to copy
         for (const k of siblingKeys(glyphKey)) {
           if (k === glyphKey) continue;
           const kg = knownGlyph(k);
@@ -309,8 +309,8 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
           // Create the bbox UNLOCKED first (the trace precondition needs a bbox),
           // post the trace, and only THEN lock — so a mid-loop failure never
           // leaves a locked-but-empty sibling that can't be reopened in the wizard.
-          await putBbox(k, { ...bboxInFromOut(bbox), locked: false, split: false });
-          const g = await postTrace(k, {
+          await putBbox(sourceId, k, { ...bboxInFromOut(bbox), locked: false, split: false });
+          const g = await postTrace(sourceId, k, {
             glyph: kg.glyph,
             position: kg.position,
             raw_path: tpl.raw_path,
@@ -320,10 +320,10 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
             n_anchors: tpl.anchors.length,
           });
           markGlyphTraced(k, summaryOf(g));
-          const savedB = await putBbox(k, { ...bboxInFromOut(bbox), locked: true, split: false });
+          const savedB = await putBbox(sourceId, k, { ...bboxInFromOut(bbox), locked: true, split: false });
           upsertBbox(k, savedB);
         }
-        const saved = await putBbox(glyphKey, { ...bboxInFromOut(bbox), locked: true, split: false });
+        const saved = await putBbox(sourceId, glyphKey, { ...bboxInFromOut(bbox), locked: true, split: false });
         upsertBbox(glyphKey, saved);
       } else {
         // Split: flag every existing sibling so the letter reads as split, leaving
@@ -332,10 +332,10 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
           if (k === glyphKey) continue;
           const sib = bboxesByKey[k];
           if (!sib) continue;
-          const savedB = await putBbox(k, { ...bboxInFromOut(sib), split: true });
+          const savedB = await putBbox(sourceId, k, { ...bboxInFromOut(sib), split: true });
           upsertBbox(k, savedB);
         }
-        const saved = await putBbox(glyphKey, { ...bboxInFromOut(bbox), locked: true, split: true });
+        const saved = await putBbox(sourceId, glyphKey, { ...bboxInFromOut(bbox), locked: true, split: true });
         upsertBbox(glyphKey, saved);
       }
       onClose();
@@ -344,7 +344,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     } finally {
       setBusy(false);
     }
-  }, [bbox, known, applyAll, glyphKey, bboxesByKey, upsertBbox, markGlyphTraced, onClose]);
+  }, [sourceId, bbox, known, applyAll, glyphKey, bboxesByKey, upsertBbox, markGlyphTraced, onClose]);
 
   return {
     // admin-context reads the shell/canvas/panels need

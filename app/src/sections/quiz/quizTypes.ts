@@ -2,10 +2,11 @@
 // logic) lives in domain/glyphs.ts — this file only carries what the quiz
 // surface itself offers the learner.
 
+import { CONFIG } from '@/global-config';
 import { cropUrl } from '@/lib/api';
 import { de } from '@/locales';
 
-// Scripts selectable in the quiz. The quiz pool rides on the single active
+// Scripts selectable in the quiz. The quiz pool rides on the site-wide public
 // source (CONFIG.sourceId) — currently the Sütterlin 1922 Ausgangsschrift;
 // the others are shown disabled so the menu reflects the planned scope.
 export interface ScriptOption {
@@ -47,4 +48,4 @@ export const DIFFICULTIES: DifficultyOption[] = [
 // handwriting sources land in the DB, this is the single place that branches on
 // it to pull a less-clean hand instead of the clean Loth plate. Today every
 // level resolves to the same Loth crop (rough levels are disabled in setup).
-export const questionCropUrl = (key: string, _difficulty: Difficulty): string => cropUrl(key);
+export const questionCropUrl = (key: string, _difficulty: Difficulty): string => cropUrl(CONFIG.sourceId, key);

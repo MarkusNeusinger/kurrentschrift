@@ -1,6 +1,6 @@
 ---
 name: verify-frontend
-description: Run and visually verify the kurrentschrift app after frontend changes — start the dev servers, click through the UI like a user via the chrome-devtools MCP, watch the console and network, check style fidelity and legibility at a desktop AND a mobile viewport, and record a performance trace. Use when asked to run, start, screenshot, verify, test in the browser, or visually check the app or a frontend change.
+description: Run and visually verify the kurrentschrift app after frontend changes — start the dev servers, click through ONLY the flows the change touches via the chrome-devtools MCP, watch the console and network, check style fidelity and legibility at a desktop AND a mobile viewport, and record a performance trace when the change can move performance. Use when asked to run, start, screenshot, verify, test in the browser, or visually check the app or a frontend change.
 ---
 
 # Verify the frontend in the browser
@@ -18,6 +18,15 @@ interaction (snapshots/clicks), console + network, visual style &
 legibility (screenshots at two viewports, actually looked at), and
 performance (trace). Report findings; don't silently fix design
 questions.
+
+**Scope: only what the change touches.** Derive the affected pages and
+flows from the diff (`git diff --name-only` + the component→route
+mapping in `app/src/routes/`) and drive exactly those — a full-app
+sweep is not the job here and wastes a round per page. Shared code
+(context, lib/api, locales, components/) widens the scope to the
+surfaces that consume it; when a shared change has both an admin and a
+public consumer, check one representative flow on each side. Everything
+the diff cannot reach is out of scope.
 
 ## 1 · Start the servers (skip if already up)
 
@@ -82,8 +91,9 @@ The loop, per page/flow you changed:
 1. `new_page` → `http://localhost:3000/` (first time), then
    `navigate_page` for further URLs.
 2. **Resize before judging anything.** The default window is unusually
-   wide and short. Check **both** sizes — this is mandatory, not
-   optional: `resize_page` 1440×900 (desktop) and 390×844 (mobile).
+   wide and short. For every surface in scope check **both** sizes:
+   `resize_page` 1440×900 (desktop) and 390×844 (mobile). Surfaces the
+   diff doesn't touch don't get a viewport pass at all.
 3. After every navigation to a lazy route: `wait_for` a text unique to
    the target page, **then** `take_snapshot`. Pick text that is *not*
    CSS-uppercased (see Gotchas).
@@ -112,7 +122,8 @@ derived values (presets, size chips), cross-check the displayed
 numbers against their source of truth in the same run — a
 chips/preset mismatch once shipped and was found on a printout.
 
-Flows worth a round-trip (all verified): landing → „Schreiben üben" →
+Reference flows — pick **only** those the diff touches, this is a
+catalog, not a checklist: landing → „Schreiben üben" →
 switch Start-Schrift presets (Sütterlin sets 1:1:1 and disables the
 Schräglage) → „Schulheft um 1900" (blue ruling + „Rote Randleiste"
 switch appears) — and `/quiz`: „Auswahl (Multiple Choice)" → „Quiz
@@ -148,7 +159,10 @@ guide and must not be re-litigated.
 
 ## 4 · Performance trace
 
-Navigate to the target URL first, then:
+Only when the change can plausibly move performance (data loading,
+render loops, bundle/chunk changes) or the user asks — skip it for
+pure copy, wiring or admin-tooling changes. Navigate to the target URL
+first, then:
 
 - `performance_start_trace` with `reload: true`, `autoStop: true`,
   `filePath: /tmp/kurrentschrift-ui/trace-<page>.json.gz`

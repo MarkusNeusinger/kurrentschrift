@@ -10,6 +10,7 @@ import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import { Alert, Box, Button, Chip, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { useEffect, useRef } from 'react';
 
+import { CONFIG } from '@/global-config';
 import { cropUrl } from '@/lib/api';
 import { de, fmt } from '@/locales';
 import { QuestionVisual } from '@/sections/quiz/QuestionVisual';
@@ -100,7 +101,7 @@ export function QuizPlayPanel(p: PlayProps) {
               </Typography>
               <Box
                 component="img"
-                src={cropUrl(current.key)}
+                src={cropUrl(CONFIG.sourceId, current.key)}
                 alt={de.quiz.play.sourceCropAlt}
                 sx={{ height: 56, maxWidth: 120, objectFit: 'contain', bgcolor: '#fff', borderRadius: 0.5, p: 0.25 }}
                 draggable={false}

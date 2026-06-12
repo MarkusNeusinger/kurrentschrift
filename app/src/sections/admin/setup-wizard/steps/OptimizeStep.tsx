@@ -23,6 +23,7 @@ import {
 } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 
+import { useAdmin } from '@/context/AdminContext';
 import { cropUrl } from '@/lib/api';
 import type { TracePreviewOut, WrittenPreviewData } from '@/lib/api';
 import { ringsToPathD } from '@/lib/svg';
@@ -88,6 +89,7 @@ function Panel({ title, chip, children, w }: { title: string; chip?: React.React
 }
 
 export function OptimizeStep({ glyphKey, cropCacheBust, hasDraftSource, nAnchors, preview, previewBusy, computePreview }: Props) {
+  const { sourceId } = useAdmin();
   const t = de.wizard.optimize;
   const [view, setView] = useState<'side' | 'overlay'>('side');
 
@@ -139,7 +141,7 @@ export function OptimizeStep({ glyphKey, cropCacheBust, hasDraftSource, nAnchors
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'flex-start' }}>
               <Panel title={t.crop} w={panelW}>
                 <img
-                  src={cropUrl(glyphKey, cropCacheBust)}
+                  src={cropUrl(sourceId, glyphKey, cropCacheBust)}
                   alt="crop"
                   width={panelW}
                   height={PANEL_H}
@@ -168,7 +170,7 @@ export function OptimizeStep({ glyphKey, cropCacheBust, hasDraftSource, nAnchors
               </Typography>
               <Box sx={{ width: panelW, height: PANEL_H, bgcolor: '#fff', border: 1, borderColor: 'divider', position: 'relative' }}>
                 <img
-                  src={cropUrl(glyphKey, cropCacheBust)}
+                  src={cropUrl(sourceId, glyphKey, cropCacheBust)}
                   alt="crop"
                   width={panelW}
                   height={PANEL_H}

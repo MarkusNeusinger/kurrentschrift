@@ -38,7 +38,7 @@ interface ChartViewProps {
 }
 
 export function ChartView({ source }: ChartViewProps) {
-  const { bboxesByKey, glyphsByKey, activeGlyph, visibleGlyphs, openWizard, openDiagnose } = useAdmin();
+  const { sourceId, bboxesByKey, glyphsByKey, activeGlyph, visibleGlyphs, openWizard, openDiagnose } = useAdmin();
   const [mode, setMode] = useState<Mode>('pan');
   const [rederiveOpen, setRederiveOpen] = useState(false);
   const { w: width, h: height } = source.chart_size;
@@ -166,7 +166,7 @@ export function ChartView({ source }: ChartViewProps) {
       <Box ref={scrollRef} sx={{ flex: 1, overflow: 'auto', bgcolor: overlay.canvasBg, position: 'relative' }}>
         <Box ref={stageRef} sx={{ width: stageWidthCss, height: stageHeightCss, position: 'relative', ...cursorStyle }}>
           <img
-            src={chartUrl()}
+            src={chartUrl(sourceId)}
             alt={source.title}
             width={stageWidthCss}
             height={stageHeightCss}

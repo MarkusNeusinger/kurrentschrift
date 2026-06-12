@@ -11,6 +11,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { Alert, Box, Button, Chip, CircularProgress, Slider, Stack, Typography } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 
+import { useAdmin } from '@/context/AdminContext';
 import { cropUrl, getFit } from '@/lib/api';
 import type { FitData } from '@/lib/api';
 import { ringsToPathD } from '@/lib/svg';
@@ -40,6 +41,7 @@ function polylineSegments(pts: Array<[number, number]>, starts?: number[]): Arra
 }
 
 export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props) {
+  const { sourceId } = useAdmin();
   const COL_W = useColumnWidth(colWidth);
   const COL_H_PX = colHeight ?? COL_H;
   const [data, setData] = useState<FitData | null>(null);
@@ -51,12 +53,12 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
     (lambdaReg: number) => {
       setLoading(true);
       setError(null);
-      getFit(glyphKey, lambdaReg)
+      getFit(sourceId, glyphKey, lambdaReg)
         .then((d) => setData(d))
         .catch((e) => setError(String(e)))
         .finally(() => setLoading(false));
     },
-    [glyphKey],
+    [sourceId, glyphKey],
   );
 
   useEffect(() => {
@@ -108,7 +110,7 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
           </Typography>
           <Box sx={{ position: 'relative', width: displayW, height: displayH, bgcolor: '#fff' }}>
             <img
-              src={cropUrl(glyphKey, cropCacheBust)}
+              src={cropUrl(sourceId, glyphKey, cropCacheBust)}
               alt="fit-overlay"
               width={displayW}
               height={displayH}

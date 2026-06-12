@@ -8,6 +8,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { Alert, Box, Button, CircularProgress, Typography } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useAdmin } from '@/context/AdminContext';
 import { cropUrl, getDiagnostic } from '@/lib/api';
 import type { DiagnosticData } from '@/lib/api';
 import { ringsToPathD } from '@/lib/svg';
@@ -30,6 +31,7 @@ interface Props {
 const COL_H = 360;
 
 export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, onData }: Props) {
+  const { sourceId } = useAdmin();
   const COL_W = useColumnWidth(colWidth);
   const COL_H_PX = colHeight ?? COL_H;
   const [data, setData] = useState<DiagnosticData | null>(null);
@@ -41,14 +43,14 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, o
   const fetch = useCallback(() => {
     setLoading(true);
     setError(null);
-    getDiagnostic(glyphKey)
+    getDiagnostic(sourceId, glyphKey)
       .then((d) => {
         setData(d);
         onDataRef.current?.(d);
       })
       .catch((e) => setError(String(e)))
       .finally(() => setLoading(false));
-  }, [glyphKey]);
+  }, [sourceId, glyphKey]);
 
   useEffect(() => {
     fetch();
@@ -106,7 +108,7 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, o
         </Typography>
         <Box sx={{ width: cropDisplayW, height: cropDisplayH, bgcolor: '#fff' }}>
           <img
-            src={cropUrl(glyphKey, cropCacheBust)}
+            src={cropUrl(sourceId, glyphKey, cropCacheBust)}
             alt="crop"
             width={cropDisplayW}
             height={cropDisplayH}
@@ -125,7 +127,7 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, o
         </Typography>
         <Box sx={{ position: 'relative', width: cropDisplayW, height: cropDisplayH, bgcolor: '#fff' }}>
           <img
-            src={cropUrl(glyphKey, cropCacheBust)}
+            src={cropUrl(sourceId, glyphKey, cropCacheBust)}
             alt="overlay"
             width={cropDisplayW}
             height={cropDisplayH}

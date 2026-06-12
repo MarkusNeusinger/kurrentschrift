@@ -59,7 +59,7 @@ function MetricCard({ title, q }: { title: string; q: QualityData }) {
 }
 
 export function QualityView({ glyphKey, cropCacheBust }: Props) {
-  const { refreshCrop, bboxesByKey, glyphsByKey } = useAdmin();
+  const { sourceId, refreshCrop, bboxesByKey, glyphsByKey } = useAdmin();
   const t = de.admin.quality;
   const [data, setData] = useState<QualityComparison | null>(null);
   const [loading, setLoading] = useState(false);
@@ -79,11 +79,11 @@ export function QualityView({ glyphKey, cropCacheBust }: Props) {
   const fetchQuality = useCallback(() => {
     setLoading(true);
     setError(null);
-    getQuality(glyphKey)
+    getQuality(sourceId, glyphKey)
       .then((d) => setData(d))
       .catch((e) => setError(String(e)))
       .finally(() => setLoading(false));
-  }, [glyphKey]);
+  }, [sourceId, glyphKey]);
 
   useEffect(() => {
     setApplied(false);
@@ -97,7 +97,7 @@ export function QualityView({ glyphKey, cropCacheBust }: Props) {
     // touch a locked glyph — exactly what the server-side lock flag is for.
     // Sequential over the sibling positions (a few seconds each, threadpooled).
     (async () => {
-      for (const k of targets) await postResample(k, { force: true });
+      for (const k of targets) await postResample(sourceId, k, { force: true });
     })()
       .then(() => {
         setApplied(true);
@@ -107,7 +107,7 @@ export function QualityView({ glyphKey, cropCacheBust }: Props) {
       })
       .catch((e) => setError(String(e)))
       .finally(() => setApplying(false));
-  }, [targets, refreshCrop]);
+  }, [sourceId, targets, refreshCrop]);
 
   if (loading && !data) {
     return (
