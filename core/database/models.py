@@ -147,6 +147,15 @@ class Bbox(Base):
     # Freeform eraser strokes (German: Radierer); see class docstring. JSONB list
     # of {points: [[x, y], ...], radius}. Replaces the old rectangle `excludes`.
     mask_strokes: Mapped[list] = mapped_column(JSONB, nullable=False, server_default="[]")
+    # Manual ink brush (German: Tinten-Pinsel): the eraser's positive twin — same
+    # {points, radius} stroke shape, but painted as ink (black) before binarisation
+    # instead of blanked, to close paper-coloured specks/gaps inside a stroke the
+    # auto-fill can't reach (e.g. a gap open to the background).
+    ink_strokes: Mapped[list] = mapped_column(JSONB, nullable=False, server_default="[]")
+    # Per-glyph speck auto-fill (German: Lücken füllen): max area (px²) of an
+    # enclosed background hole to swallow before skeletonisation; 0 = off (default,
+    # so existing glyphs stay bit-identical). See core.extract.fill_small_holes.
+    fill_holes_max_area: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
     baseline_y: Mapped[int] = mapped_column(Integer, nullable=False)
     midband_y: Mapped[int] = mapped_column(Integer, nullable=False)
     n_anchors: Mapped[int] = mapped_column(Integer, nullable=False, server_default="50")

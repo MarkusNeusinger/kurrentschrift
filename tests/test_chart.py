@@ -31,3 +31,33 @@ def test_eraser_strokes_are_offset_into_crop_local_coords():
     crop = crop_with_mask(chart, bbox, fill=1.0)
     assert crop[5, 5] == 1.0  # the single-point dab lands at the offset location
     assert crop[25, 25] == 0.0  # far away, untouched
+
+
+def test_ink_stroke_is_painted_as_ink():
+    chart = np.ones((50, 50), dtype=np.float32)  # all background (white)
+    bbox = {
+        "y0": 0,
+        "y1": 50,
+        "x0": 0,
+        "x1": 50,
+        "mask_strokes": [],
+        "ink_strokes": [{"points": [[30, 10], [30, 20]], "radius": 5}],
+    }
+    crop = crop_with_mask(chart, bbox, fill=1.0)
+    assert crop[15, 30] == 0.0  # the inked centerline is painted black (ink)
+    assert crop[40, 5] == 1.0  # far from the stroke stays background
+
+
+def test_ink_wins_over_eraser_on_overlap():
+    chart = np.zeros((50, 50), dtype=np.float32)  # all ink (black)
+    pt = [[25, 25]]
+    bbox = {
+        "y0": 0,
+        "y1": 50,
+        "x0": 0,
+        "x1": 50,
+        "mask_strokes": [{"points": pt, "radius": 5}],
+        "ink_strokes": [{"points": pt, "radius": 5}],
+    }
+    crop = crop_with_mask(chart, bbox, fill=1.0)
+    assert crop[25, 25] == 0.0  # ink applied after the eraser → ink wins on overlap

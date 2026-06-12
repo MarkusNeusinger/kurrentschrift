@@ -140,9 +140,9 @@ When in doubt about what's a glyph vs. a variant vs. a deviation, re-read
 ```
 kurrentschrift/
 ├── core/             # Pure-Python compute + DB layer
-│   ├── extract.py    # skeleton + distance transform
+│   ├── extract.py    # skeleton + distance transform; fill_small_holes (per-glyph speck fill)
 │   ├── template.py   # canonical sampling + outline + slant
-│   ├── chart.py      # load + crop_with_mask (freeform eraser)
+│   ├── chart.py      # load + crop_with_mask (eraser + ink brush); crop_mask_to_png_bytes (mask preview)
 │   ├── pipeline.py   # canonical_from_path, diagnostic_for_glyph
 │   ├── widths.py     # resolve_half_widths — per-style width resolver (§5), render-time
 │   ├── fit.py        # M4: fit_template_to_instance, fit_glyph_to_crop
@@ -213,8 +213,9 @@ Browser at `http://localhost:3000` loads the admin UI: the active source
 chart (switchable at runtime via the sidebar's Vorlage select, persisted per
 browser; `CONFIG.sourceId` in `app/src/global-config.ts` is the source the
 PUBLIC pages render — currently the Sütterlin 1922 Ausgangsschrift — and the
-admin's default) with a draggable rough bbox, then the step-by-step Einrichtungs-Wizard (Ausschluss/
-freehand eraser → Lineatur → Schräglage → Weg → Übersicht/approve→lock) for
+admin's default) with a draggable rough bbox, then the step-by-step Einrichtungs-Wizard (Ausschluss —
+freehand eraser + manual ink brush + per-glyph speck auto-fill, with a binarised "Maske zeigen" preview
+→ Lineatur → Schräglage → Weg → Übersicht/approve→lock) for
 canonical extraction, and the 3-column SVG diagnostic from `/diagnostic`
 JSON. The Weg step records the ductus as one or more pen-strokes — each pen
 lift (Absetzen, e.g. a u's two downstrokes) starts a new stroke rather than

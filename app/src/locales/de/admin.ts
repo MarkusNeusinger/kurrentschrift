@@ -44,6 +44,7 @@ export const admin = {
     locked: '🔒 „{{name}}“ gesperrt{{scope}}.',
     unlocked: '🔓 „{{name}}“ entsperrt{{scope}}.',
     deleteConfirm: 'Bbox für „{{glyph}}“ löschen?',
+    deleteConfirmScope: ' Alle Positionen dieses Buchstabens werden entfernt, damit du neu anfangen kannst.',
     deleteConfirmCanonical: ' Das gespeicherte Canonical wird mit entfernt.',
     deleted: '{{glyph}}: gelöscht.',
     // Followed by the error in the snackbar message.

@@ -50,6 +50,13 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
   // strokes never get joined by a line.
   const [strokes, setStrokes] = useState<StrokePoint[][]>([]);
   const [maskRadius, setMaskRadius] = useState(8);
+  // Which brush the Ausschluss step paints with: the eraser (Radierer, blanks
+  // neighbour ink) or the ink brush (Tinte, fills specks). Shares maskRadius.
+  const [tool, setTool] = useState<'eraser' | 'ink'>('eraser');
+  // "Maske zeigen": swap the raw crop for the binarised mask (auto-fill
+  // colour-coded) so the Lücken-füllen effect — invisible on the raw scan — and
+  // the remaining holes to ink by hand are visible. Ausschluss step only.
+  const [showMask, setShowMask] = useState(false);
   const [applyAll, setApplyAll] = useState(true);
   const [busy, setBusy] = useState(false);
   const [snack, setSnack] = useState<string | null>(null);
@@ -69,6 +76,8 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
   // the next.
   useEffect(() => {
     setStep(0);
+    setTool('eraser');
+    setShowMask(false);
     setStrokes([]);
     previewEpoch.current++;
     setPreview(null);
@@ -199,6 +208,37 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     await updateBboxField({ mask_strokes: bbox.mask_strokes.slice(0, -1) });
     refreshCrop();
   }, [bbox, updateBboxField, refreshCrop]);
+
+  // Finished ink-brush stroke (Tinte) — the eraser's positive twin: appended to
+  // ink_strokes, painted as ink into the crop before binarisation.
+  const commitInkStroke = useCallback(
+    async (points: Array<[number, number]>) => {
+      const stroke: MaskStroke = { points, radius: maskRadius };
+      if (bbox) {
+        await updateBboxField({ ink_strokes: [...bbox.ink_strokes, stroke] });
+        refreshCrop();
+      }
+    },
+    [maskRadius, bbox, updateBboxField, refreshCrop],
+  );
+
+  const undoInk = useCallback(async () => {
+    if (!bbox || bbox.ink_strokes.length === 0) return;
+    await updateBboxField({ ink_strokes: bbox.ink_strokes.slice(0, -1) });
+    refreshCrop();
+  }, [bbox, updateBboxField, refreshCrop]);
+
+  // Per-glyph speck auto-fill threshold (Lücken füllen); 0 = off. Re-derivation
+  // and the diagnostic read it from the bbox, so refresh the crop preview too.
+  const setFillHoles = useCallback(
+    async (maxArea: number) => {
+      if (bbox) {
+        await updateBboxField({ fill_holes_max_area: Math.max(0, Math.round(maxArea)) });
+        refreshCrop();
+      }
+    },
+    [bbox, updateBboxField, refreshCrop],
+  );
 
   const addSlantLine = useCallback(() => {
     const xs = guideVals.slantXs;
@@ -370,6 +410,10 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     // per-step knobs + status
     maskRadius,
     setMaskRadius,
+    tool,
+    setTool,
+    showMask,
+    setShowMask,
     applyAll,
     setApplyAll,
     busy,
@@ -388,6 +432,9 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     commitSlant,
     commitMaskStroke,
     undoMask,
+    commitInkStroke,
+    undoInk,
+    setFillHoles,
     addSlantLine,
     removeSlantLine,
     resample,
