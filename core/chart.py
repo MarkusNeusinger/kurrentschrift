@@ -111,7 +111,7 @@ def crop_mask_to_png_bytes(chart: np.ndarray, bbox: dict) -> bytes:
     max_area = int(bbox.get("fill_holes_max_area") or 0)
     raw = binarize_adaptive(crop, fill_holes_max_area=0)
     filled = binarize_adaptive(crop, fill_holes_max_area=max_area) if max_area > 0 else raw
-    auto_filled = filled & ~raw  # what the threshold swallowed beyond the raw ink
+    auto_filled = filled & ~raw  # the hole-filling delta: specks fill_small_holes swallowed
 
     h, w = crop.shape[:2]
     rgb = np.full((h, w, 3), 255, dtype=np.uint8)

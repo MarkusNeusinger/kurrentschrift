@@ -20,13 +20,6 @@ from skimage.filters import threshold_local
 from skimage.morphology import skeletonize
 
 
-# Default speck-fill threshold (px²) when a bbox opts into `fill_holes`. Sits
-# well above the binarisation edge-noise (≤4 px) and the measured chart specks
-# (~36 px) yet far below any genuine counter (hundreds of px). Opt-in per glyph
-# precisely because the right value is letter-dependent — off by default.
-FILL_HOLES_MAX_AREA = 64
-
-
 def load_grayscale(path: Path | str) -> np.ndarray:
     """Load an image as float32 in [0, 1], grayscale."""
     img = Image.open(path).convert("L")

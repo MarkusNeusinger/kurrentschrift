@@ -1,5 +1,7 @@
 """Chart-image endpoints — full chart + per-bbox crop (binary responses)."""
 
+from typing import Literal
+
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -23,7 +25,10 @@ async def get_chart(source: Source = Depends(require_source)) -> Response:
 
 @router.get("/bboxes/{glyph_key}/crop")
 async def get_crop(
-    glyph_key: str, view: str = "raw", source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
+    glyph_key: str,
+    view: Literal["raw", "mask"] = "raw",
+    source: Source = Depends(require_source),
+    db: AsyncSession = Depends(require_db),
 ) -> Response:
     """Per-bbox crop PNG. `view=raw` (default) is the grayscale scan with the
     eraser + ink brush applied; `view=mask` is the binarised mask the skeleton
