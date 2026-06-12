@@ -16,7 +16,7 @@ export const quiz = {
   },
   setup: {
     intro:
-      'Erkenne die Kurrent-Buchstaben: Jeder wird dir Zug um Zug vorgeschrieben — in der Reihenfolge der Feder — und du tippst oder wählst, welcher es ist. Ist es richtig, geht es weiter; wenn nicht, versuchst du es noch einmal. Am Ende siehst du, welche Buchstaben dir Mühe gemacht haben.',
+      'Erkenne die Buchstaben der alten deutschen Schreibschrift: Jeder wird dir Zug um Zug vorgeschrieben — in der Reihenfolge der Feder — und du tippst oder wählst, welcher es ist. Ist es richtig, geht es weiter; wenn nicht, versuchst du es noch einmal. Am Ende siehst du, welche Buchstaben dir Mühe gemacht haben.',
     scriptLabel: 'Schrift',
     lettersLabel: 'Buchstaben',
     answerLabel: 'Antwort',
@@ -42,8 +42,8 @@ export const quiz = {
     quit: 'beenden',
     solutionIs: 'Das ist',
     inSource: 'in der Vorlage:',
-    sourceCropAlt: 'Loth-Vorlage',
-    cropAlt: 'Kurrent-Buchstabe',
+    sourceCropAlt: 'Original-Vorlage',
+    cropAlt: 'Buchstabe in alter Schreibschrift',
     wrong: 'Nicht ganz — versuch es noch einmal.',
     inputPlaceholder: 'Welcher Buchstabe?',
     check: 'Prüfen',

@@ -144,6 +144,7 @@ kurrentschrift/
 │   ├── template.py   # canonical sampling + outline + slant
 │   ├── chart.py      # load + crop_with_mask (freeform eraser)
 │   ├── pipeline.py   # canonical_from_path, diagnostic_for_glyph
+│   ├── widths.py     # resolve_half_widths — per-style width resolver (§5), render-time
 │   ├── fit.py        # M4: fit_template_to_instance, fit_glyph_to_crop
 │   └── database/     # SQLAlchemy Style + Hand + Source + Bbox + Template + Instance + Aggregate + repos
 ├── api/              # FastAPI service (thin)
@@ -167,9 +168,9 @@ kurrentschrift/
 │       ├── locales/     # de/ namespaces — ALL German UI strings (pre-i18n layer)
 │       └── hooks/, styles/, global-config.ts
 ├── alembic/          # Postgres migrations
-│   └── versions/0004_library_schema.py
+│   └── versions/     # 0004 library schema + seeds … 0006 Sütterlin 1922 source
 ├── data/             # Sources, samples, derived — SEPARATE LICENSING
-│   ├── sources/      # public-domain originals (Loth 1866, …)
+│   ├── sources/      # public-domain originals (Loth 1866, Sütterlin 1922, …)
 │   ├── samples/      # own-hand scans
 │   └── derived/      # mixed licensing — see datenablage.md
 ├── docs/             # German concept + reference docs
@@ -208,7 +209,9 @@ cd app && npm install && npm run dev
 Python package manager: **uv**. Frontend: **npm** (note: anyplot uses
 yarn, kurrentschrift uses npm — `package-lock.json` is checked in).
 
-Browser at `http://localhost:3000` loads the admin UI: Loth chart with a
+Browser at `http://localhost:3000` loads the admin UI: the active source
+chart (`CONFIG.sourceId` in `app/src/global-config.ts` — currently the
+Sütterlin 1922 Ausgangsschrift; the Loth 1866 Kurrent chart is parked) with a
 draggable rough bbox, then the step-by-step Einrichtungs-Wizard (Ausschluss/
 freehand eraser → Lineatur → Schräglage → Weg → Übersicht/approve→lock) for
 canonical extraction, and the 3-column SVG diagnostic from `/diagnostic`
@@ -251,6 +254,10 @@ lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberläng
   `instances`, `aggregates`.
 - `styles` is the Grundvorlage/script family (Kurrent · Sütterlin ·
   Offenbacher); it carries `width_resolver` (§5) + lineature defaults.
+  The resolver is applied at render time by
+  `core/widths.py::resolve_half_widths` (`pressure` = measured Schwellzug,
+  `constant` = Sütterlin Gleichzug, `broad_nib` = post-MVP stub); stored
+  `half_widths` always stay the measurement.
 - `templates` are the canonical Grundvorlagen, unique on
   `(style_id, glyph, position, variant)` — the identifying tuple, **not**
   `glyph_key` (UI-only). `instances` hold per-text occurrences (the fit +

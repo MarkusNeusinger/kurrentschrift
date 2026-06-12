@@ -15,6 +15,12 @@ markiert. Stand: 2026-06-10.
 | Strichprinzip | Gleichzug — gleichmäßige Strichstärke, kein Schwellzug |
 | Schulschrift | ca. 1915–1941 |
 
+**Vorlage im Repo:** Die gemeinfreie Ausgangsschrift-Tafel (Abbildung 10
+aus dem *Neuen Leitfaden für den Schreibunterricht*, Ausgabe 1922,
+DNB-Scan) liegt als Quelle `suetterlin-1922` unter
+[`data/sources/suetterlin-1922/`](../../data/sources/suetterlin-1922/SOURCE.md)
+und ist in der DB geseedet (Migration 0006).
+
 ## Fakten
 
 - **Person:** Ludwig Sütterlin (1865 Lahr – 1917 Berlin), Grafiker und

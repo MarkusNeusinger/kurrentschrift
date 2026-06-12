@@ -193,3 +193,31 @@ def test_diagnostic_contains_render_fields(synthetic_chart_path, synthetic_bbox)
     assert len(diag["anchors_template"]) == 20
     assert len(diag["outline_polygon"]) > 0
     assert diag["slant_deg"] == 65.0
+
+
+def test_diagnostic_constant_resolver_renders_uniform_widths(synthetic_chart_path, synthetic_bbox):
+    """`width_resolver='constant'` (Gleichzug, architektur.md §5) collapses the
+    rendered width profile to one value; the stored canonical stays untouched
+    and the default 'pressure' path is byte-identical to no argument."""
+    canon = canonical_from_path(
+        raw_path=_vertical_stylus_path(),
+        bbox=synthetic_bbox,
+        chart_path=synthetic_chart_path,
+        glyph="l",
+        position="initial",
+        n_anchors=20,
+    )
+    glyph_row = {"anchors": canon["anchors"], "half_widths": canon["half_widths"], "trace_meta": canon["trace_meta"]}
+    hw_before = [float(v) for v in canon["half_widths"]]
+    common = {"bbox": synthetic_bbox, "chart_path": synthetic_chart_path, "style_ratio": [1, 1, 1], "slant_deg": 90.0}
+    constant = diagnostic_for_glyph(glyph_row=glyph_row, width_resolver="constant", **common)
+    assert len(set(constant["half_widths_template"])) == 1
+    assert len(set(constant["half_widths_px"])) == 1
+    # The measurement in the canonical is NOT mutated by rendering.
+    assert [float(v) for v in canon["half_widths"]] == hw_before
+    # Default == explicit 'pressure' == the measured profile.
+    default = diagnostic_for_glyph(glyph_row=glyph_row, **common)
+    pressure = diagnostic_for_glyph(glyph_row=glyph_row, width_resolver="pressure", **common)
+    assert default["half_widths_template"] == pressure["half_widths_template"]
+    assert default["outline_paths"] == pressure["outline_paths"]
+    assert constant["anchors_template"] == default["anchors_template"]

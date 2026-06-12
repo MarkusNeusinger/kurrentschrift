@@ -55,7 +55,7 @@ export const wizard = {
   slant: {
     title: 'Schritt 3 · Schräglage',
     body1:
-      'Die Schräglage ist die Neigung der Grundstriche (Abstriche), gemessen von der Grundlinie aus — 90° = senkrecht. Die Loth-Tafel liegt bei ≈50°, die Kurrent um 1900 bei 60–70°. Den grünen Punkt ziehen, um eine Linie über den Buchstaben zu legen.',
+      'Die Schräglage ist die Neigung der Grundstriche (Abstriche), gemessen von der Grundlinie aus — 90° = senkrecht. Sütterlin steht aufrecht (90°); die Loth-Tafel liegt bei ≈50°, die Kurrent um 1900 bei 60–70°. Den grünen Punkt ziehen, um eine Linie über den Buchstaben zu legen.',
     // Composed around <b>eine</b>.
     body2BeforeBold: 'Für die meisten Buchstaben reicht',
     body2Bold: 'eine',
@@ -72,7 +72,7 @@ export const wizard = {
   trace: {
     title: 'Schritt 4 · Weg (Duktus)',
     body1:
-      'Den Buchstaben in Schreibrichtung mit dem Stift (S-Pen) oder der Maus nachziehen — das ist der Duktus, die eigentliche Vorlage über der Loth-Geometrie.',
+      'Den Buchstaben in Schreibrichtung mit dem Stift (S-Pen) oder der Maus nachziehen — das ist der Duktus, die eigentliche Vorlage über der Tafel-Geometrie.',
     // Composed around the inline <b>u</b>.
     penLiftBold: 'Jedes Absetzen beginnt einen neuen Strich',
     penLiftAfterBold: '— zwischen den Strichen wird keine Verbindungslinie gezogen. Beim',
