@@ -30,6 +30,7 @@ from core.template import (
     sample_with_sample_plan,
     template_guides,
 )
+from core.widths import resolve_half_widths
 
 
 # Anchor-count default, calibrated on the glyph bench (12 authored Loth
@@ -672,17 +673,27 @@ def canonical_from_raw_path_only(glyph_row: dict, bbox: dict, chart_path: str, n
     )
 
 
-def written_preview_for_canonical(canonical: dict, style_ratio: list[float], slant_deg: float) -> dict:
+def written_preview_for_canonical(
+    canonical: dict, style_ratio: list[float], slant_deg: float, width_resolver: str = "pressure"
+) -> dict:
     """DiagnosticData-shaped render payload for a NOT-yet-stored canonical.
 
     Lets the wizard's Optimieren step show "as written" previews (raw vs
     refined derivation) before anything is persisted — same outline/centerline
     geometry as `diagnostic_for_glyph`, minus the crop/skeleton columns (the
-    skeleton recompute is wasted on a pure render). The image-space `quality`
-    and `refine` meta ride along for the score comparison.
+    skeleton recompute is wasted on a pure render). The style's
+    `width_resolver` is applied to the measured widths before rendering
+    (architektur.md §5) — the canonical dict itself stays the measurement.
+
+    The image-space `quality` and `refine` meta ride along for the score
+    comparison; they are computed in `canonical_from_path` from the MEASURED
+    profile, not the resolved one (the metric is frozen and measurement-based,
+    qualitaetsmetrik.md). Raw vs refined stays apples-to-apples — both sides
+    score the same way — and on Gleichzug ink the measured profile is already
+    near-constant, so score and rendered silhouette barely diverge.
     """
     anchors = np.asarray(canonical["anchors"], dtype=float)
-    half_widths = np.asarray(canonical["half_widths"], dtype=float)
+    half_widths = resolve_half_widths(np.asarray(canonical["half_widths"], dtype=float), width_resolver)
     trace_meta = canonical["trace_meta"]
     stroke_starts = trace_meta.get("stroke_starts")
     corner_anchors = trace_meta.get("corner_anchors") or []
@@ -702,7 +713,7 @@ def written_preview_for_canonical(canonical: dict, style_ratio: list[float], sla
     # deviates from the ink — same space as `core.fit.fit_glyph_to_crop`'s
     # `fitted_outline_px`, here from the canonical's own pixel anchors.
     anchors_px_local = np.array([[px - x0, py - y0] for px, py in trace_meta["pixel_anchors"]], dtype=float)
-    hw_px = np.asarray(trace_meta["half_widths_px"], dtype=float)
+    hw_px = resolve_half_widths(np.asarray(trace_meta["half_widths_px"], dtype=float), width_resolver)
     silhouette_px: list[list[list[list[float]]]] = []
     if len(anchors_px_local) >= 2:
         plan = build_sample_plan(anchors_px_local, stroke_starts, corner_anchors, 240)
@@ -717,11 +728,13 @@ def written_preview_for_canonical(canonical: dict, style_ratio: list[float], sla
         "crop_size": {"w": int(snapshot["x1"] - x0), "h": int(snapshot["y1"] - y0)},
         "skeleton_polyline_px": [],
         "anchors_px": [[round(px - x0, 2), round(py - y0, 2)] for px, py in trace_meta["pixel_anchors"]],
-        "half_widths_px": trace_meta["half_widths_px"],
+        # Resolved widths (not the stored measurement) so every displayed width
+        # matches the silhouettes drawn from them.
+        "half_widths_px": [round(float(v), 2) for v in hw_px],
         # Per-stroke ring lists in crop pixels (exterior + holes, evenodd).
         "silhouette_px": silhouette_px,
         "anchors_template": canonical["anchors"],
-        "half_widths_template": canonical["half_widths"],
+        "half_widths_template": [round(float(v), 4) for v in half_widths],
         "outline_polygon": outline_polygons[0] if outline_polygons else [],
         "outline_polygons": outline_polygons,
         "outline_paths": outline_paths,
@@ -740,12 +753,20 @@ def written_preview_for_canonical(canonical: dict, style_ratio: list[float], sla
 
 
 def diagnostic_for_glyph(
-    glyph_row: dict, bbox: dict, chart_path: str, style_ratio: list[float], slant_deg: float
+    glyph_row: dict,
+    bbox: dict,
+    chart_path: str,
+    style_ratio: list[float],
+    slant_deg: float,
+    width_resolver: str = "pressure",
 ) -> dict:
     """JSON for the 3-column SVG diagnostic (Loth pur | Crop+skeleton+anchors | Canonical).
 
     Backend does all the heavy lifting (skeleton extraction, outline polygon
-    construction) so the frontend just renders polylines + polygons.
+    construction) so the frontend just renders polylines + polygons. The
+    style's `width_resolver` is applied to the stored measured widths before
+    rendering (architektur.md §5: `pressure` keeps the Schwellzug profile,
+    `constant` renders Gleichzug) — the stored template is never mutated.
     """
     chart_gray = load_chart_grayscale(chart_path)
     crop = crop_with_mask(chart_gray, bbox, fill=1.0)
@@ -757,11 +778,13 @@ def diagnostic_for_glyph(
     skeleton_polyline_px = [[int(x), int(y)] for x, y in zip(xs.tolist(), ys.tolist(), strict=True)]
 
     anchors_template = np.asarray(glyph_row["anchors"], dtype=float)
-    half_widths_template = np.asarray(glyph_row["half_widths"], dtype=float)
+    half_widths_template = resolve_half_widths(np.asarray(glyph_row["half_widths"], dtype=float), width_resolver)
 
     trace_meta = glyph_row.get("trace_meta", {})
     pixel_anchors = trace_meta.get("pixel_anchors") or []
-    half_widths_px = trace_meta.get("half_widths_px") or []
+    half_widths_px = resolve_half_widths(
+        np.asarray(trace_meta.get("half_widths_px") or [], dtype=float), width_resolver
+    )
     stroke_starts = trace_meta.get("stroke_starts")
     corner_anchors = trace_meta.get("corner_anchors") or []
     x0, y0 = bbox["x0"], bbox["y0"]

@@ -51,10 +51,14 @@ function stripPreset(p: (typeof PRESETS)[number]): LineatureConfig {
   return cfg;
 }
 
+// Sütterlin is the active authoring script (CONFIG.sourceId), so the worksheet
+// opens on its preset; Kurrent/Offenbacher stay one click away.
+const DEFAULT_PRESET = PRESETS.find((p) => p.id === 'suetterlin') ?? PRESETS[0];
+
 export function WorksheetView() {
-  const [cfg, setCfg] = useState<LineatureConfig>(() => stripPreset(PRESETS[0]));
-  const [presetId, setPresetId] = useState<string>(PRESETS[0].id);
-  const [caption, setCaption] = useState<string>(PRESETS[0].label);
+  const [cfg, setCfg] = useState<LineatureConfig>(() => stripPreset(DEFAULT_PRESET));
+  const [presetId, setPresetId] = useState<string>(DEFAULT_PRESET.id);
+  const [caption, setCaption] = useState<string>(DEFAULT_PRESET.label);
   // Ruling colour scheme: today's print look vs the ~1900 Schulheft print
   // (blue lines, optional red Randleiste). Preview and PDF read the same map.
   const [rulingThemeId, setRulingThemeIdRaw] = useState<string>(RULING_THEMES[0].id);

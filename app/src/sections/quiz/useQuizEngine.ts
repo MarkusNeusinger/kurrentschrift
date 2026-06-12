@@ -37,7 +37,7 @@ export const inCase = (letter: string, kg: KnownGlyph): string =>
 export function useQuizEngine() {
   const { bboxesByKey, glyphsByKey } = useAdmin();
 
-  const [script, setScript] = useState('kurrent');
+  const [script, setScript] = useState('suetterlin');
   const [caseMode, setCaseMode] = useState<CaseMode>('lower');
   const [answerMode, setAnswerMode] = useState<AnswerMode>('type');
   const [difficulty, setDifficulty] = useState<Difficulty>('clean');

@@ -5,8 +5,9 @@
 import { cropUrl } from '@/lib/api';
 import { de } from '@/locales';
 
-// Scripts selectable in the quiz. Only Kurrent (the Loth 1866 source) has data
-// today; the others are shown disabled so the menu reflects the planned scope.
+// Scripts selectable in the quiz. The quiz pool rides on the single active
+// source (CONFIG.sourceId) — currently the Sütterlin 1922 Ausgangsschrift;
+// the others are shown disabled so the menu reflects the planned scope.
 export interface ScriptOption {
   id: string;
   label: string;
@@ -14,8 +15,8 @@ export interface ScriptOption {
 }
 
 export const SCRIPTS: ScriptOption[] = [
-  { id: 'kurrent', label: de.quiz.scripts.kurrent, available: true },
-  { id: 'suetterlin', label: de.quiz.scripts.suetterlin, available: false },
+  { id: 'kurrent', label: de.quiz.scripts.kurrent, available: false },
+  { id: 'suetterlin', label: de.quiz.scripts.suetterlin, available: true },
   { id: 'offenbacher', label: de.quiz.scripts.offenbacher, available: false },
 ];
 

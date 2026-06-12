@@ -6,6 +6,23 @@ Schema, Pfade — siehe [Sprachregelung](../reference/sprachregelung.md)).
 
 ---
 
+## Status (2026-06-12): Sütterlin-first-Pivot
+
+Die Loth-1866-Tafel (Kurrent) ist vorerst **geparkt**: Die bisherigen
+Kurrent-Renderings wirken unnatürlich und weichen sichtbar vom Crop ab.
+Stattdessen wird der Kern zuerst auf der **Sütterlin-Ausgangsschrift**
+validiert (Quelle `suetterlin-1922`, PD, siehe
+`data/sources/suetterlin-1922/SOURCE.md`): Gleichzug (konstante
+Strichstärke) statt Schwellzug, aufrecht (90°) statt geneigt, Lineatur
+1:1:1, einfache, wenig verschnörkelte Formen — das vereinfacht
+Kreuzungsauflösung und Renderpfad erheblich. Der `width_resolver` aus
+[`architektur.md`](architektur.md) §5 ist dafür im Renderpfad scharf
+geschaltet (`constant` rendert Gleichzug; Ablage und Wizard bleiben für
+alle drei Schriften identisch). Die MVP-Gates und Meilensteine unten
+gelten unverändert, nur auf der Sütterlin-Vorlage; Loth/Kurrent folgt
+wieder, sobald die Pipeline auf der einfacheren Schrift sauber sitzt
+(zurückwechseln = `CONFIG.sourceId` in `app/src/global-config.ts`).
+
 ## Status (2026-06-10)
 
 Die Implementierung läuft jetzt durchgängig über die Web-Admin-UI (`/app/`)

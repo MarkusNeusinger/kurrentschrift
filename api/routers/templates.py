@@ -53,17 +53,19 @@ def _sync_bbox_anchor_count(bbox, canonical: dict) -> None:
         bbox.n_anchors = actual
 
 
-async def _resolve_style(source: Source, db: AsyncSession) -> tuple[str, list[float], float]:
-    """Return (style_id, resolved style_ratio, resolved slant_deg) for a source.
+async def _resolve_style(source: Source, db: AsyncSession) -> tuple[str, list[float], float, str]:
+    """Return (style_id, resolved style_ratio, resolved slant_deg, width_resolver) for a source.
 
-    A source may override the style defaults per chart; null => use the style.
+    A source may override ratio/slant per chart (null => use the style); the
+    width resolver is a pure style property a source can never override
+    (architektur.md §5).
     """
     style = await StyleRepository(db).get(source.style_id)
     if style is None:
         raise HTTPException(500, detail=f"source {source.id!r} references unknown style {source.style_id!r}")
     style_ratio = list(source.style_ratio) if source.style_ratio is not None else list(style.default_style_ratio)
     slant_deg = float(source.slant_deg) if source.slant_deg is not None else float(style.default_slant_deg)
-    return style.id, style_ratio, slant_deg
+    return style.id, style_ratio, slant_deg, style.width_resolver
 
 
 def _bbox_to_dict(bbox) -> dict:
@@ -172,7 +174,7 @@ async def post_trace_preview(
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
         raise HTTPException(409, detail=f"set bbox for {glyph_key!r} before tracing")
-    _, style_ratio, slant_deg = await _resolve_style(source, db)
+    _, style_ratio, slant_deg, width_resolver = await _resolve_style(source, db)
     bbox_dict = _bbox_to_dict(bbox)
     raw_path = [p.model_dump() for p in payload.raw_path]
 
@@ -188,7 +190,7 @@ async def post_trace_preview(
                 n_anchors=payload.n_anchors,
                 refine=refine,
             )
-            out[name] = written_preview_for_canonical(canon, style_ratio, slant_deg)
+            out[name] = written_preview_for_canonical(canon, style_ratio, slant_deg, width_resolver)
         return out
 
     return await run_in_threadpool(compute)
@@ -239,7 +241,7 @@ async def get_diagnostic(
     template = await TemplateRepository(db).get(source.style_id, glyph_key)
     if template is None:
         raise HTTPException(404, detail=f"no canonical for {glyph_key!r}")
-    _, style_ratio, slant_deg = await _resolve_style(source, db)
+    _, style_ratio, slant_deg, width_resolver = await _resolve_style(source, db)
     return await run_in_threadpool(
         diagnostic_for_glyph,
         glyph_row={
@@ -251,6 +253,7 @@ async def get_diagnostic(
         chart_path=source.chart_path,
         style_ratio=style_ratio,
         slant_deg=slant_deg,
+        width_resolver=width_resolver,
     )
 
 

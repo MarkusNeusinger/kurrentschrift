@@ -6,9 +6,11 @@ export const CONFIG = {
   apiBase: '/api',
   /**
    * The single source the v1 UI is hardcoded to (multi-source is in the DB
-   * schema but out of UI scope).
+   * schema but out of UI scope). Currently the Sütterlin 1922 Ausgangsschrift
+   * chart; the Loth 1866 Kurrent chart is parked — flip back to 'loth-1866'
+   * to resume authoring on it.
    */
-  sourceId: 'loth-1866',
+  sourceId: 'suetterlin-1922',
   /**
    * Local-dev write auth: in production the admin write endpoints are gated by
    * the Cloudflare Access cookie (forwarded by the CF Worker). For local dev

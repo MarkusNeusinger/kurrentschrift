@@ -91,7 +91,7 @@ export const admin = {
     computing: 'Diagnose wird gerechnet…',
     noCanonicalShort: 'noch kein Canonical — erst Strich aufnehmen',
     reload: 'neu laden',
-    cropHeading: 'Original (Loth-Ausschnitt)',
+    cropHeading: 'Original (Tafel-Ausschnitt)',
     cropCaption:
       'Der unveränderte Ausschnitt der Vorlage (nach Ausschluss-Maske). Er ist der Maßstab: Jede weitere Stufe wird an diesem Bild gemessen.',
     // Followed by the anchor count "(…)" in the column heading.
