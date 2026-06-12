@@ -681,10 +681,16 @@ def written_preview_for_canonical(
     Lets the wizard's Optimieren step show "as written" previews (raw vs
     refined derivation) before anything is persisted — same outline/centerline
     geometry as `diagnostic_for_glyph`, minus the crop/skeleton columns (the
-    skeleton recompute is wasted on a pure render). The image-space `quality`
-    and `refine` meta ride along for the score comparison. The style's
+    skeleton recompute is wasted on a pure render). The style's
     `width_resolver` is applied to the measured widths before rendering
     (architektur.md §5) — the canonical dict itself stays the measurement.
+
+    The image-space `quality` and `refine` meta ride along for the score
+    comparison; they are computed in `canonical_from_path` from the MEASURED
+    profile, not the resolved one (the metric is frozen and measurement-based,
+    qualitaetsmetrik.md). Raw vs refined stays apples-to-apples — both sides
+    score the same way — and on Gleichzug ink the measured profile is already
+    near-constant, so score and rendered silhouette barely diverge.
     """
     anchors = np.asarray(canonical["anchors"], dtype=float)
     half_widths = resolve_half_widths(np.asarray(canonical["half_widths"], dtype=float), width_resolver)
