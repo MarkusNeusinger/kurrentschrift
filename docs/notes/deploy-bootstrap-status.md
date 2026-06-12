@@ -72,7 +72,7 @@ Connection (2nd-gen GitHub host):
 - `kurrentschrift-github` in `europe-west4` — verbunden mit `MarkusNeusinger/kurrentschrift`
 
 Trigger (beide in `europe-west4`, Branch-Pattern `^main$`):
-- `deploy-api` → `api/cloudbuild.yaml`, included files: `api/**, core/**, pyproject.toml, uv.lock, .dockerignore, .gcloudignore`
+- `deploy-api` → `api/cloudbuild.yaml`, included files: `api/**, core/**, alembic/**, alembic.ini, data/sources/**, pyproject.toml, uv.lock, .dockerignore, .gcloudignore` (alembic + data/sources seit 2026-06-12 — vorher löste ein Chart- oder Migrations-only-PR keinen API-Deploy aus)
 - `deploy-app` → `app/cloudbuild.yaml`, included files: `app/**`
 
 Migrationen: `api/cloudbuild.yaml` führt vor dem Deploy den Cloud-Run-Job **`kurrentschrift-migrate`** aus (`alembic upgrade head` im frisch gebauten Image, seit PR #18) — Schema-Änderungen laufen also automatisch mit dem API-Deploy, nie ad-hoc.

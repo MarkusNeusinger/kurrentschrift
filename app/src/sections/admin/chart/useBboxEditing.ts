@@ -50,7 +50,7 @@ interface UseBboxEditingArgs {
 }
 
 export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseBboxEditingArgs) {
-  const { bboxesByKey, glyphsByKey, activeGlyph, upsertBbox, removeBbox, removeGlyph } = useAdmin();
+  const { sourceId, bboxesByKey, glyphsByKey, activeGlyph, upsertBbox, removeBbox, removeGlyph } = useAdmin();
   const [drag, setDrag] = useState<DragState | null>(null);
   const [edit, setEdit] = useState<EditState | null>(null);
   const [snack, setSnack] = useState<string | null>(null);
@@ -123,7 +123,7 @@ export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseB
         Math.round(ed.cur.y1) === current.y1;
       if (unchanged) return;
       try {
-        const saved = await putBbox(activeGlyph, editedBbox(current, ed.handle, ed.cur));
+        const saved = await putBbox(sourceId, activeGlyph, editedBbox(current, ed.handle, ed.cur));
         upsertBbox(activeGlyph, saved);
         setSnack(fmt(ed.handle === 'move' ? de.admin.snack.boxMoved : de.admin.snack.boxResized, { glyph: activeGlyph }));
       } catch (err) {
@@ -160,13 +160,13 @@ export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseB
     };
     setDrag(null);
     try {
-      const saved = await putBbox(activeGlyph, next);
+      const saved = await putBbox(sourceId, activeGlyph, next);
       upsertBbox(activeGlyph, saved);
       setSnack(fmt(de.admin.snack.bboxSaved, { glyph: activeGlyph }));
     } catch (err) {
       setSnack(`${de.admin.snack.saveFailed} ${err}`);
     }
-  }, [drag, edit, activeGlyph, bboxesByKey, upsertBbox]);
+  }, [drag, edit, sourceId, activeGlyph, bboxesByKey, upsertBbox]);
 
   // A starting pinch drops a draw drag (but keeps a live edit, matching the
   // previous routing).
@@ -196,7 +196,7 @@ export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseB
     const nextLocked = !keys.some((k) => bboxesByKey[k]?.locked === true);
     try {
       for (const k of keys) {
-        const saved = await putBbox(k, { ...bboxInFromOut(bboxesByKey[k]), locked: nextLocked });
+        const saved = await putBbox(sourceId, k, { ...bboxInFromOut(bboxesByKey[k]), locked: nextLocked });
         upsertBbox(k, saved);
       }
       const name = knownGlyph(activeGlyph)?.glyph ?? activeGlyph;
@@ -205,7 +205,7 @@ export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseB
     } catch (err) {
       setSnack(`${de.admin.snack.saveFailed} ${err}`);
     }
-  }, [activeGlyph, bboxesByKey, upsertBbox]);
+  }, [sourceId, activeGlyph, bboxesByKey, upsertBbox]);
 
   const deleteActive = useCallback(async () => {
     if (!activeGlyph || !(activeGlyph in bboxesByKey)) return;
@@ -216,16 +216,16 @@ export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseB
     if (!ok) return;
     try {
       if (hasGlyph) {
-        await deleteGlyph(activeGlyph);
+        await deleteGlyph(sourceId, activeGlyph);
         removeGlyph(activeGlyph);
       }
-      await deleteBbox(activeGlyph);
+      await deleteBbox(sourceId, activeGlyph);
       removeBbox(activeGlyph);
       setSnack(fmt(de.admin.snack.deleted, { glyph: activeGlyph }));
     } catch (err) {
       setSnack(`${de.admin.snack.deleteFailed} ${err}`);
     }
-  }, [activeGlyph, bboxesByKey, glyphsByKey, removeBbox, removeGlyph, deleteBbox, deleteGlyph]);
+  }, [sourceId, activeGlyph, bboxesByKey, glyphsByKey, removeBbox, removeGlyph]);
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {

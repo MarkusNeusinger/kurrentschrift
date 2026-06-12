@@ -213,7 +213,7 @@ export function WizardCanvas({
           }}
         >
           <img
-            src={cropUrl(glyphKey, cropCacheBust)}
+            src={cropUrl(source.id, glyphKey, cropCacheBust)}
             alt={known.label}
             width={displayW}
             height={displayH}

@@ -21,6 +21,7 @@ import ReplayIcon from '@mui/icons-material/Replay';
 import { Alert, Box, CircularProgress, IconButton, keyframes } from '@mui/material';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 
+import { CONFIG } from '@/global-config';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { ApiError, getDiagnostic, type DiagnosticData } from '@/lib/api';
 import { ringsToPathD, type Ring } from '@/lib/svg';
@@ -139,7 +140,9 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, cacheB
       return;
     }
     setFetched(null); // spinner while the new glyph loads
-    getDiagnostic(glyphKey)
+    // Public surfaces always render the site-wide source, regardless of which
+    // source the admin currently has active.
+    getDiagnostic(CONFIG.sourceId, glyphKey)
       .then((d) => {
         if (cancelled) return;
         cache.set(glyphKey, { bust: cacheBust ?? null, data: d });

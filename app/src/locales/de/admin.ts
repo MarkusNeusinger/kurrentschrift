@@ -50,6 +50,7 @@ export const admin = {
     deleteFailed: 'Löschen fehlgeschlagen:',
   },
   sidebar: {
+    sourceLabel: 'Vorlage',
     groupLower: 'Kleinbuchstaben',
     groupUpper: 'Großbuchstaben',
     groupComb: 'Kombinationen',

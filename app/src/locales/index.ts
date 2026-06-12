@@ -27,7 +27,9 @@ export {
   LINEATUR_LABELS,
   POSITION_LABEL,
   POSITION_LABELS,
+  STYLE_LABELS,
   ZONE_LABELS,
   couplingLabel,
   positionLabel,
+  styleLabel,
 } from './de/common';

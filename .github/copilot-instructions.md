@@ -210,9 +210,10 @@ Python package manager: **uv**. Frontend: **npm** (note: anyplot uses
 yarn, kurrentschrift uses npm — `package-lock.json` is checked in).
 
 Browser at `http://localhost:3000` loads the admin UI: the active source
-chart (`CONFIG.sourceId` in `app/src/global-config.ts` — currently the
-Sütterlin 1922 Ausgangsschrift; the Loth 1866 Kurrent chart is parked) with a
-draggable rough bbox, then the step-by-step Einrichtungs-Wizard (Ausschluss/
+chart (switchable at runtime via the sidebar's Vorlage select, persisted per
+browser; `CONFIG.sourceId` in `app/src/global-config.ts` is the source the
+PUBLIC pages render — currently the Sütterlin 1922 Ausgangsschrift — and the
+admin's default) with a draggable rough bbox, then the step-by-step Einrichtungs-Wizard (Ausschluss/
 freehand eraser → Lineatur → Schräglage → Weg → Übersicht/approve→lock) for
 canonical extraction, and the 3-column SVG diagnostic from `/diagnostic`
 JSON. The Weg step records the ductus as one or more pen-strokes — each pen

@@ -2,6 +2,7 @@ import { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
 
 import { AdminProvider } from '@/context/AdminContext';
+import { CONFIG } from '@/global-config';
 import { paths } from '@/routes/paths';
 
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
@@ -17,10 +18,11 @@ export const publicRoutes: RouteObject[] = [
   {
     // The quiz reads the source chart + marked bboxes, so it needs the data
     // provider. Scoped to just this route so the other public pages stay
-    // client-side and don't pay the boot load / Cloud Run cold start.
+    // client-side and don't pay the boot load / Cloud Run cold start. Pinned
+    // to the site-wide source so the quiz never follows the admin's switcher.
     path: paths.quiz,
     element: (
-      <AdminProvider>
+      <AdminProvider pinnedSourceId={CONFIG.sourceId}>
         <QuizPage />
       </AdminProvider>
     ),

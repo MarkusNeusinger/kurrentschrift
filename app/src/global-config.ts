@@ -5,10 +5,10 @@ export const CONFIG = {
   /** Base path of the FastAPI backend (vite dev proxy / Cloudflare Worker in prod). */
   apiBase: '/api',
   /**
-   * The single source the v1 UI is hardcoded to (multi-source is in the DB
-   * schema but out of UI scope). Currently the Sütterlin 1922 Ausgangsschrift
-   * chart; the Loth 1866 Kurrent chart is parked — flip back to 'loth-1866'
-   * to resume authoring on it.
+   * The source the PUBLIC pages (landing, worksheet, quiz) render — currently
+   * the Sütterlin 1922 Ausgangsschrift chart. The admin is NOT bound to this:
+   * it has a runtime source switcher (AdminContext, persisted per browser)
+   * and only falls back to this id by default.
    */
   sourceId: 'suetterlin-1922',
   /**

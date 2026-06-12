@@ -61,7 +61,7 @@ function deltaColor(delta: number): string {
 }
 
 export function RederiveAllDialog({ open, onClose }: Props) {
-  const { bboxesByKey, glyphsByKey, refreshCrop } = useAdmin();
+  const { sourceId, bboxesByKey, glyphsByKey, refreshCrop } = useAdmin();
   const t = de.admin.rederive;
   const [rows, setRows] = useState<RederiveRow[] | null>(null);
   const [running, setRunning] = useState(false);
@@ -111,7 +111,7 @@ export function RederiveAllDialog({ open, onClose }: Props) {
       let rawPathMissing = false;
       updateRow(i, { status: 'scoring' });
       try {
-        const q = await getQuality(work[i].repKey);
+        const q = await getQuality(sourceId, work[i].repKey);
         before = q.stored.score;
         after = q.candidate?.score;
         rawPathMissing = q.candidate == null;
@@ -127,7 +127,7 @@ export function RederiveAllDialog({ open, onClose }: Props) {
         updateRow(i, { status: 'applying', before, after });
         for (const k of work[i].targets) {
           // force: bulk refresh is the deliberate write the lock guard expects.
-          await postResample(k, { force: true });
+          await postResample(sourceId, k, { force: true });
           applied += 1;
         }
         updateRow(i, { status: 'done' });
@@ -137,7 +137,7 @@ export function RederiveAllDialog({ open, onClose }: Props) {
     }
     if (applied > 0) refreshCrop();
     setRunning(false);
-  }, [groups, refreshCrop]);
+  }, [sourceId, groups, refreshCrop]);
 
   const handleClose = () => {
     if (running) return; // cancel first — closing mid-run would hide the report
