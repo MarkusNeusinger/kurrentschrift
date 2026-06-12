@@ -73,7 +73,7 @@ export function ImpressumView() {
           <Box
             sx={{
               display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
+              flexDirection: 'row',
               alignItems: { xs: 'flex-start', sm: 'center' },
               gap: { xs: 3, sm: 5 },
               mb: 2,
