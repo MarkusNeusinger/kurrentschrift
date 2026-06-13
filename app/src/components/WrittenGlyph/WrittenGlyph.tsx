@@ -87,6 +87,14 @@ interface Props {
   durationMs?: number;
   // Target rendered height in px (width follows the glyph's aspect, capped).
   height?: number;
+  // Frame the viewBox to the glyph's own ink extent instead of the full
+  // ascender..descender lineature, so a lowercase letter fills the box (the
+  // comparison view renders it the same size as the tight chart crop).
+  tight?: boolean;
+  // Override the rendered-width cap (default MAX_W). Pass a large value to let
+  // height drive the size unconditionally (the comparison view wants big, equal
+  // sizes regardless of glyph aspect).
+  maxWidth?: number;
   // Canonical version stamp: require a cache entry of exactly this version,
   // refetching otherwise (the admin dialog after a re-trace). The quiz never
   // passes it and accepts any cached entry.
@@ -102,7 +110,7 @@ interface Props {
 const PEN_PAUSE_MS = 150; // pause at each Absetzen so the lift reads as a lift
 const MAX_W = 300;
 
-export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, cacheBust, data: dataProp, onUnavailable }: Props) {
+export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight = false, maxWidth, cacheBust, data: dataProp, onUnavailable }: Props) {
   const reducedMotion = usePrefersReducedMotion();
   const uid = useId();
   const [fetched, setFetched] = useState<DiagnosticData | null>(() => cachedEntry(glyphKey, cacheBust)?.data ?? null);
@@ -174,10 +182,31 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, cacheB
     // so a glyph drawn from the right (e.g. K) lies entirely in negative x. Span
     // the viewBox over the real anchor extent instead of assuming [0, advance].
     const xs = data.anchors_template.map((a) => a[0]);
-    const minX = (xs.length ? Math.min(0, ...xs) : 0) - 0.5;
-    const vbW = (xs.length ? Math.max(0.5, ...xs) : 0.5) + 0.5 - minX;
-    const vbY = -tpl.ascender - 0.3;
-    const vbH = tpl.ascender - tpl.descender + 0.6;
+    const ys = data.anchors_template.map((a) => a[1]);
+    const hwMax = data.half_widths_template.length ? Math.max(...data.half_widths_template) : 0.05;
+    let minX: number;
+    let vbW: number;
+    let vbY: number;
+    let vbH: number;
+    if (tight && xs.length) {
+      // Tight: frame the glyph's own ink extent (+ a hairline of padding and the
+      // baseline) so the letter fills the box at roughly the same scale as the
+      // tightly-cropped chart image beside it.
+      const pad = hwMax + 0.06;
+      const xlo = Math.min(...xs) - pad;
+      const xhi = Math.max(...xs) + pad;
+      const ylo = Math.min(0, ...ys) - pad;
+      const yhi = Math.max(...ys) + pad;
+      minX = xlo;
+      vbW = xhi - xlo;
+      vbY = -yhi;
+      vbH = yhi - ylo;
+    } else {
+      minX = (xs.length ? Math.min(0, ...xs) : 0) - 0.5;
+      vbW = (xs.length ? Math.max(0.5, ...xs) : 0.5) + 0.5 - minX;
+      vbY = -tpl.ascender - 0.3;
+      vbH = tpl.ascender - tpl.descender + 0.6;
+    }
 
     // Preferred: capsule-union rings per stroke (loop counters stay open via
     // evenodd). Legacy ribbon polygons as fallback for older payloads.
@@ -216,7 +245,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, cacheB
     const writeEndMs = cursor;
 
     return { tpl, minX, vbW, vbY, vbH, strokePaths, polygons, centerlines, maskWidth, timing, writeEndMs };
-  }, [data, durationMs]);
+  }, [data, durationMs, tight]);
 
   if (unavailable) return null;
   if (error) {
@@ -228,11 +257,12 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, cacheB
 
   const { tpl, minX, vbW, vbY, vbH, strokePaths, polygons, centerlines, maskWidth, timing, writeEndMs } = geom;
   const displayH = height;
+  const maxW = maxWidth ?? MAX_W;
   let displayW = (displayH * vbW) / vbH;
   let finalH = displayH;
-  if (displayW > MAX_W) {
-    finalH = (MAX_W * vbH) / vbW;
-    displayW = MAX_W;
+  if (displayW > maxW) {
+    finalH = (maxW * vbH) / vbW;
+    displayW = maxW;
   }
   // useId() namespaces the mask per component instance so two WrittenGlyphs with
   // the same glyph_key on screen at once can't collide on `url(#id)`.
@@ -248,7 +278,10 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, cacheB
         preserveAspectRatio="xMidYMid meet"
         role="img"
         aria-label={de.common.writtenGlyph.ariaLabel}
-        style={{ display: 'block', background: SURFACE_BG }}
+        // maxWidth lets a wide glyph scale down to a narrow container (mobile /
+        // the comparison view's uncapped width) instead of overflowing; the
+        // viewBox + preserveAspectRatio shrink the content to fit, centered.
+        style={{ display: 'block', background: SURFACE_BG, maxWidth: '100%' }}
       >
         <defs>
           {/* Ink bleed: fibre-wicking displacement on the silhouette group —
