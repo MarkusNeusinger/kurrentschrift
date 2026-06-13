@@ -8,6 +8,7 @@ import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import GridViewIcon from '@mui/icons-material/GridView';
 import HomeIcon from '@mui/icons-material/Home';
 import LockIcon from '@mui/icons-material/Lock';
+import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import {
   Box,
@@ -108,6 +109,11 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
         >
           {de.common.brand.name}
         </Typography>
+        <Tooltip title={de.admin.sidebar.compareOverview}>
+          <IconButton size="small" aria-label={de.admin.sidebar.compareOverview} onClick={() => go('/admin/vergleich')}>
+            <ViewColumnIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
         <Tooltip title={de.admin.sidebar.chartOverview}>
           <IconButton size="small" onClick={() => go('/admin/chart')}>
             <GridViewIcon fontSize="small" />

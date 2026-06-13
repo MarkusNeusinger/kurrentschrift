@@ -57,6 +57,7 @@ export const admin = {
     groupComb: 'Kombinationen',
     toHome: 'Zur Startseite',
     chartOverview: 'Chart-Übersicht',
+    compareOverview: 'Vergleich aller Buchstaben',
     overlays: 'Overlays',
     all: 'alle',
     none: 'keine',
@@ -74,6 +75,26 @@ export const admin = {
     diagnose: 'Diagnose',
     noBboxHint: 'Noch keine Bbox — im Modus „Bbox“ ein Rechteck auf der Vorlage ziehen.',
     lockedHint: '🔒 Gesperrt (fertig) — oben in der Leiste entsperren, um zu bearbeiten.',
+  },
+  // Side-by-side comparison of every authored letter (ComparePage): the soll/ist
+  // the Diagnose modal only shows one glyph at a time.
+  compare: {
+    title: 'Vergleich aller Buchstaben',
+    intro:
+      'Jeder erstellte Buchstabe groß nebeneinander: der unveränderte Tafel-Ausschnitt und „wie geschrieben“ — so lässt sich die Formtreue über das ganze Alphabet auf einen Blick beurteilen, statt Glyphe für Glyphe in der Diagnose.',
+    colCrop: 'Original',
+    colCanonical: 'Kanonische Form',
+    colWritten: 'Wie geschrieben',
+    overlayToggle: 'Überlagern',
+    overlayHeading: 'Überlagert (Original + Geschrieben in Rot)',
+    showCorners: 'Ecken markieren',
+    animate: 'Schreiben animieren',
+    reload: 'Neu laden',
+    empty: 'Noch keine erstellten Glyphen — erst im Wizard einen Weg zeichnen und sperren.',
+    // Followed by the position label when a letter is authored per position.
+    positionPrefix: 'Position: ',
+    noCanonical: 'kein Canonical',
+    loadError: 'Diagnose konnte nicht geladen werden.',
   },
   diagnostics: {
     // Followed by the glyph label in the dialog title.
