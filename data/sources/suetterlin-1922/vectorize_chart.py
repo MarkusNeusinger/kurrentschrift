@@ -99,8 +99,9 @@ def main() -> None:
     arr = median_filter(np.asarray(img, dtype=np.float32), size=3)  # kill JPEG block speckle
     threshold = otsu_threshold(arr)
 
-    # Potrace fills the complement of its truthy region, so feed it the paper
-    # mask (~ink); the resulting filled curves are the ink strokes. Verified by
+    # `paper` is True for pixels at/above the threshold (the page background).
+    # Potrace fills the complement of the truthy bitmap it's given, so tracing
+    # the paper mask yields filled curves over the ink strokes. Verified by
     # render brightness (correct = mostly white page, ink ~16% coverage).
     paper = arr >= threshold
     d = trace_to_svg_path(paper)
