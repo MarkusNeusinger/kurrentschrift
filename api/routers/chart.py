@@ -13,13 +13,24 @@ from core.database import BboxRepository, Source
 router = APIRouter(prefix="/sources/{source_id}", tags=["chart"])
 
 
+_DISPLAY_MEDIA_TYPES = {".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg"}
+
+
 @router.get("/chart")
 async def get_chart(source: Source = Depends(require_source)) -> Response:
-    """Stream the source chart image (`chart_path` bytes from disk)."""
-    path = resolve_chart_path(source.chart_path)
+    """Stream the source chart image for display.
+
+    Prefers a crisp vector sibling (`<chart>.svg`) if one sits next to the raster
+    `chart_path`; it shares the raster's exact pixel coordinate space (same
+    `viewBox`), so it scales sharply at any zoom without touching stored bbox /
+    mask / guide coordinates. The measurement pipeline (crops, skeletonisation)
+    keeps reading the raster `chart_path` itself — this endpoint is display-only.
+    """
+    raster = resolve_chart_path(source.chart_path)
+    path = raster.with_suffix(".svg") if raster.with_suffix(".svg").exists() else raster
     if not path.exists():
         raise HTTPException(404, detail=f"chart file missing on disk: {path}")
-    media_type = "image/jpeg" if path.suffix.lower() in (".jpg", ".jpeg") else "image/png"
+    media_type = _DISPLAY_MEDIA_TYPES.get(path.suffix.lower(), "application/octet-stream")
     return Response(content=path.read_bytes(), media_type=media_type)
 
 
