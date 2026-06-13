@@ -26,3 +26,20 @@
              (Schräglage 90°), Lineatur 1:1:1, Gleichzug — gleichmäßige
              Strichstärke ohne Schwellzug (Kugelspitz-/Redisfeder); siehe
              docs/schriftkunde/suetterlin.md.
+
+## chart.svg — 1614 × 1300 (viewBox), Vektor
+
+- Origin:    Abgeleitet aus `chart.jpg` durch `vectorize_chart.py` (Otsu-Schwelle
+             + Potrace-Trace nach Median-Entrauschung).
+- Processing: Mechanische Reproduktion gemeinfreier Geometrie — fügt kein neues
+             Schutzrecht hinzu (kein eigenschöpferischer Eingriff), daher
+             derselbe PD-Status wie der Quellscan.
+- Purpose:   Reine *Anzeige*-Datei: behebt die Pixeligkeit der niedrig auflösenden
+             DNB-Vorlage in der Admin-Tafelansicht (gestochen scharf bei jedem
+             Zoom). `viewBox` = exakt 1614 × 1300, also identischer
+             Koordinatenraum wie `chart.jpg` → alle gespeicherten Bbox-/Masken-/
+             Hilfslinien-/Schräglagen-Koordinaten bleiben gültig.
+- Pipeline:  Unberührt. Messung/Skelettierung/Crops lesen weiterhin `chart.jpg`
+             (`core/chart.py`); Sütterlin ist Gleichzug, daher geht durch die
+             flache Binarisierung der SVG keine Strichstärken-Information verloren.
+- Regenerate: `uv run data/sources/suetterlin-1922/vectorize_chart.py`
