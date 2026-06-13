@@ -17,12 +17,12 @@ import { WrittenGlyph } from '@/components/WrittenGlyph';
 import { useAdmin } from '@/context/AdminContext';
 import { glyphKeyFor, isLetterSplit, LETTERS, POSITIONS } from '@/domain/glyphs';
 import type { Position } from '@/domain/glyphs';
-import { cropUrl, getDiagnostic } from '@/lib/api';
+import { ApiError, cropUrl, getDiagnostic } from '@/lib/api';
 import type { DiagnosticData } from '@/lib/api';
 import { ringsToPathD } from '@/lib/svg';
 import { de, POSITION_LABEL } from '@/locales';
 
-const FACE_H = 320; // px — "schön gröss": both faces rendered large
+const FACE_H = 320; // px — both faces rendered large
 
 interface Tile {
   key: string;
@@ -134,7 +134,9 @@ function CompareCard({
   overlay: boolean;
 }) {
   const [data, setData] = useState<DiagnosticData | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // notFound = no canonical traced yet (typed ApiError 404); anything else is a
+  // real load error. Branching on the typed status avoids parsing String(e).
+  const [error, setError] = useState<{ notFound: boolean } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -145,7 +147,7 @@ function CompareCard({
         if (!cancelled) setData(d);
       })
       .catch((e) => {
-        if (!cancelled) setError(String(e));
+        if (!cancelled) setError({ notFound: e instanceof ApiError && e.status === 404 });
       });
     return () => {
       cancelled = true;
@@ -171,8 +173,8 @@ function CompareCard({
       </Box>
 
       {error ? (
-        <Alert severity={error.includes('404') ? 'info' : 'error'} sx={{ py: 0 }}>
-          {error.includes('404') ? de.admin.compare.noCanonical : de.admin.compare.loadError}
+        <Alert severity={error.notFound ? 'info' : 'error'} sx={{ py: 0 }}>
+          {error.notFound ? de.admin.compare.noCanonical : de.admin.compare.loadError}
         </Alert>
       ) : !data ? (
         <Box sx={{ height: FACE_H, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

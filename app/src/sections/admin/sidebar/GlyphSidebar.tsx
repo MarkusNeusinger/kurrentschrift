@@ -110,7 +110,7 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
           {de.common.brand.name}
         </Typography>
         <Tooltip title={de.admin.sidebar.compareOverview}>
-          <IconButton size="small" onClick={() => go('/admin/vergleich')}>
+          <IconButton size="small" aria-label={de.admin.sidebar.compareOverview} onClick={() => go('/admin/vergleich')}>
             <ViewColumnIcon fontSize="small" />
           </IconButton>
         </Tooltip>

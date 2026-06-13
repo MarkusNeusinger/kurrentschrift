@@ -81,7 +81,7 @@ export const admin = {
   compare: {
     title: 'Vergleich aller Buchstaben',
     intro:
-      'Jeder erstellte Buchstabe groß nebeneinander: der unveränderte Tafel-Ausschnitt und „wie geschrieben" — so lässt sich die Formtreue über das ganze Alphabet auf einen Blick beurteilen, statt Glyphe für Glyphe in der Diagnose.',
+      'Jeder erstellte Buchstabe groß nebeneinander: der unveränderte Tafel-Ausschnitt und „wie geschrieben“ — so lässt sich die Formtreue über das ganze Alphabet auf einen Blick beurteilen, statt Glyphe für Glyphe in der Diagnose.',
     colCrop: 'Original',
     colCanonical: 'Kanonische Form',
     colWritten: 'Wie geschrieben',
