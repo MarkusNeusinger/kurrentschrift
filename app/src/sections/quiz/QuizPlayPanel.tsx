@@ -12,8 +12,8 @@ import { useEffect, useRef } from 'react';
 
 import { de, fmt } from '@/locales';
 import { QuestionVisual } from '@/sections/quiz/QuestionVisual';
-import { type Difficulty } from '@/sections/quiz/quizTypes';
-import { inCase, type AnswerMode, type PromptView, type QuizItem } from '@/sections/quiz/useQuizEngine';
+import { questionCropUrl, type Difficulty } from '@/sections/quiz/quizTypes';
+import { inCase, type AnswerMode, type Choice, type PromptView, type QuizItem } from '@/sections/quiz/useQuizEngine';
 
 interface PlayProps {
   current: QuizItem | null;
@@ -26,16 +26,17 @@ interface PlayProps {
   // persists across questions.
   view: PromptView;
   setView: (v: PromptView) => void;
-  choices: string[];
+  choices: Choice[];
   input: string;
   setInput: (s: string) => void;
   verdict: 'idle' | 'correct' | 'wrong' | 'revealed';
-  wrongChoices: Set<string>;
+  // The option the learner picked (colours its button, drives the crop overlay).
+  picked: Choice | null;
   answerMode: AnswerMode;
   difficulty: Difficulty;
   stats: { correct: number; seen: number; streak: number; bestStreak: number };
   onSubmitTyped: () => void;
-  onPickChoice: (c: string) => void;
+  onPickChoice: (c: Choice) => void;
   onReveal: () => void;
   onAdvance: () => void;
   onQuit: () => void;
@@ -44,14 +45,18 @@ interface PlayProps {
 export function QuizPlayPanel(p: PlayProps) {
   const { current, verdict } = p;
   const solved = verdict === 'correct';
-  const showSolution = verdict === 'correct' || verdict === 'revealed';
+  // Every answer is one-shot now, so the solution shows the moment a question is
+  // answered (right, wrong or given up).
+  const answered = verdict !== 'idle';
+  const showSolution = answered;
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Keep the typing field focused for a fast keyboard loop. (The panel only
-  // renders while a session is running, so started/finished need no re-check.)
+  // Keep the typing field focused for a fast keyboard loop while a question is
+  // open. (The panel only renders while a session runs, so no started/finished
+  // re-check is needed.)
   useEffect(() => {
-    if (p.answerMode === 'type' && verdict !== 'correct') inputRef.current?.focus();
+    if (p.answerMode === 'type' && verdict === 'idle') inputRef.current?.focus();
   }, [p.answerMode, current, verdict]);
 
   if (!current) {
@@ -64,6 +69,16 @@ export function QuizPlayPanel(p: PlayProps) {
       </Alert>
     );
   }
+
+  // The crop to blend over the prompt once answered: the prompt's own crop on a
+  // correct pick (a perfect match), the picked letter's crop on a miss (null when
+  // it has no locked specimen — then only the colour wash shows).
+  const overlayUrl =
+    verdict === 'correct'
+      ? questionCropUrl(current.key, p.difficulty)
+      : verdict === 'wrong' && p.picked?.cropKey
+        ? questionCropUrl(p.picked.cropKey, p.difficulty)
+        : null;
 
   return (
     <Stack spacing={3}>
@@ -87,6 +102,7 @@ export function QuizPlayPanel(p: PlayProps) {
         setView={p.setView}
         difficulty={p.difficulty}
         verdict={verdict}
+        overlayUrl={overlayUrl}
       />
 
       {/* Solution reveal */}
@@ -102,12 +118,6 @@ export function QuizPlayPanel(p: PlayProps) {
           <Box component="span" sx={{ color: 'text.secondary' }}>
             ({current.kg.label})
           </Box>
-        </Alert>
-      )}
-
-      {verdict === 'wrong' && (
-        <Alert severity="error" sx={{ py: 0.25 }}>
-          {de.quiz.play.wrong}
         </Alert>
       )}
 
@@ -134,20 +144,33 @@ export function QuizPlayPanel(p: PlayProps) {
       ) : (
         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
           {p.choices.map((c) => {
-            const isWrong = p.wrongChoices.has(c);
-            // Highlight the right answer green whether the learner got it or
-            // revealed it.
-            const isCorrect = showSolution && c === current.kg.answer;
+            const isAnswer = c.letter === current.kg.answer;
+            const isPick = p.picked?.letter === c.letter;
+            // Once answered: the right option turns green, the learner's wrong
+            // pick turns red. Force the colour through the disabled state so the
+            // verdict stays legible while the buttons are locked.
+            const showCorrect = answered && isAnswer;
+            const showWrong = answered && isPick && !isAnswer;
             return (
               <Button
-                key={c}
-                variant={isCorrect ? 'contained' : 'outlined'}
-                color={isCorrect ? 'success' : isWrong ? 'error' : 'primary'}
-                disabled={isWrong || showSolution}
+                key={c.letter}
+                variant={showCorrect || showWrong ? 'contained' : 'outlined'}
+                color={showCorrect ? 'success' : showWrong ? 'error' : 'primary'}
+                disabled={answered}
                 onClick={() => p.onPickChoice(c)}
-                sx={{ py: 1.5, fontSize: '1.4rem', fontWeight: 500 }}
+                sx={{
+                  py: 1.5,
+                  fontSize: '1.4rem',
+                  fontWeight: 500,
+                  ...(showCorrect && {
+                    '&.Mui-disabled': { bgcolor: 'success.main', color: 'success.contrastText', opacity: 1 },
+                  }),
+                  ...(showWrong && {
+                    '&.Mui-disabled': { bgcolor: 'error.main', color: 'error.contrastText', opacity: 1 },
+                  }),
+                }}
               >
-                {inCase(c, current.kg)}
+                {inCase(c.letter, current.kg)}
               </Button>
             );
           })}
