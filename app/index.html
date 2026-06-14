@@ -6,13 +6,13 @@
     <meta name="theme-color" content="#1c1c1c" />
     <meta name="description" content="kurrentschrift.ink — offene Bibliothek der Kurrent-Ductus-Templates. Lesen und Re-Inken historischer deutscher Kurrentschrift." />
     <title>kurrentschrift.ink</title>
-    <!-- Touch-action manipulation on the body, finer-grained on the stylus
-         canvas. Prevents the browser from swallowing pen events into
-         scroll/zoom gestures. We deliberately do NOT set
+    <!-- `touch-action: manipulation` on the body only drops the double-tap
+         zoom delay; it does not block panning/scrolling. Stylus capture is
+         protected where it matters — the drawing surfaces set their own
+         `touch-action: none`. We deliberately do NOT set
          `overscroll-behavior: none` on the root: that would also kill the
-         native pull-to-refresh gesture on mobile. The drawing surfaces guard
-         themselves with their own `touch-action: none`, so the global rule
-         isn't needed to protect stylus capture. -->
+         native pull-to-refresh gesture on mobile, and the per-canvas guard
+         already covers pen events. -->
     <style>
       html, body { margin: 0; padding: 0; height: 100%; }
       body { touch-action: manipulation; }
