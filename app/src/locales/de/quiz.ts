@@ -41,9 +41,11 @@ export const quiz = {
     streak: 'Serie',
     quit: 'beenden',
     solutionIs: 'Das ist',
-    inSource: 'in der Vorlage:',
-    sourceCropAlt: 'Original-Vorlage',
     cropAlt: 'Buchstabe in alter Schreibschrift',
+    // Prompt view toggle: the synthesised pen vs. the real chart cutout.
+    viewWritten: 'Geschrieben',
+    viewCrop: 'Original',
+    viewToggleAria: 'Zwischen geschriebener Form und Original-Ausschnitt wechseln',
     wrong: 'Nicht ganz — versuch es noch einmal.',
     inputPlaceholder: 'Welcher Buchstabe?',
     check: 'Prüfen',

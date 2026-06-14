@@ -102,6 +102,11 @@ interface Props {
   // Already-fetched diagnostic payload — skips the internal fetch entirely
   // (the Diagnose dialog shares one payload across its stages).
   data?: DiagnosticData;
+  // Background behind the SVG. Defaults to the neutral white work-surface ground;
+  // public surfaces (the quiz) pass a paper tone — or `transparent` to inherit
+  // their container's paper ground — so the fresh-ink render doesn't read as a
+  // stark white box on the cream page.
+  surfaceBg?: string;
   // Called if the glyph has no canonical yet (404) so the caller can fall back to
   // the static crop. The component itself renders nothing once unavailable.
   onUnavailable?: () => void;
@@ -110,7 +115,7 @@ interface Props {
 const PEN_PAUSE_MS = 150; // pause at each Absetzen so the lift reads as a lift
 const MAX_W = 300;
 
-export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight = false, maxWidth, cacheBust, data: dataProp, onUnavailable }: Props) {
+export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight = false, maxWidth, cacheBust, data: dataProp, onUnavailable, surfaceBg = SURFACE_BG }: Props) {
   const reducedMotion = usePrefersReducedMotion();
   const uid = useId();
   const [fetched, setFetched] = useState<DiagnosticData | null>(() => cachedEntry(glyphKey, cacheBust)?.data ?? null);
@@ -281,7 +286,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight 
         // maxWidth lets a wide glyph scale down to a narrow container (mobile /
         // the comparison view's uncapped width) instead of overflowing; the
         // viewBox + preserveAspectRatio shrink the content to fit, centered.
-        style={{ display: 'block', background: SURFACE_BG, maxWidth: '100%' }}
+        style={{ display: 'block', background: surfaceBg, maxWidth: '100%' }}
       >
         <defs>
           {/* Ink bleed: fibre-wicking displacement on the silhouette group —
