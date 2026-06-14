@@ -39,6 +39,15 @@ interface PaperBackgroundProps {
 // empty strip below the footer. `100dvh` tracks the actually-visible area, so a
 // page that fits gets no phantom scroll.
 export function PaperBackground({ children, minHeight = '100dvh', sx }: PaperBackgroundProps) {
+  // `dvh` fixes the mobile `100vh` scroll, but on browsers that don't know the
+  // unit the whole declaration is invalid and `min-height` is dropped. So emit a
+  // `vh` base and upgrade to `dvh` only where it's supported (covers any `dvh`
+  // value a caller passes, not just the default).
+  const usesDvh = typeof minHeight === 'string' && minHeight.includes('dvh');
+  const minHeightStyles = usesDvh
+    ? { minHeight: minHeight.replace('dvh', 'vh'), '@supports (min-height: 1dvh)': { minHeight } }
+    : { minHeight };
+
   return (
     <Box
       // Array form so every SxProps shape a caller might pass (object, array or
@@ -46,7 +55,7 @@ export function PaperBackground({ children, minHeight = '100dvh', sx }: PaperBac
       sx={[
         {
           position: 'relative',
-          minHeight,
+          ...minHeightStyles,
           color: paper.ink,
           bgcolor: paper.bg,
           fontFamily: garamond,
