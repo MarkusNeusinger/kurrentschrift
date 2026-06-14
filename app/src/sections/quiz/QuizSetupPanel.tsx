@@ -8,6 +8,10 @@ import { de, fmt } from '@/locales';
 import { DIFFICULTIES, MODES, SCRIPTS, type Difficulty } from '@/sections/quiz/quizTypes';
 import { type AnswerMode, type CaseMode, type QuizMode } from '@/sections/quiz/useQuizEngine';
 
+// Whether whole-word mode is offered yet (still a post-MVP task — shown disabled
+// with the "bald" marker until then).
+const wordsAvailable = MODES.find((m) => m.id === 'words')?.available ?? false;
+
 interface SetupProps {
   script: string;
   setScript: (s: string) => void;
@@ -38,6 +42,7 @@ export function QuizSetupPanel(p: SetupProps) {
           <ToggleButtonGroup
             size="small"
             exclusive
+            sx={{ flexWrap: 'wrap' }}
             value={p.script}
             onChange={(_e, v: string | null) => v && p.setScript(v)}
           >
@@ -54,36 +59,37 @@ export function QuizSetupPanel(p: SetupProps) {
           </ToggleButtonGroup>
         </Field>
 
-        <Field label={de.quiz.setup.modeLabel}>
+        {/* Combined Modus + Groß-/Kleinschreibung: one compact row. The case
+            options (Klein/Groß/Gemischt) and the "Wörter" mode are mutually
+            exclusive — picking Wörter is its own task, so there's no separate
+            "nur groß" toggle to reconcile. */}
+        <Field label={de.quiz.setup.taskLabel}>
           <ToggleButtonGroup
             size="small"
             exclusive
-            value={p.mode}
-            onChange={(_e, v: QuizMode | null) => v && p.setMode(v)}
-          >
-            {MODES.map((m) => (
-              <ToggleButton key={m.id} value={m.id} disabled={!m.available}>
-                {m.label}
-                {!m.available && (
-                  <Typography component="span" variant="caption" sx={{ ml: 0.75, color: 'text.disabled' }}>
-                    {de.common.soon}
-                  </Typography>
-                )}
-              </ToggleButton>
-            ))}
-          </ToggleButtonGroup>
-        </Field>
-
-        <Field label={de.quiz.setup.lettersLabel}>
-          <ToggleButtonGroup
-            size="small"
-            exclusive
-            value={p.caseMode}
-            onChange={(_e, v: CaseMode | null) => v && p.setCaseMode(v)}
+            sx={{ flexWrap: 'wrap' }}
+            value={p.mode === 'words' ? 'words' : p.caseMode}
+            onChange={(_e, v: CaseMode | 'words' | null) => {
+              if (!v) return;
+              if (v === 'words') {
+                p.setMode('words');
+              } else {
+                p.setMode('letters');
+                p.setCaseMode(v);
+              }
+            }}
           >
             <ToggleButton value="lower">{fmt(de.quiz.setup.caseLower, { count: p.lowerCount })}</ToggleButton>
             <ToggleButton value="upper">{fmt(de.quiz.setup.caseUpper, { count: p.upperCount })}</ToggleButton>
             <ToggleButton value="mixed">{de.quiz.setup.caseMixed}</ToggleButton>
+            <ToggleButton value="words" disabled={!wordsAvailable}>
+              {de.quiz.setup.modeWords}
+              {!wordsAvailable && (
+                <Typography component="span" variant="caption" sx={{ ml: 0.75, color: 'text.disabled' }}>
+                  {de.common.soon}
+                </Typography>
+              )}
+            </ToggleButton>
           </ToggleButtonGroup>
         </Field>
 
@@ -91,6 +97,7 @@ export function QuizSetupPanel(p: SetupProps) {
           <ToggleButtonGroup
             size="small"
             exclusive
+            sx={{ flexWrap: 'wrap' }}
             value={p.answerMode}
             onChange={(_e, v: AnswerMode | null) => v && p.setAnswerMode(v)}
           >
@@ -103,6 +110,7 @@ export function QuizSetupPanel(p: SetupProps) {
           <ToggleButtonGroup
             size="small"
             exclusive
+            sx={{ flexWrap: 'wrap' }}
             value={p.difficulty}
             onChange={(_e, v: Difficulty | null) => v && p.setDifficulty(v)}
           >
