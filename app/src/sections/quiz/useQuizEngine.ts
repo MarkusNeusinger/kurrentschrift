@@ -24,6 +24,15 @@ export interface QuizItem {
   kg: KnownGlyph;
 }
 
+// One multiple-choice option. Carries the answer letter AND the glyph key whose
+// chart crop overlays the prompt when this option is picked (the double-exposure
+// match/deviation reveal). `cropKey` is null for a bare-alphabet filler that has
+// no locked specimen — then the pick still resolves, just without a crop overlay.
+export interface Choice {
+  letter: string;
+  cropKey: string | null;
+}
+
 // Per-letter miss counts (keyed by the rendered glyph the learner saw, e.g. `ſ`)
 // and confusion tallies (keyed `seen→guessed`). Both accumulate across a session
 // and feed the end screen.
@@ -35,6 +44,17 @@ export const CONFUSION_SEP = '→';
 const ALPHABET = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i));
 
 const sample = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+
+// Fisher–Yates: an unbiased, transitive shuffle — unlike `sort(() => Math.random()
+// - 0.5)`, whose comparator is non-transitive and engine-dependent.
+const shuffle = <T,>(arr: T[]): T[] => {
+  const out = [...arr];
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+};
 
 // Display the option/solution in the case of the shown glyph so the prompt and
 // the answer read consistently (a Versal crop → uppercase label).
@@ -61,19 +81,18 @@ export function useQuizEngine() {
   // Bumped on every new question so the WrittenGlyph remounts and replays its
   // writing animation even when the same letter happens to come up again.
   const [qNonce, setQNonce] = useState(0);
-  const [choices, setChoices] = useState<string[]>([]);
+  const [choices, setChoices] = useState<Choice[]>([]);
   const [input, setInput] = useState('');
   const [verdict, setVerdict] = useState<'idle' | 'correct' | 'wrong' | 'revealed'>('idle');
-  const [wrongChoices, setWrongChoices] = useState<Set<string>>(new Set());
+  // The option the learner picked (or a synthesised one for the typed guess), so
+  // the play panel can colour the picked button and overlay its crop. Null while
+  // the question is unanswered or was given up via the reveal button. Every answer
+  // is now one-shot — the first pick is final — so there is no wrong-then-retry
+  // bookkeeping to track.
+  const [picked, setPicked] = useState<Choice | null>(null);
   const [stats, setStats] = useState({ correct: 0, seen: 0, streak: 0, bestStreak: 0 });
   const [misses, setMisses] = useState<MissMap>({});
   const [confusions, setConfusions] = useState<ConfusionMap>({});
-
-  // Whether the current question has already been answered wrong at least once.
-  // A question only counts as "correct" in the tally if it was solved on the
-  // first attempt — otherwise a wrong-then-right run would inflate the score and
-  // contradict the per-letter miss breakdown shown on the results screen.
-  const missedCurrent = useRef(false);
 
   // Pending "advance after a correct answer" timer, tracked so it can be
   // cancelled when the learner quits/restarts (or the page unmounts) before it
@@ -115,16 +134,42 @@ export function useQuizEngine() {
     [allItems, caseMode],
   );
 
-  const buildChoices = useCallback((item: QuizItem): string[] => {
-    const correct = item.kg.answer;
-    const distractors = ALPHABET.filter((c) => c !== correct);
-    const picked: string[] = [];
-    while (picked.length < 3 && distractors.length) {
-      const idx = Math.floor(Math.random() * distractors.length);
-      picked.push(distractors.splice(idx, 1)[0]);
+  // Distractors prefer real specimens so every option can overlay its own crop:
+  // other locked letters of the SAME case (so the displayed case and the overlaid
+  // crop agree), deduped by answer letter. Top up from the bare alphabet (no crop)
+  // only when too few letters are locked to supply three.
+  const buildChoices = useCallback((item: QuizItem, fromPool: QuizItem[]): Choice[] => {
+    const correctLetter = item.kg.answer;
+    const correct: Choice = { letter: correctLetter, cropKey: item.key };
+
+    const byLetter = new Map<string, QuizItem>();
+    for (const i of fromPool) {
+      if (i.kg.letterCase !== item.kg.letterCase || i.kg.answer === correctLetter) continue;
+      if (!byLetter.has(i.kg.answer)) byLetter.set(i.kg.answer, i);
     }
-    return [correct, ...picked].sort(() => Math.random() - 0.5);
+    const distractors: Choice[] = shuffle(Array.from(byLetter.values()))
+      .slice(0, 3)
+      .map((i) => ({ letter: i.kg.answer, cropKey: i.key }));
+
+    if (distractors.length < 3) {
+      const used = new Set([correctLetter, ...distractors.map((d) => d.letter)]);
+      for (const c of shuffle(ALPHABET.filter((l) => !used.has(l)))) {
+        if (distractors.length >= 3) break;
+        distractors.push({ letter: c, cropKey: null });
+      }
+    }
+
+    return shuffle([correct, ...distractors]);
   }, []);
+
+  // Resolve a typed guess to a locked specimen of the same case as the prompt, so
+  // a wrong typed answer can overlay the guessed letter's crop too. Null when the
+  // guessed letter has no locked form.
+  const cropKeyForLetter = useCallback(
+    (letter: string, like: KnownGlyph): string | null =>
+      allItems.find((i) => i.kg.answer === letter && i.kg.letterCase === like.letterCase)?.key ?? null,
+    [allItems],
+  );
 
   const nextQuestion = useCallback(
     (fromPool: QuizItem[], excludeKey?: string) => {
@@ -143,11 +188,10 @@ export function useQuizEngine() {
       }
       setCurrent(pick);
       setQNonce((n) => n + 1);
-      setChoices(buildChoices(pick));
+      setChoices(buildChoices(pick, fromPool));
       setInput('');
       setVerdict('idle');
-      setWrongChoices(new Set());
-      missedCurrent.current = false;
+      setPicked(null);
     },
     [buildChoices],
   );
@@ -172,14 +216,15 @@ export function useQuizEngine() {
     nextQuestion(pool, current?.key);
   }, [pool, current, nextQuestion, clearAdvance]);
 
-  // Advance after a short pause so the green "correct" state stays visible;
-  // cancels any previous pending advance first.
+  // Advance after a pause so the green "Super Übereinstimmung" overlay (which
+  // fades in over ~320ms) stays on screen long enough to register; cancels any
+  // previous pending advance first.
   const scheduleAdvance = useCallback(() => {
     clearAdvance();
     advanceTimer.current = window.setTimeout(() => {
       advanceTimer.current = null;
       advance();
-    }, 650);
+    }, 1150);
   }, [clearAdvance, advance]);
 
   // End the session: show the results screen if anything was answered, otherwise
@@ -223,41 +268,38 @@ export function useQuizEngine() {
   }, []);
 
   const submitTyped = useCallback(() => {
-    // 'correct' and 'revealed' are both terminal for the current question — a
-    // late submit must not mark (and double-count) it again.
-    if (!current || verdict === 'correct' || verdict === 'revealed') return;
+    // One-shot: only an unanswered question accepts a submit. The first guess is
+    // final — wrong reveals the solution and waits for "Weiter".
+    if (!current || verdict !== 'idle') return;
     const guess = input.trim().toLowerCase();
     if (!guess) return;
     if (guess === current.kg.answer) {
-      // Right only counts toward the score if no earlier attempt missed it.
-      markResult(!missedCurrent.current);
+      markResult(true);
       setVerdict('correct');
       scheduleAdvance();
     } else {
-      // Wrong → it does NOT advance; the same letter stays for another try.
-      missedCurrent.current = true;
+      // Wrong → reveal immediately and overlay the guessed letter's crop (when
+      // it has a locked specimen) over the prompt.
+      setPicked({ letter: guess, cropKey: cropKeyForLetter(guess, current.kg) });
       recordMiss(current.kg, guess);
-      setStats((s) => ({ ...s, streak: 0 }));
+      markResult(false);
       setVerdict('wrong');
-      setInput('');
     }
-  }, [current, input, verdict, markResult, recordMiss, scheduleAdvance]);
+  }, [current, input, verdict, markResult, recordMiss, scheduleAdvance, cropKeyForLetter]);
 
   const pickChoice = useCallback(
-    (choice: string) => {
-      // Terminal once correct or revealed — guard against a late double-count.
-      if (!current || verdict === 'correct' || verdict === 'revealed') return;
-      if (choice === current.kg.answer) {
-        // Right only counts toward the score if no earlier pick missed it.
-        markResult(!missedCurrent.current);
+    (choice: Choice) => {
+      // One-shot: the first pick is final. Guard against a late double-count.
+      if (!current || verdict !== 'idle') return;
+      setPicked(choice);
+      if (choice.letter === current.kg.answer) {
+        markResult(true);
         setVerdict('correct');
         scheduleAdvance();
       } else {
-        missedCurrent.current = true;
-        recordMiss(current.kg, choice);
-        setStats((s) => ({ ...s, streak: 0 }));
+        recordMiss(current.kg, choice.letter);
+        markResult(false);
         setVerdict('wrong');
-        setWrongChoices((prev) => new Set(prev).add(choice));
       }
     },
     [current, verdict, markResult, recordMiss, scheduleAdvance],
@@ -302,7 +344,7 @@ export function useQuizEngine() {
     input,
     setInput,
     verdict,
-    wrongChoices,
+    picked,
     // session tallies
     stats,
     misses,

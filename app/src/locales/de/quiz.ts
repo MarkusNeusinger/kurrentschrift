@@ -16,7 +16,7 @@ export const quiz = {
   },
   setup: {
     intro:
-      'Erkenne die Buchstaben der alten deutschen Schreibschrift: Jeder wird dir Zug um Zug vorgeschrieben — in der Reihenfolge der Feder — und du tippst oder wählst, welcher es ist. Ist es richtig, geht es weiter; wenn nicht, versuchst du es noch einmal. Am Ende siehst du, welche Buchstaben dir Mühe gemacht haben.',
+      'Erkenne die Buchstaben der alten deutschen Schreibschrift: Jeder wird dir Zug um Zug vorgeschrieben — in der Reihenfolge der Feder — und du tippst oder wählst, welcher es ist. Stimmt deine Wahl, blendet sich die Form grün ein und es geht weiter; liegst du daneben, leuchtet sie rot auf, die Lösung erscheint, und du klickst dich weiter. Am Ende siehst du, welche Buchstaben dir Mühe gemacht haben.',
     scriptLabel: 'Schrift',
     // Combined Modus + Groß-/Kleinschreibung selector: case options plus the
     // "Wörter" mode in one row, so the setup stays compact.
@@ -52,7 +52,11 @@ export const quiz = {
     viewWritten: 'Geschrieben',
     viewCrop: 'Original',
     viewToggleAria: 'Zwischen geschriebener Form und Original-Ausschnitt wechseln',
-    wrong: 'Nicht ganz — versuch es noch einmal.',
+    // Double-exposure verdict badges: the picked letter's crop blended over the
+    // prompt — a match (right) vs. a deviation (wrong).
+    matchStrong: 'Super Übereinstimmung',
+    matchWeak: 'Starke Abweichung',
+    overlayAlt: 'Vorlage des gewählten Buchstabens',
     inputPlaceholder: 'Welcher Buchstabe?',
     check: 'Prüfen',
     nextTooltip: 'Nächster Buchstabe',

@@ -98,7 +98,7 @@ export function QuizView() {
               input={quiz.input}
               setInput={quiz.setInput}
               verdict={quiz.verdict}
-              wrongChoices={quiz.wrongChoices}
+              picked={quiz.picked}
               answerMode={quiz.answerMode}
               difficulty={quiz.difficulty}
               stats={quiz.stats}
