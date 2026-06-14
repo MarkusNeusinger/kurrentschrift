@@ -72,7 +72,13 @@ def _constant_nib_radius(skel: np.ndarray, width_map: np.ndarray, mask: np.ndarr
 
 
 def _resample_by_arc(points: np.ndarray, spacing_px: float) -> np.ndarray:
-    """Resample an Mx2 polyline to ~`spacing_px` chord spacing (≥2 points)."""
+    """Resample an Mx2 polyline to ~`spacing_px` chord spacing.
+
+    A non-degenerate polyline resamples to ≥2 points. Degenerate inputs are
+    passed through unchanged: fewer than 2 points returns the input as-is, and a
+    zero-length polyline collapses to its single distinct point. The caller
+    (`_snap_strokes_to_skeleton`) drops any stroke left with <2 points.
+    """
     points = np.asarray(points, dtype=float)
     if len(points) < 2:
         return points
