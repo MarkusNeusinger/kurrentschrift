@@ -5,12 +5,14 @@
 import { Alert, Box, Button, Paper, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 
 import { de, fmt } from '@/locales';
-import { DIFFICULTIES, SCRIPTS, type Difficulty } from '@/sections/quiz/quizTypes';
-import { type AnswerMode, type CaseMode } from '@/sections/quiz/useQuizEngine';
+import { DIFFICULTIES, MODES, SCRIPTS, type Difficulty } from '@/sections/quiz/quizTypes';
+import { type AnswerMode, type CaseMode, type QuizMode } from '@/sections/quiz/useQuizEngine';
 
 interface SetupProps {
   script: string;
   setScript: (s: string) => void;
+  mode: QuizMode;
+  setMode: (m: QuizMode) => void;
   caseMode: CaseMode;
   setCaseMode: (c: CaseMode) => void;
   answerMode: AnswerMode;
@@ -43,6 +45,26 @@ export function QuizSetupPanel(p: SetupProps) {
               <ToggleButton key={s.id} value={s.id} disabled={!s.available}>
                 {s.label}
                 {!s.available && (
+                  <Typography component="span" variant="caption" sx={{ ml: 0.75, color: 'text.disabled' }}>
+                    {de.common.soon}
+                  </Typography>
+                )}
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+        </Field>
+
+        <Field label={de.quiz.setup.modeLabel}>
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={p.mode}
+            onChange={(_e, v: QuizMode | null) => v && p.setMode(v)}
+          >
+            {MODES.map((m) => (
+              <ToggleButton key={m.id} value={m.id} disabled={!m.available}>
+                {m.label}
+                {!m.available && (
                   <Typography component="span" variant="caption" sx={{ ml: 0.75, color: 'text.disabled' }}>
                     {de.common.soon}
                   </Typography>

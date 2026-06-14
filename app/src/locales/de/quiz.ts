@@ -18,6 +18,9 @@ export const quiz = {
     intro:
       'Erkenne die Buchstaben der alten deutschen Schreibschrift: Jeder wird dir Zug um Zug vorgeschrieben — in der Reihenfolge der Feder — und du tippst oder wählst, welcher es ist. Ist es richtig, geht es weiter; wenn nicht, versuchst du es noch einmal. Am Ende siehst du, welche Buchstaben dir Mühe gemacht haben.',
     scriptLabel: 'Schrift',
+    modeLabel: 'Modus',
+    modeLetters: 'Buchstaben',
+    modeWords: 'Wörter',
     lettersLabel: 'Buchstaben',
     answerLabel: 'Antwort',
     difficultyLabel: 'Schwierigkeit',

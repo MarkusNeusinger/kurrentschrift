@@ -11,6 +11,13 @@ import { useAdmin } from '@/context/AdminContext';
 
 export type CaseMode = 'lower' | 'upper' | 'mixed';
 export type AnswerMode = 'type' | 'choice';
+// Quiz subject: single letters (today) or whole words (post-MVP, disabled in
+// setup for now).
+export type QuizMode = 'letters' | 'words';
+// Prompt view: the synthesised pen ("Geschrieben") vs. the real chart cutout
+// ("Original"). Lives here (not in QuestionVisual) so the learner's choice
+// persists across questions and only resets when a new session starts.
+export type PromptView = 'written' | 'crop';
 
 export interface QuizItem {
   key: string;
@@ -38,9 +45,15 @@ export function useQuizEngine() {
   const { bboxesByKey, glyphsByKey } = useAdmin();
 
   const [script, setScript] = useState('suetterlin');
-  const [caseMode, setCaseMode] = useState<CaseMode>('lower');
-  const [answerMode, setAnswerMode] = useState<AnswerMode>('type');
+  const [mode, setMode] = useState<QuizMode>('letters');
+  // Defaults the learner most often wants: all letters at once, picked from
+  // multiple choice.
+  const [caseMode, setCaseMode] = useState<CaseMode>('mixed');
+  const [answerMode, setAnswerMode] = useState<AnswerMode>('choice');
   const [difficulty, setDifficulty] = useState<Difficulty>('clean');
+  // Prompt view (Geschrieben/Original). Persists across questions; only a new
+  // session resets it to the written default.
+  const [view, setView] = useState<PromptView>('written');
   const [started, setStarted] = useState(false);
   const [finished, setFinished] = useState(false);
 
@@ -144,6 +157,9 @@ export function useQuizEngine() {
     setStats({ correct: 0, seen: 0, streak: 0, bestStreak: 0 });
     setMisses({});
     setConfusions({});
+    // A fresh session starts back on the written form regardless of how the
+    // previous run ended up toggled.
+    setView('written');
     setFinished(false);
     setStarted(true);
     nextQuestion(pool);
@@ -262,6 +278,8 @@ export function useQuizEngine() {
     // setup state
     script,
     setScript,
+    mode,
+    setMode,
     caseMode,
     setCaseMode,
     answerMode,
@@ -278,6 +296,8 @@ export function useQuizEngine() {
     current,
     hasDuctus,
     qNonce,
+    view,
+    setView,
     choices,
     input,
     setInput,
