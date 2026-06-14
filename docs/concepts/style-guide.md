@@ -172,7 +172,7 @@ nicht beherrschen**. Keine gebrochene Schrift in UI, Headlines oder
 Body; historische Formen nur als gekennzeichnetes Schau-Material.
 
 **Größen-Untergrenze (2026-06):** Aus demselben Leitsatz heraus hebt das
-Theme (`theme/typography.ts`) die kleinen Varianten explizit über die
+Theme (`app/src/theme/typography.ts`) die kleinen Varianten explizit über die
 MUI-Defaults — EB Garamond läuft durch seine kleine x-Höhe optisch noch
 kleiner: `body1` 17 px, `body2` 15 px, `caption` 13 px. Gilt über **alle**
 Seiten (öffentlich **und** Admin), da das Theme die einzige typografische

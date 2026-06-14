@@ -57,10 +57,14 @@ export function InfoHint({ children, title, label }: InfoHintProps) {
         aria-label={label ?? de.common.info.open}
         aria-haspopup="dialog"
         aria-expanded={open}
-        onClick={(e: MouseEvent<HTMLElement>) => setAnchor(e.currentTarget)}
+        onClick={(e: MouseEvent<HTMLElement>) => {
+          // Toggle: a second activation on the trigger closes the popover.
+          const el = e.currentTarget;
+          setAnchor((a) => (a ? null : el));
+        }}
         sx={{
-          // p 0.25 keeps the hit area >= the WCAG 2.2 target-size floor (22px
-          // mark + 2*2px = 26px). Viridian at rest, darker viridian on hover.
+          // p 0.25 lifts the 22px mark to a 26px hit area — clear of the WCAG
+          // 2.2 target-size minimum (24x24 CSS px). Viridian at rest, darker on hover.
           p: 0.25,
           color: 'primary.main',
           verticalAlign: 'text-bottom',
