@@ -13,8 +13,8 @@ export const paper = {
   lo: '#d8c7a3',
   ink: '#241a10', // iron-gall ink, aged — primary writing/body
   inkSoft: '#473420',
-  sepia: '#6f5230',
-  sepiaFaint: '#9a8259',
+  sepia: '#5e4726', // eyebrows + small labels; deepened for legibility (~6.3:1 on bg)
+  sepiaFaint: '#9a8259', // ruling/Mittellinie tint only — too light for text (2.66:1)
   viridian: '#40826d', // the single accent (chromium-oxide green)
   line: '#b6a079',
 } as const;

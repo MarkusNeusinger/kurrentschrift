@@ -46,8 +46,8 @@ scharfer Akzent. CSS-Variablen / `paper`-Token in Klammern.
 | Papier dunkel | `#d8c7a3` (`lo`) | Abfallender Rand des Verlaufs; wirkt wie leicht vergilbte Ränder. |
 | **Tinte (primär)** | `#241a10` (`ink`) | **Eisengallustinte**, gealtert: ein warmes Braun-Schwarz, nie reines `#000`. Trägt Headline, Body und das Hero-Wort. |
 | Tinte weich | `#473420` (`inkSoft`) | Sekundärtext; wie verdünnte/abgesetzte Tinte. |
-| Sepia | `#6f5230` (`sepia`) | Eyebrows, kleine Labels — abgesetzte, ältere Tinte. |
-| Sepia blass | `#9a8259` (`sepiaFaint`) | „bald"-Marker, dezente Mittellinie der Lineatur. |
+| Sepia | `#5e4726` (`sepia`) | Eyebrows, kleine Labels **und** „bald"-Marker — abgesetzte, ältere Tinte. Gegenüber dem früheren `#6f5230` (nur 5.2:1) auf ~6.3:1 vertieft, damit kleine Schrift sich klar vom Papier abhebt (§3-Leitsatz). |
+| Sepia blass | `#9a8259` (`sepiaFaint`) | **Nur Lineatur** — dezente Mittellinie/Linien. Für Text zu hell (2.66:1), trägt daher keine Schrift mehr. |
 | **Akzent (Viridian)** | `#40826d` (`viridian`) | Siehe unten — der einzige scharfe Akzent. |
 | Linie | `#b6a079` (`line`) | Hairlines, Kartenrahmen, Lineatur-Linien. |
 
@@ -170,6 +170,13 @@ Korrekturrand des Lehrers frei. Tokens (`schulheft`, Hexes approx):
 die Schrift muss **lesbar sein für Menschen, die die alten Schriften
 nicht beherrschen**. Keine gebrochene Schrift in UI, Headlines oder
 Body; historische Formen nur als gekennzeichnetes Schau-Material.
+
+**Größen-Untergrenze (2026-06):** Aus demselben Leitsatz heraus hebt das
+Theme (`theme/typography.ts`) die kleinen Varianten explizit über die
+MUI-Defaults — EB Garamond läuft durch seine kleine x-Höhe optisch noch
+kleiner: `body1` 17 px, `body2` 15 px, `caption` 13 px. Gilt über **alle**
+Seiten (öffentlich **und** Admin), da das Theme die einzige typografische
+Quelle ist.
 
 **Offene Alternative:** *Sorts Mill Goudy* (OFL; Revival von Goudy
 Oldstyle, **1915** — echtes Periodendesign, wärmer/ruhiger) bleibt als
@@ -295,8 +302,8 @@ const paper = {
   lo: '#d8c7a3',
   ink: '#241a10',        // iron-gall ink, aged — primary writing/body
   inkSoft: '#473420',
-  sepia: '#6f5230',
-  sepiaFaint: '#9a8259',
+  sepia: '#5e4726',      // eyebrows, small labels, "bald" markers — deepened for legibility (~6.3:1)
+  sepiaFaint: '#9a8259', // ruling/Mittellinie tint ONLY — too light for text (2.66:1)
   viridian: '#40826d',   // the single accent (chromium-oxide green)
   line: '#b6a079',
 };
@@ -318,8 +325,10 @@ const letterpress = `0 1px 0 ${paper.hi}59`; // Deboss der Display-Headlines
 ## 10. Komponenten-Muster
 
 - **Live-Feature** → echter `RouterLink` mit CTA (`Übungsblatt erstellen →`).
-- **Geplantes Feature** → „bald"-Marker (`sepiaFaint`, kursiv), **kein**
+- **Geplantes Feature** → „bald"-Marker (`sepia`, kursiv), **kein**
   toter Button. Konsistent mit dem bestehenden „bald" im Quiz/Setup.
+  (Früher `sepiaFaint` — auf `sepia` angehoben, weil `sepiaFaint` mit
+  2.66:1 als Text durchfällt; `sepiaFaint` trägt jetzt nur noch Lineatur.)
 - **CTA primär** → Tinte-Button bzw. Viridian-Text; sparsam einsetzen.
 - Eyebrows: Viridian-Punkt + Kleinbuchstaben-Domain `kurrentschrift.ink`.
 

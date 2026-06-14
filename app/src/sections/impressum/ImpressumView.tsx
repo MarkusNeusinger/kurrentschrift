@@ -173,7 +173,7 @@ export function ImpressumView() {
           <Typography sx={{ ...prose, mb: 0 }}>{t.transparency.text}</Typography>
         </Section>
 
-        <Typography sx={{ ...prose, mb: 0, mt: { xs: 5, md: 6 }, textAlign: 'center', fontSize: '.9rem', color: paper.sepiaFaint, fontStyle: 'italic' }}>
+        <Typography sx={{ ...prose, mb: 0, mt: { xs: 5, md: 6 }, textAlign: 'center', fontSize: '.9rem', color: paper.sepia, fontStyle: 'italic' }}>
           {t.lastUpdated}
         </Typography>
       </Container>

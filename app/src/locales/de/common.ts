@@ -75,6 +75,11 @@ export const common = {
   },
   // Marker for staged/disabled features ("coming soon").
   soon: 'bald',
+  // The one recognizable (i) affordance (InfoHint) used across public + admin:
+  // surfaces stay minimal, the detail sits a tap away.
+  info: {
+    open: 'Mehr dazu',
+  },
   // Full-page boot states (BootStatus call sites in AdminLayout and QuizView).
   boot: {
     apiUnreachable: 'API nicht erreichbar',
