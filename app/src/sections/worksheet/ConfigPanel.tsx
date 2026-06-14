@@ -14,9 +14,24 @@ import {
   Typography,
 } from '@mui/material';
 
+import { InfoHint } from '@/components/InfoHint';
 import { PRESETS, type LineatureConfig } from '@/lib/lineatur';
 import { de } from '@/locales';
 import { tokens } from '@/theme';
+
+// Overline section label with an optional (i) affordance to its right — the
+// detail that used to sit as a sentence under the control now lives behind the
+// icon, keeping the panel minimal (style-guide §7).
+function SectionLabel({ children, info }: { children: React.ReactNode; info?: React.ReactNode }) {
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, mb: 1 }}>
+      <Typography variant="overline" sx={{ color: 'text.secondary' }}>
+        {children}
+      </Typography>
+      {info}
+    </Box>
+  );
+}
 
 function NumField(props: {
   label: string;
@@ -85,7 +100,7 @@ export function ConfigPanel({ cfg, set, presetId, applyPreset, caption, setCapti
               </ToggleButton>
             ))}
           </ToggleButtonGroup>
-          <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mt: 1, minHeight: '1.2em' }}>
+          <Typography variant="body2" sx={{ color: 'text.disabled', display: 'block', mt: 1, minHeight: '1.2em' }}>
             {PRESETS.find((p) => p.id === presetId)?.note ?? de.worksheet.config.customSetting}
           </Typography>
         </Box>
@@ -104,9 +119,15 @@ export function ConfigPanel({ cfg, set, presetId, applyPreset, caption, setCapti
         </Box>
 
         <Box>
-          <Typography variant="overline" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
+          <SectionLabel
+            info={
+              <InfoHint title={de.worksheet.config.lineSystemHeading}>
+                {de.worksheet.config.lineSystemHint}
+              </InfoHint>
+            }
+          >
             {de.worksheet.config.lineSystemHeading}
-          </Typography>
+          </SectionLabel>
           <ToggleButtonGroup
             exclusive
             fullWidth
@@ -118,9 +139,6 @@ export function ConfigPanel({ cfg, set, presetId, applyPreset, caption, setCapti
             <ToggleButton value="two" sx={{ textTransform: 'none' }}>{de.worksheet.config.lineSystemTwo}</ToggleButton>
             <ToggleButton value="one" sx={{ textTransform: 'none' }}>{de.worksheet.config.lineSystemOne}</ToggleButton>
           </ToggleButtonGroup>
-          <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mt: 1 }}>
-            {de.worksheet.config.lineSystemHint}
-          </Typography>
         </Box>
 
         <Stack spacing={2}>
@@ -150,29 +168,35 @@ export function ConfigPanel({ cfg, set, presetId, applyPreset, caption, setCapti
         <Divider />
 
         <Box>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={cfg.showPenAngle}
-                onChange={(e) => set({ showPenAngle: e.target.checked })}
-              />
-            }
-            label={de.worksheet.config.penAngleToggle}
-          />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={cfg.showPenAngle}
+                  onChange={(e) => set({ showPenAngle: e.target.checked })}
+                />
+              }
+              label={de.worksheet.config.penAngleToggle}
+            />
+            <InfoHint title={de.worksheet.config.penAngle}>{de.worksheet.config.penAngleHint}</InfoHint>
+          </Box>
           <Box sx={{ mt: 1 }}>
             <NumField label={de.worksheet.config.penAngle} value={cfg.penAngleDeg} onChange={(v) => set({ penAngleDeg: v })} min={0} max={90} step={1} unit="°" disabled={!cfg.showPenAngle} />
           </Box>
-          <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mt: 1 }}>
-            {de.worksheet.config.penAngleHint}
-          </Typography>
         </Box>
 
         <Divider />
 
         <Box>
-          <Typography variant="overline" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
+          <SectionLabel
+            info={
+              <InfoHint title={de.worksheet.config.rulingHeading}>
+                {de.worksheet.config.rulingNote}
+              </InfoHint>
+            }
+          >
             {de.worksheet.config.rulingHeading}
-          </Typography>
+          </SectionLabel>
           <ToggleButtonGroup
             exclusive
             fullWidth
@@ -199,9 +223,6 @@ export function ConfigPanel({ cfg, set, presetId, applyPreset, caption, setCapti
               label={de.worksheet.config.marginToggle}
             />
           )}
-          <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mt: 1 }}>
-            {de.worksheet.config.rulingNote}
-          </Typography>
         </Box>
 
         <Divider />

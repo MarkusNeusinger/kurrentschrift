@@ -4,6 +4,7 @@
 
 import { Alert, Box, Button, Paper, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 
+import { InfoHint } from '@/components/InfoHint';
 import { de, fmt } from '@/locales';
 import { DIFFICULTIES, MODES, SCRIPTS, type Difficulty } from '@/sections/quiz/quizTypes';
 import { type AnswerMode, type CaseMode, type QuizMode } from '@/sections/quiz/useQuizEngine';
@@ -40,7 +41,6 @@ export function QuizSetupPanel(p: SetupProps) {
 
         <Field label={de.quiz.setup.scriptLabel}>
           <ToggleButtonGroup
-            size="small"
             exclusive
             sx={{ flexWrap: 'wrap' }}
             value={p.script}
@@ -65,7 +65,6 @@ export function QuizSetupPanel(p: SetupProps) {
             "nur groß" toggle to reconcile. */}
         <Field label={de.quiz.setup.taskLabel}>
           <ToggleButtonGroup
-            size="small"
             exclusive
             sx={{ flexWrap: 'wrap' }}
             value={p.mode === 'words' ? 'words' : p.caseMode}
@@ -95,7 +94,6 @@ export function QuizSetupPanel(p: SetupProps) {
 
         <Field label={de.quiz.setup.answerLabel}>
           <ToggleButtonGroup
-            size="small"
             exclusive
             sx={{ flexWrap: 'wrap' }}
             value={p.answerMode}
@@ -106,9 +104,23 @@ export function QuizSetupPanel(p: SetupProps) {
           </ToggleButtonGroup>
         </Field>
 
-        <Field label={de.quiz.setup.difficultyLabel}>
+        <Field
+          label={de.quiz.setup.difficultyLabel}
+          info={
+            <InfoHint title={de.quiz.setup.difficultyLabel}>
+              {DIFFICULTIES.map((d) => (
+                <Box key={d.id} sx={{ mb: 0.75 }}>
+                  <Box component="span" sx={{ color: 'text.primary', fontWeight: 600 }}>
+                    {d.label}
+                  </Box>
+                  {` — ${d.hint}`}
+                </Box>
+              ))}
+              {de.quiz.setup.difficultyHint}
+            </InfoHint>
+          }
+        >
           <ToggleButtonGroup
-            size="small"
             exclusive
             sx={{ flexWrap: 'wrap' }}
             value={p.difficulty}
@@ -125,9 +137,6 @@ export function QuizSetupPanel(p: SetupProps) {
               </ToggleButton>
             ))}
           </ToggleButtonGroup>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.75 }}>
-            {de.quiz.setup.difficultyHint}
-          </Typography>
         </Field>
 
         {noLetters ? (
@@ -145,12 +154,15 @@ export function QuizSetupPanel(p: SetupProps) {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, info, children }: { label: string; info?: React.ReactNode; children: React.ReactNode }) {
   return (
     <Box>
-      <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 0.75 }}>
-        {label}
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, mb: 0.75 }}>
+        <Typography variant="overline" color="text.secondary">
+          {label}
+        </Typography>
+        {info}
+      </Box>
       {children}
     </Box>
   );

@@ -273,14 +273,14 @@ export function LandingView() {
                     <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: '1.2rem', color: paper.ink, minWidth: { sm: 210 } }}>
                       {r.title}
                     </Typography>
-                    <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontStyle: 'italic', fontSize: '.85rem', color: paper.sepiaFaint, whiteSpace: 'nowrap' }}>
+                    <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontStyle: 'italic', fontSize: '.85rem', color: paper.sepia, whiteSpace: 'nowrap' }}>
                       {de.common.soon}
                     </Box>
                   </Box>
                   <Typography variant="body2" sx={{ color: paper.inkSoft, flex: 1 }}>
                     {r.desc}
                   </Typography>
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, fontStyle: 'italic', fontSize: '.85rem', color: paper.sepiaFaint, whiteSpace: 'nowrap' }}>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, fontStyle: 'italic', fontSize: '.85rem', color: paper.sepia, whiteSpace: 'nowrap' }}>
                     {de.common.soon}
                   </Box>
                 </Box>
@@ -306,7 +306,7 @@ export function LandingView() {
             <Typography sx={{ fontFamily: garamond, fontStyle: 'italic', color: paper.inkSoft, fontSize: '1.1rem' }}>
               {de.landing.footer.scripts}
             </Typography>
-            <Typography variant="caption" sx={{ color: paper.sepia, fontStyle: 'italic' }}>
+            <Typography variant="body2" sx={{ color: paper.sepia, fontStyle: 'italic' }}>
               {de.landing.footer.disclaimer}
             </Typography>
           </Box>
