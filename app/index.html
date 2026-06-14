@@ -8,9 +8,13 @@
     <title>kurrentschrift.ink</title>
     <!-- Touch-action manipulation on the body, finer-grained on the stylus
          canvas. Prevents the browser from swallowing pen events into
-         scroll/zoom gestures. -->
+         scroll/zoom gestures. We deliberately do NOT set
+         `overscroll-behavior: none` on the root: that would also kill the
+         native pull-to-refresh gesture on mobile. The drawing surfaces guard
+         themselves with their own `touch-action: none`, so the global rule
+         isn't needed to protect stylus capture. -->
     <style>
-      html, body { margin: 0; padding: 0; height: 100%; overscroll-behavior: none; }
+      html, body { margin: 0; padding: 0; height: 100%; }
       body { touch-action: manipulation; }
     </style>
 
