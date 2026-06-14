@@ -19,8 +19,8 @@ import { paper } from '@/styles/paper';
 
 // Absolute, centred crop placement shared by the reveal's base (target) crop and
 // the overlaid (picked) crop, so the two land pixel-identical and a correct pick
-// reads as truly deckungsgleich. maxWidth is the Paper's content width — its
-// padding box (the abs-positioning reference) minus the 16px padding each side —
+// reads as a true, fully coincident match. maxWidth is the Paper's content width —
+// its padding box (the abs-positioning reference) minus the 16px padding each side —
 // and maxHeight matches the idle crop, so nothing shifts when the reveal lands.
 const overlayCropSx = {
   position: 'absolute',
@@ -145,8 +145,8 @@ export function QuestionVisual({
         </ToggleButtonGroup>
       )}
 
-      {/* Doppelbelichtung: once answered, the picked letter's crop blends over
-          the prompt — deckungsgleich (green, match) on a correct pick, a second
+      {/* Double exposure: once answered, the picked letter's crop blends over the
+          prompt — fully coincident (green, match) on a correct pick, a second
           ghosted form (red, deviation) on a miss — under a verdict badge. */}
       {overlayActive && (
         <Fade in appear timeout={320}>

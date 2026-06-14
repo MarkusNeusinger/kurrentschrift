@@ -25,7 +25,7 @@ export interface QuizItem {
 }
 
 // One multiple-choice option. Carries the answer letter AND the glyph key whose
-// chart crop overlays the prompt when this option is picked (the "Doppelbelichtung"
+// chart crop overlays the prompt when this option is picked (the double-exposure
 // match/deviation reveal). `cropKey` is null for a bare-alphabet filler that has
 // no locked specimen — then the pick still resolves, just without a crop overlay.
 export interface Choice {
@@ -44,6 +44,17 @@ export const CONFUSION_SEP = '→';
 const ALPHABET = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i));
 
 const sample = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+
+// Fisher–Yates: an unbiased, transitive shuffle — unlike `sort(() => Math.random()
+// - 0.5)`, whose comparator is non-transitive and engine-dependent.
+const shuffle = <T,>(arr: T[]): T[] => {
+  const out = [...arr];
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+};
 
 // Display the option/solution in the case of the shown glyph so the prompt and
 // the answer read consistently (a Versal crop → uppercase label).
@@ -75,7 +86,7 @@ export function useQuizEngine() {
   const [verdict, setVerdict] = useState<'idle' | 'correct' | 'wrong' | 'revealed'>('idle');
   // The option the learner picked (or a synthesised one for the typed guess), so
   // the play panel can colour the picked button and overlay its crop. Null while
-  // the question is unanswered or was given up via "Lösung zeigen". Every answer
+  // the question is unanswered or was given up via the reveal button. Every answer
   // is now one-shot — the first pick is final — so there is no wrong-then-retry
   // bookkeeping to track.
   const [picked, setPicked] = useState<Choice | null>(null);
@@ -136,20 +147,19 @@ export function useQuizEngine() {
       if (i.kg.letterCase !== item.kg.letterCase || i.kg.answer === correctLetter) continue;
       if (!byLetter.has(i.kg.answer)) byLetter.set(i.kg.answer, i);
     }
-    const distractors: Choice[] = Array.from(byLetter.values())
-      .sort(() => Math.random() - 0.5)
+    const distractors: Choice[] = shuffle(Array.from(byLetter.values()))
       .slice(0, 3)
       .map((i) => ({ letter: i.kg.answer, cropKey: i.key }));
 
     if (distractors.length < 3) {
       const used = new Set([correctLetter, ...distractors.map((d) => d.letter)]);
-      for (const c of ALPHABET.filter((l) => !used.has(l)).sort(() => Math.random() - 0.5)) {
+      for (const c of shuffle(ALPHABET.filter((l) => !used.has(l)))) {
         if (distractors.length >= 3) break;
         distractors.push({ letter: c, cropKey: null });
       }
     }
 
-    return [correct, ...distractors].sort(() => Math.random() - 0.5);
+    return shuffle([correct, ...distractors]);
   }, []);
 
   // Resolve a typed guess to a locked specimen of the same case as the prompt, so
