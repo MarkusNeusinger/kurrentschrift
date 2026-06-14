@@ -22,6 +22,27 @@ from core.pipeline import (
     written_preview_for_canonical,
 )
 from core.quality import quality_for_glyph
+from core.suetterlin import canonical_suetterlin_from_path, canonical_suetterlin_from_raw_path_only
+
+
+def _derive_canonical(width_resolver: str, **kwargs) -> dict:
+    """Derive a canonical with the geometry path the style demands.
+
+    Constant-width styles (Sütterlin Gleichzug) go through the skeleton-locked
+    `core.suetterlin` derivation; everything else uses the pressure pipeline.
+    Both accept the same kwargs (raw_path, bbox, chart_path, glyph, position,
+    n_anchors), so the call site stays identical.
+    """
+    if width_resolver == "constant":
+        return canonical_suetterlin_from_path(**kwargs)
+    return canonical_from_path(**kwargs)
+
+
+def _derive_canonical_from_raw(width_resolver: str, **kwargs) -> dict:
+    """Re-derive from a stored `raw_path` with the style's geometry path."""
+    if width_resolver == "constant":
+        return canonical_suetterlin_from_raw_path_only(**kwargs)
+    return canonical_from_raw_path_only(**kwargs)
 
 
 router = APIRouter(prefix="/sources/{source_id}/templates", tags=["templates"])
@@ -146,9 +167,11 @@ async def post_trace(
     if bbox is None:
         raise HTTPException(409, detail=f"set bbox for {glyph_key!r} before tracing")
     _reject_locked_unless_forced(bbox, payload.force)
+    _, _, _, width_resolver = await _resolve_style(source, db)
     # CPU-bound (binarize + skeleton + EDT) — keep it off the event loop.
     canonical = await run_in_threadpool(
-        canonical_from_path,
+        _derive_canonical,
+        width_resolver,
         raw_path=[p.model_dump() for p in payload.raw_path],
         bbox=_bbox_to_dict(bbox),
         chart_path=source.chart_path,
@@ -185,6 +208,19 @@ async def post_trace_preview(
     raw_path = [p.model_dump() for p in payload.raw_path]
 
     def compute() -> dict:
+        # Gleichzug has no edge-refine stage: the skeleton-locked geometry is
+        # final, so "raw" and "refined" are the same canonical (computed once).
+        if width_resolver == "constant":
+            canon = canonical_suetterlin_from_path(
+                raw_path=raw_path,
+                bbox=bbox_dict,
+                chart_path=source.chart_path,
+                glyph=payload.glyph,
+                position=payload.position,
+                n_anchors=payload.n_anchors,
+            )
+            preview = written_preview_for_canonical(canon, style_ratio, slant_deg, width_resolver)
+            return {"raw": preview, "refined": preview}
         out: dict = {}
         for name, refine in (("raw", False), ("refined", True)):
             canon = canonical_from_path(
@@ -223,8 +259,10 @@ async def post_resample(
     # per-glyph count still wins by sending n_anchors explicitly (the wizard
     # slider does).
     n_anchors = payload.n_anchors or DEFAULT_N_ANCHORS
+    _, _, _, width_resolver = await _resolve_style(source, db)
     canonical = await run_in_threadpool(
-        canonical_from_raw_path_only,
+        _derive_canonical_from_raw,
+        width_resolver,
         glyph_row={"raw_path": list(existing.raw_path), "glyph": existing.glyph, "position": existing.position},
         bbox=_bbox_to_dict(bbox),
         chart_path=source.chart_path,
@@ -328,6 +366,7 @@ async def get_quality(glyph_key: str, source: Source = Depends(require_source), 
         )
     raw_path = list(template.raw_path or [])
     glyph, position = template.glyph, template.position
+    _, _, _, width_resolver = await _resolve_style(source, db)
     # The candidate must preview exactly what apply (= /resample without an
     # explicit count) would store: current code + recommended anchor density.
     n_anchors = DEFAULT_N_ANCHORS
@@ -337,7 +376,8 @@ async def get_quality(glyph_key: str, source: Source = Depends(require_source), 
         candidate = None
         candidate_refine = None
         if raw_path:
-            canon = canonical_from_raw_path_only(
+            canon = _derive_canonical_from_raw(
+                width_resolver,
                 glyph_row={"raw_path": raw_path, "glyph": glyph, "position": position},
                 bbox=bbox_dict,
                 chart_path=source.chart_path,
