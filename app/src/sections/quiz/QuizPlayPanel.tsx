@@ -7,11 +7,9 @@
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
-import { Alert, Box, Button, Chip, Stack, TextField, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, Stack, TextField, Tooltip } from '@mui/material';
 import { useEffect, useRef } from 'react';
 
-import { CONFIG } from '@/global-config';
-import { cropUrl } from '@/lib/api';
 import { de, fmt } from '@/locales';
 import { QuestionVisual } from '@/sections/quiz/QuestionVisual';
 import { type Difficulty } from '@/sections/quiz/quizTypes';
@@ -92,22 +90,6 @@ export function QuizPlayPanel(p: PlayProps) {
           <Box component="span" sx={{ color: 'text.secondary' }}>
             ({current.kg.label})
           </Box>
-          {/* When we showed the generated written form, surface the original Loth
-              crop so the learner can compare it against the cut-out specimen. */}
-          {p.hasDuctus && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-              <Typography variant="caption" color="text.secondary">
-                {de.quiz.play.inSource}
-              </Typography>
-              <Box
-                component="img"
-                src={cropUrl(CONFIG.sourceId, current.key)}
-                alt={de.quiz.play.sourceCropAlt}
-                sx={{ height: 56, maxWidth: 120, objectFit: 'contain', bgcolor: '#fff', borderRadius: 0.5, p: 0.25 }}
-                draggable={false}
-              />
-            </Box>
-          )}
         </Alert>
       )}
 
