@@ -5,6 +5,7 @@
 import { CONFIG } from '@/global-config';
 import { cropUrl } from '@/lib/api';
 import { de } from '@/locales';
+import { type QuizMode } from '@/sections/quiz/useQuizEngine';
 
 // Scripts selectable in the quiz. The quiz pool rides on the site-wide public
 // source (CONFIG.sourceId) — currently the Sütterlin 1922 Ausgangsschrift;
@@ -19,6 +20,20 @@ export const SCRIPTS: ScriptOption[] = [
   { id: 'kurrent', label: de.quiz.scripts.kurrent, available: false },
   { id: 'suetterlin', label: de.quiz.scripts.suetterlin, available: true },
   { id: 'offenbacher', label: de.quiz.scripts.offenbacher, available: false },
+];
+
+// What the quiz drills. Single letters today; whole-word reading is a post-MVP
+// Lese-Cluster task (architektur.md §14), shown disabled (the German "bald"
+// marker) so the menu reflects the planned scope, like SCRIPTS/DIFFICULTIES.
+export type ModeOption = {
+  id: QuizMode;
+  label: string;
+  available: boolean;
+};
+
+export const MODES: ModeOption[] = [
+  { id: 'letters', label: de.quiz.setup.modeLetters, available: true },
+  { id: 'words', label: de.quiz.setup.modeWords, available: false },
 ];
 
 // Difficulty levels for the quiz. The idea: show each letter in progressively

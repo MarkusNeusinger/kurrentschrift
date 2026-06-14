@@ -13,7 +13,7 @@ import { useEffect, useRef } from 'react';
 import { de, fmt } from '@/locales';
 import { QuestionVisual } from '@/sections/quiz/QuestionVisual';
 import { type Difficulty } from '@/sections/quiz/quizTypes';
-import { inCase, type AnswerMode, type QuizItem } from '@/sections/quiz/useQuizEngine';
+import { inCase, type AnswerMode, type PromptView, type QuizItem } from '@/sections/quiz/useQuizEngine';
 
 interface PlayProps {
   current: QuizItem | null;
@@ -22,6 +22,10 @@ interface PlayProps {
   hasDuctus: boolean;
   // Per-question nonce; remounts the WrittenGlyph so the writing animation replays.
   qNonce: number;
+  // Prompt view toggle (Geschrieben/Original), lifted to the engine so it
+  // persists across questions.
+  view: PromptView;
+  setView: (v: PromptView) => void;
   choices: string[];
   input: string;
   setInput: (s: string) => void;
@@ -75,7 +79,15 @@ export function QuizPlayPanel(p: PlayProps) {
 
       {/* The letter — rendered "as written" (animated ductus) when a canonical
           exists, otherwise the static Loth crop. */}
-      <QuestionVisual item={current} hasDuctus={p.hasDuctus} qNonce={p.qNonce} difficulty={p.difficulty} verdict={verdict} />
+      <QuestionVisual
+        item={current}
+        hasDuctus={p.hasDuctus}
+        qNonce={p.qNonce}
+        view={p.view}
+        setView={p.setView}
+        difficulty={p.difficulty}
+        verdict={verdict}
+      />
 
       {/* Solution reveal */}
       {showSolution && (

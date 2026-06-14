@@ -66,6 +66,8 @@ export function QuizView() {
             <QuizSetupPanel
               script={quiz.script}
               setScript={quiz.setScript}
+              mode={quiz.mode}
+              setMode={quiz.setMode}
               caseMode={quiz.caseMode}
               setCaseMode={quiz.setCaseMode}
               answerMode={quiz.answerMode}
@@ -90,6 +92,8 @@ export function QuizView() {
               current={quiz.current}
               hasDuctus={quiz.hasDuctus}
               qNonce={quiz.qNonce}
+              view={quiz.view}
+              setView={quiz.setView}
               choices={quiz.choices}
               input={quiz.input}
               setInput={quiz.setInput}
