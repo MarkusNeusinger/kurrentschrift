@@ -25,11 +25,11 @@ export const SCRIPTS: ScriptOption[] = [
 // What the quiz drills. Single letters today; whole-word reading is a post-MVP
 // Lese-Cluster task (architektur.md §14), shown disabled (the German "bald"
 // marker) so the menu reflects the planned scope, like SCRIPTS/DIFFICULTIES.
-export interface ModeOption {
+export type ModeOption = {
   id: QuizMode;
   label: string;
   available: boolean;
-}
+};
 
 export const MODES: ModeOption[] = [
   { id: 'letters', label: de.quiz.setup.modeLetters, available: true },
