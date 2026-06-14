@@ -145,7 +145,7 @@ export function QuizPlayPanel(p: PlayProps) {
                 color={isCorrect ? 'success' : isWrong ? 'error' : 'primary'}
                 disabled={isWrong || showSolution}
                 onClick={() => p.onPickChoice(c)}
-                sx={{ py: 1.25, fontSize: '1.05rem' }}
+                sx={{ py: 1.5, fontSize: '1.4rem', fontWeight: 500 }}
               >
                 {inCase(c, current.kg)}
               </Button>
