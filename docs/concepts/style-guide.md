@@ -208,9 +208,10 @@ Hierarchie). Neu (live in Runden 1–3 entschieden):
   Rubrizierung (farbiger Abschnitts-Anfang) im Hausgrün statt im erwarteten
   Rot. Die Kategorie dominiert damit klar über die `subTitle`-Unterabschnitte.
 - **Hover-Reveal:** Im Ruhezustand die echte Kurrent-Schauschrift; bei
-  Hover/Focus blendet die Zierinitiale per Crossfade auf den **normalen
+  **Hover** blendet die Zierinitiale per Crossfade auf den **normalen
   Antiqua-Buchstaben** über — die Seite, die Kurrent lesen lehrt, übersetzt
-  ihre eigenen Initialen. `prefers-reduced-motion` zeigt den Wechsel ohne Blende.
+  ihre eigenen Initialen. Eine reine Maus-Geste, **kein** Lesbarkeits-Krücke
+  (s. A11y unten); `prefers-reduced-motion` zeigt den Wechsel ohne Blende.
 - **Grün = `#40826d` (normales Viridian).** Bewusst **nicht** das dunkle
   `#336152`: Letzteres ist nur ein abgeleiteter Hover-/Kontrastton („derived
   for contrast, not a period hex"); das echte Periodenpigment (Chromoxidhydrat,

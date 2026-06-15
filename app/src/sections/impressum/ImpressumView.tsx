@@ -51,11 +51,13 @@ const proseLink = {
 // Category heading — the section title in ink Playfair on a hairline writing-line,
 // opened by an oversized Kurrent show-script initial in viridian (the period
 // rubrication move recast in the house green; #40826d is the real chromium-oxide
-// pigment and, large/bold, clears the WCAG large-text bar). On hover/focus the
-// ornate initial crossfades to the plain letter — a site that teaches reading
-// Kurrent translates its own initials. The <h2> carries aria-label={heading} and
-// every visual glyph is aria-hidden, so the flourish is sighted-only and the
-// heading always reads as the plain word; prefers-reduced-motion drops the fade.
+// pigment and, large/bold, clears the WCAG large-text bar). On hover the ornate
+// initial crossfades to the plain letter — a site that teaches reading Kurrent
+// translates its own initials. The reveal is a mouse-only flourish, not a
+// legibility crutch: the <h2> carries aria-label={heading} and every visual glyph
+// is aria-hidden, so screen readers always get the plain word, and only the first
+// letter is Kurrent (the rest stays Antiqua) so the heading reads without it.
+// prefers-reduced-motion drops the fade.
 function CategoryHeading({ children }: { children: string }) {
   const first = children.slice(0, 1);
   const rest = children.slice(1);
