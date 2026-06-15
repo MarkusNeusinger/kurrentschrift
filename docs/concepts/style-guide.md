@@ -77,8 +77,12 @@ bleibt):
 
 - Tinte (`ink`/`inkSoft`) trägt **Schrift und Body**.
 - Viridian nur **sparsam als Akzent**: Marken-Punkt, Link-Hover, CTA,
-  Timeline-Knoten, Karten-Hover-Rahmen.
+  Timeline-Knoten, Karten-Hover-Rahmen, Abschnitts-Initiale (`/impressum`, §3).
 - **Viridian niemals als Fließtextfarbe** (Kontrast auf Creme zu schwach).
+  Ausnahme nur für **große/fette** Schrift (≥ ~24 px): dort genügt der
+  WCAG-Schwellwert 3:1, den `#40826d` mit 3.28:1 erreicht — so getragen von
+  der grünen Abschnitts-Initiale (§3). Reines `#40826d` als kleiner Text
+  bleibt verboten.
 
 ### Periodenpigmente als Semantikfarben (Runde R1, 2026-06)
 
@@ -191,6 +195,40 @@ Verworfene Typografie-Kandidaten (Runden R6/R7, 2026-06):
 | **Alte DIN 1451 Mittelschrift** (Preuß. Musterzeichnung 1905) als Admin-Stimme | Übersprungen — konsequent keine weiteren Schriften; EB Garamond trägt auch den Admin. |
 | UnifrakturCook · CC Accidenz Commons · Theano Didot | Keine Rolle, die Garamond/Playfair nicht füllen; Accidenz zudem CC-BY-SA statt OFL. |
 
+### Abschnitts-Initialen mit Hover-Reveal (`/impressum`, 2026-06-15)
+
+Die Kategorie-Überschriften der Rechtsseite (`Impressum` · `Datenschutz` ·
+`Quellen & Lizenzen` · `Transparenz`) waren als kleine `overline`-Eyebrow
+in Sepia gesetzt — schwächer als ihre eigenen Unterabschnitte (invertierte
+Hierarchie). Neu (live in Runden 1–3 entschieden):
+
+- **Form:** Wort in Tinte (Playfair 600, 1,5/1,75 rem) auf einer
+  Hairline-Schreiblinie (`line`), eröffnet von einer **übergroßen
+  Kurrent-Initiale** (GL-GermanCursive) in **Viridian** — die historische
+  Rubrizierung (farbiger Abschnitts-Anfang) im Hausgrün statt im erwarteten
+  Rot. Die Kategorie dominiert damit klar über die `subTitle`-Unterabschnitte.
+- **Hover-Reveal:** Im Ruhezustand die echte Kurrent-Schauschrift; bei
+  Hover/Focus blendet die Zierinitiale per Crossfade auf den **normalen
+  Antiqua-Buchstaben** über — die Seite, die Kurrent lesen lehrt, übersetzt
+  ihre eigenen Initialen. `prefers-reduced-motion` zeigt den Wechsel ohne Blende.
+- **Grün = `#40826d` (normales Viridian).** Bewusst **nicht** das dunkle
+  `#336152`: Letzteres ist nur ein abgeleiteter Hover-/Kontrastton („derived
+  for contrast, not a period hex"); das echte Periodenpigment (Chromoxidhydrat,
+  ~1859) **und** das Marken-Grün aus URL/Hero ist `#40826d`. Als große Initiale
+  (≥ 2 rem) trägt es: 3.28:1 ≥ 3:1 → Lighthouse-Accessibility 100, color-contrast
+  ohne Befund (§2-Ausnahme). Das Wort selbst bleibt Tinte.
+- **Lesbarkeit/A11y:** Das `<h2>` trägt `aria-label` mit dem vollen Wort, alle
+  sichtbaren Glyphen sind `aria-hidden` — die Zierschrift ist eine rein
+  visuelle (Sehende-)Geste, der Screenreader liest immer das Klarwort. Der
+  Lesbarkeits-Leitsatz bleibt gewahrt: nur **ein** Buchstabe ist Kurrent, der
+  Rest Antiqua, und der Hover liefert die Übersetzung. Dies ist die **eine
+  sanktionierte** UI-nahe Verwendung der Schau-Schrift (sonst gilt §4).
+
+Verworfen in diesen Runden: die grüne **Rubrizierung des ganzen Titels** (zu
+„langweilig"), die **Viridian-Randleiste** (zu modern), die **tiefe Drop-Cap**
+(hängt bei einzeiligen Überschriften durch) und das **dunkle Grün** `#336152`
+(kein Periodenton, weicht vom Marken-Grün ab).
+
 ---
 
 ## 4. Schrift-Asset: GL-GermanCursive
@@ -209,6 +247,10 @@ Verworfene Typografie-Kandidaten (Runden R6/R7, 2026-06):
 - Abgrenzung: ist ein **Font**, nicht der Duktus-Renderer. Genau die
   Lücke, die die echte Synthese später füllt — im Mockup nur Platzhalter
   für die Optik.
+- **Sanktionierte UI-nahe Ausnahme:** als dekorative **Abschnitts-Initiale**
+  mit Hover-Reveal auf `/impressum` (§3). Legitim, weil nur **ein** Buchstabe
+  Kurrent ist, der Hover die Antiqua-Form zeigt und `aria-label` das Klarwort
+  trägt — sonst bleibt es bei „Showpiece, nie UI".
 
 ---
 
@@ -400,7 +442,8 @@ schreiben"):
 ## Quick Do / Don't
 
 - ✅ Tinte fürs Schreiben, Viridian nur als Akzent.
-- ✅ Script-Font nur als Showpiece, `prefers-reduced-motion` ehren.
+- ✅ Script-Font nur als Showpiece (Ausnahme: dekorative Abschnitts-Initiale
+  mit Hover-Reveal, §3/§4), `prefers-reduced-motion` ehren.
 - ✅ Eine Tinte über alle drei Familien.
 - ✅ Papier-Textur trägt überall; nur Arbeitsflächen (A4, Crops, Chart) und das PDF bleiben neutral/weiß.
 - ✅ Prosa im Briefton um 1900 (§12); UI-Labels und Fakten nüchtern.

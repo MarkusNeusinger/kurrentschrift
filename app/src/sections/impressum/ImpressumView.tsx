@@ -14,9 +14,13 @@ import portraitUrl from '@/assets/markus-neusinger.webp';
 import { PaperBackground } from '@/components/PaperBackground';
 import { PublicHeader } from '@/components/PublicHeader';
 import { de } from '@/locales';
-import { display, garamond, letterpress, paper } from '@/styles/paper';
+import { display, garamond, letterpress, paper, script } from '@/styles/paper';
 
 const t = de.impressum;
+
+// Reduced-motion media-query key — matches the `reduce` const idiom used across
+// the public views (LandingView/Reveal/HeroSpecimen).
+const reduce = '@media (prefers-reduced-motion: reduce)';
 
 // --- shared text styles -----------------------------------------------------
 const prose = {
@@ -44,12 +48,66 @@ const proseLink = {
   '&:hover': { color: paper.viridian, textDecorationColor: paper.viridian },
 } as const;
 
+// Category heading — the section title in ink Playfair on a hairline writing-line,
+// opened by an oversized Kurrent show-script initial in viridian (the period
+// rubrication move recast in the house green; #40826d is the real chromium-oxide
+// pigment and, large/bold, clears the WCAG large-text bar). On hover/focus the
+// ornate initial crossfades to the plain letter — a site that teaches reading
+// Kurrent translates its own initials. The <h2> carries aria-label={heading} and
+// every visual glyph is aria-hidden, so the flourish is sighted-only and the
+// heading always reads as the plain word; prefers-reduced-motion drops the fade.
+function CategoryHeading({ children }: { children: string }) {
+  const first = children.slice(0, 1);
+  const rest = children.slice(1);
+  return (
+    <Box sx={{ borderBottom: `1px solid ${paper.line}`, pb: 0.75, mb: 1.5 }}>
+      <Box
+        component="h2"
+        aria-label={children}
+        sx={{
+          m: 0,
+          display: 'flex',
+          alignItems: 'baseline',
+          fontFamily: display,
+          fontWeight: 600,
+          fontSize: { xs: '1.5rem', md: '1.75rem' },
+          lineHeight: 1.25,
+          color: paper.ink,
+          textShadow: letterpress,
+          '&:hover .init-kurrent': { opacity: 0 },
+          '&:hover .init-latin': { opacity: 1 },
+          [reduce]: { '& .init-kurrent, & .init-latin': { transition: 'none' } },
+        }}
+      >
+        {/* initial slot — Kurrent glyph in flow, plain letter centred over it */}
+        <Box component="span" aria-hidden sx={{ position: 'relative', display: 'inline-block', flexShrink: 0, color: paper.viridian }}>
+          <Box
+            component="span"
+            className="init-kurrent"
+            sx={{ fontFamily: script, fontWeight: 400, fontSize: { xs: '2.6rem', md: '2.9rem' }, lineHeight: 1, display: 'block', transition: 'opacity .28s ease' }}
+          >
+            {first}
+          </Box>
+          <Box
+            component="span"
+            className="init-latin"
+            sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: display, fontWeight: 700, fontSize: { xs: '2rem', md: '2.3rem' }, lineHeight: 1, opacity: 0, transition: 'opacity .28s ease', pointerEvents: 'none' }}
+          >
+            {first}
+          </Box>
+        </Box>
+        <Box component="span" aria-hidden sx={{ ml: '0.06em' }}>
+          {rest}
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
 function Section({ heading, children }: { heading: string; children: ReactNode }) {
   return (
     <Box component="section" sx={{ mt: { xs: 5, md: 6 } }}>
-      <Typography variant="overline" sx={{ color: paper.sepia, display: 'block', mb: 1 }}>
-        {heading}
-      </Typography>
+      <CategoryHeading>{heading}</CategoryHeading>
       {children}
     </Box>
   );
@@ -60,7 +118,7 @@ export function ImpressumView() {
     <PaperBackground>
       <PublicHeader tone="paper" />
 
-      <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1, px: { xs: 2.5, sm: 4, md: 6 }, pt: { xs: 4, md: 6 }, pb: { xs: 6, md: 9 } }}>
+      <Container component="main" maxWidth="md" sx={{ position: 'relative', zIndex: 1, px: { xs: 2.5, sm: 4, md: 6 }, pt: { xs: 4, md: 6 }, pb: { xs: 6, md: 9 } }}>
         <Typography
           component="h1"
           sx={{ fontFamily: display, fontWeight: 600, fontSize: { xs: '2rem', md: '2.6rem' }, color: paper.ink, textShadow: letterpress }}
