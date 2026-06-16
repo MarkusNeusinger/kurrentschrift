@@ -16,6 +16,8 @@ from PIL import Image
 from core.suetterlin import (
     _constant_nib_radius,
     _modal_half_width,
+    _smooth_snapped_strokes,
+    _verticalize_downstrokes,
     canonical_suetterlin_from_path,
     canonical_suetterlin_from_raw_path_only,
 )
@@ -258,6 +260,52 @@ def test_crossing_is_not_edge_split(plus_cross_chart_path, plus_cross_bbox):
     assert np.abs(vert_xs - 408.0).max() < 2.5
     # And the rendered '+' still hugs the ink at one nib thickness.
     assert canon["trace_meta"]["quality"]["iou"] > 0.8
+
+
+def test_verticalize_pulls_slanted_run_to_true_vertical():
+    # A straight downstroke leaning ~8° from vertical (within the 15° gate) over
+    # 1.6 x-heights — a real Sütterlin stem. Verticalisation must pull its core
+    # onto a single x (true 90°) while never moving y.
+    unit_px = 60.0
+    n = 80
+    ys = 100.0 + np.linspace(0.0, 1.6 * unit_px, n)
+    xs = 200.0 + np.tan(np.deg2rad(8.0)) * (ys - ys[0])
+    anchors = np.column_stack([xs, ys])
+    out = _verticalize_downstrokes(anchors, [0], unit_px)
+    core = slice(15, -15)  # drop the eased ends
+    assert anchors[core, 0].max() - anchors[core, 0].min() > 4.0  # the input genuinely slants
+    assert out[core, 0].max() - out[core, 0].min() < 0.5  # the core is now a true vertical
+    assert np.allclose(out[:, 1], anchors[:, 1])  # y is never moved
+
+
+def test_verticalize_leaves_a_curve_round():
+    # A clear arc (a quarter-circle bowl) is NOT a downstroke: it fails the
+    # straightness gate and must come back essentially unchanged, not flattened.
+    unit_px = 60.0
+    t = np.linspace(0.0, np.pi / 2, 60)
+    anchors = np.column_stack([200.0 + 40.0 * np.cos(t), 100.0 + 40.0 * np.sin(t)])
+    out = _verticalize_downstrokes(anchors, [0], unit_px)
+    assert np.allclose(out, anchors, atol=1e-6)
+
+
+def test_smoothing_preserves_endpoints_and_corners():
+    unit_px = 50.0
+    rng = np.random.default_rng(2)
+    n = 60
+    # Down the stem then right along the foot (a 90° corner), with ~1px skeleton
+    # jitter on the off-axis coordinate of each leg.
+    down = np.column_stack([100.0 + rng.normal(0, 1.0, n), np.linspace(0.0, 2 * unit_px, n)])
+    foot = np.column_stack([np.linspace(100.0, 100.0 + 2 * unit_px, n), 2 * unit_px + rng.normal(0, 1.0, n)])
+    corner = np.array([100.0, 2 * unit_px])
+    stroke = np.vstack([down, foot])
+    out = _smooth_snapped_strokes([stroke], unit_px)
+    assert len(out) == 1
+    sm = out[0]
+    # Endpoints are pinned (round caps not eroded inward).
+    assert np.hypot(*(sm[0] - stroke[0])) < 1.5
+    assert np.hypot(*(sm[-1] - stroke[-1])) < 1.5
+    # The 90° corner survives — smoothing splits there, so a point still lands on it.
+    assert np.hypot(sm[:, 0] - corner[0], sm[:, 1] - corner[1]).min() < 0.15 * unit_px
 
 
 def test_from_raw_path_only_roundtrip(synthetic_chart_path, synthetic_bbox):

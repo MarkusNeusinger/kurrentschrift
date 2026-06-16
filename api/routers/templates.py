@@ -86,8 +86,8 @@ async def _pooled_constant_nib(db: AsyncSession, style_id: str, source_id: str) 
     override in `diagnostic_for_glyph` then renders all of them at this one value.
     Returns None when nothing is traced yet (caller falls back to per-glyph widths).
     """
-    rows = await TemplateRepository(db).list(style_id)
-    nibs = [statistics.median(r.half_widths) for r in rows if r.provenance_source_id == source_id and r.half_widths]
+    profiles = await TemplateRepository(db).half_widths_for_source(style_id, source_id)
+    nibs = [statistics.median(hw) for hw in profiles if hw]
     return float(statistics.mean(nibs)) if nibs else None
 
 

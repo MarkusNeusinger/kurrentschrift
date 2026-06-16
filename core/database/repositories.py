@@ -111,6 +111,20 @@ class TemplateRepository:
         )
         return list(result.scalars().all())
 
+    async def half_widths_for_source(self, style_id: str, provenance_source_id: str) -> list[list[float]]:
+        """Just the `half_widths` arrays of a style's templates traced from one source.
+
+        Selects the single JSON column (not whole Template rows with their large
+        anchors/raw_path/trace_meta payloads) — the source-pooled constant nib
+        (`api.routers.templates._pooled_constant_nib`) only needs the widths.
+        """
+        result = await self.session.execute(
+            select(Template.half_widths).where(
+                Template.style_id == style_id, Template.provenance_source_id == provenance_source_id
+            )
+        )
+        return [list(hw) for hw in result.scalars().all() if hw]
+
     async def upsert(
         self, style_id: str, glyph_key: str, canonical: dict, variant: int = 0, provenance_source_id: str | None = None
     ) -> Template:
