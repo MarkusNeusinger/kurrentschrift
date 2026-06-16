@@ -209,6 +209,57 @@ def test_merged_double_stroke_follows_edges(merged_double_chart_path, merged_dou
     assert xs.max() - xs.min() > 12.0
 
 
+@pytest.fixture
+def plus_cross_chart_path(tmp_path) -> str:
+    """A constant-width '+' — a vertical stroke crossed by a horizontal one.
+
+    Vertical bar x∈[400,416), y∈[200,560); horizontal bar y∈[372,388),
+    x∈[300,560). Both are 16px (nib ~8). The overlap blob at the crossing reads
+    a half-width above the nib, but it is a Kreuzung, not a merge: each stroke
+    must pass straight through at one nib thickness, no widening, no shove.
+    """
+    img = np.ones((800, 800), dtype=np.float32)
+    img[200:560, 400:416] = 0.05
+    img[372:388, 300:560] = 0.05
+    return _save(img, tmp_path)
+
+
+@pytest.fixture
+def plus_cross_bbox() -> dict:
+    return {
+        "y0": 180,
+        "y1": 580,
+        "x0": 340,
+        "x1": 540,
+        "mask_strokes": [],
+        "baseline_y": 560,
+        "midband_y": 460,
+        "n_anchors": 60,
+    }
+
+
+def test_crossing_is_not_edge_split(plus_cross_chart_path, plus_cross_bbox):
+    # Vertical stroke (drawn with a mild left bias) then horizontal stroke.
+    vert = [{"x": 406.0, "y": float(210 + 340 * i / 39)} for i in range(40)]
+    vert[-1]["pen_up"] = True
+    horiz = [{"x": float(310 + 240 * i / 39), "y": 380.0} for i in range(40)]
+    canon = canonical_suetterlin_from_path(
+        raw_path=vert + horiz, bbox=plus_cross_bbox, chart_path=plus_cross_chart_path, glyph="t", position="initial"
+    )
+    assert abs(canon["trace_meta"]["nib_radius_px"] - 8.0) < 2.0
+
+    starts = canon["trace_meta"]["stroke_starts"]
+    assert len(starts) == 2
+    anchors = np.array(canon["trace_meta"]["pixel_anchors"])
+    vert_xs = anchors[starts[0] : starts[1], 0]
+    # The vertical stroke holds the centerline (x≈408) the whole way THROUGH the
+    # crossing — the wide overlap blob did not pull it toward an edge (an
+    # unsuppressed offset would dip it by the EDT excess, a few px off 408).
+    assert np.abs(vert_xs - 408.0).max() < 2.5
+    # And the rendered '+' still hugs the ink at one nib thickness.
+    assert canon["trace_meta"]["quality"]["iou"] > 0.8
+
+
 def test_from_raw_path_only_roundtrip(synthetic_chart_path, synthetic_bbox):
     canon = canonical_suetterlin_from_path(
         raw_path=_vertical_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", position="initial"

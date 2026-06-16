@@ -84,6 +84,17 @@ NIB_HISTOGRAM_BIN_PX = 1.0
 MERGE_EXCESS_FACTOR = 0.3
 MERGE_EXCESS_MIN_PX = 1.5
 
+# Crossing (Kreuzung) vs. merge discrimination — the wide EDT blob at a
+# transversal crossing must NOT be edge-split: the stroke passes straight
+# through at one nib thickness, no widening, no lateral shove. A wide point is a
+# crossing (offset suppressed) when ANOTHER pass of the trace comes within reach
+# of the blob, is far away along the path (not the same stroke's own neighbours),
+# AND runs transversally. A parallel/anti-parallel pass (the two sides of a t/s
+# loop) is a real merge and keeps its edge offset. Mirrors the width-channel
+# crossing test in `core.pipeline._resolve_crossing_widths`.
+CROSSING_MIN_ANGLE_DEG = 25.0
+CROSSING_MIN_ARC_FACTOR = 3.0
+
 
 def _modal_half_width(values: np.ndarray) -> float | None:
     """The most-common half-width (histogram mode, sub-pixel-refined), or None.
@@ -149,10 +160,62 @@ def _resample_by_arc(points: np.ndarray, spacing_px: float) -> np.ndarray:
     return np.column_stack([np.interp(t, cum, points[:, 0]), np.interp(t, cum, points[:, 1])])
 
 
-def _snap_to_skeleton_edges(
-    points: np.ndarray, skel_xy: np.ndarray, skel_w: np.ndarray, tree: cKDTree, cap_px: float, r_px: float
+def _unit_tangents(points: np.ndarray) -> np.ndarray:
+    """Unit tangents of a densely-ordered (~1px) polyline via np.gradient."""
+    tangent = np.gradient(points, axis=0)
+    tnorm = np.hypot(tangent[:, 0], tangent[:, 1])
+    tnorm[tnorm == 0] = 1.0
+    return tangent / tnorm[:, None]
+
+
+def _crossing_mask(
+    centers: np.ndarray, tangents: np.ndarray, stroke_id: np.ndarray, arc: np.ndarray, hw_c: np.ndarray, r_px: float
 ) -> np.ndarray:
-    """Snap each point onto the medial axis, but follow the EDGE in merged regions.
+    """Per-point flag: a wide blob here is a transversal crossing, not a merge.
+
+    A wide point (EDT well above the nib) is a crossing when ANOTHER pass of the
+    trace — a different stroke, or the same stroke far enough along the path that
+    it is not just this point's own neighbours — comes within reach of the blob
+    AND runs transversally (turning angle above CROSSING_MIN_ANGLE_DEG). The two
+    anti-parallel sides of a t/s loop fail the angle test and stay a merge, so
+    their edge offset is kept; an X- or +-crossing trips it and is suppressed so
+    the stroke passes straight through at one nib thickness.
+    """
+    n = len(centers)
+    flagged = np.zeros(n, dtype=bool)
+    excess = hw_c - r_px
+    wide = np.flatnonzero(excess > max(MERGE_EXCESS_MIN_PX, MERGE_EXCESS_FACTOR * r_px))
+    if n < 2 or wide.size == 0:
+        return flagged
+    tree = cKDTree(centers)
+    sin_thr = np.sin(np.deg2rad(CROSSING_MIN_ANGLE_DEG))
+    arc_scale = CROSSING_MIN_ARC_FACTOR * 2.0 * r_px
+    for i in wide:
+        radius = max(2.0 * r_px, hw_c[i] + r_px)
+        for j in tree.query_ball_point(centers[i], radius):
+            if j == i:
+                continue
+            other_pass = stroke_id[j] != stroke_id[i] or abs(arc[i] - arc[j]) > arc_scale
+            if not other_pass:
+                continue
+            cross = abs(tangents[i, 0] * tangents[j, 1] - tangents[i, 1] * tangents[j, 0])
+            if cross > sin_thr:
+                flagged[i] = True
+                break
+    return flagged
+
+
+def _apply_edge_offset(
+    points: np.ndarray,
+    tangent: np.ndarray,
+    centers: np.ndarray,
+    hw_c: np.ndarray,
+    dist: np.ndarray,
+    suppress: np.ndarray,
+    cap_px: float,
+    r_px: float,
+) -> np.ndarray:
+    """Snap onto the medial axis, offsetting to the EDGE in (non-crossing) merges.
 
     On a single stroke the nearest skeleton pixel reads a half-width ≈ the nib
     radius and the point snaps straight onto the centerline (the geometry is the
@@ -162,37 +225,24 @@ def _snap_to_skeleton_edges(
     the middle. Instead the point is offset from that centerline toward its own
     edge by (local half-width − nib radius): the side comes from the drawn trace
     (its lateral position relative to the centerline, the ductus prior), the
-    magnitude from the ink. Round stroke ends read EDT < nib, so they get no
-    offset. Beyond the (locally widened) cap the skeleton is too far to trust, so
-    the drawn point stands.
+    magnitude from the ink. `suppress` marks transversal crossings — there the
+    blob is a Kreuzung, not a merge, so the offset is skipped and the stroke
+    passes straight through at one nib thickness. Round stroke ends read EDT <
+    nib, so they get no offset. Beyond the (locally widened) cap the skeleton is
+    too far to trust, so the drawn point stands.
     """
-    if len(skel_xy) == 0:
-        return points
-    dist, idx = tree.query(points)
-    centers = skel_xy[idx].astype(float)
-    hw_c = skel_w[idx]
-
-    # Local transverse direction from the drawn polyline's own tangent: the
-    # points are densely (~1px) ordered along the stroke, so np.gradient is a
-    # stable tangent. The component of (drawn − center) perpendicular to it is
-    # the side the pen was on; we keep only its sign and place the offset.
-    tangent = np.gradient(points, axis=0)
-    tnorm = np.hypot(tangent[:, 0], tangent[:, 1])
-    tnorm[tnorm == 0] = 1.0
-    tangent /= tnorm[:, None]
     rel = points - centers
     along = (rel * tangent).sum(axis=1)
     lateral = rel - along[:, None] * tangent
     lat_norm = np.hypot(lateral[:, 0], lateral[:, 1])
 
     excess = hw_c - r_px
-    merged = excess > max(MERGE_EXCESS_MIN_PX, MERGE_EXCESS_FACTOR * r_px)
-    sided = merged & (lat_norm > 1e-3)
+    merged = (excess > max(MERGE_EXCESS_MIN_PX, MERGE_EXCESS_FACTOR * r_px)) & (lat_norm > 1e-3) & (~suppress)
 
     snapped = centers.copy()
-    if sided.any():
-        unit = lateral[sided] / lat_norm[sided, None]
-        snapped[sided] = centers[sided] + excess[sided, None] * unit
+    if merged.any():
+        unit = lateral[merged] / lat_norm[merged, None]
+        snapped[merged] = centers[merged] + excess[merged, None] * unit
 
     # In a merged region the legitimate drawn point sits out at the ink edge,
     # i.e. up to one local half-width from the central skeleton — raise the cap
@@ -219,11 +269,14 @@ def _snap_strokes_to_skeleton(
 
     Each stroke is resampled to ~1px spacing and every sample pulled onto the
     medial axis — straight onto the centerline on a single stroke, out to its
-    own edge where two strokes have merged (`_snap_to_skeleton_edges`) — so the
-    result is a dense polyline tracing the ink (including through corners), the
-    geometry now the ink's, not the hand's. Even resampling + corner detection
-    happen afterwards in the shared `_resample_strokes`. Strokes collapsing to
-    <2 points are dropped.
+    own edge where two strokes have merged (`_apply_edge_offset`), straight
+    through where two strokes cross transversally (`_crossing_mask` suppresses
+    the offset). The result is a dense polyline tracing the ink (including
+    through corners), the geometry now the ink's, not the hand's. Crossing
+    detection needs every stroke at once (one pass can cross another), so the
+    dense snap-to-centre for all strokes happens first, then the offset.
+    Even resampling + corner detection happen afterwards in the shared
+    `_resample_strokes`. Strokes collapsing to <2 points are dropped.
     """
     r_px = _constant_nib_radius(skel, width_map, mask)
     skel_ys, skel_xs = np.where(skel)
@@ -232,11 +285,51 @@ def _snap_strokes_to_skeleton(
     tree = cKDTree(skel_xy) if len(skel_xy) else None
     cap_px = max(SNAP_CAP_MIN_PX, SNAP_CAP_RADIUS_FACTOR * r_px)
 
-    snapped: list[np.ndarray] = []
-    for stroke in strokes_local:
+    # Pass 1 — dense resample per stroke, snap each sample to the NEAREST
+    # skeleton centre, and gather the per-point geometry the crossing test and
+    # the edge offset both need (centre, local half-width, drawn tangent, arc).
+    dense: list[dict] = []
+    for sid, stroke in enumerate(strokes_local):
         pts = _resample_by_arc(stroke, SNAP_RESAMPLE_PX)
+        if len(pts) < 2:
+            continue
+        tangent = _unit_tangents(pts)
+        seg = np.hypot(*np.diff(pts, axis=0).T)
+        arc = np.concatenate([[0.0], np.cumsum(seg)])
         if tree is not None:
-            pts = _snap_to_skeleton_edges(pts, skel_xy, skel_w, tree, cap_px, r_px)
+            dist, idx = tree.query(pts)
+            centers = skel_xy[idx].astype(float)
+            hw_c = skel_w[idx]
+        else:
+            centers, hw_c, dist = pts.copy(), np.full(len(pts), r_px), np.zeros(len(pts))
+        dense.append(
+            {"pts": pts, "tangent": tangent, "centers": centers, "hw_c": hw_c, "dist": dist, "arc": arc, "sid": sid}
+        )
+
+    if not dense:
+        return [], r_px
+
+    # Pass 2 — flag transversal crossings across ALL strokes at once, so the
+    # offset is suppressed exactly where the wide blob is a Kreuzung.
+    centers_all = np.vstack([d["centers"] for d in dense])
+    tangents_all = np.vstack([d["tangent"] for d in dense])
+    hw_all = np.concatenate([d["hw_c"] for d in dense])
+    arc_all = np.concatenate([d["arc"] for d in dense])
+    sid_all = np.concatenate([np.full(len(d["pts"]), d["sid"]) for d in dense])
+    suppress_all = _crossing_mask(centers_all, tangents_all, sid_all, arc_all, hw_all, r_px)
+
+    # Pass 3 — apply the edge offset per stroke (offset in merges, straight in
+    # crossings), dedup, and drop strokes that collapse to <2 points.
+    snapped: list[np.ndarray] = []
+    cursor = 0
+    for d in dense:
+        k = len(d["pts"])
+        suppress = suppress_all[cursor : cursor + k]
+        cursor += k
+        if tree is None:
+            pts = d["pts"]
+        else:
+            pts = _apply_edge_offset(d["pts"], d["tangent"], d["centers"], d["hw_c"], d["dist"], suppress, cap_px, r_px)
         pts = _dedup(pts)
         if len(pts) >= 2:
             snapped.append(pts)
