@@ -42,13 +42,20 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Visualisation for the dev inspection tools (tools/glyphlab). Kept OUT of the
+# runtime `dependencies` so it never enters the Cloud Run image — only dev/test.
+viz = [
+    "matplotlib>=3.9",
+]
 dev = [
     "ruff>=0.15.12",
+    "kurrentschrift[viz]",
 ]
 test = [
     "pytest>=8.4",
     "pytest-asyncio>=1.0",
     "aiosqlite>=0.20",
+    "kurrentschrift[viz]",
 ]
 
 [project.urls]

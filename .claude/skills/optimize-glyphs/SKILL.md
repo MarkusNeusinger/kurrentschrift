@@ -26,7 +26,8 @@ numbers but never the goalposts.
   of this loop.
 - **Frozen during a run:** `tools/glyphbench/**`, `core/quality.py`,
   `tests/**`. The loop edits only `core/pipeline.py`,
-  `core/extract.py`, `core/template.py`, `core/fit.py`. Editing the
+  `core/extract.py`, `core/template.py`, `core/fit.py`,
+  `core/suetterlin.py` (the Gleichzug derivation). Editing the
   metric or a test to make a keep pass is forbidden — if a test is
   genuinely wrong, stop the loop and surface it.
 - **Never on `main`.** Branch `optimize/<tag>` first.
@@ -35,6 +36,13 @@ numbers but never the goalposts.
   the reference itself is wrong (bad binarization of a faded stroke),
   stop and flag for a human re-export — that is a re-baseline, and
   numbers across it are not comparable.
+- **The bench is blind to the ductus.** It scores the rendered
+  silhouette; a centerline or corner shift the capsule still covers
+  does NOT move `bench_loss` (e.g. Sütterlin verticalization / corner
+  placement). For naturalness changes, *look* — render overlays with
+  `python -m tools.glyphlab <key> [--live] [--stages]` (writes to
+  `temp/`; `uv run --extra viz`). The bench stays the no-regression
+  gate; glyphlab is the signal for ductus quality.
 
 ## 1 · Setup (once per run)
 
