@@ -16,6 +16,15 @@ from tools.glyphlab import (
     save,
     stage_panels,
 )
+from tools.glyphlab.cases import DEFAULT_FIXTURES_DIR
+
+
+# The glyph-bench fixtures are exported once from the DB and gitignored (derived,
+# DB-sourced data), so they exist on a dev machine but not in CI. These tests
+# exercise the real derivation against them; skip cleanly when they are absent.
+pytestmark = pytest.mark.skipif(
+    not any(DEFAULT_FIXTURES_DIR.rglob("manifest.json")), reason="glyph-bench fixtures are local-only (gitignored)"
+)
 
 
 def test_fixture_case_loads_constant_and_pressure() -> None:
