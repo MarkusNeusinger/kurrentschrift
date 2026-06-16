@@ -42,17 +42,20 @@ issues only SELECTs.
 ## Library
 
 ```python
-from tools.glyphlab import fixture_case, live_case_sync, derive, overlay, montage, save
+from tools.glyphlab import fixture_case, derive, panel, figure, overlay, save
 
 res = derive(fixture_case("i-initial"))           # production canonical + render data
-save(overlay(res, title="i"), "i")                # -> temp/i.png
+save(overlay(res, title="i"), "i")                # one-panel figure -> temp/i.png
 
-# A/B a change: render the same case before and after editing core/, then montage.
-old = overlay(derive(case), title="alt")
-new = overlay(derive(case), title="neu")          # after the edit
-save(montage([("alt", old), ("neu", new)]), "ab")
+# Several glyphs (or variants) in one labelled grid figure:
+cases = [fixture_case(k) for k in ("i-initial", "u-initial", "n-initial")]
+save(figure([panel(derive(c), title=c.key) for c in cases]), "row")
+
+# A/B a code change: render to one file, edit core/, render to another, compare.
+# (Each figure() call is a grid; combine panels from both runs to see them together.)
 ```
 
-Key pieces: `cases.py` (`GlyphCase`, fixture/live loaders), `derive.py`
-(`derive`, `derive_stages` with a self-check against production), `render.py`
-(`overlay`, `overlay_stage`, `montage`, `save`).
+Key pieces: `cases.py` (`GlyphCase`, `fixture_case` / `iter_fixture_cases` /
+`live_case_sync`), `derive.py` (`derive`, `derive_stages` with a self-check
+against production), `render.py` (`panel`, `figure`, `overlay`, `stage_panels`,
+`save`).

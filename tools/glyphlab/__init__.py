@@ -5,7 +5,7 @@ few lines (or one CLI call) instead of a throwaway script every time. It wraps
 the real `core` derivation; it never re-implements geometry and never writes to
 the database.
 
-    from tools.glyphlab import fixture_case, derive, overlay, montage, save
+    from tools.glyphlab import fixture_case, derive, overlay, save
 
     res = derive(fixture_case("i-initial"))
     save(overlay(res, title="i"), "i")

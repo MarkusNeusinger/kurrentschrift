@@ -98,14 +98,6 @@ def derive(case: GlyphCase, n_anchors: int | None = None) -> DeriveResult:
     )
 
 
-def _starts_of(strokes: list[np.ndarray]) -> list[int]:
-    starts, cursor = [], 0
-    for s in strokes:
-        starts.append(cursor)
-        cursor += len(s)
-    return starts
-
-
 def derive_stages(case: GlyphCase, n_anchors: int | None = None) -> list[Stage]:
     """Capture snap → smooth → resample → verticalize for a Gleichzug glyph.
 
@@ -147,9 +139,14 @@ def derive_stages(case: GlyphCase, n_anchors: int | None = None) -> list[Stage]:
         Stage("4 verticalized", split(final), "dots", corner_pts),
     ]
 
-    # Honesty check: the captured final must match the production anchors.
+    # Honesty check: the captured final must match the production anchors — warn
+    # on a shape mismatch too, else the guard silently no-ops when it matters most.
     prod = derive(case, n_anchors=n).anchors_px
-    if prod.shape == final.shape and not np.allclose(prod, final, atol=0.05):
+    if prod.shape != final.shape:
+        print(
+            f"  [glyphlab] WARN: stage capture shape {final.shape} != production {prod.shape} — derive_stages out of sync"
+        )
+    elif not np.allclose(prod, final, atol=0.05):
         max_d = float(np.max(np.hypot(*(prod - final).T)))
         print(f"  [glyphlab] WARN: stage capture drifted from production ({max_d:.2f}px) — keep derive_stages in sync")
     return stages

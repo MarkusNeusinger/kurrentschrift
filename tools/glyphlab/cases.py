@@ -72,12 +72,8 @@ def _manifest_for(key: str, fixtures_root: Path) -> tuple[Path, dict] | None:
     return None
 
 
-def fixture_case(key: str, fixtures_root: Path = DEFAULT_FIXTURES_DIR) -> GlyphCase:
-    """Load one frozen fixture by glyph_key (searches every manifest)."""
-    found = _manifest_for(key, fixtures_root)
-    if found is None:
-        raise KeyError(f"no fixture {key!r} under {fixtures_root}")
-    manifest_path, manifest = found
+def _case_from(manifest_path: Path, manifest: dict, key: str) -> GlyphCase:
+    """Build a GlyphCase from an already-loaded manifest (no manifest rescan)."""
     glyph_dir = manifest_path.parent / key
     tpl = json.loads((glyph_dir / "template.json").read_text())
     bbox = json.loads((glyph_dir / "bbox.json").read_text())
@@ -93,8 +89,20 @@ def fixture_case(key: str, fixtures_root: Path = DEFAULT_FIXTURES_DIR) -> GlyphC
     )
 
 
+def fixture_case(key: str, fixtures_root: Path = DEFAULT_FIXTURES_DIR) -> GlyphCase:
+    """Load one frozen fixture by glyph_key (searches every manifest)."""
+    found = _manifest_for(key, fixtures_root)
+    if found is None:
+        raise KeyError(f"no fixture {key!r} under {fixtures_root}")
+    return _case_from(*found, key)
+
+
 def iter_fixture_cases(fixtures_root: Path = DEFAULT_FIXTURES_DIR, *, only: list[str] | None = None) -> list[GlyphCase]:
-    """All fixture cases (optionally filtered to `only` glyph_keys), sorted by key."""
+    """All fixture cases (optionally filtered to `only` glyph_keys), sorted by key.
+
+    Each manifest is read once and its cases built directly from it (no per-key
+    rescan), so `--all` stays linear in the number of fixtures.
+    """
     cases: list[GlyphCase] = []
     seen: set[str] = set()
     for manifest_path in sorted(fixtures_root.rglob("manifest.json")):
@@ -104,7 +112,7 @@ def iter_fixture_cases(fixtures_root: Path = DEFAULT_FIXTURES_DIR, *, only: list
             if (only is not None and key not in only) or key in seen:
                 continue
             seen.add(key)
-            cases.append(fixture_case(key, fixtures_root))
+            cases.append(_case_from(manifest_path, manifest, key))
     return sorted(cases, key=lambda c: c.key)
 
 
