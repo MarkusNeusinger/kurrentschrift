@@ -5,6 +5,8 @@ works on a chart `source`; this router resolves the source's style and stores
 the canonical there, recording the chart as `provenance_source_id`.
 """
 
+import statistics
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -72,6 +74,21 @@ def _sync_bbox_anchor_count(bbox, canonical: dict) -> None:
     actual = int(canonical.get("trace_meta", {}).get("n_anchors") or len(canonical.get("anchors", [])))
     if actual and actual != bbox.n_anchors:
         bbox.n_anchors = actual
+
+
+async def _pooled_constant_nib(db: AsyncSession, style_id: str, source_id: str) -> float | None:
+    """Source-wide mean nib radius (x-height units) for a constant-width style.
+
+    architektur.md §5: a Gleichzug script is written with ONE constant nib, so the
+    rendered thickness should be the source's mean — not each glyph's own measured
+    constant (which varies with per-crop quantisation: 0.062–0.081 here). Pools the
+    median half-width of every template traced from this chart source; the resolver
+    override in `diagnostic_for_glyph` then renders all of them at this one value.
+    Returns None when nothing is traced yet (caller falls back to per-glyph widths).
+    """
+    rows = await TemplateRepository(db).list(style_id)
+    nibs = [statistics.median(r.half_widths) for r in rows if r.provenance_source_id == source_id and r.half_widths]
+    return float(statistics.mean(nibs)) if nibs else None
 
 
 async def _resolve_style(source: Source, db: AsyncSession) -> tuple[str, list[float], float, str]:
@@ -285,7 +302,8 @@ async def get_diagnostic(
     template = await TemplateRepository(db).get(source.style_id, glyph_key)
     if template is None:
         raise HTTPException(404, detail=f"no canonical for {glyph_key!r}")
-    _, style_ratio, slant_deg, width_resolver = await _resolve_style(source, db)
+    style_id, style_ratio, slant_deg, width_resolver = await _resolve_style(source, db)
+    constant_nib_units = await _pooled_constant_nib(db, style_id, source.id) if width_resolver == "constant" else None
     return await run_in_threadpool(
         diagnostic_for_glyph,
         glyph_row={
@@ -298,6 +316,7 @@ async def get_diagnostic(
         style_ratio=style_ratio,
         slant_deg=slant_deg,
         width_resolver=width_resolver,
+        constant_nib_units=constant_nib_units,
     )
 
 
