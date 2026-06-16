@@ -1,5 +1,11 @@
 """Repository layer — thin AsyncSession wrappers per model."""
 
+# Annotations are lazy strings: several repositories define a `list` method, which
+# would otherwise shadow the builtin `list` when a LATER method in the same class
+# is annotated `-> list[...]` (evaluated at class-definition time → "'function'
+# object is not subscriptable" on import). Stringised annotations sidestep that.
+from __future__ import annotations
+
 from typing import Any
 
 from sqlalchemy import delete, select
