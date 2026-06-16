@@ -435,6 +435,15 @@ VERTICAL_MIN_LEN_UNITS = 0.45  # min run length (x-height units) to verticalise
 VERTICAL_STRAIGHT_TOL = 0.10  # max bow (fraction of length) — a curve fails and stays round
 VERTICAL_EASE_UNITS = 0.20  # raised-cosine fillet length (x-height units) into the curve
 VERTICAL_INSET_UNITS = 0.12  # shrink the perfectly-vertical core by this per end (more curve at the ends)
+# A within-stroke corner (Umkehrpunkt) within this much arc (x-height units)
+# beyond a vertical run's end is treated as the run's true endpoint: the
+# downstroke runs straight to the reversal (no fillet inset/ease there) and the
+# corner anchor is pulled onto the vertical, so the bottom of an i/u/m/n sits
+# squarely below the stem instead of hooking off to the side where the skeleton
+# pools at the turn. Arc-based (not an anchor count) so it is invariant to anchor
+# spacing; sized just above the rounded-end drift (≈ a nib radius) the tangent
+# test sheds off the run, well below the distance to any unrelated feature.
+VERTICAL_CORNER_GAP_UNITS = 0.15
 
 
 def _run_is_straight(pts: np.ndarray, tol_frac: float) -> bool:
@@ -454,25 +463,39 @@ def _run_is_straight(pts: np.ndarray, tol_frac: float) -> bool:
     return float(np.max(np.hypot(perp[:, 0], perp[:, 1]))) <= tol_frac * clen
 
 
-def _verticalize_downstrokes(anchors: np.ndarray, stroke_starts: list[int], unit_px: float) -> np.ndarray:
+def _verticalize_downstrokes(
+    anchors: np.ndarray, stroke_starts: list[int], unit_px: float, corner_anchors: list[int] | None = None
+) -> np.ndarray:
     """Pull each long, straight, near-vertical run onto a true vertical (crop px).
 
     A run is a maximal stretch whose local tangent is within `VERTICAL_ANGLE_DEG`
     of vertical and that passes `_run_is_straight` — a downstroke, never a curving
     loop side. Detected by tangent, so it also catches the long line in a loop
     glyph (b) that has no within-stroke corner. Each run's x is attracted to its
-    mean x with a weight 1 across the (inset) core, easing to 0 over
-    `VERTICAL_EASE_UNITS` of arc into the neighbouring curve — a tangential fillet,
-    not a corner. Never crosses a pen lift (strokes are processed independently).
+    mean x with a weight 1 across the core, easing to 0 over `VERTICAL_EASE_UNITS`
+    of arc into the neighbouring curve — a tangential fillet, not a corner. Never
+    crosses a pen lift (strokes are processed independently).
+
+    Corner-aware ends: where a run terminates AT a within-stroke corner (an
+    `corner_anchors` index within `VERTICAL_CORNER_GAP` of the run end), that end
+    is a true reversal, not a fillet into a curve — the run runs straight to the
+    corner (no inset, no ease) and the corner anchor itself is pulled onto the
+    vertical, while the weight is zeroed beyond the corner so the next sub-stroke
+    (the up-going Aufstrich) is left untouched. This puts the bottom of an
+    i/u/m/n squarely below its stem instead of hooking to the side, matching the
+    written ductus: down at 90°, stop, away again. A run end that flows into a
+    curve (no corner) keeps the easing fillet as before.
     """
     bounds_all = [*stroke_starts, len(anchors)]
     out = anchors.astype(float).copy()
     ease_px = max(1e-6, VERTICAL_EASE_UNITS * unit_px)
     inset_px = VERTICAL_INSET_UNITS * unit_px
+    corner_set = {int(c) for c in (corner_anchors or [])}
     for s0, s1 in zip(bounds_all[:-1], bounds_all[1:], strict=True):
         pts = out[s0:s1]
         if len(pts) < 4:
             continue
+        local_corners = sorted(c - s0 for c in corner_set if s0 <= c < s1)
         tan = np.gradient(pts, axis=0)
         tnorm = np.hypot(tan[:, 0], tan[:, 1])
         tnorm[tnorm == 0] = 1.0
@@ -495,13 +518,25 @@ def _verticalize_downstrokes(anchors: np.ndarray, stroke_starts: list[int], unit
                 i = j + 1
             else:
                 i += 1
+        gap_px = VERTICAL_CORNER_GAP_UNITS * unit_px
         for i, j in runs:
             target_x = float(np.mean(pts[i : j + 1, 0]))
-            lo, hi = arc[i] + inset_px, arc[j] - inset_px
+            top_corner = next((c for c in reversed(local_corners) if c < i and arc[i] - arc[c] <= gap_px), None)
+            bot_corner = next((c for c in local_corners if c > j and arc[c] - arc[j] <= gap_px), None)
+            i_end = top_corner if top_corner is not None else i
+            j_end = bot_corner if bot_corner is not None else j
+            lo = arc[i_end] + (0.0 if top_corner is not None else inset_px)
+            hi = arc[j_end] - (0.0 if bot_corner is not None else inset_px)
             if hi <= lo:
-                lo = hi = 0.5 * (arc[i] + arc[j])
+                lo = hi = 0.5 * (arc[i_end] + arc[j_end])
             gap = np.clip(lo - arc, 0, None) + np.clip(arc - hi, 0, None)
             w = np.where(gap >= ease_px, 0.0, 0.5 * (1.0 + np.cos(np.pi * gap / ease_px)))
+            # A corner is a hard reversal, not a fillet: keep the vertical pull
+            # from bleeding past it into the adjacent sub-stroke.
+            if top_corner is not None:
+                w[arc < arc[i_end] - 1e-9] = 0.0
+            if bot_corner is not None:
+                w[arc > arc[j_end] + 1e-9] = 0.0
             pts[:, 0] = (1.0 - w) * pts[:, 0] + w * target_x
     return out
 
@@ -569,7 +604,7 @@ def canonical_suetterlin_from_path(
     # near-vertical straight run onto a true vertical, easing the adjacent round
     # tangentially into it (a fillet). Loops/bowls fail the straightness test and
     # stay round. Done on the resampled anchors so the corner-knot indices hold.
-    resampled_local = _verticalize_downstrokes(resampled_local, stroke_starts, unit_px)
+    resampled_local = _verticalize_downstrokes(resampled_local, stroke_starts, unit_px, corner_anchors_idx)
     hw_px = np.full(len(resampled_local), r_px, dtype=float)
 
     # Image-space self-check: how well does the rendered silhouette match the crop?

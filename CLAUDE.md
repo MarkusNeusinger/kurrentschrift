@@ -52,6 +52,8 @@ Every layer has a verified feedback-loop skill under `.claude/skills/` — use t
 - `/optimize-glyphs` — autonomous keep/discard experiment loop on the glyph pipeline: hypothesize → edit `core/` → run the hermetic glyph bench (`tools/glyphbench`, frozen scoring references) → results.tsv → keep or revert. Never touches the DB; the bench/metric/tests are frozen during a run.
 - `/optimize-skills` — periodic retro: mine past session transcripts for recurring friction and fold the patterns back into skills/memory/this file.
 
+`tools/glyphlab` (a dev tool, not a skill) renders matplotlib overlays of a glyph's derivation — crop · skeleton · centerline · corners · filled silhouette — from a fixture or a **read-only** live DB pull: `python -m tools.glyphlab <key> [--live] [--stages] [--style dots]` (output to `temp/`; matplotlib is the dev-only `viz` extra, run with `uv run --extra viz`). Use it to *see* ductus quality during `/optimize-glyphs`: the glyph bench is deliberately blind to sub-pixel centerline/corner shifts, so ductus/naturalness fixes are judged here, not by `bench_loss`. Prefer it over hand-rolled plotting scripts.
+
 Routing is mandatory, not advisory: any "commit/push/PR this" request goes through `/open-pr`; never hand-roll the type-check/build/push/PR/Copilot loop, and check Copilot comments as part of the loop instead of waiting to be asked.
 
 Known gaps without a loop yet: Alembic/schema changes (shared DB, no scratch instance), admin write flows (they would mutate shared data), post-deploy prod smoke.

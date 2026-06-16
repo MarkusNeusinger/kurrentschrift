@@ -447,6 +447,13 @@ pipelines for plot specifications). For now:
   `bench_loss:` — lower is better). A PR touching `core/` extraction or
   rendering should quote before/after numbers; the bench never touches
   the DB (fixtures are exported once, read-only).
+- **Glyph inspection (see, don't just score):** `tools/glyphlab` renders
+  matplotlib overlays of a glyph's derivation (crop · skeleton ·
+  centerline · corners · silhouette) to `temp/`, from a fixture or a
+  read-only live DB pull — `python -m tools.glyphlab <key> [--live]
+  [--stages]` (matplotlib is the dev-only `viz` extra). The bench is
+  blind to sub-pixel centerline/corner shifts, so ductus/naturalness
+  fixes are judged here, not by `bench_loss`.
 - **Never merge a PR yourself** — open it, get it green and
   review-clean (address Copilot review comments, then resolve the
   threads); merging is the maintainer's call.

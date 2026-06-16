@@ -1,0 +1,80 @@
+"""Smoke tests for the glyphlab inspection toolkit (fixtures only, no DB)."""
+
+from __future__ import annotations
+
+import numpy as np
+import pytest
+
+from tools.glyphlab import (
+    derive,
+    derive_stages,
+    figure,
+    fixture_case,
+    iter_fixture_cases,
+    overlay,
+    panel,
+    save,
+    stage_panels,
+)
+
+
+def test_fixture_case_loads_constant_and_pressure() -> None:
+    suet = fixture_case("i-initial")
+    assert suet.glyph == "i" and suet.position == "initial"
+    assert suet.is_constant  # Sütterlin Gleichzug
+    assert len(suet.raw_path) > 2
+    loth = fixture_case("longs-final")  # Loth-only key
+    assert not loth.is_constant
+
+
+def test_derive_produces_aligned_arrays() -> None:
+    res = derive(fixture_case("i-initial"))
+    n = len(res.anchors_px)
+    assert n > 2
+    assert res.anchors_px.shape == (n, 2)
+    assert res.half_widths_px.shape == (n,)
+    assert res.stroke_starts[0] == 0
+    assert res.skel.shape == res.crop.shape == res.mask.shape
+    # anchors land inside the crop bounds
+    h, w = res.crop.shape
+    assert (res.anchors_px[:, 0] >= -1).all() and (res.anchors_px[:, 0] <= w + 1).all()
+    assert (res.anchors_px[:, 1] >= -1).all() and (res.anchors_px[:, 1] <= h + 1).all()
+
+
+def test_derive_stages_match_production() -> None:
+    case = fixture_case("i-initial")
+    stages = derive_stages(case)
+    assert [s.name for s in stages] == ["1 snapped", "2 smoothed", "3 resampled", "4 verticalized"]
+    final = np.concatenate(stages[-1].strokes)
+    prod = derive(case).anchors_px
+    assert final.shape == prod.shape
+    assert np.allclose(final, prod, atol=0.05)  # stage capture mirrors the real pipeline
+
+
+def test_derive_stages_rejects_pressure() -> None:
+    with pytest.raises(ValueError, match="Gleichzug-only"):
+        derive_stages(fixture_case("longs-final"))
+
+
+def test_overlay_figure_and_save(tmp_path) -> None:
+    res = derive(fixture_case("i-initial"))
+    fig = overlay(res, title="i")
+    assert fig.get_axes()  # at least one panel axes
+    grid = figure([panel(res, title="spline"), panel(res, style="dots", title="dots")])
+    assert len(grid.get_axes()) == 2
+    path = save(grid, "smoke", out_dir=tmp_path)
+    assert path.exists() and path.suffix == ".png"
+
+
+def test_stage_panels_build(tmp_path) -> None:
+    case = fixture_case("i-initial")
+    res = derive(case)
+    panels = stage_panels(res, derive_stages(case))
+    assert len(panels) == 4
+    path = save(figure(panels, cols=4), "stages", out_dir=tmp_path)
+    assert path.exists()
+
+
+def test_iter_fixture_cases_dedups_keys() -> None:
+    cases = iter_fixture_cases(only=["i-initial", "u-initial"])
+    assert {c.key for c in cases} == {"i-initial", "u-initial"}
