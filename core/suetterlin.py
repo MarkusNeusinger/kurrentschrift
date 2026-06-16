@@ -12,10 +12,26 @@ The commitment instead: the geometry IS the crop's medial axis. We skeletonise
 the binarised crop (`skeletonize` == the centerline of a constant-width stroke,
 by construction), snap the drawn Weg onto that skeleton to recover stroke order
 and pen lifts (the ductus prior, architektur.md §2), and stamp a single
-constant half-width — the median distance-transform on the skeleton, i.e. the
-nib radius. Rendered as a constant-radius capsule union the silhouette hugs the
-crop by construction: it cannot drift, because it is literally the skeleton
-buffered. Round caps even match the Redisfeder's ball tip.
+constant half-width — the histogram MODE of the distance-transform on the
+skeleton, i.e. the nib radius. Rendered as a constant-radius capsule union the
+silhouette hugs the crop by construction: it cannot drift, because it is
+literally the skeleton buffered. Round caps even match the Redisfeder's ball tip.
+
+Two refinements handle where two strokes run together — a t/s loop, the long
+Spitze where an up- and a down-stroke nearly coincide:
+
+* Nib radius from the histogram mode, not the median. The skeleton of a merged
+  double stroke is a single central line whose EDT reads ~2x the nib, so its
+  width values are a high tail on the histogram. A median is dragged up by that
+  tail (worse when several merge depths coexist); the mode is not, because the
+  lone single-stroke nib is still the single most-common width across the glyph.
+* Edge-following snap. Where the drawn point sits over a merged region (its
+  nearest skeleton pixel reads a half-width well above the nib radius) the two
+  passes must NOT collapse onto the shared centerline — the pen ran up the left
+  edge and back down the right. Each point is offset from the central skeleton
+  toward its own edge by (local half-width − nib radius), the side taken from
+  the drawn trace (the ductus prior). Single strokes (EDT ≈ nib) snap to the
+  centerline exactly as before; round stroke ends (EDT < nib) get no offset.
 
 The drawn Weg therefore only supplies ORDER (and Absetzen): the geometry is
 locked to the ink, so a rough trace still yields a clean glyph. The output dict
@@ -49,26 +65,67 @@ SNAP_RESAMPLE_PX = 1.0
 # Snap cap as a multiple of the nib radius: a Weg drawn on the ink sits within
 # ~one half-width of the centerline. Beyond this the nearest skeleton pixel is
 # too far to trust as "the stroke this point meant" (it could be a crossing's
-# other branch), so the drawn point keeps its position instead of jumping.
+# other branch), so the drawn point keeps its position instead of jumping. In a
+# merged region the legitimate drawn position is farther from the central
+# skeleton (out at the ink edge), so the cap is raised per point to the local
+# ink half-width — `_snap_to_skeleton_edges` widens it where the blob is wide.
 SNAP_CAP_RADIUS_FACTOR = 1.5
 SNAP_CAP_MIN_PX = 4.0
 
+# Histogram bin (px) for the modal nib radius. 1px matches the EDT quantisation;
+# the modal bin is then refined to sub-pixel by its own median.
+NIB_HISTOGRAM_BIN_PX = 1.0
+
+# Edge-following snap: a drawn point whose nearest skeleton pixel reads a
+# half-width more than MERGE_EXCESS_FACTOR above the nib radius (and at least
+# MERGE_EXCESS_MIN_PX px above, so EDT quantisation on a plain single stroke
+# never triggers) sits over a merged double stroke and is pushed toward its own
+# edge instead of the shared centerline.
+MERGE_EXCESS_FACTOR = 0.3
+MERGE_EXCESS_MIN_PX = 1.5
+
+
+def _modal_half_width(values: np.ndarray) -> float | None:
+    """The most-common half-width (histogram mode, sub-pixel-refined), or None.
+
+    The EDT on a constant-width stroke clusters tightly at the nib radius, so on
+    a glyph that is mostly single-stroke the nib is the tallest bin. Merged
+    double strokes (t/s loops, a Spitze) read ~2x the nib and pile into higher
+    bins — a high tail that pulls the *median* up but leaves the *mode* on the
+    true nib. Picking the modal 1px bin and taking the median WITHIN it recovers
+    the nib to sub-pixel. Returns None when there is no positive width to bin.
+    """
+    vals = np.asarray(values, dtype=float)
+    vals = vals[vals > 0]
+    if vals.size == 0:
+        return None
+    lo = float(np.floor(vals.min()))
+    hi = float(np.ceil(vals.max()))
+    if hi <= lo:
+        return float(vals[0])
+    edges = np.arange(lo, hi + NIB_HISTOGRAM_BIN_PX, NIB_HISTOGRAM_BIN_PX)
+    counts, edges = np.histogram(vals, bins=edges)
+    peak = int(np.argmax(counts))
+    in_modal = vals[(vals >= edges[peak]) & (vals < edges[peak + 1])]
+    return float(np.median(in_modal)) if in_modal.size else float((edges[peak] + edges[peak + 1]) / 2.0)
+
 
 def _constant_nib_radius(skel: np.ndarray, width_map: np.ndarray, mask: np.ndarray) -> float:
-    """Median distance-transform on the skeleton = the Gleichzug half-width (px).
+    """Histogram mode of the distance-transform on the skeleton = the nib radius (px).
 
-    The EDT equals the half stroke width only on the medial axis, so the median
-    over the skeleton is the robust nib radius — robust to the eroded round ends
-    (which read low) and the inflated crossings (which read high). Falls back to
-    the mask median, then a 1px floor, on an empty skeleton.
+    The EDT equals the half stroke width only on the medial axis. The modal
+    width (see `_modal_half_width`) is the robust nib radius: robust to the
+    eroded round ends (which read low) and, crucially, to merged double strokes
+    (which read ~2x and would drag a median up). Falls back to the mask values,
+    then a 1px floor, on an empty skeleton.
     """
     if skel.any():
-        vals = width_map[skel]
+        modal = _modal_half_width(width_map[skel])
     elif mask.any():
-        vals = width_map[mask]
+        modal = _modal_half_width(width_map[mask])
     else:
-        return 1.0
-    return float(max(1.0, np.median(vals)))
+        modal = None
+    return float(max(1.0, modal)) if modal is not None else 1.0
 
 
 def _resample_by_arc(points: np.ndarray, spacing_px: float) -> np.ndarray:
@@ -92,18 +149,56 @@ def _resample_by_arc(points: np.ndarray, spacing_px: float) -> np.ndarray:
     return np.column_stack([np.interp(t, cum, points[:, 0]), np.interp(t, cum, points[:, 1])])
 
 
-def _snap_to_skeleton(points: np.ndarray, skel_xy: np.ndarray, tree: cKDTree, cap_px: float) -> np.ndarray:
-    """Pull each point onto the nearest skeleton pixel (within cap); keep beyond-cap as drawn.
+def _snap_to_skeleton_edges(
+    points: np.ndarray, skel_xy: np.ndarray, skel_w: np.ndarray, tree: cKDTree, cap_px: float, r_px: float
+) -> np.ndarray:
+    """Snap each point onto the medial axis, but follow the EDGE in merged regions.
 
-    Locks the drawn Weg onto the medial axis, so the geometry is the ink's, not
-    the hand's. Beyond the cap the skeleton is too far to trust (a crossing's
-    other branch), so the drawn point stands and the later snap-back continues.
+    On a single stroke the nearest skeleton pixel reads a half-width ≈ the nib
+    radius and the point snaps straight onto the centerline (the geometry is the
+    ink's, not the hand's). Where two strokes run together the nearest skeleton
+    pixel is the SHARED central line of the merged blob and reads a half-width
+    well above the nib; collapsing both passes onto it would draw one stroke down
+    the middle. Instead the point is offset from that centerline toward its own
+    edge by (local half-width − nib radius): the side comes from the drawn trace
+    (its lateral position relative to the centerline, the ductus prior), the
+    magnitude from the ink. Round stroke ends read EDT < nib, so they get no
+    offset. Beyond the (locally widened) cap the skeleton is too far to trust, so
+    the drawn point stands.
     """
     if len(skel_xy) == 0:
         return points
     dist, idx = tree.query(points)
-    snapped = skel_xy[idx].astype(float)
-    beyond = dist > cap_px
+    centers = skel_xy[idx].astype(float)
+    hw_c = skel_w[idx]
+
+    # Local transverse direction from the drawn polyline's own tangent: the
+    # points are densely (~1px) ordered along the stroke, so np.gradient is a
+    # stable tangent. The component of (drawn − center) perpendicular to it is
+    # the side the pen was on; we keep only its sign and place the offset.
+    tangent = np.gradient(points, axis=0)
+    tnorm = np.hypot(tangent[:, 0], tangent[:, 1])
+    tnorm[tnorm == 0] = 1.0
+    tangent /= tnorm[:, None]
+    rel = points - centers
+    along = (rel * tangent).sum(axis=1)
+    lateral = rel - along[:, None] * tangent
+    lat_norm = np.hypot(lateral[:, 0], lateral[:, 1])
+
+    excess = hw_c - r_px
+    merged = excess > max(MERGE_EXCESS_MIN_PX, MERGE_EXCESS_FACTOR * r_px)
+    sided = merged & (lat_norm > 1e-3)
+
+    snapped = centers.copy()
+    if sided.any():
+        unit = lateral[sided] / lat_norm[sided, None]
+        snapped[sided] = centers[sided] + excess[sided, None] * unit
+
+    # In a merged region the legitimate drawn point sits out at the ink edge,
+    # i.e. up to one local half-width from the central skeleton — raise the cap
+    # there so a well-drawn edge trace is not rejected as "too far".
+    cap_local = np.maximum(cap_px, hw_c + 1.0)
+    beyond = dist > cap_local
     snapped[beyond] = points[beyond]
     return snapped
 
@@ -123,14 +218,17 @@ def _snap_strokes_to_skeleton(
     """Snap each drawn stroke densely onto the skeleton; return strokes + nib radius.
 
     Each stroke is resampled to ~1px spacing and every sample pulled onto the
-    nearest skeleton pixel, so the result is a dense polyline that traces the
-    medial axis (including through corners) — the geometry is now the ink's, not
-    the hand's. Even resampling + corner detection happen afterwards in the
-    shared `_resample_strokes`. Strokes collapsing to <2 points are dropped.
+    medial axis — straight onto the centerline on a single stroke, out to its
+    own edge where two strokes have merged (`_snap_to_skeleton_edges`) — so the
+    result is a dense polyline tracing the ink (including through corners), the
+    geometry now the ink's, not the hand's. Even resampling + corner detection
+    happen afterwards in the shared `_resample_strokes`. Strokes collapsing to
+    <2 points are dropped.
     """
     r_px = _constant_nib_radius(skel, width_map, mask)
     skel_ys, skel_xs = np.where(skel)
     skel_xy = np.column_stack([skel_xs, skel_ys]).astype(float)
+    skel_w = width_map[skel_ys, skel_xs].astype(float)
     tree = cKDTree(skel_xy) if len(skel_xy) else None
     cap_px = max(SNAP_CAP_MIN_PX, SNAP_CAP_RADIUS_FACTOR * r_px)
 
@@ -138,7 +236,7 @@ def _snap_strokes_to_skeleton(
     for stroke in strokes_local:
         pts = _resample_by_arc(stroke, SNAP_RESAMPLE_PX)
         if tree is not None:
-            pts = _snap_to_skeleton(pts, skel_xy, tree, cap_px)
+            pts = _snap_to_skeleton_edges(pts, skel_xy, skel_w, tree, cap_px, r_px)
         pts = _dedup(pts)
         if len(pts) >= 2:
             snapped.append(pts)

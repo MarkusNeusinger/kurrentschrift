@@ -13,7 +13,12 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from core.suetterlin import canonical_suetterlin_from_path, canonical_suetterlin_from_raw_path_only
+from core.suetterlin import (
+    _constant_nib_radius,
+    _modal_half_width,
+    canonical_suetterlin_from_path,
+    canonical_suetterlin_from_raw_path_only,
+)
 
 
 def _save(img: np.ndarray, tmp_path, name: str = "chart.png") -> str:
@@ -118,6 +123,90 @@ def test_sharp_corner_becomes_a_knot(l_shape_chart_path, l_shape_bbox):
     assert len(canon["trace_meta"]["corner_anchors"]) >= 1
     # And the cornered silhouette still hugs the L-shaped ink.
     assert canon["trace_meta"]["quality"]["iou"] > 0.8
+
+
+def test_nib_radius_uses_histogram_mode():
+    # 250 single-stroke half-widths at the true nib (8), plus merged double/
+    # triple tails at 14 and 20 — exactly the t/s case where strokes run
+    # together. The median is dragged up into the tail; the mode is not.
+    vals = np.concatenate([np.full(250, 8.0), np.full(130, 14.0), np.full(130, 20.0)])
+    assert np.median(vals) >= 13.0  # a plain median would over-stamp the nib
+    assert abs(_modal_half_width(vals) - 8.0) < 1.0
+
+    # Through the public helper on a (skeleton, width_map) pair: the modal width
+    # recovers the nib radius despite the merged-region tail.
+    skel = np.ones((1, vals.size), dtype=bool)
+    width_map = np.zeros((1, vals.size), dtype=float)
+    width_map[0, :] = vals
+    assert abs(_constant_nib_radius(skel, width_map, skel) - 8.0) < 1.0
+
+
+@pytest.fixture
+def merged_double_chart_path(tmp_path) -> str:
+    """A thin single bar (the nib reference) beside a wide merged double bar.
+
+    The 16px bar (x∈[340,356)) fixes the nib radius at ~8 via the histogram
+    mode; the 32px bar (x∈[400,432)) is what two pen-strokes look like once
+    their ink has merged into one block — its medial axis is a single central
+    line at x≈416 reading a half-width of ~16. Tracing that block as a hairpin
+    (down one side, up the other) must follow its two edges, not collapse onto
+    the centerline.
+    """
+    img = np.ones((800, 800), dtype=np.float32)
+    img[150:560, 340:356] = 0.05  # 16px single-stroke nib reference
+    img[200:500, 400:432] = 0.05  # 32px merged double stroke
+    return _save(img, tmp_path)
+
+
+@pytest.fixture
+def merged_double_bbox() -> dict:
+    return {
+        "y0": 120,
+        "y1": 600,
+        "x0": 320,
+        "x1": 460,
+        "mask_strokes": [],
+        "baseline_y": 500,
+        "midband_y": 400,
+        "n_anchors": 60,
+    }
+
+
+def _merged_hairpin_path() -> list[dict]:
+    """Down the left of the wide block and back up the right — one pen-stroke.
+
+    Drawn with only a mild lateral bias (x≈412 down, x≈420 up, the block centre
+    being 416) to show the edge-follow PLACES each pass at its edge from the
+    ink, taking only the side from the drawing.
+    """
+    down = [{"x": 412.0, "y": float(212 + 274 * i / 29)} for i in range(30)]
+    turn = [{"x": float(414 + 4 * i / 2), "y": 492.0} for i in range(3)]
+    up = [{"x": 420.0, "y": float(486 - 274 * i / 29)} for i in range(30)]
+    return down + turn + up
+
+
+def test_merged_double_stroke_follows_edges(merged_double_chart_path, merged_double_bbox):
+    canon = canonical_suetterlin_from_path(
+        raw_path=_merged_hairpin_path(),
+        bbox=merged_double_bbox,
+        chart_path=merged_double_chart_path,
+        glyph="t",
+        position="initial",
+    )
+    # The thin bar fixes the nib at ~8 despite the wide bar's ~16 readings.
+    assert abs(canon["trace_meta"]["nib_radius_px"] - 8.0) < 2.0
+
+    xs = np.array([px for px, _ in canon["trace_meta"]["pixel_anchors"]])
+    left = xs[xs < 412]
+    right = xs[xs > 420]
+    # Both passes exist and sit out at their own edge-inset (centre 416 ∓ nib 8
+    # ≈ 408 / 424) — NOT collapsed onto the shared centerline at x≈416.
+    assert left.size and right.size
+    assert abs(left.mean() - 408.0) < 3.0
+    assert abs(right.mean() - 424.0) < 3.0
+    # Two 8-radius passes at ±8 from centre span the full 32px block; a centre
+    # collapse would leave the spread near zero.
+    assert xs.max() - xs.min() > 12.0
 
 
 def test_from_raw_path_only_roundtrip(synthetic_chart_path, synthetic_bbox):
