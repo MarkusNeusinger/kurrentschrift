@@ -36,6 +36,7 @@ from PIL import Image
 
 from core.pipeline import DEFAULT_N_ANCHORS, canonical_from_path
 from core.quality import crop_local_anchors, silhouette_mask, template_quality_metrics
+from core.suetterlin import canonical_suetterlin_from_path
 
 from .overlay import write_overlay_png
 
@@ -52,24 +53,36 @@ def _load_refs(glyph_dir: Path) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     return ref_mask, skel, width_map
 
 
-def run_glyph(glyph_dir: Path, chart_path: str, artifacts_dir: Path | None, refine: bool) -> dict:
-    """Re-derive one glyph with current code and score it against its frozen refs."""
+def run_glyph(
+    glyph_dir: Path, chart_path: str, artifacts_dir: Path | None, refine: bool, width_resolver: str = "pressure"
+) -> dict:
+    """Re-derive one glyph with current code and score it against its frozen refs.
+
+    Routes per the source's `width_resolver` exactly like the production API
+    (`api.routers.templates._derive_canonical`): constant-width styles (Sütterlin
+    Gleichzug) go through the skeleton-locked `canonical_suetterlin_from_path`,
+    everything else through the pressure pipeline. Without this the bench would
+    silently score Sütterlin with the wrong derivation.
+    """
     template = json.loads((glyph_dir / "template.json").read_text())
     bbox = json.loads((glyph_dir / "bbox.json").read_text())
     ref_mask, skel, width_map = _load_refs(glyph_dir)
 
-    canon = canonical_from_path(
-        raw_path=template["raw_path"],
-        bbox=bbox,
-        chart_path=chart_path,
-        glyph=template["glyph"],
-        position=template["position"],
+    common = {
+        "raw_path": template["raw_path"],
+        "bbox": bbox,
+        "chart_path": chart_path,
+        "glyph": template["glyph"],
+        "position": template["position"],
         # Mirror the /resample default (the production write-back path): the
         # bench measures what a "Neu ableiten" would actually store, not the
         # possibly stale per-bbox anchor count frozen into the fixture.
-        n_anchors=DEFAULT_N_ANCHORS,
-        refine=refine,
-    )
+        "n_anchors": DEFAULT_N_ANCHORS,
+    }
+    if width_resolver == "constant":
+        canon = canonical_suetterlin_from_path(**common)
+    else:
+        canon = canonical_from_path(**common, refine=refine)
     tm = canon["trace_meta"]
     anchors_px = crop_local_anchors(tm["pixel_anchors"], bbox)
     half_widths_px = np.asarray(tm["half_widths_px"], dtype=float)
@@ -118,13 +131,14 @@ def main() -> None:
     for manifest_path in manifests:
         manifest = json.loads(manifest_path.read_text())
         chart_path = manifest["chart_path"]
+        width_resolver = manifest.get("width_resolver", "pressure")
         for entry in sorted(manifest["glyphs"], key=lambda g: g["glyph_key"]):
             key = entry["glyph_key"]
             if glyph_filter is not None and key not in glyph_filter:
                 continue
             glyph_dir = manifest_path.parent / key
             try:
-                metrics = run_glyph(glyph_dir, chart_path, args.artifacts, not args.no_refine)
+                metrics = run_glyph(glyph_dir, chart_path, args.artifacts, not args.no_refine, width_resolver)
                 results.append({"glyph_key": key, "status": "scored", "metrics": metrics})
                 print(
                     f"glyph {key:<14} loss {metrics['loss']:.6f}  iou {metrics['iou']:.3f}  "

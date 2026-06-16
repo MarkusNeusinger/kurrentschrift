@@ -759,6 +759,7 @@ def diagnostic_for_glyph(
     style_ratio: list[float],
     slant_deg: float,
     width_resolver: str = "pressure",
+    constant_nib_units: float | None = None,
 ) -> dict:
     """JSON for the 3-column SVG diagnostic (Loth pur | Crop+skeleton+anchors | Canonical).
 
@@ -767,6 +768,13 @@ def diagnostic_for_glyph(
     style's `width_resolver` is applied to the stored measured widths before
     rendering (architektur.md §5: `pressure` keeps the Schwellzug profile,
     `constant` renders Gleichzug) — the stored template is never mutated.
+
+    `constant_nib_units` is the source-wide pooled nib radius (x-height units,
+    architektur.md §5: "mean width per source") supplied by the caller for a
+    `constant` style: every Sütterlin glyph of a source then renders at ONE
+    round-nib thickness instead of each glyph's own measured constant, so a word
+    set in the script keeps a uniform pen. Ignored for non-constant resolvers
+    and when None (falls back to the per-glyph resolved width).
     """
     chart_gray = load_chart_grayscale(chart_path)
     crop = crop_with_mask(chart_gray, bbox, fill=1.0)
@@ -785,6 +793,12 @@ def diagnostic_for_glyph(
     half_widths_px = resolve_half_widths(
         np.asarray(trace_meta.get("half_widths_px") or [], dtype=float), width_resolver
     )
+    # Source-pooled constant nib (Gleichzug): override both width arrays with the
+    # single pooled thickness so every glyph of the source renders at one pen.
+    if width_resolver == "constant" and constant_nib_units is not None:
+        unit_px = float(trace_meta.get("unit_px") or (int(bbox["baseline_y"]) - int(bbox["midband_y"])))
+        half_widths_template = np.full(len(half_widths_template), float(constant_nib_units))
+        half_widths_px = np.full(len(half_widths_px), float(constant_nib_units) * unit_px)
     stroke_starts = trace_meta.get("stroke_starts")
     corner_anchors = trace_meta.get("corner_anchors") or []
     x0, y0 = bbox["x0"], bbox["y0"]
