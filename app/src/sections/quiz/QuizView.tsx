@@ -17,9 +17,7 @@
 import { Container, Stack, Typography } from '@mui/material';
 
 import { BootStatus } from '@/components/BootStatus';
-import { PaperBackground } from '@/components/PaperBackground';
-import { PublicFooter } from '@/components/PublicFooter';
-import { PublicHeader } from '@/components/PublicHeader';
+import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de } from '@/locales';
 import { QuizPlayPanel } from '@/sections/quiz/QuizPlayPanel';
 import { QuizResultsPanel } from '@/sections/quiz/QuizResultsPanel';
@@ -54,8 +52,7 @@ export function QuizView() {
   }
 
   return (
-    <PaperBackground>
-      <PublicHeader tone="paper" />
+    <PublicLayout footer>
       <Container maxWidth="sm" sx={{ py: { xs: 4, sm: 6 } }}>
         <Stack spacing={3}>
           <Typography component="h1" sx={{ fontFamily: garamond, fontStyle: 'italic', fontSize: '2rem', lineHeight: 1.1 }}>
@@ -111,7 +108,6 @@ export function QuizView() {
           )}
         </Stack>
       </Container>
-      <PublicFooter />
-    </PaperBackground>
+    </PublicLayout>
   );
 }

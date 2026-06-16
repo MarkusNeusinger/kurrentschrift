@@ -4,15 +4,13 @@
 import { Box, Button, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 
-import { PaperBackground } from '@/components/PaperBackground';
-import { PublicHeader } from '@/components/PublicHeader';
+import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de } from '@/locales';
 import { paths } from '@/routes/paths';
 
 export function NotFoundPage() {
   return (
-    <PaperBackground minHeight="100dvh">
-      <PublicHeader />
+    <PublicLayout>
       <Box
         sx={{
           display: 'flex',
@@ -35,7 +33,7 @@ export function NotFoundPage() {
           {de.common.notFound.toHome}
         </Button>
       </Box>
-    </PaperBackground>
+    </PublicLayout>
   );
 }
 

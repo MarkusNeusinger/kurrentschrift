@@ -17,8 +17,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { Box, Container, Link, Stack, Typography } from '@mui/material';
 import { keyframes } from '@mui/system';
 
-import { PaperBackground } from '@/components/PaperBackground';
-import { PublicHeader } from '@/components/PublicHeader';
+import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de } from '@/locales';
 import { paths } from '@/routes/paths';
 import { HeroSpecimen } from '@/sections/landing/HeroSpecimen';
@@ -53,9 +52,7 @@ const pillars = de.landing.pillars;
 
 export function LandingView() {
   return (
-    <PaperBackground>
-      <PublicHeader tone="paper" />
-
+    <PublicLayout>
       {/* hero — copy left, giant script specimen right */}
       <Container maxWidth="lg" component="section" sx={{ position: 'relative', zIndex: 1, px: { xs: 2.5, sm: 4, md: 6 } }}>
         <Box
@@ -320,6 +317,6 @@ export function LandingView() {
           </Link>
         </Box>
       </Container>
-    </PaperBackground>
+    </PublicLayout>
   );
 }

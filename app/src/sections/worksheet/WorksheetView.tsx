@@ -11,9 +11,7 @@
 import { useMemo, useState } from 'react';
 import { Box, Container, Paper, Stack, Typography } from '@mui/material';
 
-import { PaperBackground } from '@/components/PaperBackground';
-import { PublicFooter } from '@/components/PublicFooter';
-import { PublicHeader } from '@/components/PublicHeader';
+import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { PRESETS, RULING_THEMES, buildLineature, type LineatureConfig } from '@/lib/lineatur';
 import { lineaturePdf } from '@/lib/pdf';
 import { de, fmt } from '@/locales';
@@ -101,8 +99,7 @@ export function WorksheetView() {
   };
 
   return (
-    <PaperBackground>
-      <PublicHeader tone="paper" />
+    <PublicLayout footer>
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         <Stack spacing={1.5} sx={{ mb: 4 }}>
           <Typography
@@ -163,7 +160,6 @@ export function WorksheetView() {
           </Box>
         </Box>
       </Container>
-      <PublicFooter />
-    </PaperBackground>
+    </PublicLayout>
   );
 }
