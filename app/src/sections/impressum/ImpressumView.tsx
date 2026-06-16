@@ -1,7 +1,7 @@
 // ImpressumView — legal page (/impressum): Impressum, Datenschutz, Quellen &
 // Lizenzen, Transparenz. Same "paper & ink" identity as every public page
-// (PaperBackground + PublicHeader, tokens from styles/paper). All German prose
-// lives in app/src/locales/de/impressum.ts; this component is layout only.
+// (via PublicLayout, tokens from styles/paper). All German prose lives in
+// app/src/locales/de/impressum.ts; this component is layout only.
 //
 // Layout follows the anyplot legal page loosely (portrait next to the operator
 // block, hairline rows for the hosting table) but stays deliberately compact —
@@ -11,8 +11,7 @@ import type { ReactNode } from 'react';
 import { Box, Container, Link, Typography } from '@mui/material';
 
 import portraitUrl from '@/assets/markus-neusinger.webp';
-import { PaperBackground } from '@/components/PaperBackground';
-import { PublicHeader } from '@/components/PublicHeader';
+import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de } from '@/locales';
 import { display, garamond, letterpress, paper, script } from '@/styles/paper';
 
@@ -117,10 +116,8 @@ function Section({ heading, children }: { heading: string; children: ReactNode }
 
 export function ImpressumView() {
   return (
-    <PaperBackground>
-      <PublicHeader tone="paper" />
-
-      <Container component="main" maxWidth="md" sx={{ position: 'relative', zIndex: 1, px: { xs: 2.5, sm: 4, md: 6 }, pt: { xs: 4, md: 6 }, pb: { xs: 6, md: 9 } }}>
+    <PublicLayout>
+      <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1, px: { xs: 2.5, sm: 4, md: 6 }, pt: { xs: 4, md: 6 }, pb: { xs: 6, md: 9 } }}>
         <Typography
           component="h1"
           sx={{ fontFamily: display, fontWeight: 600, fontSize: { xs: '2rem', md: '2.6rem' }, color: paper.ink, textShadow: letterpress }}
@@ -237,6 +234,6 @@ export function ImpressumView() {
           {t.lastUpdated}
         </Typography>
       </Container>
-    </PaperBackground>
+    </PublicLayout>
   );
 }

@@ -4,6 +4,11 @@
 // admin shell the paper texture with top-left error copy); pixel parity beats
 // unification, so the component keeps both looks behind an explicit `shell`
 // prop instead of forcing one onto the other.
+//
+// The plain shell roots on `<main>` so the public quiz route still exposes
+// exactly one main landmark in its loading/error states (the loaded state gets
+// its `<main>` from PublicLayout instead) — the two are mutually exclusive
+// returns, so there is never a double landmark.
 
 import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
@@ -56,6 +61,7 @@ export function BootStatus({ variant, title, message, detail, onRetry, retryLabe
 
   return (
     <Box
+      component="main"
       sx={{
         minHeight: '100vh',
         bgcolor: 'background.default',
