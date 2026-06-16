@@ -4,9 +4,11 @@
 // explanation lives behind this mark and is revealed on click. Click/tap toggles
 // a popover (touch-friendly — no hover dependency).
 //
-// The mark is the site's own hand: a Kurrent "i" (GLKurrent) in viridian, set
-// large and cropped to a hairline ink ring (a small monogram). "i" for
-// information, written rather than drawn from a UI kit (style-guide §1/§2).
+// The mark is the site's own hand: a Kurrent "i" (GLKurrent) set large and
+// cropped to a hairline ink ring (a small monogram). It rests in plain ink and
+// only lifts to viridian on hover/focus, so the accent stays a hint rather than
+// a permanent splash of colour. "i" for information, written rather than drawn
+// from a UI kit (style-guide §1/§2).
 
 import { useId, useState, type MouseEvent, type ReactNode } from 'react';
 
@@ -17,8 +19,8 @@ import { paper } from '@/styles/paper';
 
 // The Kurrent-i monogram. The glyph is set oversized and clipped to the ring so
 // the ornate cursive "i" reads big and centred; `currentColor` lets the button
-// drive its tone (viridian at rest, darker on hover). A unique clip id per
-// instance avoids cross-SVG id collisions.
+// drive its tone (plain ink at rest, viridian on hover/focus). A unique clip id
+// per instance avoids cross-SVG id collisions.
 function InfoMark() {
   const id = useId().replace(/:/g, '');
   return (
@@ -64,11 +66,12 @@ export function InfoHint({ children, title, label }: InfoHintProps) {
         }}
         sx={{
           // p 0.25 lifts the 22px mark to a 26px hit area — clear of the WCAG
-          // 2.2 target-size minimum (24x24 CSS px). Viridian at rest, darker on hover.
+          // 2.2 target-size minimum (24x24 CSS px). Plain ink at rest so the
+          // accent stays quiet; viridian only lights up on hover/focus.
           p: 0.25,
-          color: 'primary.main',
+          color: paper.inkSoft,
           verticalAlign: 'text-bottom',
-          '&:hover, &:focus-visible': { color: 'primary.dark', bgcolor: 'transparent' },
+          '&:hover, &:focus-visible': { color: 'primary.main', bgcolor: 'transparent' },
         }}
       >
         <InfoMark />
