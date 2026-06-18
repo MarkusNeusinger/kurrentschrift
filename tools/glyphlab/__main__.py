@@ -29,12 +29,15 @@ from .render import GREEN, figure, panel, save, stage_panels
 
 def _resolve_cases(args: argparse.Namespace) -> list[GlyphCase]:
     if args.all:
-        return iter_fixture_cases(only=args.keys or None)
+        return iter_fixture_cases(only=args.keys or None, source_id=args.source)
     if not args.keys:
         raise SystemExit("give one or more glyph_keys, or --all")
     if args.live:
         return [live_case_sync(args.source, k) for k in args.keys]
-    return [fixture_case(k) for k in args.keys]
+    # --source disambiguates a shared glyph_key (e.g. f-final exists in both the Kurrent
+    # and Sütterlin sets); default suetterlin-1922 so a fixture render is no longer
+    # silently the Kurrent glyph.
+    return [fixture_case(k, source_id=args.source) for k in args.keys]
 
 
 def main() -> None:
@@ -44,7 +47,11 @@ def main() -> None:
     p.add_argument("keys", nargs="*", help="glyph_keys, e.g. i-initial u-medial")
     p.add_argument("--all", action="store_true", help="all fixture forms (optionally filtered by keys)")
     p.add_argument("--live", action="store_true", help="read the trace from the DB (read-only) instead of the fixture")
-    p.add_argument("--source", default="suetterlin-1922", help="source id for --live (default: suetterlin-1922)")
+    p.add_argument(
+        "--source",
+        default="suetterlin-1922",
+        help="source id — used for --live AND to disambiguate a shared fixture key (default: suetterlin-1922)",
+    )
     p.add_argument("--stages", action="store_true", help="show snap/smooth/resample/verticalize (Gleichzug only)")
     p.add_argument("--style", choices=["spline", "dots", "line"], default="spline", help="centerline style")
     p.add_argument("--no-silhouette", action="store_true", help="hide the filled stroke body")

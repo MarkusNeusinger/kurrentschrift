@@ -55,6 +55,8 @@ from collections.abc import Sequence
 import numpy as np
 from scipy.ndimage import distance_transform_edt, gaussian_filter1d
 
+from core.chart import crop_with_mask, load_chart_grayscale
+from core.extract import binarize_adaptive, skeleton_and_width
 from core.fit import bilinear
 from core.geometry import (
     acute_angle_between,
@@ -69,7 +71,13 @@ from core.geometry import (
     stroke_bounds,
     unit_tangents,
 )
-from core.quality import QUALITY_N_SAMPLES, _sample_and_rings, chamfer_boundary_stats, rasterize_silhouette
+from core.quality import (
+    QUALITY_N_SAMPLES,
+    _sample_and_rings,
+    chamfer_boundary_stats,
+    crop_local_anchors,
+    rasterize_silhouette,
+)
 
 
 # --- naturalness weights (renormalised over the APPLICABLE terms each glyph) ---
@@ -112,8 +120,16 @@ CROSS_APPLY_ANGLE_DEG = 10.0  # before/after beyond this angle aren't one line t
 CROSS_APPLY_OFFSET_UNITS = 0.12  # …or beyond this lateral offset (x-heights) → N/A
 CROSSING_MIN_ANGLE_DEG = 25.0
 CROSSING_MIN_ARC_FACTOR = 3.0
-RETRACE_WINDOW_UNITS = 0.20  # arc each side used to judge a retrace pass's local straightness
-RETRACE_STRAIGHT_TOL = 0.12  # a pass bowed more than this is a curved loop, not an out-and-back retrace
+RETRACE_WINDOW_UNITS = 0.20  # arc each side for the crossing-partner local-straightness check (above)
+# A genuine retrace runs over a doubled STEM, which reads straight over a stem-length
+# window; an arch limb (the n-like Sütterlin e) is straight over a short patch but bows
+# over this longer span. Judging retrace straightness over the longer window is what
+# excludes the e double-arch (whose two near-vertical limbs are anti-parallel and close,
+# but are one smooth curve, not an out-and-back) while keeping the real doubled stems
+# (f, k, q, ſ, t), whose passes stay straight here. The shorter 0.20 window let the e
+# arch through (locally straight) — the 2026-06-18 re-baseline lengthened it.
+RETRACE_STEM_WINDOW_UNITS = 0.45  # arc each side used to judge a retrace pass's straightness
+RETRACE_STEM_STRAIGHT_TOL = 0.10  # bowed more than this over the stem-length window → a curve, not a retrace
 PROX_FLOOR_UNITS = 0.10  # crossing/retrace proximity floor (x-heights)
 PROX_NIB_FACTOR = 3.0  # …or this multiple of the nib radius, whichever is larger
 MIN_RETRACE_PAIRS = 3  # fewer matched pairs than this is a coincidental touch, not a retrace
@@ -346,10 +362,12 @@ def retrace_parallelism(
     retrace should run *parallel* — the user's "die Linien laufen auseinander"
     (the passes spread) is exactly non-parallelism, so the acute angle between a
     pass's tangent and its matched opposite tangent is the v1 signal. A pair is a
-    genuine retrace only if BOTH passes are locally straight AND the two passes
-    are essentially coincident — within `RETRACE_MAX_GAP_NIB` nib widths of each
-    other (the pen went back over the SAME ink). That excludes a loop side merely
-    grazing a stem (the l/b/h loop), which is not an out-and-back retrace. The
+    genuine retrace only if BOTH passes are straight over a stem-length window
+    (`RETRACE_STEM_WINDOW_UNITS` — long enough that a curved arch limb bows out of
+    tolerance, so the n-like `e`'s two anti-parallel limbs are excluded, not just a
+    loop-graze) AND the two passes are within `RETRACE_MAX_GAP_NIB` nib widths of
+    each other (the pen went back over the SAME ink). The angle apply-gate then drops
+    a loop side merely grazing a stem (the l/b/g loop — straight but at >15°). The
     Spitze (tip) sharpness and verifying the legitimate ~2× silhouette width are a
     v2 concern (they need the medial axis of the *rendered* silhouette).
     """
@@ -365,7 +383,7 @@ def retrace_parallelism(
         return 1.0, 0
     pts = np.column_stack([np.asarray(sx, dtype=float), np.asarray(sy, dtype=float)])
     straight = _locally_straight_mask(
-        pts, sample_starts, max(3.0, RETRACE_WINDOW_UNITS * unit_px), RETRACE_STRAIGHT_TOL
+        pts, sample_starts, max(3.0, RETRACE_STEM_WINDOW_UNITS * unit_px), RETRACE_STEM_STRAIGHT_TOL
     )
     gaps = np.hypot(*(pts[idx] - pts[partner]).T)
     keep = straight[idx] & straight[partner] & (gaps <= RETRACE_MAX_GAP_NIB * max(r_px, 1e-6))
@@ -492,3 +510,44 @@ def suetterlin_quality_metrics(
         "loss": round(1.0 - score / 100.0, 6),
         "n_samples": int(n),
     }
+
+
+def suetterlin_quality_for_glyph(glyph_row: dict, bbox: dict, chart_path: str) -> dict:
+    """Score a STORED Sütterlin template against its own crop with the naturalness metric.
+
+    The Gleichzug twin of `core.quality.quality_for_glyph`: same end-to-end load
+    (chart → crop with eraser/ink mask → binarize → skeleton/EDT), but the stored
+    pixel-space trace is scored with `suetterlin_quality_metrics`, NOT the Kurrent
+    pixel/Schwellzug metric. The /quality endpoint must score `stored` with the
+    SAME metric it scores `candidate` with (a re-derived canonical's
+    `trace_meta.quality`), or the before/after delta subtracts a naturalness score
+    from a Kurrent coverage score — incomparable, systematically negative, and
+    never converging to 0 after a /resample write-back.
+    """
+    for required in ("baseline_y", "midband_y", "y0", "y1", "x0", "x1"):
+        if bbox.get(required) is None:
+            raise ValueError(f"bbox missing required field {required!r}")
+    trace_meta = glyph_row.get("trace_meta") or {}
+    pixel_anchors = trace_meta.get("pixel_anchors")
+    half_widths_px = trace_meta.get("half_widths_px")
+    if not pixel_anchors or not half_widths_px:
+        raise ValueError("template lacks trace_meta.pixel_anchors / half_widths_px")
+
+    chart_gray = load_chart_grayscale(chart_path)
+    crop = crop_with_mask(chart_gray, bbox, fill=1.0)
+    mask = binarize_adaptive(crop, fill_holes_max_area=int(bbox.get("fill_holes_max_area") or 0))
+    skel, width_map = skeleton_and_width(mask)
+
+    anchors_px = crop_local_anchors(pixel_anchors, bbox)
+    unit_px = float(trace_meta.get("unit_px") or (int(bbox["baseline_y"]) - int(bbox["midband_y"])))
+
+    return suetterlin_quality_metrics(
+        anchors_px,
+        np.asarray(half_widths_px, dtype=float),
+        trace_meta.get("stroke_starts"),
+        mask,
+        skel,
+        width_map,
+        unit_px=unit_px,
+        corner_anchors=trace_meta.get("corner_anchors"),
+    )

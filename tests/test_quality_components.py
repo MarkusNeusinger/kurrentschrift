@@ -9,12 +9,14 @@ and applicability (a missing feature is not applicable, never an exception).
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from core.quality_suetterlin import (
     centerline_smoothness,
     corner_crispness,
     crossing_collinearity,
     retrace_parallelism,
+    suetterlin_quality_for_glyph,
     suetterlin_quality_metrics,
     verticality,
 )
@@ -157,6 +159,25 @@ def test_retrace_not_applicable_for_a_single_pass():
     assert q == 1.0
 
 
+def test_retrace_excludes_passes_not_straight_over_a_stem_length():
+    """A retrace must run over passes that are straight across a stem-length window.
+
+    Two close anti-parallel STRAIGHT passes = a genuine doubled stem → applicable. The
+    same two passes, now curved (so each bows out of tolerance over the stem-length
+    window — like the n-like `e`'s arch limbs, which are anti-parallel and close but are
+    one curve, not an out-and-back), drop to N/A. This pins the 2026-06-18 re-baseline
+    that killed the `e` retrace false fire.
+    """
+    y = np.linspace(0.0, 100.0, 120)
+    stem = np.vstack([np.column_stack([np.full(120, 48.0), y]), np.column_stack([np.full(120, 52.0), y[::-1]])])
+    _, n_stem = retrace_parallelism(stem[:, 0], stem[:, 1], [0], prox_px=20.0, unit_px=UNIT_PX, r_px=4.0)
+    assert n_stem >= 3
+    bow = 12.0 * np.sin(2.0 * np.pi * y / 60.0)  # curved passes — not straight over a stem length
+    arch = np.vstack([np.column_stack([48.0 + bow, y]), np.column_stack([52.0 + bow, y[::-1]])])
+    _, n_arch = retrace_parallelism(arch[:, 0], arch[:, 1], [0], prox_px=20.0, unit_px=UNIT_PX, r_px=4.0)
+    assert n_arch == 0
+
+
 # ------------------------------------------------------------------ aggregate
 
 
@@ -224,3 +245,21 @@ def test_inflated_widths_lower_the_gate(synthetic_chart_path, synthetic_bbox):
     fat_q = _score(fat, synthetic_bbox, synthetic_chart_path)
     assert fat_q["gate"] < good["gate"]
     assert fat_q["loss"] > good["loss"]
+
+
+def test_stored_scorer_matches_stamped_quality(synthetic_chart_path, synthetic_bbox):
+    """`suetterlin_quality_for_glyph` scores a STORED template with the SAME metric
+    the derivation stamped — so /quality's `stored` is comparable to `candidate`.
+
+    The /quality endpoint used to score `stored` with the Kurrent pixel metric
+    while a constant-width `candidate` came from the naturalness metric: the
+    before/after delta then subtracted incomparable scales, was systematically
+    negative, and never reached 0 after a /resample write-back. Scoring the
+    stored geometry here must reproduce the score the canonical carries (within
+    the trace_meta px-rounding), which is what makes the delta converge.
+    """
+    canon = _suetterlin_canonical(synthetic_chart_path, synthetic_bbox)
+    stored = suetterlin_quality_for_glyph(canon, synthetic_bbox, synthetic_chart_path)
+    stamped = canon["trace_meta"]["quality"]
+    assert stored["score"] == pytest.approx(stamped["score"], abs=0.5)
+    assert set(stored["components"]) == set(stamped["components"])

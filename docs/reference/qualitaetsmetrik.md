@@ -201,17 +201,23 @@ bestraft.
 | Vertikalität | 0.25 | RMS-Horizontalwander gerader Senkrechtläufe | ein Senkrechtlauf existiert |
 | Eckenschärfe | 0.20 | Geradheit der beiden Anläufe an die Kehre (Apex ausgenommen) | eine Within-Stroke-Ecke existiert |
 | Kollinearität | 0.15 | gerader Strich durch eine Kreuzung: Gerade vor/nach identisch (δθ, δd) | echte Gerade-kreuzt-Gerade |
-| Rückzug | 0.10 | zwei deckungsgleiche Pässe bleiben parallel (das s/t hin-und-zurück) | echter gerader Rückzug |
+| Rückzug | 0.10 | zwei deckungsgleiche Pässe bleiben parallel (das s/t hin-und-zurück) | echter Rückzug: beide Pässe über **Stammlänge** gerade |
 
 **Anwendbarkeits-Gates (zentral):** Kollinearität und Rückzug feuern in
 Sütterlin-Kleinbuchstaben fast nie, weil es dort kaum echte Gerade-
 kreuzt-Gerade-Kreuzungen oder gerade Rückzüge gibt. Eine **gebogene
 Schleifen-Selbstkreuzung** (e, d, l, g, b) ist *keine* Geraden-Kreuzung
 → N/A, nicht bestraft (Gate: Vorher-/Nachher-Gerade müssen ≈ eine Linie
-sein, < `CROSS_APPLY_ANGLE_DEG` = 10°). Eine Schleife, die nur einen
-Stamm streift, ist *kein* Rückzug → N/A (Gate: beide Pässe lokal gerade,
-deckungsgleich < 2.5 Federbreiten, Divergenz < 15°). Ein Term, der nicht
-anwendbar ist, fällt aus dem gewichteten Mittel (renormiert).
+sein, < `CROSS_APPLY_ANGLE_DEG` = 10°). Ein Rückzug muss über Pässe
+laufen, die über eine **stammlange** Fensterlänge gerade sind
+(`RETRACE_STEM_WINDOW_UNITS` = 0.45, `…_TOL` = 0.10): so fällt der
+n-artige **e**-Doppelbogen raus — seine beiden anti-parallelen Hälften
+sind über kurze Strecke gerade, biegen sich aber über Stammlänge (das
+killte den e-Fehlfeuer im Re-Baseline 2026-06-18). Eine Schleife, die nur
+einen Stamm streift (b/g/l), ist zwar gerade *und* deckungsgleich, aber
+ihre beiden Pässe stehen bei einem **Winkel > 15°** zueinander → vom
+Winkel-Apply-Gate (`RETRACE_APPLY_ANGLE_DEG` = 15°) ausgeschlossen. Ein Term, der nicht anwendbar ist, fällt aus dem
+gewichteten Mittel (renormiert).
 
 **Messboden / Anti-Gaming:** Die Natürlichkeitsterme sind referenzfrei —
 robust gegen Scan-Pixelung (genau der Punkt). Ein Verstecken von
@@ -233,18 +239,32 @@ Differenz der Krümmung konnte eine fließende Schleife nicht von Zacken
 unterscheiden → 2.-Differenz + Krümmungs-Glättung. Eckenschärfe als
 Apex-Konzentration war strukturell zu streng (der Spline verteilt einen
 echten C0-Knick über mehrere Samples) → reine Anlauf-Geradheit. Ecken
-sind seither ~0.08 statt ~0.42.
+sind seither ~0.08 statt ~0.42. **Re-Baseline 2026-06-18 (Rückzug):** ein
+Sweep über den vollen gesperrten Satz fand genau einen Rückzug-Fehlfeuer
+— das **e** (n-artiger Doppelbogen ohne Stamm) wurde als hin-und-zurück
+bestraft, weil seine Bogen-Hälften über das kurze 0.20u-Fenster gerade
+wirken. Fix: Geradheit über **Stammlänge** prüfen (0.45u). Das war der
+*einzige* Diskriminator, der e isoliert (globale Geradheit, Nettodrehung,
+Spitzen-Krümmung trennen e nicht — e hat eine scharfe Spitze wie ein
+echter Rückzug). Nebeneffekt (adversarial verifiziert als korrekt, keine
+Regression): k/q verlieren ihre Schleifen-Übergangs-Enden (gebogen, keine
+Divergenz) → ~0; t/ſ steigen (echte Divergenz der geraden Pässe). v2-Idee:
+jeden Einweg-Pass direkt auf eine Gerade fitten (fängt einen Veer, bei dem
+*beide* Pässe im Gleichschritt biegen — heute winkelblind).
 
-**Baseline (60 gesperrte Sütterlin-Glyphen, 2026-06-18):**
+**Baseline (35 deduplizierte gesperrte Sütterlin-Glyphen, 2026-06-18):**
 
 | `bench_loss` | Glätte | Vertik. | Ecke | Kollin. | Rückzug | Deckung |
 |---|---|---|---|---|---|---|
-| **0.2097** | 0.126 | 0.046 | 0.076 | 0.194 | 0.059 | 0.192 |
+| **0.2126** | 0.131 | 0.054 | 0.077 | 0.185 | 0.048 | 0.185 |
 
-Schlechteste: `t` 0.278 (Rückzug), dann die Aufstrich-Schleifen
-b/g/h/l/f (Stamm knickt leicht an der Schleifen-Kreuzung — echtes Signal
-für Phase B). **Diese Zahlen sind NICHT mit §1–§4 vergleichbar** (andere
-Metrik). `core/quality_suetterlin.py` + `core/geometry.py` sind mit der
-Metrik **eingefroren** (gehören in die Frozen-Liste des Loops); die
+Der gesperrte Satz wuchs auf das volle Alphabet (a–z, ä, A/B/C/D/E, K,
+**ſ**); identische Positions-Fan-outs werden zu einer Berechnung
+zusammengefasst (35 statt 60 Keys). Schlechteste: `ſ` 0.407 (Rückzug +
+Kollinearität — das Lang-s ist der härteste Rückzug), dann `B` 0.391,
+`E` 0.309, `t` 0.293. **Diese Zahlen sind NICHT mit §1–§4 noch mit der
+0.21-Baseline vom 60-Key-Satz vergleichbar** (andere Metrik bzw. anderer
+Fixture-Satz). `core/quality_suetterlin.py` + `core/geometry.py` sind mit
+der Metrik **eingefroren** (gehören in die Frozen-Liste des Loops); die
 intrinsischen Terme haben kein eingefrorenes Ziel — die Frozen-Reference-
 Regel bindet nur die Deckung.
