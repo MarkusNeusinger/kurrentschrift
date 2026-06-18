@@ -11,6 +11,17 @@ liegt in `core/quality.py`, das Werkzeug in `tools/glyphbench/`
 
 Stand: 2026-06-11, nach den PRs #63–#71.
 
+> **Zwei Metriken, eine pro Schrift (Stand 2026-06-18).** Kurrent und
+> Sütterlin nutzen verschiedene Schreibgeräte (Spitzfeder/Schwellzug vs.
+> Redisfeder/Gleichzug) und haben darum **getrennte** Metriken. Die
+> Abschnitte §1–§4 unten beschreiben ab jetzt **nur die Kurrent-/
+> Schwellzug-Metrik** (`core/quality.py::template_quality_metrics`,
+> unverändert). Die **Sütterlin-Natürlichkeitsmetrik** steht in §5
+> (`core/quality_suetterlin.py`). Der Bench läuft **eine Schrift pro
+> Lauf** (`--style suetterlin` Default · `--style kurrent`); es gibt
+> **keinen** kombinierten `bench_loss` über beide — einen Schwellzug-
+> und einen Gleichzug-Score zu mitteln wäre bedeutungslos.
+
 ---
 
 ## 1. Die Metrik: Score 0–100, rein geometrisch
@@ -154,3 +165,86 @@ Parameterbudget des Refines wächst über sein Iterationslimit.
 **Verbindlichkeit:** Die Verworfen-Punkte gelten wie überall im Repo —
 neue Argumente dafür gehören nach `docs/proposals/`, nicht in einen
 neuen Loop-Versuch mit denselben Mitteln.
+
+---
+
+## 5. Sütterlin-Natürlichkeitsmetrik (Re-Baseline 2026-06-18)
+
+Die §1–§4-Metrik bewertet **Pixeltreue zum Scan** (Dice + Chamfer
+dominieren). Für Sütterlin ist das falsch: der Scan ist pixelig, und der
+Welligkeits-Term ist bei konstanter Breite tot (`tv_rendered ≈ 0` →
+immer 1.0). Oberstes Kredo hier: der gerenderte Buchstabe soll **von
+einem mit Stift geschriebenen nicht unterscheidbar** sein — nicht
+pixelgenau zum zackigen Scan passen. Implementierung:
+`core/quality_suetterlin.py` (+ reine Primitive in `core/geometry.py`).
+
+**Zwei Stufen — Deckung als Tor, Natürlichkeit als Entscheider:**
+
+```
+score = 100 · Tor^0.5 · Natürlichkeit
+Tor   = Dice · Q_chamfer · Q_geo          (∈ [0,1])
+Natürlichkeit = Σ w_k·Q_k / Σ w_k   über die ANWENDBAREN Terme
+loss  = 1 − score/100
+```
+
+Das Tor ist multiplikativ: eine glatte Glyphe am falschen Ort kann nicht
+hoch scoren. Chamfer und Geo-RMSE laufen mit einem **Pixel-Totband**
+(`DEAD_BAND_PX = 0.75`): Abweichung unterhalb der Scan-Quantisierung
+kostet nichts — Sub-Pixel-Treue zum jagged Scan wird weder belohnt noch
+bestraft.
+
+**Natürlichkeitsterme (referenzfrei, am gerenderten Centerline, je 0–1):**
+
+| Term | Gewicht | Misst | Anwendbar wenn |
+|---|---|---|---|
+| Glätte | 0.30 | keine Zacken: geglättete **2.-Differenz** der Krümmung (0 für Gerade, Kreis *und* fließenden Übergang; nur Oszillation zählt) | immer |
+| Vertikalität | 0.25 | RMS-Horizontalwander gerader Senkrechtläufe | ein Senkrechtlauf existiert |
+| Eckenschärfe | 0.20 | Geradheit der beiden Anläufe an die Kehre (Apex ausgenommen) | eine Within-Stroke-Ecke existiert |
+| Kollinearität | 0.15 | gerader Strich durch eine Kreuzung: Gerade vor/nach identisch (δθ, δd) | echte Gerade-kreuzt-Gerade |
+| Rückzug | 0.10 | zwei deckungsgleiche Pässe bleiben parallel (das s/t hin-und-zurück) | echter gerader Rückzug |
+
+**Anwendbarkeits-Gates (zentral):** Kollinearität und Rückzug feuern in
+Sütterlin-Kleinbuchstaben fast nie, weil es dort kaum echte Gerade-
+kreuzt-Gerade-Kreuzungen oder gerade Rückzüge gibt. Eine **gebogene
+Schleifen-Selbstkreuzung** (e, d, l, g, b) ist *keine* Geraden-Kreuzung
+→ N/A, nicht bestraft (Gate: Vorher-/Nachher-Gerade müssen ≈ eine Linie
+sein, < `CROSS_APPLY_ANGLE_DEG` = 10°). Eine Schleife, die nur einen
+Stamm streift, ist *kein* Rückzug → N/A (Gate: beide Pässe lokal gerade,
+deckungsgleich < 2.5 Federbreiten, Divergenz < 15°). Ein Term, der nicht
+anwendbar ist, fällt aus dem gewichteten Mittel (renormiert).
+
+**Messboden / Anti-Gaming:** Die Natürlichkeitsterme sind referenzfrei —
+robust gegen Scan-Pixelung (genau der Punkt). Ein Verstecken von
+Features (um den Term zu umgehen) verhindert das Deckungs-Tor: die
+Sütterlin-Ableitung ist skelettgelockt (`core/suetterlin.py` snappt auf
+die Medial-Achse), und `Q_geo`/`Q_chamfer` bestrafen jedes Abdriften.
+Ein Skelett-Präsenz-Orakel (Term = 0, wenn die Tinte das Feature hat,
+das Rendering nicht) ist die v2-Härtung für einen *nicht* skelett-
+gelockten Generator — bewusst zurückgestellt. Ebenfalls v2: die volle
+Spitzen-Schärfe + die legitime ~2×-Silhouette beim Rückzug (brauchen die
+Medial-Achse des *gerenderten* Bildes).
+
+**Kalibrierung (Mensch-im-Loop, gegen die 60 gesperrten Glyphen):**
+Konstanten sind so getunt, dass die Metrik-Rangfolge der menschlichen
+Natürlichkeits-Wahrnehmung folgt; die *Richtung* jedes Terms ist per
+Test gepinnt (`tests/test_quality_components.py`), nur die Magnituden
+sind getunt. Erkenntnisse der ersten Kalibrierung: Glätte als 1.-
+Differenz der Krümmung konnte eine fließende Schleife nicht von Zacken
+unterscheiden → 2.-Differenz + Krümmungs-Glättung. Eckenschärfe als
+Apex-Konzentration war strukturell zu streng (der Spline verteilt einen
+echten C0-Knick über mehrere Samples) → reine Anlauf-Geradheit. Ecken
+sind seither ~0.08 statt ~0.42.
+
+**Baseline (60 gesperrte Sütterlin-Glyphen, 2026-06-18):**
+
+| `bench_loss` | Glätte | Vertik. | Ecke | Kollin. | Rückzug | Deckung |
+|---|---|---|---|---|---|---|
+| **0.2097** | 0.126 | 0.046 | 0.076 | 0.194 | 0.059 | 0.192 |
+
+Schlechteste: `t` 0.278 (Rückzug), dann die Aufstrich-Schleifen
+b/g/h/l/f (Stamm knickt leicht an der Schleifen-Kreuzung — echtes Signal
+für Phase B). **Diese Zahlen sind NICHT mit §1–§4 vergleichbar** (andere
+Metrik). `core/quality_suetterlin.py` + `core/geometry.py` sind mit der
+Metrik **eingefroren** (gehören in die Frozen-Liste des Loops); die
+intrinsischen Terme haben kein eingefrorenes Ziel — die Frozen-Reference-
+Regel bindet nur die Deckung.

@@ -66,7 +66,7 @@ from core.extract import binarize_adaptive, skeleton_and_width
 # across both derivations. Re-implementing any of them here would risk silent
 # divergence. The Gleichzug path only swaps in a skeleton snap + constant width.
 from core.pipeline import DEFAULT_N_ANCHORS, _detect_corners, _measurements, _resample_strokes, _split_raw_strokes
-from core.quality import template_quality_metrics
+from core.quality_suetterlin import suetterlin_quality_metrics
 
 
 # Dense resampling of the drawn Weg before snapping: ~1px chord spacing, so every
@@ -607,9 +607,11 @@ def canonical_suetterlin_from_path(
     resampled_local = _verticalize_downstrokes(resampled_local, stroke_starts, unit_px, corner_anchors_idx)
     hw_px = np.full(len(resampled_local), r_px, dtype=float)
 
-    # Image-space self-check: how well does the rendered silhouette match the crop?
+    # Image-space self-check: the Gleichzug naturalness metric (smoothness,
+    # verticality, corner crispness, crossing collinearity, retrace) gated by a
+    # tolerant coverage of the crop — NOT the Kurrent pixel/Schwellzug metric.
     try:
-        quality = template_quality_metrics(
+        quality = suetterlin_quality_metrics(
             resampled_local,
             hw_px,
             stroke_starts,

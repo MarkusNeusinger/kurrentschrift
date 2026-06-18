@@ -49,6 +49,8 @@ viz = [
 ]
 dev = [
     "ruff>=0.15.12",
+    # Type stubs for the numpy/scipy-heavy core (dev-only — never in the runtime image).
+    "scipy-stubs~=1.17.1",
     "kurrentschrift[viz]",
 ]
 test = [
