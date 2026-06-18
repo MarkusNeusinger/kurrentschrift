@@ -169,13 +169,15 @@ def _component_means(scored: list[dict]) -> dict[str, float] | None:
 
 
 def _arrow(delta: float) -> str:
-    return "↓" if delta < -1e-9 else "↑" if delta > 1e-9 else "="
+    # ASCII (not ↓/↑) so --compare output never trips a non-UTF-8 terminal.
+    # Penalties are lower-is-better: "better" = improved, "WORSE" = regressed.
+    return "better" if delta < -1e-9 else "WORSE" if delta > 1e-9 else "same"
 
 
 def _print_comparison(prev: dict, bench_loss: float, comp_means: dict | None, results: list[dict]) -> None:
     """Per-component and per-glyph delta tables vs a previous --json report.
 
-    Penalties are lower-is-better, so a negative delta (↓) is an improvement.
+    Penalties are lower-is-better, so a negative delta ("better") is an improvement.
     """
     print(
         f"\n=== compare: {prev.get('fixtures', '?')} @ bench_loss {prev.get('bench_loss', float('nan')):.6f}"

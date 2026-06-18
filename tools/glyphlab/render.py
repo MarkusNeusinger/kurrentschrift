@@ -1,9 +1,10 @@
 """matplotlib overlays of a derivation over its crop — the picture I keep redrawing.
 
 A `Panel` describes one thing to draw: a derivation, optionally with an
-overridden anchor set (a stage, or an A/B variant), and toggles for the layers
-(faint crop, skeleton, baseline/midband guides, filled silhouette, centerline,
-corner rings). `figure` tiles panels into a labelled grid; `overlay` is the
+overridden anchor set (a stage, or an A/B variant). Several layers are toggleable
+(`skeleton`, `silhouette`, `scores`); the rest — faint crop, baseline/midband
+guides, centerline (per `style`), corner rings — are always drawn. `figure` tiles
+panels into a labelled grid; `overlay` is the
 one-panel shortcut; `stage_panels` turns captured stages into panels; `save`
 writes a PNG to the output dir (`$GLYPHLAB_OUT`, else the project `temp/`).
 
