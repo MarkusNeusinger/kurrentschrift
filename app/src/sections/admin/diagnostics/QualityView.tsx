@@ -32,8 +32,19 @@ function scoreColor(score: number): 'success' | 'warning' | 'error' {
   return 'error';
 }
 
+function MetricRow({ label, value }: { label: string; value: string }) {
+  return (
+    <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
+      {label} {value}
+    </Typography>
+  );
+}
+
 function MetricCard({ title, q }: { title: string; q: QualityData }) {
   const t = de.admin.quality;
+  // The naturalness metric (Sütterlin/Gleichzug) and the Kurrent pixel metric
+  // return different fields under the same shape — `naturalness` discriminates.
+  const isNaturalness = q.naturalness != null;
   return (
     <Stack spacing={0.5} sx={{ minWidth: 200 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -42,18 +53,19 @@ function MetricCard({ title, q }: { title: string; q: QualityData }) {
         </Typography>
         <Chip size="small" color={scoreColor(q.score)} label={`${t.score} ${q.score.toFixed(1)}`} />
       </Box>
-      <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
-        {t.iou} {q.iou.toFixed(3)}
-      </Typography>
-      <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
-        {t.chamfer} {q.chamfer_mean_px.toFixed(2)} px
-      </Typography>
-      <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
-        {t.geoRmse} {q.geo_rmse_px.toFixed(2)} px
-      </Typography>
-      <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
-        {t.waviness} {q.waviness_ratio.toFixed(2)}
-      </Typography>
+      <MetricRow label={t.iou} value={q.iou.toFixed(3)} />
+      <MetricRow label={t.chamfer} value={`${q.chamfer_mean_px.toFixed(2)} px`} />
+      {isNaturalness ? (
+        <>
+          <MetricRow label={t.naturalness} value={(q.naturalness ?? 0).toFixed(2)} />
+          <MetricRow label={t.gate} value={(q.gate ?? 0).toFixed(2)} />
+        </>
+      ) : (
+        <>
+          <MetricRow label={t.geoRmse} value={`${(q.geo_rmse_px ?? 0).toFixed(2)} px`} />
+          <MetricRow label={t.waviness} value={(q.waviness_ratio ?? 0).toFixed(2)} />
+        </>
+      )}
     </Stack>
   );
 }

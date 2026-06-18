@@ -24,6 +24,7 @@ from core.pipeline import (
     written_preview_for_canonical,
 )
 from core.quality import quality_for_glyph
+from core.quality_suetterlin import suetterlin_quality_for_glyph
 from core.suetterlin import canonical_suetterlin_from_path, canonical_suetterlin_from_raw_path_only
 
 
@@ -368,6 +369,13 @@ async def get_quality(glyph_key: str, source: Source = Depends(require_source), 
     is the quality a fresh re-derivation from `raw_path` with the CURRENT
     pipeline code would achieve (nothing is written — the admin compares both
     before deciding to /resample). Pure CPU, threadpooled like /fit.
+
+    BOTH sides are scored with the style's OWN metric: the Kurrent pixel/width
+    metric for the pressure pipeline, the Gleichzug naturalness metric for a
+    constant-width style. `candidate` already comes from the canonical's
+    `trace_meta.quality` (the metric the derivation stamped), so `stored` must
+    use the matching metric — else a Sütterlin delta subtracts a naturalness
+    score from a Kurrent coverage score and never converges to 0 after a write.
     """
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
@@ -391,7 +399,10 @@ async def get_quality(glyph_key: str, source: Source = Depends(require_source), 
     n_anchors = DEFAULT_N_ANCHORS
 
     def compute() -> dict:
-        stored = quality_for_glyph({"trace_meta": trace_meta}, bbox_dict, source.chart_path)
+        if width_resolver == "constant":
+            stored = suetterlin_quality_for_glyph({"trace_meta": trace_meta}, bbox_dict, source.chart_path)
+        else:
+            stored = quality_for_glyph({"trace_meta": trace_meta}, bbox_dict, source.chart_path)
         candidate = None
         candidate_refine = None
         if raw_path:

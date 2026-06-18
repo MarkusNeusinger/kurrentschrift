@@ -159,6 +159,9 @@ export const admin = {
     chamfer: 'Randabstand:',
     geoRmse: 'Mittellinien-RMSE:',
     waviness: 'Welligkeit:',
+    // Sütterlin (Gleichzug) naturalness metric: overall naturalness + coverage gate.
+    naturalness: 'Natürlichkeit:',
+    gate: 'Deckungs-Gate:',
     // Followed by the score delta, e.g. "+2.3".
     delta: 'Δ Score:',
     apply: 'Neu ableiten & speichern',
