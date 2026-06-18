@@ -49,6 +49,7 @@ def main() -> None:
     p.add_argument("--style", choices=["spline", "dots", "line"], default="spline", help="centerline style")
     p.add_argument("--no-silhouette", action="store_true", help="hide the filled stroke body")
     p.add_argument("--no-skeleton", action="store_true", help="hide the skeleton")
+    p.add_argument("--no-scores", action="store_true", help="hide the per-component quality breakdown")
     p.add_argument("--n-anchors", type=int, default=None, help="resample target (default: per-bbox / pipeline default)")
     p.add_argument("--dpi", type=int, default=140, help="output resolution (default 140)")
     p.add_argument("--cols", type=int, default=None, help="montage columns (default: all in one row)")
@@ -72,11 +73,14 @@ def main() -> None:
                     style=args.style,
                     silhouette=not args.no_silhouette,
                     skeleton=not args.no_skeleton,
+                    scores=not args.no_scores,
                     color=GREEN,
                 )
             )
 
-    cols = args.cols or (4 if (args.stages or len(panels) > 6) else len(panels))
+    # Cap columns so a multi-glyph montage stays legible (wrap to rows) rather
+    # than one ultra-wide row that downscales each panel to a sliver.
+    cols = args.cols or (4 if args.stages else min(3, len(panels)))
     fig = figure(panels, cols=cols, dpi=args.dpi)
     name = args.out or ("stages_" + cases[0].key if args.stages else "glyphlab_" + "_".join(c.key for c in cases[:4]))
     path = save(fig, name, out_dir=out_dir)

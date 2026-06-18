@@ -60,6 +60,7 @@ class Panel:
     style: str = "spline"  # "spline" | "dots" | "line"
     silhouette: bool = True
     skeleton: bool = True
+    scores: bool = True  # draw the per-component quality breakdown (where the points went)
     color: str = GREEN
     annotate: list[tuple[float, float, str]] = field(default_factory=list)  # (x, y, text) callouts
 
@@ -67,6 +68,42 @@ class Panel:
 def panel(result: DeriveResult, **kwargs) -> Panel:
     """Convenience builder for a `Panel` (keyword args mirror the dataclass)."""
     return Panel(result=result, **kwargs)
+
+
+# Component → short label, in the bench's stdout order. The caption sorts by
+# penalty so the biggest deduction is on top — "where did this glyph lose points".
+_COMPONENT_LABELS = [
+    ("smoothness", "smooth"),
+    ("verticality", "vert"),
+    ("corner", "corner"),
+    ("collinearity", "cross"),
+    ("retrace", "retr"),
+    ("coverage", "cover"),
+]
+_SCORE_HI = 0.15  # mark a component at/above this penalty as a notable deduction
+
+
+def _score_caption(canon: dict | None) -> str | None:
+    """Multi-line quality breakdown for a panel, or None if the glyph has no score.
+
+    Sütterlin glyphs carry the naturalness `components` (penalty per category,
+    lower = better); the lines are sorted worst-first and the notable ones marked
+    so it reads as "here is where the points went". Kurrent glyphs fall back to
+    the Schwellzug headline numbers.
+    """
+    quality = (canon or {}).get("trace_meta", {}).get("quality")
+    if not quality:
+        return None
+    lines = [f"loss   {quality['loss']:.3f}"]
+    components = quality.get("components")
+    if components:
+        rows = sorted(
+            ((label, components[key]) for key, label in _COMPONENT_LABELS if key in components), key=lambda kv: -kv[1]
+        )
+        lines += [f"{label:<6} {val:.3f}{'  <<' if val >= _SCORE_HI else ''}" for label, val in rows]
+    else:  # Kurrent / Schwellzug metric
+        lines += [f"{k[:6]:<6} {quality[k]:.3f}" for k in ("iou", "chamfer_mean_px", "geo_rmse_px") if k in quality]
+    return "\n".join(lines)
 
 
 def _polylines(anchors: np.ndarray, stroke_starts: list[int]) -> list[np.ndarray]:
@@ -104,9 +141,13 @@ def _draw(ax, p: Panel) -> None:
         HW = None  # an overridden anchor set has no matching width profile
 
     H, W = res.crop.shape
+    # The score caption goes in a blank right-hand margin so it NEVER covers the
+    # glyph; the crop image still occupies only [0, W].
+    caption = _score_caption(res.canon) if p.scores else None
+    margin = 0.5 * W if caption else 0.0
     faint = np.clip(res.crop, 0, 1) * 0.6 + 0.4  # lighten the ink so overlays read on top
     ax.imshow(faint, cmap="gray", vmin=0, vmax=1, extent=(0, W, H, 0), interpolation="nearest", zorder=0)
-    ax.set_xlim(0, W)
+    ax.set_xlim(0, W + margin)
     ax.set_ylim(H, 0)
     ax.set_aspect("equal")
     ax.axis("off")
@@ -114,8 +155,9 @@ def _draw(ax, p: Panel) -> None:
     if p.skeleton:
         ys, xs = np.where(res.skel)
         ax.scatter(xs, ys, s=1.2, c=_SKEL, linewidths=0, zorder=1)
-    ax.axhline(res.baseline_local, color=_BASELINE, lw=0.8, zorder=1)
-    ax.axhline(res.midband_local, color=_MIDBAND, lw=0.8, zorder=1)
+    guide_xmax = W / (W + margin)  # keep the baseline/midband guides over the glyph, not the caption margin
+    ax.axhline(res.baseline_local, xmax=guide_xmax, color=_BASELINE, lw=0.8, zorder=1)
+    ax.axhline(res.midband_local, xmax=guide_xmax, color=_MIDBAND, lw=0.8, zorder=1)
 
     have_widths = HW is not None and len(HW) == len(A)
     if p.silhouette and have_widths and len(A) >= 2:
@@ -163,12 +205,22 @@ def _draw(ax, p: Panel) -> None:
             va="center",
             arrowprops={"arrowstyle": "->", "color": _CORNER, "lw": 1.0},
         )
+    if caption:
+        ax.text(
+            W + 0.04 * W, 0.0, caption, va="top", ha="left", fontsize=6.5, family="monospace", color=_CORNER, zorder=6
+        )
     if p.title:
         ax.set_title(p.title, fontsize=8.5)
 
 
-def figure(panels: list[Panel], *, cols: int | None = None, panel_size: float = 2.7, dpi: int = 140):
-    """Tile `panels` into a labelled grid figure (row-major). Returns the Figure."""
+def figure(panels: list[Panel], *, cols: int | None = None, panel_size: float = 3.2, dpi: int = 160):
+    """Tile `panels` into a labelled grid figure (row-major). Returns the Figure.
+
+    Defaults are sized so each panel is ~510px: a 3-wide montage lands near
+    1550px wide, which survives downscaling readable (a wide single row would
+    shrink each panel to an illegible strip). For close inspection render fewer
+    keys per call or raise `dpi`.
+    """
     if not panels:
         raise ValueError("no panels")
     n = len(panels)
@@ -208,6 +260,7 @@ def stage_panels(result: DeriveResult, stages: list[Stage]) -> list[Panel]:
                 corner_pts=st.corner_pts,
                 style=st.style,
                 silhouette=False,
+                scores=False,  # the score is the FINAL glyph's, not a per-stage value
             )
         )
     return out

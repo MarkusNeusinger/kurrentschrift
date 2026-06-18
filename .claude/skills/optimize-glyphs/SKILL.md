@@ -25,24 +25,31 @@ numbers but never the goalposts.
   templates is a separate explicit admin action in the UI — never part
   of this loop.
 - **Frozen during a run:** `tools/glyphbench/**`, `core/quality.py`,
-  `tests/**`. The loop edits only `core/pipeline.py`,
-  `core/extract.py`, `core/template.py`, `core/fit.py`,
-  `core/suetterlin.py` (the Gleichzug derivation). Editing the
-  metric or a test to make a keep pass is forbidden — if a test is
-  genuinely wrong, stop the loop and surface it.
+  `core/quality_suetterlin.py`, `core/geometry.py`, `tests/**`. The loop
+  edits only `core/pipeline.py`, `core/extract.py`, `core/template.py`,
+  `core/fit.py`, `core/suetterlin.py` (the Gleichzug derivation). The
+  metric lives in `core/quality.py` (Kurrent/Schwellzug) and
+  `core/quality_suetterlin.py` (Sütterlin naturalness, on the shared
+  `core/geometry.py` primitives) — all frozen, since editing the metric
+  or a test to make a keep pass is forbidden. If a test is genuinely
+  wrong, stop the loop and surface it.
 - **Never on `main`.** Branch `optimize/<tag>` first.
 - **Frozen-reference rule:** changes to `binarize_adaptive` etc.
   change the pipeline input but NOT the scoring target. If you believe
   the reference itself is wrong (bad binarization of a faded stroke),
   stop and flag for a human re-export — that is a re-baseline, and
   numbers across it are not comparable.
-- **The bench is blind to the ductus.** It scores the rendered
-  silhouette; a centerline or corner shift the capsule still covers
-  does NOT move `bench_loss` (e.g. Sütterlin verticalization / corner
-  placement). For naturalness changes, *look* — render overlays with
-  `python -m tools.glyphlab <key> [--live] [--stages]` (writes to
-  `temp/`; `uv run --extra viz`). The bench stays the no-regression
-  gate; glyphlab is the signal for ductus quality.
+- **Sütterlin: the bench now rewards the ductus directly.** The
+  naturalness metric scores smoothness, verticality, corner crispness
+  and crossing collinearity, so a centerline/corner shift DOES move
+  `bench_loss` (unlike the old silhouette-only Kurrent metric). Chase
+  the worst component (the `comp_<name>:` footer lines, and
+  `--compare prev.json` for per-glyph deltas). Still *look* though —
+  `python -m tools.glyphlab <key> [--live] [--stages]` annotates each
+  panel with its per-category penalty (where the points went; writes to
+  `temp/`, `uv run --extra viz`) — the number says how much, the overlay
+  says why. The remaining silhouette-coverage gate is still a proxy; a
+  keep that looks worse is a discard.
 
 ## 1 · Setup (once per run)
 
@@ -70,8 +77,9 @@ first row with status `keep` and description `baseline`.
    — stage everything (`-am` misses newly added files; an uncommitted
    file influencing the bench survives the discard-revert and poisons
    later runs).
-4. **Run**:
-   `uv run python -m tools.glyphbench.run > tools/glyphbench/runs/<tag>/run.log 2>&1`
+4. **Run** (one script per run — `--style suetterlin` default, `--style kurrent`
+   for the pressure pipeline; never both, the metrics differ):
+   `uv run python -m tools.glyphbench.run --style suetterlin > tools/glyphbench/runs/<tag>/run.log 2>&1`
 5. **Parse**: `grep "^bench_loss:" tools/glyphbench/runs/<tag>/run.log`
    — empty grep = crash → `tail -n 50` the log. Fix obvious typos and
    re-run (amend the commit); skip genuinely broken ideas (record
@@ -97,13 +105,16 @@ comes up (rule 0).
 ## 3 · Visual spot-check (every ~5 keeps)
 
 ```bash
-uv run python -m tools.glyphbench.run --artifacts tools/glyphbench/runs/<tag>/overlays
+uv run python -m tools.glyphbench.run --style suetterlin --artifacts tools/glyphbench/runs/<tag>/overlays
+python -m tools.glyphlab t-medial l-medial b-medial g-medial   # annotated per-category breakdown
 ```
 
-Eyeball reversal corners and width waviness on `e-final`, `u-final`,
-`longs-final`, `K-final` (the historically weakest). The metric is a
-proxy; the overlays are the truth — a keep that looks worse than its
-predecessor is a discard, log it as such.
+Eyeball the worst glyphs from the footer/`worst_glyph` — for Sütterlin
+the current weak ones are the retrace (`t`) and the loop-over-stem
+crossings (`l`, `b`, `g`, `h`, `f`). The bench overlays show coverage;
+`glyphlab` annotates each panel with its per-category penalty, so the
+metric (how much) and the picture (why) agree. A keep that looks worse
+than its predecessor is a discard, log it as such.
 
 ## 4 · Ending a run
 

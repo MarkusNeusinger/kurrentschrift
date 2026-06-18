@@ -15,11 +15,22 @@ against a **frozen** binarized reference of the crop. Metric internals live in
 uv run python -m tools.glyphbench.export_fixtures
 
 # 2. Run the bench (no DB, no HTTP — hermetic, deterministic).
-uv run python -m tools.glyphbench.run
+#    ONE script per run: --style suetterlin (default) or --style kurrent.
+uv run python -m tools.glyphbench.run --style suetterlin
 
 # Optional: per-glyph overlay PNGs + full JSON report
 uv run python -m tools.glyphbench.run --artifacts runs/dev/overlays --json runs/dev/report.json
+
+# Optional: diff component/glyph deltas vs a previous --json report
+uv run python -m tools.glyphbench.run --json runs/dev/new.json --compare runs/dev/old.json
 ```
+
+Kurrent and Sütterlin use different writing instruments (Spitzfeder/Schwellzug
+vs. Redisfeder/Gleichzug) and so **different quality metrics** — the bench runs
+exactly one script per invocation and there is no combined `bench_loss`. Sütterlin
+(`width_resolver == "constant"`) is scored by the intrinsic-naturalness metric
+(`core.quality_suetterlin`); Kurrent (`pressure`) by the Schwellzug pixel/width
+metric (`core.quality.template_quality_metrics`).
 
 `fixtures/` and `runs/` are gitignored — regenerate at will.
 
@@ -54,26 +65,39 @@ the wizard writes the same authored form across initial/medial/final).
 
 ## Output contract (parsed by the experiment loop — keep stable)
 
-Per-glyph lines, optional info lines, then a `---` footer block:
+Per-glyph lines (metric-aware), then a `---` footer block:
 
 ```
+# Sütterlin: per-component penalties (lower better)
+glyph n-medial       loss 0.180986  smooth 0.087 vert 0.000 corner 0.089 cross 0.000 retr 0.000 cover 0.243 nat 0.058
+# Kurrent: the Schwellzug line
 glyph a-medial       loss 0.082653  iou 0.883  chamfer_px 0.96  geo_rmse_px 0.46  waviness 0.96
 ---
-bench_loss:      0.045123
-median_iou:      0.901000
-worst_glyph:     K-initial 0.112000
-glyphs_scored:   24
+bench_loss:      0.209687
+median_iou:      0.864800
+worst_glyph:     t-final 0.277721
+glyphs_scored:   60
 glyphs_failed:   0
-runtime_s:       38.2
+runtime_s:       4.8
+--- components (mean penalty, lower better) ---   # Sütterlin only
+comp_smoothness: 0.126200
+comp_verticality: 0.045970
+comp_corner:     0.076310
+comp_collinearity: 0.194445
+comp_retrace:    0.058615
+comp_coverage:   0.191655
+comp_naturalness: 0.120765
 ```
 
 - `bench_loss` — **the headline**: mean per-glyph `loss` (lower is better); a
   glyph whose pipeline run raises counts as `1.0`, so one regressed glyph
-  always moves the number.
-- Extraction: `grep "^bench_loss:" run.log`.
-- Per-glyph `loss = 1 - score/100`; the aggregate `score` weighs Dice (0.45),
-  boundary chamfer (0.25), centerline-to-skeleton RMSE (0.20) and width
-  waviness vs the ink's own profile (0.10) — see `core/quality.py`.
+  always moves the number. Byte-stable grep anchor: `grep "^bench_loss:" run.log`.
+- The `comp_<name>:` footer lines (Sütterlin) are the mean per-component penalty
+  over scored glyphs — also greppable, for tracking which category moved.
+- Sütterlin `loss = 1 - score/100`, `score = 100·Tor^0.5·Natürlichkeit` (see
+  `core/quality_suetterlin.py` and `docs/reference/qualitaetsmetrik.md` §5).
+  Kurrent `score` weighs Dice (0.45) / chamfer (0.25) / geo-RMSE (0.20) /
+  waviness (0.10) — see `core/quality.py`.
 
 ## Overlays
 

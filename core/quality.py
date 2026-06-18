@@ -95,12 +95,14 @@ def _sample_and_rings(
     stroke_starts: Sequence[int] | None,
     n: int,
     corner_anchors: Sequence[int] | None = None,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, list[int], list[list[list[list[float]]]]]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, list[int], list[int], list[list[list[list[float]]]]]:
     """Shared sampling: centerline samples + per-stroke capsule-union rings.
 
     One `SamplePlan` (corner-aware, like the diagnostic render) drives both the
     rasterised silhouette and the centerline/width measurements, so every
-    metric scores the same geometry.
+    metric scores the same geometry. Also returns `plan.corner_sample_idx` (the
+    surviving sample of each within-stroke corner knot) so a caller can exclude
+    intentional reversals from a smoothness measurement.
     """
     plan = build_sample_plan(anchors_px, stroke_starts, corner_anchors, n)
     sx, sy, sw = sample_with_sample_plan(anchors_px, half_widths_px, plan)
@@ -109,7 +111,7 @@ def _sample_and_rings(
         capsule_union_rings(sx[a:b], sy[a:b], sw[a:b], simplify_tol=RASTER_SIMPLIFY_PX, decimals=2)
         for a, b in zip(bounds[:-1], bounds[1:], strict=True)
     ]
-    return sx, sy, sw, plan.sample_starts, rings
+    return sx, sy, sw, plan.sample_starts, plan.corner_sample_idx, rings
 
 
 def silhouette_mask(
@@ -126,7 +128,7 @@ def silhouette_mask(
     """
     anchors_px = np.asarray(anchors_px, dtype=float)
     half_widths_px = np.asarray(half_widths_px, dtype=float)
-    _, _, _, _, rings = _sample_and_rings(anchors_px, half_widths_px, stroke_starts, n, corner_anchors)
+    *_, rings = _sample_and_rings(anchors_px, half_widths_px, stroke_starts, n, corner_anchors)
     return rasterize_silhouette(rings, shape)
 
 
@@ -145,7 +147,7 @@ def crop_local_anchors(pixel_anchors: Sequence[Sequence[float]], bbox: dict) -> 
     return np.asarray(pixel_anchors, dtype=float) - np.array([bbox["x0"], bbox["y0"]], dtype=float)
 
 
-def chamfer_boundary_stats(pred_mask: np.ndarray, ink_mask: np.ndarray) -> dict:
+def chamfer_boundary_stats(pred_mask: np.ndarray, ink_mask: np.ndarray, *, dead_band_px: float = 0.0) -> dict:
     """Symmetric boundary chamfer (px): how far the rendered edge sits from the ink edge.
 
     Boundary pixels of each mask are measured against the EDT of the other
@@ -153,6 +155,13 @@ def chamfer_boundary_stats(pred_mask: np.ndarray, ink_mask: np.ndarray) -> dict:
     95th percentiles (a localised miss — one corner cut off — must not vanish
     in the mean). An empty side scores the crop diagonal: the worst honest
     answer, never a flattering one.
+
+    `dead_band_px` (default 0.0, so existing callers are byte-identical) is a
+    pixelation tolerance: each per-pixel boundary distance is reduced by this
+    much (floored at 0) *before* averaging, so disagreement within the scan's
+    own ~1px quantisation costs nothing while a real, several-pixel miss still
+    does. Used by the Sütterlin metric, whose credo is "indistinguishable from
+    a pen", not "pixel-identical to a jagged scan".
     """
     h, w = pred_mask.shape
     worst = float(np.hypot(h, w))
@@ -162,6 +171,9 @@ def chamfer_boundary_stats(pred_mask: np.ndarray, ink_mask: np.ndarray) -> dict:
         return {"chamfer_mean_px": round(worst, 3), "chamfer_p95_px": round(worst, 3)}
     d_pred_to_ink = distance_transform_edt(~b_ink)[b_pred]
     d_ink_to_pred = distance_transform_edt(~b_pred)[b_ink]
+    if dead_band_px > 0.0:
+        d_pred_to_ink = np.maximum(0.0, d_pred_to_ink - dead_band_px)
+        d_ink_to_pred = np.maximum(0.0, d_ink_to_pred - dead_band_px)
     return {
         "chamfer_mean_px": round(float((d_pred_to_ink.mean() + d_ink_to_pred.mean()) / 2.0), 3),
         "chamfer_p95_px": round(float(max(np.percentile(d_pred_to_ink, 95), np.percentile(d_ink_to_pred, 95))), 3),
@@ -249,7 +261,7 @@ def template_quality_metrics(
     h, w = mask.shape
     worst_px = float(np.hypot(h, w))
 
-    sx, sy, sw, sample_starts, stroke_rings = _sample_and_rings(
+    sx, sy, sw, sample_starts, _corner_sample_idx, stroke_rings = _sample_and_rings(
         anchors_px, half_widths_px, stroke_starts, n, corner_anchors
     )
     pred_mask = rasterize_silhouette(stroke_rings, (h, w))

@@ -313,7 +313,11 @@ Technical specs sit in `docs/reference/*.md`:
 - `animation-rendering.md` — stroke-dashoffset (MVP) + Canvas-2D (post-MVP)
 - `styleanalyse.md` — Hinge features, heatmap layouts
 - `qualitaetsmetrik.md` — score/bench_loss definition, frozen-reference
-  rule, baseline history, experiment learnings incl. verworfen items
+  rule, baseline history, experiment learnings incl. verworfen items.
+  TWO metrics, one per script: §1–§4 Kurrent/Schwellzug
+  (`core/quality.py`, pixel/width), §5 Sütterlin/Gleichzug naturalness
+  (`core/quality_suetterlin.py` + `core/geometry.py`). Bench runs one
+  script per run (`--style suetterlin|kurrent`), no combined bench_loss.
 - `frontend-stack.md` — build, deploy, auth, routes
 
 Source-backed script facts (lineature terms, Schräglage convention
@@ -442,18 +446,21 @@ pipelines for plot specifications). For now:
   under `.claude/skills/` — verify-frontend / verify-api / verify-core,
   write-docs, audit-licenses, open-pr, optimize-glyphs.)
 - **Glyph-pipeline changes are benchmarked:** `tools/glyphbench` scores
-  the rendered silhouette of every authored glyph against frozen
-  references (`uv run python -m tools.glyphbench.run`, headline
-  `bench_loss:` — lower is better). A PR touching `core/` extraction or
-  rendering should quote before/after numbers; the bench never touches
-  the DB (fixtures are exported once, read-only).
+  every authored glyph against frozen references, ONE script per run
+  (`uv run python -m tools.glyphbench.run --style suetterlin|kurrent`,
+  headline `bench_loss:` — lower is better; Sütterlin also prints
+  `comp_<name>:` per-category means, `--compare prev.json` diffs them).
+  A PR touching `core/` extraction or rendering should quote before/after
+  numbers; the bench never touches the DB (fixtures exported once,
+  read-only).
 - **Glyph inspection (see, don't just score):** `tools/glyphlab` renders
   matplotlib overlays of a glyph's derivation (crop · skeleton ·
   centerline · corners · silhouette) to `temp/`, from a fixture or a
   read-only live DB pull — `python -m tools.glyphlab <key> [--live]
-  [--stages]` (matplotlib is the dev-only `viz` extra). The bench is
-  blind to sub-pixel centerline/corner shifts, so ductus/naturalness
-  fixes are judged here, not by `bench_loss`.
+  [--stages]` (matplotlib is the dev-only `viz` extra), annotating each
+  panel with its per-category penalty. For Sütterlin the bench scores
+  ductus naturalness directly (so `bench_loss` moves on centerline/corner
+  shifts); the overlay says *why* a glyph lost points, the number *how much*.
 - **Never merge a PR yourself** — open it, get it green and
   review-clean (address Copilot review comments, then resolve the
   threads); merging is the maintainer's call.
