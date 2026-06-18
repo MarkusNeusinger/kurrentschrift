@@ -64,12 +64,27 @@ def _normalise_bbox(bbox: dict) -> dict:
 # ------------------------------------------------------------------- fixtures
 
 
-def _manifest_for(key: str, fixtures_root: Path) -> tuple[Path, dict] | None:
+def _manifest_for(key: str, fixtures_root: Path, source_id: str | None = None) -> tuple[Path, dict] | None:
+    """Locate the manifest holding `key`, preferring `source_id` when given.
+
+    A glyph_key (e.g. `f-final`, `longs-final`) can exist in BOTH the Kurrent and
+    the Sütterlin fixture sets. Without a preference the first manifest alphabetically
+    (kurrent < suetterlin) wins, which silently renders the wrong script's glyph.
+    Preferring the caller's `source_id` (the CLI `--source`, default suetterlin-1922)
+    picks the right one; it still falls back to any match for keys absent from that source.
+    """
+    candidates: list[tuple[Path, dict]] = []
     for manifest_path in sorted(fixtures_root.rglob("manifest.json")):
         manifest = json.loads(manifest_path.read_text())
         if any(g["glyph_key"] == key for g in manifest["glyphs"]):
-            return manifest_path, manifest
-    return None
+            candidates.append((manifest_path, manifest))
+    if not candidates:
+        return None
+    if source_id is not None:
+        preferred = [c for c in candidates if c[1].get("source_id") == source_id]
+        if preferred:
+            return preferred[0]
+    return candidates[0]
 
 
 def _case_from(manifest_path: Path, manifest: dict, key: str) -> GlyphCase:
@@ -89,24 +104,30 @@ def _case_from(manifest_path: Path, manifest: dict, key: str) -> GlyphCase:
     )
 
 
-def fixture_case(key: str, fixtures_root: Path = DEFAULT_FIXTURES_DIR) -> GlyphCase:
-    """Load one frozen fixture by glyph_key (searches every manifest)."""
-    found = _manifest_for(key, fixtures_root)
+def fixture_case(key: str, fixtures_root: Path = DEFAULT_FIXTURES_DIR, source_id: str | None = None) -> GlyphCase:
+    """Load one frozen fixture by glyph_key, preferring `source_id` on a key collision."""
+    found = _manifest_for(key, fixtures_root, source_id)
     if found is None:
         raise KeyError(f"no fixture {key!r} under {fixtures_root}")
     return _case_from(*found, key)
 
 
-def iter_fixture_cases(fixtures_root: Path = DEFAULT_FIXTURES_DIR, *, only: list[str] | None = None) -> list[GlyphCase]:
+def iter_fixture_cases(
+    fixtures_root: Path = DEFAULT_FIXTURES_DIR, *, only: list[str] | None = None, source_id: str | None = None
+) -> list[GlyphCase]:
     """All fixture cases (optionally filtered to `only` glyph_keys), sorted by key.
 
     Each manifest is read once and its cases built directly from it (no per-key
-    rescan), so `--all` stays linear in the number of fixtures.
+    rescan), so `--all` stays linear in the number of fixtures. When `source_id` is
+    given, only that source's manifest is scanned — so `--all` shows one script's
+    forms, not a Kurrent/Sütterlin mix where a shared key would otherwise collide.
     """
     cases: list[GlyphCase] = []
     seen: set[str] = set()
     for manifest_path in sorted(fixtures_root.rglob("manifest.json")):
         manifest = json.loads(manifest_path.read_text())
+        if source_id is not None and manifest.get("source_id") != source_id:
+            continue
         for entry in manifest["glyphs"]:
             key = entry["glyph_key"]
             if (only is not None and key not in only) or key in seen:

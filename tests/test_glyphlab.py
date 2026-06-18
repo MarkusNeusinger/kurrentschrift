@@ -85,5 +85,19 @@ def test_stage_panels_build(tmp_path) -> None:
 
 
 def test_iter_fixture_cases_dedups_keys() -> None:
-    cases = iter_fixture_cases(only=["i-initial", "u-initial"])
-    assert {c.key for c in cases} == {"i-initial", "u-initial"}
+    # Keys are unique across manifests (the `seen` dedup) and sorted; the `only`
+    # filter returns exactly the requested subset. Derived from the actual fixtures
+    # so it survives a re-export changing which positions collapse together.
+    keys = [c.key for c in iter_fixture_cases()]
+    assert keys == sorted(set(keys))
+    pick = keys[:2]
+    assert {c.key for c in iter_fixture_cases(only=pick)} == set(pick)
+
+
+def test_fixture_case_source_preference_avoids_collision() -> None:
+    """A glyph_key shared by the Kurrent and Sütterlin sets resolves to the requested
+    source, not the first manifest alphabetically (kurrent < suetterlin) — the old
+    silent-collision bug that rendered the Kurrent glyph for a Sütterlin key."""
+    case = fixture_case("longs-final", source_id="suetterlin-1922")
+    assert case.origin.endswith("suetterlin-1922")
+    assert case.width_resolver == "constant"  # Gleichzug → the Sütterlin ſ, not the Kurrent one

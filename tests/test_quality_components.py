@@ -157,6 +157,25 @@ def test_retrace_not_applicable_for_a_single_pass():
     assert q == 1.0
 
 
+def test_retrace_excludes_passes_not_straight_over_a_stem_length():
+    """A retrace must run over passes that are straight across a stem-length window.
+
+    Two close anti-parallel STRAIGHT passes = a genuine doubled stem → applicable. The
+    same two passes, now curved (so each bows out of tolerance over the stem-length
+    window — like the n-like `e`'s arch limbs, which are anti-parallel and close but are
+    one curve, not an out-and-back), drop to N/A. This pins the 2026-06-18 re-baseline
+    that killed the `e` retrace false fire.
+    """
+    y = np.linspace(0.0, 100.0, 120)
+    stem = np.vstack([np.column_stack([np.full(120, 48.0), y]), np.column_stack([np.full(120, 52.0), y[::-1]])])
+    _, n_stem = retrace_parallelism(stem[:, 0], stem[:, 1], [0], prox_px=20.0, unit_px=UNIT_PX, r_px=4.0)
+    assert n_stem >= 3
+    bow = 12.0 * np.sin(2.0 * np.pi * y / 60.0)  # curved passes — not straight over a stem length
+    arch = np.vstack([np.column_stack([48.0 + bow, y]), np.column_stack([52.0 + bow, y[::-1]])])
+    _, n_arch = retrace_parallelism(arch[:, 0], arch[:, 1], [0], prox_px=20.0, unit_px=UNIT_PX, r_px=4.0)
+    assert n_arch == 0
+
+
 # ------------------------------------------------------------------ aggregate
 
 
