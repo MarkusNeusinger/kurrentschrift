@@ -32,7 +32,7 @@ def test_fixture_case_loads_constant_and_pressure() -> None:
     assert suet.glyph == "i" and suet.position == "initial"
     assert suet.is_constant  # Sütterlin Gleichzug
     assert len(suet.raw_path) > 2
-    loth = fixture_case("longs-final")  # Loth-only key
+    loth = fixture_case("longs-final", source_id="loth-1866")  # Kurrent ſ (pressure); ſ now exists in both sets
     assert not loth.is_constant
 
 
@@ -62,7 +62,7 @@ def test_derive_stages_match_production() -> None:
 
 def test_derive_stages_rejects_pressure() -> None:
     with pytest.raises(ValueError, match="Gleichzug-only"):
-        derive_stages(fixture_case("longs-final"))
+        derive_stages(fixture_case("longs-final", source_id="loth-1866"))  # Kurrent (pressure) → rejected
 
 
 def test_overlay_figure_and_save(tmp_path) -> None:

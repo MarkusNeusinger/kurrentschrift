@@ -9,12 +9,14 @@ and applicability (a missing feature is not applicable, never an exception).
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from core.quality_suetterlin import (
     centerline_smoothness,
     corner_crispness,
     crossing_collinearity,
     retrace_parallelism,
+    suetterlin_quality_for_glyph,
     suetterlin_quality_metrics,
     verticality,
 )
@@ -243,3 +245,21 @@ def test_inflated_widths_lower_the_gate(synthetic_chart_path, synthetic_bbox):
     fat_q = _score(fat, synthetic_bbox, synthetic_chart_path)
     assert fat_q["gate"] < good["gate"]
     assert fat_q["loss"] > good["loss"]
+
+
+def test_stored_scorer_matches_stamped_quality(synthetic_chart_path, synthetic_bbox):
+    """`suetterlin_quality_for_glyph` scores a STORED template with the SAME metric
+    the derivation stamped — so /quality's `stored` is comparable to `candidate`.
+
+    The /quality endpoint used to score `stored` with the Kurrent pixel metric
+    while a constant-width `candidate` came from the naturalness metric: the
+    before/after delta then subtracted incomparable scales, was systematically
+    negative, and never reached 0 after a /resample write-back. Scoring the
+    stored geometry here must reproduce the score the canonical carries (within
+    the trace_meta px-rounding), which is what makes the delta converge.
+    """
+    canon = _suetterlin_canonical(synthetic_chart_path, synthetic_bbox)
+    stored = suetterlin_quality_for_glyph(canon, synthetic_bbox, synthetic_chart_path)
+    stamped = canon["trace_meta"]["quality"]
+    assert stored["score"] == pytest.approx(stamped["score"], abs=0.5)
+    assert set(stored["components"]) == set(stamped["components"])

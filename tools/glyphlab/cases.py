@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import os
+import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -71,19 +72,34 @@ def _manifest_for(key: str, fixtures_root: Path, source_id: str | None = None) -
     the Sütterlin fixture sets. Without a preference the first manifest alphabetically
     (kurrent < suetterlin) wins, which silently renders the wrong script's glyph.
     Preferring the caller's `source_id` (the CLI `--source`, default suetterlin-1922)
-    picks the right one; it still falls back to any match for keys absent from that source.
+    picks the right one and reads ONLY that source's manifest (its parent dir name is
+    the source_id); it falls back to any match for keys absent from that source. With
+    no `source_id`, an ambiguous key warns so a programmatic caller notices.
     """
+    manifests = sorted(fixtures_root.rglob("manifest.json"))
+    if source_id is not None:
+        # The source_id IS the manifest's parent dir (fixtures/<style>/<source_id>/),
+        # so resolve against it without parsing the other sets' manifests.
+        for manifest_path in manifests:
+            if manifest_path.parent.name != source_id:
+                continue
+            manifest = json.loads(manifest_path.read_text())
+            if any(g["glyph_key"] == key for g in manifest["glyphs"]):
+                return manifest_path, manifest
+        # fall through: key not in the requested source → search the remaining sets
     candidates: list[tuple[Path, dict]] = []
-    for manifest_path in sorted(fixtures_root.rglob("manifest.json")):
+    for manifest_path in manifests:
         manifest = json.loads(manifest_path.read_text())
         if any(g["glyph_key"] == key for g in manifest["glyphs"]):
             candidates.append((manifest_path, manifest))
     if not candidates:
         return None
-    if source_id is not None:
-        preferred = [c for c in candidates if c[1].get("source_id") == source_id]
-        if preferred:
-            return preferred[0]
+    if source_id is None and len(candidates) > 1:
+        warnings.warn(
+            f"glyph_key {key!r} exists in multiple fixture sets {[c[0].parent.name for c in candidates]}; "
+            f"pass source_id to disambiguate (defaulting to {candidates[0][0].parent.name})",
+            stacklevel=2,
+        )
     return candidates[0]
 
 
@@ -119,15 +135,16 @@ def iter_fixture_cases(
 
     Each manifest is read once and its cases built directly from it (no per-key
     rescan), so `--all` stays linear in the number of fixtures. When `source_id` is
-    given, only that source's manifest is scanned — so `--all` shows one script's
-    forms, not a Kurrent/Sütterlin mix where a shared key would otherwise collide.
+    given, only that source's manifest is read (skipped by parent-dir name before
+    parsing) — so `--all` shows one script's forms, not a Kurrent/Sütterlin mix where
+    a shared key would otherwise collide.
     """
     cases: list[GlyphCase] = []
     seen: set[str] = set()
     for manifest_path in sorted(fixtures_root.rglob("manifest.json")):
+        if source_id is not None and manifest_path.parent.name != source_id:
+            continue  # the parent dir IS the source_id — skip without parsing the JSON
         manifest = json.loads(manifest_path.read_text())
-        if source_id is not None and manifest.get("source_id") != source_id:
-            continue
         for entry in manifest["glyphs"]:
             key = entry["glyph_key"]
             if (only is not None and key not in only) or key in seen:

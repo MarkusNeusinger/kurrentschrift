@@ -55,6 +55,8 @@ from collections.abc import Sequence
 import numpy as np
 from scipy.ndimage import distance_transform_edt, gaussian_filter1d
 
+from core.chart import crop_with_mask, load_chart_grayscale
+from core.extract import binarize_adaptive, skeleton_and_width
 from core.fit import bilinear
 from core.geometry import (
     acute_angle_between,
@@ -69,7 +71,13 @@ from core.geometry import (
     stroke_bounds,
     unit_tangents,
 )
-from core.quality import QUALITY_N_SAMPLES, _sample_and_rings, chamfer_boundary_stats, rasterize_silhouette
+from core.quality import (
+    QUALITY_N_SAMPLES,
+    _sample_and_rings,
+    chamfer_boundary_stats,
+    crop_local_anchors,
+    rasterize_silhouette,
+)
 
 
 # --- naturalness weights (renormalised over the APPLICABLE terms each glyph) ---
@@ -502,3 +510,44 @@ def suetterlin_quality_metrics(
         "loss": round(1.0 - score / 100.0, 6),
         "n_samples": int(n),
     }
+
+
+def suetterlin_quality_for_glyph(glyph_row: dict, bbox: dict, chart_path: str) -> dict:
+    """Score a STORED Sütterlin template against its own crop with the naturalness metric.
+
+    The Gleichzug twin of `core.quality.quality_for_glyph`: same end-to-end load
+    (chart → crop with eraser/ink mask → binarize → skeleton/EDT), but the stored
+    pixel-space trace is scored with `suetterlin_quality_metrics`, NOT the Kurrent
+    pixel/Schwellzug metric. The /quality endpoint must score `stored` with the
+    SAME metric it scores `candidate` with (a re-derived canonical's
+    `trace_meta.quality`), or the before/after delta subtracts a naturalness score
+    from a Kurrent coverage score — incomparable, systematically negative, and
+    never converging to 0 after a /resample write-back.
+    """
+    for required in ("baseline_y", "midband_y", "y0", "y1", "x0", "x1"):
+        if bbox.get(required) is None:
+            raise ValueError(f"bbox missing required field {required!r}")
+    trace_meta = glyph_row.get("trace_meta") or {}
+    pixel_anchors = trace_meta.get("pixel_anchors")
+    half_widths_px = trace_meta.get("half_widths_px")
+    if not pixel_anchors or not half_widths_px:
+        raise ValueError("template lacks trace_meta.pixel_anchors / half_widths_px")
+
+    chart_gray = load_chart_grayscale(chart_path)
+    crop = crop_with_mask(chart_gray, bbox, fill=1.0)
+    mask = binarize_adaptive(crop, fill_holes_max_area=int(bbox.get("fill_holes_max_area") or 0))
+    skel, width_map = skeleton_and_width(mask)
+
+    anchors_px = crop_local_anchors(pixel_anchors, bbox)
+    unit_px = float(trace_meta.get("unit_px") or (int(bbox["baseline_y"]) - int(bbox["midband_y"])))
+
+    return suetterlin_quality_metrics(
+        anchors_px,
+        np.asarray(half_widths_px, dtype=float),
+        trace_meta.get("stroke_starts"),
+        mask,
+        skel,
+        width_map,
+        unit_px=unit_px,
+        corner_anchors=trace_meta.get("corner_anchors"),
+    )

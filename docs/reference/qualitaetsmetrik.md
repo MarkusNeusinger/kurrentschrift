@@ -214,9 +214,9 @@ laufen, die über eine **stammlange** Fensterlänge gerade sind
 n-artige **e**-Doppelbogen raus — seine beiden anti-parallelen Hälften
 sind über kurze Strecke gerade, biegen sich aber über Stammlänge (das
 killte den e-Fehlfeuer im Re-Baseline 2026-06-18). Eine Schleife, die nur
-einen Stamm streift (b/g/l), ist gerade *und* deckungsgleich, aber unter
-> 15° → vom Winkel-Apply-Gate (`RETRACE_APPLY_ANGLE_DEG` = 15°)
-ausgeschlossen. Ein Term, der nicht anwendbar ist, fällt aus dem
+einen Stamm streift (b/g/l), ist zwar gerade *und* deckungsgleich, aber
+ihre beiden Pässe stehen bei einem **Winkel > 15°** zueinander → vom
+Winkel-Apply-Gate (`RETRACE_APPLY_ANGLE_DEG` = 15°) ausgeschlossen. Ein Term, der nicht anwendbar ist, fällt aus dem
 gewichteten Mittel (renormiert).
 
 **Messboden / Anti-Gaming:** Die Natürlichkeitsterme sind referenzfrei —
