@@ -124,9 +124,11 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
   const guideVals = useMemo<GuideValues>(() => {
     const g: GuideConfig = bbox?.guides ?? {};
     const center = bbox ? (bbox.x0 + bbox.x1) / 2 : 0;
-    // slant_xs is the source of truth; fall back to the legacy single slant_x so
-    // glyphs authored before multi-line still show their one line.
-    const xs = g.slant_xs && g.slant_xs.length > 0 ? g.slant_xs : [g.slant_x ?? center];
+    // slant_xs is the source of truth: respect it verbatim, including an explicit
+    // empty array (the user removed every line — 0 lines is allowed). Only fall
+    // back to the legacy single slant_x when slant_xs was never set, so glyphs
+    // authored before multi-line still show their one line.
+    const xs = g.slant_xs != null ? g.slant_xs : [g.slant_x ?? center];
     return {
       slantDeg: g.slant_deg ?? (source ? source.slant_deg : 65),
       slantXs: xs,
@@ -254,7 +256,8 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
 
   const removeSlantLine = useCallback(
     (i: number) => {
-      if (guideVals.slantXs.length <= 1) return;
+      // Removing the last line is allowed — 0 slant lines is a valid state.
+      if (guideVals.slantXs.length === 0) return;
       void updateGuides({ slant_xs: guideVals.slantXs.filter((_, k) => k !== i) });
     },
     [guideVals, updateGuides],
