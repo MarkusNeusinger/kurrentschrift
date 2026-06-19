@@ -583,8 +583,8 @@ def _straighten_crossings(anchors: np.ndarray, stroke_starts: list[int], unit_px
     strokes at once (a stroke can cross another or itself far along its own path)
     with the metric's `detect_crossing_passages`, so exactly the regions
     `crossing_collinearity` scores are touched. For each crossed stroke run the two
-    approaches just outside the blob (within `CROSS_STRAIGHTEN_WINDOW` of arc) must
-    both be straight and meet at a small angle — a genuine straight pass continuing
+    approaches just outside the blob (within `CROSS_STRAIGHTEN_WINDOW_UNITS` of arc)
+    must both be straight and meet at a small angle — a genuine straight pass continuing
     through. When they do, one TLS line is fit through both approaches and the blob
     + approaches are projected onto it (raised-cosine-eased back to the untouched
     anchors at the window ends), so the stem runs straight through instead of

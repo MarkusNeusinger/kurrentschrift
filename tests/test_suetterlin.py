@@ -13,10 +13,12 @@ import numpy as np
 import pytest
 from PIL import Image
 
+from core.geometry import acute_angle_between, fit_line_tls
 from core.suetterlin import (
     _constant_nib_radius,
     _modal_half_width,
     _smooth_snapped_strokes,
+    _straighten_crossings,
     _verticalize_downstrokes,
     canonical_suetterlin_from_path,
     canonical_suetterlin_from_raw_path_only,
@@ -260,6 +262,36 @@ def test_crossing_is_not_edge_split(plus_cross_chart_path, plus_cross_bbox):
     assert np.abs(vert_xs - 408.0).max() < 2.5
     # And the rendered '+' still hugs the ink at one nib thickness.
     assert canon["trace_meta"]["quality"]["iou"] > 0.8
+
+
+def test_straighten_crossings_removes_a_through_stem_kink():
+    # A near-vertical stem that KINKS ~6° at a crossing — exactly the bend a
+    # loop-over-stem junction leaves in the snapped skeleton (f/g/l/ſ) — crossed
+    # transversally by a horizontal bar. `_straighten_crossings` must run the stem
+    # straight THROUGH: its TLS direction just above vs. just below the crossing
+    # becomes collinear, which is the collinearity-metric win this stage guarantees.
+    unit_px, r_px, kink_y, n = 60.0, 8.0, 60.0, 60
+    ys = np.linspace(0.0, 2.0 * unit_px, n)
+    xs = np.where(ys <= kink_y, 200.0, 200.0 + np.tan(np.deg2rad(6.0)) * (ys - kink_y))
+    stem = np.column_stack([xs, ys])
+    crosser = np.column_stack([np.linspace(160.0, 240.0, 30), np.full(30, kink_y)])
+    anchors = np.vstack([stem, crosser])
+
+    def through_angle_deg(stem_pts):
+        below = stem_pts[(stem_pts[:, 1] >= kink_y - 25) & (stem_pts[:, 1] < kink_y - 2)]
+        above = stem_pts[(stem_pts[:, 1] > kink_y + 2) & (stem_pts[:, 1] <= kink_y + 25)]
+        return np.degrees(acute_angle_between(fit_line_tls(below)[1], fit_line_tls(above)[1]))
+
+    assert through_angle_deg(stem) > 4.0  # the input genuinely kinks at the crossing
+    out = _straighten_crossings(anchors, [0, n], unit_px, r_px)
+    assert through_angle_deg(out[:n]) < 1.5  # the stem now runs collinear through the crossing
+    # A curved through-pass must NOT be straightened: same crosser, but the "stem"
+    # is now a quarter-arc bowl that merely passes near the bar — the straight/angle
+    # gate rejects it, so the geometry is returned untouched (coverage gate safe).
+    t = np.linspace(0.0, np.pi / 2, n)
+    bowl = np.column_stack([200.0 + 50.0 * np.cos(t), kink_y - 50.0 + 50.0 * np.sin(t)])
+    out_bowl = _straighten_crossings(np.vstack([bowl, crosser]), [0, n], unit_px, r_px)
+    assert np.allclose(out_bowl[:n], bowl, atol=1e-6)  # the curve is left exactly on the skeleton
 
 
 def test_verticalize_pulls_slanted_run_to_true_vertical():
