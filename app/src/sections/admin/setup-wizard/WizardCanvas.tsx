@@ -24,6 +24,10 @@ import { SLANT_COLOR } from './wizardTypes';
 import type { SavedTraceOverlay } from './useWizard';
 import type { CalibField, CommitCalib, CommitMaskStroke, CommitSlant, GuideValues, StepId } from './wizardTypes';
 
+// A dark halo behind the thin dashed guide lines so the bright colours stay
+// legible over both light paper and dark ink in the scanned crop.
+const GUIDE_SHADOW = 'drop-shadow(0 0 1.5px rgba(0,0,0,0.9))';
+
 export function WizardCanvas({
   glyphKey,
   open,
@@ -291,10 +295,10 @@ export function WizardCanvas({
             {stepId !== 'mask' && (
               <>
                 {guideVals.showAscender && ascenderCss >= 0 && ascenderCss <= displayH && (
-                  <line x1={0} y1={ascenderCss} x2={displayW} y2={ascenderCss} stroke="#888" strokeWidth={1} strokeDasharray="2 4" opacity={0.6} />
+                  <line x1={0} y1={ascenderCss} x2={displayW} y2={ascenderCss} stroke="#bbb" strokeWidth={1.5} strokeDasharray="2 4" opacity={0.9} style={{ filter: GUIDE_SHADOW }} />
                 )}
                 {guideVals.showDescender && descenderCss >= 0 && descenderCss <= displayH && (
-                  <line x1={0} y1={descenderCss} x2={displayW} y2={descenderCss} stroke="#888" strokeWidth={1} strokeDasharray="2 4" opacity={0.6} />
+                  <line x1={0} y1={descenderCss} x2={displayW} y2={descenderCss} stroke="#bbb" strokeWidth={1.5} strokeDasharray="2 4" opacity={0.9} style={{ filter: GUIDE_SHADOW }} />
                 )}
                 <g>
                   {stepId === 'lineatur' && (
@@ -314,7 +318,7 @@ export function WizardCanvas({
                       }}
                     />
                   )}
-                  <line x1={0} y1={baselineCss} x2={displayW} y2={baselineCss} stroke="#ff5060" strokeWidth={1.5} strokeDasharray="6 4" style={{ pointerEvents: 'none' }} />
+                  <line x1={0} y1={baselineCss} x2={displayW} y2={baselineCss} stroke="#ff5060" strokeWidth={2.25} strokeDasharray="6 4" style={{ pointerEvents: 'none', filter: GUIDE_SHADOW }} />
                 </g>
                 <g>
                   {stepId === 'lineatur' && (
@@ -334,7 +338,7 @@ export function WizardCanvas({
                       }}
                     />
                   )}
-                  <line x1={0} y1={midbandCss} x2={displayW} y2={midbandCss} stroke="#c060ff" strokeWidth={1.5} strokeDasharray="3 3" style={{ pointerEvents: 'none' }} />
+                  <line x1={0} y1={midbandCss} x2={displayW} y2={midbandCss} stroke="#c060ff" strokeWidth={2.25} strokeDasharray="3 3" style={{ pointerEvents: 'none', filter: GUIDE_SHADOW }} />
                 </g>
                 {dragCss != null && (
                   <line x1={0} y1={dragCss} x2={displayW} y2={dragCss} stroke={calibDrag?.field === 'baseline_y' ? '#ff5060' : '#c060ff'} strokeWidth={2} opacity={0.6} style={{ pointerEvents: 'none' }} />
@@ -355,10 +359,10 @@ export function WizardCanvas({
                     x2={ln.x2}
                     y2={ln.y2}
                     stroke={SLANT_COLOR}
-                    strokeWidth={dragging ? 2 : 1.2}
+                    strokeWidth={dragging ? 2.5 : 2}
                     strokeDasharray="5 4"
-                    opacity={dragging ? 0.6 : 0.85}
-                    style={{ pointerEvents: 'none' }}
+                    opacity={dragging ? 0.7 : 0.95}
+                    style={{ pointerEvents: 'none', filter: GUIDE_SHADOW }}
                   />
                 );
               })}
