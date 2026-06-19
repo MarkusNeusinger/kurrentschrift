@@ -110,8 +110,10 @@ python -m tools.glyphlab t-medial l-medial b-medial g-medial   # annotated per-c
 ```
 
 Eyeball the worst glyphs from the footer/`worst_glyph` — for Sütterlin
-the current weak ones are the retrace (`t`) and the loop-over-stem
-crossings (`l`, `b`, `g`, `h`, `f`). The bench overlays show coverage;
+the loop-over-stem crossings (`l`, `b`, `g`, `h`, `f`) were largely fixed
+by `_straighten_crossings` (run `jun19-suet`, bench_loss 0.2126→0.1983),
+so the current weak ones are the **retrace** (`ſ`, `t` — the doubled stem's
+two passes drift apart, not yet straightened) and `B`. The bench overlays show coverage;
 `glyphlab` annotates each panel with its per-category penalty, so the
 metric (how much) and the picture (why) agree. A keep that looks worse
 than its predecessor is a discard, log it as such.
