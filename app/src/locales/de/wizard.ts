@@ -95,6 +95,12 @@ export const wizard = {
     penLiftBold: 'Jedes Absetzen beginnt einen neuen Strich',
     penLiftAfterBold: '— zwischen den Strichen wird keine Verbindungslinie gezogen. Beim',
     penLiftRest: 'also erst den ersten Abstrich, absetzen, dann den zweiten — nacheinander, nicht in einem Zug.',
+    // Zeichnen = draw new strokes; Anpassen = drag the drawn line to fix a wobble.
+    toolDraw: 'Zeichnen',
+    toolAdjust: 'Anpassen',
+    nudgeRadius: 'Radius',
+    adjustHint:
+      'Die gezeichnete Linie mit gedrückter Maustaste ziehen, um einen Wackler zu glätten — Punkte im Radius folgen, außen läuft die Linie weich zurück. Wirkt nur auf den noch nicht gespeicherten Entwurf.',
     // Followed by the stroke count "(…)".
     undoStroke: 'Letzter Strich',
     discardAll: 'Alles verwerfen',

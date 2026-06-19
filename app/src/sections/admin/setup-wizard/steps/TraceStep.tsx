@@ -1,11 +1,25 @@
-// Step 4 "Weg" (the ductus trace) — stroke undo/discard, n_anchors + resample,
-// and the entry/exit coupling heights. Strokes are drawn on WizardCanvas. The
-// primary button saves the Weg (the pipeline optimizes on every save); the
-// next step ("Optimieren") then shows the raw-vs-optimized comparison.
+// Step 4 "Weg" (the ductus trace) — Zeichnen/Anpassen tool toggle (draw new
+// strokes vs. warp-drag the drawn line to smooth a wobble, with a falloff
+// radius), stroke undo/discard, n_anchors + resample, and the entry/exit
+// coupling heights. Strokes are drawn/warped on WizardCanvas. The primary button
+// saves the Weg (the pipeline optimizes on every save); the next step
+// ("Optimieren") then shows the raw-vs-optimized comparison.
 
 import RefreshIcon from '@mui/icons-material/Refresh';
 import UndoIcon from '@mui/icons-material/Undo';
-import { Alert, Box, Button, FormControlLabel, Stack, Switch, TextField, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  FormControlLabel,
+  Slider,
+  Stack,
+  Switch,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from '@mui/material';
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { couplingLabel, de } from '@/locales';
@@ -33,6 +47,10 @@ export function TraceStep({
   resample,
   updateBboxField,
   updateGuides,
+  wegTool,
+  setWegTool,
+  nudgeRadius,
+  setNudgeRadius,
 }: {
   bbox: BboxOut;
   strokes: StrokePoint[][];
@@ -47,10 +65,20 @@ export function TraceStep({
   resample: (nAnchors: number) => Promise<void>;
   updateBboxField: (patch: Partial<BboxIn>) => Promise<void>;
   updateGuides: (patch: Partial<GuideConfig>) => Promise<void>;
+  wegTool: 'draw' | 'adjust';
+  setWegTool: (t: 'draw' | 'adjust') => void;
+  nudgeRadius: number;
+  setNudgeRadius: (r: number) => void;
 }) {
   // n_anchors edits buffer in a local draft and commit on blur/Enter (or via the
   // buttons): a field controlled straight by the server value can never be
   // cleared — each keystroke would PUT and snap the text back mid-typing.
+  // Adjust mode warps existing strokes; once they're all undone/discarded there's
+  // nothing to drag (and pointer-down would be a no-op), so fall back to drawing.
+  useEffect(() => {
+    if (wegTool === 'adjust' && savablePoints < 2) setWegTool('draw');
+  }, [wegTool, savablePoints, setWegTool]);
+
   const [anchorsDraft, setAnchorsDraft] = useState(String(bbox.n_anchors));
   const committedAnchors = useRef(bbox.n_anchors);
   useEffect(() => {
@@ -87,6 +115,31 @@ export function TraceStep({
       <Typography variant="body2" color="text.secondary">
         <b>{de.wizard.trace.penLiftBold}</b> {de.wizard.trace.penLiftAfterBold} <b>u</b> {de.wizard.trace.penLiftRest}
       </Typography>
+
+      <ToggleButtonGroup
+        size="small"
+        exclusive
+        value={wegTool}
+        onChange={(_e, v: 'draw' | 'adjust' | null) => v && setWegTool(v)}
+        fullWidth
+      >
+        <ToggleButton value="draw">{de.wizard.trace.toolDraw}</ToggleButton>
+        <ToggleButton value="adjust" disabled={savablePoints < 2}>
+          {de.wizard.trace.toolAdjust}
+        </ToggleButton>
+      </ToggleButtonGroup>
+      {wegTool === 'adjust' && (
+        <Box>
+          <Typography variant="caption">
+            {de.wizard.trace.nudgeRadius} {nudgeRadius}px
+          </Typography>
+          <Slider size="small" min={3} max={40} value={nudgeRadius} onChange={(_e, v) => typeof v === 'number' && setNudgeRadius(v)} />
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+            {de.wizard.trace.adjustHint}
+          </Typography>
+        </Box>
+      )}
+
       <Stack direction="row" spacing={1}>
         <Button size="small" startIcon={<UndoIcon />} disabled={strokes.length === 0} onClick={() => setStrokes((s) => s.slice(0, -1))}>
           {de.wizard.trace.undoStroke} ({strokes.length})

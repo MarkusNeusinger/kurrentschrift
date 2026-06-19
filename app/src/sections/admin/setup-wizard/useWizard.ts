@@ -49,6 +49,11 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
   // pen lift starts a new stroke instead of extending the last one, so separate
   // strokes never get joined by a line.
   const [strokes, setStrokes] = useState<StrokePoint[][]>([]);
+  // Weg step interaction: draw new strokes, or "Anpassen" — drag the already
+  // drawn line to iron out a wobble before saving (warps nearby points toward
+  // the pointer, with the falloff radius below). Edits the draft only.
+  const [wegTool, setWegTool] = useState<'draw' | 'adjust'>('draw');
+  const [nudgeRadius, setNudgeRadius] = useState(10);
   const [maskRadius, setMaskRadius] = useState(8);
   // Which brush the Ausschluss step paints with: the eraser (Radierer, blanks
   // neighbour ink) or the ink brush (Tinte, fills specks). Shares maskRadius.
@@ -77,6 +82,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
   useEffect(() => {
     setStep(0);
     setTool('eraser');
+    setWegTool('draw');
     setShowMask(false);
     setStrokes([]);
     previewEpoch.current++;
@@ -406,6 +412,10 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     strokes,
     setStrokes,
     savablePoints,
+    wegTool,
+    setWegTool,
+    nudgeRadius,
+    setNudgeRadius,
     // saved-Weg reference overlay (Weg step)
     savedTrace,
     showSaved,
