@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Static sitemap of the public routes (see app/src/routes/paths.ts).
      /admin/* is gated by Cloudflare Access and is intentionally omitted.
-     Keep in sync with paths.ts; revisit once i18n /de//en/ prefixes land
+     Keep in sync with paths.ts; revisit once the i18n /de/ and /en/ prefixes land
      (docs/reference/frontend-stack.md §Sitemap). -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
