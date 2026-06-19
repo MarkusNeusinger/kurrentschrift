@@ -134,6 +134,28 @@ export const wizard = {
     delta: 'Δ Score (optimiert − roh):',
     needTrace: 'Noch kein Weg vorhanden — erst im Schritt „Weg“ zeichnen.',
     recompute: 'Neu berechnen',
+    // Per-category penalty breakdown of the optimized score (like the glyph bench):
+    // shows where the form loses points (higher penalty = bigger deduction).
+    breakdownHeading: 'Abzüge nach Kategorie (optimiert)',
+    breakdownHint: 'Wo die optimierte Form Punkte verliert — höher = mehr Abzug, wie im Glyph-Bench.',
+    breakdownNone: 'Keine nennenswerten Abzüge — die Form ist sauber.',
+    // Short category labels mirroring the naturalness metric's components.
+    cat: {
+      smoothness: 'Glätte',
+      verticality: 'Senkrechte',
+      corner: 'Ecken',
+      collinearity: 'Kreuzung',
+      retrace: 'Doppelzug',
+      coverage: 'Deckung',
+    },
+    catHint: {
+      smoothness: 'Bögen ohne Zacken',
+      verticality: 'Abstriche wirklich senkrecht',
+      corner: 'Umkehrpunkte sauber spitz',
+      collinearity: 'Strich bleibt durch eine Kreuzung gerade',
+      retrace: 'Hin- und Rückzug laufen parallel',
+      coverage: 'Form deckt die Originaltinte (Gate)',
+    },
   },
   overview: {
     title: 'Schritt 6 · Übersicht & Freigabe',
