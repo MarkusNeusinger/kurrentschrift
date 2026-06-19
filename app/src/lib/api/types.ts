@@ -190,23 +190,40 @@ export interface DiagnosticData {
   corner_anchors?: number[];
 }
 
-// Image-space quality of a template vs its crop — mirrors the dict returned by
-// core/quality.py::template_quality_metrics (served by GET .../quality).
+// Image-space quality of a template vs its crop (served by GET .../quality).
+// One of two shapes depending on the style's metric, sharing the headline keys:
+//   - Kurrent (core/quality.py::template_quality_metrics): geo_rmse_px, width_tv_*, waviness_ratio
+//   - Sütterlin (core/quality_suetterlin.py::suetterlin_quality_metrics): naturalness, gate, components
+// The metric-specific fields are optional; presence of `naturalness` discriminates.
 export interface QualityData {
   iou: number;
   dice: number;
   chamfer_mean_px: number;
   chamfer_p95_px: number;
-  geo_rmse_px: number;
-  width_tv_rendered_px: number;
-  width_tv_ink_px: number;
-  waviness_ratio: number;
   pred_area_px: number;
   ink_area_px: number;
   // Aggregate 0–100 (higher better) and its complement (lower better).
   score: number;
   loss: number;
   n_samples: number;
+  // Kurrent (pressure/Schwellzug) metric only.
+  geo_rmse_px?: number;
+  width_tv_rendered_px?: number;
+  width_tv_ink_px?: number;
+  waviness_ratio?: number;
+  // Sütterlin (Gleichzug) naturalness metric only.
+  gate?: number;
+  naturalness?: number;
+  geo_db_rmse_px?: number;
+  components?: {
+    smoothness: number;
+    verticality: number;
+    corner: number;
+    collinearity: number;
+    retrace: number;
+    coverage: number;
+    naturalness: number;
+  };
 }
 
 // GET .../quality payload: what the DB holds vs what a fresh re-derivation
