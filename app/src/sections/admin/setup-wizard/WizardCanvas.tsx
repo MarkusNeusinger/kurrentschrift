@@ -24,6 +24,31 @@ import { SLANT_COLOR } from './wizardTypes';
 import type { SavedTraceOverlay } from './useWizard';
 import type { CalibField, CommitCalib, CommitMaskStroke, CommitSlant, GuideValues, StepId } from './wizardTypes';
 
+// Warp a snapshot of the Weg strokes toward a drag: every point within `radius`
+// (chart px) of the grab point moves by the drag delta, weighted by a smoothstep
+// falloff so the grabbed spot follows the pointer fully and the line eases back
+// to its original shape at the rim — irons out a local wobble without a hard
+// kink. Points keep their pressure/timestamp/pen_up.
+function warpStrokes(
+  snapshot: StrokePoint[][],
+  grabX: number,
+  grabY: number,
+  dx: number,
+  dy: number,
+  radius: number,
+): StrokePoint[][] {
+  const r2 = radius * radius;
+  return snapshot.map((stroke) =>
+    stroke.map((p) => {
+      const d2 = (p.x - grabX) ** 2 + (p.y - grabY) ** 2;
+      if (d2 >= r2) return p;
+      const t = 1 - Math.sqrt(d2) / radius;
+      const w = t * t * (3 - 2 * t); // smoothstep
+      return { ...p, x: p.x + dx * w, y: p.y + dy * w };
+    }),
+  );
+}
+
 export function WizardCanvas({
   glyphKey,
   open,
@@ -36,6 +61,8 @@ export function WizardCanvas({
   cropCacheBust,
   maskRadius,
   tool,
+  wegTool,
+  nudgeRadius,
   showMask,
   strokes,
   setStrokes,
@@ -57,6 +84,8 @@ export function WizardCanvas({
   cropCacheBust: number;
   maskRadius: number;
   tool: 'eraser' | 'ink';
+  wegTool: 'draw' | 'adjust';
+  nudgeRadius: number;
   showMask: boolean;
   strokes: StrokePoint[][];
   setStrokes: Dispatch<SetStateAction<StrokePoint[][]>>;
@@ -80,6 +109,10 @@ export function WizardCanvas({
   const [calibDrag, setCalibDrag] = useState<{ field: CalibField; curY: number } | null>(null);
   // Which slant line is being dragged (index into slant_xs) and its live x.
   const [slantDrag, setSlantDrag] = useState<{ index: number; curX: number } | null>(null);
+  // Weg "Anpassen" warp-drag: where the grab started (chart coords) and a frozen
+  // snapshot of the strokes at grab time, so each move re-warps from the original
+  // shape rather than compounding. Cleared on pointer-up.
+  const [nudge, setNudge] = useState<{ x: number; y: number; snapshot: StrokePoint[][] } | null>(null);
   // `panDrag` holds a live pan gesture (a drag while the Schwenken toggle is on).
   const [panDrag, setPanDrag] = useState<{ sx: number; sy: number; px: number; py: number } | null>(null);
 
@@ -92,6 +125,7 @@ export function WizardCanvas({
     setHoverPt(null);
     setCalibDrag(null);
     setSlantDrag(null);
+    setNudge(null);
     setPanDrag(null);
   }, [glyphKey, open]);
 
@@ -114,6 +148,15 @@ export function WizardCanvas({
       } else if (stepId === 'weg') {
         if (e.pointerType !== 'pen' && e.pointerType !== 'mouse' && e.pointerType !== 'touch') return;
         e.preventDefault();
+        if (wegTool === 'adjust') {
+          // Grab the line where the pointer went down and warp it from there; a
+          // grab with no strokes yet is a no-op.
+          if (strokes.length > 0) {
+            setNudge({ x, y, snapshot: strokes });
+            e.currentTarget.setPointerCapture(e.pointerId);
+          }
+          return;
+        }
         setDrawing(true);
         // Each pen-down opens a new stroke; the previous one is left as-is, so a
         // pen lift never draws a line to the next stroke's start.
@@ -121,7 +164,7 @@ export function WizardCanvas({
         e.currentTarget.setPointerCapture(e.pointerId);
       }
     },
-    [bbox, stepId, cssToChart, panning, panX, panY, setStrokes],
+    [bbox, stepId, wegTool, strokes, cssToChart, panning, panX, panY, setStrokes],
   );
 
   const onSvgPointerMove = useCallback(
@@ -133,7 +176,11 @@ export function WizardCanvas({
         return;
       }
       const { x, y } = cssToChart(e.clientX, e.clientY, e.currentTarget);
-      if (stepId === 'mask') setHoverPt({ x, y });
+      if (stepId === 'mask' || (stepId === 'weg' && wegTool === 'adjust')) setHoverPt({ x, y });
+      if (nudge) {
+        setStrokes(warpStrokes(nudge.snapshot, nudge.x, nudge.y, x - nudge.x, y - nudge.y, nudgeRadius));
+        return;
+      }
       if (calibDrag) {
         setCalibDrag({ ...calibDrag, curY: Math.round(y) });
         return;
@@ -159,12 +206,17 @@ export function WizardCanvas({
         });
       }
     },
-    [bbox, calibDrag, slantDrag, stepId, maskDraft, drawing, cssToChart, panDrag, displayW, displayH, hostSize, setPanX, setPanY, setStrokes],
+    [bbox, calibDrag, slantDrag, nudge, nudgeRadius, wegTool, stepId, maskDraft, drawing, cssToChart, panDrag, displayW, displayH, hostSize, setPanX, setPanY, setStrokes],
   );
 
   const onSvgPointerUp = useCallback(async () => {
     if (panDrag) {
       setPanDrag(null);
+      return;
+    }
+    if (nudge) {
+      // The warped strokes are already live in `strokes`; just end the gesture.
+      setNudge(null);
       return;
     }
     if (calibDrag) {
@@ -186,7 +238,7 @@ export function WizardCanvas({
       return;
     }
     if (stepId === 'weg') setDrawing(false);
-  }, [panDrag, calibDrag, slantDrag, stepId, maskDraft, tool, commitCalib, commitSlant, commitMaskStroke, commitInkStroke]);
+  }, [panDrag, calibDrag, slantDrag, nudge, stepId, maskDraft, tool, commitCalib, commitSlant, commitMaskStroke, commitInkStroke]);
 
   // ------------------------------------------------------------- geometry (css)
   const baselineCss = (bbox.baseline_y - bbox.y0) * scale;
@@ -266,7 +318,17 @@ export function WizardCanvas({
               position: 'absolute',
               inset: 0,
               touchAction: 'none',
-              cursor: panning ? (panDrag ? 'grabbing' : 'grab') : stepId === 'mask' || stepId === 'weg' ? 'crosshair' : 'default',
+              cursor: panning
+                ? panDrag
+                  ? 'grabbing'
+                  : 'grab'
+                : stepId === 'weg' && wegTool === 'adjust'
+                  ? nudge
+                    ? 'grabbing'
+                    : 'grab'
+                  : stepId === 'mask' || stepId === 'weg'
+                    ? 'crosshair'
+                    : 'default',
             }}
             onPointerDown={onSvgPointerDown}
             onPointerMove={onSvgPointerMove}
@@ -275,14 +337,15 @@ export function WizardCanvas({
               setPanDrag(null);
               setCalibDrag(null);
               setSlantDrag(null);
+              setNudge(null);
               setMaskDraft(null);
               setHoverPt(null);
               setDrawing(false);
             }}
-            // Hide the eraser ring when the pointer leaves the crop — but not
-            // mid-stroke (capture keeps the draft alive past the edge).
+            // Hide the brush/nudge ring when the pointer leaves the crop — but not
+            // mid-gesture (capture keeps it alive past the edge).
             onPointerLeave={() => {
-              if (!maskDraft) setHoverPt(null);
+              if (!maskDraft && !nudge) setHoverPt(null);
             }}
           >
             {/* Lineature guides — hidden on the Ausschluss step (the eraser works
@@ -398,6 +461,22 @@ export function WizardCanvas({
                 fill={tool === 'ink' ? overlay.ink : overlay.eraser}
                 fillOpacity={0.12}
                 stroke={tool === 'ink' ? overlay.ink : overlay.eraser}
+                strokeOpacity={0.9}
+                strokeWidth={1}
+                style={{ pointerEvents: 'none' }}
+              />
+            )}
+
+            {/* Nudge ring: the warp footprint on the Weg "Anpassen" tool — points
+                inside follow the drag, easing back to the line at the rim. */}
+            {stepId === 'weg' && wegTool === 'adjust' && !panning && hoverPt && (
+              <circle
+                cx={(hoverPt.x - bbox.x0) * scale}
+                cy={(hoverPt.y - bbox.y0) * scale}
+                r={nudgeRadius * scale}
+                fill={overlay.draft}
+                fillOpacity={0.1}
+                stroke={overlay.draft}
                 strokeOpacity={0.9}
                 strokeWidth={1}
                 style={{ pointerEvents: 'none' }}

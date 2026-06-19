@@ -221,7 +221,9 @@ JSON. The Weg step records the ductus as one or more pen-strokes — each pen
 lift (Absetzen, e.g. a u's two downstrokes) starts a new stroke rather than
 bridging it; the flat `raw_path` carries sparse `pen_up` markers and the
 canonical stores `stroke_starts` in `trace_meta`, so the diagnostic outline
-and the M4 fit keep the strokes separate. UI labels are German per DIN/Süß
+and the M4 fit keep the strokes separate. A Zeichnen/Anpassen toggle lets the
+drawn line be warp-dragged (a falloff-radius nudge) to smooth a wobble in the
+draft before saving. UI labels are German per DIN/Süß
 lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberlänge
 · Mittellänge · Unterlänge).
 

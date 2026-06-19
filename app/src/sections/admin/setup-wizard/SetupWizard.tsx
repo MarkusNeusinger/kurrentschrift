@@ -7,8 +7,9 @@
 //                    each toggleable per glyph.
 //   3. Schräglage  — place + angle one or more slant guides (several individually
 //                    placed lines for m/n/u; all share the angle).
-//   4. Weg         — draw the ductus with the stylus; saves the canonical and
-//                    lets you re-sample it to a different anchor count.
+//   4. Weg         — draw the ductus with the stylus; "Anpassen" then warp-drags
+//                    the drawn line to iron out a wobble before saving; saves the
+//                    canonical and lets you re-sample it to a different anchor count.
 //   5. Übersicht   — open the (large) Diagnose modal to review, optionally apply
 //                    to all positions, then approve → lock (the bbox's `locked`).
 //
@@ -99,6 +100,10 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
             resample={wizard.resample}
             updateBboxField={wizard.updateBboxField}
             updateGuides={wizard.updateGuides}
+            wegTool={wizard.wegTool}
+            setWegTool={wizard.setWegTool}
+            nudgeRadius={wizard.nudgeRadius}
+            setNudgeRadius={wizard.setNudgeRadius}
           />
         );
       case 'optimize':
@@ -163,6 +168,8 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
               cropCacheBust={wizard.cropCacheBust}
               maskRadius={wizard.maskRadius}
               tool={wizard.tool}
+              wegTool={wizard.wegTool}
+              nudgeRadius={wizard.nudgeRadius}
               showMask={wizard.showMask}
               strokes={wizard.strokes}
               setStrokes={wizard.setStrokes}
