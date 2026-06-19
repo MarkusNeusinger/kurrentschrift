@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Static sitemap of the public routes (see app/src/routes/paths.ts).
+     /admin/* is gated by Cloudflare Access and is intentionally omitted.
+     Keep in sync with paths.ts; revisit once i18n /de//en/ prefixes land
+     (docs/reference/frontend-stack.md §Sitemap). -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://kurrentschrift.ink/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://kurrentschrift.ink/schreiben</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://kurrentschrift.ink/quiz</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kurrentschrift.ink/impressum</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>
