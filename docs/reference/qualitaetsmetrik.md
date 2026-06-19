@@ -268,3 +268,34 @@ Fixture-Satz). `core/quality_suetterlin.py` + `core/geometry.py` sind mit
 der Metrik **eingefroren** (gehören in die Frozen-Liste des Loops); die
 intrinsischen Terme haben kein eingefrorenes Ziel — die Frozen-Reference-
 Regel bindet nur die Deckung.
+
+### Phase B — Generierung: Kollinearität an Kreuzungen (2026-06-19, Lauf `jun19-suet`)
+
+**`/optimize-glyphs`-Lauf gegen die eingefrorene Metrik** (nur `core/suetterlin.py`
+geändert; Metrik unverändert → Zahlen **mit der 0.2126-Baseline vergleichbar**).
+`bench_loss 0.2126 → 0.1983` (−6.4 %, Kollinearität 0.185 → 0.081). Neue letzte
+Generierungsstufe `_straighten_crossings`: nach der Vertikalisierung wird auf den
+finalen Ankern jede *transversale* Kreuzung (gefunden mit der Metrik-eigenen
+`detect_crossing_passages`, also exakt die von `crossing_collinearity` bewerteten
+Stellen) geprüft — laufen die beiden Anläufe eines durchlaufenden Stamms gerade
+und in *einer* Linie, wird der Stamm auf eine TLS-Gerade (bei Quasi-Vertikale auf
+echte Senkrechte) gezogen, sonst unberührt gelassen. Drei behaltene Hebel:
+
+1. **Geraden-Durchführung auf den finalen Ankern** (nach Vertikalisierung, damit
+   keine spätere Stufe sie wieder verbiegt). d/g/l/B/E/p/h Kreuzungen sauber.
+2. **Quasi-vertikaler Stamm → echte Senkrechte** statt der leicht gekippten
+   TLS-Geraden (heilt eine Vertikalitäts-Regression, macht den Stamm exakt kollinear).
+3. **Prüf-Fenster 0.45u (weiter) entkoppelt vom Fit-Fenster 0.35u**: das weite
+   Prüf-Fenster lässt die Anläufe einer *kurzen* Geraden zwischen Bögen (d/p
+   Bauch→Stamm) im Winkel auseinanderlaufen → Winkel-Gate schließt sie aus (sie
+   sind in der Metrik N/A und dürfen nicht zu einem bewerteten Knick werden); ein
+   echter langer Stamm (f/g/l/ſ) bleibt unter dem Winkel.
+
+**Verworfen im Lauf:** Trigger über den *breitenbasierten* `_crossing_mask` (verfehlt
+Schlaufe-über-Stamm-Kreuzungen, die nicht 2× breit sind); Straffung **vor** der
+Vertikalisierung (verbiegt d/k/p neu); Fit-Fenster 0.09-Toleranz (schließt ſ aus);
+Nachbar-Blob-Merge (heilt ſ nicht, schadet p). **Offen:** der ſ-Rückzug bleibt bei
+~0.76 — die *breite* Projektion (nötig für die Kollinearität von B/l/E/p/g) treibt
+ſ's eng benachbarte Doppelstamm-Pässe auseinander; ſ ist dennoch besser als die
+Baseline (0.407 → 0.373). Ein **eigener Rückzug-Straffer** (jede Einweg-Bahn auf
+eine Gerade fitten) wäre der nächste, separate Schritt — mit Risiko für t/f/k/q.

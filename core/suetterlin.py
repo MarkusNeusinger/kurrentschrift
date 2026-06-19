@@ -57,6 +57,13 @@ from scipy.spatial import cKDTree
 
 from core.chart import crop_with_mask, load_chart_grayscale
 from core.extract import binarize_adaptive, skeleton_and_width
+from core.geometry import (
+    acute_angle_between,
+    arc_length,
+    detect_crossing_passages,
+    fit_line_tls,
+    run_is_straight_residual,
+)
 
 # Deliberately shared with the pressure pipeline. `_split_raw_strokes` is the
 # single source of truth for pen-lift (Absetzen) splitting; `_resample_strokes`
@@ -104,6 +111,33 @@ MERGE_EXCESS_MIN_PX = 1.5
 # crossing test in `core.pipeline._resolve_crossing_widths`.
 CROSSING_MIN_ANGLE_DEG = 25.0
 CROSSING_MIN_ARC_FACTOR = 3.0
+
+# Straighten a through-stroke across a transversal crossing. The wide skeleton
+# junction where a loop crosses a stem (f/g/h/j/l/p/ſ) bends the snapped
+# centerline a few degrees / a fraction of a nib; the Gleichzug naturalness metric
+# reads that residual kink as a collinearity penalty (the stem should continue as
+# ONE line through the crossing). Crossings are found exactly as the metric finds
+# them — `detect_crossing_passages` (proximity + transversal angle), NOT the
+# width-based merge test above (which misses loop-over-stem junctions that are not
+# 2× wide). This runs LAST, on the verticalised anchors the metric splines, so the
+# straightening it does is not re-bent by a later stage (verticalising a partly-
+# straightened stem was what kinked d/k/p in earlier attempts). Mirrors
+# `core.quality_suetterlin.crossing_collinearity`.
+CROSS_PROX_FLOOR_UNITS = 0.10  # = metric PROX_FLOOR_UNITS
+CROSS_PROX_NIB_FACTOR = 3.0  # = metric PROX_NIB_FACTOR
+# Wider than the metric's own 0.35u fit window on purpose: over a longer run the
+# two approaches of a short straight zone bounded by curves (the d/p bowl-into-
+# stem) diverge enough to trip the angle gate below — the metric's finer spline
+# reads that case as curved → N/A, so straightening it would forge a scored kink.
+# A genuine long stem (f/g/l/ſ) stays under the angle gate over the same window, so
+# the loose straightness tol (which the ſ stem, bowed ~0.11 by its top hook, needs)
+# can stay; the angle-over-the-wider-window is what separates d from ſ, not the tol.
+CROSS_STRAIGHTEN_WINDOW_UNITS = 0.45  # arc each side of the blob fit + straightened
+CROSS_STRAIGHTEN_STRAIGHT_TOL = 0.12  # an approach bowed more than this over the window is a curve, not a stem
+CROSS_STRAIGHTEN_MAX_ANGLE_DEG = (
+    12.0  # approaches meeting at a sharper angle (over the window) are a curve, not one line
+)
+CROSS_STRAIGHTEN_EASE_UNITS = 0.12  # raised-cosine blend back to the untouched stroke at the window ends
 
 
 def _modal_half_width(values: np.ndarray) -> float | None:
@@ -541,6 +575,70 @@ def _verticalize_downstrokes(
     return out
 
 
+def _straighten_crossings(anchors: np.ndarray, stroke_starts: list[int], unit_px: float, r_px: float) -> np.ndarray:
+    """Pull each straight through-stroke onto ONE line across its transversal crossings.
+
+    Runs on the final, verticalised anchors (crop px) — the geometry the metric
+    splines — so nothing re-bends the result. Crossings are located across all
+    strokes at once (a stroke can cross another or itself far along its own path)
+    with the metric's `detect_crossing_passages`, so exactly the regions
+    `crossing_collinearity` scores are touched. For each crossed stroke run the two
+    approaches just outside the blob (within `CROSS_STRAIGHTEN_WINDOW` of arc) must
+    both be straight and meet at a small angle — a genuine straight pass continuing
+    through. When they do, one TLS line is fit through both approaches and the blob
+    + approaches are projected onto it (raised-cosine-eased back to the untouched
+    anchors at the window ends), so the stem runs straight through instead of
+    bending into the skeleton's junction node. A curved loop self-crossing fails
+    the straight/angle gate and is left untouched, so the coverage gate holds.
+    """
+    n = len(anchors)
+    if n < 5:
+        return anchors
+    out = anchors.astype(float).copy()
+    sample_starts = [int(s) for s in stroke_starts]
+    prox_px = max(CROSS_PROX_NIB_FACTOR * r_px, CROSS_PROX_FLOOR_UNITS * unit_px)
+    passages = detect_crossing_passages(
+        out[:, 0],
+        out[:, 1],
+        sample_starts,
+        prox_px=prox_px,
+        min_arc_factor=CROSSING_MIN_ARC_FACTOR,
+        min_angle_deg=CROSSING_MIN_ANGLE_DEG,
+    )
+    if not passages:
+        return anchors
+    window_px = CROSS_STRAIGHTEN_WINDOW_UNITS * unit_px
+    ease_px = max(1e-6, CROSS_STRAIGHTEN_EASE_UNITS * unit_px)
+    tol = CROSS_STRAIGHTEN_STRAIGHT_TOL
+    max_ang = np.deg2rad(CROSS_STRAIGHTEN_MAX_ANGLE_DEG)
+    for a, b, lo, hi, _partner in passages:
+        seg = out[a:b]  # a view — writes propagate back to `out`
+        arc = arc_length(seg)
+        lo_l, hi_l = lo - a, hi - a
+        before = seg[(arc < arc[lo_l]) & (arc >= arc[lo_l] - window_px)]
+        after = seg[(arc > arc[hi_l]) & (arc <= arc[hi_l] + window_px)]
+        if len(before) < 3 or len(after) < 3:
+            continue
+        if run_is_straight_residual(before) > tol or run_is_straight_residual(after) > tol:
+            continue
+        if acute_angle_between(fit_line_tls(before)[1], fit_line_tls(after)[1]) > max_ang:
+            continue
+        centroid, direction = fit_line_tls(np.vstack([before, after]))
+        # A near-vertical through-stem is straightened onto a TRUE vertical (what
+        # verticalisation wanted), not the slightly-tilted TLS fit — otherwise the
+        # projection would un-verticalise the stem (a verticality regression) while
+        # fixing collinearity. Off-vertical descenders (g/j) keep the fitted line.
+        if np.degrees(np.arctan2(abs(direction[0]), abs(direction[1]))) <= VERTICAL_ANGLE_DEG:
+            direction = np.array([0.0, 1.0])
+        region_lo, region_hi = arc[lo_l] - window_px, arc[hi_l] + window_px
+        for k in np.flatnonzero((arc >= region_lo) & (arc <= region_hi)):
+            proj = centroid + ((seg[k] - centroid) @ direction) * direction
+            edge = min(arc[k] - region_lo, region_hi - arc[k])
+            w = 1.0 if edge >= ease_px else 0.5 * (1.0 - np.cos(np.pi * edge / ease_px))
+            seg[k] = (1.0 - w) * seg[k] + w * proj
+    return out
+
+
 def canonical_suetterlin_from_path(
     raw_path: list[dict], bbox: dict, chart_path: str, glyph: str, position: str, n_anchors: int | None = None
 ) -> dict:
@@ -605,6 +703,11 @@ def canonical_suetterlin_from_path(
     # tangentially into it (a fillet). Loops/bowls fail the straightness test and
     # stay round. Done on the resampled anchors so the corner-knot indices hold.
     resampled_local = _verticalize_downstrokes(resampled_local, stroke_starts, unit_px, corner_anchors_idx)
+
+    # Last geometry step: run a straight stem/bar STRAIGHT through each transversal
+    # crossing (loop-over-stem in f/g/h/j/l/p/ſ), removing the few-degree kink the
+    # skeleton's junction node leaves. After verticalisation so nothing re-bends it.
+    resampled_local = _straighten_crossings(resampled_local, stroke_starts, unit_px, r_px)
     hw_px = np.full(len(resampled_local), r_px, dtype=float)
 
     # Image-space self-check: the Gleichzug naturalness metric (smoothness,
