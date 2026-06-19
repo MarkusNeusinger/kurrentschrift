@@ -89,8 +89,10 @@ function ScoreBreakdown({ quality }: { quality: QualityData }) {
           return (
             <Box key={r.key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Tooltip title={t.catHint[r.key]} placement="left">
+                {/* tabIndex so keyboard focus (not just hover) triggers the hint */}
                 <Typography
                   variant="caption"
+                  tabIndex={0}
                   sx={{ width: 78, flexShrink: 0, fontFamily: 'monospace', cursor: 'help' }}
                 >
                   {t.cat[r.key]}
