@@ -65,7 +65,7 @@ export function SlantStep({
             key={i}
             size="small"
             label={`${de.wizard.slant.lineChip} ${i + 1}`}
-            onDelete={guideVals.slantXs.length > 1 ? () => removeSlantLine(i) : undefined}
+            onDelete={() => removeSlantLine(i)}
             sx={{ borderColor: SLANT_COLOR }}
             variant="outlined"
           />

@@ -97,8 +97,9 @@ class GuideConfig(BaseModel):
     # backward compat as the single-line fallback when `slant_xs` is unset.
     slant_x: float | None = None
     # Baseline crossings of the slant guide lines (each individually draggable in
-    # the wizard). null/empty => fall back to a single line at `slant_x`. All
-    # lines share `slant_deg`.
+    # the wizard). null (never set) => the wizard falls back to a single line at
+    # `slant_x`; an explicit empty list means the user removed every line (0 lines
+    # is allowed). All lines share `slant_deg`.
     slant_xs: list[float] | None = None
     # Whether the ascender/descender rulers apply to this glyph.
     show_ascender: bool = True
