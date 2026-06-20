@@ -1,0 +1,9 @@
+/* GLKurrent — the "as-written" German cursive monogram face. In the app this is
+   declared at runtime by PaperBackground's GlobalStyles; we also ship it in the
+   global stylesheet so brand marks that use it (InfoHint's Kurrent "i") render
+   correctly in any design, not only on pages that mount PaperBackground. */
+@font-face {
+  font-family: 'GLKurrent';
+  src: url('../app/src/assets/fonts/gl-germancursive.woff2') format('woff2');
+  font-display: swap;
+}

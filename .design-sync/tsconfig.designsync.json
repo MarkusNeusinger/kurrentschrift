@@ -1,0 +1,20 @@
+{
+  "//": "design-sync ONLY. The converter's tsconfig-paths plugin matches a barrel directory at the empty-extension step before trying /index.ts, so bare directory imports (@/theme, @/locales, ...) would resolve to a directory and fail. We map every barrel under app/src to its index file explicitly, listed BEFORE the @/* wildcard so the specific rule wins. Non-barrel @/x/y imports fall through to @/* (which resolves files correctly). baseUrl points at app/ so ./src/* resolves from here.",
+  "compilerOptions": {
+    "baseUrl": "../app",
+    "paths": {
+      "@/components/BootStatus": ["./src/components/BootStatus/index.ts"],
+      "@/components/InfoHint": ["./src/components/InfoHint/index.ts"],
+      "@/components/PaperBackground": ["./src/components/PaperBackground/index.ts"],
+      "@/components/PublicFooter": ["./src/components/PublicFooter/index.ts"],
+      "@/components/PublicHeader": ["./src/components/PublicHeader/index.ts"],
+      "@/components/WrittenGlyph": ["./src/components/WrittenGlyph/index.ts"],
+      "@/lib/api": ["./src/lib/api/index.ts"],
+      "@/locales": ["./src/locales/index.ts"],
+      "@/routes": ["./src/routes/index.tsx"],
+      "@/sections/admin/setup-wizard": ["./src/sections/admin/setup-wizard/index.ts"],
+      "@/theme": ["./src/theme/index.ts"],
+      "@/*": ["./src/*"]
+    }
+  }
+}

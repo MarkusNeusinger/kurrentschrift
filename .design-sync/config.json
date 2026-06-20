@@ -1,0 +1,35 @@
+{
+  "pkg": "kurrentschrift-app",
+  "globalName": "KurrentschriftDS",
+  "shape": "package",
+  "projectId": "2f6a4b78-bdcf-4999-ac4d-01c7cef353ff",
+  "entry": "app/designsync-entry.tsx",
+  "tsconfig": "../.design-sync/tsconfig.designsync.json",
+  "readmeHeader": ".design-sync/conventions.md",
+  "guidelinesGlob": ["../docs/concepts/style-guide.md"],
+  "provider": { "component": "AppProviders" },
+  "extraFonts": [
+    "../.design-sync/glkurrent.css",
+    "node_modules/@fontsource/eb-garamond/400.css",
+    "node_modules/@fontsource/eb-garamond/400-italic.css",
+    "node_modules/@fontsource/eb-garamond/600.css",
+    "node_modules/@fontsource/playfair-display/400.css",
+    "node_modules/@fontsource/playfair-display/500.css",
+    "node_modules/@fontsource/playfair-display/500-italic.css",
+    "node_modules/@fontsource/playfair-display/600.css",
+    "node_modules/@fontsource/playfair-display/600-italic.css"
+  ],
+  "componentSrcMap": {
+    "BootStatus": "src/components/BootStatus/BootStatus.tsx",
+    "InfoHint": "src/components/InfoHint/InfoHint.tsx",
+    "PaperBackground": "src/components/PaperBackground/PaperBackground.tsx",
+    "PublicFooter": "src/components/PublicFooter/PublicFooter.tsx",
+    "PublicHeader": "src/components/PublicHeader/PublicHeader.tsx",
+    "WrittenGlyph": "src/components/WrittenGlyph/WrittenGlyph.tsx"
+  },
+  "overrides": {
+    "BootStatus": { "cardMode": "column" },
+    "PaperBackground": { "cardMode": "column" },
+    "PublicHeader": { "cardMode": "column" }
+  }
+}
