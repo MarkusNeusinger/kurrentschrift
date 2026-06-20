@@ -35,12 +35,19 @@ Spitze where an up- and a down-stroke nearly coincide:
   tail (worse when several merge depths coexist); the mode is not, because the
   lone single-stroke nib is still the single most-common width across the glyph.
 * Edge-following snap. Where the drawn point sits over a merged region (its
-  nearest skeleton pixel reads a half-width well above the nib radius) the two
-  passes must NOT collapse onto the shared centerline — the pen ran up the left
-  edge and back down the right. Each point is offset from the central skeleton
-  toward its own edge by (local half-width − nib radius), the side taken from
-  the drawn trace (the ductus prior). Single strokes (EDT ≈ nib) snap to the
-  centerline exactly as before; round stroke ends (EDT < nib) get no offset.
+  nearest skeleton pixel reads a half-width well above the nib radius) and the
+  two strokes run SIDE BY SIDE — a genuine sustained double, the pen up the left
+  edge and back down the right — they must NOT collapse onto the shared
+  centerline. Each point is offset from the central skeleton toward its own edge
+  by (local half-width − nib radius), the side taken from the drawn trace (the
+  ductus prior). The exception is the long ſ/t/k Spitze, where a thin diagonal and
+  the stem converge to a sharp tip: there the brief wide blob at the tip is a
+  tight anti-parallel retrace, and edge-splitting it (fed by the blob's wandering
+  width) only splays the two passes into an unnatural lens, so the offset is
+  SUPPRESSED (`_retrace_mask`) and the passes collapse onto the medial line into a
+  sharp point — matching the clean single-nib stem the chart crop actually shows.
+  Single strokes (EDT ≈ nib) snap to the centerline exactly as before; round
+  stroke ends (EDT < nib) get no offset.
 
 The drawn Weg therefore only supplies ORDER (and Absetzen): the geometry is
 locked to the ink, so a rough trace still yields a clean glyph. The output dict
@@ -50,6 +57,8 @@ frontend render contract (`anchors` / `half_widths` / `stroke_starts` /
 """
 
 from __future__ import annotations
+
+from collections.abc import Callable
 
 import numpy as np
 from scipy.ndimage import gaussian_filter1d
@@ -111,6 +120,16 @@ MERGE_EXCESS_MIN_PX = 1.5
 # crossing test in `core.pipeline._resolve_crossing_widths`.
 CROSSING_MIN_ANGLE_DEG = 25.0
 CROSSING_MIN_ARC_FACTOR = 3.0
+
+# Retrace (Spitze) vs. sustained-double discrimination (the ſ/t/k tip collapse;
+# see the module header and `_retrace_mask`). The run-length cap is the WHOLE
+# discriminator between a tip-retrace and a genuine sustained double: a tip/junction
+# bulge spans only a few nib and collapses to the medial line, whereas an n/m/r arch
+# beside its stem (or any long parallel double bar) extends for many nib and keeps
+# its edge offset. A straightness gate was tried as the arch-excluder and dropped —
+# the ſ/t/k tips themselves curve as the two strokes converge, so it wrongly spared
+# them (left t/k splayed); the run-length cap alone fixes ſ/t and regresses no arch.
+RETRACE_MAX_RUN_NIB = 12.0  # flagged runs longer than this (nib widths) are a sustained double, not a tip
 
 # Straighten a through-stroke across a transversal crossing. The wide skeleton
 # junction where a loop crosses a stem (f/g/h/j/l/p/ſ) bends the snapped
@@ -212,6 +231,48 @@ def _unit_tangents(points: np.ndarray) -> np.ndarray:
     return tangent / tnorm[:, None]
 
 
+def _flag_wide_passes(
+    centers: np.ndarray,
+    tangents: np.ndarray,
+    stroke_id: np.ndarray,
+    arc: np.ndarray,
+    hw_c: np.ndarray,
+    r_px: float,
+    accept: Callable[[float, float], bool],
+) -> np.ndarray:
+    """Flag each wide blob point that has a qualifying OTHER pass nearby.
+
+    The shared scan behind both `_crossing_mask` (transversal) and `_retrace_mask`
+    (anti-parallel): for every point whose EDT half-width is well above the nib,
+    look for another pass of the trace — a different stroke, or the same stroke far
+    enough along its own path that it is not just this point's neighbours — within
+    reach of the blob, and accept it by `accept(cross, dot)` where
+    `cross = |t_i × t_j|` (the sine of the turning angle) and `dot = t_i · t_j`. The
+    caller's predicate picks transversal (cross above the angle threshold) vs.
+    anti-parallel (cross below it and opposite heading).
+    """
+    n = len(centers)
+    flagged = np.zeros(n, dtype=bool)
+    wide = np.flatnonzero(hw_c - r_px > max(MERGE_EXCESS_MIN_PX, MERGE_EXCESS_FACTOR * r_px))
+    if n < 2 or wide.size == 0:
+        return flagged
+    tree = cKDTree(centers)
+    arc_scale = CROSSING_MIN_ARC_FACTOR * 2.0 * r_px
+    for i in wide:
+        radius = max(2.0 * r_px, hw_c[i] + r_px)
+        for j in tree.query_ball_point(centers[i], radius):
+            if j == i:
+                continue
+            other_pass = stroke_id[j] != stroke_id[i] or abs(arc[i] - arc[j]) > arc_scale
+            if not other_pass:
+                continue
+            cross = abs(tangents[i, 0] * tangents[j, 1] - tangents[i, 1] * tangents[j, 0])
+            if accept(cross, float(tangents[i] @ tangents[j])):
+                flagged[i] = True
+                break
+    return flagged
+
+
 def _crossing_mask(
     centers: np.ndarray, tangents: np.ndarray, stroke_id: np.ndarray, arc: np.ndarray, hw_c: np.ndarray, r_px: float
 ) -> np.ndarray:
@@ -225,27 +286,45 @@ def _crossing_mask(
     their edge offset is kept; an X- or +-crossing trips it and is suppressed so
     the stroke passes straight through at one nib thickness.
     """
-    n = len(centers)
-    flagged = np.zeros(n, dtype=bool)
-    excess = hw_c - r_px
-    wide = np.flatnonzero(excess > max(MERGE_EXCESS_MIN_PX, MERGE_EXCESS_FACTOR * r_px))
-    if n < 2 or wide.size == 0:
-        return flagged
-    tree = cKDTree(centers)
     sin_thr = np.sin(np.deg2rad(CROSSING_MIN_ANGLE_DEG))
-    arc_scale = CROSSING_MIN_ARC_FACTOR * 2.0 * r_px
-    for i in wide:
-        radius = max(2.0 * r_px, hw_c[i] + r_px)
-        for j in tree.query_ball_point(centers[i], radius):
-            if j == i:
-                continue
-            other_pass = stroke_id[j] != stroke_id[i] or abs(arc[i] - arc[j]) > arc_scale
-            if not other_pass:
-                continue
-            cross = abs(tangents[i, 0] * tangents[j, 1] - tangents[i, 1] * tangents[j, 0])
-            if cross > sin_thr:
-                flagged[i] = True
-                break
+    return _flag_wide_passes(centers, tangents, stroke_id, arc, hw_c, r_px, lambda cross, dot: cross > sin_thr)
+
+
+def _retrace_mask(
+    centers: np.ndarray, tangents: np.ndarray, stroke_id: np.ndarray, arc: np.ndarray, hw_c: np.ndarray, r_px: float
+) -> np.ndarray:
+    """Per-point flag: a wide blob here is a SHORT tight anti-parallel retrace (a Spitze tip).
+
+    A wide point (EDT well above the nib) is a tip-retrace when ANOTHER pass of the
+    trace — a different stroke, or the same stroke far enough along the path — comes
+    within reach of the blob and runs ANTI-PARALLEL (turning angle below
+    CROSSING_MIN_ANGLE_DEG and opposite heading). Such a point's edge offset is
+    suppressed so the two passes collapse onto the shared medial line into a sharp
+    tip instead of splaying to fake edges. The discriminator against a genuine
+    sustained double (an n/m/r arch beside its stem, a long parallel double bar) is
+    a final per-stroke pass that drops any flagged run longer than
+    `RETRACE_MAX_RUN_NIB` nib widths — only a short convergence/tip bulge collapses,
+    a long sustained one keeps its edge offset.
+    """
+    sin_thr = np.sin(np.deg2rad(CROSSING_MIN_ANGLE_DEG))
+    flagged = _flag_wide_passes(
+        centers, tangents, stroke_id, arc, hw_c, r_px, lambda cross, dot: cross <= sin_thr and dot < 0.0
+    )
+    # Drop flagged runs longer than the short-tip cap: a sustained anti-parallel
+    # double bar (genuinely two strokes) must keep its edge offset.
+    n = len(centers)
+    max_run_px = RETRACE_MAX_RUN_NIB * r_px
+    i = 0
+    while i < n:
+        if not flagged[i]:
+            i += 1
+            continue
+        j = i
+        while j + 1 < n and flagged[j + 1] and stroke_id[j + 1] == stroke_id[i]:
+            j += 1
+        if abs(arc[j] - arc[i]) > max_run_px:
+            flagged[i : j + 1] = False
+        i = j + 1
     return flagged
 
 
@@ -313,12 +392,14 @@ def _snap_strokes_to_skeleton(
 
     Each stroke is resampled to ~1px spacing and every sample pulled onto the
     medial axis — straight onto the centerline on a single stroke, out to its
-    own edge where two strokes have merged (`_apply_edge_offset`), straight
-    through where two strokes cross transversally (`_crossing_mask` suppresses
-    the offset). The result is a dense polyline tracing the ink (including
-    through corners), the geometry now the ink's, not the hand's. Crossing
-    detection needs every stroke at once (one pass can cross another), so the
-    dense snap-to-centre for all strokes happens first, then the offset.
+    own edge where two strokes have merged side by side (`_apply_edge_offset`),
+    straight through where two strokes cross transversally (`_crossing_mask`
+    suppresses the offset), and collapsed onto the shared medial line at a short
+    tight anti-parallel doubled stem (`_retrace_mask` suppresses the offset — the
+    ſ/t/k Spitze tip). The result is a dense polyline tracing the ink (including
+    through corners), the geometry now the ink's, not the hand's. Crossing/retrace
+    detection needs every stroke at once (one pass can cross or retrace another),
+    so the dense snap-to-centre for all strokes happens first, then the offset.
     Even resampling + corner detection happen afterwards in the shared
     `_resample_strokes`. Strokes collapsing to <2 points are dropped.
     """
@@ -353,14 +434,18 @@ def _snap_strokes_to_skeleton(
     if not dense:
         return [], r_px
 
-    # Pass 2 — flag transversal crossings across ALL strokes at once, so the
-    # offset is suppressed exactly where the wide blob is a Kreuzung.
+    # Pass 2 — flag, across ALL strokes at once, where the offset must be suppressed:
+    # a transversal crossing (Kreuzung — pass straight through) OR a short tight
+    # anti-parallel doubled stem (Spitze tip — collapse the two passes onto the
+    # shared medial line into a sharp point).
     centers_all = np.vstack([d["centers"] for d in dense])
     tangents_all = np.vstack([d["tangent"] for d in dense])
     hw_all = np.concatenate([d["hw_c"] for d in dense])
     arc_all = np.concatenate([d["arc"] for d in dense])
     sid_all = np.concatenate([np.full(len(d["pts"]), d["sid"]) for d in dense])
-    suppress_all = _crossing_mask(centers_all, tangents_all, sid_all, arc_all, hw_all, r_px)
+    suppress_all = _crossing_mask(centers_all, tangents_all, sid_all, arc_all, hw_all, r_px) | _retrace_mask(
+        centers_all, tangents_all, sid_all, arc_all, hw_all, r_px
+    )
 
     # Pass 3 — apply the edge offset per stroke (offset in merges, straight in
     # crossings), dedup, and drop strokes that collapse to <2 points.
