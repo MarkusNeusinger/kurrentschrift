@@ -10,6 +10,12 @@ Examples:
     # the four derivation stages of one glyph, side by side
     python -m tools.glyphlab i-initial --stages
 
+    # rendered-ink-vs-crop error map, zoomed to the tip region (under=blue, over=red)
+    python -m tools.glyphlab longs-final t-final --fill-diff --zoom-top 0.4
+
+    # sweep one tuning constant across values for ONE glyph (one column each)
+    python -m tools.glyphlab longs-final --sweep core.suetterlin.RETRACE_TAPER_NIB=0.5,1.0,1.5
+
     # the live (DB) trace instead of the frozen fixture (read-only)
     python -m tools.glyphlab i-initial --live --source suetterlin-1922
 
@@ -20,6 +26,7 @@ On WSL, point it at Windows to view: GLYPHLAB_OUT=/mnt/c/Users/<you>/Desktop/gly
 from __future__ import annotations
 
 import argparse
+import importlib
 from pathlib import Path
 
 from .cases import GlyphCase, fixture_case, iter_fixture_cases, live_case_sync
@@ -40,6 +47,71 @@ def _resolve_cases(args: argparse.Namespace) -> list[GlyphCase]:
     return [fixture_case(k, source_id=args.source) for k in args.keys]
 
 
+def _parse_sweep(spec: str) -> tuple[str, str, list[float]]:
+    """Parse `module.path.CONST=v1,v2,...` → (module_path, attr_name, [floats]).
+
+    The dotted path's last segment is the constant; everything before it is the
+    importable module. Values are parsed as floats (the only thing we tune here).
+    """
+    dotted, _, raw_values = spec.partition("=")
+    if not raw_values:
+        raise SystemExit(f"--sweep needs DOTTED.PATH=v1,v2,...; got {spec!r}")
+    module_path, _, attr = dotted.rpartition(".")
+    if not module_path or not attr:
+        raise SystemExit(f"--sweep path must be module.attr, got {dotted!r}")
+    try:
+        values = [float(v) for v in raw_values.split(",") if v.strip()]
+    except ValueError as exc:
+        raise SystemExit(f"--sweep values must be floats: {raw_values!r} ({exc})") from exc
+    if not values:
+        raise SystemExit(f"--sweep needs at least one value; got {raw_values!r}")
+    return module_path, attr, values
+
+
+def _run_sweep(args: argparse.Namespace, out_dir: Path | None) -> None:
+    """Render ONE glyph across several values of a module-level constant (columns).
+
+    The constant is patched in place, the glyph re-derived per value, then the
+    ORIGINAL value is always restored in a `finally` so the live module is left
+    untouched. Honours --fill-diff / --zoom-top styling for the panels.
+    """
+    if len(args.keys) != 1:
+        raise SystemExit("--sweep renders exactly ONE glyph key; give a single key")
+    module_path, attr, values = _parse_sweep(args.sweep)
+    module = importlib.import_module(module_path)
+    if not hasattr(module, attr):
+        raise SystemExit(f"--sweep: {module_path!r} has no attribute {attr!r}")
+    case = _resolve_cases(args)[0]
+
+    original = getattr(module, attr)
+    panels = []
+    try:
+        for value in values:
+            setattr(module, attr, value)
+            res = derive(case, n_anchors=args.n_anchors)
+            panels.append(
+                panel(
+                    res,
+                    title=f"{case.key} · {attr}={value:g}",
+                    style=args.style,
+                    silhouette=not args.no_silhouette,
+                    skeleton=not args.no_skeleton,
+                    scores=not args.no_scores,
+                    color=GREEN,
+                    fill_diff=args.fill_diff,
+                    zoom_top=args.zoom_top,
+                )
+            )
+    finally:
+        setattr(module, attr, original)  # never leave the patched constant behind
+
+    cols = args.cols or len(panels)
+    fig = figure(panels, cols=cols, dpi=args.dpi)
+    name = args.out or f"sweep_{case.key}_{attr}"
+    path = save(fig, name, out_dir=out_dir)
+    print(f"wrote {path}  ({len(panels)} panel(s))")
+
+
 def main() -> None:
     p = argparse.ArgumentParser(
         prog="glyphlab", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -53,6 +125,24 @@ def main() -> None:
         help="source id — used for --live AND to disambiguate a shared fixture key (default: suetterlin-1922)",
     )
     p.add_argument("--stages", action="store_true", help="show snap/smooth/resample/verticalize (Gleichzug only)")
+    p.add_argument(
+        "--fill-diff",
+        action="store_true",
+        help="error map: rendered ink vs crop ink (gray=correct, blue=under-fill, red=over-splay)",
+    )
+    p.add_argument(
+        "--zoom-top",
+        type=float,
+        default=None,
+        metavar="FRAC",
+        help="crop the view to the top FRAC of the glyph height (the tip region), e.g. 0.4",
+    )
+    p.add_argument(
+        "--sweep",
+        default=None,
+        metavar="DOTTED.PATH=v1,v2,...",
+        help="render ONE glyph across values of a module constant, e.g. core.suetterlin.RETRACE_TAPER_NIB=0.5,1.0,1.5",
+    )
     p.add_argument("--style", choices=["spline", "dots", "line"], default="spline", help="centerline style")
     p.add_argument("--no-silhouette", action="store_true", help="hide the filled stroke body")
     p.add_argument("--no-skeleton", action="store_true", help="hide the skeleton")
@@ -64,8 +154,12 @@ def main() -> None:
     p.add_argument("--out-dir", default=None, help="output directory (default: $GLYPHLAB_OUT or project temp/)")
     args = p.parse_args()
 
-    cases = _resolve_cases(args)
     out_dir = Path(args.out_dir) if args.out_dir else None
+    if args.sweep:
+        _run_sweep(args, out_dir)
+        return
+
+    cases = _resolve_cases(args)
     panels = []
 
     for case in cases:
@@ -82,6 +176,8 @@ def main() -> None:
                     skeleton=not args.no_skeleton,
                     scores=not args.no_scores,
                     color=GREEN,
+                    fill_diff=args.fill_diff,
+                    zoom_top=args.zoom_top,
                 )
             )
 
@@ -89,7 +185,13 @@ def main() -> None:
     # than one ultra-wide row that downscales each panel to a sliver.
     cols = args.cols or (4 if args.stages else min(3, len(panels)))
     fig = figure(panels, cols=cols, dpi=args.dpi)
-    name = args.out or ("stages_" + cases[0].key if args.stages else "glyphlab_" + "_".join(c.key for c in cases[:4]))
+    if args.out:
+        name = args.out
+    elif args.stages:
+        name = "stages_" + cases[0].key
+    else:
+        prefix = "filldiff_" if args.fill_diff else "glyphlab_"
+        name = prefix + "_".join(c.key for c in cases[:4])
     path = save(fig, name, out_dir=out_dir)
     print(f"wrote {path}  ({len(panels)} panel(s))")
 

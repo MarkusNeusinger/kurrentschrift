@@ -28,6 +28,7 @@ import numpy as np  # noqa: E402
 from matplotlib.patches import PathPatch  # noqa: E402
 from matplotlib.path import Path as MplPath  # noqa: E402
 
+from core.quality import silhouette_mask  # noqa: E402
 from core.template import build_sample_plan, capsule_union_rings, sample_with_sample_plan  # noqa: E402
 
 from .cases import REPO_ROOT  # noqa: E402
@@ -40,6 +41,12 @@ _SKEL = "#5aa0ff"
 _BASELINE = "#e09696"
 _MIDBAND = "#84cf84"
 _CORNER = "#000000"
+
+# fill-diff error map (RGBA): correct ink is gray, under-fill (render misses crop
+# ink) is blue, over-splay (render outside the crop ink) is red. Background white.
+_FILL_OK = [0.75, 0.75, 0.75, 1.0]
+_FILL_UNDER = [0.10, 0.30, 1.00, 1.0]
+_FILL_OVER = [1.00, 0.10, 0.10, 1.0]
 
 
 def _default_out_dir() -> Path:
@@ -64,6 +71,8 @@ class Panel:
     scores: bool = True  # draw the per-component quality breakdown (where the points went)
     color: str = GREEN
     annotate: list[tuple[float, float, str]] = field(default_factory=list)  # (x, y, text) callouts
+    fill_diff: bool = False  # render the rendered-vs-crop ink error map instead of the overlay
+    zoom_top: float | None = None  # crop the figure to the top FRAC of the bbox height (tip region)
 
 
 def panel(result: DeriveResult, **kwargs) -> Panel:
@@ -129,7 +138,55 @@ def _silhouette_patch(rings: list, color: str):
     return PathPatch(path, facecolor=color, edgecolor="none", alpha=0.22, zorder=2)
 
 
+def _zoom_ycut(height: int, zoom_top: float | None) -> int:
+    """Bottom y (exclusive) of the kept region for `--zoom-top FRAC`; full height if off.
+
+    Clamped to at least one row so a degenerate fraction never produces an empty crop.
+    """
+    if zoom_top is None:
+        return height
+    return max(1, min(height, int(round(height * zoom_top))))
+
+
+def _draw_fill_diff(ax, p: Panel) -> None:
+    """Error map of the rendered ink (production `silhouette_mask`) vs. the crop ink.
+
+    The render is what the metric scores, so this is exactly the fill the bench
+    sees. A defect that hides in a centerline view — an over-collapsed Spitze tip
+    that renders as a thin line where the crop is a wide wedge — shows here as a
+    band of under-fill. Pixels are coloured: correct (crop AND render) gray,
+    UNDER-fill (crop, no render) blue, over-splay (render, no crop) red. The
+    under/over counts go in the title (within the zoomed region, when zooming).
+    """
+    res = p.result
+    pred = silhouette_mask(
+        res.anchors_px, res.half_widths_px, res.stroke_starts, res.mask.shape, corner_anchors=res.corner_anchors
+    )
+    H, W = res.mask.shape
+    ycut = _zoom_ycut(H, p.zoom_top)
+    crop = res.mask[:ycut]
+    pr = pred[:ycut]
+
+    rgba = np.ones((ycut, W, 4))  # white background
+    rgba[crop & pr] = _FILL_OK
+    rgba[crop & ~pr] = _FILL_UNDER
+    rgba[pr & ~crop] = _FILL_OVER
+    ax.imshow(rgba, origin="upper", extent=(0, W, ycut, 0), interpolation="nearest", zorder=0)
+    ax.set_xlim(0, W)
+    ax.set_ylim(ycut, 0)
+    ax.set_aspect("equal")
+    ax.axis("off")
+
+    under = int(np.count_nonzero(crop & ~pr))
+    over = int(np.count_nonzero(pr & ~crop))
+    title = p.title or res.case.key
+    ax.set_title(f"{title}  under={under} over={over}", fontsize=8.5)
+
+
 def _draw(ax, p: Panel) -> None:
+    if p.fill_diff:
+        _draw_fill_diff(ax, p)
+        return
     res = p.result
     A = res.anchors_px if p.anchors is None else np.asarray(p.anchors, dtype=float)
     SS = res.stroke_starts if p.stroke_starts is None else p.stroke_starts
@@ -148,8 +205,11 @@ def _draw(ax, p: Panel) -> None:
     margin = 0.5 * W if caption else 0.0
     faint = np.clip(res.crop, 0, 1) * 0.6 + 0.4  # lighten the ink so overlays read on top
     ax.imshow(faint, cmap="gray", vmin=0, vmax=1, extent=(0, W, H, 0), interpolation="nearest", zorder=0)
+    # --zoom-top crops the view to the top fraction of the glyph (the tip region);
+    # matplotlib clips the overlay layers to the axis limits, so only ylim changes.
+    ycut = _zoom_ycut(H, p.zoom_top)
     ax.set_xlim(0, W + margin)
-    ax.set_ylim(H, 0)
+    ax.set_ylim(ycut, 0)
     ax.set_aspect("equal")
     ax.axis("off")
 
