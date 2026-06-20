@@ -25,9 +25,26 @@ python -m tools.glyphlab --all --style dots
 # the derivation stages of one glyph (snap → smooth → resample → verticalize)
 python -m tools.glyphlab i-initial --stages
 
+# error map: the rendered ink (what the metric scores) vs the crop ink, zoomed
+# to the tip region — gray = correct, blue = under-fill, red = over-splay. The
+# title carries the under/over pixel counts. Tips render at the TOP, so --zoom-top
+# FRAC keeps the top FRAC of the bbox height where centerline views hide defects.
+python -m tools.glyphlab longs-final t-final --fill-diff --zoom-top 0.4
+
+# sweep ONE module constant across values for a single glyph (one column each),
+# so a tuning constant's effect is visible at a glance. The constant is patched
+# in place, the glyph re-derived, then the original value always restored.
+python -m tools.glyphlab longs-final --sweep core.suetterlin.RETRACE_TAPER_NIB=0.5,1.0,1.5
+
 # the LIVE trace from the DB instead of the frozen fixture (read-only)
 python -m tools.glyphlab i-initial --live --source suetterlin-1922
 ```
+
+`--fill-diff` renders the error map on its own — it replaces the
+centerline/silhouette overlay (the blue/red map is the whole point), it does
+not draw on top of it. `--zoom-top` composes with any view (the fill-diff map
+or the default overlay). `--sweep` takes exactly one glyph key and honours
+`--fill-diff`/`--zoom-top` for its columns.
 
 Output PNGs go to `$GLYPHLAB_OUT`, else the project `temp/` dir (git-ignored);
 the path is printed. On WSL, point it at Windows to open the images directly:
