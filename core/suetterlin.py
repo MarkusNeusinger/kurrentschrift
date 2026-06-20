@@ -40,12 +40,14 @@ Spitze where an up- and a down-stroke nearly coincide:
   edge and back down the right — they must NOT collapse onto the shared
   centerline. Each point is offset from the central skeleton toward its own edge
   by (local half-width − nib radius), the side taken from the drawn trace (the
-  ductus prior). The exception is the long ſ/t/k Spitze, where a thin diagonal and
-  the stem converge to a sharp tip: there the brief wide blob at the tip is a
-  tight anti-parallel retrace, and edge-splitting it (fed by the blob's wandering
-  width) only splays the two passes into an unnatural lens, so the offset is
-  SUPPRESSED (`_retrace_mask`) and the passes collapse onto the medial line into a
-  sharp point — matching the clean single-nib stem the chart crop actually shows.
+  ductus prior). The exception is the ſ/t Spitze, where a thin diagonal and the
+  stem converge to a sharp tip: edge-splitting the wide tip blob (fed by its
+  wandering width) splays the two passes into an unnatural lens, but fully
+  collapsing them zips one line over the whole wedge and under-fills the ink. So
+  there the offset is DAMPED by the local width excess (`_retrace_offset_scale`):
+  ~0 at the apex (a sharp single-nib point, as the crop shows) and easing back to
+  the full edge offset as the wedge widens — the two passes splay out of the tip
+  in a clean V.
   Single strokes (EDT ≈ nib) snap to the centerline exactly as before; round
   stroke ends (EDT < nib) get no offset.
 
@@ -121,15 +123,32 @@ MERGE_EXCESS_MIN_PX = 1.5
 CROSSING_MIN_ANGLE_DEG = 25.0
 CROSSING_MIN_ARC_FACTOR = 3.0
 
-# Retrace (Spitze) vs. sustained-double discrimination (the ſ/t/k tip collapse;
-# see the module header and `_retrace_mask`). The run-length cap is the WHOLE
-# discriminator between a tip-retrace and a genuine sustained double: a tip/junction
-# bulge spans only a few nib and collapses to the medial line, whereas an n/m/r arch
-# beside its stem (or any long parallel double bar) extends for many nib and keeps
-# its edge offset. A straightness gate was tried as the arch-excluder and dropped —
-# the ſ/t/k tips themselves curve as the two strokes converge, so it wrongly spared
-# them (left t/k splayed); the run-length cap alone fixes ſ/t and regresses no arch.
-RETRACE_MAX_RUN_NIB = 12.0  # flagged runs longer than this (nib widths) are a sustained double, not a tip
+# Retrace (Spitze) — the ſ/t tip where the pen runs up and back down, the two
+# anti-parallel passes converging to a sharp point (see the module header and
+# `_retrace_offset_scale`). Two parameters shape it:
+#   • RETRACE_MAX_RUN_NIB gates WHERE the taper applies — only a short tip/junction
+#     bulge (a few nib of anti-parallel overlap) is a Spitze; an n/m/r arch beside
+#     its stem (or any long parallel double bar, e.g. the synthetic merged-double
+#     test) extends for many nib and keeps its full edge offset, untouched. A
+#     straightness gate was tried as the arch-excluder instead and dropped — the
+#     tips themselves curve as the two strokes converge, so it wrongly spared them.
+#   • RETRACE_TAPER_NIB shapes HOW the tip renders. A binary collapse (offset fully
+#     suppressed over the whole run) was tried and rejected: it zips the two passes
+#     onto one line for a long stretch and under-fills the widening ink wedge (the
+#     crop is one nib ONLY at the very apex). Instead the edge offset is DAMPED by
+#     the local width excess: scale = min(1, (hw − nib) / (RETRACE_TAPER_NIB·nib)).
+#     At the apex (excess ≈ 0) the passes collapse to a sharp point; as the wedge
+#     widens they splay back to the ink edges, reaching full offset at
+#     hw = (1 + RETRACE_TAPER_NIB)·nib. The value 1.0 sets that crossover at
+#     hw = 2·nib — exactly the width below which two offset nibs (each at ±excess
+#     from the centre, where here `nib` is the nib RADIUS) still
+#     overlap (no false interior hollow) and above which the crop genuinely hosts a
+#     gap: so the damp is precisely the solid-wedge regime and nowhere else. Visually
+#     confirmed against the crop (ſ/t): a sharp single-nib tip, then the diagonal and
+#     stem part into a clean V high up, matching the chart — neither the binary
+#     collapse's long zip nor a premature splay.
+RETRACE_MAX_RUN_NIB = 12.0  # nib radii (× r_px below); flagged runs longer than this are a sustained double, not a tip
+RETRACE_TAPER_NIB = 1.0  # edge offset reaches full strength once the width excess hits this many nib radii
 
 # Straighten a through-stroke across a transversal crossing. The wide skeleton
 # junction where a loop crosses a stem (f/g/h/j/l/p/ſ) bends the snapped
@@ -242,8 +261,8 @@ def _flag_wide_passes(
 ) -> np.ndarray:
     """Flag each wide blob point that has a qualifying OTHER pass nearby.
 
-    The shared scan behind both `_crossing_mask` (transversal) and `_retrace_mask`
-    (anti-parallel): for every point whose EDT half-width is well above the nib,
+    The shared scan behind both `_crossing_mask` (transversal) and
+    `_retrace_offset_scale` (anti-parallel): for every point whose EDT half-width is well above the nib,
     look for another pass of the trace — a different stroke, or the same stroke far
     enough along its own path that it is not just this point's neighbours — within
     reach of the blob, and accept it by `accept(cross, dot)` where
@@ -290,28 +309,29 @@ def _crossing_mask(
     return _flag_wide_passes(centers, tangents, stroke_id, arc, hw_c, r_px, lambda cross, dot: cross > sin_thr)
 
 
-def _retrace_mask(
+def _retrace_offset_scale(
     centers: np.ndarray, tangents: np.ndarray, stroke_id: np.ndarray, arc: np.ndarray, hw_c: np.ndarray, r_px: float
 ) -> np.ndarray:
-    """Per-point flag: a wide blob here is a SHORT tight anti-parallel retrace (a Spitze tip).
+    """Per-point edge-offset SCALE in [0, 1] for a Spitze tip (1.0 = full offset).
 
     A wide point (EDT well above the nib) is a tip-retrace when ANOTHER pass of the
     trace — a different stroke, or the same stroke far enough along the path — comes
     within reach of the blob and runs ANTI-PARALLEL (turning angle below
-    CROSSING_MIN_ANGLE_DEG and opposite heading). Such a point's edge offset is
-    suppressed so the two passes collapse onto the shared medial line into a sharp
-    tip instead of splaying to fake edges. The discriminator against a genuine
-    sustained double (an n/m/r arch beside its stem, a long parallel double bar) is
-    a final per-stroke pass that drops any flagged run longer than
-    `RETRACE_MAX_RUN_NIB` nib widths — only a short convergence/tip bulge collapses,
-    a long sustained one keeps its edge offset.
+    CROSSING_MIN_ANGLE_DEG and opposite heading). There the edge offset is DAMPED
+    toward zero so the two passes collapse onto the shared medial line into a sharp
+    tip instead of splaying to fake edges — but only near the apex: the damp eases
+    off with the local width excess (see `RETRACE_TAPER_NIB`) so the passes splay
+    back to the ink edges as the wedge widens, a clean V instead of a long zip. The
+    discriminator against a genuine sustained double (an n/m/r arch beside its stem,
+    a long parallel double bar) is a per-stroke pass that exempts any flagged run
+    longer than `RETRACE_MAX_RUN_NIB` nib radii — it keeps its full edge offset.
     """
     sin_thr = np.sin(np.deg2rad(CROSSING_MIN_ANGLE_DEG))
     flagged = _flag_wide_passes(
         centers, tangents, stroke_id, arc, hw_c, r_px, lambda cross, dot: cross <= sin_thr and dot < 0.0
     )
-    # Drop flagged runs longer than the short-tip cap: a sustained anti-parallel
-    # double bar (genuinely two strokes) must keep its edge offset.
+    # Exempt flagged runs longer than the short-tip cap: a sustained anti-parallel
+    # double bar (genuinely two strokes) must keep its full edge offset.
     n = len(centers)
     max_run_px = RETRACE_MAX_RUN_NIB * r_px
     i = 0
@@ -325,7 +345,12 @@ def _retrace_mask(
         if abs(arc[j] - arc[i]) > max_run_px:
             flagged[i : j + 1] = False
         i = j + 1
-    return flagged
+    # Damp the offset near the apex (small excess), restore it as the wedge widens.
+    scale = np.ones(n, dtype=float)
+    taper_px = max(RETRACE_TAPER_NIB * r_px, 1e-6)
+    excess = np.maximum(hw_c - r_px, 0.0)
+    scale[flagged] = np.clip(excess[flagged] / taper_px, 0.0, 1.0)
+    return scale
 
 
 def _apply_edge_offset(
@@ -335,6 +360,7 @@ def _apply_edge_offset(
     hw_c: np.ndarray,
     dist: np.ndarray,
     suppress: np.ndarray,
+    offset_scale: np.ndarray,
     cap_px: float,
     r_px: float,
 ) -> np.ndarray:
@@ -350,9 +376,11 @@ def _apply_edge_offset(
     (its lateral position relative to the centerline, the ductus prior), the
     magnitude from the ink. `suppress` marks transversal crossings — there the
     blob is a Kreuzung, not a merge, so the offset is skipped and the stroke
-    passes straight through at one nib thickness. Round stroke ends read EDT <
-    nib, so they get no offset. Beyond the (locally widened) cap the skeleton is
-    too far to trust, so the drawn point stands.
+    passes straight through at one nib thickness. `offset_scale` (in [0, 1], 1.0
+    everywhere except a Spitze tip) damps the offset toward the apex of a retrace
+    so the two passes form a sharp point, not a long zip (`_retrace_offset_scale`).
+    Round stroke ends read EDT < nib, so they get no offset. Beyond the (locally
+    widened) cap the skeleton is too far to trust, so the drawn point stands.
     """
     rel = points - centers
     along = (rel * tangent).sum(axis=1)
@@ -365,7 +393,7 @@ def _apply_edge_offset(
     snapped = centers.copy()
     if merged.any():
         unit = lateral[merged] / lat_norm[merged, None]
-        snapped[merged] = centers[merged] + excess[merged, None] * unit
+        snapped[merged] = centers[merged] + (excess[merged] * offset_scale[merged])[:, None] * unit
 
     # In a merged region the legitimate drawn point sits out at the ink edge,
     # i.e. up to one local half-width from the central skeleton — raise the cap
@@ -394,9 +422,9 @@ def _snap_strokes_to_skeleton(
     medial axis — straight onto the centerline on a single stroke, out to its
     own edge where two strokes have merged side by side (`_apply_edge_offset`),
     straight through where two strokes cross transversally (`_crossing_mask`
-    suppresses the offset), and collapsed onto the shared medial line at a short
-    tight anti-parallel doubled stem (`_retrace_mask` suppresses the offset — the
-    ſ/t/k Spitze tip). The result is a dense polyline tracing the ink (including
+    suppresses the offset), and tapered toward the shared medial line at a short
+    tight anti-parallel doubled stem (`_retrace_offset_scale` damps the offset to a
+    sharp tip — the ſ/t Spitze). The result is a dense polyline tracing the ink (including
     through corners), the geometry now the ink's, not the hand's. Crossing/retrace
     detection needs every stroke at once (one pass can cross or retrace another),
     so the dense snap-to-centre for all strokes happens first, then the offset.
@@ -434,31 +462,33 @@ def _snap_strokes_to_skeleton(
     if not dense:
         return [], r_px
 
-    # Pass 2 — flag, across ALL strokes at once, where the offset must be suppressed:
-    # a transversal crossing (Kreuzung — pass straight through) OR a short tight
-    # anti-parallel doubled stem (Spitze tip — collapse the two passes onto the
-    # shared medial line into a sharp point).
+    # Pass 2 — across ALL strokes at once, derive the two offset modifiers:
+    # `suppress_all` hard-skips the offset at a transversal crossing (Kreuzung —
+    # pass straight through), and `scale_all` damps it toward a short tight
+    # anti-parallel doubled stem's apex (Spitze tip — a sharp point, then a clean V).
     centers_all = np.vstack([d["centers"] for d in dense])
     tangents_all = np.vstack([d["tangent"] for d in dense])
     hw_all = np.concatenate([d["hw_c"] for d in dense])
     arc_all = np.concatenate([d["arc"] for d in dense])
     sid_all = np.concatenate([np.full(len(d["pts"]), d["sid"]) for d in dense])
-    suppress_all = _crossing_mask(centers_all, tangents_all, sid_all, arc_all, hw_all, r_px) | _retrace_mask(
-        centers_all, tangents_all, sid_all, arc_all, hw_all, r_px
-    )
+    suppress_all = _crossing_mask(centers_all, tangents_all, sid_all, arc_all, hw_all, r_px)
+    scale_all = _retrace_offset_scale(centers_all, tangents_all, sid_all, arc_all, hw_all, r_px)
 
     # Pass 3 — apply the edge offset per stroke (offset in merges, straight in
-    # crossings), dedup, and drop strokes that collapse to <2 points.
+    # crossings, tapered at a Spitze tip), dedup, and drop strokes that collapse to <2 points.
     snapped: list[np.ndarray] = []
     cursor = 0
     for d in dense:
         k = len(d["pts"])
         suppress = suppress_all[cursor : cursor + k]
+        scale = scale_all[cursor : cursor + k]
         cursor += k
         if tree is None:
             pts = d["pts"]
         else:
-            pts = _apply_edge_offset(d["pts"], d["tangent"], d["centers"], d["hw_c"], d["dist"], suppress, cap_px, r_px)
+            pts = _apply_edge_offset(
+                d["pts"], d["tangent"], d["centers"], d["hw_c"], d["dist"], suppress, scale, cap_px, r_px
+            )
         pts = _dedup(pts)
         if len(pts) >= 2:
             snapped.append(pts)
