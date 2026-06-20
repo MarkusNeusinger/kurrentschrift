@@ -40,9 +40,11 @@ python -m tools.glyphlab longs-final --sweep core.suetterlin.RETRACE_TAPER_NIB=0
 python -m tools.glyphlab i-initial --live --source suetterlin-1922
 ```
 
-`--fill-diff` and `--zoom-top` compose with each other and with the default
-centerline/silhouette overlay. `--sweep` takes exactly one glyph key and
-honours `--fill-diff`/`--zoom-top` for its columns.
+`--fill-diff` renders the error map on its own — it replaces the
+centerline/silhouette overlay (the blue/red map is the whole point), it does
+not draw on top of it. `--zoom-top` composes with any view (the fill-diff map
+or the default overlay). `--sweep` takes exactly one glyph key and honours
+`--fill-diff`/`--zoom-top` for its columns.
 
 Output PNGs go to `$GLYPHLAB_OUT`, else the project `temp/` dir (git-ignored);
 the path is printed. On WSL, point it at Windows to open the images directly:
