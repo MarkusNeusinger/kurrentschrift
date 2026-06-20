@@ -243,3 +243,13 @@ __marimo__/
 !app/src/lib/
 !app/src/lib/**
 /temp/
+
+# /design-sync (claude.ai/design system sync)
+#   Durable inputs under .design-sync/ ARE committed (config.json, NOTES.md,
+#   conventions.md, previews/, overrides/); everything below is regenerated
+#   build output, staged scripts, or machine-local state.
+/.ds-sync/
+/ds-bundle/
+/.design-sync/.cache/
+/.design-sync/learnings/
+/.design-sync/node_modules
