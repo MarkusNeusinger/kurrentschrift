@@ -139,7 +139,7 @@ def test_collinearity_no_crossing_is_not_applicable():
 # ------------------------------------------------------------------ retrace
 
 
-def _doubled_stem_samples():
+def _doubled_stem_samples() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Two close anti-parallel STRAIGHT passes (a doubled stem) + the crop bar they trace."""
     y = np.linspace(12.0, 88.0, 60)
     up = np.column_stack([np.full(60, 46.0), y])
