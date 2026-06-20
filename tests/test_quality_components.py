@@ -15,7 +15,7 @@ from core.quality_suetterlin import (
     centerline_smoothness,
     corner_crispness,
     crossing_collinearity,
-    retrace_parallelism,
+    retrace_fidelity,
     suetterlin_quality_for_glyph,
     suetterlin_quality_metrics,
     verticality,
@@ -139,22 +139,52 @@ def test_collinearity_no_crossing_is_not_applicable():
 # ------------------------------------------------------------------ retrace
 
 
-def test_retrace_parallel_even_gap_beats_diverging():
-    y = np.linspace(0.0, 100.0, 100)
-    up = np.column_stack([np.full(100, 48.0), y])
-    clean_down = np.column_stack([np.full(100, 52.0), y[::-1]])  # parallel, even 4px gap
-    diverging_down = np.column_stack([np.linspace(52.0, 64.0, 100), y[::-1]])  # gap widens
-    clean = np.vstack([up, clean_down])
-    diverge = np.vstack([up, diverging_down])
-    q_clean, n_clean = retrace_parallelism(clean[:, 0], clean[:, 1], [0], prox_px=20.0, unit_px=UNIT_PX, r_px=4.0)
-    q_div, n_div = retrace_parallelism(diverge[:, 0], diverge[:, 1], [0], prox_px=20.0, unit_px=UNIT_PX, r_px=4.0)
-    assert n_clean >= 3 and n_div >= 3
-    assert q_clean > q_div
-    assert q_clean > 0.9
+def _doubled_stem_samples() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Two close anti-parallel STRAIGHT passes (a doubled stem) + the crop bar they trace."""
+    y = np.linspace(12.0, 88.0, 60)
+    up = np.column_stack([np.full(60, 46.0), y])
+    down = np.column_stack([np.full(60, 54.0), y[::-1]])  # ~2-nib gap, anti-parallel, straight
+    sx = np.r_[up[:, 0], down[:, 0]]
+    sy = np.r_[up[:, 1], down[:, 1]]
+    mask = np.zeros((100, 100), dtype=bool)
+    mask[10:90, 40:60] = True  # the merged double-stroke ink (a 20px-wide bar)
+    return sx, sy, mask
+
+
+def test_retrace_fidelity_filled_beats_underfilled():
+    """The render that FILLS the traced ink beats one that under-fills it (collapse/lens).
+
+    The v2 retrace term is crop-referenced: a faithful render of the doubled stem
+    covers the bar; a thin central line (the over-collapse the user rejected) leaves
+    the bar's sides unrendered and must score lower. This pins the 2026-06-20
+    re-baseline that inverted the old parallelism reward (coincident passes = perfect).
+    """
+    sx, sy, mask = _doubled_stem_samples()
+    filled = np.zeros((100, 100), dtype=bool)
+    filled[10:90, 40:60] = True  # covers the whole bar
+    thin = np.zeros((100, 100), dtype=bool)
+    thin[10:90, 48:52] = True  # collapsed: a thin central line, misses the bar's sides
+    q_filled, n_filled = retrace_fidelity(
+        sx, sy, [0], prox_px=20.0, unit_px=UNIT_PX, r_px=4.0, mask=mask, pred_mask=filled
+    )
+    q_thin, n_thin = retrace_fidelity(sx, sy, [0], prox_px=20.0, unit_px=UNIT_PX, r_px=4.0, mask=mask, pred_mask=thin)
+    assert n_filled >= 3 and n_thin >= 3
+    assert q_filled > q_thin
+    assert q_filled > 0.9
 
 
 def test_retrace_not_applicable_for_a_single_pass():
-    q, n = retrace_parallelism(np.full(80, 5.0), np.linspace(0, 100, 80), [0], prox_px=20.0, unit_px=UNIT_PX, r_px=4.0)
+    blank = np.zeros((100, 100), dtype=bool)
+    q, n = retrace_fidelity(
+        np.full(80, 5.0),
+        np.linspace(0, 100, 80),
+        [0],
+        prox_px=20.0,
+        unit_px=UNIT_PX,
+        r_px=4.0,
+        mask=blank,
+        pred_mask=blank,
+    )
     assert n == 0
     assert q == 1.0
 
@@ -166,15 +196,21 @@ def test_retrace_excludes_passes_not_straight_over_a_stem_length():
     same two passes, now curved (so each bows out of tolerance over the stem-length
     window — like the n-like `e`'s arch limbs, which are anti-parallel and close but are
     one curve, not an out-and-back), drop to N/A. This pins the 2026-06-18 re-baseline
-    that killed the `e` retrace false fire.
+    that killed the `e` retrace false fire (kept across the 2026-06-20 fidelity rework).
     """
+    bar = np.zeros((100, 100), dtype=bool)
+    bar[0:100, 42:58] = True  # ink under the straight stem, so the region is non-empty (else N/A)
     y = np.linspace(0.0, 100.0, 120)
     stem = np.vstack([np.column_stack([np.full(120, 48.0), y]), np.column_stack([np.full(120, 52.0), y[::-1]])])
-    _, n_stem = retrace_parallelism(stem[:, 0], stem[:, 1], [0], prox_px=20.0, unit_px=UNIT_PX, r_px=4.0)
+    _, n_stem = retrace_fidelity(
+        stem[:, 0], stem[:, 1], [0], prox_px=20.0, unit_px=UNIT_PX, r_px=4.0, mask=bar, pred_mask=bar
+    )
     assert n_stem >= 3
     bow = 12.0 * np.sin(2.0 * np.pi * y / 60.0)  # curved passes — not straight over a stem length
     arch = np.vstack([np.column_stack([48.0 + bow, y]), np.column_stack([52.0 + bow, y[::-1]])])
-    _, n_arch = retrace_parallelism(arch[:, 0], arch[:, 1], [0], prox_px=20.0, unit_px=UNIT_PX, r_px=4.0)
+    _, n_arch = retrace_fidelity(
+        arch[:, 0], arch[:, 1], [0], prox_px=20.0, unit_px=UNIT_PX, r_px=4.0, mask=bar, pred_mask=bar
+    )
     assert n_arch == 0
 
 
