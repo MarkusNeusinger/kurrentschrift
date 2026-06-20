@@ -139,14 +139,15 @@ CROSSING_MIN_ARC_FACTOR = 3.0
 #     the local width excess: scale = min(1, (hw − nib) / (RETRACE_TAPER_NIB·nib)).
 #     At the apex (excess ≈ 0) the passes collapse to a sharp point; as the wedge
 #     widens they splay back to the ink edges, reaching full offset at
-#     hw = (1 + TAPER)·nib. TAPER = 1.0 sets that crossover at hw = 2·nib — exactly
-#     the width below which two offset nibs (each at ±excess from the centre) still
+#     hw = (1 + RETRACE_TAPER_NIB)·nib. The value 1.0 sets that crossover at
+#     hw = 2·nib — exactly the width below which two offset nibs (each at ±excess
+#     from the centre, where here `nib` is the nib RADIUS) still
 #     overlap (no false interior hollow) and above which the crop genuinely hosts a
 #     gap: so the damp is precisely the solid-wedge regime and nowhere else. Visually
 #     confirmed against the crop (ſ/t): a sharp single-nib tip, then the diagonal and
 #     stem part into a clean V high up, matching the chart — neither the binary
 #     collapse's long zip nor a premature splay.
-RETRACE_MAX_RUN_NIB = 12.0  # flagged runs longer than this (nib widths) are a sustained double, not a tip
+RETRACE_MAX_RUN_NIB = 12.0  # nib radii (× r_px below); flagged runs longer than this are a sustained double, not a tip
 RETRACE_TAPER_NIB = 1.0  # edge offset reaches full strength once the width excess hits this many nib radii
 
 # Straighten a through-stroke across a transversal crossing. The wide skeleton
@@ -323,7 +324,7 @@ def _retrace_offset_scale(
     back to the ink edges as the wedge widens, a clean V instead of a long zip. The
     discriminator against a genuine sustained double (an n/m/r arch beside its stem,
     a long parallel double bar) is a per-stroke pass that exempts any flagged run
-    longer than `RETRACE_MAX_RUN_NIB` nib widths — it keeps its full edge offset.
+    longer than `RETRACE_MAX_RUN_NIB` nib radii — it keeps its full edge offset.
     """
     sin_thr = np.sin(np.deg2rad(CROSSING_MIN_ANGLE_DEG))
     flagged = _flag_wide_passes(
