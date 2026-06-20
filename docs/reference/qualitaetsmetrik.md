@@ -201,7 +201,7 @@ bestraft.
 | Vertikalität | 0.25 | RMS-Horizontalwander gerader Senkrechtläufe | ein Senkrechtlauf existiert |
 | Eckenschärfe | 0.20 | Geradheit der beiden Anläufe an die Kehre (Apex ausgenommen) | eine Within-Stroke-Ecke existiert |
 | Kollinearität | 0.15 | gerader Strich durch eine Kreuzung: Gerade vor/nach identisch (δθ, δd) | echte Gerade-kreuzt-Gerade |
-| Rückzug | 0.10 | zwei deckungsgleiche Pässe bleiben parallel (das s/t hin-und-zurück) | echter Rückzug: beide Pässe über **Stammlänge** gerade |
+| Rückzug | 0.10 | **Treue (v2)**: wie viel der Tinte im Rückzugs-Gebiet das Rendering FÜLLT (Recall) — Über-Kollaps und Linse lassen Tinte ungefüllt → niedrig, ein sauberes V füllt → hoch | echter Rückzug: beide Pässe über **Stammlänge** gerade |
 
 **Anwendbarkeits-Gates (zentral):** Kollinearität und Rückzug feuern in
 Sütterlin-Kleinbuchstaben fast nie, weil es dort kaum echte Gerade-
@@ -213,22 +213,26 @@ laufen, die über eine **stammlange** Fensterlänge gerade sind
 (`RETRACE_STEM_WINDOW_UNITS` = 0.45, `…_TOL` = 0.10): so fällt der
 n-artige **e**-Doppelbogen raus — seine beiden anti-parallelen Hälften
 sind über kurze Strecke gerade, biegen sich aber über Stammlänge (das
-killte den e-Fehlfeuer im Re-Baseline 2026-06-18). Eine Schleife, die nur
-einen Stamm streift (b/g/l), ist zwar gerade *und* deckungsgleich, aber
-ihre beiden Pässe stehen bei einem **Winkel > 15°** zueinander → vom
-Winkel-Apply-Gate (`RETRACE_APPLY_ANGLE_DEG` = 15°) ausgeschlossen. Ein Term, der nicht anwendbar ist, fällt aus dem
-gewichteten Mittel (renormiert).
+killte den e-Fehlfeuer im Re-Baseline 2026-06-18). Über diese Geradheits-
+plus Spalt-Gates (`RETRACE_MAX_GAP_NIB`) feuert der Term nur auf f/k/ſ/q —
+b/g/l/h (Schleife streift Stamm) fallen schon an der Stammlängen-Geradheit
+heraus. Der frühere **Winkel-Apply-Gate** (`RETRACE_APPLY_ANGLE_DEG`)
+diente nur dem alten Parallelitäts-Signal und ist mit der Treue-v2 (s.u.)
+entfallen: ein divergierendes sauberes V ist genau das, was die Treue
+*belohnt*, nicht ausschließt. Ein Term, der nicht anwendbar ist, fällt aus
+dem gewichteten Mittel (renormiert).
 
-**Messboden / Anti-Gaming:** Die Natürlichkeitsterme sind referenzfrei —
-robust gegen Scan-Pixelung (genau der Punkt). Ein Verstecken von
-Features (um den Term zu umgehen) verhindert das Deckungs-Tor: die
-Sütterlin-Ableitung ist skelettgelockt (`core/suetterlin.py` snappt auf
-die Medial-Achse), und `Q_geo`/`Q_chamfer` bestrafen jedes Abdriften.
+**Messboden / Anti-Gaming:** Vier Terme (Glätte, Vertikalität, Ecke,
+Kollinearität) sind referenzfrei — robust gegen Scan-Pixelung (genau der
+Punkt). Der fünfte, **Rückzug-Treue (v2)**, ist der eine *crop-referenzierte*
+Term: die Spitzen-Treue ist auf dem Centerline allein unsichtbar (ein
+deckungsgleicher Über-Kollaps ist makellos glatt + parallel), gegen den Scan
+aber offensichtlich. Ein Verstecken von Features verhindert ohnehin das
+Deckungs-Tor: die Ableitung ist skelettgelockt (`core/suetterlin.py` snappt
+auf die Medial-Achse), und `Q_geo`/`Q_chamfer` bestrafen jedes Abdriften.
 Ein Skelett-Präsenz-Orakel (Term = 0, wenn die Tinte das Feature hat,
 das Rendering nicht) ist die v2-Härtung für einen *nicht* skelett-
-gelockten Generator — bewusst zurückgestellt. Ebenfalls v2: die volle
-Spitzen-Schärfe + die legitime ~2×-Silhouette beim Rückzug (brauchen die
-Medial-Achse des *gerenderten* Bildes).
+gelockten Generator — bewusst zurückgestellt.
 
 **Kalibrierung (Mensch-im-Loop, gegen die 60 gesperrten Glyphen):**
 Konstanten sind so getunt, dass die Metrik-Rangfolge der menschlichen
@@ -299,3 +303,46 @@ Nachbar-Blob-Merge (heilt ſ nicht, schadet p). **Offen:** der ſ-Rückzug bleib
 ſ's eng benachbarte Doppelstamm-Pässe auseinander; ſ ist dennoch besser als die
 Baseline (0.407 → 0.373). Ein **eigener Rückzug-Straffer** (jede Einweg-Bahn auf
 eine Gerade fitten) wäre der nächste, separate Schritt — mit Risiko für t/f/k/q.
+
+### Re-Baseline 2026-06-20 — Rückzug-Treue + lokales Geo-Totband
+
+**Bewusste Metrik-Re-Baseline (kein `/optimize-glyphs`-Lauf):** die §1–§4-/Phase-B-Zahlen
+sind hierüber **nicht** vergleichbar. Anlass: der gerenderte Spitzen-Tip von ſ/t sah trotz
+guter Metrik unnatürlich aus (PR #105 ersetzte den binären Tip-Kollaps durch einen
+*getaperten* Offset — scharfe Spitze, dann sauberes V). Die alte Metrik **belohnte den
+Über-Kollaps**: zwei deckungsgleiche Pässe sind perfekt parallel (Rückzug-q→1) *und* bleiben
+auf der Medial-Achse (Geo-Tor hoch) — genau die „2 Linien perfekt übereinander". Zwei
+pro-Kollaps-Signale wurden gefixt:
+
+1. **Rückzug: Parallelität → Treue.** `retrace_parallelism` → `retrace_fidelity`: statt des
+   Winkels zwischen den Pässen misst der Term den **Recall des Renderings gegen die Crop-Tinte**
+   im Rückzugs-Gebiet (Pixel innerhalb `RETRACE_REGION_RADIUS_NIB` = 2.5·nib der geraden+nahen
+   Paare). Über-Kollaps verfehlt die Keil-Flanken, eine Linse die feste Mitte — beide → niedrig;
+   ein treues V → hoch. Behebt zugleich die **k/q-Blindheit** (ihre kurzen Tips lasen früher
+   `retr 0.000` egal was gerendert wurde; jetzt anwendbar + korrekt bewertet). Kein neues
+   Fehlfeuer (gleiche f/k/ſ/q-Fläche). ſ-Rückzug **0.806 → 0.135** (auf dem korrekten Taper-Render).
+2. **Geo-Tor: lokales Totband.** `geo_db_rmse` bestrafte jeden Sample fürs Verlassen der
+   Medial-Achse — also den *legitimen* Kantenversatz im verschmolzenen Gebiet, womit das Tor den
+   Kollaps belohnte. Fix: das Totband ist nun **lokal** = `max(DEAD_BAND_PX, lokale_Skelett-Halbbreite −
+   nib)` (die Halbbreite am nächsten Skelettpunkt aus `width_map`). Auf einem Einzelstrich ist die
+   Skelett-Halbbreite ≈ nib → Totband = `DEAD_BAND_PX`, **nichts ändert sich**; nur verschmolzene
+   Gebiete (Spitzen-Doppelstamm, Schlaufe-über-Stamm) verzeihen den Versatz bis zum Merge-Überschuss.
+
+Damit bevorzugt die Metrik den korrekten Render: ſ Taper-`loss` **0.112 < 0.128** Binär-Kollaps
+(vorher umgekehrt). **Bekannte Grenze — t:** t's kurzer, gebogener Tip fällt am Stammlängen-
+Geradheits-Gate heraus (N/A, wie der e-Bogen, das Gate muss eng bleiben), und der Kollaps *glättet*
+zudem t's Centerline (bessere Glätte/Vertikalität/Ecke) — die Metrik bevorzugt für t den Kollaps
+noch knapp (~0.012). Ein Lockern des Geradheits-Gates fängt t nicht (Rückzug-Gewicht 0.10 zu klein,
+und es addiert kleine e/K/p-Strafen) → bewusst nicht getan; t's Rest-Bias ist ein tieferes
+Glätte/Ecken-Thema (der Term belohnt das Weglassen einer echten Kehre) für einen späteren Schritt.
+
+**Neue Baseline (35 deduplizierte Glyphen, 2026-06-20):**
+
+| `bench_loss` | Glätte | Vertik. | Ecke | Kollin. | Rückzug | Deckung |
+|---|---|---|---|---|---|---|
+| **0.1865** | 0.126 | 0.058 | 0.073 | 0.055 | 0.008 | 0.184 |
+
+ſ fällt auf 0.112 (war als Härtester gestartet); Deckung sinkt netto (0.191 → 0.184), weil das
+lokale Totband den legitimen Kantenversatz auch an Schlaufen-Kreuzungen (b/d/g/o…) nicht mehr
+bestraft. Tests: `tests/test_quality_components.py` pinnt jetzt **Treue füllt > unterfüllt** statt
+parallel > divergent. `core/quality_suetterlin.py` + `core/geometry.py` bleiben im Loop eingefroren.

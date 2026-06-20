@@ -21,11 +21,15 @@ is built in two tiers:
   `G ∈ [0, 1]` that *multiplies* the score, so a smooth glyph in the wrong place
   cannot score well.
 
-* **Naturalness = the discriminator (reference-free).** Measured on the rendered
+* **Naturalness = the discriminator.** Four terms are measured on the rendered
   centerline alone — robust to scan pixelation by construction: curve smoothness
-  (no Zacken), verticality of straight downstrokes, corner crispness, collinearity
-  of a stroke through a crossing, and (v1) parallelism of a retrace's two passes.
-  Each term is a 0–1 quality; the weighted mean over the *applicable* terms is `N`.
+  (no Zacken), verticality of straight downstrokes, corner crispness, and
+  collinearity of a stroke through a crossing. The fifth, (v2) retrace fidelity,
+  is the one crop-referenced term: it asks how well a retrace's rendered silhouette
+  FILLS the crop ink it traces (see `retrace_fidelity`) — because the failure it
+  guards (an over-collapsed Spitze tip, a lens) is invisible on the centerline but
+  obvious against the chart. Each term is a 0–1 quality; the weighted mean over the
+  *applicable* terms is `N`.
 
 `score = 100 · G**GATE_EXPONENT · N`, `loss = 1 − score/100` — same headline keys
 and 0–100 / `1−score/100` contract as the Kurrent metric, so the glyph bench reads
@@ -69,7 +73,6 @@ from core.geometry import (
     point_line_perp_distance,
     run_is_straight_residual,
     stroke_bounds,
-    unit_tangents,
 )
 from core.quality import (
     QUALITY_N_SAMPLES,
@@ -85,7 +88,7 @@ W_SMOOTH = 0.30  # Zacken-freeness — the most universal naturalness cue, alway
 W_VERT = 0.25  # straight downstrokes truly vertical
 W_CORNER = 0.20  # corner reversals crisp, not rounded
 W_CROSS = 0.15  # a stroke stays collinear through a crossing
-W_RETRACE = 0.10  # an out-and-back retrace's two passes stay parallel (v1)
+W_RETRACE = 0.10  # an out-and-back retrace's render FILLS the crop ink it traces (fidelity, v2)
 
 # --- decays (each maps a non-negative penalty to a 0–1 quality via exp(−·)) ---
 SMOOTH_DECAY = 0.6  # mean |Δ²κ̂| (curvature 2nd difference) per step; calibration target
@@ -94,7 +97,6 @@ VERT_DECAY = 0.02  # RMS horizontal wander of a "vertical" run, in x-heights
 CORNER_STRAIGHT_DECAY = 0.5  # straightness residual of a corner's two approaches (looser; clean ≈ 0.9)
 CROSS_ANG_DECAY = 0.10  # rad (~5.7°) — direction mismatch across a crossing
 CROSS_OFF_DECAY = 0.03  # x-heights — lateral offset of the two fitted lines
-RETRACE_ANG_DECAY = 0.10  # rad — non-parallelism of the two retrace passes
 
 # --- coverage gate (reference-anchored, with a pixelation dead-band) ---
 DEAD_BAND_PX = 0.75  # boundary/centerline disagreement below this is free (scan jaggedness)
@@ -134,7 +136,7 @@ PROX_FLOOR_UNITS = 0.10  # crossing/retrace proximity floor (x-heights)
 PROX_NIB_FACTOR = 3.0  # …or this multiple of the nib radius, whichever is larger
 MIN_RETRACE_PAIRS = 3  # fewer matched pairs than this is a coincidental touch, not a retrace
 RETRACE_MAX_GAP_NIB = 2.5  # the two passes must be within this many nib widths (genuinely the same ink)
-RETRACE_APPLY_ANGLE_DEG = 15.0  # passes diverging beyond this aren't an out-and-back retrace → N/A
+RETRACE_REGION_RADIUS_NIB = 2.5  # the retrace's crop-fidelity is judged within this many nib radii of its samples
 
 
 def centerline_smoothness(
@@ -353,23 +355,38 @@ def _locally_straight_mask(
     return ok
 
 
-def retrace_parallelism(
-    sx: np.ndarray, sy: np.ndarray, sample_starts: Sequence[int] | None, prox_px: float, unit_px: float, r_px: float
+def retrace_fidelity(
+    sx: np.ndarray,
+    sy: np.ndarray,
+    sample_starts: Sequence[int] | None,
+    prox_px: float,
+    unit_px: float,
+    r_px: float,
+    *,
+    mask: np.ndarray,
+    pred_mask: np.ndarray,
 ) -> tuple[float, int]:
-    """Quality (0–1) that an out-and-back retrace's two STRAIGHT passes stay parallel (v1).
+    """Quality (0–1) that an out-and-back retrace's render FILLS the crop ink it traces (v2).
 
-    Returns `(quality, n_pairs)`. The two anti-parallel passes of an `s`/`f`/`t`
-    retrace should run *parallel* — the user's "die Linien laufen auseinander"
-    (the passes spread) is exactly non-parallelism, so the acute angle between a
-    pass's tangent and its matched opposite tangent is the v1 signal. A pair is a
-    genuine retrace only if BOTH passes are straight over a stem-length window
-    (`RETRACE_STEM_WINDOW_UNITS` — long enough that a curved arch limb bows out of
-    tolerance, so the n-like `e`'s two anti-parallel limbs are excluded, not just a
-    loop-graze) AND the two passes are within `RETRACE_MAX_GAP_NIB` nib widths of
-    each other (the pen went back over the SAME ink). The angle apply-gate then drops
-    a loop side merely grazing a stem (the l/b/g loop — straight but at >15°). The
-    Spitze (tip) sharpness and verifying the legitimate ~2× silhouette width are a
-    v2 concern (they need the medial axis of the *rendered* silhouette).
+    Returns `(quality, n_pairs)`. The v1 term scored *parallelism* of the two
+    anti-parallel passes — but that rewards exactly the wrong thing: collapsing both
+    passes onto one coincident line is perfectly parallel yet renders a single nib
+    where the chart shows a wider tip wedge (the user's "die 2 Linien liegen perfekt
+    übereinander"), and a clean Spitze that opens into a V is *non*-parallel yet
+    correct. Both lens/rails and over-collapse leave crop ink unrendered, so the
+    honest signal is fidelity: of the crop ink within the retrace's neighbourhood,
+    how much does the rendered silhouette actually cover (recall)? An over-collapse
+    misses the wedge sides, a lens misses the solid middle — both score low; a
+    faithful V scores high. This needs the crop and the render, so it is computed
+    here against `mask`/`pred_mask` rather than on the centerline alone.
+
+    A pair is part of the retrace only if BOTH passes are straight over a stem-length
+    window (`RETRACE_STEM_WINDOW_UNITS` — long enough that a curved arch limb bows out
+    of tolerance, so the n-like `e`'s anti-parallel limbs are excluded, not just a
+    loop-graze) AND within `RETRACE_MAX_GAP_NIB` nib widths of each other (the pen went
+    back over the SAME ink). The fidelity is then measured over the crop ink within
+    `RETRACE_REGION_RADIUS_NIB` of those kept samples. Unlike v1 there is no parallelism
+    apply-gate — a diverging clean V is exactly what we want to credit, not exclude.
     """
     idx, partner = detect_retrace_pairs(
         sx,
@@ -390,18 +407,22 @@ def retrace_parallelism(
     idx, partner = idx[keep], partner[keep]
     if len(idx) < MIN_RETRACE_PAIRS:
         return 1.0, 0
-    tang = np.zeros((len(pts), 2))
-    for a, b in stroke_bounds(len(pts), sample_starts):
-        if b - a >= 2:
-            tang[a:b] = unit_tangents(pts[a:b])
-    angles = np.array([acute_angle_between(tang[i], tang[j]) for i, j in zip(idx, partner, strict=True)])
-    # Applicability: a genuine retrace's passes are roughly parallel to begin
-    # with. Pairs beyond RETRACE_APPLY_ANGLE are a loop side merely grazing a
-    # stem (l/b/h), not an out-and-back — drop them; if too few remain, N/A.
-    apply = angles <= np.deg2rad(RETRACE_APPLY_ANGLE_DEG)
-    if int(apply.sum()) < MIN_RETRACE_PAIRS:
+
+    # Region = crop pixels within RETRACE_REGION_RADIUS_NIB of any kept retrace sample.
+    h, w = mask.shape
+    sample_pts = np.unique(np.concatenate([idx, partner]))
+    ys = np.clip(np.rint(pts[sample_pts, 1]).astype(int), 0, h - 1)
+    xs = np.clip(np.rint(pts[sample_pts, 0]).astype(int), 0, w - 1)
+    seed = np.zeros((h, w), dtype=bool)
+    seed[ys, xs] = True
+    region = distance_transform_edt(~seed) <= RETRACE_REGION_RADIUS_NIB * max(r_px, 1e-6)
+
+    crop_here = mask & region
+    denom = int(crop_here.sum())
+    if denom == 0:
         return 1.0, 0
-    return float(np.exp(-float(np.mean(angles[apply])) / RETRACE_ANG_DECAY)), int(apply.sum())
+    recall = int((crop_here & pred_mask).sum()) / denom
+    return float(recall), int(len(idx))
 
 
 def suetterlin_quality_metrics(
@@ -423,9 +444,10 @@ def suetterlin_quality_metrics(
     crop with the reference-free naturalness terms. Returns a flat dict: the
     aggregate `score` (0–100) / `loss`, a `components` sub-dict of 0–1 penalties
     (1 − quality, so 0 = perfect; non-applicable feature terms read 0), the
-    raw coverage diagnostics, and per-term applicability counts. `width_map` is
-    unused (Gleichzug width is a single constant) but kept in the signature so the
-    bench can call either metric with the same arguments.
+    raw coverage diagnostics, and per-term applicability counts. `width_map` (the
+    EDT half-width per pixel) gives the geo gate its LOCAL dead-band — the merge
+    excess a faithful render legitimately leaves the medial skeleton by — and is
+    sampled at the nearest skeleton point; the same signature serves either metric.
     """
     anchors_px = np.asarray(anchors_px, dtype=float)
     half_widths_px = np.asarray(half_widths_px, dtype=float)
@@ -451,8 +473,21 @@ def suetterlin_quality_metrics(
 
     chamfer = chamfer_boundary_stats(pred_mask, mask, dead_band_px=DEAD_BAND_PX)
     if skel.any():
-        d_skel = bilinear(distance_transform_edt(~skel), sx, sy)
-        geo_db_rmse = float(np.sqrt(np.mean(np.maximum(0.0, d_skel - DEAD_BAND_PX) ** 2)))
+        # Distance of each rendered sample to the medial skeleton, with a LOCAL
+        # dead-band. Where the skeleton reads a MERGED half-width (two strokes run
+        # together — a Spitze doubled stem, a loop over a stem), the faithful render
+        # offsets each pass to its own ink edge, legitimately leaving the medial line
+        # by the merge excess (local skeleton half-width − nib). Forgive exactly that
+        # much off-skeleton wander (never below the pixelation DEAD_BAND_PX); else the
+        # gate rewards collapsing the two passes back onto the medial line — the very
+        # over-collapse the retrace fidelity term now penalises. On a single stroke
+        # the skeleton half-width ≈ the nib, so the dead-band is just DEAD_BAND_PX and
+        # nothing changes.
+        edt_to_skel, (iy, ix) = distance_transform_edt(~skel, return_indices=True)
+        d_skel = bilinear(edt_to_skel.astype(float), sx, sy)
+        nib_px = float(np.median(half_widths_px)) if len(half_widths_px) else 1.0
+        local_db = np.maximum(DEAD_BAND_PX, bilinear(width_map[iy, ix].astype(float), sx, sy) - nib_px)
+        geo_db_rmse = float(np.sqrt(np.mean(np.maximum(0.0, d_skel - local_db) ** 2)))
     else:
         geo_db_rmse = worst_px
 
@@ -468,7 +503,9 @@ def suetterlin_quality_metrics(
     q_vert, n_vert = verticality(sx, sy, sample_starts, unit_px)
     q_corner, n_corner = corner_crispness(sx, sy, sample_starts, corner_sample_idx, unit_px)
     q_cross, n_cross = crossing_collinearity(sx, sy, sample_starts, prox_px, unit_px)
-    q_retrace, n_retrace = retrace_parallelism(sx, sy, sample_starts, prox_px, unit_px, r_px)
+    q_retrace, n_retrace = retrace_fidelity(
+        sx, sy, sample_starts, prox_px, unit_px, r_px, mask=mask, pred_mask=pred_mask
+    )
 
     applicable = [(W_SMOOTH, q_smooth)]
     if n_vert:
