@@ -828,6 +828,16 @@ def diagnostic_for_glyph(
         anchors_template, half_widths_template, stroke_starts, 90.0, n=240, corner_anchors=corner_anchors
     )
 
+    # Connection metadata for word composition (architektur.md §4: "Übergänge
+    # sind Konsequenz, keine Daten"). The frontend word renderer offsets each
+    # glyph along the baseline and draws the connecting stroke between glyph A's
+    # `exit_pt` and glyph B's `entry` — both carry a point (same template frame
+    # as `anchors_template`), a tangent and a coupling height. Passed straight
+    # through from the stored template; absent on legacy/synthetic glyph_rows.
+    entry = glyph_row.get("entry") or {}
+    exit_pt = glyph_row.get("exit_pt") or {}
+    advance = glyph_row.get("advance")
+
     return {
         "crop_size": {"w": int(w), "h": int(h)},
         "skeleton_polyline_px": skeleton_polyline_px,
@@ -849,4 +859,9 @@ def diagnostic_for_glyph(
         "slant_deg": float(slant_deg),
         # Anchor indices on within-stroke reversal corners (for distinct markers).
         "corner_anchors": [int(c) for c in corner_anchors],
+        # Word-composition connection points (see comment above). `advance` is the
+        # glyph's nominal horizontal advance in x-height units.
+        "entry": entry,
+        "exit_pt": exit_pt,
+        "advance": advance,
     }

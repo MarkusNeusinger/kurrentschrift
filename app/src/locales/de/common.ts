@@ -71,6 +71,7 @@ export const common = {
   },
   nav: {
     write: 'Schreiben',
+    scribe: 'Federprobe',
     read: 'Lesen',
   },
   // Marker for staged/disabled features ("coming soon").

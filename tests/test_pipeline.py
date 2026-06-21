@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from core.pipeline import canonical_from_path, diagnostic_for_glyph
 
 
@@ -193,6 +195,56 @@ def test_diagnostic_contains_render_fields(synthetic_chart_path, synthetic_bbox)
     assert len(diag["anchors_template"]) == 20
     assert len(diag["outline_polygon"]) > 0
     assert diag["slant_deg"] == 65.0
+
+
+def test_diagnostic_passes_through_connection_metadata(synthetic_chart_path, synthetic_bbox):
+    """The word renderer needs each glyph's entry/exit/advance in the diagnostic
+    payload to place glyphs and generate the connecting strokes (architektur.md
+    §4). The pipeline forwards whatever the stored template carries."""
+    canon = canonical_from_path(
+        raw_path=_vertical_stylus_path(),
+        bbox=synthetic_bbox,
+        chart_path=synthetic_chart_path,
+        glyph="l",
+        position="initial",
+        n_anchors=20,
+    )
+    glyph_row = {
+        "anchors": canon["anchors"],
+        "half_widths": canon["half_widths"],
+        "trace_meta": canon["trace_meta"],
+        "entry": canon["entry"],
+        "exit_pt": canon["exit_pt"],
+        "advance": canon["advance"],
+    }
+    diag = diagnostic_for_glyph(
+        glyph_row=glyph_row, bbox=synthetic_bbox, chart_path=synthetic_chart_path, style_ratio=[2, 1, 2], slant_deg=65.0
+    )
+    assert diag["entry"] == canon["entry"]
+    assert diag["exit_pt"] == canon["exit_pt"]
+    assert diag["advance"] == canon["advance"]
+    # entry/exit points share the anchor template frame (first/last anchor).
+    assert diag["entry"]["xy"][0] == pytest.approx(diag["anchors_template"][0][0], abs=1e-3)
+
+
+def test_diagnostic_connection_metadata_defaults_empty(synthetic_chart_path, synthetic_bbox):
+    """A legacy glyph_row without connection fields still renders (older payloads
+    / synthetic rows): entry/exit default to empty dicts, advance to None."""
+    canon = canonical_from_path(
+        raw_path=_vertical_stylus_path(),
+        bbox=synthetic_bbox,
+        chart_path=synthetic_chart_path,
+        glyph="l",
+        position="initial",
+        n_anchors=20,
+    )
+    glyph_row = {"anchors": canon["anchors"], "half_widths": canon["half_widths"], "trace_meta": canon["trace_meta"]}
+    diag = diagnostic_for_glyph(
+        glyph_row=glyph_row, bbox=synthetic_bbox, chart_path=synthetic_chart_path, style_ratio=[2, 1, 2], slant_deg=65.0
+    )
+    assert diag["entry"] == {}
+    assert diag["exit_pt"] == {}
+    assert diag["advance"] is None
 
 
 def test_diagnostic_constant_resolver_renders_uniform_widths(synthetic_chart_path, synthetic_bbox):

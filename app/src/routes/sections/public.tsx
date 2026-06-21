@@ -7,6 +7,7 @@ import { paths } from '@/routes/paths';
 
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
 const WorksheetPage = lazy(() => import('@/pages/WorksheetPage'));
+const ScribePage = lazy(() => import('@/pages/ScribePage'));
 const QuizPage = lazy(() => import('@/pages/QuizPage'));
 const ImpressumPage = lazy(() => import('@/pages/ImpressumPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
@@ -14,6 +15,7 @@ const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 export const publicRoutes: RouteObject[] = [
   { path: paths.home, element: <LandingPage /> },
   { path: paths.worksheet, element: <WorksheetPage /> },
+  { path: paths.scribe, element: <ScribePage /> },
   { path: paths.impressum, element: <ImpressumPage /> },
   {
     // The quiz reads the source chart + marked bboxes, so it needs the data

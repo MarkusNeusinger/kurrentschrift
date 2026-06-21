@@ -156,14 +156,16 @@ kurrentschrift/
 │   └── src/
 │       ├── routes/      # paths.ts route constants + lazy public/admin route sections
 │       ├── pages/       # thin default-export route mounts only
-│       ├── sections/    # feature views: landing/, worksheet/, quiz/ (useQuizEngine),
-│       │                #   admin/{chart,setup-wizard,diagnostics,sidebar} (hooks + panels)
-│       ├── components/  # reusable UI: PaperBackground, PublicHeader, WrittenGlyph, BootStatus
+│       ├── sections/    # feature views: landing/, worksheet/, scribe/ (/federprobe live writer),
+│       │                #   quiz/ (useQuizEngine), admin/{chart,setup-wizard,diagnostics,sidebar}
+│       ├── components/  # reusable UI: PaperBackground, PublicHeader, WrittenGlyph (one glyph),
+│       │                #   WrittenWord (a word/line + Übergänge as written), BootStatus
 │       ├── layouts/     # admin shell (AdminLayout + AdminModals)
 │       ├── theme/       # MUI theme split; colors sourced from styles/paper.ts (single source)
 │       ├── lib/api/     # fetch client (cold-start retry, typed ApiError), endpoints,
 │       │                #   wire types hand-synced with api/schemas.py
-│       ├── domain/      # glyphs.ts — alphabet/glyph-key registry + lock/split helpers
+│       ├── domain/      # glyphs.ts (registry + lock/split); shaping.ts (text → glyph_keys,
+│       │                #   long-s + ligatures); compose.ts (baseline layout + Übergänge)
 │       ├── context/     # AdminContext (admin boot data + selection state)
 │       ├── locales/     # de/ namespaces — ALL German UI strings (pre-i18n layer)
 │       └── hooks/, styles/, global-config.ts
@@ -183,8 +185,9 @@ kurrentschrift/
 ```
 
 `/app/` serves the public pages (`/` landing, `/schreiben` worksheet
-generator, `/quiz` letter quiz — paper-&-ink identity per
-`docs/concepts/style-guide.md`) and the admin behind `/admin/*`
+generator, `/federprobe` live word/sentence writing (synthesised Sütterlin
+ductus with generated Übergänge), `/quiz` letter quiz — paper-&-ink identity
+per `docs/concepts/style-guide.md`) and the admin behind `/admin/*`
 (Cloudflare Access in prod). **Post-MVP** the public side grows
 (`/animation`, `/lese-hilfe`, `/lese-lupe/:job`, `/stil-analyse`,
 `/vergleich`, `/open-data`). See `docs/reference/frontend-stack.md`.
