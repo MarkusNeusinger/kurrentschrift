@@ -78,6 +78,11 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
       POSITIONS.find((p) => hasBbox(glyphKeyFor(letter, p))) ??
       'medial';
     activatePosition(letter, pos);
+    // On mobile, a unified letter has nothing left to choose — close the drawer
+    // so the chart toolbar (the action hub) is reachable for the active glyph.
+    // A split letter keeps the drawer open so its position can be picked first;
+    // the position rows close it on tap. onNavigate is a no-op on desktop.
+    if (!isLetterSplit(glyphKeyFor(letter, 'medial'), bboxesByKey)) onNavigate?.();
   };
 
   const openLetter = openBase ? (LETTERS.find((l) => l.base === openBase) ?? null) : null;
@@ -261,7 +266,12 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
                     return (
                       <ButtonBase
                         key={p}
-                        onClick={() => activatePosition(letter, p)}
+                        onClick={() => {
+                          activatePosition(letter, p);
+                          // Mobile: position picked → close the drawer so the
+                          // toolbar is reachable (no-op on desktop).
+                          onNavigate?.();
+                        }}
                         sx={{
                           display: 'flex',
                           alignItems: 'center',
