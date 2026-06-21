@@ -1,5 +1,7 @@
-// Step 3 "Schräglage" — the shared slant angle + add/remove of the individually
-// placed slant lines. The green drag handles live on WizardCanvas.
+// "Schräglage" — the shared slant angle + add/remove of the individually placed
+// slant lines. The green drag handles live on WizardCanvas. Folded into the
+// Lineatur step (rendered as a sub-section by LineaturStep), so it carries a
+// sub-heading rather than a step number; the slant guides show on 'lineatur'.
 
 import AddIcon from '@mui/icons-material/Add';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
@@ -11,6 +13,7 @@ import { de } from '@/locales';
 import type { GuideConfig } from '@/lib/api';
 import { SLANT_COLOR } from '../wizardTypes';
 import type { GuideValues } from '../wizardTypes';
+import { HintHeading } from './HintHeading';
 
 export function SlantStep({
   guideVals,
@@ -30,12 +33,16 @@ export function SlantStep({
 
   return (
     <Stack spacing={1.5}>
-      <Typography variant="subtitle2">{de.wizard.slant.title}</Typography>
+      <HintHeading title={de.wizard.slant.title}>
+        <Typography variant="body2" gutterBottom>
+          {de.wizard.slant.body1}
+        </Typography>
+        <Typography variant="body2">
+          {de.wizard.slant.body2BeforeBold} <b>{de.wizard.slant.body2Bold}</b> {de.wizard.slant.body2AfterBold}
+        </Typography>
+      </HintHeading>
       <Typography variant="body2" color="text.secondary">
-        {de.wizard.slant.body1}
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        {de.wizard.slant.body2BeforeBold} <b>{de.wizard.slant.body2Bold}</b> {de.wizard.slant.body2AfterBold}
+        {de.wizard.slant.lead}
       </Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <TextField label={de.wizard.slant.angleLabel} type="number" size="small" value={angleDraft ?? Math.round(guideVals.slantDeg)} onChange={(e) => {
@@ -71,9 +78,6 @@ export function SlantStep({
           />
         ))}
       </Box>
-      <Typography variant="caption" color="text.secondary">
-        {de.wizard.slant.dragHint}
-      </Typography>
     </Stack>
   );
 }

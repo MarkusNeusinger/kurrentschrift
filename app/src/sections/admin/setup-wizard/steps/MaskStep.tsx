@@ -19,8 +19,10 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 
+import { InfoHint } from '@/components/InfoHint';
 import { de } from '@/locales';
 import type { BboxOut } from '@/lib/api';
+import { HintHeading } from './HintHeading';
 
 const AUTO_FILL_COLOR = '#1fa85a'; // matches crop_mask_to_png_bytes' green
 
@@ -59,7 +61,15 @@ export function MaskStep({
 
   return (
     <Stack spacing={1.5}>
-      <Typography variant="subtitle2">{de.wizard.mask.title}</Typography>
+      <HintHeading title={de.wizard.mask.title}>
+        <Typography variant="body2" gutterBottom>
+          {de.wizard.mask.body1}
+        </Typography>
+        <Typography variant="body2" gutterBottom>
+          {de.wizard.mask.body2}
+        </Typography>
+        <Typography variant="body2">{de.wizard.mask.inkBody}</Typography>
+      </HintHeading>
 
       <ToggleButtonGroup
         size="small"
@@ -72,20 +82,9 @@ export function MaskStep({
         <ToggleButton value="ink">{de.wizard.mask.toolInk}</ToggleButton>
       </ToggleButtonGroup>
 
-      {isInk ? (
-        <Typography variant="body2" color="text.secondary">
-          {de.wizard.mask.inkBody}
-        </Typography>
-      ) : (
-        <>
-          <Typography variant="body2" color="text.secondary">
-            {de.wizard.mask.body1}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {de.wizard.mask.body2}
-          </Typography>
-        </>
-      )}
+      <Typography variant="body2" color="text.secondary">
+        {isInk ? de.wizard.mask.leadInk : de.wizard.mask.leadEraser}
+      </Typography>
 
       <Box>
         <Typography variant="caption">
@@ -105,9 +104,12 @@ export function MaskStep({
       <Divider />
 
       <Box>
-        <Typography variant="caption">
-          {de.wizard.mask.fillHoles} {fill === 0 ? de.wizard.mask.fillHolesOff : `${fill} px²`}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Typography variant="caption">
+            {de.wizard.mask.fillHoles} {fill === 0 ? de.wizard.mask.fillHolesOff : `${fill} px²`}
+          </Typography>
+          <InfoHint title={de.wizard.mask.fillHoles}>{de.wizard.mask.fillHolesHint}</InfoHint>
+        </Box>
         <Slider
           size="small"
           min={0}
@@ -117,26 +119,21 @@ export function MaskStep({
           onChange={(_e, v) => typeof v === 'number' && setFill(v)}
           onChangeCommitted={(_e, v) => typeof v === 'number' && setFillHoles(v)}
         />
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-          {de.wizard.mask.fillHolesHint}
-        </Typography>
       </Box>
 
-      <FormControlLabel
-        sx={{ mt: 0.5 }}
-        control={<Switch size="small" checked={showMask} onChange={(e) => setShowMask(e.target.checked)} />}
-        label={<Typography variant="body2">{de.wizard.mask.showMask}</Typography>}
-      />
-      {showMask ? (
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <FormControlLabel
+          control={<Switch size="small" checked={showMask} onChange={(e) => setShowMask(e.target.checked)} />}
+          label={<Typography variant="body2">{de.wizard.mask.showMask}</Typography>}
+        />
+        <InfoHint title={de.wizard.mask.showMask}>{de.wizard.mask.showMaskHint}</InfoHint>
+      </Box>
+      {showMask && (
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', pl: 0.5 }}>
           <LegendDot color="#000" label={de.wizard.mask.legendInk} />
           <LegendDot color={AUTO_FILL_COLOR} label={de.wizard.mask.legendAuto} />
           <LegendDot color="#fff" border label={de.wizard.mask.legendGap} />
         </Box>
-      ) : (
-        <Typography variant="caption" color="text.secondary" sx={{ pl: 0.5 }}>
-          {de.wizard.mask.showMaskHint}
-        </Typography>
       )}
     </Stack>
   );

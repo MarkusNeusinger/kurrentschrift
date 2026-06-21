@@ -60,8 +60,10 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
   const [tool, setTool] = useState<'eraser' | 'ink'>('eraser');
   // "Maske zeigen": swap the raw crop for the binarised mask (auto-fill
   // colour-coded) so the Lücken-füllen effect — invisible on the raw scan — and
-  // the remaining holes to ink by hand are visible. Ausschluss step only.
-  const [showMask, setShowMask] = useState(false);
+  // the remaining holes to ink by hand are visible. Ausschluss step only. On by
+  // default: the binarised view is what the skeleton actually sees, so erasing
+  // and inking against it is the right starting point.
+  const [showMask, setShowMask] = useState(true);
   const [applyAll, setApplyAll] = useState(true);
   const [busy, setBusy] = useState(false);
   const [snack, setSnack] = useState<string | null>(null);
@@ -83,7 +85,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     setStep(0);
     setTool('eraser');
     setWegTool('draw');
-    setShowMask(false);
+    setShowMask(true);
     setStrokes([]);
     previewEpoch.current++;
     setPreview(null);

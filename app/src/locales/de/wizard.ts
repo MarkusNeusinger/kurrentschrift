@@ -9,7 +9,6 @@ export const wizard = {
   steps: {
     mask: 'Ausschluss',
     lineatur: 'Lineatur',
-    slant: 'Schräglage',
     weg: 'Weg',
     overview: 'Übersicht',
   },
@@ -33,6 +32,10 @@ export const wizard = {
     body1:
       'Auf den Lehrtafeln stehen die Buchstaben dicht beieinander — ragt Tinte vom Nachbarn in diesen Ausschnitt, verfälscht sie später Skelett und Anker. Mit dem Pinsel direkt über die störenden Stellen malen; das Übermalte wird vor der Skelettberechnung entfernt.',
     body2: 'Nur fremde Tinte ausschließen — vom eigentlichen Buchstaben nichts wegradieren.',
+    // Short essential lead under the tool toggle (the full explanation is behind
+    // the heading's info mark).
+    leadEraser: 'Fremde Tinte vom Nachbarn übermalen — vom Buchstaben selbst nichts.',
+    leadInk: 'Weiße Lücken in einem durchgehenden Strich auffüllen.',
     // Tool toggle: the eraser blanks neighbour ink, the ink brush fills specks.
     toolEraser: 'Radierer',
     toolInk: 'Tinte',
@@ -57,7 +60,10 @@ export const wizard = {
     legendGap: 'Lücke → tinten',
   },
   lineatur: {
-    title: 'Schritt 2 · Lineatur',
+    title: 'Schritt 2 · Lineatur & Schräglage',
+    // Short essential lead (the full four-line-system explanation is behind the
+    // heading's info mark); composed after the two coloured line names.
+    leadAction: 'an die richtige Höhe ziehen.',
     // Composed around the coloured <b>Grundlinie</b>/<b>Mittellinie</b>/… line
     // names (common LINEATUR_LABELS) and the "({ratio})." readout.
     bodyIntro: 'Die',
@@ -70,7 +76,10 @@ export const wizard = {
     readout: 'Grundlinie {{baseline}} · Mittellinie {{midband}} · Mittellänge (x-Höhe) {{xHeight}}px',
   },
   slant: {
-    title: 'Schritt 3 · Schräglage',
+    title: 'Schräglage',
+    // Short essential lead (the full convention explanation is behind the info
+    // mark); the green handle sits just below the Grundlinie.
+    lead: 'Neigung der Abstriche — 90° = senkrecht. Den grünen Punkt unter der Grundlinie ziehen, um eine Linie zu legen.',
     body1:
       'Die Schräglage ist die Neigung der Grundstriche (Abstriche), gemessen von der Grundlinie aus — 90° = senkrecht. Sütterlin steht aufrecht (90°); die Loth-Tafel liegt bei ≈50°, die Kurrent um 1900 bei 60–70°. Den grünen Punkt ziehen, um eine Linie über den Buchstaben zu legen.',
     // Composed around <b>eine</b>.
@@ -84,10 +93,12 @@ export const wizard = {
     addLine: 'Linie hinzufügen',
     // Followed by the line number in the chip label.
     lineChip: 'Linie',
-    dragHint: 'Den grünen Punkt einer Linie ziehen, um sie zu verschieben; das ✕ am Chip entfernt sie.',
   },
   trace: {
-    title: 'Schritt 4 · Weg (Duktus)',
+    title: 'Schritt 3 · Weg (Duktus)',
+    // Short essential lead (the full explanation + the pen-lift rule sit behind
+    // the heading's info mark).
+    lead: 'Den Buchstaben in Schreibrichtung nachziehen — jedes Absetzen beginnt einen neuen Strich.',
     body1:
       'Den Buchstaben in Schreibrichtung mit dem Stift (S-Pen) oder der Maus nachziehen — das ist der Duktus, die eigentliche Vorlage über der Tafel-Geometrie.',
     // Composed around the inline <b>u</b>.
@@ -151,7 +162,18 @@ export const wizard = {
     },
   },
   overview: {
-    title: 'Schritt 5 · Übersicht & Freigabe',
+    title: 'Schritt 4 · Übersicht & Freigabe',
+    // Verification panel on the right (OverviewVerify): crop · written · overlaid
+    // + the score criteria, so it's visible at a glance that the form fits.
+    verify: {
+      title: 'Prüfen — sitzt alles?',
+      body:
+        'Die Vorlage, die live geschriebene Form und beide übereinander — so siehst du sofort, ob der synthetisierte Zug die Tinte trifft, bevor du sperrst.',
+      cellCrop: 'Vorlage',
+      cellWritten: 'Geschrieben',
+      cellOverlay: 'Überlagert',
+      rewrite: 'Neu schreiben',
+    },
     // Composed around the inline <b>Diagnose</b>.
     bodyBeforeBold: 'Alles geprüft? Mit der',
     bodyBold: 'Diagnose',
