@@ -7,8 +7,13 @@
 ```bash
 git status --short --branch
 git log --oneline -5
-gh pr list --limit 5 2>/dev/null || echo "(gh CLI not available)"
+gh pr list --limit 5 2>/dev/null || echo "(no gh — on Claude Code web, list PRs via mcp__github__list_pull_requests instead)"
 ```
+
+> **Environment note:** locally the `gh` CLI is available; on Claude
+> Code on the web it is **not** — use the GitHub MCP tools
+> (`mcp__github__*`, loaded via `ToolSearch`) for any PR/issue/CI work
+> there. `/open-pr` §0 has the full `gh` ↔ MCP mapping.
 
 ## What this project is
 

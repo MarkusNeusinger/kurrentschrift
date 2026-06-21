@@ -12,6 +12,14 @@ driver script is needed. It comes from the author's user-level Claude
 config, not from this repo: verify availability via ToolSearch (§2)
 before relying on it. All paths below are relative to the repo root.
 
+> **Environment note:** the chrome-devtools MCP is a **local-only**
+> harness — it is not present on Claude Code on the web (no browser in
+> the remote container). If ToolSearch (§2) finds no
+> `mcp__chrome-devtools__*` tools, you are in the cloud: the visual
+> verification in this skill cannot run there. Say so plainly and fall
+> back to the static gates (`npm run build`, type-check) rather than
+> claiming a flow was driven.
+
 This skill is a **feedback loop**: after a frontend change, don't just
 confirm the page loads — drive it like a user and observe four channels:
 interaction (snapshots/clicks), console + network, visual style &
