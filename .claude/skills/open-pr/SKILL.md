@@ -24,8 +24,9 @@ command -v gh >/dev/null && echo "gh path (local)" || echo "MCP path (cloud/web)
 - **`gh` absent (Claude Code on the web / remote container):** `gh`,
   `hub` and direct GitHub API access do **not** exist here. Use the
   GitHub MCP tools (`mcp__github__*`) instead. They are deferred —
-  load each one's schema via `ToolSearch` (e.g.
-  `select:create_pull_request,pull_request_read,resolve_review_thread`)
+  load each one's schema via `ToolSearch` with its **fully-qualified**
+  name (the bare method name silently matches nothing), e.g.
+  `select:mcp__github__create_pull_request,mcp__github__pull_request_read,mcp__github__resolve_review_thread`,
   before the first call.
 
 `git` itself (commit / `push` / `fetch`) is identical in both — only
@@ -37,16 +38,17 @@ mapping:
 | Create PR | `gh pr create` | `mcp__github__create_pull_request` (ready for review, not draft) |
 | List PRs | `gh pr list` | `mcp__github__list_pull_requests` |
 | Read PR / reviews | `gh pr view --json …` | `mcp__github__pull_request_read` |
-| Watch CI | `gh pr checks --watch` | `mcp__github__actions_list` / `actions_get` / `get_job_logs` (+ `subscribe_pr_activity` to be woken on results) |
+| Watch CI | `gh pr checks --watch` | `mcp__github__actions_list` / `mcp__github__actions_get` / `mcp__github__get_job_logs` (+ `mcp__github__subscribe_pr_activity` to be woken on results) |
 | List review threads | `gh api graphql … reviewThreads` | `mcp__github__pull_request_read` (review-threads method) |
-| Reply on a thread | `gh pr comment` | `mcp__github__add_reply_to_pull_request_comment` (thread) / `add_issue_comment` (PR-level) |
+| Reply on a thread | `gh pr comment` | `mcp__github__add_reply_to_pull_request_comment` (thread) / `mcp__github__add_issue_comment` (PR-level) |
 | Resolve a thread | `gh api graphql … resolveReviewThread` | `mcp__github__resolve_review_thread` |
 | Request Copilot review | (auto / `gh`) | `mcp__github__request_copilot_review` |
 | Merge (only if asked) | `gh pr merge` | `mcp__github__merge_pull_request` |
 
-In the cloud, prefer `subscribe_pr_activity` over any polling loop:
-CI/review events wake the session as `<github-webhook-activity>`
-messages — never `sleep`-poll or foreground-`Monitor` there.
+In the cloud, prefer `mcp__github__subscribe_pr_activity` over any
+polling loop: CI/review events wake the session as
+`<github-webhook-activity>` messages — never `sleep`-poll or
+foreground-`Monitor` there.
 
 ## 1 · Pre-PR gates (pick by what the diff touches)
 
@@ -112,10 +114,11 @@ zero unresolved review threads.
 `Backend (ruff + pytest)` and `Frontend (build)`):
 
 - **Local:** `gh pr checks <num> --watch`.
-- **Cloud:** `subscribe_pr_activity` for the PR and end the turn — CI
-  results arrive as `<github-webhook-activity>` events. To inspect on
-  demand use `mcp__github__actions_list` / `actions_get`; for a failed
-  run pull `mcp__github__get_job_logs` (with `failed_only`).
+- **Cloud:** `mcp__github__subscribe_pr_activity` for the PR and end
+  the turn — CI results arrive as `<github-webhook-activity>` events.
+  To inspect on demand use `mcp__github__actions_list` /
+  `mcp__github__actions_get`; for a failed run pull
+  `mcp__github__get_job_logs` (with `failed_only`).
 
 If a check fails: read the run log, fix, push — the loop restarts.
 
@@ -128,8 +131,8 @@ minutes after push; the bot's login is exactly
   wait (~10 min upper bound — past that, tell the user instead of
   spinning) on:
   `gh pr view <num> --json reviews --jq '.reviews[] | "\(.author.login): \(.state)"'`
-- **Cloud:** the same `subscribe_pr_activity` subscription delivers
-  the review as a webhook event — don't poll. To force a fresh pass
+- **Cloud:** the same `mcp__github__subscribe_pr_activity`
+  subscription delivers the review as a webhook event — don't poll. To force a fresh pass
   after a fix-push, call `mcp__github__request_copilot_review`; to
   read the current reviews use `mcp__github__pull_request_read`.
 
