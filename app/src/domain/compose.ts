@@ -135,8 +135,11 @@ export function composeWord(slots: ComposeSlot[]): ComposedWord {
     const entryXY: Point = (data.entry?.xy as Point) ?? firstLine[0];
     const exitXY: Point = (data.exit_pt?.xy as Point) ?? lastLine[lastLine.length - 1];
 
-    // Place this glyph so its entry meets the previous glyph's exit + a small gap.
-    const desiredEntryX = prev ? prev.exit[0] + CONNECT_GAP : 0;
+    // Place this glyph so its entry meets the previous glyph's exit + a small
+    // gap. With no connector (first glyph, or after a space / unrenderable glyph)
+    // start at the running `cursorX` — falling back to 0 would yank the next word
+    // back to the origin and overlap it onto earlier glyphs.
+    const desiredEntryX = prev ? prev.exit[0] + CONNECT_GAP : cursorX;
     const dx = desiredEntryX - entryXY[0];
 
     // Connector first (writing order): the pen slides from A's exit into B's entry.
