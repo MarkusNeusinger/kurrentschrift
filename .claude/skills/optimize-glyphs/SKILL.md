@@ -131,6 +131,18 @@ than its predecessor is a discard, log it as such.
 
 ## Gotchas
 
+- **Read bench results from the printed footer / `--compare`, not by
+  indexing the run JSON.** The headline numbers are the footer lines
+  the loop already greps (`bench_loss:`, `median_iou:`, `worst_glyph:`,
+  `glyphs_failed:`, `runtime_s:`, `comp_<name>:`); per-glyph and
+  per-component deltas come from `--compare prev.json`. Do NOT hand-roll
+  `python -c "json.load(open('runs/.../x.json'))['<key>']"` to
+  re-derive them — the run dict is not a pinned contract and bare key
+  access throws `KeyError` (hit on `'sweep'`) when a run's shape
+  differs. If you genuinely need a `--json` field, read it with
+  `.get(...)` defensively; to see *why* a glyph lost points use
+  `glyphlab`, not a JSON dump. (`tools/glyphbench/**` is frozen mid-run,
+  so don't "fix" this by adding a footer line during a loop.)
 - **The bench must be deterministic**: two runs on identical code
   produce bit-identical `bench_loss`. If they don't, your change
   introduced nondeterminism (RNG, dict ordering into geometry) — that
