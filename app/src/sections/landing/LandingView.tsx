@@ -40,6 +40,7 @@ const fu = (delay: number) => ({
 // landing.pillars); here we only attach the route targets.
 const tools = [
   { ...de.landing.tools.worksheet, to: paths.worksheet },
+  { ...de.landing.tools.scribe, to: paths.scribe },
   { ...de.landing.tools.quiz, to: paths.quiz },
 ];
 

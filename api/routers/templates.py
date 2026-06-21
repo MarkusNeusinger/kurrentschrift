@@ -311,6 +311,11 @@ async def get_diagnostic(
             "anchors": list(template.anchors),
             "half_widths": list(template.half_widths),
             "trace_meta": dict(template.trace_meta),
+            # Connection metadata so the public word renderer can place glyphs and
+            # generate the Übergänge between them (architektur.md §4).
+            "entry": dict(template.entry) if template.entry else {},
+            "exit_pt": dict(template.exit_pt) if template.exit_pt else {},
+            "advance": template.advance,
         },
         bbox=_bbox_to_dict(bbox),
         chart_path=source.chart_path,

@@ -23,7 +23,7 @@ export const landing = {
   specimen: {
     word: 'Kurrent',
     subline: 'leſen · ſchreiben · verſtehen',
-    caption: 'Synthese in echter Hand — hier: Loth, 1866.',
+    caption: 'Lebendig geschrieben, nicht gesetzt — Sütterlin, 1922.',
     replay: '↻ nochmal schreiben',
   },
   // The thesis — the three-way combination that makes this project different.
@@ -40,6 +40,11 @@ export const landing = {
       title: 'Lineatur-Vorlage',
       cta: 'Übungsblatt erstellen →',
       desc: 'Hilfslinien für deutsche Schreibschrift auf A4 — das Verhältnis frei wählbar, auf Wunsch mit Schräglinien, als druckfertiges PDF.',
+    },
+    scribe: {
+      title: 'Federprobe',
+      cta: 'Wort schreiben lassen →',
+      desc: 'Tippe ein beliebiges Wort und sieh, wie der synthetisierte Duktus es Zug um Zug in Sütterlin schreibt — mit den Übergängen zwischen den Buchstaben.',
     },
     quiz: {
       title: 'Buchstaben-Quiz',

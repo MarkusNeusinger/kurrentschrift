@@ -188,6 +188,13 @@ export interface DiagnosticData {
   // Anchor indices sitting exactly on detected within-stroke reversal corners
   // (Umkehrpunkte) — rendered with distinct markers. Optional for back-compat.
   corner_anchors?: number[];
+  // Connection points for word composition (architektur.md §4): the renderer
+  // places each glyph along the baseline and draws the Übergang from glyph A's
+  // `exit_pt` to glyph B's `entry`. `xy` is in the same template frame as
+  // `anchors_template`. Optional for back-compat with older payloads.
+  entry?: CouplingPointOut;
+  exit_pt?: CouplingPointOut;
+  advance?: number | null;
 }
 
 // Image-space quality of a template vs its crop (served by GET .../quality).

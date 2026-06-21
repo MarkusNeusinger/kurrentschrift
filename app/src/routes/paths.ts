@@ -5,6 +5,7 @@
 export const paths = {
   home: '/',
   worksheet: '/schreiben',
+  scribe: '/federprobe',
   quiz: '/quiz',
   impressum: '/impressum',
   admin: {
