@@ -140,8 +140,9 @@ the Mittellänge) → „beenden" → Auswertung.
 
 **Admin flows are the most regression-prone surface and the least
 covered by the catalog above — drive them whenever the diff touches
-`app/src/sections/admin/`, `layouts/admin/`, `context/AdminContext`,
-or `domain/glyphs.ts`.** Each of these shipped broken to `main` and
+`app/src/sections/admin/`, `app/src/layouts/admin/`,
+`app/src/context/AdminContext.tsx`, or `app/src/domain/glyphs.ts`.**
+Each of these shipped broken to `main` and
 was caught only by the user clicking the live admin: the Vorlage/source
 switcher not switching the rendered chart; a setup-wizard bbox
 letterboxed (small, black border) in one step but full-width in
