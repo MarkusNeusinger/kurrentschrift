@@ -85,6 +85,25 @@ endpoints.
 
 ## Gotchas
 
+- **One synthetic chart is not a crash sweep.** pytest + the §2 smoke
+  run a single clean vertical bar; a per-glyph crash that only real
+  geometry triggers (e.g. `CubicSpline: x must be strictly increasing`
+  from coincident/non-monotonic anchors on a jagged skeleton — hit on
+  `t` initial/medial/final) sails through both and reaches prod, where
+  it is NOT swallowed. The glyph bench re-derives every real glyph, so
+  it is the crash net: when a change touches `core/extract.py`,
+  `core/template.py`, `core/suetterlin.py`, `core/fit.py` or the
+  resampling, run it and read the **failure count, not the headline
+  loss** — `uv run python -m tools.glyphbench.run --style suetterlin`
+  (and `--style kurrent`), then check the printed `glyphs_failed:` line
+  (must be `0`) and `worst_glyph:` (a glyph pinned at loss `1.000000`
+  is a crash, not a bad score). The bench catches per-glyph exceptions
+  and scores them `1.0`, so `bench_loss` stays populated and **there is
+  no stdout Traceback** — re-run with `--json /tmp/bench.json` and read
+  the crashing glyph's `error` field to see it. The bench reads
+  pre-exported fixtures from disk (no live DB/HTTP at run time); a fresh
+  checkout needs the one-time read-only
+  `uv run python -m tools.glyphbench.export_fixtures` first.
 - **Plain `uv run ruff` fails on a fresh venv** with
   `Failed to spawn: ruff` — ruff lives in the `dev` extra, not the
   default deps. After any `--extra dev` sync it silently works (the

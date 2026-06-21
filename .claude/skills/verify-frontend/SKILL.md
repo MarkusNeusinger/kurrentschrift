@@ -117,7 +117,15 @@ The loop, per page/flow you changed:
 perform the real UI write end-to-end and confirm persistence with a
 follow-up read — injecting state via the API or only rendering the
 result does not count (a wizard fix once shipped "verified" while its
-actual write path was never run). For UI that displays factual or
+actual write path was never run). The admin's **bulk / state-toggle
+writes are the ones that silently no-op**: „Alle Glyphen neu ableiten"
+reported per-glyph deltas while persisting nothing — a re-run gave the
+same non-zero deltas instead of 0 — and an unlock left the lock in the
+DB so the sidebar and quiz never updated. For these the follow-up read
+is non-negotiable: re-run the bulk action and expect delta 0, or read
+the bbox/template back and confirm the new `locked`/`anchors`. A 2xx in
+`list_network_requests` is necessary but not sufficient — only a read
+that shows the mutation proves it. For UI that displays factual or
 derived values (presets, size chips), cross-check the displayed
 numbers against their source of truth in the same run — a
 chips/preset mismatch once shipped and was found on a printout.
@@ -129,6 +137,25 @@ Schräglage) → „Schulheft um 1900" (blue ruling + „Rote Randleiste"
 switch appears) — and `/quiz`: „Auswahl (Multiple Choice)" → „Quiz
 starten" → answer (choices vs. zones: of h/j/a/l only `a` stays within
 the Mittellänge) → „beenden" → Auswertung.
+
+**Admin flows are the most regression-prone surface and the least
+covered by the catalog above — drive them whenever the diff touches
+`app/src/sections/admin/`, `layouts/admin/`, `context/AdminContext`,
+or `domain/glyphs.ts`.** Each of these shipped broken to `main` and
+was caught only by the user clicking the live admin: the Vorlage/source
+switcher not switching the rendered chart; a setup-wizard bbox
+letterboxed (small, black border) in one step but full-width in
+another; the Lücken-füllen / Radierer-Tinte mask not changing the chart
+preview; lock state not fanning out from the admin to the sidebar icon
+and the quiz. Two invariants they share: (1) **cross-step / cross-layer
+state needs the SAME entity checked on BOTH surfaces in one run** —
+switch the source and confirm the picker AND the chart image change;
+lock a glyph and confirm the sidebar icon AND the quiz de-dup; compare
+a glyph's crop across the Ausschluss and Lineatur steps at the same
+viewport. (2) **a wizard control that drives a derived preview
+(hole-fill, eraser/ink mask, slant) is only verified once you move the
+control and see the preview pixels change** — a 200 on the mask/crop
+request is not proof.
 
 ## 3 · Style fidelity & legibility check
 
