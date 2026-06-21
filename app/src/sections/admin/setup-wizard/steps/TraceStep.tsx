@@ -2,8 +2,8 @@
 // strokes vs. warp-drag the drawn line to smooth a wobble, with a falloff
 // radius), stroke undo/discard, n_anchors + resample, and the entry/exit
 // coupling heights. Strokes are drawn/warped on WizardCanvas. The primary button
-// saves the Weg (the pipeline optimizes on every save); the next step
-// ("Optimieren") then shows the raw-vs-optimized comparison.
+// saves the Weg (the pipeline optimizes on every save); once saved, an inline
+// WegPreview shows the optimized silhouette over the crop with its score.
 
 import RefreshIcon from '@mui/icons-material/Refresh';
 import UndoIcon from '@mui/icons-material/Undo';
@@ -23,8 +23,9 @@ import {
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { couplingLabel, de } from '@/locales';
-import type { BboxIn, BboxOut, CouplingHeight, GuideConfig, StrokePoint } from '@/lib/api';
+import type { BboxIn, BboxOut, CouplingHeight, GuideConfig, StrokePoint, TracePreviewOut } from '@/lib/api';
 import type { GuideValues } from '../wizardTypes';
+import { WegPreview } from './WegPreview';
 
 const COUPLING_OPTIONS: CouplingHeight[] = ['baseline', 'midband', 'ascender', 'descender'];
 
@@ -51,6 +52,11 @@ export function TraceStep({
   setWegTool,
   nudgeRadius,
   setNudgeRadius,
+  glyphKey,
+  cropCacheBust,
+  preview,
+  previewBusy,
+  computePreview,
 }: {
   bbox: BboxOut;
   strokes: StrokePoint[][];
@@ -69,6 +75,11 @@ export function TraceStep({
   setWegTool: (t: 'draw' | 'adjust') => void;
   nudgeRadius: number;
   setNudgeRadius: (r: number) => void;
+  glyphKey: string;
+  cropCacheBust?: number;
+  preview: TracePreviewOut | null;
+  previewBusy: boolean;
+  computePreview: (nAnchors: number) => Promise<void>;
 }) {
   // n_anchors edits buffer in a local draft and commit on blur/Enter (or via the
   // buttons): a field controlled straight by the server value can never be
@@ -198,6 +209,18 @@ export function TraceStep({
       <Typography variant="caption" color="text.secondary">
         {de.wizard.trace.couplingHint}
       </Typography>
+
+      {hasCanonical && (
+        <WegPreview
+          glyphKey={glyphKey}
+          cropCacheBust={cropCacheBust}
+          hasDraftSource={savablePoints >= 2 || hasCanonical}
+          nAnchors={bbox.n_anchors}
+          preview={preview}
+          previewBusy={previewBusy}
+          computePreview={computePreview}
+        />
+      )}
     </Stack>
   );
 }

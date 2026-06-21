@@ -11,7 +11,6 @@ export const wizard = {
     lineatur: 'Lineatur',
     slant: 'Schräglage',
     weg: 'Weg',
-    optimize: 'Optimieren',
     overview: 'Übersicht',
   },
   footer: {
@@ -105,7 +104,7 @@ export const wizard = {
     undoStroke: 'Letzter Strich',
     discardAll: 'Alles verwerfen',
     save: 'Weg speichern',
-    saved: 'Weg gespeichert. Weiter zum Optimieren.',
+    saved: 'Weg gespeichert. Vorschau unten · weiter zur Übersicht.',
     showSaved: 'Gespeicherten Weg & Anker einblenden',
     anchorsLabel: 'Anker (n_anchors)',
     resample: 'Neu abtasten',
@@ -116,23 +115,17 @@ export const wizard = {
     couplingHint:
       'Höhe, auf der ein Nachbarbuchstabe ansetzt (Anfang) bzw. weiterläuft (Ende). Greift bei bestehendem Canonical sofort beim nächsten Speichern.',
   },
+  // Inline Weg preview (WegPreview, shown under the Weg controls once saved).
   optimize: {
-    title: 'Schritt 5 · Optimierung prüfen',
+    title: 'Optimierung (Vorschau)',
     body:
-      'Der gespeicherte Weg wird zum Vergleich zweimal abgeleitet: einmal roh (nur gemessen) und einmal optimiert — bei der optimierten Variante werden Anker und Strichbreiten auf die Tintenkante des Originals gezogen, Umkehrpunkte bleiben spitz. Gespeichert ist bereits die optimierte Form (Schritt „Weg“); hier siehst du, was die Optimierung bringt und wo sie noch nicht perfekt passt.',
-    computing: 'Vergleich wird gerechnet…',
-    crop: 'Original (Crop)',
-    before: 'Vorher (roh gemessen)',
-    after: 'Nachher (optimiert)',
+      'Die gespeicherte Form über dem Original — rot, mit gemessener Strichbreite. Der volle Vergleich (roh vs. optimiert, alle Maße) liegt in der Diagnose.',
+    computing: 'Vorschau wird gerechnet…',
     score: 'Score',
-    viewSide: 'Nebeneinander',
-    viewOverlay: 'Überlagert',
-    overlayHeading: 'Optimierte Silhouette über dem Original',
     overlayCaption:
       'Rot = die gerenderte Form über dem Crop. Wo Tinte ohne Rot ist, deckt das Rendering nicht; wo Rot über hellem Papier liegt, rendert es zu viel — so siehst du die Stellen, die noch nicht passen.',
     // Followed by the score delta, e.g. "+3.1".
     delta: 'Δ Score (optimiert − roh):',
-    needTrace: 'Noch kein Weg vorhanden — erst im Schritt „Weg“ zeichnen.',
     recompute: 'Neu berechnen',
     // Per-category penalty breakdown of the optimized score (like the glyph bench):
     // shows where the form loses points (higher penalty = bigger deduction).
@@ -158,7 +151,7 @@ export const wizard = {
     },
   },
   overview: {
-    title: 'Schritt 6 · Übersicht & Freigabe',
+    title: 'Schritt 5 · Übersicht & Freigabe',
     // Composed around the inline <b>Diagnose</b>.
     bodyBeforeBold: 'Alles geprüft? Mit der',
     bodyBold: 'Diagnose',
