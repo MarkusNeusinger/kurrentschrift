@@ -69,9 +69,9 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
   const [showSaved, setShowSaved] = useState(true);
   const [savedTrace, setSavedTrace] = useState<SavedTraceOverlay | null>(null);
 
-  // The Optimieren step (step 5) is a comparison surface: the Weg is already
-  // saved on step 4 (optimized), and this holds the raw-vs-optimized dry run
-  // (trace-preview from the stored raw_path) the step renders side by side.
+  // The inline Weg preview (WegPreview, under the Weg controls once saved) is a
+  // comparison surface: the Weg is already saved (optimized), and this holds the
+  // raw-vs-optimized dry run (trace-preview from the stored raw_path) it renders.
   const [preview, setPreview] = useState<TracePreviewOut | null>(null);
   const [previewBusy, setPreviewBusy] = useState(false);
   const previewEpoch = useRef(0);
@@ -264,9 +264,9 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
   );
 
   // Save the drawn Weg (step 4). The pipeline optimizes on every save, so the
-  // stored canonical is the optimized one; step 5 then visualises raw vs
-  // optimized. `nAnchors` comes from the TraceStep's just-committed field so
-  // the call never races the PUT that persists it.
+  // stored canonical is the optimized one; the inline WegPreview then visualises
+  // raw vs optimized. `nAnchors` comes from the TraceStep's just-committed field
+  // so the call never races the PUT that persists it.
   const saveTrace = useCallback(async (nAnchors: number) => {
     const rawPath = flattenStrokes(strokes);
     if (rawPath.length < 2 || !known || !bbox) return;
@@ -289,9 +289,9 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     }
   }, [sourceId, strokes, known, bbox, glyphKey, markGlyphTraced, refreshSavedTrace]);
 
-  // Step 5: compute the raw-vs-optimized comparison from the freshly drawn Weg
-  // (if any) or the stored raw_path. A pure dry run — nothing is written; the
-  // glyph is already saved on step 4.
+  // Compute the raw-vs-optimized comparison for the inline WegPreview from the
+  // freshly drawn Weg (if any) or the stored raw_path. A pure dry run — nothing
+  // is written; the glyph is already saved on the Weg step.
   const computePreview = useCallback(async (nAnchors: number) => {
     if (!known || !bbox) return;
     let rawPath = flattenStrokes(strokes);

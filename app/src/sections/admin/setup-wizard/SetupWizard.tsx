@@ -43,7 +43,6 @@ import { WizardCanvas } from './WizardCanvas';
 import { STEPS } from './wizardTypes';
 import { LineaturStep } from './steps/LineaturStep';
 import { MaskStep } from './steps/MaskStep';
-import { OptimizeStep } from './steps/OptimizeStep';
 import { OverviewStep } from './steps/OverviewStep';
 import { SlantStep } from './steps/SlantStep';
 import { TraceStep } from './steps/TraceStep';
@@ -104,15 +103,9 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
             setWegTool={wizard.setWegTool}
             nudgeRadius={wizard.nudgeRadius}
             setNudgeRadius={wizard.setNudgeRadius}
-          />
-        );
-      case 'optimize':
-        return (
-          <OptimizeStep
             glyphKey={glyphKey}
             cropCacheBust={wizard.cropCacheBust}
-            hasDraftSource={wizard.savablePoints >= 2 || hasCanonical}
-            nAnchors={bbox.n_anchors}
+            savedAnchorCount={wizard.savedTrace?.anchorsPx.length}
             preview={wizard.preview}
             previewBusy={wizard.previewBusy}
             computePreview={wizard.computePreview}
@@ -133,8 +126,8 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
     }
   })();
 
-  // Weg → Optimieren needs the Weg SAVED first (the Optimieren step compares the
-  // stored canonical); Optimieren → Übersicht is free (pure review).
+  // Weg → Übersicht needs the Weg SAVED first (the inline preview + the overview
+  // both read the stored canonical); every other step advances freely.
   const canAdvance = stepId === 'weg' ? hasCanonical : true;
 
   return (
@@ -152,7 +145,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
         </Stepper>
       </Box>
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, flex: 1, minHeight: 0, gap: { xs: 1, md: 2 }, p: { xs: 1, md: 2 } }}>
-        {stepId === 'overview' || stepId === 'optimize' ? (
+        {stepId === 'overview' ? (
           <Box sx={{ flex: 1, overflowY: 'auto' }}>{panel}</Box>
         ) : (
           <>

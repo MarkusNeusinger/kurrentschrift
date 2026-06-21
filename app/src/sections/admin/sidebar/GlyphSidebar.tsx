@@ -3,13 +3,16 @@
 // a letter is selected, then offered as a toggle in the panel at the bottom.
 // One click on a letter activates it (and a sensible default position) and
 // makes its bboxes visible on the chart.
+//
+// The sidebar is pure selection/navigation: Einrichten · Diagnose · Sperren all
+// act on the active glyph and live in ONE place — the chart toolbar. Picking a
+// letter (or a position for a split letter) here just sets the active glyph the
+// toolbar then operates on.
 
-import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import GridViewIcon from '@mui/icons-material/GridView';
 import HomeIcon from '@mui/icons-material/Home';
 import LockIcon from '@mui/icons-material/Lock';
 import ViewColumnIcon from '@mui/icons-material/ViewColumn';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import {
   Box,
   Button,
@@ -38,7 +41,7 @@ const GROUP_LABELS: Record<LetterGroup, string> = {
 const GROUP_ORDER: LetterGroup[] = ['lower', 'upper', 'comb'];
 
 export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
-  const { source, sourceId, sources, switchSource, bboxesByKey, glyphsByKey, activeGlyph, visibleGlyphs, toggleVisible, setOnlyVisible, setActiveGlyph, openWizard, openDiagnose } =
+  const { source, sourceId, sources, switchSource, bboxesByKey, glyphsByKey, activeGlyph, visibleGlyphs, toggleVisible, setOnlyVisible, setActiveGlyph } =
     useAdmin();
   const navigate = useNavigate();
   const [openBase, setOpenBase] = useState<string | null>(null);
@@ -46,19 +49,6 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
   // On mobile the sidebar lives in a Drawer; navigating away should close it.
   const go = (path: string) => {
     navigate(path);
-    onNavigate?.();
-  };
-
-  // The wizard / diagnose modals are mounted in AppLayout; opening one also
-  // closes the mobile drawer so the full width is free.
-  const launchWizard = () => {
-    if (!activeGlyph) return;
-    openWizard(activeGlyph);
-    onNavigate?.();
-  };
-  const launchDiagnose = () => {
-    if (!activeGlyph) return;
-    openDiagnose(activeGlyph);
     onNavigate?.();
   };
 
@@ -88,6 +78,11 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
       POSITIONS.find((p) => hasBbox(glyphKeyFor(letter, p))) ??
       'medial';
     activatePosition(letter, pos);
+    // On mobile, a unified letter has nothing left to choose — close the drawer
+    // so the chart toolbar (the action hub) is reachable for the active glyph.
+    // A split letter keeps the drawer open so its position can be picked first;
+    // the position rows close it on tap. onNavigate is a no-op on desktop.
+    if (!isLetterSplit(glyphKeyFor(letter, 'medial'), bboxesByKey)) onNavigate?.();
   };
 
   const openLetter = openBase ? (LETTERS.find((l) => l.base === openBase) ?? null) : null;
@@ -241,26 +236,15 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
         })}
       </Box>
 
-      {/* Letter panel — shown once a letter is selected. A unified letter (the
-          default) hides position entirely: one "Einrichten" opens the wizard,
-          where the unified/split choice lives. A split letter (aufgetrennt)
-          lists its three positions so each can be edited on its own. */}
+      {/* Letter panel — shown once a letter is selected. Pure selection: it sets
+          the active glyph the chart toolbar acts on (Einrichten · Diagnose ·
+          Sperren all live there). A unified letter (the default) hides position
+          entirely; a split letter (aufgetrennt) lists its three positions so
+          each can be picked on its own. */}
       {openLetter &&
         (() => {
           const letter = openLetter;
           const split = isLetterSplit(glyphKeyFor(letter, 'medial'), bboxesByKey);
-          const editPosition = (p: Position) => {
-            const key = glyphKeyFor(letter, p);
-            activatePosition(letter, p);
-            openWizard(key);
-            onNavigate?.();
-          };
-          const diagnosePosition = (p: Position) => {
-            const key = glyphKeyFor(letter, p);
-            activatePosition(letter, p);
-            openDiagnose(key);
-            onNavigate?.();
-          };
           return (
             <Box sx={{ borderTop: 1, borderColor: 'divider', p: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 1 }}>
@@ -271,8 +255,8 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
                 </Typography>
               </Box>
 
-              {split ? (
-                <Stack spacing={0.5}>
+              {split && (
+                <Stack spacing={0.5} sx={{ mb: 1 }}>
                   {POSITIONS.map((p) => {
                     const key = glyphKeyFor(letter, p);
                     const canon = hasCanon(key);
@@ -280,17 +264,26 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
                     const locked = isLocked(key);
                     const selected = activeGlyph === key;
                     return (
-                      <Box
+                      <ButtonBase
                         key={p}
+                        onClick={() => {
+                          activatePosition(letter, p);
+                          // Mobile: position picked → close the drawer so the
+                          // toolbar is reachable (no-op on desktop).
+                          onNavigate?.();
+                        }}
                         sx={{
                           display: 'flex',
                           alignItems: 'center',
                           gap: 1,
+                          justifyContent: 'flex-start',
                           border: '1px solid',
                           borderColor: selected ? 'primary.main' : 'divider',
+                          bgcolor: selected ? 'action.selected' : 'transparent',
                           borderRadius: 1,
                           px: 1,
-                          py: 0.25,
+                          py: 0.5,
+                          '&:hover': { borderColor: 'primary.light', bgcolor: 'action.hover' },
                         }}
                       >
                         <Box
@@ -303,65 +296,30 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
                             borderColor: 'divider',
                           }}
                         />
-                        <ButtonBase onClick={() => activatePosition(letter, p)} sx={{ flex: 1, justifyContent: 'flex-start' }}>
-                          <Typography variant="caption">
-                            {POSITION_LABEL[p]}
-                            {locked ? ' 🔒' : ''}
-                          </Typography>
-                        </ButtonBase>
-                        <Tooltip title={!bbox ? de.admin.sidebar.drawBboxFirst : locked ? de.admin.sidebar.lockedUnlockAbove : de.admin.sidebar.setup}>
-                          <span>
-                            <IconButton size="small" disabled={!bbox || locked} onClick={() => editPosition(p)}>
-                              <AutoFixHighIcon fontSize="small" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                        {canon && (
-                          <Tooltip title={de.admin.sidebar.diagnose}>
-                            <IconButton size="small" onClick={() => diagnosePosition(p)}>
-                              <VisibilityIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                      </Box>
+                        <Typography variant="caption" sx={{ flex: 1, textAlign: 'left' }}>
+                          {POSITION_LABEL[p]}
+                          {locked ? ' 🔒' : ''}
+                        </Typography>
+                      </ButtonBase>
                     );
                   })}
                 </Stack>
+              )}
+
+              {/* Where the actions are. The toolbar's buttons gate themselves on
+                  bbox/lock; the sidebar only flags the two cases that block them. */}
+              {activeGlyph && !hasBbox(activeGlyph) ? (
+                <Typography variant="caption" color="text.disabled" sx={{ display: 'block' }}>
+                  {de.admin.sidebar.noBboxHint}
+                </Typography>
+              ) : activeGlyph && isLocked(activeGlyph) ? (
+                <Typography variant="caption" color="text.disabled" sx={{ display: 'block' }}>
+                  {de.admin.sidebar.lockedHint}
+                </Typography>
               ) : (
-                <>
-                  <Button
-                    fullWidth
-                    size="small"
-                    variant="contained"
-                    startIcon={<AutoFixHighIcon />}
-                    disabled={!activeGlyph || !hasBbox(activeGlyph) || isLocked(activeGlyph)}
-                    onClick={launchWizard}
-                  >
-                    {de.admin.sidebar.setup}
-                  </Button>
-                  {activeGlyph && hasCanon(activeGlyph) && (
-                    <Button
-                      fullWidth
-                      size="small"
-                      variant="outlined"
-                      startIcon={<VisibilityIcon />}
-                      onClick={launchDiagnose}
-                      sx={{ mt: 1 }}
-                    >
-                      {de.admin.sidebar.diagnose}
-                    </Button>
-                  )}
-                  {activeGlyph && !hasBbox(activeGlyph) && (
-                    <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1 }}>
-                      {de.admin.sidebar.noBboxHint}
-                    </Typography>
-                  )}
-                  {activeGlyph && hasBbox(activeGlyph) && isLocked(activeGlyph) && (
-                    <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1 }}>
-                      {de.admin.sidebar.lockedHint}
-                    </Typography>
-                  )}
-                </>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                  {de.admin.sidebar.actionsHint}
+                </Typography>
               )}
             </Box>
           );
