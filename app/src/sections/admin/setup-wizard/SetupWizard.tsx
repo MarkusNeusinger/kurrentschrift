@@ -3,14 +3,14 @@
 // Back/Next and free jumping to earlier steps):
 //   1. Ausschluss  — freehand eraser (Radierer): paint over neighbouring ink so
 //                    it can't pollute the skeleton. Strokes → bbox.mask_strokes.
-//   2. Lineatur    — drag Grundlinie / Mittellinie; Oberlinie/Unterlinie derive,
-//                    each toggleable per glyph.
-//   3. Schräglage  — place + angle one or more slant guides (several individually
-//                    placed lines for m/n/u; all share the angle).
-//   4. Weg         — draw the ductus with the stylus; "Anpassen" then warp-drags
+//   2. Lineatur    — the full writing grid in one step: drag Grundlinie /
+//                    Mittellinie (Oberlinie/Unterlinie derive, each toggleable),
+//                    AND the Schräglage — one or more slant guides (several
+//                    individually placed lines for m/n/u; all share the angle).
+//   3. Weg         — draw the ductus with the stylus; "Anpassen" then warp-drags
 //                    the drawn line to iron out a wobble before saving; saves the
 //                    canonical and lets you re-sample it to a different anchor count.
-//   5. Übersicht   — open the (large) Diagnose modal to review, optionally apply
+//   4. Übersicht   — open the (large) Diagnose modal to review, optionally apply
 //                    to all positions, then approve → lock (the bbox's `locked`).
 //
 // This is the single editing surface — the advanced EditorPage was retired, so
@@ -21,11 +21,11 @@
 // in the admin context.
 //
 // The crop canvas carries a shared zoom/pan on every step (wheel or the floating
-// −/slider/+ control; Schwenken toggle or a wheel-zoomed drag to pan). Ausschluss
-// opens fit-to-view so the whole crop incl. the box edges (where a neighbour's ink
-// pokes in) is visible; the tracing steps then auto-zoom (defaultZoomFor) so a
-// small letter — a fresh bbox seeds its x-height band at only ~35 % of the box
-// height — fills the frame for the stylus. Anpassen returns to the full crop.
+// −/slider/+ control; Schwenken toggle or a wheel-zoomed drag to pan). Every step
+// opens fit-to-view — the whole glyph is visible for erasing the box edges,
+// placing the grid lines and tracing the Weg alike; the stylus user zooms in or
+// out by hand (the slider now also goes below fit, to shrink a big letter on a
+// large screen). Anpassen returns to the full crop.
 //
 // This file is only the Dialog shell (title, Stepper, canvas-vs-panel layout,
 // footer); the state + mutations live in useWizard, the viewport in useCropView,
@@ -44,7 +44,6 @@ import { STEPS } from './wizardTypes';
 import { LineaturStep } from './steps/LineaturStep';
 import { MaskStep } from './steps/MaskStep';
 import { OverviewStep } from './steps/OverviewStep';
-import { SlantStep } from './steps/SlantStep';
 import { TraceStep } from './steps/TraceStep';
 
 export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; open: boolean; onClose: () => void }) {
@@ -80,9 +79,16 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
           />
         );
       case 'lineatur':
-        return <LineaturStep bbox={bbox} source={source} guideVals={wizard.guideVals} updateGuides={wizard.updateGuides} />;
-      case 'slant':
-        return <SlantStep guideVals={wizard.guideVals} updateGuides={wizard.updateGuides} addSlantLine={wizard.addSlantLine} removeSlantLine={wizard.removeSlantLine} />;
+        return (
+          <LineaturStep
+            bbox={bbox}
+            source={source}
+            guideVals={wizard.guideVals}
+            updateGuides={wizard.updateGuides}
+            addSlantLine={wizard.addSlantLine}
+            removeSlantLine={wizard.removeSlantLine}
+          />
+        );
       case 'weg':
         return (
           <TraceStep
@@ -121,6 +127,11 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
             setApplyAll={wizard.setApplyAll}
             bboxesByKey={wizard.bboxesByKey}
             openDiagnose={wizard.openDiagnose}
+            cropCacheBust={wizard.cropCacheBust}
+            nAnchors={wizard.savedTrace?.anchorsPx.length}
+            preview={wizard.preview}
+            previewBusy={wizard.previewBusy}
+            computePreview={wizard.computePreview}
           />
         );
     }
@@ -174,8 +185,12 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
               commitInkStroke={wizard.commitInkStroke}
             />
             {/* On mobile this drops below the canvas with a capped, scrollable
-                height so the crop above it always stays visible. */}
-            <Box sx={{ width: { xs: '100%', md: 340 }, flexShrink: 0, overflowY: 'auto', maxHeight: { xs: '40%', md: 'none' } }}>{panel}</Box>
+                height so the crop above it always stays visible. The merged
+                Lineatur & Schräglage panel is the tallest, and its step needs no
+                fine drawing, so it gets more room there (the whole letter still
+                fits the shorter canvas) to surface the slant controls; the
+                drawing steps (Ausschluss/Weg) keep the canvas dominant. */}
+            <Box sx={{ width: { xs: '100%', md: 340 }, flexShrink: 0, overflowY: 'auto', maxHeight: { xs: stepId === 'lineatur' ? '50%' : '40%', md: 'none' } }}>{panel}</Box>
           </>
         )}
       </Box>

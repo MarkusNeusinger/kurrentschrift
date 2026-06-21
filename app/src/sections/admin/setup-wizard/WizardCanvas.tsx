@@ -53,6 +53,11 @@ function warpStrokes(
 // legible over both light paper and dark ink in the scanned crop.
 const GUIDE_SHADOW = 'drop-shadow(0 0 1.5px rgba(0,0,0,0.9))';
 
+// Downstroke tangent for a slant angle (deg, 90° = upright, measured from the
+// baseline). Shared by the slant-line render and the drag-projection so the
+// `90 - deg` convention lives in exactly one place.
+const slantTan = (deg: number): number => Math.tan(((90 - deg) * Math.PI) / 180);
+
 export function WizardCanvas({
   glyphKey,
   open,
@@ -190,7 +195,11 @@ export function WizardCanvas({
         return;
       }
       if (slantDrag) {
-        setSlantDrag({ ...slantDrag, curX: x });
+        // The handle sits below the baseline on the slanted line; project the
+        // pointer back onto the baseline along the slant so curX is the line's
+        // baseline-x (what commitSlant stores) — no jump when the handle is grabbed.
+        const tan = slantTan(guideVals.slantDeg);
+        setSlantDrag({ ...slantDrag, curX: x - tan * (bbox.baseline_y - y) });
         return;
       }
       if (stepId === 'mask' && maskDraft) {
@@ -210,7 +219,7 @@ export function WizardCanvas({
         });
       }
     },
-    [bbox, calibDrag, slantDrag, nudge, nudgeRadius, wegTool, stepId, maskDraft, drawing, cssToChart, panDrag, displayW, displayH, hostSize, setPanX, setPanY, setStrokes],
+    [bbox, calibDrag, slantDrag, nudge, nudgeRadius, wegTool, stepId, maskDraft, drawing, cssToChart, panDrag, displayW, displayH, hostSize, guideVals.slantDeg, setPanX, setPanY, setStrokes],
   );
 
   const onSvgPointerUp = useCallback(async () => {
@@ -253,7 +262,7 @@ export function WizardCanvas({
   const descenderCss = (bbox.baseline_y + (dR / xR) * xHeightPx - bbox.y0) * scale;
   const dragCss = calibDrag ? (calibDrag.curY - bbox.y0) * scale : null;
 
-  const tanSlant = Math.tan(((90 - guideVals.slantDeg) * Math.PI) / 180);
+  const tanSlant = slantTan(guideVals.slantDeg);
   const slantLineCss = (xBase: number) => ({
     x1: (xBase + tanSlant * (bbox.baseline_y - bbox.y0) - bbox.x0) * scale,
     y1: 0,
@@ -358,10 +367,10 @@ export function WizardCanvas({
             {stepId !== 'mask' && (
               <>
                 {guideVals.showAscender && ascenderCss >= 0 && ascenderCss <= displayH && (
-                  <line x1={0} y1={ascenderCss} x2={displayW} y2={ascenderCss} stroke="#bbb" strokeWidth={1.5} strokeDasharray="2 4" opacity={0.9} style={{ filter: GUIDE_SHADOW }} />
+                  <line x1={0} y1={ascenderCss} x2={displayW} y2={ascenderCss} stroke="#e6eaed" strokeWidth={2.25} strokeDasharray="7 5" opacity={1} style={{ filter: GUIDE_SHADOW }} />
                 )}
                 {guideVals.showDescender && descenderCss >= 0 && descenderCss <= displayH && (
-                  <line x1={0} y1={descenderCss} x2={displayW} y2={descenderCss} stroke="#bbb" strokeWidth={1.5} strokeDasharray="2 4" opacity={0.9} style={{ filter: GUIDE_SHADOW }} />
+                  <line x1={0} y1={descenderCss} x2={displayW} y2={descenderCss} stroke="#e6eaed" strokeWidth={2.25} strokeDasharray="7 5" opacity={1} style={{ filter: GUIDE_SHADOW }} />
                 )}
                 <g>
                   {stepId === 'lineatur' && (
@@ -409,8 +418,9 @@ export function WizardCanvas({
               </>
             )}
 
-            {/* Slant guide(s) — one or more parallel lines, each draggable on the slant step */}
-            {(stepId === 'slant' || stepId === 'weg') &&
+            {/* Slant guide(s) — one or more parallel lines, draggable on the
+                Lineatur step (Schräglage is folded into it), shown on Weg too */}
+            {(stepId === 'lineatur' || stepId === 'weg') &&
               slantXsLive.map((xb, i) => {
                 const ln = slantLineCss(xb);
                 const dragging = slantDrag?.index === i;
@@ -429,25 +439,35 @@ export function WizardCanvas({
                   />
                 );
               })}
-            {stepId === 'slant' &&
-              slantXsLive.map((xb, i) => (
-                <circle
-                  key={i}
-                  cx={(xb - bbox.x0) * scale}
-                  cy={baselineCss}
-                  r={8}
-                  fill={SLANT_COLOR}
-                  stroke="#0a2a14"
-                  strokeWidth={1}
-                  style={{ cursor: 'ew-resize' }}
-                  onPointerDown={(e) => {
-                    if (panning) return; // let the drag bubble to the SVG → pan
-                    e.stopPropagation();
-                    setSlantDrag({ index: i, curX: guideVals.slantXs[i] });
-                    e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
-                  }}
-                />
-              ))}
+            {stepId === 'lineatur' &&
+              slantXsLive.map((xb, i) => {
+                // The handle rides the slant line a little BELOW the baseline,
+                // clear of the full-width Grundlinie drag hit-zone — so grabbing
+                // the slant never steals a baseline drag (and vice versa). It
+                // stays ON the line (linear interp of the line's two endpoints at
+                // the handle's y), so the drag projection below has no jump.
+                const ln = slantLineCss(xb);
+                const hy = Math.min(displayH - 9, baselineCss + 22);
+                const hx = ln.x1 + ((ln.x2 - ln.x1) * hy) / displayH;
+                return (
+                  <circle
+                    key={i}
+                    cx={hx}
+                    cy={hy}
+                    r={8}
+                    fill={SLANT_COLOR}
+                    stroke="#0a2a14"
+                    strokeWidth={1}
+                    style={{ cursor: 'ew-resize' }}
+                    onPointerDown={(e) => {
+                      if (panning) return; // let the drag bubble to the SVG → pan
+                      e.stopPropagation();
+                      setSlantDrag({ index: i, curX: guideVals.slantXs[i] });
+                      e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
+                    }}
+                  />
+                );
+              })}
 
             {/* Eraser strokes (Radierer) — committed; taps render as discs */}
             {bbox.mask_strokes.map((m, i) => renderStroke(m, `m${i}`, overlay.eraser))}

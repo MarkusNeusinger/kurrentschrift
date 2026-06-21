@@ -149,8 +149,11 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
       </Box>
       <Divider />
 
-      {/* Letter grid — every letter, status dot in the corner. */}
-      <Box sx={{ flex: 1, overflowY: 'auto', px: 2, py: 1 }}>
+      {/* Letter grid — every letter, status dot in the corner. `scrollbarGutter:
+          stable` always reserves the scrollbar's width, so selecting a letter
+          (which adds the panel below and can push the grid into overflow) never
+          shifts the flex-wrap grid from a scrollbar popping in. */}
+      <Box sx={{ flex: 1, overflowY: 'auto', scrollbarGutter: 'stable', px: 2, py: 1 }}>
         {GROUP_ORDER.map((group) => {
           const letters = LETTERS.filter((l) => l.group === group);
           if (letters.length === 0) return null;

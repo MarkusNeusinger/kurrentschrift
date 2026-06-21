@@ -5,11 +5,13 @@
 import type { CouplingHeight } from '@/lib/api';
 import { de } from '@/locales';
 
-export type StepId = 'mask' | 'lineatur' | 'slant' | 'weg' | 'overview';
+// Schräglage is folded into the Lineatur step (the writing grid — horizontal
+// lineature + the slant of the downstrokes — is set in one place), so there is
+// no standalone 'slant' step; the slant guides/handles render on 'lineatur'.
+export type StepId = 'mask' | 'lineatur' | 'weg' | 'overview';
 export const STEPS: { id: StepId; label: string }[] = [
   { id: 'mask', label: de.wizard.steps.mask },
   { id: 'lineatur', label: de.wizard.steps.lineatur },
-  { id: 'slant', label: de.wizard.steps.slant },
   { id: 'weg', label: de.wizard.steps.weg },
   { id: 'overview', label: de.wizard.steps.overview },
 ];

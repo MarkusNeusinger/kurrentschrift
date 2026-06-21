@@ -22,9 +22,11 @@ import {
 } from '@mui/material';
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 
+import { InfoHint } from '@/components/InfoHint';
 import { couplingLabel, de } from '@/locales';
 import type { BboxIn, BboxOut, CouplingHeight, GuideConfig, StrokePoint, TracePreviewOut } from '@/lib/api';
 import type { GuideValues } from '../wizardTypes';
+import { HintHeading } from './HintHeading';
 import { WegPreview } from './WegPreview';
 
 const COUPLING_OPTIONS: CouplingHeight[] = ['baseline', 'midband', 'ascender', 'descender'];
@@ -124,12 +126,16 @@ export function TraceStep({
 
   return (
     <Stack spacing={1.5}>
-      <Typography variant="subtitle2">{de.wizard.trace.title}</Typography>
+      <HintHeading title={de.wizard.trace.title}>
+        <Typography variant="body2" gutterBottom>
+          {de.wizard.trace.body1}
+        </Typography>
+        <Typography variant="body2">
+          <b>{de.wizard.trace.penLiftBold}</b> {de.wizard.trace.penLiftAfterBold} <b>u</b> {de.wizard.trace.penLiftRest}
+        </Typography>
+      </HintHeading>
       <Typography variant="body2" color="text.secondary">
-        {de.wizard.trace.body1}
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        <b>{de.wizard.trace.penLiftBold}</b> {de.wizard.trace.penLiftAfterBold} <b>u</b> {de.wizard.trace.penLiftRest}
+        {de.wizard.trace.lead}
       </Typography>
 
       <ToggleButtonGroup
@@ -146,13 +152,13 @@ export function TraceStep({
       </ToggleButtonGroup>
       {wegTool === 'adjust' && (
         <Box>
-          <Typography variant="caption">
-            {de.wizard.trace.nudgeRadius} {nudgeRadius}px
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Typography variant="caption">
+              {de.wizard.trace.nudgeRadius} {nudgeRadius}px
+            </Typography>
+            <InfoHint title={de.wizard.trace.toolAdjust}>{de.wizard.trace.adjustHint}</InfoHint>
+          </Box>
           <Slider size="small" min={3} max={40} value={nudgeRadius} onChange={(_e, v) => typeof v === 'number' && setNudgeRadius(v)} />
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-            {de.wizard.trace.adjustHint}
-          </Typography>
         </Box>
       )}
 
@@ -191,10 +197,8 @@ export function TraceStep({
         <Button size="small" variant="outlined" startIcon={<RefreshIcon />} disabled={!hasCanonical || busy} onClick={() => void resample(commitAnchors())}>
           {de.wizard.trace.resample}
         </Button>
+        <InfoHint title={de.wizard.trace.anchorsLabel}>{de.wizard.trace.anchorsHint}</InfoHint>
       </Box>
-      <Typography variant="caption" color="text.secondary">
-        {de.wizard.trace.anchorsHint}
-      </Typography>
       <Box sx={{ display: 'flex', gap: 1 }}>
         <TextField select size="small" label={de.wizard.trace.entryCoupling} value={guideVals.entryCoupling} onChange={(e) => updateGuides({ entry_coupling: e.target.value as CouplingHeight })} sx={{ flex: 1 }} slotProps={{ select: { native: true } }}>
           {COUPLING_OPTIONS.map((c) => (
@@ -210,10 +214,8 @@ export function TraceStep({
             </option>
           ))}
         </TextField>
+        <InfoHint title={de.wizard.trace.entryCoupling}>{de.wizard.trace.couplingHint}</InfoHint>
       </Box>
-      <Typography variant="caption" color="text.secondary">
-        {de.wizard.trace.couplingHint}
-      </Typography>
 
       {hasCanonical && (
         <WegPreview
