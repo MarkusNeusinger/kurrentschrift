@@ -135,18 +135,22 @@ export function WegPreview({ glyphKey, cropCacheBust, hasDraftSource, nAnchors, 
   const { sourceId } = useAdmin();
   const t = de.wizard.optimize;
 
-  // Auto-compute the comparison once when a saved Weg exists without a preview.
-  const autoRan = useRef(false);
+  // Re-arm when the glyph changes so the next glyph computes fresh. Declared
+  // before the compute effect so a glyph switch resets the marker before it runs.
+  const lastComputed = useRef<number | null>(null);
   useEffect(() => {
-    if (!autoRan.current && hasDraftSource && !preview && !previewBusy) {
-      autoRan.current = true;
+    lastComputed.current = null;
+  }, [glyphKey]);
+  // Auto-compute when a saved Weg exists, and recompute whenever the anchor count
+  // changes (a re-save with a different n_anchors). `nAnchors` is the saved
+  // canonical's authoritative count (see the parent), not the possibly-lagging
+  // bbox value, so the preview always matches what was actually stored.
+  useEffect(() => {
+    if (hasDraftSource && !previewBusy && lastComputed.current !== nAnchors) {
+      lastComputed.current = nAnchors;
       void computePreview(nAnchors);
     }
-  }, [hasDraftSource, preview, previewBusy, nAnchors, computePreview]);
-  // Re-arm the auto-run when the glyph changes (the parent clears `preview`).
-  useEffect(() => {
-    if (!preview) autoRan.current = false;
-  }, [preview, glyphKey]);
+  }, [hasDraftSource, previewBusy, nAnchors, computePreview]);
 
   if (!hasDraftSource) return null;
 
@@ -164,7 +168,7 @@ export function WegPreview({ glyphKey, cropCacheBust, hasDraftSource, nAnchors, 
         </Typography>
         <Tooltip title={t.recompute}>
           <span>
-            <ToggleButton value="recompute" size="small" selected={false} disabled={previewBusy} onChange={() => void computePreview(nAnchors)}>
+            <ToggleButton value="recompute" size="small" selected={false} disabled={previewBusy} aria-label={t.recompute} onChange={() => void computePreview(nAnchors)}>
               <RefreshIcon fontSize="small" />
             </ToggleButton>
           </span>

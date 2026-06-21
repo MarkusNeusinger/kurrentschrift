@@ -105,6 +105,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
             setNudgeRadius={wizard.setNudgeRadius}
             glyphKey={glyphKey}
             cropCacheBust={wizard.cropCacheBust}
+            savedAnchorCount={wizard.savedTrace?.anchorsPx.length}
             preview={wizard.preview}
             previewBusy={wizard.previewBusy}
             computePreview={wizard.computePreview}

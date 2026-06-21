@@ -54,6 +54,7 @@ export function TraceStep({
   setNudgeRadius,
   glyphKey,
   cropCacheBust,
+  savedAnchorCount,
   preview,
   previewBusy,
   computePreview,
@@ -77,6 +78,10 @@ export function TraceStep({
   setNudgeRadius: (r: number) => void;
   glyphKey: string;
   cropCacheBust?: number;
+  // The saved canonical's authoritative anchor count (from the loaded overlay),
+  // used as the preview's resample target instead of the possibly-lagging
+  // bbox.n_anchors. Undefined until the overlay loads → falls back to the bbox.
+  savedAnchorCount?: number;
   preview: TracePreviewOut | null;
   previewBusy: boolean;
   computePreview: (nAnchors: number) => Promise<void>;
@@ -215,7 +220,7 @@ export function TraceStep({
           glyphKey={glyphKey}
           cropCacheBust={cropCacheBust}
           hasDraftSource={savablePoints >= 2 || hasCanonical}
-          nAnchors={bbox.n_anchors}
+          nAnchors={savedAnchorCount ?? bbox.n_anchors}
           preview={preview}
           previewBusy={previewBusy}
           computePreview={computePreview}
