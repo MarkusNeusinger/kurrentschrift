@@ -10,10 +10,11 @@ import { impressum } from './de/impressum';
 import { landing } from './de/landing';
 import { quiz } from './de/quiz';
 import { scribe } from './de/scribe';
+import { tafel } from './de/tafel';
 import { wizard } from './de/wizard';
 import { worksheet } from './de/worksheet';
 
-export const de = { common, landing, worksheet, scribe, quiz, admin, wizard, impressum } as const;
+export const de = { common, landing, worksheet, scribe, quiz, tafel, admin, wizard, impressum } as const;
 
 // Tiny interpolation helper for messages with embedded variables, mirroring
 // i18next's {{name}} placeholder syntax.

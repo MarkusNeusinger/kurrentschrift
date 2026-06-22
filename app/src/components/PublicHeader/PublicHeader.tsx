@@ -26,6 +26,7 @@ const TAP_WINDOW_MS = 800;
 const NAV = [
   { label: de.common.nav.write, to: paths.worksheet },
   { label: de.common.nav.scribe, to: paths.scribe },
+  { label: de.common.nav.tafel, to: paths.tafel },
   { label: de.common.nav.read, to: paths.quiz },
 ];
 
