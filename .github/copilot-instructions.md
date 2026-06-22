@@ -156,7 +156,7 @@ kurrentschrift/
 │   └── src/
 │       ├── routes/      # paths.ts route constants + lazy public/admin route sections
 │       ├── pages/       # thin default-export route mounts only
-│       ├── sections/    # feature views: landing/, lehrbuch/ (/lehrbuch primer), worksheet/,
+│       ├── sections/    # feature views: landing/, schriftkunde/ (/schriftkunde overview), worksheet/,
 │       │                #   scribe/ (/federprobe live writer), quiz/ (useQuizEngine),
 │       │                #   admin/{chart,setup-wizard,diagnostics,sidebar}
 │       ├── components/  # reusable UI: PaperBackground, PublicHeader, WrittenGlyph (one glyph),
@@ -185,9 +185,12 @@ kurrentschrift/
 └── README.md         # public pitch (English)
 ```
 
-`/app/` serves the public pages (`/` landing, `/lehrbuch` a compact
-source-cited primer on the three Ausgangsschriften with one specimen each,
-`/schreiben` worksheet
+`/app/` serves the public pages (`/` landing, `/schriftkunde` a compact
+source-cited overview of the three Ausgangsschriften (Grundbegriffe · the three
+scripts with one specimen each · Federn · Tinte · Buchstaben/Zahlen · chronology;
+section titles share the viridian-Kurrent-initial `CategoryHeading` with
+`/impressum`; the copyrighted Süß textbook is named + linked to its DNB record,
+never reproduced), `/schreiben` worksheet
 generator, `/federprobe` live word/sentence writing (synthesised Sütterlin
 ductus with generated Übergänge), `/quiz` letter quiz — paper-&-ink identity
 per `docs/concepts/style-guide.md`) and the admin behind `/admin/*`

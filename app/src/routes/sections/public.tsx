@@ -1,12 +1,12 @@
 import { lazy } from 'react';
-import type { RouteObject } from 'react-router-dom';
+import { Navigate, type RouteObject } from 'react-router-dom';
 
 import { AdminProvider } from '@/context/AdminContext';
 import { CONFIG } from '@/global-config';
 import { paths } from '@/routes/paths';
 
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
-const LehrbuchPage = lazy(() => import('@/pages/LehrbuchPage'));
+const SchriftkundePage = lazy(() => import('@/pages/SchriftkundePage'));
 const WorksheetPage = lazy(() => import('@/pages/WorksheetPage'));
 const ScribePage = lazy(() => import('@/pages/ScribePage'));
 const TafelPage = lazy(() => import('@/pages/TafelPage'));
@@ -16,10 +16,13 @@ const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 export const publicRoutes: RouteObject[] = [
   { path: paths.home, element: <LandingPage /> },
-  // The Lehrbuch's Sütterlin specimen writes live via <WrittenWord>, which
+  // The Schriftkunde's Sütterlin specimen writes live via <WrittenWord>, which
   // fetches from the API on its own (pinned to CONFIG.sourceId) and degrades
   // gracefully — so the page needs no AdminProvider and stays client-side.
-  { path: paths.lehrbuch, element: <LehrbuchPage /> },
+  { path: paths.schriftkunde, element: <SchriftkundePage /> },
+  // Legacy redirect: this page lived at /lehrbuch before the Schriftkunde rename —
+  // forward old links/bookmarks instead of dropping them on the NotFound route.
+  { path: '/lehrbuch', element: <Navigate to={paths.schriftkunde} replace /> },
   { path: paths.worksheet, element: <WorksheetPage /> },
   { path: paths.scribe, element: <ScribePage /> },
   { path: paths.impressum, element: <ImpressumPage /> },

@@ -24,7 +24,7 @@ const ADMIN_TAPS = 5;
 const TAP_WINDOW_MS = 800;
 
 const NAV = [
-  { label: de.common.nav.lehrbuch, to: paths.lehrbuch },
+  { label: de.common.nav.schriftkunde, to: paths.schriftkunde },
   { label: de.common.nav.write, to: paths.worksheet },
   { label: de.common.nav.scribe, to: paths.scribe },
   { label: de.common.nav.tafel, to: paths.tafel },
