@@ -99,6 +99,9 @@ export const lehrbuch = {
   specimen: {
     kurrentCaption: 'Schauschrift-Font (GL German Cursive)',
     suetterlinCaption: 'live geschrieben aus der gemeinfreien Vorlage von 1922 — die Synthese-Engine des Projekts',
+    // Shown when the engine can't render (cold/unreachable API) and the card
+    // falls back to the show-script font — kept truthful about what's on screen.
+    suetterlinCaptionFallback: 'Vorschau im Schauschrift-Font — die Synthese-Engine ist gerade nicht erreichbar',
     suetterlinWord: 'leſen',
     offenbacherPending:
       'Noch keine Vorlage im Repository. Gemeinfreie Primärquelle: Rudolf Koch, „Die Offenbacher Schrift" (1928).',

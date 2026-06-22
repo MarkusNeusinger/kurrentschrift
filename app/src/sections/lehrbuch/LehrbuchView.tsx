@@ -14,8 +14,9 @@
 //   · Offenbacher — no Vorlage in the repo yet; the public-domain primary source
 //                   (Koch 1928) is named instead of faking a glyph.
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, type ReactNode } from 'react';
 import { Box, Container, Link, Typography } from '@mui/material';
+import type { SxProps, Theme } from '@mui/material/styles';
 
 import { WrittenWord } from '@/components/WrittenWord';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
@@ -51,10 +52,14 @@ const proseLink = {
 
 type SourceRef = { label: string; href: string };
 
-// A "Quellen: a · b" line — the per-section / per-card citation row.
-function SourceLine({ sources, sx }: { sources: readonly SourceRef[]; sx?: object }) {
+// A "Quellen: a · b" line — the per-section / per-card citation row. `sx` is the
+// proper MUI SxProps and merged via the array form, so callers may pass any
+// valid sx shape (object / array / theme callback) without losing styles.
+function SourceLine({ sources, sx }: { sources: readonly SourceRef[]; sx?: SxProps<Theme> }) {
   return (
-    <Typography sx={{ fontFamily: garamond, fontSize: '0.82rem', color: paper.sepia, mt: 1, ...sx }}>
+    <Typography
+      sx={[{ fontFamily: garamond, fontSize: '0.82rem', color: paper.sepia, mt: 1 }, ...(Array.isArray(sx) ? sx : [sx])]}
+    >
       {t.sourcesLabel}{' '}
       {sources.map((s, i) => (
         <Box component="span" key={s.href}>
@@ -68,70 +73,70 @@ function SourceLine({ sources, sx }: { sources: readonly SourceRef[]; sx?: objec
   );
 }
 
-// Sütterlin specimen — the engine writes the word live; on a cold/unreachable
-// API (nothing rendered or an error) it falls back to the show-script font so
-// the card is never an empty hole. The caption follows the active mode.
-function SuetterlinSpecimen({ word }: { word: string }) {
+// Show-script font specimen style, reused by the Kurrent card and the Sütterlin
+// fallback (the GLKurrent face stands in when the engine can't render).
+const fontSpecimenSx = { fontFamily: script, fontSize: 'clamp(2.4rem, 6vw, 3.2rem)', color: paper.ink, lineHeight: 1 } as const;
+// Fixed-height specimen box so the three cards line up.
+const specimenBoxSx = {
+  mt: 1.75,
+  minHeight: 104,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderTop: `1px solid ${paper.line}`,
+  borderBottom: `1px solid ${paper.line}`,
+  py: 1.5,
+} as const;
+const specimenCaptionSx = { fontFamily: garamond, fontStyle: 'italic', fontSize: '0.76rem', color: paper.sepia, mt: 0.75, textAlign: 'center' } as const;
+
+// One variant's specimen box + caption (see file header). The Sütterlin block is
+// stateful: the engine writes the word live, and on a cold/unreachable API
+// (nothing rendered or an error) it falls back to the show-script font — and the
+// caption switches with it, so it never claims "live geschrieben … Synthese-
+// Engine" while the static font fallback is on screen.
+function SpecimenBlock({ id }: { id: string }) {
   const [fallback, setFallback] = useState(false);
   const onResolved = useCallback(({ rendered }: { rendered: number }) => {
     if (rendered === 0) setFallback(true);
   }, []);
   const onError = useCallback(() => setFallback(true), []);
 
-  if (fallback) {
-    return (
-      <Box sx={{ fontFamily: script, fontSize: 'clamp(2.4rem, 6vw, 3.2rem)', color: paper.ink, lineHeight: 1 }}>
-        {word}
-      </Box>
-    );
-  }
-  return (
-    <WrittenWord
-      text={word}
-      height={84}
-      durationMs={2400}
-      maxWidth={260}
-      showReplay
-      onResolved={onResolved}
-      onError={onError}
-    />
-  );
-}
+  let content: ReactNode;
+  let caption: string | null = null;
 
-// One variant's specimen, chosen by id (see file header).
-function VariantSpecimen({ id }: { id: string }) {
   if (id === 'kurrent') {
-    return (
-      <Box sx={{ fontFamily: script, fontSize: 'clamp(2.4rem, 6vw, 3.2rem)', color: paper.ink, lineHeight: 1 }}>
-        {t.variants[0].name}
-      </Box>
+    content = <Box sx={fontSpecimenSx}>{t.variants[0].name}</Box>;
+    caption = t.specimen.kurrentCaption;
+  } else if (id === 'suetterlin') {
+    content = fallback ? (
+      <Box sx={fontSpecimenSx}>{t.specimen.suetterlinWord}</Box>
+    ) : (
+      <WrittenWord
+        text={t.specimen.suetterlinWord}
+        height={84}
+        durationMs={2400}
+        maxWidth={260}
+        showReplay
+        onResolved={onResolved}
+        onError={onError}
+      />
+    );
+    caption = fallback ? t.specimen.suetterlinCaptionFallback : t.specimen.suetterlinCaption;
+  } else {
+    // offenbacher — no glyph; name the public-domain source instead of faking one.
+    content = (
+      <Typography sx={{ fontFamily: garamond, fontStyle: 'italic', fontSize: '0.86rem', color: paper.sepia, textAlign: 'center', lineHeight: 1.5, px: 1 }}>
+        {t.specimen.offenbacherPending}
+      </Typography>
     );
   }
-  if (id === 'suetterlin') {
-    return <SuetterlinSpecimen word={t.specimen.suetterlinWord} />;
-  }
-  // offenbacher — no glyph; name the public-domain source instead of faking one.
-  return (
-    <Typography
-      sx={{
-        fontFamily: garamond,
-        fontStyle: 'italic',
-        fontSize: '0.86rem',
-        color: paper.sepia,
-        textAlign: 'center',
-        lineHeight: 1.5,
-        px: 1,
-      }}
-    >
-      {t.specimen.offenbacherPending}
-    </Typography>
-  );
-}
 
-function specimenCaption(id: string): string | null {
-  if (id === 'kurrent') return t.specimen.kurrentCaption;
-  if (id === 'suetterlin') return t.specimen.suetterlinCaption;
-  return null;
+  return (
+    <>
+      <Box sx={specimenBoxSx}>{content}</Box>
+      {caption && <Typography sx={specimenCaptionSx}>{caption}</Typography>}
+    </>
+  );
 }
 
 export function LehrbuchView() {
@@ -183,7 +188,6 @@ export function LehrbuchView() {
           <Typography sx={{ ...overline, display: 'block', mb: 2 }}>{t.variantsHeading}</Typography>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2.5 }}>
             {t.variants.map((v) => {
-              const caption = specimenCaption(v.id);
               return (
                 <Box
                   key={v.id}
@@ -203,26 +207,8 @@ export function LehrbuchView() {
                     {v.period}
                   </Typography>
 
-                  {/* specimen — fixed-height so the three cards line up */}
-                  <Box
-                    sx={{
-                      mt: 1.75,
-                      minHeight: 104,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderTop: `1px solid ${paper.line}`,
-                      borderBottom: `1px solid ${paper.line}`,
-                      py: 1.5,
-                    }}
-                  >
-                    <VariantSpecimen id={v.id} />
-                  </Box>
-                  {caption && (
-                    <Typography sx={{ fontFamily: garamond, fontStyle: 'italic', fontSize: '0.76rem', color: paper.sepia, mt: 0.75, textAlign: 'center' }}>
-                      {caption}
-                    </Typography>
-                  )}
+                  {/* specimen box + caption — caption is state-aware for Sütterlin */}
+                  <SpecimenBlock id={v.id} />
 
                   <Typography sx={{ ...prose, fontSize: '0.95rem', mt: 1.75 }}>{v.essence}</Typography>
 
