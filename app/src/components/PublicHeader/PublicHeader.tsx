@@ -24,6 +24,7 @@ const ADMIN_TAPS = 5;
 const TAP_WINDOW_MS = 800;
 
 const NAV = [
+  { label: de.common.nav.lehrbuch, to: paths.lehrbuch },
   { label: de.common.nav.write, to: paths.worksheet },
   { label: de.common.nav.scribe, to: paths.scribe },
   { label: de.common.nav.tafel, to: paths.tafel },
@@ -120,8 +121,13 @@ export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
           </Box>
         </Box>
 
-        {/* nav — viridian hover-underline */}
-        <Stack direction="row" spacing={{ xs: 2.5, sm: 3.5 }} sx={{ alignItems: 'center' }}>
+        {/* nav — viridian hover-underline; wraps under the brand on narrow
+            viewports so the fifth entry can't push the bar to overflow */}
+        <Stack
+          direction="row"
+          spacing={{ xs: 1.75, sm: 3 }}
+          sx={{ alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end', rowGap: 0.5 }}
+        >
           {NAV.map((n) => (
             <Link
               key={n.to}

@@ -70,6 +70,7 @@ export const common = {
     tld: '.ink',
   },
   nav: {
+    lehrbuch: 'Lehrbuch',
     write: 'Schreiben',
     scribe: 'Federprobe',
     tafel: 'Tafel',
