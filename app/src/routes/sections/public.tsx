@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import type { RouteObject } from 'react-router-dom';
+import { Navigate, type RouteObject } from 'react-router-dom';
 
 import { AdminProvider } from '@/context/AdminContext';
 import { CONFIG } from '@/global-config';
@@ -20,6 +20,9 @@ export const publicRoutes: RouteObject[] = [
   // fetches from the API on its own (pinned to CONFIG.sourceId) and degrades
   // gracefully — so the page needs no AdminProvider and stays client-side.
   { path: paths.schriftkunde, element: <SchriftkundePage /> },
+  // Legacy redirect: this page lived at /lehrbuch before the Schriftkunde rename —
+  // forward old links/bookmarks instead of dropping them on the NotFound route.
+  { path: '/lehrbuch', element: <Navigate to={paths.schriftkunde} replace /> },
   { path: paths.worksheet, element: <WorksheetPage /> },
   { path: paths.scribe, element: <ScribePage /> },
   { path: paths.impressum, element: <ImpressumPage /> },
