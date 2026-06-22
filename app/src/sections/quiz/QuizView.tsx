@@ -65,14 +65,8 @@ export function QuizView() {
               setScript={quiz.setScript}
               mode={quiz.mode}
               setMode={quiz.setMode}
-              caseMode={quiz.caseMode}
-              setCaseMode={quiz.setCaseMode}
-              answerMode={quiz.answerMode}
-              setAnswerMode={quiz.setAnswerMode}
               difficulty={quiz.difficulty}
               setDifficulty={quiz.setDifficulty}
-              lowerCount={quiz.lowerCount}
-              upperCount={quiz.upperCount}
               poolSize={quiz.poolSize}
               onStart={quiz.start}
             />
