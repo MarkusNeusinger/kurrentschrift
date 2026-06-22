@@ -10,7 +10,7 @@
 // glyph status the admin curated — but it never follows the admin's runtime
 // source switcher.
 
-import { Box, Container, Dialog, DialogContent, IconButton, Paper, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { Box, Container, Dialog, DialogContent, IconButton, Link, Paper, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useMemo, useState } from 'react';
 
@@ -29,6 +29,13 @@ type View = 'original' | 'written';
 // One representative position per letter prefers the medial form (the body shape
 // most letters share), falling back to initial then final.
 const PREFERRED_POSITIONS: Position[] = ['medial', 'initial', 'final'];
+
+// Friendly German labels for the short license codes stored on a source; the raw
+// code is the fallback for anything not mapped here.
+const LICENSE_LABELS: Record<string, string> = {
+  PD: 'Gemeinfrei (Public Domain)',
+  CC0: 'CC0 (gemeinfrei)',
+};
 
 interface WrittenLetter {
   key: string; // representative glyph_key with a canonical
@@ -108,22 +115,15 @@ export function TafelView() {
           </ToggleButtonGroup>
 
           {view === 'original' ? (
-            <Stack spacing={1}>
-              <Paper variant="outlined" sx={{ p: 1, bgcolor: paper.hi, overflow: 'auto', maxHeight: '75vh' }}>
-                <Box
-                  component="img"
-                  src={chartUrl(CONFIG.sourceId)}
-                  alt={de.tafel.originalAlt}
-                  sx={{ display: 'block', width: '100%', height: 'auto', userSelect: 'none' }}
-                  draggable={false}
-                />
-              </Paper>
-              {(source.attribution || source.title) && (
-                <Typography variant="caption" sx={{ color: paper.inkSoft }}>
-                  {source.attribution ?? source.title}
-                </Typography>
-              )}
-            </Stack>
+            <Paper variant="outlined" sx={{ p: 1, bgcolor: paper.hi, overflow: 'auto', maxHeight: '75vh' }}>
+              <Box
+                component="img"
+                src={chartUrl(CONFIG.sourceId)}
+                alt={de.tafel.originalAlt}
+                sx={{ display: 'block', width: '100%', height: 'auto', userSelect: 'none' }}
+                draggable={false}
+              />
+            </Paper>
           ) : letters.length === 0 ? (
             <Typography sx={{ color: paper.inkSoft }}>{de.tafel.empty}</Typography>
           ) : (
@@ -172,6 +172,41 @@ export function TafelView() {
               ))}
             </Box>
           )}
+
+          {/* Short explanation of the underlying source chart + its provenance,
+              shown under both views (it's about the chart both derive from). */}
+          <Paper variant="outlined" sx={{ p: 2, bgcolor: paper.hi }}>
+            <Stack spacing={1}>
+              <Typography component="h2" sx={{ fontFamily: garamond, fontStyle: 'italic', fontSize: '1.25rem' }}>
+                {de.tafel.source.heading}
+              </Typography>
+              <Typography variant="body2" sx={{ color: paper.inkSoft, maxWidth: '60ch' }}>
+                {de.tafel.source.blurb}
+              </Typography>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                {source.title}
+              </Typography>
+              {source.attribution && (
+                <Typography variant="caption" sx={{ color: paper.inkSoft }}>
+                  {source.attribution}
+                </Typography>
+              )}
+              <Typography variant="caption" sx={{ color: paper.inkSoft }}>
+                {de.tafel.source.licenseLabel}: {LICENSE_LABELS[source.license] ?? source.license}
+              </Typography>
+              {source.origin_url && (
+                <Link
+                  href={source.origin_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variant="body2"
+                  sx={{ color: paper.viridian, alignSelf: 'flex-start' }}
+                >
+                  {de.tafel.source.originLink}
+                </Link>
+              )}
+            </Stack>
+          </Paper>
         </Stack>
       </Container>
 

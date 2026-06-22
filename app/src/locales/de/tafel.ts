@@ -13,6 +13,14 @@ export const tafel = {
   originalAlt: 'Original-Schreibtafel (Scan der Vorlage)',
   // Empty state when no letter is finished (locked) and written yet.
   empty: 'Buchstaben erscheinen hier, sobald sie fertig nachgeschrieben und freigegeben sind.',
+  // Short explanation of the underlying source chart, shown on both views.
+  source: {
+    heading: 'Über die Vorlage',
+    blurb:
+      'Diese Seite zeigt eine historische Lehrtafel und schreibt ihre Buchstaben nach. Die gemeinfreie Vorlage liefert die Formen; die nachgeschriebene Bewegung — der Zug der Feder — ist die eigene Rekonstruktion dieses Projekts.',
+    licenseLabel: 'Lizenz',
+    originLink: 'Zur Originalquelle',
+  },
   // Per-card / modal helpers.
   replayHint: 'antippen zum Nachschreiben',
   close: 'Schließen',
