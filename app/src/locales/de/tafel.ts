@@ -11,8 +11,8 @@ export const tafel = {
   viewWritten: 'Geschrieben',
   // Caption under the original scan.
   originalAlt: 'Original-Schreibtafel (Scan der Vorlage)',
-  // Empty state when no letter has a traced ductus yet.
-  empty: 'Für diese Vorlage wurde noch kein Buchstabe nachgeschrieben.',
+  // Empty state when no letter is finished (locked) and written yet.
+  empty: 'Buchstaben erscheinen hier, sobald sie fertig nachgeschrieben und freigegeben sind.',
   // Per-card / modal helpers.
   replayHint: 'antippen zum Nachschreiben',
   close: 'Schließen',

@@ -1,9 +1,9 @@
 // TafelView — the public writing-chart page (`/tafel`, German "Schreibtafel").
 // Shows the source teaching chart two ways, switched by one toggle:
 //   - "Original": the raw chart scan the templates were authored from.
-//   - "Geschrieben" (written): every letter that has a traced canonical,
-//     rendered "as written" (WrittenGlyph) — the chart writing itself. Tapping a
-//     letter opens it large and replays the ductus.
+//   - "Geschrieben" (written): every finished (locked) letter that has a traced
+//     canonical, rendered "as written" (WrittenGlyph) — the chart writing
+//     itself. Tapping a letter opens it large and replays the ductus.
 //
 // Like the quiz, this rides on the site-wide public source (CONFIG.sourceId) via
 // the pinned AdminProvider mounted in the route, so it reads the same bboxes +
@@ -36,22 +36,24 @@ interface WrittenLetter {
 }
 
 export function TafelView() {
-  const { source, glyphsByKey, loadError, waking } = useAdmin();
+  const { source, bboxesByKey, glyphsByKey, loadError, waking } = useAdmin();
   const [view, setView] = useState<View>('original');
   // The letter shown large in the replay modal, or null when closed.
   const [active, setActive] = useState<WrittenLetter | null>(null);
 
-  // Every letter that owns a traced canonical, deduped to one entry per letter
-  // (its three positions usually share one authored form), ordered by the
-  // alphabet registry. glyphKeyFor folds the s/ſ allograph key overrides in, so
-  // the two never collapse into one card.
+  // Every letter that is both locked (the admin's "finished" marker) AND owns a
+  // traced canonical, deduped to one entry per letter (its three positions
+  // usually share one authored form), ordered by the alphabet registry. Locking
+  // is the same public-readiness gate the quiz uses, so the Tafel never surfaces
+  // a half-calibrated form. glyphKeyFor folds the s/ſ allograph key overrides
+  // in, so the two never collapse into one card.
   const letters = useMemo<WrittenLetter[]>(() => {
     const out: WrittenLetter[] = [];
     for (const letter of LETTERS) {
       let repKey: string | undefined;
       for (const position of PREFERRED_POSITIONS) {
         const key = glyphKeyFor(letter, position);
-        if (glyphsByKey[key]?.has_data) {
+        if (glyphsByKey[key]?.has_data && bboxesByKey[key]?.locked) {
           repKey = key;
           break;
         }
@@ -59,7 +61,7 @@ export function TafelView() {
       if (repKey) out.push({ key: repKey, glyph: letter.glyph });
     }
     return out;
-  }, [glyphsByKey]);
+  }, [bboxesByKey, glyphsByKey]);
 
   if (loadError) {
     return (
