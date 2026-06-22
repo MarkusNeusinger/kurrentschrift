@@ -4,7 +4,7 @@
 // the /de/ and /en/ i18n prefixes (post-MVP) will wrap these in one place too.
 export const paths = {
   home: '/',
-  lehrbuch: '/lehrbuch',
+  schriftkunde: '/schriftkunde',
   worksheet: '/schreiben',
   scribe: '/federprobe',
   tafel: '/tafel',
