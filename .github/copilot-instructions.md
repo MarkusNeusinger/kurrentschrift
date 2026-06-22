@@ -156,8 +156,9 @@ kurrentschrift/
 │   └── src/
 │       ├── routes/      # paths.ts route constants + lazy public/admin route sections
 │       ├── pages/       # thin default-export route mounts only
-│       ├── sections/    # feature views: landing/, worksheet/, scribe/ (/federprobe live writer),
-│       │                #   quiz/ (useQuizEngine), admin/{chart,setup-wizard,diagnostics,sidebar}
+│       ├── sections/    # feature views: landing/, lehrbuch/ (/lehrbuch primer), worksheet/,
+│       │                #   scribe/ (/federprobe live writer), quiz/ (useQuizEngine),
+│       │                #   admin/{chart,setup-wizard,diagnostics,sidebar}
 │       ├── components/  # reusable UI: PaperBackground, PublicHeader, WrittenGlyph (one glyph),
 │       │                #   WrittenWord (a word/line + Übergänge as written), BootStatus
 │       ├── layouts/     # admin shell (AdminLayout + AdminModals)
@@ -184,7 +185,9 @@ kurrentschrift/
 └── README.md         # public pitch (English)
 ```
 
-`/app/` serves the public pages (`/` landing, `/schreiben` worksheet
+`/app/` serves the public pages (`/` landing, `/lehrbuch` a compact
+source-cited primer on the three Ausgangsschriften with one specimen each,
+`/schreiben` worksheet
 generator, `/federprobe` live word/sentence writing (synthesised Sütterlin
 ductus with generated Übergänge), `/quiz` letter quiz — paper-&-ink identity
 per `docs/concepts/style-guide.md`) and the admin behind `/admin/*`

@@ -6,6 +6,7 @@ import { CONFIG } from '@/global-config';
 import { paths } from '@/routes/paths';
 
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
+const LehrbuchPage = lazy(() => import('@/pages/LehrbuchPage'));
 const WorksheetPage = lazy(() => import('@/pages/WorksheetPage'));
 const ScribePage = lazy(() => import('@/pages/ScribePage'));
 const TafelPage = lazy(() => import('@/pages/TafelPage'));
@@ -15,6 +16,10 @@ const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 export const publicRoutes: RouteObject[] = [
   { path: paths.home, element: <LandingPage /> },
+  // The Lehrbuch's Sütterlin specimen writes live via <WrittenWord>, which
+  // fetches from the API on its own (pinned to CONFIG.sourceId) and degrades
+  // gracefully — so the page needs no AdminProvider and stays client-side.
+  { path: paths.lehrbuch, element: <LehrbuchPage /> },
   { path: paths.worksheet, element: <WorksheetPage /> },
   { path: paths.scribe, element: <ScribePage /> },
   { path: paths.impressum, element: <ImpressumPage /> },
