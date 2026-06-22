@@ -1,9 +1,9 @@
-// TafelView — the public Schreibtafel page (`/tafel`). Shows the source teaching
-// chart two ways, switched by one toggle:
-//   - Original: the raw chart scan the templates were authored from.
-//   - Geschrieben: every letter that has a traced canonical, rendered "as
-//     written" (WrittenGlyph) — the chart writing itself. Tapping a letter opens
-//     it large and replays the ductus.
+// TafelView — the public writing-chart page (`/tafel`, German "Schreibtafel").
+// Shows the source teaching chart two ways, switched by one toggle:
+//   - "Original": the raw chart scan the templates were authored from.
+//   - "Geschrieben" (written): every letter that has a traced canonical,
+//     rendered "as written" (WrittenGlyph) — the chart writing itself. Tapping a
+//     letter opens it large and replays the ductus.
 //
 // Like the quiz, this rides on the site-wide public source (CONFIG.sourceId) via
 // the pinned AdminProvider mounted in the route, so it reads the same bboxes +
@@ -175,7 +175,13 @@ export function TafelView() {
 
       {/* Replay modal: a large WrittenGlyph that re-writes the ductus on open
           (fresh mount per letter) — and its own replay button for another pass. */}
-      <Dialog open={active !== null} onClose={() => setActive(null)} maxWidth="xs" fullWidth>
+      <Dialog
+        open={active !== null}
+        onClose={() => setActive(null)}
+        maxWidth="xs"
+        fullWidth
+        aria-label={active ? `${active.glyph} — ${de.tafel.title}` : de.tafel.title}
+      >
         <DialogContent sx={{ position: 'relative', bgcolor: paper.hi, display: 'flex', justifyContent: 'center', py: 4 }}>
           <IconButton
             onClick={() => setActive(null)}

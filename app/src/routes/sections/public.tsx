@@ -19,9 +19,10 @@ export const publicRoutes: RouteObject[] = [
   { path: paths.scribe, element: <ScribePage /> },
   { path: paths.impressum, element: <ImpressumPage /> },
   {
-    // The Schreibtafel reads the source chart + its bboxes/glyph status to know
-    // which letters have a traced ductus, so it needs the data provider — pinned
-    // to the site-wide source like the quiz, never following the admin switcher.
+    // The writing-chart page (German "Schreibtafel") reads the source chart +
+    // its bboxes/glyph status to know which letters have a traced ductus, so it
+    // needs the data provider — pinned to the site-wide source like the quiz,
+    // never following the admin switcher.
     path: paths.tafel,
     element: (
       <AdminProvider pinnedSourceId={CONFIG.sourceId}>
