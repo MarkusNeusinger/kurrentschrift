@@ -16,26 +16,17 @@ export const quiz = {
   },
   setup: {
     intro:
-      'Erkenne die Buchstaben der alten deutschen Schreibschrift: Jeder wird dir Zug um Zug vorgeschrieben — in der Reihenfolge der Feder — und du tippst oder wählst, welcher es ist. Stimmt deine Wahl, blendet sich die Form grün ein und es geht weiter; liegst du daneben, leuchtet sie rot auf, die Lösung erscheint, und du klickst dich weiter. Am Ende siehst du, welche Buchstaben dir Mühe gemacht haben.',
+      'Erkenne die Buchstaben der alten deutschen Schreibschrift: Jeder wird dir Zug um Zug vorgeschrieben — in der Reihenfolge der Feder — und du wählst aus, welcher es ist. Stimmt deine Wahl, blendet sich die Form grün ein und es geht weiter; liegst du daneben, leuchtet sie rot auf, die Lösung erscheint, und du klickst dich weiter. Am Ende siehst du, welche Buchstaben dir Mühe gemacht haben.',
     scriptLabel: 'Schrift',
-    // Combined Modus + Groß-/Kleinschreibung selector: case options plus the
-    // "Wörter" mode in one row, so the setup stays compact.
+    // Task selector: single letters or whole words. No upper-/lowercase split any
+    // more — letters always drill the full alphabet, mixed case.
     taskLabel: 'Aufgabe',
-    modeLabel: 'Modus',
     modeLetters: 'Buchstaben',
     modeWords: 'Wörter',
-    lettersLabel: 'Buchstaben',
-    answerLabel: 'Antwort',
     difficultyLabel: 'Schwierigkeit',
-    caseLower: 'Klein ({{count}})',
-    caseUpper: 'Groß ({{count}})',
-    caseMixed: 'Gemischt',
-    answerType: 'Tippen',
-    answerChoice: 'Auswahl (Multiple Choice)',
     difficultyHint:
       'Höhere Stufen zeigen denselben Buchstaben in unsaubereren Handschriften — sobald solche Vorlagen vorliegen.',
     noLetters: 'Für diese Auswahl sind noch keine Buchstaben freigegeben.',
-    noLettersUpper: 'Großbuchstaben erscheinen hier, sobald sie im Admin-Bereich fertig kalibriert und gesperrt sind.',
     noLettersOther: 'Buchstaben erscheinen hier, sobald sie im Admin-Bereich fertig kalibriert und gesperrt sind.',
     start: 'Quiz starten',
   },

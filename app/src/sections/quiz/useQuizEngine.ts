@@ -9,7 +9,6 @@ import { knownGlyph, quizKeysFromLocked, type KnownGlyph } from '@/domain/glyphs
 import { type Difficulty } from '@/sections/quiz/quizTypes';
 import { useAdmin } from '@/context/AdminContext';
 
-export type CaseMode = 'lower' | 'upper' | 'mixed';
 export type AnswerMode = 'type' | 'choice';
 // Quiz subject: single letters (today) or whole words (post-MVP, disabled in
 // setup for now).
@@ -66,10 +65,10 @@ export function useQuizEngine() {
 
   const [script, setScript] = useState('suetterlin');
   const [mode, setMode] = useState<QuizMode>('letters');
-  // Defaults the learner most often wants: all letters at once, picked from
-  // multiple choice.
-  const [caseMode, setCaseMode] = useState<CaseMode>('mixed');
-  const [answerMode, setAnswerMode] = useState<AnswerMode>('choice');
+  // Answer mode is locked to multiple choice for now ("erstmal"). The typed-input
+  // path is still implemented in the engine and the play panel — it just isn't
+  // offered in the setup any more — so it can be re-enabled without rebuilding it.
+  const answerMode: AnswerMode = 'choice';
   const [difficulty, setDifficulty] = useState<Difficulty>('clean');
   // Prompt view (Geschrieben/Original). Persists across questions; only a new
   // session resets it to the written default.
@@ -126,13 +125,11 @@ export function useQuizEngine() {
     [bboxesByKey, glyphsByKey],
   );
 
-  const lowerCount = useMemo(() => allItems.filter((i) => i.kg.letterCase === 'lower').length, [allItems]);
-  const upperCount = useMemo(() => allItems.filter((i) => i.kg.letterCase === 'upper').length, [allItems]);
-
-  const pool = useMemo(
-    () => allItems.filter((i) => caseMode === 'mixed' || i.kg.letterCase === caseMode),
-    [allItems, caseMode],
-  );
+  // No lower/upper split any more: a letter session always draws from the full
+  // locked alphabet (both cases mixed). buildChoices still keeps each question's
+  // distractors in the SAME case as the shown glyph, so the displayed case and
+  // the overlaid crop agree per question.
+  const pool = allItems;
 
   // Distractors prefer real specimens so every option can overlay its own crop:
   // other locked letters of the SAME case (so the displayed case and the overlaid
@@ -322,14 +319,9 @@ export function useQuizEngine() {
     setScript,
     mode,
     setMode,
-    caseMode,
-    setCaseMode,
     answerMode,
-    setAnswerMode,
     difficulty,
     setDifficulty,
-    lowerCount,
-    upperCount,
     poolSize: pool.length,
     // session state
     started,
