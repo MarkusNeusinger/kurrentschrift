@@ -28,7 +28,7 @@ Siehe [`docs/reference/datenablage.md`](../docs/reference/datenablage.md) §1.
 | `vos-1903` | [`sources/vos-1903/`](sources/vos-1903/SOURCE.md) | PD-Tafel (JPG) | PD (anonyme Tafel §66 UrhG; Autor † 1945; PD-US) | Wikimedia Commons |
 | `joynes-1887` | [`sources/joynes-1887/`](sources/joynes-1887/SOURCE.md) | PD-Tafeln (2× JPG) | PD (Autor † 1917; anonyme Stiche 1887; PDM 1.0) | Wikimedia Commons |
 | `suetterlin-1922` | [`sources/suetterlin-1922/`](sources/suetterlin-1922/SOURCE.md) | PD-Tafel (JPG + SVG) | PD-old-70 (Sütterlin † 1917; DNB-Scan §68 UrhG; PDM 1.0) | Wikimedia Commons (DNB-Digitalisat) |
-| `koch-1928` | [`sources/koch-1928/`](sources/koch-1928/SOURCE.md) | PD-Tafel (JPG) — Offenbacher, dt. Alphabet | PD-old-70 (Koch † 1934; PD-Art-Scan §68 UrhG; PDM 1.0) | Wikimedia Commons |
+| `koch-1928` | [`sources/koch-1928/`](sources/koch-1928/SOURCE.md) | PD-Tafel (JPG) — Offenbacher, dt. Alphabet | PDM 1.0 / PD-Art (Werk gemeinfrei, Koch † 1934; Scan-Vorbehalt §72 → SOURCE.md) | Wikimedia Commons |
 
 ## Varianten (kein Datenartefakt — Modellier-Scope über einer Quelle)
 

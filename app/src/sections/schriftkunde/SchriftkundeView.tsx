@@ -305,7 +305,7 @@ export function SchriftkundeView() {
         {/* --- Warum wir heute nicht mehr so schreiben --- */}
         <Section heading={t.endHeading}>
           {t.endParagraphs.map((p, i) => (
-            <Typography key={p.slice(0, 24)} sx={{ ...prose, mt: i === 0 ? 0 : 1.25, maxWidth: '64ch' }}>
+            <Typography key={i} sx={{ ...prose, mt: i === 0 ? 0 : 1.25, maxWidth: '64ch' }}>
               {p}
             </Typography>
           ))}

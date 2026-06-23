@@ -8,11 +8,14 @@
 - Year:      1928 (Heft; Schriftentwurf 1927)
 - Publisher: Berlin: Heintze & Blanckertz (40 S.)
 - License:   Public Domain Mark 1.0 (PD-Art / PD-old-70)
-- License-Rationale: Koch † 1934 → §64 UrhG (70 J. p. m. a.) seit Ende 2004
-            abgelaufen; der getreue Reproduktionsscan einer zweidimensionalen
-            gemeinfreien Vorlage erzeugt kein neues Schutzrecht (§68 UrhG,
-            PD-Art); US: Publikation 1928 → gemeinfrei. Commons-Tags:
-            Public Domain Mark 1.0 + PD-Art (PD-old-70).
+- License-Rationale: Das Werk selbst ist gemeinfrei (Koch † 1934 → §64 UrhG,
+            70 J. p. m. a., seit Ende 2004 abgelaufen; US: Publikation 1928 →
+            gemeinfrei). Für den Scan stützt sich das Projekt auf die
+            Commons-Auszeichnung Public Domain Mark 1.0 + PD-Art (getreue
+            Reproduktion einer 2D-Vorlage; §68 UrhG seit 2021). Vorbehalt: ein
+            Scan ist nach deutschem Recht nicht automatisch frei (§72 UrhG,
+            Lichtbildschutz; vgl. datenablage.md §1) — maßgeblich ist hier die
+            Commons-PD-Auszeichnung, nicht eine eigene rechtliche Prüfung.
 - Retrieved: 2026-06-23
 
 ## chart.jpg — 2760 × 1928 px, 446 KB
