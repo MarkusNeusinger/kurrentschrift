@@ -11,20 +11,24 @@
 // Visualisation, one honest specimen per variant:
 //   · Kurrent     — set in the GLKurrent show-script font (a period Kurrent face).
 //   · Sütterlin   — written live by the synthesis engine (<WrittenWord>) from the
-//                   project's own seeded 1922 Vorlage, with a font fallback so a
-//                   cold API never leaves an empty box.
-//   · Offenbacher — no Vorlage in the repo yet; the public-domain primary source
-//                   (Koch 1928) is named instead of faking a glyph.
+//                   project's own seeded 1922 Vorlage, with a Sütterlin-font
+//                   fallback (Zinken HJZ 1911) so a cold API never leaves an
+//                   empty box. In that font the plain 's' already is the long ſ
+//                   (its round End-s sits on '#'), so the fallback word "lesen"
+//                   renders the correct medial long-s without needing U+017F.
+//   · Offenbacher — a marked excerpt from Koch's own public-domain 1928 plate
+//                   (the genuine historical hand, not a synthesised glyph).
 
 import { useCallback, useState, type ReactNode } from 'react';
 import { Box, Container, Link, Typography } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 
+import offenbacherSpecimen from '@/assets/specimens/offenbacher-koch-1928.jpg';
 import { CategoryHeading } from '@/components/CategoryHeading';
 import { WrittenWord } from '@/components/WrittenWord';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de } from '@/locales';
-import { display, garamond, letterpress, paper, script } from '@/styles/paper';
+import { display, garamond, letterpress, paper, script, suetterlin } from '@/styles/paper';
 
 const t = de.schriftkunde;
 
@@ -134,6 +138,9 @@ function DefinitionRows({ items }: { items: readonly TermItem[] }) {
 // Show-script font specimen style, reused by the Kurrent card and the Sütterlin
 // fallback (the GLKurrent face stands in when the engine can't render).
 const fontSpecimenSx = { fontFamily: script, fontSize: 'clamp(2.4rem, 6vw, 3.2rem)', color: paper.ink, lineHeight: 1 } as const;
+// Sütterlin cold-start fallback: the bundled Zinken HJZ 1911 face (a genuine
+// Sütterlin school hand), distinct from the Kurrent show-script above.
+const suetterlinFontSx = { fontFamily: suetterlin, fontSize: 'clamp(2.2rem, 5.5vw, 3rem)', color: paper.ink, lineHeight: 1 } as const;
 // Fixed-height specimen box so the three cards line up.
 const specimenBoxSx = {
   mt: 1.75,
@@ -167,7 +174,7 @@ function SpecimenBlock({ id }: { id: string }) {
     caption = t.specimen.kurrentCaption;
   } else if (id === 'suetterlin') {
     content = fallback ? (
-      <Box sx={fontSpecimenSx}>{t.specimen.suetterlinWord}</Box>
+      <Box sx={suetterlinFontSx}>{t.specimen.suetterlinWordFallback}</Box>
     ) : (
       <WrittenWord
         text={t.specimen.suetterlinWord}
@@ -181,12 +188,18 @@ function SpecimenBlock({ id }: { id: string }) {
     );
     caption = fallback ? t.specimen.suetterlinCaptionFallback : t.specimen.suetterlinCaption;
   } else {
-    // offenbacher — no glyph; name the public-domain source instead of faking one.
+    // offenbacher — a marked excerpt from Koch's own public-domain 1928 plate
+    // (lowercase a–i). `multiply` drops the scan's white ground onto the paper.
     content = (
-      <Typography sx={{ fontFamily: garamond, fontStyle: 'italic', fontSize: '0.86rem', color: paper.sepia, textAlign: 'center', lineHeight: 1.5, px: 1 }}>
-        {t.specimen.offenbacherPending}
-      </Typography>
+      <Box
+        component="img"
+        src={offenbacherSpecimen}
+        alt={t.specimen.offenbacherAlt}
+        loading="lazy"
+        sx={{ maxWidth: '100%', height: 'auto', display: 'block', mixBlendMode: 'multiply' }}
+      />
     );
+    caption = t.specimen.offenbacherCaption;
   }
 
   return (
@@ -215,7 +228,9 @@ export function SchriftkundeView() {
         >
           {t.title}
         </Typography>
-        <Typography sx={{ ...prose, mt: 2, maxWidth: '62ch' }}>{t.lead}</Typography>
+        {/* warm newcomer opener, then the factual scope line */}
+        <Typography sx={{ ...prose, color: paper.ink, fontSize: '1.1rem', mt: 2, maxWidth: '62ch' }}>{t.intro}</Typography>
+        <Typography sx={{ ...prose, mt: 1.5, maxWidth: '62ch' }}>{t.lead}</Typography>
 
         {/* --- Grundbegriffe --- */}
         <Section heading={t.conceptsHeading}>
@@ -275,6 +290,28 @@ export function SchriftkundeView() {
           </Box>
         </Section>
 
+        {/* --- Einordnung & Abgrenzung --- */}
+        <Section heading={t.classifyHeading} lead={t.classifyLead}>
+          <DefinitionRows items={t.classify} />
+          <SourceLine sources={t.classifySources} />
+        </Section>
+
+        {/* --- Wo wurde so geschrieben --- */}
+        <Section heading={t.geographyHeading} lead={t.geographyLead}>
+          <DefinitionRows items={t.geography} />
+          <SourceLine sources={t.geographySources} />
+        </Section>
+
+        {/* --- Warum wir heute nicht mehr so schreiben --- */}
+        <Section heading={t.endHeading}>
+          {t.endParagraphs.map((p, i) => (
+            <Typography key={i} sx={{ ...prose, mt: i === 0 ? 0 : 1.25, maxWidth: '64ch' }}>
+              {p}
+            </Typography>
+          ))}
+          <SourceLine sources={t.endSources} />
+        </Section>
+
         {/* --- Federn & Striche --- */}
         <Section heading={t.federnHeading} lead={t.federnLead}>
           <TripletGrid items={t.federn} />
@@ -318,18 +355,28 @@ export function SchriftkundeView() {
           <SourceLine sources={t.timelineSources} />
         </Section>
 
-        {/* --- Quellen --- */}
+        {/* --- Quellen — scholarly/archive sources first, Wikipedia as overview --- */}
         <Section heading={t.sourcesHeading}>
           <Typography sx={{ ...prose, fontSize: '0.96rem', maxWidth: '62ch' }}>{t.sourcesIntro}</Typography>
-          <Box component="ul" sx={{ mt: 1.5, mb: 0, pl: 3 }}>
-            {t.sources.map((s) => (
-              <Typography key={s.href} component="li" sx={{ ...prose, fontSize: '0.92rem', mb: 0.4 }}>
-                <Link href={s.href} target="_blank" rel="noopener noreferrer" sx={proseLink}>
-                  {s.label}
-                </Link>
+          {[
+            { label: t.sourcesScholarlyHeading, items: t.sourcesScholarly as readonly SourceRef[] },
+            { label: t.sourcesWikipediaHeading, items: t.sourcesWikipedia as readonly SourceRef[] },
+          ].map((group) => (
+            <Box key={group.label} sx={{ mt: 2 }}>
+              <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: '0.92rem', color: paper.sepia }}>
+                {group.label}
               </Typography>
-            ))}
-          </Box>
+              <Box component="ul" sx={{ mt: 0.75, mb: 0, pl: 3 }}>
+                {group.items.map((s) => (
+                  <Typography key={s.href} component="li" sx={{ ...prose, fontSize: '0.92rem', mb: 0.4 }}>
+                    <Link href={s.href} target="_blank" rel="noopener noreferrer" sx={proseLink}>
+                      {s.label}
+                    </Link>
+                  </Typography>
+                ))}
+              </Box>
+            </Box>
+          ))}
           <Typography sx={{ ...prose, fontSize: '0.9rem', mt: 1.5, fontStyle: 'italic' }}>{t.sourcesRepo}</Typography>
         </Section>
 
@@ -343,6 +390,18 @@ export function SchriftkundeView() {
               </Link>
               {t.recommendation.after}
             </Typography>
+          </Box>
+          <Typography sx={{ ...prose, fontSize: '0.95rem', mt: 1.5, maxWidth: '62ch' }}>
+            {t.recommendation.practiceIntro}
+          </Typography>
+          <Box component="ul" sx={{ mt: 0.75, mb: 0, pl: 3 }}>
+            {t.recommendation.practiceLinks.map((s) => (
+              <Typography key={s.href} component="li" sx={{ ...prose, fontSize: '0.92rem', mb: 0.4 }}>
+                <Link href={s.href} target="_blank" rel="noopener noreferrer" sx={proseLink}>
+                  {s.label}
+                </Link>
+              </Typography>
+            ))}
           </Box>
         </Section>
       </Container>

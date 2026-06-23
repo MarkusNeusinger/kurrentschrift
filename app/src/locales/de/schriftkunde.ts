@@ -39,6 +39,37 @@ const SRC = {
     label: 'Rudolf Koch: Die Offenbacher Schrift (1928), Wikimedia Commons (gemeinfrei)',
     href: 'https://commons.wikimedia.org/wiki/File:Rudolf_Koch_Die_Offenbacher_Schrift_1928.pdf',
   },
+  englischeSchreibschrift: { label: 'Wikipedia: Englische Schreibschrift', href: 'https://de.wikipedia.org/wiki/Englische_Schreibschrift' },
+  lateinischeAusgangsschrift: { label: 'Wikipedia: Lateinische Ausgangsschrift', href: 'https://de.wikipedia.org/wiki/Lateinische_Ausgangsschrift' },
+  fraktur: { label: 'Wikipedia: Fraktur', href: 'https://de.wikipedia.org/wiki/Fraktur_(Schrift)' },
+  antiquaFraktur: { label: 'Wikipedia: Antiqua-Fraktur-Streit', href: 'https://de.wikipedia.org/wiki/Antiqua-Fraktur-Streit' },
+  liechtenstein: { label: 'Historisches Lexikon Liechtenstein: Schrift', href: 'https://historisches-lexikon.li/Schrift' },
+  // Scholarly / archive / museum references (the authoritative base behind the
+  // facts; Wikipedia above is the convenient overview pointer).
+  adfontesKursive: {
+    label: 'ad fontes (Univ. Zürich): Bastarda und gotische Kursive',
+    href: 'https://www.adfontes.uzh.ch/tutorium/schriften-lesen/schriftgeschichte/bastarda-und-gotische-kursive',
+  },
+  adfontesKurrent: {
+    label: 'ad fontes (Univ. Zürich): Deutsche Kurrentschrift',
+    href: 'https://www.adfontes.uzh.ch/tutorium/schriften-lesen/schriftgeschichte/deutsche-kurrentschrift',
+  },
+  ottweiler: {
+    label: 'Schulmuseum Ottweiler: Vorschriften & Musterbücher',
+    href: 'https://schulmuseum-ottweiler.net/magazin/buchstabentabellen-vorschriften-und-musterbuecher',
+  },
+  zbZuerich: {
+    label: 'Zentralbibliothek Zürich: „Keine Angst vor alten Schriften" (PDF)',
+    href: 'https://www.zb.uzh.ch/storage/app/media/ueber-uns/Citizen-Science/Schulzeitreisen/20210621_Keine_Angst_vor_alten_Schriften/Arbeitsblatt.pdf',
+  },
+  kunsthalleKarlsruhe: { label: 'Kunsthalle Karlsruhe: Glossar Eisengallustinte', href: 'https://www.kunsthalle-karlsruhe.de/glossar/eisengallustinte/' },
+  klingspor: { label: 'Klingspor-Museum Offenbach: Rudolf Koch', href: 'https://www.offenbach.de/microsite/klingspor_museum/bibliothek/Rudolf-Koch.php' },
+  // Practitioner / learning resources (for people who want to learn it, not
+  // factual citations) — surfaced under Weiterlernen.
+  muecke: { label: 'M. Mücke: Kurrent lesen und schreiben lernen', href: 'http://www.kurrent-lernen-muecke.de/' },
+  adfontesLernen: { label: 'ad fontes (Univ. Zürich): alte Schriften lesen lernen', href: 'https://www.adfontes.uzh.ch/tutorium/schriften-lesen' },
+  bfdsLese: { label: 'Bund für deutsche Schrift und Sprache: Leseübungen', href: 'https://www.bfds.de/veroeffentlichungen/leseuebungen/' },
+  kurrentschriftNet: { label: 'kurrentschrift.net: Übungsblätter zum Schreiben', href: 'http://www.kurrentschrift.net/' },
   // Harald Süß, Deutsche Schreibschrift — the reference textbook. Linked to its
   // neutral, non-commercial DNB catalogue record (locatable in any library); no
   // material from it is reproduced (quellen-und-rechte.md §1).
@@ -50,7 +81,10 @@ export const schriftkunde = {
 
   eyebrow: 'Schriftkunde',
   title: 'Die deutsche Schreibschrift',
-  lead: 'Vom frühen 16. bis zur Mitte des 20. Jahrhunderts war die Kurrent die allgemeine Verkehrs- und Geschäftsschrift des deutschen Sprachraums. Diese Schriftkunde gibt einen knappen, durchweg belegten Überblick über ihre Formen, ihr Werkzeug und ihre Geschichte — für die Tiefe führen die Quellen weiter. Das Projekt selbst beginnt bei drei Ausgangsschriften: Kurrent, Sütterlin und Offenbacher.',
+  // Warm opener for newcomers (period tone, second person) — placed above the
+  // factual lead so a curious finder of an old letter is met first.
+  intro: 'Sie haben einen alten Brief, eine Postkarte oder ein Tagebuch gefunden und erkennen kaum einen Buchstaben? Das ist meist die deutsche Kurrentschrift — über vierhundert Jahre lang ganz gewöhnlich, heute für die meisten ein Rätsel. Diese Seite erklärt in Ruhe, was das ist, wie es funktioniert und warum wir heute nicht mehr so schreiben.',
+  lead: 'Vom frühen 16. bis zur Mitte des 20. Jahrhunderts war die Kurrent die allgemeine Verkehrs- und Geschäftsschrift des deutschen Sprachraums — ein knapper, durchweg belegter Überblick über ihre Formen, ihr Werkzeug und ihre Geschichte; für die Tiefe führen die Quellen weiter. Das Projekt selbst beginnt bei drei Ausgangsschriften: Kurrent, Sütterlin und Offenbacher.',
 
   // --- Grundbegriffe ---------------------------------------------------------
   conceptsHeading: 'Grundbegriffe',
@@ -86,7 +120,7 @@ export const schriftkunde = {
         { k: 'Strich', v: 'Schwellzug (druckabhängig)' },
       ],
       note: 'Der Wert 60–70° um 1900 nach Süß (2002).',
-      sources: [SRC.kurrent],
+      sources: [SRC.kurrent, SRC.ottweiler],
     },
     {
       id: 'suetterlin',
@@ -114,7 +148,7 @@ export const schriftkunde = {
         { k: 'Feder', v: 'Band-/Breitfeder, Kante 15–20°' },
         { k: 'Strich', v: 'richtungsabhängiger Bandzug' },
       ],
-      sources: [SRC.offenbacher, SRC.koch1928],
+      sources: [SRC.offenbacher, SRC.klingspor, SRC.koch1928],
     },
   ],
 
@@ -123,12 +157,69 @@ export const schriftkunde = {
     kurrentCaption: 'Schauschrift-Font (GL German Cursive)',
     suetterlinCaption: 'live geschrieben aus der gemeinfreien Vorlage von 1922 — die Synthese-Engine des Projekts',
     // Shown when the engine can't render (cold/unreachable API) and the card
-    // falls back to the show-script font — kept truthful about what's on screen.
-    suetterlinCaptionFallback: 'Vorschau im Schauschrift-Font — die Synthese-Engine ist gerade nicht erreichbar',
+    // falls back to the bundled Sütterlin font — kept truthful about what's on
+    // screen. That font maps the long ſ onto the plain 's' key (round End-s is on
+    // '#'), so the plain-ASCII word "lesen" renders the correct medial long-s.
+    // Keep any fallback word's s medial — a final s would wrongly render as ſ.
+    suetterlinCaptionFallback: 'Vorschau in der Sütterlin-Schrift von H. J. Zinken — die Synthese-Engine ist gerade nicht erreichbar',
     suetterlinWord: 'leſen',
-    offenbacherPending:
-      'Noch keine Vorlage im Repository. Gemeinfreie Primärquelle: Rudolf Koch, „Die Offenbacher Schrift" (1928).',
+    suetterlinWordFallback: 'lesen',
+    // Offenbacher: a marked excerpt from Koch's own 1928 public-domain plate
+    // (lowercase a–i), the genuine historical hand rather than a synthesised glyph.
+    offenbacherCaption: 'Originaltafel von Rudolf Koch, 1928 (Ausschnitt)',
+    offenbacherAlt: 'Ausschnitt der Offenbacher-Schrifttafel von Rudolf Koch (1928): die Kleinbuchstaben a–i',
   },
+
+  // --- Einordnung & Abgrenzung ----------------------------------------------
+  classifyHeading: 'Einordnung & Abgrenzung',
+  classifyLead: 'Was diese Schrift eigentlich ist — und wie sie sich von dem unterscheidet, was man anderswo schrieb.',
+  classify: [
+    {
+      term: 'Deutsch oder lateinisch',
+      desc: 'Die Kurrent ist eine gebrochene, eckige Schrift aus der gotischen Tradition. Ihr Gegenstück ist die runde, lateinische Schreibschrift — die englische Copperplate ist deren bekannteste Ausprägung. Eckig-gebrochen gegen rund-geschwungen: daran erkennt man einen deutschen und einen englischen Brief desselben Jahres auf den ersten Blick.',
+    },
+    {
+      term: 'Beide zugleich gelernt',
+      desc: 'Deutschsprachige lernten zwei Schreibschriften nebeneinander — die Kurrent fürs Deutsche, die lateinische für Fremdwörter und fremde Namen. In ein und demselben Brief konnte die Schrift mitten im Satz wechseln.',
+    },
+    {
+      term: 'Druck oder Hand',
+      desc: 'Die kantige Fraktur ist eine gedruckte Schrift, die Kurrent ihre handgeschriebene Schwester desselben Zeitraums. „Altdeutsche Schrift" meint beides zusammen — ein Sammelbegriff, kein Fachwort.',
+    },
+  ],
+  classifySources: [SRC.adfontesKursive, SRC.schreibschrift, SRC.englischeSchreibschrift, SRC.lateinischeAusgangsschrift, SRC.fraktur],
+
+  // --- Wo wurde so geschrieben ----------------------------------------------
+  geographyHeading: 'Wo wurde so geschrieben',
+  geographyLead: 'Die Kurrent war die Schrift des gesamten deutschen Sprachraums — ihr Ende verlief aber in jedem Land anders. Auch deshalb sehen alte Briefe je nach Herkunft verschieden aus.',
+  geography: [
+    {
+      term: 'Deutschland',
+      desc: 'Bis zum Lehrverbot 1941 die allgemeine Schrift; ab den 1920er Jahren löste die Sütterlin in den Schulen die ältere Kurrent ab.',
+    },
+    {
+      term: 'Österreich',
+      desc: 'Lehrte bis 1938/39 die traditionelle Kurrent als erste Schrift — nicht die preußische Sütterlin. Nach 1945 nur noch selten als Zweitschrift.',
+    },
+    {
+      term: 'Schweiz',
+      desc: 'Gab die Kurrent schon um 1900 auf — kein Verbot, sondern kantonale Schulbeschlüsse. Die Sütterlin wurde hier nie eingeführt.',
+    },
+    {
+      term: 'Liechtenstein',
+      desc: 'Im Alltag bis ins 20. Jahrhundert üblich; die Schule stellte 1935 von sich aus auf die lateinische Schrift um — noch vor dem deutschen Erlass.',
+    },
+  ],
+  geographySources: [SRC.kurrent, SRC.ausgangsschrift, SRC.zbZuerich, SRC.liechtenstein],
+
+  // --- Warum wir heute nicht mehr so schreiben ------------------------------
+  endHeading: 'Warum wir heute nicht mehr so schreiben',
+  endParagraphs: [
+    'Die Kurrent und die Sütterlin verschwanden nicht allmählich, sondern fast auf einen Schlag: Ein Erlass vom Januar 1941 beendete die gebrochenen Druckschriften, ein Rundschreiben vom 1. September 1941 untersagte, die Kurrent in der Schule zu lehren. Ab dem Schuljahr 1941/42 lernten alle Kinder nur noch die lateinische „Deutsche Normalschrift".',
+    'Begründet wurde das Verbot mit der Behauptung, die gebrochenen Schriften seien „Schwabacher Judenlettern" — eine erfundene, sachlich falsche Propaganda. Als sachlichen Grund nannte die Reichskanzlei dagegen, dass im Ausland kaum jemand die eckige deutsche Schrift lesen könne.',
+    'Die Folge: Wer ab 1941/42 eingeschult wurde, lernte die alte Schrift gar nicht mehr. Innerhalb einer einzigen Generation wurde aus einer Alltagsschrift eine, die heute nur noch wenige lesen können — deshalb wirkt ein alter Brief oft wie eine Geheimschrift.',
+  ],
+  endSources: [SRC.erlass, SRC.antiquaFraktur, SRC.suetterlin],
 
   // --- Federn & Striche ------------------------------------------------------
   federnHeading: 'Federn & Striche',
@@ -162,15 +253,11 @@ export const schriftkunde = {
       desc: 'Aus dem Eisenvitriol der Tinte entsteht mit der Luftfeuchte Schwefelsäure. Sie zerfrisst das Papier genau dort, wo die Schrift steht, und schwächt den Kontrast.',
     },
     {
-      term: 'Zwei Kanäle',
-      desc: 'Weil ein verblasster Abstrich einst dick war, misst dieses Projekt Strichbreite (aus dem Federdruck) und Schwärze (die Tintenmenge) getrennt — sonst läse man einen ausgebleichten Schwellzug fälschlich als Haarlinie.',
-    },
-    {
       term: 'Papier & Tafel',
       desc: 'Geschrieben wurde auf reißfestem Hadernpapier, ab dem 19. Jahrhundert auf vergilbendem Holzschliffpapier. Das Schreiben gelernt wurde auf der Schiefertafel und im vierlinigen Schönschreibheft.',
     },
   ],
-  materialSources: [SRC.eisengallus, SRC.hadernpapier, SRC.schiefertafel],
+  materialSources: [SRC.eisengallus, SRC.kunsthalleKarlsruhe, SRC.hadernpapier, SRC.schiefertafel],
 
   // --- Buchstaben-Besonderheiten ---------------------------------------------
   lettersHeading: 'Buchstaben-Besonderheiten',
@@ -234,15 +321,51 @@ export const schriftkunde = {
   ],
   timelineNote:
     'Im deutschen Sprachraum verlief das Ende verschieden: Österreich lehrte bis 1938/39 die traditionelle Kurrent (nicht die Sütterlin), die Schweiz gab sie schon um 1900 kantonsweise auf.',
-  timelineSources: [SRC.kurrent, SRC.suetterlin, SRC.offenbacher, SRC.ausgangsschrift, SRC.erlass],
+  timelineSources: [SRC.adfontesKursive, SRC.ottweiler, SRC.kurrent, SRC.suetterlin, SRC.offenbacher, SRC.ausgangsschrift, SRC.erlass],
 
   // --- Quellen ---------------------------------------------------------------
   sourcesHeading: 'Quellen',
   sourcesIntro:
-    'Jede Angabe auf dieser Seite ist belegt. Die ausführlichen Faktenblätter mit Einzelnachweisen liegen in der Schriftkunde des Projekts; die Links unten führen zu denselben frei zugänglichen Primärquellen.',
-  sources: [SRC.kurrent, SRC.suetterlin, SRC.offenbacher, SRC.lineatur, SRC.feder, SRC.eisengallus, SRC.langesS, SRC.erlass, SRC.koch1928],
+    'Jede Angabe auf dieser Seite ist belegt. Die Fakten stützen sich auf paläographische und archivische Quellen — ein Universitäts-Tutorium (ad fontes, Univ. Zürich), Schulmuseen und Archive, Museen, das Lehrbuch von Süß sowie die gemeinfreien Originaltafeln. Die Wikipedia-Artikel sind der frei zugängliche Überblick dazu, nicht die Grundlage. Die ausführlichen Faktenblätter mit Einzelnachweisen liegen in der Schriftkunde des Projekts.',
+  sourcesScholarlyHeading: 'Wissenschaft, Archive & Museen',
+  sourcesScholarly: [
+    SRC.adfontesKursive,
+    SRC.adfontesKurrent,
+    SRC.ottweiler,
+    SRC.zbZuerich,
+    SRC.liechtenstein,
+    SRC.klingspor,
+    SRC.kunsthalleKarlsruhe,
+    SRC.ziffern,
+    SRC.koch1928,
+    SRC.suess,
+  ],
+  sourcesWikipediaHeading: 'Wikipedia (Überblicksartikel)',
+  sourcesWikipedia: [
+    SRC.kurrent,
+    SRC.suetterlin,
+    SRC.offenbacher,
+    SRC.lineatur,
+    SRC.schreibschrift,
+    SRC.feder,
+    SRC.redis,
+    SRC.eisengallus,
+    SRC.langesS,
+    SRC.englischeSchreibschrift,
+    SRC.lateinischeAusgangsschrift,
+    SRC.fraktur,
+    SRC.ausgangsschrift,
+    SRC.erlass,
+    SRC.antiquaFraktur,
+    SRC.nasalstrich,
+    SRC.rotunda,
+    SRC.pfennig,
+    SRC.mark,
+    SRC.hadernpapier,
+    SRC.schiefertafel,
+  ],
   sourcesRepo:
-    'Gemeinfreie Geometrie-Vorlagen im Projekt: Loth-Tafel 1866 (Kurrent) und Sütterlin-Ausgangsschrift 1922.',
+    'Als gemeinfreie Originaltafeln arbeitet das Projekt mit der Loth-Tafel 1866 (Kurrent), der Sütterlin-Ausgangsschrift 1922 und der Offenbacher-Tafel von Rudolf Koch (1928).',
 
   // --- Weiterlernen (Empfehlung) ---------------------------------------------
   recommendation: {
@@ -251,6 +374,8 @@ export const schriftkunde = {
     linkLabel: 'Harald Süß’ „Deutsche Schreibschrift. Lesen und Schreiben lernen"',
     href: SRC.suess.href,
     after: ' ans Herz gelegt — das Lehrbuch, aus dem auch der Autor dieses Projekts die Kurrent gelernt hat. Hier geht es bewusst nur um den Überblick; die Tiefe steht dort.',
+    practiceIntro: 'Zum kostenlosen Lesen- und Schreibenlernen gibt es im Netz mehrere gute Anlaufstellen:',
+    practiceLinks: [SRC.muecke, SRC.adfontesLernen, SRC.bfdsLese, SRC.kurrentschriftNet],
   },
 
   sourcesLabel: 'Quellen:',
