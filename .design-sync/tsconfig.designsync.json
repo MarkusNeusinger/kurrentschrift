@@ -1,8 +1,8 @@
 {
-  "//": "design-sync ONLY. The converter's tsconfig-paths plugin matches a barrel directory at the empty-extension step before trying /index.ts, so bare directory imports (@/theme, @/locales, ...) would resolve to a directory and fail. We map every barrel under app/src to its index file explicitly, listed BEFORE the @/* wildcard so the specific rule wins. Non-barrel @/x/y imports fall through to @/* (which resolves files correctly). baseUrl points at app/ so ./src/* resolves from here.",
   "compilerOptions": {
     "baseUrl": "../app",
     "paths": {
+      "@/assets/fonts/suetterlin-hjz-1911.ttf": ["../.design-sync/shims/suetterlin-font.ts"],
       "@/components/BootStatus": ["./src/components/BootStatus/index.ts"],
       "@/components/InfoHint": ["./src/components/InfoHint/index.ts"],
       "@/components/PaperBackground": ["./src/components/PaperBackground/index.ts"],
