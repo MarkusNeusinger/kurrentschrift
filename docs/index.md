@@ -62,6 +62,7 @@ docs/
 │   ├── zahlen-und-zeichen.md     # Ziffern, Doppelbindestrich, Abkürzungen, ₰/ℳ, genealogische Zeichen
 │   ├── tinte-und-material.md     # Eisengallustinte (inkl. Repo-Farben), Federn, Papier, Schulmaterial
 │   ├── druckschriften.md         # Fraktur/Schwabacher/Textura vs. Kurrent, Kanzleischrift, Neudörffer
+│   ├── lateinische-und-englische-schreibschrift.md  # Abgrenzung Kurrent ↔ lateinische/englische Schreibschrift, Zweischriftigkeit
 │   └── digital.md                # Unicode (ſ U+017F, Ligaturen), UNZ/MUFI, Fonts, Transkription
 └── proposals/                    # Vorgeschlagene Konzept-Änderungen, noch nicht freigegeben
     └── planaenderungen.md        # Staging: §2/§4 Bigramme, §6.1 Positions-Statistik, M4+ core/orthography.py
@@ -156,6 +157,9 @@ frei zugänglichen Quellen, jede Angabe mit Beleg; wächst inkrementell.
 - **[Druckschriften](schriftkunde/druckschriften.md)** — Fraktur ≠
   Kurrent, „altdeutsche Schrift"-Falle, Schwabacher/Textura,
   Kanzleischrift, Neudörffer
+- **[Lateinische/englische Schreibschrift](schriftkunde/lateinische-und-englische-schreibschrift.md)** —
+  Abgrenzung der Kurrent zur lateinischen und englischen Schreibschrift
+  (Copperplate), Zweischriftigkeit (Deutschsprachige lernten beides)
 - **[Digital](schriftkunde/digital.md)** — Unicode-Lage (ſ, ß, Ligaturen
   ohne Codepoints), UNZ 1/MUFI, freie Fonts, Transkriptionspraxis
 

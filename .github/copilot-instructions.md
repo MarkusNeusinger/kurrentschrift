@@ -173,7 +173,7 @@ kurrentschrift/
 ├── alembic/          # Postgres migrations
 │   └── versions/     # 0004 library schema + seeds … 0006 Sütterlin 1922 source
 ├── data/             # Sources, samples, derived — SEPARATE LICENSING
-│   ├── sources/      # public-domain originals (Loth 1866, Sütterlin 1922, …)
+│   ├── sources/      # public-domain originals (Loth 1866, Sütterlin 1922, Offenbacher/Koch 1928 reserve, …)
 │   ├── samples/      # own-hand scans
 │   └── derived/      # mixed licensing — see datenablage.md
 ├── docs/             # German concept + reference docs

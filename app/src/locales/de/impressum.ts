@@ -58,7 +58,7 @@ export const impressum = {
     geometry:
       'Die Gestalt der Buchstaben folgt gemeinfreien Schreibvorlagen: der Sütterlin-Ausgangsschrift (Leitfaden 1922) und der Kurrent-Tafel von Loth (1866). Der Duktus — Strichfolge und Schreibrichtung — ist meine eigene, handkuratierte Arbeit darüber. Historische Quellen behalten ihre eigene Lizenz; gemeinfreie Vorlagen bleiben gemeinfrei.',
     fonts:
-      'Schriften: EB Garamond und Playfair Display (SIL Open Font License) sowie GL-GermanCursive (Gutenberg-Labo, freie Lizenz).',
+      'Schriften: EB Garamond und Playfair Display (SIL Open Font License) sowie GL-GermanCursive (Gutenberg-Labo) und die Sütterlin-Schrift von H. J. Zinken, beide unter freier Lizenz.',
     code:
       'Der Quellcode des Projekts steht unter MIT-Lizenz; die Veröffentlichung des Repositories ist geplant.',
   },

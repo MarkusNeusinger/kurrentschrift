@@ -63,6 +63,11 @@ export const pigment = {
 
 export const garamond = "'EB Garamond', Georgia, 'Times New Roman', serif";
 export const script = "'GLKurrent', cursive"; // showpiece only
+// Sütterlin show-script (Zinken HJZ 1911) — a genuine upright-ish Sütterlin
+// school hand, distinct from the Kurrent-flavoured GLKurrent above. Specimen /
+// cold-start fallback only. Note: in this face the plain 's' is the long ſ and
+// the round End-s sits on '#'; feed plain ASCII (no U+017F).
+export const suetterlin = "'Suetterlin', cursive";
 // Display / headline + brand wordmark — Playfair Display: the high-contrast
 // Didone/Scotch register of 19th-century (German) Antiqua book print, fully
 // legible for readers who can't read the old scripts. User decision with an
