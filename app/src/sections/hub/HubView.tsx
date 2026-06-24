@@ -66,12 +66,18 @@ export function HubView({ title, lead, cards }: HubViewProps) {
                 borderRadius: 2,
                 color: paper.ink,
                 transition: 'border-color .25s, transform .25s, box-shadow .25s',
-                '&:hover': {
+                // Hover and keyboard focus get the same affordance so tabbing
+                // through the cards reads as clearly as pointing at them.
+                '&:hover, &:focus-visible': {
                   borderColor: paper.viridian,
                   transform: 'translateY(-2px)',
                   boxShadow: '0 8px 24px rgba(36,26,16,0.10)',
                 },
-                '&:hover .hub-cta::after': { width: '100%' },
+                '&:focus-visible': {
+                  outline: `2px solid ${paper.viridian}`,
+                  outlineOffset: 3,
+                },
+                '&:hover .hub-cta::after, &:focus-visible .hub-cta::after': { width: '100%' },
               }}
             >
               <Typography

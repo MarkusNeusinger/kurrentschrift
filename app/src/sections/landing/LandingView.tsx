@@ -91,7 +91,7 @@ export function LandingView() {
               variant="h1"
               sx={{
                 fontFamily: display,
-                fontWeight: 500,
+                fontWeight: 600,
                 lineHeight: 1.04,
                 letterSpacing: '-0.01em',
                 color: paper.ink,

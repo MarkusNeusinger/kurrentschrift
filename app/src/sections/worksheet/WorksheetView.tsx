@@ -107,7 +107,7 @@ export function WorksheetView() {
           <Stack spacing={1.5} sx={{ mb: 4 }}>
             <Typography
               component="h1"
-              variant="h2"
+              variant="h1"
               sx={{
                 fontFamily: garamond,
                 fontStyle: 'italic',
