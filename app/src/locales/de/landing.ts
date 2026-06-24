@@ -5,64 +5,93 @@
 
 export const landing = {
   hero: {
-    eyebrow: 'Gotische Kursive · seit jeher von Hand',
-    // Headline lines, separated by <br /> in the component; `titleEm` is the
-    // italic accent word opening line 3.
-    titleLine1: 'Die Schrift',
-    titleLine2: 'unserer Briefe',
-    titleEm: 'wieder',
-    titleLine3: 'lesen',
-    titleLine4: '& schreiben.',
-    leadBeforeBold: 'Eine offene Bibliothek der deutschen Kurrentschrift —',
-    leadBold: 'kein Font, sondern der Schreibvorgang selbst',
-    leadAfterBold: ': die Gestalt der Buchstaben aus historischen Vorlagen, der Strich aus handkuratiertem Duktus.',
-    ctaWrite: 'Schreiben üben',
-    ctaRead: 'Buchstaben lesen',
+    // The brand word the hero writes live with the pen. Rendered in the
+    // GL-GermanCursive show-script (a marked specimen, per the legibility rule);
+    // `wordAria` is the plain-text label for screen readers and the title attr.
+    // Long-s (ſ) at the syllable start of "-ſchrift" per the Kurrent rule.
+    word: 'Kurrentſchrift',
+    wordAria: 'Kurrentschrift',
+    wordCaption: '— ein deutsches Wort, geschrieben wie vor hundert Jahren.',
+    title: 'Alte Briefe wieder lesen — und selbst zur Feder greifen.',
+    leadBeforeBold:
+      'Kurrent, Sütterlin und Offenbacher: die Schriften, in denen unsere Vorfahren ihre Briefe und Urkunden festhielten — und die heute',
+    leadBold: 'kaum noch jemand entziffert',
+    leadAfterBold:
+      '. Hier lernst du, sie wieder zu lesen, mit der Feder nachzuschreiben und Zug um Zug zu verstehen.',
+    ctaWrite: 'Schreiben',
+    ctaRead: 'Lesen',
+    replay: '↻ noch einmal schreiben',
   },
-  // Hero specimen — the word written onto a real Kurrent lineature.
-  specimen: {
-    word: 'Kurrent',
-    subline: 'leſen · ſchreiben · verſtehen',
-    caption: 'Lebendig geschrieben, nicht gesetzt — Sütterlin, 1922.',
-    replay: '↻ nochmal schreiben',
-  },
-  // The thesis — the three-way combination that makes this project different.
-  pillarsHeading: 'Was hier entstehen soll',
-  pillars: [
-    { num: 'i.', title: 'Tinte statt Font', desc: 'Schwellzug, Strichfolge und die Buchstabenformen je nach Stellung im Wort — Schrift wie aus der Feder, nicht aus dem Setzkasten.' },
-    { num: 'ii.', title: 'Statistik statt Bauchgefühl', desc: 'Schräglage, Schwellzug und Buchstabenformen der eigenen Hand — gemessen, nicht geschätzt.' },
-    { num: 'iii.', title: 'Lineatur zum Text', desc: 'Jeder Text mit der passenden Lineatur in einem Zug — druckfertige Vorlagen, dem Inhalt angemessen.' },
+  // Section 1: the scripts. "Kurrent(schrift)" is really an umbrella over a
+  // whole family of German cursive hands; these three make good starters
+  // because each is written with a *different* pen. Honest about which can be
+  // written by the engine yet (Sütterlin only) — `state` drives a small badge.
+  scriptsHeading: 'Drei Schriften, drei Federn',
+  scriptsIntro:
+    '„Kurrentschrift" fasst eine ganze Familie deutscher Schreibschriften zusammen. Drei davon zum Anfangen — jede mit ihrer eigenen Feder, und keine als Font, sondern Zug um Zug nachgebildet.',
+  scripts: [
+    {
+      name: 'Kurrent',
+      feder: 'Spitzfeder',
+      state: 'noch zum Lesen',
+      written: false,
+      desc: 'Die ältere Norm. Aus dem Druck der Spitzfeder wächst der Schwellzug — fein im Aufstrich, breit im Abstrich.',
+    },
+    {
+      name: 'Sütterlin',
+      feder: 'Gleichzugfeder',
+      state: 'schon schreibbar',
+      written: true,
+      desc: 'Aufrecht und gleichmäßig, ohne Schwellung — die Schulschrift von 1911. Sie wird hier schon lebendig geschrieben.',
+    },
+    {
+      name: 'Offenbacher',
+      feder: 'Breitfeder',
+      state: 'noch zum Lesen',
+      written: false,
+      desc: 'Der Strichkontrast kommt aus dem Winkel der Breitfeder, nicht aus dem Druck. Nie weit verbreitet — aber ein schöner Einstieg.',
+    },
   ],
-  // Tools that exist today (the component attaches the route paths).
-  toolsHeading: 'Was heute schon bereitsteht',
+  // Section 2: what already works today (the component attaches the route paths).
+  toolsHeading: 'Schon zur Hand',
+  toolsIntro: 'Vom Nachschlagen und Lesen bis zum ersten eigenen Federstrich — was heute schon bereitsteht.',
   tools: {
     worksheet: {
       title: 'Lineatur-Vorlage',
       cta: 'Übungsblatt erstellen →',
-      desc: 'Hilfslinien für deutsche Schreibschrift auf A4 — das Verhältnis frei wählbar, auf Wunsch mit Schräglinien, als druckfertiges PDF.',
+      desc: 'Hilfslinien für die deutsche Schreibschrift auf einem Bogen A4 — das Verhältnis frei gewählt, auf Wunsch mit Schräglinien, druckfertig als PDF.',
     },
     scribe: {
       title: 'Federprobe',
       cta: 'Wort schreiben lassen →',
-      desc: 'Tippe ein beliebiges Wort und sieh, wie der synthetisierte Duktus es Zug um Zug in Sütterlin schreibt — mit den Übergängen zwischen den Buchstaben.',
+      desc: 'Ein beliebiges Wort eingeben — und zusehen, wie der nachgebildete Duktus es Zug um Zug in Sütterlin schreibt, samt den Übergängen von Buchstabe zu Buchstabe.',
     },
     quiz: {
       title: 'Buchstaben-Quiz',
       cta: 'Quiz starten →',
-      desc: 'Lies echte Kurrent-Buchstaben aus historischer Vorlage; am Ende zeigt die Auswertung, was dir Mühe machte.',
+      desc: 'Echte Kurrent-Buchstaben aus alter Vorlage lesen; am Ende weist die Auswertung, was Mühe bereitete.',
+    },
+    schriftkunde: {
+      title: 'Schriftkunde',
+      cta: 'Zur Schriftkunde →',
+      desc: 'Die drei Schriften im Überblick — Lineatur, Federn, Tinte und ihre Geschichte, quellengestützt.',
+    },
+    tafel: {
+      title: 'Schreibtafel',
+      cta: 'Zur Tafel →',
+      desc: 'Die ganze Vorlage auf einen Blick — jeder Buchstabe, wie ihn die Feder schreibt.',
     },
   },
-  // Roadmap — staged honestly, no dead links (badge: common.soon).
-  roadmapHeading: 'In Vorbereitung',
+  // Section 3: an honest word on the state + a short list of genuinely-future
+  // features. Deliberately NO items that already exist (the Schriftkunde primer,
+  // the quiz) — those live under "Schon zur Hand". Badge: common.soon.
+  roadmapHeading: 'Noch im Werden',
+  roadmapNote:
+    'Ein junges Werk: Das Schreiben-Lassen kann bisher nur Sütterlin — und noch nicht fehlerfrei. Vieles, was kommen soll, ist erst Plan:',
   roadmap: [
-    { title: 'Einstieg & Alphabet', desc: 'Die Geschichte in zwei Sätzen, eine Alphabet-Tafel, die wichtigsten Regeln — eine kleine Fibel.' },
-    { title: 'Animierte Tafel', desc: 'Strichfolge, Ansatzpunkte und Schwellzug — der Feder beim Schreiben zugesehen.' },
-    { title: 'Lese-Lupe', desc: 'Historische Scans, Zeile für Zeile übertragen — mit Erklärung zu jedem Buchstaben.' },
-    { title: 'Schrift-Analyse', desc: 'Die eigene Hand in Zahlen — Schräglage, Schwellzug, Verteilung.' },
-    { title: 'Offene Daten', desc: 'Die Glyph-Daten — Anker, Schwellzug, Duktus — offen und zitierbar.' },
+    { title: 'Mehr Hände schreiben', desc: 'Auch Kurrent und Offenbacher Zug um Zug geschrieben, nicht nur gelesen — und sauberer als heute.' },
+    { title: 'Animierte Tafel', desc: 'Strichfolge, Ansatzpunkte und Schwellzug — der Feder bei der Arbeit zugesehen.' },
+    { title: 'Lese-Lupe', desc: 'Alte Scans, Zeile um Zeile übertragen — mit einer Erläuterung zu jedem Buchstaben.' },
+    { title: 'Schrift-Analyse', desc: 'Die eigene Hand in Zahlen — Schräglage, Schwellzug und Verteilung.' },
   ],
-  footer: {
-    scripts: 'Kurrent · Sütterlin · Offenbacher Schrift',
-    disclaimer: 'Synthese, klar gekennzeichnet — nachgebildete Schrift, kein historisches Original.',
-  },
 } as const;

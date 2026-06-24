@@ -169,7 +169,8 @@ export function ImpressumView() {
         <Section heading={t.sources.heading}>
           <Typography sx={prose}>{t.sources.geometry}</Typography>
           <Typography sx={prose}>{t.sources.fonts}</Typography>
-          <Typography sx={{ ...prose, mb: 0 }}>{t.sources.code}</Typography>
+          <Typography sx={prose}>{t.sources.code}</Typography>
+          <Typography sx={{ ...prose, mb: 0 }}>{t.sources.reserved}</Typography>
         </Section>
 
         {/* Transparenz */}

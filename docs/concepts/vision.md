@@ -146,6 +146,14 @@ Kern (siehe `architektur.md` §1).
    Forschungs-Zielgruppe. Heute nirgends öffentlich verfügbar; passt
    zur MIT-Code-Linie und zur PD-Datenlinie (`quellen-und-rechte.md`).
 
+   > **Status (Open-Core, Stand 2026-06):** Zurückgestellt. Das Projekt
+   > läuft aktuell **Open-Core** — der Code ist MIT, aber der *gelernte*
+   > Datensatz (kuratierte Glyph-Vorlagen, Duktus, Schrift-Statistik)
+   > **und die daraus trainierten Lese-Modelle zur Buchstabenerkennung**
+   > bleiben vorbehalten (nicht Teil von MIT, Nachnutzung nach
+   > Rücksprache). Eine offene Veröffentlichung ist ein mögliches
+   > *späteres* Ziel, kein aktuelles.
+
 ---
 
 ## Was die Seite nicht ist (Nicht-Ziele)

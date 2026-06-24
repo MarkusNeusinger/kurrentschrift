@@ -67,7 +67,7 @@ The render kernel is the hard part. Around it, [`kurrentschrift.ink`](https://ku
 **Research**
 
 6. Style analysis of your own hand (glyph spread, slant, swell, transition angles) — with optimise / new-style-as-basis / hand-comparison paths.
-7. Open-data release of the canonical glyph dataset (Zenodo DOI, CC-BY 4.0).
+7. Possibly later: an open-data release of the canonical glyph dataset (under consideration — the project is currently open-core, so the learned dataset stays reserved for now; see License).
 
 Bilingual DE/EN is a cross-cutting guiding principle (German first; English follows).
 
@@ -149,7 +149,7 @@ If the methodology is useful to your work, see [CITATION.cff](CITATION.cff) for 
 
 ## License
 
-MIT — see [LICENSE](LICENSE). **Data is separately licensed** (each source under `/data/` carries its own; see [DATA_PROVENANCE.md](data/DATA_PROVENANCE.md)).
+**Open-core.** The code is MIT — see [LICENSE](LICENSE). The **learned data** this project produces — the curated glyph templates, the ductus, and the script statistics / trained reading models built in the admin (the synthesis foundation) — is **not** covered by MIT and stays reserved, even once the repo is public; reuse by arrangement only. The public-domain sources under `/data/` keep their own (free) license — see [DATA_PROVENANCE.md](data/DATA_PROVENANCE.md).
 
 ---
 

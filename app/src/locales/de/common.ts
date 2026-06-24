@@ -78,6 +78,12 @@ export const common = {
   },
   // Marker for staged/disabled features ("coming soon").
   soon: 'bald',
+  // Shared footer (PublicFooter) — one warm sign-off on every public page,
+  // echoing the impressum's "private Liebhaberei" voice; the Impressum link
+  // itself uses de.impressum.footerLink.
+  footer: {
+    tagline: 'Eine private Liebhaberei — quelloffen.',
+  },
   // The one recognizable (i) affordance (InfoHint) used across public + admin:
   // surfaces stay minimal, the detail sits a tap away.
   info: {
