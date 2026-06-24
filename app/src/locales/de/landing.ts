@@ -54,6 +54,7 @@ export const landing = {
   ],
   // Section 2: what already works today (the component attaches the route paths).
   toolsHeading: 'Schon zur Hand',
+  toolsIntro: 'Vom Nachschlagen und Lesen bis zum ersten eigenen Federstrich — was heute schon bereitsteht.',
   tools: {
     worksheet: {
       title: 'Lineatur-Vorlage',
@@ -70,6 +71,16 @@ export const landing = {
       cta: 'Quiz starten →',
       desc: 'Echte Kurrent-Buchstaben aus alter Vorlage lesen; am Ende weist die Auswertung, was Mühe bereitete.',
     },
+    schriftkunde: {
+      title: 'Schriftkunde',
+      cta: 'Zur Schriftkunde →',
+      desc: 'Die drei Schriften im Überblick — Lineatur, Federn, Tinte und ihre Geschichte, quellengestützt.',
+    },
+    tafel: {
+      title: 'Schreibtafel',
+      cta: 'Zur Tafel →',
+      desc: 'Die ganze Vorlage auf einen Blick — jeder Buchstabe, wie ihn die Feder schreibt.',
+    },
   },
   // Section 3: an honest word on the state + a short list of genuinely-future
   // features. Deliberately NO items that already exist (the Schriftkunde primer,
@@ -85,7 +96,7 @@ export const landing = {
     { title: 'Offene Daten', desc: 'Die Glyph-Daten — Anker, Schwellzug, Duktus — offen und frei zu zitieren.' },
   ],
   footer: {
-    scripts: 'Kurrent · Sütterlin · Offenbacher Schrift',
-    disclaimer: 'Synthese, deutlich als solche gekennzeichnet — nachgebildete Schrift, kein historisches Original.',
+    scripts: 'Kurrent · Sütterlin · Offenbacher',
+    disclaimer: 'Was hier geschrieben steht, ist nachgebildet — kein historisches Original.',
   },
 } as const;
