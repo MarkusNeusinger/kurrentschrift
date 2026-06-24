@@ -5,26 +5,20 @@
 
 export const landing = {
   hero: {
-    eyebrow: 'Gotische Kursive · seit jeher von Hand',
-    // Headline lines, separated by <br /> in the component; `titleEm` is the
-    // italic accent word opening line 3.
-    titleLine1: 'Die Schrift',
-    titleLine2: 'unserer Briefe',
-    titleEm: 'wieder',
-    titleLine3: 'lesen',
-    titleLine4: '& schreiben.',
+    // The brand word the hero writes live with the pen. Rendered in the
+    // GL-GermanCursive show-script (a marked specimen, per the legibility rule);
+    // `wordAria` is the plain-text label for screen readers and the title attr.
+    // Long-s (ſ) at the syllable start of "-ſchrift" per the Kurrent rule.
+    word: 'Kurrentſchrift',
+    wordAria: 'Kurrentschrift',
+    wordCaption: '— ein deutsches Wort, von Hand mit der Feder geschrieben.',
+    title: 'Die Schrift unserer Briefe — wieder lesen und schreiben.',
     leadBeforeBold: 'Eine offene Bibliothek der deutschen Kurrentschrift —',
     leadBold: 'kein Font, sondern der Schreibvorgang selbst',
     leadAfterBold: ': die Gestalt der Buchstaben aus historischen Vorlagen, der Strich aus handkuratiertem Duktus.',
     ctaWrite: 'Schreiben üben',
     ctaRead: 'Buchstaben lesen',
-  },
-  // Hero specimen — the word written onto a real Kurrent lineature.
-  specimen: {
-    word: 'Kurrent',
-    subline: 'leſen · ſchreiben · verſtehen',
-    caption: 'Lebendig geschrieben, nicht gesetzt — Sütterlin, 1922.',
-    replay: '↻ nochmal schreiben',
+    replay: '↻ noch einmal schreiben',
   },
   // The thesis — the three-way combination that makes this project different.
   pillarsHeading: 'Was hier entstehen soll',

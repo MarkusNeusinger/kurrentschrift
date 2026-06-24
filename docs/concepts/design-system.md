@@ -213,6 +213,7 @@ leitet weiter auf `/schriftkunde` (alter Name). Der Admin liegt unverändert hin
 | `CategoryHeading` | Abschnittstitel mit Viridian-Kurrent-Initiale auf Haarlinie | `/impressum`, `/schriftkunde` |
 | `InfoHint` | grünes Kurrent-„(i)" + Popover („Mehr dazu") | app-weit, Detail eine Geste entfernt |
 | `HubView` | Hub-Layout (Titel + Lead + Karten-Grid) | `title`, `lead`, `cards[{title,body,cta,to}]` |
+| `HeroWritten` | einspaltiger Landing-Hero: Markenwort wird von einer Feder geschrieben | GLKurrent-Wort (Specimen) hinter `<HeroWord>` als Engine-Swap-Naht (Font jetzt, Engine später) |
 | `WrittenGlyph` | ein Glyph „wie geschrieben" (Ductus-Playback) | weiße Arbeitsfläche |
 | `WrittenWord` | ganzes Wort/Zeile aus Per-Glyph-Diagnostik + Übergängen | Engine-Pfad; Font-Specimen ist Fallback |
 | `BootStatus` | Vollseiten-Boot-/Cold-Start-Zustand | Quiz, Admin |
@@ -224,8 +225,11 @@ leitet weiter auf `/schriftkunde` (alter Name). Der Admin liegt unverändert hin
 Knapp und sinnstiftend (Style-Guide §6, Detailalgorithmen
 [`reference/animation-rendering.md`](../reference/animation-rendering.md)):
 
-- **Schreib-Reveal:** `stroke-dashoffset` auf der Mittellinie zeichnet den Ductus in
-  Schreibrichtung (Tafel, Quiz, Federprobe, geplanter Hero).
+- **Schreib-Reveal (Engine):** `stroke-dashoffset` auf der Mittellinie zeichnet den
+  Ductus in Schreibrichtung (Tafel, Quiz, Federprobe).
+- **Schreib-Reveal (Hero):** das GLKurrent-Markenwort wird per `clip-path`-Wisch
+  links→rechts freigelegt, eine wandernde Federspitze (SVG) reitet auf der Kante,
+  danach zieht sich ein Viridian-Flourish — `HeroWritten`.
 - **Ink-Settle:** der gezeichnete Strich „setzt sich" (Eisengallus-Anmutung) leicht nach.
 - **Hover:** Haarlinien-Unterstrich zieht sich in Viridian; Karten heben sich 2 px mit
   weichem Schatten; Übergänge 0.25–0.3 s.
