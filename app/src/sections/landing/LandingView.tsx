@@ -24,7 +24,7 @@ import { display, garamond, letterpress, paper } from '@/styles/paper';
 
 // Tools that exist today → real RouterLinks. Staged features → common.soon, no
 // link. German copy lives in @/locales (landing.tools / landing.roadmap /
-// landing.pillars); here we only attach the route targets.
+// landing.scripts); here we only attach the route targets.
 const tools = [
   { ...de.landing.tools.worksheet, to: paths.worksheet },
   { ...de.landing.tools.scribe, to: paths.scribe },
@@ -33,10 +33,9 @@ const tools = [
 
 const roadmap = de.landing.roadmap;
 
-// The thesis — the three-way combination that makes this project different. Vision
-// prose (not interactive promises); what's usable today lives under
-// landing.toolsHeading, planned work under landing.roadmapHeading.
-const pillars = de.landing.pillars;
+// The three starter scripts from the Kurrent family. `written` marks which the
+// engine can already render (Sütterlin); `state` is the small badge text.
+const scripts = de.landing.scripts;
 
 export function LandingView() {
   return (
@@ -44,28 +43,54 @@ export function LandingView() {
       {/* hero — single column, the brand word written live by a pen */}
       <HeroWritten />
 
-      {/* thesis — three pillars, framed as the goal (not as shipped features) */}
+      {/* the three scripts — starters from the Kurrent family, each its own pen */}
       <PageContainer width="wide" sx={{ pt: { xs: 4, md: 6 } }}>
-        <Typography variant="overline" sx={{ color: paper.sepia, display: 'block', mb: 2.5 }}>
-          {de.landing.pillarsHeading}
+        <Typography variant="overline" sx={{ color: paper.sepia, display: 'block', mb: 1.5 }}>
+          {de.landing.scriptsHeading}
         </Typography>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, borderTop: `1px solid ${paper.line}` }}>
-          {pillars.map((p, i) => (
-            <Reveal key={p.title} delay={i * 0.06}>
+        <Typography variant="body1" sx={{ color: paper.inkSoft, maxWidth: '64ch', mb: { xs: 3, md: 4 } }}>
+          {de.landing.scriptsIntro}
+        </Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2.5 }}>
+          {scripts.map((s, i) => (
+            <Reveal key={s.name} delay={i * 0.06}>
               <Box
                 sx={{
                   height: '100%',
-                  px: { xs: 0, md: 3 },
-                  py: { xs: 2.5, md: 3 },
-                  borderTop: { xs: i > 0 ? `1px solid ${paper.line}` : 'none', md: 'none' },
-                  borderLeft: { md: i > 0 ? `1px solid ${paper.line}` : 'none' },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  p: 3,
+                  borderRadius: 2,
+                  border: `1px solid ${paper.line}`,
+                  bgcolor: paper.hi,
                 }}
               >
-                <Box sx={{ fontFamily: display, fontStyle: 'italic', fontWeight: 500, color: paper.viridian, fontSize: '1.1rem', mb: '0.8rem' }}>{p.num}</Box>
-                <Typography variant="h4" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, textShadow: letterpress, mb: '0.5rem', lineHeight: 1.1 }}>
-                  {p.title}
+                <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1, mb: 0.75 }}>
+                  <Typography variant="h4" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, textShadow: letterpress, lineHeight: 1.1 }}>
+                    {s.name}
+                  </Typography>
+                  <Box component="span" sx={{ fontFamily: display, fontStyle: 'italic', color: paper.viridian, fontSize: '1rem', whiteSpace: 'nowrap' }}>
+                    {s.feder}
+                  </Box>
+                </Box>
+                <Typography variant="body2" sx={{ color: paper.inkSoft, lineHeight: 1.55, mb: 2, flexGrow: 1 }}>
+                  {s.desc}
                 </Typography>
-                <Typography variant="body2" sx={{ color: paper.inkSoft, maxWidth: '30ch', lineHeight: 1.55 }}>{p.desc}</Typography>
+                <Box
+                  component="span"
+                  sx={{
+                    alignSelf: 'flex-start',
+                    fontSize: '.8rem',
+                    fontStyle: 'italic',
+                    px: '0.7rem',
+                    py: '0.18rem',
+                    borderRadius: '999px',
+                    border: `1px solid ${s.written ? paper.viridian : paper.line}`,
+                    color: s.written ? paper.viridian : paper.sepia,
+                  }}
+                >
+                  {s.state}
+                </Box>
               </Box>
             </Reveal>
           ))}
@@ -107,10 +132,13 @@ export function LandingView() {
           </Box>
         </Box>
 
-        {/* roadmap — staged honestly, no dead links */}
+        {/* roadmap — an honest word on the state, then genuinely-future items */}
         <Box sx={{ mt: { xs: 6, md: 9 } }}>
-          <Typography variant="overline" sx={{ color: paper.sepia, display: 'block', mb: 2 }}>
+          <Typography variant="overline" sx={{ color: paper.sepia, display: 'block', mb: 1.5 }}>
             {de.landing.roadmapHeading}
+          </Typography>
+          <Typography variant="body2" sx={{ color: paper.inkSoft, maxWidth: '64ch', mb: 2.5 }}>
+            {de.landing.roadmapNote}
           </Typography>
           <Stack spacing={0}>
             {roadmap.map((r, i) => (

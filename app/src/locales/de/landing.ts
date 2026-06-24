@@ -22,16 +22,38 @@ export const landing = {
     ctaRead: 'Buchstaben lesen',
     replay: '↻ noch einmal schreiben',
   },
-  // The thesis — the three-way combination that makes this project different.
-  // Prose in the site's warm turn-of-the-century voice (meaning unchanged).
-  pillarsHeading: 'Was hier entstehen soll',
-  pillars: [
-    { num: 'i.', title: 'Tinte statt Font', desc: 'Schwellzug, Strichfolge und die Form jedes Buchstabens nach seinem Platz im Wort — Schrift, wie sie der Feder entfließt, nicht wie sie der Setzkasten gießt.' },
-    { num: 'ii.', title: 'Statistik statt Bauchgefühl', desc: 'Schräglage, Druck und Buchstabenform der eigenen Hand, in Zahlen gefasst — gemessen, nicht geschätzt.' },
-    { num: 'iii.', title: 'Lineatur zum Text', desc: 'Zu jedem Text die rechte Lineatur, in einem Zuge — Vorlagen, druckfertig und dem Inhalt angemessen.' },
+  // Section 1: the scripts. "Kurrent(schrift)" is really an umbrella over a
+  // whole family of German cursive hands; these three make good starters
+  // because each is written with a *different* pen. Honest about which can be
+  // written by the engine yet (Sütterlin only) — `state` drives a small badge.
+  scriptsHeading: 'Drei Schriften, drei Federn',
+  scriptsIntro:
+    '„Kurrentschrift" fasst eine ganze Familie deutscher Schreibschriften zusammen. Drei davon zum Anfangen — jede mit ihrer eigenen Feder, und keine als Font, sondern Zug um Zug nachgebildet.',
+  scripts: [
+    {
+      name: 'Kurrent',
+      feder: 'Spitzfeder',
+      state: 'noch zum Lesen',
+      written: false,
+      desc: 'Die ältere Norm. Aus dem Druck der Spitzfeder wächst der Schwellzug — fein im Aufstrich, breit im Abstrich.',
+    },
+    {
+      name: 'Sütterlin',
+      feder: 'Gleichzugfeder',
+      state: 'schon schreibbar',
+      written: true,
+      desc: 'Aufrecht und gleichmäßig, ohne Schwellung — die Schulschrift von 1911. Sie wird hier schon lebendig geschrieben.',
+    },
+    {
+      name: 'Offenbacher',
+      feder: 'Breitfeder',
+      state: 'noch zum Lesen',
+      written: false,
+      desc: 'Der Strichkontrast kommt aus dem Winkel der Breitfeder, nicht aus dem Druck. Nie weit verbreitet — aber ein schöner Einstieg.',
+    },
   ],
-  // Tools that exist today (the component attaches the route paths).
-  toolsHeading: 'Was schon zur Hand ist',
+  // Section 2: what already works today (the component attaches the route paths).
+  toolsHeading: 'Schon zur Hand',
   tools: {
     worksheet: {
       title: 'Lineatur-Vorlage',
@@ -49,13 +71,17 @@ export const landing = {
       desc: 'Echte Kurrent-Buchstaben aus alter Vorlage lesen; am Ende weist die Auswertung, was Mühe bereitete.',
     },
   },
-  // Roadmap — staged honestly, no dead links (badge: common.soon).
-  roadmapHeading: 'In Vorbereitung',
+  // Section 3: an honest word on the state + a short list of genuinely-future
+  // features. Deliberately NO items that already exist (the Schriftkunde primer,
+  // the quiz) — those live under "Schon zur Hand". Badge: common.soon.
+  roadmapHeading: 'Noch im Werden',
+  roadmapNote:
+    'Ein junges Werk: Das Schreiben-Lassen kann bisher nur Sütterlin — und noch nicht fehlerfrei. Vieles, was kommen soll, ist erst Plan:',
   roadmap: [
-    { title: 'Einstieg & Alphabet', desc: 'Die Geschichte in zwei Sätzen, eine Alphabet-Tafel und die wichtigsten Regeln — eine kleine Fibel zum Anfangen.' },
+    { title: 'Mehr Hände schreiben', desc: 'Auch Kurrent und Offenbacher Zug um Zug geschrieben, nicht nur gelesen — und sauberer als heute.' },
     { title: 'Animierte Tafel', desc: 'Strichfolge, Ansatzpunkte und Schwellzug — der Feder bei der Arbeit zugesehen.' },
     { title: 'Lese-Lupe', desc: 'Alte Scans, Zeile um Zeile übertragen — mit einer Erläuterung zu jedem Buchstaben.' },
-    { title: 'Schrift-Analyse', desc: 'Die eigene Hand in Zahlen — Schräglage, Schwellzug und Verteilung, fein säuberlich vermessen.' },
+    { title: 'Schrift-Analyse', desc: 'Die eigene Hand in Zahlen — Schräglage, Schwellzug und Verteilung.' },
     { title: 'Offene Daten', desc: 'Die Glyph-Daten — Anker, Schwellzug, Duktus — offen und frei zu zitieren.' },
   ],
   footer: {
