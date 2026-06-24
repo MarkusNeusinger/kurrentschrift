@@ -97,6 +97,6 @@ export const landing = {
   ],
   footer: {
     scripts: 'Kurrent · Sütterlin · Offenbacher',
-    disclaimer: 'Was hier geschrieben steht, ist nachgebildet — kein historisches Original.',
+    disclaimer: 'Eine private Liebhaberei — offen und frei.',
   },
 } as const;
