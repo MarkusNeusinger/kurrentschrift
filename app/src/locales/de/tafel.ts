@@ -4,20 +4,33 @@
 export const tafel = {
   title: 'Schreibtafel',
   intro:
-    'Die Vorlage, nach der hier geschrieben wird. Schalte zwischen dem Original-Scan und der nachgeschriebenen Fassung um: In der nachgeschriebenen Ansicht schreibt sich jeder Buchstabe Zug um Zug selbst — in der Reihenfolge der Feder. Tippe einen Buchstaben an, um ihm beim Schreiben noch einmal zuzusehen.',
-  // The Original/Geschrieben toggle.
+    'Die Vorlagen, nach denen hier geschrieben wird — die drei deutschen Ausgangsschriften nebeneinander. Wo eine Schrift schon nachgebildet ist, schreibt sich jeder Buchstabe Zug um Zug selbst; sonst zeigt die Tafel den Original-Scan der historischen Lehrtafel.',
+  note: 'Die gemeinfreien Vorlagen liefern die Formen; die nachgeschriebene Bewegung — der Zug der Feder — ist die eigene Rekonstruktion dieses Projekts. Tippe einen geschriebenen Buchstaben an, um ihm noch einmal zuzusehen.',
+  // The Original/Geschrieben toggle (only on a script that is already written).
   viewToggleAria: 'Ansicht umschalten',
   viewOriginal: 'Original',
   viewWritten: 'Geschrieben',
-  // Caption under the original scan.
+  // Alt text for the original scan.
   originalAlt: 'Original-Schreibtafel (Scan der Vorlage)',
-  // Empty state when no letter is finished (locked) and written yet.
+  // Empty state when a written script has no finished (locked) letter yet.
   empty: 'Buchstaben erscheinen hier, sobald sie fertig nachgeschrieben und freigegeben sind.',
-  // Short explanation of the underlying source chart, shown on both views.
+  // Per-script writing instrument (echoes the landing's "drei Federn"), by style_id.
+  feder: {
+    kurrent: 'Spitzfeder',
+    suetterlin: 'Gleichzugfeder',
+    offenbacher: 'Breitfeder',
+  } as Record<string, string>,
+  // Short state label shown next to a script title.
+  state: {
+    written: 'nachgeschrieben',
+    original: 'noch nicht nachgeschrieben',
+    pending: 'in Vorbereitung',
+  },
+  // Placeholder for a script without any chart source yet.
+  pendingNote: 'Für diese Schrift liegt noch keine Vorlage bereit. Sie kommt später dazu.',
+  // Per-source provenance, shown under each script that has a chart.
   source: {
     heading: 'Über die Vorlage',
-    blurb:
-      'Diese Seite zeigt eine historische Lehrtafel und schreibt ihre Buchstaben nach. Die gemeinfreie Vorlage liefert die Formen; die nachgeschriebene Bewegung — der Zug der Feder — ist die eigene Rekonstruktion dieses Projekts.',
     licenseLabel: 'Lizenz',
     originLink: 'Zur Originalquelle',
   },
