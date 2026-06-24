@@ -11,11 +11,13 @@ export const landing = {
     // Long-s (ſ) at the syllable start of "-ſchrift" per the Kurrent rule.
     word: 'Kurrentſchrift',
     wordAria: 'Kurrentschrift',
-    wordCaption: '— ein deutsches Wort, von Hand mit der Feder geschrieben.',
-    title: 'Die Schrift unserer Briefe — wieder lesen und schreiben.',
-    leadBeforeBold: 'Eine offene Bibliothek der deutschen Kurrentschrift —',
-    leadBold: 'kein Font, sondern der Schreibvorgang selbst',
-    leadAfterBold: ': die Gestalt der Buchstaben aus historischen Vorlagen, der Strich aus handkuratiertem Duktus.',
+    wordCaption: '— ein deutsches Wort, geschrieben wie vor hundert Jahren.',
+    title: 'Alte Briefe wieder lesen — und selbst zur Feder greifen.',
+    leadBeforeBold:
+      'Kurrent, Sütterlin und Offenbacher — die Schriften, in denen unsere Vorfahren ihre Briefe und Urkunden festhielten und die heute',
+    leadBold: 'kaum noch jemand entziffert',
+    leadAfterBold:
+      '. Diese Sammlung führt zurück: sie zu lesen, mit der Feder nachzuschreiben und Zug um Zug zu verstehen.',
     ctaWrite: 'Schreiben üben',
     ctaRead: 'Buchstaben lesen',
     replay: '↻ noch einmal schreiben',

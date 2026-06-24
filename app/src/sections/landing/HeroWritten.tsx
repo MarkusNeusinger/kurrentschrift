@@ -37,7 +37,11 @@ const nibTravel = keyframes`
   100% { left: 99%; opacity: 0; }
 `;
 const flourishDraw = keyframes`to { stroke-dashoffset: 0; }`;
-const rise = keyframes`from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; }`;
+// `visibility` flips hidden→visible at the animation start (delay end), so the
+// element is out of the tab order while it's invisible — a keyboard user can't
+// focus a CTA/replay that hasn't appeared yet (with `both`, the `from` state
+// holds during the delay). Discrete property: it just snaps on as the fade begins.
+const rise = keyframes`from { opacity: 0; visibility: hidden; transform: translateY(14px); } to { opacity: 1; visibility: visible; transform: none; }`;
 
 // Staggered entrance for the supporting copy. Deliberately starts early (the
 // word keeps writing behind it) so the hero is usable at once, not after 3s.
@@ -86,7 +90,7 @@ function HeroWord({ runKey }: { runKey: number }) {
         position: 'relative',
         display: 'inline-block',
         // The font-size drives the whole composition (word + nib + flourish).
-        fontSize: 'clamp(2.4rem, 7vw, 6rem)',
+        fontSize: 'clamp(2.8rem, 10vw, 9rem)',
         lineHeight: 1,
         mx: 'auto',
       }}
