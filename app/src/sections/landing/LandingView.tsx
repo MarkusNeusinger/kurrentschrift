@@ -3,7 +3,8 @@
 // "Paper & ink" identity (deliberately NOT the anyplot/pyplots palette): aged cream
 // paper, aged iron-gall brown as the writing ink, viridian as the single sparing
 // accent. A single-column hero (<HeroWritten>) writes the brand word with a pen,
-// then the thesis pillars, the live tools and the honest "bald" roadmap follow.
+// then the three scripts ("Drei Schriften, drei Federn"), the live tools
+// ("Schon zur Hand") and the honest "Noch im Werden" roadmap follow.
 //
 // Headlines/brand use Playfair Display (`display`); body/eyebrow use EB Garamond
 // (`garamond`); the showpiece word uses GL-GermanCursive (`script`). All honour
@@ -98,7 +99,8 @@ export function LandingView() {
         </Box>
       </PageContainer>
 
-      {/* lower sections — live tools, pipeline, roadmap, footer */}
+      {/* lower sections — live tools ("Schon zur Hand") + roadmap ("Noch im Werden");
+          the footer is rendered globally by PublicLayout, not here */}
       <PageContainer width="wide" sx={{ pt: { xs: 6, md: 8 }, pb: { xs: 6, md: 9 } }}>
         {/* what already works — everything usable today, lighter cards */}
         <Box sx={{ pt: { xs: 1, md: 2 } }}>
