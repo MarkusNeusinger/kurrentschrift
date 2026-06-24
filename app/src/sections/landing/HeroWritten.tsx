@@ -222,12 +222,12 @@ export function HeroWritten() {
       >
         <Box
           component={RouterLink}
-          to={paths.schreiben}
+          to={paths.lesen}
           sx={{
             fontFamily: garamond,
-            fontSize: '1.06rem',
-            px: '1.6rem',
-            py: '0.8rem',
+            fontSize: '1.2rem',
+            px: '2.4rem',
+            py: '0.6rem',
             borderRadius: '8px',
             bgcolor: paper.viridian,
             color: paper.hi,
@@ -237,14 +237,14 @@ export function HeroWritten() {
             '&:hover': { filter: 'brightness(1.06)', transform: 'translateY(-2px)', boxShadow: '0 10px 24px rgba(64,130,109,.34)' },
           }}
         >
-          {t.ctaWrite}
+          {t.ctaRead}
         </Box>
         <Box
           component={RouterLink}
-          to={paths.lesen}
+          to={paths.schreiben}
           sx={{
             fontFamily: garamond,
-            fontSize: '1.06rem',
+            fontSize: '1.2rem',
             color: paper.inkSoft,
             textDecoration: 'none',
             display: 'inline-flex',
@@ -256,7 +256,7 @@ export function HeroWritten() {
             '&:hover .arrow': { transform: 'translateX(5px)' },
           }}
         >
-          {t.ctaRead}{' '}
+          {t.ctaWrite}{' '}
           <Box component="span" className="arrow">
             →
           </Box>

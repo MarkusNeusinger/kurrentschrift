@@ -14,12 +14,12 @@ export const landing = {
     wordCaption: '— ein deutsches Wort, geschrieben wie vor hundert Jahren.',
     title: 'Alte Briefe wieder lesen — und selbst zur Feder greifen.',
     leadBeforeBold:
-      'Kurrent, Sütterlin und Offenbacher — die Schriften, in denen unsere Vorfahren ihre Briefe und Urkunden festhielten und die heute',
+      'Kurrent, Sütterlin und Offenbacher: die Schriften, in denen unsere Vorfahren ihre Briefe und Urkunden festhielten — und die heute',
     leadBold: 'kaum noch jemand entziffert',
     leadAfterBold:
-      '. Diese Sammlung führt zurück: sie zu lesen, mit der Feder nachzuschreiben und Zug um Zug zu verstehen.',
-    ctaWrite: 'Schreiben üben',
-    ctaRead: 'Buchstaben lesen',
+      '. Hier lernst du, sie wieder zu lesen, mit der Feder nachzuschreiben und Zug um Zug zu verstehen.',
+    ctaWrite: 'Schreiben',
+    ctaRead: 'Lesen',
     replay: '↻ noch einmal schreiben',
   },
   // Section 1: the scripts. "Kurrent(schrift)" is really an umbrella over a
