@@ -10,11 +10,13 @@
 // glyph status the admin curated — but it never follows the admin's runtime
 // source switcher.
 
-import { Box, Container, Dialog, DialogContent, IconButton, Link, Paper, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { Box, Dialog, DialogContent, IconButton, Link, Paper, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useMemo, useState } from 'react';
 
 import { BootStatus } from '@/components/BootStatus';
+import { PageContainer } from '@/components/PageContainer';
+import { Prose } from '@/components/Prose';
 import { WrittenGlyph } from '@/components/WrittenGlyph';
 import { useAdmin } from '@/context/AdminContext';
 import { CONFIG } from '@/global-config';
@@ -93,13 +95,15 @@ export function TafelView() {
 
   return (
     <PublicLayout footer>
-      <Container maxWidth="md" sx={{ py: { xs: 4, sm: 6 } }}>
+      <PageContainer width="text" sx={{ py: { xs: 4, sm: 6 } }}>
         <Stack spacing={3}>
           <Stack spacing={1.5}>
-            <Typography component="h1" sx={{ fontFamily: garamond, fontStyle: 'italic', fontSize: '2rem', lineHeight: 1.1 }}>
+            <Typography component="h1" variant="h1" sx={{ fontFamily: garamond, fontStyle: 'italic' }}>
               {de.tafel.title}
             </Typography>
-            <Typography sx={{ color: paper.inkSoft, maxWidth: '60ch' }}>{de.tafel.intro}</Typography>
+            <Prose align="left">
+              <Typography sx={{ color: paper.inkSoft }}>{de.tafel.intro}</Typography>
+            </Prose>
           </Stack>
 
           <ToggleButtonGroup
@@ -115,7 +119,7 @@ export function TafelView() {
           </ToggleButtonGroup>
 
           {view === 'original' ? (
-            <Paper variant="outlined" sx={{ p: 1, bgcolor: paper.hi, overflow: 'auto', maxHeight: '75vh' }}>
+            <Paper variant="outlined" sx={{ p: 1, bgcolor: '#fff', overflow: 'auto', maxHeight: '75vh' }}>
               <Box
                 component="img"
                 src={chartUrl(CONFIG.sourceId)}
@@ -155,7 +159,7 @@ export function TafelView() {
                     justifyContent: 'center',
                     minHeight: 130,
                     cursor: 'pointer',
-                    bgcolor: paper.hi,
+                    bgcolor: '#fff',
                     transition: 'border-color 120ms, box-shadow 120ms',
                     '&:hover, &:focus-visible': {
                       borderColor: paper.viridian,
@@ -177,7 +181,7 @@ export function TafelView() {
               shown under both views (it's about the chart both derive from). */}
           <Paper variant="outlined" sx={{ p: 2, bgcolor: paper.hi }}>
             <Stack spacing={1}>
-              <Typography component="h2" sx={{ fontFamily: garamond, fontStyle: 'italic', fontSize: '1.25rem' }}>
+              <Typography component="h2" variant="h6" sx={{ fontFamily: garamond, fontWeight: 400, fontStyle: 'italic' }}>
                 {de.tafel.source.heading}
               </Typography>
               <Typography variant="body2" sx={{ color: paper.inkSoft, maxWidth: '60ch' }}>
@@ -208,7 +212,7 @@ export function TafelView() {
             </Stack>
           </Paper>
         </Stack>
-      </Container>
+      </PageContainer>
 
       {/* Replay modal: a large WrittenGlyph that re-writes the ductus on open
           (fresh mount per letter) — and its own replay button for another pass. */}
@@ -219,7 +223,7 @@ export function TafelView() {
         fullWidth
         aria-label={active ? `${active.glyph} — ${de.tafel.title}` : de.tafel.title}
       >
-        <DialogContent sx={{ position: 'relative', bgcolor: paper.hi, display: 'flex', justifyContent: 'center', py: 4 }}>
+        <DialogContent sx={{ position: 'relative', bgcolor: '#fff', display: 'flex', justifyContent: 'center', py: 4 }}>
           <IconButton
             onClick={() => setActive(null)}
             aria-label={de.tafel.close}

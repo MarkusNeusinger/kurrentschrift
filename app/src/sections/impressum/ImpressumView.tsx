@@ -8,29 +8,31 @@
 // the audience here is far less technical.
 
 import type { ReactNode } from 'react';
-import { Box, Container, Link, Typography } from '@mui/material';
+import { Box, Link, Typography } from '@mui/material';
 
 import portraitUrl from '@/assets/markus-neusinger.webp';
 import { CategoryHeading } from '@/components/CategoryHeading';
+import { PageContainer } from '@/components/PageContainer';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de } from '@/locales';
-import { display, garamond, letterpress, paper } from '@/styles/paper';
+import { display, letterpress, paper } from '@/styles/paper';
 
 const t = de.impressum;
 
 // --- shared text styles -----------------------------------------------------
+// Body prose inherits size/family from the theme `body1` variant (19px Garamond);
+// only colour and the slightly looser leading for dense legal text are set here.
 const prose = {
-  fontFamily: garamond,
   color: paper.inkSoft,
-  fontSize: '1.02rem',
   lineHeight: 1.7,
   mb: 1.5,
 } as const;
 
+// Small display sub-label inside a section (Playfair, tracks the 19px scale).
 const subTitle = {
   fontFamily: display,
   fontWeight: 600,
-  fontSize: '1.05rem',
+  fontSize: '1.15rem',
   color: paper.ink,
   mt: 2.5,
   mb: 0.5,
@@ -56,10 +58,16 @@ function Section({ heading, children }: { heading: string; children: ReactNode }
 export function ImpressumView() {
   return (
     <PublicLayout>
-      <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1, px: { xs: 2.5, sm: 4, md: 6 }, pt: { xs: 4, md: 6 }, pb: { xs: 6, md: 9 } }}>
+      <PageContainer sx={{ pt: { xs: 4, md: 6 }, pb: { xs: 6, md: 9 } }}>
+        {/* A legal page is one document: the whole column (prose, portrait,
+            hosting table) sits in a single left-aligned reading measure, rather
+            than full-bleed structured blocks. Not <Prose> — that wraps running
+            paragraphs only; here the measure governs the entire document. */}
+        <Box sx={{ maxWidth: '48rem' }}>
         <Typography
           component="h1"
-          sx={{ fontFamily: display, fontWeight: 600, fontSize: { xs: '2rem', md: '2.6rem' }, color: paper.ink, textShadow: letterpress }}
+          variant="h1"
+          sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, textShadow: letterpress }}
         >
           {t.title}
         </Typography>
@@ -172,7 +180,8 @@ export function ImpressumView() {
         <Typography sx={{ ...prose, mb: 0, mt: { xs: 5, md: 6 }, textAlign: 'center', fontSize: '.9rem', color: paper.sepia, fontStyle: 'italic' }}>
           {t.lastUpdated}
         </Typography>
-      </Container>
+        </Box>
+      </PageContainer>
     </PublicLayout>
   );
 }

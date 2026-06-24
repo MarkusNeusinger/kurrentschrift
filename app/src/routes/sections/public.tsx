@@ -7,6 +7,8 @@ import { paths } from '@/routes/paths';
 
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
 const SchriftkundePage = lazy(() => import('@/pages/SchriftkundePage'));
+const LesenPage = lazy(() => import('@/pages/LesenPage'));
+const SchreibenPage = lazy(() => import('@/pages/SchreibenPage'));
 const WorksheetPage = lazy(() => import('@/pages/WorksheetPage'));
 const ScribePage = lazy(() => import('@/pages/ScribePage'));
 const TafelPage = lazy(() => import('@/pages/TafelPage'));
@@ -23,6 +25,10 @@ export const publicRoutes: RouteObject[] = [
   // Legacy redirect: this page lived at /lehrbuch before the Schriftkunde rename —
   // forward old links/bookmarks instead of dropping them on the NotFound route.
   { path: '/lehrbuch', element: <Navigate to={paths.schriftkunde} replace /> },
+  // Two area hubs group the four tools (Lesen = Quiz + Tafel, Schreiben =
+  // Übungsblatt + Federprobe), so the top nav stays at three entries.
+  { path: paths.lesen, element: <LesenPage /> },
+  { path: paths.schreiben, element: <SchreibenPage /> },
   { path: paths.worksheet, element: <WorksheetPage /> },
   { path: paths.scribe, element: <ScribePage /> },
   { path: paths.impressum, element: <ImpressumPage /> },

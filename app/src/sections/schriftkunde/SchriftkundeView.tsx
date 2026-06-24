@@ -20,11 +20,13 @@
 //                   (the genuine historical hand, not a synthesised glyph).
 
 import { useCallback, useState, type ReactNode } from 'react';
-import { Box, Container, Link, Typography } from '@mui/material';
+import { Box, Link, Typography } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 
 import offenbacherSpecimen from '@/assets/specimens/offenbacher-koch-1928.jpg';
 import { CategoryHeading } from '@/components/CategoryHeading';
+import { PageContainer } from '@/components/PageContainer';
+import { Prose } from '@/components/Prose';
 import { WrittenWord } from '@/components/WrittenWord';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de } from '@/locales';
@@ -33,10 +35,10 @@ import { display, garamond, letterpress, paper, script, suetterlin } from '@/sty
 const t = de.schriftkunde;
 
 // --- shared text styles (mirrors ImpressumView) -----------------------------
+// Body prose inherits size/family from the theme `body1` variant (19px Garamond);
+// only colour and the slightly looser leading are set here.
 const prose = {
-  fontFamily: garamond,
   color: paper.inkSoft,
-  fontSize: '1.02rem',
   lineHeight: 1.7,
 } as const;
 
@@ -67,7 +69,9 @@ type TermItem = { term: string; desc: string };
 function SourceLine({ sources, sx }: { sources: readonly SourceRef[]; sx?: SxProps<Theme> }) {
   return (
     <Typography
-      sx={[{ fontFamily: garamond, fontSize: '0.82rem', color: paper.sepia, mt: 1 }, ...(Array.isArray(sx) ? sx : [sx])]}
+      variant="caption"
+      component="p"
+      sx={[{ color: paper.sepia, mt: 1 }, ...(Array.isArray(sx) ? sx : [sx])]}
     >
       {t.sourcesLabel}{' '}
       {sources.map((s, i) => (
@@ -87,7 +91,7 @@ function Section({ heading, lead, children }: { heading: string; lead?: string; 
   return (
     <Box component="section" sx={{ mt: { xs: 5, md: 6 } }}>
       <CategoryHeading>{heading}</CategoryHeading>
-      {lead && <Typography sx={{ ...prose, fontSize: '0.98rem', mb: 1.75, maxWidth: '64ch' }}>{lead}</Typography>}
+      {lead && <Typography sx={{ ...prose, mb: 1.75, maxWidth: '64ch' }}>{lead}</Typography>}
       {children}
     </Box>
   );
@@ -107,8 +111,8 @@ function TripletGrid({ items }: { items: readonly TermItem[] }) {
             borderLeft: { sm: i > 0 ? `1px solid ${paper.line}` : 'none' },
           }}
         >
-          <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: '1.12rem', color: paper.ink, mb: 0.75 }}>{c.term}</Typography>
-          <Typography sx={{ ...prose, fontSize: '0.95rem' }}>{c.desc}</Typography>
+          <Typography variant="h6" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, mb: 0.75 }}>{c.term}</Typography>
+          <Typography variant="body2" sx={prose}>{c.desc}</Typography>
         </Box>
       ))}
     </Box>
@@ -125,10 +129,10 @@ function DefinitionRows({ items }: { items: readonly TermItem[] }) {
           key={it.term}
           sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 0.25, sm: 2.5 }, py: 1.1, borderTop: `1px solid ${paper.line}` }}
         >
-          <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: '0.98rem', color: paper.ink, minWidth: { sm: 196 }, flexShrink: 0, pt: { sm: 0.15 } }}>
+          <Typography variant="subtitle2" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, minWidth: { sm: 196 }, flexShrink: 0, pt: { sm: 0.15 } }}>
             {it.term}
           </Typography>
-          <Typography sx={{ ...prose, fontSize: '0.95rem' }}>{it.desc}</Typography>
+          <Typography variant="body2" sx={prose}>{it.desc}</Typography>
         </Box>
       ))}
     </Box>
@@ -213,10 +217,7 @@ function SpecimenBlock({ id }: { id: string }) {
 export function SchriftkundeView() {
   return (
     <PublicLayout footer>
-      <Container
-        maxWidth="md"
-        sx={{ position: 'relative', zIndex: 1, px: { xs: 2.5, sm: 4, md: 6 }, pt: { xs: 4, md: 6 }, pb: { xs: 6, md: 9 } }}
-      >
+      <PageContainer sx={{ pt: { xs: 4, md: 6 }, pb: { xs: 6, md: 9 } }}>
         {/* --- header --- */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.7rem', mb: '1rem', ...overline }}>
           <Box component="span" sx={{ width: 42, height: '1px', bgcolor: paper.sepia }} />
@@ -224,13 +225,16 @@ export function SchriftkundeView() {
         </Box>
         <Typography
           component="h1"
-          sx={{ fontFamily: display, fontWeight: 600, fontSize: { xs: '2rem', md: '2.6rem' }, color: paper.ink, textShadow: letterpress, lineHeight: 1.1 }}
+          variant="h1"
+          sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, textShadow: letterpress }}
         >
           {t.title}
         </Typography>
         {/* warm newcomer opener, then the factual scope line */}
-        <Typography sx={{ ...prose, color: paper.ink, fontSize: '1.1rem', mt: 2, maxWidth: '62ch' }}>{t.intro}</Typography>
-        <Typography sx={{ ...prose, mt: 1.5, maxWidth: '62ch' }}>{t.lead}</Typography>
+        <Prose align="left">
+          <Typography sx={{ ...prose, color: paper.ink, mt: 2 }}>{t.intro}</Typography>
+          <Typography sx={{ ...prose, mt: 1.5 }}>{t.lead}</Typography>
+        </Prose>
 
         {/* --- Grundbegriffe --- */}
         <Section heading={t.conceptsHeading}>
@@ -249,36 +253,36 @@ export function SchriftkundeView() {
                   flexDirection: 'column',
                   border: `1px solid ${paper.line}`,
                   borderRadius: '3px',
-                  bgcolor: 'rgba(255,255,255,0.18)',
+                  bgcolor: paper.hi,
                   p: { xs: 2.25, md: 2.5 },
                 }}
               >
-                <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: '1.5rem', color: paper.ink, lineHeight: 1.1 }}>
+                <Typography variant="h4" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, lineHeight: 1.1 }}>
                   {v.name}
                 </Typography>
-                <Typography sx={{ fontFamily: garamond, fontStyle: 'italic', fontSize: '0.86rem', color: paper.sepia, mt: 0.25 }}>
+                <Typography variant="caption" component="p" sx={{ fontStyle: 'italic', color: paper.sepia, mt: 0.25 }}>
                   {v.period}
                 </Typography>
 
                 {/* specimen box + caption — caption is state-aware for Sütterlin */}
                 <SpecimenBlock id={v.id} />
 
-                <Typography sx={{ ...prose, fontSize: '0.95rem', mt: 1.75 }}>{v.essence}</Typography>
+                <Typography variant="body2" sx={{ ...prose, mt: 1.75 }}>{v.essence}</Typography>
 
                 {/* Steckbrief — key/value rows on hairlines */}
                 <Box sx={{ mt: 1.75 }}>
                   {v.facts.map((f) => (
                     <Box key={f.k} sx={{ display: 'flex', gap: 1.5, py: 0.6, borderTop: `1px solid ${paper.line}` }}>
-                      <Typography sx={{ ...prose, fontSize: '0.86rem', color: paper.sepia, minWidth: 84, flexShrink: 0 }}>
+                      <Typography variant="caption" sx={{ ...prose, color: paper.sepia, minWidth: 84, flexShrink: 0 }}>
                         {f.k}
                       </Typography>
-                      <Typography sx={{ ...prose, fontSize: '0.86rem', color: paper.ink }}>{f.v}</Typography>
+                      <Typography variant="caption" sx={{ ...prose, color: paper.ink }}>{f.v}</Typography>
                     </Box>
                   ))}
                 </Box>
 
                 {'note' in v && v.note && (
-                  <Typography sx={{ fontFamily: garamond, fontStyle: 'italic', fontSize: '0.8rem', color: paper.sepia, mt: 1 }}>
+                  <Typography variant="caption" component="p" sx={{ fontStyle: 'italic', color: paper.sepia, mt: 1 }}>
                     {v.note}
                   </Typography>
                 )}
@@ -304,11 +308,13 @@ export function SchriftkundeView() {
 
         {/* --- Warum wir heute nicht mehr so schreiben --- */}
         <Section heading={t.endHeading}>
-          {t.endParagraphs.map((p, i) => (
-            <Typography key={i} sx={{ ...prose, mt: i === 0 ? 0 : 1.25, maxWidth: '64ch' }}>
-              {p}
-            </Typography>
-          ))}
+          <Prose align="left">
+            {t.endParagraphs.map((p, i) => (
+              <Typography key={i} sx={{ ...prose, mt: i === 0 ? 0 : 1.25 }}>
+                {p}
+              </Typography>
+            ))}
+          </Prose>
           <SourceLine sources={t.endSources} />
         </Section>
 
@@ -343,13 +349,13 @@ export function SchriftkundeView() {
               key={row.year}
               sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 0, sm: 2 }, py: 0.9, borderBottom: `1px solid ${paper.line}` }}
             >
-              <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: '1.05rem', color: paper.viridian, minWidth: { sm: 110 }, flexShrink: 0 }}>
+              <Typography variant="subtitle2" sx={{ fontFamily: display, fontWeight: 600, color: paper.viridian, minWidth: { sm: 110 }, flexShrink: 0 }}>
                 {row.year}
               </Typography>
-              <Typography sx={{ ...prose, fontSize: '0.96rem' }}>{row.text}</Typography>
+              <Typography variant="body2" sx={prose}>{row.text}</Typography>
             </Box>
           ))}
-          <Typography sx={{ ...prose, fontSize: '0.9rem', mt: 1.5, fontStyle: 'italic', maxWidth: '62ch' }}>
+          <Typography variant="body2" sx={{ ...prose, mt: 1.5, fontStyle: 'italic', maxWidth: '62ch' }}>
             {t.timelineNote}
           </Typography>
           <SourceLine sources={t.timelineSources} />
@@ -357,18 +363,18 @@ export function SchriftkundeView() {
 
         {/* --- Quellen — scholarly/archive sources first, Wikipedia as overview --- */}
         <Section heading={t.sourcesHeading}>
-          <Typography sx={{ ...prose, fontSize: '0.96rem', maxWidth: '62ch' }}>{t.sourcesIntro}</Typography>
+          <Typography variant="body2" sx={{ ...prose, maxWidth: '62ch' }}>{t.sourcesIntro}</Typography>
           {[
             { label: t.sourcesScholarlyHeading, items: t.sourcesScholarly as readonly SourceRef[] },
             { label: t.sourcesWikipediaHeading, items: t.sourcesWikipedia as readonly SourceRef[] },
           ].map((group) => (
             <Box key={group.label} sx={{ mt: 2 }}>
-              <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: '0.92rem', color: paper.sepia }}>
+              <Typography variant="subtitle2" sx={{ fontFamily: display, fontWeight: 600, color: paper.sepia }}>
                 {group.label}
               </Typography>
               <Box component="ul" sx={{ mt: 0.75, mb: 0, pl: 3 }}>
                 {group.items.map((s) => (
-                  <Typography key={s.href} component="li" sx={{ ...prose, fontSize: '0.92rem', mb: 0.4 }}>
+                  <Typography key={s.href} variant="body2" component="li" sx={{ ...prose, mb: 0.4 }}>
                     <Link href={s.href} target="_blank" rel="noopener noreferrer" sx={proseLink}>
                       {s.label}
                     </Link>
@@ -377,13 +383,13 @@ export function SchriftkundeView() {
               </Box>
             </Box>
           ))}
-          <Typography sx={{ ...prose, fontSize: '0.9rem', mt: 1.5, fontStyle: 'italic' }}>{t.sourcesRepo}</Typography>
+          <Typography variant="body2" sx={{ ...prose, mt: 1.5, fontStyle: 'italic' }}>{t.sourcesRepo}</Typography>
         </Section>
 
         {/* --- Weiterlernen (Süß-Empfehlung) --- */}
         <Section heading={t.recommendation.heading}>
           <Box sx={{ borderLeft: `2px solid ${paper.viridian}`, pl: 2, py: 0.25 }}>
-            <Typography sx={{ ...prose, fontSize: '1rem', maxWidth: '62ch' }}>
+            <Typography sx={{ ...prose, maxWidth: '62ch' }}>
               {t.recommendation.before}
               <Link href={t.recommendation.href} target="_blank" rel="noopener noreferrer" sx={proseLink}>
                 {t.recommendation.linkLabel}
@@ -391,12 +397,12 @@ export function SchriftkundeView() {
               {t.recommendation.after}
             </Typography>
           </Box>
-          <Typography sx={{ ...prose, fontSize: '0.95rem', mt: 1.5, maxWidth: '62ch' }}>
+          <Typography sx={{ ...prose, mt: 1.5, maxWidth: '62ch' }}>
             {t.recommendation.practiceIntro}
           </Typography>
           <Box component="ul" sx={{ mt: 0.75, mb: 0, pl: 3 }}>
             {t.recommendation.practiceLinks.map((s) => (
-              <Typography key={s.href} component="li" sx={{ ...prose, fontSize: '0.92rem', mb: 0.4 }}>
+              <Typography key={s.href} variant="body2" component="li" sx={{ ...prose, mb: 0.4 }}>
                 <Link href={s.href} target="_blank" rel="noopener noreferrer" sx={proseLink}>
                   {s.label}
                 </Link>
@@ -404,7 +410,7 @@ export function SchriftkundeView() {
             ))}
           </Box>
         </Section>
-      </Container>
+      </PageContainer>
     </PublicLayout>
   );
 }

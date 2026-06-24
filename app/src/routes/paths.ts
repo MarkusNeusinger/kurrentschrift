@@ -5,7 +5,14 @@
 export const paths = {
   home: '/',
   schriftkunde: '/schriftkunde',
-  worksheet: '/schreiben',
+  // Two area hubs group the four tools so the top nav stays at three entries
+  // (Schriftkunde · Lesen · Schreiben). Lesen = Quiz + Tafel, Schreiben =
+  // Übungsblatt + Federprobe; each hub is a small overview page, not a dropdown.
+  lesen: '/lesen',
+  schreiben: '/schreiben',
+  // The worksheet generator moved under the Schreiben hub (it used to own
+  // /schreiben). /federprobe, /tafel, /quiz keep their stable standalone URLs.
+  worksheet: '/schreiben/uebungsblatt',
   scribe: '/federprobe',
   tafel: '/tafel',
   quiz: '/quiz',

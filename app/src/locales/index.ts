@@ -6,16 +6,18 @@
 
 import { admin } from './de/admin';
 import { common } from './de/common';
+import { hub } from './de/hub';
 import { impressum } from './de/impressum';
 import { landing } from './de/landing';
 import { quiz } from './de/quiz';
 import { schriftkunde } from './de/schriftkunde';
 import { scribe } from './de/scribe';
+import { seo } from './de/seo';
 import { tafel } from './de/tafel';
 import { wizard } from './de/wizard';
 import { worksheet } from './de/worksheet';
 
-export const de = { common, landing, schriftkunde, worksheet, scribe, quiz, tafel, admin, wizard, impressum } as const;
+export const de = { common, landing, schriftkunde, hub, worksheet, scribe, quiz, tafel, admin, wizard, impressum, seo } as const;
 
 // Tiny interpolation helper for messages with embedded variables, mirroring
 // i18next's {{name}} placeholder syntax.
