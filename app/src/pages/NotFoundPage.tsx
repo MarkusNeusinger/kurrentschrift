@@ -10,7 +10,7 @@ import { paths } from '@/routes/paths';
 
 export function NotFoundPage() {
   return (
-    <PublicLayout>
+    <PublicLayout footer={false}>
       <Box
         sx={{
           display: 'flex',

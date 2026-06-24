@@ -12,7 +12,7 @@
 // the work surfaces (A4 preview, letter crops, chart scan) stay neutral.
 
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Link, Stack, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 
 import { CategoryHeading } from '@/components/CategoryHeading';
 import { PageContainer } from '@/components/PageContainer';
@@ -21,7 +21,7 @@ import { de } from '@/locales';
 import { paths } from '@/routes/paths';
 import { HeroWritten } from '@/sections/landing/HeroWritten';
 import { Reveal } from '@/sections/landing/Reveal';
-import { display, garamond, letterpress, paper } from '@/styles/paper';
+import { display, letterpress, paper } from '@/styles/paper';
 
 // Everything usable today → real RouterLinks, ordered reading → writing
 // (Schriftkunde · Quiz · Tafel · Übungsblatt · Federprobe). German copy lives in
@@ -182,38 +182,8 @@ export function LandingView() {
             ))}
           </Stack>
         </Box>
-
-        {/* footer */}
-        <Box
-          sx={{
-            mt: { xs: 7, md: 10 },
-            pt: 4,
-            borderTop: `1px solid ${paper.line}`,
-            display: 'flex',
-            flexDirection: { xs: 'column', sm: 'row' },
-            justifyContent: 'space-between',
-            alignItems: { xs: 'flex-start', sm: 'flex-end' },
-            gap: 2,
-          }}
-        >
-          <Box>
-            <Typography sx={{ fontFamily: garamond, fontStyle: 'italic', color: paper.inkSoft }}>
-              {de.landing.footer.scripts}
-            </Typography>
-            <Typography variant="body2" sx={{ color: paper.sepia, fontStyle: 'italic' }}>
-              {de.landing.footer.disclaimer}
-            </Typography>
-          </Box>
-          <Link
-            component={RouterLink}
-            to={paths.impressum}
-            variant="body2"
-            sx={{ color: paper.sepia, textDecoration: 'none', '&:hover': { color: paper.viridian } }}
-          >
-            {de.impressum.footerLink}
-          </Link>
-        </Box>
       </PageContainer>
+      {/* the legal footer is the shared <PublicFooter>, rendered by PublicLayout */}
     </PublicLayout>
   );
 }

@@ -95,8 +95,4 @@ export const landing = {
     { title: 'Schrift-Analyse', desc: 'Die eigene Hand in Zahlen — Schräglage, Schwellzug und Verteilung.' },
     { title: 'Offene Daten', desc: 'Die Glyph-Daten — Anker, Schwellzug, Duktus — offen und frei zu zitieren.' },
   ],
-  footer: {
-    scripts: 'Kurrent · Sütterlin · Offenbacher',
-    disclaimer: 'Eine private Liebhaberei — offen und frei.',
-  },
 } as const;

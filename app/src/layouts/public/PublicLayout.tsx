@@ -8,9 +8,9 @@
 // impressum, ad hoc). Centralising the chrome here closes that gap for every
 // public page at once and keeps header/main/footer composition in one place.
 //
-// Footer policy: the landing carries its own richer inline footer, so it stays
-// off (footer={false}, the default); worksheet and quiz opt into the shared
-// <PublicFooter>; impressum and 404 need none.
+// Footer policy: the shared <PublicFooter> (a warm one-line sign-off + the
+// Impressum link) renders on every public page by default. A page can opt out
+// with footer={false} (e.g. the 404).
 
 import type { ReactNode } from 'react';
 import { Box } from '@mui/material';
@@ -22,7 +22,7 @@ import { PublicHeader } from '@/components/PublicHeader';
 
 interface PublicLayoutProps {
   children: ReactNode;
-  /** Render the shared legal <PublicFooter> after the content (default off). */
+  /** Render the shared <PublicFooter> after the content (default on). */
   footer?: boolean;
   /** Header tone, forwarded to <PublicHeader>; defaults to the paper identity. */
   headerTone?: 'plain' | 'paper';
@@ -32,7 +32,7 @@ interface PublicLayoutProps {
   sx?: SxProps<Theme>;
 }
 
-export function PublicLayout({ children, footer = false, headerTone = 'paper', minHeight, sx }: PublicLayoutProps) {
+export function PublicLayout({ children, footer = true, headerTone = 'paper', minHeight, sx }: PublicLayoutProps) {
   return (
     <PaperBackground minHeight={minHeight}>
       <PublicHeader tone={headerTone} />
