@@ -32,18 +32,11 @@ export const publicRoutes: RouteObject[] = [
   { path: paths.worksheet, element: <WorksheetPage /> },
   { path: paths.scribe, element: <ScribePage /> },
   { path: paths.impressum, element: <ImpressumPage /> },
-  {
-    // The writing-chart page (German "Schreibtafel") reads the source chart +
-    // its bboxes/glyph status to know which letters have a traced ductus, so it
-    // needs the data provider — pinned to the site-wide source like the quiz,
-    // never following the admin switcher.
-    path: paths.tafel,
-    element: (
-      <AdminProvider pinnedSourceId={CONFIG.sourceId}>
-        <TafelPage />
-      </AdminProvider>
-    ),
-  },
+  // The writing-chart page (German "Schreibtafel") shows all three Grundtafeln,
+  // so it can't ride the single-source AdminProvider: useGrundtafeln fetches the
+  // chart sources read-only and groups them by style itself (still pinned to the
+  // site-wide source for the one "written" script).
+  { path: paths.tafel, element: <TafelPage /> },
   {
     // The quiz reads the source chart + marked bboxes, so it needs the data
     // provider. Scoped to just this route so the other public pages stay
