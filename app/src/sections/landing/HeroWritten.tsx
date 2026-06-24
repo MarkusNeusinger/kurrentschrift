@@ -63,7 +63,7 @@ function NibSvg() {
         height: '0.7em',
         width: 'auto',
         display: 'block',
-        transform: 'rotate(-20deg)',
+        transform: 'rotate(-158deg)',
         transformOrigin: 'bottom center',
         filter: 'drop-shadow(0 2px 2px rgba(36,26,16,.28))',
       }}
@@ -114,13 +114,14 @@ function HeroWord({ runKey }: { runKey: number }) {
         {t.word}
       </Box>
 
-      {/* travelling nib — its tip rides the reveal edge along the baseline */}
+      {/* travelling nib — rides the reveal edge left→right "writing" the word at
+          the tuned angle (NibSvg rotate), fading in/out; hidden for reduced-motion. */}
       <Box
         aria-hidden
         sx={{
           position: 'absolute',
           left: '-2%',
-          bottom: '0.04em',
+          bottom: '0.4em',
           animation: `${nibTravel} ${WRITE_MS}ms linear forwards`,
           [reduce]: { display: 'none' },
         }}
