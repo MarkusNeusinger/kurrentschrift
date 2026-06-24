@@ -77,8 +77,6 @@ const SRC = {
 } as const;
 
 export const schriftkunde = {
-  pageTitle: 'Schriftkunde — kurrentschrift.ink',
-
   eyebrow: 'Schriftkunde',
   title: 'Die deutsche Schreibschrift',
   // Warm opener for newcomers (period tone, second person) — placed above the

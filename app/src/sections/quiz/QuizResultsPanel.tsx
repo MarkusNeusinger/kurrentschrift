@@ -53,7 +53,7 @@ export function QuizResultsPanel(p: ResultsProps) {
           <Typography variant="overline" color="text.secondary">
             {de.quiz.results.heading}
           </Typography>
-          <Typography sx={{ fontFamily: garamond, fontSize: '1.75rem', lineHeight: 1.2 }}>
+          <Typography variant="h3" sx={{ fontFamily: garamond, lineHeight: 1.2 }}>
             {fmt(de.quiz.results.score, { correct: p.stats.correct, seen: p.stats.seen })}
           </Typography>
           <LinearProgress

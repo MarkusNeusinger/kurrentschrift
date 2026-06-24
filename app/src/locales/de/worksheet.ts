@@ -3,7 +3,6 @@
 // a future i18next `worksheet` namespace.
 
 export const worksheet = {
-  pageTitle: 'Lineatur-Vorlage · kurrentschrift',
   title: 'Lineatur-Vorlage zum Schreiben üben',
   //   preserves the DIN&nbsp;A4 non-breaking space from the JSX original.
   intro:

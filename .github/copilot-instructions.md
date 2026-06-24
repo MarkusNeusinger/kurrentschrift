@@ -156,11 +156,14 @@ kurrentschrift/
 │   └── src/
 │       ├── routes/      # paths.ts route constants + lazy public/admin route sections
 │       ├── pages/       # thin default-export route mounts only
-│       ├── sections/    # feature views: landing/, schriftkunde/ (/schriftkunde overview), worksheet/,
+│       ├── sections/    # feature views: landing/, schriftkunde/ (/schriftkunde overview),
+│       │                #   hub/ (/lesen + /schreiben area hubs), worksheet/,
 │       │                #   scribe/ (/federprobe live writer), quiz/ (useQuizEngine),
 │       │                #   admin/{chart,setup-wizard,diagnostics,sidebar}
-│       ├── components/  # reusable UI: PaperBackground, PublicHeader, WrittenGlyph (one glyph),
-│       │                #   WrittenWord (a word/line + Übergänge as written), BootStatus
+│       ├── components/  # reusable UI: PaperBackground, PublicHeader (3-area nav), PublicFooter,
+│       │                #   PageContainer (one column: narrow 760/text 1152/wide 1280), Prose (~66ch
+│       │                #   reading measure), WrittenGlyph (one glyph), WrittenWord (word/line +
+│       │                #   Übergänge as written), CategoryHeading, BootStatus
 │       ├── layouts/     # admin shell (AdminLayout + AdminModals)
 │       ├── theme/       # MUI theme split; colors sourced from styles/paper.ts (single source)
 │       ├── lib/api/     # fetch client (cold-start retry, typed ApiError), endpoints,
@@ -190,10 +193,12 @@ source-cited overview of the three Ausgangsschriften (Grundbegriffe · the three
 scripts with one specimen each · Federn · Tinte · Buchstaben/Zahlen · chronology;
 section titles share the viridian-Kurrent-initial `CategoryHeading` with
 `/impressum`; the copyrighted Süß textbook is named + linked to its DNB record,
-never reproduced), `/schreiben` worksheet
-generator, `/federprobe` live word/sentence writing (synthesised Sütterlin
-ductus with generated Übergänge), `/quiz` letter quiz — paper-&-ink identity
-per `docs/concepts/style-guide.md`) and the admin behind `/admin/*`
+never reproduced); the tools group under two hubs so the top nav stays at three
+areas (Schriftkunde · Lesen · Schreiben): `/lesen` (→ `/quiz` letter quiz +
+`/tafel` Schreibtafel) and `/schreiben` (→ `/schreiben/uebungsblatt` worksheet
+generator + `/federprobe` live word/sentence writing, synthesised Sütterlin
+ductus with generated Übergänge) — paper-&-ink identity
+per `docs/concepts/style-guide.md` + `docs/concepts/design-system.md`) and the admin behind `/admin/*`
 (Cloudflare Access in prod). **Post-MVP** the public side grows
 (`/animation`, `/lese-hilfe`, `/lese-lupe/:job`, `/stil-analyse`,
 `/vergleich`, `/open-data`). See `docs/reference/frontend-stack.md`.
@@ -330,6 +335,13 @@ Technical specs sit in `docs/reference/*.md`:
   (`core/quality_suetterlin.py` + `core/geometry.py`). Bench runs one
   script per run (`--style suetterlin|kurrent`), no combined bench_loss.
 - `frontend-stack.md` — build, deploy, auth, routes
+
+The binding public-UI build spec is `docs/concepts/design-system.md` (colour
+tokens, 19px type ladder + Playfair-600 heading rule, PageContainer widths
+760/1152/1280 + Prose ~66ch measure, surface rule = identity-paper /
+work-surfaces-white, IA = three areas + hubs, component inventory). Read it
+before any public-page styling; it pairs with `concepts/style-guide.md`
+(rationale/history).
 
 Source-backed script facts (lineature terms, Schräglage convention
 90° = upright, nib types, per-script data — incl. the measured ~50°

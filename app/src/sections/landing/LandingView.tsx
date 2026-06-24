@@ -14,9 +14,10 @@
 // the work surfaces (A4 preview, letter crops, chart scan) stay neutral.
 
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Container, Link, Stack, Typography } from '@mui/material';
+import { Box, Link, Stack, Typography } from '@mui/material';
 import { keyframes } from '@mui/system';
 
+import { PageContainer } from '@/components/PageContainer';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de } from '@/locales';
 import { paths } from '@/routes/paths';
@@ -55,7 +56,7 @@ export function LandingView() {
   return (
     <PublicLayout>
       {/* hero — copy left, giant script specimen right */}
-      <Container maxWidth="lg" component="section" sx={{ position: 'relative', zIndex: 1, px: { xs: 2.5, sm: 4, md: 6 } }}>
+      <PageContainer width="wide" component="section">
         <Box
           sx={{
             display: 'grid',
@@ -87,10 +88,10 @@ export function LandingView() {
 
             <Typography
               component="h1"
+              variant="h1"
               sx={{
                 fontFamily: display,
                 fontWeight: 500,
-                fontSize: 'clamp(2.4rem, 5vw, 4rem)',
                 lineHeight: 1.04,
                 letterSpacing: '-0.01em',
                 color: paper.ink,
@@ -110,7 +111,6 @@ export function LandingView() {
 
             <Typography
               sx={{
-                fontSize: 'clamp(1.08rem, 1.5vw, 1.3rem)',
                 maxWidth: '42ch',
                 color: paper.inkSoft,
                 lineHeight: 1.6,
@@ -175,10 +175,10 @@ export function LandingView() {
               the ascenders land on the Oberlinie regardless of viewport/font box. */}
           <HeroSpecimen />
         </Box>
-      </Container>
+      </PageContainer>
 
       {/* thesis — three pillars, framed as the goal (not as shipped features) */}
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, px: { xs: 2.5, sm: 4, md: 6 }, pt: { xs: 4, md: 6 } }}>
+      <PageContainer width="wide" sx={{ pt: { xs: 4, md: 6 } }}>
         <Typography variant="overline" sx={{ color: paper.sepia, display: 'block', mb: 2.5 }}>
           {de.landing.pillarsHeading}
         </Typography>
@@ -195,18 +195,18 @@ export function LandingView() {
                 }}
               >
                 <Box sx={{ fontFamily: display, fontStyle: 'italic', fontWeight: 500, color: paper.viridian, fontSize: '1.1rem', mb: '0.8rem' }}>{p.num}</Box>
-                <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: '1.5rem', color: paper.ink, textShadow: letterpress, mb: '0.5rem', lineHeight: 1.1 }}>
+                <Typography variant="h4" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, textShadow: letterpress, mb: '0.5rem', lineHeight: 1.1 }}>
                   {p.title}
                 </Typography>
-                <Typography sx={{ color: paper.inkSoft, fontSize: '1.02rem', maxWidth: '30ch', lineHeight: 1.55 }}>{p.desc}</Typography>
+                <Typography variant="body2" sx={{ color: paper.inkSoft, maxWidth: '30ch', lineHeight: 1.55 }}>{p.desc}</Typography>
               </Box>
             </Reveal>
           ))}
         </Box>
-      </Container>
+      </PageContainer>
 
       {/* lower sections — live tools, pipeline, roadmap, footer */}
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, px: { xs: 2.5, sm: 4, md: 6 }, pt: { xs: 6, md: 8 }, pb: { xs: 6, md: 9 } }}>
+      <PageContainer width="wide" sx={{ pt: { xs: 6, md: 8 }, pb: { xs: 6, md: 9 } }}>
         {/* live tools */}
         <Box sx={{ pt: { xs: 2, md: 3 } }}>
           <Typography variant="overline" sx={{ color: paper.sepia, display: 'block', mb: 2 }}>
@@ -226,12 +226,12 @@ export function LandingView() {
                     p: 3,
                     borderRadius: '3px',
                     border: `1px solid ${paper.line}`,
-                    bgcolor: 'rgba(255,255,255,0.18)',
+                    bgcolor: paper.hi,
                     transition: 'transform .2s ease, box-shadow .3s ease, border-color .2s ease',
                     '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 12px 30px rgba(36,26,16,.16)', borderColor: paper.viridian },
                   }}
                 >
-                  <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: '1.6rem', mb: 0.75 }}>{t.title}</Typography>
+                  <Typography variant="h4" sx={{ fontFamily: display, fontWeight: 600, mb: 0.75 }}>{t.title}</Typography>
                   <Typography sx={{ color: paper.inkSoft, lineHeight: 1.6, mb: 1.5 }}>{t.desc}</Typography>
                   <Typography sx={{ color: paper.viridian, fontWeight: 500 }}>{t.cta}</Typography>
                 </Box>
@@ -268,7 +268,7 @@ export function LandingView() {
                       width: { xs: '100%', sm: 'auto' },
                     }}
                   >
-                    <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: '1.2rem', color: paper.ink, minWidth: { sm: 210 } }}>
+                    <Typography variant="h6" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, minWidth: { sm: 210 } }}>
                       {r.title}
                     </Typography>
                     <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontStyle: 'italic', fontSize: '.85rem', color: paper.sepia, whiteSpace: 'nowrap' }}>
@@ -301,7 +301,7 @@ export function LandingView() {
           }}
         >
           <Box>
-            <Typography sx={{ fontFamily: garamond, fontStyle: 'italic', color: paper.inkSoft, fontSize: '1.1rem' }}>
+            <Typography sx={{ fontFamily: garamond, fontStyle: 'italic', color: paper.inkSoft }}>
               {de.landing.footer.scripts}
             </Typography>
             <Typography variant="body2" sx={{ color: paper.sepia, fontStyle: 'italic' }}>
@@ -317,7 +317,7 @@ export function LandingView() {
             {de.impressum.footerLink}
           </Link>
         </Box>
-      </Container>
+      </PageContainer>
     </PublicLayout>
   );
 }

@@ -1,7 +1,7 @@
-// Shared identity header for the public pages (landing, quiz, worksheet): a sticky,
-// translucent, blurred bar with a bottom hairline. Left = the brand wordmark
-// (•kurrentschrift.ink, with ".ink" in viridian italic); right = the Schreiben/Lesen
-// nav with a viridian hover-underline. Modelled on the HTML mockup's nav.
+// Shared identity header for the public pages: a sticky, translucent, blurred
+// bar with a bottom hairline. Left = the brand wordmark (•kurrentschrift.ink,
+// with ".ink" in viridian italic); right = the three-area nav (Schriftkunde ·
+// Lesen · Schreiben) with a viridian hover-underline. Modelled on the HTML mockup.
 //
 // Two tones: `paper` (now the default everywhere, since the cream "paper & ink"
 // identity carries across all pages) and a slightly lighter `plain` fallback. The
@@ -16,6 +16,7 @@ import { Box, Link, Stack } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 
+import { PAGE_WIDTHS } from '@/components/PageContainer';
 import { de } from '@/locales';
 import { paths } from '@/routes/paths';
 import { display, paper } from '@/styles/paper';
@@ -23,12 +24,14 @@ import { display, paper } from '@/styles/paper';
 const ADMIN_TAPS = 5;
 const TAP_WINDOW_MS = 800;
 
+// Three areas only: Schriftkunde (reference), Lesen (Quiz + Tafel hub) and
+// Schreiben (Übungsblatt + Federprobe hub). The five-link bar was confusing —
+// it wasn't clear whether the Tafel or the Federprobe belonged to reading or
+// writing; the two hubs resolve that.
 const NAV = [
   { label: de.common.nav.schriftkunde, to: paths.schriftkunde },
-  { label: de.common.nav.write, to: paths.worksheet },
-  { label: de.common.nav.scribe, to: paths.scribe },
-  { label: de.common.nav.tafel, to: paths.tafel },
-  { label: de.common.nav.read, to: paths.quiz },
+  { label: de.common.nav.read, to: paths.lesen },
+  { label: de.common.nav.write, to: paths.schreiben },
 ];
 
 interface PublicHeaderProps {
@@ -77,7 +80,7 @@ export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
     >
       <Box
         sx={{
-          maxWidth: 1120,
+          maxWidth: PAGE_WIDTHS.wide,
           mx: 'auto',
           px: { xs: 2.5, sm: 4, md: 6 },
           py: 1.75,

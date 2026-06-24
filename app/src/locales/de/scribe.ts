@@ -2,7 +2,6 @@
 // Pre-i18n message catalog — mirrors a future i18next `scribe` namespace.
 
 export const scribe = {
-  pageTitle: 'Federprobe · kurrentschrift.ink',
   eyebrow: 'Federprobe',
   heading: 'Beliebige Wörter live geschrieben',
   lead: 'Tippe ein Wort oder einen Satz — der synthetisierte Duktus schreibt es Zug um Zug in Sütterlin, mit den Übergängen zwischen den Buchstaben. Lang-s, Schluss-s und die Ligaturen (ch · ck · tz · ſt · qu · ß) werden automatisch gesetzt.',

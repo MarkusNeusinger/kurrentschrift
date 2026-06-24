@@ -6,8 +6,10 @@
 // rendering in components/WrittenWord; this file is the UI shell only.
 
 import { useEffect, useMemo, useState } from 'react';
-import { Chip, Container, Paper, Stack, TextField, Typography } from '@mui/material';
+import { Chip, Paper, Stack, TextField, Typography } from '@mui/material';
 
+import { PageContainer } from '@/components/PageContainer';
+import { Prose } from '@/components/Prose';
 import { WrittenWord } from '@/components/WrittenWord';
 import { knownGlyph } from '@/domain/glyphs';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
@@ -29,10 +31,7 @@ function lettersFromKeys(keys: string[]): string {
 }
 
 export function ScribeView() {
-  useEffect(() => {
-    document.title = de.scribe.pageTitle;
-  }, []);
-
+  // The page title / SEO meta is set by the route mount (ScribePage → usePageMeta).
   const [input, setInput] = useState<string>(de.scribe.examples[0]);
   const [text, setText] = useState<string>(de.scribe.examples[0]);
   const [missing, setMissing] = useState<string[]>([]);
@@ -50,17 +49,19 @@ export function ScribeView() {
 
   return (
     <PublicLayout footer minHeight="100vh">
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 7 } }}>
-        <Typography
-          component="p"
-          sx={{ fontFamily: garamond, fontStyle: 'italic', color: paper.viridian, letterSpacing: '0.04em', mb: 1 }}
-        >
-          {de.scribe.eyebrow}
-        </Typography>
-        <Typography component="h1" variant="h3" sx={{ fontFamily: garamond, color: paper.ink, mb: 1.5 }}>
-          {de.scribe.heading}
-        </Typography>
-        <Typography sx={{ color: paper.inkSoft, maxWidth: '60ch', mb: 4 }}>{de.scribe.lead}</Typography>
+      <PageContainer width="text" sx={{ py: { xs: 4, md: 7 } }}>
+        <Prose align="left">
+          <Typography
+            component="p"
+            sx={{ fontFamily: garamond, fontStyle: 'italic', color: paper.viridian, letterSpacing: '0.04em', mb: 1 }}
+          >
+            {de.scribe.eyebrow}
+          </Typography>
+          <Typography component="h1" variant="h1" sx={{ fontFamily: garamond, color: paper.ink, mb: 1.5 }}>
+            {de.scribe.heading}
+          </Typography>
+          <Typography sx={{ color: paper.inkSoft, mb: 4 }}>{de.scribe.lead}</Typography>
+        </Prose>
 
         <TextField
           fullWidth
@@ -73,7 +74,7 @@ export function ScribeView() {
         />
 
         <Stack direction="row" sx={{ flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 3 }}>
-          <Typography component="span" sx={{ color: paper.inkSoft, fontSize: '0.9rem' }}>
+          <Typography component="span" variant="body2" sx={{ color: paper.inkSoft }}>
             {de.scribe.examplesLabel}
           </Typography>
           {de.scribe.examples.map((ex) => (
@@ -96,7 +97,7 @@ export function ScribeView() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            bgcolor: 'rgba(255,255,255,0.45)',
+            bgcolor: paper.hi,
             border: `1px solid ${paper.line}`,
             borderRadius: 1,
             overflow: 'hidden',
@@ -118,15 +119,15 @@ export function ScribeView() {
         </Paper>
 
         {missingLetters && (
-          <Typography sx={{ color: paper.sepia, fontSize: '0.88rem', mt: 1.5 }}>
+          <Typography variant="caption" component="p" sx={{ color: paper.sepia, mt: 1.5 }}>
             {fmt(de.scribe.missingNote, { letters: missingLetters })}
           </Typography>
         )}
 
-        <Typography sx={{ color: paper.sepiaFaint, fontSize: '0.82rem', fontStyle: 'italic', mt: 3 }}>
+        <Typography variant="caption" component="p" sx={{ color: paper.sepiaFaint, fontStyle: 'italic', mt: 3 }}>
           {de.scribe.disclaimer}
         </Typography>
-      </Container>
+      </PageContainer>
     </PublicLayout>
   );
 }

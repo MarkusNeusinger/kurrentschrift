@@ -15,7 +15,6 @@ import { WrittenGlyph } from '@/components/WrittenGlyph';
 import { de } from '@/locales';
 import { questionCropUrl, type Difficulty } from '@/sections/quiz/quizTypes';
 import { type PromptView, type QuizItem } from '@/sections/quiz/useQuizEngine';
-import { paper } from '@/styles/paper';
 
 // Absolute, centred crop placement shared by the reveal's base (target) crop and
 // the overlaid (picked) crop, so the two land pixel-identical and a correct pick
@@ -85,9 +84,9 @@ export function QuestionVisual({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        // Paper tone rather than stark white — the fresh-ink render and the
-        // aged-paper crop both sit on the page's cream ground.
-        bgcolor: paper.hi,
+        // Neutral white work surface — it frames the scanned chart crop, so the
+        // specimen reads true against an even ground rather than the paper grain.
+        bgcolor: '#fff',
         borderColor: verdict === 'correct' ? 'success.main' : verdict === 'wrong' ? 'error.main' : 'divider',
         transition: 'border-color 120ms',
       }}
@@ -109,7 +108,8 @@ export function QuestionVisual({
           key={`${item.key}-${qNonce}`}
           glyphKey={item.key}
           height={220}
-          // Inherit the Paper's cream ground instead of the default white box.
+          // Inherit the Paper's white work-surface ground (the chart-crop frame
+          // is #fff per the surface rule) instead of the default white box.
           surfaceBg="transparent"
           onUnavailable={() => setFellBack(true)}
         />
@@ -136,7 +136,7 @@ export function QuestionVisual({
             position: 'absolute',
             top: 8,
             right: 8,
-            bgcolor: paper.hi,
+            bgcolor: '#fff',
             '& .MuiToggleButton-root': { py: 0.25, px: 1 },
           }}
         >

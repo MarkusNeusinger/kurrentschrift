@@ -9,8 +9,10 @@
 // typesets Kurrent glyphs into the lines is the later WeasyPrint piece.
 
 import { useMemo, useState } from 'react';
-import { Box, Container, Paper, Stack, Typography } from '@mui/material';
+import { Box, Paper, Stack, Typography } from '@mui/material';
 
+import { PageContainer } from '@/components/PageContainer';
+import { Prose } from '@/components/Prose';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { PRESETS, RULING_THEMES, buildLineature, type LineatureConfig } from '@/lib/lineatur';
 import { lineaturePdf } from '@/lib/pdf';
@@ -100,25 +102,27 @@ export function WorksheetView() {
 
   return (
     <PublicLayout footer>
-      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-        <Stack spacing={1.5} sx={{ mb: 4 }}>
-          <Typography
-            component="h1"
-            sx={{
-              fontFamily: garamond,
-              fontStyle: 'italic',
-              fontWeight: 400,
-              fontSize: { xs: '1.9rem', sm: '2.3rem' },
-              lineHeight: 1.15,
-              color: 'text.primary',
-            }}
-          >
-            {de.worksheet.title}
-          </Typography>
-          <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.7, maxWidth: 560 }}>
-            {de.worksheet.intro}
-          </Typography>
-        </Stack>
+      <PageContainer width="wide" sx={{ py: { xs: 4, md: 6 } }}>
+        <Prose align="left">
+          <Stack spacing={1.5} sx={{ mb: 4 }}>
+            <Typography
+              component="h1"
+              variant="h2"
+              sx={{
+                fontFamily: garamond,
+                fontStyle: 'italic',
+                fontWeight: 400,
+                lineHeight: 1.15,
+                color: 'text.primary',
+              }}
+            >
+              {de.worksheet.title}
+            </Typography>
+            <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
+              {de.worksheet.intro}
+            </Typography>
+          </Stack>
+        </Prose>
 
         <Box
           sx={{
@@ -159,7 +163,7 @@ export function WorksheetView() {
             </Paper>
           </Box>
         </Box>
-      </Container>
+      </PageContainer>
     </PublicLayout>
   );
 }

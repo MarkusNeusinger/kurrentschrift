@@ -14,9 +14,10 @@
 // setup → play → results switch. All quiz logic lives in useQuizEngine; the
 // three panels are purely presentational.
 
-import { Container, Stack, Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 
 import { BootStatus } from '@/components/BootStatus';
+import { PageContainer } from '@/components/PageContainer';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de } from '@/locales';
 import { QuizPlayPanel } from '@/sections/quiz/QuizPlayPanel';
@@ -53,9 +54,9 @@ export function QuizView() {
 
   return (
     <PublicLayout footer>
-      <Container maxWidth="sm" sx={{ py: { xs: 4, sm: 6 } }}>
+      <PageContainer width="narrow" sx={{ py: { xs: 4, sm: 6 } }}>
         <Stack spacing={3}>
-          <Typography component="h1" sx={{ fontFamily: garamond, fontStyle: 'italic', fontSize: '2rem', lineHeight: 1.1 }}>
+          <Typography component="h1" variant="h1" sx={{ fontFamily: garamond, fontStyle: 'italic' }}>
             {de.quiz.title}
           </Typography>
 
@@ -101,7 +102,7 @@ export function QuizView() {
             />
           )}
         </Stack>
-      </Container>
+      </PageContainer>
     </PublicLayout>
   );
 }

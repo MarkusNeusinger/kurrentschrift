@@ -5,7 +5,6 @@
 // technical than e.g. anyplot's): short paragraphs, no legalese walls.
 
 export const impressum = {
-  pageTitle: 'Impressum & Datenschutz · kurrentschrift',
   title: 'Impressum & Datenschutz',
   footerLink: 'Impressum & Datenschutz',
   imprint: {
