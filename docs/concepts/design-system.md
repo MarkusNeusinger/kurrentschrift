@@ -120,7 +120,7 @@ Eine zentrale Komponente statt sieben driftender `<Container>`: `PageContainer`
 
 | Token | px | Einsatz |
 |---|---|---|
-| `narrow` | 760 | fokussierte Spaltenbreite (~Lesemaß) — heute als **Deckel**: der Quiz kappt seine Panels in einem `text`-Container auf `maxWidth: 760`, damit der Titel linksbündig mit den anderen Seiten sitzt |
+| `narrow` | 760 | fokussierte Spaltenbreite (~Lesemaß) — heute als **Deckel**: das Quiz kappt seine Panels in einem `text`-Container auf `maxWidth: 760`, damit der Titel linksbündig mit den anderen Seiten sitzt |
 | `text` | 1152 | die meisten Inhalts- & Tool-Seiten (Schriftkunde, Impressum, Scribe, Tafel, Hubs, Quiz) |
 | `wide` | 1280 | Landing, Übungsblatt, Header & Footer |
 
