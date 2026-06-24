@@ -737,6 +737,12 @@ anyplot.ai auf Cloud Run trägt:
 
 ## 17. Open-Data-Export
 
+> **Status (Open-Core, Stand 2026-06):** Zurückgestellt. Das Projekt läuft
+> aktuell **Open-Core** — Code MIT, der *gelernte* Datensatz (Glyph-Vorlagen,
+> Duktus, Schrift-Statistik) und die daraus trainierten Lese-Modelle bleiben
+> vorbehalten. Dieser Abschnitt beschreibt den *möglichen späteren*
+> Open-Data-Pfad, kein aktuelles Vorhaben (Vision §7).
+
 Vision §7: kanonische Glyph-Daten (Anker, Schwellzug, Duktus-Reihenfolge)
 als zitierbares Open-Data-Paket für die Forschungs-Zielgruppe. Heute
 nirgends öffentlich verfügbar — die ehrliche Lücke, die wir füllen können.
