@@ -2,39 +2,25 @@
 //
 // "Paper & ink" identity (deliberately NOT the anyplot/pyplots palette): aged cream
 // paper, aged iron-gall brown as the writing ink, viridian as the single sparing
-// accent. Composition follows docs/reference/kurrentschrift-landing.html: a sticky
-// blurred nav (PublicHeader) + a two-column hero — editorial copy on the left, a
-// giant GL-GermanCursive specimen ("Kurrent") that writes itself on the right —
-// then the live tools, the ductus pipeline and the honest "bald" roadmap.
+// accent. A single-column hero (<HeroWritten>) writes the brand word with a pen,
+// then the thesis pillars, the live tools and the honest "bald" roadmap follow.
 //
 // Headlines/brand use Playfair Display (`display`); body/eyebrow use EB Garamond
-// (`garamond`); the showpiece uses GL-GermanCursive (`script`). All honour
+// (`garamond`); the showpiece word uses GL-GermanCursive (`script`). All honour
 // prefers-reduced-motion. The paper atmosphere (gradient + grain + vignette) is
 // shared via <PaperBackground> so the same look carries across every page; only
 // the work surfaces (A4 preview, letter crops, chart scan) stay neutral.
 
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Link, Stack, Typography } from '@mui/material';
-import { keyframes } from '@mui/system';
 
 import { PageContainer } from '@/components/PageContainer';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de } from '@/locales';
 import { paths } from '@/routes/paths';
-import { HeroSpecimen } from '@/sections/landing/HeroSpecimen';
+import { HeroWritten } from '@/sections/landing/HeroWritten';
 import { Reveal } from '@/sections/landing/Reveal';
 import { display, garamond, letterpress, paper } from '@/styles/paper';
-
-// --- animations -----------------------------------------------------------
-const fadeUp = keyframes`from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; }`;
-const reduce = '@media (prefers-reduced-motion: reduce)';
-
-// on-load entrance for the hero copy (staggered), reduced-motion safe
-const fu = (delay: number) => ({
-  opacity: 0,
-  animation: `${fadeUp} .9s cubic-bezier(.2,.7,.2,1) ${delay}s both`,
-  [reduce]: { opacity: 1, transform: 'none', animation: 'none' },
-});
 
 // Tools that exist today → real RouterLinks. Staged features → common.soon, no
 // link. German copy lives in @/locales (landing.tools / landing.roadmap /
@@ -55,127 +41,8 @@ const pillars = de.landing.pillars;
 export function LandingView() {
   return (
     <PublicLayout>
-      {/* hero — copy left, giant script specimen right */}
-      <PageContainer width="wide" component="section">
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '1.05fr 0.95fr' },
-            gap: { xs: 4, md: 6 },
-            alignItems: 'center',
-            minHeight: { md: 'calc(100vh - 160px)' },
-            py: { xs: 4, md: 5 },
-          }}
-        >
-          {/* left: editorial copy */}
-          <Box>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.7rem',
-                mb: '1.4rem',
-                color: paper.sepia,
-                fontStyle: 'italic',
-                fontSize: '1.02rem',
-                letterSpacing: '0.06em',
-                ...fu(0.05),
-              }}
-            >
-              <Box component="span" sx={{ width: 42, height: '1px', bgcolor: paper.sepia }} />
-              {de.landing.hero.eyebrow}
-            </Box>
-
-            <Typography
-              component="h1"
-              variant="h1"
-              sx={{
-                fontFamily: display,
-                fontWeight: 600,
-                lineHeight: 1.04,
-                letterSpacing: '-0.01em',
-                color: paper.ink,
-                textShadow: letterpress,
-                mb: '1.5rem',
-                ...fu(0.18),
-              }}
-            >
-              {de.landing.hero.titleLine1}<br />
-              {de.landing.hero.titleLine2}<br />
-              <Box component="em" sx={{ fontStyle: 'italic', color: paper.viridian }}>
-                {de.landing.hero.titleEm}
-              </Box>{' '}
-              {de.landing.hero.titleLine3}<br />
-              {de.landing.hero.titleLine4}
-            </Typography>
-
-            <Typography
-              sx={{
-                maxWidth: '42ch',
-                color: paper.inkSoft,
-                lineHeight: 1.6,
-                mb: '2.3rem',
-                ...fu(0.32),
-              }}
-            >
-              {de.landing.hero.leadBeforeBold}{' '}
-              <Box component="b" sx={{ fontWeight: 600, color: paper.ink }}>
-                {de.landing.hero.leadBold}
-              </Box>
-              {de.landing.hero.leadAfterBold}
-            </Typography>
-
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', ...fu(0.46) }}>
-              <Box
-                component={RouterLink}
-                to={paths.worksheet}
-                sx={{
-                  fontFamily: garamond,
-                  fontSize: '1.06rem',
-                  px: '1.6rem',
-                  py: '0.85rem',
-                  borderRadius: '2px',
-                  bgcolor: paper.ink,
-                  color: paper.hi,
-                  textDecoration: 'none',
-                  boxShadow: '0 2px 0 rgba(0,0,0,.2)',
-                  transition: 'transform .2s ease, box-shadow .3s ease, background .3s ease',
-                  '&:hover': { bgcolor: '#000', transform: 'translateY(-2px)', boxShadow: '0 8px 22px rgba(36,26,16,.4)' },
-                }}
-              >
-                {de.landing.hero.ctaWrite}
-              </Box>
-              <Box
-                component={RouterLink}
-                to={paths.quiz}
-                sx={{
-                  fontFamily: garamond,
-                  fontSize: '1.06rem',
-                  color: paper.inkSoft,
-                  textDecoration: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  transition: 'color .25s ease',
-                  '& .arrow': { color: paper.viridian, transition: 'transform .25s ease' },
-                  '&:hover': { color: paper.ink },
-                  '&:hover .arrow': { transform: 'translateX(5px)' },
-                }}
-              >
-                {de.landing.hero.ctaRead}{' '}
-                <Box component="span" className="arrow">
-                  →
-                </Box>
-              </Box>
-            </Box>
-          </Box>
-
-          {/* right (below the copy on phones): the word written onto a real Kurrent
-              lineature. Rendered as SVG so the baseline is an exact coordinate and
-              the ascenders land on the Oberlinie regardless of viewport/font box. */}
-          <HeroSpecimen />
-        </Box>
-      </PageContainer>
+      {/* hero — single column, the brand word written live by a pen */}
+      <HeroWritten />
 
       {/* thesis — three pillars, framed as the goal (not as shipped features) */}
       <PageContainer width="wide" sx={{ pt: { xs: 4, md: 6 } }}>

@@ -15,7 +15,7 @@ import { Box } from '@mui/material';
 import { display, letterpress, paper, script } from '@/styles/paper';
 
 // Reduced-motion media-query key — matches the `reduce` const idiom used across
-// the public views (LandingView/Reveal/HeroSpecimen/ImpressumView).
+// the public views (LandingView/Reveal/HeroWritten/ImpressumView).
 const reduce = '@media (prefers-reduced-motion: reduce)';
 
 export function CategoryHeading({ children }: { children: string }) {
