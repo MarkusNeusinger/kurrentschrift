@@ -16,7 +16,7 @@ import { useState } from 'react';
 import { BootStatus } from '@/components/BootStatus';
 import { CategoryHeading } from '@/components/CategoryHeading';
 import { PageContainer } from '@/components/PageContainer';
-import { Prose } from '@/components/Prose';
+import { PageHeader } from '@/components/PageHeader';
 import { WrittenGlyph } from '@/components/WrittenGlyph';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { chartUrl } from '@/lib/api';
@@ -226,18 +226,12 @@ export function TafelView() {
 
   return (
     <PublicLayout footer>
-      <PageContainer width="text" sx={{ py: { xs: 4, sm: 6 } }}>
+      <PageContainer width="text" sx={{ pt: { xs: 4, sm: 6 } }}>
+        <PageHeader eyebrow={de.common.nav.read} title={de.tafel.title}>
+          <Typography sx={{ color: paper.inkSoft }}>{de.tafel.intro}</Typography>
+          <Typography sx={{ color: paper.inkSoft, mt: 1.5 }}>{de.tafel.note}</Typography>
+        </PageHeader>
         <Stack spacing={{ xs: 5, sm: 7 }}>
-          <Stack spacing={1.5}>
-            <Typography component="h1" variant="h1" sx={{ fontFamily: garamond, fontStyle: 'italic' }}>
-              {de.tafel.title}
-            </Typography>
-            <Prose align="left">
-              <Typography sx={{ color: paper.inkSoft }}>{de.tafel.intro}</Typography>
-              <Typography sx={{ color: paper.inkSoft, mt: 1.5 }}>{de.tafel.note}</Typography>
-            </Prose>
-          </Stack>
-
           {tafeln.map((t) => (
             <GrundtafelSection key={t.styleId} tafel={t} onReplay={setActive} />
           ))}

@@ -9,17 +9,16 @@
 // typesets Kurrent glyphs into the lines is the later WeasyPrint piece.
 
 import { useMemo, useState } from 'react';
-import { Box, Paper, Stack, Typography } from '@mui/material';
+import { Box, Paper, Typography } from '@mui/material';
 
 import { PageContainer } from '@/components/PageContainer';
-import { Prose } from '@/components/Prose';
+import { PageHeader } from '@/components/PageHeader';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { PRESETS, RULING_THEMES, buildLineature, type LineatureConfig } from '@/lib/lineatur';
 import { lineaturePdf } from '@/lib/pdf';
 import { de, fmt } from '@/locales';
 import { ConfigPanel } from '@/sections/worksheet/ConfigPanel';
 import { PreviewSvg } from '@/sections/worksheet/PreviewSvg';
-import { garamond } from '@/styles/paper';
 import { tokens } from '@/theme';
 
 const ratioLabel = (c: LineatureConfig) =>
@@ -102,27 +101,12 @@ export function WorksheetView() {
 
   return (
     <PublicLayout footer>
-      <PageContainer width="wide" sx={{ py: { xs: 4, md: 6 } }}>
-        <Prose align="left">
-          <Stack spacing={1.5} sx={{ mb: 4 }}>
-            <Typography
-              component="h1"
-              variant="h1"
-              sx={{
-                fontFamily: garamond,
-                fontStyle: 'italic',
-                fontWeight: 400,
-                lineHeight: 1.15,
-                color: 'text.primary',
-              }}
-            >
-              {de.worksheet.title}
-            </Typography>
-            <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
-              {de.worksheet.intro}
-            </Typography>
-          </Stack>
-        </Prose>
+      <PageContainer width="wide" sx={{ pt: { xs: 4, md: 6 } }}>
+        <PageHeader eyebrow={de.common.nav.write} title={de.worksheet.title}>
+          <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
+            {de.worksheet.intro}
+          </Typography>
+        </PageHeader>
 
         <Box
           sx={{

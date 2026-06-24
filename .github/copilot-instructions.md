@@ -162,8 +162,9 @@ kurrentschrift/
 │       │                #   admin/{chart,setup-wizard,diagnostics,sidebar}
 │       ├── components/  # reusable UI: PaperBackground, PublicHeader (3-area nav), PublicFooter,
 │       │                #   PageContainer (one column: narrow 760/text 1152/wide 1280), Prose (~66ch
-│       │                #   reading measure), WrittenGlyph (one glyph), WrittenWord (word/line +
-│       │                #   Übergänge as written), CategoryHeading, BootStatus
+│       │                #   reading measure), PageHeader (shared page-header: area eyebrow + Playfair
+│       │                #   title + intro; every public page bar the landing hero), WrittenGlyph (one glyph), WrittenWord (word/line +
+│       │                #   Übergänge as written), CategoryHeading (section title), BootStatus
 │       ├── layouts/     # admin shell (AdminLayout + AdminModals)
 │       ├── theme/       # MUI theme split; colors sourced from styles/paper.ts (single source)
 │       ├── lib/api/     # fetch client (cold-start retry, typed ApiError), endpoints,
@@ -192,7 +193,7 @@ kurrentschrift/
 source-cited overview of the three Ausgangsschriften (Grundbegriffe · the three
 scripts with one specimen each · Federn · Tinte · Buchstaben/Zahlen · chronology;
 section titles share the viridian-Kurrent-initial `CategoryHeading` with
-`/impressum`; the copyrighted Süß textbook is named + linked to its DNB record,
+`/impressum`, `/tafel` and `/landing`; the copyrighted Süß textbook is named + linked to its DNB record,
 never reproduced); the tools group under two hubs so the top nav stays at three
 areas (Schriftkunde · Lesen · Schreiben): `/lesen` (→ `/quiz` letter quiz +
 `/tafel` Schreibtafel) and `/schreiben` (→ `/schreiben/uebungsblatt` worksheet

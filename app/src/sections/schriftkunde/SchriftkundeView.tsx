@@ -26,11 +26,12 @@ import type { SxProps, Theme } from '@mui/material/styles';
 import offenbacherSpecimen from '@/assets/specimens/offenbacher-koch-1928.jpg';
 import { CategoryHeading } from '@/components/CategoryHeading';
 import { PageContainer } from '@/components/PageContainer';
+import { PageHeader } from '@/components/PageHeader';
 import { Prose } from '@/components/Prose';
 import { WrittenWord } from '@/components/WrittenWord';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de } from '@/locales';
-import { display, garamond, letterpress, paper, script, suetterlin } from '@/styles/paper';
+import { display, garamond, paper, script, suetterlin } from '@/styles/paper';
 
 const t = de.schriftkunde;
 
@@ -40,16 +41,6 @@ const t = de.schriftkunde;
 const prose = {
   color: paper.inkSoft,
   lineHeight: 1.7,
-} as const;
-
-// Small eyebrow/section label (used by the page eyebrow only — section titles
-// are CategoryHeadings).
-const overline = {
-  fontFamily: garamond,
-  textTransform: 'uppercase',
-  letterSpacing: '0.12em',
-  fontSize: '0.8rem',
-  color: paper.sepia,
 } as const;
 
 // In-prose links: sepia with a hairline underline, viridian on hover.
@@ -217,24 +208,12 @@ function SpecimenBlock({ id }: { id: string }) {
 export function SchriftkundeView() {
   return (
     <PublicLayout footer>
-      <PageContainer sx={{ pt: { xs: 4, md: 6 }, pb: { xs: 6, md: 9 } }}>
-        {/* --- header --- */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.7rem', mb: '1rem', ...overline }}>
-          <Box component="span" sx={{ width: 42, height: '1px', bgcolor: paper.sepia }} />
-          {t.eyebrow}
-        </Box>
-        <Typography
-          component="h1"
-          variant="h1"
-          sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, textShadow: letterpress }}
-        >
-          {t.title}
-        </Typography>
-        {/* warm newcomer opener, then the factual scope line */}
-        <Prose align="left">
-          <Typography sx={{ ...prose, color: paper.ink, mt: 2 }}>{t.intro}</Typography>
+      <PageContainer sx={{ pt: { xs: 4, md: 6 } }}>
+        {/* shared page header — eyebrow (area) + Playfair title + intro */}
+        <PageHeader eyebrow={t.eyebrow} title={t.title}>
+          <Typography sx={{ ...prose, color: paper.ink }}>{t.intro}</Typography>
           <Typography sx={{ ...prose, mt: 1.5 }}>{t.lead}</Typography>
-        </Prose>
+        </PageHeader>
 
         {/* --- Grundbegriffe --- */}
         <Section heading={t.conceptsHeading}>

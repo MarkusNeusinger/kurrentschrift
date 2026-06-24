@@ -9,9 +9,9 @@ import { Box, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 
 import { PageContainer } from '@/components/PageContainer';
-import { Prose } from '@/components/Prose';
+import { PageHeader } from '@/components/PageHeader';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
-import { display, letterpress, paper } from '@/styles/paper';
+import { display, paper } from '@/styles/paper';
 
 export interface HubCard {
   title: string;
@@ -29,23 +29,15 @@ export interface HubViewProps {
 export function HubView({ title, lead, cards }: HubViewProps) {
   return (
     <PublicLayout>
-      <PageContainer sx={{ pt: { xs: 4, md: 7 }, pb: { xs: 7, md: 10 } }}>
-        <Typography
-          component="h1"
-          variant="h1"
-          sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, textShadow: letterpress }}
-        >
-          {title}
-        </Typography>
-        <Prose align="left" sx={{ mt: 1.5 }}>
+      <PageContainer sx={{ pt: { xs: 4, md: 7 } }}>
+        <PageHeader title={title}>
           <Typography variant="body1" sx={{ color: paper.inkSoft }}>
             {lead}
           </Typography>
-        </Prose>
+        </PageHeader>
 
         <Box
           sx={{
-            mt: { xs: 4, md: 6 },
             display: 'grid',
             gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
             gap: { xs: 2.5, md: 3 },
@@ -89,16 +81,16 @@ export function HubView({ title, lead, cards }: HubViewProps) {
               <Typography variant="body2" sx={{ color: paper.inkSoft, flexGrow: 1 }}>
                 {card.body}
               </Typography>
-              <Box
+              <Typography
                 className="hub-cta"
                 component="span"
+                variant="body2"
                 sx={{
                   mt: 2.5,
                   alignSelf: 'flex-start',
                   position: 'relative',
                   color: paper.viridian,
                   fontFamily: display,
-                  fontSize: '1.05rem',
                   '&::after': {
                     content: '""',
                     position: 'absolute',
@@ -112,7 +104,7 @@ export function HubView({ title, lead, cards }: HubViewProps) {
                 }}
               >
                 {card.cta}&nbsp;→
-              </Box>
+              </Typography>
             </Box>
           ))}
         </Box>

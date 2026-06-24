@@ -14,10 +14,11 @@
 // setup → play → results switch. All quiz logic lives in useQuizEngine; the
 // three panels are purely presentational.
 
-import { Stack, Typography } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 
 import { BootStatus } from '@/components/BootStatus';
 import { PageContainer } from '@/components/PageContainer';
+import { PageHeader } from '@/components/PageHeader';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de } from '@/locales';
 import { QuizPlayPanel } from '@/sections/quiz/QuizPlayPanel';
@@ -25,7 +26,6 @@ import { QuizResultsPanel } from '@/sections/quiz/QuizResultsPanel';
 import { QuizSetupPanel } from '@/sections/quiz/QuizSetupPanel';
 import { useQuizEngine } from '@/sections/quiz/useQuizEngine';
 import { useAdmin } from '@/context/AdminContext';
-import { garamond } from '@/styles/paper';
 
 export function QuizView() {
   const { source, loadError, waking } = useAdmin();
@@ -54,13 +54,12 @@ export function QuizView() {
 
   return (
     <PublicLayout footer>
-      <PageContainer width="narrow" sx={{ py: { xs: 4, sm: 6 } }}>
-        <Stack spacing={3}>
-          <Typography component="h1" variant="h1" sx={{ fontFamily: garamond, fontStyle: 'italic' }}>
-            {de.quiz.title}
-          </Typography>
-
-          {!quiz.started ? (
+      <PageContainer width="text" sx={{ pt: { xs: 4, sm: 6 } }}>
+        <PageHeader eyebrow={de.common.nav.read} title={de.quiz.title} />
+        {/* the focused quiz column stays ~760 wide but left-aligns with the header */}
+        <Box sx={{ maxWidth: 760 }}>
+          <Stack spacing={3}>
+            {!quiz.started ? (
             <QuizSetupPanel
               script={quiz.script}
               setScript={quiz.setScript}
@@ -101,7 +100,8 @@ export function QuizView() {
               onQuit={quiz.finish}
             />
           )}
-        </Stack>
+          </Stack>
+        </Box>
       </PageContainer>
     </PublicLayout>
   );
