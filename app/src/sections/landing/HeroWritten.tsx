@@ -262,6 +262,7 @@ export function HeroWritten() {
       {!reduced && (
         <Box
           component="button"
+          type="button"
           onClick={() => setRunKey((k) => k + 1)}
           sx={{
             display: 'block',
