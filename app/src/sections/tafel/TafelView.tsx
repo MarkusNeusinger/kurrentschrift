@@ -89,11 +89,16 @@ function OriginalScan({ source }: { source: SourceOut }) {
   const drag = useRef({ active: false, moved: false, x: 0, y: 0, left: 0, top: 0 });
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    // Only react to the primary button / first contact: a tap toggles the zoom,
+    // so a right- or middle-click and secondary touch points must be ignored.
+    if (e.button !== 0 || !e.isPrimary) return;
     const box = boxRef.current;
     const img = imgRef.current;
     if (!box) return;
     drag.current = { active: true, moved: false, x: e.clientX, y: e.clientY, left: box.scrollLeft, top: box.scrollTop };
-    if (!zoomed && img) {
+    // Compute the zoom focus only once the image has laid out — a zero
+    // offsetWidth/Height would make the focus fraction Infinity/NaN.
+    if (!zoomed && img && img.offsetWidth > 0 && img.offsetHeight > 0) {
       const r = box.getBoundingClientRect();
       focus.current = {
         fx: (box.scrollLeft + e.clientX - r.left) / img.offsetWidth,
