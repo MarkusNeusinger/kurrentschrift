@@ -100,9 +100,16 @@ Regeln beim Bauen:
   Stil nie still verändern).
 - Lokale Stil-Konstanten (`prose`, `subTitle`): nur noch Farbe/Abstand/Zeile tragen,
   Größe + Family kommen aus dem Variant (vgl. `ImpressumView` `prose` → `{ color, lineHeight, mb }`).
-- Tool-Seiten (Übungsblatt, Federprobe, Quiz, Tafel) tragen ihren Titel historisch in
-  *kursivem Garamond*, Inhalts-Seiten (Impressum, Schriftkunde, Hubs, Landing) in
-  *Playfair*. Beide nehmen die **Größe** aus `variant="h1"`.
+
+**Seitenkopf — einheitlich.** Jede öffentliche Seite (außer dem Landing-Hero) trägt
+ihren Titel in **Playfair** (`fontFamily: display`, `fontWeight: 600`), Größe aus
+`variant="h1"` — über den gemeinsamen **`PageHeader`** (§7). **Ein** Titel-Schnitt für
+alle; der frühere Tool-vs-Inhalt-Split (Tool-Seiten kursives Garamond) ist aufgehoben.
+Darüber sitzt ein einheitliches **Bereichs-Eyebrow** (Overline auf 42-px-Haarlinie,
+Garamond-versal-sepia, z. B. `LESEN` / `SCHREIBEN` / `SCHRIFTKUNDE`); die Bereichs-Hubs
+lassen es weg (Titel = Bereich). Darunter optional ein Intro im Lesemaß (`Prose`). So
+sind Schrift, Eyebrow-Stil und linke Kante auf allen Seiten gleich — eine Stellschraube
+(`PageHeader`) statt pro-Seite-Köpfe.
 
 ---
 
@@ -113,18 +120,25 @@ Eine zentrale Komponente statt sieben driftender `<Container>`: `PageContainer`
 
 | Token | px | Einsatz |
 |---|---|---|
-| `narrow` | 760 | fokussierte Einspalter (Quiz) — entspricht ~dem Lesemaß |
-| `text` | 1152 | die meisten Inhaltsseiten (Schriftkunde, Impressum, Scribe, Tafel, Hubs) |
+| `narrow` | 760 | fokussierte Spaltenbreite (~Lesemaß) — heute als **Deckel**: das Quiz kappt seine Panels in einem `text`-Container auf `maxWidth: 760`, damit der Titel linksbündig mit den anderen Seiten sitzt |
+| `text` | 1152 | die meisten Inhalts- & Tool-Seiten (Schriftkunde, Impressum, Scribe, Tafel, Hubs, Quiz) |
 | `wide` | 1280 | Landing, Übungsblatt, Header & Footer |
 
 ```tsx
-<PageContainer width="text" sx={{ pt: { xs: 4, md: 6 }, pb: { xs: 6, md: 9 } }}>
+<PageContainer width="text" sx={{ pt: { xs: 4, md: 6 } }}>
 ```
 
 `PageContainer` setzt `maxWidth`, `mx:auto`, responsives `px:{xs:2.5,sm:4,md:6}` und
 liegt über den Papier-Overlays (`position:relative; zIndex:1`). Die Seite gibt nur
-ihr vertikales `pt/pb` (und Sonder-`sx`) dazu. **`PublicHeader`/`PublicFooter`**
-spannen die Leiste voll, begrenzen ihren Inhalt aber auf `PAGE_WIDTHS.wide`.
+ihr **oberes** `pt` (und Sonder-`sx`) dazu — **kein eigenes `pb`/`py`** auf dem
+äußeren Container. **`PublicHeader`/`PublicFooter`** spannen die Leiste voll,
+begrenzen ihren Inhalt aber auf `PAGE_WIDTHS.wide`.
+
+**Footer-Abstand (eine Stellschraube).** Den Abstand von Seiteninhalt zum Footer
+besitzt **allein der `PublicFooter`** über sein `mt:{xs:8,md:11}`. Setzt eine Seite
+zusätzlich `pb`/`py` auf ihren äußeren `PageContainer`, addiert sich beides und der
+Abstand driftet von Seite zu Seite. Regel: äußerer Container nur `pt`, der Footer
+trägt den Rest — so ist der Abstand überall gleich.
 
 **Lesemaß.** Fließtext kappt zusätzlich auf ~66 Zeichen (Bringhurst) über `Prose`
 (`app/src/components/Prose`), Default `measure='47rem'`, **`align='left'`** (durchgehende
@@ -210,7 +224,8 @@ leitet weiter auf `/schriftkunde` (alter Name). Der Admin liegt unverändert hin
 | `PublicFooter` | geteilter Footer (Links, Impressum) | Breite `wide` |
 | `PageContainer` | eine Inhaltsspalte, 3 Breiten | `width='narrow'\|'text'\|'wide'\|number`, `component`, `sx` |
 | `Prose` | Lesemaß ~66 Zeichen | `align='left'\|'center'`, `measure='47rem'` |
-| `CategoryHeading` | Abschnittstitel mit Viridian-Kurrent-Initiale auf Haarlinie | `/impressum`, `/schriftkunde` |
+| `PageHeader` | einheitlicher **Seitenkopf**: Bereichs-Eyebrow + Playfair-Titel + Intro | `eyebrow?`, `title`, `children` (Intro im `Prose`-Maß); jede öffentliche Seite außer Landing-Hero |
+| `CategoryHeading` | **Abschnitts**titel mit Viridian-Kurrent-Initiale auf Haarlinie | innerhalb einer Seite (`/schriftkunde`, `/impressum`, `/tafel`, `/landing`) |
 | `InfoHint` | grünes Kurrent-„(i)" + Popover („Mehr dazu") | app-weit, Detail eine Geste entfernt |
 | `HubView` | Hub-Layout (Titel + Lead + Karten-Grid) | `title`, `lead`, `cards[{title,body,cta,to}]` |
 | `HeroWritten` | einspaltiger Landing-Hero: Markenwort wird von einer Feder geschrieben | GLKurrent-Wort (Specimen) hinter `<HeroWord>` als Engine-Swap-Naht (Font jetzt, Engine später) |
@@ -250,7 +265,8 @@ blass auf blass. Diese Regel hat Vorrang vor jeder Epochen-Anmutung.
 ## 10. Pflege & Sync
 
 - Ändert sich eine Zahl/Token hier → `app/src/styles/paper.ts`, `theme/typography.ts`,
-  `components/PageContainer` bzw. `components/Prose` nachziehen (und umgekehrt).
+  `components/PageContainer`, `components/Prose`, `components/PageHeader` (Seitenkopf) bzw.
+  `components/PublicFooter` (Footer-`mt` = der eine Abstand, §4) nachziehen (und umgekehrt).
 - [Style-Guide](style-guide.md) trägt die *Begründung/Historie*, dieses Dokument den
   *Ist-Zustand*. [`.design-sync/conventions.md`](../../.design-sync/conventions.md)
   spiegelt die Marke nach Claude Design — bei Marken-Komponenten dort prüfen.

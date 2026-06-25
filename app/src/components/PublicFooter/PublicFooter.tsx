@@ -2,6 +2,11 @@
 // (the "private Liebhaberei" voice from the impressum) on the left, the
 // Impressum/Datenschutz link on the right. Rendered by <PublicLayout> after the
 // page content (inside <PaperBackground>), so it's identical everywhere.
+//
+// The footer OWNS the bottom gap (its `mt`) — the single source of the distance
+// from page content to the footer. Pages therefore set only top padding (`pt`)
+// on their outer PageContainer and never add their own `pb`, so the gap is the
+// same everywhere (design-system §4).
 
 import { Box, Link, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
@@ -18,7 +23,7 @@ export function PublicFooter() {
         component="footer"
         sx={{
           borderTop: `1px solid ${paper.line}`,
-          mt: { xs: 6, md: 8 },
+          mt: { xs: 8, md: 11 },
           py: 3,
           display: 'flex',
           flexDirection: { xs: 'column', sm: 'row' },

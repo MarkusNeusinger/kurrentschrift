@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Chip, Paper, Stack, TextField, Typography } from '@mui/material';
 
 import { PageContainer } from '@/components/PageContainer';
-import { Prose } from '@/components/Prose';
+import { PageHeader } from '@/components/PageHeader';
 import { WrittenWord } from '@/components/WrittenWord';
 import { knownGlyph } from '@/domain/glyphs';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
@@ -49,19 +49,10 @@ export function ScribeView() {
 
   return (
     <PublicLayout footer minHeight="100vh">
-      <PageContainer width="text" sx={{ py: { xs: 4, md: 7 } }}>
-        <Prose align="left">
-          <Typography
-            component="p"
-            sx={{ fontFamily: garamond, fontStyle: 'italic', color: paper.viridian, letterSpacing: '0.04em', mb: 1 }}
-          >
-            {de.scribe.eyebrow}
-          </Typography>
-          <Typography component="h1" variant="h1" sx={{ fontFamily: garamond, color: paper.ink, mb: 1.5 }}>
-            {de.scribe.heading}
-          </Typography>
-          <Typography sx={{ color: paper.inkSoft, mb: 4 }}>{de.scribe.lead}</Typography>
-        </Prose>
+      <PageContainer width="text" sx={{ pt: { xs: 4, md: 7 } }}>
+        <PageHeader eyebrow={de.common.nav.write} title={de.scribe.heading}>
+          <Typography sx={{ color: paper.inkSoft }}>{de.scribe.lead}</Typography>
+        </PageHeader>
 
         <TextField
           fullWidth
@@ -97,7 +88,10 @@ export function ScribeView() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            bgcolor: paper.hi,
+            // White work surface: this Paper frames the live-written word
+            // (WrittenWord renders transparent), so it follows the Tafel
+            // written-glyph cards' neutral #fff, not the paper.hi card tone (§5).
+            bgcolor: '#fff',
             border: `1px solid ${paper.line}`,
             borderRadius: 1,
             overflow: 'hidden',

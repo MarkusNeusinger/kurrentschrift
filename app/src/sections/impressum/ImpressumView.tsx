@@ -58,7 +58,7 @@ function Section({ heading, children }: { heading: string; children: ReactNode }
 export function ImpressumView() {
   return (
     <PublicLayout>
-      <PageContainer sx={{ pt: { xs: 4, md: 6 }, pb: { xs: 6, md: 9 } }}>
+      <PageContainer sx={{ pt: { xs: 4, md: 6 } }}>
         {/* A legal page is one document: the whole column (prose, portrait,
             hosting table) sits in a single left-aligned reading measure, rather
             than full-bleed structured blocks. Not <Prose> — that wraps running

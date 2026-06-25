@@ -101,7 +101,7 @@ export function LandingView() {
 
       {/* lower sections — live tools ("Schon zur Hand") + roadmap ("Noch im Werden");
           the footer is rendered globally by PublicLayout, not here */}
-      <PageContainer width="wide" sx={{ pt: { xs: 6, md: 8 }, pb: { xs: 6, md: 9 } }}>
+      <PageContainer width="wide" sx={{ pt: { xs: 6, md: 8 } }}>
         {/* what already works — everything usable today, lighter cards */}
         <Box sx={{ pt: { xs: 1, md: 2 } }}>
           <CategoryHeading>{de.landing.toolsHeading}</CategoryHeading>
