@@ -54,7 +54,7 @@ export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
   const barBg = isPaper ? 'rgba(231,221,193,0.86)' : 'rgba(250,248,241,0.86)';
   const border = isPaper ? paper.line : 'divider';
 
-  const navLink = (label: ReactNode, to: string) => (
+  const navLink = (label: ReactNode, to: string, sx?: SxProps<Theme>) => (
     <Link
       key={to}
       component={RouterLink}
@@ -78,6 +78,7 @@ export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
         },
         '&:hover': { color: textMain },
         '&:hover::after': { width: '100%' },
+        ...sx,
       }}
     >
       {label}
@@ -168,13 +169,20 @@ export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
           sx={{
             display: 'flex',
             flexDirection: { xs: 'column', sm: 'row' },
-            alignItems: 'center',
+            // xs: stretch so the lower Lesen/Schreiben row can right-align to the
+            // bar's right edge while Schriftkunde (alignSelf:center) sits centred
+            // above it. sm+: a normal centred single row.
+            alignItems: { xs: 'stretch', sm: 'center' },
             columnGap: { sm: 3 },
             rowGap: 0.5,
           }}
         >
-          {navLink(SCHRIFTKUNDE.label, SCHRIFTKUNDE.to)}
-          <Stack direction="row" spacing={{ xs: 1.75, sm: 3 }} sx={{ alignItems: 'center' }}>
+          {navLink(SCHRIFTKUNDE.label, SCHRIFTKUNDE.to, { alignSelf: 'center' })}
+          <Stack
+            direction="row"
+            spacing={{ xs: 1.75, sm: 3 }}
+            sx={{ alignItems: 'center', justifyContent: { xs: 'flex-end', sm: 'flex-start' } }}
+          >
             {READ_WRITE.map((n) => navLink(n.label, n.to))}
           </Stack>
         </Box>
