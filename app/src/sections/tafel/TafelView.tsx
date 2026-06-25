@@ -1,29 +1,31 @@
 // TafelView — the public writing-chart page (`/tafel`, German "Schreibtafel").
 // Shows the three German Ausgangsschriften (Kurrent · Sütterlin · Offenbacher)
 // one below the other, each with whatever the DB holds today (see useGrundtafeln):
-//   - written  — Original/Geschrieben toggle. "Geschrieben" renders every locked,
-//     traced letter "as written" (WrittenGlyph); tapping one replays the ductus.
+//   - written  — Original/Geschrieben toggle. "Geschrieben" is the WrittenSheet:
+//     the locked, traced letters written on a ruled practice sheet (in the
+//     chart's own rows); clicking one re-writes it in place.
 //   - original — only the Original scan + an honest "noch nicht nachgeschrieben".
 //   - pending  — a placeholder (no chart source seeded yet).
 //
 // Unlike the quiz this page does NOT ride the pinned AdminProvider (one source):
 // useGrundtafeln fetches all chart sources read-only and groups them by style.
 
-import { Box, Chip, Dialog, DialogContent, IconButton, Link, Paper, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import { useState } from 'react';
+import { Box, Chip, Link, Paper, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { useEffect, useRef, useState } from 'react';
+import type { PointerEvent as ReactPointerEvent } from 'react';
+import { useLocation } from 'react-router-dom';
 
 import { BootStatus } from '@/components/BootStatus';
 import { CategoryHeading } from '@/components/CategoryHeading';
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
-import { WrittenGlyph } from '@/components/WrittenGlyph';
+import { WrittenSheet } from '@/sections/tafel/WrittenSheet';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { chartUrl } from '@/lib/api';
 import type { SourceOut } from '@/lib/api';
 import { de } from '@/locales';
 import { garamond, paper } from '@/styles/paper';
-import { useGrundtafeln, type Grundtafel, type WrittenLetter } from '@/sections/tafel/useGrundtafeln';
+import { useGrundtafeln, type Grundtafel } from '@/sections/tafel/useGrundtafeln';
 
 type View = 'original' | 'written';
 
@@ -70,76 +72,143 @@ function SourceProvenance({ source }: { source: SourceOut }) {
   );
 }
 
-// The Original chart scan.
+// The Original chart scan. A plain click/tap toggles zoom to 1:1 pixels (toward
+// the tapped point) — on a phone the alphabet rows are tiny, so this makes them
+// legible without leaving the page. While zoomed, press-and-drag pans the sheet
+// with mouse OR finger (pointer events); a clean tap zooms back out. A 6px move
+// threshold separates a pan (hold + drag) from a tap (click).
 function OriginalScan({ source }: { source: SourceOut }) {
+  const [zoomed, setZoomed] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+  // The tapped point as a fraction of the image, kept so the effect can centre
+  // it once the larger (zoomed) image has laid out.
+  const focus = useRef<{ fx: number; fy: number }>({ fx: 0.5, fy: 0.5 });
+  // Drag bookkeeping. `moved` distinguishes a pan from a tap so a tap still
+  // toggles the zoom while a drag only pans.
+  const drag = useRef({ active: false, moved: false, x: 0, y: 0, left: 0, top: 0 });
+
+  const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const box = boxRef.current;
+    const img = imgRef.current;
+    if (!box) return;
+    drag.current = { active: true, moved: false, x: e.clientX, y: e.clientY, left: box.scrollLeft, top: box.scrollTop };
+    if (!zoomed && img) {
+      const r = box.getBoundingClientRect();
+      focus.current = {
+        fx: (box.scrollLeft + e.clientX - r.left) / img.offsetWidth,
+        fy: (box.scrollTop + e.clientY - r.top) / img.offsetHeight,
+      };
+    }
+    // capture only while zoomed so a press-drag keeps panning past the edges;
+    // unzoomed we leave the pointer free so a page scroll can still cancel it.
+    // (capture can throw for a stale pointer id — never let that break the drag.)
+    if (zoomed) {
+      try {
+        box.setPointerCapture(e.pointerId);
+      } catch {
+        /* pointer already released */
+      }
+    }
+  };
+
+  const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    if (!d.active) return;
+    const dx = e.clientX - d.x;
+    const dy = e.clientY - d.y;
+    if (Math.abs(dx) > 6 || Math.abs(dy) > 6) d.moved = true;
+    if (zoomed && boxRef.current) {
+      boxRef.current.scrollLeft = d.left - dx;
+      boxRef.current.scrollTop = d.top - dy;
+    }
+  };
+
+  const endPointer = (e: ReactPointerEvent<HTMLDivElement>, tap: boolean) => {
+    const d = drag.current;
+    try {
+      boxRef.current?.releasePointerCapture(e.pointerId);
+    } catch {
+      /* nothing captured */
+    }
+    if (!d.active) return;
+    d.active = false;
+    // a clean tap (no drag) toggles zoom; a drag (pan, or an aborted page
+    // scroll) leaves the zoom state alone
+    if (tap && !d.moved) setZoomed((z) => !z);
+  };
+
+  // After the zoom toggles, place the tapped point near the centre of the box.
+  useEffect(() => {
+    const box = boxRef.current;
+    const img = imgRef.current;
+    if (!box || !img) return;
+    if (zoomed) {
+      box.scrollLeft = focus.current.fx * img.offsetWidth - box.clientWidth / 2;
+      box.scrollTop = focus.current.fy * img.offsetHeight - box.clientHeight / 2;
+    } else {
+      box.scrollTo({ top: 0, left: 0 });
+    }
+  }, [zoomed]);
+
   return (
     <Paper variant="outlined" sx={{ p: 1, bgcolor: '#fff' }}>
       <Box
-        component="img"
-        src={chartUrl(source.id)}
-        alt={de.tafel.originalAlt}
-        sx={{ display: 'block', width: '100%', height: 'auto', userSelect: 'none' }}
-        draggable={false}
-      />
+        ref={boxRef}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={(e) => endPointer(e, true)}
+        onPointerCancel={(e) => endPointer(e, false)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setZoomed((z) => !z);
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        // The zoom-in / grab cursor signals the affordance on hover, so no
+        // visible hint caption is needed — the aria-label keeps it accessible.
+        aria-label={zoomed ? de.tafel.zoomOut : de.tafel.zoomIn}
+        sx={{
+          overflow: zoomed ? 'auto' : 'hidden',
+          maxHeight: zoomed ? '78vh' : 'none',
+          cursor: zoomed ? 'grab' : 'zoom-in',
+          '&:active': { cursor: zoomed ? 'grabbing' : 'zoom-in' },
+          lineHeight: 0,
+          // while zoomed we pan ourselves, so stop the browser from scrolling
+          touchAction: zoomed ? 'none' : 'auto',
+        }}
+      >
+        <Box
+          component="img"
+          ref={imgRef}
+          src={chartUrl(source.id)}
+          alt={de.tafel.originalAlt}
+          draggable={false}
+          sx={{
+            display: 'block',
+            width: zoomed ? 'auto' : '100%',
+            maxWidth: zoomed ? 'none' : '100%',
+            height: 'auto',
+            userSelect: 'none',
+          }}
+        />
+      </Box>
     </Paper>
   );
 }
 
-// The grid of written letters; each card opens the replay modal.
-function WrittenGrid({ letters, onReplay }: { letters: WrittenLetter[]; onReplay: (l: WrittenLetter) => void }) {
-  if (letters.length === 0) {
-    return <Typography sx={{ color: paper.inkSoft }}>{de.tafel.empty}</Typography>;
-  }
-  return (
-    <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))' }}>
-      {letters.map((l) => (
-        <Paper
-          key={l.key}
-          variant="outlined"
-          onClick={() => onReplay(l)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              onReplay(l);
-            }
-          }}
-          aria-label={`${l.glyph} — ${de.tafel.replayHint}`}
-          sx={{
-            p: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: 130,
-            cursor: 'pointer',
-            bgcolor: '#fff',
-            transition: 'border-color 120ms, box-shadow 120ms',
-            '&:hover, &:focus-visible': {
-              borderColor: paper.viridian,
-              boxShadow: `0 0 0 1px ${paper.viridian}`,
-            },
-          }}
-        >
-          {/* pointerEvents off so the click always lands on the card, not
-              WrittenGlyph's own replay button — the card opens the modal. */}
-          <Box sx={{ pointerEvents: 'none' }}>
-            <WrittenGlyph glyphKey={l.key} height={104} tight surfaceBg="transparent" />
-          </Box>
-        </Paper>
-      ))}
-    </Box>
-  );
-}
-
 // One script's section: heading + Feder/state caption, then the body by state.
-function GrundtafelSection({ tafel, onReplay }: { tafel: Grundtafel; onReplay: (l: WrittenLetter) => void }) {
+function GrundtafelSection({ tafel }: { tafel: Grundtafel }) {
   // Original is the default everywhere; the written grid is one toggle away.
   const [view, setView] = useState<View>('original');
   const feder = de.tafel.feder[tafel.styleId];
 
   return (
-    <Stack component="section" spacing={2} aria-label={tafel.name}>
+    // `id` makes the section a deep-link target (landing links to /tafel#<styleId>);
+    // the scroll offset is applied in JS (TafelView), measuring the live header.
+    <Stack component="section" id={tafel.styleId} spacing={2} aria-label={tafel.name}>
       <Box>
         <CategoryHeading>{tafel.name}</CategoryHeading>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
@@ -175,7 +244,7 @@ function GrundtafelSection({ tafel, onReplay }: { tafel: Grundtafel; onReplay: (
             <ToggleButton value="written">{de.tafel.viewWritten}</ToggleButton>
           </ToggleButtonGroup>
           {view === 'written' ? (
-            <WrittenGrid letters={tafel.letters} onReplay={onReplay} />
+            <WrittenSheet rows={tafel.rows} ratio={tafel.source.style_ratio} />
           ) : (
             <OriginalScan source={tafel.source} />
           )}
@@ -200,8 +269,53 @@ function GrundtafelSection({ tafel, onReplay }: { tafel: Grundtafel; onReplay: (
 
 export function TafelView() {
   const { tafeln, loadError, waking } = useGrundtafeln();
-  // The letter shown large in the replay modal, or null when closed.
-  const [active, setActive] = useState<WrittenLetter | null>(null);
+  const { hash } = useLocation();
+
+  // Deep-link from the landing's script cards (/tafel#<styleId>): once the
+  // sections exist, scroll the requested one clear of the sticky header (the
+  // root ScrollToTop already reset us to the top). Two moving parts make a
+  // single scroll unreliable: the PublicHeader wraps to two rows on mobile (so
+  // its height isn't constant — #126), and the original scans load async and
+  // reflow the sections above the target after the first scroll. So measure the
+  // live header height, and re-align on every reflow (ResizeObserver) until the
+  // user scrolls or ~1.5s passes — never fighting the user's own scrolling.
+  useEffect(() => {
+    if (!tafeln || !hash) return;
+    const id = hash.slice(1);
+    let settle: ReturnType<typeof setTimeout> | undefined;
+    let cap: ReturnType<typeof setTimeout> | undefined;
+    const scrollToSection = () => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const header = document.querySelector('header');
+      const offset = (header?.getBoundingClientRect().height ?? 0) + 16;
+      window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - offset) });
+    };
+    const stop = () => {
+      ro.disconnect();
+      if (settle) clearTimeout(settle);
+      if (cap) clearTimeout(cap);
+      window.removeEventListener('wheel', stop);
+      window.removeEventListener('touchmove', stop);
+      window.removeEventListener('keydown', stop);
+    };
+    // Re-align on every reflow, but stop once the page has held still for 400ms
+    // (the last scan/font has loaded) — a fixed delay under-aligns the lower
+    // sections when an upper scan loads late. A 4s cap + user-scroll both abort.
+    const onReflow = () => {
+      scrollToSection();
+      if (settle) clearTimeout(settle);
+      settle = setTimeout(stop, 400);
+    };
+    const ro = new ResizeObserver(onReflow);
+    scrollToSection();
+    ro.observe(document.body);
+    window.addEventListener('wheel', stop, { passive: true });
+    window.addEventListener('touchmove', stop, { passive: true });
+    window.addEventListener('keydown', stop);
+    cap = setTimeout(stop, 4000);
+    return stop;
+  }, [tafeln, hash]);
 
   if (loadError) {
     return (
@@ -233,32 +347,10 @@ export function TafelView() {
         </PageHeader>
         <Stack spacing={{ xs: 5, sm: 7 }}>
           {tafeln.map((t) => (
-            <GrundtafelSection key={t.styleId} tafel={t} onReplay={setActive} />
+            <GrundtafelSection key={t.styleId} tafel={t} />
           ))}
         </Stack>
       </PageContainer>
-
-      {/* Replay modal: a large WrittenGlyph that re-writes the ductus on open
-          (fresh mount per letter) — and its own replay button for another pass. */}
-      <Dialog
-        open={active !== null}
-        onClose={() => setActive(null)}
-        maxWidth="xs"
-        fullWidth
-        aria-label={active ? `${active.glyph} — ${de.tafel.title}` : de.tafel.title}
-      >
-        <DialogContent sx={{ position: 'relative', bgcolor: '#fff', display: 'flex', justifyContent: 'center', py: 4 }}>
-          <IconButton
-            onClick={() => setActive(null)}
-            aria-label={de.tafel.close}
-            size="small"
-            sx={{ position: 'absolute', top: 8, right: 8, color: 'text.secondary' }}
-          >
-            <CloseIcon fontSize="small" />
-          </IconButton>
-          {active && <WrittenGlyph key={active.key} glyphKey={active.key} height={280} surfaceBg="transparent" />}
-        </DialogContent>
-      </Dialog>
     </PublicLayout>
   );
 }

@@ -26,22 +26,34 @@ export function PublicFooter() {
           mt: { xs: 8, md: 11 },
           py: 3,
           display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
+          flexDirection: 'row',
+          flexWrap: 'nowrap',
           justifyContent: 'space-between',
-          alignItems: { xs: 'flex-start', sm: 'center' },
-          gap: 1.5,
+          alignItems: 'center',
+          gap: 2,
         }}
       >
         <Typography sx={{ fontFamily: garamond, fontStyle: 'italic', color: paper.inkSoft }}>
           {de.common.footer.tagline}
+          <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+            {de.common.footer.taglineRest}
+          </Box>
         </Typography>
         <Link
           component={RouterLink}
           to={paths.impressum}
           variant="body2"
-          sx={{ color: paper.sepia, textDecoration: 'none', '&:hover': { color: paper.viridian } }}
+          sx={{
+            flexShrink: 0,
+            color: paper.sepia,
+            textDecoration: 'none',
+            '&:hover': { color: paper.viridian },
+          }}
         >
           {de.impressum.footerLink}
+          <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+            {de.impressum.footerLinkRest}
+          </Box>
         </Link>
       </Box>
     </PageContainer>

@@ -24,30 +24,36 @@ export const landing = {
   },
   // Section 1: the scripts. "Kurrent(schrift)" is really an umbrella over a
   // whole family of German cursive hands; these three make good starters
-  // because each is written with a *different* pen. Honest about which can be
-  // written by the engine yet (Sütterlin only) — `state` drives a small badge.
+  // because each is written with a *different* pen. Each card LINKS to its own
+  // Grundtafel (paths.tafel#<styleId>) like the tool cards do; the honest state
+  // rides the link text itself (`cta`): Sütterlin is already written by the
+  // engine (viridian, `written`), Kurrent/Offenbacher are only the historical
+  // Vorlage to look at (muted) — neither is in the quiz yet, so no "lesen" claim.
   scriptsHeading: 'Drei Schriften, drei Federn',
   scriptsIntro:
     '„Kurrentschrift" fasst eine ganze Familie deutscher Schreibschriften zusammen. Drei davon zum Anfangen — jede mit ihrer eigenen Feder, und keine als Font, sondern Zug um Zug nachgebildet.',
   scripts: [
     {
       name: 'Kurrent',
+      styleId: 'kurrent',
       feder: 'Spitzfeder',
-      state: 'noch zum Lesen',
+      cta: 'Historische Vorlage ansehen →',
       written: false,
       desc: 'Die ältere Norm. Aus dem Druck der Spitzfeder wächst der Schwellzug — fein im Aufstrich, breit im Abstrich.',
     },
     {
       name: 'Sütterlin',
+      styleId: 'suetterlin',
       feder: 'Gleichzugfeder',
-      state: 'schon schreibbar',
+      cta: 'Schon geschrieben — ansehen →',
       written: true,
       desc: 'Aufrecht und gleichmäßig, ohne Schwellung — die Schulschrift von 1911. Sie wird hier schon lebendig geschrieben.',
     },
     {
       name: 'Offenbacher',
+      styleId: 'offenbacher',
       feder: 'Breitfeder',
-      state: 'noch zum Lesen',
+      cta: 'Historische Vorlage ansehen →',
       written: false,
       desc: 'Der Strichkontrast kommt aus dem Winkel der Breitfeder, nicht aus dem Druck. Nie weit verbreitet — aber ein schöner Einstieg.',
     },

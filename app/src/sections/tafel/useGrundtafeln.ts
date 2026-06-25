@@ -29,9 +29,15 @@ const STYLE_ORDER = ['kurrent', 'suetterlin', 'offenbacher'] as const;
 // back to initial then final — the same rule the old single-source Tafel used.
 const PREFERRED_POSITIONS: Position[] = ['medial', 'initial', 'final'];
 
-export interface WrittenLetter {
-  key: string; // representative glyph_key with a locked canonical
-  glyph: string; // the rendered character (ſ, A, ch, …)
+// One marked-letter slot on the Schreibtafel sheet, in the chart's own layout.
+// `key` is set only when the letter has a locked canonical (it renders); a
+// marked-but-untraced letter keeps its slot with `key: null` so it reads as a
+// gap. `x`/`baseline` are chart-pixel coords used to order + row-cluster slots.
+export interface MarkedSlot {
+  glyph: string;
+  key: string | null;
+  x: number;
+  baseline: number;
 }
 
 export type GrundtafelState = 'written' | 'original' | 'pending';
@@ -41,8 +47,9 @@ export interface Grundtafel {
   name: string;
   state: GrundtafelState;
   source: SourceOut | null;
-  // Populated only for state === 'written' (one entry per finished letter).
-  letters: WrittenLetter[];
+  // Populated only for state === 'written': the marked letters grouped into the
+  // chart's own rows (left-to-right, top-to-bottom), gaps for untraced letters.
+  rows: MarkedSlot[][];
 }
 
 export interface GrundtafelnResult {
@@ -52,27 +59,62 @@ export interface GrundtafelnResult {
   waking: boolean;
 }
 
-// Every letter that is both locked (the admin's "finished" marker) AND owns a
-// traced canonical, deduped to one entry per letter (its three positions usually
-// share one authored form), ordered by the alphabet registry. Locking is the
-// same public-readiness gate the quiz uses, so the Tafel never surfaces a
-// half-calibrated form.
-function writtenLetters(bboxes: BboxOut[], glyphs: GlyphSummary[]): WrittenLetter[] {
+function median(xs: number[]): number {
+  if (!xs.length) return 0;
+  const s = [...xs].sort((a, b) => a - b);
+  const m = s.length >> 1;
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
+// The marked letters grouped into the chart's own rows. Each letter's three
+// sibling bboxes share one chart location, so we dedupe to a single slot;
+// `key` is the representative glyph_key only when a locked canonical exists
+// (else the slot is a gap). Slots are clustered into rows by their baseline
+// (so a letter lands in the same row it occupies on the tafel) and ordered
+// left-to-right; rows run top-to-bottom. Letters never marked on the chart are
+// not slots. Locking is the same public-readiness gate the quiz uses.
+function markedRowsOf(bboxes: BboxOut[], glyphs: GlyphSummary[]): MarkedSlot[][] {
   const bm: Record<string, BboxOut> = {};
   for (const b of bboxes) bm[b.glyph_key] = b;
   const gm: Record<string, GlyphSummary> = {};
   for (const g of glyphs) gm[g.glyph_key] = g;
-  const out: WrittenLetter[] = [];
+
+  const slots: MarkedSlot[] = [];
+  const heights: number[] = [];
   for (const letter of LETTERS) {
+    let rep: BboxOut | null = null;
+    let writtenKey: string | null = null;
     for (const position of PREFERRED_POSITIONS) {
       const key = glyphKeyFor(letter, position);
-      if (gm[key]?.has_data && bm[key]?.locked) {
-        out.push({ key, glyph: letter.glyph });
-        break;
-      }
+      const b = bm[key];
+      if (!b) continue;
+      if (!rep) rep = b;
+      if (gm[key]?.has_data && b.locked && !writtenKey) writtenKey = key;
     }
+    if (!rep) continue;
+    heights.push(rep.y1 - rep.y0);
+    slots.push({ glyph: letter.glyph, key: writtenKey, x: (rep.x0 + rep.x1) / 2, baseline: rep.baseline_y });
   }
-  return out;
+  if (!slots.length) return [];
+
+  // Cluster by baseline: a gap bigger than half a typical letter height starts a
+  // new chart row (within a row the baselines are ~equal).
+  const threshold = Math.max(1, median(heights) * 0.5);
+  slots.sort((a, b) => a.baseline - b.baseline);
+  const rows: MarkedSlot[][] = [];
+  let row: MarkedSlot[] = [];
+  let last: number | null = null;
+  for (const s of slots) {
+    if (last !== null && s.baseline - last > threshold) {
+      rows.push(row);
+      row = [];
+    }
+    row.push(s);
+    last = s.baseline;
+  }
+  if (row.length) rows.push(row);
+  for (const r of rows) r.sort((a, b) => a.x - b.x);
+  return rows;
 }
 
 export function useGrundtafeln(): GrundtafelnResult {
@@ -102,7 +144,7 @@ export function useGrundtafeln(): GrundtafelnResult {
         const styleById: Record<string, StyleOut> = {};
         for (const s of styles) styleById[s.id] = s;
         const charts = sources.filter((s) => s.kind === 'chart');
-        const written = writtenLetters(bboxes, glyphs);
+        const writtenRows = markedRowsOf(bboxes, glyphs);
 
         const built: Grundtafel[] = STYLE_ORDER.filter((id) => styleById[id]).map((styleId) => {
           const ownCharts = charts.filter((c) => c.style_id === styleId);
@@ -117,7 +159,7 @@ export function useGrundtafeln(): GrundtafelnResult {
             name: styleLabel(styleId),
             state,
             source,
-            letters: state === 'written' ? written : [],
+            rows: state === 'written' ? writtenRows : [],
           };
         });
         setTafeln(built);
