@@ -1,6 +1,6 @@
 ---
 name: verify-frontend
-description: Run and visually verify the kurrentschrift app after frontend changes — start the dev servers, click through ONLY the flows the change touches via the chrome-devtools MCP, watch the console and network, check style fidelity and legibility at a desktop AND a mobile viewport, and record a performance trace when the change can move performance. Use when asked to run, start, screenshot, verify, test in the browser, or visually check the app or a frontend change.
+description: Run and visually verify the kurrentschrift app after frontend changes — start the dev servers, click through ONLY the flows the change touches (chrome-devtools MCP locally, or playwright-core against the pre-installed Chromium in the cloud), watch the console and network, check style fidelity and legibility at a desktop AND a mobile viewport, and record a performance trace when the change can move performance. Use when asked to run, start, screenshot, verify, test in the browser, or visually check the app or a frontend change.
 ---
 
 # Verify the frontend in the browser
@@ -13,12 +13,15 @@ config, not from this repo: verify availability via ToolSearch (§2)
 before relying on it. All paths below are relative to the repo root.
 
 > **Environment note:** the chrome-devtools MCP is a **local-only**
-> harness — it is not present on Claude Code on the web (no browser in
-> the remote container). If ToolSearch (§2) finds no
-> `mcp__chrome-devtools__*` tools, you are in the cloud: the visual
-> verification in this skill cannot run there. Say so plainly and fall
-> back to the static gates (`npm run build`, type-check) rather than
-> claiming a flow was driven.
+> harness — it is not present on Claude Code on the web. If ToolSearch
+> (§2) finds no `mcp__chrome-devtools__*` tools, you are in the cloud.
+> **This is not a dead end:** the remote container ships a Chromium under
+> `/opt/pw-browsers/` (`PLAYWRIGHT_BROWSERS_PATH`), so you can still drive
+> the live app — just via `playwright-core` directly instead of the MCP.
+> See **§2b · Cloud fallback**. Only when *both* the MCP is absent *and*
+> no Chromium is found under `PLAYWRIGHT_BROWSERS_PATH` do you fall back to
+> the static gates (`npm run build`, type-check) — and then say plainly
+> that no flow was driven rather than claiming one was.
 
 This skill is a **feedback loop**: after a frontend change, don't just
 confirm the page loads — drive it like a user and observe four channels:
@@ -165,6 +168,62 @@ viewport. (2) **a wizard control that drives a derived preview
 (hole-fill, eraser/ink mask, slant) is only verified once you move the
 control and see the preview pixels change** — a 200 on the mask/crop
 request is not proof.
+
+## 2b · Cloud fallback — drive Chromium via Playwright (no MCP)
+
+When ToolSearch finds no `mcp__chrome-devtools__*` tools you are on
+Claude Code on the web. The MCP is gone but the browser is not: the
+container ships Chromium under `PLAYWRIGHT_BROWSERS_PATH`
+(`/opt/pw-browsers/chromium-<rev>/chrome-linux/chrome`). Drive it with
+`playwright-core` and you keep the core channels — interaction, console +
+network, and screenshots (a perf trace is reachable via a CDP session but
+is rarely worth it in the cloud). This path is **verified working in
+this environment**; it does not replace §2 locally (the MCP is richer and
+interactive) — it is the cloud-only substitute.
+
+One-time setup (per container — the scratchpad is ephemeral):
+
+```bash
+SCRATCH=<the session scratchpad dir named in the prompt>   # not an env var
+cd "$SCRATCH" && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm i playwright-core
+```
+
+`PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` is load-bearing: it stops npm from
+re-fetching a browser — you want the pre-installed one, pointed at via
+`executablePath`. **Never run `playwright install`.**
+
+Then start the servers (§1) and run the bundled probe — it reports the
+routine layout channels as machine-readable lines (exact pixels, not
+vibes) and writes a screenshot per viewport:
+
+```bash
+NODE_PATH="$SCRATCH/node_modules" SHOTS=/tmp/kurrentschrift-ui \
+  node .claude/skills/verify-frontend/cloud-probe.mjs \
+  http://localhost:3000/ http://localhost:3000/quiz
+```
+
+It prints, per URL × viewport (default `1440,390,360,320`; override with
+`WIDTHS=`): horizontal **overflow** + the widest offending element,
+the `h1` computed font-size + family (type-voice check, §3), and a
+deduped count of JS errors / 4xx-5xx requests with their paths (the
+`favicon.ico` 404 is filtered). Then **Read the screenshots** under
+`SHOTS` — the same "actually look at it" rule as §2 step 5. `NODE_PATH`
+is needed because `playwright-core` lives in the scratchpad, not the
+repo; the probe loads it via `createRequire` (ESM bare imports ignore
+`NODE_PATH`).
+
+The probe covers the 80 % case (did my change break layout / spew
+errors). For anything custom — a size **ratio**, a specific element's
+rect, a multi-step flow (`click`/`fill`/`wait_for` exist on the
+`playwright-core` `page` too) — copy it as a starting point and add the
+measurement inside its `page.evaluate()` block, or write a one-off
+`.mjs` in the scratchpad. Getting **exact numbers** out of
+`getComputedStyle`/`getBoundingClientRect` is the point: it lets you tune
+`clamp()` values by calculation instead of eyeballing screenshots. Keep
+ad-hoc scripts in the scratchpad (throwaway); only the reusable
+`cloud-probe.mjs` is committed. All other rules below (§3 style, §4
+trace, Gotchas) apply unchanged — the lazy-route `wait_for`, the stale
+`favicon` 404, scroll-into-view all behave the same through Playwright.
 
 ## 3 · Style fidelity & legibility check
 
