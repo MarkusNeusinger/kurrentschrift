@@ -7,7 +7,8 @@
 // even. While the glyphs load, a "pen warming up" loader pulses centred in the
 // ruling until the first letter starts.
 //
-// On load each glyph writes itself in (a gentle left-to-right cascade); clicking
+// On load the diagnostics resolve together, then each glyph writes itself in
+// (a gentle left-to-right cascade); clicking
 // a glyph clears it, pauses, then re-writes it in place — no modal. Technique per glyph (from
 // WrittenGlyph): fill the silhouette, then reveal it with a wide mask swept
 // along the centerlines via an animated stroke-dashoffset, lifting between pen
@@ -16,6 +17,7 @@
 // glyph scale stays constant; the four lines span the full width.
 
 import { Box, Stack, Typography, keyframes } from '@mui/material';
+import { visuallyHidden } from '@mui/utils';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 
@@ -371,7 +373,7 @@ export function WrittenSheet({ rows, ratio }: Props) {
   // gaps (untraced letters) so the spacing is even with no holes, and ignore the
   // chart's own row breaks — every row holds the same count at the same scale.
   const sheetRows = useMemo(() => {
-    const written = rows.flat().filter((s) => s.key);
+    const written = rows.flat().filter((s): s is MarkedSlot & { key: string } => s.key !== null);
     const chunks: MarkedSlot[][] = [];
     for (let i = 0; i < written.length; i += LETTERS_PER_ROW) {
       chunks.push(written.slice(i, i + LETTERS_PER_ROW));
@@ -388,9 +390,9 @@ export function WrittenSheet({ rows, ratio }: Props) {
       {sheetRows.length === 0 ? (
         <Typography sx={{ color: paper.inkSoft }}>{de.tafel.empty}</Typography>
       ) : (
-        // The ruled rows render at once; each glyph writes itself in as its
-        // diagnostic resolves (geomByKey fills in), so the lines are there first.
-        // While the glyphs load, a "pen warming up" loader pulses in the middle.
+        // The ruled rows render at once with the loader pulsing in the middle;
+        // the diagnostics load together (one Promise.all), then every glyph
+        // writes itself in at once in the staggered left-to-right cascade.
         containerW > 0 && (
           <Box sx={{ position: 'relative' }}>
             <Stack spacing={1}>
@@ -411,7 +413,7 @@ export function WrittenSheet({ rows, ratio }: Props) {
             {loading && (
               <Box
                 role="status"
-                aria-label={de.tafel.loading}
+                aria-live="polite"
                 sx={{
                   position: 'absolute',
                   inset: 0,
@@ -422,6 +424,10 @@ export function WrittenSheet({ rows, ratio }: Props) {
                   pointerEvents: 'none',
                 }}
               >
+                {/* visually-hidden text so the status region has a name SRs announce */}
+                <Box component="span" sx={visuallyHidden}>
+                  {de.tafel.loading}
+                </Box>
                 {[0, 1, 2].map((i) => (
                   <Box
                     key={i}
