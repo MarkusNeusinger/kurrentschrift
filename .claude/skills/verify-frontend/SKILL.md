@@ -184,7 +184,8 @@ interactive) — it is the cloud-only substitute.
 One-time setup (per container — the scratchpad is ephemeral):
 
 ```bash
-SCRATCH=<the session scratchpad dir named in the prompt>   # not an env var
+# SCRATCH is not pre-provided — set it yourself, to the session scratchpad dir named in the prompt
+SCRATCH=<the session scratchpad dir named in the prompt>
 cd "$SCRATCH" && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm i playwright-core
 ```
 

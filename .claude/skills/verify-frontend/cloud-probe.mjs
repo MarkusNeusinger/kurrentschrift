@@ -23,9 +23,13 @@ const { chromium } = require('playwright-core');
 
 // Resolve the pre-installed Chromium (version-pinned dir under PLAYWRIGHT_BROWSERS_PATH).
 const root = process.env.PLAYWRIGHT_BROWSERS_PATH || '/opt/pw-browsers';
-const dir = readdirSync(root).find((d) => /^chromium-\d+$/.test(d));
+if (!existsSync(root)) throw new Error(`browsers dir not found: ${root} — set PLAYWRIGHT_BROWSERS_PATH (cloud container only)`);
+const dir = readdirSync(root)
+  .filter((d) => /^chromium-\d+$/.test(d))
+  .sort((a, b) => Number(b.slice(9)) - Number(a.slice(9)))[0]; // newest revision, deterministically
+if (!dir) throw new Error(`no chromium-<rev> dir under ${root}`);
 const executablePath = `${root}/${dir}/chrome-linux/chrome`;
-if (!existsSync(executablePath)) throw new Error(`no chromium under ${root}`);
+if (!existsSync(executablePath)) throw new Error(`chromium binary missing: ${executablePath}`);
 
 const urls = process.argv.slice(2);
 if (urls.length === 0) urls.push('http://localhost:3000/');
@@ -48,7 +52,12 @@ for (const url of urls) {
     page.on('response', (r) => { const s = r.status(); if (s >= 400 && !/favicon\.ico/.test(r.url())) bad.push(`${s} ${r.url().replace(/^https?:\/\/[^/]+/, '')}`); });
     page.on('requestfailed', (r) => { if (!/favicon\.ico/.test(r.url())) errors.push(`requestfailed ${r.url().replace(/^https?:\/\/[^/]+/, '')}`); });
 
-    await page.goto(url, { waitUntil: 'networkidle' });
+    // domcontentloaded first, then a *bounded* networkidle: a bare
+    // networkidle can hang because Vite's HMR websocket never lets the network
+    // settle, so cap it — the lazy route chunk + render normally finishes well
+    // inside the timeout, and measurement proceeds even if it doesn't idle.
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
 
     const data = await page.evaluate(() => {
       const docW = document.documentElement.scrollWidth;
@@ -75,7 +84,7 @@ for (const url of urls) {
 
     await page.screenshot({ path: `${shots}/${slug}-${width}.png` });
     const ov = data.culprit ? `OVERFLOW doc=${data.docW}>${data.winW} ${JSON.stringify(data.culprit)}` : 'ok';
-    const issues = [...errors, ...[...new Set(bad)]];
+    const issues = [...new Set([...errors, ...bad])];
     console.log(`${slug}\tw=${width}\t${ov}\th1=${data.h1?.fontSize} ${data.h1?.family}\tissues=${issues.length}${issues.length ? ' :: ' + issues.slice(0, 2).join(' | ') : ''}`);
     await ctx.close();
   }
