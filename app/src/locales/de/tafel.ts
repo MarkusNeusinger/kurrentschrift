@@ -34,7 +34,10 @@ export const tafel = {
     licenseLabel: 'Lizenz',
     originLink: 'Zur Originalquelle',
   },
-  // Per-card / modal helpers.
+  // Click/tap a written letter on the sheet to re-write it in place.
   replayHint: 'antippen zum Nachschreiben',
-  close: 'Schließen',
+  // Tap/click-to-zoom on the original scan (OriginalScan): aria labels only —
+  // the zoom-in/grab cursor signals the affordance, no visible hint (minimal).
+  zoomIn: 'Tafel vergrößern',
+  zoomOut: 'Tafel verkleinern',
 } as const;

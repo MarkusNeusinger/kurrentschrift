@@ -6,7 +6,10 @@
 
 export const impressum = {
   title: 'Impressum & Datenschutz',
-  footerLink: 'Impressum & Datenschutz',
+  // Footer link split in two so it stays one row on mobile: `footerLink` always
+  // shows, `footerLinkRest` only on sm+ (PublicFooter hides it at xs).
+  footerLink: 'Impressum',
+  footerLinkRest: ' & Datenschutz',
   imprint: {
     heading: 'Impressum',
     operatorLabel: 'Betreiber',

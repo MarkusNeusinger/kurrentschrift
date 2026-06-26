@@ -57,14 +57,20 @@ export function LandingView() {
           {scripts.map((s, i) => (
             <Reveal key={s.name} delay={i * 0.06}>
               <Box
+                component={RouterLink}
+                to={`${paths.tafel}#${s.styleId}`}
                 sx={{
                   height: '100%',
                   display: 'flex',
                   flexDirection: 'column',
+                  textDecoration: 'none',
+                  color: paper.ink,
                   p: 2.5,
                   borderRadius: 2,
                   border: `1px solid ${paper.line}`,
                   bgcolor: paper.hi,
+                  transition: 'transform .2s ease, box-shadow .3s ease, border-color .2s ease',
+                  '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 10px 24px rgba(36,26,16,.14)', borderColor: paper.viridian },
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1, mb: 0.75 }}>
@@ -75,23 +81,20 @@ export function LandingView() {
                     {s.feder}
                   </Box>
                 </Box>
-                <Typography variant="body2" sx={{ color: paper.inkSoft, lineHeight: 1.55, mb: 2, flexGrow: 1 }}>
+                <Typography variant="body2" sx={{ color: paper.inkSoft, lineHeight: 1.55, flexGrow: 1 }}>
                   {s.desc}
                 </Typography>
-                <Box
-                  component="span"
-                  sx={{
-                    alignSelf: 'flex-start',
-                    fontSize: '.8rem',
-                    fontStyle: 'italic',
-                    px: '0.7rem',
-                    py: '0.18rem',
-                    borderRadius: '999px',
-                    border: `1px solid ${s.written ? paper.viridian : paper.line}`,
-                    color: s.written ? paper.viridian : paper.sepia,
-                  }}
-                >
-                  {s.state}
+                {/* the honest state rides the link text itself: viridian + active
+                    for the script the engine already writes (Sütterlin), muted
+                    "historische Vorlage" for the two that are only a scan today.
+                    A hairline sets the CTA off from the description. */}
+                <Box sx={{ mt: 2, pt: 1.5, borderTop: `1px solid ${paper.line}` }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 500, color: s.written ? paper.viridian : paper.sepia }}
+                  >
+                    {s.cta}
+                  </Typography>
                 </Box>
               </Box>
             </Reveal>
