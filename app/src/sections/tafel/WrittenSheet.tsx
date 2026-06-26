@@ -2,10 +2,13 @@
 // sheet instead of separate boxes: full-width rows ruled with the four Lineatur
 // lines (Ober-, Mittel-, Grund-, Unterlinie), and the synthesised letters
 // written ON the lines, stroke by stroke, in the pen's order. The written
-// letters are re-flowed into uniform rows of LETTERS_PER_ROW at one fixed scale,
-// in reading order; untraced letters are dropped (no gaps), so the spacing is
-// even. While the glyphs load, a "pen warming up" loader pulses centred in the
-// ruling until the first letter starts.
+// letters are re-flowed into rows of LETTERS_PER_ROW at one fixed scale, in
+// reading order; untraced letters are dropped (no gaps). Each letter keeps its
+// own ink width and is flowed left-to-right with a CONSTANT gap between the end
+// of one glyph and the start of the next (proportional spacing), so wide letters
+// like m/w never crowd or overlap their neighbours. While the glyphs load, a
+// "pen warming up" loader pulses centred in the ruling until the first letter
+// starts.
 //
 // On load the diagnostics resolve together, then each glyph writes itself in
 // (a gentle left-to-right cascade); clicking
@@ -49,7 +52,13 @@ function fetchGlyph(key: string): Promise<DiagnosticData | null> {
 }
 
 const LETTERS_PER_ROW = 8; // re-flow the written letters into rows of this many (gaps dropped)
-const CELL_W = 2.0; // fixed slot width (x-height units) so the ruling is stable from the first frame
+// Proportional layout: every letter keeps its own ink width and the SAME gap is
+// left between the end of one glyph and the start of the next (x-height units),
+// so wide letters (m, w) no longer crowd or overlap their neighbours the way a
+// fixed centred cell let them. LEAD pads the row's left/right edges.
+const GAP = 0.42;
+const LEAD = 0.3;
+const FALLBACK_ROW_W = (1.5 + GAP) * LETTERS_PER_ROW; // pre-load viewBox width (~avg letter)
 const PAD_Y = 0.14; // vertical air above the ascender / below the descender
 const RULE = schulheft.rulingBlueFaded;
 const RULE_W = 1; // px — non-scaling so the rule stays a hairline at any row scale
@@ -141,7 +150,8 @@ function glyphGeom(data: DiagnosticData): GlyphGeom | null {
 interface SheetGlyphProps {
   geom: GlyphGeom;
   glyph: string;
-  cellX: number; // left edge of this slot, template coords
+  glyphX: number; // where this glyph's left ink edge (minX) lands, template coords
+  cellX: number; // left edge of the hover/focus cell, template coords
   cellW: number;
   vbY: number;
   vbH: number;
@@ -152,11 +162,12 @@ interface SheetGlyphProps {
 // One written glyph inside the row SVG: the silhouette revealed by a mask swept
 // along its centerlines. Owns a `run` counter — bumping it (a click/tap)
 // remounts the mask + ink so the write-in replays, in place, with no modal.
-function SheetGlyph({ geom, glyph, cellX, cellW, vbY, vbH, orderIndex, reducedMotion }: SheetGlyphProps) {
+function SheetGlyph({ geom, glyph, glyphX, cellX, cellW, vbY, vbH, orderIndex, reducedMotion }: SheetGlyphProps) {
   const uid = useId();
   const [run, setRun] = useState(0);
   const animate = !reducedMotion;
-  const tx = cellX + cellW / 2 - (geom.minX + geom.maxX) / 2;
+  // Left-align the ink so the gap to the previous glyph's end is constant.
+  const tx = glyphX - geom.minX;
 
   // Per-stroke timing: duration ∝ chord length, a pen pause between strokes.
   // The first stroke is offset by the cascade delay on the initial write; on a
@@ -246,8 +257,7 @@ function SheetGlyph({ geom, glyph, cellX, cellW, vbY, vbH, orderIndex, reducedMo
 interface RowProps {
   row: MarkedSlot[];
   rowOffset: number; // reading-order index of this row's first slot
-  cellW: number;
-  rowW: number; // shared full template width (maxRowLength · cellW)
+  rowW: number; // shared template width (the widest row's content), keeps scale constant
   geomByKey: Map<string, GlyphGeom>;
   guides: DiagnosticData['template_guides'];
   width: number; // rendered px width (sized exactly so the lines never distort)
@@ -255,7 +265,7 @@ interface RowProps {
 }
 
 // One ruled row: the four full-width Lineatur lines + the row's written glyphs.
-function SheetRow({ row, rowOffset, cellW, rowW, geomByKey, guides, width, reducedMotion }: RowProps) {
+function SheetRow({ row, rowOffset, rowW, geomByKey, guides, width, reducedMotion }: RowProps) {
   const vbY = -(guides.ascender + PAD_Y);
   const vbH = guides.ascender - guides.descender + 2 * PAD_Y;
   const lines = [
@@ -264,6 +274,26 @@ function SheetRow({ row, rowOffset, cellW, rowW, geomByKey, guides, width, reduc
     { y: guides.ascender, opacity: 0.45, dash: undefined }, // Oberlinie
     { y: guides.descender, opacity: 0.45, dash: undefined }, // Unterlinie
   ];
+
+  // Flow the glyphs left-to-right: each glyph's left ink edge lands at the
+  // cursor, then the cursor advances by the glyph's own width + a constant GAP,
+  // so the distance from one letter's end to the next's start is identical.
+  const placed: { slot: MarkedSlot; geom: GlyphGeom; glyphX: number; cellX: number; cellW: number; orderIndex: number }[] = [];
+  let cursor = LEAD;
+  row.forEach((slot, i) => {
+    const geom = slot.key ? geomByKey.get(slot.key) : undefined;
+    if (!slot.key || !geom) return; // gap (untraced) — no slot reserved
+    const glyphW = geom.maxX - geom.minX;
+    placed.push({
+      slot,
+      geom,
+      glyphX: cursor,
+      cellX: cursor - GAP / 2, // hover cell spans the ink (lands at glyphX) + half a gap each side
+      cellW: glyphW + GAP,
+      orderIndex: rowOffset + i,
+    });
+    cursor += glyphW + GAP;
+  });
 
   return (
     <Box
@@ -288,23 +318,20 @@ function SheetRow({ row, rowOffset, cellW, rowW, geomByKey, guides, width, reduc
           vectorEffect="non-scaling-stroke"
         />
       ))}
-      {row.map((slot, i) => {
-        const geom = slot.key ? geomByKey.get(slot.key) : undefined;
-        if (!slot.key || !geom) return null; // gap
-        return (
-          <SheetGlyph
-            key={i}
-            geom={geom}
-            glyph={slot.glyph}
-            cellX={i * cellW}
-            cellW={cellW}
-            vbY={vbY}
-            vbH={vbH}
-            orderIndex={rowOffset + i}
-            reducedMotion={reducedMotion}
-          />
-        );
-      })}
+      {placed.map((p, i) => (
+        <SheetGlyph
+          key={i}
+          geom={p.geom}
+          glyph={p.slot.glyph}
+          glyphX={p.glyphX}
+          cellX={p.cellX}
+          cellW={p.cellW}
+          vbY={vbY}
+          vbH={vbH}
+          orderIndex={p.orderIndex}
+          reducedMotion={reducedMotion}
+        />
+      ))}
     </Box>
   );
 }
@@ -381,8 +408,24 @@ export function WrittenSheet({ rows, ratio }: Props) {
     return chunks;
   }, [rows]);
 
-  // Constant width = a full row of slots, so a short last row keeps the scale.
-  const rowW = CELL_W * LETTERS_PER_ROW;
+  // One shared template width for every row = the widest row's flowed content
+  // (LEAD + Σ glyphW + gaps + LEAD), so all rows keep one constant glyph scale
+  // and a short last row simply leaves trailing space. Until the glyph widths
+  // resolve, fall back to a sensible average so the ruling draws immediately.
+  const rowW = useMemo(() => {
+    let max = 0;
+    for (const row of sheetRows) {
+      let w = LEAD;
+      for (const slot of row) {
+        const geom = slot.key ? geomByKey.get(slot.key) : undefined;
+        if (!geom) continue;
+        w += geom.maxX - geom.minX + GAP;
+      }
+      w += LEAD - GAP; // drop the trailing gap, add the right lead
+      if (w > max) max = w;
+    }
+    return max > 0 ? max : FALLBACK_ROW_W;
+  }, [sheetRows, geomByKey]);
   const loading = dataByKey === null;
 
   return (
@@ -401,7 +444,6 @@ export function WrittenSheet({ rows, ratio }: Props) {
                   key={ri}
                   row={row}
                   rowOffset={ri * LETTERS_PER_ROW}
-                  cellW={CELL_W}
                   rowW={rowW}
                   geomByKey={geomByKey}
                   guides={guides}
