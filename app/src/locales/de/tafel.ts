@@ -14,6 +14,8 @@ export const tafel = {
   originalAlt: 'Original-Schreibtafel (Scan der Vorlage)',
   // Empty state when a written script has no finished (locked) letter yet.
   empty: 'Buchstaben erscheinen hier, sobald sie fertig nachgeschrieben und freigegeben sind.',
+  // Accessible label for the loader shown in the ruling while the glyphs load.
+  loading: 'Buchstaben werden geladen …',
   // Per-script writing instrument (echoes the landing's "drei Federn"), by style_id.
   feder: {
     kurrent: 'Spitzfeder',

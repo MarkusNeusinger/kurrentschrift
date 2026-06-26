@@ -1,13 +1,15 @@
 // WrittenSheet — the "Geschrieben" alphabet laid out like a writing-practice
 // sheet instead of separate boxes: full-width rows ruled with the four Lineatur
 // lines (Ober-, Mittel-, Grund-, Unterlinie), and the synthesised letters
-// written ON the lines, stroke by stroke, in the pen's order. The rows mirror
-// the chart's own layout (same letters per row, in the same order —
-// `markedRowsOf` clusters the marked bboxes by baseline); the letters sit at a
-// uniform spacing. A marked-but-untraced letter keeps its slot as a gap.
+// written ON the lines, stroke by stroke, in the pen's order. The written
+// letters are re-flowed into uniform rows of LETTERS_PER_ROW at one fixed scale,
+// in reading order; untraced letters are dropped (no gaps), so the spacing is
+// even. While the glyphs load, a "pen warming up" loader pulses centred in the
+// ruling until the first letter starts.
 //
-// On load each glyph writes itself in (a gentle left-to-right cascade); clicking
-// a glyph re-writes it in place — no modal. Technique per glyph (from
+// On load the diagnostics resolve together, then each glyph writes itself in
+// (a gentle left-to-right cascade); clicking
+// a glyph clears it, pauses, then re-writes it in place — no modal. Technique per glyph (from
 // WrittenGlyph): fill the silhouette, then reveal it with a wide mask swept
 // along the centerlines via an animated stroke-dashoffset, lifting between pen
 // strokes; the ink then settles fresh → oxidized. Coordinates: template space
@@ -15,6 +17,7 @@
 // glyph scale stays constant; the four lines span the full width.
 
 import { Box, Stack, Typography, keyframes } from '@mui/material';
+import { visuallyHidden } from '@mui/utils';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 
@@ -45,6 +48,7 @@ function fetchGlyph(key: string): Promise<DiagnosticData | null> {
   return p;
 }
 
+const LETTERS_PER_ROW = 8; // re-flow the written letters into rows of this many (gaps dropped)
 const CELL_W = 2.0; // fixed slot width (x-height units) so the ruling is stable from the first frame
 const PAD_Y = 0.14; // vertical air above the ascender / below the descender
 const RULE = schulheft.rulingBlueFaded;
@@ -55,9 +59,12 @@ const PEN_PAUSE_MS = 130; // pause at a pen lift so an Absetzen reads as a lift
 const SETTLE_MS = 1500; // iron-gall fresh → oxidized
 const STAGGER_MS = 65; // per-glyph start offset for the load cascade
 const STAGGER_CAP = 1300; // …capped so the last letter never waits too long
+const CLICK_PAUSE_MS = 420; // after a tap the glyph clears, then waits this long before re-writing
 
 const reveal = keyframes`from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; }`;
 const inkSettle = keyframes`from { fill: ${inkState.fresh}; } to { fill: ${inkState.oxidized}; }`;
+// Loading "pen warming up" dots, shown centred in the ruling until the glyphs load.
+const loaderPulse = keyframes`0%, 80%, 100% { opacity: 0.25; transform: scale(0.7); } 40% { opacity: 1; transform: scale(1); }`;
 
 // Template-space Lineatur levels from a style ratio. x-height (baseline→midband)
 // is the unit (= Mittellänge); the Oberlänge/Unterlänge scale relative to it.
@@ -152,10 +159,12 @@ function SheetGlyph({ geom, glyph, cellX, cellW, vbY, vbH, orderIndex, reducedMo
   const tx = cellX + cellW / 2 - (geom.minX + geom.maxX) / 2;
 
   // Per-stroke timing: duration ∝ chord length, a pen pause between strokes.
-  // The first stroke is offset by the cascade delay on the initial write only.
+  // The first stroke is offset by the cascade delay on the initial write; on a
+  // tap (run > 0) the remount instantly clears the ink (mask back to offset 1),
+  // then CLICK_PAUSE_MS holds it blank before the pen starts re-writing.
   const lengths = geom.centerlines.map(chordLength);
   const total = lengths.reduce((s, l) => s + l, 0) || 1;
-  let cursor = run === 0 ? Math.min(orderIndex * STAGGER_MS, STAGGER_CAP) : 0;
+  let cursor = run === 0 ? Math.min(orderIndex * STAGGER_MS, STAGGER_CAP) : CLICK_PAUSE_MS;
   const timing = geom.centerlines.map((_, i) => {
     const dur = Math.max(180, (lengths[i] / total) * WRITE_MS);
     const delay = cursor;
@@ -360,43 +369,83 @@ export function WrittenSheet({ rows, ratio }: Props) {
   // written letters land on these lines exactly.
   const guides = useMemo(() => guidesFromRatio(ratio), [ratio]);
 
-  const maxRow = useMemo(() => rows.reduce((m, r) => Math.max(m, r.length), 0), [rows]);
-  const rowW = CELL_W * Math.max(1, maxRow);
-
-  // Reading-order offset of each row's first slot (for the load cascade).
-  const rowOffsets = useMemo(() => {
-    const offs: number[] = [];
-    let acc = 0;
-    for (const r of rows) {
-      offs.push(acc);
-      acc += r.length;
+  // Re-flow the written letters into uniform rows of LETTERS_PER_ROW: drop the
+  // gaps (untraced letters) so the spacing is even with no holes, and ignore the
+  // chart's own row breaks — every row holds the same count at the same scale.
+  const sheetRows = useMemo(() => {
+    const written = rows.flat().filter((s): s is MarkedSlot & { key: string } => s.key !== null);
+    const chunks: MarkedSlot[][] = [];
+    for (let i = 0; i < written.length; i += LETTERS_PER_ROW) {
+      chunks.push(written.slice(i, i + LETTERS_PER_ROW));
     }
-    return offs;
+    return chunks;
   }, [rows]);
+
+  // Constant width = a full row of slots, so a short last row keeps the scale.
+  const rowW = CELL_W * LETTERS_PER_ROW;
+  const loading = dataByKey === null;
 
   return (
     <Box ref={containerRef} sx={{ width: '100%' }}>
-      {rows.length === 0 ? (
+      {sheetRows.length === 0 ? (
         <Typography sx={{ color: paper.inkSoft }}>{de.tafel.empty}</Typography>
       ) : (
-        // The ruled rows render at once; each glyph writes itself in as its
-        // diagnostic resolves (geomByKey fills in), so the lines are there first.
+        // The ruled rows render at once with the loader pulsing in the middle;
+        // the diagnostics load together (one Promise.all), then every glyph
+        // writes itself in at once in the staggered left-to-right cascade.
         containerW > 0 && (
-          <Stack spacing={0.75}>
-            {rows.map((row, ri) => (
-              <SheetRow
-                key={ri}
-                row={row}
-                rowOffset={rowOffsets[ri]}
-                cellW={CELL_W}
-                rowW={rowW}
-                geomByKey={geomByKey}
-                guides={guides}
-                width={containerW}
-                reducedMotion={reducedMotion}
-              />
-            ))}
-          </Stack>
+          <Box sx={{ position: 'relative' }}>
+            <Stack spacing={1}>
+              {sheetRows.map((row, ri) => (
+                <SheetRow
+                  key={ri}
+                  row={row}
+                  rowOffset={ri * LETTERS_PER_ROW}
+                  cellW={CELL_W}
+                  rowW={rowW}
+                  geomByKey={geomByKey}
+                  guides={guides}
+                  width={containerW}
+                  reducedMotion={reducedMotion}
+                />
+              ))}
+            </Stack>
+            {loading && (
+              <Box
+                role="status"
+                aria-live="polite"
+                sx={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 1,
+                  pointerEvents: 'none',
+                }}
+              >
+                {/* visually-hidden text so the status region has a name SRs announce */}
+                <Box component="span" sx={visuallyHidden}>
+                  {de.tafel.loading}
+                </Box>
+                {[0, 1, 2].map((i) => (
+                  <Box
+                    key={i}
+                    sx={{
+                      width: 9,
+                      height: 9,
+                      borderRadius: '50%',
+                      bgcolor: paper.viridian,
+                      opacity: reducedMotion ? 0.7 : undefined,
+                      animation: reducedMotion
+                        ? undefined
+                        : `${loaderPulse} 1.2s ease-in-out ${i * 0.16}s infinite`,
+                    }}
+                  />
+                ))}
+              </Box>
+            )}
+          </Box>
         )
       )}
     </Box>
