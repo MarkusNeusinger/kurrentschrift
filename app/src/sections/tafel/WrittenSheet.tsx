@@ -4,11 +4,13 @@
 // written ON the lines, stroke by stroke, in the pen's order. The written
 // letters are re-flowed into rows of LETTERS_PER_ROW at one fixed scale, in
 // reading order; untraced letters are dropped (no gaps). Each letter keeps its
-// own ink width and is flowed left-to-right with a CONSTANT gap between the end
-// of one glyph and the start of the next (proportional spacing), so wide letters
-// like m/w never crowd or overlap their neighbours. While the glyphs load, a
-// "pen warming up" loader pulses centred in the ruling until the first letter
-// starts.
+// own ink width and is flowed left-to-right with the gap measured from the END
+// of one glyph to the START of the next (proportional spacing), so wide letters
+// like m/w never crowd or overlap their neighbours. That gap is CONSTANT WITHIN
+// A ROW ("gleich pro Zeile") and every full row is justified to fill the shared
+// width, so rows span edge to edge; the gap may differ between rows. While the
+// glyphs load, a "pen warming up" loader pulses centred in the ruling until the
+// first letter starts.
 //
 // On load the diagnostics resolve together, then each glyph writes itself in
 // (a gentle left-to-right cascade); clicking
@@ -275,9 +277,25 @@ function SheetRow({ row, rowOffset, rowW, geomByKey, guides, width, reducedMotio
     { y: guides.descender, opacity: 0.45, dash: undefined }, // Unterlinie
   ];
 
-  // Flow the glyphs left-to-right: each glyph's left ink edge lands at the
-  // cursor, then the cursor advances by the glyph's own width + a constant GAP,
-  // so the distance from one letter's end to the next's start is identical.
+  // "Gleich pro Zeile": every letter in a row is separated by the SAME gap, and
+  // a full row is justified to fill the shared width — so the inter-letter gap is
+  // constant within a row but differs between rows (a row of wide letters gets a
+  // smaller gap than a row of narrow ones, and every full row spans edge to
+  // edge). The final short row keeps the natural minimum GAP, left-aligned, so
+  // its few letters are not stretched across the whole line.
+  const placeable = row.filter((s): s is MarkedSlot & { key: string } => !!s.key && geomByKey.has(s.key));
+  const n = placeable.length;
+  let gap = GAP;
+  if (n > 1 && n === LETTERS_PER_ROW) {
+    const ink = placeable.reduce((sum, s) => {
+      const g = geomByKey.get(s.key)!;
+      return sum + (g.maxX - g.minX);
+    }, 0);
+    gap = Math.max(GAP, (rowW - 2 * LEAD - ink) / (n - 1));
+  }
+
+  // Lay each glyph by its left ink edge at the running cursor, advancing by the
+  // glyph's own width + this row's gap.
   const placed: { slot: MarkedSlot; geom: GlyphGeom; glyphX: number; cellX: number; cellW: number; orderIndex: number }[] = [];
   let cursor = LEAD;
   row.forEach((slot, i) => {
@@ -288,11 +306,11 @@ function SheetRow({ row, rowOffset, rowW, geomByKey, guides, width, reducedMotio
       slot,
       geom,
       glyphX: cursor,
-      cellX: cursor - GAP / 2, // hover cell spans the ink (lands at glyphX) + half a gap each side
-      cellW: glyphW + GAP,
+      cellX: cursor - gap / 2, // hover cell spans the ink (lands at glyphX) + half a gap each side
+      cellW: glyphW + gap,
       orderIndex: rowOffset + i,
     });
-    cursor += glyphW + GAP;
+    cursor += glyphW + gap;
   });
 
   return (
@@ -318,9 +336,9 @@ function SheetRow({ row, rowOffset, rowW, geomByKey, guides, width, reducedMotio
           vectorEffect="non-scaling-stroke"
         />
       ))}
-      {placed.map((p, i) => (
+      {placed.map((p) => (
         <SheetGlyph
-          key={i}
+          key={p.slot.key ?? p.orderIndex}
           geom={p.geom}
           glyph={p.slot.glyph}
           glyphX={p.glyphX}
@@ -415,15 +433,20 @@ export function WrittenSheet({ rows, ratio }: Props) {
   const rowW = useMemo(() => {
     let max = 0;
     for (const row of sheetRows) {
-      let w = LEAD;
+      let ink = 0;
+      let n = 0;
       for (const slot of row) {
         const geom = slot.key ? geomByKey.get(slot.key) : undefined;
         if (!geom) continue;
-        w += geom.maxX - geom.minX + GAP;
+        ink += geom.maxX - geom.minX;
+        n += 1;
       }
-      w += LEAD - GAP; // drop the trailing gap, add the right lead
+      if (n === 0) continue; // a row with no resolved glyph contributes nothing
+      const w = 2 * LEAD + ink + (n - 1) * GAP; // LEAD + glyphs + gaps + LEAD
       if (w > max) max = w;
     }
+    // Until any glyph geometry resolves, max stays 0 → keep the pre-load fallback
+    // so the ruling draws at a sensible scale instead of collapsing.
     return max > 0 ? max : FALLBACK_ROW_W;
   }, [sheetRows, geomByKey]);
   const loading = dataByKey === null;
