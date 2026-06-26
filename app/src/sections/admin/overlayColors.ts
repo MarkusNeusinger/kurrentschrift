@@ -15,6 +15,9 @@ export const overlay = {
   eraser: '#ff6b35',
   // Manual ink brush strokes (Tinten-Pinsel) — the eraser's positive twin.
   ink: '#2b50e0',
+  // Inserted donor cell (Zelle einsetzen): the placement rect on the crop and
+  // the donor-picker selection. Distinct from eraser/ink/draft/slant.
+  patch: '#c057ff',
   // In-progress drawing (the rubber-band rect while drawing a new bbox; the
   // wizard's slant handles use the same accent).
   draft: '#00d2ff',

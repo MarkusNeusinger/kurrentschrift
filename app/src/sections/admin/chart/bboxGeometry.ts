@@ -73,6 +73,9 @@ export function editedBbox(current: BboxOut, handle: EditHandle, cur: Rect): Bbo
         ...m,
         points: m.points.map(([x, y]) => [x + dx, y + dy] as [number, number]),
       })),
+      // The donor regions (`src`) stay put — they point at fixed chart content —
+      // but each landing spot (`dst`) rides along with the moving crop.
+      patches: current.patches.map((p) => ({ ...p, dst: [p.dst[0] + dx, p.dst[1] + dy] as [number, number] })),
     };
   }
   return {

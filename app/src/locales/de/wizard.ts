@@ -58,6 +58,30 @@ export const wizard = {
     legendInk: 'Tinte',
     legendAuto: 'automatisch gefüllt',
     legendGap: 'Lücke → tinten',
+    // Third tool: "Zelle einsetzen" — copy ink from another cell of the same
+    // chart into this crop, for glyphs with no own cell (ü/ö borrowing ä's
+    // umlaut over a u/o body). The donor's ink wins by darken, so its white
+    // background never erases the base.
+    toolPatch: 'Zelle einsetzen',
+    leadPatch: 'Tinte aus einer anderen Zelle einsetzen — z. B. die Umlaut-Striche vom ä über ein u/o für ü/ö.',
+    patchBody:
+      'Manche Buchstaben fehlen als eigene Zelle auf der Tafel: ü und ö gibt es nicht, wohl aber ein u/o und das ä mit seinen zwei Umlaut-Strichen. Hier eine Spenderzelle wählen (die Striche vom ä), sie über den Grundbuchstaben setzen und dann ganz normal nachfahren. Den u-Bogen vorher mit dem Radierer entfernen.',
+    // Button that opens the donor picker (full chart).
+    patchPick: 'Spenderzelle wählen',
+    patchListTitle: 'Eingesetzte Zellen',
+    patchEmpty: 'Noch keine Zelle eingesetzt.',
+    // Followed by the 1-based index.
+    patchItem: 'Zelle',
+    patchRemove: 'Entfernen',
+    patchDragHint: 'Im Bild an die richtige Stelle über dem Grundbuchstaben ziehen.',
+  },
+  // Donor picker dialog: choose a region of the full chart to copy in.
+  donor: {
+    title: 'Spenderzelle wählen',
+    help: 'Einen Rahmen um die Stelle ziehen, deren Tinte eingesetzt werden soll — z. B. die zwei Umlaut-Striche über dem ä.',
+    redraw: 'Neu ziehen',
+    cancel: 'Abbrechen',
+    confirm: 'Übernehmen',
   },
   lineatur: {
     title: 'Schritt 2 · Lineatur & Schräglage',

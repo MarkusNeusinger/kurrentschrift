@@ -11,6 +11,7 @@ export function bboxInFromOut(b: BboxOut): BboxIn {
     x1: b.x1,
     mask_strokes: b.mask_strokes,
     ink_strokes: b.ink_strokes,
+    patches: b.patches,
     baseline_y: b.baseline_y,
     midband_y: b.midband_y,
     n_anchors: b.n_anchors,

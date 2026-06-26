@@ -9,6 +9,17 @@ export interface MaskStroke {
   radius: number;
 }
 
+// One crop patch (German: eingesetzte Zelle): a donor rectangle copied from
+// elsewhere on the *same* chart into the crop at a destination, all chart-pixel
+// coords. `src` is [x0, y0, x1, y1], `dst` is the top-left [x, y]. Composited by
+// darken before binarisation, so only the donor's ink lands — lets a glyph with
+// no own cell borrow another's strokes (e.g. ü/ö taking the umlaut from ä).
+// Mirrors Patch in api/schemas.py.
+export interface Patch {
+  src: [number, number, number, number];
+  dst: [number, number];
+}
+
 export interface StyleOut {
   id: string;
   name: string;
@@ -71,6 +82,10 @@ export interface BboxOut {
   // Manual ink brush (German: Tinten-Pinsel): the eraser's positive twin, same
   // {points, radius} shape, painted as ink before binarisation.
   ink_strokes: MaskStroke[];
+  // Crop patches (German: eingesetzte Zelle): donor regions from elsewhere on
+  // the same chart composited into the crop, for glyphs with no own cell (e.g.
+  // ü/ö borrowing ä's umlaut). See Patch.
+  patches: Patch[];
   baseline_y: number;
   midband_y: number;
   n_anchors: number;
@@ -96,6 +111,9 @@ export interface BboxIn {
   x1: number;
   mask_strokes: MaskStroke[];
   ink_strokes: MaskStroke[];
+  // Replace-semantics like ink_strokes: the client holds the full list and
+  // resends it on every save, so an omitted/empty list clears the patches.
+  patches: Patch[];
   baseline_y: number;
   midband_y: number;
   n_anchors: number;

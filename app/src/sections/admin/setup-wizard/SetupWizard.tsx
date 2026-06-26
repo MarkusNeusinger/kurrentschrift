@@ -67,6 +67,9 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
         return (
           <MaskStep
             bbox={bbox}
+            sourceId={source.id}
+            chartW={source.chart_size.w}
+            chartH={source.chart_size.h}
             maskRadius={wizard.maskRadius}
             setMaskRadius={wizard.setMaskRadius}
             tool={wizard.tool}
@@ -76,6 +79,8 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
             undoMask={wizard.undoMask}
             undoInk={wizard.undoInk}
             setFillHoles={wizard.setFillHoles}
+            addPatch={wizard.addPatch}
+            removePatch={wizard.removePatch}
           />
         );
       case 'lineatur':
@@ -183,6 +188,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
               commitSlant={wizard.commitSlant}
               commitMaskStroke={wizard.commitMaskStroke}
               commitInkStroke={wizard.commitInkStroke}
+              updatePatch={wizard.updatePatch}
             />
             {/* On mobile this drops below the canvas with a capped, scrollable
                 height so the crop above it always stays visible. The merged

@@ -14,7 +14,7 @@ import { de, fmt } from '@/locales';
 import { flattenStrokes, savablePointCount } from './strokeUtils';
 import { STEPS } from './wizardTypes';
 import type { CalibField, GuideValues } from './wizardTypes';
-import type { BboxIn, GlyphSummary, GuideConfig, MaskStroke, StrokePoint, TracePreviewOut } from '@/lib/api';
+import type { BboxIn, GlyphSummary, GuideConfig, MaskStroke, Patch, StrokePoint, TracePreviewOut } from '@/lib/api';
 
 // The already-saved Weg, shown faintly on the Weg step for reference: the raw
 // pen path (chart coordinates) and the resampled anchors (crop-local pixels).
@@ -55,9 +55,11 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
   const [wegTool, setWegTool] = useState<'draw' | 'adjust'>('draw');
   const [nudgeRadius, setNudgeRadius] = useState(10);
   const [maskRadius, setMaskRadius] = useState(8);
-  // Which brush the Ausschluss step paints with: the eraser (Radierer, blanks
-  // neighbour ink) or the ink brush (Tinte, fills specks). Shares maskRadius.
-  const [tool, setTool] = useState<'eraser' | 'ink'>('eraser');
+  // What the Ausschluss step's pointer does: paint with the eraser (Radierer,
+  // blanks neighbour ink), paint with the ink brush (Tinte, fills specks), or
+  // place an inserted donor cell (Zelle einsetzen). The two brushes share
+  // maskRadius; 'patch' uses no brush.
+  const [tool, setTool] = useState<'eraser' | 'ink' | 'patch'>('eraser');
   // "Maske zeigen": swap the raw crop for the binarised mask (auto-fill
   // colour-coded) so the Lücken-füllen effect — invisible on the raw scan — and
   // the remaining holes to ink by hand are visible. Ausschluss step only. On by
@@ -246,6 +248,45 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
         await updateBboxField({ fill_holes_max_area: Math.max(0, Math.round(maxArea)) });
         refreshCrop();
       }
+    },
+    [bbox, updateBboxField, refreshCrop],
+  );
+
+  // --------------------------------------------------- crop patches (Zelle einsetzen)
+  // Donor regions copied from elsewhere on the same chart into this crop. Each
+  // {src:[x0,y0,x1,y1], dst:[x,y]} composites by darken before binarisation, so a
+  // glyph with no own cell can borrow another's ink (ü/ö ← ä's umlaut). The crop
+  // re-renders after each save; dst is repositioned live on the canvas.
+  const addPatch = useCallback(
+    async (src: [number, number, number, number]) => {
+      if (!bbox) return;
+      // Default landing spot: centred horizontally, near the top of the crop —
+      // the user then drags it into place over the base letter.
+      const dw = src[2] - src[0];
+      const dx = Math.round((bbox.x0 + bbox.x1) / 2 - dw / 2);
+      const dy = Math.round(bbox.y0 + Math.max(2, (bbox.y1 - bbox.y0) * 0.08));
+      const patch: Patch = { src, dst: [dx, dy] };
+      await updateBboxField({ patches: [...bbox.patches, patch] });
+      refreshCrop();
+    },
+    [bbox, updateBboxField, refreshCrop],
+  );
+
+  const updatePatch = useCallback(
+    async (index: number, dst: [number, number]) => {
+      if (!bbox || index < 0 || index >= bbox.patches.length) return;
+      const patches = bbox.patches.map((p, i) => (i === index ? { ...p, dst } : p));
+      await updateBboxField({ patches });
+      refreshCrop();
+    },
+    [bbox, updateBboxField, refreshCrop],
+  );
+
+  const removePatch = useCallback(
+    async (index: number) => {
+      if (!bbox) return;
+      await updateBboxField({ patches: bbox.patches.filter((_, i) => i !== index) });
+      refreshCrop();
     },
     [bbox, updateBboxField, refreshCrop],
   );
@@ -450,6 +491,9 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     commitInkStroke,
     undoInk,
     setFillHoles,
+    addPatch,
+    updatePatch,
+    removePatch,
     addSlantLine,
     removeSlantLine,
     resample,

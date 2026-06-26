@@ -51,20 +51,62 @@ def _rasterize_strokes(strokes: list, w: int, h: int, x0: int, y0: int) -> np.nd
     return np.array(img, dtype=bool)
 
 
+def _composite_patches(crop: np.ndarray, chart: np.ndarray, patches: list, x0: int, y0: int) -> None:
+    """Composite donor regions from `chart` into `crop` in place, by darken.
+
+    Each patch is `{src: [sx0, sy0, sx1, sy1], dst: [dx, dy]}` in chart-pixel
+    coords: copy `chart[sy0:sy1, sx0:sx1]` into the crop with its top-left at
+    `(dx, dy)`, keeping the darker pixel (`np.minimum`) so only the donor's ink
+    lands — the chart is 0 = ink, 1 = white, so the donor's white background
+    leaves the base untouched. Lets a glyph with no own cell borrow another's ink
+    (e.g. the Sütterlin ü/ö taking the umlaut strokes from the ä cell).
+
+    Defensive: clip the source to the chart and the destination to the crop, and
+    skip any malformed/empty patch, so a bad row can't crash the crop.
+    """
+    ch, cw = crop.shape[:2]
+    chart_h, chart_w = chart.shape[:2]
+    for patch in patches:
+        src = patch.get("src") or []
+        dst = patch.get("dst") or []
+        if len(src) < 4 or len(dst) < 2:
+            continue
+        sx0, sy0, sx1, sy1 = (int(round(float(v))) for v in src[:4])
+        dx, dy = (int(round(float(v))) for v in dst[:2])
+        # Normalise + clip the source rect to the chart.
+        sx0, sx1 = sorted((max(0, sx0), min(chart_w, sx1)))
+        sy0, sy1 = sorted((max(0, sy0), min(chart_h, sy1)))
+        if sx1 <= sx0 or sy1 <= sy0:
+            continue
+        donor = chart[sy0:sy1, sx0:sx1]
+        donor_h, donor_w = donor.shape[:2]
+        # Destination top-left in crop-local coords, then clip the destination box
+        # (and the matching donor sub-box) to the crop.
+        lx, ly = dx - x0, dy - y0
+        cx0, cy0 = max(0, lx), max(0, ly)
+        cx1, cy1 = min(cw, lx + donor_w), min(ch, ly + donor_h)
+        if cx1 <= cx0 or cy1 <= cy0:
+            continue
+        donor_clip = donor[cy0 - ly : cy1 - ly, cx0 - lx : cx1 - lx]
+        crop[cy0:cy1, cx0:cx1] = np.minimum(crop[cy0:cy1, cx0:cx1], donor_clip)
+
+
 def crop_with_mask(chart: np.ndarray, bbox: dict, fill: float | int = 1.0) -> np.ndarray:
-    """Slice the main rect, blank the eraser strokes, then paint the ink strokes.
+    """Slice the main rect, blank the eraser, paste the patches, paint the ink.
 
-    `bbox` is a dict-shaped row carrying `y0/y1/x0/x1` plus two optional brush-
-    stroke lists in chart-pixel coords, each `[{points: [[x, y], ...], radius}]`:
+    `bbox` is a dict-shaped row carrying `y0/y1/x0/x1` plus three optional crop-
+    assembly inputs in chart-pixel coords, applied in order *before*
+    skeletonisation:
 
-    - `mask_strokes` — the freeform eraser (German: Radierer): covered pixels are
-      set to `fill`, the input's background (255 for uint8, 1.0 for float32).
-    - `ink_strokes` — the manual ink brush (German: Tinten-Pinsel), the positive
-      twin: covered pixels are set to ink (0), to close specks/gaps inside a
-      stroke. Applied *after* the eraser, so ink wins on any overlap.
-
-    Both happen *before* skeletonisation: erasing keeps neighbouring-letter ink
-    out of the skeleton, inking keeps a faded fleck from breaking it.
+    - `mask_strokes` — the freeform eraser (German: Radierer), `[{points, radius}]`:
+      covered pixels are set to `fill`, the input's background (255 for uint8, 1.0
+      for float32). Keeps neighbouring-letter ink out of the skeleton.
+    - `patches` — donor regions from elsewhere on the same chart,
+      `[{src: [x0, y0, x1, y1], dst: [x, y]}]`, composited by darken (see
+      `_composite_patches`). Lets a glyph borrow another cell's ink.
+    - `ink_strokes` — the manual ink brush (German: Tinten-Pinsel), `[{points,
+      radius}]`: covered pixels are set to ink (0), to close specks/gaps inside a
+      stroke. Applied last, so ink wins on any overlap.
     """
     y0, y1, x0, x1 = bbox["y0"], bbox["y1"], bbox["x0"], bbox["x1"]
     crop = chart[y0:y1, x0:x1].copy()
@@ -75,6 +117,9 @@ def crop_with_mask(chart: np.ndarray, bbox: dict, fill: float | int = 1.0) -> np
     eraser = bbox.get("mask_strokes") or []
     if eraser:
         crop[_rasterize_strokes(eraser, w, h, x0, y0)] = fill
+    patches = bbox.get("patches") or []
+    if patches:
+        _composite_patches(crop, chart, patches, x0, y0)
     ink = bbox.get("ink_strokes") or []
     if ink:
         crop[_rasterize_strokes(ink, w, h, x0, y0)] = 0
