@@ -155,6 +155,7 @@ export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseB
       y1,
       mask_strokes: [],
       ink_strokes: [],
+      patches: [],
       baseline_y: current?.baseline_y ?? Math.round(y0 + h * NEW_BBOX_BASELINE_RATIO),
       midband_y: current?.midband_y ?? Math.round(y0 + h * NEW_BBOX_MIDBAND_RATIO),
       n_anchors: current?.n_anchors ?? NEW_BBOX_N_ANCHORS,

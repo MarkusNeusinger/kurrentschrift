@@ -156,6 +156,14 @@ class Bbox(Base):
     # enclosed background hole to swallow before skeletonisation; 0 = off (default,
     # so existing glyphs stay bit-identical). See core.extract.fill_small_holes.
     fill_holes_max_area: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+    # Crop patches (German: eingesetzte Zelle): donor regions copied from elsewhere
+    # on the *same* chart and composited into the crop before binarisation, each
+    # {src: [x0, y0, x1, y1], dst: [x, y]} (source rect + destination top-left, all
+    # chart-pixel coords). For glyphs with no own cell — e.g. the Sütterlin ü/ö
+    # borrowing the two umlaut strokes from the ä cell. Composited by darken
+    # (np.minimum), so only the donor's ink lands, never its background. See
+    # core.chart.crop_with_mask.
+    patches: Mapped[list] = mapped_column(JSONB, nullable=False, server_default="[]")
     baseline_y: Mapped[int] = mapped_column(Integer, nullable=False)
     midband_y: Mapped[int] = mapped_column(Integer, nullable=False)
     n_anchors: Mapped[int] = mapped_column(Integer, nullable=False, server_default="50")

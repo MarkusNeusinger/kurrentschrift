@@ -1,15 +1,19 @@
-// Step 1 "Ausschluss & Tinte" — two brushes sharing one radius: the eraser
-// (Radierer) blanks neighbour ink, the ink brush (Tinte) fills white specks.
-// Plus the per-glyph "Lücken füllen" auto-fill threshold. The strokes are
-// painted on WizardCanvas and committed to bbox.mask_strokes / bbox.ink_strokes;
-// the fill threshold persists to bbox.fill_holes_max_area.
+// Step 1 "Ausschluss & Tinte" — assemble the crop the skeleton will see. Three
+// pointer modes sharing the canvas: the eraser (Radierer) blanks neighbour ink,
+// the ink brush (Tinte) fills white specks, and "Zelle einsetzen" copies ink
+// from another cell of the same chart into this crop (e.g. the ä umlaut over a
+// u/o for ü/ö). Plus the per-glyph "Lücken füllen" auto-fill threshold. Brushes
+// commit to bbox.mask_strokes / bbox.ink_strokes; inserted cells to bbox.patches.
 
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
+import PhotoSizeSelectLargeIcon from '@mui/icons-material/PhotoSizeSelectLarge';
 import UndoIcon from '@mui/icons-material/Undo';
 import {
   Box,
   Button,
   Divider,
   FormControlLabel,
+  IconButton,
   Slider,
   Stack,
   Switch,
@@ -22,14 +26,20 @@ import { useEffect, useState } from 'react';
 import { InfoHint } from '@/components/InfoHint';
 import { de } from '@/locales';
 import type { BboxOut } from '@/lib/api';
+import { DonorPicker } from '../DonorPicker';
 import { HintHeading } from './HintHeading';
 
 const AUTO_FILL_COLOR = '#1fa85a'; // matches crop_mask_to_png_bytes' green
 
 const FILL_MAX = 160; // px²: above this the slider risks eating real counters
 
+type Tool = 'eraser' | 'ink' | 'patch';
+
 export function MaskStep({
   bbox,
+  sourceId,
+  chartW,
+  chartH,
   maskRadius,
   setMaskRadius,
   tool,
@@ -39,25 +49,35 @@ export function MaskStep({
   undoMask,
   undoInk,
   setFillHoles,
+  addPatch,
+  removePatch,
 }: {
   bbox: BboxOut;
+  sourceId: string;
+  chartW: number;
+  chartH: number;
   maskRadius: number;
   setMaskRadius: (r: number) => void;
-  tool: 'eraser' | 'ink';
-  setTool: (t: 'eraser' | 'ink') => void;
+  tool: Tool;
+  setTool: (t: Tool) => void;
   showMask: boolean;
   setShowMask: (v: boolean) => void;
   undoMask: () => Promise<void>;
   undoInk: () => Promise<void>;
   setFillHoles: (v: number) => void | Promise<void>;
+  addPatch: (src: [number, number, number, number]) => void | Promise<void>;
+  removePatch: (index: number) => void | Promise<void>;
 }) {
   // Live slider value, synced from the stored bbox; committed (PUT) only on
   // release so dragging doesn't spam the server.
   const [fill, setFill] = useState(bbox.fill_holes_max_area);
   useEffect(() => setFill(bbox.fill_holes_max_area), [bbox.fill_holes_max_area]);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const isInk = tool === 'ink';
+  const isPatch = tool === 'patch';
   const undoCount = isInk ? bbox.ink_strokes.length : bbox.mask_strokes.length;
+  const lead = isPatch ? de.wizard.mask.leadPatch : isInk ? de.wizard.mask.leadInk : de.wizard.mask.leadEraser;
 
   return (
     <Stack spacing={1.5}>
@@ -68,38 +88,69 @@ export function MaskStep({
         <Typography variant="body2" gutterBottom>
           {de.wizard.mask.body2}
         </Typography>
-        <Typography variant="body2">{de.wizard.mask.inkBody}</Typography>
+        <Typography variant="body2" gutterBottom>
+          {de.wizard.mask.inkBody}
+        </Typography>
+        <Typography variant="body2">{de.wizard.mask.patchBody}</Typography>
       </HintHeading>
 
-      <ToggleButtonGroup
-        size="small"
-        exclusive
-        value={tool}
-        onChange={(_e, v: 'eraser' | 'ink' | null) => v && setTool(v)}
-        fullWidth
-      >
+      <ToggleButtonGroup size="small" exclusive value={tool} onChange={(_e, v: Tool | null) => v && setTool(v)} fullWidth>
         <ToggleButton value="eraser">{de.wizard.mask.toolEraser}</ToggleButton>
         <ToggleButton value="ink">{de.wizard.mask.toolInk}</ToggleButton>
+        <ToggleButton value="patch">{de.wizard.mask.toolPatch}</ToggleButton>
       </ToggleButtonGroup>
 
       <Typography variant="body2" color="text.secondary">
-        {isInk ? de.wizard.mask.leadInk : de.wizard.mask.leadEraser}
+        {lead}
       </Typography>
 
-      <Box>
-        <Typography variant="caption">
-          {de.wizard.mask.brushSize} {maskRadius}px
-        </Typography>
-        <Slider size="small" min={1} max={30} value={maskRadius} onChange={(_e, v) => typeof v === 'number' && setMaskRadius(v)} />
-      </Box>
-      <Button
-        size="small"
-        startIcon={<UndoIcon />}
-        disabled={undoCount === 0}
-        onClick={isInk ? undoInk : undoMask}
-      >
-        {de.wizard.mask.undo} ({undoCount})
-      </Button>
+      {isPatch ? (
+        <>
+          <Button size="small" variant="outlined" startIcon={<PhotoSizeSelectLargeIcon />} onClick={() => setPickerOpen(true)}>
+            {de.wizard.mask.patchPick}
+          </Button>
+          <Box>
+            <Typography variant="caption" color="text.secondary">
+              {de.wizard.mask.patchListTitle}
+            </Typography>
+            {bbox.patches.length === 0 ? (
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                {de.wizard.mask.patchEmpty}
+              </Typography>
+            ) : (
+              <Stack spacing={0.5} sx={{ mt: 0.5 }}>
+                {bbox.patches.map((_p, i) => (
+                  <Box key={i} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Typography variant="body2">
+                      {de.wizard.mask.patchItem} {i + 1}
+                    </Typography>
+                    <IconButton size="small" aria-label={de.wizard.mask.patchRemove} onClick={() => void removePatch(i)}>
+                      <DeleteOutlineIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                ))}
+              </Stack>
+            )}
+          </Box>
+          {bbox.patches.length > 0 && (
+            <Typography variant="caption" color="text.secondary">
+              {de.wizard.mask.patchDragHint}
+            </Typography>
+          )}
+        </>
+      ) : (
+        <>
+          <Box>
+            <Typography variant="caption">
+              {de.wizard.mask.brushSize} {maskRadius}px
+            </Typography>
+            <Slider size="small" min={1} max={30} value={maskRadius} onChange={(_e, v) => typeof v === 'number' && setMaskRadius(v)} />
+          </Box>
+          <Button size="small" startIcon={<UndoIcon />} disabled={undoCount === 0} onClick={isInk ? undoInk : undoMask}>
+            {de.wizard.mask.undo} ({undoCount})
+          </Button>
+        </>
+      )}
 
       <Divider />
 
@@ -135,6 +186,15 @@ export function MaskStep({
           <LegendDot color="#fff" border label={de.wizard.mask.legendGap} />
         </Box>
       )}
+
+      <DonorPicker
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onConfirm={(src) => void addPatch(src)}
+        sourceId={sourceId}
+        chartW={chartW}
+        chartH={chartH}
+      />
     </Stack>
   );
 }

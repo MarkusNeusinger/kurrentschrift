@@ -74,6 +74,21 @@ class MaskStroke(BaseModel):
     radius: float = Field(default=4.0, gt=0)
 
 
+class Patch(BaseModel):
+    """One crop patch (German: eingesetzte Zelle): a donor rect + destination.
+
+    `src` is `[x0, y0, x1, y1]` (the donor region on the same chart), `dst` is
+    `[x, y]` (its top-left in the crop), all chart-pixel coords. The crop pipeline
+    composites the donor by darken, so only its ink lands. Lets a glyph with no
+    own cell borrow another's strokes (e.g. ü/ö taking the umlaut from ä). The
+    fixed-length tuples reject malformed payloads with 422 instead of letting
+    `crop_with_mask` 500 on a bad index.
+    """
+
+    src: tuple[float, float, float, float]
+    dst: tuple[float, float]
+
+
 class GuideConfig(BaseModel):
     """Practice-sheet-style guide lines (Hilfslinien) drawn over a glyph crop.
 
@@ -127,6 +142,11 @@ class BboxIn(BaseModel):
     # binarisation. Replace-semantics like mask_strokes (the client resends the
     # full list each save).
     ink_strokes: list[MaskStroke] = Field(default_factory=list)
+    # Crop patches (German: eingesetzte Zelle): donor regions from elsewhere on the
+    # same chart composited into the crop before binarisation, for glyphs with no
+    # own cell (e.g. ü/ö borrowing ä's umlaut). Replace-semantics like ink_strokes
+    # — the client holds the full list and resends it on every bbox save.
+    patches: list[Patch] = Field(default_factory=list)
     baseline_y: int
     midband_y: int
     # Bounded server-side (the client clamps too): below 4 the resampler breaks

@@ -13,7 +13,7 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import { Box, IconButton, Slider, Tooltip, Typography } from '@mui/material';
 import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 
-import { cropUrl } from '@/lib/api';
+import { chartUrl, cropUrl } from '@/lib/api';
 import { de } from '@/locales';
 import { overlay } from '@/sections/admin/overlayColors';
 import type { KnownGlyph } from '@/domain/glyphs';
@@ -81,6 +81,7 @@ export function WizardCanvas({
   commitSlant,
   commitMaskStroke,
   commitInkStroke,
+  updatePatch,
 }: {
   glyphKey: string;
   open: boolean;
@@ -92,7 +93,7 @@ export function WizardCanvas({
   view: CropView;
   cropCacheBust: number;
   maskRadius: number;
-  tool: 'eraser' | 'ink';
+  tool: 'eraser' | 'ink' | 'patch';
   wegTool: 'draw' | 'adjust';
   nudgeRadius: number;
   showMask: boolean;
@@ -104,6 +105,7 @@ export function WizardCanvas({
   commitSlant: CommitSlant;
   commitMaskStroke: CommitMaskStroke;
   commitInkStroke: CommitMaskStroke;
+  updatePatch: (index: number, dst: [number, number]) => Promise<void>;
 }) {
   const { hostRef, hostSize, userZoom, panX, panY, setPanX, setPanY, panning, setPanning, scale, displayW, displayH, applyZoom, zoomBy, fitZoom, cssToChart } = view;
 
@@ -124,6 +126,11 @@ export function WizardCanvas({
   const [nudge, setNudge] = useState<{ x: number; y: number; snapshot: StrokePoint[][] } | null>(null);
   // `panDrag` holds a live pan gesture (a drag while the Schwenken toggle is on).
   const [panDrag, setPanDrag] = useState<{ sx: number; sy: number; px: number; py: number } | null>(null);
+  // Live placement of an inserted donor cell (Zelle einsetzen): which patch
+  // (index into bbox.patches), the grab point + its dst at grab time (chart
+  // coords), and the live dst, so the donor preview follows the pointer and
+  // commits on release.
+  const [patchDrag, setPatchDrag] = useState<{ index: number; grabX: number; grabY: number; origDst: [number, number]; dst: [number, number] } | null>(null);
 
   // When a different glyph opens (or the dialog reopens), drop any in-flight
   // gesture — mirrors the wizard-level reset, so one glyph's draft never leaks
@@ -136,6 +143,7 @@ export function WizardCanvas({
     setSlantDrag(null);
     setNudge(null);
     setPanDrag(null);
+    setPatchDrag(null);
   }, [glyphKey, open]);
 
   // ------------------------------------------------------------- pointer routing
@@ -150,6 +158,9 @@ export function WizardCanvas({
       }
       const { x, y } = cssToChart(e.clientX, e.clientY, e.currentTarget);
       if (stepId === 'mask') {
+        // Patch placement is driven by the per-rect handlers below, not the brush;
+        // a press on empty canvas in patch mode does nothing.
+        if (tool === 'patch') return;
         e.preventDefault();
         setHoverPt({ x, y });
         setMaskDraft([[x, y]]);
@@ -173,7 +184,7 @@ export function WizardCanvas({
         e.currentTarget.setPointerCapture(e.pointerId);
       }
     },
-    [bbox, stepId, wegTool, strokes, cssToChart, panning, panX, panY, setStrokes],
+    [bbox, stepId, tool, wegTool, strokes, cssToChart, panning, panX, panY, setStrokes],
   );
 
   const onSvgPointerMove = useCallback(
@@ -185,7 +196,11 @@ export function WizardCanvas({
         return;
       }
       const { x, y } = cssToChart(e.clientX, e.clientY, e.currentTarget);
-      if (stepId === 'mask' || (stepId === 'weg' && wegTool === 'adjust')) setHoverPt({ x, y });
+      if (patchDrag) {
+        setPatchDrag({ ...patchDrag, dst: [patchDrag.origDst[0] + (x - patchDrag.grabX), patchDrag.origDst[1] + (y - patchDrag.grabY)] });
+        return;
+      }
+      if ((stepId === 'mask' && tool !== 'patch') || (stepId === 'weg' && wegTool === 'adjust')) setHoverPt({ x, y });
       if (nudge) {
         setStrokes(warpStrokes(nudge.snapshot, nudge.x, nudge.y, x - nudge.x, y - nudge.y, nudgeRadius));
         return;
@@ -219,12 +234,18 @@ export function WizardCanvas({
         });
       }
     },
-    [bbox, calibDrag, slantDrag, nudge, nudgeRadius, wegTool, stepId, maskDraft, drawing, cssToChart, panDrag, displayW, displayH, hostSize, guideVals.slantDeg, setPanX, setPanY, setStrokes],
+    [bbox, calibDrag, slantDrag, nudge, nudgeRadius, wegTool, stepId, tool, maskDraft, drawing, patchDrag, cssToChart, panDrag, displayW, displayH, hostSize, guideVals.slantDeg, setPanX, setPanY, setStrokes],
   );
 
   const onSvgPointerUp = useCallback(async () => {
     if (panDrag) {
       setPanDrag(null);
+      return;
+    }
+    if (patchDrag) {
+      const { index, dst } = patchDrag;
+      setPatchDrag(null);
+      await updatePatch(index, [Math.round(dst[0]), Math.round(dst[1])]);
       return;
     }
     if (nudge) {
@@ -251,7 +272,7 @@ export function WizardCanvas({
       return;
     }
     if (stepId === 'weg') setDrawing(false);
-  }, [panDrag, calibDrag, slantDrag, nudge, stepId, maskDraft, tool, commitCalib, commitSlant, commitMaskStroke, commitInkStroke]);
+  }, [panDrag, patchDrag, calibDrag, slantDrag, nudge, stepId, maskDraft, tool, commitCalib, commitSlant, commitMaskStroke, commitInkStroke, updatePatch]);
 
   // ------------------------------------------------------------- geometry (css)
   const baselineCss = (bbox.baseline_y - bbox.y0) * scale;
@@ -339,7 +360,7 @@ export function WizardCanvas({
                   ? nudge
                     ? 'grabbing'
                     : 'grab'
-                  : stepId === 'mask' || stepId === 'weg'
+                  : (stepId === 'mask' && tool !== 'patch') || stepId === 'weg'
                     ? 'crosshair'
                     : 'default',
             }}
@@ -348,6 +369,7 @@ export function WizardCanvas({
             onPointerUp={onSvgPointerUp}
             onPointerCancel={() => {
               setPanDrag(null);
+              setPatchDrag(null);
               setCalibDrag(null);
               setSlantDrag(null);
               setNudge(null);
@@ -475,9 +497,60 @@ export function WizardCanvas({
             {bbox.ink_strokes.map((m, i) => renderStroke(m, `ink-${i}`, overlay.ink))}
             {/* In-progress brush stroke — coloured by the active tool */}
             {maskDraft && <polyline points={toLocal(maskDraft)} fill="none" stroke={tool === 'ink' ? overlay.ink : overlay.eraser} strokeOpacity={0.8} strokeWidth={Math.max(1, maskRadius * 2 * scale)} strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: 'none' }} />}
+            {/* Inserted donor cells (Zelle einsetzen): each patch's ink shown at
+                its dst via the full-chart image clipped to the donor rect, with a
+                draggable dashed outline. The crop already bakes the patch server-
+                side; this overlay is the editable handle, and follows the pointer
+                live while dragging. Patch-tool step only. */}
+            {stepId === 'mask' && tool === 'patch' &&
+              bbox.patches.map((p, i) => {
+                const live = patchDrag?.index === i ? patchDrag.dst : p.dst;
+                const w = (p.src[2] - p.src[0]) * scale;
+                const h = (p.src[3] - p.src[1]) * scale;
+                const lx = (live[0] - bbox.x0) * scale;
+                const ly = (live[1] - bbox.y0) * scale;
+                const clipId = `patch-clip-${glyphKey}-${i}`;
+                return (
+                  <g key={`patch-${i}`}>
+                    <clipPath id={clipId}>
+                      <rect x={lx} y={ly} width={w} height={h} />
+                    </clipPath>
+                    <image
+                      href={chartUrl(source.id)}
+                      x={lx - p.src[0] * scale}
+                      y={ly - p.src[1] * scale}
+                      width={source.chart_size.w * scale}
+                      height={source.chart_size.h * scale}
+                      clipPath={`url(#${clipId})`}
+                      preserveAspectRatio="none"
+                      style={{ imageRendering: 'pixelated', pointerEvents: 'none' }}
+                    />
+                    <rect
+                      x={lx}
+                      y={ly}
+                      width={w}
+                      height={h}
+                      fill="transparent"
+                      stroke={overlay.patch}
+                      strokeWidth={1.5}
+                      strokeDasharray="5 3"
+                      style={{ cursor: 'move' }}
+                      onPointerDown={(e) => {
+                        if (panning) return; // let the drag bubble to the SVG → pan
+                        e.stopPropagation();
+                        const svg = e.currentTarget.ownerSVGElement;
+                        const { x, y } = cssToChart(e.clientX, e.clientY, svg);
+                        setPatchDrag({ index: i, grabX: x, grabY: y, origDst: p.dst, dst: p.dst });
+                        svg?.setPointerCapture(e.pointerId);
+                      }}
+                    />
+                  </g>
+                );
+              })}
+
             {/* Brush cursor: a ring at the pointer sized to the real footprint
                 (radius in chart px → CSS px via scale), coloured by the tool. */}
-            {stepId === 'mask' && !panning && hoverPt && (
+            {stepId === 'mask' && tool !== 'patch' && !panning && hoverPt && (
               <circle
                 cx={(hoverPt.x - bbox.x0) * scale}
                 cy={(hoverPt.y - bbox.y0) * scale}

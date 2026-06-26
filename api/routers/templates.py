@@ -115,11 +115,14 @@ def _bbox_to_dict(bbox) -> dict:
         "x0": bbox.x0,
         "x1": bbox.x1,
         "mask_strokes": list(bbox.mask_strokes),
-        # Ink brush + speck auto-fill must travel with the bbox too, or the
-        # anchor/width derivation (trace, resample, diagnostic, fit) binarises the
-        # UNfilled mask and silently ignores both — the crop preview alone would
-        # show them. Mirrors crop endpoint + crop_with_mask/binarize_adaptive.
+        # Ink brush + speck auto-fill + inserted donor cells must travel with the
+        # bbox too, or the anchor/width derivation (trace, resample, diagnostic,
+        # fit) binarises the UNassembled crop and silently ignores them — the crop
+        # preview alone would show them. Without `patches` the umlaut a ü/ö borrows
+        # from ä would not be in the skeleton the traced strokes snap to. Mirrors
+        # the crop endpoint + crop_with_mask/binarize_adaptive.
         "ink_strokes": list(bbox.ink_strokes),
+        "patches": list(bbox.patches),
         "fill_holes_max_area": int(bbox.fill_holes_max_area),
         "baseline_y": bbox.baseline_y,
         "midband_y": bbox.midband_y,

@@ -139,6 +139,56 @@ def test_pen_up_marker_preserved_in_raw_path(synthetic_chart_path, synthetic_bbo
     assert not canon["raw_path"][-1].get("pen_up")
 
 
+def test_crop_patch_reaches_the_derived_skeleton(tmp_path):
+    """A crop patch (Zelle einsetzen) must land in the mask the traced strokes
+    snap to, not just the preview — otherwise a ü/ö borrowing the ä umlaut would
+    trace over empty paper. Build a base downstroke plus a donor block far
+    outside the bbox, patch the block in above the base, trace both, and assert
+    the umlaut stroke measured real width only WITH the patch.
+    """
+    import numpy as np
+    from PIL import Image
+
+    img = np.ones((800, 800), dtype=np.float32)
+    img[200:600, 392:408] = 0.05  # base downstroke (the u body), inside the bbox
+    img[120:160, 700:760] = 0.05  # donor block (the umlaut), far OUTSIDE the bbox
+    chart_path = tmp_path / "chart.png"
+    Image.fromarray((img * 255).astype(np.uint8), mode="L").save(chart_path)
+
+    # Stroke 1: down the bar (pen up). Stroke 2: across where the patch lands.
+    base = [{"x": 400.0, "y": float(210 + 380 * i / 19), "pressure": 0.5, "t": float(i)} for i in range(20)]
+    base[-1]["pen_up"] = True
+    umlaut = [{"x": float(376 + 48 * i / 9), "y": 160.0, "pressure": 0.5, "t": float(20 + i)} for i in range(10)]
+
+    def derive(patches):
+        bbox = {
+            "y0": 100,
+            "y1": 700,
+            "x0": 300,
+            "x1": 500,
+            "mask_strokes": [],
+            "ink_strokes": [],
+            "patches": patches,
+            "baseline_y": 600,
+            "midband_y": 500,
+            "n_anchors": 30,
+        }
+        return canonical_from_path(
+            raw_path=base + umlaut, bbox=bbox, chart_path=str(chart_path), glyph="ü", position="initial", n_anchors=30
+        )
+
+    with_patch = derive([{"src": [700, 120, 760, 160], "dst": [370, 140]}])
+    without = derive([])
+    sw = with_patch["trace_meta"]["stroke_starts"]
+    so = without["trace_meta"]["stroke_starts"]
+    assert len(sw) == 2 and len(so) == 2  # body + umlaut, both runs
+
+    umlaut_with = max(with_patch["half_widths"][sw[1] :])
+    umlaut_without = max(without["half_widths"][so[1] :])
+    assert umlaut_with > 0.0  # the umlaut stroke found the patched ink
+    assert umlaut_with > umlaut_without  # …and only because the patch put it there
+
+
 def test_single_stroke_has_one_segment(synthetic_chart_path, synthetic_bbox):
     """A path without markers re-derives as one stroke (legacy compatibility)."""
     canon = canonical_from_path(

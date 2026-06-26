@@ -57,6 +57,7 @@ async def get_crop(
         "x1": bbox.x1,
         "mask_strokes": list(bbox.mask_strokes),
         "ink_strokes": list(bbox.ink_strokes),
+        "patches": list(bbox.patches),
         "fill_holes_max_area": int(bbox.fill_holes_max_area),
     }
     png = crop_mask_to_png_bytes(chart, bbox_dict) if view == "mask" else crop_to_png_bytes(chart, bbox_dict)
