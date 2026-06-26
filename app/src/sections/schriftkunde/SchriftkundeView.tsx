@@ -14,8 +14,8 @@
 //                   project's own seeded 1922 Vorlage, with a Sütterlin-font
 //                   fallback (Zinken HJZ 1911) so a cold API never leaves an
 //                   empty box. In that font the plain 's' already is the long ſ
-//                   (its round End-s sits on '#'), so the fallback word "lesen"
-//                   renders the correct medial long-s without needing U+017F.
+//                   (its round End-s sits on '#'), so the fallback word
+//                   "sütterlin" renders its initial long-s without needing U+017F.
 //   · Offenbacher — a marked excerpt from Koch's own public-domain 1928 plate
 //                   (the genuine historical hand, not a synthesised glyph).
 
@@ -132,7 +132,7 @@ function DefinitionRows({ items }: { items: readonly TermItem[] }) {
 
 // Show-script font specimen style, reused by the Kurrent card and the Sütterlin
 // fallback (the GLKurrent face stands in when the engine can't render).
-const fontSpecimenSx = { fontFamily: script, fontSize: 'clamp(2.8rem, 7vw, 3.8rem)', color: paper.ink, lineHeight: 1 } as const;
+const fontSpecimenSx = { fontFamily: script, fontSize: 'clamp(3.5rem, 9vw, 4.8rem)', color: paper.ink, lineHeight: 1 } as const;
 // Sütterlin cold-start fallback: the bundled Zinken HJZ 1911 face (a genuine
 // Sütterlin school hand), distinct from the Kurrent show-script above.
 const suetterlinFontSx = { fontFamily: suetterlin, fontSize: 'clamp(2.5rem, 6.5vw, 3.5rem)', color: paper.ink, lineHeight: 1 } as const;
