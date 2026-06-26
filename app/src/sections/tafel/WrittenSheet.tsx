@@ -53,12 +53,15 @@ function fetchGlyph(key: string): Promise<DiagnosticData | null> {
   return p;
 }
 
-const LETTERS_PER_ROW = 8; // re-flow the written letters into rows of this many (gaps dropped)
+const LETTERS_PER_ROW = 7; // re-flow the written letters into rows of this many (gaps dropped)
 // Proportional layout: every letter keeps its own ink width and the SAME gap is
 // left between the end of one glyph and the start of the next (x-height units),
 // so wide letters (m, w) no longer crowd or overlap their neighbours the way a
-// fixed centred cell let them. LEAD pads the row's left/right edges.
-const GAP = 0.42;
+// fixed centred cell let them. LEAD pads the row's left/right edges. The gap is
+// generous so the width freed by fitting fewer letters per row becomes breathing
+// room between the letters rather than a bigger glyph scale (rowW grows with GAP,
+// so the per-row scale stays roughly constant as the count drops).
+const GAP = 0.7;
 const LEAD = 0.3;
 const FALLBACK_ROW_W = (1.5 + GAP) * LETTERS_PER_ROW; // pre-load viewBox width (~avg letter)
 const PAD_Y = 0.14; // vertical air above the ascender / below the descender
