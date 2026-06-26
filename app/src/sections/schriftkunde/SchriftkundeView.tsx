@@ -136,8 +136,9 @@ const fontSpecimenSx = { fontFamily: script, fontSize: 'clamp(2.8rem, 7vw, 3.8re
 // Sütterlin cold-start fallback: the bundled Zinken HJZ 1911 face (a genuine
 // Sütterlin school hand), distinct from the Kurrent show-script above.
 const suetterlinFontSx = { fontFamily: suetterlin, fontSize: 'clamp(2.5rem, 6.5vw, 3.5rem)', color: paper.ink, lineHeight: 1 } as const;
-// Fixed-height specimen box so the three cards line up; each specimen is sized
-// to fill it generously (the script is the card's hero).
+// Minimum-height specimen box so the three cards line up; each specimen is sized
+// to fill it generously (the script is the card's hero). It's a min-height, not a
+// hard height — the box may grow if a specimen ever exceeds it, but none does.
 const specimenBoxSx = {
   mt: 1.75,
   minHeight: 132,
@@ -194,7 +195,7 @@ function SpecimenBlock({ id }: { id: string }) {
         src={offenbacherSpecimen}
         alt={t.specimen.offenbacherAlt}
         loading="lazy"
-        sx={{ width: '100%', height: 'auto', maxHeight: '100%', display: 'block', mixBlendMode: 'multiply' }}
+        sx={{ width: '100%', height: 'auto', display: 'block', mixBlendMode: 'multiply' }}
       />
     );
     caption = t.specimen.offenbacherCaption;
