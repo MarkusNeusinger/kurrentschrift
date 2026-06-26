@@ -63,7 +63,7 @@ export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
         color: textSoft,
         textDecoration: 'none',
         fontFamily: display,
-        fontSize: '1.05rem',
+        fontSize: { xs: '0.95rem', sm: '1.05rem' },
         position: 'relative',
         transition: 'color .25s',
         '&::after': {
@@ -123,7 +123,7 @@ export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: 2,
+          gap: { xs: 1, sm: 2 },
         }}
       >
         {/* brand — dot + kurrentschrift + .ink (accent italic). 5 taps → admin. */}
@@ -137,7 +137,10 @@ export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
             textDecoration: 'none',
             fontFamily: display,
             fontWeight: 600,
-            fontSize: { xs: '1.3rem', sm: '1.5rem' },
+            // Fluid so the long ".ink" wordmark eases down on the narrowest
+            // phones instead of forcing the bar wider than the viewport (it used
+            // to overflow ≤360px); holds at 1.5rem on sm+ as before.
+            fontSize: 'clamp(1.05rem, 0.58rem + 2.4vw, 1.5rem)',
             letterSpacing: '0.02em',
             color: textMain,
           }}
@@ -180,7 +183,7 @@ export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
           {navLink(SCHRIFTKUNDE.label, SCHRIFTKUNDE.to, { alignSelf: 'center' })}
           <Stack
             direction="row"
-            spacing={{ xs: 1.75, sm: 3 }}
+            spacing={{ xs: 1.5, sm: 3 }}
             sx={{ alignItems: 'center', justifyContent: { xs: 'flex-end', sm: 'flex-start' } }}
           >
             {READ_WRITE.map((n) => navLink(n.label, n.to))}

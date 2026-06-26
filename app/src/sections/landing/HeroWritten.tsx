@@ -90,7 +90,13 @@ function HeroWord({ runKey }: { runKey: number }) {
         position: 'relative',
         display: 'inline-block',
         // The font-size drives the whole composition (word + nib + flourish).
-        fontSize: 'clamp(2.8rem, 10vw, 9rem)',
+        // On small screens the long show-word ("Kurrentſchrift") still occupies
+        // only ~60% of the column at the old 2.8rem floor, so it read as too
+        // timid next to the Playfair headline. A steeper vw term (≈15.5vw) lets
+        // it grow into the available width — measured to stay within the column
+        // down to 320px — restoring its dominance on phones; the 9rem cap keeps
+        // desktop unchanged, the 3rem floor protects the very narrowest screens.
+        fontSize: 'clamp(3rem, 15.5vw, 9rem)',
         lineHeight: 1,
         mx: 'auto',
       }}
