@@ -23,7 +23,7 @@ import { useCallback, useState, type ReactNode } from 'react';
 import { Box, Link, Typography } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 
-import offenbacherSpecimen from '@/assets/specimens/offenbacher-koch-1928.jpg';
+import offenbacherSpecimen from '@/assets/specimens/offenbacher-koch-1928-excerpt.jpg';
 import { CategoryHeading } from '@/components/CategoryHeading';
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
@@ -132,20 +132,22 @@ function DefinitionRows({ items }: { items: readonly TermItem[] }) {
 
 // Show-script font specimen style, reused by the Kurrent card and the Sütterlin
 // fallback (the GLKurrent face stands in when the engine can't render).
-const fontSpecimenSx = { fontFamily: script, fontSize: 'clamp(2.4rem, 6vw, 3.2rem)', color: paper.ink, lineHeight: 1 } as const;
+const fontSpecimenSx = { fontFamily: script, fontSize: 'clamp(2.8rem, 7vw, 3.8rem)', color: paper.ink, lineHeight: 1 } as const;
 // Sütterlin cold-start fallback: the bundled Zinken HJZ 1911 face (a genuine
 // Sütterlin school hand), distinct from the Kurrent show-script above.
-const suetterlinFontSx = { fontFamily: suetterlin, fontSize: 'clamp(2.2rem, 5.5vw, 3rem)', color: paper.ink, lineHeight: 1 } as const;
-// Fixed-height specimen box so the three cards line up.
+const suetterlinFontSx = { fontFamily: suetterlin, fontSize: 'clamp(2.5rem, 6.5vw, 3.5rem)', color: paper.ink, lineHeight: 1 } as const;
+// Minimum-height specimen box so the three cards line up; each specimen is sized
+// to fill it generously (the script is the card's hero). It's a min-height, not a
+// hard height — the box may grow if a specimen ever exceeds it, but none does.
 const specimenBoxSx = {
   mt: 1.75,
-  minHeight: 104,
+  minHeight: 132,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   borderTop: `1px solid ${paper.line}`,
   borderBottom: `1px solid ${paper.line}`,
-  py: 1.5,
+  py: 1.75,
 } as const;
 const specimenCaptionSx = { fontFamily: garamond, fontStyle: 'italic', fontSize: '0.76rem', color: paper.sepia, mt: 0.75, textAlign: 'center' } as const;
 
@@ -173,9 +175,9 @@ function SpecimenBlock({ id }: { id: string }) {
     ) : (
       <WrittenWord
         text={t.specimen.suetterlinWord}
-        height={84}
+        height={104}
         durationMs={2400}
-        maxWidth={260}
+        maxWidth={300}
         showReplay
         onResolved={onResolved}
         onError={onError}
@@ -183,15 +185,17 @@ function SpecimenBlock({ id }: { id: string }) {
     );
     caption = fallback ? t.specimen.suetterlinCaptionFallback : t.specimen.suetterlinCaption;
   } else {
-    // offenbacher — a marked excerpt from Koch's own public-domain 1928 plate
-    // (lowercase a–i). `multiply` drops the scan's white ground onto the paper.
+    // offenbacher — a tight, centred excerpt from Koch's own public-domain 1928
+    // plate (lowercase a–f). The tighter crop lets the letters render large and
+    // fill the box like the other two cards; `multiply` drops the scan's white
+    // ground onto the paper.
     content = (
       <Box
         component="img"
         src={offenbacherSpecimen}
         alt={t.specimen.offenbacherAlt}
         loading="lazy"
-        sx={{ maxWidth: '100%', height: 'auto', display: 'block', mixBlendMode: 'multiply' }}
+        sx={{ width: '100%', height: 'auto', display: 'block', mixBlendMode: 'multiply' }}
       />
     );
     caption = t.specimen.offenbacherCaption;

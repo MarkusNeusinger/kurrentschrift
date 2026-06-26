@@ -163,9 +163,9 @@ export const schriftkunde = {
     suetterlinWord: 'leſen',
     suetterlinWordFallback: 'lesen',
     // Offenbacher: a marked excerpt from Koch's own 1928 public-domain plate
-    // (lowercase a–i), the genuine historical hand rather than a synthesised glyph.
+    // (lowercase a–f), the genuine historical hand rather than a synthesised glyph.
     offenbacherCaption: 'Originaltafel von Rudolf Koch, 1928 (Ausschnitt)',
-    offenbacherAlt: 'Ausschnitt der Offenbacher-Schrifttafel von Rudolf Koch (1928): die Kleinbuchstaben a–i',
+    offenbacherAlt: 'Ausschnitt der Offenbacher-Schrifttafel von Rudolf Koch (1928): die Kleinbuchstaben a–f',
   },
 
   // --- Einordnung & Abgrenzung ----------------------------------------------
