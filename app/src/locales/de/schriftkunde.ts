@@ -162,9 +162,12 @@ export const schriftkunde = {
     suetterlinCaptionFallback: 'Vorschau in der Sütterlin-Schrift von H. J. Zinken — die Synthese-Engine ist gerade nicht erreichbar',
     // The script's own name, written live. `shapeText` resolves the word-initial
     // 's' to the long ſ. NOTE: the 'ü' glyph is not yet captured in the 1922
-    // source (only 'ä' exists), so until a ü bbox is added in the admin the
-    // engine renders the word without it; the fallback font has the ü and shows
-    // the full word on a cold API.
+    // source — the sheet itself HAS a ü, but only 'ä' was given a bbox so far.
+    // With 'ue-*' absent, composeWord leaves a blank advance where the ü belongs
+    // and breaks the connecting stroke there: a visible gap mid-word, on the live
+    // path too (NOT a seamless omission). The full-font fallback only kicks in
+    // when nothing renders at all; that bundled font does have the ü. Adding a ü
+    // bbox in the admin closes the gap.
     suetterlinWord: 'sütterlin',
     suetterlinWordFallback: 'sütterlin',
     // Offenbacher: a marked excerpt from Koch's own 1928 public-domain plate

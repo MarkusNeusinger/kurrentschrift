@@ -130,8 +130,8 @@ function DefinitionRows({ items }: { items: readonly TermItem[] }) {
   );
 }
 
-// Show-script font specimen style, reused by the Kurrent card and the Sütterlin
-// fallback (the GLKurrent face stands in when the engine can't render).
+// Show-script font specimen style for the Kurrent card only (the GLKurrent face).
+// The Sütterlin fallback has its own face — see suetterlinFontSx (Zinken HJZ 1911).
 const fontSpecimenSx = { fontFamily: script, fontSize: 'clamp(3.5rem, 9vw, 4.8rem)', color: paper.ink, lineHeight: 1 } as const;
 // Sütterlin cold-start fallback: the bundled Zinken HJZ 1911 face (a genuine
 // Sütterlin school hand), distinct from the Kurrent show-script above.
