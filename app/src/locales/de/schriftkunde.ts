@@ -157,11 +157,19 @@ export const schriftkunde = {
     // Shown when the engine can't render (cold/unreachable API) and the card
     // falls back to the bundled Sütterlin font — kept truthful about what's on
     // screen. That font maps the long ſ onto the plain 's' key (round End-s is on
-    // '#'), so the plain-ASCII word "lesen" renders the correct medial long-s.
-    // Keep any fallback word's s medial — a final s would wrongly render as ſ.
+    // '#'), so the word's word-initial 's' renders as the correct long ſ.
+    // Keep any fallback word's s non-final — a final s would wrongly render as ſ.
     suetterlinCaptionFallback: 'Vorschau in der Sütterlin-Schrift von H. J. Zinken — die Synthese-Engine ist gerade nicht erreichbar',
-    suetterlinWord: 'leſen',
-    suetterlinWordFallback: 'lesen',
+    // The script's own name, written live. `shapeText` resolves the word-initial
+    // 's' to the long ſ. NOTE: the 'ü' glyph is not yet captured in the 1922
+    // source — the sheet itself HAS a ü, but only 'ä' was given a bbox so far.
+    // With 'ue-*' absent, composeWord leaves a blank advance where the ü belongs
+    // and breaks the connecting stroke there: a visible gap mid-word, on the live
+    // path too (NOT a seamless omission). The full-font fallback only kicks in
+    // when nothing renders at all; that bundled font does have the ü. Adding a ü
+    // bbox in the admin closes the gap.
+    suetterlinWord: 'sütterlin',
+    suetterlinWordFallback: 'sütterlin',
     // Offenbacher: a marked excerpt from Koch's own 1928 public-domain plate
     // (lowercase a–f), the genuine historical hand rather than a synthesised glyph.
     offenbacherCaption: 'Originaltafel von Rudolf Koch, 1928 (Ausschnitt)',
