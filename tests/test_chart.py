@@ -119,6 +119,20 @@ def test_patch_out_of_bounds_clips_without_crashing():
 
 def test_patch_malformed_rows_are_skipped():
     chart = np.ones((50, 50), dtype=np.float32)
-    bbox = {"y0": 0, "y1": 50, "x0": 0, "x1": 50, "patches": [{"src": [1, 2, 3]}, {"dst": [5, 5]}, {}]}
+    bbox = {
+        "y0": 0,
+        "y1": 50,
+        "x0": 0,
+        "x1": 50,
+        "patches": [
+            {"src": [1, 2, 3]},  # too-short src
+            {"dst": [5, 5]},  # missing src
+            {},  # empty
+            None,  # not a dict
+            "nope",  # not a dict
+            {"src": ["a", "b", "c", "d"], "dst": [1, 2]},  # non-numeric src
+            {"src": [1, 2, 3, 4], "dst": ["x", "y"]},  # non-numeric dst
+        ],
+    }
     crop = crop_with_mask(chart, bbox, fill=1.0)  # must not raise
     assert np.all(crop == 1.0)

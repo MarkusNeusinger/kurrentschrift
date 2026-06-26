@@ -67,12 +67,20 @@ def _composite_patches(crop: np.ndarray, chart: np.ndarray, patches: list, x0: i
     ch, cw = crop.shape[:2]
     chart_h, chart_w = chart.shape[:2]
     for patch in patches:
-        src = patch.get("src") or []
-        dst = patch.get("dst") or []
-        if len(src) < 4 or len(dst) < 2:
+        # Skip a malformed row rather than 500 the crop: a non-dict element, a
+        # too-short src/dst, or non-numeric coords are all tolerated (the API
+        # schema validates new writes; a hand-edited/legacy DB row may not).
+        try:
+            if not isinstance(patch, dict):
+                continue
+            src = patch.get("src") or []
+            dst = patch.get("dst") or []
+            if len(src) < 4 or len(dst) < 2:
+                continue
+            sx0, sy0, sx1, sy1 = (int(round(float(v))) for v in src[:4])
+            dx, dy = (int(round(float(v))) for v in dst[:2])
+        except (TypeError, ValueError):
             continue
-        sx0, sy0, sx1, sy1 = (int(round(float(v))) for v in src[:4])
-        dx, dy = (int(round(float(v))) for v in dst[:2])
         # Normalise + clip the source rect to the chart.
         sx0, sx1 = sorted((max(0, sx0), min(chart_w, sx1)))
         sy0, sy1 = sorted((max(0, sy0), min(chart_h, sy1)))
