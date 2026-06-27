@@ -58,6 +58,10 @@ const MISSING_ADV = 0.7; // advance reserved for an unrenderable glyph
 const CONNECT_GAP = 0.16; // horizontal span of a connecting stroke
 const CONNECT_SAMPLES = 16; // Bézier samples per connector
 const DEFAULT_HALF = 0.05; // fallback stroke half-width
+// Exit y (baseline = 0, descender ≈ −1) below which a glyph's stroke is judged
+// to end inside its descender loop, so the connector becomes a return upstroke
+// rather than following the downward exit tangent (see the long-s ſ).
+const DESCENDER_EXIT_Y = -0.2;
 
 function median(xs: number[]): number {
   if (!xs.length) return DEFAULT_HALF;
@@ -138,6 +142,11 @@ export function composeWord(slots: ComposeSlot[]): ComposedWord {
     const centerlines = data?.centerlines_template;
     if (!data || !centerlines || !centerlines.length) {
       if (slot.key) missing.push(slot.key);
+      // A null-key slot (punctuation, digit) or a missing glyph breaks the
+      // writing run just like a space: flush the marks gathered so far before
+      // the gap, so a preceding i-dot/umlaut lands at the end of its word and
+      // never after the placeholder.
+      flushDiacritics();
       cursorX += MISSING_ADV;
       prev = null;
       continue;
@@ -204,7 +213,17 @@ export function composeWord(slots: ComposeSlot[]): ComposedWord {
       const p3: Point = [entryXY[0] + dx, entryXY[1]];
       const span = Math.hypot(p3[0] - p0[0], p3[1] - p0[1]);
       const handle = Math.max(0.04, span * 0.4);
-      const dOut = unit(prev.tangentDeg);
+      let dOut = unit(prev.tangentDeg);
+      // A glyph whose stroke ends deep in its descender loop (the long-s ſ,
+      // whose authored ductus stops at the loop bottom) exits pointing downward
+      // — following that tangent makes the connector dive even deeper before
+      // climbing. There the connector IS the return upstroke: aim it from the
+      // loop bottom toward the next entry instead of continuing the descent.
+      // Glyphs that finish a descender properly (g, h, j) exit above the
+      // baseline, so the guard never fires for them.
+      if (p0[1] < DESCENDER_EXIT_Y && dOut[1] < 0 && span > 0) {
+        dOut = [(p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span];
+      }
       const entryDeg = data.entry?.tangent_deg ?? tangentOf(firstLine, false);
       const dIn = unit(entryDeg);
       const p1: Point = [p0[0] + handle * dOut[0], p0[1] + handle * dOut[1]];
