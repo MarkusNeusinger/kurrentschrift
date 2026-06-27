@@ -170,7 +170,8 @@ kurrentschrift/
 │       ├── lib/api/     # fetch client (cold-start retry, typed ApiError), endpoints,
 │       │                #   wire types hand-synced with api/schemas.py
 │       ├── domain/      # glyphs.ts (registry + lock/split); shaping.ts (text → glyph_keys,
-│       │                #   long-s + ligatures); compose.ts (baseline layout + Übergänge)
+│       │                #   long-s + ligatures); compose.ts (baseline layout + Übergänge;
+│       │                #   diacritics — i-/j-dot, u-bow, umlaut — deferred to word end)
 │       ├── context/     # AdminContext (admin boot data + selection state)
 │       ├── locales/     # de/ namespaces — ALL German UI strings (pre-i18n layer)
 │       └── hooks/, styles/, global-config.ts

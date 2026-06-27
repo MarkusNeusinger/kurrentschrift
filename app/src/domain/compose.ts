@@ -31,6 +31,10 @@ export interface DrawItem {
   // A pen lift precedes this item (a within-glyph Absetzen) → the renderer
   // inserts a short pause. Connectors and inter-glyph joins flow without a lift.
   lift: boolean;
+  // A deferred diacritic (i-dot, j-dot, the Sütterlin u-bow, the ä/ö/ü umlaut):
+  // a mark that floats above the midband and is written only once the word
+  // body is finished. Emitted after the word, never threaded into the flow.
+  diacritic?: boolean;
 }
 
 export interface ComposedWord {
@@ -110,8 +114,22 @@ export function composeWord(slots: ComposeSlot[]): ComposedWord {
     }
   };
 
+  // Diacritic strokes are held back until the current word is finished, then
+  // flushed in encounter (left-to-right) order — the writer dots the i's and
+  // sets the umlauts after the word body, not mid-flow. Each becomes its own
+  // pen-down (lift) so the renderer pauses before placing it.
+  const pendingDiacritics: DrawItem[] = [];
+  const flushDiacritics = () => {
+    for (const it of pendingDiacritics) {
+      it.lift = true;
+      items.push(it);
+    }
+    pendingDiacritics.length = 0;
+  };
+
   for (const slot of slots) {
     if (slot.space) {
+      flushDiacritics(); // the word's marks land before the gap to the next word
       cursorX += SPACE_ADV;
       prev = null;
       continue;
@@ -130,10 +148,48 @@ export function composeWord(slots: ComposeSlot[]): ComposedWord {
     const maxHalf = halfWidths.length ? Math.max(...halfWidths) : DEFAULT_HALF;
     const medHalf = median(halfWidths);
 
+    // Classify each pen-stroke. A diacritic (i-dot, j-dot, the Sütterlin u-bow,
+    // the ä/ö/ü umlaut) floats entirely above the midband and is never the
+    // glyph's first stroke; it is deferred to the end of the word. The
+    // t-crossbar sits inside the x-height band (and doubles as t's connecting
+    // exit), so it correctly stays in flow.
+    const midband = data.template_guides?.midband ?? 1;
+    const diacriticFlags = centerlines.map((cl, si) => {
+      if (si === 0) return false;
+      let minY = Infinity;
+      for (const [, y] of cl as Point[]) if (y < minY) minY = y;
+      return minY > midband;
+    });
+    const hasDiacritic = diacriticFlags.some(Boolean);
+
     const firstLine = centerlines[0] as Point[];
     const lastLine = centerlines[centerlines.length - 1] as Point[];
+    // Last NON-diacritic stroke — the part that sits on the writing line and
+    // carries the join to the next glyph.
+    let lastBodyIdx = centerlines.length - 1;
+    if (hasDiacritic) {
+      for (let si = centerlines.length - 1; si >= 0; si--) {
+        if (!diacriticFlags[si]) {
+          lastBodyIdx = si;
+          break;
+        }
+      }
+    }
+    const bodyExitLine = centerlines[lastBodyIdx] as Point[];
+
     const entryXY: Point = (data.entry?.xy as Point) ?? firstLine[0];
-    const exitXY: Point = (data.exit_pt?.xy as Point) ?? lastLine[lastLine.length - 1];
+    // The connector to the NEXT glyph must leave from the body's exit, never
+    // from a floating mark. The stored `exit_pt` is the end of the LAST stroke,
+    // which on a dotted/umlauted letter is the diacritic (e.g. i's `exit_pt` is
+    // the i-dot high above the baseline) — so derive the exit from the last body
+    // stroke when the glyph carries one, and keep the precise stored tangent
+    // otherwise (no diacritic → last stroke IS the body).
+    const exitXY: Point = hasDiacritic
+      ? bodyExitLine[bodyExitLine.length - 1]
+      : (data.exit_pt?.xy as Point) ?? lastLine[lastLine.length - 1];
+    const exitDeg = hasDiacritic
+      ? tangentOf(bodyExitLine, true)
+      : data.exit_pt?.tangent_deg ?? tangentOf(lastLine, true);
 
     // Place this glyph so its entry meets the previous glyph's exit + a small
     // gap. With no connector (first glyph, or after a space / unrenderable glyph)
@@ -159,26 +215,35 @@ export function composeWord(slots: ComposeSlot[]): ComposedWord {
       track(centerline);
     }
 
-    // The glyph's own strokes (silhouette + centerline), translated by dx.
+    // The glyph's own strokes (silhouette + centerline), translated by dx. Body
+    // strokes flow in writing order; diacritic strokes are held back and
+    // flushed once the whole word is written.
     const ringsByStroke = data.outline_paths ?? [];
     centerlines.forEach((cl, si) => {
       const offset = (cl as Point[]).map(([x, y]): Point => [x + dx, y]);
       const rings = (ringsByStroke[si] ?? []).map((r) => r.map(([x, y]): Point => [x + dx, y]));
-      items.push({
+      const item: DrawItem = {
         centerline: offset,
         rings: rings.length ? rings : undefined,
         maskWidth: 2.2 * maxHalf,
         lift: si > 0, // a within-glyph pen lift precedes every stroke after the first
-      });
+      };
       track(offset);
       for (const r of rings) track(r);
+      if (diacriticFlags[si]) {
+        item.diacritic = true;
+        pendingDiacritics.push(item);
+      } else {
+        items.push(item);
+      }
     });
 
     const exitAbs: Point = [exitXY[0] + dx, exitXY[1]];
-    const exitDeg = data.exit_pt?.tangent_deg ?? tangentOf(lastLine, true);
     prev = { exit: exitAbs, tangentDeg: exitDeg, width: medHalf };
     cursorX = exitAbs[0];
   }
+
+  flushDiacritics(); // the last word's marks, once its body is complete
 
   if (!Number.isFinite(minX)) {
     minX = 0;
