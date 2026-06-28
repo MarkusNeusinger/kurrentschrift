@@ -5,6 +5,7 @@
       "@/assets/fonts/suetterlin-hjz-1911.ttf": ["../.design-sync/shims/suetterlin-font.ts"],
       "@/components/BootStatus": ["./src/components/BootStatus/index.ts"],
       "@/components/InfoHint": ["./src/components/InfoHint/index.ts"],
+      "@/components/PageContainer": ["./src/components/PageContainer/index.ts"],
       "@/components/PaperBackground": ["./src/components/PaperBackground/index.ts"],
       "@/components/PublicFooter": ["./src/components/PublicFooter/index.ts"],
       "@/components/PublicHeader": ["./src/components/PublicHeader/index.ts"],
