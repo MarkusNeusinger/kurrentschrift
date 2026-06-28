@@ -56,7 +56,7 @@ export interface ComposeSlot {
 const SPACE_ADV = 0.55; // inter-word gap, x-height units
 const MISSING_ADV = 0.7; // advance reserved for an unrenderable glyph
 const CONNECT_GAP = 0.16; // horizontal span of a connecting stroke
-const CONNECT_SAMPLES = 16; // Bézier samples per connector
+const CONNECT_SAMPLES = 24; // Bézier samples per connector (dense enough to read as a smooth arc)
 const DEFAULT_HALF = 0.05; // fallback stroke half-width
 // Exit y (baseline = 0, descender ≈ −1) below which a glyph's stroke is judged
 // to end inside its descender loop, so the connector becomes a return upstroke
@@ -76,13 +76,37 @@ function unit(deg: number): Point {
 }
 
 // Travel direction (degrees, y up) at the start (entering) or end (leaving) of a
-// polyline, used when a payload predates the entry/exit tangents. Entering = the
-// pen's heading from the first sample to the second; leaving = from the
-// second-to-last to the last.
-function tangentOf(line: Point[], atEnd = false): number {
-  if (line.length < 2) return 0;
-  const [p, q] = atEnd ? [line[line.length - 2], line[line.length - 1]] : [line[0], line[1]];
-  return (Math.atan2(q[1] - p[1], q[0] - p[0]) * 180) / Math.PI;
+// polyline, measured over a short ARC-LENGTH window rather than the single final
+// segment. This is what makes a connector leave/enter exactly tangent to the
+// rendered ink: the glyph centerline is a smooth cubic spline through the
+// anchors, so its true endpoint tangent rarely matches the stored single-chord
+// anchor tangent — feeding the chord tangent to the connector breaks G1 at the
+// join and reads as a kink (and, at the foot of the long-s, as a loop). Sampling
+// the spline over a window also rejects the jitter of one short final segment.
+// Entering = the pen's heading away from the first sample; leaving = its heading
+// into the last sample.
+const TANGENT_WINDOW = 0.12; // x-height units (matches the corner-detection window)
+function endpointTangent(line: Point[], atEnd = false): number {
+  const n = line.length;
+  if (n < 2) return 0;
+  const tip = atEnd ? line[n - 1] : line[0];
+  let far = atEnd ? line[n - 2] : line[1];
+  let acc = 0;
+  if (atEnd) {
+    for (let i = n - 1; i > 0; i--) {
+      acc += Math.hypot(line[i][0] - line[i - 1][0], line[i][1] - line[i - 1][1]);
+      far = line[i - 1];
+      if (acc >= TANGENT_WINDOW) break;
+    }
+  } else {
+    for (let i = 0; i < n - 1; i++) {
+      acc += Math.hypot(line[i + 1][0] - line[i][0], line[i + 1][1] - line[i][1]);
+      far = line[i + 1];
+      if (acc >= TANGENT_WINDOW) break;
+    }
+  }
+  const [a, b] = atEnd ? [far, tip] : [tip, far];
+  return (Math.atan2(b[1] - a[1], b[0] - a[0]) * 180) / Math.PI;
 }
 
 function sampleBezier(p0: Point, p1: Point, p2: Point, p3: Point, n: number): Point[] {
@@ -172,7 +196,6 @@ export function composeWord(slots: ComposeSlot[]): ComposedWord {
     const hasDiacritic = diacriticFlags.some(Boolean);
 
     const firstLine = centerlines[0] as Point[];
-    const lastLine = centerlines[centerlines.length - 1] as Point[];
     // Last NON-diacritic stroke — the part that sits on the writing line and
     // carries the join to the next glyph.
     let lastBodyIdx = centerlines.length - 1;
@@ -187,18 +210,16 @@ export function composeWord(slots: ComposeSlot[]): ComposedWord {
     const bodyExitLine = centerlines[lastBodyIdx] as Point[];
 
     const entryXY: Point = (data.entry?.xy as Point) ?? firstLine[0];
-    // The connector to the NEXT glyph must leave from the body's exit, never
-    // from a floating mark. The stored `exit_pt` is the end of the LAST stroke,
-    // which on a dotted/umlauted letter is the diacritic (e.g. i's `exit_pt` is
-    // the i-dot high above the baseline) — so derive the exit from the last body
-    // stroke when the glyph carries one, and keep the precise stored tangent
-    // otherwise (no diacritic → last stroke IS the body).
-    const exitXY: Point = hasDiacritic
-      ? bodyExitLine[bodyExitLine.length - 1]
-      : (data.exit_pt?.xy as Point) ?? lastLine[lastLine.length - 1];
-    const exitDeg = hasDiacritic
-      ? tangentOf(bodyExitLine, true)
-      : data.exit_pt?.tangent_deg ?? tangentOf(lastLine, true);
+    // The connector to the NEXT glyph leaves from the body's exit, never from a
+    // floating mark: on a dotted/umlauted letter the LAST stroke is the diacritic
+    // (e.g. i's last stroke is the i-dot high above the baseline), so the join
+    // grows out of the last body stroke. Both the exit point AND its tangent come
+    // from the rendered body centerline — not the stored single-chord anchor
+    // tangent — so the connector leaves exactly tangent to the ink it continues
+    // (G1 continuity → no kink). Without a diacritic the body's last stroke is
+    // simply the glyph's last stroke.
+    const exitXY: Point = bodyExitLine[bodyExitLine.length - 1];
+    const exitDeg = endpointTangent(bodyExitLine, true);
 
     // Place this glyph so its entry meets the previous glyph's exit + a small
     // gap. With no connector (first glyph, or after a space / unrenderable glyph)
@@ -210,9 +231,11 @@ export function composeWord(slots: ComposeSlot[]): ComposedWord {
     // Connector first (writing order): the pen slides from A's exit into B's entry.
     if (prev) {
       const p0 = prev.exit;
-      const p3: Point = [entryXY[0] + dx, entryXY[1]];
+      // End the connector exactly on the next glyph's first ink sample so the
+      // join sits on the centerline the entry tangent is measured from.
+      const p3: Point = [firstLine[0][0] + dx, firstLine[0][1]];
       const span = Math.hypot(p3[0] - p0[0], p3[1] - p0[1]);
-      const handle = Math.max(0.04, span * 0.4);
+      const handle = Math.max(0.05, span * 0.4);
       let dOut = unit(prev.tangentDeg);
       // A glyph whose stroke ends deep in its descender loop (the long-s ſ,
       // whose authored ductus stops at the loop bottom) exits pointing downward
@@ -224,7 +247,7 @@ export function composeWord(slots: ComposeSlot[]): ComposedWord {
       if (p0[1] < DESCENDER_EXIT_Y && dOut[1] < 0 && span > 0) {
         dOut = [(p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span];
       }
-      const entryDeg = data.entry?.tangent_deg ?? tangentOf(firstLine, false);
+      const entryDeg = endpointTangent(firstLine, false);
       const dIn = unit(entryDeg);
       const p1: Point = [p0[0] + handle * dOut[0], p0[1] + handle * dOut[1]];
       const p2: Point = [p3[0] - handle * dIn[0], p3[1] - handle * dIn[1]];
