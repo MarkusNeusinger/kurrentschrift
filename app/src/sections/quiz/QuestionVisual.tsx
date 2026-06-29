@@ -1,179 +1,281 @@
-// The quiz prompt: the glyph "as written" (animated ductus) or the static Loth
-// crop, with a toggle so the learner can switch between the two at will (compare
-// the synthesised pen against the real specimen). The chosen view lives in the
-// engine, so it persists across questions and only resets when a new session
-// starts; the written form is still preferred whenever a traced canonical
-// exists, falling back to the crop when the written render reports none (a 404
-// race) or the glyph was never traced.
+// The quiz card — the "Arbeitsfläche" the form is read on (design handoff
+// "Tinte & Vergleich"). A warm work surface (a shade lighter than the page) with
+// an inner hairline frame and a faint exercise-book ruling that the rendered
+// glyph carries with it. Three states:
+//
+//   • idle  — the form written Zug um Zug (WrittenGlyph / WrittenWord), an "i"
+//             affordance top-right and a faint centre divider.
+//   • correct — the card glows viridian; the matching Antiqua letter/word presses
+//             through behind the form like letterpress.
+//   • wrong — the card glows vermilion and shows the two forms side by side:
+//             "deine Wahl" (red) ↔ "richtig" (near-black), so the difference is
+//             legible at a glance.
+//
+// Letters render via WrittenGlyph (with a chart-crop fallback if a glyph has no
+// canonical yet); words via WrittenWord. The comparison forms are static and
+// tinted (inkColor), never a second write-in performance.
 
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import HighlightOffIcon from '@mui/icons-material/HighlightOff';
-import { Box, Chip, Fade, Paper, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Box, Typography } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { useEffect, useState } from 'react';
 
+import { InfoHint } from '@/components/InfoHint';
 import { WrittenGlyph } from '@/components/WrittenGlyph';
+import { WrittenWord } from '@/components/WrittenWord';
 import { de } from '@/locales';
 import { questionCropUrl, type Difficulty } from '@/sections/quiz/quizTypes';
-import { type PromptView, type QuizItem } from '@/sections/quiz/useQuizEngine';
+import { inCase, type Choice, type Question, type Verdict } from '@/sections/quiz/useQuizEngine';
+import { cardSurface, display, inkState, paper, pigment, schulheft } from '@/styles/paper';
 
-// Absolute, centred crop placement shared by the reveal's base (target) crop and
-// the overlaid (picked) crop, so the two land pixel-identical and a correct pick
-// reads as a true, fully coincident match. maxWidth is the Paper's content width —
-// its padding box (the abs-positioning reference) minus the 16px padding each side —
-// and maxHeight matches the idle crop, so nothing shifts when the reveal lands.
-const overlayCropSx = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  maxWidth: 'calc(100% - 32px)',
-  maxHeight: 240,
-  objectFit: 'contain',
-  userSelect: 'none',
-} as const;
+// Quiz-local rendering tokens (the card is a sanctioned work surface, not the
+// paper identity): the inner hairline frame and the two comparison ink tones.
+const INNER_FRAME = paper.lo;
+const YOURS_INK = schulheft.marginRed; // the learner's wrong pick, in printed-margin red
+const RIGHT_INK = inkState.oxidized; // the correct form, near-black
+
+// The Antiqua letter/word that presses through behind a correct form.
+function letterpressText(q: Question): string {
+  return q.kind === 'word' ? q.word : inCase(q.kg.answer, q.kg);
+}
+
+// One written form (letter or word), with graceful fallbacks: a chart crop for a
+// glyph without a canonical, plain Antiqua type when nothing can be rendered.
+function WrittenForm({
+  kind,
+  renderKey,
+  label,
+  inkColor,
+  animate = true,
+  height,
+  cropUrl,
+  fallbackColor,
+  word,
+}: {
+  kind: 'letter' | 'word';
+  renderKey: string | null;
+  label: string;
+  inkColor?: string;
+  animate?: boolean;
+  height: number;
+  // Chart-crop URL to fall back to when a letter has no canonical (prompt only).
+  cropUrl?: string;
+  // Colour of the plain-type fallback.
+  fallbackColor?: string;
+  // Larger Antiqua type for a word fallback vs. a single letter.
+  word?: boolean;
+}) {
+  const [unavailable, setUnavailable] = useState(false);
+  useEffect(() => setUnavailable(false), [renderKey]);
+
+  const fallback = (
+    <Typography
+      sx={{ fontFamily: display, fontWeight: 600, fontSize: word ? '2rem' : '2.6rem', color: fallbackColor ?? inkColor ?? 'text.primary' }}
+    >
+      {label}
+    </Typography>
+  );
+
+  if (kind === 'word') {
+    if (!renderKey) return fallback;
+    return (
+      <WrittenWord text={renderKey} inkColor={inkColor} animate={animate} height={height} surfaceBg="transparent" />
+    );
+  }
+  // letter
+  if (renderKey && !unavailable) {
+    return (
+      <WrittenGlyph
+        glyphKey={renderKey}
+        inkColor={inkColor}
+        animate={animate}
+        height={height}
+        surfaceBg="transparent"
+        onUnavailable={() => setUnavailable(true)}
+      />
+    );
+  }
+  if (cropUrl) {
+    return (
+      <Box
+        component="img"
+        src={cropUrl}
+        alt={de.quiz.play.cropAlt}
+        sx={{ maxWidth: '100%', maxHeight: height + 40, objectFit: 'contain', userSelect: 'none' }}
+        draggable={false}
+      />
+    );
+  }
+  return fallback;
+}
 
 export function QuestionVisual({
-  item,
-  hasDuctus,
+  question,
   qNonce,
-  view,
-  setView,
-  difficulty,
   verdict,
-  overlayUrl,
+  picked,
+  difficulty,
 }: {
-  item: QuizItem;
-  hasDuctus: boolean;
+  question: Question;
   qNonce: number;
-  view: PromptView;
-  setView: (v: PromptView) => void;
+  verdict: Verdict;
+  picked: Choice | null;
   difficulty: Difficulty;
-  verdict: 'idle' | 'correct' | 'wrong' | 'revealed';
-  // The crop of the picked letter to blend over the prompt once answered
-  // ("Doppelbelichtung"): the prompt's own crop on a correct pick, the wrong
-  // letter's crop on a miss, null when the picked letter has no locked specimen.
-  overlayUrl: string | null;
 }) {
-  // The match/deviation reveal only shows after a concrete pick — a given-up
-  // ("revealed") question keeps the plain solution list without the overlay.
-  const overlayActive = verdict === 'correct' || verdict === 'wrong';
-  const tone = verdict === 'correct' ? 'success' : 'error';
-  const [fellBack, setFellBack] = useState(false);
-  // Only the per-question fallback resets on a new question; the learner's
-  // Geschrieben/Original choice (view) is owned by the engine and stays put.
-  useEffect(() => {
-    setFellBack(false);
-  }, [item.key, qNonce]);
+  const isCorrect = verdict === 'correct';
+  const isWrong = verdict === 'wrong';
+  const isWord = question.kind === 'word';
 
-  // The written form is offered only when the glyph has a traced canonical (and
-  // the render didn't 404). Otherwise the crop is the only option and the toggle
-  // is hidden.
-  const canWrite = hasDuctus && !fellBack;
-  const showWritten = canWrite && view === 'written';
+  const glow = isCorrect
+    ? `0 0 0 2px ${paper.viridian}, 0 0 0 6px ${alpha(paper.viridian, 0.15)}, 0 0 28px ${alpha(paper.viridian, 0.22)}`
+    : isWrong
+      ? `0 0 0 2px ${pigment.vermilion}, 0 0 0 6px ${alpha(pigment.vermilion, 0.13)}, 0 0 28px ${alpha(pigment.vermilion, 0.2)}`
+      : 'none';
+
+  const promptCrop = question.kind === 'letter' ? questionCropUrl(question.key, difficulty) : undefined;
 
   return (
-    <Paper
-      variant="outlined"
+    <Box
       sx={{
-        // Fixed height so the box never resizes when the learner toggles between
-        // the written render and the (taller) chart crop.
         position: 'relative',
-        p: 2,
         width: '100%',
-        height: 280,
+        minHeight: { xs: 224, sm: 290 },
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        // Neutral white work surface — it frames the scanned chart crop, so the
-        // specimen reads true against an even ground rather than the paper grain.
-        bgcolor: '#fff',
-        borderColor: verdict === 'correct' ? 'success.main' : verdict === 'wrong' ? 'error.main' : 'divider',
-        transition: 'border-color 120ms',
+        px: { xs: 2, sm: 4 },
+        py: { xs: 2.5, sm: 4 },
+        bgcolor: cardSurface,
+        border: '1px solid',
+        borderColor: isCorrect ? paper.viridian : isWrong ? pigment.vermilion : paper.line,
+        borderRadius: '6px',
+        boxShadow: glow,
+        overflow: 'hidden',
+        transition: 'border-color 160ms ease, box-shadow 220ms ease',
       }}
     >
-      {overlayActive ? (
-        // On reveal the comparison is crop ↔ crop, never written ↔ crop: the
-        // target's own crop is the base (so the learner also sees the solution)
-        // and the picked crop blends over it at identical geometry. Same letter
-        // on a correct pick → the two coincide exactly.
-        <Box
-          component="img"
-          src={questionCropUrl(item.key, difficulty)}
-          alt={de.quiz.play.cropAlt}
-          sx={overlayCropSx}
-          draggable={false}
-        />
-      ) : showWritten ? (
-        <WrittenGlyph
-          key={`${item.key}-${qNonce}`}
-          glyphKey={item.key}
-          height={220}
-          // Inherit the Paper's white work-surface ground (the chart-crop frame
-          // is #fff per the surface rule) instead of the default white box.
-          surfaceBg="transparent"
-          onUnavailable={() => setFellBack(true)}
-        />
-      ) : (
-        <Box
-          component="img"
-          src={questionCropUrl(item.key, difficulty)}
-          alt={de.quiz.play.cropAlt}
-          sx={{ maxWidth: '100%', maxHeight: 240, objectFit: 'contain', userSelect: 'none' }}
-          draggable={false}
-        />
-      )}
+      {/* Inner hairline frame. */}
+      <Box
+        aria-hidden
+        sx={{ position: 'absolute', inset: 10, border: `1px solid ${INNER_FRAME}`, borderRadius: '4px', pointerEvents: 'none' }}
+      />
 
-      {canWrite && !overlayActive && (
-        <ToggleButtonGroup
-          size="small"
-          exclusive
-          value={view}
-          onChange={(_, v: PromptView | null) => v && setView(v)}
-          aria-label={de.quiz.play.viewToggleAria}
-          // Tucked into the top-right corner of the box, overlaying the prompt,
-          // so the toggle stays put while the glyph stays centred.
+      {/* Faint vertical centre divider — single-form states only. */}
+      {!isWrong && (
+        <Box
+          aria-hidden
           sx={{
             position: 'absolute',
-            top: 8,
-            right: 8,
-            bgcolor: '#fff',
-            '& .MuiToggleButton-root': { py: 0.25, px: 1 },
+            top: '20%',
+            bottom: '20%',
+            left: '50%',
+            width: '1px',
+            background: `linear-gradient(${INNER_FRAME}, transparent)`,
+            opacity: 0.45,
+            pointerEvents: 'none',
           }}
-        >
-          <ToggleButton value="written">{de.quiz.play.viewWritten}</ToggleButton>
-          <ToggleButton value="crop">{de.quiz.play.viewCrop}</ToggleButton>
-        </ToggleButtonGroup>
+        />
       )}
 
-      {/* Double exposure: once answered, the picked letter's crop blends over the
-          prompt — fully coincident (green, match) on a correct pick, a second
-          ghosted form (red, deviation) on a miss — under a verdict badge. */}
-      {overlayActive && (
-        <Fade in appear timeout={320}>
-          <Box sx={{ position: 'absolute', inset: 0, borderRadius: 'inherit', overflow: 'hidden', pointerEvents: 'none' }}>
-            {/* the colour wash that makes the box "leuchtet auf" */}
-            <Box sx={{ position: 'absolute', inset: 0, bgcolor: `${tone}.main`, opacity: 0.14 }} />
-            {/* the picked crop, multiply-blended over the base target crop at the
-                exact same geometry — so a correct pick (same crop) overlaps cleanly
-                and a miss ghosts a visibly different form over the solution */}
-            {overlayUrl && (
-              <Box
-                component="img"
-                src={overlayUrl}
-                alt={de.quiz.play.overlayAlt}
-                sx={{ ...overlayCropSx, opacity: 0.55, mixBlendMode: 'multiply' }}
-              />
-            )}
-            <Chip
-              size="small"
-              color={tone}
-              icon={verdict === 'correct' ? <CheckCircleIcon /> : <HighlightOffIcon />}
-              label={verdict === 'correct' ? de.quiz.play.matchStrong : de.quiz.play.matchWeak}
-              sx={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', fontWeight: 600 }}
+      {/* Info affordance. */}
+      <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 3 }}>
+        <InfoHint title={de.quiz.play.cardInfoTitle}>{de.quiz.play.cardInfo}</InfoHint>
+      </Box>
+
+      {isWrong ? (
+        // ——— comparison: deine Wahl ↔ richtig ———
+        <Box
+          sx={{
+            position: 'relative',
+            zIndex: 1,
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: { xs: 1, sm: 3 },
+          }}
+        >
+          <CompareColumn label={de.quiz.play.compareYours} labelColor={pigment.oxblood}>
+            <WrittenForm
+              kind={question.kind}
+              renderKey={picked?.renderKey ?? null}
+              label={picked?.label ?? ''}
+              inkColor={YOURS_INK}
+              fallbackColor={YOURS_INK}
+              animate={false}
+              height={isWord ? 60 : 78}
+              word={isWord}
+            />
+          </CompareColumn>
+
+          <Typography aria-hidden sx={{ fontFamily: display, fontSize: 22, color: paper.sepiaFaint, flexShrink: 0 }}>
+            ↔
+          </Typography>
+
+          <CompareColumn label={de.quiz.play.compareCorrect} labelColor={paper.ink}>
+            <WrittenForm
+              kind={question.kind}
+              renderKey={question.kind === 'word' ? question.word : question.key}
+              label={letterpressText(question)}
+              inkColor={RIGHT_INK}
+              fallbackColor={RIGHT_INK}
+              animate={false}
+              height={isWord ? 60 : 78}
+              word={isWord}
+            />
+          </CompareColumn>
+        </Box>
+      ) : (
+        // ——— single form (idle / correct) ———
+        <>
+          {isCorrect && (
+            <Typography
+              aria-hidden
+              sx={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontFamily: display,
+                fontWeight: 600,
+                color: paper.ink,
+                opacity: 0.06,
+                fontSize: isWord ? { xs: '2.8rem', sm: '4.6rem' } : { xs: '7rem', sm: '11rem' },
+                lineHeight: 1,
+                whiteSpace: 'nowrap',
+                pointerEvents: 'none',
+                zIndex: 0,
+              }}
+            >
+              {letterpressText(question)}
+            </Typography>
+          )}
+          <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+            <WrittenForm
+              key={`prompt-${qNonce}`}
+              kind={question.kind}
+              renderKey={question.kind === 'word' ? question.word : question.key}
+              label={letterpressText(question)}
+              height={isWord ? 110 : 150}
+              cropUrl={promptCrop}
             />
           </Box>
-        </Fade>
+        </>
       )}
-    </Paper>
+    </Box>
+  );
+}
+
+function CompareColumn({ label, labelColor, children }: { label: string; labelColor: string; children: React.ReactNode }) {
+  return (
+    <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 86 }}>{children}</Box>
+      <Typography
+        variant="overline"
+        sx={{ color: labelColor, textTransform: 'uppercase', letterSpacing: '0.08em', lineHeight: 1 }}
+      >
+        {label}
+      </Typography>
+    </Box>
   );
 }

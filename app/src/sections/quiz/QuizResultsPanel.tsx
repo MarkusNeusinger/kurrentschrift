@@ -1,17 +1,19 @@
-// QuizResultsPanel — the end-of-session Auswertung: hit rate, the letters that
-// were missed most (worst-first bars) and the confusion pairs ("ſ für f
-// gehalten"), plus replay/back-to-setup actions. Purely presentational; the
-// tallies accumulate in useQuizEngine and arrive via props.
+// QuizResultsPanel — the end-of-session Auswertung (design handoff "Tinte &
+// Vergleich"): the hit-rate card, "Häufig verwechselt" (the confusion pairs the
+// learner mixed up) and "Machte Mühe" (the forms that cost the most), or a clean
+// "sauber gelesen" note when nothing was missed. The forms render "as written"
+// (WrittenGlyph / WrittenWord), with a plain-type fallback. The tallies
+// accumulate in useQuizEngine and arrive via props.
 
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ReplayIcon from '@mui/icons-material/Replay';
-import TuneIcon from '@mui/icons-material/Tune';
-import { Alert, Box, Button, Chip, Divider, LinearProgress, Paper, Stack, Typography } from '@mui/material';
-import { useMemo } from 'react';
+import { Box, Stack, Typography } from '@mui/material';
+import { useEffect, useMemo, useState } from 'react';
 
-import { de, fmt } from '@/locales';
-import { CONFUSION_SEP, type ConfusionMap, type MissMap } from '@/sections/quiz/useQuizEngine';
-import { garamond } from '@/styles/paper';
+import { WrittenGlyph } from '@/components/WrittenGlyph';
+import { WrittenWord } from '@/components/WrittenWord';
+import { de } from '@/locales';
+import { InkButton, QuizEyebrow } from '@/sections/quiz/quizUi';
+import { type ConfusionMap, type MissMap, type TallyRef } from '@/sections/quiz/useQuizEngine';
+import { cardSurface, display, garamond, paper, pigment } from '@/styles/paper';
 
 interface ResultsProps {
   stats: { correct: number; seen: number; streak: number; bestStreak: number };
@@ -21,143 +23,177 @@ interface ResultsProps {
   onSetup: () => void;
 }
 
-export function QuizResultsPanel(p: ResultsProps) {
-  const pct = p.stats.seen > 0 ? Math.round((p.stats.correct / p.stats.seen) * 100) : 0;
+// A small written form for the results lists, with a plain-type fallback.
+function ResultForm({ refr, height }: { refr: TallyRef; height: number }) {
+  const [unavailable, setUnavailable] = useState(false);
+  useEffect(() => setUnavailable(false), [refr.renderKey]);
 
-  // Worst letters first; cap the list so the screen stays scannable.
-  const topMisses = useMemo(
-    () =>
-      Object.entries(p.misses)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 6),
-    [p.misses],
+  if (!refr.renderKey || unavailable) {
+    return (
+      <Typography component="span" sx={{ fontFamily: display, fontWeight: 600, fontSize: height * 0.6, color: paper.ink }}>
+        {refr.label}
+      </Typography>
+    );
+  }
+  if (refr.kind === 'word') {
+    return <WrittenWord text={refr.renderKey} animate={false} height={height} maxWidth={220} surfaceBg="transparent" showLineature={false} />;
+  }
+  return (
+    <WrittenGlyph glyphKey={refr.renderKey} animate={false} height={height} tight surfaceBg="transparent" onUnavailable={() => setUnavailable(true)} />
   );
-  const maxMiss = topMisses.length ? topMisses[0][1] : 0;
+}
 
+export function QuizResultsPanel(p: ResultsProps) {
+  const { correct, seen } = p.stats;
+  const pct = seen > 0 ? Math.round((correct / seen) * 100) : 0;
+
+  const topMisses = useMemo(() => Object.values(p.misses).sort((a, b) => b.count - a.count).slice(0, 6), [p.misses]);
   const topConfusions = useMemo(
-    () =>
-      Object.entries(p.confusions)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([key, count]) => {
-          const [seen, guessed] = key.split(CONFUSION_SEP);
-          return { seen, guessed, count };
-        }),
+    () => Object.values(p.confusions).sort((a, b) => b.count - a.count).slice(0, 4),
     [p.confusions],
   );
+  const clean = topMisses.length === 0;
 
   return (
-    <Paper variant="outlined" sx={{ p: 3 }}>
-      <Stack spacing={3}>
-        <Box>
-          <Typography variant="overline" color="text.secondary">
-            {de.quiz.results.heading}
+    <Stack spacing={3}>
+      <QuizEyebrow>{de.quiz.results.heading}</QuizEyebrow>
+
+      {/* Hit-rate card */}
+      <Box sx={{ bgcolor: cardSurface, border: `1px solid ${paper.line}`, borderRadius: '6px', p: { xs: 3, sm: 3.5 }, textAlign: 'center' }}>
+        <Typography variant="overline" sx={{ color: paper.sepia, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          {de.quiz.results.hitRateLabel}
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 1, mt: 0.5 }}>
+          <Typography component="span" sx={{ fontFamily: display, fontWeight: 600, fontSize: 46, color: paper.ink, lineHeight: 1 }}>
+            {correct}
           </Typography>
-          <Typography variant="h3" sx={{ fontFamily: garamond, lineHeight: 1.2 }}>
-            {fmt(de.quiz.results.score, { correct: p.stats.correct, seen: p.stats.seen })}
+          <Typography component="span" sx={{ fontFamily: display, fontSize: 24, color: paper.sepiaFaint }}>
+            / {seen}
           </Typography>
-          <LinearProgress
-            variant="determinate"
-            value={pct}
-            color={pct >= 80 ? 'success' : pct >= 50 ? 'primary' : 'warning'}
-            sx={{ mt: 1.5, height: 8, borderRadius: 4 }}
-          />
-          <Box sx={{ display: 'flex', gap: 1, mt: 1.5, flexWrap: 'wrap' }}>
-            <Chip size="small" label={fmt(de.quiz.results.hitRate, { pct })} />
-            <Chip size="small" variant="outlined" color="primary" label={`${de.quiz.results.bestStreak} ${p.stats.bestStreak}`} />
-          </Box>
+          <Typography component="span" sx={{ fontFamily: garamond, fontSize: 18, color: paper.viridian, ml: 0.5 }}>
+            {pct} %
+          </Typography>
         </Box>
+        <Box sx={{ mt: 2, height: 4, borderRadius: 2, bgcolor: 'rgba(182,160,121,0.4)', overflow: 'hidden' }}>
+          <Box sx={{ height: '100%', width: `${pct}%`, bgcolor: paper.viridian, transition: 'width 300ms ease' }} />
+        </Box>
+      </Box>
 
-        <Divider />
-
-        {/* Letters that were missed most */}
+      {/* Confusions */}
+      {topConfusions.length > 0 && (
         <Box>
-          <Typography variant="subtitle2" gutterBottom>
+          <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: 18, color: paper.ink }}>
+            {de.quiz.results.confusionsHeading}
+          </Typography>
+          <Typography sx={{ fontFamily: garamond, fontSize: 13.5, color: paper.sepia, mb: 1.25 }}>
+            {de.quiz.results.confusionsHint}
+          </Typography>
+          <Stack spacing={1}>
+            {topConfusions.map((c, i) => (
+              <Box
+                key={i}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.25,
+                  bgcolor: '#fdfbf6',
+                  border: '1px solid #e0d2b2',
+                  borderRadius: '7px',
+                  px: 1.75,
+                  py: 1,
+                }}
+              >
+                <ResultForm refr={c.correct} height={32} />
+                <Typography component="span" aria-hidden sx={{ fontFamily: display, color: paper.sepiaFaint }}>
+                  ↔
+                </Typography>
+                <ResultForm refr={c.guessed} height={32} />
+                <Typography component="span" sx={{ fontFamily: garamond, fontSize: 14, color: paper.sepia, ml: 0.5 }}>
+                  {c.correct.label} / {c.guessed.label}
+                </Typography>
+                <Box sx={{ flex: 1 }} />
+                <Typography component="span" sx={{ fontFamily: garamond, fontSize: 14, color: pigment.oxblood }}>
+                  ·{c.count}
+                  {de.quiz.results.times}
+                </Typography>
+              </Box>
+            ))}
+          </Stack>
+        </Box>
+      )}
+
+      {/* Misses — or the clean note when nothing was missed */}
+      {clean ? (
+        <Box
+          sx={{
+            border: `1px solid ${paper.viridian}`,
+            bgcolor: 'rgba(64,130,109,0.08)',
+            borderRadius: '6px',
+            px: 2,
+            py: 1.5,
+            textAlign: 'center',
+          }}
+        >
+          <Typography sx={{ fontFamily: garamond, fontSize: 16, color: paper.ink }}>
+            <Box component="span" sx={{ color: paper.viridian, mr: 0.75 }}>
+              ✓
+            </Box>
+            {de.quiz.results.cleanNote}
+          </Typography>
+        </Box>
+      ) : (
+        <Box>
+          <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: 18, color: paper.ink, mb: 1.25 }}>
             {de.quiz.results.missesHeading}
           </Typography>
-          {topMisses.length === 0 ? (
-            <Alert severity="success" icon={<CheckCircleIcon />} sx={{ py: 0.5 }}>
-              {de.quiz.results.noMisses}
-            </Alert>
-          ) : (
-            <Stack spacing={1}>
-              {topMisses.map(([glyph, count]) => (
-                <Box key={glyph} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Box
-                    sx={{
-                      fontFamily: garamond,
-                      fontSize: '1.6rem',
-                      width: 36,
-                      textAlign: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {glyph}
-                  </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <Box
-                      sx={{
-                        height: 10,
-                        borderRadius: 5,
-                        bgcolor: 'error.main',
-                        opacity: 0.85,
-                        width: `${maxMiss ? Math.max(8, (count / maxMiss) * 100) : 0}%`,
-                        transition: 'width 200ms',
-                      }}
-                    />
-                  </Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ width: 64, textAlign: 'right' }}>
-                    {count}{de.quiz.results.timesWrong}
-                  </Typography>
-                </Box>
-              ))}
-            </Stack>
-          )}
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {topMisses.map((m, i) => (
+              <Box
+                key={i}
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 0.75,
+                  bgcolor: '#fdfbf6',
+                  border: '1px solid #e0d2b2',
+                  borderRadius: '7px',
+                  px: 1.25,
+                  py: 0.75,
+                }}
+              >
+                <ResultForm refr={m} height={28} />
+                <Typography component="span" sx={{ fontFamily: garamond, fontSize: 13.5, color: paper.sepia }}>
+                  ·{m.count}
+                  {de.quiz.results.times}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
         </Box>
+      )}
 
-        {/* Confusion pairs */}
-        {topConfusions.length > 0 && (
-          <>
-            <Divider />
-            <Box>
-              <Typography variant="subtitle2" gutterBottom>
-                {de.quiz.results.confusionsHeading}
-              </Typography>
-              <Stack spacing={1}>
-                {topConfusions.map(({ seen, guessed, count }) => (
-                  <Box key={`${seen}${CONFUSION_SEP}${guessed}`} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box component="span" sx={{ fontFamily: garamond, fontSize: '1.4rem' }}>
-                      {seen}
-                    </Box>
-                    <Typography component="span" color="text.secondary">
-                      {de.quiz.results.confusedFor}
-                    </Typography>
-                    <Box component="span" sx={{ fontFamily: garamond, fontSize: '1.4rem' }}>
-                      {guessed}
-                    </Box>
-                    <Typography component="span" color="text.secondary">
-                      {de.quiz.results.confusedAs}
-                    </Typography>
-                    <Box sx={{ flex: 1 }} />
-                    <Chip size="small" variant="outlined" label={`${count}×`} />
-                  </Box>
-                ))}
-              </Stack>
-            </Box>
-          </>
-        )}
-
-        <Divider />
-
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-          <Button variant="contained" startIcon={<ReplayIcon />} onClick={p.onReplay} fullWidth>
-            {de.quiz.results.replay}
-          </Button>
-          <Button variant="outlined" startIcon={<TuneIcon />} onClick={p.onSetup} fullWidth>
-            {de.quiz.results.settings}
-          </Button>
-        </Stack>
-      </Stack>
-    </Paper>
+      {/* Actions */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5, flexWrap: 'wrap', pt: 0.5 }}>
+        <InkButton onClick={p.onReplay} fullWidthMobile={false}>
+          {de.quiz.results.replay} →
+        </InkButton>
+        <Typography
+          component="button"
+          onClick={p.onSetup}
+          sx={{
+            fontFamily: garamond,
+            fontSize: 15,
+            color: paper.sepia,
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            p: 0,
+            '&:hover': { color: paper.viridian },
+          }}
+        >
+          {de.quiz.results.settings}
+        </Typography>
+      </Box>
+    </Stack>
   );
 }

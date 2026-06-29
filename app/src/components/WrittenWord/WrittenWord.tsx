@@ -77,6 +77,14 @@ interface Props {
   durationMs?: number;
   maxWidth?: number;
   surfaceBg?: string;
+  // Solid ink colour override (fill + connector stroke). When set, the iron-gall
+  // settle is skipped and the word holds one tone — the quiz comparison tints the
+  // learner's wrong word red and the correct word near-black.
+  inkColor?: string;
+  // Whether to play the write-in (and settle). Defaults to true; false renders
+  // the word already fully drawn (the post-answer comparison). ANDed with the
+  // reduced-motion preference.
+  animate?: boolean;
   // Draw the faint baseline + midband ruling under the word.
   showLineature?: boolean;
   // Show the replay button (bottom-right).
@@ -97,6 +105,8 @@ export function WrittenWord({
   durationMs = 2600,
   maxWidth = MAX_W,
   surfaceBg = 'transparent',
+  inkColor,
+  animate: animateProp = true,
   showLineature = true,
   showReplay = false,
   onResolved,
@@ -178,7 +188,7 @@ export function WrittenWord({
     displayW = maxWidth;
   }
   const maskId = `word-${uid.replace(/[^a-zA-Z0-9_-]/g, '_')}-${run}`;
-  const animate = !reducedMotion;
+  const animate = animateProp && !reducedMotion;
 
   return (
     <Box sx={{ position: 'relative', display: 'inline-flex' }}>
@@ -241,9 +251,12 @@ export function WrittenWord({
           mask={`url(#${maskId})`}
           filter={`url(#${maskId}-bleed)`}
           sx={{
-            fill: animate ? inkState.fresh : inkState.oxidized,
-            stroke: animate ? inkState.fresh : inkState.oxidized,
-            animation: animate ? `${inkSettle} ${SETTLE_MS}ms ease ${writeEndMs}ms forwards` : undefined,
+            // A fixed inkColor (the comparison's red/black) skips the settle and
+            // holds one tone; otherwise the iron-gall fresh→oxidized settle plays.
+            fill: inkColor ?? (animate ? inkState.fresh : inkState.oxidized),
+            stroke: inkColor ?? (animate ? inkState.fresh : inkState.oxidized),
+            animation:
+              animate && !inkColor ? `${inkSettle} ${SETTLE_MS}ms ease ${writeEndMs}ms forwards` : undefined,
           }}
         >
           {items.map((it, i) =>

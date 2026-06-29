@@ -15,60 +15,69 @@ export const quiz = {
     messy: { label: 'Krakelig', hint: 'unsaubere, schwer lesbare Hand' },
   },
   setup: {
-    intro:
-      'Erkenne die Buchstaben der alten deutschen Schreibschrift: Jeder wird dir Zug um Zug vorgeschrieben — in der Reihenfolge der Feder — und du wählst aus, welcher es ist. Stimmt deine Wahl, blendet sich die Form grün ein und es geht weiter; liegst du daneben, leuchtet sie rot auf, die Lösung erscheint, und du klickst dich weiter. Am Ende siehst du, welche Buchstaben dir Mühe gemacht haben.',
+    // Warm lead, ~1900 Vorwort tone — the second clause sits in a softer ink.
+    introLead: 'Such dir aus, was du heute üben magst —',
+    introRest: ' drei Handgriffe, dann geht’s los.',
     scriptLabel: 'Schrift',
-    // Task selector: single letters or whole words. No upper-/lowercase split any
-    // more — letters always drill the full alphabet, mixed case.
+    scriptHint: 'welche Schreibschrift-Familie',
+    // Task selector: single letters or whole words.
     taskLabel: 'Aufgabe',
+    taskHint: 'einzelne Zeichen oder ganze Wörter',
     modeLetters: 'Buchstaben',
     modeWords: 'Wörter',
     difficultyLabel: 'Schwierigkeit',
+    difficultyShortHint: 'wie ordentlich die Handschrift ist',
     difficultyHint:
       'Höhere Stufen zeigen denselben Buchstaben in unsaubereren Handschriften — sobald solche Vorlagen vorliegen.',
+    // Summary line above the start button: "dein Quiz · Kurrent · Buchstaben · Sauber".
+    summaryPrefix: 'dein Quiz',
     noLetters: 'Für diese Auswahl sind noch keine Buchstaben freigegeben.',
     noLettersOther: 'Buchstaben erscheinen hier, sobald sie im Admin-Bereich fertig kalibriert und gesperrt sind.',
+    noWords: 'Für diese Auswahl sind noch keine ganzen Wörter freigegeben.',
+    noWordsOther: 'Ein Wort erscheint hier, sobald jeder seiner Buchstaben kalibriert und gesperrt ist.',
     start: 'Quiz starten',
   },
   play: {
-    emptyPool: 'Keine Buchstaben für diese Auswahl.',
+    emptyPool: 'Keine Aufgaben für diese Auswahl.',
     back: 'zurück',
-    score: 'Richtig {{correct}}/{{seen}}',
-    // Followed by the streak count in the chip label.
-    streak: 'Serie',
+    // Score band: labels (uppercased in the UI) + bare counters beside them.
+    scoreLabel: 'Richtig',
+    streakLabel: 'Serie',
     quit: 'beenden',
-    solutionIs: 'Das ist',
-    cropAlt: 'Buchstabe in alter Schreibschrift',
-    // Prompt view toggle: the synthesised pen vs. the real chart cutout.
-    viewWritten: 'Geschrieben',
-    viewCrop: 'Original',
-    viewToggleAria: 'Zwischen geschriebener Form und Original-Ausschnitt wechseln',
-    // Double-exposure verdict badges: the picked letter's crop blended over the
-    // prompt — a match (right) vs. a deviation (wrong).
+    // The question prompt under the card.
+    questionLetter: 'Welcher Buchstabe ist das?',
+    questionWord: 'Welches Wort ist das?',
+    // Verdict line: success, then the two miss variants.
     matchStrong: 'Super Übereinstimmung',
-    matchWeak: 'Starke Abweichung',
-    overlayAlt: 'Vorlage des gewählten Buchstabens',
-    inputPlaceholder: 'Welcher Buchstabe?',
-    check: 'Prüfen',
-    nextTooltip: 'Nächster Buchstabe',
+    solutionLetter: 'Das ist ein {{letter}}.',
+    solutionWord: 'Das ist „{{word}}“.',
+    // Side-by-side comparison labels on a wrong pick (uppercased in the UI).
+    compareYours: 'deine Wahl',
+    compareCorrect: 'richtig',
+    // The card's info affordance (top-right "i").
+    cardInfoTitle: 'Wie du liest',
+    cardInfo:
+      'Die Form wird dir Zug um Zug vorgeschrieben — in der Reihenfolge der Feder. Stimmt deine Wahl, geht es weiter; liegst du daneben, siehst du deine Wahl und die richtige Form nebeneinander.',
+    // Advance affordances.
+    autoNext: 'nächste Frage …',
     next: 'Weiter',
-    reveal: 'Lösung zeigen',
+    cropAlt: 'Buchstabe in alter Schreibschrift',
   },
   results: {
     heading: 'Auswertung',
-    score: '{{correct}} von {{seen}} richtig',
-    hitRate: '{{pct}}% Trefferquote',
-    // Followed by the best-streak count in the chip label.
-    bestStreak: 'Beste Serie',
-    missesHeading: 'Diese Buchstaben machten Mühe',
-    noMisses: 'Kein einziger Fehler — tadellos gelesen!',
-    // Preceded by the miss count ("3× falsch").
-    timesWrong: '× falsch',
+    hitRateLabel: 'Trefferquote',
+    // Empty state (ended without answering anything).
+    emptyHeading: 'Noch nichts gelesen.',
+    emptyBody: 'Wähle eine Aufgabe und lies ein paar Formen — dann zeigt sich hier, was dir leicht fiel und was nicht.',
+    emptyCta: 'Eine Runde lesen',
     confusionsHeading: 'Häufig verwechselt',
-    // "ſ für f gehalten" — composed around the two glyphs in the component.
-    confusedFor: 'für',
-    confusedAs: 'gehalten',
-    replay: 'Nochmal',
-    settings: 'Einstellungen',
+    confusionsHint: 'Diese Formen ähneln sich — hier hast du sie vertauscht.',
+    missesHeading: 'Machte Mühe',
+    // Clean run: shown instead of the miss blocks when nothing was missed.
+    cleanNote: 'Keine Verwechslungen — sauber gelesen.',
+    // Suffix after a count, e.g. "1×".
+    times: '×',
+    replay: 'Weiter üben',
+    settings: 'Einstellungen ändern',
   },
 } as const;

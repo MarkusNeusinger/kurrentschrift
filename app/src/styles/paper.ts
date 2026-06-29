@@ -47,6 +47,13 @@ export const schulheft = {
   marginRed: '#b03a3a', // Randleiste: aged printed red margin bar (approx)
 } as const;
 
+// Quiz / worksheet work-surface card — a shade lighter and cleaner than the
+// paper ground but still warm (not the stark #fff of a chart-crop frame). The
+// single sanctioned lift from the paper tone for an on-page "Arbeitsfläche"
+// (the quiz card, design handoff "Tinte & Vergleich"). Local rendering token,
+// not part of the MUI palette.
+export const cardSurface = '#f6f0e3';
+
 // Period pigment set — the chromolithography palette of German school wall
 // charts (Schulwandbilder) and period print. Named real pigments; hexes
 // approximate aged prints. Any contrast derivative introduced downstream must

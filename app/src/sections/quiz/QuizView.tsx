@@ -1,20 +1,16 @@
-// QuizView — public reading drill (`/quiz`). Shows a real letter crop from the
-// source chart and asks the learner which Latin letter it is. Deliberately
-// simple for now: it consumes whatever bboxes have been marked (via the admin
-// chart editor) and maps each glyph_key back to its `answer` letter, so the
-// vocabulary grows as letters get marked. The richer version (animated ductus
-// playback, whole words, orthography-rule explanations on a miss) is the P1
-// Lese-Cluster work — see docs/concepts/vision.md §4 and mvp-roadmap.md.
-//
-// Ending a session ("beenden") opens a results screen that surfaces which
-// letters were missed most and which ones the learner tends to confuse, so the
-// drill turns into targeted feedback rather than an endless stream.
+// QuizView — public reading drill (`/quiz`). Shows a form of the old German
+// cursive (a single glyph or a whole word, written Zug um Zug) and asks the
+// learner to read it from four choices. It consumes whatever bboxes have been
+// locked + traced in the public Sütterlin source, so the vocabulary grows as
+// letters and words become available.
 //
 // The view itself is just the shell: boot states, the page chrome and the
 // setup → play → results switch. All quiz logic lives in useQuizEngine; the
-// three panels are purely presentational.
+// three panels are purely presentational. The shared page header shows on setup;
+// during play and on the results screen the panels carry their own chrome (the
+// score band / the Auswertung eyebrow), so the focus stays on the card.
 
-import { Box, Stack } from '@mui/material';
+import { Box } from '@mui/material';
 
 import { BootStatus } from '@/components/BootStatus';
 import { PageContainer } from '@/components/PageContainer';
@@ -52,56 +48,54 @@ export function QuizView() {
     );
   }
 
+  const onSetup = !quiz.started;
+
   return (
     <PublicLayout footer>
-      <PageContainer width="text" sx={{ pt: { xs: 4, sm: 6 } }}>
-        <PageHeader eyebrow={de.common.nav.read} title={de.quiz.title} />
-        {/* the focused quiz column stays ~760 wide but left-aligns with the header */}
-        <Box sx={{ maxWidth: 760 }}>
-          <Stack spacing={3}>
-            {!quiz.started ? (
-            <QuizSetupPanel
-              script={quiz.script}
-              setScript={quiz.setScript}
-              mode={quiz.mode}
-              setMode={quiz.setMode}
-              difficulty={quiz.difficulty}
-              setDifficulty={quiz.setDifficulty}
-              poolSize={quiz.poolSize}
-              onStart={quiz.start}
-            />
-          ) : quiz.finished ? (
-            <QuizResultsPanel
-              stats={quiz.stats}
-              misses={quiz.misses}
-              confusions={quiz.confusions}
-              onReplay={quiz.start}
-              onSetup={quiz.backToSetup}
-            />
-          ) : (
-            <QuizPlayPanel
-              current={quiz.current}
-              hasDuctus={quiz.hasDuctus}
-              qNonce={quiz.qNonce}
-              view={quiz.view}
-              setView={quiz.setView}
-              choices={quiz.choices}
-              input={quiz.input}
-              setInput={quiz.setInput}
-              verdict={quiz.verdict}
-              picked={quiz.picked}
-              answerMode={quiz.answerMode}
-              difficulty={quiz.difficulty}
-              stats={quiz.stats}
-              onSubmitTyped={quiz.submitTyped}
-              onPickChoice={quiz.pickChoice}
-              onReveal={quiz.reveal}
-              onAdvance={quiz.advance}
-              onQuit={quiz.finish}
-            />
-          )}
-          </Stack>
-        </Box>
+      <PageContainer width="narrow" sx={{ pt: { xs: 4, sm: 6 } }}>
+        {onSetup && (
+          <PageHeader eyebrow={de.common.nav.read} title={de.quiz.title}>
+            {de.quiz.setup.introLead}
+            <Box component="span" sx={{ color: 'text.secondary' }}>
+              {de.quiz.setup.introRest}
+            </Box>
+          </PageHeader>
+        )}
+
+        {onSetup ? (
+          <QuizSetupPanel
+            script={quiz.script}
+            setScript={quiz.setScript}
+            mode={quiz.mode}
+            setMode={quiz.setMode}
+            difficulty={quiz.difficulty}
+            setDifficulty={quiz.setDifficulty}
+            poolSize={quiz.poolSize}
+            onStart={quiz.start}
+          />
+        ) : quiz.finished ? (
+          <QuizResultsPanel
+            stats={quiz.stats}
+            misses={quiz.misses}
+            confusions={quiz.confusions}
+            onReplay={quiz.start}
+            onSetup={quiz.backToSetup}
+          />
+        ) : (
+          <QuizPlayPanel
+            current={quiz.current}
+            qNonce={quiz.qNonce}
+            choices={quiz.choices}
+            verdict={quiz.verdict}
+            picked={quiz.picked}
+            difficulty={quiz.difficulty}
+            reducedMotion={quiz.reducedMotion}
+            stats={quiz.stats}
+            onPickChoice={quiz.pickChoice}
+            onAdvance={quiz.advance}
+            onQuit={quiz.finish}
+          />
+        )}
       </PageContainer>
     </PublicLayout>
   );
