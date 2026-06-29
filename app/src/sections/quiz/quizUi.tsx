@@ -71,6 +71,7 @@ export function OptionChip({
     <ButtonBase
       disabled={disabled}
       onClick={onClick}
+      aria-pressed={selected}
       sx={{
         display: 'inline-flex',
         alignItems: 'center',

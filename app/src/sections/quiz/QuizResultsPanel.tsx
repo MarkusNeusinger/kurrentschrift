@@ -89,9 +89,9 @@ export function QuizResultsPanel(p: ResultsProps) {
             {de.quiz.results.confusionsHint}
           </Typography>
           <Stack spacing={1}>
-            {topConfusions.map((c, i) => (
+            {topConfusions.map((c) => (
               <Box
-                key={i}
+                key={`${c.correct.renderKey ?? c.correct.label}__${c.guessed.renderKey ?? c.guessed.label}`}
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
@@ -147,9 +147,9 @@ export function QuizResultsPanel(p: ResultsProps) {
             {de.quiz.results.missesHeading}
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {topMisses.map((m, i) => (
+            {topMisses.map((m) => (
               <Box
-                key={i}
+                key={m.renderKey ?? m.label}
                 sx={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -179,6 +179,7 @@ export function QuizResultsPanel(p: ResultsProps) {
         </InkButton>
         <Typography
           component="button"
+          type="button"
           onClick={p.onSetup}
           sx={{
             fontFamily: garamond,
