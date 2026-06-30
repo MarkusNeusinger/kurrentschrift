@@ -20,15 +20,27 @@ import type {
   TraceRequest,
 } from '@/lib/api/types';
 
-const API = CONFIG.apiBase;
+// Where to reach the API. The apex `/api/*` is gated by Cloudflare Access — it
+// 302-redirects anonymous visitors to the CF login, and following that
+// cross-origin redirect trips the browser's CORS check, so PUBLIC pages can't
+// read it. They go straight to the open `api.` subdomain (CONFIG.publicApiBase)
+// instead: same data, no auth gate. The ADMIN (`/admin/*`) keeps the apex so
+// its CF-Access cookie still authorizes writes — Access injects the verifying
+// JWT only on that path. Dev has neither gate; the Vite proxy serves `/api`
+// same-origin, so we stay on apiBase there. Resolved per call (read at request
+// time) so client-side navigation between public and admin routes is honoured.
+const onAdminRoute = (): boolean =>
+  typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+const apiRoot = (): string =>
+  import.meta.env.DEV || onAdminRoute() ? CONFIG.apiBase : CONFIG.publicApiBase;
 
-const src = (sourceId: string, path: string) => `${API}/sources/${encodeURIComponent(sourceId)}${path}`;
+const src = (sourceId: string, path: string) => `${apiRoot()}/sources/${encodeURIComponent(sourceId)}${path}`;
 
 export const getStyles = (retry?: RetryOptions): Promise<StyleOut[]> =>
-  apiFetch(`${API}/styles`, {}, retry).then(asJson<StyleOut[]>);
+  apiFetch(`${apiRoot()}/styles`, {}, retry).then(asJson<StyleOut[]>);
 
 export const getSources = (retry?: RetryOptions): Promise<SourceOut[]> =>
-  apiFetch(`${API}/sources`, {}, retry).then(asJson<SourceOut[]>);
+  apiFetch(`${apiRoot()}/sources`, {}, retry).then(asJson<SourceOut[]>);
 
 export const getSource = (sourceId: string, retry?: RetryOptions): Promise<SourceOut> =>
   apiFetch(src(sourceId, ''), {}, retry).then(asJson<SourceOut>);
