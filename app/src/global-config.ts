@@ -19,7 +19,12 @@ export const CONFIG = {
    * apiBase (the Vite proxy serves `/api` same-origin). Override per build with
    * VITE_PUBLIC_API_BASE.
    */
-  publicApiBase: (import.meta.env.VITE_PUBLIC_API_BASE as string | undefined) ?? 'https://api.kurrentschrift.ink',
+  // Trailing slashes are stripped so an override like `https://api.example/`
+  // can't produce a double slash (`https://api.example//styles`) downstream.
+  publicApiBase: ((import.meta.env.VITE_PUBLIC_API_BASE as string | undefined) ?? 'https://api.kurrentschrift.ink').replace(
+    /\/+$/,
+    '',
+  ),
   /**
    * The source the PUBLIC pages (landing, worksheet, quiz) render — currently
    * the Sütterlin 1922 Ausgangsschrift chart. The admin is NOT bound to this:

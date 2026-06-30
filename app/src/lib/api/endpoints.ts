@@ -32,7 +32,7 @@ import type {
 const onAdminRoute = (): boolean =>
   typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
 const apiRoot = (): string =>
-  import.meta.env.DEV || onAdminRoute() ? CONFIG.apiBase : CONFIG.publicApiBase;
+  (import.meta.env.DEV || onAdminRoute()) ? CONFIG.apiBase : CONFIG.publicApiBase;
 
 const src = (sourceId: string, path: string) => `${apiRoot()}/sources/${encodeURIComponent(sourceId)}${path}`;
 
