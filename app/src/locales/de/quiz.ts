@@ -54,10 +54,6 @@ export const quiz = {
     // Side-by-side comparison labels on a wrong pick (uppercased in the UI).
     compareYours: 'deine Wahl',
     compareCorrect: 'richtig',
-    // The card's info affordance (top-right "i").
-    cardInfoTitle: 'Wie du liest',
-    cardInfo:
-      'Die Form wird dir Zug um Zug vorgeschrieben — in der Reihenfolge der Feder. Stimmt deine Wahl, geht es weiter; liegst du daneben, siehst du deine Wahl und die richtige Form nebeneinander.',
     // Advance affordances.
     autoNext: 'nächste Frage …',
     next: 'Weiter',

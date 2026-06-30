@@ -52,7 +52,12 @@ export function QuizView() {
 
   return (
     <PublicLayout footer>
-      <PageContainer width="narrow" sx={{ pt: { xs: 4, sm: 6 } }}>
+      {/* The header rides the shared `text` column so its left edge lines up
+          with the other tool pages (/tafel, /federprobe); the drill itself is
+          capped to a compact reading measure, left-aligned on that same edge —
+          a full-width answer grid would sprawl. */}
+      <PageContainer width="text" sx={{ pt: { xs: 4, sm: 6 } }}>
+        <Box sx={{ maxWidth: 760 }}>
         {onSetup && (
           <PageHeader eyebrow={de.common.nav.read} title={de.quiz.title}>
             {de.quiz.setup.introLead}
@@ -96,6 +101,7 @@ export function QuizView() {
             onQuit={quiz.finish}
           />
         )}
+        </Box>
       </PageContainer>
     </PublicLayout>
   );
