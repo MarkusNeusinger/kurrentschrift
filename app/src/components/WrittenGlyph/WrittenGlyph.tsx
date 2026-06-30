@@ -107,6 +107,16 @@ interface Props {
   // their container's paper ground — so the fresh-ink render doesn't read as a
   // stark white box on the cream page.
   surfaceBg?: string;
+  // Solid ink colour override. When set, the glyph is filled in this single
+  // colour and the iron-gall settle (fresh blue-black → oxidized) is skipped —
+  // used by the quiz comparison to tint the learner's wrong pick red and the
+  // correct form near-black.
+  inkColor?: string;
+  // Whether to play the write-in (and settle). Defaults to true; pass false to
+  // render the glyph already fully drawn (the post-answer comparison shows the
+  // finished forms, not a second performance). ANDed with the reduced-motion
+  // preference, so a static render is the floor either way.
+  animate?: boolean;
   // Called if the glyph has no canonical yet (404) so the caller can fall back to
   // the static crop. The component itself renders nothing once unavailable.
   onUnavailable?: () => void;
@@ -115,7 +125,7 @@ interface Props {
 const PEN_PAUSE_MS = 150; // pause at each Absetzen so the lift reads as a lift
 const MAX_W = 300;
 
-export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight = false, maxWidth, cacheBust, data: dataProp, onUnavailable, surfaceBg = SURFACE_BG }: Props) {
+export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight = false, maxWidth, cacheBust, data: dataProp, onUnavailable, surfaceBg = SURFACE_BG, inkColor, animate: animateProp = true }: Props) {
   const reducedMotion = usePrefersReducedMotion();
   const uid = useId();
   const [fetched, setFetched] = useState<DiagnosticData | null>(() => cachedEntry(glyphKey, cacheBust)?.data ?? null);
@@ -272,7 +282,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight 
   // useId() namespaces the mask per component instance so two WrittenGlyphs with
   // the same glyph_key on screen at once can't collide on `url(#id)`.
   const maskId = `written-${uid.replace(/[^a-zA-Z0-9_-]/g, '_')}-${run}`;
-  const animate = !reducedMotion;
+  const animate = animateProp && !reducedMotion;
 
   return (
     <Box sx={{ position: 'relative', display: 'inline-flex' }}>
@@ -347,8 +357,11 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight 
           mask={`url(#${maskId})`}
           filter={`url(#${maskId}-bleed)`}
           sx={{
-            fill: animate ? inkState.fresh : inkState.oxidized,
-            animation: animate ? `${inkSettle} ${SETTLE_MS}ms ease ${writeEndMs}ms forwards` : undefined,
+            // A fixed inkColor (the comparison's red/black) skips the settle and
+            // holds one tone; otherwise the iron-gall fresh→oxidized settle plays.
+            fill: inkColor ?? (animate ? inkState.fresh : inkState.oxidized),
+            animation:
+              animate && !inkColor ? `${inkSettle} ${SETTLE_MS}ms ease ${writeEndMs}ms forwards` : undefined,
           }}
         >
           {strokePaths
