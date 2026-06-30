@@ -2,8 +2,29 @@
 // read, so the rest of the app imports config instead of import.meta.env.
 
 export const CONFIG = {
-  /** Base path of the FastAPI backend (vite dev proxy / Cloudflare Worker in prod). */
+  /**
+   * API base for the ADMIN and local dev: the apex `/api` (Vite proxy in dev,
+   * the Cloudflare Worker in prod). The apex `/api/*` is gated by Cloudflare
+   * Access — that gate is what authorizes the admin's write endpoints, since
+   * Access injects the verifying JWT only on this path.
+   */
   apiBase: '/api',
+  /**
+   * API base for the PUBLIC pages in production. The apex `/api/*` above is
+   * Access-gated: anonymous visitors get a 302 to the Cloudflare login, and
+   * that cross-origin redirect fails the browser's CORS check — so public reads
+   * cannot use it. They go straight to the open `api.` subdomain instead (same
+   * data, no auth gate; writes there are still refused by `require_admin`).
+   * Ignored in dev, where the resolver in lib/api/endpoints.ts falls back to
+   * apiBase (the Vite proxy serves `/api` same-origin). Override per build with
+   * VITE_PUBLIC_API_BASE.
+   */
+  // Trailing slashes are stripped so an override like `https://api.example/`
+  // can't produce a double slash (`https://api.example//styles`) downstream.
+  publicApiBase: ((import.meta.env.VITE_PUBLIC_API_BASE as string | undefined) ?? 'https://api.kurrentschrift.ink').replace(
+    /\/+$/,
+    '',
+  ),
   /**
    * The source the PUBLIC pages (landing, worksheet, quiz) render — currently
    * the Sütterlin 1922 Ausgangsschrift chart. The admin is NOT bound to this:
