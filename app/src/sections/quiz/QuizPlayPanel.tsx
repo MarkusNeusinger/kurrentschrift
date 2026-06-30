@@ -7,17 +7,10 @@ import { Box, Button, ButtonBase, Stack, Typography, keyframes } from '@mui/mate
 
 import { de, fmt } from '@/locales';
 import { QuestionVisual } from '@/sections/quiz/QuestionVisual';
-import { InkButton } from '@/sections/quiz/quizUi';
+import { InkButton, QuietButton } from '@/sections/quiz/quizUi';
 import { type Difficulty } from '@/sections/quiz/quizTypes';
 import { AUTO_ADVANCE_MS, inCase, type Choice, type Question, type Verdict } from '@/sections/quiz/useQuizEngine';
-import { display, garamond, paper, pigment } from '@/styles/paper';
-
-// Quiz-local answer-button tokens (the card + its controls are a work surface,
-// not the paper identity — design handoff "Tinte & Vergleich").
-const BTN_FACE = '#fdfbf6'; // unanswered answer button
-const BTN_BORDER = '#c2ad84';
-const RESOLVED_FACE = '#f4eddd'; // dimmed, once answered
-const RESOLVED_TEXT = '#8a795f';
+import { display, garamond, paper, pigment, quiz, quizRadius } from '@/styles/paper';
 
 const fillBar = keyframes`from { width: 0%; } to { width: 100%; }`;
 
@@ -82,19 +75,7 @@ export function QuizPlayPanel(p: PlayProps) {
         <Box sx={{ width: '1px', height: 18, bgcolor: paper.line }} />
         <ScoreStat label={de.quiz.play.streakLabel} value={p.stats.streak} />
         <Box sx={{ flex: 1 }} />
-        <ButtonBase
-          onClick={p.onQuit}
-          sx={{
-            fontFamily: garamond,
-            fontSize: 15,
-            color: paper.sepia,
-            px: 0.5,
-            borderRadius: 1,
-            '&:hover': { color: paper.viridian },
-          }}
-        >
-          {de.quiz.play.quit}
-        </ButtonBase>
+        <QuietButton onClick={p.onQuit}>{de.quiz.play.quit}</QuietButton>
       </Box>
 
       <QuestionVisual
@@ -123,7 +104,7 @@ export function QuizPlayPanel(p: PlayProps) {
               sx={{
                 position: 'relative',
                 height: { xs: 58, sm: 64 },
-                borderRadius: '5px',
+                borderRadius: quizRadius,
                 border: '1px solid',
                 fontFamily: display,
                 fontWeight: 500,
@@ -136,14 +117,16 @@ export function QuizPlayPanel(p: PlayProps) {
                         ? 'rgba(64,130,109,0.10)'
                         : showWrong
                           ? 'rgba(227,66,52,0.10)'
-                          : RESOLVED_FACE,
+                          : quiz.resolvedFace,
                       borderColor: showCorrect ? paper.viridian : showWrong ? pigment.vermilion : 'transparent',
-                      color: showCorrect ? paper.ink : showWrong ? pigment.oxblood : RESOLVED_TEXT,
-                      '&.Mui-disabled': { color: showCorrect ? paper.ink : showWrong ? pigment.oxblood : RESOLVED_TEXT },
+                      color: showCorrect ? paper.ink : showWrong ? pigment.oxblood : quiz.resolvedText,
+                      '&.Mui-disabled': {
+                        color: showCorrect ? paper.ink : showWrong ? pigment.oxblood : quiz.resolvedText,
+                      },
                     }
                   : {
-                      bgcolor: BTN_FACE,
-                      borderColor: BTN_BORDER,
+                      bgcolor: quiz.face,
+                      borderColor: quiz.border,
                       color: paper.ink,
                       boxShadow: '0 1px 2px rgba(60,40,20,0.05)',
                       '&:hover': {

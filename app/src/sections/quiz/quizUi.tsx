@@ -6,11 +6,7 @@ import { Box, Button, ButtonBase, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import type { ReactNode } from 'react';
 
-import { garamond, paper } from '@/styles/paper';
-
-// Quiz-local control tokens (the card and its controls are a work surface, not
-// the paper identity).
-export const CHIP_BORDER = '#c2ad84';
+import { garamond, paper, quiz, quizRadius } from '@/styles/paper';
 
 // The dark "ink" call-to-action ("Quiz starten →", "Weiter →", "Weiter üben →").
 // Full width on mobile, inline on desktop.
@@ -78,10 +74,10 @@ export function OptionChip({
         gap: 0.75,
         px: 2,
         py: 1,
-        borderRadius: '5px',
+        borderRadius: quizRadius,
         border: '1px solid',
         borderWidth: selected ? '1.5px' : '1px',
-        borderColor: selected ? paper.viridian : CHIP_BORDER,
+        borderColor: selected ? paper.viridian : quiz.border,
         bgcolor: selected ? alpha(paper.viridian, 0.1) : 'transparent',
         color: selected ? paper.ink : paper.sepia,
         fontFamily: garamond,
@@ -117,5 +113,27 @@ export function QuizEyebrow({ children }: { children: ReactNode }) {
         {children}
       </Typography>
     </Box>
+  );
+}
+
+// A quiet inline text affordance (the play screen's "Abbrechen", the results
+// screen's "Einstellungen"): garamond, sepia, viridian on hover. One primitive
+// so the two read identically instead of each rolling its own button reset.
+export function QuietButton({ onClick, children }: { onClick: () => void; children: ReactNode }) {
+  return (
+    <ButtonBase
+      onClick={onClick}
+      sx={{
+        fontFamily: garamond,
+        fontSize: 15,
+        color: paper.sepia,
+        px: 0.5,
+        borderRadius: quizRadius,
+        transition: 'color 120ms ease',
+        '&:hover': { color: paper.viridian },
+      }}
+    >
+      {children}
+    </ButtonBase>
   );
 }

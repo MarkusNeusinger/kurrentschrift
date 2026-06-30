@@ -19,7 +19,6 @@ import { Box, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useEffect, useState } from 'react';
 
-import { InfoHint } from '@/components/InfoHint';
 import { WrittenGlyph } from '@/components/WrittenGlyph';
 import { WrittenWord } from '@/components/WrittenWord';
 import { de } from '@/locales';
@@ -29,7 +28,9 @@ import { cardSurface, display, inkState, paper, pigment, schulheft } from '@/sty
 
 // Quiz-local rendering tokens (the card is a sanctioned work surface, not the
 // paper identity): the inner hairline frame and the two comparison ink tones.
-const INNER_FRAME = paper.lo;
+// paper.line (not the fainter paper.lo) so the frame + centre divider actually
+// read on the warm card.
+const INNER_FRAME = paper.line;
 const YOURS_INK = schulheft.marginRed; // the learner's wrong pick, in printed-margin red
 const RIGHT_INK = inkState.oxidized; // the correct form, near-black
 
@@ -170,16 +171,11 @@ export function QuestionVisual({
             left: '50%',
             width: '1px',
             background: `linear-gradient(${INNER_FRAME}, transparent)`,
-            opacity: 0.45,
+            opacity: 0.6,
             pointerEvents: 'none',
           }}
         />
       )}
-
-      {/* Info affordance. */}
-      <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 3 }}>
-        <InfoHint title={de.quiz.play.cardInfoTitle}>{de.quiz.play.cardInfo}</InfoHint>
-      </Box>
 
       {isWrong ? (
         // ——— comparison: deine Wahl ↔ richtig ———
@@ -239,7 +235,7 @@ export function QuestionVisual({
                 fontFamily: display,
                 fontWeight: 600,
                 color: paper.ink,
-                opacity: 0.06,
+                opacity: 0.1,
                 fontSize: isWord ? { xs: '2.8rem', sm: '4.6rem' } : { xs: '7rem', sm: '11rem' },
                 lineHeight: 1,
                 whiteSpace: 'nowrap',

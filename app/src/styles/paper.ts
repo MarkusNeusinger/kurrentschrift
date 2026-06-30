@@ -54,6 +54,22 @@ export const schulheft = {
 // not part of the MUI palette.
 export const cardSurface = '#f6f0e3';
 
+// Quiz answer-surface tokens — the buttons, chips and result pills on the quiz
+// "Arbeitsfläche" (design handoff "Tinte & Vergleich"). A work-surface palette,
+// intentionally a touch cleaner than the paper identity; kept here as the single
+// source so the setup/play/results panels can't drift apart on these values.
+export const quiz = {
+  face: '#fdfbf6', // unanswered answer button + result pill face
+  border: '#c2ad84', // answer button + setup chip border
+  pillBorder: '#e0d2b2', // result confusion/miss pill border
+  resolvedFace: '#f4eddd', // answered-but-not-picked button face
+  resolvedText: '#8a795f', // answered-but-not-picked button text
+} as const;
+
+// One radius across the quiz surface — the chips, answer buttons and result
+// pills used to mix 5/6/7px; this aligns them with the 6px cards + InkButton.
+export const quizRadius = '6px';
+
 // Period pigment set — the chromolithography palette of German school wall
 // charts (Schulwandbilder) and period print. Named real pigments; hexes
 // approximate aged prints. Any contrast derivative introduced downstream must

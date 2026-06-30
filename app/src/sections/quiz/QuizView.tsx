@@ -52,7 +52,13 @@ export function QuizView() {
 
   return (
     <PublicLayout footer>
-      <PageContainer width="narrow" sx={{ pt: { xs: 4, sm: 6 } }}>
+      {/* The content rides the shared `text` column, capped to a compact
+          measure so the answer grid doesn't sprawl. On setup it sits flush-left
+          so the page header lines up with the other tool pages (/tafel,
+          /federprobe); once the drill starts (no header) the flashcards centre
+          for focus. */}
+      <PageContainer width="text" sx={{ pt: { xs: 4, sm: 6 } }}>
+        <Box sx={{ maxWidth: 760, mx: onSetup ? 0 : 'auto' }}>
         {onSetup && (
           <PageHeader eyebrow={de.common.nav.read} title={de.quiz.title}>
             {de.quiz.setup.introLead}
@@ -96,6 +102,7 @@ export function QuizView() {
             onQuit={quiz.finish}
           />
         )}
+        </Box>
       </PageContainer>
     </PublicLayout>
   );

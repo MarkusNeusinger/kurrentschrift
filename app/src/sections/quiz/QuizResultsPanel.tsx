@@ -11,9 +11,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { WrittenGlyph } from '@/components/WrittenGlyph';
 import { WrittenWord } from '@/components/WrittenWord';
 import { de } from '@/locales';
-import { InkButton, QuizEyebrow } from '@/sections/quiz/quizUi';
+import { InkButton, QuietButton, QuizEyebrow } from '@/sections/quiz/quizUi';
 import { type ConfusionMap, type MissMap, type TallyRef } from '@/sections/quiz/useQuizEngine';
-import { cardSurface, display, garamond, paper, pigment } from '@/styles/paper';
+import { cardSurface, display, garamond, paper, pigment, quiz, quizRadius } from '@/styles/paper';
 
 interface ResultsProps {
   stats: { correct: number; seen: number; streak: number; bestStreak: number };
@@ -96,9 +96,9 @@ export function QuizResultsPanel(p: ResultsProps) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 1.25,
-                  bgcolor: '#fdfbf6',
-                  border: '1px solid #e0d2b2',
-                  borderRadius: '7px',
+                  bgcolor: quiz.face,
+                  border: `1px solid ${quiz.pillBorder}`,
+                  borderRadius: quizRadius,
                   px: 1.75,
                   py: 1,
                 }}
@@ -154,9 +154,9 @@ export function QuizResultsPanel(p: ResultsProps) {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 0.75,
-                  bgcolor: '#fdfbf6',
-                  border: '1px solid #e0d2b2',
-                  borderRadius: '7px',
+                  bgcolor: quiz.face,
+                  border: `1px solid ${quiz.pillBorder}`,
+                  borderRadius: quizRadius,
                   px: 1.25,
                   py: 0.75,
                 }}
@@ -177,23 +177,7 @@ export function QuizResultsPanel(p: ResultsProps) {
         <InkButton onClick={p.onReplay} fullWidthMobile={false}>
           {de.quiz.results.replay} →
         </InkButton>
-        <Typography
-          component="button"
-          type="button"
-          onClick={p.onSetup}
-          sx={{
-            fontFamily: garamond,
-            fontSize: 15,
-            color: paper.sepia,
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            p: 0,
-            '&:hover': { color: paper.viridian },
-          }}
-        >
-          {de.quiz.results.settings}
-        </Typography>
+        <QuietButton onClick={p.onSetup}>{de.quiz.results.settings}</QuietButton>
       </Box>
     </Stack>
   );
