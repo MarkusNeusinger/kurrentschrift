@@ -123,4 +123,9 @@ export const common = {
     ariaLabel: 'Kurrent-Buchstabe, wie geschrieben',
     replay: 'noch einmal schreiben',
   },
+  // WrittenWord — neutral label for a written word whose text must NOT leak
+  // into the DOM (the quiz prompt before the answer).
+  writtenWord: {
+    ariaLabelNeutral: 'Geschriebenes Wort',
+  },
 } as const;

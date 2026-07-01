@@ -24,7 +24,9 @@ import pytest
         "core.database.repositories",
         "core.database.models",
         "api.schemas",
+        "api.rendering",
         "api.routers.templates",
+        "api.routers.write",
         "api.main",
     ],
 )

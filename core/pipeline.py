@@ -749,6 +749,51 @@ def written_preview_for_canonical(
     }
 
 
+def render_payload_for_template(
+    glyph_row: dict, style_ratio: list[float], width_resolver: str = "pressure", constant_nib_units: float | None = None
+) -> dict:
+    """Render-only payload for the public writer — no chart I/O, no pixel columns.
+
+    The public word/letter writer needs exactly the geometry a STORED template
+    already carries: capsule-union silhouettes + centerlines in template space,
+    the resolved widths, the lineature guides and the §4 connection metadata
+    (entry/exit_pt/advance). `diagnostic_for_glyph` computes all of this too,
+    but re-runs the image pipeline (chart load, binarize, skeletonize) per
+    request for admin-only overlay columns the writer discards; this is the
+    same render geometry without that cost — the stored-template sibling of
+    `written_preview_for_canonical`.
+
+    `constant_nib_units` mirrors the diagnostic's source-pooled Gleichzug nib
+    (architektur.md §5): every glyph of a constant-width source renders at ONE
+    pen thickness instead of its own measured constant.
+    """
+    anchors_template = np.asarray(glyph_row["anchors"], dtype=float)
+    half_widths_template = resolve_half_widths(np.asarray(glyph_row["half_widths"], dtype=float), width_resolver)
+    if width_resolver == "constant" and constant_nib_units is not None:
+        half_widths_template = np.full(len(half_widths_template), float(constant_nib_units))
+    trace_meta = glyph_row.get("trace_meta") or {}
+    stroke_starts = trace_meta.get("stroke_starts")
+    corner_anchors = trace_meta.get("corner_anchors") or []
+
+    outline_paths = multi_stroke_silhouettes(
+        anchors_template, half_widths_template, stroke_starts, 90.0, n=240, corner_anchors=corner_anchors
+    )
+    centerlines_template = multi_stroke_centerlines(
+        anchors_template, half_widths_template, stroke_starts, 90.0, n=240, corner_anchors=corner_anchors
+    )
+
+    return {
+        "anchors_template": [[round(float(x), 4), round(float(y), 4)] for x, y in anchors_template],
+        "half_widths_template": [round(float(v), 4) for v in half_widths_template],
+        "outline_paths": outline_paths,
+        "centerlines_template": centerlines_template,
+        "template_guides": template_guides(style_ratio),
+        "entry": glyph_row.get("entry") or {},
+        "exit_pt": glyph_row.get("exit_pt") or {},
+        "advance": glyph_row.get("advance"),
+    }
+
+
 # ------------------------------------------------------------------ diagnostic
 
 

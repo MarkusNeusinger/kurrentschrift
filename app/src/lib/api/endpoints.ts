@@ -18,6 +18,7 @@ import type {
   StyleOut,
   TracePreviewOut,
   TraceRequest,
+  WriteGlyphsOut,
 } from '@/lib/api/types';
 
 // Where to reach the API. The apex `/api/*` is gated by Cloudflare Access — it
@@ -114,6 +115,17 @@ export const getQuality = (sourceId: string, glyphKey: string): Promise<QualityC
 
 export const getDiagnostic = (sourceId: string, glyphKey: string): Promise<DiagnosticData> =>
   apiFetch(src(sourceId, `/templates/${encodeURIComponent(glyphKey)}/diagnostic`)).then(asJson<DiagnosticData>);
+
+// Batch render payloads for the public writer (one round trip per word/Tafel).
+// Keys are sorted so the same letter set always yields the same URL — the
+// response carries Cache-Control, so a stable URL turns repeat visits into
+// browser/edge cache hits.
+export const getWriteGlyphs = (sourceId: string, keys: string[], retry?: RetryOptions): Promise<WriteGlyphsOut> =>
+  apiFetch(
+    src(sourceId, `/write/glyphs?keys=${encodeURIComponent([...keys].sort().join(','))}`),
+    {},
+    retry,
+  ).then(asJson<WriteGlyphsOut>);
 
 export const getFit = (
   sourceId: string,

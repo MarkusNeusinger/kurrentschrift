@@ -133,6 +133,38 @@ function assignPositions(tokens: RawToken[]): GlyphSlot[] {
   });
 }
 
+// Fallback for a ligature whose canonical is missing at fetch time: the
+// closed-set cluster decomposes into its constituent letters, so 'Schule'
+// without a ch-template still writes c+h with a generated Übergang instead of
+// leaving a connector-severing hole. The sub-letters inherit the cluster's
+// word position (first keeps `initial`, last keeps `final`, the rest is
+// medial). ß stays atomic: its historic decomposition (ſs/ſz) is itself an
+// allograph question — a naive split would write ſſ mid-word.
+export function decomposeLigatureSlot(slot: GlyphSlot): GlyphSlot[] | null {
+  if (!slot.ligature || !slot.position) return null;
+  const chars = [...slot.text];
+  if (chars.length < 2) return null; // ß
+  return chars.map((raw, i): GlyphSlot => {
+    const position: Position =
+      i === 0 && slot.position === 'initial'
+        ? 'initial'
+        : i === chars.length - 1 && slot.position === 'final'
+          ? 'final'
+          : 'medial';
+    const c = raw.toLowerCase();
+    // The s in ſt (typed 's' or 'ſ') follows the allograph rule for its slot.
+    const letter =
+      c === 's' || c === 'ſ' ? (position === 'final' ? ROUND_S : LONG_S) : LETTER_BY_CHAR.get(c) ?? null;
+    return {
+      key: letter ? glyphKeyFor(letter, position) : null,
+      text: raw,
+      position,
+      ligature: false,
+      space: false,
+    };
+  });
+}
+
 // One word → its ordered glyph slots (with positions + allographs resolved).
 export function shapeWord(word: string): GlyphSlot[] {
   if (!word) return [];

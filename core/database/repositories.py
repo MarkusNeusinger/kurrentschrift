@@ -117,12 +117,23 @@ class TemplateRepository:
         )
         return list(result.scalars().all())
 
+    async def get_many(self, style_id: str, glyph_keys: list[str], variant: int = 0) -> list[Template]:
+        """The requested keys' templates in one query (the batch write endpoint)."""
+        if not glyph_keys:
+            return []
+        result = await self.session.execute(
+            select(Template).where(
+                Template.style_id == style_id, Template.glyph_key.in_(glyph_keys), Template.variant == variant
+            )
+        )
+        return list(result.scalars().all())
+
     async def half_widths_for_source(self, style_id: str, provenance_source_id: str) -> list[list[float]]:
         """Just the `half_widths` arrays of a style's templates traced from one source.
 
         Selects the single JSON column (not whole Template rows with their large
         anchors/raw_path/trace_meta payloads) — the source-pooled constant nib
-        (`api.routers.templates._pooled_constant_nib`) only needs the widths.
+        (`api.rendering.pooled_constant_nib`) only needs the widths.
         """
         result = await self.session.execute(
             select(Template.half_widths).where(

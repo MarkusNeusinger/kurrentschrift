@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from core.pipeline import canonical_from_path, diagnostic_for_glyph
+from core.pipeline import canonical_from_path, diagnostic_for_glyph, render_payload_for_template
 
 
 def _vertical_stylus_path(num: int = 40, x_global: int = 400) -> list[dict]:
@@ -295,6 +295,74 @@ def test_diagnostic_connection_metadata_defaults_empty(synthetic_chart_path, syn
     assert diag["entry"] == {}
     assert diag["exit_pt"] == {}
     assert diag["advance"] is None
+
+
+def test_render_payload_matches_diagnostic_geometry(synthetic_chart_path, synthetic_bbox):
+    """The chart-free render payload (public write endpoints) carries exactly the
+    diagnostic's template geometry and connection metadata — and none of the
+    admin-only pixel/crop columns the image pipeline exists for."""
+    canon = canonical_from_path(
+        raw_path=_vertical_stylus_path(),
+        bbox=synthetic_bbox,
+        chart_path=synthetic_chart_path,
+        glyph="l",
+        position="initial",
+        n_anchors=20,
+    )
+    glyph_row = {
+        "anchors": canon["anchors"],
+        "half_widths": canon["half_widths"],
+        "trace_meta": canon["trace_meta"],
+        "entry": canon["entry"],
+        "exit_pt": canon["exit_pt"],
+        "advance": canon["advance"],
+    }
+    diag = diagnostic_for_glyph(
+        glyph_row=glyph_row, bbox=synthetic_bbox, chart_path=synthetic_chart_path, style_ratio=[2, 1, 2], slant_deg=65.0
+    )
+    render = render_payload_for_template(glyph_row, [2, 1, 2])
+    assert render["anchors_template"] == diag["anchors_template"]
+    assert render["half_widths_template"] == diag["half_widths_template"]
+    assert render["outline_paths"] == diag["outline_paths"]
+    assert render["centerlines_template"] == diag["centerlines_template"]
+    assert render["template_guides"] == diag["template_guides"]
+    assert render["entry"] == canon["entry"]
+    assert render["exit_pt"] == canon["exit_pt"]
+    assert render["advance"] == canon["advance"]
+    for admin_only in (
+        "crop_size",
+        "skeleton_polyline_px",
+        "anchors_px",
+        "half_widths_px",
+        "outline_polygon",
+        "outline_polygons",
+        "baseline_y_crop",
+        "midband_y_crop",
+        "slant_deg",
+        "corner_anchors",
+    ):
+        assert admin_only not in render
+
+
+def test_render_payload_constant_nib_override(synthetic_chart_path, synthetic_bbox):
+    """The source-pooled Gleichzug nib collapses the rendered widths to that one
+    value under 'constant'; the pressure resolver ignores it."""
+    canon = canonical_from_path(
+        raw_path=_vertical_stylus_path(),
+        bbox=synthetic_bbox,
+        chart_path=synthetic_chart_path,
+        glyph="l",
+        position="initial",
+        n_anchors=20,
+    )
+    glyph_row = {"anchors": canon["anchors"], "half_widths": canon["half_widths"], "trace_meta": canon["trace_meta"]}
+    constant = render_payload_for_template(glyph_row, [1, 1, 1], width_resolver="constant", constant_nib_units=0.07)
+    assert set(constant["half_widths_template"]) == {0.07}
+    pressure = render_payload_for_template(glyph_row, [1, 1, 1], constant_nib_units=0.07)
+    assert set(pressure["half_widths_template"]) != {0.07}
+    # A legacy row without connection fields still renders.
+    assert constant["entry"] == {}
+    assert constant["advance"] is None
 
 
 def test_diagnostic_constant_resolver_renders_uniform_widths(synthetic_chart_path, synthetic_bbox):

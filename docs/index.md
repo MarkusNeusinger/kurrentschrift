@@ -30,6 +30,7 @@ nächsten Meilensteine.
 | Schriftkunde-Fakten (Lineatur, Schräglage, Federn) nachschlagen | [Schriftkunde](schriftkunde/allgemein.md) |
 | Fakten zu Kurrent / Sütterlin / Offenbacher nachschlagen | [Kurrent](schriftkunde/kurrent.md) · [Sütterlin](schriftkunde/suetterlin.md) · [Offenbacher](schriftkunde/offenbacher.md) |
 | Offene Vorschläge für Konzept-Änderungen sehen | [Planänderungen](proposals/planaenderungen.md) |
+| Schreib-API, Python-Komposition & Wort-Bench-Plan nachschlagen | [Schreibsystem und Wort-Bench](proposals/schreibsystem-und-wortbench.md) |
 
 ---
 
@@ -67,7 +68,8 @@ docs/
 │   ├── lateinische-und-englische-schreibschrift.md  # Abgrenzung Kurrent ↔ lateinische/englische Schreibschrift, Zweischriftigkeit
 │   └── digital.md                # Unicode (ſ U+017F, Ligaturen), UNZ/MUFI, Fonts, Transkription
 └── proposals/                    # Vorgeschlagene Konzept-Änderungen, noch nicht freigegeben
-    └── planaenderungen.md        # Staging: §2/§4 Bigramme, §6.1 Positions-Statistik, M4+ core/orthography.py
+    ├── planaenderungen.md        # Staging: §2/§4 Bigramme, §6.1 Positions-Statistik, M4+ core/orthography.py
+    └── schreibsystem-und-wortbench.md  # Audit 2026-07-01: Schreib-API, core/compose.py-Port, Wort-Bench, Übergangs-Redesign (Phasen A–E)
 ```
 
 `docs/notes/` enthält zusätzlich Recherchematerial und operative
@@ -175,6 +177,11 @@ Vorgeschlagene Änderungen an den Konzept-Dokumenten, noch nicht freigegeben.
   Vorschläge: §3 `position` als Lehrtafel-Rolle präzisieren; §2/§4
   systematische Bigramm-Extraktion aus Beispieltext; §3/§6.1
   Positions-Verteilung datengetrieben; M4+-Modul `core/orthography.py`
+- **[Schreibsystem und Wort-Bench](proposals/schreibsystem-und-wortbench.md)** —
+  Audit 2026-07-01: öffentliche Schreib-API (Buchstabe + Wort) statt
+  `/diagnostic`-Mitnutzung, Port der Wortkomposition nach
+  `core/compose.py`, Wort-Bench gegen verifizierte PD-Wortvorlagen
+  (gleiche Hand je Tafel), Übergangs-Redesign mit Exit-Klassen (Phasen A–E)
 
 ---
 

@@ -4,14 +4,17 @@
 // single-glyph sibling is `WrittenGlyph`; this one composes many.
 //
 // Pipeline: `shapeText` turns the string into glyph slots (positions, long-s,
-// ligatures); we fetch each glyph's `DiagnosticData` (centerlines + silhouette
-// rings + entry/exit); `composeWord` lays them along one baseline and generates
-// the connectors; we fill every silhouette + stroke every connector inside one
-// group, then mask it with a wide path swept along each centerline via an
-// animated `stroke-dashoffset`. The group carries BOTH fill (glyph silhouettes)
-// and stroke (connectors) so the iron-gall ink settle ages the whole word at
-// once. Coordinates: template space (baseline = 0, y up); SVG y points down, so
-// y is negated in the rendered data.
+// ligatures); ONE batch request (shared render cache → GET /write/glyphs)
+// fetches every glyph's `GlyphRenderData` (centerlines + silhouette rings +
+// entry/exit); a ligature whose canonical is missing decomposes into its
+// letters and their payloads arrive in a second round; `composeWord` lays the
+// slots along one baseline and generates the connectors; we fill every
+// silhouette + stroke every connector inside one group, then mask it with a
+// wide path swept along each centerline via an animated `stroke-dashoffset`.
+// The group carries BOTH fill (glyph silhouettes) and stroke (connectors) so
+// the iron-gall ink settle ages the whole word at once. Coordinates: template
+// space (baseline = 0, y up); SVG y points down, so y is negated in the
+// rendered data.
 
 import ReplayIcon from '@mui/icons-material/Replay';
 import { Box, CircularProgress, IconButton, keyframes } from '@mui/material';
@@ -20,8 +23,8 @@ import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { CONFIG } from '@/global-config';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { composeWord, type ComposedWord, type Point } from '@/domain/compose';
-import { glyphKeysOf, shapeText } from '@/domain/shaping';
-import { ApiError, getDiagnostic, type DiagnosticData } from '@/lib/api';
+import { decomposeLigatureSlot, glyphKeysOf, shapeText, type GlyphSlot } from '@/domain/shaping';
+import { fetchRenderGlyphs, type GlyphRenderData } from '@/lib/api';
 import { ringsToPathD } from '@/lib/svg';
 import { de } from '@/locales';
 import { inkState, schulheft } from '@/styles/paper';
@@ -38,22 +41,27 @@ const MIN_ITEM_MS = 120;
 
 const GUIDE = schulheft.rulingBlueFaded;
 
-// Diagnostics are a backend compute; cache the in-flight/resolved promise per
-// (source, glyph) so a repeated letter — or a second WrittenWord on the page —
-// never refetches. A 404 (no canonical) resolves to null, not a throw.
-const cache = new Map<string, Promise<DiagnosticData | null>>();
-function fetchGlyph(sourceId: string, key: string): Promise<DiagnosticData | null> {
-  const id = `${sourceId}|${key}`;
-  let p = cache.get(id);
-  if (!p) {
-    p = getDiagnostic(sourceId, key).catch((e) => {
-      if (e instanceof ApiError && e.status === 404) return null;
-      cache.delete(id); // a transient error shouldn't be cached — allow a retry
-      throw e;
-    });
-    cache.set(id, p);
+// Fetch the word's glyphs (one batch via the shared render cache), then
+// decompose any closed-set ligature whose canonical is missing into its
+// constituent letters and fetch those too — at most one extra round trip, only
+// when something was actually missing.
+async function resolveSlots(
+  sourceId: string,
+  baseSlots: GlyphSlot[],
+): Promise<{ slots: GlyphSlot[]; data: Map<string, GlyphRenderData | null> }> {
+  let slots = baseSlots;
+  let data = await fetchRenderGlyphs(sourceId, glyphKeysOf(slots));
+  if (slots.some((s) => s.ligature && s.key && data.get(s.key) === null)) {
+    slots = slots.flatMap((s) =>
+      s.ligature && s.key && data.get(s.key) === null ? decomposeLigatureSlot(s) ?? [s] : [s],
+    );
+    const extra = glyphKeysOf(slots).filter((k) => !data.has(k));
+    if (extra.length) {
+      const more = await fetchRenderGlyphs(sourceId, extra);
+      data = new Map([...data, ...more]);
+    }
   }
-  return p;
+  return { slots, data };
 }
 
 function chordLength(points: Point[]): number {
@@ -94,6 +102,10 @@ interface Props {
   onResolved?: (info: { missing: string[]; rendered: number }) => void;
   // A non-404 fetch error (e.g. cold-start retries exhausted).
   onError?: (e: unknown) => void;
+  // Accessible name of the rendered SVG. Defaults to the written text; the quiz
+  // passes a neutral label so the image does not leak the solution word to the
+  // DOM/screen reader before the answer.
+  ariaLabel?: string;
 }
 
 const MAX_W = 640;
@@ -111,21 +123,23 @@ export function WrittenWord({
   showReplay = false,
   onResolved,
   onError,
+  ariaLabel,
 }: Props) {
   const reducedMotion = usePrefersReducedMotion();
   const uid = useId();
-  const slots = useMemo(() => shapeText(text), [text]);
-  const [dataByKey, setDataByKey] = useState<Map<string, DiagnosticData | null> | null>(null);
+  const baseSlots = useMemo(() => shapeText(text), [text]);
+  const [resolved, setResolved] = useState<{
+    slots: GlyphSlot[];
+    data: Map<string, GlyphRenderData | null>;
+  } | null>(null);
   const [run, setRun] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
-    setDataByKey(null);
-    const keys = glyphKeysOf(slots);
-    Promise.all(keys.map((k) => fetchGlyph(sourceId, k).then((d) => [k, d] as const)))
-      .then((entries) => {
-        if (cancelled) return;
-        setDataByKey(new Map(entries));
+    setResolved(null);
+    resolveSlots(sourceId, baseSlots)
+      .then((r) => {
+        if (!cancelled) setResolved(r);
       })
       .catch((e) => {
         if (!cancelled) onError?.(e);
@@ -135,12 +149,13 @@ export function WrittenWord({
     };
     // onError intentionally omitted: a fresh closure each render must not refetch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slots, sourceId]);
+  }, [baseSlots, sourceId]);
 
   const composed: ComposedWord | null = useMemo(() => {
-    if (!dataByKey) return null;
-    return composeWord(slots.map((s) => ({ key: s.key, space: s.space, data: s.key ? dataByKey.get(s.key) ?? null : null })));
-  }, [dataByKey, slots]);
+    if (!resolved) return null;
+    const { slots, data } = resolved;
+    return composeWord(slots.map((s) => ({ key: s.key, space: s.space, data: s.key ? data.get(s.key) ?? null : null })));
+  }, [resolved]);
 
   useEffect(() => {
     if (composed) onResolved?.({ missing: composed.missing, rendered: composed.items.length });
@@ -198,7 +213,7 @@ export function WrittenWord({
         viewBox={`${minX} ${vbY} ${vbW} ${vbH}`}
         preserveAspectRatio="xMidYMid meet"
         role="img"
-        aria-label={text}
+        aria-label={ariaLabel ?? text}
         style={{ display: 'block', background: surfaceBg, maxWidth: '100%', overflow: 'visible' }}
       >
         <defs>
