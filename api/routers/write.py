@@ -55,7 +55,7 @@ async def get_write_glyphs(
 
     Keys without a canonical land in `missing` instead of failing the batch:
     the client renders what exists and falls back per slot (ligature decompose,
-    "Noch nicht kuratiert" notice).
+    "not yet curated" notice).
     """
     requested = [k for k in dict.fromkeys(k.strip() for k in keys.split(",")) if k]
     if not requested:
@@ -66,18 +66,21 @@ async def get_write_glyphs(
     style_id, style_ratio, _slant, width_resolver = await resolve_style(source, db)
     nib = await pooled_constant_nib(db, style_id, source.id) if width_resolver == "constant" else None
     templates = await TemplateRepository(db).get_many(source.style_id, requested)
-    by_key = {t.glyph_key: t for t in templates}
-    missing = [k for k in requested if k not in by_key]
+    # Dereference the ORM rows into plain dicts ON the event loop — touching a
+    # session-bound instance from the threadpool is not thread-safe (an
+    # expired/deferred attribute would lazy-load off-loop).
+    rows = {t.glyph_key: _template_to_glyph_row(t) for t in templates}
+    missing = [k for k in requested if k not in rows]
 
     # Silhouette/centerline sampling is pure numpy but adds up over ~30 glyphs —
     # keep it off the event loop like the diagnostic does.
     def compute() -> list[dict]:
         out: list[dict] = []
         for key in requested:
-            t = by_key.get(key)
-            if t is None:
+            row = rows.get(key)
+            if row is None:
                 continue
-            payload = render_payload_for_template(_template_to_glyph_row(t), style_ratio, width_resolver, nib)
+            payload = render_payload_for_template(row, style_ratio, width_resolver, nib)
             payload["glyph_key"] = key
             out.append(payload)
         return out
