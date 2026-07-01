@@ -9,14 +9,18 @@ headers so browser + edge absorb repeat traffic
 gate — same visibility as /diagnostic.
 """
 
+import unicodedata
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import require_db, require_source
 from api.rendering import pooled_constant_nib, resolve_style
+from core.compose import compose_word
 from core.database import Source, Template, TemplateRepository
 from core.pipeline import render_payload_for_template
+from core.shaping import decompose_ligature_slot, glyph_keys_of, shape_text
 
 
 router = APIRouter(prefix="/sources/{source_id}/write", tags=["write"])
@@ -31,6 +35,10 @@ CACHE_CONTROL = "public, max-age=300, s-maxage=86400, stale-while-revalidate=604
 # A word/sheet needs one entry per UNIQUE glyph key — the full Tafel is ~30,
 # the /federprobe input is capped at 48 chars, so 80 bounds any legitimate use.
 MAX_BATCH_KEYS = 80
+
+# /word input bound: comfortably above the /federprobe cap (48) and the
+# Schriftkunde specimen, small enough to bound compose CPU per request.
+MAX_TEXT_LEN = 160
 
 
 def _template_to_glyph_row(t: Template) -> dict:
@@ -88,6 +96,62 @@ async def get_write_glyphs(
     glyphs = await run_in_threadpool(compute)
     response.headers["Cache-Control"] = CACHE_CONTROL
     return {"glyphs": glyphs, "missing": missing}
+
+
+@router.get("/word")
+async def get_write_word(
+    response: Response,
+    text: str = Query(..., description="the word or line to write (NFC-normalised, trimmed, ≤160 chars)"),
+    source: Source = Depends(require_source),
+    db: AsyncSession = Depends(require_db),
+):
+    """Compose a whole word/line server-side — ONE cacheable request per text.
+
+    Shaping (long-s rule, closed ligature set, positions), glyph placement and
+    the generated Übergänge all run in Python (core.shaping + core.compose, the
+    single composition source of truth); the client only animates the returned
+    draw items in order. A closed-set ligature without a canonical decomposes
+    into its letters server-side, mirroring the old client fallback; whatever
+    still has no template lands in ``missing`` and composes as a gap.
+    """
+    normalized = unicodedata.normalize("NFC", text).strip()
+    if not normalized:
+        raise HTTPException(422, detail="text must contain at least one non-space character")
+    if len(normalized) > MAX_TEXT_LEN:
+        raise HTTPException(422, detail=f"text is limited to {MAX_TEXT_LEN} characters")
+
+    style_id, style_ratio, _slant, width_resolver = await resolve_style(source, db)
+    nib = await pooled_constant_nib(db, style_id, source.id) if width_resolver == "constant" else None
+
+    repo = TemplateRepository(db)
+    slots = shape_text(normalized)
+    rows: dict[str, dict] = {
+        t.glyph_key: _template_to_glyph_row(t) for t in await repo.get_many(source.style_id, glyph_keys_of(slots))
+    }
+    # Ligature fallback (one extra query at most, only when something is missing).
+    if any(s.ligature and s.key and s.key not in rows for s in slots):
+        expanded = []
+        for s in slots:
+            if s.ligature and s.key and s.key not in rows:
+                expanded.extend(decompose_ligature_slot(s) or [s])
+            else:
+                expanded.append(s)
+        slots = expanded
+        extra = [k for k in glyph_keys_of(slots) if k not in rows]
+        for t in await repo.get_many(source.style_id, extra):
+            rows[t.glyph_key] = _template_to_glyph_row(t)
+
+    # Render geometry + composition are pure numpy/python — off the event loop.
+    def compute() -> dict:
+        payloads = {
+            key: (render_payload_for_template(rows[key], style_ratio, width_resolver, nib) if key in rows else None)
+            for key in glyph_keys_of(slots)
+        }
+        return compose_word(slots, payloads)
+
+    composed = await run_in_threadpool(compute)
+    response.headers["Cache-Control"] = CACHE_CONTROL
+    return {"text": normalized, **composed}
 
 
 @router.get("/glyphs/{glyph_key}")

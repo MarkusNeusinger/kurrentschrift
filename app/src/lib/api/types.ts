@@ -218,6 +218,36 @@ export interface WriteGlyphsOut {
   missing: string[];
 }
 
+// One stroke/connector of a composed word, in the composed word frame (y up),
+// in writing order. A glyph stroke carries filled silhouette `rings`; a
+// connector carries a constant `stroke_width`. Both carry the `centerline` the
+// renderer sweeps its reveal mask along (`mask_width` wide). `lift` = a pen
+// lift precedes this item (short pause); `diacritic` marks the deferred
+// floating marks (i-dot, u-bow, umlaut) flushed after the word body.
+export interface DrawItemOut {
+  centerline: Array<[number, number]>;
+  // One stroke's silhouette rings (exterior + holes, drawn evenodd).
+  rings?: Array<Array<[number, number]>>;
+  stroke_width?: number;
+  mask_width: number;
+  lift: boolean;
+  diacritic?: boolean;
+}
+
+// GET …/write/word?text=… — the whole word/line composed server-side
+// (core.shaping + core.compose): shaping, placement and the generated
+// Übergänge in one cacheable request; the client only animates the items.
+export interface ComposedWordOut {
+  text: string;
+  items: DrawItemOut[];
+  bounds: { min_x: number; max_x: number; min_y: number; max_y: number };
+  // Lineature levels (from the first rendered glyph; all share the style ratio).
+  guides: GlyphRenderData['template_guides'] | null;
+  // glyph_keys that could not be placed (no canonical) — surfaced so callers
+  // can flag the letters; closed-set ligatures already decomposed server-side.
+  missing: string[];
+}
+
 export interface DiagnosticData extends GlyphRenderData {
   crop_size: { w: number; h: number };
   skeleton_polyline_px: Array<[number, number]>;
