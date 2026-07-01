@@ -143,7 +143,9 @@ kurrentschrift/
 │   ├── extract.py    # skeleton + distance transform; fill_small_holes (per-glyph speck fill)
 │   ├── template.py   # canonical sampling + outline + slant
 │   ├── chart.py      # load + crop_with_mask (eraser + patches + ink brush); crop_mask_to_png_bytes (mask preview)
-│   ├── pipeline.py   # canonical_from_path, diagnostic_for_glyph
+│   ├── pipeline.py   # canonical_from_path, diagnostic_for_glyph, render_payload_for_template
+│   ├── shaping.py    # text → glyph_keys (long-s, ligatures, decompose fallback; twin of app shaping.ts)
+│   ├── compose.py    # word composition (placement + Übergänge; single source of truth, golden-pinned)
 │   ├── widths.py     # resolve_half_widths — per-style width resolver (§5), render-time
 │   ├── fit.py        # M4: fit_template_to_instance, fit_glyph_to_crop
 │   └── database/     # SQLAlchemy Style + Hand + Source + Bbox + Template + Instance + Aggregate + repos
@@ -153,7 +155,8 @@ kurrentschrift/
 │   ├── dependencies.py
 │   ├── rendering.py  # style resolution + memoised source-pooled nib (templates + write)
 │   └── routers/      # health, styles, hands, sources, chart, bboxes, templates,
-│                     #   write (public batched render payloads, cached, no chart I/O)
+│                     #   write (public batched render payloads + /word server-side composition,
+│                     #   cached, no chart I/O)
 ├── app/              # React 19 + Vite + MUI SPA (anyplot-style)
 │   └── src/
 │       ├── routes/      # paths.ts route constants + lazy public/admin route sections
@@ -172,9 +175,9 @@ kurrentschrift/
 │       ├── lib/api/     # fetch client (cold-start retry, typed ApiError), endpoints,
 │       │                #   wire types hand-synced with api/schemas.py, renderCache.ts
 │       │                #   (shared render-data cache, batches /write/glyphs per word)
-│       ├── domain/      # glyphs.ts (registry + lock/split); shaping.ts (text → glyph_keys,
-│       │                #   long-s + ligatures); compose.ts (baseline layout + Übergänge;
-│       │                #   diacritics — i-/j-dot, u-bow, umlaut — deferred to word end)
+│       ├── domain/      # glyphs.ts (registry + lock/split); shaping.ts (text → glyph_keys —
+│       │                #   quiz word-bank gating only; word composition moved server-side
+│       │                #   to core/shaping.py + core/compose.py, compose.ts is gone)
 │       ├── context/     # AdminContext (admin boot data + selection state)
 │       ├── locales/     # de/ namespaces — ALL German UI strings (pre-i18n layer)
 │       └── hooks/, styles/, global-config.ts

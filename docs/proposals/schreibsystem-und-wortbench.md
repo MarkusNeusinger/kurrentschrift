@@ -1,6 +1,6 @@
 # Schreibsystem: Schreib-API, Python-Komposition, Wort-Bench
 
-**Status: Vorschlag (Phase A freigegeben und in Umsetzung, 2026-07-01).**
+**Status: Vorschlag; Phase A umgesetzt (PR #142, 2026-07-02), Phase B in Umsetzung.**
 Ergebnis des Schreibsystem-Audits vom 2026-07-01 (Repo-Audit + Live-Test
 der Prod-Federprobe + Quellen-Recherche). Ziel: Wörter und Sätze so
 schreiben, dass sie von einer echten Hand nicht zu unterscheiden sind —
@@ -99,7 +99,7 @@ Python-Komponist und eingefrorene Wort-Referenzen.
 
 ## 2. Plan
 
-### Phase A — Schreib-API + Quick Wins (in Umsetzung)
+### Phase A — Schreib-API + Quick Wins (umgesetzt: PR #142)
 
 Neuer öffentlicher Read-Router `api/routers/write.py`:
 

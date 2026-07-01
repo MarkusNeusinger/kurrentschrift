@@ -1,20 +1,18 @@
 // WrittenWord — writes an arbitrary word or line "as written": each glyph's
 // filled Sütterlin silhouette plus the generated connecting strokes (Übergänge),
 // revealed stroke-by-stroke in writing order across the whole word. The
-// single-glyph sibling is `WrittenGlyph`; this one composes many.
+// single-glyph sibling is `WrittenGlyph`; this one renders many.
 //
-// Pipeline: `shapeText` turns the string into glyph slots (positions, long-s,
-// ligatures); ONE batch request (shared render cache → GET /write/glyphs)
-// fetches every glyph's `GlyphRenderData` (centerlines + silhouette rings +
-// entry/exit); a ligature whose canonical is missing decomposes into its
-// letters and their payloads arrive in a second round; `composeWord` lays the
-// slots along one baseline and generates the connectors; we fill every
-// silhouette + stroke every connector inside one group, then mask it with a
-// wide path swept along each centerline via an animated `stroke-dashoffset`.
-// The group carries BOTH fill (glyph silhouettes) and stroke (connectors) so
-// the iron-gall ink settle ages the whole word at once. Coordinates: template
-// space (baseline = 0, y up); SVG y points down, so y is negated in the
-// rendered data.
+// Composition happens SERVER-SIDE (GET /write/word → core/shaping.py +
+// core/compose.py): shaping (long-s, ligatures incl. the decompose fallback),
+// baseline placement and the generated connectors arrive as flat draw items in
+// writing order — ONE cacheable request per text. This component only renders:
+// fill every silhouette + stroke every connector inside one group, then mask it
+// with a wide path swept along each centerline via an animated
+// `stroke-dashoffset`. The group carries BOTH fill (glyph silhouettes) and
+// stroke (connectors) so the iron-gall ink settle ages the whole word at once.
+// Coordinates: template space (baseline = 0, y up); SVG y points down, so y is
+// negated in the rendered data.
 
 import ReplayIcon from '@mui/icons-material/Replay';
 import { Box, CircularProgress, IconButton, keyframes } from '@mui/material';
@@ -22,9 +20,7 @@ import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 
 import { CONFIG } from '@/global-config';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
-import { composeWord, type ComposedWord, type Point } from '@/domain/compose';
-import { decomposeLigatureSlot, glyphKeysOf, shapeText, type GlyphSlot } from '@/domain/shaping';
-import { fetchRenderGlyphs, type GlyphRenderData } from '@/lib/api';
+import { getWriteWord, type ComposedWordOut } from '@/lib/api';
 import { ringsToPathD } from '@/lib/svg';
 import { de } from '@/locales';
 import { inkState, schulheft } from '@/styles/paper';
@@ -41,28 +37,32 @@ const MIN_ITEM_MS = 120;
 
 const GUIDE = schulheft.rulingBlueFaded;
 
-// Fetch the word's glyphs (one batch via the shared render cache), then
-// decompose any closed-set ligature whose canonical is missing into its
-// constituent letters and fetch those too — at most one extra round trip, only
-// when something was actually missing.
-async function resolveSlots(
-  sourceId: string,
-  baseSlots: GlyphSlot[],
-): Promise<{ slots: GlyphSlot[]; data: Map<string, GlyphRenderData | null> }> {
-  let slots = baseSlots;
-  let data = await fetchRenderGlyphs(sourceId, glyphKeysOf(slots));
-  if (slots.some((s) => s.ligature && s.key && data.get(s.key) === null)) {
-    slots = slots.flatMap((s) =>
-      s.ligature && s.key && data.get(s.key) === null ? decomposeLigatureSlot(s) ?? [s] : [s],
-    );
-    const extra = glyphKeysOf(slots).filter((k) => !data.has(k));
-    if (extra.length) {
-      const more = await fetchRenderGlyphs(sourceId, extra);
-      data = new Map([...data, ...more]);
+// Composing is a backend compute; cache the in-flight/resolved promise per
+// (source, text) so a replay, a re-mount or a second WrittenWord on the page
+// never refetches. Transient errors evict so a retry can succeed; the server
+// also sets Cache-Control, so even a fresh page load hits the browser cache.
+// Live typing on /federprobe produces many distinct intermediate texts, so the
+// cache is FIFO-capped — evicted entries just refetch (usually straight from
+// the browser cache).
+const CACHE_MAX = 64;
+const cache = new Map<string, Promise<ComposedWordOut>>();
+function fetchComposed(sourceId: string, text: string): Promise<ComposedWordOut> {
+  const id = `${sourceId}|${text}`;
+  let p = cache.get(id);
+  if (!p) {
+    p = getWriteWord(sourceId, text, { retries: 3 }).catch((e) => {
+      cache.delete(id);
+      throw e;
+    });
+    if (cache.size >= CACHE_MAX) {
+      cache.delete(cache.keys().next().value as string); // FIFO: drop the oldest entry
     }
+    cache.set(id, p);
   }
-  return { slots, data };
+  return p;
 }
+
+type Point = [number, number];
 
 function chordLength(points: Point[]): number {
   let total = 0;
@@ -97,10 +97,11 @@ interface Props {
   showLineature?: boolean;
   // Show the replay button (bottom-right).
   showReplay?: boolean;
-  // After fetch + compose: the glyph_keys that had no canonical (empty = all
-  // rendered) and how many strokes were placed. Lets the hero fall back.
+  // After the composed word arrives: the glyph_keys that had no canonical
+  // (empty = all rendered) and how many strokes were placed. Lets callers flag
+  // the letters or fall back.
   onResolved?: (info: { missing: string[]; rendered: number }) => void;
-  // A non-404 fetch error (e.g. cold-start retries exhausted).
+  // A fetch error (e.g. cold-start retries exhausted).
   onError?: (e: unknown) => void;
   // Accessible name of the rendered SVG. Defaults to the written text; the quiz
   // passes a neutral label so the image does not leak the solution word to the
@@ -127,19 +128,23 @@ export function WrittenWord({
 }: Props) {
   const reducedMotion = usePrefersReducedMotion();
   const uid = useId();
-  const baseSlots = useMemo(() => shapeText(text), [text]);
-  const [resolved, setResolved] = useState<{
-    slots: GlyphSlot[];
-    data: Map<string, GlyphRenderData | null>;
-  } | null>(null);
+  // Mirror the server's normalisation so equal words share one cache/URL entry.
+  const normalized = useMemo(() => text.normalize('NFC').trim(), [text]);
+  const [composed, setComposed] = useState<ComposedWordOut | null>(null);
   const [run, setRun] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
-    setResolved(null);
-    resolveSlots(sourceId, baseSlots)
-      .then((r) => {
-        if (!cancelled) setResolved(r);
+    setComposed(null);
+    if (!normalized) {
+      // Nothing to write (the server 422s on empty text) — settle on an empty
+      // composition so callers see `missing: []` instead of a spinner forever.
+      setComposed({ text: '', items: [], bounds: { min_x: 0, max_x: 1, min_y: 0, max_y: 1 }, guides: null, missing: [] });
+      return;
+    }
+    fetchComposed(sourceId, normalized)
+      .then((c) => {
+        if (!cancelled) setComposed(c);
       })
       .catch((e) => {
         if (!cancelled) onError?.(e);
@@ -149,13 +154,7 @@ export function WrittenWord({
     };
     // onError intentionally omitted: a fresh closure each render must not refetch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [baseSlots, sourceId]);
-
-  const composed: ComposedWord | null = useMemo(() => {
-    if (!resolved) return null;
-    const { slots, data } = resolved;
-    return composeWord(slots.map((s) => ({ key: s.key, space: s.space, data: s.key ? data.get(s.key) ?? null : null })));
-  }, [resolved]);
+  }, [normalized, sourceId]);
 
   useEffect(() => {
     if (composed) onResolved?.({ missing: composed.missing, rendered: composed.items.length });
@@ -166,10 +165,10 @@ export function WrittenWord({
     if (!composed || !composed.items.length) return null;
     const { bounds, guides, items } = composed;
     const pad = 0.15;
-    const minX = bounds.minX - pad;
-    const vbW = bounds.maxX - bounds.minX + 2 * pad;
-    const yHi = showLineature && guides ? Math.max(guides.ascender, bounds.maxY) : bounds.maxY + pad;
-    const yLo = showLineature && guides ? Math.min(guides.descender, bounds.minY, 0) : bounds.minY - pad;
+    const minX = bounds.min_x - pad;
+    const vbW = bounds.max_x - bounds.min_x + 2 * pad;
+    const yHi = showLineature && guides ? Math.max(guides.ascender, bounds.max_y) : bounds.max_y + pad;
+    const yLo = showLineature && guides ? Math.min(guides.descender, bounds.min_y, 0) : bounds.min_y - pad;
     const vbY = -yHi;
     const vbH = Math.max(0.5, yHi - yLo);
 
@@ -230,7 +229,7 @@ export function WrittenWord({
                 d={pathD(it.centerline)}
                 fill="none"
                 stroke="#fff"
-                strokeWidth={it.maskWidth}
+                strokeWidth={it.mask_width}
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 pathLength={1}
@@ -284,7 +283,7 @@ export function WrittenWord({
                 key={i}
                 d={pathD(it.centerline)}
                 fill="none"
-                strokeWidth={it.strokeWidth}
+                strokeWidth={it.stroke_width}
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />

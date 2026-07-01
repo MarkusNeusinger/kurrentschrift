@@ -9,6 +9,7 @@ import { apiFetch, asJson, type RetryOptions } from '@/lib/api/client';
 import type {
   BboxIn,
   BboxOut,
+  ComposedWordOut,
   DiagnosticData,
   FitData,
   GlyphOut,
@@ -126,6 +127,17 @@ export const getWriteGlyphs = (sourceId: string, keys: string[], retry?: RetryOp
     {},
     retry,
   ).then(asJson<WriteGlyphsOut>);
+
+// A whole word/line composed server-side (shaping + placement + Übergänge in
+// core/shaping.py + core/compose.py) — one cacheable request per text. The
+// text is NFC-normalised + trimmed HERE (mirroring the server) so semantically
+// equal inputs always share one URL and one browser/edge cache entry.
+export const getWriteWord = (sourceId: string, text: string, retry?: RetryOptions): Promise<ComposedWordOut> =>
+  apiFetch(
+    src(sourceId, `/write/word?text=${encodeURIComponent(text.normalize('NFC').trim())}`),
+    {},
+    retry,
+  ).then(asJson<ComposedWordOut>);
 
 export const getFit = (
   sourceId: string,
