@@ -207,6 +207,10 @@ cython_debug/
 /tools/glyphbench/fixtures/
 /tools/glyphbench/runs/
 
+# Word bench: same contract (regenerate via tools/wordbench/export_fixtures.py).
+/tools/wordbench/fixtures/
+/tools/wordbench/runs/
+
 # Abstra
 #   Abstra is an AI-powered process automation framework.
 #   Ignore directories containing user credentials, local state, and settings.

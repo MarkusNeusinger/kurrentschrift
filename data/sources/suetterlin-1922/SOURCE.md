@@ -43,3 +43,39 @@
              (`core/chart.py`); Sütterlin ist Gleichzug, daher geht durch die
              flache Binarisierung der SVG keine Strichstärken-Information verloren.
 - Regenerate: `uv run data/sources/suetterlin-1922/vectorize_chart.py`
+
+## words-abb19.png — 1756 × 1783 px, 3,5 MB
+
+- Title:     „Abbildung 19. Die Ausgangsschrift im Zusammenhang geschrieben
+             (mit Kugelspitzfeder)" — S. 53 desselben *Neuen Leitfadens*
+             (Ausgabe 1922), dieselbe Hand/Norm wie `chart.jpg` (Abbildung 10).
+- Origin:    https://commons.wikimedia.org/wiki/File:S%C3%BCtterlin,_Schriftprobe_(deutsche_Kurrent).png
+- Direct:    https://upload.wikimedia.org/wikipedia/commons/8/8d/S%C3%BCtterlin%2C_Schriftprobe_%28deutsche_Kurrent%29.png
+- SHA256:    fc48b4ff2b7e9a18a43d3e93c86d5ce4a3db0cbb5d339a5dd7629ac70a22ad3b
+- License:   wie oben (Sütterlin † 1917 → §64 UrhG seit Ende 1987 abgelaufen;
+             §68 UrhG; US: Publikation vor 1930). Commons: CC-PD-Mark.
+- Retrieved: 2026-07-02
+- Processing: keine (byte-identisch von Commons übernommen).
+- Note:      Zwölf Zeilen verbundene Ausgangsschrift (Volkslied „Wer will
+             unter die Soldaten"), ~50 Wörter, ohne gedruckte Lineatur.
+             **Wort-Referenzen für die Wort-Bench**: `words.json` (gleiches
+             Verzeichnis) trägt die vermessenen Wort-Rechtecke + die aus der
+             Tinte gemessene Grund-/Mittellinie je Zeile;
+             `tools/wordbench/export_fixtures.py` friert daraus die
+             Scoring-Referenzen ein (docs/reference/qualitaetsmetrik.md §6).
+
+## pairs-abb20.png — 1869 × 976 px, 1,9 MB
+
+- Title:     „Abbildung 20. Einige Beispiele für nicht selbstverständliche
+             Buchstabenverbindungen" — S. 54 desselben *Neuen Leitfadens*.
+- Origin:    https://commons.wikimedia.org/wiki/File:S%C3%BCtterlin,_Beispiele_f%C3%BCr_Verbindungen_(deutsche_Kurrent).png
+- Direct:    https://upload.wikimedia.org/wikipedia/commons/1/1d/S%C3%BCtterlin%2C_Beispiele_f%C3%BCr_Verbindungen_%28deutsche_Kurrent%29.png
+- SHA256:    e4b8083e1993a9839d45f14408351837d35e1670731c3b55598ff6a830f7dd01
+- License:   wie oben. Commons: CC-PD-Mark.
+- Retrieved: 2026-07-02
+- Processing: keine (byte-identisch von Commons übernommen).
+- Note:      Vier Zeilen isolierte Buchstaben-PAARE (bb be bz bp db df do dp
+             dt · dk de dz vu vp vb ve vz · rp rb re rz sa sg ssi ßi Bi ·
+             bi wi ri Du Ju Of Wu) — Sütterlins eigene Referenz für genau die
+             Übergänge, die der Renderer generiert. Reserve für Paar-Fixtures
+             der Wort-Bench (Phase D, Übergangs-Redesign).

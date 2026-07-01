@@ -1,6 +1,6 @@
 # Schreibsystem: Schreib-API, Python-Komposition, Wort-Bench
 
-**Status: Vorschlag; Phase A umgesetzt (PR #142, 2026-07-02), Phase B in Umsetzung.**
+**Status: Vorschlag; Phase A (PR #142) und Phase B (PR #143) umgesetzt, Phase C in Umsetzung (2026-07-02).**
 Ergebnis des Schreibsystem-Audits vom 2026-07-01 (Repo-Audit + Live-Test
 der Prod-Federprobe + Quellen-Recherche). Ziel: Wörter und Sätze so
 schreiben, dass sie von einer echten Hand nicht zu unterscheiden sind —
@@ -117,7 +117,7 @@ Neuer öffentlicher Read-Router `api/routers/write.py`:
   für die Write-Fetches; Ligatur-404-Fallback (Zerfall `ch`→`c`+`h` usw.);
   `MISSING_ADV ≤ SPACE_ADV`; Quiz-`aria-label`-Leak schließen.
 
-### Phase B — `core/compose.py` + Wort-API
+### Phase B — `core/compose.py` + Wort-API (umgesetzt: PR #143)
 
 Port von `shaping.ts` + `compose.ts` nach Python (rahmenwerkfrei, über
 Template-Zeilen). `GET /sources/{id}/write/word?text=…` liefert
