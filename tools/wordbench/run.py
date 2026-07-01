@@ -1,9 +1,11 @@
 """Run the word bench: compose every fixture word with CURRENT code, score frozen.
 
 Hermetic and deterministic — no DB, no HTTP: templates + slots + scoring
-references come from the fixture snapshot (tools/wordbench/export_fixtures.py);
-the code under test is core/shaping.py (frozen slots bypass it deliberately) +
-core/pipeline.render_payload_for_template + core/compose.py. ONE script per
+references come from the fixture snapshot (tools/wordbench/export_fixtures.py).
+The code under test per run is COMPOSITION + RENDERING (core/compose.py +
+core/pipeline.render_payload_for_template). Shaping is deliberately NOT under
+test: the slots are frozen at export, so a core/shaping.py change moves the
+numbers only after an explicit re-export (= a re-baseline). ONE script per
 run, like the glyph bench: Kurrent and Sütterlin words are never averaged.
 
 Usage:

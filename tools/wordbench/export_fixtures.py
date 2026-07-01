@@ -35,6 +35,7 @@ import statistics
 from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
 from dotenv import load_dotenv
@@ -42,7 +43,11 @@ from PIL import Image
 from scipy.ndimage import label as cc_label
 
 from core.extract import binarize_adaptive, skeleton_and_width
-from core.shaping import decompose_ligature_slot, glyph_keys_of, shape_text
+from core.shaping import GlyphSlot, decompose_ligature_slot, glyph_keys_of, shape_text
+
+
+if TYPE_CHECKING:
+    from core.database.models import Template
 
 
 DEFAULT_SOURCE_ID = "suetterlin-1922"
@@ -50,7 +55,7 @@ DEFAULT_OUT_DIR = Path(__file__).resolve().parent / "fixtures"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-def _template_dict(t) -> dict:
+def _template_dict(t: Template) -> dict:
     return {
         "glyph_key": t.glyph_key,
         "glyph": t.glyph,
@@ -146,7 +151,8 @@ async def export(source_id: str, out_dir: Path) -> None:
 
     word_index = []
     for w in words:
-        missing = [k for k in glyph_keys_of([_slot(s) for s in shaped[w["word"]]]) if k not in templates]
+        word_slots = [GlyphSlot(**s) for s in shaped[w["word"]]]
+        missing = [k for k in glyph_keys_of(word_slots) if k not in templates]
         word_dir = fixture_root / w["word"]
         word_dir.mkdir(exist_ok=True)
 
@@ -191,12 +197,6 @@ async def export(source_id: str, out_dir: Path) -> None:
     incomplete = [w for w in word_index if w["missing_at_export"]]
     if incomplete:
         print(f"  words with missing templates at export: {[(w['word'], w['missing_at_export']) for w in incomplete]}")
-
-
-def _slot(d: dict):
-    from core.shaping import GlyphSlot
-
-    return GlyphSlot(**d)
 
 
 def main() -> None:
