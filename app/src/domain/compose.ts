@@ -1,7 +1,7 @@
 // Word composition geometry: lay a sequence of canonical glyphs along a shared
 // baseline and generate the connecting strokes (Übergänge) between them, so a
 // whole word reads as one continuous pen performance. Framework-free — consumes
-// the per-glyph `DiagnosticData` (template-frame centerlines, silhouette rings,
+// the per-glyph `GlyphRenderData` (template-frame centerlines, silhouette rings,
 // entry/exit points) and emits flat, render-ready draw items in writing order.
 //
 // "Übergänge sind Konsequenz, keine Daten" (architektur.md §4): we never store a
@@ -13,7 +13,7 @@
 // (baseline vs midband) honoured implicitly, because entry/exit `xy` already
 // encode the join height.
 
-import type { DiagnosticData } from '@/lib/api';
+import type { GlyphRenderData } from '@/lib/api';
 import type { Ring } from '@/lib/svg';
 
 export type Point = [number, number];
@@ -41,7 +41,7 @@ export interface ComposedWord {
   items: DrawItem[];
   bounds: { minX: number; maxX: number; minY: number; maxY: number };
   // Lineature levels (from the first rendered glyph; all share the style ratio).
-  guides: DiagnosticData['template_guides'] | null;
+  guides: GlyphRenderData['template_guides'] | null;
   // glyph_keys that could not be placed (no canonical / fetch failed) — surfaced
   // so a caller (the hero) can fall back, or the playground can flag the letter.
   missing: string[];
@@ -50,11 +50,13 @@ export interface ComposedWord {
 export interface ComposeSlot {
   key: string | null;
   space: boolean;
-  data: DiagnosticData | null;
+  data: GlyphRenderData | null;
 }
 
 const SPACE_ADV = 0.55; // inter-word gap, x-height units
-const MISSING_ADV = 0.7; // advance reserved for an unrenderable glyph
+// Advance reserved for an unrenderable glyph — capped at the word gap, so a
+// hole never yawns wider than an actual space.
+const MISSING_ADV = 0.55;
 const CONNECT_GAP = 0.16; // horizontal span of a connecting stroke
 const CONNECT_SAMPLES = 24; // Bézier samples per connector (dense enough to read as a smooth arc)
 const DEFAULT_HALF = 0.05; // fallback stroke half-width
@@ -124,7 +126,7 @@ function sampleBezier(p0: Point, p1: Point, p2: Point, p3: Point, n: number): Po
 export function composeWord(slots: ComposeSlot[]): ComposedWord {
   const items: DrawItem[] = [];
   const missing: string[] = [];
-  let guides: DiagnosticData['template_guides'] | null = null;
+  let guides: GlyphRenderData['template_guides'] | null = null;
   let cursorX = 0;
   // The previous glyph's exit, in the composed frame, for the next connector.
   let prev: { exit: Point; tangentDeg: number; width: number } | null = null;

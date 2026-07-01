@@ -44,7 +44,7 @@ change one, check the other.
 - Frontend feature work that follows the existing `/app/` patterns
   (drag-on-canvas, stylus capture, diagnostic panels).
 - New FastAPI routes that mirror the `api/routers/{health,styles,hands,
-  sources,chart,bboxes,templates}.py` shape.
+  sources,chart,bboxes,templates,write}.py` shape.
 - Adding numpy/scipy/scikit-image pipeline steps inside `core/`.
 - Writing/improving unit tests under `tests/` (no tests exist yet — adding
   them is welcome).
@@ -151,7 +151,9 @@ kurrentschrift/
 │   ├── main.py
 │   ├── schemas.py
 │   ├── dependencies.py
-│   └── routers/      # health, styles, hands, sources, chart, bboxes, templates
+│   ├── rendering.py  # style resolution + memoised source-pooled nib (templates + write)
+│   └── routers/      # health, styles, hands, sources, chart, bboxes, templates,
+│                     #   write (public batched render payloads, cached, no chart I/O)
 ├── app/              # React 19 + Vite + MUI SPA (anyplot-style)
 │   └── src/
 │       ├── routes/      # paths.ts route constants + lazy public/admin route sections
@@ -168,7 +170,8 @@ kurrentschrift/
 │       ├── layouts/     # admin shell (AdminLayout + AdminModals)
 │       ├── theme/       # MUI theme split; colors sourced from styles/paper.ts (single source)
 │       ├── lib/api/     # fetch client (cold-start retry, typed ApiError), endpoints,
-│       │                #   wire types hand-synced with api/schemas.py
+│       │                #   wire types hand-synced with api/schemas.py, renderCache.ts
+│       │                #   (shared render-data cache, batches /write/glyphs per word)
 │       ├── domain/      # glyphs.ts (registry + lock/split); shaping.ts (text → glyph_keys,
 │       │                #   long-s + ligatures); compose.ts (baseline layout + Übergänge;
 │       │                #   diacritics — i-/j-dot, u-bow, umlaut — deferred to word end)

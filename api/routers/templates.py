@@ -5,16 +5,15 @@ works on a chart `source`; this router resolves the source's style and stores
 the canonical there, recording the chart as `provenance_source_id`.
 """
 
-import statistics
-
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_admin
 from api.dependencies import require_db, require_source
+from api.rendering import invalidate_pooled_nib, pooled_constant_nib, resolve_style
 from api.schemas import ResampleRequest, TemplateOut, TemplateSummary, TraceRequest
-from core.database import BboxRepository, Source, StyleRepository, Template, TemplateRepository
+from core.database import BboxRepository, Source, Template, TemplateRepository
 from core.fit import fit_glyph_to_crop
 from core.pipeline import (
     DEFAULT_N_ANCHORS,
@@ -75,36 +74,6 @@ def _sync_bbox_anchor_count(bbox, canonical: dict) -> None:
     actual = int(canonical.get("trace_meta", {}).get("n_anchors") or len(canonical.get("anchors", [])))
     if actual and actual != bbox.n_anchors:
         bbox.n_anchors = actual
-
-
-async def _pooled_constant_nib(db: AsyncSession, style_id: str, source_id: str) -> float | None:
-    """Source-wide mean nib radius (x-height units) for a constant-width style.
-
-    architektur.md §5: a Gleichzug script is written with ONE constant nib, so the
-    rendered thickness should be the source's mean — not each glyph's own measured
-    constant (which varies with per-crop quantisation: 0.062–0.081 here). Pools the
-    median half-width of every template traced from this chart source; the resolver
-    override in `diagnostic_for_glyph` then renders all of them at this one value.
-    Returns None when nothing is traced yet (caller falls back to per-glyph widths).
-    """
-    profiles = await TemplateRepository(db).half_widths_for_source(style_id, source_id)
-    nibs = [statistics.median(hw) for hw in profiles if hw]
-    return float(statistics.mean(nibs)) if nibs else None
-
-
-async def _resolve_style(source: Source, db: AsyncSession) -> tuple[str, list[float], float, str]:
-    """Return (style_id, resolved style_ratio, resolved slant_deg, width_resolver) for a source.
-
-    A source may override ratio/slant per chart (null => use the style); the
-    width resolver is a pure style property a source can never override
-    (architektur.md §5).
-    """
-    style = await StyleRepository(db).get(source.style_id)
-    if style is None:
-        raise HTTPException(500, detail=f"source {source.id!r} references unknown style {source.style_id!r}")
-    style_ratio = list(source.style_ratio) if source.style_ratio is not None else list(style.default_style_ratio)
-    slant_deg = float(source.slant_deg) if source.slant_deg is not None else float(style.default_slant_deg)
-    return style.id, style_ratio, slant_deg, style.width_resolver
 
 
 def _bbox_to_dict(bbox) -> dict:
@@ -188,7 +157,7 @@ async def post_trace(
     if bbox is None:
         raise HTTPException(409, detail=f"set bbox for {glyph_key!r} before tracing")
     _reject_locked_unless_forced(bbox, payload.force)
-    _, _, _, width_resolver = await _resolve_style(source, db)
+    _, _, _, width_resolver = await resolve_style(source, db)
     # CPU-bound (binarize + skeleton + EDT) — keep it off the event loop.
     canonical = await run_in_threadpool(
         _derive_canonical,
@@ -204,6 +173,7 @@ async def post_trace(
         source.style_id, glyph_key, canonical, variant=payload.variant, provenance_source_id=source.id
     )
     _sync_bbox_anchor_count(bbox, canonical)
+    invalidate_pooled_nib(source.style_id, source.id)
     return _template_to_out(t)
 
 
@@ -224,7 +194,7 @@ async def post_trace_preview(
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
         raise HTTPException(409, detail=f"set bbox for {glyph_key!r} before tracing")
-    _, style_ratio, slant_deg, width_resolver = await _resolve_style(source, db)
+    _, style_ratio, slant_deg, width_resolver = await resolve_style(source, db)
     bbox_dict = _bbox_to_dict(bbox)
     raw_path = [p.model_dump() for p in payload.raw_path]
 
@@ -280,7 +250,7 @@ async def post_resample(
     # per-glyph count still wins by sending n_anchors explicitly (the wizard
     # slider does).
     n_anchors = payload.n_anchors or DEFAULT_N_ANCHORS
-    _, _, _, width_resolver = await _resolve_style(source, db)
+    _, _, _, width_resolver = await resolve_style(source, db)
     canonical = await run_in_threadpool(
         _derive_canonical_from_raw,
         width_resolver,
@@ -293,6 +263,7 @@ async def post_resample(
         source.style_id, glyph_key, canonical, variant=existing.variant, provenance_source_id=source.id
     )
     _sync_bbox_anchor_count(bbox, canonical)
+    invalidate_pooled_nib(source.style_id, source.id)
     return _template_to_out(t)
 
 
@@ -306,8 +277,8 @@ async def get_diagnostic(
     template = await TemplateRepository(db).get(source.style_id, glyph_key)
     if template is None:
         raise HTTPException(404, detail=f"no canonical for {glyph_key!r}")
-    style_id, style_ratio, slant_deg, width_resolver = await _resolve_style(source, db)
-    constant_nib_units = await _pooled_constant_nib(db, style_id, source.id) if width_resolver == "constant" else None
+    style_id, style_ratio, slant_deg, width_resolver = await resolve_style(source, db)
+    constant_nib_units = await pooled_constant_nib(db, style_id, source.id) if width_resolver == "constant" else None
     return await run_in_threadpool(
         diagnostic_for_glyph,
         glyph_row={
@@ -401,7 +372,7 @@ async def get_quality(glyph_key: str, source: Source = Depends(require_source), 
         )
     raw_path = list(template.raw_path or [])
     glyph, position = template.glyph, template.position
-    _, _, _, width_resolver = await _resolve_style(source, db)
+    _, _, _, width_resolver = await resolve_style(source, db)
     # The candidate must preview exactly what apply (= /resample without an
     # explicit count) would store: current code + recommended anchor density.
     n_anchors = DEFAULT_N_ANCHORS
@@ -433,3 +404,4 @@ async def delete_template(
     glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
 ):
     await TemplateRepository(db).delete(source.style_id, glyph_key)
+    invalidate_pooled_nib(source.style_id, source.id)

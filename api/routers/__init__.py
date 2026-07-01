@@ -7,6 +7,7 @@ from api.routers.health import router as health_router
 from api.routers.sources import router as sources_router
 from api.routers.styles import router as styles_router
 from api.routers.templates import router as templates_router
+from api.routers.write import router as write_router
 
 
 __all__ = [
@@ -17,4 +18,5 @@ __all__ = [
     "sources_router",
     "styles_router",
     "templates_router",
+    "write_router",
 ]

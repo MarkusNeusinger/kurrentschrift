@@ -28,30 +28,13 @@ import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 
 import { CONFIG } from '@/global-config';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
-import { ApiError, getDiagnostic, type DiagnosticData } from '@/lib/api';
+import { fetchRenderGlyphs, type GlyphRenderData } from '@/lib/api';
 import { ringsToPathD, type Ring } from '@/lib/svg';
 import { de } from '@/locales';
 import { inkState, paper, schulheft } from '@/styles/paper';
 import type { MarkedSlot } from '@/sections/tafel/useGrundtafeln';
 
 type Pt = [number, number];
-
-// Cache the in-flight/resolved diagnostic per (source, glyph); a 404 (no
-// canonical) resolves to null, never a throw.
-const cache = new Map<string, Promise<DiagnosticData | null>>();
-function fetchGlyph(key: string): Promise<DiagnosticData | null> {
-  const id = `${CONFIG.sourceId}|${key}`;
-  let p = cache.get(id);
-  if (!p) {
-    p = getDiagnostic(CONFIG.sourceId, key).catch((e) => {
-      if (e instanceof ApiError && e.status === 404) return null;
-      cache.delete(id); // a transient error shouldn't be cached — allow a retry
-      throw e;
-    });
-    cache.set(id, p);
-  }
-  return p;
-}
 
 const LETTERS_PER_ROW = 7; // re-flow the written letters into rows of this many (gaps dropped)
 // Proportional layout: every letter keeps its own ink width and the SAME gap is
@@ -82,7 +65,7 @@ const loaderPulse = keyframes`0%, 80%, 100% { opacity: 0.25; transform: scale(0.
 
 // Template-space Lineatur levels from a style ratio. x-height (baseline→midband)
 // is the unit (= Mittellänge); the Oberlänge/Unterlänge scale relative to it.
-function guidesFromRatio(ratio: number[]): DiagnosticData['template_guides'] {
+function guidesFromRatio(ratio: number[]): GlyphRenderData['template_guides'] {
   const [ober = 1, mittel = 1, unter = 1] = ratio;
   const m = mittel || 1;
   return { baseline: 0, midband: 1, ascender: 1 + ober / m, descender: -(unter / m) };
@@ -117,7 +100,7 @@ interface GlyphGeom {
 // Per-stroke silhouette + centerlines + x-extent for one glyph. Prefers the
 // capsule-union rings (`outline_paths`); falls back to the legacy ribbon
 // polygons, then to the anchor span if a payload carries no silhouette at all.
-function glyphGeom(data: DiagnosticData): GlyphGeom | null {
+function glyphGeom(data: GlyphRenderData): GlyphGeom | null {
   const strokes: Ring[][] = data.outline_paths?.length
     ? data.outline_paths
     : data.outline_polygons?.length
@@ -264,7 +247,7 @@ interface RowProps {
   rowOffset: number; // reading-order index of this row's first slot
   rowW: number; // shared template width (the widest row's content), keeps scale constant
   geomByKey: Map<string, GlyphGeom>;
-  guides: DiagnosticData['template_guides'];
+  guides: GlyphRenderData['template_guides'];
   width: number; // rendered px width (sized exactly so the lines never distort)
   reducedMotion: boolean;
 }
@@ -364,7 +347,7 @@ interface Props {
 
 export function WrittenSheet({ rows, ratio }: Props) {
   const reducedMotion = usePrefersReducedMotion();
-  const [dataByKey, setDataByKey] = useState<Map<string, DiagnosticData | null> | null>(null);
+  const [dataByKey, setDataByKey] = useState<Map<string, GlyphRenderData | null> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerW, setContainerW] = useState(0);
 
@@ -373,13 +356,14 @@ export function WrittenSheet({ rows, ratio }: Props) {
     [rows],
   );
 
-  // Fetch a diagnostic for each written letter (gaps need no fetch).
+  // Fetch every written letter's render payload — one batch request through the
+  // shared render cache (gaps need no fetch, missing letters resolve to null).
   useEffect(() => {
     let cancelled = false;
     setDataByKey(null);
-    Promise.all(keys.map((k) => fetchGlyph(k).then((d) => [k, d] as const)))
-      .then((entries) => {
-        if (!cancelled) setDataByKey(new Map(entries));
+    fetchRenderGlyphs(CONFIG.sourceId, keys)
+      .then((m) => {
+        if (!cancelled) setDataByKey(m);
       })
       .catch(() => {
         if (!cancelled) setDataByKey(new Map()); // render only the lineature on error

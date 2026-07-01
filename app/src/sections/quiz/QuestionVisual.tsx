@@ -79,7 +79,16 @@ function WrittenForm({
   if (kind === 'word') {
     if (!renderKey) return fallback;
     return (
-      <WrittenWord text={renderKey} inkColor={inkColor} animate={animate} height={height} surfaceBg="transparent" />
+      <WrittenWord
+        text={renderKey}
+        inkColor={inkColor}
+        animate={animate}
+        height={height}
+        surfaceBg="transparent"
+        // The prompt is the riddle: the default aria-label carries the word
+        // itself and would hand the solution to the DOM/screen reader.
+        ariaLabel={de.common.writtenWord.ariaLabelNeutral}
+      />
     );
   }
   // letter

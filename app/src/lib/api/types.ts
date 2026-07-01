@@ -179,33 +179,29 @@ export interface GlyphOut {
   measurements: Record<string, unknown>;
 }
 
-export interface DiagnosticData {
-  crop_size: { w: number; h: number };
-  skeleton_polyline_px: Array<[number, number]>;
-  anchors_px: Array<[number, number]>;
-  half_widths_px: number[];
+// Render subset served by the public write endpoints (GET …/write/glyphs):
+// exactly what the "as written" surfaces (WrittenGlyph/WrittenWord/WrittenSheet)
+// draw — template-frame silhouettes + centerlines in writing order, resolved
+// widths, lineature guides, and the §4 connection metadata for word
+// composition. The admin /diagnostic payload (DiagnosticData) is a superset,
+// so admin callers can hand their payload to the same renderers.
+export interface GlyphRenderData {
+  // Set on batch items so the client can key the response; absent on payloads
+  // embedded in admin responses.
+  glyph_key?: string;
   anchors_template: Array<[number, number]>;
   half_widths_template: number[];
-  // First polygon, kept for older clients (identical to outline_polygons[0]).
-  outline_polygon: Array<[number, number]>;
-  // One filled outline polygon per pen-stroke — a pen lift is a real gap, not a
-  // bar bridging the two strokes.
-  outline_polygons: Array<Array<[number, number]>>;
-  // One centerline polyline per pen-stroke, in writing order, running down the
-  // spine of the matching outline polygon. Drives the animated "as written"
-  // reveal in the quiz (WrittenGlyph). Optional for back-compat with older payloads.
-  centerlines_template?: Array<Array<[number, number]>>;
   // Preferred silhouette: per pen-stroke a list of rings (exterior + holes)
   // from the backend capsule union — render all rings of one stroke as a
   // single path with fill-rule evenodd. Falls back to outline_polygons.
   outline_paths?: Array<Array<Array<[number, number]>>>;
-  baseline_y_crop: number;
-  midband_y_crop: number;
+  // Legacy ribbon fallbacks — only present on admin /diagnostic payloads.
+  outline_polygon?: Array<[number, number]>;
+  outline_polygons?: Array<Array<[number, number]>>;
+  // One centerline polyline per pen-stroke, in writing order, running down the
+  // spine of the matching silhouette. Drives the animated "as written" reveal.
+  centerlines_template?: Array<Array<[number, number]>>;
   template_guides: { baseline: number; midband: number; ascender: number; descender: number };
-  slant_deg: number;
-  // Anchor indices sitting exactly on detected within-stroke reversal corners
-  // (Umkehrpunkte) — rendered with distinct markers. Optional for back-compat.
-  corner_anchors?: number[];
   // Connection points for word composition (architektur.md §4): the renderer
   // places each glyph along the baseline and draws the Übergang from glyph A's
   // `exit_pt` to glyph B's `entry`. `xy` is in the same template frame as
@@ -213,6 +209,31 @@ export interface DiagnosticData {
   entry?: CouplingPointOut;
   exit_pt?: CouplingPointOut;
   advance?: number | null;
+}
+
+// GET …/write/glyphs?keys=… — batch render payloads; keys without a canonical
+// land in `missing` instead of failing the batch.
+export interface WriteGlyphsOut {
+  glyphs: GlyphRenderData[];
+  missing: string[];
+}
+
+export interface DiagnosticData extends GlyphRenderData {
+  crop_size: { w: number; h: number };
+  skeleton_polyline_px: Array<[number, number]>;
+  anchors_px: Array<[number, number]>;
+  half_widths_px: number[];
+  // First polygon, kept for older clients (identical to outline_polygons[0]).
+  outline_polygon: Array<[number, number]>;
+  // One filled outline polygon per pen-stroke — a pen lift is a real gap, not a
+  // bar bridging the two strokes.
+  outline_polygons: Array<Array<[number, number]>>;
+  baseline_y_crop: number;
+  midband_y_crop: number;
+  slant_deg: number;
+  // Anchor indices sitting exactly on detected within-stroke reversal corners
+  // (Umkehrpunkte) — rendered with distinct markers. Optional for back-compat.
+  corner_anchors?: number[];
 }
 
 // Image-space quality of a template vs its crop (served by GET .../quality).

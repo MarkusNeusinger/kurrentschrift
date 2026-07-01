@@ -13,6 +13,7 @@ from contextlib import asynccontextmanager  # noqa: E402
 
 from fastapi import FastAPI  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+from fastapi.middleware.gzip import GZipMiddleware  # noqa: E402
 
 from api.routers import (  # noqa: E402
     bboxes_router,
@@ -22,6 +23,7 @@ from api.routers import (  # noqa: E402
     sources_router,
     styles_router,
     templates_router,
+    write_router,
 )
 from core.config import settings  # noqa: E402
 from core.database import close_db, init_db, is_db_configured  # noqa: E402
@@ -64,6 +66,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Geometry payloads (diagnostic ~15–22 KB, write batches) compress ~4–8×.
+# GZip has no content-type filter, so admin chart/crop images get a useless
+# recompress pass too — a few ms on rare admin loads, accepted for the public
+# JSON win.
+app.add_middleware(GZipMiddleware, minimum_size=1024)
 
 app.include_router(health_router)
 app.include_router(styles_router)
@@ -72,6 +79,7 @@ app.include_router(sources_router)
 app.include_router(chart_router)
 app.include_router(bboxes_router)
 app.include_router(templates_router)
+app.include_router(write_router)
 
 
 if __name__ == "__main__":

@@ -23,7 +23,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 
 import { CONFIG } from '@/global-config';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
-import { ApiError, getDiagnostic, type DiagnosticData } from '@/lib/api';
+import { fetchRenderGlyph, peekRenderGlyph, seedRenderGlyph, type GlyphRenderData } from '@/lib/api';
 import { ringsToPathD, type Ring } from '@/lib/svg';
 import { de } from '@/locales';
 import { inkState, schulheft } from '@/styles/paper';
@@ -48,25 +48,10 @@ const GUIDE_BASELINE = schulheft.rulingBlueFaded;
 const GUIDE_MIDBAND = schulheft.rulingBlueFaded;
 const GUIDE_MIDBAND_OPACITY = 0.55;
 
-// Diagnostics are a backend compute (skeleton extraction); cache per glyph so
-// replays and repeat questions don't refetch. One entry per glyph, stamped
-// with the canonical version (`bust`) it was fetched under: a mismatching
-// version overwrites the entry instead of forking the key, so the quiz
-// benefits from the admin's fresh fetch and stale payloads can't accumulate.
-// `data: null` records a 404 (no ductus).
-interface CacheEntry {
-  bust: number | null;
-  data: DiagnosticData | null;
-}
-const cache = new Map<string, CacheEntry>();
-
-// A caller without a version accepts whatever is cached; a versioned caller
-// (the admin dialog after a re-trace) requires its exact version.
-function cachedEntry(glyphKey: string, bust?: number): CacheEntry | undefined {
-  const entry = cache.get(glyphKey);
-  if (entry === undefined || (bust != null && entry.bust !== bust)) return undefined;
-  return entry;
-}
+// Render payloads come from the shared render cache (`@/lib/api/renderCache`),
+// so a glyph the quiz letter shows and a written word contains costs one fetch
+// per session across ALL surfaces. Version stamps (`bust`) and externally
+// supplied payloads (the admin dialog) are handled there too.
 
 function chordLength(points: Array<[number, number]>): number {
   let total = 0;
@@ -99,9 +84,10 @@ interface Props {
   // refetching otherwise (the admin dialog after a re-trace). The quiz never
   // passes it and accepts any cached entry.
   cacheBust?: number;
-  // Already-fetched diagnostic payload — skips the internal fetch entirely
-  // (the Diagnose dialog shares one payload across its stages).
-  data?: DiagnosticData;
+  // Already-fetched render payload — skips the internal fetch entirely (the
+  // Diagnose dialog shares one diagnostic payload across its stages; the
+  // admin's DiagnosticData is a structural superset of GlyphRenderData).
+  data?: GlyphRenderData;
   // Background behind the SVG. Defaults to the neutral white work-surface ground;
   // public surfaces (the quiz) pass a paper tone — or `transparent` to inherit
   // their container's paper ground — so the fresh-ink render doesn't read as a
@@ -128,7 +114,9 @@ const MAX_W = 300;
 export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight = false, maxWidth, cacheBust, data: dataProp, onUnavailable, surfaceBg = SURFACE_BG, inkColor, animate: animateProp = true }: Props) {
   const reducedMotion = usePrefersReducedMotion();
   const uid = useId();
-  const [fetched, setFetched] = useState<DiagnosticData | null>(() => cachedEntry(glyphKey, cacheBust)?.data ?? null);
+  const [fetched, setFetched] = useState<GlyphRenderData | null>(
+    () => peekRenderGlyph(CONFIG.sourceId, glyphKey, cacheBust) ?? null,
+  );
   const data = dataProp ?? fetched;
   const [error, setError] = useState<string | null>(null);
   // True once a glyph turns out to have no canonical (404): the component then
@@ -147,41 +135,27 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight 
     setError(null);
     setUnavailable(false);
     if (dataProp) {
-      // Externally supplied payload: sync the shared cache so other consumers
+      // Externally supplied payload: seed the shared cache so other consumers
       // (the quiz) see the freshest canonical without refetching.
-      cache.set(glyphKey, { bust: cacheBust ?? null, data: dataProp });
+      seedRenderGlyph(CONFIG.sourceId, glyphKey, dataProp, cacheBust);
       return;
     }
-    const entry = cachedEntry(glyphKey, cacheBust);
-    if (entry !== undefined) {
-      if (entry.data === null) {
-        setUnavailable(true);
-        onUnavailableRef.current?.();
-      } else {
-        setFetched(entry.data);
-      }
-      return;
-    }
-    setFetched(null); // spinner while the new glyph loads
+    setFetched(peekRenderGlyph(CONFIG.sourceId, glyphKey, cacheBust) ?? null); // spinner while loading
     // Public surfaces always render the site-wide source, regardless of which
-    // source the admin currently has active.
-    getDiagnostic(CONFIG.sourceId, glyphKey)
+    // source the admin currently has active. A resolved `null` means no
+    // canonical is traced yet → let the caller show the crop instead.
+    fetchRenderGlyph(CONFIG.sourceId, glyphKey, cacheBust)
       .then((d) => {
         if (cancelled) return;
-        cache.set(glyphKey, { bust: cacheBust ?? null, data: d });
-        setFetched(d);
+        if (d === null) {
+          setUnavailable(true);
+          onUnavailableRef.current?.();
+        } else {
+          setFetched(d);
+        }
       })
       .catch((e) => {
-        if (e instanceof ApiError && e.status === 404) {
-          // No canonical traced yet → let the caller show the crop instead.
-          cache.set(glyphKey, { bust: cacheBust ?? null, data: null });
-          if (!cancelled) {
-            setUnavailable(true);
-            onUnavailableRef.current?.();
-          }
-        } else if (!cancelled) {
-          setError(String(e));
-        }
+        if (!cancelled) setError(String(e));
       });
     return () => {
       cancelled = true;
@@ -226,9 +200,9 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight 
     // Preferred: capsule-union rings per stroke (loop counters stay open via
     // evenodd). Legacy ribbon polygons as fallback for older payloads.
     const strokePaths: Ring[][] | null = data.outline_paths?.length ? data.outline_paths : null;
-    const polygons = (data.outline_polygons ?? (data.outline_polygon?.length > 2 ? [data.outline_polygon] : [])).filter(
-      (p) => p.length > 2,
-    );
+    const polygons = (
+      data.outline_polygons ?? ((data.outline_polygon?.length ?? 0) > 2 ? [data.outline_polygon!] : [])
+    ).filter((p) => p.length > 2);
     // Fall back to a single centerline through all anchors if an older payload
     // carries no per-stroke centerlines.
     const centerlines =
