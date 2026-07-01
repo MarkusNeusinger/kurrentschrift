@@ -125,9 +125,8 @@ async def get_write_word(
 
     repo = TemplateRepository(db)
     slots = shape_text(normalized)
-    rows: dict[str, dict] = {
-        t.glyph_key: _template_to_glyph_row(t) for t in await repo.get_many(source.style_id, glyph_keys_of(slots))
-    }
+    keys = glyph_keys_of(slots)
+    rows: dict[str, dict] = {t.glyph_key: _template_to_glyph_row(t) for t in await repo.get_many(source.style_id, keys)}
     # Ligature fallback (one extra query at most, only when something is missing).
     if any(s.ligature and s.key and s.key not in rows for s in slots):
         expanded = []
@@ -137,7 +136,8 @@ async def get_write_word(
             else:
                 expanded.append(s)
         slots = expanded
-        extra = [k for k in glyph_keys_of(slots) if k not in rows]
+        keys = glyph_keys_of(slots)
+        extra = [k for k in keys if k not in rows]
         for t in await repo.get_many(source.style_id, extra):
             rows[t.glyph_key] = _template_to_glyph_row(t)
 
@@ -145,7 +145,7 @@ async def get_write_word(
     def compute() -> dict:
         payloads = {
             key: (render_payload_for_template(rows[key], style_ratio, width_resolver, nib) if key in rows else None)
-            for key in glyph_keys_of(slots)
+            for key in keys
         }
         return compose_word(slots, payloads)
 

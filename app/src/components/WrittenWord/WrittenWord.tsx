@@ -41,6 +41,10 @@ const GUIDE = schulheft.rulingBlueFaded;
 // (source, text) so a replay, a re-mount or a second WrittenWord on the page
 // never refetches. Transient errors evict so a retry can succeed; the server
 // also sets Cache-Control, so even a fresh page load hits the browser cache.
+// Live typing on /federprobe produces many distinct intermediate texts, so the
+// cache is FIFO-capped — evicted entries just refetch (usually straight from
+// the browser cache).
+const CACHE_MAX = 64;
 const cache = new Map<string, Promise<ComposedWordOut>>();
 function fetchComposed(sourceId: string, text: string): Promise<ComposedWordOut> {
   const id = `${sourceId}|${text}`;
@@ -50,6 +54,9 @@ function fetchComposed(sourceId: string, text: string): Promise<ComposedWordOut>
       cache.delete(id);
       throw e;
     });
+    if (cache.size >= CACHE_MAX) {
+      cache.delete(cache.keys().next().value as string); // FIFO: drop the oldest entry
+    }
     cache.set(id, p);
   }
   return p;
