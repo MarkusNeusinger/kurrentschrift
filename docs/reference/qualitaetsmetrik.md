@@ -346,3 +346,66 @@ Glätte/Ecken-Thema (der Term belohnt das Weglassen einer echten Kehre) für ein
 lokale Totband den legitimen Kantenversatz auch an Schlaufen-Kreuzungen (b/d/g/o…) nicht mehr
 bestraft. Tests: `tests/test_quality_components.py` pinnt jetzt **Treue füllt > unterfüllt** statt
 parallel > divergent. `core/quality_suetterlin.py` + `core/geometry.py` bleiben im Loop eingefroren.
+
+---
+
+## 6. Wort-Bench: Übergänge gegen echte Wortproben (2026-07-02)
+
+Eine Ebene über der Glyph-Bench: `tools/wordbench` bewertet das **komponierte
+Wort** — Platzierung + generierte Übergänge aus `core/shaping.py` +
+`core/compose.py` (seit PR #143 die einzige Kompositionsquelle, auch hinter
+`GET /write/word`) — gegen **gemeinfreie Wortproben derselben Hand**. Für
+Sütterlin: Abbildung 19 des Leitfadens 1922 („Die Ausgangsschrift im
+Zusammenhang geschrieben"), 15 vermessene Wörter in
+`data/sources/suetterlin-1922/words.json` (Rechteck + aus der Tinte gemessene
+Grund-/Mittellinie je Zeile; die Tafel hat keine gedruckte Lineatur).
+Werkzeug-Details und Output-Contract: `tools/wordbench/README.md`; die Metrik
+liegt in `tools/wordbench/metric.py` (Bench-only, nicht Produktionscode).
+
+**Score:**
+
+```
+loss = 0.45·Übergang + 0.35·Deckung + 0.20·Breite      (je ∈ [0,1], kleiner besser)
+```
+
+- **Übergang** — Vorwärts-Chamfer der *generierten Verbindungsstriche* zum
+  Proben-Skelett plus Rückwärts-Chamfer der Proben-Tinte innerhalb der
+  Konnektor-x-Spannen. Das Leitsignal: liegt der Übergang da, wo die echte
+  Feder lief?
+- **Deckung** — symmetrischer Chamfer über alle komponierten Centerlines.
+  Bewegt sich auch mit der Autoring-Qualität der Einzelglyphen → Tor, nicht
+  Entscheider.
+- **Breite** — |log|-Verhältnis der Gesamt-Tintenbreite: Rhythmus-/
+  Spacing-Fehler, die punktweiser Chamfer kaum sieht.
+- Ein Wort mit fehlendem Template oder Compose-Crash zählt `1.0`
+  (Glyph-Bench-Regel).
+
+**Frozen-Reference-Regel erweitert:** Eingefroren sind Maske (binarisiert +
+entfleckt), Skelett + EDT, die **geshapten Slots** (eine Shaping-Änderung ist
+ein bewusstes Re-Baseline, kein stiller Input-Shift), die Template-Zeilen und
+der gepoolte Nib. Die **Registrierung ist Teil der Metrik und begrenzt**:
+Skala fix aus der gemessenen Lineatur, Translation ±0,6 x-Höhen / ±4 px per
+Vorwärts-Chamfer gewählt und pro Wort reportet — ein Experiment kann sich
+nicht durch Verschieben verbessern. Ein Lauf = eine Schrift (kein kombinierter
+`bench_loss`, wie bei der Glyph-Bench). **Cross-Hand-Vorsicht:** strenge
+Ganzwort-Tore nur gegen gleiche Hand; Fremdhand-Proben (Vos, Petzendorfer)
+später nur für Übergangs-/Form-Scores.
+
+**Baseline (15 Wörter, Abbildung 19, 2026-07-02):**
+
+| `bench_loss` | Übergang | Deckung | Breite | schlechtestes Wort |
+|---|---|---|---|---|
+| **0.1397** | 0.104 | 0.133 | 0.231 | `wenn` 0.263 |
+
+Die Komponenten decken sich mit dem Prod-Live-Befund vom Audit 2026-07-01:
+Breite ist die größte Strafe (komponierte Wörter deutlich schmaler als die
+Probe — der konstante `CONNECT_GAP` erzeugt keinen Gleichmaß-Rhythmus), und
+die schlechtesten Wörter (`wenn` 0.263, `zwei` 0.244, `einen` 0.239) enthalten
+die w-/Mittelband-Exit-Verbindungen, deren Kollaps der Live-Test zeigte. Damit
+misst die Bench genau das, was Phase D (Exit-Klassen, Kopplungshöhen,
+G2-Joins, paarabhängiger Abstand) verbessern soll.
+
+**Frozen-Liste des `/optimize-glyphs`-Loops erweitert:** bei Wort-Läufen sind
+zusätzlich `tools/wordbench/metric.py`, `tools/wordbench/export_fixtures.py`
+und die Fixtures eingefroren; editiert wird `core/compose.py` (und ggf.
+`core/pipeline.py`-Rendergeometrie), nie die Messlatte.

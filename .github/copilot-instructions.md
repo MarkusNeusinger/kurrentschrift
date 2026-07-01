@@ -184,7 +184,8 @@ kurrentschrift/
 ├── alembic/          # Postgres migrations
 │   └── versions/     # 0004 library schema + seeds … 0006 Sütterlin 1922 source
 ├── data/             # Sources, samples, derived — SEPARATE LICENSING
-│   ├── sources/      # public-domain originals (Loth 1866, Sütterlin 1922, Offenbacher/Koch 1928 reserve, …)
+│   ├── sources/      # public-domain originals (Loth 1866, Sütterlin 1922 incl. connected-writing
+│   │                 #   plates + words.json word rects for the word bench, Koch 1928 reserve, …)
 │   ├── samples/      # own-hand scans
 │   └── derived/      # mixed licensing — see datenablage.md
 ├── docs/             # German concept + reference docs
@@ -485,7 +486,12 @@ pipelines for plot specifications). For now:
   `comp_<name>:` per-category means, `--compare prev.json` diffs them).
   A PR touching `core/` extraction or rendering should quote before/after
   numbers; the bench never touches the DB (fixtures exported once,
-  read-only).
+  read-only). One level up, `tools/wordbench` scores COMPOSED words
+  (placement + Übergänge from core/shaping.py + core/compose.py) against
+  frozen same-hand word specimens the same way
+  (`uv run python -m tools.wordbench.run --style suetterlin`; see
+  docs/reference/qualitaetsmetrik.md §6) — a PR touching core/compose.py
+  should quote its before/after `bench_loss:` too.
 - **Glyph inspection (see, don't just score):** `tools/glyphlab` renders
   matplotlib overlays of a glyph's derivation (crop · skeleton ·
   centerline · corners · silhouette) to `temp/`, from a fixture or a

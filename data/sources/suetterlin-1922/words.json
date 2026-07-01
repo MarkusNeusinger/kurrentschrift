@@ -1,0 +1,163 @@
+{
+ "note": "Word exemplars cut from the connected-writing plates of this source. Rect + lineature in page-pixel coords of `page`; optional `exclude` rects ([x0, y0, x1, y1], page coords) are painted paper-white before binarisation (foreign ink from neighbouring lines). Frozen into wordbench fixtures by tools/wordbench/export_fixtures.py. Lineature measured from the ink (the plate has no printed ruling).",
+ "words": [
+  {
+   "word": "unter",
+   "page": "words-abb19.png",
+   "y0": 73,
+   "y1": 159,
+   "x0": 560,
+   "x1": 834,
+   "baseline_y": 145,
+   "midband_y": 114
+  },
+  {
+   "word": "die",
+   "page": "words-abb19.png",
+   "y0": 73,
+   "y1": 159,
+   "x0": 838,
+   "x1": 992,
+   "baseline_y": 145,
+   "midband_y": 114
+  },
+  {
+   "word": "haben",
+   "page": "words-abb19.png",
+   "y0": 183,
+   "y1": 266,
+   "x0": 520,
+   "x1": 791,
+   "baseline_y": 252,
+   "midband_y": 222
+  },
+  {
+   "word": "ein",
+   "page": "words-abb19.png",
+   "y0": 204,
+   "y1": 266,
+   "x0": 801,
+   "x1": 961,
+   "baseline_y": 252,
+   "midband_y": 222
+  },
+  {
+   "word": "das",
+   "page": "words-abb19.png",
+   "y0": 290,
+   "y1": 376,
+   "x0": 149,
+   "x1": 313,
+   "baseline_y": 362,
+   "midband_y": 331
+  },
+  {
+   "word": "mit",
+   "page": "words-abb19.png",
+   "y0": 290,
+   "y1": 376,
+   "x0": 648,
+   "x1": 818,
+   "baseline_y": 362,
+   "midband_y": 331
+  },
+  {
+   "word": "laden",
+   "page": "words-abb19.png",
+   "y0": 290,
+   "y1": 376,
+   "x0": 1164,
+   "x1": 1432,
+   "baseline_y": 362,
+   "midband_y": 331
+  },
+  {
+   "word": "und",
+   "page": "words-abb19.png",
+   "y0": 398,
+   "y1": 484,
+   "x0": 143,
+   "x1": 349,
+   "baseline_y": 470,
+   "midband_y": 439
+  },
+  {
+   "word": "einer",
+   "page": "words-abb19.png",
+   "y0": 420,
+   "y1": 484,
+   "x0": 540,
+   "x1": 813,
+   "baseline_y": 470,
+   "midband_y": 439
+  },
+  {
+   "word": "linken",
+   "page": "words-abb19.png",
+   "y0": 538,
+   "y1": 621,
+   "x0": 950,
+   "x1": 1260,
+   "baseline_y": 607,
+   "midband_y": 577
+  },
+  {
+   "word": "einen",
+   "page": "words-abb19.png",
+   "y0": 668,
+   "y1": 730,
+   "x0": 143,
+   "x1": 420,
+   "baseline_y": 716,
+   "midband_y": 686
+  },
+  {
+   "word": "zum",
+   "page": "words-abb19.png",
+   "y0": 1027,
+   "y1": 1116,
+   "x0": 715,
+   "x1": 942,
+   "baseline_y": 1074,
+   "midband_y": 1042,
+   "exclude": [
+    [
+     724,
+     1027,
+     808,
+     1045
+    ]
+   ]
+  },
+  {
+   "word": "zwei",
+   "page": "words-abb19.png",
+   "y0": 1136,
+   "y1": 1219,
+   "x0": 1038,
+   "x1": 1264,
+   "baseline_y": 1180,
+   "midband_y": 1150
+  },
+  {
+   "word": "regieren",
+   "page": "words-abb19.png",
+   "y0": 1247,
+   "y1": 1328,
+   "x0": 1064,
+   "x1": 1433,
+   "baseline_y": 1289,
+   "midband_y": 1259
+  },
+  {
+   "word": "wenn",
+   "page": "words-abb19.png",
+   "y0": 1351,
+   "y1": 1409,
+   "x0": 139,
+   "x1": 418,
+   "baseline_y": 1396,
+   "midband_y": 1368
+  }
+ ]
+}
