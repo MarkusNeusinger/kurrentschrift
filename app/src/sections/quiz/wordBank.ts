@@ -26,12 +26,12 @@
 export interface WordEntry {
   word: string;
   // Three form-similar alternatives; the engine samples from these for the
-  // multiple-choice options. Real words, same case as `word`, chosen by the
-  // rules in `similarity` below.
+  // multiple-choice options. Real words, same case as `word`, hand-picked to
+  // fit the rules `similarity` below encodes.
   distractors: string[];
-  // 'modern' = todays high-frequency core; 'historisch' = still readable but
+  // 'modern' = today's high-frequency core; 'historic' = still readable but
   // dated, the vocabulary of old letters. Drives an optional era filter.
-  era: 'modern' | 'historisch';
+  era: 'modern' | 'historic';
   // Shown in the answer reveal for words a modern reader may not know
   // (archaisms, dated meanings). Omitted for self-evident everyday words.
   note?: string;
@@ -67,23 +67,23 @@ export const WORD_BANK: WordEntry[] = [
   { word: 'Wasser', distractors: ['Messer', 'Wesen', 'Wasen'], era: 'modern' },
 
   // ——— Vocabulary of old letters (around 1900) — glossed ———
-  { word: 'Muhme', distractors: ['Mütze', 'Mulde', 'Mähne'], era: 'historisch', note: 'veraltet für Tante oder weibliche Verwandte' },
-  { word: 'Base', distractors: ['Hase', 'Vase', 'Nase'], era: 'historisch', note: 'veraltet für Cousine' },
-  { word: 'Vetter', distractors: ['Wetter', 'Retter', 'Blätter'], era: 'historisch', note: 'Cousin, männlicher Verwandter' },
-  { word: 'Weib', distractors: ['Leib', 'Wein', 'Reim'], era: 'historisch', note: 'früher wertneutral für Frau / Ehefrau' },
-  { word: 'Magd', distractors: ['Mahd', 'Made', 'Jagd'], era: 'historisch', note: 'Dienstmädchen, Landarbeiterin' },
-  { word: 'Knecht', distractors: ['Recht', 'Nacht', 'Gicht'], era: 'historisch', note: 'landwirtschaftlicher Dienstbote' },
-  { word: 'Stube', distractors: ['Stufe', 'Grube', 'Staub'], era: 'historisch', note: 'beheizbares Wohnzimmer' },
-  { word: 'Kammer', distractors: ['Hammer', 'Kummer', 'Jammer'], era: 'historisch', note: 'kleiner, meist unbeheizter Nebenraum' },
-  { word: 'Truhe', distractors: ['Trübe', 'Traube', 'Trage'], era: 'historisch', note: 'großer Aufbewahrungskasten mit Deckel' },
-  { word: 'Witwe', distractors: ['Wiege', 'Wippe', 'Wanne'], era: 'historisch', note: 'Frau eines Verstorbenen (veraltet: Wittib)' },
-  { word: 'Pfarrer', distractors: ['Pfeffer', 'Sparren', 'Pfarrei'], era: 'historisch', note: 'Geistlicher der Gemeinde' },
-  { word: 'Taufe', distractors: ['Taube', 'Traube', 'Haube'], era: 'historisch', note: 'kirchliche Namensgebung' },
-  { word: 'Hornung', distractors: ['Wohnung', 'Rechnung', 'Ordnung'], era: 'historisch', note: 'alter Name für den Februar' },
-  { word: 'selig', distractors: ['ledig', 'eilig', 'wenig'], era: 'historisch', note: 'verstorben („mein seliger Vater“); auch: glückselig' },
-  { word: 'weiland', distractors: ['weinen', 'weilen', 'weichen'], era: 'historisch', note: 'einst, ehemals; vor einem Namen: der verstorbene …' },
-  { word: 'ergebenst', distractors: ['ergeben', 'erhoben', 'gegeben'], era: 'historisch', note: 'unterwürfige Grußformel: „Ihr ergebenster …“' },
-  { word: 'verbleibe', distractors: ['verbleibt', 'verweile', 'verkleide'], era: 'historisch', note: 'Schlussformel: „so verbleibe ich …“' },
+  { word: 'Muhme', distractors: ['Mütze', 'Mulde', 'Mähne'], era: 'historic', note: 'veraltet für Tante oder weibliche Verwandte' },
+  { word: 'Base', distractors: ['Hase', 'Vase', 'Nase'], era: 'historic', note: 'veraltet für Cousine' },
+  { word: 'Vetter', distractors: ['Wetter', 'Retter', 'Blätter'], era: 'historic', note: 'Cousin, männlicher Verwandter' },
+  { word: 'Weib', distractors: ['Leib', 'Wein', 'Reim'], era: 'historic', note: 'früher wertneutral für Frau / Ehefrau' },
+  { word: 'Magd', distractors: ['Mahd', 'Made', 'Jagd'], era: 'historic', note: 'Dienstmädchen, Landarbeiterin' },
+  { word: 'Knecht', distractors: ['Recht', 'Nacht', 'Gicht'], era: 'historic', note: 'landwirtschaftlicher Dienstbote' },
+  { word: 'Stube', distractors: ['Stufe', 'Grube', 'Staub'], era: 'historic', note: 'beheizbares Wohnzimmer' },
+  { word: 'Kammer', distractors: ['Hammer', 'Kummer', 'Jammer'], era: 'historic', note: 'kleiner, meist unbeheizter Nebenraum' },
+  { word: 'Truhe', distractors: ['Trübe', 'Traube', 'Trage'], era: 'historic', note: 'großer Aufbewahrungskasten mit Deckel' },
+  { word: 'Witwe', distractors: ['Wiege', 'Wippe', 'Wanne'], era: 'historic', note: 'Frau eines Verstorbenen (veraltet: Wittib)' },
+  { word: 'Pfarrer', distractors: ['Pfeffer', 'Sparren', 'Pfarrei'], era: 'historic', note: 'Geistlicher der Gemeinde' },
+  { word: 'Taufe', distractors: ['Taube', 'Traube', 'Haube'], era: 'historic', note: 'kirchliche Namensgebung' },
+  { word: 'Hornung', distractors: ['Wohnung', 'Rechnung', 'Ordnung'], era: 'historic', note: 'alter Name für den Februar' },
+  { word: 'selig', distractors: ['ledig', 'eilig', 'wenig'], era: 'historic', note: 'verstorben („mein seliger Vater“); auch: glückselig' },
+  { word: 'weiland', distractors: ['weinen', 'weilen', 'weichen'], era: 'historic', note: 'einst, ehemals; vor einem Namen: der verstorbene …' },
+  { word: 'ergebenst', distractors: ['ergeben', 'erhoben', 'gegeben'], era: 'historic', note: 'unterwürfige Grußformel: „Ihr ergebenster …“' },
+  { word: 'verbleibe', distractors: ['verbleibt', 'verweile', 'verkleide'], era: 'historic', note: 'Schlussformel: „so verbleibe ich …“' },
 
   // ——— Compound with a Fugen-s the automatic rule renders wrong ———
   // Excluded from the word mode (avoidAutoS) until shaping can force a round s;
@@ -93,9 +93,10 @@ export const WORD_BANK: WordEntry[] = [
 
 // ——— Distractor vetting (curation / future generation helper) ———
 //
-// Not called at render time — the lists above are hand-vetted — but this is the
-// rule set they were vetted against, kept executable so new entries and a future
-// corpus-fed generator can be scored the same way.
+// Not called at render time — the lists above are hand-picked — but this
+// encodes the rules used while curating them, kept executable so new entries and
+// a future corpus-fed generator can be scored the same way. It advises; it does
+// not enforce the bank.
 
 // Typical Kurrent/Sütterlin misreadings: unordered letter pairs that look alike
 // in the cursive hand. A distractor differing from the answer only in these is a
@@ -110,6 +111,14 @@ const CONFUSABLE: ReadonlyArray<readonly [string, string]> = [
 const isConfusablePair = (a: string, b: string): boolean =>
   CONFUSABLE.some(([x, y]) => (a === x && b === y) || (a === y && b === x));
 
+// Initial-capital (a noun like `Haus`) vs. lowercase (`das`): a different
+// reading target, not a confusion. Non-letters (upper === lower) count as
+// lowercase.
+const isCapitalized = (w: string): boolean => {
+  const first = w[0];
+  return first !== undefined && first === first.toUpperCase() && first !== first.toLowerCase();
+};
+
 // Heuristic distractor quality for (answer, candidate): higher is a better
 // (more confusable) distractor. Encodes the rules asked for — near-equal length,
 // a shared start OR end letter, and same-position differences that are cursive
@@ -117,6 +126,7 @@ const isConfusablePair = (a: string, b: string): boolean =>
 // different case pattern, or too far in length scores 0.
 export function similarity(answer: string, candidate: string): number {
   if (!answer || !candidate || answer === candidate) return 0;
+  if (isCapitalized(answer) !== isCapitalized(candidate)) return 0; // rule: same case pattern
   const a = [...answer];
   const b = [...candidate];
   if (Math.abs(a.length - b.length) > 1) return 0; // rule: length ±1
