@@ -31,6 +31,9 @@ COPY data/sources/ ./data/sources/
 # as the pre-deploy migrate Cloud Run Job (see api/cloudbuild.yaml).
 COPY alembic.ini ./
 COPY alembic/ ./alembic/
+# Seed data the quiz_words migrations (0010/0011) read at apply time — without
+# it the migrate job dies on FileNotFoundError (seen on the 0011 deploy).
+COPY tools/quizgen/quiz_words.json ./tools/quizgen/quiz_words.json
 
 # Non-root user.
 RUN useradd -m -u 1000 appuser && \
