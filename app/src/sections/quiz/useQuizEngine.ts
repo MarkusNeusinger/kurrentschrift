@@ -17,7 +17,17 @@ import { glyphKeysOf, shapeText } from '@/domain/shaping';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { type Difficulty } from '@/sections/quiz/quizTypes';
 import { isPlausibleDistractor, WORD_BANK, type WordEntry } from '@/sections/quiz/wordBank';
+import { getQuizWords, type QuizWordOut } from '@/lib/api';
 import { useAdmin } from '@/context/AdminContext';
+
+// DB row → the engine's WordEntry (null → undefined for the optional fields).
+const toEntry = (r: QuizWordOut): WordEntry => ({
+  word: r.word,
+  distractors: r.distractors,
+  era: r.era,
+  note: r.note ?? undefined,
+  fugen: r.fugen ?? undefined,
+});
 
 // Quiz subject: single letters or whole words.
 export type QuizMode = 'letters' | 'words';
@@ -101,6 +111,24 @@ export function useQuizEngine() {
   const { bboxesByKey, glyphsByKey } = useAdmin();
   const reducedMotion = usePrefersReducedMotion();
 
+  // The word bank: fetched from the DB (GET /quiz-words), falling back to the
+  // bundled WORD_BANK until — or unless — the API answers, so the quiz always
+  // has words even offline or before the seed migration has run.
+  const [words, setWords] = useState<WordEntry[]>(WORD_BANK);
+  useEffect(() => {
+    let alive = true;
+    getQuizWords()
+      .then((rows) => {
+        if (alive && rows.length > 0) setWords(rows.map(toEntry));
+      })
+      .catch(() => {
+        /* keep the bundled fallback */
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const [script, setScript] = useState('suetterlin');
   const [mode, setMode] = useState<QuizMode>('letters');
   const [difficulty, setDifficulty] = useState<Difficulty>('clean');
@@ -167,8 +195,8 @@ export function useQuizEngine() {
   // marker), so a compound is offered exactly when its round Schluss-s glyph
   // (`s-round-medial`) is traced too, never shown with the wrong s.
   const wordPool = useMemo<WordEntry[]>(
-    () => WORD_BANK.filter((e) => isWordRenderable(e.fugen ?? e.word)),
-    [isWordRenderable],
+    () => words.filter((e) => isWordRenderable(e.fugen ?? e.word)),
+    [isWordRenderable, words],
   );
 
   const poolSize = mode === 'words' ? wordPool.length : letterPool.length;
@@ -208,18 +236,18 @@ export function useQuizEngine() {
   const buildWordChoices = useCallback(
     (entry: WordEntry): Choice[] => {
       const answer = entry.word;
-      const renderFormOf = (w: string): string => WORD_BANK.find((e) => e.word === w)?.fugen ?? w;
+      const renderFormOf = (w: string): string => words.find((e) => e.word === w)?.fugen ?? w;
       const correct: Choice = { value: answer, label: answer, renderKey: entry.fugen ?? answer };
 
       const curated = entry.distractors.filter((d) => d !== answer);
-      const similar = WORD_BANK.map((e) => e.word).filter(
+      const similar = words.map((e) => e.word).filter(
         (w) => w !== answer && !curated.includes(w) && isPlausibleDistractor(answer, w),
       );
       const pool = [...curated, ...similar];
       // Top up from the rest of the bank if a word has too few near-forms, so
       // three options are always available.
       if (pool.length < 3) {
-        for (const w of shuffle(WORD_BANK.map((e) => e.word))) {
+        for (const w of shuffle(words.map((e) => e.word))) {
           if (pool.length >= 3) break;
           if (w !== answer && !pool.includes(w)) pool.push(w);
         }
@@ -232,7 +260,7 @@ export function useQuizEngine() {
         });
       return shuffle([correct, ...distractors]);
     },
-    [isWordRenderable],
+    [isWordRenderable, words],
   );
 
   const nextQuestion = useCallback(

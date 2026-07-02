@@ -15,6 +15,7 @@ import type {
   GlyphOut,
   GlyphSummary,
   QualityComparison,
+  QuizWordOut,
   SourceOut,
   StyleOut,
   TracePreviewOut,
@@ -40,6 +41,10 @@ const src = (sourceId: string, path: string) => `${apiRoot()}/sources/${encodeUR
 
 export const getStyles = (retry?: RetryOptions): Promise<StyleOut[]> =>
   apiFetch(`${apiRoot()}/styles`, {}, retry).then(asJson<StyleOut[]>);
+
+// The public reading-drill word bank (un-scoped, not source-specific).
+export const getQuizWords = (retry?: RetryOptions): Promise<QuizWordOut[]> =>
+  apiFetch(`${apiRoot()}/quiz-words`, {}, retry).then(asJson<QuizWordOut[]>);
 
 export const getSources = (retry?: RetryOptions): Promise<SourceOut[]> =>
   apiFetch(`${apiRoot()}/sources`, {}, retry).then(asJson<SourceOut[]>);

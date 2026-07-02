@@ -1,0 +1,540 @@
+[
+  {
+    "word": "der",
+    "distractors": [
+      "den",
+      "dem",
+      "des"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "das",
+    "distractors": [
+      "des",
+      "dass",
+      "was"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "und",
+    "distractors": [
+      "uns",
+      "nun",
+      "aus"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "sein",
+    "distractors": [
+      "mein",
+      "dein",
+      "kein"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "mehr",
+    "distractors": [
+      "sehr",
+      "wehr",
+      "leer"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "sehr",
+    "distractors": [
+      "mehr",
+      "wehr",
+      "leer"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "haben",
+    "distractors": [
+      "hoben",
+      "heben",
+      "laben"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "geben",
+    "distractors": [
+      "gehen",
+      "leben",
+      "eben"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "gehen",
+    "distractors": [
+      "geben",
+      "sehen",
+      "nehmen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "sehen",
+    "distractors": [
+      "gehen",
+      "geben",
+      "nehmen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "lesen",
+    "distractors": [
+      "leben",
+      "losen",
+      "lehren"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "finden",
+    "distractors": [
+      "binden",
+      "fanden",
+      "winden"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "waren",
+    "distractors": [
+      "malen",
+      "fahren",
+      "wagen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "machen",
+    "distractors": [
+      "wachen",
+      "lachen",
+      "sachen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "sagen",
+    "distractors": [
+      "tagen",
+      "wagen",
+      "jagen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "legen",
+    "distractors": [
+      "regen",
+      "segen",
+      "fegen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "neu",
+    "distractors": [
+      "nie",
+      "nun",
+      "neun"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "gut",
+    "distractors": [
+      "tut",
+      "gab",
+      "tat"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "alt",
+    "distractors": [
+      "als",
+      "oft",
+      "kalt"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "groß",
+    "distractors": [
+      "bloß",
+      "floß",
+      "schloß"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "klein",
+    "distractors": [
+      "kleid",
+      "klang",
+      "klar"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Tag",
+    "distractors": [
+      "Tat",
+      "Rat",
+      "Tor"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Jahr",
+    "distractors": [
+      "Haar",
+      "Paar",
+      "Bahn"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Haus",
+    "distractors": [
+      "Maus",
+      "Laus",
+      "Hans"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Kind",
+    "distractors": [
+      "Rind",
+      "Wind",
+      "Kino"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Hand",
+    "distractors": [
+      "Wand",
+      "Land",
+      "Rand"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Mann",
+    "distractors": [
+      "Bann",
+      "Wahn",
+      "Kahn"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Zeit",
+    "distractors": [
+      "Leid",
+      "Seite",
+      "Zeile"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Wort",
+    "distractors": [
+      "Ort",
+      "Wert",
+      "Sorte"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Buch",
+    "distractors": [
+      "Bach",
+      "Bruch",
+      "Busch"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Wasser",
+    "distractors": [
+      "Messer",
+      "Wesen",
+      "Wasen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Mutter",
+    "distractors": [
+      "Butter",
+      "Futter",
+      "Kutter"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Kinder",
+    "distractors": [
+      "Rinder",
+      "Finder",
+      "Binder"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Bruder",
+    "distractors": [
+      "Ruder",
+      "Luder",
+      "Puder"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Muhme",
+    "distractors": [
+      "Mütze",
+      "Mulde",
+      "Mähne"
+    ],
+    "era": "historic",
+    "note": "veraltet für Tante oder weibliche Verwandte"
+  },
+  {
+    "word": "Base",
+    "distractors": [
+      "Hase",
+      "Vase",
+      "Nase"
+    ],
+    "era": "historic",
+    "note": "veraltet für Cousine"
+  },
+  {
+    "word": "Vetter",
+    "distractors": [
+      "Wetter",
+      "Retter",
+      "Blätter"
+    ],
+    "era": "historic",
+    "note": "Cousin, männlicher Verwandter"
+  },
+  {
+    "word": "Weib",
+    "distractors": [
+      "Leib",
+      "Wein",
+      "Reim"
+    ],
+    "era": "historic",
+    "note": "früher wertneutral für Frau / Ehefrau"
+  },
+  {
+    "word": "Magd",
+    "distractors": [
+      "Mahd",
+      "Made",
+      "Jagd"
+    ],
+    "era": "historic",
+    "note": "Dienstmädchen, Landarbeiterin"
+  },
+  {
+    "word": "Knecht",
+    "distractors": [
+      "Recht",
+      "Nacht",
+      "Gicht"
+    ],
+    "era": "historic",
+    "note": "landwirtschaftlicher Dienstbote"
+  },
+  {
+    "word": "Gesinde",
+    "distractors": [
+      "Gebinde",
+      "Gefilde",
+      "Gelinde"
+    ],
+    "era": "historic",
+    "note": "die Dienstboten eines Hofes"
+  },
+  {
+    "word": "Stube",
+    "distractors": [
+      "Stufe",
+      "Grube",
+      "Staub"
+    ],
+    "era": "historic",
+    "note": "beheizbares Wohnzimmer"
+  },
+  {
+    "word": "Kammer",
+    "distractors": [
+      "Hammer",
+      "Kummer",
+      "Jammer"
+    ],
+    "era": "historic",
+    "note": "kleiner, meist unbeheizter Nebenraum"
+  },
+  {
+    "word": "Truhe",
+    "distractors": [
+      "Trübe",
+      "Traube",
+      "Trage"
+    ],
+    "era": "historic",
+    "note": "großer Aufbewahrungskasten mit Deckel"
+  },
+  {
+    "word": "Witwe",
+    "distractors": [
+      "Wiege",
+      "Wippe",
+      "Wanne"
+    ],
+    "era": "historic",
+    "note": "Frau eines Verstorbenen (veraltet: Wittib)"
+  },
+  {
+    "word": "Pfarrer",
+    "distractors": [
+      "Pfeffer",
+      "Sparren",
+      "Pfarrei"
+    ],
+    "era": "historic",
+    "note": "Geistlicher der Gemeinde"
+  },
+  {
+    "word": "Taufe",
+    "distractors": [
+      "Taube",
+      "Traube",
+      "Haube"
+    ],
+    "era": "historic",
+    "note": "kirchliche Namensgebung"
+  },
+  {
+    "word": "Schuster",
+    "distractors": [
+      "Muster",
+      "Kloster",
+      "Fenster"
+    ],
+    "era": "historic",
+    "note": "Schuhmacher"
+  },
+  {
+    "word": "Hornung",
+    "distractors": [
+      "Wohnung",
+      "Rechnung",
+      "Ordnung"
+    ],
+    "era": "historic",
+    "note": "alter Name für den Februar"
+  },
+  {
+    "word": "selig",
+    "distractors": [
+      "ledig",
+      "eilig",
+      "wenig"
+    ],
+    "era": "historic",
+    "note": "verstorben („mein seliger Vater“); auch: glückselig"
+  },
+  {
+    "word": "weiland",
+    "distractors": [
+      "weinen",
+      "weilen",
+      "weichen"
+    ],
+    "era": "historic",
+    "note": "einst, ehemals; vor einem Namen: der verstorbene …"
+  },
+  {
+    "word": "ergebenst",
+    "distractors": [
+      "ergeben",
+      "erhoben",
+      "gegeben"
+    ],
+    "era": "historic",
+    "note": "unterwürfige Grußformel: „Ihr ergebenster …“"
+  },
+  {
+    "word": "verbleibe",
+    "distractors": [
+      "verbleibt",
+      "verweile",
+      "verkleide"
+    ],
+    "era": "historic",
+    "note": "Schlussformel: „so verbleibe ich …“"
+  },
+  {
+    "word": "Donnerstag",
+    "distractors": [
+      "Sonntag",
+      "Freitag",
+      "Feiertag"
+    ],
+    "era": "modern",
+    "fugen": "Donners|tag"
+  },
+  {
+    "word": "Haustür",
+    "distractors": [
+      "Haustor",
+      "Haustüre",
+      "Hoftür"
+    ],
+    "era": "modern",
+    "fugen": "Haus|tür"
+  },
+  {
+    "word": "Arbeitsamt",
+    "distractors": [
+      "Standesamt",
+      "Bauamt",
+      "Zollamt"
+    ],
+    "era": "historic",
+    "note": "Behörde der Arbeitsvermittlung",
+    "fugen": "Arbeits|amt"
+  },
+  {
+    "word": "Häusler",
+    "distractors": [
+      "Häuser",
+      "Käufer",
+      "Gaukler"
+    ],
+    "era": "historic",
+    "note": "Kleinbauer / Tagelöhner mit eigenem Häuschen, ohne Feld",
+    "fugen": "Häus|ler"
+  }
+]

@@ -144,11 +144,11 @@ kurrentschrift/
 │   ├── template.py   # canonical sampling + outline + slant
 │   ├── chart.py      # load + crop_with_mask (eraser + patches + ink brush); crop_mask_to_png_bytes (mask preview)
 │   ├── pipeline.py   # canonical_from_path, diagnostic_for_glyph, render_payload_for_template
-│   ├── shaping.py    # text → glyph_keys (long-s, ligatures, decompose fallback; twin of app shaping.ts)
+│   ├── shaping.py    # text → glyph_keys (long-s + Fuge marker `|` for round Schluss-s in compounds, ligatures, decompose fallback; twin of app shaping.ts)
 │   ├── compose.py    # word composition (placement + Übergänge; single source of truth, golden-pinned)
 │   ├── widths.py     # resolve_half_widths — per-style width resolver (§5), render-time
 │   ├── fit.py        # M4: fit_template_to_instance, fit_glyph_to_crop
-│   └── database/     # SQLAlchemy Style + Hand + Source + Bbox + Template + Instance + Aggregate + repos
+│   └── database/     # SQLAlchemy Style + Hand + Source + Bbox + Template + Instance + Aggregate + QuizWord + repos
 ├── api/              # FastAPI service (thin)
 │   ├── main.py
 │   ├── schemas.py
@@ -156,7 +156,7 @@ kurrentschrift/
 │   ├── rendering.py  # style resolution + memoised source-pooled nib (templates + write)
 │   └── routers/      # health, styles, hands, sources, chart, bboxes, templates,
 │                     #   write (public batched render payloads + /word server-side composition,
-│                     #   cached, no chart I/O)
+│                     #   cached, no chart I/O), quiz_words (public GET /quiz-words reading-drill bank)
 ├── app/              # React 19 + Vite + MUI SPA (anyplot-style)
 │   └── src/
 │       ├── routes/      # paths.ts route constants + lazy public/admin route sections
