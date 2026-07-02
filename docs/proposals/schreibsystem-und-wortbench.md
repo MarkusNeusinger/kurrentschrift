@@ -1,6 +1,6 @@
 # Schreibsystem: Schreib-API, Python-Komposition, Wort-Bench
 
-**Status: Vorschlag; Phase A (PR #142) und Phase B (PR #143) umgesetzt, Phase C in Umsetzung (2026-07-02).**
+**Status: Vorschlag; Phasen A (PR #142), B (PR #143), C (PR #144) und D (erster Lauf, PR #145) umgesetzt (2026-07-02). Offen: Phase E.**
 Ergebnis des Schreibsystem-Audits vom 2026-07-01 (Repo-Audit + Live-Test
 der Prod-Federprobe + Quellen-Recherche). Ziel: Wörter und Sätze so
 schreiben, dass sie von einer echten Hand nicht zu unterscheiden sind —
@@ -126,7 +126,7 @@ DrawItems in Schreibreihenfolge (Vertrag von `WrittenWord` bleibt:
 `composeWord`-Ausgabe der §9-Wörter); danach wird `compose.ts` gelöscht
 (eine Quelle der Wahrheit). Ein Wort = 1 cachebarer Request.
 
-### Phase C — Wortvorlagen + Wort-Bench
+### Phase C — Wortvorlagen + Wort-Bench (umgesetzt: PR #144)
 
 - Vorlagen-Seiten (→ §3) als Chart-Bytes mit `SOURCE.md` via
   `/audit-licenses`.
@@ -149,7 +149,7 @@ DrawItems in Schreibreihenfolge (Vertrag von `WrittenWord` bleibt:
   Vorlagen (Vos, Petzendorfer) nur für Form-/Übergangs-Scores mit
   Per-Buchstabe-Alignment.
 
-### Phase D — Übergangs-Redesign gegen die Bench
+### Phase D — Übergangs-Redesign gegen die Bench (erster Lauf umgesetzt: PR #145, `bench_loss` 0.1397 → 0.1206; Log in qualitaetsmetrik.md §6)
 
 Mit Messinstrument, im Keep/Discard-Loop:
 

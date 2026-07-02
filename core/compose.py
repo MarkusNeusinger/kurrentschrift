@@ -16,9 +16,12 @@ the previous glyph's exit. Diacritic strokes — the marks floating above the
 midband (i-/j-dot, the Sütterlin u-bow, the ä/ö/ü umlaut) — are deferred to the
 end of their word; the join to the next letter leaves from the body's exit.
 
-Ported 1:1 from ``app/src/domain/compose.ts`` and pinned against its output by
-the golden parity fixture (``tests/test_compose_golden.py``) — the TS file is
-deleted once the server-side word endpoint carries the public writer.
+History: ported 1:1 from the SPA's ``compose.ts`` (PR #143, TS file deleted),
+then deliberately evolved past it against the word bench (``tools/wordbench``,
+same-hand specimens — see qualitaetsmetrik.md §6): ink-clearance spacing in
+the join band, the backward-/high-exit rescues and the bow-launch clamp all
+come from that loop. Pinned against accidental change by the golden regression
+fixture (``tests/test_compose_golden.py``; re-baseline via ``REGEN_GOLDEN=1``).
 """
 
 from __future__ import annotations
@@ -32,7 +35,28 @@ SPACE_ADV = 0.55  # inter-word gap, x-height units
 # Advance reserved for an unrenderable glyph — capped at the word gap, so a
 # hole never yawns wider than an actual space.
 MISSING_ADV = 0.55
-CONNECT_GAP = 0.16  # horizontal span of a connecting stroke
+CONNECT_GAP = 0.16  # minimum horizontal span of a connecting stroke (exit → entry)
+# Minimum clearance between the previous glyph's rightmost body INK and the
+# next glyph's leftmost body ink. The exit/entry anchors alone cannot carry the
+# spacing rhythm: a bow that curls back (w, v) exits well LEFT of its rightmost
+# ink, so an exit-anchored gap starts the next letter inside the bow — the
+# words the bench flagged as far too narrow (einen/einer/wenn/zwei) all contain
+# such exits, while exit≈ink-edge words (das, mit) were already sized right.
+INK_CLEARANCE = 0.14
+# The y-band the ink clearance is measured in: where connectors travel and the
+# next letter's body sits. Ink above it (ascender loops) or below (descenders)
+# may overlap the neighbour's column like on the teaching plates.
+JOIN_BAND_Y = (-0.15, 0.8)
+# Exit height above which the pen visibly REVERSES into the connector (the tall
+# d finishes its loop upward; the join then drops next to the stem): follow the
+# chord instead of the upward end tangent — the corner is authentic there.
+HIGH_EXIT_Y = 1.05
+# Midband-bow exits (Sütterlin b at ~0.98): the bow closes rising, but the pen
+# flattens OUT of the bow into a level join that then falls into the next
+# entry (the plates' Deckstrich-like connection) — following the rising end
+# tangent instead humps the connector above the bow. Clamp the launch angle.
+BOW_EXIT_Y = 0.7
+BOW_LAUNCH_DEG = (-35.0, 5.0)
 CONNECT_SAMPLES = 24  # Bézier samples per connector (dense enough to read as a smooth arc)
 DEFAULT_HALF = 0.05  # fallback stroke half-width
 # Exit y (baseline = 0, descender ≈ −1) below which a glyph's stroke is judged
@@ -201,9 +225,37 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None]) ->
         exit_xy: Point = body_exit_line[-1]
         exit_deg = _endpoint_tangent(body_exit_line, at_end=True)
 
+        # Horizontal body-INK extent in the glyph's own frame (rings where
+        # available — the silhouette edge — else centerlines), measured ONLY
+        # inside the JOIN BAND around the x-height (kerning, not bounding
+        # boxes): an ascender loop reaching high right (d) must not push the
+        # neighbour away — on the teaching plates the next letter tucks in
+        # under it — while a bow at x-height (w, v) must. Diacritics never
+        # count (they are deferred and float above the band anyway).
+        rings_by_stroke = data.get("outline_paths") or []
+        ink_min_x = math.inf
+        ink_max_x = -math.inf
+        for si, cl in enumerate(centerlines):
+            if diacritic_flags[si]:
+                continue
+            rings = rings_by_stroke[si] if si < len(rings_by_stroke) else []
+            pts = [p for ring in rings for p in ring] if rings else cl
+            for x, y in pts:
+                if JOIN_BAND_Y[0] <= y <= JOIN_BAND_Y[1]:
+                    ink_min_x = min(ink_min_x, x)
+                    ink_max_x = max(ink_max_x, x)
+        if not math.isfinite(ink_min_x):
+            ink_min_x = ink_max_x = entry_xy[0]
+
         # Place this glyph so its entry meets the previous glyph's exit + a
-        # small gap; with no connector start at the running cursor_x.
-        desired_entry_x = prev["exit"][0] + CONNECT_GAP if prev else cursor_x
+        # small gap AND its body ink clears the previous glyph's body ink by
+        # INK_CLEARANCE; with no connector start at the running cursor_x.
+        if prev:
+            desired_entry_x = max(
+                prev["exit"][0] + CONNECT_GAP, prev["ink_max_x"] + INK_CLEARANCE - (ink_min_x - entry_xy[0])
+            )
+        else:
+            desired_entry_x = cursor_x
         dx = desired_entry_x - entry_xy[0]
 
         # Connector first (writing order): the pen slides from A's exit into B's entry.
@@ -213,15 +265,34 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None]) ->
             # on the centerline the entry tangent is measured from.
             p3: Point = (first_line[0][0] + dx, first_line[0][1])
             span = math.hypot(p3[0] - p0[0], p3[1] - p0[1])
-            handle = max(0.05, span * 0.4)
+            # Handle length: 40 % of the span, but never more than half the
+            # HORIZONTAL run — a steep drop (d/t exits high above the next
+            # entry) with span-scaled handles balloons the Bézier into an
+            # S-bulge; clamping to the horizontal run keeps the curve taut
+            # while preserving the end tangents (G1).
+            hspan = abs(p3[0] - p0[0])
+            handle = max(0.05, min(span * 0.4, hspan * 0.5))
             d_out = _unit(prev["tangent_deg"])
             # A glyph whose stroke ends deep in its descender loop (the long-s ſ)
             # exits pointing downward — there the connector IS the return
             # upstroke: aim it at the next entry instead of continuing the
             # descent. Glyphs that finish a descender properly exit above the
-            # baseline, so the guard never fires for them.
-            if p0[1] < DESCENDER_EXIT_Y and d_out[1] < 0 and span > 0:
+            # baseline, so the guard never fires for them. The same rescue
+            # applies to a BACKWARD exit tangent (the Sütterlin w/v bow curls
+            # left at its end): a pen travelling to the next letter always
+            # progresses rightward — following the curl loops the connector
+            # around the bow (the "wovon" collapse from the 2026-07 audit).
+            backward = d_out[0] <= 0.0
+            # A HIGH exit (tall d finishing its loop upward) reverses into the
+            # join — a real corner on the plates, so the chord is truthful.
+            high_reversal = p0[1] > HIGH_EXIT_Y and p3[1] < p0[1]
+            if ((p0[1] < DESCENDER_EXIT_Y and d_out[1] < 0) or backward or high_reversal) and span > 0:
                 d_out = ((p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span)
+            elif BOW_EXIT_Y < p0[1] <= HIGH_EXIT_Y and p3[1] < p0[1]:
+                launch = math.degrees(math.atan2(d_out[1], d_out[0]))
+                clamped = min(max(launch, BOW_LAUNCH_DEG[0]), BOW_LAUNCH_DEG[1])
+                if clamped != launch:
+                    d_out = _unit(clamped)
             entry_deg = _endpoint_tangent(first_line, at_end=False)
             d_in = _unit(entry_deg)
             p1: Point = (p0[0] + handle * d_out[0], p0[1] + handle * d_out[1])
@@ -240,7 +311,6 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None]) ->
 
         # The glyph's own strokes (silhouette + centerline), translated by dx.
         # Body strokes flow in writing order; diacritics are held back.
-        rings_by_stroke = data.get("outline_paths") or []
         for si, cl in enumerate(centerlines):
             offset = [(x + dx, y) for x, y in cl]
             rings = [
@@ -263,7 +333,7 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None]) ->
                 items.append(item)
 
         exit_abs: Point = (exit_xy[0] + dx, exit_xy[1])
-        prev = {"exit": exit_abs, "tangent_deg": exit_deg, "width": med_half}
+        prev = {"exit": exit_abs, "tangent_deg": exit_deg, "width": med_half, "ink_max_x": ink_max_x + dx}
         cursor_x = exit_abs[0]
 
     flush_diacritics()  # the last word's marks, once its body is complete
