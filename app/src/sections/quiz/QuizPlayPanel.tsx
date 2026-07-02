@@ -89,6 +89,16 @@ export function QuizPlayPanel(p: PlayProps) {
       {/* Verdict / question line */}
       <Box sx={{ minHeight: 34, textAlign: 'center' }}>{message}</Box>
 
+      {/* Gloss for a dated/rare word, revealed only after the pick so it never
+          gives the answer away. */}
+      {answered && current.kind === 'word' && current.note && (
+        <Typography
+          sx={{ mt: -1, textAlign: 'center', fontFamily: garamond, fontSize: 16, fontStyle: 'italic', color: paper.sepia }}
+        >
+          {current.note}
+        </Typography>
+      )}
+
       {/* Answer grid */}
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
         {p.choices.map((c) => {

@@ -12,7 +12,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.database.models import Aggregate, Bbox, Hand, Instance, Source, Style, Template
+from core.database.models import Aggregate, Bbox, Hand, Instance, QuizWord, Source, Style, Template
 
 
 class StyleRepository:
@@ -25,6 +25,15 @@ class StyleRepository:
 
     async def list(self) -> list[Style]:
         result = await self.session.execute(select(Style).order_by(Style.id))
+        return list(result.scalars().all())
+
+
+class QuizWordRepository:
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def list(self) -> list[QuizWord]:
+        result = await self.session.execute(select(QuizWord).order_by(QuizWord.id))
         return list(result.scalars().all())
 
 

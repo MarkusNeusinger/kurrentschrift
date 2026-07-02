@@ -16,8 +16,18 @@ import { knownGlyph, quizKeysFromLocked, type KnownGlyph } from '@/domain/glyphs
 import { glyphKeysOf, shapeText } from '@/domain/shaping';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { type Difficulty } from '@/sections/quiz/quizTypes';
-import { WORD_BANK, type WordEntry } from '@/sections/quiz/wordBank';
+import { isPlausibleDistractor, WORD_BANK, type WordEntry } from '@/sections/quiz/wordBank';
+import { getQuizWords, type QuizWordOut } from '@/lib/api';
 import { useAdmin } from '@/context/AdminContext';
+
+// DB row → the engine's WordEntry (null → undefined for the optional fields).
+const toEntry = (r: QuizWordOut): WordEntry => ({
+  word: r.word,
+  distractors: r.distractors,
+  era: r.era,
+  note: r.note ?? undefined,
+  fugen: r.fugen ?? undefined,
+});
 
 // Quiz subject: single letters or whole words.
 export type QuizMode = 'letters' | 'words';
@@ -36,7 +46,9 @@ export interface LetterQuestion {
 }
 export interface WordQuestion {
   kind: 'word';
-  word: string; // rendered via WrittenWord
+  word: string; // the clean display/answer form (no Fuge marker)
+  render: string; // the form passed to WrittenWord — may carry a Fuge marker `|`
+  note?: string; // optional gloss for a dated/rare word, shown in the reveal
 }
 export type Question = LetterQuestion | WordQuestion;
 
@@ -98,6 +110,24 @@ const questionId = (q: Question): string => (q.kind === 'word' ? `W:${q.word}` :
 export function useQuizEngine() {
   const { bboxesByKey, glyphsByKey } = useAdmin();
   const reducedMotion = usePrefersReducedMotion();
+
+  // The word bank: fetched from the DB (GET /quiz-words), falling back to the
+  // bundled WORD_BANK until — or unless — the API answers, so the quiz always
+  // has words even offline or before the seed migration has run.
+  const [words, setWords] = useState<WordEntry[]>(WORD_BANK);
+  useEffect(() => {
+    let alive = true;
+    getQuizWords()
+      .then((rows) => {
+        if (alive && rows.length > 0) setWords(rows.map(toEntry));
+      })
+      .catch(() => {
+        /* keep the bundled fallback */
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const [script, setScript] = useState('suetterlin');
   const [mode, setMode] = useState<QuizMode>('letters');
@@ -161,9 +191,12 @@ export function useQuizEngine() {
     },
     [isKeyReady],
   );
+  // Keep only fully-renderable words — checking the render form (with its Fuge
+  // marker), so a compound is offered exactly when its round Schluss-s glyph
+  // (`s-round-medial`) is traced too, never shown with the wrong s.
   const wordPool = useMemo<WordEntry[]>(
-    () => WORD_BANK.filter((e) => isWordRenderable(e.word)),
-    [isWordRenderable],
+    () => words.filter((e) => isWordRenderable(e.fugen ?? e.word)),
+    [isWordRenderable, words],
   );
 
   const poolSize = mode === 'words' ? wordPool.length : letterPool.length;
@@ -195,17 +228,39 @@ export function useQuizEngine() {
     return shuffle([correct, ...distractors]);
   }, []);
 
-  // Word distractors come from the entry's curated form-similar list; each is
-  // rendered "as written" in the comparison only when it's fully traced.
+  // Word distractors: the entry's curated form-similar list PLUS any other bank
+  // word the similarity rules rate as a plausible misread, sampled down to three
+  // — so the options vary from round to round instead of being the same fixed
+  // trio. Each is rendered "as written" in the comparison only when fully traced
+  // (its render form may itself carry a Fuge marker).
   const buildWordChoices = useCallback(
     (entry: WordEntry): Choice[] => {
-      const correct: Choice = { value: entry.word, label: entry.word, renderKey: entry.word };
-      const distractors: Choice[] = shuffle(entry.distractors.filter((d) => d !== entry.word))
+      const answer = entry.word;
+      const renderFormOf = (w: string): string => words.find((e) => e.word === w)?.fugen ?? w;
+      const correct: Choice = { value: answer, label: answer, renderKey: entry.fugen ?? answer };
+
+      const curated = entry.distractors.filter((d) => d !== answer);
+      const similar = words.map((e) => e.word).filter(
+        (w) => w !== answer && !curated.includes(w) && isPlausibleDistractor(answer, w),
+      );
+      const pool = [...curated, ...similar];
+      // Top up from the rest of the bank if a word has too few near-forms, so
+      // three options are always available.
+      if (pool.length < 3) {
+        for (const w of shuffle(words.map((e) => e.word))) {
+          if (pool.length >= 3) break;
+          if (w !== answer && !pool.includes(w)) pool.push(w);
+        }
+      }
+      const distractors: Choice[] = shuffle(pool)
         .slice(0, 3)
-        .map((d) => ({ value: d, label: d, renderKey: isWordRenderable(d) ? d : null }));
+        .map((d) => {
+          const rf = renderFormOf(d);
+          return { value: d, label: d, renderKey: isWordRenderable(rf) ? rf : null };
+        });
       return shuffle([correct, ...distractors]);
     },
-    [isWordRenderable],
+    [isWordRenderable, words],
   );
 
   const nextQuestion = useCallback(
@@ -223,7 +278,7 @@ export function useQuizEngine() {
             guard += 1;
           }
         }
-        setCurrent({ kind: 'word', word: pick.word });
+        setCurrent({ kind: 'word', word: pick.word, render: pick.fugen ?? pick.word, note: pick.note });
         setChoices(buildWordChoices(pick));
       } else {
         if (letterPool.length === 0) {
@@ -299,7 +354,7 @@ export function useQuizEngine() {
   }, []);
 
   const refOf = useCallback((q: Question): TallyRef => {
-    if (q.kind === 'word') return { label: q.word, renderKey: q.word, kind: 'word' };
+    if (q.kind === 'word') return { label: q.word, renderKey: q.render, kind: 'word' };
     return { label: inCase(q.kg.answer, q.kg), renderKey: q.key, kind: 'letter' };
   }, []);
 

@@ -10,12 +10,13 @@ from core.database.connection import (
     init_db,
     is_db_configured,
 )
-from core.database.models import Aggregate, Bbox, Hand, Instance, Source, Style, Template
+from core.database.models import Aggregate, Bbox, Hand, Instance, QuizWord, Source, Style, Template
 from core.database.repositories import (
     AggregateRepository,
     BboxRepository,
     HandRepository,
     InstanceRepository,
+    QuizWordRepository,
     SourceRepository,
     StyleRepository,
     TemplateRepository,
@@ -33,6 +34,8 @@ __all__ = [
     "HandRepository",
     "Instance",
     "InstanceRepository",
+    "QuizWord",
+    "QuizWordRepository",
     "Source",
     "SourceRepository",
     "Style",

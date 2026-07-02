@@ -23,6 +23,20 @@ class StyleOut(BaseModel):
     authorable: bool = False
 
 
+class QuizWordOut(BaseModel):
+    """A reading-drill word: the clean answer form plus form-similar distractors.
+
+    `fugen` is the optional render form with a `|` morpheme marker (round
+    Schluss-s in compounds); `note` glosses dated/rare words in the reveal.
+    """
+
+    word: str
+    distractors: list[str]
+    era: str
+    note: str | None = None
+    fugen: str | None = None
+
+
 class HandOut(BaseModel):
     """One writer."""
 

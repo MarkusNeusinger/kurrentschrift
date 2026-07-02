@@ -13,9 +13,14 @@ Two orthographic rules carry the historical look (architektur.md §3/§4):
    and in the middle of a word, the round s only at the end. Separate
    allographs with their own ductus (historical keys: ſ-medial → ``s-medial``,
    round-s medial → ``s-round-medial``), not one letter with a transition. The
-   syllable-aware rule (round s at morpheme boundaries) is post-MVP and
+   fully syllable-aware rule (round s at morpheme boundaries) is post-MVP and
    reserved for ``core/orthography.py`` (planaenderungen.md Vorschlag D) —
-   this module is the pragmatic "ſ unless word-final" mapper until then.
+   this module is the pragmatic "ſ unless word-final" mapper until then, with
+   one manual escape hatch: a Fuge marker ``|`` in the input forces the round
+   s at a compound's inner morpheme boundary (``Haus|tür``, ``Arbeits|amt``)
+   the length heuristic gets wrong. The s right before the ``|`` renders round,
+   no ligature spans the boundary, and the marker carries no glyph. Strip it
+   for display with ``strip_fugen``.
 2. The closed ligature set ch · ck · tz · ſt · qu · ß are *taught units* with
    their own template, not exit→entry chains (architektur.md §4), detected
    greedily but only when the cluster starts on a lowercase letter.
@@ -30,6 +35,16 @@ from dataclasses import dataclass
 
 
 Position = str  # 'initial' | 'medial' | 'final'
+
+# The Fuge marker: a morpheme boundary the caller places in a compound so the
+# preceding s renders round (Schluss-s) and no ligature spans it. Mirrors the
+# TS ``FUGE`` in app/src/domain/shaping.ts.
+FUGE = "|"
+
+
+def strip_fugen(text: str) -> str:
+    """Drop Fuge markers for any human-facing display; render keeps the marked form."""
+    return text.replace(FUGE, "")
 
 
 @dataclass(frozen=True)
@@ -99,6 +114,7 @@ class _RawToken:
     text: str
     ligature: bool
     s_allograph: bool  # lowercase s/ſ whose long-vs-round form depends on position
+    force_round: bool  # an s immediately before a Fuge — always the round allograph
 
 
 def _tokenize_word(word: str) -> list[_RawToken]:
@@ -109,27 +125,36 @@ def _tokenize_word(word: str) -> list[_RawToken]:
     while i < len(chars):
         c = chars[i]
         nxt = chars[i + 1] if i + 1 < len(chars) else None
+        # Fuge marker: a morpheme boundary carrying no glyph. Consumed here; its
+        # only effect is on the preceding s (handled in the s branch below).
+        if c == FUGE:
+            i += 1
+            continue
         if nxt is not None and _is_lowercase_letter(c):
             pair = (c + nxt).lower()
             if pair in ("ch", "ck", "tz", "qu"):
-                tokens.append(_RawToken(_LIGATURES[pair], c + nxt, True, False))
+                tokens.append(_RawToken(_LIGATURES[pair], c + nxt, True, False, False))
                 i += 2
                 continue
             # ſt-ligature: the s before t is always a long-s context; accept
-            # both the typed 's' and an already-long 'ſ'.
+            # both the typed 's' and an already-long 'ſ'. A Fuge between them
+            # (`Aus|tritt`) blocks it — nxt is then the marker, not t.
             if pair in ("st", "ſt"):
-                tokens.append(_RawToken(_LIGATURES["ſt"], c + nxt, True, False))
+                tokens.append(_RawToken(_LIGATURES["ſt"], c + nxt, True, False, False))
                 i += 2
                 continue
         if c == "ß":
-            tokens.append(_RawToken(_LIGATURES["ß"], c, True, False))
+            tokens.append(_RawToken(_LIGATURES["ß"], c, True, False, False))
             i += 1
             continue
+        # Lowercase s/ſ: defer the long-vs-round choice to position assignment,
+        # unless a Fuge follows — then it's the round Schluss-s of a compound's
+        # inner boundary (`Haus|tür`), regardless of position.
         if c in ("s", "ſ") and _is_lowercase_letter(c):
-            tokens.append(_RawToken(None, c, False, True))
+            tokens.append(_RawToken(None, c, False, True, nxt == FUGE))
             i += 1
             continue
-        tokens.append(_RawToken(_LETTERS.get(c), c, False, False))
+        tokens.append(_RawToken(_LETTERS.get(c), c, False, False, False))
         i += 1
     return tokens
 
@@ -147,8 +172,9 @@ def _assign_positions(tokens: list[_RawToken]) -> list[GlyphSlot]:
     for idx, t in enumerate(tokens):
         position = _position_of(idx, len(tokens))
         if t.s_allograph:
-            # Long-s in initial/medial position, round s word-final.
-            entry = _LETTERS["s"] if position == "final" else _LETTERS["ſ"]
+            # Long-s in initial/medial position, round s word-final — or forced
+            # round at a Fuge boundary regardless of position.
+            entry = _LETTERS["s"] if (t.force_round or position == "final") else _LETTERS["ſ"]
             out.append(GlyphSlot(_key_for(entry, position), t.text, position, False, False))
             continue
         if t.entry is None:

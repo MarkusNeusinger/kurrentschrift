@@ -32,6 +32,18 @@ export interface StyleOut {
   authorable: boolean;
 }
 
+// A reading-drill quiz word. Mirrors QuizWordOut in api/schemas.py. `word` is
+// the clean display/answer form; `fugen` is the optional render form carrying a
+// `|` morpheme marker (round Schluss-s in compounds); `note` glosses dated
+// words in the reveal. Same shape as the local WordEntry fallback.
+export interface QuizWordOut {
+  word: string;
+  distractors: string[];
+  era: 'modern' | 'historic';
+  note?: string | null;
+  fugen?: string | null;
+}
+
 export interface SourceOut {
   id: string;
   style_id: string;

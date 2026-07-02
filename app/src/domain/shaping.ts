@@ -8,10 +8,16 @@
 //   1. Long-s vs round-s (Lang-s ſ / Schluss-s s). German Kurrent/Sütterlin
 //      writes the long-s ſ at the start and in the middle of a word and the
 //      round s only at the end. These are *separate allographs* with their own
-//      ductus (`longs-*` / `s-medial` for ſ, `s-final` for the round s), not one
-//      letter with a transition. We approximate the syllable rule with the
-//      pragmatic "ſ unless word-final" convention used by historical type — good
-//      enough for the public live-writing demo; a full syllabifier is post-MVP.
+//      ductus (`longs-*` / `s-medial` for ſ, `s-final` / `s-round-medial` for
+//      the round s), not one letter with a transition. We approximate the
+//      syllable rule with the pragmatic "ſ unless word-final" convention used by
+//      historical type — good enough for the public live-writing demo; a full
+//      syllabifier is post-MVP (orthographie-regeln.md §1.2). Until then a
+//      Fuge marker `|` in the input lets the caller force the round s at a
+//      morpheme boundary a compound needs it (`Haus|tür`, `Arbeits|amt`): the s
+//      right before the `|` renders round, no ſt/ligature spans the boundary,
+//      and the marker itself produces no glyph. Strip it for display via
+//      `stripFugen`.
 //
 //   2. The closed ligature set ch · ck · tz · ſt · qu · ß are *taught units*
 //      with their own template, not exit→entry chains (architektur.md §4). We
@@ -58,11 +64,20 @@ function isLowercaseLetter(c: string): boolean {
   return c === c.toLowerCase() && c !== c.toUpperCase();
 }
 
+// The Fuge marker: a morpheme boundary the caller places in a compound so the
+// preceding s renders round (Schluss-s) and no ligature spans it.
+export const FUGE = '|';
+
+// Drop Fuge markers for any human-facing display (labels, answer text). The
+// marked form is only for shaping/rendering.
+export const stripFugen = (text: string): string => text.split(FUGE).join('');
+
 interface RawToken {
   letter: Letter | null; // null => unknown char (gap) or a deferred s-allograph
   text: string;
   ligature: boolean;
   sAllograph: boolean; // a lowercase s/ſ whose long-vs-round form depends on position
+  forceRound: boolean; // an s immediately before a Fuge — always the round allograph
 }
 
 // Greedy left-to-right tokeniser over one whitespace-free word.
@@ -73,36 +88,45 @@ function tokenizeWord(word: string): RawToken[] {
   while (i < chars.length) {
     const c = chars[i];
     const next = chars[i + 1];
+    // Fuge marker: a morpheme boundary carrying no glyph. Consumed here; its
+    // only effect is on the preceding s (handled in the s branch below).
+    if (c === FUGE) {
+      i += 1;
+      continue;
+    }
     // Two-character ligatures, only when the cluster opens on a lowercase letter.
     if (next !== undefined && isLowercaseLetter(c)) {
       const pair = (c + next).toLowerCase();
       if (pair === 'ch' || pair === 'ck' || pair === 'tz' || pair === 'qu') {
-        tokens.push({ letter: LIGATURE_BY_FORM.get(pair) ?? null, text: c + next, ligature: true, sAllograph: false });
+        tokens.push({ letter: LIGATURE_BY_FORM.get(pair) ?? null, text: c + next, ligature: true, sAllograph: false, forceRound: false });
         i += 2;
         continue;
       }
       // ſt-ligature: a long-s followed by t (the s before t is always a long-s
-      // context). Accept both the typed 's' and an already-long 'ſ'.
+      // context). Accept both the typed 's' and an already-long 'ſ'. A Fuge
+      // between them (`Aus|tritt`) blocks it — `next` is then the marker, not t.
       if (pair === 'st' || pair === 'ſt') {
-        tokens.push({ letter: LIGATURE_BY_FORM.get('ſt') ?? null, text: c + next, ligature: true, sAllograph: false });
+        tokens.push({ letter: LIGATURE_BY_FORM.get('ſt') ?? null, text: c + next, ligature: true, sAllograph: false, forceRound: false });
         i += 2;
         continue;
       }
     }
     // ß — a single-character ligature unit (Eszett).
     if (c === 'ß') {
-      tokens.push({ letter: LIGATURE_BY_FORM.get('ß') ?? null, text: c, ligature: true, sAllograph: false });
+      tokens.push({ letter: LIGATURE_BY_FORM.get('ß') ?? null, text: c, ligature: true, sAllograph: false, forceRound: false });
       i += 1;
       continue;
     }
-    // Lowercase s/ſ: defer the long-vs-round choice to position assignment.
+    // Lowercase s/ſ: defer the long-vs-round choice to position assignment,
+    // unless a Fuge marker follows — then it's the round Schluss-s of a
+    // compound's inner boundary (`Haus|tür`), regardless of position.
     if ((c === 's' || c === 'ſ') && isLowercaseLetter(c)) {
-      tokens.push({ letter: null, text: c, ligature: false, sAllograph: true });
+      tokens.push({ letter: null, text: c, ligature: false, sAllograph: true, forceRound: next === FUGE });
       i += 1;
       continue;
     }
     const letter = LETTER_BY_CHAR.get(c) ?? null;
-    tokens.push({ letter, text: c, ligature: false, sAllograph: false });
+    tokens.push({ letter, text: c, ligature: false, sAllograph: false, forceRound: false });
     i += 1;
   }
   return tokens;
@@ -117,9 +141,10 @@ function positionOf(index: number, count: number): Position {
 function assignPositions(tokens: RawToken[]): GlyphSlot[] {
   return tokens.map((t, idx): GlyphSlot => {
     const position = positionOf(idx, tokens.length);
-    // Long-s in initial/medial position, round s word-final (the historical rule).
+    // Long-s in initial/medial position, round s word-final (the historical
+    // rule) — or forced round at a Fuge boundary regardless of position.
     if (t.sAllograph) {
-      const letter = position === 'final' ? ROUND_S : LONG_S;
+      const letter = t.forceRound || position === 'final' ? ROUND_S : LONG_S;
       return {
         key: letter ? glyphKeyFor(letter, position) : null,
         text: t.text,

@@ -310,3 +310,26 @@ class Aggregate(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class QuizWord(Base):
+    """A word shown in the reading quiz plus its form-similar distractors.
+
+    Content, not measurement — it lives in its own flat table, unrelated to the
+    style/hand/template graph. `word` is the clean display/answer form; `fugen`
+    is the optional render form carrying a `|` morpheme-boundary marker where a
+    compound's Fugen-s must render round (`Donners|tag`). `era` tags modern vs.
+    around-1900 vocabulary; `note` glosses dated/rare words in the answer
+    reveal. Seeded from `tools/quizgen/quiz_words.json` (0010).
+    """
+
+    __tablename__ = "quiz_words"
+    __table_args__ = (UniqueConstraint("word", name="uq_quiz_word"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    word: Mapped[str] = mapped_column(String(64), nullable=False)
+    distractors: Mapped[list] = mapped_column(JSONB, nullable=False, server_default="[]")
+    era: Mapped[str] = mapped_column(String(16), nullable=False, server_default="modern")
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    fugen: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
