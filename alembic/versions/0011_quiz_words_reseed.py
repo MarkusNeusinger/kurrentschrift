@@ -65,6 +65,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    # The pre-0011 rows are not recoverable from this revision; keep the
-    # current bank (a superset) rather than leaving the table empty.
-    pass
+    # Fail loudly instead of pretending: the pre-0011 rows were replaced in
+    # place and cannot be reconstructed from this revision.
+    raise NotImplementedError("0011 replaced the quiz_words rows in place; restore them from a backup instead")
