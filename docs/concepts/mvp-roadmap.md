@@ -460,21 +460,22 @@ Kopplungshöhe) die Verbindungslinie zum Folgebuchstaben generieren (§4
 **Keine Ligatur-Klasse** im MVP — die wird erst mit dem Rest-Alphabet
 (post-MVP) getestet.
 
-**Bereits gebaut (Frontend, Canonical-Variante):** Die Übergangs-Engine
-existiert im SPA als framework-freie `domain/shaping.ts` (Text → geordnete
-glyph_keys mit Position, Lang-s-Regel und geschlossenem Ligatur-Satz) +
-`domain/compose.ts` (Glyphen auf eine Grundlinie legen, Übergangs-Kurve aus
-`exit_pt`→`entry` als kurze Bézier mit Tangenten generieren) und rendert über
-`components/WrittenWord` ein ganzes Wort/eine Zeile „as written" (Silhouetten +
-Verbinder, in Schreibreihenfolge enthüllt). Sie speist sich aus den
-**kanonischen** Templates (die `/diagnostic`-Payload trägt dafür jetzt
-`entry`/`exit_pt`/`advance`), nicht aus M4-Per-Instanz-Fits — sie liefert das
-öffentliche „beliebige Wörter live schreiben" (`/federprobe`, Hero) und die
-Geometrie-Schicht für die obige Rekonstruktion. Was für M6/Gate 3 noch fehlt,
-ist die Speisung mit gefitteten bzw. M5(C)-aggregierten Templates statt der
-Grundvorlage.
+**Bereits gebaut (Canonical-Variante, seit 2026-07 in Python):** Die
+Übergangs-Engine liegt in `core/shaping.py` (Text → geordnete glyph_keys mit
+Position, Lang-s-Regel, geschlossenem Ligatur-Satz + Zerfalls-Fallback) und
+`core/compose.py` (Glyphen auf eine Grundlinie legen, Übergangs-Kurve aus dem
+gerenderten Exit + Tangente generieren, inkl. Tinten-Freiraum-Rhythmus und
+Exit-Klassen-Regeln — Historie in `qualitaetsmetrik.md` §6); die Wort-API
+`GET /sources/{id}/write/word` serviert sie, `components/WrittenWord` rendert
+„as written". Die Qualität ist über `tools/wordbench` gegen gleichhändige
+PD-Wortproben messbar. Die Engine speist sich aus den **kanonischen**
+Templates, nicht aus M4-Per-Instanz-Fits — sie liefert das öffentliche
+„beliebige Wörter live schreiben" (`/federprobe`) und die Geometrie-Schicht
+für die obige Rekonstruktion. Was für M6/Gate 3 noch fehlt, ist die Speisung
+mit gefitteten bzw. M5(C)-aggregierten Templates statt der Grundvorlage.
 
-**Wo:** `mvp/transition.py` + `mvp/render.py` + `mvp/out/<wort>-rendered.png`
+**Wo:** `core/compose.py` (statt des früher hier geplanten
+`mvp/transition.py`/`mvp/render.py`) + `mvp/out/<wort>-rendered.png`
 (eines pro Wort des Sets + `denen-generalized.png`, Side-by-Side zur
 Vorlage bzw. zu einem hand-geschriebenen Vergleichswort; heute: Input
 sind `templates`-/`aggregates`-Rows statt JSON unter `/mvp/`).
