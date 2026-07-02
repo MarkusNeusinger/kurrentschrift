@@ -466,8 +466,8 @@ Position, Lang-s-Regel, geschlossenem Ligatur-Satz + Zerfalls-Fallback) und
 `core/compose.py` (Glyphen auf eine Grundlinie legen, Übergangs-Kurve aus dem
 gerenderten Exit + Tangente generieren, inkl. Tinten-Freiraum-Rhythmus und
 Exit-Klassen-Regeln — Historie in `qualitaetsmetrik.md` §6); die Wort-API
-`GET /sources/{id}/write/word` serviert sie, `components/WrittenWord` rendert
-„as written". Die Qualität ist über `tools/wordbench` gegen gleichhändige
+`GET /sources/{id}/write/word` serviert sie, `app/src/components/WrittenWord`
+rendert „as written". Die Qualität ist über `tools/wordbench` gegen gleichhändige
 PD-Wortproben messbar. Die Engine speist sich aus den **kanonischen**
 Templates, nicht aus M4-Per-Instanz-Fits — sie liefert das öffentliche
 „beliebige Wörter live schreiben" (`/federprobe`) und die Geometrie-Schicht
@@ -475,10 +475,12 @@ für die obige Rekonstruktion. Was für M6/Gate 3 noch fehlt, ist die Speisung
 mit gefitteten bzw. M5(C)-aggregierten Templates statt der Grundvorlage.
 
 **Wo:** `core/compose.py` (statt des früher hier geplanten
-`mvp/transition.py`/`mvp/render.py`) + `mvp/out/<wort>-rendered.png`
-(eines pro Wort des Sets + `denen-generalized.png`, Side-by-Side zur
-Vorlage bzw. zu einem hand-geschriebenen Vergleichswort; heute: Input
-sind `templates`-/`aggregates`-Rows statt JSON unter `/mvp/`).
+`mvp/transition.py`/`mvp/render.py`). Die M6-Belege — ein Side-by-Side-Render
+pro Wort des Sets + `denen-generalized.png` — sind ein **geplantes** Artefakt
+(Ablageort wird mit M6 festgelegt); das heute existierende Gegenstück sind die
+Overlay-PNGs der Wort-Bench (`tools/wordbench/run.py --artifacts …`,
+komponiertes Wort über der gleichhändigen PD-Vorlage), nur eben aus den
+kanonischen statt den gefitteten Templates.
 
 **Fertig wenn:** MVP-Gate 3 erfüllt — die §9-Pflicht-Anker sehen
 kontinuierlich aus (kein Sprung, kein doppelter Strich an der Naht),
