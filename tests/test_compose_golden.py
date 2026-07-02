@@ -25,7 +25,7 @@ from pathlib import Path
 import pytest
 
 from core.compose import compose_word
-from core.shaping import GlyphSlot, decompose_ligature_slot, glyph_keys_of, shape_text
+from core.shaping import GlyphSlot, decompose_ligature_slot, glyph_keys_of, shape_text, shape_word, strip_fugen
 
 
 FIXTURE = Path(__file__).parent / "fixtures" / "compose_golden.json.gz"
@@ -160,3 +160,40 @@ def test_glyph_keys_of_dedupes() -> None:
     slots = shape_text("lesen")
     keys = glyph_keys_of(slots)
     assert keys == ["l-initial", "e-medial", "s-medial", "n-final"]  # e-medial deduped, order preserved
+
+
+def test_fuge_forces_round_s_at_morpheme_boundary() -> None:
+    """`Haus|tür`: the s before the Fuge is the round Schluss-s, no ſt ligature."""
+    slots = shape_word("Haus|tür")
+    # The marker carries no glyph — one slot per real letter, in order.
+    assert [s.text for s in slots] == ["H", "a", "u", "s", "t", "ü", "r"]
+    s_slot = slots[3]
+    assert s_slot.key == "s-round-medial"  # round s, medial position (not final)
+    assert s_slot.position == "medial"
+    # No ſt ligature spans the boundary; the t is its own initial-of-part slot.
+    assert all(not s.ligature for s in slots)
+    assert slots[4].key == "t-medial"
+
+
+def test_fuge_absent_keeps_long_s() -> None:
+    """Without a Fuge the inner s stays long — the unchanged historical default."""
+    assert glyph_keys_of(shape_text("Arbeitsamt")) == [  # naive: inner s is long ſ
+        "A-initial",
+        "r-medial",
+        "b-medial",
+        "e-medial",
+        "i-medial",
+        "t-medial",
+        "s-medial",
+        "a-medial",
+        "m-medial",
+        "t-final",
+    ]
+    # With the Fuge the boundary s turns round.
+    assert "s-round-medial" in glyph_keys_of(shape_text("Arbeits|amt"))
+
+
+def test_strip_fugen_clears_markers() -> None:
+    assert strip_fugen("Haus|tür") == "Haustür"
+    assert strip_fugen("Donners|tag") == "Donnerstag"
+    assert strip_fugen("lesen") == "lesen"

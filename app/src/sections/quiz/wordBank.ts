@@ -10,12 +10,14 @@
 // (Muhme, Magd, Hornung, „verbleibe …“). Every entry carries an `era` tag so a
 // later UI can bias the draw (Alltag ↔ alte Briefe).
 //
-// Long-s vs round-s is NOT encoded here: `domain/shaping.ts` sets the allographs
-// automatically (long ſ initial/medial, round s word-final). We therefore store
-// the plain modern spelling — `lesen` renders as `leſen`. The one case the
-// automatic rule gets wrong is the Fugen-s / inner syllable-final s of compounds
-// (`Donnerstag`, `Haustür` → wrongly long), so such words carry `avoidAutoS` and
-// stay out of the word mode until the engine can force a round s.
+// Long-s vs round-s is NOT encoded in `word`: `domain/shaping.ts` sets the
+// allographs automatically (long ſ initial/medial, round s word-final), so we
+// store the plain modern spelling — `lesen` renders as `leſen`. The one case
+// the automatic rule gets wrong is the Fugen-s / inner syllable-final s of
+// compounds (`Donnerstag`, `Haustür` → wrongly long); those carry a `fugen`
+// field with a `|` marking the morpheme boundary (`Donners|tag`) so the
+// junction s renders round. `word` stays clean for display; `fugen` is the
+// render form.
 //
 // This is the FULL candidate set. The engine keeps only the words whose every
 // Sütterlin glyph is actually locked + traced in the live source (see the word
@@ -35,10 +37,11 @@ export interface WordEntry {
   // Shown in the answer reveal for words a modern reader may not know
   // (archaisms, dated meanings). Omitted for self-evident everyday words.
   note?: string;
-  // Compound with a Fugen-s / inner syllable-final s the automatic ſ-rule would
-  // render long by mistake. Excluded from the word mode until shaping can force
-  // a round s; kept here so the word is ready the moment it can.
-  avoidAutoS?: boolean;
+  // The render form with a Fuge marker `|` where the automatic ſ-rule needs a
+  // hand-placed morpheme boundary to pick the round Schluss-s (`Donners|tag`,
+  // `Haus|tür`). Only set when it differs from `word`; the renderer uses this,
+  // everything human-facing (label, answer value) uses the clean `word`.
+  fugen?: string;
 }
 
 export const WORD_BANK: WordEntry[] = [
@@ -85,10 +88,11 @@ export const WORD_BANK: WordEntry[] = [
   { word: 'ergebenst', distractors: ['ergeben', 'erhoben', 'gegeben'], era: 'historic', note: 'unterwürfige Grußformel: „Ihr ergebenster …“' },
   { word: 'verbleibe', distractors: ['verbleibt', 'verweile', 'verkleide'], era: 'historic', note: 'Schlussformel: „so verbleibe ich …“' },
 
-  // ——— Compound with a Fugen-s the automatic rule renders wrong ———
-  // Excluded from the word mode (avoidAutoS) until shaping can force a round s;
-  // `Donnerstag` = Donners·tag, the junction s is round, not long.
-  { word: 'Donnerstag', distractors: ['Sonntag', 'Freitag', 'Feiertag'], era: 'modern', note: 'Fugen-s: rundes s (Donners·tag)', avoidAutoS: true },
+  // ——— Compounds with a Fugen-s: the `|` marks the morpheme boundary so the
+  // junction s renders round, not long (Donners·tag, Haus·tür). ———
+  { word: 'Donnerstag', fugen: 'Donners|tag', distractors: ['Sonntag', 'Freitag', 'Feiertag'], era: 'modern' },
+  { word: 'Haustür', fugen: 'Haus|tür', distractors: ['Haustor', 'Haustüre', 'Hoftür'], era: 'modern' },
+  { word: 'Arbeitsamt', fugen: 'Arbeits|amt', distractors: ['Standesamt', 'Bauamt', 'Zollamt'], era: 'historic', note: 'Behörde der Arbeitsvermittlung' },
 ];
 
 // ——— Distractor vetting (curation / future generation helper) ———

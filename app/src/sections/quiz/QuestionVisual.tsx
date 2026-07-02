@@ -219,7 +219,7 @@ export function QuestionVisual({
           <CompareColumn label={de.quiz.play.compareCorrect} labelColor={paper.ink}>
             <WrittenForm
               kind={question.kind}
-              renderKey={question.kind === 'word' ? question.word : question.key}
+              renderKey={question.kind === 'word' ? question.render : question.key}
               label={letterpressText(question)}
               inkColor={RIGHT_INK}
               fallbackColor={RIGHT_INK}
@@ -259,7 +259,7 @@ export function QuestionVisual({
             <WrittenForm
               key={`prompt-${qNonce}`}
               kind={question.kind}
-              renderKey={question.kind === 'word' ? question.word : question.key}
+              renderKey={question.kind === 'word' ? question.render : question.key}
               label={letterpressText(question)}
               height={isWord ? 110 : 150}
               cropUrl={promptCrop}
