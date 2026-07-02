@@ -113,6 +113,10 @@ Distraktoren) und damit eigene Ausdrucksform unter der Repo-Lizenz.
 3. Bereits migrierte Datenbanken behalten ihre Zeilen: eine neue
    Re-Seed-Migration nach dem Muster von `0011_quiz_words_reseed.py`
    anlegen (Tabelle leeren, aus dem committeten JSON neu einspielen).
+4. Die Migrationen lesen `quiz_words.json` zur Apply-Zeit — die Datei
+   wird deshalb im `api/Dockerfile` ins Image kopiert, sonst stirbt der
+   Migrate-Job des Deploys an einem FileNotFoundError (so geschehen
+   beim 0011-Deploy am 2026-07-02).
 
 ## Verworfen
 
