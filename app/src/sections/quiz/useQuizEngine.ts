@@ -37,6 +37,7 @@ export interface LetterQuestion {
 export interface WordQuestion {
   kind: 'word';
   word: string; // rendered via WrittenWord
+  note?: string; // optional gloss for a dated/rare word, shown in the reveal
 }
 export type Question = LetterQuestion | WordQuestion;
 
@@ -161,8 +162,11 @@ export function useQuizEngine() {
     },
     [isKeyReady],
   );
+  // Skip compounds whose Fugen-s the automatic ſ-rule would render wrong
+  // (avoidAutoS) — they stay out of the word mode until shaping can force a
+  // round s. Everything else must be fully renderable.
   const wordPool = useMemo<WordEntry[]>(
-    () => WORD_BANK.filter((e) => isWordRenderable(e.word)),
+    () => WORD_BANK.filter((e) => !e.avoidAutoS && isWordRenderable(e.word)),
     [isWordRenderable],
   );
 
@@ -223,7 +227,7 @@ export function useQuizEngine() {
             guard += 1;
           }
         }
-        setCurrent({ kind: 'word', word: pick.word });
+        setCurrent({ kind: 'word', word: pick.word, note: pick.note });
         setChoices(buildWordChoices(pick));
       } else {
         if (letterPool.length === 0) {
