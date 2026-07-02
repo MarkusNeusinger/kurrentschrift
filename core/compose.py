@@ -239,11 +239,11 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None]) ->
             if diacritic_flags[si]:
                 continue
             rings = rings_by_stroke[si] if si < len(rings_by_stroke) else []
-            pts = [p for ring in rings for p in ring] if rings else cl
-            for x, y in pts:
-                if JOIN_BAND_Y[0] <= y <= JOIN_BAND_Y[1]:
-                    ink_min_x = min(ink_min_x, x)
-                    ink_max_x = max(ink_max_x, x)
+            for pts in rings if rings else (cl,):
+                for x, y in pts:
+                    if JOIN_BAND_Y[0] <= y <= JOIN_BAND_Y[1]:
+                        ink_min_x = min(ink_min_x, x)
+                        ink_max_x = max(ink_max_x, x)
         if not math.isfinite(ink_min_x):
             ink_min_x = ink_max_x = entry_xy[0]
 

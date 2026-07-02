@@ -85,7 +85,10 @@ def _shaped_slots_with_fallback(text: str, payloads: dict) -> list[GlyphSlot]:
     return slots
 
 
-def _round9(value):
+_PY_TO_TS = {v: k for k, v in _TS_TO_PY.items()}
+
+
+def _round9(value: object) -> object:
     if isinstance(value, float):
         return round(value, 9)
     if isinstance(value, list):
@@ -95,18 +98,17 @@ def _round9(value):
     return value
 
 
-def _py_shape(value):
+def _py_shape(value: object) -> object:
     """Python composed dict → the fixture's TS field names (inverse of _snake)."""
-    inv = {v: k for k, v in _TS_TO_PY.items()}
     if isinstance(value, dict):
-        return {inv.get(k, k): _py_shape(v) for k, v in value.items()}
+        return {_PY_TO_TS.get(k, k): _py_shape(v) for k, v in value.items()}
     if isinstance(value, list):
         return [_py_shape(v) for v in value]
     return value
 
 
 def _maybe_regen() -> None:
-    if not os.environ.get("REGEN_GOLDEN"):
+    if os.environ.get("REGEN_GOLDEN") != "1":
         return
     data = _load()
     for entry in data["words"]:
