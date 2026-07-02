@@ -409,3 +409,42 @@ G2-Joins, paarabhängiger Abstand) verbessern soll.
 zusätzlich `tools/wordbench/metric.py`, `tools/wordbench/export_fixtures.py`
 und die Fixtures eingefroren; editiert wird `core/compose.py` (und ggf.
 `core/pipeline.py`-Rendergeometrie), nie die Messlatte.
+
+### Lauf `jul02` — Übergangs-Redesign in `core/compose.py` (2026-07-02)
+
+Erster Experiment-Loop gegen die eingefrorene Wort-Metrik (nur
+`core/compose.py` geändert → Zahlen **mit der 0.1397-Baseline vergleichbar**).
+`bench_loss` **0.1397 → 0.1206** (−13,6 %; Übergang 0.104→0.113,
+Deckung 0.133→0.118, Breite 0.231→0.142). Die Katastrophen-Wörter des
+Prod-Audits tragen den Gewinn: `wenn` 0.263→0.202, `zwei` 0.244→0.178,
+`einen` 0.178→0.075, `zum` 0.154→0.104. Behaltene Hebel:
+
+1. **Rückwärts-Exit-Guard**: Zeigt die gerenderte Auslauf-Tangente nach links
+   (w/v-Bogen rollt am Ende zurück, gemessen −151° bei w), zielt der
+   Verbindungsstrich auf die nächste Entry statt der Tangente zu folgen —
+   der „wovon"-Schleifenkollaps aus dem Live-Test ist damit weg.
+2. **Tinten-Freiraum im Verbindungsband** (`INK_CLEARANCE` 0.14 in
+   `JOIN_BAND_Y` −0.15..0.8): Platzierung als
+   `max(exit + CONNECT_GAP, ink_maxX + clearance)` — die Exit-Anker allein
+   tragen den Rhythmus nicht (w's Exit liegt 0,27 Einheiten LINKS seiner
+   rechtesten Tinte → Folgebuchstabe startete in der Tinte). Kerning-Prinzip:
+   Ober-/Unterlängen außerhalb des Bands dürfen die Nachbarspalte überlappen
+   wie auf der Lehrtafel (heilte das/die/regieren nach dem ersten Versuch mit
+   Ganzhöhen-Extents).
+3. **Handle-Clamp an der Horizontaldistanz** (`min(0.4·span, 0.5·hspan)`):
+   steile Abstiege (d/t hoch → tiefe Entry) beulten die Kubik als S-Bogen aus.
+4. **Hoch-Exit-Chord** (`HIGH_EXIT_Y` 1.05): das hohe d kehrt sichtbar in den
+   Join um — die Sehne ist dort die ehrliche Ecke.
+5. **Bogen-Launch-Clamp** (`BOW_EXIT_Y` 0.7, Startwinkel −35°..+5°): b's
+   Bogen schließt steigend (44°), der Join läuft aber flach aus dem Bogen —
+   metrisch neutral, im Overlay/`haben` sichtbar deckungsgleicher.
+
+**Verworfen im Lauf:** pauschal `CONNECT_GAP` 0.16→0.30 (Netto nur −0.004:
+richtig breite Wörter wie `das`/`mit` überschießen — der Abstand muss an der
+Tinte hängen, nicht am Anker); Tinten-Freiraum über die GANZE Glyphhöhe
+(drückt Nachbarn von d-Schleifen weg, +0.07 auf `das`). **Erkenntnis zur
+Metrik:** Die globale Registrierung vermengt Buchstabenbreiten-Unterschiede
+(Autoring: unsere e/n sind schmaler als die der Probe) mit Join-Qualität —
+ein Rest-Drift in `unter`/`mit` ist Autoring-, nicht Compose-Thema. Die
+Golden-Fixture (`tests/fixtures/compose_golden.json.gz`) wurde nach dem Lauf
+bewusst re-baselined (`REGEN_GOLDEN=1`) — sie pinnt jetzt die NEUE Komposition.

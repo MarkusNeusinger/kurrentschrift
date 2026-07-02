@@ -1,12 +1,17 @@
-"""Golden parity: core/shaping.py + core/compose.py reproduce the TS composer.
+"""Golden regression pin for the composer (shaping + compose on frozen inputs).
 
-The fixture (tests/fixtures/compose_golden.json.gz) was generated ONCE from the
-SPA's shaping.ts + compose.ts running on real, frozen glyph payloads
-(app/scripts/dump-compose-golden.mjs) right before the TS composer was retired.
-The Python port must reproduce the shaped slots exactly and the composed draw
-items within float tolerance — this is the contract that made deleting
-compose.ts safe. Regenerating the fixture is a deliberate re-baseline, not a
-routine step.
+Historically the TS→Python parity contract: the fixture was generated from the
+SPA's compose.ts on real, frozen glyph payloads right before that file was
+retired (the port reproduced it within 1e-6 — PR #143). Since then it pins the
+CURRENT composer against accidental change: the frozen payload inputs stay,
+the expected slots/outputs are re-baselined DELIBERATELY whenever the
+composition rules change on purpose (Phase D transition work):
+
+    REGEN_GOLDEN=1 uv run --extra test pytest tests/test_compose_golden.py
+
+which recomputes `slots` + `composed` from the frozen `payloads` — hermetic,
+no DB, no TS. Diff the fixture consciously; a regen is a re-baseline, not a
+routine green-up.
 """
 
 from __future__ import annotations
@@ -14,6 +19,7 @@ from __future__ import annotations
 import gzip
 import json
 import math
+import os
 from pathlib import Path
 
 import pytest
@@ -77,6 +83,45 @@ def _shaped_slots_with_fallback(text: str, payloads: dict) -> list[GlyphSlot]:
                 expanded.append(s)
         slots = expanded
     return slots
+
+
+_PY_TO_TS = {v: k for k, v in _TS_TO_PY.items()}
+
+
+def _round9(value: object) -> object:
+    if isinstance(value, float):
+        return round(value, 9)
+    if isinstance(value, list):
+        return [_round9(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _round9(v) for k, v in value.items()}
+    return value
+
+
+def _py_shape(value: object) -> object:
+    """Python composed dict → the fixture's TS field names (inverse of _snake)."""
+    if isinstance(value, dict):
+        return {_PY_TO_TS.get(k, k): _py_shape(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_py_shape(v) for v in value]
+    return value
+
+
+def _maybe_regen() -> None:
+    if os.environ.get("REGEN_GOLDEN") != "1":
+        return
+    data = _load()
+    for entry in data["words"]:
+        slots = _shaped_slots_with_fallback(entry["text"].strip(), entry["payloads"])
+        entry["slots"] = [
+            {"key": s.key, "text": s.text, "position": s.position, "ligature": s.ligature, "space": s.space}
+            for s in slots
+        ]
+        entry["composed"] = _round9(_py_shape(compose_word(slots, entry["payloads"])))
+    FIXTURE.write_bytes(gzip.compress(json.dumps(data, ensure_ascii=False).encode(), 9))
+
+
+_maybe_regen()
 
 
 def _words() -> list[dict]:
