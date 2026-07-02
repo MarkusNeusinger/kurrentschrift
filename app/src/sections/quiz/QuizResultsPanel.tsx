@@ -162,6 +162,9 @@ export function QuizResultsPanel(p: ResultsProps) {
                 }}
               >
                 <ResultForm refr={m} height={28} />
+                <Typography component="span" sx={{ fontFamily: garamond, fontWeight: 600, fontSize: 14, color: paper.ink }}>
+                  {m.label}
+                </Typography>
                 <Typography component="span" sx={{ fontFamily: garamond, fontSize: 13.5, color: paper.sepia }}>
                   ·{m.count}
                   {de.quiz.results.times}

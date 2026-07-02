@@ -207,7 +207,7 @@ export function QuestionVisual({
               inkColor={YOURS_INK}
               fallbackColor={YOURS_INK}
               animate={false}
-              height={isWord ? 60 : 78}
+              height={isWord ? 60 : 112}
               word={isWord}
             />
           </CompareColumn>
@@ -224,7 +224,7 @@ export function QuestionVisual({
               inkColor={RIGHT_INK}
               fallbackColor={RIGHT_INK}
               animate={false}
-              height={isWord ? 60 : 78}
+              height={isWord ? 60 : 112}
               word={isWord}
             />
           </CompareColumn>
