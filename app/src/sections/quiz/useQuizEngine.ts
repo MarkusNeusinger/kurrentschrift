@@ -16,7 +16,7 @@ import { knownGlyph, quizKeysFromLocked, type KnownGlyph } from '@/domain/glyphs
 import { glyphKeysOf, shapeText } from '@/domain/shaping';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { type Difficulty } from '@/sections/quiz/quizTypes';
-import { isPlausibleDistractor, WORD_BANK, type WordEntry } from '@/sections/quiz/wordBank';
+import { similarity, WORD_BANK, type WordEntry } from '@/sections/quiz/wordBank';
 import { getQuizWords, type QuizWordOut } from '@/lib/api';
 import { useAdmin } from '@/context/AdminContext';
 
@@ -96,6 +96,23 @@ const shuffle = <T,>(arr: T[]): T[] => {
   for (let i = out.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1));
     [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+};
+
+// Draw `k` distinct words from (word, weight) pairs, probability proportional
+// to weight — strong cursive confusions come up more often, weak ones still
+// appear, so the options change from round to round.
+const weightedSample = (entries: Array<[string, number]>, k: number): string[] => {
+  const pool = [...entries];
+  const out: string[] = [];
+  while (out.length < k && pool.length > 0) {
+    const total = pool.reduce((sum, [, w]) => sum + w, 0);
+    let r = Math.random() * total;
+    let i = 0;
+    while (i < pool.length - 1 && (r -= pool[i][1]) > 0) i += 1;
+    out.push(pool[i][0]);
+    pool.splice(i, 1);
   }
   return out;
 };
@@ -228,22 +245,32 @@ export function useQuizEngine() {
     return shuffle([correct, ...distractors]);
   }, []);
 
-  // Word distractors: the entry's curated form-similar list PLUS any other bank
-  // word the similarity rules rate as a plausible misread, sampled down to three
-  // — so the options vary from round to round instead of being the same fixed
-  // trio. Each is rendered "as written" in the comparison only when fully traced
-  // (its render form may itself carry a Fuge marker).
+  // Word distractors: one of the entry's pinned misreads is always offered (the
+  // hand-curated anchor); the remaining slots are drawn from the WHOLE bank by
+  // the similarity rules, weighted by score — so every round shows different but
+  // plausible misreads instead of a fixed trio. Each is rendered "as written" in
+  // the comparison only when fully traced (its render form may carry a Fuge
+  // marker).
   const buildWordChoices = useCallback(
     (entry: WordEntry): Choice[] => {
       const answer = entry.word;
       const renderFormOf = (w: string): string => words.find((e) => e.word === w)?.fugen ?? w;
       const correct: Choice = { value: answer, label: answer, renderKey: entry.fugen ?? answer };
 
-      const curated = entry.distractors.filter((d) => d !== answer);
-      const similar = words.map((e) => e.word).filter(
-        (w) => w !== answer && !curated.includes(w) && isPlausibleDistractor(answer, w),
-      );
-      const pool = [...curated, ...similar];
+      const pinned = entry.distractors.filter((d) => d !== answer);
+      const anchor = pinned.length > 0 ? [sample(pinned)] : [];
+      // Score every bank word as a misread of the answer; undrawn pins rejoin
+      // the pool with a strong weight so multi-pin entries still rotate.
+      const PINNED_WEIGHT = 8;
+      const scored: Array<[string, number]> = pinned
+        .filter((d) => !anchor.includes(d))
+        .map((d) => [d, PINNED_WEIGHT] as [string, number]);
+      for (const e of words) {
+        if (e.word === answer || pinned.includes(e.word)) continue;
+        const score = similarity(answer, e.word);
+        if (score > 0) scored.push([e.word, score]);
+      }
+      const pool = [...anchor, ...weightedSample(scored, 3 - anchor.length)];
       // Top up from the rest of the bank if a word has too few near-forms, so
       // three options are always available.
       if (pool.length < 3) {
@@ -252,12 +279,10 @@ export function useQuizEngine() {
           if (w !== answer && !pool.includes(w)) pool.push(w);
         }
       }
-      const distractors: Choice[] = shuffle(pool)
-        .slice(0, 3)
-        .map((d) => {
-          const rf = renderFormOf(d);
-          return { value: d, label: d, renderKey: isWordRenderable(rf) ? rf : null };
-        });
+      const distractors: Choice[] = pool.slice(0, 3).map((d) => {
+        const rf = renderFormOf(d);
+        return { value: d, label: d, renderKey: isWordRenderable(rf) ? rf : null };
+      });
       return shuffle([correct, ...distractors]);
     },
     [isWordRenderable, words],

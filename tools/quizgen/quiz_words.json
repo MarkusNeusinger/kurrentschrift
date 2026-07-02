@@ -2,315 +2,2747 @@
   {
     "word": "der",
     "distractors": [
-      "den",
-      "dem",
-      "des"
+      "den"
     ],
     "era": "modern"
   },
   {
     "word": "das",
     "distractors": [
-      "des",
-      "dass",
-      "was"
+      "des"
     ],
     "era": "modern"
   },
   {
     "word": "und",
     "distractors": [
-      "uns",
-      "nun",
-      "aus"
+      "uns"
     ],
     "era": "modern"
   },
   {
     "word": "sein",
     "distractors": [
-      "mein",
-      "dein",
-      "kein"
+      "mein"
     ],
     "era": "modern"
   },
   {
-    "word": "mehr",
+    "word": "wir",
     "distractors": [
-      "sehr",
-      "wehr",
-      "leer"
+      "mir"
     ],
     "era": "modern"
   },
   {
-    "word": "sehr",
+    "word": "mir",
     "distractors": [
-      "mehr",
-      "wehr",
-      "leer"
+      "wir"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "nur",
+    "distractors": [
+      "nun"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "nun",
+    "distractors": [
+      "nur"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "wie",
+    "distractors": [
+      "nie"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "nie",
+    "distractors": [
+      "wie"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "wenn",
+    "distractors": [
+      "wann"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "wann",
+    "distractors": [
+      "wenn"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "noch",
+    "distractors": [
+      "nach"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "nach",
+    "distractors": [
+      "noch"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "auch",
+    "distractors": [
+      "euch"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "euch",
+    "distractors": [
+      "auch"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "sich",
+    "distractors": [
+      "mich"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "mich",
+    "distractors": [
+      "dich"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "dich",
+    "distractors": [
+      "mich"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "doch",
+    "distractors": [
+      "noch"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "dann",
+    "distractors": [
+      "denn"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "denn",
+    "distractors": [
+      "dann"
     ],
     "era": "modern"
   },
   {
     "word": "haben",
     "distractors": [
-      "hoben",
-      "heben",
-      "laben"
+      "hoben"
     ],
     "era": "modern"
   },
   {
     "word": "geben",
     "distractors": [
-      "gehen",
-      "leben",
-      "eben"
+      "gehen"
     ],
     "era": "modern"
   },
   {
     "word": "gehen",
     "distractors": [
-      "geben",
-      "sehen",
-      "nehmen"
+      "geben"
     ],
     "era": "modern"
   },
   {
     "word": "sehen",
     "distractors": [
-      "gehen",
-      "geben",
-      "nehmen"
+      "gehen"
     ],
     "era": "modern"
   },
   {
     "word": "lesen",
     "distractors": [
-      "leben",
-      "losen",
-      "lehren"
+      "leben"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "leben",
+    "distractors": [
+      "loben"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "schreiben",
+    "distractors": [
+      "schreien"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "bleiben",
+    "distractors": [
+      "treiben"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "treiben",
+    "distractors": [
+      "bleiben"
     ],
     "era": "modern"
   },
   {
     "word": "finden",
     "distractors": [
-      "binden",
-      "fanden",
-      "winden"
+      "binden"
     ],
     "era": "modern"
   },
   {
-    "word": "waren",
+    "word": "binden",
     "distractors": [
-      "malen",
-      "fahren",
-      "wagen"
+      "finden"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "bringen",
+    "distractors": [
+      "springen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "springen",
+    "distractors": [
+      "bringen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "singen",
+    "distractors": [
+      "sinken"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "denken",
+    "distractors": [
+      "danken"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "danken",
+    "distractors": [
+      "denken"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "kommen",
+    "distractors": [
+      "können"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "können",
+    "distractors": [
+      "kennen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "kennen",
+    "distractors": [
+      "nennen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "nennen",
+    "distractors": [
+      "kennen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "wohnen",
+    "distractors": [
+      "wollen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "wollen",
+    "distractors": [
+      "wohnen"
     ],
     "era": "modern"
   },
   {
     "word": "machen",
     "distractors": [
-      "wachen",
-      "lachen",
-      "sachen"
+      "lachen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "lachen",
+    "distractors": [
+      "machen"
     ],
     "era": "modern"
   },
   {
     "word": "sagen",
     "distractors": [
-      "tagen",
-      "wagen",
       "jagen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "jagen",
+    "distractors": [
+      "wagen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "fragen",
+    "distractors": [
+      "tragen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "tragen",
+    "distractors": [
+      "fragen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "spielen",
+    "distractors": [
+      "spülen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "laufen",
+    "distractors": [
+      "kaufen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "kaufen",
+    "distractors": [
+      "laufen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "rufen",
+    "distractors": [
+      "raufen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "schlafen",
+    "distractors": [
+      "schaffen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "schaffen",
+    "distractors": [
+      "schlafen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "essen",
+    "distractors": [
+      "messen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "messen",
+    "distractors": [
+      "wessen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "lassen",
+    "distractors": [
+      "fassen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "fassen",
+    "distractors": [
+      "lassen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "halten",
+    "distractors": [
+      "falten"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "falten",
+    "distractors": [
+      "halten"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "fallen",
+    "distractors": [
+      "fällen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "stehen",
+    "distractors": [
+      "stechen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "stellen",
+    "distractors": [
+      "stehlen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "suchen",
+    "distractors": [
+      "buchen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "brauchen",
+    "distractors": [
+      "rauchen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "hören",
+    "distractors": [
+      "stören"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "holen",
+    "distractors": [
+      "loben"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "warten",
+    "distractors": [
+      "warnen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "warnen",
+    "distractors": [
+      "warten"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "werden",
+    "distractors": [
+      "werfen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "werfen",
+    "distractors": [
+      "werden"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "wissen",
+    "distractors": [
+      "wiesen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "zeigen",
+    "distractors": [
+      "zeugen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "ziehen",
+    "distractors": [
+      "zielen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "zahlen",
+    "distractors": [
+      "zählen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "zählen",
+    "distractors": [
+      "zahlen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "fehlen",
+    "distractors": [
+      "fühlen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "fühlen",
+    "distractors": [
+      "fehlen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "führen",
+    "distractors": [
+      "fuhren"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "fahren",
+    "distractors": [
+      "wahren"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "waren",
+    "distractors": [
+      "wagen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "reden",
+    "distractors": [
+      "regen"
     ],
     "era": "modern"
   },
   {
     "word": "legen",
     "distractors": [
-      "regen",
-      "segen",
-      "fegen"
+      "regen"
     ],
     "era": "modern"
   },
   {
-    "word": "neu",
+    "word": "reiten",
     "distractors": [
-      "nie",
-      "nun",
-      "neun"
+      "retten"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "retten",
+    "distractors": [
+      "reiten"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "weinen",
+    "distractors": [
+      "meinen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "meinen",
+    "distractors": [
+      "weinen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "scheinen",
+    "distractors": [
+      "scheiden"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "waschen",
+    "distractors": [
+      "wachsen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "wachsen",
+    "distractors": [
+      "waschen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "sitzen",
+    "distractors": [
+      "setzen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "setzen",
+    "distractors": [
+      "sitzen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "putzen",
+    "distractors": [
+      "nutzen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "nutzen",
+    "distractors": [
+      "putzen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "lernen",
+    "distractors": [
+      "lehren"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "lehren",
+    "distractors": [
+      "lernen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "sprechen",
+    "distractors": [
+      "brechen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "brechen",
+    "distractors": [
+      "sprechen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "riechen",
+    "distractors": [
+      "kriechen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "kriechen",
+    "distractors": [
+      "riechen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "trinken",
+    "distractors": [
+      "tranken"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "wandern",
+    "distractors": [
+      "wundern"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "wundern",
+    "distractors": [
+      "wandern"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "arbeiten",
+    "distractors": [
+      "anbieten"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "schicken",
+    "distractors": [
+      "schenken"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "schenken",
+    "distractors": [
+      "schicken"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "bitten",
+    "distractors": [
+      "bieten"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "bieten",
+    "distractors": [
+      "bitten"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "beten",
+    "distractors": [
+      "treten"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "treten",
+    "distractors": [
+      "beten"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "sterben",
+    "distractors": [
+      "streben"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "streben",
+    "distractors": [
+      "sterben"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "brennen",
+    "distractors": [
+      "rennen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "rennen",
+    "distractors": [
+      "brennen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "schneiden",
+    "distractors": [
+      "scheiden"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "kochen",
+    "distractors": [
+      "pochen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "backen",
+    "distractors": [
+      "packen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "packen",
+    "distractors": [
+      "backen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "helfen",
+    "distractors": [
+      "hoffen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "hoffen",
+    "distractors": [
+      "helfen"
     ],
     "era": "modern"
   },
   {
     "word": "gut",
     "distractors": [
-      "tut",
-      "gab",
-      "tat"
+      "tut"
     ],
     "era": "modern"
   },
   {
     "word": "alt",
     "distractors": [
-      "als",
-      "oft",
-      "kalt"
+      "als"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "neu",
+    "distractors": [
+      "nie"
     ],
     "era": "modern"
   },
   {
     "word": "groß",
     "distractors": [
-      "bloß",
-      "floß",
-      "schloß"
+      "bloß"
     ],
     "era": "modern"
   },
   {
     "word": "klein",
     "distractors": [
-      "kleid",
-      "klang",
-      "klar"
+      "kein"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "lang",
+    "distractors": [
+      "bang"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "kurz",
+    "distractors": [
+      "karg"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "hoch",
+    "distractors": [
+      "noch"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "tief",
+    "distractors": [
+      "lief"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "breit",
+    "distractors": [
+      "bereit"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "schmal",
+    "distractors": [
+      "schnell"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "schnell",
+    "distractors": [
+      "schmal"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "warm",
+    "distractors": [
+      "arm"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "kalt",
+    "distractors": [
+      "kahl"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "heiß",
+    "distractors": [
+      "weiß"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "weiß",
+    "distractors": [
+      "heiß"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "leise",
+    "distractors": [
+      "weise"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "laut",
+    "distractors": [
+      "taut"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "schwer",
+    "distractors": [
+      "schwor"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "leicht",
+    "distractors": [
+      "nicht"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "jung",
+    "distractors": [
+      "lang"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "schön",
+    "distractors": [
+      "schon"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "früh",
+    "distractors": [
+      "froh"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "spät",
+    "distractors": [
+      "spart"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "bald",
+    "distractors": [
+      "kalt"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "immer",
+    "distractors": [
+      "nimmer"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "wieder",
+    "distractors": [
+      "weiter"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "heute",
+    "distractors": [
+      "heule"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "viel",
+    "distractors": [
+      "fiel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "wenig",
+    "distractors": [
+      "einig"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "gern",
+    "distractors": [
+      "fern"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "fern",
+    "distractors": [
+      "gern"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "voll",
+    "distractors": [
+      "toll"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "arm",
+    "distractors": [
+      "warm"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "reich",
+    "distractors": [
+      "weich"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "weich",
+    "distractors": [
+      "reich"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "rein",
+    "distractors": [
+      "fein"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "fein",
+    "distractors": [
+      "rein"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "mehr",
+    "distractors": [
+      "sehr"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "sehr",
+    "distractors": [
+      "mehr"
     ],
     "era": "modern"
   },
   {
     "word": "Tag",
     "distractors": [
-      "Tat",
-      "Rat",
-      "Tor"
+      "Tat"
     ],
     "era": "modern"
   },
   {
     "word": "Jahr",
     "distractors": [
-      "Haar",
-      "Paar",
-      "Bahn"
+      "Haar"
     ],
     "era": "modern"
   },
   {
     "word": "Haus",
     "distractors": [
-      "Maus",
-      "Laus",
-      "Hans"
+      "Maus"
     ],
     "era": "modern"
   },
   {
     "word": "Kind",
     "distractors": [
-      "Rind",
-      "Wind",
-      "Kino"
+      "Rind"
     ],
     "era": "modern"
   },
   {
     "word": "Hand",
     "distractors": [
-      "Wand",
-      "Land",
-      "Rand"
+      "Wand"
     ],
     "era": "modern"
   },
   {
     "word": "Mann",
     "distractors": [
-      "Bann",
-      "Wahn",
-      "Kahn"
+      "Bann"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Frau",
+    "distractors": [
+      "Braut"
     ],
     "era": "modern"
   },
   {
     "word": "Zeit",
     "distractors": [
-      "Leid",
-      "Seite",
-      "Zeile"
+      "Leid"
     ],
     "era": "modern"
   },
   {
     "word": "Wort",
     "distractors": [
-      "Ort",
-      "Wert",
-      "Sorte"
+      "Ort"
     ],
     "era": "modern"
   },
   {
     "word": "Buch",
     "distractors": [
-      "Bach",
-      "Bruch",
-      "Busch"
+      "Bach"
     ],
     "era": "modern"
   },
   {
     "word": "Wasser",
     "distractors": [
-      "Messer",
-      "Wesen",
-      "Wasen"
+      "Messer"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Messer",
+    "distractors": [
+      "Wasser"
     ],
     "era": "modern"
   },
   {
     "word": "Mutter",
     "distractors": [
-      "Butter",
-      "Futter",
-      "Kutter"
+      "Butter"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Vater",
+    "distractors": [
+      "Kater"
     ],
     "era": "modern"
   },
   {
     "word": "Kinder",
     "distractors": [
-      "Rinder",
-      "Finder",
-      "Binder"
+      "Rinder"
     ],
     "era": "modern"
   },
   {
     "word": "Bruder",
     "distractors": [
-      "Ruder",
-      "Luder",
-      "Puder"
+      "Ruder"
     ],
     "era": "modern"
   },
   {
+    "word": "Schwester",
+    "distractors": [
+      "Schuster"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Sonne",
+    "distractors": [
+      "Wonne"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Mond",
+    "distractors": [
+      "Mund"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Mund",
+    "distractors": [
+      "Mond"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Stern",
+    "distractors": [
+      "Stirn"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Himmel",
+    "distractors": [
+      "Hummel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Erde",
+    "distractors": [
+      "Ernte"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Feuer",
+    "distractors": [
+      "Feier"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Luft",
+    "distractors": [
+      "Lust"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Berg",
+    "distractors": [
+      "Burg"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Burg",
+    "distractors": [
+      "Berg"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Wald",
+    "distractors": [
+      "Wild"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Feld",
+    "distractors": [
+      "Fell"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Wiese",
+    "distractors": [
+      "Weise"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Blume",
+    "distractors": [
+      "Bluse"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Baum",
+    "distractors": [
+      "Raum"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Raum",
+    "distractors": [
+      "Baum"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Garten",
+    "distractors": [
+      "Karten"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Straße",
+    "distractors": [
+      "Strafe"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Stadt",
+    "distractors": [
+      "Staat"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Dorf",
+    "distractors": [
+      "Torf"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Brücke",
+    "distractors": [
+      "Mücke"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Turm",
+    "distractors": [
+      "Wurm"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Tür",
+    "distractors": [
+      "Tier"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Fenster",
+    "distractors": [
+      "Meister"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Tisch",
+    "distractors": [
+      "Fisch"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Fisch",
+    "distractors": [
+      "Tisch"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Stuhl",
+    "distractors": [
+      "Stahl"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Bett",
+    "distractors": [
+      "Brett"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Spiegel",
+    "distractors": [
+      "Siegel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Uhr",
+    "distractors": [
+      "Ohr"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Ohr",
+    "distractors": [
+      "Uhr"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Licht",
+    "distractors": [
+      "Sicht"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Morgen",
+    "distractors": [
+      "Sorgen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Abend",
+    "distractors": [
+      "Ahnen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Nacht",
+    "distractors": [
+      "Macht"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Woche",
+    "distractors": [
+      "Wache"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Monat",
+    "distractors": [
+      "Montag"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Winter",
+    "distractors": [
+      "Winkel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Sommer",
+    "distractors": [
+      "Kummer"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Herbst",
+    "distractors": [
+      "Durst"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Frühling",
+    "distractors": [
+      "Zwilling"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Regen",
+    "distractors": [
+      "Segen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Segen",
+    "distractors": [
+      "Regen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Wind",
+    "distractors": [
+      "Rind"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Brot",
+    "distractors": [
+      "Boot"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Milch",
+    "distractors": [
+      "Molch"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Butter",
+    "distractors": [
+      "Futter"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Käse",
+    "distractors": [
+      "Käfer"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Apfel",
+    "distractors": [
+      "Ampel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Birne",
+    "distractors": [
+      "Bühne"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Kirsche",
+    "distractors": [
+      "Kirche"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Kirche",
+    "distractors": [
+      "Kirsche"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Zucker",
+    "distractors": [
+      "Zauber"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Salz",
+    "distractors": [
+      "Satz"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Mehl",
+    "distractors": [
+      "Meer"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Fleisch",
+    "distractors": [
+      "Flasche"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Suppe",
+    "distractors": [
+      "Puppe"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Kuchen",
+    "distractors": [
+      "Knochen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Knochen",
+    "distractors": [
+      "Kuchen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Schule",
+    "distractors": [
+      "Schale"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Lehrer",
+    "distractors": [
+      "Fehler"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Freund",
+    "distractors": [
+      "Feind"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Feind",
+    "distractors": [
+      "Freund"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Name",
+    "distractors": [
+      "Dame"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Dame",
+    "distractors": [
+      "Name"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Geld",
+    "distractors": [
+      "Gold"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Gold",
+    "distractors": [
+      "Geld"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Arbeit",
+    "distractors": [
+      "Anteil"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Hochzeit",
+    "distractors": [
+      "Hoheit"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Pferd",
+    "distractors": [
+      "Pfand"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Hund",
+    "distractors": [
+      "Mund"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Katze",
+    "distractors": [
+      "Tatze"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Kuh",
+    "distractors": [
+      "Kur"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Schwein",
+    "distractors": [
+      "Schein"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Schaf",
+    "distractors": [
+      "Schlaf"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Huhn",
+    "distractors": [
+      "Hahn"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Hahn",
+    "distractors": [
+      "Huhn"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Vogel",
+    "distractors": [
+      "Nagel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Fuchs",
+    "distractors": [
+      "Luchs"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Wolf",
+    "distractors": [
+      "Wolke"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Biene",
+    "distractors": [
+      "Miene"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Fliege",
+    "distractors": [
+      "Fliese"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Brief",
+    "distractors": [
+      "Beruf"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Feder",
+    "distractors": [
+      "Leder"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Tinte",
+    "distractors": [
+      "Tante"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Zeitung",
+    "distractors": [
+      "Leitung"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Schrift",
+    "distractors": [
+      "Schicht"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Anschrift",
+    "distractors": [
+      "Aufschrift"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Umschlag",
+    "distractors": [
+      "Vorschlag"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Postkarte",
+    "distractors": [
+      "Spielkarte"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Nadel",
+    "distractors": [
+      "Nagel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Nagel",
+    "distractors": [
+      "Nadel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Wein",
+    "distractors": [
+      "Bein"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Bein",
+    "distractors": [
+      "Wein"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Brille",
+    "distractors": [
+      "Grille"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Tasse",
+    "distractors": [
+      "Gasse"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Gasse",
+    "distractors": [
+      "Tasse"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Teller",
+    "distractors": [
+      "Keller"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Keller",
+    "distractors": [
+      "Teller"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Gabel",
+    "distractors": [
+      "Nabel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Spaten",
+    "distractors": [
+      "Spatzen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Leiter",
+    "distractors": [
+      "Liter"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Zange",
+    "distractors": [
+      "Wange"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Eimer",
+    "distractors": [
+      "Imker"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Besen",
+    "distractors": [
+      "Wesen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Bürste",
+    "distractors": [
+      "Büste"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Seife",
+    "distractors": [
+      "Seite"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Kessel",
+    "distractors": [
+      "Sessel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Sessel",
+    "distractors": [
+      "Kessel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Ofen",
+    "distractors": [
+      "Hafen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Herd",
+    "distractors": [
+      "Hemd"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Hemd",
+    "distractors": [
+      "Herd"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Rock",
+    "distractors": [
+      "Bock"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Hose",
+    "distractors": [
+      "Dose"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Hut",
+    "distractors": [
+      "Mut"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Schuh",
+    "distractors": [
+      "Schub"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Strumpf",
+    "distractors": [
+      "Stumpf"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Mantel",
+    "distractors": [
+      "Mangel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Knopf",
+    "distractors": [
+      "Kopf"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Kopf",
+    "distractors": [
+      "Knopf"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Topf",
+    "distractors": [
+      "Zopf"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Zopf",
+    "distractors": [
+      "Topf"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Faden",
+    "distractors": [
+      "Laden"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Laden",
+    "distractors": [
+      "Faden"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Boden",
+    "distractors": [
+      "Bogen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Bogen",
+    "distractors": [
+      "Boden"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Schere",
+    "distractors": [
+      "Scherbe"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Zimmer",
+    "distractors": [
+      "Schimmer"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Zaun",
+    "distractors": [
+      "Zahn"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Zahn",
+    "distractors": [
+      "Zaun"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Blatt",
+    "distractors": [
+      "Brett"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Wurzel",
+    "distractors": [
+      "Wirbel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Eiche",
+    "distractors": [
+      "Weiche"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Buche",
+    "distractors": [
+      "Bucht"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Tanne",
+    "distractors": [
+      "Kanne"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Kanne",
+    "distractors": [
+      "Tanne"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Birke",
+    "distractors": [
+      "Birne"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Nebel",
+    "distractors": [
+      "Hebel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Donner",
+    "distractors": [
+      "Wunder"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Blitz",
+    "distractors": [
+      "Blick"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Blick",
+    "distractors": [
+      "Blitz"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Sturm",
+    "distractors": [
+      "Turm"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Welle",
+    "distractors": [
+      "Weile"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Weile",
+    "distractors": [
+      "Welle"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Ufer",
+    "distractors": [
+      "Eifer"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Insel",
+    "distractors": [
+      "Pinsel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Pinsel",
+    "distractors": [
+      "Insel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Amsel",
+    "distractors": [
+      "Achsel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Korb",
+    "distractors": [
+      "Kork"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Laterne",
+    "distractors": [
+      "Taverne"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Kerze",
+    "distractors": [
+      "Kerbe"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Stall",
+    "distractors": [
+      "Stahl"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Acker",
+    "distractors": [
+      "Anker"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Pflug",
+    "distractors": [
+      "Flug"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Sense",
+    "distractors": [
+      "Sehne"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Sichel",
+    "distractors": [
+      "Eichel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Heu",
+    "distractors": [
+      "Hut"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Stroh",
+    "distractors": [
+      "Strom"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Ernte",
+    "distractors": [
+      "Ente"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Vieh",
+    "distractors": [
+      "Reh"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Fohlen",
+    "distractors": [
+      "Bohlen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Ferkel",
+    "distractors": [
+      "Fenchel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Ziege",
+    "distractors": [
+      "Liege"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Docht",
+    "distractors": [
+      "Draht"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Grab",
+    "distractors": [
+      "Grad"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Glocke",
+    "distractors": [
+      "Locke"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Altar",
+    "distractors": [
+      "Alter"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Gebet",
+    "distractors": [
+      "Gebot"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Gebot",
+    "distractors": [
+      "Gebet"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Beichte",
+    "distractors": [
+      "Berichte"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Friedhof",
+    "distractors": [
+      "Bahnhof"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Salbe",
+    "distractors": [
+      "Silbe"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Kräuter",
+    "distractors": [
+      "Kreuzer"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Fieber",
+    "distractors": [
+      "Fibel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Sarg",
+    "distractors": [
+      "Sorge"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Hirte",
+    "distractors": [
+      "Hirse"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Schmied",
+    "distractors": [
+      "Schmiede"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Schäfer",
+    "distractors": [
+      "Schiefer"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Bäcker",
+    "distractors": [
+      "Wecker"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Meister",
+    "distractors": [
+      "Mieter"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Erbe",
+    "distractors": [
+      "Ebbe"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Pate",
+    "distractors": [
+      "Rate"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Scheune",
+    "distractors": [
+      "Scheuche"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Donnerstag",
+    "distractors": [
+      "Sonntag"
+    ],
+    "era": "modern",
+    "fugen": "Donners|tag"
+  },
+  {
+    "word": "Dienstag",
+    "distractors": [
+      "Donnerstag"
+    ],
+    "era": "modern",
+    "fugen": "Diens|tag"
+  },
+  {
+    "word": "Samstag",
+    "distractors": [
+      "Sonntag"
+    ],
+    "era": "modern",
+    "fugen": "Sams|tag"
+  },
+  {
+    "word": "Sonntag",
+    "distractors": [
+      "Montag"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Montag",
+    "distractors": [
+      "Monat"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Geburtstag",
+    "distractors": [
+      "Feiertag"
+    ],
+    "era": "modern",
+    "fugen": "Geburts|tag"
+  },
+  {
+    "word": "Haustür",
+    "distractors": [
+      "Hoftür"
+    ],
+    "era": "modern",
+    "fugen": "Haus|tür"
+  },
+  {
+    "word": "Ausgang",
+    "distractors": [
+      "Eingang"
+    ],
+    "era": "modern",
+    "fugen": "Aus|gang"
+  },
+  {
+    "word": "Ausflug",
+    "distractors": [
+      "Abflug"
+    ],
+    "era": "modern",
+    "fugen": "Aus|flug"
+  },
+  {
+    "word": "Standesamt",
+    "distractors": [
+      "Arbeitsamt"
+    ],
+    "era": "modern",
+    "fugen": "Standes|amt"
+  },
+  {
+    "word": "Liebesbrief",
+    "distractors": [
+      "Bittbrief"
+    ],
+    "era": "modern",
+    "fugen": "Liebes|brief"
+  },
+  {
+    "word": "Wohlgeboren",
+    "distractors": [
+      "Hochgeboren"
+    ],
+    "era": "historic",
+    "note": "höfliche Anrede in Briefen („Euer Wohlgeboren“)"
+  },
+  {
+    "word": "hochgeehrt",
+    "distractors": [
+      "hochverehrt"
+    ],
+    "era": "historic",
+    "note": "Anrede: sehr geehrt („hochgeehrter Herr“)"
+  },
+  {
+    "word": "ergebenst",
+    "distractors": [
+      "ergeben"
+    ],
+    "era": "historic",
+    "note": "unterwürfige Grußformel: „Ihr ergebenster …“"
+  },
+  {
+    "word": "gehorsamst",
+    "distractors": [
+      "gehorsam"
+    ],
+    "era": "historic",
+    "note": "devote Schlussformel alter Briefe"
+  },
+  {
+    "word": "untertänigst",
+    "distractors": [
+      "untertänig"
+    ],
+    "era": "historic",
+    "note": "devote Steigerung in Bittschriften"
+  },
+  {
+    "word": "verbleibe",
+    "distractors": [
+      "verbleibt"
+    ],
+    "era": "historic",
+    "note": "Schlussformel: „so verbleibe ich …“"
+  },
+  {
+    "word": "geziemend",
+    "distractors": [
+      "gebietend"
+    ],
+    "era": "historic",
+    "note": "wie es sich gehört, angemessen"
+  },
+  {
+    "word": "werter",
+    "distractors": [
+      "werten"
+    ],
+    "era": "historic",
+    "note": "Anrede: geschätzter („werter Freund“)"
+  },
+  {
+    "word": "gnädig",
+    "distractors": [
+      "gütig"
+    ],
+    "era": "historic",
+    "note": "Anrede an Höhergestellte („gnädige Frau“)"
+  },
+  {
+    "word": "Fräulein",
+    "distractors": [
+      "Bräutlein"
+    ],
+    "era": "historic",
+    "note": "frühere Anrede für eine unverheiratete Frau"
+  },
+  {
+    "word": "Hochachtung",
+    "distractors": [
+      "Hochrechnung"
+    ],
+    "era": "historic",
+    "note": "große Wertschätzung (Briefschluss)"
+  },
+  {
+    "word": "Lebewohl",
+    "distractors": [
+      "Lebewesen"
+    ],
+    "era": "historic",
+    "note": "Abschiedsgruß: lebe wohl!"
+  },
+  {
+    "word": "Kunde",
+    "distractors": [
+      "Runde"
+    ],
+    "era": "historic",
+    "note": "Nachricht („Kunde geben“); heute: Käufer"
+  },
+  {
+    "word": "Depesche",
+    "distractors": [
+      "Kutsche"
+    ],
+    "era": "historic",
+    "note": "Telegramm, Eilnachricht"
+  },
+  {
+    "word": "Siegel",
+    "distractors": [
+      "Spiegel"
+    ],
+    "era": "historic",
+    "note": "Wachsabdruck zum Verschließen von Briefen"
+  },
+  {
     "word": "Muhme",
     "distractors": [
-      "Mütze",
-      "Mulde",
-      "Mähne"
+      "Mulde"
     ],
     "era": "historic",
     "note": "veraltet für Tante oder weibliche Verwandte"
@@ -318,9 +2750,7 @@
   {
     "word": "Base",
     "distractors": [
-      "Hase",
-      "Vase",
-      "Nase"
+      "Hase"
     ],
     "era": "historic",
     "note": "veraltet für Cousine"
@@ -328,9 +2758,7 @@
   {
     "word": "Vetter",
     "distractors": [
-      "Wetter",
-      "Retter",
-      "Blätter"
+      "Wetter"
     ],
     "era": "historic",
     "note": "Cousin, männlicher Verwandter"
@@ -338,129 +2766,103 @@
   {
     "word": "Weib",
     "distractors": [
-      "Leib",
-      "Wein",
-      "Reim"
+      "Leib"
     ],
     "era": "historic",
     "note": "früher wertneutral für Frau / Ehefrau"
   },
   {
-    "word": "Magd",
+    "word": "Gemahl",
     "distractors": [
-      "Mahd",
-      "Made",
-      "Jagd"
+      "Gemach"
     ],
     "era": "historic",
-    "note": "Dienstmädchen, Landarbeiterin"
+    "note": "Ehemann (gehoben)"
   },
   {
-    "word": "Knecht",
+    "word": "Gemahlin",
     "distractors": [
-      "Recht",
-      "Nacht",
-      "Gicht"
+      "Gespielin"
     ],
     "era": "historic",
-    "note": "landwirtschaftlicher Dienstbote"
+    "note": "Ehefrau (gehoben)"
   },
   {
-    "word": "Gesinde",
+    "word": "Gevatter",
     "distractors": [
-      "Gebinde",
-      "Gefilde",
-      "Gelinde"
+      "Gewitter"
     ],
     "era": "historic",
-    "note": "die Dienstboten eines Hofes"
+    "note": "Taufpate; vertrauliche Anrede"
   },
   {
-    "word": "Stube",
+    "word": "Oheim",
     "distractors": [
-      "Stufe",
-      "Grube",
-      "Staub"
+      "Odem"
     ],
     "era": "historic",
-    "note": "beheizbares Wohnzimmer"
+    "note": "veraltet für Onkel"
   },
   {
-    "word": "Kammer",
+    "word": "Wittib",
     "distractors": [
-      "Hammer",
-      "Kummer",
-      "Jammer"
+      "Witwe"
     ],
     "era": "historic",
-    "note": "kleiner, meist unbeheizter Nebenraum"
-  },
-  {
-    "word": "Truhe",
-    "distractors": [
-      "Trübe",
-      "Traube",
-      "Trage"
-    ],
-    "era": "historic",
-    "note": "großer Aufbewahrungskasten mit Deckel"
+    "note": "veraltete Form von Witwe"
   },
   {
     "word": "Witwe",
     "distractors": [
-      "Wiege",
-      "Wippe",
-      "Wanne"
+      "Wiege"
     ],
     "era": "historic",
     "note": "Frau eines Verstorbenen (veraltet: Wittib)"
   },
   {
-    "word": "Pfarrer",
+    "word": "Mündel",
     "distractors": [
-      "Pfeffer",
-      "Sparren",
-      "Pfarrei"
+      "Bündel"
     ],
     "era": "historic",
-    "note": "Geistlicher der Gemeinde"
+    "note": "Kind unter Vormundschaft"
   },
   {
-    "word": "Taufe",
+    "word": "Vormund",
     "distractors": [
-      "Taube",
-      "Traube",
-      "Haube"
+      "Vorwand"
     ],
     "era": "historic",
-    "note": "kirchliche Namensgebung"
+    "note": "gesetzlicher Vertreter eines Mündels"
   },
   {
-    "word": "Schuster",
+    "word": "Ahne",
     "distractors": [
-      "Muster",
-      "Kloster",
-      "Fenster"
+      "Ahle"
     ],
     "era": "historic",
-    "note": "Schuhmacher"
+    "note": "Vorfahr, Ahnherr"
   },
   {
-    "word": "Hornung",
+    "word": "Waise",
     "distractors": [
-      "Wohnung",
-      "Rechnung",
-      "Ordnung"
+      "Weise"
     ],
     "era": "historic",
-    "note": "alter Name für den Februar"
+    "note": "elternloses Kind"
+  },
+  {
+    "word": "ledig",
+    "distractors": [
+      "eilig"
+    ],
+    "era": "historic",
+    "note": "unverheiratet (Familienstand)"
   },
   {
     "word": "selig",
     "distractors": [
-      "ledig",
-      "eilig",
-      "wenig"
+      "ledig"
     ],
     "era": "historic",
     "note": "verstorben („mein seliger Vater“); auch: glückselig"
@@ -468,73 +2870,738 @@
   {
     "word": "weiland",
     "distractors": [
-      "weinen",
-      "weilen",
-      "weichen"
+      "weilen"
     ],
     "era": "historic",
     "note": "einst, ehemals; vor einem Namen: der verstorbene …"
   },
   {
-    "word": "ergebenst",
+    "word": "Tagelöhner",
     "distractors": [
-      "ergeben",
-      "erhoben",
-      "gegeben"
+      "Tagedieb"
     ],
     "era": "historic",
-    "note": "unterwürfige Grußformel: „Ihr ergebenster …“"
-  },
-  {
-    "word": "verbleibe",
-    "distractors": [
-      "verbleibt",
-      "verweile",
-      "verkleide"
-    ],
-    "era": "historic",
-    "note": "Schlussformel: „so verbleibe ich …“"
-  },
-  {
-    "word": "Donnerstag",
-    "distractors": [
-      "Sonntag",
-      "Freitag",
-      "Feiertag"
-    ],
-    "era": "modern",
-    "fugen": "Donners|tag"
-  },
-  {
-    "word": "Haustür",
-    "distractors": [
-      "Haustor",
-      "Haustüre",
-      "Hoftür"
-    ],
-    "era": "modern",
-    "fugen": "Haus|tür"
-  },
-  {
-    "word": "Arbeitsamt",
-    "distractors": [
-      "Standesamt",
-      "Bauamt",
-      "Zollamt"
-    ],
-    "era": "historic",
-    "note": "Behörde der Arbeitsvermittlung",
-    "fugen": "Arbeits|amt"
+    "note": "Arbeiter ohne feste Stelle, im Tagesverdienst"
   },
   {
     "word": "Häusler",
     "distractors": [
-      "Häuser",
-      "Käufer",
-      "Gaukler"
+      "Häuser"
     ],
     "era": "historic",
     "note": "Kleinbauer / Tagelöhner mit eigenem Häuschen, ohne Feld",
     "fugen": "Häus|ler"
+  },
+  {
+    "word": "Büttner",
+    "distractors": [
+      "Büttel"
+    ],
+    "era": "historic",
+    "note": "Fassbinder, Küfer"
+  },
+  {
+    "word": "Küfer",
+    "distractors": [
+      "Käfer"
+    ],
+    "era": "historic",
+    "note": "Fassmacher"
+  },
+  {
+    "word": "Kürschner",
+    "distractors": [
+      "Kutscher"
+    ],
+    "era": "historic",
+    "note": "Pelzverarbeiter"
+  },
+  {
+    "word": "Sattler",
+    "distractors": [
+      "Sattel"
+    ],
+    "era": "historic",
+    "note": "Handwerker für Sattel- und Lederzeug"
+  },
+  {
+    "word": "Wagner",
+    "distractors": [
+      "Wagen"
+    ],
+    "era": "historic",
+    "note": "Wagenbauer, Stellmacher"
+  },
+  {
+    "word": "Weber",
+    "distractors": [
+      "Werber"
+    ],
+    "era": "historic",
+    "note": "Tuchmacher am Webstuhl"
+  },
+  {
+    "word": "Gerber",
+    "distractors": [
+      "Färber"
+    ],
+    "era": "historic",
+    "note": "verarbeitet Tierhäute zu Leder"
+  },
+  {
+    "word": "Magd",
+    "distractors": [
+      "Mahd"
+    ],
+    "era": "historic",
+    "note": "Dienstmädchen, Landarbeiterin"
+  },
+  {
+    "word": "Knecht",
+    "distractors": [
+      "Recht"
+    ],
+    "era": "historic",
+    "note": "landwirtschaftlicher Dienstbote"
+  },
+  {
+    "word": "Gesinde",
+    "distractors": [
+      "Gebinde"
+    ],
+    "era": "historic",
+    "note": "die Dienstboten eines Hofes"
+  },
+  {
+    "word": "Schuster",
+    "distractors": [
+      "Muster"
+    ],
+    "era": "historic",
+    "note": "Schuhmacher"
+  },
+  {
+    "word": "Amme",
+    "distractors": [
+      "Ampel"
+    ],
+    "era": "historic",
+    "note": "Frau, die fremde Säuglinge stillt"
+  },
+  {
+    "word": "Fuhrmann",
+    "distractors": [
+      "Fährmann"
+    ],
+    "era": "historic",
+    "note": "Kutscher von Lastfuhrwerken"
+  },
+  {
+    "word": "Kutscher",
+    "distractors": [
+      "Kürschner"
+    ],
+    "era": "historic",
+    "note": "Wagenlenker"
+  },
+  {
+    "word": "Krämer",
+    "distractors": [
+      "Kammer"
+    ],
+    "era": "historic",
+    "note": "Kleinhändler"
+  },
+  {
+    "word": "Küster",
+    "distractors": [
+      "Kloster"
+    ],
+    "era": "historic",
+    "note": "Kirchendiener"
+  },
+  {
+    "word": "Kantor",
+    "distractors": [
+      "Kontor"
+    ],
+    "era": "historic",
+    "note": "Leiter des Kirchenchors, Organist"
+  },
+  {
+    "word": "Schreiber",
+    "distractors": [
+      "Schreiner"
+    ],
+    "era": "historic",
+    "note": "Amts- oder Gerichtsschreiber"
+  },
+  {
+    "word": "Schreiner",
+    "distractors": [
+      "Schreiber"
+    ],
+    "era": "historic",
+    "note": "Tischler"
+  },
+  {
+    "word": "Näherin",
+    "distractors": [
+      "Wäscherin"
+    ],
+    "era": "historic",
+    "note": "Frau, die für Lohn näht"
+  },
+  {
+    "word": "Dienstmagd",
+    "distractors": [
+      "Dienstmann"
+    ],
+    "era": "historic",
+    "note": "Magd im Haushalt"
+  },
+  {
+    "word": "Geselle",
+    "distractors": [
+      "Gefälle"
+    ],
+    "era": "historic",
+    "note": "Handwerker nach der Lehrzeit"
+  },
+  {
+    "word": "Lehrling",
+    "distractors": [
+      "Liebling"
+    ],
+    "era": "historic",
+    "note": "Auszubildender in der Lehre"
+  },
+  {
+    "word": "Zunft",
+    "distractors": [
+      "Zukunft"
+    ],
+    "era": "historic",
+    "note": "Handwerkerverband der Stadt"
+  },
+  {
+    "word": "Schultheiß",
+    "distractors": [
+      "Schulmeister"
+    ],
+    "era": "historic",
+    "note": "Dorfvorsteher, Bürgermeister"
+  },
+  {
+    "word": "Schulmeister",
+    "distractors": [
+      "Bürgermeister"
+    ],
+    "era": "historic",
+    "note": "Dorflehrer"
+  },
+  {
+    "word": "Stube",
+    "distractors": [
+      "Stufe"
+    ],
+    "era": "historic",
+    "note": "beheizbares Wohnzimmer"
+  },
+  {
+    "word": "Kammer",
+    "distractors": [
+      "Hammer"
+    ],
+    "era": "historic",
+    "note": "kleiner, meist unbeheizter Nebenraum"
+  },
+  {
+    "word": "Truhe",
+    "distractors": [
+      "Traube"
+    ],
+    "era": "historic",
+    "note": "großer Aufbewahrungskasten mit Deckel"
+  },
+  {
+    "word": "Zuber",
+    "distractors": [
+      "Zucker"
+    ],
+    "era": "historic",
+    "note": "großer Waschbottich"
+  },
+  {
+    "word": "Krug",
+    "distractors": [
+      "Krieg"
+    ],
+    "era": "historic",
+    "note": "Gefäß für Bier oder Wasser; auch: Dorfschenke"
+  },
+  {
+    "word": "Schemel",
+    "distractors": [
+      "Schimmel"
+    ],
+    "era": "historic",
+    "note": "niedriger Hocker"
+  },
+  {
+    "word": "Speicher",
+    "distractors": [
+      "Sprecher"
+    ],
+    "era": "historic",
+    "note": "Dachboden, Vorratsraum"
+  },
+  {
+    "word": "Egge",
+    "distractors": [
+      "Ecke"
+    ],
+    "era": "historic",
+    "note": "Ackergerät zum Zerkleinern der Schollen"
+  },
+  {
+    "word": "Garbe",
+    "distractors": [
+      "Farbe"
+    ],
+    "era": "historic",
+    "note": "gebundenes Getreidebündel"
+  },
+  {
+    "word": "Gaul",
+    "distractors": [
+      "Maul"
+    ],
+    "era": "historic",
+    "note": "Pferd (derb)"
+  },
+  {
+    "word": "Spinnrad",
+    "distractors": [
+      "Windrad"
+    ],
+    "era": "historic",
+    "note": "Gerät zum Garnspinnen"
+  },
+  {
+    "word": "Webstuhl",
+    "distractors": [
+      "Lehnstuhl"
+    ],
+    "era": "historic",
+    "note": "Gerät zum Weben von Tuch"
+  },
+  {
+    "word": "Wirtshaus",
+    "distractors": [
+      "Rathaus"
+    ],
+    "era": "historic",
+    "note": "Gasthaus, Schenke",
+    "fugen": "Wirts|haus"
+  },
+  {
+    "word": "Gutshof",
+    "distractors": [
+      "Gasthof"
+    ],
+    "era": "historic",
+    "note": "Hof eines Gutsbesitzers",
+    "fugen": "Guts|hof"
+  },
+  {
+    "word": "Ratsherr",
+    "distractors": [
+      "Richter"
+    ],
+    "era": "historic",
+    "note": "Mitglied des Stadtrats",
+    "fugen": "Rats|herr"
+  },
+  {
+    "word": "Volksschule",
+    "distractors": [
+      "Vorschule"
+    ],
+    "era": "historic",
+    "note": "frühere allgemeine Schule (Klassen 1–8)",
+    "fugen": "Volks|schule"
+  },
+  {
+    "word": "Hornung",
+    "distractors": [
+      "Wohnung"
+    ],
+    "era": "historic",
+    "note": "alter Name für den Februar"
+  },
+  {
+    "word": "anno",
+    "distractors": [
+      "also"
+    ],
+    "era": "historic",
+    "note": "im Jahre („anno 1892“)"
+  },
+  {
+    "word": "alsbald",
+    "distractors": [
+      "sobald"
+    ],
+    "era": "historic",
+    "note": "sogleich, bald darauf",
+    "fugen": "als|bald"
+  },
+  {
+    "word": "alsdann",
+    "distractors": [
+      "alsbald"
+    ],
+    "era": "historic",
+    "note": "danach, daraufhin",
+    "fugen": "als|dann"
+  },
+  {
+    "word": "einst",
+    "distractors": [
+      "erst"
+    ],
+    "era": "historic",
+    "note": "früher einmal; auch: in ferner Zukunft"
+  },
+  {
+    "word": "ehedem",
+    "distractors": [
+      "ehemals"
+    ],
+    "era": "historic",
+    "note": "früher, vormals"
+  },
+  {
+    "word": "vormals",
+    "distractors": [
+      "vielmals"
+    ],
+    "era": "historic",
+    "note": "früher"
+  },
+  {
+    "word": "unlängst",
+    "distractors": [
+      "längst"
+    ],
+    "era": "historic",
+    "note": "vor kurzem"
+  },
+  {
+    "word": "jüngst",
+    "distractors": [
+      "längst"
+    ],
+    "era": "historic",
+    "note": "kürzlich, neulich"
+  },
+  {
+    "word": "fortan",
+    "distractors": [
+      "forthin"
+    ],
+    "era": "historic",
+    "note": "von nun an"
+  },
+  {
+    "word": "hinfort",
+    "distractors": [
+      "sofort"
+    ],
+    "era": "historic",
+    "note": "künftig, von jetzt an"
+  },
+  {
+    "word": "sogleich",
+    "distractors": [
+      "zugleich"
+    ],
+    "era": "historic",
+    "note": "sofort"
+  },
+  {
+    "word": "Vesper",
+    "distractors": [
+      "Wespe"
+    ],
+    "era": "historic",
+    "note": "Nachmittagsmahlzeit; Abendandacht"
+  },
+  {
+    "word": "Kirmes",
+    "distractors": [
+      "Kirche"
+    ],
+    "era": "historic",
+    "note": "Kirchweihfest, Jahrmarkt"
+  },
+  {
+    "word": "Jahrmarkt",
+    "distractors": [
+      "Fischmarkt"
+    ],
+    "era": "historic",
+    "note": "großer Markt zur Kirchweih"
+  },
+  {
+    "word": "Sonnabend",
+    "distractors": [
+      "Sonntag"
+    ],
+    "era": "historic",
+    "note": "norddeutsch für Samstag"
+  },
+  {
+    "word": "Taufe",
+    "distractors": [
+      "Taube"
+    ],
+    "era": "historic",
+    "note": "kirchliche Namensgebung"
+  },
+  {
+    "word": "Pfarrer",
+    "distractors": [
+      "Pfeffer"
+    ],
+    "era": "historic",
+    "note": "Geistlicher der Gemeinde"
+  },
+  {
+    "word": "Fibel",
+    "distractors": [
+      "Bibel"
+    ],
+    "era": "historic",
+    "note": "erstes Lesebuch der Schulkinder"
+  },
+  {
+    "word": "Gesangbuch",
+    "distractors": [
+      "Tagebuch"
+    ],
+    "era": "historic",
+    "note": "Liederbuch der Kirchengemeinde"
+  },
+  {
+    "word": "Kanzel",
+    "distractors": [
+      "Kanzlei"
+    ],
+    "era": "historic",
+    "note": "erhöhter Predigtstuhl in der Kirche"
+  },
+  {
+    "word": "Kanzlei",
+    "distractors": [
+      "Kanzel"
+    ],
+    "era": "historic",
+    "note": "Schreibstube, Amtsstube"
+  },
+  {
+    "word": "Leichnam",
+    "distractors": [
+      "Leinwand"
+    ],
+    "era": "historic",
+    "note": "toter Körper, der Verstorbene"
+  },
+  {
+    "word": "Begräbnis",
+    "distractors": [
+      "Ergebnis"
+    ],
+    "era": "historic",
+    "note": "Beerdigung"
+  },
+  {
+    "word": "Schwindsucht",
+    "distractors": [
+      "Sehnsucht"
+    ],
+    "era": "historic",
+    "note": "veraltet für Tuberkulose"
+  },
+  {
+    "word": "Blattern",
+    "distractors": [
+      "Flattern"
+    ],
+    "era": "historic",
+    "note": "veraltet für Pocken"
+  },
+  {
+    "word": "Arznei",
+    "distractors": [
+      "Abtei"
+    ],
+    "era": "historic",
+    "note": "Heilmittel, Medikament"
+  },
+  {
+    "word": "Lehen",
+    "distractors": [
+      "Leben"
+    ],
+    "era": "historic",
+    "note": "vom Herrn verliehenes Gut"
+  },
+  {
+    "word": "Taler",
+    "distractors": [
+      "Tafel"
+    ],
+    "era": "historic",
+    "note": "alte Silbermünze"
+  },
+  {
+    "word": "Groschen",
+    "distractors": [
+      "Kirschen"
+    ],
+    "era": "historic",
+    "note": "Münze (10 Pfennig)"
+  },
+  {
+    "word": "Pfennig",
+    "distractors": [
+      "Honig"
+    ],
+    "era": "historic",
+    "note": "Münze, 1/100 Mark"
+  },
+  {
+    "word": "Kreuzer",
+    "distractors": [
+      "Kräuter"
+    ],
+    "era": "historic",
+    "note": "alte süddeutsche Münze"
+  },
+  {
+    "word": "Gulden",
+    "distractors": [
+      "Mulden"
+    ],
+    "era": "historic",
+    "note": "alte Goldmünze"
+  },
+  {
+    "word": "Zins",
+    "distractors": [
+      "Zinn"
+    ],
+    "era": "historic",
+    "note": "Pacht, Abgabe; auch: Kapitalertrag"
+  },
+  {
+    "word": "Zehnt",
+    "distractors": [
+      "Zelt"
+    ],
+    "era": "historic",
+    "note": "der zehnte Teil der Ernte als Abgabe"
+  },
+  {
+    "word": "Obrigkeit",
+    "distractors": [
+      "Ewigkeit"
+    ],
+    "era": "historic",
+    "note": "die herrschende Gewalt, Behörden"
+  },
+  {
+    "word": "Amtmann",
+    "distractors": [
+      "Landmann"
+    ],
+    "era": "historic",
+    "note": "Verwaltungsbeamter eines Amtes"
+  },
+  {
+    "word": "Büttel",
+    "distractors": [
+      "Büttner"
+    ],
+    "era": "historic",
+    "note": "Gerichtsdiener, Polizeidiener"
+  },
+  {
+    "word": "Gendarm",
+    "distractors": [
+      "Gewand"
+    ],
+    "era": "historic",
+    "note": "Landpolizist"
+  },
+  {
+    "word": "Gewand",
+    "distractors": [
+      "Gewinn"
+    ],
+    "era": "historic",
+    "note": "Kleidungsstück (gehoben)"
+  },
+  {
+    "word": "Kontor",
+    "distractors": [
+      "Kantor"
+    ],
+    "era": "historic",
+    "note": "Büro eines Kaufmanns"
+  },
+  {
+    "word": "Mitgift",
+    "distractors": [
+      "Mittwoch"
+    ],
+    "era": "historic",
+    "note": "Aussteuer der Braut"
+  },
+  {
+    "word": "Aussteuer",
+    "distractors": [
+      "Steuer"
+    ],
+    "era": "historic",
+    "note": "Ausstattung der Braut zur Hochzeit",
+    "fugen": "Aus|steuer"
+  },
+  {
+    "word": "Pacht",
+    "distractors": [
+      "Nacht"
+    ],
+    "era": "historic",
+    "note": "Miete für Land oder Hof"
+  },
+  {
+    "word": "Frondienst",
+    "distractors": [
+      "Verdienst"
+    ],
+    "era": "historic",
+    "note": "unbezahlte Pflichtarbeit für den Grundherrn"
+  },
+  {
+    "word": "Arbeitsamt",
+    "distractors": [
+      "Standesamt"
+    ],
+    "era": "historic",
+    "note": "Behörde der Arbeitsvermittlung",
+    "fugen": "Arbeits|amt"
   }
 ]

@@ -23,6 +23,7 @@ nächsten Meilensteine.
 | Stil-Analyse-Pipeline nachschlagen | [Stil-Analyse](reference/styleanalyse.md) |
 | Qualitätsmetrik, Glyph-Bench & Loop-Erkenntnisse nachschlagen | [Qualitätsmetrik](reference/qualitaetsmetrik.md) |
 | Frontend-Stack & Deploy nachschlagen | [Frontend-Stack](reference/frontend-stack.md) |
+| Quiz-Wortbank (Quellen, Distraktoren, Fugen-Marker) nachschlagen | [Quiz-Wortbank](reference/quiz-wortbank.md) |
 | Sprache für Code, Docs, README nachschlagen | [Sprachregelung](reference/sprachregelung.md) |
 | Wissen, was ins öffentliche Repo darf | [Quellen- und Rechte-Policy](reference/quellen-und-rechte.md) |
 | Den `/data`-Baum verstehen | [Datenablage](reference/datenablage.md) |
@@ -55,6 +56,7 @@ docs/
 │   ├── animation-rendering.md    # stroke-dashoffset (MVP), Canvas-2D-Stroker (post-MVP), WAAPI
 │   ├── styleanalyse.md           # Per-Hand-Aggregation, Hinge-Features, Heatmap-Layouts
 │   ├── qualitaetsmetrik.md       # Zwei Metriken (Kurrent-Schwellzug §1–4 · Sütterlin-Natürlichkeit §5), bench/Referenzen, Baseline-Historie, Loop-Erkenntnisse + Verworfen
+│   ├── quiz-wortbank.md          # Lese-Quiz-Wortbank: Quellen (Kaeding, Genealogie-Felder), Pin+Runtime-Distraktoren, Fugen-Marker
 │   └── frontend-stack.md         # React+Vite+MUI Build, Deploy auf Cloud Run, i18n, Auth-Routen
 ├── schriftkunde/                 # Quellengesicherte Fakten zu den Schriften (wächst inkrementell)
 │   ├── allgemein.md              # Lineatur, Schräglage, Striche, Federtypen, Chronologie, DACH
@@ -130,6 +132,10 @@ Policy- und Technik-Dokumente.
   MUI 9 + React Router 7 + `react-helmet-async` + `react-i18next`,
   Build/Deploy auf Cloud Run, Auth-geschützte Admin-Routen,
   Komponenten-Map
+- **[Quiz-Wortbank](reference/quiz-wortbank.md)** — Lese-Quiz-Wortschatz:
+  Quellen (Kaeding 1897/98, Grundwortschatz, Genealogie-Felder),
+  Distraktor-Modell (ein Pin + Laufzeit-Ziehung nach `similarity`),
+  Fugen-Marker-Regeln, Lizenz-Haltung, Erweiterungs-Workflow
 
 ---
 

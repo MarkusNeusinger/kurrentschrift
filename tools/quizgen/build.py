@@ -1,10 +1,15 @@
 """Build the quiz word seed from the curated corpus.
 
-Reads ``corpus.py``, fills any entry that left ``distractors`` as ``None`` from
-the lexicon by the similarity rules, validates that every entry ends with at
-least three real distractors, and writes ``quiz_words.json`` — the single
-source the Alembic seed migration (``0010_quiz_words.py``) loads into the
-``quiz_words`` table.
+Reads ``corpus.py``, pins the best-scoring bank word for any entry that left
+``distractors`` as ``None``, validates the rows, and writes ``quiz_words.json``
+— the single source the Alembic seed migrations load into the ``quiz_words``
+table.
+
+The stored ``distractors`` are PINNED anchors, usually exactly one per word:
+the hand-curated best misread, always offered by the quiz. The remaining
+options are drawn at runtime from the whole bank by the similarity rules with
+weighted randomness (see ``buildWordChoices`` in ``useQuizEngine.ts``), so the
+choices change from round to round.
 
     uv run python -m tools.quizgen.build          # write quiz_words.json
     uv run python -m tools.quizgen.build --check   # verify it is up to date
@@ -20,38 +25,28 @@ import json
 import sys
 from pathlib import Path
 
-from tools.quizgen.corpus import ENTRIES, LEXICON
+from tools.quizgen.corpus import ENTRIES
 from tools.quizgen.similarity import best_distractors, is_plausible_distractor
 
 
 OUT = Path(__file__).parent / "quiz_words.json"
-MIN_DISTRACTORS = 3
-MAX_DISTRACTORS = 5
-
-
-def _lexicon() -> list[str]:
-    """Every candidate word: the shown words plus the distractor-only fodder."""
-    seen: dict[str, None] = {}
-    for e in ENTRIES:
-        seen.setdefault(e["word"])
-    for w in LEXICON:
-        seen.setdefault(w)
-    return list(seen)
+# Pinned anchors per word: at least one, and only a few even for thematic sets —
+# variety comes from the runtime draw, not from long stored lists.
+MIN_DISTRACTORS = 1
+MAX_DISTRACTORS = 3
 
 
 def build() -> list[dict]:
-    lex = _lexicon()
+    bank = [e["word"] for e in ENTRIES]
     out: list[dict] = []
     weak: list[str] = []
     for e in ENTRIES:
         word = e["word"]
         curated = e.get("distractors")
-        # Curated lists are trusted verbatim — thematic distractors (Sonntag for
-        # Donnerstag) may bend the strict length rule on purpose, and the runtime
-        # already widens the pool with bank-similar words for variety, so there's
-        # no need to pad here. Only entries that leave distractors None are filled
-        # from the lexicon by the similarity rules.
-        distractors = list(curated) if curated is not None else best_distractors(word, lex, MAX_DISTRACTORS)
+        # Curated pins are trusted verbatim — a thematic anchor (Sonntag for
+        # Donnerstag) may bend the similarity rules on purpose. Only entries
+        # that leave distractors None get the best-scoring bank word pinned.
+        distractors = list(curated) if curated is not None else best_distractors(word, bank, MIN_DISTRACTORS)
         # Dedupe, drop the answer itself, cap.
         distractors = [d for d in dict.fromkeys(distractors) if d != word][:MAX_DISTRACTORS]
         if len(distractors) < MIN_DISTRACTORS:
@@ -76,9 +71,11 @@ def _validate(rows: list[dict]) -> None:
         assert r["word"] not in seen, f"duplicate entry: {r['word']}"
         seen.add(r["word"])
         assert r["era"] in ("modern", "historic"), f"{r['word']}: bad era {r['era']!r}"
-        assert r["distractors"], f"{r['word']}: no distractors"
+        assert r["distractors"], f"{r['word']}: no pinned distractor"
         assert r["word"] not in r["distractors"], f"{r['word']}: answer in distractors"
         assert len(set(r["distractors"])) == len(r["distractors"]), f"{r['word']}: duplicate distractors"
+        # Every dated word must explain itself in the answer reveal.
+        assert r["era"] != "historic" or r.get("note"), f"{r['word']}: historic entry without a note"
         if "fugen" in r:
             assert r["fugen"].replace("|", "") == r["word"], f"{r['word']}: fugen must strip to word"
 
@@ -107,11 +104,17 @@ def main() -> int:
     OUT.write_text(text, encoding="utf-8")
     modern = sum(1 for r in rows if r["era"] == "modern")
     historic = len(rows) - modern
-    # Report how well the similarity rules cover the generated distractors.
-    gen_pairs = sum(1 for r in rows for d in r["distractors"] if is_plausible_distractor(r["word"], d))
-    total_pairs = sum(len(r["distractors"]) for r in rows)
+    # Report how many words the runtime similarity draw can serve from the bank
+    # itself (≥2 plausible in-bank candidates beyond the pinned anchor).
+    bank = [r["word"] for r in rows]
+    rich = sum(
+        1
+        for r in rows
+        if sum(1 for w in bank if w not in (r["word"], *r["distractors"]) and is_plausible_distractor(r["word"], w))
+        >= 2
+    )
     print(f"wrote {OUT.name}: {len(rows)} words ({modern} modern, {historic} historic)")
-    print(f"distractors passing the similarity bar: {gen_pairs}/{total_pairs}")
+    print(f"words with >=2 in-bank runtime candidates beyond the pin: {rich}/{len(rows)}")
     return 0
 
 

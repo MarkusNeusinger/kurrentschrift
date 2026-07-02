@@ -1,14 +1,19 @@
-// Curated word bank for the word-reading drill. Each entry is a real German
-// word plus deliberately form-similar distractors — the typical Kurrent /
-// Sütterlin reading confusions (e/n, m/n/u, u/a, h/k, b/l, f/ſ …) — so a wrong
-// pick is a genuine misread, not a careless one.
+// Bundled word bank for the word-reading drill — the OFFLINE FALLBACK for the
+// DB bank served by `GET /quiz-words` (seeded from `tools/quizgen`, ~500
+// words). Each entry is a real German word plus pinned form-similar
+// distractors — the typical Kurrent / Sütterlin reading confusions (e/n,
+// m/n/u, u/a, h/k, b/l, f/ſ …) — so a wrong pick is a genuine misread, not a
+// careless one. The engine always offers one pinned distractor and draws the
+// remaining options from the whole bank by the `similarity` rules below with
+// weighted randomness, so the choices change from round to round.
 //
-// The mix is deliberate (see `docs/concepts/architektur.md` §9 and the quiz
-// research note): a modern high-frequency core (what a learner reads first)
-// blended with vocabulary from *around 1900* that no longer sits in everyday
-// speech but keeps turning up in the old letters this app exists to decode
-// (Muhme, Magd, Hornung, „verbleibe …“). Every entry carries an `era` tag so a
-// later UI can bias the draw (Alltag ↔ alte Briefe).
+// The mix is deliberate (see `docs/concepts/architektur.md` §9 and
+// `docs/reference/quiz-wortbank.md` for sources + curation rules): a modern
+// high-frequency core (what a learner reads first) blended with vocabulary
+// from *around 1900* that no longer sits in everyday speech but keeps turning
+// up in the old letters this app exists to decode (Muhme, Magd, Hornung,
+// „verbleibe …“). Every entry carries an `era` tag so a later UI can bias the
+// draw (Alltag ↔ alte Briefe).
 //
 // Long-s vs round-s is NOT encoded in `word`: `domain/shaping.ts` sets the
 // allographs automatically (long ſ initial/medial, round s word-final), so we
@@ -19,17 +24,18 @@
 // junction s renders round. `word` stays clean for display; `fugen` is the
 // render form.
 //
-// This is the FULL candidate set. The engine keeps only the words whose every
-// Sütterlin glyph is actually locked + traced in the live source (see the word
-// pool in useQuizEngine), so a word is never shown half-rendered. Distractors
-// are filtered the same way for the comparison, falling back to plain type when
-// a distractor isn't fully traced.
+// Whichever bank is active (DB or this fallback), the engine keeps only the
+// words whose every Sütterlin glyph is actually locked + traced in the live
+// source (see the word pool in useQuizEngine), so a word is never shown
+// half-rendered. Distractors are filtered the same way for the comparison,
+// falling back to plain type when a distractor isn't fully traced.
 
 export interface WordEntry {
   word: string;
-  // Three form-similar alternatives; the engine samples from these for the
-  // multiple-choice options. Real words, same case as `word`, hand-picked to
-  // fit the rules `similarity` below encodes.
+  // PINNED form-similar misreads (the DB bank pins exactly one, this fallback
+  // keeps up to three): real words, same case as `word`, trusted verbatim —
+  // the engine always offers one of them and fills the remaining option slots
+  // from the whole bank by the `similarity` rules with weighted randomness.
   distractors: string[];
   // 'modern' = today's high-frequency core; 'historic' = still readable but
   // dated, the vocabulary of old letters. Drives an optional era filter.

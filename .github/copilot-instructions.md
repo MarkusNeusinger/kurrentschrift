@@ -156,7 +156,9 @@ kurrentschrift/
 │   ├── rendering.py  # style resolution + memoised source-pooled nib (templates + write)
 │   └── routers/      # health, styles, hands, sources, chart, bboxes, templates,
 │                     #   write (public batched render payloads + /word server-side composition,
-│                     #   cached, no chart I/O), quiz_words (public GET /quiz-words reading-drill bank)
+│                     #   cached, no chart I/O), quiz_words (public GET /quiz-words reading-drill bank:
+│                     #   ~500 words, ONE pinned anchor distractor each, rest drawn at runtime by the
+│                     #   shared similarity rules — docs/reference/quiz-wortbank.md)
 ├── app/              # React 19 + Vite + MUI SPA (anyplot-style)
 │   └── src/
 │       ├── routes/      # paths.ts route constants + lazy public/admin route sections
