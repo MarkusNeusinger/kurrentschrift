@@ -1,0 +1,77 @@
+name: Bug report
+description: Report something in kurrentschrift that does not work as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug! The area, how to reproduce, and (for the reader/re-inker)
+        which source or glyph is involved are the most helpful parts.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the project?
+      options:
+        - Backend / API (FastAPI, core, DB)
+        - Frontend / SPA (React app)
+        - Reading (HTR / transcription)
+        - Re-inking (ductus templates, tracing, resample)
+        - Data / sources (scans, provenance)
+        - Deploy / infra (Cloud Run, Cloud Build)
+        - Other / not sure
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version / commit
+      description: App version or the git commit SHA you are on.
+      placeholder: "0.1.0 or abc1234"
+    validations:
+      required: false
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser / OS (for frontend issues)
+      placeholder: "Firefox 128 / Ubuntu 24.04"
+    validations:
+      required: false
+
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+      placeholder: |
+        Steps to reproduce:
+        1. ...
+        2. ...
+
+        Expected:
+        ...
+
+        Actual:
+        ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant output, logs, or screenshots
+      description: Backend traceback, browser console errors, or a screenshot. Rendered as code — no backticks needed.
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and did not find a duplicate.
+          required: true

@@ -215,8 +215,7 @@ FastAPI mit Routern pro Resource (`health`, `styles`, `hands`,
 TypeScript, lokal über zwei Terminals (`uvicorn` :8000, `npm run dev`
 :3000 mit `/api`-Proxy). Dockerfiles und `cloudbuild.yaml` existieren
 pro Service und sind produktiv: beide Services laufen seit 2026-05 auf
-Cloud Run hinter kurrentschrift.ink, deployed über Cloud-Build-Trigger
-(siehe [`deploy-bootstrap-status.md`](../notes/deploy-bootstrap-status.md)).
+Cloud Run hinter kurrentschrift.ink, deployed über Cloud-Build-Trigger.
 
 **Schwellzug:** Die `half_widths` kommen weiterhin aus dem M0
 Distance-Transform der Loth-Tinte — die geometrische Wahrheit kommt

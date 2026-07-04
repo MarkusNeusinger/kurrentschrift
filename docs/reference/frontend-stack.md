@@ -228,8 +228,7 @@ Funktionsweise identisch.
 
 ### Deploy auf Cloud Run
 
-**Zwei Services**, live seit 2026-05 — operativer Ist-Zustand in
-[`deploy-bootstrap-status.md`](../notes/deploy-bootstrap-status.md):
+**Zwei Services**, live seit 2026-05:
 
 - **`kurrentschrift-api`** — FastAPI (`api/Dockerfile`);
   `api/cloudbuild.yaml` fährt vor dem Rollout einen
