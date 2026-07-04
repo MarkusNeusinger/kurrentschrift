@@ -13,9 +13,13 @@ substitutions:
   # DB lives on the anyplot Cloud SQL instance; cross-project cloudsql.client
   # is granted to the runtime SA in the anyplot project.
   _CLOUDSQL_INSTANCE: "anyplot:europe-west4:anyplot-db"
-  # Comma-separated allow-list for the CF Access JWT path. Browser users with
-  # a valid JWT but an email not in this list get 403.
-  _ADMIN_ALLOWED_EMAILS: "meakeiok@gmail.com"
+  # Comma-separated allow-list for the CF Access JWT path. Browser users with a
+  # valid JWT but an email not in this list get 403. Left EMPTY in the repo (as
+  # in anyplot) — the real allow-list is injected at deploy time via the Cloud
+  # Build trigger substitution. With this empty, the JWT/email path authorizes
+  # no one and only the X-Admin-Token fallback (ADMIN_TOKEN secret) is active,
+  # so an empty value never locks admin out.
+  _ADMIN_ALLOWED_EMAILS: ""
 
 steps:
   - name: "gcr.io/cloud-builders/docker"
@@ -46,7 +50,7 @@ steps:
 
   # Apply DB migrations BEFORE the new code serves traffic. Runs as a Cloud Run
   # Job under the runtime SA, so it reaches Cloud SQL as the kurrentschrift role
-  # (which owns its tables — see docs/notes/deploy-bootstrap-status.md). The job
+  # (which owns its tables). The job
   # image is the same one we just built, so it carries the latest alembic/
   # revisions. --wait blocks the build (and thus the deploy) on the migration's
   # success, so a failed migration never ships a schema-mismatched service.

@@ -26,7 +26,7 @@ GitHub. Nothing to launch; this skill is the editing contract.
 docs/
 ├── concepts/    # Architektur, Philosophie, getroffene Entscheidungen
 ├── reference/   # Nachschlage-Dokumente (Stack, Regeln, Pipelines)
-├── notes/       # Operativer Zustand, Journale (z. B. deploy-bootstrap-status)
+├── notes/       # Operativer Zustand, Journale (z. B. stifte-fuer-unterwegs)
 └── proposals/   # Offene Vorschläge, noch nicht entschieden
 ```
 
@@ -89,7 +89,7 @@ contradicts a Verworfen entry, stop and surface it to the user.
 
 ## Gotchas
 
-- **Relative dates rot.** Docs like `notes/deploy-bootstrap-status.md`
+- **Relative dates rot.** Docs under `notes/`
   are state journals — write absolute dates (2026-06-10), never
   „aktuell“ or „letzte Woche“.
 - **The architecture doc is sectioned (§1–§17) and other docs cite

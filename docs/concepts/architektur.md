@@ -726,9 +726,8 @@ anyplot.ai auf Cloud Run trägt:
   serviert das statische Vite-Build hinter nginx (kurrentschrift.ink),
   `kurrentschrift-api` das FastAPI (api.kurrentschrift.ink) — je eigenes
   `Dockerfile` + `cloudbuild.yaml` unter `app/` bzw. `api/`.
-- CI/CD über Cloud Build mit getrennten Triggern pro Service. Operativer
-  Ist-Zustand (Domains, Cloudflare Access, Migrate-Job):
-  [`notes/deploy-bootstrap-status.md`](../notes/deploy-bootstrap-status.md).
+- CI/CD über Cloud Build mit getrennten Triggern pro Service (Domains,
+  Cloudflare Access, Migrate-Job).
 
 > Build-Schritte, Komponenten-Map, Auth-Konfiguration:
 > [`reference/frontend-stack.md`](../reference/frontend-stack.md).
