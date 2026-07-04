@@ -11,14 +11,15 @@ coverage:
         flags:
           - backend
 
-  # Only report coverage for the tested Python source (core/ + api/).
-  ignore:
-    - "alembic/"
-    - "tests/"
-    - "data/"
-    - "docs/"
-    - "tools/"
-    - "app/"
+# Only report coverage for the tested Python source (core/ + api/).
+# Top-level key per the Codecov schema.
+ignore:
+  - "alembic/"
+  - "tests/"
+  - "data/"
+  - "docs/"
+  - "tools/"
+  - "app/"
 
 flags:
   backend:
