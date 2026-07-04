@@ -31,7 +31,7 @@ dependencies = [
     "python-multipart>=0.0.32",
     "python-dotenv>=1.0.0",
     # Admin auth — Cloudflare Access JWT verification against the team JWKS.
-    "pyjwt[crypto]>=2.9",
+    "pyjwt[crypto]>=2.13.0",
     # Database — Postgres (Cloud SQL on the anyplot instance for now)
     "sqlalchemy[asyncio]>=2.0.49",
     "asyncpg>=0.30.0",
