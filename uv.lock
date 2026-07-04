@@ -356,7 +356,7 @@ wheels = [
 
 [[package]]
 name = "cloud-sql-python-connector"
-version = "1.20.2"
+version = "1.20.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiofiles" },
@@ -366,9 +366,9 @@ dependencies = [
     { name = "google-auth" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b3/35/b2145359b1d6e6a2447be27c5048dd23703ac7df7303f8bbb88f0cb5d793/cloud_sql_python_connector-1.20.2.tar.gz", hash = "sha256:c1a6d827199c9730e7f9687c074885ce7db447dd7d8f3f3a49c37180a530df95", size = 44245, upload-time = "2026-04-17T19:03:37.631Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fb/f6/cd4b630fca8f165db508795bc354f14e7155444a25a204b3da356134c3e8/cloud_sql_python_connector-1.20.4.tar.gz", hash = "sha256:fe2dbee747543ad2c720760c53064f0ef42ed04218981e1f7231362a88b3cf44", size = 44205, upload-time = "2026-06-26T23:04:12.62Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d0/53/e94962c964644f75cae552ed2d8162cf0404d6e7004113777f355717f9ec/cloud_sql_python_connector-1.20.2-py3-none-any.whl", hash = "sha256:cbd55bf58cbd5bea8e44c5768bcecc18d4ab2bc490150d90620b3fdb518d1063", size = 50099, upload-time = "2026-04-17T19:03:35.91Z" },
+    { url = "https://files.pythonhosted.org/packages/0b/38/10a95226732a3d81ebcd157e5cb750b9d52a534e017dd177cc2321aea895/cloud_sql_python_connector-1.20.4-py3-none-any.whl", hash = "sha256:4c1cd8b573d5e9b93a6f390ccf772fa431afdcc32025b1577e2bafa89756a9f6", size = 50099, upload-time = "2026-06-26T23:04:11.098Z" },
 ]
 
 [package.optional-dependencies]
@@ -966,7 +966,7 @@ requires-dist = [
     { name = "alembic", specifier = ">=1.18.5" },
     { name = "asyncpg", specifier = ">=0.30.0" },
     { name = "cairosvg", specifier = ">=2.9.0" },
-    { name = "cloud-sql-python-connector", extras = ["asyncpg", "pg8000"], specifier = ">=1.20.2" },
+    { name = "cloud-sql-python-connector", extras = ["asyncpg", "pg8000"], specifier = ">=1.20.4" },
     { name = "fastapi", specifier = ">=0.139.0" },
     { name = "kurrentschrift", extras = ["viz"], marker = "extra == 'dev'" },
     { name = "kurrentschrift", extras = ["viz"], marker = "extra == 'test'" },
