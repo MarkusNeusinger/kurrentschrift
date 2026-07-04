@@ -1,0 +1,33 @@
+# Codecov configuration — https://docs.codecov.com/docs/codecov-yaml
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+    patch:
+      backend:
+        target: 80%
+        flags:
+          - backend
+
+  # Only report coverage for the tested Python source (core/ + api/).
+  ignore:
+    - "alembic/"
+    - "tests/"
+    - "data/"
+    - "docs/"
+    - "tools/"
+    - "app/"
+
+flags:
+  backend:
+    paths:
+      - core/
+      - api/
+    carryforward: true
+
+comment:
+  layout: "reach,diff,flags,components"
+  behavior: default
+  require_changes: false

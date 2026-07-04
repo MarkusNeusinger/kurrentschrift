@@ -44,7 +44,16 @@ jobs:
         run: uv run ruff format --check .
 
       - name: Pytest
-        run: uv run pytest
+        run: uv run pytest --cov=core --cov=api --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        # fail_ci_if_error stays false so a missing token / codecov hiccup never reds CI.
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v6
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          flags: backend
+          fail_ci_if_error: false
 
   frontend:
     name: Frontend (build)
