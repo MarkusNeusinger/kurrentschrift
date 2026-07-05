@@ -1,5 +1,5 @@
 {
- "note": "Word exemplars cut from the connected-writing plates of this source. Rect + lineature in page-pixel coords of `page`; optional `exclude` rects ([x0, y0, x1, y1], page coords) are painted paper-white before binarisation (foreign ink from neighbouring lines). Frozen into wordbench fixtures by tools/wordbench/export_fixtures.py. Lineature measured from the ink (the plate has no printed ruling).",
+ "note": "Word/pair exemplars cut from the connected-writing plates of this source. Rect + lineature in page-pixel coords of `page`; optional `exclude` rects ([x0, y0, x1, y1], page coords) are painted paper-white before binarisation (foreign ink from neighbouring lines, printed-caption bleed, punctuation overlapping a box edge, apostrophes of elided words). `id` keys the fixture (unique; repeated words carry -2/-3 suffixes), `kind: pair` marks the isolated letter-pair joins of Abb. 20 (their own bench headline). The stored `word` carries letters only: trailing punctuation stays outside the rect or in an exclude, elisions (ha'n, Spor'n) are stored as the drawn letter run. Boxes proposed by tools/wordbench/propose_boxes.py and verified visually per line; frozen into wordbench fixtures by tools/wordbench/export_fixtures.py. Lineature measured from the ink (the plates have no printed ruling).",
  "words": [
   {
    "word": "unter",
@@ -158,6 +158,1441 @@
    "x1": 418,
    "baseline_y": 1396,
    "midband_y": 1368
+  },
+  {
+   "id": "Wer",
+   "word": "Wer",
+   "page": "words-abb19.png",
+   "y0": 78,
+   "y1": 152,
+   "x0": 146,
+   "x1": 353,
+   "baseline_y": 145,
+   "midband_y": 113
+  },
+  {
+   "id": "will",
+   "word": "will",
+   "page": "words-abb19.png",
+   "y0": 78,
+   "y1": 152,
+   "x0": 353,
+   "x1": 554,
+   "baseline_y": 145,
+   "midband_y": 113
+  },
+  {
+   "id": "Soldaten",
+   "word": "Soldaten",
+   "page": "words-abb19.png",
+   "y0": 74,
+   "y1": 151,
+   "x0": 1006,
+   "x1": 1383,
+   "baseline_y": 145,
+   "midband_y": 113
+  },
+  {
+   "id": "der",
+   "word": "der",
+   "page": "words-abb19.png",
+   "y0": 186,
+   "y1": 259,
+   "x0": 140,
+   "x1": 303,
+   "baseline_y": 252,
+   "midband_y": 222
+  },
+  {
+   "id": "muß",
+   "word": "muß",
+   "page": "words-abb19.png",
+   "y0": 184,
+   "y1": 287,
+   "x0": 303,
+   "x1": 514,
+   "baseline_y": 252,
+   "midband_y": 222,
+   "exclude": [
+    [
+     384,
+     267,
+     393,
+     278
+    ]
+   ]
+  },
+  {
+   "id": "Gewehr",
+   "word": "Gewehr",
+   "page": "words-abb19.png",
+   "y0": 181,
+   "y1": 294,
+   "x0": 982,
+   "x1": 1330,
+   "baseline_y": 252,
+   "midband_y": 222,
+   "exclude": [
+    [
+     982,
+     293,
+     1155,
+     294
+    ]
+   ]
+  },
+  {
+   "id": "muß-2",
+   "word": "muß",
+   "page": "words-abb19.png",
+   "y0": 265,
+   "y1": 399,
+   "x0": 322,
+   "x1": 526,
+   "baseline_y": 362,
+   "midband_y": 331,
+   "exclude": [
+    [
+     322,
+     265,
+     512,
+     285
+    ],
+    [
+     399,
+     388,
+     407,
+     397
+    ]
+   ]
+  },
+  {
+   "id": "er",
+   "word": "er",
+   "page": "words-abb19.png",
+   "y0": 327,
+   "y1": 368,
+   "x0": 536,
+   "x1": 642,
+   "baseline_y": 362,
+   "midband_y": 331
+  },
+  {
+   "id": "Pulver",
+   "word": "Pulver",
+   "page": "words-abb19.png",
+   "y0": 291,
+   "y1": 401,
+   "x0": 834,
+   "x1": 1157,
+   "baseline_y": 362,
+   "midband_y": 331,
+   "exclude": [
+    [
+     984,
+     291,
+     1157,
+     292
+    ],
+    [
+     988,
+     372,
+     1004,
+     392
+    ],
+    [
+     913,
+     384,
+     922,
+     395
+    ]
+   ]
+  },
+  {
+   "id": "mit-2",
+   "word": "mit",
+   "page": "words-abb19.png",
+   "y0": 386,
+   "y1": 476,
+   "x0": 353,
+   "x1": 536,
+   "baseline_y": 470,
+   "midband_y": 440,
+   "exclude": [
+    [
+     353,
+     386,
+     524,
+     397
+    ]
+   ]
+  },
+  {
+   "id": "Kugel",
+   "word": "Kugel",
+   "page": "words-abb19.png",
+   "y0": 370,
+   "y1": 507,
+   "x0": 820,
+   "x1": 1112,
+   "baseline_y": 470,
+   "midband_y": 440,
+   "exclude": [
+    [
+     836,
+     370,
+     1112,
+     399
+    ]
+   ]
+  },
+  {
+   "id": "schwer",
+   "word": "schwer",
+   "page": "words-abb19.png",
+   "y0": 378,
+   "y1": 506,
+   "x0": 1127,
+   "x1": 1430,
+   "baseline_y": 470,
+   "midband_y": 440,
+   "exclude": [
+    [
+     1127,
+     378,
+     1155,
+     399
+    ],
+    [
+     1421,
+     462,
+     1430,
+     473
+    ]
+   ]
+  },
+  {
+   "id": "der-2",
+   "word": "der",
+   "page": "words-abb19.png",
+   "y0": 541,
+   "y1": 615,
+   "x0": 138,
+   "x1": 315,
+   "baseline_y": 607,
+   "midband_y": 576
+  },
+  {
+   "id": "muß-3",
+   "word": "muß",
+   "page": "words-abb19.png",
+   "y0": 541,
+   "y1": 645,
+   "x0": 323,
+   "x1": 560,
+   "baseline_y": 607,
+   "midband_y": 576
+  },
+  {
+   "id": "an",
+   "word": "an",
+   "page": "words-abb19.png",
+   "y0": 570,
+   "y1": 614,
+   "x0": 580,
+   "x1": 743,
+   "baseline_y": 607,
+   "midband_y": 576
+  },
+  {
+   "id": "der-3",
+   "word": "der",
+   "page": "words-abb19.png",
+   "y0": 538,
+   "y1": 615,
+   "x0": 771,
+   "x1": 935,
+   "baseline_y": 607,
+   "midband_y": 576
+  },
+  {
+   "id": "Seiten",
+   "word": "Seiten",
+   "page": "words-abb19.png",
+   "y0": 539,
+   "y1": 616,
+   "x0": 1271,
+   "x1": 1564,
+   "baseline_y": 607,
+   "midband_y": 576
+  },
+  {
+   "id": "scharfen",
+   "word": "scharfen",
+   "page": "words-abb19.png",
+   "y0": 651,
+   "y1": 754,
+   "x0": 429,
+   "x1": 783,
+   "baseline_y": 716,
+   "midband_y": 687,
+   "exclude": [
+    [
+     565,
+     734,
+     571,
+     748
+    ],
+    [
+     681,
+     737,
+     691,
+     748
+    ]
+   ]
+  },
+  {
+   "id": "Säbel",
+   "word": "Säbel",
+   "page": "words-abb19.png",
+   "y0": 649,
+   "y1": 724,
+   "x0": 796,
+   "x1": 1036,
+   "baseline_y": 716,
+   "midband_y": 687
+  },
+  {
+   "id": "han",
+   "word": "han",
+   "page": "words-abb19.png",
+   "y0": 649,
+   "y1": 755,
+   "x0": 1048,
+   "x1": 1251,
+   "baseline_y": 716,
+   "midband_y": 687,
+   "exclude": [
+    [
+     1162,
+     659,
+     1175,
+     684
+    ]
+   ],
+   "note": "elision ha'n on the plate; apostrophe ink excluded, word stored as the drawn letter run"
+  },
+  {
+   "id": "daß",
+   "word": "daß",
+   "page": "words-abb19.png",
+   "y0": 739,
+   "y1": 862,
+   "x0": 145,
+   "x1": 321,
+   "baseline_y": 824,
+   "midband_y": 793,
+   "exclude": [
+    [
+     147,
+     851,
+     156,
+     862
+    ]
+   ]
+  },
+  {
+   "id": "er-2",
+   "word": "er",
+   "page": "words-abb19.png",
+   "y0": 741,
+   "y1": 832,
+   "x0": 340,
+   "x1": 452,
+   "baseline_y": 824,
+   "midband_y": 793,
+   "exclude": [
+    [
+     431,
+     741,
+     452,
+     752
+    ]
+   ]
+  },
+  {
+   "id": "wenn-2",
+   "word": "wenn",
+   "page": "words-abb19.png",
+   "y0": 732,
+   "y1": 832,
+   "x0": 486,
+   "x1": 764,
+   "baseline_y": 824,
+   "midband_y": 793,
+   "exclude": [
+    [
+     486,
+     732,
+     764,
+     752
+    ]
+   ]
+  },
+  {
+   "id": "die-2",
+   "word": "die",
+   "page": "words-abb19.png",
+   "y0": 741,
+   "y1": 831,
+   "x0": 779,
+   "x1": 921,
+   "baseline_y": 824,
+   "midband_y": 793,
+   "exclude": [
+    [
+     779,
+     741,
+     781,
+     752
+    ]
+   ]
+  },
+  {
+   "id": "Feinde",
+   "word": "Feinde",
+   "page": "words-abb19.png",
+   "y0": 756,
+   "y1": 862,
+   "x0": 927,
+   "x1": 1216,
+   "baseline_y": 824,
+   "midband_y": 793
+  },
+  {
+   "id": "streiten",
+   "word": "streiten",
+   "page": "words-abb19.png",
+   "y0": 731,
+   "y1": 862,
+   "x0": 1235,
+   "x1": 1577,
+   "baseline_y": 824,
+   "midband_y": 793,
+   "exclude": [
+    [
+     1400,
+     854,
+     1412,
+     862
+    ],
+    [
+     1341,
+     856,
+     1350,
+     862
+    ],
+    [
+     1564,
+     858,
+     1577,
+     862
+    ]
+   ]
+  },
+  {
+   "id": "schießen",
+   "word": "schießen",
+   "page": "words-abb19.png",
+   "y0": 847,
+   "y1": 970,
+   "x0": 140,
+   "x1": 495,
+   "baseline_y": 935,
+   "midband_y": 903,
+   "exclude": [
+    [
+     147,
+     847,
+     319,
+     860
+    ],
+    [
+     412,
+     952,
+     421,
+     961
+    ]
+   ]
+  },
+  {
+   "id": "und-2",
+   "word": "und",
+   "page": "words-abb19.png",
+   "y0": 861,
+   "y1": 939,
+   "x0": 515,
+   "x1": 712,
+   "baseline_y": 935,
+   "midband_y": 903
+  },
+  {
+   "id": "auch",
+   "word": "auch",
+   "page": "words-abb19.png",
+   "y0": 866,
+   "y1": 970,
+   "x0": 721,
+   "x1": 937,
+   "baseline_y": 935,
+   "midband_y": 903
+  },
+  {
+   "id": "fechten",
+   "word": "fechten",
+   "page": "words-abb19.png",
+   "y0": 856,
+   "y1": 972,
+   "x0": 964,
+   "x1": 1255,
+   "baseline_y": 935,
+   "midband_y": 903,
+   "exclude": [
+    [
+     964,
+     856,
+     1214,
+     860
+    ],
+    [
+     1237,
+     856,
+     1255,
+     860
+    ]
+   ]
+  },
+  {
+   "id": "kann",
+   "word": "kann",
+   "page": "words-abb19.png",
+   "y0": 852,
+   "y1": 945,
+   "x0": 1272,
+   "x1": 1559,
+   "baseline_y": 935,
+   "midband_y": 903,
+   "exclude": [
+    [
+     1272,
+     852,
+     1559,
+     860
+    ],
+    [
+     1552,
+     930,
+     1559,
+     943
+    ]
+   ]
+  },
+  {
+   "id": "Einen",
+   "word": "Einen",
+   "page": "words-abb19.png",
+   "y0": 950,
+   "y1": 1109,
+   "x0": 147,
+   "x1": 433,
+   "baseline_y": 1075,
+   "midband_y": 1042,
+   "exclude": [
+    [
+     147,
+     950,
+     433,
+     968
+    ]
+   ]
+  },
+  {
+   "id": "Gaul",
+   "word": "Gaul",
+   "page": "words-abb19.png",
+   "y0": 1003,
+   "y1": 1111,
+   "x0": 458,
+   "x1": 705,
+   "baseline_y": 1075,
+   "midband_y": 1042,
+   "exclude": [
+    [
+     458,
+     1090,
+     465,
+     1106
+    ],
+    [
+     469,
+     1098,
+     478,
+     1106
+    ]
+   ]
+  },
+  {
+   "id": "Galoppieren",
+   "word": "Galoppieren",
+   "page": "words-abb19.png",
+   "y0": 984,
+   "y1": 1114,
+   "x0": 960,
+   "x1": 1524,
+   "baseline_y": 1075,
+   "midband_y": 1042,
+   "exclude": [
+    [
+     1365,
+     1082,
+     1373,
+     1093
+    ]
+   ]
+  },
+  {
+   "id": "und-3",
+   "word": "und",
+   "page": "words-abb19.png",
+   "y0": 1111,
+   "y1": 1186,
+   "x0": 146,
+   "x1": 348,
+   "baseline_y": 1181,
+   "midband_y": 1150
+  },
+  {
+   "id": "von",
+   "word": "von",
+   "page": "words-abb19.png",
+   "y0": 1088,
+   "y1": 1187,
+   "x0": 351,
+   "x1": 538,
+   "baseline_y": 1181,
+   "midband_y": 1150,
+   "exclude": [
+    [
+     351,
+     1088,
+     431,
+     1107
+    ],
+    [
+     460,
+     1088,
+     538,
+     1109
+    ],
+    [
+     353,
+     1167,
+     361,
+     1177
+    ]
+   ]
+  },
+  {
+   "id": "Silber",
+   "word": "Silber",
+   "page": "words-abb19.png",
+   "y0": 1113,
+   "y1": 1187,
+   "x0": 547,
+   "x1": 807,
+   "baseline_y": 1181,
+   "midband_y": 1150
+  },
+  {
+   "id": "auch-2",
+   "word": "auch",
+   "page": "words-abb19.png",
+   "y0": 1114,
+   "y1": 1220,
+   "x0": 813,
+   "x1": 1023,
+   "baseline_y": 1181,
+   "midband_y": 1150,
+   "exclude": [
+    [
+     932,
+     1215,
+     940,
+     1220
+    ],
+    [
+     898,
+     1217,
+     908,
+     1220
+    ]
+   ]
+  },
+  {
+   "id": "Sporn",
+   "word": "Sporn",
+   "page": "words-abb19.png",
+   "y0": 1080,
+   "y1": 1216,
+   "x0": 1261,
+   "x1": 1549,
+   "baseline_y": 1181,
+   "midband_y": 1150,
+   "exclude": [
+    [
+     1261,
+     1080,
+     1521,
+     1112
+    ],
+    [
+     1359,
+     1175,
+     1369,
+     1181
+    ],
+    [
+     1437,
+     1199,
+     1451,
+     1212
+    ],
+    [
+     1456,
+     1211,
+     1465,
+     1216
+    ],
+    [
+     1365,
+     1082,
+     1373,
+     1093
+    ],
+    [
+     1464,
+     1122,
+     1478,
+     1145
+    ]
+   ],
+   "note": "elision Spor'n on the plate; apostrophe ink excluded, word stored as the drawn letter run"
+  },
+  {
+   "id": "Zaum",
+   "word": "Zaum",
+   "page": "words-abb19.png",
+   "y0": 1206,
+   "y1": 1327,
+   "x0": 134,
+   "x1": 434,
+   "baseline_y": 1290,
+   "midband_y": 1260,
+   "exclude": [
+    [
+     392,
+     1308,
+     403,
+     1320
+    ],
+    [
+     256,
+     1309,
+     270,
+     1321
+    ],
+    [
+     202,
+     1311,
+     211,
+     1321
+    ]
+   ]
+  },
+  {
+   "id": "und-4",
+   "word": "und",
+   "page": "words-abb19.png",
+   "y0": 1215,
+   "y1": 1295,
+   "x0": 438,
+   "x1": 632,
+   "baseline_y": 1290,
+   "midband_y": 1260
+  },
+  {
+   "id": "Zügel",
+   "word": "Zügel",
+   "page": "words-abb19.png",
+   "y0": 1215,
+   "y1": 1329,
+   "x0": 633,
+   "x1": 910,
+   "baseline_y": 1290,
+   "midband_y": 1260,
+   "exclude": [
+    [
+     815,
+     1215,
+     910,
+     1218
+    ],
+    [
+     712,
+     1307,
+     731,
+     1318
+    ]
+   ]
+  },
+  {
+   "id": "zu",
+   "word": "zu",
+   "page": "words-abb19.png",
+   "y0": 1213,
+   "y1": 1330,
+   "x0": 930,
+   "x1": 1057,
+   "baseline_y": 1290,
+   "midband_y": 1260,
+   "exclude": [
+    [
+     930,
+     1213,
+     1021,
+     1218
+    ],
+    [
+     1044,
+     1213,
+     1057,
+     1218
+    ]
+   ]
+  },
+  {
+   "id": "er-3",
+   "word": "er",
+   "page": "words-abb19.png",
+   "y0": 1303,
+   "y1": 1404,
+   "x0": 430,
+   "x1": 539,
+   "baseline_y": 1397,
+   "midband_y": 1367
+  },
+  {
+   "id": "Sprünge",
+   "word": "Sprünge",
+   "page": "words-abb19.png",
+   "y0": 1300,
+   "y1": 1437,
+   "x0": 560,
+   "x1": 947,
+   "baseline_y": 1397,
+   "midband_y": 1367,
+   "exclude": [
+    [
+     637,
+     1300,
+     899,
+     1327
+    ],
+    [
+     940,
+     1300,
+     947,
+     1328
+    ],
+    [
+     903,
+     1300,
+     919,
+     1307
+    ],
+    [
+     913,
+     1415,
+     923,
+     1424
+    ],
+    [
+     675,
+     1416,
+     688,
+     1427
+    ],
+    [
+     653,
+     1429,
+     662,
+     1437
+    ],
+    [
+     560,
+     1431,
+     567,
+     1437
+    ]
+   ]
+  },
+  {
+   "id": "macht",
+   "word": "macht",
+   "page": "words-abb19.png",
+   "y0": 1328,
+   "y1": 1435,
+   "x0": 960,
+   "x1": 1244,
+   "baseline_y": 1397,
+   "midband_y": 1367,
+   "exclude": [
+    [
+     1205,
+     1419,
+     1215,
+     1426
+    ],
+    [
+     1058,
+     1432,
+     1069,
+     1435
+    ]
+   ]
+  },
+  {
+   "id": "im",
+   "word": "im",
+   "page": "words-abb19.png",
+   "y0": 1337,
+   "y1": 1401,
+   "x0": 1243,
+   "x1": 1389,
+   "baseline_y": 1397,
+   "midband_y": 1367
+  },
+  {
+   "id": "Zorn",
+   "word": "Zorn",
+   "page": "words-abb19.png",
+   "y0": 1300,
+   "y1": 1435,
+   "x0": 1392,
+   "x1": 1612,
+   "baseline_y": 1397,
+   "midband_y": 1367,
+   "exclude": [
+    [
+     1392,
+     1300,
+     1471,
+     1327
+    ],
+    [
+     1461,
+     1300,
+     1482,
+     1309
+    ],
+    [
+     1561,
+     1425,
+     1571,
+     1434
+    ],
+    [
+     1492,
+     1430,
+     1501,
+     1435
+    ],
+    [
+     1611,
+     1434,
+     1612,
+     1435
+    ]
+   ]
+  },
+  {
+   "id": "bs",
+   "word": "bs",
+   "page": "pairs-abb20.png",
+   "y0": 71,
+   "y1": 175,
+   "x0": 106,
+   "x1": 241,
+   "baseline_y": 169,
+   "midband_y": 118,
+   "kind": "pair"
+  },
+  {
+   "id": "bx",
+   "word": "bx",
+   "page": "pairs-abb20.png",
+   "y0": 54,
+   "y1": 217,
+   "x0": 295,
+   "x1": 437,
+   "baseline_y": 169,
+   "midband_y": 118,
+   "kind": "pair",
+   "exclude": [
+    [
+     425,
+     80,
+     434,
+     94
+    ]
+   ]
+  },
+  {
+   "id": "bz",
+   "word": "bz",
+   "page": "pairs-abb20.png",
+   "y0": 74,
+   "y1": 220,
+   "x0": 489,
+   "x1": 624,
+   "baseline_y": 169,
+   "midband_y": 118,
+   "kind": "pair"
+  },
+  {
+   "id": "bp",
+   "word": "bp",
+   "page": "pairs-abb20.png",
+   "y0": 75,
+   "y1": 224,
+   "x0": 672,
+   "x1": 811,
+   "baseline_y": 169,
+   "midband_y": 118,
+   "kind": "pair"
+  },
+  {
+   "id": "ds",
+   "word": "ds",
+   "page": "pairs-abb20.png",
+   "y0": 74,
+   "y1": 174,
+   "x0": 859,
+   "x1": 1007,
+   "baseline_y": 169,
+   "midband_y": 118,
+   "kind": "pair"
+  },
+  {
+   "id": "df",
+   "word": "df",
+   "page": "pairs-abb20.png",
+   "y0": 69,
+   "y1": 216,
+   "x0": 1065,
+   "x1": 1194,
+   "baseline_y": 169,
+   "midband_y": 118,
+   "kind": "pair"
+  },
+  {
+   "id": "do",
+   "word": "do",
+   "page": "pairs-abb20.png",
+   "y0": 72,
+   "y1": 177,
+   "x0": 1241,
+   "x1": 1391,
+   "baseline_y": 169,
+   "midband_y": 118,
+   "kind": "pair"
+  },
+  {
+   "id": "dp",
+   "word": "dp",
+   "page": "pairs-abb20.png",
+   "y0": 70,
+   "y1": 216,
+   "x0": 1428,
+   "x1": 1578,
+   "baseline_y": 169,
+   "midband_y": 118,
+   "kind": "pair",
+   "exclude": [
+    [
+     1553,
+     78,
+     1562,
+     87
+    ]
+   ]
+  },
+  {
+   "id": "dt",
+   "word": "dt",
+   "page": "pairs-abb20.png",
+   "y0": 67,
+   "y1": 175,
+   "x0": 1618,
+   "x1": 1744,
+   "baseline_y": 169,
+   "midband_y": 118,
+   "kind": "pair"
+  },
+  {
+   "id": "dk",
+   "word": "dk",
+   "page": "pairs-abb20.png",
+   "y0": 249,
+   "y1": 353,
+   "x0": 187,
+   "x1": 334,
+   "baseline_y": 345,
+   "midband_y": 298,
+   "kind": "pair"
+  },
+  {
+   "id": "dx",
+   "word": "dx",
+   "page": "pairs-abb20.png",
+   "y0": 251,
+   "y1": 390,
+   "x0": 385,
+   "x1": 532,
+   "baseline_y": 345,
+   "midband_y": 298,
+   "kind": "pair"
+  },
+  {
+   "id": "dz",
+   "word": "dz",
+   "page": "pairs-abb20.png",
+   "y0": 253,
+   "y1": 399,
+   "x0": 579,
+   "x1": 704,
+   "baseline_y": 345,
+   "midband_y": 298,
+   "kind": "pair"
+  },
+  {
+   "id": "on",
+   "word": "on",
+   "page": "pairs-abb20.png",
+   "y0": 294,
+   "y1": 355,
+   "x0": 763,
+   "x1": 942,
+   "baseline_y": 345,
+   "midband_y": 298,
+   "kind": "pair",
+   "note": "reads on (user review 2026-07-06): first letter is o (not v), second carries no u-breve = n"
+  },
+  {
+   "id": "vp",
+   "word": "vp",
+   "page": "pairs-abb20.png",
+   "y0": 291,
+   "y1": 398,
+   "x0": 985,
+   "x1": 1118,
+   "baseline_y": 345,
+   "midband_y": 298,
+   "kind": "pair"
+  },
+  {
+   "id": "vs",
+   "word": "vs",
+   "page": "pairs-abb20.png",
+   "y0": 251,
+   "y1": 351,
+   "x0": 1163,
+   "x1": 1319,
+   "baseline_y": 345,
+   "midband_y": 298,
+   "kind": "pair"
+  },
+  {
+   "id": "vx",
+   "word": "vx",
+   "page": "pairs-abb20.png",
+   "y0": 291,
+   "y1": 392,
+   "x0": 1349,
+   "x1": 1500,
+   "baseline_y": 345,
+   "midband_y": 298,
+   "kind": "pair"
+  },
+  {
+   "id": "vz",
+   "word": "vz",
+   "page": "pairs-abb20.png",
+   "y0": 264,
+   "y1": 397,
+   "x0": 1537,
+   "x1": 1674,
+   "baseline_y": 345,
+   "midband_y": 298,
+   "kind": "pair",
+   "exclude": [
+    [
+     1577,
+     394,
+     1585,
+     397
+    ]
+   ]
+  },
+  {
+   "id": "rp",
+   "word": "rp",
+   "page": "pairs-abb20.png",
+   "y0": 437,
+   "y1": 572,
+   "x0": 91,
+   "x1": 238,
+   "baseline_y": 524,
+   "midband_y": 475,
+   "kind": "pair"
+  },
+  {
+   "id": "rb",
+   "word": "rb",
+   "page": "pairs-abb20.png",
+   "y0": 414,
+   "y1": 531,
+   "x0": 269,
+   "x1": 398,
+   "baseline_y": 524,
+   "midband_y": 475,
+   "kind": "pair"
+  },
+  {
+   "id": "rx",
+   "word": "rx",
+   "page": "pairs-abb20.png",
+   "y0": 392,
+   "y1": 566,
+   "x0": 428,
+   "x1": 570,
+   "baseline_y": 524,
+   "midband_y": 475,
+   "kind": "pair",
+   "exclude": [
+    [
+     495,
+     554,
+     503,
+     562
+    ]
+   ]
+  },
+  {
+   "id": "rz",
+   "word": "rz",
+   "page": "pairs-abb20.png",
+   "y0": 470,
+   "y1": 572,
+   "x0": 605,
+   "x1": 740,
+   "baseline_y": 524,
+   "midband_y": 475,
+   "kind": "pair"
+  },
+  {
+   "id": "sa",
+   "word": "sa",
+   "page": "pairs-abb20.png",
+   "y0": 404,
+   "y1": 573,
+   "x0": 784,
+   "x1": 947,
+   "baseline_y": 524,
+   "midband_y": 475,
+   "kind": "pair",
+   "note": "written with long s (ſa); the a carries no breve (a, not u)"
+  },
+  {
+   "id": "sg",
+   "word": "sg",
+   "page": "pairs-abb20.png",
+   "y0": 414,
+   "y1": 576,
+   "x0": 979,
+   "x1": 1115,
+   "baseline_y": 524,
+   "midband_y": 475,
+   "kind": "pair"
+  },
+  {
+   "id": "ssi",
+   "word": "ssi",
+   "page": "pairs-abb20.png",
+   "y0": 428,
+   "y1": 577,
+   "x0": 1165,
+   "x1": 1326,
+   "baseline_y": 524,
+   "midband_y": 475,
+   "kind": "pair",
+   "exclude": [
+    [
+     1165,
+     519,
+     1174,
+     532
+    ]
+   ]
+  },
+  {
+   "id": "ßi",
+   "word": "ßi",
+   "page": "pairs-abb20.png",
+   "y0": 428,
+   "y1": 567,
+   "x0": 1360,
+   "x1": 1522,
+   "baseline_y": 524,
+   "midband_y": 475,
+   "kind": "pair",
+   "exclude": [
+    [
+     1520,
+     526,
+     1522,
+     534
+    ]
+   ]
+  },
+  {
+   "id": "Bi",
+   "word": "Bi",
+   "page": "pairs-abb20.png",
+   "y0": 392,
+   "y1": 568,
+   "x0": 1573,
+   "x1": 1743,
+   "baseline_y": 524,
+   "midband_y": 475,
+   "kind": "pair",
+   "exclude": [
+    [
+     1573,
+     392,
+     1672,
+     395
+    ]
+   ]
+  },
+  {
+   "id": "bi",
+   "word": "bi",
+   "page": "pairs-abb20.png",
+   "y0": 608,
+   "y1": 706,
+   "x0": 215,
+   "x1": 328,
+   "baseline_y": 698,
+   "midband_y": 656,
+   "kind": "pair"
+  },
+  {
+   "id": "wi",
+   "word": "wi",
+   "page": "pairs-abb20.png",
+   "y0": 581,
+   "y1": 707,
+   "x0": 365,
+   "x1": 516,
+   "baseline_y": 698,
+   "midband_y": 656,
+   "kind": "pair"
+  },
+  {
+   "id": "xi",
+   "word": "xi",
+   "page": "pairs-abb20.png",
+   "y0": 582,
+   "y1": 755,
+   "x0": 560,
+   "x1": 704,
+   "baseline_y": 698,
+   "midband_y": 656,
+   "kind": "pair",
+   "exclude": [
+    [
+     694,
+     694,
+     704,
+     709
+    ],
+    [
+     683,
+     733,
+     699,
+     751
+    ]
+   ]
+  },
+  {
+   "id": "Du",
+   "word": "Du",
+   "page": "pairs-abb20.png",
+   "y0": 585,
+   "y1": 708,
+   "x0": 760,
+   "x1": 946,
+   "baseline_y": 698,
+   "midband_y": 656,
+   "kind": "pair"
+  },
+  {
+   "id": "In",
+   "word": "In",
+   "page": "pairs-abb20.png",
+   "y0": 608,
+   "y1": 709,
+   "x0": 1009,
+   "x1": 1184,
+   "baseline_y": 698,
+   "midband_y": 656,
+   "kind": "pair",
+   "note": "reads In (user review 2026-07-06): the capital has no descender, so I rather than J; no u-breve = n"
+  },
+  {
+   "id": "Of",
+   "word": "Of",
+   "page": "pairs-abb20.png",
+   "y0": 595,
+   "y1": 749,
+   "x0": 1249,
+   "x1": 1392,
+   "baseline_y": 698,
+   "midband_y": 656,
+   "kind": "pair"
+  },
+  {
+   "id": "Wu",
+   "word": "Wu",
+   "page": "pairs-abb20.png",
+   "y0": 587,
+   "y1": 705,
+   "x0": 1436,
+   "x1": 1659,
+   "baseline_y": 698,
+   "midband_y": 656,
+   "kind": "pair"
   }
  ]
 }

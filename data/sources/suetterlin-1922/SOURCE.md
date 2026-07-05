@@ -57,11 +57,15 @@
 - Retrieved: 2026-07-02
 - Processing: keine (byte-identisch von Commons übernommen).
 - Note:      Zwölf Zeilen verbundene Ausgangsschrift (Volkslied „Wer will
-             unter die Soldaten"), ~50 Wörter, ohne gedruckte Lineatur.
+             unter die Soldaten"), 63 Wörter, ohne gedruckte Lineatur.
              **Wort-Referenzen für die Wort-Bench**: `words.json` (gleiches
              Verzeichnis) trägt die vermessenen Wort-Rechtecke + die aus der
-             Tinte gemessene Grund-/Mittellinie je Zeile;
-             `tools/wordbench/export_fixtures.py` friert daraus die
+             Tinte gemessene Grund-/Mittellinie je Zeile — seit 2026-07-05
+             **vollständig** (alle 63 Wörter; Boxen von
+             `tools/wordbench/propose_boxes.py` vorgeschlagen und Zeile für
+             Zeile visuell verifiziert; Interpunktion und die Apostrophe der
+             Elisionen ha'n/Spor'n bleiben per Box-Grenze bzw. `exclude`
+             draußen). `tools/wordbench/export_fixtures.py` friert daraus die
              Scoring-Referenzen ein (docs/reference/qualitaetsmetrik.md §6).
 
 ## pairs-abb20.png — 1869 × 976 px, 1,9 MB
@@ -74,8 +78,17 @@
 - License:   wie oben. Commons: CC-PD-Mark.
 - Retrieved: 2026-07-02
 - Processing: keine (byte-identisch von Commons übernommen).
-- Note:      Vier Zeilen isolierte Buchstaben-PAARE (bb be bz bp db df do dp
-             dt · dk de dz vu vp vb ve vz · rp rb re rz sa sg ssi ßi Bi ·
-             bi wi ri Du Ju Of Wu) — Sütterlins eigene Referenz für genau die
-             Übergänge, die der Renderer generiert. Reserve für Paar-Fixtures
-             der Wort-Bench (Phase D, Übergangs-Redesign).
+- Note:      Vier Zeilen isolierte Buchstaben-PAARE — formverifiziert gegen
+             die Buchstabenzellen der eigenen Tafel (Abbildung 10): das
+             Schluss-s ist in dieser Hand eine „6" mit voller Oberlänge, das
+             x die offene Schleife unter die Grundlinie. Transkription:
+             bs bx bz bp ds df do dp dt · dk dx dz on vp vs vx vz ·
+             rp rb rx rz sa sg ssi ßi Bi · bi wi xi Du In Of Wu.
+             (Eine frühere Lesung hatte s/x als b/e verlesen; „on" und „In"
+             tragen keinen u-Bogen — also n, nicht u, konsistent mit Du/Wu —
+             und der Versal von „In" hat keine Unterlänge, ist also I,
+             nicht J; Lesung 2026-07-06 vom Autor bestätigt.)
+             Sütterlins eigene Referenz für genau die Übergänge, die der
+             Renderer generiert. Seit 2026-07-05 sind alle 33 Paare als
+             `kind: pair`-Einträge in `words.json` vermessen (eigene
+             Bench-Headline `pair_loss`, Fixture-Set `suetterlin-1922-pairs`).

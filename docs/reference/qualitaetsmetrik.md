@@ -355,10 +355,13 @@ Eine Ebene über der Glyph-Bench: `tools/wordbench` bewertet das **komponierte
 Wort** — Platzierung + generierte Übergänge aus `core/shaping.py` +
 `core/compose.py` (seit PR #143 die einzige Kompositionsquelle, auch hinter
 `GET /write/word`) — gegen **gemeinfreie Wortproben derselben Hand**. Für
-Sütterlin: Abbildung 19 des Leitfadens 1922 („Die Ausgangsschrift im
-Zusammenhang geschrieben"), 15 vermessene Wörter in
-`data/sources/suetterlin-1922/words.json` (Rechteck + aus der Tinte gemessene
-Grund-/Mittellinie je Zeile; die Tafel hat keine gedruckte Lineatur).
+Sütterlin: alle 63 Wörter der Abbildung 19 des Leitfadens 1922 („Die
+Ausgangsschrift im Zusammenhang geschrieben") plus, als **getrenntes Set mit
+eigener Headline `pair_loss`**, die 33 isolierten Buchstabenverbindungen der
+Abbildung 20 — vermessen in `data/sources/suetterlin-1922/words.json`
+(Rechteck + aus der Tinte gemessene Grund-/Mittellinie je Zeile; die Tafeln
+haben keine gedruckte Lineatur; Boxen vorgeschlagen von
+`tools/wordbench/propose_boxes.py` und Zeile für Zeile visuell verifiziert).
 Werkzeug-Details und Output-Contract: `tools/wordbench/README.md`; die Metrik
 liegt in `tools/wordbench/metric.py` (Bench-only, nicht Produktionscode).
 
@@ -376,9 +379,16 @@ loss = 0.45·Übergang + 0.35·Deckung + 0.20·Breite      (je ∈ [0,1], kleine
   Bewegt sich auch mit der Autoring-Qualität der Einzelglyphen → Tor, nicht
   Entscheider.
 - **Breite** — |log|-Verhältnis der Gesamt-Tintenbreite: Rhythmus-/
-  Spacing-Fehler, die punktweiser Chamfer kaum sieht.
-- Ein Wort mit fehlendem Template oder Compose-Crash zählt `1.0`
-  (Glyph-Bench-Regel).
+  Spacing-Fehler, die punktweiser Chamfer kaum sieht. Bei den PAAREN trägt
+  diese Komponente einen konstanten Bias (die Tafel zeichnet An-/Auslauf-
+  striche, die das isoliert komponierte Paar nicht hat) — für Paare ist
+  `Übergang` das Leitsignal.
+- Ein Wort, dessen Komposition crasht, zählt `1.0` (Glyph-Bench-Regel).
+  Ein Eintrag, dessen Template schlicht **noch nicht autorisiert** ist, wird
+  beim Export als `scorable: false` eingefroren und vom Runner **geskippt +
+  namentlich reportet** (`words_skipped_ids:`) — eine Autoring-Lücke darf die
+  Kompositions-Headline nicht ertränken, bleibt aber sichtbar (seit dem
+  Re-Baseline `jul05`; davor zählte auch das fehlende Template `1.0`).
 
 **Frozen-Reference-Regel erweitert:** Eingefroren sind Maske (binarisiert +
 entfleckt), Skelett + EDT, die **geshapten Slots** (eine Shaping-Änderung ist
@@ -448,3 +458,52 @@ Metrik:** Die globale Registrierung vermengt Buchstabenbreiten-Unterschiede
 ein Rest-Drift in `unter`/`mit` ist Autoring-, nicht Compose-Thema. Die
 Golden-Fixture (`tests/fixtures/compose_golden.json.gz`) wurde nach dem Lauf
 bewusst re-baselined (`REGEN_GOLDEN=1`) — sie pinnt jetzt die NEUE Komposition.
+
+### Re-Baseline `jul05` — Vollabdeckung Abb. 19 + Paar-Bench Abb. 20 (2026-07-05)
+
+Bewusstes Re-Baseline durch **Datenerweiterung**, Composer unverändert
+(Zahlen daher **nicht** mit 0.1206 vergleichbar — 0.1206 bleibt der letzte
+Compose-Stand über den historischen 15 Wörtern):
+
+- `words.json` vollständig: **63 Wörter** (statt 15) der Abbildung 19 und
+  **alle 33 Paare** der Abbildung 20 (`kind: pair`). Boxen automatisch
+  vorgeschlagen (`tools/wordbench/propose_boxes.py`: Zeilenbänder aus der
+  Tinten-Projektion, Komponenten-Clustering mit 5-px-Lückenschwelle,
+  Lineatur aus der Hüllkurve; validiert gegen die 15 Bestands-Boxen mit
+  Lineatur-Fehler ≤1 px) und Zeile für Zeile visuell verifiziert. Die
+  Paar-**Transkription** wurde formverifiziert gegen die Buchstabenzellen
+  der eigenen Tafel (Schluss-s = „6" mit voller Oberlänge, top 2,0 x-Höhen
+  wie b/k — Höhe trennt nicht, nur die Form; x = offene Schleife unter die
+  Grundlinie): sieben Paare der früheren `SOURCE.md`-Lesung waren s/x-als-
+  b/e-Verwechslungen (bb→bs, be→bx, db→ds, de→dx, vb→vs, ve→vx, re→rx),
+  dazu der Reihe-4-Tippfehler „ri"→„xi" sowie — vom Autor am 2026-07-06
+  entschieden — „vu"→`on` (erster Buchstabe ist o, kein v; ohne u-Bogen = n)
+  und „Ju"→`In` (Versal ohne Unterlänge = I, kein J; ohne u-Bogen = n).
+  Duplikate tragen `id`-Suffixe (`muß`/`muß-2`/`muß-3`), Interpunktion und
+  die Apostrophe der Elisionen (`han`, `Sporn`) bleiben per
+  Box-Grenze/`exclude` draußen.
+- Exporter/Runner: `--set words|pairs|all`, Paar-Fixtures als
+  Geschwister-Set `suetterlin-1922-pairs`, `scorable`-Skip-Semantik (s. o.),
+  optionales `slots`-Override pro Sidecar-Eintrag (für Paare, deren isolierte
+  Schreibung vom Wort-Shaping abweichen sollte — Stand jul05 ungenutzt:
+  die Paare sind mit An-/Auslauf als Initial+Final-Formen stimmig).
+
+**Baselines (Composer-Stand = `jul02`/PR #145):**
+
+| Set | Headline | Übergang | Deckung | Breite | gescort / geskippt | schlechtester Eintrag |
+|---|---|---|---|---|---|---|
+| Wörter (Abb. 19) | `bench_loss` **0.1844** | 0.166 | 0.185 | 0.224 | 48 / 15 | `Einen` 0.532 |
+| Paare (Abb. 20) | `pair_loss` **0.1793** | 0.142 | 0.154 | 0.307 | 31 / 2 | `Bi` 0.341 |
+
+Geskippt (Autoring-Backlog, nicht Compose): `S-initial` (Soldaten, Seiten,
+Säbel, Silber, Sporn, Sprünge), `Z-initial` (Zaum, Zügel, Zorn), `W-initial`
+(Wer, Wu), `sz-final/-medial/-initial` (muß ×3, daß, schießen, ßi). Bemerkens-
+wert: D/J/O/B/E/F/G/K/P-Versalien sind autorisiert — 31 von 33 Paaren und 48
+von 63 Wörtern scoren sofort, **0 Crashes**. Die schlechtesten gescorten
+Einträge (`Einen` 0.532, `zu` 0.496, `wenn-2` 0.475; Paare `Bi` 0.341,
+`xi` 0.314) sind die Zielliste für den nächsten Compose-Loop.
+**Festlegung (User, 2026-07-06):** Optimiert wird gegen die
+**Wort-Headline** (`--set words`, der Normalfall der Schrift); die Paare
+sind ausdrücklich die „nicht selbstverständlichen" Sonderfälle und bleiben
+Mess-Evidenz (`pair_loss` wird reportet, nie Optimierungsziel des ersten
+Loops — erst wenn die Wörter sitzen).
