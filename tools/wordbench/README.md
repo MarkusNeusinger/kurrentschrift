@@ -100,7 +100,7 @@ comp_width: 0.223770
 
 Byte-stable grep anchor: `grep "^bench_loss:" run.log`. The pairs block
 (`--set pairs`/`all`) mirrors it with `pair_loss:`, `worst_pair:`,
-`pairs_scored/skipped/failed` and `pair_comp_*` lines.
+`pairs_scored/skipped/failed`, `pairs_skipped_ids:` and `pair_comp_*` lines.
 
 ## Overlays
 

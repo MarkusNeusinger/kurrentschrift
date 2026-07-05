@@ -50,6 +50,7 @@ import asyncio
 import hashlib
 import json
 import statistics
+from collections import Counter
 from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
@@ -90,7 +91,7 @@ def _template_dict(t: Template) -> dict:
     }
 
 
-def _load_page(path: Path) -> np.ndarray:
+def load_page(path: Path) -> np.ndarray:
     """Page image as float grayscale in [0, 1] (same convention as core.chart)."""
     return np.asarray(Image.open(path).convert("L"), dtype=np.float64) / 255.0
 
@@ -101,7 +102,7 @@ def _load_page(path: Path) -> np.ndarray:
 DESPECKLE_MIN_AREA_PX = 24
 
 
-def _despeckle(mask: np.ndarray) -> np.ndarray:
+def despeckle(mask: np.ndarray) -> np.ndarray:
     labels, n = cc_label(mask)
     if not n:
         return mask
@@ -151,8 +152,8 @@ async def export(source_id: str, out_dir: Path, which: str) -> None:
     entries = [w for w in sidecar["words"] if which == "all" or _kind(w) + "s" == which]
     if not entries:
         raise SystemExit(f"no {which!r} entries in {sidecar_path}")
-    ids = [_entry_id(w) for w in sidecar["words"]]
-    dupes = {i for i in ids if ids.count(i) > 1}
+    id_counts = Counter(_entry_id(w) for w in sidecar["words"])
+    dupes = [i for i, n in id_counts.items() if n > 1]
     if dupes:
         raise SystemExit(f"duplicate sidecar ids {sorted(dupes)} — give repeated words an explicit 'id'")
 
@@ -193,7 +194,7 @@ async def export(source_id: str, out_dir: Path, which: str) -> None:
         page = w["page"]
         if page not in pages:
             page_path = REPO_ROOT / "data" / "sources" / source_id / page
-            pages[page] = _load_page(page_path)
+            pages[page] = load_page(page_path)
             page_shas[page] = hashlib.sha256(page_path.read_bytes()).hexdigest()
 
     for kind, set_name in (("word", "words"), ("pair", "pairs")):
@@ -218,7 +219,7 @@ async def export(source_id: str, out_dir: Path, which: str) -> None:
             # Foreign ink from neighbouring lines: paint paper-white before binarising.
             for ex0, ey0, ex1, ey1 in w.get("exclude", []):
                 crop[max(0, ey0 - w["y0"]) : max(0, ey1 - w["y0"]), max(0, ex0 - w["x0"]) : max(0, ex1 - w["x0"])] = 1.0
-            mask = _despeckle(binarize_adaptive(crop))
+            mask = despeckle(binarize_adaptive(crop))
             skel, width_map = skeleton_and_width(mask)
 
             (entry_dir / "word.json").write_text(

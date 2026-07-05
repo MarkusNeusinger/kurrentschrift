@@ -38,7 +38,7 @@ from scipy.ndimage import find_objects
 from scipy.ndimage import label as cc_label
 
 from core.extract import binarize_adaptive
-from tools.wordbench.export_fixtures import DESPECKLE_MIN_AREA_PX, REPO_ROOT, _despeckle, _load_page
+from tools.wordbench.export_fixtures import DESPECKLE_MIN_AREA_PX, REPO_ROOT, despeckle, load_page
 
 
 DEFAULT_SOURCE_ID = "suetterlin-1922"
@@ -262,7 +262,7 @@ def add_foreign_ink_excludes(proposals: list[Proposal], comps: list[Component]) 
 def propose(
     page_path: Path, expect_lines: int, gap_px: int = GAP_PX
 ) -> tuple[list[LineBand], list[Proposal], np.ndarray]:
-    mask = _despeckle(binarize_adaptive(_load_page(page_path)))
+    mask = despeckle(binarize_adaptive(load_page(page_path)))
     lines = detect_lines(mask, expect_lines)
     comps = extract_components(mask)
     assign_lines(comps, lines)
