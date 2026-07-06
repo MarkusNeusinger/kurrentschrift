@@ -18,7 +18,7 @@ keywords = [
 ]
 dependencies = [
     # Scientific stack — ductus extraction, distance transform, skeletonisation
-    "numpy>=2.1",
+    "numpy>=2.5.1",
     "scipy>=1.18.0",
     "scikit-image>=0.24",
     "pillow>=12.3.0",
