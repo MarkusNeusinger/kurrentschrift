@@ -63,7 +63,15 @@ class WordCase:
 
     @property
     def has_specimen(self) -> bool:
-        return self.crop is not None and self.skel is not None
+        """True only when EVERY specimen field is present — derive/render use
+        the lineature and rect as unconditionally as the crop and skeleton."""
+        return (
+            self.crop is not None
+            and self.skel is not None
+            and self.rect is not None
+            and self.baseline_y is not None
+            and self.midband_y is not None
+        )
 
 
 def _load_page_float(path: Path) -> np.ndarray:
