@@ -6,9 +6,10 @@
 // duration grows sublinearly with stroke length. Both are cheap to apply on
 // the existing stroke-dashoffset path (docs/concepts/federmodelle.md §5):
 //
-//  - per-sample time weight  w_i = Δs_i · (1 + κ_i·r_ref)^(1/3)  with
-//    r_ref = 1 x-height (coordinates are template units), the +1 clamping
-//    straight-line speed;
+//  - per-sample time weight  w_i = Δs_i · (1 + κ_i·r_ref)^(1/3); the curvature
+//    reference radius r_ref is 1 x-height, and coordinates are template units
+//    with x-height = 1, so κ_i·r_ref reduces to the bare κ_i in the code — the
+//    +1 clamps straight-line speed;
 //  - a stroke's total weight drives its duration share, raised to
 //    ISOCHRONY_BETA < 1 so long strokes don't drag;
 //  - the cumulative weight curve becomes non-linear dashoffset KEYFRAMES, so
