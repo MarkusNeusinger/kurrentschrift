@@ -757,8 +757,9 @@ def written_preview_for_canonical(
 # untouched. Applied at RENDER time on the writing path only (the stored
 # template stays the chart measurement, like the §5 width resolver; the admin
 # diagnostic and the glyph bench keep comparing against the chart). Keyed by
-# the base glyph; umlauts share their base body. Target-based (not a factor),
-# so a re-authored wider body self-corrects to a no-op.
+# glyph, each umlaut listed explicitly at its base letter's target.
+# Target-based (not a factor), so a re-authored wider body self-corrects to
+# a no-op.
 FLUENT_BODY_PITCH: dict[str, float] = {"e": 0.40, "a": 0.85, "ä": 0.85, "u": 1.00, "ü": 1.00, "o": 0.80, "ö": 0.80}
 # Guards: only widen (never shrink) and never beyond 1.5× — a detection
 # hiccup must degrade to a gentle no-op, not a deformed letter.
