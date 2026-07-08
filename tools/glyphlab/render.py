@@ -274,6 +274,28 @@ def _draw(ax, p: Panel) -> None:
         ax.set_title(p.title, fontsize=8.5)
 
 
+def tile(draws: list, *, cols: int | None = None, panel_size: float = 3.2, dpi: int = 160):
+    """Tile per-axes draw callbacks into a grid figure (row-major). Returns the Figure.
+
+    The generic grid core shared by `figure` (glyph panels) and tools/wordlab
+    (word panels): each callback receives one matplotlib Axes and draws into
+    it; surplus axes are hidden.
+    """
+    if not draws:
+        raise ValueError("no panels")
+    n = len(draws)
+    cols = cols or n
+    rows = (n + cols - 1) // cols
+    fig, axes = plt.subplots(rows, cols, figsize=(cols * panel_size, rows * panel_size), dpi=dpi, squeeze=False)
+    for i, ax in enumerate(axes.flat):
+        if i < n:
+            draws[i](ax)
+        else:
+            ax.axis("off")
+    fig.tight_layout(pad=0.4)
+    return fig
+
+
 def figure(panels: list[Panel], *, cols: int | None = None, panel_size: float = 3.2, dpi: int = 160):
     """Tile `panels` into a labelled grid figure (row-major). Returns the Figure.
 
@@ -282,19 +304,7 @@ def figure(panels: list[Panel], *, cols: int | None = None, panel_size: float = 
     shrink each panel to an illegible strip). For close inspection render fewer
     keys per call or raise `dpi`.
     """
-    if not panels:
-        raise ValueError("no panels")
-    n = len(panels)
-    cols = cols or n
-    rows = (n + cols - 1) // cols
-    fig, axes = plt.subplots(rows, cols, figsize=(cols * panel_size, rows * panel_size), dpi=dpi, squeeze=False)
-    for i, ax in enumerate(axes.flat):
-        if i < n:
-            _draw(ax, panels[i])
-        else:
-            ax.axis("off")
-    fig.tight_layout(pad=0.4)
-    return fig
+    return tile([(lambda ax, p=p: _draw(ax, p)) for p in panels], cols=cols, panel_size=panel_size, dpi=dpi)
 
 
 def overlay(result: DeriveResult, **kwargs):

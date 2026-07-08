@@ -22,6 +22,9 @@ the ruler. Design per docs/reference/qualitaetsmetrik.md §6:
   loss = 0.45·transition + 0.35·coverage + 0.20·width
 - A word whose composition is missing a template scores 1.0 (a hole is a
   failure, not a skipped case), mirroring the glyph bench's crash rule.
+- `score_word_segments` adds per-connector/per-glyph attribution rows (for
+  tools/wordlab) on the same registration and saturation scale — diagnostics
+  only, never part of the headline.
 """
 
 from __future__ import annotations
@@ -147,3 +150,87 @@ def score_word(composed: dict, word_meta: dict, skel: np.ndarray, nib_units: flo
         "registration": {"tx": tx, "ty": ty, "xh_px": xh},
         "missing": [],
     }
+
+
+def score_word_segments(
+    composed: dict, word_meta: dict, skel: np.ndarray, nib_units: float | None, registration: dict
+) -> list[dict]:
+    """Per-segment attribution of a scored word, in writing order. ADDITIVE
+    diagnostics — `score_word` and the headline number are untouched, and this
+    function is frozen together with it during an experiment loop.
+
+    Reuses the registration `score_word` already reports (its ``registration``
+    dict) — the segments explain THE SAME fit, never a second chance to slide
+    the word. One row per segment, on the headline's ingredients and
+    saturation scale (CHAMFER_SAT_UNITS·xh):
+
+    - connector (one row each): forward chamfer of ITS samples to the specimen
+      skeleton + reverse chamfer of the specimen skeleton inside ITS x-span to
+      the full composed raster → ``transition``. The headline pools these over
+      all connectors; a row says how much THIS join contributed.
+    - glyph (body strokes + its deferred diacritics, grouped): the same two
+      chamfers over the glyph's own samples/x-span → ``coverage``.
+
+    ``penalty`` mirrors the row's headline component so a caller can rank
+    segments uniformly. Labels (``glyph_key``, ``pair``, slot indices) come
+    from compose provenance (``compose_word(..., provenance=True)``); without
+    it they are None and strokes cannot be grouped per glyph.
+    """
+    items = composed["items"]
+    if composed["missing"] or not items:
+        return []
+    ys, xs = np.nonzero(skel)
+    if len(xs) == 0:
+        return []
+
+    xh = float(registration["xh_px"])
+    shift = np.array([float(registration["tx"]), float(registration["ty"])])
+    baseline_row = float(word_meta["baseline_y"] - word_meta["rect"][1])
+    sat = CHAMFER_SAT_UNITS * xh
+
+    edt = distance_transform_edt(~skel)
+    all_px = [_to_px(np.asarray(it["centerline"], dtype=float), xh, baseline_row) for it in items]
+    stroke_px = max(2, int(round(2 * (nib_units or 0.07) * xh)))
+    raster = _rasterize([p + shift for p in all_px], skel.shape, stroke_px)
+    edt_composed = distance_transform_edt(~raster)
+
+    # Segments in writing order: each connector is its own segment; glyph
+    # strokes (incl. the diacritics deferred to the word end) group by their
+    # provenance slot_index, anchored where the glyph body first appears.
+    segments: list[dict] = []
+    by_slot: dict[int, dict] = {}
+    for it, px in zip(items, all_px, strict=True):
+        if "rings" not in it:  # connector (same predicate as score_word)
+            segments.append(
+                {
+                    "kind": "connector",
+                    "pair": it.get("pair"),
+                    "from_slot": it.get("from_slot"),
+                    "to_slot": it.get("to_slot"),
+                    "samples": [px],
+                }
+            )
+            continue
+        slot = it.get("slot_index")
+        seg = by_slot.get(slot) if slot is not None else None
+        if seg is None:
+            seg = {"kind": "glyph", "glyph_key": it.get("glyph_key"), "slot_index": slot, "samples": []}
+            segments.append(seg)
+            if slot is not None:
+                by_slot[slot] = seg
+        seg["samples"].append(px)
+
+    rows: list[dict] = []
+    for seg in segments:
+        samples = np.vstack(seg.pop("samples"))
+        fwd = float(_edt_lookup(edt, samples + shift).mean())
+        lo = float(samples[:, 0].min() + shift[0])
+        hi = float(samples[:, 0].max() + shift[0])
+        in_span = (xs >= lo) & (xs <= hi)
+        rev = float(edt_composed[ys[in_span], xs[in_span]].mean()) if in_span.any() else fwd
+        penalty = min(1.0, 0.5 * (fwd + rev) / sat)
+        row = dict(seg)
+        row["transition" if seg["kind"] == "connector" else "coverage"] = penalty
+        row.update({"penalty": penalty, "fwd_px": fwd, "rev_px": rev, "x_span_px": [lo, hi]})
+        rows.append(row)
+    return rows

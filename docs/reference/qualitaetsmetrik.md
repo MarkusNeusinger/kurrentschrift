@@ -507,3 +507,64 @@ Einträge (`Einen` 0.532, `zu` 0.496, `wenn-2` 0.475; Paare `Bi` 0.341,
 sind ausdrücklich die „nicht selbstverständlichen" Sonderfälle und bleiben
 Mess-Evidenz (`pair_loss` wird reportet, nie Optimierungsziel des ersten
 Loops — erst wenn die Wörter sitzen).
+
+### Segment-Attribution + `tools/wordlab` (2026-07-08)
+
+Diagnostik-Ausbau **vor** dem ersten Compose-Loop (Frozen-Metric-Disziplin:
+Messlatten-Änderungen landen vor dem Loop, nie währenddessen). Beide
+Headlines byte-identisch verifiziert (0.184426 / 0.179312 vor = nach):
+
+- `compose_word(..., provenance=False)`: bei `True` tragen Glyph-Items
+  `slot_index`/`glyph_key`, Konnektoren `pair=[prev_key, curr_key]` +
+  `from_slot`/`to_slot`. Default off — `/write/word`-Payload und
+  Golden-Fixture unverändert (kein `REGEN_GOLDEN`). Dieselbe Naht ist später
+  der Hook für per-Paar-Overrides nach Vorschlag B (gegated, nichts wird
+  gespeichert).
+- `score_word_segments` (additiv in `tools/wordbench/metric.py`, gehört ab
+  jetzt zur eingefrorenen Messlatte): pro Konnektor Vorwärts-/Rückwärts-
+  Chamfer in der eigenen x-Spanne, pro Glyphe (Körper + nachgestellte
+  Diakritika) dasselbe über die eigenen Samples — auf der Registrierung und
+  Sättigungsskala der Headline, in Schreibreihenfolge gelabelt. Damit ist
+  eine Abweichung einem Buchstaben **oder** einer konkreten Verbindung
+  zuzuordnen, nicht nur dem Wort.
+- `tools/wordlab` (Gegenstück zu glyphlab, geteilter Render-Kern): Overlay
+  Probe + Skelett + farbcodierte komponierte Centerlines mit
+  per-Konnektor-Penalty-Callouts; `--set pairs`, `--live` (read-only),
+  `--sweep core.compose.KONSTANTE=v1,v2`. Die Zahl sagt wie viel, das
+  Overlay sagt wo und warum.
+
+### Re-Baseline `jul08` — Exclude-Kanten-Artefakt in den Referenzen (2026-07-08)
+
+Erster Fund des neuen Wordlab, noch vor dem ersten Loop: In den `jul05`-
+Referenzen zog sich durch **genau die sieben schlechtesten Wörter** (Einen,
+kann, von, zu, wenn-2, mit-2, Kugel) ein horizontales Fake-Tinten-Band —
+die Exclude-Rects wurden vor der Binarisierung papierweiß übermalt, und die
+harte Weiß→Papier-Stufe an der Malkante binarisierte als durchgehende Linie
+(bei `wenn-2` 30 % aller Skelett-Pixel). Der Reverse-Chamfer bestrafte jede
+Komposition dafür, ein Artefakt nicht zu decken: die alte Worst-Liste war
+überwiegend artefaktgetrieben (`Einen` 0.532 → 0.17, `kann` 0.487 → 0.182).
+
+**Fix im Exporter** (`clear_excluded`): binarisiert wird der UNBEMALTE Crop
+(keine Kante), Fremdtinte fliegt komponentenweise raus — jede Komponente mit
+≥ 50 % ihrer Fläche in der Exclude-Vereinigung wird ganz entfernt (Schwänze
+inklusive), Pixel strikt im Rect immer; weiß übermalt wird nur noch das
+gespeicherte `crop.png` (Overlay-Hintergrund). Das einzig verbliebene
+„Band" (`dk`, Paare) ist echte Tinte: der lange Deckstrich-Join des d→k.
+
+**Baselines `jul08` (Composer unverändert = PR-#145-Stand; nicht mit `jul05`
+vergleichbar):**
+
+| Set | Headline | Übergang | Deckung | Breite | gescort / geskippt | schlechtester Eintrag |
+|---|---|---|---|---|---|---|
+| Wörter (Abb. 19) | `bench_loss` **0.1284** | 0.102 | 0.120 | 0.202 | 48 / 15 | `han` 0.265 |
+| Paare (Abb. 20) | `pair_loss` **0.1762** | 0.142 | 0.146 | 0.307 | 31 / 2 | `ssi` 0.332 |
+
+**Bereinigte Evidenz für den Loop** (Segment-Attribution über alle 48
+Wörter): systematisch schlecht sind die Halbhoch-Exits `f→e` 0.220 / `t→e`
+0.204 (Exit-Klassen-These aus Phase D), `n→n` 0.191 und `e→n` 0.160 bei
+**12 Vorkommen** (größter Frequenz-Hebel); Einzelfälle `h→r` 0.326,
+`r→f` 0.317, `l→v` 0.312, `e→h` 0.298, `z→w` 0.266. Schlechteste Glyphen-
+Deckung: `d-initial` 0.223 (6×), `n-final` 0.179 (17×). Neue Zielliste:
+`han` 0.265, `fechten` 0.243, `Gewehr` 0.233, `schwer` 0.227, `wenn` 0.203.
+Breite bleibt die größte Komponente (0.202) — die Wörter komponieren
+weiterhin zu schmal (kurze Joins, s. `zu`-Overlay).

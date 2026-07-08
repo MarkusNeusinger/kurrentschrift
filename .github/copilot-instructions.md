@@ -506,6 +506,13 @@ pipelines for plot specifications). For now:
   panel with its per-category penalty. For Sütterlin the bench scores
   ductus naturalness directly (so `bench_loss` moves on centerline/corner
   shifts); the overlay says *why* a glyph lost points, the number *how much*.
+  Its word-level sibling `tools/wordlab` draws a COMPOSED word over its
+  wordbench specimen with per-connector penalty callouts
+  (`compose_word(..., provenance=True)` + `score_word_segments` attribute a
+  deviation to a letter or a specific join) — `python -m tools.wordlab <id>
+  [--set pairs] [--live] [--sweep core.compose.CONST=v1,v2]`. The provenance
+  flag is diagnostics-only and default OFF: the `/write/word` payload and the
+  compose golden fixture stay byte-identical.
 - **Never merge a PR yourself** — open it, get it green and
   review-clean (address Copilot review comments, then resolve the
   threads); merging is the maintainer's call.

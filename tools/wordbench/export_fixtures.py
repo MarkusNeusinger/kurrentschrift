@@ -101,6 +101,41 @@ def load_page(path: Path) -> np.ndarray:
 # stay: the smallest genuine ink component (an i-dot) is ~50 px² at this scale.
 DESPECKLE_MIN_AREA_PX = 24
 
+# A connected component whose pixels lie at least this fraction inside the
+# entry's exclude rects is foreign ink and removed WHOLE (tails included).
+# The jul05 export instead painted the excludes paper-white BEFORE binarising;
+# the hard white→paper step at the painted border binarised as a fake
+# full-width ink line whose skeleton dominated the references of exactly the
+# excluded words (up to 30 % of wenn-2's skeleton pixels — wordlab finding,
+# 2026-07-08). Binarising the unpainted crop creates no such edge; the auto
+# excludes are the foreign components' own bounding boxes, so they contain
+# their component almost entirely.
+EXCLUDE_COMPONENT_FRAC = 0.5
+
+
+def clear_excluded(mask: np.ndarray, rects: list[tuple[int, int, int, int]]) -> np.ndarray:
+    """Remove foreign ink under crop-local exclude rects from a binarised mask.
+
+    Two layers: every pixel strictly inside a rect is cleared, and every
+    connected component with ≥ EXCLUDE_COMPONENT_FRAC of its area inside the
+    rect union is removed whole — so a descender tail poking out of its rect
+    does not survive as an ink stub (its skeleton would poison the reverse
+    chamfer). Word ink is safe: it never lies half inside an exclude.
+    """
+    if not rects:
+        return mask
+    inside = np.zeros_like(mask)
+    for x0, y0, x1, y1 in rects:
+        inside[max(0, y0) : max(0, y1), max(0, x0) : max(0, x1)] = True
+    labels, n = cc_label(mask)
+    if n:
+        sizes = np.bincount(labels.ravel(), minlength=n + 1)
+        inside_sizes = np.bincount(labels[inside].ravel(), minlength=n + 1)
+        kill = inside_sizes >= EXCLUDE_COMPONENT_FRAC * sizes
+        kill[0] = False
+        mask = mask & ~kill[labels]
+    return mask & ~inside
+
 
 def despeckle(mask: np.ndarray) -> np.ndarray:
     labels, n = cc_label(mask)
@@ -216,10 +251,17 @@ async def export(source_id: str, out_dir: Path, which: str) -> None:
             entry_dir.mkdir(exist_ok=True)
 
             crop = pages[w["page"]][w["y0"] : w["y1"], w["x0"] : w["x1"]].copy()
-            # Foreign ink from neighbouring lines: paint paper-white before binarising.
-            for ex0, ey0, ex1, ey1 in w.get("exclude", []):
-                crop[max(0, ey0 - w["y0"]) : max(0, ey1 - w["y0"]), max(0, ex0 - w["x0"]) : max(0, ex1 - w["x0"])] = 1.0
-            mask = despeckle(binarize_adaptive(crop))
+            rects = [
+                (ex0 - w["x0"], ey0 - w["y0"], ex1 - w["x0"], ey1 - w["y0"])
+                for ex0, ey0, ex1, ey1 in w.get("exclude", [])
+            ]
+            # Binarise the UNPAINTED crop (a painted-white exclude would leave a
+            # fake ink line along its border — see clear_excluded), then remove
+            # the foreign ink component-wise and despeckle the rest.
+            mask = despeckle(clear_excluded(binarize_adaptive(crop), rects))
+            # The saved crop is the human/overlay view: paint the excludes out.
+            for x0, y0, x1, y1 in rects:
+                crop[max(0, y0) : max(0, y1), max(0, x0) : max(0, x1)] = 1.0
             skel, width_map = skeleton_and_width(mask)
 
             (entry_dir / "word.json").write_text(

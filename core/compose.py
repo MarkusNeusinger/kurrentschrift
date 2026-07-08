@@ -126,7 +126,7 @@ def _sample_bezier(p0: Point, p1: Point, p2: Point, p3: Point, n: int) -> list[P
     return out
 
 
-def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None]) -> dict:
+def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *, provenance: bool = False) -> dict:
     """Compose shaped slots + per-glyph render payloads into draw items.
 
     Returns ``{"items", "bounds", "guides", "missing"}`` — one draw item per
@@ -136,6 +136,14 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None]) ->
     the renderer sweeps its reveal mask along (``mask_width`` wide), a ``lift``
     flag (a pen lift precedes this item → short pause) and ``diacritic`` on the
     deferred floating marks.
+
+    ``provenance=True`` (diagnostics only) additionally tags every glyph item
+    with ``slot_index``/``glyph_key`` and every connector with ``from_slot``/
+    ``to_slot``/``pair=[prev_key, curr_key]``, so a downstream ruler can
+    attribute a deviation to a letter or a specific join. Default off — the
+    public ``/write/word`` payload and the golden fixture stay byte-identical.
+    The same seam is where an approved per-pair override would hook in later
+    (Vorschlag B — gated, nothing is stored today).
     """
     items: list[dict] = []
     missing: list[str] = []
@@ -169,7 +177,7 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None]) ->
             items.append(it)
         pending_diacritics.clear()
 
-    for slot in slots:
+    for slot_index, slot in enumerate(slots):
         if slot.space:
             flush_diacritics()  # the word's marks land before the gap to the next word
             cursor_x += SPACE_ADV
@@ -299,14 +307,17 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None]) ->
             p2: Point = (p3[0] - handle * d_in[0], p3[1] - handle * d_in[1])
             centerline = _sample_bezier(p0, p1, p2, p3, CONNECT_SAMPLES)
             stroke_width = 2 * min(prev["width"], med_half)
-            items.append(
-                {
-                    "centerline": [list(p) for p in centerline],
-                    "stroke_width": stroke_width,
-                    "mask_width": stroke_width * 1.3,
-                    "lift": False,
-                }
-            )
+            connector: dict = {
+                "centerline": [list(p) for p in centerline],
+                "stroke_width": stroke_width,
+                "mask_width": stroke_width * 1.3,
+                "lift": False,
+            }
+            if provenance:
+                connector["pair"] = [prev["key"], slot.key]
+                connector["from_slot"] = prev["slot_index"]
+                connector["to_slot"] = slot_index
+            items.append(connector)
             track(centerline)
 
         # The glyph's own strokes (silhouette + centerline), translated by dx.
@@ -321,6 +332,9 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None]) ->
                 "mask_width": 2.2 * max_half,
                 "lift": si > 0,  # a within-glyph pen lift precedes every stroke after the first
             }
+            if provenance:
+                item["slot_index"] = slot_index
+                item["glyph_key"] = slot.key
             if rings:
                 item["rings"] = [[list(p) for p in ring] for ring in rings]
             track(offset)
@@ -333,7 +347,14 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None]) ->
                 items.append(item)
 
         exit_abs: Point = (exit_xy[0] + dx, exit_xy[1])
-        prev = {"exit": exit_abs, "tangent_deg": exit_deg, "width": med_half, "ink_max_x": ink_max_x + dx}
+        prev = {
+            "exit": exit_abs,
+            "tangent_deg": exit_deg,
+            "width": med_half,
+            "ink_max_x": ink_max_x + dx,
+            "key": slot.key,
+            "slot_index": slot_index,
+        }
         cursor_x = exit_abs[0]
 
     flush_diacritics()  # the last word's marks, once its body is complete
