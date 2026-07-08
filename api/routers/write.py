@@ -16,7 +16,7 @@ from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import require_db, require_source
-from api.rendering import pooled_constant_nib, resolve_style
+from api.rendering import pooled_constant_nib, pooled_pen, resolve_style
 from core.compose import compose_word
 from core.database import Source, Template, TemplateRepository
 from core.pipeline import render_payload_for_template
@@ -73,6 +73,7 @@ async def get_write_glyphs(
 
     style_id, style_ratio, _slant, width_resolver = await resolve_style(source, db)
     nib = await pooled_constant_nib(db, style_id, source.id) if width_resolver == "constant" else None
+    pen = await pooled_pen(db, style_id, source.id, width_resolver)
     templates = await TemplateRepository(db).get_many(source.style_id, requested)
     # Dereference the ORM rows into plain dicts ON the event loop — touching a
     # session-bound instance from the threadpool is not thread-safe (an
@@ -88,7 +89,7 @@ async def get_write_glyphs(
             row = rows.get(key)
             if row is None:
                 continue
-            payload = render_payload_for_template(row, style_ratio, width_resolver, nib)
+            payload = render_payload_for_template(row, style_ratio, width_resolver, nib, pen=pen)
             payload["glyph_key"] = key
             out.append(payload)
         return out
@@ -122,6 +123,7 @@ async def get_write_word(
 
     style_id, style_ratio, _slant, width_resolver = await resolve_style(source, db)
     nib = await pooled_constant_nib(db, style_id, source.id) if width_resolver == "constant" else None
+    pen = await pooled_pen(db, style_id, source.id, width_resolver)
 
     repo = TemplateRepository(db)
     slots = shape_text(normalized)
@@ -144,10 +146,14 @@ async def get_write_word(
     # Render geometry + composition are pure numpy/python — off the event loop.
     def compute() -> dict:
         payloads = {
-            key: (render_payload_for_template(rows[key], style_ratio, width_resolver, nib) if key in rows else None)
+            key: (
+                render_payload_for_template(rows[key], style_ratio, width_resolver, nib, pen=pen)
+                if key in rows
+                else None
+            )
             for key in keys
         }
-        return compose_word(slots, payloads)
+        return compose_word(slots, payloads, pen=pen)
 
     composed = await run_in_threadpool(compute)
     response.headers["Cache-Control"] = CACHE_CONTROL
@@ -164,8 +170,9 @@ async def get_write_glyph(
         raise HTTPException(404, detail=f"no canonical for {glyph_key!r}")
     style_id, style_ratio, _slant, width_resolver = await resolve_style(source, db)
     nib = await pooled_constant_nib(db, style_id, source.id) if width_resolver == "constant" else None
+    pen = await pooled_pen(db, style_id, source.id, width_resolver)
     payload = await run_in_threadpool(
-        render_payload_for_template, _template_to_glyph_row(template), style_ratio, width_resolver, nib
+        render_payload_for_template, _template_to_glyph_row(template), style_ratio, width_resolver, nib, pen=pen
     )
     payload["glyph_key"] = glyph_key
     response.headers["Cache-Control"] = CACHE_CONTROL

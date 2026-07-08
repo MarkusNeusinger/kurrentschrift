@@ -31,8 +31,8 @@
 import { glyphKeyFor, LETTERS, type Letter, type Position } from '@/domain/glyphs';
 
 export interface GlyphSlot {
-  // The canonical glyph_key to fetch + render, or null for a space / a character
-  // with no glyph (punctuation, digits) which renders as an advance-only gap.
+  // The canonical glyph_key to fetch + render, or null for a space / a
+  // character with no glyph at all, which renders as an advance-only gap.
   key: string | null;
   // The source character(s) this slot stands for (availability UI / debugging).
   text: string;
@@ -42,6 +42,9 @@ export interface GlyphSlot {
   // True for an inter-word space — renders as horizontal advance only and
   // breaks the connecting stroke (no Übergang spans a word gap).
   space: boolean;
+  // False for the detached glyph classes (digits, punctuation): they render
+  // but no Übergang ever enters or leaves them. Mirrors core/shaping.py.
+  joins: boolean;
 }
 
 // Single-character glyphs keyed by their character (a–z, ä/ö/ü, ſ, s, A–Z, …).
@@ -56,6 +59,22 @@ for (const letter of LETTERS) {
 // The two s-allographs, resolved per position in `assignPositions`.
 const LONG_S = LETTER_BY_CHAR.get('ſ');
 const ROUND_S = LETTER_BY_CHAR.get('s');
+
+// Alias characters folding onto a registry glyph (typographic apostrophe,
+// closing-quote variants, hyphen variants, em dash). The straight double
+// quote is resolved by occurrence parity within the word instead (see the
+// quoteAllograph token flag). Mirrors the alias entries in core/shaping.py's
+// _PUNCT.
+const CHAR_ALIASES: Record<string, string> = {
+  '’': "'", // ’
+  '”': '“', // ” → “
+  '‐': '-',
+  '‑': '-',
+  '—': '–', // — → –
+};
+const STRAIGHT_QUOTE = '"';
+const QUOTE_LOW = LETTERS.find((l) => l.base === 'quote-low');
+const QUOTE_HIGH = LETTERS.find((l) => l.base === 'quote-high');
 
 // A cased lowercase letter (so an uppercase initial is never folded into a
 // lowercase ligature). `toLowerCase() === c` is true for non-letters too, hence
@@ -73,11 +92,13 @@ export const FUGE = '|';
 export const stripFugen = (text: string): string => text.split(FUGE).join('');
 
 interface RawToken {
-  letter: Letter | null; // null => unknown char (gap) or a deferred s-allograph
+  letter: Letter | null; // null => unknown char (gap) or a deferred allograph
   text: string;
   ligature: boolean;
   sAllograph: boolean; // a lowercase s/ſ whose long-vs-round form depends on position
   forceRound: boolean; // an s immediately before a Fuge — always the round allograph
+  joins: boolean; // false: digits/punctuation/unknown — detached, no Übergang
+  quoteAllograph: boolean; // a straight " resolved low/high by occurrence parity
 }
 
 // Greedy left-to-right tokeniser over one whitespace-free word.
@@ -98,7 +119,7 @@ function tokenizeWord(word: string): RawToken[] {
     if (next !== undefined && isLowercaseLetter(c)) {
       const pair = (c + next).toLowerCase();
       if (pair === 'ch' || pair === 'ck' || pair === 'tz' || pair === 'qu') {
-        tokens.push({ letter: LIGATURE_BY_FORM.get(pair) ?? null, text: c + next, ligature: true, sAllograph: false, forceRound: false });
+        tokens.push({ letter: LIGATURE_BY_FORM.get(pair) ?? null, text: c + next, ligature: true, sAllograph: false, forceRound: false, joins: true, quoteAllograph: false });
         i += 2;
         continue;
       }
@@ -106,14 +127,14 @@ function tokenizeWord(word: string): RawToken[] {
       // context). Accept both the typed 's' and an already-long 'ſ'. A Fuge
       // between them (`Aus|tritt`) blocks it — `next` is then the marker, not t.
       if (pair === 'st' || pair === 'ſt') {
-        tokens.push({ letter: LIGATURE_BY_FORM.get('ſt') ?? null, text: c + next, ligature: true, sAllograph: false, forceRound: false });
+        tokens.push({ letter: LIGATURE_BY_FORM.get('ſt') ?? null, text: c + next, ligature: true, sAllograph: false, forceRound: false, joins: true, quoteAllograph: false });
         i += 2;
         continue;
       }
     }
     // ß — a single-character ligature unit (Eszett).
     if (c === 'ß') {
-      tokens.push({ letter: LIGATURE_BY_FORM.get('ß') ?? null, text: c, ligature: true, sAllograph: false, forceRound: false });
+      tokens.push({ letter: LIGATURE_BY_FORM.get('ß') ?? null, text: c, ligature: true, sAllograph: false, forceRound: false, joins: true, quoteAllograph: false });
       i += 1;
       continue;
     }
@@ -121,12 +142,18 @@ function tokenizeWord(word: string): RawToken[] {
     // unless a Fuge marker follows — then it's the round Schluss-s of a
     // compound's inner boundary (`Haus|tür`), regardless of position.
     if ((c === 's' || c === 'ſ') && isLowercaseLetter(c)) {
-      tokens.push({ letter: null, text: c, ligature: false, sAllograph: true, forceRound: next === FUGE });
+      tokens.push({ letter: null, text: c, ligature: false, sAllograph: true, forceRound: next === FUGE, joins: true, quoteAllograph: false });
       i += 1;
       continue;
     }
-    const letter = LETTER_BY_CHAR.get(c) ?? null;
-    tokens.push({ letter, text: c, ligature: false, sAllograph: false, forceRound: false });
+    // Straight double quote: low vs high resolved by occurrence parity („…“).
+    if (c === STRAIGHT_QUOTE) {
+      tokens.push({ letter: null, text: c, ligature: false, sAllograph: false, forceRound: false, joins: false, quoteAllograph: true });
+      i += 1;
+      continue;
+    }
+    const letter = LETTER_BY_CHAR.get(c) ?? LETTER_BY_CHAR.get(CHAR_ALIASES[c] ?? '') ?? null;
+    tokens.push({ letter, text: c, ligature: false, sAllograph: false, forceRound: false, joins: letter !== null && letter.joins !== false, quoteAllograph: false });
     i += 1;
   }
   return tokens;
@@ -139,23 +166,60 @@ function positionOf(index: number, count: number): Position {
 }
 
 function assignPositions(tokens: RawToken[]): GlyphSlot[] {
-  return tokens.map((t, idx): GlyphSlot => {
-    const position = positionOf(idx, tokens.length);
-    // Long-s in initial/medial position, round s word-final (the historical
-    // rule) — or forced round at a Fuge boundary regardless of position.
-    if (t.sAllograph) {
-      const letter = t.forceRound || position === 'final' ? ROUND_S : LONG_S;
-      return {
-        key: letter ? glyphKeyFor(letter, position) : null,
-        text: t.text,
-        position,
-        ligature: false,
-        space: false,
-      };
-    }
-    if (!t.letter) return { key: null, text: t.text, position: null, ligature: false, space: false };
-    return { key: glyphKeyFor(t.letter, position), text: t.text, position, ligature: t.ligature, space: false };
-  });
+  // Positions are assigned per RUN of same-joins-class tokens: a trailing
+  // comma or a digit block must not steal the word-final position from the
+  // last letter — "Haus," keeps the round Schluss-s — and a detached block
+  // ("1922") resolves its own initial/medial/final internally. Mirrors
+  // core/shaping.py::_assign_positions.
+  const runs: RawToken[][] = [];
+  for (const t of tokens) {
+    const last = runs[runs.length - 1];
+    if (last && last[last.length - 1].joins === t.joins) last.push(t);
+    else runs.push([t]);
+  }
+  const out: GlyphSlot[] = [];
+  let straightQuotes = 0; // occurrences within this word, for low/high pairing
+  for (const run of runs) {
+    run.forEach((t, runIdx) => {
+      const position = positionOf(runIdx, run.length);
+      // Long-s in initial/medial position, round s at the end of its letter
+      // run — or forced round at a Fuge boundary regardless of position.
+      if (t.sAllograph) {
+        const letter = t.forceRound || position === 'final' ? ROUND_S : LONG_S;
+        out.push({
+          key: letter ? glyphKeyFor(letter, position) : null,
+          text: t.text,
+          position,
+          ligature: false,
+          space: false,
+          joins: true,
+        });
+        return;
+      }
+      // Straight double quote ("): German quotes pair low-then-high („Ja“).
+      // Resolved by occurrence parity within the word, so a quote after
+      // other punctuation — ("Ja") — still opens low.
+      if (t.quoteAllograph) {
+        const letter = straightQuotes % 2 === 0 ? QUOTE_LOW : QUOTE_HIGH;
+        straightQuotes += 1;
+        out.push({
+          key: letter ? glyphKeyFor(letter, position) : null,
+          text: t.text,
+          position,
+          ligature: false,
+          space: false,
+          joins: false,
+        });
+        return;
+      }
+      if (!t.letter) {
+        out.push({ key: null, text: t.text, position: null, ligature: false, space: false, joins: false });
+        return;
+      }
+      out.push({ key: glyphKeyFor(t.letter, position), text: t.text, position, ligature: t.ligature, space: false, joins: t.joins });
+    });
+  }
+  return out;
 }
 
 // Fallback for a ligature whose canonical is missing at fetch time: the
@@ -186,6 +250,7 @@ export function decomposeLigatureSlot(slot: GlyphSlot): GlyphSlot[] | null {
       position,
       ligature: false,
       space: false,
+      joins: true,
     };
   });
 }
@@ -203,7 +268,7 @@ export function shapeText(text: string): GlyphSlot[] {
   for (const part of text.split(/(\s+)/)) {
     if (part === '') continue;
     if (/^\s+$/.test(part)) {
-      out.push({ key: null, text: ' ', position: null, ligature: false, space: true });
+      out.push({ key: null, text: ' ', position: null, ligature: false, space: true, joins: false });
       continue;
     }
     out.push(...shapeWord(part));

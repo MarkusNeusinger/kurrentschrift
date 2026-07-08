@@ -18,6 +18,7 @@ nächsten Meilensteine.
 | Wissen, warum Name/Domain/Lizenz so gewählt sind | [Naming und OSS-Setup](concepts/naming-und-setup.md) |
 | Look & visuelle Identität nachschlagen | [Style-Guide](concepts/style-guide.md) |
 | Design-System (Tokens, Typo-Skala, Breiten, Flächen, IA) nachschlagen | [Design-System](concepts/design-system.md) |
+| Die drei Federmodelle (Bandzug/Spitz/Redis) & Ziffern/Satzzeichen nachschlagen | [Federmodelle](concepts/federmodelle.md) |
 | HTR-Pfad (Transkribus + TrOCR) nachschlagen | [HTR-Integration](reference/htr-integration.md) |
 | Animation-Render-Algorithmus nachschlagen | [Animation-Rendering](reference/animation-rendering.md) |
 | Stil-Analyse-Pipeline nachschlagen | [Stil-Analyse](reference/styleanalyse.md) |
@@ -47,6 +48,7 @@ docs/
 │   ├── mvp-roadmap.md            # Operative Zerlegung des MVP (§8) in Schritt 0 + M0–M7
 │   ├── style-guide.md            # Visuelle Identität Papier & Tinte: Tokens (styles/paper.ts), Typografie, R1–R9-Entscheidungen
 │   ├── design-system.md          # Verbindliche Bauvorschrift: Tokens, Typo-Skala (19px), Breiten (PageContainer), Flächen, IA, Komponenten
+│   ├── federmodelle.md           # Drei Federn, ein Renderpfad: Bandzugfeder-Gesetz, Spitzfeder-Haarstriche, Ziffern/Satzzeichen (joins:false)
 │   └── naming-und-setup.md       # Repo-Name, Domain, Lizenz, Verzeichnis-Split, Frontend-Stack, Hosting
 ├── reference/                    # Policy- und Technik-Dokumente mit Begründung
 │   ├── sprachregelung.md         # Deutsch/Englisch pro Artefakt

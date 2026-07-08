@@ -144,9 +144,9 @@ kurrentschrift/
 │   ├── template.py   # canonical sampling + outline + slant
 │   ├── chart.py      # load + crop_with_mask (eraser + patches + ink brush); crop_mask_to_png_bytes (mask preview)
 │   ├── pipeline.py   # canonical_from_path, diagnostic_for_glyph, render_payload_for_template
-│   ├── shaping.py    # text → glyph_keys (long-s + Fuge marker `|` for round Schluss-s in compounds, ligatures, decompose fallback; twin of app shaping.ts)
-│   ├── compose.py    # word composition (placement + Übergänge; single source of truth, golden-pinned)
-│   ├── widths.py     # resolve_half_widths — per-style width resolver (§5), render-time
+│   ├── shaping.py    # text → glyph_keys (long-s + Fuge marker `|` for round Schluss-s in compounds, ligatures, decompose fallback; digits/punctuation as detached `joins: false` glyphs, positions per joins-run; twin of app shaping.ts)
+│   ├── compose.py    # word composition (placement + Übergänge; detached ink-clearance placement for non-joining glyphs; optional `pen` inks generated strokes per script; single source of truth, golden-pinned)
+│   ├── widths.py     # resolve_half_widths + pen models (§5, docs/concepts/federmodelle.md): BroadNib w(φ)-law + PenStyle, render-time
 │   ├── fit.py        # M4: fit_template_to_instance, fit_glyph_to_crop
 │   └── database/     # SQLAlchemy Style + Hand + Source + Bbox + Template + Instance + Aggregate + QuizWord + repos
 ├── api/              # FastAPI service (thin)
@@ -287,7 +287,10 @@ lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberläng
   Offenbacher); it carries `width_resolver` (§5) + lineature defaults.
   The resolver is applied at render time by
   `core/widths.py::resolve_half_widths` (`pressure` = measured Schwellzug,
-  `constant` = Sütterlin Gleichzug, `broad_nib` = post-MVP stub); stored
+  `constant` = Sütterlin Gleichzug, `broad_nib` = widths regenerated from
+  the `BroadNib` model — w(φ) = W·|sin(φ−α)| + t·|cos(φ−α)|, constant 15°
+  Federwinkel per Koch 1928, calibrated per source by
+  `api/rendering.py::pooled_pen`; see docs/concepts/federmodelle.md); stored
   `half_widths` always stay the measurement.
 - `templates` are the canonical Grundvorlagen, unique on
   `(style_id, glyph, position, variant)` — the identifying tuple, **not**
@@ -472,6 +475,18 @@ pipelines for plot specifications). For now:
 - **Branch policy:** main is protected; feature branches with PRs.
 - **Commit messages:** English, focused on WHY, conventional-commit prefix
   optional (`docs:`, `feat:`, `fix:`, `refactor:`).
+- **Changelog:** every PR adds its entries to `CHANGELOG.md` under
+  `[Unreleased]` (Keep-a-Changelog categories, English, bold-titled
+  bullets like the existing entries) — that file is how releases get
+  posted; a PR without its entry is incomplete. Data-only commits
+  (chart sources, authored templates) are exempt — provenance lives in
+  their `SOURCE.md`.
+- **Codecov:** the bot comments the patch coverage on every PR (backend
+  only). Treat it like a reviewer, not a hard gate: uncovered NEW logic
+  that a unit test can reach cheaply gets a test in the same PR
+  (prefer extracting a pure core from DB/async wrappers); lines only a
+  live DB/HTTP flow exercises are covered by the API verification
+  sweep instead.
 - **Pre-commit hooks:** none configured yet — when added, do not bypass
   with `--no-verify`.
 - **Verification before a PR:** run the local CI equivalents first —

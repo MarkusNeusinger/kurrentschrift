@@ -69,6 +69,12 @@ A `/verify-*` gate only counts if the **diff's own flow** was driven —
 rendering a proxy or injecting state via the API is not verification
 (see the changed-path rule in `/verify-frontend` §2).
 
+**Changelog gate:** every PR adds its entries to `CHANGELOG.md` under
+`[Unreleased]` (Keep-a-Changelog categories, English, bold-titled
+bullets matching the existing entries) before the PR opens — that file
+is how releases get posted. Data-only commits (chart sources, authored
+templates) are exempt; their provenance lives in `SOURCE.md`.
+
 Then the local CI equivalents — the same commands the pipeline runs,
 without the round trip (backend always; frontend build only if `app/`
 changed). **This is a hard gate, not a suggestion: do not open the PR
@@ -135,6 +141,22 @@ minutes after push; the bot's login is exactly
   subscription delivers the review as a webhook event — don't poll. To force a fresh pass
   after a fix-push, call `mcp__github__request_copilot_review`; to
   read the current reviews use `mcp__github__pull_request_read`.
+
+**b2. Read the Codecov patch report** (arrives as a PR comment from the
+`codecov` bot once the backend coverage upload lands; only the backend
+uploads coverage):
+
+```bash
+gh pr view <num> --json comments --jq '.comments[] | select(.author.login | test("codecov"; "i")) | .body'
+```
+
+Judge it like a reviewer, not a hard gate: uncovered NEW logic that a
+unit test can reach cheaply (pure helpers, calibration maths, edge
+branches) gets a test in the same PR — extracting a pure core from an
+async/DB wrapper to make it testable is the preferred move. Lines only
+a live DB/HTTP flow exercises (routers, pooled caches, threadpool glue)
+are the `/verify-api` sweep's job, not a unit test's — leave those, and
+say so in the PR if the patch percentage looks alarming.
 
 **c. List unresolved threads** (id is needed for resolving):
 

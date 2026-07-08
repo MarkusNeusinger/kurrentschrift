@@ -30,7 +30,7 @@ from core.template import (
     sample_with_sample_plan,
     template_guides,
 )
-from core.widths import resolve_half_widths
+from core.widths import BroadNib, PenStyle, resolve_half_widths
 
 
 # Anchor-count default, calibrated on the glyph bench (12 authored Loth
@@ -846,7 +846,11 @@ def _fluent_widen(
 
 
 def render_payload_for_template(
-    glyph_row: dict, style_ratio: list[float], width_resolver: str = "pressure", constant_nib_units: float | None = None
+    glyph_row: dict,
+    style_ratio: list[float],
+    width_resolver: str = "pressure",
+    constant_nib_units: float | None = None,
+    pen: PenStyle | None = None,
 ) -> dict:
     """Render-only payload for the public writer — no chart I/O, no pixel columns.
 
@@ -864,12 +868,25 @@ def render_payload_for_template(
     pen thickness instead of its own measured constant.
     """
     anchors_template = np.asarray(glyph_row["anchors"], dtype=float)
-    half_widths_template = resolve_half_widths(np.asarray(glyph_row["half_widths"], dtype=float), width_resolver)
-    if width_resolver == "constant" and constant_nib_units is not None:
-        half_widths_template = np.full(len(half_widths_template), float(constant_nib_units))
     trace_meta = glyph_row.get("trace_meta") or {}
     stroke_starts = trace_meta.get("stroke_starts")
     corner_anchors = trace_meta.get("corner_anchors") or []
+
+    # Broad-nib writing path regenerates widths from the nib model (see
+    # core/widths.py: the measured profile stops matching the geometry the
+    # moment any warp is applied, and generated strokes have no measurement).
+    nib = None
+    if width_resolver == "broad_nib":
+        nib = pen.nib if pen is not None and pen.nib is not None else BroadNib()
+    half_widths_template = resolve_half_widths(
+        np.asarray(glyph_row["half_widths"], dtype=float),
+        width_resolver,
+        points=anchors_template,
+        stroke_starts=stroke_starts,
+        nib=nib,
+    )
+    if width_resolver == "constant" and constant_nib_units is not None:
+        half_widths_template = np.full(len(half_widths_template), float(constant_nib_units))
 
     # Chart→fluent body widening (Gleichzug writing path only — the measured
     # targets come from the Sütterlin Abb.-19 hand; see FLUENT_BODY_PITCH).
@@ -883,7 +900,7 @@ def render_payload_for_template(
         }
 
     outline_paths = multi_stroke_silhouettes(
-        anchors_template, half_widths_template, stroke_starts, 90.0, n=240, corner_anchors=corner_anchors
+        anchors_template, half_widths_template, stroke_starts, 90.0, n=240, corner_anchors=corner_anchors, nib=nib
     )
     centerlines_template = multi_stroke_centerlines(
         anchors_template, half_widths_template, stroke_starts, 90.0, n=240, corner_anchors=corner_anchors

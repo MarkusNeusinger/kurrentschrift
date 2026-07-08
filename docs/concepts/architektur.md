@@ -211,7 +211,7 @@ vorliegen. Generator-Logik bleibt Default. Wird mit dem Beispieltext-Import
   Intensitätskanal parallel behalten.
 
 **Width-Profile-Resolver pro Schriftfamilie.** Das gleiche Library-Schema
-trägt zwei Render-Modi:
+trägt drei Render-Modi:
 
 - **Kurrent (Spitzfeder, 19. Jh.):** `width_profile` wird als
   *druckabhängiger Schwellzug* interpretiert — variable Strichbreite über
@@ -221,6 +221,11 @@ trägt zwei Render-Modi:
   *konstanten* Wert (mittlere Breite pro Source) gesetzt — Sütterlin
   verzichtet bewusst auf Schwellzug. Gleiches Duktus-Template, anderer
   Resolver.
+- **Offenbacher (Bandzugfeder, 1927 ff.):** Breite ist reine
+  Richtungsfunktion des festen Federwinkels — beim Schreiben wird sie aus
+  dem Federmodell *regeneriert*, die Messung kalibriert nur die Feder pro
+  Source. Formel, Meißel-Sweep und Verworfenes in
+  [`federmodelle.md`](federmodelle.md).
 
 Die Wahl ist eine Stil-Eigenschaft (`styles.width_resolver`, siehe §3),
 keine `glyph`-Eigenschaft. Der Renderer (§11) löst sie über den Stil der

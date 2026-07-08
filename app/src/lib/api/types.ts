@@ -232,10 +232,13 @@ export interface WriteGlyphsOut {
 
 // One stroke/connector of a composed word, in the composed word frame (y up),
 // in writing order. A glyph stroke carries filled silhouette `rings`; a
-// connector carries a constant `stroke_width`. Both carry the `centerline` the
-// renderer sweeps its reveal mask along (`mask_width` wide). `lift` = a pen
-// lift precedes this item (short pause); `diacritic` marks the deferred
-// floating marks (i-dot, u-bow, umlaut) flushed after the word body.
+// connector carries a constant `stroke_width` — except under a broad-nib
+// style, where generated strokes ship their swept-nib silhouette as `rings`
+// too (rings win: an item with rings is filled, never stroked). Both carry
+// the `centerline` the renderer sweeps its reveal mask along (`mask_width`
+// wide). `lift` = a pen lift precedes this item (short pause); `diacritic`
+// marks the deferred floating marks (i-dot, u-bow, umlaut) flushed after the
+// word body.
 export interface DrawItemOut {
   centerline: Array<[number, number]>;
   // One stroke's silhouette rings (exterior + holes, drawn evenodd).

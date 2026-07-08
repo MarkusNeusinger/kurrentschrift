@@ -55,6 +55,8 @@ export const admin = {
     groupLower: 'Kleinbuchstaben',
     groupUpper: 'Großbuchstaben',
     groupComb: 'Kombinationen',
+    groupDigit: 'Ziffern',
+    groupPunct: 'Satzzeichen',
     toHome: 'Zur Startseite',
     chartOverview: 'Chart-Übersicht',
     compareOverview: 'Vergleich aller Buchstaben',

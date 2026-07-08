@@ -28,13 +28,33 @@ from __future__ import annotations
 
 import math
 
+import numpy as np
+
 from core.shaping import GlyphSlot
+from core.template import chisel_union_rings
+from core.widths import PenStyle
 
 
 SPACE_ADV = 0.55  # inter-word gap, x-height units
 # Advance reserved for an unrenderable glyph — capped at the word gap, so a
 # hole never yawns wider than an actual space.
 MISSING_ADV = 0.55
+# Ink clearance around a NON-JOINING glyph (digits, punctuation — slot.joins
+# False): no Übergang enters or leaves it, the composer places it by ink
+# clearance alone. Keyed by glyph_key base; the sentence marks hug their word
+# (the plates set them tight), digits run at an even pitch narrower than the
+# word gap. Between two detached glyphs the smaller clearance wins.
+NONJOIN_CLEARANCE_DEFAULT = 0.24
+NONJOIN_CLEARANCE: dict[str, float] = {
+    "period": 0.12,
+    "comma": 0.12,
+    "semicolon": 0.14,
+    "colon": 0.14,
+    "apostrophe": 0.08,
+    "quote-low": 0.14,
+    "quote-high": 0.14,
+    **{str(d): 0.16 for d in range(10)},
+}
 CONNECT_GAP = 0.16  # minimum horizontal span of a connecting stroke (exit → entry)
 # Minimum clearance between the previous glyph's rightmost body INK and the
 # next glyph's leftmost body ink. The exit/entry anchors alone cannot carry the
@@ -102,6 +122,18 @@ def _unit(deg: float) -> Point:
     return (math.cos(r), math.sin(r))
 
 
+def _key_base(key: str | None, position: str | None) -> str:
+    """The glyph_key without its position suffix (`comma-final` → `comma`)."""
+    if not key:
+        return ""
+    suffix = f"-{position}"
+    return key[: -len(suffix)] if position and key.endswith(suffix) else key
+
+
+def _nonjoin_clearance(base: str) -> float:
+    return NONJOIN_CLEARANCE.get(base, NONJOIN_CLEARANCE_DEFAULT)
+
+
 def _endpoint_tangent(line: list[Point], at_end: bool = False) -> float:
     """Travel direction (degrees, y up) entering (start) or leaving (end) a polyline.
 
@@ -143,7 +175,13 @@ def _sample_bezier(p0: Point, p1: Point, p2: Point, p3: Point, n: int) -> list[P
     return out
 
 
-def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *, provenance: bool = False) -> dict:
+def compose_word(
+    slots: list[GlyphSlot],
+    data_by_key: dict[str, dict | None],
+    *,
+    pen: PenStyle | None = None,
+    provenance: bool = False,
+) -> dict:
     """Compose shaped slots + per-glyph render payloads into draw items.
 
     Returns ``{"items", "bounds", "guides", "missing"}`` — one draw item per
@@ -153,6 +191,14 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
     the renderer sweeps its reveal mask along (``mask_width`` wide), a ``lift``
     flag (a pen lift precedes this item → short pause) and ``diacritic`` on the
     deferred floating marks.
+
+    ``pen`` (default None = today's Gleichzug behaviour, byte-identical)
+    selects how GENERATED strokes are inked (see ``apply_pen``): pressure
+    caps them at the pooled Haarstrich, broad_nib sweeps the Bandzugfeder and
+    ships the join as filled ``rings``. Non-joining slots (``slot.joins``
+    False — digits, punctuation) render detached: no connector enters or
+    leaves them, placement is by ink clearance (``NONJOIN_CLEARANCE``), the
+    preceding letter run ends like a word (Endstrich + diacritic flush).
 
     ``provenance=True`` (diagnostics only) additionally tags every glyph item
     with ``slot_index``/``glyph_key`` and every connector with ``from_slot``/
@@ -168,6 +214,26 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
     cursor_x = 0.0
     # The previous glyph's exit in the composed frame, for the next connector.
     prev: dict | None = None
+
+    def apply_pen(item: dict, centerline: list[Point], default_width: float) -> None:
+        """Ink a GENERATED stroke (connector, Endstrich) with the style's pen.
+
+        No pen / constant: the Gleichzug capsule — one stroke_width (today's
+        behaviour, byte-identical). pressure: a Haarstrich — generated strokes
+        never carry pressure (Spitzfeder physics), so the pooled hairline caps
+        the width. broad_nib: the swept Bandzugfeder ships as filled rings
+        (the client fills rings and never strokes them); the centerline stays
+        for the reveal mask, widened to cover the nib's asymmetric extent.
+        """
+        stroke_width = default_width
+        if pen is not None and pen.kind == "pressure" and pen.hairline_half is not None:
+            stroke_width = min(stroke_width, 2 * pen.hairline_half)
+        item["stroke_width"] = stroke_width
+        item["mask_width"] = stroke_width * 1.3
+        if pen is not None and pen.kind == "broad_nib" and pen.nib is not None:
+            pts = np.asarray(centerline, dtype=float)
+            item["rings"] = chisel_union_rings(pts[:, 0], pts[:, 1], pen.nib, simplify_tol=0.002)
+            item["mask_width"] = max(item["mask_width"], pen.nib.width_units * 1.15)
 
     min_x = math.inf
     max_x = -math.inf
@@ -200,7 +266,7 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
         towards the x-height line. High, backward or flat exits (bows, a
         Deckstrich cover-stroke) end the word as they are."""
         nonlocal cursor_x
-        if not prev or prev["exit"][1] >= SWING_MAX_EXIT_Y:
+        if not prev or not prev["joins"] or prev["exit"][1] >= SWING_MAX_EXIT_Y:
             return
         d_out = _unit(prev["tangent_deg"])
         if d_out[0] <= 0 or d_out[1] < SWING_MIN_RISE:
@@ -211,13 +277,8 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
             return
         p3: Point = (p0[0] + run, p0[1] + run * d_out[1] / d_out[0])
         centerline = [p0, ((p0[0] + p3[0]) / 2, (p0[1] + p3[1]) / 2), p3]
-        stroke_width = 2 * prev["width"]
-        swing: dict = {
-            "centerline": [list(p) for p in centerline],
-            "stroke_width": stroke_width,
-            "mask_width": stroke_width * 1.3,
-            "lift": False,
-        }
+        swing: dict = {"centerline": [list(p) for p in centerline], "lift": False}
+        apply_pen(swing, centerline, 2 * prev["width"])
         if provenance:
             swing["pair"] = [prev["key"], None]
             swing["from_slot"] = prev["slot_index"]
@@ -225,6 +286,9 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
         items.append(swing)
         track(centerline)
         cursor_x = p3[0]
+        # The swing's ink extends the word rightward — a detached mark placed
+        # next (comma, period) must clear it, not the letter body alone.
+        prev["ink_max_x"] = max(prev["ink_max_x"], p3[0])
 
     for slot_index, slot in enumerate(slots):
         if slot.space:
@@ -238,10 +302,17 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
         if not data or not centerlines:
             if slot.key:
                 missing.append(slot.key)
+                if not slot.joins:
+                    # A DETACHED glyph is a run boundary even while its
+                    # template is unauthored: the word before a missing comma
+                    # still earns its Endstrich (matching the pre-registry
+                    # null-key behaviour for punctuation).
+                    end_swing()
             else:
-                # A null-key slot (punctuation, digit) is a real word boundary
-                # in the slot stream — the word before it earns its Endstrich.
-                # A MISSING glyph is a mid-word hole and must not fake one.
+                # A null-key slot (a character with no glyph at all) is a real
+                # word boundary in the slot stream — the word before it earns
+                # its Endstrich. A MISSING LETTER, in contrast, is a mid-word
+                # hole and must not fake one.
                 end_swing()
             # Either way the writing run breaks like a space: flush the marks
             # gathered so far, so a preceding i-dot/umlaut lands at the end of
@@ -253,17 +324,27 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
         if guides is None:
             guides = data["template_guides"]
 
+        # A detached glyph (digit, punctuation — slot.joins False) closes the
+        # letter run before it like a word boundary: the body earns its
+        # Endstrich and the word's floating marks land before the mark is
+        # written.
+        if not slot.joins and prev and prev["joins"]:
+            end_swing()
+            flush_diacritics()
+
         half_widths = data.get("half_widths_template") or []
         max_half = max(half_widths) if half_widths else DEFAULT_HALF
         med_half = _median(list(half_widths))
 
         # Classify each pen-stroke: a diacritic floats entirely above the
         # midband and is never the glyph's first stroke (the t-crossbar sits
-        # inside the x-height band and correctly stays in flow).
+        # inside the x-height band and correctly stays in flow). A detached
+        # glyph never defers: a quote's second mark or a ?'s dot writes in
+        # place, in order.
         midband = (data.get("template_guides") or {}).get("midband", 1)
         diacritic_flags: list[bool] = []
         for si, cl in enumerate(centerlines):
-            if si == 0:
+            if si == 0 or not slot.joins:
                 diacritic_flags.append(False)
                 continue
             stroke_min_y = min(y for _, y in cl) if cl else math.inf
@@ -298,13 +379,17 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
         rings_by_stroke = data.get("outline_paths") or []
         ink_min_x = math.inf
         ink_max_x = -math.inf
+        # A detached glyph does not take part in join-band kerning — its whole
+        # body (a comma below the baseline, a quote above the midband) is what
+        # the neighbour must clear.
+        band = JOIN_BAND_Y if slot.joins else (-math.inf, math.inf)
         for si, cl in enumerate(centerlines):
             if diacritic_flags[si]:
                 continue
             rings = rings_by_stroke[si] if si < len(rings_by_stroke) else []
             for pts in rings if rings else (cl,):
                 for x, y in pts:
-                    if JOIN_BAND_Y[0] <= y <= JOIN_BAND_Y[1]:
+                    if band[0] <= y <= band[1]:
                         ink_min_x = min(ink_min_x, x)
                         ink_max_x = max(ink_max_x, x)
         if not math.isfinite(ink_min_x):
@@ -312,17 +397,25 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
 
         # Place this glyph so its entry meets the previous glyph's exit + a
         # small gap AND its body ink clears the previous glyph's body ink by
-        # INK_CLEARANCE; with no connector start at the running cursor_x.
-        if prev:
+        # INK_CLEARANCE; with no connector start at the running cursor_x. A
+        # detached pairing (either side non-joining) is placed by ink
+        # clearance alone — the tighter of the two clearances wins.
+        joined = bool(prev) and prev["joins"] and slot.joins
+        if joined:
             desired_entry_x = max(
                 prev["exit"][0] + CONNECT_GAP, prev["ink_max_x"] + INK_CLEARANCE - (ink_min_x - entry_xy[0])
             )
+        elif prev:
+            gap = _nonjoin_clearance(_key_base(slot.key, slot.position)) if not slot.joins else math.inf
+            if not prev["joins"]:
+                gap = min(gap, _nonjoin_clearance(prev["base"]))
+            desired_entry_x = prev["ink_max_x"] + gap - (ink_min_x - entry_xy[0])
         else:
             desired_entry_x = cursor_x
         dx = desired_entry_x - entry_xy[0]
 
         # Connector first (writing order): the pen slides from A's exit into B's entry.
-        if prev:
+        if joined:
             p0: Point = prev["exit"]
             # End exactly on the next glyph's first ink sample so the join sits
             # on the centerline the entry tangent is measured from.
@@ -361,13 +454,8 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
             p1: Point = (p0[0] + handle * d_out[0], p0[1] + handle * d_out[1])
             p2: Point = (p3[0] - handle * d_in[0], p3[1] - handle * d_in[1])
             centerline = _sample_bezier(p0, p1, p2, p3, CONNECT_SAMPLES)
-            stroke_width = 2 * min(prev["width"], med_half)
-            connector: dict = {
-                "centerline": [list(p) for p in centerline],
-                "stroke_width": stroke_width,
-                "mask_width": stroke_width * 1.3,
-                "lift": False,
-            }
+            connector: dict = {"centerline": [list(p) for p in centerline], "lift": False}
+            apply_pen(connector, centerline, 2 * min(prev["width"], med_half))
             if provenance:
                 connector["pair"] = [prev["key"], slot.key]
                 connector["from_slot"] = prev["slot_index"]
@@ -376,7 +464,16 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
             track(centerline)
 
         # The glyph's own strokes (silhouette + centerline), translated by dx.
-        # Body strokes flow in writing order; diacritics are held back.
+        # Body strokes flow in writing order; diacritics are held back. When no
+        # connector precedes (a detached boundary on either side), the pen
+        # visibly lifts into this glyph's first stroke.
+        detached_entry = prev is not None and not joined
+        glyph_mask_width = 2.2 * max_half
+        if pen is not None and pen.kind == "broad_nib" and pen.nib is not None:
+            # The stamped nib's diagonal extent can exceed the widest width the
+            # glyph's own stroke directions reach — the reveal mask must cover
+            # the nib, not just the widest measured direction.
+            glyph_mask_width = max(glyph_mask_width, pen.nib.width_units * 1.15)
         for si, cl in enumerate(centerlines):
             offset = [(x + dx, y) for x, y in cl]
             rings = [
@@ -384,8 +481,9 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
             ]
             item: dict = {
                 "centerline": [list(p) for p in offset],
-                "mask_width": 2.2 * max_half,
-                "lift": si > 0,  # a within-glyph pen lift precedes every stroke after the first
+                "mask_width": glyph_mask_width,
+                # a within-glyph pen lift precedes every stroke after the first
+                "lift": si > 0 or detached_entry,
             }
             if provenance:
                 item["slot_index"] = slot_index
@@ -409,8 +507,10 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
             "ink_max_x": ink_max_x + dx,
             "key": slot.key,
             "slot_index": slot_index,
+            "joins": slot.joins,
+            "base": _key_base(slot.key, slot.position),
         }
-        cursor_x = exit_abs[0]
+        cursor_x = max(exit_abs[0], ink_max_x + dx) if not slot.joins else exit_abs[0]
 
     end_swing()  # the last word's Endstrich …
     flush_diacritics()  # … then its marks, once the body is complete

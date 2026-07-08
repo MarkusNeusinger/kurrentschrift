@@ -51,9 +51,13 @@ def strip_fugen(text: str) -> str:
 class GlyphSlot:
     """One shaped slot: a canonical glyph_key to render, or a gap.
 
-    ``key`` is None for a space / a character with no glyph (punctuation,
-    digits), which composes as an advance-only gap. ``text`` keeps the source
-    character(s) for availability notices. Mirrors the TS ``GlyphSlot``.
+    ``key`` is None for a space / a character with no glyph at all, which
+    composes as an advance-only gap. ``text`` keeps the source character(s)
+    for availability notices. ``joins`` is False for the detached glyph
+    classes (digits, punctuation): they render but no Übergang ever enters or
+    leaves them — the composer places them by ink clearance instead
+    (architektur.md §4: connections are generated between letters only).
+    Mirrors the TS ``GlyphSlot``.
     """
 
     key: str | None
@@ -61,6 +65,7 @@ class GlyphSlot:
     position: Position | None
     ligature: bool
     space: bool
+    joins: bool = True
 
 
 # --------------------------------------------------------------- the registry
@@ -94,6 +99,41 @@ _LIGATURES: dict[str, tuple[str, dict[str, str]]] = {
     "ß": ("sz", {}),
 }
 
+# Non-joining glyphs: digits and punctuation are written detached — no
+# Übergang ever enters or leaves them. They still fan out across the three
+# positions like letters (uniform admin authoring/lock machinery); the
+# position is resolved within their own run, and their templates are
+# identical across positions. Bases are ascii-safe glyph_key bases.
+_DIGITS: dict[str, str] = {c: c for c in "0123456789"}
+_PUNCT: dict[str, str] = {
+    ".": "period",
+    ",": "comma",
+    ";": "semicolon",
+    ":": "colon",
+    "!": "exclam",
+    "?": "question",
+    "'": "apostrophe",
+    "’": "apostrophe",  # ’ typographic apostrophe
+    "„": "quote-low",  # „ German opening quote
+    "“": "quote-high",  # “ German closing quote
+    "”": "quote-high",  # ” tolerated as closing
+    "-": "hyphen",  # written as the historical double oblique stroke ⸗ (U+2E17)
+    "‐": "hyphen",
+    "‑": "hyphen",
+    "–": "dash",  # Gedankenstrich
+    "—": "dash",
+    "(": "paren-open",
+    ")": "paren-close",
+    "§": "section",
+}
+_NONJOINING: dict[str, tuple[str, dict[str, str]]] = {c: (b, {}) for c, b in {**_DIGITS, **_PUNCT}.items()}
+
+# The straight double quote is ambiguous: German writing opens low („) and
+# closes high (“). Resolved by occurrence parity within the word — first "
+# opens low, second closes high — so a quote after other punctuation, ("Ja"),
+# still opens low.
+_STRAIGHT_QUOTE = '"'
+
 
 def _key_for(entry: tuple[str, dict[str, str]], position: Position) -> str:
     base, overrides = entry
@@ -110,11 +150,13 @@ def _is_lowercase_letter(c: str) -> bool:
 
 @dataclass(frozen=True)
 class _RawToken:
-    entry: tuple[str, dict[str, str]] | None  # None => unknown char or deferred s-allograph
+    entry: tuple[str, dict[str, str]] | None  # None => unknown char or deferred allograph
     text: str
     ligature: bool
     s_allograph: bool  # lowercase s/ſ whose long-vs-round form depends on position
     force_round: bool  # an s immediately before a Fuge — always the round allograph
+    joins: bool = True  # False: digits/punctuation/unknown — detached, no Übergang
+    quote_allograph: bool = False  # a straight " resolved low/high by occurrence parity
 
 
 def _tokenize_word(word: str) -> list[_RawToken]:
@@ -154,7 +196,20 @@ def _tokenize_word(word: str) -> list[_RawToken]:
             tokens.append(_RawToken(None, c, False, True, nxt == FUGE))
             i += 1
             continue
-        tokens.append(_RawToken(_LETTERS.get(c), c, False, False, False))
+        # Straight double quote: low vs high resolved by occurrence parity
+        # (see _STRAIGHT_QUOTE); typographic quotes were already caught above.
+        if c == _STRAIGHT_QUOTE:
+            tokens.append(_RawToken(None, c, False, False, False, joins=False, quote_allograph=True))
+            i += 1
+            continue
+        # Digits and punctuation: real glyphs, but detached (no Übergang).
+        nonjoining = _NONJOINING.get(c)
+        if nonjoining is not None:
+            tokens.append(_RawToken(nonjoining, c, False, False, False, joins=False))
+            i += 1
+            continue
+        entry = _LETTERS.get(c)
+        tokens.append(_RawToken(entry, c, False, False, False, joins=entry is not None))
         i += 1
     return tokens
 
@@ -168,19 +223,39 @@ def _position_of(index: int, count: int) -> Position:
 
 
 def _assign_positions(tokens: list[_RawToken]) -> list[GlyphSlot]:
+    # Positions are assigned per RUN of same-joins-class tokens: a trailing
+    # comma or a digit block must not steal the word-final position from the
+    # last letter — "Haus," keeps the round Schluss-s — and a detached block
+    # ("1922") resolves its own initial/medial/final internally.
+    runs: list[list[_RawToken]] = []
+    for t in tokens:
+        if runs and runs[-1][-1].joins == t.joins:
+            runs[-1].append(t)
+        else:
+            runs.append([t])
     out: list[GlyphSlot] = []
-    for idx, t in enumerate(tokens):
-        position = _position_of(idx, len(tokens))
-        if t.s_allograph:
-            # Long-s in initial/medial position, round s word-final — or forced
-            # round at a Fuge boundary regardless of position.
-            entry = _LETTERS["s"] if (t.force_round or position == "final") else _LETTERS["ſ"]
-            out.append(GlyphSlot(_key_for(entry, position), t.text, position, False, False))
-            continue
-        if t.entry is None:
-            out.append(GlyphSlot(None, t.text, None, False, False))
-            continue
-        out.append(GlyphSlot(_key_for(t.entry, position), t.text, position, t.ligature, False))
+    straight_quotes = 0  # occurrences within this word, for low/high pairing
+    for run in runs:
+        for run_idx, t in enumerate(run):
+            position = _position_of(run_idx, len(run))
+            if t.s_allograph:
+                # Long-s in initial/medial position, round s at the end of its
+                # letter run — or forced round at a Fuge boundary.
+                entry = _LETTERS["s"] if (t.force_round or position == "final") else _LETTERS["ſ"]
+                out.append(GlyphSlot(_key_for(entry, position), t.text, position, False, False))
+                continue
+            if t.quote_allograph:
+                # Straight double quote ("): German quotes pair low-then-high
+                # („Ja“). Resolved by occurrence parity within the word, so a
+                # quote after other punctuation — ("Ja") — still opens low.
+                base = "quote-low" if straight_quotes % 2 == 0 else "quote-high"
+                straight_quotes += 1
+                out.append(GlyphSlot(_key_for((base, {}), position), t.text, position, False, False, joins=False))
+                continue
+            if t.entry is None:
+                out.append(GlyphSlot(None, t.text, None, False, False, joins=False))
+                continue
+            out.append(GlyphSlot(_key_for(t.entry, position), t.text, position, t.ligature, False, joins=t.joins))
     return out
 
 
@@ -199,7 +274,7 @@ def shape_text(text: str) -> list[GlyphSlot]:
     out: list[GlyphSlot] = []
     for part in text.split():
         if out:
-            out.append(GlyphSlot(None, " ", None, False, True))
+            out.append(GlyphSlot(None, " ", None, False, True, joins=False))
         out.extend(shape_word(part))
     return out
 

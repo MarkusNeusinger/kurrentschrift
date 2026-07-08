@@ -61,8 +61,14 @@ from .overlay import write_overlay_png
 DEFAULT_FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
 CRASH_LOSS = 1.0
 
-# --style maps to the source's stored width_resolver.
-STYLE_TO_RESOLVER = {"suetterlin": "constant", "kurrent": "pressure"}
+# --style maps to the source's stored width_resolver. Offenbacher (broad_nib)
+# derives through the pressure pipeline and scores with the Schwellzug pixel
+# metric for now — that metric scores the MEASURED profile against the ink,
+# so it is honest for broad-nib extraction too; a dedicated width-direction
+# naturalness metric (w(phi) = W·|sin(phi−alpha)| fit) is designed in
+# docs/concepts/federmodelle.md and waits for enough authored templates to
+# calibrate against.
+STYLE_TO_RESOLVER = {"suetterlin": "constant", "kurrent": "pressure", "offenbacher": "broad_nib"}
 
 # Sütterlin per-glyph component order (and the footer's comp_<name> means).
 COMPONENT_KEYS = ["smoothness", "verticality", "corner", "collinearity", "retrace", "coverage", "naturalness"]
