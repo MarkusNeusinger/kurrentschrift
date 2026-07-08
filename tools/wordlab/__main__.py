@@ -144,6 +144,12 @@ def main() -> None:
     p.add_argument("--heatmap", action="store_true", help="colour connectors green→red by penalty")
     p.add_argument("--no-skeleton", action="store_true", help="hide the blue specimen skeleton")
     p.add_argument(
+        "--zoom-x",
+        default=None,
+        metavar="LO,HI",
+        help="crop the view to this horizontal fraction of the crop, e.g. 0.4,0.8 (join close-up)",
+    )
+    p.add_argument(
         "--sweep",
         default=None,
         metavar="DOTTED.PATH=v1,v2,...",
@@ -165,6 +171,14 @@ def main() -> None:
         _run_sweep(args, out_dir)
         return
 
+    zoom_x = None
+    if args.zoom_x:
+        lo, _, hi = args.zoom_x.partition(",")
+        try:
+            zoom_x = (float(lo), float(hi))
+        except ValueError:
+            raise SystemExit(f"--zoom-x needs LO,HI fractions, got {args.zoom_x!r}") from None
+
     cases = _resolve_cases(args)
     draws = []
     for case in cases:
@@ -177,6 +191,7 @@ def main() -> None:
                 callouts=not args.no_callouts,
                 heatmap=args.heatmap,
                 skeleton=not args.no_skeleton,
+                zoom_x=zoom_x,
             )
         )
 

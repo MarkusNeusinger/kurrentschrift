@@ -37,6 +37,17 @@ von Vorschlag D (`core/orthography.py`) konsumiert.
 ## Vorschlag B — `architektur.md` §2 und §4: systematische Bigramm-Extraktion aus Beispieltext
 
 **Status:** größer, betrifft zwei Festlegungen. Diskussion offen.
+**Mess-Evidenz (2026-07-08, Beobachtung — keine Übernahme):** Der erste
+Compose-Loop hat die per-Paar-Residualtabelle über alle 48 scorbaren
+Abb.-19-Wörter erzeugt (Segment-Attribution, beste Generator-Settings;
+`tools/wordbench/runs/loop-jul08/vorschlag-b-residuals.tsv`, Zusammenfassung
+in `qualitaetsmetrik.md` §6). Kein Paar weicht dramatisch ab; die Ausreißer
+(`h→r` 0.33, `r→f` 0.32, `l→v` 0.31, `e→h` 0.30 — alle n=1) sind eher
+Einzelglyph-/Bogenbreiten-Effekte als systematische Paarformen. Die
+Haupt-Abweichung liegt laut Loop **in den Bogenbreiten der Glyphen selbst**
+(Chart-Zelle vs. fließende Schrift), nicht in den Übergängen — ein Argument
+GEGEN gespeicherte Paar-Overrides beim heutigen Stand. Overrides bleiben
+gegated; nichts wurde gespeichert.
 
 ### Heutige Festlegung
 

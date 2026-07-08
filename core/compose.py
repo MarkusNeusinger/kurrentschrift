@@ -58,6 +58,19 @@ HIGH_EXIT_Y = 1.05
 BOW_EXIT_Y = 0.7
 BOW_LAUNCH_DEG = (-35.0, 5.0)
 CONNECT_SAMPLES = 24  # Bézier samples per connector (dense enough to read as a smooth arc)
+# Word-final Endstrich: the Ausgangsschrift finishes a word by continuing the
+# last letter's rising flank STRAIGHT up towards the Mittellinie. Every Abb.-19
+# specimen word carries that stroke; the composed words lacked it — the largest
+# single cause of the width penalty on short words (an 0.58, im 0.45) and of
+# the n-final coverage signal (the swing's ink lies in the last letter's
+# x-span). A tangent-straight extension, generated at the word boundary, never
+# stored — the Übergang into "nothing".
+SWING_TOP_Y = 0.7  # where the swing ends (bench optimum; plate medians: n≈0.53, m/e≈0.6, r≈0.82)
+SWING_MAX_RUN = 0.9  # cap the horizontal run for shallow exits (x-height units)
+SWING_MIN_RISE = 0.2  # a flat/falling exit does not swing (needs a rising flank to continue)
+# Only a LOW forward exit swings: a bow/Deckstrich exit (o, b, w) already ends
+# high and the plates show no extra flourish there.
+SWING_MAX_EXIT_Y = 0.7
 DEFAULT_HALF = 0.05  # fallback stroke half-width
 # Exit y (baseline = 0, descender ≈ −1) below which a glyph's stroke is judged
 # to end inside its descender loop, so the connector becomes a return upstroke
@@ -177,8 +190,40 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
             items.append(it)
         pending_diacritics.clear()
 
+    def end_swing() -> None:
+        """Emit the word-final Endstrich (see SWING_TOP_Y): the last glyph's
+        rising exit flank, continued straight towards the Mittellinie. High,
+        backward or flat exits (bows, Deckstrich) end the word as they are."""
+        nonlocal cursor_x
+        if not prev or prev["exit"][1] >= SWING_MAX_EXIT_Y:
+            return
+        d_out = _unit(prev["tangent_deg"])
+        if d_out[0] <= 0 or d_out[1] < SWING_MIN_RISE:
+            return
+        p0: Point = prev["exit"]
+        run = min((SWING_TOP_Y - p0[1]) * d_out[0] / d_out[1], SWING_MAX_RUN)
+        if run <= 0:
+            return
+        p3: Point = (p0[0] + run, p0[1] + run * d_out[1] / d_out[0])
+        centerline = [p0, ((p0[0] + p3[0]) / 2, (p0[1] + p3[1]) / 2), p3]
+        stroke_width = 2 * prev["width"]
+        swing: dict = {
+            "centerline": [list(p) for p in centerline],
+            "stroke_width": stroke_width,
+            "mask_width": stroke_width * 1.3,
+            "lift": False,
+        }
+        if provenance:
+            swing["pair"] = [prev["key"], None]
+            swing["from_slot"] = prev["slot_index"]
+            swing["to_slot"] = None
+        items.append(swing)
+        track(centerline)
+        cursor_x = p3[0]
+
     for slot_index, slot in enumerate(slots):
         if slot.space:
+            end_swing()  # the pen finishes the word body before the marks and the gap
             flush_diacritics()  # the word's marks land before the gap to the next word
             cursor_x += SPACE_ADV
             prev = None
@@ -357,7 +402,8 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
         }
         cursor_x = exit_abs[0]
 
-    flush_diacritics()  # the last word's marks, once its body is complete
+    end_swing()  # the last word's Endstrich …
+    flush_diacritics()  # … then its marks, once the body is complete
 
     if not math.isfinite(min_x):
         min_x, max_x, min_y, max_y = 0.0, 1.0, 0.0, 1.0

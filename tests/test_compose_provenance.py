@@ -49,9 +49,12 @@ def test_provenance_tags_without_touching_geometry(entry: dict) -> None:
     assert tagged["missing"] == plain["missing"]
     for p, t in zip(plain["items"], tagged["items"], strict=True):
         assert t["centerline"] == p["centerline"]  # geometry identical
-        if "stroke_width" in t:  # a generated connector
-            assert t["pair"] == [slots[t["from_slot"]].key, slots[t["to_slot"]].key]
-            assert t["from_slot"] < t["to_slot"]
+        if "stroke_width" in t:  # a generated connector or boundary stroke
+            if t["to_slot"] is None:  # the word-final Endstrich leaves its last glyph
+                assert t["pair"] == [slots[t["from_slot"]].key, None]
+            else:
+                assert t["pair"] == [slots[t["from_slot"]].key, slots[t["to_slot"]].key]
+                assert t["from_slot"] < t["to_slot"]
             assert "slot_index" not in t
         else:  # a glyph stroke (body or deferred diacritic)
             assert t["glyph_key"] == slots[t["slot_index"]].key
