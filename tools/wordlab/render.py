@@ -173,7 +173,13 @@ def _draw_callouts(ax, result: WordDeriveResult, tf: Callable, head: float) -> N
 
 
 def _draw_specimen(
-    ax, result: WordDeriveResult, *, callouts: bool, heatmap: bool, skeleton: bool, zoom_x: tuple | None = None
+    ax,
+    result: WordDeriveResult,
+    *,
+    callouts: bool,
+    heatmap: bool,
+    skeleton: bool,
+    zoom_x: tuple[float, float] | None = None,
 ) -> None:
     case = result.case
     tf = lambda pts: _transform(  # noqa: E731 — a tiny per-panel closure over the fit
@@ -262,7 +268,7 @@ def word_panel(
     callouts: bool = True,
     heatmap: bool = False,
     skeleton: bool = True,
-    zoom_x: tuple | None = None,
+    zoom_x: tuple[float, float] | None = None,
 ) -> Callable:
     """A draw callback for glyphlab's `tile` — one composed word over its specimen.
 

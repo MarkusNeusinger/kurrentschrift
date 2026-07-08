@@ -178,6 +178,8 @@ def main() -> None:
             zoom_x = (float(lo), float(hi))
         except ValueError:
             raise SystemExit(f"--zoom-x needs LO,HI fractions, got {args.zoom_x!r}") from None
+        if not (0.0 <= zoom_x[0] < zoom_x[1] <= 1.0):
+            raise SystemExit(f"--zoom-x fractions must satisfy 0 <= LO < HI <= 1, got {args.zoom_x!r}")
 
     cases = _resolve_cases(args)
     draws = []

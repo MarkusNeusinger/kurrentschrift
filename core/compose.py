@@ -233,9 +233,14 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
         if not data or not centerlines:
             if slot.key:
                 missing.append(slot.key)
-            # A null-key slot (punctuation, digit) or a missing glyph breaks the
-            # writing run just like a space: flush the marks gathered so far, so
-            # a preceding i-dot/umlaut lands at the end of its word.
+            else:
+                # A null-key slot (punctuation, digit) is a real word boundary
+                # in the slot stream — the word before it earns its Endstrich.
+                # A MISSING glyph is a mid-word hole and must not fake one.
+                end_swing()
+            # Either way the writing run breaks like a space: flush the marks
+            # gathered so far, so a preceding i-dot/umlaut lands at the end of
+            # its word.
             flush_diacritics()
             cursor_x += MISSING_ADV
             prev = None
