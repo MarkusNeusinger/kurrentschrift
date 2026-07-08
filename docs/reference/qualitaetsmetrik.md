@@ -617,3 +617,55 @@ dekomponiert zu breit; Autoring), `Gewehr` 0.233, `schwer` 0.227, `an`
 0.204 / `wenn` 0.197 (Bogenbreiten-Befund). Vorschlag-B-Residualtabelle:
 `runs/loop-jul08/vorschlag-b-residuals.tsv` (Status-Notiz in
 `planaenderungen.md` — Beobachtung, keine Übernahme).
+
+**Nachtrag (gleicher Tag, Runde 2):**
+
+- **Bogenbreiten-These RELATIVIERT** (Issue #167 umgescopet): eine
+  einheitliche Steigungs-/Pitch-Messung (Strich-Kreuzungen auf 0,25/0,5/
+  0,75 x-Höhe, identische Methode auf Proben-Skelett UND komponierten
+  Centerlines) zeigt: Anstiege 32–45° (Probe) vs. 34–44° (komponiert),
+  Abwärtsstriche beidseitig senkrecht, Bogen-Pitch vergleichbar. Die
+  „~35 % schmaler"-Zahl aus dem E4-Lauf war verkettete Landmarken-
+  Arithmetik, keine Direktmessung. Der E4-Kollaps geht aufs
+  Platzierungsmodell (Clearance-Packung vs. Diagonal-Überdehnung), nicht
+  auf die Glyphen. Offen bleibt ein BUCHSTABENSPEZIFISCHER Verdacht
+  (e-intern ~0,25 xh vs. ~0,4–0,5 auf der Tafel) — per-Letter-Landmarken-
+  tabelle in Arbeit, Glyph-Eingriffe erst danach.
+- **Verworfen — E6 Level-Join-Begradigung** (`|Δy| ≤ 0,10…0,30` →
+  +0,0016…+0,0082): Die These, der S-Schwung bei fast-levelen Joins
+  (t→e, f→e) sei ein Artefakt der erzwungenen G1-Tangenten, hält der
+  Messlatte nicht stand — die sanfte S-Kurve liegt näher an der Proben-
+  Tinte als die Gerade. Der sichtbare „Wackler" ist offenbar authentisch
+  (die Feder wippt beim Querbalken-Anschluss leicht durch).
+- Die komponierte t-Form (Fußschleife, Stammhöhe) ist chart-treu
+  (glyphlab-Gegenprobe der Zelle) — Abweichung zur fließenden Tafel ist
+  Chart-vs-Fluent, kein Ableitungsfehler.
+
+### Lauf `jul08` Runde 3 — Landmarken-Tabelle + Fluent-Weitung der Rundformen
+
+Die per-Buchstaben-Landmarkenmessung (identischer Kreuzungs-Code auf
+Template-Centerlines UND Proben-Skeletten, ≥5 Instanzen je Buchstabe aus
+Wörtern + Paaren, gegen Zoom-Crops validiert) löst Issue #167 endgültig
+auf: **Die Chart-Zellen quetschen die RUNDEN Körper**, nicht die Arkaden —
+interner Pitch (xh): e 0,314 → Tafel 0,400 (+21 %), a-Schüssel 0,671 →
+0,845 (+21 %), u 0,852 → 1,00 (+15 %), o 0,679 → 0,80 (+15 %); n +8 %
+(grenzwertig, bleibt), m +4 % / d +6 % (ok). Auf Wortebene absorbiert die
+Komposition ⅔ des Defizits (median spec/comp-Breite 1,051) — deshalb war
+die Wort-Headline für die These fast blind.
+
+**Behalten — Fluent-Weitung zur Renderzeit** (`core/pipeline.py`,
+`FLUENT_BODY_PITCH`): Der Körper (erste↔letzte Vertikale von Stroke 0)
+wird beim Rendern auf den gemessenen Tafel-Pitch gestreckt — stückweise
+linear, Stubs bleiben, alles rechts rückt nach; entry/exit/advance werden
+mitgeführt. NUR auf dem Gleichzug-Schreibpfad (`render_payload_for_
+template` = `/write/*` + Wort-Bench): das gespeicherte Template bleibt die
+Chart-Messung (§5-Resolver-Prinzip), Admin-Diagnose und Glyph-Bench
+vergleichen weiter gegen die Zelle, und ein „Alle neu ableiten" überlebt
+die Korrektur (zielbasiert: breiter autorisierte Körper ⇒ No-op).
+**Bench-neutral** (λ-Sweep 0/0,25/0,5/0,75/1,0 → 0,1240/0,1244/0,1237/
+0,1242/0,1253 — Spread 0,0017, die Wortmetrik wäscht Buchstabenform aus);
+Entscheid fürs volle Mess-Ziel per Overlay-Sichtung (von 0,115, zu 0,061,
+auch 0,101 — die geweiteten Rundformen liegen auf der Probe). Paare
+(Report) 0,197 → 0,199. Neue Wort-Headline: **0,1253** (innerhalb des
+Rauschens der 0,1240; die Wahrheit der Buchstabenformen war hier das
+Kriterium, nicht die Proxy-Zahl).
