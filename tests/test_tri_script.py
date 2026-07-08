@@ -84,6 +84,57 @@ def test_chisel_union_rings_vertical_stroke_has_chisel_extent():
     assert pts[:, 1].max() == pytest.approx(1.0 + abs(hy) + abs(ey), abs=1e-3)
 
 
+# ------------------------------------------------------------ pen calibration
+
+
+def test_pen_from_profiles_calibrates_per_resolver():
+    from api.rendering import pen_from_profiles
+
+    profiles = [[0.02, 0.03, 0.05], [0.06, 0.07, 0.08], [0.01, 0.04]]
+    # constant has its own pooled-nib path; no PenStyle.
+    assert pen_from_profiles("constant", profiles) is None
+    # pressure: the pooled hairline is the P10 of the flattened samples.
+    pressure = pen_from_profiles("pressure", profiles)
+    assert pressure.kind == "pressure"
+    assert pressure.hairline_half == pytest.approx(0.02)  # P10 of 8 sorted samples
+    # broad_nib: W = 2*P95, edge fraction = 2*P10/W clamped to [0.05, 0.5].
+    broad = pen_from_profiles("broad_nib", profiles)
+    assert broad.nib.width_units == pytest.approx(0.16)  # 2 * 0.08
+    assert broad.nib.edge_fraction == pytest.approx((2 * 0.02) / 0.16)
+    assert broad.nib.angle_deg == pytest.approx(15.0)  # the taught constant, never fitted
+
+
+def test_pen_from_profiles_falls_back_without_measurements():
+    from api.rendering import pen_from_profiles
+    from core.widths import BROAD_NIB_WIDTH_UNITS
+
+    assert pen_from_profiles("pressure", []).hairline_half is None
+    empty = pen_from_profiles("broad_nib", [[], []])
+    assert empty.nib.width_units == pytest.approx(BROAD_NIB_WIDTH_UNITS)
+
+
+def test_pen_from_profiles_clamps_edge_fraction():
+    from api.rendering import pen_from_profiles
+
+    # Near-constant measurements would imply edge ≈ width; the clamp keeps the
+    # nib a physical chisel (edge ≤ half the width).
+    flatish = [[0.05, 0.05, 0.051, 0.052]]
+    assert pen_from_profiles("broad_nib", flatish).nib.edge_fraction == pytest.approx(0.5)
+
+
+def test_chisel_union_rings_degenerate_inputs():
+    nib = BroadNib(width_units=0.2, angle_deg=15.0, edge_fraction=0.1)
+    assert chisel_union_rings(np.array([]), np.array([]), nib) == []
+    # A single point stamps the bare nib rectangle: area == W * t.
+    rings = chisel_union_rings(np.array([0.0]), np.array([0.0]), nib)
+    assert len(rings) == 1
+    pts = np.array(rings[0])
+    x, y = pts[:, 0], pts[:, 1]
+    area = 0.5 * abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1)))
+    # ring coordinates are rounded to 4 decimals — allow that quantisation
+    assert area == pytest.approx(nib.width_units * nib.edge_units, rel=1e-2)
+
+
 # --------------------------------------------------------- shaping: detached
 
 

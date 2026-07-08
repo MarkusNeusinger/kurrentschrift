@@ -70,6 +70,23 @@ def _percentile(sorted_values: list[float], q: float) -> float:
     return sorted_values[idx]
 
 
+def pen_from_profiles(width_resolver: str, profiles: list[list[float]]) -> PenStyle | None:
+    """Pure calibration core of `pooled_pen` — see its docstring for the
+    per-resolver rules. Split out so the maths is unit-testable without a DB."""
+    if width_resolver not in ("pressure", "broad_nib"):
+        return None
+    flat = sorted(float(w) for hw in profiles for w in (hw or []))
+    if width_resolver == "pressure":
+        return PenStyle(kind="pressure", hairline_half=_percentile(flat, 0.10) if flat else None)
+    if flat:
+        width_units = max(2 * _percentile(flat, 0.95), 1e-3)
+        edge_fraction = min(max((2 * _percentile(flat, 0.10)) / width_units, 0.05), 0.5)
+        nib = BroadNib(width_units=width_units, edge_fraction=edge_fraction)
+    else:
+        nib = BroadNib()
+    return PenStyle(kind="broad_nib", nib=nib)
+
+
 async def pooled_pen(db: AsyncSession, style_id: str, source_id: str, width_resolver: str) -> PenStyle | None:
     """Render-time pen for a style, calibrated from the source's measurements.
 
@@ -96,17 +113,7 @@ async def pooled_pen(db: AsyncSession, style_id: str, source_id: str, width_reso
     if hit is not None and now - hit[1] < _NIB_TTL_S:
         return hit[0]
     profiles = await TemplateRepository(db).half_widths_for_source(style_id, source_id)
-    flat = sorted(float(w) for hw in profiles for w in (hw or []))
-    if width_resolver == "pressure":
-        pen = PenStyle(kind="pressure", hairline_half=_percentile(flat, 0.10) if flat else None)
-    else:
-        if flat:
-            width_units = max(2 * _percentile(flat, 0.95), 1e-3)
-            edge_fraction = min(max((2 * _percentile(flat, 0.10)) / width_units, 0.05), 0.5)
-            nib = BroadNib(width_units=width_units, edge_fraction=edge_fraction)
-        else:
-            nib = BroadNib()
-        pen = PenStyle(kind="broad_nib", nib=nib)
+    pen = pen_from_profiles(width_resolver, profiles)
     _pen_cache[key] = (pen, now)
     return pen
 

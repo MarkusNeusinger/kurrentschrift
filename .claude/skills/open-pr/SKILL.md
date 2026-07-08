@@ -142,6 +142,22 @@ minutes after push; the bot's login is exactly
   after a fix-push, call `mcp__github__request_copilot_review`; to
   read the current reviews use `mcp__github__pull_request_read`.
 
+**b2. Read the Codecov patch report** (arrives as a PR comment from the
+`codecov` bot once the backend coverage upload lands; only the backend
+uploads coverage):
+
+```bash
+gh pr view <num> --json comments --jq '.comments[] | select(.author.login | test("codecov"; "i")) | .body'
+```
+
+Judge it like a reviewer, not a hard gate: uncovered NEW logic that a
+unit test can reach cheaply (pure helpers, calibration maths, edge
+branches) gets a test in the same PR — extracting a pure core from an
+async/DB wrapper to make it testable is the preferred move. Lines only
+a live DB/HTTP flow exercises (routers, pooled caches, threadpool glue)
+are the `/verify-api` sweep's job, not a unit test's — leave those, and
+say so in the PR if the patch percentage looks alarming.
+
 **c. List unresolved threads** (id is needed for resolving):
 
 - **Local:**

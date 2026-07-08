@@ -481,6 +481,12 @@ pipelines for plot specifications). For now:
   posted; a PR without its entry is incomplete. Data-only commits
   (chart sources, authored templates) are exempt — provenance lives in
   their `SOURCE.md`.
+- **Codecov:** the bot comments the patch coverage on every PR (backend
+  only). Treat it like a reviewer, not a hard gate: uncovered NEW logic
+  that a unit test can reach cheaply gets a test in the same PR
+  (prefer extracting a pure core from DB/async wrappers); lines only a
+  live DB/HTTP flow exercises are covered by the API verification
+  sweep instead.
 - **Pre-commit hooks:** none configured yet — when added, do not bypass
   with `--no-verify`.
 - **Verification before a PR:** run the local CI equivalents first —
