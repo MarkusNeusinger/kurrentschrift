@@ -180,6 +180,8 @@ def main() -> None:
             raise SystemExit(f"--zoom-x needs LO,HI fractions, got {args.zoom_x!r}") from None
         if not (0.0 <= zoom_x[0] < zoom_x[1] <= 1.0):
             raise SystemExit(f"--zoom-x fractions must satisfy 0 <= LO < HI <= 1, got {args.zoom_x!r}")
+        if args.live:
+            raise SystemExit("--zoom-x crops the specimen view; a --live case has no specimen crop")
 
     cases = _resolve_cases(args)
     draws = []
