@@ -58,14 +58,17 @@ HIGH_EXIT_Y = 1.05
 BOW_EXIT_Y = 0.7
 BOW_LAUNCH_DEG = (-35.0, 5.0)
 CONNECT_SAMPLES = 24  # Bézier samples per connector (dense enough to read as a smooth arc)
-# Word-final Endstrich: the Ausgangsschrift finishes a word by continuing the
-# last letter's rising flank STRAIGHT up towards the Mittellinie. Every Abb.-19
-# specimen word carries that stroke; the composed words lacked it — the largest
-# single cause of the width penalty on short words (an 0.58, im 0.45) and of
-# the n-final coverage signal (the swing's ink lies in the last letter's
-# x-span). A tangent-straight extension, generated at the word boundary, never
-# stored — the Übergang into "nothing".
-SWING_TOP_Y = 0.7  # where the swing ends (bench optimum; plate medians: n≈0.53, m/e≈0.6, r≈0.82)
+# Word-final Endstrich (the finishing upswing of the school hand): the plates
+# end a word by continuing the last letter's rising flank STRAIGHT up towards
+# the Mittellinie (x-height line). Every Abb.-19 specimen word carries that
+# stroke; the composed words lacked it — the largest single cause of the width
+# penalty on short words (an 0.58, im 0.45) and of the n-final coverage signal
+# (the swing's ink lies in the last letter's x-span). A tangent-straight
+# extension, generated at the word boundary, never stored — the transition
+# into "nothing".
+# Target height of the swing's end — SWING_MAX_RUN may cap a shallow exit's
+# run short of it. Bench optimum; plate medians: n≈0.53, m/e≈0.6, r≈0.82.
+SWING_TOP_Y = 0.7
 SWING_MAX_RUN = 0.9  # cap the horizontal run for shallow exits (x-height units)
 SWING_MIN_RISE = 0.2  # a flat/falling exit does not swing (needs a rising flank to continue)
 # Only a LOW forward exit swings: a bow/Deckstrich exit (o, b, w) already ends
@@ -191,9 +194,10 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
         pending_diacritics.clear()
 
     def end_swing() -> None:
-        """Emit the word-final Endstrich (see SWING_TOP_Y): the last glyph's
-        rising exit flank, continued straight towards the Mittellinie. High,
-        backward or flat exits (bows, Deckstrich) end the word as they are."""
+        """Emit the word-final Endstrich — the finishing upswing (see
+        SWING_TOP_Y): the last glyph's rising exit flank, continued straight
+        towards the x-height line. High, backward or flat exits (bows, a
+        Deckstrich cover-stroke) end the word as they are."""
         nonlocal cursor_x
         if not prev or prev["exit"][1] >= SWING_MAX_EXIT_Y:
             return
