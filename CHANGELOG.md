@@ -12,7 +12,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
-- **`llms.txt` for agentic browsing.** The site now serves a spec-conform `/llms.txt`
+- **`llms.txt` for agentic browsing.** The site now serves a spec-compliant `/llms.txt`
   (H1, summary, linked sections: the three public areas, legal, GitHub, the open read
   API's OpenAPI docs) so AI agents get a crawlable map instead of the SPA's index.html
   fallback — fixes the Chrome "agentic browsing" audit error.
