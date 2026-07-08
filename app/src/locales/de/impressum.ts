@@ -20,13 +20,25 @@ export const impressum = {
     linkedinLabel: 'LinkedIn',
     linkedinHandle: 'markus-neusinger',
     linkedinUrl: 'https://www.linkedin.com/in/markus-neusinger/',
-    // The operator's other project, listed with the operator info so it is
-    // actually findable (a mid-paragraph mention further down was too hidden).
-    projectsLabel: 'Weiteres Projekt',
-    anyplotLabel: 'anyplot.ai',
-    anyplotUrl: 'https://anyplot.ai',
     disclaimer:
       'kurrentschrift.ink ist eine private Liebhaberei: der Versuch, die deutsche Kurrentschrift wieder lesbar und schreibbar zu machen. Alle gezeigten Schriftzüge sind mit Sorgfalt nachgebildet und als Synthese gekennzeichnet — kein historisches Original.',
+  },
+  // "Other projects" block, mirroring the anyplot legal page (name — one-line
+  // description; own sites are linked with noopener only to keep the referrer).
+  projects: {
+    heading: 'Weitere Projekte',
+    items: [
+      {
+        name: 'anyplot.ai',
+        url: 'https://anyplot.ai',
+        description: 'eine Galerie von Datenvisualisierungs-Beispielen samt Code',
+      },
+      {
+        name: 'cite-citadel',
+        url: 'https://github.com/MarkusNeusinger/cite-citadel',
+        description: 'ein LLM-gepflegtes, vollständig zitiertes persönliches Wiki',
+      },
+    ],
   },
   privacy: {
     heading: 'Datenschutz',

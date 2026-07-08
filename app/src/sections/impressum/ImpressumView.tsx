@@ -7,7 +7,7 @@
 // block, hairline rows for the hosting table) but stays deliberately compact —
 // the audience here is far less technical.
 
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { Box, Link, Typography } from '@mui/material';
 
 import portraitUrl from '@/assets/markus-neusinger.webp';
@@ -110,15 +110,25 @@ export function ImpressumView() {
                 <Link href={t.imprint.linkedinUrl} target="_blank" rel="noopener noreferrer" sx={proseLink}>
                   {t.imprint.linkedinHandle}
                 </Link>
-                <br />
-                {t.imprint.projectsLabel}:{' '}
-                <Link href={t.imprint.anyplotUrl} target="_blank" rel="noopener noreferrer" sx={proseLink}>
-                  {t.imprint.anyplotLabel}
-                </Link>
               </Typography>
             </Box>
           </Box>
-          <Typography sx={{ ...prose, fontStyle: 'italic', mb: 0 }}>{t.imprint.disclaimer}</Typography>
+          <Typography sx={{ ...prose, fontStyle: 'italic' }}>{t.imprint.disclaimer}</Typography>
+
+          <Typography sx={subTitle}>{t.projects.heading}</Typography>
+          <Typography sx={{ ...prose, mb: 0 }}>
+            {t.projects.items.map((p, i) => (
+              <Fragment key={p.name}>
+                {i > 0 && <br />}
+                {/* no noreferrer — own sites, keep the referrer for their analytics */}
+                <Link href={p.url} target="_blank" rel="noopener" sx={proseLink}>
+                  {p.name}
+                </Link>
+                {' — '}
+                {p.description}
+              </Fragment>
+            ))}
+          </Typography>
         </Section>
 
         {/* Datenschutz */}
