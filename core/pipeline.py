@@ -840,7 +840,7 @@ def _fluent_widen(
             f["xy"] = [remap_x(float(f["xy"][0])), f["xy"][1]]
             fields[key] = f
     if fields["advance"] is not None:
-        fields["advance"] = float(fields["advance"]) + grow
+        fields["advance"] = remap_x(float(fields["advance"]))
     return out, fields
 
 

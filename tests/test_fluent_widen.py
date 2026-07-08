@@ -78,6 +78,7 @@ def test_unlisted_glyph_and_pressure_path_stay_untouched() -> None:
         row = _pinched_row(glyph)
         payload = render_payload_for_template(row, [1, 1, 1], resolver, 0.05 if resolver == "constant" else None)
         v = _verticals_x(payload)
+        assert len(v) >= 2
         assert abs((max(v) - min(v)) - 0.30) < 0.05
         assert payload["advance"] == row["advance"]
 
@@ -86,5 +87,6 @@ def test_wide_body_is_a_no_op_never_shrunk() -> None:
     row = _pinched_row("e", pitch=0.55)  # already wider than the 0.40 target
     payload = render_payload_for_template(row, [1, 1, 1], "constant", 0.05)
     v = _verticals_x(payload)
+    assert len(v) >= 2
     assert abs((max(v) - min(v)) - 0.55) < 0.05
     assert payload["advance"] == row["advance"]
