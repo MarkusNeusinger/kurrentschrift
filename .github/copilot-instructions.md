@@ -184,10 +184,13 @@ kurrentschrift/
 │       ├── locales/     # de/ namespaces — ALL German UI strings (pre-i18n layer)
 │       └── hooks/, styles/, global-config.ts
 ├── alembic/          # Postgres migrations
-│   └── versions/     # 0004 library schema + seeds … 0006 Sütterlin 1922 source
+│   └── versions/     # 0004 library schema + seeds … 0006 Sütterlin 1922 source …
+│   │                 #   0012 Petzendorfer 1889 as a SEPARATE Kurrent source (another hand
+│   │                 #   at ~57°, the only PD Kurrent digits row — never merged into loth-1866)
 ├── data/             # Sources, samples, derived — SEPARATE LICENSING
 │   ├── sources/      # public-domain originals (Loth 1866, Sütterlin 1922 incl. connected-writing
-│   │                 #   plates + words.json word rects for the word bench, Koch 1928 reserve, …)
+│   │                 #   plates + words.json word rects for the word bench, Koch 1928 reserve,
+│   │                 #   Petzendorfer 1889 Kurrent chart, …)
 │   ├── samples/      # own-hand scans
 │   └── derived/      # mixed licensing — see datenablage.md
 ├── docs/             # German concept + reference docs
