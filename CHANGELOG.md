@@ -12,6 +12,10 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Petzendorfer 1889 seeded as a separate Kurrent source** (migration 0012): the only PD
+  Kurrent chart with a digits row — the Kurrent digit templates' authoring source. A
+  deliberately separate hand (~57° calligraphic Kurrent), never merged into loth-1866.
+
 - **Broad-nib pen model — the Offenbacher Bandzugfeder writes for real.** `core/widths.py`
   gains the `BroadNib` model (`w(φ) = W·|sin(φ−α)| + t·|cos(φ−α)|` at Koch's constant 15°
   edge angle, primary source *Die Offenbacher Schrift*, 1928) and
@@ -40,6 +44,14 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 - **`tools/glyphbench --style offenbacher`** routes through the pressure derivation and the
   Schwellzug pixel metric (honest for extraction quality — it scores the measured profile)
   until a dedicated width-direction naturalness metric is calibrated.
+
+### Changed
+
+- **The handwriting reveal follows human kinematics.** `lib/strokeTiming` applies the
+  two-thirds power law (the pen visibly slows in curves — non-linear dashoffset keyframes
+  per stroke) and isochrony (stroke durations grow sublinearly with length) to
+  `WrittenWord` and `WrittenGlyph`, replacing the constant-speed sweep
+  (docs/concepts/federmodelle.md §5).
 
 ### Fixed
 
