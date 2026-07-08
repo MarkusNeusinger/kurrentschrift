@@ -37,8 +37,10 @@ const GROUP_LABELS: Record<LetterGroup, string> = {
   lower: de.admin.sidebar.groupLower,
   upper: de.admin.sidebar.groupUpper,
   comb: de.admin.sidebar.groupComb,
+  digit: de.admin.sidebar.groupDigit,
+  punct: de.admin.sidebar.groupPunct,
 };
-const GROUP_ORDER: LetterGroup[] = ['lower', 'upper', 'comb'];
+const GROUP_ORDER: LetterGroup[] = ['lower', 'upper', 'comb', 'digit', 'punct'];
 
 export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
   const { source, sourceId, sources, switchSource, bboxesByKey, glyphsByKey, activeGlyph, visibleGlyphs, toggleVisible, setOnlyVisible, setActiveGlyph } =

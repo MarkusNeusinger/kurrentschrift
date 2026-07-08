@@ -31,7 +31,7 @@ export type GlyphGroup = 'mvp' | 'alphabet';
 // (The German per-position UI label lives in `@/locales` as POSITION_LABEL.)
 export const POSITIONS: Position[] = ['initial', 'medial', 'final'];
 
-export type LetterGroup = 'lower' | 'upper' | 'comb';
+export type LetterGroup = 'lower' | 'upper' | 'comb' | 'digit' | 'punct';
 
 export interface Letter {
   glyph: string; // the actual character(s); sent as TraceRequest.glyph
@@ -39,6 +39,9 @@ export interface Letter {
   base: string; // ascii-safe glyph_key base
   note?: string; // short descriptor shown in tooltips
   keyOverrides?: Partial<Record<Position, string>>; // historical keys to preserve
+  // False for the detached glyph classes (digits, punctuation): they render
+  // but no Übergang ever enters or leaves them. Mirrors core/shaping.py.
+  joins?: boolean;
 }
 
 function range(start: string, end: string): string[] {
@@ -80,7 +83,31 @@ const COMB: Letter[] = [
   { glyph: 'ß', group: 'comb', base: 'sz', note: 'Eszett' },
 ];
 
-export const LETTERS: Letter[] = [...LOWER_SINGLE, ...LOWER_EXTRA, ...UPPER, ...COMB];
+// Digits and punctuation: real glyphs, but detached — written without any
+// Übergang (joins: false). They fan out across the three positions like
+// letters so the admin authoring/lock machinery applies unchanged; the three
+// positions carry the same form. Kept in sync with core/shaping.py
+// (_DIGITS/_PUNCT — alias characters like ’ ” ‐ — resolve in shaping).
+const DIGITS: Letter[] = range('0', '9').map((c): Letter => ({ glyph: c, group: 'digit', base: c, joins: false }));
+
+const PUNCT: Letter[] = [
+  { glyph: '.', group: 'punct', base: 'period', note: 'Punkt', joins: false },
+  { glyph: ',', group: 'punct', base: 'comma', note: 'Komma', joins: false },
+  { glyph: ';', group: 'punct', base: 'semicolon', note: 'Semikolon', joins: false },
+  { glyph: ':', group: 'punct', base: 'colon', note: 'Doppelpunkt', joins: false },
+  { glyph: '!', group: 'punct', base: 'exclam', note: 'Ausrufezeichen', joins: false },
+  { glyph: '?', group: 'punct', base: 'question', note: 'Fragezeichen', joins: false },
+  { glyph: "'", group: 'punct', base: 'apostrophe', note: 'Apostroph', joins: false },
+  { glyph: '„', group: 'punct', base: 'quote-low', note: 'Anführungszeichen öffnend', joins: false },
+  { glyph: '“', group: 'punct', base: 'quote-high', note: 'Anführungszeichen schließend', joins: false },
+  { glyph: '-', group: 'punct', base: 'hyphen', note: 'Bindestrich (schräger Doppelstrich ⸗)', joins: false },
+  { glyph: '–', group: 'punct', base: 'dash', note: 'Gedankenstrich', joins: false },
+  { glyph: '(', group: 'punct', base: 'paren-open', note: 'Klammer auf', joins: false },
+  { glyph: ')', group: 'punct', base: 'paren-close', note: 'Klammer zu', joins: false },
+  { glyph: '§', group: 'punct', base: 'section', note: 'Paragraf', joins: false },
+];
+
+export const LETTERS: Letter[] = [...LOWER_SINGLE, ...LOWER_EXTRA, ...UPPER, ...COMB, ...DIGITS, ...PUNCT];
 
 export function glyphKeyFor(letter: Letter, position: Position): string {
   return letter.keyOverrides?.[position] ?? `${letter.base}-${position}`;
@@ -199,6 +226,9 @@ export function quizKeysFromLocked(
   const seenGroups = new Set<string>();
   for (const [key, b] of Object.entries(bboxesByKey)) {
     if (!b?.locked) continue;
+    // Punctuation never enters the reading quiz (there is no letter to type);
+    // digits do — reading period digits is a real drill.
+    if (LETTER_BY_KEY[key]?.group === 'punct') continue;
     if (isLetterSplit(key, bboxesByKey)) {
       out.push(key); // split: each locked position is its own quiz unit
       continue;

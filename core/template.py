@@ -21,7 +21,9 @@ from dataclasses import dataclass
 import numpy as np
 import shapely
 from scipy.interpolate import CubicSpline
-from shapely.geometry import LineString, Point
+from shapely.geometry import LineString, MultiPoint, Point
+
+from core.widths import BroadNib
 
 
 def sample_polyline(
@@ -413,6 +415,51 @@ def capsule_union_rings(
     return rings
 
 
+def chisel_union_rings(
+    x: np.ndarray, y: np.ndarray, nib: BroadNib, simplify_tol: float = 0.0, decimals: int = 4
+) -> list[list[list[float]]]:
+    """Silhouette of a broad-nib (Bandzugfeder) stroke as rings.
+
+    The W × t nib rectangle held at the fixed angle alpha is swept along the
+    centerline: per segment the Minkowski sum is the convex hull of the
+    rectangle stamped at both endpoints; the union over all segments is the
+    stroke. Chisel ends fall out as the stamped nib edge (never round caps —
+    the nib edge IS the cap), a path moving parallel to the edge pinches to
+    the edge thickness t, and loops/reversals are resolved by the union like
+    in `capsule_union_rings`. Same ring/evenodd payload contract.
+    """
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    if len(x) == 0:
+        return []
+    hx, hy = nib.half_vector
+    ex, ey = nib.edge_vector
+
+    def stamp(px: float, py: float) -> list[tuple[float, float]]:
+        return [
+            (px + hx + ex, py + hy + ey),
+            (px + hx - ex, py + hy - ey),
+            (px - hx + ex, py - hy + ey),
+            (px - hx - ex, py - hy - ey),
+        ]
+
+    if len(x) == 1:
+        shapes = [MultiPoint(stamp(x[0], y[0])).convex_hull]
+    else:
+        shapes = [MultiPoint(stamp(x[i], y[i]) + stamp(x[i + 1], y[i + 1])).convex_hull for i in range(len(x) - 1)]
+    merged = shapely.union_all(shapes)
+    if simplify_tol > 0:
+        merged = merged.simplify(simplify_tol, preserve_topology=True)
+    polygons = merged.geoms if merged.geom_type == "MultiPolygon" else [merged]
+    rings: list[list[list[float]]] = []
+    for poly in polygons:
+        if poly.is_empty or poly.geom_type != "Polygon":
+            continue
+        for ring in (poly.exterior, *poly.interiors):
+            rings.append([[round(float(px), decimals), round(float(py), decimals)] for px, py in ring.coords])
+    return rings
+
+
 def multi_stroke_silhouettes(
     anchors: np.ndarray,
     half_widths: np.ndarray,
@@ -420,14 +467,23 @@ def multi_stroke_silhouettes(
     slant_deg: float,
     n: int = 240,
     corner_anchors: Sequence[int] | None = None,
+    nib: BroadNib | None = None,
 ) -> list[list[list[list[float]]]]:
-    """One capsule-union silhouette (ring list) per pen-stroke, slant applied.
+    """One silhouette (ring list) per pen-stroke, slant applied.
 
     Same sampling as `multi_stroke_outline`/`multi_stroke_centerlines`, so the
-    silhouettes stay aligned with the animated centerline sweep. The simplify
-    tolerance is in template units (x-height = 1): 0.002 ≈ a fifteenth of a
-    pixel at typical chart resolution — invisible, but it halves the payload.
+    silhouettes stay aligned with the animated centerline sweep. Default pen
+    is the round capsule union; passing a `nib` sweeps the Bandzugfeder
+    rectangle instead (broad_nib styles — widths then come from the nib, the
+    sampled width channel is ignored). The simplify tolerance is in template
+    units (x-height = 1): 0.002 ≈ a fifteenth of a pixel at typical chart
+    resolution — invisible, but it halves the payload.
     """
+    if nib is not None:
+        return [
+            chisel_union_rings(sx, sy, nib, simplify_tol=0.002)
+            for sx, sy, _sw in _multi_stroke_samples(anchors, half_widths, stroke_starts, slant_deg, n, corner_anchors)
+        ]
     return [
         capsule_union_rings(sx, sy, sw, simplify_tol=0.002)
         for sx, sy, sw in _multi_stroke_samples(anchors, half_widths, stroke_starts, slant_deg, n, corner_anchors)
