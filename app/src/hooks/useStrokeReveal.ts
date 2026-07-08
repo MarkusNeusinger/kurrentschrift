@@ -23,16 +23,20 @@ export function useStrokeReveal(
   useEffect(() => {
     if (!animate) return undefined;
     const anims: Animation[] = [];
-    pathRefs.current.forEach((el, i) => {
-      const t = timing[i];
-      if (!el || !t) return;
-      // No WAAPI (very old engines): reveal instantly instead of throwing —
-      // the finished word is the floor, like the reduced-motion path.
-      if (typeof el.animate !== 'function') {
+    // Iterate the timing table, not pathRefs.current: the ref array only ever
+    // grows (live typing on /federprobe), while timing always matches the
+    // strokes currently rendered.
+    timing.forEach((t, i) => {
+      const el = pathRefs.current[i];
+      if (!el) return;
+      const steps = t.arcAtTime.length - 1;
+      // No WAAPI (very old engines) or a degenerate single-sample profile:
+      // reveal instantly instead of throwing — the finished word is the floor,
+      // like the reduced-motion path.
+      if (typeof el.animate !== 'function' || steps <= 0) {
         el.style.strokeDashoffset = '0';
         return;
       }
-      const steps = t.arcAtTime.length - 1;
       const frames = t.arcAtTime.map((s, k) => ({
         strokeDashoffset: `${(1 - s).toFixed(4)}`,
         offset: k / steps,
