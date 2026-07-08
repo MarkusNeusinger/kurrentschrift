@@ -53,7 +53,7 @@ export function strokeTimeProfile(points: Point[]): StrokeTimeProfile {
   const n = points.length;
   if (n < 2) return { weight: 0, arcAtTime: Array.from({ length: KEYFRAME_STEPS + 1 }, (_, k) => k / KEYFRAME_STEPS) };
   // Per-segment arc length and time weight (curvature sampled at the segment's
-  // start vertex; end segments have no turn → weight = plain length).
+  // start vertex; only the FIRST segment has no preceding turn → plain length).
   const segLen: number[] = [];
   const segW: number[] = [];
   for (let i = 0; i < n - 1; i++) {
