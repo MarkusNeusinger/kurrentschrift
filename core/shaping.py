@@ -117,7 +117,7 @@ _PUNCT: dict[str, str] = {
     "„": "quote-low",  # „ German opening quote
     "“": "quote-high",  # “ German closing quote
     "”": "quote-high",  # ” tolerated as closing
-    "-": "hyphen",  # written as the historical double stroke (⹀-like)
+    "-": "hyphen",  # written as the historical double oblique stroke ⸗ (U+2E17)
     "‐": "hyphen",
     "‑": "hyphen",
     "–": "dash",  # Gedankenstrich
