@@ -114,6 +114,12 @@ def test_straight_quote_resolves_low_then_high():
     typographic = shape_word("„Ja“")
     assert typographic[0].key.startswith("quote-low")
     assert typographic[-1].key.startswith("quote-high")
+    # Occurrence parity, not word position: a quote after other punctuation
+    # still opens low — ("Ja") from the Copilot review.
+    parenthesised = shape_word('("Ja")')
+    quotes = [s for s in parenthesised if s.text == '"']
+    assert quotes[0].key.startswith("quote-low")
+    assert quotes[1].key.startswith("quote-high")
 
 
 def test_hyphen_and_dash_map_to_their_glyphs():

@@ -226,15 +226,16 @@ def _assign_positions(tokens: list[_RawToken]) -> list[GlyphSlot]:
     # comma or a digit block must not steal the word-final position from the
     # last letter — "Haus," keeps the round Schluss-s — and a detached block
     # ("1922") resolves its own initial/medial/final internally.
-    runs: list[list[tuple[int, _RawToken]]] = []
-    for idx, t in enumerate(tokens):
-        if runs and runs[-1][-1][1].joins == t.joins:
-            runs[-1].append((idx, t))
+    runs: list[list[_RawToken]] = []
+    for t in tokens:
+        if runs and runs[-1][-1].joins == t.joins:
+            runs[-1].append(t)
         else:
-            runs.append([(idx, t)])
+            runs.append([t])
     out: list[GlyphSlot] = []
+    straight_quotes = 0  # occurrences within this word, for low/high pairing
     for run in runs:
-        for run_idx, (idx, t) in enumerate(run):
+        for run_idx, t in enumerate(run):
             position = _position_of(run_idx, len(run))
             if t.s_allograph:
                 # Long-s in initial/medial position, round s at the end of its
@@ -243,9 +244,11 @@ def _assign_positions(tokens: list[_RawToken]) -> list[GlyphSlot]:
                 out.append(GlyphSlot(_key_for(entry, position), t.text, position, False, False))
                 continue
             if t.quote_allograph:
-                # Straight ": opens low at the very start of the word, closes
-                # high everywhere else.
-                base = "quote-low" if idx == 0 else "quote-high"
+                # Straight ": German quotes pair low-then-high („Ja“). Resolved
+                # by occurrence parity within the word, so a quote after other
+                # punctuation — ("Ja") — still opens low.
+                base = "quote-low" if straight_quotes % 2 == 0 else "quote-high"
+                straight_quotes += 1
                 out.append(GlyphSlot(_key_for((base, {}), position), t.text, position, False, False, joins=False))
                 continue
             if t.entry is None:

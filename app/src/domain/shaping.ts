@@ -170,15 +170,16 @@ function assignPositions(tokens: RawToken[]): GlyphSlot[] {
   // last letter — "Haus," keeps the round Schluss-s — and a detached block
   // ("1922") resolves its own initial/medial/final internally. Mirrors
   // core/shaping.py::_assign_positions.
-  const runs: Array<Array<[number, RawToken]>> = [];
-  tokens.forEach((t, idx) => {
+  const runs: RawToken[][] = [];
+  for (const t of tokens) {
     const last = runs[runs.length - 1];
-    if (last && last[last.length - 1][1].joins === t.joins) last.push([idx, t]);
-    else runs.push([[idx, t]]);
-  });
+    if (last && last[last.length - 1].joins === t.joins) last.push(t);
+    else runs.push([t]);
+  }
   const out: GlyphSlot[] = [];
+  let straightQuotes = 0; // occurrences within this word, for low/high pairing
   for (const run of runs) {
-    run.forEach(([idx, t], runIdx) => {
+    run.forEach((t, runIdx) => {
       const position = positionOf(runIdx, run.length);
       // Long-s in initial/medial position, round s at the end of its letter
       // run — or forced round at a Fuge boundary regardless of position.
@@ -194,10 +195,12 @@ function assignPositions(tokens: RawToken[]): GlyphSlot[] {
         });
         return;
       }
-      // Straight ": opens low at the very start of the word, closes high
-      // everywhere else.
+      // Straight ": German quotes pair low-then-high („Ja“). Resolved by
+      // occurrence parity within the word, so a quote after other
+      // punctuation — ("Ja") — still opens low.
       if (t.quoteAllograph) {
-        const letter = idx === 0 ? QUOTE_LOW : QUOTE_HIGH;
+        const letter = straightQuotes % 2 === 0 ? QUOTE_LOW : QUOTE_HIGH;
+        straightQuotes += 1;
         out.push({
           key: letter ? glyphKeyFor(letter, position) : null,
           text: t.text,
