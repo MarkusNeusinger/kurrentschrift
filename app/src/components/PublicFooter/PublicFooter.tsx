@@ -43,8 +43,8 @@ export function PublicFooter() {
           py: 3,
           display: 'flex',
           flexDirection: 'row',
-          // Three links no longer fit beside the tagline on a phone — there the
-          // link row wraps onto its own line instead of truncating.
+          // If the link row doesn't fit beside the tagline (narrow phones), it
+          // wraps onto its own line instead of truncating.
           flexWrap: { xs: 'wrap', sm: 'nowrap' },
           justifyContent: 'space-between',
           alignItems: 'center',
