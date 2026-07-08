@@ -58,6 +58,11 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   per stroke) and isochrony (stroke durations grow sublinearly with length) to
   `WrittenWord` and `WrittenGlyph`, replacing the constant-speed sweep
   (docs/concepts/federmodelle.md §5).
+- **The Schreibtafel writes with the same hand.** `WrittenSheet` (the `/tafel` alphabet
+  rows) now runs through the shared kinematic reveal (strokeTiming + the WAAPI hook)
+  instead of its own linear keyframes — the most glyph-dense writing surface no longer
+  sweeps at machine-constant speed; cascade stagger, tap-replay and the ink settle are
+  unchanged.
 
 ### Fixed
 

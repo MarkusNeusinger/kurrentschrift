@@ -16,8 +16,11 @@
 // (a gentle left-to-right cascade); clicking
 // a glyph clears it, pauses, then re-writes it in place — no modal. Technique per glyph (from
 // WrittenGlyph): fill the silhouette, then reveal it with a wide mask swept
-// along the centerlines via an animated stroke-dashoffset, lifting between pen
-// strokes; the ink then settles fresh → oxidized. Coordinates: template space
+// along the centerlines via stroke-dashoffset, lifting between pen strokes —
+// driven by the shared kinematics pair (lib/strokeTiming + useStrokeReveal), so
+// the pen slows in curves and stroke durations follow isochrony exactly like
+// WrittenWord/WrittenGlyph, not a constant-speed sweep; the ink then settles
+// fresh → oxidized. Coordinates: template space
 // (baseline 0, y up), negated for SVG. Every row shares one viewBox width so the
 // glyph scale stays constant; the four lines span the full width.
 
@@ -28,7 +31,9 @@ import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 
 import { CONFIG } from '@/global-config';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
+import { useStrokeReveal } from '@/hooks/useStrokeReveal';
 import { fetchRenderGlyphs, type GlyphRenderData } from '@/lib/api';
+import { allocateDurations, strokeTimeProfile } from '@/lib/strokeTiming';
 import { ringsToPathD, type Ring } from '@/lib/svg';
 import { de } from '@/locales';
 import { inkState, paper, schulheft } from '@/styles/paper';
@@ -51,14 +56,14 @@ const PAD_Y = 0.14; // vertical air above the ascender / below the descender
 const RULE = schulheft.rulingBlueFaded;
 const RULE_W = 1; // px — non-scaling so the rule stays a hairline at any row scale
 const HOVER = 'rgba(64, 130, 109, 0.10)'; // faint viridian wash on hover/focus
-const WRITE_MS = 1100; // per-glyph write-in duration
+const WRITE_MS = 1100; // per-glyph write-in target across all strokes (isochrony-allocated)
+const MIN_STROKE_MS = 180; // per-stroke floor so a short stroke never reads as a flicker
 const PEN_PAUSE_MS = 130; // pause at a pen lift so an Absetzen reads as a lift
 const SETTLE_MS = 1500; // iron-gall fresh → oxidized
 const STAGGER_MS = 65; // per-glyph start offset for the load cascade
 const STAGGER_CAP = 1300; // …capped so the last letter never waits too long
 const CLICK_PAUSE_MS = 420; // after a tap the glyph clears, then waits this long before re-writing
 
-const reveal = keyframes`from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; }`;
 const inkSettle = keyframes`from { fill: ${inkState.fresh}; } to { fill: ${inkState.oxidized}; }`;
 // Loading "pen warming up" dots, shown centred in the ruling until the glyphs load.
 const loaderPulse = keyframes`0%, 80%, 100% { opacity: 0.25; transform: scale(0.7); } 40% { opacity: 1; transform: scale(1); }`;
@@ -69,14 +74,6 @@ function guidesFromRatio(ratio: number[]): GlyphRenderData['template_guides'] {
   const [ober = 1, mittel = 1, unter = 1] = ratio;
   const m = mittel || 1;
   return { baseline: 0, midband: 1, ascender: 1 + ober / m, descender: -(unter / m) };
-}
-
-function chordLength(points: Pt[]): number {
-  let total = 0;
-  for (let i = 1; i < points.length; i++) {
-    total += Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]);
-  }
-  return total;
 }
 
 // Polyline → SVG path, translated by tx and y-negated (template y up, SVG down).
@@ -157,20 +154,33 @@ function SheetGlyph({ geom, glyph, glyphX, cellX, cellW, vbY, vbH, orderIndex, r
   // Left-align the ink so the gap to the previous glyph's end is constant.
   const tx = glyphX - geom.minX;
 
-  // Per-stroke timing: duration ∝ chord length, a pen pause between strokes.
-  // The first stroke is offset by the cascade delay on the initial write; on a
-  // tap (run > 0) the remount instantly clears the ink (mask back to offset 1),
-  // then CLICK_PAUSE_MS holds it blank before the pen starts re-writing.
-  const lengths = geom.centerlines.map(chordLength);
-  const total = lengths.reduce((s, l) => s + l, 0) || 1;
-  let cursor = run === 0 ? Math.min(orderIndex * STAGGER_MS, STAGGER_CAP) : CLICK_PAUSE_MS;
-  const timing = geom.centerlines.map((_, i) => {
-    const dur = Math.max(180, (lengths[i] / total) * WRITE_MS);
-    const delay = cursor;
-    cursor += dur + PEN_PAUSE_MS;
-    return { dur, delay };
-  });
-  const writeEnd = cursor;
+  // Per-stroke timing via the shared kinematics (lib/strokeTiming): the
+  // two-thirds power law slows the sweep in curves, isochrony allocates stroke
+  // durations sublinearly, a pen pause between strokes. The first stroke is
+  // offset by the cascade delay on the initial write; on a tap (run > 0) the
+  // remount instantly clears the ink (mask back to offset 1), then
+  // CLICK_PAUSE_MS holds it blank before the pen starts re-writing.
+  const { timing, writeEnd } = useMemo(() => {
+    const profiles = geom.centerlines.map((cl) => strokeTimeProfile(cl));
+    const durations = allocateDurations(
+      profiles.map((p) => p.weight),
+      WRITE_MS,
+      MIN_STROKE_MS,
+    );
+    let cursor = run === 0 ? Math.min(orderIndex * STAGGER_MS, STAGGER_CAP) : CLICK_PAUSE_MS;
+    const entries = profiles.map((p, i) => {
+      const dur = durations[i];
+      const delay = cursor;
+      cursor += dur + PEN_PAUSE_MS;
+      return { dur, delay, arcAtTime: p.arcAtTime };
+    });
+    return { timing: entries, writeEnd: cursor };
+  }, [geom, orderIndex, run]);
+
+  // WAAPI drives the per-path dashoffset — the same element-scoped mechanism as
+  // WrittenWord/WrittenGlyph, with no per-stroke Emotion @keyframes.
+  const maskPathRefs = useRef<Array<SVGPathElement | null>>([]);
+  useStrokeReveal(maskPathRefs, timing, animate, run);
 
   const maskId = `sheet-${uid.replace(/[^a-zA-Z0-9_-]/g, '_')}-${run}`;
   const bx = tx + geom.minX - 0.08;
@@ -203,9 +213,11 @@ function SheetGlyph({ geom, glyph, glyphX, cellX, cellW, vbY, vbH, orderIndex, r
         <mask id={maskId} maskUnits="userSpaceOnUse" x={bx} y={vbY} width={bw} height={vbH}>
           <rect x={bx} y={vbY} width={bw} height={vbH} fill="black" />
           {geom.centerlines.map((line, i) => (
-            <Box
-              component="path"
+            <path
               key={`${run}-${i}`}
+              ref={(el) => {
+                maskPathRefs.current[i] = el;
+              }}
               d={lineD(line, tx)}
               fill="none"
               stroke="#fff"
@@ -214,12 +226,7 @@ function SheetGlyph({ geom, glyph, glyphX, cellX, cellW, vbY, vbH, orderIndex, r
               strokeLinejoin="round"
               pathLength={1}
               strokeDasharray={1}
-              sx={{
-                strokeDashoffset: animate ? 1 : 0,
-                animation: animate
-                  ? `${reveal} ${timing[i].dur}ms linear ${timing[i].delay}ms forwards`
-                  : undefined,
-              }}
+              style={{ strokeDashoffset: animate ? 1 : 0 }}
             />
           ))}
         </mask>
