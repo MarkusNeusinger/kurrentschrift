@@ -780,7 +780,9 @@ def _crossings_at(points: np.ndarray, y: float) -> list[float]:
     return sorted(out)
 
 
-def _fluent_widen(glyph: str | None, anchors: np.ndarray, stroke_starts, glyph_row: dict) -> tuple[np.ndarray, dict]:
+def _fluent_widen(
+    glyph: str | None, anchors: np.ndarray, stroke_starts: list[int] | None, glyph_row: dict
+) -> tuple[np.ndarray, dict]:
     """Stretch a pinched round-letter BODY to its fluent pitch (see
     FLUENT_BODY_PITCH). Returns the (possibly) remapped anchors plus the
     x-remapped entry/exit/advance fields; everything left of the body stays
