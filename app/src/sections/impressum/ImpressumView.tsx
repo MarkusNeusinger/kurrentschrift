@@ -110,6 +110,11 @@ export function ImpressumView() {
                 <Link href={t.imprint.linkedinUrl} target="_blank" rel="noopener noreferrer" sx={proseLink}>
                   {t.imprint.linkedinHandle}
                 </Link>
+                <br />
+                {t.imprint.projectsLabel}:{' '}
+                <Link href={t.imprint.anyplotUrl} target="_blank" rel="noopener noreferrer" sx={proseLink}>
+                  {t.imprint.anyplotLabel}
+                </Link>
               </Typography>
             </Box>
           </Box>
@@ -181,13 +186,7 @@ export function ImpressumView() {
 
         {/* Transparenz */}
         <Section heading={t.transparency.heading}>
-          <Typography sx={{ ...prose, mb: 0 }}>
-            {t.transparency.textBeforeLink}
-            <Link href={t.transparency.anyplotUrl} target="_blank" rel="noopener noreferrer" sx={proseLink}>
-              {t.transparency.anyplotLinkText}
-            </Link>
-            {t.transparency.textAfterLink}
-          </Typography>
+          <Typography sx={{ ...prose, mb: 0 }}>{t.transparency.text}</Typography>
         </Section>
 
         <Typography sx={{ ...prose, mb: 0, mt: { xs: 5, md: 6 }, textAlign: 'center', fontSize: '.9rem', color: paper.sepia, fontStyle: 'italic' }}>

@@ -15,8 +15,8 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 - **The public repository is linked.** Every public page's footer now carries a GitHub
   link next to the Impressum link (on phones the row wraps onto its own line), and the
   Impressum's "Quellen & Lizenzen" no longer announces the repository as planned but links
-  it directly. The Impressum's Transparenz section now also mentions the operator's other
-  project anyplot.ai — deliberately there and not in the footer.
+  it directly. The operator block lists the other project anyplot.ai ("Weiteres Projekt")
+  next to the LinkedIn line — deliberately in the Impressum and not in the footer.
 - **Broad-nib pen model — the Offenbacher Bandzugfeder writes for real.** `core/widths.py`
   gains the `BroadNib` model (`w(φ) = W·|sin(φ−α)| + t·|cos(φ−α)|` at Koch's constant 15°
   edge angle, primary source *Die Offenbacher Schrift*, 1928) and

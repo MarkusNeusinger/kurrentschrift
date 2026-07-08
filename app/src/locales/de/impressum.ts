@@ -20,6 +20,11 @@ export const impressum = {
     linkedinLabel: 'LinkedIn',
     linkedinHandle: 'markus-neusinger',
     linkedinUrl: 'https://www.linkedin.com/in/markus-neusinger/',
+    // The operator's other project, listed with the operator info so it is
+    // actually findable (a mid-paragraph mention further down was too hidden).
+    projectsLabel: 'Weiteres Projekt',
+    anyplotLabel: 'anyplot.ai',
+    anyplotUrl: 'https://anyplot.ai',
     disclaimer:
       'kurrentschrift.ink ist eine private Liebhaberei: der Versuch, die deutsche Kurrentschrift wieder lesbar und schreibbar zu machen. Alle gezeigten Schriftzüge sind mit Sorgfalt nachgebildet und als Synthese gekennzeichnet — kein historisches Original.',
   },
@@ -73,15 +78,8 @@ export const impressum = {
   },
   transparency: {
     heading: 'Transparenz',
-    // Split around the anyplot.ai link (same pattern as privacy.analytics*) —
-    // the operator's other project is mentioned here, deliberately not in the
-    // footer (it has little to do with Kurrent).
-    textBeforeLink:
-      'kurrentschrift.ink ist das Werk eines Einzelnen, offen für alle. Die Website läuft vollständig in der EU — React im Browser, Python und PostgreSQL auf Google Cloud in den Niederlanden. Vom selben Schreibtisch stammt übrigens auch ',
-    anyplotLinkText: 'anyplot.ai',
-    anyplotUrl: 'https://anyplot.ai',
-    textAfterLink:
-      '. Fragen, Hinweise und Berichtigungen sind jederzeit willkommen — ich freue mich über Post.',
+    text:
+      'kurrentschrift.ink ist das Werk eines Einzelnen, offen für alle. Die Website läuft vollständig in der EU — React im Browser, Python und PostgreSQL auf Google Cloud in den Niederlanden. Fragen, Hinweise und Berichtigungen sind jederzeit willkommen — ich freue mich über Post.',
   },
   lastUpdated: 'Visp, im Juni 2026',
 } as const;
