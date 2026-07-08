@@ -24,12 +24,10 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { CONFIG } from '@/global-config';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { fetchRenderGlyph, peekRenderGlyph, seedRenderGlyph, type GlyphRenderData } from '@/lib/api';
+import { allocateDurations, revealKeyframeBody, strokeTimeProfile } from '@/lib/strokeTiming';
 import { ringsToPathD, type Ring } from '@/lib/svg';
 import { de } from '@/locales';
 import { inkState, schulheft } from '@/styles/paper';
-
-// Reveal a dashed path (pathLength=1, dasharray=1): offset 1 hides it, 0 draws it.
-const reveal = keyframes`from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; }`;
 
 // Iron-gall ink settle: German school ink wrote blue-black and oxidized to
 // near-black (Reichs-Tintenprüfung 1888/1912) — compressed here from weeks to
@@ -52,14 +50,6 @@ const GUIDE_MIDBAND_OPACITY = 0.55;
 // so a glyph the quiz letter shows and a written word contains costs one fetch
 // per session across ALL surfaces. Version stamps (`bust`) and externally
 // supplied payloads (the admin dialog) are handled there too.
-
-function chordLength(points: Array<[number, number]>): number {
-  let total = 0;
-  for (let i = 1; i < points.length; i++) {
-    total += Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]);
-  }
-  return total;
-}
 
 // Polyline as an SVG path `d`, negating y (template y is up, SVG y is down).
 function pathD(points: Array<[number, number]>): string {
@@ -215,17 +205,22 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight 
     // little extra + round caps cover the spline-normal seams and pen-nib tip.
     const maskWidth = Math.max(0.05, 2.2 * maxHalfWidth);
 
-    // Per-stroke durations proportional to path length so the pen moves at a
-    // roughly even pace; each stroke starts after the previous one finishes plus
-    // a short pen-lift pause.
-    const lengths = centerlines.map(chordLength);
-    const totalLen = lengths.reduce((s, l) => s + l, 0) || 1;
+    // Human kinematics instead of an even pace (lib/strokeTiming): the
+    // two-thirds power law slows the sweep in curves via non-linear dashoffset
+    // keyframes, isochrony allocates stroke durations sublinearly; each stroke
+    // starts after the previous one finishes plus a short pen-lift pause.
+    const profiles = centerlines.map((cl) => strokeTimeProfile(cl as [number, number][]));
+    const durations = allocateDurations(
+      profiles.map((p) => p.weight),
+      durationMs,
+      250,
+    );
     let cursor = 0;
     const timing = centerlines.map((_, i) => {
-      const dur = Math.max(250, (lengths[i] / totalLen) * durationMs);
+      const dur = durations[i];
       const delay = cursor;
       cursor += dur + PEN_PAUSE_MS;
-      return { dur, delay };
+      return { dur, delay, kf: keyframes(revealKeyframeBody(profiles[i].arcAtTime)) };
     });
 
     // End of the writing performance. Includes the trailing PEN_PAUSE_MS on
@@ -300,7 +295,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight 
                 sx={{
                   strokeDashoffset: animate ? 1 : 0,
                   animation: animate
-                    ? `${reveal} ${timing[i].dur}ms linear ${timing[i].delay}ms forwards`
+                    ? `${timing[i].kf} ${timing[i].dur}ms linear ${timing[i].delay}ms forwards`
                     : undefined,
                 }}
               />

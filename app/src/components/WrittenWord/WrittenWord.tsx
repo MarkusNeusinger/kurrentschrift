@@ -21,11 +21,10 @@ import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { CONFIG } from '@/global-config';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { getWriteWord, type ComposedWordOut } from '@/lib/api';
+import { allocateDurations, revealKeyframeBody, strokeTimeProfile } from '@/lib/strokeTiming';
 import { ringsToPathD } from '@/lib/svg';
 import { de } from '@/locales';
 import { inkState, schulheft } from '@/styles/paper';
-
-const reveal = keyframes`from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; }`;
 // Iron-gall settle: fresh blue-black → oxidized brown after the write-in ends.
 const inkSettle = keyframes`
   from { fill: ${inkState.fresh}; stroke: ${inkState.fresh}; }
@@ -63,14 +62,6 @@ function fetchComposed(sourceId: string, text: string): Promise<ComposedWordOut>
 }
 
 type Point = [number, number];
-
-function chordLength(points: Point[]): number {
-  let total = 0;
-  for (let i = 1; i < points.length; i++) {
-    total += Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]);
-  }
-  return total;
-}
 
 function pathD(points: Point[]): string {
   return points.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x},${-y}`).join(' ');
@@ -172,14 +163,21 @@ export function WrittenWord({
     const vbY = -yHi;
     const vbH = Math.max(0.5, yHi - yLo);
 
-    const lengths = items.map((it) => chordLength(it.centerline));
-    const total = lengths.reduce((s, l) => s + l, 0) || 1;
+    // Human kinematics instead of a constant sweep (lib/strokeTiming): the
+    // two-thirds power law slows the front in curves (non-linear dashoffset
+    // keyframes per item) and isochrony allocates durations sublinearly.
+    const profiles = items.map((it) => strokeTimeProfile(it.centerline));
+    const durations = allocateDurations(
+      profiles.map((p) => p.weight),
+      durationMs,
+      MIN_ITEM_MS,
+    );
     let cursor = 0;
     const timing = items.map((_, i) => {
-      const dur = Math.max(MIN_ITEM_MS, (lengths[i] / total) * durationMs);
+      const dur = durations[i];
       const delay = cursor + (items[i].lift ? PEN_PAUSE_MS : 0);
       cursor = delay + dur;
-      return { dur, delay };
+      return { dur, delay, kf: keyframes(revealKeyframeBody(profiles[i].arcAtTime)) };
     });
     return { minX, vbW, vbY, vbH, items, guides, timing, writeEndMs: cursor };
   }, [composed, showLineature, durationMs]);
@@ -236,7 +234,7 @@ export function WrittenWord({
                 strokeDasharray={1}
                 sx={{
                   strokeDashoffset: animate ? 1 : 0,
-                  animation: animate ? `${reveal} ${timing[i].dur}ms linear ${timing[i].delay}ms forwards` : undefined,
+                  animation: animate ? `${timing[i].kf} ${timing[i].dur}ms linear ${timing[i].delay}ms forwards` : undefined,
                 }}
               />
             ))}
