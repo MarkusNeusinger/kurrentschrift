@@ -95,15 +95,12 @@ export function strokeTimeProfile(points: Point[]): StrokeTimeProfile {
   return { weight: totalW, arcAtTime };
 }
 
-// Allocate a total budget across strokes with isochrony: share ∝ weight^β.
+// Allocate ~totalMs across strokes with isochrony: share ∝ weight^β. The
+// per-stroke floor may push the SUM above totalMs on stroke-rich texts —
+// deliberately the same behaviour as the pre-kinematics allocation (a stroke
+// shorter than minMs reads as a flicker); totalMs is a target, not a contract.
 export function allocateDurations(weights: number[], totalMs: number, minMs: number): number[] {
   const powered = weights.map((w) => Math.pow(Math.max(w, 1e-6), ISOCHRONY_BETA));
   const sum = powered.reduce((s, v) => s + v, 0) || 1;
   return powered.map((p) => Math.max(minMs, (p / sum) * totalMs));
-}
-
-// CSS keyframe body for a stroke's non-linear dashoffset reveal (pathLength=1).
-export function revealKeyframeBody(arcAtTime: number[]): string {
-  const steps = arcAtTime.length - 1;
-  return arcAtTime.map((s, k) => `${Math.round((k / steps) * 100)}% { stroke-dashoffset: ${(1 - s).toFixed(4)}; }`).join('\n');
 }

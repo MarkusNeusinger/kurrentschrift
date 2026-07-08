@@ -16,12 +16,13 @@
 
 import ReplayIcon from '@mui/icons-material/Replay';
 import { Box, CircularProgress, IconButton, keyframes } from '@mui/material';
-import { useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { CONFIG } from '@/global-config';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
+import { useStrokeReveal } from '@/hooks/useStrokeReveal';
 import { getWriteWord, type ComposedWordOut } from '@/lib/api';
-import { allocateDurations, revealKeyframeBody, strokeTimeProfile } from '@/lib/strokeTiming';
+import { allocateDurations, strokeTimeProfile } from '@/lib/strokeTiming';
 import { ringsToPathD } from '@/lib/svg';
 import { de } from '@/locales';
 import { inkState, schulheft } from '@/styles/paper';
@@ -177,12 +178,18 @@ export function WrittenWord({
       const dur = durations[i];
       const delay = cursor + (items[i].lift ? PEN_PAUSE_MS : 0);
       cursor = delay + dur;
-      return { dur, delay, kf: keyframes(revealKeyframeBody(profiles[i].arcAtTime)) };
+      return { dur, delay, arcAtTime: profiles[i].arcAtTime };
     });
     return { minX, vbW, vbY, vbH, items, guides, timing, writeEndMs: cursor };
   }, [composed, showLineature, durationMs]);
 
   const replay = useCallback(() => setRun((r) => r + 1), []);
+
+  const animate = animateProp && !reducedMotion;
+  // WAAPI drives the per-path dashoffset (scoped to the elements, no global
+  // @keyframes growth); hooks run unconditionally, before the early return.
+  const maskPathRefs = useRef<Array<SVGPathElement | null>>([]);
+  useStrokeReveal(maskPathRefs, geom?.timing ?? [], animate && !!geom, `${run}|${geom ? 'g' : ''}`);
 
   if (!composed || !geom) {
     return (
@@ -192,7 +199,7 @@ export function WrittenWord({
     );
   }
 
-  const { minX, vbW, vbY, vbH, items, guides, timing, writeEndMs } = geom;
+  const { minX, vbW, vbY, vbH, items, guides, writeEndMs } = geom;
   let displayW = (height * vbW) / vbH;
   let finalH = height;
   if (displayW > maxWidth) {
@@ -200,7 +207,6 @@ export function WrittenWord({
     displayW = maxWidth;
   }
   const maskId = `word-${uid.replace(/[^a-zA-Z0-9_-]/g, '_')}-${run}`;
-  const animate = animateProp && !reducedMotion;
 
   return (
     <Box sx={{ position: 'relative', display: 'inline-flex' }}>
@@ -221,9 +227,11 @@ export function WrittenWord({
           <mask id={maskId} maskUnits="userSpaceOnUse" x={minX} y={vbY} width={vbW} height={vbH}>
             <rect x={minX} y={vbY} width={vbW} height={vbH} fill="black" />
             {items.map((it, i) => (
-              <Box
-                component="path"
+              <path
                 key={`${run}-${i}`}
+                ref={(el) => {
+                  maskPathRefs.current[i] = el;
+                }}
                 d={pathD(it.centerline)}
                 fill="none"
                 stroke="#fff"
@@ -232,10 +240,7 @@ export function WrittenWord({
                 strokeLinejoin="round"
                 pathLength={1}
                 strokeDasharray={1}
-                sx={{
-                  strokeDashoffset: animate ? 1 : 0,
-                  animation: animate ? `${timing[i].kf} ${timing[i].dur}ms linear ${timing[i].delay}ms forwards` : undefined,
-                }}
+                style={{ strokeDashoffset: animate ? 1 : 0 }}
               />
             ))}
           </mask>
