@@ -7,7 +7,7 @@
 // block, hairline rows for the hosting table) but stays deliberately compact —
 // the audience here is far less technical.
 
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { Box, Link, Typography } from '@mui/material';
 
 import portraitUrl from '@/assets/markus-neusinger.webp';
@@ -113,7 +113,22 @@ export function ImpressumView() {
               </Typography>
             </Box>
           </Box>
-          <Typography sx={{ ...prose, fontStyle: 'italic', mb: 0 }}>{t.imprint.disclaimer}</Typography>
+          <Typography sx={{ ...prose, fontStyle: 'italic' }}>{t.imprint.disclaimer}</Typography>
+
+          <Typography sx={subTitle}>{t.projects.heading}</Typography>
+          <Typography sx={{ ...prose, mb: 0 }}>
+            {t.projects.items.map((p, i) => (
+              <Fragment key={p.name}>
+                {i > 0 && <br />}
+                {/* no noreferrer — own sites, keep the referrer for their analytics */}
+                <Link href={p.url} target="_blank" rel="noopener" sx={proseLink}>
+                  {p.name}
+                </Link>
+                {' — '}
+                {p.description}
+              </Fragment>
+            ))}
+          </Typography>
         </Section>
 
         {/* Datenschutz */}
@@ -169,7 +184,13 @@ export function ImpressumView() {
         <Section heading={t.sources.heading}>
           <Typography sx={prose}>{t.sources.geometry}</Typography>
           <Typography sx={prose}>{t.sources.fonts}</Typography>
-          <Typography sx={prose}>{t.sources.code}</Typography>
+          <Typography sx={prose}>
+            {t.sources.codeBeforeLink}
+            <Link href={t.sources.codeUrl} target="_blank" rel="noopener noreferrer" sx={proseLink}>
+              {t.sources.codeLinkText}
+            </Link>
+            {t.sources.codeAfterLink}
+          </Typography>
           <Typography sx={{ ...prose, mb: 0 }}>{t.sources.reserved}</Typography>
         </Section>
 

@@ -23,6 +23,23 @@ export const impressum = {
     disclaimer:
       'kurrentschrift.ink ist eine private Liebhaberei: der Versuch, die deutsche Kurrentschrift wieder lesbar und schreibbar zu machen. Alle gezeigten Schriftzüge sind mit Sorgfalt nachgebildet und als Synthese gekennzeichnet — kein historisches Original.',
   },
+  // "Other projects" block, mirroring the anyplot legal page (name — one-line
+  // description; own sites are linked with noopener only to keep the referrer).
+  projects: {
+    heading: 'Weitere Projekte',
+    items: [
+      {
+        name: 'anyplot.ai',
+        url: 'https://anyplot.ai',
+        description: 'eine Galerie von Datenvisualisierungs-Beispielen samt Code',
+      },
+      {
+        name: 'cite-citadel',
+        url: 'https://github.com/MarkusNeusinger/cite-citadel',
+        description: 'ein LLM-gepflegtes, vollständig zitiertes persönliches Wiki',
+      },
+    ],
+  },
   privacy: {
     heading: 'Datenschutz',
     intro:
@@ -61,10 +78,15 @@ export const impressum = {
       'Die Gestalt der Buchstaben folgt gemeinfreien Schreibvorlagen: der Sütterlin-Ausgangsschrift (Leitfaden 1922) und der Kurrent-Tafel von Loth (1866). Der Duktus — Strichfolge und Schreibrichtung — ist meine eigene, handkuratierte Arbeit darüber. Historische Quellen behalten ihre eigene Lizenz; gemeinfreie Vorlagen bleiben gemeinfrei.',
     fonts:
       'Schriften: EB Garamond und Playfair Display (SIL Open Font License) sowie GL-GermanCursive (Gutenberg-Labo, freie Lizenz) und die Sütterlin-Schrift von H. J. Zinken (Freeware, Verbreitung gestattet).',
-    code:
-      'Was offen ist, darf mit Quellenangabe genutzt werden: der Quellcode steht unter MIT-Lizenz, die gemeinfreien Vorlagen sind ohnehin frei. Die Veröffentlichung des Repositories ist geplant.',
+    // The repository is public now — the paragraph names and links it
+    // (split around the link, same pattern as privacy.analytics*).
+    codeBeforeLink:
+      'Was offen ist, darf mit Quellenangabe genutzt werden: der Quellcode steht unter MIT-Lizenz, die gemeinfreien Vorlagen sind ohnehin frei. Das Repository liegt offen einsehbar auf ',
+    codeLinkText: 'GitHub',
+    codeUrl: 'https://github.com/MarkusNeusinger/kurrentschrift',
+    codeAfterLink: '.',
     reserved:
-      'Die hier gelernten Daten dagegen — die kuratierten Glyph-Vorlagen, der Duktus und die Schrift-Statistik, die im Hintergrund entstehen und die Grundlage der Synthese bilden, ebenso die daraus trainierten Lese-Modelle zur Buchstabenerkennung — bleiben meine eigene, vorbehaltene Arbeit. Sie sind nicht Teil der MIT-Lizenz, auch wenn das Repository später veröffentlicht wird; eine Nachnutzung nur nach Rücksprache.',
+      'Die hier gelernten Daten dagegen — die kuratierten Glyph-Vorlagen, der Duktus und die Schrift-Statistik, die im Hintergrund entstehen und die Grundlage der Synthese bilden, ebenso die daraus trainierten Lese-Modelle zur Buchstabenerkennung — bleiben meine eigene, vorbehaltene Arbeit. Sie sind nicht Teil der MIT-Lizenz, auch wenn das Repository offen einsehbar ist; eine Nachnutzung nur nach Rücksprache.',
   },
   transparency: {
     heading: 'Transparenz',

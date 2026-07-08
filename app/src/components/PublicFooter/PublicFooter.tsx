@@ -1,7 +1,8 @@
 // Shared footer for every public page: a hairline, a warm one-line sign-off
-// (the "private Liebhaberei" voice from the impressum) on the left, the
-// Impressum/Datenschutz link on the right. Rendered by <PublicLayout> after the
-// page content (inside <PaperBackground>), so it's identical everywhere.
+// (the "private Liebhaberei" voice from the impressum) on the left, and a
+// small link row on the right — the public GitHub repository and
+// Impressum/Datenschutz. Rendered by <PublicLayout> after the page content
+// (inside <PaperBackground>), so it's identical everywhere.
 //
 // The footer OWNS the bottom gap (its `mt`) — the single source of the distance
 // from page content to the footer. Pages therefore set only top padding (`pt`)
@@ -16,6 +17,21 @@ import { de } from '@/locales';
 import { paths } from '@/routes/paths';
 import { garamond, paper } from '@/styles/paper';
 
+const footerLink = {
+  color: paper.sepia,
+  textDecoration: 'none',
+  '&:hover': { color: paper.viridian },
+} as const;
+
+// Decorative middot between the footer links.
+function Dot() {
+  return (
+    <Typography component="span" variant="body2" aria-hidden="true" sx={{ color: paper.sepia, opacity: 0.5 }}>
+      ·
+    </Typography>
+  );
+}
+
 export function PublicFooter() {
   return (
     <PageContainer width="wide">
@@ -27,10 +43,13 @@ export function PublicFooter() {
           py: 3,
           display: 'flex',
           flexDirection: 'row',
-          flexWrap: 'nowrap',
+          // If the link row doesn't fit beside the tagline (narrow phones), it
+          // wraps onto its own line instead of truncating.
+          flexWrap: { xs: 'wrap', sm: 'nowrap' },
           justifyContent: 'space-between',
           alignItems: 'center',
-          gap: 2,
+          columnGap: 2,
+          rowGap: 0.75,
         }}
       >
         <Typography sx={{ fontFamily: garamond, fontStyle: 'italic', color: paper.inkSoft }}>
@@ -39,22 +58,25 @@ export function PublicFooter() {
             {de.common.footer.taglineRest}
           </Box>
         </Typography>
-        <Link
-          component={RouterLink}
-          to={paths.impressum}
-          variant="body2"
-          sx={{
-            flexShrink: 0,
-            color: paper.sepia,
-            textDecoration: 'none',
-            '&:hover': { color: paper.viridian },
-          }}
-        >
-          {de.impressum.footerLink}
-          <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-            {de.impressum.footerLinkRest}
-          </Box>
-        </Link>
+        {/* `ml: 'auto'` keeps the row on the right edge when it wraps below the tagline. */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, ml: 'auto', flexShrink: 0 }}>
+          <Link
+            href={de.common.footer.githubUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="body2"
+            sx={footerLink}
+          >
+            {de.common.footer.github}
+          </Link>
+          <Dot />
+          <Link component={RouterLink} to={paths.impressum} variant="body2" sx={footerLink}>
+            {de.impressum.footerLink}
+            <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+              {de.impressum.footerLinkRest}
+            </Box>
+          </Link>
+        </Box>
       </Box>
     </PageContainer>
   );

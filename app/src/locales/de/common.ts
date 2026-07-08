@@ -81,11 +81,15 @@ export const common = {
   // Shared footer (PublicFooter) — one warm sign-off on every public page,
   // echoing the impressum's "private Liebhaberei" voice; the Impressum link
   // itself uses de.impressum.footerLink.
-  // Split in two so the footer stays one row on mobile: `tagline` always shows,
+  // Split in two so the footer stays compact on mobile: `tagline` always shows,
   // `taglineRest` only on sm+ (PublicFooter hides it at xs).
   footer: {
     tagline: 'Eine private Liebhaberei',
     taglineRest: ' — quelloffen.',
+    // Right-hand link row: the public repository, rendered before the
+    // Impressum link (de.impressum.footerLink).
+    github: 'GitHub',
+    githubUrl: 'https://github.com/MarkusNeusinger/kurrentschrift',
   },
   // The one recognizable (i) affordance (InfoHint) used across public + admin:
   // surfaces stay minimal, the detail sits a tap away.
