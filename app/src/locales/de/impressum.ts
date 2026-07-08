@@ -61,15 +61,27 @@ export const impressum = {
       'Die Gestalt der Buchstaben folgt gemeinfreien Schreibvorlagen: der Sütterlin-Ausgangsschrift (Leitfaden 1922) und der Kurrent-Tafel von Loth (1866). Der Duktus — Strichfolge und Schreibrichtung — ist meine eigene, handkuratierte Arbeit darüber. Historische Quellen behalten ihre eigene Lizenz; gemeinfreie Vorlagen bleiben gemeinfrei.',
     fonts:
       'Schriften: EB Garamond und Playfair Display (SIL Open Font License) sowie GL-GermanCursive (Gutenberg-Labo, freie Lizenz) und die Sütterlin-Schrift von H. J. Zinken (Freeware, Verbreitung gestattet).',
-    code:
-      'Was offen ist, darf mit Quellenangabe genutzt werden: der Quellcode steht unter MIT-Lizenz, die gemeinfreien Vorlagen sind ohnehin frei. Die Veröffentlichung des Repositories ist geplant.',
+    // The repository is public now — the paragraph names and links it
+    // (split around the link, same pattern as privacy.analytics*).
+    codeBeforeLink:
+      'Was offen ist, darf mit Quellenangabe genutzt werden: der Quellcode steht unter MIT-Lizenz, die gemeinfreien Vorlagen sind ohnehin frei. Das Repository liegt offen einsehbar auf ',
+    codeLinkText: 'GitHub',
+    codeUrl: 'https://github.com/MarkusNeusinger/kurrentschrift',
+    codeAfterLink: '.',
     reserved:
-      'Die hier gelernten Daten dagegen — die kuratierten Glyph-Vorlagen, der Duktus und die Schrift-Statistik, die im Hintergrund entstehen und die Grundlage der Synthese bilden, ebenso die daraus trainierten Lese-Modelle zur Buchstabenerkennung — bleiben meine eigene, vorbehaltene Arbeit. Sie sind nicht Teil der MIT-Lizenz, auch wenn das Repository später veröffentlicht wird; eine Nachnutzung nur nach Rücksprache.',
+      'Die hier gelernten Daten dagegen — die kuratierten Glyph-Vorlagen, der Duktus und die Schrift-Statistik, die im Hintergrund entstehen und die Grundlage der Synthese bilden, ebenso die daraus trainierten Lese-Modelle zur Buchstabenerkennung — bleiben meine eigene, vorbehaltene Arbeit. Sie sind nicht Teil der MIT-Lizenz, auch wenn das Repository offen einsehbar ist; eine Nachnutzung nur nach Rücksprache.',
   },
   transparency: {
     heading: 'Transparenz',
-    text:
-      'kurrentschrift.ink ist das Werk eines Einzelnen, offen für alle. Die Website läuft vollständig in der EU — React im Browser, Python und PostgreSQL auf Google Cloud in den Niederlanden. Fragen, Hinweise und Berichtigungen sind jederzeit willkommen — ich freue mich über Post.',
+    // Split around the anyplot.ai link (same pattern as privacy.analytics*) —
+    // the operator's other project is mentioned here, deliberately not in the
+    // footer (it has little to do with Kurrent).
+    textBeforeLink:
+      'kurrentschrift.ink ist das Werk eines Einzelnen, offen für alle. Die Website läuft vollständig in der EU — React im Browser, Python und PostgreSQL auf Google Cloud in den Niederlanden. Vom selben Schreibtisch stammt übrigens auch ',
+    anyplotLinkText: 'anyplot.ai',
+    anyplotUrl: 'https://anyplot.ai',
+    textAfterLink:
+      '. Fragen, Hinweise und Berichtigungen sind jederzeit willkommen — ich freue mich über Post.',
   },
   lastUpdated: 'Visp, im Juni 2026',
 } as const;

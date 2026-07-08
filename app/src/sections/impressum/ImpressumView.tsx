@@ -169,13 +169,25 @@ export function ImpressumView() {
         <Section heading={t.sources.heading}>
           <Typography sx={prose}>{t.sources.geometry}</Typography>
           <Typography sx={prose}>{t.sources.fonts}</Typography>
-          <Typography sx={prose}>{t.sources.code}</Typography>
+          <Typography sx={prose}>
+            {t.sources.codeBeforeLink}
+            <Link href={t.sources.codeUrl} target="_blank" rel="noopener noreferrer" sx={proseLink}>
+              {t.sources.codeLinkText}
+            </Link>
+            {t.sources.codeAfterLink}
+          </Typography>
           <Typography sx={{ ...prose, mb: 0 }}>{t.sources.reserved}</Typography>
         </Section>
 
         {/* Transparenz */}
         <Section heading={t.transparency.heading}>
-          <Typography sx={{ ...prose, mb: 0 }}>{t.transparency.text}</Typography>
+          <Typography sx={{ ...prose, mb: 0 }}>
+            {t.transparency.textBeforeLink}
+            <Link href={t.transparency.anyplotUrl} target="_blank" rel="noopener noreferrer" sx={proseLink}>
+              {t.transparency.anyplotLinkText}
+            </Link>
+            {t.transparency.textAfterLink}
+          </Typography>
         </Section>
 
         <Typography sx={{ ...prose, mb: 0, mt: { xs: 5, md: 6 }, textAlign: 'center', fontSize: '.9rem', color: paper.sepia, fontStyle: 'italic' }}>
