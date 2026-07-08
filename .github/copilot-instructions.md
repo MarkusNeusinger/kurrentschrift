@@ -475,6 +475,12 @@ pipelines for plot specifications). For now:
 - **Branch policy:** main is protected; feature branches with PRs.
 - **Commit messages:** English, focused on WHY, conventional-commit prefix
   optional (`docs:`, `feat:`, `fix:`, `refactor:`).
+- **Changelog:** every PR adds its entries to `CHANGELOG.md` under
+  `[Unreleased]` (Keep-a-Changelog categories, English, bold-titled
+  bullets like the existing entries) — that file is how releases get
+  posted; a PR without its entry is incomplete. Data-only commits
+  (chart sources, authored templates) are exempt — provenance lives in
+  their `SOURCE.md`.
 - **Pre-commit hooks:** none configured yet — when added, do not bypass
   with `--no-verify`.
 - **Verification before a PR:** run the local CI equivalents first —

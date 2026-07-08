@@ -62,6 +62,7 @@ Known gaps without a loop yet: Alembic/schema changes (shared DB, no scratch ins
 ## Working guardrails (from session retros)
 
 - **Never commit on `main`** — branch first, even for a quick "commit and push" outside `/open-pr`.
+- **Every PR updates `CHANGELOG.md`** (`[Unreleased]`, Keep-a-Changelog categories, English, bold-titled bullets like the existing entries) — that file is how releases get posted; a PR without its entry is incomplete. Data-only commits (chart sources, authored templates) are exempt — their provenance lives in `SOURCE.md`.
 - **Prod-touching actions need explicit in-session confirmation first** (Cloud SQL DDL/queries, Secret Manager access, Cloudflare Access policies): name the exact action, resource, and any email/secret id, and ask before acting.
 - **Never echo secret values into the transcript** — verify by exit code or metadata.
 - **Modify repo files only with the Edit/Write tools, never via Bash heredocs/sed.** When a Bash command legitimately mutates a tracked file (formatter, codegen, `git checkout`), Read the file again before the next Edit on it — stale-state errors cascade otherwise.

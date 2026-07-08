@@ -245,9 +245,9 @@ def _assign_positions(tokens: list[_RawToken]) -> list[GlyphSlot]:
                 out.append(GlyphSlot(_key_for(entry, position), t.text, position, False, False))
                 continue
             if t.quote_allograph:
-                # Straight ": German quotes pair low-then-high („Ja“). Resolved
-                # by occurrence parity within the word, so a quote after other
-                # punctuation — ("Ja") — still opens low.
+                # Straight double quote ("): German quotes pair low-then-high
+                # („Ja“). Resolved by occurrence parity within the word, so a
+                # quote after other punctuation — ("Ja") — still opens low.
                 base = "quote-low" if straight_quotes % 2 == 0 else "quote-high"
                 straight_quotes += 1
                 out.append(GlyphSlot(_key_for((base, {}), position), t.text, position, False, False, joins=False))

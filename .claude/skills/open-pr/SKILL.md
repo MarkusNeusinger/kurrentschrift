@@ -69,6 +69,12 @@ A `/verify-*` gate only counts if the **diff's own flow** was driven —
 rendering a proxy or injecting state via the API is not verification
 (see the changed-path rule in `/verify-frontend` §2).
 
+**Changelog gate:** every PR adds its entries to `CHANGELOG.md` under
+`[Unreleased]` (Keep-a-Changelog categories, English, bold-titled
+bullets matching the existing entries) before the PR opens — that file
+is how releases get posted. Data-only commits (chart sources, authored
+templates) are exempt; their provenance lives in `SOURCE.md`.
+
 Then the local CI equivalents — the same commands the pipeline runs,
 without the round trip (backend always; frontend build only if `app/`
 changed). **This is a hard gate, not a suggestion: do not open the PR

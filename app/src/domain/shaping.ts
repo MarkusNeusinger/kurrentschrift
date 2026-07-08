@@ -196,9 +196,9 @@ function assignPositions(tokens: RawToken[]): GlyphSlot[] {
         });
         return;
       }
-      // Straight ": German quotes pair low-then-high („Ja“). Resolved by
-      // occurrence parity within the word, so a quote after other
-      // punctuation — ("Ja") — still opens low.
+      // Straight double quote ("): German quotes pair low-then-high („Ja“).
+      // Resolved by occurrence parity within the word, so a quote after
+      // other punctuation — ("Ja") — still opens low.
       if (t.quoteAllograph) {
         const letter = straightQuotes % 2 === 0 ? QUOTE_LOW : QUOTE_HIGH;
         straightQuotes += 1;
