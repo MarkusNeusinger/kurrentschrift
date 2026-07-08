@@ -230,6 +230,9 @@ def test_compose_broad_nib_pen_ships_connector_rings():
     assert generated, "connector + swing exist"
     for it in generated:
         assert it.get("rings"), "broad-nib generated strokes ship as filled rings"
+    # EVERY item's reveal mask covers the stamped nib's extent — glyph strokes
+    # too, whose own directions may never reach the nib's widest direction.
+    for it in out["items"]:
         assert it["mask_width"] >= nib.width_units * 1.15 - 1e-9
 
 

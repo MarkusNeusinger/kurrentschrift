@@ -468,6 +468,12 @@ def compose_word(
         # connector precedes (a detached boundary on either side), the pen
         # visibly lifts into this glyph's first stroke.
         detached_entry = prev is not None and not joined
+        glyph_mask_width = 2.2 * max_half
+        if pen is not None and pen.kind == "broad_nib" and pen.nib is not None:
+            # The stamped nib's diagonal extent can exceed the widest width the
+            # glyph's own stroke directions reach — the reveal mask must cover
+            # the nib, not just the widest measured direction.
+            glyph_mask_width = max(glyph_mask_width, pen.nib.width_units * 1.15)
         for si, cl in enumerate(centerlines):
             offset = [(x + dx, y) for x, y in cl]
             rings = [
@@ -475,7 +481,7 @@ def compose_word(
             ]
             item: dict = {
                 "centerline": [list(p) for p in offset],
-                "mask_width": 2.2 * max_half,
+                "mask_width": glyph_mask_width,
                 # a within-glyph pen lift precedes every stroke after the first
                 "lift": si > 0 or detached_entry,
             }
