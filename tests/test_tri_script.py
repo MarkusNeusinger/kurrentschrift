@@ -184,6 +184,17 @@ def test_compose_detached_spacing_uses_clearance():
     assert items[1]["lift"] is True
 
 
+def test_compose_missing_detached_glyph_still_ends_the_word():
+    """An UNAUTHORED comma is still a run boundary: the word before it earns
+    its Endstrich, exactly like the pre-registry null-key behaviour."""
+    payloads = {"a-initial": _stub_payload()}  # comma has no template
+    slots = [_slot("a-initial", "initial"), _slot("comma-final", "final", joins=False, text=",")]
+    out = compose_word(slots, payloads)
+    stroked = [it for it in out["items"] if "stroke_width" in it]
+    assert len(stroked) == 1, "the Endstrich swing must fire before the missing comma's gap"
+    assert out["missing"] == ["comma-final"]
+
+
 def test_compose_letter_after_detached_starts_fresh():
     payloads = {"quote-low-initial": _stub_payload(width=0.1), "W-final": _stub_payload()}
     slots = [_slot("quote-low-initial", "initial", joins=False, text='"'), _slot("W-final", "final")]

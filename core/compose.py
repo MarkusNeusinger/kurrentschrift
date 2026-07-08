@@ -302,11 +302,17 @@ def compose_word(
         if not data or not centerlines:
             if slot.key:
                 missing.append(slot.key)
+                if not slot.joins:
+                    # A DETACHED glyph is a run boundary even while its
+                    # template is unauthored: the word before a missing comma
+                    # still earns its Endstrich (matching the pre-registry
+                    # null-key behaviour for punctuation).
+                    end_swing()
             else:
                 # A null-key slot (a character with no glyph at all) is a real
                 # word boundary in the slot stream — the word before it earns
-                # its Endstrich. A MISSING glyph is a mid-word hole and must
-                # not fake one.
+                # its Endstrich. A MISSING LETTER, in contrast, is a mid-word
+                # hole and must not fake one.
                 end_swing()
             # Either way the writing run breaks like a space: flush the marks
             # gathered so far, so a preceding i-dot/umlaut lands at the end of
