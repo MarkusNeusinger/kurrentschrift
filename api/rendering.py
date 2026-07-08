@@ -64,9 +64,9 @@ async def pooled_constant_nib(db: AsyncSession, style_id: str, source_id: str) -
 
 
 def _percentile(sorted_values: list[float], q: float) -> float:
-    """Percentile by rounded index on an ascending list (q in [0, 1]):
-    the element at round(q·(n−1)) — no interpolation."""
-    idx = min(len(sorted_values) - 1, max(0, round(q * (len(sorted_values) - 1))))
+    """Percentile by half-up-rounded index on an ascending list (q in [0, 1]):
+    the element at ⌊q·(n−1) + 0.5⌋ — no interpolation, no banker's rounding."""
+    idx = min(len(sorted_values) - 1, max(0, int(q * (len(sorted_values) - 1) + 0.5)))
     return sorted_values[idx]
 
 

@@ -172,7 +172,7 @@ async def get_write_glyph(
     nib = await pooled_constant_nib(db, style_id, source.id) if width_resolver == "constant" else None
     pen = await pooled_pen(db, style_id, source.id, width_resolver)
     payload = await run_in_threadpool(
-        render_payload_for_template, _template_to_glyph_row(template), style_ratio, width_resolver, nib, pen
+        render_payload_for_template, _template_to_glyph_row(template), style_ratio, width_resolver, nib, pen=pen
     )
     payload["glyph_key"] = glyph_key
     response.headers["Cache-Control"] = CACHE_CONTROL
