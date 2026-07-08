@@ -167,8 +167,9 @@ Träger: `core/shaping.py` (`_DIGITS`/`_PUNCT`) und die TS-Zwillinge
 `app/src/domain/glyphs.ts` (Gruppen `digit`/`punct`) +
 `app/src/domain/shaping.ts` — **im Gleichschritt halten** (bestehende
 Regel). Aliasse: `’`→`apostrophe`, `”`→`quote-high`, `‐ ‑`→`hyphen`,
-`—`→`dash`. Das gerade `"` wird wie das s-Allograph positionsaufgelöst:
-wortinitial → `quote-low`, sonst `quote-high`.
+`—`→`dash`. Das gerade `"` wird über die Vorkommens-Parität im Wort
+aufgelöst: erstes `"` → `quote-low`, zweites → `quote-high` — so öffnet
+auch `("Ja")` korrekt tief.
 
 Konventionen aus den Primärtafeln:
 

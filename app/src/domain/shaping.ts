@@ -62,8 +62,9 @@ const ROUND_S = LETTER_BY_CHAR.get('s');
 
 // Alias characters folding onto a registry glyph (typographic apostrophe,
 // closing-quote variants, hyphen variants, em dash). The straight double
-// quote is position-resolved instead (see the quoteAllograph token flag).
-// Mirrors the alias entries in core/shaping.py's _PUNCT.
+// quote is resolved by occurrence parity within the word instead (see the
+// quoteAllograph token flag). Mirrors the alias entries in core/shaping.py's
+// _PUNCT.
 const CHAR_ALIASES: Record<string, string> = {
   '’': "'", // ’
   '”': '“', // ” → “
@@ -97,7 +98,7 @@ interface RawToken {
   sAllograph: boolean; // a lowercase s/ſ whose long-vs-round form depends on position
   forceRound: boolean; // an s immediately before a Fuge — always the round allograph
   joins: boolean; // false: digits/punctuation/unknown — detached, no Übergang
-  quoteAllograph: boolean; // a straight " whose low-vs-high form depends on position
+  quoteAllograph: boolean; // a straight " resolved low/high by occurrence parity
 }
 
 // Greedy left-to-right tokeniser over one whitespace-free word.
@@ -145,7 +146,7 @@ function tokenizeWord(word: string): RawToken[] {
       i += 1;
       continue;
     }
-    // Straight double quote: low vs high resolved by position (German „…“).
+    // Straight double quote: low vs high resolved by occurrence parity („…“).
     if (c === STRAIGHT_QUOTE) {
       tokens.push({ letter: null, text: c, ligature: false, sAllograph: false, forceRound: false, joins: false, quoteAllograph: true });
       i += 1;

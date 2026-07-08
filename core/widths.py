@@ -21,7 +21,7 @@ Resolvers:
   measured profile stops being valid the moment the path is warped (slant
   normalisation, fluent widening) and because generated Übergänge have no
   measurement at all; the measurement is used to CALIBRATE the nib per source
-  (see `api/rendering.py::pooled_broad_nib`). The diagnostic keeps comparing
+  (see `api/rendering.py::pooled_pen`). The diagnostic keeps comparing
   the measured profile against the chart ink — the model would hide
   extraction errors there.
 """
@@ -107,7 +107,7 @@ def _per_stroke_tangents_deg(points: np.ndarray, stroke_starts: list[int] | None
     points = np.asarray(points, dtype=float)
     n = len(points)
     out = np.zeros(n)
-    starts = [s for s in (stroke_starts or [0]) if 0 <= s < n] or [0]
+    starts = sorted({s for s in (stroke_starts or [0]) if 0 <= s < n}) or [0]
     if starts[0] != 0:
         starts = [0, *starts]
     bounds = [*starts, n]

@@ -129,8 +129,9 @@ _PUNCT: dict[str, str] = {
 _NONJOINING: dict[str, tuple[str, dict[str, str]]] = {c: (b, {}) for c, b in {**_DIGITS, **_PUNCT}.items()}
 
 # The straight double quote is ambiguous: German writing opens low („) and
-# closes high (“). Resolved by position like the s allographs: word-initial →
-# quote-low, anywhere else → quote-high.
+# closes high (“). Resolved by occurrence parity within the word — first "
+# opens low, second closes high — so a quote after other punctuation, ("Ja"),
+# still opens low.
 _STRAIGHT_QUOTE = '"'
 
 
@@ -155,7 +156,7 @@ class _RawToken:
     s_allograph: bool  # lowercase s/ſ whose long-vs-round form depends on position
     force_round: bool  # an s immediately before a Fuge — always the round allograph
     joins: bool = True  # False: digits/punctuation/unknown — detached, no Übergang
-    quote_allograph: bool = False  # a straight " whose low-vs-high form depends on position
+    quote_allograph: bool = False  # a straight " resolved low/high by occurrence parity
 
 
 def _tokenize_word(word: str) -> list[_RawToken]:
@@ -195,8 +196,8 @@ def _tokenize_word(word: str) -> list[_RawToken]:
             tokens.append(_RawToken(None, c, False, True, nxt == FUGE))
             i += 1
             continue
-        # Straight double quote: low vs high resolved by position (see
-        # _STRAIGHT_QUOTE); typographic quotes were already caught above.
+        # Straight double quote: low vs high resolved by occurrence parity
+        # (see _STRAIGHT_QUOTE); typographic quotes were already caught above.
         if c == _STRAIGHT_QUOTE:
             tokens.append(_RawToken(None, c, False, False, False, joins=False, quote_allograph=True))
             i += 1
