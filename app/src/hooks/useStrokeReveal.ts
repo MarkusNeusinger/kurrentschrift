@@ -26,6 +26,12 @@ export function useStrokeReveal(
     pathRefs.current.forEach((el, i) => {
       const t = timing[i];
       if (!el || !t) return;
+      // No WAAPI (very old engines): reveal instantly instead of throwing —
+      // the finished word is the floor, like the reduced-motion path.
+      if (typeof el.animate !== 'function') {
+        el.style.strokeDashoffset = '0';
+        return;
+      }
       const steps = t.arcAtTime.length - 1;
       const frames = t.arcAtTime.map((s, k) => ({
         strokeDashoffset: `${(1 - s).toFixed(4)}`,
