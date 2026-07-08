@@ -749,6 +749,102 @@ def written_preview_for_canonical(
     }
 
 
+# Fluent body-pitch targets (x-heights), measured on the Abb.-19 hand with a
+# uniform landmark battery (qualitaetsmetrik.md §6, Lauf jul08 Nachtrag): the
+# teaching chart's cells PINCH the round letter bodies relative to the same
+# hand's connected writing — e 0.31→0.40, a-bowl 0.67→0.85, u 0.85→1.00,
+# o-bowl 0.68→0.80 — while the arcade letters (n +8 %, m +4 %) match and stay
+# untouched. Applied at RENDER time on the writing path only (the stored
+# template stays the chart measurement, like the §5 width resolver; the admin
+# diagnostic and the glyph bench keep comparing against the chart). Keyed by
+# glyph, each umlaut listed explicitly at its base letter's target.
+# Target-based (not a factor), so a re-authored wider body self-corrects to
+# a no-op.
+FLUENT_BODY_PITCH: dict[str, float] = {"e": 0.40, "a": 0.85, "ä": 0.85, "u": 1.00, "ü": 1.00, "o": 0.80, "ö": 0.80}
+# Guards: only widen (never shrink) and never beyond 1.5× — a detection
+# hiccup must degrade to a gentle no-op, not a deformed letter.
+FLUENT_MAX_STRETCH = 1.5
+# Verticality bound for a "downstroke" crossing when locating the body: the
+# x-drift between the two scan heights, in x-height units.
+_FLUENT_SCAN_Y = (0.35, 0.65)
+_FLUENT_MAX_DRIFT = 0.15
+
+
+def _crossings_at(points: np.ndarray, y: float) -> list[float]:
+    """x-positions where a polyline crosses the horizontal line at `y`."""
+    out: list[float] = []
+    for (x0, y0), (x1, y1) in zip(points[:-1], points[1:], strict=True):
+        if (y0 - y) * (y1 - y) <= 0 and y0 != y1:
+            t = (y - y0) / (y1 - y0)
+            if 0.0 <= t <= 1.0:
+                out.append(float(x0 + t * (x1 - x0)))
+    return sorted(out)
+
+
+def _fluent_widen(
+    glyph: str | None, anchors: np.ndarray, stroke_starts: list[int] | None, glyph_row: dict
+) -> tuple[np.ndarray, dict]:
+    """Stretch a pinched round-letter BODY to its fluent pitch (see
+    FLUENT_BODY_PITCH). Returns the (possibly) remapped anchors plus the
+    x-remapped entry/exit/advance fields; everything left of the body stays
+    put, the body interval stretches, everything right shifts along — so the
+    coupling stubs keep their measured runs and only the body opens.
+    """
+    fields = {
+        "entry": glyph_row.get("entry") or {},
+        "exit_pt": glyph_row.get("exit_pt") or {},
+        "advance": glyph_row.get("advance"),
+    }
+    target = FLUENT_BODY_PITCH.get(glyph or "")
+    if target is None or len(anchors) < 4:
+        return anchors, fields
+    # Body = the interval between the FIRST and LAST near-vertical crossing of
+    # the first pen-stroke (the letter body; floating marks ride along).
+    end0 = int(stroke_starts[1]) if stroke_starts and len(stroke_starts) > 1 else len(anchors)
+    body = anchors[:end0]
+    lo = _crossings_at(body, _FLUENT_SCAN_Y[0])
+    hi = _crossings_at(body, _FLUENT_SCAN_Y[1])
+    verticals: list[float] = []
+    used: set[int] = set()
+    for x in lo:
+        cands = [(abs(xh - x), j) for j, xh in enumerate(hi) if j not in used]
+        if not cands:
+            continue
+        d, j = min(cands)
+        if d <= _FLUENT_MAX_DRIFT:
+            used.add(j)
+            verticals.append((x + hi[j]) / 2)
+    if len(verticals) < 2:
+        return anchors, fields
+    x1, x2 = min(verticals), max(verticals)
+    pitch = x2 - x1
+    if pitch <= 0.05:
+        return anchors, fields
+    k = min(max(target / pitch, 1.0), FLUENT_MAX_STRETCH)
+    if k <= 1.0:
+        return anchors, fields
+    grow = (k - 1.0) * pitch
+
+    def remap_x(x: float) -> float:
+        if x <= x1:
+            return x
+        if x <= x2:
+            return x1 + k * (x - x1)
+        return x + grow
+
+    out = anchors.copy()
+    out[:, 0] = [remap_x(float(x)) for x in anchors[:, 0]]
+    for key in ("entry", "exit_pt"):
+        f = fields[key]
+        if f and f.get("xy"):
+            f = dict(f)
+            f["xy"] = [remap_x(float(f["xy"][0])), f["xy"][1]]
+            fields[key] = f
+    if fields["advance"] is not None:
+        fields["advance"] = remap_x(float(fields["advance"]))
+    return out, fields
+
+
 def render_payload_for_template(
     glyph_row: dict, style_ratio: list[float], width_resolver: str = "pressure", constant_nib_units: float | None = None
 ) -> dict:
@@ -775,6 +871,17 @@ def render_payload_for_template(
     stroke_starts = trace_meta.get("stroke_starts")
     corner_anchors = trace_meta.get("corner_anchors") or []
 
+    # Chart→fluent body widening (Gleichzug writing path only — the measured
+    # targets come from the Sütterlin Abb.-19 hand; see FLUENT_BODY_PITCH).
+    if width_resolver == "constant":
+        anchors_template, connection = _fluent_widen(glyph_row.get("glyph"), anchors_template, stroke_starts, glyph_row)
+    else:
+        connection = {
+            "entry": glyph_row.get("entry") or {},
+            "exit_pt": glyph_row.get("exit_pt") or {},
+            "advance": glyph_row.get("advance"),
+        }
+
     outline_paths = multi_stroke_silhouettes(
         anchors_template, half_widths_template, stroke_starts, 90.0, n=240, corner_anchors=corner_anchors
     )
@@ -788,9 +895,9 @@ def render_payload_for_template(
         "outline_paths": outline_paths,
         "centerlines_template": centerlines_template,
         "template_guides": template_guides(style_ratio),
-        "entry": glyph_row.get("entry") or {},
-        "exit_pt": glyph_row.get("exit_pt") or {},
-        "advance": glyph_row.get("advance"),
+        "entry": connection["entry"],
+        "exit_pt": connection["exit_pt"],
+        "advance": connection["advance"],
     }
 
 
