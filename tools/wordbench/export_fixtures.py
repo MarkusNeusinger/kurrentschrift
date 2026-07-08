@@ -9,20 +9,38 @@ and the SHAPED SLOTS (so a later shaping change is a deliberate re-baseline,
 not a silent input shift). Frozen per source: the template rows the words need
 and the source-pooled Gleichzug nib.
 
+Sidecar entries may carry (all optional, additive):
+  id     — unique fixture key; defaults to the word text. Required in practice
+           for repeated words on the plate ("und" appears three times).
+  kind   — "word" (default) or "pair" (isolated letter-pair joins, Abb. 20).
+           Falls back to "pair" for entries on a pairs-* page.
+  slots  — explicit slot list [{key, text, position, ligature?}] overriding
+           shape_text, for pairs whose isolated drawing does not match
+           word-context shaping.
+
+Word and pair fixtures freeze into SIBLING roots (``<source_id>`` and
+``<source_id>-pairs``) with their own manifests, so ``--set pairs`` never
+regenerates the word fixtures and the two headline numbers never mix.
+
+Entries needing a template that is not authored yet freeze with
+``scorable: false`` — the runner skips and reports them instead of drowning
+the headline in 1.0s (a missing capital is an authoring gap, not a
+composition failure; a template that exists but composes badly still scores).
+
 Fixture layout (gitignored — regenerate at will):
 
-    fixtures/<style_id>/<source_id>/
-      manifest.json            # export stamp, page sha256s, style ratio/resolver, pooled nib, word index
+    fixtures/<style_id>/<source_id>[-pairs]/
+      manifest.json            # export stamp, set, page sha256s, style ratio/resolver, pooled nib, word index
       templates.json           # glyph_key -> template row (anchors, half_widths, trace_meta, entry, exit_pt, advance)
-      <word>/
-        word.json              # text, rect, lineature, frozen slots
+      <id>/
+        word.json              # id, text, kind, rect, lineature, frozen slots, scorable
         crop.png               # grayscale crop (excludes applied) — overlay background
         ref_mask.png           # FROZEN binarized scoring reference
         ref_skel.npz           # FROZEN skeleton (bool) + EDT half-width map (float32)
 
 Usage:
     uv run python -m tools.wordbench.export_fixtures [--source suetterlin-1922]
-        [--out tools/wordbench/fixtures]
+        [--set words|pairs|all] [--out tools/wordbench/fixtures]
 """
 
 from __future__ import annotations
@@ -32,6 +50,7 @@ import asyncio
 import hashlib
 import json
 import statistics
+from collections import Counter
 from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
@@ -54,6 +73,8 @@ DEFAULT_SOURCE_ID = "suetterlin-1922"
 DEFAULT_OUT_DIR = Path(__file__).resolve().parent / "fixtures"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
+SETS = ("words", "pairs", "all")
+
 
 def _template_dict(t: Template) -> dict:
     return {
@@ -70,7 +91,7 @@ def _template_dict(t: Template) -> dict:
     }
 
 
-def _load_page(path: Path) -> np.ndarray:
+def load_page(path: Path) -> np.ndarray:
     """Page image as float grayscale in [0, 1] (same convention as core.chart)."""
     return np.asarray(Image.open(path).convert("L"), dtype=np.float64) / 255.0
 
@@ -81,7 +102,7 @@ def _load_page(path: Path) -> np.ndarray:
 DESPECKLE_MIN_AREA_PX = 24
 
 
-def _despeckle(mask: np.ndarray) -> np.ndarray:
+def despeckle(mask: np.ndarray) -> np.ndarray:
     labels, n = cc_label(mask)
     if not n:
         return mask
@@ -91,12 +112,50 @@ def _despeckle(mask: np.ndarray) -> np.ndarray:
     return keep[labels]
 
 
-async def export(source_id: str, out_dir: Path) -> None:
+def _kind(w: dict) -> str:
+    return w.get("kind") or ("pair" if w["page"].startswith("pairs") else "word")
+
+
+def _entry_id(w: dict) -> str:
+    return w.get("id", w["word"])
+
+
+def _shape_entry(w: dict, have: set[str]) -> list[GlyphSlot]:
+    """Frozen slots for one sidecar entry: explicit override or shape_text with
+    the ligature-decompose fallback against the current template inventory."""
+    if "slots" in w:
+        return [
+            GlyphSlot(
+                key=s["key"],
+                text=s.get("text", w["word"]),
+                position=s.get("position"),
+                ligature=bool(s.get("ligature", False)),
+                space=False,
+            )
+            for s in w["slots"]
+        ]
+    slots = shape_text(w["word"])
+    if any(s.ligature and s.key and s.key not in have for s in slots):
+        slots = [
+            d
+            for s in slots
+            for d in ((decompose_ligature_slot(s) or [s]) if s.ligature and s.key and s.key not in have else [s])
+        ]
+    return slots
+
+
+async def export(source_id: str, out_dir: Path, which: str) -> None:
     sidecar_path = REPO_ROOT / "data" / "sources" / source_id / "words.json"
     if not sidecar_path.exists():
         raise SystemExit(f"no word sidecar at {sidecar_path}")
     sidecar = json.loads(sidecar_path.read_text())
-    words = sidecar["words"]
+    entries = [w for w in sidecar["words"] if which == "all" or _kind(w) + "s" == which]
+    if not entries:
+        raise SystemExit(f"no {which!r} entries in {sidecar_path}")
+    id_counts = Counter(_entry_id(w) for w in sidecar["words"])
+    dupes = [i for i, n in id_counts.items() if n > 1]
+    if dupes:
+        raise SystemExit(f"duplicate sidecar ids {sorted(dupes)} — give repeated words an explicit 'id'")
 
     # Imported here, after load_dotenv(): the connection module reads env at import time.
     from core.database.connection import get_db_context
@@ -109,27 +168,20 @@ async def export(source_id: str, out_dir: Path) -> None:
         style = await StyleRepository(session).get(source.style_id)
         repo = TemplateRepository(session)
 
-        # Shape every word, apply the ligature-decompose fallback against the
+        # Shape every entry, apply the ligature-decompose fallback against the
         # CURRENT template inventory, and freeze the resulting slots.
         shaped: dict[str, list[dict]] = {}
-        needed: dict[str, None] = {}
-        for w in words:
-            slots = shape_text(w["word"])
-            keys = glyph_keys_of(slots)
+        needed: dict[str, dict[str, None]] = {"word": {}, "pair": {}}
+        for w in entries:
+            keys = glyph_keys_of(shape_text(w["word"]))
             have = {t.glyph_key for t in await repo.get_many(source.style_id, keys)}
-            if any(s.ligature and s.key and s.key not in have for s in slots):
-                slots = [
-                    d
-                    for s in slots
-                    for d in (
-                        (decompose_ligature_slot(s) or [s]) if s.ligature and s.key and s.key not in have else [s]
-                    )
-                ]
-            shaped[w["word"]] = [asdict(s) for s in slots]
+            slots = _shape_entry(w, have)
+            shaped[_entry_id(w)] = [asdict(s) for s in slots]
             for k in glyph_keys_of(slots):
-                needed.setdefault(k)
+                needed[_kind(w)].setdefault(k)
 
-        templates = {t.glyph_key: _template_dict(t) for t in await repo.get_many(source.style_id, list(needed))}
+        all_keys = list({**needed["word"], **needed["pair"]})
+        templates = {t.glyph_key: _template_dict(t) for t in await repo.get_many(source.style_id, all_keys)}
         # Source-pooled Gleichzug nib, frozen at export (api.rendering computes
         # the same live; freezing keeps bench numbers stable across re-traces).
         profiles = await repo.half_widths_for_source(source.style_id, source_id)
@@ -138,75 +190,96 @@ async def export(source_id: str, out_dir: Path) -> None:
 
     pages: dict[str, np.ndarray] = {}
     page_shas: dict[str, str] = {}
-    for w in words:
+    for w in entries:
         page = w["page"]
         if page not in pages:
             page_path = REPO_ROOT / "data" / "sources" / source_id / page
-            pages[page] = _load_page(page_path)
+            pages[page] = load_page(page_path)
             page_shas[page] = hashlib.sha256(page_path.read_bytes()).hexdigest()
 
-    fixture_root = out_dir / source.style_id / source_id
-    fixture_root.mkdir(parents=True, exist_ok=True)
-    (fixture_root / "templates.json").write_text(json.dumps(templates, ensure_ascii=False))
+    for kind, set_name in (("word", "words"), ("pair", "pairs")):
+        kind_entries = [w for w in entries if _kind(w) == kind]
+        if not kind_entries:
+            continue
+        root_name = source_id if kind == "word" else f"{source_id}-pairs"
+        fixture_root = out_dir / source.style_id / root_name
+        fixture_root.mkdir(parents=True, exist_ok=True)
+        kind_templates = {k: templates[k] for k in needed[kind] if k in templates}
+        (fixture_root / "templates.json").write_text(json.dumps(kind_templates, ensure_ascii=False))
 
-    word_index = []
-    for w in words:
-        word_slots = [GlyphSlot(**s) for s in shaped[w["word"]]]
-        missing = [k for k in glyph_keys_of(word_slots) if k not in templates]
-        word_dir = fixture_root / w["word"]
-        word_dir.mkdir(exist_ok=True)
+        index = []
+        for w in kind_entries:
+            entry_id = _entry_id(w)
+            slots = [GlyphSlot(**s) for s in shaped[entry_id]]
+            missing = [k for k in glyph_keys_of(slots) if k not in templates]
+            entry_dir = fixture_root / entry_id
+            entry_dir.mkdir(exist_ok=True)
 
-        crop = pages[w["page"]][w["y0"] : w["y1"], w["x0"] : w["x1"]].copy()
-        # Foreign ink from neighbouring lines: paint paper-white before binarising.
-        for ex0, ey0, ex1, ey1 in w.get("exclude", []):
-            crop[max(0, ey0 - w["y0"]) : max(0, ey1 - w["y0"]), max(0, ex0 - w["x0"]) : max(0, ex1 - w["x0"])] = 1.0
-        mask = _despeckle(binarize_adaptive(crop))
-        skel, width_map = skeleton_and_width(mask)
+            crop = pages[w["page"]][w["y0"] : w["y1"], w["x0"] : w["x1"]].copy()
+            # Foreign ink from neighbouring lines: paint paper-white before binarising.
+            for ex0, ey0, ex1, ey1 in w.get("exclude", []):
+                crop[max(0, ey0 - w["y0"]) : max(0, ey1 - w["y0"]), max(0, ex0 - w["x0"]) : max(0, ex1 - w["x0"])] = 1.0
+            mask = despeckle(binarize_adaptive(crop))
+            skel, width_map = skeleton_and_width(mask)
 
-        (word_dir / "word.json").write_text(
-            json.dumps(
-                {
-                    "word": w["word"],
-                    "page": w["page"],
-                    "rect": [w["x0"], w["y0"], w["x1"], w["y1"]],
-                    "baseline_y": w["baseline_y"],
-                    "midband_y": w["midband_y"],
-                    "slots": shaped[w["word"]],
-                    "missing_at_export": missing,
-                },
-                ensure_ascii=False,
+            (entry_dir / "word.json").write_text(
+                json.dumps(
+                    {
+                        "id": entry_id,
+                        "word": w["word"],
+                        "kind": kind,
+                        "page": w["page"],
+                        "rect": [w["x0"], w["y0"], w["x1"], w["y1"]],
+                        "baseline_y": w["baseline_y"],
+                        "midband_y": w["midband_y"],
+                        "slots": shaped[entry_id],
+                        "missing_at_export": missing,
+                        "scorable": not missing,
+                    },
+                    ensure_ascii=False,
+                )
             )
-        )
-        Image.fromarray((np.clip(crop, 0.0, 1.0) * 255).astype(np.uint8), mode="L").save(word_dir / "crop.png")
-        Image.fromarray((mask * 255).astype(np.uint8), mode="L").save(word_dir / "ref_mask.png")
-        np.savez_compressed(word_dir / "ref_skel.npz", skel=skel, width_map=width_map.astype(np.float32))
-        word_index.append({"word": w["word"], "page": w["page"], "missing_at_export": missing})
+            Image.fromarray((np.clip(crop, 0.0, 1.0) * 255).astype(np.uint8), mode="L").save(entry_dir / "crop.png")
+            Image.fromarray((mask * 255).astype(np.uint8), mode="L").save(entry_dir / "ref_mask.png")
+            np.savez_compressed(entry_dir / "ref_skel.npz", skel=skel, width_map=width_map.astype(np.float32))
+            index.append(
+                {
+                    "id": entry_id,
+                    "word": w["word"],
+                    "kind": kind,
+                    "page": w["page"],
+                    "missing_at_export": missing,
+                    "scorable": not missing,
+                }
+            )
 
-    manifest = {
-        "exported_at": datetime.now(UTC).isoformat(timespec="seconds"),
-        "source_id": source_id,
-        "style_id": source.style_id,
-        "page_sha256": page_shas,
-        "style_ratio": source.style_ratio or (style.default_style_ratio if style else None),
-        "width_resolver": style.width_resolver if style else None,
-        "constant_nib_units": constant_nib_units,
-        "words": word_index,
-    }
-    (fixture_root / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1))
-    print(f"exported {len(word_index)} words to {fixture_root}")
-    incomplete = [w for w in word_index if w["missing_at_export"]]
-    if incomplete:
-        print(f"  words with missing templates at export: {[(w['word'], w['missing_at_export']) for w in incomplete]}")
+        manifest = {
+            "exported_at": datetime.now(UTC).isoformat(timespec="seconds"),
+            "source_id": source_id,
+            "style_id": source.style_id,
+            "set": set_name,
+            "page_sha256": {p: s for p, s in page_shas.items() if any(w["page"] == p for w in kind_entries)},
+            "style_ratio": source.style_ratio or (style.default_style_ratio if style else None),
+            "width_resolver": style.width_resolver if style else None,
+            "constant_nib_units": constant_nib_units,
+            "words": index,
+        }
+        (fixture_root / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1))
+        unscorable = [w for w in index if not w["scorable"]]
+        print(f"exported {len(index)} {set_name} to {fixture_root} ({len(unscorable)} unscorable)")
+        if unscorable:
+            print(f"  missing templates: {[(w['id'], w['missing_at_export']) for w in unscorable]}")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--source", default=DEFAULT_SOURCE_ID, help="source id (default: suetterlin-1922)")
+    parser.add_argument("--set", dest="which", default="words", choices=SETS, help="which sidecar entries to freeze")
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT_DIR, help="fixtures output dir")
     args = parser.parse_args()
 
     load_dotenv()  # before any core.database import — env is read at import time
-    asyncio.run(export(args.source, args.out))
+    asyncio.run(export(args.source, args.out, args.which))
 
 
 if __name__ == "__main__":
