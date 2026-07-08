@@ -15,7 +15,7 @@ CLI: ``python -m tools.glyphlab i-initial u-initial`` (see ``--help``).
 
 from .cases import GlyphCase, fixture_case, iter_fixture_cases, live_case, live_case_sync
 from .derive import DeriveResult, Stage, derive, derive_stages
-from .render import GREEN, RED, Panel, figure, overlay, panel, save, stage_panels
+from .render import GREEN, RED, Panel, figure, overlay, panel, save, stage_panels, tile
 
 
 __all__ = [
@@ -33,6 +33,7 @@ __all__ = [
     "figure",
     "overlay",
     "stage_panels",
+    "tile",
     "save",
     "GREEN",
     "RED",

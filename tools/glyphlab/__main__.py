@@ -47,11 +47,12 @@ def _resolve_cases(args: argparse.Namespace) -> list[GlyphCase]:
     return [fixture_case(k, source_id=args.source) for k in args.keys]
 
 
-def _parse_sweep(spec: str) -> tuple[str, str, list[float]]:
+def parse_sweep(spec: str) -> tuple[str, str, list[float]]:
     """Parse `module.path.CONST=v1,v2,...` → (module_path, attr_name, [floats]).
 
     The dotted path's last segment is the constant; everything before it is the
     importable module. Values are parsed as floats (the only thing we tune here).
+    Public: tools/wordlab reuses it for its own `--sweep` (two CLIs, one core).
     """
     dotted, _, raw_values = spec.partition("=")
     if not raw_values:
@@ -77,7 +78,7 @@ def _run_sweep(args: argparse.Namespace, out_dir: Path | None) -> None:
     """
     if len(args.keys) != 1:
         raise SystemExit("--sweep renders exactly ONE glyph key; give a single key")
-    module_path, attr, values = _parse_sweep(args.sweep)
+    module_path, attr, values = parse_sweep(args.sweep)
     module = importlib.import_module(module_path)
     if not hasattr(module, attr):
         raise SystemExit(f"--sweep: {module_path!r} has no attribute {attr!r}")
