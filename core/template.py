@@ -450,7 +450,13 @@ def chisel_union_rings(
     merged = shapely.union_all(shapes)
     if simplify_tol > 0:
         merged = merged.simplify(simplify_tol, preserve_topology=True)
-    polygons = merged.geoms if merged.geom_type == "MultiPolygon" else [merged]
+    # A degenerate nib (zero width AND edge) collapses the stamps to
+    # lines/points and the union to a non-area geometry — extract whatever
+    # polygons exist and return [] gracefully for pure-line unions.
+    if merged.geom_type in ("MultiPolygon", "GeometryCollection"):
+        polygons = list(merged.geoms)
+    else:
+        polygons = [merged]
     rings: list[list[list[float]]] = []
     for poly in polygons:
         if poly.is_empty or poly.geom_type != "Polygon":
