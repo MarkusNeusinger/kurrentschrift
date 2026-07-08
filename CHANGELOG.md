@@ -10,22 +10,24 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+## [0.13.0] — 2026-07-09 — Tri-script pen foundation + human writing kinematics
+
 ### Added
 
 - **`llms.txt` for agentic browsing.** The site now serves a spec-compliant `/llms.txt`
   (H1, summary, linked sections: the three public areas, legal, GitHub, the open read
   API's OpenAPI docs) so AI agents get a crawlable map instead of the SPA's index.html
-  fallback — fixes the Chrome "agentic browsing" audit error.
+  fallback — fixes the Chrome "agentic browsing" audit error (#174).
 - **The public repository is linked.** Every public page's footer now carries a GitHub
   link next to the Impressum link (on phones the row wraps onto its own line), and the
   Impressum's "Quellen & Lizenzen" no longer announces the repository as planned but links
   it directly. A "Weitere Projekte" block (mirroring the anyplot legal page) lists
   anyplot.ai and cite-citadel after the operator disclaimer — deliberately in the
-  Impressum and not in the footer.
+  Impressum and not in the footer (#172).
 - **Petzendorfer 1889 seeded as a separate Kurrent source** (migration 0012): the only PD
   Kurrent chart with a digits row — the Kurrent digit templates' authoring source. A
-  deliberately separate hand (~57° calligraphic Kurrent), never merged into loth-1866.
-
+  deliberately separate hand (~57° calligraphic Kurrent), never merged into loth-1866
+  (#171).
 - **Broad-nib pen model — the Offenbacher Bandzugfeder writes for real.** `core/widths.py`
   gains the `BroadNib` model (`w(φ) = W·|sin(φ−α)| + t·|cos(φ−α)|` at Koch's constant 15°
   edge angle, primary source *Die Offenbacher Schrift*, 1928) and
@@ -33,7 +35,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   so chisel ends fall out naturally — never round caps. The writing path regenerates widths
   from the model (warp-invariant, inks generated connectors, repairs scan noise); the stored
   measurement is untouched and keeps serving the diagnostic. `api/rendering.py::pooled_pen`
-  calibrates the nib per source from the pooled measured profiles.
+  calibrates the nib per source from the pooled measured profiles (#170).
 - **Digits and punctuation as detached glyphs.** `0–9` and `. , ; : ! ? ' „ “ - – ( ) §`
   are real glyphs with `joins: false` in both shaping twins (`core/shaping.py`,
   `app/src/domain/{glyphs,shaping}.ts`): written without any Übergang, placed by whole-ink
@@ -41,19 +43,20 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   the historical double-stroke hyphen; straight `"` pairs low-then-high by occurrence
   parity. The admin sidebar gains Ziffern/Satzzeichen groups; digits are quizzable,
   punctuation is not; unauthored marks surface in the Federprobe "noch nicht kuratiert"
-  note instead of failing silently.
+  note instead of failing silently (#170).
 - **Pen-aware composition.** `compose_word(…, pen=…)`: `pressure` (Kurrent Spitzfeder) caps
   generated strokes at the source's pooled hairline — pressure never travels between
   letters; `broad_nib` ships connectors as swept-nib rings (the client already fills rings,
   zero client changes). `pen=None` stays byte-identical: golden fixture, wordbench 0.125337
-  and both glyph benches (Sütterlin 0.1865, Kurrent 0.1251) reproduce their baselines.
+  and both glyph benches (Sütterlin 0.1865, Kurrent 0.1251) reproduce their baselines
+  (#170).
 - **Design doc `docs/concepts/federmodelle.md`** — three pens, one render path: the
   Bandzugfeder law + chisel sweep, Spitzfeder hairline rules and the planned synthesis
   model/naturalness metric, the digits/punctuation glyph space, per-script authoring
-  sources, and the rejected alternatives.
+  sources, and the rejected alternatives (#170).
 - **`tools/glyphbench --style offenbacher`** routes through the pressure derivation and the
   Schwellzug pixel metric (honest for extraction quality — it scores the measured profile)
-  until a dedicated width-direction naturalness metric is calibrated.
+  until a dedicated width-direction naturalness metric is calibrated (#170).
 
 ### Changed
 
@@ -61,18 +64,18 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   two-thirds power law (the pen visibly slows in curves — non-linear dashoffset keyframes
   per stroke) and isochrony (stroke durations grow sublinearly with length) to
   `WrittenWord` and `WrittenGlyph`, replacing the constant-speed sweep
-  (docs/concepts/federmodelle.md §5).
+  (docs/concepts/federmodelle.md §5) (#171).
 - **The Schreibtafel writes with the same hand.** `WrittenSheet` (the `/tafel` alphabet
   rows) now runs through the shared kinematic reveal (strokeTiming + the WAAPI hook)
   instead of its own linear keyframes — the most glyph-dense writing surface no longer
   sweeps at machine-constant speed; cascade stagger, tap-replay and the ink settle are
-  unchanged.
+  unchanged (#173).
 
 ### Fixed
 
 - **Trailing punctuation no longer steals the round Schluss-s.** Positions are assigned per
   run of same joins-class, so `"Haus,"` keeps `s-final` (previously the comma made the s
-  read as medial → long-ſ).
+  read as medial → long-ſ) (#170).
 
 ## [0.12.0] — 2026-07-08 — Word bench full coverage + compose loop
 
