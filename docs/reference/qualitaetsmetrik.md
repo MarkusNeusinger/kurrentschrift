@@ -568,3 +568,52 @@ Deckung: `d-initial` 0.223 (6×), `n-final` 0.179 (17×). Neue Zielliste:
 `han` 0.265, `fechten` 0.243, `Gewehr` 0.233, `schwer` 0.227, `wenn` 0.203.
 Breite bleibt die größte Komponente (0.202) — die Wörter komponieren
 weiterhin zu schmal (kurze Joins, s. `zu`-Overlay).
+
+### Lauf `jul08` — erster Compose-Loop (Endstrich) + Struktur-Befund (2026-07-08)
+
+Keep/Discard nur an `core/compose.py`, Ziel NUR die Wort-Headline
+(User-Festlegung), Referenzen = `jul08`. Log:
+`tools/wordbench/runs/loop-jul08/results.tsv`.
+
+**Behalten — E1 Wort-End-Schwung (`bench_loss` 0.1284 → 0.1240):** Die
+Ausgangsschrift beendet jedes Wort mit einem Endstrich — die steigende
+Schlussflanke des letzten Buchstabens, GERADE verlängert Richtung
+Mittellinie. Generiert am Wortende (`SWING_TOP_Y = 0.7`, Bench-Optimum;
+Tafel-Mediane per Katalog: n≈0.53, m/e≈0.6, r≈0.82), nur bei niedrigem
+vorwärts-steigendem Exit (< 0.7) — Bogen-/Deckstrich-Exits enden wie
+gehabt. Erste Form (kubischer Haken, 55°) war schlechter (0.1356): der
+Tafel-Endstrich ist die tangenten-gerade Fortsetzung, kein Schnörkel.
+Golden-Fixture bewusst re-gepinnt (REGEN_GOLDEN, Endstrich ist jetzt Teil
+des öffentlichen `/write/word`). Sichtbarster Gewinn bei kurzen Wörtern
+(`Einen` 0.053 mit Breite 0.001, `zu` 0.111, `die` 0.099). **Paare:**
+`pair_loss` 0.176 → 0.197 (nur Report, nie Ziel) — die isolierten
+Abb.-20-Paare tragen eigene Auslaufstriche, der zusätzliche Endstrich
+verschiebt deren Breiten-Bias.
+
+**Verworfen — E2 uniformer Wortanfangs-Anstrich (+0.011):** Der
+Höhen-Schwellwert ist der falsche Diskriminator. Tafel-Katalog (48 Crops,
+formverifiziert): die Anstriche setzen bei ~0,5–0,7 x-Höhen an (NIE an der
+Grundlinie), ~30–35° über ~0,5 xh — und genau das ZEICHNEN unsere
+Entry-Stubs aus den Chart-Zellen bereits; a/z/f und alle Versalien öffnen
+ohne Anstrich. Ein zusätzlicher Lead-in ist ein Doppel-Anstrich.
+
+**Verworfen — E4 Stub-Trim + Diagonal-Platzierung (+0.11 … +0.32), mit dem
+wichtigsten Struktur-Befund des Laufs:** Die Chart-Zellen zeichnen halb-hohe
+Kopplungs-Stubs (Entry: Pen-down mitte → Bogenscheitel; Exit: Grundlinien-
+Fuß → halbe Höhe). Im fließenden Schreiben ersetzt der Join beide Stubs
+durch EINE flache Gerade — unser Konnektor überbrückt stattdessen die
+Stub-Spitzen fast waagerecht („Shelf"). Der Umbau (Trim + Fuß→Scheitel-
+Diagonale, Patch: `runs/loop-jul08/e4-stub-trim-full.patch`) legte offen:
+**die Bögen der Glyphen selbst sind ~35 % schmaler als die fließende
+Vorlage** (n intern 0,7 xh vs. 1,11 xh gemessen) — die Stubs kaschierten
+das als Padding. Compose kann das nicht ehrlich kompensieren (Trim-only
+kollabiert auf halbe Breite, Diagonal-Regel überdehnt die Joins); der Fix
+liegt auf der **Glyph-Ebene** (Bogenbreite der autorisierten n/e/m/w-Formen
+an die fließende Schrift anpassen) → eigenes Issue, eigener Lauf mit
+Glyph-Bench-Gegenprobe.
+
+**Zielliste danach:** `fechten` 0.257 (ch-Ligatur fehlt → komponiert
+dekomponiert zu breit; Autoring), `Gewehr` 0.233, `schwer` 0.227, `an`
+0.204 / `wenn` 0.197 (Bogenbreiten-Befund). Vorschlag-B-Residualtabelle:
+`runs/loop-jul08/vorschlag-b-residuals.tsv` (Status-Notiz in
+`planaenderungen.md` — Beobachtung, keine Übernahme).

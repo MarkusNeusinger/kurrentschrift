@@ -58,6 +58,23 @@ HIGH_EXIT_Y = 1.05
 BOW_EXIT_Y = 0.7
 BOW_LAUNCH_DEG = (-35.0, 5.0)
 CONNECT_SAMPLES = 24  # Bézier samples per connector (dense enough to read as a smooth arc)
+# Word-final Endstrich (the finishing upswing of the school hand): the plates
+# end a word by continuing the last letter's rising flank STRAIGHT up towards
+# the Mittellinie (x-height line). Every Abb.-19 specimen word carries that
+# stroke; the composed words lacked it — before the swing it was the largest
+# single cause of the bench's width penalty on short words and of the n-final
+# coverage signal (the swing's ink lies in the last letter's x-span; history
+# in qualitaetsmetrik.md §6, Lauf jul08). A tangent-straight
+# extension, generated at the word boundary, never stored — the transition
+# into "nothing".
+# Target height of the swing's end — SWING_MAX_RUN may cap a shallow exit's
+# run short of it. Bench optimum; plate medians: n≈0.53, m/e≈0.6, r≈0.82.
+SWING_TOP_Y = 0.7
+SWING_MAX_RUN = 0.9  # cap the horizontal run for shallow exits (x-height units)
+SWING_MIN_RISE = 0.2  # a flat/falling exit does not swing (needs a rising flank to continue)
+# Only a LOW forward exit swings: a bow/Deckstrich exit (o, b, w) already ends
+# high and the plates show no extra flourish there.
+SWING_MAX_EXIT_Y = 0.7
 DEFAULT_HALF = 0.05  # fallback stroke half-width
 # Exit y (baseline = 0, descender ≈ −1) below which a glyph's stroke is judged
 # to end inside its descender loop, so the connector becomes a return upstroke
@@ -177,8 +194,41 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
             items.append(it)
         pending_diacritics.clear()
 
+    def end_swing() -> None:
+        """Emit the word-final Endstrich — the finishing upswing (see
+        SWING_TOP_Y): the last glyph's rising exit flank, continued straight
+        towards the x-height line. High, backward or flat exits (bows, a
+        Deckstrich cover-stroke) end the word as they are."""
+        nonlocal cursor_x
+        if not prev or prev["exit"][1] >= SWING_MAX_EXIT_Y:
+            return
+        d_out = _unit(prev["tangent_deg"])
+        if d_out[0] <= 0 or d_out[1] < SWING_MIN_RISE:
+            return
+        p0: Point = prev["exit"]
+        run = min((SWING_TOP_Y - p0[1]) * d_out[0] / d_out[1], SWING_MAX_RUN)
+        if run <= 0:
+            return
+        p3: Point = (p0[0] + run, p0[1] + run * d_out[1] / d_out[0])
+        centerline = [p0, ((p0[0] + p3[0]) / 2, (p0[1] + p3[1]) / 2), p3]
+        stroke_width = 2 * prev["width"]
+        swing: dict = {
+            "centerline": [list(p) for p in centerline],
+            "stroke_width": stroke_width,
+            "mask_width": stroke_width * 1.3,
+            "lift": False,
+        }
+        if provenance:
+            swing["pair"] = [prev["key"], None]
+            swing["from_slot"] = prev["slot_index"]
+            swing["to_slot"] = None
+        items.append(swing)
+        track(centerline)
+        cursor_x = p3[0]
+
     for slot_index, slot in enumerate(slots):
         if slot.space:
+            end_swing()  # the pen finishes the word body before the marks and the gap
             flush_diacritics()  # the word's marks land before the gap to the next word
             cursor_x += SPACE_ADV
             prev = None
@@ -188,9 +238,14 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
         if not data or not centerlines:
             if slot.key:
                 missing.append(slot.key)
-            # A null-key slot (punctuation, digit) or a missing glyph breaks the
-            # writing run just like a space: flush the marks gathered so far, so
-            # a preceding i-dot/umlaut lands at the end of its word.
+            else:
+                # A null-key slot (punctuation, digit) is a real word boundary
+                # in the slot stream — the word before it earns its Endstrich.
+                # A MISSING glyph is a mid-word hole and must not fake one.
+                end_swing()
+            # Either way the writing run breaks like a space: flush the marks
+            # gathered so far, so a preceding i-dot/umlaut lands at the end of
+            # its word.
             flush_diacritics()
             cursor_x += MISSING_ADV
             prev = None
@@ -357,7 +412,8 @@ def compose_word(slots: list[GlyphSlot], data_by_key: dict[str, dict | None], *,
         }
         cursor_x = exit_abs[0]
 
-    flush_diacritics()  # the last word's marks, once its body is complete
+    end_swing()  # the last word's Endstrich …
+    flush_diacritics()  # … then its marks, once the body is complete
 
     if not math.isfinite(min_x):
         min_x, max_x, min_y, max_y = 0.0, 1.0, 0.0, 1.0

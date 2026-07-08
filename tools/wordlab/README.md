@@ -29,6 +29,10 @@ python -m tools.wordlab bs on --set pairs
 # colour the connectors green→red by penalty instead of a flat red
 python -m tools.wordlab Einen --heatmap
 
+# join close-up: crop the view to a horizontal fraction of the crop (the
+# caption margin is dropped — the zoom is about the geometry)
+python -m tools.wordlab wenn kann --zoom-x 0.35,0.95 --no-callouts
+
 # every word of the set, one per row (filter with ids)
 python -m tools.wordlab --all
 

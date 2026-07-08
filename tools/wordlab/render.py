@@ -172,20 +172,33 @@ def _draw_callouts(ax, result: WordDeriveResult, tf: Callable, head: float) -> N
         lane += 1
 
 
-def _draw_specimen(ax, result: WordDeriveResult, *, callouts: bool, heatmap: bool, skeleton: bool) -> None:
+def _draw_specimen(
+    ax,
+    result: WordDeriveResult,
+    *,
+    callouts: bool,
+    heatmap: bool,
+    skeleton: bool,
+    zoom_x: tuple[float, float] | None = None,
+) -> None:
     case = result.case
     tf = lambda pts: _transform(  # noqa: E731 — a tiny per-panel closure over the fit
         pts, result.xh_px, result.registration["tx"], result.registration["ty"], result.baseline_row
     )
     crop = np.clip(case.crop, 0, 1)
     H, W = crop.shape
-    caption = _score_caption(result)
+    # A zoomed join close-up drops the caption margin — the numbers belong to
+    # the whole word, the zoom is about the geometry.
+    caption = _score_caption(result) if zoom_x is None else None
     margin = 0.5 * W if caption else 0.0
     head = 0.34 * H if (callouts and result.segments) else 0.0
 
     faint = crop * 0.6 + 0.4  # lighten the ink so the overlay reads on top
     ax.imshow(faint, cmap="gray", vmin=0, vmax=1, extent=(0, W, H, 0), interpolation="nearest", zorder=0)
-    ax.set_xlim(0, W + margin)
+    if zoom_x is not None:
+        ax.set_xlim(zoom_x[0] * W, zoom_x[1] * W)
+    else:
+        ax.set_xlim(0, W + margin)
     ax.set_ylim(H, -head)  # inverted (image convention); the band above holds callouts
     ax.set_aspect("equal")
     ax.axis("off")
@@ -255,18 +268,21 @@ def word_panel(
     callouts: bool = True,
     heatmap: bool = False,
     skeleton: bool = True,
+    zoom_x: tuple[float, float] | None = None,
 ) -> Callable:
     """A draw callback for glyphlab's `tile` — one composed word over its specimen.
 
     `callouts` annotates each connector with its penalty; `heatmap` recolours the
     connectors green→red by penalty; `skeleton` toggles the blue specimen
-    skeleton. A live case (no specimen) ignores the specimen-only toggles and
-    draws on white in composed units.
+    skeleton; `zoom_x=(lo, hi)` crops the view to that horizontal fraction of
+    the crop (a join close-up; the caption margin is dropped). A live case (no
+    specimen) ignores the specimen-only toggles and draws on white in composed
+    units.
     """
 
     def draw(ax) -> None:
         if result.case.has_specimen:
-            _draw_specimen(ax, result, callouts=callouts, heatmap=heatmap, skeleton=skeleton)
+            _draw_specimen(ax, result, callouts=callouts, heatmap=heatmap, skeleton=skeleton, zoom_x=zoom_x)
         else:
             _draw_live(ax, result, heatmap=heatmap)
         ax.set_title(title or result.case.id, fontsize=8.5)

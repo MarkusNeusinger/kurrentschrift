@@ -88,7 +88,7 @@ def _summary(result: WordDeriveResult) -> str:
     )
 
 
-def _run_sweep(args: argparse.Namespace, out_dir: Path) -> None:
+def _run_sweep(args: argparse.Namespace, out_dir: Path, zoom_x: tuple[float, float] | None) -> None:
     """Compose ONE word across several values of a module-level constant (columns).
 
     The constant is patched in place, the word re-derived per value, then the
@@ -117,6 +117,7 @@ def _run_sweep(args: argparse.Namespace, out_dir: Path) -> None:
                     callouts=not args.no_callouts,
                     heatmap=args.heatmap,
                     skeleton=not args.no_skeleton,
+                    zoom_x=zoom_x,
                 )
             )
     finally:
@@ -144,6 +145,12 @@ def main() -> None:
     p.add_argument("--heatmap", action="store_true", help="colour connectors green→red by penalty")
     p.add_argument("--no-skeleton", action="store_true", help="hide the blue specimen skeleton")
     p.add_argument(
+        "--zoom-x",
+        default=None,
+        metavar="LO,HI",
+        help="crop the view to this horizontal fraction of the crop, e.g. 0.4,0.8 (join close-up)",
+    )
+    p.add_argument(
         "--sweep",
         default=None,
         metavar="DOTTED.PATH=v1,v2,...",
@@ -161,8 +168,21 @@ def main() -> None:
     args = p.parse_args()
 
     out_dir = Path(args.out_dir) if args.out_dir else _default_out_dir()
+
+    zoom_x = None
+    if args.zoom_x:
+        lo, _, hi = args.zoom_x.partition(",")
+        try:
+            zoom_x = (float(lo), float(hi))
+        except ValueError:
+            raise SystemExit(f"--zoom-x needs LO,HI fractions, got {args.zoom_x!r}") from None
+        if not (0.0 <= zoom_x[0] < zoom_x[1] <= 1.0):
+            raise SystemExit(f"--zoom-x fractions must satisfy 0 <= LO < HI <= 1, got {args.zoom_x!r}")
+        if args.live:
+            raise SystemExit("--zoom-x crops the specimen view; a --live case has no specimen crop")
+
     if args.sweep:
-        _run_sweep(args, out_dir)
+        _run_sweep(args, out_dir, zoom_x)
         return
 
     cases = _resolve_cases(args)
@@ -177,6 +197,7 @@ def main() -> None:
                 callouts=not args.no_callouts,
                 heatmap=args.heatmap,
                 skeleton=not args.no_skeleton,
+                zoom_x=zoom_x,
             )
         )
 
