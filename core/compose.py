@@ -61,9 +61,10 @@ CONNECT_SAMPLES = 24  # Bézier samples per connector (dense enough to read as a
 # Word-final Endstrich (the finishing upswing of the school hand): the plates
 # end a word by continuing the last letter's rising flank STRAIGHT up towards
 # the Mittellinie (x-height line). Every Abb.-19 specimen word carries that
-# stroke; the composed words lacked it — the largest single cause of the width
-# penalty on short words (an 0.58, im 0.45) and of the n-final coverage signal
-# (the swing's ink lies in the last letter's x-span). A tangent-straight
+# stroke; the composed words lacked it — before the swing it was the largest
+# single cause of the bench's width penalty on short words and of the n-final
+# coverage signal (the swing's ink lies in the last letter's x-span; history
+# in qualitaetsmetrik.md §6, Lauf jul08). A tangent-straight
 # extension, generated at the word boundary, never stored — the transition
 # into "nothing".
 # Target height of the swing's end — SWING_MAX_RUN may cap a shallow exit's

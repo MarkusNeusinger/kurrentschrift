@@ -88,7 +88,7 @@ def _summary(result: WordDeriveResult) -> str:
     )
 
 
-def _run_sweep(args: argparse.Namespace, out_dir: Path) -> None:
+def _run_sweep(args: argparse.Namespace, out_dir: Path, zoom_x: tuple[float, float] | None) -> None:
     """Compose ONE word across several values of a module-level constant (columns).
 
     The constant is patched in place, the word re-derived per value, then the
@@ -117,6 +117,7 @@ def _run_sweep(args: argparse.Namespace, out_dir: Path) -> None:
                     callouts=not args.no_callouts,
                     heatmap=args.heatmap,
                     skeleton=not args.no_skeleton,
+                    zoom_x=zoom_x,
                 )
             )
     finally:
@@ -167,9 +168,6 @@ def main() -> None:
     args = p.parse_args()
 
     out_dir = Path(args.out_dir) if args.out_dir else _default_out_dir()
-    if args.sweep:
-        _run_sweep(args, out_dir)
-        return
 
     zoom_x = None
     if args.zoom_x:
@@ -182,6 +180,10 @@ def main() -> None:
             raise SystemExit(f"--zoom-x fractions must satisfy 0 <= LO < HI <= 1, got {args.zoom_x!r}")
         if args.live:
             raise SystemExit("--zoom-x crops the specimen view; a --live case has no specimen crop")
+
+    if args.sweep:
+        _run_sweep(args, out_dir, zoom_x)
+        return
 
     cases = _resolve_cases(args)
     draws = []
