@@ -61,6 +61,9 @@ def _verticals_x(payload: dict) -> list[float]:
 
 def test_pinched_e_opens_to_target_on_gleichzug_path() -> None:
     row = _pinched_row("e")
+    entry_before = [*row["entry"]["xy"]]
+    exit_before = [*row["exit_pt"]["xy"]]
+    advance_before = row["advance"]
     payload = render_payload_for_template(row, [1, 1, 1], "constant", 0.05)
     v = _verticals_x(payload)
     assert len(v) >= 2
@@ -69,8 +72,12 @@ def test_pinched_e_opens_to_target_on_gleichzug_path() -> None:
     assert payload["advance"] > row["advance"]
     assert payload["exit_pt"]["xy"][0] > row["exit_pt"]["xy"][0]
     assert payload["entry"]["xy"] == row["entry"]["xy"]  # entry sits left of the body
-    # the stored row itself is never mutated
-    assert row["anchors"][6][0] == 0.8
+    # the stored row is never mutated — the remap copies the nested connection
+    # dicts, the only place an in-place edit could actually leak (anchors are
+    # re-arrayed by the renderer anyway)
+    assert row["entry"]["xy"] == entry_before
+    assert row["exit_pt"]["xy"] == exit_before
+    assert row["advance"] == advance_before
 
 
 def test_unlisted_glyph_and_pressure_path_stay_untouched() -> None:
