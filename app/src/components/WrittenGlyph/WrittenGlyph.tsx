@@ -24,12 +24,11 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { CONFIG } from '@/global-config';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { fetchRenderGlyph, peekRenderGlyph, seedRenderGlyph, type GlyphRenderData } from '@/lib/api';
+import { useStrokeReveal } from '@/hooks/useStrokeReveal';
+import { allocateDurations, strokeTimeProfile } from '@/lib/strokeTiming';
 import { ringsToPathD, type Ring } from '@/lib/svg';
 import { de } from '@/locales';
 import { inkState, schulheft } from '@/styles/paper';
-
-// Reveal a dashed path (pathLength=1, dasharray=1): offset 1 hides it, 0 draws it.
-const reveal = keyframes`from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; }`;
 
 // Iron-gall ink settle: German school ink wrote blue-black and oxidized to
 // near-black (Reichs-Tintenprüfung 1888/1912) — compressed here from weeks to
@@ -52,14 +51,6 @@ const GUIDE_MIDBAND_OPACITY = 0.55;
 // so a glyph the quiz letter shows and a written word contains costs one fetch
 // per session across ALL surfaces. Version stamps (`bust`) and externally
 // supplied payloads (the admin dialog) are handled there too.
-
-function chordLength(points: Array<[number, number]>): number {
-  let total = 0;
-  for (let i = 1; i < points.length; i++) {
-    total += Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]);
-  }
-  return total;
-}
 
 // Polyline as an SVG path `d`, negating y (template y is up, SVG y is down).
 function pathD(points: Array<[number, number]>): string {
@@ -215,17 +206,22 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight 
     // little extra + round caps cover the spline-normal seams and pen-nib tip.
     const maskWidth = Math.max(0.05, 2.2 * maxHalfWidth);
 
-    // Per-stroke durations proportional to path length so the pen moves at a
-    // roughly even pace; each stroke starts after the previous one finishes plus
-    // a short pen-lift pause.
-    const lengths = centerlines.map(chordLength);
-    const totalLen = lengths.reduce((s, l) => s + l, 0) || 1;
+    // Human kinematics instead of an even pace (lib/strokeTiming): the
+    // two-thirds power law slows the sweep in curves via non-linear dashoffset
+    // keyframes, isochrony allocates stroke durations sublinearly; each stroke
+    // starts after the previous one finishes plus a short pen-lift pause.
+    const profiles = centerlines.map((cl) => strokeTimeProfile(cl as [number, number][]));
+    const durations = allocateDurations(
+      profiles.map((p) => p.weight),
+      durationMs,
+      250,
+    );
     let cursor = 0;
     const timing = centerlines.map((_, i) => {
-      const dur = Math.max(250, (lengths[i] / totalLen) * durationMs);
+      const dur = durations[i];
       const delay = cursor;
       cursor += dur + PEN_PAUSE_MS;
-      return { dur, delay };
+      return { dur, delay, arcAtTime: profiles[i].arcAtTime };
     });
 
     // End of the writing performance. Includes the trailing PEN_PAUSE_MS on
@@ -236,6 +232,12 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight 
     return { tpl, minX, vbW, vbY, vbH, strokePaths, polygons, centerlines, maskWidth, timing, writeEndMs };
   }, [data, durationMs, tight]);
 
+  const animate = animateProp && !reducedMotion;
+  // WAAPI drives the per-path dashoffset (scoped, no global @keyframes growth);
+  // hooks run unconditionally, before the early returns.
+  const maskPathRefs = useRef<Array<SVGPathElement | null>>([]);
+  useStrokeReveal(maskPathRefs, geom?.timing ?? [], animate && !!geom, `${run}|${geom ? 'g' : ''}`);
+
   if (unavailable) return null;
   if (error) {
     return <Alert severity="error" sx={{ width: '100%' }}>{error}</Alert>;
@@ -244,7 +246,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight 
     return <CircularProgress size={28} />;
   }
 
-  const { tpl, minX, vbW, vbY, vbH, strokePaths, polygons, centerlines, maskWidth, timing, writeEndMs } = geom;
+  const { tpl, minX, vbW, vbY, vbH, strokePaths, polygons, centerlines, maskWidth, writeEndMs } = geom;
   const displayH = height;
   const maxW = maxWidth ?? MAX_W;
   let displayW = (displayH * vbW) / vbH;
@@ -256,7 +258,6 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight 
   // useId() namespaces the mask per component instance so two WrittenGlyphs with
   // the same glyph_key on screen at once can't collide on `url(#id)`.
   const maskId = `written-${uid.replace(/[^a-zA-Z0-9_-]/g, '_')}-${run}`;
-  const animate = animateProp && !reducedMotion;
 
   return (
     <Box sx={{ position: 'relative', display: 'inline-flex' }}>
@@ -286,9 +287,11 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight 
             {/* Black hides; the white sweep reveals the silhouette beneath it. */}
             <rect x={minX} y={vbY} width={vbW} height={vbH} fill="black" />
             {centerlines.map((line, i) => (
-              <Box
-                component="path"
+              <path
                 key={`${run}-${i}`}
+                ref={(el) => {
+                  maskPathRefs.current[i] = el;
+                }}
                 d={pathD(line)}
                 fill="none"
                 stroke="#fff"
@@ -297,12 +300,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight 
                 strokeLinejoin="round"
                 pathLength={1}
                 strokeDasharray={1}
-                sx={{
-                  strokeDashoffset: animate ? 1 : 0,
-                  animation: animate
-                    ? `${reveal} ${timing[i].dur}ms linear ${timing[i].delay}ms forwards`
-                    : undefined,
-                }}
+                style={{ strokeDashoffset: animate ? 1 : 0 }}
               />
             ))}
           </mask>
