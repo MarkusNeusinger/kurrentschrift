@@ -1,0 +1,21 @@
+# kurrentschrift.ink
+
+> Die alte deutsche Schreibschrift lesen und schreiben lernen: Kurrent, Sütterlin und Offenbacher Schrift — mit Schriftkunde, Buchstaben-Quiz, Schreibtafel, Übungsblättern und einer Feder, die eingegebenen Text live im synthetisierten Duktus schreibt.
+
+Alle gezeigten Schriftzüge sind sorgfältige Synthesen aus gemeinfreien historischen Schreibvorlagen (Sütterlin-Leitfaden 1922, Loth 1866, Petzendorfer 1889, Koch 1928) und als solche gekennzeichnet — keine historischen Originale. Inhalte auf Deutsch.
+
+## Bereiche
+
+- [Schriftkunde](https://kurrentschrift.ink/schriftkunde): Belegter Überblick über die deutschen Schreibschriften — Grundbegriffe, die drei Ausgangsschriften, Federn, Tinte & Papier, Buchstaben-Besonderheiten, Zahlen & Zeichen, Chronologie
+- [Lesen](https://kurrentschrift.ink/lesen): Übersicht der Lese-Übungen
+- [Buchstaben-Quiz](https://kurrentschrift.ink/quiz): Sütterlin-Buchstaben und -Wörter erkennen, mit Auswertung
+- [Schreibtafel](https://kurrentschrift.ink/tafel): Die drei Grundtafeln; das Sütterlin-Alphabet schreibt sich Zug um Zug selbst
+- [Schreiben](https://kurrentschrift.ink/schreiben): Übersicht der Schreib-Übungen
+- [Übungsblatt](https://kurrentschrift.ink/schreiben/uebungsblatt): Konfigurierbare Lineatur-Vorlagen zum Ausdrucken
+- [Federprobe](https://kurrentschrift.ink/federprobe): Beliebigen Text eingeben — die Feder schreibt ihn live mit generierten Übergängen
+- [Impressum & Datenschutz](https://kurrentschrift.ink/impressum): Betreiber, Datenschutz, Quellen & Lizenzen
+
+## Ressourcen
+
+- [Quellcode auf GitHub](https://github.com/MarkusNeusinger/kurrentschrift): MIT-Lizenz; die kuratierten Schriftdaten (Duktus, Vorlagen, Statistik) sind gesondert vorbehalten
+- [Offene Lese-API](https://api.kurrentschrift.ink/docs): OpenAPI-Dokumentation der öffentlichen Endpunkte (Quellen, Glyphen, serverseitig komponierte Wörter)
