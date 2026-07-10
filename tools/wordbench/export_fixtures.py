@@ -33,7 +33,7 @@ composition failure; a template that exists but composes badly still scores).
 
 Fixture layout (gitignored — regenerate at will):
 
-    fixtures/<style_id>/<source_id>[-pairs]/
+    fixtures/<style_id>/<source_id>[-<set>]/   # words -> <source_id>, pairs/custom -> suffixed
       manifest.json            # export stamp, set, page sha256s, style ratio/resolver, pooled nib, word index
       templates.json           # glyph_key -> template row (anchors, half_widths, trace_meta, entry, exit_pt, advance)
       <id>/
@@ -44,7 +44,7 @@ Fixture layout (gitignored — regenerate at will):
 
 Usage:
     uv run python -m tools.wordbench.export_fixtures [--source suetterlin-1922]
-        [--set words|pairs|all] [--out tools/wordbench/fixtures]
+        [--set words|pairs|<custom set like abb22>|all] [--out tools/wordbench/fixtures]
 """
 
 from __future__ import annotations

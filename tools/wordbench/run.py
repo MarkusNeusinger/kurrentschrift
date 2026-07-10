@@ -14,8 +14,13 @@ reported by name — an authoring gap is not a composition failure; a crash of
 an authored entry still counts 1.0.
 
 Usage:
-    uv run python -m tools.wordbench.run [--style suetterlin] [--set words|pairs|all]
-        [--words unter,das] [--artifacts DIR] [--json report.json] [--compare old.json]
+    uv run python -m tools.wordbench.run [--style suetterlin]
+        [--set words|pairs|<custom set like abb22>|all] [--words unter,das]
+        [--artifacts DIR] [--json report.json] [--compare old.json]
+
+    ``--set all`` covers ONLY the canonical same-hand sets (words + pairs);
+    a custom cross-hand set must be named explicitly so it can never mix
+    into the same-hand headlines.
 
 Output contract (parsed by the experiment loop — keep the words block stable):
 
