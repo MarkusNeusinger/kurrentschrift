@@ -77,7 +77,36 @@ HIGH_EXIT_Y = 1.05
 # tangent instead humps the connector above the bow. Clamp the launch angle.
 BOW_EXIT_Y = 0.7
 BOW_LAUNCH_DEG = (-35.0, 5.0)
+# The r-arm exception inside the bow band: a LOW pre-clamp tangent is the
+# level Deckstrich arm ending in its knob (r ≈ +29°), not a closing bow
+# (o ≈ +39°, b ≈ +44°). The plates write an Absatz there — the pen sets off
+# the arm with a corner and falls steeply into the garland turn; rolling the
+# crest like a bow reads as the V-notch wobble the jul09 join audit flagged
+# (r→e 72°/65° seam kinks, worst connector of the corpus).
+ARM_TAN_MAX_DEG = 33.0
+ARM_FALL_DEG = -65.0
 CONNECT_SAMPLES = 24  # Bézier samples per connector (dense enough to read as a smooth arc)
+# Baseline garland — the school hand's default join when a letter's stroke
+# ends ABOVE where the next one begins. The plates (Abb. 19/20) show the pen
+# leaving the exit (r's arm, b's bow, d's loop, t), falling into a ROUNDED
+# TURN near the Grundlinie and rising into the next letter's lead-in
+# collinearly. The taut single cubic used to bridge such drops directly,
+# which read as a V-notch / S-wobble at the seam (jul09 join audit: r→e
+# 72°/65°, b→i 90°/77° seam kinks). Geometry + eligibility in
+# ``_garland_centerline``: a fall cubic into a horizontal-tangent turn point
+# plus a rise cubic that straightens into the entry tangent.
+# How far down the lead-in line the pen merges: the merge point sits
+# GARLAND_TURN_RATIO × (exit's perpendicular distance to the line) before the
+# entry point — a close line (rb) is joined near the entry, a far one (r→e,
+# d→e) is ridden from near its foot, which is exactly how the plates grade
+# the depth of the turn.
+GARLAND_TURN_RATIO = 0.8
+GARLAND_MERGE_EPS = 0.15  # exit closer than this to the lead-in line: plain taut cubic
+# A strongly RISING launch is a sawtooth mid-rise exit (e, n, m …) — those
+# letters already wrote their baseline turn; the connector only extends the
+# diagonal and must NOT dip again.
+GARLAND_MAX_LAUNCH_RISE = 0.35
+GARLAND_MIN_DX = 0.05  # the merge point must sit right of the exit by at least this
 # Word-final Endstrich (the finishing upswing of the school hand): the plates
 # end a word by continuing the last letter's rising flank STRAIGHT up towards
 # the Mittellinie (x-height line). Every Abb.-19 specimen word carries that
@@ -92,6 +121,11 @@ CONNECT_SAMPLES = 24  # Bézier samples per connector (dense enough to read as a
 SWING_TOP_Y = 0.7
 SWING_MAX_RUN = 0.9  # cap the horizontal run for shallow exits (x-height units)
 SWING_MIN_RISE = 0.2  # a flat/falling exit does not swing (needs a rising flank to continue)
+# The plates' Endstrich is not a straight continuation: it leaves along the
+# exit tangent and FLATTENS towards the end (a long, gently convex upswing —
+# the jul09 audit measured runs of ~0.5 x-heights ending near level, while
+# the straight swing stopped after ~0.2). End direction of that curve:
+SWING_END_DEG = 12.0
 # Only a LOW forward exit swings: a bow/Deckstrich exit (o, b, w) already ends
 # high and the plates show no extra flourish there.
 SWING_MAX_EXIT_Y = 0.7
@@ -100,6 +134,25 @@ DEFAULT_HALF = 0.05  # fallback stroke half-width
 # to end inside its descender loop, so the connector becomes a return upstroke
 # rather than following the downward exit tangent (see the long-s ſ).
 DESCENDER_EXIT_Y = -0.2
+# Sawtooth pass-through alignment: when the previous letter hands over
+# mid-rise and the next begins mid-rise (both tangents inside the diagonal
+# band), the plates run ONE continuous diagonal from the previous baseline
+# turn into the next letter — no shelf. Placement then PULLS the next glyph
+# left onto the exit's rise line (never below the ALIGN_MIN_CLEARANCE ink
+# floor), so the taut connector degenerates to the collinear middle piece.
+# Backward (w/v), bow (o/b), arm (r) and descender exits never qualify —
+# their tangent is not a diagonal.
+ALIGN_TAN_DEG = (25.0, 55.0)
+ALIGN_MIN_RISE = 0.02  # entry must sit above the exit for a pass-through
+ALIGN_MIN_CLEARANCE = 0.06  # ink may approach this close when alignment pulls
+# The plates couple slightly FLATTER than the letters' internal diagonals (a
+# subtle set-off remains between two sawtooth letters) — pull onto a line of
+# this fraction of the mean tangent slope, not the full slope.
+ALIGN_SLOPE_RATIO = 0.8
+# Tall lead-ins (h 0.69, t 0.70 …) sweep in long and flat on the plates —
+# alignment on their steep landing tangent over-pulls; leave them to the
+# clearance placement.
+ALIGN_MAX_ENTRY_Y = 0.62
 # Travel direction measured over a short ARC-LENGTH window rather than the
 # single final segment — the glyph centerline is a smooth spline through the
 # anchors, so its true endpoint tangent rarely matches the stored single-chord
@@ -173,6 +226,52 @@ def _sample_bezier(p0: Point, p1: Point, p2: Point, p3: Point, n: int) -> list[P
         y = u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1]
         out.append((x, y))
     return out
+
+
+def _garland_centerline(p0: Point, d_out: Point, p3: Point, d_in: Point) -> list[Point] | None:
+    """Baseline-garland join (see the GARLAND_* constants): fall cubic from the
+    exit into a horizontal-tangent turn point near the Grundlinie, then a rise
+    cubic that straightens into the entry tangent. Returns None whenever the
+    geometry does not call for a garland — the caller falls back to the taut
+    cubic (mid-rise sawtooth exits, descender returns, rising joins, no room).
+    """
+    if d_in[1] <= 0.2 or d_in[0] <= 0.0:
+        return None  # entry stroke not a rising lead-in
+    if d_out[1] > GARLAND_MAX_LAUNCH_RISE:
+        return None  # exit still mid-rise: extend the diagonal, don't dip again
+    if p3[0] - p0[0] <= 2 * GARLAND_MIN_DX:
+        return None
+    # Signed perpendicular distance of the exit ABOVE the lead-in line
+    # (through p3 along d_in): cross(d_in, p0 − p3) > 0 ⇔ exit left of/above
+    # the rising line — only then is there a turn to write.
+    d_perp = d_in[0] * (p0[1] - p3[1]) - d_in[1] * (p0[0] - p3[0])
+    if d_perp <= GARLAND_MERGE_EPS:
+        return None
+    # Merge point: GARLAND_TURN_RATIO × d_perp down the lead-in line before
+    # the entry, kept right of the exit so the pen always progresses.
+    lam = GARLAND_TURN_RATIO * d_perp
+    lam = min(lam, (p3[0] - p0[0] - GARLAND_MIN_DX) / d_in[0])
+    if lam <= 0.0:
+        return None
+    m: Point = (p3[0] - lam * d_in[0], p3[1] - lam * d_in[1])
+
+    # Fall cubic: leave along the (already rescue-clamped) launch direction,
+    # kiss the lead-in line at the merge point tangentially — its natural dip
+    # just below the merge IS the rounded garland turn of the school hand.
+    fall_span = math.hypot(m[0] - p0[0], m[1] - p0[1])
+    fall_dx = m[0] - p0[0]
+    h_out = max(0.03, min(fall_span * 0.4, fall_dx * 0.6))
+    h_in = max(0.03, min(fall_span * 0.4, fall_dx * 0.6))
+    fall = _sample_bezier(
+        p0,
+        (p0[0] + h_out * d_out[0], p0[1] + h_out * d_out[1]),
+        (m[0] - h_in * d_in[0], m[1] - h_in * d_in[1]),
+        m,
+        18,
+    )
+    # Ride the lead-in line straight into the entry point.
+    ride = [(m[0] + (p3[0] - m[0]) * t / 6, m[1] + (p3[1] - m[1]) * t / 6) for t in range(1, 7)]
+    return fall + ride
 
 
 def compose_word(
@@ -272,11 +371,33 @@ def compose_word(
         if d_out[0] <= 0 or d_out[1] < SWING_MIN_RISE:
             return
         p0: Point = prev["exit"]
-        run = min((SWING_TOP_Y - p0[1]) * d_out[0] / d_out[1], SWING_MAX_RUN)
+        rise = SWING_TOP_Y - p0[1]
+        if rise <= 0:
+            return
+        # Quadratic that leaves along the exit tangent and flattens to
+        # SWING_END_DEG at the top: run = rise × mean of the two cotangents.
+        cot_out = d_out[0] / d_out[1]
+        cot_end = 1.0 / math.tan(math.radians(SWING_END_DEG))
+        run = min(rise * (cot_out + cot_end) / 2, SWING_MAX_RUN)
         if run <= 0:
             return
-        p3: Point = (p0[0] + run, p0[1] + run * d_out[1] / d_out[0])
-        centerline = [p0, ((p0[0] + p3[0]) / 2, (p0[1] + p3[1]) / 2), p3]
+        p3: Point = (p0[0] + run, p0[1] + rise * min(1.0, run / (rise * (cot_out + cot_end) / 2)))
+        # Control point: intersection of the two tangent lines (exists because
+        # the directions differ; fall back to the midpoint when nearly parallel).
+        d_end = _unit(SWING_END_DEG)
+        denom = d_out[0] * d_end[1] - d_out[1] * d_end[0]
+        ctrl: Point = ((p0[0] + p3[0]) / 2, (p0[1] + p3[1]) / 2)
+        if abs(denom) > 1e-9:
+            t = ((p3[0] - p0[0]) * d_end[1] - (p3[1] - p0[1]) * d_end[0]) / denom
+            if 0.0 < t and p0[0] < p0[0] + t * d_out[0] < p3[0]:
+                ctrl = (p0[0] + t * d_out[0], p0[1] + t * d_out[1])
+        centerline = [
+            (
+                (1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * ctrl[0] + t * t * p3[0],
+                (1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * ctrl[1] + t * t * p3[1],
+            )
+            for t in (i / 10 for i in range(11))
+        ]
         swing: dict = {"centerline": [list(p) for p in centerline], "lift": False}
         apply_pen(swing, centerline, 2 * prev["width"])
         if provenance:
@@ -405,6 +526,23 @@ def compose_word(
             desired_entry_x = max(
                 prev["exit"][0] + CONNECT_GAP, prev["ink_max_x"] + INK_CLEARANCE - (ink_min_x - entry_xy[0])
             )
+            # Sawtooth pass-through: pull the glyph onto the exit's rise line
+            # (see ALIGN_*) so the diagonal continues without a shelf.
+            entry_land_deg = _endpoint_tangent(first_line, at_end=False)
+            rise = first_line[0][1] - prev["exit"][1]
+            if (
+                ALIGN_TAN_DEG[0] <= prev["tangent_deg"] <= ALIGN_TAN_DEG[1]
+                and ALIGN_TAN_DEG[0] <= entry_land_deg <= ALIGN_TAN_DEG[1]
+                and rise >= ALIGN_MIN_RISE
+                and first_line[0][1] <= ALIGN_MAX_ENTRY_Y
+            ):
+                mean_slope = ALIGN_SLOPE_RATIO * math.tan(
+                    math.radians((prev["tangent_deg"] + entry_land_deg) / 2)
+                )
+                align_entry_x = prev["exit"][0] + rise / mean_slope + (entry_xy[0] - first_line[0][0])
+                floor_x = prev["ink_max_x"] + ALIGN_MIN_CLEARANCE - (ink_min_x - entry_xy[0])
+                if align_entry_x < desired_entry_x:
+                    desired_entry_x = max(align_entry_x, floor_x)
         elif prev:
             gap = _nonjoin_clearance(_key_base(slot.key, slot.position)) if not slot.joins else math.inf
             if not prev["joins"]:
@@ -446,14 +584,22 @@ def compose_word(
                 d_out = ((p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span)
             elif BOW_EXIT_Y < p0[1] <= HIGH_EXIT_Y and p3[1] < p0[1]:
                 launch = math.degrees(math.atan2(d_out[1], d_out[0]))
-                clamped = min(max(launch, BOW_LAUNCH_DEG[0]), BOW_LAUNCH_DEG[1])
-                if clamped != launch:
-                    d_out = _unit(clamped)
+                if launch < ARM_TAN_MAX_DEG:
+                    # r-arm Absatz: corner off the arm, steep fall (see ARM_*).
+                    d_out = _unit(ARM_FALL_DEG)
+                else:
+                    clamped = min(max(launch, BOW_LAUNCH_DEG[0]), BOW_LAUNCH_DEG[1])
+                    if clamped != launch:
+                        d_out = _unit(clamped)
             entry_deg = _endpoint_tangent(first_line, at_end=False)
             d_in = _unit(entry_deg)
-            p1: Point = (p0[0] + handle * d_out[0], p0[1] + handle * d_out[1])
-            p2: Point = (p3[0] - handle * d_in[0], p3[1] - handle * d_in[1])
-            centerline = _sample_bezier(p0, p1, p2, p3, CONNECT_SAMPLES)
+            # A join that must LOSE height writes as a baseline garland (the
+            # school hand's rounded turn); everything else stays the taut cubic.
+            centerline = _garland_centerline(p0, d_out, p3, d_in)
+            if centerline is None:
+                p1: Point = (p0[0] + handle * d_out[0], p0[1] + handle * d_out[1])
+                p2: Point = (p3[0] - handle * d_in[0], p3[1] - handle * d_in[1])
+                centerline = _sample_bezier(p0, p1, p2, p3, CONNECT_SAMPLES)
             connector: dict = {"centerline": [list(p) for p in centerline], "lift": False}
             apply_pen(connector, centerline, 2 * min(prev["width"], med_half))
             if provenance:
