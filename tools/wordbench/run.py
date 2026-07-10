@@ -110,7 +110,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--style", default="suetterlin", choices=STYLES)
     parser.add_argument(
-        "--set", dest="which", default="words", help="fixture set to run (words | pairs | a custom set name | all)"
+        "--set",
+        dest="which",
+        default="words",
+        help="fixture set to run (words | pairs | a custom set name | all). 'all' covers ONLY the "
+        "canonical same-hand sets (words + pairs) — a custom cross-hand set like abb22 must be "
+        "named explicitly so it can never mix into the same-hand headlines.",
     )
     parser.add_argument("--fixtures", type=Path, default=FIXTURES, help="fixture root (default: the frozen set)")
     parser.add_argument("--words", help="comma-separated id/word filter")
@@ -121,10 +126,12 @@ def main() -> None:
 
     t0 = time.perf_counter()
     style_root = args.fixtures / args.style
+    # 'all' aggregates reports across the selected manifests, so it must stay
+    # scoped to the canonical SAME-HAND sets — a custom cross-hand set (abb22)
+    # would otherwise silently join the words headline.
+    wanted = ("words", "pairs") if args.which == "all" else (args.which,)
     manifests = [
-        p
-        for p in sorted(style_root.glob("*/manifest.json"))
-        if args.which == "all" or json.loads(p.read_text()).get("set", "words") == args.which
+        p for p in sorted(style_root.glob("*/manifest.json")) if json.loads(p.read_text()).get("set", "words") in wanted
     ]
     if not manifests:
         raise SystemExit(f"no {args.which} fixtures under {style_root} — run tools/wordbench/export_fixtures first")

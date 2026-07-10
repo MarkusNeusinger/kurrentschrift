@@ -244,11 +244,13 @@ def _sample_bezier(p0: Point, p1: Point, p2: Point, p3: Point, n: int) -> list[P
 
 
 def _garland_centerline(p0: Point, d_out: Point, p3: Point, d_in: Point) -> list[Point] | None:
-    """Baseline-garland join (see the GARLAND_* constants): fall cubic from the
-    exit into a horizontal-tangent turn point near the Grundlinie, then a rise
-    cubic that straightens into the entry tangent. Returns None whenever the
-    geometry does not call for a garland — the caller falls back to the taut
-    cubic (mid-rise sawtooth exits, descender returns, rising joins, no room).
+    """Baseline-garland join (see the GARLAND_* constants): a fall cubic that
+    kisses the lead-in line (through the entry along its tangent) at the merge
+    point, then a straight ride along that line into the entry — the cubic's
+    natural dip just below the merge IS the rounded turn of the school hand.
+    Returns None whenever the geometry does not call for a garland — the
+    caller falls back to the taut cubic (mid-rise sawtooth exits, descender
+    returns, rising joins, no room).
     """
     if d_in[1] <= 0.2 or d_in[0] <= 0.0:
         return None  # entry stroke not a rising lead-in
