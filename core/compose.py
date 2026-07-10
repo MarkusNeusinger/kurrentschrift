@@ -254,6 +254,8 @@ def _garland_centerline(p0: Point, d_out: Point, p3: Point, d_in: Point) -> list
     """
     if d_in[1] <= 0.2 or d_in[0] <= 0.0:
         return None  # entry stroke not a rising lead-in
+    if p0[1] < DESCENDER_EXIT_Y:
+        return None  # a descender return-upstroke rises, it never dips again
     if d_out[1] > GARLAND_MAX_LAUNCH_RISE:
         return None  # exit still mid-rise: extend the diagonal, don't dip again
     if p3[0] - p0[0] <= 2 * GARLAND_MIN_DX:
@@ -374,8 +376,10 @@ def compose_word(
 
     def end_swing() -> None:
         """Emit the word-final Endstrich — the finishing upswing (see
-        SWING_TOP_Y): the last glyph's rising exit flank, continued straight
-        towards the x-height line. High, backward or flat exits (bows, a
+        SWING_TOP_Y): a two-tangent quadratic that leaves along the last
+        glyph's rising exit flank and flattens to SWING_END_DEG towards the
+        target height, truncated at SWING_MAX_RUN (SWING_DEEP_MAX_RUN after a
+        below-baseline exit). High, backward or flat exits (bows, a
         Deckstrich cover-stroke) end the word as they are."""
         nonlocal cursor_x
         if not prev or not prev["joins"] or prev["exit"][1] >= SWING_MAX_EXIT_Y:

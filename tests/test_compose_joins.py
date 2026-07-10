@@ -26,6 +26,12 @@ def test_garland_rejects_mid_rise_exit() -> None:
     assert _garland_centerline((0.0, 0.49), _unit(40.0), (0.3, 0.58), _unit(40.0)) is None
 
 
+def test_garland_rejects_descender_exit() -> None:
+    # A descender return-upstroke (long-s, x) rises into the entry — it never
+    # dips again, even with an artificially shallow launch.
+    assert _garland_centerline((0.0, -0.9), _unit(10.0), (3.0, 0.55), _unit(40.0)) is None
+
+
 def test_garland_rejects_exit_close_to_lead_in_line() -> None:
     # Exit sits almost ON the lead-in line (d_perp below the merge epsilon):
     # the taut cubic's shallow notch is the plates' join there (rb, on).
