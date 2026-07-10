@@ -55,7 +55,12 @@ NONJOIN_CLEARANCE: dict[str, float] = {
     "quote-high": 0.14,
     **{str(d): 0.16 for d in range(10)},
 }
-CONNECT_GAP = 0.16  # minimum horizontal span of a connecting stroke (exit → entry)
+# Minimum horizontal span of a connecting stroke (exit → entry) for the
+# clearance-based placement. The sawtooth pass-through alignment may
+# deliberately place closer (its connector is the collinear middle piece of
+# one continuous diagonal) — there the ALIGN_MIN_CLEARANCE ink floor bounds
+# the span instead.
+CONNECT_GAP = 0.16
 # Minimum clearance between the previous glyph's rightmost body INK and the
 # next glyph's leftmost body ink. The exit/entry anchors alone cannot carry the
 # spacing rhythm: a bow that curls back (w, v) exits well LEFT of its rightmost

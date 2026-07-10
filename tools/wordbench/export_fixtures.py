@@ -154,8 +154,15 @@ def _kind(w: dict) -> str:
 
 
 def _set_name(w: dict) -> str:
-    """Fixture set of a sidecar entry: explicit ``set`` or the kind default."""
-    return w.get("set") or ("pairs" if _kind(w) == "pair" else "words")
+    """Fixture set of a sidecar entry: explicit ``set`` or the kind default.
+
+    ``all`` is reserved for the runner's aggregate mode — a fixture set named
+    that way could never be run explicitly.
+    """
+    name = w.get("set") or ("pairs" if _kind(w) == "pair" else "words")
+    if name == "all":
+        raise SystemExit(f"sidecar entry {_entry_id(w)!r} uses the reserved set name 'all'")
+    return name
 
 
 def _root_name(source_id: str, set_name: str) -> str:

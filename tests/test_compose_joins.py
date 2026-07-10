@@ -1,4 +1,4 @@
-"""Join-geometry guards of the specimen-true connector grammar (PR #177).
+"""Join-geometry guards of the specimen-true connector grammar.
 
 Pure-geometry unit tests for ``_garland_centerline`` (the baseline-garland
 join) and the ``end_swing`` eligibility guards — the branches a whole-word
