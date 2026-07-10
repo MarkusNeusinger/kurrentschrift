@@ -98,13 +98,20 @@ ARM_FALL_DEG = -65.0
 # x-height units; 0 disables the roll.
 CREST_ROLL_LEN = 0.09
 CONNECT_SAMPLES = 24  # Bézier samples per connector (dense enough to read as a smooth arc)
-# Baseline garland — the school hand's default join when a letter's stroke
-# ends ABOVE where the next one begins. The plates (Abb. 19/20) show the pen
-# leaving the exit (r's arm, b's bow, d's loop, t), falling into a ROUNDED
-# TURN near the Grundlinie and rising into the next letter's lead-in
-# collinearly. The taut single cubic used to bridge such drops directly,
-# which read as a V-notch / S-wobble at the seam (jul09 join audit: r→e
-# 72°/65°, b→i 90°/77° seam kinks). Geometry + eligibility in
+# Entry coupling class — the school hand's e-vs-n rule: after a HIGH exit
+# (r-arm, b/o bow, d loop) a round BODY (bowl or the e loop) is entered
+# directly AT ITS TOP — the letter hangs from the covering join, the pen
+# never dips first (verified on the plate originals: ren/roten/ihren/lieber
+# Abb. 22, regieren/haben/das/do/der Abb. 19/20). Arcade letters (n m i u …)
+# instead couple LOW through the baseline garland (bi, on originals do dip).
+# A closed, enumerated set like NONJOIN_CLEARANCE — glyph_key bases.
+HIGH_COUPLE_BASES = frozenset({"e", "a", "o", "c", "d", "g", "q", "ae", "oe"})
+# Baseline garland — the join for ARCADE entries when a letter's stroke ends
+# ABOVE where the next one begins. The plates show the pen leaving the exit,
+# falling into a ROUNDED TURN near the Grundlinie and rising into the next
+# letter's lead-in collinearly. The taut single cubic used to bridge such
+# drops directly, which read as a V-notch / S-wobble at the seam (jul09 join
+# audit: b→i 90°/77° seam kinks). Geometry + eligibility in
 # ``_garland_centerline``: a fall cubic into a horizontal-tangent turn point
 # plus a rise cubic that straightens into the entry tangent.
 # How far down the lead-in line the pen merges: the merge point sits
@@ -618,6 +625,10 @@ def compose_word(
                 d_out = ((p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span)
             entry_deg = _endpoint_tangent(first_line, at_end=False)
             d_in = _unit(entry_deg)
+            # A round body (bowl / e-loop) is entered AT ITS TOP after a high
+            # exit — the letter hangs from the covering join, never dipping
+            # first (see HIGH_COUPLE_BASES; verified on the plate originals).
+            high_couple = _key_base(slot.key, slot.position) in HIGH_COUPLE_BASES
             # Perpendicular distance of the exit above the lead-in line — the
             # garland trigger (see GARLAND_MERGE_EPS); also gates the r-Absatz:
             # a close line is joined with the shallow notch of the taut cubic.
@@ -625,7 +636,7 @@ def compose_word(
             crest: list[Point] = []
             if not rescued and BOW_EXIT_Y < p0[1] <= HIGH_EXIT_Y and p3[1] < p0[1]:
                 launch = math.degrees(math.atan2(d_out[1], d_out[0]))
-                if launch < ARM_TAN_MAX_DEG and d_perp > GARLAND_MERGE_EPS:
+                if launch < ARM_TAN_MAX_DEG and d_perp > GARLAND_MERGE_EPS and not high_couple:
                     # r-arm Absatz: corner off the arm, steep fall (see ARM_*).
                     d_out = _unit(ARM_FALL_DEG)
                 elif launch > BOW_LAUNCH_DEG[1]:
@@ -646,11 +657,19 @@ def compose_word(
                             for t in (i / 5 for i in range(6))
                         ]
                         p0 = roll_end
-            # A join that must LOSE height writes as a baseline garland (the
-            # school hand's rounded turn); everything else stays the taut cubic.
-            centerline = _garland_centerline(p0, d_out, p3, d_in)
+            # An ARCADE entry that must LOSE height writes as a baseline
+            # garland (the school hand's rounded turn); a round body couples
+            # high instead and everything else stays the taut cubic.
+            centerline = None if high_couple else _garland_centerline(p0, d_out, p3, d_in)
             if centerline is None:
                 span = math.hypot(p3[0] - p0[0], p3[1] - p0[1])
+                if high_couple and p3[1] < p0[1] and span > 0:
+                    # Land ON the body's top from above: the authored rising
+                    # Anstrich is absorbed by the covering join on the plates
+                    # (ren/roten/das originals) — following it would dip
+                    # below the entry and rise back, the very notch the
+                    # garland audit set out to remove.
+                    d_in = ((p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span)
                 hspan = abs(p3[0] - p0[0])
                 handle = max(0.05, min(span * 0.4, hspan * 0.5))
                 p1: Point = (p0[0] + handle * d_out[0], p0[1] + handle * d_out[1])

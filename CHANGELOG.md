@@ -25,15 +25,18 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 ### Changed
 
 - **Connectors follow the school hand's join grammar.** The jul09/10 join audit (all
-  generated Übergänge ranked with seam-kink angles against the Abb. 19/20 specimens)
-  replaced the one-size taut cubic: joins that must lose height write a baseline
-  garland that merges tangentially onto the next letter's lead-in line (r→e, b→e, d→e);
-  the r-arm sets off with its authentic Absatz corner before a deep garland; clamped bow
-  exits roll G1 over the crest instead of cornering (the b→e "extra Zacken"); sawtooth
-  pairs (e→n family) pull onto one continuous diagonal instead of leaving a mid-height
-  shelf; and the word-final Endstrich is a two-tangent quadratic that flattens like the
-  plates (short flick after descender exits). Wordbench: words 0.1253 → 0.1247, pairs
-  0.1992 → 0.1912; the r→e/b→i seam kinks drop from 72–97° to ≲15° (deliberate golden
+  generated Übergänge ranked with seam-kink angles against the Abb. 19/20/22 specimens)
+  replaced the one-size taut cubic with the plates' entry-class rule: after a high exit
+  (r-arm, b/o bow, d loop) a round body — bowl or e-loop — couples directly AT ITS TOP
+  (the letter hangs from the covering join, verified on the ren/roten/das/der originals),
+  while arcade entries (n m i u …) couple low through a baseline garland that merges
+  tangentially onto their lead-in line (bi/on originals). The r-arm sets off with its
+  authentic Absatz corner before a deep garland; clamped bow exits roll G1 over the
+  crest instead of cornering (the b→e "extra Zacken"); sawtooth pairs (e→n family) pull
+  onto one continuous diagonal instead of leaving a mid-height shelf; and the word-final
+  Endstrich is a two-tangent quadratic that flattens like the plates (short flick after
+  descender exits). Wordbench: words 0.1253 → 0.1241, pairs 0.1992 → 0.1927; the r→e
+  join penalty drops 0.49 → 0.12 on the audit's worst case (deliberate golden
   re-baseline; experiment log in `docs/reference/qualitaetsmetrik.md` §6).
 
 ## [0.13.0] — 2026-07-09 — Tri-script pen foundation + human writing kinematics

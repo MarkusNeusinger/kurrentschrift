@@ -727,3 +727,17 @@ bench_loss 0,4628 (Breite 0,77 dominiert — die Schülerhand schreibt
 sichtbar breiter als die Norm-Templates; Übergang 0,26). Die Zahl misst
 GENERALISIERUNG über Schreiber hinweg und wird NIE mit den
 Same-Hand-Headlines gemittelt.
+
+**Korrektur (Nutzer-Review am Original, 2026-07-10):** Die erste
+Girlanden-Fassung ließ auch r→e/d→a zur Grundlinie tauchen — die Originale
+(ren/roten/ihren Abb. 22, das/do/der/regieren Abb. 19/20) zeigen: **Runde
+Körper (e-Schleife, Schüsseln a o c d g q ä ö) koppeln nach hohen Exits
+direkt OBEN an** — der Buchstabe hängt am Deckstrich-Übergang, der
+angeautorte Anstrich wird vom Übergang absorbiert (Mückes e-vs-n-Regel).
+Nur Arkaden-Eintritte (n m i u …) laufen durch die Girlande (bi/on tauchen
+auch im Original). Implementiert als geschlossene Klassenmenge
+`HIGH_COUPLE_BASES` (enumerate, don't generate) + Chord-Landung von oben.
+Wörter 0,1247 → **0,1241**, Paare 0,1927; regieren r→e 0,49 → 0,12.
+Merke: Overlay-Reviews immer gegen das ROHE Original-Tintenbild
+gegenprüfen — im Overlay hatte ich den e-Ausgangs-Abstrich dem Übergang
+zugeschrieben.
