@@ -669,3 +669,61 @@ auch 0,101 — die geweiteten Rundformen liegen auf der Probe). Paare
 (Report) 0,197 → 0,199. Neue Wort-Headline: **0,1253** (innerhalb des
 Rauschens der 0,1240; die Wahrheit der Buchstabenformen war hier das
 Kriterium, nicht die Proxy-Zahl).
+
+### Lauf `jul09/10` — Girlanden-Verbindungen, r-Absatz, Endstrich; drittes Set `abb22`
+
+Der Join-Audit (Ranking aller generierten Übergänge über Wörter + Paare mit
+Naht-Knick-Winkeln als „Zacken-Detektor") fand drei Systematiken, die der
+Nutzer auch visuell gemeldet hatte (en-Zacken in „lesen", re-Wackler und
+be-Zacken in „schreiben"):
+
+1. **Höhenverlierende Exits** (r-Arm 0,86 · b-Bogen 0,98 · d-Schleife 1,36):
+   der taute Einzel-Bézier schrieb V-Kerben/S-Wackler an der Naht (r→e
+   72°/65° Knick, b→i 90°/77°). Die Platten schreiben eine **Grundlinien-
+   Girlande** — Fall-Kubik, die tangential auf die rückwärts verlängerte
+   Lead-in-Linie des Folgebuchstabens einschwenkt und sie gerade bis zum
+   Entry reitet (`_garland_centerline`; Tiefe ∝ Senkrechtabstand des Exits
+   zur Linie, `GARLAND_TURN_RATIO`). Exits NAHE der Linie (rb, on:
+   d_perp ≤ `GARLAND_MERGE_EPS` 0,40) behalten die flache Kerbe des tauten
+   Béziers — sie zu girlandieren kostete ~+0,01 pair_loss.
+2. **r-Absatz**: innerhalb des Bogen-Bandes ist eine flache Vor-Klemm-
+   Tangente (r ≈ +29° vs. o +39°/b +44°) der Deckstrich-Arm — die Platten
+   setzen dort ab (Ecke) und fallen steil (−65°) in die Girlande; nur wenn
+   eine echte Girlande folgt. Geklemmte BOGEN-Exits rollen stattdessen G1
+   über den Scheitel (`CREST_ROLL_LEN` 0,09 — der „extra Zacken" bei b→e).
+3. **Sägezahn-Durchschreiben**: zwischen zwei Mittelband-Diagonalen
+   (e→n-Familie) entstand ein flaches „Regal"; die Platten führen EINE
+   Diagonale durch. Platzierung zieht den Folgebuchstaben auf die
+   Exit-Steigungslinie (`ALIGN_*`, Steigung ×0,8, Tinten-Floor 0,06,
+   hohe Lead-ins h/t ausgenommen). Guard-Verschärfungen (min-rise 0,08,
+   entry ≤0,58, clearance 0,10) und Ratio-Sweeps 0,7/0,9 waren alle
+   schlechter — 0,8/0,62/0,06 ist das lokale Optimum.
+4. **Endstrich**: Zwei-Tangenten-Quadratik (Exit-Tangente → 25° am Ende,
+   Ziel `SWING_TOP_Y` 0,6, Kappung 0,9; Exits unter der Grundlinie — x —
+   flicken nur 0,35 weit). Der alte gerade 0,7-Strich überschoss jede
+   Probe (n→END mean 0,437, x→END 0,90).
+
+**Headline: Wörter 0,1253 → 0,1247 · Paare 0,1992 → 0,1912** (bewusstes
+Golden-Re-Baseline von `tests/fixtures/compose_golden.json.gz`). Die
+Proxy-Zahlen unterschätzen den Effekt: die Naht-Knicke r→e/b→i sind von
+72–97° auf ≲15° gefallen, sichtbar in den wordlab-Overlays (streiten,
+fechten, haben, bi). Verworfen: Girlande mit fixer Bodentiefe (v1 —
+rb/on-Regression), Absatz ohne Tiefen-Gate (rb-Spitze), END_DEG 12°
+(0,9-lange flache Schwänze, Paare +0,033), lineare Kappungs-Stauchung
+des Schwungs (dx/vx +0,1).
+
+**Drittes Fixture-Set `abb22`** (Cross-Hand-Referenz, 2026-07-10):
+Abbildung 22 des Leitfadens — „Schülerschrift aus der 39. Gemeindeschule
+in Berlin … mit der Breitkantfeder" (S. 59; DNB-Blatt 61) — ist die
+einzige weitere verbundene Ausgangsschrift-Probe der Quelle: 106 Wörter
+in 19 Zeilen (Hoffmann von Fallersleben, „Hab' Dank, du lieber Wind!"),
+signiert „Bruno Krüger" — **andere Hand, gleiche Norm**. Vermessen wie
+Abb. 19 (propose_boxes + 19-Zeilen-QC + Handkorrekturen: Splits laden|ein
+und|fern, Schmaus-Merge, ?- und !-Boxen verworfen, Interpunktions- und
+Fremdtinten-Excludes, Zeile-15-Lineatur auf Median-xh korrigiert,
+Diakritika-Excludes entfernt), Sidecar-Feld `set: "abb22"` → eigenes
+Fixture-Root `suetterlin-1922-abb22` (`--set abb22`). Erste Zahl:
+bench_loss 0,4628 (Breite 0,77 dominiert — die Schülerhand schreibt
+sichtbar breiter als die Norm-Templates; Übergang 0,26). Die Zahl misst
+GENERALISIERUNG über Schreiber hinweg und wird NIE mit den
+Same-Hand-Headlines gemittelt.

@@ -10,6 +10,32 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **Third wordbench set: the Abb. 22 Schülerschrift plate (cross-hand reference).** The
+  1922 Leitfaden's only other connected Ausgangsschrift specimen — a pupil's hand
+  (Bruno Krüger, 3rd school year, Breitkantfeder, 106 words of Hoffmann von
+  Fallersleben's "Hab' Dank, du lieber Wind!") — is now measured like Abb. 19
+  (`words-abb22.png` + 106 sidecar entries, boxes proposed, line-QC'd and hand-corrected).
+  Sidecar entries carry a new optional `set` field; `export_fixtures`/`run`/`wordlab`
+  accept custom set names, so the plate freezes into its own sibling fixture root
+  (`suetterlin-1922-abb22`, `--set abb22`) and its cross-writer numbers are never averaged
+  into the same-hand headlines. Provenance + PD rationale in the source's `SOURCE.md`.
+
+### Changed
+
+- **Connectors follow the school hand's join grammar.** The jul09/10 join audit (all
+  generated Übergänge ranked with seam-kink angles against the Abb. 19/20 specimens)
+  replaced the one-size taut cubic: joins that must lose height write a baseline
+  garland that merges tangentially onto the next letter's lead-in line (r→e, b→e, d→e);
+  the r-arm sets off with its authentic Absatz corner before a deep garland; clamped bow
+  exits roll G1 over the crest instead of cornering (the b→e "extra Zacken"); sawtooth
+  pairs (e→n family) pull onto one continuous diagonal instead of leaving a mid-height
+  shelf; and the word-final Endstrich is a two-tangent quadratic that flattens like the
+  plates (short flick after descender exits). Wordbench: words 0.1253 → 0.1247, pairs
+  0.1992 → 0.1912; the r→e/b→i seam kinks drop from 72–97° to ≲15° (deliberate golden
+  re-baseline; experiment log in `docs/reference/qualitaetsmetrik.md` §6).
+
 ## [0.13.0] — 2026-07-09 — Tri-script pen foundation + human writing kinematics
 
 ### Added

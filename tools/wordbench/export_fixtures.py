@@ -14,13 +14,17 @@ Sidecar entries may carry (all optional, additive):
            for repeated words on the plate ("und" appears three times).
   kind   — "word" (default) or "pair" (isolated letter-pair joins, Abb. 20).
            Falls back to "pair" for entries on a pairs-* page.
+  set    — explicit fixture-set name for entries that must NOT join the
+           default sets (e.g. "abb22" for the Schülerschrift plate: same
+           norm, DIFFERENT writer — never averaged into the same-hand
+           headline). Defaults to "words"/"pairs" by kind.
   slots  — explicit slot list [{key, text, position, ligature?}] overriding
            shape_text, for pairs whose isolated drawing does not match
            word-context shaping.
 
-Word and pair fixtures freeze into SIBLING roots (``<source_id>`` and
-``<source_id>-pairs``) with their own manifests, so ``--set pairs`` never
-regenerates the word fixtures and the two headline numbers never mix.
+Each set freezes into its own SIBLING root (``<source_id>``,
+``<source_id>-pairs``, ``<source_id>-<set>``) with its own manifest, so
+exporting one set never regenerates another and headline numbers never mix.
 
 Entries needing a template that is not authored yet freeze with
 ``scorable: false`` — the runner skips and reports them instead of drowning
@@ -72,8 +76,6 @@ if TYPE_CHECKING:
 DEFAULT_SOURCE_ID = "suetterlin-1922"
 DEFAULT_OUT_DIR = Path(__file__).resolve().parent / "fixtures"
 REPO_ROOT = Path(__file__).resolve().parents[2]
-
-SETS = ("words", "pairs", "all")
 
 
 def _template_dict(t: Template) -> dict:
@@ -151,6 +153,15 @@ def _kind(w: dict) -> str:
     return w.get("kind") or ("pair" if w["page"].startswith("pairs") else "word")
 
 
+def _set_name(w: dict) -> str:
+    """Fixture set of a sidecar entry: explicit ``set`` or the kind default."""
+    return w.get("set") or ("pairs" if _kind(w) == "pair" else "words")
+
+
+def _root_name(source_id: str, set_name: str) -> str:
+    return source_id if set_name == "words" else f"{source_id}-{set_name}"
+
+
 def _entry_id(w: dict) -> str:
     return w.get("id", w["word"])
 
@@ -184,9 +195,10 @@ async def export(source_id: str, out_dir: Path, which: str) -> None:
     if not sidecar_path.exists():
         raise SystemExit(f"no word sidecar at {sidecar_path}")
     sidecar = json.loads(sidecar_path.read_text())
-    entries = [w for w in sidecar["words"] if which == "all" or _kind(w) + "s" == which]
+    entries = [w for w in sidecar["words"] if which == "all" or _set_name(w) == which]
     if not entries:
-        raise SystemExit(f"no {which!r} entries in {sidecar_path}")
+        known = sorted({_set_name(w) for w in sidecar["words"]})
+        raise SystemExit(f"no {which!r} entries in {sidecar_path} (sets present: {known})")
     id_counts = Counter(_entry_id(w) for w in sidecar["words"])
     dupes = [i for i, n in id_counts.items() if n > 1]
     if dupes:
@@ -206,16 +218,16 @@ async def export(source_id: str, out_dir: Path, which: str) -> None:
         # Shape every entry, apply the ligature-decompose fallback against the
         # CURRENT template inventory, and freeze the resulting slots.
         shaped: dict[str, list[dict]] = {}
-        needed: dict[str, dict[str, None]] = {"word": {}, "pair": {}}
+        needed: dict[str, dict[str, None]] = {}
         for w in entries:
             keys = glyph_keys_of(shape_text(w["word"]))
             have = {t.glyph_key for t in await repo.get_many(source.style_id, keys)}
             slots = _shape_entry(w, have)
             shaped[_entry_id(w)] = [asdict(s) for s in slots]
             for k in glyph_keys_of(slots):
-                needed[_kind(w)].setdefault(k)
+                needed.setdefault(_set_name(w), {}).setdefault(k)
 
-        all_keys = list({**needed["word"], **needed["pair"]})
+        all_keys = list({k: None for keys in needed.values() for k in keys})
         templates = {t.glyph_key: _template_dict(t) for t in await repo.get_many(source.style_id, all_keys)}
         # Source-pooled Gleichzug nib, frozen at export (api.rendering computes
         # the same live; freezing keeps bench numbers stable across re-traces).
@@ -232,14 +244,13 @@ async def export(source_id: str, out_dir: Path, which: str) -> None:
             pages[page] = load_page(page_path)
             page_shas[page] = hashlib.sha256(page_path.read_bytes()).hexdigest()
 
-    for kind, set_name in (("word", "words"), ("pair", "pairs")):
-        kind_entries = [w for w in entries if _kind(w) == kind]
+    for set_name in sorted(needed):
+        kind_entries = [w for w in entries if _set_name(w) == set_name]
         if not kind_entries:
             continue
-        root_name = source_id if kind == "word" else f"{source_id}-pairs"
-        fixture_root = out_dir / source.style_id / root_name
+        fixture_root = out_dir / source.style_id / _root_name(source_id, set_name)
         fixture_root.mkdir(parents=True, exist_ok=True)
-        kind_templates = {k: templates[k] for k in needed[kind] if k in templates}
+        kind_templates = {k: templates[k] for k in needed[set_name] if k in templates}
         (fixture_root / "templates.json").write_text(json.dumps(kind_templates, ensure_ascii=False))
 
         index = []
@@ -269,7 +280,7 @@ async def export(source_id: str, out_dir: Path, which: str) -> None:
                     {
                         "id": entry_id,
                         "word": w["word"],
-                        "kind": kind,
+                        "kind": _kind(w),
                         "page": w["page"],
                         "rect": [w["x0"], w["y0"], w["x1"], w["y1"]],
                         "baseline_y": w["baseline_y"],
@@ -288,7 +299,7 @@ async def export(source_id: str, out_dir: Path, which: str) -> None:
                 {
                     "id": entry_id,
                     "word": w["word"],
-                    "kind": kind,
+                    "kind": _kind(w),
                     "page": w["page"],
                     "missing_at_export": missing,
                     "scorable": not missing,
@@ -316,7 +327,9 @@ async def export(source_id: str, out_dir: Path, which: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--source", default=DEFAULT_SOURCE_ID, help="source id (default: suetterlin-1922)")
-    parser.add_argument("--set", dest="which", default="words", choices=SETS, help="which sidecar entries to freeze")
+    parser.add_argument(
+        "--set", dest="which", default="words", help="sidecar set to freeze (words | pairs | a custom set name | all)"
+    )
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT_DIR, help="fixtures output dir")
     args = parser.parse_args()
 

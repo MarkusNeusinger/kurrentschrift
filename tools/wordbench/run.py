@@ -53,7 +53,6 @@ from tools.wordbench.metric import score_word
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 STYLES = ("suetterlin", "kurrent", "offenbacher")
-SETS = ("words", "pairs", "all")
 
 
 def _overlay(word_dir: Path, word_meta: dict, composed: dict, report: dict, out_path: Path) -> None:
@@ -110,7 +109,9 @@ def _print_block(reports: list[dict], skipped: list[dict], kind: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--style", default="suetterlin", choices=STYLES)
-    parser.add_argument("--set", dest="which", default="words", choices=SETS, help="fixture set to run")
+    parser.add_argument(
+        "--set", dest="which", default="words", help="fixture set to run (words | pairs | a custom set name | all)"
+    )
     parser.add_argument("--fixtures", type=Path, default=FIXTURES, help="fixture root (default: the frozen set)")
     parser.add_argument("--words", help="comma-separated id/word filter")
     parser.add_argument("--artifacts", type=Path, help="write overlay PNGs here")
