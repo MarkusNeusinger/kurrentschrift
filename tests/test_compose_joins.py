@@ -10,7 +10,15 @@ from __future__ import annotations
 
 import math
 
-from core.compose import GARLAND_MERGE_EPS, SWING_MAX_EXIT_Y, SWING_TOP_Y, _garland_centerline, _unit, compose_word
+from core.compose import (
+    GARLAND_MERGE_EPS,
+    SWING_DEEP_MAX_RUN,
+    SWING_MAX_EXIT_Y,
+    SWING_TOP_Y,
+    _garland_centerline,
+    _unit,
+    compose_word,
+)
 from core.shaping import GlyphSlot
 
 
@@ -97,3 +105,14 @@ def test_swing_after_rising_mid_height_exit() -> None:
     swing = composed["items"][1]["centerline"]
     assert swing[-1][1] > 0.53  # rises ...
     assert swing[-1][1] <= SWING_TOP_Y + 1e-9  # ... at most to the target
+
+
+def test_deep_exit_swing_respects_its_run_cap() -> None:
+    # An exit below the baseline (x's under-loop) flicks only briefly; the
+    # interpolated cap point guarantees the stroke never passes the cap even
+    # when the sample step is coarse.
+    exit_pt = (0.4, -0.5)
+    composed = _compose_single([(0.0, 0.5), (0.2, -0.6), exit_pt])
+    assert len(composed["items"]) == 2
+    swing = composed["items"][1]["centerline"]
+    assert max(x for x, _ in swing) <= exit_pt[0] + SWING_DEEP_MAX_RUN + 1e-9

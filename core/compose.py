@@ -418,10 +418,23 @@ def compose_word(
             )
             for t in (i / 10 for i in range(11))
         ]
-        # Truncate at the run cap — a deep exit ends its swing mid-curve.
+        # Truncate at the run cap — a deep exit ends its swing mid-curve. The
+        # cap point is interpolated so a coarse sample step can never carry
+        # the stroke (and ink_max_x) past the cap.
         run_cap = SWING_MAX_RUN if p0[1] >= 0 else SWING_DEEP_MAX_RUN
-        kept = [p for p in centerline if p[0] <= p0[0] + run_cap]
-        centerline = kept if len(kept) >= 2 else centerline[:2]
+        limit = p0[0] + run_cap
+        kept: list[Point] = [centerline[0]]
+        for a, b in zip(centerline, centerline[1:], strict=False):
+            if b[0] <= limit:
+                kept.append(b)
+                continue
+            if a[0] < limit and b[0] > a[0]:
+                t = (limit - a[0]) / (b[0] - a[0])
+                kept.append((limit, a[1] + t * (b[1] - a[1])))
+            break
+        if len(kept) < 2:
+            return
+        centerline = kept
         swing: dict = {"centerline": [list(p) for p in centerline], "lift": False}
         apply_pen(swing, centerline, 2 * prev["width"])
         if provenance:
