@@ -138,7 +138,7 @@ def fixture_word_case(
         if entry.get("id", entry["word"]) == entry_id or entry["word"] == entry_id:
             return _case_from(root, manifest, templates, entry)
     raise KeyError(
-        f"no fixture entry {entry_id!r} under {root} (ids: {[w.get('id', w['word']) for w in manifest['words']][:8]}…)"
+        f"no {which!r} fixture entry {entry_id!r} under {root} (ids: {[w.get('id', w['word']) for w in manifest['words']][:8]}…)"
     )
 
 
