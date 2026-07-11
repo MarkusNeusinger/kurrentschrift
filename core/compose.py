@@ -117,15 +117,15 @@ DESCENDER_EXIT_Y = -0.2
 # tuck the next letter back LEFT under it, proportionally to the exit height
 # (pairlab independent-fit calibration, 2026-07-11: d-loop joins need −0.33 xh
 # at exit_y 1.36, low arcade exits ~0). Constants are the bench-sweep optimum
-# (rate 0.25–0.55 × y0 0.3–0.75); at 0.25/0.6 the re-measured calibration
-# halves the d-class error (−0.33 → −0.15 med) and drops joins needing
+# (rate 0.25–0.55 × y0 0.3–0.75, re-swept after the coupling anchor landed);
+# the re-measured calibration halves the d-class error and drops joins needing
 # ≥ 0.25 xh correction from 31 to 24 of 146. The ink-clearance guard still
 # floors the placement, so the tuck can never push a letter into the previous
 # body. Mid-height stub exits (c, t, f at ~0.5 xh) stay wrong on purpose:
 # height alone cannot tell their stubs from a real arcade end at the same
 # height (e, n) — that separation is the coupling-anchor work (O2,
 # uebergaenge-befund.md §6).
-TUCK_RATE = 0.25
+TUCK_RATE = 0.35
 TUCK_Y0 = 0.6
 # Coupling anchor after a HIGH exit (O2, uebergaenge-befund.md §5b): when the
 # previous letter leaves from a Deckstrich bow, a d-loop or the r-arm
