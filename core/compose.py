@@ -556,20 +556,15 @@ def compose_word(
         for si, cl in enumerate(centerlines):
             src = cl[entry_trim:] if si == 0 and entry_trim else cl
             offset = [(x + dx, y) for x, y in src]
-            rings = [
-                [(x + dx, y) for x, y in ring] for ring in (rings_by_stroke[si] if si < len(rings_by_stroke) else [])
-            ]
-            if si == 0 and entry_trim and rings:
+            raw_rings = rings_by_stroke[si] if si < len(rings_by_stroke) else []
+            if si == 0 and entry_trim and raw_rings:
                 # The trimmed stub piece (plus the anchor sample, so the erase
                 # meets the kept flank without a sliver) leaves the silhouette
-                # with the same cut the centerline took.
-                removed = [(x + dx, y) for x, y in cl[: entry_trim + 1]]
-                rings = [
-                    [tuple(p) for p in ring]
-                    for ring in erase_silhouette_piece(
-                        [[list(p) for p in ring] for ring in rings], removed, med_half * 1.1
-                    )
-                ]
+                # with the same cut the centerline took. Erased in the glyph's
+                # own frame, BEFORE the dx shift — stub prefix and payload
+                # rings share that frame, so no coordinate round-trips.
+                raw_rings = erase_silhouette_piece(raw_rings, cl[: entry_trim + 1], med_half * 1.1)
+            rings = [[(x + dx, y) for x, y in ring] for ring in raw_rings]
             item: dict = {
                 "centerline": [list(p) for p in offset],
                 "mask_width": glyph_mask_width,
