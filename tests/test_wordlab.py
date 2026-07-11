@@ -81,9 +81,10 @@ def test_derive_word_composes_scores_and_attributes() -> None:
     segs = result.segments
     assert segs is not None
     assert {s["kind"] for s in segs} <= {"glyph", "connector"}
-    # writing order: a word opens on a glyph; it may CLOSE on the generated
-    # word-final Endstrich/Auslauf (a connector-kind segment) — since the
-    # high-exit Auslauf every last letter earns one, not just rising exits.
+    # writing order: a word opens on a glyph; it MAY close on the generated
+    # word-final Endstrich/Auslauf (a connector-kind segment) — emitted for
+    # joining last letters with a forward rising OR high forward exit (see
+    # core.compose.end_swing), so the last segment's kind is not an invariant.
     assert segs[0]["kind"] == "glyph"
     assert any(s["kind"] == "connector" for s in segs)
     for s in segs:

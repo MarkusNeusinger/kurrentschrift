@@ -119,7 +119,7 @@ DESCENDER_EXIT_Y = -0.2
 # at exit_y 1.36, low arcade exits ~0). Constants are the bench-sweep optimum
 # (rate 0.25–0.55 × y0 0.3–0.75, re-swept after the coupling anchor landed);
 # the re-measured calibration halves the d-class error and drops joins needing
-# ≥ 0.25 xh correction from 31 to 24 of 146. The ink-clearance guard still
+# ≥ 0.25 xh correction from 31 to 21 of 146. The ink-clearance guard still
 # floors the placement, so the tuck can never push a letter into the previous
 # body. Mid-height stub exits (c, t, f at ~0.5 xh) stay wrong on purpose:
 # height alone cannot tell their stubs from a real arcade end at the same

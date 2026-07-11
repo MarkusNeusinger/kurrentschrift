@@ -420,8 +420,9 @@ def erase_silhouette_piece(
 ) -> list[list[list[float]]]:
     """Erase a stroke silhouette around a removed centerline piece.
 
-    The composer trims a coupling stub off a stroke's CENTERLINE in bound
-    context (the join replaces the chart cell's stub); the stroke's filled
+    The composer trims a coupling stub off a stroke's CENTERLINE in joined
+    (bound) context — when a connector replaces the chart cell's coupling
+    stub between two letters; the stroke's filled
     silhouette must lose the same piece or the stub ink still renders. The
     rings are the evenodd payload of ``capsule_union_rings``/
     ``chisel_union_rings``: reconstruct the region (symmetric difference
