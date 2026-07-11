@@ -31,7 +31,7 @@ import math
 import numpy as np
 
 from core.shaping import GlyphSlot
-from core.template import chisel_union_rings
+from core.template import chisel_union_rings, erase_silhouette_piece
 from core.widths import PenStyle
 
 
@@ -122,6 +122,22 @@ DESCENDER_EXIT_Y = -0.2
 # uebergaenge-befund.md §6).
 TUCK_RATE = 0.25
 TUCK_Y0 = 0.6
+# Coupling anchor after a HIGH exit (O2, uebergaenge-befund.md §5b): when the
+# previous letter leaves from a Deckstrich bow, a d-loop or the r-arm
+# (exit ≥ HIGH_COUPLE_EXIT_Y), the plates' join falls in ONE diagonal onto the
+# rising flank of the next letter's first downstroke — the chart cell's
+# half-height entry stub is REPLACED by the join, not extended (measured
+# head adaptation 0.14–0.43 xh of arc; fitted arrivals y 0.58–0.70). The
+# connector therefore targets the first sample of B's first stroke at
+# ENTRY_COUPLE_Y and the stub piece below it is trimmed — centerline and
+# silhouette (see erase_silhouette_piece). Word-initial stubs stay: they ARE
+# the Anstrich (E2 finding, qualitaetsmetrik.md §6), and low arcade exits keep
+# the full stub too — there the connector IS the entry upstroke and lands on
+# its foot (befund §4: the standard diagonal is generically right).
+# 0.78 is the bench optimum (0.6/0.66/0.72/0.78/0.84 sweep), a touch above
+# the fitted arrivals (0.58–0.70) — the join lands on the upper flank.
+HIGH_COUPLE_EXIT_Y = 0.7
+ENTRY_COUPLE_Y = 0.78
 # Travel direction measured over a short ARC-LENGTH window rather than the
 # single final segment — the glyph centerline is a smooth spline through the
 # anchors, so its true endpoint tangent rarely matches the stored single-chord
@@ -184,6 +200,22 @@ def _endpoint_tangent(line: list[Point], at_end: bool = False) -> float:
                 break
     a, b = (far, tip) if at_end else (tip, far)
     return math.degrees(math.atan2(b[1] - a[1], b[0] - a[0]))
+
+
+def _entry_couple_index(line: list[Point]) -> int:
+    """Coupling-anchor index on B's first stroke for a high-exit join: the
+    first sample reaching ENTRY_COUPLE_Y on the RISING entry flank. 0 = no
+    trim (the stroke already starts at/above the couple height, or it turns
+    downward before reaching it — then its head is a real form, not a stub).
+    """
+    if len(line) < 3 or line[0][1] >= ENTRY_COUPLE_Y:
+        return 0
+    for i in range(1, len(line) - 1):
+        if line[i][1] >= ENTRY_COUPLE_Y:
+            return i
+        if line[i][1] < line[i - 1][1]:
+            return 0
+    return 0
 
 
 def _sample_bezier(p0: Point, p1: Point, p2: Point, p3: Point, n: int) -> list[Point]:
@@ -439,11 +471,18 @@ def compose_word(
         dx = desired_entry_x - entry_xy[0]
 
         # Connector first (writing order): the pen slides from A's exit into B's entry.
+        entry_trim = 0
         if joined:
             p0: Point = prev["exit"]
+            # A HIGH exit couples onto the rising flank of B's first downstroke
+            # instead of the entry-stub foot (O2, see ENTRY_COUPLE_Y): the stub
+            # piece below the anchor is dropped from centerline AND silhouette.
+            if p0[1] >= HIGH_COUPLE_EXIT_Y:
+                entry_trim = _entry_couple_index(first_line)
+            couple_line = first_line[entry_trim:]
             # End exactly on the next glyph's first ink sample so the join sits
             # on the centerline the entry tangent is measured from.
-            p3: Point = (first_line[0][0] + dx, first_line[0][1])
+            p3: Point = (couple_line[0][0] + dx, couple_line[0][1])
             span = math.hypot(p3[0] - p0[0], p3[1] - p0[1])
             # Handle length: 40 % of the span, but never more than half the
             # HORIZONTAL run — a steep drop (d/t exits high above the next
@@ -473,7 +512,7 @@ def compose_word(
                 clamped = min(max(launch, BOW_LAUNCH_DEG[0]), BOW_LAUNCH_DEG[1])
                 if clamped != launch:
                     d_out = _unit(clamped)
-            entry_deg = _endpoint_tangent(first_line, at_end=False)
+            entry_deg = _endpoint_tangent(couple_line, at_end=False)
             d_in = _unit(entry_deg)
             p1: Point = (p0[0] + handle * d_out[0], p0[1] + handle * d_out[1])
             p2: Point = (p3[0] - handle * d_in[0], p3[1] - handle * d_in[1])
@@ -499,10 +538,22 @@ def compose_word(
             # the nib, not just the widest measured direction.
             glyph_mask_width = max(glyph_mask_width, pen.nib.width_units * 1.15)
         for si, cl in enumerate(centerlines):
-            offset = [(x + dx, y) for x, y in cl]
+            src = cl[entry_trim:] if si == 0 and entry_trim else cl
+            offset = [(x + dx, y) for x, y in src]
             rings = [
                 [(x + dx, y) for x, y in ring] for ring in (rings_by_stroke[si] if si < len(rings_by_stroke) else [])
             ]
+            if si == 0 and entry_trim and rings:
+                # The trimmed stub piece (plus the anchor sample, so the erase
+                # meets the kept flank without a sliver) leaves the silhouette
+                # with the same cut the centerline took.
+                removed = [(x + dx, y) for x, y in cl[: entry_trim + 1]]
+                rings = [
+                    [tuple(p) for p in ring]
+                    for ring in erase_silhouette_piece(
+                        [[list(p) for p in ring] for ring in rings], removed, med_half * 1.1
+                    )
+                ]
             item: dict = {
                 "centerline": [list(p) for p in offset],
                 "mask_width": glyph_mask_width,
