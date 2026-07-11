@@ -40,6 +40,11 @@ def _default_out_dir() -> Path:
     return Path(env) if env else REPO_ROOT / "temp"
 
 
+def _deg(value: float | None) -> str:
+    """Real-tangent column: signed degrees, or an em dash when untrackable."""
+    return "—" if value is None else f"{value:+.0f}°"
+
+
 def _print_summary(rows: list[dict]) -> None:
     for r in rows:
         print(
@@ -47,8 +52,8 @@ def _print_summary(rows: list[dict]) -> None:
             f"A {r['a_shift_units'][0]:+.2f},{r['a_shift_units'][1]:+.2f}  "
             f"B {r['b_shift_units'][0]:+.2f},{r['b_shift_units'][1]:+.2f}  "
             f"gen {r['gen_chamfer']:.3f}  tail {r['tail_adapt']:.2f}  head {r['head_adapt']:.2f}  "
-            f"exit {r['exit_deg']:+.0f}°/{r['real_exit_deg'] if r['real_exit_deg'] is not None else '—'}  "
-            f"entry {r['entry_deg']:+.0f}°/{r['real_entry_deg'] if r['real_entry_deg'] is not None else '—'}"
+            f"exit {r['exit_deg']:+.0f}°/{_deg(r['real_exit_deg'])}  "
+            f"entry {r['entry_deg']:+.0f}°/{_deg(r['real_entry_deg'])}"
             + (
                 f"  fit exit y{r['target_exit_y']:+.2f}@{r['target_exit_deg']:+.0f}°"
                 f" entry y{r['target_entry_y']:+.2f}@{r['target_entry_deg']:+.0f}°"

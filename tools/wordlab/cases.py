@@ -102,9 +102,9 @@ def _case_from(root: Path, manifest: dict, templates: dict, entry: dict) -> Word
     """Build a WordCase from an already-loaded manifest entry (no rescan)."""
     entry_id = entry.get("id", entry["word"])
     word_meta = json.loads((root / entry_id / "word.json").read_text())
-    ref = np.load(root / entry_id / "ref_skel.npz")
-    skel = ref["skel"]
-    width_map = ref["width_map"] if "width_map" in ref else None
+    with np.load(root / entry_id / "ref_skel.npz") as ref:
+        skel = ref["skel"]
+        width_map = ref["width_map"] if "width_map" in ref else None
     crop = _load_page_float(root / entry_id / "crop.png")
     return WordCase(
         id=entry_id,

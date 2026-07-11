@@ -472,6 +472,8 @@ def dissect_occurrence(case: WordCase, slot_a: int, *, trace: bool = True) -> Jo
     onto the specimen ink along their known ductus (the M4 fit) — the fitted
     pair is the occurrence's ground-truth target for the generator. None when
     the composition is missing a template."""
+    if not case.has_specimen:
+        raise ValueError(f"case {case.id!r} has no specimen (live case?) — pairlab dissects fixture occurrences only")
     result = derive_word(case)
     if result.composed["missing"] or result.report is None or result.report.get("failed"):
         return None
