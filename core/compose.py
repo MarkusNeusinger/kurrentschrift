@@ -100,6 +100,20 @@ DEFAULT_HALF = 0.05  # fallback stroke half-width
 # to end inside its descender loop, so the connector becomes a return upstroke
 # rather than following the downward exit tangent (see the long-s ſ).
 DESCENDER_EXIT_Y = -0.2
+# A HIGH exit is a coupling-stub tip, not the pen's true departure: the plates
+# tuck the next letter back LEFT under it, proportionally to the exit height
+# (pairlab independent-fit calibration, 2026-07-11: d-loop joins need −0.33 xh
+# at exit_y 1.36, low arcade exits ~0). Constants are the bench-sweep optimum
+# (rate 0.25–0.55 × y0 0.3–0.75); at 0.25/0.6 the re-measured calibration
+# halves the d-class error (−0.33 → −0.15 med) and drops joins needing
+# ≥ 0.25 xh correction from 31 to 24 of 146. The ink-clearance guard still
+# floors the placement, so the tuck can never push a letter into the previous
+# body. Mid-height stub exits (c, t, f at ~0.5 xh) stay wrong on purpose:
+# height alone cannot tell their stubs from a real arcade end at the same
+# height (e, n) — that separation is the coupling-anchor work (O2,
+# uebergaenge-befund.md §6).
+TUCK_RATE = 0.25
+TUCK_Y0 = 0.6
 # Travel direction measured over a short ARC-LENGTH window rather than the
 # single final segment — the glyph centerline is a smooth spline through the
 # anchors, so its true endpoint tangent rarely matches the stored single-chord
@@ -402,8 +416,9 @@ def compose_word(
         # clearance alone — the tighter of the two clearances wins.
         joined = bool(prev) and prev["joins"] and slot.joins
         if joined:
+            tuck = TUCK_RATE * max(0.0, prev["exit"][1] - TUCK_Y0)
             desired_entry_x = max(
-                prev["exit"][0] + CONNECT_GAP, prev["ink_max_x"] + INK_CLEARANCE - (ink_min_x - entry_xy[0])
+                prev["exit"][0] + CONNECT_GAP - tuck, prev["ink_max_x"] + INK_CLEARANCE - (ink_min_x - entry_xy[0])
             )
         elif prev:
             gap = _nonjoin_clearance(_key_base(slot.key, slot.position)) if not slot.joins else math.inf
