@@ -63,6 +63,14 @@ CONNECT_GAP = 0.16  # minimum horizontal span of a connecting stroke (exit → e
 # words the bench flagged as far too narrow (einen/einer/wenn/zwei) all contain
 # such exits, while exit≈ink-edge words (das, mit) were already sized right.
 INK_CLEARANCE = 0.14
+# Clearance when the previous exit tangent points BACKWARD (the w/v bow curls
+# left at its end): there the join must travel over the whole bow before it
+# can fall into the next entry — the plates give those pairs visibly more room
+# (pairlab calibration 2026-07-11: w→e/i occurrences need +0.23 xh median on
+# top of the composed spacing; the standard clearance already handled the
+# audit's collapse, this widens it to the measured rhythm — 0.30 is the bench
+# optimum of the 0.24–0.37 sweep, slightly under the raw calibration median).
+BACKWARD_INK_CLEARANCE = 0.30
 # The y-band the ink clearance is measured in: where connectors travel and the
 # next letter's body sits. Ink above it (ascender loops) or below (descenders)
 # may overlap the neighbour's column like on the teaching plates.
@@ -417,8 +425,9 @@ def compose_word(
         joined = bool(prev) and prev["joins"] and slot.joins
         if joined:
             tuck = TUCK_RATE * max(0.0, prev["exit"][1] - TUCK_Y0)
+            clearance = BACKWARD_INK_CLEARANCE if _unit(prev["tangent_deg"])[0] <= 0.0 else INK_CLEARANCE
             desired_entry_x = max(
-                prev["exit"][0] + CONNECT_GAP - tuck, prev["ink_max_x"] + INK_CLEARANCE - (ink_min_x - entry_xy[0])
+                prev["exit"][0] + CONNECT_GAP - tuck, prev["ink_max_x"] + clearance - (ink_min_x - entry_xy[0])
             )
         elif prev:
             gap = _nonjoin_clearance(_key_base(slot.key, slot.position)) if not slot.joins else math.inf
