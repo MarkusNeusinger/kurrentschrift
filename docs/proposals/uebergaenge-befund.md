@@ -109,6 +109,32 @@ Sekundärbefund (Autoring, nicht Compose): die r-Form weicht mittig 0,1–0,2 xh
 von der fließenden Probe ab (Profile `r→e`), passend zum offenen
 buchstabenspezifischen Verdacht aus `jul08` Runde 2/3.
 
+## 5b. Duktus-Trace: das echte Paar nachgefahren (Nachtrag, gleicher Tag)
+
+Auf Nutzer-Vorschlag fährt pairlab die echten Paare jetzt zusätzlich **entlang
+des bekannten Duktus nach**: der M4-Fit (`core/fit.py`,
+`fit_template_to_instance` — Stroke-Struktur + Ecken bleiben erhalten,
+Tikhonov-regularisiert) warpt beide Templates auf die Tinte der Probe
+(buchstabenlokales Skelett-Fenster). Das gefittete Paar + der verfolgte
+Verbindungszug IST der kontinuierliche **Soll-Pfad** des Vorkommens — die
+perfekte Zielvorgabe für den Generator (violett in den Overlays; `fit
+exit/entry` in Caption/JSON; `--no-trace` schaltet ab).
+
+Abgelesene Soll-Kopplungen (gefittete Endpunkt-Geometrie, xh / Grad):
+
+| Klasse | Soll-Abgang (A) | Soll-Ankunft (B) |
+|---|---|---|
+| Arkaden-Diagonale (e→n/e→r/u→n/n→e) | y 0,43–0,68 @ +29…+44° | y 0,47–0,67 @ +31…+52° |
+| Deckstrich/Arm (r→e, o→n) | **y 0,81–0,87 @ +2…+13° (eben!)** | **y 0,60–0,72 = Scheitel**, nicht Stub-Fuß |
+| Schleifen-Exit (d→e, b→i) | Fit-Endpunkt y 1,2–1,5 auf der Flanke — der Stub hat keine eigene Tinte (Trim-Signal); echter Abgang laut Zugverfolgung y ≈ 0,8 fallend | y 0,60–0,72 = Scheitel |
+
+Lesart der beiden Kennwerte: bei braven Diagonalen stimmen Fit-Endpunkt und
+Zugverfolgungs-Abgang überein; klafft dazwischen eine Lücke (d, b), wurde der
+Exit-Stub vom Fit in die Schleifenflanke absorbiert — genau das ist die zu
+trimmende Strecke. Die O2-Kopplungsanker sind damit nicht mehr Schätzwerte,
+sondern **pro Klasse gemessen**; und für einen späteren Vorschlag-B-Import
+liefert derselbe Fit die geernteten Paar-Geometrien gleich mit.
+
 ## 6. Beantwortung der Kernfrage + Lösungsoptionen
 
 **Generisch lösbar — als Klassenregel, nicht pro Paar.** Die Abweichungen
@@ -131,10 +157,13 @@ Empfohlene Reihenfolge:
    (Schleifenkreuzung/Bogenende statt Stub-Spitze). Ist der A-Exit hoch
    (≥ ~0,7 xh: d-Schleife, Deckstrich-Bögen, r-Arm), wird der Übergang
    **Anker→Anker** generiert und die Stub-Stücke im **gebundenen** Kontext
-   weggelassen (gemessene Ersatzlänge 0,2–0,4 xh). Wortanfangs-Stubs bleiben
-   — sie SIND der Anstrich (E2-Erkenntnis). Nur Renderpfad, Template bleibt
-   Chart-Messung (Prinzip wie `FLUENT_BODY_PITCH`); Absicherung über den
-   Wort-Bench-Loop, `pair_loss` als Report.
+   weggelassen (gemessene Ersatzlänge 0,2–0,4 xh). Die Soll-Werte pro Klasse
+   liegen seit dem Duktus-Trace (§5b) gemessen vor: Deckstrich-Klasse eben
+   (+2…+13°) bei y ≈ 0,85 abgehen, am Scheitel y ≈ 0,6–0,7 ankommen.
+   Wortanfangs-Stubs bleiben — sie SIND der Anstrich (E2-Erkenntnis). Nur
+   Renderpfad, Template bleibt Chart-Messung (Prinzip wie
+   `FLUENT_BODY_PITCH`); Absicherung über den Wort-Bench-Loop, `pair_loss`
+   als Report.
 3. **O3 — Paar-Overrides (Vorschlag B) vertagen:** nach O1+O2 neu messen;
    nach heutiger Evidenz für Kleinbuchstaben unnötig. Erst mit der
    Versal-Phase wieder prüfen (B→i/I→n/D→u sind die stärksten Kandidaten

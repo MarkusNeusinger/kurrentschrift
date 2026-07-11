@@ -46,6 +46,7 @@ from core.compose import (
     _sample_bezier,
     _unit,
 )
+from core.fit import fit_template_to_instance
 from tools.wordlab.cases import WordCase, iter_fixture_word_cases
 from tools.wordlab.derive import WordDeriveResult, derive_word
 
@@ -69,6 +70,14 @@ PROFILE_LEN_UNITS = 1.2
 # Arc window for the specimen-side tangents of the real join (matches the
 # composer's TANGENT_WINDOW spirit, in px it is scaled by xh).
 REAL_TANGENT_UNITS = 0.18
+# Ductus trace: horizontal margin (xh) of the letter-local skeleton window the
+# M4 fit runs against — wide enough to let the tail follow the real ink INTO
+# the join, narrow enough not to hand the coverage term the neighbour's body.
+TRACE_WINDOW_MARGIN = 0.15
+# Anchor arc (xh) from the join end counted as the coupling-stub region when
+# summarising how far the fit had to move it (matches the measured 0.2–0.4 xh
+# adaptation zones).
+STUB_ARC_UNITS = 0.4
 
 
 Point = tuple[float, float]
@@ -88,6 +97,32 @@ class LetterFit:
     resid_after: float
     body_px: list[np.ndarray]  # body strokes at the OPTIMAL placement (crop px)
     composed_px: list[np.ndarray]  # the same strokes at the composed placement
+
+
+@dataclass
+class DuctusTrace:
+    """One letter's template WARPED onto the specimen ink along its known
+    ductus (the M4 fit, `core.fit.fit_template_to_instance`, run against a
+    letter-local skeleton window). The fitted polyline IS the real letter as
+    written — its end point/tangent are the true coupling geometry of this
+    occurrence, the perfect target for the generator."""
+
+    slot_index: int
+    key: str
+    polyline_px: np.ndarray  # fitted centerline samples (crop px)
+    stroke_starts: list[int]  # per-pen-stroke sample bounds
+    diacritic_strokes: list[bool]  # per stroke: floats above the midband
+    converged: bool
+    geo_rmse_px: float
+    # True coupling geometry read off the fitted ink (composed units, y up):
+    exit_xy: Point
+    exit_deg: float
+    entry_xy: Point
+    entry_deg: float
+    # How far the fit had to move the template (units, global shift excluded):
+    tail_stub_delta: float  # mean anchor displacement inside the exit-stub arc
+    head_stub_delta: float  # …inside the entry-stub arc
+    body_delta: float  # mean over the remaining anchors (contrast)
 
 
 @dataclass
@@ -118,6 +153,9 @@ class JoinDissection:
     head_profile: np.ndarray  # (n, 2): arc from B's entry (units) → deviation (units)
     tail_adapt: float  # arc length of A's tail the specimen re-shapes (units)
     head_adapt: float
+    # --- ductus traces: the templates warped onto THIS occurrence's real ink ---
+    a_trace: DuctusTrace | None = None
+    b_trace: DuctusTrace | None = None
 
 
 def pair_bases(arg: str) -> tuple[str, str]:
@@ -292,6 +330,131 @@ def _adaptation_length(profile: np.ndarray) -> float:
     return float(arcs[-1])
 
 
+def _polyline_end_tangent_units(pts_px: np.ndarray, xh: float, at_end: bool) -> float:
+    """Arc-window endpoint tangent of a px polyline, degrees in the composed
+    frame (y up) — the same TANGENT_WINDOW rule the composer applies."""
+    units = [(float(x), float(-y)) for x, y in pts_px / xh]
+    return _endpoint_tangent(units, at_end=at_end)
+
+
+def _stub_vs_body_delta(
+    anchors: np.ndarray, fitted: np.ndarray, stroke_slice: tuple[int, int], from_end: bool
+) -> tuple[float, float]:
+    """Mean per-anchor displacement (units, global shift removed) inside the
+    join-side stub arc of ONE stroke vs over all remaining anchors."""
+    deltas = np.hypot(*(fitted - anchors).T)
+    deltas = deltas - np.median(deltas)  # remove what is effectively a residual global shift
+    deltas = np.abs(deltas)
+    a, b = stroke_slice
+    seg = anchors[a:b]
+    arcs = np.concatenate([[0.0], np.cumsum(np.hypot(*np.diff(seg, axis=0).T))])
+    arc_from_join = arcs[-1] - arcs if from_end else arcs
+    stub_idx = np.arange(a, b)[arc_from_join <= STUB_ARC_UNITS]
+    if len(stub_idx) == 0:
+        return 0.0, float(deltas.mean())
+    body_mask = np.ones(len(anchors), dtype=bool)
+    body_mask[stub_idx] = False
+    body = float(deltas[body_mask].mean()) if body_mask.any() else 0.0
+    return float(deltas[stub_idx].mean()), body
+
+
+def trace_letter_ductus(
+    case: WordCase, result: WordDeriveResult, fit: LetterFit, slot_index: int
+) -> DuctusTrace | None:
+    """Warp the letter's stored template onto the specimen ink along its known
+    ductus (M4 fit against a letter-local skeleton window). None when the case
+    carries no width map or the template row is missing."""
+    slot = case.slots[slot_index]
+    row = case.templates.get(slot.key) if slot.key else None
+    if row is None or case.width_map is None or case.skel is None:
+        return None
+    anchors = np.asarray(row["anchors"], dtype=float)
+    half_widths = np.asarray(row["half_widths"], dtype=float)
+    meta = row.get("trace_meta") or {}
+    stroke_starts = meta.get("stroke_starts") or [0]
+    corner_anchors = meta.get("corner_anchors") or []
+
+    xh = result.xh_px
+    tx, ty = result.registration["tx"], result.registration["ty"]
+
+    # Letter-local windows: the fit's coverage term must see THIS letter's ink
+    # (plus a little join), never the neighbour's body.
+    body = np.vstack(fit.body_px)
+    x0 = body[:, 0].min() - TRACE_WINDOW_MARGIN * xh
+    x1 = body[:, 0].max() + TRACE_WINDOW_MARGIN * xh
+    cols = np.arange(case.skel.shape[1])
+    keep = (cols >= x0) & (cols <= x1)
+    skel_local = case.skel & keep[None, :]
+    if not skel_local.any():
+        return None
+    width_local = np.where(keep[None, :], case.width_map, 0.0)
+
+    # Initial placement: the template origin at the letter's independent fit.
+    # The composed items are the (possibly fluent-widened) render geometry, so
+    # recover the compose dx from the first body stroke's first sample vs the
+    # payload's template-frame twin; the fit's global translation absorbs the
+    # small widening offset that remains.
+    payload = result.payloads.get(slot.key) or {}
+    first_template = (payload.get("centerlines_template") or [[[0.0, 0.0]]])[0][0]
+    first_item = _body_items(result, slot_index)[0]["centerline"][0]
+    dx = first_item[0] - first_template[0]
+    x_origin_px = dx * xh + tx + fit.ddx_px - anchors[0, 0] * xh
+    baseline_y_px = result.baseline_row + ty + fit.ddy_px
+
+    fr = fit_template_to_instance(
+        anchors,
+        half_widths,
+        skel_local,
+        width_local,
+        unit_px=xh,
+        baseline_y_px=baseline_y_px,
+        x_origin_px=x_origin_px,
+        stroke_starts=stroke_starts,
+        corner_anchors=corner_anchors,
+    )
+
+    # Per-stroke sample bounds + diacritic classification (compose's rule:
+    # a non-first stroke floating entirely above the midband).
+    poly = fr.fitted_polyline_px
+    sample_bounds = [*fr.polyline_stroke_starts, len(poly)]
+    anchor_bounds = [*(s for s in stroke_starts if s < len(anchors)), len(anchors)]
+    diacritic_strokes = []
+    for si, (a, b) in enumerate(zip(anchor_bounds[:-1], anchor_bounds[1:], strict=True)):
+        diacritic_strokes.append(si > 0 and bool((anchors[a:b, 1] > 1.0).all()))
+    body_stroke_idx = [i for i, d in enumerate(diacritic_strokes) if not d] or [0]
+    last_body, first_body = body_stroke_idx[-1], body_stroke_idx[0]
+
+    exit_seg = poly[sample_bounds[last_body] : sample_bounds[last_body + 1]]
+    entry_seg = poly[sample_bounds[first_body] : sample_bounds[first_body + 1]]
+    to_units = lambda p: (  # noqa: E731 — crop px → composed word frame (y up)
+        (p[0] - tx) / xh,
+        (result.baseline_row + ty - p[1]) / xh,
+    )
+
+    tail_stub, body_delta = _stub_vs_body_delta(
+        anchors, fr.anchors, (anchor_bounds[last_body], anchor_bounds[last_body + 1]), from_end=True
+    )
+    head_stub, _ = _stub_vs_body_delta(
+        anchors, fr.anchors, (anchor_bounds[first_body], anchor_bounds[first_body + 1]), from_end=False
+    )
+    return DuctusTrace(
+        slot_index=slot_index,
+        key=slot.key,
+        polyline_px=poly,
+        stroke_starts=list(fr.polyline_stroke_starts),
+        diacritic_strokes=diacritic_strokes,
+        converged=bool(fr.fit_meta.get("converged")),
+        geo_rmse_px=float(fr.fit_meta.get("geo_rmse_px", math.nan)),
+        exit_xy=to_units(exit_seg[-1]),
+        exit_deg=_polyline_end_tangent_units(exit_seg, xh, at_end=True),
+        entry_xy=to_units(entry_seg[0]),
+        entry_deg=_polyline_end_tangent_units(entry_seg, xh, at_end=False),
+        tail_stub_delta=tail_stub,
+        head_stub_delta=head_stub,
+        body_delta=body_delta,
+    )
+
+
 def _ink_extent_x(strokes_px: list[np.ndarray], baseline_row: float, xh: float) -> tuple[float, float]:
     """Horizontal extent of the letter's body samples inside the join band (px)."""
     row_top = baseline_row - JOIN_BAND_Y[1] * xh
@@ -303,9 +466,12 @@ def _ink_extent_x(strokes_px: list[np.ndarray], baseline_row: float, xh: float) 
     return float(band[:, 0].min()), float(band[:, 0].max())
 
 
-def dissect_occurrence(case: WordCase, slot_a: int) -> JoinDissection | None:
+def dissect_occurrence(case: WordCase, slot_a: int, *, trace: bool = True) -> JoinDissection | None:
     """Independent-fit dissection of the join between slots ``slot_a`` and
-    ``slot_a + 1``. None when the composition is missing a template."""
+    ``slot_a + 1``. ``trace`` additionally warps the two letters' templates
+    onto the specimen ink along their known ductus (the M4 fit) — the fitted
+    pair is the occurrence's ground-truth target for the generator. None when
+    the composition is missing a template."""
     result = derive_word(case)
     if result.composed["missing"] or result.report is None or result.report.get("failed"):
         return None
@@ -374,6 +540,12 @@ def dissect_occurrence(case: WordCase, slot_a: int) -> JoinDissection | None:
     tail_profile = _deviation_profile(edt, a.body_px[-1], xh, from_end=True)
     head_profile = _deviation_profile(edt, b.body_px[0], xh, from_end=False)
 
+    # --- ductus traces: warp both templates onto THIS occurrence's real ink ---
+    a_trace = b_trace = None
+    if trace:
+        a_trace = trace_letter_ductus(case, result, a, slot_a)
+        b_trace = trace_letter_ductus(case, result, b, slot_a + 1)
+
     return JoinDissection(
         case=case,
         result=result,
@@ -396,6 +568,8 @@ def dissect_occurrence(case: WordCase, slot_a: int) -> JoinDissection | None:
         head_profile=head_profile,
         tail_adapt=_adaptation_length(tail_profile),
         head_adapt=_adaptation_length(head_profile),
+        a_trace=a_trace,
+        b_trace=b_trace,
     )
 
 
@@ -421,4 +595,14 @@ def summary_row(d: JoinDissection) -> dict:
         "real_entry_deg": None if d.real_entry_deg is None else round(d.real_entry_deg, 1),
         "real_depart_y": None if d.real_depart_y is None else round(d.real_depart_y, 3),
         "real_arrive_y": None if d.real_arrive_y is None else round(d.real_arrive_y, 3),
+        # Ground truth read off the ductus traces (the generator's target):
+        "target_exit_y": None if d.a_trace is None else round(d.a_trace.exit_xy[1], 3),
+        "target_exit_deg": None if d.a_trace is None else round(d.a_trace.exit_deg, 1),
+        "target_entry_y": None if d.b_trace is None else round(d.b_trace.entry_xy[1], 3),
+        "target_entry_deg": None if d.b_trace is None else round(d.b_trace.entry_deg, 1),
+        "a_tail_stub_delta": None if d.a_trace is None else round(d.a_trace.tail_stub_delta, 3),
+        "b_head_stub_delta": None if d.b_trace is None else round(d.b_trace.head_stub_delta, 3),
+        "trace_converged": None
+        if d.a_trace is None or d.b_trace is None
+        else bool(d.a_trace.converged and d.b_trace.converged),
     }

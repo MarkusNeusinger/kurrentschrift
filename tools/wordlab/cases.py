@@ -59,6 +59,7 @@ class WordCase:
     midband_y: int | None = None
     crop: np.ndarray | None = None  # float [0, 1], shape (H, W) — overlay background
     skel: np.ndarray | None = None  # bool, the frozen scoring skeleton
+    width_map: np.ndarray | None = None  # float, EDT half-width per skeleton pixel (same npz)
     extra: dict = field(default_factory=dict)  # updated_at, … (informational)
 
     @property
@@ -101,7 +102,9 @@ def _case_from(root: Path, manifest: dict, templates: dict, entry: dict) -> Word
     """Build a WordCase from an already-loaded manifest entry (no rescan)."""
     entry_id = entry.get("id", entry["word"])
     word_meta = json.loads((root / entry_id / "word.json").read_text())
-    skel = np.load(root / entry_id / "ref_skel.npz")["skel"]
+    ref = np.load(root / entry_id / "ref_skel.npz")
+    skel = ref["skel"]
+    width_map = ref["width_map"] if "width_map" in ref else None
     crop = _load_page_float(root / entry_id / "crop.png")
     return WordCase(
         id=entry_id,
@@ -119,6 +122,7 @@ def _case_from(root: Path, manifest: dict, templates: dict, entry: dict) -> Word
         midband_y=word_meta["midband_y"],
         crop=crop,
         skel=skel,
+        width_map=width_map,
     )
 
 

@@ -39,6 +39,7 @@ _B = (25 / 255, 120 / 255, 60 / 255)  # second letter — viridian green
 _OTHER = (0.55, 0.55, 0.55)  # the word's remaining letters — grey
 _GEN = (235 / 255, 40 / 255, 40 / 255)  # regenerated production connector — bright red
 _ADAPT = (230 / 255, 140 / 255, 30 / 255)  # adaptation zone on the glyph's own stroke — orange
+_TRACE = (122 / 255, 63 / 255, 160 / 255)  # ductus trace: template warped onto the real ink — purple
 _BASELINE = "#e09696"
 _MIDBAND = "#84cf84"
 _CAPTION = "#222222"
@@ -63,6 +64,14 @@ def _caption(d: JoinDissection) -> str:
     ]
     if d.real_depart_y is not None and d.real_arrive_y is not None:
         lines.append(f"real y {d.real_depart_y:+.2f}→{d.real_arrive_y:+.2f} xh")
+    if d.a_trace is not None and d.b_trace is not None:
+        conv = "ok" if d.a_trace.converged and d.b_trace.converged else "FAIL"
+        lines += [
+            f"trace {conv}",
+            f" fit exit  y{d.a_trace.exit_xy[1]:+.2f} {_fmt_deg(d.a_trace.exit_deg)}",
+            f" fit entry y{d.b_trace.entry_xy[1]:+.2f} {_fmt_deg(d.b_trace.entry_deg)}",
+            f" stub d tail {d.a_trace.tail_stub_delta:.2f} head {d.b_trace.head_stub_delta:.2f}",
+        ]
     return "\n".join(lines)
 
 
@@ -111,6 +120,18 @@ def overlay_panel(d: JoinDissection, *, title: str | None = None, zoom: bool = T
             lw = 2.0 if i in (d.slot_a, d.slot_a + 1) else 1.1
             for stroke in fit.body_px:
                 ax.plot(stroke[:, 0], stroke[:, 1], color=color, lw=lw, solid_capstyle="round", zorder=3)
+
+        # Ductus traces: the two templates warped onto the real ink — together
+        # with the specimen's connecting stroke this IS the target pair.
+        for trace_obj in (d.a_trace, d.b_trace):
+            if trace_obj is None:
+                continue
+            bounds = [*trace_obj.stroke_starts, len(trace_obj.polyline_px)]
+            for si, (s0, s1) in enumerate(zip(bounds[:-1], bounds[1:], strict=True)):
+                seg = trace_obj.polyline_px[s0:s1]
+                if len(seg) >= 2:
+                    alpha = 0.45 if trace_obj.diacritic_strokes[si] else 0.85
+                    ax.plot(seg[:, 0], seg[:, 1], color=_TRACE, lw=2.8, alpha=alpha, zorder=2)
 
         # Regenerated production connector between the independent placements.
         ax.plot(d.gen_px[:, 0], d.gen_px[:, 1], color=_GEN, lw=2.2, ls=(0, (4, 2)), zorder=4)

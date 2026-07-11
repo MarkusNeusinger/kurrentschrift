@@ -20,9 +20,11 @@ from tools.pairlab.analyze import (
     _adaptation_length,
     _generate_connector,
     _real_join,
+    _stub_vs_body_delta,
     dissect_occurrence,
     find_occurrences,
     pair_bases,
+    trace_letter_ductus,
 )
 from tools.wordlab.cases import DEFAULT_FIXTURES_DIR
 
@@ -107,6 +109,18 @@ def test_real_join_empty_when_letters_touch() -> None:
     assert len(pts) == 0
 
 
+def test_stub_vs_body_delta_localises_the_moved_stub() -> None:
+    """Anchors moved only near the stroke end must show up as a stub delta
+    well above the body delta (global-shift component removed)."""
+    anchors = np.column_stack([np.linspace(0.0, 2.0, 21), np.zeros(21)])
+    fitted = anchors.copy()
+    fitted[-3:] += [0.0, 0.3]  # last ~0.3 units of arc pushed up
+    stub, body = _stub_vs_body_delta(anchors, fitted, (0, 21), from_end=True)
+    assert stub > 3 * max(body, 1e-6)
+    stub_head, _ = _stub_vs_body_delta(anchors, fitted, (0, 21), from_end=False)
+    assert stub_head < stub  # the entry side did not move
+
+
 # -------------------------------------------------- fixture-gated end-to-end
 
 fixtures_present = any(DEFAULT_FIXTURES_DIR.rglob("manifest.json"))
@@ -117,7 +131,7 @@ def test_dissect_first_en_occurrence() -> None:
     occurrences = find_occurrences(("e", "n"), sets=("words",))
     assert occurrences, "the Abb.-19 words contain e→n"
     case, slot_a = occurrences[0]
-    d = dissect_occurrence(case, slot_a)
+    d = dissect_occurrence(case, slot_a, trace=False)
     assert d is not None
     assert d.a.base == "e" and d.b.base == "n"
     # shifts stay inside the search bounds and the fit never worsens the residual
@@ -130,3 +144,19 @@ def test_dissect_first_en_occurrence() -> None:
     from tools.pairlab.analyze import summary_row
 
     assert row_keys <= set(summary_row(d))
+
+
+@pytest.mark.skipif(not fixtures_present, reason="word-bench fixtures are local-only (gitignored)")
+def test_ductus_trace_follows_the_ink() -> None:
+    """The M4-fit trace of one letter must land on the specimen skeleton and
+    expose the true coupling geometry (finite end tangents, plausible heights)."""
+    occurrences = find_occurrences(("e", "n"), sets=("words",))
+    case, slot_a = occurrences[0]
+    d = dissect_occurrence(case, slot_a, trace=False)
+    t = trace_letter_ductus(case, d.result, d.a, slot_a)
+    assert t is not None
+    assert len(t.polyline_px) > 10
+    assert np.isfinite(t.geo_rmse_px)
+    assert -1.5 <= t.exit_xy[1] <= 2.5  # within the writing band (units)
+    assert np.isfinite(t.exit_deg) and np.isfinite(t.entry_deg)
+    assert t.tail_stub_delta >= 0.0 and t.body_delta >= 0.0

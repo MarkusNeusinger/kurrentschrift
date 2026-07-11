@@ -20,8 +20,12 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   inter-letter gap, and measures tail/head adaptation profiles — how far into each
   glyph the real pen departs from the template before the join. Separates the three
   entangled failure modes (connector shape · placement · glyph-end adaptation) the
-  word bench cannot tell apart. Overlay + deviation-profile PNGs per occurrence,
-  JSON aggregation, unit-tested pure geometry core (`tests/test_pairlab.py`).
+  word bench cannot tell apart. Additionally it TRACES the real pair along the known
+  ductus: the M4 fit (`core/fit.py`) warps both templates onto the specimen ink, so
+  every occurrence yields its ground-truth target — true coupling heights/tangents
+  per join class and the stub-trim signal (fitted endpoint vs. tracked departure).
+  Overlay + deviation-profile PNGs per occurrence, JSON aggregation, unit-tested
+  pure geometry core (`tests/test_pairlab.py`).
 - **Übergangs-Befund 2026-07-11** (`docs/proposals/uebergaenge-befund.md`): the
   pairlab survey over 87 occurrences / 45 pairs. Placement is the largest single
   error (39/87 need ≥ 0.25 xh correction); the standard diagonal join is generically
