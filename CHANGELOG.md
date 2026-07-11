@@ -10,6 +10,36 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Changed
+
+- **Pairlab-calibrated placement (O1).** `core/compose.py` places letters with two
+  measured corrections: a HIGH exit is treated as a coupling-stub tip, not the pen's
+  true departure — the next letter tucks back under it proportionally to the exit
+  height (`TUCK_RATE`·(exit − 0.6)⁺; the d-class needed −0.33 xh) — and a BACKWARD
+  exit tangent (the w/v bow) gets `BACKWARD_INK_CLEARANCE` 0.30 instead of 0.14 (the
+  join must clear the whole bow; w joins measured +0.23 xh too tight). Re-measured
+  against the pairlab independent fits over all 48 scorable specimen words: joins
+  needing ≥ 0.25 xh correction drop from 31 to 21 of 146 (d-class −0.33 → −0.07,
+  w-class +0.23 → +0.08 median).
+- **Coupling anchors for high-exit joins (O2, B side).** After a Deckstrich bow,
+  d-loop or r-arm exit (≥ 0.7 xh) the generated connector no longer bridges to the
+  next letter's entry-stub foot ("shelf") but falls onto the RISING flank of its
+  first downstroke at y 0.78, and the chart cell's stub piece below the anchor is
+  removed from the centerline and the filled silhouette (new
+  `core/template.py::erase_silhouette_piece`). Word-initial stubs stay — they are
+  the Anstrich; low arcade joins are untouched (the standard diagonal is generically
+  right per the pairlab findings).
+- **Level Auslauf for high word-final exits.** A word ending on a high forward exit
+  (the r-arm) now runs a short level finishing stroke (0.25 xh) like the plates,
+  instead of stopping dead at the arm end — `der`/`der-2` carried the bench's
+  largest width penalties for the missing stroke. Words ending low keep their
+  rising Endstrich.
+- **Word bench headline** 0.1253 → 0.1183 (−5.6 %) over the frozen `jul08`
+  references; `pair_loss` (report-only) 0.199 → 0.195. Loop protocol, keeps,
+  discards (incl. the measured-but-rejected A-side d-stub trim) in
+  `docs/reference/qualitaetsmetrik.md` §6, Lauf `jul11`; the compose golden fixture
+  is deliberately re-pinned.
+
 ### Added
 
 - **`tools/pairlab` — independent-fit dissection of letter joins.** For every real

@@ -683,3 +683,60 @@ Hoch-Exits (d-Schleife, Deckstrich-Bögen o/b/v/w, r-Arm) ersetzt die echte
 Feder die Kopplungs-Stubs beider Seiten (0,2–0,4 xh je Seite) durch eine
 Diagonale in den Scheitel des ersten Abstrichs. Befund + Optionen O1–O3:
 [`docs/proposals/uebergaenge-befund.md`](../proposals/uebergaenge-befund.md).
+
+### Lauf `jul11` — O1 Platzierungs-Kalibrierung + O2 Kopplungsanker (2026-07-11)
+
+Keep/Discard nur an `core/compose.py` (plus ein Silhouetten-Helfer in
+`core/template.py`), Ziel die Wort-Headline, Referenzen = `jul08`-Stand
+(Fixtures identisch reproduziert; die unveränderte Baseline traf die
+dokumentierte Headline exakt: 0.125337). Neu als Kalibriersignal neben der
+Bench: die pairlab-Unabhängig-Fits ALLER Buchstaben der 48 scorbaren Wörter
+(156 Joins; Soll-Korrektur pro Join = ddx(B) − ddx(A)) — die Bench wacht
+über Regressionen, die Kalibrierung sagt, ob die Platzierung wirklich
+stimmt. Log: `tools/wordbench/runs/loop-jul11/results.tsv` (lokal).
+
+`bench_loss` **0.1253 → 0.1183** (−5,6 %; Deckung 0.121 → 0.113, Breite
+0.162 → 0.135); `pair_loss` (Report, nie Ziel) 0.199 → 0.195.
+Kalibrierung nachgemessen: Joins mit ≥ 0,25 xh Soll-Korrektur **31 → 21**
+von 146, d-Klasse −0,33 → −0,07 med, w-Klasse +0,23 → +0,08 med.
+
+Behalten (in Keep-Reihenfolge):
+
+1. **Hoch-Exit-Tuck (O1):** der `gap`-Anker zieht `TUCK_RATE·(exit_y −
+   TUCK_Y0)⁺` ab — ein hoher Exit ist eine Stub-Spitze, kein echter
+   Abgang; die Tafel tuckt den Folgebuchstaben darunter (d-Klasse −0,33 xh
+   bei exit 1,36). Der Ink-Clearance-Guard bleibt die Untergrenze.
+2. **Rückwärts-Exit-Clearance (O1):** zeigt die Exit-Tangente nach links
+   (w/v-Bogen), gilt `BACKWARD_INK_CLEARANCE` 0.30 statt 0.14 — der Join
+   muss erst über den ganzen Bogen (w-Joins +0,23 xh med zu eng).
+3. **Kopplungsanker B-seitig (O2):** nach hohem Exit (≥ 0,7: Deckstrich-
+   Bogen, d-Schleife, r-Arm) zielt der Konnektor auf die STEIGENDE Flanke
+   des ersten Abstrichs bei `ENTRY_COUPLE_Y` 0.78 statt auf den Stub-Fuß;
+   das Stub-Stück darunter fliegt aus Centerline UND Silhouette
+   (`core/template.py::erase_silhouette_piece`). Wortanfangs-Stubs bleiben
+   (E2-Erkenntnis), Arkaden-Joins bleiben unangetastet (Befund §4).
+4. **Level-Auslauf (O2-Rand):** ein hoher VORWÄRTS-Exit am Wortende
+   (r-Arm ~0,86) läuft `SWING_HIGH_RUN` 0.25 xh eben aus statt abrupt zu
+   enden — `der`/`der-2` trugen dafür die größten Breiten-Strafen
+   (0,31/0,48). Ein stale Smoke-Test-Assert in `tests/test_wordlab.py`
+   („Wort endet auf Glyph-Segment") wurde dafür korrigiert — die Annahme
+   galt seit dem jul08-Endstrich nur noch zufällig; die eingefrorene
+   Metrik (`tools/wordbench/metric.py`) blieb unangetastet.
+5. **Tuck-Re-Sweep:** nach dem Kopplungsanker gewinnt `TUCK_RATE` 0.35
+   (Konstanten interagieren — am Ende eines Laufs die frühen Keeps
+   nachsweepen).
+
+**Verworfen im Lauf:** pauschal `CONNECT_GAP` 0.16→0.08 (Übergang
+verschlechtert — Bestätigung der jul02-Lektion in Gegenrichtung);
+`INK_CLEARANCE` global 0.14→0.25 (kippt gap-Joins massenhaft in den
+ink-Branch, +0,03); Descender-Exit mit breiter Clearance (headline-neutral);
+Launch-Clamp auf die gemessenen +2…+13° (neutral bis minimal schlechter).
+**Wichtigster Negativ-Befund — A-seitiger d-Stub-Trim:** der Abgang an der
+Schleifenkreuzung (statt Stub-Spitze) verbessert die Deckung, aber die
+Übergangs-Komponente bestraft konstruktionsbedingt die x-Spannen-Ausdehnung
+des Konnektors in die d-Spalte (Reverse-Chamfer im Konnektor-Band);
+medial-d-Wörter (laden, Feinde) besser, initial-d-Wörter (der, die)
+schlechter, netto +0,001. Der d-Stub bleibt daher gezeichnet; seine
+Platzierungs-Wirkung fängt der Tuck ab. Falls später gewünscht, braucht ein
+ehrlicher A-Trim zuerst eine Metrik-Diskussion (Re-Baseline) — nicht im
+Loop lösbar.
