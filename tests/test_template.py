@@ -1,7 +1,6 @@
 """Template-coord helpers."""
 
 import numpy as np
-
 from shapely.geometry import Point as ShapelyPoint
 from shapely.geometry import Polygon as ShapelyPolygon
 
