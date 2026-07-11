@@ -81,8 +81,10 @@ def test_derive_word_composes_scores_and_attributes() -> None:
     segs = result.segments
     assert segs is not None
     assert {s["kind"] for s in segs} <= {"glyph", "connector"}
-    # writing order: a word opens and closes on a glyph, with connectors interior
-    assert segs[0]["kind"] == "glyph" and segs[-1]["kind"] == "glyph"
+    # writing order: a word opens on a glyph; it may CLOSE on the generated
+    # word-final Endstrich/Auslauf (a connector-kind segment) — since the
+    # high-exit Auslauf every last letter earns one, not just rising exits.
+    assert segs[0]["kind"] == "glyph"
     assert any(s["kind"] == "connector" for s in segs)
     for s in segs:
         assert 0.0 <= s["penalty"] <= 1.0

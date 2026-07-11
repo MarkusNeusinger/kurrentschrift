@@ -100,9 +100,14 @@ CONNECT_SAMPLES = 24  # Bézier samples per connector (dense enough to read as a
 SWING_TOP_Y = 0.7
 SWING_MAX_RUN = 0.9  # cap the horizontal run for shallow exits (x-height units)
 SWING_MIN_RISE = 0.2  # a flat/falling exit does not swing (needs a rising flank to continue)
-# Only a LOW forward exit swings: a bow/Deckstrich exit (o, b, w) already ends
-# high and the plates show no extra flourish there.
+# Only a LOW forward exit swings UP: a bow/Deckstrich exit already ends high.
+# A high FORWARD exit (the r-arm) instead runs level off the word — the plates
+# extend the arm as a flat Auslauf (wordbench: der/der-2 carried the largest
+# width penalties, 0.31/0.48, because the composed r stopped at the arm end).
 SWING_MAX_EXIT_Y = 0.7
+SWING_HIGH_RUN = 0.25  # arc run of the level Auslauf (bench optimum of 0.15–0.65, xh units)
+SWING_HIGH_LAUNCH_DEG = (-5.0, 15.0)  # level-ish band the Auslauf is clamped into
+SWING_HIGH_MAX_TANGENT_DEG = 45.0  # a bow still closing steeply upward gets no Auslauf
 DEFAULT_HALF = 0.05  # fallback stroke half-width
 # Exit y (baseline = 0, descender ≈ −1) below which a glyph's stroke is judged
 # to end inside its descender loop, so the connector becomes a return upstroke
@@ -320,16 +325,24 @@ def compose_word(
         towards the x-height line. High, backward or flat exits (bows, a
         Deckstrich cover-stroke) end the word as they are."""
         nonlocal cursor_x
-        if not prev or not prev["joins"] or prev["exit"][1] >= SWING_MAX_EXIT_Y:
+        if not prev or not prev["joins"]:
             return
         d_out = _unit(prev["tangent_deg"])
-        if d_out[0] <= 0 or d_out[1] < SWING_MIN_RISE:
-            return
         p0: Point = prev["exit"]
-        run = min((SWING_TOP_Y - p0[1]) * d_out[0] / d_out[1], SWING_MAX_RUN)
-        if run <= 0:
-            return
-        p3: Point = (p0[0] + run, p0[1] + run * d_out[1] / d_out[0])
+        if p0[1] >= SWING_MAX_EXIT_Y:
+            # High forward exit (r-arm): level Auslauf along the arm.
+            launch = math.degrees(math.atan2(d_out[1], d_out[0]))
+            if d_out[0] <= 0 or launch > SWING_HIGH_MAX_TANGENT_DEG:
+                return
+            d_run = _unit(min(max(launch, SWING_HIGH_LAUNCH_DEG[0]), SWING_HIGH_LAUNCH_DEG[1]))
+            p3: Point = (p0[0] + SWING_HIGH_RUN * d_run[0], p0[1] + SWING_HIGH_RUN * d_run[1])
+        else:
+            if d_out[0] <= 0 or d_out[1] < SWING_MIN_RISE:
+                return
+            run = min((SWING_TOP_Y - p0[1]) * d_out[0] / d_out[1], SWING_MAX_RUN)
+            if run <= 0:
+                return
+            p3 = (p0[0] + run, p0[1] + run * d_out[1] / d_out[0])
         centerline = [p0, ((p0[0] + p3[0]) / 2, (p0[1] + p3[1]) / 2), p3]
         swing: dict = {"centerline": [list(p) for p in centerline], "lift": False}
         apply_pen(swing, centerline, 2 * prev["width"])
