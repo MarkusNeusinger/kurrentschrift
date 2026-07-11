@@ -210,8 +210,10 @@ def _endpoint_tangent(line: list[Point], at_end: bool = False) -> float:
 def _entry_couple_index(line: list[Point]) -> int:
     """Coupling-anchor index on B's first stroke for a high-exit join: the
     first sample reaching ENTRY_COUPLE_Y on the RISING entry flank. 0 = no
-    trim (the stroke already starts at/above the couple height, or it turns
-    downward before reaching it — then its head is a real form, not a stub).
+    trim: the stroke already starts at/above the couple height, it turns
+    downward before reaching it (then its head is a real form, not a stub),
+    or only the stroke's very last sample reaches it — the trimmed line must
+    keep at least two samples for the entry-tangent estimate.
     """
     if len(line) < 3 or line[0][1] >= ENTRY_COUPLE_Y:
         return 0
@@ -320,10 +322,11 @@ def compose_word(
         pending_diacritics.clear()
 
     def end_swing() -> None:
-        """Emit the word-final Endstrich — the finishing upswing (see
-        SWING_TOP_Y): the last glyph's rising exit flank, continued straight
-        towards the x-height line. High, backward or flat exits (bows, a
-        Deckstrich cover-stroke) end the word as they are."""
+        """Emit the word-final Endstrich. A LOW rising exit continues its
+        flank straight towards the x-height line (see SWING_TOP_Y); a HIGH
+        forward exit (the r-arm, a Deckstrich cover-stroke) runs a short
+        level Auslauf instead (SWING_HIGH_RUN). Backward or flat-low exits
+        end the word as they are."""
         nonlocal cursor_x
         if not prev or not prev["joins"]:
             return
