@@ -135,6 +135,22 @@ def test_erase_silhouette_piece_removes_the_piece_and_keeps_the_rest():
     assert after.contains(ShapelyPoint(1.5, 0.0))  # the kept flank still renders
 
 
+def test_erase_silhouette_piece_ignores_degenerate_rings():
+    # Rings too short to be polygons contribute nothing; when ALL rings are
+    # degenerate there is no region and the input passes through unchanged.
+    degenerate = [[[0.0, 0.0], [1.0, 0.0], [0.0, 0.0]]]
+    assert erase_silhouette_piece(degenerate, [(0.0, 0.0), (1.0, 0.0)], 0.1) == degenerate
+
+
+def test_erase_silhouette_piece_handles_self_intersecting_rings():
+    # A bowtie ring is invalid as-is; the helper repairs it (buffer(0)) instead
+    # of crashing, and the far lobe survives an erase on the near one.
+    bowtie = [[[0.0, 0.0], [1.0, 1.0], [1.0, 0.0], [0.0, 1.0], [0.0, 0.0]]]
+    erased = erase_silhouette_piece(bowtie, [(0.1, 0.4), (0.1, 0.6)], 0.15)
+    region = _evenodd_region(erased)
+    assert region is not None and region.contains(ShapelyPoint(0.9, 0.5))
+
+
 def test_erase_silhouette_piece_preserves_holes():
     # A closed loop's capsule union carries its counter as a real hole
     # (exterior + interior ring); erasing a short piece on the far side must
