@@ -48,6 +48,13 @@ Haupt-Abweichung liegt laut Loop **in den Bogenbreiten der Glyphen selbst**
 (Chart-Zelle vs. fließende Schrift), nicht in den Übergängen — ein Argument
 GEGEN gespeicherte Paar-Overrides beim heutigen Stand. Overrides bleiben
 gegated; nichts wurde gespeichert.
+**Mess-Evidenz (2026-07-11, `tools/pairlab` — Beobachtung, keine
+Übernahme):** die platzierungsbereinigte Paar-Sektion
+([`uebergaenge-befund.md`](uebergaenge-befund.md)) bestätigt: kein
+Kleinbuchstaben-Paar verhält sich idiosynkratisch — die Abweichungen
+gruppieren sich nach Exit-KLASSEN (generisch lösbar). Stärkste Kandidaten
+für echte gefittete Paarformen sind die Versal-Verbindungen (B→i 0.258,
+I→n 0.249, D→u 0.195), die laut MVP-Scope ohnehin später kommen.
 
 ### Heutige Festlegung
 

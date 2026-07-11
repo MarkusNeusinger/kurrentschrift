@@ -10,6 +10,28 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **`tools/pairlab` — independent-fit dissection of letter joins.** For every real
+  occurrence of a letter pair in the Abb.-19/Abb.-20 specimens it re-fits each letter
+  INDEPENDENTLY onto the frozen skeleton (bounded translation grid), regenerates the
+  production connector between the two placements (same constants/guards as
+  `core/compose.py`), tracks the specimen's own connecting stroke through the
+  inter-letter gap, and measures tail/head adaptation profiles — how far into each
+  glyph the real pen departs from the template before the join. Separates the three
+  entangled failure modes (connector shape · placement · glyph-end adaptation) the
+  word bench cannot tell apart. Overlay + deviation-profile PNGs per occurrence,
+  JSON aggregation, unit-tested pure geometry core (`tests/test_pairlab.py`).
+- **Übergangs-Befund 2026-07-11** (`docs/proposals/uebergaenge-befund.md`): the
+  pairlab survey over 87 occurrences / 45 pairs. Placement is the largest single
+  error (39/87 need ≥ 0.25 xh correction); the standard diagonal join is generically
+  right once letters sit correctly (f→e/t→e's bench penalty was placement); high
+  exits (d loop, o/b/v/w Deckstrich bows, the r arm) systematically REPLACE both
+  coupling stubs (0.2–0.4 xh per side) with one diagonal into the next letter's
+  first-downstroke apex — confirming the stub hypothesis class-wise, not per pair.
+  Solution options O1–O3 (placement first, coupling anchors, gated pair overrides)
+  with cross-references from `qualitaetsmetrik.md` §6 and Vorschlag B.
+
 ## [0.13.0] — 2026-07-09 — Tri-script pen foundation + human writing kinematics
 
 ### Added

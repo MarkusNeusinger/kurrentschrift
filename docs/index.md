@@ -33,6 +33,7 @@ nächsten Meilensteine.
 | Fakten zu Kurrent / Sütterlin / Offenbacher nachschlagen | [Kurrent](schriftkunde/kurrent.md) · [Sütterlin](schriftkunde/suetterlin.md) · [Offenbacher](schriftkunde/offenbacher.md) |
 | Offene Vorschläge für Konzept-Änderungen sehen | [Planänderungen](proposals/planaenderungen.md) |
 | Schreib-API, Python-Komposition & Wort-Bench-Plan nachschlagen | [Schreibsystem und Wort-Bench](proposals/schreibsystem-und-wortbench.md) |
+| Übergangs-Befund (pairlab: Platzierung · Stubs · Klassen) nachschlagen | [Übergangs-Befund](proposals/uebergaenge-befund.md) |
 
 ---
 
@@ -73,7 +74,8 @@ docs/
 │   └── digital.md                # Unicode (ſ U+017F, Ligaturen), UNZ/MUFI, Fonts, Transkription
 └── proposals/                    # Vorgeschlagene Konzept-Änderungen, noch nicht freigegeben
     ├── planaenderungen.md        # Staging: §2/§4 Bigramme, §6.1 Positions-Statistik, M4+ core/orthography.py
-    └── schreibsystem-und-wortbench.md  # Audit 2026-07-01: Schreib-API, core/compose.py-Port, Wort-Bench, Übergangs-Redesign (Phasen A–E)
+    ├── schreibsystem-und-wortbench.md  # Audit 2026-07-01: Schreib-API, core/compose.py-Port, Wort-Bench, Übergangs-Redesign (Phasen A–E)
+    └── uebergaenge-befund.md     # Befund 2026-07-11: pairlab-Paarsektion — Platzierung dominiert, Stub-Ersatz klassenweise, Optionen O1–O3
 ```
 
 `docs/notes/` enthält zusätzlich Recherchematerial und operative
@@ -190,6 +192,11 @@ Vorgeschlagene Änderungen an den Konzept-Dokumenten, noch nicht freigegeben.
   `/diagnostic`-Mitnutzung, Port der Wortkomposition nach
   `core/compose.py`, Wort-Bench gegen verifizierte PD-Wortvorlagen
   (gleiche Hand je Tafel), Übergangs-Redesign mit Exit-Klassen (Phasen A–E)
+- **[Übergangs-Befund](proposals/uebergaenge-befund.md)** — Befund
+  2026-07-11 aus `tools/pairlab` (unabhängige Paar-Sektion, 87 Vorkommen):
+  Platzierung ist der größte Einzelfehler, die Standard-Diagonale ist
+  generisch richtig, Hoch-Exits (d-Schleife, Deckstrich-Bögen, r-Arm)
+  ersetzen die Kopplungs-Stubs klassenweise — Lösungsoptionen O1–O3
 
 ---
 
