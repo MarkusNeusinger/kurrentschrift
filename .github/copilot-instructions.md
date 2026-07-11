@@ -530,7 +530,12 @@ pipelines for plot specifications). For now:
   deviation to a letter or a specific join) — `python -m tools.wordlab <id>
   [--set pairs] [--live] [--sweep core.compose.CONST=v1,v2]`. The provenance
   flag is diagnostics-only and default OFF: the `/write/word` payload and the
-  compose golden fixture stay byte-identical.
+  compose golden fixture stay byte-identical. `tools/pairlab` dissects ONE
+  letter join against its real specimen occurrences with every letter re-fit
+  INDEPENDENTLY (separates connector-shape from placement error and measures
+  how far the specimen reshapes each glyph's own tail/head for the join) —
+  `python -m tools.pairlab re [longs,a] [--set words|pairs|all]`; findings +
+  solution options in `docs/proposals/uebergaenge-befund.md`.
 - **Never merge a PR yourself** — open it, get it green and
   review-clean (address Copilot review comments, then resolve the
   threads); merging is the maintainer's call.

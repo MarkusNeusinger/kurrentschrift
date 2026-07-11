@@ -669,3 +669,17 @@ auch 0,101 — die geweiteten Rundformen liegen auf der Probe). Paare
 (Report) 0,197 → 0,199. Neue Wort-Headline: **0,1253** (innerhalb des
 Rauschens der 0,1240; die Wahrheit der Buchstabenformen war hier das
 Kriterium, nicht die Proxy-Zahl).
+
+### Befund `jul11` — pairlab: unabhängige Paar-Sektion (2026-07-11)
+
+Diagnostik-Ausbau, Composer und Messlatte unverändert: `tools/pairlab`
+fittet jeden Buchstaben eines Proben-Worts UNABHÄNGIG (begrenzte
+Translations-Suche) und seziert dann den Join — damit sind Konnektor-Form,
+Platzierung und Glyphen-End-Anpassung erstmals getrennt messbar. Ergebnis
+über 87 Vorkommen / 45 Paare: Platzierung ist der größte Einzelfehler
+(39/87 brauchen ≥ 0,25 xh Korrektur), die Standard-Diagonale ist generisch
+richtig (auch f→e/t→e — deren `jul08`-Penalty war Platzierung), und bei
+Hoch-Exits (d-Schleife, Deckstrich-Bögen o/b/v/w, r-Arm) ersetzt die echte
+Feder die Kopplungs-Stubs beider Seiten (0,2–0,4 xh je Seite) durch eine
+Diagonale in den Scheitel des ersten Abstrichs. Befund + Optionen O1–O3:
+[`docs/proposals/uebergaenge-befund.md`](../proposals/uebergaenge-befund.md).
