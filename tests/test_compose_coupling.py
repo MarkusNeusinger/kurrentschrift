@@ -10,12 +10,7 @@ from __future__ import annotations
 
 import math
 
-from core.compose import (
-    ENTRY_COUPLE_Y,
-    SWING_HIGH_LAUNCH_DEG,
-    _entry_couple_index,
-    compose_word,
-)
+from core.compose import ENTRY_COUPLE_Y, SWING_HIGH_LAUNCH_DEG, _entry_couple_index, compose_word
 from core.shaping import GlyphSlot
 
 
