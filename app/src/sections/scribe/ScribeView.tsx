@@ -2,8 +2,9 @@
 // the synthesised Sütterlin ductus write it stroke by stroke, with the
 // generated connecting strokes (Übergänge) between the letters. The whole thesis
 // of the project — arbitrary text from a per-glyph ductus prior, not a font —
-// made tangible. Shaping lives in domain/shaping, geometry in domain/compose,
-// rendering in components/WrittenWord; this file is the UI shell only.
+// made tangible. Shaping + geometry live server-side (core/shaping.py +
+// core/compose.py, fetched via GET /write/word), rendering in
+// components/WrittenWord; this file is the UI shell only.
 
 import { useEffect, useMemo, useState } from 'react';
 import { Chip, Paper, Stack, TextField, Typography } from '@mui/material';

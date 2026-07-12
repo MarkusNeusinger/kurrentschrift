@@ -39,6 +39,16 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   discards (incl. the measured-but-rejected A-side d-stub trim) in
   `docs/reference/qualitaetsmetrik.md` §6, Lauf `jul11`; the compose golden fixture
   is deliberately re-pinned.
+- **Doc & instruction-sync hygiene.** Re-aligned `.github/copilot-instructions.md`
+  with `CLAUDE.md`: corrected the stale "no tests exist yet", "ruff/ESLint when
+  configured" and "no automated AI workflows configured" claims (a pytest suite,
+  ruff, and `.github/workflows/ci.yml` all exist); fixed the dead `app/src/constants.ts`
+  and `components/wizard/SetupWizard.tsx` paths to `app/src/domain/glyphs.ts` and
+  `app/src/sections/admin/setup-wizard/`; added `quiz_words` to the schema table; and
+  added the missing Working Guardrails section. Removed the stale references to the
+  deleted `app/src/domain/compose.ts` in `domain/shaping.ts`, `sections/scribe/ScribeView.tsx`
+  and the `schreibsystem-und-wortbench.md` proposal. Added the `kurrent-writer-and-recognizer.md`
+  proposal and `docs/notes/` to `docs/index.md`.
 
 ### Added
 
