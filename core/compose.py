@@ -31,7 +31,7 @@ import math
 import numpy as np
 
 from core.shaping import GlyphSlot
-from core.template import chisel_union_rings
+from core.template import chisel_union_rings, erase_silhouette_piece
 from core.widths import PenStyle
 
 
@@ -63,6 +63,14 @@ CONNECT_GAP = 0.16  # minimum horizontal span of a connecting stroke (exit → e
 # words the bench flagged as far too narrow (einen/einer/wenn/zwei) all contain
 # such exits, while exit≈ink-edge words (das, mit) were already sized right.
 INK_CLEARANCE = 0.14
+# Clearance when the previous exit tangent points BACKWARD (the w/v bow curls
+# left at its end): there the join must travel over the whole bow before it
+# can fall into the next entry — the plates give those pairs visibly more room
+# (pairlab calibration 2026-07-11: w→e/i occurrences need +0.23 xh median on
+# top of the composed spacing; the standard clearance already handled the
+# audit's collapse, this widens it to the measured rhythm — 0.30 is the bench
+# optimum of the 0.24–0.37 sweep, slightly under the raw calibration median).
+BACKWARD_INK_CLEARANCE = 0.30
 # The y-band the ink clearance is measured in: where connectors travel and the
 # next letter's body sits. Ink above it (ascender loops) or below (descenders)
 # may overlap the neighbour's column like on the teaching plates.
@@ -92,14 +100,49 @@ CONNECT_SAMPLES = 24  # Bézier samples per connector (dense enough to read as a
 SWING_TOP_Y = 0.7
 SWING_MAX_RUN = 0.9  # cap the horizontal run for shallow exits (x-height units)
 SWING_MIN_RISE = 0.2  # a flat/falling exit does not swing (needs a rising flank to continue)
-# Only a LOW forward exit swings: a bow/Deckstrich exit (o, b, w) already ends
-# high and the plates show no extra flourish there.
+# Only a LOW forward exit swings UP: a bow/Deckstrich exit already ends high.
+# A high FORWARD exit (the r-arm) instead runs level off the word — the plates
+# extend the arm as a flat Auslauf (wordbench: der/der-2 carried the largest
+# width penalties, 0.31/0.48, because the composed r stopped at the arm end).
 SWING_MAX_EXIT_Y = 0.7
+SWING_HIGH_RUN = 0.25  # arc run of the level Auslauf (bench optimum of 0.15–0.65, xh units)
+SWING_HIGH_LAUNCH_DEG = (-5.0, 15.0)  # level-ish band the Auslauf is clamped into
+SWING_HIGH_MAX_TANGENT_DEG = 45.0  # a bow still closing steeply upward gets no Auslauf
 DEFAULT_HALF = 0.05  # fallback stroke half-width
 # Exit y (baseline = 0, descender ≈ −1) below which a glyph's stroke is judged
 # to end inside its descender loop, so the connector becomes a return upstroke
 # rather than following the downward exit tangent (see the long-s ſ).
 DESCENDER_EXIT_Y = -0.2
+# A HIGH exit is a coupling-stub tip, not the pen's true departure: the plates
+# tuck the next letter back LEFT under it, proportionally to the exit height
+# (pairlab independent-fit calibration, 2026-07-11: d-loop joins need −0.33 xh
+# at exit_y 1.36, low arcade exits ~0). Constants are the bench-sweep optimum
+# (rate 0.25–0.55 × y0 0.3–0.75, re-swept after the coupling anchor landed);
+# the re-measured calibration halves the d-class error and drops joins needing
+# ≥ 0.25 xh correction from 31 to 21 of 146. The ink-clearance guard still
+# floors the placement, so the tuck can never push a letter into the previous
+# body. Mid-height stub exits (c, t, f at ~0.5 xh) stay wrong on purpose:
+# height alone cannot tell their stubs from a real arcade end at the same
+# height (e, n) — that separation is the coupling-anchor work (O2,
+# uebergaenge-befund.md §6).
+TUCK_RATE = 0.35
+TUCK_Y0 = 0.6
+# Coupling anchor after a HIGH exit (O2, uebergaenge-befund.md §5b): when the
+# previous letter leaves from a Deckstrich bow, a d-loop or the r-arm
+# (exit ≥ HIGH_COUPLE_EXIT_Y), the plates' join falls in ONE diagonal onto the
+# rising flank of the next letter's first downstroke — the chart cell's
+# half-height entry stub is REPLACED by the join, not extended (measured
+# head adaptation 0.14–0.43 xh of arc; fitted arrivals y 0.58–0.70). The
+# connector therefore targets the first sample of B's first stroke at
+# ENTRY_COUPLE_Y and the stub piece below it is trimmed — centerline and
+# silhouette (see erase_silhouette_piece). Word-initial stubs stay: they ARE
+# the Anstrich (E2 finding, qualitaetsmetrik.md §6), and low arcade exits keep
+# the full stub too — there the connector IS the entry upstroke and lands on
+# its foot (befund §4: the standard diagonal is generically right).
+# 0.78 is the bench optimum (0.6/0.66/0.72/0.78/0.84 sweep), a touch above
+# the fitted arrivals (0.58–0.70) — the join lands on the upper flank.
+HIGH_COUPLE_EXIT_Y = 0.7
+ENTRY_COUPLE_Y = 0.78
 # Travel direction measured over a short ARC-LENGTH window rather than the
 # single final segment — the glyph centerline is a smooth spline through the
 # anchors, so its true endpoint tangent rarely matches the stored single-chord
@@ -162,6 +205,24 @@ def _endpoint_tangent(line: list[Point], at_end: bool = False) -> float:
                 break
     a, b = (far, tip) if at_end else (tip, far)
     return math.degrees(math.atan2(b[1] - a[1], b[0] - a[0]))
+
+
+def _entry_couple_index(line: list[Point]) -> int:
+    """Coupling-anchor index on B's first stroke for a high-exit join: the
+    first sample reaching ENTRY_COUPLE_Y on the RISING entry flank. 0 = no
+    trim: the stroke already starts at/above the couple height, it turns
+    downward before reaching it (then its head is a real form, not a stub),
+    or only the stroke's very last sample reaches it — the trimmed line must
+    keep at least two samples for the entry-tangent estimate.
+    """
+    if len(line) < 3 or line[0][1] >= ENTRY_COUPLE_Y:
+        return 0
+    for i in range(1, len(line) - 1):
+        if line[i][1] >= ENTRY_COUPLE_Y:
+            return i
+        if line[i][1] < line[i - 1][1]:
+            return 0
+    return 0
 
 
 def _sample_bezier(p0: Point, p1: Point, p2: Point, p3: Point, n: int) -> list[Point]:
@@ -261,21 +322,30 @@ def compose_word(
         pending_diacritics.clear()
 
     def end_swing() -> None:
-        """Emit the word-final Endstrich — the finishing upswing (see
-        SWING_TOP_Y): the last glyph's rising exit flank, continued straight
-        towards the x-height line. High, backward or flat exits (bows, a
-        Deckstrich cover-stroke) end the word as they are."""
+        """Emit the word-final Endstrich. A LOW rising exit continues its
+        flank straight towards the x-height line (see SWING_TOP_Y); a HIGH
+        forward exit (the r-arm, a Deckstrich cover-stroke) runs a short
+        level Auslauf instead (SWING_HIGH_RUN). Backward or flat-low exits
+        end the word as they are."""
         nonlocal cursor_x
-        if not prev or not prev["joins"] or prev["exit"][1] >= SWING_MAX_EXIT_Y:
+        if not prev or not prev["joins"]:
             return
         d_out = _unit(prev["tangent_deg"])
-        if d_out[0] <= 0 or d_out[1] < SWING_MIN_RISE:
-            return
         p0: Point = prev["exit"]
-        run = min((SWING_TOP_Y - p0[1]) * d_out[0] / d_out[1], SWING_MAX_RUN)
-        if run <= 0:
-            return
-        p3: Point = (p0[0] + run, p0[1] + run * d_out[1] / d_out[0])
+        if p0[1] >= SWING_MAX_EXIT_Y:
+            # High forward exit (r-arm): level Auslauf along the arm.
+            launch = math.degrees(math.atan2(d_out[1], d_out[0]))
+            if d_out[0] <= 0 or launch > SWING_HIGH_MAX_TANGENT_DEG:
+                return
+            d_run = _unit(min(max(launch, SWING_HIGH_LAUNCH_DEG[0]), SWING_HIGH_LAUNCH_DEG[1]))
+            p3: Point = (p0[0] + SWING_HIGH_RUN * d_run[0], p0[1] + SWING_HIGH_RUN * d_run[1])
+        else:
+            if d_out[0] <= 0 or d_out[1] < SWING_MIN_RISE:
+                return
+            run = min((SWING_TOP_Y - p0[1]) * d_out[0] / d_out[1], SWING_MAX_RUN)
+            if run <= 0:
+                return
+            p3 = (p0[0] + run, p0[1] + run * d_out[1] / d_out[0])
         centerline = [p0, ((p0[0] + p3[0]) / 2, (p0[1] + p3[1]) / 2), p3]
         swing: dict = {"centerline": [list(p) for p in centerline], "lift": False}
         apply_pen(swing, centerline, 2 * prev["width"])
@@ -402,8 +472,10 @@ def compose_word(
         # clearance alone — the tighter of the two clearances wins.
         joined = bool(prev) and prev["joins"] and slot.joins
         if joined:
+            tuck = TUCK_RATE * max(0.0, prev["exit"][1] - TUCK_Y0)
+            clearance = BACKWARD_INK_CLEARANCE if _unit(prev["tangent_deg"])[0] <= 0.0 else INK_CLEARANCE
             desired_entry_x = max(
-                prev["exit"][0] + CONNECT_GAP, prev["ink_max_x"] + INK_CLEARANCE - (ink_min_x - entry_xy[0])
+                prev["exit"][0] + CONNECT_GAP - tuck, prev["ink_max_x"] + clearance - (ink_min_x - entry_xy[0])
             )
         elif prev:
             gap = _nonjoin_clearance(_key_base(slot.key, slot.position)) if not slot.joins else math.inf
@@ -415,11 +487,18 @@ def compose_word(
         dx = desired_entry_x - entry_xy[0]
 
         # Connector first (writing order): the pen slides from A's exit into B's entry.
+        entry_trim = 0
         if joined:
             p0: Point = prev["exit"]
+            # A HIGH exit couples onto the rising flank of B's first downstroke
+            # instead of the entry-stub foot (O2, see ENTRY_COUPLE_Y): the stub
+            # piece below the anchor is dropped from centerline AND silhouette.
+            if p0[1] >= HIGH_COUPLE_EXIT_Y:
+                entry_trim = _entry_couple_index(first_line)
+            couple_line = first_line[entry_trim:]
             # End exactly on the next glyph's first ink sample so the join sits
             # on the centerline the entry tangent is measured from.
-            p3: Point = (first_line[0][0] + dx, first_line[0][1])
+            p3: Point = (couple_line[0][0] + dx, couple_line[0][1])
             span = math.hypot(p3[0] - p0[0], p3[1] - p0[1])
             # Handle length: 40 % of the span, but never more than half the
             # HORIZONTAL run — a steep drop (d/t exits high above the next
@@ -449,7 +528,7 @@ def compose_word(
                 clamped = min(max(launch, BOW_LAUNCH_DEG[0]), BOW_LAUNCH_DEG[1])
                 if clamped != launch:
                     d_out = _unit(clamped)
-            entry_deg = _endpoint_tangent(first_line, at_end=False)
+            entry_deg = _endpoint_tangent(couple_line, at_end=False)
             d_in = _unit(entry_deg)
             p1: Point = (p0[0] + handle * d_out[0], p0[1] + handle * d_out[1])
             p2: Point = (p3[0] - handle * d_in[0], p3[1] - handle * d_in[1])
@@ -475,10 +554,17 @@ def compose_word(
             # the nib, not just the widest measured direction.
             glyph_mask_width = max(glyph_mask_width, pen.nib.width_units * 1.15)
         for si, cl in enumerate(centerlines):
-            offset = [(x + dx, y) for x, y in cl]
-            rings = [
-                [(x + dx, y) for x, y in ring] for ring in (rings_by_stroke[si] if si < len(rings_by_stroke) else [])
-            ]
+            src = cl[entry_trim:] if si == 0 and entry_trim else cl
+            offset = [(x + dx, y) for x, y in src]
+            raw_rings = rings_by_stroke[si] if si < len(rings_by_stroke) else []
+            if si == 0 and entry_trim and raw_rings:
+                # The trimmed stub piece (plus the anchor sample, so the erase
+                # meets the kept flank without a sliver) leaves the silhouette
+                # with the same cut the centerline took. Erased in the glyph's
+                # own frame, BEFORE the dx shift — stub prefix and payload
+                # rings share that frame, so no coordinate round-trips.
+                raw_rings = erase_silhouette_piece(raw_rings, cl[: entry_trim + 1], med_half * 1.1)
+            rings = [[(x + dx, y) for x, y in ring] for ring in raw_rings]
             item: dict = {
                 "centerline": [list(p) for p in offset],
                 "mask_width": glyph_mask_width,

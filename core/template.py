@@ -21,7 +21,7 @@ from dataclasses import dataclass
 import numpy as np
 import shapely
 from scipy.interpolate import CubicSpline
-from shapely.geometry import LineString, MultiPoint, Point
+from shapely.geometry import LineString, MultiPoint, Point, Polygon
 
 from core.widths import BroadNib
 
@@ -413,6 +413,48 @@ def capsule_union_rings(
         for ring in (poly.exterior, *poly.interiors):
             rings.append([[round(float(px), decimals), round(float(py), decimals)] for px, py in ring.coords])
     return rings
+
+
+def erase_silhouette_piece(
+    rings: list[list[list[float]]], piece: Sequence[Sequence[float]], radius: float, decimals: int = 4
+) -> list[list[list[float]]]:
+    """Erase a stroke silhouette around a removed centerline piece.
+
+    The composer trims a coupling stub off a stroke's CENTERLINE in joined
+    (bound) context — when a connector replaces the chart cell's coupling
+    stub between two letters; the stroke's filled
+    silhouette must lose the same piece or the stub ink still renders. The
+    rings are the evenodd payload of ``capsule_union_rings``/
+    ``chisel_union_rings``: reconstruct the region (symmetric difference
+    pairs exteriors with their holes), subtract a round-capped capsule of
+    ``radius`` around the removed piece, and re-emit rings under the same
+    contract. Returns the input unchanged when there is nothing to erase.
+    """
+    if not rings or len(piece) < 2:
+        return rings
+    region = None
+    for ring in rings:
+        if len(ring) < 4:
+            continue
+        poly = Polygon(ring)
+        if not poly.is_valid:
+            poly = poly.buffer(0)
+        region = poly if region is None else region.symmetric_difference(poly)
+    if region is None:
+        return rings
+    eraser = LineString([(float(x), float(y)) for x, y in piece]).buffer(float(radius))
+    remain = region.difference(eraser)
+    if remain.geom_type in ("MultiPolygon", "GeometryCollection"):
+        polygons = list(remain.geoms)
+    else:
+        polygons = [remain]
+    out: list[list[list[float]]] = []
+    for poly in polygons:
+        if poly.is_empty or poly.geom_type != "Polygon":
+            continue
+        for ring in (poly.exterior, *poly.interiors):
+            out.append([[round(float(px), decimals), round(float(py), decimals)] for px, py in ring.coords])
+    return out
 
 
 def chisel_union_rings(

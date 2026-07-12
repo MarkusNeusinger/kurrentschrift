@@ -1,10 +1,14 @@
 """Template-coord helpers."""
 
 import numpy as np
+from shapely.geometry import Point as ShapelyPoint
+from shapely.geometry import Polygon as ShapelyPolygon
 
 from core.template import (
     allocate_samples,
     apply_slant,
+    capsule_union_rings,
+    erase_silhouette_piece,
     multi_stroke_centerlines,
     multi_stroke_outline,
     sample_polyline,
@@ -101,6 +105,63 @@ def test_multi_stroke_centerlines_one_line_per_stroke():
     assert len(lines) == 2
     # No stroke_starts → one continuous centerline.
     assert len(multi_stroke_centerlines(anchors, widths, None, slant_deg=90.0)) == 1
+
+
+def _evenodd_region(rings):
+    """Reconstruct the evenodd fill region of a ring payload (the client's
+    fill rule) — the same pairing erase_silhouette_piece performs."""
+    region = None
+    for ring in rings:
+        poly = ShapelyPolygon(ring)
+        region = poly if region is None else region.symmetric_difference(poly)
+    return region
+
+
+def test_erase_silhouette_piece_noop_on_empty_or_short_input():
+    x = np.array([0.0, 1.0, 2.0])
+    rings = capsule_union_rings(x, np.zeros(3), np.full(3, 0.1))
+    assert erase_silhouette_piece([], [(0.0, 0.0), (1.0, 0.0)], 0.1) == []
+    # A piece of fewer than two samples has no arc to erase around.
+    assert erase_silhouette_piece(rings, [(0.0, 0.0)], 0.1) == rings
+
+
+def test_erase_silhouette_piece_removes_the_piece_and_keeps_the_rest():
+    x = np.array([0.0, 1.0, 2.0])
+    rings = capsule_union_rings(x, np.zeros(3), np.full(3, 0.1))
+    erased = erase_silhouette_piece(rings, [(0.0, 0.0), (0.6, 0.0)], 0.12)
+    before, after = _evenodd_region(rings), _evenodd_region(erased)
+    assert after.area < before.area
+    assert not after.contains(ShapelyPoint(0.2, 0.0))  # the stub piece is gone
+    assert after.contains(ShapelyPoint(1.5, 0.0))  # the kept flank still renders
+
+
+def test_erase_silhouette_piece_ignores_degenerate_rings():
+    # Rings too short to be polygons contribute nothing; when ALL rings are
+    # degenerate there is no region and the input passes through unchanged.
+    degenerate = [[[0.0, 0.0], [1.0, 0.0], [0.0, 0.0]]]
+    assert erase_silhouette_piece(degenerate, [(0.0, 0.0), (1.0, 0.0)], 0.1) == degenerate
+
+
+def test_erase_silhouette_piece_handles_self_intersecting_rings():
+    # A bowtie ring is invalid as-is; the helper repairs it (buffer(0)) instead
+    # of crashing, and the far lobe survives an erase on the near one.
+    bowtie = [[[0.0, 0.0], [1.0, 1.0], [1.0, 0.0], [0.0, 1.0], [0.0, 0.0]]]
+    erased = erase_silhouette_piece(bowtie, [(0.1, 0.4), (0.1, 0.6)], 0.15)
+    region = _evenodd_region(erased)
+    assert region is not None and region.contains(ShapelyPoint(0.9, 0.5))
+
+
+def test_erase_silhouette_piece_preserves_holes():
+    # A closed loop's capsule union carries its counter as a real hole
+    # (exterior + interior ring); erasing a short piece on the far side must
+    # not fill the hole in — the evenodd reconstruction keeps the pairing.
+    t = np.linspace(0.0, 2 * np.pi, 60)
+    rings = capsule_union_rings(np.cos(t), np.sin(t), np.full_like(t, 0.15))
+    assert len(rings) >= 2  # exterior + hole
+    erased = erase_silhouette_piece(rings, [(1.0, -0.05), (1.0, 0.05)], 0.1)
+    region = _evenodd_region(erased)
+    assert not region.contains(ShapelyPoint(0.0, 0.0))  # hole is still a hole
+    assert region.contains(ShapelyPoint(-1.0, 0.0))  # loop ink far away survives
 
 
 def test_centerline_runs_down_the_spine_of_its_outline():

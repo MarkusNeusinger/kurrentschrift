@@ -1,7 +1,12 @@
 # Übergangs-Befund 2026-07-11 — unabhängige Paar-Sektion (pairlab)
 
-**Status:** Mess-Befund + Lösungsoptionen, noch keine Übernahme. Werkzeug:
-`tools/pairlab` (neu, Diagnostik). Bezieht sich auf
+**Status:** O1 und O2 (B-Seite) sind umgesetzt — Compose-Loop `jul11`,
+[`qualitaetsmetrik.md`](../reference/qualitaetsmetrik.md) §6 (Wort-Headline
+0,1253 → 0,1183; Joins mit ≥ 0,25 xh Soll-Korrektur 31 → 21). Der
+A-seitige d-Stub-Trim wurde gemessen und VERWORFEN (Deckung besser,
+Übergangs-Komponente bestraft die Spannen-Ausdehnung konstruktionsbedingt —
+Details ebd.); O3 bleibt vertagt. Werkzeug:
+`tools/pairlab` (Diagnostik). Bezieht sich auf
 [`architektur.md`](../concepts/architektur.md) §4 („Übergänge sind
 Konsequenz, keine Daten") und die offene Diskussion in
 [`planaenderungen.md`](planaenderungen.md) Vorschlag B; Vorgeschichte in
@@ -146,11 +151,16 @@ für echte Paar-/Verkettungsformen.
 
 Empfohlene Reihenfolge:
 
-1. **O1 — Platzierung zuerst** (größter Hebel, §3): das Advance-/
+1. **O1 — Platzierung zuerst** *(umgesetzt, Lauf `jul11`: Hoch-Exit-Tuck
+   + Rückwärts-Exit-Clearance)*: das Advance-/
    Clearance-Modell gegen die gemessenen Ist-Abstände der Tafel kalibrieren
    (pairlab liefert die Soll-Verschiebungen pro Vorkommen). Erst danach ist
    jeder Form-Eingriff sauber messbar — die E4-Lektion.
-2. **O2 — Kopplungsanker statt Stub-Spitzen** (generisch, klassenbasiert):
+2. **O2 — Kopplungsanker statt Stub-Spitzen** *(B-Seite umgesetzt, Lauf
+   `jul11`: Anker auf der steigenden Flanke bei y 0,78 + Entry-Stub-Trim,
+   dazu der Level-Auslauf am Wortende; der A-seitige d-Trim wurde gemessen
+   und auf der eingefrorenen Metrik verworfen — s. Statuskopf)*
+   (generisch, klassenbasiert):
    pro Template zur Renderzeit zwei ableitbare Ankerpunkte bestimmen —
    B-seitig der Scheitel des ersten Abstrichs (erstes lokales y-Maximum
    innerhalb ~0,5 xh Bogenlänge), A-seitig der letzte Strukturpunkt
