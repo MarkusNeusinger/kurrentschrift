@@ -4,8 +4,9 @@
 **Erledigt:** Der in §1.2 / Phase C beschriebene Port ist abgeschlossen —
 die Wortkomposition liegt in `core/compose.py` (+ `core/shaping.py`), und
 `app/src/domain/compose.ts` wurde gelöscht. Die `compose.ts`-Erwähnungen
-weiter unten beschreiben den Ausgangszustand vor dem Port, nicht den
-aktuellen Code.
+weiter unten (inkl. Präsens wie „existiert nur in `compose.ts`") sind
+historische Audit-Aussagen vom 2026-07-01 und beschreiben den Ausgangszustand
+vor dem Port, nicht den aktuellen Code.
 Ergebnis des Schreibsystem-Audits vom 2026-07-01 (Repo-Audit + Live-Test
 der Prod-Federprobe + Quellen-Recherche). Ziel: Wörter und Sätze so
 schreiben, dass sie von einer echten Hand nicht zu unterscheiden sind —

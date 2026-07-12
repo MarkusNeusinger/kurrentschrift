@@ -73,7 +73,7 @@ agent working in this repo:
 - Frontend feature work that follows the existing `/app/` patterns
   (drag-on-canvas, stylus capture, diagnostic panels).
 - New FastAPI routes that mirror the `api/routers/{health,styles,hands,
-  sources,chart,bboxes,templates,write}.py` shape.
+  sources,chart,bboxes,templates,write,quiz_words}.py` shape.
 - Adding numpy/scipy/scikit-image pipeline steps inside `core/`.
 - Writing/improving unit tests under `tests/` (a pytest suite already
   exists — mirror the existing flat `tests/test_<module>.py` layout).

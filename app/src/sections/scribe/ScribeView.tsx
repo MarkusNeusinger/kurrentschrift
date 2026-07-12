@@ -3,7 +3,7 @@
 // generated connecting strokes (Übergänge) between the letters. The whole thesis
 // of the project — arbitrary text from a per-glyph ductus prior, not a font —
 // made tangible. Shaping + geometry live server-side (core/shaping.py +
-// core/compose.py, fetched via GET /write/word), rendering in
+// core/compose.py, fetched via GET /sources/{id}/write/word), rendering in
 // components/WrittenWord; this file is the UI shell only.
 
 import { useEffect, useMemo, useState } from 'react';
