@@ -1,7 +1,8 @@
 // Text shaping for the German cursive scripts: turn a typed word or sentence
-// into the ordered sequence of canonical glyph_keys the renderer fetches and
-// connects. Framework-free (no React, no API) — the geometry lives in
-// `domain/compose.ts`, the rendering in `components/WrittenWord`.
+// into the ordered sequence of canonical glyph_keys. Framework-free (no React,
+// no API). Word composition + geometry moved server-side to `core/shaping.py` +
+// `core/compose.py`; this module is the TS twin kept ONLY for the quiz
+// word-bank gating (keep it in sync with `core/shaping.py`).
 //
 // Two orthographic rules carry the historical look (architektur.md §3/§4):
 //

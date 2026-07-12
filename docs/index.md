@@ -72,15 +72,14 @@ docs/
 │   ├── druckschriften.md         # Fraktur/Schwabacher/Textura vs. Kurrent, Kanzleischrift, Neudörffer
 │   ├── lateinische-und-englische-schreibschrift.md  # Abgrenzung Kurrent ↔ lateinische/englische Schreibschrift, Zweischriftigkeit
 │   └── digital.md                # Unicode (ſ U+017F, Ligaturen), UNZ/MUFI, Fonts, Transkription
-└── proposals/                    # Vorgeschlagene Konzept-Änderungen, noch nicht freigegeben
-    ├── planaenderungen.md        # Staging: §2/§4 Bigramme, §6.1 Positions-Statistik, M4+ core/orthography.py
-    ├── schreibsystem-und-wortbench.md  # Audit 2026-07-01: Schreib-API, core/compose.py-Port, Wort-Bench, Übergangs-Redesign (Phasen A–E)
-    └── uebergaenge-befund.md     # Befund 2026-07-11: pairlab-Paarsektion — Platzierung dominiert, Stub-Ersatz klassenweise, Optionen O1–O3
+├── proposals/                    # Vorgeschlagene Konzept-Änderungen, noch nicht freigegeben
+│   ├── planaenderungen.md        # Staging: §2/§4 Bigramme, §6.1 Positions-Statistik, M4+ core/orthography.py
+│   ├── schreibsystem-und-wortbench.md  # Audit 2026-07-01: Schreib-API, core/compose.py-Port, Wort-Bench, Übergangs-Redesign (Phasen A–E)
+│   ├── uebergaenge-befund.md     # Befund 2026-07-11: pairlab-Paarsektion — Platzierung dominiert, Stub-Ersatz klassenweise, Optionen O1–O3
+│   └── kurrent-writer-and-recognizer.md  # Recherche-Notiz (EN): generativer Writer (Graves 2013) als synthetische Datenquelle → billiger Recognizer
+└── notes/                        # Recherchematerial & operative Notizen (nicht Designkern)
+    └── stifte-fuer-unterwegs.md  # Stift-/Hardware-Recherche fürs Schreiben unterwegs
 ```
-
-`docs/notes/` enthält zusätzlich Recherchematerial und operative
-Notizen, die nicht zum Designkern gehören (z. B. Stift-Recherche,
-Deploy-Bootstrap-Status).
 
 ---
 
@@ -197,6 +196,21 @@ Vorgeschlagene Änderungen an den Konzept-Dokumenten, noch nicht freigegeben.
   Platzierung ist der größte Einzelfehler, die Standard-Diagonale ist
   generisch richtig, Hoch-Exits (d-Schleife, Deckstrich-Bögen, r-Arm)
   ersetzen die Kopplungs-Stubs klassenweise — Lösungsoptionen O1–O3
+- **[Kurrent: Writer → Recognizer](proposals/kurrent-writer-and-recognizer.md)** —
+  Recherche-Notiz (Englisch): warum Graves 2013 (RNN-Handschrift-Synthese)
+  der Anker für den generativen Writer ist, und wie derselbe Writer als
+  synthetische Datenquelle mit perfektem Ground-Truth einen billigen,
+  browser-lauffähigen Recognizer trainiert (ein Forward-Pass statt
+  Analysis-by-Synthesis zur Inferenzzeit)
+
+---
+
+## Notes
+
+Recherchematerial und operative Notizen außerhalb des Designkerns.
+
+- **[Stifte für unterwegs](notes/stifte-fuer-unterwegs.md)** — Stift-/
+  Hardware-Recherche fürs Kurrent-Schreiben unterwegs
 
 ---
 

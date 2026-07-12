@@ -37,6 +37,35 @@ change one, check the other.
 
 ---
 
+## Working Guardrails
+
+These operational rules mirror `CLAUDE.md`'s guardrails and apply to any
+agent working in this repo:
+
+- **Never commit on `main`.** Branch first, even for a quick
+  "commit and push". `main` is protected; land changes via a PR.
+- **Every PR updates `CHANGELOG.md`** under `[Unreleased]`
+  (Keep-a-Changelog categories, English, bold-titled bullets) — a PR
+  without its entry is incomplete. Data-only commits (chart sources,
+  authored templates) are exempt; their provenance lives in `SOURCE.md`.
+- **Prod-touching actions need explicit confirmation first.** Cloud SQL
+  DDL/queries, Secret Manager access, and Cloudflare Access policy changes
+  are not routine — name the exact action, resource, and any secret id,
+  and ask before acting.
+- **Never echo secret values** into logs, comments, or commits — verify by
+  exit code or metadata instead.
+- **Do not mutate tracked files via shell heredocs/`sed`** that bypass
+  normal review; edit through the editor. When a command legitimately
+  rewrites a tracked file (formatter, codegen), re-read it before the next
+  edit.
+- **Claude Code sessions** additionally route work through verified skills
+  under `.claude/skills/` (`verify-core` / `verify-api` / `verify-frontend`,
+  `write-docs`, `audit-licenses`, `open-pr`, `optimize-glyphs`); Copilot
+  can't invoke those, but the same gates apply manually (see
+  "GitHub Workflow" → "Verification before a PR").
+
+---
+
 ## Task Suitability
 
 **Good tasks for Copilot in this repo:**
@@ -44,13 +73,13 @@ change one, check the other.
 - Frontend feature work that follows the existing `/app/` patterns
   (drag-on-canvas, stylus capture, diagnostic panels).
 - New FastAPI routes that mirror the `api/routers/{health,styles,hands,
-  sources,chart,bboxes,templates,write}.py` shape.
+  sources,chart,bboxes,templates,write,quiz_words}.py` shape.
 - Adding numpy/scipy/scikit-image pipeline steps inside `core/`.
-- Writing/improving unit tests under `tests/` (no tests exist yet — adding
-  them is welcome).
+- Writing/improving unit tests under `tests/` (a pytest suite already
+  exists — mirror the existing flat `tests/test_<module>.py` layout).
 - Refactors within established patterns.
 - Updating documentation under `docs/` (mind the German/English split).
-- Fixing ruff / TypeScript / ESLint findings.
+- Fixing ruff / TypeScript findings (ESLint is not configured yet).
 
 **Tasks requiring human review:**
 
@@ -263,7 +292,8 @@ lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberläng
 
 ### Python Style
 
-- **Linter/Formatter**: Ruff (when configured — `pyproject.toml`).
+- **Linter/Formatter**: Ruff — configured in `pyproject.toml` and CI-gated
+  (`ruff check` + `ruff format --check` run on every PR).
 - **Type hints**: required for all functions.
 - **Docstrings**: explanatory line for non-obvious functions; identifiers
   carry most of the meaning.
@@ -277,15 +307,17 @@ lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberläng
 - React 19 functional components with hooks.
 - MUI 9 + Emotion for styling.
 - Types over interfaces by default.
-- `app/src/constants.ts` is the canonical place for shared constants
-  (Position type, KNOWN_GLYPHS list).
+- `app/src/domain/glyphs.ts` is the canonical place for shared constants
+  (the `Position` type, `POSITIONS`, the `LETTERS` registry and the
+  `KNOWN_GLYPHS` list). There is no `app/src/constants.ts`.
 - Do not introduce a state-management framework (Redux/Zustand) — Context
   + local state are sufficient for our use cases.
 
 ### Database Schema (Postgres + SQLAlchemy async)
 
 - Tables: `styles`, `hands`, `sources`, `bboxes`, `templates`,
-  `instances`, `aggregates`.
+  `instances`, `aggregates`, `quiz_words` (the flat reading-quiz word
+  bank — word + JSONB `distractors` + `era`/`note`/`fugen`).
 - `styles` is the Grundvorlage/script family (Kurrent · Sütterlin ·
   Offenbacher); it carries `width_resolver` (§5) + lineature defaults.
   The resolver is applied at render time by
@@ -301,7 +333,7 @@ lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberläng
   `measurements`, §12 layer 1, filled by the post-MVP import); `aggregates`
   are per-hand stats (§12 layer 2).
 - `position` is the **chart role** (where Loth teaches it), not the
-  text-position — see `app/src/constants.ts` comments and architektur.md
+  text-position — see `app/src/domain/glyphs.ts` comments and architektur.md
   §3. The admin authors one form for all positions by default (fan-out).
 - `bboxes` carries the chart crop + freeform eraser `mask_strokes` (replaces
   the old rectangle `excludes`) + baseline/midband calibration + `guides` +
@@ -309,11 +341,16 @@ lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberläng
 
 ### Testing Standards
 
-- No tests exist yet. **Adding them is welcome.**
-- When you do add tests, mirror the source structure
-  (`tests/unit/core/test_template.py` for `core/template.py`, etc.).
-- Use pytest fixtures; SQLite-in-memory for integration tests if/when
-  needed.
+- A pytest suite already exists under `tests/` (flat layout —
+  `tests/test_<module>.py`, e.g. `tests/test_tri_script.py`,
+  plus `conftest.py` and `tests/fixtures/`). It runs in CI on every PR.
+- Add new tests in the same flat layout; name a module's tests after the
+  module.
+- Prefer pure, deterministic core logic (extract a pure core from
+  DB/async wrappers where needed) — those are the cheap, high-value
+  tests. DB/HTTP-only lines are covered by the API verification sweep.
+- Use pytest fixtures; the compose golden fixture
+  (`tests/fixtures/compose_golden.json.gz`) pins `core/compose.py` output.
 
 ---
 
@@ -444,7 +481,9 @@ it.
 - **Planned additions (post-MVP):** `react-helmet-async` (SEO),
   `react-i18next` (DE/EN), WeasyPrint (PDF), httpx (Transkribus client),
   optionally TrOCR via HuggingFace Transformers for self-hosted HTR.
-- **Linting (when configured):** ruff (Python), ESLint (TypeScript).
+- **Linting:** ruff (Python) is configured and CI-gated; the SPA's
+  type-check (`tsc`) runs via `npm run build` in CI. ESLint for the SPA
+  is **not** configured yet.
 
 ---
 
@@ -467,9 +506,11 @@ deployment is local-only (`npm run dev` + `uvicorn --reload`).
 
 ## GitHub Workflow
 
-No automated AI workflows are configured yet (in contrast to
-anyplot which has spec-create / impl-generate / impl-review / impl-merge
-pipelines for plot specifications). For now:
+CI runs on every PR via `.github/workflows/ci.yml`: a backend job
+(ruff lint + `ruff format --check` + pytest with Codecov upload) and a
+frontend job (`npm run build`, i.e. `tsc && vite build` — type-check +
+build only, no lint or frontend tests yet). There are no anyplot-style
+spec-create / impl-generate pipelines. Conventions:
 
 - **Issues** are welcome for design discussion (pre-MVP this is the main
   contribution channel — see `docs/contributing.md`).
@@ -565,9 +606,10 @@ Before completing any task:
 ## Getting Help
 
 - **Documentation:** start at `docs/index.md`.
-- **Code patterns:** the existing `/app/src/components/wizard/SetupWizard.tsx`
-  shows the canonical pattern for an interactive stylus/guide tool;
-  `core/pipeline.py` shows the pipeline composition pattern.
+- **Code patterns:** the `app/src/sections/admin/setup-wizard/` tree
+  (e.g. `WizardCanvas.tsx` + `useWizard.ts`) shows the canonical pattern
+  for an interactive stylus/guide tool; `core/pipeline.py` shows the
+  pipeline composition pattern.
 - **Sibling AI guide:** `CLAUDE.md` (this file's twin for Claude Code).
 - **Vision-to-architecture mapping:** `docs/concepts/architektur.md` §1
   is the index — every Vision pillar points to a specific architecture
