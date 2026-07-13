@@ -558,6 +558,12 @@ anyplot-style spec-create / impl-generate pipelines. Conventions:
   and skipped+reported, never averaged in; see
   docs/reference/qualitaetsmetrik.md §6) — a PR touching core/compose.py
   should quote its before/after `bench_loss:` (and `pair_loss:`) too.
+  A third, CROSS-HAND set exists: the Abb.-22 Schülerschrift plate
+  (words-abb22.png, 106 words, Breitkantfeder, a pupil following the
+  same norm — sidecar entries carry `set: "abb22"`, frozen into the
+  sibling root `suetterlin-1922-abb22`, run via `--set abb22`); its
+  numbers track generalisation and are NEVER part of the same-hand
+  headlines.
 - **Glyph inspection (see, don't just score):** `tools/glyphlab` renders
   matplotlib overlays of a glyph's derivation (crop · skeleton ·
   centerline · corners · silhouette) to `temp/`, from a fixture or a

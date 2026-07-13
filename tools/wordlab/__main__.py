@@ -136,7 +136,10 @@ def main() -> None:
     p.add_argument("ids", nargs="*", help="fixture word ids/words, or texts with --live")
     p.add_argument("--all", action="store_true", help="all words of the set (optionally filtered by ids)")
     p.add_argument(
-        "--set", dest="which", choices=["words", "pairs"], default="words", help="fixture set (default: words)"
+        "--set",
+        dest="which",
+        default="words",
+        help="fixture set (words | pairs | a custom set name like abb22; default: words)",
     )
     p.add_argument("--live", action="store_true", help="compose from the DB (read-only) instead of a fixture")
     p.add_argument("--source", default="suetterlin-1922", help="source id for --live (default: suetterlin-1922)")

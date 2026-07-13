@@ -10,6 +10,18 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **Third wordbench set: the Abb. 22 Schülerschrift plate (cross-hand reference).** The
+  1922 Leitfaden's only other connected Ausgangsschrift specimen — a pupil's hand
+  (Bruno Krüger, 3rd school year, Breitkantfeder, 106 words of Hoffmann von
+  Fallersleben's "Hab' Dank, du lieber Wind!") — is now measured like Abb. 19
+  (`words-abb22.png` + 106 sidecar entries, boxes proposed, line-QC'd and hand-corrected).
+  Sidecar entries carry a new optional `set` field; `export_fixtures`/`run`/`wordlab`
+  accept custom set names, so the plate freezes into its own sibling fixture root
+  (`suetterlin-1922-abb22`, `--set abb22`) and its cross-writer numbers are never averaged
+  into the same-hand headlines. Provenance + PD rationale in the source's `SOURCE.md`.
+
 ### Changed
 
 - **Pairlab-calibrated placement (O1).** `core/compose.py` places letters with two
@@ -86,6 +98,22 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   first-downstroke apex — confirming the stub hypothesis class-wise, not per pair.
   Solution options O1–O3 (placement first, coupling anchors, gated pair overrides)
   with cross-references from `qualitaetsmetrik.md` §6 and Vorschlag B.
+- **Connectors follow the school hand's join grammar.** The jul09/10 join audit (all
+  generated Übergänge ranked with seam-kink angles against the Abb. 19/20/22 specimens)
+  adds the plates' entry-class join grammar on top of the jul11 coupling composer:
+  arcade entries (n m i u …) that must lose height now couple low through a baseline
+  garland that merges tangentially onto their lead-in line (bi/on originals), the r-arm
+  sets off with its authentic Absatz corner before a deep garland, clamped bow exits
+  roll G1 over the crest instead of cornering (the b→e "extra Zacken"), sawtooth pairs
+  (e→n family) pull onto one continuous diagonal instead of leaving a mid-height shelf,
+  and the low-exit word-final Endstrich is a two-tangent quadratic that flattens like the
+  plates (short flick after descender exits) while high forward exits keep the jul11 level
+  Auslauf. Round bodies after a high exit stay on the jul11 rising-flank coupling anchor
+  (O2), which subsumes the garland there. Measured standalone against the pre-jul11 base
+  the grammar scored words 0.1253 → 0.1241 / pairs 0.1992 → 0.1927; the combined headline
+  on top of jul11 was not re-measured in the merge environment (the wordbench needs the
+  shared DB), but both composer unit-suites (`test_compose_coupling`, `test_compose_joins`)
+  pass and the compose golden fixture is deliberately re-pinned.
 
 ## [0.13.0] — 2026-07-09 — Tri-script pen foundation + human writing kinematics
 

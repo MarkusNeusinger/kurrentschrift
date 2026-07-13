@@ -68,6 +68,42 @@
              draußen). `tools/wordbench/export_fixtures.py` friert daraus die
              Scoring-Referenzen ein (docs/reference/qualitaetsmetrik.md §6).
 
+## words-abb22.png — 1740 × 2075 px, 2,1 MB
+
+- Title:     „Abbildung 22. Schülerschrift aus der 39. Gemeindeschule in
+             Berlin. Zu Beginn des 3. Schuljahrs mit der Breitkantfeder
+             geschrieben." — S. 59 desselben *Neuen Leitfadens* (Ausgabe 1922).
+- Origin:    DNB-Digitalisat, Blatt 61: https://portal.dnb.de/bookviewer/
+             view/1124005439 (Bildabruf: …/ui/view/1124005439/img/page/061/p.jpg)
+- Source-SHA256 (DNB-Blatt 61, JPEG): 3c50b462efe023d7d89e35441d82abcb72e18915b22febdbfc9688fe23e1f062
+- SHA256:    83d7393634faa2c3aea908e0d74b2c540dda78dec0e0f334740ba988af5dce64
+- Retrieved: 2026-07-09
+- Processing: Zuschnitt auf den Schriftblock (Pixel 60,150–1800,2225 des
+             DNB-Scans; die gedruckte Bildunterschrift bleibt draußen),
+             Graustufen-PNG. Keine weitere Bearbeitung.
+- License:   Public Domain (Begründung dreischichtig):
+             1. *Schrift*: gewöhnliche Schülerhandschrift (signiert „Bruno
+                Krüger", 3. Schuljahr) nach der amtlichen Ausgangsschrift-
+                Vorlage — normgetreue Schreibleistung ohne eigenschöpferische
+                Gestaltung, daher kein Werk i. S. d. § 2 Abs. 2 UrhG (keine
+                Schöpfungshöhe; Schutz käme allenfalls kalligraphischen
+                Ausnahmefällen zu).
+             2. *Text*: Hoffmann von Fallersleben, Kinderlied „Hab' Dank, du
+                lieber Wind!" († 19.01.1874) → § 64 UrhG seit Ende 1944
+                abgelaufen.
+             3. *Scan*: DNB-Reproduktion, § 68 UrhG (Reproduktionsfotografie
+                erzeugt kein neues Schutzrecht); US: Publikation 1922 (vor
+                1930).
+- Note:      19 Zeilen (106 Wörter) verbundene Ausgangsschrift, geschrieben
+             mit der **Breitkantfeder** (deutliche Dick-/Dünn-Modulation) —
+             die einzige verbundene Breitfeder-Probe der Quelle und damit die
+             natürliche Referenz für das `broad_nib`-Federmodell. ANDERE HAND
+             als Abbildung 10/19/20 (Schülerhand nach der Norm, nicht
+             Sütterlins eigene): die Wort-Boxen tragen in `words.json` das
+             Set-Feld `abb22` und frieren in ein EIGENES Fixture-Set
+             (`suetterlin-1922-abb22`) — sie werden nie in die
+             Same-Hand-Headline (Abb. 19/20) gemittelt.
+
 ## pairs-abb20.png — 1869 × 976 px, 1,9 MB
 
 - Title:     „Abbildung 20. Einige Beispiele für nicht selbstverständliche
