@@ -1,8 +1,15 @@
 """Pydantic wire types — request/response bodies for the FastAPI routers."""
 
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
+
+
+# Anchor-count bound, shared by BboxIn / TraceRequest / ResampleRequest: below 4
+# the resampler breaks (single-sample linspace / negative counts), far above it
+# the anchor JSONB and the SVG renderers blow up. 1000 is generous headroom over
+# the ~50 norm (see core.pipeline.DEFAULT_N_ANCHORS).
+NAnchors = Annotated[int, Field(ge=4, le=1000)]
 
 
 # ----------------------------------------------------------------------- Style / Hand
@@ -32,7 +39,8 @@ class QuizWordOut(BaseModel):
 
     word: str
     distractors: list[str]
-    era: str
+    # Constrained to the two seeded tags (mirrors app/src/lib/api/types.ts).
+    era: Literal["modern", "historic"]
     note: str | None = None
     fugen: str | None = None
 
@@ -163,13 +171,10 @@ class BboxIn(BaseModel):
     patches: list[Patch] = Field(default_factory=list)
     baseline_y: int
     midband_y: int
-    # Bounded server-side (the client clamps too): below 4 the resampler breaks
-    # (single-sample linspace / negative counts), far above it the anchor JSONB
-    # and the SVG renderers blow up. 1000 is generous headroom over the ~50 norm
-    # (the measured jitter knee, see core.pipeline.DEFAULT_N_ANCHORS). Optional
-    # like `guides`/`locked`: an omitted value preserves the stored count
-    # instead of silently rewriting it on every bbox edit.
-    n_anchors: int | None = Field(default=None, ge=4, le=1000)
+    # Bounded via the shared `NAnchors` type. Optional like `guides`/`locked`: an
+    # omitted value preserves the stored count instead of silently rewriting it
+    # on every bbox edit.
+    n_anchors: NAnchors | None = None
     # Optional so an omitted `guides` (older clients, scripts, a plain bbox
     # save) is distinguishable from an explicit value: PUT then preserves the
     # stored guides instead of resetting them. See put_bbox.
@@ -230,7 +235,7 @@ class TraceRequest(BaseModel):
     position: Literal["initial", "medial", "final"]
     raw_path: list[StrokePoint]
     # Same bounds as BboxIn.n_anchors; None falls back to the stored bbox value.
-    n_anchors: int | None = Field(default=None, ge=4, le=1000)
+    n_anchors: NAnchors | None = None
     variant: int = 0
     # A locked glyph (Bbox.locked) rejects writes unless this is set — the lock
     # used to be a UI-only contract; the flag makes overriding it an explicit,
@@ -247,7 +252,7 @@ class ResampleRequest(BaseModel):
     pipeline improvements land. An explicit count still wins (wizard slider).
     """
 
-    n_anchors: int | None = Field(default=None, ge=4, le=1000)
+    n_anchors: NAnchors | None = None
     # See TraceRequest.force — required to resample a locked glyph.
     force: bool = False
 

@@ -24,6 +24,19 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **API helper consolidation (no behaviour change).** Collapsed copy-pasted `api/`
+  boilerplate onto single sources of truth: `resolve_render_context(source, db)` in
+  `api/rendering.py` now resolves the style + source-pooled nib/pen for every write and
+  template render path, so the "constant nib if constant else None" branch lives in one
+  place; `Bbox.to_pipeline_dict()` is the ONE crop-affecting serializer consumed by the
+  crop preview, the trace/resample/diagnostic derivation and the bbox read response (a
+  new crop-affecting field can no longer be added to one and dropped from the others);
+  `put_bbox` loads the stored row once and coalesces the optional fields via one
+  `_coalesce` helper; `CACHE_CONTROL` moved to a shared `api/http.py`; the `n_anchors`
+  bound is one `NAnchors` annotated type and `QuizWordOut.era` is a
+  `Literal["modern", "historic"]`; `GET /styles` fetches all sources in one query and
+  groups in Python (no more per-style N+1, chart `.exists()` memoised); and the router
+  `HTTPException`s use named `status.*` constants. Response shapes are unchanged.
 - **Pairlab-calibrated placement (O1).** `core/compose.py` places letters with two
   measured corrections: a HIGH exit is treated as a coupling-stub tip, not the pen's
   true departure — the next letter tucks back under it proportionally to the exit

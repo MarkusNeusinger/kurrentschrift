@@ -4,14 +4,12 @@ from fastapi import APIRouter, Depends, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import require_db
+from api.http import CACHE_CONTROL
 from api.schemas import QuizWordOut
 from core.database import QuizWord, QuizWordRepository
 
 
 router = APIRouter(prefix="/quiz-words", tags=["quiz-words"])
-
-# Public and rarely changing — cache hard at the edge (mirrors write.py).
-CACHE_CONTROL = "public, max-age=300, s-maxage=86400, stale-while-revalidate=604800"
 
 
 def _to_out(row: QuizWord) -> QuizWordOut:

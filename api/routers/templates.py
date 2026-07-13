@@ -5,13 +5,13 @@ works on a chart `source`; this router resolves the source's style and stores
 the canonical there, recording the chart as `provenance_source_id`.
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_admin
 from api.dependencies import require_db, require_source
-from api.rendering import invalidate_pooled_nib, pooled_constant_nib, resolve_style
+from api.rendering import invalidate_pooled_nib, resolve_render_context, resolve_style
 from api.schemas import ResampleRequest, TemplateOut, TemplateSummary, TraceRequest
 from core.database import BboxRepository, Source, Template, TemplateRepository
 from core.fit import fit_glyph_to_crop
@@ -58,7 +58,9 @@ def _reject_locked_unless_forced(bbox, force: bool) -> None:
     finished glyph. 423 Locked tells the client exactly what to do.
     """
     if bbox.locked and not force:
-        raise HTTPException(423, detail=f"glyph {bbox.glyph_key!r} is locked; pass force=true to overwrite")
+        raise HTTPException(
+            status.HTTP_423_LOCKED, detail=f"glyph {bbox.glyph_key!r} is locked; pass force=true to overwrite"
+        )
 
 
 def _sync_bbox_anchor_count(bbox, canonical: dict) -> None:
@@ -77,22 +79,12 @@ def _sync_bbox_anchor_count(bbox, canonical: dict) -> None:
 
 
 def _bbox_to_dict(bbox) -> dict:
+    """The full derivation dict: the shared crop-affecting fields
+    (`Bbox.to_pipeline_dict`, so ink/patches/auto-fill can't drift from the crop
+    preview) plus the calibration the anchor/width derivation needs on top."""
     guides = bbox.guides or {}
     return {
-        "y0": bbox.y0,
-        "y1": bbox.y1,
-        "x0": bbox.x0,
-        "x1": bbox.x1,
-        "mask_strokes": list(bbox.mask_strokes),
-        # Ink brush + speck auto-fill + inserted donor cells must travel with the
-        # bbox too, or the anchor/width derivation (trace, resample, diagnostic,
-        # fit) binarises the UNassembled crop and silently ignores them — the crop
-        # preview alone would show them. Without `patches` the umlaut a ü/ö borrows
-        # from ä would not be in the skeleton the traced strokes snap to. Mirrors
-        # the crop endpoint + crop_with_mask/binarize_adaptive.
-        "ink_strokes": list(bbox.ink_strokes),
-        "patches": list(bbox.patches),
-        "fill_holes_max_area": int(bbox.fill_holes_max_area),
+        **bbox.to_pipeline_dict(),
         "baseline_y": bbox.baseline_y,
         "midband_y": bbox.midband_y,
         "n_anchors": bbox.n_anchors,
@@ -142,7 +134,7 @@ async def get_template(
 ):
     template = await TemplateRepository(db).get(source.style_id, glyph_key)
     if template is None:
-        raise HTTPException(404, detail=f"no canonical for {glyph_key!r}")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no canonical for {glyph_key!r}")
     return _template_to_out(template)
 
 
@@ -155,7 +147,7 @@ async def post_trace(
 ):
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
-        raise HTTPException(409, detail=f"set bbox for {glyph_key!r} before tracing")
+        raise HTTPException(status.HTTP_409_CONFLICT, detail=f"set bbox for {glyph_key!r} before tracing")
     _reject_locked_unless_forced(bbox, payload.force)
     _, _, _, width_resolver = await resolve_style(source, db)
     # CPU-bound (binarize + skeleton + EDT) — keep it off the event loop.
@@ -193,7 +185,7 @@ async def post_trace_preview(
     """
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
-        raise HTTPException(409, detail=f"set bbox for {glyph_key!r} before tracing")
+        raise HTTPException(status.HTTP_409_CONFLICT, detail=f"set bbox for {glyph_key!r} before tracing")
     _, style_ratio, slant_deg, width_resolver = await resolve_style(source, db)
     bbox_dict = _bbox_to_dict(bbox)
     raw_path = [p.model_dump() for p in payload.raw_path]
@@ -238,13 +230,15 @@ async def post_resample(
 ):
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
-        raise HTTPException(409, detail=f"bbox for {glyph_key!r} missing")
+        raise HTTPException(status.HTTP_409_CONFLICT, detail=f"bbox for {glyph_key!r} missing")
     _reject_locked_unless_forced(bbox, payload.force)
     existing = await TemplateRepository(db).get(source.style_id, glyph_key)
     if existing is None:
-        raise HTTPException(404, detail=f"no canonical to resample for {glyph_key!r}")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no canonical to resample for {glyph_key!r}")
     if not existing.raw_path:
-        raise HTTPException(409, detail="stored canonical has no raw_path; re-trace to enable resampling")
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, detail="stored canonical has no raw_path; re-trace to enable resampling"
+        )
     # None means "re-derive with current code AND its current recommended
     # anchor density" — DEFAULT_N_ANCHORS is bench-calibrated; a deliberate
     # per-glyph count still wins by sending n_anchors explicitly (the wizard
@@ -273,12 +267,11 @@ async def get_diagnostic(
 ):
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
-        raise HTTPException(404, detail=f"bbox not set for {glyph_key!r}")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"bbox not set for {glyph_key!r}")
     template = await TemplateRepository(db).get(source.style_id, glyph_key)
     if template is None:
-        raise HTTPException(404, detail=f"no canonical for {glyph_key!r}")
-    style_id, style_ratio, slant_deg, width_resolver = await resolve_style(source, db)
-    constant_nib_units = await pooled_constant_nib(db, style_id, source.id) if width_resolver == "constant" else None
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no canonical for {glyph_key!r}")
+    ctx = await resolve_render_context(source, db)
     return await run_in_threadpool(
         diagnostic_for_glyph,
         glyph_row={
@@ -293,10 +286,10 @@ async def get_diagnostic(
         },
         bbox=_bbox_to_dict(bbox),
         chart_path=source.chart_path,
-        style_ratio=style_ratio,
-        slant_deg=slant_deg,
-        width_resolver=width_resolver,
-        constant_nib_units=constant_nib_units,
+        style_ratio=ctx.style_ratio,
+        slant_deg=ctx.slant_deg,
+        width_resolver=ctx.width_resolver,
+        constant_nib_units=ctx.nib,
     )
 
 
@@ -315,10 +308,10 @@ async def get_fit(
     """
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
-        raise HTTPException(404, detail=f"bbox not set for {glyph_key!r}")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"bbox not set for {glyph_key!r}")
     template = await TemplateRepository(db).get(source.style_id, glyph_key)
     if template is None:
-        raise HTTPException(404, detail=f"no canonical for {glyph_key!r}")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no canonical for {glyph_key!r}")
     return await run_in_threadpool(
         fit_glyph_to_crop,
         glyph_row={
@@ -358,17 +351,18 @@ async def get_quality(glyph_key: str, source: Source = Depends(require_source), 
     """
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
-        raise HTTPException(404, detail=f"bbox not set for {glyph_key!r}")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"bbox not set for {glyph_key!r}")
     template = await TemplateRepository(db).get(source.style_id, glyph_key)
     if template is None:
-        raise HTTPException(404, detail=f"no canonical for {glyph_key!r}")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no canonical for {glyph_key!r}")
     bbox_dict = _bbox_to_dict(bbox)
     trace_meta = dict(template.trace_meta or {})
     # Older templates predate the pixel-space trace meta the metric scores —
     # a clear 409 beats the ValueError-turned-500 the metric would raise.
     if not trace_meta.get("pixel_anchors") or not trace_meta.get("half_widths_px"):
         raise HTTPException(
-            409, detail=f"stored template for {glyph_key!r} lacks pixel-space trace meta; resample or re-trace first"
+            status.HTTP_409_CONFLICT,
+            detail=f"stored template for {glyph_key!r} lacks pixel-space trace meta; resample or re-trace first",
         )
     raw_path = list(template.raw_path or [])
     glyph, position = template.glyph, template.position

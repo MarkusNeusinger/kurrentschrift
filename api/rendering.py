@@ -10,8 +10,9 @@ process; the TTL is the safety net for out-of-band writes (psql, migrations).
 
 import statistics
 import time
+from dataclasses import dataclass
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import Source, StyleRepository, TemplateRepository
@@ -34,7 +35,10 @@ async def resolve_style(source: Source, db: AsyncSession) -> tuple[str, list[flo
     """
     style = await StyleRepository(db).get(source.style_id)
     if style is None:
-        raise HTTPException(500, detail=f"source {source.id!r} references unknown style {source.style_id!r}")
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"source {source.id!r} references unknown style {source.style_id!r}",
+        )
     style_ratio = list(source.style_ratio) if source.style_ratio is not None else list(style.default_style_ratio)
     slant_deg = float(source.slant_deg) if source.slant_deg is not None else float(style.default_slant_deg)
     return style.id, style_ratio, slant_deg, style.width_resolver
@@ -123,3 +127,33 @@ def invalidate_pooled_nib(style_id: str, source_id: str) -> None:
     _nib_cache.pop((style_id, source_id), None)
     for resolver in ("pressure", "broad_nib"):
         _pen_cache.pop((style_id, source_id, resolver), None)
+
+
+@dataclass(frozen=True)
+class RenderContext:
+    """Everything a render/diagnostic path needs to turn a stored template into
+    a payload: the resolved lineature, the style's width resolver, and the two
+    mutually-exclusive pooled pens (constant styles get ``nib``, pressure/
+    broad-nib styles get ``pen`` — the other stays None)."""
+
+    style_id: str
+    style_ratio: list[float]
+    slant_deg: float
+    width_resolver: str
+    nib: float | None  # pooled constant Gleichzug nib (constant styles only)
+    pen: PenStyle | None  # pooled Spitz-/Bandzugfeder (pressure/broad_nib only)
+
+
+async def resolve_render_context(source: Source, db: AsyncSession) -> RenderContext:
+    """Resolve the style + the source-pooled pens in one place.
+
+    Consolidates the ``resolve_style`` → constant-nib-if-constant → pooled-pen
+    dance every write/template render path used to copy verbatim, so the
+    ``constant`` branch lives in exactly one spot. The two pool lookups are
+    memoised and mutually exclusive by resolver — one returns None without a
+    query — so calling both is cheap regardless of the style.
+    """
+    style_id, style_ratio, slant_deg, width_resolver = await resolve_style(source, db)
+    nib = await pooled_constant_nib(db, style_id, source.id) if width_resolver == "constant" else None
+    pen = await pooled_pen(db, style_id, source.id, width_resolver)
+    return RenderContext(style_id, style_ratio, slant_deg, width_resolver, nib, pen)
