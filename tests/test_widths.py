@@ -99,7 +99,10 @@ def test_resolve_constant_empty_passes_through():
     assert resolve_half_widths(empty, "constant").size == 0
 
 
-def test_resolve_unknown_resolver_is_passthrough():
+def test_resolve_pressure_resolver_is_passthrough():
+    # "pressure" has no special branch in resolve_half_widths (the measured
+    # profile IS the Schwellzug), so it returns the measurement unchanged — the
+    # same passthrough any resolver other than constant/broad_nib takes.
     measured = np.array([0.03, 0.05, 0.04])
     assert np.allclose(resolve_half_widths(measured, "pressure"), measured)
 

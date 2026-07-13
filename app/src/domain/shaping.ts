@@ -22,8 +22,9 @@
 //      Fuge marker `|` in the input lets the caller force the round s at a
 //      morpheme boundary a compound needs it (`Haus|tür`, `Arbeits|amt`): the s
 //      right before the `|` renders round, no ſt/ligature spans the boundary,
-//      and the marker itself produces no glyph. Strip it for display via
-//      `stripFugen`.
+//      and the marker itself produces no glyph. For display the caller shows the
+//      unmarked `word`/label form; only the render form (`entry.fugen`, passed
+//      to `shapeText`) carries the `|`.
 //
 //   2. The closed ligature set ch · ck · tz · ſt · qu · ß are *taught units*
 //      with their own template, not exit→entry chains (architektur.md §4). We
