@@ -150,6 +150,8 @@ export function WrittenWord({
 
   useEffect(() => {
     if (composed) onResolved?.({ missing: composed.missing, rendered: composed.items.length });
+    // onResolved intentionally omitted: report only when the composition changes,
+    // not when a parent passes a fresh callback identity.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [composed]);
 

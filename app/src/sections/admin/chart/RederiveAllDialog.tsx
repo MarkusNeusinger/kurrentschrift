@@ -137,7 +137,7 @@ export function RederiveAllDialog({ open, onClose }: Props) {
     }
     if (applied > 0) refreshCrop();
     setRunning(false);
-  }, [sourceId, groups, refreshCrop]);
+  }, [sourceId, groups, refreshCrop, t.noRawPath]);
 
   const handleClose = () => {
     if (running) return; // cancel first — closing mid-run would hide the report

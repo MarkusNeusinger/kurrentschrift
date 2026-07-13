@@ -79,7 +79,7 @@ agent working in this repo:
   exists — mirror the existing flat `tests/test_<module>.py` layout).
 - Refactors within established patterns.
 - Updating documentation under `docs/` (mind the German/English split).
-- Fixing ruff / TypeScript findings (ESLint is not configured yet).
+- Fixing ruff / TypeScript / ESLint findings.
 
 **Tasks requiring human review:**
 
@@ -481,9 +481,10 @@ it.
 - **Planned additions (post-MVP):** `react-helmet-async` (SEO),
   `react-i18next` (DE/EN), WeasyPrint (PDF), httpx (Transkribus client),
   optionally TrOCR via HuggingFace Transformers for self-hosted HTR.
-- **Linting:** ruff (Python) is configured and CI-gated; the SPA's
-  type-check (`tsc`) runs via `npm run build` in CI. ESLint for the SPA
-  is **not** configured yet.
+- **Linting:** ruff (Python) is configured and CI-gated. The SPA has a
+  flat ESLint config (`app/eslint.config.js`: JS + typescript-eslint
+  recommended + react-hooks); `npm run lint` runs in CI, and the
+  type-check (`tsc`) runs via `npm run build`.
 
 ---
 
@@ -508,9 +509,9 @@ deployment is local-only (`npm run dev` + `uvicorn --reload`).
 
 CI runs on every PR via `.github/workflows/ci.yml`: a backend job
 (ruff lint + `ruff format --check` + pytest with Codecov upload) and a
-frontend job (`npm run build`, i.e. `tsc && vite build` — type-check +
-build only, no lint or frontend tests yet). There are no anyplot-style
-spec-create / impl-generate pipelines. Conventions:
+frontend job (`npm run lint` then `npm run build`, i.e. ESLint +
+`tsc && vite build`; no frontend unit tests yet). There are no
+anyplot-style spec-create / impl-generate pipelines. Conventions:
 
 - **Issues** are welcome for design discussion (pre-MVP this is the main
   contribution channel — see `docs/contributing.md`).
@@ -535,9 +536,9 @@ spec-create / impl-generate pipelines. Conventions:
   with `--no-verify`.
 - **Verification before a PR:** run the local CI equivalents first —
   `uv run --extra test pytest`, `uv run --extra dev ruff check .`,
-  `uv run --extra dev ruff format --check .`, plus `npm run build` in
-  `app/` when the frontend changed. The pipeline should never fail on
-  tests or lint. (Claude Code sessions encode these loops as skills
+  `uv run --extra dev ruff format --check .`, plus `npm run lint` and
+  `npm run build` in `app/` when the frontend changed. The pipeline
+  should never fail on tests or lint. (Claude Code sessions encode these loops as skills
   under `.claude/skills/` — verify-frontend / verify-api / verify-core,
   write-docs, audit-licenses, open-pr, optimize-glyphs.)
 - **Glyph-pipeline changes are benchmarked:** `tools/glyphbench` scores

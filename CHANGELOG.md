@@ -52,6 +52,17 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **ESLint gate for the SPA.** Added a flat `app/eslint.config.js` (JS +
+  typescript-eslint recommended + `react-hooks`, react-refresh as warnings),
+  a `npm run lint` script, and an ESLint step to the CI frontend job — the
+  `react-hooks/exhaustive-deps` suppressions in the tree are now enforced
+  instead of inert. Fixed the findings this surfaced: `prefer-const` in
+  `TafelView.tsx`, a missing hook dep in `RederiveAllDialog.tsx`, and added
+  the missing justification to a `WrittenWord.tsx` suppression; kept the
+  `_`-prefix unused-args convention and allowed intentional non-breaking
+  spaces in UI strings. Updated `.github/copilot-instructions.md` to record
+  that ESLint is now configured.
+
 - **`tools/pairlab` — independent-fit dissection of letter joins.** For every real
   occurrence of a letter pair in the Abb.-19/Abb.-20 specimens it re-fits each letter
   INDEPENDENTLY onto the frozen skeleton (bounded translation grid), regenerates the

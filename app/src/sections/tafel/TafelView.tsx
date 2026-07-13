@@ -288,7 +288,6 @@ export function TafelView() {
     if (!tafeln || !hash) return;
     const id = hash.slice(1);
     let settle: ReturnType<typeof setTimeout> | undefined;
-    let cap: ReturnType<typeof setTimeout> | undefined;
     const scrollToSection = () => {
       const el = document.getElementById(id);
       if (!el) return;
@@ -318,7 +317,7 @@ export function TafelView() {
     window.addEventListener('wheel', stop, { passive: true });
     window.addEventListener('touchmove', stop, { passive: true });
     window.addEventListener('keydown', stop);
-    cap = setTimeout(stop, 4000);
+    const cap = setTimeout(stop, 4000);
     return stop;
   }, [tafeln, hash]);
 
