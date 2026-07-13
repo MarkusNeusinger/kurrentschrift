@@ -1,6 +1,6 @@
 """Hand (writer) endpoints — read-only list + get. Thin until the import pipeline."""
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import require_db
@@ -24,5 +24,5 @@ async def list_hands(db: AsyncSession = Depends(require_db)) -> list[HandOut]:
 async def get_hand(hand_id: str, db: AsyncSession = Depends(require_db)) -> HandOut:
     hand = await HandRepository(db).get(hand_id)
     if hand is None:
-        raise HTTPException(404, detail=f"hand {hand_id!r} not found")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"hand {hand_id!r} not found")
     return _to_out(hand)

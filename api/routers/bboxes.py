@@ -1,6 +1,6 @@
 """Bbox CRUD per source."""
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_admin
@@ -13,23 +13,28 @@ from core.pipeline import DEFAULT_N_ANCHORS
 router = APIRouter(prefix="/sources/{source_id}/bboxes", tags=["bboxes"])
 
 
+def _coalesce(payload_val, stored_val, default):
+    """Optional-field precedence for a bbox PUT: the client's value when it sent
+    one, else whatever is already stored, else the default. Keeps a plain
+    bbox/calibration save from wiping fields the client omitted."""
+    if payload_val is not None:
+        return payload_val
+    return stored_val if stored_val is not None else default
+
+
 def _to_out(bbox: Bbox) -> BboxOut:
+    # The crop-affecting fields come from the ONE shared serializer (Pydantic
+    # coerces the stroke/patch dicts into their models); the read-only bbox
+    # metadata (calibration, guides, lock/split) rides alongside.
     return BboxOut(
+        **bbox.to_pipeline_dict(),
         glyph_key=bbox.glyph_key,
-        y0=bbox.y0,
-        y1=bbox.y1,
-        x0=bbox.x0,
-        x1=bbox.x1,
-        mask_strokes=list(bbox.mask_strokes),
-        ink_strokes=list(bbox.ink_strokes),
-        patches=list(bbox.patches),
         baseline_y=bbox.baseline_y,
         midband_y=bbox.midband_y,
         n_anchors=bbox.n_anchors,
         guides=GuideConfig(**(bbox.guides or {})),
         locked=bool(bbox.locked),
         split=bool(bbox.split),
-        fill_holes_max_area=int(bbox.fill_holes_max_area),
     )
 
 
@@ -43,7 +48,7 @@ async def list_bboxes(source: Source = Depends(require_source), db: AsyncSession
 async def get_bbox(glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)):
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
-        raise HTTPException(404, detail=f"bbox not set for {glyph_key!r}")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"bbox not set for {glyph_key!r}")
     return _to_out(bbox)
 
 
@@ -52,42 +57,24 @@ async def put_bbox(
     glyph_key: str, payload: BboxIn, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
 ):
     if payload.baseline_y <= payload.midband_y:
-        raise HTTPException(422, detail="baseline_y must be greater than midband_y (baseline is below midband)")
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="baseline_y must be greater than midband_y (baseline is below midband)",
+        )
     repo = BboxRepository(db)
-    # `guides`, `locked`, `split` and `n_anchors` are optional: when the client
-    # omits one, keep whatever is already stored (a plain bbox/calibration save
-    # must not wipe the guide lines, silently rewrite the anchor count, or
-    # require resending unrelated fields).
-    existing = None
-    if payload.guides is not None:
-        guides = payload.guides.model_dump()
-    else:
-        existing = await repo.get(source.id, glyph_key)
-        guides = existing.guides if existing is not None else {}
-    if payload.locked is not None:
-        locked = payload.locked
-    else:
-        if existing is None:
-            existing = await repo.get(source.id, glyph_key)
-        locked = bool(existing.locked) if existing is not None else False
-    if payload.split is not None:
-        split = payload.split
-    else:
-        if existing is None:
-            existing = await repo.get(source.id, glyph_key)
-        split = bool(existing.split) if existing is not None else False
-    if payload.n_anchors is not None:
-        n_anchors = payload.n_anchors
-    else:
-        if existing is None:
-            existing = await repo.get(source.id, glyph_key)
-        n_anchors = int(existing.n_anchors) if existing is not None else DEFAULT_N_ANCHORS
-    if payload.fill_holes_max_area is not None:
-        fill_holes_max_area = payload.fill_holes_max_area
-    else:
-        if existing is None:
-            existing = await repo.get(source.id, glyph_key)
-        fill_holes_max_area = int(existing.fill_holes_max_area) if existing is not None else 0
+    # `guides`, `locked`, `split`, `n_anchors` and `fill_holes_max_area` are
+    # optional: when the client omits one, keep whatever is already stored (a
+    # plain bbox/calibration save must not wipe the guide lines, silently rewrite
+    # the anchor count, or require resending unrelated fields). Load `existing`
+    # once up front and coalesce each field.
+    existing = await repo.get(source.id, glyph_key)
+    guides = payload.guides.model_dump() if payload.guides is not None else (existing.guides if existing else {})
+    locked = _coalesce(payload.locked, bool(existing.locked) if existing else None, False)
+    split = _coalesce(payload.split, bool(existing.split) if existing else None, False)
+    n_anchors = _coalesce(payload.n_anchors, int(existing.n_anchors) if existing else None, DEFAULT_N_ANCHORS)
+    fill_holes_max_area = _coalesce(
+        payload.fill_holes_max_area, int(existing.fill_holes_max_area) if existing else None, 0
+    )
     bbox = await repo.upsert(
         source.id,
         glyph_key,

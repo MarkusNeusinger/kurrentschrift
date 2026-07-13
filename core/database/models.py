@@ -190,6 +190,29 @@ class Bbox(Base):
 
     source: Mapped[Source] = relationship(back_populates="bboxes")
 
+    def to_pipeline_dict(self) -> dict:
+        """The crop-affecting fields the extraction pipeline reads.
+
+        Exactly the keys `core.chart.crop_with_mask` + `core.extract.
+        binarize_adaptive` consume: the rectangle plus the eraser, donor patches,
+        ink brush and speck auto-fill. The ONE serializer so a new crop-affecting
+        field (as `patches` recently was) can't be added to the crop preview but
+        silently dropped from the trace/resample/diagnostic derivation — or vice
+        versa. The derivation dict (templates router) layers baseline/midband/
+        n_anchors/coupling on top of this; the bbox read response coerces it into
+        the Pydantic `BboxOut`.
+        """
+        return {
+            "y0": self.y0,
+            "y1": self.y1,
+            "x0": self.x0,
+            "x1": self.x1,
+            "mask_strokes": list(self.mask_strokes),
+            "ink_strokes": list(self.ink_strokes),
+            "patches": list(self.patches),
+            "fill_holes_max_area": int(self.fill_holes_max_area),
+        }
+
 
 class Template(Base):
     """Canonical ductus template (Grundvorlage) for a (style, glyph, position, variant).

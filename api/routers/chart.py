@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,7 +31,7 @@ async def get_chart(source: Source = Depends(require_source)) -> FileResponse:
     svg = raster.with_suffix(".svg")
     path = svg if svg.exists() else raster
     if not path.exists():
-        raise HTTPException(404, detail=f"chart file missing on disk: {path}")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"chart file missing on disk: {path}")
     media_type = _DISPLAY_MEDIA_TYPES.get(path.suffix.lower(), "application/octet-stream")
     return FileResponse(path, media_type=media_type)
 
@@ -48,17 +48,8 @@ async def get_crop(
     sees, colour-coding what the auto-fill swallowed (the wizard's preview)."""
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
-        raise HTTPException(404, detail=f"bbox not set for {glyph_key!r}")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"bbox not set for {glyph_key!r}")
     chart = load_chart_grayscale(source.chart_path)
-    bbox_dict = {
-        "y0": bbox.y0,
-        "y1": bbox.y1,
-        "x0": bbox.x0,
-        "x1": bbox.x1,
-        "mask_strokes": list(bbox.mask_strokes),
-        "ink_strokes": list(bbox.ink_strokes),
-        "patches": list(bbox.patches),
-        "fill_holes_max_area": int(bbox.fill_holes_max_area),
-    }
+    bbox_dict = bbox.to_pipeline_dict()
     png = crop_mask_to_png_bytes(chart, bbox_dict) if view == "mask" else crop_to_png_bytes(chart, bbox_dict)
     return Response(content=png, media_type="image/png")
