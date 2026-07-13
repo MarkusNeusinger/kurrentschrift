@@ -94,7 +94,7 @@
              3. *Scan*: DNB-Reproduktion, § 68 UrhG (Reproduktionsfotografie
                 erzeugt kein neues Schutzrecht); US: Publikation 1922 (vor
                 1930).
-- Note:      19 Zeilen (~95 Wörter) verbundene Ausgangsschrift, geschrieben
+- Note:      19 Zeilen (106 Wörter) verbundene Ausgangsschrift, geschrieben
              mit der **Breitkantfeder** (deutliche Dick-/Dünn-Modulation) —
              die einzige verbundene Breitfeder-Probe der Quelle und damit die
              natürliche Referenz für das `broad_nib`-Federmodell. ANDERE HAND
