@@ -17,45 +17,36 @@
 // so we negate y in the rendered data (rather than a flipped <g>) to keep the
 // mask coordinates aligned with the filled polygons without a nested transform.
 
-import ReplayIcon from '@mui/icons-material/Replay';
-import { Alert, Box, CircularProgress, IconButton, keyframes } from '@mui/material';
+import { Alert, Box, CircularProgress } from '@mui/material';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { CONFIG } from '@/global-config';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { fetchRenderGlyph, peekRenderGlyph, seedRenderGlyph, type GlyphRenderData } from '@/lib/api';
 import { useStrokeReveal } from '@/hooks/useStrokeReveal';
-import { allocateDurations, strokeTimeProfile } from '@/lib/strokeTiming';
+import {
+  allocateDurations,
+  sequenceReveal,
+  strokeTimeProfile,
+  GLYPH_MAX_W,
+  GLYPH_MIN_STROKE_MS,
+  GLYPH_WRITE_MS,
+  PEN_PAUSE_MS,
+  SETTLE_MS,
+} from '@/lib/strokeTiming';
+import { InkBleedFilter, InkGuides, RevealMask, ReplayButton, inkGroupSx } from '@/components/inkReveal';
 import { ringsToPathD, type Ring } from '@/lib/svg';
 import { de } from '@/locales';
-import { inkState, schulheft } from '@/styles/paper';
-
-// Iron-gall ink settle: German school ink wrote blue-black and oxidized to
-// near-black (Reichs-Tintenprüfung 1888/1912) — compressed here from weeks to
-// seconds after the write-in completes. Knowingly expressive synthesis.
-const inkSettle = keyframes`from { fill: ${inkState.fresh}; } to { fill: ${inkState.oxidized}; }`;
-const SETTLE_MS = 1800;
-
-// Rendering colours of this work surface. The crop box is one of the neutral
-// surfaces that deliberately opt out of the paper identity (style-guide §8) —
-// these are local rendering constants, not theme tokens.
-const SURFACE_BG = '#fff'; // neutral white crop ground (binding)
-// Context guides in the faint exercise-book blue (schulheft tokens) so the
-// glyph sits on a whisper of period ruling, matching the fresh-ink narrative
-// of this surface; the midband stays the quieter of the two via opacity.
-const GUIDE_BASELINE = schulheft.rulingBlueFaded;
-const GUIDE_MIDBAND = schulheft.rulingBlueFaded;
-const GUIDE_MIDBAND_OPACITY = 0.55;
 
 // Render payloads come from the shared render cache (`@/lib/api/renderCache`),
 // so a glyph the quiz letter shows and a written word contains costs one fetch
 // per session across ALL surfaces. Version stamps (`bust`) and externally
 // supplied payloads (the admin dialog) are handled there too.
 
-// Polyline as an SVG path `d`, negating y (template y is up, SVG y is down).
-function pathD(points: Array<[number, number]>): string {
-  return points.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x},${-y}`).join(' ');
-}
+// Rendering colours of this work surface. The crop box is one of the neutral
+// surfaces that deliberately opt out of the paper identity (style-guide §8) —
+// this is a local rendering constant, not a theme token.
+const SURFACE_BG = '#fff'; // neutral white crop ground (binding)
 
 interface Props {
   glyphKey: string;
@@ -99,10 +90,7 @@ interface Props {
   onUnavailable?: () => void;
 }
 
-const PEN_PAUSE_MS = 150; // pause at each Absetzen so the lift reads as a lift
-const MAX_W = 300;
-
-export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight = false, maxWidth, cacheBust, data: dataProp, onUnavailable, surfaceBg = SURFACE_BG, inkColor, animate: animateProp = true }: Props) {
+export function WrittenGlyph({ glyphKey, durationMs = GLYPH_WRITE_MS, height = 220, tight = false, maxWidth, cacheBust, data: dataProp, onUnavailable, surfaceBg = SURFACE_BG, inkColor, animate: animateProp = true }: Props) {
   const reducedMotion = usePrefersReducedMotion();
   const uid = useId();
   const [fetched, setFetched] = useState<GlyphRenderData | null>(
@@ -209,25 +197,16 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight 
     // Human kinematics instead of an even pace (lib/strokeTiming): the
     // two-thirds power law slows the sweep in curves via non-linear dashoffset
     // keyframes, isochrony allocates stroke durations sublinearly; each stroke
-    // starts after the previous one finishes plus a short pen-lift pause.
+    // starts after the previous one finishes plus a short pen-lift pause. The
+    // trailing pause is folded into writeEndMs so the settle starts one beat
+    // after the last stroke, letting the lift register before the ink ages.
     const profiles = centerlines.map((cl) => strokeTimeProfile(cl as [number, number][]));
     const durations = allocateDurations(
       profiles.map((p) => p.weight),
       durationMs,
-      250,
+      GLYPH_MIN_STROKE_MS,
     );
-    let cursor = 0;
-    const timing = centerlines.map((_, i) => {
-      const dur = durations[i];
-      const delay = cursor;
-      cursor += dur + PEN_PAUSE_MS;
-      return { dur, delay, arcAtTime: profiles[i].arcAtTime };
-    });
-
-    // End of the writing performance. Includes the trailing PEN_PAUSE_MS on
-    // purpose: the settle starts one pen-pause beat after the last stroke
-    // finishes, so the lift registers before the ink begins to age.
-    const writeEndMs = cursor;
+    const { timing, writeEndMs } = sequenceReveal(profiles, durations, { trailPause: PEN_PAUSE_MS });
 
     return { tpl, minX, vbW, vbY, vbH, strokePaths, polygons, centerlines, maskWidth, timing, writeEndMs };
   }, [data, durationMs, tight]);
@@ -248,7 +227,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight 
 
   const { tpl, minX, vbW, vbY, vbH, strokePaths, polygons, centerlines, maskWidth, writeEndMs } = geom;
   const displayH = height;
-  const maxW = maxWidth ?? MAX_W;
+  const maxW = maxWidth ?? GLYPH_MAX_W;
   let displayW = (displayH * vbW) / vbH;
   let finalH = displayH;
   if (displayW > maxW) {
@@ -274,50 +253,19 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight 
         style={{ display: 'block', background: surfaceBg, maxWidth: '100%' }}
       >
         <defs>
-          {/* Ink bleed: fibre-wicking displacement on the silhouette group —
-              deliberately active during the write-in too (ink wicks the moment
-              it touches paper). The viewBox is in template units (x-height = 1),
-              so the displacement scale must be tiny — pixel-space example
-              values would be wildly off. */}
-          <filter id={`${maskId}-bleed`} x="-5%" y="-5%" width="110%" height="110%">
-            <feTurbulence type="fractalNoise" baseFrequency="6" numOctaves="2" seed="7" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.018" xChannelSelector="R" yChannelSelector="G" />
-          </filter>
-          <mask id={maskId} maskUnits="userSpaceOnUse" x={minX} y={vbY} width={vbW} height={vbH}>
-            {/* Black hides; the white sweep reveals the silhouette beneath it. */}
-            <rect x={minX} y={vbY} width={vbW} height={vbH} fill="black" />
-            {centerlines.map((line, i) => (
-              <path
-                key={`${run}-${i}`}
-                ref={(el) => {
-                  maskPathRefs.current[i] = el;
-                }}
-                d={pathD(line)}
-                fill="none"
-                stroke="#fff"
-                strokeWidth={maskWidth}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                pathLength={1}
-                strokeDasharray={1}
-                style={{ strokeDashoffset: animate ? 1 : 0 }}
-              />
-            ))}
-          </mask>
+          <InkBleedFilter id={`${maskId}-bleed`} scale={0.018} />
+          <RevealMask
+            id={maskId}
+            bounds={{ x: minX, y: vbY, width: vbW, height: vbH }}
+            strokes={centerlines.map((line) => ({ centerline: line, maskWidth }))}
+            pathRefs={maskPathRefs}
+            animate={animate}
+            runKey={run}
+          />
         </defs>
 
         {/* Faint Lineatur (baseline + midband) for reading context. */}
-        <line x1={minX} y1={-tpl.baseline} x2={minX + vbW} y2={-tpl.baseline} stroke={GUIDE_BASELINE} strokeWidth={0.012} />
-        <line
-          x1={minX}
-          y1={-tpl.midband}
-          x2={minX + vbW}
-          y2={-tpl.midband}
-          stroke={GUIDE_MIDBAND}
-          strokeOpacity={GUIDE_MIDBAND_OPACITY}
-          strokeWidth={0.012}
-          strokeDasharray="0.08 0.06"
-        />
+        <InkGuides minX={minX} width={vbW} baseline={tpl.baseline} midband={tpl.midband} />
 
         {/* Filled silhouette, revealed by the swept mask. The group carries the
             fill so the iron-gall settle (fresh blue-black → oxidized) animates
@@ -328,13 +276,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight 
           key={`ink-${run}`}
           mask={`url(#${maskId})`}
           filter={`url(#${maskId}-bleed)`}
-          sx={{
-            // A fixed inkColor (the comparison's red/black) skips the settle and
-            // holds one tone; otherwise the iron-gall fresh→oxidized settle plays.
-            fill: inkColor ?? (animate ? inkState.fresh : inkState.oxidized),
-            animation:
-              animate && !inkColor ? `${inkSettle} ${SETTLE_MS}ms ease ${writeEndMs}ms forwards` : undefined,
-          }}
+          sx={inkGroupSx({ animate, writeEndMs, settleMs: SETTLE_MS, inkColor })}
         >
           {strokePaths
             ? strokePaths.map((rings, i) => <path key={i} d={ringsToPathD(rings, true)} fillRule="evenodd" />)
@@ -342,16 +284,7 @@ export function WrittenGlyph({ glyphKey, durationMs = 1500, height = 220, tight 
         </Box>
       </svg>
 
-      {animate && (
-        <IconButton
-          size="small"
-          onClick={replay}
-          aria-label={de.common.writtenGlyph.replay}
-          sx={{ position: 'absolute', bottom: 4, right: 4, color: 'text.disabled', '&:hover': { color: 'text.secondary' } }}
-        >
-          <ReplayIcon fontSize="small" />
-        </IconButton>
-      )}
+      {animate && <ReplayButton onClick={replay} />}
     </Box>
   );
 }

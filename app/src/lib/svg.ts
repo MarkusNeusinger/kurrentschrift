@@ -15,3 +15,11 @@ export function ringsToPathD(rings: Ring[], flipY = false): string {
     )
     .join(' ');
 }
+
+// Polyline → SVG path `d`, y-negated for template coordinates (y up) inside SVG
+// (y down), optionally x-translated by `tx`. The single home for the reveal
+// centerline path — the three "as written" surfaces used to each redeclare this
+// (`pathD` / `lineD`).
+export function polylineToPathD(points: Ring, tx = 0): string {
+  return points.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x + tx},${-y}`).join(' ');
+}

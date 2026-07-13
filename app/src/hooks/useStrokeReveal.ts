@@ -7,12 +7,12 @@
 
 import { useEffect, type MutableRefObject } from 'react';
 
-export interface RevealTiming {
-  dur: number;
-  delay: number;
-  // Arc fraction reached at each even time step (from strokeTimeProfile).
-  arcAtTime: number[];
-}
+import type { RevealTiming } from '@/lib/strokeTiming';
+
+// Re-exported for back-compat: the timing table now lives with the maths in
+// lib/strokeTiming (so sequenceReveal can produce it), but consumers still
+// import the type alongside the hook.
+export type { RevealTiming };
 
 export function useStrokeReveal(
   pathRefs: MutableRefObject<Array<SVGPathElement | null>>,

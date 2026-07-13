@@ -14,59 +14,30 @@
 // Coordinates: template space (baseline = 0, y up); SVG y points down, so y is
 // negated in the rendered data.
 
-import ReplayIcon from '@mui/icons-material/Replay';
-import { Box, CircularProgress, IconButton, keyframes } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { CONFIG } from '@/global-config';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { useStrokeReveal } from '@/hooks/useStrokeReveal';
-import { getWriteWord, type ComposedWordOut } from '@/lib/api';
-import { allocateDurations, strokeTimeProfile } from '@/lib/strokeTiming';
-import { ringsToPathD } from '@/lib/svg';
-import { de } from '@/locales';
-import { inkState, schulheft } from '@/styles/paper';
-// Iron-gall settle: fresh blue-black → oxidized brown after the write-in ends.
-const inkSettle = keyframes`
-  from { fill: ${inkState.fresh}; stroke: ${inkState.fresh}; }
-  to { fill: ${inkState.oxidized}; stroke: ${inkState.oxidized}; }
-`;
-const SETTLE_MS = 1800;
-const PEN_PAUSE_MS = 110; // pause at a within-glyph Absetzen so a lift reads as a lift
-const MIN_ITEM_MS = 120;
+import { fetchRenderWord, type ComposedWordOut } from '@/lib/api';
+import {
+  allocateDurations,
+  sequenceReveal,
+  strokeTimeProfile,
+  PEN_PAUSE_MS,
+  SETTLE_MS,
+  WORD_MAX_W,
+  WORD_MIN_ITEM_MS,
+  WORD_WRITE_MS,
+} from '@/lib/strokeTiming';
+import { InkBleedFilter, InkGuides, RevealMask, ReplayButton, inkGroupSx } from '@/components/inkReveal';
+import { polylineToPathD, ringsToPathD } from '@/lib/svg';
 
-const GUIDE = schulheft.rulingBlueFaded;
-
-// Composing is a backend compute; cache the in-flight/resolved promise per
-// (source, text) so a replay, a re-mount or a second WrittenWord on the page
-// never refetches. Transient errors evict so a retry can succeed; the server
-// also sets Cache-Control, so even a fresh page load hits the browser cache.
-// Live typing on /federprobe produces many distinct intermediate texts, so the
-// cache is FIFO-capped — evicted entries just refetch (usually straight from
-// the browser cache).
-const CACHE_MAX = 64;
-const cache = new Map<string, Promise<ComposedWordOut>>();
-function fetchComposed(sourceId: string, text: string): Promise<ComposedWordOut> {
-  const id = `${sourceId}|${text}`;
-  let p = cache.get(id);
-  if (!p) {
-    p = getWriteWord(sourceId, text, { retries: 3 }).catch((e) => {
-      cache.delete(id);
-      throw e;
-    });
-    if (cache.size >= CACHE_MAX) {
-      cache.delete(cache.keys().next().value as string); // FIFO: drop the oldest entry
-    }
-    cache.set(id, p);
-  }
-  return p;
-}
-
-type Point = [number, number];
-
-function pathD(points: Point[]): string {
-  return points.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x},${-y}`).join(' ');
-}
+// Composition happens server-side and is cached in the shared render cache
+// (`@/lib/api/renderCache` → fetchRenderWord), so a replay, a re-mount or a
+// second WrittenWord on the page never refetches — one cacheable request per
+// text across the whole session.
 
 interface Props {
   text: string;
@@ -101,14 +72,12 @@ interface Props {
   ariaLabel?: string;
 }
 
-const MAX_W = 640;
-
 export function WrittenWord({
   text,
   sourceId = CONFIG.sourceId,
   height = 160,
-  durationMs = 2600,
-  maxWidth = MAX_W,
+  durationMs = WORD_WRITE_MS,
+  maxWidth = WORD_MAX_W,
   surfaceBg = 'transparent',
   inkColor,
   animate: animateProp = true,
@@ -134,7 +103,7 @@ export function WrittenWord({
       setComposed({ text: '', items: [], bounds: { min_x: 0, max_x: 1, min_y: 0, max_y: 1 }, guides: null, missing: [] });
       return;
     }
-    fetchComposed(sourceId, normalized)
+    fetchRenderWord(sourceId, normalized)
       .then((c) => {
         if (!cancelled) setComposed(c);
       })
@@ -168,21 +137,18 @@ export function WrittenWord({
 
     // Human kinematics instead of a constant sweep (lib/strokeTiming): the
     // two-thirds power law slows the front in curves (non-linear dashoffset
-    // keyframes per item) and isochrony allocates durations sublinearly.
+    // keyframes per item) and isochrony allocates durations sublinearly. A short
+    // pen-lift pause precedes only the items flagged as following an Absetzen.
     const profiles = items.map((it) => strokeTimeProfile(it.centerline));
     const durations = allocateDurations(
       profiles.map((p) => p.weight),
       durationMs,
-      MIN_ITEM_MS,
+      WORD_MIN_ITEM_MS,
     );
-    let cursor = 0;
-    const timing = items.map((_, i) => {
-      const dur = durations[i];
-      const delay = cursor + (items[i].lift ? PEN_PAUSE_MS : 0);
-      cursor = delay + dur;
-      return { dur, delay, arcAtTime: profiles[i].arcAtTime };
+    const { timing, writeEndMs } = sequenceReveal(profiles, durations, {
+      leadPause: (i) => (items[i].lift ? PEN_PAUSE_MS : 0),
     });
-    return { minX, vbW, vbY, vbH, items, guides, timing, writeEndMs: cursor };
+    return { minX, vbW, vbY, vbH, items, guides, timing, writeEndMs };
   }, [composed, showLineature, durationMs]);
 
   const replay = useCallback(() => setRun((r) => r + 1), []);
@@ -222,46 +188,23 @@ export function WrittenWord({
         style={{ display: 'block', background: surfaceBg, maxWidth: '100%', overflow: 'visible' }}
       >
         <defs>
-          <filter id={`${maskId}-bleed`} x="-3%" y="-5%" width="106%" height="110%">
-            <feTurbulence type="fractalNoise" baseFrequency="6" numOctaves="2" seed="7" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.016" xChannelSelector="R" yChannelSelector="G" />
-          </filter>
-          <mask id={maskId} maskUnits="userSpaceOnUse" x={minX} y={vbY} width={vbW} height={vbH}>
-            <rect x={minX} y={vbY} width={vbW} height={vbH} fill="black" />
-            {items.map((it, i) => (
-              <path
-                key={`${run}-${i}`}
-                ref={(el) => {
-                  maskPathRefs.current[i] = el;
-                }}
-                d={pathD(it.centerline)}
-                fill="none"
-                stroke="#fff"
-                strokeWidth={it.mask_width}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                pathLength={1}
-                strokeDasharray={1}
-                style={{ strokeDashoffset: animate ? 1 : 0 }}
-              />
-            ))}
-          </mask>
+          <InkBleedFilter
+            id={`${maskId}-bleed`}
+            scale={0.016}
+            inset={{ x: '-3%', y: '-5%', width: '106%', height: '110%' }}
+          />
+          <RevealMask
+            id={maskId}
+            bounds={{ x: minX, y: vbY, width: vbW, height: vbH }}
+            strokes={items.map((it) => ({ centerline: it.centerline, maskWidth: it.mask_width }))}
+            pathRefs={maskPathRefs}
+            animate={animate}
+            runKey={run}
+          />
         </defs>
 
         {showLineature && guides && (
-          <>
-            <line x1={minX} y1={-guides.baseline} x2={minX + vbW} y2={-guides.baseline} stroke={GUIDE} strokeWidth={0.012} />
-            <line
-              x1={minX}
-              y1={-guides.midband}
-              x2={minX + vbW}
-              y2={-guides.midband}
-              stroke={GUIDE}
-              strokeOpacity={0.55}
-              strokeWidth={0.012}
-              strokeDasharray="0.08 0.06"
-            />
-          </>
+          <InkGuides minX={minX} width={vbW} baseline={guides.baseline} midband={guides.midband} />
         )}
 
         <Box
@@ -269,14 +212,7 @@ export function WrittenWord({
           key={`ink-${run}`}
           mask={`url(#${maskId})`}
           filter={`url(#${maskId}-bleed)`}
-          sx={{
-            // A fixed inkColor (the comparison's red/black) skips the settle and
-            // holds one tone; otherwise the iron-gall fresh→oxidized settle plays.
-            fill: inkColor ?? (animate ? inkState.fresh : inkState.oxidized),
-            stroke: inkColor ?? (animate ? inkState.fresh : inkState.oxidized),
-            animation:
-              animate && !inkColor ? `${inkSettle} ${SETTLE_MS}ms ease ${writeEndMs}ms forwards` : undefined,
-          }}
+          sx={inkGroupSx({ animate, writeEndMs, settleMs: SETTLE_MS, inkColor, withStroke: true })}
         >
           {items.map((it, i) =>
             it.rings ? (
@@ -286,7 +222,7 @@ export function WrittenWord({
               // Connector: stroked capsule (inherits group stroke), never filled.
               <path
                 key={i}
-                d={pathD(it.centerline)}
+                d={polylineToPathD(it.centerline)}
                 fill="none"
                 strokeWidth={it.stroke_width}
                 strokeLinecap="round"
@@ -297,16 +233,7 @@ export function WrittenWord({
         </Box>
       </svg>
 
-      {animate && showReplay && (
-        <IconButton
-          size="small"
-          onClick={replay}
-          aria-label={de.common.writtenGlyph.replay}
-          sx={{ position: 'absolute', bottom: 4, right: 4, color: 'text.disabled', '&:hover': { color: 'text.secondary' } }}
-        >
-          <ReplayIcon fontSize="small" />
-        </IconButton>
-      )}
+      {animate && showReplay && <ReplayButton onClick={replay} />}
     </Box>
   );
 }
