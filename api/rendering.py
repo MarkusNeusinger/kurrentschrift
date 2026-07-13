@@ -14,7 +14,7 @@ import time
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.database import Source, StyleRepository, TemplateRepository
+from core.database import Bbox, Source, StyleRepository, TemplateRepository
 from core.widths import BroadNib, PenStyle
 
 
@@ -38,6 +38,54 @@ async def resolve_style(source: Source, db: AsyncSession) -> tuple[str, list[flo
     style_ratio = list(source.style_ratio) if source.style_ratio is not None else list(style.default_style_ratio)
     slant_deg = float(source.slant_deg) if source.slant_deg is not None else float(style.default_slant_deg)
     return style.id, style_ratio, slant_deg, style.width_resolver
+
+
+async def resolve_render_context(
+    source: Source, db: AsyncSession
+) -> tuple[list[float], str, float | None, PenStyle | None]:
+    """Resolve everything the public write endpoints need to render a source.
+
+    All three write endpoints (/glyphs, /word, /glyphs/{key}) need the same
+    trio: the style ratio + width resolver, the pooled constant nib (Gleichzug
+    styles only), and the calibrated pen. Bundled so the resolution stays
+    identical across them. Returns (style_ratio, width_resolver, nib, pen).
+    """
+    style_id, style_ratio, _slant, width_resolver = await resolve_style(source, db)
+    nib = await pooled_constant_nib(db, style_id, source.id) if width_resolver == "constant" else None
+    pen = await pooled_pen(db, style_id, source.id, width_resolver)
+    return style_ratio, width_resolver, nib, pen
+
+
+def bbox_to_pipeline_dict(bbox: Bbox) -> dict:
+    """Serialize a Bbox ORM row into the plain dict the core pipeline consumes.
+
+    The one Bbox→dict serializer shared by the template derivation (trace,
+    resample, diagnostic, fit, quality) and the chart-crop endpoint. Ink brush +
+    speck auto-fill + inserted donor cells must travel with the bbox, or the
+    anchor/width derivation binarises the UNassembled crop and silently ignores
+    them — the crop preview alone would show them. Without `patches` the umlaut a
+    ü/ö borrows from ä would not be in the skeleton the traced strokes snap to.
+    Mirrors crop_with_mask/binarize_adaptive. The crop endpoint ignores the
+    calibration keys (baseline/midband/n_anchors/coupling) it does not need.
+    """
+    guides = bbox.guides or {}
+    return {
+        "y0": bbox.y0,
+        "y1": bbox.y1,
+        "x0": bbox.x0,
+        "x1": bbox.x1,
+        "mask_strokes": list(bbox.mask_strokes),
+        "ink_strokes": list(bbox.ink_strokes),
+        "patches": list(bbox.patches),
+        "fill_holes_max_area": int(bbox.fill_holes_max_area),
+        "baseline_y": bbox.baseline_y,
+        "midband_y": bbox.midband_y,
+        "n_anchors": bbox.n_anchors,
+        # Coupling height travels with the bbox so trace/resample can stamp it
+        # onto the canonical's entry/exit (default baseline when unset).
+        "entry_coupling": guides.get("entry_coupling", "baseline"),
+        "exit_coupling": guides.get("exit_coupling", "baseline"),
+    }
 
 
 async def pooled_constant_nib(db: AsyncSession, style_id: str, source_id: str) -> float | None:

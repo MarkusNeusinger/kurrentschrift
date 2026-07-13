@@ -54,40 +54,25 @@ async def put_bbox(
     if payload.baseline_y <= payload.midband_y:
         raise HTTPException(422, detail="baseline_y must be greater than midband_y (baseline is below midband)")
     repo = BboxRepository(db)
-    # `guides`, `locked`, `split` and `n_anchors` are optional: when the client
-    # omits one, keep whatever is already stored (a plain bbox/calibration save
-    # must not wipe the guide lines, silently rewrite the anchor count, or
-    # require resending unrelated fields).
-    existing = None
-    if payload.guides is not None:
-        guides = payload.guides.model_dump()
-    else:
-        existing = await repo.get(source.id, glyph_key)
-        guides = existing.guides if existing is not None else {}
-    if payload.locked is not None:
-        locked = payload.locked
-    else:
-        if existing is None:
-            existing = await repo.get(source.id, glyph_key)
-        locked = bool(existing.locked) if existing is not None else False
-    if payload.split is not None:
-        split = payload.split
-    else:
-        if existing is None:
-            existing = await repo.get(source.id, glyph_key)
-        split = bool(existing.split) if existing is not None else False
-    if payload.n_anchors is not None:
-        n_anchors = payload.n_anchors
-    else:
-        if existing is None:
-            existing = await repo.get(source.id, glyph_key)
-        n_anchors = int(existing.n_anchors) if existing is not None else DEFAULT_N_ANCHORS
-    if payload.fill_holes_max_area is not None:
-        fill_holes_max_area = payload.fill_holes_max_area
-    else:
-        if existing is None:
-            existing = await repo.get(source.id, glyph_key)
-        fill_holes_max_area = int(existing.fill_holes_max_area) if existing is not None else 0
+    # `guides`, `locked`, `split`, `n_anchors` and `fill_holes_max_area` are all
+    # optional: when the client omits one, keep whatever is already stored (a
+    # plain bbox/calibration save must not wipe the guide lines, silently rewrite
+    # the anchor count, or require resending unrelated fields). Load the existing
+    # row once, only if at least one of them is actually omitted.
+    optionals = (payload.guides, payload.locked, payload.split, payload.n_anchors, payload.fill_holes_max_area)
+    existing = await repo.get(source.id, glyph_key) if any(v is None for v in optionals) else None
+
+    def coalesce(value, attr, default, cast):
+        """Prefer the payload value; else fall back to the stored row, else the default."""
+        if value is not None:
+            return value
+        return cast(getattr(existing, attr)) if existing is not None else default
+
+    guides = payload.guides.model_dump() if payload.guides is not None else coalesce(None, "guides", {}, dict)
+    locked = coalesce(payload.locked, "locked", False, bool)
+    split = coalesce(payload.split, "split", False, bool)
+    n_anchors = coalesce(payload.n_anchors, "n_anchors", DEFAULT_N_ANCHORS, int)
+    fill_holes_max_area = coalesce(payload.fill_holes_max_area, "fill_holes_max_area", 0, int)
     bbox = await repo.upsert(
         source.id,
         glyph_key,

@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_admin
 from api.dependencies import require_db, require_source
-from api.rendering import invalidate_pooled_nib, pooled_constant_nib, resolve_style
+from api.rendering import bbox_to_pipeline_dict, invalidate_pooled_nib, pooled_constant_nib, resolve_style
 from api.schemas import ResampleRequest, TemplateOut, TemplateSummary, TraceRequest
 from core.database import BboxRepository, Source, Template, TemplateRepository
 from core.fit import fit_glyph_to_crop
@@ -76,33 +76,6 @@ def _sync_bbox_anchor_count(bbox, canonical: dict) -> None:
         bbox.n_anchors = actual
 
 
-def _bbox_to_dict(bbox) -> dict:
-    guides = bbox.guides or {}
-    return {
-        "y0": bbox.y0,
-        "y1": bbox.y1,
-        "x0": bbox.x0,
-        "x1": bbox.x1,
-        "mask_strokes": list(bbox.mask_strokes),
-        # Ink brush + speck auto-fill + inserted donor cells must travel with the
-        # bbox too, or the anchor/width derivation (trace, resample, diagnostic,
-        # fit) binarises the UNassembled crop and silently ignores them — the crop
-        # preview alone would show them. Without `patches` the umlaut a ü/ö borrows
-        # from ä would not be in the skeleton the traced strokes snap to. Mirrors
-        # the crop endpoint + crop_with_mask/binarize_adaptive.
-        "ink_strokes": list(bbox.ink_strokes),
-        "patches": list(bbox.patches),
-        "fill_holes_max_area": int(bbox.fill_holes_max_area),
-        "baseline_y": bbox.baseline_y,
-        "midband_y": bbox.midband_y,
-        "n_anchors": bbox.n_anchors,
-        # Coupling height travels with the bbox so trace/resample can stamp it
-        # onto the canonical's entry/exit (default baseline when unset).
-        "entry_coupling": guides.get("entry_coupling", "baseline"),
-        "exit_coupling": guides.get("exit_coupling", "baseline"),
-    }
-
-
 def _template_to_out(t: Template) -> TemplateOut:
     return TemplateOut(
         glyph_key=t.glyph_key,
@@ -163,7 +136,7 @@ async def post_trace(
         _derive_canonical,
         width_resolver,
         raw_path=[p.model_dump() for p in payload.raw_path],
-        bbox=_bbox_to_dict(bbox),
+        bbox=bbox_to_pipeline_dict(bbox),
         chart_path=source.chart_path,
         glyph=payload.glyph,
         position=payload.position,
@@ -195,7 +168,7 @@ async def post_trace_preview(
     if bbox is None:
         raise HTTPException(409, detail=f"set bbox for {glyph_key!r} before tracing")
     _, style_ratio, slant_deg, width_resolver = await resolve_style(source, db)
-    bbox_dict = _bbox_to_dict(bbox)
+    bbox_dict = bbox_to_pipeline_dict(bbox)
     raw_path = [p.model_dump() for p in payload.raw_path]
 
     def compute() -> dict:
@@ -255,7 +228,7 @@ async def post_resample(
         _derive_canonical_from_raw,
         width_resolver,
         glyph_row={"raw_path": list(existing.raw_path), "glyph": existing.glyph, "position": existing.position},
-        bbox=_bbox_to_dict(bbox),
+        bbox=bbox_to_pipeline_dict(bbox),
         chart_path=source.chart_path,
         n_anchors=n_anchors,
     )
@@ -291,7 +264,7 @@ async def get_diagnostic(
             "exit_pt": dict(template.exit_pt) if template.exit_pt else {},
             "advance": template.advance,
         },
-        bbox=_bbox_to_dict(bbox),
+        bbox=bbox_to_pipeline_dict(bbox),
         chart_path=source.chart_path,
         style_ratio=style_ratio,
         slant_deg=slant_deg,
@@ -333,7 +306,7 @@ async def get_fit(
             "stroke_starts": (template.trace_meta or {}).get("stroke_starts"),
             "corner_anchors": (template.trace_meta or {}).get("corner_anchors"),
         },
-        bbox=_bbox_to_dict(bbox),
+        bbox=bbox_to_pipeline_dict(bbox),
         chart_path=source.chart_path,
         lambda_reg=lambda_reg,
         width_weight=width_weight,
@@ -362,7 +335,7 @@ async def get_quality(glyph_key: str, source: Source = Depends(require_source), 
     template = await TemplateRepository(db).get(source.style_id, glyph_key)
     if template is None:
         raise HTTPException(404, detail=f"no canonical for {glyph_key!r}")
-    bbox_dict = _bbox_to_dict(bbox)
+    bbox_dict = bbox_to_pipeline_dict(bbox)
     trace_meta = dict(template.trace_meta or {})
     # Older templates predate the pixel-space trace meta the metric scores —
     # a clear 409 beats the ValueError-turned-500 the metric would raise.

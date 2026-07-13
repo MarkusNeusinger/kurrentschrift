@@ -7,6 +7,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import require_db, require_source
+from api.rendering import bbox_to_pipeline_dict
 from core.chart import crop_mask_to_png_bytes, crop_to_png_bytes, load_chart_grayscale, resolve_chart_path
 from core.database import BboxRepository, Source
 
@@ -50,15 +51,6 @@ async def get_crop(
     if bbox is None:
         raise HTTPException(404, detail=f"bbox not set for {glyph_key!r}")
     chart = load_chart_grayscale(source.chart_path)
-    bbox_dict = {
-        "y0": bbox.y0,
-        "y1": bbox.y1,
-        "x0": bbox.x0,
-        "x1": bbox.x1,
-        "mask_strokes": list(bbox.mask_strokes),
-        "ink_strokes": list(bbox.ink_strokes),
-        "patches": list(bbox.patches),
-        "fill_holes_max_area": int(bbox.fill_holes_max_area),
-    }
+    bbox_dict = bbox_to_pipeline_dict(bbox)
     png = crop_mask_to_png_bytes(chart, bbox_dict) if view == "mask" else crop_to_png_bytes(chart, bbox_dict)
     return Response(content=png, media_type="image/png")

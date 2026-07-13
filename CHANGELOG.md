@@ -12,6 +12,20 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **API shared helpers & consistency.** Consolidated the write-path routers'
+  duplicated glue: a single `resolve_render_context` (style ratio + width
+  resolver + pooled nib/pen) replaces the three-line trio copied across
+  `/write/glyphs`, `/write/word` and `/write/glyphs/{key}`; one
+  `bbox_to_pipeline_dict` serializer (in `api/rendering.py`) replaces the two
+  divergent Bbox→dict copies in the templates and chart routers; the public
+  `PUBLIC_CACHE_CONTROL` header moved to a shared `api/cache.py`; `put_bbox`'s
+  five copy-pasted "keep stored value when omitted" blocks collapse to one
+  `coalesce` helper loading the existing row at most once; a shared `NAnchors`
+  bound keeps the anchor-count validation identical across the bbox/trace/
+  resample bodies; `QuizWordOut.era` is now a `Literal["modern","historic"]`;
+  and `GET /styles` fetches all sources in one query instead of one per style
+  (N+1). Behaviour-preserving; covered by new DB-free unit tests.
+
 - **Pairlab-calibrated placement (O1).** `core/compose.py` places letters with two
   measured corrections: a HIGH exit is treated as a coupling-stub tip, not the pen's
   true departure — the next letter tucks back under it proportionally to the exit

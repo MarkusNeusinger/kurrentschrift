@@ -32,12 +32,12 @@ def _to_out(style: Style, sources: list[Source]) -> StyleOut:
 @router.get("", response_model=list[StyleOut])
 async def list_styles(db: AsyncSession = Depends(require_db)) -> list[StyleOut]:
     styles = await StyleRepository(db).list()
-    source_repo = SourceRepository(db)
-    out = []
-    for style in styles:
-        sources = await source_repo.list(style_id=style.id)
-        out.append(_to_out(style, sources))
-    return out
+    # One query for every source, then bucket by style — avoids the per-style
+    # round trip (N+1) the old loop made.
+    by_style: dict[str, list[Source]] = {}
+    for source in await SourceRepository(db).list():
+        by_style.setdefault(source.style_id, []).append(source)
+    return [_to_out(style, by_style.get(style.id, [])) for style in styles]
 
 
 @router.get("/{style_id}", response_model=StyleOut)

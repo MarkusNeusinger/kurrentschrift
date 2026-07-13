@@ -15,8 +15,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.cache import set_public_cache
 from api.dependencies import require_db, require_source
-from api.rendering import pooled_constant_nib, pooled_pen, resolve_style
+from api.rendering import resolve_render_context
 from core.compose import compose_word
 from core.database import Source, Template, TemplateRepository
 from core.pipeline import render_payload_for_template
@@ -24,13 +25,6 @@ from core.shaping import decompose_ligature_slot, glyph_keys_of, shape_text
 
 
 router = APIRouter(prefix="/sources/{source_id}/write", tags=["write"])
-
-# Template geometry only changes on an admin re-trace; five minutes of browser
-# staleness is fine for the public pages while the admin surfaces keep reading
-# the uncached /diagnostic. `s-maxage` targets the CDN once a cache rule allows
-# JSON on write/*; stale-while-revalidate bridges revalidation without a
-# blocking round trip.
-CACHE_CONTROL = "public, max-age=300, s-maxage=86400, stale-while-revalidate=604800"
 
 # A word/sheet needs one entry per UNIQUE glyph key — the full Tafel is ~30,
 # the /federprobe input is capped at 48 chars, so 80 bounds any legitimate use.
@@ -71,9 +65,7 @@ async def get_write_glyphs(
     if len(requested) > MAX_BATCH_KEYS:
         raise HTTPException(422, detail=f"at most {MAX_BATCH_KEYS} keys per request")
 
-    style_id, style_ratio, _slant, width_resolver = await resolve_style(source, db)
-    nib = await pooled_constant_nib(db, style_id, source.id) if width_resolver == "constant" else None
-    pen = await pooled_pen(db, style_id, source.id, width_resolver)
+    style_ratio, width_resolver, nib, pen = await resolve_render_context(source, db)
     templates = await TemplateRepository(db).get_many(source.style_id, requested)
     # Dereference the ORM rows into plain dicts ON the event loop — touching a
     # session-bound instance from the threadpool is not thread-safe (an
@@ -95,7 +87,7 @@ async def get_write_glyphs(
         return out
 
     glyphs = await run_in_threadpool(compute)
-    response.headers["Cache-Control"] = CACHE_CONTROL
+    set_public_cache(response)
     return {"glyphs": glyphs, "missing": missing}
 
 
@@ -121,9 +113,7 @@ async def get_write_word(
     if len(normalized) > MAX_TEXT_LEN:
         raise HTTPException(422, detail=f"text is limited to {MAX_TEXT_LEN} characters")
 
-    style_id, style_ratio, _slant, width_resolver = await resolve_style(source, db)
-    nib = await pooled_constant_nib(db, style_id, source.id) if width_resolver == "constant" else None
-    pen = await pooled_pen(db, style_id, source.id, width_resolver)
+    style_ratio, width_resolver, nib, pen = await resolve_render_context(source, db)
 
     repo = TemplateRepository(db)
     slots = shape_text(normalized)
@@ -156,7 +146,7 @@ async def get_write_word(
         return compose_word(slots, payloads, pen=pen)
 
     composed = await run_in_threadpool(compute)
-    response.headers["Cache-Control"] = CACHE_CONTROL
+    set_public_cache(response)
     return {"text": normalized, **composed}
 
 
@@ -168,12 +158,10 @@ async def get_write_glyph(
     template = await TemplateRepository(db).get(source.style_id, glyph_key)
     if template is None:
         raise HTTPException(404, detail=f"no canonical for {glyph_key!r}")
-    style_id, style_ratio, _slant, width_resolver = await resolve_style(source, db)
-    nib = await pooled_constant_nib(db, style_id, source.id) if width_resolver == "constant" else None
-    pen = await pooled_pen(db, style_id, source.id, width_resolver)
+    style_ratio, width_resolver, nib, pen = await resolve_render_context(source, db)
     payload = await run_in_threadpool(
         render_payload_for_template, _template_to_glyph_row(template), style_ratio, width_resolver, nib, pen=pen
     )
     payload["glyph_key"] = glyph_key
-    response.headers["Cache-Control"] = CACHE_CONTROL
+    set_public_cache(response)
     return payload
