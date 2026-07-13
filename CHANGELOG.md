@@ -37,6 +37,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `Literal["modern", "historic"]`; `GET /styles` fetches all sources in one query and
   groups in Python (no more per-style N+1, chart `.exists()` memoised); and the router
   `HTTPException`s use named `status.*` constants. Response shapes are unchanged.
+- **Pairlab-calibrated placement (O1).** `core/compose.py` places letters with two
   measured corrections: a HIGH exit is treated as a coupling-stub tip, not the pen's
   true departure — the next letter tucks back under it proportionally to the exit
   height (`TUCK_RATE`·(exit − 0.6)⁺; the d-class needed −0.33 xh) — and a BACKWARD

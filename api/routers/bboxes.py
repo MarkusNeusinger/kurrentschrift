@@ -1,5 +1,7 @@
 """Bbox CRUD per source."""
 
+from typing import TypeVar
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,8 +14,10 @@ from core.pipeline import DEFAULT_N_ANCHORS
 
 router = APIRouter(prefix="/sources/{source_id}/bboxes", tags=["bboxes"])
 
+T = TypeVar("T")
 
-def _coalesce(payload_val, stored_val, default):
+
+def _coalesce(payload_val: T | None, stored_val: T | None, default: T) -> T:
     """Optional-field precedence for a bbox PUT: the client's value when it sent
     one, else whatever is already stored, else the default. Keeps a plain
     bbox/calibration save from wiping fields the client omitted."""
