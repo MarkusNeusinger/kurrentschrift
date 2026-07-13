@@ -131,9 +131,11 @@ def fixture_word_case(
 ) -> WordCase:
     """Load one frozen word-bench fixture by id (its `word` text is accepted too).
 
-    `which` in {"words", "pairs"} selects the sibling root. A frozen-unscorable
-    entry (a needed template is unauthored) still loads — you may want to LOOK at
-    what composes — with `scorable=False`; the derivation reports the hole.
+    `which` selects the sibling fixture root: the canonical `"words"`/`"pairs"`
+    sets or any custom set name a sidecar declares (e.g. `"abb22"`). A
+    frozen-unscorable entry (a needed template is unauthored) still loads — you
+    may want to LOOK at what composes — with `scorable=False`; the derivation
+    reports the hole.
     """
     root = _root_for(fixtures_root, style, which)
     manifest = json.loads((root / "manifest.json").read_text())
