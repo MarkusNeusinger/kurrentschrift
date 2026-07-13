@@ -222,6 +222,12 @@ function SheetGlyph({ geom, glyph, glyphX, cellX, cellW, vbY, vbH, orderIndex, r
           runKey={run}
         />
       </defs>
+      {/* No InkBleedFilter here by design: the Schreibtafel renders the whole
+          alphabet at once (up to LETTERS_PER_ROW glyphs × several rows), so it
+          deliberately skips the per-glyph feTurbulence/feDisplacementMap bleed
+          the single-glyph/word surfaces use — many concurrent filters on a live,
+          click-replayable sheet is a real cost for a whisper of edge wicking.
+          The mask + settle are shared; the bleed is the one part it opts out of. */}
       <Box
         component="g"
         key={`ink-${run}`}
