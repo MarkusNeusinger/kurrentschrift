@@ -12,6 +12,20 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Direct unit tests for the pure-math core modules + a mechanical shaping twin
+  guard.** New `tests/test_geometry.py` and `tests/test_widths.py` pin the
+  deterministic numeric helpers in `core/geometry.py` (tangents, arc length,
+  curvature, straightness residual, TLS line fit, vertical-run/crossing/retrace
+  detectors) and `core/widths.py` (the `BroadNib` law + vectors, per-stroke
+  tangents, every `resolve_half_widths` branch) with known inputs/outputs, so the
+  upcoming core-dedup refactor has a behavioural net; `_locally_straight_mask`
+  gains direct coverage in `tests/test_quality_components.py`. The
+  `core/shaping.py` ↔ `app/src/domain/shaping.ts` twin is now enforced by a shared
+  fixture (`tests/fixtures/shaping_cases.json`, generated from the Python source of
+  truth) asserted by both `tests/test_tri_script.py` and a new Vitest test
+  (`app/src/domain/shaping.test.ts`) — mutating one shaping without the other fails
+  CI. Wires a `test` script + `vitest` into `app/` and a Vitest step into the
+  frontend CI job (build-only before).
 - **Third wordbench set: the Abb. 22 Schülerschrift plate (cross-hand reference).** The
   1922 Leitfaden's only other connected Ausgangsschrift specimen — a pupil's hand
   (Bruno Krüger, 3rd school year, Breitkantfeder, 106 words of Hoffmann von
@@ -24,6 +38,14 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **Trimmed `app/src/domain/shaping.ts` to the quiz-gating subset.** With word
+  composition living server-side (`core/compose.py`), the TS shaper only needs the
+  `text → glyph_keys` mapping the quiz word-bank gating consumes (`shapeText` +
+  `glyphKeysOf`). Dropped the now-dead exports `decomposeLigatureSlot` and
+  `stripFugen`, and made `shapeWord`/`FUGE` module-private; the header note now
+  states the reduced scope and points at the shared fixture that keeps the mapping
+  in sync with `core/shaping.py`. No runtime behaviour change (the quiz imports are
+  untouched).
 - **API helper consolidation (no behaviour change).** Collapsed copy-pasted `api/`
   boilerplate onto single sources of truth: `resolve_render_context(source, db)` in
   `api/rendering.py` now resolves the style + source-pooled nib/pen for every write and
