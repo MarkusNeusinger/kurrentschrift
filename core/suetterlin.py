@@ -74,16 +74,25 @@ from core.geometry import (
     detect_crossing_passages,
     fit_line_tls,
     run_is_straight_residual,
+    unit_tangents,
 )
 
 # Deliberately shared with the pressure pipeline. `_split_raw_strokes` is the
 # single source of truth for pen-lift (Absetzen) splitting; `_resample_strokes`
 # is the proven even-spacing + corner-knot (Umkehrpunkt) resampler — even
 # spacing is what keeps the render's natural cubic spline from overshooting on a
-# straight run; `_measurements` keeps the stored per-instance stats identical
-# across both derivations. Re-implementing any of them here would risk silent
-# divergence. The Gleichzug path only swaps in a skeleton snap + constant width.
-from core.pipeline import DEFAULT_N_ANCHORS, _detect_corners, _measurements, _resample_strokes, _split_raw_strokes
+# straight run; `_assemble_canonical_payload` builds the shared wire dict
+# (normalisation, entry/exit, raw_path, trace_meta, measurements) so the stored
+# shape stays identical across both derivations. Re-implementing any of them
+# here would risk silent divergence. The Gleichzug path only swaps in a skeleton
+# snap + constant width.
+from core.pipeline import (
+    DEFAULT_N_ANCHORS,
+    _assemble_canonical_payload,
+    _detect_corners,
+    _resample_strokes,
+    _split_raw_strokes,
+)
 from core.quality_suetterlin import suetterlin_quality_metrics
 
 
@@ -240,14 +249,6 @@ def _resample_by_arc(points: np.ndarray, spacing_px: float) -> np.ndarray:
     n = max(2, int(round(total / max(spacing_px, 1e-3))) + 1)
     t = np.linspace(0.0, total, n)
     return np.column_stack([np.interp(t, cum, points[:, 0]), np.interp(t, cum, points[:, 1])])
-
-
-def _unit_tangents(points: np.ndarray) -> np.ndarray:
-    """Unit tangents of a densely-ordered (~1px) polyline via np.gradient."""
-    tangent = np.gradient(points, axis=0)
-    tnorm = np.hypot(tangent[:, 0], tangent[:, 1])
-    tnorm[tnorm == 0] = 1.0
-    return tangent / tnorm[:, None]
 
 
 def _flag_wide_passes(
@@ -446,7 +447,7 @@ def _snap_strokes_to_skeleton(
         pts = _resample_by_arc(stroke, SNAP_RESAMPLE_PX)
         if len(pts) < 2:
             continue
-        tangent = _unit_tangents(pts)
+        tangent = unit_tangents(pts)
         seg = np.hypot(*np.diff(pts, axis=0).T)
         arc = np.concatenate([[0.0], np.cumsum(seg)])
         if tree is not None:
@@ -842,50 +843,24 @@ def canonical_suetterlin_from_path(
     except ValueError:
         quality = None
 
-    pixel_global = resampled_local + np.array([x0, y0])
-    x_origin = float(pixel_global[0, 0])
-    x_norm = (pixel_global[:, 0] - x_origin) / unit_px
-    y_norm = (baseline_y - pixel_global[:, 1]) / unit_px
-    hw_norm = hw_px / unit_px
-    anchors_norm = np.column_stack([x_norm, y_norm])
-
-    entry_xy = [round(float(x_norm[0]), 4), round(float(y_norm[0]), 4)]
-    exit_xy = [round(float(x_norm[-1]), 4), round(float(y_norm[-1]), 4)]
-    entry_tan = float(np.degrees(np.arctan2(y_norm[1] - y_norm[0], x_norm[1] - x_norm[0])))
-    exit_tan = float(np.degrees(np.arctan2(y_norm[-1] - y_norm[-2], x_norm[-1] - x_norm[-2])))
-    entry_coupling = bbox.get("entry_coupling", "baseline")
-    exit_coupling = bbox.get("exit_coupling", "baseline")
-    advance = float(max(0.1, x_norm.max() - x_norm.min()))
-
-    raw_stored = []
-    for p in raw_path:
-        item: dict = {
-            "x": round(float(p["x"]), 2),
-            "y": round(float(p["y"]), 2),
-            "pressure": None if p.get("pressure") is None else round(float(p["pressure"]), 4),
-            "t": None if p.get("t") is None else round(float(p["t"]), 2),
-        }
-        if p.get("pen_up"):
-            item["pen_up"] = True
-        raw_stored.append(item)
-
-    return {
-        "glyph": glyph,
-        "position": position,
-        "advance": round(advance, 4),
-        "anchors": [[round(float(x), 4), round(float(y), 4)] for x, y in anchors_norm],
-        "half_widths": [round(float(h), 4) for h in hw_norm],
-        "entry": {"xy": entry_xy, "tangent_deg": round(entry_tan, 1), "coupling": entry_coupling},
-        "exit_pt": {"xy": exit_xy, "tangent_deg": round(exit_tan, 1), "coupling": exit_coupling},
-        "raw_path": raw_stored,
-        "trace_meta": {
-            "method": "suetterlin-gleichzug",
-            "bbox_snapshot": {k: bbox[k] for k in ("y0", "y1", "x0", "x1")},
-            "baseline_y": baseline_y,
-            "midband_y": midband_y,
-            "unit_px": unit_px,
-            "n_anchors": len(anchors_norm),
-            "stroke_starts": stroke_starts,
+    return _assemble_canonical_payload(
+        resampled_local=resampled_local,
+        hw_px=hw_px,
+        stroke_starts=stroke_starts,
+        corner_anchors_idx=corner_anchors_idx,
+        # No crossing-width resolution: the width is a single constant.
+        crossing_anchors=[],
+        path_length_px=path_length_px,
+        quality=quality,
+        raw_path=raw_path,
+        bbox=bbox,
+        glyph=glyph,
+        position=position,
+        baseline_y=baseline_y,
+        midband_y=midband_y,
+        unit_px=unit_px,
+        method="suetterlin-gleichzug",
+        extra_trace_meta={
             # The Gleichzug nib radius (px) the constant half-width was stamped from.
             "nib_radius_px": round(r_px, 3),
             # Snap/refine are pressure-pipeline stages; recorded as not-applicable
@@ -898,16 +873,8 @@ def canonical_suetterlin_from_path(
             # Verticalisation: long near-vertical straight runs pulled to true 90°
             # with a tangential fillet into the adjacent rounds.
             "vertical": {"applied": True, "angle_deg": VERTICAL_ANGLE_DEG, "min_len_units": VERTICAL_MIN_LEN_UNITS},
-            "quality": quality,
-            # No crossing-width resolution: the width is a single constant.
-            "crossing_anchors": [],
-            "corner_anchors": corner_anchors_idx,
-            "path_length_px": round(path_length_px, 1),
-            "pixel_anchors": [[round(float(x), 2), round(float(y), 2)] for x, y in pixel_global],
-            "half_widths_px": [round(float(h), 2) for h in hw_px],
         },
-        "measurements": _measurements(anchors_norm, hw_px, path_length_px, bbox),
-    }
+    )
 
 
 def canonical_suetterlin_from_raw_path_only(glyph_row: dict, bbox: dict, chart_path: str, n_anchors: int) -> dict:

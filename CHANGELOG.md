@@ -38,6 +38,23 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **Deduped shared geometry/payload helpers and decomposed the oversized `core/`
+  functions (no behaviour change).** The two canonical derivations now share one
+  `_assemble_canonical_payload` (+ `_serialize_raw_path`) in `core/pipeline.py`
+  instead of ~45 near-verbatim lines each — the pixel→template normalisation,
+  entry/exit tangents, raw-path pen-lift serialization and the wire dict live
+  once; the per-script differences (`method`, the Sütterlin `nib_radius_px`/
+  `smooth`/`vertical` keys and the snap/refine notes) ride in one `method` string
+  plus an `extra_trace_meta` dict. `bilinear` moved from `core/fit.py` to
+  `core/geometry.py`, so `core/quality.py` and `core/quality_suetterlin.py` sample
+  the shared field without importing the heavy `fit` module; `suetterlin`'s
+  `_unit_tangents` now reuses `geometry.unit_tangents` and `compose`'s `_median`
+  reuses `statistics.median`. The multi-closure giants are stage-extracted into
+  named module-level helpers: `compose_word`'s pen/Endstrich/connector geometry
+  became `_apply_pen`/`_endstrike_centerline`/`_connector_centerline`, and
+  `fit_template_to_instance`'s objective/energy closures became an `_InstanceFit`
+  dataclass mirroring the existing `_RefineRound` idiom. The compose golden fixture
+  stays byte-identical and the full core suite is unchanged.
 - **Unified the "as written" ink-reveal across the three surfaces into a shared
   primitive.** `WrittenGlyph`, `WrittenWord` and `WrittenSheet` each
   reimplemented the identical SVG reveal technique (y-negated centerline paths,

@@ -442,6 +442,115 @@ def _measurements(anchors_norm: np.ndarray, half_widths_px: np.ndarray, path_len
     }
 
 
+def _serialize_raw_path(raw_path: list[dict]) -> list[dict]:
+    """Round + sparsely mark a stylus path for storage in `templates.raw_path`.
+
+    Keeps the pen-lift (Absetzen) markers sparse — only the last sample of each
+    stroke but the final one carries `pen_up` — so `_split_raw_strokes` on a
+    re-derive re-splits the path identically.
+    """
+    raw_stored: list[dict] = []
+    for p in raw_path:
+        item: dict = {
+            "x": round(float(p["x"]), 2),
+            "y": round(float(p["y"]), 2),
+            "pressure": None if p.get("pressure") is None else round(float(p["pressure"]), 4),
+            "t": None if p.get("t") is None else round(float(p["t"]), 2),
+        }
+        if p.get("pen_up"):
+            item["pen_up"] = True
+        raw_stored.append(item)
+    return raw_stored
+
+
+def _assemble_canonical_payload(
+    *,
+    resampled_local: np.ndarray,
+    hw_px: np.ndarray,
+    stroke_starts: list[int],
+    corner_anchors_idx: list[int],
+    crossing_anchors: list[int],
+    path_length_px: float,
+    quality: dict | None,
+    raw_path: list[dict],
+    bbox: dict,
+    glyph: str,
+    position: str,
+    baseline_y: int,
+    midband_y: int,
+    unit_px: float,
+    method: str,
+    extra_trace_meta: dict | None = None,
+) -> dict:
+    """Normalise resampled crop-local anchors + widths into the canonical dict.
+
+    The shared tail of both canonical derivations — the pressure pipeline
+    (`canonical_from_path`) and the Gleichzug pipeline
+    (`core.suetterlin.canonical_suetterlin_from_path`): pixel → template
+    normalisation (baseline = 0, midband = 1), entry/exit points + tangents,
+    the raw_path serialization and the wire dict (glyph/position/advance/
+    anchors/half_widths/entry/exit_pt/raw_path/trace_meta/measurements). The
+    per-script differences ride in `method` (`trace_meta.method`) and
+    `extra_trace_meta` (the Sütterlin path adds `nib_radius_px`/`smooth`/
+    `vertical` and overrides `snap`/`refine`); the pressure path passes its
+    `snap`/`refine`/`quality` residuals the same way.
+    """
+    x0, y0 = bbox["x0"], bbox["y0"]
+    pixel_global = resampled_local + np.array([x0, y0])
+    x_origin = float(pixel_global[0, 0])
+    x_norm = (pixel_global[:, 0] - x_origin) / unit_px
+    y_norm = (baseline_y - pixel_global[:, 1]) / unit_px
+    hw_norm = hw_px / unit_px
+    anchors_norm = np.column_stack([x_norm, y_norm])
+
+    entry_xy = [round(float(x_norm[0]), 4), round(float(y_norm[0]), 4)]
+    exit_xy = [round(float(x_norm[-1]), 4), round(float(y_norm[-1]), 4)]
+    entry_tan = float(np.degrees(np.arctan2(y_norm[1] - y_norm[0], x_norm[1] - x_norm[0])))
+    exit_tan = float(np.degrees(np.arctan2(y_norm[-1] - y_norm[-2], x_norm[-1] - x_norm[-2])))
+    entry_coupling = bbox.get("entry_coupling", "baseline")
+    exit_coupling = bbox.get("exit_coupling", "baseline")
+    advance = float(max(0.1, x_norm.max() - x_norm.min()))
+
+    trace_meta: dict = {
+        "method": method,
+        "bbox_snapshot": {k: bbox[k] for k in ("y0", "y1", "x0", "x1")},
+        "baseline_y": baseline_y,
+        "midband_y": midband_y,
+        "unit_px": unit_px,
+        "n_anchors": len(anchors_norm),
+        # Anchor indices where each pen-stroke begins (first is 0). A single
+        # entry means one continuous stroke; the diagnostic + fit split here.
+        "stroke_starts": stroke_starts,
+        # Image-space quality of the stored result vs the binarized crop.
+        "quality": quality,
+        # Anchor indices whose width reading was crossing-contaminated and
+        # replaced by interpolation (diagnostic visibility, not geometry).
+        "crossing_anchors": crossing_anchors,
+        # Anchor indices sitting exactly on detected within-stroke reversal
+        # corners (Umkehrpunkte) — sampling splits the spline there so the
+        # rendered centerline keeps a true kink instead of rounding it.
+        "corner_anchors": corner_anchors_idx,
+        "path_length_px": round(path_length_px, 1),
+        "pixel_anchors": [[round(float(x), 2), round(float(y), 2)] for x, y in pixel_global],
+        "half_widths_px": [round(float(h), 2) for h in hw_px],
+    }
+    if extra_trace_meta:
+        trace_meta.update(extra_trace_meta)
+
+    return {
+        "glyph": glyph,
+        "position": position,
+        "advance": round(advance, 4),
+        "anchors": [[round(float(x), 4), round(float(y), 4)] for x, y in anchors_norm],
+        "half_widths": [round(float(h), 4) for h in hw_norm],
+        "entry": {"xy": entry_xy, "tangent_deg": round(entry_tan, 1), "coupling": entry_coupling},
+        "exit_pt": {"xy": exit_xy, "tangent_deg": round(exit_tan, 1), "coupling": exit_coupling},
+        "raw_path": _serialize_raw_path(raw_path),
+        "trace_meta": trace_meta,
+        "measurements": _measurements(anchors_norm, hw_px, path_length_px, bbox),
+    }
+
+
 # -------------------------------------------------------------------- public API
 
 
@@ -584,77 +693,30 @@ def canonical_from_path(
     except ValueError:
         quality = None
 
-    pixel_global = resampled_local + np.array([x0, y0])
-    x_origin = float(pixel_global[0, 0])
-    x_norm = (pixel_global[:, 0] - x_origin) / unit_px
-    y_norm = (baseline_y - pixel_global[:, 1]) / unit_px
-    hw_norm = hw_px / unit_px
-
-    anchors_norm = np.column_stack([x_norm, y_norm])
-
-    entry_xy = [round(float(x_norm[0]), 4), round(float(y_norm[0]), 4)]
-    exit_xy = [round(float(x_norm[-1]), 4), round(float(y_norm[-1]), 4)]
-    entry_tan = float(np.degrees(np.arctan2(y_norm[1] - y_norm[0], x_norm[1] - x_norm[0])))
-    exit_tan = float(np.degrees(np.arctan2(y_norm[-1] - y_norm[-2], x_norm[-1] - x_norm[-2])))
-    # Coupling height (where a neighbour joins) is configured per glyph on the
-    # bbox guides; default to the baseline when unset.
-    entry_coupling = bbox.get("entry_coupling", "baseline")
-    exit_coupling = bbox.get("exit_coupling", "baseline")
-    advance = float(max(0.1, x_norm.max() - x_norm.min()))
-
-    raw_stored = []
-    for p in raw_path:
-        item: dict = {
-            "x": round(float(p["x"]), 2),
-            "y": round(float(p["y"]), 2),
-            "pressure": None if p.get("pressure") is None else round(float(p["pressure"]), 4),
-            "t": None if p.get("t") is None else round(float(p["t"]), 2),
-        }
-        # Keep the pen-lift markers sparse (only the last sample of each stroke
-        # but the final one) so /resample re-splits the path identically.
-        if p.get("pen_up"):
-            item["pen_up"] = True
-        raw_stored.append(item)
-
-    return {
-        "glyph": glyph,
-        "position": position,
-        "advance": round(advance, 4),
-        "anchors": [[round(float(x), 4), round(float(y), 4)] for x, y in anchors_norm],
-        "half_widths": [round(float(h), 4) for h in hw_norm],
-        "entry": {"xy": entry_xy, "tangent_deg": round(entry_tan, 1), "coupling": entry_coupling},
-        "exit_pt": {"xy": exit_xy, "tangent_deg": round(exit_tan, 1), "coupling": exit_coupling},
-        "raw_path": raw_stored,
-        "trace_meta": {
-            "method": "web-stylus",
-            "bbox_snapshot": {k: bbox[k] for k in ("y0", "y1", "x0", "x1")},
-            "baseline_y": baseline_y,
-            "midband_y": midband_y,
-            "unit_px": unit_px,
-            "n_anchors": len(anchors_norm),
-            # Anchor indices where each pen-stroke begins (first is 0). A single
-            # entry means one continuous stroke; the diagnostic + fit split here.
-            "stroke_starts": stroke_starts,
+    return _assemble_canonical_payload(
+        resampled_local=resampled_local,
+        hw_px=hw_px,
+        stroke_starts=stroke_starts,
+        corner_anchors_idx=corner_anchors_idx,
+        crossing_anchors=crossing_anchors,
+        path_length_px=path_length_px,
+        quality=quality,
+        raw_path=raw_path,
+        bbox=bbox,
+        glyph=glyph,
+        position=position,
+        baseline_y=baseline_y,
+        midband_y=midband_y,
+        unit_px=unit_px,
+        method="web-stylus",
+        extra_trace_meta={
             # Medial-axis snap of the drawn Weg (applied flag + residuals/shift).
             "snap": snap_meta,
             # Image-space refinement of anchors+widths against the ink edge
             # (applied flag + residuals; see refine_template_against_crop).
             "refine": refine_meta,
-            # Image-space quality of the stored result vs the binarized crop.
-            "quality": quality,
-            # Anchor indices whose width reading was crossing-contaminated and
-            # replaced by interpolation (diagnostic visibility, not geometry).
-            "crossing_anchors": crossing_anchors,
-            # Anchor indices sitting exactly on detected within-stroke reversal
-            # corners (Umkehrpunkte) — sampling splits the spline there so the
-            # rendered centerline keeps a true kink instead of rounding it.
-            "corner_anchors": corner_anchors_idx,
-            "path_length_px": round(path_length_px, 1),
-            "pixel_anchors": [[round(float(x), 2), round(float(y), 2)] for x, y in pixel_global],
-            "half_widths_px": [round(float(h), 2) for h in hw_px],
         },
-        "measurements": _measurements(anchors_norm, hw_px, path_length_px, bbox),
-    }
+    )
 
 
 def canonical_from_raw_path_only(glyph_row: dict, bbox: dict, chart_path: str, n_anchors: int) -> dict:

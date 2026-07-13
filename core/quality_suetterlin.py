@@ -61,10 +61,10 @@ from scipy.ndimage import distance_transform_edt, gaussian_filter1d
 
 from core.chart import crop_with_mask, load_chart_grayscale
 from core.extract import binarize_adaptive, skeleton_and_width
-from core.fit import bilinear
 from core.geometry import (
     acute_angle_between,
     arc_length,
+    bilinear,
     detect_crossing_passages,
     detect_retrace_pairs,
     detect_vertical_runs,

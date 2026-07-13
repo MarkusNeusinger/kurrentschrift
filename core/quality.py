@@ -33,8 +33,10 @@ from core.chart import crop_with_mask, load_chart_grayscale
 from core.extract import binarize_adaptive, half_widths_on_medial_axis, skeleton_and_width
 
 # Bilinear field sampling shared with the fit — the metric reads the same EDT
-# interpolant the optimiser descends, so "converged" and "high score" agree.
-from core.fit import bilinear
+# interpolant the optimiser descends, so "converged" and "high score" agree. It
+# lives in `core.geometry` (not `core.fit`) so the metric never drags in the
+# heavy fit module.
+from core.geometry import bilinear
 from core.template import build_sample_plan, capsule_union_rings, sample_with_sample_plan
 
 

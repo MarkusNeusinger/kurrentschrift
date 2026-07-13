@@ -50,6 +50,7 @@ from scipy.spatial import cKDTree
 
 from core.chart import crop_with_mask, load_chart_grayscale
 from core.extract import binarize_adaptive, half_widths_on_medial_axis, skeleton_and_width
+from core.geometry import bilinear
 from core.template import SamplePlan, build_sample_plan, capsule_union_rings, sample_with_sample_plan
 
 
@@ -183,16 +184,6 @@ def _skeleton_points(skel: np.ndarray) -> np.ndarray:
     return np.column_stack([xs.astype(float), ys.astype(float)])
 
 
-def bilinear(field_map: np.ndarray, px: np.ndarray, py: np.ndarray) -> np.ndarray:
-    """Sample a (H, W) field at float pixel coordinates, clamped to the crop.
-
-    Public shared facility: `core.quality` reads the same EDT interpolant the
-    optimiser descends, so "converged" and "high score" agree by construction.
-    """
-    val, _, _ = _bilinear_with_grad(field_map, px, py)
-    return val
-
-
 def _bilinear_with_grad(
     field_map: np.ndarray, px: np.ndarray, py: np.ndarray
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -313,6 +304,121 @@ def _tangent_deg(p0: np.ndarray, p1: np.ndarray) -> float:
 # -------------------------------------------------------------------- core fit
 
 
+@dataclass
+class _InstanceFit:
+    """Frozen inputs + operators of one ``fit_template_to_instance`` run.
+
+    The instance-fit twin of ``_RefineRound``: the sampling operator, width
+    samples and lookup fields are frozen at the canonical anchors, so
+    ``objective`` sees an exactly analytic gradient (function and gradient agree
+    to machine precision, as L-BFGS-B's line search requires — see the module
+    header) and ``report_energies`` scores on the UNSMOOTHED fields.
+    """
+
+    template_anchors: np.ndarray
+    k: int
+    unit_px: float
+    unit_sq: float
+    x_origin_px: float
+    baseline_y_px: float
+    crop_h: int
+    crop_w: int
+    sampling_op: np.ndarray
+    sw_px: np.ndarray
+    n_s: int
+    dist_raw: np.ndarray
+    dist_smooth: np.ndarray
+    width_raw: np.ndarray
+    width_smooth: np.ndarray
+    cov_pts: np.ndarray
+    n_cov: int
+    width_weight: float
+    coverage_weight: float
+    lambda_reg: float
+
+    def to_pixels(self, params: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        tx, ty = params[0], params[1]
+        deltas = params[2:].reshape(self.k, 2)
+        px = self.x_origin_px + (self.sampling_op @ (self.template_anchors[:, 0] + deltas[:, 0]) + tx) * self.unit_px
+        py = self.baseline_y_px - (self.sampling_op @ (self.template_anchors[:, 1] + deltas[:, 1]) + ty) * self.unit_px
+        return px, py
+
+    def out_of_crop(self, px: np.ndarray, py: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """Signed distance of each sample beyond the crop border (0 inside).
+
+        The lookup fields are clamped at the border, so a sample outside the
+        crop would otherwise see a frozen value with zero gradient — it could
+        sit there forever and still read a finite, under-stated residual.
+        """
+        return px - np.clip(px, 0.0, self.crop_w - 1.0), py - np.clip(py, 0.0, self.crop_h - 1.0)
+
+    def objective(self, params: np.ndarray) -> tuple[float, np.ndarray]:
+        k = self.k
+        n_s = self.n_s
+        unit_sq = self.unit_sq
+        deltas = params[2:].reshape(k, 2)
+        px, py = self.to_pixels(params)
+
+        d, d_dx, d_dy = _bilinear_with_grad(self.dist_smooth, px, py)
+        e_geo = float(np.mean(d**2)) / unit_sq
+        g_px = 2.0 * d * d_dx / (n_s * unit_sq)
+        g_py = 2.0 * d * d_dy / (n_s * unit_sq)
+
+        # Out-of-crop pull (geometry-class weight): restores the gradient the
+        # clamped fields lose beyond the border.
+        ox, oy = self.out_of_crop(px, py)
+        e_geo += float(np.mean(ox**2 + oy**2)) / unit_sq
+        g_px = g_px + 2.0 * ox / (n_s * unit_sq)
+        g_py = g_py + 2.0 * oy / (n_s * unit_sq)
+
+        wm, w_dx, w_dy = _bilinear_with_grad(self.width_smooth, px, py)
+        wr = wm - self.sw_px
+        e_wid = float(np.mean(wr**2)) / unit_sq
+        g_px = g_px + self.width_weight * 2.0 * wr * w_dx / (n_s * unit_sq)
+        g_py = g_py + self.width_weight * 2.0 * wr * w_dy / (n_s * unit_sq)
+
+        # Coverage: distance from each (subsampled) skeleton pixel to its
+        # nearest template sample. The assignment is held fixed for the
+        # gradient (exact almost everywhere, ICP-style).
+        pts = np.column_stack([px, py])
+        cdist, cidx = cKDTree(pts).query(self.cov_pts)
+        e_cov = float(np.mean(cdist**2)) / unit_sq
+        g_cov = np.zeros((n_s, 2))
+        np.add.at(g_cov, cidx, 2.0 * (pts[cidx] - self.cov_pts) / (self.n_cov * unit_sq))
+        g_px = g_px + self.coverage_weight * g_cov[:, 0]
+        g_py = g_py + self.coverage_weight * g_cov[:, 1]
+
+        e_reg = float(np.mean(np.sum(deltas**2, axis=1)))
+
+        f = e_geo + self.width_weight * e_wid + self.coverage_weight * e_cov + self.lambda_reg * e_reg
+
+        # Chain rule through the pixel mapping: dpx/dtx = unit_px,
+        # dpy/dty = -unit_px, dpx/dax = unit_px * S, dpy/day = -unit_px * S.
+        grad = np.empty_like(params)
+        grad[0] = self.unit_px * float(g_px.sum())
+        grad[1] = -self.unit_px * float(g_py.sum())
+        g_anchors = np.column_stack(
+            [self.unit_px * (self.sampling_op.T @ g_px), -self.unit_px * (self.sampling_op.T @ g_py)]
+        )
+        grad[2:] = (g_anchors + self.lambda_reg * 2.0 * deltas / k).ravel()
+        return f, grad
+
+    def report_energies(self, params: np.ndarray) -> tuple[float, float, float]:
+        """Honest residuals on the UNSMOOTHED fields (geo, width, coverage).
+
+        Samples beyond the crop add their border distance to the clamped field
+        value, so a truncated fit cannot report a flattering residual.
+        """
+        px, py = self.to_pixels(params)
+        ox, oy = self.out_of_crop(px, py)
+        d_eff = bilinear(self.dist_raw, px, py) + np.hypot(ox, oy)
+        e_geo = float(np.mean(d_eff**2)) / self.unit_sq
+        e_wid = float(np.mean((bilinear(self.width_raw, px, py) - self.sw_px) ** 2)) / self.unit_sq
+        cdist, _ = cKDTree(np.column_stack([px, py])).query(self.cov_pts)
+        e_cov = float(np.mean(cdist**2)) / self.unit_sq
+        return e_geo, e_wid, e_cov
+
+
 def fit_template_to_instance(
     template_anchors: np.ndarray,
     template_half_widths: np.ndarray,
@@ -406,85 +512,33 @@ def fit_template_to_instance(
     sw_px = (_width_operator(template_anchors, plan) @ template_half_widths) * unit_px
     n_s = sampling_op.shape[0]
 
-    def to_pixels(params: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        tx, ty = params[0], params[1]
-        deltas = params[2:].reshape(k, 2)
-        px = x_origin_px + (sampling_op @ (template_anchors[:, 0] + deltas[:, 0]) + tx) * unit_px
-        py = baseline_y_px - (sampling_op @ (template_anchors[:, 1] + deltas[:, 1]) + ty) * unit_px
-        return px, py
-
     unit_sq = unit_px**2
     crop_h, crop_w = skel.shape
 
-    def out_of_crop(px: np.ndarray, py: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        """Signed distance of each sample beyond the crop border (0 inside).
-
-        The lookup fields are clamped at the border, so a sample outside the
-        crop would otherwise see a frozen value with zero gradient — it could
-        sit there forever and still read a finite, under-stated residual.
-        """
-        return px - np.clip(px, 0.0, crop_w - 1.0), py - np.clip(py, 0.0, crop_h - 1.0)
-
-    def objective(params: np.ndarray) -> tuple[float, np.ndarray]:
-        deltas = params[2:].reshape(k, 2)
-        px, py = to_pixels(params)
-
-        d, d_dx, d_dy = _bilinear_with_grad(dist_smooth, px, py)
-        e_geo = float(np.mean(d**2)) / unit_sq
-        g_px = 2.0 * d * d_dx / (n_s * unit_sq)
-        g_py = 2.0 * d * d_dy / (n_s * unit_sq)
-
-        # Out-of-crop pull (geometry-class weight): restores the gradient the
-        # clamped fields lose beyond the border.
-        ox, oy = out_of_crop(px, py)
-        e_geo += float(np.mean(ox**2 + oy**2)) / unit_sq
-        g_px = g_px + 2.0 * ox / (n_s * unit_sq)
-        g_py = g_py + 2.0 * oy / (n_s * unit_sq)
-
-        wm, w_dx, w_dy = _bilinear_with_grad(width_smooth, px, py)
-        wr = wm - sw_px
-        e_wid = float(np.mean(wr**2)) / unit_sq
-        g_px = g_px + width_weight * 2.0 * wr * w_dx / (n_s * unit_sq)
-        g_py = g_py + width_weight * 2.0 * wr * w_dy / (n_s * unit_sq)
-
-        # Coverage: distance from each (subsampled) skeleton pixel to its
-        # nearest template sample. The assignment is held fixed for the
-        # gradient (exact almost everywhere, ICP-style).
-        pts = np.column_stack([px, py])
-        cdist, cidx = cKDTree(pts).query(cov_pts)
-        e_cov = float(np.mean(cdist**2)) / unit_sq
-        g_cov = np.zeros((n_s, 2))
-        np.add.at(g_cov, cidx, 2.0 * (pts[cidx] - cov_pts) / (n_cov * unit_sq))
-        g_px = g_px + coverage_weight * g_cov[:, 0]
-        g_py = g_py + coverage_weight * g_cov[:, 1]
-
-        e_reg = float(np.mean(np.sum(deltas**2, axis=1)))
-
-        f = e_geo + width_weight * e_wid + coverage_weight * e_cov + lambda_reg * e_reg
-
-        # Chain rule through the pixel mapping: dpx/dtx = unit_px,
-        # dpy/dty = -unit_px, dpx/dax = unit_px * S, dpy/day = -unit_px * S.
-        grad = np.empty_like(params)
-        grad[0] = unit_px * float(g_px.sum())
-        grad[1] = -unit_px * float(g_py.sum())
-        g_anchors = np.column_stack([unit_px * (sampling_op.T @ g_px), -unit_px * (sampling_op.T @ g_py)])
-        grad[2:] = (g_anchors + lambda_reg * 2.0 * deltas / k).ravel()
-        return f, grad
-
-    def report_energies(params: np.ndarray) -> tuple[float, float, float]:
-        """Honest residuals on the UNSMOOTHED fields (geo, width, coverage).
-
-        Samples beyond the crop add their border distance to the clamped field
-        value, so a truncated fit cannot report a flattering residual.
-        """
-        px, py = to_pixels(params)
-        ox, oy = out_of_crop(px, py)
-        d_eff = bilinear(dist_raw, px, py) + np.hypot(ox, oy)
-        e_geo = float(np.mean(d_eff**2)) / unit_sq
-        e_wid = float(np.mean((bilinear(width_raw, px, py) - sw_px) ** 2)) / unit_sq
-        cdist, _ = cKDTree(np.column_stack([px, py])).query(cov_pts)
-        e_cov = float(np.mean(cdist**2)) / unit_sq
-        return e_geo, e_wid, e_cov
+    # Frozen state + operators for the objective/energy evaluations (mirrors the
+    # `_RefineRound` idiom of the refinement stage).
+    problem = _InstanceFit(
+        template_anchors=template_anchors,
+        k=k,
+        unit_px=unit_px,
+        unit_sq=unit_sq,
+        x_origin_px=x_origin_px,
+        baseline_y_px=baseline_y_px,
+        crop_h=crop_h,
+        crop_w=crop_w,
+        sampling_op=sampling_op,
+        sw_px=sw_px,
+        n_s=n_s,
+        dist_raw=dist_raw,
+        dist_smooth=dist_smooth,
+        width_raw=width_raw,
+        width_smooth=width_smooth,
+        cov_pts=cov_pts,
+        n_cov=n_cov,
+        width_weight=width_weight,
+        coverage_weight=coverage_weight,
+        lambda_reg=lambda_reg,
+    )
 
     n_params = 2 + 2 * k
     x0 = np.zeros(n_params)
@@ -492,9 +546,9 @@ def fit_template_to_instance(
     bounds = [(-max_shift_units, max_shift_units)] * 2
     bounds += [(-max_anchor_delta, max_anchor_delta)] * (2 * k)
 
-    e_geo0, _, _ = report_energies(x0)
+    e_geo0, _, _ = problem.report_energies(x0)
     res = minimize(
-        objective,
+        problem.objective,
         x0,
         jac=True,
         method="L-BFGS-B",
@@ -511,9 +565,9 @@ def fit_template_to_instance(
     fitted_anchors = template_anchors + deltas
 
     # Final overlay polylines (crop-local pixels).
-    px, py = to_pixels(res.x)
+    px, py = problem.to_pixels(res.x)
     fitted_polyline_px = np.column_stack([px, py])
-    cpx, cpy = to_pixels(x0)
+    cpx, cpy = problem.to_pixels(x0)
     canonical_polyline_px = np.column_stack([cpx, cpy])
 
     # Measured half-widths along the fit — projected onto the medial axis,
@@ -536,7 +590,7 @@ def fit_template_to_instance(
         / unit_px
     )
 
-    e_geo, e_wid, e_cov = report_energies(res.x)
+    e_geo, e_wid, e_cov = problem.report_energies(res.x)
     e_reg = float(np.mean(np.sum(deltas**2, axis=1)))
     entry = {
         "xy": [round(float(fitted_anchors[0, 0]), 4), round(float(fitted_anchors[0, 1]), 4)],
