@@ -38,6 +38,28 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **Unified the "as written" ink-reveal across the three surfaces into a shared
+  primitive.** `WrittenGlyph`, `WrittenWord` and `WrittenSheet` each
+  reimplemented the identical SVG reveal technique (y-negated centerline paths,
+  the `feTurbulence`/`feDisplacementMap` ink-bleed filter, the swept
+  `stroke-dashoffset` mask, the iron-gall settle, the faint baseline/midband
+  guides, the replay button). That lives once now in
+  `app/src/components/inkReveal` (`InkBleedFilter` · `RevealMask` · `InkGuides` ·
+  `ReplayButton` · `inkGroupSx` settle helper); the y-negating polyline path
+  moved to `lib/svg.ts` (`polylineToPathD`, replacing the three per-file
+  `pathD`/`lineD` copies); and the timing magic numbers moved to
+  `lib/strokeTiming.ts` as named, justified defaults plus one shared
+  `sequenceReveal` cursor walk — reconciling the drifted pen-lift pause (was
+  110/130/150 ms across siblings → one `PEN_PAUSE_MS = 130`). The three surfaces
+  are now thin consumers. No SVG/filter/timing behaviour change beyond that pause
+  reconciliation.
+- **Folded `WrittenWord`'s private `/write/word` cache into `renderCache.ts`.**
+  The composed-word FIFO cache lived in a second module-level `Map` inside
+  `WrittenWord` with its own key scheme, undermining the "ONE shared render
+  cache" invariant. It is now `fetchRenderWord` alongside the glyph cache
+  (same key helper, same cold-start retry, same evict-on-error) — no private
+  render cache remains outside `renderCache.ts`.
+
 - **Trimmed `app/src/domain/shaping.ts` to the quiz-gating subset.** With word
   composition living server-side (`core/compose.py`), the TS shaper only needs the
   `text → glyph_keys` mapping the quiz word-bank gating consumes (`shapeText` +

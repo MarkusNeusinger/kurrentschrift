@@ -33,10 +33,19 @@ import { CONFIG } from '@/global-config';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { useStrokeReveal } from '@/hooks/useStrokeReveal';
 import { fetchRenderGlyphs, type GlyphRenderData } from '@/lib/api';
-import { allocateDurations, strokeTimeProfile } from '@/lib/strokeTiming';
+import {
+  allocateDurations,
+  sequenceReveal,
+  strokeTimeProfile,
+  PEN_PAUSE_MS,
+  SHEET_MIN_STROKE_MS,
+  SHEET_SETTLE_MS,
+  SHEET_WRITE_MS,
+} from '@/lib/strokeTiming';
+import { RevealMask, inkGroupSx } from '@/components/inkReveal';
 import { ringsToPathD, type Ring } from '@/lib/svg';
 import { de } from '@/locales';
-import { inkState, paper, schulheft } from '@/styles/paper';
+import { paper, schulheft } from '@/styles/paper';
 import type { MarkedSlot } from '@/sections/tafel/useGrundtafeln';
 
 type Pt = [number, number];
@@ -56,15 +65,13 @@ const PAD_Y = 0.14; // vertical air above the ascender / below the descender
 const RULE = schulheft.rulingBlueFaded;
 const RULE_W = 1; // px — non-scaling so the rule stays a hairline at any row scale
 const HOVER = 'rgba(64, 130, 109, 0.10)'; // faint viridian wash on hover/focus
-const WRITE_MS = 1100; // per-glyph write-in target across all strokes (isochrony-allocated)
-const MIN_STROKE_MS = 180; // per-stroke floor so a short stroke never reads as a flicker
-const PEN_PAUSE_MS = 130; // pause at a pen lift so an Absetzen reads as a lift
-const SETTLE_MS = 1500; // iron-gall fresh → oxidized
+// Per-glyph write-in target, per-stroke floor, pen-lift pause and settle come
+// from lib/strokeTiming (SHEET_WRITE_MS / SHEET_MIN_STROKE_MS / PEN_PAUSE_MS /
+// SHEET_SETTLE_MS). These three are the Schreibtafel-only cascade constants.
 const STAGGER_MS = 65; // per-glyph start offset for the load cascade
 const STAGGER_CAP = 1300; // …capped so the last letter never waits too long
 const CLICK_PAUSE_MS = 420; // after a tap the glyph clears, then waits this long before re-writing
 
-const inkSettle = keyframes`from { fill: ${inkState.fresh}; } to { fill: ${inkState.oxidized}; }`;
 // Loading "pen warming up" dots, shown centred in the ruling until the glyphs load.
 const loaderPulse = keyframes`0%, 80%, 100% { opacity: 0.25; transform: scale(0.7); } 40% { opacity: 1; transform: scale(1); }`;
 
@@ -74,11 +81,6 @@ function guidesFromRatio(ratio: number[]): GlyphRenderData['template_guides'] {
   const [ober = 1, mittel = 1, unter = 1] = ratio;
   const m = mittel || 1;
   return { baseline: 0, midband: 1, ascender: 1 + ober / m, descender: -(unter / m) };
-}
-
-// Polyline → SVG path, translated by tx and y-negated (template y up, SVG down).
-function lineD(points: Pt[], tx: number): string {
-  return points.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x + tx},${-y}`).join(' ');
 }
 
 // One stroke's rings → path, translated by tx (ringsToPathD y-negates).
@@ -164,17 +166,15 @@ function SheetGlyph({ geom, glyph, glyphX, cellX, cellW, vbY, vbH, orderIndex, r
     const profiles = geom.centerlines.map((cl) => strokeTimeProfile(cl));
     const durations = allocateDurations(
       profiles.map((p) => p.weight),
-      WRITE_MS,
-      MIN_STROKE_MS,
+      SHEET_WRITE_MS,
+      SHEET_MIN_STROKE_MS,
     );
-    let cursor = run === 0 ? Math.min(orderIndex * STAGGER_MS, STAGGER_CAP) : CLICK_PAUSE_MS;
-    const entries = profiles.map((p, i) => {
-      const dur = durations[i];
-      const delay = cursor;
-      cursor += dur + PEN_PAUSE_MS;
-      return { dur, delay, arcAtTime: p.arcAtTime };
-    });
-    return { timing: entries, writeEnd: cursor };
+    // First write: offset by the load cascade; a tap (run > 0) holds the cleared
+    // glyph blank for CLICK_PAUSE_MS before the pen restarts. Each stroke lifts
+    // to the next with the shared pen-lift pause.
+    const start = run === 0 ? Math.min(orderIndex * STAGGER_MS, STAGGER_CAP) : CLICK_PAUSE_MS;
+    const { timing: entries, writeEndMs } = sequenceReveal(profiles, durations, { start, trailPause: PEN_PAUSE_MS });
+    return { timing: entries, writeEnd: writeEndMs };
   }, [geom, orderIndex, run]);
 
   // WAAPI drives the per-path dashoffset — the same element-scoped mechanism as
@@ -210,36 +210,30 @@ function SheetGlyph({ geom, glyph, glyphX, cellX, cellW, vbY, vbH, orderIndex, r
     >
       <rect className="cellbg" x={cellX} y={vbY} width={cellW} height={vbH} rx={0.08} />
       <defs>
-        <mask id={maskId} maskUnits="userSpaceOnUse" x={bx} y={vbY} width={bw} height={vbH}>
-          <rect x={bx} y={vbY} width={bw} height={vbH} fill="black" />
-          {geom.centerlines.map((line, i) => (
-            <path
-              key={`${run}-${i}`}
-              ref={(el) => {
-                maskPathRefs.current[i] = el;
-              }}
-              d={lineD(line, tx)}
-              fill="none"
-              stroke="#fff"
-              strokeWidth={geom.maskWidth}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              pathLength={1}
-              strokeDasharray={1}
-              style={{ strokeDashoffset: animate ? 1 : 0 }}
-            />
-          ))}
-        </mask>
+        <RevealMask
+          id={maskId}
+          bounds={{ x: bx, y: vbY, width: bw, height: vbH }}
+          strokes={geom.centerlines.map((line) => ({
+            centerline: line.map(([x, y]): Pt => [x + tx, y]),
+            maskWidth: geom.maskWidth,
+          }))}
+          pathRefs={maskPathRefs}
+          animate={animate}
+          runKey={run}
+        />
       </defs>
+      {/* No InkBleedFilter here by design: the Schreibtafel renders the whole
+          alphabet at once (up to LETTERS_PER_ROW glyphs × several rows), so it
+          deliberately skips the per-glyph feTurbulence/feDisplacementMap bleed
+          the single-glyph/word surfaces use — many concurrent filters on a live,
+          click-replayable sheet is a real cost for a whisper of edge wicking.
+          The mask + settle are shared; the bleed is the one part it opts out of. */}
       <Box
         component="g"
         key={`ink-${run}`}
         mask={`url(#${maskId})`}
         pointerEvents="none"
-        sx={{
-          fill: animate ? inkState.fresh : inkState.oxidized,
-          animation: animate ? `${inkSettle} ${SETTLE_MS}ms ease ${writeEnd}ms forwards` : undefined,
-        }}
+        sx={inkGroupSx({ animate, writeEndMs: writeEnd, settleMs: SHEET_SETTLE_MS })}
       >
         {geom.strokes.map((stroke, i) => (
           <path key={i} d={ringsD(stroke, tx)} fillRule="evenodd" />

@@ -8,8 +8,8 @@
 // backend). `null` records "no canonical" — cached, since only an admin write
 // changes that, and the write endpoint reports it in `missing` instead of a 404.
 
-import { getWriteGlyphs } from '@/lib/api/endpoints';
-import type { GlyphRenderData } from '@/lib/api/types';
+import { getWriteGlyphs, getWriteWord } from '@/lib/api/endpoints';
+import type { ComposedWordOut, GlyphRenderData } from '@/lib/api/types';
 
 const COLD_START_RETRY = { retries: 3 };
 
@@ -85,4 +85,33 @@ export function fetchRenderGlyphs(sourceId: string, keys: string[]): Promise<Map
 export function seedRenderGlyph(sourceId: string, key: string, data: GlyphRenderData | null, bust?: number): void {
   const entry: Entry = { bust: bust ?? null, promise: Promise.resolve(data), settled: data };
   cache.set(id(sourceId, key), entry);
+}
+
+// ── Composed-word cache (GET /write/word) ──────────────────────────────────
+// Composing a whole word/line is a backend compute; cache the in-flight/resolved
+// promise per (source, text) so a replay, a re-mount or a second WrittenWord on
+// the page never refetches. This lives here — with the glyph cache — so the
+// "ONE shared render cache" invariant holds (there used to be a private
+// module-level cache inside WrittenWord with its own key scheme). Transient
+// errors evict so a retry can succeed; the server also sets Cache-Control, so
+// even a fresh page load hits the browser cache. Live typing on /federprobe
+// produces many distinct intermediate texts, so the cache is FIFO-capped —
+// evicted entries just refetch (usually straight from the browser cache).
+const WORD_CACHE_MAX = 64;
+const wordCache = new Map<string, Promise<ComposedWordOut>>();
+
+export function fetchRenderWord(sourceId: string, text: string): Promise<ComposedWordOut> {
+  const key = id(sourceId, text);
+  let p = wordCache.get(key);
+  if (!p) {
+    p = getWriteWord(sourceId, text, COLD_START_RETRY).catch((e) => {
+      wordCache.delete(key);
+      throw e;
+    });
+    if (wordCache.size >= WORD_CACHE_MAX) {
+      wordCache.delete(wordCache.keys().next().value as string); // FIFO: drop the oldest entry
+    }
+    wordCache.set(key, p);
+  }
+  return p;
 }

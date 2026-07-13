@@ -105,3 +105,72 @@ export function allocateDurations(weights: number[], totalMs: number, minMs: num
   const sum = powered.reduce((s, v) => s + v, 0) || 1;
   return powered.map((p) => Math.max(minMs, (p / sum) * totalMs));
 }
+
+// ── Reveal timing table ────────────────────────────────────────────────────
+// One stroke's animation schedule, consumed by `useStrokeReveal`. Lives here
+// (not in the hook) so `sequenceReveal` — the shared cursor walk that turns
+// per-stroke durations into (delay, dur) pairs — can produce it directly.
+export interface RevealTiming {
+  dur: number;
+  delay: number;
+  // Arc fraction reached at each even time step (from strokeTimeProfile).
+  arcAtTime: number[];
+}
+
+// Walk a run of strokes into a reveal schedule: each stroke starts after the
+// previous one, plus an optional pen-lift pause. This is the single sequencing
+// loop the three "as written" surfaces (glyph, word, sheet) share; they differ
+// only in the `opts`:
+//  - `start`     — cursor offset before the first stroke (the sheet's load
+//                  cascade / click-pause; 0 for glyph and word).
+//  - `leadPause` — pause BEFORE stroke i (the word pauses only where a within-
+//                  glyph pen lift precedes the item).
+//  - `trailPause`— pause AFTER every stroke (the glyph and sheet lift between
+//                  each pen-stroke). Included in `writeEndMs` on purpose so the
+//                  ink settle starts one lift-beat after the last stroke.
+export function sequenceReveal(
+  profiles: StrokeTimeProfile[],
+  durations: number[],
+  opts?: { start?: number; leadPause?: (i: number) => number; trailPause?: number },
+): { timing: RevealTiming[]; writeEndMs: number } {
+  const trailPause = opts?.trailPause ?? 0;
+  let cursor = opts?.start ?? 0;
+  const timing = profiles.map((p, i) => {
+    const dur = durations[i];
+    const delay = cursor + (opts?.leadPause?.(i) ?? 0);
+    cursor = delay + dur + trailPause;
+    return { dur, delay, arcAtTime: p.arcAtTime };
+  });
+  return { timing, writeEndMs: cursor };
+}
+
+// ── Named reveal-timing defaults ───────────────────────────────────────────
+// Formerly per-file magic numbers that had drifted between the three surfaces.
+// Named + justified here so siblings that should match no longer diverge.
+
+// Pause held at an Absetzen (pen lift) so a lift reads as a lift. The surfaces
+// previously disagreed (word 110 · sheet 130 · glyph 150 ms); unified to one
+// value — long enough to register as a deliberate lift, short enough not to
+// stall the write-in.
+export const PEN_PAUSE_MS = 130;
+
+// Iron-gall settle (fresh blue-black → oxidized) after the write-in completes.
+export const SETTLE_MS = 1800; // WrittenGlyph / WrittenWord
+export const SHEET_SETTLE_MS = 1500; // WrittenSheet's slightly quicker settle
+
+// Per-surface total write-in targets (isochrony-allocated across strokes): a
+// single glyph is quicker than a whole word; the Schreibtafel writes each
+// letter faster still. These legitimately differ by surface.
+export const GLYPH_WRITE_MS = 1500;
+export const WORD_WRITE_MS = 2600;
+export const SHEET_WRITE_MS = 1100;
+
+// Per-stroke duration floors so a short stroke never flickers — a single
+// glyph's few strokes get a higher floor than a word's many short connectors.
+export const GLYPH_MIN_STROKE_MS = 250;
+export const WORD_MIN_ITEM_MS = 120;
+export const SHEET_MIN_STROKE_MS = 180;
+
+// Rendered-width caps (px): a whole word is far wider than a single glyph.
+export const GLYPH_MAX_W = 300;
+export const WORD_MAX_W = 640;
