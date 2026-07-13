@@ -443,11 +443,13 @@ def _measurements(anchors_norm: np.ndarray, half_widths_px: np.ndarray, path_len
 
 
 def _serialize_raw_path(raw_path: list[dict]) -> list[dict]:
-    """Round + sparsely mark a stylus path for storage in `templates.raw_path`.
+    """Round a stylus path for storage in `templates.raw_path`, preserving pen lifts.
 
-    Keeps the pen-lift (Absetzen) markers sparse — only the last sample of each
-    stroke but the final one carries `pen_up` — so `_split_raw_strokes` on a
-    re-derive re-splits the path identically.
+    Each point's coordinates/pressure/time are rounded; an existing `pen_up`
+    (Absetzen) flag is carried through verbatim, anything else dropped. The
+    incoming trace already marks `pen_up` sparsely — once per pen lift, on the
+    last sample before the pen leaves the paper — so `_split_raw_strokes` re-splits
+    a re-derive from the stored path into the same strokes.
     """
     raw_stored: list[dict] = []
     for p in raw_path:
