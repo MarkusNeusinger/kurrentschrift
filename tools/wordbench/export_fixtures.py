@@ -53,6 +53,7 @@ import argparse
 import asyncio
 import hashlib
 import json
+import re
 import statistics
 from collections import Counter
 from dataclasses import asdict
@@ -157,11 +158,20 @@ def _set_name(w: dict) -> str:
     """Fixture set of a sidecar entry: explicit ``set`` or the kind default.
 
     ``all`` is reserved for the runner's aggregate mode — a fixture set named
-    that way could never be run explicitly.
+    that way could never be run explicitly. The name becomes a single fixture
+    directory component (``<source>-<set>``); the runner and wordlab discover
+    roots with a one-level ``*/manifest.json`` glob, so a name with a path
+    separator or whitespace would export into an undiscoverable nested path —
+    reject it as a path-unsafe token instead.
     """
     name = w.get("set") or ("pairs" if _kind(w) == "pair" else "words")
     if name == "all":
         raise SystemExit(f"sidecar entry {_entry_id(w)!r} uses the reserved set name 'all'")
+    if not re.fullmatch(r"[A-Za-z0-9._-]+", name):
+        raise SystemExit(
+            f"sidecar entry {_entry_id(w)!r} has a path-unsafe set name {name!r} "
+            "(allowed: letters, digits, '.', '_', '-')"
+        )
     return name
 
 
