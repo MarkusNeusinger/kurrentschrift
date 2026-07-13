@@ -1,8 +1,13 @@
 // Text shaping for the German cursive scripts: turn a typed word or sentence
 // into the ordered sequence of canonical glyph_keys. Framework-free (no React,
 // no API). Word composition + geometry moved server-side to `core/shaping.py` +
-// `core/compose.py`; this module is the TS twin kept ONLY for the quiz
-// word-bank gating (keep it in sync with `core/shaping.py`).
+// `core/compose.py`; this module is the TS twin trimmed to ONLY what the quiz
+// word-bank gating needs — the `text → glyph_keys` mapping (`shapeText` +
+// `glyphKeysOf`). It stays in sync with `core/shaping.py` on that mapping,
+// pinned mechanically by the shared fixture `tests/fixtures/shaping_cases.json`
+// (asserted here in `shaping.test.ts` and Python-side in `tests/test_tri_script.py`).
+// The client-side compose fallbacks that used to live here (ligature-decompose,
+// Fuge stripping for display) are Python-only now that composition is server-side.
 //
 // Two orthographic rules carry the historical look (architektur.md §3/§4):
 //
@@ -85,12 +90,9 @@ function isLowercaseLetter(c: string): boolean {
 }
 
 // The Fuge marker: a morpheme boundary the caller places in a compound so the
-// preceding s renders round (Schluss-s) and no ligature spans it.
-export const FUGE = '|';
-
-// Drop Fuge markers for any human-facing display (labels, answer text). The
-// marked form is only for shaping/rendering.
-export const stripFugen = (text: string): string => text.split(FUGE).join('');
+// preceding s renders round (Schluss-s) and no ligature spans it. Internal only:
+// the quiz passes the pre-marked render form (`entry.fugen`) straight through.
+const FUGE = '|';
 
 interface RawToken {
   letter: Letter | null; // null => unknown char (gap) or a deferred allograph
@@ -223,41 +225,9 @@ function assignPositions(tokens: RawToken[]): GlyphSlot[] {
   return out;
 }
 
-// Fallback for a ligature whose canonical is missing at fetch time: the
-// closed-set cluster decomposes into its constituent letters, so 'Schule'
-// without a ch-template still writes c+h with a generated Übergang instead of
-// leaving a connector-severing hole. The sub-letters inherit the cluster's
-// word position (first keeps `initial`, last keeps `final`, the rest is
-// medial). ß stays atomic: its historic decomposition (ſs/ſz) is itself an
-// allograph question — a naive split would write ſſ mid-word.
-export function decomposeLigatureSlot(slot: GlyphSlot): GlyphSlot[] | null {
-  if (!slot.ligature || !slot.position) return null;
-  const chars = [...slot.text];
-  if (chars.length < 2) return null; // ß
-  return chars.map((raw, i): GlyphSlot => {
-    const position: Position =
-      i === 0 && slot.position === 'initial'
-        ? 'initial'
-        : i === chars.length - 1 && slot.position === 'final'
-          ? 'final'
-          : 'medial';
-    const c = raw.toLowerCase();
-    // The s in ſt (typed 's' or 'ſ') follows the allograph rule for its slot.
-    const letter =
-      c === 's' || c === 'ſ' ? (position === 'final' ? ROUND_S : LONG_S) : LETTER_BY_CHAR.get(c) ?? null;
-    return {
-      key: letter ? glyphKeyFor(letter, position) : null,
-      text: raw,
-      position,
-      ligature: false,
-      space: false,
-      joins: true,
-    };
-  });
-}
-
 // One word → its ordered glyph slots (with positions + allographs resolved).
-export function shapeWord(word: string): GlyphSlot[] {
+// Internal: `shapeText` is the only entry point the quiz uses.
+function shapeWord(word: string): GlyphSlot[] {
   if (!word) return [];
   return assignPositions(tokenizeWord(word));
 }

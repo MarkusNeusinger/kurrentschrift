@@ -10,7 +10,9 @@ by tests/test_compose_golden.py.
 
 from __future__ import annotations
 
+import json
 import math
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -19,6 +21,9 @@ from core.compose import compose_word
 from core.shaping import GlyphSlot, glyph_keys_of, shape_text, shape_word
 from core.template import chisel_union_rings, template_guides
 from core.widths import BroadNib, PenStyle, broad_nib_half_widths, resolve_half_widths
+
+
+SHAPING_CASES = Path(__file__).parent / "fixtures" / "shaping_cases.json"
 
 
 # ------------------------------------------------------------- broad-nib law
@@ -189,6 +194,22 @@ def test_letters_only_shaping_unchanged():
     slots = shape_word("lesen")
     assert [s.key for s in slots] == ["l-initial", "e-medial", "s-medial", "e-medial", "n-final"]
     assert all(s.joins for s in slots)
+
+
+# ------------------------------------------------- shaping twin: shared fixture
+# core/shaping.py and app/src/domain/shaping.ts MUST agree on text → glyph_keys
+# (CLAUDE.md twin mandate). The SAME fixture drives this Python assertion and a
+# Vitest test in app/ (app/src/domain/shaping.test.ts): deliberately mutating
+# one shaping without the other fails CI. Regenerate the expected keys from the
+# Python source of truth (the server-side shaper) when a case legitimately changes.
+
+
+def test_shaping_cases_fixture_matches_python_shaping():
+    cases = json.loads(SHAPING_CASES.read_text(encoding="utf-8"))
+    assert cases, "the shared shaping fixture must not be empty"
+    for case in cases:
+        keys = [s.key for s in shape_text(case["text"])]
+        assert keys == case["keys"], f"shaping drift on {case['text']!r}: {keys} != {case['keys']}"
 
 
 # ------------------------------------------------------- compose: detached

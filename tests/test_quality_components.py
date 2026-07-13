@@ -12,6 +12,7 @@ import numpy as np
 import pytest
 
 from core.quality_suetterlin import (
+    _locally_straight_mask,
     centerline_smoothness,
     corner_crispness,
     crossing_collinearity,
@@ -103,6 +104,26 @@ def test_corner_not_applicable_without_corners():
     q, n = corner_crispness(np.full(40, 0.0), np.linspace(0, 40, 40), [0], [], UNIT_PX)
     assert n == 0
     assert q == 1.0
+
+
+# ------------------------------------------------------- locally-straight mask
+
+
+def test_locally_straight_mask_flags_a_line_and_clears_a_corner():
+    """The gate that confines the crossing/retrace terms to genuinely straight
+    passes: a straight run reads all-True; a sharp reversal is not straight at
+    the apex, so the mask must clear there."""
+    line = np.column_stack([np.full(40, 5.0), np.linspace(0.0, 60.0, 40)])
+    straight = _locally_straight_mask(line, [0], window_px=12.0, tol=0.1)
+    assert straight.all()
+
+    down = np.column_stack([np.full(30, 0.0), np.linspace(0.0, 30.0, 30)])
+    up = np.column_stack([np.linspace(0.0, 30.0, 30), np.linspace(30.0, 0.0, 30)])
+    corner = np.vstack([down, up[1:]])
+    apex = len(down) - 1
+    mask = _locally_straight_mask(corner, [0], window_px=12.0, tol=0.05)
+    assert not mask[apex]  # the reversal apex is not "locally straight"
+    assert mask[0] and mask[-1]  # the straight limbs still read straight
 
 
 # ------------------------------------------------------------------ collinearity

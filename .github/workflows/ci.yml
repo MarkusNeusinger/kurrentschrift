@@ -79,6 +79,12 @@ jobs:
       - name: ESLint
         run: npm run lint
 
+      # Fast fixture-driven Vitest run — pins the shaping.ts ↔ core/shaping.py
+      # twin against tests/fixtures/shaping_cases.json (the Python side asserts
+      # the same fixture in tests/test_tri_script.py).
+      - name: Test
+        run: npm run test
+
       # `npm run build` is `tsc && vite build`, so this gates the type-check too.
       - name: Build
         run: npm run build
