@@ -36,6 +36,32 @@ def unit_tangents(pts: np.ndarray) -> np.ndarray:
     return tangent / tnorm[:, None]
 
 
+def bilinear(field_map: np.ndarray, px: np.ndarray, py: np.ndarray) -> np.ndarray:
+    """Sample a (H, W) field at float pixel coordinates, clamped to the crop.
+
+    Public shared facility: the fit optimiser descends this same interpolant and
+    ``core.quality`` / ``core.quality_suetterlin`` read it back, so "converged"
+    and "high score" agree by construction. Lives here (not in ``core.fit``) so
+    the quality modules can sample the field without importing the heavy fit
+    module (``core.fit._bilinear_with_grad`` is the gradient-carrying twin the
+    optimiser uses; this is the value-only sample, identical numerically).
+    """
+    h, w = field_map.shape
+    x = np.clip(px, 0.0, w - 1.0)
+    y = np.clip(py, 0.0, h - 1.0)
+    x0 = np.floor(x).astype(int)
+    y0 = np.floor(y).astype(int)
+    x1 = np.minimum(x0 + 1, w - 1)
+    y1 = np.minimum(y0 + 1, h - 1)
+    fx = x - x0
+    fy = y - y0
+    f00 = field_map[y0, x0]
+    f01 = field_map[y0, x1]
+    f10 = field_map[y1, x0]
+    f11 = field_map[y1, x1]
+    return f00 * (1.0 - fx) * (1.0 - fy) + f01 * fx * (1.0 - fy) + f10 * (1.0 - fx) * fy + f11 * fx * fy
+
+
 def arc_length(pts: np.ndarray) -> np.ndarray:
     """Cumulative chord length along an Mx2 polyline (length M, first entry 0)."""
     pts = np.asarray(pts, dtype=float)

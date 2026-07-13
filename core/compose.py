@@ -27,6 +27,7 @@ fixture (``tests/test_compose_golden.py``; re-baseline via ``REGEN_GOLDEN=1``).
 from __future__ import annotations
 
 import math
+import statistics
 
 import numpy as np
 
@@ -233,14 +234,6 @@ TANGENT_WINDOW = 0.12  # x-height units (matches the corner-detection window)
 Point = tuple[float, float]
 
 
-def _median(xs: list[float]) -> float:
-    if not xs:
-        return DEFAULT_HALF
-    s = sorted(xs)
-    m = len(s) // 2
-    return s[m] if len(s) % 2 else (s[m - 1] + s[m]) / 2
-
-
 def _unit(deg: float) -> Point:
     r = math.radians(deg)
     return (math.cos(r), math.sin(r))
@@ -363,6 +356,195 @@ def _garland_centerline(p0: Point, d_out: Point, p3: Point, d_in: Point) -> list
     return fall + ride
 
 
+def _apply_pen(item: dict, centerline: list[Point], default_width: float, pen: PenStyle | None) -> None:
+    """Ink a GENERATED stroke (connector, Endstrich) with the style's pen.
+
+    No pen / constant: the Gleichzug capsule — one stroke_width (today's
+    behaviour, byte-identical). pressure: a Haarstrich — generated strokes
+    never carry pressure (Spitzfeder physics), so the pooled hairline caps
+    the width. broad_nib: the swept Bandzugfeder ships as filled rings
+    (the client fills rings and never strokes them); the centerline stays
+    for the reveal mask, widened to cover the nib's asymmetric extent.
+    """
+    stroke_width = default_width
+    if pen is not None and pen.kind == "pressure" and pen.hairline_half is not None:
+        stroke_width = min(stroke_width, 2 * pen.hairline_half)
+    item["stroke_width"] = stroke_width
+    item["mask_width"] = stroke_width * 1.3
+    if pen is not None and pen.kind == "broad_nib" and pen.nib is not None:
+        pts = np.asarray(centerline, dtype=float)
+        item["rings"] = chisel_union_rings(pts[:, 0], pts[:, 1], pen.nib, simplify_tol=0.002)
+        item["mask_width"] = max(item["mask_width"], pen.nib.width_units * 1.15)
+
+
+def _endstrike_centerline(p0: Point, tangent_deg: float) -> list[Point] | None:
+    """Word-final Endstrich centerline, or None when the exit does not swing.
+
+    A LOW rising exit writes the finishing upswing (see SWING_TOP_Y) as a
+    two-tangent quadratic that leaves along the last glyph's exit flank and
+    flattens to SWING_END_DEG towards the target height, truncated at
+    SWING_MAX_RUN (SWING_DEEP_MAX_RUN after a below-baseline exit). A HIGH
+    forward exit (the r-arm, a Deckstrich cover-stroke) runs a short level
+    Auslauf instead (SWING_HIGH_RUN). Backward or flat-low exits do not swing
+    (None) and end the word as they are.
+    """
+    d_out = _unit(tangent_deg)
+    if p0[1] >= SWING_MAX_EXIT_Y:
+        # High forward exit (r-arm, Deckstrich): a short level Auslauf
+        # along the arm — the plates draw no rising flourish this high.
+        launch = math.degrees(math.atan2(d_out[1], d_out[0]))
+        if d_out[0] <= 0 or launch > SWING_HIGH_MAX_TANGENT_DEG:
+            return None
+        d_run = _unit(min(max(launch, SWING_HIGH_LAUNCH_DEG[0]), SWING_HIGH_LAUNCH_DEG[1]))
+        p3: Point = (p0[0] + SWING_HIGH_RUN * d_run[0], p0[1] + SWING_HIGH_RUN * d_run[1])
+        return [p0, ((p0[0] + p3[0]) / 2, (p0[1] + p3[1]) / 2), p3]
+    # Low rising exit: the finishing upswing as a two-tangent quadratic
+    # that leaves along the exit tangent and flattens to SWING_END_DEG
+    # at the top: run = rise × mean of the two cotangents. A flat or
+    # falling exit has no rising flank to continue.
+    if d_out[0] <= 0 or d_out[1] < SWING_MIN_RISE:
+        return None
+    rise = SWING_TOP_Y - p0[1]
+    if rise <= 0:
+        return None
+    cot_out = d_out[0] / d_out[1]
+    cot_end = 1.0 / math.tan(math.radians(SWING_END_DEG))
+    run = rise * (cot_out + cot_end) / 2
+    if run <= 0:
+        return None
+    p3 = (p0[0] + run, p0[1] + rise)
+    # Control point: intersection of the two tangent lines (exists
+    # because the directions differ; fall back to the midpoint when
+    # nearly parallel).
+    d_end = _unit(SWING_END_DEG)
+    denom = d_out[0] * d_end[1] - d_out[1] * d_end[0]
+    ctrl: Point = ((p0[0] + p3[0]) / 2, (p0[1] + p3[1]) / 2)
+    if abs(denom) > 1e-9:
+        t = ((p3[0] - p0[0]) * d_end[1] - (p3[1] - p0[1]) * d_end[0]) / denom
+        if 0.0 < t and p0[0] < p0[0] + t * d_out[0] < p3[0]:
+            ctrl = (p0[0] + t * d_out[0], p0[1] + t * d_out[1])
+    centerline = [
+        (
+            (1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * ctrl[0] + t * t * p3[0],
+            (1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * ctrl[1] + t * t * p3[1],
+        )
+        for t in (i / 10 for i in range(11))
+    ]
+    # Truncate at the run cap — a deep exit ends its swing mid-curve.
+    # The cap point is interpolated so a coarse sample step can never
+    # carry the stroke (and ink_max_x) past the cap.
+    run_cap = SWING_MAX_RUN if p0[1] >= 0 else SWING_DEEP_MAX_RUN
+    limit = p0[0] + run_cap
+    kept: list[Point] = [centerline[0]]
+    for a, b in zip(centerline, centerline[1:], strict=False):
+        if b[0] <= limit:
+            kept.append(b)
+            continue
+        if a[0] < limit and b[0] > a[0]:
+            t = (limit - a[0]) / (b[0] - a[0])
+            kept.append((limit, a[1] + t * (b[1] - a[1])))
+        break
+    if len(kept) < 2:
+        return None
+    return kept
+
+
+def _connector_centerline(
+    exit_pt: Point, exit_tangent_deg: float, first_line: list[Point], dx: float, *, high_couple: bool
+) -> tuple[list[Point], int]:
+    """Centerline of the Übergang from A's exit into B's entry + the entry trim.
+
+    All the rescue/clamp/garland/crest geometry factored out of ``compose_word``.
+    ``entry_trim`` is how many lead-in samples B's first stroke drops when a HIGH
+    exit couples onto its rising flank (O2/ENTRY_COUPLE_Y); the caller applies
+    the same cut to B's centerline + silhouette.
+    """
+    entry_trim = 0
+    p0: Point = exit_pt
+    # A HIGH exit couples onto the rising flank of B's first downstroke
+    # instead of the entry-stub foot (O2, see ENTRY_COUPLE_Y): the stub
+    # piece below the anchor is dropped from centerline AND silhouette.
+    if p0[1] >= HIGH_COUPLE_EXIT_Y:
+        entry_trim = _entry_couple_index(first_line)
+    couple_line = first_line[entry_trim:]
+    # End exactly on the next glyph's first ink sample so the join sits
+    # on the centerline the entry tangent is measured from.
+    p3: Point = (couple_line[0][0] + dx, couple_line[0][1])
+    span = math.hypot(p3[0] - p0[0], p3[1] - p0[1])
+    d_out = _unit(exit_tangent_deg)
+    # A glyph whose stroke ends deep in its descender loop (the long-s ſ)
+    # exits pointing downward — there the connector IS the return
+    # upstroke: aim it at the next entry instead of continuing the
+    # descent. Glyphs that finish a descender properly exit above the
+    # baseline, so the guard never fires for them. The same rescue
+    # applies to a BACKWARD exit tangent (the Sütterlin w/v bow curls
+    # left at its end): a pen travelling to the next letter always
+    # progresses rightward — following the curl loops the connector
+    # around the bow (the "wovon" collapse from the 2026-07 audit).
+    backward = d_out[0] <= 0.0
+    # A HIGH exit (tall d finishing its loop upward) reverses into the
+    # join — a real corner on the plates, so the chord is truthful.
+    high_reversal = p0[1] > HIGH_EXIT_Y and p3[1] < p0[1]
+    rescued = ((p0[1] < DESCENDER_EXIT_Y and d_out[1] < 0) or backward or high_reversal) and span > 0
+    if rescued:
+        d_out = ((p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span)
+    # The entry tangent is measured from the COUPLED lead-in (the stub
+    # dropped after a high exit, O2/ENTRY_COUPLE_Y); the bow-launch
+    # clamp of the jul11 branch is subsumed by the crest-roll block
+    # below, which clamps the same bow band and rolls the seam.
+    entry_deg = _endpoint_tangent(couple_line, at_end=False)
+    d_in = _unit(entry_deg)
+    # Perpendicular distance of the exit above the lead-in line — the
+    # garland trigger (see GARLAND_MERGE_EPS); also gates the r-Absatz:
+    # a close line is joined with the shallow notch of the taut cubic.
+    d_perp = d_in[0] * (p0[1] - p3[1]) - d_in[1] * (p0[0] - p3[0])
+    crest: list[Point] = []
+    if not rescued and BOW_EXIT_Y < p0[1] <= HIGH_EXIT_Y and p3[1] < p0[1]:
+        launch = math.degrees(math.atan2(d_out[1], d_out[0]))
+        if launch < ARM_TAN_MAX_DEG and d_perp > GARLAND_MERGE_EPS and not high_couple:
+            # r-arm Absatz: corner off the arm, steep fall (see ARM_*).
+            d_out = _unit(ARM_FALL_DEG)
+        elif launch > BOW_LAUNCH_DEG[1]:
+            d_orig = d_out
+            d_out = _unit(min(max(launch, BOW_LAUNCH_DEG[0]), BOW_LAUNCH_DEG[1]))
+            if CREST_ROLL_LEN > 0:
+                # Roll over the crest (see CREST_ROLL_LEN): a short
+                # two-tangent arc keeps the bow seam G1; the join
+                # proper then launches from the roll's end.
+                half = CREST_ROLL_LEN / 2
+                ctrl = (p0[0] + half * d_orig[0], p0[1] + half * d_orig[1])
+                roll_end = (ctrl[0] + half * d_out[0], ctrl[1] + half * d_out[1])
+                crest = [
+                    (
+                        (1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * ctrl[0] + t * t * roll_end[0],
+                        (1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * ctrl[1] + t * t * roll_end[1],
+                    )
+                    for t in (i / 5 for i in range(6))
+                ]
+                p0 = roll_end
+    # An ARCADE entry that must LOSE height writes as a baseline
+    # garland (the school hand's rounded turn); a round body couples
+    # high instead and everything else stays the taut cubic.
+    centerline = None if high_couple else _garland_centerline(p0, d_out, p3, d_in)
+    if centerline is None:
+        span = math.hypot(p3[0] - p0[0], p3[1] - p0[1])
+        if high_couple and p3[1] < p0[1] and span > 0:
+            # Land ON the body's top from above: the authored rising
+            # Anstrich is absorbed by the covering join on the plates
+            # (ren/roten/das originals) — following it would dip
+            # below the entry and rise back, the very notch the
+            # garland audit set out to remove.
+            d_in = ((p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span)
+        hspan = abs(p3[0] - p0[0])
+        handle = max(0.05, min(span * 0.4, hspan * 0.5))
+        p1: Point = (p0[0] + handle * d_out[0], p0[1] + handle * d_out[1])
+        p2: Point = (p3[0] - handle * d_in[0], p3[1] - handle * d_in[1])
+        centerline = _sample_bezier(p0, p1, p2, p3, CONNECT_SAMPLES)
+    if crest:
+        centerline = crest + centerline[1:]
+    return centerline, entry_trim
+
+
 def compose_word(
     slots: list[GlyphSlot],
     data_by_key: dict[str, dict | None],
@@ -403,26 +585,6 @@ def compose_word(
     # The previous glyph's exit in the composed frame, for the next connector.
     prev: dict | None = None
 
-    def apply_pen(item: dict, centerline: list[Point], default_width: float) -> None:
-        """Ink a GENERATED stroke (connector, Endstrich) with the style's pen.
-
-        No pen / constant: the Gleichzug capsule — one stroke_width (today's
-        behaviour, byte-identical). pressure: a Haarstrich — generated strokes
-        never carry pressure (Spitzfeder physics), so the pooled hairline caps
-        the width. broad_nib: the swept Bandzugfeder ships as filled rings
-        (the client fills rings and never strokes them); the centerline stays
-        for the reveal mask, widened to cover the nib's asymmetric extent.
-        """
-        stroke_width = default_width
-        if pen is not None and pen.kind == "pressure" and pen.hairline_half is not None:
-            stroke_width = min(stroke_width, 2 * pen.hairline_half)
-        item["stroke_width"] = stroke_width
-        item["mask_width"] = stroke_width * 1.3
-        if pen is not None and pen.kind == "broad_nib" and pen.nib is not None:
-            pts = np.asarray(centerline, dtype=float)
-            item["rings"] = chisel_union_rings(pts[:, 0], pts[:, 1], pen.nib, simplify_tol=0.002)
-            item["mask_width"] = max(item["mask_width"], pen.nib.width_units * 1.15)
-
     min_x = math.inf
     max_x = -math.inf
     min_y = math.inf
@@ -449,79 +611,15 @@ def compose_word(
         pending_diacritics.clear()
 
     def end_swing() -> None:
-        """Emit the word-final Endstrich. A LOW rising exit writes the
-        finishing upswing (see SWING_TOP_Y) as a two-tangent quadratic that
-        leaves along the last glyph's exit flank and flattens to SWING_END_DEG
-        towards the target height, truncated at SWING_MAX_RUN (SWING_DEEP_MAX_RUN
-        after a below-baseline exit). A HIGH forward exit (the r-arm, a
-        Deckstrich cover-stroke) runs a short level Auslauf instead
-        (SWING_HIGH_RUN). Backward or flat-low exits end the word as they are."""
+        """Emit the word-final Endstrich (geometry in ``_endstrike_centerline``)."""
         nonlocal cursor_x
         if not prev or not prev["joins"]:
             return
-        d_out = _unit(prev["tangent_deg"])
-        p0: Point = prev["exit"]
-        if p0[1] >= SWING_MAX_EXIT_Y:
-            # High forward exit (r-arm, Deckstrich): a short level Auslauf
-            # along the arm — the plates draw no rising flourish this high.
-            launch = math.degrees(math.atan2(d_out[1], d_out[0]))
-            if d_out[0] <= 0 or launch > SWING_HIGH_MAX_TANGENT_DEG:
-                return
-            d_run = _unit(min(max(launch, SWING_HIGH_LAUNCH_DEG[0]), SWING_HIGH_LAUNCH_DEG[1]))
-            p3: Point = (p0[0] + SWING_HIGH_RUN * d_run[0], p0[1] + SWING_HIGH_RUN * d_run[1])
-            centerline = [p0, ((p0[0] + p3[0]) / 2, (p0[1] + p3[1]) / 2), p3]
-        else:
-            # Low rising exit: the finishing upswing as a two-tangent quadratic
-            # that leaves along the exit tangent and flattens to SWING_END_DEG
-            # at the top: run = rise × mean of the two cotangents. A flat or
-            # falling exit has no rising flank to continue.
-            if d_out[0] <= 0 or d_out[1] < SWING_MIN_RISE:
-                return
-            rise = SWING_TOP_Y - p0[1]
-            if rise <= 0:
-                return
-            cot_out = d_out[0] / d_out[1]
-            cot_end = 1.0 / math.tan(math.radians(SWING_END_DEG))
-            run = rise * (cot_out + cot_end) / 2
-            if run <= 0:
-                return
-            p3 = (p0[0] + run, p0[1] + rise)
-            # Control point: intersection of the two tangent lines (exists
-            # because the directions differ; fall back to the midpoint when
-            # nearly parallel).
-            d_end = _unit(SWING_END_DEG)
-            denom = d_out[0] * d_end[1] - d_out[1] * d_end[0]
-            ctrl: Point = ((p0[0] + p3[0]) / 2, (p0[1] + p3[1]) / 2)
-            if abs(denom) > 1e-9:
-                t = ((p3[0] - p0[0]) * d_end[1] - (p3[1] - p0[1]) * d_end[0]) / denom
-                if 0.0 < t and p0[0] < p0[0] + t * d_out[0] < p3[0]:
-                    ctrl = (p0[0] + t * d_out[0], p0[1] + t * d_out[1])
-            centerline = [
-                (
-                    (1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * ctrl[0] + t * t * p3[0],
-                    (1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * ctrl[1] + t * t * p3[1],
-                )
-                for t in (i / 10 for i in range(11))
-            ]
-            # Truncate at the run cap — a deep exit ends its swing mid-curve.
-            # The cap point is interpolated so a coarse sample step can never
-            # carry the stroke (and ink_max_x) past the cap.
-            run_cap = SWING_MAX_RUN if p0[1] >= 0 else SWING_DEEP_MAX_RUN
-            limit = p0[0] + run_cap
-            kept: list[Point] = [centerline[0]]
-            for a, b in zip(centerline, centerline[1:], strict=False):
-                if b[0] <= limit:
-                    kept.append(b)
-                    continue
-                if a[0] < limit and b[0] > a[0]:
-                    t = (limit - a[0]) / (b[0] - a[0])
-                    kept.append((limit, a[1] + t * (b[1] - a[1])))
-                break
-            if len(kept) < 2:
-                return
-            centerline = kept
+        centerline = _endstrike_centerline(prev["exit"], prev["tangent_deg"])
+        if centerline is None:
+            return
         swing: dict = {"centerline": [list(p) for p in centerline], "lift": False}
-        apply_pen(swing, centerline, 2 * prev["width"])
+        _apply_pen(swing, centerline, 2 * prev["width"], pen)
         if provenance:
             swing["pair"] = [prev["key"], None]
             swing["from_slot"] = prev["slot_index"]
@@ -577,7 +675,7 @@ def compose_word(
 
         half_widths = data.get("half_widths_template") or []
         max_half = max(half_widths) if half_widths else DEFAULT_HALF
-        med_half = _median(list(half_widths))
+        med_half = statistics.median(half_widths) if half_widths else DEFAULT_HALF
 
         # Classify each pen-stroke: a diacritic floats entirely above the
         # midband and is never the glyph's first stroke (the t-crossbar sits
@@ -674,97 +772,18 @@ def compose_word(
             desired_entry_x = cursor_x
         dx = desired_entry_x - entry_xy[0]
 
-        # Connector first (writing order): the pen slides from A's exit into B's entry.
+        # Connector first (writing order): the pen slides from A's exit into B's
+        # entry. A round body (bowl / e-loop) is entered AT ITS TOP after a high
+        # exit — the letter hangs from the covering join, never dipping first
+        # (see HIGH_COUPLE_BASES; verified on the plate originals).
         entry_trim = 0
         if joined:
-            p0: Point = prev["exit"]
-            # A HIGH exit couples onto the rising flank of B's first downstroke
-            # instead of the entry-stub foot (O2, see ENTRY_COUPLE_Y): the stub
-            # piece below the anchor is dropped from centerline AND silhouette.
-            if p0[1] >= HIGH_COUPLE_EXIT_Y:
-                entry_trim = _entry_couple_index(first_line)
-            couple_line = first_line[entry_trim:]
-            # End exactly on the next glyph's first ink sample so the join sits
-            # on the centerline the entry tangent is measured from.
-            p3: Point = (couple_line[0][0] + dx, couple_line[0][1])
-            span = math.hypot(p3[0] - p0[0], p3[1] - p0[1])
-            d_out = _unit(prev["tangent_deg"])
-            # A glyph whose stroke ends deep in its descender loop (the long-s ſ)
-            # exits pointing downward — there the connector IS the return
-            # upstroke: aim it at the next entry instead of continuing the
-            # descent. Glyphs that finish a descender properly exit above the
-            # baseline, so the guard never fires for them. The same rescue
-            # applies to a BACKWARD exit tangent (the Sütterlin w/v bow curls
-            # left at its end): a pen travelling to the next letter always
-            # progresses rightward — following the curl loops the connector
-            # around the bow (the "wovon" collapse from the 2026-07 audit).
-            backward = d_out[0] <= 0.0
-            # A HIGH exit (tall d finishing its loop upward) reverses into the
-            # join — a real corner on the plates, so the chord is truthful.
-            high_reversal = p0[1] > HIGH_EXIT_Y and p3[1] < p0[1]
-            rescued = ((p0[1] < DESCENDER_EXIT_Y and d_out[1] < 0) or backward or high_reversal) and span > 0
-            if rescued:
-                d_out = ((p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span)
-            # The entry tangent is measured from the COUPLED lead-in (the stub
-            # dropped after a high exit, O2/ENTRY_COUPLE_Y); the bow-launch
-            # clamp of the jul11 branch is subsumed by the crest-roll block
-            # below, which clamps the same bow band and rolls the seam.
-            entry_deg = _endpoint_tangent(couple_line, at_end=False)
-            d_in = _unit(entry_deg)
-            # A round body (bowl / e-loop) is entered AT ITS TOP after a high
-            # exit — the letter hangs from the covering join, never dipping
-            # first (see HIGH_COUPLE_BASES; verified on the plate originals).
             high_couple = _key_base(slot.key, slot.position) in HIGH_COUPLE_BASES
-            # Perpendicular distance of the exit above the lead-in line — the
-            # garland trigger (see GARLAND_MERGE_EPS); also gates the r-Absatz:
-            # a close line is joined with the shallow notch of the taut cubic.
-            d_perp = d_in[0] * (p0[1] - p3[1]) - d_in[1] * (p0[0] - p3[0])
-            crest: list[Point] = []
-            if not rescued and BOW_EXIT_Y < p0[1] <= HIGH_EXIT_Y and p3[1] < p0[1]:
-                launch = math.degrees(math.atan2(d_out[1], d_out[0]))
-                if launch < ARM_TAN_MAX_DEG and d_perp > GARLAND_MERGE_EPS and not high_couple:
-                    # r-arm Absatz: corner off the arm, steep fall (see ARM_*).
-                    d_out = _unit(ARM_FALL_DEG)
-                elif launch > BOW_LAUNCH_DEG[1]:
-                    d_orig = d_out
-                    d_out = _unit(min(max(launch, BOW_LAUNCH_DEG[0]), BOW_LAUNCH_DEG[1]))
-                    if CREST_ROLL_LEN > 0:
-                        # Roll over the crest (see CREST_ROLL_LEN): a short
-                        # two-tangent arc keeps the bow seam G1; the join
-                        # proper then launches from the roll's end.
-                        half = CREST_ROLL_LEN / 2
-                        ctrl = (p0[0] + half * d_orig[0], p0[1] + half * d_orig[1])
-                        roll_end = (ctrl[0] + half * d_out[0], ctrl[1] + half * d_out[1])
-                        crest = [
-                            (
-                                (1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * ctrl[0] + t * t * roll_end[0],
-                                (1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * ctrl[1] + t * t * roll_end[1],
-                            )
-                            for t in (i / 5 for i in range(6))
-                        ]
-                        p0 = roll_end
-            # An ARCADE entry that must LOSE height writes as a baseline
-            # garland (the school hand's rounded turn); a round body couples
-            # high instead and everything else stays the taut cubic.
-            centerline = None if high_couple else _garland_centerline(p0, d_out, p3, d_in)
-            if centerline is None:
-                span = math.hypot(p3[0] - p0[0], p3[1] - p0[1])
-                if high_couple and p3[1] < p0[1] and span > 0:
-                    # Land ON the body's top from above: the authored rising
-                    # Anstrich is absorbed by the covering join on the plates
-                    # (ren/roten/das originals) — following it would dip
-                    # below the entry and rise back, the very notch the
-                    # garland audit set out to remove.
-                    d_in = ((p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span)
-                hspan = abs(p3[0] - p0[0])
-                handle = max(0.05, min(span * 0.4, hspan * 0.5))
-                p1: Point = (p0[0] + handle * d_out[0], p0[1] + handle * d_out[1])
-                p2: Point = (p3[0] - handle * d_in[0], p3[1] - handle * d_in[1])
-                centerline = _sample_bezier(p0, p1, p2, p3, CONNECT_SAMPLES)
-            if crest:
-                centerline = crest + centerline[1:]
+            centerline, entry_trim = _connector_centerline(
+                prev["exit"], prev["tangent_deg"], first_line, dx, high_couple=high_couple
+            )
             connector: dict = {"centerline": [list(p) for p in centerline], "lift": False}
-            apply_pen(connector, centerline, 2 * min(prev["width"], med_half))
+            _apply_pen(connector, centerline, 2 * min(prev["width"], med_half), pen)
             if provenance:
                 connector["pair"] = [prev["key"], slot.key]
                 connector["from_slot"] = prev["slot_index"]
