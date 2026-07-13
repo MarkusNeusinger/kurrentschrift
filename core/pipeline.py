@@ -493,9 +493,11 @@ def _assemble_canonical_payload(
     the raw_path serialization and the wire dict (glyph/position/advance/
     anchors/half_widths/entry/exit_pt/raw_path/trace_meta/measurements). The
     per-script differences ride in `method` (`trace_meta.method`) and
-    `extra_trace_meta` (the Sütterlin path adds `nib_radius_px`/`smooth`/
-    `vertical` and overrides `snap`/`refine`); the pressure path passes its
-    `snap`/`refine`/`quality` residuals the same way.
+    `extra_trace_meta`: the pressure path passes its `snap`/`refine` residuals
+    there, the Sütterlin path adds `nib_radius_px`/`smooth`/`vertical` and its
+    own not-applicable `snap`/`refine` notes. `quality` and `crossing_anchors`
+    are dedicated arguments (both scripts fill `trace_meta["quality"]` /
+    `["crossing_anchors"]` directly).
     """
     x0, y0 = bbox["x0"], bbox["y0"]
     pixel_global = resampled_local + np.array([x0, y0])
