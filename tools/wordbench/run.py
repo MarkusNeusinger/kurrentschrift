@@ -14,8 +14,13 @@ reported by name — an authoring gap is not a composition failure; a crash of
 an authored entry still counts 1.0.
 
 Usage:
-    uv run python -m tools.wordbench.run [--style suetterlin] [--set words|pairs|all]
-        [--words unter,das] [--artifacts DIR] [--json report.json] [--compare old.json]
+    uv run python -m tools.wordbench.run [--style suetterlin]
+        [--set words|pairs|<custom set like abb22>|all] [--words unter,das]
+        [--artifacts DIR] [--json report.json] [--compare old.json]
+
+    ``--set all`` covers ONLY the canonical same-hand sets (words + pairs);
+    a custom cross-hand set must be named explicitly so it can never mix
+    into the same-hand headlines.
 
 Output contract (parsed by the experiment loop — keep the words block stable):
 
@@ -53,7 +58,6 @@ from tools.wordbench.metric import score_word
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 STYLES = ("suetterlin", "kurrent", "offenbacher")
-SETS = ("words", "pairs", "all")
 
 
 def _overlay(word_dir: Path, word_meta: dict, composed: dict, report: dict, out_path: Path) -> None:
@@ -110,7 +114,14 @@ def _print_block(reports: list[dict], skipped: list[dict], kind: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--style", default="suetterlin", choices=STYLES)
-    parser.add_argument("--set", dest="which", default="words", choices=SETS, help="fixture set to run")
+    parser.add_argument(
+        "--set",
+        dest="which",
+        default="words",
+        help="fixture set to run (words | pairs | a custom set name | all). 'all' covers ONLY the "
+        "canonical same-hand sets (words + pairs) — a custom cross-hand set like abb22 must be "
+        "named explicitly so it can never mix into the same-hand headlines.",
+    )
     parser.add_argument("--fixtures", type=Path, default=FIXTURES, help="fixture root (default: the frozen set)")
     parser.add_argument("--words", help="comma-separated id/word filter")
     parser.add_argument("--artifacts", type=Path, help="write overlay PNGs here")
@@ -120,10 +131,12 @@ def main() -> None:
 
     t0 = time.perf_counter()
     style_root = args.fixtures / args.style
+    # 'all' aggregates reports across the selected manifests, so it must stay
+    # scoped to the canonical SAME-HAND sets — a custom cross-hand set (abb22)
+    # would otherwise silently join the words headline.
+    wanted = ("words", "pairs") if args.which == "all" else (args.which,)
     manifests = [
-        p
-        for p in sorted(style_root.glob("*/manifest.json"))
-        if args.which == "all" or json.loads(p.read_text()).get("set", "words") == args.which
+        p for p in sorted(style_root.glob("*/manifest.json")) if json.loads(p.read_text()).get("set", "words") in wanted
     ]
     if not manifests:
         raise SystemExit(f"no {args.which} fixtures under {style_root} — run tools/wordbench/export_fixtures first")
