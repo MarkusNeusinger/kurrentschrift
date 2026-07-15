@@ -105,15 +105,29 @@ class Harness:
         self.session_maker = session_maker
 
     async def seed_style_and_source(
-        self, width_resolver: str = "pressure", chart_path: str = "data/does-not-exist/chart.png"
+        self,
+        width_resolver: str = "pressure",
+        chart_path: str = "data/does-not-exist/chart.png",
+        chart_size: dict | None = None,
     ) -> tuple[str, str]:
         """Insert one style + one chart source; returns (style_id, source_id).
 
         `chart_path` defaults to a nonexistent file (most tests never touch the
-        chart bytes); the trace tests pass the on-disk synthetic chart instead.
+        chart bytes); the trace tests pass the on-disk synthetic chart. When a
+        real chart is passed, its actual pixel size is read from disk so the
+        stored `chart_size` metadata stays truthful.
         """
         n = next(_ids)
         style_id, source_id = f"teststyle{n}", f"test-source-{n}"
+        if chart_size is None:
+            chart_size = {"w": 100, "h": 100}
+            try:
+                from PIL import Image
+
+                with Image.open(chart_path) as img:
+                    chart_size = {"w": img.width, "h": img.height}
+            except OSError:
+                pass  # default placeholder for the deliberately-nonexistent chart
         async with self.session_maker() as session:
             session.add(
                 Style(
@@ -132,7 +146,7 @@ class Harness:
                     title="Synthetic test chart",
                     license="CC0",
                     chart_path=chart_path,
-                    chart_size={"w": 100, "h": 100},
+                    chart_size=chart_size,
                 )
             )
             await session.commit()
