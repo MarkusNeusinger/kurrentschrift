@@ -3,10 +3,10 @@
 // a future i18next `worksheet` namespace.
 
 export const worksheet = {
-  title: 'Lineatur-Vorlage zum Schreiben üben',
+  title: 'Übungsblatt für die deutsche Schreibschrift',
   //   preserves the DIN&nbsp;A4 non-breaking space from the JSX original.
   intro:
-    'Hilfslinien für deutsche Schreibschrift auf DIN A4. Wähle eine der drei Start-Schriften, passe das Verhältnis von Ober-, Mittel- und Unterband nach Belieben an, nimm auf Wunsch Schräglinien dazu — und lade das Blatt als PDF zum Ausdrucken.',
+    'Hilfslinien für deutsche Schreibschrift auf DIN A4. Wähle eine der drei Ausgangsschriften, passe das Verhältnis von Ober-, Mittel- und Unterband nach Belieben an, nimm auf Wunsch Schräglinien dazu — und lade das Blatt als PDF zum Ausdrucken.',
   preview: 'Vorschau · DIN A4',
   // Footer spec fragments printed on the sheet (fmt templates).
   spec: {
@@ -20,7 +20,7 @@ export const worksheet = {
     offenbacher: { label: 'Offenbacher', note: '2 : 3 : 2 · Schräglage 75–80° · Breitfeder 15–20°' },
   },
   config: {
-    presetHeading: 'Start-Schrift',
+    presetHeading: 'Ausgangsschrift',
     customSetting: 'Eigene Einstellung',
     ratioHeading: 'Verhältnis · Ober : Mittel : Unter',
     ratioAscender: 'Ober',

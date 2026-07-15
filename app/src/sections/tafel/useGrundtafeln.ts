@@ -20,6 +20,7 @@ import { LETTERS, glyphKeyFor, type Position } from '@/domain/glyphs';
 import { CONFIG } from '@/global-config';
 import { getBboxes, getGlyphs, getSources, getStyles } from '@/lib/api';
 import type { BboxOut, GlyphSummary, SourceOut, StyleOut } from '@/lib/api';
+import { de } from '@/locales';
 import { styleLabel } from '@/locales/de/common';
 
 // Canonical teaching order (oldest → newest), matching the landing + Schriftkunde.
@@ -166,7 +167,9 @@ export function useGrundtafeln(): GrundtafelnResult {
       } catch (e) {
         if (cancelled) return;
         setWaking(false);
-        setLoadError(String(e));
+        // Fixed German copy for the public /tafel; raw exception → console.
+        console.error('grundtafeln boot load failed', e);
+        setLoadError(de.common.boot.sourceUnreachableDetail);
       }
     })();
     return () => {

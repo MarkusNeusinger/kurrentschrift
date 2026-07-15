@@ -12,6 +12,62 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Authorized admin-write and Cloudflare-Access test suites.** New
+  `tests/test_api_admin_writes.py` exercises the gated handlers with a CORRECT
+  token: bbox PUT/GET roundtrip incl. the coalesce contract (omitted
+  `locked`/`n_anchors` preserve stored values), the full `/trace` pipeline
+  against the on-disk synthetic chart (persisted template, list `has_data`,
+  bbox anchor-count sync), the 423 lock + `force` override, and DELETE
+  semantics for bboxes and templates. New `tests/test_api_auth.py` covers the
+  JWT branch that actually gates prod: listed email → authorized, unlisted →
+  hard 403 (no token fallback), unverifiable JWT → break-glass token path, plus
+  unit tests of `_verify_cf_access_jwt` (lowercasing, PyJWTError → None,
+  missing email claim, unconfigured). The shared ASGI harness moved from
+  `test_api_http.py` into `tests/api_harness.py` + a conftest `api` fixture so
+  all three API suites reuse it.
+
+### Fixed
+
+- **`/trace` can no longer cross-link template rows.** The template upsert
+  conflicts on `(style, glyph, position, variant)` while reads go by
+  `glyph_key`, so a client bug pairing a wrong URL key with a payload identity
+  could conflict-update another row and rewrite its `glyph_key` — reads then
+  silently 404 on the shared prod DB. `POST /trace` now derives the expected
+  key from the shared registry (`core.shaping.expected_glyph_key`, the Python
+  twin of `glyphs.ts`; `{base}-{position}` convention as fallback) and rejects
+  a mismatch with 422.
+- **DB engine init race closed.** The lazy `asyncio.Lock` getter in
+  `core/database/connection.py` was itself check-then-set, so two first
+  requests could each mint their own lock, both enter `init_db()`, and the
+  loser's engine (and Cloud SQL connector) leaked without `dispose()`. The
+  lock is now created at import; the dead `_sync_init_lock` is gone.
+- **No more raw English error strings on public pages.** `/quiz` and `/tafel`
+  showed `String(e)` (e.g. "TypeError: Failed to fetch") as the BootStatus
+  detail under a German title; both now show a fixed German sentence
+  (`common.boot.sourceUnreachableDetail`) and log the exception to the console.
+
+### Changed
+
+- **Public copy pass from the content audit.** /schriftkunde's intro no longer
+  switches to Sie-form on an otherwise du-form site; German closing quotes are
+  typographic („…“) everywhere; the hub/SEO texts stop promising trace-along
+  words the worksheet generator doesn't produce and stop overclaiming the
+  Tafel ("jeder Buchstabe, wie ihn die Feder schreibt" → only the Sütterlin is
+  engine-written); the landing quiz card stops calling the Sütterlin-only quiz
+  "Kurrent-Buchstaben" (and fixes "weist" → "zeigt"); quiz feedback "Super
+  Übereinstimmung" → "Richtig gelesen."; quiz/tafel availability notes use the
+  same wording (freigegeben instead of admin-jargon "kalibriert und gesperrt");
+  the worksheet tool is consistently named "Übungsblatt" and the presets
+  "Ausgangsschrift"; fact fixes against docs/schriftkunde: Sütterlin school
+  introduction 1915 (Prussia) / ~1930 elsewhere instead of "1920er Jahre" and
+  "Schulschrift von 1911", the Swiss phase-out 1890–1930 instead of "um 1900",
+  the ß note now attributes the ſ+s reading to the Antiqua tradition, the
+  1915/1918 timeline entry carries the divergent-sources caveat, and Kurrent is
+  "die alte Alltagsschrift, ohne einheitliche Norm" instead of "die ältere
+  Norm"; grammar fixes ("Das Schreiben lernte man …", "niederschrieben");
+  the static `<title>`/description in `index.html` now match the SEO catalogue
+  (full home title for no-JS crawlers, description trimmed to ~155 chars).
+
 - **HTTP-level API test suite + an Alembic migration check in CI.** New
   `tests/test_api_http.py` runs the FastAPI app under pytest against an
   in-memory aiosqlite session (dependency-overridden `get_db`, no

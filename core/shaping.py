@@ -288,6 +288,21 @@ def glyph_keys_of(slots: list[GlyphSlot]) -> list[str]:
     return list(seen)
 
 
+def expected_glyph_key(glyph: str, position: Position) -> str | None:
+    """The canonical glyph_key the registry assigns to (glyph, position).
+
+    None for a glyph outside the registry subset — callers fall back to the
+    `{base}-{position}` naming convention. Used by the admin write path to
+    reject a trace whose URL key and payload identity disagree (the template
+    upsert conflicts on (style, glyph, position, variant), so a mismatched
+    pair would silently rewrite another row's glyph_key).
+    """
+    entry = _LETTERS.get(glyph) or _LIGATURES.get(glyph) or _NONJOINING.get(glyph)
+    if entry is None:
+        return None
+    return _key_for(entry, position)
+
+
 def decompose_ligature_slot(slot: GlyphSlot) -> list[GlyphSlot] | None:
     """Fallback for a ligature whose canonical is missing: split into letters.
 

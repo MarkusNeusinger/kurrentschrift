@@ -104,6 +104,10 @@ export const common = {
     // Quiz variant talks about the Vorlage (the source chart), not the API.
     sourceUnreachable: 'Vorlage nicht erreichbar',
     sourceColdStart: 'Der Server wacht gerade auf — das kann beim ersten Besuch bis zu einer Minute dauern.',
+    // Public-facing error detail: a fixed German sentence instead of the raw
+    // (English) exception text; the technical error goes to the console.
+    sourceUnreachableDetail:
+      'Die Vorlage konnte auch nach mehreren Versuchen nicht geladen werden — der Server ist gerade nicht erreichbar.',
     loadingTemplate: 'lade Vorlage…',
     retry: 'Erneut versuchen',
     apiUnreachableDetail: 'Die API (Cloud Run) konnte auch nach mehreren Versuchen nicht erreicht werden.',

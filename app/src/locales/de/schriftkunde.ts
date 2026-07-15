@@ -59,7 +59,7 @@ const SRC = {
     href: 'https://schulmuseum-ottweiler.net/magazin/buchstabentabellen-vorschriften-und-musterbuecher',
   },
   zbZuerich: {
-    label: 'Zentralbibliothek Zürich: „Keine Angst vor alten Schriften" (PDF)',
+    label: 'Zentralbibliothek Zürich: „Keine Angst vor alten Schriften“ (PDF)',
     href: 'https://www.zb.uzh.ch/storage/app/media/ueber-uns/Citizen-Science/Schulzeitreisen/20210621_Keine_Angst_vor_alten_Schriften/Arbeitsblatt.pdf',
   },
   kunsthalleKarlsruhe: { label: 'Kunsthalle Karlsruhe: Glossar Eisengallustinte', href: 'https://www.kunsthalle-karlsruhe.de/glossar/eisengallustinte/' },
@@ -81,7 +81,7 @@ export const schriftkunde = {
   title: 'Die deutsche Schreibschrift',
   // Warm opener for newcomers (period tone, second person) — placed above the
   // factual lead so a curious finder of an old letter is met first.
-  intro: 'Sie haben einen alten Brief, eine Postkarte oder ein Tagebuch gefunden und erkennen kaum einen Buchstaben? Das ist meist die deutsche Kurrentschrift — über vierhundert Jahre lang ganz gewöhnlich, heute für die meisten ein Rätsel. Diese Seite erklärt in Ruhe, was das ist, wie es funktioniert und warum wir heute nicht mehr so schreiben.',
+  intro: 'Du hast einen alten Brief, eine Postkarte oder ein Tagebuch gefunden und erkennst kaum einen Buchstaben? Das ist meist die deutsche Kurrentschrift — über vierhundert Jahre lang ganz gewöhnlich, heute für die meisten ein Rätsel. Diese Seite erklärt in Ruhe, was das ist, wie es funktioniert und warum wir heute nicht mehr so schreiben.',
   lead: 'Vom frühen 16. bis zur Mitte des 20. Jahrhunderts war die Kurrent die allgemeine Verkehrs- und Geschäftsschrift des deutschen Sprachraums — ein knapper, durchweg belegter Überblick über ihre Formen, ihr Werkzeug und ihre Geschichte; für die Tiefe führen die Quellen weiter. Das Projekt selbst beginnt bei drei Ausgangsschriften: Kurrent, Sütterlin und Offenbacher.',
 
   // --- Grundbegriffe ---------------------------------------------------------
@@ -125,7 +125,7 @@ export const schriftkunde = {
       name: 'Sütterlin',
       period: 'entworfen 1911 · Schulschrift ~1915–1941',
       essence:
-        'Ludwig Sütterlins bewusst aufrechte, vereinfachte Ausgangsschrift für den Schreibunterricht. Heute heißt umgangssprachlich fast jede Kurrent „Sütterlin" — gemeint ist aber nur diese eine, späte Variante.',
+        'Ludwig Sütterlins bewusst aufrechte, vereinfachte Ausgangsschrift für den Schreibunterricht. Heute heißt umgangssprachlich fast jede Kurrent „Sütterlin“ — gemeint ist aber nur diese eine, späte Variante.',
       facts: [
         { k: 'Schriftlage', v: 'senkrecht (90°)' },
         { k: 'Lineatur', v: '1:1:1' },
@@ -189,7 +189,7 @@ export const schriftkunde = {
     },
     {
       term: 'Druck oder Hand',
-      desc: 'Die kantige Fraktur ist eine gedruckte Schrift, die Kurrent ihre handgeschriebene Schwester desselben Zeitraums. „Altdeutsche Schrift" meint beides zusammen — ein Sammelbegriff, kein Fachwort.',
+      desc: 'Die kantige Fraktur ist eine gedruckte Schrift, die Kurrent ihre handgeschriebene Schwester desselben Zeitraums. „Altdeutsche Schrift“ meint beides zusammen — ein Sammelbegriff, kein Fachwort.',
     },
   ],
   classifySources: [SRC.adfontesKursive, SRC.schreibschrift, SRC.englischeSchreibschrift, SRC.lateinischeAusgangsschrift, SRC.fraktur],
@@ -200,7 +200,7 @@ export const schriftkunde = {
   geography: [
     {
       term: 'Deutschland',
-      desc: 'Bis zum Lehrverbot 1941 die allgemeine Schrift; ab den 1920er Jahren löste die Sütterlin in den Schulen die ältere Kurrent ab.',
+      desc: 'Bis zum Lehrverbot 1941 die allgemeine Schrift; ab 1915 in Preußen, in den übrigen Ländern erst um 1930, löste die Sütterlin in den Schulen die ältere Kurrent ab.',
     },
     {
       term: 'Österreich',
@@ -208,7 +208,7 @@ export const schriftkunde = {
     },
     {
       term: 'Schweiz',
-      desc: 'Gab die Kurrent schon um 1900 auf — kein Verbot, sondern kantonale Schulbeschlüsse. Die Sütterlin wurde hier nie eingeführt.',
+      desc: 'Gab die Kurrent zwischen 1890 und 1930 kantonsweise auf — kein Verbot, sondern kantonale Schulbeschlüsse. Die Sütterlin wurde hier nie eingeführt.',
     },
     {
       term: 'Liechtenstein',
@@ -220,8 +220,8 @@ export const schriftkunde = {
   // --- Why we no longer write this way ("Warum wir heute nicht mehr so schreiben")
   endHeading: 'Warum wir heute nicht mehr so schreiben',
   endParagraphs: [
-    'Die Kurrent und die Sütterlin verschwanden nicht allmählich, sondern fast auf einen Schlag: Ein Erlass vom Januar 1941 beendete die gebrochenen Druckschriften, ein Rundschreiben vom 1. September 1941 untersagte, die Kurrent in der Schule zu lehren. Ab dem Schuljahr 1941/42 lernten alle Kinder nur noch die lateinische „Deutsche Normalschrift".',
-    'Begründet wurde das Verbot mit der Behauptung, die gebrochenen Schriften seien „Schwabacher Judenlettern" — eine erfundene, sachlich falsche Propaganda. Als sachlichen Grund nannte die Reichskanzlei dagegen, dass im Ausland kaum jemand die eckige deutsche Schrift lesen könne.',
+    'Die Kurrent und die Sütterlin verschwanden nicht allmählich, sondern fast auf einen Schlag: Ein Erlass vom Januar 1941 beendete die gebrochenen Druckschriften, ein Rundschreiben vom 1. September 1941 untersagte, die Kurrent in der Schule zu lehren. Ab dem Schuljahr 1941/42 lernten alle Kinder nur noch die lateinische „Deutsche Normalschrift“.',
+    'Begründet wurde das Verbot mit der Behauptung, die gebrochenen Schriften seien „Schwabacher Judenlettern“ — eine erfundene, sachlich falsche Propaganda. Als sachlichen Grund nannte die Reichskanzlei dagegen, dass im Ausland kaum jemand die eckige deutsche Schrift lesen könne.',
     'Die Folge: Wer ab 1941/42 eingeschult wurde, lernte die alte Schrift gar nicht mehr. Innerhalb einer einzigen Generation wurde aus einer Alltagsschrift eine, die heute nur noch wenige lesen können — deshalb wirkt ein alter Brief oft wie eine Geheimschrift.',
   ],
   endSources: [SRC.erlass, SRC.antiquaFraktur, SRC.suetterlin],
@@ -251,7 +251,7 @@ export const schriftkunde = {
   material: [
     {
       term: 'Eisengallustinte',
-      desc: 'Die wichtigste Tinte vom Mittelalter bis ins 20. Jahrhundert. Frisch geschrieben ist sie blass; das tiefe Schwarz bildet sich erst beim Trocknen an der Luft. Ein blauer Hilfsfarbstoff machte sie zunächst sichtbar („blauschwarz") und verblasst später — gealtert erscheint die Schrift braun.',
+      desc: 'Die wichtigste Tinte vom Mittelalter bis ins 20. Jahrhundert. Frisch geschrieben ist sie blass; das tiefe Schwarz bildet sich erst beim Trocknen an der Luft. Ein blauer Hilfsfarbstoff machte sie zunächst sichtbar („blauschwarz“) und verblasst später — gealtert erscheint die Schrift braun.',
     },
     {
       term: 'Tintenfraß',
@@ -259,7 +259,7 @@ export const schriftkunde = {
     },
     {
       term: 'Papier & Tafel',
-      desc: 'Geschrieben wurde auf reißfestem Hadernpapier, ab dem 19. Jahrhundert auf vergilbendem Holzschliffpapier. Das Schreiben gelernt wurde auf der Schiefertafel und im vierlinigen Schönschreibheft.',
+      desc: 'Geschrieben wurde auf reißfestem Hadernpapier, ab dem 19. Jahrhundert auf vergilbendem Holzschliffpapier. Das Schreiben lernte man auf der Schiefertafel und im vierlinigen Schönschreibheft.',
     },
   ],
   materialSources: [SRC.eisengallus, SRC.kunsthalleKarlsruhe, SRC.hadernpapier, SRC.schiefertafel],
@@ -282,7 +282,7 @@ export const schriftkunde = {
     },
     {
       term: 'Das ß',
-      desc: 'Das Eszett ist historisch eine Ligatur aus langem ſ und z (ſʒ) — nicht aus ſ und s.',
+      desc: 'Das Eszett ist historisch eine Ligatur aus langem ſ und z (ſʒ) — die Deutung als ſ+s stammt aus der Antiqua-Tradition.',
     },
     {
       term: 'Reduplikationsstrich',
@@ -301,11 +301,11 @@ export const schriftkunde = {
     },
     {
       term: 'Geldzeichen',
-      desc: 'Der Pfennig ist ein geschriebenes d mit Abschwung (₰, von lat. denarius), die Mark erscheint als „Mk" oder ℳ — die Kürzel alter Rechnungen.',
+      desc: 'Der Pfennig ist ein geschriebenes d mit Abschwung (₰, von lat. denarius), die Mark erscheint als „Mk“ oder ℳ — die Kürzel alter Rechnungen.',
     },
     {
       term: 'Kürzungen',
-      desc: 'Ein waagrechter Strich über einem Buchstaben (Nasalstrich) ergänzt oder verdoppelt ein m oder n; „ꝛc." stand für „etc.". Solche Kürzungen waren in Handschriften gebräuchlich.',
+      desc: 'Ein waagrechter Strich über einem Buchstaben (Nasalstrich) ergänzt oder verdoppelt ein m oder n; „ꝛc.“ stand für „etc.“. Solche Kürzungen waren in Handschriften gebräuchlich.',
     },
   ],
   signsSources: [SRC.ziffern, SRC.pfennig, SRC.mark, SRC.nasalstrich, SRC.rotunda],
@@ -318,10 +318,10 @@ export const schriftkunde = {
     { year: '19. Jh.', text: 'Die metallene Spitzfeder lässt die Kurrent stärker nach rechts neigen — die Schulvorschriften streuen weit, von 45° bis 75°.' },
     { year: 'um 1900', text: 'Die klassische Kurrent steht auf der Lineatur 2:1:2 und einer Schräglage von 60–70°.' },
     { year: '1911', text: 'Ludwig Sütterlin entwirft im preußischen Auftrag seine bewusst aufrechte Ausgangsschrift.' },
-    { year: '1915 / 1918', text: 'Einführung in Preußen — erst probeweise, dann verbindlich.' },
+    { year: '1915 / 1918', text: 'Einführung in Preußen — erst probeweise, dann verbindlich (nach anderen Quellen 1914/1924).' },
     { year: '1927', text: 'Rudolf Koch entwirft die Offenbacher Schrift als künstlerischen Gegenentwurf.' },
-    { year: '1935', text: 'Eine modifizierte Sütterlin wird als „Deutsche Volksschrift" Bestandteil des Schulunterrichts.' },
-    { year: '1941', text: 'Lehrverbot der Kurrentschriften zum 1. September; ab 1941/42 gilt die lateinische „Deutsche Normalschrift".' },
+    { year: '1935', text: 'Eine modifizierte Sütterlin wird als „Deutsche Volksschrift“ Bestandteil des Schulunterrichts.' },
+    { year: '1941', text: 'Lehrverbot der Kurrentschriften zum 1. September; ab 1941/42 gilt die lateinische „Deutsche Normalschrift“.' },
     { year: 'nach 1945', text: 'Vereinzelt als Zweitschrift wiederbelebt (etwa Koch-Hermersdorf in Bayern), ohne dauerhaften Erfolg.' },
   ],
   timelineNote:
@@ -376,7 +376,7 @@ export const schriftkunde = {
   recommendation: {
     heading: 'Weiterlernen',
     before: 'Wer die deutsche Schreibschrift nicht nur betrachten, sondern wirklich lesen und schreiben lernen möchte, dem sei ',
-    linkLabel: 'Harald Süß’ „Deutsche Schreibschrift. Lesen und Schreiben lernen"',
+    linkLabel: 'Harald Süß’ „Deutsche Schreibschrift. Lesen und Schreiben lernen“',
     href: SRC.suess.href,
     after: ' ans Herz gelegt — das Lehrbuch, aus dem auch der Autor dieses Projekts die Kurrent gelernt hat. Hier geht es bewusst nur um den Überblick; die Tiefe steht dort.',
     practiceIntro: 'Zum kostenlosen Lesen- und Schreibenlernen gibt es im Netz mehrere gute Anlaufstellen:',
@@ -391,13 +391,13 @@ export const schriftkunde = {
     {
       id: 'quiz',
       title: 'Buchstaben-Quiz',
-      body: 'Lesen üben: Erkenne die Buchstaben der alten Schrift in einem kurzen Abfragespiel — vom einzelnen Zeichen bis zum kurzen Wort.',
+      body: 'Lesen üben: Erkenne die Buchstaben der alten Schrift in einem kurzen Abfragespiel — vom einzelnen Zeichen bis zum ganzen Wort.',
       cta: 'Quiz öffnen',
     },
     {
       id: 'tafel',
       title: 'Schreibtafel',
-      body: 'Die ganze Vorlage auf einen Blick: jeder Buchstabe, wie ihn die Feder schreibt — zum Vergleichen und Nachschlagen.',
+      body: 'Die drei historischen Vorlagen auf einen Blick — die Sütterlin schreibt sich Zug um Zug selbst. Zum Vergleichen und Nachschlagen.',
       cta: 'Zur Tafel',
     },
     {

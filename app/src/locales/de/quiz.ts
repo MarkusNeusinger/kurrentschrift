@@ -11,7 +11,7 @@ export const quiz = {
   },
   difficulties: {
     clean: { label: 'Sauber', hint: 'klare Lehrtafel' },
-    worn: { label: 'Geübt', hint: 'flüssige Alltagshand' },
+    worn: { label: 'Flüssig', hint: 'geübte Alltagshand' },
     messy: { label: 'Krakelig', hint: 'unsaubere, schwer lesbare Hand' },
   },
   setup: {
@@ -32,9 +32,9 @@ export const quiz = {
     // Summary line above the start button: "dein Quiz · Kurrent · Buchstaben · Sauber".
     summaryPrefix: 'dein Quiz',
     noLetters: 'Für diese Auswahl sind noch keine Buchstaben freigegeben.',
-    noLettersOther: 'Buchstaben erscheinen hier, sobald sie im Admin-Bereich fertig kalibriert und gesperrt sind.',
+    noLettersOther: 'Buchstaben erscheinen hier, sobald sie fertig nachgeschrieben und freigegeben sind.',
     noWords: 'Für diese Auswahl sind noch keine ganzen Wörter freigegeben.',
-    noWordsOther: 'Ein Wort erscheint hier, sobald jeder seiner Buchstaben kalibriert und gesperrt ist.',
+    noWordsOther: 'Ein Wort erscheint hier, sobald jeder seiner Buchstaben nachgeschrieben und freigegeben ist.',
     start: 'Quiz starten',
   },
   play: {
@@ -48,7 +48,7 @@ export const quiz = {
     questionLetter: 'Welcher Buchstabe ist das?',
     questionWord: 'Welches Wort ist das?',
     // Verdict line: success, then the two miss variants.
-    matchStrong: 'Super Übereinstimmung',
+    matchStrong: 'Richtig gelesen.',
     solutionLetter: 'Das ist ein {{letter}}.',
     solutionWord: 'Das ist „{{word}}“.',
     // Side-by-side comparison labels on a wrong pick (uppercased in the UI).
