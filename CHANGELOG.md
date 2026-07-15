@@ -12,6 +12,63 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **`/verify-migrations` skill + a hardened CI migrations job.** The CI job now
+  runs the full sequence — `alembic upgrade head`, `alembic check`
+  (model↔migration autogenerate drift) and a `downgrade -1`/`upgrade head`
+  roundtrip — against its throwaway Postgres 16; the new skill runs the exact
+  same sequence locally (Docker or the container's unprivileged Postgres), so
+  the shared Cloud SQL DB never sees an untested revision. This closes the
+  Alembic entry in CLAUDE.md's "known gaps without a loop".
+- **Post-deploy prod smoke.** `api/cloudbuild.yaml` ends with a smoke step
+  against the freshly deployed revision: `/health`, `/styles` non-empty,
+  `/write/word?text=lesen` returns items, and an uncredentialed write answers
+  401 (fail-closed gate proven live) — a bad image that still answers /health
+  can no longer ship silently.
+- **Frontend coverage reporting.** `npm run test -- --coverage`
+  (`@vitest/coverage-v8`) uploads to Codecov under a new `frontend` flag
+  (informational patch status to start); `app/` is no longer ignored in
+  `codecov.yml`, so SPA regressions become visible to the patch gate.
+- **`REGEN_SHAPING=1` regen path for the shaping-twin fixture.** Mirrors the
+  compose-golden pattern: a legitimate shaping change regenerates
+  `tests/fixtures/shaping_cases.json` from the Python source of truth instead
+  of hand-editing JSON that two suites assert.
+- **Pre-commit config.** `ruff-check` + `ruff-format` hooks (same versions CI
+  pins), so format-only red CI runs stop happening; ESLint stays CI-only.
+- **`docs/reference/write-api.md`.** The shipped public render endpoints
+  (`/write/glyphs` + `/write/word`) graduate from the proposal into a proper
+  reference doc (pipeline, wire format, cache semantics, render-cache
+  consumption), indexed in `docs/index.md`.
+
+### Changed
+
+- **CI frontend job on Node 22** (20 reached EOL 2026-04-30); `app` engines
+  field now requires `>=22`.
+- **Docs and agent-surface refresh from the audit.** `.claude/commands/prime.md`
+  rewritten from the current repo layout (it described the pre-library-schema
+  world: `glyphs.py` router, `constants.ts`, `state.tsx`); `verify-api` skill
+  aligned with reality (admin-gated `/fit`+`/quality`, four seeded sources,
+  `/write/*` + `/quiz-words` + `/bboxes/status` in the sweep); `verify-core`
+  drops stale test counts; `verify-frontend` drops the obsolete favicon-404
+  gotcha and describes the render-cache quiz boot; `write-docs` matches the
+  real `docs/index.md` structure (notes/ IS indexed, `schriftkunde/` exists);
+  CLAUDE.md corrections (hero is font-first with an open engine seam,
+  koch-1928 is a live seeded source, migration 0008 listed, known-gaps
+  updated) mirrored to `.github/copilot-instructions.md` (CI = three jobs);
+  `naming-und-setup.md` §1 reflects the Sütterlin pivot; `docs/index.md`
+  prose sections list style-guide/design-system/federmodelle/qualitaetsmetrik;
+  `frontend-stack.md` names `HeroWritten` and clarifies "keine eigene
+  Komponenten-Bibliothek"; `animation-rendering.md` §1 describes the
+  render-cache data path; `contributing.md` names the full live feature set;
+  `sprachregelung.md` documents the EN-proposals exception.
+
+### Fixed
+
+- **`quiz_words.created_at` is NOT NULL like every other `created_at`.**
+  Migration 0010 forgot `nullable=False` (0004 declares it on all other
+  tables) while the model implies NOT NULL — the very first `alembic check`
+  run caught the drift; migration 0013 tightens the column (safe: it carries
+  `server_default=now()`).
+
 - **Slim public reads for the heavy list payloads.** New
   `GET /sources/{id}/bboxes/status` returns only the availability flags
   (glyph_key, locked, split) and `TemplateRepository.list_summaries()` feeds

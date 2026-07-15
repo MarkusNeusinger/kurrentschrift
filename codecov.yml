@@ -10,8 +10,15 @@ coverage:
         target: 80%
         flags:
           - backend
+      frontend:
+        # Informational to start with — the Vitest suite is young; tighten
+        # once the pure modules (pdf/lineatur/glyphs) carry tests.
+        target: auto
+        threshold: 5%
+        flags:
+          - frontend
 
-# Only report coverage for the tested Python source (core/ + api/).
+# Only report coverage for the tested source (core/ + api/ + app/src).
 # Top-level key per the Codecov schema.
 ignore:
   - "alembic/"
@@ -19,13 +26,16 @@ ignore:
   - "data/"
   - "docs/"
   - "tools/"
-  - "app/"
 
 flags:
   backend:
     paths:
       - core/
       - api/
+    carryforward: true
+  frontend:
+    paths:
+      - app/src/
     carryforward: true
 
 comment:

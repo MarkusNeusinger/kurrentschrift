@@ -59,8 +59,9 @@ cd app && npm install && npm run dev
 ```
 
 Expected: `{"status":"healthy","database_configured":true}` and
-`vite:200`. `curl -fsS http://localhost:8000/sources` must list
-`loth-1866` — that proves the DB path works. If the schema is stale:
+`vite:200`. `curl -fsS http://localhost:8000/sources` must list the
+four seeded sources incl. `suetterlin-1922` (the public default) —
+that proves the DB path works. If the schema is stale:
 `uv run alembic upgrade head` — but **only after the DB-target
 preflight from `/verify-api`** (alembic is DDL against the shared
 Cloud SQL DB, and `.env` has pointed at the wrong database before).
@@ -116,13 +117,14 @@ The loop, per page/flow you changed:
    and **Read the file — actually look at it**. A snapshot proves the
    DOM is there; only the screenshot shows clipped layouts, broken
    paper texture, unreadable type.
-6. `list_console_messages` after each flow — expect **zero** messages
-   apart from the known `favicon.ico` 404. Any new error/warning is a
-   finding.
+6. `list_console_messages` after each flow — expect **zero** messages.
+   `app/public/favicon.ico` ships since 2026-07, so a favicon 404 is
+   now a regression, not known noise. Any error/warning is a finding.
 7. `list_network_requests` once per page — scan for 4xx/5xx. The quiz
-   feedback loads Loth crops from
-   `/api/sources/loth-1866/bboxes/<glyph>-<position>/crop`; a 200
-   there proves the Vite-proxy → API → DB → chart-crop path end to end.
+   boots from `/api/sources/suetterlin-1922/bboxes/status` +
+   `/templates` and renders its prompts via the shared render cache
+   (`/write/glyphs` batches); a 200 on those proves the Vite-proxy →
+   API → DB path end to end (chart crops are only the fallback).
 
 **Verify the changed path itself, not a proxy.** For a write flow,
 perform the real UI write end-to-end and confirm persistence with a
@@ -206,8 +208,8 @@ NODE_PATH="$SCRATCH/node_modules" SHOTS=/tmp/kurrentschrift-ui \
 It prints, per URL × viewport (default `1440,390,360,320`; override with
 `WIDTHS=`): horizontal **overflow** + the widest offending element,
 the `h1` computed font-size + family (type-voice check, §3), and a
-deduped count of JS errors / 4xx-5xx requests with their paths (the
-`favicon.ico` 404 is filtered). Then **Read the screenshots** under
+deduped count of JS errors / 4xx-5xx requests with their paths. Then
+**Read the screenshots** under
 `SHOTS` — the same "actually look at it" rule as §2 step 5. `NODE_PATH`
 is needed because `playwright-core` lives in the scratchpad, not the
 repo; the probe loads it via `createRequire` (ESM bare imports ignore
@@ -223,8 +225,8 @@ measurement inside its `page.evaluate()` block, or write a one-off
 `clamp()` values by calculation instead of eyeballing screenshots. Keep
 ad-hoc scripts in the scratchpad (throwaway); only the reusable
 `cloud-probe.mjs` is committed. All other rules below (§3 style, §4
-trace, Gotchas) apply unchanged — the lazy-route `wait_for`, the stale
-`favicon` 404, scroll-into-view all behave the same through Playwright.
+trace, Gotchas) apply unchanged — the lazy-route `wait_for` and
+scroll-into-view behave the same through Playwright.
 
 ## 3 · Style fidelity & legibility check
 
@@ -296,8 +298,6 @@ then open `http://localhost:3000/` (Vite is pinned to 3000 — not 5173).
 - **Clicking scrolls the element into view**, so the next viewport
   screenshot may show a different page region. Reset with
   `evaluate_script` → `window.scrollTo(0, 0)` before screenshotting.
-- **`favicon.ico` 404** appears in console + network on every page
-  load. Known noise — don't chase it, but don't let it mask other 404s.
 - **Worksheet preset buttons fan out**: picking „Sütterlin" rewrites
   ratio, x-height, Schräglage *and* the title field — expected
   behaviour, not a bug.

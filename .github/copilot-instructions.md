@@ -59,10 +59,10 @@ agent working in this repo:
   rewrites a tracked file (formatter, codegen), re-read it before the next
   edit.
 - **Claude Code sessions** additionally route work through verified skills
-  under `.claude/skills/` (`verify-core` / `verify-api` / `verify-frontend`,
-  `write-docs`, `audit-licenses`, `open-pr`, `optimize-glyphs`,
-  `optimize-skills`); Copilot can't invoke those, but the same gates apply
-  manually (see "GitHub Workflow" → "Verification before a PR").
+  under `.claude/skills/` (`verify-core` / `verify-api` / `verify-frontend` /
+  `verify-migrations`, `write-docs`, `audit-licenses`, `open-pr`,
+  `optimize-glyphs`, `optimize-skills`); Copilot can't invoke those, but the
+  same gates apply manually (see "GitHub Workflow" → "Verification before a PR").
 
 ---
 
@@ -528,10 +528,13 @@ learning site).
 ## GitHub Workflow
 
 CI runs on every PR via `.github/workflows/ci.yml`: a backend job
-(ruff lint + `ruff format --check` + pytest with Codecov upload) and a
+(ruff lint + `ruff format --check` + pytest with Codecov upload), a
 frontend job (`npm run lint`, then `npm run test` — the Vitest
 shaping-twin fixture run — then `npm run build`, i.e. ESLint + Vitest +
-`tsc && vite build`). There are no anyplot-style spec-create /
+`tsc && vite build`), and a migrations job (`alembic upgrade head` +
+`alembic check` + a downgrade/upgrade roundtrip against a throwaway
+Postgres 16 service, so a broken or drifting revision never reaches the
+shared Cloud SQL instance). There are no anyplot-style spec-create /
 impl-generate pipelines. Conventions:
 
 - **Issues** are welcome for design discussion (pre-MVP this is the main
@@ -560,8 +563,9 @@ impl-generate pipelines. Conventions:
   `uv run --extra dev ruff format --check .`, plus `npm run lint`,
   `npm run test` and `npm run build` in `app/` when the frontend changed.
   The pipeline should never fail on tests or lint. (Claude Code sessions encode these loops as skills
-  under `.claude/skills/` — verify-frontend / verify-api / verify-core,
-  write-docs, audit-licenses, open-pr, optimize-glyphs, optimize-skills.)
+  under `.claude/skills/` — verify-frontend / verify-api / verify-core /
+  verify-migrations, write-docs, audit-licenses, open-pr, optimize-glyphs,
+  optimize-skills.)
 - **Glyph-pipeline changes are benchmarked:** `tools/glyphbench` scores
   every authored glyph against frozen references, ONE script per run
   (`uv run python -m tools.glyphbench.run --style suetterlin|kurrent`,

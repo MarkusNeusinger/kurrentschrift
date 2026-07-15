@@ -65,10 +65,13 @@ pro Familie ([`architektur.md`](architektur.md) §5), nicht über ein
 eigenes Modell. Die schema-seitige Verankerung dieser Stil-Dimension ist
 **umgesetzt** (Tabelle `styles`, Migration `0004`; alle drei Grundvorlagen
 sind geseedet) — die ursprüngliche Vertagung auf nach dem MVP ist damit
-aufgehoben (Owner-Entscheidung). Der MVP validiert den Render-Kern
-weiterhin an Kurrent allein: nur Loth 1866 hat Tafel-Bytes, also ist
-zunächst nur Kurrent bebaubar; Sütterlin/Offenbacher existieren als
-Stil-Zeilen und werden autorierbar, sobald Tafeln vorliegen.
+aufgehoben (Owner-Entscheidung). Der Render-Kern wird inzwischen an
+**Sütterlin** validiert (Pivot 2026-06, siehe
+[`mvp-roadmap.md`](mvp-roadmap.md) Status): die Sütterlin-1922-Tafel
+ist die öffentliche Standardquelle (`CONFIG.sourceId`), Loth 1866 ist
+geparkt. Alle drei Stile haben committete Tafel-Bytes und geseedete
+Quellen (Loth 1866 + Petzendorfer 1889 unter Kurrent, Sütterlin 1922,
+Koch 1928 unter Offenbacher) und sind autorierbar.
 
 **Oberbegriffe** (für SEO / Texte / spätere Multi-Stil-Benennung):
 „Kurrent" · „deutsche Schreibschrift" · „deutsche Schrift" / „alte

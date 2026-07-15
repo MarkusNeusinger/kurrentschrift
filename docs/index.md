@@ -25,6 +25,7 @@ nächsten Meilensteine.
 | Qualitätsmetrik, Glyph-Bench & Loop-Erkenntnisse nachschlagen | [Qualitätsmetrik](reference/qualitaetsmetrik.md) |
 | Frontend-Stack & Deploy nachschlagen | [Frontend-Stack](reference/frontend-stack.md) |
 | Quiz-Wortbank (Quellen, Distraktoren, Fugen-Marker) nachschlagen | [Quiz-Wortbank](reference/quiz-wortbank.md) |
+| Öffentliche Render-Endpunkte (`/write/*`) nachschlagen | [Write-API](reference/write-api.md) |
 | Sprache für Code, Docs, README nachschlagen | [Sprachregelung](reference/sprachregelung.md) |
 | Wissen, was ins öffentliche Repo darf | [Quellen- und Rechte-Policy](reference/quellen-und-rechte.md) |
 | Den `/data`-Baum verstehen | [Datenablage](reference/datenablage.md) |
@@ -60,6 +61,7 @@ docs/
 │   ├── styleanalyse.md           # Per-Hand-Aggregation, Hinge-Features, Heatmap-Layouts
 │   ├── qualitaetsmetrik.md       # Zwei Metriken (Kurrent-Schwellzug §1–4 · Sütterlin-Natürlichkeit §5), bench/Referenzen, Baseline-Historie, Loop-Erkenntnisse + Verworfen
 │   ├── quiz-wortbank.md          # Lese-Quiz-Wortbank: Quellen (Kaeding, Genealogie-Felder), Pin+Runtime-Distraktoren, Fugen-Marker
+│   ├── write-api.md              # Öffentliche Render-Endpunkte /write/glyphs + /write/word: Shaping → Komposition → Payload
 │   └── frontend-stack.md         # React+Vite+MUI Build, Deploy auf Cloud Run, i18n, Auth-Routen
 ├── schriftkunde/                 # Quellengesicherte Fakten zu den Schriften (wächst inkrementell)
 │   ├── allgemein.md              # Lineatur, Schräglage, Striche, Federtypen, Chronologie, DACH
@@ -105,6 +107,15 @@ und was bewusst verworfen wurde.
 - **[Naming und OSS-Setup](concepts/naming-und-setup.md)** — Name, Domain
   `kurrentschrift.ink`, Monorepo-Layout, MIT-Lizenz, Frontend-Stack
   (anyplot-Stil), Hosting (Cloud Run), README als Pitch
+- **[Style-Guide](concepts/style-guide.md)** — visuelle Identität
+  „Papier & Tinte": Tokens (`styles/paper.ts`), Typografie,
+  R1–R9-Entscheidungen samt Begründung/Historie
+- **[Design-System](concepts/design-system.md)** — die verbindliche
+  Bauvorschrift der öffentlichen Seiten: Farb-Tokens, 19-px-Typo-Leiter,
+  PageContainer-Breiten (760/1152/1280), Flächenregel, IA, Komponenten
+- **[Federmodelle](concepts/federmodelle.md)** — drei Federn, ein
+  Renderpfad: Bandzugfeder-Gesetz, Spitzfeder-Haarstriche,
+  Ziffern/Satzzeichen (`joins: false`)
 
 ---
 
@@ -139,6 +150,14 @@ Policy- und Technik-Dokumente.
   Quellen (Kaeding 1897/98, Grundwortschatz, Genealogie-Felder),
   Distraktor-Modell (ein Pin + Laufzeit-Ziehung nach `similarity`),
   Fugen-Marker-Regeln, Lizenz-Haltung, Erweiterungs-Workflow
+- **[Write-API](reference/write-api.md)** — die öffentlichen
+  Render-Endpunkte `/write/glyphs` + `/write/word`: Shaping →
+  Komposition → Payload, Cache-Verhalten, `missing`-Semantik,
+  Render-Cache-Konsum im Frontend
+- **[Qualitätsmetrik](reference/qualitaetsmetrik.md)** — zwei Metriken
+  (Kurrent-Schwellzug §1–§4 · Sütterlin-Natürlichkeit §5), Frozen-
+  Reference-Regel, Baseline-Historie, Loop-Erkenntnisse + Verworfen —
+  Pflichtlektüre vor jedem `/optimize-glyphs`-Lauf
 
 ---
 
