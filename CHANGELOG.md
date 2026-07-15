@@ -12,6 +12,34 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **jsx-a11y lint gate.** `eslint-plugin-jsx-a11y` (recommended rules) now runs
+  in the frontend lint, so the mechanical accessibility slips on the SVG-heavy
+  custom surfaces get caught before review.
+- **`PaperCardLink` + `PaperCardCta`.** The public "paper card that is a link"
+  (hover/focus lift, viridian border, focus ring, CTA underline sweep) that
+  LandingView, HubView and the Schriftkunde try-cards each copy-pasted is now
+  one shared component — contrast and focus fixes land once.
+
+### Fixed
+
+- **WCAG AA contrast for viridian text and the quiz answered state.** New
+  `paper.viridianText` (#2e6152 — derived for contrast, not a period hex;
+  5.15:1 on the paper ground vs 3.28:1 for the accent #40826d) is used
+  wherever viridian is body-size text: card CTAs, the hub/landing links, the
+  quiz score and verdict, the Scribe copy confirmation, Tafel chip/provenance
+  links, prose-link hovers. `quiz.resolvedText` darkened to #6e5c42 (5.5:1 on
+  the answered button face, was 3.61:1). The accent #40826d stays for large
+  display, initials, borders, fills and focus rings.
+- **Contiguous heading outline on every public page.** Card titles now carry
+  explicit heading components (hub cards `h2` under the page `h1`; landing,
+  Schriftkunde and Tafel cards `h3` under their `h2` section headings), and
+  MUI's default subtitle→`<h6>` mapping is overridden to `<p>` at the theme
+  level — definition-row terms and timeline years no longer appear as phantom
+  section headings to screen readers.
+- **The nav marks the current area.** PublicHeader links carry
+  `aria-current="page"` plus a visible active state (ink colour + full
+  viridian underline) for the area whose page is open.
+
 - **Authorized admin-write and Cloudflare-Access test suites.** New
   `tests/test_api_admin_writes.py` exercises the gated handlers with a CORRECT
   token: bbox PUT/GET roundtrip incl. the coalesce contract (omitted

@@ -6,10 +6,10 @@
 // thin page wrappers (strings from locales/de/hub, URLs from routes/paths).
 
 import { Box, Typography } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
 
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
+import { PaperCardCta, PaperCardLink } from '@/components/PaperCardLink';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { display, paper } from '@/styles/paper';
 
@@ -44,36 +44,11 @@ export function HubView({ title, lead, cards }: HubViewProps) {
           }}
         >
           {cards.map((card) => (
-            <Box
-              key={card.to}
-              component={RouterLink}
-              to={card.to}
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                textDecoration: 'none',
-                p: { xs: 3, md: 3.5 },
-                bgcolor: paper.hi,
-                border: `1px solid ${paper.line}`,
-                borderRadius: 2,
-                color: paper.ink,
-                transition: 'border-color .25s, transform .25s, box-shadow .25s',
-                // Hover and keyboard focus get the same affordance so tabbing
-                // through the cards reads as clearly as pointing at them.
-                '&:hover, &:focus-visible': {
-                  borderColor: paper.viridian,
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 24px rgba(36,26,16,0.10)',
-                },
-                '&:focus-visible': {
-                  outline: `2px solid ${paper.viridian}`,
-                  outlineOffset: 3,
-                },
-                '&:hover .hub-cta::after, &:focus-visible .hub-cta::after': { width: '100%' },
-              }}
-            >
+            <PaperCardLink key={card.to} to={card.to} sx={{ p: { xs: 3, md: 3.5 } }}>
+              {/* h2: the cards sit directly under the PageHeader <h1> */}
               <Typography
                 variant="h3"
+                component="h2"
                 sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, mb: 1 }}
               >
                 {card.title}
@@ -81,31 +56,8 @@ export function HubView({ title, lead, cards }: HubViewProps) {
               <Typography variant="body2" sx={{ color: paper.inkSoft, flexGrow: 1 }}>
                 {card.body}
               </Typography>
-              <Typography
-                className="hub-cta"
-                component="span"
-                variant="body2"
-                sx={{
-                  mt: 2.5,
-                  alignSelf: 'flex-start',
-                  position: 'relative',
-                  color: paper.viridian,
-                  fontFamily: display,
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    left: 0,
-                    bottom: -3,
-                    height: '1px',
-                    width: 0,
-                    bgcolor: paper.viridian,
-                    transition: 'width .3s ease',
-                  },
-                }}
-              >
-                {card.cta}&nbsp;→
-              </Typography>
-            </Box>
+              <PaperCardCta>{card.cta}&nbsp;→</PaperCardCta>
+            </PaperCardLink>
           ))}
         </Box>
       </PageContainer>

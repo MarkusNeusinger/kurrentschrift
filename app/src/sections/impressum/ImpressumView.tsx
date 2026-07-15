@@ -43,7 +43,7 @@ const proseLink = {
   color: paper.sepia,
   textDecorationColor: `${paper.sepia}80`,
   transition: 'color .2s',
-  '&:hover': { color: paper.viridian, textDecorationColor: paper.viridian },
+  '&:hover': { color: paper.viridianText, textDecorationColor: paper.viridian },
 } as const;
 
 function Section({ heading, children }: { heading: string; children: ReactNode }) {

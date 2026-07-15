@@ -135,7 +135,7 @@ export function QuietButton({ onClick, children }: { onClick: () => void; childr
         px: 0.5,
         borderRadius: quizRadius,
         transition: 'color 120ms ease',
-        '&:hover': { color: paper.viridian },
+        '&:hover': { color: paper.viridianText },
       }}
     >
       {children}

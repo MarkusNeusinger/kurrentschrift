@@ -70,7 +70,7 @@ export function QuizResultsPanel(p: ResultsProps) {
           <Typography component="span" sx={{ fontFamily: display, fontSize: 24, color: paper.sepiaFaint }}>
             / {seen}
           </Typography>
-          <Typography component="span" sx={{ fontFamily: garamond, fontSize: 18, color: paper.viridian, ml: 0.5 }}>
+          <Typography component="span" sx={{ fontFamily: garamond, fontSize: 18, color: paper.viridianText, ml: 0.5 }}>
             {pct} %
           </Typography>
         </Box>
@@ -135,7 +135,7 @@ export function QuizResultsPanel(p: ResultsProps) {
           }}
         >
           <Typography sx={{ fontFamily: garamond, fontSize: 16, color: paper.ink }}>
-            <Box component="span" sx={{ color: paper.viridian, mr: 0.75 }}>
+            <Box component="span" sx={{ color: paper.viridianText, mr: 0.75 }}>
               ✓
             </Box>
             {de.quiz.results.cleanNote}

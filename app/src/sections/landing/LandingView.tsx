@@ -12,11 +12,11 @@
 // shared via <PaperBackground> so the same look carries across every page; only
 // the work surfaces (A4 preview, letter crops, chart scan) stay neutral.
 
-import { Link as RouterLink } from 'react-router-dom';
 import { Box, Stack, Typography } from '@mui/material';
 
 import { CategoryHeading } from '@/components/CategoryHeading';
 import { PageContainer } from '@/components/PageContainer';
+import { PaperCardLink } from '@/components/PaperCardLink';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de } from '@/locales';
 import { paths } from '@/routes/paths';
@@ -56,31 +56,13 @@ export function LandingView() {
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2.5 }}>
           {scripts.map((s, i) => (
             <Reveal key={s.name} delay={i * 0.06}>
-              <Box
-                component={RouterLink}
-                to={`${paths.tafel}#${s.styleId}`}
-                sx={{
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  textDecoration: 'none',
-                  color: paper.ink,
-                  p: 2.5,
-                  borderRadius: 2,
-                  border: `1px solid ${paper.line}`,
-                  bgcolor: paper.hi,
-                  transition: 'transform .2s ease, box-shadow .3s ease, border-color .2s ease',
-                  // Hover and keyboard focus share the affordance; the outline
-                  // marks the focused card for tab users (HubView pattern).
-                  '&:hover, &:focus-visible': { transform: 'translateY(-2px)', boxShadow: '0 10px 24px rgba(36,26,16,.14)', borderColor: paper.viridian },
-                  '&:focus-visible': { outline: `2px solid ${paper.viridian}`, outlineOffset: 3 },
-                }}
-              >
+              <PaperCardLink to={`${paths.tafel}#${s.styleId}`}>
                 <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1, mb: 0.75 }}>
-                  <Typography variant="h5" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, textShadow: letterpress, lineHeight: 1.1 }}>
+                  {/* h3: the cards sit directly under the CategoryHeading <h2> */}
+                  <Typography variant="h5" component="h3" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, textShadow: letterpress, lineHeight: 1.1 }}>
                     {s.name}
                   </Typography>
-                  <Box component="span" sx={{ fontFamily: display, fontStyle: 'italic', color: paper.viridian, fontSize: '1rem', whiteSpace: 'nowrap' }}>
+                  <Box component="span" sx={{ fontFamily: display, fontStyle: 'italic', color: paper.viridianText, fontSize: '1rem', whiteSpace: 'nowrap' }}>
                     {s.feder}
                   </Box>
                 </Box>
@@ -94,12 +76,12 @@ export function LandingView() {
                 <Box sx={{ mt: 2, pt: 1.5, borderTop: `1px solid ${paper.line}` }}>
                   <Typography
                     variant="body2"
-                    sx={{ fontWeight: 500, color: s.written ? paper.viridian : paper.sepia }}
+                    sx={{ fontWeight: 500, color: s.written ? paper.viridianText : paper.sepia }}
                   >
                     {s.cta}
                   </Typography>
                 </Box>
-              </Box>
+              </PaperCardLink>
             </Reveal>
           ))}
         </Box>
@@ -117,30 +99,12 @@ export function LandingView() {
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
             {tools.map((t, i) => (
               <Reveal key={t.to} delay={i * 0.06}>
-                <Box
-                  component={RouterLink}
-                  to={t.to}
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    height: '100%',
-                    textDecoration: 'none',
-                    color: paper.ink,
-                    p: 2.5,
-                    borderRadius: 2,
-                    border: `1px solid ${paper.line}`,
-                    bgcolor: paper.hi,
-                    transition: 'transform .2s ease, box-shadow .3s ease, border-color .2s ease',
-                    // Same hover/focus affordance + focus outline as the script
-                    // cards above (HubView pattern).
-                    '&:hover, &:focus-visible': { transform: 'translateY(-2px)', boxShadow: '0 10px 24px rgba(36,26,16,.14)', borderColor: paper.viridian },
-                    '&:focus-visible': { outline: `2px solid ${paper.viridian}`, outlineOffset: 3 },
-                  }}
-                >
-                  <Typography variant="h5" sx={{ fontFamily: display, fontWeight: 600, mb: 0.5 }}>{t.title}</Typography>
+                <PaperCardLink to={t.to}>
+                  {/* h3: the cards sit directly under the CategoryHeading <h2> */}
+                  <Typography variant="h5" component="h3" sx={{ fontFamily: display, fontWeight: 600, mb: 0.5 }}>{t.title}</Typography>
                   <Typography variant="body2" sx={{ color: paper.inkSoft, lineHeight: 1.55, mb: 1.25, flexGrow: 1 }}>{t.desc}</Typography>
-                  <Typography variant="body2" sx={{ color: paper.viridian, fontWeight: 500 }}>{t.cta}</Typography>
-                </Box>
+                  <Typography variant="body2" sx={{ color: paper.viridianText, fontWeight: 500 }}>{t.cta}</Typography>
+                </PaperCardLink>
               </Reveal>
             ))}
           </Box>
@@ -175,7 +139,7 @@ export function LandingView() {
                       width: { xs: '100%', sm: 'auto' },
                     }}
                   >
-                    <Typography variant="h6" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, minWidth: { sm: 210 } }}>
+                    <Typography variant="h6" component="h3" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, minWidth: { sm: 210 } }}>
                       {r.title}
                     </Typography>
                     <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontStyle: 'italic', fontSize: '.85rem', color: paper.sepia, whiteSpace: 'nowrap' }}>

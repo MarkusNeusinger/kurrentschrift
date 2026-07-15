@@ -14,7 +14,7 @@
 import { type MouseEvent, type ReactNode, useRef } from 'react';
 import { Box, Link, Stack } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 
 import { PAGE_WIDTHS } from '@/components/PageContainer';
 import { de } from '@/locales';
@@ -46,6 +46,7 @@ interface PublicHeaderProps {
 
 export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const tap = useRef({ count: 0, last: 0 });
   const isPaper = tone === 'paper';
   const textMain = isPaper ? paper.ink : 'text.primary';
@@ -54,38 +55,45 @@ export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
   const barBg = isPaper ? 'rgba(231,221,193,0.86)' : 'rgba(250,248,241,0.86)';
   const border = isPaper ? paper.line : 'divider';
 
-  const navLink = (label: ReactNode, to: string, sx?: SxProps<Theme>) => (
-    <Link
-      key={to}
-      component={RouterLink}
-      to={to}
-      sx={{
-        color: textSoft,
-        textDecoration: 'none',
-        fontFamily: display,
-        fontSize: { xs: '0.95rem', sm: '1.05rem' },
-        position: 'relative',
-        transition: 'color .25s',
-        '&::after': {
-          content: '""',
-          position: 'absolute',
-          left: 0,
-          bottom: -4,
-          height: '1px',
-          width: 0,
-          bgcolor: accent,
-          transition: 'width .3s ease',
-        },
-        '&:hover': { color: textMain },
-        '&:hover::after': { width: '100%' },
-        // Visible keyboard-focus ring (HubView pattern: 2px viridian, offset).
-        '&:focus-visible': { color: textMain, outline: `2px solid ${accent}`, outlineOffset: 3 },
-        ...sx,
-      }}
-    >
-      {label}
-    </Link>
-  );
+  const navLink = (label: ReactNode, to: string, sx?: SxProps<Theme>) => {
+    // Current-area indication: the area link stays "on" (ink + full underline
+    // + aria-current) while any page of that area is open (/lesen also covers
+    // /quiz + /tafel etc. once those routes nest; exact match covers today's flat ones).
+    const active = pathname === to || pathname.startsWith(`${to}/`);
+    return (
+      <Link
+        key={to}
+        component={RouterLink}
+        to={to}
+        aria-current={active ? 'page' : undefined}
+        sx={{
+          color: active ? textMain : textSoft,
+          textDecoration: 'none',
+          fontFamily: display,
+          fontSize: { xs: '0.95rem', sm: '1.05rem' },
+          position: 'relative',
+          transition: 'color .25s',
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            left: 0,
+            bottom: -4,
+            height: '1px',
+            width: active ? '100%' : 0,
+            bgcolor: accent,
+            transition: 'width .3s ease',
+          },
+          '&:hover': { color: textMain },
+          '&:hover::after': { width: '100%' },
+          // Visible keyboard-focus ring (2px viridian, offset).
+          '&:focus-visible': { color: textMain, outline: `2px solid ${accent}`, outlineOffset: 3 },
+          ...sx,
+        }}
+      >
+        {label}
+      </Link>
+    );
+  };
 
   // Count quick successive taps on the wordmark; the 5th within the window opens
   // admin instead of following the home link. Per-instance state (useRef) — the
