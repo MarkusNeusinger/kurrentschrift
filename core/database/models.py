@@ -27,13 +27,19 @@ width resolver, §12 for the statistics layers):
 
 from datetime import date, datetime
 
-from sqlalchemy import Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import JSON, Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from core.database.connection import Base
 
+
+# Portable JSON column type: JSONB on Postgres (runtime behavior unchanged),
+# generic JSON on other dialects so the HTTP test harness can create the schema
+# on SQLite (aiosqlite). Alembic migrations declare their column types
+# themselves (sqlalchemy.dialects.postgresql.JSONB) and are unaffected.
+PORTABLE_JSON = JSON().with_variant(JSONB(), "postgresql")
 
 GLYPH_KEY_MAX = 32
 GLYPH_CHAR_MAX = 8
@@ -63,7 +69,7 @@ class Style(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     width_resolver: Mapped[str] = mapped_column(String(WIDTH_RESOLVER_MAX), nullable=False, server_default="pressure")
     default_slant_deg: Mapped[float] = mapped_column(Float, nullable=False, server_default="65")
-    default_style_ratio: Mapped[list] = mapped_column(JSONB, nullable=False, server_default="[2, 1, 2]")
+    default_style_ratio: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False, server_default="[2, 1, 2]")
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
@@ -108,9 +114,9 @@ class Source(Base):
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     license: Mapped[str] = mapped_column(String(64), nullable=False)
     chart_path: Mapped[str] = mapped_column(String(512), nullable=False)
-    chart_size: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    chart_size: Mapped[dict] = mapped_column(PORTABLE_JSON, nullable=False)
     # Per-source overrides of the style defaults; null => use the style's values.
-    style_ratio: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    style_ratio: Mapped[list | None] = mapped_column(PORTABLE_JSON, nullable=True)
     slant_deg: Mapped[float | None] = mapped_column(Float, nullable=True)
     attribution: Mapped[str | None] = mapped_column(Text, nullable=True)
     origin_url: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -146,12 +152,12 @@ class Bbox(Base):
     x1: Mapped[int] = mapped_column(Integer, nullable=False)
     # Freeform eraser strokes (German: Radierer); see class docstring. JSONB list
     # of {points: [[x, y], ...], radius}. Replaces the old rectangle `excludes`.
-    mask_strokes: Mapped[list] = mapped_column(JSONB, nullable=False, server_default="[]")
+    mask_strokes: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False, server_default="[]")
     # Manual ink brush (German: Tinten-Pinsel): the eraser's positive twin — same
     # {points, radius} stroke shape, but painted as ink (black) before binarisation
     # instead of blanked, to close paper-coloured specks/gaps inside a stroke the
     # auto-fill can't reach (e.g. a gap open to the background).
-    ink_strokes: Mapped[list] = mapped_column(JSONB, nullable=False, server_default="[]")
+    ink_strokes: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False, server_default="[]")
     # Per-glyph speck auto-fill (German: Lücken füllen): max area (px²) of an
     # enclosed background hole to swallow before skeletonisation; 0 = off (default,
     # so existing glyphs stay bit-identical). See core.extract.fill_small_holes.
@@ -163,14 +169,14 @@ class Bbox(Base):
     # borrowing the two umlaut strokes from the ä cell. Composited by darken
     # (np.minimum), so only the donor's ink lands, never its background. See
     # core.chart.crop_with_mask.
-    patches: Mapped[list] = mapped_column(JSONB, nullable=False, server_default="[]")
+    patches: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False, server_default="[]")
     baseline_y: Mapped[int] = mapped_column(Integer, nullable=False)
     midband_y: Mapped[int] = mapped_column(Integer, nullable=False)
     n_anchors: Mapped[int] = mapped_column(Integer, nullable=False, server_default="50")
     # Guide lines drawn over the crop (German: Hilfslinien): the four-line system
     # (Grundlinie/Mittellinie/Oberlinie/Unterlinie) plus a positionable, angled
     # main line (slant). Open JSONB; see GuideConfig in api/schemas.py.
-    guides: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default="{}")
+    guides: Mapped[dict] = mapped_column(PORTABLE_JSON, nullable=False, server_default="{}")
     # Manual "done" marker (German: gesperrt): a finished glyph is locked so it
     # reads as complete and is protected from accidental move/resize/redraw. The
     # wizard's final "approve" step sets this; unlocking re-enables editing.
@@ -242,15 +248,15 @@ class Template(Base):
     variant: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
 
     advance: Mapped[float] = mapped_column(Float, nullable=False)
-    entry: Mapped[dict] = mapped_column(JSONB, nullable=False)
-    exit_pt: Mapped[dict] = mapped_column("exit_pt", JSONB, nullable=False)
+    entry: Mapped[dict] = mapped_column(PORTABLE_JSON, nullable=False)
+    exit_pt: Mapped[dict] = mapped_column("exit_pt", PORTABLE_JSON, nullable=False)
 
-    anchors: Mapped[list] = mapped_column(JSONB, nullable=False)
-    half_widths: Mapped[list] = mapped_column(JSONB, nullable=False)
+    anchors: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False)
+    half_widths: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False)
 
-    raw_path: Mapped[list] = mapped_column(JSONB, nullable=False)
-    trace_meta: Mapped[dict] = mapped_column(JSONB, nullable=False)
-    measurements: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default="{}")
+    raw_path: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False)
+    trace_meta: Mapped[dict] = mapped_column(PORTABLE_JSON, nullable=False)
+    measurements: Mapped[dict] = mapped_column(PORTABLE_JSON, nullable=False, server_default="{}")
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
@@ -294,10 +300,10 @@ class Instance(Base):
     x0: Mapped[int] = mapped_column(Integer, nullable=False)
     x1: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    anchors: Mapped[list] = mapped_column(JSONB, nullable=False)
-    half_widths: Mapped[list] = mapped_column(JSONB, nullable=False)
-    raw_path: Mapped[list] = mapped_column(JSONB, nullable=False, server_default="[]")
-    measurements: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default="{}")
+    anchors: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False)
+    half_widths: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False)
+    raw_path: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False, server_default="[]")
+    measurements: Mapped[dict] = mapped_column(PORTABLE_JSON, nullable=False, server_default="{}")
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
@@ -325,9 +331,9 @@ class Aggregate(Base):
     position: Mapped[str] = mapped_column(String(POSITION_MAX), nullable=False)
     variant: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
 
-    cluster_center: Mapped[list] = mapped_column(JSONB, nullable=False, server_default="[]")
-    hull: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default="{}")
-    mean_stats: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default="{}")
+    cluster_center: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False, server_default="[]")
+    hull: Mapped[dict] = mapped_column(PORTABLE_JSON, nullable=False, server_default="{}")
+    mean_stats: Mapped[dict] = mapped_column(PORTABLE_JSON, nullable=False, server_default="{}")
     n_instances: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
 
     updated_at: Mapped[datetime] = mapped_column(
@@ -351,7 +357,7 @@ class QuizWord(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     word: Mapped[str] = mapped_column(String(64), nullable=False)
-    distractors: Mapped[list] = mapped_column(JSONB, nullable=False, server_default="[]")
+    distractors: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False, server_default="[]")
     era: Mapped[str] = mapped_column(String(16), nullable=False, server_default="modern")
     note: Mapped[str | None] = mapped_column(Text, nullable=True)
     fugen: Mapped[str | None] = mapped_column(String(80), nullable=True)
