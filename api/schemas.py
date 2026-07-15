@@ -204,6 +204,19 @@ class BboxOut(BboxIn):
     fill_holes_max_area: int
 
 
+class BboxStatusOut(BaseModel):
+    """Item of `GET /sources/{id}/bboxes/status` — the availability flags only.
+
+    The public quiz gates its vocabulary on locked/split per glyph_key; the
+    full BboxOut list drags every mask/ink/patch JSONB blob over the wire for
+    that. This is the slim public read (pairs with TemplateSummary's has_data).
+    """
+
+    glyph_key: str
+    locked: bool
+    split: bool
+
+
 # ----------------------------------------------------------------------- Template
 
 

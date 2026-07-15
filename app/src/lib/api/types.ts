@@ -84,6 +84,15 @@ export interface GuideConfig {
   exit_coupling?: CouplingHeight;
 }
 
+// Item of GET /sources/{id}/bboxes/status — the availability flags only. The
+// public quiz gates its vocabulary on locked/split; the full BboxOut list
+// would drag every mask/ink/patch blob over the wire for that.
+export interface BboxStatusOut {
+  glyph_key: string;
+  locked: boolean;
+  split: boolean;
+}
+
 export interface BboxOut {
   glyph_key: string;
   y0: number;

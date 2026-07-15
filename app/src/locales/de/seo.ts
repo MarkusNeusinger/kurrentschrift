@@ -8,7 +8,7 @@ export const seo = {
   home: {
     title: 'kurrentschrift.ink — deutsche Kurrent & Sütterlin lesen und schreiben',
     description:
-      'Lerne die alte deutsche Schreibschrift — Kurrent, Sütterlin, Offenbacher — lesen und schreiben: mit Schriftkunde, Buchstaben-Quiz, Schreibtafel, Übungsblättern und einer Feder, die live schreibt.',
+      'Alte deutsche Schreibschrift lesen und schreiben lernen — Kurrent, Sütterlin, Offenbacher: mit Quiz, Schreibtafel, Übungsblatt und einer Feder, die live schreibt.',
   },
   schriftkunde: {
     title: 'Schriftkunde · kurrentschrift.ink',
@@ -23,12 +23,12 @@ export const seo = {
   quiz: {
     title: 'Buchstaben-Quiz · kurrentschrift.ink',
     description:
-      'Erkenne die Buchstaben der alten deutschen Schreibschrift in einem kurzen Quiz — jeder wird dir Zug um Zug von der Feder vorgeschrieben.',
+      'Erkenne die Buchstaben der alten deutschen Schreibschrift in einem kurzen Quiz — jeder wird dir Zug um Zug von der Feder live geschrieben.',
   },
   tafel: {
     title: 'Schreibtafel · kurrentschrift.ink',
     description:
-      'Die ganze Vorlage auf einen Blick: jeder Buchstabe der deutschen Schreibschrift, wie ihn die Feder schreibt — zum Vergleichen und Nachschlagen.',
+      'Die drei historischen Vorlagen der deutschen Schreibschrift auf einen Blick — die Sütterlin Zug um Zug von der Feder geschrieben, zum Vergleichen und Nachschlagen.',
   },
   schreiben: {
     title: 'Schreiben · kurrentschrift.ink',
@@ -38,7 +38,7 @@ export const seo = {
   worksheet: {
     title: 'Übungsblatt · kurrentschrift.ink',
     description:
-      'Erzeuge ein Übungsblatt als PDF — mit Lineatur und Wörtern zum Nachfahren, fertig zum Ausdrucken für die deutsche Schreibschrift.',
+      'Erzeuge ein Übungsblatt als PDF — Lineatur mit frei wählbarem Verhältnis, Schräglinien und Federwinkel, fertig zum Ausdrucken für die deutsche Schreibschrift.',
   },
   federprobe: {
     title: 'Federprobe · kurrentschrift.ink',

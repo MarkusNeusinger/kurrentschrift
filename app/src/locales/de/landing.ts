@@ -14,7 +14,7 @@ export const landing = {
     wordCaption: '— ein deutsches Wort, geschrieben wie vor hundert Jahren.',
     title: 'Alte Briefe wieder lesen — und selbst zur Feder greifen.',
     leadBeforeBold:
-      'Kurrent, Sütterlin und Offenbacher: die Schriften, in denen unsere Vorfahren ihre Briefe und Urkunden festhielten — und die heute',
+      'Kurrent, Sütterlin und Offenbacher: die Schriften, in denen unsere Vorfahren ihre Briefe und Urkunden niederschrieben — und die heute',
     leadBold: 'kaum noch jemand entziffert',
     leadAfterBold:
       '. Hier lernst du, sie wieder zu lesen, mit der Feder nachzuschreiben und Zug um Zug zu verstehen.',
@@ -31,7 +31,7 @@ export const landing = {
   // Vorlage to look at (muted) — neither is in the quiz yet, so no "lesen" claim.
   scriptsHeading: 'Drei Schriften, drei Federn',
   scriptsIntro:
-    '„Kurrentschrift" fasst eine ganze Familie deutscher Schreibschriften zusammen. Drei davon zum Anfangen — jede mit ihrer eigenen Feder, und keine als Font, sondern Zug um Zug nachgebildet.',
+    '„Kurrentschrift“ fasst eine ganze Familie deutscher Schreibschriften zusammen. Drei davon zum Anfangen — jede mit ihrer eigenen Feder, und keine als Font, sondern Zug um Zug nachgebildet.',
   scripts: [
     {
       name: 'Kurrent',
@@ -39,7 +39,7 @@ export const landing = {
       feder: 'Spitzfeder',
       cta: 'Historische Vorlage ansehen →',
       written: false,
-      desc: 'Die ältere Norm. Aus dem Druck der Spitzfeder wächst der Schwellzug — fein im Aufstrich, breit im Abstrich.',
+      desc: 'Die alte Alltagsschrift, ohne einheitliche Norm. Aus dem Druck der Spitzfeder wächst der Schwellzug — fein im Aufstrich, breit im Abstrich.',
     },
     {
       name: 'Sütterlin',
@@ -47,7 +47,7 @@ export const landing = {
       feder: 'Gleichzugfeder',
       cta: 'Schon geschrieben — ansehen →',
       written: true,
-      desc: 'Aufrecht und gleichmäßig, ohne Schwellung — die Schulschrift von 1911. Sie wird hier schon lebendig geschrieben.',
+      desc: 'Aufrecht und gleichmäßig, ohne Schwellung — 1911 entworfen, ab 1915 Schulschrift. Sie wird hier schon lebendig geschrieben.',
     },
     {
       name: 'Offenbacher',
@@ -55,7 +55,7 @@ export const landing = {
       feder: 'Breitfeder',
       cta: 'Historische Vorlage ansehen →',
       written: false,
-      desc: 'Der Strichkontrast kommt aus dem Winkel der Breitfeder, nicht aus dem Druck. Nie weit verbreitet — aber ein schöner Einstieg.',
+      desc: 'Der Strichkontrast kommt aus dem Winkel der Breitfeder, nicht aus dem Druck. Nie weit verbreitet — aber ein schöner Einstieg in die Breitfeder-Kalligrafie.',
     },
   ],
   // Section 2: what already works today (the component attaches the route paths).
@@ -63,7 +63,7 @@ export const landing = {
   toolsIntro: 'Vom Nachschlagen und Lesen bis zum ersten eigenen Federstrich — was heute schon bereitsteht.',
   tools: {
     worksheet: {
-      title: 'Lineatur-Vorlage',
+      title: 'Übungsblatt',
       cta: 'Übungsblatt erstellen →',
       desc: 'Hilfslinien für die deutsche Schreibschrift auf einem Bogen A4 — das Verhältnis frei gewählt, auf Wunsch mit Schräglinien, druckfertig als PDF.',
     },
@@ -75,7 +75,7 @@ export const landing = {
     quiz: {
       title: 'Buchstaben-Quiz',
       cta: 'Quiz starten →',
-      desc: 'Echte Kurrent-Buchstaben aus alter Vorlage lesen; am Ende weist die Auswertung, was Mühe bereitete.',
+      desc: 'Echte Buchstaben der alten Schreibschrift lesen; am Ende zeigt die Auswertung, was Mühe bereitete.',
     },
     schriftkunde: {
       title: 'Schriftkunde',
@@ -85,7 +85,7 @@ export const landing = {
     tafel: {
       title: 'Schreibtafel',
       cta: 'Zur Tafel →',
-      desc: 'Die ganze Vorlage auf einen Blick — jeder Buchstabe, wie ihn die Feder schreibt.',
+      desc: 'Die drei historischen Vorlagen auf einen Blick — die Sütterlin schreibt sich Zug um Zug selbst.',
     },
   },
   // Section 3: an honest word on the state + a short list of genuinely-future

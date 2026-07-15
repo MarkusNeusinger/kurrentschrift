@@ -3,8 +3,11 @@
 // no tsconfig project service), plus the react-hooks rules — the whole reason
 // this gate exists (the `exhaustive-deps` suppressions in the tree are only
 // meaningful once the rule actually runs). react-refresh findings are warnings.
+// jsx-a11y guards the SVG-heavy custom-interaction surfaces (quiz, Tafel,
+// admin canvas) against the mechanical accessibility slips a reviewer misses.
 import js from '@eslint/js';
 import globals from 'globals';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
@@ -22,9 +25,11 @@ export default tseslint.config(
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
+      'jsx-a11y': jsxA11y,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      ...jsxA11y.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       // Honour the `_`-prefix convention for intentionally-unused bindings.
       '@typescript-eslint/no-unused-vars': [

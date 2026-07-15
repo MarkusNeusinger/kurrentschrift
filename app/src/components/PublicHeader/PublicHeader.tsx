@@ -14,7 +14,7 @@
 import { type MouseEvent, type ReactNode, useRef } from 'react';
 import { Box, Link, Stack } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 
 import { PAGE_WIDTHS } from '@/components/PageContainer';
 import { de } from '@/locales';
@@ -39,6 +39,16 @@ const READ_WRITE = [
   { label: de.common.nav.write, to: paths.schreiben },
 ];
 
+// Which standalone tool routes belong to which area link, so the nav can mark
+// the current AREA even off its hub page (/quiz and /tafel are Lesen tools,
+// /federprobe a Schreiben tool — they keep their stable top-level URLs and are
+// not nested under the hubs; see routes/paths.ts).
+const AREA_ROUTES: Record<string, string[]> = {
+  [paths.lesen]: [paths.lesen, paths.quiz, paths.tafel],
+  [paths.schreiben]: [paths.schreiben, paths.scribe],
+  [paths.schriftkunde]: [paths.schriftkunde],
+};
+
 interface PublicHeaderProps {
   tone?: 'plain' | 'paper';
   sx?: SxProps<Theme>;
@@ -46,6 +56,7 @@ interface PublicHeaderProps {
 
 export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const tap = useRef({ count: 0, last: 0 });
   const isPaper = tone === 'paper';
   const textMain = isPaper ? paper.ink : 'text.primary';
@@ -54,38 +65,49 @@ export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
   const barBg = isPaper ? 'rgba(231,221,193,0.86)' : 'rgba(250,248,241,0.86)';
   const border = isPaper ? paper.line : 'divider';
 
-  const navLink = (label: ReactNode, to: string, sx?: SxProps<Theme>) => (
-    <Link
-      key={to}
-      component={RouterLink}
-      to={to}
-      sx={{
-        color: textSoft,
-        textDecoration: 'none',
-        fontFamily: display,
-        fontSize: { xs: '0.95rem', sm: '1.05rem' },
-        position: 'relative',
-        transition: 'color .25s',
-        '&::after': {
-          content: '""',
-          position: 'absolute',
-          left: 0,
-          bottom: -4,
-          height: '1px',
-          width: 0,
-          bgcolor: accent,
-          transition: 'width .3s ease',
-        },
-        '&:hover': { color: textMain },
-        '&:hover::after': { width: '100%' },
-        // Visible keyboard-focus ring (HubView pattern: 2px viridian, offset).
-        '&:focus-visible': { color: textMain, outline: `2px solid ${accent}`, outlineOffset: 3 },
-        ...sx,
-      }}
-    >
-      {label}
-    </Link>
-  );
+  const navLink = (label: ReactNode, to: string, sx?: SxProps<Theme>) => {
+    // Current-area indication: the area link stays "on" (ink + full underline
+    // + aria-current) while any page of that area is open — the hub itself,
+    // its nested routes (/schreiben/uebungsblatt), or the area's standalone
+    // tool routes (AREA_ROUTES: /quiz, /tafel → Lesen; /federprobe → Schreiben).
+    const roots = AREA_ROUTES[to] ?? [to];
+    const active = roots.some((root) => pathname === root || pathname.startsWith(`${root}/`));
+    return (
+      <Link
+        key={to}
+        component={RouterLink}
+        to={to}
+        // "page" only when this IS the open page; a tool page inside the area
+        // (e.g. /quiz under Lesen) gets the generic "true" current-marker.
+        aria-current={active ? (pathname === to ? 'page' : 'true') : undefined}
+        sx={{
+          color: active ? textMain : textSoft,
+          textDecoration: 'none',
+          fontFamily: display,
+          fontSize: { xs: '0.95rem', sm: '1.05rem' },
+          position: 'relative',
+          transition: 'color .25s',
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            left: 0,
+            bottom: -4,
+            height: '1px',
+            width: active ? '100%' : 0,
+            bgcolor: accent,
+            transition: 'width .3s ease',
+          },
+          '&:hover': { color: textMain },
+          '&:hover::after': { width: '100%' },
+          // Visible keyboard-focus ring (2px viridian, offset).
+          '&:focus-visible': { color: textMain, outline: `2px solid ${accent}`, outlineOffset: 3 },
+          ...sx,
+        }}
+      >
+        {label}
+      </Link>
+    );
+  };
 
   // Count quick successive taps on the wordmark; the 5th within the window opens
   // admin instead of following the home link. Per-instance state (useRef) — the

@@ -10,23 +10,23 @@ export const hub = {
     cards: {
       quiz: {
         title: 'Buchstaben-Quiz',
-        body: 'Erkenne die Buchstaben in einem kurzen Abfragespiel — vom einzelnen Zeichen bis zum kurzen Wort.',
+        body: 'Erkenne die Buchstaben in einem kurzen Abfragespiel — vom einzelnen Zeichen bis zum ganzen Wort.',
         cta: 'Quiz öffnen',
       },
       tafel: {
         title: 'Schreibtafel',
-        body: 'Die ganze Vorlage auf einen Blick: jeder Buchstabe, wie ihn die Feder schreibt — zum Vergleichen und Nachschlagen.',
+        body: 'Die drei historischen Vorlagen auf einen Blick — die Sütterlin schreibt sich Zug um Zug selbst. Zum Vergleichen und Nachschlagen.',
         cta: 'Zur Tafel',
       },
     },
   },
   schreiben: {
     title: 'Schreiben',
-    lead: 'Selbst zur Feder greifen. Übe die Züge auf gedrucktem Papier — oder sieh der Feder beim Schreiben zu.',
+    lead: 'Selbst zur Feder greifen. Übe die Züge auf dem ausgedruckten Übungsblatt — oder sieh der Feder beim Schreiben zu.',
     cards: {
       worksheet: {
         title: 'Übungsblatt',
-        body: 'Erzeuge ein Übungsblatt als PDF: mit Lineatur und Wörtern zum Nachfahren, fertig zum Ausdrucken.',
+        body: 'Erzeuge ein Übungsblatt mit Lineatur als PDF — Verhältnis, Schräglinien und Federwinkel frei wählbar, fertig zum Ausdrucken.',
         cta: 'Blatt erzeugen',
       },
       federprobe: {

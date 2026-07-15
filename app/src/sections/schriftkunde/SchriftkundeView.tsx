@@ -22,12 +22,11 @@
 import { useCallback, useState, type ReactNode } from 'react';
 import { Box, Link, Typography } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { Link as RouterLink } from 'react-router-dom';
-
 import offenbacherSpecimen from '@/assets/specimens/offenbacher-koch-1928-excerpt.jpg';
 import { CategoryHeading } from '@/components/CategoryHeading';
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
+import { PaperCardCta, PaperCardLink } from '@/components/PaperCardLink';
 import { Prose } from '@/components/Prose';
 import { WrittenWord } from '@/components/WrittenWord';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
@@ -50,7 +49,7 @@ const proseLink = {
   color: paper.sepia,
   textDecorationColor: `${paper.sepia}80`,
   transition: 'color .2s',
-  '&:hover': { color: paper.viridian, textDecorationColor: paper.viridian },
+  '&:hover': { color: paper.viridianText, textDecorationColor: paper.viridian },
 } as const;
 
 type SourceRef = { label: string; href: string };
@@ -114,7 +113,7 @@ function TripletGrid({ items }: { items: readonly TermItem[] }) {
             borderLeft: { sm: i > 0 ? `1px solid ${paper.line}` : 'none' },
           }}
         >
-          <Typography variant="h6" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, mb: 0.75 }}>{c.term}</Typography>
+          <Typography variant="h6" component="h3" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, mb: 0.75 }}>{c.term}</Typography>
           <Typography variant="body2" sx={prose}>{c.desc}</Typography>
         </Box>
       ))}
@@ -252,7 +251,7 @@ export function SchriftkundeView() {
                   p: { xs: 2.25, md: 2.5 },
                 }}
               >
-                <Typography variant="h4" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, lineHeight: 1.1 }}>
+                <Typography variant="h4" component="h3" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, lineHeight: 1.1 }}>
                   {v.name}
                 </Typography>
                 <Typography variant="caption" component="p" sx={{ fontStyle: 'italic', color: paper.sepia, mt: 0.25 }}>
@@ -344,7 +343,7 @@ export function SchriftkundeView() {
               key={row.year}
               sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 0, sm: 2 }, py: 0.9, borderBottom: `1px solid ${paper.line}` }}
             >
-              <Typography variant="subtitle2" sx={{ fontFamily: display, fontWeight: 600, color: paper.viridian, minWidth: { sm: 110 }, flexShrink: 0 }}>
+              <Typography variant="subtitle2" sx={{ fontFamily: display, fontWeight: 600, color: paper.viridianText, minWidth: { sm: 110 }, flexShrink: 0 }}>
                 {row.year}
               </Typography>
               <Typography variant="body2" sx={prose}>{row.text}</Typography>
@@ -419,64 +418,16 @@ export function SchriftkundeView() {
             }}
           >
             {t.tryCards.map((card) => (
-              <Box
-                key={card.id}
-                component={RouterLink}
-                to={TRY_TARGETS[card.id]}
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  textDecoration: 'none',
-                  p: { xs: 3, md: 3.5 },
-                  bgcolor: paper.hi,
-                  border: `1px solid ${paper.line}`,
-                  borderRadius: 2,
-                  color: paper.ink,
-                  transition: 'border-color .25s, transform .25s, box-shadow .25s',
-                  // Hover and keyboard focus share the same affordance (HubView).
-                  '&:hover, &:focus-visible': {
-                    borderColor: paper.viridian,
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 24px rgba(36,26,16,0.10)',
-                  },
-                  '&:focus-visible': {
-                    outline: `2px solid ${paper.viridian}`,
-                    outlineOffset: 3,
-                  },
-                  '&:hover .try-cta::after, &:focus-visible .try-cta::after': { width: '100%' },
-                }}
-              >
-                <Typography variant="h5" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, mb: 1 }}>
+              <PaperCardLink key={card.id} to={TRY_TARGETS[card.id]} sx={{ p: { xs: 3, md: 3.5 } }}>
+                {/* h3: the cards sit under this Section's CategoryHeading <h2> */}
+                <Typography variant="h5" component="h3" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, mb: 1 }}>
                   {card.title}
                 </Typography>
                 <Typography variant="body2" sx={{ color: paper.inkSoft, flexGrow: 1 }}>
                   {card.body}
                 </Typography>
-                <Typography
-                  className="try-cta"
-                  component="span"
-                  variant="body2"
-                  sx={{
-                    mt: 2.5,
-                    alignSelf: 'flex-start',
-                    position: 'relative',
-                    color: paper.viridian,
-                    fontFamily: display,
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      left: 0,
-                      bottom: -3,
-                      height: '1px',
-                      width: 0,
-                      bgcolor: paper.viridian,
-                      transition: 'width .3s ease',
-                    },
-                  }}
-                >
-                  {card.cta}&nbsp;→
-                </Typography>
-              </Box>
+                <PaperCardCta>{card.cta}&nbsp;→</PaperCardCta>
+              </PaperCardLink>
             ))}
           </Box>
         </Section>

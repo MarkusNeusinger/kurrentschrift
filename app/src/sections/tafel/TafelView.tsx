@@ -42,7 +42,8 @@ function SourceProvenance({ source }: { source: SourceOut }) {
   return (
     <Paper variant="outlined" sx={{ p: 2, bgcolor: paper.hi }}>
       <Stack spacing={1}>
-        <Typography component="h4" variant="h6" sx={{ fontFamily: garamond, fontWeight: 400, fontStyle: 'italic' }}>
+        {/* h3: sits under the per-script CategoryHeading <h2> */}
+        <Typography component="h3" variant="h6" sx={{ fontFamily: garamond, fontWeight: 400, fontStyle: 'italic' }}>
           {de.tafel.source.heading}
         </Typography>
         <Typography variant="body2" sx={{ fontWeight: 600 }}>
@@ -62,7 +63,7 @@ function SourceProvenance({ source }: { source: SourceOut }) {
             target="_blank"
             rel="noopener noreferrer"
             variant="body2"
-            sx={{ color: paper.viridian, alignSelf: 'flex-start' }}
+            sx={{ color: paper.viridianText, alignSelf: 'flex-start' }}
           >
             {de.tafel.source.originLink}
           </Link>
@@ -227,7 +228,7 @@ function GrundtafelSection({ tafel }: { tafel: Grundtafel }) {
             label={de.tafel.state[tafel.state]}
             variant="outlined"
             sx={{
-              color: tafel.state === 'written' ? paper.viridian : paper.inkSoft,
+              color: tafel.state === 'written' ? paper.viridianText : paper.inkSoft,
               borderColor: tafel.state === 'written' ? paper.viridian : paper.line,
               bgcolor: 'transparent',
             }}

@@ -9,6 +9,7 @@ import { apiFetch, asJson, type RetryOptions } from '@/lib/api/client';
 import type {
   BboxIn,
   BboxOut,
+  BboxStatusOut,
   ComposedWordOut,
   DiagnosticData,
   FitData,
@@ -65,6 +66,11 @@ export const cropUrl = (sourceId: string, glyphKey: string, cacheBust?: number, 
 
 export const getBboxes = (sourceId: string, retry?: RetryOptions): Promise<BboxOut[]> =>
   apiFetch(src(sourceId, '/bboxes'), {}, retry).then(asJson<BboxOut[]>);
+
+// Slim public read for the quiz's availability gating — flags only, none of
+// the heavy crop-editing fields.
+export const getBboxStatuses = (sourceId: string, retry?: RetryOptions): Promise<BboxStatusOut[]> =>
+  apiFetch(src(sourceId, '/bboxes/status'), {}, retry).then(asJson<BboxStatusOut[]>);
 
 export const putBbox = (sourceId: string, glyphKey: string, bbox: BboxIn): Promise<BboxOut> =>
   apiFetch(src(sourceId, `/bboxes/${encodeURIComponent(glyphKey)}`), {

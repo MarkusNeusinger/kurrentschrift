@@ -5,6 +5,16 @@
 import type { Components, Theme } from '@mui/material/styles';
 
 export const components: Components<Theme> = {
+  MuiTypography: {
+    defaultProps: {
+      // MUI maps subtitle1/subtitle2 to <h6> by default, which litters the
+      // document outline with phantom heading levels (screen readers announce
+      // every definition-row term and timeline year as a section). They are
+      // labels, not headings — render as <p>; a subtitle that really IS a
+      // heading sets `component` explicitly at the call site.
+      variantMapping: { subtitle1: 'p', subtitle2: 'p' },
+    },
+  },
   MuiButton: {
     defaultProps: { disableElevation: true },
     styleOverrides: {

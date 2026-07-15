@@ -14,6 +14,7 @@ import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, 
 
 import { CONFIG } from '@/global-config';
 import { ApiError, getBboxes, getGlyphs, getSource, getSources } from '@/lib/api';
+import { de } from '@/locales';
 import type { BboxOut, GlyphSummary, SourceOut } from '@/lib/api';
 
 const SOURCE_STORAGE_KEY = 'kurrentschrift.admin.sourceId';
@@ -148,7 +149,10 @@ function SourceScopedProvider({
           switchSource(CONFIG.sourceId);
           return;
         }
-        setLoadError(String(e));
+        // Fixed German copy for the user (this state renders on the public
+        // /quiz too); the raw exception goes to the console for diagnosis.
+        console.error('source boot load failed', e);
+        setLoadError(de.common.boot.sourceUnreachableDetail);
       }
     })();
     return () => {

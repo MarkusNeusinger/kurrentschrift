@@ -289,7 +289,7 @@ export function HeroWritten() {
             opacity: 0,
             animation: `${rise} .8s ease 0.85s both`,
             transition: 'color .25s',
-            '&:hover': { color: paper.viridian },
+            '&:hover': { color: paper.viridianText },
           }}
         >
           {t.replay}

@@ -16,6 +16,12 @@ export const paper = {
   sepia: '#5e4726', // eyebrows + small labels; deepened for legibility (~6.3:1 on bg)
   sepiaFaint: '#9a8259', // ruling/Mittellinie tint only — too light for text (2.66:1)
   viridian: '#40826d', // the single accent (chromium-oxide green)
+  // Derived for contrast, not a period hex: viridian darkened until running
+  // TEXT passes WCAG AA on the paper grounds (5.15:1 on bg, 5.85:1 on hi,
+  // 6.27:1 on cardSurface — #40826d itself is only 3.28:1 on bg). Use this
+  // wherever viridian is body-size text (CTAs, confirmations, scores);
+  // #40826d stays for large display/initials, borders, fills and focus rings.
+  viridianText: '#2e6152',
   line: '#b6a079',
 } as const;
 
@@ -63,7 +69,10 @@ export const quiz = {
   border: '#c2ad84', // answer button + setup chip border
   pillBorder: '#e0d2b2', // result confusion/miss pill border
   resolvedFace: '#f4eddd', // answered-but-not-picked button face
-  resolvedText: '#8a795f', // answered-but-not-picked button text
+  // Derived for contrast, not a period hex: the buttons stay enabled after
+  // answering, so the label must clear WCAG AA (5.5:1 on resolvedFace —
+  // the previous #8a795f sat at 3.61:1).
+  resolvedText: '#6e5c42', // answered-but-not-picked button text
 } as const;
 
 // One radius across the quiz surface — the chips, answer buttons and result

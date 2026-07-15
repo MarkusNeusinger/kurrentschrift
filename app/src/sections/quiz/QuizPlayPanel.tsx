@@ -55,7 +55,7 @@ export function QuizPlayPanel(p: PlayProps) {
   let message: React.ReactNode;
   if (verdict === 'correct') {
     message = (
-      <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: 24, color: paper.viridian }}>
+      <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: 24, color: paper.viridianText }}>
         {de.quiz.play.matchStrong}
       </Typography>
     );

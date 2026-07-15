@@ -145,7 +145,7 @@ export function ScribeView() {
           <Button
             size="small"
             onClick={copyLink}
-            sx={{ ml: 'auto', fontFamily: garamond, color: copied ? paper.viridian : paper.sepia, minWidth: 0 }}
+            sx={{ ml: 'auto', fontFamily: garamond, color: copied ? paper.viridianText : paper.sepia, minWidth: 0 }}
           >
             {copied ? de.scribe.copied : de.scribe.copyLink}
           </Button>

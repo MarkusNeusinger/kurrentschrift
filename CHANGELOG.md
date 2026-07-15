@@ -12,6 +12,37 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Slim public reads for the heavy list payloads.** New
+  `GET /sources/{id}/bboxes/status` returns only the availability flags
+  (glyph_key, locked, split) and `TemplateRepository.list_summaries()` feeds
+  the template list from a column-select — the admin sidebar and the public
+  quiz no longer decode multi-MB of `raw_path`/`anchors`/mask/ink/patch JSONB
+  for six scalar fields. The quiz left the pinned AdminProvider entirely: a
+  new `useQuizSource` hook boots from source + template summaries + status
+  flags (same cold-start retry), so `/quiz` stops downloading the full
+  crop-editing bbox payload.
+
+- **jsx-a11y lint gate.** `eslint-plugin-jsx-a11y` (recommended rules) now runs
+  in the frontend lint, so the mechanical accessibility slips on the SVG-heavy
+  custom surfaces get caught before review.
+- **`PaperCardLink` + `PaperCardCta`.** The public "paper card that is a link"
+  (hover/focus lift, viridian border, focus ring, CTA underline sweep) that
+  LandingView, HubView and the Schriftkunde try-cards each copy-pasted is now
+  one shared component — contrast and focus fixes land once.
+
+- **Authorized admin-write and Cloudflare-Access test suites.** New
+  `tests/test_api_admin_writes.py` exercises the gated handlers with a CORRECT
+  token: bbox PUT/GET roundtrip incl. the coalesce contract (omitted
+  `locked`/`n_anchors` preserve stored values), the full `/trace` pipeline
+  against the on-disk synthetic chart (persisted template, list `has_data`,
+  bbox anchor-count sync), the 423 lock + `force` override, and DELETE
+  semantics for bboxes and templates. New `tests/test_api_auth.py` covers the
+  JWT branch that actually gates prod: listed email → authorized, unlisted →
+  hard 403 (no token fallback), unverifiable JWT → break-glass token path, plus
+  unit tests of `_verify_cf_access_jwt` (lowercasing, PyJWTError → None,
+  missing email claim, unconfigured). The shared ASGI harness moved from
+  `test_api_http.py` into `tests/api_harness.py` + a conftest `api` fixture so
+  all three API suites reuse it.
 - **HTTP-level API test suite + an Alembic migration check in CI.** New
   `tests/test_api_http.py` runs the FastAPI app under pytest against an
   in-memory aiosqlite session (dependency-overridden `get_db`, no
@@ -63,9 +94,77 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   accept custom set names, so the plate freezes into its own sibling fixture root
   (`suetterlin-1922-abb22`, `--set abb22`) and its cross-writer numbers are never averaged
   into the same-hand headlines. Provenance + PD rationale in the source's `SOURCE.md`.
+- **ESLint gate for the SPA.** Added a flat `app/eslint.config.js` (JS +
+  typescript-eslint recommended + `react-hooks`, react-refresh as warnings),
+  a `npm run lint` script, and an ESLint step to the CI frontend job — the
+  `react-hooks/exhaustive-deps` suppressions in the tree are now enforced
+  instead of inert. Fixed the findings this surfaced: `prefer-const` in
+  `TafelView.tsx`, a missing hook dep in `RederiveAllDialog.tsx`, and added
+  the missing justification to a `WrittenWord.tsx` suppression; kept the
+  `_`-prefix unused-args convention and allowed intentional non-breaking
+  spaces in UI strings. Updated `.github/copilot-instructions.md` to record
+  that ESLint is now configured.
+- **`tools/pairlab` — independent-fit dissection of letter joins.** For every real
+  occurrence of a letter pair in the Abb.-19/Abb.-20 specimens it re-fits each letter
+  INDEPENDENTLY onto the frozen skeleton (bounded translation grid), regenerates the
+  production connector between the two placements (same constants/guards as
+  `core/compose.py`), tracks the specimen's own connecting stroke through the
+  inter-letter gap, and measures tail/head adaptation profiles — how far into each
+  glyph the real pen departs from the template before the join. Separates the three
+  entangled failure modes (connector shape · placement · glyph-end adaptation) the
+  word bench cannot tell apart. Additionally it TRACES the real pair along the known
+  ductus: the M4 fit (`core/fit.py`) warps both templates onto the specimen ink, so
+  every occurrence yields its ground-truth target — true coupling heights/tangents
+  per join class and the stub-trim signal (fitted endpoint vs. tracked departure).
+  Overlay + deviation-profile PNGs per occurrence, JSON aggregation, unit-tested
+  pure geometry core (`tests/test_pairlab.py`).
+- **Transition findings 2026-07-11** (`docs/proposals/uebergaenge-befund.md`): the
+  pairlab survey over 87 occurrences / 45 pairs. Placement is the largest single
+  error (39/87 need ≥ 0.25 xh correction); the standard diagonal join is generically
+  right once letters sit correctly (f→e/t→e's bench penalty was placement); high
+  exits (d loop, o/b/v/w Deckstrich bows, the r arm) systematically REPLACE both
+  coupling stubs (0.2–0.4 xh per side) with one diagonal into the next letter's
+  first-downstroke apex — confirming the stub hypothesis class-wise, not per pair.
+  Solution options O1–O3 (placement first, coupling anchors, gated pair overrides)
+  with cross-references from `qualitaetsmetrik.md` §6 and Vorschlag B.
+- **Connectors follow the school hand's join grammar.** The jul09/10 join audit (all
+  generated Übergänge ranked with seam-kink angles against the Abb. 19/20/22 specimens)
+  adds the plates' entry-class join grammar on top of the jul11 coupling composer:
+  arcade entries (n m i u …) that must lose height now couple low through a baseline
+  garland that merges tangentially onto their lead-in line (bi/on originals), the r-arm
+  sets off with its authentic Absatz corner before a deep garland, clamped bow exits
+  roll G1 over the crest instead of cornering (the b→e "extra Zacken"), sawtooth pairs
+  (e→n family) pull onto one continuous diagonal instead of leaving a mid-height shelf,
+  and the low-exit word-final Endstrich is a two-tangent quadratic that flattens like the
+  plates (short flick after descender exits) while high forward exits keep the jul11 level
+  Auslauf. Round bodies after a high exit stay on the jul11 rising-flank coupling anchor
+  (O2), which subsumes the garland there. Measured standalone against the pre-jul11 base
+  the grammar scored words 0.1253 → 0.1241 / pairs 0.1992 → 0.1927; the combined headline
+  on top of jul11 was not re-measured in the merge environment (the wordbench needs the
+  shared DB), but both composer unit-suites (`test_compose_coupling`, `test_compose_joins`)
+  pass and the compose golden fixture is deliberately re-pinned.
 
 ### Changed
 
+- **Public copy pass from the content audit.** /schriftkunde's intro no longer
+  switches to Sie-form on an otherwise du-form site; German closing quotes are
+  typographic („…“) everywhere; the hub/SEO texts stop promising trace-along
+  words the worksheet generator doesn't produce and stop overclaiming the
+  Tafel ("jeder Buchstabe, wie ihn die Feder schreibt" → only the Sütterlin is
+  engine-written); the landing quiz card stops calling the Sütterlin-only quiz
+  "Kurrent-Buchstaben" (and fixes "weist" → "zeigt"); quiz feedback "Super
+  Übereinstimmung" → "Richtig gelesen."; quiz/tafel availability notes use the
+  same wording (freigegeben instead of admin-jargon "kalibriert und gesperrt");
+  the worksheet tool is consistently named "Übungsblatt" and the presets
+  "Ausgangsschrift"; fact fixes against docs/schriftkunde: Sütterlin school
+  introduction 1915 (Prussia) / ~1930 elsewhere instead of "1920er Jahre" and
+  "Schulschrift von 1911", the Swiss phase-out 1890–1930 instead of "um 1900",
+  the ß note now attributes the ſ+s reading to the Antiqua tradition, the
+  1915/1918 timeline entry carries the divergent-sources caveat, and Kurrent is
+  "die alte Alltagsschrift, ohne einheitliche Norm" instead of "die ältere
+  Norm"; grammar fixes ("Das Schreiben lernte man …", "niederschrieben");
+  the static `<title>`/description in `index.html` now match the SEO catalogue
+  (full home title for no-JS crawlers, description trimmed to ~155 chars).
 - **`/fit` and `/quality` are admin-gated; the crop endpoint leaves the event
   loop.** Both diagnostics cost seconds of pure CPU per call and back
   admin-only workflows, so they now require the admin credential like the
@@ -201,61 +300,53 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `app/src/sections/scribe/ScribeView.tsx` and the `schreibsystem-und-wortbench.md` proposal. Added the `kurrent-writer-and-recognizer.md`
   proposal and `docs/notes/` to `docs/index.md`.
 
-### Added
-
-- **ESLint gate for the SPA.** Added a flat `app/eslint.config.js` (JS +
-  typescript-eslint recommended + `react-hooks`, react-refresh as warnings),
-  a `npm run lint` script, and an ESLint step to the CI frontend job — the
-  `react-hooks/exhaustive-deps` suppressions in the tree are now enforced
-  instead of inert. Fixed the findings this surfaced: `prefer-const` in
-  `TafelView.tsx`, a missing hook dep in `RederiveAllDialog.tsx`, and added
-  the missing justification to a `WrittenWord.tsx` suppression; kept the
-  `_`-prefix unused-args convention and allowed intentional non-breaking
-  spaces in UI strings. Updated `.github/copilot-instructions.md` to record
-  that ESLint is now configured.
-
-- **`tools/pairlab` — independent-fit dissection of letter joins.** For every real
-  occurrence of a letter pair in the Abb.-19/Abb.-20 specimens it re-fits each letter
-  INDEPENDENTLY onto the frozen skeleton (bounded translation grid), regenerates the
-  production connector between the two placements (same constants/guards as
-  `core/compose.py`), tracks the specimen's own connecting stroke through the
-  inter-letter gap, and measures tail/head adaptation profiles — how far into each
-  glyph the real pen departs from the template before the join. Separates the three
-  entangled failure modes (connector shape · placement · glyph-end adaptation) the
-  word bench cannot tell apart. Additionally it TRACES the real pair along the known
-  ductus: the M4 fit (`core/fit.py`) warps both templates onto the specimen ink, so
-  every occurrence yields its ground-truth target — true coupling heights/tangents
-  per join class and the stub-trim signal (fitted endpoint vs. tracked departure).
-  Overlay + deviation-profile PNGs per occurrence, JSON aggregation, unit-tested
-  pure geometry core (`tests/test_pairlab.py`).
-- **Transition findings 2026-07-11** (`docs/proposals/uebergaenge-befund.md`): the
-  pairlab survey over 87 occurrences / 45 pairs. Placement is the largest single
-  error (39/87 need ≥ 0.25 xh correction); the standard diagonal join is generically
-  right once letters sit correctly (f→e/t→e's bench penalty was placement); high
-  exits (d loop, o/b/v/w Deckstrich bows, the r arm) systematically REPLACE both
-  coupling stubs (0.2–0.4 xh per side) with one diagonal into the next letter's
-  first-downstroke apex — confirming the stub hypothesis class-wise, not per pair.
-  Solution options O1–O3 (placement first, coupling anchors, gated pair overrides)
-  with cross-references from `qualitaetsmetrik.md` §6 and Vorschlag B.
-- **Connectors follow the school hand's join grammar.** The jul09/10 join audit (all
-  generated Übergänge ranked with seam-kink angles against the Abb. 19/20/22 specimens)
-  adds the plates' entry-class join grammar on top of the jul11 coupling composer:
-  arcade entries (n m i u …) that must lose height now couple low through a baseline
-  garland that merges tangentially onto their lead-in line (bi/on originals), the r-arm
-  sets off with its authentic Absatz corner before a deep garland, clamped bow exits
-  roll G1 over the crest instead of cornering (the b→e "extra Zacken"), sawtooth pairs
-  (e→n family) pull onto one continuous diagonal instead of leaving a mid-height shelf,
-  and the low-exit word-final Endstrich is a two-tangent quadratic that flattens like the
-  plates (short flick after descender exits) while high forward exits keep the jul11 level
-  Auslauf. Round bodies after a high exit stay on the jul11 rising-flank coupling anchor
-  (O2), which subsumes the garland there. Measured standalone against the pre-jul11 base
-  the grammar scored words 0.1253 → 0.1241 / pairs 0.1992 → 0.1927; the combined headline
-  on top of jul11 was not re-measured in the merge environment (the wordbench needs the
-  shared DB), but both composer unit-suites (`test_compose_coupling`, `test_compose_joins`)
-  pass and the compose golden fixture is deliberately re-pinned.
-
 ### Fixed
 
+- **WCAG AA contrast for viridian text and the quiz answered state.** New
+  `paper.viridianText` (#2e6152 — derived for contrast, not a period hex;
+  5.15:1 on the paper ground vs 3.28:1 for the accent #40826d) is used
+  wherever viridian is body-size text: card CTAs, the hub/landing links, the
+  quiz score and verdict, the Scribe copy confirmation, Tafel chip/provenance
+  links, prose-link hovers. `quiz.resolvedText` darkened to #6e5c42 (5.5:1 on
+  the answered button face, was 3.61:1). The accent #40826d stays for large
+  display, initials, borders, fills and focus rings.
+- **Contiguous heading outline on every public page.** Card titles now carry
+  explicit heading components (hub cards `h2` under the page `h1`; landing,
+  Schriftkunde and Tafel cards `h3` under their `h2` section headings), and
+  MUI's default subtitle→`<h6>` mapping is overridden to `<p>` at the theme
+  level — definition-row terms and timeline years no longer appear as phantom
+  section headings to screen readers.
+- **The nav marks the current area.** PublicHeader links carry
+  `aria-current="page"` plus a visible active state (ink colour + full
+  viridian underline) for the area whose page is open.
+- **`/trace` can no longer cross-link template rows.** The template upsert
+  conflicts on `(style, glyph, position, variant)` while reads go by
+  `glyph_key`, so a client bug pairing a wrong URL key with a payload identity
+  could conflict-update another row and rewrite its `glyph_key` — reads then
+  silently 404 on the shared prod DB. `POST /trace` now derives the expected
+  key from the shared registry (`core.shaping.expected_glyph_key`, the Python
+  twin of `glyphs.ts`; `{base}-{position}` convention as fallback) and rejects
+  a mismatch with 422.
+- **DB engine init race closed.** The lazy `asyncio.Lock` getter in
+  `core/database/connection.py` was itself check-then-set, so two first
+  requests could each mint their own lock, both enter `init_db()`, and the
+  loser's engine (and Cloud SQL connector) leaked without `dispose()`. The
+  lock is now created at import; the dead `_sync_init_lock` is gone.
+- **No more raw English error strings on public pages.** `/quiz` and `/tafel`
+  showed `String(e)` (e.g. "TypeError: Failed to fetch") as the BootStatus
+  detail under a German title; both now show a fixed German sentence
+  (`common.boot.sourceUnreachableDetail`) and log the exception to the console.
+- **A late word-compose rejection can no longer evict a fresh cache entry.**
+  `fetchRenderWord`'s error eviction now checks entry identity before deleting
+  (like the glyph cache): after a FIFO eviction + re-fetch under the same key,
+  the old promise's rejection used to delete the new, valid entry.
+- **The nav's current-area marker covers the standalone tool routes.** /quiz
+  and /tafel light up Lesen, /federprobe lights up Schreiben (they keep their
+  stable top-level URLs and are not nested under the hubs); only the exactly
+  matching page uses `aria-current="page"`, area membership uses `"true"`.
+- **CHANGELOG `[Unreleased]` consolidated to one heading per category.**
+  Successive PR insertions had produced duplicate Added/Changed/Fixed headings
+  with bullets filed under the wrong category; regrouped per Keep-a-Changelog.
 - **The Cloud SQL connector fallback is now truly async.** The
   `INSTANCE_CONNECTION_NAME` path built a *sync* pg8000 engine and handed it to
   `async_sessionmaker(..., class_=AsyncSession)` — the first session would have

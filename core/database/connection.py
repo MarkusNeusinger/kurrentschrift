@@ -10,7 +10,6 @@ import asyncio
 import logging
 import os
 import re
-import threading
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
@@ -35,15 +34,11 @@ engine = None
 AsyncSessionLocal: async_sessionmaker | None = None
 _connector = None
 
-_async_init_lock: asyncio.Lock | None = None
-_sync_init_lock = threading.Lock()
-
-
-def _get_async_lock() -> asyncio.Lock:
-    global _async_init_lock
-    if _async_init_lock is None:
-        _async_init_lock = asyncio.Lock()
-    return _async_init_lock
+# Created at import so the lock itself cannot race: the old lazy getter was
+# check-then-set, so two first requests could each mint their own lock, both
+# enter init_db(), and the loser's engine leaked without dispose().
+# asyncio.Lock() needs no running loop since Python 3.10.
+_init_lock = asyncio.Lock()
 
 
 class Base(DeclarativeBase):
@@ -137,7 +132,7 @@ async def get_db() -> AsyncGenerator[AsyncSession | None, None]:
     """FastAPI dependency. Yields a session, or None if DB is not configured
     or initialisation failed (require_db turns None into a clean 503)."""
     if engine is None:
-        async with _get_async_lock():
+        async with _init_lock:
             if engine is None:
                 try:
                     await init_db()
@@ -161,7 +156,7 @@ async def get_db() -> AsyncGenerator[AsyncSession | None, None]:
 async def get_db_context() -> AsyncGenerator[AsyncSession, None]:
     """Context manager for scripts."""
     if engine is None:
-        async with _get_async_lock():
+        async with _init_lock:
             if engine is None:
                 await init_db()
 
