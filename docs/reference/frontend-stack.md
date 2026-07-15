@@ -43,35 +43,52 @@ checked in; anyplot nutzt yarn, wir bewusst nicht).
 
 ## 2. Routenstruktur
 
-### Öffentliche Routen (kein Auth)
+### Öffentliche Routen (kein Auth) — Ist-Stand
 
-Die Pfade unten sind **ohne** Sprachpräfix notiert — so liegen sie heute
-auch im Routing (`routes/paths.ts`: `/`, `/schreiben`, `/quiz`, ohne
-Präfix). Im Ziel-Design (P1, siehe i18n unten) wandern sie unter `/de/…`
-(Default) bzw. `/en/…` — `/lernen` wird dann als `/de/lernen` und
-`/en/learn` ausgeliefert. Die englischen Slug-Varianten werden mit dem
-`locales/en/`-Bundle definiert (P1-Arbeit).
+So liegen die Routen heute im Code (`app/src/routes/paths.ts` +
+`routes/sections/public.tsx`; die IA mit den drei Bereichen und den zwei
+Hub-Seiten ist in [`design-system.md`](../concepts/design-system.md) §6
+festgelegt). Die Pfade sind **ohne** Sprachpräfix notiert; im Ziel-Design
+(P1, siehe i18n unten) wandern sie unter `/de/…` (Default) bzw. `/en/…` —
+die englischen Slug-Varianten werden mit dem `locales/en/`-Bundle
+definiert (P1-Arbeit).
 
-| Pfad | Inhalt | Vision-Bezug |
+| Pfad | Inhalt | Bereich |
 |---|---|---|
-| `/` | Landing-Page mit Pitch und Quick-Links | §1 |
-| `/lernen` | Einstieg (Geschichte, Alphabet-Tafel, Lese-Regeln) | §1 |
-| `/quiz` | Buchstaben-Quiz (Crop aus der Vorlage → Latein-Buchstabe raten) | §4 |
-| `/animation` | Animierte Buchstaben-Tafel | §3 |
-| `/schreiben` | Lineatur-Konfigurator + Übungsblatt-Generator | §2 |
-| `/lesen-ueben` | Beliebiger Text → Kurrent-Rendering | §4 |
-| `/lese-hilfe` | Upload historischer Brief → HTR-Job | §5 |
-| `/lese-lupe/:job` | Lese-Lupe für transkribierten Brief | §5 |
-| `/stil-analyse` | Upload Schrift-Probe → Statistik-Report | §6 |
-| `/vergleich` | Hände vergleichen mit Heatmaps | §6 |
-| `/open-data` | Daten-Export-Seite mit DOI-Verweis | §7 |
-| `/glossar` | Erklärungen (Rund-s, Ligaturen, Schwellzug…) | §1, §5 |
+| `/` | Landing (der Hero schreibt ein Wort live mit dem Wort-Renderer) | Einstieg |
+| `/schriftkunde` | Überblick der deutschen Schreibschriften (der umbenannte frühere `/lehrbuch`) | Schriftkunde |
+| `/lesen` | Hub → Quiz, Tafel | Lesen |
+| `/quiz` | Buchstaben-Quiz | Lesen |
+| `/tafel` | Schreibtafel (Vorlage) | Lesen |
+| `/schreiben` | Hub → Übungsblatt, Federprobe | Schreiben |
+| `/schreiben/uebungsblatt` | Übungsblatt-Generator (Lineatur-Konfigurator, PDF) | Schreiben |
+| `/federprobe` | Live-Schreiber (Sütterlin-Synthese mit generierten Übergängen) | Schreiben |
+| `/impressum` | Impressum, Datenschutz, Quellen | Footer |
+| `/lehrbuch` | Redirect → `/schriftkunde` (alter Name) | — |
+
+### Geplante öffentliche Routen (P1+)
+
+Noch nicht gebaut — Ziel-Routen aus der Vision, kommen mit den
+Post-MVP-Phasen (architektur.md §10):
+
+| Pfad | Inhalt | Vision-Bezug | Status |
+|---|---|---|---|
+| `/lernen` | Einstieg (Geschichte, Alphabet-Tafel, Lese-Regeln) | §1 | geplant (P1+) |
+| `/animation` | Animierte Buchstaben-Tafel | §3 | geplant |
+| `/lesen-ueben` | Beliebiger Text → Kurrent-Rendering | §4 | geplant (P2) |
+| `/lese-hilfe` | Upload historischer Brief → HTR-Job | §5 | geplant (P1) |
+| `/lese-lupe/:job` | Lese-Lupe für transkribierten Brief | §5 | geplant (P1+) |
+| `/stil-analyse` | Upload Schrift-Probe → Statistik-Report | §6 | geplant (P3) |
+| `/vergleich` | Hände vergleichen mit Heatmaps | §6 | geplant (P4) |
+| `/open-data` | Daten-Export-Seite mit DOI-Verweis | §7 | zurückgestellt (Open-Core, architektur.md §17) |
+| `/glossar` | Erklärungen (Rund-s, Ligaturen, Schwellzug…) | §1, §5 | geplant |
 
 ### Admin-Routen (hinter Auth)
 
 | Pfad | Inhalt | Status |
 |---|---|---|
 | `/admin/chart` | Bbox-Editor auf Source-Chart; enthält den Einrichtungs-Wizard (Dialog, einzige Autoren-Fläche inkl. Stylus-Trace) und das Diagnose-Modal (3-Spalten + M4-Fit) | existiert |
+| `/admin/vergleich` | Vergleichsansicht: jedes autorisierte Zeichen als Chart-Crop vs. „wie geschrieben", nebeneinander oder überlagert (`sections/admin/compare/GlyphComparison.tsx`) | existiert |
 | `/admin/sources` | Source-Verwaltung | post-MVP |
 | `/admin/jobs` | HTR-Job-Monitor (Quote-Übersicht) | post-MVP |
 
@@ -271,10 +288,18 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
   `routes/paths.ts` ist die einzige Quelle der URLs.
 - `sections/landing/` — `LandingView` + `HeroSpecimen` (GLKurrent-Schreib-
   Animation) + `Reveal` (Scroll-Reveal).
+- `sections/schriftkunde/` — der `/schriftkunde`-Überblick (Grundbegriffe,
+  drei Ausgangsschriften mit Specimen, Federn, Tinte, Chronologie).
+- `sections/hub/` — `HubView` (die `/lesen`- und `/schreiben`-Bereichs-Hubs).
 - `sections/worksheet/` — `WorksheetView` + `ConfigPanel` + `PreviewSvg`
-  (Lineatur-Konfigurator, `/schreiben`).
+  (Lineatur-Konfigurator, `/schreiben/uebungsblatt`).
+- `sections/scribe/` — der `/federprobe`-Live-Schreiber (Text →
+  serverseitig komponiertes Wort, `WrittenWord`).
+- `sections/tafel/` — die `/tafel`-Schreibtafel (Vorlage-Zeilen „wie
+  geschrieben").
 - `sections/quiz/` — `QuizView` + `useQuizEngine` (gesamte Quiz-Logik ohne
   JSX) + Setup/Play/Results-Panels + `QuestionVisual`.
+- `sections/impressum/` — Impressum/Datenschutz/Quellen als Dokumentspalte.
 - `sections/admin/chart/` — `ChartView` (Pointer-Routing) + `useChartViewport`
   (Zoom/Pan/Pinch) + `useBboxEditing` (Bbox-Commits, Lock-Fan-out) +
   `BboxOverlay`/`ChartToolbar` + pure `bboxGeometry`.
@@ -283,16 +308,32 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
   + `steps/{Mask,Lineatur,Slant,Trace,Overview}Step`. Einzige Autoren-Fläche.
 - `sections/admin/diagnostics/` — `DiagnosticDialog` (3-Spalten + M4-Fit),
   `DiagnosticView`/`FitView`.
+- `sections/admin/compare/` — `GlyphComparison` (`/admin/vergleich`): jedes
+  autorisierte Zeichen als Chart-Crop vs. „wie geschrieben", nebeneinander
+  oder überlagert.
 - `sections/admin/sidebar/GlyphSidebar.tsx` — Buchstaben-Grid aus
   `domain/glyphs.ts`.
-- `components/` — `PaperBackground` (Papier-Atmosphäre), `PublicHeader`,
-  `WrittenGlyph` (Duktus-Animation), `BootStatus` (Boot/Fehler-Screens).
+- `components/` — `PaperBackground` (Papier-Atmosphäre), `PublicHeader`
+  (3-Bereiche-Nav), `PublicFooter`, `PageContainer` (eine Inhaltsspalte,
+  drei Breiten 760/1152/1280), `Prose` (Lesemaß ~66 Zeichen), `PageHeader`
+  (einheitlicher Seitenkopf: Bereichs-Eyebrow + Playfair-Titel + Intro),
+  `CategoryHeading` (Abschnittstitel mit Viridian-Kurrent-Initiale),
+  `InfoHint` (Kurrent-„i"-Popover, die eine Info-Affordanz app-weit),
+  `inkReveal/` (geteilte „wie geschrieben"-Primitiven: Silhouette,
+  maskiert von einer gesweepten Centerline + Ink-Bleed/Settle),
+  `WrittenGlyph` (ein Glyph als Duktus-Animation), `WrittenWord` (ganzes
+  Wort/Zeile, serverseitig komponiert via `GET /write/word`), `BootStatus`
+  (Boot/Fehler-Screens). Vollinventar mit Kern-APIs:
+  [`design-system.md`](../concepts/design-system.md) §7.
 
 ### Neu (kommt mit Phasen P1–P5)
 
 Bereits gebaut (siehe oben): Landing (`sections/landing/`),
-Lineatur-Konfigurator (`sections/worksheet/`, `/schreiben`),
-Buchstaben-Quiz (`sections/quiz/`). Neue Features kommen als je eine
+Schriftkunde (`sections/schriftkunde/`), die Bereichs-Hubs
+(`sections/hub/`), Lineatur-Konfigurator (`sections/worksheet/`,
+`/schreiben/uebungsblatt`), Federprobe (`sections/scribe/`), Schreibtafel
+(`sections/tafel/`), Buchstaben-Quiz (`sections/quiz/`). Neue Features
+kommen als je eine
 `sections/<feature>/`-View + dünner `pages/`-Mount + Eintrag in
 `routes/paths.ts`:
 

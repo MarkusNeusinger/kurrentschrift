@@ -13,10 +13,13 @@
 
 ## What you can use today
 
-The live site already does two things:
+The live site is organised into three areas — Schriftkunde (reference), Lesen (reading) and Schreiben (writing):
 
-- **Practice-sheet generator** — printable Kurrent worksheets with configurable ruling (Lineatur) and your own text.
+- **Script overview (Schriftkunde)** — a compact, fully sourced introduction to the German cursive scripts (Kurrent · Sütterlin · Offenbacher), their nibs, ink and letter quirks.
 - **Letter quiz** — learn to read the alphabet one glyph at a time.
+- **Writing board (Tafel)** — specimen rows on ruled lines, written stroke by stroke as a tracing model.
+- **Practice-sheet generator** — printable worksheets with configurable ruling (Lineatur) and your own text.
+- **Live writer (Federprobe)** — type any word or sentence and watch the synthesised Sütterlin ductus write it, connecting strokes included.
 
 Everything below is the engine being built behind them.
 
@@ -37,8 +40,8 @@ The open research question is how tight to make the template: too rigid won't fi
 
 In-progress MVP.
 
-- **Live** on [kurrentschrift.ink](https://kurrentschrift.ink): the worksheet generator and the letter quiz.
-- **Built:** the admin setup wizard, canonical glyph extraction, and the template-to-instance fit routine.
+- **Live** on [kurrentschrift.ink](https://kurrentschrift.ink): the script overview (`/schriftkunde`), the letter quiz and the writing board under *Lesen*, and the worksheet generator and the Federprobe live writer under *Schreiben*.
+- **Built:** the admin setup wizard, canonical glyph extraction, the template-to-instance fit routine, and server-side word composition — text → glyph sequence → placed glyphs with generated connecting strokes (`core/shaping.py` + `core/compose.py`, served as `GET …/write/word`, scored against period word specimens by the `tools/wordbench` benchmark).
 - **Next milestone:** scan the author's own hand for a small lowercase alphabet (`a d e l n ſ s`) plus a few words, fit the canonical ductus per glyph, aggregate, then re-render those words *and at least one new word* in the same hand. Four validation gates — stability, allograph separation, word rendering, animation playback — decide "kernel validated" vs. a fast, useful negative result. See the [§8 MVP](docs/concepts/architektur.md#8-der-mvp-kleinster-lauffähiger-renderkern) and the [MVP roadmap](docs/concepts/mvp-roadmap.md).
 
 Beyond the kernel, the roadmap sequences reading help (HTR), style analysis, hand comparison, and a possible open-data release — see [`architektur.md` §10](docs/concepts/architektur.md#10-reihenfolge--post-mvp-roadmap).

@@ -9,7 +9,9 @@ probiert. Ergänzt [`architektur.md`](../concepts/architektur.md) §5
 liegt in `core/quality.py`, das Werkzeug in `tools/glyphbench/`
 (englisches README mit Fixture-Format und Output-Contract).
 
-Stand: 2026-06-11, nach den PRs #63–#71.
+Stand: fortlaufend gepflegtes Journal — Grundfassung 2026-06-11 (nach den
+PRs #63–#71), seither mit jedem Lauf/Befund fortgeschrieben; letzter
+Eintrag 2026-07-13 (Merge-Reconciliation `jul09/10` × `jul11`).
 
 > **Zwei Metriken, eine pro Schrift (Stand 2026-06-18).** Kurrent und
 > Sütterlin nutzen verschiedene Schreibgeräte (Spitzfeder/Schwellzug vs.
