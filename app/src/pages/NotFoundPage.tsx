@@ -4,11 +4,13 @@
 import { Box, Button, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de } from '@/locales';
 import { paths } from '@/routes/paths';
 
 export function NotFoundPage() {
+  usePageMeta(de.seo.notFound);
   return (
     <PublicLayout footer={false}>
       <Box

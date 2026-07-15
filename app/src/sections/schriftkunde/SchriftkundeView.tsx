@@ -22,6 +22,7 @@
 import { useCallback, useState, type ReactNode } from 'react';
 import { Box, Link, Typography } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
+import { Link as RouterLink } from 'react-router-dom';
 
 import offenbacherSpecimen from '@/assets/specimens/offenbacher-koch-1928-excerpt.jpg';
 import { CategoryHeading } from '@/components/CategoryHeading';
@@ -31,6 +32,7 @@ import { Prose } from '@/components/Prose';
 import { WrittenWord } from '@/components/WrittenWord';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de } from '@/locales';
+import { paths } from '@/routes/paths';
 import { display, garamond, paper, script, suetterlin } from '@/styles/paper';
 
 const t = de.schriftkunde;
@@ -53,6 +55,14 @@ const proseLink = {
 
 type SourceRef = { label: string; href: string };
 type TermItem = { term: string; desc: string };
+
+// Route targets for the closing "Jetzt ausprobieren" cards (copy in the locale,
+// URLs from the central route constants — same split as the hub pages).
+const TRY_TARGETS: Record<string, string> = {
+  quiz: paths.quiz,
+  tafel: paths.tafel,
+  federprobe: paths.scribe,
+};
 
 // A "Quellen: a · b" line — the per-section / per-card citation row. `sx` is the
 // proper MUI SxProps and merged via the array form, so callers may pass any
@@ -225,7 +235,7 @@ export function SchriftkundeView() {
           <SourceLine sources={t.conceptsSources} />
         </Section>
 
-        {/* --- Die drei Schriften --- */}
+        {/* --- the three script variants ("Die drei Schriften") --- */}
         <Section heading={t.variantsHeading}>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2.5 }}>
             {t.variants.map((v) => (
@@ -277,19 +287,19 @@ export function SchriftkundeView() {
           </Box>
         </Section>
 
-        {/* --- Einordnung & Abgrenzung --- */}
+        {/* --- classification ("Einordnung & Abgrenzung") --- */}
         <Section heading={t.classifyHeading} lead={t.classifyLead}>
           <DefinitionRows items={t.classify} />
           <SourceLine sources={t.classifySources} />
         </Section>
 
-        {/* --- Wo wurde so geschrieben --- */}
+        {/* --- geography ("Wo wurde so geschrieben") --- */}
         <Section heading={t.geographyHeading} lead={t.geographyLead}>
           <DefinitionRows items={t.geography} />
           <SourceLine sources={t.geographySources} />
         </Section>
 
-        {/* --- Warum wir heute nicht mehr so schreiben --- */}
+        {/* --- why we no longer write this way ("Warum wir heute nicht mehr so schreiben") --- */}
         <Section heading={t.endHeading}>
           <Prose align="left">
             {t.endParagraphs.map((p, i) => (
@@ -390,6 +400,81 @@ export function SchriftkundeView() {
                   {s.label}
                 </Link>
               </Typography>
+            ))}
+          </Box>
+        </Section>
+
+        {/* --- closing cross-links into the live tools ("Jetzt ausprobieren") ---
+            The page must not dead-end in the source list: three cards lead into
+            the quiz, the Schreibtafel and the Federprobe — same card pattern as
+            the area hubs (sections/hub/HubView). */}
+        <Section heading={t.tryHeading} lead={t.tryLead}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
+              gap: { xs: 2.5, md: 3 },
+            }}
+          >
+            {t.tryCards.map((card) => (
+              <Box
+                key={card.id}
+                component={RouterLink}
+                to={TRY_TARGETS[card.id]}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  textDecoration: 'none',
+                  p: { xs: 3, md: 3.5 },
+                  bgcolor: paper.hi,
+                  border: `1px solid ${paper.line}`,
+                  borderRadius: 2,
+                  color: paper.ink,
+                  transition: 'border-color .25s, transform .25s, box-shadow .25s',
+                  // Hover and keyboard focus share the same affordance (HubView).
+                  '&:hover, &:focus-visible': {
+                    borderColor: paper.viridian,
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 24px rgba(36,26,16,0.10)',
+                  },
+                  '&:focus-visible': {
+                    outline: `2px solid ${paper.viridian}`,
+                    outlineOffset: 3,
+                  },
+                  '&:hover .try-cta::after, &:focus-visible .try-cta::after': { width: '100%' },
+                }}
+              >
+                <Typography variant="h5" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, mb: 1 }}>
+                  {card.title}
+                </Typography>
+                <Typography variant="body2" sx={{ color: paper.inkSoft, flexGrow: 1 }}>
+                  {card.body}
+                </Typography>
+                <Typography
+                  className="try-cta"
+                  component="span"
+                  variant="body2"
+                  sx={{
+                    mt: 2.5,
+                    alignSelf: 'flex-start',
+                    position: 'relative',
+                    color: paper.viridian,
+                    fontFamily: display,
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      left: 0,
+                      bottom: -3,
+                      height: '1px',
+                      width: 0,
+                      bgcolor: paper.viridian,
+                      transition: 'width .3s ease',
+                    },
+                  }}
+                >
+                  {card.cta}&nbsp;→
+                </Typography>
+              </Box>
             ))}
           </Box>
         </Section>

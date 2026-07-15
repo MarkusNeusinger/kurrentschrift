@@ -103,7 +103,7 @@ export const common = {
     loadingSource: 'lade Quelle…',
     // Quiz variant talks about the Vorlage (the source chart), not the API.
     sourceUnreachable: 'Vorlage nicht erreichbar',
-    sourceColdStart: 'Vorlage startet (Cold Start), einen Moment…',
+    sourceColdStart: 'Der Server wacht gerade auf — das kann beim ersten Besuch bis zu einer Minute dauern.',
     loadingTemplate: 'lade Vorlage…',
     retry: 'Erneut versuchen',
     apiUnreachableDetail: 'Die API (Cloud Run) konnte auch nach mehreren Versuchen nicht erreicht werden.',

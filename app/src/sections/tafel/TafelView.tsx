@@ -321,24 +321,30 @@ export function TafelView() {
     return stop;
   }, [tafeln, hash]);
 
+  // Boot/error states render inside PublicLayout so the header nav and footer
+  // stay usable during a cold start instead of vanishing with the page.
   if (loadError) {
     return (
-      <BootStatus
-        variant="error"
-        title={de.common.boot.sourceUnreachable}
-        message={loadError}
-        onRetry={() => window.location.reload()}
-        retryLabel={de.common.boot.retry}
-      />
+      <PublicLayout footer>
+        <BootStatus
+          variant="error"
+          title={de.common.boot.sourceUnreachable}
+          message={loadError}
+          onRetry={() => window.location.reload()}
+          retryLabel={de.common.boot.retry}
+        />
+      </PublicLayout>
     );
   }
 
   if (!tafeln) {
     return (
-      <BootStatus
-        variant="loading"
-        message={waking ? de.common.boot.sourceColdStart : de.common.boot.loadingTemplate}
-      />
+      <PublicLayout footer>
+        <BootStatus
+          variant="loading"
+          message={waking ? de.common.boot.sourceColdStart : de.common.boot.loadingTemplate}
+        />
+      </PublicLayout>
     );
   }
 

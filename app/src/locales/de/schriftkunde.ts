@@ -217,7 +217,7 @@ export const schriftkunde = {
   ],
   geographySources: [SRC.kurrent, SRC.ausgangsschrift, SRC.zbZuerich, SRC.liechtenstein],
 
-  // --- Warum wir heute nicht mehr so schreiben ------------------------------
+  // --- Why we no longer write this way ("Warum wir heute nicht mehr so schreiben")
   endHeading: 'Warum wir heute nicht mehr so schreiben',
   endParagraphs: [
     'Die Kurrent und die Sütterlin verschwanden nicht allmählich, sondern fast auf einen Schlag: Ein Erlass vom Januar 1941 beendete die gebrochenen Druckschriften, ein Rundschreiben vom 1. September 1941 untersagte, die Kurrent in der Schule zu lehren. Ab dem Schuljahr 1941/42 lernten alle Kinder nur noch die lateinische „Deutsche Normalschrift".',
@@ -382,6 +382,31 @@ export const schriftkunde = {
     practiceIntro: 'Zum kostenlosen Lesen- und Schreibenlernen gibt es im Netz mehrere gute Anlaufstellen:',
     practiceLinks: [SRC.muecke, SRC.adfontesLernen, SRC.bfdsLese, SRC.kurrentschriftNet],
   },
+
+  // --- Closing cross-links into the live tools ("Jetzt ausprobieren") --------
+  // Card copy echoes the hub pages (locales/de/hub.ts); routes attach in the view.
+  tryHeading: 'Jetzt ausprobieren',
+  tryLead: 'Genug gelesen? Die Schriften dieser Seite lassen sich gleich hier üben — vom Entziffern bis zur schreibenden Feder.',
+  tryCards: [
+    {
+      id: 'quiz',
+      title: 'Buchstaben-Quiz',
+      body: 'Lesen üben: Erkenne die Buchstaben der alten Schrift in einem kurzen Abfragespiel — vom einzelnen Zeichen bis zum kurzen Wort.',
+      cta: 'Quiz öffnen',
+    },
+    {
+      id: 'tafel',
+      title: 'Schreibtafel',
+      body: 'Die ganze Vorlage auf einen Blick: jeder Buchstabe, wie ihn die Feder schreibt — zum Vergleichen und Nachschlagen.',
+      cta: 'Zur Tafel',
+    },
+    {
+      id: 'federprobe',
+      title: 'Federprobe',
+      body: 'Tippe einen beliebigen Text — die Feder schreibt ihn dir lebendig in Sütterlin, mit allen Übergängen.',
+      cta: 'Feder ansetzen',
+    },
+  ],
 
   sourcesLabel: 'Quellen:',
 } as const;

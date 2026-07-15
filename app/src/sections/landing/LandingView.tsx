@@ -70,7 +70,10 @@ export function LandingView() {
                   border: `1px solid ${paper.line}`,
                   bgcolor: paper.hi,
                   transition: 'transform .2s ease, box-shadow .3s ease, border-color .2s ease',
-                  '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 10px 24px rgba(36,26,16,.14)', borderColor: paper.viridian },
+                  // Hover and keyboard focus share the affordance; the outline
+                  // marks the focused card for tab users (HubView pattern).
+                  '&:hover, &:focus-visible': { transform: 'translateY(-2px)', boxShadow: '0 10px 24px rgba(36,26,16,.14)', borderColor: paper.viridian },
+                  '&:focus-visible': { outline: `2px solid ${paper.viridian}`, outlineOffset: 3 },
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1, mb: 0.75 }}>
@@ -128,7 +131,10 @@ export function LandingView() {
                     border: `1px solid ${paper.line}`,
                     bgcolor: paper.hi,
                     transition: 'transform .2s ease, box-shadow .3s ease, border-color .2s ease',
-                    '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 10px 24px rgba(36,26,16,.14)', borderColor: paper.viridian },
+                    // Same hover/focus affordance + focus outline as the script
+                    // cards above (HubView pattern).
+                    '&:hover, &:focus-visible': { transform: 'translateY(-2px)', boxShadow: '0 10px 24px rgba(36,26,16,.14)', borderColor: paper.viridian },
+                    '&:focus-visible': { outline: `2px solid ${paper.viridian}`, outlineOffset: 3 },
                   }}
                 >
                   <Typography variant="h5" sx={{ fontFamily: display, fontWeight: 600, mb: 0.5 }}>{t.title}</Typography>

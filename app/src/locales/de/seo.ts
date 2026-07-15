@@ -49,4 +49,8 @@ export const seo = {
     title: 'Impressum & Datenschutz · kurrentschrift.ink',
     description: 'Impressum, Datenschutz, Quellen und Lizenzen von kurrentschrift.ink.',
   },
+  notFound: {
+    title: 'Seite nicht gefunden · kurrentschrift.ink',
+    description: 'Unter dieser Adresse liegt nichts — der Link ist veraltet oder vertippt.',
+  },
 } as const;
