@@ -201,6 +201,33 @@ async def test_trace_unknown_glyph_falls_back_to_position_suffix(api: Harness):
     assert await _trace_status(api, source_id, "clover-final", "☘", "medial") == 422
 
 
+async def test_trace_unknown_glyph_cannot_claim_registry_key(api: Harness):
+    """An out-of-registry glyph posting to a registry-owned key (suffix would
+    match!) must 422 — the upsert would stamp `n-medial` onto the ☘ row and
+    duplicate the key against the real n row."""
+    _, source_id = await api.seed_style_and_source()
+    assert await _trace_status(api, source_id, "n-medial", "☘", "medial") == 422
+    assert await _trace_status(api, source_id, "s-medial", "☘", "medial") == 422
+
+
+async def test_trace_stored_row_identity_mismatch_409(api: Harness):
+    """Stored-row backstop for keys outside the registry: a key that already
+    names one custom glyph refuses a trace re-keying it to another. (Asserted
+    on the detail text — a missing bbox also answers 409.)"""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "clover-medial", "☘", "medial")
+    res = await api.client.request(
+        "POST",
+        f"/sources/{source_id}/templates/clover-medial/trace",
+        json_body={"glyph": "♣", "position": "medial", "raw_path": [{"x": 0.0, "y": 0.0}]},
+        headers=api.admin_headers(),
+    )
+    assert res.status == 409
+    assert "already names" in res.json()["detail"]
+    res = await api.client.request("GET", f"/sources/{source_id}/templates/clover-medial")
+    assert res.json()["glyph"] == "☘"
+
+
 # ------------------------------------------------------------------ delete
 
 

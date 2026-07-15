@@ -24,7 +24,7 @@ from core.pipeline import (
 )
 from core.quality import quality_for_glyph
 from core.quality_suetterlin import suetterlin_quality_for_glyph
-from core.shaping import expected_glyph_key
+from core.shaping import expected_glyph_key, is_registry_glyph_key
 from core.suetterlin import canonical_suetterlin_from_path, canonical_suetterlin_from_raw_path_only
 
 
@@ -82,6 +82,14 @@ def _reject_key_identity_mismatch(glyph_key: str, glyph: str, position: str) -> 
                 detail=f"glyph_key {glyph_key!r} does not match glyph {glyph!r} at position {position!r}"
                 f" (expected {expected!r})",
             )
+    elif is_registry_glyph_key(glyph_key):
+        # An out-of-registry glyph may never claim a registry-owned key: the
+        # upsert would stamp that key onto its own (glyph, position) row and
+        # duplicate it against the registry glyph's row.
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"glyph_key {glyph_key!r} belongs to a registry glyph, not to {glyph!r}",
+        )
     elif not glyph_key.endswith(f"-{position}"):
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"glyph_key {glyph_key!r} does not match position {position!r}"
@@ -171,6 +179,17 @@ async def post_trace(
     db: AsyncSession = Depends(require_db),
 ):
     _reject_key_identity_mismatch(glyph_key, payload.glyph, payload.position)
+    # Stored-row backstop for keys the registry doesn't know: whatever row this
+    # key already names must carry the same (glyph, position) — otherwise the
+    # upsert (conflict target: style/glyph/position/variant) would write onto a
+    # DIFFERENT row and leave two rows claiming the same glyph_key.
+    stored = await TemplateRepository(db).get(source.style_id, glyph_key, variant=payload.variant)
+    if stored is not None and (stored.glyph, stored.position) != (payload.glyph, payload.position):
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail=f"glyph_key {glyph_key!r} already names glyph {stored.glyph!r} at position {stored.position!r};"
+            f" refusing to re-key it to {payload.glyph!r}/{payload.position!r}",
+        )
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
         raise HTTPException(status.HTTP_409_CONFLICT, detail=f"set bbox for {glyph_key!r} before tracing")

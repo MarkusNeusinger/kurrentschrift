@@ -303,6 +303,23 @@ def expected_glyph_key(glyph: str, position: Position) -> str | None:
     return _key_for(entry, position)
 
 
+# Every glyph_key the registry owns, across all three positions — so the admin
+# write path can refuse a registry-owned key claimed by an out-of-registry
+# glyph (e.g. glyph "☘" posting to "n-medial" would otherwise pass the bare
+# suffix convention and collide with the real n row).
+_REGISTRY_KEYS: frozenset[str] = frozenset(
+    _key_for(entry, position)
+    for registry in (_LETTERS, _LIGATURES, _NONJOINING)
+    for entry in registry.values()
+    for position in ("initial", "medial", "final")
+)
+
+
+def is_registry_glyph_key(glyph_key: str) -> bool:
+    """Whether a registry glyph owns this key (in any position)."""
+    return glyph_key in _REGISTRY_KEYS
+
+
 def decompose_ligature_slot(slot: GlyphSlot) -> list[GlyphSlot] | None:
     """Fallback for a ligature whose canonical is missing: split into letters.
 
