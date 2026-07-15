@@ -3,6 +3,10 @@ import type { BboxIn, BboxOut } from '@/lib/api';
 // Turn a stored bbox (API shape) back into the writable payload, echoing every
 // persisted field — including `split` — unchanged, so partial updates can
 // spread `{ ...bboxInFromOut(b), ...patch }` without dropping state.
+// `n_anchors` is deliberately NOT echoed: the server keeps it in sync with the
+// derived canonical (templates.py::_sync_bbox_anchor_count), so resending the
+// client's copy on every bbox save would revert that correction. The one place
+// that intends to change it (TraceStep) sends it explicitly.
 export function bboxInFromOut(b: BboxOut): BboxIn {
   return {
     y0: b.y0,
@@ -14,7 +18,6 @@ export function bboxInFromOut(b: BboxOut): BboxIn {
     patches: b.patches,
     baseline_y: b.baseline_y,
     midband_y: b.midband_y,
-    n_anchors: b.n_anchors,
     guides: b.guides,
     locked: b.locked,
     split: b.split,

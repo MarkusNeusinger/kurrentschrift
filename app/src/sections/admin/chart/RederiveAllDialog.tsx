@@ -31,7 +31,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { useAdmin } from '@/context/AdminContext';
 import { isLetterSplit, knownGlyph, siblingKeys } from '@/domain/glyphs';
 import { getQuality, postResample } from '@/lib/api';
-import { de, fmt } from '@/locales';
+import { de, fmt } from '@/locales/admin';
 
 interface Props {
   open: boolean;

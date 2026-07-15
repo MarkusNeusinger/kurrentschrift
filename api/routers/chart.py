@@ -3,6 +3,7 @@
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -33,7 +34,8 @@ async def get_chart(source: Source = Depends(require_source)) -> FileResponse:
     if not path.exists():
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"chart file missing on disk: {path}")
     media_type = _DISPLAY_MEDIA_TYPES.get(path.suffix.lower(), "application/octet-stream")
-    return FileResponse(path, media_type=media_type)
+    # Chart bytes only change with a deploy — let browser + edge hold them a day.
+    return FileResponse(path, media_type=media_type, headers={"Cache-Control": "public, max-age=86400"})
 
 
 @router.get("/bboxes/{glyph_key}/crop")
@@ -49,7 +51,13 @@ async def get_crop(
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"bbox not set for {glyph_key!r}")
-    chart = load_chart_grayscale(source.chart_path)
     bbox_dict = bbox.to_pipeline_dict()
-    png = crop_mask_to_png_bytes(chart, bbox_dict) if view == "mask" else crop_to_png_bytes(chart, bbox_dict)
+
+    # Chart decode + crop + (for the mask view) binarisation are CPU-bound —
+    # keep them off the event loop like templates.py/write.py do.
+    def compute() -> bytes:
+        chart = load_chart_grayscale(source.chart_path)
+        return crop_mask_to_png_bytes(chart, bbox_dict) if view == "mask" else crop_to_png_bytes(chart, bbox_dict)
+
+    png = await run_in_threadpool(compute)
     return Response(content=png, media_type="image/png")

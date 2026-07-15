@@ -10,7 +10,7 @@ import { deleteBbox, deleteGlyph, putBbox } from '@/lib/api';
 import { bboxInFromOut } from '@/lib/bbox';
 import { isLetterSplit, knownGlyph, siblingKeys } from '@/domain/glyphs';
 import { useAdmin } from '@/context/AdminContext';
-import { de, fmt } from '@/locales';
+import { de, fmt } from '@/locales/admin';
 import { applyHandle, editedBbox, hitHandle } from './bboxGeometry';
 import {
   GRIP_HIT,
@@ -158,7 +158,9 @@ export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseB
       patches: [],
       baseline_y: current?.baseline_y ?? Math.round(y0 + h * NEW_BBOX_BASELINE_RATIO),
       midband_y: current?.midband_y ?? Math.round(y0 + h * NEW_BBOX_MIDBAND_RATIO),
-      n_anchors: current?.n_anchors ?? NEW_BBOX_N_ANCHORS,
+      // Only seed the anchor count for a brand-new bbox; an existing one keeps
+      // its server-synced count (undefined is dropped by JSON.stringify).
+      n_anchors: current ? undefined : NEW_BBOX_N_ANCHORS,
     };
     setDrag(null);
     try {

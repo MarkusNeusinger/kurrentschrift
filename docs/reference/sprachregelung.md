@@ -23,6 +23,7 @@ auf Deutsch. Das ist kein Bruch zur anyplot-Linie, sondern dieselbe Regel
 | Artefakt | Sprache | Begründung |
 |---|---|---|
 | **Interne Docs** (Referenz, Naming-Setup, dieses Dokument) | Deutsch | Für den Autor geschrieben; argumentieren über eine deutsche Domäne |
+| **`docs/contributing.md`** | **Englisch** (dokumentierte Ausnahme) | Wird vom README für das externe Publikum verlinkt — das Contributing-Publikum ist das README-Publikum (inkl. englischsprachiger Genealogie), nicht der Autor; in `docs/index.md` als „(EN)" markiert |
 | **README** | **Englisch** (zuerst), ggf. zweisprachig | Pitch, kein internes Doku — Hauptzielgruppe schließt englischsprachige Genealogie ein |
 | **GitHub-Description** | Englisch | Internationale/SEO-Zielgruppe, Abgrenzung vom `kurrent-io`-Namespace |
 | **Website (v1)** | Deutsch | Erste Zielgruppe deutschsprachig; spätere i18n nicht ausgeschlossen |

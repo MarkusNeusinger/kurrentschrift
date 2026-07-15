@@ -713,11 +713,14 @@ anyplot.ai auf Cloud Run trägt:
   zweiter Hebel. Bis dahin liegen die deutschen UI-Strings als
   Pre-i18n-Namespaces unter `locales/de/`.
 
-**Routenstruktur:**
+**Routenstruktur** (die öffentliche Liste sind **Ziel-Routen für die
+Post-MVP-Phasen P1+**; der Ist-Stand der IA — drei Bereiche, zwei Hubs,
+die heutigen Pfade — steht in
+[`design-system.md`](design-system.md) §6):
 
-- **Öffentliche Routen:** Einstieg, Lese-Regeln, Glossar, animierte
-  Buchstaben-Tafel, Schreiben-üben (Lineatur-Konfigurator), Lese-Hilfe
-  (Upload), Hände vergleichen, Open-Data-Export-Seite.
+- **Öffentliche Ziel-Routen (P1+):** Einstieg, Lese-Regeln, Glossar,
+  animierte Buchstaben-Tafel, Schreiben-üben (Lineatur-Konfigurator),
+  Lese-Hilfe (Upload), Hände vergleichen, Open-Data-Export-Seite.
 - **Admin-Routen (Auth-geschützt):** Bbox-Editor, Stylus-Trace,
   3-Spalten-Diagnostic, Source-Verwaltung. Code lebt weiter im
   Verzeichnis `/app/` (kein zweites Frontend); im URL-Raum wandern sie

@@ -9,7 +9,7 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import { Box, Button, Chip, IconButton, Stack, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 
-import { de } from '@/locales';
+import { de } from '@/locales/admin';
 import type { GuideConfig } from '@/lib/api';
 import { SLANT_COLOR } from '../wizardTypes';
 import type { GuideValues } from '../wizardTypes';

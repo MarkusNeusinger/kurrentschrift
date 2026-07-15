@@ -1,14 +1,15 @@
-// BootStatus — full-page boot screen (loading spinner / load error) shared by
-// the public quiz and the admin layout. The two consumers draw different
-// chrome today (the quiz a flat centered page on `background.default`, the
-// admin shell the paper texture with top-left error copy); pixel parity beats
-// unification, so the component keeps both looks behind an explicit `shell`
-// prop instead of forcing one onto the other.
+// BootStatus — boot state (loading spinner / load error) shared by the public
+// quiz/tafel and the admin layout. The consumers draw different chrome (the
+// public pages a centered block, the admin shell the paper texture with
+// top-left error copy); pixel parity beats unification, so the component keeps
+// both looks behind an explicit `shell` prop instead of forcing one onto the
+// other.
 //
-// The plain shell roots on `<main>` so the public quiz route still exposes
-// exactly one main landmark in its loading/error states (the loaded state gets
-// its `<main>` from PublicLayout instead) — the two are mutually exclusive
-// returns, so there is never a double landmark.
+// The plain shell is a centered block WITHOUT its own <main>/background: the
+// public consumers render it inside <PublicLayout> (which owns the paper
+// atmosphere, the <main> landmark, header and footer), so the navigation stays
+// usable during a cold-start boot or an error instead of vanishing with the
+// page chrome.
 
 import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
@@ -24,8 +25,9 @@ interface BootStatusProps {
   detail?: ReactNode;
   onRetry?: () => void;
   retryLabel?: string;
-  // 'plain' = flat centered page (quiz); 'paper' = PaperBackground shell with
-  // the admin's top-left error block / centered spinner.
+  // 'plain' = centered block inside an existing layout (quiz/tafel, within
+  // PublicLayout); 'paper' = standalone PaperBackground shell with the admin's
+  // top-left error block / centered spinner.
   shell?: 'plain' | 'paper';
 }
 
@@ -61,10 +63,10 @@ export function BootStatus({ variant, title, message, detail, onRetry, retryLabe
 
   return (
     <Box
-      component="main"
       sx={{
-        minHeight: '100vh',
-        bgcolor: 'background.default',
+        // Tall enough to read as the page body between header and footer, but
+        // no viewport-filling block — the surrounding PublicLayout owns those.
+        minHeight: '55vh',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',

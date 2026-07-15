@@ -15,7 +15,7 @@ import { useEffect, useRef } from 'react';
 import { useAdmin } from '@/context/AdminContext';
 import { cropUrl } from '@/lib/api';
 import type { TracePreviewOut } from '@/lib/api';
-import { de } from '@/locales';
+import { de } from '@/locales/admin';
 import { HintHeading } from './HintHeading';
 import { ScoreBreakdown, SilhouetteSvg, scoreColor } from './previewParts';
 

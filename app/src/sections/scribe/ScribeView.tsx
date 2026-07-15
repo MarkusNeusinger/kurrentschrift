@@ -6,8 +6,9 @@
 // core/compose.py, fetched via GET /sources/{id}/write/word), rendering in
 // components/WrittenWord; this file is the UI shell only.
 
-import { useEffect, useMemo, useState } from 'react';
-import { Chip, Paper, Stack, TextField, Typography } from '@mui/material';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Button, Chip, Paper, Stack, TextField, Typography } from '@mui/material';
+import { useSearchParams } from 'react-router-dom';
 
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
@@ -33,9 +34,34 @@ function lettersFromKeys(keys: string[]): string {
 
 export function ScribeView() {
   // The page title / SEO meta is set by the route mount (ScribePage → usePageMeta).
-  const [input, setInput] = useState<string>(de.scribe.examples[0]);
-  const [text, setText] = useState<string>(de.scribe.examples[0]);
+  // A shared link (?text=…) seeds the field; otherwise the first example does.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const paramText = searchParams.get('text')?.slice(0, MAX_LEN) ?? '';
+  const defaultText = de.scribe.examples[0];
+  const [input, setInput] = useState<string>(paramText || defaultText);
+  const [text, setText] = useState<string>((paramText || defaultText).trim());
+  // The ?text= value this component itself last wrote (mirror effect below).
+  // Lets the URL→state effect tell our own replaceState apart from an external
+  // navigation (another shared link, back/forward) — React Router does NOT
+  // remount on search-param changes, so the ref-free version never re-seeded.
+  const lastWrittenParam = useRef(paramText);
+
+  // URL → state: an externally navigated ?text= (deep link while mounted,
+  // history traversal) re-seeds the field; our own mirror writes are ignored.
+  useEffect(() => {
+    if (paramText === lastWrittenParam.current) return;
+    lastWrittenParam.current = paramText;
+    const next = paramText || defaultText;
+    setInput(next);
+    setText(next.trim());
+  }, [paramText, defaultText]);
   const [missing, setMissing] = useState<string[]>([]);
+  // Compose fetch failed (after the cold-start retries) — offer a retry instead
+  // of a spinner forever; the nonce remounts WrittenWord to kick a fresh fetch.
+  const [composeError, setComposeError] = useState(false);
+  const [retryNonce, setRetryNonce] = useState(0);
+  const [copied, setCopied] = useState(false);
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Debounce so each keystroke doesn't kick off a fresh compose/fetch storm; the
   // glyph cache covers repeats, but the debounce keeps the write-in from
@@ -45,6 +71,37 @@ export function ScribeView() {
     const id = setTimeout(() => setText(trimmed), DEBOUNCE_MS);
     return () => clearTimeout(id);
   }, [input]);
+
+  // A new text starts a fresh compose — clear a stale error from the last one.
+  useEffect(() => setComposeError(false), [text]);
+
+  // State → URL: mirror the debounced text into ?text= so the page is
+  // shareable. `replace` keeps typing from flooding the history; the default
+  // example stays a clean URL. Records what it wrote so the URL→state effect
+  // above can ignore the resulting searchParams change.
+  useEffect(() => {
+    const url = text && text !== defaultText ? text : '';
+    lastWrittenParam.current = url;
+    setSearchParams(url ? { text: url } : {}, { replace: true });
+    // setSearchParams' identity is not stable across navigations — depending on
+    // it would re-run (and re-navigate) after every sync.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [text, defaultText]);
+
+  useEffect(() => () => clearTimeout(copyTimer.current), []);
+
+  const copyLink = () => {
+    navigator.clipboard
+      ?.writeText(window.location.href)
+      .then(() => {
+        setCopied(true);
+        clearTimeout(copyTimer.current);
+        copyTimer.current = setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => {
+        /* clipboard unavailable (permissions/insecure context) — stay quiet */
+      });
+  };
 
   const missingLetters = useMemo(() => lettersFromKeys(missing), [missing]);
 
@@ -61,8 +118,12 @@ export function ScribeView() {
           onChange={(e) => setInput(e.target.value.slice(0, MAX_LEN))}
           label={de.scribe.inputLabel}
           placeholder={de.scribe.inputPlaceholder}
-          slotProps={{ htmlInput: { maxLength: MAX_LEN, autoCapitalize: 'off', spellCheck: false } }}
-          sx={{ mb: 1.5 }}
+          helperText={`${input.length}/${MAX_LEN}`}
+          slotProps={{
+            htmlInput: { maxLength: MAX_LEN, autoCapitalize: 'off', spellCheck: false },
+            formHelperText: { sx: { textAlign: 'right', mr: 0 } },
+          }}
+          sx={{ mb: 1 }}
         />
 
         <Stack direction="row" sx={{ flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 3 }}>
@@ -79,6 +140,15 @@ export function ScribeView() {
               sx={{ fontFamily: garamond, borderColor: paper.line, color: paper.ink }}
             />
           ))}
+          {/* Share the written text — copies the ?text= deep link, label flips
+              briefly to the viridian confirmation. */}
+          <Button
+            size="small"
+            onClick={copyLink}
+            sx={{ ml: 'auto', fontFamily: garamond, color: copied ? paper.viridian : paper.sepia, minWidth: 0 }}
+          >
+            {copied ? de.scribe.copied : de.scribe.copyLink}
+          </Button>
         </Stack>
 
         <Paper
@@ -98,15 +168,30 @@ export function ScribeView() {
             overflow: 'hidden',
           }}
         >
-          {text ? (
+          {text && composeError ? (
+            <Stack spacing={1.5} sx={{ alignItems: 'center', textAlign: 'center', px: 2 }}>
+              <Typography sx={{ color: paper.inkSoft }}>{de.scribe.loadError}</Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => {
+                  setComposeError(false);
+                  setRetryNonce((n) => n + 1);
+                }}
+              >
+                {de.scribe.retry}
+              </Button>
+            </Stack>
+          ) : text ? (
             <WrittenWord
-              key={text}
+              key={`${text}#${retryNonce}`}
               text={text}
               height={170}
               durationMs={Math.min(5200, 700 + text.replace(/\s/g, '').length * 320)}
               maxWidth={840}
               showReplay
               onResolved={({ missing: m }) => setMissing(m)}
+              onError={() => setComposeError(true)}
             />
           ) : (
             <Typography sx={{ color: paper.inkSoft, fontStyle: 'italic' }}>{de.scribe.emptyHint}</Typography>
@@ -119,7 +204,7 @@ export function ScribeView() {
           </Typography>
         )}
 
-        <Typography variant="caption" component="p" sx={{ color: paper.sepiaFaint, fontStyle: 'italic', mt: 3 }}>
+        <Typography variant="caption" component="p" sx={{ color: paper.sepia, fontStyle: 'italic', mt: 3 }}>
           {de.scribe.disclaimer}
         </Typography>
       </PageContainer>

@@ -11,13 +11,13 @@ import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
 import OpenWithIcon from '@mui/icons-material/OpenWith';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { Box, IconButton, Slider, Tooltip, Typography } from '@mui/material';
-import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
+import { memo, useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { chartUrl, cropUrl } from '@/lib/api';
-import { de } from '@/locales';
+import { de } from '@/locales/admin';
 import { overlay } from '@/sections/admin/overlayColors';
 import type { KnownGlyph } from '@/domain/glyphs';
-import type { BboxOut, SourceOut, StrokePoint } from '@/lib/api';
+import type { BboxOut, MaskStroke, Patch, SourceOut, StrokePoint } from '@/lib/api';
 import { splitRawPath } from './strokeUtils';
 import { clampPan, ZOOM_MAX, ZOOM_MIN, type CropView } from './useCropView';
 import { SLANT_COLOR } from './wizardTypes';
@@ -57,6 +57,176 @@ const GUIDE_SHADOW = 'drop-shadow(0 0 1.5px rgba(0,0,0,0.9))';
 // baseline). Shared by the slant-line render and the drag-projection so the
 // `90 - deg` convention lives in exactly one place.
 const slantTan = (deg: number): number => Math.tan(((90 - deg) * Math.PI) / 180);
+
+// ----------------------------------------------------------- memoised layers
+// The canvas re-renders on every pointer-move sample while a gesture is live
+// (an S-Pen delivers samples at up to 240 Hz). The layers below hold the
+// COMMITTED overlays, whose props keep their identity across those samples —
+// React.memo turns their point-string recomputation into a no-op, so only the
+// in-flight stroke/drag renders hot.
+
+const toLocalPoints = (pts: Array<[number, number]>, x0: number, y0: number, scale: number) =>
+  pts.map(([x, y]) => `${(x - x0) * scale},${(y - y0) * scale}`).join(' ');
+
+// One committed brush stroke (eraser or ink). A single-point stroke is a
+// tap/dab — it bakes into the crop as a disc but a 1-point <polyline> draws
+// nothing, so it gets a <circle> instead (otherwise taps show no overlay).
+const BrushStroke = memo(function BrushStroke({ m, color, x0, y0, scale }: { m: MaskStroke; color: string; x0: number; y0: number; scale: number }) {
+  if (m.points.length >= 2) {
+    return (
+      <polyline
+        points={toLocalPoints(m.points, x0, y0, scale)}
+        fill="none"
+        stroke={color}
+        strokeOpacity={0.55}
+        strokeWidth={Math.max(1, m.radius * 2 * scale)}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{ pointerEvents: 'none' }}
+      />
+    );
+  }
+  const p = m.points[0];
+  if (!p) return null;
+  return <circle cx={(p[0] - x0) * scale} cy={(p[1] - y0) * scale} r={Math.max(0.5, m.radius * scale)} fill={color} fillOpacity={0.55} style={{ pointerEvents: 'none' }} />;
+});
+
+// All committed eraser + ink strokes. The stroke arrays come straight off the
+// bbox, whose identity only changes on a save — a memo hit for every pointer
+// sample in between.
+const CommittedBrushStrokes = memo(function CommittedBrushStrokes({
+  maskStrokes,
+  inkStrokes,
+  x0,
+  y0,
+  scale,
+}: {
+  maskStrokes: MaskStroke[];
+  inkStrokes: MaskStroke[];
+  x0: number;
+  y0: number;
+  scale: number;
+}) {
+  return (
+    <>
+      {maskStrokes.map((m, i) => (
+        <BrushStroke key={`m${i}`} m={m} color={overlay.eraser} x0={x0} y0={y0} scale={scale} />
+      ))}
+      {inkStrokes.map((m, i) => (
+        <BrushStroke key={`ink-${i}`} m={m} color={overlay.ink} x0={x0} y0={y0} scale={scale} />
+      ))}
+    </>
+  );
+});
+
+// One committed Weg draft stroke (polyline only — the start dots render in a
+// separate layer above ALL lines, preserving the original stacking order).
+// setStrokes only replaces the array tail while drawing, so every stroke but
+// the live one keeps its identity → memo hit.
+const DraftStrokeLine = memo(function DraftStrokeLine({ stroke, x0, y0, scale }: { stroke: StrokePoint[]; x0: number; y0: number; scale: number }) {
+  if (stroke.length <= 1) return null;
+  return (
+    <polyline
+      points={stroke.map((p) => `${(p.x - x0) * scale},${(p.y - y0) * scale}`).join(' ')}
+      fill="none"
+      stroke={overlay.draft}
+      strokeWidth={2}
+      style={{ pointerEvents: 'none' }}
+    />
+  );
+});
+
+const DraftStrokeDot = memo(function DraftStrokeDot({ stroke, x0, y0, scale }: { stroke: StrokePoint[]; x0: number; y0: number; scale: number }) {
+  if (stroke.length === 0) return null;
+  return <circle cx={(stroke[0].x - x0) * scale} cy={(stroke[0].y - y0) * scale} r={4} fill="#fff" stroke={overlay.draft} style={{ pointerEvents: 'none' }} />;
+});
+
+// Saved Weg + anchors (faint reference under the draft). splitRawPath runs
+// only when the saved trace or the zoom actually changes.
+const SavedTraceLayer = memo(function SavedTraceLayer({ trace, x0, y0, scale }: { trace: SavedTraceOverlay; x0: number; y0: number; scale: number }) {
+  return (
+    <g style={{ pointerEvents: 'none' }}>
+      {splitRawPath(trace.rawPath).map((stroke, i) => (
+        <polyline
+          key={`saved-${i}`}
+          points={stroke.map((p) => `${(p.x - x0) * scale},${(p.y - y0) * scale}`).join(' ')}
+          fill="none"
+          stroke={overlay.locked}
+          strokeOpacity={0.4}
+          strokeWidth={2}
+        />
+      ))}
+      {trace.anchorsPx.map(([x, y], i) => (
+        <circle key={`anchor-${i}`} cx={x * scale} cy={y * scale} r={2.5} fill={overlay.active} fillOpacity={0.75} />
+      ))}
+    </g>
+  );
+});
+
+// One inserted donor cell (Zelle einsetzen): the full-chart <image> clipped to
+// the donor rect plus its draggable dashed outline. `live` keeps p.dst's
+// identity for every patch except the one being dragged, so a patch drag
+// re-renders only itself.
+const PatchOverlay = memo(function PatchOverlay({
+  p,
+  index,
+  live,
+  x0,
+  y0,
+  scale,
+  sourceId,
+  chartW,
+  chartH,
+  glyphKey,
+  onGrab,
+}: {
+  p: Patch;
+  index: number;
+  live: [number, number];
+  x0: number;
+  y0: number;
+  scale: number;
+  sourceId: string;
+  chartW: number;
+  chartH: number;
+  glyphKey: string;
+  onGrab: (e: React.PointerEvent<SVGRectElement>, index: number, origDst: [number, number]) => void;
+}) {
+  const w = (p.src[2] - p.src[0]) * scale;
+  const h = (p.src[3] - p.src[1]) * scale;
+  const lx = (live[0] - x0) * scale;
+  const ly = (live[1] - y0) * scale;
+  const clipId = `patch-clip-${glyphKey}-${index}`;
+  return (
+    <g>
+      <clipPath id={clipId}>
+        <rect x={lx} y={ly} width={w} height={h} />
+      </clipPath>
+      <image
+        href={chartUrl(sourceId)}
+        x={lx - p.src[0] * scale}
+        y={ly - p.src[1] * scale}
+        width={chartW * scale}
+        height={chartH * scale}
+        clipPath={`url(#${clipId})`}
+        preserveAspectRatio="none"
+        style={{ imageRendering: 'pixelated', pointerEvents: 'none' }}
+      />
+      <rect
+        x={lx}
+        y={ly}
+        width={w}
+        height={h}
+        fill="transparent"
+        stroke={overlay.patch}
+        strokeWidth={1.5}
+        strokeDasharray="5 3"
+        style={{ cursor: 'move' }}
+        onPointerDown={(e) => onGrab(e, index, p.dst)}
+      />
+    </g>
+  );
+});
 
 export function WizardCanvas({
   glyphKey,
@@ -295,34 +465,19 @@ export function WizardCanvas({
     ? guideVals.slantXs.map((x, i) => (i === slantDrag.index ? slantDrag.curX : x))
     : guideVals.slantXs;
 
-  const toLocal = (pts: Array<[number, number]>) =>
-    pts.map(([x, y]) => `${(x - bbox.x0) * scale},${(y - bbox.y0) * scale}`).join(' ');
-
-  // Render one committed brush stroke (eraser or ink). A single-point stroke is
-  // a tap/dab — it bakes into the crop as a disc but a 1-point <polyline> draws
-  // nothing, so it gets a <circle> instead (otherwise taps show no overlay).
-  const renderStroke = (m: { points: Array<[number, number]>; radius: number }, key: string, color: string) => {
-    if (m.points.length >= 2) {
-      return (
-        <polyline
-          key={key}
-          points={toLocal(m.points)}
-          fill="none"
-          stroke={color}
-          strokeOpacity={0.55}
-          strokeWidth={Math.max(1, m.radius * 2 * scale)}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{ pointerEvents: 'none' }}
-        />
-      );
-    }
-    const p = m.points[0];
-    if (!p) return null;
-    return (
-      <circle key={key} cx={(p[0] - bbox.x0) * scale} cy={(p[1] - bbox.y0) * scale} r={Math.max(0.5, m.radius * scale)} fill={color} fillOpacity={0.55} style={{ pointerEvents: 'none' }} />
-    );
-  };
+  // Grab handler for the donor-cell outlines (passed into the memoised
+  // PatchOverlay; stable identity so a hover elsewhere never re-renders them).
+  const onPatchGrab = useCallback(
+    (e: React.PointerEvent<SVGRectElement>, index: number, origDst: [number, number]) => {
+      if (panning) return; // let the drag bubble to the SVG → pan
+      e.stopPropagation();
+      const svg = e.currentTarget.ownerSVGElement;
+      const { x, y } = cssToChart(e.clientX, e.clientY, svg);
+      setPatchDrag({ index, grabX: x, grabY: y, origDst, dst: origDst });
+      svg?.setPointerCapture(e.pointerId);
+    },
+    [panning, cssToChart],
+  );
 
   return (
     <Box ref={hostRef} sx={{ flex: 1, minHeight: 0, position: 'relative', bgcolor: overlay.canvasBg, overflow: 'hidden' }}>
@@ -491,62 +646,33 @@ export function WizardCanvas({
                 );
               })}
 
-            {/* Eraser strokes (Radierer) — committed; taps render as discs */}
-            {bbox.mask_strokes.map((m, i) => renderStroke(m, `m${i}`, overlay.eraser))}
-            {/* Ink strokes (Tinte) — committed */}
-            {bbox.ink_strokes.map((m, i) => renderStroke(m, `ink-${i}`, overlay.ink))}
+            {/* Eraser strokes (Radierer) + ink strokes (Tinte) — committed; taps
+                render as discs. Memoised: see CommittedBrushStrokes. */}
+            <CommittedBrushStrokes maskStrokes={bbox.mask_strokes} inkStrokes={bbox.ink_strokes} x0={bbox.x0} y0={bbox.y0} scale={scale} />
             {/* In-progress brush stroke — coloured by the active tool */}
-            {maskDraft && <polyline points={toLocal(maskDraft)} fill="none" stroke={tool === 'ink' ? overlay.ink : overlay.eraser} strokeOpacity={0.8} strokeWidth={Math.max(1, maskRadius * 2 * scale)} strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: 'none' }} />}
+            {maskDraft && <polyline points={toLocalPoints(maskDraft, bbox.x0, bbox.y0, scale)} fill="none" stroke={tool === 'ink' ? overlay.ink : overlay.eraser} strokeOpacity={0.8} strokeWidth={Math.max(1, maskRadius * 2 * scale)} strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: 'none' }} />}
             {/* Inserted donor cells (Zelle einsetzen): each patch's ink shown at
                 its dst via the full-chart image clipped to the donor rect, with a
                 draggable dashed outline. The crop already bakes the patch server-
                 side; this overlay is the editable handle, and follows the pointer
                 live while dragging. Patch-tool step only. */}
             {stepId === 'mask' && tool === 'patch' &&
-              bbox.patches.map((p, i) => {
-                const live = patchDrag?.index === i ? patchDrag.dst : p.dst;
-                const w = (p.src[2] - p.src[0]) * scale;
-                const h = (p.src[3] - p.src[1]) * scale;
-                const lx = (live[0] - bbox.x0) * scale;
-                const ly = (live[1] - bbox.y0) * scale;
-                const clipId = `patch-clip-${glyphKey}-${i}`;
-                return (
-                  <g key={`patch-${i}`}>
-                    <clipPath id={clipId}>
-                      <rect x={lx} y={ly} width={w} height={h} />
-                    </clipPath>
-                    <image
-                      href={chartUrl(source.id)}
-                      x={lx - p.src[0] * scale}
-                      y={ly - p.src[1] * scale}
-                      width={source.chart_size.w * scale}
-                      height={source.chart_size.h * scale}
-                      clipPath={`url(#${clipId})`}
-                      preserveAspectRatio="none"
-                      style={{ imageRendering: 'pixelated', pointerEvents: 'none' }}
-                    />
-                    <rect
-                      x={lx}
-                      y={ly}
-                      width={w}
-                      height={h}
-                      fill="transparent"
-                      stroke={overlay.patch}
-                      strokeWidth={1.5}
-                      strokeDasharray="5 3"
-                      style={{ cursor: 'move' }}
-                      onPointerDown={(e) => {
-                        if (panning) return; // let the drag bubble to the SVG → pan
-                        e.stopPropagation();
-                        const svg = e.currentTarget.ownerSVGElement;
-                        const { x, y } = cssToChart(e.clientX, e.clientY, svg);
-                        setPatchDrag({ index: i, grabX: x, grabY: y, origDst: p.dst, dst: p.dst });
-                        svg?.setPointerCapture(e.pointerId);
-                      }}
-                    />
-                  </g>
-                );
-              })}
+              bbox.patches.map((p, i) => (
+                <PatchOverlay
+                  key={`patch-${i}`}
+                  p={p}
+                  index={i}
+                  live={patchDrag?.index === i ? patchDrag.dst : p.dst}
+                  x0={bbox.x0}
+                  y0={bbox.y0}
+                  scale={scale}
+                  sourceId={source.id}
+                  chartW={source.chart_size.w}
+                  chartH={source.chart_size.h}
+                  glyphKey={glyphKey}
+                  onGrab={onPatchGrab}
+                />
+              ))}
 
             {/* Brush cursor: a ring at the pointer sized to the real footprint
                 (radius in chart px → CSS px via scale), coloured by the tool. */}
@@ -583,50 +709,17 @@ export function WizardCanvas({
             {/* Saved Weg + anchors (faint reference, toggleable): the committed
                 canonical under the in-progress draft. The raw path is in chart
                 coordinates, the anchors in crop-local pixels. */}
-            {stepId === 'weg' && showSaved && savedTrace && (
-              <g style={{ pointerEvents: 'none' }}>
-                {splitRawPath(savedTrace.rawPath).map((stroke, i) => (
-                  <polyline
-                    key={`saved-${i}`}
-                    points={stroke.map((p) => `${(p.x - bbox.x0) * scale},${(p.y - bbox.y0) * scale}`).join(' ')}
-                    fill="none"
-                    stroke={overlay.locked}
-                    strokeOpacity={0.4}
-                    strokeWidth={2}
-                  />
-                ))}
-                {savedTrace.anchorsPx.map(([x, y], i) => (
-                  <circle key={`anchor-${i}`} cx={x * scale} cy={y * scale} r={2.5} fill={overlay.active} fillOpacity={0.75} />
-                ))}
-              </g>
-            )}
+            {stepId === 'weg' && showSaved && savedTrace && <SavedTraceLayer trace={savedTrace} x0={bbox.x0} y0={bbox.y0} scale={scale} />}
 
-            {/* Trace draft — one polyline + start dot per stroke; pen lifts stay gaps */}
-            {strokes.map((stroke, i) =>
-              stroke.length > 1 ? (
-                <polyline
-                  key={`stroke-${i}`}
-                  points={stroke.map((p) => `${(p.x - bbox.x0) * scale},${(p.y - bbox.y0) * scale}`).join(' ')}
-                  fill="none"
-                  stroke={overlay.draft}
-                  strokeWidth={2}
-                  style={{ pointerEvents: 'none' }}
-                />
-              ) : null,
-            )}
-            {strokes.map((stroke, i) =>
-              stroke.length > 0 ? (
-                <circle
-                  key={`start-${i}`}
-                  cx={(stroke[0].x - bbox.x0) * scale}
-                  cy={(stroke[0].y - bbox.y0) * scale}
-                  r={4}
-                  fill="#fff"
-                  stroke={overlay.draft}
-                  style={{ pointerEvents: 'none' }}
-                />
-              ) : null,
-            )}
+            {/* Trace draft — one polyline + start dot per stroke; pen lifts stay
+                gaps. Per-stroke memo: while drawing, setStrokes replaces only the
+                array tail, so every finished stroke keeps its identity. */}
+            {strokes.map((stroke, i) => (
+              <DraftStrokeLine key={`stroke-${i}`} stroke={stroke} x0={bbox.x0} y0={bbox.y0} scale={scale} />
+            ))}
+            {strokes.map((stroke, i) => (
+              <DraftStrokeDot key={`start-${i}`} stroke={stroke} x0={bbox.x0} y0={bbox.y0} scale={scale} />
+            ))}
           </svg>
         </Box>
       )}

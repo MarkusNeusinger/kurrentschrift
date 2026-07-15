@@ -8,13 +8,14 @@ directly.
 
 from __future__ import annotations
 
+from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
 from PIL import Image, ImageDraw
 
 from core.config import REPO_ROOT
-from core.extract import binarize_adaptive, load_grayscale
+from core.extract import binarize_adaptive, fill_small_holes, load_grayscale
 
 
 def resolve_chart_path(chart_path: str | Path) -> Path:
@@ -23,9 +24,22 @@ def resolve_chart_path(chart_path: str | Path) -> Path:
     return p if p.is_absolute() else REPO_ROOT / p
 
 
+@lru_cache(maxsize=4)
+def _load_chart_cached(resolved_path: str) -> np.ndarray:
+    arr = load_grayscale(resolved_path)
+    arr.setflags(write=False)  # shared across callers — nobody may mutate it
+    return arr
+
+
 def load_chart_grayscale(chart_path: str | Path) -> np.ndarray:
-    """Load chart bytes as float32 [0, 1] grayscale."""
-    return load_grayscale(resolve_chart_path(chart_path))
+    """Load chart bytes as float32 [0, 1] grayscale.
+
+    Cached per resolved absolute path: charts are immutable PD scans, so the
+    decoded array never changes for a given path. The cache is deliberately
+    small (a full chart is tens of MB and Cloud Run memory is tight) and the
+    returned array is read-only — callers slice-and-copy (`crop_with_mask`).
+    """
+    return _load_chart_cached(str(resolve_chart_path(chart_path)))
 
 
 def _rasterize_strokes(strokes: list, w: int, h: int, x0: int, y0: int) -> np.ndarray:
@@ -163,7 +177,10 @@ def crop_mask_to_png_bytes(chart: np.ndarray, bbox: dict) -> bytes:
     crop = crop_with_mask(chart, bbox, fill=1.0)
     max_area = int(bbox.get("fill_holes_max_area") or 0)
     raw = binarize_adaptive(crop, fill_holes_max_area=0)
-    filled = binarize_adaptive(crop, fill_holes_max_area=max_area) if max_area > 0 else raw
+    # Same mask binarize_adaptive(crop, fill_holes_max_area=max_area) yields —
+    # hole-filling runs on the thresholded mask, so reuse `raw` instead of
+    # paying for a second threshold_local pass.
+    filled = fill_small_holes(raw, max_area)
     auto_filled = filled & ~raw  # the hole-filling delta: specks fill_small_holes swallowed
 
     h, w = crop.shape[:2]

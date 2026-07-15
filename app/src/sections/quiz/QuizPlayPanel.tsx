@@ -4,6 +4,7 @@
 // runs for AUTO_ADVANCE_MS), a wrong pick waits for "Weiter →".
 
 import { Box, Button, ButtonBase, Stack, Typography, keyframes } from '@mui/material';
+import { useEffect, useRef } from 'react';
 
 import { de, fmt } from '@/locales';
 import { QuestionVisual } from '@/sections/quiz/QuestionVisual';
@@ -31,6 +32,13 @@ interface PlayProps {
 export function QuizPlayPanel(p: PlayProps) {
   const { current, verdict } = p;
   const answered = verdict !== 'idle';
+
+  // After a wrong pick every answer button disables, so keyboard focus would
+  // fall back to <body>; move it onto the one actionable control ("Weiter →").
+  const advanceRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (verdict === 'wrong') advanceRef.current?.focus();
+  }, [verdict]);
 
   if (!current) {
     return (
@@ -86,8 +94,9 @@ export function QuizPlayPanel(p: PlayProps) {
         difficulty={p.difficulty}
       />
 
-      {/* Verdict / question line */}
-      <Box sx={{ minHeight: 34, textAlign: 'center' }}>{message}</Box>
+      {/* Verdict / question line — live region so screen readers hear the
+          right/wrong verdict without leaving the answer grid */}
+      <Box aria-live="polite" sx={{ minHeight: 34, textAlign: 'center' }}>{message}</Box>
 
       {/* Gloss for a dated/rare word, revealed only after the pick so it never
           gives the answer away. */}
@@ -181,7 +190,7 @@ export function QuizPlayPanel(p: PlayProps) {
             </Box>
           </Stack>
         ) : answered ? (
-          <InkButton onClick={p.onAdvance}>{de.quiz.play.next} →</InkButton>
+          <InkButton buttonRef={advanceRef} onClick={p.onAdvance}>{de.quiz.play.next} →</InkButton>
         ) : null}
       </Box>
     </Stack>

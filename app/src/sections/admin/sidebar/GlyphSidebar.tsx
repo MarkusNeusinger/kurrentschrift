@@ -31,7 +31,7 @@ import { useNavigate } from 'react-router-dom';
 import { glyphKeyFor, isLetterSplit, LETTERS, LETTER_BY_KEY, POSITIONS } from '@/domain/glyphs';
 import type { Letter, LetterGroup, Position } from '@/domain/glyphs';
 import { useAdmin } from '@/context/AdminContext';
-import { de, POSITION_LABEL, styleLabel } from '@/locales';
+import { de, POSITION_LABEL, styleLabel } from '@/locales/admin';
 
 const GROUP_LABELS: Record<LetterGroup, string> = {
   lower: de.admin.sidebar.groupLower,

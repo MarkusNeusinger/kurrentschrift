@@ -27,7 +27,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import { de, fmt } from '@/locales';
+import { de, fmt } from '@/locales/admin';
 import { ZOOM_MAX, ZOOM_MIN, ZOOM_PRESETS } from './chartConstants';
 import type { Mode } from './chartConstants';
 

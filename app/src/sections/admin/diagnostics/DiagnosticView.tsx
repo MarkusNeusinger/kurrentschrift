@@ -12,7 +12,7 @@ import { useAdmin } from '@/context/AdminContext';
 import { cropUrl, getDiagnostic } from '@/lib/api';
 import type { DiagnosticData } from '@/lib/api';
 import { ringsToPathD } from '@/lib/svg';
-import { de, fmt } from '@/locales';
+import { de, fmt } from '@/locales/admin';
 import { useColumnWidth } from '@/sections/admin/diagnostics/useColumnWidth';
 
 interface Props {

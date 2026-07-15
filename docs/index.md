@@ -1,4 +1,4 @@
-# Documentation
+# Dokumentation
 
 Interne Design-Docs für das Kurrentschrift-Projekt. Sprache: Deutsch
 (siehe [`reference/sprachregelung.md`](reference/sprachregelung.md) zur
@@ -8,7 +8,7 @@ nächsten Meilensteine.
 
 ---
 
-## Quick Links
+## Schnellzugriff
 
 | Ich will… | Gehe zu |
 |---|---|
@@ -37,12 +37,12 @@ nächsten Meilensteine.
 
 ---
 
-## Documentation Structure
+## Struktur der Dokumentation
 
 ```
 docs/
 ├── index.md                      # You are here
-├── contributing.md               # Was aktuell hilfreich ist und was noch zu früh ist
+├── contributing.md               # (EN) Was aktuell hilfreich ist und was noch zu früh ist — englisch, vom README verlinkt
 ├── concepts/                     # Architektur, Philosophie, getroffene Entscheidungen
 │   ├── vision.md                 # Was die Endnutzer-Website sein soll (Pitch + Zielgruppe + 7 Ziele in 3 Clustern + Leitprinzipien + Nicht-Ziele)
 │   ├── architektur.md            # §1–§17: Analysis-by-Synthesis, Schema, MVP, Animation, HTR, Lese-Lupe, Print, Frontend, Open-Data
@@ -182,10 +182,11 @@ frei zugänglichen Quellen, jede Angabe mit Beleg; wächst inkrementell.
 
 Vorgeschlagene Änderungen an den Konzept-Dokumenten, noch nicht freigegeben.
 
-- **[Planänderungen](proposals/planaenderungen.md)** — vier offene
-  Vorschläge: §3 `position` als Lehrtafel-Rolle präzisieren; §2/§4
-  systematische Bigramm-Extraktion aus Beispieltext; §3/§6.1
-  Positions-Verteilung datengetrieben; M4+-Modul `core/orthography.py`
+- **[Planänderungen](proposals/planaenderungen.md)** — drei offene
+  Vorschläge: §2/§4 systematische Bigramm-Extraktion aus Beispieltext;
+  §3/§6.1 Positions-Verteilung datengetrieben; M4+-Modul
+  `core/orthography.py` (Vorschlag A — `position` als Lehrtafel-Rolle —
+  ist freigegeben und in `architektur.md` §3 eingearbeitet)
 - **[Schreibsystem und Wort-Bench](proposals/schreibsystem-und-wortbench.md)** —
   Audit 2026-07-01: öffentliche Schreib-API (Buchstabe + Wort) statt
   `/diagnostic`-Mitnutzung, Port der Wortkomposition nach
@@ -216,7 +217,7 @@ Recherchematerial und operative Notizen außerhalb des Designkerns.
 
 ## Mitmachen
 
-- **[Contributing Guide](contributing.md)** — was aktuell hilfreich ist und was noch zu früh ist
+- **[Contributing Guide](contributing.md)** (EN) — was aktuell hilfreich ist und was noch zu früh ist (englisch, weil vom README für das externe Publikum verlinkt — siehe [`sprachregelung.md`](reference/sprachregelung.md) §1)
 
 ---
 

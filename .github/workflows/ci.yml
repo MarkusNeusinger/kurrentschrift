@@ -57,6 +57,50 @@ jobs:
           flags: backend
           fail_ci_if_error: false
 
+  migrations:
+    name: Migrations (alembic upgrade head)
+    runs-on: ubuntu-latest
+    # Full migration chain incl. seeds against a real Postgres 16 — catches
+    # broken revisions, JSONB/DDL issues and seed-file drift that the SQLite
+    # test harness cannot see. The service DB is throwaway; no shared Cloud SQL
+    # instance is ever touched here.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: kurrentschrift
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install
+
+      # Runtime dependencies suffice: alembic + asyncpg are project deps, and
+      # the migration run needs neither the dev nor the test extras.
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      # alembic/env.py reads DATABASE_URL (async mode needs the asyncpg driver
+      # in the URL) and falls back to INSTANCE_CONNECTION_NAME otherwise.
+      - name: Alembic upgrade head
+        env:
+          DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/kurrentschrift
+        run: uv run alembic upgrade head
+
   frontend:
     name: Frontend (build)
     runs-on: ubuntu-latest

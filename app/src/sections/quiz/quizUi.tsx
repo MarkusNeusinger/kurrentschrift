@@ -4,7 +4,7 @@
 
 import { Box, Button, ButtonBase, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 
 import { garamond, paper, quiz, quizRadius } from '@/styles/paper';
 
@@ -15,14 +15,19 @@ export function InkButton({
   children,
   fullWidthMobile = true,
   disabled,
+  buttonRef,
 }: {
   onClick: () => void;
   children: ReactNode;
   fullWidthMobile?: boolean;
   disabled?: boolean;
+  // Underlying <button> element, for callers that move focus programmatically
+  // (the play panel focuses "Weiter" after a wrong pick disables the grid).
+  buttonRef?: Ref<HTMLButtonElement>;
 }) {
   return (
     <Button
+      ref={buttonRef}
       onClick={onClick}
       disabled={disabled}
       sx={{

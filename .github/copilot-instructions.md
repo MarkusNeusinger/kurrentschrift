@@ -60,9 +60,9 @@ agent working in this repo:
   edit.
 - **Claude Code sessions** additionally route work through verified skills
   under `.claude/skills/` (`verify-core` / `verify-api` / `verify-frontend`,
-  `write-docs`, `audit-licenses`, `open-pr`, `optimize-glyphs`); Copilot
-  can't invoke those, but the same gates apply manually (see
-  "GitHub Workflow" → "Verification before a PR").
+  `write-docs`, `audit-licenses`, `open-pr`, `optimize-glyphs`,
+  `optimize-skills`); Copilot can't invoke those, but the same gates apply
+  manually (see "GitHub Workflow" → "Verification before a PR").
 
 ---
 
@@ -194,15 +194,25 @@ kurrentschrift/
 │       ├── pages/       # thin default-export route mounts only
 │       ├── sections/    # feature views: landing/, schriftkunde/ (/schriftkunde overview),
 │       │                #   hub/ (/lesen + /schreiben area hubs), worksheet/,
-│       │                #   scribe/ (/federprobe live writer), quiz/ (useQuizEngine),
-│       │                #   admin/{chart,setup-wizard,diagnostics,sidebar}
+│       │                #   scribe/ (/federprobe live writer), tafel/ (/tafel Schreibtafel),
+│       │                #   quiz/ (useQuizEngine), impressum/,
+│       │                #   admin/{chart,setup-wizard,diagnostics,sidebar,compare}
+│       │                #   (compare/GlyphComparison.tsx = /admin/vergleich: every authored
+│       │                #   letter, chart crop vs. "as written", side-by-side or overlaid)
 │       ├── components/  # reusable UI: PaperBackground, PublicHeader (3-area nav), PublicFooter,
 │       │                #   PageContainer (one column: narrow 760/text 1152/wide 1280), Prose (~66ch
 │       │                #   reading measure), PageHeader (shared page-header: area eyebrow + Playfair
 │       │                #   title + intro; every public page bar the landing hero), WrittenGlyph (one glyph), WrittenWord (word/line +
-│       │                #   Übergänge as written), CategoryHeading (section title), BootStatus
+│       │                #   Übergänge as written), CategoryHeading (section title),
+│       │                #   InfoHint (Kurrent-"i" popover, the one info affordance app-wide),
+│       │                #   inkReveal/ (shared "as written" reveal primitives: silhouette masked
+│       │                #   by a swept centerline + ink-bleed/settle — used by WrittenGlyph,
+│       │                #   WrittenWord and the Tafel sheet), BootStatus
 │       ├── layouts/     # admin shell (AdminLayout + AdminModals)
 │       ├── theme/       # MUI theme split; colors sourced from styles/paper.ts (single source)
+│       ├── lib/         # framework-free helpers: strokeTiming.ts (two-thirds-power-law +
+│       │                #   isochrony timing for the reveal animation), svg.ts (ring-geometry →
+│       │                #   SVG path d), bbox.ts, lineatur.ts, pdf.ts
 │       ├── lib/api/     # fetch client (cold-start retry, typed ApiError), endpoints,
 │       │                #   wire types hand-synced with api/schemas.py, renderCache.ts
 │       │                #   (shared render-data cache, batches /write/glyphs per word)
@@ -242,7 +252,9 @@ areas (Schriftkunde · Lesen · Schreiben): `/lesen` (→ `/quiz` letter quiz +
 generator + `/federprobe` live word/sentence writing, synthesised Sütterlin
 ductus with generated Übergänge) — paper-&-ink identity
 per `docs/concepts/style-guide.md` + `docs/concepts/design-system.md`) and the admin behind `/admin/*`
-(Cloudflare Access in prod). **Post-MVP** the public side grows
+(Cloudflare Access in prod; `/admin/chart` bbox editor + wizard,
+`/admin/vergleich` whole-alphabet crop-vs-written comparison). **Post-MVP**
+the public side grows
 (`/animation`, `/lese-hilfe`, `/lese-lupe/:job`, `/stil-analyse`,
 `/vergleich`, `/open-data`). See `docs/reference/frontend-stack.md`.
 
@@ -351,6 +363,11 @@ lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberläng
   tests. DB/HTTP-only lines are covered by the API verification sweep.
 - Use pytest fixtures; the compose golden fixture
   (`tests/fixtures/compose_golden.json.gz`) pins `core/compose.py` output.
+- Frontend unit tests run via **Vitest** (`npm run test` in `app/`,
+  CI-gated since PR #198): `app/src/domain/shaping.test.ts` pins the
+  `shaping.ts` ↔ `core/shaping.py` twin against the shared fixture
+  `tests/fixtures/shaping_cases.json` (the Python side asserts the same
+  fixture in `tests/test_tri_script.py`).
 
 ---
 
@@ -481,27 +498,30 @@ it.
 - **Planned additions (post-MVP):** `react-helmet-async` (SEO),
   `react-i18next` (DE/EN), WeasyPrint (PDF), httpx (Transkribus client),
   optionally TrOCR via HuggingFace Transformers for self-hosted HTR.
-- **Linting:** ruff (Python) is configured and CI-gated. The SPA has a
-  flat ESLint config (`app/eslint.config.js`: JS + typescript-eslint
-  recommended + react-hooks); `npm run lint` runs in CI, and the
-  type-check (`tsc`) runs via `npm run build`.
+- **Linting/Testing:** ruff (Python) is configured and CI-gated. The SPA
+  has a flat ESLint config (`app/eslint.config.js`: JS + typescript-eslint
+  recommended + react-hooks); `npm run lint`, `npm run test` (Vitest —
+  the shaping-twin fixture test) and the type-check (`tsc` via
+  `npm run build`) all run in CI.
 
 ---
 
-## Deployment (post-MVP target)
+## Deployment (live since May 2026)
 
-The project will run on **Google Cloud Platform** (eigenes GCP-Projekt,
-same pattern as anyplot.ai):
+The project runs on **Google Cloud Platform** (own GCP project, same
+pattern as anyplot.ai). Two Cloud Run services, live since 2026-05
+(authoritative spec: `docs/reference/frontend-stack.md` §6):
 
 | Service | Component | Purpose |
 |---|---|---|
-| Cloud Run | `kurrentschrift` | FastAPI + Vite-build in one container |
-| Cloud SQL | PostgreSQL | `kurrentschrift` DB (currently on anyplot's Cloud SQL instance) |
-| Cloud Build | Triggers | Auto-deploy on push to main (Dockerfile + cloudbuild.yaml are placeholders today) |
-| Cloudflare Access *or* GCP IAP | edge | Admin-route auth (Google identity) |
+| Cloud Run | `kurrentschrift-api` | FastAPI (`api/Dockerfile`); `api/cloudbuild.yaml` runs an Alembic migrate job (`kurrentschrift-migrate`) before rollout — serves api.kurrentschrift.ink |
+| Cloud Run | `kurrentschrift-app` | static Vite build behind nginx-unprivileged (`app/Dockerfile` + `app/cloudbuild.yaml`) — serves kurrentschrift.ink |
+| Cloud SQL | PostgreSQL | `kurrentschrift` DB (on anyplot's Cloud SQL instance — local dev writes the SAME DB) |
+| Cloud Build | Triggers | one trigger per service (deploy-api / deploy-app), deploys from `main` |
+| Cloudflare | edge | Cloudflare Access gates `/admin/*` (Google identity); a Cloudflare Worker in front of the app routes `/api/*` to api.kurrentschrift.ink (nginx in the app container knows no `/api`) |
 
-Today the `Dockerfile` and `cloudbuild.yaml` placeholders are unactivated;
-deployment is local-only (`npm run dev` + `uvicorn --reload`).
+Region europe-west4, min instances 0 (cold start acceptable for a
+learning site).
 
 ---
 
@@ -509,9 +529,10 @@ deployment is local-only (`npm run dev` + `uvicorn --reload`).
 
 CI runs on every PR via `.github/workflows/ci.yml`: a backend job
 (ruff lint + `ruff format --check` + pytest with Codecov upload) and a
-frontend job (`npm run lint` then `npm run build`, i.e. ESLint +
-`tsc && vite build`; no frontend unit tests yet). There are no
-anyplot-style spec-create / impl-generate pipelines. Conventions:
+frontend job (`npm run lint`, then `npm run test` — the Vitest
+shaping-twin fixture run — then `npm run build`, i.e. ESLint + Vitest +
+`tsc && vite build`). There are no anyplot-style spec-create /
+impl-generate pipelines. Conventions:
 
 - **Issues** are welcome for design discussion (pre-MVP this is the main
   contribution channel — see `docs/contributing.md`).
@@ -536,11 +557,11 @@ anyplot-style spec-create / impl-generate pipelines. Conventions:
   with `--no-verify`.
 - **Verification before a PR:** run the local CI equivalents first —
   `uv run --extra test pytest`, `uv run --extra dev ruff check .`,
-  `uv run --extra dev ruff format --check .`, plus `npm run lint` and
-  `npm run build` in `app/` when the frontend changed. The pipeline
-  should never fail on tests or lint. (Claude Code sessions encode these loops as skills
+  `uv run --extra dev ruff format --check .`, plus `npm run lint`,
+  `npm run test` and `npm run build` in `app/` when the frontend changed.
+  The pipeline should never fail on tests or lint. (Claude Code sessions encode these loops as skills
   under `.claude/skills/` — verify-frontend / verify-api / verify-core,
-  write-docs, audit-licenses, open-pr, optimize-glyphs.)
+  write-docs, audit-licenses, open-pr, optimize-glyphs, optimize-skills.)
 - **Glyph-pipeline changes are benchmarked:** `tools/glyphbench` scores
   every authored glyph against frozen references, ONE script per run
   (`uv run python -m tools.glyphbench.run --style suetterlin|kurrent`,

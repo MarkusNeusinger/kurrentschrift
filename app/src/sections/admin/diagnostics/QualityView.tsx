@@ -18,7 +18,7 @@ import { useAdmin } from '@/context/AdminContext';
 import { isLetterSplit, siblingKeys } from '@/domain/glyphs';
 import { getQuality, postResample } from '@/lib/api';
 import type { QualityComparison, QualityData } from '@/lib/api';
-import { de, fmt } from '@/locales';
+import { de, fmt } from '@/locales/admin';
 
 interface Props {
   glyphKey: string;

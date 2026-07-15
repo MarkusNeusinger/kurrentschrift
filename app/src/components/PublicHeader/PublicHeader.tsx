@@ -78,6 +78,8 @@ export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
         },
         '&:hover': { color: textMain },
         '&:hover::after': { width: '100%' },
+        // Visible keyboard-focus ring (HubView pattern: 2px viridian, offset).
+        '&:focus-visible': { color: textMain, outline: `2px solid ${accent}`, outlineOffset: 3 },
         ...sx,
       }}
     >

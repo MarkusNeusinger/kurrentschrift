@@ -16,6 +16,9 @@ export const tafel = {
   empty: 'Buchstaben erscheinen hier, sobald sie fertig nachgeschrieben und freigegeben sind.',
   // Accessible label for the loader shown in the ruling while the glyphs load.
   loading: 'Buchstaben werden geladen …',
+  // Batch fetch of the written letters failed (API unreachable after retries);
+  // shown in the ruling with a retry button (label = de.common.boot.retry).
+  loadError: 'Die Buchstaben konnten gerade nicht geladen werden — der Server ist nicht erreichbar.',
   // Per-script writing instrument (echoes the landing's "drei Federn"), by style_id.
   feder: {
     kurrent: 'Spitzfeder',

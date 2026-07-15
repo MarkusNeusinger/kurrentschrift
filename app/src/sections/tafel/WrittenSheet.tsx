@@ -24,7 +24,7 @@
 // (baseline 0, y up), negated for SVG. Every row shares one viewBox width so the
 // glyph scale stays constant; the four lines span the full width.
 
-import { Box, Stack, Typography, keyframes } from '@mui/material';
+import { Box, Button, Stack, Typography, keyframes } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
@@ -349,6 +349,11 @@ interface Props {
 export function WrittenSheet({ rows, ratio }: Props) {
   const reducedMotion = usePrefersReducedMotion();
   const [dataByKey, setDataByKey] = useState<Map<string, GlyphRenderData | null> | null>(null);
+  // Batch fetch failed (after the cold-start retries): keep the empty ruling and
+  // show a visible error + retry instead of a silently blank sheet. The nonce
+  // re-runs the fetch effect on retry.
+  const [loadError, setLoadError] = useState(false);
+  const [fetchNonce, setFetchNonce] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerW, setContainerW] = useState(0);
 
@@ -362,17 +367,21 @@ export function WrittenSheet({ rows, ratio }: Props) {
   useEffect(() => {
     let cancelled = false;
     setDataByKey(null);
+    setLoadError(false);
     fetchRenderGlyphs(CONFIG.sourceId, keys)
       .then((m) => {
         if (!cancelled) setDataByKey(m);
       })
       .catch(() => {
-        if (!cancelled) setDataByKey(new Map()); // render only the lineature on error
+        if (!cancelled) {
+          setDataByKey(new Map()); // only the lineature renders behind the notice
+          setLoadError(true);
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [keys]);
+  }, [keys, fetchNonce]);
 
   // Track the available width so the rendered px size adapts to the viewport.
   useEffect(() => {
@@ -463,6 +472,31 @@ export function WrittenSheet({ rows, ratio }: Props) {
                 />
               ))}
             </Stack>
+            {loadError && (
+              // Fetch failed — say so in the ruling instead of leaving the sheet
+              // silently blank, with a retry that re-runs the batch fetch.
+              <Box
+                role="alert"
+                sx={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 1.5,
+                  textAlign: 'center',
+                  px: 2,
+                }}
+              >
+                <Typography variant="body2" sx={{ color: paper.inkSoft }}>
+                  {de.tafel.loadError}
+                </Typography>
+                <Button variant="outlined" size="small" onClick={() => setFetchNonce((n) => n + 1)}>
+                  {de.common.boot.retry}
+                </Button>
+              </Box>
+            )}
             {loading && (
               <Box
                 role="status"

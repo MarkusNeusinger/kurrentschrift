@@ -3,7 +3,7 @@
 // uses to hand a finished gesture to the wizard (which validates + persists).
 
 import type { CouplingHeight } from '@/lib/api';
-import { de } from '@/locales';
+import { de } from '@/locales/admin';
 
 // Schräglage is folded into the Lineatur step (the writing grid — horizontal
 // lineature + the slant of the downstrokes — is set in one place), so there is

@@ -175,12 +175,15 @@ die Schrift muss **lesbar sein für Menschen, die die alten Schriften
 nicht beherrschen**. Keine gebrochene Schrift in UI, Headlines oder
 Body; historische Formen nur als gekennzeichnetes Schau-Material.
 
-**Größen-Untergrenze (2026-06):** Aus demselben Leitsatz heraus hebt das
-Theme (`app/src/theme/typography.ts`) die kleinen Varianten explizit über die
-MUI-Defaults — EB Garamond läuft durch seine kleine x-Höhe optisch noch
-kleiner: `body1` 17 px, `body2` 15 px, `caption` 13 px. Gilt über **alle**
-Seiten (öffentlich **und** Admin), da das Theme die einzige typografische
-Quelle ist.
+**Größen-Untergrenze (2026-06, seither angehoben):** Aus demselben Leitsatz
+heraus hebt das Theme (`app/src/theme/typography.ts`) die kleinen Varianten
+explizit über die MUI-Defaults — EB Garamond läuft durch seine kleine x-Höhe
+optisch noch kleiner. Ist-Stand ist die 19-px-Leiter aus
+[`design-system.md`](design-system.md) §3: `body1` 19 px, `body2` 17 px,
+`caption` 14 px. (Historie: die erste Runde 2026-06 setzte 17/15/13 px; die
+Design-System-Kalibrierung hob die ganze Leiter auf die 19-px-Basis.) Gilt
+über **alle** Seiten (öffentlich **und** Admin), da das Theme die einzige
+typografische Quelle ist.
 
 **Offene Alternative:** *Sorts Mill Goudy* (OFL; Revival von Goudy
 Oldstyle, **1915** — echtes Periodendesign, wärmer/ruhiger) bleibt als

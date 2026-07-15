@@ -12,6 +12,34 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **HTTP-level API test suite + an Alembic migration check in CI.** New
+  `tests/test_api_http.py` runs the FastAPI app under pytest against an
+  in-memory aiosqlite session (dependency-overridden `get_db`, no
+  Postgres/network): the admin gate (401 on missing/wrong token, fail-closed
+  503 when unconfigured) is asserted for every write endpoint incl. the newly
+  gated `/fit` + `/quality`, plus Cache-Control on the public reads and
+  `/write/glyphs` + `/write/word` end-to-end with synthetically seeded
+  templates. A new `migrations` CI job runs `alembic upgrade head` (schema +
+  seeds) against a throwaway Postgres 16 service on every PR, so a broken
+  revision can no longer reach the shared Cloud SQL instance. Vitest gains
+  `renderCache.test.ts` (request batching, in-flight dedupe, cache hits,
+  missing-as-null, error eviction, cold-start retry).
+- **Brand icons + social preview image.** `favicon.ico` (multi-size),
+  `apple-touch-icon.png` and a 1200×630 `og.png` — the viridian Kurrent K on
+  the paper gradient, rendered from the bundled GLKurrent face — wired into
+  `index.html` with a `summary_large_image` twitter card; link previews and
+  browser tabs stop being generic.
+- **Shareable Federprobe.** The typed text syncs to a `?text=` URL parameter
+  (debounced, history-friendly) with a "Link kopieren" button and a character
+  counter on the input — the page's output is now deep-linkable.
+- **"Jetzt ausprobieren" cross-links on `/schriftkunde`.** The primer closes
+  with hub-style cards into the quiz, the Schreibtafel and the Federprobe
+  instead of dead-ending after the chronology.
+- **Chart image LRU cache + Cache-Control on stable reads.** Decoded chart
+  grayscale arrays are cached per resolved path (read-only, max 4 entries), so
+  repeated crops/diagnostics/fits stop re-decoding the same immutable PD scan;
+  `/styles` and `/sources` responses now carry the shared cache policy and the
+  chart image caches for a day.
 - **Direct unit tests for the pure-math core modules + a mechanical shaping twin
   guard.** New `tests/test_geometry.py` and `tests/test_widths.py` pin the
   deterministic numeric helpers in `core/geometry.py` (tangents, arc length,
@@ -38,6 +66,43 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **`/fit` and `/quality` are admin-gated; the crop endpoint leaves the event
+  loop.** Both diagnostics cost seconds of pure CPU per call and back
+  admin-only workflows, so they now require the admin credential like the
+  writes (the SPA already sends it on every request); `GET /crop` runs its
+  chart decode + binarisation in the threadpool like the other CPU-bound
+  endpoints instead of freezing concurrent public requests.
+- **Admin locale namespaces left the public bundle.** The `admin`/`wizard`
+  message catalogs moved from the shared locales barrel into a new
+  `@/locales/admin` superset barrel imported only by admin code — ~24 kB of
+  admin-only German strings no longer ship to every visitor (locales chunk
+  51.7 → 45.5 kB gzip).
+- **Boot states keep the navigation, and the cold-start copy speaks German,
+  not ops.** The quiz and Tafel cold-start/loading/error states render inside
+  the public layout (header + footer stay usable through the ~47 s worst
+  case), and the boot message now says the server is waking up instead of
+  "Cold Start".
+- **Accessibility polish on the public pages.** The quiz verdict line is an
+  `aria-live` region and focus moves to "Weiter" after a wrong answer (the
+  disabled answer buttons used to drop focus on `<body>`); landing cards and
+  header nav links gained visible `:focus-visible` outlines; the Federprobe
+  disclaimer switched from the too-light `sepiaFaint` to readable `sepia`; the
+  404 page sets its own title.
+- **Portable JSON column type.** Model columns now declare
+  `JSON().with_variant(JSONB, "postgresql")` — identical behaviour on
+  Postgres, creatable on SQLite for the new API test harness; migrations keep
+  their own explicit JSONB types.
+- **Docs refreshed to current reality.** The agent guides
+  (`copilot-instructions`, `CLAUDE.md`) now describe the live two-service
+  Cloud Run deployment, the CI-gated Vitest suite and the full UI inventory
+  (`inkReveal`, `InfoHint`, `tafel/`, `impressum/`, `/admin/vergleich`);
+  `frontend-stack.md` §2/§7 carry the real route map (three areas, hubs,
+  `/federprobe`, `/tafel`) with planned P1+ routes split out; the README's
+  "what you can use today" covers Schriftkunde, Tafel and Federprobe;
+  `style-guide.md` §3 states the 19/17/14 px type floor;
+  `sprachregelung.md` documents the English `contributing.md` exception;
+  `mvp-roadmap`/`architektur` §16/`qualitaetsmetrik`/`docs/index` status
+  lines corrected.
 - **Deduped shared geometry/payload helpers and decomposed the oversized `core/`
   functions (no behaviour change).** The two canonical derivations now share one
   `_assemble_canonical_payload` (+ `_serialize_raw_path`) in `core/pipeline.py`
@@ -188,6 +253,39 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   on top of jul11 was not re-measured in the merge environment (the wordbench needs the
   shared DB), but both composer unit-suites (`test_compose_coupling`, `test_compose_joins`)
   pass and the compose golden fixture is deliberately re-pinned.
+
+### Fixed
+
+- **The Cloud SQL connector fallback is now truly async.** The
+  `INSTANCE_CONNECTION_NAME` path built a *sync* pg8000 engine and handed it to
+  `async_sessionmaker(..., class_=AsyncSession)` — the first session would have
+  raised `ArgumentError` and `close_db` would have crashed on `await
+  engine.dispose()`; it now uses the native async Cloud SQL Connector with an
+  asyncpg `async_creator`. A failing lazy `init_db()` in the session dependency
+  is also caught and surfaces as the clean 503 instead of an unhandled 500.
+- **Wizard brush commits can no longer overwrite each other.** All bbox writes
+  are serialized through one queue and compute their payload from the
+  then-current bbox at write time — two quick eraser/ink strokes (S-Pen taps
+  faster than the PUT round-trip) used to both build on the same stale state,
+  silently dropping the first stroke. Bbox saves also stopped echoing a stale
+  `n_anchors` back, which used to revert the server-side sync with the derived
+  canonical (`_sync_bbox_anchor_count`); and the canvas renders committed
+  strokes/patches/saved-trace through memoised layers, so a 240 Hz pen gesture
+  only re-renders the in-flight stroke.
+- **Federprobe and Schreibtafel fail loudly instead of silently.** A failed
+  compose fetch on `/federprobe` now shows an error message with a retry button
+  instead of an endless spinner, and a failed letter batch on the Tafel shows a
+  notice + retry instead of silently rendering an empty ruled sheet.
+- **Mask preview halves its binarisation work.** The "Maske zeigen" preview
+  derives the filled mask from the already-thresholded raw mask via
+  `fill_small_holes` instead of running the adaptive threshold twice
+  (identical output).
+
+### Removed
+
+- **Unused runtime dependencies `cairosvg` and `python-multipart`.** Neither is
+  referenced anywhere in the codebase; both (plus cairosvg's native transitive
+  chain) leave the Cloud Run image.
 
 ## [0.13.0] — 2026-07-09 — Tri-script pen foundation + human writing kinematics
 

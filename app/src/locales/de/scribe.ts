@@ -13,6 +13,12 @@ export const scribe = {
   // Shown when some letters have no curated canonical yet (interpolates {{letters}}).
   missingNote: 'Noch nicht kuratiert und darum ausgelassen: {{letters}}',
   emptyHint: 'Tippe oben etwas, um es geschrieben zu sehen.',
+  // Compose fetch failed even after the cold-start retries (API unreachable).
+  loadError: 'Der Schreibdienst ist gerade nicht erreichbar — die Feder muss kurz pausieren.',
+  retry: 'Erneut versuchen',
+  // Share the current text as a ?text= link (label swaps briefly after copying).
+  copyLink: 'Link kopieren',
+  copied: 'Link kopiert!',
   // Honest provenance note, mirroring the landing disclaimer.
   disclaimer: 'Synthese, klar gekennzeichnet — nachgebildete Schrift aus der Sütterlin-Ausgangsschrift 1922, kein historisches Original.',
 } as const;

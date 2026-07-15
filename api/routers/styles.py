@@ -2,10 +2,11 @@
 
 from functools import lru_cache
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import require_db
+from api.http import CACHE_CONTROL
 from api.schemas import StyleOut
 from core.chart import resolve_chart_path
 from core.database import Source, SourceRepository, Style, StyleRepository
@@ -40,20 +41,23 @@ def _to_out(style: Style, sources: list[Source]) -> StyleOut:
 
 
 @router.get("", response_model=list[StyleOut])
-async def list_styles(db: AsyncSession = Depends(require_db)) -> list[StyleOut]:
+async def list_styles(response: Response, db: AsyncSession = Depends(require_db)) -> list[StyleOut]:
     styles = await StyleRepository(db).list()
     # One query for every source, grouped per style in Python — not a per-style
     # `source_repo.list(style_id=...)` round trip (mirrors sources.py's batching).
     by_style: dict[str, list[Source]] = {}
     for source in await SourceRepository(db).list():
         by_style.setdefault(source.style_id, []).append(source)
+    # Styles only change with a migration — cache like the render payloads.
+    response.headers["Cache-Control"] = CACHE_CONTROL
     return [_to_out(style, by_style.get(style.id, [])) for style in styles]
 
 
 @router.get("/{style_id}", response_model=StyleOut)
-async def get_style(style_id: str, db: AsyncSession = Depends(require_db)) -> StyleOut:
+async def get_style(style_id: str, response: Response, db: AsyncSession = Depends(require_db)) -> StyleOut:
     style = await StyleRepository(db).get(style_id)
     if style is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"style {style_id!r} not found")
     sources = await SourceRepository(db).list(style_id=style_id)
+    response.headers["Cache-Control"] = CACHE_CONTROL
     return _to_out(style, sources)

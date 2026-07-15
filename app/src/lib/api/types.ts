@@ -128,7 +128,10 @@ export interface BboxIn {
   patches: Patch[];
   baseline_y: number;
   midband_y: number;
-  n_anchors: number;
+  // Optional so an omitted value preserves the stored count (mirrors the API's
+  // BboxIn): the server keeps bbox.n_anchors truthful to the derived canonical
+  // after trace/resample, so routine bbox saves must not echo a stale value back.
+  n_anchors?: number | null;
   guides?: GuideConfig;
   // Optional so an omitted value preserves the stored flag (mirrors guides).
   locked?: boolean;
