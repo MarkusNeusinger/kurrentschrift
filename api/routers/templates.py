@@ -147,18 +147,8 @@ def _template_to_out(t: Template) -> TemplateOut:
 
 @router.get("", response_model=list[TemplateSummary])
 async def list_templates(source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)):
-    rows = await TemplateRepository(db).list(source.style_id)
-    return [
-        TemplateSummary(
-            glyph_key=t.glyph_key,
-            glyph=t.glyph,
-            position=t.position,
-            variant=t.variant,
-            advance=t.advance,
-            has_data=True,
-        )
-        for t in rows
-    ]
+    rows = await TemplateRepository(db).list_summaries(source.style_id)
+    return [TemplateSummary(**row, has_data=True) for row in rows]
 
 
 @router.get("/{glyph_key}", response_model=TemplateOut)

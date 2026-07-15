@@ -39,6 +39,16 @@ const READ_WRITE = [
   { label: de.common.nav.write, to: paths.schreiben },
 ];
 
+// Which standalone tool routes belong to which area link, so the nav can mark
+// the current AREA even off its hub page (/quiz and /tafel are Lesen tools,
+// /federprobe a Schreiben tool — they keep their stable top-level URLs and are
+// not nested under the hubs; see routes/paths.ts).
+const AREA_ROUTES: Record<string, string[]> = {
+  [paths.lesen]: [paths.lesen, paths.quiz, paths.tafel],
+  [paths.schreiben]: [paths.schreiben, paths.scribe],
+  [paths.schriftkunde]: [paths.schriftkunde],
+};
+
 interface PublicHeaderProps {
   tone?: 'plain' | 'paper';
   sx?: SxProps<Theme>;
@@ -57,15 +67,19 @@ export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
 
   const navLink = (label: ReactNode, to: string, sx?: SxProps<Theme>) => {
     // Current-area indication: the area link stays "on" (ink + full underline
-    // + aria-current) while any page of that area is open (/lesen also covers
-    // /quiz + /tafel etc. once those routes nest; exact match covers today's flat ones).
-    const active = pathname === to || pathname.startsWith(`${to}/`);
+    // + aria-current) while any page of that area is open — the hub itself,
+    // its nested routes (/schreiben/uebungsblatt), or the area's standalone
+    // tool routes (AREA_ROUTES: /quiz, /tafel → Lesen; /federprobe → Schreiben).
+    const roots = AREA_ROUTES[to] ?? [to];
+    const active = roots.some((root) => pathname === root || pathname.startsWith(`${root}/`));
     return (
       <Link
         key={to}
         component={RouterLink}
         to={to}
-        aria-current={active ? 'page' : undefined}
+        // "page" only when this IS the open page; a tool page inside the area
+        // (e.g. /quiz under Lesen) gets the generic "true" current-marker.
+        aria-current={active ? (pathname === to ? 'page' : 'true') : undefined}
         sx={{
           color: active ? textMain : textSoft,
           textDecoration: 'none',

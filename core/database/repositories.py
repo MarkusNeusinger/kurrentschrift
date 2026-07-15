@@ -80,6 +80,14 @@ class BboxRepository:
         result = await self.session.execute(select(Bbox).where(Bbox.source_id == source_id).order_by(Bbox.glyph_key))
         return list(result.scalars().all())
 
+    async def list_status(self, source_id: str) -> list[dict]:
+        """Availability flags only (glyph_key, locked, split) — the public
+        quiz's gating read, without the heavy mask/ink/patch JSONB columns."""
+        result = await self.session.execute(
+            select(Bbox.glyph_key, Bbox.locked, Bbox.split).where(Bbox.source_id == source_id).order_by(Bbox.glyph_key)
+        )
+        return [{"glyph_key": k, "locked": bool(locked), "split": bool(split)} for k, locked, split in result.all()]
+
     async def upsert(self, source_id: str, glyph_key: str, **fields: Any) -> Bbox:
         """Insert-or-update by (source_id, glyph_key)."""
         payload = {"source_id": source_id, "glyph_key": glyph_key, **fields}
@@ -125,6 +133,23 @@ class TemplateRepository:
             select(Template).where(Template.style_id == style_id).order_by(Template.glyph_key, Template.variant)
         )
         return list(result.scalars().all())
+
+    async def list_summaries(self, style_id: str) -> list[dict]:
+        """The sidebar's summary fields only — never the heavy JSONB columns.
+
+        A fully authored source makes full-row `list()` decode multi-MB of
+        `raw_path`/`anchors`/`trace_meta` per sidebar load just to render six
+        scalar fields; select exactly those instead (same pattern as
+        `half_widths_for_source`).
+        """
+        result = await self.session.execute(
+            select(Template.glyph_key, Template.glyph, Template.position, Template.variant, Template.advance)
+            .where(Template.style_id == style_id)
+            .order_by(Template.glyph_key, Template.variant)
+        )
+        return [
+            {"glyph_key": k, "glyph": g, "position": p, "variant": v, "advance": a} for k, g, p, v, a in result.all()
+        ]
 
     async def get_many(self, style_id: str, glyph_keys: list[str], variant: int = 0) -> list[Template]:
         """The requested keys' templates in one query (the batch write endpoint)."""

@@ -18,7 +18,7 @@ import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { type Difficulty } from '@/sections/quiz/quizTypes';
 import { similarity, WORD_BANK, type WordEntry } from '@/sections/quiz/wordBank';
 import { getQuizWords, type QuizWordOut } from '@/lib/api';
-import { useAdmin } from '@/context/AdminContext';
+import type { QuizSourceData } from '@/sections/quiz/useQuizSource';
 
 // DB row → the engine's WordEntry (null → undefined for the optional fields).
 const toEntry = (r: QuizWordOut): WordEntry => ({
@@ -124,8 +124,7 @@ export const inCase = (letter: string, kg: KnownGlyph): string =>
 
 const questionId = (q: Question): string => (q.kind === 'word' ? `W:${q.word}` : `L:${q.key}`);
 
-export function useQuizEngine() {
-  const { bboxesByKey, glyphsByKey } = useAdmin();
+export function useQuizEngine({ bboxesByKey, glyphsByKey }: Pick<QuizSourceData, 'bboxesByKey' | 'glyphsByKey'>) {
   const reducedMotion = usePrefersReducedMotion();
 
   // The word bank: fetched from the DB (GET /quiz-words), falling back to the

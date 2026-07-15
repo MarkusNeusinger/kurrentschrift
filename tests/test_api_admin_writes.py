@@ -89,6 +89,23 @@ async def test_delete_bbox_removes_row(api: Harness):
     assert res.status == 404
 
 
+async def test_bbox_status_lists_flags_only(api: Harness):
+    """The slim public read: availability flags per glyph_key, none of the
+    heavy crop fields. The literal /status path must win over /{glyph_key}."""
+    _, source_id = await api.seed_style_and_source()
+    res = await api.client.request("GET", f"/sources/{source_id}/bboxes/status")
+    assert res.status == 200
+    assert res.json() == []
+
+    await api.client.request(
+        "PUT", f"/sources/{source_id}/bboxes/n-medial", json_body=_bbox_body(locked=True), headers=api.admin_headers()
+    )
+    res = await api.client.request("GET", f"/sources/{source_id}/bboxes/status")
+    assert res.status == 200
+    rows = res.json()
+    assert rows == [{"glyph_key": "n-medial", "locked": True, "split": False}]
+
+
 # ------------------------------------------------------------------ trace
 
 

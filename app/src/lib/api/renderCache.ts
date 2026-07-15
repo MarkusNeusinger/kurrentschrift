@@ -105,7 +105,10 @@ export function fetchRenderWord(sourceId: string, text: string): Promise<Compose
   let p = wordCache.get(key);
   if (!p) {
     p = getWriteWord(sourceId, text, COLD_START_RETRY).catch((e) => {
-      wordCache.delete(key);
+      // Identity guard (same as the glyph cache): after a FIFO eviction and
+      // re-fetch under the same key, the OLD promise's late rejection must not
+      // delete the new, valid entry.
+      if (wordCache.get(key) === p) wordCache.delete(key);
       throw e;
     });
     if (wordCache.size >= WORD_CACHE_MAX) {

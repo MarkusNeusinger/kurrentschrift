@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_admin
 from api.dependencies import require_db, require_source
-from api.schemas import BboxIn, BboxOut, GuideConfig
+from api.schemas import BboxIn, BboxOut, BboxStatusOut, GuideConfig
 from core.database import Bbox, BboxRepository, Source
 from core.pipeline import DEFAULT_N_ANCHORS
 
@@ -46,6 +46,18 @@ def _to_out(bbox: Bbox) -> BboxOut:
 async def list_bboxes(source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)):
     rows = await BboxRepository(db).list(source.id)
     return [_to_out(b) for b in rows]
+
+
+@router.get("/status", response_model=list[BboxStatusOut])
+async def list_bbox_status(source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)):
+    """Slim public read: just the availability flags per glyph_key.
+
+    The quiz gates its vocabulary on locked/split (+ TemplateSummary.has_data);
+    the full list above ships every mask/ink/patch JSONB blob for that. Declared
+    BEFORE /{glyph_key} so the literal path wins the route match.
+    """
+    rows = await BboxRepository(db).list_status(source.id)
+    return [BboxStatusOut(**row) for row in rows]
 
 
 @router.get("/{glyph_key}", response_model=BboxOut)

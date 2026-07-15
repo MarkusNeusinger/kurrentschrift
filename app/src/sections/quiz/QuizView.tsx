@@ -21,11 +21,14 @@ import { QuizPlayPanel } from '@/sections/quiz/QuizPlayPanel';
 import { QuizResultsPanel } from '@/sections/quiz/QuizResultsPanel';
 import { QuizSetupPanel } from '@/sections/quiz/QuizSetupPanel';
 import { useQuizEngine } from '@/sections/quiz/useQuizEngine';
-import { useAdmin } from '@/context/AdminContext';
+import { useQuizSource } from '@/sections/quiz/useQuizSource';
 
 export function QuizView() {
-  const { source, loadError, waking } = useAdmin();
-  const quiz = useQuizEngine();
+  // The quiz's own slim boot load (source + template summaries + bbox status
+  // flags) — it no longer mounts the AdminProvider and no longer downloads the
+  // full crop-editing bbox payload. Pinned to the site-wide source.
+  const { source, bboxesByKey, glyphsByKey, loadError, waking } = useQuizSource();
+  const quiz = useQuizEngine({ bboxesByKey, glyphsByKey });
 
   // Boot/error states render inside PublicLayout so the header nav and footer
   // stay usable during a cold start instead of vanishing with the page.
