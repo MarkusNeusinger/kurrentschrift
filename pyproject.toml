@@ -46,7 +46,7 @@ viz = [
     "matplotlib>=3.9",
 ]
 dev = [
-    "ruff>=0.15.20",
+    "ruff>=0.15.21",
     # Type stubs for the numpy/scipy-heavy core (dev-only — never in the runtime image).
     "scipy-stubs~=1.18.0",
     "kurrentschrift[viz]",
