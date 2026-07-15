@@ -36,9 +36,25 @@ export function ScribeView() {
   // The page title / SEO meta is set by the route mount (ScribePage → usePageMeta).
   // A shared link (?text=…) seeds the field; otherwise the first example does.
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialText = useRef(searchParams.get('text')?.slice(0, MAX_LEN) || de.scribe.examples[0]).current;
-  const [input, setInput] = useState<string>(initialText);
-  const [text, setText] = useState<string>(initialText.trim());
+  const paramText = searchParams.get('text')?.slice(0, MAX_LEN) ?? '';
+  const defaultText = de.scribe.examples[0];
+  const [input, setInput] = useState<string>(paramText || defaultText);
+  const [text, setText] = useState<string>((paramText || defaultText).trim());
+  // The ?text= value this component itself last wrote (mirror effect below).
+  // Lets the URL→state effect tell our own replaceState apart from an external
+  // navigation (another shared link, back/forward) — React Router does NOT
+  // remount on search-param changes, so the ref-free version never re-seeded.
+  const lastWrittenParam = useRef(paramText);
+
+  // URL → state: an externally navigated ?text= (deep link while mounted,
+  // history traversal) re-seeds the field; our own mirror writes are ignored.
+  useEffect(() => {
+    if (paramText === lastWrittenParam.current) return;
+    lastWrittenParam.current = paramText;
+    const next = paramText || defaultText;
+    setInput(next);
+    setText(next.trim());
+  }, [paramText, defaultText]);
   const [missing, setMissing] = useState<string[]>([]);
   // Compose fetch failed (after the cold-start retries) — offer a retry instead
   // of a spinner forever; the nonce remounts WrittenWord to kick a fresh fetch.
@@ -59,14 +75,18 @@ export function ScribeView() {
   // A new text starts a fresh compose — clear a stale error from the last one.
   useEffect(() => setComposeError(false), [text]);
 
-  // Mirror the debounced text into ?text= so the page is shareable. `replace`
-  // keeps typing from flooding the history; the default example stays a clean URL.
+  // State → URL: mirror the debounced text into ?text= so the page is
+  // shareable. `replace` keeps typing from flooding the history; the default
+  // example stays a clean URL. Records what it wrote so the URL→state effect
+  // above can ignore the resulting searchParams change.
   useEffect(() => {
-    setSearchParams(text && text !== de.scribe.examples[0] ? { text } : {}, { replace: true });
+    const url = text && text !== defaultText ? text : '';
+    lastWrittenParam.current = url;
+    setSearchParams(url ? { text: url } : {}, { replace: true });
     // setSearchParams' identity is not stable across navigations — depending on
     // it would re-run (and re-navigate) after every sync.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [text]);
+  }, [text, defaultText]);
 
   useEffect(() => () => clearTimeout(copyTimer.current), []);
 
