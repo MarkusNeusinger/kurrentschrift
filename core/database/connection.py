@@ -1,9 +1,9 @@
 """Async SQLAlchemy connection — supports DATABASE_URL (local) and Cloud SQL Connector (Cloud Run).
 
 Adapted from anyplot's `core/database/connection.py`. Same dual-mode pattern:
-prefer `DATABASE_URL` (asyncpg), fall back to Cloud SQL Connector (sync pg8000
-wrapped for async) if only `INSTANCE_CONNECTION_NAME` is set. Graceful no-op
-if neither is configured.
+prefer `DATABASE_URL` (asyncpg), fall back to the async Cloud SQL Connector
+(asyncpg) if only `INSTANCE_CONNECTION_NAME` is set. Graceful no-op if neither
+is configured.
 """
 
 import asyncio
@@ -54,30 +54,29 @@ def _normalize_db_url(url: str, target_driver: str) -> str:
     return re.sub(r"^postgres(?:ql)?(?:\+\w+)?://", f"postgresql+{target_driver}://", url)
 
 
-def _create_cloud_sql_engine_sync():
-    """Sync engine using Cloud SQL Python Connector with pg8000 (wrapped as async-compat)."""
+async def _create_cloud_sql_engine():
+    """Async engine using the async Cloud SQL Python Connector with asyncpg."""
     global _connector
 
-    from google.cloud.sql.connector import Connector, IPTypes
-    from sqlalchemy import create_engine
+    from google.cloud.sql.connector import IPTypes, create_async_connector
 
-    _connector = Connector()
+    _connector = await create_async_connector()
 
-    def get_conn():
-        return _connector.connect(
-            INSTANCE_CONNECTION_NAME, "pg8000", user=DB_USER, password=DB_PASS, db=DB_NAME, ip_type=IPTypes.PUBLIC
+    async def get_conn():
+        return await _connector.connect_async(
+            INSTANCE_CONNECTION_NAME, "asyncpg", user=DB_USER, password=DB_PASS, db=DB_NAME, ip_type=IPTypes.PUBLIC
         )
 
-    cloud_engine = create_engine(
-        "postgresql+pg8000://",
-        creator=get_conn,
+    cloud_engine = create_async_engine(
+        "postgresql+asyncpg://",
+        async_creator=get_conn,
         pool_size=DEFAULT_POOL_SIZE,
         max_overflow=DEFAULT_MAX_OVERFLOW,
         pool_pre_ping=True,
         echo=ENVIRONMENT == "development",
     )
 
-    logger.info("Created Cloud SQL engine: %s (PUBLIC IP)", INSTANCE_CONNECTION_NAME)
+    logger.info("Created Cloud SQL async engine: %s (PUBLIC IP)", INSTANCE_CONNECTION_NAME)
     return cloud_engine
 
 
@@ -110,8 +109,7 @@ async def init_db() -> None:
     if DATABASE_URL:
         engine = _create_direct_engine()
     elif INSTANCE_CONNECTION_NAME:
-        engine = _create_cloud_sql_engine_sync()
-        logger.warning("Using sync Cloud SQL engine via pg8000 — set DATABASE_URL for async asyncpg path")
+        engine = await _create_cloud_sql_engine()
     else:
         logger.warning("No database configuration found — running without database")
         return
@@ -130,17 +128,21 @@ async def close_db() -> None:
         logger.info("Database engine disposed")
 
     if _connector is not None:
-        _connector.close()
+        await _connector.close_async()
         _connector = None
         logger.info("Cloud SQL connector closed")
 
 
 async def get_db() -> AsyncGenerator[AsyncSession | None, None]:
-    """FastAPI dependency. Yields a session, or None if DB is not configured."""
+    """FastAPI dependency. Yields a session, or None if DB is not configured
+    or initialisation failed (require_db turns None into a clean 503)."""
     if engine is None:
         async with _get_async_lock():
             if engine is None:
-                await init_db()
+                try:
+                    await init_db()
+                except Exception:
+                    logger.exception("Database initialisation failed")
 
     if AsyncSessionLocal is None:
         yield None

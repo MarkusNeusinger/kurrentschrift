@@ -293,7 +293,7 @@ async def get_diagnostic(
     )
 
 
-@router.get("/{glyph_key}/fit")
+@router.get("/{glyph_key}/fit", dependencies=[Depends(require_admin)])
 async def get_fit(
     glyph_key: str,
     lambda_reg: float = 1.0,
@@ -304,7 +304,9 @@ async def get_fit(
     """Fit the stored canonical to its own crop skeleton (read-only).
 
     The optimisation takes seconds and is pure CPU — run it in the threadpool
-    so it cannot freeze every other request on the event loop.
+    so it cannot freeze every other request on the event loop. Admin-gated
+    like the writes (it costs the same CPU); only the public renderer's
+    read endpoints stay open.
     """
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
@@ -333,14 +335,14 @@ async def get_fit(
     )
 
 
-@router.get("/{glyph_key}/quality")
+@router.get("/{glyph_key}/quality", dependencies=[Depends(require_admin)])
 async def get_quality(glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)):
     """Image-space quality of the stored template, plus a re-derive dry run.
 
     `stored` scores what the DB currently holds against its crop; `candidate`
     is the quality a fresh re-derivation from `raw_path` with the CURRENT
     pipeline code would achieve (nothing is written — the admin compares both
-    before deciding to /resample). Pure CPU, threadpooled like /fit.
+    before deciding to /resample). Pure CPU, threadpooled and admin-gated like /fit.
 
     BOTH sides are scored with the style's OWN metric: the Kurrent pixel/width
     metric for the pressure pipeline, the Gleichzug naturalness metric for a

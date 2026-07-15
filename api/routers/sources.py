@@ -1,9 +1,10 @@
 """Source CRUD (read-only in v1)."""
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import require_db, require_source
+from api.http import CACHE_CONTROL
 from api.schemas import SourceOut
 from core.database import Source, SourceRepository, Style, StyleRepository
 
@@ -36,14 +37,19 @@ def _to_out(source: Source, style: Style | None) -> SourceOut:
 
 
 @router.get("", response_model=list[SourceOut])
-async def list_sources(db: AsyncSession = Depends(require_db)) -> list[SourceOut]:
+async def list_sources(response: Response, db: AsyncSession = Depends(require_db)) -> list[SourceOut]:
     rows = await SourceRepository(db).list()
     style_repo = StyleRepository(db)
     styles = {s.id: s for s in await style_repo.list()}
+    # Sources only change with a migration — cache like the render payloads.
+    response.headers["Cache-Control"] = CACHE_CONTROL
     return [_to_out(s, styles.get(s.style_id)) for s in rows]
 
 
 @router.get("/{source_id}", response_model=SourceOut)
-async def get_source(source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)) -> SourceOut:
+async def get_source(
+    response: Response, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
+) -> SourceOut:
     style = await StyleRepository(db).get(source.style_id)
+    response.headers["Cache-Control"] = CACHE_CONTROL
     return _to_out(source, style)

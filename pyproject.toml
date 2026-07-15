@@ -22,13 +22,11 @@ dependencies = [
     "scipy>=1.18.0",
     "scikit-image>=0.24",
     "pillow>=12.3.0",
-    "cairosvg>=2.9.0",
     # API
     "fastapi>=0.139.0",
     "uvicorn[standard]>=0.50.1",
     "pydantic>=2.10",
     "pydantic-settings>=2.14.2",
-    "python-multipart>=0.0.32",
     "python-dotenv>=1.0.0",
     # Admin auth — Cloudflare Access JWT verification against the team JWKS.
     "pyjwt[crypto]>=2.13.0",
