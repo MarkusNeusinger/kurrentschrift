@@ -11,7 +11,7 @@ import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Typogra
 import { useCallback, useRef, useState } from 'react';
 
 import { chartUrl } from '@/lib/api';
-import { de } from '@/locales';
+import { de } from '@/locales/admin';
 import { overlay } from '@/sections/admin/overlayColors';
 
 const MIN_SIZE = 4; // chart px: reject an accidental dot

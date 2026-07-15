@@ -8,7 +8,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Alert, Box, Button, FormControlLabel, Radio, RadioGroup, Stack, Typography } from '@mui/material';
 
 import { isLetterSplit } from '@/domain/glyphs';
-import { de, fmt, POSITION_LABEL } from '@/locales';
+import { de, fmt, POSITION_LABEL } from '@/locales/admin';
 import type { KnownGlyph } from '@/domain/glyphs';
 import type { BboxOut, TracePreviewOut } from '@/lib/api';
 import { HintHeading } from './HintHeading';

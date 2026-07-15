@@ -5,7 +5,7 @@
 
 import { Checkbox, Divider, FormControlLabel, Stack, Typography } from '@mui/material';
 
-import { de, fmt, LINEATUR_LABELS } from '@/locales';
+import { de, fmt, LINEATUR_LABELS } from '@/locales/admin';
 import type { BboxOut, GuideConfig, SourceOut } from '@/lib/api';
 import type { GuideValues } from '../wizardTypes';
 import { HintHeading } from './HintHeading';

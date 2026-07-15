@@ -24,7 +24,7 @@ import {
 import { useEffect, useState } from 'react';
 
 import { InfoHint } from '@/components/InfoHint';
-import { de } from '@/locales';
+import { de } from '@/locales/admin';
 import type { BboxOut } from '@/lib/api';
 import { DonorPicker } from '../DonorPicker';
 import { HintHeading } from './HintHeading';

@@ -7,7 +7,7 @@
 import { Box, LinearProgress, Stack, Tooltip, Typography } from '@mui/material';
 
 import { ringsToPathD } from '@/lib/svg';
-import { de } from '@/locales';
+import { de } from '@/locales/admin';
 import type { QualityData, WrittenPreviewData } from '@/lib/api';
 
 export function scoreColor(score: number): 'success' | 'warning' | 'error' {

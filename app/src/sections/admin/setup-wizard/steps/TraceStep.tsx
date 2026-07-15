@@ -23,7 +23,7 @@ import {
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { InfoHint } from '@/components/InfoHint';
-import { couplingLabel, de } from '@/locales';
+import { couplingLabel, de } from '@/locales/admin';
 import type { BboxIn, BboxOut, CouplingHeight, GuideConfig, StrokePoint, TracePreviewOut } from '@/lib/api';
 import type { GuideValues } from '../wizardTypes';
 import { HintHeading } from './HintHeading';

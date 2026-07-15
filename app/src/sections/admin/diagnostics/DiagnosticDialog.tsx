@@ -15,7 +15,7 @@ import { WrittenGlyph } from '@/components/WrittenGlyph';
 import { knownGlyph } from '@/domain/glyphs';
 import { useAdmin } from '@/context/AdminContext';
 import type { DiagnosticData } from '@/lib/api';
-import { de } from '@/locales';
+import { de } from '@/locales/admin';
 import { DiagnosticView } from './DiagnosticView';
 import { FitView } from './FitView';
 import { QualityView } from './QualityView';

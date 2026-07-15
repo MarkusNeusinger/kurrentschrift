@@ -4,7 +4,6 @@
 // mechanical: de.quiz.setup.start → useTranslation('quiz') + t('setup.start').
 // Deliberately NO i18next and NO provider yet.
 
-import { admin } from './de/admin';
 import { common } from './de/common';
 import { hub } from './de/hub';
 import { impressum } from './de/impressum';
@@ -14,10 +13,14 @@ import { schriftkunde } from './de/schriftkunde';
 import { scribe } from './de/scribe';
 import { seo } from './de/seo';
 import { tafel } from './de/tafel';
-import { wizard } from './de/wizard';
 import { worksheet } from './de/worksheet';
 
-export const de = { common, landing, schriftkunde, hub, worksheet, scribe, quiz, tafel, admin, wizard, impressum, seo } as const;
+// PUBLIC namespaces only. The admin/wizard namespaces (~24 kB of source) are
+// deliberately NOT part of this barrel: it loads with the first public route,
+// and admin strings have no business in a visitor's bundle. Admin code imports
+// the superset `de` from '@/locales/admin' instead (same shape plus
+// `.admin`/`.wizard`), which lands in the lazy /admin chunks.
+export const de = { common, landing, schriftkunde, hub, worksheet, scribe, quiz, tafel, impressum, seo } as const;
 
 // Tiny interpolation helper for messages with embedded variables, mirroring
 // i18next's {{name}} placeholder syntax.

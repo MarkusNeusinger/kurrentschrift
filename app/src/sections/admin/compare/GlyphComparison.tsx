@@ -20,7 +20,7 @@ import type { Position } from '@/domain/glyphs';
 import { ApiError, cropUrl, getDiagnostic } from '@/lib/api';
 import type { DiagnosticData } from '@/lib/api';
 import { ringsToPathD } from '@/lib/svg';
-import { de, POSITION_LABEL } from '@/locales';
+import { de, POSITION_LABEL } from '@/locales/admin';
 
 const FACE_H = 320; // px — both faces rendered large
 

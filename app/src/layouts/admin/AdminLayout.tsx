@@ -20,7 +20,7 @@ import { BootStatus } from '@/components/BootStatus';
 import { PaperBackground } from '@/components/PaperBackground';
 import { useAdmin } from '@/context/AdminContext';
 import { AdminModals } from '@/layouts/admin/AdminModals';
-import { de } from '@/locales';
+import { de } from '@/locales/admin';
 import { GlyphSidebar } from '@/sections/admin/sidebar/GlyphSidebar';
 
 const DRAWER_WIDTH = 280;

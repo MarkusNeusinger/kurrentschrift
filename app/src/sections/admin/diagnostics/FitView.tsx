@@ -15,7 +15,7 @@ import { useAdmin } from '@/context/AdminContext';
 import { cropUrl, getFit } from '@/lib/api';
 import type { FitData } from '@/lib/api';
 import { ringsToPathD } from '@/lib/svg';
-import { de } from '@/locales';
+import { de } from '@/locales/admin';
 import { useColumnWidth } from '@/sections/admin/diagnostics/useColumnWidth';
 
 interface Props {

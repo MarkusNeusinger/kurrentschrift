@@ -10,11 +10,17 @@ import { getDiagnostic, getGlyph, postResample, postTrace, postTracePreview, put
 import { bboxInFromOut } from '@/lib/bbox';
 import { isLetterSplit, knownGlyph, siblingKeys } from '@/domain/glyphs';
 import { useAdmin } from '@/context/AdminContext';
-import { de, fmt } from '@/locales';
+import { de, fmt } from '@/locales/admin';
 import { flattenStrokes, savablePointCount } from './strokeUtils';
 import { STEPS } from './wizardTypes';
 import type { CalibField, GuideValues } from './wizardTypes';
-import type { BboxIn, GlyphSummary, GuideConfig, MaskStroke, Patch, StrokePoint, TracePreviewOut } from '@/lib/api';
+import type { BboxIn, BboxOut, GlyphSummary, GuideConfig, MaskStroke, Patch, StrokePoint, TracePreviewOut } from '@/lib/api';
+
+// A bbox mutation: either a static partial payload, or a function evaluated at
+// write time against the then-current bbox (return null to skip the write).
+// The functional form is what makes rapid-fire commits (two quick brush
+// strokes) safe — see updateBboxField below.
+type BboxFieldPatch = Partial<BboxIn> | ((current: BboxOut) => Partial<BboxIn> | null);
 
 // The already-saved Weg, shown faintly on the Weg step for reference: the raw
 // pen path (chart coordinates) and the resampled anchors (crop-local pixels).
@@ -143,17 +149,34 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     };
   }, [bbox, source]);
 
+  // All bbox writes go through one promise chain, and a functional patch is
+  // resolved against the bbox as of its turn in the queue. Both parts guard the
+  // same race: two quick brush strokes (S-Pen taps faster than the PUT RTT)
+  // would otherwise both build their payload from the same stale bbox, and the
+  // second save would silently drop the first stroke.
+  const bboxWriteQueue = useRef<Promise<void>>(Promise.resolve());
   const updateBboxField = useCallback(
-    async (patch: Partial<BboxIn>) => {
-      if (!bbox) return;
-      try {
-        const saved = await putBbox(sourceId, glyphKey, { ...bboxInFromOut(bbox), ...patch });
-        upsertBbox(glyphKey, saved);
-      } catch (err) {
-        setSnack(`${de.wizard.snack.saveFailed} ${err}`);
-      }
+    (patch: BboxFieldPatch) => {
+      const run = async () => {
+        const current = bboxesByKeyRef.current[glyphKey];
+        if (!current) return;
+        const resolved = typeof patch === 'function' ? patch(current) : patch;
+        if (resolved === null) return;
+        try {
+          const saved = await putBbox(sourceId, glyphKey, { ...bboxInFromOut(current), ...resolved });
+          // Update the ref immediately: the next queued write may run before
+          // React re-renders with the context update below.
+          bboxesByKeyRef.current = { ...bboxesByKeyRef.current, [glyphKey]: saved };
+          upsertBbox(glyphKey, saved);
+        } catch (err) {
+          setSnack(`${de.wizard.snack.saveFailed} ${err}`);
+        }
+      };
+      const next = bboxWriteQueue.current.then(run);
+      bboxWriteQueue.current = next;
+      return next;
     },
-    [sourceId, bbox, glyphKey, upsertBbox],
+    [sourceId, glyphKey, upsertBbox],
   );
 
   const updateGuides = useCallback(
@@ -203,53 +226,47 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     [guideVals, updateGuides],
   );
 
-  // Finished eraser stroke at the current brush radius.
+  // Finished eraser stroke at the current brush radius. Functional patch: the
+  // stroke list is read at write time, so back-to-back strokes stack instead of
+  // the second overwriting the first.
   const commitMaskStroke = useCallback(
     async (points: Array<[number, number]>) => {
       const stroke: MaskStroke = { points, radius: maskRadius };
-      if (bbox) {
-        await updateBboxField({ mask_strokes: [...bbox.mask_strokes, stroke] });
-        refreshCrop();
-      }
+      await updateBboxField((b) => ({ mask_strokes: [...b.mask_strokes, stroke] }));
+      refreshCrop();
     },
-    [maskRadius, bbox, updateBboxField, refreshCrop],
+    [maskRadius, updateBboxField, refreshCrop],
   );
 
   const undoMask = useCallback(async () => {
-    if (!bbox || bbox.mask_strokes.length === 0) return;
-    await updateBboxField({ mask_strokes: bbox.mask_strokes.slice(0, -1) });
+    await updateBboxField((b) => (b.mask_strokes.length === 0 ? null : { mask_strokes: b.mask_strokes.slice(0, -1) }));
     refreshCrop();
-  }, [bbox, updateBboxField, refreshCrop]);
+  }, [updateBboxField, refreshCrop]);
 
   // Finished ink-brush stroke (Tinte) — the eraser's positive twin: appended to
   // ink_strokes, painted as ink into the crop before binarisation.
   const commitInkStroke = useCallback(
     async (points: Array<[number, number]>) => {
       const stroke: MaskStroke = { points, radius: maskRadius };
-      if (bbox) {
-        await updateBboxField({ ink_strokes: [...bbox.ink_strokes, stroke] });
-        refreshCrop();
-      }
+      await updateBboxField((b) => ({ ink_strokes: [...b.ink_strokes, stroke] }));
+      refreshCrop();
     },
-    [maskRadius, bbox, updateBboxField, refreshCrop],
+    [maskRadius, updateBboxField, refreshCrop],
   );
 
   const undoInk = useCallback(async () => {
-    if (!bbox || bbox.ink_strokes.length === 0) return;
-    await updateBboxField({ ink_strokes: bbox.ink_strokes.slice(0, -1) });
+    await updateBboxField((b) => (b.ink_strokes.length === 0 ? null : { ink_strokes: b.ink_strokes.slice(0, -1) }));
     refreshCrop();
-  }, [bbox, updateBboxField, refreshCrop]);
+  }, [updateBboxField, refreshCrop]);
 
   // Per-glyph speck auto-fill threshold (Lücken füllen); 0 = off. Re-derivation
   // and the diagnostic read it from the bbox, so refresh the crop preview too.
   const setFillHoles = useCallback(
     async (maxArea: number) => {
-      if (bbox) {
-        await updateBboxField({ fill_holes_max_area: Math.max(0, Math.round(maxArea)) });
-        refreshCrop();
-      }
+      await updateBboxField({ fill_holes_max_area: Math.max(0, Math.round(maxArea)) });
+      refreshCrop();
     },
-    [bbox, updateBboxField, refreshCrop],
+    [updateBboxField, refreshCrop],
   );
 
   // --------------------------------------------------- crop patches (Zelle einsetzen)
@@ -259,36 +276,37 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
   // re-renders after each save; dst is repositioned live on the canvas.
   const addPatch = useCallback(
     async (src: [number, number, number, number]) => {
-      if (!bbox) return;
-      // Default landing spot: centred horizontally, near the top of the crop —
-      // the user then drags it into place over the base letter.
-      const dw = src[2] - src[0];
-      const dx = Math.round((bbox.x0 + bbox.x1) / 2 - dw / 2);
-      const dy = Math.round(bbox.y0 + Math.max(2, (bbox.y1 - bbox.y0) * 0.08));
-      const patch: Patch = { src, dst: [dx, dy] };
-      await updateBboxField({ patches: [...bbox.patches, patch] });
+      await updateBboxField((b) => {
+        // Default landing spot: centred horizontally, near the top of the crop —
+        // the user then drags it into place over the base letter.
+        const dw = src[2] - src[0];
+        const dx = Math.round((b.x0 + b.x1) / 2 - dw / 2);
+        const dy = Math.round(b.y0 + Math.max(2, (b.y1 - b.y0) * 0.08));
+        const patch: Patch = { src, dst: [dx, dy] };
+        return { patches: [...b.patches, patch] };
+      });
       refreshCrop();
     },
-    [bbox, updateBboxField, refreshCrop],
+    [updateBboxField, refreshCrop],
   );
 
   const updatePatch = useCallback(
     async (index: number, dst: [number, number]) => {
-      if (!bbox || index < 0 || index >= bbox.patches.length) return;
-      const patches = bbox.patches.map((p, i) => (i === index ? { ...p, dst } : p));
-      await updateBboxField({ patches });
+      await updateBboxField((b) => {
+        if (index < 0 || index >= b.patches.length) return null;
+        return { patches: b.patches.map((p, i) => (i === index ? { ...p, dst } : p)) };
+      });
       refreshCrop();
     },
-    [bbox, updateBboxField, refreshCrop],
+    [updateBboxField, refreshCrop],
   );
 
   const removePatch = useCallback(
     async (index: number) => {
-      if (!bbox) return;
-      await updateBboxField({ patches: bbox.patches.filter((_, i) => i !== index) });
+      await updateBboxField((b) => ({ patches: b.patches.filter((_, i) => i !== index) }));
       refreshCrop();
     },
-    [bbox, updateBboxField, refreshCrop],
+    [updateBboxField, refreshCrop],
   );
 
   const addSlantLine = useCallback(() => {

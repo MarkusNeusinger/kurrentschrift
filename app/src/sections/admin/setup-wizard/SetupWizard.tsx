@@ -36,7 +36,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import LockIcon from '@mui/icons-material/Lock';
 import { Alert, Box, Button, Dialog, Step, StepButton, Stepper, Typography, useMediaQuery, useTheme } from '@mui/material';
 
-import { de } from '@/locales';
+import { de } from '@/locales/admin';
 import { useCropView } from './useCropView';
 import { useWizard } from './useWizard';
 import { WizardCanvas } from './WizardCanvas';
