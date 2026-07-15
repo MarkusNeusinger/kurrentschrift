@@ -26,6 +26,9 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
+    # Defensive: the column was nullable since 0010, so an explicit NULL could
+    # have been inserted despite the server_default — backfill before tightening.
+    op.execute("UPDATE quiz_words SET created_at = now() WHERE created_at IS NULL")
     op.alter_column("quiz_words", "created_at", existing_type=sa.DateTime(timezone=True), nullable=False)
 
 
