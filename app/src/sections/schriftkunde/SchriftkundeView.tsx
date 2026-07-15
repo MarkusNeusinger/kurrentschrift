@@ -57,8 +57,10 @@ type SourceRef = { label: string; href: string };
 type TermItem = { term: string; desc: string };
 
 // Route targets for the closing "Jetzt ausprobieren" cards (copy in the locale,
-// URLs from the central route constants — same split as the hub pages).
-const TRY_TARGETS: Record<string, string> = {
+// URLs from the central route constants — same split as the hub pages). Keyed
+// by the locale's literal card ids, so adding/renaming a card without its
+// route (or vice versa) fails to compile.
+const TRY_TARGETS: Record<(typeof de.schriftkunde.tryCards)[number]['id'], string> = {
   quiz: paths.quiz,
   tafel: paths.tafel,
   federprobe: paths.scribe,
