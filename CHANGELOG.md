@@ -63,6 +63,26 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Fixed
 
+- **Straight-quote pairing spans the whole text, not one word.** The shaping
+  twins (`core/shaping.py` + `app/src/domain/shaping.ts`) reset the
+  low/high quote parity per whitespace-split word, so a multi-word quote —
+  `"Guten Tag"` in the Federprobe — rendered two opening „ quotes. The parity
+  now threads through `shape_text`/`shapeText`; the shared fixture gained the
+  multi-word case and was regenerated via `REGEN_SHAPING=1`.
+- **Quiz word prompt no longer spins forever on a failed compose.** The word
+  branch of the question card passed no `onError` to `WrittenWord`, so a
+  compose request that died mid-cold-start (the render cache's retry budget is
+  much shorter than the boot loads') left an infinite `CircularProgress`. The
+  prompt now offers the same retry affordance as the Federprobe — a plain-type
+  fallback would hand the solution to the learner, so it retries instead; the
+  post-answer comparison forms fall back to plain type.
+- **Quiz keyboard focus survives a correct answer.** Focus moved to "Weiter"
+  only on a wrong pick; on a correct one every answer button disables and focus
+  fell to `<body>` — reduced-motion users got a "Weiter" button that never
+  received focus, everyone else lost their tab position each auto-advance. The
+  advance control now receives focus on every verdict, and after the advance
+  focus returns to the answer grid.
+
 - **`quiz_words.created_at` is NOT NULL like every other `created_at`.**
   Migration 0010 forgot `nullable=False` (0004 declares it on all other
   tables) while the model implies NOT NULL — the very first `alembic check`

@@ -169,12 +169,16 @@ function positionOf(index: number, count: number): Position {
   return 'medial';
 }
 
-function assignPositions(tokens: RawToken[]): GlyphSlot[] {
+function assignPositions(tokens: RawToken[], quoteParity = 0): { slots: GlyphSlot[]; quoteParity: number } {
   // Positions are assigned per RUN of same-joins-class tokens: a trailing
   // comma or a digit block must not steal the word-final position from the
   // last letter — "Haus," keeps the round Schluss-s — and a detached block
   // ("1922") resolves its own initial/medial/final internally. Mirrors
   // core/shaping.py::_assign_positions.
+  //
+  // `quoteParity` is the straight-quote occurrence count so far; it threads
+  // through `shapeText` so a quote pair spanning several words ("Guten Tag")
+  // still closes high.
   const runs: RawToken[][] = [];
   for (const t of tokens) {
     const last = runs[runs.length - 1];
@@ -182,7 +186,7 @@ function assignPositions(tokens: RawToken[]): GlyphSlot[] {
     else runs.push([t]);
   }
   const out: GlyphSlot[] = [];
-  let straightQuotes = 0; // occurrences within this word, for low/high pairing
+  let straightQuotes = quoteParity;
   for (const run of runs) {
     run.forEach((t, runIdx) => {
       const position = positionOf(runIdx, run.length);
@@ -201,7 +205,7 @@ function assignPositions(tokens: RawToken[]): GlyphSlot[] {
         return;
       }
       // Straight double quote ("): German quotes pair low-then-high („Ja“).
-      // Resolved by occurrence parity within the word, so a quote after
+      // Resolved by occurrence parity across the text, so a quote after
       // other punctuation — ("Ja") — still opens low.
       if (t.quoteAllograph) {
         const letter = straightQuotes % 2 === 0 ? QUOTE_LOW : QUOTE_HIGH;
@@ -223,27 +227,25 @@ function assignPositions(tokens: RawToken[]): GlyphSlot[] {
       out.push({ key: glyphKeyFor(t.letter, position), text: t.text, position, ligature: t.ligature, space: false, joins: t.joins });
     });
   }
-  return out;
-}
-
-// One word → its ordered glyph slots (with positions + allographs resolved).
-// Internal: `shapeText` is the only entry point the quiz uses.
-function shapeWord(word: string): GlyphSlot[] {
-  if (!word) return [];
-  return assignPositions(tokenizeWord(word));
+  return { slots: out, quoteParity: straightQuotes };
 }
 
 // A whole line (word(s) + spaces) → slots, with a space slot between words so
 // the renderer leaves a gap and breaks the connecting stroke there.
+// Straight-quote parity threads across the words so a quote pair spanning
+// several words ("Guten Tag") opens low and closes high.
 export function shapeText(text: string): GlyphSlot[] {
   const out: GlyphSlot[] = [];
+  let quoteParity = 0;
   for (const part of text.split(/(\s+)/)) {
     if (part === '') continue;
     if (/^\s+$/.test(part)) {
       out.push({ key: null, text: ' ', position: null, ligature: false, space: true, joins: false });
       continue;
     }
-    out.push(...shapeWord(part));
+    const shaped = assignPositions(tokenizeWord(part), quoteParity);
+    quoteParity = shaped.quoteParity;
+    out.push(...shaped.slots);
   }
   return out;
 }

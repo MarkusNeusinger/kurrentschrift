@@ -164,6 +164,22 @@
     ]
   },
   {
+    "text": "\"Guten Tag\"",
+    "keys": [
+      "quote-low-initial",
+      "G-initial",
+      "u-medial",
+      "t-medial",
+      "e-medial",
+      "n-final",
+      null,
+      "T-initial",
+      "a-medial",
+      "g-final",
+      "quote-high-initial"
+    ]
+  },
+  {
     "text": "Wort – Wort",
     "keys": [
       "W-initial",

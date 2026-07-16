@@ -58,6 +58,11 @@ export const quiz = {
     autoNext: 'nächste Frage …',
     next: 'Weiter',
     cropAlt: 'Buchstabe in alter Schreibschrift',
+    // Word-prompt compose fetch failed (after the cold-start retries) — the
+    // plain-type fallback would hand the solution to the learner, so the card
+    // offers a retry instead.
+    renderError: 'Das Wort lässt sich gerade nicht schreiben — der Server ist nicht erreichbar.',
+    renderRetry: 'Erneut versuchen',
   },
   results: {
     heading: 'Auswertung',

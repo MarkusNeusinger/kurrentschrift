@@ -15,7 +15,7 @@
 // canonical yet); words via WrittenWord. The comparison forms are static and
 // tinted (inkColor), never a second write-in performance.
 
-import { Box, Typography } from '@mui/material';
+import { Box, Button, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useEffect, useState } from 'react';
 
@@ -51,6 +51,7 @@ function WrittenForm({
   cropUrl,
   fallbackColor,
   word,
+  retryOnError,
 }: {
   kind: 'letter' | 'word';
   renderKey: string | null;
@@ -64,9 +65,19 @@ function WrittenForm({
   fallbackColor?: string;
   // Larger Antiqua type for a word fallback vs. a single letter.
   word?: boolean;
+  // The unanswered prompt: a failed word fetch must NOT fall back to plain
+  // type (that would hand the solution to the learner) — offer a retry instead.
+  retryOnError?: boolean;
 }) {
   const [unavailable, setUnavailable] = useState(false);
-  useEffect(() => setUnavailable(false), [renderKey]);
+  // Word compose fetch failed (after the cold-start retries) — without this the
+  // card would spin forever; the nonce remounts WrittenWord to kick a fresh fetch.
+  const [failed, setFailed] = useState(false);
+  const [retryNonce, setRetryNonce] = useState(0);
+  useEffect(() => {
+    setUnavailable(false);
+    setFailed(false);
+  }, [renderKey]);
 
   const fallback = (
     <Typography
@@ -78,8 +89,27 @@ function WrittenForm({
 
   if (kind === 'word') {
     if (!renderKey) return fallback;
+    if (failed) {
+      if (!retryOnError) return fallback;
+      return (
+        <Stack spacing={1.5} sx={{ alignItems: 'center', textAlign: 'center', px: 2 }}>
+          <Typography sx={{ color: 'text.secondary' }}>{de.quiz.play.renderError}</Typography>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => {
+              setFailed(false);
+              setRetryNonce((n) => n + 1);
+            }}
+          >
+            {de.quiz.play.renderRetry}
+          </Button>
+        </Stack>
+      );
+    }
     return (
       <WrittenWord
+        key={`${renderKey}#${retryNonce}`}
         text={renderKey}
         inkColor={inkColor}
         animate={animate}
@@ -88,6 +118,7 @@ function WrittenForm({
         // The prompt is the riddle: the default aria-label carries the word
         // itself and would hand the solution to the DOM/screen reader.
         ariaLabel={de.common.writtenWord.ariaLabelNeutral}
+        onError={() => setFailed(true)}
       />
     );
   }
@@ -263,6 +294,7 @@ export function QuestionVisual({
               label={letterpressText(question)}
               height={isWord ? 110 : 150}
               cropUrl={promptCrop}
+              retryOnError
             />
           </Box>
         </>
