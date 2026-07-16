@@ -129,9 +129,10 @@ _PUNCT: dict[str, str] = {
 _NONJOINING: dict[str, tuple[str, dict[str, str]]] = {c: (b, {}) for c, b in {**_DIGITS, **_PUNCT}.items()}
 
 # The straight double quote is ambiguous: German writing opens low („) and
-# closes high (“). Resolved by occurrence parity within the word — first "
+# closes high (“). Resolved by occurrence parity across the whole text — first "
 # opens low, second closes high — so a quote after other punctuation, ("Ja"),
-# still opens low.
+# still opens low, and a quote closing after several words ("Guten Tag") still
+# closes high instead of re-opening.
 _STRAIGHT_QUOTE = '"'
 
 
@@ -222,11 +223,15 @@ def _position_of(index: int, count: int) -> Position:
     return "medial"
 
 
-def _assign_positions(tokens: list[_RawToken]) -> list[GlyphSlot]:
+def _assign_positions(tokens: list[_RawToken], quote_parity: int = 0) -> tuple[list[GlyphSlot], int]:
     # Positions are assigned per RUN of same-joins-class tokens: a trailing
     # comma or a digit block must not steal the word-final position from the
     # last letter — "Haus," keeps the round Schluss-s — and a detached block
     # ("1922") resolves its own initial/medial/final internally.
+    #
+    # `quote_parity` is the straight-quote occurrence count so far; it threads
+    # through `shape_text` so a quote pair spanning several words ("Guten Tag")
+    # still closes high. Returns the slots plus the updated parity.
     runs: list[list[_RawToken]] = []
     for t in tokens:
         if runs and runs[-1][-1].joins == t.joins:
@@ -234,7 +239,7 @@ def _assign_positions(tokens: list[_RawToken]) -> list[GlyphSlot]:
         else:
             runs.append([t])
     out: list[GlyphSlot] = []
-    straight_quotes = 0  # occurrences within this word, for low/high pairing
+    straight_quotes = quote_parity
     for run in runs:
         for run_idx, t in enumerate(run):
             position = _position_of(run_idx, len(run))
@@ -246,7 +251,7 @@ def _assign_positions(tokens: list[_RawToken]) -> list[GlyphSlot]:
                 continue
             if t.quote_allograph:
                 # Straight double quote ("): German quotes pair low-then-high
-                # („Ja“). Resolved by occurrence parity within the word, so a
+                # („Ja“). Resolved by occurrence parity across the text, so a
                 # quote after other punctuation — ("Ja") — still opens low.
                 base = "quote-low" if straight_quotes % 2 == 0 else "quote-high"
                 straight_quotes += 1
@@ -256,7 +261,7 @@ def _assign_positions(tokens: list[_RawToken]) -> list[GlyphSlot]:
                 out.append(GlyphSlot(None, t.text, None, False, False, joins=False))
                 continue
             out.append(GlyphSlot(_key_for(t.entry, position), t.text, position, t.ligature, False, joins=t.joins))
-    return out
+    return out, straight_quotes
 
 
 # ----------------------------------------------------------------- public API
@@ -266,16 +271,23 @@ def shape_word(word: str) -> list[GlyphSlot]:
     """One word → its ordered glyph slots (positions + allographs resolved)."""
     if not word:
         return []
-    return _assign_positions(_tokenize_word(word))
+    slots, _ = _assign_positions(_tokenize_word(word))
+    return slots
 
 
 def shape_text(text: str) -> list[GlyphSlot]:
-    """A whole line → slots, with a space slot between words (breaks the join)."""
+    """A whole line → slots, with a space slot between words (breaks the join).
+
+    Straight-quote parity threads across the words so a quote pair spanning
+    several words ("Guten Tag") opens low and closes high.
+    """
     out: list[GlyphSlot] = []
+    quote_parity = 0
     for part in text.split():
         if out:
             out.append(GlyphSlot(None, " ", None, False, True, joins=False))
-        out.extend(shape_word(part))
+        slots, quote_parity = _assign_positions(_tokenize_word(part), quote_parity)
+        out.extend(slots)
     return out
 
 

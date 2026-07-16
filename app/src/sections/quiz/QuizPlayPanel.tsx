@@ -33,12 +33,26 @@ export function QuizPlayPanel(p: PlayProps) {
   const { current, verdict } = p;
   const answered = verdict !== 'idle';
 
-  // After a wrong pick every answer button disables, so keyboard focus would
-  // fall back to <body>; move it onto the one actionable control ("Weiter →").
+  // After a pick every answer button disables, so keyboard focus would fall
+  // back to <body>; move it onto the one actionable control ("Weiter →") — it
+  // renders on a wrong pick and, for reduced-motion users, on a correct one
+  // too (no auto-advance there). After the advance the buttons re-enable, so
+  // focus returns to the answer grid instead of being lost to <body>.
   const advanceRef = useRef<HTMLButtonElement>(null);
+  const firstChoiceRef = useRef<HTMLButtonElement>(null);
+  const answeredRef = useRef(false);
   useEffect(() => {
-    if (verdict === 'wrong') advanceRef.current?.focus();
+    if (verdict !== 'idle') {
+      answeredRef.current = true;
+      advanceRef.current?.focus();
+    }
   }, [verdict]);
+  useEffect(() => {
+    if (answeredRef.current) {
+      answeredRef.current = false;
+      firstChoiceRef.current?.focus();
+    }
+  }, [p.qNonce]);
 
   if (!current) {
     return (
@@ -110,7 +124,7 @@ export function QuizPlayPanel(p: PlayProps) {
 
       {/* Answer grid */}
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
-        {p.choices.map((c) => {
+        {p.choices.map((c, idx) => {
           const isAnswer = c.value === correctValue;
           const isPick = p.picked?.value === c.value;
           const showCorrect = answered && isAnswer;
@@ -118,6 +132,7 @@ export function QuizPlayPanel(p: PlayProps) {
           return (
             <ButtonBase
               key={c.value}
+              ref={idx === 0 ? firstChoiceRef : undefined}
               disabled={answered}
               onClick={() => p.onPickChoice(c)}
               sx={{
