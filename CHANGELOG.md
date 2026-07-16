@@ -63,6 +63,37 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Fixed
 
+- **`/diagnostic` is admin-gated like its compute siblings.** The 3-column
+  diagnostic re-runs the image pipeline (chart decode + binarise +
+  skeletonise, ~0.2 s CPU) per request; `/fit` and `/quality` were gated for
+  exactly that reason but `/diagnostic` stayed public and uncached on the
+  max-instances=1 service. Only admin surfaces consume it — the public
+  renderer reads the cached `/write` payloads. The admin-gate HTTP test
+  matrix now includes it.
+- **Structural uniqueness for `glyph_key`.** Every template read — including
+  the public `/write` endpoints — keys on `glyph_key` via
+  `scalar_one_or_none()`, so two rows sharing `(style, glyph_key, variant)`
+  would turn every read into a 500; the API's 409 backstops are
+  read-then-write and bypassable out of band. Migration 0015 adds the unique
+  constraint (mirrored in the model), making the backstops UX instead of the
+  only defense.
+- **Bbox saves reject degenerate rectangles.** `PUT /bboxes/{key}` accepted
+  inverted or negative rectangles (`x1 <= x0`, `y1 <= y0`), which stored fine
+  and then 500ed the public crop/derivation paths on an empty crop; the
+  handler now 422s with a clear message, alongside the existing
+  baseline/midband check.
+- **Cross-source pen-pool invalidation.** A style can pool from several chart
+  sources (Kurrent: loth-1866 + petzendorfer-1889); a trace/resample/delete
+  issued through source A that touches a template whose provenance is B left
+  B's pooled nib/pen stale for the 10-minute TTL. Template writes now clear
+  the whole style's pools (they are tiny), with a unit test pinning it.
+- **Cache-Control on the remaining public reads.** `GET /bboxes/status` (the
+  quiz boot) and the crop PNGs (quiz prompt fallback; the wizard busts via
+  its version param) now carry the shared public cache header; `GET
+  /templates` deliberately stays uncached — the admin sidebar reads the same
+  list and needs a fresh `has_data` right after a trace, and the code now
+  says so.
+
 - **Fact-checked public copy, with the fact sheets updated to match.** A
   research pass with primary sources settled the audit's content findings:
   the Schriftkunde chronology note claimed the Swiss cantons dropped Kurrent

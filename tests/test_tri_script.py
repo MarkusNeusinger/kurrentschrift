@@ -119,6 +119,29 @@ def test_pen_from_profiles_falls_back_without_measurements():
     assert empty.nib.width_units == pytest.approx(BROAD_NIB_WIDTH_UNITS)
 
 
+def test_invalidate_pooled_style_clears_all_sources_of_the_style():
+    # A style pools from several chart sources (Kurrent: loth + petzendorfer);
+    # a write through one source must drop the OTHER source's pool too, or a
+    # cross-source re-trace serves a stale pen for the TTL.
+    import time
+
+    from api import rendering
+
+    now = time.monotonic()
+    rendering._nib_cache[("kurrent", "loth-1866")] = (0.07, now)
+    rendering._nib_cache[("kurrent", "petzendorfer-1889")] = (0.06, now)
+    rendering._nib_cache[("suetterlin", "suetterlin-1922")] = (0.05, now)
+    rendering._pen_cache[("kurrent", "petzendorfer-1889", "pressure")] = (None, now)
+    try:
+        rendering.invalidate_pooled_style("kurrent")
+        assert not [k for k in rendering._nib_cache if k[0] == "kurrent"]
+        assert not [k for k in rendering._pen_cache if k[0] == "kurrent"]
+        # Other styles keep their pools.
+        assert ("suetterlin", "suetterlin-1922") in rendering._nib_cache
+    finally:
+        rendering._nib_cache.pop(("suetterlin", "suetterlin-1922"), None)
+
+
 def test_pen_from_profiles_clamps_edge_fraction():
     from api.rendering import pen_from_profiles
 

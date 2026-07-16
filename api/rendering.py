@@ -123,10 +123,24 @@ async def pooled_pen(db: AsyncSession, style_id: str, source_id: str, width_reso
 
 
 def invalidate_pooled_nib(style_id: str, source_id: str) -> None:
-    """Drop the memoised nib/pen after a template write (trace/resample/delete)."""
+    """Drop the memoised nib/pen of one (style, source) pool."""
     _nib_cache.pop((style_id, source_id), None)
     for resolver in ("pressure", "broad_nib"):
         _pen_cache.pop((style_id, source_id, resolver), None)
+
+
+def invalidate_pooled_style(style_id: str) -> None:
+    """Drop every memoised nib/pen of a style, across ALL its sources.
+
+    A style can pool from several chart sources (Kurrent: loth-1866 +
+    petzendorfer-1889), and a trace/resample/delete issued through source A can
+    change a template whose `provenance_source_id` is B — invalidating only
+    (style, A) would leave B's pool stale for the TTL. The caches are tiny, so
+    the writes simply clear the whole style."""
+    for key in [k for k in _nib_cache if k[0] == style_id]:
+        _nib_cache.pop(key, None)
+    for key in [k for k in _pen_cache if k[0] == style_id]:
+        _pen_cache.pop(key, None)
 
 
 @dataclass(frozen=True)

@@ -2,11 +2,12 @@
 
 from typing import TypeVar
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_admin
 from api.dependencies import require_db, require_source
+from api.http import CACHE_CONTROL
 from api.schemas import BboxIn, BboxOut, BboxStatusOut, GuideConfig
 from core.database import Bbox, BboxRepository, Source
 from core.pipeline import DEFAULT_N_ANCHORS
@@ -49,13 +50,19 @@ async def list_bboxes(source: Source = Depends(require_source), db: AsyncSession
 
 
 @router.get("/status", response_model=list[BboxStatusOut])
-async def list_bbox_status(source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)):
+async def list_bbox_status(
+    response: Response, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
+):
     """Slim public read: just the availability flags per glyph_key.
 
     The quiz gates its vocabulary on locked/split (+ TemplateSummary.has_data);
     the full list above ships every mask/ink/patch JSONB blob for that. Declared
-    BEFORE /{glyph_key} so the literal path wins the route match.
+    BEFORE /{glyph_key} so the literal path wins the route match. Only the quiz
+    boot consumes it (the admin reads the full list), so it caches like the
+    other public reads — the flags change on the same admin-write cadence as
+    the /write payloads.
     """
+    response.headers["Cache-Control"] = CACHE_CONTROL
     rows = await BboxRepository(db).list_status(source.id)
     return [BboxStatusOut(**row) for row in rows]
 
@@ -72,6 +79,16 @@ async def get_bbox(glyph_key: str, source: Source = Depends(require_source), db:
 async def put_bbox(
     glyph_key: str, payload: BboxIn, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
 ):
+    # Geometry sanity: a degenerate or inverted rectangle would store fine but
+    # blow up later on the public read path (empty crop → 500 in the pipeline).
+    if min(payload.x0, payload.y0, payload.x1, payload.y1) < 0:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY, detail="bbox coordinates must be non-negative chart pixels"
+        )
+    if payload.x1 <= payload.x0 or payload.y1 <= payload.y0:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY, detail="bbox must have positive extent (x1 > x0 and y1 > y0)"
+        )
     if payload.baseline_y <= payload.midband_y:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,

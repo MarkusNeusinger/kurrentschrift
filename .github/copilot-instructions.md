@@ -226,7 +226,8 @@ kurrentschrift/
 │   └── versions/     # 0004 library schema + seeds … 0006 Sütterlin 1922 source …
 │   │                 #   0012 Petzendorfer 1889 as a SEPARATE Kurrent source (another hand
 │   │                 #   at ~57°, the only PD Kurrent digits row — never merged into loth-1866)
-│   │                 #   … 0013 quiz_words.created_at NOT NULL, 0014 Gulden gloss fix (silver)
+│   │                 #   … 0013 quiz_words.created_at NOT NULL, 0014 Gulden gloss fix (silver),
+│   │                 #   0015 unique (style_id, glyph_key, variant) on templates
 ├── data/             # Sources, samples, derived — SEPARATE LICENSING
 │   ├── sources/      # public-domain originals (Loth 1866, Sütterlin 1922 incl. connected-writing
 │   │                 #   plates + words.json word rects for the word bench, Koch 1928 Offenbacher
