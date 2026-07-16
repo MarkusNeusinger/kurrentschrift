@@ -373,8 +373,10 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 - **Deploys go no-traffic → smoke → promote.** `api/cloudbuild.yaml` used to
   route 100 % of traffic and only then smoke — a bad revision served users
   until the build went red. The deploy now carries `--no-traffic` +
-  `--tag=candidate`, the smoke suite probes the candidate's tag URL, and a
-  final `update-traffic --to-latest` step promotes only a verified revision.
+  `--tag=candidate` + a deterministic `--revision-suffix`, the smoke suite
+  probes the candidate's tag URL (and asserts the tag still points at this
+  build's revision), and a final `update-traffic --to-revisions` step promotes
+  exactly the smoked revision — never a concurrent build's unsmoked one.
 - **The Tafel boots from the slim bbox read.** `BboxStatusOut` gains the six
   layout scalars (`x0/x1/y0/y1/baseline_y` + flags) the sheet layout needs,
   and `useGrundtafeln` switches from the full `BboxOut` list — the same
