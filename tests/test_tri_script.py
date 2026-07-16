@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 from pathlib import Path
 
 import numpy as np
@@ -200,13 +201,23 @@ def test_letters_only_shaping_unchanged():
 # core/shaping.py and app/src/domain/shaping.ts MUST agree on text → glyph_keys
 # (CLAUDE.md twin mandate). The SAME fixture drives this Python assertion and a
 # Vitest test in app/ (app/src/domain/shaping.test.ts): deliberately mutating
-# one shaping without the other fails CI. Regenerate the expected keys from the
-# Python source of truth (the server-side shaper) when a case legitimately changes.
+# one shaping without the other fails CI. When a case legitimately changes,
+# regenerate the expected keys from the Python source of truth (mirrors the
+# compose-golden pattern):
+#
+#     REGEN_SHAPING=1 uv run --extra test pytest tests/test_tri_script.py -k fixture
+#
+# then re-run BOTH suites (pytest + `npm run test`) to confirm the twin agrees.
 
 
 def test_shaping_cases_fixture_matches_python_shaping():
     cases = json.loads(SHAPING_CASES.read_text(encoding="utf-8"))
     assert cases, "the shared shaping fixture must not be empty"
+    if os.environ.get("REGEN_SHAPING") == "1":
+        for case in cases:
+            case["keys"] = [s.key for s in shape_text(case["text"])]
+        SHAPING_CASES.write_text(json.dumps(cases, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        pytest.skip("shaping fixture regenerated from core/shaping.py — re-run without REGEN_SHAPING")
     for case in cases:
         keys = [s.key for s in shape_text(case["text"])]
         assert keys == case["keys"], f"shaping drift on {case['text']!r}: {keys} != {case['keys']}"

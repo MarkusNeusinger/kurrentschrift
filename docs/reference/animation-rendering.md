@@ -30,8 +30,11 @@ Centerline) hinaus: enthüllt wird die gefüllte **Schwellzug-Silhouette**.
 
 ### Algorithmus (implementiert)
 
-1. `GET /sources/{source_id}/templates/{glyph_key}/diagnostic` liefert pro
-   Pen-Stroke die gefüllte Schwellzug-Silhouette — bevorzugt `outline_paths`
+1. `WrittenGlyph` bezieht das Render-Payload über den geteilten
+   Render-Cache (`app/src/lib/api/renderCache.ts`), der pro Wort/Tafel
+   gebündelt `GET /sources/{source_id}/write/glyphs?keys=…` abruft
+   (`/diagnostic` bleibt dem Admin-Dialog vorbehalten). Das Payload
+   liefert pro Pen-Stroke die gefüllte Schwellzug-Silhouette — bevorzugt `outline_paths`
    (Kapsel-Union als Ringlisten: Außenkontur + Löcher, gerendert als ein
    Pfad mit `fill-rule: evenodd`, damit Schleifenaugen offen bleiben;
    Fallback: die älteren `outline_polygons`) — und die zugehörige

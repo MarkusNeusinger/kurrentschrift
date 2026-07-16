@@ -101,16 +101,30 @@ steps:
     id: "deploy"
     waitFor: ["migrate"]
 
+  # Post-deploy smoke against the freshly deployed revision: a bad image that
+  # still answers /health can 500 on the real render path — probe the paths
+  # the public site actually depends on, plus the fail-closed write gate.
+  # Retries cover the min-instances=0 cold start.
   - name: "gcr.io/cloud-builders/gcloud"
+    entrypoint: "bash"
     args:
-      - "run"
-      - "services"
-      - "describe"
-      - "${_SERVICE_NAME}"
-      - "--region=${_REGION}"
-      - "--platform=managed"
-      - "--format=value(status.url)"
-    id: "get-url"
+      - "-ceu"
+      - |
+        URL=$$(gcloud run services describe ${_SERVICE_NAME} --region=${_REGION} --platform=managed --format='value(status.url)')
+        echo "smoke against $$URL"
+        # Retry EVERY probe: /health doesn't touch the DB, so the first /styles
+        # or /write call can still be the first real DB request after the
+        # min-instances=0 cold start and may fail transiently.
+        RETRY="--retry 5 --retry-delay 5 --retry-all-errors"
+        curl -fsS $$RETRY "$$URL/health" | grep -q '"healthy"'
+        curl -fsS $$RETRY "$$URL/styles" | grep -q '"id"'
+        curl -fsS $$RETRY "$$URL/sources/suetterlin-1922/write/word?text=lesen" | grep -q '"items"'
+        # Fail-closed admin gate, probed via a body-less admin-gated GET so the
+        # assertion can never race request-body validation.
+        code=$$(curl -s $$RETRY -o /dev/null -w '%{http_code}' "$$URL/sources/suetterlin-1922/templates/n-medial/fit")
+        test "$$code" = "401" || { echo "admin gate expected 401, got $$code"; exit 1; }
+        echo "smoke OK"
+    id: "smoke"
     waitFor: ["deploy"]
 
 images:

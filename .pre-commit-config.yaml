@@ -1,0 +1,11 @@
+# Local fast gate — the same ruff checks CI runs, so a format-only red CI run
+# never happens. Install once with:  uvx pre-commit install
+# ESLint/Vitest deliberately stay CI-only (node_modules + runtime cost); run
+# `npm run lint` in app/ before pushing frontend changes.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Keep in lockstep with the ruff version pinned in uv.lock.
+    rev: v0.15.20
+    hooks:
+      - id: ruff-check
+      - id: ruff-format

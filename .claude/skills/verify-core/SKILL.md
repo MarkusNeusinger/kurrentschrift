@@ -20,9 +20,10 @@ uv run --extra test pytest
 async deps live in the `test` extra; in an already-synced checkout
 plain `uv run pytest` happens to work.)
 
-Expected: all pass (29 tests across `tests/test_chart.py`,
-`test_fit.py`, `test_pipeline.py`, `test_template.py`; ~15 s as of
-2026-06). The fixtures in `tests/conftest.py` are synthetic (an
+Expected: all pass (~350 tests across ~30 modules in well under a
+minute; a handful of tool-fixture tests skip when the local-only bench
+fixtures are absent — normal). Check "all pass", not an exact count —
+the suite grows continuously. The fixtures in `tests/conftest.py` are synthetic (an
 800×800 chart with a vertical bar) — no real data, DB, or network is
 touched, so pytest is always safe to run.
 

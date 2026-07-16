@@ -286,8 +286,8 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
 
 - `routes/index.tsx` — Router-Assembly (Suspense-Fallback, errorElement);
   `routes/paths.ts` ist die einzige Quelle der URLs.
-- `sections/landing/` — `LandingView` + `HeroSpecimen` (GLKurrent-Schreib-
-  Animation) + `Reveal` (Scroll-Reveal).
+- `sections/landing/` — `LandingView` + `HeroWritten` (GLKurrent-Schreib-
+  Animation, Font-first mit offener Engine-Naht) + `Reveal` (Scroll-Reveal).
 - `sections/schriftkunde/` — der `/schriftkunde`-Überblick (Grundbegriffe,
   drei Ausgangsschriften mit Specimen, Federn, Tinte, Chronologie).
 - `sections/hub/` — `HubView` (die `/lesen`- und `/schreiben`-Bereichs-Hubs).
@@ -354,9 +354,12 @@ kommen als je eine
 
 ## 8. Was wir nicht machen
 
-- **Kein eigenes Design-System.** MUI 9 deckt unsere UI-Bedürfnisse. Custom
-  Komponenten nur dort, wo es unvermeidbar ist (Animation, Lineatur,
-  Heatmap).
+- **Keine eigene Komponenten-Bibliothek.** MUI 9 deckt unsere
+  UI-Bedürfnisse. Custom-Komponenten nur dort, wo es unvermeidbar ist
+  (Animation, Lineatur, Heatmap). Die verbindliche Bauvorschrift
+  (Tokens, Typo-Leiter, Flächen) ist
+  [`design-system.md`](../concepts/design-system.md) — das ist ein
+  Regelwerk ÜBER MUI, keine eigene Bibliothek.
 - **Kein State-Management-Framework** (Redux/Zustand/Recoil). React-Context
   + lokaler Component-State reichen für unsere Use-Cases.
 - **Keine GraphQL-Schicht.** REST über FastAPI ist genug.

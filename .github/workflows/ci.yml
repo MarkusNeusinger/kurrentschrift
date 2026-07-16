@@ -101,6 +101,21 @@ jobs:
           DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/kurrentschrift
         run: uv run alembic upgrade head
 
+      # Model ↔ migration drift: a model column added without a revision passes
+      # `upgrade head` silently; autogenerate-diff against the migrated DB
+      # catches it.
+      - name: Alembic check (model/migration drift)
+        env:
+          DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/kurrentschrift
+        run: uv run alembic check
+
+      # Reversibility of the newest revision: downgrade one step and re-upgrade,
+      # so a broken/missing downgrade never lands unnoticed.
+      - name: Alembic downgrade/upgrade roundtrip
+        env:
+          DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/kurrentschrift
+        run: uv run alembic downgrade -1 && uv run alembic upgrade head
+
   frontend:
     name: Frontend (build)
     runs-on: ubuntu-latest
@@ -113,7 +128,8 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
-          node-version: 20
+          # 22 = active LTS (Node 20 reached end-of-life 2026-04-30).
+          node-version: 22
           cache: npm
           cache-dependency-path: app/package-lock.json
 
@@ -125,9 +141,19 @@ jobs:
 
       # Fast fixture-driven Vitest run — pins the shaping.ts ↔ core/shaping.py
       # twin against tests/fixtures/shaping_cases.json (the Python side asserts
-      # the same fixture in tests/test_tri_script.py).
+      # the same fixture in tests/test_tri_script.py). --coverage feeds the
+      # Codecov frontend flag so SPA patch coverage stops being invisible.
       - name: Test
-        run: npm run test
+        run: npm run test -- --coverage
+
+      - name: Upload frontend coverage to Codecov
+        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v6
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./app/coverage/coverage-final.json
+          flags: frontend
+          fail_ci_if_error: false
 
       # `npm run build` is `tsc && vite build`, so this gates the type-check too.
       - name: Build

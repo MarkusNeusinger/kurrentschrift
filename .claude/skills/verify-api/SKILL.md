@@ -32,47 +32,56 @@ OpenAPI UI: `http://localhost:8000/docs` (returns 200).
 
 ## 2 · Read-endpoint sweep (agent path, safe)
 
-All of these are GET and safe against the shared DB:
+All of these are GET and safe against the shared DB. `suetterlin-1922`
+is the public site's source (`CONFIG.sourceId`) and the most-authored
+one, so sweep against it:
 
 ```bash
 curl -fsS http://localhost:8000/styles | python3 -c 'import json,sys; d=json.load(sys.stdin); print([s["id"] for s in d])'
+curl -fsS http://localhost:8000/sources | python3 -c 'import json,sys; d=json.load(sys.stdin); print([s["id"] for s in d])'
 curl -fsS http://localhost:8000/hands
-curl -fsS http://localhost:8000/sources/loth-1866/bboxes | python3 -c 'import json,sys; d=json.load(sys.stdin); print(len(d), [b["glyph_key"] for b in d])'
-curl -fsS http://localhost:8000/sources/loth-1866/templates | python3 -c 'import json,sys; d=json.load(sys.stdin); print(len(d), [t["glyph_key"] for t in d])'
+curl -fsS http://localhost:8000/quiz-words | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))'
+curl -fsS http://localhost:8000/sources/suetterlin-1922/bboxes/status | python3 -c 'import json,sys; d=json.load(sys.stdin); print(len(d), sum(1 for b in d if b["locked"]))'
+curl -fsS http://localhost:8000/sources/suetterlin-1922/templates | python3 -c 'import json,sys; d=json.load(sys.stdin); print(len(d))'
 ```
 
-Expected baseline (2026-06): styles = `['kurrent', 'offenbacher',
-'suetterlin']` (the three seeded Grundvorlagen); `hands` = `[]`;
-bboxes and templates each list the authored glyph keys (currently the
-`a`/`u` clusters across initial/medial/final — the count grows as
-glyphs get authored, so check shape, not exact numbers).
+Expected baseline: styles = `['kurrent', 'offenbacher', 'suetterlin']`
+(three seeded Grundvorlagen); sources = `['koch-1928', 'loth-1866',
+'petzendorfer-1889', 'suetterlin-1922']` (four seeded chart sources);
+`hands` = `[]` (normal at this stage); quiz-words ≈ 500. Bbox status +
+templates list the authored glyph keys — the counts grow as glyphs get
+authored, so check shape, not exact numbers.
 
-The compute-heavy read endpoints (these run the real extract/fit
-pipeline server-side on the Loth chart, so a 200 with the right keys
-verifies core + DB + chart file together):
+The public write/render endpoints (the engine behind Federprobe, Tafel
+and the quiz — a 200 with `items`/`glyphs` verifies core + DB + chart
+file together, and both carry Cache-Control):
 
 ```bash
-curl -fsS http://localhost:8000/sources/loth-1866/templates/u-medial/diagnostic | python3 -c 'import json,sys; print(sorted(json.load(sys.stdin).keys()))'
-curl -fsS http://localhost:8000/sources/loth-1866/templates/u-medial/fit | python3 -c 'import json,sys; print(sorted(json.load(sys.stdin).keys()))'
-curl -fsS -o /dev/null -w '%{content_type} %{http_code}\n' http://localhost:8000/sources/loth-1866/bboxes/u-medial/crop
+curl -fsS 'http://localhost:8000/sources/suetterlin-1922/write/word?text=lesen' | python3 -c 'import json,sys; d=json.load(sys.stdin); print(len(d["items"]), d["missing"])'
+curl -fsS 'http://localhost:8000/sources/suetterlin-1922/write/glyphs?keys=n-medial' | python3 -c 'import json,sys; d=json.load(sys.stdin); print([g["glyph_key"] for g in d["glyphs"]], d["missing"])'
+curl -fsS http://localhost:8000/sources/suetterlin-1922/templates/n-medial/diagnostic | python3 -c 'import json,sys; print(sorted(json.load(sys.stdin).keys())[:6])'
+curl -fsS -o /dev/null -w '%{content_type} %{http_code}\n' http://localhost:8000/sources/suetterlin-1922/bboxes/n-medial/crop
 ```
 
-Expected: diagnostic keys include `anchors_template`,
-`outline_polygons`, `skeleton_polyline_px`, `template_guides`; fit
-keys include `fitted_polyline_px`, `canonical_polyline_px`,
-`placement`; crop returns `image/png 200`.
+Expected: word compose returns draw items (missing = `[]` for a fully
+authored word); diagnostic keys include `anchors_template`,
+`outline_polygons`, `template_guides`; crop returns `image/png 200`.
 
 ## 3 · Admin write gate (probe only — do not write)
 
 Write endpoints (`PUT`/`DELETE` bboxes, `POST …/trace`,
-`POST …/resample`, `DELETE` templates) are gated by `require_admin`.
-The safe probe is the unauthorized request:
+`POST …/trace-preview`, `POST …/resample`, `DELETE` templates) AND the
+compute-heavy diagnostics `GET …/fit` + `GET …/quality` are gated by
+`require_admin` (the two GETs cost seconds of CPU per call, so they are
+gated like the writes — an unauthenticated `/fit` returning 401 is
+correct, not a regression). The safe probe is the unauthorized request:
 
 ```bash
-curl -s -o /dev/null -w '%{http_code}\n' -X PUT -H 'Content-Type: application/json' -d '{}' http://localhost:8000/sources/loth-1866/bboxes/u-medial
+curl -s -o /dev/null -w '%{http_code}\n' -X PUT -H 'Content-Type: application/json' -d '{}' http://localhost:8000/sources/suetterlin-1922/bboxes/n-medial
+curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8000/sources/suetterlin-1922/templates/n-medial/fit
 ```
 
-Expected: `401` with `ADMIN_TOKEN` configured — or `503` when neither
+Expected: `401` for both with `ADMIN_TOKEN` configured — or `503` when neither
 `ADMIN_TOKEN` nor Cloudflare Access is configured (`require_admin`
 fails closed, `api/auth.py`); a 503 here means the env is missing the
 token, not that the gate is broken. **Do not send authorized writes
@@ -90,9 +99,15 @@ needed) is the same one CI runs:
 uv run --extra test pytest
 ```
 
-Expected: all pass (29 tests, ~15 s as of 2026-06). CI
+Expected: all pass (a handful of tool-fixture tests skip when the
+local-only bench fixtures are absent — that's normal). Check "all
+pass", not an exact count; the suite grows continuously. CI
 (`.github/workflows/ci.yml`) runs this plus ruff on every push/PR —
-see the `verify-core` skill for the lint commands.
+see the `verify-core` skill for the lint commands. The HTTP-level API
+suites (`tests/test_api_http.py`, `tests/test_api_admin_writes.py`,
+`tests/test_api_auth.py`) already cover the gate, the authorized write
+paths and the CF-Access branch against in-memory SQLite — no live DB
+needed for those.
 
 ## Gotchas
 
@@ -118,12 +133,14 @@ see the `verify-core` skill for the lint commands.
   never ad-hoc DDL.
 - **`hands` being empty is normal** at the current MVP stage — don't
   read it as a broken endpoint.
-- **`/diagnostic` and `/fit` are slow-ish by design** (they run
-  skeletonisation + the regularised fit on the chart crop per call);
-  a sub-second JSON response is still the norm locally.
+- **`/diagnostic` is slow-ish by design** (it runs skeletonisation on
+  the chart crop per call); a sub-second JSON response is still the
+  norm locally. `/fit` + `/quality` are admin-gated for the same
+  reason — probe them for 401, don't expect public 200s.
 - **Router prefixes nest under sources**: bboxes and templates live at
-  `/sources/{source_id}/…`, not top-level. The only seeded source is
-  `loth-1866`.
+  `/sources/{source_id}/…`, not top-level. Seeded sources:
+  `loth-1866` + `petzendorfer-1889` (Kurrent), `suetterlin-1922`
+  (the public default), `koch-1928` (Offenbacher).
 
 ## Troubleshooting
 

@@ -24,22 +24,22 @@ GitHub. Nothing to launch; this skill is the editing contract.
 
 ```
 docs/
-├── concepts/    # Architektur, Philosophie, getroffene Entscheidungen
-├── reference/   # Nachschlage-Dokumente (Stack, Regeln, Pipelines)
-├── notes/       # Operativer Zustand, Journale (z. B. stifte-fuer-unterwegs)
-└── proposals/   # Offene Vorschläge, noch nicht entschieden
+├── concepts/     # Architektur, Philosophie, getroffene Entscheidungen
+├── reference/    # Nachschlage-Dokumente (Stack, Regeln, Pipelines)
+├── schriftkunde/ # Quellengestützte Faktenblätter zu den Schriften
+├── notes/        # Operativer Zustand, Journale (z. B. stifte-fuer-unterwegs)
+└── proposals/    # Offene Vorschläge, noch nicht entschieden
 ```
 
 Checklist for adding or renaming a doc:
 
 1. Pick the layer: settled decision → `concepts/`, look-up material →
-   `reference/`, operational state → `notes/`, not-yet-decided →
-   `proposals/`.
+   `reference/`, source-backed script facts → `schriftkunde/`,
+   operational state → `notes/`, not-yet-decided → `proposals/`.
 2. **Add it to the Quick-Links table and the structure tree in
-   `docs/index.md`** — with one exception: `notes/` is deliberately
-   outside the index tree (research/state material, referenced in
-   prose only); only `concepts/`, `reference/` and `proposals/` docs
-   get index entries.
+   `docs/index.md`** — all five layers are indexed there (the tree
+   plus a prose section per layer, incl. `notes/`); keep both in sync
+   with the file system.
 3. If it records a decision, include a „Verworfen“ section for the
    rejected alternatives — that is what makes the decision binding
    (see below).
@@ -74,8 +74,7 @@ contradicts a Verworfen entry, stop and surface it to the user.
   surface for the old form** — don't rely on remembering which docs
   cite it (a targeted edit once left contributing.md, datenablage.md
   and orthographie-regeln.md stale until the user asked). Explicitly
-  include `proposals/` and `notes/` even though they're outside the
-  index tree:
+  include `proposals/` and `notes/`:
 
   ```bash
   grep -rn '<old term or § number>' docs/ CLAUDE.md .github/copilot-instructions.md README.md
