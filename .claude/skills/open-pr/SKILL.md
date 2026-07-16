@@ -116,8 +116,11 @@ Then open the PR (ready for review, not a draft):
 Repeat this loop until **both** hold: all checks pass *and* there are
 zero unresolved review threads.
 
-**a. Wait for the pipeline** (the two jobs are named
-`Backend (ruff + pytest)` and `Frontend (build)`):
+**a. Wait for the pipeline** (three jobs: `Backend (ruff + pytest)`,
+`Migrations (alembic upgrade head)` — the upgrade + `alembic check` +
+downgrade-roundtrip sequence against a throwaway Postgres; run
+`/verify-migrations` locally BEFORE pushing any alembic diff — and
+`Frontend (build)`):
 
 - **Local:** `gh pr checks <num> --watch`.
 - **Cloud:** `mcp__github__subscribe_pr_activity` for the PR and end

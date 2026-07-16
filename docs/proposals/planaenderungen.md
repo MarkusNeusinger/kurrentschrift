@@ -200,6 +200,18 @@ C ist eine Statistik über Instanzen.
 Text→Template-Mapper in M4 designt — kein Code jetzt, kein Stub im
 Voraus.
 
+**Nachtrag (Juli 2026):** Der hier beschriebene Text→Glyph-Slot-Mapper
+existiert inzwischen als pragmatischer Vorläufer in `core/shaping.py`
+(Lang-s-Regel, Fuge-Marker `|`, geschlossenes Ligaturen-Set,
+Positions-Zuweisung pro Joins-Klassen-Run; TS-Twin `shaping.ts`). Offen
+bleibt die hier gemeinte **volle** silbenbewusste Orthographie-Schicht
+(Regeln aus `orthographie-regeln.md` als Daten) — sie würde
+`core/shaping.py` ablösen bzw. speisen. Hinweis zur Terminologie: die
+im Text erwähnte `glyphs`-Tabelle heißt seit Migration 0004
+`templates` (Schema in `core/database/models.py`);
+„`glyphs.position` → `glyphs.chart_role`" liest sich heute als
+`templates.position` → `templates.chart_role`.
+
 ### Verantwortung
 
 Mappt einen Eingabetext (deutscher Text in moderner oder vor-1901-

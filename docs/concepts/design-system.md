@@ -40,9 +40,13 @@ im Code immer über das Token (`paper.viridian`, nie `'#40826d'`).
 | `paper.sepia` | `#5e4726` | Sepia — sekundärer Text, In-Prosa-Links (Ruhezustand) |
 | `paper.sepiaFaint` | `#9a8259` | blasses Sepia — Captions, Metazeilen |
 | `paper.viridian` | `#40826d` | **der einzige Akzent** — CTAs, Hover, Initialen, aktive Zustände |
+| `paper.viridianText` | `#2e6152` | Viridian in Textgröße — für Kontrast abgeleitet (5.15:1 auf dem Papiergrund, WCAG AA), kein Periodenton; Karten-CTAs, Links, Quiz-Score/-Verdikt |
 | `paper.line` | `#b6a079` | Haarlinie — Rahmen, Trenner, Tabellen-Borders |
 
 **Akzent-Regel:** Viridian ist sparsam und bedeutungstragend (Aktion/Aktiv/Akzent).
+Sobald Viridian als Fließtext-großer Text auftritt, gilt `paper.viridianText`
+(der Akzent `#40826d` erreicht auf dem Papiergrund nur 3.28:1); `#40826d`
+bleibt für Display-Größen, Initialen, Rahmen, Füllungen und Fokus-Ringe.
 Niemals als Fläche, nie zwei konkurrierende Akzentfarben. Semantik (Erfolg/Fehler im
 Quiz) nutzt Periodenpigmente — siehe [Style-Guide §2](style-guide.md).
 

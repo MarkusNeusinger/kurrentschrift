@@ -49,11 +49,20 @@ Centerline) hinaus: enthüllt wird die gefüllte **Schwellzug-Silhouette**.
 3. Der Masken-Pfad nutzt `pathLength={1}` + `stroke-dasharray: 1`; ein
    animierter `stroke-dashoffset` von `1` auf `0` lässt die Tinte entlang
    des realen Schreibwegs erscheinen.
-4. Animation als **CSS-Keyframes** (Emotion), nicht WAAPI. Pro Teilstrich
-   ist die Dauer proportional zur Pfadlänge (die Feder bewegt sich mit
-   konstanter Geschwindigkeit), sequenziert über `animation-delay`; nach
-   dem Schreibende folgt der „Eisengallus-Settle" (Tintenfarbe frisch →
-   oxidiert).
+4. Animation per **WAAPI** (`el.animate(...)` in
+   `app/src/hooks/useStrokeReveal.ts`), bewusst *nicht* als globale
+   Emotion-`@keyframes` — Live-Tippen auf `/federprobe` würde das
+   Stylesheet unbegrenzt wachsen lassen; die Animationen sind an die
+   Elemente gebunden und werden beim Cleanup gecancelt. Das Timing kommt
+   aus `app/src/lib/strokeTiming.ts` und ist **nicht konstant**: das
+   Zwei-Drittel-Gesetz der Schreibkinematik (v ∝ κ^(−1/3), die Feder
+   verlangsamt in Kurven) liefert pro Teilstrich nichtlineare
+   Dashoffset-Keyframes, und die Isochronie (Dauer ∝ Länge^0.6)
+   verteilt die Gesamtdauer sublinear über die Striche; vor einem
+   Absetz-Strich liegt eine kurze Stiftpause (`PEN_PAUSE_MS`). Nach dem
+   Schreibende folgt der „Eisengallus-Settle" (Tintenfarbe frisch →
+   oxidiert). Fallback ohne WAAPI oder bei degeneriertem Profil: die
+   fertige Silhouette steht sofort (wie beim Reduced-Motion-Pfad).
 5. **Mehrstrich-Duktus (Absetzen):** jeder Pen-Stroke ist ein eigenes
    Polygon mit eigener Centerline (`trace_meta.stroke_starts`, gespeist
    aus den `pen_up`-Markern im `raw_path`). Die Striche spielen
@@ -64,11 +73,15 @@ Centerline) hinaus: enthüllt wird die gefüllte **Schwellzug-Silhouette**.
 ### Code-Skizze
 
 ```typescript
-// app/src/components/WrittenGlyph/WrittenGlyph.tsx (Auszug)
+// app/src/hooks/useStrokeReveal.ts (Auszug)
 // Maske: gestrichelter Pfad mit pathLength=1 — Offset 1 versteckt, 0 zeichnet.
-const reveal = keyframes`from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; }`;
-// pro Centerline i im <mask>:
-//   animation: `${reveal} ${dur_i}ms linear ${delay_i}ms forwards`
+// arcAtTime aus lib/strokeTiming: Bogenlängen-Anteil ŝ pro Zeitanteil t̂
+// (Zwei-Drittel-Gesetz) → nichtlineare Keyframes statt konstanter Sweep.
+const frames = t.arcAtTime.map((s, k) => ({
+  strokeDashoffset: `${(1 - s).toFixed(4)}`,
+  offset: k / steps,
+}));
+el.animate(frames, { duration: t.dur, delay: t.delay, fill: 'forwards', easing: 'linear' });
 ```
 
 ### UI-Controls (Ist-Stand)
@@ -166,15 +179,17 @@ entscheidet (§5):
 ### Implementierung
 
 ```python
-# core/width_profile.py (kommt mit P4-Implementation)
-def resolve_widths(glyph: Glyph, source: Source) -> list[float]:
-    if source.width_profile_mode == "konstant":
-        return [statistics.mean(glyph.half_widths)] * len(glyph.half_widths)
-    return glyph.half_widths  # Default: voller Schwellzug
+# Sinngemäß — die reale Auflösung lebt in core/widths.py::resolve_half_widths,
+# gesteuert von styles.width_resolver (englische Werte, architektur.md §5).
+def resolve_widths(template: Template, style: Style) -> list[float]:
+    if style.width_resolver == "constant":
+        return [pooled_nib] * len(template.half_widths)  # Source-gepoolter Gleichzug
+    return template.half_widths  # "pressure": voller Schwellzug
 ```
 
-Frontend bekommt das aufgelöste `half_widths`-Array über den existierenden
-`/diagnostic`-Endpoint (Backend führt die Auflösung durch).
+Frontend bekommt die aufgelösten Silhouetten über die öffentlichen
+`/write`-Payloads (Backend führt die Auflösung durch; `api/rendering.py`
+kalibriert die gepoolte Feder pro Source).
 
 ---
 
