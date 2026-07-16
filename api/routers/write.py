@@ -61,9 +61,9 @@ async def get_write_glyphs(
     """
     requested = [k for k in dict.fromkeys(k.strip() for k in keys.split(",")) if k]
     if not requested:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail="keys must name at least one glyph_key")
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail="keys must name at least one glyph_key")
     if len(requested) > MAX_BATCH_KEYS:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"at most {MAX_BATCH_KEYS} keys per request")
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail=f"at most {MAX_BATCH_KEYS} keys per request")
 
     ctx = await resolve_render_context(source, db)
     templates = await TemplateRepository(db).get_many(source.style_id, requested)
@@ -110,11 +110,11 @@ async def get_write_word(
     normalized = unicodedata.normalize("NFC", text).strip()
     if not normalized:
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY, detail="text must contain at least one non-space character"
+            status.HTTP_422_UNPROCESSABLE_CONTENT, detail="text must contain at least one non-space character"
         )
     if len(normalized) > MAX_TEXT_LEN:
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"text is limited to {MAX_TEXT_LEN} characters"
+            status.HTTP_422_UNPROCESSABLE_CONTENT, detail=f"text is limited to {MAX_TEXT_LEN} characters"
         )
 
     ctx = await resolve_render_context(source, db)
