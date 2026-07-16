@@ -101,9 +101,12 @@ steps:
       # Deploy WITHOUT routing traffic: the smoke step probes this revision on
       # its tag URL first, and only the promote step below shifts traffic —
       # so a bad image never serves users, not even between deploy and a
-      # failing smoke. The `candidate` tag moves to each new revision.
+      # failing smoke. The `candidate` tag moves to each new revision, and the
+      # deterministic revision suffix lets promote target EXACTLY the revision
+      # this build smoked (never a concurrent build's newer one).
       - "--no-traffic"
       - "--tag=candidate"
+      - "--revision-suffix=$BUILD_ID"
     id: "deploy"
     waitFor: ["migrate"]
 
@@ -116,9 +119,14 @@ steps:
     args:
       - "-ceu"
       - |
-        URL=$$(gcloud run services describe ${_SERVICE_NAME} --region=${_REGION} --platform=managed --format=json \
-          | python3 -c "import json,sys; t=json.load(sys.stdin)['status']['traffic']; print(next(x['url'] for x in t if x.get('tag')=='candidate'))")
-        echo "smoke against candidate $$URL"
+        # Resolve the candidate tag's URL AND assert it still points at THIS
+        # build's revision (deterministic --revision-suffix) — a concurrent
+        # build re-tagging `candidate` must fail this build, not get smoked
+        # on its behalf.
+        read -r URL REV <<< "$$(gcloud run services describe ${_SERVICE_NAME} --region=${_REGION} --platform=managed --format=json \
+          | python3 -c "import json,sys; t=json.load(sys.stdin)['status']['traffic']; c=next(x for x in t if x.get('tag')=='candidate'); print(c['url'], c['revisionName'])")"
+        test "$$REV" = "${_SERVICE_NAME}-$BUILD_ID" || { echo "candidate tag moved to $$REV (expected ${_SERVICE_NAME}-$BUILD_ID)"; exit 1; }
+        echo "smoke against candidate $$URL ($$REV)"
         # Retry EVERY probe: /health doesn't touch the DB, so the first /styles
         # or /write call can still be the first real DB request after the
         # min-instances=0 cold start and may fail transiently.
@@ -134,7 +142,9 @@ steps:
     id: "smoke"
     waitFor: ["deploy"]
 
-  # Smoke passed — route 100% of traffic to the just-verified revision.
+  # Smoke passed — route 100% of traffic to EXACTLY the revision this build
+  # deployed and smoked (deterministic name via --revision-suffix), never
+  # `--to-latest`, which could promote a concurrent build's unsmoked revision.
   - name: "gcr.io/cloud-builders/gcloud"
     args:
       - "run"
@@ -143,7 +153,7 @@ steps:
       - "${_SERVICE_NAME}"
       - "--region=${_REGION}"
       - "--platform=managed"
-      - "--to-latest"
+      - "--to-revisions=${_SERVICE_NAME}-$BUILD_ID=100"
     id: "promote"
     waitFor: ["smoke"]
 
