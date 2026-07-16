@@ -110,7 +110,7 @@ export const admin = {
       'Die Generalprobe der Bibliothek: Die kanonische Vorlage wird elastisch auf das Skelett des Originals gelegt — mit derselben Einpassung werden später echte Schreibproben vermessen. Mit dem λ-Regler die Regularisierung abwägen: niedrig folgt dem Skelett, hoch hält die Form zusammen.',
     writtenCaption:
       'Die Vorlage, wie der Duktus sie schreibt: Strich für Strich, mit echtem Absetzen zwischen den Zügen. Genau so erscheint der Buchstabe später im Quiz — und so soll er einmal auf der Startseite schreiben.',
-    computing: 'Diagnose wird gerechnet…',
+    computing: 'Diagnose wird gerechnet …',
     noCanonicalShort: 'noch kein Canonical — erst Strich aufnehmen',
     reload: 'neu laden',
     cropHeading: 'Original (Tafel-Ausschnitt)',
@@ -127,7 +127,7 @@ export const admin = {
     guidesReadout: 'Grundlinie=0 · Mittellinie=1 · Oberlinie={{ascender}} · Unterlinie={{descender}}',
   },
   fit: {
-    computing: 'Einpassung wird gerechnet…',
+    computing: 'Einpassung wird gerechnet …',
     overlayHeading: 'Original · Skelett · Ausgangslage (grau) · Einpassung (rot)',
     overlayCaption:
       'Die rote Füllung ist die eingepasste Vorlage mit ihrer gemessenen Strichbreite — sie soll die Originaltinte decken. Grau gestrichelt: die Ausgangslage vor der Einpassung; blassrot: das Skelett, auf das eingepasst wird.',
@@ -148,7 +148,7 @@ export const admin = {
     sectionTitle: 'Qualität & Neu ableiten',
     intro:
       'Bildraum-Vergleich: Wie gut deckt die gerenderte Silhouette die Originaltinte? Links der gespeicherte Stand, rechts was eine Neuableitung aus dem gezeichneten Weg mit dem aktuellen Code erreichen würde — erst vergleichen, dann übernehmen.',
-    computing: 'Qualität wird gerechnet…',
+    computing: 'Qualität wird gerechnet …',
     stored: 'Gespeichert',
     candidate: 'Neu ableitbar',
     noCandidate: 'Kein Roh-Weg gespeichert — Neuableitung nicht möglich.',
@@ -190,8 +190,8 @@ export const admin = {
     colDelta: 'Δ Score',
     colStatus: 'Status',
     statusPending: 'wartet',
-    statusScoring: 'rechnet…',
-    statusApplying: 'speichert…',
+    statusScoring: 'rechnet …',
+    statusApplying: 'speichert …',
     statusDone: 'fertig',
     statusFailed: 'Fehler',
     noRawPath: 'Kein Roh-Weg gespeichert — im Wizard neu zeichnen.',

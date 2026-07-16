@@ -97,7 +97,7 @@ export const schriftkunde = {
     },
     {
       term: 'Schwellzug & Gleichzug',
-      desc: 'Die elastische Spitzfeder schwillt unter Druck an — dünne Aufstriche, dicke Abstriche (Schwellzug). Die Gleichzugfeder hält überall dieselbe Strichstärke (Gleichzug).',
+      desc: 'Unter Druck schwillt der Strich der elastischen Spitzfeder an — dünne Aufstriche, dicke Abstriche (Schwellzug). Die Gleichzugfeder hält überall dieselbe Strichstärke (Gleichzug).',
     },
   ],
   conceptsSources: [SRC.lineatur, SRC.schreibschrift, SRC.feder],
@@ -152,7 +152,7 @@ export const schriftkunde = {
 
   // Specimen captions, keyed by variant id (rendered next to the visual).
   specimen: {
-    kurrentCaption: 'Schauschrift-Font (GL German Cursive)',
+    kurrentCaption: 'Schauschrift-Font (GL-GermanCursive)',
     suetterlinCaption: 'live geschrieben aus der gemeinfreien Vorlage von 1922 — die Synthese-Engine des Projekts',
     // Shown when the engine can't render (cold/unreachable API) and the card
     // falls back to the bundled Sütterlin font — kept truthful about what's on
@@ -221,7 +221,7 @@ export const schriftkunde = {
   endHeading: 'Warum wir heute nicht mehr so schreiben',
   endParagraphs: [
     'Die Kurrent und die Sütterlin verschwanden nicht allmählich, sondern fast auf einen Schlag: Ein Erlass vom Januar 1941 beendete die gebrochenen Druckschriften, ein Rundschreiben vom 1. September 1941 untersagte, die Kurrent in der Schule zu lehren. Ab dem Schuljahr 1941/42 lernten alle Kinder nur noch die lateinische „Deutsche Normalschrift“.',
-    'Begründet wurde das Verbot mit der Behauptung, die gebrochenen Schriften seien „Schwabacher Judenlettern“ — eine erfundene, sachlich falsche Propaganda. Als sachlichen Grund nannte die Reichskanzlei dagegen, dass im Ausland kaum jemand die eckige deutsche Schrift lesen könne.',
+    'Begründet wurde das Verbot mit der Behauptung, die gebrochenen Schriften seien „Schwabacher Judenlettern“ — eine erfundene, sachlich falsche Propaganda. Als sachlichen Grund nannte der Chef der Reichskanzlei bei der Weiterleitung des Erlasses dagegen, dass Ausländer die eckige deutsche Schrift meist nicht lesen könnten.',
     'Die Folge: Wer ab 1941/42 eingeschult wurde, lernte die alte Schrift gar nicht mehr. Innerhalb einer einzigen Generation wurde aus einer Alltagsschrift eine, die heute nur noch wenige lesen können — deshalb wirkt ein alter Brief oft wie eine Geheimschrift.',
   ],
   endSources: [SRC.erlass, SRC.antiquaFraktur, SRC.suetterlin],
@@ -236,7 +236,7 @@ export const schriftkunde = {
     },
     {
       term: 'Gleichzugfeder',
-      desc: 'Kugelspitzfeder (kugeliger Kopf) oder Redisfeder (runde Schreibplatte). Sie hält überall dieselbe Strichstärke — ganz ohne Druckwechsel. Drucklos und kindgerecht: die Feder der Sütterlin, die sich mit ihr in den 1920er Jahren durchsetzte.',
+      desc: 'Kugelspitzfeder (kugeliger Kopf) oder Redisfeder (runde Schreibplatte). Sie hält überall dieselbe Strichstärke — ganz ohne Druckwechsel. Drucklos und kindgerecht: die Feder der Sütterlin — mit ihr verbreitete sie sich ab 1915 von Preußen aus, um 1930 war sie in den meisten deutschen Ländern Schulschrift.',
     },
     {
       term: 'Bandzugfeder',
@@ -325,13 +325,13 @@ export const schriftkunde = {
     { year: 'nach 1945', text: 'Vereinzelt als Zweitschrift wiederbelebt (etwa Koch-Hermersdorf in Bayern), ohne dauerhaften Erfolg.' },
   ],
   timelineNote:
-    'Im deutschen Sprachraum verlief das Ende verschieden: Österreich lehrte bis 1938/39 die traditionelle Kurrent (nicht die Sütterlin), die Schweiz gab sie schon um 1900 kantonsweise auf.',
+    'Im deutschen Sprachraum verlief das Ende verschieden: Österreich lehrte bis 1938/39 die traditionelle Kurrent (nicht die Sütterlin), die Schweiz gab sie zwischen 1890 und 1930 kantonsweise auf.',
   timelineSources: [SRC.adfontesKursive, SRC.ottweiler, SRC.kurrent, SRC.suetterlin, SRC.offenbacher, SRC.ausgangsschrift, SRC.erlass],
 
   // --- Quellen ---------------------------------------------------------------
   sourcesHeading: 'Quellen',
   sourcesIntro:
-    'Jede Angabe auf dieser Seite ist belegt. Die Fakten stützen sich auf paläographische und archivische Quellen — ein Universitäts-Tutorium (ad fontes, Univ. Zürich), Schulmuseen und Archive, Museen, das Lehrbuch von Süß sowie die gemeinfreien Originaltafeln. Die Wikipedia-Artikel sind der frei zugängliche Überblick dazu, nicht die Grundlage. Die ausführlichen Faktenblätter mit Einzelnachweisen liegen in der Schriftkunde des Projekts.',
+    'Jede Angabe auf dieser Seite ist belegt. Die Fakten stützen sich auf paläographische und archivische Quellen — ein Universitäts-Tutorium (ad fontes, Univ. Zürich), Schulmuseen und Archive, Museen, das Lehrbuch von Süß sowie die gemeinfreien Originaltafeln. Die Wikipedia-Artikel sind der frei zugängliche Überblick dazu, nicht die Grundlage. Die ausführlichen Faktenblätter mit Einzelnachweisen liegen im offenen GitHub-Repository des Projekts (docs/schriftkunde) — der Link steht unten im Seitenfuß.',
   sourcesScholarlyHeading: 'Wissenschaft, Archive & Museen',
   sourcesScholarly: [
     SRC.adfontesKursive,
