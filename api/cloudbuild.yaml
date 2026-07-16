@@ -104,9 +104,11 @@ steps:
       # failing smoke. The `candidate` tag moves to each new revision, and the
       # deterministic revision suffix lets promote target EXACTLY the revision
       # this build smoked (never a concurrent build's newer one).
+      # `b` prefix: Cloud Run requires the suffix to start with a lowercase
+      # letter, and $BUILD_ID is a UUID that usually starts with a digit.
       - "--no-traffic"
       - "--tag=candidate"
-      - "--revision-suffix=$BUILD_ID"
+      - "--revision-suffix=b$BUILD_ID"
     id: "deploy"
     waitFor: ["migrate"]
 
@@ -125,7 +127,7 @@ steps:
         # on its behalf.
         read -r URL REV <<< "$$(gcloud run services describe ${_SERVICE_NAME} --region=${_REGION} --platform=managed --format=json \
           | python3 -c "import json,sys; t=json.load(sys.stdin)['status']['traffic']; c=next(x for x in t if x.get('tag')=='candidate'); print(c['url'], c['revisionName'])")"
-        test "$$REV" = "${_SERVICE_NAME}-$BUILD_ID" || { echo "candidate tag moved to $$REV (expected ${_SERVICE_NAME}-$BUILD_ID)"; exit 1; }
+        test "$$REV" = "${_SERVICE_NAME}-b$BUILD_ID" || { echo "candidate tag moved to $$REV (expected ${_SERVICE_NAME}-b$BUILD_ID)"; exit 1; }
         echo "smoke against candidate $$URL ($$REV)"
         # Retry EVERY probe: /health doesn't touch the DB, so the first /styles
         # or /write call can still be the first real DB request after the
@@ -153,7 +155,7 @@ steps:
       - "${_SERVICE_NAME}"
       - "--region=${_REGION}"
       - "--platform=managed"
-      - "--to-revisions=${_SERVICE_NAME}-$BUILD_ID=100"
+      - "--to-revisions=${_SERVICE_NAME}-b$BUILD_ID=100"
     id: "promote"
     waitFor: ["smoke"]
 
