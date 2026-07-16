@@ -21,7 +21,7 @@ export const impressum = {
     linkedinHandle: 'markus-neusinger',
     linkedinUrl: 'https://www.linkedin.com/in/markus-neusinger/',
     disclaimer:
-      'kurrentschrift.ink ist eine private Liebhaberei: der Versuch, die deutsche Kurrentschrift wieder lesbar und schreibbar zu machen. Alle gezeigten Schriftzüge sind mit Sorgfalt nachgebildet und als Synthese gekennzeichnet — kein historisches Original.',
+      'kurrentschrift.ink ist eine private Liebhaberei: der Versuch, die deutsche Kurrentschrift wieder lesbar und schreibbar zu machen. Alle nachgebildeten Schriftzüge sind mit Sorgfalt synthetisiert und als Synthese gekennzeichnet; daneben zeigt die Seite gemeinfreie historische Originalvorlagen mit Quellenangabe.',
   },
   // "Other projects" block, mirroring the anyplot legal page (name — one-line
   // description; own sites are linked with noopener only to keep the referrer).
@@ -65,7 +65,7 @@ export const impressum = {
     notCollected: [
       'keine Konten, keine Profile',
       'keine Cookies',
-      'keine personenbezogenen Daten, keine Weitergabe an Dritte',
+      'keine personenbezogenen Daten über die nach dreißig Tagen gelöschten Server-Logs hinaus, keine Weitergabe an Dritte',
       'kein Training von KI-Modellen mit Besucherdaten',
     ],
     rightsTitle: 'Deine Rechte',

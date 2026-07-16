@@ -55,12 +55,18 @@ und ist in der DB geseedet (Migration 0006).
   deutschen Ländern Schulschrift
   ([Wikipedia: Ludwig Sütterlin](https://de.wikipedia.org/wiki/Ludwig_S%C3%BCtterlin_(Grafiker)),
   [altdeutsche-schrift.org](https://www.altdeutsche-schrift.org/suetterlin/)).
+  **Abweichende Datierung:** das Osnabrücker Schulmuseum nennt ein
+  reichsweites Obligatorium erst 1934
+  ([osnabruecker-schulmuseum.de](https://www.osnabruecker-schulmuseum.de/index.php/14-das-museum/50-informationen-zur-suetterlinschrift)) —
+  nicht abschließend aufgelöst.
 - **1935** wurde eine modifizierte Form als „Deutsche Volksschrift"
   offizieller Bestandteil des Schulunterrichts
   ([Wikipedia: Sütterlinschrift](https://de.wikipedia.org/wiki/S%C3%BCtterlinschrift)).
-- **Ende 1941:** Lehrverbot der Kurrentschriften zum 1. September 1941;
-  ab Schuljahr 1941/42 lateinische „Deutsche Normalschrift"
+- **Ende 1941:** Lehrverbot der Kurrentschriften durch einen Erlass des
+  Reichserziehungsministeriums zum 1. September 1941; ab Schuljahr
+  1941/42 lateinische „Deutsche Normalschrift"
   ([Wikipedia: Normalschrifterlass](https://de.wikipedia.org/wiki/Normalschrifterlass),
+  [Gesellschaft für Schleswig-Holsteinische Geschichte](https://geschichte-s-h.de/sh-von-a-bis-z/s/schriftenstreit/),
   [Sütterlinschrift](https://de.wikipedia.org/wiki/S%C3%BCtterlinschrift)).
 - **Didaktik:** kein Schönheitsanspruch — leicht erlernbare Grundlage, aus
   der sich die persönliche Handschrift entwickeln sollte

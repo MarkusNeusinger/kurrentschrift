@@ -659,7 +659,10 @@ ENTRIES: list[Entry] = [
     {"word": "Groschen", "distractors": ["Kirschen"], "era": "historic", "note": "Münze (10 Pfennig)"},
     {"word": "Pfennig", "distractors": ["Honig"], "era": "historic", "note": "Münze, 1/100 Mark"},
     {"word": "Kreuzer", "distractors": ["Kräuter"], "era": "historic", "note": "alte süddeutsche Münze"},
-    {"word": "Gulden", "distractors": ["Mulden"], "era": "historic", "note": "alte Goldmünze"},
+    # Silver, not gold: the 19th-century South German Gulden (the one in old
+    # letters) was a silver coin — only the name derives from the medieval
+    # gold "guldin" (Münchner Münzvertrag 1837, silbernes Kurantgeld).
+    {"word": "Gulden", "distractors": ["Mulden"], "era": "historic", "note": "alte Silbermünze (süddeutsche Währung)"},
     {"word": "Zins", "distractors": ["Zinn"], "era": "historic", "note": "Pacht, Abgabe; auch: Kapitalertrag"},
     {"word": "Zehnt", "distractors": ["Zelt"], "era": "historic", "note": "der zehnte Teil der Ernte als Abgabe"},
     {"word": "Obrigkeit", "distractors": ["Ewigkeit"], "era": "historic", "note": "die herrschende Gewalt, Behörden"},

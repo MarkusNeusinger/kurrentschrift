@@ -153,12 +153,19 @@ in [kurrent.md](kurrent.md). Übrige Werte:
   Bestandteil des Schulunterrichts
   ([Wikipedia: Sütterlinschrift](https://de.wikipedia.org/wiki/S%C3%BCtterlinschrift)).
 - **1941:** Zwei Vorgänge, oft vermischt: der **Normalschrifterlass vom
-  3. Januar 1941** beendet die gebrochenen **Druck**schriften
-  („Schwabacher Judenlettern" als absurde Begründung); ein Rundschreiben
-  vom **1. September 1941** untersagt das Lehren der Kurrent in der
-  Schule, ab Schuljahr 1941/42 gilt die lateinische „Deutsche
-  Normalschrift"
+  3. Januar 1941** — ein Rundschreiben Martin Bormanns als Stabsleiter des
+  Stellvertreters des Führers (Parteidienststelle, nicht Reichskanzlei) —
+  beendet die gebrochenen **Druck**schriften („Schwabacher Judenlettern"
+  als absurde Begründung); bei der Weiterleitung an die obersten
+  Reichsbehörden am **13. Januar 1941** nennt der Chef der Reichskanzlei
+  Hans Heinrich Lammers den praktischen Grund: Ausländer, die die deutsche
+  Sprache beherrschen, könnten „diese Schrift meist nicht lesen". Ein
+  Erlass des Reichserziehungsministeriums vom **1. September 1941**
+  untersagt das Lehren der Kurrent in der Schule, ab Schuljahr 1941/42
+  gilt die lateinische „Deutsche Normalschrift"
   ([Wikipedia: Normalschrifterlass](https://de.wikipedia.org/wiki/Normalschrifterlass),
+  [Faksimile des Bormann-Rundschreibens](https://ewnor.de/ah/bormann_erlass.php),
+  [Gesellschaft für Schleswig-Holsteinische Geschichte](https://geschichte-s-h.de/sh-von-a-bis-z/s/schriftenstreit/),
   [Sütterlinschrift](https://de.wikipedia.org/wiki/S%C3%BCtterlinschrift)).
 - **Nach 1945:** Ab 1954 in einigen Bundesländern wieder Zusatzschrift,
   ohne dauerhaften Erfolg; Bayern nutzt 1950–1955 die
@@ -203,14 +210,18 @@ verlief aber je Land völlig unterschiedlich.
   ([Wikipedia: Deutsche Kurrentschrift](https://de.wikipedia.org/wiki/Deutsche_Kurrentschrift)).
 - Kein Verbot, sondern **kantonale Schulbeschlüsse zwischen 1890 und
   1930**
-  ([Zentralbibliothek Zürich, Arbeitsblatt](https://www.zb.uzh.ch/storage/app/media/ueber-uns/Citizen-Science/Schulzeitreisen/20210621_Keine_Angst_vor_alten_Schriften/Arbeitsblatt.pdf)).
+  ([Zentralbibliothek Zürich, Arbeitsblatt](https://www.zb.uzh.ch/storage/app/media/ueber-uns/Citizen-Science/Schulzeitreisen/20210621_Keine_Angst_vor_alten_Schriften/Arbeitsblatt.pdf);
+  akademisch gestützt: Boser/Hofmann, *Fraktur or Antiqua in primary
+  schools?*, Paedagogica Historica 55 (2019), S. 792–811 — Kontroverse ab
+  den 1860ern, Umstellung in den ersten Jahrzehnten des 20. Jh.).
   **Quellen-Spannung:** das Staatsarchiv Graubünden nennt Kurrent dort
   noch „bis in die 1940er Jahre" Schulstoff
   ([gr.ch](https://www.gr.ch/DE/institutionen/verwaltung/ekud/afk/sag/dokumentation/digitaleVitrine/Seiten/DeutscheKurrentschrift.aspx)) —
   nicht aufgelöst.
-- Sütterlin war eine preußisch-deutsche Schulschrift; eine Einführung in
-  der Schweiz ist in den Standardquellen nicht belegt
-  ([Wikipedia: Sütterlinschrift](https://de.wikipedia.org/wiki/S%C3%BCtterlinschrift)).
+- Die preußische Sütterlinschrift wurde in der Schweiz **nirgends
+  eingeführt** — „und jedenfalls nirgendwo die preussische
+  Sütterlinschrift"
+  ([Zentralbibliothek Zürich, Information für Lehrpersonen](https://www.zb.uzh.ch/storage/app/media/ueber-uns/Citizen-Science/Schulzeitreisen/20210621_Keine_Angst_vor_alten_Schriften/Information-Lehrpersonen.pdf)).
 - Nachfolger: die Hulligerschrift (Basel 1926) wurde 1936 als **Schweizer
   Schulschrift** („Schnüerlischrift") von zehn Kantonen übernommen, 1947
   revidiert; seit 2014 löst die **Basisschrift** sie ab

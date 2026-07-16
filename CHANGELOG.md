@@ -63,6 +63,43 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Fixed
 
+- **Fact-checked public copy, with the fact sheets updated to match.** A
+  research pass with primary sources settled the audit's content findings:
+  the Schriftkunde chronology note claimed the Swiss cantons dropped Kurrent
+  "um 1900" while the geography section of the same page (correctly, per the
+  cited ZB Zürich source) says 1890–1930 — the note now matches. The 1941
+  passage attributes the "foreigners can't read it" justification precisely
+  (Lammers, Chef der Reichskanzlei, forwarding note of 13 Jan 1941) and the
+  fact sheets now name Bormann's party-office circular (3 Jan), Lammers'
+  forwarding (13 Jan) and the Reich education ministry's school decree
+  (1 Sept) with sources. The Gleichzugfeder blurb no longer claims Sütterlin
+  "setzte sich in den 1920er Jahren durch" (Prussia from 1915, most Länder
+  only around 1930). The Sütterlin-never-in-Switzerland claim is now backed
+  by a direct ZB Zürich quote in the fact sheet, and the Swiss 1890–1930
+  range gained an academic reference (Boser/Hofmann 2019).
+- **Quiz gloss for "Gulden": silver, not gold.** The 19th-century South
+  German Gulden was a silver coin (only the name derives from the medieval
+  gold "guldin"); the generator source, `quiz_words.json` and — via new
+  migration 0014 — the already-seeded DB row now read "alte Silbermünze
+  (süddeutsche Währung)".
+- **Impressum/llms.txt no longer overclaim synthesis.** "Alle gezeigten
+  Schriftzüge sind … kein historisches Original" contradicted the
+  Schreibtafel's genuine public-domain scans and the Koch 1928 original on
+  /schriftkunde; both texts now distinguish synthesized forms (marked as
+  such) from the PD originals shown with provenance. The privacy section's
+  "keine personenbezogenen Daten" now carves out the 30-day server logs the
+  same page already discloses (IPs are personal data).
+- **Copy polish across the public pages.** Landing no longer claims all
+  three scripts are engine-written ("die Sütterlin schreibt hier schon");
+  the Federprobe card invites a word *or short sentence* (the input takes
+  48 chars); "↻ noch einmal schreiben" matches the other replay labels;
+  the worksheet intro gains its missing article; the written-glyph aria
+  label says "alte Schreibschrift" instead of naming Kurrent while the
+  engine writes Sütterlin; trailing ellipses uniformly get their narrow
+  space; the Schwellzug explainer no longer has the *pen* swelling; the
+  show-script font is consistently "GL-GermanCursive"; the sources intro
+  points readers to the GitHub fact sheets.
+
 - **Straight-quote pairing spans the whole text, not one word.** The shaping
   twins (`core/shaping.py` + `app/src/domain/shaping.ts`) reset the
   low/high quote parity per whitespace-split word, so a multi-word quote —

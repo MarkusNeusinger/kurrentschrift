@@ -99,8 +99,8 @@ export const common = {
   // Full-page boot states (BootStatus call sites in AdminLayout and QuizView).
   boot: {
     apiUnreachable: 'API nicht erreichbar',
-    apiColdStart: 'API startet (Cold Start), einen Moment…',
-    loadingSource: 'lade Quelle…',
+    apiColdStart: 'API startet (Cold Start), einen Moment …',
+    loadingSource: 'lade Quelle …',
     // Quiz variant talks about the Vorlage (the source chart), not the API.
     sourceUnreachable: 'Vorlage nicht erreichbar',
     sourceColdStart: 'Der Server wacht gerade auf — das kann beim ersten Besuch bis zu einer Minute dauern.',
@@ -108,7 +108,7 @@ export const common = {
     // (English) exception text; the technical error goes to the console.
     sourceUnreachableDetail:
       'Die Vorlage konnte auch nach mehreren Versuchen nicht geladen werden — der Server ist gerade nicht erreichbar.',
-    loadingTemplate: 'lade Vorlage…',
+    loadingTemplate: 'lade Vorlage …',
     retry: 'Erneut versuchen',
     apiUnreachableDetail: 'Die API (Cloud Run) konnte auch nach mehreren Versuchen nicht erreicht werden.',
     // Followed in JSX by the <code>uv run uvicorn …</code> dev-server hint.
@@ -128,7 +128,7 @@ export const common = {
   },
   // WrittenGlyph — the "as written" ductus playback (quiz prompt today).
   writtenGlyph: {
-    ariaLabel: 'Kurrent-Buchstabe, wie geschrieben',
+    ariaLabel: 'Buchstabe in alter Schreibschrift, wie geschrieben',
     replay: 'noch einmal schreiben',
   },
   // WrittenWord — neutral label for a written word whose text must NOT leak

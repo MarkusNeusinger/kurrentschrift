@@ -6,7 +6,7 @@ export const scribe = {
   lead: 'Tippe ein Wort oder einen Satz — der synthetisierte Duktus schreibt es Zug um Zug in Sütterlin, mit den Übergängen zwischen den Buchstaben. Lang-s, Schluss-s und die Ligaturen (ch · ck · tz · ſt · qu · ß) werden automatisch gesetzt.',
   inputLabel: 'Dein Text',
   inputPlaceholder: 'lesen und schreiben',
-  replay: '↻ nochmal schreiben',
+  replay: '↻ noch einmal schreiben',
   // Examples the user can drop into the field.
   examplesLabel: 'Beispiele:',
   examples: ['lesen', 'schreiben', 'denen', 'das', 'Glück'],

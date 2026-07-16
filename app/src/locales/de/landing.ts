@@ -31,7 +31,7 @@ export const landing = {
   // Vorlage to look at (muted) — neither is in the quiz yet, so no "lesen" claim.
   scriptsHeading: 'Drei Schriften, drei Federn',
   scriptsIntro:
-    '„Kurrentschrift“ fasst eine ganze Familie deutscher Schreibschriften zusammen. Drei davon zum Anfangen — jede mit ihrer eigenen Feder, und keine als Font, sondern Zug um Zug nachgebildet.',
+    '„Kurrentschrift“ fasst eine ganze Familie deutscher Schreibschriften zusammen. Drei davon zum Anfangen — jede mit ihrer eigenen Feder. Das Ziel: keine als Font, sondern Zug um Zug nachgebildet — die Sütterlin schreibt hier schon.',
   scripts: [
     {
       name: 'Kurrent',
@@ -70,7 +70,7 @@ export const landing = {
     scribe: {
       title: 'Federprobe',
       cta: 'Wort schreiben lassen →',
-      desc: 'Ein beliebiges Wort eingeben — und zusehen, wie der nachgebildete Duktus es Zug um Zug in Sütterlin schreibt, samt den Übergängen von Buchstabe zu Buchstabe.',
+      desc: 'Ein Wort oder einen kurzen Satz eingeben — und zusehen, wie der nachgebildete Duktus es Zug um Zug in Sütterlin schreibt, samt den Übergängen von Buchstabe zu Buchstabe.',
     },
     quiz: {
       title: 'Buchstaben-Quiz',

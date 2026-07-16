@@ -155,7 +155,7 @@ export const wizard = {
     title: 'Optimierung (Vorschau)',
     body:
       'Die gespeicherte Form über dem Original — rot, mit gemessener Strichbreite. Der volle Vergleich (roh vs. optimiert, alle Maße) liegt in der Diagnose.',
-    computing: 'Vorschau wird gerechnet…',
+    computing: 'Vorschau wird gerechnet …',
     score: 'Score',
     overlayCaption:
       'Rot = die gerenderte Form über dem Crop. Wo Tinte ohne Rot ist, deckt das Rendering nicht; wo Rot über hellem Papier liegt, rendert es zu viel — so siehst du die Stellen, die noch nicht passen.',
