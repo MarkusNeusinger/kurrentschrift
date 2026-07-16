@@ -55,7 +55,7 @@ definiert (P1-Arbeit).
 
 | Pfad | Inhalt | Bereich |
 |---|---|---|
-| `/` | Landing (der Hero schreibt ein Wort live mit dem Wort-Renderer) | Einstieg |
+| `/` | Landing (der Hero schreibt das Markenwort font-first: GLKurrent + Clip-Path-Reveal, Engine-Naht offen — §7) | Einstieg |
 | `/schriftkunde` | Überblick der deutschen Schreibschriften (der umbenannte frühere `/lehrbuch`) | Schriftkunde |
 | `/lesen` | Hub → Quiz, Tafel | Lesen |
 | `/quiz` | Buchstaben-Quiz | Lesen |

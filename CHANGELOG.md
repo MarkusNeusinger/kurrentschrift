@@ -5,7 +5,8 @@ All notable changes to this project are documented here. The format is based on
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Every PR adds its entries under `[Unreleased]`; a release moves that section under a new
-version heading. Code changes are covered here — data-only commits (chart sources,
+version heading AND bumps `CITATION.cff` (`version` + `date-released`) in the same
+commit. Code changes are covered here — data-only commits (chart sources,
 authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
@@ -68,28 +69,6 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   (`/write/glyphs` + `/write/word`) graduate from the proposal into a proper
   reference doc (pipeline, wire format, cache semantics, render-cache
   consumption), indexed in `docs/index.md`.
-
-### Changed
-
-- **CI frontend job on Node 22** (20 reached EOL 2026-04-30); `app` engines
-  field now requires `>=22`.
-- **Docs and agent-surface refresh from the audit.** `.claude/commands/prime.md`
-  rewritten from the current repo layout (it described the pre-library-schema
-  world: `glyphs.py` router, `constants.ts`, `state.tsx`); `verify-api` skill
-  aligned with reality (admin-gated `/fit`+`/quality`, four seeded sources,
-  `/write/*` + `/quiz-words` + `/bboxes/status` in the sweep); `verify-core`
-  drops stale test counts; `verify-frontend` drops the obsolete favicon-404
-  gotcha and describes the render-cache quiz boot; `write-docs` matches the
-  real `docs/index.md` structure (notes/ IS indexed, `schriftkunde/` exists);
-  CLAUDE.md corrections (hero is font-first with an open engine seam,
-  koch-1928 is a live seeded source, migration 0008 listed, known-gaps
-  updated) mirrored to `.github/copilot-instructions.md` (CI = three jobs);
-  `naming-und-setup.md` §1 reflects the Sütterlin pivot; `docs/index.md`
-  prose sections list style-guide/design-system/federmodelle/qualitaetsmetrik;
-  `frontend-stack.md` names `HeroWritten` and clarifies "keine eigene
-  Komponenten-Bibliothek"; `animation-rendering.md` §1 describes the
-  render-cache data path; `contributing.md` names the full live feature set;
-  `sprachregelung.md` documents the EN-proposals exception.
 
 ### Fixed
 
@@ -318,9 +297,114 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   on top of jul11 was not re-measured in the merge environment (the wordbench needs the
   shared DB), but both composer unit-suites (`test_compose_coupling`, `test_compose_joins`)
   pass and the compose golden fixture is deliberately re-pinned.
+- **WCAG AA contrast for viridian text and the quiz answered state.** New
+  `paper.viridianText` (#2e6152 — derived for contrast, not a period hex;
+  5.15:1 on the paper ground vs 3.28:1 for the accent #40826d) is used
+  wherever viridian is body-size text: card CTAs, the hub/landing links, the
+  quiz score and verdict, the Scribe copy confirmation, Tafel chip/provenance
+  links, prose-link hovers. `quiz.resolvedText` darkened to #6e5c42 (5.5:1 on
+  the answered button face, was 3.61:1). The accent #40826d stays for large
+  display, initials, borders, fills and focus rings.
+- **Contiguous heading outline on every public page.** Card titles now carry
+  explicit heading components (hub cards `h2` under the page `h1`; landing,
+  Schriftkunde and Tafel cards `h3` under their `h2` section headings), and
+  MUI's default subtitle→`<h6>` mapping is overridden to `<p>` at the theme
+  level — definition-row terms and timeline years no longer appear as phantom
+  section headings to screen readers.
+- **The nav marks the current area.** PublicHeader links carry
+  `aria-current="page"` plus a visible active state (ink colour + full
+  viridian underline) for the area whose page is open.
+- **`/trace` can no longer cross-link template rows.** The template upsert
+  conflicts on `(style, glyph, position, variant)` while reads go by
+  `glyph_key`, so a client bug pairing a wrong URL key with a payload identity
+  could conflict-update another row and rewrite its `glyph_key` — reads then
+  silently 404 on the shared prod DB. `POST /trace` now derives the expected
+  key from the shared registry (`core.shaping.expected_glyph_key`, the Python
+  twin of `glyphs.ts`; `{base}-{position}` convention as fallback) and rejects
+  a mismatch with 422.
+- **DB engine init race closed.** The lazy `asyncio.Lock` getter in
+  `core/database/connection.py` was itself check-then-set, so two first
+  requests could each mint their own lock, both enter `init_db()`, and the
+  loser's engine (and Cloud SQL connector) leaked without `dispose()`. The
+  lock is now created at import; the dead `_sync_init_lock` is gone.
+- **No more raw English error strings on public pages.** `/quiz` and `/tafel`
+  showed `String(e)` (e.g. "TypeError: Failed to fetch") as the BootStatus
+  detail under a German title; both now show a fixed German sentence
+  (`common.boot.sourceUnreachableDetail`) and log the exception to the console.
+- **A late word-compose rejection can no longer evict a fresh cache entry.**
+  `fetchRenderWord`'s error eviction now checks entry identity before deleting
+  (like the glyph cache): after a FIFO eviction + re-fetch under the same key,
+  the old promise's rejection used to delete the new, valid entry.
+- **The nav's current-area marker covers the standalone tool routes.** /quiz
+  and /tafel light up Lesen, /federprobe lights up Schreiben (they keep their
+  stable top-level URLs and are not nested under the hubs); only the exactly
+  matching page uses `aria-current="page"`, area membership uses `"true"`.
+- **CHANGELOG `[Unreleased]` consolidated to one heading per category.**
+  Successive PR insertions had produced duplicate Added/Changed/Fixed headings
+  with bullets filed under the wrong category; regrouped per Keep-a-Changelog.
+- **The Cloud SQL connector fallback is now truly async.** The
+  `INSTANCE_CONNECTION_NAME` path built a *sync* pg8000 engine and handed it to
+  `async_sessionmaker(..., class_=AsyncSession)` — the first session would have
+  raised `ArgumentError` and `close_db` would have crashed on `await
+  engine.dispose()`; it now uses the native async Cloud SQL Connector with an
+  asyncpg `async_creator`. A failing lazy `init_db()` in the session dependency
+  is also caught and surfaces as the clean 503 instead of an unhandled 500.
+- **Wizard brush commits can no longer overwrite each other.** All bbox writes
+  are serialized through one queue and compute their payload from the
+  then-current bbox at write time — two quick eraser/ink strokes (S-Pen taps
+  faster than the PUT round-trip) used to both build on the same stale state,
+  silently dropping the first stroke. Bbox saves also stopped echoing a stale
+  `n_anchors` back, which used to revert the server-side sync with the derived
+  canonical (`_sync_bbox_anchor_count`); and the canvas renders committed
+  strokes/patches/saved-trace through memoised layers, so a 240 Hz pen gesture
+  only re-renders the in-flight stroke.
+- **Federprobe and Schreibtafel fail loudly instead of silently.** A failed
+  compose fetch on `/federprobe` now shows an error message with a retry button
+  instead of an endless spinner, and a failed letter batch on the Tafel shows a
+  notice + retry instead of silently rendering an empty ruled sheet.
+- **Mask preview halves its binarisation work.** The "Maske zeigen" preview
+  derives the filled mask from the already-thresholded raw mask via
+  `fill_small_holes` instead of running the adaptive threshold twice
+  (identical output).
 
 ### Changed
 
+- **Docs drift pass from the audit.** `animation-rendering.md` §1 now
+  describes the SHIPPED engine — WAAPI via `useStrokeReveal`/`el.animate`
+  with two-thirds-law keyframes and isochrony from `lib/strokeTiming`, not
+  the "CSS keyframes, constant speed" it claimed — and its §3 sketch uses the
+  real `width_resolver == "constant"` property and the `/write` payload path;
+  the `/open-pr` skill learns CI's third job (migrations) and the
+  `/verify-migrations` precondition; `CITATION.cff` catches up to release
+  0.13.0/2026-07-09 and the CHANGELOG header makes the bump part of every
+  release; `quiz-wortbank.md` states the real 75/25 modern/historic ratio
+  (was 60/40); `docs/index.md` names the full library tuple
+  `(style, glyph, position, variant)` and a current status line;
+  `frontend-stack.md`'s route map stops claiming a live-written hero;
+  `design-system.md`'s colour table gains the shipped `paper.viridianText`
+  token + its usage rule; `planaenderungen.md` Vorschlag D gets a status
+  note (core/shaping.py is the shipped precursor; the `glyphs` table is
+  `templates` since 0004); `[Unreleased]` regrouped to one heading per
+  category.
+- **CI frontend job on Node 22** (20 reached EOL 2026-04-30); `app` engines
+  field now requires `>=22`.
+- **Docs and agent-surface refresh from the audit.** `.claude/commands/prime.md`
+  rewritten from the current repo layout (it described the pre-library-schema
+  world: `glyphs.py` router, `constants.ts`, `state.tsx`); `verify-api` skill
+  aligned with reality (admin-gated `/fit`+`/quality`, four seeded sources,
+  `/write/*` + `/quiz-words` + `/bboxes/status` in the sweep); `verify-core`
+  drops stale test counts; `verify-frontend` drops the obsolete favicon-404
+  gotcha and describes the render-cache quiz boot; `write-docs` matches the
+  real `docs/index.md` structure (notes/ IS indexed, `schriftkunde/` exists);
+  CLAUDE.md corrections (hero is font-first with an open engine seam,
+  koch-1928 is a live seeded source, migration 0008 listed, known-gaps
+  updated) mirrored to `.github/copilot-instructions.md` (CI = three jobs);
+  `naming-und-setup.md` §1 reflects the Sütterlin pivot; `docs/index.md`
+  prose sections list style-guide/design-system/federmodelle/qualitaetsmetrik;
+  `frontend-stack.md` names `HeroWritten` and clarifies "keine eigene
+  Komponenten-Bibliothek"; `animation-rendering.md` §1 describes the
+  render-cache data path; `contributing.md` names the full live feature set;
+  `sprachregelung.md` documents the EN-proposals exception.
 - **Public copy pass from the content audit.** /schriftkunde's intro no longer
   switches to Sie-form on an otherwise du-form site; German closing quotes are
   typographic („…“) everywhere; the hub/SEO texts stop promising trace-along
@@ -475,80 +559,12 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `app/src/sections/scribe/ScribeView.tsx` and the `schreibsystem-und-wortbench.md` proposal. Added the `kurrent-writer-and-recognizer.md`
   proposal and `docs/notes/` to `docs/index.md`.
 
-### Fixed
-
-- **WCAG AA contrast for viridian text and the quiz answered state.** New
-  `paper.viridianText` (#2e6152 — derived for contrast, not a period hex;
-  5.15:1 on the paper ground vs 3.28:1 for the accent #40826d) is used
-  wherever viridian is body-size text: card CTAs, the hub/landing links, the
-  quiz score and verdict, the Scribe copy confirmation, Tafel chip/provenance
-  links, prose-link hovers. `quiz.resolvedText` darkened to #6e5c42 (5.5:1 on
-  the answered button face, was 3.61:1). The accent #40826d stays for large
-  display, initials, borders, fills and focus rings.
-- **Contiguous heading outline on every public page.** Card titles now carry
-  explicit heading components (hub cards `h2` under the page `h1`; landing,
-  Schriftkunde and Tafel cards `h3` under their `h2` section headings), and
-  MUI's default subtitle→`<h6>` mapping is overridden to `<p>` at the theme
-  level — definition-row terms and timeline years no longer appear as phantom
-  section headings to screen readers.
-- **The nav marks the current area.** PublicHeader links carry
-  `aria-current="page"` plus a visible active state (ink colour + full
-  viridian underline) for the area whose page is open.
-- **`/trace` can no longer cross-link template rows.** The template upsert
-  conflicts on `(style, glyph, position, variant)` while reads go by
-  `glyph_key`, so a client bug pairing a wrong URL key with a payload identity
-  could conflict-update another row and rewrite its `glyph_key` — reads then
-  silently 404 on the shared prod DB. `POST /trace` now derives the expected
-  key from the shared registry (`core.shaping.expected_glyph_key`, the Python
-  twin of `glyphs.ts`; `{base}-{position}` convention as fallback) and rejects
-  a mismatch with 422.
-- **DB engine init race closed.** The lazy `asyncio.Lock` getter in
-  `core/database/connection.py` was itself check-then-set, so two first
-  requests could each mint their own lock, both enter `init_db()`, and the
-  loser's engine (and Cloud SQL connector) leaked without `dispose()`. The
-  lock is now created at import; the dead `_sync_init_lock` is gone.
-- **No more raw English error strings on public pages.** `/quiz` and `/tafel`
-  showed `String(e)` (e.g. "TypeError: Failed to fetch") as the BootStatus
-  detail under a German title; both now show a fixed German sentence
-  (`common.boot.sourceUnreachableDetail`) and log the exception to the console.
-- **A late word-compose rejection can no longer evict a fresh cache entry.**
-  `fetchRenderWord`'s error eviction now checks entry identity before deleting
-  (like the glyph cache): after a FIFO eviction + re-fetch under the same key,
-  the old promise's rejection used to delete the new, valid entry.
-- **The nav's current-area marker covers the standalone tool routes.** /quiz
-  and /tafel light up Lesen, /federprobe lights up Schreiben (they keep their
-  stable top-level URLs and are not nested under the hubs); only the exactly
-  matching page uses `aria-current="page"`, area membership uses `"true"`.
-- **CHANGELOG `[Unreleased]` consolidated to one heading per category.**
-  Successive PR insertions had produced duplicate Added/Changed/Fixed headings
-  with bullets filed under the wrong category; regrouped per Keep-a-Changelog.
-- **The Cloud SQL connector fallback is now truly async.** The
-  `INSTANCE_CONNECTION_NAME` path built a *sync* pg8000 engine and handed it to
-  `async_sessionmaker(..., class_=AsyncSession)` — the first session would have
-  raised `ArgumentError` and `close_db` would have crashed on `await
-  engine.dispose()`; it now uses the native async Cloud SQL Connector with an
-  asyncpg `async_creator`. A failing lazy `init_db()` in the session dependency
-  is also caught and surfaces as the clean 503 instead of an unhandled 500.
-- **Wizard brush commits can no longer overwrite each other.** All bbox writes
-  are serialized through one queue and compute their payload from the
-  then-current bbox at write time — two quick eraser/ink strokes (S-Pen taps
-  faster than the PUT round-trip) used to both build on the same stale state,
-  silently dropping the first stroke. Bbox saves also stopped echoing a stale
-  `n_anchors` back, which used to revert the server-side sync with the derived
-  canonical (`_sync_bbox_anchor_count`); and the canvas renders committed
-  strokes/patches/saved-trace through memoised layers, so a 240 Hz pen gesture
-  only re-renders the in-flight stroke.
-- **Federprobe and Schreibtafel fail loudly instead of silently.** A failed
-  compose fetch on `/federprobe` now shows an error message with a retry button
-  instead of an endless spinner, and a failed letter batch on the Tafel shows a
-  notice + retry instead of silently rendering an empty ruled sheet.
-- **Mask preview halves its binarisation work.** The "Maske zeigen" preview
-  derives the filled mask from the already-thresholded raw mask via
-  `fill_small_holes` instead of running the adaptive threshold twice
-  (identical output).
-
 ### Removed
 
+- **Orphaned design artifacts in `docs/reference/`.** The pre-design-system
+  landing mockup `kurrentschrift-landing.html` (Google-Fonts era, referenced
+  by nothing) and the duplicate `gl-germancursive.woff2` (the live copy is
+  `app/src/assets/fonts/`) are gone.
 - **Unused runtime dependencies `cairosvg` and `python-multipart`.** Neither is
   referenced anywhere in the codebase; both (plus cairosvg's native transitive
   chain) leave the Cloud Run image.

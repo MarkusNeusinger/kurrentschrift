@@ -7,7 +7,8 @@ Antwortoptionen entstehen. Implementiert in `tools/quizgen/` (Generator),
 `GET /quiz-words`) und `useQuizEngine.ts` (Runtime-Ziehung); der
 SPA-Fallback ist `app/src/sections/quiz/wordBank.ts`.
 
-Stand 2026-07-02: ~500 Wörter, ca. 60 % `modern` / 40 % `historic`.
+Stand 2026-07-16: 495 Wörter, ca. 75 % `modern` / 25 % `historic`
+(373 / 122 — nachgezählt aus `tools/quizgen/quiz_words.json`).
 
 ---
 

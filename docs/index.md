@@ -2,9 +2,10 @@
 
 Interne Design-Docs für das Kurrentschrift-Projekt. Sprache: Deutsch
 (siehe [`reference/sprachregelung.md`](reference/sprachregelung.md) zur
-Begründung). Stand: in-progress MVP — Admin-UI läuft, Canonical-
-Extraktion funktioniert, Per-Instanz-Fit und Aggregation sind die
-nächsten Meilensteine.
+Begründung). Stand: in-progress MVP — Admin-UI und Canonical-Extraktion
+laufen, die öffentliche Seite schreibt serverseitig komponierte Wörter
+(Federprobe, Tafel, Quiz inkl. Wort-Modus, Schriftkunde, Übungsblätter);
+Per-Instanz-Fit und Aggregation sind die nächsten Meilensteine.
 
 ---
 
@@ -98,7 +99,7 @@ und was bewusst verworfen wurde.
   Nicht-Ziele, Verhältnis zur bestehenden Landschaft
 - **[Architektur-Referenz](concepts/architektur.md)** — §1–§17:
   Analysis-by-Synthesis, Duktus-Prior, Library-Einheit
-  `(glyph, position, variant)`, Schwellzug vs. Tinte, dreistufige
+  `(style, glyph, position, variant)`, Schwellzug vs. Tinte, dreistufige
   Qualitätspipeline, MVP (vier Gates), Testwörter, Reihenfolge, plus
   Animation-Render, Stil-Analyse, HTR-Integration, Lese-Lupe, Print,
   Frontend-Architektur, Open-Data
