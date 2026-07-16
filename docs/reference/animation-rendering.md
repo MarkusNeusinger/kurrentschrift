@@ -60,7 +60,7 @@ Centerline) hinaus: enthüllt wird die gefüllte **Schwellzug-Silhouette**.
    Dashoffset-Keyframes, und die Isochronie (Dauer ∝ Länge^0.6)
    verteilt die Gesamtdauer sublinear über die Striche; vor einem
    Absetz-Strich liegt eine kurze Stiftpause (`PEN_PAUSE_MS`). Nach dem
-   Schreibende folgt der „Eisengallus-Settle" (Tintenfarbe frisch →
+   Schreibende folgt der „Eisengallus-Settle“ (Tintenfarbe frisch →
    oxidiert). Fallback ohne WAAPI oder bei degeneriertem Profil: die
    fertige Silhouette steht sofort (wie beim Reduced-Motion-Pfad).
 5. **Mehrstrich-Duktus (Absetzen):** jeder Pen-Stroke ist ein eigenes
