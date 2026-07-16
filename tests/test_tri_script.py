@@ -127,19 +127,26 @@ def test_invalidate_pooled_style_clears_all_sources_of_the_style():
 
     from api import rendering
 
+    # Snapshot the module-level caches so the test cannot leak state into the
+    # rest of the suite, whichever assertion fails.
+    nib_snapshot = dict(rendering._nib_cache)
+    pen_snapshot = dict(rendering._pen_cache)
     now = time.monotonic()
-    rendering._nib_cache[("kurrent", "loth-1866")] = (0.07, now)
-    rendering._nib_cache[("kurrent", "petzendorfer-1889")] = (0.06, now)
-    rendering._nib_cache[("suetterlin", "suetterlin-1922")] = (0.05, now)
-    rendering._pen_cache[("kurrent", "petzendorfer-1889", "pressure")] = (None, now)
     try:
+        rendering._nib_cache[("kurrent", "loth-1866")] = (0.07, now)
+        rendering._nib_cache[("kurrent", "petzendorfer-1889")] = (0.06, now)
+        rendering._nib_cache[("suetterlin", "suetterlin-1922")] = (0.05, now)
+        rendering._pen_cache[("kurrent", "petzendorfer-1889", "pressure")] = (None, now)
         rendering.invalidate_pooled_style("kurrent")
         assert not [k for k in rendering._nib_cache if k[0] == "kurrent"]
         assert not [k for k in rendering._pen_cache if k[0] == "kurrent"]
         # Other styles keep their pools.
         assert ("suetterlin", "suetterlin-1922") in rendering._nib_cache
     finally:
-        rendering._nib_cache.pop(("suetterlin", "suetterlin-1922"), None)
+        rendering._nib_cache.clear()
+        rendering._nib_cache.update(nib_snapshot)
+        rendering._pen_cache.clear()
+        rendering._pen_cache.update(pen_snapshot)
 
 
 def test_pen_from_profiles_clamps_edge_fraction():
