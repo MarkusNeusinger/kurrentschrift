@@ -45,6 +45,10 @@ def _project_version() -> str:
         pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
         return str(tomllib.loads(pyproject.read_text(encoding="utf-8"))["project"]["version"])
     except (OSError, KeyError, tomllib.TOMLDecodeError):  # pragma: no cover — packaging error, not runtime
+        # A cosmetic version must never keep the API from starting, but a
+        # missing/unparsable pyproject in the image is a packaging bug —
+        # scream in the logs instead of failing silently.
+        logger.exception("could not read project.version from pyproject.toml — check the image contents")
         return "0.0.0"
 
 

@@ -6,7 +6,8 @@ All notable changes to this project are documented here. The format is based on
 
 Every PR adds its entries under `[Unreleased]`; a release moves that section under a new
 version heading AND bumps `CITATION.cff` (`version` + `date-released`) and
-`pyproject.toml` (`project.version` — `/docs` reads it at runtime) in the same commit. Code changes are covered here — data-only commits (chart sources,
+`pyproject.toml` (`project.version` — `/docs` reads it at runtime) in the same commit.
+Code changes are covered here — data-only commits (chart sources,
 authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
