@@ -75,8 +75,9 @@ Centerline) hinaus: enthüllt wird die gefüllte **Schwellzug-Silhouette**.
 ```typescript
 // app/src/hooks/useStrokeReveal.ts (Auszug)
 // Maske: gestrichelter Pfad mit pathLength=1 — Offset 1 versteckt, 0 zeichnet.
-// arcAtTime aus lib/strokeTiming: Bogenlängen-Anteil ŝ pro Zeitanteil t̂
+// t.arcAtTime aus lib/strokeTiming: Bogenlängen-Anteil ŝ pro Zeitanteil t̂
 // (Zwei-Drittel-Gesetz) → nichtlineare Keyframes statt konstanter Sweep.
+const steps = t.arcAtTime.length - 1;
 const frames = t.arcAtTime.map((s, k) => ({
   strokeDashoffset: `${(1 - s).toFixed(4)}`,
   offset: k / steps,

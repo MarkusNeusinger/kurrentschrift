@@ -208,9 +208,10 @@ bleibt die hier gemeinte **volle** silbenbewusste Orthographie-Schicht
 (Regeln aus `orthographie-regeln.md` als Daten) — sie würde
 `core/shaping.py` ablösen bzw. speisen. Hinweis zur Terminologie: die
 im Text erwähnte `glyphs`-Tabelle heißt seit Migration 0004
-`templates` (Schema in `core/database/models.py`);
-„`glyphs.position` → `glyphs.chart_role`" liest sich heute als
-`templates.position` → `templates.chart_role`.
+`templates` (Schema in `core/database/models.py`); die real existierende
+Spalte ist `templates.position`. Das unten skizzierte
+Begleit-Refactoring (Umbenennung nach `chart_role`) bleibt
+hypothetisch und würde heute `templates.position` betreffen.
 
 ### Verantwortung
 
