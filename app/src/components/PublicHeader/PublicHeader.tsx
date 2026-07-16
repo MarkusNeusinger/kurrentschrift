@@ -3,9 +3,9 @@
 // with ".ink" in viridian italic); right = the three-area nav (Schriftkunde ·
 // Lesen · Schreiben) with a viridian hover-underline. Modelled on the HTML mockup.
 //
-// Two tones: `paper` (now the default everywhere, since the cream "paper & ink"
-// identity carries across all pages) and a slightly lighter `plain` fallback. The
-// viridian accent is the same in both.
+// One tone: the cream "paper & ink" identity — it carries across every public
+// page (the former `plain` fallback had no caller and no palette token, so it
+// was removed rather than left as a drift risk).
 //
 // Hidden admin entry: 5 quick clicks on the wordmark → /admin/chart (no visible
 // admin link anywhere). The brand still navigates home on a normal single click.
@@ -13,6 +13,7 @@
 
 import { type MouseEvent, type ReactNode, useRef } from 'react';
 import { Box, Link, Stack } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 
@@ -50,20 +51,20 @@ const AREA_ROUTES: Record<string, string[]> = {
 };
 
 interface PublicHeaderProps {
-  tone?: 'plain' | 'paper';
   sx?: SxProps<Theme>;
 }
 
-export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
+export function PublicHeader({ sx }: PublicHeaderProps) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const tap = useRef({ count: 0, last: 0 });
-  const isPaper = tone === 'paper';
-  const textMain = isPaper ? paper.ink : 'text.primary';
-  const textSoft = isPaper ? paper.inkSoft : 'text.secondary';
+  const textMain = paper.ink;
+  const textSoft = paper.inkSoft;
   const accent = paper.viridian;
-  const barBg = isPaper ? 'rgba(231,221,193,0.86)' : 'rgba(250,248,241,0.86)';
-  const border = isPaper ? paper.line : 'divider';
+  // Derive from the palette token: the hardcoded rgba here had drifted from a
+  // pre-retune paper.bg and silently missed the palette change.
+  const barBg = alpha(paper.bg, 0.86);
+  const border = paper.line;
 
   const navLink = (label: ReactNode, to: string, sx?: SxProps<Theme>) => {
     // Current-area indication: the area link stays "on" (ink + full underline

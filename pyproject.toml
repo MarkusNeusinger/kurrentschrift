@@ -1,7 +1,7 @@
 # pyproject.toml
 [project]
 name = "kurrentschrift"
-version = "0.1.0"
+version = "0.13.0"
 description = "Analysis-by-synthesis ductus-template extraction and re-inking for normed pre-1900 German Kurrent script."
 authors = [{ name = "Markus Neusinger", email = "admin@kurrentschrift.ink" }]
 readme = "README.md"

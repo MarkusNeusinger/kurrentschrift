@@ -2,10 +2,22 @@
 # never happens. Install once with:  uvx pre-commit install
 # ESLint/Vitest deliberately stay CI-only (node_modules + runtime cost); run
 # `npm run lint` in app/ before pushing frontend changes.
+#
+# The hooks run ruff THROUGH uv, so the version is always the one pinned in
+# uv.lock — the previous mirror-based hooks carried their own `rev` that
+# Dependabot never bumps, and drifted behind CI within weeks.
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    # Keep in lockstep with the ruff version pinned in uv.lock.
-    rev: v0.15.20
+  - repo: local
     hooks:
       - id: ruff-check
+        name: ruff check (via uv.lock)
+        entry: uv run --extra dev ruff check --force-exclude
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
       - id: ruff-format
+        name: ruff format (via uv.lock)
+        entry: uv run --extra dev ruff format --force-exclude
+        language: system
+        types_or: [python, pyi]
+        require_serial: true

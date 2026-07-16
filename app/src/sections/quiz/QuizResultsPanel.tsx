@@ -6,6 +6,7 @@
 // accumulate in useQuizEngine and arrive via props.
 
 import { Box, Stack, Typography } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { useEffect, useMemo, useState } from 'react';
 
 import { WrittenGlyph } from '@/components/WrittenGlyph';
@@ -74,7 +75,7 @@ export function QuizResultsPanel(p: ResultsProps) {
             {pct} %
           </Typography>
         </Box>
-        <Box sx={{ mt: 2, height: 4, borderRadius: 2, bgcolor: 'rgba(182,160,121,0.4)', overflow: 'hidden' }}>
+        <Box sx={{ mt: 2, height: 4, borderRadius: 2, bgcolor: alpha(paper.line, 0.4), overflow: 'hidden' }}>
           <Box sx={{ height: '100%', width: `${pct}%`, bgcolor: paper.viridian, transition: 'width 300ms ease' }} />
         </Box>
       </Box>
@@ -127,7 +128,7 @@ export function QuizResultsPanel(p: ResultsProps) {
         <Box
           sx={{
             border: `1px solid ${paper.viridian}`,
-            bgcolor: 'rgba(64,130,109,0.08)',
+            bgcolor: alpha(paper.viridian, 0.08),
             borderRadius: '6px',
             px: 2,
             py: 1.5,

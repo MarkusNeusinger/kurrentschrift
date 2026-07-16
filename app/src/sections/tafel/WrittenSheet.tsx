@@ -25,6 +25,7 @@
 // glyph scale stays constant; the four lines span the full width.
 
 import { Box, Button, Stack, Typography, keyframes } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { visuallyHidden } from '@mui/utils';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
@@ -64,7 +65,7 @@ const FALLBACK_ROW_W = (1.5 + GAP) * LETTERS_PER_ROW; // pre-load viewBox width 
 const PAD_Y = 0.14; // vertical air above the ascender / below the descender
 const RULE = schulheft.rulingBlueFaded;
 const RULE_W = 1; // px — non-scaling so the rule stays a hairline at any row scale
-const HOVER = 'rgba(64, 130, 109, 0.10)'; // faint viridian wash on hover/focus
+const HOVER = alpha(paper.viridian, 0.1); // faint viridian wash on hover/focus
 // Per-glyph write-in target, per-stroke floor, pen-lift pause and settle come
 // from lib/strokeTiming (SHEET_WRITE_MS / SHEET_MIN_STROKE_MS / PEN_PAUSE_MS /
 // SHEET_SETTLE_MS). These three are the Schreibtafel-only cascade constants.

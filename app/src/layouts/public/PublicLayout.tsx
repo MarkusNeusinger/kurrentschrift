@@ -24,18 +24,16 @@ interface PublicLayoutProps {
   children: ReactNode;
   /** Render the shared <PublicFooter> after the content (default on). */
   footer?: boolean;
-  /** Header tone, forwarded to <PublicHeader>; defaults to the paper identity. */
-  headerTone?: 'plain' | 'paper';
   /** Min-height forwarded to <PaperBackground> (defaults to a full viewport). */
   minHeight?: string | number;
   /** Extra sx merged onto the <main> content wrapper. */
   sx?: SxProps<Theme>;
 }
 
-export function PublicLayout({ children, footer = true, headerTone = 'paper', minHeight, sx }: PublicLayoutProps) {
+export function PublicLayout({ children, footer = true, minHeight, sx }: PublicLayoutProps) {
   return (
     <PaperBackground minHeight={minHeight}>
-      <PublicHeader tone={headerTone} />
+      <PublicHeader />
       <Box component="main" sx={sx}>
         {children}
       </Box>

@@ -5,8 +5,9 @@ All notable changes to this project are documented here. The format is based on
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Every PR adds its entries under `[Unreleased]`; a release moves that section under a new
-version heading AND bumps `CITATION.cff` (`version` + `date-released`) in the same
-commit. Code changes are covered here — data-only commits (chart sources,
+version heading AND bumps `CITATION.cff` (`version` + `date-released`) and
+`pyproject.toml` (`project.version` — `/docs` reads it at runtime) in the same commit.
+Code changes are covered here — data-only commits (chart sources,
 authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
@@ -369,6 +370,32 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **Deploys go no-traffic → smoke → promote.** `api/cloudbuild.yaml` used to
+  route 100 % of traffic and only then smoke — a bad revision served users
+  until the build went red. The deploy now carries `--no-traffic` +
+  `--tag=candidate` + a deterministic `--revision-suffix`, the smoke suite
+  probes the candidate's tag URL (and asserts the tag still points at this
+  build's revision), and a final `update-traffic --to-revisions` step promotes
+  exactly the smoked revision — never a concurrent build's unsmoked one.
+- **The Tafel boots from the slim bbox read.** `BboxStatusOut` gains the six
+  layout scalars (`x0/x1/y0/y1/baseline_y` + flags) the sheet layout needs,
+  and `useGrundtafeln` switches from the full `BboxOut` list — the same
+  multi-MB mask/ink/patch JSONB payload the quiz was weaned off in the last
+  audit round — to `GET /bboxes/status`. The three chart scans (~1.4 MB of
+  JPEG, two below the fold) now load lazily like the other public images.
+- **One version source for the API.** `api/main.py` read `0.2.0` while
+  pyproject said `0.1.0` and the last release was 0.13.0; `/docs` now reads
+  `project.version` from the shipped `pyproject.toml` (bumped to 0.13.0), and
+  the release note covers the bump.
+- **pre-commit runs ruff through uv.** The mirror-based hooks pinned their own
+  `rev` that Dependabot never bumps — pre-commit-green/CI-red was weeks away;
+  the hooks are now `repo: local` `uv run --extra dev ruff …`, so uv.lock is
+  the single ruff version source.
+- **Palette rgba literals replaced with `alpha(token, …)`.** The quiz panels
+  and the Tafel sheet baked `paper.viridian`/`pigment.vermilion`/`paper.line`
+  into rgba strings a palette retune would silently miss — `PublicHeader`'s
+  bar background had in fact already drifted from a pre-retune `paper.bg`
+  (rgb 231,221,193 vs the token's 231,218,191); all derive from the tokens now.
 - **Docs drift pass from the audit.** `animation-rendering.md` §1 now
   describes the SHIPPED engine — WAAPI via `useStrokeReveal`/`el.animate`
   with two-thirds-law keyframes and isochrony from `lib/strokeTiming`, not

@@ -4,6 +4,7 @@
 // runs for AUTO_ADVANCE_MS), a wrong pick waits for "Weiter →".
 
 import { Box, Button, ButtonBase, Stack, Typography, keyframes } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { useEffect, useRef } from 'react';
 
 import { de, fmt } from '@/locales';
@@ -148,9 +149,9 @@ export function QuizPlayPanel(p: PlayProps) {
                 ...(answered
                   ? {
                       bgcolor: showCorrect
-                        ? 'rgba(64,130,109,0.10)'
+                        ? alpha(paper.viridian, 0.1)
                         : showWrong
-                          ? 'rgba(227,66,52,0.10)'
+                          ? alpha(pigment.vermilion, 0.1)
                           : quiz.resolvedFace,
                       borderColor: showCorrect ? paper.viridian : showWrong ? pigment.vermilion : 'transparent',
                       color: showCorrect ? paper.ink : showWrong ? pigment.oxblood : quiz.resolvedText,
@@ -200,7 +201,7 @@ export function QuizPlayPanel(p: PlayProps) {
             <Typography variant="caption" sx={{ color: paper.sepia, fontFamily: garamond }}>
               {de.quiz.play.autoNext}
             </Typography>
-            <Box sx={{ width: 176, height: 3, borderRadius: 2, bgcolor: 'rgba(182,160,121,0.42)', overflow: 'hidden' }}>
+            <Box sx={{ width: 176, height: 3, borderRadius: 2, bgcolor: alpha(paper.line, 0.42), overflow: 'hidden' }}>
               <Box sx={{ height: '100%', bgcolor: paper.viridian, animation: `${fillBar} ${AUTO_ADVANCE_MS}ms linear forwards` }} />
             </Box>
           </Stack>
