@@ -84,13 +84,19 @@ export interface GuideConfig {
   exit_coupling?: CouplingHeight;
 }
 
-// Item of GET /sources/{id}/bboxes/status — the availability flags only. The
-// public quiz gates its vocabulary on locked/split; the full BboxOut list
-// would drag every mask/ink/patch blob over the wire for that.
+// Item of GET /sources/{id}/bboxes/status — flags + layout scalars only. The
+// public quiz gates its vocabulary on locked/split, the public Tafel lays its
+// sheet out from the crop rect + baseline; the full BboxOut list would drag
+// every mask/ink/patch blob over the wire for those six scalars.
 export interface BboxStatusOut {
   glyph_key: string;
   locked: boolean;
   split: boolean;
+  x0: number;
+  x1: number;
+  y0: number;
+  y1: number;
+  baseline_y: number;
 }
 
 export interface BboxOut {

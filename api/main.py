@@ -9,7 +9,9 @@ from dotenv import load_dotenv  # noqa: I001
 load_dotenv()
 
 import logging  # noqa: E402
+import tomllib  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
+from pathlib import Path  # noqa: E402
 
 from fastapi import FastAPI  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
@@ -34,6 +36,18 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 
+def _project_version() -> str:
+    """The one version source: pyproject.toml (shipped in the image next to
+    api/). The project is an uv workspace, not an installed distribution, so
+    importlib.metadata has no record — read the file instead of keeping a
+    second hardcoded string here that drifts (it sat at 0.2.0 for epochs)."""
+    try:
+        pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+        return str(tomllib.loads(pyproject.read_text(encoding="utf-8"))["project"]["version"])
+    except (OSError, KeyError, tomllib.TOMLDecodeError):  # pragma: no cover — packaging error, not runtime
+        return "0.0.0"
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     logger.info("kurrentschrift API starting (env=%s)", settings.environment)
@@ -53,7 +67,7 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(
     title="kurrentschrift admin API",
     description="Canonical ductus-template extraction for normed pre-1900 German Kurrent script.",
-    version="0.2.0",
+    version=_project_version(),
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",

@@ -192,6 +192,11 @@ function OriginalScan({ source }: { source: SourceOut }) {
           src={chartUrl(source.id)}
           alt={de.tafel.originalAlt}
           draggable={false}
+          // Three Grundtafeln render at once (~1.4 MB of JPEG), two below the
+          // fold — defer them like the Schriftkunde/Impressum images do. The
+          // deep-link re-align effect tolerates the late reflow (ResizeObserver).
+          loading="lazy"
+          decoding="async"
           sx={{
             display: 'block',
             width: zoomed ? 'auto' : '100%',

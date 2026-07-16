@@ -58,7 +58,7 @@ Every layer has a verified feedback-loop skill under `.claude/skills/` — use t
 
 Routing is mandatory, not advisory: any "commit/push/PR this" request goes through `/open-pr`; never hand-roll the type-check/build/push/PR/Copilot loop, and check Copilot comments as part of the loop instead of waiting to be asked.
 
-Known gaps without a loop yet: admin write flows against the LIVE DB (the HTTP suites cover them against in-memory SQLite; a live write would mutate shared data). Alembic changes have `/verify-migrations` locally plus the CI `migrations` job (upgrade + `alembic check` + downgrade roundtrip against a throwaway Postgres); the deploy pipeline ends with a prod smoke step (`api/cloudbuild.yaml`).
+Known gaps without a loop yet: admin write flows against the LIVE DB (the HTTP suites cover them against in-memory SQLite; a live write would mutate shared data). Alembic changes have `/verify-migrations` locally plus the CI `migrations` job (upgrade + `alembic check` + downgrade roundtrip against a throwaway Postgres); the deploy pipeline deploys with `--no-traffic`, smokes the candidate revision on its tag URL and only then promotes traffic (`api/cloudbuild.yaml`).
 
 ## Working guardrails (from session retros)
 

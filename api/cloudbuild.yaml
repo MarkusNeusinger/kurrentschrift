@@ -98,20 +98,27 @@ steps:
       - "--cpu-throttling"
       - "--concurrency=15"
       - "--timeout=600"
+      # Deploy WITHOUT routing traffic: the smoke step probes this revision on
+      # its tag URL first, and only the promote step below shifts traffic —
+      # so a bad image never serves users, not even between deploy and a
+      # failing smoke. The `candidate` tag moves to each new revision.
+      - "--no-traffic"
+      - "--tag=candidate"
     id: "deploy"
     waitFor: ["migrate"]
 
-  # Post-deploy smoke against the freshly deployed revision: a bad image that
-  # still answers /health can 500 on the real render path — probe the paths
-  # the public site actually depends on, plus the fail-closed write gate.
-  # Retries cover the min-instances=0 cold start.
+  # Pre-traffic smoke against the CANDIDATE revision (tag URL, serving no
+  # traffic yet): a bad image that still answers /health can 500 on the real
+  # render path — probe the paths the public site actually depends on, plus
+  # the fail-closed write gate. Retries cover the min-instances=0 cold start.
   - name: "gcr.io/cloud-builders/gcloud"
     entrypoint: "bash"
     args:
       - "-ceu"
       - |
-        URL=$$(gcloud run services describe ${_SERVICE_NAME} --region=${_REGION} --platform=managed --format='value(status.url)')
-        echo "smoke against $$URL"
+        URL=$$(gcloud run services describe ${_SERVICE_NAME} --region=${_REGION} --platform=managed --format=json \
+          | python3 -c "import json,sys; t=json.load(sys.stdin)['status']['traffic']; print(next(x['url'] for x in t if x.get('tag')=='candidate'))")
+        echo "smoke against candidate $$URL"
         # Retry EVERY probe: /health doesn't touch the DB, so the first /styles
         # or /write call can still be the first real DB request after the
         # min-instances=0 cold start and may fail transiently.
@@ -126,6 +133,19 @@ steps:
         echo "smoke OK"
     id: "smoke"
     waitFor: ["deploy"]
+
+  # Smoke passed — route 100% of traffic to the just-verified revision.
+  - name: "gcr.io/cloud-builders/gcloud"
+    args:
+      - "run"
+      - "services"
+      - "update-traffic"
+      - "${_SERVICE_NAME}"
+      - "--region=${_REGION}"
+      - "--platform=managed"
+      - "--to-latest"
+    id: "promote"
+    waitFor: ["smoke"]
 
 images:
   - "europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}:$BUILD_ID"

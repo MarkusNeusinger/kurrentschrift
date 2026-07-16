@@ -81,12 +81,27 @@ class BboxRepository:
         return list(result.scalars().all())
 
     async def list_status(self, source_id: str) -> list[dict]:
-        """Availability flags only (glyph_key, locked, split) — the public
-        quiz's gating read, without the heavy mask/ink/patch JSONB columns."""
+        """Availability flags + layout scalars (glyph_key, locked, split, crop
+        rect, baseline) — the public quiz's gating read and the Tafel's sheet
+        layout, without the heavy mask/ink/patch JSONB columns."""
         result = await self.session.execute(
-            select(Bbox.glyph_key, Bbox.locked, Bbox.split).where(Bbox.source_id == source_id).order_by(Bbox.glyph_key)
+            select(Bbox.glyph_key, Bbox.locked, Bbox.split, Bbox.x0, Bbox.x1, Bbox.y0, Bbox.y1, Bbox.baseline_y)
+            .where(Bbox.source_id == source_id)
+            .order_by(Bbox.glyph_key)
         )
-        return [{"glyph_key": k, "locked": bool(locked), "split": bool(split)} for k, locked, split in result.all()]
+        return [
+            {
+                "glyph_key": k,
+                "locked": bool(locked),
+                "split": bool(split),
+                "x0": x0,
+                "x1": x1,
+                "y0": y0,
+                "y1": y1,
+                "baseline_y": baseline_y,
+            }
+            for k, locked, split, x0, x1, y0, y1, baseline_y in result.all()
+        ]
 
     async def upsert(self, source_id: str, glyph_key: str, **fields: Any) -> Bbox:
         """Insert-or-update by (source_id, glyph_key)."""

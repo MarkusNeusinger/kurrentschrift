@@ -517,7 +517,7 @@ pattern as anyplot.ai). Two Cloud Run services, live since 2026-05
 
 | Service | Component | Purpose |
 |---|---|---|
-| Cloud Run | `kurrentschrift-api` | FastAPI (`api/Dockerfile`); `api/cloudbuild.yaml` runs an Alembic migrate job (`kurrentschrift-migrate`) before rollout — serves api.kurrentschrift.ink |
+| Cloud Run | `kurrentschrift-api` | FastAPI (`api/Dockerfile`); `api/cloudbuild.yaml` runs an Alembic migrate job (`kurrentschrift-migrate`) before rollout, deploys `--no-traffic`, smokes the candidate revision and only then promotes traffic — serves api.kurrentschrift.ink |
 | Cloud Run | `kurrentschrift-app` | static Vite build behind nginx-unprivileged (`app/Dockerfile` + `app/cloudbuild.yaml`) — serves kurrentschrift.ink |
 | Cloud SQL | PostgreSQL | `kurrentschrift` DB (on anyplot's Cloud SQL instance — local dev writes the SAME DB) |
 | Cloud Build | Triggers | one trigger per service (deploy-api / deploy-app), deploys from `main` |

@@ -18,8 +18,8 @@ import { useEffect, useState } from 'react';
 
 import { LETTERS, glyphKeyFor, type Position } from '@/domain/glyphs';
 import { CONFIG } from '@/global-config';
-import { getBboxes, getGlyphs, getSources, getStyles } from '@/lib/api';
-import type { BboxOut, GlyphSummary, SourceOut, StyleOut } from '@/lib/api';
+import { getBboxStatuses, getGlyphs, getSources, getStyles } from '@/lib/api';
+import type { BboxStatusOut, GlyphSummary, SourceOut, StyleOut } from '@/lib/api';
 import { de } from '@/locales';
 import { styleLabel } from '@/locales/de/common';
 
@@ -74,8 +74,8 @@ function median(xs: number[]): number {
 // (so a letter lands in the same row it occupies on the tafel) and ordered
 // left-to-right; rows run top-to-bottom. Letters never marked on the chart are
 // not slots. Locking is the same public-readiness gate the quiz uses.
-function markedRowsOf(bboxes: BboxOut[], glyphs: GlyphSummary[]): MarkedSlot[][] {
-  const bm: Record<string, BboxOut> = {};
+function markedRowsOf(bboxes: BboxStatusOut[], glyphs: GlyphSummary[]): MarkedSlot[][] {
+  const bm: Record<string, BboxStatusOut> = {};
   for (const b of bboxes) bm[b.glyph_key] = b;
   const gm: Record<string, GlyphSummary> = {};
   for (const g of glyphs) gm[g.glyph_key] = g;
@@ -83,7 +83,7 @@ function markedRowsOf(bboxes: BboxOut[], glyphs: GlyphSummary[]): MarkedSlot[][]
   const slots: MarkedSlot[] = [];
   const heights: number[] = [];
   for (const letter of LETTERS) {
-    let rep: BboxOut | null = null;
+    let rep: BboxStatusOut | null = null;
     let writtenKey: string | null = null;
     for (const position of PREFERRED_POSITIONS) {
       const key = glyphKeyFor(letter, position);
@@ -132,11 +132,13 @@ export function useGrundtafeln(): GrundtafelnResult {
       const retry = { retries: 8, onRetry };
       try {
         // Only the site-wide source can be written today, so its bboxes/glyphs
-        // are the only per-source detail we need beyond the registry.
+        // are the only per-source detail we need beyond the registry. The slim
+        // /bboxes/status read carries exactly the layout scalars markedRowsOf
+        // needs — the full BboxOut list would ship every mask/ink/patch blob.
         const [styles, sources, bboxes, glyphs] = await Promise.all([
           getStyles(retry),
           getSources(retry),
-          getBboxes(CONFIG.sourceId, retry),
+          getBboxStatuses(CONFIG.sourceId, retry),
           getGlyphs(CONFIG.sourceId, retry),
         ]);
         if (cancelled) return;

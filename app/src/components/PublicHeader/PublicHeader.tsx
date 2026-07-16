@@ -13,6 +13,7 @@
 
 import { type MouseEvent, type ReactNode, useRef } from 'react';
 import { Box, Link, Stack } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 
@@ -62,7 +63,9 @@ export function PublicHeader({ tone = 'paper', sx }: PublicHeaderProps) {
   const textMain = isPaper ? paper.ink : 'text.primary';
   const textSoft = isPaper ? paper.inkSoft : 'text.secondary';
   const accent = paper.viridian;
-  const barBg = isPaper ? 'rgba(231,221,193,0.86)' : 'rgba(250,248,241,0.86)';
+  // Derive from the palette token: the hardcoded rgba here had drifted from a
+  // pre-retune paper.bg and silently missed the palette change.
+  const barBg = isPaper ? alpha(paper.bg, 0.86) : 'rgba(250,248,241,0.86)';
   const border = isPaper ? paper.line : 'divider';
 
   const navLink = (label: ReactNode, to: string, sx?: SxProps<Theme>) => {
