@@ -12,6 +12,36 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **HTTP tests for the admin compute endpoints + the untested public reads.**
+  New `tests/test_api_compute_endpoints.py` (15 tests): `/trace-preview`
+  (pressure raw/refined + the constant-style compute-once branch, dry-run
+  proof), the full `/resample` 409/404/409/423 ladder incl. the legacy
+  no-raw_path row, `/diagnostic` 404s + payload, `/quality` 409 without
+  pixel meta + a real stored/candidate score, `/fit` 404, both chart image
+  endpoints (PNG magic + cache headers), the single-glyph `/write` read,
+  `/write/word` input bounds + the ligature-decompose fallback over HTTP,
+  the new bbox geometry 422s, and the styles/sources/hands get-by-id 404s.
+  `api/routers` coverage: templates 41→57 %, chart 47→84 %, write 61→67 %.
+- **Pooled nib/pen memoisation unit tests.** `tests/test_rendering_pool.py`
+  pins the TTL cache the admin-trace→public-render coherence hangs on
+  (hit, expiry, explicit invalidation, no-scan for constant styles) with a
+  fake repository and a frozen clock — `api/rendering.py` 68→90 %.
+- **Guard against silent lab-test skip rot.** The glyphlab/wordlab/pairlab
+  suites skip in CI on gitignored fixtures by design, so a renamed export
+  dir would disable them forever without anyone noticing;
+  `tests/test_lab_fixture_wiring.py` pins the consumers' fixture dirs to
+  the exporters' output dirs and the shared manifest name.
+- **Vitest suite for the glyph lock/split helpers.** `domain/glyphs.test.ts`
+  (10 tests) pins `siblingKeys` (incl. the s/ſ allograph overrides),
+  `isLetterSplit`'s `.some` contract and `quizKeysFromLocked` (lock-as-one
+  collapse, canonical-preferring representative, split units, punctuation
+  exclusion, allograph separation).
+- **Own-code deprecations now fail the test suite.** The deprecated
+  `HTTP_422_UNPROCESSABLE_ENTITY` starlette constant (9 accumulated
+  warnings) is renamed to `HTTP_422_UNPROCESSABLE_CONTENT` across the
+  routers, and `filterwarnings` turns DeprecationWarnings raised from
+  `api`/`core`/`tools` code into errors — third-party warnings stay
+  warnings.
 - **`/verify-migrations` skill + a hardened CI migrations job.** The CI job now
   runs the full sequence — `alembic upgrade head`, `alembic check`
   (model↔migration autogenerate drift) and a `downgrade -1`/`upgrade head`

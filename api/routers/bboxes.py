@@ -83,15 +83,15 @@ async def put_bbox(
     # blow up later on the public read path (empty crop → 500 in the pipeline).
     if min(payload.x0, payload.y0, payload.x1, payload.y1) < 0:
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY, detail="bbox coordinates must be non-negative chart pixels"
+            status.HTTP_422_UNPROCESSABLE_CONTENT, detail="bbox coordinates must be non-negative chart pixels"
         )
     if payload.x1 <= payload.x0 or payload.y1 <= payload.y0:
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY, detail="bbox must have positive extent (x1 > x0 and y1 > y0)"
+            status.HTTP_422_UNPROCESSABLE_CONTENT, detail="bbox must have positive extent (x1 > x0 and y1 > y0)"
         )
     if payload.baseline_y <= payload.midband_y:
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="baseline_y must be greater than midband_y (baseline is below midband)",
         )
     repo = BboxRepository(db)

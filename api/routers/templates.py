@@ -78,7 +78,7 @@ def _reject_key_identity_mismatch(glyph_key: str, glyph: str, position: str) -> 
     if expected is not None:
         if expected != glyph_key:
             raise HTTPException(
-                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail=f"glyph_key {glyph_key!r} does not match glyph {glyph!r} at position {position!r}"
                 f" (expected {expected!r})",
             )
@@ -87,12 +87,13 @@ def _reject_key_identity_mismatch(glyph_key: str, glyph: str, position: str) -> 
         # upsert would stamp that key onto its own (glyph, position) row and
         # duplicate it against the registry glyph's row.
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"glyph_key {glyph_key!r} belongs to a registry glyph, not to {glyph!r}",
         )
     elif not glyph_key.endswith(f"-{position}"):
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"glyph_key {glyph_key!r} does not match position {position!r}"
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=f"glyph_key {glyph_key!r} does not match position {position!r}",
         )
 
 

@@ -113,3 +113,13 @@ extend-immutable-calls = ["fastapi.Depends", "fastapi.Header"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = ["--strict-markers", "-ra"]
+filterwarnings = [
+    # Deprecations from OUR code fail loudly instead of accumulating as noise
+    # (the 422-constant rename sat unnoticed behind 9 warnings). Third-party
+    # deprecations stay warnings — we can't fix those here. The module regex
+    # is start-anchored by re.match; the (\.|$) boundary stops prefix
+    # collisions with third-party packages like `apischema` or `corenlp`.
+    'error::DeprecationWarning:api(\.|$)',
+    'error::DeprecationWarning:core(\.|$)',
+    'error::DeprecationWarning:tools(\.|$)',
+]
