@@ -27,8 +27,9 @@ from tests.api_harness import Harness
 
 # ------------------------------------------------------------------ admin gate
 
-# Every admin-gated endpoint (method, path template, JSON body or None). /fit
-# and /quality are compute-heavy read endpoints gated like the writes.
+# Every admin-gated endpoint (method, path template, JSON body or None). /fit,
+# /quality and /diagnostic are compute-heavy read endpoints gated like the
+# writes (each re-runs the image pipeline per request).
 WRITE_ENDPOINTS = [
     ("PUT", "/sources/{src}/bboxes/a-medial", {}),
     ("DELETE", "/sources/{src}/bboxes/a-medial", None),
@@ -38,6 +39,7 @@ WRITE_ENDPOINTS = [
     ("DELETE", "/sources/{src}/templates/a-medial", None),
     ("GET", "/sources/{src}/templates/a-medial/fit", None),
     ("GET", "/sources/{src}/templates/a-medial/quality", None),
+    ("GET", "/sources/{src}/templates/a-medial/diagnostic", None),
 ]
 
 

@@ -233,7 +233,13 @@ class Template(Base):
     """
 
     __tablename__ = "templates"
-    __table_args__ = (UniqueConstraint("style_id", "glyph", "position", "variant", name="uq_template_style_gpv"),)
+    __table_args__ = (
+        UniqueConstraint("style_id", "glyph", "position", "variant", name="uq_template_style_gpv"),
+        # Every read keys on glyph_key (scalar_one_or_none) — two rows sharing a
+        # key would 500 every public /write. The routers keep their friendly
+        # 409 backstops; this makes the invariant structural (migration 0015).
+        UniqueConstraint("style_id", "glyph_key", "variant", name="uq_template_style_key_variant"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     style_id: Mapped[str] = mapped_column(

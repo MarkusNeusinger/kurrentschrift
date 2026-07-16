@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_admin
 from api.dependencies import require_db, require_source
-from api.rendering import invalidate_pooled_nib, resolve_render_context, resolve_style
+from api.rendering import invalidate_pooled_style, resolve_render_context, resolve_style
 from api.schemas import ResampleRequest, TemplateOut, TemplateSummary, TraceRequest
 from core.database import BboxRepository, Source, Template, TemplateRepository
 from core.fit import fit_glyph_to_crop
@@ -147,6 +147,10 @@ def _template_to_out(t: Template) -> TemplateOut:
 
 @router.get("", response_model=list[TemplateSummary])
 async def list_templates(source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)):
+    # Deliberately uncached: the admin sidebar reads this same list and expects
+    # a fresh `has_data` immediately after a trace/delete — a browser max-age
+    # would serve it the pre-write list for minutes. The public quiz boot
+    # tolerates the origin round trip (it already rides the cold-start retry).
     rows = await TemplateRepository(db).list_summaries(source.style_id)
     return [TemplateSummary(**row, has_data=True) for row in rows]
 
@@ -200,7 +204,7 @@ async def post_trace(
         source.style_id, glyph_key, canonical, variant=payload.variant, provenance_source_id=source.id
     )
     _sync_bbox_anchor_count(bbox, canonical)
-    invalidate_pooled_nib(source.style_id, source.id)
+    invalidate_pooled_style(source.style_id)
     return _template_to_out(t)
 
 
@@ -292,14 +296,21 @@ async def post_resample(
         source.style_id, glyph_key, canonical, variant=existing.variant, provenance_source_id=source.id
     )
     _sync_bbox_anchor_count(bbox, canonical)
-    invalidate_pooled_nib(source.style_id, source.id)
+    invalidate_pooled_style(source.style_id)
     return _template_to_out(t)
 
 
-@router.get("/{glyph_key}/diagnostic")
+@router.get("/{glyph_key}/diagnostic", dependencies=[Depends(require_admin)])
 async def get_diagnostic(
     glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
 ):
+    """3-column diagnostic payload (crop · skeleton+anchors · canonical).
+
+    Re-runs the image pipeline (chart decode + binarise + skeletonise) per
+    request — admin-gated like /fit and /quality ("it costs the same CPU").
+    Only the admin surfaces (Diagnose dialog, wizard, /admin/vergleich) consume
+    it; the public renderer reads the cached /write payloads instead.
+    """
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"bbox not set for {glyph_key!r}")
@@ -435,4 +446,4 @@ async def delete_template(
     glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
 ):
     await TemplateRepository(db).delete(source.style_id, glyph_key)
-    invalidate_pooled_nib(source.style_id, source.id)
+    invalidate_pooled_style(source.style_id)

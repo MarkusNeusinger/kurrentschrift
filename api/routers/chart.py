@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import require_db, require_source
+from api.http import CACHE_CONTROL
 from core.chart import crop_mask_to_png_bytes, crop_to_png_bytes, load_chart_grayscale, resolve_chart_path
 from core.database import BboxRepository, Source
 
@@ -47,7 +48,15 @@ async def get_crop(
 ) -> Response:
     """Per-bbox crop PNG. `view=raw` (default) is the grayscale scan with the
     eraser + ink brush applied; `view=mask` is the binarised mask the skeleton
-    sees, colour-coding what the auto-fill swallowed (the wizard's preview)."""
+    sees, colour-coding what the auto-fill swallowed (the wizard's preview).
+
+    Both views stay public: the quiz prompt falls back to the raw crop for a
+    glyph without a canonical, and the wizard loads both via plain `<img>`
+    tags, which cannot send the admin header. The chart decode + crop (+ mask
+    binarisation) are CPU-bound, so the response is cached like the other
+    public reads — a crop only changes with an admin edit, and every admin
+    call site busts the cache with its version query param.
+    """
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"bbox not set for {glyph_key!r}")
@@ -60,4 +69,4 @@ async def get_crop(
         return crop_mask_to_png_bytes(chart, bbox_dict) if view == "mask" else crop_to_png_bytes(chart, bbox_dict)
 
     png = await run_in_threadpool(compute)
-    return Response(content=png, media_type="image/png")
+    return Response(content=png, media_type="image/png", headers={"Cache-Control": CACHE_CONTROL})
