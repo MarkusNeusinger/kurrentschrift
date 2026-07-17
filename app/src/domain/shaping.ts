@@ -14,8 +14,8 @@
 //   1. Long-s vs round-s (Lang-s ſ / Schluss-s s). German Kurrent/Sütterlin
 //      writes the long-s ſ at the start and in the middle of a word and the
 //      round s only at the end. These are *separate allographs* with their own
-//      ductus (`longs-*` / `s-medial` for ſ, `s-final` / `s-round-medial` for
-//      the round s), not one letter with a transition. We approximate the
+//      ductus (glyph_key `longs` for ſ, `s` for the round s), not one letter
+//      with a transition. We approximate the
 //      syllable rule with the pragmatic "ſ unless word-final" convention used by
 //      historical type — good enough for the public live-writing demo; a full
 //      syllabifier is post-MVP (orthographie-regeln.md §1.2). Until then a
@@ -197,7 +197,7 @@ function assignPositions(tokens: RawToken[], quoteParity = 0): { slots: GlyphSlo
       if (t.sAllograph) {
         const letter = t.forceRound || position === 'final' ? ROUND_S : LONG_S;
         out.push({
-          key: letter ? glyphKeyFor(letter, position) : null,
+          key: letter ? glyphKeyFor(letter) : null,
           text: t.text,
           position,
           ligature: false,
@@ -213,7 +213,7 @@ function assignPositions(tokens: RawToken[], quoteParity = 0): { slots: GlyphSlo
         const letter = straightQuotes % 2 === 0 ? QUOTE_LOW : QUOTE_HIGH;
         straightQuotes += 1;
         out.push({
-          key: letter ? glyphKeyFor(letter, position) : null,
+          key: letter ? glyphKeyFor(letter) : null,
           text: t.text,
           position,
           ligature: false,
@@ -226,7 +226,7 @@ function assignPositions(tokens: RawToken[], quoteParity = 0): { slots: GlyphSlo
         out.push({ key: null, text: t.text, position: null, ligature: false, space: false, joins: false });
         return;
       }
-      out.push({ key: glyphKeyFor(t.letter, position), text: t.text, position, ligature: t.ligature, space: false, joins: t.joins });
+      out.push({ key: glyphKeyFor(t.letter), text: t.text, position, ligature: t.ligature, space: false, joins: t.joins });
     });
   }
   return { slots: out, quoteParity: straightQuotes };

@@ -186,17 +186,16 @@ export function useQuizEngine({ bboxesByKey, glyphsByKey }: Pick<QuizSourceData,
 
   // ——— Letters pool ———
   // Only locked letters that resolve to a known glyph. quizKeysFromLocked
-  // collapses each letter to ONE quiz unit (its positions share a form) unless
-  // explicitly split; the rep key prefers a position that owns a canonical.
+  // yields one quiz unit per locked glyph_key (punctuation excluded).
   const letterPool = useMemo<LetterQuestion[]>(
     () =>
-      quizKeysFromLocked(bboxesByKey, (key) => glyphsByKey[key]?.has_data === true)
+      quizKeysFromLocked(bboxesByKey)
         .map((key) => {
           const kg = knownGlyph(key);
           return kg ? ({ kind: 'letter', key, kg } as LetterQuestion) : null;
         })
         .filter((x): x is LetterQuestion => x !== null),
-    [bboxesByKey, glyphsByKey],
+    [bboxesByKey],
   );
 
   // ——— Words pool ———
@@ -212,7 +211,7 @@ export function useQuizEngine({ bboxesByKey, glyphsByKey }: Pick<QuizSourceData,
   );
   // Keep only fully-renderable words — checking the render form (with its Fuge
   // marker), so a compound is offered exactly when its round Schluss-s glyph
-  // (`s-round-medial`) is traced too, never shown with the wrong s.
+  // (`s`) is traced too, never shown with the wrong s.
   const wordPool = useMemo<WordEntry[]>(
     () => words.filter((e) => isWordRenderable(e.fugen ?? e.word)),
     [isWordRenderable, words],

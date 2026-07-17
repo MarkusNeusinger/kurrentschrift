@@ -5,9 +5,7 @@
 // The Diagnose modal shows this for one glyph at a time; here the whole alphabet
 // is on one page so shape fidelity can be judged at a glance.
 //
-// One tile per LETTER: non-split letters share a single authored form across
-// positions, so a representative position stands in; a split (per-position)
-// letter contributes one tile per canonical position.
+// One tile per LETTER — one glyph_key, one authored form.
 
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { Alert, Box, Button, CircularProgress, FormControlLabel, Switch, Typography } from '@mui/material';
@@ -15,13 +13,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { WrittenGlyph } from '@/components/WrittenGlyph';
 import { useAdmin } from '@/context/AdminContext';
-import { glyphKeyFor, isLetterSplit, LETTERS, POSITIONS } from '@/domain/glyphs';
-import type { Position } from '@/domain/glyphs';
+import { glyphKeyFor, LETTERS } from '@/domain/glyphs';
 import { useInView } from '@/hooks/useInView';
 import { ApiError, cropUrl, getDiagnostic } from '@/lib/api';
 import type { DiagnosticData } from '@/lib/api';
 import { ringsToPathD } from '@/lib/svg';
-import { de, POSITION_LABEL } from '@/locales/admin';
+import { de } from '@/locales/admin';
 import { garamond } from '@/styles/paper';
 
 const FACE_H = 320; // px — both faces rendered large
@@ -29,34 +26,14 @@ const FACE_H = 320; // px — both faces rendered large
 interface Tile {
   key: string;
   letterGlyph: string;
-  caption: string;
 }
 
-function buildTiles(
-  glyphsByKey: Record<string, { has_data: boolean }>,
-  bboxesByKey: Record<string, { locked?: boolean; split?: boolean }>,
-): Tile[] {
-  const hasCanon = (key: string) => glyphsByKey[key]?.has_data === true;
+function buildTiles(glyphsByKey: Record<string, { has_data: boolean }>): Tile[] {
   const tiles: Tile[] = [];
   for (const letter of LETTERS) {
-    const canonPositions = POSITIONS.filter((p) => hasCanon(glyphKeyFor(letter, p)));
-    if (canonPositions.length === 0) continue;
-    const split = isLetterSplit(glyphKeyFor(letter, 'medial'), bboxesByKey);
-    if (split) {
-      for (const p of canonPositions) {
-        tiles.push({
-          key: glyphKeyFor(letter, p),
-          letterGlyph: letter.glyph,
-          caption: `${de.admin.compare.positionPrefix}${POSITION_LABEL[p as Position]}`,
-        });
-      }
-    } else {
-      tiles.push({
-        key: glyphKeyFor(letter, canonPositions[0]),
-        letterGlyph: letter.glyph,
-        caption: de.admin.sidebar.unifiedCaption,
-      });
-    }
+    const key = glyphKeyFor(letter);
+    if (glyphsByKey[key]?.has_data !== true) continue;
+    tiles.push({ key, letterGlyph: letter.glyph });
   }
   return tiles;
 }
@@ -121,7 +98,6 @@ function CropWrittenOverlay({
 function CompareCard({
   glyphKey,
   letterGlyph,
-  caption,
   sourceId,
   cropCacheBust,
   reloadKey,
@@ -129,7 +105,6 @@ function CompareCard({
 }: {
   glyphKey: string;
   letterGlyph: string;
-  caption: string;
   sourceId: string;
   cropCacheBust: number;
   reloadKey: number;
@@ -173,9 +148,6 @@ function CompareCard({
         <Typography sx={{ fontFamily: garamond, fontSize: 28, lineHeight: 1 }}>{letterGlyph}</Typography>
         <Typography variant="caption" color="text.secondary">
           {glyphKey}
-        </Typography>
-        <Typography variant="caption" color="text.disabled" sx={{ ml: 'auto' }}>
-          {caption}
         </Typography>
       </Box>
 
@@ -224,12 +196,12 @@ function CompareCard({
 }
 
 export function GlyphComparison() {
-  const { source, sourceId, glyphsByKey, bboxesByKey, cropCacheBust } = useAdmin();
+  const { source, sourceId, glyphsByKey, cropCacheBust } = useAdmin();
   const [reloadKey, setReloadKey] = useState(0);
   const [overlay, setOverlay] = useState(false);
   const reload = useCallback(() => setReloadKey((k) => k + 1), []);
 
-  const tiles = useMemo(() => buildTiles(glyphsByKey, bboxesByKey), [glyphsByKey, bboxesByKey]);
+  const tiles = useMemo(() => buildTiles(glyphsByKey), [glyphsByKey]);
 
   if (!source) return null;
 
@@ -262,7 +234,6 @@ export function GlyphComparison() {
               key={t.key}
               glyphKey={t.key}
               letterGlyph={t.letterGlyph}
-              caption={t.caption}
               sourceId={sourceId}
               cropCacheBust={cropCacheBust}
               reloadKey={reloadKey}

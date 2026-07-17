@@ -10,7 +10,7 @@ import { useMemo, useState } from 'react';
 
 import { WrittenWord } from '@/components/WrittenWord';
 import { useAdmin } from '@/context/AdminContext';
-import { glyphKeyFor, LETTERS, POSITIONS } from '@/domain/glyphs';
+import { glyphKeyFor, LETTERS } from '@/domain/glyphs';
 import type { Letter } from '@/domain/glyphs';
 import { useInView } from '@/hooks/useInView';
 import { de, fmt } from '@/locales/admin';
@@ -59,7 +59,7 @@ function CellGrid({ pairs, sourceId }: { pairs: string[]; sourceId: string }) {
 export function PairMatrix() {
   const { source, sourceId, glyphsByKey } = useAdmin();
   const authored = useMemo(() => {
-    const hasCanon = (letter: Letter) => POSITIONS.some((p) => glyphsByKey[glyphKeyFor(letter, p)]?.has_data);
+    const hasCanon = (letter: Letter) => glyphsByKey[glyphKeyFor(letter)]?.has_data === true;
     return {
       lower: LETTERS.filter((l) => l.group === 'lower' && hasCanon(l)),
       upper: LETTERS.filter((l) => l.group === 'upper' && hasCanon(l)),

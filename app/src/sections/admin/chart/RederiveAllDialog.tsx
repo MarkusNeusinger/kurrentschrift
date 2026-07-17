@@ -2,11 +2,10 @@
 //
 // After pipeline/anchor-density improvements land, every stored template can
 // be recomputed from its raw stylus path. This dialog runs that over ALL
-// authored glyphs: per letter it first fetches the stored-vs-candidate score
-// (`GET .../quality`, a dry run), then applies via `/resample` (force, fanned
-// out over the sibling positions like the wizard's trace), and reports the
-// per-letter delta — regressions show red so a worsened letter is caught
-// immediately instead of discovered later in the quiz.
+// authored glyphs: per glyph it first fetches the stored-vs-candidate score
+// (`GET .../quality`, a dry run), then applies via `/resample` (force), and
+// reports the per-glyph delta — regressions show red so a worsened letter is
+// caught immediately instead of discovered later in the quiz.
 
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import {
@@ -29,7 +28,7 @@ import {
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useAdmin } from '@/context/AdminContext';
-import { isLetterSplit, knownGlyph, siblingKeys } from '@/domain/glyphs';
+import { knownGlyph } from '@/domain/glyphs';
 import { getQuality, postResample } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 
@@ -41,9 +40,8 @@ interface Props {
 type RowStatus = 'pending' | 'scoring' | 'applying' | 'done' | 'failed';
 
 interface RederiveRow {
-  label: string; // letter char, plus position for split letters
-  repKey: string; // representative key for the quality dry run
-  targets: string[]; // keys re-derived together (sibling positions)
+  label: string; // letter char
+  key: string; // the glyph_key scored and re-derived
   status: RowStatus;
   before?: number;
   after?: number;
@@ -67,23 +65,14 @@ export function RederiveAllDialog({ open, onClose }: Props) {
   const [running, setRunning] = useState(false);
   const cancelRef = useRef(false);
 
-  // One row per authored letter; non-split letters share one form, so their
-  // sibling positions form a single row that is scored once and applied to all.
+  // One row per authored glyph_key.
   const groups = useMemo<RederiveRow[]>(() => {
-    const seen = new Set<string>();
     const out: RederiveRow[] = [];
     for (const key of Object.keys(glyphsByKey).sort()) {
-      if (seen.has(key) || !glyphsByKey[key]?.has_data || !bboxesByKey[key]) continue;
+      if (!glyphsByKey[key]?.has_data || !bboxesByKey[key]) continue;
       const known = knownGlyph(key);
       if (!known) continue;
-      if (isLetterSplit(key, bboxesByKey)) {
-        seen.add(key);
-        out.push({ label: `${known.glyph} (${known.position})`, repKey: key, targets: [key], status: 'pending' });
-      } else {
-        const sibs = siblingKeys(key).filter((k) => glyphsByKey[k]?.has_data && bboxesByKey[k]);
-        sibs.forEach((k) => seen.add(k));
-        out.push({ label: known.glyph, repKey: sibs[0] ?? key, targets: sibs.length ? sibs : [key], status: 'pending' });
-      }
+      out.push({ label: known.glyph, key, status: 'pending' });
     }
     return out;
   }, [glyphsByKey, bboxesByKey]);
@@ -111,7 +100,7 @@ export function RederiveAllDialog({ open, onClose }: Props) {
       let rawPathMissing = false;
       updateRow(i, { status: 'scoring' });
       try {
-        const q = await getQuality(sourceId, work[i].repKey);
+        const q = await getQuality(sourceId, work[i].key);
         before = q.stored.score;
         after = q.candidate?.score;
         rawPathMissing = q.candidate == null;
@@ -125,11 +114,9 @@ export function RederiveAllDialog({ open, onClose }: Props) {
       }
       try {
         updateRow(i, { status: 'applying', before, after });
-        for (const k of work[i].targets) {
-          // force: bulk refresh is the deliberate write the lock guard expects.
-          await postResample(sourceId, k, { force: true });
-          applied += 1;
-        }
+        // force: bulk refresh is the deliberate write the lock guard expects.
+        await postResample(sourceId, work[i].key, { force: true });
+        applied += 1;
         updateRow(i, { status: 'done' });
       } catch (err) {
         updateRow(i, { status: 'failed', error: String(err) });
@@ -167,7 +154,6 @@ export function RederiveAllDialog({ open, onClose }: Props) {
             <TableHead>
               <TableRow>
                 <TableCell>{t.colLetter}</TableCell>
-                <TableCell align="right">{t.colPositions}</TableCell>
                 <TableCell align="right">{t.colBefore}</TableCell>
                 <TableCell align="right">{t.colAfter}</TableCell>
                 <TableCell align="right">{t.colDelta}</TableCell>
@@ -178,9 +164,8 @@ export function RederiveAllDialog({ open, onClose }: Props) {
               {effectiveRows.map((r) => {
                 const delta = r.before != null && r.after != null ? r.after - r.before : null;
                 return (
-                  <TableRow key={r.repKey}>
+                  <TableRow key={r.key}>
                     <TableCell sx={{ fontFamily: 'monospace' }}>{r.label}</TableCell>
-                    <TableCell align="right">{r.targets.length}</TableCell>
                     <TableCell align="right">{r.before?.toFixed(1) ?? '–'}</TableCell>
                     <TableCell align="right">{r.after?.toFixed(1) ?? '–'}</TableCell>
                     <TableCell align="right" sx={{ color: delta != null ? deltaColor(delta) : 'text.disabled', fontWeight: 600 }}>

@@ -5,8 +5,6 @@
 // no i18next, no provider (docs/reference/frontend-stack.md plans that
 // post-MVP with /de + /en URL prefixes).
 
-import type { Position } from '@/domain/glyphs';
-
 // --- label maps (absorbed from lib/labels.ts + domain/glyphs.ts) -----------
 // German UI terminology for the admin (DIN 16552-1 / Süß-Lehrbuch lineature).
 // Code identifiers stay English (project language rule); these map the English
@@ -39,17 +37,6 @@ export const COUPLING_LABELS: Record<string, string> = {
   descender: 'Unterlinie',
 };
 
-// German label per position, shown wherever a position surfaces to the user
-// (the wizard's unified/split choice, the sidebar's per-position sub-entries
-// of a split letter). Front · middle · end of a word.
-export const POSITION_LABEL: Record<Position, string> = {
-  initial: 'Anfang',
-  medial: 'Mitte',
-  final: 'Ende',
-};
-
-export const POSITION_LABELS: Record<string, string> = POSITION_LABEL;
-
 // Short script names keyed by style_id — the admin's source switcher shows
 // these instead of the long source titles.
 export const STYLE_LABELS: Record<string, string> = {
@@ -59,7 +46,6 @@ export const STYLE_LABELS: Record<string, string> = {
 };
 
 export const couplingLabel = (key: string): string => COUPLING_LABELS[key] ?? key;
-export const positionLabel = (key: string): string => POSITION_LABELS[key] ?? key;
 export const styleLabel = (key: string): string => STYLE_LABELS[key] ?? key;
 
 // --- shared strings ---------------------------------------------------------

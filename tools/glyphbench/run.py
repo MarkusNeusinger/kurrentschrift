@@ -101,7 +101,6 @@ def run_glyph(
         "bbox": bbox,
         "chart_path": chart_path,
         "glyph": template["glyph"],
-        "position": template["position"],
         # Mirror the /resample default (the production write-back path): the
         # bench measures what a "Neu ableiten" would actually store, not the
         # possibly stale per-bbox anchor count frozen into the fixture.

@@ -28,7 +28,7 @@ def _stylus_path(x_global: float, num: int = 40) -> list[dict]:
 
 def _canonical(chart_path, bbox, x_global: float) -> dict:
     return canonical_from_path(
-        raw_path=_stylus_path(x_global), bbox=bbox, chart_path=chart_path, glyph="l", position="initial", n_anchors=24
+        raw_path=_stylus_path(x_global), bbox=bbox, chart_path=chart_path, glyph="l", n_anchors=24
     )
 
 
@@ -191,7 +191,6 @@ def test_default_anchor_count_does_not_exhaust_budget(synthetic_chart_path, synt
         bbox=synthetic_bbox,
         chart_path=synthetic_chart_path,
         glyph="l",
-        position="initial",
         n_anchors=100,
     )
     out = fit_glyph_to_crop(canon, synthetic_bbox, synthetic_chart_path)

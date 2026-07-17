@@ -81,7 +81,7 @@ def test_crossing_blob_width_is_interpolated(synthetic_bbox, tmp_path):
     """
     chart_path = _save_chart(_cross_chart(), tmp_path, "cross.png")
     canon = canonical_from_path(
-        raw_path=_cross_path(), bbox=synthetic_bbox, chart_path=chart_path, glyph="t", position="medial", n_anchors=48
+        raw_path=_cross_path(), bbox=synthetic_bbox, chart_path=chart_path, glyph="t", n_anchors=48
     )
     assert canon["trace_meta"]["crossing_anchors"], "the crossing must be detected"
     hw_px = np.asarray(canon["trace_meta"]["half_widths_px"])
@@ -97,12 +97,7 @@ def test_retrace_keeps_measured_widths(synthetic_chart_path, synthetic_bbox):
     would erase real width. The transversality test must exempt them.
     """
     canon = canonical_from_path(
-        raw_path=_retrace_path(),
-        bbox=synthetic_bbox,
-        chart_path=synthetic_chart_path,
-        glyph="i",
-        position="initial",
-        n_anchors=30,
+        raw_path=_retrace_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="i", n_anchors=30
     )
     assert canon["trace_meta"]["crossing_anchors"] == []
     hw_px = np.asarray(canon["trace_meta"]["half_widths_px"])
@@ -156,12 +151,7 @@ def test_fully_contaminated_stroke_keeps_measured_widths():
 def test_wobbly_trace_snaps_to_stroke_center(synthetic_chart_path, synthetic_bbox):
     """An off-center, wobbly trace lands on the bar's medial axis (x ≈ 399.5)."""
     canon = canonical_from_path(
-        raw_path=_wobbly_path(),
-        bbox=synthetic_bbox,
-        chart_path=synthetic_chart_path,
-        glyph="l",
-        position="initial",
-        n_anchors=24,
+        raw_path=_wobbly_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", n_anchors=24
     )
     assert canon["trace_meta"]["snap"]["applied"] is True
     xs = np.asarray(canon["trace_meta"]["pixel_anchors"], dtype=float)[:, 0]
@@ -176,7 +166,6 @@ def test_snap_to_ink_can_be_disabled(synthetic_chart_path, synthetic_bbox):
         bbox=synthetic_bbox,
         chart_path=synthetic_chart_path,
         glyph="l",
-        position="initial",
         n_anchors=24,
         snap_to_ink=False,
     )
@@ -195,12 +184,7 @@ def test_snap_preserves_stroke_split(synthetic_chart_path, synthetic_bbox):
         {"x": 404.0, "y": float(410 + 180 * i / (num - 1)), "pressure": 0.5, "t": float(num + i)} for i in range(num)
     ]
     canon = canonical_from_path(
-        raw_path=first + second,
-        bbox=synthetic_bbox,
-        chart_path=synthetic_chart_path,
-        glyph="u",
-        position="medial",
-        n_anchors=20,
+        raw_path=first + second, bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="u", n_anchors=20
     )
     starts = canon["trace_meta"]["stroke_starts"]
     assert len(starts) == 2

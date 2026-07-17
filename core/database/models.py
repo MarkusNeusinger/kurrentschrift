@@ -181,14 +181,6 @@ class Bbox(Base):
     # reads as complete and is protected from accidental move/resize/redraw. The
     # wizard's final "approve" step sets this; unlocking re-enables editing.
     locked: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
-    # Per-letter "positions authored separately" marker (German: aufgetrennt).
-    # Default false: the three positional forms share one authored form (the
-    # wizard fans the same trace across initial/medial/final) and the sidebar,
-    # quiz and lock treat the letter as one unit. true marks a letter whose
-    # positions genuinely differ, so each is authored/locked/quizzed on its own.
-    # A letter-level intent stored on all three sibling rows, read with `.some`;
-    # writes fan out across siblings exactly like `locked`.
-    split: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -221,7 +213,11 @@ class Bbox(Base):
 
 
 class Template(Base):
-    """Canonical ductus template (Grundvorlage) for a (style, glyph, position, variant).
+    """Canonical ductus template (Grundvorlage) for a (style, glyph, variant).
+
+    One row per glyph since the position removal (redesign R2) — the word
+    position is render context in `core/shaping.py`, not a stored form; true
+    allographs (ſ vs s) are separate glyphs with separate keys.
 
     `anchors` + `half_widths` are in normalised template coordinates (baseline=0,
     midband=1). `raw_path` is the dense stylus capture in chart-pixel coords, kept
@@ -234,7 +230,7 @@ class Template(Base):
 
     __tablename__ = "templates"
     __table_args__ = (
-        UniqueConstraint("style_id", "glyph", "position", "variant", name="uq_template_style_gpv"),
+        UniqueConstraint("style_id", "glyph", "variant", name="uq_template_style_gv"),
         # Every read keys on glyph_key (scalar_one_or_none) — two rows sharing a
         # key would 500 every public /write. The routers keep their friendly
         # 409 backstops; this makes the invariant structural (migration 0015).
@@ -250,7 +246,6 @@ class Template(Base):
     )
     glyph_key: Mapped[str] = mapped_column(String(GLYPH_KEY_MAX), nullable=False, index=True)
     glyph: Mapped[str] = mapped_column(String(GLYPH_CHAR_MAX), nullable=False)
-    position: Mapped[str] = mapped_column(String(POSITION_MAX), nullable=False)
     variant: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
 
     advance: Mapped[float] = mapped_column(Float, nullable=False)

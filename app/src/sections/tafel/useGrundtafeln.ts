@@ -16,7 +16,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { LETTERS, glyphKeyFor, type Position } from '@/domain/glyphs';
+import { LETTERS, glyphKeyFor } from '@/domain/glyphs';
 import { CONFIG } from '@/global-config';
 import { getBboxStatuses, getGlyphs, getSources, getStyles } from '@/lib/api';
 import type { BboxStatusOut, GlyphSummary, SourceOut, StyleOut } from '@/lib/api';
@@ -25,10 +25,6 @@ import { styleLabel } from '@/locales/de/common';
 
 // Canonical teaching order (oldest → newest), matching the landing + Schriftkunde.
 const STYLE_ORDER = ['kurrent', 'suetterlin', 'offenbacher'] as const;
-
-// One representative position per letter: prefer the medial (body) form, falling
-// back to initial then final — the same rule the old single-source Tafel used.
-const PREFERRED_POSITIONS: Position[] = ['medial', 'initial', 'final'];
 
 // One marked-letter slot on the Schreibtafel sheet, in the chart's own layout.
 // `key` is set only when the letter has a locked canonical (it renders); a
@@ -67,9 +63,8 @@ function median(xs: number[]): number {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
-// The marked letters grouped into the chart's own rows. Each letter's three
-// sibling bboxes share one chart location, so we dedupe to a single slot;
-// `key` is the representative glyph_key only when a locked canonical exists
+// The marked letters grouped into the chart's own rows. One bbox per letter;
+// `key` is the letter's glyph_key only when a locked canonical exists
 // (else the slot is a gap). Slots are clustered into rows by their baseline
 // (so a letter lands in the same row it occupies on the tafel) and ordered
 // left-to-right; rows run top-to-bottom. Letters never marked on the chart are
@@ -83,16 +78,10 @@ function markedRowsOf(bboxes: BboxStatusOut[], glyphs: GlyphSummary[]): MarkedSl
   const slots: MarkedSlot[] = [];
   const heights: number[] = [];
   for (const letter of LETTERS) {
-    let rep: BboxStatusOut | null = null;
-    let writtenKey: string | null = null;
-    for (const position of PREFERRED_POSITIONS) {
-      const key = glyphKeyFor(letter, position);
-      const b = bm[key];
-      if (!b) continue;
-      if (!rep) rep = b;
-      if (gm[key]?.has_data && b.locked && !writtenKey) writtenKey = key;
-    }
+    const key = glyphKeyFor(letter);
+    const rep = bm[key];
     if (!rep) continue;
+    const writtenKey = gm[key]?.has_data && rep.locked ? key : null;
     heights.push(rep.y1 - rep.y0);
     slots.push({ glyph: letter.glyph, key: writtenKey, x: (rep.x0 + rep.x1) / 2, baseline: rep.baseline_y });
   }

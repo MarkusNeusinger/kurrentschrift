@@ -1,6 +1,6 @@
 // Bbox editing state for the chart editor: drawing a new bbox (drag), moving/
-// resizing an existing one (edit grips), the putBbox commits, the lock toggle
-// with its unified-letter fan-out, delete, the Escape cancel and the snackbar.
+// resizing an existing one (edit grips), the putBbox commits, the lock toggle,
+// delete, the Escape cancel and the snackbar.
 // ChartView keeps the single pointer-routing layer and calls into the
 // start/update/commit primitives returned here.
 
@@ -8,7 +8,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { deleteBbox, deleteGlyph, putBbox } from '@/lib/api';
 import { bboxInFromOut } from '@/lib/bbox';
-import { isLetterSplit, knownGlyph, siblingKeys } from '@/domain/glyphs';
+import { knownGlyph } from '@/domain/glyphs';
 import { useAdmin } from '@/context/AdminContext';
 import { de, fmt } from '@/locales/admin';
 import { applyHandle, editedBbox, hitHandle } from './bboxGeometry';
@@ -182,30 +182,20 @@ export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseB
     setEdit(null);
   }, []);
 
-  // Toggle the "done" lock. For a UNIFIED letter (the default) lock fans out
-  // across the three positions so they stay one unit — else the sidebar lock
-  // icon (`some position locked`) and the quiz keep firing on the siblings left
-  // behind. For a SPLIT letter the positions are independent, so we lock only
-  // the active position. The split decision routes through isLetterSplit (the
-  // one shared `.some` helper). Either way we flip the aggregate of the affected
-  // keys and keep each one's own geometry — positions without a bbox are skipped.
+  // Toggle the "done" lock on the single active key — one glyph, one row.
   const toggleLock = useCallback(async () => {
     if (!activeGlyph) return;
-    const scopeKeys = isLetterSplit(activeGlyph, bboxesByKey) ? [activeGlyph] : siblingKeys(activeGlyph);
-    const keys = scopeKeys.filter((k) => k in bboxesByKey);
-    if (keys.length === 0) {
+    const current = bboxesByKey[activeGlyph];
+    if (!current) {
       setSnack(fmt(de.admin.snack.noBboxYet, { glyph: activeGlyph }));
       return;
     }
-    const nextLocked = !keys.some((k) => bboxesByKey[k]?.locked === true);
+    const nextLocked = current.locked !== true;
     try {
-      for (const k of keys) {
-        const saved = await putBbox(sourceId, k, { ...bboxInFromOut(bboxesByKey[k]), locked: nextLocked });
-        upsertBbox(k, saved);
-      }
+      const saved = await putBbox(sourceId, activeGlyph, { ...bboxInFromOut(current), locked: nextLocked });
+      upsertBbox(activeGlyph, saved);
       const name = knownGlyph(activeGlyph)?.glyph ?? activeGlyph;
-      const scope = keys.length > 1 ? de.admin.snack.scopeAllPositions : '';
-      setSnack(fmt(nextLocked ? de.admin.snack.locked : de.admin.snack.unlocked, { name, scope }));
+      setSnack(fmt(nextLocked ? de.admin.snack.locked : de.admin.snack.unlocked, { name }));
     } catch (err) {
       setSnack(`${de.admin.snack.saveFailed} ${err}`);
     }
@@ -213,28 +203,19 @@ export function useBboxEditing({ width, height, zoom, mode, pointToImage }: UseB
 
   const deleteActive = useCallback(async () => {
     if (!activeGlyph || !(activeGlyph in bboxesByKey)) return;
-    // Scope mirrors the lock: a unified letter deletes all three positions (the
-    // fan-out), a split letter only the active one — so "delete" is a clean
-    // restart of exactly the unit the lock treats as one. Otherwise deleting
-    // a-initial leaves a-medial/a-final standing and the letter looks half-gone.
-    const split = isLetterSplit(activeGlyph, bboxesByKey);
-    const scope = (split ? [activeGlyph] : siblingKeys(activeGlyph)).filter((k) => k in bboxesByKey);
-    const anyCanonical = scope.some((k) => glyphsByKey[k]?.has_data === true);
+    const hasCanonical = glyphsByKey[activeGlyph]?.has_data === true;
     const ok = window.confirm(
       `${fmt(de.admin.snack.deleteConfirm, { glyph: activeGlyph })}` +
-        `${scope.length > 1 ? de.admin.snack.deleteConfirmScope : ''}` +
-        `${anyCanonical ? de.admin.snack.deleteConfirmCanonical : ''}`,
+        `${hasCanonical ? de.admin.snack.deleteConfirmCanonical : ''}`,
     );
     if (!ok) return;
     try {
-      for (const key of scope) {
-        if (glyphsByKey[key]?.has_data === true) {
-          await deleteGlyph(sourceId, key);
-          removeGlyph(key);
-        }
-        await deleteBbox(sourceId, key);
-        removeBbox(key);
+      if (hasCanonical) {
+        await deleteGlyph(sourceId, activeGlyph);
+        removeGlyph(activeGlyph);
       }
+      await deleteBbox(sourceId, activeGlyph);
+      removeBbox(activeGlyph);
       setSnack(fmt(de.admin.snack.deleted, { glyph: activeGlyph }));
     } catch (err) {
       setSnack(`${de.admin.snack.deleteFailed} ${err}`);

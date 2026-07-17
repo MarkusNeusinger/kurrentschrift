@@ -1,6 +1,6 @@
 // Toolbar row of the chart editor: mode toggle (Schwenken/Bbox/Verschieben),
-// the lock toggle with its scope-aware tooltips, the zoom −/slider/+ group,
-// the active-glyph chip and the delete/Einrichten/Diagnose actions.
+// the lock toggle, the zoom −/slider/+ group, the active-glyph chip and the
+// delete/Einrichten/Diagnose actions.
 // Pure props — all state is derived in ChartView and passed in.
 
 import AddBoxIcon from '@mui/icons-material/AddBox';
@@ -35,13 +35,8 @@ interface ChartToolbarProps {
   mode: Mode;
   onModeChange: (mode: Mode) => void;
   activeGlyph: string | null;
-  // Lock scope (whole letter vs. single position) and its aggregate state, as
-  // derived in ChartView from isLetterSplit/siblingKeys.
-  activeSplit: boolean;
   activeLocked: boolean;
-  // Whether any key in the lock scope has a bbox (the lock button's gate).
-  hasLockableBbox: boolean;
-  // Whether the active glyph itself has a bbox (delete/Einrichten gate).
+  // Whether the active glyph has a bbox (lock/delete/Einrichten gate).
   hasActiveBbox: boolean;
   activeHasCanonical: boolean;
   zoom: number;
@@ -59,9 +54,7 @@ export function ChartToolbar({
   mode,
   onModeChange,
   activeGlyph,
-  activeSplit,
   activeLocked,
-  hasLockableBbox,
   hasActiveBbox,
   activeHasCanonical,
   zoom,
@@ -93,15 +86,11 @@ export function ChartToolbar({
 
       <Tooltip
         title={
-          !hasLockableBbox
+          !hasActiveBbox
             ? de.admin.toolbar.lockNeedsBbox
-            : activeSplit
-              ? activeLocked
-                ? de.admin.toolbar.unlockSplit
-                : de.admin.toolbar.lockSplit
-              : activeLocked
-                ? de.admin.toolbar.unlockUnified
-                : de.admin.toolbar.lockUnified
+            : activeLocked
+              ? de.admin.toolbar.unlock
+              : de.admin.toolbar.lock
         }
       >
         <span>
@@ -110,7 +99,7 @@ export function ChartToolbar({
             value="lock"
             selected={activeLocked}
             color="success"
-            disabled={!hasLockableBbox}
+            disabled={!hasActiveBbox}
             aria-label={activeLocked ? de.admin.toolbar.unlockAria : de.admin.toolbar.lockAria}
             onChange={onToggleLock}
           >

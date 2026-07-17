@@ -20,7 +20,6 @@ import { Alert, Box, Snackbar } from '@mui/material';
 import { useCallback, useState } from 'react';
 
 import { chartUrl } from '@/lib/api';
-import { isLetterSplit, siblingKeys } from '@/domain/glyphs';
 import { useAdmin } from '@/context/AdminContext';
 import { overlay } from '@/sections/admin/overlayColors';
 import { BboxOverlay } from './BboxOverlay';
@@ -119,15 +118,8 @@ export function ChartView({ source }: ChartViewProps) {
     [releasePointer, endPan, commitEditOrDraw],
   );
 
-  // Lock state of the affected scope: the whole letter for a unified glyph (the
-  // three positions move as one, matching the sidebar icon and the fan-out
-  // toggle), or just the active position for a split letter. The button is
-  // reachable as long as a relevant position has a bbox.
-  const activeSplit = activeGlyph ? isLetterSplit(activeGlyph, bboxesByKey) : false;
-  const activeSiblings = activeGlyph
-    ? (activeSplit ? [activeGlyph] : siblingKeys(activeGlyph)).filter((k) => k in bboxesByKey)
-    : [];
-  const activeLocked = activeSiblings.some((k) => bboxesByKey[k]?.locked === true);
+  // Lock state of the single active key — one glyph, one bbox row.
+  const activeLocked = activeGlyph ? bboxesByKey[activeGlyph]?.locked === true : false;
   const activeHasCanonical = activeGlyph ? glyphsByKey[activeGlyph]?.has_data === true : false;
   const cursorStyle: React.CSSProperties =
     mode === 'pan'
@@ -146,9 +138,7 @@ export function ChartView({ source }: ChartViewProps) {
         mode={mode}
         onModeChange={setMode}
         activeGlyph={activeGlyph}
-        activeSplit={activeSplit}
         activeLocked={activeLocked}
-        hasLockableBbox={activeSiblings.length > 0}
         hasActiveBbox={!!activeGlyph && activeGlyph in bboxesByKey}
         activeHasCanonical={activeHasCanonical}
         zoom={zoom}

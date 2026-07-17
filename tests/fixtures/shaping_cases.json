@@ -2,263 +2,263 @@
   {
     "text": "lesen",
     "keys": [
-      "l-initial",
-      "e-medial",
-      "s-medial",
-      "e-medial",
-      "n-final"
+      "l",
+      "e",
+      "longs",
+      "e",
+      "n"
     ]
   },
   {
     "text": "das",
     "keys": [
-      "d-initial",
-      "a-medial",
-      "s-final"
+      "d",
+      "a",
+      "s"
     ]
   },
   {
     "text": "Wasser",
     "keys": [
-      "W-initial",
-      "a-medial",
-      "s-medial",
-      "s-medial",
-      "e-medial",
-      "r-final"
+      "W",
+      "a",
+      "longs",
+      "longs",
+      "e",
+      "r"
     ]
   },
   {
     "text": "Fuss",
     "keys": [
-      "F-initial",
-      "u-medial",
-      "s-medial",
-      "s-final"
+      "F",
+      "u",
+      "longs",
+      "s"
     ]
   },
   {
     "text": "Fuß",
     "keys": [
-      "F-initial",
-      "u-medial",
-      "sz-final"
+      "F",
+      "u",
+      "sz"
     ]
   },
   {
     "text": "Buch",
     "keys": [
-      "B-initial",
-      "u-medial",
-      "ch-final"
+      "B",
+      "u",
+      "ch"
     ]
   },
   {
     "text": "Glück",
     "keys": [
-      "G-initial",
-      "l-medial",
-      "ue-medial",
-      "ck-final"
+      "G",
+      "l",
+      "ue",
+      "ck"
     ]
   },
   {
     "text": "Katze",
     "keys": [
-      "K-initial",
-      "a-medial",
-      "tz-medial",
-      "e-final"
+      "K",
+      "a",
+      "tz",
+      "e"
     ]
   },
   {
     "text": "quer",
     "keys": [
-      "qu-initial",
-      "e-medial",
-      "r-final"
+      "qu",
+      "e",
+      "r"
     ]
   },
   {
     "text": "fest",
     "keys": [
-      "f-initial",
-      "e-medial",
-      "longst-final"
+      "f",
+      "e",
+      "longst"
     ]
   },
   {
     "text": "Stein",
     "keys": [
-      "S-initial",
-      "t-medial",
-      "e-medial",
-      "i-medial",
-      "n-final"
+      "S",
+      "t",
+      "e",
+      "i",
+      "n"
     ]
   },
   {
     "text": "Haus|tür",
     "keys": [
-      "H-initial",
-      "a-medial",
-      "u-medial",
-      "s-round-medial",
-      "t-medial",
-      "ue-medial",
-      "r-final"
+      "H",
+      "a",
+      "u",
+      "s",
+      "t",
+      "ue",
+      "r"
     ]
   },
   {
     "text": "Arbeits|amt",
     "keys": [
-      "A-initial",
-      "r-medial",
-      "b-medial",
-      "e-medial",
-      "i-medial",
-      "t-medial",
-      "s-round-medial",
-      "a-medial",
-      "m-medial",
-      "t-final"
+      "A",
+      "r",
+      "b",
+      "e",
+      "i",
+      "t",
+      "s",
+      "a",
+      "m",
+      "t"
     ]
   },
   {
     "text": "1922",
     "keys": [
-      "1-initial",
-      "9-medial",
-      "2-medial",
-      "2-final"
+      "1",
+      "9",
+      "2",
+      "2"
     ]
   },
   {
     "text": "Haus,",
     "keys": [
-      "H-initial",
-      "a-medial",
-      "u-medial",
-      "s-final",
-      "comma-initial"
+      "H",
+      "a",
+      "u",
+      "s",
+      "comma"
     ]
   },
   {
     "text": "\"Ja\"",
     "keys": [
-      "quote-low-initial",
-      "J-initial",
-      "a-final",
-      "quote-high-initial"
+      "quote-low",
+      "J",
+      "a",
+      "quote-high"
     ]
   },
   {
     "text": "(\"Ja\")",
     "keys": [
-      "paren-open-initial",
-      "quote-low-final",
-      "J-initial",
-      "a-final",
-      "quote-high-initial",
-      "paren-close-final"
+      "paren-open",
+      "quote-low",
+      "J",
+      "a",
+      "quote-high",
+      "paren-close"
     ]
   },
   {
     "text": "\"Guten Tag\"",
     "keys": [
-      "quote-low-initial",
-      "G-initial",
-      "u-medial",
-      "t-medial",
-      "e-medial",
-      "n-final",
+      "quote-low",
+      "G",
+      "u",
+      "t",
+      "e",
+      "n",
       null,
-      "T-initial",
-      "a-medial",
-      "g-final",
-      "quote-high-initial"
+      "T",
+      "a",
+      "g",
+      "quote-high"
     ]
   },
   {
     "text": "Wort – Wort",
     "keys": [
-      "W-initial",
-      "o-medial",
-      "r-medial",
-      "t-final",
+      "W",
+      "o",
+      "r",
+      "t",
       null,
-      "dash-initial",
+      "dash",
       null,
-      "W-initial",
-      "o-medial",
-      "r-medial",
-      "t-final"
+      "W",
+      "o",
+      "r",
+      "t"
     ]
   },
   {
     "text": "Tag",
     "keys": [
-      "T-initial",
-      "a-medial",
-      "g-final"
+      "T",
+      "a",
+      "g"
     ]
   },
   {
     "text": "lesen das",
     "keys": [
-      "l-initial",
-      "e-medial",
-      "s-medial",
-      "e-medial",
-      "n-final",
+      "l",
+      "e",
+      "longs",
+      "e",
+      "n",
       null,
-      "d-initial",
-      "a-medial",
-      "s-final"
+      "d",
+      "a",
+      "s"
     ]
   },
   {
     "text": "Straße",
     "keys": [
-      "S-initial",
-      "t-medial",
-      "r-medial",
-      "a-medial",
-      "sz-medial",
-      "e-final"
+      "S",
+      "t",
+      "r",
+      "a",
+      "sz",
+      "e"
     ]
   },
   {
     "text": "ſt",
     "keys": [
-      "longst-initial"
+      "longst"
     ]
   },
   {
     "text": "Sohn",
     "keys": [
-      "S-initial",
-      "o-medial",
-      "h-medial",
-      "n-final"
+      "S",
+      "o",
+      "h",
+      "n"
     ]
   },
   {
     "text": "sT",
     "keys": [
-      "longs-initial",
-      "T-final"
+      "longs",
+      "T"
     ]
   },
   {
     "text": "McHale",
     "keys": [
-      "M-initial",
-      "c-medial",
-      "H-medial",
-      "a-medial",
-      "l-medial",
-      "e-final"
+      "M",
+      "c",
+      "H",
+      "a",
+      "l",
+      "e"
     ]
   }
 ]

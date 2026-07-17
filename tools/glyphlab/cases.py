@@ -30,9 +30,8 @@ DEFAULT_FIXTURES_DIR = REPO_ROOT / "tools" / "glyphbench" / "fixtures"
 class GlyphCase:
     """All inputs needed to re-derive one canonical, plus its provenance label."""
 
-    key: str  # glyph_key, e.g. "i-initial"
+    key: str  # glyph_key, e.g. "i"
     glyph: str  # the character, e.g. "i"
-    position: str  # "initial" | "medial" | "final"
     raw_path: list[dict]
     bbox: dict
     chart_path: str  # relative to repo root
@@ -111,7 +110,6 @@ def _case_from(manifest_path: Path, manifest: dict, key: str) -> GlyphCase:
     return GlyphCase(
         key=key,
         glyph=tpl["glyph"],
-        position=tpl["position"],
         raw_path=tpl["raw_path"],
         bbox=_normalise_bbox(bbox),
         chart_path=_abs_chart(manifest["chart_path"]),
@@ -217,7 +215,6 @@ async def live_case(source_id: str, glyph_key: str) -> GlyphCase:
             return GlyphCase(
                 key=glyph_key,
                 glyph=tpl.glyph,
-                position=tpl.position,
                 raw_path=tpl.raw_path,
                 bbox=bbox_dict,
                 chart_path=_abs_chart(src.chart_path),

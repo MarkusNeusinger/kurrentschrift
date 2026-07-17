@@ -1,14 +1,14 @@
 // Wizard-level state + server mutations for the Einrichtungs-Wizard: the step
 // position, the captured Weg strokes, the resolved guide values and every
 // live-commit against the API (PUT bbox / POST trace / resample / the final
-// lock fan-out). The canvas hands finished gestures to the commit* callbacks;
+// lock). The canvas hands finished gestures to the commit* callbacks;
 // in-flight gesture state itself lives in WizardCanvas.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { getDiagnostic, getGlyph, postResample, postTrace, postTracePreview, putBbox } from '@/lib/api';
 import { bboxInFromOut } from '@/lib/bbox';
-import { isLetterSplit, knownGlyph, siblingKeys } from '@/domain/glyphs';
+import { knownGlyph } from '@/domain/glyphs';
 import { useAdmin } from '@/context/AdminContext';
 import { de, fmt } from '@/locales/admin';
 import { flattenStrokes, savablePointCount } from './strokeUtils';
@@ -29,10 +29,9 @@ export interface SavedTraceOverlay {
   anchorsPx: Array<[number, number]>;
 }
 
-const summaryOf = (g: { glyph_key: string; glyph: string; position: string; variant: number; advance: number }): GlyphSummary => ({
+const summaryOf = (g: { glyph_key: string; glyph: string; variant: number; advance: number }): GlyphSummary => ({
   glyph_key: g.glyph_key,
   glyph: g.glyph,
-  position: g.position,
   variant: g.variant,
   advance: g.advance,
   has_data: true,
@@ -41,8 +40,8 @@ const summaryOf = (g: { glyph_key: string; glyph: string; position: string; vari
 export function useWizard(glyphKey: string, open: boolean, onClose: () => void) {
   const { sourceId, source, bboxesByKey, glyphsByKey, cropCacheBust, upsertBbox, markGlyphTraced, refreshCrop, openDiagnose } = useAdmin();
   const bbox = bboxesByKey[glyphKey] ?? null;
-  // Always-current bbox map, read (not subscribed) by the open/reset effect so it
-  // can seed applyAll from the letter's split state without re-running on edits.
+  // Always-current bbox map, read (not subscribed) by the queued bbox writes so
+  // rapid-fire commits never build on a stale snapshot.
   const bboxesByKeyRef = useRef(bboxesByKey);
   bboxesByKeyRef.current = bboxesByKey;
   const known = knownGlyph(glyphKey);
@@ -72,7 +71,6 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
   // default: the binarised view is what the skeleton actually sees, so erasing
   // and inking against it is the right starting point.
   const [showMask, setShowMask] = useState(true);
-  const [applyAll, setApplyAll] = useState(true);
   const [busy, setBusy] = useState(false);
   const [snack, setSnack] = useState<string | null>(null);
   // Saved-Weg reference overlay on the Weg step (toggleable, on by default).
@@ -98,10 +96,6 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     previewEpoch.current++;
     setPreview(null);
     setPreviewBusy(false);
-    // Seed the unified/split choice from the letter's current state: an already
-    // split letter defaults to keeping this position separate; a unified letter
-    // defaults to "one form for all". The user can still flip it before finishing.
-    setApplyAll(!isLetterSplit(glyphKey, bboxesByKeyRef.current));
   }, [glyphKey, open]);
 
   // Savable points (strokes with ≥2 points; stray taps excluded) — gates "save".
@@ -335,7 +329,6 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     try {
       const g = await postTrace(sourceId, glyphKey, {
         glyph: known.glyph,
-        position: known.position,
         raw_path: rawPath,
         n_anchors: nAnchors,
       });
@@ -371,7 +364,6 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     try {
       const p = await postTracePreview(sourceId, glyphKey, {
         glyph: known.glyph,
-        position: known.position,
         raw_path: rawPath,
         n_anchors: nAnchors,
       });
@@ -399,68 +391,25 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     }
   }, [sourceId, bbox, hasCanonical, glyphKey, markGlyphTraced, refreshSavedTrace]);
 
-  // Approve → lock. applyAll is the unified-vs-split decision:
-  //   true  (unified) — THIS position's form is the one form for the letter. Fan
-  //                     it out to every sibling (overwriting any divergent split
-  //                     forms — "eine Form übernehmen") and clear `split` on all.
-  //   false (split)   — author only this position; flag the letter `split` across
-  //                     every sibling-with-bbox so isLetterSplit (a `.some` read)
-  //                     stays consistent and the siblings keep their own forms.
+  // Approve → lock: one write on THE key (the glyph is a single library row).
   const finish = useCallback(async () => {
-    if (!bbox || !known) return;
+    if (!bbox) return;
     setBusy(true);
     try {
-      if (applyAll) {
-        const tpl = await getGlyph(sourceId, glyphKey); // carries the raw_path to copy
-        for (const k of siblingKeys(glyphKey)) {
-          if (k === glyphKey) continue;
-          const kg = knownGlyph(k);
-          if (!kg) continue;
-          // Create the bbox UNLOCKED first (the trace precondition needs a bbox),
-          // post the trace, and only THEN lock — so a mid-loop failure never
-          // leaves a locked-but-empty sibling that can't be reopened in the wizard.
-          await putBbox(sourceId, k, { ...bboxInFromOut(bbox), locked: false, split: false });
-          const g = await postTrace(sourceId, k, {
-            glyph: kg.glyph,
-            position: kg.position,
-            raw_path: tpl.raw_path,
-            // The fetched template's REAL count, not bbox.n_anchors: the bbox in
-            // this closure can lag a just-committed field edit, and the fan-out
-            // must reproduce exactly the form the user approved.
-            n_anchors: tpl.anchors.length,
-          });
-          markGlyphTraced(k, summaryOf(g));
-          const savedB = await putBbox(sourceId, k, { ...bboxInFromOut(bbox), locked: true, split: false });
-          upsertBbox(k, savedB);
-        }
-        const saved = await putBbox(sourceId, glyphKey, { ...bboxInFromOut(bbox), locked: true, split: false });
-        upsertBbox(glyphKey, saved);
-      } else {
-        // Split: flag every existing sibling so the letter reads as split, leaving
-        // their forms and lock state untouched; only this position is (re)authored.
-        for (const k of siblingKeys(glyphKey)) {
-          if (k === glyphKey) continue;
-          const sib = bboxesByKey[k];
-          if (!sib) continue;
-          const savedB = await putBbox(sourceId, k, { ...bboxInFromOut(sib), split: true });
-          upsertBbox(k, savedB);
-        }
-        const saved = await putBbox(sourceId, glyphKey, { ...bboxInFromOut(bbox), locked: true, split: true });
-        upsertBbox(glyphKey, saved);
-      }
+      const saved = await putBbox(sourceId, glyphKey, { ...bboxInFromOut(bbox), locked: true });
+      upsertBbox(glyphKey, saved);
       onClose();
     } catch (err) {
       setSnack(`${de.wizard.snack.finishFailed} ${err}`);
     } finally {
       setBusy(false);
     }
-  }, [sourceId, bbox, known, applyAll, glyphKey, bboxesByKey, upsertBbox, markGlyphTraced, onClose]);
+  }, [sourceId, bbox, glyphKey, upsertBbox, onClose]);
 
   return {
     // admin-context reads the shell/canvas/panels need
     source,
     bbox,
-    bboxesByKey,
     known,
     hasCanonical,
     cropCacheBust,
@@ -488,8 +437,6 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     setTool,
     showMask,
     setShowMask,
-    applyAll,
-    setApplyAll,
     busy,
     snack,
     setSnack,

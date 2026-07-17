@@ -103,13 +103,12 @@ export interface GuideConfig {
 }
 
 // Item of GET /sources/{id}/bboxes/status — flags + layout scalars only. The
-// public quiz gates its vocabulary on locked/split, the public Tafel lays its
+// public quiz gates its vocabulary on locked, the public Tafel lays its
 // sheet out from the crop rect + baseline; the full BboxOut list would drag
-// every mask/ink/patch blob over the wire for those six scalars.
+// every mask/ink/patch blob over the wire for those few scalars.
 export interface BboxStatusOut {
   glyph_key: string;
   locked: boolean;
-  split: boolean;
   x0: number;
   x1: number;
   y0: number;
@@ -138,12 +137,6 @@ export interface BboxOut {
   // Manual "done" marker: the glyph is finished, shown as complete on the chart
   // and protected from accidental edits. See ChartPage / the wizard's lock step.
   locked: boolean;
-  // Per-letter "positions authored separately" marker (German: aufgetrennt).
-  // false (default): the three positional forms share one authored form and the
-  // sidebar/quiz/lock treat the letter as one unit. true: positions differ and
-  // are authored/locked/quizzed independently. Stored on all three sibling rows
-  // and read with `.some` via isLetterSplit (constants.ts). See the wizard.
-  split: boolean;
   // Per-glyph speck auto-fill (German: Lücken füllen): max enclosed-hole area
   // (px²) filled before skeletonisation; 0 = off.
   fill_holes_max_area: number;
@@ -168,9 +161,6 @@ export interface BboxIn {
   guides?: GuideConfig;
   // Optional so an omitted value preserves the stored flag (mirrors guides).
   locked?: boolean;
-  // Optional so an omitted value preserves the stored flag (mirrors locked).
-  // Written fanned out across the three sibling positions; see the wizard.
-  split?: boolean;
   // Optional so an omitted value preserves the stored setting (mirrors locked).
   fill_holes_max_area?: number;
 }
@@ -188,7 +178,6 @@ export interface StrokePoint {
 
 export interface TraceRequest {
   glyph: string;
-  position: 'initial' | 'medial' | 'final';
   raw_path: StrokePoint[];
   n_anchors?: number | null;
   variant?: number;
@@ -206,7 +195,6 @@ export interface CouplingPointOut {
 export interface GlyphSummary {
   glyph_key: string;
   glyph: string | null;
-  position: string | null;
   variant: number;
   advance: number | null;
   has_data: boolean;
@@ -215,7 +203,6 @@ export interface GlyphSummary {
 export interface GlyphOut {
   glyph_key: string;
   glyph: string;
-  position: string;
   variant: number;
   advance: number;
   entry: CouplingPointOut;
@@ -405,7 +392,6 @@ export interface FitMeta {
 
 export interface FitData {
   glyph: string;
-  position: string;
   advance: number;
   anchors: Array<[number, number]>;
   half_widths: number[];

@@ -756,7 +756,7 @@ def _straighten_crossings(anchors: np.ndarray, stroke_starts: list[int], unit_px
 
 
 def canonical_suetterlin_from_path(
-    raw_path: list[dict], bbox: dict, chart_path: str, glyph: str, position: str, n_anchors: int | None = None
+    raw_path: list[dict], bbox: dict, chart_path: str, glyph: str, n_anchors: int | None = None
 ) -> dict:
     """Turn a dense stylus path into a canonical-template dict — Gleichzug variant.
 
@@ -855,7 +855,6 @@ def canonical_suetterlin_from_path(
         raw_path=raw_path,
         bbox=bbox,
         glyph=glyph,
-        position=position,
         baseline_y=baseline_y,
         midband_y=midband_y,
         unit_px=unit_px,
@@ -884,10 +883,5 @@ def canonical_suetterlin_from_raw_path_only(glyph_row: dict, bbox: dict, chart_p
     the /resample and /quality endpoints for constant-width styles.
     """
     return canonical_suetterlin_from_path(
-        raw_path=glyph_row["raw_path"],
-        bbox=bbox,
-        chart_path=chart_path,
-        glyph=glyph_row["glyph"],
-        position=glyph_row["position"],
-        n_anchors=n_anchors,
+        raw_path=glyph_row["raw_path"], bbox=bbox, chart_path=chart_path, glyph=glyph_row["glyph"], n_anchors=n_anchors
     )

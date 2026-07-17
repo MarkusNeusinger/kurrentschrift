@@ -15,7 +15,7 @@ deshalb schnell genug für Cache-Control + gzip.
 
 | Endpunkt | Zweck |
 |---|---|
-| `GET /sources/{id}/write/glyphs?keys=a-medial,n-medial,…` | Batch: pro `glyph_key` das Render-Payload eines einzelnen Buchstabens; nicht autorisierte Keys landen in `missing`, nie als Fehler |
+| `GET /sources/{id}/write/glyphs?keys=a,n,…` | Batch: pro `glyph_key` (Basis-Keys seit R2, z. B. `a`, `longs`, `ch`) das Render-Payload eines einzelnen Buchstabens; nicht autorisierte Keys landen in `missing`, nie als Fehler |
 | `GET /sources/{id}/write/glyphs/{glyph_key}` | Einzel-Read: das Render-Payload EINES Buchstabens; antwortet **404**, wenn noch kein Canonical getraced ist (anders als der Batch, der fehlende Keys in `missing` meldet) |
 | `GET /sources/{id}/write/word?text=…` | Ein ganzes Wort/eine Zeile, serverseitig komponiert |
 

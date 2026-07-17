@@ -24,13 +24,7 @@ def _stylus_path(x_global: float = 400.0, y0: float = 200.0, y1: float = 600.0, 
 
 def _canonical(chart_path, bbox, raw_path=None, refine: bool = True) -> dict:
     return canonical_from_path(
-        raw_path=raw_path or _stylus_path(),
-        bbox=bbox,
-        chart_path=chart_path,
-        glyph="l",
-        position="initial",
-        n_anchors=24,
-        refine=refine,
+        raw_path=raw_path or _stylus_path(), bbox=bbox, chart_path=chart_path, glyph="l", n_anchors=24, refine=refine
     )
 
 
@@ -177,9 +171,7 @@ def test_refine_keeps_crossing_widths_resolved(synthetic_bbox, tmp_path):
     down[-1]["pen_up"] = True
     bar = [{"x": float(325 + 150 * i / 14), "y": 400.0, "pressure": 0.5, "t": float(30 + i)} for i in range(15)]
 
-    canon = canonical_from_path(
-        raw_path=down + bar, bbox=synthetic_bbox, chart_path=str(path), glyph="t", position="initial", n_anchors=40
-    )
+    canon = canonical_from_path(raw_path=down + bar, bbox=synthetic_bbox, chart_path=str(path), glyph="t", n_anchors=40)
     hw = np.asarray(canon["trace_meta"]["half_widths_px"], dtype=float)
     crossing = canon["trace_meta"]["crossing_anchors"]
     assert crossing  # the crossing was detected

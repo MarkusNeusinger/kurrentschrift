@@ -22,7 +22,7 @@ const MAX_LEN = 48;
 const DEBOUNCE_MS = 450;
 
 // Map an unrenderable glyph_key back to a human letter for the "not curated yet"
-// note (e.g. `s-medial` → ſ, `qu-initial` → qu).
+// note (e.g. `longs` → ſ, `qu` → qu).
 function lettersFromKeys(keys: string[]): string {
   const seen = new Set<string>();
   for (const k of keys) {

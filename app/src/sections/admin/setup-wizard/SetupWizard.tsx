@@ -10,8 +10,8 @@
 //   3. Weg         — draw the ductus with the stylus; "Anpassen" then warp-drags
 //                    the drawn line to iron out a wobble before saving; saves the
 //                    canonical and lets you re-sample it to a different anchor count.
-//   4. Übersicht   — open the (large) Diagnose modal to review, optionally apply
-//                    to all positions, then approve → lock (the bbox's `locked`).
+//   4. Übersicht   — open the (large) Diagnose modal to review, then
+//                    approve → lock (the bbox's `locked`).
 //
 // This is the single editing surface — the advanced EditorPage was retired, so
 // everything that used to live there (ascender/descender toggles, n_anchors
@@ -126,11 +126,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
         return (
           <OverviewStep
             glyphKey={glyphKey}
-            known={known}
             hasCanonical={hasCanonical}
-            applyAll={wizard.applyAll}
-            setApplyAll={wizard.setApplyAll}
-            bboxesByKey={wizard.bboxesByKey}
             openDiagnose={wizard.openDiagnose}
             cropCacheBust={wizard.cropCacheBust}
             nAnchors={wizard.savedTrace?.anchorsPx.length}

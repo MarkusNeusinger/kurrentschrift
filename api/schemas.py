@@ -200,10 +200,6 @@ class BboxIn(BaseModel):
     # not be edited. Optional so an omitted value preserves the stored flag,
     # like `guides`. See put_bbox.
     locked: bool | None = None
-    # Per-letter "positions authored separately" marker (German: aufgetrennt).
-    # Optional so an omitted value preserves the stored flag, like `locked`.
-    # Written fanned out across the three sibling positions; see put_bbox.
-    split: bool | None = None
     # Per-glyph speck auto-fill (German: Lücken füllen): max enclosed-hole area
     # (px²) to swallow before skeletonisation; 0 = off. Optional so an omitted
     # value preserves the stored setting, like `locked`. See put_bbox.
@@ -217,23 +213,21 @@ class BboxOut(BboxIn):
     n_anchors: int
     guides: GuideConfig
     locked: bool
-    split: bool
     fill_holes_max_area: int
 
 
 class BboxStatusOut(BaseModel):
     """Item of `GET /sources/{id}/bboxes/status` — flags + layout scalars only.
 
-    The public quiz gates its vocabulary on locked/split per glyph_key, and the
+    The public quiz gates its vocabulary on locked per glyph_key, and the
     public Tafel additionally lays its "as written" sheet out from the crop
     rectangle + baseline; the full BboxOut list drags every mask/ink/patch
-    JSONB blob over the wire for those six scalars. This is the slim public
+    JSONB blob over the wire for those scalars. This is the slim public
     read (pairs with TemplateSummary's has_data).
     """
 
     glyph_key: str
     locked: bool
-    split: bool
     x0: int
     x1: int
     y0: int
@@ -269,7 +263,6 @@ class TraceRequest(BaseModel):
     """Body of `POST /sources/{id}/templates/{glyph_key}/trace`."""
 
     glyph: str
-    position: Literal["initial", "medial", "final"]
     raw_path: list[StrokePoint]
     # Same bounds as BboxIn.n_anchors; None falls back to the stored bbox value.
     n_anchors: NAnchors | None = None
@@ -299,7 +292,6 @@ class TemplateSummary(BaseModel):
 
     glyph_key: str
     glyph: str | None = None
-    position: str | None = None
     variant: int = 0
     advance: float | None = None
     has_data: bool
@@ -308,7 +300,6 @@ class TemplateSummary(BaseModel):
 class TemplateOut(BaseModel):
     glyph_key: str
     glyph: str
-    position: str
     variant: int
     advance: float
     entry: CouplingPointOut

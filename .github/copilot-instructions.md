@@ -26,7 +26,7 @@ change one, check the other.
     `width_profile  # Schwellzug: pressure-driven stroke-width modulation`.
   - Characters themselves are **data, not code** — schema keys stay
     English, but values are the actual glyphs:
-    `{"glyph": "ſt", "position": "medial", "variant": 0}`.
+    `{"glyph": "ſt", "variant": 0}`.
 - **Do not re-litigate settled decisions.** The design docs under
   `docs/concepts/` have explicit *verworfen* (rejected) sections; do not
   propose alternatives those sections already considered and ruled out
@@ -145,13 +145,16 @@ pillars). The settled architecture (§1–§17) is in
 **Analysis-by-synthesis with a ductus prior.** The image supplies geometry
 + ink width; the canonical ductus template supplies stroke order and
 crossing resolution. A canonical template's key is `(style, glyph,
-position, variant)` — `style` is the Grundvorlage/script family (Kurrent ·
+variant)` — `style` is the Grundvorlage/script family (Kurrent ·
 Sütterlin · Offenbacher), the rest is the library unit within a style, not
-just glyph. Allographs (e.g. medial ſ vs. final s) are *separate glyphs*
-with separate ductus, not one glyph with variants. Positionally-sanctioned
-form variants (the "A = A" on teaching charts) are separate templates, not
-parameter deviations. In the admin the authored form applies to all
-positions by default (fan-out across initial/medial/final); positional
+just glyph. Since the R2 position removal (schreibsystem-redesign.md,
+migration 0017) glyph_keys are bare base keys (`a`, `longs`, `ch`) — ONE
+authored form per glyph, no initial/medial/final triplication; the word
+position is per-slot RENDER context from `core/shaping.py` (Anstrich/
+Auslauf, long-vs-round s). Allographs (long ſ = `longs` vs. round s = `s`)
+are *separate glyphs* with separate ductus, not one glyph with variants.
+Positionally-sanctioned form variants (the "A = A" on teaching charts) are
+separate templates (`variant`), not parameter deviations; positional
 connection strokes are *generated* from `entry`/`exit` tangents.
 
 The closed ligature set (`ch`, `ck`, `tz`, `ſt`, `qu`, `ß`) are first-
@@ -224,7 +227,7 @@ kurrentschrift/
 │       ├── lib/api/     # fetch client (cold-start retry, typed ApiError), endpoints,
 │       │                #   wire types hand-synced with api/schemas.py, renderCache.ts
 │       │                #   (shared render-data cache, batches /write/glyphs per word)
-│       ├── domain/      # glyphs.ts (registry + lock/split); shaping.ts (text → glyph_keys —
+│       ├── domain/      # glyphs.ts (registry + lock/quiz helpers); shaping.ts (text → glyph_keys —
 │       │                #   quiz word-bank gating only; word composition moved server-side
 │       │                #   to core/shaping.py + core/compose.py, compose.ts is gone)
 │       ├── context/     # AdminContext (admin boot data + selection state)
@@ -235,7 +238,9 @@ kurrentschrift/
 │   │                 #   0012 Petzendorfer 1889 as a SEPARATE Kurrent source (another hand
 │   │                 #   at ~57°, the only PD Kurrent digits row — never merged into loth-1866)
 │   │                 #   … 0013 quiz_words.created_at NOT NULL, 0014 Gulden gloss fix (silver),
-│   │                 #   0015 unique (style_id, glyph_key, variant) on templates
+│   │                 #   0015 unique (style_id, glyph_key, variant) on templates,
+│   │                 #   0017 position removal (R2): base glyph_keys, sibling collapse,
+│   │                 #   drop templates.position + bboxes.split, unique (style, glyph, variant)
 ├── data/             # Sources, samples, derived — SEPARATE LICENSING
 │   ├── sources/      # public-domain originals (Loth 1866, Sütterlin 1922 incl. connected-writing
 │   │                 #   plates + words.json word rects for the word bench, Koch 1928 Offenbacher
@@ -356,16 +361,13 @@ lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberläng
   `api/rendering.py::pooled_pen`; see docs/concepts/federmodelle.md); stored
   `half_widths` always stay the measurement.
 - `templates` are the canonical Grundvorlagen, with **two** unique
-  constraints since migration 0015: `(style_id, glyph, position, variant)`
+  constraints since migration 0017: `(style_id, glyph, variant)`
   (the library tuple, architektur.md §3) **and**
   `(style_id, glyph_key, variant)` — every read keys on `glyph_key`, so it
   is identifying too; the API's 409 backstops are UX on top of the DB
   constraints, not the only defense. `instances` hold per-text occurrences
   (the fit + `measurements`, §12 layer 1, filled by the post-MVP import);
   `aggregates` are per-hand stats (§12 layer 2).
-- `position` is the **chart role** (where Loth teaches it), not the
-  text-position — see `app/src/domain/glyphs.ts` comments and architektur.md
-  §3. The admin authors one form for all positions by default (fan-out).
 - `bboxes` carries the chart crop + freeform eraser `mask_strokes` (replaces
   the old rectangle `excludes`) + baseline/midband calibration + `guides` +
   `locked`. JSONB columns hold structured data; aggregate stats in SQL.
@@ -399,7 +401,7 @@ about 17 sections after the May 2026 holistic restructure). Quick index:
 |---|---|
 | §1 | Five-pillar problem split (Synthesis / Recognition / Analysis / Content / Data Export) — also the index to all following sections |
 | §2 | Analysis-by-synthesis with ductus prior (rejected alternatives noted) |
-| §3 | Library schema `(glyph, position, variant)` |
+| §3 | Library schema `(glyph, variant)`; word position = render context since R2 |
 | §4 | Transitions are consequences (closed ligature set is the exception) |
 | §5 | Width = pressure (Schwellzug) vs. darkness = ink; width-profile resolver per source (Kurrent / Sütterlin) |
 | §6 | Three-stage quality pipeline (statistics → closed-loop → curation) |

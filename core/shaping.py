@@ -7,20 +7,26 @@ glyph_keys the composer renders and connects. Mirrors
 text exactly like the client's quiz word-bank gating does — keep the two in
 sync when either changes.
 
+Since the position removal (redesign R2, schreibsystem-redesign.md) a
+glyph_key is the bare base key (``a``, ``longs``, ``ch``) — ONE template row
+per glyph, no ``-initial/-medial/-final`` triplication. The word position is
+still assigned per slot (``GlyphSlot.position``) as RENDER context (the
+word-initial Anstrich, the final Auslauf, and the long-vs-round s choice), it
+just no longer selects a different stored row.
+
 Two orthographic rules carry the historical look (architektur.md §3/§4):
 
 1. Long-s vs round-s (Lang-s ſ / Schluss-s s): the long-s writes at the start
    and in the middle of a word, the round s only at the end. Separate
-   allographs with their own ductus (historical keys: ſ-medial → ``s-medial``,
-   round-s medial → ``s-round-medial``), not one letter with a transition. The
-   fully syllable-aware rule (round s at morpheme boundaries) is post-MVP and
-   reserved for ``core/orthography.py`` (planaenderungen.md Vorschlag D) —
-   this module is the pragmatic "ſ unless word-final" mapper until then, with
-   one manual escape hatch: a Fuge marker ``|`` in the input forces the round
-   s at a compound's inner morpheme boundary (``Haus|tür``, ``Arbeits|amt``)
-   the length heuristic gets wrong. The s right before the ``|`` renders round,
-   no ligature spans the boundary, and the marker carries no glyph. Strip it
-   for display with ``strip_fugen``.
+   allographs with their own ductus (keys ``longs`` / ``s``), not one letter
+   with a transition. The fully syllable-aware rule (round s at morpheme
+   boundaries) is post-MVP and reserved for ``core/orthography.py``
+   (planaenderungen.md Vorschlag D) — this module is the pragmatic "ſ unless
+   word-final" mapper until then, with one manual escape hatch: a Fuge marker
+   ``|`` in the input forces the round s at a compound's inner morpheme
+   boundary (``Haus|tür``, ``Arbeits|amt``) the length heuristic gets wrong.
+   The s right before the ``|`` renders round, no ligature spans the boundary,
+   and the marker carries no glyph. Strip it for display with ``strip_fugen``.
 2. The closed ligature set ch · ck · tz · ſt · qu · ß are *taught units* with
    their own template, not exit→entry chains (architektur.md §4), detected
    greedily but only when the whole cluster is lowercase letters.
@@ -53,11 +59,13 @@ class GlyphSlot:
 
     ``key`` is None for a space / a character with no glyph at all, which
     composes as an advance-only gap. ``text`` keeps the source character(s)
-    for availability notices. ``joins`` is False for the detached glyph
-    classes (digits, punctuation): they render but no Übergang ever enters or
-    leaves them — the composer places them by ink clearance instead
-    (architektur.md §4: connections are generated between letters only).
-    Mirrors the TS ``GlyphSlot``.
+    for availability notices. ``position`` is the slot's place in its word run
+    — render context only (Anstrich/Auslauf, allograph choice), never part of
+    the key. ``joins`` is False for the detached glyph classes (digits,
+    punctuation): they render but no Übergang ever enters or leaves them — the
+    composer places them by ink clearance instead (architektur.md §4:
+    connections are generated between letters only). Mirrors the TS
+    ``GlyphSlot``.
     """
 
     key: str | None
@@ -69,41 +77,28 @@ class GlyphSlot:
 
 
 # --------------------------------------------------------------- the registry
-# Subset of app/src/domain/glyphs.ts: char → (glyph_key base, per-position key
-# overrides). The overrides preserve historical DB keys — never change them.
+# Subset of app/src/domain/glyphs.ts: char → glyph_key (base keys since R2).
+# The long-s and round-s allographs are separate glyphs with separate keys.
 
 _LOWER_EXTRA = {"ä": "ae", "ö": "oe", "ü": "ue"}
 _UPPER_EXTRA = {"Ä": "Ae", "Ö": "Oe", "Ü": "Ue"}
 
-# char → (base, overrides). Round s keeps its historical final key `s-final`;
-# its medial gets `s-round-medial` so it never collides with long-s' `s-medial`.
-_LETTERS: dict[str, tuple[str, dict[str, str]]] = {}
-for _c in "abcdefghijklmnopqrtuvwxyz":  # s handled explicitly below
-    _LETTERS[_c] = (_c, {})
-_LETTERS["s"] = ("s", {"medial": "s-round-medial"})
-_LETTERS["ſ"] = ("longs", {"medial": "s-medial"})
+_LETTERS: dict[str, str] = {}
+for _c in "abcdefghijklmnopqrstuvwxyz":
+    _LETTERS[_c] = _c  # 's' is the round Schluss-s
+_LETTERS["ſ"] = "longs"
 for _c, _base in _LOWER_EXTRA.items():
-    _LETTERS[_c] = (_base, {})
+    _LETTERS[_c] = _base
 for _c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
-    _LETTERS[_c] = (_c, {})
+    _LETTERS[_c] = _c
 for _c, _base in _UPPER_EXTRA.items():
-    _LETTERS[_c] = (_base, {})
+    _LETTERS[_c] = _base
 
 # The closed ligature set, keyed by its written form (architektur.md §4).
-_LIGATURES: dict[str, tuple[str, dict[str, str]]] = {
-    "ch": ("ch", {}),
-    "ck": ("ck", {}),
-    "tz": ("tz", {}),
-    "ſt": ("longst", {}),
-    "qu": ("qu", {}),
-    "ß": ("sz", {}),
-}
+_LIGATURES: dict[str, str] = {"ch": "ch", "ck": "ck", "tz": "tz", "ſt": "longst", "qu": "qu", "ß": "sz"}
 
 # Non-joining glyphs: digits and punctuation are written detached — no
-# Übergang ever enters or leaves them. They still fan out across the three
-# positions like letters (uniform admin authoring/lock machinery); the
-# position is resolved within their own run, and their templates are
-# identical across positions. Bases are ascii-safe glyph_key bases.
+# Übergang ever enters or leaves them. Bases are ascii-safe glyph_keys.
 _DIGITS: dict[str, str] = {c: c for c in "0123456789"}
 _PUNCT: dict[str, str] = {
     ".": "period",
@@ -126,7 +121,7 @@ _PUNCT: dict[str, str] = {
     ")": "paren-close",
     "§": "section",
 }
-_NONJOINING: dict[str, tuple[str, dict[str, str]]] = {c: (b, {}) for c, b in {**_DIGITS, **_PUNCT}.items()}
+_NONJOINING: dict[str, str] = {**_DIGITS, **_PUNCT}
 
 # The straight double quote is ambiguous: German writing opens low („) and
 # closes high (“). Resolved by occurrence parity across the whole text — first "
@@ -134,11 +129,6 @@ _NONJOINING: dict[str, tuple[str, dict[str, str]]] = {c: (b, {}) for c, b in {**
 # still opens low, and a quote closing after several words ("Guten Tag") still
 # closes high instead of re-opening.
 _STRAIGHT_QUOTE = '"'
-
-
-def _key_for(entry: tuple[str, dict[str, str]], position: Position) -> str:
-    base, overrides = entry
-    return overrides.get(position, f"{base}-{position}")
 
 
 def _is_lowercase_letter(c: str) -> bool:
@@ -151,7 +141,7 @@ def _is_lowercase_letter(c: str) -> bool:
 
 @dataclass(frozen=True)
 class _RawToken:
-    entry: tuple[str, dict[str, str]] | None  # None => unknown char or deferred allograph
+    key: str | None  # None => unknown char or deferred allograph
     text: str
     ligature: bool
     s_allograph: bool  # lowercase s/ſ whose long-vs-round form depends on position
@@ -212,8 +202,8 @@ def _tokenize_word(word: str) -> list[_RawToken]:
             tokens.append(_RawToken(nonjoining, c, False, False, False, joins=False))
             i += 1
             continue
-        entry = _LETTERS.get(c)
-        tokens.append(_RawToken(entry, c, False, False, False, joins=entry is not None))
+        key = _LETTERS.get(c)
+        tokens.append(_RawToken(key, c, False, False, False, joins=key is not None))
         i += 1
     return tokens
 
@@ -249,21 +239,21 @@ def _assign_positions(tokens: list[_RawToken], quote_parity: int = 0) -> tuple[l
             if t.s_allograph:
                 # Long-s in initial/medial position, round s at the end of its
                 # letter run — or forced round at a Fuge boundary.
-                entry = _LETTERS["s"] if (t.force_round or position == "final") else _LETTERS["ſ"]
-                out.append(GlyphSlot(_key_for(entry, position), t.text, position, False, False))
+                key = _LETTERS["s"] if (t.force_round or position == "final") else _LETTERS["ſ"]
+                out.append(GlyphSlot(key, t.text, position, False, False))
                 continue
             if t.quote_allograph:
                 # Straight double quote ("): German quotes pair low-then-high
                 # („Ja“). Resolved by occurrence parity across the text, so a
                 # quote after other punctuation — ("Ja") — still opens low.
-                base = "quote-low" if straight_quotes % 2 == 0 else "quote-high"
+                key = "quote-low" if straight_quotes % 2 == 0 else "quote-high"
                 straight_quotes += 1
-                out.append(GlyphSlot(_key_for((base, {}), position), t.text, position, False, False, joins=False))
+                out.append(GlyphSlot(key, t.text, position, False, False, joins=False))
                 continue
-            if t.entry is None:
+            if t.key is None:
                 out.append(GlyphSlot(None, t.text, None, False, False, joins=False))
                 continue
-            out.append(GlyphSlot(_key_for(t.entry, position), t.text, position, t.ligature, False, joins=t.joins))
+            out.append(GlyphSlot(t.key, t.text, position, t.ligature, False, joins=t.joins))
     return out, straight_quotes
 
 
@@ -303,35 +293,28 @@ def glyph_keys_of(slots: list[GlyphSlot]) -> list[str]:
     return list(seen)
 
 
-def expected_glyph_key(glyph: str, position: Position) -> str | None:
-    """The canonical glyph_key the registry assigns to (glyph, position).
+def expected_glyph_key(glyph: str) -> str | None:
+    """The canonical glyph_key the registry assigns to a glyph.
 
-    None for a glyph outside the registry subset — callers fall back to the
-    `{base}-{position}` naming convention. Used by the admin write path to
-    reject a trace whose URL key and payload identity disagree (the template
-    upsert conflicts on (style, glyph, position, variant), so a mismatched
-    pair would silently rewrite another row's glyph_key).
+    None for a glyph outside the registry subset — callers fall back to
+    accepting the client's key as-is. Used by the admin write path to reject a
+    trace whose URL key and payload glyph disagree (reads go by glyph_key, so
+    a mismatched pair would silently rewrite another row's glyph_key). The
+    lowercase 's' maps to the round Schluss-s; the long s is its own glyph ſ.
     """
-    entry = _LETTERS.get(glyph) or _LIGATURES.get(glyph) or _NONJOINING.get(glyph)
-    if entry is None:
-        return None
-    return _key_for(entry, position)
+    return _LETTERS.get(glyph) or _LIGATURES.get(glyph) or _NONJOINING.get(glyph)
 
 
-# Every glyph_key the registry owns, across all three positions — so the admin
-# write path can refuse a registry-owned key claimed by an out-of-registry
-# glyph (e.g. glyph "☘" posting to "n-medial" would otherwise pass the bare
-# suffix convention and collide with the real n row).
+# Every glyph_key the registry owns — so the admin write path can refuse a
+# registry-owned key claimed by an out-of-registry glyph (e.g. glyph "☘"
+# posting to "n" would otherwise collide with the real n row).
 _REGISTRY_KEYS: frozenset[str] = frozenset(
-    _key_for(entry, position)
-    for registry in (_LETTERS, _LIGATURES, _NONJOINING)
-    for entry in registry.values()
-    for position in ("initial", "medial", "final")
+    key for registry in (_LETTERS, _LIGATURES, _NONJOINING) for key in registry.values()
 )
 
 
 def is_registry_glyph_key(glyph_key: str) -> bool:
-    """Whether a registry glyph owns this key (in any position)."""
+    """Whether a registry glyph owns this key."""
     return glyph_key in _REGISTRY_KEYS
 
 
@@ -361,8 +344,8 @@ def decompose_ligature_slot(slot: GlyphSlot) -> list[GlyphSlot] | None:
             position = "medial"
         c = raw.lower()
         if c in ("s", "ſ"):
-            entry = _LETTERS["s"] if position == "final" else _LETTERS["ſ"]
+            key = _LETTERS["s"] if position == "final" else _LETTERS["ſ"]
         else:
-            entry = _LETTERS.get(c)
-        out.append(GlyphSlot(_key_for(entry, position) if entry else None, raw, position, False, False))
+            key = _LETTERS.get(c)
+        out.append(GlyphSlot(key, raw, position, False, False))
     return out
