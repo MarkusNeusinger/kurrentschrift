@@ -14,6 +14,24 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **"Einen alten Brief entziffern" section on /schriftkunde.** A method-only
+  five-step decipherment guide (anchors first, stock formulas, chart
+  side-by-side, the classic f/ſ–n/u–e/n traps, skip-and-return) with a
+  pointer to the Schreibtafel — the practical how-to the page's own intro
+  audience was missing.
+- **Quiz provenance caption.** The quiz setup now names its source like the
+  Tafel and Federprobe do ("Nachgebildet aus der gemeinfreien
+  Sütterlin-Ausgangsschrift von 1922.").
+- **Structured data + meta polish.** Static `WebSite`/`Person` JSON-LD in
+  `index.html`, a `twitter:image:alt`, and `<lastmod>` on every sitemap entry.
+- **`docs/reference/werkzeuge.md`.** Human-facing entry point for
+  glyphlab/wordlab/pairlab (exact CLI, `--live` read-only pulls, `temp/`
+  output) with pointers to the bench and quizgen docs; indexed in
+  `docs/index.md`.
+- **Admin `useInView` hook.** `/admin/vergleich` gates each card's heavy
+  diagnostic fetch behind an IntersectionObserver and lazy-loads crop images
+  instead of firing ~30 JSON requests on mount.
+
 - **HTTP tests for the admin compute endpoints + the untested public reads.**
   New `tests/test_api_compute_endpoints.py` (15 tests): `/trace-preview`
   (pressure raw/refined + the constant-style compute-once branch, dry-run
@@ -73,6 +91,27 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Fixed
 
+- **Cross-source render-cache poisoning.** `WrittenGlyph` seeded admin
+  payloads from the runtime-switched active source under the *public*
+  source's cache keys, so after a source switch in the admin, `/quiz` and
+  `/tafel` could serve the wrong script in the same SPA session. The
+  component now takes a `sourceId` prop used for peek/seed/fetch alike,
+  threaded from all three admin surfaces.
+- **Quiz word bank no longer degrades silently on cold start.** The boot
+  read now retries like its siblings instead of falling back to the small
+  bundled bank for the whole session after one failed fetch.
+- **Out-of-chart bboxes are rejected (422)** instead of storing a box that
+  later 500s the public `/crop` with a zero-size crop.
+- **DELETE /templates and /bboxes return 404 for nonexistent rows** instead
+  of a false 204 on a typo'd glyph key.
+- **Error details no longer leak internals.** The public chart 404 hid the
+  absolute container path and the style-resolution 500 its referential
+  detail; specifics now go to the server log.
+- **`/hands` responses carry the shared Cache-Control** like styles/sources.
+- **`/fit` query params are bounded**; `require_db`'s 503 distinguishes
+  "not configured" from "initialisation failed".
+- **Quiz results word render falls back to plain type on error** instead of
+  spinning forever after a cache eviction + failed refetch.
 - **`/diagnostic` is admin-gated like its compute siblings.** The 3-column
   diagnostic re-runs the image pipeline (chart decode + binarise +
   skeletonise, ~0.2 s CPU) per request; `/fit` and `/quality` were gated for
@@ -370,6 +409,51 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **CORS is now environment-scoped.** Production allows only the
+  `kurrentschrift.ink` origins; the localhost/LAN developer conveniences no
+  longer apply to prod (where `allow_credentials` rides the CF Access
+  cookie). An env override remains available.
+- **Template writes commit before invalidating the pooled-nib cache**, so a
+  concurrent public read can no longer repopulate the 600 s TTL cache from
+  pre-write state.
+- **Ligatures require both characters lowercase** in the shaping twins
+  (Python + TS): `sT` / `McHale` no longer swallow capitals into
+  `longst`/`ch` ligatures; pinned by new shared fixture cases.
+- **Wizard stroke capture stores relative timestamps.** Points now carry
+  `performance.now() - traceEpoch` instead of a `t=0` first point followed
+  by raw epoch values — saved traces become usable for the post-MVP
+  velocity/style analysis.
+- **Quiz play/results panels use semantic headings and the type ladder.**
+  Section titles are real `h2`/`h3`s in ladder variants (Playfair-600 rule);
+  ad-hoc pixel sizes are mapped to the nearest rung, deliberate display
+  figures are marked as such.
+- **Public copy audit fixes.** The Gleichzugfeder paragraph no longer calls
+  the *pen* a school script; the 1915 timeline entry drops the four-year
+  hedge; the Schriftkunde lead anakoluth is split; the Tafel intro says
+  "Schreibvorlagen" instead of claiming "die drei Ausgangsschriften"; the
+  hero caption is honest about being type, not the engine; the quiz SEO line
+  no longer overclaims; the Federprobe page finally carries its own name as
+  the h1; "kuratiert" jargon is replaced; the worksheet uses the DIN/Süß
+  terms (Ober-/Mittel-/Unterlänge, "Mittellänge (Schreibhöhe)") instead of
+  Band/x-Höhe.
+- **Impressum wording made defensible.** EU data-centre claim now names
+  Google/Cloudflare as US providers certified under the EU-US Data Privacy
+  Framework; the rights paragraph is reconciled with the 30-day server logs;
+  date bumped to July 2026.
+- **Quiz gloss corrections.** "Groschen" (era-scoped: 10-Pfennig piece only
+  in the Kaiserreich) and "Witwe" (precise definition) fixed in the
+  generator, the regenerated word bank, the bundled fallback bank, and
+  in place via migration `0016_quiz_gloss_fixes`.
+- **Docs sync.** copilot-instructions' schema section now states both
+  template unique constraints (the `(style_id, glyph_key, variant)` one
+  shipped in 0015) instead of calling `glyph_key` UI-only;
+  `write-api.md` documents the single-glyph read; the letter quiz is renamed
+  to the shipped reading quiz (letters + words) across README/docs/guides;
+  the two agent guides agree on read-first and language rules; implemented
+  proposals are annotated in `docs/index.md`; README explains the
+  Sütterlin-first validation order and lists `tools/`/`tests/`.
+- **Cloud Run request timeout lowered to 60 s** (from 600) — nothing
+  legitimate runs ten minutes.
 - **Deploys go no-traffic → smoke → promote.** `api/cloudbuild.yaml` used to
   route 100 % of traffic and only then smoke — a bad revision served users
   until the build went red. The deploy now carries `--no-traffic` +
