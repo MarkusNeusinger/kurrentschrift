@@ -216,7 +216,12 @@ ENTRY_COUPLE_Y = 0.78
 # their tangent is not a diagonal.
 ALIGN_TAN_DEG = (25.0, 55.0)
 ALIGN_MIN_RISE = 0.02  # entry must sit above the exit for a pass-through
-ALIGN_MIN_CLEARANCE = 0.06  # ink may approach this close when alignment pulls
+# Shared by the sawtooth pass-through AND the R4 "nested fall" placement (a
+# rising mid-band exit whose neighbour enters below it — t's bar, f's flag —
+# nests over the next letter instead of clearing its full ink column; the
+# jul17 sweep put the nested floor exactly at the align floor, and shrinking
+# the connect gap on top of it never bound).
+ALIGN_MIN_CLEARANCE = 0.06
 # The plates couple slightly FLATTER than the letters' internal diagonals (a
 # subtle set-off remains between two sawtooth letters) — pull onto a line of
 # this fraction of the mean tangent slope, not the full slope.
@@ -790,6 +795,17 @@ def compose_word(
                 floor_x = prev["ink_max_x"] + ALIGN_MIN_CLEARANCE - (ink_min_x - entry_xy[0])
                 if align_entry_x < desired_entry_x:
                     desired_entry_x = max(align_entry_x, floor_x)
+            elif (
+                ALIGN_TAN_DEG[0] <= prev["tangent_deg"] <= ALIGN_TAN_DEG[1]
+                and rise < ALIGN_MIN_RISE
+                and prev["exit"][1] <= HIGH_COUPLE_EXIT_Y
+            ):
+                # Nested fall (R4): a rising mid-band exit whose neighbour
+                # enters BELOW it cannot pass through — on the plate the next
+                # letter nests under the exit ink (t's bar, f's flag) instead
+                # of clearing it, so the ink floor relaxes to the align floor.
+                floor_x = prev["ink_max_x"] + ALIGN_MIN_CLEARANCE - (ink_min_x - entry_xy[0])
+                desired_entry_x = max(prev["exit"][0] + CONNECT_GAP - tuck, floor_x)
         elif prev:
             gap = _nonjoin_clearance(_key_base(slot.key, slot.position)) if not slot.joins else math.inf
             if not prev["joins"]:
