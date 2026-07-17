@@ -25,8 +25,9 @@ const FACE_H = 220; // px per face — words are wide, keep cards scannable
 export type WordCompareMode = 'words' | 'pairs' | 'other';
 
 function matchesMode(s: WordSampleOut, mode: WordCompareMode): boolean {
-  if (mode === 'other') return s.sample_set != null;
-  if (s.sample_set != null) return false;
+  // Truthiness, not != null: an empty set tag must not count as another hand.
+  if (mode === 'other') return !!s.sample_set;
+  if (s.sample_set) return false;
   return mode === 'pairs' ? s.kind === 'pair' : s.kind === 'word';
 }
 

@@ -28,11 +28,14 @@ router = APIRouter(prefix="/sources/{source_id}", tags=["word-samples"])
 def _to_out(sample: dict) -> WordSampleOut:
     y0, y1 = int(sample["y0"]), int(sample["y1"])
     x0, x1 = int(sample["x0"]), int(sample["x1"])
+    # An empty/whitespace set tag (hand-maintained data) must not classify the
+    # row as another hand — normalize to None.
+    sample_set = str(sample.get("set") or "").strip() or None
     return WordSampleOut(
         id=sample["id"],
         word=str(sample["word"]),
         kind="pair" if sample.get("kind") == "pair" else "word",
-        sample_set=sample.get("set"),
+        sample_set=sample_set,
         width=x1 - x0,
         height=y1 - y0,
         baseline_y=int(sample["baseline_y"]) - y0,

@@ -45,6 +45,7 @@ async def test_list_word_samples(api, tmp_path):
             WORD,
             {**WORD, "id": "unter-2", "kind": "pair"},
             {**WORD, "id": "abc", "set": "abb22"},
+            {**WORD, "id": "emptyset", "set": "  "},
             {"word": "malformed"},  # missing rect/page — skipped, not 500
         ],
     )
@@ -53,7 +54,7 @@ async def test_list_word_samples(api, tmp_path):
     assert res.status == 200
     assert "max-age" in res.headers.get("cache-control", "")
     rows = res.json()
-    assert [r["id"] for r in rows] == ["unter", "unter-2", "abc"]
+    assert [r["id"] for r in rows] == ["unter", "unter-2", "abc", "emptyset"]
     first = rows[0]
     assert first["word"] == "unter"
     assert first["kind"] == "word"
@@ -63,6 +64,9 @@ async def test_list_word_samples(api, tmp_path):
     assert (first["baseline_y"], first["midband_y"]) == (60, 30)
     assert rows[1]["kind"] == "pair"
     assert rows[2]["sample_set"] == "abb22"
+    # A whitespace-only set tag normalizes to null — it must not classify the
+    # row as another hand.
+    assert rows[3]["sample_set"] is None
 
 
 async def test_list_word_samples_empty_without_sidecar(api, tmp_path):
