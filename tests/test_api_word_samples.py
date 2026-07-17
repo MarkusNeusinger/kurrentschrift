@@ -72,6 +72,35 @@ async def test_list_word_samples_empty_without_sidecar(api, tmp_path):
     assert res.json() == []
 
 
+async def test_list_word_samples_invalid_sidecar_json(api, tmp_path):
+    (tmp_path / "words.json").write_text("{not json", encoding="utf-8")
+    _, source_id = await api.seed_style_and_source(chart_path=str(tmp_path / "chart.png"))
+    res = await api.client.request("GET", f"/sources/{source_id}/word-samples")
+    assert res.status == 200
+    assert res.json() == []
+
+
+def test_load_word_samples_hardening(tmp_path):
+    """Traversal pages, malformed numbers and degenerate rects are skipped."""
+    (tmp_path / "words.json").write_text(
+        json.dumps(
+            {
+                "words": [
+                    {**WORD, "id": "ok"},
+                    {**WORD, "id": "traversal", "page": "../secret.png"},
+                    {**WORD, "id": "abs", "page": "/etc/passwd"},
+                    {**WORD, "id": "badnum", "x0": "wide"},
+                    {**WORD, "id": "inverted", "x1": WORD["x0"]},
+                    "not-a-dict",
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    rows = load_word_samples(tmp_path / "chart.png")
+    assert [r["id"] for r in rows] == ["ok"]
+
+
 async def test_word_sample_crop_png_and_excludes(api, tmp_path):
     exclude_word = {**WORD, "id": "ex", "exclude": [[40, 10, 120, 90]]}  # blank the whole crop
     chart_path = _sidecar(tmp_path, [WORD, exclude_word])

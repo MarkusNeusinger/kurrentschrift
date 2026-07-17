@@ -176,14 +176,34 @@ def load_word_samples(chart_path: str | Path) -> list[dict]:
     sidecar = resolve_chart_path(chart_path).parent / "words.json"
     if not sidecar.exists():
         return []
-    data = json.loads(sidecar.read_text(encoding="utf-8"))
+    try:
+        data = json.loads(sidecar.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    words = data.get("words") if isinstance(data, dict) else None
+    if not isinstance(words, list):
+        return []
     out: list[dict] = []
-    for rec in data.get("words", []):
-        if not isinstance(rec, dict):
-            continue
-        if any(k not in rec for k in ("word", "page", "x0", "x1", "y0", "y1", "baseline_y", "midband_y")):
+    for rec in words:
+        if not isinstance(rec, dict) or "word" not in rec:
             continue
         entry = dict(rec)
+        # Coerce the numeric fields; a malformed value skips the entry instead
+        # of 500ing the public endpoints later.
+        try:
+            for k in ("x0", "x1", "y0", "y1", "baseline_y", "midband_y"):
+                entry[k] = int(round(float(rec[k])))
+        except (KeyError, TypeError, ValueError):
+            continue
+        if entry["x1"] <= entry["x0"] or entry["y1"] <= entry["y0"]:
+            continue
+        # The plate must be a plain filename in the chart directory — a `page`
+        # with path components would let the public crop endpoint read files
+        # outside the source folder.
+        page = str(rec.get("page") or "")
+        if not page or Path(page).name != page or page in (".", ".."):
+            continue
+        entry["page"] = page
         entry["id"] = str(rec.get("id") or rec["word"])
         out.append(entry)
     return out
