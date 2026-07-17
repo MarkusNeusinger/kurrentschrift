@@ -11,7 +11,7 @@ export const landing = {
     // Long-s (ſ) at the syllable start of "-ſchrift" per the Kurrent rule.
     word: 'Kurrentſchrift',
     wordAria: 'Kurrentschrift',
-    wordCaption: '— ein deutsches Wort, geschrieben wie vor hundert Jahren.',
+    wordCaption: '— ein deutsches Wort im Schriftbild von vor hundert Jahren.',
     title: 'Alte Briefe wieder lesen — und selbst zur Feder greifen.',
     leadBeforeBold:
       'Kurrent, Sütterlin und Offenbacher: die Schriften, in denen unsere Vorfahren ihre Briefe und Urkunden niederschrieben — und die heute',

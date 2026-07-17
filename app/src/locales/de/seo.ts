@@ -23,7 +23,7 @@ export const seo = {
   quiz: {
     title: 'Buchstaben-Quiz · kurrentschrift.ink',
     description:
-      'Erkenne die Buchstaben der alten deutschen Schreibschrift in einem kurzen Quiz — jeder wird dir Zug um Zug von der Feder live geschrieben.',
+      'Erkenne die Buchstaben der alten deutschen Schreibschrift in einem kurzen Quiz — viele davon Zug um Zug von der Feder live geschrieben.',
   },
   tafel: {
     title: 'Schreibtafel · kurrentschrift.ink',

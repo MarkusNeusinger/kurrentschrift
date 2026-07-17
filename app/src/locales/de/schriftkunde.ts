@@ -82,7 +82,7 @@ export const schriftkunde = {
   // Warm opener for newcomers (period tone, second person) — placed above the
   // factual lead so a curious finder of an old letter is met first.
   intro: 'Du hast einen alten Brief, eine Postkarte oder ein Tagebuch gefunden und erkennst kaum einen Buchstaben? Das ist meist die deutsche Kurrentschrift — über vierhundert Jahre lang ganz gewöhnlich, heute für die meisten ein Rätsel. Diese Seite erklärt in Ruhe, was das ist, wie es funktioniert und warum wir heute nicht mehr so schreiben.',
-  lead: 'Vom frühen 16. bis zur Mitte des 20. Jahrhunderts war die Kurrent die allgemeine Verkehrs- und Geschäftsschrift des deutschen Sprachraums — ein knapper, durchweg belegter Überblick über ihre Formen, ihr Werkzeug und ihre Geschichte; für die Tiefe führen die Quellen weiter. Das Projekt selbst beginnt bei drei Ausgangsschriften: Kurrent, Sütterlin und Offenbacher.',
+  lead: 'Vom frühen 16. bis zur Mitte des 20. Jahrhunderts war die Kurrent die allgemeine Verkehrs- und Geschäftsschrift des deutschen Sprachraums. Diese Seite gibt einen knappen, durchweg belegten Überblick über ihre Formen, ihr Werkzeug und ihre Geschichte; für die Tiefe führen die Quellen weiter. Das Projekt selbst beginnt bei drei Ausgangsschriften: Kurrent, Sütterlin und Offenbacher.',
 
   // --- Grundbegriffe ---------------------------------------------------------
   conceptsHeading: 'Grundbegriffe',
@@ -236,7 +236,7 @@ export const schriftkunde = {
     },
     {
       term: 'Gleichzugfeder',
-      desc: 'Kugelspitzfeder (kugeliger Kopf) oder Redisfeder (runde Schreibplatte). Sie hält überall dieselbe Strichstärke — ganz ohne Druckwechsel. Drucklos und kindgerecht: die Feder der Sütterlin — mit ihr verbreitete sie sich ab 1915 von Preußen aus, um 1930 war sie in den meisten deutschen Ländern Schulschrift.',
+      desc: 'Kugelspitzfeder (kugeliger Kopf) oder Redisfeder (runde Schreibplatte). Sie hält überall dieselbe Strichstärke — ganz ohne Druckwechsel. Drucklos und kindgerecht: die Feder der Sütterlin. Mit ihr verbreitete sich die Sütterlinschrift ab 1915 von Preußen aus; um 1930 war sie in den meisten deutschen Ländern Schulschrift.',
     },
     {
       term: 'Bandzugfeder',
@@ -291,6 +291,43 @@ export const schriftkunde = {
   ],
   lettersSources: [SRC.kurrent, SRC.langesS],
 
+  // --- Einen alten Brief entziffern ------------------------------------------
+  // Practical method only (no new historical claims, hence no source line):
+  // the working order every archive primer teaches, told in the page's voice.
+  // The Tafel pointer renders as an in-prose router link in the view.
+  decipherHeading: 'Einen alten Brief entziffern',
+  decipherLead:
+    'Kein Buchstabe muss auf Anhieb lesbar sein — Entziffern ist ein Handwerk mit Reihenfolge. So gehst du vor:',
+  decipher: [
+    {
+      term: 'Anker zuerst',
+      desc: 'Suche als Erstes Namen, Orte, Daten und Zahlen. Sie ändern sich nicht mit der Sprache, sind oft schon aus dem Zusammenhang bekannt — und verankern den Rest des Textes.',
+    },
+    {
+      term: 'Feste Formeln nutzen',
+      desc: 'Briefe folgen Mustern: Anrede und Schluss („ergebenst“, „Deine dich liebende …“) oder Amtsformeln kehren wörtlich wieder. Wer die Formel erkennt, gewinnt eine ganze Reihe gesicherter Buchstaben auf einmal.',
+    },
+    {
+      term: 'Tafel daneben legen',
+      desc: 'Lege eine Buchstabentafel neben den Brief und vergleiche Wort für Wort — erst die sicheren Buchstaben, dann die Lücken dazwischen.',
+    },
+    {
+      term: 'Die klassischen Fallen',
+      desc: 'f und langes ſ trennt nur der Querstrich; n und u sind formgleich — das u trägt zur Unterscheidung seinen Bogen; und das Kurrent-e sieht einem n zum Verwechseln ähnlich.',
+    },
+    {
+      term: 'Überspringen erlaubt',
+      desc: 'Bleibt ein Wort stumm, lies einfach weiter — der Zusammenhang löst es später fast immer. Was sich gar nicht fügen will, markierst du und kehrst mit frischem Auge zurück.',
+    },
+  ],
+  // In-prose pointer to the project's own letter chart (/tafel); the view
+  // attaches the route to `linkLabel`.
+  decipherTafel: {
+    before: 'Die Buchstabentafel dazu liegt gleich hier: die ',
+    linkLabel: 'Schreibtafel',
+    after: ' zeigt die Vorlagen Buchstabe für Buchstabe — zum Vergleichen und Nachschlagen.',
+  },
+
   // --- Zahlen & Zeichen ------------------------------------------------------
   signsHeading: 'Zahlen & Zeichen',
   signsLead: 'Was in alten Dokumenten neben den Buchstaben steht.',
@@ -318,7 +355,7 @@ export const schriftkunde = {
     { year: '19. Jh.', text: 'Die metallene Spitzfeder lässt die Kurrent stärker nach rechts neigen — die Schulvorschriften streuen weit, von 45° bis 75°.' },
     { year: 'um 1900', text: 'Die klassische Kurrent steht auf der Lineatur 2:1:2 und einer Schräglage von 60–70°.' },
     { year: '1911', text: 'Ludwig Sütterlin entwirft im preußischen Auftrag seine bewusst aufrechte Ausgangsschrift.' },
-    { year: '1915 / 1918', text: 'Einführung in Preußen — erst probeweise, dann verbindlich (nach anderen Quellen 1914/1924).' },
+    { year: '1915', text: 'Einführung der Sütterlinschrift in Preußen, zunächst probeweise; in den Folgejahren verbindlich (die Quellen nennen leicht abweichende Jahre).' },
     { year: '1927', text: 'Rudolf Koch entwirft die Offenbacher Schrift als künstlerischen Gegenentwurf.' },
     { year: '1935', text: 'Eine modifizierte Sütterlin wird als „Deutsche Volksschrift“ Bestandteil des Schulunterrichts.' },
     { year: '1941', text: 'Lehrverbot der Kurrentschriften zum 1. September; ab 1941/42 gilt die lateinische „Deutsche Normalschrift“.' },

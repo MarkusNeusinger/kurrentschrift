@@ -3,51 +3,61 @@
      /admin/* is gated by Cloudflare Access and is intentionally omitted.
      The two area hubs (/lesen, /schreiben) are navigational; the tools they
      point to (/quiz, /tafel, /schreiben/uebungsblatt, /federprobe) carry the
-     content weight. Keep in sync with paths.ts; revisit once the i18n /de/ and
-     /en/ prefixes land (docs/reference/frontend-stack.md §Sitemap). -->
+     content weight. Keep in sync with paths.ts; bump <lastmod> when a page's
+     content changes. Revisit once the i18n /de/ and /en/ prefixes land
+     (docs/reference/frontend-stack.md §Sitemap). -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://kurrentschrift.ink/</loc>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://kurrentschrift.ink/schriftkunde</loc>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kurrentschrift.ink/lesen</loc>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://kurrentschrift.ink/quiz</loc>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://kurrentschrift.ink/tafel</loc>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://kurrentschrift.ink/schreiben</loc>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://kurrentschrift.ink/schreiben/uebungsblatt</loc>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kurrentschrift.ink/federprobe</loc>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kurrentschrift.ink/impressum</loc>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

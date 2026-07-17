@@ -503,11 +503,13 @@ ENTRIES: list[Entry] = [
     {"word": "Gevatter", "distractors": ["Gewitter"], "era": "historic", "note": "Taufpate; vertrauliche Anrede"},
     {"word": "Oheim", "distractors": ["Odem"], "era": "historic", "note": "veraltet für Onkel"},
     {"word": "Wittib", "distractors": ["Witwe"], "era": "historic", "note": "veraltete Form von Witwe"},
+    # "Frau eines Verstorbenen" misread as "wife of any deceased man" — a Witwe
+    # is a woman whose own husband has died; say it unambiguously.
     {
         "word": "Witwe",
         "distractors": ["Wiege"],
         "era": "historic",
-        "note": "Frau eines Verstorbenen (veraltet: Wittib)",
+        "note": "Frau, deren Ehemann gestorben ist (veraltet: Wittib)",
     },
     {"word": "Mündel", "distractors": ["Bündel"], "era": "historic", "note": "Kind unter Vormundschaft"},
     {"word": "Vormund", "distractors": ["Vorwand"], "era": "historic", "note": "gesetzlicher Vertreter eines Mündels"},
@@ -656,7 +658,14 @@ ENTRIES: list[Entry] = [
     {"word": "Lehen", "distractors": ["Leben"], "era": "historic", "note": "vom Herrn verliehenes Gut"},
     # --- Historic: money, office & law --------------------------------------------
     {"word": "Taler", "distractors": ["Tafel"], "era": "historic", "note": "alte Silbermünze"},
-    {"word": "Groschen", "distractors": ["Kirschen"], "era": "historic", "note": "Münze (10 Pfennig)"},
+    # Not simply "10 Pfennig": the Groschen is a centuries-old coin name; only
+    # the Kaiserreich colloquially pinned it to the 10-Pfennig piece.
+    {
+        "word": "Groschen",
+        "distractors": ["Kirschen"],
+        "era": "historic",
+        "note": "alte Münze; im Kaiserreich das 10-Pfennig-Stück",
+    },
     {"word": "Pfennig", "distractors": ["Honig"], "era": "historic", "note": "Münze, 1/100 Mark"},
     {"word": "Kreuzer", "distractors": ["Kräuter"], "era": "historic", "note": "alte süddeutsche Münze"},
     # Silver, not gold: the 19th-century South German Gulden (the one in old

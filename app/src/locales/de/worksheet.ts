@@ -6,7 +6,7 @@ export const worksheet = {
   title: 'Übungsblatt für die deutsche Schreibschrift',
   //   preserves the DIN&nbsp;A4 non-breaking space from the JSX original.
   intro:
-    'Hilfslinien für die deutsche Schreibschrift auf DIN A4. Wähle eine der drei Ausgangsschriften, passe das Verhältnis von Ober-, Mittel- und Unterband nach Belieben an, nimm auf Wunsch Schräglinien dazu — und lade das Blatt als PDF zum Ausdrucken.',
+    'Hilfslinien für die deutsche Schreibschrift auf DIN A4. Wähle eine der drei Ausgangsschriften, passe das Verhältnis von Ober-, Mittel- und Unterlänge nach Belieben an, nimm auf Wunsch Schräglinien dazu — und lade das Blatt als PDF zum Ausdrucken.',
   preview: 'Vorschau · DIN A4',
   // Footer spec fragments printed on the sheet (fmt templates).
   spec: {
@@ -22,11 +22,11 @@ export const worksheet = {
   config: {
     presetHeading: 'Ausgangsschrift',
     customSetting: 'Eigene Einstellung',
-    ratioHeading: 'Verhältnis · Ober : Mittel : Unter',
+    ratioHeading: 'Verhältnis · Oberlänge : Mittellänge : Unterlänge',
     ratioAscender: 'Ober',
     ratioXHeight: 'Mittel',
     ratioDescender: 'Unter',
-    xHeight: 'Mittelband (x-Höhe)',
+    xHeight: 'Mittellänge (Schreibhöhe)',
     rowGap: 'Zeilenabstand',
     margin: 'Seitenrand',
     lineSystemHeading: 'Liniensystem',
@@ -34,7 +34,7 @@ export const worksheet = {
     lineSystemTwo: 'Doppellinie',
     lineSystemOne: 'Nur Grundlinie',
     lineSystemHint:
-      'Die klassische Lern-Progression: vier Linien für den Anfang, die Doppellinie fürs Mittelband, später nur noch die Grundlinie.',
+      'Die klassische Lern-Progression: vier Linien für den Anfang, die Doppellinie für die Mittellänge, später nur noch die Grundlinie.',
     slantToggle: 'Schräglinien (Schräglage)',
     slantAngle: 'Schräglage',
     slantSpacing: 'Abstand der Schräglinien',
