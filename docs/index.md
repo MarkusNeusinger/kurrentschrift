@@ -37,6 +37,7 @@ Per-Instanz-Fit und Aggregation sind die nächsten Meilensteine.
 | Offene Vorschläge für Konzept-Änderungen sehen | [Planänderungen](proposals/planaenderungen.md) |
 | Schreib-API, Python-Komposition & Wort-Bench-Plan nachschlagen | [Schreibsystem und Wort-Bench](proposals/schreibsystem-und-wortbench.md) |
 | Übergangs-Befund (pairlab: Platzierung · Stubs · Klassen) nachschlagen | [Übergangs-Befund](proposals/uebergaenge-befund.md) |
+| Schreibsystem-Redesign (R1–R5: Paar-Matrix, Positions-Rückbau, geerntete Paare, Schräglage) nachschlagen | [Schreibsystem-Redesign](proposals/schreibsystem-redesign.md) |
 
 ---
 
@@ -81,6 +82,7 @@ docs/
 │   ├── planaenderungen.md        # Staging: §2/§4 Bigramme, §6.1 Positions-Statistik, M4+ core/orthography.py
 │   ├── schreibsystem-und-wortbench.md  # Audit 2026-07-01: Schreib-API, core/compose.py-Port, Wort-Bench, Übergangs-Redesign (Phasen A–E)
 │   ├── uebergaenge-befund.md     # Befund 2026-07-11: pairlab-Paarsektion — Platzierung dominiert, Stub-Ersatz klassenweise, Optionen O1–O3
+│   ├── schreibsystem-redesign.md # Entscheid 2026-07-17: eine Form pro Glyphe (Positions-Rückbau), Paar-Matrix, geerntete Paar-Overrides, Schräglagen-Befund (R1–R5)
 │   └── kurrent-writer-and-recognizer.md  # Recherche-Notiz (EN): generativer Writer (Graves 2013) als synthetische Datenquelle → billiger Recognizer
 └── notes/                        # Recherchematerial & operative Notizen (nicht Designkern)
     └── stifte-fuer-unterwegs.md  # Stift-/Hardware-Recherche fürs Schreiben unterwegs
@@ -228,6 +230,13 @@ umgesetzt) — maßgeblich ist der Status-Kopf des jeweiligen Dokuments.
   ersetzen die Kopplungs-Stubs klassenweise — Lösungsoptionen O1–O3;
   **O1 + O2 (B-Seite) umgesetzt** (Compose-Loop `jul11`), der A-seitige
   d-Stub-Trim gemessen und verworfen; offen: O3 (vertagt)
+- **[Schreibsystem-Redesign](proposals/schreibsystem-redesign.md)** —
+  Richtungsentscheid 2026-07-17 (angenommen, Umsetzung offen): eine Form
+  pro Glyphe mit Positions-Rückbau (R2), Paar-Matrix-Ansicht im Admin
+  (R1), sparsame **geerntete** Paar-Overrides mit Versal-Priorität als
+  Konkretisierung von Vorschlag B (R3), Platzierungs-Rest + O3-Neubewertung
+  (R4) und der neue Schräglagen-Befund (d-Oberschleife lehnt in der
+  verbundenen Schrift ~4–5° rechts gegenüber der Chart-Zelle; R5)
 - **[Kurrent: Writer → Recognizer](proposals/kurrent-writer-and-recognizer.md)** —
   Recherche-Notiz (Englisch): warum Graves 2013 (RNN-Handschrift-Synthese)
   der Anker für den generativen Writer ist, und wie derselbe Writer als
