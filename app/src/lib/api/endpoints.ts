@@ -24,6 +24,7 @@ import type {
   TracePreviewOut,
   TraceRequest,
   WordSampleOut,
+  WordSampleScoreOut,
   WriteGlyphsOut,
 } from '@/lib/api/types';
 
@@ -102,6 +103,12 @@ export const getWordSamples = (sourceId: string, retry?: RetryOptions): Promise<
 
 export const wordSampleCropUrl = (sourceId: string, sampleId: string): string =>
   src(sourceId, `/word-samples/${encodeURIComponent(sampleId)}/crop`);
+
+// Admin-only: the frozen wordbench ruler on one specimen vs the CURRENT
+// composition (redesign R1b Stufe 2). CPU-bound server-side — callers fetch
+// sequentially, not in a fan-out.
+export const getWordSampleScore = (sourceId: string, sampleId: string): Promise<WordSampleScoreOut> =>
+  apiFetch(src(sourceId, `/word-samples/${encodeURIComponent(sampleId)}/score`)).then(asJson<WordSampleScoreOut>);
 
 export const getBboxes = (sourceId: string, retry?: RetryOptions): Promise<BboxOut[]> =>
   apiFetch(src(sourceId, '/bboxes'), {}, retry).then(asJson<BboxOut[]>);

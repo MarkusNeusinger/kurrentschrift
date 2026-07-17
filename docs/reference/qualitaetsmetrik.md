@@ -365,7 +365,12 @@ Abbildung 20 — vermessen in `data/sources/suetterlin-1922/words.json`
 haben keine gedruckte Lineatur; Boxen vorgeschlagen von
 `tools/wordbench/propose_boxes.py` und Zeile für Zeile visuell verifiziert).
 Werkzeug-Details und Output-Contract: `tools/wordbench/README.md`; die Metrik
-liegt in `tools/wordbench/metric.py` (Bench-only, nicht Produktionscode).
+liegt seit R1b Stufe 2 in **`core/word_metric.py`** (das API-Image liefert
+`tools/` nicht aus, und der Admin-Score-Endpunkt
+`GET /sources/{id}/word-samples/{sample_id}/score` serviert dieselbe Metrik
+als Anzeige); `tools/wordbench/metric.py` bleibt als Re-Export-Shim der
+historische Importpfad des Bench-Loops. Eine Implementierung, keine Drift —
+die Freeze-Regel gilt durch den Shim hindurch für das Core-Modul.
 
 **Score:**
 
@@ -418,7 +423,8 @@ misst die Bench genau das, was Phase D (Exit-Klassen, Kopplungshöhen,
 G2-Joins, paarabhängiger Abstand) verbessern soll.
 
 **Frozen-Liste des `/optimize-glyphs`-Loops erweitert:** bei Wort-Läufen sind
-zusätzlich `tools/wordbench/metric.py`, `tools/wordbench/export_fixtures.py`
+zusätzlich `core/word_metric.py` (samt Shim `tools/wordbench/metric.py`),
+`tools/wordbench/export_fixtures.py`
 und die Fixtures eingefroren; editiert wird `core/compose.py` (und ggf.
 `core/pipeline.py`-Rendergeometrie), nie die Messlatte.
 

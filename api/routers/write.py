@@ -91,36 +91,18 @@ async def get_write_glyphs(
     return {"glyphs": glyphs, "missing": missing}
 
 
-@router.get("/word")
-async def get_write_word(
-    response: Response,
-    text: str = Query(..., description="the word or line to write (NFC-normalised, trimmed, ≤160 chars)"),
-    source: Source = Depends(require_source),
-    db: AsyncSession = Depends(require_db),
-):
-    """Compose a whole word/line server-side — ONE cacheable request per text.
+async def compose_word_payload(text: str, source: Source, db: AsyncSession, *, provenance: bool = False) -> dict:
+    """Shape + fetch templates + approved pair overrides + compose ONE text.
 
-    Shaping (long-s rule, closed ligature set, positions), glyph placement and
-    the generated Übergänge all run in Python (core.shaping + core.compose, the
-    single composition source of truth); the client only animates the returned
-    draw items in order. A closed-set ligature without a canonical decomposes
-    into its letters server-side, mirroring the old client fallback; whatever
-    still has no template lands in ``missing`` and composes as a gap.
+    The single server-side word-composition path: /write/word serves it to the
+    public writer and the admin specimen-score endpoint re-runs it with
+    ``provenance=True`` — so a score always judges exactly the composition the
+    writer draws, overrides included. ``text`` is expected pre-normalised.
     """
-    normalized = unicodedata.normalize("NFC", text).strip()
-    if not normalized:
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_CONTENT, detail="text must contain at least one non-space character"
-        )
-    if len(normalized) > MAX_TEXT_LEN:
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_CONTENT, detail=f"text is limited to {MAX_TEXT_LEN} characters"
-        )
-
     ctx = await resolve_render_context(source, db)
 
     repo = TemplateRepository(db)
-    slots = shape_text(normalized)
+    slots = shape_text(text)
     keys = glyph_keys_of(slots)
     rows: dict[str, dict] = {t.glyph_key: _template_to_glyph_row(t) for t in await repo.get_many(source.style_id, keys)}
     # Ligature fallback (one extra query at most, only when something is missing).
@@ -156,9 +138,38 @@ async def get_write_word(
             )
             for key in keys
         }
-        return compose_word(slots, payloads, pen=ctx.pen, pair_overrides=pair_overrides)
+        return compose_word(slots, payloads, pen=ctx.pen, pair_overrides=pair_overrides, provenance=provenance)
 
-    composed = await run_in_threadpool(compute)
+    return await run_in_threadpool(compute)
+
+
+@router.get("/word")
+async def get_write_word(
+    response: Response,
+    text: str = Query(..., description="the word or line to write (NFC-normalised, trimmed, ≤160 chars)"),
+    source: Source = Depends(require_source),
+    db: AsyncSession = Depends(require_db),
+):
+    """Compose a whole word/line server-side — ONE cacheable request per text.
+
+    Shaping (long-s rule, closed ligature set, positions), glyph placement and
+    the generated Übergänge all run in Python (core.shaping + core.compose, the
+    single composition source of truth); the client only animates the returned
+    draw items in order. A closed-set ligature without a canonical decomposes
+    into its letters server-side, mirroring the old client fallback; whatever
+    still has no template lands in ``missing`` and composes as a gap.
+    """
+    normalized = unicodedata.normalize("NFC", text).strip()
+    if not normalized:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, detail="text must contain at least one non-space character"
+        )
+    if len(normalized) > MAX_TEXT_LEN:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, detail=f"text is limited to {MAX_TEXT_LEN} characters"
+        )
+
+    composed = await compose_word_payload(normalized, source, db)
     response.headers["Cache-Control"] = CACHE_CONTROL
     return {"text": normalized, **composed}
 

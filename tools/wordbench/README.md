@@ -11,8 +11,11 @@ measured lineature live in `data/sources/suetterlin-1922/words.json` (boxes
 proposed by `tools/wordbench/propose_boxes.py`, verified visually per line).
 The glyph bench (`tools/glyphbench`) covers derivation quality per glyph;
 this bench covers the layer above it: transitions, coupling heights, spacing
-rhythm. Metric internals live in `tools/wordbench/metric.py`; the doc +
-baseline history in `docs/reference/qualitaetsmetrik.md` §6.
+rhythm. Metric internals live in `core/word_metric.py` (moved there so the
+admin score endpoint serves the SAME frozen ruler — the deployed API image
+ships no `tools/`); `tools/wordbench/metric.py` remains the bench's import
+path as a re-export shim. Doc + baseline history in
+`docs/reference/qualitaetsmetrik.md` §6.
 
 ## Quick start
 

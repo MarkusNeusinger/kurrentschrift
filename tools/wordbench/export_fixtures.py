@@ -64,10 +64,10 @@ from typing import TYPE_CHECKING
 import numpy as np
 from dotenv import load_dotenv
 from PIL import Image
-from scipy.ndimage import label as cc_label
 
 from core.extract import binarize_adaptive, skeleton_and_width
 from core.shaping import GlyphSlot, decompose_ligature_slot, glyph_keys_of, shape_text
+from core.word_metric import clear_excluded, despeckle
 
 
 if TYPE_CHECKING:
@@ -98,55 +98,9 @@ def load_page(path: Path) -> np.ndarray:
     return np.asarray(Image.open(path).convert("L"), dtype=np.float64) / 255.0
 
 
-# Paper grain survives the adaptive binarisation as scattered 1–10 px specks;
-# their skeletons would put a noise floor under the reverse chamfer. Real marks
-# stay: the smallest genuine ink component (an i-dot) is ~50 px² at this scale.
-DESPECKLE_MIN_AREA_PX = 24
-
-# A connected component whose pixels lie at least this fraction inside the
-# entry's exclude rects is foreign ink and removed WHOLE (tails included).
-# The jul05 export instead painted the excludes paper-white BEFORE binarising;
-# the hard white→paper step at the painted border binarised as a fake
-# full-width ink line whose skeleton dominated the references of exactly the
-# excluded words (up to 30 % of wenn-2's skeleton pixels — wordlab finding,
-# 2026-07-08). Binarising the unpainted crop creates no such edge; the auto
-# excludes are the foreign components' own bounding boxes, so they contain
-# their component almost entirely.
-EXCLUDE_COMPONENT_FRAC = 0.5
-
-
-def clear_excluded(mask: np.ndarray, rects: list[tuple[int, int, int, int]]) -> np.ndarray:
-    """Remove foreign ink under crop-local exclude rects from a binarised mask.
-
-    Two layers: every pixel strictly inside a rect is cleared, and every
-    connected component with ≥ EXCLUDE_COMPONENT_FRAC of its area inside the
-    rect union is removed whole — so a descender tail poking out of its rect
-    does not survive as an ink stub (its skeleton would poison the reverse
-    chamfer). Word ink is safe: it never lies half inside an exclude.
-    """
-    if not rects:
-        return mask
-    inside = np.zeros_like(mask)
-    for x0, y0, x1, y1 in rects:
-        inside[max(0, y0) : max(0, y1), max(0, x0) : max(0, x1)] = True
-    labels, n = cc_label(mask)
-    if n:
-        sizes = np.bincount(labels.ravel(), minlength=n + 1)
-        inside_sizes = np.bincount(labels[inside].ravel(), minlength=n + 1)
-        kill = inside_sizes >= EXCLUDE_COMPONENT_FRAC * sizes
-        kill[0] = False
-        mask = mask & ~kill[labels]
-    return mask & ~inside
-
-
-def despeckle(mask: np.ndarray) -> np.ndarray:
-    labels, n = cc_label(mask)
-    if not n:
-        return mask
-    sizes = np.bincount(labels.ravel())
-    keep = sizes >= DESPECKLE_MIN_AREA_PX
-    keep[0] = False
-    return keep[labels]
+# Mask hygiene (despeckle + component-wise exclude clearing) moved to
+# core.word_metric so the admin score endpoint builds the exact same
+# reference; the jul05 painted-border lesson is documented there.
 
 
 def _kind(w: dict) -> str:

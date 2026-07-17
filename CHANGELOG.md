@@ -14,6 +14,22 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Specimen scores in the admin word comparison (redesign R1b, stage 2).**
+  New admin-gated endpoint `GET /sources/{id}/word-samples/{sample_id}/score`:
+  it runs the frozen wordbench ruler on the same composition `/write/word`
+  serves (shared `compose_word_payload`, approved pair overrides included)
+  and returns loss/components plus per-letter/per-join segment attribution
+  from compose provenance; a specimen with a missing template scores
+  `failed`/1.0 (the bench crash rule). The `/admin/vergleich` word and pair
+  tabs gain a "Scores berechnen & sortieren" action that fetches each card's
+  score sequentially, shows a colour-coded loss chip (tooltip: the three
+  worst segments) and sorts worst-first; the other-hand tab is deliberately
+  never scored. To serve the metric from the API image (which ships no
+  `tools/`), the ruler moved to `core/word_metric.py` — together with the
+  exporter's specimen-reference pipeline and a per-sample skeleton cache —
+  while `tools/wordbench/metric.py` remains as a re-export shim, so the
+  bench's frozen import path and behaviour are unchanged.
+
 - **Pair editor + override badges (redesign R3, stage 2).** Clicking a cell
   in `/admin/paare` opens the new `PairEditorDialog`: both letters rendered
   at an adjustable coupling offset (right entry relative to left exit), the
