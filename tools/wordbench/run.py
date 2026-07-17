@@ -54,6 +54,7 @@ from core.compose import compose_word
 from core.pipeline import render_payload_for_template
 from core.shaping import GlyphSlot
 from tools.wordbench.metric import score_word
+from tools.wordbench.slant import composed_raster, slant_deg
 
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
@@ -109,6 +110,13 @@ def _print_block(reports: list[dict], skipped: list[dict], kind: str) -> None:
         print("--- components (mean penalty, lower better) ---")
         for comp, label in (("transition", "transition"), ("coverage", "coverage"), ("width", "width")):
             print(f"{comp_prefix}_{label}: {float(np.mean([r[comp] for r in scored])):.6f}")
+        # Report-only slant medians (90 = upright, < 90 = right-leaning) —
+        # appended after the stable component block, never a headline.
+        slant_prefix = "" if kind == "word" else "pair_"
+        for slant_key in ("slant_spec", "slant_comp"):
+            values = [r[slant_key] for r in scored if r.get(slant_key) is not None]
+            if values:
+                print(f"{slant_prefix}{slant_key}_median: {float(np.median(values)):.2f}")
 
 
 def main() -> None:
@@ -191,6 +199,12 @@ def main() -> None:
                     skel,
                     nib,
                 )
+                # Slant is a REPORT column (redesign R5), never part of the loss:
+                # specimen vs composed, both measured on the same crop grid.
+                report["slant_spec"] = slant_deg(skel)
+                report["slant_comp"] = slant_deg(
+                    composed_raster(composed, report["registration"], word_meta, skel.shape)
+                )
             except Exception as exc:  # a crash counts 1.0 — one regressed word always moves the number
                 composed = None
                 report = {"loss": 1.0, "failed": True, "error": f"{type(exc).__name__}: {exc}", "missing": []}
@@ -209,10 +223,13 @@ def main() -> None:
             print(f"word {r['id']:<15} loss {r['loss']:.6f}  FAILED ({reason})")
         else:
             reg = r["registration"]
+            spec = r.get("slant_spec")
+            comp = r.get("slant_comp")
+            slant = f"  slant {spec:.1f}/{comp:.1f}" if spec is not None and comp is not None else ""
             print(
                 f"word {r['id']:<15} loss {r['loss']:.6f}  "
                 f"trans {r['transition']:.3f} cover {r['coverage']:.3f} width {r['width']:.3f}  "
-                f"(tx={reg['tx']:.0f}, ty={reg['ty']:.0f})"
+                f"(tx={reg['tx']:.0f}, ty={reg['ty']:.0f}){slant}"
             )
 
     result: dict = {"style": args.style, "set": args.which}
