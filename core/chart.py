@@ -226,11 +226,12 @@ def word_sample_crop_to_png_bytes(chart_path: str | Path, sample: dict) -> bytes
     page_path = resolve_chart_path(chart_path).parent / str(sample["page"])
     page = load_chart_grayscale(page_path)
     ph, pw = page.shape[:2]
-    y0, y1 = max(0, int(sample["y0"])), min(ph, int(sample["y1"]))
-    x0, x1 = max(0, int(sample["x0"])), min(pw, int(sample["x1"]))
-    if y1 <= y0 or x1 <= x0:
-        # Explicit instead of letting Image.fromarray choke on a 0-size array —
-        # a hand-maintained rect can lie outside the plate.
+    y0, y1, x0, x1 = (int(sample[k]) for k in ("y0", "y1", "x0", "x1"))
+    if not (0 <= y0 < y1 <= ph and 0 <= x0 < x1 <= pw):
+        # Reject instead of clamping: a clamped crop would disagree with the
+        # width/height the metadata endpoint advertises (computed from the raw
+        # rect), silently distorting <img> sizing and overlay registration —
+        # a hand-maintained rect outside the plate is data breakage.
         raise ValueError(f"word sample rect {sample.get('id')!r} lies outside plate {sample['page']!r}")
     crop = page[y0:y1, x0:x1].copy()
     for ex in sample.get("exclude") or []:
