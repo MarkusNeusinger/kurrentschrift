@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import math
 
-from core.compose import ENTRY_COUPLE_Y, SWING_HIGH_LAUNCH_DEG, _entry_couple_index, compose_word
+from core.compose import ENTRY_COUPLE_Y, SWING_HIGH_LAUNCH_DEG, _entry_couple_index, _joined_run_length, compose_word
 from core.shaping import GlyphSlot
 
 
@@ -83,3 +83,16 @@ def test_backward_high_exit_gets_no_auslauf():
     # A curl travelling LEFT at its end never extends the word rightward.
     composed = _compose_one([[0.0, 0.0], [0.6, 0.85], [0.3, 0.9]])
     assert _generated_items(composed) == []
+
+
+def test_joined_run_length_counts_letters_and_stops_at_boundaries():
+    # The R5 ascender-lean gate: a bound run is a property of the TEXT — a
+    # space or a detached glyph ends it, a non-joining slot has no run at all.
+    space = GlyphSlot(key=None, text=" ", position=None, ligature=False, space=True)
+    digit = GlyphSlot(key="7", text="7", position="final", ligature=False, space=False, joins=False)
+    letters = [_slot("d-medial"), _slot("a-medial"), _slot("s-medial")]
+    assert _joined_run_length(letters, 0) == 3
+    assert _joined_run_length([*letters, space, _slot("e-medial")], 2) == 3
+    assert _joined_run_length([digit, *letters], 1) == 3
+    assert _joined_run_length([digit], 0) == 0
+    assert _joined_run_length([space], 0) == 0
