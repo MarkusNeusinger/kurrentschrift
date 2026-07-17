@@ -231,7 +231,8 @@ umgesetzt) — maßgeblich ist der Status-Kopf des jeweiligen Dokuments.
   **O1 + O2 (B-Seite) umgesetzt** (Compose-Loop `jul11`), der A-seitige
   d-Stub-Trim gemessen und verworfen; offen: O3 (vertagt)
 - **[Schreibsystem-Redesign](proposals/schreibsystem-redesign.md)** —
-  Richtungsentscheid 2026-07-17 (angenommen, Umsetzung offen): eine Form
+  Richtungsentscheid 2026-07-17 (angenommen; R1 Paar-Matrix und R1b
+  Stufe 1 Wortvergleich sind umgesetzt, R2–R5 offen): eine Form
   pro Glyphe mit Positions-Rückbau (R2), Paar-Matrix-Ansicht im Admin
   (R1), sparsame **geerntete** Paar-Overrides mit Versal-Priorität als
   Konkretisierung von Vorschlag B (R3), Platzierungs-Rest + O3-Neubewertung

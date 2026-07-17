@@ -8,6 +8,7 @@ directly.
 
 from __future__ import annotations
 
+import json
 from functools import lru_cache
 from pathlib import Path
 
@@ -153,6 +154,66 @@ def crop_to_png_bytes(chart: np.ndarray, bbox: dict) -> bytes:
     from io import BytesIO
 
     crop = crop_with_mask(chart, bbox, fill=1.0)
+    crop_uint8 = (np.clip(crop, 0.0, 1.0) * 255).astype(np.uint8)
+    buf = BytesIO()
+    Image.fromarray(crop_uint8, mode="L").save(buf, format="PNG")
+    return buf.getvalue()
+
+
+def load_word_samples(chart_path: str | Path) -> list[dict]:
+    """Read the `words.json` word-sample sidecar next to the chart raster.
+
+    The sidecar (see `data/sources/suetterlin-1922/words.json`) holds the
+    connected-writing specimens of a source: word/pair rects in page-pixel
+    coords of `page` (a plate image in the same directory), per-entry lineature
+    (`baseline_y`/`midband_y`), optional `exclude` rects and an optional `set`
+    tag for plates by another writer. Returns the raw entry dicts with a
+    guaranteed `id` (falls back to `word` — the sidecar keys repeated words
+    with -2/-3 suffixes already); `[]` when the source has no sidecar. Entries
+    without the required rect/page fields are skipped rather than raised — the
+    sidecar is hand-maintained data, not code.
+    """
+    sidecar = resolve_chart_path(chart_path).parent / "words.json"
+    if not sidecar.exists():
+        return []
+    data = json.loads(sidecar.read_text(encoding="utf-8"))
+    out: list[dict] = []
+    for rec in data.get("words", []):
+        if not isinstance(rec, dict):
+            continue
+        if any(k not in rec for k in ("word", "page", "x0", "x1", "y0", "y1", "baseline_y", "midband_y")):
+            continue
+        entry = dict(rec)
+        entry["id"] = str(rec.get("id") or rec["word"])
+        out.append(entry)
+    return out
+
+
+def word_sample_crop_to_png_bytes(chart_path: str | Path, sample: dict) -> bytes:
+    """One word-sample crop → PNG bytes (8-bit grayscale, excludes painted white).
+
+    `sample` is an entry from `load_word_samples`. The plate is loaded through
+    the same read-only chart cache; `exclude` rects ([x0, y0, x1, y1], page
+    coords — foreign ink from neighbouring lines) are painted paper-white
+    inside the crop, exactly like the wordbench exporter treats them.
+    """
+    from io import BytesIO
+
+    page_path = resolve_chart_path(chart_path).parent / str(sample["page"])
+    page = load_chart_grayscale(page_path)
+    ph, pw = page.shape[:2]
+    y0, y1 = max(0, int(sample["y0"])), min(ph, int(sample["y1"]))
+    x0, x1 = max(0, int(sample["x0"])), min(pw, int(sample["x1"]))
+    crop = page[y0:y1, x0:x1].copy()
+    for ex in sample.get("exclude") or []:
+        try:
+            ex0, ey0, ex1, ey1 = (int(round(float(v))) for v in ex[:4])
+        except (TypeError, ValueError):
+            continue
+        cx0, cy0 = max(0, ex0 - x0), max(0, ey0 - y0)
+        cx1, cy1 = min(x1 - x0, ex1 - x0), min(y1 - y0, ey1 - y0)
+        if cx1 > cx0 and cy1 > cy0:
+            crop[cy0:cy1, cx0:cx1] = 1.0
     crop_uint8 = (np.clip(crop, 0.0, 1.0) * 255).astype(np.uint8)
     buf = BytesIO()
     Image.fromarray(crop_uint8, mode="L").save(buf, format="PNG")

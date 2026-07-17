@@ -73,7 +73,7 @@ agent working in this repo:
 - Frontend feature work that follows the existing `/app/` patterns
   (drag-on-canvas, stylus capture, diagnostic panels).
 - New FastAPI routes that mirror the `api/routers/{health,styles,hands,
-  sources,chart,bboxes,templates,write,quiz_words}.py` shape.
+  sources,chart,bboxes,templates,write,word_samples,quiz_words}.py` shape.
 - Adding numpy/scipy/scikit-image pipeline steps inside `core/`.
 - Writing/improving unit tests under `tests/` (a pytest suite already
   exists — mirror the existing flat `tests/test_<module>.py` layout).
@@ -185,7 +185,10 @@ kurrentschrift/
 │   ├── rendering.py  # style resolution + memoised source-pooled nib (templates + write)
 │   └── routers/      # health, styles, hands, sources, chart, bboxes, templates,
 │                     #   write (public batched render payloads + /word server-side composition,
-│                     #   cached, no chart I/O), quiz_words (public GET /quiz-words reading-drill bank:
+│                     #   cached, no chart I/O), word_samples (public reads over the committed
+│                     #   words.json sidecar: /word-samples metadata + /crop PNG with excludes
+│                     #   painted white — public like the bbox crops, <img> can't send the
+│                     #   admin header), quiz_words (public GET /quiz-words reading-drill bank:
 │                     #   ~500 words, ONE pinned anchor distractor each, rest drawn at runtime by the
 │                     #   shared similarity rules — docs/reference/quiz-wortbank.md)
 ├── app/              # React 19 + Vite + MUI SPA (anyplot-style)
@@ -196,9 +199,14 @@ kurrentschrift/
 │       │                #   hub/ (/lesen + /schreiben area hubs), worksheet/,
 │       │                #   scribe/ (/federprobe live writer), tafel/ (/tafel Schreibtafel),
 │       │                #   quiz/ (useQuizEngine), impressum/,
-│       │                #   admin/{chart,setup-wizard,diagnostics,sidebar,compare}
-│       │                #   (compare/GlyphComparison.tsx = /admin/vergleich: every authored
-│       │                #   letter, chart crop vs. "as written", side-by-side or overlaid)
+│       │                #   admin/{chart,setup-wizard,diagnostics,sidebar,compare,pairs}
+│       │                #   (compare/CompareTabs.tsx = /admin/vergleich tabs: Buchstaben
+│       │                #   (GlyphComparison — every authored letter, crop vs. "as written",
+│       │                #   side-by-side or overlaid) + Wörter/Verbindungen/Andere Hand
+│       │                #   (WordComparison — words.json specimens vs /write/word, overlay
+│       │                #   registered over the sidecar lineature); pairs/PairMatrix.tsx =
+│       │                #   /admin/paare: every 2-letter combination of a chosen letter,
+│       │                #   server-composed, capitals only left — redesign R1)
 │       ├── components/  # reusable UI: PaperBackground, PublicHeader (3-area nav), PublicFooter,
 │       │                #   PageContainer (one column: narrow 760/text 1152/wide 1280), Prose (~66ch
 │       │                #   reading measure), PageHeader (shared page-header: area eyebrow + Playfair
@@ -260,7 +268,8 @@ generator + `/federprobe` live word/sentence writing, synthesised Sütterlin
 ductus with generated Übergänge) — paper-&-ink identity
 per `docs/concepts/style-guide.md` + `docs/concepts/design-system.md`) and the admin behind `/admin/*`
 (Cloudflare Access in prod; `/admin/chart` bbox editor + wizard,
-`/admin/vergleich` whole-alphabet crop-vs-written comparison). **Post-MVP**
+`/admin/vergleich` whole-alphabet crop-vs-written comparison plus the
+words.json specimen tabs, `/admin/paare` generated pair matrix). **Post-MVP**
 the public side grows
 (`/animation`, `/lese-hilfe`, `/lese-lupe/:job`, `/stil-analyse`,
 `/vergleich`, `/open-data`). See `docs/reference/frontend-stack.md`.

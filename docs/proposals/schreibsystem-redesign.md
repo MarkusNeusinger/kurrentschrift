@@ -1,8 +1,11 @@
 # Schreibsystem-Redesign 2026-07-17 — eine Form pro Glyphe, Paar-Matrix, geerntete Paar-Overrides, Schräglagen-Befund
 
 **Status:** Richtungsentscheid des Nutzers (2026-07-17) nach kritischer
-Prüfung: **angenommen** — inklusive des Positions-Rückbaus (R2). Umsetzung
-offen, Phasen R1–R5 (Reihenfolge s. §6). Dieses Dokument konkretisiert
+Prüfung: **angenommen** — inklusive des Positions-Rückbaus (R2).
+**R1 und R1b Stufe 1 sind umgesetzt** (2026-07-17: `/admin/paare`
+Paar-Matrix; `/admin/vergleich` mit Wortvorlagen-Tabs über die neuen
+öffentlichen `/word-samples`-Reads, registrierte Überlagerung). Offen:
+R1b Stufe 2 (Scores), R2–R5 (Reihenfolge s. §6). Dieses Dokument konkretisiert
 [`planaenderungen.md`](planaenderungen.md) Vorschlag B (Paar-Overrides,
 dort weiterhin der sanktionierte Rahmen) und baut auf dem
 platzierungsbereinigten Paar-Befund in
@@ -144,16 +147,51 @@ Keep/Discard-Loop.
 
 ## 5. Phasen
 
-### R1 — Paar-Matrix-Ansicht (sofort, keine Migration)
+### R1 — Paar-Matrix-Ansicht (umgesetzt 2026-07-17)
 
-Neue Admin-Seite: für eine gewählte Glyphe alle Kombinationen (links
-Versalien + Kleinbuchstaben, rechts Kleinbuchstaben), jede Zelle ein
-serverseitig komponiertes Zwei-Buchstaben-„Wort" über den bestehenden
-cachebaren `GET /write/word`. Sortierung nach gemessener Paar-Abweichung
-(pairlab-/Wordbench-Zahlen, sofern für das Paar vorhanden), damit die
-schlechtesten Joins oben stehen. Reine Lese-Ansicht; erzeugt die
-Sichtbarkeit aus Punkt 2 des Nutzer-Vorschlags ohne jede
-Architektur-Festlegung.
+Neue Admin-Seite `/admin/paare`: für eine gewählte Glyphe alle
+Kombinationen (links Versalien + Kleinbuchstaben, rechts
+Kleinbuchstaben), jede Zelle ein serverseitig komponiertes
+Zwei-Buchstaben-„Wort" über den bestehenden cachebaren
+`GET /write/word` (Zellen laden lazy per IntersectionObserver über den
+gemeinsamen Render-Cache). Reine Lese-Ansicht; erzeugt die Sichtbarkeit
+aus Punkt 2 des Nutzer-Vorschlags ohne jede Architektur-Festlegung.
+Noch offen (mit R1b Stufe 2): Sortierung nach gemessener
+Paar-Abweichung, damit die schlechtesten Joins oben stehen.
+
+### R1b — Wortvergleich im Admin (Stufe 1 umgesetzt 2026-07-17)
+
+Nutzer-Erweiterung (2026-07-17): die geschriebenen Vorlagen-Wörter fest
+in den Admin einbauen — Vorlage und „wie geschrieben" immer als
+Vergleich, damit sofort sichtbar ist, wo noch optimiert werden muss.
+
+**Stufe 1 (umgesetzt):** `/admin/vergleich` bekommt Reiter
+**Buchstaben · Wörter · Verbindungen · Andere Hand**. Die
+Vorlagen-Daten kommen aus dem committeten `words.json`-Sidecar über
+zwei neue **öffentliche** Reads (`GET /sources/{id}/word-samples` +
+`/word-samples/{sample_id}/crop`, `core/chart.py::load_word_samples` /
+`word_sample_crop_to_png_bytes`; öffentlich wie die Bbox-Crops, weil
+`<img>`-Tags den Admin-Header nicht senden können, und die Tafeln sind
+PD). Jede Karte zeigt den Vorlagen-Crop (Excludes weiß übermalt) neben
+demselben Wort per `/write/word` — oder **überlagert**: die
+Engine-Schrift maßstabsgetreu auf den Vorlagen-Pixeln, registriert über
+die Sidecar-Lineatur (Skala = `baseline_y − midband_y` px pro x-Höhe,
+linksbündig; exakt, kein Augenmaß). Fehlende Templates erscheinen als
+`missing`-Chip; der „Andere Hand"-Reiter (Sidecar-`set`, z. B. die
+Abb.-22-Schülerschrift) ist als Fremdhand beschriftet und bleibt reine
+Anschauung, nie Referenz.
+
+**Stufe 2 (offen):** derselbe Karten-Satz mit Zahlen — ein
+Admin-Compute-Endpunkt reused `tools/wordbench/metric.py::
+score_word_segments` + die Provenance-Attribution aus
+`compose_word(..., provenance=True)` für Scores **pro Buchstabe und pro
+Übergang** (Konnektor-Heatmap wie in wordlab, Sortierung
+schlechteste zuerst; memoisiert pro (Wort × Template-Stand),
+Invalidierung am Pooled-Nib-Hook). Die Wordbench bleibt der
+Schiedsrichter — der Admin-Score ist dieselbe Metrik als Anzeige,
+Optimierungs-Läufe laufen weiter nur im eingefrorenen Bench-Loop.
+Später schließt sich der Kreis zu R3: aus einer schlechten Paar-Karte
+direkt in den Paar-Editor mit dem Vorlagen-Crop als Unterlage.
 
 ### R2 — Positions-Rückbau (vor R3, damit Paar-Keys einfach bleiben)
 
@@ -233,9 +271,10 @@ mit Baseline-Vermerk in `qualitaetsmetrik.md`, nie während eines Laufs).
 
 ## 6. Reihenfolge
 
-R1 (unabhängig, sofort) → R2 (mechanische Schema-PR) → R3 (Paar-Schicht
-auf Basis-Keys) · parallel dazu R4/R5 als Wordbench-Loops (unabhängig von
-R2/R3, können jederzeit laufen).
+R1 + R1b Stufe 1 (unabhängig, umgesetzt) → R2 (mechanische Schema-PR) →
+R3 (Paar-Schicht auf Basis-Keys) · R1b Stufe 2 (Scores) sobald sinnvoll ·
+parallel dazu R4/R5 als Wordbench-Loops (unabhängig von R2/R3, können
+jederzeit laufen).
 
 ## 7. Verworfen (bindend für dieses Redesign)
 
