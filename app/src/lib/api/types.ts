@@ -79,6 +79,37 @@ export interface WordSampleOut {
   midband_y: number;
 }
 
+// One letter-pair override (redesign R3). Mirrors GlyphPairOut/PairGeometry in
+// api/schemas.py: `offset` is where the right glyph's entry lands relative to
+// the LEFT glyph's exit (template units; the composer applies the horizontal
+// part), `connector` is the join's centerline relative to the left glyph's
+// exit, drawn verbatim instead of the generated Übergang. Only `approved`
+// rows ever render; `provenance` = harvested (M4-fitted from a specimen,
+// citing specimen_id) | authored (freehand in the pair editor).
+export interface PairGeometry {
+  offset: number[];
+  connector: Array<[number, number]>;
+}
+
+export interface GlyphPairOut {
+  left_key: string;
+  right_key: string;
+  variant: number;
+  geometry: PairGeometry;
+  provenance: 'harvested' | 'authored';
+  provenance_source_id: string | null;
+  specimen_id: string | null;
+  approved: boolean;
+}
+
+export interface GlyphPairIn {
+  geometry: PairGeometry;
+  provenance: 'harvested' | 'authored';
+  specimen_id?: string | null;
+  approved: boolean;
+  variant?: number;
+}
+
 // Practice-sheet-style guide lines (Hilfslinien) drawn over a glyph crop —
 // same vocabulary as the worksheet rulers in lib/lineatur.ts. baseline + waist
 // come from the bbox calibration; ascender/descender are toggleable; slant is

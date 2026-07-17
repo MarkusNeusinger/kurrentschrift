@@ -211,7 +211,9 @@ kurrentschrift/
 │       │                #   (WordComparison — words.json specimens vs /write/word, overlay
 │       │                #   registered over the sidecar lineature); pairs/PairMatrix.tsx =
 │       │                #   /admin/paare: every 2-letter combination of a chosen letter,
-│       │                #   server-composed, capitals only left — redesign R1)
+│       │                #   server-composed, capitals only left — redesign R1; override
+│       │                #   badges + cell click → pairs/PairEditorDialog.tsx (R3 stage 2:
+│       │                #   draw the connector, approve, live preview))
 │       ├── components/  # reusable UI: PaperBackground, PublicHeader (3-area nav), PublicFooter,
 │       │                #   PageContainer (one column: narrow 760/text 1152/wide 1280), Prose (~66ch
 │       │                #   reading measure), PageHeader (shared page-header: area eyebrow + Playfair
