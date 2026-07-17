@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select, tuple_
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -260,23 +260,17 @@ class GlyphPairRepository:
         """
         if not pairs:
             return {}
-        lefts = {left for left, _ in pairs}
-        rights = {right for _, right in pairs}
         result = await self.session.execute(
             select(GlyphPair).where(
                 GlyphPair.style_id == style_id,
-                GlyphPair.left_key.in_(lefts),
-                GlyphPair.right_key.in_(rights),
+                # Exact pair set in SQL (row-value IN) — no over-fetch of the
+                # cartesian lefts×rights as the table grows.
+                tuple_(GlyphPair.left_key, GlyphPair.right_key).in_(list(set(pairs))),
                 GlyphPair.variant == variant,
                 GlyphPair.approved.is_(True),
             )
         )
-        wanted = set(pairs)
-        return {
-            (row.left_key, row.right_key): dict(row.geometry)
-            for row in result.scalars().all()
-            if (row.left_key, row.right_key) in wanted
-        }
+        return {(row.left_key, row.right_key): dict(row.geometry) for row in result.scalars().all()}
 
     async def upsert(self, style_id: str, left_key: str, right_key: str, variant: int = 0, **fields: Any) -> GlyphPair:
         """Insert-or-update by (style_id, left_key, right_key, variant)."""
@@ -284,6 +278,9 @@ class GlyphPairRepository:
         update_cols = {
             k: v for k, v in payload.items() if k not in ("style_id", "left_key", "right_key", "variant", "id")
         }
+        # The ORM-level `onupdate` never fires through on_conflict_do_update —
+        # stamp the recency column explicitly so admin UIs can trust it.
+        update_cols["updated_at"] = func.now()
         stmt = pg_insert(GlyphPair).values(**payload)
         stmt = stmt.on_conflict_do_update(constraint="uq_glyph_pair_style_lr_variant", set_=update_cols)
         await self.session.execute(stmt)

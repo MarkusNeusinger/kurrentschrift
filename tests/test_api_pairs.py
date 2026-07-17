@@ -66,6 +66,20 @@ async def test_public_list_hides_unapproved_rows(api: Harness):
     assert [(r["left_key"], r["right_key"], r["approved"]) for r in res.json()] == [("n", "e", False)]
 
 
+async def test_single_get_hides_unapproved_from_public(api: Harness):
+    """The per-pair GET keeps the same contract as the list: unapproved rows
+    404 publicly (not 401 — existence stays hidden) and resolve for admins."""
+    _, source_id = await api.seed_style_and_source()
+    await api.client.request(
+        "PUT", f"/sources/{source_id}/pairs/n/e", json_body=_pair_body(approved=False), headers=api.admin_headers()
+    )
+    res = await api.client.request("GET", f"/sources/{source_id}/pairs/n/e")
+    assert res.status == 404
+    res = await api.client.request("GET", f"/sources/{source_id}/pairs/n/e", headers=api.admin_headers())
+    assert res.status == 200
+    assert res.json()["approved"] is False
+
+
 async def test_harvested_pair_requires_specimen_id(api: Harness):
     """A harvest without its specimen pointer is untraceable — 422."""
     _, source_id = await api.seed_style_and_source()

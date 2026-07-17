@@ -70,6 +70,7 @@ async def list_pairs(
 
 @router.get("/{left_key}/{right_key}", response_model=GlyphPairOut)
 async def get_pair(
+    request: Request,
     left_key: str,
     right_key: str,
     variant: int = 0,
@@ -77,6 +78,17 @@ async def get_pair(
     db: AsyncSession = Depends(require_db),
 ):
     row = await GlyphPairRepository(db).get(source.style_id, left_key, right_key, variant=variant)
+    if row is not None and not row.approved:
+        # Unapproved rows are admin work-in-progress — same contract as the
+        # list endpoint: they never leak to public callers (404, not 401, so
+        # existence isn't revealed either).
+        try:
+            require_admin(
+                x_admin_token=request.headers.get("X-Admin-Token"),
+                cf_access_jwt=request.headers.get("Cf-Access-Jwt-Assertion"),
+            )
+        except HTTPException:
+            row = None
     if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no pair override for {left_key!r}→{right_key!r}")
     return _to_out(row)
