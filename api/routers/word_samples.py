@@ -8,6 +8,8 @@ plates are PD source bytes, so nothing here is secret; responses are cached
 like the other public reads (the sidecar only changes with a deploy).
 """
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.concurrency import run_in_threadpool
 
@@ -17,6 +19,8 @@ from api.schemas import WordSampleOut
 from core.chart import load_word_samples, word_sample_crop_to_png_bytes
 from core.database import Source
 
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/sources/{source_id}", tags=["word-samples"])
 
@@ -49,13 +53,19 @@ async def get_word_sample_crop(sample_id: str, source: Source = Depends(require_
     """One specimen crop as grayscale PNG, exclude rects painted paper-white."""
 
     # Sidecar read + plate decode + crop are file/CPU-bound — keep them off the
-    # event loop like the chart crops do.
+    # event loop like the chart crops do. A missing/corrupt plate or an
+    # out-of-plate rect is hand-maintained-data breakage, not a server fault:
+    # answer 404, don't 500 the public read.
     def compute() -> bytes | None:
         samples = load_word_samples(source.chart_path)
         sample = next((s for s in samples if s["id"] == sample_id), None)
         if sample is None:
             return None
-        return word_sample_crop_to_png_bytes(source.chart_path, sample)
+        try:
+            return word_sample_crop_to_png_bytes(source.chart_path, sample)
+        except (OSError, ValueError):
+            logger.warning("word sample crop failed for %r on source %r", sample_id, source.id)
+            return None
 
     png = await run_in_threadpool(compute)
     if png is None:

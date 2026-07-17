@@ -197,6 +197,10 @@ def load_word_samples(chart_path: str | Path) -> list[dict]:
             continue
         if entry["x1"] <= entry["x0"] or entry["y1"] <= entry["y0"]:
             continue
+        # Clients use baseline_y - midband_y as the positive x-height scale for
+        # overlay registration — a zero/negative band is a broken row.
+        if entry["baseline_y"] <= entry["midband_y"]:
+            continue
         # The plate must be a plain filename in the chart directory — a `page`
         # with path components would let the public crop endpoint read files
         # outside the source folder.
@@ -224,6 +228,10 @@ def word_sample_crop_to_png_bytes(chart_path: str | Path, sample: dict) -> bytes
     ph, pw = page.shape[:2]
     y0, y1 = max(0, int(sample["y0"])), min(ph, int(sample["y1"]))
     x0, x1 = max(0, int(sample["x0"])), min(pw, int(sample["x1"]))
+    if y1 <= y0 or x1 <= x0:
+        # Explicit instead of letting Image.fromarray choke on a 0-size array —
+        # a hand-maintained rect can lie outside the plate.
+        raise ValueError(f"word sample rect {sample.get('id')!r} lies outside plate {sample['page']!r}")
     crop = page[y0:y1, x0:x1].copy()
     for ex in sample.get("exclude") or []:
         try:

@@ -91,6 +91,7 @@ def test_load_word_samples_hardening(tmp_path):
                     {**WORD, "id": "abs", "page": "/etc/passwd"},
                     {**WORD, "id": "badnum", "x0": "wide"},
                     {**WORD, "id": "inverted", "x1": WORD["x0"]},
+                    {**WORD, "id": "flatband", "midband_y": WORD["baseline_y"]},
                     "not-a-dict",
                 ]
             }
@@ -125,6 +126,18 @@ async def test_word_sample_crop_404(api, tmp_path):
     _, source_id = await api.seed_style_and_source(chart_path=chart_path)
     res = await api.client.request("GET", f"/sources/{source_id}/word-samples/nope/crop")
     assert res.status == 404
+
+
+async def test_word_sample_crop_failures_are_404_not_500(api, tmp_path):
+    """Hand-maintained-data breakage — rect outside the plate, missing plate
+    file — answers 404 on the public read instead of 500."""
+    outside = {**WORD, "id": "outside", "x0": 500, "x1": 600, "baseline_y": 70, "midband_y": 40}
+    lost_plate = {**WORD, "id": "lost", "page": "gone.png"}
+    chart_path = _sidecar(tmp_path, [outside, lost_plate])
+    _, source_id = await api.seed_style_and_source(chart_path=chart_path)
+    for sample_id in ("outside", "lost"):
+        res = await api.client.request("GET", f"/sources/{source_id}/word-samples/{sample_id}/crop")
+        assert res.status == 404, sample_id
 
 
 def test_load_word_samples_missing_sidecar(tmp_path):
