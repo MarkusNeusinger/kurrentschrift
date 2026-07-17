@@ -217,8 +217,15 @@ pro Abruf (~0,1–0,3 s), dafür ist der Score immer aktuell und braucht
 keine Invalidierungs-Hooks. Die Wordbench bleibt der Schiedsrichter —
 der Admin-Score ist dieselbe Metrik als Anzeige, Optimierungs-Läufe
 laufen weiter nur im eingefrorenen Bench-Loop.
-Später schließt sich der Kreis zu R3: aus einer schlechten Paar-Karte
-direkt in den Paar-Editor mit dem Vorlagen-Crop als Unterlage.
+Auch der Kreis zu R3 ist geschlossen (2026-07-17): jede Paar-Karte im
+Verbindungen-Reiter öffnet den Paar-Editor direkt („Im Paar-Editor
+öffnen"), mit dem Vorlagen-Crop als registrierter Unterlage im
+Zeichenfeld (Skala aus der Sidecar-Lineatur, Grundlinie auf y = 0,
+linksbündig am linken Buchstaben — Pauspapier, keine Metrik;
+abschaltbar per „Vorlage unterlegen"). Ein Override-Save macht den
+Karten-Score gezielt ungültig, statt eine veraltete Zahl stehen zu
+lassen. Karten, deren Text nicht auf genau zwei Slots shaped (ssi),
+haben bewusst keinen Editor-Link.
 
 ### R2 — Positions-Rückbau (umgesetzt 2026-07-17, Migration `0017`)
 

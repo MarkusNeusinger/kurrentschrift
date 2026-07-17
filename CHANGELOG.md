@@ -14,6 +14,17 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Pair cards link into the pair editor with the specimen as underlay.**
+  Closing the redesign's R1b→R3 circle: every letter-pair card in the
+  `/admin/vergleich` Verbindungen tab gets an "Im Paar-Editor öffnen" action
+  that opens the pair editor for exactly that join, with the Abb.-20 specimen
+  crop rendered as a semi-transparent, lineature-registered underlay in the
+  drawing scene (baseline on y = 0, scale from the sidecar lineature; a
+  "Vorlage unterlegen" toggle hides it) — the connector is drawn over the
+  real pen's path instead of from memory. Saving an override invalidates
+  that card's cached score; pairs that don't shape to exactly two slots
+  offer no link. The shared `pairKeysOf` helper moved to its own module.
+
 - **Specimen scores in the admin word comparison (redesign R1b, stage 2).**
   New admin-gated endpoint `GET /sources/{id}/word-samples/{sample_id}/score`:
   it runs the frozen wordbench ruler on the same composition `/write/word`

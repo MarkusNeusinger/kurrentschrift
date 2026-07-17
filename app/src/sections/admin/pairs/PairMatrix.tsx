@@ -12,23 +12,15 @@ import { WrittenWord } from '@/components/WrittenWord';
 import { useAdmin } from '@/context/AdminContext';
 import { glyphKeyFor, LETTERS } from '@/domain/glyphs';
 import type { Letter } from '@/domain/glyphs';
-import { shapeText } from '@/domain/shaping';
 import { useInView } from '@/hooks/useInView';
 import { getPairs } from '@/lib/api';
 import type { GlyphPairOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { garamond } from '@/styles/paper';
 import { PairEditorDialog } from '@/sections/admin/pairs/PairEditorDialog';
+import { pairKeysOf } from '@/sections/admin/pairs/pairKeys';
 
 const CELL_H = 88; // px — big enough to judge a join, small enough for a grid
-
-// The shaped glyph_keys behind a two-letter cell — null when the pair folds
-// into a closed-set ligature (one slot: ch, ck, …), which has no join to edit.
-function pairKeysOf(text: string): [string, string] | null {
-  const keyed = shapeText(text).filter((s) => s.key);
-  if (keyed.length !== 2) return null;
-  return [keyed[0].key!, keyed[1].key!];
-}
 
 function PairCell({
   text,

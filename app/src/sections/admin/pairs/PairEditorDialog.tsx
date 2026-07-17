@@ -21,8 +21,8 @@ import {
 } from '@mui/material';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { ApiError, deletePair, getPair, getWriteWord, putPair } from '@/lib/api';
-import type { ComposedWordOut, GlyphPairOut, GlyphRenderData } from '@/lib/api';
+import { ApiError, deletePair, getPair, getWriteWord, putPair, wordSampleCropUrl } from '@/lib/api';
+import type { ComposedWordOut, GlyphPairOut, GlyphRenderData, WordSampleOut } from '@/lib/api';
 import { fetchRenderGlyphs } from '@/lib/api/renderCache';
 import { polylineToPathD, ringsToPathD } from '@/lib/svg';
 import { de, fmt } from '@/locales/admin';
@@ -41,6 +41,10 @@ interface Props {
   sourceId: string;
   // Called after a successful save/delete so the matrix can refresh its badges.
   onChanged?: () => void;
+  // Optional connected-writing specimen (an Abb.-20 pair sample) rendered as a
+  // registered underlay in the editing scene — the redesign's circle back from
+  // a bad pair card to the editor, drawing over the real pen's path.
+  specimen?: WordSampleOut;
 }
 
 function exitOf(data: GlyphRenderData): Pt {
@@ -91,7 +95,7 @@ function ComposedPreview({ composed }: { composed: ComposedWordOut }) {
   );
 }
 
-export function PairEditorDialog({ open, onClose, pairText, leftKey, rightKey, sourceId, onChanged }: Props) {
+export function PairEditorDialog({ open, onClose, pairText, leftKey, rightKey, sourceId, onChanged, specimen }: Props) {
   const [left, setLeft] = useState<GlyphRenderData | null>(null);
   const [right, setRight] = useState<GlyphRenderData | null>(null);
   const [row, setRow] = useState<GlyphPairOut | null>(null);
@@ -152,6 +156,25 @@ export function PairEditorDialog({ open, onClose, pairText, leftKey, rightKey, s
   // Translate the right glyph so its entry lands at leftExit + offset.
   const rightDx = leftExit[0] + offsetDx - rightEntry[0];
 
+  const [showSpecimen, setShowSpecimen] = useState(true);
+
+  // Specimen underlay in template coords: scale from the crop-local lineature
+  // (baseline_y − midband_y px per x-height unit), baseline on y = 0, left
+  // edge aligned to the left glyph's ink left edge (specimen boxes are tight —
+  // an approximate registration meant as tracing paper, not as a metric).
+  const underlay = useMemo(() => {
+    if (!specimen) return null;
+    const unitPx = specimen.baseline_y - specimen.midband_y;
+    if (unitPx <= 0) return null;
+    const xs = (left?.centerlines_template ?? []).flatMap((line) => line.map(([x]) => x));
+    return {
+      x: xs.length ? Math.min(...xs) : 0,
+      topY: specimen.baseline_y / unitPx, // template y of crop row 0
+      w: specimen.width / unitPx,
+      h: specimen.height / unitPx,
+    };
+  }, [specimen, left]);
+
   // Editing scene bounds (template units), padded.
   const scene = useMemo(() => {
     const xs: number[] = [];
@@ -165,6 +188,12 @@ export function PairEditorDialog({ open, onClose, pairText, leftKey, rightKey, s
     };
     eat(left, 0);
     eat(right, rightDx);
+    // Only a VISIBLE underlay widens the scene — hiding it re-fits the view
+    // to the two glyphs instead of staying zoomed out to the hidden crop.
+    if (underlay && showSpecimen) {
+      xs.push(underlay.x, underlay.x + underlay.w);
+      ys.push(underlay.topY - underlay.h, underlay.topY);
+    }
     if (!xs.length) return { minX: -0.2, maxX: 2, minY: -1.2, maxY: 2.2 };
     const pad = 0.35;
     return {
@@ -173,7 +202,7 @@ export function PairEditorDialog({ open, onClose, pairText, leftKey, rightKey, s
       minY: Math.min(...ys, -0.2) - pad,
       maxY: Math.max(...ys, 1.2) + pad,
     };
-  }, [left, right, rightDx]);
+  }, [left, right, rightDx, underlay, showSpecimen]);
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const drawingRef = useRef(false);
@@ -300,6 +329,22 @@ export function PairEditorDialog({ open, onClose, pairText, leftKey, rightKey, s
               onPointerUp={onPointerUp}
               onPointerLeave={onPointerUp}
             >
+              {/* Specimen underlay in root coords (SVG y-down): crop row r sits
+                  at template y = (baseline_y − r)/unitPx, i.e. root y = −topY
+                  at the top edge, growing downward with the crop rows. Hidden
+                  via opacity, not unmount — the decoded bitmap survives the
+                  toggle instead of re-fetching on every re-show. */}
+              {underlay && specimen && (
+                <image
+                  href={wordSampleCropUrl(sourceId, specimen.id)}
+                  x={underlay.x}
+                  y={-underlay.topY}
+                  width={underlay.w}
+                  height={underlay.h}
+                  opacity={showSpecimen ? 0.35 : 0}
+                  preserveAspectRatio="none"
+                />
+              )}
               <g transform="scale(1,-1)">
                 <line x1={scene.minX} x2={scene.maxX} y1={0} y2={0} stroke="#b9c4c0" strokeWidth={0.015} />
                 <line
@@ -351,6 +396,15 @@ export function PairEditorDialog({ open, onClose, pairText, leftKey, rightKey, s
               <Button size="small" onClick={() => setConnector([])} disabled={!connector.length}>
                 {de.admin.pairs.clearConnector}
               </Button>
+              {underlay && (
+                <FormControlLabel
+                  sx={{ mr: 0 }}
+                  control={
+                    <Checkbox size="small" checked={showSpecimen} onChange={(e) => setShowSpecimen(e.target.checked)} />
+                  }
+                  label={<Typography variant="caption">{de.admin.pairs.showSpecimen}</Typography>}
+                />
+              )}
               <Typography variant="caption" color="text.secondary">
                 {row
                   ? fmt(de.admin.pairs.rowState, {

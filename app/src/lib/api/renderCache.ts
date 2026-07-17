@@ -100,6 +100,13 @@ export function seedRenderGlyph(sourceId: string, key: string, data: GlyphRender
 const WORD_CACHE_MAX = 64;
 const wordCache = new Map<string, Promise<ComposedWordOut>>();
 
+// Drop one composed word so the next fetch recomposes it — an approved pair
+// override changes what /write/word returns for exactly this text, and a
+// surface that just saved one must not keep showing the pre-override join.
+export function invalidateRenderWord(sourceId: string, text: string): void {
+  wordCache.delete(id(sourceId, text));
+}
+
 export function fetchRenderWord(sourceId: string, text: string): Promise<ComposedWordOut> {
   const key = id(sourceId, text);
   let p = wordCache.get(key);
