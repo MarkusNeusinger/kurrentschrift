@@ -237,9 +237,16 @@ Composer-Fallback (`core/compose.py::compose_word(pair_overrides=…)` —
 Override gewinnt für genau sein Nachbarpaar, sonst §4-Generator
 byte-identisch), die Konsumtion NUR freigegebener Zeilen im
 Wort-Endpoint und die Admin-CRUD-API (`/sources/{id}/pairs/…`) sind
-umgesetzt. **Offen:** der Ernte-Importer (pairlab-§5b-Fits, braucht die
-Live-DB + Wordbench-Fixtures), der Paar-Editor als Freigabe-Fläche und
-die Override-Badges in der Paar-Matrix.
+umgesetzt (Schnitt 1). Ebenfalls umgesetzt (Schnitt 2, 2026-07-17):
+der **Paar-Editor** (`PairEditorDialog` — beide Buchstaben an der
+einstellbaren Kopplung, Verbindungszug per Stift/Zeiger zeichnen,
+Freigabe-Checkbox, Live-`/write/word`-Vorschau; Freihand-Saves sind
+`authored`, das Freigeben einer unveränderten Ernte behält
+`harvested` + Vorlagen-Zitat) und die **Override-Badges** in der
+Paar-Matrix (grün = freigegeben, orange = Entwurf; Zellen-Klick
+öffnet den Editor; Ligatur-Zellen ohne Join bleiben nicht klickbar).
+**Offen:** der Ernte-Importer (pairlab-§5b-Fits, braucht die Live-DB +
+Wordbench-Fixtures — läuft in der lokalen Umgebung des Autors).
 
 - **Schema:** eigene Tabelle `glyph_pairs` — `(style_id, left_key,
   right_key, variant)`, Geometrie als JSONB (gefittetes Paar:

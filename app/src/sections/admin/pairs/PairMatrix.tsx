@@ -5,27 +5,52 @@
 // (IntersectionObserver) through WrittenWord's shared render cache, so a full
 // row of ~60 combinations doesn't fire at once on mount.
 
-import { Alert, Box, ButtonBase, Typography } from '@mui/material';
-import { useMemo, useState } from 'react';
+import { Alert, Box, ButtonBase, Chip, Typography } from '@mui/material';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { WrittenWord } from '@/components/WrittenWord';
 import { useAdmin } from '@/context/AdminContext';
 import { glyphKeyFor, LETTERS } from '@/domain/glyphs';
 import type { Letter } from '@/domain/glyphs';
+import { shapeText } from '@/domain/shaping';
 import { useInView } from '@/hooks/useInView';
+import { getPairs } from '@/lib/api';
+import type { GlyphPairOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { garamond } from '@/styles/paper';
+import { PairEditorDialog } from '@/sections/admin/pairs/PairEditorDialog';
 
 const CELL_H = 88; // px — big enough to judge a join, small enough for a grid
 
-function PairCell({ text, sourceId }: { text: string; sourceId: string }) {
+// The shaped glyph_keys behind a two-letter cell — null when the pair folds
+// into a closed-set ligature (one slot: ch, ck, …), which has no join to edit.
+function pairKeysOf(text: string): [string, string] | null {
+  const keyed = shapeText(text).filter((s) => s.key);
+  if (keyed.length !== 2) return null;
+  return [keyed[0].key!, keyed[1].key!];
+}
+
+function PairCell({
+  text,
+  sourceId,
+  row,
+  onEdit,
+}: {
+  text: string;
+  sourceId: string;
+  row?: GlyphPairOut;
+  onEdit?: () => void;
+}) {
   const [ref, inView] = useInView<HTMLDivElement>();
   return (
     <Box
       ref={ref}
+      component={onEdit ? ButtonBase : Box}
+      onClick={onEdit}
       sx={{
+        position: 'relative',
         border: 1,
-        borderColor: 'divider',
+        borderColor: row ? (row.approved ? 'success.main' : 'warning.main') : 'divider',
         borderRadius: 1,
         bgcolor: '#fff',
         p: 0.5,
@@ -34,11 +59,20 @@ function PairCell({ text, sourceId }: { text: string; sourceId: string }) {
         alignItems: 'center',
         gap: 0.25,
         minWidth: 96,
+        cursor: onEdit ? 'pointer' : 'default',
       }}
     >
       <Typography variant="caption" color="text.secondary" sx={{ fontFamily: garamond }}>
         {text}
       </Typography>
+      {row && (
+        <Chip
+          size="small"
+          color={row.approved ? 'success' : 'warning'}
+          label={row.approved ? de.admin.pairs.badgeApproved : de.admin.pairs.badgeDraft}
+          sx={{ position: 'absolute', top: 2, right: 2, height: 18, fontSize: 10 }}
+        />
+      )}
       <Box sx={{ height: CELL_H, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {inView && <WrittenWord text={text} sourceId={sourceId} height={CELL_H} animate={false} showLineature />}
       </Box>
@@ -46,12 +80,31 @@ function PairCell({ text, sourceId }: { text: string; sourceId: string }) {
   );
 }
 
-function CellGrid({ pairs, sourceId }: { pairs: string[]; sourceId: string }) {
+function CellGrid({
+  pairs,
+  sourceId,
+  rowsByKeys,
+  onEdit,
+}: {
+  pairs: string[];
+  sourceId: string;
+  rowsByKeys: Map<string, GlyphPairOut>;
+  onEdit: (text: string, left: string, right: string) => void;
+}) {
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-      {pairs.map((p) => (
-        <PairCell key={p} text={p} sourceId={sourceId} />
-      ))}
+      {pairs.map((p) => {
+        const keys = pairKeysOf(p);
+        return (
+          <PairCell
+            key={p}
+            text={p}
+            sourceId={sourceId}
+            row={keys ? rowsByKeys.get(`${keys[0]}|${keys[1]}`) : undefined}
+            onEdit={keys ? () => onEdit(p, keys[0], keys[1]) : undefined}
+          />
+        );
+      })}
     </Box>
   );
 }
@@ -68,6 +121,18 @@ export function PairMatrix() {
   const pickable = useMemo(() => [...authored.lower, ...authored.upper], [authored]);
   const [picked, setPicked] = useState<string | null>(null);
   const letter = pickable.find((l) => l.glyph === picked) ?? pickable[0];
+
+  // Existing overrides (incl. unapproved drafts — the admin fetch carries the
+  // auth headers) for the badges + the editor's starting state.
+  const [rowsByKeys, setRowsByKeys] = useState<Map<string, GlyphPairOut>>(new Map());
+  const refreshPairs = useCallback(() => {
+    getPairs(sourceId, { all: true }, { retries: 1 })
+      .then((rows) => setRowsByKeys(new Map(rows.map((r) => [`${r.left_key}|${r.right_key}`, r]))))
+      .catch(() => setRowsByKeys(new Map()));
+  }, [sourceId]);
+  useEffect(refreshPairs, [refreshPairs]);
+
+  const [editing, setEditing] = useState<{ text: string; left: string; right: string } | null>(null);
 
   if (!source) return null;
 
@@ -124,19 +189,40 @@ export function PairMatrix() {
                 <Typography variant="subtitle2" sx={{ mb: 1 }}>
                   {fmt(de.admin.pairs.asFirst, { glyph: letter.glyph })}
                 </Typography>
-                <CellGrid pairs={asFirst} sourceId={sourceId} />
+                <CellGrid
+                  pairs={asFirst}
+                  sourceId={sourceId}
+                  rowsByKeys={rowsByKeys}
+                  onEdit={(text, left, right) => setEditing({ text, left, right })}
+                />
               </Box>
               {asSecond.length > 0 && (
                 <Box>
                   <Typography variant="subtitle2" sx={{ mb: 1 }}>
                     {fmt(de.admin.pairs.asSecond, { glyph: letter.glyph })}
                   </Typography>
-                  <CellGrid pairs={asSecond} sourceId={sourceId} />
+                  <CellGrid
+                    pairs={asSecond}
+                    sourceId={sourceId}
+                    rowsByKeys={rowsByKeys}
+                    onEdit={(text, left, right) => setEditing({ text, left, right })}
+                  />
                 </Box>
               )}
             </Box>
           )}
         </>
+      )}
+      {editing && (
+        <PairEditorDialog
+          open
+          onClose={() => setEditing(null)}
+          pairText={editing.text}
+          leftKey={editing.left}
+          rightKey={editing.right}
+          sourceId={sourceId}
+          onChanged={refreshPairs}
+        />
       )}
     </Box>
   );

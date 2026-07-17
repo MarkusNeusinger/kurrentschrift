@@ -107,11 +107,31 @@ export const admin = {
   pairs: {
     title: 'Paar-Matrix',
     intro:
-      'Alle Zweier-Verbindungen eines Buchstabens, aus den Einzelformen plus generiertem Übergang komponiert (Versalien nur links). So fällt eine unnatürliche Verbindung sofort auf, ohne sie in einem Wort suchen zu müssen.',
+      'Alle Zweier-Verbindungen eines Buchstabens, aus den Einzelformen plus generiertem Übergang komponiert (Versalien nur links). So fällt eine unnatürliche Verbindung sofort auf, ohne sie in einem Wort suchen zu müssen. Klick auf eine Zelle öffnet den Paar-Editor.',
     pickLetter: 'Buchstabe',
     asFirst: '„{{glyph}}“ als erster Buchstabe',
     asSecond: '„{{glyph}}“ als zweiter Buchstabe',
     empty: 'Noch keine erstellten Glyphen — erst im Wizard einen Weg zeichnen.',
+    badgeApproved: 'Override',
+    badgeDraft: 'Entwurf',
+    // Pair editor (the review/approval surface over glyph_pairs).
+    editorTitle: 'Paar-Editor · {{pair}}',
+    editorIntro:
+      'Beide Buchstaben liegen an der einstellbaren Kopplung (Versatz des rechten Ansatzpunkts relativ zum Abgang des linken). Den Verbindungszug mit dem Stift/Zeiger direkt zeichnen; gespeichert wird er relativ zum Abgangspunkt. Nur freigegebene Overrides ersetzen den generierten Übergang.',
+    offsetLabel: 'Versatz',
+    clearConnector: 'Zug löschen',
+    previewHeading: 'Live-Ergebnis (/write/word)',
+    approveLabel: 'Freigegeben (ersetzt den Generator)',
+    approveHint: 'Ohne Freigabe bleibt der Override gespeicherter Entwurf — gerendert wird weiter der Generator.',
+    noRowYet: 'Noch kein Override — der Generator schreibt dieses Paar.',
+    // {{provenance}} = harvested/authored, {{specimen}} = words.json-Id.
+    rowState: 'Override vorhanden · {{provenance}} · Vorlage: {{specimen}}',
+    save: 'Speichern',
+    close: 'Schließen',
+    deleteOverride: 'Override löschen',
+    saveFailed: 'Speichern fehlgeschlagen.',
+    deleteFailed: 'Löschen fehlgeschlagen.',
+    editorLoadError: 'Paar-Daten konnten nicht geladen werden.',
   },
   diagnostics: {
     // Followed by the glyph label in the dialog title.

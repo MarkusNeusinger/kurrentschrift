@@ -19,6 +19,8 @@ import type {
   QuizWordOut,
   SourceOut,
   StyleOut,
+  GlyphPairIn,
+  GlyphPairOut,
   TracePreviewOut,
   TraceRequest,
   WordSampleOut,
@@ -64,6 +66,34 @@ export const cropUrl = (sourceId: string, glyphKey: string, cacheBust?: number, 
   const s = qs.toString();
   return src(sourceId, `/bboxes/${encodeURIComponent(glyphKey)}/crop${s ? `?${s}` : ''}`);
 };
+
+// Letter-pair overrides (redesign R3). Public callers see approved rows only;
+// `all: true` (the admin matrix/editor) additionally returns unreviewed rows
+// and rides the admin auth the client already sends on /admin routes.
+export const getPairs = (sourceId: string, opts?: { all?: boolean }, retry?: RetryOptions): Promise<GlyphPairOut[]> =>
+  apiFetch(src(sourceId, `/pairs${opts?.all ? '?all=true' : ''}`), {}, retry).then(asJson<GlyphPairOut[]>);
+
+export const getPair = (sourceId: string, leftKey: string, rightKey: string): Promise<GlyphPairOut> =>
+  apiFetch(src(sourceId, `/pairs/${encodeURIComponent(leftKey)}/${encodeURIComponent(rightKey)}`)).then(
+    asJson<GlyphPairOut>,
+  );
+
+export const putPair = (
+  sourceId: string,
+  leftKey: string,
+  rightKey: string,
+  body: GlyphPairIn,
+): Promise<GlyphPairOut> =>
+  apiFetch(src(sourceId, `/pairs/${encodeURIComponent(leftKey)}/${encodeURIComponent(rightKey)}`), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }).then(asJson<GlyphPairOut>);
+
+export const deletePair = (sourceId: string, leftKey: string, rightKey: string): Promise<void> =>
+  apiFetch(src(sourceId, `/pairs/${encodeURIComponent(leftKey)}/${encodeURIComponent(rightKey)}`), {
+    method: 'DELETE',
+  }).then(asJson<void>);
 
 // The connected-writing specimens of a source (words.json sidecar) — empty for
 // sources without plates. The crop is an <img>-loadable public URL like cropUrl.
@@ -152,9 +182,17 @@ export const getWriteGlyphs = (sourceId: string, keys: string[], retry?: RetryOp
 // core/shaping.py + core/compose.py) — one cacheable request per text. The
 // text is NFC-normalised + trimmed HERE (mirroring the server) so semantically
 // equal inputs always share one URL and one browser/edge cache entry.
-export const getWriteWord = (sourceId: string, text: string, retry?: RetryOptions): Promise<ComposedWordOut> =>
+export const getWriteWord = (
+  sourceId: string,
+  text: string,
+  retry?: RetryOptions,
+  bust?: number,
+): Promise<ComposedWordOut> =>
   apiFetch(
-    src(sourceId, `/write/word?text=${encodeURIComponent(text.normalize('NFC').trim())}`),
+    src(
+      sourceId,
+      `/write/word?text=${encodeURIComponent(text.normalize('NFC').trim())}${bust ? `&t=${bust}` : ''}`,
+    ),
     {},
     retry,
   ).then(asJson<ComposedWordOut>);

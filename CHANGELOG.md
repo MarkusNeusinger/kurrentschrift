@@ -14,6 +14,16 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Pair editor + override badges (redesign R3, stage 2).** Clicking a cell
+  in `/admin/paare` opens the new `PairEditorDialog`: both letters rendered
+  at an adjustable coupling offset (right entry relative to left exit), the
+  connector drawn directly with the pointer/stylus, an approval checkbox and
+  a cache-busted live `/write/word` preview. Freehand saves are stored as
+  `authored`; approving an untouched harvested row keeps its provenance and
+  specimen citation. Matrix cells show green (approved) / orange (draft)
+  override badges; ligature-folding cells (ch, ck, …) have no join and stay
+  non-clickable. New client endpoints for `/pairs` CRUD.
+
 - **Glyph-pair override layer (redesign R3, stage 1).** New `glyph_pairs`
   table (migration `0018`): sparse per-pair overrides over the §4 join
   generator, carrying a connector centerline + placement offset relative to
