@@ -106,6 +106,7 @@ export const admin = {
       'Vorlagen einer anderen Hand (z. B. die Schülerschrift der Abb. 22) — nur zur Anschauung, nie Referenz der Bewertung.',
     wordsEmpty: 'Diese Vorlage hat keine Wortproben (words.json-Sidecar fehlt).',
     wordsLoadError: 'Wortproben konnten nicht geladen werden.',
+    wordRenderError: 'Wort konnte nicht komponiert werden.',
     // Followed by the comma-joined missing glyph_keys.
     missingPrefix: 'fehlend: ',
     specimenAlt: 'Vorlage',

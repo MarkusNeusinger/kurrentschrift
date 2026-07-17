@@ -115,7 +115,7 @@ function WordCard({ sample, sourceId, overlay }: { sample: WordSampleOut; source
 
       {error ? (
         <Alert severity="error" sx={{ py: 0 }}>
-          {de.admin.compare.loadError}
+          {de.admin.compare.wordRenderError}
         </Alert>
       ) : !inView ? (
         <Box sx={{ height: FACE_H }} />
