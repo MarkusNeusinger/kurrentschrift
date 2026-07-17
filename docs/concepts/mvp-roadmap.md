@@ -45,7 +45,7 @@ Zweisprachig-Leitprinzip — siehe [`vision.md`](vision.md)) liegt im
 Schwerpunkt *nach* dem MVP. Erste Public-Seiten sind allerdings bereits
 auf kurrentschrift.ink live: die Landing, die Schriftkunde-Übersicht
 (`/schriftkunde`), die Bereichs-Hubs (`/lesen`, `/schreiben`), das
-Buchstaben-Quiz (`/quiz`), die Schreibtafel (`/tafel`), der
+Lese-Quiz (`/quiz`, Buchstaben + ganze Wörter), die Schreibtafel (`/tafel`), der
 Lineatur-Übungsblatt-Generator (`/schreiben/uebungsblatt`) und die
 Federprobe (`/federprobe`, Live-Schreiber). Frühe
 Parallel-Wins laut [`architektur.md`](architektur.md) §10: Lese-Hilfe

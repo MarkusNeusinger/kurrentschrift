@@ -16,7 +16,7 @@
 The live site is organised into three areas — Schriftkunde (reference), Lesen (reading) and Schreiben (writing):
 
 - **Script overview (Schriftkunde)** — a compact, fully sourced introduction to the German cursive scripts (Kurrent · Sütterlin · Offenbacher), their nibs, ink and letter quirks.
-- **Letter quiz** — learn to read the alphabet one glyph at a time.
+- **Reading quiz** — learn to read letters and whole words (a ~500-word bank with historically plausible misreads as distractors).
 - **Writing board (Tafel)** — specimen rows on ruled lines, written stroke by stroke as a tracing model.
 - **Practice-sheet generator** — printable worksheets with configurable ruling (Lineatur) and your own text.
 - **Live writer (Federprobe)** — type any word or sentence and watch the synthesised Sütterlin ductus write it, connecting strokes included.
@@ -38,9 +38,9 @@ The open research question is how tight to make the template: too rigid won't fi
 
 ## Status
 
-In-progress MVP.
+In-progress MVP. The kernel is currently being validated on the **Sütterlin 1922** source first — its constant-width strokes (Gleichzug) and upright forms simplify crossing resolution and the render path; Kurrent (Loth 1866) follows once the pipeline sits cleanly on the simpler script (see the [MVP roadmap](docs/concepts/mvp-roadmap.md)).
 
-- **Live** on [kurrentschrift.ink](https://kurrentschrift.ink): the script overview (`/schriftkunde`), the letter quiz and the writing board under *Lesen*, and the worksheet generator and the Federprobe live writer under *Schreiben*.
+- **Live** on [kurrentschrift.ink](https://kurrentschrift.ink): the script overview (`/schriftkunde`), the reading quiz and the writing board under *Lesen*, and the worksheet generator and the Federprobe live writer under *Schreiben*.
 - **Built:** the admin setup wizard, canonical glyph extraction, the template-to-instance fit routine, and server-side word composition — text → glyph sequence → placed glyphs with generated connecting strokes (`core/shaping.py` + `core/compose.py`, served as `GET …/write/word`, scored against period word specimens by the `tools/wordbench` benchmark).
 - **Next milestone:** scan the author's own hand for a small lowercase alphabet (`a d e l n ſ s`) plus a few words, fit the canonical ductus per glyph, aggregate, then re-render those words *and at least one new word* in the same hand. Four validation gates — stability, allograph separation, word rendering, animation playback — decide "kernel validated" vs. a fast, useful negative result. See the [§8 MVP](docs/concepts/architektur.md#8-der-mvp-kleinster-lauffähiger-renderkern) and the [MVP roadmap](docs/concepts/mvp-roadmap.md).
 
@@ -55,6 +55,8 @@ kurrentschrift/
 ├── app/        # React 19 + Vite + MUI SPA — public site + admin behind /admin/*
 ├── alembic/    # Schema migrations
 ├── data/       # Sources, variants, samples (separate licensing — see below)
+├── tools/      # Dev tooling: glyph/word benchmarks, inspection labs, quiz word-bank generator
+├── tests/      # CI test suite (pytest + shared fixtures)
 └── docs/       # Design rationale (German); references with technical specs
 ```
 

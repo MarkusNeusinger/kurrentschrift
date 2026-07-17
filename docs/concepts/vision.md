@@ -205,8 +205,8 @@ diese Seite an.
   Synthese-Pipeline (vier Validierungs-Gates inkl. abgespeckter
   Animation). Die hier beschriebene Website liegt überwiegend *nach*
   dem MVP — der Lineatur-Generator (`/schreiben`, Teil von Punkt 2,
-  noch ohne inhaltsbewusste Synthese) und das Buchstaben-Quiz
-  (Grundform von Punkt 4) sind aber bereits live — und ist in
+  noch ohne inhaltsbewusste Synthese) und das Lese-Quiz (Buchstaben +
+  ganze Wörter, Grundform von Punkt 4) sind aber bereits live — und ist in
   `architektur.md` §10 als Fünf-Phasen-Plan
   sequenziert: P1 Lese-Hilfe (Punkt 5) → P2 Lineatur/Print (Punkt 2) →
   P3 Stil-Analyse (Punkt 6) → P4 Hände-Vergleich (Anwendung von Punkt 6,
