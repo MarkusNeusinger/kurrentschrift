@@ -11,10 +11,8 @@ export const admin = {
     bbox: 'Bbox',
     edit: 'Verschieben',
     lockNeedsBbox: 'Glyph mit Bbox wählen, um ihn als fertig zu sperren',
-    unlockSplit: 'Entsperren (nur diese Position — aufgetrennt)',
-    lockSplit: 'Als fertig sperren (nur diese Position — aufgetrennt)',
-    unlockUnified: 'Entsperren (alle Positionen, wieder bearbeitbar)',
-    lockUnified: 'Als fertig sperren (alle Positionen, vor Änderungen schützen)',
+    unlock: 'Entsperren (wieder bearbeitbar)',
+    lock: 'Als fertig sperren (vor Änderungen schützen)',
     unlockAria: 'Glyph entsperren',
     lockAria: 'Glyph als fertig sperren',
     // Followed by the glyph key in the chip label.
@@ -40,11 +38,9 @@ export const admin = {
     // Followed by the error in the snackbar message.
     saveFailed: 'Speichern fehlgeschlagen:',
     noBboxYet: '{{glyph}}: noch keine Bbox.',
-    scopeAllPositions: ' (alle Positionen)',
-    locked: '🔒 „{{name}}“ gesperrt{{scope}}.',
-    unlocked: '🔓 „{{name}}“ entsperrt{{scope}}.',
+    locked: '🔒 „{{name}}“ gesperrt.',
+    unlocked: '🔓 „{{name}}“ entsperrt.',
     deleteConfirm: 'Bbox für „{{glyph}}“ löschen?',
-    deleteConfirmScope: ' Alle Positionen dieses Buchstabens werden entfernt, damit du neu anfangen kannst.',
     deleteConfirmCanonical: ' Das gespeicherte Canonical wird mit entfernt.',
     deleted: '{{glyph}}: gelöscht.',
     // Followed by the error in the snackbar message.
@@ -69,9 +65,6 @@ export const admin = {
     statusBbox: ' · Bbox gesetzt',
     statusEmpty: ' · leer',
     statusLocked: ' · gesperrt (fertig)',
-    statusSplit: ' · aufgetrennt (pro Position)',
-    splitCaption: 'aufgetrennt · pro Position',
-    unifiedCaption: 'eine Form für alle Positionen',
     actionsHint: 'Einrichten · Diagnose · Sperren in der Leiste oben.',
     noBboxHint: 'Noch keine Bbox — im Modus „Bbox“ ein Rechteck auf der Vorlage ziehen.',
     lockedHint: '🔒 Gesperrt (fertig) — oben in der Leiste entsperren, um zu bearbeiten.',
@@ -91,8 +84,6 @@ export const admin = {
     animate: 'Schreiben animieren',
     reload: 'Neu laden',
     empty: 'Noch keine erstellten Glyphen — erst im Wizard einen Weg zeichnen und sperren.',
-    // Followed by the position label when a letter is authored per position.
-    positionPrefix: 'Position: ',
     noCanonical: 'kein Canonical',
     loadError: 'Diagnose konnte nicht geladen werden.',
     // Tabs: letters (the classic view) vs the connected-writing specimens.
@@ -191,12 +182,8 @@ export const admin = {
     // Followed by the score delta, e.g. "+2.3".
     delta: 'Δ Score:',
     apply: 'Neu ableiten & speichern',
-    // Non-split letters share one form — applying fans out over all positions.
-    applyAll: 'Neu ableiten & speichern (alle {{count}} Positionen)',
     applyHint:
       'Überschreibt die gespeicherte Vorlage mit der Neuableitung aus dem Roh-Weg — bewusste Aktion, wirkt auch bei gesperrten Glyphen.',
-    applyHintAll:
-      'Der Buchstabe teilt eine Form über alle Positionen — die Neuableitung überschreibt alle {{count}} zusammen (bewusste Aktion, wirkt auch bei gesperrten Glyphen).',
     applied: 'Vorlage neu abgeleitet und gespeichert.',
   },
   // Bulk re-derive of all authored glyphs (RederiveAllDialog).
@@ -206,12 +193,11 @@ export const admin = {
       'Alle erstellten Glyphen mit aktuellem Code und aktueller Ankerdichte neu berechnen und überschreiben — mit Vorher/Nachher-Tabelle pro Buchstabe',
     title: 'Alle Glyphen neu ableiten',
     intro:
-      'Berechnet jede erstellte Glyphe aus ihrem Roh-Weg neu (aktueller Code, aktuelle Ankerdichte) und überschreibt die gespeicherte Vorlage — mit Score vorher/nachher pro Buchstabe. Nicht aufgetrennte Buchstaben werden über alle Positionen zusammen aktualisiert. Rote Δ-Werte heißen: verschlechtert — in der Diagnose prüfen.',
+      'Berechnet jede erstellte Glyphe aus ihrem Roh-Weg neu (aktueller Code, aktuelle Ankerdichte) und überschreibt die gespeicherte Vorlage — mit Score vorher/nachher pro Buchstabe. Rote Δ-Werte heißen: verschlechtert — in der Diagnose prüfen.',
     start: 'Alle neu berechnen & überschreiben',
     cancel: 'Abbrechen',
     close: 'Schließen',
     colLetter: 'Buchstabe',
-    colPositions: 'Pos.',
     colBefore: 'vorher',
     colAfter: 'nachher',
     colDelta: 'Δ Score',

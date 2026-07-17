@@ -5,20 +5,17 @@
 // fresh re-derivation from the raw stylus path with the CURRENT pipeline code
 // would achieve (nothing written). The admin compares both and applies the
 // candidate via /resample — the explicit per-glyph write-back path after
-// pipeline improvements land. A non-split letter shares one authored form
-// across initial/medial/final, so applying fans out over all sibling
-// positions (same pattern as the wizard's trace fan-out).
+// pipeline improvements land.
 
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { Alert, Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useAdmin } from '@/context/AdminContext';
-import { isLetterSplit, siblingKeys } from '@/domain/glyphs';
 import { getQuality, postResample } from '@/lib/api';
 import type { QualityComparison, QualityData } from '@/lib/api';
-import { de, fmt } from '@/locales/admin';
+import { de } from '@/locales/admin';
 
 interface Props {
   glyphKey: string;
@@ -71,22 +68,13 @@ function MetricCard({ title, q }: { title: string; q: QualityData }) {
 }
 
 export function QualityView({ glyphKey, cropCacheBust }: Props) {
-  const { sourceId, refreshCrop, bboxesByKey, glyphsByKey } = useAdmin();
+  const { sourceId, refreshCrop } = useAdmin();
   const t = de.admin.quality;
   const [data, setData] = useState<QualityComparison | null>(null);
   const [loading, setLoading] = useState(false);
   const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // A non-split letter shares ONE authored form across initial/medial/final —
-  // applying re-derives every sibling position with a stored canonical, so the
-  // identical forms stay identical (same fan-out rule as the wizard's trace).
-  const targets = useMemo(() => {
-    if (isLetterSplit(glyphKey, bboxesByKey)) return [glyphKey];
-    const siblings = siblingKeys(glyphKey).filter((k) => glyphsByKey[k]?.has_data && bboxesByKey[k]);
-    return siblings.length > 0 ? siblings : [glyphKey];
-  }, [glyphKey, bboxesByKey, glyphsByKey]);
 
   const fetchQuality = useCallback(() => {
     setLoading(true);
@@ -107,10 +95,7 @@ export function QualityView({ glyphKey, cropCacheBust }: Props) {
     setError(null);
     // force: the diagnostics' re-derive is the one deliberate write that may
     // touch a locked glyph — exactly what the server-side lock flag is for.
-    // Sequential over the sibling positions (a few seconds each, threadpooled).
-    (async () => {
-      for (const k of targets) await postResample(sourceId, k, { force: true });
-    })()
+    postResample(sourceId, glyphKey, { force: true })
       .then(() => {
         setApplied(true);
         // Bumps cropCacheBust → every diagnostic-derived view (including this
@@ -119,7 +104,7 @@ export function QualityView({ glyphKey, cropCacheBust }: Props) {
       })
       .catch((e) => setError(String(e)))
       .finally(() => setApplying(false));
-  }, [sourceId, targets, refreshCrop]);
+  }, [sourceId, glyphKey, refreshCrop]);
 
   if (loading && !data) {
     return (
@@ -172,10 +157,10 @@ export function QualityView({ glyphKey, cropCacheBust }: Props) {
                 disabled={applying}
                 onClick={apply}
               >
-                {targets.length > 1 ? fmt(t.applyAll, { count: targets.length }) : t.apply}
+                {t.apply}
               </Button>
               <Typography variant="caption" color="text.disabled" sx={{ maxWidth: 260 }}>
-                {targets.length > 1 ? fmt(t.applyHintAll, { count: targets.length }) : t.applyHint}
+                {t.applyHint}
               </Typography>
             </Stack>
           </>

@@ -159,7 +159,7 @@ def test_compose_matches_ts(entry: dict) -> None:
 def test_glyph_keys_of_dedupes() -> None:
     slots = shape_text("lesen")
     keys = glyph_keys_of(slots)
-    assert keys == ["l-initial", "e-medial", "s-medial", "n-final"]  # e-medial deduped, order preserved
+    assert keys == ["l", "e", "longs", "n"]  # repeated e deduped, order preserved
 
 
 def test_fuge_forces_round_s_at_morpheme_boundary() -> None:
@@ -168,29 +168,21 @@ def test_fuge_forces_round_s_at_morpheme_boundary() -> None:
     # The marker carries no glyph — one slot per real letter, in order.
     assert [s.text for s in slots] == ["H", "a", "u", "s", "t", "ü", "r"]
     s_slot = slots[3]
-    assert s_slot.key == "s-round-medial"  # round s, medial position (not final)
+    assert s_slot.key == "s"  # round s despite the medial position
     assert s_slot.position == "medial"
     # No ſt ligature spans the boundary; the t is its own initial-of-part slot.
     assert all(not s.ligature for s in slots)
-    assert slots[4].key == "t-medial"
+    assert slots[4].key == "t"
 
 
 def test_fuge_absent_keeps_long_s() -> None:
     """Without a Fuge the inner s stays long — the unchanged historical default."""
-    assert glyph_keys_of(shape_text("Arbeitsamt")) == [  # naive: inner s is long ſ
-        "A-initial",
-        "r-medial",
-        "b-medial",
-        "e-medial",
-        "i-medial",
-        "t-medial",
-        "s-medial",
-        "a-medial",
-        "m-medial",
-        "t-final",
-    ]
-    # With the Fuge the boundary s turns round.
-    assert "s-round-medial" in glyph_keys_of(shape_text("Arbeits|amt"))
+    slots = shape_text("Arbeitsamt")  # naive: inner s is long ſ
+    assert [s.key for s in slots] == ["A", "r", "b", "e", "i", "t", "longs", "a", "m", "t"]
+    # With the Fuge the boundary s turns round; positions still mark the slot.
+    fuge_slots = shape_text("Arbeits|amt")
+    assert [s.key for s in fuge_slots][6] == "s"
+    assert fuge_slots[6].position == "medial"
 
 
 def test_strip_fugen_clears_markers() -> None:

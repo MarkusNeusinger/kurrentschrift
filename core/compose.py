@@ -642,7 +642,8 @@ def compose_word(
         centerlines = (data or {}).get("centerlines_template")
         if not data or not centerlines:
             if slot.key:
-                missing.append(slot.key)
+                if slot.key not in missing:  # repeated letters share one key now
+                    missing.append(slot.key)
                 if not slot.joins:
                     # A DETACHED glyph is a run boundary even while its
                     # template is unauthored: the word before a missing comma

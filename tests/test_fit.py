@@ -36,12 +36,7 @@ def _two_stroke_path(num: int = 10) -> list[dict]:
 
 def _canonical_on_synthetic(chart_path, bbox, n_anchors: int = 16) -> dict:
     return canonical_from_path(
-        raw_path=_vertical_stylus_path(),
-        bbox=bbox,
-        chart_path=chart_path,
-        glyph="l",
-        position="initial",
-        n_anchors=n_anchors,
+        raw_path=_vertical_stylus_path(), bbox=bbox, chart_path=chart_path, glyph="l", n_anchors=n_anchors
     )
 
 
@@ -123,12 +118,7 @@ def test_regularisation_limits_deformation(synthetic_chart_path, synthetic_bbox)
 def test_multi_stroke_fit_carries_stroke_starts(synthetic_chart_path, synthetic_bbox):
     """A two-stroke canonical fits with the strokes kept separate in the overlay."""
     canon = canonical_from_path(
-        raw_path=_two_stroke_path(),
-        bbox=synthetic_bbox,
-        chart_path=synthetic_chart_path,
-        glyph="u",
-        position="medial",
-        n_anchors=20,
+        raw_path=_two_stroke_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="u", n_anchors=20
     )
     out = fit_glyph_to_crop(canon, synthetic_bbox, synthetic_chart_path)
     # Two strokes → two polyline segments the frontend can draw without bridging.
@@ -142,10 +132,9 @@ def test_fit_returns_library_entry_shape(synthetic_chart_path, synthetic_bbox):
     """The high-level fit yields a §3-schema entry plus overlay polylines."""
     canon = _canonical_on_synthetic(synthetic_chart_path, synthetic_bbox)
     out = fit_glyph_to_crop(canon, synthetic_bbox, synthetic_chart_path)
-    for key in ("glyph", "position", "advance", "anchors", "half_widths", "entry", "exit_pt", "fit"):
+    for key in ("glyph", "advance", "anchors", "half_widths", "entry", "exit_pt", "fit"):
         assert key in out
     assert out["glyph"] == "l"
-    assert out["position"] == "initial"
     assert len(out["half_widths"]) == len(out["anchors"])
     # Measured half-widths positive and sane (16px bar → half ≈ 8px ≈ 0.08 unit).
     assert min(out["half_widths"]) > 0.0

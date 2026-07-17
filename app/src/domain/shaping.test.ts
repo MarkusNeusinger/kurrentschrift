@@ -34,15 +34,8 @@ describe('shapeText twin parity', () => {
 
 describe('glyphKeysOf', () => {
   it('returns the distinct, in-order keys the composer fetches', () => {
-    // "lesen" repeats e-medial → deduped; the null space slot is dropped.
-    expect(glyphKeysOf(shapeText('lesen das'))).toEqual([
-      'l-initial',
-      'e-medial',
-      's-medial',
-      'n-final',
-      'd-initial',
-      'a-medial',
-      's-final',
-    ]);
+    // "lesen" repeats e → deduped; the null space slot is dropped; the medial
+    // ſ shapes to `longs`, the word-final round s to `s`.
+    expect(glyphKeysOf(shapeText('lesen das'))).toEqual(['l', 'e', 'longs', 'n', 'd', 'a', 's']);
   });
 });

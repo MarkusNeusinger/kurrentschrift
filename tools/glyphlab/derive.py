@@ -73,7 +73,6 @@ def derive(case: GlyphCase, n_anchors: int | None = None) -> DeriveResult:
         "bbox": case.bbox,
         "chart_path": case.chart_path,
         "glyph": case.glyph,
-        "position": case.position,
         "n_anchors": n,
     }
     canon = canonical_suetterlin_from_path(**common) if case.is_constant else canonical_from_path(**common)

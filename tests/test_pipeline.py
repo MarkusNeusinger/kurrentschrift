@@ -32,15 +32,9 @@ def _two_stroke_path(num: int = 10) -> list[dict]:
 def test_canonical_from_path_produces_expected_shape(synthetic_chart_path, synthetic_bbox):
     raw_path = _vertical_stylus_path()
     canon = canonical_from_path(
-        raw_path=raw_path,
-        bbox=synthetic_bbox,
-        chart_path=synthetic_chart_path,
-        glyph="l",
-        position="initial",
-        n_anchors=20,
+        raw_path=raw_path, bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", n_anchors=20
     )
     assert canon["glyph"] == "l"
-    assert canon["position"] == "initial"
     assert len(canon["anchors"]) == 20
     assert len(canon["half_widths"]) == 20
     # Half-widths should be positive — the synthetic glyph is 16px wide,
@@ -55,12 +49,7 @@ def test_canonical_from_path_produces_expected_shape(synthetic_chart_path, synth
 
 def test_canonical_contains_measurements(synthetic_chart_path, synthetic_bbox):
     canon = canonical_from_path(
-        raw_path=_vertical_stylus_path(),
-        bbox=synthetic_bbox,
-        chart_path=synthetic_chart_path,
-        glyph="l",
-        position="initial",
-        n_anchors=20,
+        raw_path=_vertical_stylus_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", n_anchors=20
     )
     m = canon["measurements"]
     for key in ("slant_deg", "mean_half_width_px", "path_length_px", "aspect_ratio"):
@@ -71,12 +60,7 @@ def test_canonical_contains_measurements(synthetic_chart_path, synthetic_bbox):
 
 def test_coupling_defaults_to_baseline(synthetic_chart_path, synthetic_bbox):
     canon = canonical_from_path(
-        raw_path=_vertical_stylus_path(),
-        bbox=synthetic_bbox,
-        chart_path=synthetic_chart_path,
-        glyph="l",
-        position="initial",
-        n_anchors=20,
+        raw_path=_vertical_stylus_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", n_anchors=20
     )
     assert canon["entry"]["coupling"] == "baseline"
     assert canon["exit_pt"]["coupling"] == "baseline"
@@ -85,12 +69,7 @@ def test_coupling_defaults_to_baseline(synthetic_chart_path, synthetic_bbox):
 def test_coupling_height_from_bbox(synthetic_chart_path, synthetic_bbox):
     bbox = {**synthetic_bbox, "entry_coupling": "midband", "exit_coupling": "ascender"}
     canon = canonical_from_path(
-        raw_path=_vertical_stylus_path(),
-        bbox=bbox,
-        chart_path=synthetic_chart_path,
-        glyph="l",
-        position="initial",
-        n_anchors=20,
+        raw_path=_vertical_stylus_path(), bbox=bbox, chart_path=synthetic_chart_path, glyph="l", n_anchors=20
     )
     assert canon["entry"]["coupling"] == "midband"
     assert canon["exit_pt"]["coupling"] == "ascender"
@@ -99,7 +78,7 @@ def test_coupling_height_from_bbox(synthetic_chart_path, synthetic_bbox):
 def test_raw_path_is_preserved(synthetic_chart_path, synthetic_bbox):
     raw = _vertical_stylus_path(num=80)
     canon = canonical_from_path(
-        raw_path=raw, bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", position="initial", n_anchors=10
+        raw_path=raw, bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", n_anchors=10
     )
     assert len(canon["raw_path"]) == 80
 
@@ -107,12 +86,7 @@ def test_raw_path_is_preserved(synthetic_chart_path, synthetic_bbox):
 def test_pen_up_splits_path_into_strokes(synthetic_chart_path, synthetic_bbox):
     """A pen_up marker yields two strokes; stroke_starts records the boundary."""
     canon = canonical_from_path(
-        raw_path=_two_stroke_path(),
-        bbox=synthetic_bbox,
-        chart_path=synthetic_chart_path,
-        glyph="u",
-        position="medial",
-        n_anchors=20,
+        raw_path=_two_stroke_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="u", n_anchors=20
     )
     starts = canon["trace_meta"]["stroke_starts"]
     assert len(starts) == 2
@@ -127,12 +101,7 @@ def test_pen_up_splits_path_into_strokes(synthetic_chart_path, synthetic_bbox):
 def test_pen_up_marker_preserved_in_raw_path(synthetic_chart_path, synthetic_bbox):
     """The single pen lift survives into the stored raw_path so /resample re-splits."""
     canon = canonical_from_path(
-        raw_path=_two_stroke_path(),
-        bbox=synthetic_bbox,
-        chart_path=synthetic_chart_path,
-        glyph="u",
-        position="medial",
-        n_anchors=20,
+        raw_path=_two_stroke_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="u", n_anchors=20
     )
     assert sum(1 for p in canon["raw_path"] if p.get("pen_up")) == 1
     # Markers are stored sparsely — the final stroke's points carry none.
@@ -174,7 +143,7 @@ def test_crop_patch_reaches_the_derived_skeleton(tmp_path):
             "n_anchors": 30,
         }
         return canonical_from_path(
-            raw_path=base + umlaut, bbox=bbox, chart_path=str(chart_path), glyph="ü", position="initial", n_anchors=30
+            raw_path=base + umlaut, bbox=bbox, chart_path=str(chart_path), glyph="ü", n_anchors=30
         )
 
     with_patch = derive([{"src": [700, 120, 760, 160], "dst": [370, 140]}])
@@ -192,12 +161,7 @@ def test_crop_patch_reaches_the_derived_skeleton(tmp_path):
 def test_single_stroke_has_one_segment(synthetic_chart_path, synthetic_bbox):
     """A path without markers re-derives as one stroke (legacy compatibility)."""
     canon = canonical_from_path(
-        raw_path=_vertical_stylus_path(),
-        bbox=synthetic_bbox,
-        chart_path=synthetic_chart_path,
-        glyph="l",
-        position="initial",
-        n_anchors=20,
+        raw_path=_vertical_stylus_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", n_anchors=20
     )
     assert canon["trace_meta"]["stroke_starts"] == [0]
 
@@ -205,12 +169,7 @@ def test_single_stroke_has_one_segment(synthetic_chart_path, synthetic_bbox):
 def test_diagnostic_has_one_outline_polygon_per_stroke(synthetic_chart_path, synthetic_bbox):
     """The diagnostic emits a separate outline polygon for each pen-stroke."""
     canon = canonical_from_path(
-        raw_path=_two_stroke_path(),
-        bbox=synthetic_bbox,
-        chart_path=synthetic_chart_path,
-        glyph="u",
-        position="medial",
-        n_anchors=20,
+        raw_path=_two_stroke_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="u", n_anchors=20
     )
     glyph_row = {"anchors": canon["anchors"], "half_widths": canon["half_widths"], "trace_meta": canon["trace_meta"]}
     diag = diagnostic_for_glyph(
@@ -228,12 +187,7 @@ def test_diagnostic_has_one_outline_polygon_per_stroke(synthetic_chart_path, syn
 
 def test_diagnostic_contains_render_fields(synthetic_chart_path, synthetic_bbox):
     canon = canonical_from_path(
-        raw_path=_vertical_stylus_path(),
-        bbox=synthetic_bbox,
-        chart_path=synthetic_chart_path,
-        glyph="l",
-        position="initial",
-        n_anchors=20,
+        raw_path=_vertical_stylus_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", n_anchors=20
     )
     glyph_row = {"anchors": canon["anchors"], "half_widths": canon["half_widths"], "trace_meta": canon["trace_meta"]}
     diag = diagnostic_for_glyph(
@@ -252,12 +206,7 @@ def test_diagnostic_passes_through_connection_metadata(synthetic_chart_path, syn
     payload to place glyphs and generate the connecting strokes (architektur.md
     §4). The pipeline forwards whatever the stored template carries."""
     canon = canonical_from_path(
-        raw_path=_vertical_stylus_path(),
-        bbox=synthetic_bbox,
-        chart_path=synthetic_chart_path,
-        glyph="l",
-        position="initial",
-        n_anchors=20,
+        raw_path=_vertical_stylus_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", n_anchors=20
     )
     glyph_row = {
         "anchors": canon["anchors"],
@@ -281,12 +230,7 @@ def test_diagnostic_connection_metadata_defaults_empty(synthetic_chart_path, syn
     """A legacy glyph_row without connection fields still renders (older payloads
     / synthetic rows): entry/exit default to empty dicts, advance to None."""
     canon = canonical_from_path(
-        raw_path=_vertical_stylus_path(),
-        bbox=synthetic_bbox,
-        chart_path=synthetic_chart_path,
-        glyph="l",
-        position="initial",
-        n_anchors=20,
+        raw_path=_vertical_stylus_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", n_anchors=20
     )
     glyph_row = {"anchors": canon["anchors"], "half_widths": canon["half_widths"], "trace_meta": canon["trace_meta"]}
     diag = diagnostic_for_glyph(
@@ -302,12 +246,7 @@ def test_render_payload_matches_diagnostic_geometry(synthetic_chart_path, synthe
     diagnostic's template geometry and connection metadata — and none of the
     admin-only pixel/crop columns the image pipeline exists for."""
     canon = canonical_from_path(
-        raw_path=_vertical_stylus_path(),
-        bbox=synthetic_bbox,
-        chart_path=synthetic_chart_path,
-        glyph="l",
-        position="initial",
-        n_anchors=20,
+        raw_path=_vertical_stylus_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", n_anchors=20
     )
     glyph_row = {
         "anchors": canon["anchors"],
@@ -348,12 +287,7 @@ def test_render_payload_constant_nib_override(synthetic_chart_path, synthetic_bb
     """The source-pooled Gleichzug nib collapses the rendered widths to that one
     value under 'constant'; the pressure resolver ignores it."""
     canon = canonical_from_path(
-        raw_path=_vertical_stylus_path(),
-        bbox=synthetic_bbox,
-        chart_path=synthetic_chart_path,
-        glyph="l",
-        position="initial",
-        n_anchors=20,
+        raw_path=_vertical_stylus_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", n_anchors=20
     )
     glyph_row = {"anchors": canon["anchors"], "half_widths": canon["half_widths"], "trace_meta": canon["trace_meta"]}
     constant = render_payload_for_template(glyph_row, [1, 1, 1], width_resolver="constant", constant_nib_units=0.07)
@@ -370,12 +304,7 @@ def test_diagnostic_constant_resolver_renders_uniform_widths(synthetic_chart_pat
     rendered width profile to one value; the stored canonical stays untouched
     and the default 'pressure' path is byte-identical to no argument."""
     canon = canonical_from_path(
-        raw_path=_vertical_stylus_path(),
-        bbox=synthetic_bbox,
-        chart_path=synthetic_chart_path,
-        glyph="l",
-        position="initial",
-        n_anchors=20,
+        raw_path=_vertical_stylus_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", n_anchors=20
     )
     glyph_row = {"anchors": canon["anchors"], "half_widths": canon["half_widths"], "trace_meta": canon["trace_meta"]}
     hw_before = [float(v) for v in canon["half_widths"]]

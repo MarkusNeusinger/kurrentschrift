@@ -242,9 +242,7 @@ def _suetterlin_canonical(chart_path, bbox) -> dict:
     from core.suetterlin import canonical_suetterlin_from_path
 
     path = [{"x": 400.0, "y": float(200 + 400 * i / 39), "pressure": None, "t": float(i)} for i in range(40)]
-    return canonical_suetterlin_from_path(
-        raw_path=path, bbox=bbox, chart_path=chart_path, glyph="i", position="initial", n_anchors=20
-    )
+    return canonical_suetterlin_from_path(raw_path=path, bbox=bbox, chart_path=chart_path, glyph="i", n_anchors=20)
 
 
 def _score(canon, bbox, chart_path):

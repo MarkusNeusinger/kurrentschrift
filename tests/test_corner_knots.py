@@ -156,7 +156,7 @@ def _chevron_raw_path() -> list[dict]:
 
 def test_canonical_records_corner_anchor_on_the_apex(chevron_chart_path):
     canon = canonical_from_path(
-        raw_path=_chevron_raw_path(), bbox=CHEVRON_BBOX, chart_path=chevron_chart_path, glyph="k", position="initial"
+        raw_path=_chevron_raw_path(), bbox=CHEVRON_BBOX, chart_path=chevron_chart_path, glyph="k"
     )
     corners = canon["trace_meta"]["corner_anchors"]
     assert len(corners) == 1
@@ -168,7 +168,7 @@ def test_canonical_records_corner_anchor_on_the_apex(chevron_chart_path):
 
 def test_corner_survives_resample_from_raw_path(chevron_chart_path):
     canon = canonical_from_path(
-        raw_path=_chevron_raw_path(), bbox=CHEVRON_BBOX, chart_path=chevron_chart_path, glyph="k", position="initial"
+        raw_path=_chevron_raw_path(), bbox=CHEVRON_BBOX, chart_path=chevron_chart_path, glyph="k"
     )
     rederived = canonical_from_raw_path_only(canon, CHEVRON_BBOX, chevron_chart_path, n_anchors=24)
     assert len(rederived["trace_meta"]["corner_anchors"]) == 1

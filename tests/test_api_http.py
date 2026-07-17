@@ -34,15 +34,15 @@ from tests.api_harness import Harness
 # /quality and /diagnostic are compute-heavy read endpoints gated like the
 # writes (each re-runs the image pipeline per request).
 WRITE_ENDPOINTS = [
-    ("PUT", "/sources/{src}/bboxes/a-medial", {}),
-    ("DELETE", "/sources/{src}/bboxes/a-medial", None),
-    ("POST", "/sources/{src}/templates/a-medial/trace", {}),
-    ("POST", "/sources/{src}/templates/a-medial/trace-preview", {}),
-    ("POST", "/sources/{src}/templates/a-medial/resample", {}),
-    ("DELETE", "/sources/{src}/templates/a-medial", None),
-    ("GET", "/sources/{src}/templates/a-medial/fit", None),
-    ("GET", "/sources/{src}/templates/a-medial/quality", None),
-    ("GET", "/sources/{src}/templates/a-medial/diagnostic", None),
+    ("PUT", "/sources/{src}/bboxes/a", {}),
+    ("DELETE", "/sources/{src}/bboxes/a", None),
+    ("POST", "/sources/{src}/templates/a/trace", {}),
+    ("POST", "/sources/{src}/templates/a/trace-preview", {}),
+    ("POST", "/sources/{src}/templates/a/resample", {}),
+    ("DELETE", "/sources/{src}/templates/a", None),
+    ("GET", "/sources/{src}/templates/a/fit", None),
+    ("GET", "/sources/{src}/templates/a/quality", None),
+    ("GET", "/sources/{src}/templates/a/diagnostic", None),
 ]
 
 
@@ -196,12 +196,12 @@ async def test_write_glyphs_empty_keys_422(api: Harness):
 
 async def test_write_glyphs_batch_and_missing(api: Harness):
     style_id, source_id = await api.seed_style_and_source()
-    await api.seed_template(style_id, source_id, "n-initial", "n", "initial")
-    res = await api.client.request("GET", f"/sources/{source_id}/write/glyphs", params={"keys": "n-initial,zz-medial"})
+    await api.seed_template(style_id, source_id, "n", "n")
+    res = await api.client.request("GET", f"/sources/{source_id}/write/glyphs", params={"keys": "n,zz"})
     assert res.status == 200
     data = res.json()
-    assert [g["glyph_key"] for g in data["glyphs"]] == ["n-initial"]
-    assert data["missing"] == ["zz-medial"]
+    assert [g["glyph_key"] for g in data["glyphs"]] == ["n"]
+    assert data["missing"] == ["zz"]
     assert "cache-control" in res.headers
     payload = data["glyphs"][0]
     for field in ("outline_paths", "centerlines_template", "entry", "exit_pt", "advance", "template_guides"):
@@ -217,9 +217,9 @@ async def test_write_word_happy_path_with_seeded_templates(api: Harness):
     style_id, source_id = await api.seed_style_and_source()
     word = "nn"
     slots = shape_text(word)
-    for slot in slots:
-        assert slot.key is not None
-        await api.seed_template(style_id, source_id, slot.key, slot.text, slot.position)
+    assert all(slot.key is not None for slot in slots)
+    for key in glyph_keys_of(slots):  # deduped — both n slots share ONE row now
+        await api.seed_template(style_id, source_id, key, "n")
 
     res = await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": word})
     assert res.status == 200

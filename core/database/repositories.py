@@ -81,26 +81,17 @@ class BboxRepository:
         return list(result.scalars().all())
 
     async def list_status(self, source_id: str) -> list[dict]:
-        """Availability flags + layout scalars (glyph_key, locked, split, crop
-        rect, baseline) — the public quiz's gating read and the Tafel's sheet
+        """Availability flags + layout scalars (glyph_key, locked, crop rect,
+        baseline) — the public quiz's gating read and the Tafel's sheet
         layout, without the heavy mask/ink/patch JSONB columns."""
         result = await self.session.execute(
-            select(Bbox.glyph_key, Bbox.locked, Bbox.split, Bbox.x0, Bbox.x1, Bbox.y0, Bbox.y1, Bbox.baseline_y)
+            select(Bbox.glyph_key, Bbox.locked, Bbox.x0, Bbox.x1, Bbox.y0, Bbox.y1, Bbox.baseline_y)
             .where(Bbox.source_id == source_id)
             .order_by(Bbox.glyph_key)
         )
         return [
-            {
-                "glyph_key": k,
-                "locked": bool(locked),
-                "split": bool(split),
-                "x0": x0,
-                "x1": x1,
-                "y0": y0,
-                "y1": y1,
-                "baseline_y": baseline_y,
-            }
-            for k, locked, split, x0, x1, y0, y1, baseline_y in result.all()
+            {"glyph_key": k, "locked": bool(locked), "x0": x0, "x1": x1, "y0": y0, "y1": y1, "baseline_y": baseline_y}
+            for k, locked, x0, x1, y0, y1, baseline_y in result.all()
         ]
 
     async def upsert(self, source_id: str, glyph_key: str, **fields: Any) -> Bbox:
@@ -127,7 +118,7 @@ class TemplateRepository:
     """Canonical templates (Grundvorlage), keyed per style.
 
     Templates hang off a `style`, not a single source: the canonical for
-    (style, glyph, position, variant) is the norm. `provenance_source_id` records
+    (style, glyph, variant) is the norm. `provenance_source_id` records
     which teaching chart it was traced from. The router resolves the style from
     the source being worked on.
     """
@@ -158,13 +149,11 @@ class TemplateRepository:
         `half_widths_for_source`).
         """
         result = await self.session.execute(
-            select(Template.glyph_key, Template.glyph, Template.position, Template.variant, Template.advance)
+            select(Template.glyph_key, Template.glyph, Template.variant, Template.advance)
             .where(Template.style_id == style_id)
             .order_by(Template.glyph_key, Template.variant)
         )
-        return [
-            {"glyph_key": k, "glyph": g, "position": p, "variant": v, "advance": a} for k, g, p, v, a in result.all()
-        ]
+        return [{"glyph_key": k, "glyph": g, "variant": v, "advance": a} for k, g, v, a in result.all()]
 
     async def get_many(self, style_id: str, glyph_keys: list[str], variant: int = 0) -> list[Template]:
         """The requested keys' templates in one query (the batch write endpoint)."""
@@ -194,18 +183,17 @@ class TemplateRepository:
     async def upsert(
         self, style_id: str, glyph_key: str, canonical: dict, variant: int = 0, provenance_source_id: str | None = None
     ) -> Template:
-        """Insert-or-update by (style_id, glyph, position, variant).
+        """Insert-or-update by (style_id, glyph, variant).
 
-        `canonical` must carry `glyph`, `position`, `advance`, `entry`,
-        `exit_pt`, `anchors`, `half_widths`, `raw_path`, `trace_meta`,
-        `measurements`. Produced by `core.pipeline.canonical_from_path`.
+        `canonical` must carry `glyph`, `advance`, `entry`, `exit_pt`,
+        `anchors`, `half_widths`, `raw_path`, `trace_meta`, `measurements`.
+        Produced by `core.pipeline.canonical_from_path`.
         """
         payload = {
             "style_id": style_id,
             "provenance_source_id": provenance_source_id,
             "glyph_key": glyph_key,
             "glyph": canonical["glyph"],
-            "position": canonical["position"],
             "variant": variant,
             "advance": canonical["advance"],
             "entry": canonical["entry"],
@@ -216,17 +204,14 @@ class TemplateRepository:
             "trace_meta": canonical["trace_meta"],
             "measurements": canonical.get("measurements", {}),
         }
-        update_cols = {k: v for k, v in payload.items() if k not in ("style_id", "glyph", "position", "variant")}
+        update_cols = {k: v for k, v in payload.items() if k not in ("style_id", "glyph", "variant")}
         stmt = pg_insert(Template).values(**payload)
-        stmt = stmt.on_conflict_do_update(constraint="uq_template_style_gpv", set_=update_cols)
+        stmt = stmt.on_conflict_do_update(constraint="uq_template_style_gv", set_=update_cols)
         await self.session.execute(stmt)
         await self.session.flush()
         result = await self.session.execute(
             select(Template).where(
-                Template.style_id == style_id,
-                Template.glyph == canonical["glyph"],
-                Template.position == canonical["position"],
-                Template.variant == variant,
+                Template.style_id == style_id, Template.glyph == canonical["glyph"], Template.variant == variant
             )
         )
         return result.scalar_one()

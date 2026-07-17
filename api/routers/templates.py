@@ -33,7 +33,7 @@ def _derive_canonical(width_resolver: str, **kwargs) -> dict:
 
     Constant-width styles (Sütterlin Gleichzug) go through the skeleton-locked
     `core.suetterlin` derivation; everything else uses the pressure pipeline.
-    Both accept the same kwargs (raw_path, bbox, chart_path, glyph, position,
+    Both accept the same kwargs (raw_path, bbox, chart_path, glyph,
     n_anchors), so the call site stays identical.
     """
     if width_resolver == "constant":
@@ -64,36 +64,30 @@ def _reject_locked_unless_forced(bbox, force: bool) -> None:
         )
 
 
-def _reject_key_identity_mismatch(glyph_key: str, glyph: str, position: str) -> None:
-    """Backstop: the URL's glyph_key and the payload's (glyph, position) must agree.
+def _reject_key_identity_mismatch(glyph_key: str, glyph: str) -> None:
+    """Backstop: the URL's glyph_key and the payload's glyph must agree.
 
-    The template upsert conflicts on (style, glyph, position, variant) while
-    reads go by glyph_key — a mismatched pair would conflict-update another
-    row and rewrite its glyph_key, so subsequent GETs silently 404. Derive the
+    The template upsert conflicts on (style, glyph, variant) while reads go by
+    glyph_key — a mismatched pair would conflict-update another row and
+    rewrite its glyph_key, so subsequent GETs silently 404. Derive the
     expected key from the shared registry (core.shaping, the Python twin of
-    glyphs.ts); for glyphs outside the registry subset fall back to the
-    `{base}-{position}` naming convention.
+    glyphs.ts); a glyph outside the registry subset keeps its client-chosen
+    key but may never claim a registry-owned one.
     """
-    expected = expected_glyph_key(glyph, position)
+    expected = expected_glyph_key(glyph)
     if expected is not None:
         if expected != glyph_key:
             raise HTTPException(
                 status.HTTP_422_UNPROCESSABLE_CONTENT,
-                detail=f"glyph_key {glyph_key!r} does not match glyph {glyph!r} at position {position!r}"
-                f" (expected {expected!r})",
+                detail=f"glyph_key {glyph_key!r} does not match glyph {glyph!r} (expected {expected!r})",
             )
     elif is_registry_glyph_key(glyph_key):
         # An out-of-registry glyph may never claim a registry-owned key: the
-        # upsert would stamp that key onto its own (glyph, position) row and
-        # duplicate it against the registry glyph's row.
+        # upsert would stamp that key onto its own glyph row and duplicate it
+        # against the registry glyph's row.
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"glyph_key {glyph_key!r} belongs to a registry glyph, not to {glyph!r}",
-        )
-    elif not glyph_key.endswith(f"-{position}"):
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail=f"glyph_key {glyph_key!r} does not match position {position!r}",
         )
 
 
@@ -133,7 +127,6 @@ def _template_to_out(t: Template) -> TemplateOut:
     return TemplateOut(
         glyph_key=t.glyph_key,
         glyph=t.glyph,
-        position=t.position,
         variant=t.variant,
         advance=t.advance,
         entry=t.entry,
@@ -173,17 +166,17 @@ async def post_trace(
     source: Source = Depends(require_source),
     db: AsyncSession = Depends(require_db),
 ):
-    _reject_key_identity_mismatch(glyph_key, payload.glyph, payload.position)
+    _reject_key_identity_mismatch(glyph_key, payload.glyph)
     # Stored-row backstop for keys the registry doesn't know: whatever row this
-    # key already names must carry the same (glyph, position) — otherwise the
-    # upsert (conflict target: style/glyph/position/variant) would write onto a
-    # DIFFERENT row and leave two rows claiming the same glyph_key.
+    # key already names must carry the same glyph — otherwise the upsert
+    # (conflict target: style/glyph/variant) would write onto a DIFFERENT row
+    # and leave two rows claiming the same glyph_key.
     stored = await TemplateRepository(db).get(source.style_id, glyph_key, variant=payload.variant)
-    if stored is not None and (stored.glyph, stored.position) != (payload.glyph, payload.position):
+    if stored is not None and stored.glyph != payload.glyph:
         raise HTTPException(
             status.HTTP_409_CONFLICT,
-            detail=f"glyph_key {glyph_key!r} already names glyph {stored.glyph!r} at position {stored.position!r};"
-            f" refusing to re-key it to {payload.glyph!r}/{payload.position!r}",
+            detail=f"glyph_key {glyph_key!r} already names glyph {stored.glyph!r};"
+            f" refusing to re-key it to {payload.glyph!r}",
         )
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:
@@ -198,7 +191,6 @@ async def post_trace(
         bbox=_bbox_to_dict(bbox),
         chart_path=source.chart_path,
         glyph=payload.glyph,
-        position=payload.position,
         n_anchors=payload.n_anchors,
     )
     t = await TemplateRepository(db).upsert(
@@ -245,7 +237,6 @@ async def post_trace_preview(
                 bbox=bbox_dict,
                 chart_path=source.chart_path,
                 glyph=payload.glyph,
-                position=payload.position,
                 n_anchors=payload.n_anchors,
             )
             preview = written_preview_for_canonical(canon, style_ratio, slant_deg, width_resolver)
@@ -257,7 +248,6 @@ async def post_trace_preview(
                 bbox=bbox_dict,
                 chart_path=source.chart_path,
                 glyph=payload.glyph,
-                position=payload.position,
                 n_anchors=payload.n_anchors,
                 refine=refine,
             )
@@ -294,7 +284,7 @@ async def post_resample(
     canonical = await run_in_threadpool(
         _derive_canonical_from_raw,
         width_resolver,
-        glyph_row={"raw_path": list(existing.raw_path), "glyph": existing.glyph, "position": existing.position},
+        glyph_row={"raw_path": list(existing.raw_path), "glyph": existing.glyph},
         bbox=_bbox_to_dict(bbox),
         chart_path=source.chart_path,
         n_anchors=n_anchors,
@@ -374,7 +364,6 @@ async def get_fit(
         fit_glyph_to_crop,
         glyph_row={
             "glyph": template.glyph,
-            "position": template.position,
             "anchors": list(template.anchors),
             "half_widths": list(template.half_widths),
             "entry": dict(template.entry) if template.entry else {},
@@ -423,7 +412,7 @@ async def get_quality(glyph_key: str, source: Source = Depends(require_source), 
             detail=f"stored template for {glyph_key!r} lacks pixel-space trace meta; resample or re-trace first",
         )
     raw_path = list(template.raw_path or [])
-    glyph, position = template.glyph, template.position
+    glyph = template.glyph
     _, _, _, width_resolver = await resolve_style(source, db)
     # The candidate must preview exactly what apply (= /resample without an
     # explicit count) would store: current code + recommended anchor density.
@@ -439,7 +428,7 @@ async def get_quality(glyph_key: str, source: Source = Depends(require_source), 
         if raw_path:
             canon = _derive_canonical_from_raw(
                 width_resolver,
-                glyph_row={"raw_path": raw_path, "glyph": glyph, "position": position},
+                glyph_row={"raw_path": raw_path, "glyph": glyph},
                 bbox=bbox_dict,
                 chart_path=source.chart_path,
                 n_anchors=n_anchors,

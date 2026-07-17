@@ -73,7 +73,7 @@ def _l_shape_path(num: int = 30) -> list[dict]:
 
 def test_width_is_constant(synthetic_chart_path, synthetic_bbox):
     canon = canonical_suetterlin_from_path(
-        raw_path=_vertical_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", position="initial"
+        raw_path=_vertical_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l"
     )
     hw = canon["half_widths"]
     assert len(hw) == len(canon["anchors"])
@@ -86,7 +86,7 @@ def test_width_is_constant(synthetic_chart_path, synthetic_bbox):
 
 def test_silhouette_hugs_the_crop(synthetic_chart_path, synthetic_bbox):
     canon = canonical_suetterlin_from_path(
-        raw_path=_vertical_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", position="initial"
+        raw_path=_vertical_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l"
     )
     quality = canon["trace_meta"]["quality"]
     assert quality is not None
@@ -101,7 +101,7 @@ def test_anchors_lock_to_the_skeleton(synthetic_chart_path, synthetic_bbox):
     rng = np.random.default_rng(0)
     raw = [{"x": 400.0 + rng.uniform(-5, 5), "y": float(205 + 390 * i / 39)} for i in range(40)]
     canon = canonical_suetterlin_from_path(
-        raw_path=raw, bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", position="initial"
+        raw_path=raw, bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l"
     )
     xs = np.array([px for px, _ in canon["trace_meta"]["pixel_anchors"]])
     # The bar's medial axis sits at x≈399–400; snapped anchors hug it tightly
@@ -114,14 +114,14 @@ def test_pen_lift_splits_strokes(synthetic_chart_path, synthetic_bbox):
     first[-1]["pen_up"] = True
     second = [{"x": 400.0, "y": float(410 + 180 * i / 9)} for i in range(10)]
     canon = canonical_suetterlin_from_path(
-        raw_path=first + second, bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="u", position="initial"
+        raw_path=first + second, bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="u"
     )
     assert len(canon["trace_meta"]["stroke_starts"]) == 2
 
 
 def test_sharp_corner_becomes_a_knot(l_shape_chart_path, l_shape_bbox):
     canon = canonical_suetterlin_from_path(
-        raw_path=_l_shape_path(), bbox=l_shape_bbox, chart_path=l_shape_chart_path, glyph="L", position="initial"
+        raw_path=_l_shape_path(), bbox=l_shape_bbox, chart_path=l_shape_chart_path, glyph="L"
     )
     # The 90° turn at the foot is a within-stroke reversal → at least one corner.
     assert len(canon["trace_meta"]["corner_anchors"]) >= 1
@@ -191,11 +191,7 @@ def _merged_hairpin_path() -> list[dict]:
 
 def test_merged_double_stroke_follows_edges(merged_double_chart_path, merged_double_bbox):
     canon = canonical_suetterlin_from_path(
-        raw_path=_merged_hairpin_path(),
-        bbox=merged_double_bbox,
-        chart_path=merged_double_chart_path,
-        glyph="t",
-        position="initial",
+        raw_path=_merged_hairpin_path(), bbox=merged_double_bbox, chart_path=merged_double_chart_path, glyph="t"
     )
     # The thin bar fixes the nib at ~8 despite the wide bar's ~16 readings.
     assert abs(canon["trace_meta"]["nib_radius_px"] - 8.0) < 2.0
@@ -248,7 +244,7 @@ def test_crossing_is_not_edge_split(plus_cross_chart_path, plus_cross_bbox):
     vert[-1]["pen_up"] = True
     horiz = [{"x": float(310 + 240 * i / 39), "y": 380.0} for i in range(40)]
     canon = canonical_suetterlin_from_path(
-        raw_path=vert + horiz, bbox=plus_cross_bbox, chart_path=plus_cross_chart_path, glyph="t", position="initial"
+        raw_path=vert + horiz, bbox=plus_cross_bbox, chart_path=plus_cross_chart_path, glyph="t"
     )
     assert abs(canon["trace_meta"]["nib_radius_px"] - 8.0) < 2.0
 
@@ -342,10 +338,10 @@ def test_smoothing_preserves_endpoints_and_corners():
 
 def test_from_raw_path_only_roundtrip(synthetic_chart_path, synthetic_bbox):
     canon = canonical_suetterlin_from_path(
-        raw_path=_vertical_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", position="initial"
+        raw_path=_vertical_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l"
     )
     again = canonical_suetterlin_from_raw_path_only(
-        glyph_row={"raw_path": canon["raw_path"], "glyph": "l", "position": "initial"},
+        glyph_row={"raw_path": canon["raw_path"], "glyph": "l"},
         bbox=synthetic_bbox,
         chart_path=synthetic_chart_path,
         n_anchors=40,

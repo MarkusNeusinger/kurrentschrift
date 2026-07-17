@@ -301,7 +301,7 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
   JSX) + Setup/Play/Results-Panels + `QuestionVisual`.
 - `sections/impressum/` — Impressum/Datenschutz/Quellen als Dokumentspalte.
 - `sections/admin/chart/` — `ChartView` (Pointer-Routing) + `useChartViewport`
-  (Zoom/Pan/Pinch) + `useBboxEditing` (Bbox-Commits, Lock-Fan-out) +
+  (Zoom/Pan/Pinch) + `useBboxEditing` (Bbox-Commits, Lock) +
   `BboxOverlay`/`ChartToolbar` + pure `bboxGeometry`.
 - `sections/admin/setup-wizard/` — `SetupWizard` (Dialog-Shell) + `useWizard`
   (State + Server-Mutationen) + `useCropView` (Crop-Viewport) + `WizardCanvas`

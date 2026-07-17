@@ -478,7 +478,6 @@ def _assemble_canonical_payload(
     raw_path: list[dict],
     bbox: dict,
     glyph: str,
-    position: str,
     baseline_y: int,
     midband_y: int,
     unit_px: float,
@@ -491,7 +490,7 @@ def _assemble_canonical_payload(
     (`canonical_from_path`) and the Gleichzug pipeline
     (`core.suetterlin.canonical_suetterlin_from_path`): pixel → template
     normalisation (baseline = 0, midband = 1), entry/exit points + tangents,
-    the raw_path serialization and the wire dict (glyph/position/advance/
+    the raw_path serialization and the wire dict (glyph/advance/
     anchors/half_widths/entry/exit_pt/raw_path/trace_meta/measurements). The
     per-script differences ride in `method` (`trace_meta.method`) and
     `extra_trace_meta`: the pressure path passes its `snap`/`refine` residuals
@@ -544,7 +543,6 @@ def _assemble_canonical_payload(
 
     return {
         "glyph": glyph,
-        "position": position,
         "advance": round(advance, 4),
         "anchors": [[round(float(x), 4), round(float(y), 4)] for x, y in anchors_norm],
         "half_widths": [round(float(h), 4) for h in hw_norm],
@@ -564,7 +562,6 @@ def canonical_from_path(
     bbox: dict,
     chart_path: str,
     glyph: str,
-    position: str,
     n_anchors: int | None = None,
     snap_to_ink: bool = True,
     refine: bool = True,
@@ -574,9 +571,8 @@ def canonical_from_path(
     `raw_path` items: `{x, y, pressure?, t?}` in *chart-global* pixel coords.
     `bbox` is a dict carrying y0/y1/x0/x1, mask_strokes, baseline_y, midband_y,
     (optional) n_anchors. `chart_path` is the on-disk path (resolvable via
-    `core.chart.resolve_chart_path`). The grading characters identifying the
-    glyph (`glyph`, `position`) are passed explicitly because they live on the
-    canonical itself, not on the bbox row.
+    `core.chart.resolve_chart_path`). The glyph character is passed
+    explicitly because it lives on the canonical itself, not on the bbox row.
 
     Steps:
       1. Load chart + crop with eraser mask (M0 input).
@@ -709,7 +705,6 @@ def canonical_from_path(
         raw_path=raw_path,
         bbox=bbox,
         glyph=glyph,
-        position=position,
         baseline_y=baseline_y,
         midband_y=midband_y,
         unit_px=unit_px,
@@ -731,12 +726,7 @@ def canonical_from_raw_path_only(glyph_row: dict, bbox: dict, chart_path: str, n
     and we want the new anchor count without re-tracing.
     """
     return canonical_from_path(
-        raw_path=glyph_row["raw_path"],
-        bbox=bbox,
-        chart_path=chart_path,
-        glyph=glyph_row["glyph"],
-        position=glyph_row["position"],
-        n_anchors=n_anchors,
+        raw_path=glyph_row["raw_path"], bbox=bbox, chart_path=chart_path, glyph=glyph_row["glyph"], n_anchors=n_anchors
     )
 
 

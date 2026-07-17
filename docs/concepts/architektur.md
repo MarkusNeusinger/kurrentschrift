@@ -106,9 +106,8 @@ plus deren Abweichung von der Norm. Drei orthogonale Achsen:
 # One library entry = one fitted ductus instance of one (allograph, variant)
 {
   "glyph": "s",
-  "position": "final",        # chart role: where the source teaches it
   "variant": 0,               # index into the norm's sanctioned form set
-  "canonical": "<ref>",       # shared per (glyph,position,variant); fixed
+  "canonical": "<ref>",       # shared per (glyph,variant); fixed
   "control_points": [...],    # THIS sample's fit (deviation from canonical)
   "width_profile": [...],     # the Schwellzug (from distance transform)
   "entry": {"xy": (x, y), "tangent": deg, "coupling": "baseline"},
@@ -131,8 +130,15 @@ Wichtige Festlegungen:
 - **Formvarianten sind eigene Templates, nicht Auslenkung.** Die zwei F-
   oder c-Formen der Lehrtafel unterscheiden sich *strukturell* (andere
   Topologie/Strichfolge), nicht nur in der Kontrollpunkt-Auslenkung.
-  Bibliotheksschlüssel ist daher `(style, glyph, position, variant)` — der
-  Stil (Grundvorlage) ist die vierte, äußerste Achse (siehe unten).
+  Bibliotheksschlüssel ist daher `(style, glyph, variant)` — der
+  Stil (Grundvorlage) ist die äußerste Achse (siehe unten).
+- **Die Wort-Position ist Render-Kontext, kein Template-Schlüssel** (Redesign
+  R2, [`schreibsystem-redesign.md`](../proposals/schreibsystem-redesign.md)):
+  Ein Template pro Glyphe; `core/shaping.py` weist die Position
+  (initial/medial/final) pro Slot zu und wählt darüber die Allographen
+  (langes ſ = `longs` vs. Schluss-s = `s`) — die frühere
+  Positions-Triplikation (`a-initial/-medial/-final`, Vorschlag A
+  „Lehrtafel-Rolle") ist zurückgebaut (Migration `0017`).
 - **Width-Profile-Resolver pro Stil.** Eine Stil-Eigenschaft entscheidet,
   wie das Breitenprofil interpretiert wird: **Kurrent** = druckabhängiger
   Schwellzug (Spitzfeder, `pressure`), **Sütterlin** = annähernd konstant
@@ -153,8 +159,8 @@ ebenso die früher (naming-und-setup §1) vertagte Stil-Dimension:
   Stil-Default pro Tafel.
 - `bboxes` — die Admin-Crop-Konfiguration pro `(source, glyph_key)`:
   Crop-Rechteck, Radierer-`mask_strokes`, Lineatur-Kalibrierung
-  (`baseline_y`/`midband_y`), `guides`, `n_anchors`, `locked`/`split`.
-- `templates` — das kanonische `canonical` pro `(style, glyph, position,
+  (`baseline_y`/`midband_y`), `guides`, `n_anchors`, `locked`.
+- `templates` — das kanonische `canonical` pro `(style, glyph,
   variant)`; `provenance_source_id` zeigt auf die getuschte Lehrtafel.
 - `instances` — die `control_points`-Fits pro Beleg aus Originaltexten
   (§12 Schicht 1, `measurements`); viele pro `(glyph, position, variant)`.
@@ -163,10 +169,11 @@ ebenso die früher (naming-und-setup §1) vertagte Stil-Dimension:
   textunabhängige Hand-Features (Hinge/Δn-Hinge nach Bulacu/Schomaker).
 
 `instances`/`aggregates` sind angelegt, aber erst der post-MVP-Import füllt
-sie. Im Admin gilt eine getuschte Form per Default für alle drei Positionen
-(Fan-out über initial/medial/final); eine Position wird bei Bedarf später
-differenziert — die positionsabhängigen Verbindungsstriche werden ohnehin aus
-`entry`/`exit`-Tangenten *generiert* (§4).
+sie (dort bleibt die Wort-Position eine legitime Beobachtungs-Dimension pro
+Beleg). Seit dem Positions-Rückbau (R2) autorisiert der Admin genau EINE Form
+pro Glyphe — die positionsabhängigen Verbindungsstriche werden aus
+`entry`/`exit`-Tangenten *generiert* (§4), Anstrich/Auslauf setzt der
+Composer aus dem Slot-Kontext.
 
 ---
 

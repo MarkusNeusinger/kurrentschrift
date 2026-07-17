@@ -29,15 +29,12 @@ export function fmt(template: string, params: Record<string, string | number>): 
 }
 
 // Label maps + helpers shared by admin/wizard code (absorbed from the former
-// lib/labels.ts and domain/glyphs.ts POSITION_LABEL).
+// lib/labels.ts).
 export {
   COUPLING_LABELS,
   LINEATUR_LABELS,
-  POSITION_LABEL,
-  POSITION_LABELS,
   STYLE_LABELS,
   ZONE_LABELS,
   couplingLabel,
-  positionLabel,
   styleLabel,
 } from './de/common';

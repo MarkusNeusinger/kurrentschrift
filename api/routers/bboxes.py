@@ -30,7 +30,7 @@ def _coalesce(payload_val: T | None, stored_val: T | None, default: T) -> T:
 def _to_out(bbox: Bbox) -> BboxOut:
     # The crop-affecting fields come from the ONE shared serializer (Pydantic
     # coerces the stroke/patch dicts into their models); the read-only bbox
-    # metadata (calibration, guides, lock/split) rides alongside.
+    # metadata (calibration, guides, lock) rides alongside.
     return BboxOut(
         **bbox.to_pipeline_dict(),
         glyph_key=bbox.glyph_key,
@@ -39,7 +39,6 @@ def _to_out(bbox: Bbox) -> BboxOut:
         n_anchors=bbox.n_anchors,
         guides=GuideConfig(**(bbox.guides or {})),
         locked=bool(bbox.locked),
-        split=bool(bbox.split),
     )
 
 
@@ -55,7 +54,7 @@ async def list_bbox_status(
 ):
     """Slim public read: just the availability flags per glyph_key.
 
-    The quiz gates its vocabulary on locked/split (+ TemplateSummary.has_data);
+    The quiz gates its vocabulary on locked (+ TemplateSummary.has_data);
     the full list above ships every mask/ink/patch JSONB blob for that. Declared
     BEFORE /{glyph_key} so the literal path wins the route match. Only the quiz
     boot consumes it (the admin reads the full list), so it caches like the
@@ -104,15 +103,14 @@ async def put_bbox(
             status.HTTP_422_UNPROCESSABLE_CONTENT, detail=f"bbox exceeds the chart dimensions ({chart_w}×{chart_h} px)"
         )
     repo = BboxRepository(db)
-    # `guides`, `locked`, `split`, `n_anchors` and `fill_holes_max_area` are
-    # optional: when the client omits one, keep whatever is already stored (a
-    # plain bbox/calibration save must not wipe the guide lines, silently rewrite
+    # `guides`, `locked`, `n_anchors` and `fill_holes_max_area` are optional:
+    # when the client omits one, keep whatever is already stored (a plain
+    # bbox/calibration save must not wipe the guide lines, silently rewrite
     # the anchor count, or require resending unrelated fields). Load `existing`
     # once up front and coalesce each field.
     existing = await repo.get(source.id, glyph_key)
     guides = payload.guides.model_dump() if payload.guides is not None else (existing.guides if existing else {})
     locked = _coalesce(payload.locked, bool(existing.locked) if existing else None, False)
-    split = _coalesce(payload.split, bool(existing.split) if existing else None, False)
     n_anchors = _coalesce(payload.n_anchors, int(existing.n_anchors) if existing else None, DEFAULT_N_ANCHORS)
     fill_holes_max_area = _coalesce(
         payload.fill_holes_max_area, int(existing.fill_holes_max_area) if existing else None, 0
@@ -132,7 +130,6 @@ async def put_bbox(
         n_anchors=n_anchors,
         guides=guides,
         locked=locked,
-        split=split,
         fill_holes_max_area=fill_holes_max_area,
     )
     return _to_out(bbox)

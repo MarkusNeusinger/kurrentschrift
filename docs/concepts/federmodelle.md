@@ -192,9 +192,9 @@ Positionen werden **pro Lauf gleicher joins-Klasse** vergeben: das
 Komma in „Haus,“ stiehlt dem s nicht mehr die Endposition — das
 **Schluss-s bleibt rund** (behobener Altfehler; vorher las `Haus,` das
 s als medial → Lang-ſ). Ein Ziffernblock „1922“ löst
-initial/medial/final intern auf; die drei Positionen tragen bei
-detached-Glyphen dieselbe Form (der gewohnte Fan-out beim Authoring
-gilt unverändert).
+initial/medial/final intern auf; seit dem Positions-Rückbau (Redesign R2)
+trägt ohnehin jede Glyphe genau EINEN Basis-Key — die Position ist reiner
+Slot-Kontext.
 
 ### Composer
 

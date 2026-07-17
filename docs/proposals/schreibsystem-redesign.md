@@ -4,8 +4,13 @@
 Prüfung: **angenommen** — inklusive des Positions-Rückbaus (R2).
 **R1 und R1b Stufe 1 sind umgesetzt** (2026-07-17: `/admin/paare`
 Paar-Matrix; `/admin/vergleich` mit Wortvorlagen-Tabs über die neuen
-öffentlichen `/word-samples`-Reads, registrierte Überlagerung). Offen:
-R1b Stufe 2 (Scores), R2–R5 (Reihenfolge s. §6). Dieses Dokument konkretisiert
+öffentlichen `/word-samples`-Reads, registrierte Überlagerung).
+**R2 ist umgesetzt** (2026-07-17, Migration `0017`: Basis-Keys, Drillinge
+kollabiert — eine abweichende Schwester überlebt als `variant` —,
+`templates.position` + `bboxes.split` entfernt, Identitäts-Constraint
+`(style, glyph, variant)`; `architektur.md` §3 angepasst; das
+Compose-Golden-Fixture blieb in der Geometrie byte-identisch). Offen:
+R1b Stufe 2 (Scores), R3–R5 (Reihenfolge s. §6). Dieses Dokument konkretisiert
 [`planaenderungen.md`](planaenderungen.md) Vorschlag B (Paar-Overrides,
 dort weiterhin der sanktionierte Rahmen) und baut auf dem
 platzierungsbereinigten Paar-Befund in
@@ -193,7 +198,7 @@ Optimierungs-Läufe laufen weiter nur im eingefrorenen Bench-Loop.
 Später schließt sich der Kreis zu R3: aus einer schlechten Paar-Karte
 direkt in den Paar-Editor mit dem Vorlagen-Crop als Unterlage.
 
-### R2 — Positions-Rückbau (vor R3, damit Paar-Keys einfach bleiben)
+### R2 — Positions-Rückbau (umgesetzt 2026-07-17, Migration `0017`)
 
 Heute schreibt der Admin eine autorisierte Form per Fan-out auf drei
 identische Template-Zeilen (`a-initial`/`a-medial`/`a-final`); `position`

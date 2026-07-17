@@ -176,22 +176,23 @@ def test_chisel_union_rings_degenerate_inputs():
 
 def test_digits_shape_to_detached_slots():
     slots = shape_word("1922")
-    assert [s.key for s in slots] == ["1-initial", "9-medial", "2-medial", "2-final"]
+    assert [s.key for s in slots] == ["1", "9", "2", "2"]
     assert all(not s.joins for s in slots)
-    assert glyph_keys_of(slots) == ["1-initial", "9-medial", "2-medial", "2-final"]
+    assert glyph_keys_of(slots) == ["1", "9", "2"]  # repeated 2 deduped
 
 
 def test_punctuation_keeps_word_final_round_s():
     # The trailing comma must not steal the letter run's final position:
     # "Haus," keeps the round Schluss-s.
     slots = shape_word("Haus,")
-    assert slots[3].key == "s-final"
-    # The comma is a one-token run of its own → position 'initial' (the
-    # position is cosmetic for detached glyphs, all three carry the same form).
-    assert slots[4].key == "comma-initial"
+    assert slots[3].key == "s"
+    assert slots[3].position == "final"
+    # The comma is a one-token run of its own → position 'initial' (cosmetic
+    # for detached glyphs; the key is position-free anyway).
+    assert slots[4].key == "comma"
     assert not slots[4].joins
     # Without the run split the s would read medial → long-s (the old bug).
-    assert shape_word("Haus")[3].key == "s-final"
+    assert shape_word("Haus")[3].key == "s"
 
 
 def test_straight_quote_resolves_low_then_high():
@@ -212,18 +213,19 @@ def test_straight_quote_resolves_low_then_high():
 def test_hyphen_and_dash_map_to_their_glyphs():
     slots = shape_word("Haus-Tür")
     hyphen = [s for s in slots if s.text == "-"][0]
-    assert hyphen.key.startswith("hyphen-")
+    assert hyphen.key == "hyphen"
     assert not hyphen.joins
     # Letters on both sides keep their own runs: r final, H initial of ITS run.
-    assert slots[0].key == "H-initial"
-    assert slots[-1].key == "r-final"
+    assert slots[0].key == "H"
+    assert slots[-1].key == "r"
+    assert slots[-1].position == "final"
     dash = shape_text("Wort – Wort")
-    assert any(s.key and s.key.startswith("dash-") for s in dash)
+    assert any(s.key == "dash" for s in dash)
 
 
 def test_letters_only_shaping_unchanged():
     slots = shape_word("lesen")
-    assert [s.key for s in slots] == ["l-initial", "e-medial", "s-medial", "e-medial", "n-final"]
+    assert [s.key for s in slots] == ["l", "e", "longs", "e", "n"]
     assert all(s.joins for s in slots)
 
 

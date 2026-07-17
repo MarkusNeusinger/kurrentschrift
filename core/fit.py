@@ -161,11 +161,10 @@ class FitResult:
     # caller build a filled silhouette of the fit for overlay on the crop.
     fitted_sample_half_widths_px: np.ndarray | None = None
 
-    def to_entry(self, glyph: str, position: str) -> dict:
+    def to_entry(self, glyph: str) -> dict:
         """Render the fit as a §3 library-entry dict (rounded, JSON-ready)."""
         return {
             "glyph": glyph,
-            "position": position,
             "advance": round(float(self.advance), 4),
             "anchors": [[round(float(x), 4), round(float(y), 4)] for x, y in self.anchors],
             "half_widths": [round(float(h), 4) for h in self.half_widths],
@@ -1279,7 +1278,7 @@ def fit_glyph_to_crop(
     ]
 
     h, w = crop.shape
-    entry = result.to_entry(glyph_row["glyph"], glyph_row["position"])
+    entry = result.to_entry(glyph_row["glyph"])
     skel_pts = _skeleton_points(skel)
     return {
         **entry,

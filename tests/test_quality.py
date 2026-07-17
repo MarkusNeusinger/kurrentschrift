@@ -25,12 +25,7 @@ def _vertical_stylus_path(num: int = 40, x_global: int = 400) -> list[dict]:
 
 def _canonical(synthetic_chart_path, synthetic_bbox) -> dict:
     return canonical_from_path(
-        raw_path=_vertical_stylus_path(),
-        bbox=synthetic_bbox,
-        chart_path=synthetic_chart_path,
-        glyph="l",
-        position="initial",
-        n_anchors=20,
+        raw_path=_vertical_stylus_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", n_anchors=20
     )
 
 

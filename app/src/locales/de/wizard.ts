@@ -205,17 +205,6 @@ export const wizard = {
       'kannst du das Ergebnis groß ansehen: der reine Crop, das Skelett mit Ankern und die kanonische Vorlage nebeneinander (plus den M4-Fit).',
     openDiagnose: 'Diagnose öffnen',
     noTraceYet: 'Noch kein Weg gezeichnet — Schritt „Weg“ zuerst.',
-    positionsHeading: 'Positionen (Anfang · Mitte · Ende)',
-    unifiedOption: 'Eine Form für alle Positionen',
-    splitOption: 'Nur „{{position}}“ getrennt einrichten (abweichende Form)',
-    unifiedCaption:
-      'Diese Form gilt für alle drei Positionen; die Anschlussstriche werden je Position aus Anfang/Ende erzeugt. Im Quiz und in der Sidebar erscheint der Buchstabe einmal.',
-    splitCaption:
-      'Nur „{{position}}“ bekommt diese Form, die anderen Positionen behalten ihre eigene. Der Buchstabe erscheint dann pro Position getrennt.',
-    // Composed around the inline <b>diese</b>.
-    overwriteBeforeBold: 'Der Buchstabe ist aktuell aufgetrennt — „Eine Form für alle“ überträgt',
-    overwriteBold: 'diese',
-    overwriteAfterBold: 'Form auf alle drei Positionen und überschreibt die abweichenden.',
     lockCaption:
       'Mit „Abschließen & sperren“ wird der Glyph gesperrt (🔒) und ist erst nach Entsperren wieder änderbar.',
   },

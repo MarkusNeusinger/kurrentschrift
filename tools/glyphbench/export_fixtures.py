@@ -65,7 +65,6 @@ def _template_dict(template) -> dict:
     return {
         "glyph_key": template.glyph_key,
         "glyph": template.glyph,
-        "position": template.position,
         "variant": template.variant,
         "advance": template.advance,
         "entry": template.entry,
@@ -101,9 +100,9 @@ def _dedupe_templates(entries: list[tuple[dict, dict]]) -> tuple[list[tuple[dict
         digest = hashlib.sha256(json.dumps(computation_inputs, sort_keys=True).encode()).hexdigest()
         key = (template["glyph"], digest)
         if key in by_key:
-            by_key[key][2].append(template["position"])
+            by_key[key][2].append(template["glyph_key"])
         else:
-            by_key[key] = (template, bbox, [template["position"]])
+            by_key[key] = (template, bbox, [template["glyph_key"]])
     kept = list(by_key.values())
     return kept, len(entries) - len(kept)
 
@@ -135,7 +134,7 @@ async def export(source_id: str, out_dir: Path, include_unlocked: bool, dedupe: 
     if dedupe:
         kept, n_deduped = _dedupe_templates(entries)
     else:
-        kept = [(t, b, [t["position"]]) for t, b in sorted(entries, key=lambda e: e[0]["glyph_key"])]
+        kept = [(t, b, [t["glyph_key"]]) for t, b in sorted(entries, key=lambda e: e[0]["glyph_key"])]
         n_deduped = 0
 
     chart_abs = resolve_chart_path(source.chart_path)

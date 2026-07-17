@@ -83,7 +83,6 @@ def _template_dict(t: Template) -> dict:
     return {
         "glyph_key": t.glyph_key,
         "glyph": t.glyph,
-        "position": t.position,
         "advance": t.advance,
         "entry": t.entry,
         "exit_pt": t.exit_pt,

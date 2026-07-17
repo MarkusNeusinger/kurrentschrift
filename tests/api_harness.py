@@ -155,7 +155,7 @@ class Harness:
             await session.commit()
         return style_id, source_id
 
-    async def seed_template(self, style_id: str, source_id: str, glyph_key: str, glyph: str, position: str) -> None:
+    async def seed_template(self, style_id: str, source_id: str, glyph_key: str, glyph: str) -> None:
         """A minimal but render-valid canonical: an n-like arch in template coords
         (baseline = 0, midband = 1) with a constant hairline width profile."""
         anchors = [[0.0, 0.0], [0.05, 0.45], [0.12, 0.62], [0.25, 0.55], [0.32, 0.25], [0.35, 0.0]]
@@ -166,7 +166,6 @@ class Harness:
                     provenance_source_id=source_id,
                     glyph_key=glyph_key,
                     glyph=glyph,
-                    position=position,
                     variant=0,
                     advance=0.45,
                     entry={"xy": [0.0, 0.0], "tangent_deg": 60.0, "coupling": "baseline"},

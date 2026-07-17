@@ -12,6 +12,20 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Changed
+
+- **Position removal (redesign R2).** One authored form per glyph:
+  glyph_keys lose their `-initial/-medial/-final` suffix (`a-medial` → `a`;
+  the s-allographs untangle to `longs` — historically `s-medial` — and `s`),
+  the admin fan-out/split machinery is gone, `templates.position` and
+  `bboxes.split` are dropped and the identity constraint becomes
+  `(style_id, glyph, variant)` (migration `0017`, which collapses sibling
+  rows — a genuinely differing sibling survives as an extra `variant`, bbox
+  locks are OR-merged). The word position stays per-slot render context in
+  `core/shaping.py`/`shaping.ts`. Render output is unchanged: the compose
+  golden fixture stays byte-identical in geometry (only key names moved).
+  `architektur.md` §3 updated in the same change.
+
 ### Added
 
 - **Admin pair matrix (`/admin/paare`, redesign R1).** Every two-letter
