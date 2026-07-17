@@ -33,7 +33,11 @@ einem Tag am CDN). Der Admin behält den ungecachten `/diagnostic`.
    `joins: false`-Glyphen. Python-Zwilling des Quiz-Shapings
    `app/src/domain/shaping.ts`, gepinnt durch
    `tests/fixtures/shaping_cases.json`.
-2. **Komposition** (`core/compose.py::compose_word`): Grundlinien-
+2. **Komposition** (`core/compose.py::compose_word`): freigegebene
+   Paar-Overrides (`glyph_pairs`, Redesign R3) werden pro Wort in EINER
+   Query geladen und ersetzen für genau ihr Nachbarpaar den generierten
+   Übergang samt Platzierung (Vorrang links-nach-rechts); ohne Override
+   bleibt der Generator-Pfad byte-identisch. Danach Grundlinien-
    Platzierung, generierte Übergänge aus `exit`/`entry`-Tangenten +
    Koppelhöhe, Diakritika-Deferral, Ink-Clearance für nicht-joinende
    Glyphen; optionaler `pen`-Parameter färbt GENERIERTE Striche pro

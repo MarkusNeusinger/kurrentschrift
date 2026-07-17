@@ -230,7 +230,16 @@ ist seit Vorschlag A nur noch Lehrtafel-Rolle. Rückbau:
   deshalb wird R2 als **eigene, mechanische PR** geschnitten, nie
   vermischt mit Form-Änderungen.
 
-### R3 — Paar-Schicht (Vorschlag B, konkretisiert)
+### R3 — Paar-Schicht (Vorschlag B, konkretisiert; Schnitt 1 umgesetzt 2026-07-17)
+
+**Stand:** Schema (`glyph_pairs`, Migration `0018`), der
+Composer-Fallback (`core/compose.py::compose_word(pair_overrides=…)` —
+Override gewinnt für genau sein Nachbarpaar, sonst §4-Generator
+byte-identisch), die Konsumtion NUR freigegebener Zeilen im
+Wort-Endpoint und die Admin-CRUD-API (`/sources/{id}/pairs/…`) sind
+umgesetzt. **Offen:** der Ernte-Importer (pairlab-§5b-Fits, braucht die
+Live-DB + Wordbench-Fixtures), der Paar-Editor als Freigabe-Fläche und
+die Override-Badges in der Paar-Matrix.
 
 - **Schema:** eigene Tabelle `glyph_pairs` — `(style_id, left_key,
   right_key, variant)`, Geometrie als JSONB (gefittetes Paar:

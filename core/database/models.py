@@ -342,6 +342,52 @@ class Aggregate(Base):
     )
 
 
+class GlyphPair(Base):
+    """An observed/authored letter-pair override (redesign R3, proposal B).
+
+    The §4 generator stays the DEFAULT for every join; a row here is a sparse
+    opt-in override for ONE adjacent pair `(left_key, right_key)` within a
+    style, used by `core/compose.py` only when `approved` is true. `geometry`
+    (JSONB, see PairGeometry in api/schemas.py) carries the connector
+    centerline relative to the left glyph's exit plus the right glyph's
+    placement offset — template units, baseline = 0, midband = 1.
+
+    `provenance` records how the row came to be: `harvested` (M4-fitted from a
+    same-hand specimen; `provenance_source_id` + `specimen_id` point to the
+    words.json sample) or `authored` (drawn freehand in the pair editor — the
+    marked fallback for pairs without a specimen; never a wordbench reference).
+    """
+
+    __tablename__ = "glyph_pairs"
+    __table_args__ = (
+        UniqueConstraint("style_id", "left_key", "right_key", "variant", name="uq_glyph_pair_style_lr_variant"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    style_id: Mapped[str] = mapped_column(
+        String(STYLE_ID_MAX), ForeignKey("styles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    left_key: Mapped[str] = mapped_column(String(GLYPH_KEY_MAX), nullable=False)
+    right_key: Mapped[str] = mapped_column(String(GLYPH_KEY_MAX), nullable=False)
+    variant: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+
+    geometry: Mapped[dict] = mapped_column(PORTABLE_JSON, nullable=False)
+    provenance: Mapped[str] = mapped_column(String(16), nullable=False)  # 'harvested' | 'authored'
+    provenance_source_id: Mapped[str | None] = mapped_column(
+        String(SOURCE_ID_MAX), ForeignKey("sources.id", ondelete="SET NULL"), nullable=True
+    )
+    # The words.json sample the harvest fitted (e.g. an Abb.-20 pair id).
+    specimen_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    # Freigabe: only approved rows reach the composer; a fresh harvest lands
+    # unapproved so the pair editor stays the human gate.
+    approved: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
 class QuizWord(Base):
     """A word shown in the reading quiz plus its form-similar distractors.
 

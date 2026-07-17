@@ -97,6 +97,54 @@ class WordSampleOut(BaseModel):
     midband_y: int
 
 
+# ------------------------------------------------------------------ Glyph pair
+
+
+class PairGeometry(BaseModel):
+    """Stored override geometry of ONE letter join (redesign R3, proposal B).
+
+    Template units (baseline = 0, midband = 1), both parts relative to the
+    LEFT glyph's exit point: `offset` is where the right glyph's entry lands
+    (`[dx, dy]`; the composer currently applies the horizontal part),
+    `connector` is the join's centerline drawn verbatim instead of the
+    generated Übergang."""
+
+    offset: list[float] = Field(min_length=2, max_length=2)
+    connector: list[list[float]] = Field(min_length=2, max_length=500)
+
+    def model_post_init(self, __context: Any) -> None:
+        for pt in self.connector:
+            if len(pt) != 2:
+                raise ValueError("connector points must be [x, y] pairs")
+            if not all(abs(float(v)) <= 20.0 for v in pt):
+                raise ValueError("connector coordinates out of range (template units)")
+        if not all(abs(float(v)) <= 20.0 for v in self.offset):
+            raise ValueError("offset out of range (template units)")
+
+
+class GlyphPairIn(BaseModel):
+    """Body of `PUT /sources/{id}/pairs/{left_key}/{right_key}`."""
+
+    geometry: PairGeometry
+    provenance: Literal["harvested", "authored"]
+    # The words.json sample a harvest fitted (e.g. an Abb.-20 pair id).
+    specimen_id: str | None = None
+    # Freigabe: only approved rows reach the composer.
+    approved: bool = False
+    variant: int = 0
+
+
+class GlyphPairOut(BaseModel):
+    left_key: str
+    right_key: str
+    variant: int
+    geometry: PairGeometry
+    provenance: str
+    provenance_source_id: str | None = None
+    specimen_id: str | None = None
+    approved: bool
+
+
 # ----------------------------------------------------------------------- Bbox
 
 

@@ -19,7 +19,7 @@ from api.dependencies import require_db, require_source
 from api.http import CACHE_CONTROL
 from api.rendering import resolve_render_context
 from core.compose import compose_word
-from core.database import Source, Template, TemplateRepository
+from core.database import GlyphPairRepository, Source, Template, TemplateRepository
 from core.pipeline import render_payload_for_template
 from core.shaping import decompose_ligature_slot, glyph_keys_of, shape_text
 
@@ -137,6 +137,15 @@ async def get_write_word(
         for t in await repo.get_many(source.style_id, extra):
             rows[t.glyph_key] = _template_to_glyph_row(t)
 
+    # Approved pair overrides for this text's adjacent joined pairs (redesign
+    # R3): one query for the whole word; no rows → the generator path stays
+    # byte-identical.
+    adjacent: list[tuple[str, str]] = []
+    for a, b in zip(slots, slots[1:], strict=False):
+        if a.key and b.key and a.joins and b.joins and not a.space and not b.space:
+            adjacent.append((a.key, b.key))
+    pair_overrides = await GlyphPairRepository(db).approved_for_pairs(source.style_id, adjacent)
+
     # Render geometry + composition are pure numpy/python — off the event loop.
     def compute() -> dict:
         payloads = {
@@ -147,7 +156,7 @@ async def get_write_word(
             )
             for key in keys
         }
-        return compose_word(slots, payloads, pen=ctx.pen)
+        return compose_word(slots, payloads, pen=ctx.pen, pair_overrides=pair_overrides)
 
     composed = await run_in_threadpool(compute)
     response.headers["Cache-Control"] = CACHE_CONTROL
