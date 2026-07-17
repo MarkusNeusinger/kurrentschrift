@@ -79,6 +79,32 @@ export interface WordSampleOut {
   midband_y: number;
 }
 
+// Per-segment attribution row of a scored specimen (redesign R1b Stufe 2) —
+// a connector row names the join (`pair`), a glyph row the letter; `penalty`
+// is the row's headline component on the metric's saturation scale.
+export interface WordSampleScoreSegment {
+  kind: 'connector' | 'glyph';
+  penalty: number;
+  pair?: [string | null, string | null] | null;
+  glyph_key?: string | null;
+}
+
+// Admin-only score of one specimen: the frozen wordbench ruler run on the
+// SAME composition /write/word serves (loss = 0.45·transition +
+// 0.35·coverage + 0.20·width, lower better; failed = a template hole scores
+// 1.0). Mirrors the /word-samples/{id}/score response.
+export interface WordSampleScoreOut {
+  id: string;
+  word: string;
+  loss: number;
+  failed: boolean;
+  transition?: number;
+  coverage?: number;
+  width?: number;
+  missing: string[];
+  segments: WordSampleScoreSegment[];
+}
+
 // One letter-pair override (redesign R3). Mirrors GlyphPairOut/PairGeometry in
 // api/schemas.py: `offset` is where the right glyph's entry lands relative to
 // the LEFT glyph's exit (template units; the composer applies the horizontal

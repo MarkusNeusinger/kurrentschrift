@@ -7,14 +7,14 @@
 // (baseline = 0, 1 unit = x-height), so the map is a pure scale+translate —
 // scale = (baseline_y - midband_y) px per unit, left-aligned on the crop edge.
 
-import { Alert, Box, Chip, CircularProgress, Typography } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
+import { Alert, Box, Button, Chip, CircularProgress, Tooltip, Typography } from '@mui/material';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { WrittenWord } from '@/components/WrittenWord';
 import { useAdmin } from '@/context/AdminContext';
 import { useInView } from '@/hooks/useInView';
-import { getWordSamples, wordSampleCropUrl } from '@/lib/api';
-import type { ComposedWordOut, WordSampleOut } from '@/lib/api';
+import { getWordSamples, getWordSampleScore, wordSampleCropUrl } from '@/lib/api';
+import type { ComposedWordOut, WordSampleOut, WordSampleScoreOut } from '@/lib/api';
 import { fetchRenderWord } from '@/lib/api/renderCache';
 import { polylineToPathD, ringsToPathD } from '@/lib/svg';
 import { de } from '@/locales/admin';
@@ -75,7 +75,39 @@ function SpecimenOverlay({ sample, composed, sourceId }: { sample: WordSampleOut
   );
 }
 
-function WordCard({ sample, sourceId, overlay }: { sample: WordSampleOut; sourceId: string; overlay: boolean }) {
+// Loss thresholds for the chip colour — same scale as the wordbench headline
+// (lower better; the current bench baseline sits around 0.3).
+function lossColor(loss: number): 'success' | 'warning' | 'error' {
+  if (loss < 0.25) return 'success';
+  if (loss < 0.4) return 'warning';
+  return 'error';
+}
+
+// The three worst segments as "label penalty" lines for the chip tooltip —
+// the number says how much, the label says which letter/join.
+function worstSegments(score: WordSampleScoreOut): string[] {
+  return [...score.segments]
+    .sort((a, b) => b.penalty - a.penalty)
+    .slice(0, 3)
+    .map((s) => {
+      const label = s.kind === 'connector' ? (s.pair ?? []).map((k) => k ?? '·').join('→') : (s.glyph_key ?? '?');
+      return `${label} ${s.penalty.toFixed(2)}`;
+    });
+}
+
+function ScoreChip({ score }: { score: WordSampleScoreOut }) {
+  if (score.failed) {
+    return <Chip size="small" color="error" variant="outlined" label={de.admin.compare.scoreFailed} />;
+  }
+  const lines = worstSegments(score);
+  return (
+    <Tooltip title={lines.length ? `${de.admin.compare.scoreWorstSegments} ${lines.join(' · ')}` : ''}>
+      <Chip size="small" color={lossColor(score.loss)} variant="outlined" label={`Loss ${score.loss.toFixed(2)}`} />
+    </Tooltip>
+  );
+}
+
+function WordCard({ sample, sourceId, overlay, score }: { sample: WordSampleOut; sourceId: string; overlay: boolean; score?: WordSampleScoreOut }) {
   const [ref, inView] = useInView<HTMLDivElement>();
   const [composed, setComposed] = useState<ComposedWordOut | null>(null);
   const [error, setError] = useState(false);
@@ -108,6 +140,7 @@ function WordCard({ sample, sourceId, overlay }: { sample: WordSampleOut; source
           {sample.id}
         </Typography>
         {sample.sample_set && <Chip size="small" label={sample.sample_set} />}
+        {score && <ScoreChip score={score} />}
         {composed && composed.missing.length > 0 && (
           <Chip size="small" color="warning" label={`${de.admin.compare.missingPrefix}${composed.missing.join(', ')}`} />
         )}
@@ -170,11 +203,19 @@ export function WordComparison({ mode, overlay }: { mode: WordCompareMode; overl
   const { source, sourceId } = useAdmin();
   const [samples, setSamples] = useState<WordSampleOut[] | null>(null);
   const [error, setError] = useState(false);
+  const [scores, setScores] = useState<Record<string, WordSampleScoreOut>>({});
+  const [scoring, setScoring] = useState<{ done: number; total: number } | null>(null);
+  const [scoreError, setScoreError] = useState(false);
+  const scoringRun = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
     setSamples(null);
     setError(false);
+    setScores({});
+    setScoring(null);
+    setScoreError(false);
+    scoringRun.current += 1; // invalidate an in-flight score sweep of the old source
     getWordSamples(sourceId, { retries: 2 })
       .then((rows) => {
         if (!cancelled) setSamples(rows);
@@ -187,7 +228,36 @@ export function WordComparison({ mode, overlay }: { mode: WordCompareMode; overl
     };
   }, [sourceId]);
 
-  const visible = useMemo(() => (samples ?? []).filter((s) => matchesMode(s, mode)), [samples, mode]);
+  const visible = useMemo(() => {
+    const rows = (samples ?? []).filter((s) => matchesMode(s, mode));
+    // Once scored, worst first — that IS the work list. Unscored rows keep
+    // their sidecar order at the end.
+    return rows.length && Object.keys(scores).length
+      ? [...rows].sort((a, b) => (scores[b.id]?.loss ?? -1) - (scores[a.id]?.loss ?? -1))
+      : rows;
+  }, [samples, mode, scores]);
+
+  // Sequentially score every specimen of the tab: the endpoint is CPU-bound
+  // server-side (compose + chamfer grid search), a parallel fan-out would
+  // just queue on the single instance and risk timeouts.
+  const loadScores = async () => {
+    const run = ++scoringRun.current;
+    const targets = (samples ?? []).filter((s) => matchesMode(s, mode));
+    setScoreError(false);
+    setScoring({ done: 0, total: targets.length });
+    for (let i = 0; i < targets.length; i += 1) {
+      try {
+        const score = await getWordSampleScore(sourceId, targets[i].id);
+        if (run !== scoringRun.current) return;
+        setScores((prev) => ({ ...prev, [targets[i].id]: score }));
+      } catch {
+        if (run !== scoringRun.current) return;
+        setScoreError(true);
+      }
+      setScoring({ done: i + 1, total: targets.length });
+    }
+    setScoring(null);
+  };
 
   if (!source) return null;
   if (error) return <Alert severity="error">{de.admin.compare.wordsLoadError}</Alert>;
@@ -205,8 +275,24 @@ export function WordComparison({ mode, overlay }: { mode: WordCompareMode; overl
       <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 720 }}>
         {mode === 'other' ? de.admin.compare.otherIntro : de.admin.compare.wordsIntro}
       </Typography>
+      {/* The Fremdhand tab is view-only context, never a scoring reference. */}
+      {mode !== 'other' && (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+          <Button size="small" variant="outlined" onClick={loadScores} disabled={scoring !== null}>
+            {scoring
+              ? `${de.admin.compare.scoreBusy} (${scoring.done}/${scoring.total})`
+              : de.admin.compare.scoreButton}
+          </Button>
+          {scoring && <CircularProgress size={16} />}
+          {scoreError && (
+            <Typography variant="caption" color="error">
+              {de.admin.compare.scoreError}
+            </Typography>
+          )}
+        </Box>
+      )}
       {visible.map((s) => (
-        <WordCard key={s.id} sample={s} sourceId={sourceId} overlay={overlay} />
+        <WordCard key={s.id} sample={s} sourceId={sourceId} overlay={overlay} score={scores[s.id]} />
       ))}
     </Box>
   );

@@ -180,6 +180,11 @@ kurrentschrift/
 │   ├── compose.py    # word composition (placement + Übergänge; detached ink-clearance placement for non-joining glyphs; optional `pen` inks generated strokes per script; `pair_overrides` renders approved glyph_pairs rows verbatim (R3), no-override path byte-identical; single source of truth, golden-pinned)
 │   ├── widths.py     # resolve_half_widths + pen models (§5, docs/concepts/federmodelle.md): BroadNib w(φ)-law + PenStyle, render-time
 │   ├── fit.py        # M4: fit_template_to_instance, fit_glyph_to_crop
+│   ├── word_metric.py # the FROZEN wordbench ruler (score_word/score_word_segments +
+│   │                 #   specimen-reference builder with per-sample skeleton cache; moved from
+│   │                 #   tools/wordbench/metric.py — which stays as a re-export shim — because
+│   │                 #   the API image ships no tools/ and the admin score endpoint serves the
+│   │                 #   SAME metric; the freeze rule covers it through the shim)
 │   └── database/     # SQLAlchemy Style + Hand + Source + Bbox + Template + Instance + Aggregate + QuizWord + repos
 ├── api/              # FastAPI service (thin)
 │   ├── main.py
@@ -190,10 +195,15 @@ kurrentschrift/
 │                     #   pairs (R3 glyph-pair overrides: public reads + admin PUT/DELETE,
 │                     #   only approved rows reach the composer),
 │                     #   write (public batched render payloads + /word server-side composition,
-│                     #   cached, no chart I/O), word_samples (public reads over the committed
+│                     #   cached, no chart I/O; module-level compose_word_payload is the ONE
+│                     #   shared shape+compose path), word_samples (public reads over the committed
 │                     #   words.json sidecar: /word-samples metadata + /crop PNG with excludes
 │                     #   painted white — public like the bbox crops, <img> can't send the
-│                     #   admin header), quiz_words (public GET /quiz-words reading-drill bank:
+│                     #   admin header; plus the admin-gated uncached /word-samples/{id}/score —
+│                     #   R1b Stufe 2: the frozen core/word_metric.py ruler on the same
+│                     #   composition /write/word serves, provenance=True, per-letter/per-join
+│                     #   segment attribution, missing template ⇒ failed/1.0),
+│                     #   quiz_words (public GET /quiz-words reading-drill bank:
 │                     #   ~500 words, ONE pinned anchor distractor each, rest drawn at runtime by the
 │                     #   shared similarity rules — docs/reference/quiz-wortbank.md)
 ├── app/              # React 19 + Vite + MUI SPA (anyplot-style)
@@ -209,7 +219,10 @@ kurrentschrift/
 │       │                #   (GlyphComparison — every authored letter, crop vs. "as written",
 │       │                #   side-by-side or overlaid) + Wörter/Verbindungen/Andere Hand
 │       │                #   (WordComparison — words.json specimens vs /write/word, overlay
-│       │                #   registered over the sidecar lineature); pairs/PairMatrix.tsx =
+│       │                #   registered over the sidecar lineature; "Scores berechnen &
+│       │                #   sortieren" fetches the admin /score per card sequentially, loss
+│       │                #   chip + worst-first sort; the Fremdhand tab is never scored);
+│       │                #   pairs/PairMatrix.tsx =
 │       │                #   /admin/paare: every 2-letter combination of a chosen letter,
 │       │                #   server-composed, capitals only left — redesign R1; override
 │       │                #   badges + cell click → pairs/PairEditorDialog.tsx (R3 stage 2:
@@ -612,7 +625,9 @@ impl-generate pipelines. Conventions:
   letter-pair joins
   (`uv run python -m tools.wordbench.run --style suetterlin [--set
   words|pairs|all]`; unauthored templates are frozen `scorable: false`
-  and skipped+reported, never averaged in; see
+  and skipped+reported, never averaged in; the metric lives in
+  `core/word_metric.py` with `tools/wordbench/metric.py` as its
+  re-export shim; see
   docs/reference/qualitaetsmetrik.md §6) — a PR touching core/compose.py
   should quote its before/after `bench_loss:` (and `pair_loss:`) too.
   A third, CROSS-HAND set exists: the Abb.-22 Schülerschrift plate

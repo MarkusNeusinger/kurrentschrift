@@ -146,3 +146,73 @@ async def test_word_sample_crop_failures_are_404_not_500(api, tmp_path):
 
 def test_load_word_samples_missing_sidecar(tmp_path):
     assert load_word_samples(tmp_path / "chart.png") == []
+
+
+# ------------------------------------------------------------ specimen scores
+
+
+async def test_word_sample_score_requires_admin(api, tmp_path):
+    chart_path = _sidecar(tmp_path, [WORD])
+    _, source_id = await api.seed_style_and_source(chart_path=chart_path)
+    res = await api.client.request("GET", f"/sources/{source_id}/word-samples/unter/score")
+    assert res.status == 401
+
+
+async def test_word_sample_score_404_unknown_sample(api, tmp_path):
+    chart_path = _sidecar(tmp_path, [WORD])
+    _, source_id = await api.seed_style_and_source(chart_path=chart_path)
+    res = await api.client.request("GET", f"/sources/{source_id}/word-samples/nope/score", headers=api.admin_headers())
+    assert res.status == 404
+
+
+async def test_word_sample_score_missing_template_fails_not_500(api, tmp_path):
+    """A specimen whose word has no authored template scores 1.0/failed —
+    a hole is a failure, not an error (mirrors the bench crash rule)."""
+    chart_path = _sidecar(tmp_path, [{**WORD, "id": "nn", "word": "nn"}])
+    _, source_id = await api.seed_style_and_source(chart_path=chart_path)
+    res = await api.client.request("GET", f"/sources/{source_id}/word-samples/nn/score", headers=api.admin_headers())
+    assert res.status == 200
+    body = res.json()
+    assert body["failed"] is True
+    assert body["loss"] == 1.0
+    assert body["missing"] == ["n"]
+    assert body["segments"] == []
+
+
+async def test_word_sample_score_success_with_segments(api, tmp_path):
+    """Structural contract of a scored specimen: bounded loss + components,
+    registration, and provenance-labelled per-segment attribution rows."""
+    chart_path = _sidecar(tmp_path, [{**WORD, "id": "nn", "word": "nn"}])
+    style_id, source_id = await api.seed_style_and_source(chart_path=chart_path)
+    await api.seed_template(style_id, source_id, "n", "n")
+
+    res = await api.client.request("GET", f"/sources/{source_id}/word-samples/nn/score", headers=api.admin_headers())
+    assert res.status == 200
+    body = res.json()
+    assert body["id"] == "nn"
+    assert body["word"] == "nn"
+    assert body["failed"] is False
+    assert 0.0 <= body["loss"] <= 1.0
+    for comp in ("transition", "coverage", "width"):
+        assert 0.0 <= body[comp] <= 1.0
+    assert body["registration"]["xh_px"] == 30.0
+    # Scores must not be cached — they move with every template/pair write.
+    assert "cache-control" not in res.headers
+
+    segments = body["segments"]
+    kinds = [s["kind"] for s in segments]
+    # nn = glyph + generated connector + glyph, labelled via compose provenance.
+    assert kinds == ["glyph", "connector", "glyph"]
+    assert [s.get("glyph_key") for s in segments if s["kind"] == "glyph"] == ["n", "n"]
+    connector = segments[kinds.index("connector")]
+    assert connector["pair"] == ["n", "n"]
+    for s in segments:
+        assert 0.0 <= s["penalty"] <= 1.0
+
+
+async def test_word_sample_score_lost_plate_is_404_not_500(api, tmp_path):
+    chart_path = _sidecar(tmp_path, [{**WORD, "id": "lost", "page": "gone.png"}])
+    style_id, source_id = await api.seed_style_and_source(chart_path=chart_path)
+    await api.seed_template(style_id, source_id, "u", "u")
+    res = await api.client.request("GET", f"/sources/{source_id}/word-samples/lost/score", headers=api.admin_headers())
+    assert res.status == 404

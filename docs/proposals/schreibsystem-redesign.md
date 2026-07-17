@@ -9,8 +9,11 @@ Paar-Matrix; `/admin/vergleich` mit Wortvorlagen-Tabs über die neuen
 kollabiert — eine abweichende Schwester überlebt als `variant` —,
 `templates.position` + `bboxes.split` entfernt, Identitäts-Constraint
 `(style, glyph, variant)`; `architektur.md` §3 angepasst; das
-Compose-Golden-Fixture blieb in der Geometrie byte-identisch). Offen:
-R1b Stufe 2 (Scores), R3–R5 (Reihenfolge s. §6). Dieses Dokument konkretisiert
+Compose-Golden-Fixture blieb in der Geometrie byte-identisch).
+**R3 ist umgesetzt** (2026-07-17, Migration `0018` + Paar-Editor).
+**R1b Stufe 2 ist umgesetzt** (2026-07-17: Admin-Score-Endpunkt +
+Score-Chips/Sortierung im Wortvergleich, s. R1b). Offen:
+Ernte-Importer (lokale Umgebung), R4–R5 (Reihenfolge s. §6). Dieses Dokument konkretisiert
 [`planaenderungen.md`](planaenderungen.md) Vorschlag B (Paar-Overrides,
 dort weiterhin der sanktionierte Rahmen) und baut auf dem
 platzierungsbereinigten Paar-Befund in
@@ -186,15 +189,34 @@ linksbündig; exakt, kein Augenmaß). Fehlende Templates erscheinen als
 Abb.-22-Schülerschrift) ist als Fremdhand beschriftet und bleibt reine
 Anschauung, nie Referenz.
 
-**Stufe 2 (offen):** derselbe Karten-Satz mit Zahlen — ein
-Admin-Compute-Endpunkt reused `tools/wordbench/metric.py::
-score_word_segments` + die Provenance-Attribution aus
-`compose_word(..., provenance=True)` für Scores **pro Buchstabe und pro
-Übergang** (Konnektor-Heatmap wie in wordlab, Sortierung
-schlechteste zuerst; memoisiert pro (Wort × Template-Stand),
-Invalidierung am Pooled-Nib-Hook). Die Wordbench bleibt der
-Schiedsrichter — der Admin-Score ist dieselbe Metrik als Anzeige,
-Optimierungs-Läufe laufen weiter nur im eingefrorenen Bench-Loop.
+**Stufe 2 (umgesetzt 2026-07-17):** derselbe Karten-Satz mit Zahlen.
+Die eingefrorene Wordbench-Metrik ist dafür nach
+`core/word_metric.py` gezogen (das Docker-Image der API liefert
+`tools/` nicht aus; `tools/wordbench/metric.py` bleibt als
+Re-Export-Shim der historische Importpfad, die Freeze-Regel gilt
+durch den Shim hindurch — eine Implementierung, keine Drift). Dort
+liegt jetzt auch der Referenz-Aufbau des Exporters
+(`clear_excluded`/`despeckle`/`specimen_reference`) plus ein pro
+Sample gecachtes Skelett (`skeleton_for_sample`; die Tafeln sind pro
+Deploy unveränderlich). Der Admin-Endpunkt
+`GET /sources/{id}/word-samples/{sample_id}/score` (Admin-Gate,
+ungecacht) komponiert über den geteilten Pfad
+`api/routers/write.py::compose_word_payload` — exakt die Komposition,
+die `/write/word` ausliefert, inklusive freigegebener Paar-Overrides —
+mit `provenance=True` und liefert `score_word` +
+`score_word_segments`: Loss/Komponenten pro Wort und Attribution
+**pro Buchstabe und pro Übergang** (fehlendes Template ⇒ `failed`,
+Loss 1,0 — die Bench-Crash-Regel). Im Wortvergleich lädt „Scores
+berechnen & sortieren" die Karten sequenziell (der Endpunkt ist
+CPU-gebunden), zeigt pro Karte einen Loss-Chip (Tooltip: die drei
+größten Segment-Abweichungen) und sortiert schlechteste zuerst; der
+Fremdhand-Reiter bleibt bewusst ohne Scores (nie Referenz). Bewusste
+Abweichung vom Plan: keine Memoisierung pro (Wort × Template-Stand) —
+das teure Tafel-Skelett ist gecacht, Compose + Chamfer-Suche laufen
+pro Abruf (~0,1–0,3 s), dafür ist der Score immer aktuell und braucht
+keine Invalidierungs-Hooks. Die Wordbench bleibt der Schiedsrichter —
+der Admin-Score ist dieselbe Metrik als Anzeige, Optimierungs-Läufe
+laufen weiter nur im eingefrorenen Bench-Loop.
 Später schließt sich der Kreis zu R3: aus einer schlechten Paar-Karte
 direkt in den Paar-Editor mit dem Vorlagen-Crop als Unterlage.
 

@@ -101,6 +101,13 @@ export const admin = {
     // Followed by the comma-joined missing glyph_keys.
     missingPrefix: 'fehlend: ',
     specimenAlt: 'Vorlage',
+    // Specimen scores (redesign R1b Stufe 2): the frozen wordbench ruler per
+    // card, worst first = the work list.
+    scoreButton: 'Scores berechnen & sortieren',
+    scoreBusy: 'Berechne',
+    scoreFailed: 'nicht bewertbar',
+    scoreError: 'Einzelne Scores konnten nicht berechnet werden.',
+    scoreWorstSegments: 'Größte Abweichungen:',
   },
   // The pair matrix (/admin/paare): every two-letter combination of one chosen
   // letter, server-composed — capitals only on the left, per the redesign (R1).
