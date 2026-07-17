@@ -11,7 +11,7 @@ export const landing = {
     // Long-s (ſ) at the syllable start of "-ſchrift" per the Kurrent rule.
     word: 'Kurrentſchrift',
     wordAria: 'Kurrentschrift',
-    wordCaption: '— ein deutsches Wort, geschrieben wie vor hundert Jahren.',
+    wordCaption: '— ein deutsches Wort im Schriftbild von vor hundert Jahren.',
     title: 'Alte Briefe wieder lesen — und selbst zur Feder greifen.',
     leadBeforeBold:
       'Kurrent, Sütterlin und Offenbacher: die Schriften, in denen unsere Vorfahren ihre Briefe und Urkunden niederschrieben — und die heute',
@@ -73,9 +73,9 @@ export const landing = {
       desc: 'Ein Wort oder einen kurzen Satz eingeben — und zusehen, wie der nachgebildete Duktus es Zug um Zug in Sütterlin schreibt, samt den Übergängen von Buchstabe zu Buchstabe.',
     },
     quiz: {
-      title: 'Buchstaben-Quiz',
+      title: 'Lese-Quiz',
       cta: 'Quiz starten →',
-      desc: 'Echte Buchstaben der alten Schreibschrift lesen; am Ende zeigt die Auswertung, was Mühe bereitete.',
+      desc: 'Echte Buchstaben und ganze Wörter der alten Schreibschrift lesen; am Ende zeigt die Auswertung, was Mühe bereitete.',
     },
     schriftkunde: {
       title: 'Schriftkunde',

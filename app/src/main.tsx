@@ -1,8 +1,8 @@
-// EB Garamond, self-hosted. Actually exercised today: 400-italic (hero + footer)
-// and 600 (card/roadmap titles). 400-regular is kept as headroom — body currently
-// renders in the theme sans stack, but moving body to Garamond is a live Phase-B
-// dial (style-guide §3). Unused @font-face faces are declared but not fetched until
-// a matching glyph needs them.
+// EB Garamond, self-hosted. Exercised today: 400 carries the site-wide body/UI
+// (the theme's fontFamily, theme/typography.ts — the style-guide §3 Phase-B dial
+// has been pulled), 400-italic (hero + footer) and 600 (card/roadmap titles).
+// Unused @font-face faces are declared but not fetched until a matching glyph
+// needs them.
 import '@fontsource/eb-garamond/400.css';
 import '@fontsource/eb-garamond/400-italic.css';
 import '@fontsource/eb-garamond/600.css';

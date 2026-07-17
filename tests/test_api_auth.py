@@ -4,7 +4,8 @@ actually gates prod.
 `test_api_http.py` covers the X-Admin-Token fallback (401/503); this suite
 covers the JWT side by monkeypatching `_verify_cf_access_jwt` (HTTP level)
 and the JWKS/decode plumbing (unit level). DELETE /bboxes/{key} is the probe
-endpoint: past auth it always returns 204, so status encodes only the gate.
+endpoint: past auth it returns 404 (no bbox is seeded), so status encodes
+only the gate — 401/403 = blocked, 404 = the handler ran.
 """
 
 from __future__ import annotations
@@ -40,7 +41,7 @@ async def test_valid_jwt_listed_email_authorizes(api: Harness, cf):
     _, source_id = await api.seed_style_and_source()
     cf(ALLOWED)
     status, _ = await _probe(api, source_id, {"Cf-Access-Jwt-Assertion": "jwt"})
-    assert status == 204
+    assert status == 404  # past the gate: the handler ran (no bbox seeded)
 
 
 async def test_valid_jwt_unlisted_email_403_names_email(api: Harness, cf):
@@ -66,7 +67,7 @@ async def test_invalid_jwt_falls_through_to_token_path(api: Harness, cf):
     _, source_id = await api.seed_style_and_source()
     cf(None)
     status, _ = await _probe(api, source_id, {"Cf-Access-Jwt-Assertion": "garbage", "X-Admin-Token": ADMIN_TOKEN})
-    assert status == 204
+    assert status == 404  # past the gate: the handler ran (no bbox seeded)
 
 
 async def test_invalid_jwt_without_token_401(api: Harness, cf):

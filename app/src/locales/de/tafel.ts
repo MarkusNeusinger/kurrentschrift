@@ -4,7 +4,7 @@
 export const tafel = {
   title: 'Schreibtafel',
   intro:
-    'Die Vorlagen, nach denen hier geschrieben wird — die drei deutschen Ausgangsschriften nebeneinander. Wo eine Schrift schon nachgebildet ist, schreibt sich jeder Buchstabe Zug um Zug selbst; sonst zeigt die Tafel den Original-Scan der historischen Lehrtafel.',
+    'Die drei Schreibvorlagen, mit denen dieses Projekt beginnt, nebeneinander — nach ihnen wird hier geschrieben. Wo eine Schrift schon nachgebildet ist, schreibt sich jeder Buchstabe Zug um Zug selbst; sonst zeigt die Tafel den Original-Scan der historischen Lehrtafel.',
   note: 'Die gemeinfreien Vorlagen liefern die Formen; die nachgeschriebene Bewegung — der Zug der Feder — ist die eigene Rekonstruktion dieses Projekts. Tippe einen geschriebenen Buchstaben an, um ihm noch einmal zuzusehen.',
   // The Original/Geschrieben toggle (only on a script that is already written).
   viewToggleAria: 'Ansicht umschalten',

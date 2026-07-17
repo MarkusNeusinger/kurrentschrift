@@ -242,5 +242,23 @@
       "h-medial",
       "n-final"
     ]
+  },
+  {
+    "text": "sT",
+    "keys": [
+      "longs-initial",
+      "T-final"
+    ]
+  },
+  {
+    "text": "McHale",
+    "keys": [
+      "M-initial",
+      "c-medial",
+      "H-medial",
+      "a-medial",
+      "l-medial",
+      "e-final"
+    ]
   }
 ]

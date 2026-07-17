@@ -120,7 +120,10 @@ class Harness:
         n = next(_ids)
         style_id, source_id = f"teststyle{n}", f"test-source-{n}"
         if chart_size is None:
-            chart_size = {"w": 100, "h": 100}
+            # Placeholder matches the synthetic chart's 800×800 so the standard
+            # test bbox (x1=500, y1=700) passes the chart-bounds validation
+            # whether or not the chart bytes exist on disk.
+            chart_size = {"w": 800, "h": 800}
             try:
                 from PIL import Image
 

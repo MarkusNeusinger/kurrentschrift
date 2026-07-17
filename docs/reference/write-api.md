@@ -15,10 +15,11 @@ deshalb schnell genug für Cache-Control + gzip.
 
 | Endpunkt | Zweck |
 |---|---|
-| `GET /sources/{id}/write/glyphs?keys=a-medial,n-medial,…` | Batch: pro `glyph_key` das Render-Payload eines einzelnen Buchstabens |
+| `GET /sources/{id}/write/glyphs?keys=a-medial,n-medial,…` | Batch: pro `glyph_key` das Render-Payload eines einzelnen Buchstabens; nicht autorisierte Keys landen in `missing`, nie als Fehler |
+| `GET /sources/{id}/write/glyphs/{glyph_key}` | Einzel-Read: das Render-Payload EINES Buchstabens; antwortet **404**, wenn noch kein Canonical getraced ist (anders als der Batch, der fehlende Keys in `missing` meldet) |
 | `GET /sources/{id}/write/word?text=…` | Ein ganzes Wort/eine Zeile, serverseitig komponiert |
 
-Beide sind **öffentliche Reads** (kein Admin-Gate) und tragen den
+Alle drei sind **öffentliche Reads** (kein Admin-Gate) und tragen den
 geteilten Cache-Header (`api/http.py`; Browser ≈ 5 min, Edge
 `s-maxage` = 1 Tag — Template-Geometrie ändert sich nur durch einen
 Admin-Re-Trace, dann gilt das dokumentierte Stale-Fenster von bis zu

@@ -27,6 +27,7 @@ Per-Instanz-Fit und Aggregation sind die nächsten Meilensteine.
 | Frontend-Stack & Deploy nachschlagen | [Frontend-Stack](reference/frontend-stack.md) |
 | Quiz-Wortbank (Quellen, Distraktoren, Fugen-Marker) nachschlagen | [Quiz-Wortbank](reference/quiz-wortbank.md) |
 | Öffentliche Render-Endpunkte (`/write/*`) nachschlagen | [Write-API](reference/write-api.md) |
+| Dev-Werkzeuge (glyphlab/wordlab/pairlab, Benches, quizgen) nachschlagen | [Werkzeuge](reference/werkzeuge.md) |
 | Sprache für Code, Docs, README nachschlagen | [Sprachregelung](reference/sprachregelung.md) |
 | Wissen, was ins öffentliche Repo darf | [Quellen- und Rechte-Policy](reference/quellen-und-rechte.md) |
 | Den `/data`-Baum verstehen | [Datenablage](reference/datenablage.md) |
@@ -63,6 +64,7 @@ docs/
 │   ├── qualitaetsmetrik.md       # Zwei Metriken (Kurrent-Schwellzug §1–4 · Sütterlin-Natürlichkeit §5), bench/Referenzen, Baseline-Historie, Loop-Erkenntnisse + Verworfen
 │   ├── quiz-wortbank.md          # Lese-Quiz-Wortbank: Quellen (Kaeding, Genealogie-Felder), Pin+Runtime-Distraktoren, Fugen-Marker
 │   ├── write-api.md              # Öffentliche Render-Endpunkte /write/glyphs + /write/word: Shaping → Komposition → Payload
+│   ├── werkzeuge.md              # Dev-Tools unter tools/: glyphlab/wordlab/pairlab (Inspektions-Labs), Benches, quizgen
 │   └── frontend-stack.md         # React+Vite+MUI Build, Deploy auf Cloud Run, i18n, Auth-Routen
 ├── schriftkunde/                 # Quellengesicherte Fakten zu den Schriften (wächst inkrementell)
 │   ├── allgemein.md              # Lineatur, Schräglage, Striche, Federtypen, Chronologie, DACH
@@ -75,7 +77,7 @@ docs/
 │   ├── druckschriften.md         # Fraktur/Schwabacher/Textura vs. Kurrent, Kanzleischrift, Neudörffer
 │   ├── lateinische-und-englische-schreibschrift.md  # Abgrenzung Kurrent ↔ lateinische/englische Schreibschrift, Zweischriftigkeit
 │   └── digital.md                # Unicode (ſ U+017F, Ligaturen), UNZ/MUFI, Fonts, Transkription
-├── proposals/                    # Vorgeschlagene Konzept-Änderungen, noch nicht freigegeben
+├── proposals/                    # Vorgeschlagene Konzept-Änderungen (Umsetzungs-Stand je Eintrag, s. u.)
 │   ├── planaenderungen.md        # Staging: §2/§4 Bigramme, §6.1 Positions-Statistik, M4+ core/orthography.py
 │   ├── schreibsystem-und-wortbench.md  # Audit 2026-07-01: Schreib-API, core/compose.py-Port, Wort-Bench, Übergangs-Redesign (Phasen A–E)
 │   ├── uebergaenge-befund.md     # Befund 2026-07-11: pairlab-Paarsektion — Platzierung dominiert, Stub-Ersatz klassenweise, Optionen O1–O3
@@ -159,6 +161,10 @@ Policy- und Technik-Dokumente.
   (Kurrent-Schwellzug §1–§4 · Sütterlin-Natürlichkeit §5), Frozen-
   Reference-Regel, Baseline-Historie, Loop-Erkenntnisse + Verworfen —
   Pflichtlektüre vor jedem `/optimize-glyphs`-Lauf
+- **[Werkzeuge](reference/werkzeuge.md)** — Einstieg in die Dev-Tools
+  unter `tools/`: die Inspektions-Labs glyphlab/wordlab/pairlab
+  (matplotlib-Overlays, `--extra viz`, Ausgabe nach `temp/`), Verweise auf
+  glyphbench/wordbench und quizgen
 
 ---
 
@@ -200,7 +206,9 @@ frei zugänglichen Quellen, jede Angabe mit Beleg; wächst inkrementell.
 
 ## Proposals
 
-Vorgeschlagene Änderungen an den Konzept-Dokumenten, noch nicht freigegeben.
+Vorgeschlagene Änderungen an den Konzept-Dokumenten. Der Umsetzungs-Stand
+ist je Eintrag unterschiedlich (einige sind inzwischen weitgehend
+umgesetzt) — maßgeblich ist der Status-Kopf des jeweiligen Dokuments.
 
 - **[Planänderungen](proposals/planaenderungen.md)** — drei offene
   Vorschläge: §2/§4 systematische Bigramm-Extraktion aus Beispieltext;
@@ -212,11 +220,14 @@ Vorgeschlagene Änderungen an den Konzept-Dokumenten, noch nicht freigegeben.
   `/diagnostic`-Mitnutzung, Port der Wortkomposition nach
   `core/compose.py`, Wort-Bench gegen verifizierte PD-Wortvorlagen
   (gleiche Hand je Tafel), Übergangs-Redesign mit Exit-Klassen (Phasen A–E)
+  — **weitgehend umgesetzt** (Phasen A–D, 2026-07-02); offen: Phase E
 - **[Übergangs-Befund](proposals/uebergaenge-befund.md)** — Befund
   2026-07-11 aus `tools/pairlab` (unabhängige Paar-Sektion, 87 Vorkommen):
   Platzierung ist der größte Einzelfehler, die Standard-Diagonale ist
   generisch richtig, Hoch-Exits (d-Schleife, Deckstrich-Bögen, r-Arm)
-  ersetzen die Kopplungs-Stubs klassenweise — Lösungsoptionen O1–O3
+  ersetzen die Kopplungs-Stubs klassenweise — Lösungsoptionen O1–O3;
+  **O1 + O2 (B-Seite) umgesetzt** (Compose-Loop `jul11`), der A-seitige
+  d-Stub-Trim gemessen und verworfen; offen: O3 (vertagt)
 - **[Kurrent: Writer → Recognizer](proposals/kurrent-writer-and-recognizer.md)** —
   Recherche-Notiz (Englisch): warum Graves 2013 (RNN-Handschrift-Synthese)
   der Anker für den generativen Writer ist, und wie derselbe Writer als

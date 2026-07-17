@@ -28,9 +28,9 @@
 //
 //   2. The closed ligature set ch · ck · tz · ſt · qu · ß are *taught units*
 //      with their own template, not exit→entry chains (architektur.md §4). We
-//      detect them greedily, but only when the cluster starts on a lowercase
-//      letter — a capitalised "China"/"Stein" is a capital C/S plus the rest,
-//      not the lowercase ligature.
+//      detect them greedily, but only when the whole cluster is lowercase
+//      letters — a capitalised "China"/"Stein" is a capital C/S plus the rest,
+//      and a capital in the second slot ("McHale") keeps its own glyph too.
 //
 // Everything else (arbitrary letter pairs) is connected by generated Übergänge
 // at render time, which is the whole point of avoiding a bigram table.
@@ -119,9 +119,11 @@ function tokenizeWord(word: string): RawToken[] {
       i += 1;
       continue;
     }
-    // Two-character ligatures, only when the cluster opens on a lowercase letter.
-    if (next !== undefined && isLowercaseLetter(c)) {
-      const pair = (c + next).toLowerCase();
+    // Two-character ligatures need BOTH characters lowercase: a capital in
+    // either slot ("China", "McHale", "sT") is never part of the taught
+    // lowercase cluster and must keep its own glyph. Mirrors core/shaping.py.
+    if (next !== undefined && isLowercaseLetter(c) && isLowercaseLetter(next)) {
+      const pair = c + next;
       if (pair === 'ch' || pair === 'ck' || pair === 'tz' || pair === 'qu') {
         tokens.push({ letter: LIGATURE_BY_FORM.get(pair) ?? null, text: c + next, ligature: true, sAllograph: false, forceRound: false, joins: true, quoteAllograph: false });
         i += 2;

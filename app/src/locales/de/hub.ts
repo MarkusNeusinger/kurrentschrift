@@ -9,7 +9,7 @@ export const hub = {
     lead: 'Alte deutsche Handschrift entziffern — Schritt für Schritt. Vom einzelnen Buchstaben bis zum ganzen Wort.',
     cards: {
       quiz: {
-        title: 'Buchstaben-Quiz',
+        title: 'Lese-Quiz',
         body: 'Erkenne die Buchstaben in einem kurzen Abfragespiel — vom einzelnen Zeichen bis zum ganzen Wort.',
         cta: 'Quiz öffnen',
       },

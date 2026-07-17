@@ -2,7 +2,7 @@
 // message catalog — key tree mirrors a future i18next `quiz` namespace.
 
 export const quiz = {
-  title: 'Buchstaben-Quiz',
+  title: 'Lese-Quiz',
   // Quiz option lists (quizTypes.ts) — script + difficulty labels.
   scripts: {
     kurrent: 'Kurrent',
@@ -36,6 +36,9 @@ export const quiz = {
     noWords: 'Für diese Auswahl sind noch keine ganzen Wörter freigegeben.',
     noWordsOther: 'Ein Wort erscheint hier, sobald jeder seiner Buchstaben nachgeschrieben und freigegeben ist.',
     start: 'Quiz starten',
+    // Provenance caption under the setup rows — names the source the letter
+    // forms come from, like the Tafel and the Federprobe do.
+    sourceNote: 'Nachgebildet aus der gemeinfreien Sütterlin-Ausgangsschrift von 1922.',
   },
   play: {
     emptyPool: 'Keine Aufgaben für diese Auswahl.',

@@ -18,12 +18,12 @@ export const seo = {
   lesen: {
     title: 'Lesen · kurrentschrift.ink',
     description:
-      'Alte deutsche Handschrift lesen lernen — Schritt für Schritt vom einzelnen Buchstaben bis zum Wort: das Buchstaben-Quiz und die Schreibtafel.',
+      'Alte deutsche Handschrift lesen lernen — Schritt für Schritt vom einzelnen Buchstaben bis zum Wort: das Lese-Quiz und die Schreibtafel.',
   },
   quiz: {
-    title: 'Buchstaben-Quiz · kurrentschrift.ink',
+    title: 'Lese-Quiz · kurrentschrift.ink',
     description:
-      'Erkenne die Buchstaben der alten deutschen Schreibschrift in einem kurzen Quiz — jeder wird dir Zug um Zug von der Feder live geschrieben.',
+      'Erkenne Buchstaben und ganze Wörter der alten deutschen Schreibschrift in einem kurzen Quiz — viele davon Zug um Zug von der Feder live geschrieben.',
   },
   tafel: {
     title: 'Schreibtafel · kurrentschrift.ink',

@@ -18,7 +18,10 @@ Covered:
 
 from __future__ import annotations
 
+import re
+
 import pytest
+from fastapi import HTTPException
 
 from core.config import settings
 from core.shaping import glyph_keys_of, shape_text
@@ -68,6 +71,49 @@ async def test_write_endpoints_fail_closed_without_configured_token(api: Harness
     assert res.status == 503, f"{method} {path}: expected fail-closed 503, got {res.status}"
 
 
+# ------------------------------------------------------------------ config
+
+
+def test_cors_allow_origin_regex_splits_by_environment(monkeypatch):
+    """Production allows only the public site origin; the localhost/LAN
+    conveniences exist in development only. An explicit env override wins."""
+    monkeypatch.setattr(settings, "cors_origin_regex", None)
+    monkeypatch.setattr(settings, "environment", "production")
+    prod = settings.cors_allow_origin_regex
+    assert re.match(prod, "https://kurrentschrift.ink")
+    assert re.match(prod, "https://www.kurrentschrift.ink")
+    assert not re.match(prod, "http://kurrentschrift.ink")
+    assert not re.match(prod, "http://localhost:3000")
+    assert not re.match(prod, "http://192.168.1.20:3000")
+
+    monkeypatch.setattr(settings, "environment", "development")
+    dev = settings.cors_allow_origin_regex
+    assert re.match(dev, "http://localhost:3000")
+    assert re.match(dev, "http://192.168.1.20:3000")
+
+    monkeypatch.setattr(settings, "cors_origin_regex", r"^https://example\.org$")
+    assert settings.cors_allow_origin_regex == r"^https://example\.org$"
+
+
+async def test_require_db_503_detail_distinguishes_init_failure(monkeypatch):
+    """`DATABASE_URL is set but the connection failed` must not be answered
+    with `Set DATABASE_URL...` — that detail is for the unconfigured case."""
+    import api.dependencies as api_dependencies
+
+    monkeypatch.setattr(api_dependencies, "is_db_configured", lambda: False)
+    monkeypatch.setattr(api_dependencies, "db_init_failed", lambda: False)
+    with pytest.raises(HTTPException) as exc:
+        await api_dependencies.require_db(db=None)
+    assert exc.value.status_code == 503
+    assert "not configured" in exc.value.detail
+
+    monkeypatch.setattr(api_dependencies, "is_db_configured", lambda: True)
+    with pytest.raises(HTTPException) as exc:
+        await api_dependencies.require_db(db=None)
+    assert exc.value.status_code == 503
+    assert "initialisation failed" in exc.value.detail
+
+
 # ------------------------------------------------------------------ public reads
 
 
@@ -89,6 +135,26 @@ async def test_sources_empty_db_returns_empty_list_with_cache_control(api: Harne
     assert res.status == 200
     assert res.json() == []
     assert "cache-control" in res.headers, "GET /sources must set Cache-Control"
+
+
+async def test_hands_empty_db_returns_empty_list_with_cache_control(api: Harness):
+    res = await api.client.request("GET", "/hands")
+    assert res.status == 200
+    assert res.json() == []
+    assert "cache-control" in res.headers, "GET /hands must set Cache-Control"
+
+
+async def test_hand_single_read_returns_row_with_cache_control(api: Harness):
+    from core.database import Hand
+
+    style_id, _ = await api.seed_style_and_source()
+    async with api.session_maker() as session:
+        session.add(Hand(id="hand-test", style_id=style_id, label="Testhand", era="1920er", note=None))
+        await session.commit()
+    res = await api.client.request("GET", "/hands/hand-test")
+    assert res.status == 200
+    assert res.json()["label"] == "Testhand"
+    assert "cache-control" in res.headers, "GET /hands/{id} must set Cache-Control"
 
 
 async def test_quiz_words_empty_db_returns_empty_list_with_cache_control(api: Harness):

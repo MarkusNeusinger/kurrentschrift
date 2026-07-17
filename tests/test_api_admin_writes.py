@@ -78,6 +78,21 @@ async def test_put_bbox_rejects_baseline_above_midband(api: Harness):
     assert res.status == 422
 
 
+async def test_put_bbox_rejects_rectangle_beyond_chart(api: Harness):
+    """A bbox reaching past the stored chart dimensions must 422 — it would
+    store fine but produce a zero-size crop that 500s the public /crop."""
+    _, source_id = await api.seed_style_and_source()  # chart_size 800×800
+    res = await api.client.request(
+        "PUT", f"/sources/{source_id}/bboxes/n-medial", json_body=_bbox_body(x1=900), headers=api.admin_headers()
+    )
+    assert res.status == 422
+    assert "chart dimensions" in res.json()["detail"]
+    res = await api.client.request(
+        "PUT", f"/sources/{source_id}/bboxes/n-medial", json_body=_bbox_body(y1=801), headers=api.admin_headers()
+    )
+    assert res.status == 422
+
+
 async def test_delete_bbox_removes_row(api: Harness):
     _, source_id = await api.seed_style_and_source()
     await api.client.request(
@@ -86,6 +101,12 @@ async def test_delete_bbox_removes_row(api: Harness):
     res = await api.client.request("DELETE", f"/sources/{source_id}/bboxes/n-medial", headers=api.admin_headers())
     assert res.status == 204
     res = await api.client.request("GET", f"/sources/{source_id}/bboxes/n-medial")
+    assert res.status == 404
+
+
+async def test_delete_bbox_nonexistent_404(api: Harness):
+    _, source_id = await api.seed_style_and_source()
+    res = await api.client.request("DELETE", f"/sources/{source_id}/bboxes/n-medial", headers=api.admin_headers())
     assert res.status == 404
 
 
@@ -267,3 +288,21 @@ async def test_delete_template_removes_row(api: Harness):
     assert res.status == 204
     res = await api.client.request("GET", f"/sources/{source_id}/templates/n-medial")
     assert res.status == 404
+
+
+async def test_delete_template_nonexistent_404(api: Harness):
+    _, source_id = await api.seed_style_and_source()
+    res = await api.client.request("DELETE", f"/sources/{source_id}/templates/n-medial", headers=api.admin_headers())
+    assert res.status == 404
+
+
+async def test_fit_rejects_out_of_bounds_tuning_params(api: Harness):
+    """The /fit tuning knobs feed a scipy optimisation — reject absurd values
+    at the boundary instead of burning CPU on them."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n-medial", "n", "medial")
+    for params in ({"lambda_reg": -1}, {"lambda_reg": 101}, {"width_weight": -0.1}, {"width_weight": 11}):
+        res = await api.client.request(
+            "GET", f"/sources/{source_id}/templates/n-medial/fit", params=params, headers=api.admin_headers()
+        )
+        assert res.status == 422, f"{params}: expected 422, got {res.status}"

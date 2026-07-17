@@ -1,5 +1,7 @@
 # Kurrent: Generative Writer → Cheap Recognizer
 
+> Sprache: Englisch (Recherche-Notiz, Ausnahme gemäß [sprachregelung.md](../reference/sprachregelung.md) §1).
+
 Reference notes for **kurrentschrift.ink**. Two questions answered here:
 
 1. Why Alex Graves' 2013 handwriting-synthesis paper is the right anchor for the **writer**.

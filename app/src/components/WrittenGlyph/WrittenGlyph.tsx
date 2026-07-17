@@ -50,6 +50,12 @@ const SURFACE_BG = '#fff'; // neutral white crop ground (binding)
 
 interface Props {
   glyphKey: string;
+  // Source the glyph is rendered from. Defaults to the site-wide public source
+  // (CONFIG.sourceId); admin callers pass their runtime-active source so seeded
+  // and fetched payloads live under THAT source's cache keys — otherwise an
+  // admin who switched sources would poison the public cache entries the quiz
+  // and Tafel read in the same SPA session.
+  sourceId?: string;
   // Total writing time across all strokes (excluding inter-stroke pauses).
   durationMs?: number;
   // Target rendered height in px (width follows the glyph's aspect, capped).
@@ -90,11 +96,11 @@ interface Props {
   onUnavailable?: () => void;
 }
 
-export function WrittenGlyph({ glyphKey, durationMs = GLYPH_WRITE_MS, height = 220, tight = false, maxWidth, cacheBust, data: dataProp, onUnavailable, surfaceBg = SURFACE_BG, inkColor, animate: animateProp = true }: Props) {
+export function WrittenGlyph({ glyphKey, sourceId = CONFIG.sourceId, durationMs = GLYPH_WRITE_MS, height = 220, tight = false, maxWidth, cacheBust, data: dataProp, onUnavailable, surfaceBg = SURFACE_BG, inkColor, animate: animateProp = true }: Props) {
   const reducedMotion = usePrefersReducedMotion();
   const uid = useId();
   const [fetched, setFetched] = useState<GlyphRenderData | null>(
-    () => peekRenderGlyph(CONFIG.sourceId, glyphKey, cacheBust) ?? null,
+    () => peekRenderGlyph(sourceId, glyphKey, cacheBust) ?? null,
   );
   const data = dataProp ?? fetched;
   const [error, setError] = useState<string | null>(null);
@@ -115,15 +121,16 @@ export function WrittenGlyph({ glyphKey, durationMs = GLYPH_WRITE_MS, height = 2
     setUnavailable(false);
     if (dataProp) {
       // Externally supplied payload: seed the shared cache so other consumers
-      // (the quiz) see the freshest canonical without refetching.
-      seedRenderGlyph(CONFIG.sourceId, glyphKey, dataProp, cacheBust);
+      // see the freshest canonical without refetching — under the CALLER's
+      // source, so an admin payload never overwrites the public source's entry.
+      seedRenderGlyph(sourceId, glyphKey, dataProp, cacheBust);
       return;
     }
-    setFetched(peekRenderGlyph(CONFIG.sourceId, glyphKey, cacheBust) ?? null); // spinner while loading
-    // Public surfaces always render the site-wide source, regardless of which
-    // source the admin currently has active. A resolved `null` means no
+    setFetched(peekRenderGlyph(sourceId, glyphKey, cacheBust) ?? null); // spinner while loading
+    // Public surfaces render the site-wide source (the default), regardless of
+    // which source the admin currently has active. A resolved `null` means no
     // canonical is traced yet → let the caller show the crop instead.
-    fetchRenderGlyph(CONFIG.sourceId, glyphKey, cacheBust)
+    fetchRenderGlyph(sourceId, glyphKey, cacheBust)
       .then((d) => {
         if (cancelled) return;
         if (d === null) {
@@ -139,7 +146,7 @@ export function WrittenGlyph({ glyphKey, durationMs = GLYPH_WRITE_MS, height = 2
     return () => {
       cancelled = true;
     };
-  }, [glyphKey, cacheBust, dataProp]);
+  }, [glyphKey, sourceId, cacheBust, dataProp]);
 
   const replay = useCallback(() => setRun((r) => r + 1), []);
 

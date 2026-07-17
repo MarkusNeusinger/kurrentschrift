@@ -58,7 +58,7 @@ definiert (P1-Arbeit).
 | `/` | Landing (der Hero schreibt das Markenwort font-first: GLKurrent + Clip-Path-Reveal, Engine-Naht offen — §7) | Einstieg |
 | `/schriftkunde` | Überblick der deutschen Schreibschriften (der umbenannte frühere `/lehrbuch`) | Schriftkunde |
 | `/lesen` | Hub → Quiz, Tafel | Lesen |
-| `/quiz` | Buchstaben-Quiz | Lesen |
+| `/quiz` | Lese-Quiz (Buchstaben + ganze Wörter) | Lesen |
 | `/tafel` | Schreibtafel (Vorlage) | Lesen |
 | `/schreiben` | Hub → Übungsblatt, Federprobe | Schreiben |
 | `/schreiben/uebungsblatt` | Übungsblatt-Generator (Lineatur-Konfigurator, PDF) | Schreiben |
@@ -332,7 +332,7 @@ Bereits gebaut (siehe oben): Landing (`sections/landing/`),
 Schriftkunde (`sections/schriftkunde/`), die Bereichs-Hubs
 (`sections/hub/`), Lineatur-Konfigurator (`sections/worksheet/`,
 `/schreiben/uebungsblatt`), Federprobe (`sections/scribe/`), Schreibtafel
-(`sections/tafel/`), Buchstaben-Quiz (`sections/quiz/`). Neue Features
+(`sections/tafel/`), Lese-Quiz (`sections/quiz/`). Neue Features
 kommen als je eine
 `sections/<feature>/`-View + dünner `pages/`-Mount + Eintrag in
 `routes/paths.ts`:

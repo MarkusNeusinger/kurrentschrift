@@ -114,6 +114,11 @@ export function QuizSetupPanel(p: SetupProps) {
             <InkButton onClick={p.onStart}>{de.quiz.setup.start} →</InkButton>
           </Stack>
         )}
+        {/* Provenance line — the quiz names its source like the Tafel and the
+            Federprobe do (their italic sepia caption pattern, kept minimal). */}
+        <Typography variant="caption" component="p" sx={{ color: paper.sepia, fontStyle: 'italic', mt: 3 }}>
+          {de.quiz.setup.sourceNote}
+        </Typography>
       </Box>
     </Stack>
   );

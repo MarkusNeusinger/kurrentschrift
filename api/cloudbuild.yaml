@@ -97,7 +97,10 @@ steps:
       - "--set-env-vars=^|^ENVIRONMENT=production|ADMIN_ALLOWED_EMAILS_RAW=${_ADMIN_ALLOWED_EMAILS}"
       - "--cpu-throttling"
       - "--concurrency=15"
-      - "--timeout=600"
+      # Longest legitimate request is a /fit or /trace at a few seconds — 60s
+      # covers cold start + compute with margin; 600s only kept slow-loris
+      # style connections alive.
+      - "--timeout=60"
       # Deploy WITHOUT routing traffic: the smoke step probes this revision on
       # its tag URL first, and only the promote step below shifts traffic —
       # so a bad image never serves users, not even between deploy and a

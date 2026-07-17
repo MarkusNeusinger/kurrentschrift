@@ -17,10 +17,12 @@ import { WrittenGlyph } from '@/components/WrittenGlyph';
 import { useAdmin } from '@/context/AdminContext';
 import { glyphKeyFor, isLetterSplit, LETTERS, POSITIONS } from '@/domain/glyphs';
 import type { Position } from '@/domain/glyphs';
+import { useInView } from '@/hooks/useInView';
 import { ApiError, cropUrl, getDiagnostic } from '@/lib/api';
 import type { DiagnosticData } from '@/lib/api';
 import { ringsToPathD } from '@/lib/svg';
 import { de, POSITION_LABEL } from '@/locales/admin';
+import { garamond } from '@/styles/paper';
 
 const FACE_H = 320; // px — both faces rendered large
 
@@ -137,8 +139,13 @@ function CompareCard({
   // notFound = no canonical traced yet (typed ApiError 404); anything else is a
   // real load error. Branching on the typed status avoids parsing String(e).
   const [error, setError] = useState<{ notFound: boolean } | null>(null);
+  // The diagnostic payload is heavy JSON and there is one card per authored
+  // letter — fetch only once the card scrolls (near) into view instead of
+  // firing ~30 requests on mount.
+  const [cardRef, inView] = useInView<HTMLDivElement>();
 
   useEffect(() => {
+    if (!inView) return;
     let cancelled = false;
     setData(null);
     setError(null);
@@ -152,7 +159,7 @@ function CompareCard({
     return () => {
       cancelled = true;
     };
-  }, [sourceId, glyphKey, cropCacheBust, reloadKey]);
+  }, [inView, sourceId, glyphKey, cropCacheBust, reloadKey]);
 
   const cropDisplay = useMemo(() => {
     if (!data) return null;
@@ -161,9 +168,9 @@ function CompareCard({
   }, [data]);
 
   return (
-    <Box sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2, bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', gap: 1 }}>
+    <Box ref={cardRef} sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2, bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', gap: 1 }}>
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-        <Typography sx={{ fontFamily: 'Georgia, "Times New Roman", serif', fontSize: 28, lineHeight: 1 }}>{letterGlyph}</Typography>
+        <Typography sx={{ fontFamily: garamond, fontSize: 28, lineHeight: 1 }}>{letterGlyph}</Typography>
         <Typography variant="caption" color="text.secondary">
           {glyphKey}
         </Typography>
@@ -198,6 +205,8 @@ function CompareCard({
                 alt={`${glyphKey} crop`}
                 width={cropDisplay.w}
                 height={cropDisplay.h}
+                loading="lazy"
+                decoding="async"
                 style={{ display: 'block', maxWidth: '100%', objectFit: 'contain' }}
               />
             )}
@@ -206,7 +215,7 @@ function CompareCard({
             {/* Pass the already-fetched payload so WrittenGlyph renders the
                 admin's active source without a second fetch. Keyed by reload so
                 the write-in animation restarts on "Neu laden". */}
-            <WrittenGlyph key={reloadKey} glyphKey={glyphKey} data={data} height={FACE_H} tight maxWidth={9999} />
+            <WrittenGlyph key={reloadKey} glyphKey={glyphKey} sourceId={sourceId} data={data} height={FACE_H} tight maxWidth={9999} />
           </Face>
         </Box>
       )}

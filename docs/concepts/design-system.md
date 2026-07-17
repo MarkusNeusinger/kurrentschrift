@@ -205,7 +205,7 @@ Unklarheit „gehört die Tafel zu Lesen oder Schreiben?".
 | `/` | Landing | Einstieg |
 | `/schriftkunde` | Überblick der deutschen Schreibschriften | Schriftkunde |
 | `/lesen` | Hub → Quiz, Tafel | Lesen |
-| `/quiz` | Buchstaben-Quiz | Lesen |
+| `/quiz` | Lese-Quiz (Buchstaben + ganze Wörter) | Lesen |
 | `/tafel` | Schreibtafel (Vorlage) | Lesen |
 | `/schreiben` | Hub → Übungsblatt, Federprobe | Schreiben |
 | `/schreiben/uebungsblatt` | Übungsblatt-Generator (PDF) | Schreiben |

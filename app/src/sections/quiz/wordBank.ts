@@ -85,7 +85,7 @@ export const WORD_BANK: WordEntry[] = [
   { word: 'Stube', distractors: ['Stufe', 'Grube', 'Staub'], era: 'historic', note: 'beheizbares Wohnzimmer' },
   { word: 'Kammer', distractors: ['Hammer', 'Kummer', 'Jammer'], era: 'historic', note: 'kleiner, meist unbeheizter Nebenraum' },
   { word: 'Truhe', distractors: ['Trübe', 'Traube', 'Trage'], era: 'historic', note: 'großer Aufbewahrungskasten mit Deckel' },
-  { word: 'Witwe', distractors: ['Wiege', 'Wippe', 'Wanne'], era: 'historic', note: 'Frau eines Verstorbenen (veraltet: Wittib)' },
+  { word: 'Witwe', distractors: ['Wiege', 'Wippe', 'Wanne'], era: 'historic', note: 'Frau, deren Ehemann gestorben ist (veraltet: Wittib)' },
   { word: 'Pfarrer', distractors: ['Pfeffer', 'Sparren', 'Pfarrei'], era: 'historic', note: 'Geistlicher der Gemeinde' },
   { word: 'Taufe', distractors: ['Taube', 'Traube', 'Haube'], era: 'historic', note: 'kirchliche Namensgebung' },
   { word: 'Hornung', distractors: ['Wohnung', 'Rechnung', 'Ordnung'], era: 'historic', note: 'alter Name für den Februar' },

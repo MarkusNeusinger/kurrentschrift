@@ -54,7 +54,8 @@ export const impressum = {
     logs:
       'Was die Technik beim Besuch nebenher notiert — IP-Adresse, abgerufene Seite, Browser-Kennung —, dient allein der Sicherheit und Fehlersuche und verschwindet nach dreißig Tagen von selbst (Google Cloud Logging).',
     hostingTitle: 'Hosting & Dienste',
-    hostingIntro: 'Sämtliche Dienste laufen in der EU:',
+    hostingIntro:
+      'Alle Dienste laufen in EU-Rechenzentren. Google und Cloudflare sind US-Anbieter, zertifiziert nach dem EU-US Data Privacy Framework:',
     hosting: [
       { label: 'Hosting', value: 'Google Cloud Run (Niederlande)' },
       { label: 'Datenbank', value: 'Google Cloud SQL (Niederlande)' },
@@ -70,7 +71,7 @@ export const impressum = {
     ],
     rightsTitle: 'Deine Rechte',
     rights:
-      'Auskunft, Berichtigung, Löschung: Wo nichts über dich gespeichert ist, gibt es auch nichts auszuhändigen oder zu tilgen. Bei Fragen genügen ein paar Zeilen per E-Mail.',
+      'Auskunft, Berichtigung, Löschung: Über die nach dreißig Tagen gelöschten Server-Logs hinaus ist nichts über dich gespeichert — es gibt also fast nie etwas auszuhändigen oder zu tilgen. Bei Fragen genügen ein paar Zeilen per E-Mail.',
   },
   sources: {
     heading: 'Quellen & Lizenzen',
@@ -91,7 +92,7 @@ export const impressum = {
   transparency: {
     heading: 'Transparenz',
     text:
-      'kurrentschrift.ink ist das Werk eines Einzelnen, offen für alle. Die Website läuft vollständig in der EU — React im Browser, Python und PostgreSQL auf Google Cloud in den Niederlanden. Fragen, Hinweise und Berichtigungen sind jederzeit willkommen — ich freue mich über Post.',
+      'kurrentschrift.ink ist das Werk eines Einzelnen, offen für alle. Die Website läuft in EU-Rechenzentren — React im Browser, Python und PostgreSQL auf Google Cloud in den Niederlanden; Google und Cloudflare sind US-Anbieter, zertifiziert nach dem EU-US Data Privacy Framework. Fragen, Hinweise und Berichtigungen sind jederzeit willkommen — ich freue mich über Post.',
   },
-  lastUpdated: 'Visp, im Juni 2026',
+  lastUpdated: 'Visp, im Juli 2026',
 } as const;

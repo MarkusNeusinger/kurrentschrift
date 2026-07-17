@@ -23,7 +23,7 @@ Two orthographic rules carry the historical look (architektur.md §3/§4):
    for display with ``strip_fugen``.
 2. The closed ligature set ch · ck · tz · ſt · qu · ß are *taught units* with
    their own template, not exit→entry chains (architektur.md §4), detected
-   greedily but only when the cluster starts on a lowercase letter.
+   greedily but only when the whole cluster is lowercase letters.
 
 Everything else (arbitrary letter pairs) is connected by generated Übergänge
 at compose time — the whole point of avoiding a bigram table.
@@ -173,8 +173,11 @@ def _tokenize_word(word: str) -> list[_RawToken]:
         if c == FUGE:
             i += 1
             continue
-        if nxt is not None and _is_lowercase_letter(c):
-            pair = (c + nxt).lower()
+        # Two-character ligatures need BOTH characters lowercase: a capital in
+        # either slot ("China", "McHale", "sT") is never part of the taught
+        # lowercase cluster and must keep its own glyph.
+        if nxt is not None and _is_lowercase_letter(c) and _is_lowercase_letter(nxt):
+            pair = c + nxt
             if pair in ("ch", "ck", "tz", "qu"):
                 tokens.append(_RawToken(_LIGATURES[pair], c + nxt, True, False, False))
                 i += 2

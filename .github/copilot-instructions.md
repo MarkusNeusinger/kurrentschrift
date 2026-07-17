@@ -235,10 +235,14 @@ kurrentschrift/
 │   │                 #   Petzendorfer 1889 Kurrent chart, …)
 │   ├── samples/      # own-hand scans
 │   └── derived/      # mixed licensing — see datenablage.md
+├── tools/            # Dev tooling: glyphbench/wordbench (frozen-reference scoring),
+│                     #   glyphlab/wordlab/pairlab (matplotlib inspection labs),
+│                     #   quizgen (quiz word-bank generator)
+├── tests/            # CI pytest suite (flat test_<module>.py + shared fixtures)
 ├── docs/             # German concept + reference docs
 │   ├── concepts/     # vision, architektur (§1–§17), mvp-roadmap, naming
 │   ├── reference/    # language rules, licensing, HTR, animation, …
-│   └── proposals/    # staged not-yet-approved changes
+│   └── proposals/    # staged changes (per-entry status in docs/index.md)
 ├── .github/          # this file + workflows
 ├── CLAUDE.md         # sibling guide for Claude Code
 └── README.md         # public pitch (English)
@@ -250,7 +254,7 @@ scripts with one specimen each · Federn · Tinte · Buchstaben/Zahlen · chrono
 section titles share the viridian-Kurrent-initial `CategoryHeading` with
 `/impressum`, `/tafel` and `/landing`; the copyrighted Süß textbook is named + linked to its DNB record,
 never reproduced); the tools group under two hubs so the top nav stays at three
-areas (Schriftkunde · Lesen · Schreiben): `/lesen` (→ `/quiz` letter quiz +
+areas (Schriftkunde · Lesen · Schreiben): `/lesen` (→ `/quiz` reading quiz (letters + whole words) +
 `/tafel` Schreibtafel) and `/schreiben` (→ `/schreiben/uebungsblatt` worksheet
 generator + `/federprobe` live word/sentence writing, synthesised Sütterlin
 ductus with generated Übergänge) — paper-&-ink identity
@@ -342,11 +346,14 @@ lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberläng
   Federwinkel per Koch 1928, calibrated per source by
   `api/rendering.py::pooled_pen`; see docs/concepts/federmodelle.md); stored
   `half_widths` always stay the measurement.
-- `templates` are the canonical Grundvorlagen, unique on
-  `(style_id, glyph, position, variant)` — the identifying tuple, **not**
-  `glyph_key` (UI-only). `instances` hold per-text occurrences (the fit +
-  `measurements`, §12 layer 1, filled by the post-MVP import); `aggregates`
-  are per-hand stats (§12 layer 2).
+- `templates` are the canonical Grundvorlagen, with **two** unique
+  constraints since migration 0015: `(style_id, glyph, position, variant)`
+  (the library tuple, architektur.md §3) **and**
+  `(style_id, glyph_key, variant)` — every read keys on `glyph_key`, so it
+  is identifying too; the API's 409 backstops are UX on top of the DB
+  constraints, not the only defense. `instances` hold per-text occurrences
+  (the fit + `measurements`, §12 layer 1, filled by the post-MVP import);
+  `aggregates` are per-hand stats (§12 layer 2).
 - `position` is the **chart role** (where Loth teaches it), not the
   text-position — see `app/src/domain/glyphs.ts` comments and architektur.md
   §3. The admin authors one form for all positions by default (fan-out).
@@ -410,6 +417,12 @@ Technical specs sit in `docs/reference/*.md`:
   (`core/quality.py`, pixel/width), §5 Sütterlin/Gleichzug naturalness
   (`core/quality_suetterlin.py` + `core/geometry.py`). Bench runs one
   script per run (`--style suetterlin|kurrent`), no combined bench_loss.
+- `write-api.md` — the public render endpoints `/write/glyphs`,
+  `/write/glyphs/{glyph_key}` + `/write/word`: shaping → composition →
+  payload, cache behaviour, `missing` semantics (update it when changing
+  any `/write/*` route)
+- `quiz-wortbank.md` — the reading-quiz word bank: sources, the
+  pin+runtime distractor model, Fugen-marker rules, extension workflow
 - `frontend-stack.md` — build, deploy, auth, routes
 
 The binding public-UI build spec is `docs/concepts/design-system.md` (colour

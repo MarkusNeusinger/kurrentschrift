@@ -21,6 +21,7 @@
 
 import { useCallback, useState, type ReactNode } from 'react';
 import { Box, Link, Typography } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import type { SxProps, Theme } from '@mui/material/styles';
 import offenbacherSpecimen from '@/assets/specimens/offenbacher-koch-1928-excerpt.jpg';
 import { CategoryHeading } from '@/components/CategoryHeading';
@@ -328,6 +329,20 @@ export function SchriftkundeView() {
         <Section heading={t.lettersHeading} lead={t.lettersLead}>
           <DefinitionRows items={t.letters} />
           <SourceLine sources={t.lettersSources} />
+        </Section>
+
+        {/* --- Einen alten Brief entziffern ---
+            Practical method steps (no historical claims → no SourceLine); the
+            closing line points into the project's own Tafel. */}
+        <Section heading={t.decipherHeading} lead={t.decipherLead}>
+          <DefinitionRows items={t.decipher} />
+          <Typography variant="body2" sx={{ ...prose, mt: 1.5, maxWidth: '62ch' }}>
+            {t.decipherTafel.before}
+            <Link component={RouterLink} to={paths.tafel} sx={proseLink}>
+              {t.decipherTafel.linkLabel}
+            </Link>
+            {t.decipherTafel.after}
+          </Typography>
         </Section>
 
         {/* --- Zahlen & Zeichen --- */}
