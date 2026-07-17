@@ -133,6 +133,12 @@ class GlyphPairIn(BaseModel):
     approved: bool = False
     variant: int = 0
 
+    def model_post_init(self, __context: Any) -> None:
+        # A harvested row without its specimen pointer would be untraceable —
+        # the whole point of harvesting is citing the same-hand evidence.
+        if self.provenance == "harvested" and not (self.specimen_id or "").strip():
+            raise ValueError("harvested pairs must cite their specimen_id")
+
 
 class GlyphPairOut(BaseModel):
     left_key: str

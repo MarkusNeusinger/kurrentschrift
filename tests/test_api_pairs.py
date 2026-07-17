@@ -48,6 +48,49 @@ async def test_pair_put_get_list_delete_roundtrip(api: Harness):
     assert res.status == 404
 
 
+async def test_public_list_hides_unapproved_rows(api: Harness):
+    """Public list = approved only; ?all=true needs the admin gate."""
+    _, source_id = await api.seed_style_and_source()
+    await api.client.request(
+        "PUT", f"/sources/{source_id}/pairs/n/e", json_body=_pair_body(approved=False), headers=api.admin_headers()
+    )
+    res = await api.client.request("GET", f"/sources/{source_id}/pairs")
+    assert res.status == 200
+    assert res.json() == []
+    res = await api.client.request("GET", f"/sources/{source_id}/pairs", params={"all": "true"})
+    assert res.status == 401  # unauthenticated ?all=true is gated
+    res = await api.client.request(
+        "GET", f"/sources/{source_id}/pairs", params={"all": "true"}, headers=api.admin_headers()
+    )
+    assert res.status == 200
+    assert [(r["left_key"], r["right_key"], r["approved"]) for r in res.json()] == [("n", "e", False)]
+
+
+async def test_harvested_pair_requires_specimen_id(api: Harness):
+    """A harvest without its specimen pointer is untraceable — 422."""
+    _, source_id = await api.seed_style_and_source()
+    res = await api.client.request(
+        "PUT", f"/sources/{source_id}/pairs/n/e", json_body=_pair_body(specimen_id=None), headers=api.admin_headers()
+    )
+    assert res.status == 422
+
+
+async def test_authored_pair_carries_no_specimen_pointer(api: Harness):
+    """The specimen reference belongs to harvested rows only."""
+    _, source_id = await api.seed_style_and_source()
+    res = await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/pairs/n/e",
+        json_body=_pair_body(provenance="authored", specimen_id="nn"),
+        headers=api.admin_headers(),
+    )
+    assert res.status == 200, res.body
+    out = res.json()
+    assert out["provenance"] == "authored"
+    assert out["provenance_source_id"] is None
+    assert out["specimen_id"] is None
+
+
 async def test_pair_put_rejects_unknown_key_and_bad_geometry(api: Harness):
     _, source_id = await api.seed_style_and_source()
     res = await api.client.request(
@@ -117,3 +160,7 @@ def test_compose_word_without_overrides_is_byte_identical():
     payloads = {"n": payload}
     assert compose_word(slots, payloads) == compose_word(slots, payloads, pair_overrides={})
     assert compose_word(slots, payloads) == compose_word(slots, payloads, pair_overrides=None)
+    # All-or-nothing: a malformed override (connector under 2 points) must not
+    # shift the glyph without drawing the join — it is ignored entirely.
+    malformed = {("n", "n"): {"offset": [0.9, 0.0], "connector": [[0.0, 0.0]]}}
+    assert compose_word(slots, payloads) == compose_word(slots, payloads, pair_overrides=malformed)

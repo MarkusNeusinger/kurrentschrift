@@ -7,7 +7,7 @@ rows (see `GlyphPairRepository.approved_for_pairs` in the word endpoint);
 storing an unapproved harvest is safe.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_admin
@@ -44,11 +44,28 @@ def _reject_unknown_keys(left_key: str, right_key: str) -> None:
 
 
 @router.get("", response_model=list[GlyphPairOut])
-async def list_pairs(source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)):
-    # Deliberately uncached like /templates: the admin edits and expects fresh
-    # rows immediately.
+async def list_pairs(
+    request: Request,
+    all: bool = False,
+    source: Source = Depends(require_source),
+    db: AsyncSession = Depends(require_db),
+):
+    """List pair overrides. Public callers see APPROVED rows only (matching
+    what actually renders); `?all=true` additionally returns unreviewed rows
+    — e.g. a fresh bulk harvest — and is admin-gated so unapproved data never
+    leaks to public consumers or bloats their responses.
+
+    Deliberately uncached like /templates: the admin edits and expects fresh
+    rows immediately."""
+    if all:
+        # Conditional gate: the dependency is a plain callable over the two
+        # auth headers — invoked manually because it only applies to ?all=true.
+        require_admin(
+            x_admin_token=request.headers.get("X-Admin-Token"),
+            cf_access_jwt=request.headers.get("Cf-Access-Jwt-Assertion"),
+        )
     rows = await GlyphPairRepository(db).list(source.style_id)
-    return [_to_out(r) for r in rows]
+    return [_to_out(r) for r in rows if all or r.approved]
 
 
 @router.get("/{left_key}/{right_key}", response_model=GlyphPairOut)
@@ -81,8 +98,10 @@ async def put_pair(
         variant=payload.variant,
         geometry=payload.geometry.model_dump(),
         provenance=payload.provenance,
-        provenance_source_id=source.id,
-        specimen_id=payload.specimen_id,
+        # The specimen pointer belongs to harvested rows only — an authored
+        # (freehand) override has no source specimen to cite.
+        provenance_source_id=source.id if payload.provenance == "harvested" else None,
+        specimen_id=payload.specimen_id if payload.provenance == "harvested" else None,
         approved=payload.approved,
     )
     return _to_out(row)

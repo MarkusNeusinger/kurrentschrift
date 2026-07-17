@@ -760,7 +760,12 @@ def compose_word(
         joined = bool(prev) and prev["joins"] and slot.joins
         # An approved pair override wins over the generated placement AND the
         # generated connector for exactly this adjacent pair (redesign R3).
+        # All-or-nothing: a malformed row (connector under 2 points — e.g. a
+        # hand-edited DB row) must not shift the glyph without drawing the
+        # join, so it is ignored entirely and the generator path runs.
         override = (pair_overrides or {}).get((prev["key"], slot.key)) if joined and slot.key else None
+        if override is not None and len(override.get("connector") or []) < 2:
+            override = None
         if override is not None:
             offset = override.get("offset") or [CONNECT_GAP, 0.0]
             desired_entry_x = prev["exit"][0] + float(offset[0])
@@ -801,19 +806,19 @@ def compose_word(
         entry_trim = 0
         if override is not None:
             # The stored join, verbatim: centerline points are relative to the
-            # left glyph's exit point (template units).
+            # left glyph's exit point (template units; ≥2 points guaranteed by
+            # the all-or-nothing check above).
             ex, ey = prev["exit"]
-            centerline = [(ex + float(px), ey + float(py)) for px, py in (override.get("connector") or [])]
-            if len(centerline) >= 2:
-                connector = {"centerline": [list(p) for p in centerline], "lift": False}
-                _apply_pen(connector, centerline, 2 * min(prev["width"], med_half), pen)
-                if provenance:
-                    connector["pair"] = [prev["key"], slot.key]
-                    connector["from_slot"] = prev["slot_index"]
-                    connector["to_slot"] = slot_index
-                    connector["override"] = True
-                items.append(connector)
-                track(centerline)
+            centerline = [(ex + float(px), ey + float(py)) for px, py in override["connector"]]
+            connector = {"centerline": [list(p) for p in centerline], "lift": False}
+            _apply_pen(connector, centerline, 2 * min(prev["width"], med_half), pen)
+            if provenance:
+                connector["pair"] = [prev["key"], slot.key]
+                connector["from_slot"] = prev["slot_index"]
+                connector["to_slot"] = slot_index
+                connector["override"] = True
+            items.append(connector)
+            track(centerline)
         elif joined:
             high_couple = _key_base(slot.key, slot.position) in HIGH_COUPLE_BASES
             centerline, entry_trim = _connector_centerline(
