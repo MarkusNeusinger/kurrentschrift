@@ -14,6 +14,27 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Admin pair matrix (`/admin/paare`, redesign R1).** Every two-letter
+  combination of a chosen letter (capitals only on the left), composed
+  server-side via the cacheable `/write/word` and rendered lazily per
+  IntersectionObserver — an unnatural join is visible directly instead of
+  hiding inside a longer word.
+- **Word-specimen comparison on `/admin/vergleich` (redesign R1b, stage 1).**
+  The page now has tabs — Buchstaben (the existing per-letter view) plus
+  Wörter/Verbindungen/Andere Hand: every connected-writing specimen from the
+  source's `words.json` sidecar next to the same word written by the engine,
+  side-by-side or with the engine ink overlaid on the specimen pixels,
+  registered exactly over the sidecar lineature (baseline/midband → scale);
+  unauthored letters surface as `missing` chips, the other-hand plate
+  (Abb. 22) is labeled as view-only context.
+- **Public word-sample reads.** New `word_samples` router:
+  `GET /sources/{id}/word-samples` (metadata with crop-local lineature) and
+  `GET /sources/{id}/word-samples/{sample_id}/crop` (grayscale PNG, exclude
+  rects painted paper-white), backed by `core/chart.py::load_word_samples` +
+  `word_sample_crop_to_png_bytes` over the committed sidecar — public like
+  the bbox crops (`<img>` cannot send the admin header), cached, covered by
+  a new HTTP test suite.
+
 - **Writing-system redesign proposal (`docs/proposals/schreibsystem-redesign.md`).**
   Records the accepted direction from the 2026-07-17 review: one authored
   form per glyph with the position triplication removed (R2), an admin

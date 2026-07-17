@@ -61,6 +61,24 @@ export interface SourceOut {
   note?: string | null;
 }
 
+// One connected-writing specimen (word or letter pair) from a source's
+// words.json sidecar. Mirrors WordSampleOut in api/schemas.py. baseline_y /
+// midband_y are crop-local pixels, so an engine-written overlay registers with
+// scale = baseline_y - midband_y px per x-height unit; the crop bytes come
+// from wordSampleCropUrl.
+export interface WordSampleOut {
+  id: string;
+  word: string;
+  kind: 'word' | 'pair';
+  // Sidecar `set` tag — a plate by another writer (e.g. the Abb.-22
+  // Schülerschrift); null for the headline hand.
+  sample_set: string | null;
+  width: number;
+  height: number;
+  baseline_y: number;
+  midband_y: number;
+}
+
 // Practice-sheet-style guide lines (Hilfslinien) drawn over a glyph crop —
 // same vocabulary as the worksheet rulers in lib/lineatur.ts. baseline + waist
 // come from the bbox calibration; ascender/descender are toggleable; slant is

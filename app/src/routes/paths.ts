@@ -21,5 +21,6 @@ export const paths = {
     root: '/admin',
     chart: '/admin/chart',
     compare: '/admin/vergleich',
+    pairs: '/admin/paare',
   },
 } as const;

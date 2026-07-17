@@ -60,6 +60,7 @@ export const admin = {
     toHome: 'Zur Startseite',
     chartOverview: 'Chart-Übersicht',
     compareOverview: 'Vergleich aller Buchstaben',
+    pairsOverview: 'Paar-Matrix (alle Verbindungen)',
     overlays: 'Overlays',
     all: 'alle',
     none: 'keine',
@@ -94,6 +95,32 @@ export const admin = {
     positionPrefix: 'Position: ',
     noCanonical: 'kein Canonical',
     loadError: 'Diagnose konnte nicht geladen werden.',
+    // Tabs: letters (the classic view) vs the connected-writing specimens.
+    tabLetters: 'Buchstaben',
+    tabWords: 'Wörter',
+    tabPairs: 'Verbindungen',
+    tabOther: 'Andere Hand',
+    wordsIntro:
+      'Jede Wortvorlage der Tafel neben demselben Wort „wie geschrieben“ — überlagert liegt die Engine-Schrift maßstabsgetreu (über die Lineatur registriert) auf der Vorlage, damit sofort sichtbar ist, wo Buchstaben oder Übergänge noch abweichen.',
+    otherIntro:
+      'Vorlagen einer anderen Hand (z. B. die Schülerschrift der Abb. 22) — nur zur Anschauung, nie Referenz der Bewertung.',
+    wordsEmpty: 'Diese Vorlage hat keine Wortproben (words.json-Sidecar fehlt).',
+    wordsLoadError: 'Wortproben konnten nicht geladen werden.',
+    wordRenderError: 'Wort konnte nicht komponiert werden.',
+    // Followed by the comma-joined missing glyph_keys.
+    missingPrefix: 'fehlend: ',
+    specimenAlt: 'Vorlage',
+  },
+  // The pair matrix (/admin/paare): every two-letter combination of one chosen
+  // letter, server-composed — capitals only on the left, per the redesign (R1).
+  pairs: {
+    title: 'Paar-Matrix',
+    intro:
+      'Alle Zweier-Verbindungen eines Buchstabens, aus den Einzelformen plus generiertem Übergang komponiert (Versalien nur links). So fällt eine unnatürliche Verbindung sofort auf, ohne sie in einem Wort suchen zu müssen.',
+    pickLetter: 'Buchstabe',
+    asFirst: '„{{glyph}}“ als erster Buchstabe',
+    asSecond: '„{{glyph}}“ als zweiter Buchstabe',
+    empty: 'Noch keine erstellten Glyphen — erst im Wizard einen Weg zeichnen.',
   },
   diagnostics: {
     // Followed by the glyph label in the dialog title.

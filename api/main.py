@@ -26,6 +26,7 @@ from api.routers import (  # noqa: E402
     sources_router,
     styles_router,
     templates_router,
+    word_samples_router,
     write_router,
 )
 from core.config import settings  # noqa: E402
@@ -98,6 +99,7 @@ app.include_router(sources_router)
 app.include_router(chart_router)
 app.include_router(bboxes_router)
 app.include_router(templates_router)
+app.include_router(word_samples_router)
 app.include_router(write_router)
 app.include_router(quiz_words_router)
 

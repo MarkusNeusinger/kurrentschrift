@@ -21,6 +21,7 @@ import type {
   StyleOut,
   TracePreviewOut,
   TraceRequest,
+  WordSampleOut,
   WriteGlyphsOut,
 } from '@/lib/api/types';
 
@@ -63,6 +64,14 @@ export const cropUrl = (sourceId: string, glyphKey: string, cacheBust?: number, 
   const s = qs.toString();
   return src(sourceId, `/bboxes/${encodeURIComponent(glyphKey)}/crop${s ? `?${s}` : ''}`);
 };
+
+// The connected-writing specimens of a source (words.json sidecar) — empty for
+// sources without plates. The crop is an <img>-loadable public URL like cropUrl.
+export const getWordSamples = (sourceId: string, retry?: RetryOptions): Promise<WordSampleOut[]> =>
+  apiFetch(src(sourceId, '/word-samples'), {}, retry).then(asJson<WordSampleOut[]>);
+
+export const wordSampleCropUrl = (sourceId: string, sampleId: string): string =>
+  src(sourceId, `/word-samples/${encodeURIComponent(sampleId)}/crop`);
 
 export const getBboxes = (sourceId: string, retry?: RetryOptions): Promise<BboxOut[]> =>
   apiFetch(src(sourceId, '/bboxes'), {}, retry).then(asJson<BboxOut[]>);

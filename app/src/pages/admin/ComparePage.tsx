@@ -1,6 +1,7 @@
-import { GlyphComparison } from '@/sections/admin/compare/GlyphComparison';
+import { CompareTabs } from '@/sections/admin/compare/CompareTabs';
 
-// Thin route mount — the section component carries the whole comparison view.
+// Thin route mount — the section component carries the whole comparison view
+// (letters tab + the connected-writing specimen tabs).
 export default function ComparePage() {
-  return <GlyphComparison />;
+  return <CompareTabs />;
 }

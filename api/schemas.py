@@ -80,6 +80,23 @@ class SourceOut(BaseModel):
     note: str | None = None
 
 
+class WordSampleOut(BaseModel):
+    """One connected-writing specimen (word or letter pair) from a source's
+    `words.json` sidecar — metadata only; the crop bytes come from the sibling
+    `/word-samples/{sample_id}/crop` endpoint. `baseline_y`/`midband_y` are
+    crop-local pixels so a client can register an engine-written overlay
+    (scale = baseline_y − midband_y px per x-height)."""
+
+    id: str
+    word: str
+    kind: Literal["word", "pair"]
+    sample_set: str | None = None  # sidecar `set` tag, e.g. a plate by another writer
+    width: int
+    height: int
+    baseline_y: int
+    midband_y: int
+
+
 # ----------------------------------------------------------------------- Bbox
 
 
