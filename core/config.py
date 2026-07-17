@@ -11,6 +11,15 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
+# Production allows exactly the public site origin; development additionally
+# accepts localhost/LAN origins (any port) for the Vite dev server and
+# stylus-on-tablet testing against a dev machine's LAN IP.
+_CORS_PRODUCTION_REGEX = r"^https://(www\.)?kurrentschrift\.ink$"
+_CORS_DEVELOPMENT_REGEX = (
+    r"^https?://(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|"
+    r"(www\.)?kurrentschrift\.ink)(:\d+)?$"
+)
+
 
 class Settings(BaseSettings):
     """Application settings."""
@@ -32,10 +41,10 @@ class Settings(BaseSettings):
     repo_root: Path = REPO_ROOT
 
     # ------------------------------------------------------------------ CORS
-    cors_origin_regex: str = (
-        r"^https?://(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|"
-        r"(www\.)?kurrentschrift\.ink|api\.kurrentschrift\.ink)(:\d+)?$"
-    )
+    # Explicit env override wins; otherwise the effective regex is picked per
+    # environment (see `cors_allow_origin_regex`) so the localhost/LAN dev
+    # conveniences never widen the production allow-list.
+    cors_origin_regex: str | None = None
 
     # ------------------------------------------------------------------ Admin auth
     # Cloudflare Access (Zero Trust) verifies a Google identity at the edge and
@@ -49,6 +58,13 @@ class Settings(BaseSettings):
     # JWT but an email not in this list receive 403 — required for the JWT path
     # to authorize anyone.
     admin_allowed_emails_raw: str = ""
+
+    @property
+    def cors_allow_origin_regex(self) -> str:
+        """The CORS origin regex the app should serve with (env override wins)."""
+        if self.cors_origin_regex:
+            return self.cors_origin_regex
+        return _CORS_PRODUCTION_REGEX if self.is_production else _CORS_DEVELOPMENT_REGEX
 
     @property
     def is_production(self) -> bool:

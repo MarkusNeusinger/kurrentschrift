@@ -5,7 +5,7 @@ works on a chart `source`; this router resolves the source's style and stores
 the canonical there, recording the chart as `provenance_source_id`.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -205,8 +205,14 @@ async def post_trace(
         source.style_id, glyph_key, canonical, variant=payload.variant, provenance_source_id=source.id
     )
     _sync_bbox_anchor_count(bbox, canonical)
+    out = _template_to_out(t)
+    # Commit BEFORE invalidating the pooled-nib cache: get_db only commits in
+    # its teardown, so invalidating first would let a concurrent public request
+    # repopulate the cache (TTL 600s) from the pre-write DB state. The
+    # teardown's commit then finalises an already-committed session (a no-op).
+    await db.commit()
     invalidate_pooled_style(source.style_id)
-    return _template_to_out(t)
+    return out
 
 
 @router.post("/{glyph_key}/trace-preview", dependencies=[Depends(require_admin)])
@@ -297,8 +303,11 @@ async def post_resample(
         source.style_id, glyph_key, canonical, variant=existing.variant, provenance_source_id=source.id
     )
     _sync_bbox_anchor_count(bbox, canonical)
+    out = _template_to_out(t)
+    # Commit before invalidating the pooled-nib cache — see post_trace.
+    await db.commit()
     invalidate_pooled_style(source.style_id)
-    return _template_to_out(t)
+    return out
 
 
 @router.get("/{glyph_key}/diagnostic", dependencies=[Depends(require_admin)])
@@ -343,8 +352,8 @@ async def get_diagnostic(
 @router.get("/{glyph_key}/fit", dependencies=[Depends(require_admin)])
 async def get_fit(
     glyph_key: str,
-    lambda_reg: float = 1.0,
-    width_weight: float = 0.15,
+    lambda_reg: float = Query(1.0, ge=0.0, le=100.0),
+    width_weight: float = Query(0.15, ge=0.0, le=10.0),
     source: Source = Depends(require_source),
     db: AsyncSession = Depends(require_db),
 ):
@@ -446,5 +455,9 @@ async def get_quality(glyph_key: str, source: Source = Depends(require_source), 
 async def delete_template(
     glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
 ):
-    await TemplateRepository(db).delete(source.style_id, glyph_key)
+    deleted = await TemplateRepository(db).delete(source.style_id, glyph_key)
+    if not deleted:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no canonical for {glyph_key!r}")
+    # Commit before invalidating the pooled-nib cache — see post_trace.
+    await db.commit()
     invalidate_pooled_style(source.style_id)

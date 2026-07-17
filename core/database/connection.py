@@ -33,6 +33,10 @@ DEFAULT_MAX_OVERFLOW = 10
 engine = None
 AsyncSessionLocal: async_sessionmaker | None = None
 _connector = None
+# True after a CONFIGURED database failed to initialise (connection refused,
+# bad credentials, …) — lets require_db distinguish "not configured" from
+# "configured but broken" in its 503 detail. Reset on a later successful init.
+_init_failed = False
 
 # Created at import so the lock itself cannot race: the old lazy getter was
 # check-then-set, so two first requests could each mint their own lock, both
@@ -131,12 +135,15 @@ async def close_db() -> None:
 async def get_db() -> AsyncGenerator[AsyncSession | None, None]:
     """FastAPI dependency. Yields a session, or None if DB is not configured
     or initialisation failed (require_db turns None into a clean 503)."""
+    global _init_failed
     if engine is None:
         async with _init_lock:
             if engine is None:
                 try:
                     await init_db()
+                    _init_failed = False
                 except Exception:
+                    _init_failed = True
                     logger.exception("Database initialisation failed")
 
     if AsyncSessionLocal is None:
@@ -174,3 +181,8 @@ async def get_db_context() -> AsyncGenerator[AsyncSession, None]:
 
 def is_db_configured() -> bool:
     return bool(INSTANCE_CONNECTION_NAME or DATABASE_URL)
+
+
+def db_init_failed() -> bool:
+    """Whether the last initialisation attempt of a CONFIGURED database failed."""
+    return _init_failed

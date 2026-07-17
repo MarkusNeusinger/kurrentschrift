@@ -377,7 +377,8 @@ def _resolve_crossing_widths(
         norm[norm == 0] = 1.0
         tangents[a:b] = t / norm[:, None]
 
-    # All-pairs tests — anchor counts are ~50, brute force beats a KD-tree.
+    # All-pairs tests — anchor counts are ~120 (DEFAULT_N_ANCHORS), so the
+    # O(n²) matrices stay tiny and brute force still beats a KD-tree.
     diff = anchors_px[:, None, :] - anchors_px[None, :, :]
     dist = np.hypot(diff[..., 0], diff[..., 1])
     hw_sum = hw_px[:, None] + hw_px[None, :]

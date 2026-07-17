@@ -94,6 +94,15 @@ async def put_bbox(
             status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="baseline_y must be greater than midband_y (baseline is below midband)",
         )
+    # A bbox reaching beyond the chart bytes would store fine but yield an
+    # empty/zero-size crop that 500s the PUBLIC /crop endpoint later — reject
+    # it here while the admin can still fix the rectangle.
+    chart_size = source.chart_size or {}
+    chart_w, chart_h = chart_size.get("w"), chart_size.get("h")
+    if chart_w is not None and chart_h is not None and (payload.x1 > chart_w or payload.y1 > chart_h):
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, detail=f"bbox exceeds the chart dimensions ({chart_w}×{chart_h} px)"
+        )
     repo = BboxRepository(db)
     # `guides`, `locked`, `split`, `n_anchors` and `fill_holes_max_area` are
     # optional: when the client omits one, keep whatever is already stored (a
@@ -131,4 +140,6 @@ async def put_bbox(
 
 @router.delete("/{glyph_key}", status_code=204, dependencies=[Depends(require_admin)])
 async def delete_bbox(glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)):
-    await BboxRepository(db).delete(source.id, glyph_key)
+    deleted = await BboxRepository(db).delete(source.id, glyph_key)
+    if not deleted:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"bbox not set for {glyph_key!r}")

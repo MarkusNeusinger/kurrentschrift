@@ -1,5 +1,6 @@
 """Chart-image endpoints — full chart + per-bbox crop (binary responses)."""
 
+import logging
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
@@ -12,6 +13,8 @@ from api.http import CACHE_CONTROL
 from core.chart import crop_mask_to_png_bytes, crop_to_png_bytes, load_chart_grayscale, resolve_chart_path
 from core.database import BboxRepository, Source
 
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/sources/{source_id}", tags=["chart"])
 
@@ -33,7 +36,10 @@ async def get_chart(source: Source = Depends(require_source)) -> FileResponse:
     svg = raster.with_suffix(".svg")
     path = svg if svg.exists() else raster
     if not path.exists():
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"chart file missing on disk: {path}")
+        # The absolute path is server-internal — log it, never echo it into an
+        # unauthenticated response body.
+        logger.error("chart file for source %r missing on disk: %s", source.id, path)
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"chart file for source {source.id!r} is unavailable")
     media_type = _DISPLAY_MEDIA_TYPES.get(path.suffix.lower(), "application/octet-stream")
     # Chart bytes only change with a deploy — let browser + edge hold them a day.
     return FileResponse(path, media_type=media_type, headers={"Cache-Control": "public, max-age=86400"})

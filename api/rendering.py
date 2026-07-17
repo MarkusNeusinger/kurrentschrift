@@ -8,6 +8,7 @@ runs one instance (max-instances=1) and every template write flows through this
 process; the TTL is the safety net for out-of-band writes (psql, migrations).
 """
 
+import logging
 import statistics
 import time
 from dataclasses import dataclass
@@ -18,6 +19,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import Source, StyleRepository, TemplateRepository
 from core.widths import BroadNib, PenStyle
 
+
+logger = logging.getLogger(__name__)
 
 _NIB_TTL_S = 600.0
 # (style_id, source_id) -> (pooled nib radius in x-height units or None, computed_at)
@@ -35,10 +38,10 @@ async def resolve_style(source: Source, db: AsyncSession) -> tuple[str, list[flo
     """
     style = await StyleRepository(db).get(source.style_id)
     if style is None:
-        raise HTTPException(
-            status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"source {source.id!r} references unknown style {source.style_id!r}",
-        )
+        # Referential-integrity detail is server-internal — log it, keep the
+        # response body generic.
+        logger.error("source %r references unknown style %r", source.id, source.style_id)
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, detail="internal style resolution error")
     style_ratio = list(source.style_ratio) if source.style_ratio is not None else list(style.default_style_ratio)
     slant_deg = float(source.slant_deg) if source.slant_deg is not None else float(style.default_slant_deg)
     return style.id, style_ratio, slant_deg, style.width_resolver
