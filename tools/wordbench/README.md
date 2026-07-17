@@ -41,6 +41,10 @@ uv run python -m tools.wordbench.run --artifacts runs/dev/overlays --json runs/d
 # Optional: diff word deltas vs a previous --json report
 uv run python -m tools.wordbench.run --json runs/dev/new.json --compare runs/dev/old.json
 
+# Optional: compose with pair overrides from a harvest file (redesign R3).
+# An override run is its OWN measurement, never comparable to the headline.
+uv run python -m tools.wordbench.run --set pairs --overrides temp/pair_harvest.json
+
 # Box proposal / verification sheets for annotating a new plate (no DB):
 uv run python -m tools.wordbench.propose_boxes --page words-abb19.png --expect-lines 12 --strips
 uv run python -m tools.wordbench.propose_boxes --page words-abb19.png --expect-lines 12 --validate
@@ -73,6 +77,10 @@ loss = 0.45·transition + 0.35·coverage + 0.20·width      (all ∈ [0,1], lowe
   the connector x-spans. Are the Übergänge where the real pen went?
 - `coverage` — symmetric chamfer over all composed centerlines. Also moves
   with per-glyph authoring quality, so it gates rather than decides.
+
+Each scored row also reports `slant <specimen>/<composed>` (redesign R5:
+shear-search estimator in `slant.py`, 90 = upright, < 90 = right-leaning),
+plus per-block medians — report-only diagnostics, never part of the loss.
 - `width` — |log| of the total-ink-width ratio: spacing/rhythm errors that
   per-point chamfer barely sees. For PAIRS this component carries a constant
   positive bias (the plate draws lead-in/lead-out strokes the composed

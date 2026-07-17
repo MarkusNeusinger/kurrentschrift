@@ -657,7 +657,17 @@ impl-generate pipelines. Conventions:
   INDEPENDENTLY (separates connector-shape from placement error and measures
   how far the specimen reshapes each glyph's own tail/head for the join) —
   `python -m tools.pairlab re [longs,a] [--set words|pairs|all]`; findings +
-  solution options in `docs/proposals/uebergaenge-befund.md`.
+  solution options in `docs/proposals/uebergaenge-befund.md`. Its harvest
+  sibling `tools/pairlab/harvest.py` (redesign R3 Erstbefüllung, no viz
+  extra) turns those dissections into `glyph_pairs` override DRAFTS — offset
+  from the rigid fits, connector from the specimen's joining stroke,
+  baseline-locked — written through the admin API (`--apply`,
+  `--approve left:right` only for measured winners); measure the composed
+  effect with `tools/wordbench/run.py --overrides <harvest.json>` (an
+  override run is its own number, never the headline). The bench also
+  reports a slant column (`slant <spec>/<comp>` per row + medians,
+  `tools/wordbench/slant.py`, 90° = upright) — report-only, never part of
+  the loss.
 - **Never merge a PR yourself** — open it, get it green and
   review-clean (address Copilot review comments, then resolve the
   threads); merging is the maintainer's call.
