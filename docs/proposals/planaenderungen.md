@@ -37,6 +37,12 @@ von Vorschlag D (`core/orthography.py`) konsumiert.
 ## Vorschlag B — `architektur.md` §2 und §4: systematische Bigramm-Extraktion aus Beispieltext
 
 **Status:** größer, betrifft zwei Festlegungen. Diskussion offen.
+**Konkretisierung (2026-07-17):** Das
+[`schreibsystem-redesign.md`](schreibsystem-redesign.md) (Richtungsentscheid
+des Nutzers) übernimmt diesen Vorschlag als Phase R3 — sparsame,
+**geerntete** Paar-Overrides (M4-Fit aus Abb. 19/20 statt Freihand),
+Versal-Verbindungen zuerst, offene Punkte (a)/(b) dort entschieden
+(eigene Tabelle `glyph_pairs`; Links-nach-rechts-Vorrang im Wort).
 **Mess-Evidenz (2026-07-08, Beobachtung — keine Übernahme):** Der erste
 Compose-Loop hat die per-Paar-Residualtabelle über alle 48 scorbaren
 Abb.-19-Wörter erzeugt (Segment-Attribution, beste Generator-Settings;
@@ -212,6 +218,11 @@ im Text erwähnte `glyphs`-Tabelle heißt seit Migration 0004
 Spalte ist `templates.position`. Das unten skizzierte
 Begleit-Refactoring (Umbenennung nach `chart_role`) bleibt
 hypothetisch und würde heute `templates.position` betreffen.
+**Nachtrag (2026-07-17):** Mit dem im
+[`schreibsystem-redesign.md`](schreibsystem-redesign.md) beschlossenen
+Positions-Rückbau (Phase R2) entfällt das Rename ersatzlos — die
+Positions-Triplikation der Templates verschwindet ganz; `position`
+bleibt nur als Render-Kontext im Shaping-Slot.
 
 ### Verantwortung
 

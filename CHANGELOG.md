@@ -14,6 +14,16 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Writing-system redesign proposal (`docs/proposals/schreibsystem-redesign.md`).**
+  Records the accepted direction from the 2026-07-17 review: one authored
+  form per glyph with the position triplication removed (R2), an admin
+  pair-matrix view over `/write/word` (R1), sparse *harvested* pair
+  overrides with capital-joins first as the concrete form of proposal B
+  (R3), placement-residual + O3 re-evaluation (R4), and a new measured
+  slant finding — the specimen hand's d-ascender loop leans ~4–5° right
+  of the upright chart cell while medians match (R5). Cross-referenced
+  from `docs/index.md` and `planaenderungen.md` (proposals B and D).
+
 - **"Einen alten Brief entziffern" section on /schriftkunde.** A method-only
   five-step decipherment guide (anchors first, stock formulas, chart
   side-by-side, the classic f/ſ–n/u–e/n traps, skip-and-return) with a
