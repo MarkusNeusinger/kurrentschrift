@@ -188,7 +188,9 @@ export function PairEditorDialog({ open, onClose, pairText, leftKey, rightKey, s
     };
     eat(left, 0);
     eat(right, rightDx);
-    if (underlay) {
+    // Only a VISIBLE underlay widens the scene — hiding it re-fits the view
+    // to the two glyphs instead of staying zoomed out to the hidden crop.
+    if (underlay && showSpecimen) {
       xs.push(underlay.x, underlay.x + underlay.w);
       ys.push(underlay.topY - underlay.h, underlay.topY);
     }
@@ -200,7 +202,7 @@ export function PairEditorDialog({ open, onClose, pairText, leftKey, rightKey, s
       minY: Math.min(...ys, -0.2) - pad,
       maxY: Math.max(...ys, 1.2) + pad,
     };
-  }, [left, right, rightDx, underlay]);
+  }, [left, right, rightDx, underlay, showSpecimen]);
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const drawingRef = useRef(false);
@@ -329,15 +331,17 @@ export function PairEditorDialog({ open, onClose, pairText, leftKey, rightKey, s
             >
               {/* Specimen underlay in root coords (SVG y-down): crop row r sits
                   at template y = (baseline_y − r)/unitPx, i.e. root y = −topY
-                  at the top edge, growing downward with the crop rows. */}
-              {underlay && specimen && showSpecimen && (
+                  at the top edge, growing downward with the crop rows. Hidden
+                  via opacity, not unmount — the decoded bitmap survives the
+                  toggle instead of re-fetching on every re-show. */}
+              {underlay && specimen && (
                 <image
                   href={wordSampleCropUrl(sourceId, specimen.id)}
                   x={underlay.x}
                   y={-underlay.topY}
                   width={underlay.w}
                   height={underlay.h}
-                  opacity={0.35}
+                  opacity={showSpecimen ? 0.35 : 0}
                   preserveAspectRatio="none"
                 />
               )}
