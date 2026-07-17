@@ -412,12 +412,13 @@ export function WizardCanvas({
         return;
       }
       if (stepId === 'weg' && drawing) {
+        const now = performance.now();
         setStrokes((prev) => {
           if (prev.length === 0) return prev;
           const stroke = prev[prev.length - 1];
           const last = stroke[stroke.length - 1];
           if (last && (x - last.x) ** 2 + (y - last.y) ** 2 < 0.36) return prev;
-          const extended = [...stroke, { x, y, pressure: e.pressure || null, t: performance.now() - (traceEpoch.current ?? performance.now()) }];
+          const extended = [...stroke, { x, y, pressure: e.pressure || null, t: now - (traceEpoch.current ?? now) }];
           return [...prev.slice(0, -1), extended];
         });
       }
