@@ -358,16 +358,17 @@ export function WizardCanvas({
         // (Re)anchor the capture epoch: a fresh trace starts at t=0; a canvas
         // remount over an existing draft re-derives the epoch from the last
         // stored relative time so the capture stays monotonic.
+        const now = performance.now();
         if (strokes.length === 0) {
-          traceEpoch.current = performance.now();
+          traceEpoch.current = now;
         } else if (traceEpoch.current == null) {
           const lastStroke = strokes[strokes.length - 1];
-          traceEpoch.current = performance.now() - (lastStroke[lastStroke.length - 1]?.t ?? 0);
+          traceEpoch.current = now - (lastStroke[lastStroke.length - 1]?.t ?? 0);
         }
         setDrawing(true);
         // Each pen-down opens a new stroke; the previous one is left as-is, so a
         // pen lift never draws a line to the next stroke's start.
-        setStrokes((prev) => [...prev, [{ x, y, pressure: e.pressure || null, t: performance.now() - (traceEpoch.current ?? performance.now()) }]]);
+        setStrokes((prev) => [...prev, [{ x, y, pressure: e.pressure || null, t: now - (traceEpoch.current ?? now) }]]);
         e.currentTarget.setPointerCapture(e.pointerId);
       }
     },
