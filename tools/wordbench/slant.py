@@ -15,6 +15,7 @@ import math
 import numpy as np
 from PIL import Image, ImageDraw
 
+
 SHEAR_RANGE_DEG = 30.0
 SHEAR_STEP_DEG = 0.25
 MIN_PIXELS = 32  # below this a profile maximum is noise, not a slant
