@@ -28,7 +28,7 @@ im Live-Bild weiterhin unnatürlich. Der Vorschlag (2026-07-17):
 4. Aus vielen manuell gezeichneten Paaren **lernen**, um die generierten
    zu verbessern.
 
-## 2. Kritische Prüfung gegen die Messevidenz
+## 2. Kritische Prüfung gegen die Mess-Evidenz
 
 Die Paar-Sektion ([`uebergaenge-befund.md`](uebergaenge-befund.md), 87
 platzierungsbereinigte Vorkommen über 45 Paare) beantwortet die Kernfrage
