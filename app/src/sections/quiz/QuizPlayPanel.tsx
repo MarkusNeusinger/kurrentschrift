@@ -69,8 +69,10 @@ export function QuizPlayPanel(p: PlayProps) {
   // The verdict / question line under the card.
   let message: React.ReactNode;
   if (verdict === 'correct') {
+    // Ladder sizes (h5/h6/body1), Playfair character kept locally; component="p"
+    // because the verdict line is a status message, not a document heading.
     message = (
-      <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: 24, color: paper.viridianText }}>
+      <Typography component="p" variant="h5" sx={{ fontFamily: display, fontWeight: 600, color: paper.viridianText }}>
         {de.quiz.play.matchStrong}
       </Typography>
     );
@@ -80,11 +82,11 @@ export function QuizPlayPanel(p: PlayProps) {
         ? fmt(de.quiz.play.solutionWord, { word: current.word })
         : fmt(de.quiz.play.solutionLetter, { letter: inCase(current.kg.answer, current.kg) });
     message = (
-      <Typography sx={{ fontFamily: display, fontWeight: 500, fontSize: 21, color: pigment.oxblood }}>{text}</Typography>
+      <Typography component="p" variant="h6" sx={{ fontFamily: display, fontWeight: 500, color: pigment.oxblood }}>{text}</Typography>
     );
   } else {
     message = (
-      <Typography sx={{ fontFamily: garamond, fontSize: 18, color: 'text.secondary' }}>
+      <Typography variant="body1" sx={{ fontFamily: garamond, color: 'text.secondary' }}>
         {current.kind === 'word' ? de.quiz.play.questionWord : de.quiz.play.questionLetter}
       </Typography>
     );
@@ -117,7 +119,8 @@ export function QuizPlayPanel(p: PlayProps) {
           gives the answer away. */}
       {answered && current.kind === 'word' && current.note && (
         <Typography
-          sx={{ mt: -1, textAlign: 'center', fontFamily: garamond, fontSize: 16, fontStyle: 'italic', color: paper.sepia }}
+          variant="body2"
+          sx={{ mt: -1, textAlign: 'center', fontFamily: garamond, fontStyle: 'italic', color: paper.sepia }}
         >
           {current.note}
         </Typography>
@@ -143,6 +146,8 @@ export function QuizPlayPanel(p: PlayProps) {
                 border: '1px solid',
                 fontFamily: display,
                 fontWeight: 500,
+                // Deliberate display sizing: the answer options are letterform
+                // specimens scaled to the button, not running text.
                 fontSize: current.kind === 'word' ? { xs: 17, sm: 23 } : { xs: 26, sm: 30 },
                 transition: 'transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease',
                 // Resolved palette first, then the unanswered interactive state.
@@ -222,7 +227,7 @@ function ScoreStat({ label, value }: { label: string; value: string | number }) 
       >
         {label}
       </Typography>
-      <Typography component="span" sx={{ fontFamily: display, fontWeight: 600, fontSize: 19, color: paper.ink, lineHeight: 1 }}>
+      <Typography component="span" variant="body1" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, lineHeight: 1 }}>
         {value}
       </Typography>
     </Box>

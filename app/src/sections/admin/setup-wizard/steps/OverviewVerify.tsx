@@ -122,6 +122,7 @@ export function OverviewVerify({
                 <WrittenGlyph
                   key={replayKey}
                   glyphKey={glyphKey}
+                  sourceId={sourceId}
                   data={refined}
                   cacheBust={cropCacheBust}
                   tight

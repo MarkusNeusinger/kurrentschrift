@@ -27,17 +27,36 @@ interface ResultsProps {
 // A small written form for the results lists, with a plain-type fallback.
 function ResultForm({ refr, height }: { refr: TallyRef; height: number }) {
   const [unavailable, setUnavailable] = useState(false);
-  useEffect(() => setUnavailable(false), [refr.renderKey]);
+  // Word compose fetch failed (cache evicted + refetch exhausted) — fall back
+  // to plain type instead of letting the pill spin forever. Post-answer surface,
+  // so plain text gives nothing away.
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    setUnavailable(false);
+    setFailed(false);
+  }, [refr.renderKey]);
 
-  if (!refr.renderKey || unavailable) {
+  if (!refr.renderKey || unavailable || failed) {
     return (
+      // Deliberate display sizing: the plain-type stand-in scales with the
+      // written form's pixel height, not the type ladder.
       <Typography component="span" sx={{ fontFamily: display, fontWeight: 600, fontSize: height * 0.6, color: paper.ink }}>
         {refr.label}
       </Typography>
     );
   }
   if (refr.kind === 'word') {
-    return <WrittenWord text={refr.renderKey} animate={false} height={height} maxWidth={220} surfaceBg="transparent" showLineature={false} />;
+    return (
+      <WrittenWord
+        text={refr.renderKey}
+        animate={false}
+        height={height}
+        maxWidth={220}
+        surfaceBg="transparent"
+        showLineature={false}
+        onError={() => setFailed(true)}
+      />
+    );
   }
   return (
     <WrittenGlyph glyphKey={refr.renderKey} animate={false} height={height} tight surfaceBg="transparent" onUnavailable={() => setUnavailable(true)} />
@@ -65,13 +84,15 @@ export function QuizResultsPanel(p: ResultsProps) {
           {de.quiz.results.hitRateLabel}
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 1, mt: 0.5 }}>
+          {/* Deliberate display figures: the score readout (46/24) is a scoreboard
+              number pair outside the type ladder, not running text. */}
           <Typography component="span" sx={{ fontFamily: display, fontWeight: 600, fontSize: 46, color: paper.ink, lineHeight: 1 }}>
             {correct}
           </Typography>
           <Typography component="span" sx={{ fontFamily: display, fontSize: 24, color: paper.sepiaFaint }}>
             / {seen}
           </Typography>
-          <Typography component="span" sx={{ fontFamily: garamond, fontSize: 18, color: paper.viridianText, ml: 0.5 }}>
+          <Typography component="span" variant="body1" sx={{ fontFamily: garamond, color: paper.viridianText, ml: 0.5 }}>
             {pct} %
           </Typography>
         </Box>
@@ -83,10 +104,12 @@ export function QuizResultsPanel(p: ResultsProps) {
       {/* Confusions */}
       {topConfusions.length > 0 && (
         <Box>
-          <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: 18, color: paper.ink }}>
+          {/* Real section heading (semantics + ladder size); Playfair headings
+              carry weight 600 per design-system §3. */}
+          <Typography component="h2" variant="h6" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink }}>
             {de.quiz.results.confusionsHeading}
           </Typography>
-          <Typography sx={{ fontFamily: garamond, fontSize: 13.5, color: paper.sepia, mb: 1.25 }}>
+          <Typography component="p" variant="caption" sx={{ color: paper.sepia, mb: 1.25 }}>
             {de.quiz.results.confusionsHint}
           </Typography>
           <Stack spacing={1}>
@@ -109,11 +132,11 @@ export function QuizResultsPanel(p: ResultsProps) {
                   ↔
                 </Typography>
                 <ResultForm refr={c.guessed} height={32} />
-                <Typography component="span" sx={{ fontFamily: garamond, fontSize: 14, color: paper.sepia, ml: 0.5 }}>
+                <Typography component="span" variant="caption" sx={{ color: paper.sepia, ml: 0.5 }}>
                   {c.correct.label} / {c.guessed.label}
                 </Typography>
                 <Box sx={{ flex: 1 }} />
-                <Typography component="span" sx={{ fontFamily: garamond, fontSize: 14, color: pigment.oxblood }}>
+                <Typography component="span" variant="caption" sx={{ color: pigment.oxblood }}>
                   ·{c.count}
                   {de.quiz.results.times}
                 </Typography>
@@ -135,7 +158,7 @@ export function QuizResultsPanel(p: ResultsProps) {
             textAlign: 'center',
           }}
         >
-          <Typography sx={{ fontFamily: garamond, fontSize: 16, color: paper.ink }}>
+          <Typography variant="body2" sx={{ color: paper.ink }}>
             <Box component="span" sx={{ color: paper.viridianText, mr: 0.75 }}>
               ✓
             </Box>
@@ -144,7 +167,9 @@ export function QuizResultsPanel(p: ResultsProps) {
         </Box>
       ) : (
         <Box>
-          <Typography sx={{ fontFamily: display, fontWeight: 600, fontSize: 18, color: paper.ink, mb: 1.25 }}>
+          {/* Real section heading (semantics + ladder size); Playfair headings
+              carry weight 600 per design-system §3. */}
+          <Typography component="h2" variant="h6" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, mb: 1.25 }}>
             {de.quiz.results.missesHeading}
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -167,11 +192,11 @@ export function QuizResultsPanel(p: ResultsProps) {
                     form is actually drawn; without a renderKey ResultForm already
                     falls back to the plain label, so this would double it. */}
                 {m.renderKey && (
-                  <Typography component="span" sx={{ fontFamily: garamond, fontWeight: 600, fontSize: 14, color: paper.ink }}>
+                  <Typography component="span" variant="caption" sx={{ fontWeight: 600, color: paper.ink }}>
                     {m.label}
                   </Typography>
                 )}
-                <Typography component="span" sx={{ fontFamily: garamond, fontSize: 13.5, color: paper.sepia }}>
+                <Typography component="span" variant="caption" sx={{ color: paper.sepia }}>
                   ·{m.count}
                   {de.quiz.results.times}
                 </Typography>

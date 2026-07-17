@@ -133,7 +133,10 @@ export function useQuizEngine({ bboxesByKey, glyphsByKey }: Pick<QuizSourceData,
   const [words, setWords] = useState<WordEntry[]>(WORD_BANK);
   useEffect(() => {
     let alive = true;
-    getQuizWords()
+    // Cold-start retry like the other boot reads (min-instances=0 backend) — a
+    // failed first request would otherwise silently pin the bundled fallback
+    // bank for the whole session.
+    getQuizWords({ retries: 3 })
       .then((rows) => {
         if (alive && rows.length > 0) setWords(rows.map(toEntry));
       })

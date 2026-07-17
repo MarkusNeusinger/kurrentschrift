@@ -11,7 +11,7 @@ import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
 import OpenWithIcon from '@mui/icons-material/OpenWith';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { Box, IconButton, Slider, Tooltip, Typography } from '@mui/material';
-import { memo, useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
+import { memo, useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { chartUrl, cropUrl } from '@/lib/api';
 import { de } from '@/locales/admin';
@@ -296,6 +296,13 @@ export function WizardCanvas({
   const [nudge, setNudge] = useState<{ x: number; y: number; snapshot: StrokePoint[][] } | null>(null);
   // `panDrag` holds a live pan gesture (a drag while the Schwenken toggle is on).
   const [panDrag, setPanDrag] = useState<{ sx: number; sy: number; px: number; py: number } | null>(null);
+  // Trace-capture epoch: performance.now() at the first pen-down of a Weg
+  // capture. Every stored sample carries `t` RELATIVE to this epoch, so the
+  // timestamps are monotonic across the whole trace — a new stroke in the same
+  // trace continues the same epoch. (Previously the first point stored t=0
+  // while later samples stored the raw performance.now() epoch, so the first
+  // inter-sample delta was garbage for the future style-analysis layer.)
+  const traceEpoch = useRef<number | null>(null);
   // Live placement of an inserted donor cell (Zelle einsetzen): which patch
   // (index into bbox.patches), the grab point + its dst at grab time (chart
   // coords), and the live dst, so the donor preview follows the pointer and
@@ -314,6 +321,7 @@ export function WizardCanvas({
     setNudge(null);
     setPanDrag(null);
     setPatchDrag(null);
+    traceEpoch.current = null;
   }, [glyphKey, open]);
 
   // ------------------------------------------------------------- pointer routing
@@ -347,10 +355,19 @@ export function WizardCanvas({
           }
           return;
         }
+        // (Re)anchor the capture epoch: a fresh trace starts at t=0; a canvas
+        // remount over an existing draft re-derives the epoch from the last
+        // stored relative time so the capture stays monotonic.
+        if (strokes.length === 0) {
+          traceEpoch.current = performance.now();
+        } else if (traceEpoch.current == null) {
+          const lastStroke = strokes[strokes.length - 1];
+          traceEpoch.current = performance.now() - (lastStroke[lastStroke.length - 1]?.t ?? 0);
+        }
         setDrawing(true);
         // Each pen-down opens a new stroke; the previous one is left as-is, so a
         // pen lift never draws a line to the next stroke's start.
-        setStrokes((prev) => [...prev, [{ x, y, pressure: e.pressure || null, t: prev.length === 0 ? 0 : performance.now() }]]);
+        setStrokes((prev) => [...prev, [{ x, y, pressure: e.pressure || null, t: performance.now() - (traceEpoch.current ?? performance.now()) }]]);
         e.currentTarget.setPointerCapture(e.pointerId);
       }
     },
@@ -399,7 +416,7 @@ export function WizardCanvas({
           const stroke = prev[prev.length - 1];
           const last = stroke[stroke.length - 1];
           if (last && (x - last.x) ** 2 + (y - last.y) ** 2 < 0.36) return prev;
-          const extended = [...stroke, { x, y, pressure: e.pressure || null, t: performance.now() }];
+          const extended = [...stroke, { x, y, pressure: e.pressure || null, t: performance.now() - (traceEpoch.current ?? performance.now()) }];
           return [...prev.slice(0, -1), extended];
         });
       }

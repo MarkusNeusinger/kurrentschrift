@@ -40,7 +40,7 @@ function Section({ title, intro, children }: { title: string; intro: string; chi
 }
 
 export function DiagnosticDialog() {
-  const { diagnoseGlyph, closeDiagnose, glyphsByKey, cropCacheBust } = useAdmin();
+  const { diagnoseGlyph, closeDiagnose, glyphsByKey, cropCacheBust, sourceId } = useAdmin();
   const open = diagnoseGlyph != null;
   const glyphKey = diagnoseGlyph ?? '';
   const known = glyphKey ? knownGlyph(glyphKey) : null;
@@ -93,6 +93,7 @@ export function DiagnosticDialog() {
                 <WrittenGlyph
                   key={`${glyphKey}-${cropCacheBust ?? 0}`}
                   glyphKey={glyphKey}
+                  sourceId={sourceId}
                   cacheBust={cropCacheBust}
                   data={diag}
                   height={300}
