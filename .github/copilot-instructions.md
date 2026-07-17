@@ -177,7 +177,7 @@ kurrentschrift/
 │   ├── chart.py      # load + crop_with_mask (eraser + patches + ink brush); crop_mask_to_png_bytes (mask preview)
 │   ├── pipeline.py   # canonical_from_path, diagnostic_for_glyph, render_payload_for_template
 │   ├── shaping.py    # text → glyph_keys (long-s + Fuge marker `|` for round Schluss-s in compounds, ligatures, decompose fallback; digits/punctuation as detached `joins: false` glyphs, positions per joins-run; twin of app shaping.ts)
-│   ├── compose.py    # word composition (placement + Übergänge; detached ink-clearance placement for non-joining glyphs; optional `pen` inks generated strokes per script; single source of truth, golden-pinned)
+│   ├── compose.py    # word composition (placement + Übergänge; detached ink-clearance placement for non-joining glyphs; optional `pen` inks generated strokes per script; `pair_overrides` renders approved glyph_pairs rows verbatim (R3), no-override path byte-identical; single source of truth, golden-pinned)
 │   ├── widths.py     # resolve_half_widths + pen models (§5, docs/concepts/federmodelle.md): BroadNib w(φ)-law + PenStyle, render-time
 │   ├── fit.py        # M4: fit_template_to_instance, fit_glyph_to_crop
 │   └── database/     # SQLAlchemy Style + Hand + Source + Bbox + Template + Instance + Aggregate + QuizWord + repos
@@ -187,6 +187,8 @@ kurrentschrift/
 │   ├── dependencies.py
 │   ├── rendering.py  # style resolution + memoised source-pooled nib (templates + write)
 │   └── routers/      # health, styles, hands, sources, chart, bboxes, templates,
+│                     #   pairs (R3 glyph-pair overrides: public reads + admin PUT/DELETE,
+│                     #   only approved rows reach the composer),
 │                     #   write (public batched render payloads + /word server-side composition,
 │                     #   cached, no chart I/O), word_samples (public reads over the committed
 │                     #   words.json sidecar: /word-samples metadata + /crop PNG with excludes
@@ -240,7 +242,8 @@ kurrentschrift/
 │   │                 #   … 0013 quiz_words.created_at NOT NULL, 0014 Gulden gloss fix (silver),
 │   │                 #   0015 unique (style_id, glyph_key, variant) on templates,
 │   │                 #   0017 position removal (R2): base glyph_keys, sibling collapse,
-│   │                 #   drop templates.position + bboxes.split, unique (style, glyph, variant)
+│   │                 #   drop templates.position + bboxes.split, unique (style, glyph, variant),
+│   │                 #   0018 glyph_pairs (R3): additive pair-override table, approved gate
 ├── data/             # Sources, samples, derived — SEPARATE LICENSING
 │   ├── sources/      # public-domain originals (Loth 1866, Sütterlin 1922 incl. connected-writing
 │   │                 #   plates + words.json word rects for the word bench, Koch 1928 Offenbacher

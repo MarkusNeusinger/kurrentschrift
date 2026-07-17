@@ -36,6 +36,8 @@ from tests.api_harness import Harness
 WRITE_ENDPOINTS = [
     ("PUT", "/sources/{src}/bboxes/a", {}),
     ("DELETE", "/sources/{src}/bboxes/a", None),
+    ("PUT", "/sources/{src}/pairs/n/e", {}),
+    ("DELETE", "/sources/{src}/pairs/n/e", None),
     ("POST", "/sources/{src}/templates/a/trace", {}),
     ("POST", "/sources/{src}/templates/a/trace-preview", {}),
     ("POST", "/sources/{src}/templates/a/resample", {}),

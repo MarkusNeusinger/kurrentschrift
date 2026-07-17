@@ -8,11 +8,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select, tuple_
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.database.models import Aggregate, Bbox, Hand, Instance, QuizWord, Source, Style, Template
+from core.database.models import Aggregate, Bbox, GlyphPair, Hand, Instance, QuizWord, Source, Style, Template
 
 
 class StyleRepository:
@@ -220,6 +220,88 @@ class TemplateRepository:
         result = await self.session.execute(
             delete(Template).where(
                 Template.style_id == style_id, Template.glyph_key == glyph_key, Template.variant == variant
+            )
+        )
+        return (result.rowcount or 0) > 0
+
+
+class GlyphPairRepository:
+    """Sparse letter-pair overrides (redesign R3); the §4 generator is the default."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def list(self, style_id: str) -> list[GlyphPair]:
+        result = await self.session.execute(
+            select(GlyphPair)
+            .where(GlyphPair.style_id == style_id)
+            .order_by(GlyphPair.left_key, GlyphPair.right_key, GlyphPair.variant)
+        )
+        return list(result.scalars().all())
+
+    async def get(self, style_id: str, left_key: str, right_key: str, variant: int = 0) -> GlyphPair | None:
+        result = await self.session.execute(
+            select(GlyphPair).where(
+                GlyphPair.style_id == style_id,
+                GlyphPair.left_key == left_key,
+                GlyphPair.right_key == right_key,
+                GlyphPair.variant == variant,
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def approved_for_pairs(
+        self, style_id: str, pairs: list[tuple[str, str]], variant: int = 0
+    ) -> dict[tuple[str, str], dict]:
+        """The APPROVED override geometries for a word's adjacent key pairs.
+
+        One query for the whole word (the /write/word path); returns
+        {(left_key, right_key): geometry}. Unapproved rows never render.
+        """
+        if not pairs:
+            return {}
+        result = await self.session.execute(
+            select(GlyphPair).where(
+                GlyphPair.style_id == style_id,
+                # Exact pair set in SQL (row-value IN) — no over-fetch of the
+                # cartesian lefts×rights as the table grows.
+                tuple_(GlyphPair.left_key, GlyphPair.right_key).in_(list(set(pairs))),
+                GlyphPair.variant == variant,
+                GlyphPair.approved.is_(True),
+            )
+        )
+        return {(row.left_key, row.right_key): dict(row.geometry) for row in result.scalars().all()}
+
+    async def upsert(self, style_id: str, left_key: str, right_key: str, variant: int = 0, **fields: Any) -> GlyphPair:
+        """Insert-or-update by (style_id, left_key, right_key, variant)."""
+        payload = {"style_id": style_id, "left_key": left_key, "right_key": right_key, "variant": variant, **fields}
+        update_cols = {
+            k: v for k, v in payload.items() if k not in ("style_id", "left_key", "right_key", "variant", "id")
+        }
+        # The ORM-level `onupdate` never fires through on_conflict_do_update —
+        # stamp the recency column explicitly so admin UIs can trust it.
+        update_cols["updated_at"] = func.now()
+        stmt = pg_insert(GlyphPair).values(**payload)
+        stmt = stmt.on_conflict_do_update(constraint="uq_glyph_pair_style_lr_variant", set_=update_cols)
+        await self.session.execute(stmt)
+        await self.session.flush()
+        result = await self.session.execute(
+            select(GlyphPair).where(
+                GlyphPair.style_id == style_id,
+                GlyphPair.left_key == left_key,
+                GlyphPair.right_key == right_key,
+                GlyphPair.variant == variant,
+            )
+        )
+        return result.scalar_one()
+
+    async def delete(self, style_id: str, left_key: str, right_key: str, variant: int = 0) -> bool:
+        result = await self.session.execute(
+            delete(GlyphPair).where(
+                GlyphPair.style_id == style_id,
+                GlyphPair.left_key == left_key,
+                GlyphPair.right_key == right_key,
+                GlyphPair.variant == variant,
             )
         )
         return (result.rowcount or 0) > 0

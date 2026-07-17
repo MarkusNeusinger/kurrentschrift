@@ -551,6 +551,7 @@ def compose_word(
     *,
     pen: PenStyle | None = None,
     provenance: bool = False,
+    pair_overrides: dict[tuple[str, str], dict] | None = None,
 ) -> dict:
     """Compose shaped slots + per-glyph render payloads into draw items.
 
@@ -575,8 +576,22 @@ def compose_word(
     ``to_slot``/``pair=[prev_key, curr_key]``, so a downstream ruler can
     attribute a deviation to a letter or a specific join. Default off — the
     public ``/write/word`` payload and the golden fixture stay byte-identical.
-    The same seam is where an approved per-pair override would hook in later
-    (Vorschlag B — gated, nothing is stored today).
+
+    ``pair_overrides`` (redesign R3 / Vorschlag B) maps an adjacent joined
+    key pair ``(left_key, right_key)`` to a stored override geometry (the
+    APPROVED `glyph_pairs` rows, fetched by the word endpoint):
+
+    - ``offset``: ``[dx, dy]`` — where the right glyph's entry point lands
+      relative to the LEFT glyph's exit point (template units; the composer
+      currently applies the horizontal part — vertical placement stays on the
+      shared baseline).
+    - ``connector``: ``[[x, y], …]`` — the join's centerline relative to the
+      left glyph's exit point, drawn verbatim instead of the generated
+      Übergang (same pen/width treatment as a generated connector).
+
+    Overrides resolve left-to-right (the advance is carried forward), so two
+    adjacent overrides never conflict: each constrains only its right glyph.
+    ``None``/no matching pair keeps the generator path byte-identical.
     """
     items: list[dict] = []
     missing: list[str] = []
@@ -743,7 +758,18 @@ def compose_word(
         # detached pairing (either side non-joining) is placed by ink
         # clearance alone — the tighter of the two clearances wins.
         joined = bool(prev) and prev["joins"] and slot.joins
-        if joined:
+        # An approved pair override wins over the generated placement AND the
+        # generated connector for exactly this adjacent pair (redesign R3).
+        # All-or-nothing: a malformed row (connector under 2 points — e.g. a
+        # hand-edited DB row) must not shift the glyph without drawing the
+        # join, so it is ignored entirely and the generator path runs.
+        override = (pair_overrides or {}).get((prev["key"], slot.key)) if joined and slot.key else None
+        if override is not None and len(override.get("connector") or []) < 2:
+            override = None
+        if override is not None:
+            offset = override.get("offset") or [CONNECT_GAP, 0.0]
+            desired_entry_x = prev["exit"][0] + float(offset[0])
+        elif joined:
             tuck = TUCK_RATE * max(0.0, prev["exit"][1] - TUCK_Y0)
             clearance = BACKWARD_INK_CLEARANCE if _unit(prev["tangent_deg"])[0] <= 0.0 else INK_CLEARANCE
             desired_entry_x = max(
@@ -778,12 +804,27 @@ def compose_word(
         # exit — the letter hangs from the covering join, never dipping first
         # (see HIGH_COUPLE_BASES; verified on the plate originals).
         entry_trim = 0
-        if joined:
+        if override is not None:
+            # The stored join, verbatim: centerline points are relative to the
+            # left glyph's exit point (template units; ≥2 points guaranteed by
+            # the all-or-nothing check above).
+            ex, ey = prev["exit"]
+            centerline = [(ex + float(px), ey + float(py)) for px, py in override["connector"]]
+            connector = {"centerline": [list(p) for p in centerline], "lift": False}
+            _apply_pen(connector, centerline, 2 * min(prev["width"], med_half), pen)
+            if provenance:
+                connector["pair"] = [prev["key"], slot.key]
+                connector["from_slot"] = prev["slot_index"]
+                connector["to_slot"] = slot_index
+                connector["override"] = True
+            items.append(connector)
+            track(centerline)
+        elif joined:
             high_couple = _key_base(slot.key, slot.position) in HIGH_COUPLE_BASES
             centerline, entry_trim = _connector_centerline(
                 prev["exit"], prev["tangent_deg"], first_line, dx, high_couple=high_couple
             )
-            connector: dict = {"centerline": [list(p) for p in centerline], "lift": False}
+            connector = {"centerline": [list(p) for p in centerline], "lift": False}
             _apply_pen(connector, centerline, 2 * min(prev["width"], med_half), pen)
             if provenance:
                 connector["pair"] = [prev["key"], slot.key]

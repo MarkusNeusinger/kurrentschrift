@@ -12,6 +12,20 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **Glyph-pair override layer (redesign R3, stage 1).** New `glyph_pairs`
+  table (migration `0018`): sparse per-pair overrides over the §4 join
+  generator, carrying a connector centerline + placement offset relative to
+  the left glyph's exit, with `provenance` (harvested/authored), a specimen
+  reference and an `approved` gate. `core/compose.py` renders an approved
+  override verbatim for exactly its adjacent pair (left-to-right precedence);
+  with no override the generator path stays byte-identical (golden-pinned).
+  `GET /sources/{id}/write/word` fetches the approved rows in one query;
+  new public reads + admin-gated writes under `/sources/{id}/pairs/…` with
+  registry-key and geometry validation. The harvest importer and the pair
+  editor follow as the next slices.
+
 ### Changed
 
 - **Position removal (redesign R2).** One authored form per glyph:
