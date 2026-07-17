@@ -9,7 +9,10 @@ state leaks into the HTTP suites.
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
+from fastapi import HTTPException
 
 from api import rendering
 
@@ -72,3 +75,22 @@ async def test_pooled_constant_nib_caches_and_invalidates(_isolated_pool):
 async def test_non_pooled_resolver_returns_none_without_scanning(_isolated_pool):
     assert await rendering.pooled_pen(None, "suetterlin", "s1922", "constant") is None
     assert _FakeRepo.calls == 0
+
+
+async def test_resolve_style_unknown_style_500_without_internal_detail(monkeypatch):
+    """A source referencing a missing style is a server-side integrity error:
+    the 500 body must stay generic — the ids belong in the log, not the wire."""
+
+    class _NoStyleRepo:
+        def __init__(self, _db):
+            pass
+
+        async def get(self, _style_id):
+            return None
+
+    monkeypatch.setattr(rendering, "StyleRepository", _NoStyleRepo)
+    source = SimpleNamespace(id="loth-1866", style_id="gone")
+    with pytest.raises(HTTPException) as exc:
+        await rendering.resolve_style(source, None)
+    assert exc.value.status_code == 500
+    assert "gone" not in exc.value.detail and "loth-1866" not in exc.value.detail

@@ -144,6 +144,19 @@ async def test_hands_empty_db_returns_empty_list_with_cache_control(api: Harness
     assert "cache-control" in res.headers, "GET /hands must set Cache-Control"
 
 
+async def test_hand_single_read_returns_row_with_cache_control(api: Harness):
+    from core.database import Hand
+
+    style_id, _ = await api.seed_style_and_source()
+    async with api.session_maker() as session:
+        session.add(Hand(id="hand-test", style_id=style_id, label="Testhand", era="1920er", note=None))
+        await session.commit()
+    res = await api.client.request("GET", "/hands/hand-test")
+    assert res.status == 200
+    assert res.json()["label"] == "Testhand"
+    assert "cache-control" in res.headers, "GET /hands/{id} must set Cache-Control"
+
+
 async def test_quiz_words_empty_db_returns_empty_list_with_cache_control(api: Harness):
     res = await api.client.request("GET", "/quiz-words")
     assert res.status == 200
