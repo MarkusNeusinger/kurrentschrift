@@ -444,6 +444,10 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   in the Kaiserreich) and "Witwe" (precise definition) fixed in the
   generator, the regenerated word bank, the bundled fallback bank, and
   in place via migration `0016_quiz_gloss_fixes`.
+- **The quiz is named "Lese-Quiz" in the UI too.** The six "Buchstaben-Quiz"
+  strings (page title, hub/landing/Schriftkunde cards, SEO title) and the
+  letters-only SEO/landing descriptions now match the shipped scope
+  (letters + whole words), consistent with the docs rename below.
 - **Docs sync.** copilot-instructions' schema section now states both
   template unique constraints (the `(style_id, glyph_key, variant)` one
   shipped in 0015) instead of calling `glyph_key` UI-only;

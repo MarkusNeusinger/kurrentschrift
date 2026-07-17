@@ -427,7 +427,7 @@ export const schriftkunde = {
   tryCards: [
     {
       id: 'quiz',
-      title: 'Buchstaben-Quiz',
+      title: 'Lese-Quiz',
       body: 'Lesen üben: Erkenne die Buchstaben der alten Schrift in einem kurzen Abfragespiel — vom einzelnen Zeichen bis zum ganzen Wort.',
       cta: 'Quiz öffnen',
     },

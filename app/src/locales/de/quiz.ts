@@ -2,7 +2,7 @@
 // message catalog — key tree mirrors a future i18next `quiz` namespace.
 
 export const quiz = {
-  title: 'Buchstaben-Quiz',
+  title: 'Lese-Quiz',
   // Quiz option lists (quizTypes.ts) — script + difficulty labels.
   scripts: {
     kurrent: 'Kurrent',
