@@ -18,6 +18,8 @@ import type { ComposedWordOut, WordSampleOut, WordSampleScoreOut } from '@/lib/a
 import { fetchRenderWord } from '@/lib/api/renderCache';
 import { polylineToPathD, ringsToPathD } from '@/lib/svg';
 import { de } from '@/locales/admin';
+import { PairEditorDialog } from '@/sections/admin/pairs/PairEditorDialog';
+import { pairKeysOf } from '@/sections/admin/pairs/pairKeys';
 import { garamond } from '@/styles/paper';
 
 const FACE_H = 220; // px per face — words are wide, keep cards scannable
@@ -107,7 +109,19 @@ function ScoreChip({ score }: { score: WordSampleScoreOut }) {
   );
 }
 
-function WordCard({ sample, sourceId, overlay, score }: { sample: WordSampleOut; sourceId: string; overlay: boolean; score?: WordSampleScoreOut }) {
+function WordCard({
+  sample,
+  sourceId,
+  overlay,
+  score,
+  onOpenEditor,
+}: {
+  sample: WordSampleOut;
+  sourceId: string;
+  overlay: boolean;
+  score?: WordSampleScoreOut;
+  onOpenEditor?: () => void;
+}) {
   const [ref, inView] = useInView<HTMLDivElement>();
   const [composed, setComposed] = useState<ComposedWordOut | null>(null);
   const [error, setError] = useState(false);
@@ -143,6 +157,11 @@ function WordCard({ sample, sourceId, overlay, score }: { sample: WordSampleOut;
         {score && <ScoreChip score={score} />}
         {composed && composed.missing.length > 0 && (
           <Chip size="small" color="warning" label={`${de.admin.compare.missingPrefix}${composed.missing.join(', ')}`} />
+        )}
+        {onOpenEditor && (
+          <Button size="small" variant="text" onClick={onOpenEditor} sx={{ ml: 'auto' }}>
+            {de.admin.compare.openPairEditor}
+          </Button>
         )}
       </Box>
 
@@ -207,6 +226,7 @@ export function WordComparison({ mode, overlay }: { mode: WordCompareMode; overl
   const [scoring, setScoring] = useState<{ done: number; total: number } | null>(null);
   const [scoreError, setScoreError] = useState(false);
   const scoringRun = useRef(0);
+  const [editing, setEditing] = useState<{ sample: WordSampleOut; left: string; right: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -291,9 +311,41 @@ export function WordComparison({ mode, overlay }: { mode: WordCompareMode; overl
           )}
         </Box>
       )}
-      {visible.map((s) => (
-        <WordCard key={s.id} sample={s} sourceId={sourceId} overlay={overlay} score={scores[s.id]} />
-      ))}
+      {visible.map((s) => {
+        // A pair card links straight into the pair editor (redesign R1b →
+        // R3 circle) — with its specimen crop as the editor's underlay.
+        const keys = mode === 'pairs' ? pairKeysOf(s.word) : null;
+        return (
+          <WordCard
+            key={s.id}
+            sample={s}
+            sourceId={sourceId}
+            overlay={overlay}
+            score={scores[s.id]}
+            onOpenEditor={keys ? () => setEditing({ sample: s, left: keys[0], right: keys[1] }) : undefined}
+          />
+        );
+      })}
+      {editing && (
+        <PairEditorDialog
+          open
+          onClose={() => setEditing(null)}
+          pairText={editing.sample.word}
+          leftKey={editing.left}
+          rightKey={editing.right}
+          sourceId={sourceId}
+          specimen={editing.sample}
+          onChanged={() => {
+            // An override change makes the card's score stale — drop it so the
+            // chip doesn't mislead; a fresh sweep re-ranks.
+            setScores((prev) => {
+              const next = { ...prev };
+              delete next[editing.sample.id];
+              return next;
+            });
+          }}
+        />
+      )}
     </Box>
   );
 }

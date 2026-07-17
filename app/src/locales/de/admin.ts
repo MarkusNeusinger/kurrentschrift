@@ -108,6 +108,7 @@ export const admin = {
     scoreFailed: 'nicht bewertbar',
     scoreError: 'Einzelne Scores konnten nicht berechnet werden.',
     scoreWorstSegments: 'Größte Abweichungen:',
+    openPairEditor: 'Im Paar-Editor öffnen',
   },
   // The pair matrix (/admin/paare): every two-letter combination of one chosen
   // letter, server-composed — capitals only on the left, per the redesign (R1).
@@ -127,6 +128,7 @@ export const admin = {
       'Beide Buchstaben liegen an der einstellbaren Kopplung (Versatz des rechten Ansatzpunkts relativ zum Abgang des linken). Den Verbindungszug mit dem Stift/Zeiger direkt zeichnen; gespeichert wird er relativ zum Abgangspunkt. Nur freigegebene Overrides ersetzen den generierten Übergang.',
     offsetLabel: 'Versatz',
     clearConnector: 'Zug löschen',
+    showSpecimen: 'Vorlage unterlegen',
     previewHeading: 'Live-Ergebnis (/write/word)',
     approveLabel: 'Freigegeben (ersetzt den Generator)',
     approveHint: 'Ohne Freigabe bleibt der Override gespeicherter Entwurf — gerendert wird weiter der Generator.',

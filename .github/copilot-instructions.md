@@ -221,7 +221,9 @@ kurrentschrift/
 │       │                #   (WordComparison — words.json specimens vs /write/word, overlay
 │       │                #   registered over the sidecar lineature; "Scores berechnen &
 │       │                #   sortieren" fetches the admin /score per card sequentially, loss
-│       │                #   chip + worst-first sort; the Fremdhand tab is never scored);
+│       │                #   chip + worst-first sort; pair cards link into the pair editor
+│       │                #   with the specimen crop as registered underlay (R1b→R3 circle);
+│       │                #   the Fremdhand tab is never scored);
 │       │                #   pairs/PairMatrix.tsx =
 │       │                #   /admin/paare: every 2-letter combination of a chosen letter,
 │       │                #   server-composed, capitals only left — redesign R1; override
