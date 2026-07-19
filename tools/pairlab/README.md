@@ -54,6 +54,32 @@ uv run --extra viz python -m tools.pairlab longs,a ue,b
 uv run --extra viz python -m tools.pairlab re --full-word
 ```
 
+## Harvest (redesign R3 Erstbefüllung)
+
+`tools/pairlab/harvest.py` turns the dissections into `glyph_pairs` override
+drafts: placement offset from the rigid independent fits, connector centerline
+from the specimen's own joining stroke (baseline-locked so it meets the
+composed entry), one best occurrence per pair. Needs no viz extra and writes
+nothing without `--apply`:
+
+```bash
+# dissect all Abb.-20 pairs, report + QC to temp/pair_harvest.json
+uv run python -m tools.pairlab.harvest
+
+# import as UNAPPROVED drafts via the local admin API (needs ADMIN_TOKEN)
+uv run python -m tools.pairlab.harvest --apply
+
+# additionally approve named pairs in the same write (measured winners only)
+uv run python -m tools.pairlab.harvest --apply --approve B:i,I:n,D:u,O:f
+```
+
+The stdout QC line compares `gen` (generated connector chamfer at independent
+placement) against `harvest` (the stored centerline) — a harvest that scores
+worse than the generator should stay a draft. Measure the composed effect with
+`tools/wordbench/run.py --set pairs --overrides temp/pair_harvest.json` (an
+override run is its own measurement, never the headline). Review + Freigabe
+stay in the pair editor (`/admin/paare`) — the human gate.
+
 One PNG per pair (rows = occurrences, columns = overlay + profile) into
 `$PAIRLAB_OUT` (else `temp/`). Overlay colours: first letter dark red, second
 green, other letters grey — all at their INDEPENDENT placements; the ductus

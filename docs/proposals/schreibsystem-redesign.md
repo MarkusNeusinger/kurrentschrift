@@ -12,8 +12,14 @@ kollabiert — eine abweichende Schwester überlebt als `variant` —,
 Compose-Golden-Fixture blieb in der Geometrie byte-identisch).
 **R3 ist umgesetzt** (2026-07-17, Migration `0018` + Paar-Editor).
 **R1b Stufe 2 ist umgesetzt** (2026-07-17: Admin-Score-Endpunkt +
-Score-Chips/Sortierung im Wortvergleich, s. R1b). Offen:
-Ernte-Importer (lokale Umgebung), R4–R5 (Reihenfolge s. §6). Dieses Dokument konkretisiert
+Score-Chips/Sortierung im Wortvergleich, s. R1b).
+**Der Ernte-Importer sowie R4 und R5 sind umgesetzt** (2026-07-18,
+Issue #218: `tools/pairlab/harvest.py` + Wordbench-`--overrides`, R4-Loop
+`jul17` mit Nested-Fall-Keep und O3-Neubewertung, R5 Slant-Spalte +
+d-Schleifen-Lehnung — Zahlen in `qualitaetsmetrik.md` §6 `jul17`). Offen ist
+allein der **Live-Import** der Ernte-Entwürfe in die geteilte DB samt
+Freigabe im Paar-Editor (die Session hatte keinen Cloud-SQL-Zugang; ein
+Kommando, s. R3). Dieses Dokument konkretisiert
 [`planaenderungen.md`](planaenderungen.md) Vorschlag B (Paar-Overrides,
 dort weiterhin der sanktionierte Rahmen) und baut auf dem
 platzierungsbereinigten Paar-Befund in
@@ -274,8 +280,16 @@ Freigabe-Checkbox, Live-`/write/word`-Vorschau; Freihand-Saves sind
 `harvested` + Vorlagen-Zitat) und die **Override-Badges** in der
 Paar-Matrix (grün = freigegeben, orange = Entwurf; Zellen-Klick
 öffnet den Editor; Ligatur-Zellen ohne Join bleiben nicht klickbar).
-**Offen:** der Ernte-Importer (pairlab-§5b-Fits, braucht die Live-DB +
-Wordbench-Fixtures — läuft in der lokalen Umgebung des Autors).
+**Ernte-Importer umgesetzt (2026-07-18):** `tools/pairlab/harvest.py`
+seziert alle Abb.-20-Paare über die frozen Fixtures (Offset aus rigiden
+Einzel-Fits, Verbindungszug aus dem Specimen-Zug, baseline-locked) und
+schreibt sie per `--apply` als unfreigegebene `harvested`-Entwürfe durch die
+Admin-API; `--approve` markiert gemessene Gewinner in derselben Schreibung.
+Override-Messung über `tools/wordbench/run.py --overrides` (eigene
+Messgröße): mit den vier Versal-Paaren B→i/I→n/D→u/O→f fällt `pair_loss`
+0,1918 → 0,1864. **Offen:** der Live-Import in die geteilte DB
+(`uv run python -m tools.pairlab.harvest --apply --approve B:i,I:n,D:u,O:f`
+gegen die lokal laufende API) + Review im Paar-Editor.
 
 - **Schema:** eigene Tabelle `glyph_pairs` — `(style_id, left_key,
   right_key, variant)`, Geometrie als JSONB (gefittetes Paar:
@@ -310,6 +324,14 @@ A-seitigen d-Trims (O3) — mit dem dokumentierten Metrik-Vorbehalt aus dem
 konstruktionsbedingt; eine Metrik-Anpassung geschieht **zwischen** Loops
 mit Baseline-Vermerk in `qualitaetsmetrik.md`, nie während eines Laufs).
 
+**Stand (2026-07-18, Loop `jul17`):** Der globale Advance-Bias ist weg
+(Residuen-Median −0,03 xh) — der Restfehler ist klassenförmig. Gelandet:
+die **Nested-Fall**-Platzierung (t-Balken/f-Fahne, Wörter 0,1185 → 0,1178).
+Verworfen: der Ligatur-Rest-Tuck (ch/ck/…) und — Neubewertung O3 — der
+A-seitige d-Trim, mit geschärftem Befund: der Trim entfernt gedeckte
+Kreuzungs-Tinte der Schleife, die Deckung verschlechtert sich; es ist NICHT
+nur das Spannen-Artefakt. Details + Zahlen: `qualitaetsmetrik.md` §6.
+
 ### R5 — Schräglagen-Klassenkorrektur
 
 1. Slant-Messung (Schätzer aus §4) als Report-Spalte in
@@ -318,6 +340,16 @@ mit Baseline-Vermerk in `qualitaetsmetrik.md`, nie während eines Laufs).
    gebundenen Kontext (d zuerst, dann b/h/k prüfen) als
    Renderpfad-Regel im Keep/Discard-Loop — Template bleibt
    Chart-Messung.
+
+**Stand (2026-07-18):** Beides umgesetzt. Die Report-Spalte
+(`tools/wordbench/slant.py`, `slant <Vorlage>/<Engine>` + Blockmediane)
+reproduziert den §4-Befund headline-neutral. Die d-Lehnung rendert als
+`ASCENDER_LEAN_*`-Klassenregel in `core/compose.py`: gebundene d in Läufen
+≥ 3 Buchstaben scheren oberhalb des Mittelbands 4,5° nach rechts — die
+isolierten Abb.-20-Drills messen aufrecht (§4-Median 90,75°) und bleiben
+chart-treu, ebenso das Template selbst. Bench-neutral, entschieden per
+Messung + Overlay; **b/h/k geprüft und nicht übernommen** (keine gemessene
+Lehnung in §4, Bench-Delta sub-noise). Golden-Fixture bewusst neu gepinnt.
 
 ## 6. Reihenfolge
 

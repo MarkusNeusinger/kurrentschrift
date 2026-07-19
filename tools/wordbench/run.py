@@ -50,10 +50,11 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw
 
-from core.compose import compose_word
+from core.compose import _key_base, compose_word
 from core.pipeline import render_payload_for_template
 from core.shaping import GlyphSlot
 from tools.wordbench.metric import score_word
+from tools.wordbench.slant import composed_raster, slant_deg
 
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
@@ -84,6 +85,22 @@ def _overlay(word_dir: Path, word_meta: dict, composed: dict, report: dict, out_
     img.save(out_path)
 
 
+def _slot_overrides(slots: list[GlyphSlot], by_base: dict[tuple[str, str], dict]) -> dict[tuple[str, str], dict]:
+    """Map base-keyed pair overrides onto this word's RAW slot keys.
+
+    The composer looks overrides up by the slots' own keys; a harvest file is
+    keyed by bare glyph bases (post-R2 registry keys), while frozen fixture
+    slots may still carry position suffixes — so the mapping happens per word."""
+    out: dict[tuple[str, str], dict] = {}
+    for s0, s1 in zip(slots, slots[1:], strict=False):
+        if s0.space or s1.space or not s0.key or not s1.key or not (s0.joins and s1.joins):
+            continue
+        geometry = by_base.get((_key_base(s0.key, s0.position), _key_base(s1.key, s1.position)))
+        if geometry is not None:
+            out[(s0.key, s1.key)] = geometry
+    return out
+
+
 def _print_block(reports: list[dict], skipped: list[dict], kind: str) -> None:
     """One headline block per fixture set. The words block is the experiment
     loop's stable contract; the pairs block mirrors it under its own names."""
@@ -109,6 +126,13 @@ def _print_block(reports: list[dict], skipped: list[dict], kind: str) -> None:
         print("--- components (mean penalty, lower better) ---")
         for comp, label in (("transition", "transition"), ("coverage", "coverage"), ("width", "width")):
             print(f"{comp_prefix}_{label}: {float(np.mean([r[comp] for r in scored])):.6f}")
+        # Report-only slant medians (90 = upright, < 90 = right-leaning) —
+        # appended after the stable component block, never a headline.
+        slant_prefix = "" if kind == "word" else "pair_"
+        for slant_key in ("slant_spec", "slant_comp"):
+            values = [r[slant_key] for r in scored if r.get(slant_key) is not None]
+            if values:
+                print(f"{slant_prefix}{slant_key}_median: {float(np.median(values)):.2f}")
 
 
 def main() -> None:
@@ -127,7 +151,19 @@ def main() -> None:
     parser.add_argument("--artifacts", type=Path, help="write overlay PNGs here")
     parser.add_argument("--json", type=Path, help="write the full report here")
     parser.add_argument("--compare", type=Path, help="previous --json report to diff against")
+    parser.add_argument(
+        "--overrides",
+        type=Path,
+        help="pair-override file (tools/pairlab/harvest.py --out format) composed into every word; "
+        "an override run is a SEPARATE measurement, never comparable to the override-free headline",
+    )
     args = parser.parse_args()
+
+    overrides_by_base: dict[tuple[str, str], dict] = {}
+    if args.overrides:
+        for entry in json.loads(args.overrides.read_text()):
+            overrides_by_base[(entry["left_key"], entry["right_key"])] = entry["geometry"]
+        print(f"overrides: {len(overrides_by_base)} pairs from {args.overrides}")
 
     t0 = time.perf_counter()
     style_root = args.fixtures / args.style
@@ -180,7 +216,11 @@ def main() -> None:
             skel = np.load(word_dir / "ref_skel.npz")["skel"]
             slots = [GlyphSlot(**s) for s in word_meta["slots"]]
             try:
-                composed = compose_word(slots, {s.key: payload_for(s.key) for s in slots if s.key})
+                composed = compose_word(
+                    slots,
+                    {s.key: payload_for(s.key) for s in slots if s.key},
+                    pair_overrides=_slot_overrides(slots, overrides_by_base) or None,
+                )
                 report = score_word(
                     composed,
                     {
@@ -190,6 +230,12 @@ def main() -> None:
                     },
                     skel,
                     nib,
+                )
+                # Slant is a REPORT column (redesign R5), never part of the loss:
+                # specimen vs composed, both measured on the same crop grid.
+                report["slant_spec"] = slant_deg(skel)
+                report["slant_comp"] = slant_deg(
+                    composed_raster(composed, report["registration"], word_meta, skel.shape)
                 )
             except Exception as exc:  # a crash counts 1.0 — one regressed word always moves the number
                 composed = None
@@ -209,13 +255,18 @@ def main() -> None:
             print(f"word {r['id']:<15} loss {r['loss']:.6f}  FAILED ({reason})")
         else:
             reg = r["registration"]
+            spec = r.get("slant_spec")
+            comp = r.get("slant_comp")
+            slant = f"  slant {spec:.1f}/{comp:.1f}" if spec is not None and comp is not None else ""
             print(
                 f"word {r['id']:<15} loss {r['loss']:.6f}  "
                 f"trans {r['transition']:.3f} cover {r['coverage']:.3f} width {r['width']:.3f}  "
-                f"(tx={reg['tx']:.0f}, ty={reg['ty']:.0f})"
+                f"(tx={reg['tx']:.0f}, ty={reg['ty']:.0f}){slant}"
             )
 
     result: dict = {"style": args.style, "set": args.which}
+    if args.overrides:
+        result["overrides"] = str(args.overrides)
     for kind in ("word", "pair"):
         kind_reports = [r for r in reports if r["kind"] == kind]
         kind_skipped = [s for s in skipped if s["kind"] == kind]

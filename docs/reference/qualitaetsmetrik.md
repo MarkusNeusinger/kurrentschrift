@@ -841,3 +841,77 @@ in der Merge-Umgebung NICHT nachgemessen (die Wortbench braucht die geteilte
 Cloud-SQL-DB) — vor dem nächsten `/optimize`-Loop einmal
 `export_fixtures` + `run --set all` fahren, um die reale kombinierte Zahl zu
 setzen.
+
+### Kombinierte Baseline + Loop `jul17` (2026-07-18, Issue #218)
+
+**Kombinierte Baseline nach der Merge-Reconciliation:** gemessen auf den
+EINGEFRORENEN `jul08`-Fixtures — bewusst ohne Re-Export: die
+Sütterlin-Templates sind seit 2026-07-07 unverändert (R2 war geometrisch
+byte-identisch, nur Keys), und die Session hatte keinen Cloud-SQL-Zugang
+(Egress-IP nicht in den authorized networks). Der nachgeholte Re-Export auf
+Basis-Keys bleibt eine spätere bewusste Re-Baseline-Entscheidung.
+**Wörter 0,118532 · Paare 0,191805** (Komponenten 0,107/0,111/0,158 bzw.
+0,161/0,131/0,369; 48/15 bzw. 31/2 gescort/übersprungen).
+
+**Messwerkzeug-Erweiterungen (vor dem Loop, Headline-Neutralität
+verifiziert):**
+
+- **Slant-Report-Spalte** (R5 Stufe 1, `tools/wordbench/slant.py`):
+  Scher-Suche −30°…+30° in 0,25°-Schritten, Maximierung der quadrierten
+  Spaltenprofil-Summe (90° = senkrecht); pro Zeile `slant <Vorlage>/<Engine>`
+  plus Blockmediane, JSON-Felder `slant_spec`/`slant_comp`. Headlines und
+  alle Per-Wort-Losses byte-identisch (0,118532/0,191805). Reproduziert den
+  §4-Befund des Redesign-Docs auf den frozen Referenzen: das 86,2°,
+  der 87,2°, die 88,0° bei Engine ~90.
+- **`--overrides <harvest.json>`** in `run.py`: komponiert jedes Wort mit den
+  Paar-Overrides der Datei (Basis-Keys werden pro Wort auf die eingefrorenen
+  Slot-Keys gemappt). Ein Override-Lauf ist eine EIGENE Messgröße und nie mit
+  der Override-freien Headline vergleichbar; das JSON trägt das Feld
+  `overrides`.
+
+**Ernte (R3-Erstbefüllung, `tools/pairlab/harvest.py`):** 32 Abb.-20-Paare
+geerntet — Offset aus den rigiden Einzel-Fits, Verbindungszug aus dem
+Specimen-Zug, baseline-locked (der Composer hält beide Buchstaben auf der
+Grundlinie, die relative vertikale Fit-Verschiebung wird linear über den
+Pfad verteilt, `connector[-1] == offset`). Override-Messung: alle 32 →
+pair_loss 0,1890; nur die vier Versal-Paare B→i/I→n/D→u/O→f → **0,1864**
+(alle vier verbessern einzeln: In −0,085, Of −0,056, Bi −0,018, Du −0,008;
+Wörter-Headline unverändert — kein Wort enthält sie). Berührungs-Paare ohne
+Zwischenraum-Zug (df/dp/ds/bi) verschlechtern als Override — der
+Override-Pfad rendert verbatim und verliert den O2-Entry-Trim — und bleiben
+Entwürfe, konsistent mit der R3-Regel „Kleinbuchstaben erst nach R4".
+
+**Loop `jul17`** (Composer editiert, Metrik/Fixtures/Slots eingefroren; Log
+`tools/wordbench/runs/loop-jul17/results.tsv`, Residuen-Evidenz per pairlab:
+kein globaler Advance-Bias mehr — Median −0,03 xh —, Restfehler klassenförmig
+t −0,34 · c→h −0,25 · f→e −0,29 · a +0,16):
+
+- **E1 Nested Fall — KEEP, Wörter 0,118532 → 0,117769** (Paare unverändert):
+  steigende Mittelband-Exits, deren Nachbar UNTER dem Exit eintritt (t-Balken,
+  f-Fahne — kein Sägezahn-ALIGN möglich), nesten auf der Platte unter der
+  Exit-Tinte; die Ink-Schranke lockert auf `ALIGN_MIN_CLEARANCE`. Sweep:
+  Schranke 0,06/0,0/−0,10 → 0,06 optimal; ein zusätzlicher Gap-Tuck band nie
+  (E4-Check: alle Nest-Gewinne liegen bei rise ∈ (−0,15, 0,02)).
+- **E2 Ligatur-Rest-Tuck — DISCARD** (+0,0014/+0,0023 Wörter bei 0,15/0,25):
+  die enge Kopplung zerlegter ch/ck/tz/ſt/qu-Reste verschlechtert die
+  Headline trotz der pairlab-Evidenz (−0,25 xh bei c→h).
+- **E3/E3b O3 A-seitiger d-Trim — DISCARD, Befund geschärft** (0,1316/0,2126
+  bzw. 0,1364/0,2189 mit Fall-Tangente): der Trim verschlechtert auch die
+  DECKUNG — der d-Stub retraciert die Kreuzungsstrecke der Schleife, die auf
+  der Platte eigene Tinte trägt; das ist ein substanzielles Negativ-Ergebnis,
+  nicht nur das dokumentierte Spannen-Artefakt der Übergangs-Komponente. O3
+  bleibt auch nach der Neubewertung auf dem gemergten Composer verworfen.
+- **E5 (R5 Stufe 2) d-Schleifen-Lehnung — KEEP, Wörter 0,117999** (Paare
+  unverändert): gebundene d (Lauf ≥ 3 Buchstaben — die isolierten
+  Abb.-20-Drills messen aufrecht, §4-Median 90,75°) scheren oberhalb des
+  Mittelbands um 4,5° nach rechts (Template bleibt Chart-Messung, ein
+  solitäres d bleibt chart-treu). Bench-neutral (Winkel-Sweep 3/4,5/6°
+  spreizt 0,0007 = Ruler-Rauschen) — entschieden per §4-Messung + Overlay
+  (das/der: die komponierte Schleife liegt auf der lehnenden
+  Vorlagen-Schleife; Präzedenz Fluent-Weitung). Slant-Spalte bestätigt:
+  das/der/die 90,2 → ~89,0. **b/h/k geprüft und NICHT übernommen** (Delta
+  sub-noise, §4-Tabelle zeigt für deren Wörter keine Lehnung).
+  Golden-Fixture bewusst neu gepinnt (REGEN_GOLDEN).
+
+**Endstand `jul17`: Wörter 0,117999 · Paare 0,191805**; Override-Lauf mit
+den vier Versal-Entwürfen: pair_loss 0,1864.

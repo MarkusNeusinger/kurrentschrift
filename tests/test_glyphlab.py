@@ -29,7 +29,7 @@ pytestmark = pytest.mark.skipif(
 
 def test_fixture_case_loads_constant_and_pressure() -> None:
     suet = fixture_case("i-initial")
-    assert suet.glyph == "i" and suet.position == "initial"
+    assert suet.glyph == "i" and suet.key == "i-initial"
     assert suet.is_constant  # Sütterlin Gleichzug
     assert len(suet.raw_path) > 2
     loth = fixture_case("longs-final", source_id="loth-1866")  # Kurrent ſ (pressure); ſ now exists in both sets

@@ -14,6 +14,56 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Harvest importer for glyph-pair overrides (redesign R3 Erstbefüllung).**
+  `tools/pairlab/harvest.py` dissects every adjacent joined pair in the frozen
+  Abb.-20 pair fixtures (independent rigid fits + M4 ductus traces) and derives
+  the `PairGeometry` the composer replays verbatim: placement offset from the
+  rigid fits, connector centerline from the specimen's own joining stroke,
+  baseline-locked so the stored path meets the composed entry
+  (`connector[-1] == offset`). One best occurrence per pair with QC (fit
+  residuals, gap ink, harvested vs generated chamfer); `--apply` PUTs
+  unapproved `harvested` drafts through the admin API's validation and
+  `--approve left:right` flags measured winners in the same upsert. The word
+  bench gains `--overrides <harvest.json>` — an override run is its own
+  measurement, never the headline; with only the four capital pairs B:i, I:n,
+  D:u, O:f overridden, `pair_loss` falls 0.1918 → 0.1864 on the frozen
+  fixtures.
+
+- **Slant report column in the word bench (redesign R5, stage 1).**
+  `tools/wordbench/slant.py` implements the shear-search estimator from the
+  redesign findings (−30°…+30° in 0.25° steps, maximum sum of squared column
+  profile; 90° = upright, < 90 = right-leaning). Every scored row reports
+  `slant <specimen>/<composed>` plus per-block medians; report-only —
+  headlines and per-word losses verified byte-identical. On the frozen
+  references it reproduces the d-loop finding: das 86.2°, der 87.2°,
+  die 88.0° against a rigid ~90° engine.
+
+### Changed
+
+- **Composer placement: nested-fall class rule (redesign R4).** With the
+  global advance bias gone, the pairlab residuals are class-shaped: rising
+  mid-band exits whose neighbour enters below them (t's bar, f's flag, c's
+  hook — no sawtooth pass-through possible) composed up to 0.34 xh too wide
+  because their far-right ink pinned the clearance floor. On the plates the
+  next letter nests under that ink: the ink floor now relaxes to
+  `ALIGN_MIN_CLEARANCE` for exactly this class. Words bench 0.1185 → 0.1178,
+  pairs unchanged. Re-evaluated and again rejected in the same loop: the
+  ligature-remnant tuck and the O3 A-side d-stub trim — the latter with a
+  sharpened diagnosis (the trimmed stub retraces the loop's crossing stretch,
+  which carries real specimen ink; both headlines regress).
+
+- **Bound d leans its ascender loop like the school hand (redesign R5,
+  stage 2).** The measured d-Oberlängen-Schleife leans 4–5° right in
+  connected writing while the chart cell stands upright. A bound d in a
+  joined run of ≥ 3 letters now shears its above-midband part 4.5° right at
+  render time — centerlines, silhouette rings and every downstream
+  measurement consistently; the stored template stays the chart measurement,
+  a solitary d and the isolated two-letter drills (measured upright) render
+  chart-true. Bench-neutral within ruler noise; decided by the slant
+  measurement and the das/der overlays. Extending the class to b/h/k was
+  checked and not adopted (no measured lean). The compose golden fixture is
+  deliberately re-pinned for this intentional output change.
+
 - **Pair cards link into the pair editor with the specimen as underlay.**
   Closing the redesign's R1b→R3 circle: every letter-pair card in the
   `/admin/vergleich` Verbindungen tab gets an "Im Paar-Editor öffnen" action

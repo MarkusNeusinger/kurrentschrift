@@ -115,6 +115,20 @@ CONNECT_SAMPLES = 24  # Bézier samples per connector (dense enough to read as a
 # instead couple LOW through the baseline garland (bi, on originals do dip).
 # A closed, enumerated set like NONJOIN_CLEARANCE — glyph_key bases.
 HIGH_COUPLE_BASES = frozenset({"e", "a", "o", "c", "d", "g", "q", "ae", "oe"})
+# Ascender-lean (R5): in BOUND context the school hand tilts the d loop 4-5°
+# right of the upright chart cell — the slant sits above the midband, in the
+# loop itself, while the midband stays ~90° (redesign §4: das 85.0°, der
+# 86.25°, die 86.75°/87.0°, muß 86.5° full-height vs ~90° midband-only). A
+# render-path rule like FLUENT_BODY_PITCH: the stored template remains the
+# chart measurement, and a solitary (unbound) glyph renders chart-true.
+# Class-based, d first; b/h/k measured separately (their loops did not show
+# the lean in the §4 word table).
+ASCENDER_LEAN_BASES = frozenset({"d"})
+ASCENDER_LEAN_DEG = 4.5
+# The lean is a property of FLOWING words: the isolated two-letter drills of
+# Abb. 20 measure upright (§4: pairs full-height median 90.75° vs the leaning
+# d-words of Abb. 19), so a run shorter than this stays chart-true.
+ASCENDER_LEAN_MIN_RUN = 3
 # Baseline garland — the join for ARCADE entries when a letter's stroke ends
 # ABOVE where the next one begins. The plates show the pen leaving the exit,
 # falling into a ROUNDED TURN near the Grundlinie and rising into the next
@@ -216,7 +230,12 @@ ENTRY_COUPLE_Y = 0.78
 # their tangent is not a diagonal.
 ALIGN_TAN_DEG = (25.0, 55.0)
 ALIGN_MIN_RISE = 0.02  # entry must sit above the exit for a pass-through
-ALIGN_MIN_CLEARANCE = 0.06  # ink may approach this close when alignment pulls
+# Shared by the sawtooth pass-through AND the R4 "nested fall" placement (a
+# rising mid-band exit whose neighbour enters below it — t's bar, f's flag —
+# nests over the next letter instead of clearing its full ink column; the
+# jul17 sweep put the nested floor exactly at the align floor, and shrinking
+# the connect gap on top of it never bound).
+ALIGN_MIN_CLEARANCE = 0.06
 # The plates couple slightly FLATTER than the letters' internal diagonals (a
 # subtle set-off remains between two sawtooth letters) — pull onto a line of
 # this fraction of the mean tangent slope, not the full slope.
@@ -245,6 +264,32 @@ def _key_base(key: str | None, position: str | None) -> str:
         return ""
     suffix = f"-{position}"
     return key[: -len(suffix)] if position and key.endswith(suffix) else key
+
+
+def _joined_run_length(slots: list[GlyphSlot], index: int) -> int:
+    """Length of the contiguous joined letter run around ``index`` — bound
+    context is a property of the text (an unauthored neighbour still counts),
+    never of template availability."""
+
+    def _joins(i: int) -> bool:
+        s = slots[i]
+        return not s.space and bool(s.key) and bool(s.joins)
+
+    if not _joins(index):
+        return 0
+    length = 1
+    for step in (-1, 1):
+        i = index + step
+        while 0 <= i < len(slots) and _joins(i):
+            length += 1
+            i += step
+    return length
+
+
+def _lean_stroke(pts: list, shear: float, pivot_y: float) -> list[Point]:
+    """Shear the stroke's above-``pivot_y`` part rightward (continuous at the
+    pivot, identity below it)."""
+    return [(x + shear * max(0.0, y - pivot_y), y) for x, y in pts]
 
 
 def _nonjoin_clearance(base: str) -> float:
@@ -681,6 +726,21 @@ def compose_word(
         if guides is None:
             guides = data["template_guides"]
 
+        rings_by_stroke = data.get("outline_paths") or []
+        # Ascender-lean (R5): tilt the loop of a BOUND d to the measured axis.
+        # Applied to the shared payload's copies — centerlines, silhouette
+        # rings and entry alike — before any exit/ink measurement, so every
+        # downstream consumer sees one consistent glyph.
+        if (
+            slot.joins
+            and _key_base(slot.key, slot.position) in ASCENDER_LEAN_BASES
+            and _joined_run_length(slots, slot_index) >= ASCENDER_LEAN_MIN_RUN
+        ):
+            shear = math.tan(math.radians(ASCENDER_LEAN_DEG))
+            pivot_y = (data.get("template_guides") or {}).get("midband", 1)
+            centerlines = [_lean_stroke(cl, shear, pivot_y) for cl in centerlines]
+            rings_by_stroke = [[_lean_stroke(ring, shear, pivot_y) for ring in rings] for rings in rings_by_stroke]
+
         # A detached glyph (digit, punctuation — slot.joins False) closes the
         # letter run before it like a word boundary: the body earns its
         # Endstrich and the word's floating marks land before the mark is
@@ -733,7 +793,6 @@ def compose_word(
         # neighbour away — on the teaching plates the next letter tucks in
         # under it — while a bow at x-height (w, v) must. Diacritics never
         # count (they are deferred and float above the band anyway).
-        rings_by_stroke = data.get("outline_paths") or []
         ink_min_x = math.inf
         ink_max_x = -math.inf
         # A detached glyph does not take part in join-band kerning — its whole
@@ -790,6 +849,17 @@ def compose_word(
                 floor_x = prev["ink_max_x"] + ALIGN_MIN_CLEARANCE - (ink_min_x - entry_xy[0])
                 if align_entry_x < desired_entry_x:
                     desired_entry_x = max(align_entry_x, floor_x)
+            elif (
+                ALIGN_TAN_DEG[0] <= prev["tangent_deg"] <= ALIGN_TAN_DEG[1]
+                and rise < ALIGN_MIN_RISE
+                and prev["exit"][1] <= HIGH_COUPLE_EXIT_Y
+            ):
+                # Nested fall (R4): a rising mid-band exit whose neighbour
+                # enters BELOW it cannot pass through — on the plate the next
+                # letter nests under the exit ink (t's bar, f's flag) instead
+                # of clearing it, so the ink floor relaxes to the align floor.
+                floor_x = prev["ink_max_x"] + ALIGN_MIN_CLEARANCE - (ink_min_x - entry_xy[0])
+                desired_entry_x = max(prev["exit"][0] + CONNECT_GAP - tuck, floor_x)
         elif prev:
             gap = _nonjoin_clearance(_key_base(slot.key, slot.position)) if not slot.joins else math.inf
             if not prev["joins"]:
