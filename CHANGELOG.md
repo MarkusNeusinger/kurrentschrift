@@ -20,22 +20,27 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   collinear — the taut cubic ran visibly flatter than both ink flanks (n→e
   chord −7° between 41°/39° tangents on the golden payloads), the kink the
   connected-writing review kept flagging. `core/compose.py` now solves the
-  PAIR DISTANCE together with the coupling point: the pair is pushed together
-  until the exit's rise line meets the rising lead-in flank of the next
-  letter exactly (`_flank_couple_placement`), the stub below the coupling
-  point is absorbed by the join (the O2 trim mechanism, silhouette included),
-  and the ink floor for that fit ignores the stub silhouette's own overhang.
-  Where even the tightest legal placement cannot reach collinearity, the
-  connector falls back to the steepest reachable straight line
-  (`_flank_couple_steepest`) instead of dipping below both flanks; connectors
-  whose crossing already lies inside the couple-able window (a→n, g→e)
-  degenerate to the exact straight middle piece at unchanged placement.
-  Guarded to the sawtooth class: both tangents inside `ALIGN_TAN_DEG`,
-  coupling below `ALIGN_MAX_ENTRY_Y`, entry drop bounded by
-  `FLANK_COUPLE_MAX_DROP` so the nested-fall letters (t's bar, f's flag) keep
-  their bench-confirmed authentic S-join. Golden fixture deliberately
-  re-pinned; the wordbench headline still needs a re-measure in a
-  DB-connected session (qualitaetsmetrik.md §6).
+  PAIR DISTANCE together with the coupling point, in two stages. Fusion
+  (`_fused_flank_placement`): the join continues the stroke direction
+  itself — the pair is pushed together until the line through the exit at
+  the FULL mean ink tangent meets the rising lead-in flank, the connector
+  degenerates to a short collinear piece and the stub below the coupling
+  point is absorbed by the join (the O2 trim mechanism, silhouette
+  included); since fusing stroke ends overlap in x by design, legitimacy is
+  judged by a new height-aware per-y-bin clearance guard
+  (`_fused_clearance_ok`) instead of the column ink floor. Fallback
+  (`_flank_couple_steepest`): a rejected fusion places at the stub-relaxed
+  column floor and couples the steepest reachable straight line instead of
+  dipping below both flanks; connectors whose crossing already lies inside
+  the couple-able window (a→n, g→e) degenerate to the exact straight middle
+  piece at unchanged placement. On the golden payloads n→e goes from a −7°
+  dipping cubic to a 39.9° straight between 41.2°/40.9° flanks — seam kinks
+  −1.3°/+1.0°, one continuous diagonal. Guarded to the sawtooth class: both
+  tangents inside `ALIGN_TAN_DEG`, coupling below `ALIGN_MAX_ENTRY_Y`, entry
+  drop bounded by `FLANK_COUPLE_MAX_DROP` so the nested-fall letters (t's
+  bar, f's flag) keep their bench-confirmed authentic S-join. Golden fixture
+  deliberately re-pinned; the wordbench headline still needs a re-measure in
+  a DB-connected session (qualitaetsmetrik.md §6).
 
 - **Harvest importer for glyph-pair overrides (redesign R3 Erstbefüllung).**
   `tools/pairlab/harvest.py` dissects every adjacent joined pair in the frozen

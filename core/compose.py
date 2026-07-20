@@ -253,18 +253,30 @@ ALIGN_MAX_ENTRY_Y = 0.62
 # letter's lead-in and absorb the stub below it (befund §5b: arcade arrivals
 # y 0.47–0.67 @ +31…+52°, i.e. mid-flank, not the foot). The connector
 # becomes the straight middle piece of that diagonal: it couples at the first
-# flank sample on/above the exit's rise line (slope flattened by
-# ALIGN_SLOPE_RATIO exactly like the pass-through placement) and the lead-in
-# below the coupling point is trimmed — centerline and silhouette, the same
-# O2 mechanism as the high-exit couple. Where the entry foot sits at/below
-# the exit (rise < ALIGN_MIN_RISE) the PLACEMENT is solved too: the pair is
-# pushed together until the rise line meets the flank exactly
-# (``_flank_couple_placement``); the ink floor for that fit ignores band ink
-# LEFT of the entry foot — that overhang is the stub's own silhouette, which
-# the coupled join absorbs, so it must not hold the pair apart. When even the
-# tightest legal placement cannot reach collinearity, the connector falls
-# back to the STEEPEST reachable straight line (couple at the top of the
-# window, ``_flank_couple_steepest``) instead of today's down-dipping cubic.
+# flank sample on/above the exit's rise line and the lead-in below the
+# coupling point is trimmed — centerline and silhouette, the same O2
+# mechanism as the high-exit couple. Where the entry foot sits at/below the
+# exit (rise < ALIGN_MIN_RISE) the PLACEMENT is solved too, in two stages:
+#
+# 1. FUSION (``_fused_flank_placement``): the join continues the stroke
+#    direction ITSELF — the pair is pushed together until the line through
+#    the exit at the FULL mean ink tangent (no ALIGN_SLOPE_RATIO flattening:
+#    a flattened line is near-parallel to the flank and can never reach it,
+#    and its different slant was exactly the user-visible kink) meets the
+#    rising lead-in flank. The connector degenerates to a short collinear
+#    piece; the strokes fuse. The column ink floor cannot judge such a
+#    placement (fusing stroke ends overlap by design), so legitimacy comes
+#    from a HEIGHT-AWARE clearance guard (``_fused_clearance_ok``): per
+#    y-bin over the join band, B's trimmed ink must clear A's ink by
+#    ALIGN_MIN_CLEARANCE — except inside the fusion band around
+#    [exit_y, couple_y] (± FUSE_BAND_PAD), where the joining strokes are
+#    MEANT to share ink.
+# 2. Fallback (``_flank_couple_steepest``): when the fused placement is
+#    rejected, place at the stub-relaxed column floor (band ink LEFT of the
+#    entry foot is the stub's own silhouette — absorbed by the trim, it must
+#    not hold the pair apart) and couple at the top of the flank window: the
+#    steepest straight join the ink allows, instead of a down-dipping cubic.
+#
 # Guards: only mid-band forward-diagonal exits (high exits keep their own
 # coupling), BOTH tangents inside ALIGN_TAN_DEG, the flank must still rise
 # diagonally at the coupling point (a head bending into its loop is a real
@@ -274,6 +286,9 @@ ALIGN_MAX_ENTRY_Y = 0.62
 # nested-fall class (t's bar, f's flag), whose gentle S-join is authentic
 # (E6-verworfen straightening stays verworfen — qualitaetsmetrik.md §6).
 FLANK_COUPLE_MAX_DROP = 0.05
+FUSE_MIN_DX = 0.02  # a fused coupling still progresses rightward past the exit
+FUSE_BAND_PAD = 0.12  # height pad around [exit_y, couple_y] where fusing ink may overlap
+FUSE_CLEAR_BINS = 9  # y-bins of the height-aware clearance guard over JOIN_BAND_Y
 # Travel direction measured over a short ARC-LENGTH window rather than the
 # single final segment — the glyph centerline is a smooth spline through the
 # anchors, so its true endpoint tangent rarely matches the stored single-chord
@@ -420,21 +435,22 @@ def _flank_couple_index(first_line: list[Point], dx: float, exit_pt: Point, slop
     return 0
 
 
-def _flank_couple_placement(
-    first_line: list[Point], exit_pt: Point, slope: float, entry_x: float, floor_x: float
+def _fused_flank_placement(
+    first_line: list[Point], exit_pt: Point, slope: float, entry_x: float
 ) -> tuple[float, int] | None:
-    """Entry-x placement + coupling index so B's flank sits ON the rise line.
+    """Entry-x placement + coupling index FUSING B's flank onto the exit line.
 
     The inverse of ``_flank_couple_index``: instead of intersecting the line
     with the flank at a fixed placement, solve for the placement — push the
-    pair together until the exit's rise line meets B's rising lead-in flank
-    exactly (the user-visible "ne" case: the entry foot sits at/below the
-    exit, so no spacing can put the FOOT on the line, but a flank sample
-    can). Returns ``(entry_x_placement, couple_index)`` for the LOWEST
-    couple-able sample whose exact-fit placement clears the ink floor —
-    least trim wins, the authored form is kept as far down as possible.
-    None: no sample admits a fit (no couple-able window above the exit, or
-    every fit would push B through the floor).
+    pair together until the line through the exit at the full mean ink
+    tangent ``slope`` meets B's rising lead-in flank (the user-visible "ne"
+    case: the entry foot sits at/below the exit, so no spacing can put the
+    FOOT on the line, but a flank sample can — the strokes then continue as
+    ONE diagonal). Returns ``(entry_x_placement, couple_index)`` for the
+    LOWEST couple-able sample — least trim wins, the authored form is kept
+    as far down as possible. No ink floor here: a fused placement is judged
+    by the height-aware ``_fused_clearance_ok`` guard instead. None: no
+    couple-able sample gains height and FUSE_MIN_DX rightward progress.
     """
     ex, ey = exit_pt
     for i in _flank_candidates(first_line):
@@ -442,12 +458,54 @@ def _flank_couple_placement(
         if q[1] < ey + ALIGN_MIN_RISE:
             continue
         run = (q[1] - ey) / slope  # composed x-distance exit → coupling point
-        if run < GARLAND_MIN_DX:
+        if run < FUSE_MIN_DX:
             continue
-        place = ex + run - q[0] + entry_x
-        if place >= floor_x:
-            return place, i
+        return ex + run - q[0] + entry_x, i
     return None
+
+
+def _band_bin(y: float) -> int:
+    """Y-bin index of the height-aware clearance guard over JOIN_BAND_Y."""
+    frac = (y - JOIN_BAND_Y[0]) / (JOIN_BAND_Y[1] - JOIN_BAND_Y[0])
+    return min(FUSE_CLEAR_BINS - 1, max(0, int(frac * FUSE_CLEAR_BINS)))
+
+
+def _fused_clearance_ok(
+    a_profile: list[float],
+    b_centerlines: list[list[Point]],
+    diacritic_flags: list[bool],
+    trim: int,
+    dx: float,
+    margin: float,
+    exempt: tuple[float, float],
+) -> bool:
+    """Height-aware ink clearance for a fused flank placement.
+
+    The column floor cannot judge a fusion (the joining stroke ends overlap
+    in x by design), so collision is checked per y-bin instead: B's trimmed
+    body ink (centerlines shifted by ``dx``, widened by ``margin``; stroke 0
+    from the coupling index) must clear A's per-bin rightmost ink
+    ``a_profile`` by ALIGN_MIN_CLEARANCE — except in the ``exempt`` height
+    band around the join, where the fusing strokes are meant to share ink.
+    """
+    b_min = [math.inf] * FUSE_CLEAR_BINS
+    for si, cl in enumerate(b_centerlines):
+        if si < len(diacritic_flags) and diacritic_flags[si]:
+            continue
+        for x, y in cl[trim:] if si == 0 else cl:
+            if JOIN_BAND_Y[0] <= y <= JOIN_BAND_Y[1]:
+                b = _band_bin(y)
+                b_min[b] = min(b_min[b], x)
+    span = JOIN_BAND_Y[1] - JOIN_BAND_Y[0]
+    for b in range(FUSE_CLEAR_BINS):
+        if not math.isfinite(a_profile[b]) or not math.isfinite(b_min[b]):
+            continue
+        y_mid = JOIN_BAND_Y[0] + (b + 0.5) * span / FUSE_CLEAR_BINS
+        if exempt[0] <= y_mid <= exempt[1]:
+            continue
+        if b_min[b] - margin + dx - a_profile[b] < ALIGN_MIN_CLEARANCE:
+            return False
+    return True
 
 
 def _flank_couple_steepest(first_line: list[Point], dx: float, exit_pt: Point) -> int:
@@ -640,8 +698,8 @@ def _connector_centerline(
     exit couples onto its rising flank (O2/ENTRY_COUPLE_Y); the caller applies
     the same cut to B's centerline + silhouette. ``flank_trim`` is the coupling
     index of a straight-fit flank placement decided by the CALLER
-    (``_flank_couple_placement``) — the connector then IS the straight collinear
-    middle piece of the shared diagonal.
+    (``_fused_flank_placement`` / ``_flank_couple_steepest``) — the connector
+    then IS the straight collinear middle piece of the shared diagonal.
     """
     entry_trim = 0
     p0: Point = exit_pt
@@ -950,6 +1008,9 @@ def compose_word(
         # count (they are deferred and float above the band anyway).
         ink_min_x = math.inf
         ink_max_x = -math.inf
+        # Per-y-bin rightmost ink over the join band — the height-aware side
+        # of the fused-flank clearance guard (see FUSE_CLEAR_BINS).
+        ink_profile = [-math.inf] * FUSE_CLEAR_BINS
         # A detached glyph does not take part in join-band kerning — its whole
         # body (a comma below the baseline, a quote above the midband) is what
         # the neighbour must clear.
@@ -963,6 +1024,9 @@ def compose_word(
                     if band[0] <= y <= band[1]:
                         ink_min_x = min(ink_min_x, x)
                         ink_max_x = max(ink_max_x, x)
+                        if slot.joins and JOIN_BAND_Y[0] <= y <= JOIN_BAND_Y[1]:
+                            bi = _band_bin(y)
+                            ink_profile[bi] = max(ink_profile[bi], x)
         if not math.isfinite(ink_min_x):
             ink_min_x = ink_max_x = entry_xy[0]
 
@@ -1020,25 +1084,40 @@ def compose_word(
                 desired_entry_x = max(prev["exit"][0] + CONNECT_GAP - tuck, floor_x)
                 # Straight-fit flank coupling (the "ne" case, see the ALIGN_*
                 # constant block): with the entry FOOT at/below the exit no
-                # spacing can make the diagonal collinear — but pushing the
-                # pair together until the exit's rise line meets B's RISING
-                # lead-in flank can. Solve for that placement (never wider
-                # than the nested placement); the coupled join absorbs the
-                # lead-in below the coupling point, so the floor ignores the
-                # stub silhouette's own overhang left of the entry foot. If
-                # even the tightest legal placement cannot reach the line,
-                # couple at the top of the flank window — the steepest
-                # straight join the ink allows.
+                # spacing can make the diagonal collinear at the foot — but
+                # fusing onto the RISING lead-in flank can. Stage 1: push the
+                # pair together until the line through the exit at the FULL
+                # mean ink tangent meets the flank — the join continues the
+                # stroke direction itself, legitimacy judged by the
+                # height-aware clearance guard. Stage 2 fallback: place at
+                # the stub-relaxed column floor and couple at the top of the
+                # flank window — the steepest straight join the ink allows.
                 if rise > -FLANK_COUPLE_MAX_DROP and ALIGN_TAN_DEG[0] <= entry_land_deg <= ALIGN_TAN_DEG[1]:
-                    floor_couple = prev["ink_max_x"] + ALIGN_MIN_CLEARANCE - max(ink_min_x - entry_xy[0], 0.0)
-                    fit_slope = ALIGN_SLOPE_RATIO * math.tan(math.radians((prev["tangent_deg"] + entry_land_deg) / 2))
-                    fit = _flank_couple_placement(first_line, prev["exit"], fit_slope, entry_xy[0], floor_couple)
-                    if fit is not None and fit[0] <= desired_entry_x:
-                        desired_entry_x, flank_couple = fit
-                    elif fit is None and floor_couple <= desired_entry_x:
-                        steepest = _flank_couple_steepest(first_line, floor_couple - entry_xy[0], prev["exit"])
-                        if steepest:
-                            desired_entry_x, flank_couple = floor_couple, steepest
+                    full_slope = math.tan(math.radians((prev["tangent_deg"] + entry_land_deg) / 2))
+                    fuse = _fused_flank_placement(first_line, prev["exit"], full_slope, entry_xy[0])
+                    fused = False
+                    if fuse is not None and fuse[0] <= desired_entry_x:
+                        exempt = (
+                            min(prev["exit"][1], first_line[0][1]) - FUSE_BAND_PAD,
+                            first_line[fuse[1]][1] + FUSE_BAND_PAD,
+                        )
+                        if _fused_clearance_ok(
+                            prev["ink_profile"],
+                            centerlines,
+                            diacritic_flags,
+                            fuse[1],
+                            fuse[0] - entry_xy[0],
+                            max_half,
+                            exempt,
+                        ):
+                            desired_entry_x, flank_couple = fuse
+                            fused = True
+                    if not fused:
+                        floor_couple = prev["ink_max_x"] + ALIGN_MIN_CLEARANCE - max(ink_min_x - entry_xy[0], 0.0)
+                        if floor_couple <= desired_entry_x:
+                            steepest = _flank_couple_steepest(first_line, floor_couple - entry_xy[0], prev["exit"])
+                            if steepest:
+                                desired_entry_x, flank_couple = floor_couple, steepest
         elif prev:
             gap = _nonjoin_clearance(_key_base(slot.key, slot.position)) if not slot.joins else math.inf
             if not prev["joins"]:
@@ -1131,6 +1210,7 @@ def compose_word(
             "tangent_deg": exit_deg,
             "width": med_half,
             "ink_max_x": ink_max_x + dx,
+            "ink_profile": [v + dx if math.isfinite(v) else v for v in ink_profile],
             "key": slot.key,
             "slot_index": slot_index,
             "joins": slot.joins,

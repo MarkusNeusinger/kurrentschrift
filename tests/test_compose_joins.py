@@ -18,8 +18,8 @@ from core.compose import (
     SWING_MAX_EXIT_Y,
     SWING_TOP_Y,
     _flank_couple_index,
-    _flank_couple_placement,
     _flank_couple_steepest,
+    _fused_flank_placement,
     _garland_centerline,
     _unit,
     compose_word,
@@ -107,25 +107,21 @@ def test_flank_couple_index_rejects_a_turning_head() -> None:
     assert _flank_couple_index(head, 0.21, (0.0, 0.45), math.tan(math.radians(20.0))) == 0
 
 
-def test_flank_couple_placement_puts_the_flank_exactly_on_the_line() -> None:
-    slope = math.tan(math.radians(33.0))
-    fit = _flank_couple_placement(_FLANK, (2.0, 0.53), slope, 0.0, -math.inf)
+def test_fused_flank_placement_puts_the_flank_exactly_on_the_line() -> None:
+    slope = math.tan(math.radians(40.0))
+    fit = _fused_flank_placement(_FLANK, (2.0, 0.53), slope, 0.0)
     assert fit is not None
     place, i = fit
     x, y = _FLANK[i][0] + place, _FLANK[i][1]
     assert math.isclose(y - 0.53, slope * (x - 2.0), abs_tol=1e-9)  # ON the line
     assert y >= 0.53 + ALIGN_MIN_RISE  # the pen gains height
+    # Lowest couple-able sample wins — no earlier sample gains the height.
+    assert all(_FLANK[j][1] < 0.53 + ALIGN_MIN_RISE for j in range(1, i))
 
 
-def test_flank_couple_placement_respects_the_ink_floor() -> None:
-    slope = math.tan(math.radians(33.0))
-    unbounded = _flank_couple_placement(_FLANK, (2.0, 0.53), slope, 0.0, -math.inf)
-    assert unbounded is not None
-    # A floor just above the unbounded fit forces a higher coupling sample …
-    floored = _flank_couple_placement(_FLANK, (2.0, 0.53), slope, 0.0, unbounded[0] + 0.005)
-    assert floored is not None and floored[1] > unbounded[1]
-    # … and an unreachable floor yields no fit at all.
-    assert _flank_couple_placement(_FLANK, (2.0, 0.53), slope, 0.0, 10.0) is None
+def test_fused_flank_placement_needs_a_couple_able_window() -> None:
+    # Exit above the whole flank window: no sample gains height — no fusion.
+    assert _fused_flank_placement(_FLANK, (2.0, 0.65), math.tan(math.radians(40.0)), 0.0) is None
 
 
 def test_flank_couple_steepest_takes_the_top_of_the_window() -> None:
@@ -164,12 +160,14 @@ def test_flank_coupled_connector_is_straight_and_trims_the_stub() -> None:
     assert by > b[0][1]  # the foot sample is gone
 
 
-def test_flank_coupled_placement_exact_fit_rides_the_rise_line() -> None:
+def test_fused_composition_continues_the_stroke_slope() -> None:
     # A steep (~54°) lead-in flank behind a flat (~27°) arcade exit: the
-    # exact-fit placement is reachable above the ink floor — the pair is
-    # pushed together until the coupling sample sits ON the rise line, so the
-    # straight connector's chord slope IS the flattened mean-tangent slope.
-    from core.compose import ALIGN_SLOPE_RATIO, _endpoint_tangent
+    # fused placement is legal (no off-band ink conflict) — the pair is
+    # pushed together until the coupling sample sits ON the line through the
+    # exit at the FULL mean ink tangent, so the straight connector continues
+    # the stroke slope itself (no ALIGN_SLOPE_RATIO flattening — the
+    # flattened slant was the user-visible kink).
+    from core.compose import _endpoint_tangent
 
     a = [(0.0, 0.0), (0.1, 0.35), (0.3, 0.45)]  # exit tangent ≈ 26.6°
     step_x = 0.012 / math.tan(math.radians(54.0))
@@ -185,11 +183,45 @@ def test_flank_coupled_placement_exact_fit_rides_the_rise_line() -> None:
     assert y1 > y0 and x1 > x0
     # The pair is pulled TIGHTER than the plain nested placement …
     assert x1 - x0 < 0.16  # CONNECT_GAP
-    # … and the chord rides the flattened mean-tangent rise line exactly.
+    # … and the chord continues the full mean-tangent stroke direction.
     exit_deg = _endpoint_tangent(a, at_end=True)
     land_deg = _endpoint_tangent(b, at_end=False)
-    expected = ALIGN_SLOPE_RATIO * math.tan(math.radians((exit_deg + land_deg) / 2))
+    expected = math.tan(math.radians((exit_deg + land_deg) / 2))
     assert math.isclose((y1 - y0) / (x1 - x0), expected, rel_tol=1e-9)
+
+
+def test_fused_clearance_conflict_falls_back_to_the_steepest_line() -> None:
+    # Same sawtooth pair, but A carries low ink far right and B low ink left
+    # (below the fusion band): the height-aware guard rejects the fused
+    # placement, and the join falls back to the steepest straight line at
+    # the column floor instead.
+    a_strokes = [
+        [(0.1, -0.12), (0.6, -0.08)],  # low sweep, blocks the fused tuck
+        [(0.0, 0.0), (0.15, 0.3), (0.3, 0.42)],  # arcade exit ≈ 39°
+    ]
+    b = [(0.012 * i, 0.4 + 0.01 * i) for i in range(13)] + [(0.16, 0.63), (0.17, 0.3), (0.19, -0.1)]
+    slots = [
+        GlyphSlot(key="n", text="n", position="initial", ligature=False, space=False),
+        GlyphSlot(key="m", text="m", position="final", ligature=False, space=False),
+    ]
+    payload_a = {
+        "centerlines_template": a_strokes,
+        "half_widths_template": [0.05] * 5,
+        "entry": {"xy": [0.1, -0.12]},
+        "outline_paths": [],
+        "template_guides": {"midband": 1.0},
+    }
+    composed = compose_word(slots, {"n": payload_a, "m": _payload(b)})
+    connector = next(it for it in composed["items"] if "stroke_width" in it)
+    line = connector["centerline"]
+    (x0, y0), (x1, y1) = line[0], line[-1]
+    span = math.hypot(x1 - x0, y1 - y0)
+    assert span > 0
+    for x, y in line:  # still a straight line …
+        assert abs(-(y1 - y0) * (x - x0) + (x1 - x0) * (y - y0)) / span < 1e-9
+    assert y1 > y0  # … and still rising
+    # But NOT fused: the placement respects the column floor past A's low ink.
+    assert x1 - x0 > 0.16  # wider than CONNECT_GAP — no tuck under the exit
 
 
 def _payload(centerline: list[tuple[float, float]]) -> dict:

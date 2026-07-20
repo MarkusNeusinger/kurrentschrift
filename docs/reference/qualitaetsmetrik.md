@@ -927,23 +927,33 @@ ABWÄRTS); die Tafel koppelt stattdessen auf der steigenden Flanke (§5b:
 Arkaden-Ankünfte y 0,47–0,67, nicht der Stub-Fuß).
 
 Umsetzung (`core/compose.py`, nur Nested-/Align-Klasse): Paar-Abstand und
-Kopplungspunkt werden GEMEINSAM gelöst — das Paar rückt zusammen, bis die
-Exit-Linie (Steigung ×`ALIGN_SLOPE_RATIO` wie beim Durchschreiben) die
-Anstrichs-Flanke exakt trifft (`_flank_couple_placement`); der Stub unter dem
-Kopplungspunkt wird wie bei O2 aus Centerline UND Silhouette absorbiert, und
-die Tinten-Schranke des Fits ignoriert den EIGENEN Silhouetten-Überhang des
-Stubs links vom Entry-Fuß (er existiert nach dem Trim nicht mehr). Ist selbst
-die engste legale Platzierung nicht kollinear erreichbar, koppelt der
-Konnektor als STEILSTE erreichbare Gerade am oberen Fensterrand
-(`_flank_couple_steepest`, Kappe `ALIGN_MAX_ENTRY_Y`) statt wie bisher unter
-beide Flanken durchzuhängen; liegt die Kreuzung bereits im Fenster (a→n,
-g→e), degeneriert der Konnektor bei unveränderter Platzierung zur exakten
-Geraden. Golden-Effekt: n→e −6,6° → **+17,5° exakte Gerade** (Nahtwinkel
-halbiert, Ankunft y 0,61 im §5b-Sollfenster); alle anderen Klassen
-byte-identisch. Schutz der Verworfen-Einträge: `FLANK_COUPLE_MAX_DROP` 0,05
-hält die Nested-Fall-Klasse (t-Balken, f-Fahne — E1) heraus, deren sanfte
-S-Naht laut E6 authentisch ist; E6 (Begradigung bei UNVERÄNDERTER Kopplung)
-bleibt verworfen — hier ändert sich die Kopplung selbst.
+Kopplungspunkt werden GEMEINSAM gelöst, zweistufig. **Stufe 1 — Fusion**
+(`_fused_flank_placement`, Nutzer-Review-Runde 2 am selben Tag: die erste
+Fassung mit ×0,8-abgeflachter Ziellinie las sich weiter als „andere
+Schräge"): der Übergang setzt die STRICHRICHTUNG SELBST fort — das Paar
+rückt zusammen, bis die Gerade durch den Exit mit der VOLLEN mittleren
+Tinten-Tangente die Anstrichs-Flanke trifft; der Konnektor degeneriert zum
+kurzen kollinearen Stück, die Züge verschmelzen, der Stub unter dem
+Kopplungspunkt wird wie bei O2 aus Centerline UND Silhouette absorbiert.
+Die Spalten-Tinten-Schranke kann eine solche Platzierung nicht beurteilen
+(verschmelzende Strichenden überlappen absichtlich) — Legitimität prüft ein
+HÖHENBEWUSSTER Clearance-Guard (`_fused_clearance_ok`, `FUSE_CLEAR_BINS`
+y-Bins über dem Join-Band, Ausnahmeband ±`FUSE_BAND_PAD` um
+[Exit-Höhe, Kopplungshöhe]). **Stufe 2 — Fallback** (`_flank_couple_steepest`):
+wird die Fusion abgelehnt, platziert der Stub-relaxierte Spalten-Floor und
+koppelt die steilste erreichbare Gerade am oberen Fensterrand (Kappe
+`ALIGN_MAX_ENTRY_Y`) statt wie bisher unter beide Flanken durchzuhängen.
+Liegt die Kreuzung bereits im Fenster (a→n, g→e), degeneriert der Konnektor
+bei unveränderter Platzierung zur exakten Geraden. Golden-Effekt: n→e −6,6°
+→ **+39,9° bei Flanken 41,2°/40,9°** — Nahtwinkel −1,3°/+1,0°, eine
+durchgehende Diagonale; alle anderen Klassen byte-identisch. Schutz der
+Verworfen-Einträge: `FLANK_COUPLE_MAX_DROP` 0,05 hält die
+Nested-Fall-Klasse (t-Balken, f-Fahne — E1) heraus, deren sanfte S-Naht
+laut E6 authentisch ist; E6 (Begradigung bei UNVERÄNDERTER Kopplung) bleibt
+verworfen — hier ändern sich Kopplung UND Platzierung. Bewusst NICHT
+angefasst: die floor-gebundenen Align-Paare (e→n 23°, n→n, a→s) — deren
+Set-off ist das jul09/10-Bench-Optimum, und die jul17-Residuen (a-Klasse
++0,16 = eher weiten) warnen vor blindem Engerziehen ohne Messlatte.
 
 **Offen:** Diese Session hatte keinen Cloud-SQL-Zugang (wie `jul13`) — die
 Wort-/Paar-Headline ist NICHT nachgemessen. Vor dem nächsten
