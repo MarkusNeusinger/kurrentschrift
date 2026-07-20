@@ -915,3 +915,39 @@ t −0,34 · c→h −0,25 · f→e −0,29 · a +0,16):
 
 **Endstand `jul17`: Wörter 0,117999 · Paare 0,191805**; Override-Lauf mit
 den vier Versal-Entwürfen: pair_loss 0,1864.
+
+### Änderung `jul20` — Geraden-Fit-Flankenkopplung („ne-Knick", Headline offen)
+
+Nutzer-Befund am Live-Bild: Bei Sägezahn-Paaren, deren Entry-Fuß auf/unter
+dem Exit sitzt (n→e als Prototyp), lief der generierte Konnektor sichtbar
+flacher als beide Tinten-Flanken — auf den Golden-Payloads n→e Chord **−7°**
+zwischen 41°/39°-Flanken (Naht-Knicke −40°/+57°). Geometrische Ursache:
+Kein Abstand kann den FUSS auf die Exit-Steigungslinie legen (näher = steiler
+ABWÄRTS); die Tafel koppelt stattdessen auf der steigenden Flanke (§5b:
+Arkaden-Ankünfte y 0,47–0,67, nicht der Stub-Fuß).
+
+Umsetzung (`core/compose.py`, nur Nested-/Align-Klasse): Paar-Abstand und
+Kopplungspunkt werden GEMEINSAM gelöst — das Paar rückt zusammen, bis die
+Exit-Linie (Steigung ×`ALIGN_SLOPE_RATIO` wie beim Durchschreiben) die
+Anstrichs-Flanke exakt trifft (`_flank_couple_placement`); der Stub unter dem
+Kopplungspunkt wird wie bei O2 aus Centerline UND Silhouette absorbiert, und
+die Tinten-Schranke des Fits ignoriert den EIGENEN Silhouetten-Überhang des
+Stubs links vom Entry-Fuß (er existiert nach dem Trim nicht mehr). Ist selbst
+die engste legale Platzierung nicht kollinear erreichbar, koppelt der
+Konnektor als STEILSTE erreichbare Gerade am oberen Fensterrand
+(`_flank_couple_steepest`, Kappe `ALIGN_MAX_ENTRY_Y`) statt wie bisher unter
+beide Flanken durchzuhängen; liegt die Kreuzung bereits im Fenster (a→n,
+g→e), degeneriert der Konnektor bei unveränderter Platzierung zur exakten
+Geraden. Golden-Effekt: n→e −6,6° → **+17,5° exakte Gerade** (Nahtwinkel
+halbiert, Ankunft y 0,61 im §5b-Sollfenster); alle anderen Klassen
+byte-identisch. Schutz der Verworfen-Einträge: `FLANK_COUPLE_MAX_DROP` 0,05
+hält die Nested-Fall-Klasse (t-Balken, f-Fahne — E1) heraus, deren sanfte
+S-Naht laut E6 authentisch ist; E6 (Begradigung bei UNVERÄNDERTER Kopplung)
+bleibt verworfen — hier ändert sich die Kopplung selbst.
+
+**Offen:** Diese Session hatte keinen Cloud-SQL-Zugang (wie `jul13`) — die
+Wort-/Paar-Headline ist NICHT nachgemessen. Vor dem nächsten
+`/optimize`-Loop einmal `export_fixtures` + `run --set all` fahren; die
+Guards (`FLANK_COUPLE_MAX_DROP`, Kappen-Wahl, Floor-Relaxierung) sind dann
+die ersten Sweep-Kandidaten. Golden-Fixture bewusst neu gepinnt
+(REGEN_GOLDEN).

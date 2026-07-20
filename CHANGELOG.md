@@ -14,6 +14,29 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Straight-fit flank coupling for sawtooth letter pairs (the "ne" kink).**
+  Between two mid-band diagonals whose entry foot sits at/below the previous
+  exit (n→e and friends), no spacing can make the generated connector
+  collinear — the taut cubic ran visibly flatter than both ink flanks (n→e
+  chord −7° between 41°/39° tangents on the golden payloads), the kink the
+  connected-writing review kept flagging. `core/compose.py` now solves the
+  PAIR DISTANCE together with the coupling point: the pair is pushed together
+  until the exit's rise line meets the rising lead-in flank of the next
+  letter exactly (`_flank_couple_placement`), the stub below the coupling
+  point is absorbed by the join (the O2 trim mechanism, silhouette included),
+  and the ink floor for that fit ignores the stub silhouette's own overhang.
+  Where even the tightest legal placement cannot reach collinearity, the
+  connector falls back to the steepest reachable straight line
+  (`_flank_couple_steepest`) instead of dipping below both flanks; connectors
+  whose crossing already lies inside the couple-able window (a→n, g→e)
+  degenerate to the exact straight middle piece at unchanged placement.
+  Guarded to the sawtooth class: both tangents inside `ALIGN_TAN_DEG`,
+  coupling below `ALIGN_MAX_ENTRY_Y`, entry drop bounded by
+  `FLANK_COUPLE_MAX_DROP` so the nested-fall letters (t's bar, f's flag) keep
+  their bench-confirmed authentic S-join. Golden fixture deliberately
+  re-pinned; the wordbench headline still needs a re-measure in a
+  DB-connected session (qualitaetsmetrik.md §6).
+
 - **Harvest importer for glyph-pair overrides (redesign R3 Erstbefüllung).**
   `tools/pairlab/harvest.py` dissects every adjacent joined pair in the frozen
   Abb.-20 pair fixtures (independent rigid fits + M4 ductus traces) and derives

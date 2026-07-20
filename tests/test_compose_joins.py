@@ -11,10 +11,15 @@ from __future__ import annotations
 import math
 
 from core.compose import (
+    ALIGN_MAX_ENTRY_Y,
+    ALIGN_MIN_RISE,
     GARLAND_MERGE_EPS,
     SWING_DEEP_MAX_RUN,
     SWING_MAX_EXIT_Y,
     SWING_TOP_Y,
+    _flank_couple_index,
+    _flank_couple_placement,
+    _flank_couple_steepest,
     _garland_centerline,
     _unit,
     compose_word,
@@ -66,6 +71,91 @@ def test_garland_falls_and_rides_the_lead_in_line() -> None:
     (x1, y1), (x2, y2) = line[-2], line[-1]
     tail_deg = math.degrees(math.atan2(y2 - y1, x2 - x1))
     assert abs(tail_deg - 38.0) < 1.0
+
+
+# A rising ~40° lead-in flank like a Sütterlin arcade/loop letter's Anstrich:
+# foot at half height, diagonal-banded all the way to the cap.
+_FLANK = [(0.012 * i, 0.5 + 0.01 * i) for i in range(13)]
+
+
+def test_flank_couple_index_finds_the_line_crossing() -> None:
+    # Exit below the foot's line: the ~40° flank crosses the 25° rise line
+    # partway up — the coupling index is the first sample on/above it.
+    slope = math.tan(math.radians(25.0))
+    i = _flank_couple_index(_FLANK, 0.2, (0.0, 0.45), slope)
+    assert i > 0
+    x, y = _FLANK[i][0] + 0.2, _FLANK[i][1]
+    assert y - 0.45 >= slope * x - 1e-9  # on/above the line
+    assert _FLANK[i - 1][1] - 0.45 < slope * (_FLANK[i - 1][0] + 0.2)  # first such sample
+
+
+def test_flank_couple_index_leaves_a_foot_on_the_line_alone() -> None:
+    # Foot already on/above the rise line: the pass-through placement owns it.
+    assert _flank_couple_index(_FLANK, 0.1, (0.0, 0.3), math.tan(math.radians(30.0))) == 0
+
+
+def test_flank_couple_index_rejects_a_turning_head() -> None:
+    # The flank bends over (turns down) just before the line crossing: a real
+    # head form, never trimmed — even though a longer flank would cross.
+    head = [(0.012 * i, 0.5 + 0.01 * i) for i in range(5)] + [(0.07, 0.53), (0.09, 0.5)]
+    assert _flank_couple_index(head, 0.21, (0.0, 0.45), math.tan(math.radians(20.0))) == 0
+
+
+def test_flank_couple_placement_puts_the_flank_exactly_on_the_line() -> None:
+    slope = math.tan(math.radians(33.0))
+    fit = _flank_couple_placement(_FLANK, (2.0, 0.53), slope, 0.0, -math.inf)
+    assert fit is not None
+    place, i = fit
+    x, y = _FLANK[i][0] + place, _FLANK[i][1]
+    assert math.isclose(y - 0.53, slope * (x - 2.0), abs_tol=1e-9)  # ON the line
+    assert y >= 0.53 + ALIGN_MIN_RISE  # the pen gains height
+
+
+def test_flank_couple_placement_respects_the_ink_floor() -> None:
+    slope = math.tan(math.radians(33.0))
+    unbounded = _flank_couple_placement(_FLANK, (2.0, 0.53), slope, 0.0, -math.inf)
+    assert unbounded is not None
+    # A floor just above the unbounded fit forces a higher coupling sample …
+    floored = _flank_couple_placement(_FLANK, (2.0, 0.53), slope, 0.0, unbounded[0] + 0.005)
+    assert floored is not None and floored[1] > unbounded[1]
+    # … and an unreachable floor yields no fit at all.
+    assert _flank_couple_placement(_FLANK, (2.0, 0.53), slope, 0.0, 10.0) is None
+
+
+def test_flank_couple_steepest_takes_the_top_of_the_window() -> None:
+    i = _flank_couple_steepest(_FLANK, 0.2, (0.0, 0.5))
+    assert i > 0
+    assert _FLANK[i][1] <= ALIGN_MAX_ENTRY_Y
+    # No later candidate exists inside the cap.
+    assert all(_FLANK[j][1] > ALIGN_MAX_ENTRY_Y for j in range(i + 1, len(_FLANK) - 1))
+
+
+def test_flank_coupled_connector_is_straight_and_trims_the_stub() -> None:
+    # Two sawtooth letters whose entry foot sits just BELOW the previous
+    # exit (the "ne" case): the composed connector must be a straight line
+    # onto B's flank and B's first stroke must start at the coupling point.
+    a = [(0.0, 0.0), (0.15, 0.3), (0.3, 0.42)]  # arcade exit rising ~39°
+    b = [(0.012 * i, 0.4 + 0.01 * i) for i in range(13)] + [(0.16, 0.63), (0.17, 0.3), (0.18, 0.0)]
+    slots = [
+        GlyphSlot(key="n", text="n", position="initial", ligature=False, space=False),
+        GlyphSlot(key="m", text="m", position="final", ligature=False, space=False),
+    ]
+    composed = compose_word(slots, {"n": _payload(a), "m": _payload(b)})
+    assert len(composed["items"]) >= 3
+    connector, glyph_b = composed["items"][1], composed["items"][2]
+    line = connector["centerline"]
+    # Straight: every interior sample lies on the chord.
+    (x0, y0), (x1, y1) = line[0], line[-1]
+    span = math.hypot(x1 - x0, y1 - y0)
+    assert span > 0
+    for x, y in line:
+        assert abs(-(y1 - y0) * (x - x0) + (x1 - x0) * (y - y0)) / span < 1e-9
+    assert y1 > y0  # the join rises
+    # B's trimmed first stroke starts at the connector's arrival (the stub
+    # below the coupling point is absorbed by the join).
+    bx, by = glyph_b["centerline"][0]
+    assert math.isclose(bx, x1, abs_tol=1e-9) and math.isclose(by, y1, abs_tol=1e-9)
+    assert by > b[0][1]  # the foot sample is gone
 
 
 def _payload(centerline: list[tuple[float, float]]) -> dict:
