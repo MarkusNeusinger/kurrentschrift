@@ -89,6 +89,12 @@ def test_flank_couple_index_finds_the_line_crossing() -> None:
     assert _FLANK[i - 1][1] - 0.45 < slope * (_FLANK[i - 1][0] + 0.2)  # first such sample
 
 
+def test_flank_couple_index_rejects_a_crossing_without_height_gain() -> None:
+    # The line crosses the flank immediately above the foot (no height gained
+    # over the exit, no rightward progress): a degenerate coupling, rejected.
+    assert _flank_couple_index(_FLANK, 0.001, (0.0, 0.5), math.tan(math.radians(35.0))) == 0
+
+
 def test_flank_couple_index_leaves_a_foot_on_the_line_alone() -> None:
     # Foot already on/above the rise line: the pass-through placement owns it.
     assert _flank_couple_index(_FLANK, 0.1, (0.0, 0.3), math.tan(math.radians(30.0))) == 0
@@ -156,6 +162,34 @@ def test_flank_coupled_connector_is_straight_and_trims_the_stub() -> None:
     bx, by = glyph_b["centerline"][0]
     assert math.isclose(bx, x1, abs_tol=1e-9) and math.isclose(by, y1, abs_tol=1e-9)
     assert by > b[0][1]  # the foot sample is gone
+
+
+def test_flank_coupled_placement_exact_fit_rides_the_rise_line() -> None:
+    # A steep (~54°) lead-in flank behind a flat (~27°) arcade exit: the
+    # exact-fit placement is reachable above the ink floor — the pair is
+    # pushed together until the coupling sample sits ON the rise line, so the
+    # straight connector's chord slope IS the flattened mean-tangent slope.
+    from core.compose import ALIGN_SLOPE_RATIO, _endpoint_tangent
+
+    a = [(0.0, 0.0), (0.1, 0.35), (0.3, 0.45)]  # exit tangent ≈ 26.6°
+    step_x = 0.012 / math.tan(math.radians(54.0))
+    b = [(step_x * i, 0.44 + 0.012 * i) for i in range(14)] + [(0.2, 0.3), (0.22, 0.0)]
+    slots = [
+        GlyphSlot(key="n", text="n", position="initial", ligature=False, space=False),
+        GlyphSlot(key="m", text="m", position="final", ligature=False, space=False),
+    ]
+    composed = compose_word(slots, {"n": _payload(a), "m": _payload(b)})
+    connector = composed["items"][1]
+    line = connector["centerline"]
+    (x0, y0), (x1, y1) = line[0], line[-1]
+    assert y1 > y0 and x1 > x0
+    # The pair is pulled TIGHTER than the plain nested placement …
+    assert x1 - x0 < 0.16  # CONNECT_GAP
+    # … and the chord rides the flattened mean-tangent rise line exactly.
+    exit_deg = _endpoint_tangent(a, at_end=True)
+    land_deg = _endpoint_tangent(b, at_end=False)
+    expected = ALIGN_SLOPE_RATIO * math.tan(math.radians((exit_deg + land_deg) / 2))
+    assert math.isclose((y1 - y0) / (x1 - x0), expected, rel_tol=1e-9)
 
 
 def _payload(centerline: list[tuple[float, float]]) -> dict:
