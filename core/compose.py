@@ -431,11 +431,7 @@ def _flank_couple_index(first_line: list[Point], dx: float, exit_pt: Point, slop
         return 0
     for i in _flank_candidates(first_line):
         q = first_line[i]
-        if (
-            rise_over_line(q) >= 0
-            and q[1] >= ey + ALIGN_MIN_RISE
-            and (q[0] + dx) - ex >= GARLAND_MIN_DX
-        ):
+        if rise_over_line(q) >= 0 and q[1] >= ey + ALIGN_MIN_RISE and (q[0] + dx) - ex >= GARLAND_MIN_DX:
             return i
     return 0
 
