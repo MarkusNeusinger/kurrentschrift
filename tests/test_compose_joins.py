@@ -13,7 +13,9 @@ import math
 from core.compose import (
     ALIGN_MAX_ENTRY_Y,
     ALIGN_MIN_RISE,
+    CONNECT_GAP,
     GARLAND_MERGE_EPS,
+    GARLAND_MIN_DX,
     SWING_DEEP_MAX_RUN,
     SWING_MAX_EXIT_Y,
     SWING_TOP_Y,
@@ -96,7 +98,7 @@ def test_flank_couple_index_walks_past_a_degenerate_early_crossing() -> None:
     i = _flank_couple_index(_FLANK, 0.001, (0.0, 0.5), math.tan(math.radians(35.0)))
     assert i > 1  # the immediate crossing at the first sample was skipped …
     assert _FLANK[i][1] >= 0.5 + ALIGN_MIN_RISE  # … for one that gains height
-    assert _FLANK[i][0] + 0.001 >= 0.05  # … and progresses rightward
+    assert _FLANK[i][0] + 0.001 >= GARLAND_MIN_DX  # … and progresses rightward
 
 
 def test_flank_couple_index_rejects_when_the_window_ends_before_the_guards() -> None:
@@ -193,7 +195,7 @@ def test_fused_composition_continues_the_stroke_slope() -> None:
     (x0, y0), (x1, y1) = line[0], line[-1]
     assert y1 > y0 and x1 > x0
     # The pair is pulled TIGHTER than the plain nested placement …
-    assert x1 - x0 < 0.16  # CONNECT_GAP
+    assert x1 - x0 < CONNECT_GAP
     # … and the chord continues the full mean-tangent stroke direction.
     exit_deg = _endpoint_tangent(a, at_end=True)
     land_deg = _endpoint_tangent(b, at_end=False)
@@ -232,7 +234,7 @@ def test_fused_clearance_conflict_falls_back_to_the_steepest_line() -> None:
         assert abs(-(y1 - y0) * (x - x0) + (x1 - x0) * (y - y0)) / span < 1e-9
     assert y1 > y0  # … and still rising
     # But NOT fused: the placement respects the column floor past A's low ink.
-    assert x1 - x0 > 0.16  # wider than CONNECT_GAP — no tuck under the exit
+    assert x1 - x0 > CONNECT_GAP  # no tuck under the exit
 
 
 def _payload(centerline: list[tuple[float, float]]) -> dict:

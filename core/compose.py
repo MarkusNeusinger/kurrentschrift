@@ -1020,6 +1020,13 @@ def compose_word(
             if diacritic_flags[si]:
                 continue
             rings = rings_by_stroke[si] if si < len(rings_by_stroke) else []
+            # A ringless stroke contributes raw centerline x to the scalar
+            # extents (the historical fallback, placement-relevant) but a
+            # max_half-widened x to the guard profile: the fused clearance
+            # compares silhouette-like extents on both sides (B subtracts the
+            # same margin), and an underestimated A edge would wave through a
+            # colliding fusion. Ring-backed strokes are true ink either way.
+            profile_pad = 0.0 if rings else max_half
             for pts in rings if rings else (cl,):
                 for x, y in pts:
                     if band[0] <= y <= band[1]:
@@ -1027,7 +1034,7 @@ def compose_word(
                         ink_max_x = max(ink_max_x, x)
                         if slot.joins and JOIN_BAND_Y[0] <= y <= JOIN_BAND_Y[1]:
                             bi = _band_bin(y)
-                            ink_profile[bi] = max(ink_profile[bi], x)
+                            ink_profile[bi] = max(ink_profile[bi], x + profile_pad)
         if not math.isfinite(ink_min_x):
             ink_min_x = ink_max_x = entry_xy[0]
 
