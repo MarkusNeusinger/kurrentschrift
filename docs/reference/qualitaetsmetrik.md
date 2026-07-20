@@ -916,7 +916,7 @@ t −0,34 · c→h −0,25 · f→e −0,29 · a +0,16):
 **Endstand `jul17`: Wörter 0,117999 · Paare 0,191805**; Override-Lauf mit
 den vier Versal-Entwürfen: pair_loss 0,1864.
 
-### Änderung `jul20` — Geraden-Fit-Flankenkopplung („ne-Knick", Headline offen)
+### Änderung `jul20` — Geraden-Fit-Flankenkopplung („ne-Knick“, Headline offen)
 
 Nutzer-Befund am Live-Bild: Bei Sägezahn-Paaren, deren Entry-Fuß auf/unter
 dem Exit sitzt (n→e als Prototyp), lief der generierte Konnektor sichtbar
@@ -930,7 +930,7 @@ Umsetzung (`core/compose.py`, nur Nested-/Align-Klasse): Paar-Abstand und
 Kopplungspunkt werden GEMEINSAM gelöst, zweistufig. **Stufe 1 — Fusion**
 (`_fused_flank_placement`, Nutzer-Review-Runde 2 am selben Tag: die erste
 Fassung mit ×0,8-abgeflachter Ziellinie las sich weiter als „andere
-Schräge"): der Übergang setzt die STRICHRICHTUNG SELBST fort — das Paar
+Schräge“): der Übergang setzt die STRICHRICHTUNG SELBST fort — das Paar
 rückt zusammen, bis die Gerade durch den Exit mit der VOLLEN mittleren
 Tinten-Tangente die Anstrichs-Flanke trifft; der Konnektor degeneriert zum
 kurzen kollinearen Stück, die Züge verschmelzen, der Stub unter dem

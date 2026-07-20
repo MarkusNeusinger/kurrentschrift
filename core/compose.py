@@ -414,10 +414,13 @@ def _flank_candidates(first_line: list[Point]) -> list[int]:
 def _flank_couple_index(first_line: list[Point], dx: float, exit_pt: Point, slope: float) -> int:
     """Coupling index on B's rising lead-in at a FIXED placement ``dx``.
 
-    The first couple-able sample on/above the exit's rise line. 0 = no
-    coupling: the foot already sits on/above the line (the pass-through
-    placement owns that case), the flank ends before reaching the line, or
-    the crossing gains no height / no rightward progress over the exit.
+    The first couple-able sample on/above the exit's rise line that also
+    gains ALIGN_MIN_RISE of height and GARLAND_MIN_DX of rightward progress
+    over the exit — a crossing that lands slightly too early (e.g. between
+    samples, right next to the exit) does not reject the coupling, the scan
+    walks on to the first sample clearing the guards. 0 = no coupling: the
+    foot already sits on/above the line (the pass-through placement owns
+    that case), or the couple-able window ends first.
     """
     ex, ey = exit_pt
 
@@ -428,9 +431,11 @@ def _flank_couple_index(first_line: list[Point], dx: float, exit_pt: Point, slop
         return 0
     for i in _flank_candidates(first_line):
         q = first_line[i]
-        if rise_over_line(q) >= 0:
-            if q[1] < ey + ALIGN_MIN_RISE or (q[0] + dx) - ex < GARLAND_MIN_DX:
-                return 0
+        if (
+            rise_over_line(q) >= 0
+            and q[1] >= ey + ALIGN_MIN_RISE
+            and (q[0] + dx) - ex >= GARLAND_MIN_DX
+        ):
             return i
     return 0
 

@@ -89,10 +89,21 @@ def test_flank_couple_index_finds_the_line_crossing() -> None:
     assert _FLANK[i - 1][1] - 0.45 < slope * (_FLANK[i - 1][0] + 0.2)  # first such sample
 
 
-def test_flank_couple_index_rejects_a_crossing_without_height_gain() -> None:
+def test_flank_couple_index_walks_past_a_degenerate_early_crossing() -> None:
     # The line crosses the flank immediately above the foot (no height gained
-    # over the exit, no rightward progress): a degenerate coupling, rejected.
-    assert _flank_couple_index(_FLANK, 0.001, (0.0, 0.5), math.tan(math.radians(35.0))) == 0
+    # over the exit yet, no rightward progress): the scan walks on and couples
+    # at the first sample clearing both guards instead of rejecting outright.
+    i = _flank_couple_index(_FLANK, 0.001, (0.0, 0.5), math.tan(math.radians(35.0)))
+    assert i > 1  # the immediate crossing at the first sample was skipped …
+    assert _FLANK[i][1] >= 0.5 + ALIGN_MIN_RISE  # … for one that gains height
+    assert _FLANK[i][0] + 0.001 >= 0.05  # … and progresses rightward
+
+
+def test_flank_couple_index_rejects_when_the_window_ends_before_the_guards() -> None:
+    # Same degenerate crossing, but the couple-able window (the flank turns
+    # down) ends before any sample clears the progress guard: no coupling.
+    short = _FLANK[:5] + [(0.06, 0.53)]
+    assert _flank_couple_index(short, 0.001, (0.0, 0.5), math.tan(math.radians(35.0))) == 0
 
 
 def test_flank_couple_index_leaves_a_foot_on_the_line_alone() -> None:
