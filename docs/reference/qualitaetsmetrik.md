@@ -915,3 +915,49 @@ t −0,34 · c→h −0,25 · f→e −0,29 · a +0,16):
 
 **Endstand `jul17`: Wörter 0,117999 · Paare 0,191805**; Override-Lauf mit
 den vier Versal-Entwürfen: pair_loss 0,1864.
+
+### Änderung `jul20` — Geraden-Fit-Flankenkopplung („ne-Knick“, Headline offen)
+
+Nutzer-Befund am Live-Bild: Bei Sägezahn-Paaren, deren Entry-Fuß auf/unter
+dem Exit sitzt (n→e als Prototyp), lief der generierte Konnektor sichtbar
+flacher als beide Tinten-Flanken — auf den Golden-Payloads n→e Chord **−7°**
+zwischen 41°/39°-Flanken (Naht-Knicke −40°/+57°). Geometrische Ursache:
+Kein Abstand kann den FUSS auf die Exit-Steigungslinie legen (näher = steiler
+ABWÄRTS); die Tafel koppelt stattdessen auf der steigenden Flanke (§5b:
+Arkaden-Ankünfte y 0,47–0,67, nicht der Stub-Fuß).
+
+Umsetzung (`core/compose.py`, nur Nested-/Align-Klasse): Paar-Abstand und
+Kopplungspunkt werden GEMEINSAM gelöst, zweistufig. **Stufe 1 — Fusion**
+(`_fused_flank_placement`, Nutzer-Review-Runde 2 am selben Tag: die erste
+Fassung mit ×0,8-abgeflachter Ziellinie las sich weiter als „andere
+Schräge“): der Übergang setzt die STRICHRICHTUNG SELBST fort — das Paar
+rückt zusammen, bis die Gerade durch den Exit mit der VOLLEN mittleren
+Tinten-Tangente die Anstrichs-Flanke trifft; der Konnektor degeneriert zum
+kurzen kollinearen Stück, die Züge verschmelzen, der Stub unter dem
+Kopplungspunkt wird wie bei O2 aus Centerline UND Silhouette absorbiert.
+Die Spalten-Tinten-Schranke kann eine solche Platzierung nicht beurteilen
+(verschmelzende Strichenden überlappen absichtlich) — Legitimität prüft ein
+HÖHENBEWUSSTER Clearance-Guard (`_fused_clearance_ok`, `FUSE_CLEAR_BINS`
+y-Bins über dem Join-Band, Ausnahmeband ±`FUSE_BAND_PAD` um
+[Exit-Höhe, Kopplungshöhe]). **Stufe 2 — Fallback** (`_flank_couple_steepest`):
+wird die Fusion abgelehnt, platziert der Stub-relaxierte Spalten-Floor und
+koppelt die steilste erreichbare Gerade am oberen Fensterrand (Kappe
+`ALIGN_MAX_ENTRY_Y`) statt wie bisher unter beide Flanken durchzuhängen.
+Liegt die Kreuzung bereits im Fenster (a→n, g→e), degeneriert der Konnektor
+bei unveränderter Platzierung zur exakten Geraden. Golden-Effekt: n→e −6,6°
+→ **+39,9° bei Flanken 41,2°/40,9°** — Nahtwinkel −1,3°/+1,0°, eine
+durchgehende Diagonale; alle anderen Klassen byte-identisch. Schutz der
+Verworfen-Einträge: `FLANK_COUPLE_MAX_DROP` 0,05 hält die
+Nested-Fall-Klasse (t-Balken, f-Fahne — E1) heraus, deren sanfte S-Naht
+laut E6 authentisch ist; E6 (Begradigung bei UNVERÄNDERTER Kopplung) bleibt
+verworfen — hier ändern sich Kopplung UND Platzierung. Bewusst NICHT
+angefasst: die floor-gebundenen Align-Paare (e→n 23°, n→n, a→s) — deren
+Set-off ist das jul09/10-Bench-Optimum, und die jul17-Residuen (a-Klasse
++0,16 = eher weiten) warnen vor blindem Engerziehen ohne Messlatte.
+
+**Offen:** Diese Session hatte keinen Cloud-SQL-Zugang (wie `jul13`) — die
+Wort-/Paar-Headline ist NICHT nachgemessen. Vor dem nächsten
+`/optimize`-Loop einmal `export_fixtures` + `run --set all` fahren; die
+Guards (`FLANK_COUPLE_MAX_DROP`, Kappen-Wahl, Floor-Relaxierung) sind dann
+die ersten Sweep-Kandidaten. Golden-Fixture bewusst neu gepinnt
+(REGEN_GOLDEN).
