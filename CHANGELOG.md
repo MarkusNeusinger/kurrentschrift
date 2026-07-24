@@ -68,6 +68,32 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **Public `/write` endpoints: p95 latency ~1100 ms → ~100 ms (rendered
+  geometry byte-identical).** A cProfile of a realistic workload (real
+  120-anchor Sütterlin templates, mixed words up to the 160-char cap, gzip
+  on) showed 74 % of request CPU re-rendering the SAME glyph payloads per
+  request, dominated by per-segment Python-loop shapely buffers plus
+  `union_all`, with FastAPI's `jsonable_encoder` walk and level-9 gzip on
+  top. Four independent, output-preserving fixes: (1) `api/rendering.py`
+  memoises `render_payload_for_template` per
+  `(style, glyph_key, template id+updated_at, resolver, ratio, nib, pen)`
+  with the same TTL + invalidation discipline as the pooled-nib cache
+  (admin template writes clear the style's entries; callers copy before
+  annotating — the shared payloads are never mutated, pinned by the golden
+  parity fixture); (2) `core/template.py` builds the capsule/chisel
+  silhouette geometries with shapely 2.x vectorized array calls instead of
+  93k Python-level `buffer()` calls — bit-identical output verified against
+  the previous implementation on all fixture glyphs plus randomized
+  degenerate inputs (capsule 1.6×, chisel 3.5× faster); (3) the three write
+  endpoints serialize straight through `orjson` (new runtime dependency),
+  bypassing the `jsonable_encoder` walk over ~100k floats per response, and
+  the write-path template fetches defer the unused `raw_path`/`measurements`
+  JSONB columns (~100 KB per glyph off every request); (4) `GZipMiddleware`
+  drops from the implicit compresslevel 9 to 6 (~3× faster on the large
+  geometry bodies for ~1 % more bytes). In-process benchmark, 84 mixed
+  requests: `/write/word` p95 1116 → 100 ms (max 217 ms), the 23-key
+  `/write/glyphs` batch p95 1031 → 26 ms.
+
 - **Composer placement: nested-fall class rule (redesign R4).** With the
   global advance bias gone, the pairlab residuals are class-shaped: rising
   mid-band exits whose neighbour enters below them (t's bar, f's flag, c's

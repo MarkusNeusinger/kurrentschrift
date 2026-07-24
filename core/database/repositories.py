@@ -11,6 +11,7 @@ from typing import Any
 from sqlalchemy import delete, func, select, tuple_
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import defer
 
 from core.database.models import Aggregate, Bbox, GlyphPair, Hand, Instance, QuizWord, Source, Style, Template
 
@@ -114,6 +115,14 @@ class BboxRepository:
         return (result.rowcount or 0) > 0
 
 
+# The render path (public /write endpoints) never reads the dense stylus
+# capture or the trace statistics — deferring the two heavy JSONB columns
+# (raw_path can be ~100 KB per glyph) skips their transfer + parse per request.
+# Deferred attributes lazy-load on first access, so callers passing
+# `render_only=True` must not touch `raw_path`/`measurements` off-session.
+_RENDER_ONLY_DEFERS = (defer(Template.raw_path), defer(Template.measurements))
+
+
 class TemplateRepository:
     """Canonical templates (Grundvorlage), keyed per style.
 
@@ -126,12 +135,15 @@ class TemplateRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get(self, style_id: str, glyph_key: str, variant: int = 0) -> Template | None:
-        result = await self.session.execute(
-            select(Template).where(
-                Template.style_id == style_id, Template.glyph_key == glyph_key, Template.variant == variant
-            )
+    async def get(
+        self, style_id: str, glyph_key: str, variant: int = 0, *, render_only: bool = False
+    ) -> Template | None:
+        stmt = select(Template).where(
+            Template.style_id == style_id, Template.glyph_key == glyph_key, Template.variant == variant
         )
+        if render_only:
+            stmt = stmt.options(*_RENDER_ONLY_DEFERS)
+        result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
     async def list(self, style_id: str) -> list[Template]:
@@ -155,15 +167,18 @@ class TemplateRepository:
         )
         return [{"glyph_key": k, "glyph": g, "variant": v, "advance": a} for k, g, v, a in result.all()]
 
-    async def get_many(self, style_id: str, glyph_keys: list[str], variant: int = 0) -> list[Template]:
+    async def get_many(
+        self, style_id: str, glyph_keys: list[str], variant: int = 0, *, render_only: bool = False
+    ) -> list[Template]:
         """The requested keys' templates in one query (the batch write endpoint)."""
         if not glyph_keys:
             return []
-        result = await self.session.execute(
-            select(Template).where(
-                Template.style_id == style_id, Template.glyph_key.in_(glyph_keys), Template.variant == variant
-            )
+        stmt = select(Template).where(
+            Template.style_id == style_id, Template.glyph_key.in_(glyph_keys), Template.variant == variant
         )
+        if render_only:
+            stmt = stmt.options(*_RENDER_ONLY_DEFERS)
+        result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
     async def half_widths_for_source(self, style_id: str, provenance_source_id: str) -> list[list[float]]:

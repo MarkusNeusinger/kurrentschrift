@@ -11,16 +11,16 @@ gate — same visibility as /diagnostic.
 
 import unicodedata
 
+import orjson
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import require_db, require_source
 from api.http import CACHE_CONTROL
-from api.rendering import resolve_render_context
+from api.rendering import render_payload_cached, resolve_render_context
 from core.compose import compose_word
 from core.database import GlyphPairRepository, Source, Template, TemplateRepository
-from core.pipeline import render_payload_for_template
 from core.shaping import decompose_ligature_slot, glyph_keys_of, shape_text
 
 
@@ -46,9 +46,31 @@ def _template_to_glyph_row(t: Template) -> dict:
     }
 
 
+def _template_render_entry(t: Template) -> dict:
+    """Row dict plus the identity fields the payload memo keys on."""
+    return {"row": _template_to_glyph_row(t), "id": t.id, "updated_at": t.updated_at}
+
+
+def _cached_payload(entry: dict, glyph_key: str, ctx) -> dict:
+    """Memoised render payload for one pre-dereferenced template entry.
+
+    The returned dict is SHARED across requests (api.rendering payload cache)
+    — callers copy before annotating and never mutate it or its children.
+    """
+    return render_payload_cached(entry["row"], glyph_key, entry["id"], entry["updated_at"], ctx)
+
+
+def _geometry_response(content: dict) -> Response:
+    """Serialize a render/compose payload with orjson, bypassing FastAPI's
+    jsonable_encoder walk — pure overhead over these already-JSON-safe dicts
+    of plain floats/lists (~100k numbers per word batch)."""
+    return Response(
+        content=orjson.dumps(content), media_type="application/json", headers={"Cache-Control": CACHE_CONTROL}
+    )
+
+
 @router.get("/glyphs")
 async def get_write_glyphs(
-    response: Response,
     keys: str = Query(..., description="comma-separated glyph_keys, e.g. 'l-initial,e-medial'"),
     source: Source = Depends(require_source),
     db: AsyncSession = Depends(require_db),
@@ -66,29 +88,28 @@ async def get_write_glyphs(
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail=f"at most {MAX_BATCH_KEYS} keys per request")
 
     ctx = await resolve_render_context(source, db)
-    templates = await TemplateRepository(db).get_many(source.style_id, requested)
+    templates = await TemplateRepository(db).get_many(source.style_id, requested, render_only=True)
     # Dereference the ORM rows into plain dicts ON the event loop — touching a
     # session-bound instance from the threadpool is not thread-safe (an
     # expired/deferred attribute would lazy-load off-loop).
-    rows = {t.glyph_key: _template_to_glyph_row(t) for t in templates}
-    missing = [k for k in requested if k not in rows]
+    entries = {t.glyph_key: _template_render_entry(t) for t in templates}
+    missing = [k for k in requested if k not in entries]
 
     # Silhouette/centerline sampling is pure numpy but adds up over ~30 glyphs —
-    # keep it off the event loop like the diagnostic does.
+    # keep it off the event loop like the diagnostic does (cache misses only;
+    # hits are dict lookups).
     def compute() -> list[dict]:
         out: list[dict] = []
         for key in requested:
-            row = rows.get(key)
-            if row is None:
+            entry = entries.get(key)
+            if entry is None:
                 continue
-            payload = render_payload_for_template(row, ctx.style_ratio, ctx.width_resolver, ctx.nib, pen=ctx.pen)
-            payload["glyph_key"] = key
-            out.append(payload)
+            # Shallow copy: the memoised payload is shared across requests.
+            out.append({**_cached_payload(entry, key, ctx), "glyph_key": key})
         return out
 
     glyphs = await run_in_threadpool(compute)
-    response.headers["Cache-Control"] = CACHE_CONTROL
-    return {"glyphs": glyphs, "missing": missing}
+    return _geometry_response({"glyphs": glyphs, "missing": missing})
 
 
 async def compose_word_payload(text: str, source: Source, db: AsyncSession, *, provenance: bool = False) -> dict:
@@ -104,20 +125,22 @@ async def compose_word_payload(text: str, source: Source, db: AsyncSession, *, p
     repo = TemplateRepository(db)
     slots = shape_text(text)
     keys = glyph_keys_of(slots)
-    rows: dict[str, dict] = {t.glyph_key: _template_to_glyph_row(t) for t in await repo.get_many(source.style_id, keys)}
+    entries: dict[str, dict] = {
+        t.glyph_key: _template_render_entry(t) for t in await repo.get_many(source.style_id, keys, render_only=True)
+    }
     # Ligature fallback (one extra query at most, only when something is missing).
-    if any(s.ligature and s.key and s.key not in rows for s in slots):
+    if any(s.ligature and s.key and s.key not in entries for s in slots):
         expanded = []
         for s in slots:
-            if s.ligature and s.key and s.key not in rows:
+            if s.ligature and s.key and s.key not in entries:
                 expanded.extend(decompose_ligature_slot(s) or [s])
             else:
                 expanded.append(s)
         slots = expanded
         keys = glyph_keys_of(slots)
-        extra = [k for k in keys if k not in rows]
-        for t in await repo.get_many(source.style_id, extra):
-            rows[t.glyph_key] = _template_to_glyph_row(t)
+        extra = [k for k in keys if k not in entries]
+        for t in await repo.get_many(source.style_id, extra, render_only=True):
+            entries[t.glyph_key] = _template_render_entry(t)
 
     # Approved pair overrides for this text's adjacent joined pairs (redesign
     # R3): one query for the whole word; no rows → the generator path stays
@@ -129,15 +152,10 @@ async def compose_word_payload(text: str, source: Source, db: AsyncSession, *, p
     pair_overrides = await GlyphPairRepository(db).approved_for_pairs(source.style_id, adjacent)
 
     # Render geometry + composition are pure numpy/python — off the event loop.
+    # The memoised payloads are shared across requests; compose_word reads
+    # them without mutating (pinned by the golden parity fixture).
     def compute() -> dict:
-        payloads = {
-            key: (
-                render_payload_for_template(rows[key], ctx.style_ratio, ctx.width_resolver, ctx.nib, pen=ctx.pen)
-                if key in rows
-                else None
-            )
-            for key in keys
-        }
+        payloads = {key: (_cached_payload(entries[key], key, ctx) if key in entries else None) for key in keys}
         return compose_word(slots, payloads, pen=ctx.pen, pair_overrides=pair_overrides, provenance=provenance)
 
     return await run_in_threadpool(compute)
@@ -145,7 +163,6 @@ async def compose_word_payload(text: str, source: Source, db: AsyncSession, *, p
 
 @router.get("/word")
 async def get_write_word(
-    response: Response,
     text: str = Query(..., description="the word or line to write (NFC-normalised, trimmed, ≤160 chars)"),
     source: Source = Depends(require_source),
     db: AsyncSession = Depends(require_db),
@@ -170,27 +187,19 @@ async def get_write_word(
         )
 
     composed = await compose_word_payload(normalized, source, db)
-    response.headers["Cache-Control"] = CACHE_CONTROL
-    return {"text": normalized, **composed}
+    return _geometry_response({"text": normalized, **composed})
 
 
 @router.get("/glyphs/{glyph_key}")
 async def get_write_glyph(
-    glyph_key: str, response: Response, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
+    glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
 ):
     """Render payload for one glyph — 404 when no canonical is traced yet."""
-    template = await TemplateRepository(db).get(source.style_id, glyph_key)
+    template = await TemplateRepository(db).get(source.style_id, glyph_key, render_only=True)
     if template is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no canonical for {glyph_key!r}")
     ctx = await resolve_render_context(source, db)
-    payload = await run_in_threadpool(
-        render_payload_for_template,
-        _template_to_glyph_row(template),
-        ctx.style_ratio,
-        ctx.width_resolver,
-        ctx.nib,
-        pen=ctx.pen,
-    )
-    payload["glyph_key"] = glyph_key
-    response.headers["Cache-Control"] = CACHE_CONTROL
-    return payload
+    entry = _template_render_entry(template)
+    payload = await run_in_threadpool(_cached_payload, entry, glyph_key, ctx)
+    # Shallow copy before annotating — the memoised payload is shared.
+    return _geometry_response({**payload, "glyph_key": glyph_key})
