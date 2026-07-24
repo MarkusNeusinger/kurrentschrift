@@ -71,7 +71,7 @@ def _geometry_response(content: dict) -> Response:
 
 @router.get("/glyphs")
 async def get_write_glyphs(
-    keys: str = Query(..., description="comma-separated glyph_keys, e.g. 'l-initial,e-medial'"),
+    keys: str = Query(..., description="comma-separated glyph_keys, e.g. 'l,e,longs'"),
     source: Source = Depends(require_source),
     db: AsyncSession = Depends(require_db),
 ):
