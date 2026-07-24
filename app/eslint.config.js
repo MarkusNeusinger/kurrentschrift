@@ -39,7 +39,8 @@ export default tseslint.config(
       // state when the input prop changes" effects (21×). Both need a
       // behavioural refactor of the component tree, which is its own change,
       // not a dependency bump — so they stay visible as warnings until then
-      // rather than being switched off. See the follow-up issue.
+      // rather than being switched off. Every site is listed in issue #227;
+      // clearing them means deleting these two lines.
       'react-hooks/refs': 'warn',
       'react-hooks/set-state-in-effect': 'warn',
       ...jsxA11y.configs.recommended.rules,
