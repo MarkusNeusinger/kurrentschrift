@@ -10,6 +10,7 @@ process; the TTL is the safety net for out-of-band writes (psql, migrations).
 
 import logging
 import statistics
+import threading
 import time
 from dataclasses import dataclass
 
@@ -38,6 +39,11 @@ _pen_cache: dict[tuple[str, str, str], tuple[PenStyle | None, float]] = {}
 # key (see `render_payload_cached`) -> (payload dict, computed_at)
 _PAYLOAD_CACHE_MAX = 512  # ~30 glyphs/source at a handful of sources — 512 is generous
 _payload_cache: dict[tuple, tuple[dict, float]] = {}
+# Unlike the nib/pen caches (touched only on the event loop), the payload
+# cache is read/written from the write router's threadpool while invalidation
+# runs on the loop — iteration and eviction need a real guard. The render
+# computation itself stays outside the lock.
+_payload_lock = threading.Lock()
 
 
 async def resolve_style(source: Source, db: AsyncSession) -> tuple[str, list[float], float, str]:
@@ -144,8 +150,9 @@ def _invalidate_payloads_for_style(style_id: str) -> None:
     already forces a miss after a write — this additionally frees the stale
     entries instead of letting them age out via TTL/eviction.
     """
-    for key in [k for k in _payload_cache if k[0] == style_id]:
-        _payload_cache.pop(key, None)
+    with _payload_lock:
+        for key in [k for k in _payload_cache if k[0] == style_id]:
+            _payload_cache.pop(key, None)
 
 
 def invalidate_pooled_nib(style_id: str, source_id: str) -> None:
@@ -237,13 +244,17 @@ def render_payload_cached(glyph_row: dict, glyph_key: str, template_id: int, upd
         _pen_fingerprint(ctx.pen),
     )
     now = time.monotonic()
-    hit = _payload_cache.get(key)
+    with _payload_lock:
+        hit = _payload_cache.get(key)
     if hit is not None and now - hit[1] < _NIB_TTL_S:
         return hit[0]
+    # Compute outside the lock — a rare concurrent double-compute of the same
+    # key is benign (same value) and never blocks other threads' hits.
     payload = render_payload_for_template(glyph_row, ctx.style_ratio, ctx.width_resolver, ctx.nib, pen=ctx.pen)
-    _payload_cache[key] = (payload, now)
-    # Bound the cache: evict in insertion order beyond the cap (plain dict —
-    # good enough for a working set of a few dozen templates per style).
-    while len(_payload_cache) > _PAYLOAD_CACHE_MAX:
-        _payload_cache.pop(next(iter(_payload_cache)))
+    with _payload_lock:
+        _payload_cache[key] = (payload, now)
+        # Bound the cache: evict in insertion order beyond the cap (plain dict
+        # — good enough for a working set of a few dozen templates per style).
+        while len(_payload_cache) > _PAYLOAD_CACHE_MAX:
+            _payload_cache.pop(next(iter(_payload_cache)))
     return payload
