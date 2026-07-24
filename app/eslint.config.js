@@ -28,7 +28,20 @@ export default tseslint.config(
       'jsx-a11y': jsxA11y,
     },
     rules: {
+      // eslint-plugin-react-hooks v7 folded the stabilised React Compiler rule
+      // set into `recommended` — 16 rules where v5 shipped two. The preset is
+      // adopted as-is: 11 rules land at error (v5 enforced only
+      // `rules-of-hooks`), and all of them are clean on the current tree except
+      // the two below.
       ...reactHooks.configs.recommended.rules,
+      // These two fire on long-standing patterns — the latest-ref
+      // `ref.current = prop` write during render (4×) and the "reset transient
+      // state when the input prop changes" effects (21×). Both need a
+      // behavioural refactor of the component tree, which is its own change,
+      // not a dependency bump — so they stay visible as warnings until then
+      // rather than being switched off. See the follow-up issue.
+      'react-hooks/refs': 'warn',
+      'react-hooks/set-state-in-effect': 'warn',
       ...jsxA11y.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       // Honour the `_`-prefix convention for intentionally-unused bindings.
