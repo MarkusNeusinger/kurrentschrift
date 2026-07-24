@@ -68,6 +68,14 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **Ruff no longer formats the Markdown docs.** Ruff 0.16 extends `ruff format`
+  to Python code blocks inside Markdown, which reflows the illustrative
+  snippets under `docs/` and in the tool READMEs — schema sketches,
+  pseudo-code and column-aligned trailing comments whose alignment is the
+  point. `*.md` therefore joins `[tool.ruff] exclude`; the formatter's scope
+  stays the 128 Python files it always covered. Unblocks the ruff
+  0.15.20 → 0.16.0 bump.
+
 - **Public `/write` endpoints: p95 latency ~1100 ms → ~100 ms (rendered
   geometry byte-identical).** A cProfile of a realistic workload (real
   120-anchor Sütterlin templates, mixed words up to the 160-char cap, gzip
