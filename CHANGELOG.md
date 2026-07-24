@@ -81,7 +81,8 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   transient state when the input prop changes" effects, 21 sites) — are
   configured as warnings rather than switched off, because clearing them is a
   behavioural refactor of `WrittenGlyph`/`WrittenWord`, the diagnostics dialogs
-  and the admin compare views, tracked separately. `npm run lint` therefore
+  and the admin compare views, tracked with every site listed in issue #227.
+  `npm run lint` therefore
   reports 0 errors / 45 warnings (20 pre-existing `react-refresh` + the 25
   above); tests, build and `npm ci` are unaffected.
 
