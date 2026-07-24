@@ -73,6 +73,11 @@ exclude = [
     ".venv",
     "__pycache__",
     "dist",
+    # Ruff >=0.16 also formats Python code blocks inside Markdown. The docs are
+    # prose whose snippets are illustrative — schema sketches, pseudo-code and
+    # aligned trailing comments that carry meaning. They are documentation, not
+    # source, and must not be reflowed by the formatter.
+    "*.md",
 ]
 
 [tool.ruff.lint]
