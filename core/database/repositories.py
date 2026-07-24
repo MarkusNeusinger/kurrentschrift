@@ -16,6 +16,16 @@ from sqlalchemy.orm import defer
 from core.database.models import Aggregate, Bbox, GlyphPair, Hand, Instance, QuizWord, Source, Style, Template
 
 
+# Every `upsert` below writes through a CORE insert-on-conflict, which the ORM
+# session cannot see: it never touches the identity map. A plain re-select then
+# returns the ALREADY-LOADED instance with its pre-write column values — so an
+# endpoint that read the row before writing it (put_bbox's `existing`, the
+# /trace identity guard) answers with the state from *before* its own write, and
+# the client's next edit builds on that stale copy and drops the last one.
+# `populate_existing` forces the re-select to overwrite the loaded attributes.
+REFRESH_LOADED = {"populate_existing": True}
+
+
 class StyleRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
@@ -104,7 +114,9 @@ class BboxRepository:
         await self.session.execute(stmt)
         await self.session.flush()
         result = await self.session.execute(
-            select(Bbox).where(Bbox.source_id == source_id, Bbox.glyph_key == glyph_key)
+            select(Bbox)
+            .where(Bbox.source_id == source_id, Bbox.glyph_key == glyph_key)
+            .execution_options(**REFRESH_LOADED)
         )
         return result.scalar_one()
 
@@ -225,9 +237,9 @@ class TemplateRepository:
         await self.session.execute(stmt)
         await self.session.flush()
         result = await self.session.execute(
-            select(Template).where(
-                Template.style_id == style_id, Template.glyph == canonical["glyph"], Template.variant == variant
-            )
+            select(Template)
+            .where(Template.style_id == style_id, Template.glyph == canonical["glyph"], Template.variant == variant)
+            .execution_options(**REFRESH_LOADED)
         )
         return result.scalar_one()
 
@@ -301,12 +313,14 @@ class GlyphPairRepository:
         await self.session.execute(stmt)
         await self.session.flush()
         result = await self.session.execute(
-            select(GlyphPair).where(
+            select(GlyphPair)
+            .where(
                 GlyphPair.style_id == style_id,
                 GlyphPair.left_key == left_key,
                 GlyphPair.right_key == right_key,
                 GlyphPair.variant == variant,
             )
+            .execution_options(**REFRESH_LOADED)
         )
         return result.scalar_one()
 

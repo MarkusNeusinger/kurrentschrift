@@ -317,6 +317,24 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Fixed
 
+- **Admin writes answered with the state from *before* the write.** Every
+  repository `upsert` writes through a Core insert-on-conflict the ORM session
+  cannot see, then re-selects the row — and a plain re-select returns the
+  instance already in the session's identity map, unrefreshed. Since the
+  handlers load the row first (the bbox PUT's coalesce lookup, the `/trace`
+  identity guard), every response carried the pre-write values. The setup
+  wizard builds each next edit on the last response, so it re-sent a
+  one-edit-old bbox: guide drags snapped back to their old position before
+  jumping forward a round trip later, and every second eraser/ink stroke was
+  silently dropped — erased neighbour ink reappeared as the crop "jumped back
+  and forth". The three upserts (bbox, template, glyph pair) now re-select with
+  `populate_existing`.
+- **Wizard gestures no longer snap back for the duration of their save.** The
+  in-flight drag/stroke preview (Grundlinie, Mittellinie, Schräglage, donor
+  cell, eraser and ink brush) was cleared *before* the PUT resolved, so the
+  guide line or stroke rendered from the still-unsaved bbox for one round trip.
+  The preview now hands over to the stored value only once the commit lands,
+  cleared by gesture identity so a gesture started during the save survives.
 - **Cross-source render-cache poisoning.** `WrittenGlyph` seeded admin
   payloads from the runtime-switched active source under the *public*
   source's cache keys, so after a source switch in the admin, `/quiz` and

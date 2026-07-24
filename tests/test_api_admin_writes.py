@@ -67,6 +67,45 @@ async def test_put_bbox_omitted_fields_preserve_stored_values(api: Harness):
     assert out["locked"] is True
 
 
+async def test_put_bbox_response_reflects_the_write_not_the_previous_state(api: Harness):
+    """An UPDATE PUT must answer with what it just wrote.
+
+    The handler reads the stored row first (the coalesce lookup), which puts it
+    in the session's identity map; the upsert then writes through a Core
+    insert-on-conflict the ORM cannot see. Without `populate_existing` the
+    re-select handed back the pre-write instance, so every response was one edit
+    behind — and the wizard, which builds each next edit on the last response,
+    silently dropped strokes and made the crop/guides jump back and forth.
+    """
+    _, source_id = await api.seed_style_and_source()
+    stroke_a = {"points": [[310, 110]], "radius": 8}
+    stroke_b = {"points": [[320, 120]], "radius": 8}
+    await api.client.request(
+        "PUT", f"/sources/{source_id}/bboxes/n", json_body=_bbox_body(), headers=api.admin_headers()
+    )
+
+    res = await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/bboxes/n",
+        json_body=_bbox_body(baseline_y=615, mask_strokes=[stroke_a]),
+        headers=api.admin_headers(),
+    )
+    out = res.json()
+    assert out["baseline_y"] == 615
+    assert len(out["mask_strokes"]) == 1
+
+    # The client appends to what it just got back — the wizard's commit pattern.
+    res = await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/bboxes/n",
+        json_body=_bbox_body(baseline_y=615, mask_strokes=[*out["mask_strokes"], stroke_b]),
+        headers=api.admin_headers(),
+    )
+    assert len(res.json()["mask_strokes"]) == 2
+    stored = await api.client.request("GET", f"/sources/{source_id}/bboxes/n")
+    assert len(stored.json()["mask_strokes"]) == 2
+
+
 async def test_put_bbox_rejects_baseline_above_midband(api: Harness):
     _, source_id = await api.seed_style_and_source()
     res = await api.client.request(
