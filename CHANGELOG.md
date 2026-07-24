@@ -68,6 +68,23 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **The SPA lint gate now enforces the React Compiler rules
+  (`eslint-plugin-react-hooks` 5 → 7).** v7 folds the stabilised React Compiler
+  rule set into `recommended`: 16 rules where v5 shipped two, of which **11 are
+  enforced at error** — previously only `rules-of-hooks` was. Ten of the newly
+  adopted error-level rules (`purity`, `immutability`,
+  `preserve-manual-memoization`, `static-components`, `error-boundaries`,
+  `set-state-in-render`, `globals`, `use-memo`, `config`, `gating`) are already
+  clean on the tree, so the gate gets strictly stronger at no cost. The two
+  that are not — `react-hooks/refs` (the latest-ref `ref.current = prop` write
+  during render, 4 sites) and `react-hooks/set-state-in-effect` (the "reset
+  transient state when the input prop changes" effects, 21 sites) — are
+  configured as warnings rather than switched off, because clearing them is a
+  behavioural refactor of `WrittenGlyph`/`WrittenWord`, the diagnostics dialogs
+  and the admin compare views, tracked separately. `npm run lint` therefore
+  reports 0 errors / 45 warnings (20 pre-existing `react-refresh` + the 25
+  above); tests, build and `npm ci` are unaffected.
+
 - **Ruff no longer formats the Markdown docs.** Ruff 0.16 extends `ruff format`
   to Python code blocks inside Markdown, which reflows the illustrative
   snippets under `docs/` and in the tool READMEs — schema sketches,
