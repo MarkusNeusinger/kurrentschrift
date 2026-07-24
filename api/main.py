@@ -91,7 +91,8 @@ app.add_middleware(
 # GZip has no content-type filter, so admin chart/crop images get a useless
 # recompress pass too — a few ms on rare admin loads, accepted for the public
 # JSON win.
-app.add_middleware(GZipMiddleware, minimum_size=1024)
+# Level 6 over the default 9: large geometry JSON compresses ~2-3x faster for ~1-2% more bytes.
+app.add_middleware(GZipMiddleware, minimum_size=1024, compresslevel=6)
 
 app.include_router(health_router)
 app.include_router(styles_router)

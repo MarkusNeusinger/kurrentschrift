@@ -35,8 +35,10 @@ class _FakeRepo:
 def _isolated_pool(monkeypatch):
     nib_snapshot = dict(rendering._nib_cache)
     pen_snapshot = dict(rendering._pen_cache)
+    payload_snapshot = dict(rendering._payload_cache)
     rendering._nib_cache.clear()
     rendering._pen_cache.clear()
+    rendering._payload_cache.clear()
     _FakeRepo.calls = 0
     monkeypatch.setattr(rendering, "TemplateRepository", _FakeRepo)
     clock = {"now": 1000.0}
@@ -46,6 +48,8 @@ def _isolated_pool(monkeypatch):
     rendering._nib_cache.update(nib_snapshot)
     rendering._pen_cache.clear()
     rendering._pen_cache.update(pen_snapshot)
+    rendering._payload_cache.clear()
+    rendering._payload_cache.update(payload_snapshot)
 
 
 async def test_pooled_pen_caches_within_ttl_and_recomputes_after(_isolated_pool):
@@ -75,6 +79,80 @@ async def test_pooled_constant_nib_caches_and_invalidates(_isolated_pool):
 async def test_non_pooled_resolver_returns_none_without_scanning(_isolated_pool):
     assert await rendering.pooled_pen(None, "suetterlin", "s1922", "constant") is None
     assert _FakeRepo.calls == 0
+
+
+# ------------------------------------------------------- render-payload memo
+
+
+def _render_ctx(width_resolver: str = "pressure") -> rendering.RenderContext:
+    pen = rendering.PenStyle(kind="pressure", hairline_half=0.04)
+    return rendering.RenderContext("kurrent", [2.0, 1.0, 2.0], 50.0, width_resolver, None, pen)
+
+
+@pytest.fixture
+def _counted_render(monkeypatch):
+    """Replace the real payload computation with a counting stub that returns
+    a fresh (mutable) dict per call — so cache hits are provable by identity
+    and call count, without dragging real template geometry into the test."""
+    calls = {"n": 0}
+
+    def fake_render(glyph_row, style_ratio, width_resolver, constant_nib_units, pen=None):
+        calls["n"] += 1
+        return {"outline_paths": [[[[0.0, 0.0], [1.0, 0.0]]]], "advance": glyph_row["advance"], "seq": calls["n"]}
+
+    monkeypatch.setattr(rendering, "render_payload_for_template", fake_render)
+    return calls
+
+
+def test_render_payload_cached_serves_memo_and_misses_on_updated_at(_isolated_pool, _counted_render):
+    ctx = _render_ctx()
+    row = {"advance": 0.5}
+    first = rendering.render_payload_cached(row, "n", 7, "2026-07-24T10:00:00", ctx)
+    again = rendering.render_payload_cached(row, "n", 7, "2026-07-24T10:00:00", ctx)
+    assert again is first  # identical request → the memoised payload, not a recompute
+    assert _counted_render["n"] == 1
+
+    # An admin write bumps updated_at → new key → fresh payload.
+    fresh = rendering.render_payload_cached(row, "n", 7, "2026-07-24T11:00:00", ctx)
+    assert fresh is not first
+    assert _counted_render["n"] == 2
+
+
+def test_render_payload_cached_repeat_equals_first_after_copy_annotate(_isolated_pool, _counted_render):
+    """The router pattern `{**payload, "glyph_key": k}` must leave the shared
+    memo entry untouched — a repeated request serves an equal payload."""
+    ctx = _render_ctx()
+    first = rendering.render_payload_cached({"advance": 0.5}, "n", 7, "t1", ctx)
+    snapshot = dict(first)
+    annotated = {**first, "glyph_key": "n"}
+    assert "glyph_key" in annotated and "glyph_key" not in first
+    again = rendering.render_payload_cached({"advance": 0.5}, "n", 7, "t1", ctx)
+    assert again == snapshot
+    assert _counted_render["n"] == 1
+
+
+def test_render_payload_cache_invalidation_and_ttl(_isolated_pool, _counted_render):
+    clock = _isolated_pool
+    ctx = _render_ctx()
+    rendering.render_payload_cached({"advance": 0.5}, "n", 7, "t1", ctx)
+    rendering.invalidate_pooled_style("kurrent")
+    rendering.render_payload_cached({"advance": 0.5}, "n", 7, "t1", ctx)
+    assert _counted_render["n"] == 2  # style invalidation dropped the entry
+
+    rendering.invalidate_pooled_nib("kurrent", "loth-1866")
+    rendering.render_payload_cached({"advance": 0.5}, "n", 7, "t1", ctx)
+    assert _counted_render["n"] == 3  # per-source invalidation clears the style's payloads too
+
+    clock["now"] += rendering._NIB_TTL_S + 1
+    rendering.render_payload_cached({"advance": 0.5}, "n", 7, "t1", ctx)
+    assert _counted_render["n"] == 4  # TTL elapsed → recompute (out-of-band-write safety net)
+
+
+def test_render_payload_cache_bounded_eviction(_isolated_pool, _counted_render):
+    ctx = _render_ctx()
+    for i in range(rendering._PAYLOAD_CACHE_MAX + 5):
+        rendering.render_payload_cached({"advance": 0.5}, f"g{i}", i, "t1", ctx)
+    assert len(rendering._payload_cache) == rendering._PAYLOAD_CACHE_MAX
 
 
 async def test_resolve_style_unknown_style_500_without_internal_detail(monkeypatch):

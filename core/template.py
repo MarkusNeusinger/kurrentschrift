@@ -398,10 +398,16 @@ def capsule_union_rings(
     if len(x) == 1:
         shapes = [Point(x[0], y[0]).buffer(hw[0])]
     else:
-        shapes = [
-            LineString([(x[i], y[i]), (x[i + 1], y[i + 1])]).buffer(float((hw[i] + hw[i + 1]) / 2.0))
-            for i in range(len(x) - 1)
-        ]
+        # Vectorized over segments: one (n-1, 2, 2) coordinate block → all
+        # LineStrings → all buffers in single C-level calls. Buffer params stay
+        # at the LineString.buffer defaults (quad_segs=16, round caps/joins —
+        # the METHOD default, not shapely.buffer's 8) so each capsule — and
+        # therefore the union — is bit-identical to the former per-segment
+        # Python loop.
+        pts = np.column_stack([x, y])
+        segments = np.stack([pts[:-1], pts[1:]], axis=1)
+        radii = (hw[:-1] + hw[1:]) / 2.0
+        shapes = shapely.buffer(shapely.linestrings(segments), radii, quad_segs=16)
     merged = shapely.union_all(shapes)
     if simplify_tol > 0:
         merged = merged.simplify(simplify_tol, preserve_topology=True)
@@ -477,18 +483,22 @@ def chisel_union_rings(
     hx, hy = nib.half_vector
     ex, ey = nib.edge_vector
 
-    def stamp(px: float, py: float) -> list[tuple[float, float]]:
-        return [
-            (px + hx + ex, py + hy + ey),
-            (px + hx - ex, py + hy - ey),
-            (px - hx + ex, py - hy + ey),
-            (px - hx - ex, py - hy - ey),
-        ]
-
+    # Vectorized nib stamps: the four rectangle corners per sample point,
+    # summed in the same operand order as the former scalar stamp() —
+    # (p + h) ± e — so every coordinate is bit-identical to the loop version.
+    pts = np.column_stack([x, y])
+    half = np.array([hx, hy])
+    edge = np.array([ex, ey])
+    plus_h = pts + half
+    minus_h = pts - half
+    stamps = np.stack([plus_h + edge, plus_h - edge, minus_h + edge, minus_h - edge], axis=1)
     if len(x) == 1:
-        shapes = [MultiPoint(stamp(x[0], y[0])).convex_hull]
+        shapes = [MultiPoint(stamps[0]).convex_hull]
     else:
-        shapes = [MultiPoint(stamp(x[i], y[i]) + stamp(x[i + 1], y[i + 1])).convex_hull for i in range(len(x) - 1)]
+        # Per segment the 8-point block of both endpoint stamps → MultiPoints
+        # → convex hulls, all in vectorized shapely calls.
+        blocks = np.concatenate([stamps[:-1], stamps[1:]], axis=1)
+        shapes = shapely.convex_hull(shapely.multipoints(blocks))
     merged = shapely.union_all(shapes)
     if simplify_tol > 0:
         merged = merged.simplify(simplify_tol, preserve_topology=True)

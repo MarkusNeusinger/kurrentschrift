@@ -10,6 +10,7 @@ process; the TTL is the safety net for out-of-band writes (psql, migrations).
 
 import logging
 import statistics
+import threading
 import time
 from dataclasses import dataclass
 
@@ -17,6 +18,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import Source, StyleRepository, TemplateRepository
+from core.pipeline import render_payload_for_template
 from core.widths import BroadNib, PenStyle
 
 
@@ -27,6 +29,21 @@ _NIB_TTL_S = 600.0
 _nib_cache: dict[tuple[str, str], tuple[float | None, float]] = {}
 # (style_id, source_id, width_resolver) -> (PenStyle or None, computed_at)
 _pen_cache: dict[tuple[str, str, str], tuple[PenStyle | None, float]] = {}
+# Memoised `render_payload_for_template` outputs: the silhouette/centerline
+# sampling is a pure function of (template row content, resolved render
+# context), yet dominates the public /write CPU because the same few dozen
+# templates are re-sampled on every request. Keyed by the template's identity
+# + `updated_at` stamp + every render input, so an admin write naturally
+# misses; the explicit style invalidation below and the shared TTL are the
+# same safety nets the nib/pen caches use.
+# key (see `render_payload_cached`) -> (payload dict, computed_at)
+_PAYLOAD_CACHE_MAX = 512  # ~30 glyphs/source at a handful of sources — 512 is generous
+_payload_cache: dict[tuple, tuple[dict, float]] = {}
+# Unlike the nib/pen caches (touched only on the event loop), the payload
+# cache is read/written from the write router's threadpool while invalidation
+# runs on the loop — iteration and eviction need a real guard. The render
+# computation itself stays outside the lock.
+_payload_lock = threading.Lock()
 
 
 async def resolve_style(source: Source, db: AsyncSession) -> tuple[str, list[float], float, str]:
@@ -125,11 +142,25 @@ async def pooled_pen(db: AsyncSession, style_id: str, source_id: str, width_reso
     return pen
 
 
+def _invalidate_payloads_for_style(style_id: str) -> None:
+    """Drop every memoised render payload of a style.
+
+    Templates hang off the style (not a source), so both invalidation entry
+    points clear at style granularity. The `updated_at` component of the key
+    already forces a miss after a write — this additionally frees the stale
+    entries instead of letting them age out via TTL/eviction.
+    """
+    with _payload_lock:
+        for key in [k for k in _payload_cache if k[0] == style_id]:
+            _payload_cache.pop(key, None)
+
+
 def invalidate_pooled_nib(style_id: str, source_id: str) -> None:
     """Drop the memoised nib/pen of one (style, source) pool."""
     _nib_cache.pop((style_id, source_id), None)
     for resolver in ("pressure", "broad_nib"):
         _pen_cache.pop((style_id, source_id, resolver), None)
+    _invalidate_payloads_for_style(style_id)
 
 
 def invalidate_pooled_style(style_id: str) -> None:
@@ -144,6 +175,7 @@ def invalidate_pooled_style(style_id: str) -> None:
         _nib_cache.pop(key, None)
     for key in [k for k in _pen_cache if k[0] == style_id]:
         _pen_cache.pop(key, None)
+    _invalidate_payloads_for_style(style_id)
 
 
 @dataclass(frozen=True)
@@ -174,3 +206,55 @@ async def resolve_render_context(source: Source, db: AsyncSession) -> RenderCont
     nib = await pooled_constant_nib(db, style_id, source.id) if width_resolver == "constant" else None
     pen = await pooled_pen(db, style_id, source.id, width_resolver)
     return RenderContext(style_id, style_ratio, slant_deg, width_resolver, nib, pen)
+
+
+def _pen_fingerprint(pen: PenStyle | None) -> tuple | None:
+    """Hashable identity of a pooled pen for the payload cache key.
+
+    `PenStyle`/`BroadNib` are frozen dataclasses and hashable already, but the
+    key stays a plain value tuple so no dataclass instance is retained in a
+    long-lived key and equality is by calibration values only.
+    """
+    if pen is None:
+        return None
+    nib = pen.nib
+    nib_fp = None if nib is None else (nib.width_units, nib.angle_deg, nib.edge_fraction)
+    return (pen.kind, pen.hairline_half, nib_fp)
+
+
+def render_payload_cached(glyph_row: dict, glyph_key: str, template_id: int, updated_at, ctx: RenderContext) -> dict:
+    """`render_payload_for_template` with the cross-request memo.
+
+    Pure function of (row content, render context) — the key carries the
+    template's id + `updated_at` as the row-content proxy plus every render
+    input. Returned payloads are SHARED across requests: callers must never
+    mutate them (copy before annotating, e.g. ``{**payload, "glyph_key": k}``).
+    Synchronous by design — called from the write router's threadpool so a
+    miss still computes off the event loop; dict get/set are atomic under the
+    GIL, and a rare concurrent double-compute is benign (same value).
+    """
+    key = (
+        ctx.style_id,
+        glyph_key,
+        template_id,
+        None if updated_at is None else str(updated_at),
+        ctx.width_resolver,
+        tuple(ctx.style_ratio),
+        ctx.nib,
+        _pen_fingerprint(ctx.pen),
+    )
+    now = time.monotonic()
+    with _payload_lock:
+        hit = _payload_cache.get(key)
+    if hit is not None and now - hit[1] < _NIB_TTL_S:
+        return hit[0]
+    # Compute outside the lock — a rare concurrent double-compute of the same
+    # key is benign (same value) and never blocks other threads' hits.
+    payload = render_payload_for_template(glyph_row, ctx.style_ratio, ctx.width_resolver, ctx.nib, pen=ctx.pen)
+    with _payload_lock:
+        _payload_cache[key] = (payload, now)
+        # Bound the cache: evict in insertion order beyond the cap (plain dict
+        # — good enough for a working set of a few dozen templates per style).
+        while len(_payload_cache) > _PAYLOAD_CACHE_MAX:
+            _payload_cache.pop(next(iter(_payload_cache)))
+    return payload
