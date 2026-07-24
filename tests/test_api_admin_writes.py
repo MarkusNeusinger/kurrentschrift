@@ -80,9 +80,10 @@ async def test_put_bbox_response_reflects_the_write_not_the_previous_state(api: 
     _, source_id = await api.seed_style_and_source()
     stroke_a = {"points": [[310, 110]], "radius": 8}
     stroke_b = {"points": [[320, 120]], "radius": 8}
-    await api.client.request(
+    res = await api.client.request(
         "PUT", f"/sources/{source_id}/bboxes/n", json_body=_bbox_body(), headers=api.admin_headers()
     )
+    assert res.status == 200
 
     res = await api.client.request(
         "PUT",
@@ -90,6 +91,7 @@ async def test_put_bbox_response_reflects_the_write_not_the_previous_state(api: 
         json_body=_bbox_body(baseline_y=615, mask_strokes=[stroke_a]),
         headers=api.admin_headers(),
     )
+    assert res.status == 200
     out = res.json()
     assert out["baseline_y"] == 615
     assert len(out["mask_strokes"]) == 1
@@ -101,8 +103,10 @@ async def test_put_bbox_response_reflects_the_write_not_the_previous_state(api: 
         json_body=_bbox_body(baseline_y=615, mask_strokes=[*out["mask_strokes"], stroke_b]),
         headers=api.admin_headers(),
     )
+    assert res.status == 200
     assert len(res.json()["mask_strokes"]) == 2
     stored = await api.client.request("GET", f"/sources/{source_id}/bboxes/n")
+    assert stored.status == 200
     assert len(stored.json()["mask_strokes"]) == 2
 
 

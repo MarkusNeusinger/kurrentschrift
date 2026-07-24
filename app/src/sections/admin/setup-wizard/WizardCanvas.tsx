@@ -431,6 +431,11 @@ export function WizardCanvas({
   // still-unsaved bbox, so it visibly snaps back to where the gesture started and
   // jumps forward again a round trip later. Cleared by identity, so a gesture
   // begun while the PUT was still in flight survives its predecessor's landing.
+  // `finally`, not `then`: a REJECTED save leaves the bbox unchanged, so keeping
+  // the preview would paint a value that was never stored. The gesture is dropped
+  // either way and the canvas falls back to the true stored state — the commit
+  // paths report the failure through the wizard's snack (useWizard's
+  // updateBboxField catches, so in practice only an unexpected throw lands here).
   const commitThenClear = useCallback(
     async <T,>(gesture: T, setGesture: Dispatch<SetStateAction<T | null>>, commit: () => Promise<void>) => {
       try {
