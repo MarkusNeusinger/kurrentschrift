@@ -83,11 +83,11 @@ Durchsetzung.
 Zwei Details der Datei sind Absicht und sollten beim Bearbeiten nicht
 „aufgeräumt" werden:
 
-- Die `Content-Signal`-Zeile steht **zweimal**: einmal in der Gruppe der
-  erlaubten KI-Agenten, einmal unter `User-agent: *`. Ein Crawler befolgt
-  genau die eine Gruppe, die auf ihn passt — ein namentlich genannter
-  Agent sähe das Signal aus der `*`-Gruppe also nie, und genau ihn muss
-  der Trainingsvorbehalt erreichen.
+- Die `Content-Signal`-Zeile steht in **jeder** Gruppe, auch in den
+  ablehnenden. Ein Crawler liest nur die Gruppe, die auf ihn passt — ein
+  einmal unter `User-agent: *` erklärter Vorbehalt erreichte keinen
+  namentlich genannten Agenten, am wenigsten die Trainings-Sammler, an die
+  er sich richtet.
 - Die **namentlichen Gruppen stehen vor** der `*`-Gruppe. Ein
   spezifikationstreuer Crawler wählt unabhängig von der Reihenfolge die
   spezifischste Gruppe; einfachere Parser nehmen die erste passende — mit
