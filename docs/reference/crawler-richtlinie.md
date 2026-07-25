@@ -2,7 +2,7 @@
 
 **Status:** Entschieden (2026-07-25). Die Repo-Seite ist umgesetzt; das
 Durchsetzen liegt in der Cloudflare-Zone `kurrentschrift.ink` und ist
-eine Dashboard-Handlung (siehe [§4](#4-was-in-cloudflare-zu-tun-ist)).
+eine Dashboard-Handlung (siehe [§4](#4--was-in-cloudflare-zu-tun-ist)).
 
 **Kurzfassung:** KI-Agenten, die **abrufen und zitieren**, sind
 willkommen; Sammler, die **nur für das Training** einsammeln, sind
