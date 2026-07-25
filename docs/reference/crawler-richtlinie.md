@@ -15,7 +15,7 @@ Gemessen am 2026-07-25 gegen die Live-Zone:
 
 | Anfrage | Ergebnis |
 |---|---|
-| `ClaudeBot`, `Claude-User`, `Claude-SearchBot` auf `/` | **403** „Your request was blocked." (Cloudflare) |
+| `ClaudeBot`, `Claude-User`, `Claude-SearchBot` auf `/` | **403** „Your request was blocked.“ (Cloudflare) |
 | `GPTBot`, `OAI-SearchBot`, `ChatGPT-User`, `PerplexityBot` auf `/` | **403** |
 | Dieselben UAs auf `/llms.txt` | **403** |
 | Dieselben UAs auf `api.kurrentschrift.ink` | **403** (die Zone ist vollständig erfasst) |
@@ -27,7 +27,7 @@ Zwei Dinge daran waren nicht beabsichtigt:
    ist genau für Agenten geschrieben — und genau die bekamen 403.
 2. **Es trifft nutzergesteuerte Abrufe.** `Claude-User` und
    `ChatGPT-User` feuern, wenn ein *Mensch* seinem Assistenten sagt
-   „schau dir kurrentschrift.ink an". Das sind Besucher mit Werkzeug,
+   „schau dir kurrentschrift.ink an“. Das sind Besucher mit Werkzeug,
    keine Scraper.
 
 Zusätzlich blockte die Zone `api.kurrentschrift.ink` mit — die in
@@ -51,7 +51,7 @@ Begründung:
 
 - **Auffindbarkeit.** Das Publikum dieser Seite — Familienforschung,
   Schulunterricht, Archivarbeit — fragt seine Frage zunehmend einem
-  Assistenten („wie lese ich Sütterlin?"). Wer dort nicht zitiert werden
+  Assistenten („wie lese ich Sütterlin?“). Wer dort nicht zitiert werden
   kann, existiert für diesen Kanal nicht. Für eine deutschsprachige
   Nische ist das der wachsende Entdeckungsweg, nicht ein Randfall.
 - **Der Vorbehalt bleibt bestehen.** `ai-train=no` ist der rechtlich
@@ -81,7 +81,7 @@ Die Datei ist damit die Quelle der Wahrheit, das Dashboard nur die
 Durchsetzung.
 
 Zwei Details der Datei sind Absicht und sollten beim Bearbeiten nicht
-„aufgeräumt" werden:
+„aufgeräumt“ werden:
 
 - Die `Content-Signal`-Zeile steht in **jeder** Gruppe, auch in den
   ablehnenden. Ein Crawler liest nur die Gruppe, die auf ihn passt — ein
@@ -110,7 +110,7 @@ nächste Schritt, nicht eine weitere robots.txt-Zeile.
 ## 4 · Was in Cloudflare zu tun ist
 
 Zone `kurrentschrift.ink` → **AI Crawl Control** (bei älteren Konten:
-Security → Bots → „AI Scrapers and Crawlers"):
+Security → Bots → „AI Scrapers and Crawlers“):
 
 1. Den pauschalen Block **aufheben** und stattdessen pro Kategorie
    setzen: *AI Search* und *AI Assistant* → **Allow**, *AI Crawler*
