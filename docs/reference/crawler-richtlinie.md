@@ -68,8 +68,8 @@ Begründung:
 und steht deshalb bei den abgelehnten Gruppen, während ChatGPTs
 Abruf-Pfad (`OAI-SearchBot`, `ChatGPT-User`) offen bleibt. Die Rollen der
 Anbieter-UAs verschieben sich — vor einer Änderung die aktuelle
-Kategorisierung in Cloudflares AI Crawl Control prüfen, nicht diese
-Liste als dauerhaft wahr nehmen.
+Kategorisierung in Cloudflares AI Crawl Control prüfen; diese Liste ist
+eine Momentaufnahme, keine dauerhaft gültige Wahrheit.
 
 ## 3 · Was im Repo steht
 
@@ -79,6 +79,20 @@ Absicht — so gilt sie auch dann, wenn Cloudflares verwalteter Block
 abgeschaltet wird (mit ihm verschwindet sonst auch die Content-Signal-Zeile).
 Die Datei ist damit die Quelle der Wahrheit, das Dashboard nur die
 Durchsetzung.
+
+Zwei Details der Datei sind Absicht und sollten beim Bearbeiten nicht
+„aufgeräumt" werden:
+
+- Die `Content-Signal`-Zeile steht **zweimal**: einmal in der Gruppe der
+  erlaubten KI-Agenten, einmal unter `User-agent: *`. Ein Crawler befolgt
+  genau die eine Gruppe, die auf ihn passt — ein namentlich genannter
+  Agent sähe das Signal aus der `*`-Gruppe also nie, und genau ihn muss
+  der Trainingsvorbehalt erreichen.
+- Die **namentlichen Gruppen stehen vor** der `*`-Gruppe. Ein
+  spezifikationstreuer Crawler wählt unabhängig von der Reihenfolge die
+  spezifischste Gruppe; einfachere Parser nehmen die erste passende — mit
+  dem Wildcard oben läsen die `Allow: /` und kämen bei den ablehnenden
+  Gruppen nie an.
 
 `app/public/llms.txt` bleibt die inhaltliche Oberfläche für Agenten. Das
 ist hier wichtiger als bei einer üblichen Seite: Die SPA liefert ohne
