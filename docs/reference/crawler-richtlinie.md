@@ -93,6 +93,10 @@ Zwei Details der Datei sind Absicht und sollten beim Bearbeiten nicht
   spezifischste Gruppe; einfachere Parser nehmen die erste passende — mit
   dem Wildcard oben läsen die `Allow: /` und kämen bei den ablehnenden
   Gruppen nie an.
+- Innerhalb einer Gruppe steht **`Disallow:` vor `Allow: /`**. Dieselbe
+  Logik: Bei umgekehrter Reihenfolge lässt ein First-Match-Parser `/admin`
+  durch (nachgestellt mit Pythons `urllib.robotparser`, der genau so
+  arbeitet), während ein Longest-Match-Parser richtig sperrt.
 
 `app/public/llms.txt` bleibt die inhaltliche Oberfläche für Agenten. Das
 ist hier wichtiger als bei einer üblichen Seite: Die SPA liefert ohne
