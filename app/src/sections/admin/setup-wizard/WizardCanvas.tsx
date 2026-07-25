@@ -18,6 +18,7 @@ import { de } from '@/locales/admin';
 import { overlay } from '@/sections/admin/overlayColors';
 import type { KnownGlyph } from '@/domain/glyphs';
 import type { BboxOut, MaskStroke, Patch, SourceOut, StrokePoint } from '@/lib/api';
+import { commitThenClear, gripHeld, holdsGrip, releaseGrip, takeGrip, type Grip } from './gestureUtils';
 import { splitRawPath } from './strokeUtils';
 import { clampPan, ZOOM_MAX, ZOOM_MIN, type CropView } from './useCropView';
 import { SLANT_COLOR } from './wizardTypes';
@@ -308,11 +309,18 @@ export function WizardCanvas({
   // coords), and the live dst, so the donor preview follows the pointer and
   // commits on release.
   const [patchDrag, setPatchDrag] = useState<{ index: number; grabX: number; grabY: number; origDst: [number, number]; dst: [number, number] } | null>(null);
+  // Which pointer currently drives a gesture (see gestureUtils): a ref, not state,
+  // because it is read on every one of an S-Pen's 240 samples per second and must
+  // never trigger a render. It ends at pen-up, while the gesture VALUE lives on
+  // until its commit lands — keeping the two apart is what stops a move during the
+  // round trip from stranding the gesture (the eraser draft that kept growing
+  // after release, the Grundlinie that stayed glued to the pointer into the Weg
+  // step and blocked the ductus).
+  const grip: Grip = useRef<number | null>(null);
 
-  // When a different glyph opens (or the dialog reopens), drop any in-flight
-  // gesture — mirrors the wizard-level reset, so one glyph's draft never leaks
-  // onto the next.
-  useEffect(() => {
+  // Drop every in-flight gesture, pointer grip included.
+  const resetGestures = useCallback(() => {
+    grip.current = null;
     setDrawing(false);
     setMaskDraft(null);
     setHoverPt(null);
@@ -321,14 +329,29 @@ export function WizardCanvas({
     setNudge(null);
     setPanDrag(null);
     setPatchDrag(null);
+  }, [grip]);
+
+  // A different glyph (or a reopened dialog) drops any in-flight gesture — mirrors
+  // the wizard-level reset, so one glyph's draft never leaks onto the next. A STEP
+  // change is the same kind of boundary: whatever is still in flight belongs to the
+  // step it was started on. Without that, a gesture that outlived its pointer keeps
+  // its branch priority on the next step and swallows every pointer sample there —
+  // a leaked Grundlinie drag makes the Weg undrawable and then commits its stale
+  // value on the next click. (A commit still in flight loses its preview a round
+  // trip early here; that beats carrying the gesture into a step where it does not
+  // belong.) Clearing traceEpoch is safe on both: pointer-down re-derives it from
+  // the last stored sample when a Weg draft is still on the canvas.
+  useEffect(() => {
+    resetGestures();
     traceEpoch.current = null;
-  }, [glyphKey, open]);
+  }, [glyphKey, open, stepId, resetGestures]);
 
   // ------------------------------------------------------------- pointer routing
   const onSvgPointerDown = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
       if (!bbox) return;
       if (panning) {
+        if (!takeGrip(grip, e.pointerId)) return;
         e.preventDefault();
         setPanDrag({ sx: e.clientX, sy: e.clientY, px: panX, py: panY });
         e.currentTarget.setPointerCapture(e.pointerId);
@@ -339,6 +362,7 @@ export function WizardCanvas({
         // Patch placement is driven by the per-rect handlers below, not the brush;
         // a press on empty canvas in patch mode does nothing.
         if (tool === 'patch') return;
+        if (!takeGrip(grip, e.pointerId)) return;
         e.preventDefault();
         setHoverPt({ x, y });
         setMaskDraft([[x, y]]);
@@ -349,12 +373,13 @@ export function WizardCanvas({
         if (wegTool === 'adjust') {
           // Grab the line where the pointer went down and warp it from there; a
           // grab with no strokes yet is a no-op.
-          if (strokes.length > 0) {
+          if (strokes.length > 0 && takeGrip(grip, e.pointerId)) {
             setNudge({ x, y, snapshot: strokes });
             e.currentTarget.setPointerCapture(e.pointerId);
           }
           return;
         }
+        if (!takeGrip(grip, e.pointerId)) return;
         // (Re)anchor the capture epoch: a fresh trace starts at t=0; a canvas
         // remount over an existing draft re-derives the epoch from the last
         // stored relative time so the capture stays monotonic.
@@ -372,23 +397,80 @@ export function WizardCanvas({
         e.currentTarget.setPointerCapture(e.pointerId);
       }
     },
-    [bbox, stepId, tool, wegTool, strokes, cssToChart, panning, panX, panY, setStrokes],
+    [bbox, stepId, tool, wegTool, strokes, cssToChart, panning, panX, panY, setStrokes, grip],
   );
+
+  // End the gesture the released pointer was driving and hand it to its commit.
+  // Shared by pointer-up and the missed-up backstop in the move handler; the grip
+  // is always released by the CALLER before this runs, so nothing can rewrite the
+  // gesture while the awaits below are in flight — that is what lets
+  // commitThenClear's identity clear actually land.
+  const finishGesture = useCallback(async () => {
+    // A release always ends the Weg pen-down, whichever branch below commits.
+    setDrawing(false);
+    if (panDrag) {
+      setPanDrag(null);
+      return;
+    }
+    if (patchDrag) {
+      const { index, dst } = patchDrag;
+      await commitThenClear(patchDrag, setPatchDrag, () => updatePatch(index, [Math.round(dst[0]), Math.round(dst[1])]));
+      return;
+    }
+    if (nudge) {
+      // The warped strokes are already live in `strokes`; just end the gesture.
+      setNudge(null);
+      return;
+    }
+    if (calibDrag) {
+      const { field, curY } = calibDrag;
+      await commitThenClear(calibDrag, setCalibDrag, () => commitCalib(field, curY));
+      return;
+    }
+    if (slantDrag) {
+      const { index, curX } = slantDrag;
+      await commitThenClear(slantDrag, setSlantDrag, () => commitSlant(index, curX));
+      return;
+    }
+    if (stepId === 'mask' && maskDraft) {
+      const points = maskDraft;
+      const commit = tool === 'ink' ? commitInkStroke : commitMaskStroke;
+      await commitThenClear(maskDraft, setMaskDraft, () => commit(points));
+    }
+  }, [panDrag, patchDrag, calibDrag, slantDrag, nudge, stepId, maskDraft, tool, commitCalib, commitSlant, commitMaskStroke, commitInkStroke, updatePatch]);
 
   const onSvgPointerMove = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
       if (!bbox) return;
-      if (panDrag) {
+      // Only the pointer that started the gesture drives it — a palm resting beside
+      // the S-Pen must not hijack or extend it. Between gestures (no grip) any
+      // pointer may still move the hover ring.
+      if (gripHeld(grip) && !holdsGrip(grip, e.pointerId)) return;
+      // The pointer released without its pointerup reaching this canvas (capture
+      // lost, the release swallowed elsewhere): no button is down, so finish the
+      // gesture from here. Otherwise the branches below would keep driving it on
+      // plain hover moves — the eraser draft that "keeps painting" with the pen up.
+      if (gripHeld(grip) && e.buttons === 0) {
+        releaseGrip(grip, e.pointerId);
+        void finishGesture();
+        return;
+      }
+      // Every branch below DRIVES a gesture, so all of them are gated on the grip
+      // — not on their own state, which outlives the pointer while its write is in
+      // flight. Only the hover ring runs either way.
+      const held = gripHeld(grip);
+      if (held && panDrag) {
         setPanX(clampPan(panDrag.px + (e.clientX - panDrag.sx), displayW, hostSize.w));
         setPanY(clampPan(panDrag.py + (e.clientY - panDrag.sy), displayH, hostSize.h));
         return;
       }
       const { x, y } = cssToChart(e.clientX, e.clientY, e.currentTarget);
-      if (patchDrag) {
+      if (held && patchDrag) {
         setPatchDrag({ ...patchDrag, dst: [patchDrag.origDst[0] + (x - patchDrag.grabX), patchDrag.origDst[1] + (y - patchDrag.grabY)] });
         return;
       }
       if ((stepId === 'mask' && tool !== 'patch') || (stepId === 'weg' && wegTool === 'adjust')) setHoverPt({ x, y });
+      if (!held) return;
       if (nudge) {
         setStrokes(warpStrokes(nudge.snapshot, nudge.x, nudge.y, x - nudge.x, y - nudge.y, nudgeRadius));
         return;
@@ -423,63 +505,20 @@ export function WizardCanvas({
         });
       }
     },
-    [bbox, calibDrag, slantDrag, nudge, nudgeRadius, wegTool, stepId, tool, maskDraft, drawing, patchDrag, cssToChart, panDrag, displayW, displayH, hostSize, guideVals.slantDeg, setPanX, setPanY, setStrokes],
+    [bbox, calibDrag, slantDrag, nudge, nudgeRadius, wegTool, stepId, tool, maskDraft, drawing, patchDrag, cssToChart, panDrag, displayW, displayH, hostSize, guideVals.slantDeg, setPanX, setPanY, setStrokes, grip, finishGesture],
   );
 
-  // Hand a finished gesture over to its commit and only THEN drop the in-flight
-  // preview — dropping it first would re-render the guide line / stroke from the
-  // still-unsaved bbox, so it visibly snaps back to where the gesture started and
-  // jumps forward again a round trip later. Cleared by identity, so a gesture
-  // begun while the PUT was still in flight survives its predecessor's landing.
-  // `finally`, not `then`: a REJECTED save leaves the bbox unchanged, so keeping
-  // the preview would paint a value that was never stored. The gesture is dropped
-  // either way and the canvas falls back to the true stored state — the commit
-  // paths report the failure through the wizard's snack (useWizard's
-  // updateBboxField catches, so in practice only an unexpected throw lands here).
-  const commitThenClear = useCallback(
-    async <T,>(gesture: T, setGesture: Dispatch<SetStateAction<T | null>>, commit: () => Promise<void>) => {
-      try {
-        await commit();
-      } finally {
-        setGesture((g) => (g === gesture ? null : g));
-      }
+  // Release the grip BEFORE the commit is awaited: from here on the gesture value
+  // is only a preview waiting for its write, and no pointer sample may touch it.
+  // A release from a pointer that never held the canvas (a palm lifting) is
+  // ignored, so it can never commit a gesture it did not draw.
+  const onSvgPointerUp = useCallback(
+    async (e: React.PointerEvent<SVGSVGElement>) => {
+      if (!releaseGrip(grip, e.pointerId)) return;
+      await finishGesture();
     },
-    [],
+    [grip, finishGesture],
   );
-
-  const onSvgPointerUp = useCallback(async () => {
-    if (panDrag) {
-      setPanDrag(null);
-      return;
-    }
-    if (patchDrag) {
-      const { index, dst } = patchDrag;
-      await commitThenClear(patchDrag, setPatchDrag, () => updatePatch(index, [Math.round(dst[0]), Math.round(dst[1])]));
-      return;
-    }
-    if (nudge) {
-      // The warped strokes are already live in `strokes`; just end the gesture.
-      setNudge(null);
-      return;
-    }
-    if (calibDrag) {
-      const { field, curY } = calibDrag;
-      await commitThenClear(calibDrag, setCalibDrag, () => commitCalib(field, curY));
-      return;
-    }
-    if (slantDrag) {
-      const { index, curX } = slantDrag;
-      await commitThenClear(slantDrag, setSlantDrag, () => commitSlant(index, curX));
-      return;
-    }
-    if (stepId === 'mask' && maskDraft) {
-      const points = maskDraft;
-      const commit = tool === 'ink' ? commitInkStroke : commitMaskStroke;
-      await commitThenClear(maskDraft, setMaskDraft, () => commit(points));
-      return;
-    }
-    if (stepId === 'weg') setDrawing(false);
-  }, [panDrag, patchDrag, calibDrag, slantDrag, nudge, stepId, maskDraft, tool, commitCalib, commitSlant, commitMaskStroke, commitInkStroke, updatePatch, commitThenClear]);
 
   // ------------------------------------------------------------- geometry (css)
   const baselineCss = (bbox.baseline_y - bbox.y0) * scale;
@@ -508,12 +547,13 @@ export function WizardCanvas({
     (e: React.PointerEvent<SVGRectElement>, index: number, origDst: [number, number]) => {
       if (panning) return; // let the drag bubble to the SVG → pan
       e.stopPropagation();
+      if (!takeGrip(grip, e.pointerId)) return;
       const svg = e.currentTarget.ownerSVGElement;
       const { x, y } = cssToChart(e.clientX, e.clientY, svg);
       setPatchDrag({ index, grabX: x, grabY: y, origDst, dst: origDst });
       svg?.setPointerCapture(e.pointerId);
     },
-    [panning, cssToChart],
+    [panning, cssToChart, grip],
   );
 
   return (
@@ -559,20 +599,15 @@ export function WizardCanvas({
             onPointerDown={onSvgPointerDown}
             onPointerMove={onSvgPointerMove}
             onPointerUp={onSvgPointerUp}
-            onPointerCancel={() => {
-              setPanDrag(null);
-              setPatchDrag(null);
-              setCalibDrag(null);
-              setSlantDrag(null);
-              setNudge(null);
-              setMaskDraft(null);
-              setHoverPt(null);
-              setDrawing(false);
-            }}
+            // The browser took the pointer over (scroll/zoom takeover, palm
+            // rejection): the gesture is void, not finished — drop it uncommitted.
+            onPointerCancel={resetGestures}
             // Hide the brush/nudge ring when the pointer leaves the crop — but not
-            // mid-gesture (capture keeps it alive past the edge).
+            // mid-gesture (capture keeps it alive past the edge). Keyed on the grip,
+            // so the ring reappears as soon as the pen is up even while the stroke's
+            // write is still in flight.
             onPointerLeave={() => {
-              if (!maskDraft && !nudge) setHoverPt(null);
+              if (!gripHeld(grip)) setHoverPt(null);
             }}
           >
             {/* Lineature guides — hidden on the Ausschluss step (the eraser works
@@ -599,6 +634,7 @@ export function WizardCanvas({
                       onPointerDown={(e) => {
                         if (panning) return; // let the drag bubble to the SVG → pan
                         e.stopPropagation();
+                        if (!takeGrip(grip, e.pointerId)) return;
                         setCalibDrag({ field: 'baseline_y', curY: bbox.baseline_y });
                         e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
                       }}
@@ -619,6 +655,7 @@ export function WizardCanvas({
                       onPointerDown={(e) => {
                         if (panning) return; // let the drag bubble to the SVG → pan
                         e.stopPropagation();
+                        if (!takeGrip(grip, e.pointerId)) return;
                         setCalibDrag({ field: 'midband_y', curY: bbox.midband_y });
                         e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
                       }}
@@ -676,6 +713,7 @@ export function WizardCanvas({
                     onPointerDown={(e) => {
                       if (panning) return; // let the drag bubble to the SVG → pan
                       e.stopPropagation();
+                      if (!takeGrip(grip, e.pointerId)) return;
                       setSlantDrag({ index: i, curX: guideVals.slantXs[i] });
                       e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
                     }}
