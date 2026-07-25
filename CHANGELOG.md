@@ -317,6 +317,25 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Fixed
 
+- **Wizard gestures stranded by their own save — the eraser that kept
+  painting and the Grundlinie that blocked the Weg.** Handing the preview
+  over only once the commit lands (above) clears the gesture by identity,
+  but nothing ended the POINTER's turn at pen-up: every pointer-move during
+  the ~round trip replaced that same state with a new object, so the identity
+  clear found a stranger and skipped. The gesture then lived forever — the
+  red Ausschluss draft kept growing on plain hover moves and only vanished on
+  the next press, and a leaked Grundlinie/Mittellinie drag survived the step
+  change and swallowed every pointer sample on the Weg step (`if (calibDrag)`
+  returns ahead of the trace branch), so the ductus could not be drawn at all
+  and the stale value was committed on the next click. `WizardCanvas` now
+  separates the two lifetimes explicitly (`gestureUtils.ts`): a pointer
+  **grip** claimed at pen-down and released at the top of pointer-up, before
+  the commit is awaited — so the preview still waits for its write while no
+  sample can rewrite it. The grip also makes one pointer own the canvas (a
+  palm resting beside the S-Pen no longer hijacks a stroke, and only the
+  owning pointer's release commits), adds a `buttons === 0` backstop that
+  finishes a gesture whose pointer-up never arrived, and a step change is now
+  a hard gesture boundary.
 - **Admin writes answered with the state from *before* the write.** Every
   repository `upsert` writes through a Core insert-on-conflict the ORM session
   cannot see, then re-selects the row — and a plain re-select returns the
