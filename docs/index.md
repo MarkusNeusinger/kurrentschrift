@@ -28,6 +28,7 @@ Per-Instanz-Fit und Aggregation sind die nächsten Meilensteine.
 | Quiz-Wortbank (Quellen, Distraktoren, Fugen-Marker) nachschlagen | [Quiz-Wortbank](reference/quiz-wortbank.md) |
 | Öffentliche Render-Endpunkte (`/write/*`) nachschlagen | [Write-API](reference/write-api.md) |
 | Dev-Werkzeuge (glyphlab/wordlab/pairlab, Benches, quizgen) nachschlagen | [Werkzeuge](reference/werkzeuge.md) |
+| Wissen, welche Crawler/KI-Agenten die Seite lesen dürfen | [Crawler-Richtlinie](reference/crawler-richtlinie.md) |
 | Sprache für Code, Docs, README nachschlagen | [Sprachregelung](reference/sprachregelung.md) |
 | Wissen, was ins öffentliche Repo darf | [Quellen- und Rechte-Policy](reference/quellen-und-rechte.md) |
 | Den `/data`-Baum verstehen | [Datenablage](reference/datenablage.md) |
@@ -66,6 +67,7 @@ docs/
 │   ├── quiz-wortbank.md          # Lese-Quiz-Wortbank: Quellen (Kaeding, Genealogie-Felder), Pin+Runtime-Distraktoren, Fugen-Marker
 │   ├── write-api.md              # Öffentliche Render-Endpunkte /write/glyphs + /write/word: Shaping → Komposition → Payload
 │   ├── werkzeuge.md              # Dev-Tools unter tools/: glyphlab/wordlab/pairlab (Inspektions-Labs), Benches, quizgen
+│   ├── crawler-richtlinie.md     # Wer die Seite lesen darf: Suchmaschinen, KI-Abruf vs. KI-Training, robots.txt/llms.txt, Cloudflare
 │   └── frontend-stack.md         # React+Vite+MUI Build, Deploy auf Cloud Run, i18n, Auth-Routen
 ├── schriftkunde/                 # Quellengesicherte Fakten zu den Schriften (wächst inkrementell)
 │   ├── allgemein.md              # Lineatur, Schräglage, Striche, Federtypen, Chronologie, DACH
@@ -167,6 +169,10 @@ Policy- und Technik-Dokumente.
   unter `tools/`: die Inspektions-Labs glyphlab/wordlab/pairlab
   (matplotlib-Overlays, `--extra viz`, Ausgabe nach `temp/`), Verweise auf
   glyphbench/wordbench und quizgen
+- **[Crawler-Richtlinie](reference/crawler-richtlinie.md)** — wer die
+  Seite lesen darf: KI-Abruf/Zitat erlaubt, KI-Training abgelehnt
+  (`ai-train=no` als Nutzungsvorbehalt), `robots.txt` als Quelle der
+  Wahrheit, Cloudflare als Durchsetzung + Verworfen
 
 ---
 

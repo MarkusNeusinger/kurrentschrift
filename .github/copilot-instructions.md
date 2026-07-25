@@ -454,6 +454,10 @@ Technical specs sit in `docs/reference/*.md`:
   any `/write/*` route)
 - `quiz-wortbank.md` — the reading-quiz word bank: sources, the
   pin+runtime distractor model, Fugen-marker rules, extension workflow
+- `crawler-richtlinie.md` — who may read the site: AI retrieval/citation
+  allowed, AI training declined (`ai-train=no` as the express
+  reservation of rights), `app/public/robots.txt` as the single source
+  of truth, Cloudflare AI Crawl Control as the enforcement layer
 - `frontend-stack.md` — build, deploy, auth, routes
 
 The binding public-UI build spec is `docs/concepts/design-system.md` (colour
