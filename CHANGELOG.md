@@ -14,6 +14,19 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **A written-down crawler policy — AI retrieval welcome, AI training declined.**
+  Cloudflare answered every AI user agent with a hard `403` across the whole
+  zone, `llms.txt` and `api.kurrentschrift.ink` included, so the file written
+  for AI agents was unreachable to every agent it was written for — and
+  user-directed fetches (`Claude-User`, `ChatGPT-User`, i.e. a human asking
+  their assistant to open the page) were blocked along with the scrapers.
+  `app/public/robots.txt` now carries the whole policy itself — the content
+  signals incl. `ai-train=no` as the express reservation of rights under
+  Art. 4 EU-DSM, the welcomed retrieval/citation agents, the declined training
+  collectors — so it holds with Cloudflare's managed block turned off. The new
+  `docs/reference/crawler-richtlinie.md` records the measurement, the decision,
+  the dashboard steps that lift the block and the rejected alternatives;
+  lifting it at the edge is a Cloudflare action, not a repo change.
 - **Straight-fit flank coupling for sawtooth letter pairs (the "ne" kink).**
   Between two mid-band diagonals whose entry foot sits at/below the previous
   exit (n→e and friends), no spacing can make the generated connector
