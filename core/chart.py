@@ -63,7 +63,7 @@ def _rasterize_strokes(strokes: list, w: int, h: int, x0: int, y0: int) -> np.nd
             try:
                 if len(p) >= 2:
                     pts.append((float(p[0]) - x0, float(p[1]) - y0))
-            except (TypeError, ValueError):
+            except (TypeError, ValueError, KeyError, IndexError):
                 pass
 
         if not pts:
@@ -132,18 +132,18 @@ def _composite_patches(crop: np.ndarray, chart: np.ndarray, patches: list, x0: i
 
 
 def crop_with_mask(chart: np.ndarray, bbox: dict, fill: float | int = 1.0) -> np.ndarray:
-    """Slice the main rect, blank the eraser, paste the patches, paint the ink.
+    """Slice the main rect, paste the patches, blank the eraser, paint the ink.
 
     `bbox` is a dict-shaped row carrying `y0/y1/x0/x1` plus three optional crop-
     assembly inputs in chart-pixel coords, applied in order *before*
     skeletonisation:
 
-    - `mask_strokes` — the freeform eraser (German: Radierer), `[{points, radius}]`:
-      covered pixels are set to `fill`, the input's background (255 for uint8, 1.0
-      for float32). Keeps neighbouring-letter ink out of the skeleton.
     - `patches` — donor regions from elsewhere on the same chart,
       `[{src: [x0, y0, x1, y1], dst: [x, y]}]`, composited by darken (see
       `_composite_patches`). Lets a glyph borrow another cell's ink.
+    - `mask_strokes` — the freeform eraser (German: Radierer), `[{points, radius}]`:
+      covered pixels are set to `fill`, the input's background (255 for uint8, 1.0
+      for float32). Keeps neighbouring-letter ink out of the skeleton.
     - `ink_strokes` — the manual ink brush (German: Tinten-Pinsel), `[{points,
       radius}]`: covered pixels are set to ink (0), to close specks/gaps inside a
       stroke. Applied last, so ink wins on any overlap.
