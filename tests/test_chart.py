@@ -82,10 +82,10 @@ def test_patch_darken_keeps_base_ink():
     assert crop[20, 20] == 0.0  # the donor's white background left the base ink intact
 
 
-def test_patch_applies_after_eraser():
+def test_eraser_applies_after_patch():
     chart = np.ones((50, 50), dtype=np.float32)
     chart[5:10, 5:10] = 0.0  # dark donor
-    # The eraser blanks around (22, 22); the patch then darkens the same spot.
+    # The patch darkens around (22, 22); the eraser then blanks the same spot.
     bbox = {
         "y0": 0,
         "y1": 50,
@@ -95,7 +95,7 @@ def test_patch_applies_after_eraser():
         "patches": [{"src": [5, 5, 10, 10], "dst": [20, 20]}],
     }
     crop = crop_with_mask(chart, bbox, fill=1.0)
-    assert crop[22, 22] == 0.0  # patch runs after the eraser, so its ink wins
+    assert crop[22, 22] == 1.0  # eraser runs after the patch, so its background wins
 
 
 def test_patch_out_of_bounds_clips_without_crashing():
@@ -136,3 +136,24 @@ def test_patch_malformed_rows_are_skipped():
     }
     crop = crop_with_mask(chart, bbox, fill=1.0)  # must not raise
     assert np.all(crop == 1.0)
+
+
+def test_stroke_malformed_rows_are_skipped():
+    chart = np.zeros((50, 50), dtype=np.float32)
+    bbox = {
+        "y0": 0,
+        "y1": 50,
+        "x0": 0,
+        "x1": 50,
+        "mask_strokes": [
+            {"points": [1, 2, 3]},  # flat ints instead of pairs
+            {"points": ["a", "b"]},  # strings
+            {"points": [[10, "x"]]},  # invalid coordinate
+            "not a dict",  # wrong type
+            None,
+            {"points": [[10, 10]], "radius": "invalid"},  # invalid radius fallback
+        ],
+    }
+    crop = crop_with_mask(chart, bbox, fill=1.0)  # must not raise
+    # The valid point with the invalid radius should fall back to 4.0 radius and be drawn.
+    assert crop[10, 10] == 1.0

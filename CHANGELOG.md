@@ -330,6 +330,17 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Fixed
 
+- **Eraser mask correctly applies to inserted donor cells ("Patches").**
+  Previously, when placing a second cell (Zelle einsetzen) into a crop via the
+  admin wizard, the eraser tool (Ausschluss/Radierer) could not remove its ink
+  because patches were composited *after* the eraser ran. The crop pipeline now
+  composites patches before the eraser, matching the frontend's visual layering
+  and allowing the eraser to clean up unwanted ink from donor cells.
+- **Robust `_rasterize_strokes` against malformed payloads.**
+  The `core/chart.py` rasterizer now uses `isinstance` checks and `try...except` 
+  blocks when parsing `mask_strokes` and `ink_strokes`. A malformed JSON row in 
+  the database (e.g. flat integers instead of coordinate pairs) will now be 
+  safely skipped instead of crashing the pipeline with a 500 error.
 - **Wizard gestures stranded by their own save — the eraser that kept
   painting and the Grundlinie that blocked the Weg.** Handing the preview
   over only once the commit lands (above) clears the gesture by identity,

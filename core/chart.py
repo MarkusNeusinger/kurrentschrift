@@ -52,11 +52,28 @@ def _rasterize_strokes(strokes: list, w: int, h: int, x0: int, y0: int) -> np.nd
     img = Image.new("1", (w, h), 0)
     draw = ImageDraw.Draw(img)
     for stroke in strokes:
-        raw_points = stroke.get("points") or []
-        pts = [(float(p[0]) - x0, float(p[1]) - y0) for p in raw_points if len(p) >= 2]
+        if not isinstance(stroke, dict):
+            continue
+        raw_points = stroke.get("points")
+        if not isinstance(raw_points, list):
+            continue
+
+        pts = []
+        for p in raw_points:
+            try:
+                if len(p) >= 2:
+                    pts.append((float(p[0]) - x0, float(p[1]) - y0))
+            except (TypeError, ValueError, KeyError, IndexError):
+                pass
+
         if not pts:
             continue
-        radius = max(0.5, float(stroke.get("radius", 4.0)))
+
+        try:
+            radius = max(0.5, float(stroke.get("radius", 4.0)))
+        except (TypeError, ValueError):
+            radius = 4.0
+
         width = max(1, int(round(radius * 2)))
         if len(pts) >= 2:
             draw.line(pts, fill=1, width=width, joint="curve")
@@ -115,18 +132,18 @@ def _composite_patches(crop: np.ndarray, chart: np.ndarray, patches: list, x0: i
 
 
 def crop_with_mask(chart: np.ndarray, bbox: dict, fill: float | int = 1.0) -> np.ndarray:
-    """Slice the main rect, blank the eraser, paste the patches, paint the ink.
+    """Slice the main rect, paste the patches, blank the eraser, paint the ink.
 
     `bbox` is a dict-shaped row carrying `y0/y1/x0/x1` plus three optional crop-
     assembly inputs in chart-pixel coords, applied in order *before*
     skeletonisation:
 
-    - `mask_strokes` — the freeform eraser (German: Radierer), `[{points, radius}]`:
-      covered pixels are set to `fill`, the input's background (255 for uint8, 1.0
-      for float32). Keeps neighbouring-letter ink out of the skeleton.
     - `patches` — donor regions from elsewhere on the same chart,
       `[{src: [x0, y0, x1, y1], dst: [x, y]}]`, composited by darken (see
       `_composite_patches`). Lets a glyph borrow another cell's ink.
+    - `mask_strokes` — the freeform eraser (German: Radierer), `[{points, radius}]`:
+      covered pixels are set to `fill`, the input's background (255 for uint8, 1.0
+      for float32). Keeps neighbouring-letter ink out of the skeleton.
     - `ink_strokes` — the manual ink brush (German: Tinten-Pinsel), `[{points,
       radius}]`: covered pixels are set to ink (0), to close specks/gaps inside a
       stroke. Applied last, so ink wins on any overlap.
@@ -137,12 +154,12 @@ def crop_with_mask(chart: np.ndarray, bbox: dict, fill: float | int = 1.0) -> np
     if h <= 0 or w <= 0:
         return crop
 
-    eraser = bbox.get("mask_strokes") or []
-    if eraser:
-        crop[_rasterize_strokes(eraser, w, h, x0, y0)] = fill
     patches = bbox.get("patches") or []
     if patches:
         _composite_patches(crop, chart, patches, x0, y0)
+    eraser = bbox.get("mask_strokes") or []
+    if eraser:
+        crop[_rasterize_strokes(eraser, w, h, x0, y0)] = fill
     ink = bbox.get("ink_strokes") or []
     if ink:
         crop[_rasterize_strokes(ink, w, h, x0, y0)] = 0
