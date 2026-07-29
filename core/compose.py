@@ -134,7 +134,9 @@ ASCENDER_LEAN_DEG = 4.5
 # O3 trim stays rejected) and is RETRACED: the connector leaves from the
 # foot, the tip→foot piece is prepended so the pen path stays continuous.
 # Enumerated class like ASCENDER_LEAN_BASES.
-LOOP_EXIT_BASES = frozenset({"d"})
+# The round Schluss-s ends in the same loop-and-stub shape (jul30): word-
+# final mostly, mid-word at a Fuge — the same departure applies.
+LOOP_EXIT_BASES = frozenset({"d", "s"})
 LOOP_EXIT_MIN_STUB = 0.1  # the tip must rise at least this above the foot
 # Word-final d-loop Endstrich: the plates leave the crossing near-level for a
 # short run, then accelerate upward into a long tapering flick (tails end
@@ -868,7 +870,7 @@ def _connector_centerline(
     # A HIGH exit couples onto the rising flank of B's first downstroke
     # instead of the entry-stub foot (O2, see ENTRY_COUPLE_Y): the stub
     # piece below the anchor is dropped from centerline AND silhouette.
-    if p0[1] >= HIGH_COUPLE_EXIT_Y:
+    if p0[1] >= HIGH_COUPLE_EXIT_Y and not loop_exit:
         entry_trim = arm_fuse or _entry_couple_index(first_line)
     elif flank_trim:
         # Placement already solved the pair distance so B's flank sample sits
@@ -1002,10 +1004,14 @@ def _connector_centerline(
     # An ARCADE entry that must LOSE height writes as a baseline
     # garland (the school hand's rounded turn); a round body couples
     # high instead and everything else stays the taut cubic.
-    centerline = None if high_couple else _garland_centerline(p0, d_out, p3, d_in)
+    # A LOOP-RETURN departure (d, round s) never covers the next letter's
+    # top: the return runs DEEP down the stem and the next letter is entered
+    # low over its own Anstrich — the garland writes exactly that fall-turn-
+    # ride (the jul30 d→e mockup).
+    centerline = None if (high_couple and not loop_exit) else _garland_centerline(p0, d_out, p3, d_in)
     if centerline is None:
         span = math.hypot(p3[0] - p0[0], p3[1] - p0[1])
-        if high_couple and p3[1] < p0[1] and span > 0:
+        if high_couple and not loop_exit and p3[1] < p0[1] and span > 0:
             # Land ON the body's top from above: the authored rising
             # Anstrich is absorbed by the covering join on the plates
             # (ren/roten/das originals) — following it would dip
