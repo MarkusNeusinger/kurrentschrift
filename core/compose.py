@@ -308,6 +308,21 @@ FLANK_COUPLE_MAX_DROP = 0.05
 FUSE_MIN_DX = 0.02  # a fused coupling still progresses rightward past the exit
 FUSE_BAND_PAD = 0.12  # height pad around [exit_y, couple_y] where fusing ink may overlap
 FUSE_CLEAR_BINS = 9  # y-bins of the height-aware clearance guard over JOIN_BAND_Y
+# Same-slant straight coupling (the jul29 Versatz verdict): when two sawtooth
+# diagonals match in slant (|exit − land| ≤ tol) and the entry rises, the
+# plates write ONE straight through-line arriving HIGH on B's flank (pairlab
+# dissection over 27 Abb.-19 occurrences: real exit = entry = 38.7–45°,
+# arrivals y 0.64–0.79 — above the generic ALIGN window cap) — the connector
+# couples at the highest flank sample under a raised, path-local cap and the
+# stub below is absorbed (the O2 trim). Placement stays UNTOUCHED: specimen
+# spacing equals or exceeds the composed one, so the line is straightened
+# without tightening (the fusion experiment that also tightened cost the
+# words bench +0.011 on exactly these words). Closed arcade-entry set: loop
+# lead-ins (d, l, h) must not be coupled into (measured leak: und-4 +0.047
+# via n→d when the cap is raised without the set).
+SAMESLANT_TOL_DEG = 6.0
+SAMESLANT_COUPLE_MAX_Y = 0.72
+SAMESLANT_COUPLE_BASES = frozenset({"n", "m", "i", "u"})
 # Descender-return placement (ſ→c, decomposed ſ→t …): the return upstroke
 # crosses the baseline DESCENDER_RETURN_GAP right of the descender exit and
 # rides B's lead-in line up from there — the plates start the next letter AT
@@ -542,6 +557,31 @@ def _fused_clearance_ok(
     return True
 
 
+def _sameslant_couple_index(first_line: list[Point], dx: float, exit_pt: Point) -> int:
+    """Highest couple-able flank sample for a same-slant straight coupling.
+
+    Like ``_flank_couple_steepest``, but the couple-able window's height cap
+    is raised to SAMESLANT_COUPLE_MAX_Y — the plates arrive at y 0.64–0.79
+    on the matching flank, above the generic ALIGN_MAX_ENTRY_Y window. The
+    flank must keep rising diagonally all the way (a head bending into its
+    loop is a real form and ends the window). 0 = no couple-able sample.
+    """
+    ex, ey = exit_pt
+    best = 0
+    for i in range(1, len(first_line) - 1):
+        p, q = first_line[i - 1], first_line[i]
+        if q[1] < p[1]:
+            break
+        seg_deg = math.degrees(math.atan2(q[1] - p[1], q[0] - p[0]))
+        if not (ALIGN_TAN_DEG[0] <= seg_deg <= ALIGN_TAN_DEG[1]):
+            break
+        if q[1] > SAMESLANT_COUPLE_MAX_Y:
+            break
+        if q[1] >= ey + ALIGN_MIN_RISE and (q[0] + dx) - ex >= GARLAND_MIN_DX:
+            best = i
+    return best
+
+
 def _flank_couple_steepest(first_line: list[Point], dx: float, exit_pt: Point) -> int:
     """Fallback coupling index when no exact collinear fit clears the floor:
     the HIGHEST couple-able flank sample at the fixed placement ``dx`` — the
@@ -764,6 +804,7 @@ def _connector_centerline(
     high_couple: bool,
     flank_trim: int = 0,
     descender_ride: bool = False,
+    sameslant_couple: bool = False,
 ) -> tuple[list[Point], int]:
     """Centerline of the Übergang from A's exit into B's entry + the entry trim.
 
@@ -794,6 +835,17 @@ def _connector_centerline(
         # below the coupling point is absorbed by it.
         land_deg = _endpoint_tangent(first_line, at_end=False)
         if ALIGN_TAN_DEG[0] <= land_deg <= ALIGN_TAN_DEG[1]:
+            # Same-slant straight coupling (see SAMESLANT_*): two matching
+            # diagonals continue as ONE line arriving high on B's flank —
+            # decided before the generic 0.8-line pull, placement untouched.
+            if (
+                sameslant_couple
+                and abs(exit_tangent_deg - land_deg) <= SAMESLANT_TOL_DEG
+                and first_line[0][1] >= p0[1] + ALIGN_MIN_RISE
+            ):
+                idx = _sameslant_couple_index(first_line, dx, p0)
+                if idx:
+                    return _straight_connector(p0, first_line, dx, idx), idx
             slope = ALIGN_SLOPE_RATIO * math.tan(math.radians((exit_tangent_deg + land_deg) / 2))
             entry_trim = _flank_couple_index(first_line, dx, p0, slope)
             if entry_trim:
@@ -1203,9 +1255,7 @@ def compose_word(
             # against the below-arm ink only, and let a height-aware floor
             # keep a tall neighbour (rb) clear of the arm knob itself.
             arm_exempt = (
-                forward
-                and BOW_EXIT_Y < prev["exit"][1] <= HIGH_EXIT_Y
-                and prev["tangent_deg"] < ARM_TAN_MAX_DEG
+                forward and BOW_EXIT_Y < prev["exit"][1] <= HIGH_EXIT_Y and prev["tangent_deg"] < ARM_TAN_MAX_DEG
             )
             edge = prev["ink_max_x_low"] if arm_exempt else prev["ink_max_x"]
             desired_entry_x = max(prev["exit"][0] + CONNECT_GAP - tuck, edge + clearance - (ink_min_x - entry_xy[0]))
@@ -1228,9 +1278,7 @@ def compose_word(
                 and ALIGN_TAN_DEG[0] <= entry_land_deg <= ALIGN_TAN_DEG[1]
                 and first_line[0][1] > 0
             ):
-                run_down = min(
-                    first_line[0][1] / math.tan(math.radians(entry_land_deg)), DESCENDER_RETURN_MAX_RUN
-                )
+                run_down = min(first_line[0][1] / math.tan(math.radians(entry_land_deg)), DESCENDER_RETURN_MAX_RUN)
                 desired_entry_x = max(
                     desired_entry_x,
                     prev["conn_exit"][0] + DESCENDER_RETURN_GAP + run_down + (entry_xy[0] - first_line[0][0]),
@@ -1332,6 +1380,7 @@ def compose_word(
                 high_couple=high_couple,
                 flank_trim=flank_couple,
                 descender_ride=_key_base(slot.key, slot.position) in DESCENDER_RIDE_BASES,
+                sameslant_couple=_key_base(slot.key, slot.position) in SAMESLANT_COUPLE_BASES,
             )
             if prev["retrace"]:
                 # Loop-return: the pen retraces the drawn stub tip→foot, then
