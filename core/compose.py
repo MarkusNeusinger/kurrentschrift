@@ -243,9 +243,13 @@ ENTRY_COUPLE_Y = 0.78
 # onto the round body's top — the pair is pulled together until B's top
 # couple point (the ENTRY_COUPLE_Y trim) sits ARM_FUSE_GAP right of the
 # arm's bow end, and the connector becomes the short G1 roll from the true
-# arm tangent into the covering descent. No knob guard on the fused
-# placement: the strokes are meant to touch at the junction.
-ARM_FUSE_GAP = 0.06
+# arm tangent into the covering descent. The couple point is B's rising
+# lead-in APEX (not the mid-flank 0.78): coupling below the apex leaves a
+# short rising residue running PARALLEL to the bow's end — two strokes side
+# by side, "als wäre der Stift kurz doppelt so breit" (jul30) — while the
+# pen is always one width: strokes either coincide or part cleanly. No knob
+# guard on the fused placement: the strokes are meant to touch.
+ARM_FUSE_GAP = 0.02
 # Above this horizontal span (fusion unavailable) the roll would hump above
 # the arm (the jul29 double wave) — a far arm join keeps the falling chord
 # launch instead.
@@ -448,6 +452,21 @@ def _entry_couple_index(line: list[Point], target_y: float = ENTRY_COUPLE_Y) -> 
         if line[i][1] < line[i - 1][1]:
             return 0
     return 0
+
+
+def _entry_apex_index(line: list[Point]) -> int:
+    """Index of the rising lead-in's APEX on B's first stroke — where the
+    crest stops rising and turns down. The arm fusion couples HERE so no
+    rising residue stays beside the bow (one pen line, never two). 0 = no
+    rise, or the apex leaves fewer than two samples for the entry tangent.
+    """
+    if len(line) < 3 or line[1][1] < line[0][1]:
+        return 0
+    i = 1
+    while i < len(line) - 1 and line[i][1] >= line[i - 1][1]:
+        i += 1
+    apex = i - 1
+    return apex if 0 < apex < len(line) - 1 else 0
 
 
 def _flank_candidates(first_line: list[Point]) -> list[int]:
@@ -832,11 +851,17 @@ def _connector_centerline(
     """
     entry_trim = 0
     p0: Point = exit_pt
+    # The r-arm into a round body fuses at B's crest APEX (see ARM_FUSE_GAP).
+    arm_round = high_couple and p0[1] <= HIGH_EXIT_Y and 0.0 <= exit_tangent_deg < ARM_TAN_MAX_DEG and not loop_exit
     # A HIGH exit couples onto the rising flank of B's first downstroke
     # instead of the entry-stub foot (O2, see ENTRY_COUPLE_Y): the stub
     # piece below the anchor is dropped from centerline AND silhouette.
     if p0[1] >= HIGH_COUPLE_EXIT_Y:
-        entry_trim = _entry_couple_index(first_line)
+        entry_trim = (
+            (_entry_apex_index(first_line) or _entry_couple_index(first_line))
+            if arm_round
+            else _entry_couple_index(first_line)
+        )
     elif flank_trim:
         # Placement already solved the pair distance so B's flank sample sits
         # exactly on the exit's rise line — draw that line.
@@ -942,8 +967,12 @@ def _connector_centerline(
                 d_out = _unit(ARM_FALL_DEG)
             elif span > 0 and not (high_couple and p3[0] - p0[0] <= ARM_ROLL_MAX_DX):
                 d_out = ((p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span)
-            # else — FUSED round-body join (see ARM_FUSE_GAP): keep the true
-            # arm tangent, the bow rolls directly onto the body's top.
+            else:
+                # FUSED round-body join (see ARM_FUSE_GAP): the bow rolls
+                # directly onto the body's crest. Launch at most LEVEL — a
+                # rising launch bulges the roll above the arm and lays it
+                # parallel over B's top (the Gleichzug audit's doubling).
+                d_out = _unit(min(max(launch, BOW_LAUNCH_DEG[0]), 0.0))
         elif launch > BOW_LAUNCH_DEG[1]:
             d_orig = d_out
             d_out = _unit(min(max(launch, BOW_LAUNCH_DEG[0]), BOW_LAUNCH_DEG[1]))
@@ -1289,7 +1318,7 @@ def compose_word(
                 # jul30 mockup. Deliberately below the knob guard: the
                 # joining strokes are meant to touch.
                 if _key_base(slot.key, slot.position) in HIGH_COUPLE_BASES:
-                    couple_idx = _entry_couple_index(first_line)
+                    couple_idx = _entry_apex_index(first_line) or _entry_couple_index(first_line)
                     if couple_idx:
                         fuse_x = prev["exit"][0] + ARM_FUSE_GAP + entry_xy[0] - first_line[couple_idx][0]
                         desired_entry_x = min(desired_entry_x, fuse_x)
