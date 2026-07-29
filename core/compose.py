@@ -239,6 +239,16 @@ TUCK_Y0 = 0.6
 # the fitted arrivals (0.58–0.70) — the join lands on the upper flank.
 HIGH_COUPLE_EXIT_Y = 0.7
 ENTRY_COUPLE_Y = 0.78
+# The r-arm into a round body (jul30 verdict on re/rr/ri): the arm's small
+# bow does NOT cover the body's top — it falls, turns, and merges
+# TANGENTIALLY into the body's rising Anstrich where the bow meets the
+# Anstrich angle, then rides the short rise into the crest ("an der Stelle
+# wo der kleine Bogen den Winkel vom Anstrich trifft, geht es kurzes Stück
+# hoch"). The pairlab dissection agrees: the real r→e join arrives on the
+# RISING e flank below the generic top couple (fitted 0.39–0.64); 0.68
+# keeps the merge high enough that only the short crest rise remains after
+# the junction — the jul30 sketch's geometry.
+ARM_COUPLE_Y = 0.68
 # Sawtooth pass-through alignment: when the previous letter hands over
 # mid-rise and the next begins mid-rise (both tangents inside the diagonal
 # band), the plates run ONE continuous diagonal from the previous baseline
@@ -419,18 +429,20 @@ def _endpoint_tangent(line: list[Point], at_end: bool = False) -> float:
     return math.degrees(math.atan2(b[1] - a[1], b[0] - a[0]))
 
 
-def _entry_couple_index(line: list[Point]) -> int:
+def _entry_couple_index(line: list[Point], target_y: float = ENTRY_COUPLE_Y) -> int:
     """Coupling-anchor index on B's first stroke for a high-exit join: the
-    first sample reaching ENTRY_COUPLE_Y on the RISING entry flank. 0 = no
-    trim: the stroke already starts at/above the couple height, it turns
-    downward before reaching it (then its head is a real form, not a stub),
-    or only the stroke's very last sample reaches it — the trimmed line must
-    keep at least two samples for the entry-tangent estimate.
+    first sample reaching ``target_y`` (ENTRY_COUPLE_Y for the generic top
+    couple, ARM_COUPLE_Y for the r-arm flank merge) on the RISING entry
+    flank. 0 = no trim: the stroke already starts at/above the couple
+    height, it turns downward before reaching it (then its head is a real
+    form, not a stub), or only the stroke's very last sample reaches it —
+    the trimmed line must keep at least two samples for the entry-tangent
+    estimate.
     """
-    if len(line) < 3 or line[0][1] >= ENTRY_COUPLE_Y:
+    if len(line) < 3 or line[0][1] >= target_y:
         return 0
     for i in range(1, len(line) - 1):
-        if line[i][1] >= ENTRY_COUPLE_Y:
+        if line[i][1] >= target_y:
             return i
         if line[i][1] < line[i - 1][1]:
             return 0
@@ -805,6 +817,7 @@ def _connector_centerline(
     flank_trim: int = 0,
     descender_ride: bool = False,
     sameslant_couple: bool = False,
+    loop_exit: bool = False,
 ) -> tuple[list[Point], int]:
     """Centerline of the Übergang from A's exit into B's entry + the entry trim.
 
@@ -818,11 +831,14 @@ def _connector_centerline(
     """
     entry_trim = 0
     p0: Point = exit_pt
+    # The r-arm into a round body merges into the body's RISING Anstrich at
+    # ARM_COUPLE_Y instead of covering its top (see ARM_COUPLE_Y).
+    arm_flank = high_couple and p0[1] <= HIGH_EXIT_Y and 0.0 <= exit_tangent_deg < ARM_TAN_MAX_DEG and not loop_exit
     # A HIGH exit couples onto the rising flank of B's first downstroke
     # instead of the entry-stub foot (O2, see ENTRY_COUPLE_Y): the stub
     # piece below the anchor is dropped from centerline AND silhouette.
     if p0[1] >= HIGH_COUPLE_EXIT_Y:
-        entry_trim = _entry_couple_index(first_line)
+        entry_trim = _entry_couple_index(first_line, ARM_COUPLE_Y if arm_flank else ENTRY_COUPLE_Y)
     elif flank_trim:
         # Placement already solved the pair distance so B's flank sample sits
         # exactly on the exit's rise line — draw that line.
@@ -867,8 +883,12 @@ def _connector_centerline(
     # around the bow (the "wovon" collapse from the 2026-07 audit).
     backward = d_out[0] <= 0.0
     # A HIGH exit (tall d finishing its loop upward) reverses into the
-    # join — a real corner on the plates, so the chord is truthful.
-    high_reversal = p0[1] > HIGH_EXIT_Y and p3[1] < p0[1]
+    # join — a real corner on the plates, so the chord is truthful. A
+    # LOOP-RETURN departure (see LOOP_EXIT_BASES) is exempt: its exit
+    # tangent is the return's own falling direction at the crossing, and
+    # the join must CONTINUE that curve into the next letter ("der große
+    # Kringel wird direkt zum e", jul30) — no chord, no corner.
+    high_reversal = p0[1] > HIGH_EXIT_Y and p3[1] < p0[1] and not loop_exit
     rescued = ((p0[1] < DESCENDER_EXIT_Y and d_out[1] < 0) or backward or high_reversal) and span > 0
     if rescued:
         d_out = ((p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span)
@@ -944,11 +964,13 @@ def _connector_centerline(
                 p0 = roll_end
     # An ARCADE entry that must LOSE height writes as a baseline
     # garland (the school hand's rounded turn); a round body couples
-    # high instead and everything else stays the taut cubic.
-    centerline = None if high_couple else _garland_centerline(p0, d_out, p3, d_in)
+    # high instead and everything else stays the taut cubic. The arm's
+    # flank merge (arm_flank) MAY garland: its fall-turn-rise into the
+    # rising Anstrich is exactly the garland shape.
+    centerline = _garland_centerline(p0, d_out, p3, d_in) if (arm_flank or not high_couple) else None
     if centerline is None:
         span = math.hypot(p3[0] - p0[0], p3[1] - p0[1])
-        if high_couple and p3[1] < p0[1] and span > 0:
+        if high_couple and not arm_flank and p3[1] < p0[1] and span > 0:
             # Land ON the body's top from above: the authored rising
             # Anstrich is absorbed by the covering join on the plates
             # (ren/roten/das originals) — following it would dip
@@ -1381,6 +1403,7 @@ def compose_word(
                 flank_trim=flank_couple,
                 descender_ride=_key_base(slot.key, slot.position) in DESCENDER_RIDE_BASES,
                 sameslant_couple=_key_base(slot.key, slot.position) in SAMESLANT_COUPLE_BASES,
+                loop_exit=bool(prev["retrace"]),
             )
             if prev["retrace"]:
                 # Loop-return: the pen retraces the drawn stub tip→foot, then
