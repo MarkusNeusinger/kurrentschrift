@@ -208,10 +208,11 @@ SWING_HIGH_LAUNCH_DEG = (-5.0, 15.0)  # level-ish band the Auslauf is clamped in
 SWING_HIGH_MAX_TANGENT_DEG = 45.0  # a bow still closing steeply upward gets no Auslauf
 DEFAULT_HALF = 0.05  # fallback stroke half-width
 # Generated strokes overlap their neighbours' ink by this much at each open
-# end (extended along the local tangent, under the round cap): the item
-# handoffs otherwise leave hairline white cracks in the filled rendering —
-# the "re-set" illusion the Gleichzug flow must never show. Ink-only: the
-# pen path geometry is unchanged, the cap just tucks under the neighbour.
+# end: the endpoint is extended along the local tangent so the round cap
+# tucks under ink that is already drawn there — the item handoffs otherwise
+# leave hairline white cracks in the filled rendering, the "re-set" illusion
+# the Gleichzug flow must never show. The extension adds no NEW ink area of
+# its own; it only doubles into the neighbour's.
 CONNECT_OVERLAP = 0.05
 # Exit y (baseline = 0, descender ≈ −1) below which a glyph's stroke is judged
 # to end inside its descender loop, so the connector becomes a return upstroke

@@ -964,7 +964,7 @@ die ersten Sweep-Kandidaten. Golden-Fixture bewusst neu gepinnt
 nachgemessen — Wörter 0,123703, Paare 0,191805; das ist die Baseline der
 Skizzen-Runde unten.)*
 
-### Runde `jul29/30` — Skizzen-Feedback: sechs Verbindungsklassen (PR folgt)
+### Runde `jul29/30` — Skizzen-Feedback: sechs Verbindungsklassen (PR #239)
 
 Erste durchgängig NUTZER-GEFÜHRTE Runde: Der Autor markierte Defekte direkt
 auf gerenderten Wörtern (annotierte Screenshots mit Soll-Linien), jede
@@ -972,7 +972,7 @@ Korrektur wurde als KLASSENREGEL umgesetzt (nie als Bigramm), gegen
 wordbench + Golden verifiziert und sofort erneut vorgelegt. Leitsatz des
 Autors, als prüfbare Invariante formuliert: *„Man muss das (bis auf
 i-Punkte, paar Ausnahmen) in einem Fluss ohne Absetzen schreiben können —
-dann muss bei Sütterlin die Linie immer perfekt gleich dick sein."*
+dann muss bei Sütterlin die Linie immer perfekt gleich dick sein.“*
 (→ Gleichzug-Audit, unten.)
 
 Die sechs Änderungen (`core/compose.py`):
