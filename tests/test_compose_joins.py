@@ -166,10 +166,12 @@ def test_flank_coupled_connector_is_straight_and_trims_the_stub() -> None:
     for x, y in line:
         assert abs(-(y1 - y0) * (x - x0) + (x1 - x0) * (y - y0)) / span < 1e-9
     assert y1 > y0  # the join rises
-    # B's trimmed first stroke starts at the connector's arrival (the stub
-    # below the coupling point is absorbed by the join).
+    # B's trimmed first stroke starts at the connector's geometric arrival —
+    # the SECOND-to-last sample: the last one is the CONNECT_OVERLAP
+    # extension tucking under B's ink (see _overlap_extend).
+    ax, ay = line[-2]
     bx, by = glyph_b["centerline"][0]
-    assert math.isclose(bx, x1, abs_tol=1e-9) and math.isclose(by, y1, abs_tol=1e-9)
+    assert math.isclose(bx, ax, abs_tol=1e-9) and math.isclose(by, ay, abs_tol=1e-9)
     assert by > b[0][1]  # the foot sample is gone
 
 

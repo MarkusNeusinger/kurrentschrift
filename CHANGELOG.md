@@ -81,6 +81,31 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **A sketch-driven join round: six Sütterlin connection classes rebuilt
+  toward "one flow, one nib width".** An annotated feedback loop (the user
+  marking defects directly on rendered words) rebuilt the generated
+  Übergänge in `core/compose.py`, each as a letter-CLASS rule, never a
+  bigram: (1) a descender-loop exit (ſ) returns THROUGH the baseline and
+  rides the next Anstrich letter's lead-in line up from the Grundlinie
+  (class `{c, t}`; hanging bowls keep their direct coupling); (2) the
+  Deckstrich arm (r/p) is classified exhaustively in the bow band — no
+  crest-roll above the arm (the double-wave), and the covering arm no
+  longer kerns the next letter away (arm-exempt clearance with a
+  height-aware knob guard); (3) the arm FUSES onto the next letter's
+  lead-in crest apex (round bodies + r + i, `ARM_FUSE_GAP` 0.02) — the bow
+  rolls over in one motion, no parallel double-stroke; (4) same-slant
+  sawtooth diagonals (e→n, i→n, …) couple as ONE straight through-line
+  arriving high on the flank, placement untouched; (5) a bound loop-return
+  letter (d, round s) no longer writes the chart cell's finishing stub at
+  all — the return crosses the stem and continues in one motion into the
+  next letter (word-final keeps the complete chart form plus a new
+  level-launch late-rise loop finial); this supersedes the twice-rejected
+  O3 stub trim, which fails only with a tip-anchored connector
+  (qualitaetsmetrik.md §6); (6) every generated stroke now overlaps its
+  neighbours' ink by `CONNECT_OVERLAP` under the round cap, closing the
+  hairline white cracks at item handoffs. Wordbench: words
+  0.123703 → 0.122287, pairs 0.191805 → 0.183317; compose golden re-pinned
+  deliberately per stage.
 - **The SPA lint gate now enforces the React Compiler rules
   (`eslint-plugin-react-hooks` 5 → 7).** v7 folds the stabilised React Compiler
   rule set into `recommended`: 16 rules where v5 shipped two, of which **11 are
