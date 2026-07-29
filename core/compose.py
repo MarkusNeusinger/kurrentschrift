@@ -239,16 +239,17 @@ TUCK_Y0 = 0.6
 # the fitted arrivals (0.58–0.70) — the join lands on the upper flank.
 HIGH_COUPLE_EXIT_Y = 0.7
 ENTRY_COUPLE_Y = 0.78
-# The r-arm into a round body (jul30 verdict on re/rr/ri): the arm's small
-# bow does NOT cover the body's top — it falls, turns, and merges
-# TANGENTIALLY into the body's rising Anstrich where the bow meets the
-# Anstrich angle, then rides the short rise into the crest ("an der Stelle
-# wo der kleine Bogen den Winkel vom Anstrich trifft, geht es kurzes Stück
-# hoch"). The pairlab dissection agrees: the real r→e join arrives on the
-# RISING e flank below the generic top couple (fitted 0.39–0.64); 0.68
-# keeps the merge high enough that only the short crest rise remains after
-# the junction — the jul30 sketch's geometry.
-ARM_COUPLE_Y = 0.68
+# Arm fusion (the jul30 mockup on "re"): the arm's small bow rolls DIRECTLY
+# onto the round body's top — the pair is pulled together until B's top
+# couple point (the ENTRY_COUPLE_Y trim) sits ARM_FUSE_GAP right of the
+# arm's bow end, and the connector becomes the short G1 roll from the true
+# arm tangent into the covering descent. No knob guard on the fused
+# placement: the strokes are meant to touch at the junction.
+ARM_FUSE_GAP = 0.06
+# Above this horizontal span (fusion unavailable) the roll would hump above
+# the arm (the jul29 double wave) — a far arm join keeps the falling chord
+# launch instead.
+ARM_ROLL_MAX_DX = 0.16
 # Sawtooth pass-through alignment: when the previous letter hands over
 # mid-rise and the next begins mid-rise (both tangents inside the diagonal
 # band), the plates run ONE continuous diagonal from the previous baseline
@@ -432,7 +433,7 @@ def _endpoint_tangent(line: list[Point], at_end: bool = False) -> float:
 def _entry_couple_index(line: list[Point], target_y: float = ENTRY_COUPLE_Y) -> int:
     """Coupling-anchor index on B's first stroke for a high-exit join: the
     first sample reaching ``target_y`` (ENTRY_COUPLE_Y for the generic top
-    couple, ARM_COUPLE_Y for the r-arm flank merge) on the RISING entry
+    couple; other targets for special joins) on the RISING entry
     flank. 0 = no trim: the stroke already starts at/above the couple
     height, it turns downward before reaching it (then its head is a real
     form, not a stub), or only the stroke's very last sample reaches it —
@@ -831,14 +832,11 @@ def _connector_centerline(
     """
     entry_trim = 0
     p0: Point = exit_pt
-    # The r-arm into a round body merges into the body's RISING Anstrich at
-    # ARM_COUPLE_Y instead of covering its top (see ARM_COUPLE_Y).
-    arm_flank = high_couple and p0[1] <= HIGH_EXIT_Y and 0.0 <= exit_tangent_deg < ARM_TAN_MAX_DEG and not loop_exit
     # A HIGH exit couples onto the rising flank of B's first downstroke
     # instead of the entry-stub foot (O2, see ENTRY_COUPLE_Y): the stub
     # piece below the anchor is dropped from centerline AND silhouette.
     if p0[1] >= HIGH_COUPLE_EXIT_Y:
-        entry_trim = _entry_couple_index(first_line, ARM_COUPLE_Y if arm_flank else ENTRY_COUPLE_Y)
+        entry_trim = _entry_couple_index(first_line)
     elif flank_trim:
         # Placement already solved the pair distance so B's flank sample sits
         # exactly on the exit's rise line — draw that line.
@@ -942,8 +940,10 @@ def _connector_centerline(
             # level-to-falling, never rising).
             if d_perp > GARLAND_MERGE_EPS and not high_couple:
                 d_out = _unit(ARM_FALL_DEG)
-            elif span > 0:
+            elif span > 0 and not (high_couple and p3[0] - p0[0] <= ARM_ROLL_MAX_DX):
                 d_out = ((p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span)
+            # else — FUSED round-body join (see ARM_FUSE_GAP): keep the true
+            # arm tangent, the bow rolls directly onto the body's top.
         elif launch > BOW_LAUNCH_DEG[1]:
             d_orig = d_out
             d_out = _unit(min(max(launch, BOW_LAUNCH_DEG[0]), BOW_LAUNCH_DEG[1]))
@@ -964,13 +964,11 @@ def _connector_centerline(
                 p0 = roll_end
     # An ARCADE entry that must LOSE height writes as a baseline
     # garland (the school hand's rounded turn); a round body couples
-    # high instead and everything else stays the taut cubic. The arm's
-    # flank merge (arm_flank) MAY garland: its fall-turn-rise into the
-    # rising Anstrich is exactly the garland shape.
-    centerline = _garland_centerline(p0, d_out, p3, d_in) if (arm_flank or not high_couple) else None
+    # high instead and everything else stays the taut cubic.
+    centerline = None if high_couple else _garland_centerline(p0, d_out, p3, d_in)
     if centerline is None:
         span = math.hypot(p3[0] - p0[0], p3[1] - p0[1])
-        if high_couple and not arm_flank and p3[1] < p0[1] and span > 0:
+        if high_couple and p3[1] < p0[1] and span > 0:
             # Land ON the body's top from above: the authored rising
             # Anstrich is absorbed by the covering join on the plates
             # (ren/roten/das originals) — following it would dip
@@ -1285,6 +1283,16 @@ def compose_word(
                 a_top = prev["ink_profile"][FUSE_CLEAR_BINS - 1]
                 if math.isfinite(a_top) and math.isfinite(ink_min_x_top):
                     desired_entry_x = max(desired_entry_x, a_top + ALIGN_MIN_CLEARANCE - (ink_min_x_top - entry_xy[0]))
+                # Arm fusion (see ARM_FUSE_GAP): a round body is pulled in
+                # until its top couple point sits right at the bow's end —
+                # the covering join degenerates to the short roll of the
+                # jul30 mockup. Deliberately below the knob guard: the
+                # joining strokes are meant to touch.
+                if _key_base(slot.key, slot.position) in HIGH_COUPLE_BASES:
+                    couple_idx = _entry_couple_index(first_line)
+                    if couple_idx:
+                        fuse_x = prev["exit"][0] + ARM_FUSE_GAP + entry_xy[0] - first_line[couple_idx][0]
+                        desired_entry_x = min(desired_entry_x, fuse_x)
             # Sawtooth pass-through: pull the glyph onto the exit's rise line
             # (see ALIGN_*) so the diagonal continues without a shelf.
             entry_land_deg = _endpoint_tangent(first_line, at_end=False)
