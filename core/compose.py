@@ -207,6 +207,12 @@ SWING_HIGH_RUN = 0.25  # arc run of the level Auslauf (bench optimum of 0.15–0
 SWING_HIGH_LAUNCH_DEG = (-5.0, 15.0)  # level-ish band the Auslauf is clamped into
 SWING_HIGH_MAX_TANGENT_DEG = 45.0  # a bow still closing steeply upward gets no Auslauf
 DEFAULT_HALF = 0.05  # fallback stroke half-width
+# Generated strokes overlap their neighbours' ink by this much at each open
+# end (extended along the local tangent, under the round cap): the item
+# handoffs otherwise leave hairline white cracks in the filled rendering —
+# the "re-set" illusion the Gleichzug flow must never show. Ink-only: the
+# pen path geometry is unchanged, the cap just tucks under the neighbour.
+CONNECT_OVERLAP = 0.05
 # Exit y (baseline = 0, descender ≈ −1) below which a glyph's stroke is judged
 # to end inside its descender loop, so the connector becomes a return upstroke
 # rather than following the downward exit tangent (see the long-s ſ).
@@ -647,6 +653,26 @@ def _straight_connector(p0: Point, first_line: list[Point], dx: float, couple_in
     ]
 
 
+def _overlap_extend(line: list[Point], start: bool = True, end: bool = True) -> list[Point]:
+    """Extend a generated stroke's open ends by CONNECT_OVERLAP along the
+    local tangent so its round cap tucks under the neighbouring ink (see
+    CONNECT_OVERLAP). Degenerate/short lines pass through unchanged."""
+    if len(line) < 2:
+        return line
+    out = list(line)
+    if start:
+        dx, dy = out[0][0] - out[1][0], out[0][1] - out[1][1]
+        n = math.hypot(dx, dy)
+        if n > 1e-9:
+            out.insert(0, (out[0][0] + dx / n * CONNECT_OVERLAP, out[0][1] + dy / n * CONNECT_OVERLAP))
+    if end:
+        dx, dy = out[-1][0] - out[-2][0], out[-1][1] - out[-2][1]
+        n = math.hypot(dx, dy)
+        if n > 1e-9:
+            out.append((out[-1][0] + dx / n * CONNECT_OVERLAP, out[-1][1] + dy / n * CONNECT_OVERLAP))
+    return out
+
+
 def _sample_bezier(p0: Point, p1: Point, p2: Point, p3: Point, n: int) -> list[Point]:
     out: list[Point] = []
     for i in range(n + 1):
@@ -846,7 +872,6 @@ def _connector_centerline(
     flank_trim: int = 0,
     descender_ride: bool = False,
     sameslant_couple: bool = False,
-    loop_exit: bool = False,
     fuse_base: bool = False,
 ) -> tuple[list[Point], int]:
     """Centerline of the Übergang from A's exit into B's entry + the entry trim.
@@ -863,14 +888,17 @@ def _connector_centerline(
     p0: Point = exit_pt
     # The r-arm into a round body fuses at B's crest APEX (see ARM_FUSE_GAP).
     arm_fuse = 0
-    if fuse_base and p0[1] <= HIGH_EXIT_Y and 0.0 <= exit_tangent_deg < ARM_TAN_MAX_DEG and not loop_exit:
+    if fuse_base and p0[1] <= HIGH_EXIT_Y and 0.0 <= exit_tangent_deg < ARM_TAN_MAX_DEG:
         apex = _entry_apex_index(first_line)
         if apex and first_line[apex][1] <= ARM_FUSE_MAX_APEX_Y:
             arm_fuse = apex
     # A HIGH exit couples onto the rising flank of B's first downstroke
     # instead of the entry-stub foot (O2, see ENTRY_COUPLE_Y): the stub
-    # piece below the anchor is dropped from centerline AND silhouette.
-    if p0[1] >= HIGH_COUPLE_EXIT_Y and not loop_exit:
+    # piece below the anchor is dropped from centerline AND silhouette. A
+    # stub-trimmed loop exit (d, round s) departs at its crossing ~1.17 and
+    # takes this same path — the straight continuation into the couple
+    # point is the jul30 target sketch's diagonal.
+    if p0[1] >= HIGH_COUPLE_EXIT_Y:
         entry_trim = arm_fuse or _entry_couple_index(first_line)
     elif flank_trim:
         # Placement already solved the pair distance so B's flank sample sits
@@ -915,13 +943,10 @@ def _connector_centerline(
     # progresses rightward — following the curl loops the connector
     # around the bow (the "wovon" collapse from the 2026-07 audit).
     backward = d_out[0] <= 0.0
-    # A HIGH exit (tall d finishing its loop upward) reverses into the
-    # join — a real corner on the plates, so the chord is truthful. A
-    # LOOP-RETURN departure (see LOOP_EXIT_BASES) is exempt: its exit
-    # tangent is the return's own falling direction at the crossing, and
-    # the join must CONTINUE that curve into the next letter ("der große
-    # Kringel wird direkt zum e", jul30) — no chord, no corner.
-    high_reversal = p0[1] > HIGH_EXIT_Y and p3[1] < p0[1] and not loop_exit
+    # A HIGH exit reverses into the join — a real corner on the plates, so
+    # the chord is truthful. A trimmed loop exit arrives here already
+    # falling, so the chord continues its direction near-seamlessly.
+    high_reversal = p0[1] > HIGH_EXIT_Y and p3[1] < p0[1]
     rescued = ((p0[1] < DESCENDER_EXIT_Y and d_out[1] < 0) or backward or high_reversal) and span > 0
     if rescued:
         d_out = ((p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span)
@@ -1004,14 +1029,10 @@ def _connector_centerline(
     # An ARCADE entry that must LOSE height writes as a baseline
     # garland (the school hand's rounded turn); a round body couples
     # high instead and everything else stays the taut cubic.
-    # A LOOP-RETURN departure (d, round s) never covers the next letter's
-    # top: the return runs DEEP down the stem and the next letter is entered
-    # low over its own Anstrich — the garland writes exactly that fall-turn-
-    # ride (the jul30 d→e mockup).
-    centerline = None if (high_couple and not loop_exit) else _garland_centerline(p0, d_out, p3, d_in)
+    centerline = None if high_couple else _garland_centerline(p0, d_out, p3, d_in)
     if centerline is None:
         span = math.hypot(p3[0] - p0[0], p3[1] - p0[1])
-        if high_couple and not loop_exit and p3[1] < p0[1] and span > 0:
+        if high_couple and p3[1] < p0[1] and span > 0:
             # Land ON the body's top from above: the authored rising
             # Anstrich is absorbed by the covering join on the plates
             # (ren/roten/das originals) — following it would dip
@@ -1116,6 +1137,7 @@ def compose_word(
         centerline = _endstrike_centerline(prev["exit"], prev["tangent_deg"])
         if centerline is None:
             return
+        centerline = _overlap_extend(centerline, end=False)
         swing: dict = {"centerline": [list(p) for p in centerline], "lift": False}
         _apply_pen(swing, centerline, 2 * prev["width"], pen)
         if provenance:
@@ -1223,18 +1245,34 @@ def compose_word(
         # floating mark; point AND tangent come from the rendered centerline.
         exit_xy: Point = body_exit_line[-1]
         exit_deg = _endpoint_tangent(body_exit_line, at_end=True)
-        # Loop-return departure (see LOOP_EXIT_BASES): the JOIN leaves at the
-        # loop foot and the drawn stub is retraced tip→foot; the Endstrich and
-        # the placement rhythm stay keyed on the tip.
-        conn_exit_xy: Point = exit_xy
-        conn_exit_deg = exit_deg
-        retrace_line: list[Point] = []
+        # Loop-return departure (see LOOP_EXIT_BASES): in BOUND context the
+        # chart cell's finishing stub is NOT WRITTEN at all — the loop return
+        # continues without a set-down straight into the next letter ("der
+        # Kringel geht weiter ohne Absetzen zum e", jul30 target sketch; the
+        # earlier tip-retrace still read as a re-set). The stub is cut from
+        # centerline AND silhouette, so every downstream measurement sees the
+        # flowing form. Word-final (and before any detached/missing break)
+        # the chart form stays complete and earns its loop finial.
         if slot.joins and _key_base(slot.key, slot.position) in LOOP_EXIT_BASES:
+            nxt = slots[slot_index + 1] if slot_index + 1 < len(slots) else None
+            bound_next = (
+                nxt is not None
+                and not nxt.space
+                and bool(nxt.joins)
+                and bool(nxt.key)
+                and bool((data_by_key.get(nxt.key) or {}).get("centerlines_template"))
+            )
             foot_idx = _loop_return_foot(body_exit_line)
-            if foot_idx is not None:
-                conn_exit_xy = body_exit_line[foot_idx]
-                conn_exit_deg = _endpoint_tangent(body_exit_line[: foot_idx + 1], at_end=True)
-                retrace_line = body_exit_line[foot_idx:][::-1]
+            if foot_idx is not None and bound_next:
+                stub_piece = list(centerlines[last_body_idx])[foot_idx:]
+                centerlines[last_body_idx] = list(centerlines[last_body_idx])[: foot_idx + 1]
+                if last_body_idx < len(rings_by_stroke) and rings_by_stroke[last_body_idx]:
+                    rings_by_stroke[last_body_idx] = erase_silhouette_piece(
+                        rings_by_stroke[last_body_idx], stub_piece, med_half * 1.1
+                    )
+                body_exit_line = [tuple(p) for p in centerlines[last_body_idx]]
+                exit_xy = body_exit_line[-1]
+                exit_deg = _endpoint_tangent(body_exit_line, at_end=True)
 
         # Horizontal body-INK extent in the glyph's own frame (rings where
         # available — the silhouette edge — else centerlines), measured ONLY
@@ -1346,8 +1384,8 @@ def compose_word(
             # baseline right of the stem and rides B's lead-in line — the
             # placement must grant the ride its run-down to the Grundlinie.
             if (
-                prev["conn_exit"][1] < DESCENDER_EXIT_Y
-                and _unit(prev["conn_tangent_deg"])[1] < 0
+                prev["exit"][1] < DESCENDER_EXIT_Y
+                and _unit(prev["tangent_deg"])[1] < 0
                 and _key_base(slot.key, slot.position) in DESCENDER_RIDE_BASES
                 and ALIGN_TAN_DEG[0] <= entry_land_deg <= ALIGN_TAN_DEG[1]
                 and first_line[0][1] > 0
@@ -1355,7 +1393,7 @@ def compose_word(
                 run_down = min(first_line[0][1] / math.tan(math.radians(entry_land_deg)), DESCENDER_RETURN_MAX_RUN)
                 desired_entry_x = max(
                     desired_entry_x,
-                    prev["conn_exit"][0] + DESCENDER_RETURN_GAP + run_down + (entry_xy[0] - first_line[0][0]),
+                    prev["exit"][0] + DESCENDER_RETURN_GAP + run_down + (entry_xy[0] - first_line[0][0]),
                 )
             if (
                 ALIGN_TAN_DEG[0] <= prev["tangent_deg"] <= ALIGN_TAN_DEG[1]
@@ -1447,21 +1485,17 @@ def compose_word(
         elif joined:
             high_couple = _key_base(slot.key, slot.position) in HIGH_COUPLE_BASES
             centerline, entry_trim = _connector_centerline(
-                prev["conn_exit"],
-                prev["conn_tangent_deg"],
+                prev["exit"],
+                prev["tangent_deg"],
                 first_line,
                 dx,
                 high_couple=high_couple,
                 flank_trim=flank_couple,
                 descender_ride=_key_base(slot.key, slot.position) in DESCENDER_RIDE_BASES,
                 sameslant_couple=_key_base(slot.key, slot.position) in SAMESLANT_COUPLE_BASES,
-                loop_exit=bool(prev["retrace"]),
                 fuse_base=_key_base(slot.key, slot.position) in ARM_FUSE_BASES,
             )
-            if prev["retrace"]:
-                # Loop-return: the pen retraces the drawn stub tip→foot, then
-                # writes the join — one continuous path, ink unchanged.
-                centerline = prev["retrace"] + centerline[1:]
+            centerline = _overlap_extend(centerline)
             connector = {"centerline": [list(p) for p in centerline], "lift": False}
             _apply_pen(connector, centerline, 2 * min(prev["width"], med_half), pen)
             if provenance:
@@ -1518,9 +1552,6 @@ def compose_word(
         prev = {
             "exit": exit_abs,
             "tangent_deg": exit_deg,
-            "conn_exit": (conn_exit_xy[0] + dx, conn_exit_xy[1]),
-            "conn_tangent_deg": conn_exit_deg,
-            "retrace": [(x + dx, y) for x, y in retrace_line],
             "width": med_half,
             "ink_max_x": ink_max_x + dx,
             "ink_max_x_low": ink_max_x_low + dx,
