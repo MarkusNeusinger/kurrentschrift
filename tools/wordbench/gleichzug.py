@@ -177,7 +177,7 @@ def audit_composed(composed: dict) -> dict:
     for a, b in events:
         if (b - a) * STEP < MIN_EVENT_ARC:
             continue
-        seps = dmat[a : b + 1][bad[a : b + 1]]
+        seps = perp[a : b + 1][bad[a : b + 1]]
         doublings.append(
             {
                 "x0": round(float(P[a][0]), 3),

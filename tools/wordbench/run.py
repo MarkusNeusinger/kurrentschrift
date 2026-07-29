@@ -250,12 +250,16 @@ def main() -> None:
                 report["slant_comp"] = slant_deg(
                     composed_raster(composed, report["registration"], word_meta, skel.shape)
                 )
-                # Gleichzug audit — REPORT columns like slant, never the loss:
-                # flow gaps + parallel-doubling events on the composed path.
-                report["gleichzug"] = audit_composed(composed)
             except Exception as exc:  # a crash counts 1.0 — one regressed word always moves the number
                 composed = None
                 report = {"loss": 1.0, "failed": True, "error": f"{type(exc).__name__}: {exc}", "missing": []}
+            # Gleichzug audit — REPORT columns like slant, never the loss, and
+            # under its OWN guard: an audit crash must never move the headline.
+            if composed is not None:
+                try:
+                    report["gleichzug"] = audit_composed(composed)
+                except Exception as exc:
+                    report["gleichzug_error"] = f"{type(exc).__name__}: {exc}"
             report["id"] = entry_id
             report["word"] = entry["word"]
             report["kind"] = kind
@@ -274,10 +278,10 @@ def main() -> None:
             spec = r.get("slant_spec")
             comp = r.get("slant_comp")
             slant = f"  slant {spec:.1f}/{comp:.1f}" if spec is not None and comp is not None else ""
+            # Stable report column: printed on every scored entry, zeros
+            # included — parsers must not have to infer a missing column.
             audit = r.get("gleichzug")
-            flow = ""
-            if audit and (audit["gaps"] or audit["doublings"]):
-                flow = f"  flow gaps={len(audit['gaps'])} dbl={len(audit['doublings'])}"
+            flow = f"  flow gaps={len(audit['gaps'])} dbl={len(audit['doublings'])}" if audit else ""
             print(
                 f"word {r['id']:<15} loss {r['loss']:.6f}  "
                 f"trans {r['transition']:.3f} cover {r['coverage']:.3f} width {r['width']:.3f}  "
