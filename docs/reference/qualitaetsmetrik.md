@@ -960,4 +960,84 @@ Wort-/Paar-Headline ist NICHT nachgemessen. Vor dem nächsten
 `/optimize`-Loop einmal `export_fixtures` + `run --set all` fahren; die
 Guards (`FLANK_COUPLE_MAX_DROP`, Kappen-Wahl, Floor-Relaxierung) sind dann
 die ersten Sweep-Kandidaten. Golden-Fixture bewusst neu gepinnt
-(REGEN_GOLDEN).
+(REGEN_GOLDEN). *(Nachtrag `jul29`: Headline auf den jul08-Fixtures
+nachgemessen — Wörter 0,123703, Paare 0,191805; das ist die Baseline der
+Skizzen-Runde unten.)*
+
+### Runde `jul29/30` — Skizzen-Feedback: sechs Verbindungsklassen (PR folgt)
+
+Erste durchgängig NUTZER-GEFÜHRTE Runde: Der Autor markierte Defekte direkt
+auf gerenderten Wörtern (annotierte Screenshots mit Soll-Linien), jede
+Korrektur wurde als KLASSENREGEL umgesetzt (nie als Bigramm), gegen
+wordbench + Golden verifiziert und sofort erneut vorgelegt. Leitsatz des
+Autors, als prüfbare Invariante formuliert: *„Man muss das (bis auf
+i-Punkte, paar Ausnahmen) in einem Fluss ohne Absetzen schreiben können —
+dann muss bei Sütterlin die Linie immer perfekt gleich dick sein."*
+(→ Gleichzug-Audit, unten.)
+
+Die sechs Änderungen (`core/compose.py`):
+
+1. **Descender-Rückkehr** (ſ→c-Verdikt „das c muss von der Grundlinie aus
+   losgehen"): Ein Descender-Schleifen-Exit kehrt DURCH die Grundlinie
+   zurück und reitet die Anlauflinie des nächsten Buchstabens kollinear
+   hoch (`DESCENDER_RETURN_GAP`/`_MAX_RUN`); geschlossene Anstrich-Klasse
+   `DESCENDER_RIDE_BASES = {c, t}` — hängende Schüsseln koppeln direkt
+   (erster Wurf ohne Klassen-Schranke: sg 0,20→0,38, behoben).
+2. **Arm-Klassifikation exhaustiv** (Doppelwellen-Verdikt): Im Bogen-Band
+   ist ein flacher Prä-Clamp-Tangens (<`ARM_TAN_MAX_DEG`) IMMER der Arm
+   (r/p), nie ein schließender Bogen — kein Crest-Roll über dem Arm mehr;
+   dazu Arm-exempte Clearance (Kerning gegen die Unter-Arm-Tinte,
+   `ink_max_x_low`, Knubbel-Guard über das oberste Profil-Bin).
+3. **Arm-Fusion** (Zielbild-Mockups re, dann rr): Der Arm-Bogen rollt in
+   EINER Bewegung auf den Anlauf-SCHEITEL des nächsten Buchstabens
+   (`_entry_apex_index` — Kopplung unterhalb des Scheitels ließ einen
+   steigenden Rest parallel zum Bogen stehen, „als wäre der Stift kurz
+   doppelt so breit"); Platzierung rückwärts aus dem Kopplungspunkt
+   (`ARM_FUSE_GAP` 0,02), Launch höchstens waagerecht. Geschlossene
+   B-Klasse `ARM_FUSE_BASES` = Rundkörper ∪ {r, i} — x/z/p messbar
+   ausgeschlossen (rp 0,08→0,27 beim Klassen-Sweep).
+4. **Gleich-Schräge-Kopplung** („wie eine perfekte Linie"): Sägezahn-Paare
+   mit passenden Tangenten (±`SAMESLANT_TOL_DEG`) koppeln als EINE Gerade
+   hoch auf der Flanke (`SAMESLANT_COUPLE_MAX_Y` 0,72; pairlab: reale
+   Ankünfte 0,64–0,79), Platzierung unangetastet — das Engerziehen (F1)
+   kostete +0,011 und widerspricht den pairlab-Abständen. Die
+   floor-gebundenen Align-Paare aus `jul20` („bewusst NICHT angefasst")
+   sind damit adressiert: nicht durch Engerziehen, sondern durch die
+   hohe gerade Kopplung.
+5. **Schleifen-Abgang ohne Absetzen** (d→e-Zielbild, drei Iterationen):
+   Im GEBUNDENEN Kontext schreibt ein Schleifen-Buchstabe
+   (`LOOP_EXIT_BASES = {d, s}` — das runde Schluss-s hat denselben
+   Kringel) den Zier-Stub der Tafelzelle GAR NICHT — die Rückkehr kreuzt
+   den Stamm und läuft ohne Absetzen weiter in den nächsten Buchstaben;
+   Stub aus Centerline UND Silhouette geschnitten. Wortfinal bleibt die
+   komplette Tafel-Form und erhält das neue Schleifen-Finial
+   (`DLOOP_SWING_*`: flacher Launch, später langer Aufschwung — der
+   r-Arm-Auslauf passte der d-Höhe nicht). **Ablösung von O3:** Der
+   zweimal verworfene Stub-Trim scheiterte am TIP-verankerten Konnektor
+   (Fall 0,4 u rechts der echten Stelle); mit Abfahrt an der Kreuzung
+   stimmen Auge UND Messung überein — Wörter 0,1237→0,1220 in genau dem
+   Schritt. O3 bleibt als Warnung vor Trim-bei-Tip-Anker gültig.
+6. **`CONNECT_OVERLAP` 0,05:** Generierte Striche überlappen an offenen
+   Enden minimal in die Nachbar-Tinte (unter der runden Kappe) — schließt
+   die Haarrisse an den Item-Übergaben im gefüllten Rendering (die letzte
+   „Neu-ansetzen"-Illusion). Ink-only, Stiftweg unverändert.
+
+**Ergebnis:** Wörter 0,123703 → **0,122287**, Paare 0,191805 → **0,183317**
+(do/ds tauschen bewusst etwas Chamfer gegen den fließenden Tiefeneinstieg —
+Design-Entscheid des Autors). Bestätigung des §6-Dauerbefunds: Die Headline
+ist gegen die meisten dieser sichtbaren Korrekturen nahezu blind
+(Einzelschritte ±0,001), erst Klassen-Fehlgriffe schlagen aus (sg, rp) —
+die Skizzen des Autors waren das Messinstrument, der Bench der
+Regressionswächter.
+
+**Gleichzug-Audit (Werkzeug-Idee, noch nicht im Ruler):** Zwei physikalische
+Invarianten pro komponiertem Wort — (a) EIN FLUSS: aufeinanderfolgende
+Pen-down-Items schließen Ende-an-Anfang (Lücke = Stift springt); (b) EINE
+STRICHBREITE: zwei fast-parallele Pfadstücke im Abstand zwischen
+Retrace-Epsilon und ~1,35×Feder lesen sich als doppelt breiter Strich
+(exaktes Nachfahren und transversales Kreuzen erlaubt; Paare innerhalb
+EINES Buchstabens sind Buchstabenform, nicht Compose). Prototyp im
+Session-Scratchpad; als Report-Spalten neben Slant/Segment-Attribution
+vorgesehen (headline-neutral, dann bewusster Fold-in). Offene Arbeitsliste
+aus dem Audit: die ſ-Rückkehr läuft in „sch" ~0,3–0,6 u parallel zur
+eigenen Unterschleife (Abstand ~0,12).
