@@ -250,6 +250,13 @@ ENTRY_COUPLE_Y = 0.78
 # pen is always one width: strokes either coincide or part cleanly. No knob
 # guard on the fused placement: the strokes are meant to touch.
 ARM_FUSE_GAP = 0.02
+# The fusion applies to next letters whose lead-in crest sits at x-height
+# scale — closed set per the jul30 verdicts (re/rr/ri): the round bodies
+# plus r and i. Measured exclusions: fusing x/z/p regressed rp 0.08→0.27
+# and the words bench; ascender lead-ins (b, h — apex ~1.9) are excluded
+# by the apex cap either way.
+ARM_FUSE_BASES = HIGH_COUPLE_BASES | frozenset({"r", "i"})
+ARM_FUSE_MAX_APEX_Y = 1.0
 # Above this horizontal span (fusion unavailable) the roll would hump above
 # the arm (the jul29 double wave) — a far arm join keeps the falling chord
 # launch instead.
@@ -838,6 +845,7 @@ def _connector_centerline(
     descender_ride: bool = False,
     sameslant_couple: bool = False,
     loop_exit: bool = False,
+    fuse_base: bool = False,
 ) -> tuple[list[Point], int]:
     """Centerline of the Übergang from A's exit into B's entry + the entry trim.
 
@@ -852,16 +860,16 @@ def _connector_centerline(
     entry_trim = 0
     p0: Point = exit_pt
     # The r-arm into a round body fuses at B's crest APEX (see ARM_FUSE_GAP).
-    arm_round = high_couple and p0[1] <= HIGH_EXIT_Y and 0.0 <= exit_tangent_deg < ARM_TAN_MAX_DEG and not loop_exit
+    arm_fuse = 0
+    if fuse_base and p0[1] <= HIGH_EXIT_Y and 0.0 <= exit_tangent_deg < ARM_TAN_MAX_DEG and not loop_exit:
+        apex = _entry_apex_index(first_line)
+        if apex and first_line[apex][1] <= ARM_FUSE_MAX_APEX_Y:
+            arm_fuse = apex
     # A HIGH exit couples onto the rising flank of B's first downstroke
     # instead of the entry-stub foot (O2, see ENTRY_COUPLE_Y): the stub
     # piece below the anchor is dropped from centerline AND silhouette.
     if p0[1] >= HIGH_COUPLE_EXIT_Y:
-        entry_trim = (
-            (_entry_apex_index(first_line) or _entry_couple_index(first_line))
-            if arm_round
-            else _entry_couple_index(first_line)
-        )
+        entry_trim = arm_fuse or _entry_couple_index(first_line)
     elif flank_trim:
         # Placement already solved the pair distance so B's flank sample sits
         # exactly on the exit's rise line — draw that line.
@@ -963,15 +971,15 @@ def _connector_centerline(
             # connector ABOVE the arm exit into a second wave (the jul29
             # double-wave verdict on rr/re/ri; specimen arm joins depart
             # level-to-falling, never rising).
-            if d_perp > GARLAND_MERGE_EPS and not high_couple:
+            if d_perp > GARLAND_MERGE_EPS and not high_couple and not arm_fuse:
                 d_out = _unit(ARM_FALL_DEG)
-            elif span > 0 and not (high_couple and p3[0] - p0[0] <= ARM_ROLL_MAX_DX):
+            elif span > 0 and not (arm_fuse and p3[0] - p0[0] <= ARM_ROLL_MAX_DX):
                 d_out = ((p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span)
             else:
-                # FUSED round-body join (see ARM_FUSE_GAP): the bow rolls
-                # directly onto the body's crest. Launch at most LEVEL — a
-                # rising launch bulges the roll above the arm and lays it
-                # parallel over B's top (the Gleichzug audit's doubling).
+                # FUSED join (see ARM_FUSE_GAP): the bow rolls directly onto
+                # B's lead-in crest. Launch at most LEVEL — a rising launch
+                # bulges the roll above the arm and lays it parallel over
+                # B's top (the Gleichzug audit's doubling).
                 d_out = _unit(min(max(launch, BOW_LAUNCH_DEG[0]), 0.0))
         elif launch > BOW_LAUNCH_DEG[1]:
             d_orig = d_out
@@ -1312,14 +1320,15 @@ def compose_word(
                 a_top = prev["ink_profile"][FUSE_CLEAR_BINS - 1]
                 if math.isfinite(a_top) and math.isfinite(ink_min_x_top):
                     desired_entry_x = max(desired_entry_x, a_top + ALIGN_MIN_CLEARANCE - (ink_min_x_top - entry_xy[0]))
-                # Arm fusion (see ARM_FUSE_GAP): a round body is pulled in
-                # until its top couple point sits right at the bow's end —
-                # the covering join degenerates to the short roll of the
-                # jul30 mockup. Deliberately below the knob guard: the
-                # joining strokes are meant to touch.
-                if _key_base(slot.key, slot.position) in HIGH_COUPLE_BASES:
-                    couple_idx = _entry_apex_index(first_line) or _entry_couple_index(first_line)
-                    if couple_idx:
+                # Arm fusion (see ARM_FUSE_GAP): the next letter is pulled in
+                # until its lead-in crest sits right at the bow's end — the
+                # covering join degenerates to the short roll of the jul30
+                # mockups (re AND rr). Deliberately below the knob guard:
+                # the joining strokes are meant to touch. Ascender lead-ins
+                # (apex above ARM_FUSE_MAX_APEX_Y) keep the generic couple.
+                if _key_base(slot.key, slot.position) in ARM_FUSE_BASES:
+                    couple_idx = _entry_apex_index(first_line)
+                    if couple_idx and first_line[couple_idx][1] <= ARM_FUSE_MAX_APEX_Y:
                         fuse_x = prev["exit"][0] + ARM_FUSE_GAP + entry_xy[0] - first_line[couple_idx][0]
                         desired_entry_x = min(desired_entry_x, fuse_x)
             # Sawtooth pass-through: pull the glyph onto the exit's rise line
@@ -1441,6 +1450,7 @@ def compose_word(
                 descender_ride=_key_base(slot.key, slot.position) in DESCENDER_RIDE_BASES,
                 sameslant_couple=_key_base(slot.key, slot.position) in SAMESLANT_COUPLE_BASES,
                 loop_exit=bool(prev["retrace"]),
+                fuse_base=_key_base(slot.key, slot.position) in ARM_FUSE_BASES,
             )
             if prev["retrace"]:
                 # Loop-return: the pen retraces the drawn stub tip→foot, then
