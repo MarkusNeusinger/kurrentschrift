@@ -1076,3 +1076,19 @@ schwerere Wörter, die Kapital-Joins sind die messbar schwächste Klasse):
   (Paare) — das ist die Arbeitsliste der kommenden Läufe, nicht Rauschen:
   dominiert von der ſ-Rückkehr, der d-Kurven-Anschmiegung und den
   Arm-Fusions-Nähten.
+
+**Kalibrierung der Doppelungs-Erkennung (`jul30`, zweiter Schritt):** Die
+110/68 enthielten zwei Klassen, die der Render-Abgleich als PEN-AUTHENTISCH
+auswies — (a) voll verschmolzene Läufe (senkrechter Versatz < ½ Feder,
+z. B. die ſ-Haken-Wende bei 0,06: liest sich als sanfte Schwellung wie das
+Tinten-Pooling der Platte an jeder Schleifenschließung) und (b) kurze
+Knoten-Loben an den vom Autor freigegebenen Fusionsnähten (Bogenlänge
+0,17–0,22). Daher: Untergrenze des Bandes skaliert mit der Feder
+(`DOUBLE_MIN_NIB_FACTOR` 0,5), `MIN_EVENT_ARC` 0,05 → 0,25,
+`PARALLEL_DEG` 30 → 22 (flache Kreuzungen zählen nicht als parallel).
+Headlines byte-identisch (Report-Spalte). **Kalibrierte Nulllinie:
+Wörter 3 / Paare 17** — die Überlebenden sind die echte Shortlist, alle in
+drei bekannten Klassen: Kapital-Joins (In 2, Of 3 — Befund §6 O3,
+post-MVP-Kandidaten für gespeicherte Paar-Formen), d→Unterlängen
+(df/dp/dx), ſ→Schüsseln (sa 2, sg 2, ssi 4 — der Grundlinien-Ride gilt
+dort bewusst nicht); Wörter: Soldaten/scharfen/schwer je 1.

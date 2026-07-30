@@ -36,10 +36,18 @@ from core.compose import CONNECT_OVERLAP
 GAP_EPS = CONNECT_OVERLAP + 0.02
 STEP = 0.012  # resample step along the pen path, x-height units
 MIN_ARC_APART = 0.22  # closer along the path = the same stroke bending
-PARALLEL_DEG = 30.0  # tangent difference below this (mod 180) = parallel
-DOUBLE_MIN = 0.035  # closer = retrace/coincident, allowed
+PARALLEL_DEG = 22.0  # tangent difference below this (mod 180) = parallel
+DOUBLE_MIN = 0.035  # absolute floor: closer = retrace/coincident, allowed
+# Calibrated against the user-approved renders (jul30): two runs closer than
+# half a nib merge into ONE smoothly swelling stroke (the ſ-hook junction —
+# pen-authentic ink pooling, sep ~0.06 at nib 0.147), so the lower band edge
+# scales with the nib.
+DOUBLE_MIN_NIB_FACTOR = 0.5
 DOUBLE_MAX_FACTOR = 1.35  # x nib width; farther = visibly separate lines
-MIN_EVENT_ARC = 0.05  # shorter doubling = a touch point, allowed
+# Short side-by-side lobes are junction knots (the approved arm-fusion seams
+# measure 0.17–0.22 of arc); only a LONGER double-track reads as the
+# forbidden double-width stroke.
+MIN_EVENT_ARC = 0.25
 
 
 def _resample(points: list, step: float) -> np.ndarray:
@@ -154,9 +162,10 @@ def audit_composed(composed: dict) -> dict:
     perp = np.abs(np.cos(rad)[:, None] * dym - np.sin(rad)[:, None] * dxm)
     compose_pair = (s_gen[:, None] | s_gen[None, :]).astype(bool) | (s_slot[:, None] != s_slot[None, :])
     far_apart = (run_id[:, None] != run_id[None, :]) | (np.abs(arc[:, None] - arc[None, :]) > MIN_ARC_APART)
+    double_lo = max(DOUBLE_MIN, DOUBLE_MIN_NIB_FACTOR * nib)
     bad = (
         (dmat < DOUBLE_MAX_FACTOR * nib)
-        & (perp > DOUBLE_MIN)
+        & (perp > double_lo)
         & (perp < DOUBLE_MAX_FACTOR * nib)
         & far_apart
         & (tdiff < PARALLEL_DEG)
