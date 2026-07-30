@@ -12,6 +12,28 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Changed
+
+- **Height-aware join kerning — ink at different heights may overlap columns
+  like on the teaching plates.** The specimen gap measurement (every letter
+  of all 58 Abb.-19 words re-fit independently onto its plate) showed the
+  composed rhythm, not the total width, is what reads as stretched: the
+  overall width ratio is 0.96 and the join-advance median ±0.00, but
+  high-exit classes sat 0.13–0.36 x-heights wider than the plate (t/f bar,
+  c/b/l/o arcs — the plate even slides the next letter's body under the
+  t-bar) while baseline diagonals already matched. Joined placement now
+  judges clearance per y-bin (the nine fusion-guard bins) between A's
+  rightmost and B's leftmost band ink — bins where only one side has ink
+  impose nothing, which is exactly the plates' tuck-under; the covering-arm
+  exemption (r/p) collapses into it as a special case and backward bow exits
+  (w/v) keep the scalar clearance. Words bench 0.131392 → 0.130439, pairs
+  0.182982 → 0.174158, Gleichzug zero line unchanged (3/17), per-class
+  advance error halved (c→h −0.26 → −0.13, b→e −0.28 → −0.14, l to 0.00);
+  compose golden fixture deliberately re-pinned. The t/f bar class needs a
+  fork join (retrace the own stroke, then fall) — measured on the plates for
+  both the bar and the ſ ascent — and follows as its own round
+  (qualitaetsmetrik.md §6 „Dehn-Runde Stufe 1").
+
 ### Added
 
 - **A Gleichzug audit as wordbench report columns — the one-flow, one-width

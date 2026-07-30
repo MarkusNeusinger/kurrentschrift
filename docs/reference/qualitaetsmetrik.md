@@ -1092,3 +1092,45 @@ drei bekannten Klassen: Kapital-Joins (In 2, Of 3 — Befund §6 O3,
 post-MVP-Kandidaten für gespeicherte Paar-Formen), d→Unterlängen
 (df/dp/dx), ſ→Schüsseln (sa 2, sg 2, ssi 4 — der Grundlinien-Ride gilt
 dort bewusst nicht); Wörter: Soldaten/scharfen/schwer je 1.
+
+### Dehn-Runde Stufe 1 `jul30` — Lücken-Messung + höhenbewusstes Kerning
+
+**Auslöser** (User, jul30): Das Wortbild wirke „in die Länge gezogen — so
+würde niemand schreiben"; die Verbindungsschräge (z. B. en) solle stellbar
+werden, damit alle Lücken vergleichbar sind. **Messung zuerst** (Auftakt
+der Dehn-Runde): jeder Buchstabe aller 58 Wörter unabhängig aufs Specimen
+gefittet (pairlab-Grid, vektorisiert); der Vorschub-Fehler eines Joins ist
+`ddx_B − ddx_A`. Befund: **Gesamtbreite stimmt** (komponiert/Specimen
+median 0,96; Join-Median ±0,00) — gestreckt wirkt der *ungleiche Rhythmus*
+(sd 0,21): Hoch-Exits t −0,36 / f −0,29 / v −0,28 / b −0,28 / c −0,26 /
+l −0,13 / o −0,13 ZU WEIT (die Platte schiebt den t-Balken sogar ÜBER den
+Folgebuchstaben, Band-Lücke −0,15), während die Grundlinien-Diagonalen
+(e→n +0,10, i→n +0,12, n→n +0,16) und die Fusionen (r→e, p) bereits enger
+stehen als die Platte.
+
+**Änderung — Kerning je Höhenzone** (`_profile_clearance_x`): die
+Clearance-Platzierung vergleicht A-rechts/B-links **pro y-Bin** (die 9
+`FUSE_CLEAR_BINS` des Fusion-Guards) statt an der skalaren Tintenkante;
+Bins, in denen nur eine Seite Tinte hat, binden nicht — Tinte auf
+verschiedenen Höhen darf Spalten überlappen wie auf der Tafel. Ersetzt
+skalares Kerning, Align-/Nested-/Flanken-Floor; der Arm-Sonderweg
+(Unter-Arm-Kante + Knauf-Guard, r/p) kollabiert als Spezialfall hinein,
+die Arm-Fusion bleibt. Rückwärts-Exits (w/v) bleiben skalar
+(`BACKWARD_INK_CLEARANCE`; die Platte ist bei w→e selbst +0,13 weiter).
+Ergebnis: **Wörter 0,131392 → 0,130439, Paare 0,182982 → 0,174158**,
+Gleichzug-Nulllinie unverändert 3/17, Klassen halbiert (c→h −0,26→−0,13,
+b→e −0,28→−0,14, l 0,00), Streuung 0,210 → 0,197. Golden-Fixture
+deliberate re-gepinnt.
+
+**Offen, mit Plattenbeweis:** (a) t/f bewegen sich nicht — dort bindet der
+Balken-Exit (`CONNECT_GAP` ab Balkenspitze), nicht die Clearance; die
+Platte schreibt einen **Gabel-Join** (Retrace am eigenen Strich zurück,
+dann fallen). Denselben Befund liefert die ſ-Vermessung (alle 7
+`longs→X`-Vorkommen, pairlab-Sektion): Aufstieg skelett-identisch mit dem
+ſ-Stamm bis zur Gabel bei y ≈ 0,25–0,4 (ſ→ſ 0,6; ſ→g Grundlinie), dann
+SOFORT ~45° ausschwingend (½ Feder nach ≤0,05 u) — der komponierte
+0,08-Parallelritt existiert auf der Platte nicht. Nächste Klassenregel:
+Gabel-Join für Balken- (t/f) und ſ-Exits. (b) Die stellbare
+Verbindungsschräge (en/in) ist Stufe 2 — Achtung: die Platte ist dort
+WEITER als wir; das wird eine dokumentierte Geschmacksentscheidung gegen
+den Bench-Gradienten, nicht Platten-Treue.
