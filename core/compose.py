@@ -368,6 +368,59 @@ DESCENDER_RETURN_MAX_RUN = 0.6
 # top directly off the return on the plates (sg/sa drills) — no ride, no
 # extra run.
 DESCENDER_RIDE_BASES = frozenset({"c", "t"})
+# Fork join (the jul30 ſ-ascent verdict, measured on ALL 7 joined longs→X
+# plate occurrences, pairs and words): the descender-loop return does NOT
+# climb beside the stem — the pen rejoins the stem around the Grundlinie,
+# RETRACES it (skeleton-identical, a genuine single line) up to a fork,
+# then swings out instantly on a ~45° diagonal (half a nib of daylight
+# within 0.05 xh of the fork) that couples high on the next letter
+# (measured arrivals y 0.65–0.97 — the generic ENTRY_COUPLE_Y flank point
+# sits inside that band). The prior chord/ride climbed 0.078–0.095 xh
+# BESIDE the stem — a sustained parallel track the plates never write (the
+# Gleichzug audit's ſ shortlist). Fork height scales with the coupling
+# height, clamped to the measured band (ſ→ſ 0.6 and ſ→g ≈ 0 are the
+# extremes the clamp trades away).
+FORK_RATIO = 0.42
+FORK_Y_MIN = 0.18
+FORK_Y_MAX = 0.55
+FORK_CLOSE_Y = 0.05  # the loop return rejoins the stem just above the Grundlinie
+# Swing steepness dy/dx of the fork diagonal — the measured band is
+# dx/dy 0.8–1.5 (~34–51°); placement puts B where the 45° line from the
+# fork meets its coupling point, floored by the per-bin ink clearance.
+FORK_SWING_SLOPE = 0.75
+# Where the swing arrives on B: HIGH — the measured arrivals are y
+# 0.65–0.97 (bowls/c/i ~0.85–1.0, t/ſ higher still). A lead-in whose apex
+# sits at letter scale couples at the apex (like the arm fusion); a tall
+# lead-in (t, ſ, h) couples on the flank at the arrival target instead.
+FORK_ARRIVE_Y = 0.92
+FORK_APEX_MAX_Y = 1.05
+# Ride-line collinearity inside the fork join (the jul29 ſ→c verdict
+# kept): for the ride bases (DESCENDER_RIDE_BASES) with an ALIGN-band
+# landing, the swing continues B's lead-in line — fork, diagonal and
+# Anstrich read as one stroke, and B is placed so its lead-in line passes
+# through the fork (the chart foot sits mid-height; the line's extension
+# below it is drawn by the join, as the old baseline ride did). Bowls
+# keep the apex couple (the sa/sg drills).
+# Bar exit (t's crossbar, f's flag — jul30 plate measurement over all 8
+# joined occurrences): on the plates t's crossbar is a short DEAD-END
+# stroke ending AT the stem (right of it: 0.00–0.03 xh of ink — the chart
+# cell's long bar is table form, not running form), and the join is one
+# hairline leaving the STEM at y ≈ 0.34–0.53, rising at 16–27° into the
+# next letter's apex (0.88–1.00) at +1.16–1.52 xh from the stem. f's LOW
+# flag instead crosses the stem and CONTINUES as that very join. In bound
+# context t's rendered bar is therefore cut at the stem (word-final keeps
+# the full chart bar, like LOOP_EXIT) and the join launches from the
+# bar/stem CROSSING; f's flag tip continues along the same stem-anchored
+# rise line. The anchor is the exit stroke's LAST crossing with the
+# glyph's own earlier ink (t: the separate bar stroke crossing the body;
+# f: the flag self-crossing its stem inside the one stroke). A closed,
+# enumerated A-set — geometry alone cannot tell t's dead-end bar from a
+# genuine crossing form like x, whose crossing stroke is a real letter
+# part.
+BAR_EXIT_BASES = frozenset({"t", "f"})
+BAR_CROSS_MIN_Y = 0.2  # a plausible bar/flag crossing sits mid-band
+BAR_CROSS_MAX_Y = 0.7
+BAR_RISE_SLOPE = 0.55
 # Travel direction measured over a short ARC-LENGTH window rather than the
 # single final segment — the glyph centerline is a smooth spline through the
 # anchors, so its true endpoint tangent rarely matches the stored single-chord
@@ -558,6 +611,62 @@ def _fused_flank_placement(
         if run < FUSE_MIN_DX:
             continue
         return ex + run - q[0] + entry_x, i
+    return None
+
+
+def _last_ink_crossing(exit_line: list[Point], candidates: list[list[Point]]) -> tuple[Point, int] | None:
+    """The exit stroke's LAST crossing with the glyph's own earlier ink —
+    the bar/stem anchor of a bar exit (see BAR_EXIT_BASES). ``candidates``
+    are the earlier body strokes plus the exit stroke's own prefix (for the
+    one-stroke f, whose flag crosses its own stem). Returns the crossing
+    point and the exit-stroke segment index, walking the exit stroke from
+    its END backwards so the last crossing in writing order wins."""
+
+    def seg_cross(p1: Point, p2: Point, q1: Point, q2: Point) -> Point | None:
+        d1 = (p2[0] - p1[0], p2[1] - p1[1])
+        d2 = (q2[0] - q1[0], q2[1] - q1[1])
+        den = d1[0] * d2[1] - d1[1] * d2[0]
+        if abs(den) < 1e-12:
+            return None
+        t = ((q1[0] - p1[0]) * d2[1] - (q1[1] - p1[1]) * d2[0]) / den
+        u = ((q1[0] - p1[0]) * d1[1] - (q1[1] - p1[1]) * d1[0]) / den
+        if 0.0 <= t <= 1.0 and 0.0 <= u <= 1.0:
+            return (p1[0] + t * d1[0], p1[1] + t * d1[1])
+        return None
+
+    for i in range(len(exit_line) - 1, 0, -1):
+        p1, p2 = exit_line[i - 1], exit_line[i]
+        for cand in candidates:
+            limit = len(cand) - 1
+            if cand is exit_line:
+                limit = min(limit, i - 3)  # own prefix only, clear of the joint itself
+            for j in range(limit):
+                hit = seg_cross(p1, p2, cand[j], cand[j + 1])
+                if hit is not None:
+                    return hit, i - 1
+    return None
+
+
+def _fork_couple_index(first_line: list[Point]) -> int:
+    """Coupling index of a fork-join swing on B's first stroke — the HIGH
+    arrival the plates write (see FORK_ARRIVE_Y): the lead-in apex when it
+    sits at letter scale, else the flank sample at the arrival target."""
+    apex = _entry_apex_index(first_line)
+    if apex and first_line[apex][1] <= FORK_APEX_MAX_Y:
+        return apex
+    return _entry_couple_index(first_line, target_y=FORK_ARRIVE_Y)
+
+
+def _stem_crossing_x(line: list[Point], y: float) -> float | None:
+    """X where the stroke LAST crosses ``y`` travelling DOWNWARD — the stem
+    descent of a descender-loop glyph (the ſ). Walked from the end backwards
+    so a loop that grazes the height near the exit wins over earlier ink;
+    None when the stroke never descends through ``y``."""
+    for i in range(len(line) - 1, 0, -1):
+        y1, y2 = line[i - 1][1], line[i][1]
+        if y1 > y >= y2:
+            t = (y1 - y) / (y1 - y2)
+            return line[i - 1][0] + t * (line[i][0] - line[i - 1][0])
     return None
 
 
@@ -895,6 +1004,8 @@ def _connector_centerline(
     descender_ride: bool = False,
     sameslant_couple: bool = False,
     fuse_base: bool = False,
+    fork_line: list[Point] | None = None,
+    stem_launch: Point | None = None,
 ) -> tuple[list[Point], int]:
     """Centerline of the Übergang from A's exit into B's entry + the entry trim.
 
@@ -908,6 +1019,16 @@ def _connector_centerline(
     """
     entry_trim = 0
     p0: Point = exit_pt
+    # Bar-exit launch (see BAR_EXIT_BASES): one straight hairline from the
+    # exit — t's cut bar ends AT the bar/stem crossing, f's flag tip lies
+    # on the same stem-anchored line — rising into a high coupling on B
+    # (the measured 16–27° climb into the apex).
+    if stem_launch is not None:
+        idx = _fork_couple_index(first_line)
+        if idx:
+            p3b: Point = (first_line[idx][0] + dx, first_line[idx][1])
+            if p3b[0] > p0[0] + GARLAND_MIN_DX and p3b[1] > p0[1] + ALIGN_MIN_RISE:
+                return [(p0[0] + (p3b[0] - p0[0]) * t / 10, p0[1] + (p3b[1] - p0[1]) * t / 10) for t in range(11)], idx
     # The r-arm into a round body fuses at B's crest APEX (see ARM_FUSE_GAP).
     arm_fuse = 0
     if fuse_base and p0[1] <= HIGH_EXIT_Y and 0.0 <= exit_tangent_deg < ARM_TAN_MAX_DEG:
@@ -990,6 +1111,50 @@ def _connector_centerline(
     # Decided BEFORE any coupling/garland call: c's round-body membership
     # (HIGH_COUPLE_BASES) must not divert this join into a top-entry chord.
     descender = exit_pt[1] < DESCENDER_EXIT_Y and _unit(exit_tangent_deg)[1] < 0
+    # Fork join (see FORK_RATIO): the return rejoins the stem, retraces it to
+    # the fork and swings out on the diagonal to the generic coupling point
+    # on B's rising lead-in. Applies to EVERY joined letter after a
+    # descender-loop exit (the plate verdict is uniform across B classes);
+    # the ride/chord paths below stay as fallbacks when the geometry is
+    # unavailable (no stem crossing, no rising lead-in, B not right of the
+    # fork).
+    if descender and fork_line is not None and span > 0:
+        idx = _fork_couple_index(first_line)
+        if idx:
+            p3c: Point = (first_line[idx][0] + dx, first_line[idx][1])
+            fork_y = min(max(FORK_RATIO * p3c[1], FORK_Y_MIN), FORK_Y_MAX)
+            x_fork = _stem_crossing_x(fork_line, fork_y)
+            x_close = _stem_crossing_x(fork_line, FORK_CLOSE_Y)
+            if x_fork is not None:
+                # Ride bases (c, decomposed t — see DESCENDER_RIDE_BASES):
+                # the swing lands mid-flank (the generic ENTRY_COUPLE_Y
+                # point, inside the measured 0.75–0.9 arrival band), not at
+                # the apex — the jul29 verdict keeps c entered low on its
+                # rising Anstrich, never top-coupled like a bowl.
+                land = _endpoint_tangent(first_line, at_end=False)
+                if descender_ride and ALIGN_TAN_DEG[0] <= land <= ALIGN_TAN_DEG[1]:
+                    ride_idx = _entry_couple_index(first_line)
+                    if ride_idx:
+                        idx = ride_idx
+                        p3c = (first_line[idx][0] + dx, first_line[idx][1])
+            if (
+                x_fork is not None
+                and x_close is not None
+                and p3c[0] > x_fork + GARLAND_MIN_DX
+                and p3c[1] > fork_y + ALIGN_MIN_RISE
+            ):
+                s0: Point = (x_close, FORK_CLOSE_Y)
+                close_chord = math.hypot(s0[0] - p0[0], s0[1] - p0[1])
+                if close_chord > 0:
+                    d_close = ((s0[0] - p0[0]) / close_chord, (s0[1] - p0[1]) / close_chord)
+                    h = max(0.03, close_chord * 0.4)
+                    close = _sample_bezier(
+                        p0, (p0[0] + h * d_close[0], p0[1] + h * d_close[1]), (s0[0], s0[1] - h), s0, 10
+                    )
+                    f: Point = (x_fork, fork_y)
+                    retrace = [(s0[0] + (f[0] - s0[0]) * t / 6, s0[1] + (f[1] - s0[1]) * t / 6) for t in range(1, 7)]
+                    swing = [(f[0] + (p3c[0] - f[0]) * t / 8, f[1] + (p3c[1] - f[1]) * t / 8) for t in range(1, 9)]
+                    return close + retrace + swing, idx
     if descender and descender_ride and span > 0 and p3[1] > 0 and ALIGN_TAN_DEG[0] <= entry_deg <= ALIGN_TAN_DEG[1]:
         lam = min(p3[1] / d_in[1], (p3[0] - p0[0] - GARLAND_MIN_DX) / d_in[0])
         if lam > 0:
@@ -1208,7 +1373,14 @@ def compose_word(
         if guides is None:
             guides = data["template_guides"]
 
-        rings_by_stroke = data.get("outline_paths") or []
+        # Shallow-copy the payload's stroke lists before any bound-context
+        # modification (loop-exit stub cut, bar cut): callers may CACHE and
+        # share payload dicts across words (the wordbench does), and an
+        # element assignment on the shared list would leak a cut stroke into
+        # every later composition of the same glyph — a word-final t after
+        # any bound t lost its whole bar and its Endstrich.
+        centerlines = list(centerlines)
+        rings_by_stroke = list(data.get("outline_paths") or [])
         # Ascender-lean (R5): tilt the loop of a BOUND d to the measured axis.
         # Applied to the shared payload's copies — centerlines, silhouette
         # rings and entry alike — before any exit/ink measurement, so every
@@ -1295,6 +1467,45 @@ def compose_word(
                 body_exit_line = [tuple(p) for p in centerlines[last_body_idx]]
                 exit_xy = body_exit_line[-1]
                 exit_deg = _endpoint_tangent(body_exit_line, at_end=True)
+
+        # Bar exit (see BAR_EXIT_BASES): t's crossbar / f's flag. The anchor
+        # is the exit stroke's last crossing with the glyph's own earlier
+        # ink. In bound context t's bar is cut AT that crossing — the
+        # plates' running form ends it at the stem — and the join launches
+        # from there; f keeps its flag tip and only anchors the rise line.
+        # Word-final keeps the full chart form, like LOOP_EXIT.
+        stem_launch: tuple[float, float] | None = None
+        if slot.joins and _key_base(slot.key, slot.position) in BAR_EXIT_BASES and len(body_exit_line) >= 5:
+            nxt = slots[slot_index + 1] if slot_index + 1 < len(slots) else None
+            bound_next = (
+                nxt is not None
+                and not nxt.space
+                and bool(nxt.joins)
+                and bool(nxt.key)
+                and bool((data_by_key.get(nxt.key) or {}).get("centerlines_template"))
+            )
+            if bound_next:
+                earlier = [
+                    [tuple(p) for p in centerlines[si2]] for si2 in range(last_body_idx) if not diacritic_flags[si2]
+                ]
+                crossing = _last_ink_crossing(body_exit_line, earlier + [body_exit_line])
+                if crossing is not None and BAR_CROSS_MIN_Y <= crossing[0][1] <= BAR_CROSS_MAX_Y:
+                    stem_launch = crossing[0]
+                    cut = crossing[1]
+                    if _key_base(slot.key, slot.position) == "t" and cut + 1 < len(body_exit_line):
+                        # Dead-end crossbar: everything right of the
+                        # crossing is table form — cut it, centerline AND
+                        # silhouette; the exit becomes the crossing itself.
+                        bar = list(centerlines[last_body_idx])
+                        piece = bar[cut:]
+                        centerlines[last_body_idx] = bar[: cut + 1] + [list(stem_launch)]
+                        if last_body_idx < len(rings_by_stroke) and rings_by_stroke[last_body_idx]:
+                            rings_by_stroke[last_body_idx] = erase_silhouette_piece(
+                                rings_by_stroke[last_body_idx], piece, med_half * 1.1
+                            )
+                        body_exit_line = [tuple(p) for p in centerlines[last_body_idx]]
+                        exit_xy = body_exit_line[-1]
+                        exit_deg = _endpoint_tangent(body_exit_line, at_end=True)
 
         # Horizontal body-INK extent in the glyph's own frame (rings where
         # available — the silhouette edge — else centerlines), measured ONLY
@@ -1399,12 +1610,57 @@ def compose_word(
             # (see ALIGN_*) so the diagonal continues without a shelf.
             entry_land_deg = _endpoint_tangent(first_line, at_end=False)
             rise = first_line[0][1] - prev["exit"][1]
-            # Descender-return run (see the connector's baseline merge): after
-            # a descender-loop exit (ſ) the return upstroke crosses the
-            # baseline right of the stem and rides B's lead-in line — the
-            # placement must grant the ride its run-down to the Grundlinie.
+            # Fork-join placement (see FORK_SWING_SLOPE): after a
+            # descender-loop exit the connector retraces the stem to the fork
+            # and swings out at ~45° — B sits where that diagonal reaches its
+            # coupling point, floored by the per-bin ink clearance. Replaces
+            # the ride's run-down grant whenever the fork geometry resolves;
+            # the grant below stays as its fallback.
+            fork_placed = False
+            fork_ride_base = _key_base(slot.key, slot.position) in DESCENDER_RIDE_BASES
             if (
                 prev["exit"][1] < DESCENDER_EXIT_Y
+                and _unit(prev["tangent_deg"])[1] < 0
+                and prev.get("exit_line")
+                # Ride bases keep the calibrated run-down placement below —
+                # the jul30 overlay shows it plate-exact (schwer longs→c
+                # 0.05); the fork only reshapes their ASCENT.
+                and not fork_ride_base
+            ):
+                couple_idx = _fork_couple_index(first_line)
+                if couple_idx:
+                    couple_y = first_line[couple_idx][1]
+                    fork_y = min(max(FORK_RATIO * couple_y, FORK_Y_MIN), FORK_Y_MAX)
+                    x_fork = _stem_crossing_x(prev["exit_line"], fork_y)
+                    if x_fork is not None and couple_y > fork_y + ALIGN_MIN_RISE:
+                        fork_desired = (
+                            x_fork + (couple_y - fork_y) / FORK_SWING_SLOPE + (entry_xy[0] - first_line[couple_idx][0])
+                        )
+                        # Full ink-clearance floor: the 45° pull-in applies
+                        # only as far as the body ink allows — a LOW coupling
+                        # point (short lead-in) must not crowd B into the
+                        # stem (over-tightening showed as a +0.5 xh word
+                        # registration shift on schwer/scharfen).
+                        floor_x = _profile_clearance_x(prev["ink_profile"], ink_min_profile, entry_xy[0], INK_CLEARANCE)
+                        desired_entry_x = max(fork_desired, floor_x)
+                        fork_placed = True
+            # Bar-exit placement (see BAR_RISE_SLOPE): B's coupling point
+            # sits on the ~20° rise line from the stem-launch anchor,
+            # floored by the per-bin ink clearance — the plates put B off
+            # the STEM, not off the (cut) bar tip.
+            if not fork_placed and prev.get("stem_launch"):
+                couple_idx = _fork_couple_index(first_line)
+                if couple_idx:
+                    couple_y = first_line[couple_idx][1]
+                    lx, ly = prev["stem_launch"]
+                    if couple_y > ly + ALIGN_MIN_RISE:
+                        bar_desired = lx + (couple_y - ly) / BAR_RISE_SLOPE + (entry_xy[0] - first_line[couple_idx][0])
+                        floor_x = _profile_clearance_x(prev["ink_profile"], ink_min_profile, entry_xy[0], INK_CLEARANCE)
+                        desired_entry_x = max(bar_desired, floor_x)
+                        fork_placed = True
+            if (
+                not fork_placed
+                and prev["exit"][1] < DESCENDER_EXIT_Y
                 and _unit(prev["tangent_deg"])[1] < 0
                 and _key_base(slot.key, slot.position) in DESCENDER_RIDE_BASES
                 and ALIGN_TAN_DEG[0] <= entry_land_deg <= ALIGN_TAN_DEG[1]
@@ -1516,6 +1772,8 @@ def compose_word(
                 descender_ride=_key_base(slot.key, slot.position) in DESCENDER_RIDE_BASES,
                 sameslant_couple=_key_base(slot.key, slot.position) in SAMESLANT_COUPLE_BASES,
                 fuse_base=_key_base(slot.key, slot.position) in ARM_FUSE_BASES,
+                fork_line=prev.get("exit_line"),
+                stem_launch=prev.get("stem_launch"),
             )
             centerline = _overlap_extend(centerline)
             connector = {"centerline": [list(p) for p in centerline], "lift": False}
@@ -1576,6 +1834,11 @@ def compose_word(
             "tangent_deg": exit_deg,
             "width": med_half,
             "ink_max_x": ink_max_x + dx,
+            # The exit stroke in word coordinates — the fork join reads the
+            # stem descent off it. Only a descender-loop exit needs it.
+            "exit_line": ([(x + dx, y) for x, y in body_exit_line] if exit_xy[1] < DESCENDER_EXIT_Y else None),
+            # Bar-exit launch anchor (t/f, see BAR_EXIT_*), word coordinates.
+            "stem_launch": (stem_launch[0] + dx, stem_launch[1]) if stem_launch else None,
             "ink_profile": [v + dx if math.isfinite(v) else v for v in ink_profile],
             "key": slot.key,
             "slot_index": slot_index,

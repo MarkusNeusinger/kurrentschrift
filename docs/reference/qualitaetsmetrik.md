@@ -1134,3 +1134,49 @@ Gabel-Join für Balken- (t/f) und ſ-Exits. (b) Die stellbare
 Verbindungsschräge (en/in) ist Stufe 2 — Achtung: die Platte ist dort
 WEITER als wir; das wird eine dokumentierte Geschmacksentscheidung gegen
 den Bench-Gradienten, nicht Platten-Treue.
+
+### Gabel-Runde `jul30` — ſ-Stammverschmelzung + t/f-Stammstart
+
+Umsetzung des (a)-Befunds als zwei Klassen; die t/f-Messung (Zweitagent,
+alle 8 gebundenen t/f-Vorkommen der Wörter — die Paar-Drills enthalten
+keins) korrigierte die Retrace-These zu einem DRITTEN Bild: t's
+Querbalken existiert auf der Platte nur LINKS vom Stamm (rechts 0,00–0,03
+Tinte — der lange Chart-Balken ist Tabellenform), der Join verlässt den
+STAMM bei y ≈ 0,34–0,53 und STEIGT mit 16–27° in den Apex des
+Folgebuchstabens (0,88–1,0) bei +1,16–1,52 vom Stamm; f's tiefer Flag
+kreuzt den Stamm und IST der Join. Kein Breiten-Beleg für ein Retrace.
+
+- **ſ-Gabel** (`FORK_*`): Rückkehr schmiegt an den Stamm
+  (`_stem_crossing_x` auf der Exit-Line), Retrace bis Gabelhöhe
+  (0,42 × Koppelhöhe, geklemmt 0,18–0,55), dann Gerade in die HOHE
+  Kopplung (`_fork_couple_index`: Apex ≤ 1,05, sonst Flanke bei 0,92).
+  Platzierung: Schüsseln u. a. auf der 45°-Linie ab Gabel
+  (`FORK_SWING_SLOPE` 0,75 nach Sweep, Profil-Floor); die Ride-Basen
+  (c, t) behalten die kalibrierte run_down-Platzierung — das
+  wordlab-Overlay zeigt sie platten-exakt (schwer longs→c 0,05) — und
+  koppeln bei ENTRY_COUPLE_Y (im gemessenen Ankunftsband 0,75–0,9).
+- **t/f-Stammstart** (`BAR_EXIT_BASES` {t, f}, geschlossen — Geometrie
+  allein kann x' echte Kreuzungsform nicht vom Balken unterscheiden):
+  Anker = LETZTE Kreuzung des Exit-Strokes mit eigener früherer Tinte
+  (`_last_ink_crossing`; f's Flag kreuzt im selben Stroke). Gebunden wird
+  t's Balken an der Kreuzung GEKAPPT (Centerline + Silhouette,
+  Wort-Ende behält die Chart-Form — LOOP_EXIT-Präzedenz) und der Join
+  ist EINE flache Gerade zur hohen Kopplung; Platzierung auf der
+  Steiglinie ab Anker (`BAR_RISE_SLOPE` 0,55 nach Sweep 0,36–0,7).
+- **Payload-Mutations-Fix:** die Cut-Klassen (LOOP_EXIT seit #239, jetzt
+  Balken) mutierten die GETEILTEN Payload-Listen in place — bei
+  gecachten Payloads (wordbench!) verlor jedes spätere Wort mit
+  demselben Buchstaben den Strich (mit/mit-2/macht: End-t ohne Balken
+  und Endstrich, +0,05–0,06 Phantom-Loss). compose kopiert die
+  Stroke-Listen jetzt vor jeder Modifikation.
+
+Ergebnis: **Wörter 0,130439 → 0,130253, Paare 0,174158 → 0,170674**,
+Gleichzug-Doppelungen **3 → 1 (Wörter) / 17 → 9 (Paare)** — die
+ſ-Shortlist (sa 2, sg 2, ssi 4, schwer/scharfen) ist leer; übrig
+Kapital-Joins (In/Of/Soldaten S→o) + d→Unterlängen. Per-Wort vs. main:
+unter −0,014, fechten −0,009, streiten −0,006, scharfen −0,005;
+Soldaten +0,015 (a→t 0,63 + Kapital-Join, geparkt). Golden bewusst
+re-gepinnt. Verworfen in dieser Runde (gemessen): 45°-Platzierung auch
+für Ride-Basen (Wort-Registrierung +0,5 xh, schwer +0,06),
+Apex-Kopplung für c (jul29-Verdikt „c startet tief" gilt),
+kollineare Anstrich-Linien-Platzierung (schwer 0,242 — zu eng).
