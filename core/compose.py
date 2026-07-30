@@ -1361,7 +1361,7 @@ def compose_word(
             tuck = TUCK_RATE * max(0.0, prev["exit"][1] - TUCK_Y0)
             forward = _unit(prev["tangent_deg"])[0] > 0.0
             if forward:
-                # Height-aware kerning (Dehn-Runde Stufe 1, jul30): clearance
+                # Height-aware kerning (jul30 stretch round, stage 1): clearance
                 # judged per y-bin between A's rightmost and B's leftmost band
                 # ink — ink at DIFFERENT heights may overlap columns like on
                 # the plates. Subsumes the covering-arm exemption (r, p),

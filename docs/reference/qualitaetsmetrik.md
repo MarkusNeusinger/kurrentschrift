@@ -1120,7 +1120,7 @@ die Arm-Fusion bleibt. Rückwärts-Exits (w/v) bleiben skalar
 Ergebnis: **Wörter 0,131392 → 0,130439, Paare 0,182982 → 0,174158**,
 Gleichzug-Nulllinie unverändert 3/17, Klassen halbiert (c→h −0,26→−0,13,
 b→e −0,28→−0,14, l 0,00), Streuung 0,210 → 0,197. Golden-Fixture
-deliberate re-gepinnt.
+bewusst neu gepinnt.
 
 **Offen, mit Plattenbeweis:** (a) t/f bewegen sich nicht — dort bindet der
 Balken-Exit (`CONNECT_GAP` ab Balkenspitze), nicht die Clearance; die
