@@ -567,6 +567,27 @@ def _band_bin(y: float) -> int:
     return min(FUSE_CLEAR_BINS - 1, max(0, int(frac * FUSE_CLEAR_BINS)))
 
 
+def _profile_clearance_x(
+    a_profile: list[float], b_profile: list[float], entry_x: float, margin: float, *, stub_relaxed: bool = False
+) -> float:
+    """Smallest entry x keeping B's band ink ``margin`` right of A's, judged
+    PER y-bin (see FUSE_CLEAR_BINS): a bin where only one side has ink imposes
+    nothing — that is the plates' tuck-under (t's bar and c's upper arc cover
+    the next letter's low body; the jul30 gap measurement put the scalar-edge
+    placement 0.26–0.36 xh wider than the specimens for exactly those
+    classes, the t→e band columns even overlap). ``stub_relaxed`` treats
+    B ink left of its entry as the lead-in stub the flank trim absorbs (the
+    same rule as the scalar flank floor). −inf when no bin binds."""
+    out = -math.inf
+    for a_x, b_x in zip(a_profile, b_profile, strict=True):
+        if math.isfinite(a_x) and math.isfinite(b_x):
+            offset = b_x - entry_x
+            if stub_relaxed:
+                offset = max(offset, 0.0)
+            out = max(out, a_x + margin - offset)
+    return out
+
+
 def _fused_clearance_ok(
     a_profile: list[float],
     b_centerlines: list[list[Point]],
@@ -1284,18 +1305,11 @@ def compose_word(
         # count (they are deferred and float above the band anyway).
         ink_min_x = math.inf
         ink_max_x = -math.inf
-        # Rightmost band ink BELOW the covering-arm zone (y ≤ HIGH_COUPLE_EXIT_Y)
-        # — the kerning edge after a Deckstrich-arm exit (r, p): the plates tuck
-        # the next letter UNDER the arm (specimen delta −0.10…−0.16 xh on r→e),
-        # so the arm's own underside ink must not hold the pair apart.
-        ink_max_x_low = -math.inf
-        # Leftmost band ink in the TOP profile bin — the B-side of the
-        # collision guard when a pair is placed arm-exempt (rb: the b flank
-        # must still clear the arm knob).
-        ink_min_x_top = math.inf
-        # Per-y-bin rightmost ink over the join band — the height-aware side
-        # of the fused-flank clearance guard (see FUSE_CLEAR_BINS).
+        # Per-y-bin rightmost/leftmost ink over the join band — the two sides
+        # of the height-aware kerning (see _profile_clearance_x) and of the
+        # fused-flank clearance guard (see FUSE_CLEAR_BINS).
         ink_profile = [-math.inf] * FUSE_CLEAR_BINS
+        ink_min_profile = [math.inf] * FUSE_CLEAR_BINS
         # A detached glyph does not take part in join-band kerning — its whole
         # body (a comma below the baseline, a quote above the midband) is what
         # the neighbour must clear.
@@ -1316,17 +1330,12 @@ def compose_word(
                     if band[0] <= y <= band[1]:
                         ink_min_x = min(ink_min_x, x)
                         ink_max_x = max(ink_max_x, x)
-                        if y <= HIGH_COUPLE_EXIT_Y:
-                            ink_max_x_low = max(ink_max_x_low, x)
                         if slot.joins and JOIN_BAND_Y[0] <= y <= JOIN_BAND_Y[1]:
                             bi = _band_bin(y)
                             ink_profile[bi] = max(ink_profile[bi], x + profile_pad)
-                            if bi == FUSE_CLEAR_BINS - 1:
-                                ink_min_x_top = min(ink_min_x_top, x - profile_pad)
+                            ink_min_profile[bi] = min(ink_min_profile[bi], x - profile_pad)
         if not math.isfinite(ink_min_x):
             ink_min_x = ink_max_x = entry_xy[0]
-        if not math.isfinite(ink_max_x_low):
-            ink_max_x_low = ink_max_x
 
         # Place this glyph so its entry meets the previous glyph's exit + a
         # small gap AND its body ink clears the previous glyph's body ink by
@@ -1351,31 +1360,41 @@ def compose_word(
         elif joined:
             tuck = TUCK_RATE * max(0.0, prev["exit"][1] - TUCK_Y0)
             forward = _unit(prev["tangent_deg"])[0] > 0.0
-            clearance = INK_CLEARANCE if forward else BACKWARD_INK_CLEARANCE
-            # Covering-arm exemption (the connector's arm class, r/p): the
-            # plates tuck the next letter UNDER the Deckstrich arm — kern
-            # against the below-arm ink only, and let a height-aware floor
-            # keep a tall neighbour (rb) clear of the arm knob itself.
+            if forward:
+                # Height-aware kerning (jul30 stretch round, stage 1): clearance
+                # judged per y-bin between A's rightmost and B's leftmost band
+                # ink — ink at DIFFERENT heights may overlap columns like on
+                # the plates. Subsumes the covering-arm exemption (r, p),
+                # whose below-arm edge + top-bin knob guard were this same
+                # computation at two fixed heights.
+                desired_entry_x = max(
+                    prev["exit"][0] + CONNECT_GAP - tuck,
+                    _profile_clearance_x(prev["ink_profile"], ink_min_profile, entry_xy[0], INK_CLEARANCE),
+                )
+            else:
+                # Backward exits (w/v bow) keep the scalar full-column
+                # clearance: the join must travel over the whole bow before it
+                # can fall into the next entry (calibrated jul-11; the jul30
+                # gap measurement still has w→e WIDER on the plate, so the
+                # bins must not tighten it).
+                desired_entry_x = max(
+                    prev["exit"][0] + CONNECT_GAP - tuck,
+                    prev["ink_max_x"] + BACKWARD_INK_CLEARANCE - (ink_min_x - entry_xy[0]),
+                )
             arm_exempt = (
                 forward and BOW_EXIT_Y < prev["exit"][1] <= HIGH_EXIT_Y and prev["tangent_deg"] < ARM_TAN_MAX_DEG
             )
-            edge = prev["ink_max_x_low"] if arm_exempt else prev["ink_max_x"]
-            desired_entry_x = max(prev["exit"][0] + CONNECT_GAP - tuck, edge + clearance - (ink_min_x - entry_xy[0]))
-            if arm_exempt:
-                a_top = prev["ink_profile"][FUSE_CLEAR_BINS - 1]
-                if math.isfinite(a_top) and math.isfinite(ink_min_x_top):
-                    desired_entry_x = max(desired_entry_x, a_top + ALIGN_MIN_CLEARANCE - (ink_min_x_top - entry_xy[0]))
+            if arm_exempt and _key_base(slot.key, slot.position) in ARM_FUSE_BASES:
                 # Arm fusion (see ARM_FUSE_GAP): the next letter is pulled in
                 # until its lead-in crest sits right at the bow's end — the
                 # covering join degenerates to the short roll of the jul30
-                # mockups (re AND rr). Deliberately below the knob guard:
+                # mockups (re AND rr). Deliberately below any clearance:
                 # the joining strokes are meant to touch. Ascender lead-ins
                 # (apex above ARM_FUSE_MAX_APEX_Y) keep the generic couple.
-                if _key_base(slot.key, slot.position) in ARM_FUSE_BASES:
-                    couple_idx = _entry_apex_index(first_line)
-                    if couple_idx and first_line[couple_idx][1] <= ARM_FUSE_MAX_APEX_Y:
-                        fuse_x = prev["exit"][0] + ARM_FUSE_GAP + entry_xy[0] - first_line[couple_idx][0]
-                        desired_entry_x = min(desired_entry_x, fuse_x)
+                couple_idx = _entry_apex_index(first_line)
+                if couple_idx and first_line[couple_idx][1] <= ARM_FUSE_MAX_APEX_Y:
+                    fuse_x = prev["exit"][0] + ARM_FUSE_GAP + entry_xy[0] - first_line[couple_idx][0]
+                    desired_entry_x = min(desired_entry_x, fuse_x)
             # Sawtooth pass-through: pull the glyph onto the exit's rise line
             # (see ALIGN_*) so the diagonal continues without a shelf.
             entry_land_deg = _endpoint_tangent(first_line, at_end=False)
@@ -1404,7 +1423,7 @@ def compose_word(
             ):
                 mean_slope = ALIGN_SLOPE_RATIO * math.tan(math.radians((prev["tangent_deg"] + entry_land_deg) / 2))
                 align_entry_x = prev["exit"][0] + rise / mean_slope + (entry_xy[0] - first_line[0][0])
-                floor_x = prev["ink_max_x"] + ALIGN_MIN_CLEARANCE - (ink_min_x - entry_xy[0])
+                floor_x = _profile_clearance_x(prev["ink_profile"], ink_min_profile, entry_xy[0], ALIGN_MIN_CLEARANCE)
                 if align_entry_x < desired_entry_x:
                     desired_entry_x = max(align_entry_x, floor_x)
             elif (
@@ -1416,7 +1435,7 @@ def compose_word(
                 # enters BELOW it cannot pass through — on the plate the next
                 # letter nests under the exit ink (t's bar, f's flag) instead
                 # of clearing it, so the ink floor relaxes to the align floor.
-                floor_x = prev["ink_max_x"] + ALIGN_MIN_CLEARANCE - (ink_min_x - entry_xy[0])
+                floor_x = _profile_clearance_x(prev["ink_profile"], ink_min_profile, entry_xy[0], ALIGN_MIN_CLEARANCE)
                 desired_entry_x = max(prev["exit"][0] + CONNECT_GAP - tuck, floor_x)
                 # Straight-fit flank coupling (the "ne" case, see the ALIGN_*
                 # constant block): with the entry FOOT at/below the exit no
@@ -1449,8 +1468,10 @@ def compose_word(
                             desired_entry_x, flank_couple = fuse
                             fused = True
                     if not fused:
-                        floor_couple = prev["ink_max_x"] + ALIGN_MIN_CLEARANCE - max(ink_min_x - entry_xy[0], 0.0)
-                        if floor_couple <= desired_entry_x:
+                        floor_couple = _profile_clearance_x(
+                            prev["ink_profile"], ink_min_profile, entry_xy[0], ALIGN_MIN_CLEARANCE, stub_relaxed=True
+                        )
+                        if math.isfinite(floor_couple) and floor_couple <= desired_entry_x:
                             steepest = _flank_couple_steepest(first_line, floor_couple - entry_xy[0], prev["exit"])
                             if steepest:
                                 desired_entry_x, flank_couple = floor_couple, steepest
@@ -1555,7 +1576,6 @@ def compose_word(
             "tangent_deg": exit_deg,
             "width": med_half,
             "ink_max_x": ink_max_x + dx,
-            "ink_max_x_low": ink_max_x_low + dx,
             "ink_profile": [v + dx if math.isfinite(v) else v for v in ink_profile],
             "key": slot.key,
             "slot_index": slot_index,
