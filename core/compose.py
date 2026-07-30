@@ -1497,7 +1497,10 @@ def compose_word(
                         # crossing is table form — cut it, centerline AND
                         # silhouette; the exit becomes the crossing itself.
                         bar = list(centerlines[last_body_idx])
-                        piece = bar[cut:]
+                        # The crossing lies INSIDE segment cut→cut+1: the
+                        # erased piece starts AT the crossing so the kept
+                        # sub-segment up to it survives the erase.
+                        piece = [list(stem_launch)] + bar[cut + 1 :]
                         centerlines[last_body_idx] = bar[: cut + 1] + [list(stem_launch)]
                         if last_body_idx < len(rings_by_stroke) and rings_by_stroke[last_body_idx]:
                             rings_by_stroke[last_body_idx] = erase_silhouette_piece(
