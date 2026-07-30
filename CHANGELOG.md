@@ -31,7 +31,8 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   half a nib and short junction lobes are pen-authentic — the lower band
   edge scales with the nib, minimum event arc 0.25, parallel threshold 22°)
   the doubling worklist is 3 words / 17 pairs, concentrated in three known
-  classes (capital joins, d into descenders, ſ into hanging bowls). The wordbench fixtures were also
+  classes (capital joins, d into descenders, ſ into hanging bowls). The
+  wordbench fixtures were also
   re-exported after the author completed the letter set — words 58/63
   scorable (only the five ß words remain), pairs 32/33, abb22 106/106; the
   new headlines (words 0.131392, pairs 0.182982) are a documented
