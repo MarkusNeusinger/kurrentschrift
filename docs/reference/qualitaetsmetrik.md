@@ -1041,3 +1041,38 @@ Session-Scratchpad; als Report-Spalten neben Slant/Segment-Attribution
 vorgesehen (headline-neutral, dann bewusster Fold-in). Offene Arbeitsliste
 aus dem Audit: die ſ-Rückkehr läuft in „sch" ~0,3–0,6 u parallel zur
 eigenen Unterschleife (Abstand ~0,12).
+
+### Re-Baseline + Report-Spalten `jul30` — Gleichzug-Audit, Vollauthoring-Fixtures
+
+**Gleichzug-Audit als Report-Spalten** (`tools/wordbench/gleichzug.py`,
+konsumiert von `run.py` wie die Slant-Spalte — nie Teil des Loss): pro
+Eintrag `flow gaps=… dbl=…`, pro Block `gleichzug_gaps`/`_doublings`.
+Definitionen: (a) FLOW GAP — aufeinanderfolgende Pen-down-Items schließen
+Ende-an-Anfang (Toleranz `CONNECT_OVERLAP`+0,02); (b) DOPPELUNG — zwei
+fast-parallele Pfadstücke (<30° mod 180) mit SENKRECHTEM Versatz zwischen
+0,035 und 1,35×Feder über ≥0,05 u Bogenlänge (euklidisch nah; der
+senkrechte Versatz unterscheidet Seit-an-Seit von „auf derselben Linie
+gleitend" = Retrace). Klassifikation über die compose-Provenance: Paare
+innerhalb EINES Slots sind Buchstabenform (nicht gezählt), generierte
+Samples auf eigener Buchstaben-Tinte werden dem Slot zugeschlagen
+(Retrace). Resampling PRO Pen-down-Lauf (Lift-Split — sonst Phantom-
+Brücken). `run.py` komponiert dafür mit `provenance=True` — Headline auf
+den alten jul08-Fixtures byte-identisch verifiziert (0,122287).
+Unit-Tests: `tests/test_wordbench_gleichzug.py` (7 Fälle inkl. Retrace-,
+Kreuzungs- und Letterform-Ausnahme).
+
+**Re-Export nach Vollauthoring** (der Autor hat alle Klein- UND
+Großbuchstaben autorisiert; nur ß/sz fehlt): Wörter 58/63 bewertbar
+(vorher 48 — neu: Wer, Soldaten, Seiten, Säbel, Silber, Sporn, Zaum,
+Zügel, Sprünge, Zorn; offen nur die ß-Wörter muß×3, daß, schießen),
+Paare 32/33 (neu: Wu; offen ßi), abb22 106/106 (vorher 95). **Neue
+Headlines — NICHT mit den jul08-Fixture-Zahlen vergleichbar** (mehr und
+schwerere Wörter, die Kapital-Joins sind die messbar schwächste Klasse):
+
+- Wörter **0,131392** (worst: han 0,286; comp 0,124/0,121/0,168)
+- Paare **0,182982** (worst: bx 0,324)
+- abb22 **0,460933** (Kontext-Set, nie Headline)
+- Gleichzug-Nulllinie: 0 Gaps überall; Doppelungen 110 (Wörter) / 68
+  (Paare) — das ist die Arbeitsliste der kommenden Läufe, nicht Rauschen:
+  dominiert von der ſ-Rückkehr, der d-Kurven-Anschmiegung und den
+  Arm-Fusions-Nähten.

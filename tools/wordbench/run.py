@@ -53,6 +53,7 @@ from PIL import Image, ImageDraw
 from core.compose import _key_base, compose_word
 from core.pipeline import render_payload_for_template
 from core.shaping import GlyphSlot
+from tools.wordbench.gleichzug import audit_composed
 from tools.wordbench.metric import score_word
 from tools.wordbench.slant import composed_raster, slant_deg
 
@@ -133,6 +134,14 @@ def _print_block(reports: list[dict], skipped: list[dict], kind: str) -> None:
             values = [r[slant_key] for r in scored if r.get(slant_key) is not None]
             if values:
                 print(f"{slant_prefix}{slant_key}_median: {float(np.median(values)):.2f}")
+        # Gleichzug audit totals (report-only): flow gaps + doubling events
+        # over all scored entries — the one-flow, one-width invariant.
+        audits = [r["gleichzug"] for r in scored if r.get("gleichzug")]
+        if audits:
+            gaps_total = sum(len(a["gaps"]) for a in audits)
+            dbl_total = sum(len(a["doublings"]) for a in audits)
+            print(f"{slant_prefix}gleichzug_gaps: {gaps_total}")
+            print(f"{slant_prefix}gleichzug_doublings: {dbl_total}")
 
 
 def main() -> None:
@@ -216,9 +225,13 @@ def main() -> None:
             skel = np.load(word_dir / "ref_skel.npz")["skel"]
             slots = [GlyphSlot(**s) for s in word_meta["slots"]]
             try:
+                # provenance=True only tags items with slot/pair attribution
+                # (needed by the Gleichzug audit's letterform classification);
+                # the scoring reads none of those keys — headline unchanged.
                 composed = compose_word(
                     slots,
                     {s.key: payload_for(s.key) for s in slots if s.key},
+                    provenance=True,
                     pair_overrides=_slot_overrides(slots, overrides_by_base) or None,
                 )
                 report = score_word(
@@ -240,6 +253,13 @@ def main() -> None:
             except Exception as exc:  # a crash counts 1.0 — one regressed word always moves the number
                 composed = None
                 report = {"loss": 1.0, "failed": True, "error": f"{type(exc).__name__}: {exc}", "missing": []}
+            # Gleichzug audit — REPORT columns like slant, never the loss, and
+            # under its OWN guard: an audit crash must never move the headline.
+            if composed is not None:
+                try:
+                    report["gleichzug"] = audit_composed(composed)
+                except Exception as exc:
+                    report["gleichzug_error"] = f"{type(exc).__name__}: {exc}"
             report["id"] = entry_id
             report["word"] = entry["word"]
             report["kind"] = kind
@@ -258,10 +278,14 @@ def main() -> None:
             spec = r.get("slant_spec")
             comp = r.get("slant_comp")
             slant = f"  slant {spec:.1f}/{comp:.1f}" if spec is not None and comp is not None else ""
+            # Stable report column: printed on every scored entry, zeros
+            # included — parsers must not have to infer a missing column.
+            audit = r.get("gleichzug")
+            flow = f"  flow gaps={len(audit['gaps'])} dbl={len(audit['doublings'])}" if audit else ""
             print(
                 f"word {r['id']:<15} loss {r['loss']:.6f}  "
                 f"trans {r['transition']:.3f} cover {r['coverage']:.3f} width {r['width']:.3f}  "
-                f"(tx={reg['tx']:.0f}, ty={reg['ty']:.0f}){slant}"
+                f"(tx={reg['tx']:.0f}, ty={reg['ty']:.0f}){slant}{flow}"
             )
 
     result: dict = {"style": args.style, "set": args.which}
