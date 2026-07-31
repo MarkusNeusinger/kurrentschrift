@@ -68,7 +68,17 @@ def _reject_key_identity_mismatch(glyph_key: str, glyph: str) -> None:
 
 
 async def _upsert_hand(db: AsyncSession, hand: HandIn, style_id: str) -> str:
-    row = await HandRepository(db).upsert(hand.id, style_id=style_id, label=hand.label, era=hand.era, note=hand.note)
+    repo = HandRepository(db)
+    existing = await repo.get(hand.id)
+    if existing is not None and existing.style_id not in (None, style_id):
+        # A hand is registered under the style it was observed writing — a
+        # reused id across styles would silently reassign the hand and detach
+        # its existing occurrences' semantics.
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail=f"hand {hand.id!r} belongs to style {existing.style_id!r}, not {style_id!r}",
+        )
+    row = await repo.upsert(hand.id, style_id=style_id, label=hand.label, era=hand.era, note=hand.note)
     return row.id
 
 

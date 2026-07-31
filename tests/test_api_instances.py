@@ -123,6 +123,22 @@ async def test_put_instances_gate_and_validation(api: Harness):
     assert res.status == 200 and res.json() == {"deleted": 0}
 
 
+async def test_hand_id_reuse_across_styles_conflicts(api: Harness):
+    """A hand belongs to ONE style — writing the same hand id under a source
+    of another style must 409 instead of silently reassigning the hand."""
+    _, source_a = await api.seed_style_and_source()
+    _, source_b = await api.seed_style_and_source()  # fresh style + source
+    res = await api.client.request(
+        "PUT", f"/sources/{source_a}/instances", json_body=_batch([_instance_item()]), headers=api.admin_headers()
+    )
+    assert res.status == 200
+    res = await api.client.request(
+        "PUT", f"/sources/{source_b}/instances", json_body=_batch([_instance_item()]), headers=api.admin_headers()
+    )
+    assert res.status == 409
+    assert "belongs to style" in res.json()["detail"]
+
+
 # -------------------------------------------------------------- pair instances
 
 
