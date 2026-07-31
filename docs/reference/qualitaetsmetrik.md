@@ -1211,3 +1211,39 @@ Audit unverändert 1/9, Rhythmus-Streuung der Lücken 0,197 → 0,186,
 Breiten-Ratio 0,966. Ein l-Sweep (1,05/1,07/1,09) war flach (Δ0,0005) —
 der gemessene Median 1,09 bleibt: Konstanten kommen von der Platte, die
 Bench ist Wächter, nicht Ziel. Golden bewusst re-gepinnt.
+
+### Kapital-Runde `jul31` — Arbeits-Exit statt Zierbogen (User-Fund S→o)
+
+**Auslöser:** Der User sah in der Runde-4-Galerie, dass Soldaten S→o
+falsch koppelt — die Platte führt KEINE Linie oben weiter, sondern setzt
+an der Grundlinie neu an. Messagent über ALLE 22 gebundenen
+Kapital→Klein-Vorkommen (17 Wörter + Paare Bi/Du/In/Of/Wu): nirgends
+eine hohe Decklinie; der Join ist die normale Kleinbuchstaben-Grammatik
+ab dem **Arbeits-Exit** des Kapitals. Vier Exit-Klassen: Zierbogen
+(S 1,76→0,30 · O 1,98→0,48), Tief-Ender (K/P/B → 0,0–0,2),
+Unterschleife (G/Z — die Rückkehr IST der Join, das ſ-Gabel-Muster,
+schon richtig), Mittel-Ender (E/F/W/I/D behalten ihren echten Exit).
+Empfangsseite invariant: Rundkörper auf der Flanke 0,48–0,69 (Median
+0,60, Anstrich intakt) — die 0,78-Top-Kopplung ist nach Kapitalen in
+JEDEM Fall widerlegt. Null Parallelspuren auf der Platte: die
+S→o-Audit-Doppelung war reines Composer-Artefakt.
+
+**Änderung:** `CAP_RESTART_BASES` {S, O, B, K, P} — Abgang am letzten
+tiefen Durchlauf (Rückwärtslauf über den finalen Aufschwung zum lokalen
+Minimum ≤ `CAP_EXIT_MAX_Y` 0,55); der Zierbogen bleibt voll gezeichnet
+und wird über die eigene Tinte RETRACED (Konnektor-Präfix, audit-
+transparent — ſ-Präzedenz). `HIGH_COUPLE` nach Kapital-A-Seite
+unterdrückt; Kapital-Joins girlanden nie (steigen monoton — der Dip lief
+parallel über den Schüsselboden, die neuen Audit-Events des ersten
+Wurfs) und bekommen die breitere Platten-Clearance
+(`CAP_INK_CLEARANCE` 0,30; Sweep 0,22/0,30/0,38 — 0,22 ließ 8
+Doppelungen, 0,38 kostete Bench).
+
+Ergebnis: **Wörter 0,121625 → 0,120793, Paare 0,169987 → 0,165297**
+(In/Of), **Gleichzug Wörter 0/0 — erstmals ganz leer**; Paare-Rest 6
+(d→Unterlängen df/dp/dx + Wu). Seiten 0,101→0,068, Silber 0,120→0,098,
+Säbel 0,165→0,115; Soldaten 0,232 (Wortende überläuft DIESES kompakte
+Specimen — Median-Varianz wie „will", das Schriftbild stimmt jetzt).
+Bekannt offen: In (I→n) — unser I-Template endet bei 0,41, die Platte
+zieht den Schweif bis 0,83 weiter (Authoring-Frage, kein Composer-Fix).
+Golden bewusst re-gepinnt.

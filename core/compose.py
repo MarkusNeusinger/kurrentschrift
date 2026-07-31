@@ -441,6 +441,31 @@ BAR_EXIT_BASES = frozenset({"t", "f"})
 BAR_CROSS_MIN_Y = 0.2  # a plausible bar/flag crossing sits mid-band
 BAR_CROSS_MAX_Y = 0.7
 BAR_RISE_SLOPE = 0.55
+# Capital handover (jul31 — user find on Soldaten S→o, then measured on all
+# 22 joined capital→lowercase plate occurrences): NO high covering line
+# exists after any capital. The join is the ordinary lowercase grammar
+# computed from the capital's WORKING exit — for the crest/ornament and
+# low-ending capitals that is the last body pass at/below CAP_EXIT_MAX_Y
+# (S 1.76→0.30, O 1.98→0.48, B 1.0→0.15), NOT the ductus end: the crest
+# stays fully drawn and the pen retraces its own ink to the departure
+# (audit-transparent — the ſ precedent). Descender-loop capitals (G, Z)
+# already take the fork join; mid enders (E, F, W, I, D) keep their true
+# arm/bow exit. Round bodies after a capital are met on their rising
+# flank (plate arrivals 0.48–0.69, lead-in intact) — HIGH_COUPLE's top
+# entry is contradicted in every capital case, so it is suppressed for a
+# capital A-side and the garland/align grammar takes over.
+CAP_RESTART_BASES = frozenset({"S", "O", "B", "K", "P"})
+CAP_EXIT_MAX_Y = 0.55
+# RESTART-class joins (S/O/B/K/P only) rise monotonically on the plates
+# (min join y ≥ departure −0.07) — a garland dip would run parallel over
+# the capital's own bowl bottom (the audit doubling of the first draft) —
+# and get visibly more room (their band-ink gaps run 0.45–0.85). The
+# MID-ENDING capitals (E/F/W/I/D) and the descender-loop ones (G/Z)
+# deliberately keep the lowercase clearance and grammar: their measured
+# plate gaps are tight (E→i 0.24, F→e −0.01, W→e 0.01, G/Z 0.24–0.41),
+# so the wider room and the garland ban are properties of the restart
+# class, not of capitals as such.
+CAP_INK_CLEARANCE = 0.30
 # Travel direction measured over a short ARC-LENGTH window rather than the
 # single final segment — the glyph centerline is a smooth spline through the
 # anchors, so its true endpoint tangent rarely matches the stored single-chord
@@ -1026,6 +1051,7 @@ def _connector_centerline(
     fuse_base: bool = False,
     fork_line: list[Point] | None = None,
     stem_launch: Point | None = None,
+    cap_restart: bool = False,
 ) -> tuple[list[Point], int]:
     """Centerline of the Übergang from A's exit into B's entry + the entry trim.
 
@@ -1235,8 +1261,11 @@ def _connector_centerline(
                 p0 = roll_end
     # An ARCADE entry that must LOSE height writes as a baseline
     # garland (the school hand's rounded turn); a round body couples
-    # high instead and everything else stays the taut cubic.
-    centerline = None if high_couple else _garland_centerline(p0, d_out, p3, d_in)
+    # high instead and everything else stays the taut cubic. A capital
+    # restart never garlands: its join rises monotonically on the plates
+    # (see CAP_INK_CLEARANCE) — a dip would run parallel over the
+    # capital's own bowl bottom.
+    centerline = None if high_couple or cap_restart else _garland_centerline(p0, d_out, p3, d_in)
     if centerline is None:
         span = math.hypot(p3[0] - p0[0], p3[1] - p0[1])
         if high_couple and p3[1] < p0[1] and span > 0:
@@ -1543,6 +1572,33 @@ def compose_word(
                         exit_xy = body_exit_line[-1]
                         exit_deg = _endpoint_tangent(body_exit_line, at_end=True)
 
+        # Capital working exit (see CAP_RESTART_BASES): the join departs at
+        # the last low pass of the body stroke — walk back over the final
+        # ascent/ornament to the local minimum at/below CAP_EXIT_MAX_Y. The
+        # ornament stays fully drawn; the pen RETRACES its own ink from the
+        # ductus end to the departure (the connector is prefixed with that
+        # piece, so the flow stays continuous and the audit sees a retrace).
+        cap_retrace: list[Point] | None = None
+        if slot.joins and _key_base(slot.key, slot.position) in CAP_RESTART_BASES and len(body_exit_line) >= 3:
+            nxt = slots[slot_index + 1] if slot_index + 1 < len(slots) else None
+            bound_next = (
+                nxt is not None
+                and not nxt.space
+                and bool(nxt.joins)
+                and bool(nxt.key)
+                and bool((data_by_key.get(nxt.key) or {}).get("centerlines_template"))
+            )
+            if bound_next:
+                i = len(body_exit_line) - 1
+                while i > 0 and body_exit_line[i][1] > CAP_EXIT_MAX_Y:
+                    i -= 1
+                while i > 0 and body_exit_line[i - 1][1] <= body_exit_line[i][1]:
+                    i -= 1
+                if 0 < i < len(body_exit_line) - 1 and body_exit_line[-1][1] - body_exit_line[i][1] > 0.15:
+                    cap_retrace = [tuple(p) for p in body_exit_line[i:]][::-1]
+                    exit_xy = body_exit_line[i]
+                    exit_deg = _endpoint_tangent(cap_retrace, at_end=True)
+
         # Horizontal body-INK extent in the glyph's own frame (rings where
         # available — the silhouette edge — else centerlines), measured ONLY
         # inside the JOIN BAND around the x-height (kerning, not bounding
@@ -1613,10 +1669,12 @@ def compose_word(
                 # ink — ink at DIFFERENT heights may overlap columns like on
                 # the plates. Subsumes the covering-arm exemption (r, p),
                 # whose below-arm edge + top-bin knob guard were this same
-                # computation at two fixed heights.
+                # computation at two fixed heights. A capital restart gets
+                # the plates' wider room (see CAP_INK_CLEARANCE).
+                clearance = CAP_INK_CLEARANCE if prev.get("cap_retrace") else INK_CLEARANCE
                 desired_entry_x = max(
                     prev["exit"][0] + CONNECT_GAP - tuck,
-                    _profile_clearance_x(prev["ink_profile"], ink_min_profile, entry_xy[0], INK_CLEARANCE),
+                    _profile_clearance_x(prev["ink_profile"], ink_min_profile, entry_xy[0], clearance),
                 )
             else:
                 # Backward exits (w/v bow) keep the scalar full-column
@@ -1797,7 +1855,10 @@ def compose_word(
             items.append(connector)
             track(centerline)
         elif joined:
-            high_couple = _key_base(slot.key, slot.position) in HIGH_COUPLE_BASES
+            # HIGH_COUPLE is a lowercase-exit rule: after a CAPITAL the
+            # plates never enter a round body at its top (see
+            # CAP_RESTART_BASES) — the garland/align grammar runs instead.
+            high_couple = _key_base(slot.key, slot.position) in HIGH_COUPLE_BASES and not prev["base"][:1].isupper()
             centerline, entry_trim = _connector_centerline(
                 prev["exit"],
                 prev["tangent_deg"],
@@ -1810,7 +1871,13 @@ def compose_word(
                 fuse_base=_key_base(slot.key, slot.position) in ARM_FUSE_BASES,
                 fork_line=prev.get("exit_line"),
                 stem_launch=prev.get("stem_launch"),
+                cap_restart=bool(prev.get("cap_retrace")),
             )
+            if prev.get("cap_retrace"):
+                # The retrace ends AT the departure the connector starts
+                # from — drop the duplicate so the seam has no zero-length
+                # segment.
+                centerline = prev["cap_retrace"][:-1] + centerline
             centerline = _overlap_extend(centerline)
             connector = {"centerline": [list(p) for p in centerline], "lift": False}
             _apply_pen(connector, centerline, 2 * min(prev["width"], med_half), pen)
@@ -1875,6 +1942,9 @@ def compose_word(
             "exit_line": ([(x + dx, y) for x, y in body_exit_line] if exit_xy[1] < DESCENDER_EXIT_Y else None),
             # Bar-exit launch anchor (t/f, see BAR_EXIT_*), word coordinates.
             "stem_launch": (stem_launch[0] + dx, stem_launch[1]) if stem_launch else None,
+            # Capital ornament retrace (see CAP_RESTART_BASES), word coords —
+            # prefixed onto the connector so the pen path stays continuous.
+            "cap_retrace": [(x + dx, y) for x, y in cap_retrace] if cap_retrace else None,
             "ink_profile": [v + dx if math.isfinite(v) else v for v in ink_profile],
             "key": slot.key,
             "slot_index": slot_index,
