@@ -258,3 +258,6 @@ __marimo__/
 /.design-sync/.cache/
 /.design-sync/learnings/
 /.design-sync/node_modules
+# Real authored diagnostic payloads (the learned dataset's raw form) — local
+# only, regenerate from the local API (open-core moat, quellen-und-rechte.md §5).
+/.design-sync/previews/_writtenGlyphData.ts

@@ -151,10 +151,17 @@ async def list_templates(source: Source = Depends(require_source), db: AsyncSess
     return [TemplateSummary(**row, has_data=True) for row in rows]
 
 
-@router.get("/{glyph_key}", response_model=TemplateOut)
+@router.get("/{glyph_key}", response_model=TemplateOut, dependencies=[Depends(require_admin)])
 async def get_template(
     glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
 ):
+    """The FULL authored template — anchors, half_widths, raw stylus path.
+
+    Admin-gated as the open-core moat (quellen-und-rechte.md): this is the
+    learned dataset's raw form, and no public surface needs it — the public
+    pages render from the /write payloads, and the summary list above carries
+    no geometry. Before this gate, ~80 requests could exfiltrate the whole
+    authored library losslessly."""
     template = await TemplateRepository(db).get(source.style_id, glyph_key)
     if template is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no canonical for {glyph_key!r}")

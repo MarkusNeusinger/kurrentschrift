@@ -196,7 +196,7 @@ async def test_trace_happy_path_persists_template(api: Harness, synthetic_chart_
     assert len(out["half_widths"]) == len(out["anchors"])
     assert out["advance"] > 0
 
-    res = await api.client.request("GET", f"/sources/{source_id}/templates/n")
+    res = await api.client.request("GET", f"/sources/{source_id}/templates/n", headers=api.admin_headers())
     assert res.status == 200
     assert res.json()["glyph_key"] == "n"
 
@@ -304,7 +304,7 @@ async def test_trace_stored_row_identity_mismatch_409(api: Harness):
     )
     assert res.status == 409
     assert "already names" in res.json()["detail"]
-    res = await api.client.request("GET", f"/sources/{source_id}/templates/clover")
+    res = await api.client.request("GET", f"/sources/{source_id}/templates/clover", headers=api.admin_headers())
     assert res.json()["glyph"] == "☘"
 
 
@@ -316,7 +316,7 @@ async def test_delete_template_removes_row(api: Harness):
     await api.seed_template(style_id, source_id, "n", "n")
     res = await api.client.request("DELETE", f"/sources/{source_id}/templates/n", headers=api.admin_headers())
     assert res.status == 204
-    res = await api.client.request("GET", f"/sources/{source_id}/templates/n")
+    res = await api.client.request("GET", f"/sources/{source_id}/templates/n", headers=api.admin_headers())
     assert res.status == 404
 
 

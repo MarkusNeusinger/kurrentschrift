@@ -45,6 +45,9 @@ WRITE_ENDPOINTS = [
     ("GET", "/sources/{src}/templates/a/fit", None),
     ("GET", "/sources/{src}/templates/a/quality", None),
     ("GET", "/sources/{src}/templates/a/diagnostic", None),
+    # The raw authored template (anchors + stylus path) is the open-core
+    # moat — gated like the writes even though it is a read.
+    ("GET", "/sources/{src}/templates/a", None),
 ]
 
 

@@ -542,6 +542,14 @@ Hard rules:
   order: own hand → explicit PD/CC0 → own photo of a PD original.
 - "Script-downloaded" ≠ "license-free." The license of the bytes follows
   the bytes, not the fetch mechanism.
+- **The LEARNED dataset stays out of the repo (open-core moat).** The
+  authored ductus templates, Laufformen and occurrence statistics — the DB
+  contents — are reserved outside the MIT grant (README "License").
+  Technically enforced: bench fixtures stay gitignored, harvest artefacts
+  are never committed, the raw single-template API GET is admin-gated; the
+  public `/write` payloads are deliberate product surface under the README
+  reservation + crawler policy. A public dataset only ever happens as a
+  deliberate goal-7 release. See quellen-und-rechte.md §5.
 - Variant 0 (`v0-loth-1866`) is the canonical geometry baseline for first
   tests. The ductus prior is *the author's own contribution layered over*
   this PD geometry — Loth supplies shapes, not stroke order.

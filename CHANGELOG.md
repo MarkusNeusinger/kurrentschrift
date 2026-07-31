@@ -12,7 +12,22 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
-### Added
+### Changed
+
+- **Open-core moat hardened: the learned dataset is no longer publicly
+  exfiltrable.** The README has always reserved the authored data (ductus
+  templates, running forms, statistics) outside the MIT grant; now the
+  technical side matches: `GET /sources/{id}/templates/{glyph_key}` — the
+  full authored row incl. the raw stylus path, used by no public surface —
+  is admin-gated (the public list keeps serving geometry-free summaries),
+  the design-sync preview data file that embedded real diagnostic payloads
+  is untracked (local-only, regenerate against the local API), and
+  `quellen-und-rechte.md` §5 documents the whole enforcement picture: bench
+  fixtures stay gitignored, `/write` payloads remain deliberate product
+  surface under the README reservation + crawler policy, the compose-golden
+  parity fixture (11 rendered words, no templates) is the accepted known
+  exception with a follow-up to regenerate it from synthetic templates, and
+  a public dataset only ever ships as a deliberate goal-7 release.
 
 - **Occurrence persistence: every clean specimen fit becomes a database row
   (hand-model plan H1/H2).** Per the decision to store occurrences, not just
