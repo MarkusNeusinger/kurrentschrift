@@ -77,6 +77,10 @@ export interface WordSampleOut {
   height: number;
   baseline_y: number;
   midband_y: number;
+  // The sample's rect on the plate page, [x0, y0, x1, y1] in PAGE pixels —
+  // the origin that turns a page-pixel occurrence box (InstanceOut) into a
+  // crop-local one: cropX = x0 - rect[0], cropY = y0 - rect[1].
+  rect: number[];
 }
 
 // Fit context of one stored word trace (see tools/laufform/harvest.py). Every
@@ -105,6 +109,98 @@ export interface WordInstanceOut {
   provenance: 'traced' | 'authored';
   hand_id: string | null;
   measurements: WordInstanceMeasurements;
+}
+
+// Fit context of ONE stored letter occurrence (tools/laufform/harvest.py).
+// `specimen_id` + `slot` tie the row back to its word sample and the slot
+// index inside it; `geo_rmse_px` is that fit's residual — the Werkbank's
+// worst-first ranking per letter.
+export interface InstanceMeasurements {
+  specimen_id?: string;
+  slot?: number;
+  prev_key?: string | null;
+  next_key?: string | null;
+  shift_xh?: [number, number];
+  registration_px?: [number, number];
+  geo_rmse_px?: number;
+  xh_px?: number;
+}
+
+// One stored letter occurrence (handmodell H1). Mirrors InstanceOut in
+// api/schemas.py. The box (y0/y1/x0/x1) is in PAGE pixels of the specimen
+// plate — subtract the word sample's `rect` origin for crop-local coords.
+export interface InstanceOut {
+  glyph_key: string;
+  glyph: string;
+  position: string;
+  variant: number;
+  hand_id: string | null;
+  y0: number;
+  y1: number;
+  x0: number;
+  x1: number;
+  anchors: Array<[number, number]>;
+  half_widths: number[];
+  measurements: InstanceMeasurements;
+}
+
+// Dissection QC of one observed join (tools/pairlab/harvest.py): `gen_chamfer`
+// is how far the GENERATED Übergang sits from the specimen ink (xh units,
+// lower better), `fit_ok` whether both letters fitted cleanly enough for the
+// dissection to be trusted.
+export interface PairInstanceMeasurements {
+  fit_ok?: boolean;
+  gen_chamfer?: number;
+  harvest_chamfer?: number;
+  a_resid?: number;
+  b_resid?: number;
+}
+
+// One stored join occurrence (handmodell H2). Mirrors PairInstanceOut in
+// api/schemas.py — `geometry` shares the glyph_pairs frame (connector +
+// placement offset relative to the left glyph's exit), so an occurrence
+// compares directly with the override the pair editor writes.
+export interface PairInstanceOut {
+  left_key: string;
+  right_key: string;
+  kind: 'word' | 'pair';
+  specimen_id: string;
+  slot: number;
+  hand_id: string | null;
+  geometry: PairGeometry;
+  measurements: PairInstanceMeasurements;
+}
+
+// One filed Auftragskorb task (Werkbank W1). Mirrors WorkItemIn/WorkItemOut in
+// api/schemas.py: `kind` decides which target fields are required ('letter' →
+// glyph_key, 'pair' → left_key + right_key, 'word' → word or specimen_id), and
+// specimen_kind/specimen_id must be sent TOGETHER or not at all (422 otherwise
+// — an id without its namespace may point at nothing). Fully admin-gated.
+export interface WorkItemIn {
+  kind: 'letter' | 'pair' | 'word';
+  glyph_key?: string | null;
+  left_key?: string | null;
+  right_key?: string | null;
+  word?: string | null;
+  specimen_kind?: 'word' | 'pair' | null;
+  specimen_id?: string | null;
+  note?: string;
+}
+
+export interface WorkItemOut {
+  id: number;
+  kind: 'letter' | 'pair' | 'word';
+  glyph_key: string | null;
+  left_key: string | null;
+  right_key: string | null;
+  word: string | null;
+  specimen_kind: string | null;
+  specimen_id: string | null;
+  note: string;
+  status: 'open' | 'done';
+  resolution: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 // Per-segment attribution row of a scored specimen (redesign R1b Stufe 2) —

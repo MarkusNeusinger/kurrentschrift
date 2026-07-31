@@ -15,6 +15,8 @@ import type {
   FitData,
   GlyphOut,
   GlyphSummary,
+  InstanceOut,
+  PairInstanceOut,
   QualityComparison,
   QuizWordOut,
   SourceOut,
@@ -26,6 +28,8 @@ import type {
   WordInstanceOut,
   WordSampleOut,
   WordSampleScoreOut,
+  WorkItemIn,
+  WorkItemOut,
   WriteGlyphsOut,
 } from '@/lib/api/types';
 
@@ -119,6 +123,59 @@ export const listWordInstances = (
   const s = qs.toString();
   return apiFetch(src(sourceId, `/word-instances${s ? `?${s}` : ''}`), {}, retry).then(asJson<WordInstanceOut[]>);
 };
+
+// The stored LETTER occurrences of a source (handmodell H1). Public GET; the
+// boxes are page pixels of the specimen plate, so a crop-local box needs the
+// word sample's `rect` origin. The Werkbank loads the whole source once (a few
+// hundred rows) and groups client-side; `glyphKey` narrows to one letter.
+export const listInstances = (
+  sourceId: string,
+  opts?: { glyphKey?: string },
+  retry?: RetryOptions,
+): Promise<InstanceOut[]> => {
+  const qs = opts?.glyphKey ? `?glyph_key=${encodeURIComponent(opts.glyphKey)}` : '';
+  return apiFetch(src(sourceId, `/instances${qs}`), {}, retry).then(asJson<InstanceOut[]>);
+};
+
+// The stored JOIN occurrences of a source (handmodell H2). Public GET, same
+// load-once-and-group pattern as listInstances; `leftKey`/`rightKey` narrow to
+// one pair.
+export const listPairInstances = (
+  sourceId: string,
+  opts?: { leftKey?: string; rightKey?: string },
+  retry?: RetryOptions,
+): Promise<PairInstanceOut[]> => {
+  const qs = new URLSearchParams();
+  if (opts?.leftKey) qs.set('left_key', opts.leftKey);
+  if (opts?.rightKey) qs.set('right_key', opts.rightKey);
+  const s = qs.toString();
+  return apiFetch(src(sourceId, `/pair-instances${s ? `?${s}` : ''}`), {}, retry).then(asJson<PairInstanceOut[]>);
+};
+
+// The Auftragskorb (Werkbank W1) — FULLY admin-gated, reads included: these
+// are internal work notes, not measurement. `status` splits the round's queue
+// ('open') from the archive ('done'); without it both come back, oldest first.
+export const listWorkItems = (
+  sourceId: string,
+  opts?: { status?: 'open' | 'done' },
+  retry?: RetryOptions,
+): Promise<WorkItemOut[]> => {
+  const qs = opts?.status ? `?status=${opts.status}` : '';
+  return apiFetch(src(sourceId, `/work-items${qs}`), {}, retry).then(asJson<WorkItemOut[]>);
+};
+
+export const createWorkItem = (sourceId: string, body: WorkItemIn): Promise<WorkItemOut> =>
+  apiFetch(src(sourceId, '/work-items'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }).then(asJson<WorkItemOut>);
+
+// Drops a misfiling. A WORKED item is closed with status 'done' + a resolution
+// note instead (the archive stays readable) — that PATCH is the session's job,
+// not the UI's, so it has no wrapper here.
+export const deleteWorkItem = (sourceId: string, itemId: number): Promise<void> =>
+  apiFetch(src(sourceId, `/work-items/${itemId}`), { method: 'DELETE' }).then(asJson<void>);
 
 // Admin-only: the frozen wordbench ruler on one specimen vs the CURRENT
 // composition (redesign R1b Stufe 2). CPU-bound server-side — callers fetch

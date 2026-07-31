@@ -96,6 +96,12 @@ class WordSampleOut(BaseModel):
     height: int
     baseline_y: int
     midband_y: int
+    # The sample's rect on the plate page, `[x0, y0, x1, y1]` in PAGE pixels.
+    # Occurrence rows (`instances`) store their boxes in page pixels too, so a
+    # client needs this origin to place a letter box inside the crop
+    # (crop-local = page − rect[:2]). Public like the rest: this is PD-plate
+    # measurement metadata from the committed sidecar, not learned data.
+    rect: list[int] = Field(default_factory=list, min_length=4, max_length=4)
 
 
 # ------------------------------------------------------------------ Glyph pair

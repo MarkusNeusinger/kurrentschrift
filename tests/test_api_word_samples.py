@@ -62,6 +62,9 @@ async def test_list_word_samples(api, tmp_path):
     assert (first["width"], first["height"]) == (80, 80)
     # Lineature is crop-local: page 70/40 minus y0=10.
     assert (first["baseline_y"], first["midband_y"]) == (60, 30)
+    # The page rect stays in PAGE pixels — it is the origin a client subtracts
+    # to place a page-pixel occurrence box inside this crop (Werkbank).
+    assert first["rect"] == [40, 10, 120, 90]
     assert rows[1]["kind"] == "pair"
     assert rows[2]["sample_set"] == "abb22"
     # A whitespace-only set tag normalizes to null — it must not classify the

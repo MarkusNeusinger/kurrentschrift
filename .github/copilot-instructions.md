@@ -203,7 +203,9 @@ kurrentschrift/
 │                     #   write (public batched render payloads + /word server-side composition,
 │                     #   cached, no chart I/O; module-level compose_word_payload is the ONE
 │                     #   shared shape+compose path), word_samples (public reads over the committed
-│                     #   words.json sidecar: /word-samples metadata + /crop PNG with excludes
+│                     #   words.json sidecar: /word-samples metadata incl. the sample's page
+│                     #   `rect` (page px — the origin that puts a page-pixel occurrence box
+│                     #   inside a crop) + /crop PNG with excludes
 │                     #   painted white — public like the bbox crops, <img> can't send the
 │                     #   admin header; plus the admin-gated uncached /word-samples/{id}/score —
 │                     #   R1b Stufe 2: the frozen core/word_metric.py ruler on the same
@@ -223,7 +225,8 @@ kurrentschrift/
 │       │                #   hub/ (/lesen + /schreiben area hubs), worksheet/,
 │       │                #   scribe/ (/federprobe live writer), tafel/ (/tafel Schreibtafel),
 │       │                #   quiz/ (useQuizEngine), impressum/,
-│       │                #   admin/{chart,setup-wizard,diagnostics,sidebar,compare,pairs}
+│       │                #   admin/{chart,setup-wizard,diagnostics,sidebar,compare,pairs,
+│       │                #   belege,werkbank}
 │       │                #   (compare/CompareTabs.tsx = /admin/vergleich tabs: Buchstaben
 │       │                #   (GlyphComparison — every authored letter, crop vs. "as written",
 │       │                #   side-by-side or overlaid) + Wörter/Verbindungen/Andere Hand
@@ -241,7 +244,17 @@ kurrentschrift/
 │       │                #   belege/BelegeView.tsx = /admin/belege: every stored word-
 │       │                #   occurrence trace over its specimen crop (GET /word-instances +
 │       │                #   word-samples crop), worst-first — the error-finding surface
-│       │                #   over the occurrence layer, entry point for the word editor)
+│       │                #   over the occurrence layer, entry point for the word editor;
+│       │                #   werkbank/WerkbankView.tsx = /admin/werkbank (Werkbank W2,
+│       │                #   optimierungs-werkbank.md §2): the word spine (Belege cards +
+│       │                #   dashed letter boxes from `instances`, join dots between
+│       │                #   adjacent boxes) left, a switching context lens right — letter
+│       │                #   lens (chart form + all occurrences as crop cut-outs, wizard
+│       │                #   jump) / pair lens (pair_instances + pair-editor jump) — plus
+│       │                #   the Auftragskorb over work_items; the ⚑ dialog asks the §4
+│       │                #   pre-sort question for letters (solo-wrong → wizard, files
+│       │                #   nothing). Needs WordSampleOut.rect (page px) to place the
+│       │                #   page-pixel occurrence boxes inside a crop)
 │       ├── components/  # reusable UI: PaperBackground, PublicHeader (3-area nav), PublicFooter,
 │       │                #   PageContainer (one column: narrow 760/text 1152/wide 1280), Prose (~66ch
 │       │                #   reading measure), PageHeader (shared page-header: area eyebrow + Playfair

@@ -215,6 +215,25 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The Optimierungs-Werkbank page (`/admin/werkbank`, stage W2): word spine,
+  switching context lens, Auftragskorb.** One admin surface where the three
+  occurrence layers finally meet, per the doctrine in
+  `docs/proposals/optimierungs-werkbank.md` §2. The left column is the word
+  spine — every stored trace over its specimen crop, worst first — now with an
+  interactive overlay: a dashed box per fitted letter and a dot on every join
+  between two adjacent letters. Clicking one switches the right column's lens:
+  a LETTER shows its chart form plus every stored occurrence as a cut-out
+  thumbnail (worst residual first, click to jump back into that word) and
+  offers the wizard jump; a JOIN lists its dissected occurrences with the
+  generated connector's distance from the plate ink and opens the pair editor
+  for exactly that pair. ⚑ (or shift-click) files the element into the
+  Auftragskorb — the `work_items` backend from W1 — where a letter first has to
+  pass the one pre-sort question §4 puts on the human ("does it look wrong on
+  its own too?"): yes routes to the wizard and files nothing, no files the
+  complaint. `WordSampleOut` gained the specimen's page `rect` so page-pixel
+  occurrence boxes can be placed inside a crop; the existing pages
+  (Vergleich · Paare · Belege) stay untouched until the Werkbank absorbs them.
+
 - **Laufform variants: median running forms as a reserved templates
   variant.** The doctrine split settled with the author: the chart cell is the ductus prior
   (stroke order, crossings), the written specimen words are the form model.
