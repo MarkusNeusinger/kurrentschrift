@@ -1170,7 +1170,7 @@ kreuzt den Stamm und IST der Join. Kein Breiten-Beleg für ein Retrace.
   und Endstrich, +0,05–0,06 Phantom-Loss). compose kopiert die
   Stroke-Listen jetzt vor jeder Modifikation.
 
-Ergebnis: **Wörter 0,130439 → 0,130253, Paare 0,174158 → 0,170674**,
+Ergebnis (Gabel-Runde): **Wörter 0,130439 → 0,130253, Paare 0,174158 → 0,170674**,
 Gleichzug-Doppelungen **3 → 1 (Wörter) / 17 → 9 (Paare)** — die
 ſ-Shortlist (sa 2, sg 2, ssi 4, schwer/scharfen) ist leer; übrig
 Kapital-Joins (In/Of/Soldaten S→o) + d→Unterlängen. Per-Wort vs. main:
@@ -1180,3 +1180,34 @@ re-gepinnt. Verworfen in dieser Runde (gemessen): 45°-Platzierung auch
 für Ride-Basen (Wort-Registrierung +0,5 xh, schwer +0,06),
 Apex-Kopplung für c (jul29-Verdikt „c startet tief" gilt),
 kollineare Anstrich-Linien-Platzierung (schwer 0,242 — zu eng).
+
+### Laufform-Runde `jul31` — Dehnen als Renderkontext-Regel
+
+**Messgrundlage** (User-Idee: „glyphen einzeln auf die beispielwörter
+fitten"): alle 257 Buchstaben-Vorkommen der 58 Wörter per M4-Fit auf die
+Platten gewarpt, affine Zerlegung Template→Laufform je Vorkommen (220
+saubere Fits). Befund: die laufende Hand schreibt fast alle Buchstaben
+3–11 % BREITER als die Chart-Zelle (e 1,083 · r 1,094 · h 1,102 ·
+ſ 1,112 · l 1,091 · i 1,075 · u 1,072) bei leicht gestauchter Höhe;
+Neigung aufrecht (±1,5°) bis auf d +5,1° (bestätigt ASCENDER_LEAN 4,5
+unabhängig), w/b +4,6°, S −4,8°. Die Fluent-Weitung (`FLUENT_BODY_PITCH`,
+jul08) erweist sich als dasselbe Modell für die Rundkörper — ihre Ziele
+treffen die jul31-Mediane (e Body 0,31→0,40 ≈ sx 1,083).
+
+**Änderung:** `LAUFFORM_SX` in `core/compose.py` — ganzheitliche
+x-Skalierung je Buchstabe im GEBUNDENEN Kontext (Lauf ≥
+ASCENDER_LEAN_MIN_RUN, Solo/Tafel bleibt chart-treu), Mediane mit n ≥ 5
+und |sx−1| ≥ 0,03, OHNE die fluent-abgedeckten Rundkörper: i 1,08 ·
+l 1,09 · h 1,10 · n 1,03 · r 1,09 · t 0,96 · d 0,97 · w 1,05 · ſ 1,11.
+sy (0,96) bewusst NICHT angewandt (kollidiert mit der
+Lineatur-Normierung); Neigen für w/b/S vertagt (S hängt an der offenen
+Kapital-Join-Klasse).
+
+Ergebnis: **Wörter 0,130253 → 0,121625** (größter Einzelsprung seit der
+Girlanden-Runde; 28 Wörter besser — Einen −0,048, Gewehr −0,060,
+einer −0,043 — 8 leicht schlechter, Ausreißer will +0,046: DIESES
+Specimen ist eng geschrieben, Median-Modell), Paare 0,170674 → 0,169987,
+Audit unverändert 1/9, Rhythmus-Streuung der Lücken 0,197 → 0,186,
+Breiten-Ratio 0,966. Ein l-Sweep (1,05/1,07/1,09) war flach (Δ0,0005) —
+der gemessene Median 1,09 bleibt: Konstanten kommen von der Platte, die
+Bench ist Wächter, nicht Ziel. Golden bewusst re-gepinnt.
