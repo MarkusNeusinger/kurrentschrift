@@ -5,6 +5,8 @@ works on a chart `source`; this router resolves the source's style and stores
 the canonical there, recording the chart as `provenance_source_id`.
 """
 
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.auth import require_admin
 from api.dependencies import require_db, require_source
 from api.rendering import invalidate_pooled_style, resolve_render_context, resolve_style
-from api.schemas import ResampleRequest, TemplateOut, TemplateSummary, TraceRequest
+from api.schemas import LaufformUpsert, ResampleRequest, TemplateOut, TemplateSummary, TraceRequest
 from core.database import BboxRepository, Source, Template, TemplateRepository
 from core.fit import fit_glyph_to_crop
 from core.pipeline import (
@@ -157,6 +159,73 @@ async def get_template(
     if template is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no canonical for {glyph_key!r}")
     return _template_to_out(template)
+
+
+@router.put("/{glyph_key}/laufform", response_model=TemplateOut, dependencies=[Depends(require_admin)])
+async def put_laufform(
+    glyph_key: str,
+    payload: LaufformUpsert,
+    source: Source = Depends(require_source),
+    db: AsyncSession = Depends(require_db),
+):
+    """Store the median RUNNING form as templates variant 1 (jul31 doctrine:
+    chart cell = ductus prior, written words = form model). The anchors must
+    match the chart row one-to-one — same count, same stroke topology — so
+    stroke starts, corners and crossings carry over unchanged; entry/exit/
+    advance shift with their end anchors. `/write/word` picks the row up for
+    glyphs in a flowing run; solo renders stay chart-true."""
+    base = await TemplateRepository(db).get(source.style_id, glyph_key, variant=0)
+    if base is None:
+        raise HTTPException(status.HTTP_409_CONFLICT, detail=f"no chart template for {glyph_key!r} — author it first")
+    chart = [tuple(p) for p in base.anchors]
+    if len(payload.anchors) != len(chart):
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"anchor count {len(payload.anchors)} != chart row's {len(chart)} — the ductus prior must match",
+        )
+    canonical: dict[str, Any] = {
+        "glyph": base.glyph,
+        "anchors": [[float(x), float(y)] for x, y in payload.anchors],
+        "half_widths": base.half_widths,
+        # No stylus capture behind a derived variant — an empty path, not
+        # NULL, so every raw_path consumer keeps its list contract.
+        "raw_path": [],
+        "trace_meta": {
+            **(base.trace_meta or {}),
+            "laufform": {"derived_from": "specimen-words", "n_occurrences": payload.n_occurrences},
+        },
+    }
+    # Entry/exit/advance ride their end anchors: shift the chart fields by the
+    # respective anchor delta (the tangents stay — median deviations are
+    # sub-nib and the composer re-measures tangents off the centerline).
+    d_in = (payload.anchors[0][0] - chart[0][0], payload.anchors[0][1] - chart[0][1])
+    d_out = (payload.anchors[-1][0] - chart[-1][0], payload.anchors[-1][1] - chart[-1][1])
+    for field, delta in (("entry", d_in), ("exit_pt", d_out)):
+        stored = getattr(base, field) or {}
+        if stored.get("xy"):
+            stored = {**stored, "xy": [stored["xy"][0] + delta[0], stored["xy"][1] + delta[1]]}
+        canonical[field] = stored
+    canonical["advance"] = (base.advance or 0.0) + d_out[0]
+    t = await TemplateRepository(db).upsert(
+        source.style_id, glyph_key, canonical, variant=1, provenance_source_id=source.id
+    )
+    out = _template_to_out(t)
+    await db.commit()
+    invalidate_pooled_style(source.style_id)
+    return out
+
+
+@router.delete("/{glyph_key}/laufform", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_admin)])
+async def delete_laufform(
+    glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
+):
+    """Remove the running-form variant; composition falls back to the chart
+    row (plus the LAUFFORM_SX width factor)."""
+    deleted = await TemplateRepository(db).delete(source.style_id, glyph_key, variant=1)
+    if not deleted:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no laufform variant for {glyph_key!r}")
+    await db.commit()
+    invalidate_pooled_style(source.style_id)
 
 
 @router.post("/{glyph_key}/trace", response_model=TemplateOut, dependencies=[Depends(require_admin)])

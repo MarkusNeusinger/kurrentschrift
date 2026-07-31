@@ -1292,6 +1292,7 @@ def compose_word(
     pen: PenStyle | None = None,
     provenance: bool = False,
     pair_overrides: dict[tuple[str, str], dict] | None = None,
+    laufform_by_key: dict[str, dict] | None = None,
 ) -> dict:
     """Compose shaped slots + per-glyph render payloads into draw items.
 
@@ -1395,6 +1396,23 @@ def compose_word(
             prev = None
             continue
         data = data_by_key.get(slot.key) if slot.key else None
+        # Laufform variant (the doctrine split, jul31): the chart cell is the
+        # ductus prior, the WRITTEN WORDS are the form model. In a flowing
+        # run (same gate as the ascender lean) a glyph renders its
+        # median running form when one is stored (templates variant 1);
+        # solitary glyphs, the Tafel and the short Abb.-20-style drills stay
+        # chart-true — the drills measure chart-like on the plates.
+        laufform_used = False
+        if (
+            laufform_by_key
+            and slot.key
+            and slot.joins
+            and _joined_run_length(slots, slot_index) >= ASCENDER_LEAN_MIN_RUN
+        ):
+            alt = laufform_by_key.get(slot.key)
+            if alt and alt.get("centerlines_template"):
+                data = alt
+                laufform_used = True
         centerlines = (data or {}).get("centerlines_template")
         if not data or not centerlines:
             if slot.key:
@@ -1445,8 +1463,12 @@ def compose_word(
             rings_by_stroke = [[_lean_stroke(ring, shear, pivot_y) for ring in rings] for rings in rings_by_stroke]
         # Laufform width (see LAUFFORM_SX): scale the bound glyph to its
         # measured running width, around its own x-origin — centerlines,
-        # rings and the entry anchor alike, before any measurement.
-        laufform_sx = LAUFFORM_SX.get(_key_base(slot.key, slot.position), 0.0) if slot.joins else 0.0
+        # rings and the entry anchor alike, before any measurement. A stored
+        # median running form (variant 1, above) already carries its width —
+        # the factor is the fallback for letters without one.
+        laufform_sx = (
+            LAUFFORM_SX.get(_key_base(slot.key, slot.position), 0.0) if slot.joins and not laufform_used else 0.0
+        )
         if laufform_sx and _joined_run_length(slots, slot_index) >= ASCENDER_LEAN_MIN_RUN:
             centerlines = [[(x * laufform_sx, y) for x, y in cl] for cl in centerlines]
             rings_by_stroke = [[[(x * laufform_sx, y) for x, y in ring] for ring in rings] for rings in rings_by_stroke]

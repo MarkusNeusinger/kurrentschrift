@@ -151,12 +151,28 @@ async def compose_word_payload(text: str, source: Source, db: AsyncSession, *, p
             adjacent.append((a.key, b.key))
     pair_overrides = await GlyphPairRepository(db).approved_for_pairs(source.style_id, adjacent)
 
+    # Laufform variant rows (templates variant 1 — the median running forms
+    # derived from the specimen words): compose renders them for glyphs in a
+    # flowing run; no rows → chart behaviour, byte-identical.
+    laufform_entries: dict[str, dict] = {
+        t.glyph_key: _template_render_entry(t)
+        for t in await repo.get_many(source.style_id, keys, variant=1, render_only=True)
+    }
+
     # Render geometry + composition are pure numpy/python — off the event loop.
     # The memoised payloads are shared across requests; compose_word reads
     # them without mutating (pinned by the golden parity fixture).
     def compute() -> dict:
         payloads = {key: (_cached_payload(entries[key], key, ctx) if key in entries else None) for key in keys}
-        return compose_word(slots, payloads, pen=ctx.pen, pair_overrides=pair_overrides, provenance=provenance)
+        laufform = {key: _cached_payload(entry, key, ctx) for key, entry in laufform_entries.items()}
+        return compose_word(
+            slots,
+            payloads,
+            pen=ctx.pen,
+            pair_overrides=pair_overrides,
+            provenance=provenance,
+            laufform_by_key=laufform or None,
+        )
 
     return await run_in_threadpool(compute)
 

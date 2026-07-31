@@ -103,6 +103,25 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   references it reproduces the d-loop finding: das 86.2°, der 87.2°,
   die 88.0° against a rigid ~90° engine.
 
+### Added
+
+- **Laufform variants: median running forms as templates variant 1.** The
+  doctrine split settled with the author: the chart cell is the ductus prior
+  (stroke order, crossings), the written specimen words are the form model.
+  A new admin endpoint `PUT/DELETE /sources/{id}/templates/{key}/laufform`
+  stores a per-letter median running form (validated one-to-one against the
+  chart row's anchor topology; entry/exit/advance ride their end anchors),
+  and `/write/word` renders it for glyphs in a flowing run (≥ 3, the
+  ascender-lean gate) — solo payloads, the Tafel and short drills stay
+  chart-true, and the per-letter width factor stays as fallback for letters
+  without a stored form. `tools/laufform/harvest.py` derives the medians
+  from the frozen word fixtures (M4 fit per occurrence, clean-fit guards)
+  and writes drafts through the admin API. The experiment run measured
+  words bench 0.1208 → 0.1136 with the median shapes; the headline moves
+  only once the rows are written and the fixtures re-exported (documented
+  re-baseline). Without variant rows every composition stays
+  byte-identical (golden fixture untouched).
+
 ### Changed
 
 - **Capital handover: the join leaves the capital's WORKING exit, never its

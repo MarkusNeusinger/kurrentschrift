@@ -313,6 +313,18 @@ class CouplingPointOut(BaseModel):
     coupling: Literal["baseline", "midband", "ascender", "descender"]
 
 
+class LaufformUpsert(BaseModel):
+    """Body of `PUT /sources/{id}/templates/{glyph_key}/laufform` — the median
+    running form (templates variant 1) derived from the specimen words. The
+    anchor list must match the chart row's anchor count exactly: the chart
+    cell stays the ductus prior (stroke order, crossings), only the geometry
+    comes from the written words."""
+
+    anchors: list[tuple[float, float]] = Field(min_length=4, max_length=4096)
+    # Number of clean specimen occurrences behind the median — provenance.
+    n_occurrences: int = Field(ge=1)
+
+
 class TraceRequest(BaseModel):
     """Body of `POST /sources/{id}/templates/{glyph_key}/trace`."""
 
