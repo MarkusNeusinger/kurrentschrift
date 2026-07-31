@@ -15,7 +15,7 @@ from api.auth import require_admin
 from api.dependencies import require_db, require_source
 from api.rendering import invalidate_pooled_style, resolve_render_context, resolve_style
 from api.schemas import LaufformUpsert, ResampleRequest, TemplateOut, TemplateSummary, TraceRequest
-from core.database import BboxRepository, Source, Template, TemplateRepository
+from core.database import LAUFFORM_VARIANT, BboxRepository, Source, Template, TemplateRepository
 from core.fit import fit_glyph_to_crop
 from core.pipeline import (
     DEFAULT_N_ANCHORS,
@@ -207,7 +207,7 @@ async def put_laufform(
         canonical[field] = stored
     canonical["advance"] = (base.advance or 0.0) + d_out[0]
     t = await TemplateRepository(db).upsert(
-        source.style_id, glyph_key, canonical, variant=1, provenance_source_id=source.id
+        source.style_id, glyph_key, canonical, variant=LAUFFORM_VARIANT, provenance_source_id=source.id
     )
     out = _template_to_out(t)
     await db.commit()
@@ -221,7 +221,7 @@ async def delete_laufform(
 ):
     """Remove the running-form variant; composition falls back to the chart
     row (plus the LAUFFORM_SX width factor)."""
-    deleted = await TemplateRepository(db).delete(source.style_id, glyph_key, variant=1)
+    deleted = await TemplateRepository(db).delete(source.style_id, glyph_key, variant=LAUFFORM_VARIANT)
     if not deleted:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no laufform variant for {glyph_key!r}")
     await db.commit()

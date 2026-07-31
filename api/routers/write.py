@@ -20,7 +20,7 @@ from api.dependencies import require_db, require_source
 from api.http import CACHE_CONTROL
 from api.rendering import render_payload_cached, resolve_render_context
 from core.compose import compose_word
-from core.database import GlyphPairRepository, Source, Template, TemplateRepository
+from core.database import LAUFFORM_VARIANT, GlyphPairRepository, Source, Template, TemplateRepository
 from core.shaping import decompose_ligature_slot, glyph_keys_of, shape_text
 
 
@@ -156,7 +156,7 @@ async def compose_word_payload(text: str, source: Source, db: AsyncSession, *, p
     # flowing run; no rows → chart behaviour, byte-identical.
     laufform_entries: dict[str, dict] = {
         t.glyph_key: _template_render_entry(t)
-        for t in await repo.get_many(source.style_id, keys, variant=1, render_only=True)
+        for t in await repo.get_many(source.style_id, keys, variant=LAUFFORM_VARIANT, render_only=True)
     }
 
     # Render geometry + composition are pure numpy/python — off the event loop.

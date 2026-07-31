@@ -212,6 +212,15 @@ class Bbox(Base):
         }
 
 
+# The templates variant number reserved for the derived median RUNNING form
+# (Laufform, jul31). Deliberately far from the authored chart-form variants,
+# which occupy 1..n (the "A = A" teaching-chart alternatives — Sütterlin Q
+# and ü carry variants 1+2): the first Laufform write-up used variant 1 and
+# silently overwrote an authored row via the upsert. Authored variants and
+# derived forms must never share a number range.
+LAUFFORM_VARIANT = 100
+
+
 class Template(Base):
     """Canonical ductus template (Grundvorlage) for a (style, glyph, variant).
 
