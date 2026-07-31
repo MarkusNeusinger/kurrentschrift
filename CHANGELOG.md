@@ -23,7 +23,8 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   after the median, add per-pair join statistics for observed pairs, move
   measurable hand constants from `core/compose.py` into per-hand aggregates
   behind a simplification gate, prove hand-genericity on a second historical
-  hand, and finish on the user's own hand ("in meiner Hand, aber jeden Text").
+  hand, and finish on the user's own hand ("any text, in my own hand" — vision
+  goal 6, "in meiner Hand, aber jeden Text").
   `docs/notes/quellen-recherche-2026-07.md` preserves the source-research round
   (ranked committable finds, rejected items with license reasoning, possible
   archive requests recorded but not commissioned); `docs/index.md` indexes both
