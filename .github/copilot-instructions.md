@@ -513,7 +513,7 @@ Three commit classes, kept strictly separate (see
 `docs/reference/datenablage.md` §1):
 
 1. **Committable:** `/data/sources/` (public-domain only, e.g. Loth 1866
-   SVG; `suetterlin-leitfaden-1926/` archives 21 PD-marked specimen pages
+   SVG; `/data/sources/suetterlin-leitfaden-1926/` archives 22 PD-marked pages
    of the SUB-Hamburg Leitfaden full digitization — hands-gallery
    cross-hand material, never a same-hand bench reference) and
    `/data/samples/own-hand/` (author's own copyright). Each gets

@@ -2,7 +2,8 @@
 
 - Title:     Ludwig Sütterlin, *Neuer Leitfaden für den Schreibunterricht*,
              5. Auflage, Berlin: Verlag Albrecht-Dürer-Haus (Gebr. Laudahn), 1926
-             — 21 ausgewählte Seiten des Volldigitalisats (Schriftproben-Seiten)
+             — 22 ausgewählte Seiten des Volldigitalisats (21 Schriftproben-
+             Seiten + die Vorwort-Seite p016 als Lizenz-Beleg)
 - Author:    Ludwig Sütterlin (1865 – † 20.11.1917). Das Vorwort im Scan ist
              „Berlin, Ostern 1917. Ludwig Sütterlin." signiert (S. 9 / p016);
              die Verlagsvorworte zur 2. Aufl. (Mai 1921) und 5. Aufl. (Mai 1926)
@@ -54,6 +55,7 @@ ausschließlich gegen die 1922er Normhand, Abb. 19/20).
 
 | Datei | Buchseite | Inhalt | Schreiber († Jahr) |
 |---|---|---|---|
+| p016.jpg | S. 9 | Lizenz-Beleg (kein Specimen): Vorwort-Schluss „Berlin, Ostern 1917. Ludwig Sütterlin." + Verlagsvorworte 2. Aufl. Mai 1921 / 5. Aufl. Mai 1926 ohne Bearbeiter | — (Fraktursatz) |
 | p020.jpg | S. 13 | Abb. 1: Kanzlistenschrift aus Gerichtsakten des 16. Jh. (Kopfzeile + 2 Zeilen, ~20–25 Wörter) | anonym, 16. Jh. |
 | p021.jpg | S. 14 | Abb. 2: Kanzlistenschrift 16. Jh., ganzseitig (~16 Zeilen, ~100–110 Wörter) | anonym, 16. Jh. |
 | p028.jpg | S. 21 | Abb. 5: Georg Rodolf Weckherlin, Sonett auf den Tod Gustav Adolfs, 1632 (~40 Wörter) | Weckherlin († 1653) |
