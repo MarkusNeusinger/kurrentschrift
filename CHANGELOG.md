@@ -29,6 +29,16 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   exception with a follow-up to regenerate it from synthetic templates, and
   a public dataset only ever ships as a deliberate goal-7 release.
 
+- **Admin Belege page (`/admin/belege`) — the stored word traces, browsable.**
+  Every word-occurrence trace of the active source rendered over its specimen
+  crop (public `GET /word-instances` joined with the word-samples metadata,
+  registered via the row's stored registration), sorted worst-first: unfitted
+  letters weigh heaviest, mean fit RMSE breaks ties — the error-finding surface
+  over the new occurrence layer and the designated entry point for the coming
+  word editor (manual `authored` re-tracing). Cards carry provenance
+  (traced/authored), fitted-count, unfitted-letter and RMSE chips (per-letter
+  values in the tooltip) plus a word filter; a sidebar icon links the page.
+
 - **Occurrence persistence: every clean specimen fit becomes a database row
   (hand-model plan H1/H2).** Per the decision to store occurrences, not just
   medians: the laufform harvest now persists each clean per-occurrence M4 fit
