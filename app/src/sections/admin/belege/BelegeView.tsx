@@ -41,8 +41,8 @@ function TraceCard({ row, sample, sourceId }: { row: WordInstanceOut; sample: Wo
   const matrix = `matrix(${xh} 0 0 ${-xh} ${tx} ${baselineRow})`;
 
   const fitted = m.fitted_slots?.length ?? null;
-  // Defensive label lookup: unfitted indices count the harvester's FULL slot
-  // list (keyless slots included), the stored `slots` array is filtered.
+  // Slot indices index into `slots` (the harvest emits them in that space);
+  // the fallback keeps older rows from crashing the card.
   const unfitted = (m.unfitted_slots ?? []).map((i) => row.slots[i] ?? String(i));
   const meanRmse = rmseMean(row);
   const cropW = (FACE_H / sample.height) * sample.width;

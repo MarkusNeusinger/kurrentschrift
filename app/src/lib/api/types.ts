@@ -82,6 +82,7 @@ export interface WordSampleOut {
 // Fit context of one stored word trace (see tools/laufform/harvest.py). Every
 // field optional: authored rows written by hand may carry less. registration_px
 // + xh_px map trace units to crop pixels: px = (u·xh + tx, baseline_row + ty − v·xh).
+// Slot indices (fitted/unfitted/rmse keys) index into the row's `slots` list.
 export interface WordInstanceMeasurements {
   registration_px?: { tx: number; ty: number; baseline_row: number };
   xh_px?: number;
@@ -100,7 +101,7 @@ export interface WordInstanceOut {
   specimen_id: string;
   word: string;
   slots: string[];
-  strokes: number[][][];
+  strokes: Array<Array<[number, number]>>;
   provenance: 'traced' | 'authored';
   hand_id: string | null;
   measurements: WordInstanceMeasurements;
