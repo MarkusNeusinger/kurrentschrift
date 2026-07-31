@@ -12,14 +12,28 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
-### Fixed
+## [0.21.0] — 2026-08-01 — Optimierungs-Werkbank + open-core moat
 
-- **Werkbank: the context lens and Auftragskorb now stay beside the word being
-  inspected.** The sticky positioning sat on the lens card, whose parent column
-  is content-sized — no room to travel, so clicking far down the word spine
-  showed the lens only after scrolling back to the top. The whole right column
-  now sticks against the tall spine track (scrolling internally when taller
-  than the viewport; single-column layouts stay in flow).
+### Added
+
+- **The Optimierungs-Werkbank page (`/admin/werkbank`, stage W2): word spine,
+  switching context lens, Auftragskorb.** One admin surface where the three
+  occurrence layers finally meet, per the doctrine in
+  `docs/proposals/optimierungs-werkbank.md` §2. The left column is the word
+  spine — every stored trace over its specimen crop, worst first — now with an
+  interactive overlay: a dashed box per fitted letter and a dot on every join
+  between two adjacent letters. Clicking one switches the right column's lens:
+  a LETTER shows its chart form plus every stored occurrence as a cut-out
+  thumbnail (worst residual first, click to jump back into that word) and
+  offers the wizard jump; a JOIN lists its dissected occurrences with the
+  generated connector's distance from the plate ink and opens the pair editor
+  for exactly that pair. ⚑ (or shift-click) files the element into the
+  Auftragskorb — the `work_items` backend from W1 — where a letter first has to
+  pass the one pre-sort question §4 puts on the human ("does it look wrong on
+  its own too?"): yes routes to the wizard and files nothing, no files the
+  complaint. `WordSampleOut` gained the specimen's page `rect` so page-pixel
+  occurrence boxes can be placed inside a crop; the existing pages
+  (Vergleich · Paare · Belege) stay untouched until the Werkbank absorbs them (#255).
 
 ### Changed
 
@@ -33,8 +47,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   bench scores. Documented re-baseline in `qualitaetsmetrik.md` §6: words
   0.1208 → 0.1169, pairs flat at 0.1645 — decomposed into the export shift
   (five words + one pair newly scorable through the authored capitals) and
-  the Laufform effect proper (−0.0053 on words).
-
+  the Laufform effect proper (−0.0053 on words) (#256).
 - **Open-core moat hardened: the learned dataset is no longer publicly
   exfiltrable.** The README has always reserved the authored data (ductus
   templates, running forms, statistics) outside the MIT grant; now the
@@ -48,8 +61,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   surface under the README reservation + crawler policy, the compose-golden
   parity fixture (11 rendered words, no templates) is the accepted known
   exception with a follow-up to regenerate it from synthetic templates, and
-  a public dataset only ever ships as a deliberate goal-7 release.
-
+  a public dataset only ever ships as a deliberate goal-7 release (#254).
 - **The Optimierungs-Werkbank direction and its binding stage/role doctrine,
   documented.** `docs/proposals/optimierungs-werkbank.md` records the
   2026-07-31 decisions (ONE admin workbench page — word spine + letter/pair
@@ -62,8 +74,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   Laufform/fit → class rule → placement → override) is the AI's duty, with a
   fixed `resolution` format and a "Rückgabe an Autor" path for ground-truth
   gaps. Indexed in `docs/index.md`; CLAUDE.md and the Copilot twin point to it
-  as mandatory reading before working off a work item.
-
+  as mandatory reading before working off a work item (#253).
 - **The Auftragskorb: filed optimization tasks instead of screenshots
   (Werkbank stage W1).** The admin's channel into a working session gets a
   backend: the new additive `work_items` table (migration `0020`) holds one
@@ -79,7 +90,20 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   notes, not measurement or public content. Filing validates that the target
   is actually workable (a letter item needs its glyph_key, a pair both sides,
   a word its text or specimen) and that the keys are registry glyphs. Nothing
-  here affects rendering.
+  here affects rendering (#252).
+
+### Fixed
+
+- **Werkbank: the context lens and Auftragskorb now stay beside the word being
+  inspected.** The sticky positioning sat on the lens card, whose parent column
+  is content-sized — no room to travel, so clicking far down the word spine
+  showed the lens only after scrolling back to the top. The whole right column
+  now sticks against the tall spine track (scrolling internally when taller
+  than the viewport; single-column layouts stay in flow) (#257).
+
+## [0.20.0] — 2026-07-31 — Hand model: occurrence layer + Belege
+
+### Changed
 
 - **Admin Belege page (`/admin/belege`) — the stored word traces, browsable.**
   Every word-occurrence trace of the active source rendered over its specimen
@@ -89,8 +113,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   over the new occurrence layer and the designated entry point for the coming
   word editor (manual `authored` re-tracing). Cards carry provenance
   (traced/authored), fitted-count, unfitted-letter and RMSE chips (per-letter
-  values in the tooltip) plus a word filter; a sidebar icon links the page.
-
+  values in the tooltip) plus a word filter; a sidebar icon links the page (#251).
 - **Occurrence persistence: every clean specimen fit becomes a database row
   (hand-model plan H1/H2).** Per the decision to store occurrences, not just
   medians: the laufform harvest now persists each clean per-occurrence M4 fit
@@ -111,8 +134,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   (`PUT /sources/{id}/instances` + `/pair-instances` + `/word-instances`,
   public reads alongside) that get-or-create the writer's `hands` row — the
   first real inhabitants of the statistics layer defined in migration 0004.
-  Occurrence rows never affect rendering; the composer path is untouched.
-
+  Occurrence rows never affect rendering; the composer path is untouched (#250).
 - **The staged hand-model plan and the July specimen-source research, documented.**
   `docs/proposals/handmodell-stufenplan.md` consolidates the Laufform round into
   a staged proposal (H0–H5): confirm the role model (chart cell = ductus prior,
@@ -127,7 +149,84 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `docs/notes/quellen-recherche-2026-07.md` preserves the source-research round
   (ranked committable finds, rejected items with license reasoning, possible
   archive requests recorded but not commissioned); `docs/index.md` indexes both
-  and syncs the stale R3–R5 status line.
+  and syncs the stale R3–R5 status line (#249).
+
+## [0.19.0] — 2026-07-31 — Laufformen: the running hand's letterforms
+
+### Added
+
+- **Laufform variants: median running forms as a reserved templates
+  variant.** The doctrine split settled with the author: the chart cell is the ductus prior
+  (stroke order, crossings), the written specimen words are the form model.
+  A new admin endpoint `PUT/DELETE /sources/{id}/templates/{key}/laufform`
+  stores a per-letter median running form (validated one-to-one against the
+  chart row's anchor topology; entry/exit/advance ride their end anchors),
+  and `/write/word` renders it for glyphs in a flowing run (≥ 3, the
+  ascender-lean gate) — solo payloads, the Tafel and short drills stay
+  chart-true, and the per-letter width factor stays as fallback for letters
+  without a stored form. `tools/laufform/harvest.py` derives the medians
+  from the frozen word fixtures (M4 fit per occurrence, clean-fit guards)
+  and writes drafts through the admin API. The experiment run measured
+  words bench 0.1208 → 0.1136 with the median shapes; the headline moves
+  only once the rows are written and the fixtures re-exported (documented
+  re-baseline). Without variant rows every composition stays
+  byte-identical (golden fixture untouched) (#246, #247).
+
+### Changed
+
+- **Capital handover: the join leaves the capital's WORKING exit, never its
+  ornament.** Prompted by the user spotting that Soldaten's S→o kept a high
+  covering line where the 1922 plate restarts at the baseline; measuring all
+  22 joined capital→lowercase plate occurrences confirmed no capital ever
+  hands over high. Crest and low-ending capitals (S/O/B/K/P) now depart at
+  their last low body pass (local minimum at/below 0.55 x-heights) with the
+  ornament fully drawn and retraced over its own ink; descender-loop
+  capitals (G/Z) already took the fork join; mid enders (E/F/W/I/D) keep
+  their true exit. The round-body top coupling is suppressed after any
+  capital (contradicted by every plate case — round bodies are met on their
+  rising flank with the lead-in intact), capital joins never garland (they
+  rise monotonically on the plates) and get the plates' wider clearance.
+  Words bench 0.121625 → 0.120793, pairs 0.169987 → **0.165297**, and the
+  words Gleichzug audit is **completely clean for the first time** (0
+  gaps, 0 doublings; pairs keep 6 in the parked d→descender class).
+  Seiten 0.101 → 0.068, Silber 0.120 → 0.098, Säbel 0.165 → 0.115. Golden
+  re-pinned (qualitaetsmetrik.md §6 „Kapital-Runde jul31") (#245).
+- **Running-form width (Laufform): bound letters render at their measured
+  running width.** M4-fitting all 257 letter occurrences of the specimen
+  words onto the plates shows the running hand writes most letters 3–11%
+  wider than their chart cells (e/r/h/l/ſ up to +11%) — the plates get
+  their word width from wider letters with tighter gaps, the composer so
+  far from chart-narrow letters with wider gaps (the root of the
+  "stretched" impression). The target-based fluent body widening already
+  covers the round bodies (its jul08 targets match the new medians
+  independently); the new `LAUFFORM_SX` rule scales the remaining letters
+  (i/l/h/n/r/w/ſ wider, t/d slightly narrower) in bound context only —
+  solitary glyphs and the Tafel stay chart-true, like the ascender lean.
+  Words bench 0.130253 → **0.121625** (largest single improvement since
+  the garland round; 28 words improve, e.g. Gewehr −0.060, Einen −0.048),
+  pairs 0.169987, Gleichzug zero line unchanged, gap-rhythm spread
+  0.197 → 0.186. Golden re-pinned (qualitaetsmetrik.md §6
+  „Laufform-Runde jul31") (#244).
+
+### Fixed
+
+- **Laufform rows move to reserved variant 100 — variant 1 belongs to the
+  authored chart-form variants.** The live check after the first Laufform
+  write-up found the collision: authored "A = A" teaching-chart variants
+  already occupy variants 1..n (Sütterlin Q and ü carry 1+2), so
+  `/write/word` had started rendering those authored alternatives as
+  running forms in flowing words, and the Laufform upsert for `i` silently
+  overwrote a pre-existing authored variant-1 row (its content needs a
+  backup restore or re-authoring; Q/ü were untouched). The Laufform
+  endpoint, the `/write/word` fetch and the harvest tool now use the
+  reserved `LAUFFORM_VARIANT` (100), the 13 derived rows were migrated
+  there and the 12 freshly-created variant-1 rows removed, and a
+  regression test pins that an authored variant-1 row is never picked up
+  as a running form (#247).
+
+## [0.18.0] — 2026-07-31 — One-flow writing: six connection classes + Gleichzug audit
+
+### Changed
 
 - **A Gleichzug audit as wordbench report columns — the one-flow, one-width
   invariant made measurable.** A Sütterlin word is written in one flow (pen
@@ -152,7 +251,76 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   scorable (only the five ß words remain), pairs 32/33, abb22 106/106; the
   new headlines (words 0.131392, pairs 0.182982) are a documented
   re-baseline, not comparable to the jul08-fixture numbers
-  (qualitaetsmetrik.md §6).
+  (qualitaetsmetrik.md §6) (#240, #241).
+- **Fork joins for the long-s and the t/f bar — the two plate-measured
+  stem-launch classes.** After a long-s the rising connector no longer
+  climbs 0.08 x-heights BESIDE the stem (a sustained parallel track the
+  plates never write — the Gleichzug audit's ſ shortlist): it rejoins the
+  stem, retraces it to a fork at ~0.4 of the coupling height and swings
+  out on a straight diagonal into a high coupling; hanging bowls place on
+  the 45° line from the fork while c/t keep their calibrated run-down
+  placement (overlay-verified plate-exact) and couple mid-flank. For t/f
+  the second specimen measurement (all 8 joined occurrences) showed the
+  plates end t's crossbar AT the stem (right of it: no ink — the long
+  chart bar is table form) and leave the STEM on a shallow 16–27° rise
+  into the next letter's apex: in bound context the rendered bar is cut
+  at its own last ink crossing (word-final keeps the chart form) and the
+  join is one straight rise, with placement on that line. Also fixes a
+  latent shared-payload mutation (the stub/bar cuts edited cached stroke
+  lists in place — a word-final t after any bound t lost its bar and
+  Endstrich in cached-payload runs like the wordbench). Words bench
+  0.130439 → 0.130253, pairs 0.174158 → 0.170674, Gleichzug doublings
+  3 → 1 (words) / 17 → 9 (pairs); golden re-pinned
+  (qualitaetsmetrik.md §6 „Gabel-Runde jul30") (#243).
+- **Height-aware join kerning — ink at different heights may overlap columns
+  like on the teaching plates.** The specimen gap measurement (every letter
+  of all 58 Abb.-19 words re-fit independently onto its plate) showed the
+  composed rhythm, not the total width, is what reads as stretched: the
+  overall width ratio is 0.96 and the join-advance median ±0.00, but
+  high-exit classes sat 0.13–0.36 x-heights wider than the plate (t/f bar,
+  c/b/l/o arcs — the plate even slides the next letter's body under the
+  t-bar) while baseline diagonals already matched. Joined placement now
+  judges clearance per y-bin (the nine fusion-guard bins) between A's
+  rightmost and B's leftmost band ink — bins where only one side has ink
+  impose nothing, which is exactly the plates' tuck-under; the covering-arm
+  exemption (r/p) collapses into it as a special case and backward bow exits
+  (w/v) keep the scalar clearance. Words bench 0.131392 → 0.130439, pairs
+  0.182982 → 0.174158, Gleichzug zero line unchanged (3/17), per-class
+  advance error halved (c→h −0.26 → −0.13, b→e −0.28 → −0.14, l to 0.00);
+  compose golden fixture deliberately re-pinned. The t/f bar class needs a
+  fork join (retrace the own stroke, then fall) — measured on the plates for
+  both the bar and the ſ ascent — and follows as its own round
+  (qualitaetsmetrik.md §6 „Dehn-Runde Stufe 1") (#242).
+- **A sketch-driven join round: six Sütterlin connection classes rebuilt
+  toward "one flow, one nib width".** An annotated feedback loop (the user
+  marking defects directly on rendered words) rebuilt the generated
+  Übergänge in `core/compose.py`, each as a letter-CLASS rule, never a
+  bigram: (1) a descender-loop exit (ſ) returns THROUGH the baseline and
+  rides the next Anstrich letter's lead-in line up from the Grundlinie
+  (class `{c, t}`; hanging bowls keep their direct coupling); (2) the
+  Deckstrich arm (r/p) is classified exhaustively in the bow band — no
+  crest-roll above the arm (the double-wave), and the covering arm no
+  longer kerns the next letter away (arm-exempt clearance with a
+  height-aware knob guard); (3) the arm FUSES onto the next letter's
+  lead-in crest apex (round bodies + r + i, `ARM_FUSE_GAP` 0.02) — the bow
+  rolls over in one motion, no parallel double-stroke; (4) same-slant
+  sawtooth diagonals (e→n, i→n, …) couple as ONE straight through-line
+  arriving high on the flank, placement untouched; (5) a bound loop-return
+  letter (d, round s) no longer writes the chart cell's finishing stub at
+  all — the return crosses the stem and continues in one motion into the
+  next letter (word-final keeps the complete chart form plus a new
+  level-launch late-rise loop finial); this supersedes the twice-rejected
+  O3 stub trim, which fails only with a tip-anchored connector
+  (qualitaetsmetrik.md §6); (6) every generated stroke now overlaps its
+  neighbours' ink by `CONNECT_OVERLAP` under the round cap, closing the
+  hairline white cracks at item handoffs. Wordbench: words
+  0.123703 → 0.122287, pairs 0.191805 → 0.183317; compose golden re-pinned
+  deliberately per stage (#239).
+
+## [0.17.0] — 2026-07-28 — Fast public writes + crawler policy
+
+### Changed
+
 - **A written-down crawler policy — AI retrieval welcome, AI training declined.**
   Cloudflare answered every AI user agent with a hard `403` across the whole
   zone, `llms.txt` and `api.kurrentschrift.ink` included, so the file written
@@ -165,7 +333,144 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   collectors — so it holds with Cloudflare's managed block turned off. The new
   `docs/reference/crawler-richtlinie.md` records the measurement, the decision,
   the dashboard steps that lift the block and the rejected alternatives;
-  lifting it at the edge is a Cloudflare action, not a repo change.
+  lifting it at the edge is a Cloudflare action, not a repo change (#232).
+- **The SPA lint gate now enforces the React Compiler rules
+  (`eslint-plugin-react-hooks` 5 → 7).** v7 folds the stabilised React Compiler
+  rule set into `recommended`: 16 rules where v5 shipped two, of which **11 are
+  enforced at error** — previously only `rules-of-hooks` was. Ten of the newly
+  adopted error-level rules (`purity`, `immutability`,
+  `preserve-manual-memoization`, `static-components`, `error-boundaries`,
+  `set-state-in-render`, `globals`, `use-memo`, `config`, `gating`) are already
+  clean on the tree, so the gate gets strictly stronger at no cost. The two
+  that are not — `react-hooks/refs` (the latest-ref `ref.current = prop` write
+  during render, 4 sites) and `react-hooks/set-state-in-effect` (the "reset
+  transient state when the input prop changes" effects, 21 sites) — are
+  configured as warnings rather than switched off, because clearing them is a
+  behavioural refactor of `WrittenGlyph`/`WrittenWord`, the diagnostics dialogs
+  and the admin compare views, tracked with every site listed in issue #227.
+  `npm run lint` therefore
+  reports 0 errors / 45 warnings (20 pre-existing `react-refresh` + the 25
+  above); tests, build and `npm ci` are unaffected (#190).
+- **Ruff no longer formats the Markdown docs.** Ruff 0.16 extends `ruff format`
+  to Python code blocks inside Markdown, which reflows the illustrative
+  snippets under `docs/` and in the tool READMEs — schema sketches,
+  pseudo-code and column-aligned trailing comments whose alignment is the
+  point. `*.md` therefore joins `[tool.ruff] exclude`; the formatter's scope
+  stays the 128 Python files it always covered. Unblocks the ruff
+  0.15.20 → 0.16.0 bump (#226).
+- **Public `/write` endpoints: p95 latency ~1100 ms → ~100 ms (rendered
+  geometry byte-identical).** A cProfile of a realistic workload (real
+  120-anchor Sütterlin templates, mixed words up to the 160-char cap, gzip
+  on) showed 74 % of request CPU re-rendering the SAME glyph payloads per
+  request, dominated by per-segment Python-loop shapely buffers plus
+  `union_all`, with FastAPI's `jsonable_encoder` walk and level-9 gzip on
+  top. Four independent, output-preserving fixes: (1) `api/rendering.py`
+  memoises `render_payload_for_template` per
+  `(style, glyph_key, template id+updated_at, resolver, ratio, nib, pen)`
+  with the same TTL + invalidation discipline as the pooled-nib cache
+  (admin template writes clear the style's entries; callers copy before
+  annotating — the shared payloads are never mutated, pinned by the golden
+  parity fixture); (2) `core/template.py` builds the capsule/chisel
+  silhouette geometries with shapely 2.x vectorized array calls instead of
+  93k Python-level `buffer()` calls — bit-identical output verified against
+  the previous implementation on all fixture glyphs plus randomized
+  degenerate inputs (capsule 1.6×, chisel 3.5× faster); (3) the three write
+  endpoints serialize straight through `orjson` (new runtime dependency),
+  bypassing the `jsonable_encoder` walk over ~100k floats per response, and
+  the write-path template fetches defer the unused `raw_path`/`measurements`
+  JSONB columns (~100 KB per glyph off every request); (4) `GZipMiddleware`
+  drops from the implicit compresslevel 9 to 6 (~3× faster on the large
+  geometry bodies for ~1 % more bytes). In-process benchmark, 84 mixed
+  requests: `/write/word` p95 1116 → 100 ms (max 217 ms), the 23-key
+  `/write/glyphs` batch p95 1031 → 26 ms (#225).
+
+### Fixed
+
+- **Eraser mask correctly applies to inserted donor cells ("Patches").**
+  Previously, when placing a second cell (Zelle einsetzen) into a crop via the
+  admin wizard, the eraser tool (Ausschluss/Radierer) could not remove its ink
+  because patches were composited *after* the eraser ran. The crop pipeline now
+  composites patches before the eraser, matching the frontend's visual layering
+  and allowing the eraser to clean up unwanted ink from donor cells (#238).
+- **Robust `_rasterize_strokes` against malformed payloads.**
+  The `core/chart.py` rasterizer now uses `isinstance` checks and `try...except` 
+  blocks when parsing `mask_strokes` and `ink_strokes`. A malformed JSON row in 
+  the database (e.g. flat integers instead of coordinate pairs) will now be 
+  safely skipped instead of crashing the pipeline with a 500 error (#238).
+- **Wizard gestures stranded by their own save — the eraser that kept
+  painting and the Grundlinie that blocked the Weg.** Handing the preview
+  over only once the commit lands (above) clears the gesture by identity,
+  but nothing ended the POINTER's turn at pen-up: every pointer-move during
+  the ~round trip replaced that same state with a new object, so the identity
+  clear found a stranger and skipped. The gesture then lived forever — the
+  red Ausschluss draft kept growing on plain hover moves and only vanished on
+  the next press, and a leaked Grundlinie/Mittellinie drag survived the step
+  change and swallowed every pointer sample on the Weg step (`if (calibDrag)`
+  returns ahead of the trace branch), so the ductus could not be drawn at all
+  and the stale value was committed on the next click. `WizardCanvas` now
+  separates the two lifetimes explicitly (`gestureUtils.ts`): a pointer
+  **grip** claimed at pen-down and released at the top of pointer-up, before
+  the commit is awaited — so the preview still waits for its write while no
+  sample can rewrite it. The grip also makes one pointer own the canvas (a
+  palm resting beside the S-Pen no longer hijacks a stroke, and only the
+  owning pointer's release commits), adds a `buttons === 0` backstop that
+  finishes a gesture whose pointer-up never arrived, and a step change is now
+  a hard gesture boundary (#231).
+- **Admin writes answered with the state from *before* the write.** Every
+  repository `upsert` writes through a Core insert-on-conflict the ORM session
+  cannot see, then re-selects the row — and a plain re-select returns the
+  instance already in the session's identity map, unrefreshed. Since the
+  handlers load the row first (the bbox PUT's coalesce lookup, the `/trace`
+  identity guard), every response carried the pre-write values. The setup
+  wizard builds each next edit on the last response, so it re-sent a
+  one-edit-old bbox: guide drags snapped back to their old position before
+  jumping forward a round trip later, and every second eraser/ink stroke was
+  silently dropped — erased neighbour ink reappeared as the crop "jumped back
+  and forth". The three upserts (bbox, template, glyph pair) now re-select with
+  `populate_existing` (#230).
+- **Wizard gestures no longer snap back for the duration of their save.** The
+  in-flight drag/stroke preview (Grundlinie, Mittellinie, Schräglage, donor
+  cell, eraser and ink brush) was cleared *before* the PUT resolved, so the
+  guide line or stroke rendered from the still-unsaved bbox for one round trip.
+  The preview now hands over to the stored value only once the commit lands,
+  cleared by gesture identity so a gesture started during the save survives (#230).
+
+## [0.16.0] — 2026-07-20 — Writing-system redesign: one form per glyph + pair overrides
+
+### Added
+
+- **Admin pair matrix (`/admin/paare`, redesign R1).** Every two-letter
+  combination of a chosen letter (capitals only on the left), composed
+  server-side via the cacheable `/write/word` and rendered lazily per
+  IntersectionObserver — an unnatural join is visible directly instead of
+  hiding inside a longer word (#213).
+- **Word-specimen comparison on `/admin/vergleich` (redesign R1b, stage 1).**
+  The page now has tabs — Buchstaben (the existing per-letter view) plus
+  Wörter/Verbindungen/Andere Hand: every connected-writing specimen from the
+  source's `words.json` sidecar next to the same word written by the engine,
+  side-by-side or with the engine ink overlaid on the specimen pixels,
+  registered exactly over the sidecar lineature (baseline/midband → scale);
+  unauthored letters surface as `missing` chips, the other-hand plate
+  (Abb. 22) is labeled as view-only context (#213).
+- **Public word-sample reads.** New `word_samples` router:
+  `GET /sources/{id}/word-samples` (metadata with crop-local lineature) and
+  `GET /sources/{id}/word-samples/{sample_id}/crop` (grayscale PNG, exclude
+  rects painted paper-white), backed by `core/chart.py::load_word_samples` +
+  `word_sample_crop_to_png_bytes` over the committed sidecar — public like
+  the bbox crops (`<img>` cannot send the admin header), cached, covered by
+  a new HTTP test suite (#213).
+- **Writing-system redesign proposal (`docs/proposals/schreibsystem-redesign.md`).**
+  Records the accepted direction from the 2026-07-17 review: one authored
+  form per glyph with the position triplication removed (R2), an admin
+  pair-matrix view over `/write/word` (R1), sparse *harvested* pair
+  overrides with capital-joins first as the concrete form of proposal B
+  (R3), placement-residual + O3 re-evaluation (R4), and a new measured
+  slant finding — the specimen hand's d-ascender loop leans ~4–5° right
+  of the upright chart cell while medians match (R5). Cross-referenced
+  from `docs/index.md` and `planaenderungen.md` (proposals B and D) (#212).
+
+### Changed
+
 - **Straight-fit flank coupling for sawtooth letter pairs (the "ne" kink).**
   Between two mid-band diagonals whose entry foot sits at/below the previous
   exit (n→e and friends), no spacing can make the generated connector
@@ -192,8 +497,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   drop bounded by `FLANK_COUPLE_MAX_DROP` so the nested-fall letters (t's
   bar, f's flag) keep their bench-confirmed authentic S-join. Golden fixture
   deliberately re-pinned; the wordbench headline still needs a re-measure in
-  a DB-connected session (qualitaetsmetrik.md §6).
-
+  a DB-connected session (qualitaetsmetrik.md §6) (#221).
 - **Harvest importer for glyph-pair overrides (redesign R3 Erstbefüllung).**
   `tools/pairlab/harvest.py` dissects every adjacent joined pair in the frozen
   Abb.-20 pair fixtures (independent rigid fits + M4 ductus traces) and derives
@@ -207,8 +511,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   bench gains `--overrides <harvest.json>` — an override run is its own
   measurement, never the headline; with only the four capital pairs B:i, I:n,
   D:u, O:f overridden, `pair_loss` falls 0.1918 → 0.1864 on the frozen
-  fixtures.
-
+  fixtures (#220).
 - **Slant report column in the word bench (redesign R5, stage 1).**
   `tools/wordbench/slant.py` implements the shear-search estimator from the
   redesign findings (−30°…+30° in 0.25° steps, maximum sum of squared column
@@ -216,217 +519,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `slant <specimen>/<composed>` plus per-block medians; report-only —
   headlines and per-word losses verified byte-identical. On the frozen
   references it reproduces the d-loop finding: das 86.2°, der 87.2°,
-  die 88.0° against a rigid ~90° engine.
-
-### Fixed
-
-- **Laufform rows move to reserved variant 100 — variant 1 belongs to the
-  authored chart-form variants.** The live check after the first Laufform
-  write-up found the collision: authored "A = A" teaching-chart variants
-  already occupy variants 1..n (Sütterlin Q and ü carry 1+2), so
-  `/write/word` had started rendering those authored alternatives as
-  running forms in flowing words, and the Laufform upsert for `i` silently
-  overwrote a pre-existing authored variant-1 row (its content needs a
-  backup restore or re-authoring; Q/ü were untouched). The Laufform
-  endpoint, the `/write/word` fetch and the harvest tool now use the
-  reserved `LAUFFORM_VARIANT` (100), the 13 derived rows were migrated
-  there and the 12 freshly-created variant-1 rows removed, and a
-  regression test pins that an authored variant-1 row is never picked up
-  as a running form.
-
-### Added
-
-- **The Optimierungs-Werkbank page (`/admin/werkbank`, stage W2): word spine,
-  switching context lens, Auftragskorb.** One admin surface where the three
-  occurrence layers finally meet, per the doctrine in
-  `docs/proposals/optimierungs-werkbank.md` §2. The left column is the word
-  spine — every stored trace over its specimen crop, worst first — now with an
-  interactive overlay: a dashed box per fitted letter and a dot on every join
-  between two adjacent letters. Clicking one switches the right column's lens:
-  a LETTER shows its chart form plus every stored occurrence as a cut-out
-  thumbnail (worst residual first, click to jump back into that word) and
-  offers the wizard jump; a JOIN lists its dissected occurrences with the
-  generated connector's distance from the plate ink and opens the pair editor
-  for exactly that pair. ⚑ (or shift-click) files the element into the
-  Auftragskorb — the `work_items` backend from W1 — where a letter first has to
-  pass the one pre-sort question §4 puts on the human ("does it look wrong on
-  its own too?"): yes routes to the wizard and files nothing, no files the
-  complaint. `WordSampleOut` gained the specimen's page `rect` so page-pixel
-  occurrence boxes can be placed inside a crop; the existing pages
-  (Vergleich · Paare · Belege) stay untouched until the Werkbank absorbs them.
-
-- **Laufform variants: median running forms as a reserved templates
-  variant.** The doctrine split settled with the author: the chart cell is the ductus prior
-  (stroke order, crossings), the written specimen words are the form model.
-  A new admin endpoint `PUT/DELETE /sources/{id}/templates/{key}/laufform`
-  stores a per-letter median running form (validated one-to-one against the
-  chart row's anchor topology; entry/exit/advance ride their end anchors),
-  and `/write/word` renders it for glyphs in a flowing run (≥ 3, the
-  ascender-lean gate) — solo payloads, the Tafel and short drills stay
-  chart-true, and the per-letter width factor stays as fallback for letters
-  without a stored form. `tools/laufform/harvest.py` derives the medians
-  from the frozen word fixtures (M4 fit per occurrence, clean-fit guards)
-  and writes drafts through the admin API. The experiment run measured
-  words bench 0.1208 → 0.1136 with the median shapes; the headline moves
-  only once the rows are written and the fixtures re-exported (documented
-  re-baseline). Without variant rows every composition stays
-  byte-identical (golden fixture untouched).
-
-### Changed
-
-- **Capital handover: the join leaves the capital's WORKING exit, never its
-  ornament.** Prompted by the user spotting that Soldaten's S→o kept a high
-  covering line where the 1922 plate restarts at the baseline; measuring all
-  22 joined capital→lowercase plate occurrences confirmed no capital ever
-  hands over high. Crest and low-ending capitals (S/O/B/K/P) now depart at
-  their last low body pass (local minimum at/below 0.55 x-heights) with the
-  ornament fully drawn and retraced over its own ink; descender-loop
-  capitals (G/Z) already took the fork join; mid enders (E/F/W/I/D) keep
-  their true exit. The round-body top coupling is suppressed after any
-  capital (contradicted by every plate case — round bodies are met on their
-  rising flank with the lead-in intact), capital joins never garland (they
-  rise monotonically on the plates) and get the plates' wider clearance.
-  Words bench 0.121625 → 0.120793, pairs 0.169987 → **0.165297**, and the
-  words Gleichzug audit is **completely clean for the first time** (0
-  gaps, 0 doublings; pairs keep 6 in the parked d→descender class).
-  Seiten 0.101 → 0.068, Silber 0.120 → 0.098, Säbel 0.165 → 0.115. Golden
-  re-pinned (qualitaetsmetrik.md §6 „Kapital-Runde jul31").
-
-- **Running-form width (Laufform): bound letters render at their measured
-  running width.** M4-fitting all 257 letter occurrences of the specimen
-  words onto the plates shows the running hand writes most letters 3–11%
-  wider than their chart cells (e/r/h/l/ſ up to +11%) — the plates get
-  their word width from wider letters with tighter gaps, the composer so
-  far from chart-narrow letters with wider gaps (the root of the
-  "stretched" impression). The target-based fluent body widening already
-  covers the round bodies (its jul08 targets match the new medians
-  independently); the new `LAUFFORM_SX` rule scales the remaining letters
-  (i/l/h/n/r/w/ſ wider, t/d slightly narrower) in bound context only —
-  solitary glyphs and the Tafel stay chart-true, like the ascender lean.
-  Words bench 0.130253 → **0.121625** (largest single improvement since
-  the garland round; 28 words improve, e.g. Gewehr −0.060, Einen −0.048),
-  pairs 0.169987, Gleichzug zero line unchanged, gap-rhythm spread
-  0.197 → 0.186. Golden re-pinned (qualitaetsmetrik.md §6
-  „Laufform-Runde jul31").
-
-- **Fork joins for the long-s and the t/f bar — the two plate-measured
-  stem-launch classes.** After a long-s the rising connector no longer
-  climbs 0.08 x-heights BESIDE the stem (a sustained parallel track the
-  plates never write — the Gleichzug audit's ſ shortlist): it rejoins the
-  stem, retraces it to a fork at ~0.4 of the coupling height and swings
-  out on a straight diagonal into a high coupling; hanging bowls place on
-  the 45° line from the fork while c/t keep their calibrated run-down
-  placement (overlay-verified plate-exact) and couple mid-flank. For t/f
-  the second specimen measurement (all 8 joined occurrences) showed the
-  plates end t's crossbar AT the stem (right of it: no ink — the long
-  chart bar is table form) and leave the STEM on a shallow 16–27° rise
-  into the next letter's apex: in bound context the rendered bar is cut
-  at its own last ink crossing (word-final keeps the chart form) and the
-  join is one straight rise, with placement on that line. Also fixes a
-  latent shared-payload mutation (the stub/bar cuts edited cached stroke
-  lists in place — a word-final t after any bound t lost its bar and
-  Endstrich in cached-payload runs like the wordbench). Words bench
-  0.130439 → 0.130253, pairs 0.174158 → 0.170674, Gleichzug doublings
-  3 → 1 (words) / 17 → 9 (pairs); golden re-pinned
-  (qualitaetsmetrik.md §6 „Gabel-Runde jul30").
-
-- **Height-aware join kerning — ink at different heights may overlap columns
-  like on the teaching plates.** The specimen gap measurement (every letter
-  of all 58 Abb.-19 words re-fit independently onto its plate) showed the
-  composed rhythm, not the total width, is what reads as stretched: the
-  overall width ratio is 0.96 and the join-advance median ±0.00, but
-  high-exit classes sat 0.13–0.36 x-heights wider than the plate (t/f bar,
-  c/b/l/o arcs — the plate even slides the next letter's body under the
-  t-bar) while baseline diagonals already matched. Joined placement now
-  judges clearance per y-bin (the nine fusion-guard bins) between A's
-  rightmost and B's leftmost band ink — bins where only one side has ink
-  impose nothing, which is exactly the plates' tuck-under; the covering-arm
-  exemption (r/p) collapses into it as a special case and backward bow exits
-  (w/v) keep the scalar clearance. Words bench 0.131392 → 0.130439, pairs
-  0.182982 → 0.174158, Gleichzug zero line unchanged (3/17), per-class
-  advance error halved (c→h −0.26 → −0.13, b→e −0.28 → −0.14, l to 0.00);
-  compose golden fixture deliberately re-pinned. The t/f bar class needs a
-  fork join (retrace the own stroke, then fall) — measured on the plates for
-  both the bar and the ſ ascent — and follows as its own round
-  (qualitaetsmetrik.md §6 „Dehn-Runde Stufe 1").
-
-- **A sketch-driven join round: six Sütterlin connection classes rebuilt
-  toward "one flow, one nib width".** An annotated feedback loop (the user
-  marking defects directly on rendered words) rebuilt the generated
-  Übergänge in `core/compose.py`, each as a letter-CLASS rule, never a
-  bigram: (1) a descender-loop exit (ſ) returns THROUGH the baseline and
-  rides the next Anstrich letter's lead-in line up from the Grundlinie
-  (class `{c, t}`; hanging bowls keep their direct coupling); (2) the
-  Deckstrich arm (r/p) is classified exhaustively in the bow band — no
-  crest-roll above the arm (the double-wave), and the covering arm no
-  longer kerns the next letter away (arm-exempt clearance with a
-  height-aware knob guard); (3) the arm FUSES onto the next letter's
-  lead-in crest apex (round bodies + r + i, `ARM_FUSE_GAP` 0.02) — the bow
-  rolls over in one motion, no parallel double-stroke; (4) same-slant
-  sawtooth diagonals (e→n, i→n, …) couple as ONE straight through-line
-  arriving high on the flank, placement untouched; (5) a bound loop-return
-  letter (d, round s) no longer writes the chart cell's finishing stub at
-  all — the return crosses the stem and continues in one motion into the
-  next letter (word-final keeps the complete chart form plus a new
-  level-launch late-rise loop finial); this supersedes the twice-rejected
-  O3 stub trim, which fails only with a tip-anchored connector
-  (qualitaetsmetrik.md §6); (6) every generated stroke now overlaps its
-  neighbours' ink by `CONNECT_OVERLAP` under the round cap, closing the
-  hairline white cracks at item handoffs. Wordbench: words
-  0.123703 → 0.122287, pairs 0.191805 → 0.183317; compose golden re-pinned
-  deliberately per stage.
-- **The SPA lint gate now enforces the React Compiler rules
-  (`eslint-plugin-react-hooks` 5 → 7).** v7 folds the stabilised React Compiler
-  rule set into `recommended`: 16 rules where v5 shipped two, of which **11 are
-  enforced at error** — previously only `rules-of-hooks` was. Ten of the newly
-  adopted error-level rules (`purity`, `immutability`,
-  `preserve-manual-memoization`, `static-components`, `error-boundaries`,
-  `set-state-in-render`, `globals`, `use-memo`, `config`, `gating`) are already
-  clean on the tree, so the gate gets strictly stronger at no cost. The two
-  that are not — `react-hooks/refs` (the latest-ref `ref.current = prop` write
-  during render, 4 sites) and `react-hooks/set-state-in-effect` (the "reset
-  transient state when the input prop changes" effects, 21 sites) — are
-  configured as warnings rather than switched off, because clearing them is a
-  behavioural refactor of `WrittenGlyph`/`WrittenWord`, the diagnostics dialogs
-  and the admin compare views, tracked with every site listed in issue #227.
-  `npm run lint` therefore
-  reports 0 errors / 45 warnings (20 pre-existing `react-refresh` + the 25
-  above); tests, build and `npm ci` are unaffected.
-
-- **Ruff no longer formats the Markdown docs.** Ruff 0.16 extends `ruff format`
-  to Python code blocks inside Markdown, which reflows the illustrative
-  snippets under `docs/` and in the tool READMEs — schema sketches,
-  pseudo-code and column-aligned trailing comments whose alignment is the
-  point. `*.md` therefore joins `[tool.ruff] exclude`; the formatter's scope
-  stays the 128 Python files it always covered. Unblocks the ruff
-  0.15.20 → 0.16.0 bump.
-
-- **Public `/write` endpoints: p95 latency ~1100 ms → ~100 ms (rendered
-  geometry byte-identical).** A cProfile of a realistic workload (real
-  120-anchor Sütterlin templates, mixed words up to the 160-char cap, gzip
-  on) showed 74 % of request CPU re-rendering the SAME glyph payloads per
-  request, dominated by per-segment Python-loop shapely buffers plus
-  `union_all`, with FastAPI's `jsonable_encoder` walk and level-9 gzip on
-  top. Four independent, output-preserving fixes: (1) `api/rendering.py`
-  memoises `render_payload_for_template` per
-  `(style, glyph_key, template id+updated_at, resolver, ratio, nib, pen)`
-  with the same TTL + invalidation discipline as the pooled-nib cache
-  (admin template writes clear the style's entries; callers copy before
-  annotating — the shared payloads are never mutated, pinned by the golden
-  parity fixture); (2) `core/template.py` builds the capsule/chisel
-  silhouette geometries with shapely 2.x vectorized array calls instead of
-  93k Python-level `buffer()` calls — bit-identical output verified against
-  the previous implementation on all fixture glyphs plus randomized
-  degenerate inputs (capsule 1.6×, chisel 3.5× faster); (3) the three write
-  endpoints serialize straight through `orjson` (new runtime dependency),
-  bypassing the `jsonable_encoder` walk over ~100k floats per response, and
-  the write-path template fetches defer the unused `raw_path`/`measurements`
-  JSONB columns (~100 KB per glyph off every request); (4) `GZipMiddleware`
-  drops from the implicit compresslevel 9 to 6 (~3× faster on the large
-  geometry bodies for ~1 % more bytes). In-process benchmark, 84 mixed
-  requests: `/write/word` p95 1116 → 100 ms (max 217 ms), the 23-key
-  `/write/glyphs` batch p95 1031 → 26 ms.
-
+  die 88.0° against a rigid ~90° engine (#220).
 - **Composer placement: nested-fall class rule (redesign R4).** With the
   global advance bias gone, the pairlab residuals are class-shaped: rising
   mid-band exits whose neighbour enters below them (t's bar, f's flag, c's
@@ -437,8 +530,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   pairs unchanged. Re-evaluated and again rejected in the same loop: the
   ligature-remnant tuck and the O3 A-side d-stub trim — the latter with a
   sharpened diagnosis (the trimmed stub retraces the loop's crossing stretch,
-  which carries real specimen ink; both headlines regress).
-
+  which carries real specimen ink; both headlines regress) (#220).
 - **Bound d leans its ascender loop like the school hand (redesign R5,
   stage 2).** The measured d-Oberlängen-Schleife leans 4–5° right in
   connected writing while the chart cell stands upright. A bound d in a
@@ -449,8 +541,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   chart-true. Bench-neutral within ruler noise; decided by the slant
   measurement and the das/der overlays. Extending the class to b/h/k was
   checked and not adopted (no measured lean). The compose golden fixture is
-  deliberately re-pinned for this intentional output change.
-
+  deliberately re-pinned for this intentional output change (#220).
 - **Pair cards link into the pair editor with the specimen as underlay.**
   Closing the redesign's R1b→R3 circle: every letter-pair card in the
   `/admin/vergleich` Verbindungen tab gets an "Im Paar-Editor öffnen" action
@@ -460,8 +551,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   "Vorlage unterlegen" toggle hides it) — the connector is drawn over the
   real pen's path instead of from memory. Saving an override invalidates
   that card's cached score; pairs that don't shape to exactly two slots
-  offer no link. The shared `pairKeysOf` helper moved to its own module.
-
+  offer no link. The shared `pairKeysOf` helper moved to its own module (#219).
 - **Specimen scores in the admin word comparison (redesign R1b, stage 2).**
   New admin-gated endpoint `GET /sources/{id}/word-samples/{sample_id}/score`:
   it runs the frozen wordbench ruler on the same composition `/write/word`
@@ -476,8 +566,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `tools/`), the ruler moved to `core/word_metric.py` — together with the
   exporter's specimen-reference pipeline and a per-sample skeleton cache —
   while `tools/wordbench/metric.py` remains as a re-export shim, so the
-  bench's frozen import path and behaviour are unchanged.
-
+  bench's frozen import path and behaviour are unchanged (#217).
 - **Pair editor + override badges (redesign R3, stage 2).** Clicking a cell
   in `/admin/paare` opens the new `PairEditorDialog`: both letters rendered
   at an adjustable coupling offset (right entry relative to left exit), the
@@ -486,8 +575,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `authored`; approving an untouched harvested row keeps its provenance and
   specimen citation. Matrix cells show green (approved) / orange (draft)
   override badges; ligature-folding cells (ch, ck, …) have no join and stay
-  non-clickable. New client endpoints for `/pairs` CRUD.
-
+  non-clickable. New client endpoints for `/pairs` CRUD (#216).
 - **Glyph-pair override layer (redesign R3, stage 1).** New `glyph_pairs`
   table (migration `0018`): sparse per-pair overrides over the §4 join
   generator, carrying a connector centerline + placement offset relative to
@@ -498,10 +586,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `GET /sources/{id}/write/word` fetches the approved rows in one query;
   new public reads + admin-gated writes under `/sources/{id}/pairs/…` with
   registry-key and geometry validation. The harvest importer and the pair
-  editor follow as the next slices.
-
-### Changed
-
+  editor follow as the next slices (#215).
 - **Position removal (redesign R2).** One authored form per glyph:
   glyph_keys lose their `-initial/-medial/-final` suffix (`a-medial` → `a`;
   the s-allographs untangle to `longs` — historically `s-medial` — and `s`),
@@ -512,59 +597,29 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   locks are OR-merged). The word position stays per-slot render context in
   `core/shaping.py`/`shaping.ts`. Render output is unchanged: the compose
   golden fixture stays byte-identical in geometry (only key names moved).
-  `architektur.md` §3 updated in the same change.
+  `architektur.md` §3 updated in the same change (#214).
+
+## [0.15.0] — 2026-07-17 — Full-repo audit: hardening, tests, deploy gating
 
 ### Added
-
-- **Admin pair matrix (`/admin/paare`, redesign R1).** Every two-letter
-  combination of a chosen letter (capitals only on the left), composed
-  server-side via the cacheable `/write/word` and rendered lazily per
-  IntersectionObserver — an unnatural join is visible directly instead of
-  hiding inside a longer word.
-- **Word-specimen comparison on `/admin/vergleich` (redesign R1b, stage 1).**
-  The page now has tabs — Buchstaben (the existing per-letter view) plus
-  Wörter/Verbindungen/Andere Hand: every connected-writing specimen from the
-  source's `words.json` sidecar next to the same word written by the engine,
-  side-by-side or with the engine ink overlaid on the specimen pixels,
-  registered exactly over the sidecar lineature (baseline/midband → scale);
-  unauthored letters surface as `missing` chips, the other-hand plate
-  (Abb. 22) is labeled as view-only context.
-- **Public word-sample reads.** New `word_samples` router:
-  `GET /sources/{id}/word-samples` (metadata with crop-local lineature) and
-  `GET /sources/{id}/word-samples/{sample_id}/crop` (grayscale PNG, exclude
-  rects painted paper-white), backed by `core/chart.py::load_word_samples` +
-  `word_sample_crop_to_png_bytes` over the committed sidecar — public like
-  the bbox crops (`<img>` cannot send the admin header), cached, covered by
-  a new HTTP test suite.
-
-- **Writing-system redesign proposal (`docs/proposals/schreibsystem-redesign.md`).**
-  Records the accepted direction from the 2026-07-17 review: one authored
-  form per glyph with the position triplication removed (R2), an admin
-  pair-matrix view over `/write/word` (R1), sparse *harvested* pair
-  overrides with capital-joins first as the concrete form of proposal B
-  (R3), placement-residual + O3 re-evaluation (R4), and a new measured
-  slant finding — the specimen hand's d-ascender loop leans ~4–5° right
-  of the upright chart cell while medians match (R5). Cross-referenced
-  from `docs/index.md` and `planaenderungen.md` (proposals B and D).
 
 - **"Einen alten Brief entziffern" section on /schriftkunde.** A method-only
   five-step decipherment guide (anchors first, stock formulas, chart
   side-by-side, the classic f/ſ–n/u–e/n traps, skip-and-return) with a
   pointer to the Schreibtafel — the practical how-to the page's own intro
-  audience was missing.
+  audience was missing (#211).
 - **Quiz provenance caption.** The quiz setup now names its source like the
   Tafel and Federprobe do ("Nachgebildet aus der gemeinfreien
-  Sütterlin-Ausgangsschrift von 1922.").
+  Sütterlin-Ausgangsschrift von 1922.") (#211).
 - **Structured data + meta polish.** Static `WebSite`/`Person` JSON-LD in
-  `index.html`, a `twitter:image:alt`, and `<lastmod>` on every sitemap entry.
+  `index.html`, a `twitter:image:alt`, and `<lastmod>` on every sitemap entry (#211).
 - **`docs/reference/werkzeuge.md`.** Human-facing entry point for
   glyphlab/wordlab/pairlab (exact CLI, `--live` read-only pulls, `temp/`
   output) with pointers to the bench and quizgen docs; indexed in
-  `docs/index.md`.
+  `docs/index.md` (#211).
 - **Admin `useInView` hook.** `/admin/vergleich` gates each card's heavy
   diagnostic fetch behind an IntersectionObserver and lazy-loads crop images
-  instead of firing ~30 JSON requests on mount.
-
+  instead of firing ~30 JSON requests on mount (#211).
 - **HTTP tests for the admin compute endpoints + the untested public reads.**
   New `tests/test_api_compute_endpoints.py` (15 tests): `/trace-preview`
   (pressure raw/refined + the constant-style compute-once branch, dry-run
@@ -574,440 +629,74 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   endpoints (PNG magic + cache headers), the single-glyph `/write` read,
   `/write/word` input bounds + the ligature-decompose fallback over HTTP,
   the new bbox geometry 422s, and the styles/sources/hands get-by-id 404s.
-  `api/routers` coverage: templates 41→57 %, chart 47→84 %, write 61→67 %.
+  `api/routers` coverage: templates 41→57 %, chart 47→84 %, write 61→67 % (#208).
 - **Pooled nib/pen memoisation unit tests.** `tests/test_rendering_pool.py`
   pins the TTL cache the admin-trace→public-render coherence hangs on
   (hit, expiry, explicit invalidation, no-scan for constant styles) with a
-  fake repository and a frozen clock — `api/rendering.py` 68→90 %.
+  fake repository and a frozen clock — `api/rendering.py` 68→90 % (#208).
 - **Guard against silent lab-test skip rot.** The glyphlab/wordlab/pairlab
   suites skip in CI on gitignored fixtures by design, so a renamed export
   dir would disable them forever without anyone noticing;
   `tests/test_lab_fixture_wiring.py` pins the consumers' fixture dirs to
-  the exporters' output dirs and the shared manifest name.
+  the exporters' output dirs and the shared manifest name (#208).
 - **Vitest suite for the glyph lock/split helpers.** `domain/glyphs.test.ts`
   (10 tests) pins `siblingKeys` (incl. the s/ſ allograph overrides),
   `isLetterSplit`'s `.some` contract and `quizKeysFromLocked` (lock-as-one
   collapse, canonical-preferring representative, split units, punctuation
-  exclusion, allograph separation).
+  exclusion, allograph separation) (#208).
 - **Own-code deprecations now fail the test suite.** The deprecated
   `HTTP_422_UNPROCESSABLE_ENTITY` starlette constant (9 accumulated
   warnings) is renamed to `HTTP_422_UNPROCESSABLE_CONTENT` across the
   routers, and `filterwarnings` turns DeprecationWarnings raised from
   `api`/`core`/`tools` code into errors — third-party warnings stay
-  warnings.
+  warnings (#208).
 - **`/verify-migrations` skill + a hardened CI migrations job.** The CI job now
   runs the full sequence — `alembic upgrade head`, `alembic check`
   (model↔migration autogenerate drift) and a `downgrade -1`/`upgrade head`
   roundtrip — against its throwaway Postgres 16; the new skill runs the exact
   same sequence locally (Docker or the container's unprivileged Postgres), so
   the shared Cloud SQL DB never sees an untested revision. This closes the
-  Alembic entry in CLAUDE.md's "known gaps without a loop".
+  Alembic entry in CLAUDE.md's "known gaps without a loop" (#204).
 - **Post-deploy prod smoke.** `api/cloudbuild.yaml` ends with a smoke step
   against the freshly deployed revision: `/health`, `/styles` non-empty,
   `/write/word?text=lesen` returns items, and an uncredentialed write answers
   401 (fail-closed gate proven live) — a bad image that still answers /health
-  can no longer ship silently.
+  can no longer ship silently (#204).
 - **Frontend coverage reporting.** `npm run test -- --coverage`
   (`@vitest/coverage-v8`) uploads to Codecov under a new `frontend` flag
   (informational patch status to start); `app/` is no longer ignored in
-  `codecov.yml`, so SPA regressions become visible to the patch gate.
+  `codecov.yml`, so SPA regressions become visible to the patch gate (#204).
 - **`REGEN_SHAPING=1` regen path for the shaping-twin fixture.** Mirrors the
   compose-golden pattern: a legitimate shaping change regenerates
   `tests/fixtures/shaping_cases.json` from the Python source of truth instead
-  of hand-editing JSON that two suites assert.
+  of hand-editing JSON that two suites assert (#204).
 - **Pre-commit config.** `ruff-check` + `ruff-format` hooks (same versions CI
-  pins), so format-only red CI runs stop happening; ESLint stays CI-only.
+  pins), so format-only red CI runs stop happening; ESLint stays CI-only (#204).
 - **`docs/reference/write-api.md`.** The shipped public render endpoints
   (`/write/glyphs` + `/write/word`) graduate from the proposal into a proper
   reference doc (pipeline, wire format, cache semantics, render-cache
-  consumption), indexed in `docs/index.md`.
-
-### Fixed
-
-- **Eraser mask correctly applies to inserted donor cells ("Patches").**
-  Previously, when placing a second cell (Zelle einsetzen) into a crop via the
-  admin wizard, the eraser tool (Ausschluss/Radierer) could not remove its ink
-  because patches were composited *after* the eraser ran. The crop pipeline now
-  composites patches before the eraser, matching the frontend's visual layering
-  and allowing the eraser to clean up unwanted ink from donor cells.
-- **Robust `_rasterize_strokes` against malformed payloads.**
-  The `core/chart.py` rasterizer now uses `isinstance` checks and `try...except` 
-  blocks when parsing `mask_strokes` and `ink_strokes`. A malformed JSON row in 
-  the database (e.g. flat integers instead of coordinate pairs) will now be 
-  safely skipped instead of crashing the pipeline with a 500 error.
-- **Wizard gestures stranded by their own save — the eraser that kept
-  painting and the Grundlinie that blocked the Weg.** Handing the preview
-  over only once the commit lands (above) clears the gesture by identity,
-  but nothing ended the POINTER's turn at pen-up: every pointer-move during
-  the ~round trip replaced that same state with a new object, so the identity
-  clear found a stranger and skipped. The gesture then lived forever — the
-  red Ausschluss draft kept growing on plain hover moves and only vanished on
-  the next press, and a leaked Grundlinie/Mittellinie drag survived the step
-  change and swallowed every pointer sample on the Weg step (`if (calibDrag)`
-  returns ahead of the trace branch), so the ductus could not be drawn at all
-  and the stale value was committed on the next click. `WizardCanvas` now
-  separates the two lifetimes explicitly (`gestureUtils.ts`): a pointer
-  **grip** claimed at pen-down and released at the top of pointer-up, before
-  the commit is awaited — so the preview still waits for its write while no
-  sample can rewrite it. The grip also makes one pointer own the canvas (a
-  palm resting beside the S-Pen no longer hijacks a stroke, and only the
-  owning pointer's release commits), adds a `buttons === 0` backstop that
-  finishes a gesture whose pointer-up never arrived, and a step change is now
-  a hard gesture boundary.
-- **Admin writes answered with the state from *before* the write.** Every
-  repository `upsert` writes through a Core insert-on-conflict the ORM session
-  cannot see, then re-selects the row — and a plain re-select returns the
-  instance already in the session's identity map, unrefreshed. Since the
-  handlers load the row first (the bbox PUT's coalesce lookup, the `/trace`
-  identity guard), every response carried the pre-write values. The setup
-  wizard builds each next edit on the last response, so it re-sent a
-  one-edit-old bbox: guide drags snapped back to their old position before
-  jumping forward a round trip later, and every second eraser/ink stroke was
-  silently dropped — erased neighbour ink reappeared as the crop "jumped back
-  and forth". The three upserts (bbox, template, glyph pair) now re-select with
-  `populate_existing`.
-- **Wizard gestures no longer snap back for the duration of their save.** The
-  in-flight drag/stroke preview (Grundlinie, Mittellinie, Schräglage, donor
-  cell, eraser and ink brush) was cleared *before* the PUT resolved, so the
-  guide line or stroke rendered from the still-unsaved bbox for one round trip.
-  The preview now hands over to the stored value only once the commit lands,
-  cleared by gesture identity so a gesture started during the save survives.
-- **Cross-source render-cache poisoning.** `WrittenGlyph` seeded admin
-  payloads from the runtime-switched active source under the *public*
-  source's cache keys, so after a source switch in the admin, `/quiz` and
-  `/tafel` could serve the wrong script in the same SPA session. The
-  component now takes a `sourceId` prop used for peek/seed/fetch alike,
-  threaded from all three admin surfaces.
-- **Quiz word bank no longer degrades silently on cold start.** The boot
-  read now retries like its siblings instead of falling back to the small
-  bundled bank for the whole session after one failed fetch.
-- **Out-of-chart bboxes are rejected (422)** instead of storing a box that
-  later 500s the public `/crop` with a zero-size crop.
-- **DELETE /templates and /bboxes return 404 for nonexistent rows** instead
-  of a false 204 on a typo'd glyph key.
-- **Error details no longer leak internals.** The public chart 404 hid the
-  absolute container path and the style-resolution 500 its referential
-  detail; specifics now go to the server log.
-- **`/hands` responses carry the shared Cache-Control** like styles/sources.
-- **`/fit` query params are bounded**; `require_db`'s 503 distinguishes
-  "not configured" from "initialisation failed".
-- **Quiz results word render falls back to plain type on error** instead of
-  spinning forever after a cache eviction + failed refetch.
-- **`/diagnostic` is admin-gated like its compute siblings.** The 3-column
-  diagnostic re-runs the image pipeline (chart decode + binarise +
-  skeletonise, ~0.2 s CPU) per request; `/fit` and `/quality` were gated for
-  exactly that reason but `/diagnostic` stayed public and uncached on the
-  max-instances=1 service. Only admin surfaces consume it — the public
-  renderer reads the cached `/write` payloads. The admin-gate HTTP test
-  matrix now includes it.
-- **Structural uniqueness for `glyph_key`.** Every template read — including
-  the public `/write` endpoints — keys on `glyph_key` via
-  `scalar_one_or_none()`, so two rows sharing `(style, glyph_key, variant)`
-  would turn every read into a 500; the API's 409 backstops are
-  read-then-write and bypassable out of band. Migration 0015 adds the unique
-  constraint (mirrored in the model), making the backstops UX instead of the
-  only defense.
-- **Bbox saves reject degenerate rectangles.** `PUT /bboxes/{key}` accepted
-  inverted or negative rectangles (`x1 <= x0`, `y1 <= y0`), which stored fine
-  and then 500ed the public crop/derivation paths on an empty crop; the
-  handler now 422s with a clear message, alongside the existing
-  baseline/midband check.
-- **Cross-source pen-pool invalidation.** A style can pool from several chart
-  sources (Kurrent: loth-1866 + petzendorfer-1889); a trace/resample/delete
-  issued through source A that touches a template whose provenance is B left
-  B's pooled nib/pen stale for the 10-minute TTL. Template writes now clear
-  the whole style's pools (they are tiny), with a unit test pinning it.
-- **Cache-Control on the remaining public reads.** `GET /bboxes/status` (the
-  quiz boot) and the crop PNGs (quiz prompt fallback; the wizard busts via
-  its version param) now carry the shared public cache header; `GET
-  /templates` deliberately stays uncached — the admin sidebar reads the same
-  list and needs a fresh `has_data` right after a trace, and the code now
-  says so.
-
-- **Fact-checked public copy, with the fact sheets updated to match.** A
-  research pass with primary sources settled the audit's content findings:
-  the Schriftkunde chronology note claimed the Swiss cantons dropped Kurrent
-  "um 1900" while the geography section of the same page (correctly, per the
-  cited ZB Zürich source) says 1890–1930 — the note now matches. The 1941
-  passage attributes the "foreigners can't read it" justification precisely
-  (Lammers, Chef der Reichskanzlei, forwarding note of 13 Jan 1941) and the
-  fact sheets now name Bormann's party-office circular (3 Jan), Lammers'
-  forwarding (13 Jan) and the Reich education ministry's school decree
-  (1 Sept) with sources. The Gleichzugfeder blurb no longer claims Sütterlin
-  "setzte sich in den 1920er Jahren durch" (Prussia from 1915, most Länder
-  only around 1930). The Sütterlin-never-in-Switzerland claim is now backed
-  by a direct ZB Zürich quote in the fact sheet, and the Swiss 1890–1930
-  range gained an academic reference (Boser/Hofmann 2019).
-- **Quiz gloss for "Gulden": silver, not gold.** The 19th-century South
-  German Gulden was a silver coin (only the name derives from the medieval
-  gold "guldin"); the generator source, `quiz_words.json` and — via new
-  migration 0014 — the already-seeded DB row now read "alte Silbermünze
-  (süddeutsche Währung)".
-- **Impressum/llms.txt no longer overclaim synthesis.** "Alle gezeigten
-  Schriftzüge sind … kein historisches Original" contradicted the
-  Schreibtafel's genuine public-domain scans and the Koch 1928 original on
-  /schriftkunde; both texts now distinguish synthesized forms (marked as
-  such) from the PD originals shown with provenance. The privacy section's
-  "keine personenbezogenen Daten" now carves out the 30-day server logs the
-  same page already discloses (IPs are personal data).
-- **Copy polish across the public pages.** Landing no longer claims all
-  three scripts are engine-written ("die Sütterlin schreibt hier schon");
-  the Federprobe card invites a word *or short sentence* (the input takes
-  48 chars); "↻ noch einmal schreiben" matches the other replay labels;
-  the worksheet intro gains its missing article; the written-glyph aria
-  label says "alte Schreibschrift" instead of naming Kurrent while the
-  engine writes Sütterlin; trailing ellipses uniformly get their narrow
-  space; the Schwellzug explainer no longer has the *pen* swelling; the
-  show-script font is consistently "GL-GermanCursive"; the sources intro
-  points readers to the GitHub fact sheets.
-
-- **Straight-quote pairing spans the whole text, not one word.** The shaping
-  twins (`core/shaping.py` + `app/src/domain/shaping.ts`) reset the
-  low/high quote parity per whitespace-split word, so a multi-word quote —
-  `"Guten Tag"` in the Federprobe — rendered two opening „ quotes. The parity
-  now threads through `shape_text`/`shapeText`; the shared fixture gained the
-  multi-word case and was regenerated via `REGEN_SHAPING=1`.
-- **Quiz word prompt no longer spins forever on a failed compose.** The word
-  branch of the question card passed no `onError` to `WrittenWord`, so a
-  compose request that died mid-cold-start (the render cache's retry budget is
-  much shorter than the boot loads') left an infinite `CircularProgress`. The
-  prompt now offers the same retry affordance as the Federprobe — a plain-type
-  fallback would hand the solution to the learner, so it retries instead; the
-  post-answer comparison forms fall back to plain type.
-- **Quiz keyboard focus survives a correct answer.** Focus moved to "Weiter"
-  only on a wrong pick; on a correct one every answer button disables and focus
-  fell to `<body>` — reduced-motion users got a "Weiter" button that never
-  received focus, everyone else lost their tab position each auto-advance. The
-  advance control now receives focus on every verdict, and after the advance
-  focus returns to the answer grid.
-
-- **`quiz_words.created_at` is NOT NULL like every other `created_at`.**
-  Migration 0010 forgot `nullable=False` (0004 declares it on all other
-  tables) while the model implies NOT NULL — the very first `alembic check`
-  run caught the drift; migration 0013 tightens the column (safe: it carries
-  `server_default=now()`).
-
-- **Slim public reads for the heavy list payloads.** New
-  `GET /sources/{id}/bboxes/status` returns only the availability flags
-  (glyph_key, locked, split) and `TemplateRepository.list_summaries()` feeds
-  the template list from a column-select — the admin sidebar and the public
-  quiz no longer decode multi-MB of `raw_path`/`anchors`/mask/ink/patch JSONB
-  for six scalar fields. The quiz left the pinned AdminProvider entirely: a
-  new `useQuizSource` hook boots from source + template summaries + status
-  flags (same cold-start retry), so `/quiz` stops downloading the full
-  crop-editing bbox payload.
-
-- **jsx-a11y lint gate.** `eslint-plugin-jsx-a11y` (recommended rules) now runs
-  in the frontend lint, so the mechanical accessibility slips on the SVG-heavy
-  custom surfaces get caught before review.
-- **`PaperCardLink` + `PaperCardCta`.** The public "paper card that is a link"
-  (hover/focus lift, viridian border, focus ring, CTA underline sweep) that
-  LandingView, HubView and the Schriftkunde try-cards each copy-pasted is now
-  one shared component — contrast and focus fixes land once.
-
-- **Authorized admin-write and Cloudflare-Access test suites.** New
-  `tests/test_api_admin_writes.py` exercises the gated handlers with a CORRECT
-  token: bbox PUT/GET roundtrip incl. the coalesce contract (omitted
-  `locked`/`n_anchors` preserve stored values), the full `/trace` pipeline
-  against the on-disk synthetic chart (persisted template, list `has_data`,
-  bbox anchor-count sync), the 423 lock + `force` override, and DELETE
-  semantics for bboxes and templates. New `tests/test_api_auth.py` covers the
-  JWT branch that actually gates prod: listed email → authorized, unlisted →
-  hard 403 (no token fallback), unverifiable JWT → break-glass token path, plus
-  unit tests of `_verify_cf_access_jwt` (lowercasing, PyJWTError → None,
-  missing email claim, unconfigured). The shared ASGI harness moved from
-  `test_api_http.py` into `tests/api_harness.py` + a conftest `api` fixture so
-  all three API suites reuse it.
-- **HTTP-level API test suite + an Alembic migration check in CI.** New
-  `tests/test_api_http.py` runs the FastAPI app under pytest against an
-  in-memory aiosqlite session (dependency-overridden `get_db`, no
-  Postgres/network): the admin gate (401 on missing/wrong token, fail-closed
-  503 when unconfigured) is asserted for every write endpoint incl. the newly
-  gated `/fit` + `/quality`, plus Cache-Control on the public reads and
-  `/write/glyphs` + `/write/word` end-to-end with synthetically seeded
-  templates. A new `migrations` CI job runs `alembic upgrade head` (schema +
-  seeds) against a throwaway Postgres 16 service on every PR, so a broken
-  revision can no longer reach the shared Cloud SQL instance. Vitest gains
-  `renderCache.test.ts` (request batching, in-flight dedupe, cache hits,
-  missing-as-null, error eviction, cold-start retry).
-- **Brand icons + social preview image.** `favicon.ico` (multi-size),
-  `apple-touch-icon.png` and a 1200×630 `og.png` — the viridian Kurrent K on
-  the paper gradient, rendered from the bundled GLKurrent face — wired into
-  `index.html` with a `summary_large_image` twitter card; link previews and
-  browser tabs stop being generic.
-- **Shareable Federprobe.** The typed text syncs to a `?text=` URL parameter
-  (debounced, history-friendly) with a "Link kopieren" button and a character
-  counter on the input — the page's output is now deep-linkable.
-- **"Jetzt ausprobieren" cross-links on `/schriftkunde`.** The primer closes
-  with hub-style cards into the quiz, the Schreibtafel and the Federprobe
-  instead of dead-ending after the chronology.
-- **Chart image LRU cache + Cache-Control on stable reads.** Decoded chart
-  grayscale arrays are cached per resolved path (read-only, max 4 entries), so
-  repeated crops/diagnostics/fits stop re-decoding the same immutable PD scan;
-  `/styles` and `/sources` responses now carry the shared cache policy and the
-  chart image caches for a day.
-- **Direct unit tests for the pure-math core modules + a mechanical shaping twin
-  guard.** New `tests/test_geometry.py` and `tests/test_widths.py` pin the
-  deterministic numeric helpers in `core/geometry.py` (tangents, arc length,
-  curvature, straightness residual, TLS line fit, vertical-run/crossing/retrace
-  detectors) and `core/widths.py` (the `BroadNib` law + vectors, per-stroke
-  tangents, every `resolve_half_widths` branch) with known inputs/outputs, so the
-  upcoming core-dedup refactor has a behavioural net; `_locally_straight_mask`
-  gains direct coverage in `tests/test_quality_components.py`. The
-  `core/shaping.py` ↔ `app/src/domain/shaping.ts` twin is now enforced by a shared
-  fixture (`tests/fixtures/shaping_cases.json`, generated from the Python source of
-  truth) asserted by both `tests/test_tri_script.py` and a new Vitest test
-  (`app/src/domain/shaping.test.ts`) — mutating one shaping without the other fails
-  CI. Wires a `test` script + `vitest` into `app/` and a Vitest step into the
-  frontend CI job (build-only before).
-- **Third wordbench set: the Abb. 22 Schülerschrift plate (cross-hand reference).** The
-  1922 Leitfaden's only other connected Ausgangsschrift specimen — a pupil's hand
-  (Bruno Krüger, 3rd school year, Breitkantfeder, 106 words of Hoffmann von
-  Fallersleben's "Hab' Dank, du lieber Wind!") — is now measured like Abb. 19
-  (`words-abb22.png` + 106 sidecar entries, boxes proposed, line-QC'd and hand-corrected).
-  Sidecar entries carry a new optional `set` field; `export_fixtures`/`run`/`wordlab`
-  accept custom set names, so the plate freezes into its own sibling fixture root
-  (`suetterlin-1922-abb22`, `--set abb22`) and its cross-writer numbers are never averaged
-  into the same-hand headlines. Provenance + PD rationale in the source's `SOURCE.md`.
-- **ESLint gate for the SPA.** Added a flat `app/eslint.config.js` (JS +
-  typescript-eslint recommended + `react-hooks`, react-refresh as warnings),
-  a `npm run lint` script, and an ESLint step to the CI frontend job — the
-  `react-hooks/exhaustive-deps` suppressions in the tree are now enforced
-  instead of inert. Fixed the findings this surfaced: `prefer-const` in
-  `TafelView.tsx`, a missing hook dep in `RederiveAllDialog.tsx`, and added
-  the missing justification to a `WrittenWord.tsx` suppression; kept the
-  `_`-prefix unused-args convention and allowed intentional non-breaking
-  spaces in UI strings. Updated `.github/copilot-instructions.md` to record
-  that ESLint is now configured.
-- **`tools/pairlab` — independent-fit dissection of letter joins.** For every real
-  occurrence of a letter pair in the Abb.-19/Abb.-20 specimens it re-fits each letter
-  INDEPENDENTLY onto the frozen skeleton (bounded translation grid), regenerates the
-  production connector between the two placements (same constants/guards as
-  `core/compose.py`), tracks the specimen's own connecting stroke through the
-  inter-letter gap, and measures tail/head adaptation profiles — how far into each
-  glyph the real pen departs from the template before the join. Separates the three
-  entangled failure modes (connector shape · placement · glyph-end adaptation) the
-  word bench cannot tell apart. Additionally it TRACES the real pair along the known
-  ductus: the M4 fit (`core/fit.py`) warps both templates onto the specimen ink, so
-  every occurrence yields its ground-truth target — true coupling heights/tangents
-  per join class and the stub-trim signal (fitted endpoint vs. tracked departure).
-  Overlay + deviation-profile PNGs per occurrence, JSON aggregation, unit-tested
-  pure geometry core (`tests/test_pairlab.py`).
-- **Transition findings 2026-07-11** (`docs/proposals/uebergaenge-befund.md`): the
-  pairlab survey over 87 occurrences / 45 pairs. Placement is the largest single
-  error (39/87 need ≥ 0.25 xh correction); the standard diagonal join is generically
-  right once letters sit correctly (f→e/t→e's bench penalty was placement); high
-  exits (d loop, o/b/v/w Deckstrich bows, the r arm) systematically REPLACE both
-  coupling stubs (0.2–0.4 xh per side) with one diagonal into the next letter's
-  first-downstroke apex — confirming the stub hypothesis class-wise, not per pair.
-  Solution options O1–O3 (placement first, coupling anchors, gated pair overrides)
-  with cross-references from `qualitaetsmetrik.md` §6 and Vorschlag B.
-- **Connectors follow the school hand's join grammar.** The jul09/10 join audit (all
-  generated Übergänge ranked with seam-kink angles against the Abb. 19/20/22 specimens)
-  adds the plates' entry-class join grammar on top of the jul11 coupling composer:
-  arcade entries (n m i u …) that must lose height now couple low through a baseline
-  garland that merges tangentially onto their lead-in line (bi/on originals), the r-arm
-  sets off with its authentic Absatz corner before a deep garland, clamped bow exits
-  roll G1 over the crest instead of cornering (the b→e "extra Zacken"), sawtooth pairs
-  (e→n family) pull onto one continuous diagonal instead of leaving a mid-height shelf,
-  and the low-exit word-final Endstrich is a two-tangent quadratic that flattens like the
-  plates (short flick after descender exits) while high forward exits keep the jul11 level
-  Auslauf. Round bodies after a high exit stay on the jul11 rising-flank coupling anchor
-  (O2), which subsumes the garland there. Measured standalone against the pre-jul11 base
-  the grammar scored words 0.1253 → 0.1241 / pairs 0.1992 → 0.1927; the combined headline
-  on top of jul11 was not re-measured in the merge environment (the wordbench needs the
-  shared DB), but both composer unit-suites (`test_compose_coupling`, `test_compose_joins`)
-  pass and the compose golden fixture is deliberately re-pinned.
-- **WCAG AA contrast for viridian text and the quiz answered state.** New
-  `paper.viridianText` (#2e6152 — derived for contrast, not a period hex;
-  5.15:1 on the paper ground vs 3.28:1 for the accent #40826d) is used
-  wherever viridian is body-size text: card CTAs, the hub/landing links, the
-  quiz score and verdict, the Scribe copy confirmation, Tafel chip/provenance
-  links, prose-link hovers. `quiz.resolvedText` darkened to #6e5c42 (5.5:1 on
-  the answered button face, was 3.61:1). The accent #40826d stays for large
-  display, initials, borders, fills and focus rings.
-- **Contiguous heading outline on every public page.** Card titles now carry
-  explicit heading components (hub cards `h2` under the page `h1`; landing,
-  Schriftkunde and Tafel cards `h3` under their `h2` section headings), and
-  MUI's default subtitle→`<h6>` mapping is overridden to `<p>` at the theme
-  level — definition-row terms and timeline years no longer appear as phantom
-  section headings to screen readers.
-- **The nav marks the current area.** PublicHeader links carry
-  `aria-current="page"` plus a visible active state (ink colour + full
-  viridian underline) for the area whose page is open.
-- **`/trace` can no longer cross-link template rows.** The template upsert
-  conflicts on `(style, glyph, position, variant)` while reads go by
-  `glyph_key`, so a client bug pairing a wrong URL key with a payload identity
-  could conflict-update another row and rewrite its `glyph_key` — reads then
-  silently 404 on the shared prod DB. `POST /trace` now derives the expected
-  key from the shared registry (`core.shaping.expected_glyph_key`, the Python
-  twin of `glyphs.ts`; `{base}-{position}` convention as fallback) and rejects
-  a mismatch with 422.
-- **DB engine init race closed.** The lazy `asyncio.Lock` getter in
-  `core/database/connection.py` was itself check-then-set, so two first
-  requests could each mint their own lock, both enter `init_db()`, and the
-  loser's engine (and Cloud SQL connector) leaked without `dispose()`. The
-  lock is now created at import; the dead `_sync_init_lock` is gone.
-- **No more raw English error strings on public pages.** `/quiz` and `/tafel`
-  showed `String(e)` (e.g. "TypeError: Failed to fetch") as the BootStatus
-  detail under a German title; both now show a fixed German sentence
-  (`common.boot.sourceUnreachableDetail`) and log the exception to the console.
-- **A late word-compose rejection can no longer evict a fresh cache entry.**
-  `fetchRenderWord`'s error eviction now checks entry identity before deleting
-  (like the glyph cache): after a FIFO eviction + re-fetch under the same key,
-  the old promise's rejection used to delete the new, valid entry.
-- **The nav's current-area marker covers the standalone tool routes.** /quiz
-  and /tafel light up Lesen, /federprobe lights up Schreiben (they keep their
-  stable top-level URLs and are not nested under the hubs); only the exactly
-  matching page uses `aria-current="page"`, area membership uses `"true"`.
-- **CHANGELOG `[Unreleased]` consolidated to one heading per category.**
-  Successive PR insertions had produced duplicate Added/Changed/Fixed headings
-  with bullets filed under the wrong category; regrouped per Keep-a-Changelog.
-- **The Cloud SQL connector fallback is now truly async.** The
-  `INSTANCE_CONNECTION_NAME` path built a *sync* pg8000 engine and handed it to
-  `async_sessionmaker(..., class_=AsyncSession)` — the first session would have
-  raised `ArgumentError` and `close_db` would have crashed on `await
-  engine.dispose()`; it now uses the native async Cloud SQL Connector with an
-  asyncpg `async_creator`. A failing lazy `init_db()` in the session dependency
-  is also caught and surfaces as the clean 503 instead of an unhandled 500.
-- **Wizard brush commits can no longer overwrite each other.** All bbox writes
-  are serialized through one queue and compute their payload from the
-  then-current bbox at write time — two quick eraser/ink strokes (S-Pen taps
-  faster than the PUT round-trip) used to both build on the same stale state,
-  silently dropping the first stroke. Bbox saves also stopped echoing a stale
-  `n_anchors` back, which used to revert the server-side sync with the derived
-  canonical (`_sync_bbox_anchor_count`); and the canvas renders committed
-  strokes/patches/saved-trace through memoised layers, so a 240 Hz pen gesture
-  only re-renders the in-flight stroke.
-- **Federprobe and Schreibtafel fail loudly instead of silently.** A failed
-  compose fetch on `/federprobe` now shows an error message with a retry button
-  instead of an endless spinner, and a failed letter batch on the Tafel shows a
-  notice + retry instead of silently rendering an empty ruled sheet.
-- **Mask preview halves its binarisation work.** The "Maske zeigen" preview
-  derives the filled mask from the already-thresholded raw mask via
-  `fill_small_holes` instead of running the adaptive threshold twice
-  (identical output).
+  consumption), indexed in `docs/index.md` (#204).
 
 ### Changed
 
 - **CORS is now environment-scoped.** Production allows only the
   `kurrentschrift.ink` origins; the localhost/LAN developer conveniences no
   longer apply to prod (where `allow_credentials` rides the CF Access
-  cookie). An env override remains available.
+  cookie). An env override remains available (#211).
 - **Template writes commit before invalidating the pooled-nib cache**, so a
   concurrent public read can no longer repopulate the 600 s TTL cache from
-  pre-write state.
+  pre-write state (#211).
 - **Ligatures require both characters lowercase** in the shaping twins
   (Python + TS): `sT` / `McHale` no longer swallow capitals into
-  `longst`/`ch` ligatures; pinned by new shared fixture cases.
+  `longst`/`ch` ligatures; pinned by new shared fixture cases (#211).
 - **Wizard stroke capture stores relative timestamps.** Points now carry
   `performance.now() - traceEpoch` instead of a `t=0` first point followed
   by raw epoch values — saved traces become usable for the post-MVP
-  velocity/style analysis.
+  velocity/style analysis (#211).
 - **Quiz play/results panels use semantic headings and the type ladder.**
   Section titles are real `h2`/`h3`s in ladder variants (Playfair-600 rule);
   ad-hoc pixel sizes are mapped to the nearest rung, deliberate display
-  figures are marked as such.
+  figures are marked as such (#211).
 - **Public copy audit fixes.** The Gleichzugfeder paragraph no longer calls
   the *pen* a school script; the 1915 timeline entry drops the four-year
   hedge; the Schriftkunde lead anakoluth is split; the Tafel intro says
@@ -1016,19 +705,19 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   no longer overclaims; the Federprobe page finally carries its own name as
   the h1; "kuratiert" jargon is replaced; the worksheet uses the DIN/Süß
   terms (Ober-/Mittel-/Unterlänge, "Mittellänge (Schreibhöhe)") instead of
-  Band/x-Höhe.
+  Band/x-Höhe (#211).
 - **Impressum wording made defensible.** EU data-centre claim now names
   Google/Cloudflare as US providers certified under the EU-US Data Privacy
   Framework; the rights paragraph is reconciled with the 30-day server logs;
-  date bumped to July 2026.
+  date bumped to July 2026 (#211).
 - **Quiz gloss corrections.** "Groschen" (era-scoped: 10-Pfennig piece only
   in the Kaiserreich) and "Witwe" (precise definition) fixed in the
   generator, the regenerated word bank, the bundled fallback bank, and
-  in place via migration `0016_quiz_gloss_fixes`.
+  in place via migration `0016_quiz_gloss_fixes` (#211).
 - **The quiz is named "Lese-Quiz" in the UI too.** The six "Buchstaben-Quiz"
   strings (page title, hub/landing/Schriftkunde cards, SEO title) and the
   letters-only SEO/landing descriptions now match the shipped scope
-  (letters + whole words), consistent with the docs rename below.
+  (letters + whole words), consistent with the docs rename below (#211).
 - **Docs sync.** copilot-instructions' schema section now states both
   template unique constraints (the `(style_id, glyph_key, variant)` one
   shipped in 0015) instead of calling `glyph_key` UI-only;
@@ -1036,35 +725,35 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   to the shipped reading quiz (letters + words) across README/docs/guides;
   the two agent guides agree on read-first and language rules; implemented
   proposals are annotated in `docs/index.md`; README explains the
-  Sütterlin-first validation order and lists `tools/`/`tests/`.
+  Sütterlin-first validation order and lists `tools/`/`tests/` (#211).
 - **Cloud Run request timeout lowered to 60 s** (from 600) — nothing
-  legitimate runs ten minutes.
+  legitimate runs ten minutes (#211).
 - **Deploys go no-traffic → smoke → promote.** `api/cloudbuild.yaml` used to
   route 100 % of traffic and only then smoke — a bad revision served users
   until the build went red. The deploy now carries `--no-traffic` +
   `--tag=candidate` + a deterministic `--revision-suffix`, the smoke suite
   probes the candidate's tag URL (and asserts the tag still points at this
   build's revision), and a final `update-traffic --to-revisions` step promotes
-  exactly the smoked revision — never a concurrent build's unsmoked one.
+  exactly the smoked revision — never a concurrent build's unsmoked one (#210).
 - **The Tafel boots from the slim bbox read.** `BboxStatusOut` gains the six
   layout scalars (`x0/x1/y0/y1/baseline_y` + flags) the sheet layout needs,
   and `useGrundtafeln` switches from the full `BboxOut` list — the same
   multi-MB mask/ink/patch JSONB payload the quiz was weaned off in the last
   audit round — to `GET /bboxes/status`. The three chart scans (~1.4 MB of
-  JPEG, two below the fold) now load lazily like the other public images.
+  JPEG, two below the fold) now load lazily like the other public images (#210).
 - **One version source for the API.** `api/main.py` read `0.2.0` while
   pyproject said `0.1.0` and the last release was 0.13.0; `/docs` now reads
   `project.version` from the shipped `pyproject.toml` (bumped to 0.13.0), and
-  the release note covers the bump.
+  the release note covers the bump (#210).
 - **pre-commit runs ruff through uv.** The mirror-based hooks pinned their own
   `rev` that Dependabot never bumps — pre-commit-green/CI-red was weeks away;
   the hooks are now `repo: local` `uv run --extra dev ruff …`, so uv.lock is
-  the single ruff version source.
+  the single ruff version source (#210).
 - **Palette rgba literals replaced with `alpha(token, …)`.** The quiz panels
   and the Tafel sheet baked `paper.viridian`/`pigment.vermilion`/`paper.line`
   into rgba strings a palette retune would silently miss — `PublicHeader`'s
   bar background had in fact already drifted from a pre-retune `paper.bg`
-  (rgb 231,221,193 vs the token's 231,218,191); all derive from the tokens now.
+  (rgb 231,221,193 vs the token's 231,218,191); all derive from the tokens now (#210).
 - **Docs drift pass from the audit.** `animation-rendering.md` §1 now
   describes the SHIPPED engine — WAAPI via `useStrokeReveal`/`el.animate`
   with two-thirds-law keyframes and isochrony from `lib/strokeTiming`, not
@@ -1081,9 +770,9 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   token + its usage rule; `planaenderungen.md` Vorschlag D gets a status
   note (core/shaping.py is the shipped precursor; the `glyphs` table is
   `templates` since 0004); `[Unreleased]` regrouped to one heading per
-  category.
+  category (#209).
 - **CI frontend job on Node 22** (20 reached EOL 2026-04-30); `app` engines
-  field now requires `>=22`.
+  field now requires `>=22` (#204).
 - **Docs and agent-surface refresh from the audit.** `.claude/commands/prime.md`
   rewritten from the current repo layout (it described the pre-library-schema
   world: `glyphs.py` router, `constants.ts`, `state.tsx`); `verify-api` skill
@@ -1100,7 +789,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `frontend-stack.md` names `HeroWritten` and clarifies "keine eigene
   Komponenten-Bibliothek"; `animation-rendering.md` §1 describes the
   render-cache data path; `contributing.md` names the full live feature set;
-  `sprachregelung.md` documents the EN-proposals exception.
+  `sprachregelung.md` documents the EN-proposals exception (#204).
 - **Public copy pass from the content audit.** /schriftkunde's intro no longer
   switches to Sie-form on an otherwise du-form site; German closing quotes are
   typographic („…“) everywhere; the hub/SEO texts stop promising trace-along
@@ -1119,33 +808,33 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   "die alte Alltagsschrift, ohne einheitliche Norm" instead of "die ältere
   Norm"; grammar fixes ("Das Schreiben lernte man …", "niederschrieben");
   the static `<title>`/description in `index.html` now match the SEO catalogue
-  (full home title for no-JS crawlers, description trimmed to ~155 chars).
+  (full home title for no-JS crawlers, description trimmed to ~155 chars) (#202).
 - **`/fit` and `/quality` are admin-gated; the crop endpoint leaves the event
   loop.** Both diagnostics cost seconds of pure CPU per call and back
   admin-only workflows, so they now require the admin credential like the
   writes (the SPA already sends it on every request); `GET /crop` runs its
   chart decode + binarisation in the threadpool like the other CPU-bound
-  endpoints instead of freezing concurrent public requests.
+  endpoints instead of freezing concurrent public requests (#201).
 - **Admin locale namespaces left the public bundle.** The `admin`/`wizard`
   message catalogs moved from the shared locales barrel into a new
   `@/locales/admin` superset barrel imported only by admin code — ~24 kB of
   admin-only German strings no longer ship to every visitor (locales chunk
-  51.7 → 45.5 kB gzip).
+  51.7 → 45.5 kB gzip) (#201).
 - **Boot states keep the navigation, and the cold-start copy speaks German,
   not ops.** The quiz and Tafel cold-start/loading/error states render inside
   the public layout (header + footer stay usable through the ~47 s worst
   case), and the boot message now says the server is waking up instead of
-  "Cold Start".
+  "Cold Start" (#201).
 - **Accessibility polish on the public pages.** The quiz verdict line is an
   `aria-live` region and focus moves to "Weiter" after a wrong answer (the
   disabled answer buttons used to drop focus on `<body>`); landing cards and
   header nav links gained visible `:focus-visible` outlines; the Federprobe
   disclaimer switched from the too-light `sepiaFaint` to readable `sepia`; the
-  404 page sets its own title.
+  404 page sets its own title (#201).
 - **Portable JSON column type.** Model columns now declare
   `JSON().with_variant(JSONB, "postgresql")` — identical behaviour on
   Postgres, creatable on SQLite for the new API test harness; migrations keep
-  their own explicit JSONB types.
+  their own explicit JSONB types (#201).
 - **Docs refreshed to current reality.** The agent guides
   (`copilot-instructions`, `CLAUDE.md`) now describe the live two-service
   Cloud Run deployment, the CI-gated Vitest suite and the full UI inventory
@@ -1156,7 +845,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `style-guide.md` §3 states the 19/17/14 px type floor;
   `sprachregelung.md` documents the English `contributing.md` exception;
   `mvp-roadmap`/`architektur` §16/`qualitaetsmetrik`/`docs/index` status
-  lines corrected.
+  lines corrected (#201).
 - **Deduped shared geometry/payload helpers and decomposed the oversized `core/`
   functions (no behaviour change).** The two canonical derivations now share one
   `_assemble_canonical_payload` (+ `_serialize_raw_path`) in `core/pipeline.py`
@@ -1173,7 +862,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   became `_apply_pen`/`_endstrike_centerline`/`_connector_centerline`, and
   `fit_template_to_instance`'s objective/energy closures became an `_InstanceFit`
   dataclass mirroring the existing `_RefineRound` idiom. The compose golden fixture
-  stays byte-identical and the full core suite is unchanged.
+  stays byte-identical and the full core suite is unchanged (#200).
 - **Unified the "as written" ink-reveal across the three surfaces into a shared
   primitive.** `WrittenGlyph`, `WrittenWord` and `WrittenSheet` each
   reimplemented the identical SVG reveal technique (y-negated centerline paths,
@@ -1188,14 +877,13 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `sequenceReveal` cursor walk — reconciling the drifted pen-lift pause (was
   110/130/150 ms across siblings → one `PEN_PAUSE_MS = 130`). The three surfaces
   are now thin consumers. No SVG/filter/timing behaviour change beyond that pause
-  reconciliation.
+  reconciliation (#199).
 - **Folded `WrittenWord`'s private `/write/word` cache into `renderCache.ts`.**
   The composed-word FIFO cache lived in a second module-level `Map` inside
   `WrittenWord` with its own key scheme, undermining the "ONE shared render
   cache" invariant. It is now `fetchRenderWord` alongside the glyph cache
   (same key helper, same cold-start retry, same evict-on-error) — no private
-  render cache remains outside `renderCache.ts`.
-
+  render cache remains outside `renderCache.ts` (#199).
 - **Trimmed `app/src/domain/shaping.ts` to the quiz-gating subset.** With word
   composition living server-side (`core/compose.py`), the TS shaper only needs the
   `text → glyph_keys` mapping the quiz word-bank gating consumes (`shapeText` +
@@ -1203,7 +891,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `stripFugen`, and made `shapeWord`/`FUGE` module-private; the header note now
   states the reduced scope and points at the shared fixture that keeps the mapping
   in sync with `core/shaping.py`. No runtime behaviour change (the quiz imports are
-  untouched).
+  untouched) (#198).
 - **API helper consolidation (no behaviour change).** Collapsed copy-pasted `api/`
   boilerplate onto single sources of truth: `resolve_render_context(source, db)` in
   `api/rendering.py` now resolves the style + source-pooled nib/pen for every write and
@@ -1216,7 +904,276 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   bound is one `NAnchors` annotated type and `QuizWordOut.era` is a
   `Literal["modern", "historic"]`; `GET /styles` fetches all sources in one query and
   groups in Python (no more per-style N+1, chart `.exists()` memoised); and the router
-  `HTTPException`s use named `status.*` constants. Response shapes are unchanged.
+  `HTTPException`s use named `status.*` constants. Response shapes are unchanged (#197).
+
+### Removed
+
+- **Orphaned design artifacts in `docs/reference/`.** The pre-design-system
+  landing mockup `kurrentschrift-landing.html` (Google-Fonts era, referenced
+  by nothing) and the duplicate `gl-germancursive.woff2` (the live copy is
+  `app/src/assets/fonts/`) are gone (#209).
+- **Unused runtime dependencies `cairosvg` and `python-multipart`.** Neither is
+  referenced anywhere in the codebase; both (plus cairosvg's native transitive
+  chain) leave the Cloud Run image (#201).
+
+### Fixed
+
+- **Cross-source render-cache poisoning.** `WrittenGlyph` seeded admin
+  payloads from the runtime-switched active source under the *public*
+  source's cache keys, so after a source switch in the admin, `/quiz` and
+  `/tafel` could serve the wrong script in the same SPA session. The
+  component now takes a `sourceId` prop used for peek/seed/fetch alike,
+  threaded from all three admin surfaces (#211).
+- **Quiz word bank no longer degrades silently on cold start.** The boot
+  read now retries like its siblings instead of falling back to the small
+  bundled bank for the whole session after one failed fetch (#211).
+- **Out-of-chart bboxes are rejected (422)** instead of storing a box that
+  later 500s the public `/crop` with a zero-size crop (#211).
+- **DELETE /templates and /bboxes return 404 for nonexistent rows** instead
+  of a false 204 on a typo'd glyph key (#211).
+- **Error details no longer leak internals.** The public chart 404 hid the
+  absolute container path and the style-resolution 500 its referential
+  detail; specifics now go to the server log (#211).
+- **`/hands` responses carry the shared Cache-Control** like styles/sources (#211).
+- **`/fit` query params are bounded**; `require_db`'s 503 distinguishes
+  "not configured" from "initialisation failed" (#211).
+- **Quiz results word render falls back to plain type on error** instead of
+  spinning forever after a cache eviction + failed refetch (#211).
+- **`/diagnostic` is admin-gated like its compute siblings.** The 3-column
+  diagnostic re-runs the image pipeline (chart decode + binarise +
+  skeletonise, ~0.2 s CPU) per request; `/fit` and `/quality` were gated for
+  exactly that reason but `/diagnostic` stayed public and uncached on the
+  max-instances=1 service. Only admin surfaces consume it — the public
+  renderer reads the cached `/write` payloads. The admin-gate HTTP test
+  matrix now includes it (#207).
+- **Structural uniqueness for `glyph_key`.** Every template read — including
+  the public `/write` endpoints — keys on `glyph_key` via
+  `scalar_one_or_none()`, so two rows sharing `(style, glyph_key, variant)`
+  would turn every read into a 500; the API's 409 backstops are
+  read-then-write and bypassable out of band. Migration 0015 adds the unique
+  constraint (mirrored in the model), making the backstops UX instead of the
+  only defense (#207).
+- **Bbox saves reject degenerate rectangles.** `PUT /bboxes/{key}` accepted
+  inverted or negative rectangles (`x1 <= x0`, `y1 <= y0`), which stored fine
+  and then 500ed the public crop/derivation paths on an empty crop; the
+  handler now 422s with a clear message, alongside the existing
+  baseline/midband check (#207).
+- **Cross-source pen-pool invalidation.** A style can pool from several chart
+  sources (Kurrent: loth-1866 + petzendorfer-1889); a trace/resample/delete
+  issued through source A that touches a template whose provenance is B left
+  B's pooled nib/pen stale for the 10-minute TTL. Template writes now clear
+  the whole style's pools (they are tiny), with a unit test pinning it (#207).
+- **Cache-Control on the remaining public reads.** `GET /bboxes/status` (the
+  quiz boot) and the crop PNGs (quiz prompt fallback; the wizard busts via
+  its version param) now carry the shared public cache header; `GET
+  /templates` deliberately stays uncached — the admin sidebar reads the same
+  list and needs a fresh `has_data` right after a trace, and the code now
+  says so (#207).
+- **Fact-checked public copy, with the fact sheets updated to match.** A
+  research pass with primary sources settled the audit's content findings:
+  the Schriftkunde chronology note claimed the Swiss cantons dropped Kurrent
+  "um 1900" while the geography section of the same page (correctly, per the
+  cited ZB Zürich source) says 1890–1930 — the note now matches. The 1941
+  passage attributes the "foreigners can't read it" justification precisely
+  (Lammers, Chef der Reichskanzlei, forwarding note of 13 Jan 1941) and the
+  fact sheets now name Bormann's party-office circular (3 Jan), Lammers'
+  forwarding (13 Jan) and the Reich education ministry's school decree
+  (1 Sept) with sources. The Gleichzugfeder blurb no longer claims Sütterlin
+  "setzte sich in den 1920er Jahren durch" (Prussia from 1915, most Länder
+  only around 1930). The Sütterlin-never-in-Switzerland claim is now backed
+  by a direct ZB Zürich quote in the fact sheet, and the Swiss 1890–1930
+  range gained an academic reference (Boser/Hofmann 2019) (#206).
+- **Quiz gloss for "Gulden": silver, not gold.** The 19th-century South
+  German Gulden was a silver coin (only the name derives from the medieval
+  gold "guldin"); the generator source, `quiz_words.json` and — via new
+  migration 0014 — the already-seeded DB row now read "alte Silbermünze
+  (süddeutsche Währung)" (#206).
+- **Impressum/llms.txt no longer overclaim synthesis.** "Alle gezeigten
+  Schriftzüge sind … kein historisches Original" contradicted the
+  Schreibtafel's genuine public-domain scans and the Koch 1928 original on
+  /schriftkunde; both texts now distinguish synthesized forms (marked as
+  such) from the PD originals shown with provenance. The privacy section's
+  "keine personenbezogenen Daten" now carves out the 30-day server logs the
+  same page already discloses (IPs are personal data) (#206).
+- **Copy polish across the public pages.** Landing no longer claims all
+  three scripts are engine-written ("die Sütterlin schreibt hier schon");
+  the Federprobe card invites a word *or short sentence* (the input takes
+  48 chars); "↻ noch einmal schreiben" matches the other replay labels;
+  the worksheet intro gains its missing article; the written-glyph aria
+  label says "alte Schreibschrift" instead of naming Kurrent while the
+  engine writes Sütterlin; trailing ellipses uniformly get their narrow
+  space; the Schwellzug explainer no longer has the *pen* swelling; the
+  show-script font is consistently "GL-GermanCursive"; the sources intro
+  points readers to the GitHub fact sheets (#206).
+- **Straight-quote pairing spans the whole text, not one word.** The shaping
+  twins (`core/shaping.py` + `app/src/domain/shaping.ts`) reset the
+  low/high quote parity per whitespace-split word, so a multi-word quote —
+  `"Guten Tag"` in the Federprobe — rendered two opening „ quotes. The parity
+  now threads through `shape_text`/`shapeText`; the shared fixture gained the
+  multi-word case and was regenerated via `REGEN_SHAPING=1` (#205).
+- **Quiz word prompt no longer spins forever on a failed compose.** The word
+  branch of the question card passed no `onError` to `WrittenWord`, so a
+  compose request that died mid-cold-start (the render cache's retry budget is
+  much shorter than the boot loads') left an infinite `CircularProgress`. The
+  prompt now offers the same retry affordance as the Federprobe — a plain-type
+  fallback would hand the solution to the learner, so it retries instead; the
+  post-answer comparison forms fall back to plain type (#205).
+- **Quiz keyboard focus survives a correct answer.** Focus moved to "Weiter"
+  only on a wrong pick; on a correct one every answer button disables and focus
+  fell to `<body>` — reduced-motion users got a "Weiter" button that never
+  received focus, everyone else lost their tab position each auto-advance. The
+  advance control now receives focus on every verdict, and after the advance
+  focus returns to the answer grid (#205).
+- **`quiz_words.created_at` is NOT NULL like every other `created_at`.**
+  Migration 0010 forgot `nullable=False` (0004 declares it on all other
+  tables) while the model implies NOT NULL — the very first `alembic check`
+  run caught the drift; migration 0013 tightens the column (safe: it carries
+  `server_default=now()`) (#204).
+- **Slim public reads for the heavy list payloads.** New
+  `GET /sources/{id}/bboxes/status` returns only the availability flags
+  (glyph_key, locked, split) and `TemplateRepository.list_summaries()` feeds
+  the template list from a column-select — the admin sidebar and the public
+  quiz no longer decode multi-MB of `raw_path`/`anchors`/mask/ink/patch JSONB
+  for six scalar fields. The quiz left the pinned AdminProvider entirely: a
+  new `useQuizSource` hook boots from source + template summaries + status
+  flags (same cold-start retry), so `/quiz` stops downloading the full
+  crop-editing bbox payload (#202).
+- **jsx-a11y lint gate.** `eslint-plugin-jsx-a11y` (recommended rules) now runs
+  in the frontend lint, so the mechanical accessibility slips on the SVG-heavy
+  custom surfaces get caught before review (#202).
+- **`PaperCardLink` + `PaperCardCta`.** The public "paper card that is a link"
+  (hover/focus lift, viridian border, focus ring, CTA underline sweep) that
+  LandingView, HubView and the Schriftkunde try-cards each copy-pasted is now
+  one shared component — contrast and focus fixes land once (#202).
+- **Authorized admin-write and Cloudflare-Access test suites.** New
+  `tests/test_api_admin_writes.py` exercises the gated handlers with a CORRECT
+  token: bbox PUT/GET roundtrip incl. the coalesce contract (omitted
+  `locked`/`n_anchors` preserve stored values), the full `/trace` pipeline
+  against the on-disk synthetic chart (persisted template, list `has_data`,
+  bbox anchor-count sync), the 423 lock + `force` override, and DELETE
+  semantics for bboxes and templates. New `tests/test_api_auth.py` covers the
+  JWT branch that actually gates prod: listed email → authorized, unlisted →
+  hard 403 (no token fallback), unverifiable JWT → break-glass token path, plus
+  unit tests of `_verify_cf_access_jwt` (lowercasing, PyJWTError → None,
+  missing email claim, unconfigured). The shared ASGI harness moved from
+  `test_api_http.py` into `tests/api_harness.py` + a conftest `api` fixture so
+  all three API suites reuse it (#202).
+- **HTTP-level API test suite + an Alembic migration check in CI.** New
+  `tests/test_api_http.py` runs the FastAPI app under pytest against an
+  in-memory aiosqlite session (dependency-overridden `get_db`, no
+  Postgres/network): the admin gate (401 on missing/wrong token, fail-closed
+  503 when unconfigured) is asserted for every write endpoint incl. the newly
+  gated `/fit` + `/quality`, plus Cache-Control on the public reads and
+  `/write/glyphs` + `/write/word` end-to-end with synthetically seeded
+  templates. A new `migrations` CI job runs `alembic upgrade head` (schema +
+  seeds) against a throwaway Postgres 16 service on every PR, so a broken
+  revision can no longer reach the shared Cloud SQL instance. Vitest gains
+  `renderCache.test.ts` (request batching, in-flight dedupe, cache hits,
+  missing-as-null, error eviction, cold-start retry) (#201).
+- **Brand icons + social preview image.** `favicon.ico` (multi-size),
+  `apple-touch-icon.png` and a 1200×630 `og.png` — the viridian Kurrent K on
+  the paper gradient, rendered from the bundled GLKurrent face — wired into
+  `index.html` with a `summary_large_image` twitter card; link previews and
+  browser tabs stop being generic (#201).
+- **Shareable Federprobe.** The typed text syncs to a `?text=` URL parameter
+  (debounced, history-friendly) with a "Link kopieren" button and a character
+  counter on the input — the page's output is now deep-linkable (#201).
+- **"Jetzt ausprobieren" cross-links on `/schriftkunde`.** The primer closes
+  with hub-style cards into the quiz, the Schreibtafel and the Federprobe
+  instead of dead-ending after the chronology (#201).
+- **Chart image LRU cache + Cache-Control on stable reads.** Decoded chart
+  grayscale arrays are cached per resolved path (read-only, max 4 entries), so
+  repeated crops/diagnostics/fits stop re-decoding the same immutable PD scan;
+  `/styles` and `/sources` responses now carry the shared cache policy and the
+  chart image caches for a day (#201).
+- **Direct unit tests for the pure-math core modules + a mechanical shaping twin
+  guard.** New `tests/test_geometry.py` and `tests/test_widths.py` pin the
+  deterministic numeric helpers in `core/geometry.py` (tangents, arc length,
+  curvature, straightness residual, TLS line fit, vertical-run/crossing/retrace
+  detectors) and `core/widths.py` (the `BroadNib` law + vectors, per-stroke
+  tangents, every `resolve_half_widths` branch) with known inputs/outputs, so the
+  upcoming core-dedup refactor has a behavioural net; `_locally_straight_mask`
+  gains direct coverage in `tests/test_quality_components.py`. The
+  `core/shaping.py` ↔ `app/src/domain/shaping.ts` twin is now enforced by a shared
+  fixture (`tests/fixtures/shaping_cases.json`, generated from the Python source of
+  truth) asserted by both `tests/test_tri_script.py` and a new Vitest test
+  (`app/src/domain/shaping.test.ts`) — mutating one shaping without the other fails
+  CI. Wires a `test` script + `vitest` into `app/` and a Vitest step into the
+  frontend CI job (build-only before) (#198).
+- **WCAG AA contrast for viridian text and the quiz answered state.** New
+  `paper.viridianText` (#2e6152 — derived for contrast, not a period hex;
+  5.15:1 on the paper ground vs 3.28:1 for the accent #40826d) is used
+  wherever viridian is body-size text: card CTAs, the hub/landing links, the
+  quiz score and verdict, the Scribe copy confirmation, Tafel chip/provenance
+  links, prose-link hovers. `quiz.resolvedText` darkened to #6e5c42 (5.5:1 on
+  the answered button face, was 3.61:1). The accent #40826d stays for large
+  display, initials, borders, fills and focus rings (#202).
+- **Contiguous heading outline on every public page.** Card titles now carry
+  explicit heading components (hub cards `h2` under the page `h1`; landing,
+  Schriftkunde and Tafel cards `h3` under their `h2` section headings), and
+  MUI's default subtitle→`<h6>` mapping is overridden to `<p>` at the theme
+  level — definition-row terms and timeline years no longer appear as phantom
+  section headings to screen readers (#202).
+- **The nav marks the current area.** PublicHeader links carry
+  `aria-current="page"` plus a visible active state (ink colour + full
+  viridian underline) for the area whose page is open (#202).
+- **`/trace` can no longer cross-link template rows.** The template upsert
+  conflicts on `(style, glyph, position, variant)` while reads go by
+  `glyph_key`, so a client bug pairing a wrong URL key with a payload identity
+  could conflict-update another row and rewrite its `glyph_key` — reads then
+  silently 404 on the shared prod DB. `POST /trace` now derives the expected
+  key from the shared registry (`core.shaping.expected_glyph_key`, the Python
+  twin of `glyphs.ts`; `{base}-{position}` convention as fallback) and rejects
+  a mismatch with 422 (#202).
+- **DB engine init race closed.** The lazy `asyncio.Lock` getter in
+  `core/database/connection.py` was itself check-then-set, so two first
+  requests could each mint their own lock, both enter `init_db()`, and the
+  loser's engine (and Cloud SQL connector) leaked without `dispose()`. The
+  lock is now created at import; the dead `_sync_init_lock` is gone (#202).
+- **No more raw English error strings on public pages.** `/quiz` and `/tafel`
+  showed `String(e)` (e.g. "TypeError: Failed to fetch") as the BootStatus
+  detail under a German title; both now show a fixed German sentence
+  (`common.boot.sourceUnreachableDetail`) and log the exception to the console (#202).
+- **A late word-compose rejection can no longer evict a fresh cache entry.**
+  `fetchRenderWord`'s error eviction now checks entry identity before deleting
+  (like the glyph cache): after a FIFO eviction + re-fetch under the same key,
+  the old promise's rejection used to delete the new, valid entry (#202).
+- **The nav's current-area marker covers the standalone tool routes.** /quiz
+  and /tafel light up Lesen, /federprobe lights up Schreiben (they keep their
+  stable top-level URLs and are not nested under the hubs); only the exactly
+  matching page uses `aria-current="page"`, area membership uses `"true"` (#202).
+- **CHANGELOG `[Unreleased]` consolidated to one heading per category.**
+  Successive PR insertions had produced duplicate Added/Changed/Fixed headings
+  with bullets filed under the wrong category; regrouped per Keep-a-Changelog (#202).
+- **The Cloud SQL connector fallback is now truly async.** The
+  `INSTANCE_CONNECTION_NAME` path built a *sync* pg8000 engine and handed it to
+  `async_sessionmaker(..., class_=AsyncSession)` — the first session would have
+  raised `ArgumentError` and `close_db` would have crashed on `await
+  engine.dispose()`; it now uses the native async Cloud SQL Connector with an
+  asyncpg `async_creator`. A failing lazy `init_db()` in the session dependency
+  is also caught and surfaces as the clean 503 instead of an unhandled 500 (#201).
+- **Wizard brush commits can no longer overwrite each other.** All bbox writes
+  are serialized through one queue and compute their payload from the
+  then-current bbox at write time — two quick eraser/ink strokes (S-Pen taps
+  faster than the PUT round-trip) used to both build on the same stale state,
+  silently dropping the first stroke. Bbox saves also stopped echoing a stale
+  `n_anchors` back, which used to revert the server-side sync with the derived
+  canonical (`_sync_bbox_anchor_count`); and the canvas renders committed
+  strokes/patches/saved-trace through memoised layers, so a 240 Hz pen gesture
+  only re-renders the in-flight stroke (#201).
+- **Federprobe and Schreibtafel fail loudly instead of silently.** A failed
+  compose fetch on `/federprobe` now shows an error message with a retry button
+  instead of an endless spinner, and a failed letter batch on the Tafel shows a
+  notice + retry instead of silently rendering an empty ruled sheet (#201).
+- **Mask preview halves its binarisation work.** The "Maske zeigen" preview
+  derives the filled mask from the already-thresholded raw mask via
+  `fill_small_holes` instead of running the adaptive threshold twice
+  (identical output) (#201).
+
+## [0.14.0] — 2026-07-13 — Specimen-true joins + compose calibration
+
+### Changed
+
 - **Pairlab-calibrated placement (O1).** `core/compose.py` places letters with two
   measured corrections: a HIGH exit is treated as a coupling-stub tip, not the pen's
   true departure — the next letter tucks back under it proportionally to the exit
@@ -1225,7 +1182,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   join must clear the whole bow; w joins measured +0.23 xh too tight). Re-measured
   against the pairlab independent fits over all 48 scorable specimen words: joins
   needing ≥ 0.25 xh correction drop from 31 to 21 of 146 (d-class −0.33 → −0.07,
-  w-class +0.23 → +0.08 median).
+  w-class +0.23 → +0.08 median) (#179).
 - **Coupling anchors for high-exit joins (O2, B side).** After a Deckstrich bow,
   d-loop or r-arm exit (≥ 0.7 xh) the generated connector no longer bridges to the
   next letter's entry-stub foot ("shelf") but falls onto the RISING flank of its
@@ -1233,17 +1190,17 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   removed from the centerline and the filled silhouette (new
   `core/template.py::erase_silhouette_piece`). Word-initial stubs stay — they are
   the Anstrich; low arcade joins are untouched (the standard diagonal is generically
-  right per the pairlab findings).
+  right per the pairlab findings) (#179).
 - **Level Auslauf for high word-final exits.** A word ending on a high forward exit
   (the r-arm) now runs a short level finishing stroke (0.25 xh) like the plates,
   instead of stopping dead at the arm end — `der`/`der-2` carried the bench's
   largest width penalties for the missing stroke. Words ending low keep their
-  rising Endstrich.
+  rising Endstrich (#179).
 - **Word bench headline** 0.1253 → 0.1183 (−5.6 %) over the frozen `jul08`
   references; `pair_loss` (report-only) 0.199 → 0.195. Loop protocol, keeps,
   discards (incl. the measured-but-rejected A-side d-stub trim) in
   `docs/reference/qualitaetsmetrik.md` §6, Lauf `jul11`; the compose golden fixture
-  is deliberately re-pinned.
+  is deliberately re-pinned (#179).
 - **Doc & instruction-sync hygiene.** Re-aligned `.github/copilot-instructions.md`
   with `CLAUDE.md`: corrected the stale "no tests exist yet", "ruff/ESLint when
   configured" and "no automated AI workflows configured" claims (a pytest suite,
@@ -1253,17 +1210,68 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   and added the missing Working Guardrails section. Removed the stale references to the
   deleted `app/src/domain/compose.ts` in `app/src/domain/shaping.ts`,
   `app/src/sections/scribe/ScribeView.tsx` and the `schreibsystem-und-wortbench.md` proposal. Added the `kurrent-writer-and-recognizer.md`
-  proposal and `docs/notes/` to `docs/index.md`.
+  proposal and `docs/notes/` to `docs/index.md` (#186).
 
-### Removed
+### Fixed
 
-- **Orphaned design artifacts in `docs/reference/`.** The pre-design-system
-  landing mockup `kurrentschrift-landing.html` (Google-Fonts era, referenced
-  by nothing) and the duplicate `gl-germancursive.woff2` (the live copy is
-  `app/src/assets/fonts/`) are gone.
-- **Unused runtime dependencies `cairosvg` and `python-multipart`.** Neither is
-  referenced anywhere in the codebase; both (plus cairosvg's native transitive
-  chain) leave the Cloud Run image.
+- **Third wordbench set: the Abb. 22 Schülerschrift plate (cross-hand reference).** The
+  1922 Leitfaden's only other connected Ausgangsschrift specimen — a pupil's hand
+  (Bruno Krüger, 3rd school year, Breitkantfeder, 106 words of Hoffmann von
+  Fallersleben's "Hab' Dank, du lieber Wind!") — is now measured like Abb. 19
+  (`words-abb22.png` + 106 sidecar entries, boxes proposed, line-QC'd and hand-corrected).
+  Sidecar entries carry a new optional `set` field; `export_fixtures`/`run`/`wordlab`
+  accept custom set names, so the plate freezes into its own sibling fixture root
+  (`suetterlin-1922-abb22`, `--set abb22`) and its cross-writer numbers are never averaged
+  into the same-hand headlines. Provenance + PD rationale in the source's `SOURCE.md` (#188).
+- **ESLint gate for the SPA.** Added a flat `app/eslint.config.js` (JS +
+  typescript-eslint recommended + `react-hooks`, react-refresh as warnings),
+  a `npm run lint` script, and an ESLint step to the CI frontend job — the
+  `react-hooks/exhaustive-deps` suppressions in the tree are now enforced
+  instead of inert. Fixed the findings this surfaced: `prefer-const` in
+  `TafelView.tsx`, a missing hook dep in `RederiveAllDialog.tsx`, and added
+  the missing justification to a `WrittenWord.tsx` suppression; kept the
+  `_`-prefix unused-args convention and allowed intentional non-breaking
+  spaces in UI strings. Updated `.github/copilot-instructions.md` to record
+  that ESLint is now configured (#187).
+- **`tools/pairlab` — independent-fit dissection of letter joins.** For every real
+  occurrence of a letter pair in the Abb.-19/Abb.-20 specimens it re-fits each letter
+  INDEPENDENTLY onto the frozen skeleton (bounded translation grid), regenerates the
+  production connector between the two placements (same constants/guards as
+  `core/compose.py`), tracks the specimen's own connecting stroke through the
+  inter-letter gap, and measures tail/head adaptation profiles — how far into each
+  glyph the real pen departs from the template before the join. Separates the three
+  entangled failure modes (connector shape · placement · glyph-end adaptation) the
+  word bench cannot tell apart. Additionally it TRACES the real pair along the known
+  ductus: the M4 fit (`core/fit.py`) warps both templates onto the specimen ink, so
+  every occurrence yields its ground-truth target — true coupling heights/tangents
+  per join class and the stub-trim signal (fitted endpoint vs. tracked departure).
+  Overlay + deviation-profile PNGs per occurrence, JSON aggregation, unit-tested
+  pure geometry core (`tests/test_pairlab.py`) (#178).
+- **Transition findings 2026-07-11** (`docs/proposals/uebergaenge-befund.md`): the
+  pairlab survey over 87 occurrences / 45 pairs. Placement is the largest single
+  error (39/87 need ≥ 0.25 xh correction); the standard diagonal join is generically
+  right once letters sit correctly (f→e/t→e's bench penalty was placement); high
+  exits (d loop, o/b/v/w Deckstrich bows, the r arm) systematically REPLACE both
+  coupling stubs (0.2–0.4 xh per side) with one diagonal into the next letter's
+  first-downstroke apex — confirming the stub hypothesis class-wise, not per pair.
+  Solution options O1–O3 (placement first, coupling anchors, gated pair overrides)
+  with cross-references from `qualitaetsmetrik.md` §6 and Vorschlag B (#178).
+- **Connectors follow the school hand's join grammar.** The jul09/10 join audit (all
+  generated Übergänge ranked with seam-kink angles against the Abb. 19/20/22 specimens)
+  adds the plates' entry-class join grammar on top of the jul11 coupling composer:
+  arcade entries (n m i u …) that must lose height now couple low through a baseline
+  garland that merges tangentially onto their lead-in line (bi/on originals), the r-arm
+  sets off with its authentic Absatz corner before a deep garland, clamped bow exits
+  roll G1 over the crest instead of cornering (the b→e "extra Zacken"), sawtooth pairs
+  (e→n family) pull onto one continuous diagonal instead of leaving a mid-height shelf,
+  and the low-exit word-final Endstrich is a two-tangent quadratic that flattens like the
+  plates (short flick after descender exits) while high forward exits keep the jul11 level
+  Auslauf. Round bodies after a high exit stay on the jul11 rising-flank coupling anchor
+  (O2), which subsumes the garland there. Measured standalone against the pre-jul11 base
+  the grammar scored words 0.1253 → 0.1241 / pairs 0.1992 → 0.1927; the combined headline
+  on top of jul11 was not re-measured in the merge environment (the wordbench needs the
+  shared DB), but both composer unit-suites (`test_compose_coupling`, `test_compose_joins`)
+  pass and the compose golden fixture is deliberately re-pinned (#188).
 
 ## [0.13.0] — 2026-07-09 — Tri-script pen foundation + human writing kinematics
 
