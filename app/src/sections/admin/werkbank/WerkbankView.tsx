@@ -251,7 +251,10 @@ export function WerkbankView() {
               minWidth: 0,
               position: { md: 'sticky' },
               top: { md: 16 },
-              maxHeight: { md: 'calc(100dvh - 96px)' },
+              // `vh` base with a `dvh` upgrade — same pitfall as PaperBackground:
+              // on browsers without the unit the whole declaration is dropped.
+              maxHeight: { md: 'calc(100vh - 96px)' },
+              '@supports (height: 1dvh)': { maxHeight: { md: 'calc(100dvh - 96px)' } },
               overflowY: { md: 'auto' },
             }}
           >
