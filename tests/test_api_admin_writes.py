@@ -408,5 +408,6 @@ async def test_authored_chart_variant_is_never_picked_up_as_laufform(api: Harnes
     span = max(p[0] for p in items[0]["centerline"]) - min(p[0] for p in items[0]["centerline"])
     # Chart form (0.35) times the LAUFFORM_SX width factor for n (1.03): the
     # factor applying PROVES the variant-1 row was not treated as a stored
-    # running form — a picked-up Laufform suppresses the factor (span 0.35).
-    assert abs(span - 0.35 * 1.03) < 1e-9
+    # running form — a picked-up Laufform suppresses the factor (span 0.35,
+    # a 0.0105 separation, so 1e-6 discriminates with plenty of margin).
+    assert abs(span - 0.35 * 1.03) < 1e-6
