@@ -133,6 +133,8 @@ async def test_rejects_unworkable_targets_and_unknown_keys(api: Harness):
         {"kind": "letter", "note": "welcher Buchstabe?"},  # letter without glyph_key
         {"kind": "pair", "left_key": "n"},  # pair missing the right side
         {"kind": "word", "note": "welches Wort?"},  # word without word or specimen
+        {"kind": "word", "word": "wenn", "specimen_id": "wenn"},  # specimen id without its namespace
+        {"kind": "letter", "glyph_key": "n", "specimen_kind": "word"},  # namespace without id
         {"kind": "ligature", "glyph_key": "ch"},  # not a marked level
         _letter_item(glyph_key="zz9"),  # not a registry glyph
         {"kind": "pair", "left_key": "n", "right_key": "zz9"},

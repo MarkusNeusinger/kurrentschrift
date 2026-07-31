@@ -339,6 +339,10 @@ class WorkItemIn(BaseModel):
             raise ValueError("a pair item needs left_key and right_key")
         if self.kind == "word" and not (self.word or self.specimen_id):
             raise ValueError("a word item needs word or specimen_id")
+        # The specimen reference is only unambiguous as a pair: an id without
+        # its namespace (word plates vs Abb.-20 drills) may point at nothing.
+        if (self.specimen_id is None) != (self.specimen_kind is None):
+            raise ValueError("specimen_id and specimen_kind must be given together")
 
 
 class WorkItemUpdate(BaseModel):
