@@ -12,6 +12,15 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Werkbank: the context lens and Auftragskorb now stay beside the word being
+  inspected.** The sticky positioning sat on the lens card, whose parent column
+  is content-sized — no room to travel, so clicking far down the word spine
+  showed the lens only after scrolling back to the top. The whole right column
+  now sticks against the tall spine track (scrolling internally when taller
+  than the viewport; single-column layouts stay in flow).
+
 ### Changed
 
 - **The word bench now composes with the frozen Laufform variants — the

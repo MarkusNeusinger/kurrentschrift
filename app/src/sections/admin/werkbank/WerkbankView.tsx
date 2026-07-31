@@ -237,7 +237,27 @@ export function WerkbankView() {
             </Box>
           </Box>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+          {/* The WHOLE right column sticks (not the lens card): a sticky child
+              can only travel within its parent, and this column is content-
+              sized — sticking the column against the tall spine track is what
+              keeps Korb + lens beside the word the admin just clicked. Taller
+              than the viewport it scrolls internally. Single-column (xs) has
+              no track to stick in, so it stays in flow. */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2,
+              minWidth: 0,
+              position: { md: 'sticky' },
+              top: { md: 16 },
+              // `vh` base with a `dvh` upgrade — same pitfall as PaperBackground:
+              // on browsers without the unit the whole declaration is dropped.
+              maxHeight: { md: 'calc(100vh - 96px)' },
+              '@supports (height: 1dvh)': { maxHeight: { md: 'calc(100dvh - 96px)' } },
+              overflowY: { md: 'auto' },
+            }}
+          >
             <KorbPanel sourceId={sourceId} refreshKey={korbTick} />
             <Box>
               <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
