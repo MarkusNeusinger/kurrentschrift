@@ -58,6 +58,7 @@ export const admin = {
     compareOverview: 'Vergleich aller Buchstaben',
     pairsOverview: 'Paar-Matrix (alle Verbindungen)',
     belegeOverview: 'Belege (nachgefahrene Wörter)',
+    werkbankOverview: 'Werkbank (Wörter · Linsen · Auftragskorb)',
     overlays: 'Overlays',
     all: 'alle',
     none: 'keine',
@@ -164,6 +165,83 @@ export const admin = {
     provenanceAuthored: 'von Hand nachgefahren',
     // A stored trace whose specimen crop is missing from the sidecar.
     noSample: 'Kein Platten-Ausschnitt zur specimen_id {{id}} — Sidecar prüfen.',
+  },
+  // The Werkbank (/admin/werkbank, proposal optimierungs-werkbank.md §2): ONE
+  // optimisation surface — the word spine on the left (where errors become
+  // visible), a context lens on the right that switches between the clicked
+  // letter and the clicked join, and the Auftragskorb (work_items) that
+  // replaces feedback-by-screenshot. The ⚑ dialog asks the §4 pre-sort
+  // question for letters: solo-wrong belongs in the wizard (the author's own
+  // ductus is the truth), word-only-wrong is an algorithm complaint.
+  werkbank: {
+    title: 'Werkbank',
+    intro:
+      'Links die Wörter als Rückgrat: jedes nachgefahrene Vorkommen über seinem Platten-Ausschnitt, schlechteste zuerst. Ein Klick auf eine Buchstaben-Box oder einen Übergangs-Punkt schaltet rechts die Linse um; ⚑ (oder Umschalt-Klick) legt das Element als Auftrag in den Korb.',
+    loadError: 'Werkbank-Daten konnten nicht geladen werden.',
+    empty: 'Noch keine gespeicherten Wort-Vorkommen — erst die Ernte laufen lassen (tools/laufform/harvest.py --apply).',
+    filterLabel: 'Wort suchen',
+    spineHeading: 'Wörter (schlechteste zuerst)',
+    lensHeading: 'Kontext-Linse',
+    cropAlt: 'Platten-Ausschnitt',
+    // Chips on a word card — same reading as on der Belege-Seite.
+    fittedChip: '{{fitted}}/{{total}} gefittet',
+    unfittedPrefix: 'fehlt: ',
+    rmseChip: 'RMSE ⌀ {{value}} px',
+    provenanceTraced: 'automatisch nachgefahren',
+    provenanceAuthored: 'von Hand nachgefahren',
+    noSample: 'Kein Platten-Ausschnitt zur specimen_id {{id}} — Sidecar prüfen.',
+    // Interactive overlay elements (also their aria-labels).
+    letterBoxAria: 'Buchstabe {{key}} in {{word}} — anklicken für die Buchstaben-Linse',
+    joinDotAria: 'Übergang {{left}}→{{right}} in {{word}} — anklicken für die Paar-Linse',
+    letterBoxTitle: '{{key}} · RMSE {{rmse}} px',
+    letterBoxTitleNoRmse: '{{key}}',
+    joinDotTitle: '{{left}}→{{right}}',
+    markWord: 'Wort markieren',
+    markLetter: 'Buchstabe markieren',
+    markPair: 'Übergang markieren',
+    // The lens.
+    lensEmpty:
+      'Nichts ausgewählt. Eine gestrichelte Buchstaben-Box oder einen braunen Übergangs-Punkt im Wort anklicken — hier erscheint dann die passende Linse.',
+    lensLetterHeading: 'Buchstabe {{key}}',
+    lensPairHeading: 'Übergang {{left}}→{{right}}',
+    lensSeenIn: 'gesehen in {{word}}',
+    chartFormLabel: 'Tafel-Form',
+    chartFormAlt: 'Tafel-Ausschnitt von {{key}}',
+    occurrencesLabel: 'Vorkommen in Wörtern ({{count}})',
+    noOccurrences: 'Keine gespeicherten Vorkommen zu diesem Element.',
+    openWizard: 'Im Wizard öffnen',
+    openPairEditor: 'Paar-Editor öffnen',
+    // Per-occurrence caption of a pair row: the generated Übergang's distance
+    // from the specimen ink (xh units, lower better).
+    genChamfer: 'Generator-Abstand {{value}}',
+    fitDoubtful: 'Fit unsicher',
+    // The Auftragskorb.
+    korbTitle: 'Auftragskorb',
+    korbOpenCount: '{{count}} offen',
+    korbEmpty: 'Noch keine Aufträge — ⚑ markiert ein Element und legt es hier ab.',
+    korbShowDone: 'erledigte anzeigen',
+    korbDelete: 'Auftrag löschen',
+    korbLoadError: 'Aufträge konnten nicht geladen werden (Admin-Zugang nötig).',
+    korbDeleteError: 'Löschen fehlgeschlagen — der Auftrag liegt weiter im Korb.',
+    kindLetter: 'Buchstabe',
+    kindPair: 'Übergang',
+    kindWord: 'Wort',
+    // The filing dialog.
+    dialogTitle: 'Auftrag einreichen',
+    dialogTarget: 'Ziel',
+    dialogSeenIn: 'gesehen in',
+    // The §4 pre-sort question — the ONE triage step asked of the human; the
+    // stage diagnosis itself stays the working session's duty.
+    presortQuestion: 'Sieht der Buchstabe einzeln (in der Tafel-Ansicht daneben) auch falsch aus?',
+    presortHint:
+      'Ja heißt: der eigene Duktus ist die Wahrheit — im Wizard nachbessern, kein Auftrag. Nein heißt: solo stimmt er, im Wort nicht — das ist Algorithmus-Gebiet und gehört in den Korb.',
+    presortYes: 'Ja — im Wizard nachbessern',
+    presortNo: 'Nein — Auftrag einreichen',
+    noteLabel: 'Notiz (was stört?)',
+    submit: 'In den Korb legen',
+    cancel: 'Abbrechen',
+    submitFailed: 'Auftrag konnte nicht gespeichert werden.',
+    submitted: 'Auftrag abgelegt.',
   },
   diagnostics: {
     // Followed by the glyph label in the dialog title.

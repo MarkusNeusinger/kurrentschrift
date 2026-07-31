@@ -23,5 +23,6 @@ export const paths = {
     compare: '/admin/vergleich',
     pairs: '/admin/paare',
     belege: '/admin/belege',
+    werkbank: '/admin/werkbank',
   },
 } as const;

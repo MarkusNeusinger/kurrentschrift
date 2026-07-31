@@ -12,6 +12,7 @@ const BelegePage = lazy(() => import('@/pages/admin/BelegePage'));
 const ChartPage = lazy(() => import('@/pages/admin/ChartPage'));
 const ComparePage = lazy(() => import('@/pages/admin/ComparePage'));
 const PairsPage = lazy(() => import('@/pages/admin/PairsPage'));
+const WerkbankPage = lazy(() => import('@/pages/admin/WerkbankPage'));
 
 export const adminRoutes: RouteObject[] = [
   {
@@ -30,6 +31,7 @@ export const adminRoutes: RouteObject[] = [
       { path: 'vergleich', element: <ComparePage /> },
       { path: 'paare', element: <PairsPage /> },
       { path: 'belege', element: <BelegePage /> },
+      { path: 'werkbank', element: <WerkbankPage /> },
       // Legacy editor deep-links land back on the chart; editing is now wholly
       // in the Einrichtungs-Wizard / Diagnose modals (opened from the toolbar).
       { path: 'edit/:glyphKey', element: <Navigate to={paths.admin.chart} replace /> },

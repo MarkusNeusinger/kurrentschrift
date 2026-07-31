@@ -46,6 +46,7 @@ def _to_out(sample: dict) -> WordSampleOut:
         height=y1 - y0,
         baseline_y=int(sample["baseline_y"]) - y0,
         midband_y=int(sample["midband_y"]) - y0,
+        rect=[x0, y0, x1, y1],
     )
 
 
