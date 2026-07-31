@@ -108,6 +108,9 @@ export function ContextLens({
 }: Props) {
   const t = de.admin.werkbank;
 
+  // Not sticky itself: the parent column is content-sized, so a sticky card
+  // would have no room to travel — the view makes the whole right COLUMN
+  // stick against the tall word-spine track instead.
   const frame = (children: ReactNode) => (
     <Box
       sx={{
@@ -116,8 +119,6 @@ export function ContextLens({
         borderRadius: 2,
         p: 2,
         bgcolor: 'background.paper',
-        position: 'sticky',
-        top: (theme) => theme.spacing(2),
       }}
     >
       {children}
