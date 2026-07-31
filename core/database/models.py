@@ -482,6 +482,53 @@ class WordInstance(Base):
     )
 
 
+class WorkItem(Base):
+    """One filed optimization task — the Auftragskorb of the Werkbank (stage W1).
+
+    The admin's channel into a working session: instead of screenshotting a bad
+    letter, join or word and describing it in prose, they mark the element in
+    the Werkbank and file a row here — `kind` names the level ('letter' | 'pair'
+    | 'word'), the key columns name the element, `specimen_kind`/`specimen_id`
+    (words.json namespace, same semantics as `PairInstance`) name where the
+    issue was seen, and `note` carries the observation. An AI session lists the
+    open items at round start, works them off and PATCHes the row to
+    status 'done' with a `resolution` (what changed, PR reference).
+
+    Internal work notes, not measurement and not content — every endpoint is
+    admin-gated, and nothing here ever affects rendering. See
+    `docs/proposals/handmodell-stufenplan.md`.
+    """
+
+    __tablename__ = "work_items"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_id: Mapped[str] = mapped_column(
+        String(SOURCE_ID_MAX), ForeignKey("sources.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    # The marked level: 'letter' (one glyph_key) | 'pair' (left+right) | 'word'.
+    kind: Mapped[str] = mapped_column(String(KIND_MAX), nullable=False)
+    glyph_key: Mapped[str | None] = mapped_column(String(GLYPH_KEY_MAX), nullable=True)
+    left_key: Mapped[str | None] = mapped_column(String(GLYPH_KEY_MAX), nullable=True)
+    right_key: Mapped[str | None] = mapped_column(String(GLYPH_KEY_MAX), nullable=True)
+    # The word text for kind 'word'; optional context for the other kinds (the
+    # word the bad letter or join was spotted in).
+    word: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    # Where it was seen: the words.json sample, its id namespace in
+    # `specimen_kind` ('word' | 'pair') exactly like the occurrence rows.
+    specimen_kind: Mapped[str | None] = mapped_column(String(KIND_MAX), nullable=True)
+    specimen_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+
+    note: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
+    status: Mapped[str] = mapped_column(String(16), nullable=False, server_default="open")  # 'open' | 'done'
+    # The working session's completion note — filled by the PATCH that closes it.
+    resolution: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
 class QuizWord(Base):
     """A word shown in the reading quiz plus its form-similar distractors.
 
