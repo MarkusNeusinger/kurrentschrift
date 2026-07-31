@@ -9,6 +9,7 @@ Same in-memory aiosqlite stack (`tests/api_harness.py` via the `api` fixture).
 
 from __future__ import annotations
 
+from core.database import LAUFFORM_VARIANT
 from tests.api_harness import Harness
 
 
@@ -363,7 +364,7 @@ async def test_put_laufform_stores_variant_and_write_word_uses_it(api: Harness):
     )
     assert res.status == 200
     out = res.json()
-    assert out["variant"] == 1
+    assert out["variant"] == LAUFFORM_VARIANT
     assert out["trace_meta"]["laufform"]["n_occurrences"] == 9
 
     # A flowing run (nnn, run >= 3) renders the wider running form …
@@ -390,3 +391,22 @@ async def test_put_laufform_stores_variant_and_write_word_uses_it(api: Harness):
     assert res.status in (404, 409)
     res = await api.client.request("DELETE", f"/sources/{source_id}/templates/n/laufform", headers=api.admin_headers())
     assert res.status == 204
+
+
+async def test_authored_chart_variant_is_never_picked_up_as_laufform(api: Harness):
+    """Regression for the jul31 incident: authored chart-form variants live at
+    variant 1..n (Sütterlin Q/ü) — /write/word must NOT render them as running
+    forms. Only the reserved LAUFFORM_VARIANT row counts."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    # An authored alternative form at variant 1 — dormant data, never a Laufform.
+    await api.seed_template(style_id, source_id, "n", "n", variant=1)
+
+    res = await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "nnn"})
+    assert res.status == 200
+    items = [it for it in res.json()["items"] if "stroke_width" not in it]
+    span = max(p[0] for p in items[0]["centerline"]) - min(p[0] for p in items[0]["centerline"])
+    # Chart form (0.35) times the LAUFFORM_SX width factor for n (1.03): the
+    # factor applying PROVES the variant-1 row was not treated as a stored
+    # running form — a picked-up Laufform suppresses the factor (span 0.35).
+    assert abs(span - 0.35 * 1.03) < 1e-9

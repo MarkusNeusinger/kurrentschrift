@@ -103,10 +103,26 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   references it reproduces the d-loop finding: das 86.2°, der 87.2°,
   die 88.0° against a rigid ~90° engine.
 
+### Fixed
+
+- **Laufform rows move to reserved variant 100 — variant 1 belongs to the
+  authored chart-form variants.** The live check after the first Laufform
+  write-up found the collision: authored "A = A" teaching-chart variants
+  already occupy variants 1..n (Sütterlin Q and ü carry 1+2), so
+  `/write/word` had started rendering those authored alternatives as
+  running forms in flowing words, and the Laufform upsert for `i` silently
+  overwrote a pre-existing authored variant-1 row (its content needs a
+  backup restore or re-authoring; Q/ü were untouched). The Laufform
+  endpoint, the `/write/word` fetch and the harvest tool now use the
+  reserved `LAUFFORM_VARIANT` (100), the 13 derived rows were migrated
+  there and the 12 freshly-created variant-1 rows removed, and a
+  regression test pins that an authored variant-1 row is never picked up
+  as a running form.
+
 ### Added
 
-- **Laufform variants: median running forms as templates variant 1.** The
-  doctrine split settled with the author: the chart cell is the ductus prior
+- **Laufform variants: median running forms as a reserved templates
+  variant.** The doctrine split settled with the author: the chart cell is the ductus prior
   (stroke order, crossings), the written specimen words are the form model.
   A new admin endpoint `PUT/DELETE /sources/{id}/templates/{key}/laufform`
   stores a per-letter median running form (validated one-to-one against the

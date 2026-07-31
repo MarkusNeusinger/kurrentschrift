@@ -11,7 +11,18 @@ from core.database.connection import (
     init_db,
     is_db_configured,
 )
-from core.database.models import Aggregate, Bbox, GlyphPair, Hand, Instance, QuizWord, Source, Style, Template
+from core.database.models import (
+    LAUFFORM_VARIANT,
+    Aggregate,
+    Bbox,
+    GlyphPair,
+    Hand,
+    Instance,
+    QuizWord,
+    Source,
+    Style,
+    Template,
+)
 from core.database.repositories import (
     AggregateRepository,
     BboxRepository,
@@ -44,6 +55,7 @@ __all__ = [
     "SourceRepository",
     "Style",
     "StyleRepository",
+    "LAUFFORM_VARIANT",
     "Template",
     "TemplateRepository",
     "close_db",
