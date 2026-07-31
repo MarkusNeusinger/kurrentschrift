@@ -1,12 +1,16 @@
 # Handmodell-Stufenplan 2026-07-31 — Duktus-Prior, Laufformen, Statistik pro Glyphe und Paar, eigene Hand
 
 **Status: Richtung entschieden (Nutzer, 2026-07-31) für H1 + H2 —
-Vorkommen speichern, nicht nur Mediane:** pro Glyphe *und* pro Paar
-wird jedes saubere Vorkommen als Zeile abgelegt (Glyphen → die
-bestehende `instances`-Tabelle, Fokus die Form selbst und ihre
-Varianten; Paare → eigene additive Tabelle, Fokus der natürliche
-Übergang). Nicht alle Kombinationen werden vorkommen — gespeichert
-wird, was die Vorlagen hergeben. H0/H3–H5 bleiben Vorschlag.
+Vorkommen speichern, nicht nur Mediane, auf ALLEN drei Ebenen:** pro
+Glyphe, pro Paar *und* pro Wort wird jedes saubere Vorkommen als Zeile
+abgelegt (Glyphen → die bestehende `instances`-Tabelle, Fokus die Form
+selbst und ihre Varianten; Paare → eigene additive Tabelle, Fokus der
+natürliche Übergang; Wörter → `word_instances`, die vollständige
+Lern-Schablone: Specimen-Crop + nachgefahrener Schreibpfad +
+Slot-Labels). Nicht alle Kombinationen werden vorkommen — gespeichert
+wird, was die Vorlagen hergeben, und der Bestand wächst über die
+Nachfahr-Schleife (s. H2-Absatz „Trainingsmenge"). Umsetzung der
+Persistenz: PR #250. H0/H3–H5 bleiben Vorschlag.
 Konsolidiert die
 Laufform-Runde vom 30./31.07.2026 (PR #246/#247: Median-Laufformen als
 Template-Variante 100, `laufform_by_key` im Composer) und die
@@ -154,6 +158,20 @@ Audit-/Report-Spalten der Wordbench und der Vergleichs-Tab zeigen
 „gemessen vs. komponiert" pro Paar. Rahmen bleibt
 [`planaenderungen.md`](planaenderungen.md) Vorschlag B: der Generator
 bleibt Default, keine Bigram-Datenbank (architektur.md §2, verworfen).
+
+**Wort-Ebene + Trainingsmenge (Entscheid 2026-07-31):** Zusätzlich hält
+`word_instances` je Specimen-Wort die vollständige Lern-Schablone —
+Slot-Labels + der nachgefahrene Schreibpfad im Registrierungs-Rahmen
+des Worts, gepaart mit dem Crop, den die word-samples-Endpunkte schon
+liefern. Die Engine fährt Wörter selbständig nach (Duktus-Prior +
+M4-Fit, „wie mit einem Stift, absetzen nur wo nötig") → Provenienz
+`traced`; wo sie scheitert, fährt der Admin manuell nach → `authored`,
+von keiner Neu-Ernte je überschrieben. Für Paare existiert diese
+manuelle Schleife bereits (Paar-Editor, R3); ein Wort-Editor im Admin
+ist der Folgeschritt. So wächst die Trainingsmenge (Buchstaben ·
+Paare · Wörter, je Statistik + Crop + Nachfahrung) kontinuierlich —
+zugleich die Datengrundlage für den späteren generativen Writer
+([`kurrent-writer-and-recognizer.md`](kurrent-writer-and-recognizer.md)).
 
 ### H3 — Konstanten werden Hand-Parameter (Vereinfachungs-Runde)
 
