@@ -151,9 +151,9 @@ async def compose_word_payload(text: str, source: Source, db: AsyncSession, *, p
             adjacent.append((a.key, b.key))
     pair_overrides = await GlyphPairRepository(db).approved_for_pairs(source.style_id, adjacent)
 
-    # Laufform variant rows (templates variant 1 — the median running forms
-    # derived from the specimen words): compose renders them for glyphs in a
-    # flowing run; no rows → chart behaviour, byte-identical.
+    # Laufform variant rows (templates LAUFFORM_VARIANT — the median running
+    # forms derived from the specimen words): compose renders them for glyphs
+    # in a flowing run; no rows → chart behaviour, byte-identical.
     laufform_entries: dict[str, dict] = {
         t.glyph_key: _template_render_entry(t)
         for t in await repo.get_many(source.style_id, keys, variant=LAUFFORM_VARIANT, render_only=True)

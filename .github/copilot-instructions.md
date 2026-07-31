@@ -680,7 +680,10 @@ impl-generate pipelines. Conventions:
   as a separate set with its own `pair_loss` headline, the Abb. 20
   letter-pair joins
   (`uv run python -m tools.wordbench.run --style suetterlin [--set
-  words|pairs|all]`; unauthored templates are frozen `scorable: false`
+  words|pairs|all]`; composition mirrors production incl. the frozen
+  Laufform variants (`templates_laufform.json` → `laufform_by_key`,
+  `--no-laufform` = chart-only diagnostic); unauthored templates are
+  frozen `scorable: false`
   and skipped+reported, never averaged in; the metric lives in
   `core/word_metric.py` with `tools/wordbench/metric.py` as its
   re-export shim; see

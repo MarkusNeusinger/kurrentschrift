@@ -1319,7 +1319,7 @@ def compose_word(
     public ``/write/word`` payload and the golden fixture stay byte-identical.
 
     ``laufform_by_key`` (optional) maps glyph_keys to ALTERNATIVE render
-    payloads — the median running forms (templates variant 1). A glyph uses
+    payloads — the median running forms (templates LAUFFORM_VARIANT). A glyph uses
     its running form only inside a flowing joined run (length ≥
     ASCENDER_LEAN_MIN_RUN, the lean gate); solitary glyphs and short drills
     always render ``data_by_key``. Where a running form is used, the
@@ -1408,7 +1408,7 @@ def compose_word(
         # Laufform variant (the doctrine split, jul31): the chart cell is the
         # ductus prior, the WRITTEN WORDS are the form model. In a flowing
         # run (same gate as the ascender lean) a glyph renders its
-        # median running form when one is stored (templates variant 1);
+        # median running form when one is stored (templates LAUFFORM_VARIANT);
         # solitary glyphs, the Tafel and the short Abb.-20-style drills stay
         # chart-true — the drills measure chart-like on the plates.
         laufform_used = False
@@ -1473,7 +1473,7 @@ def compose_word(
         # Laufform width (see LAUFFORM_SX): scale the bound glyph to its
         # measured running width, around its own x-origin — centerlines,
         # rings and the entry anchor alike, before any measurement. A stored
-        # median running form (variant 1, above) already carries its width —
+        # median running form (LAUFFORM_VARIANT, above) already carries its width —
         # the factor is the fallback for letters without one.
         laufform_sx = (
             LAUFFORM_SX.get(_key_base(slot.key, slot.position), 0.0) if slot.joins and not laufform_used else 0.0

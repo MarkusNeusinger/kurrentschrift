@@ -45,6 +45,11 @@ uv run python -m tools.wordbench.run --json runs/dev/new.json --compare runs/dev
 # An override run is its OWN measurement, never comparable to the headline.
 uv run python -m tools.wordbench.run --set pairs --overrides temp/pair_harvest.json
 
+# Optional: chart-only diagnostic (ignore the frozen Laufform variants).
+# The headline mirrors production and composes WITH them; this decomposition
+# run is its own number, never the headline.
+uv run python -m tools.wordbench.run --no-laufform
+
 # Box proposal / verification sheets for annotating a new plate (no DB):
 uv run python -m tools.wordbench.propose_boxes --page words-abb19.png --expect-lines 12 --strips
 uv run python -m tools.wordbench.propose_boxes --page words-abb19.png --expect-lines 12 --validate
@@ -57,7 +62,9 @@ uv run python -m tools.wordbench.propose_boxes --page pairs-abb20.png --expect-l
 
 Everything a run scores against is frozen at export: the binarized +
 despeckled word mask, the skeleton + EDT width map, the SHAPED SLOTS (so a
-shaping change cannot silently move the inputs), the template rows and the
+shaping change cannot silently move the inputs), the template rows — chart
+AND the `LAUFFORM_VARIANT` running forms (`templates_laufform.json`, passed
+to `compose_word` as `laufform_by_key` exactly like `/write/word`) — and the
 pooled nib. The code under test per run is composition + rendering
 (`compose_word`, `render_payload_for_template`). Registration is part of the
 metric and BOUNDED (scale fixed by the measured lineature; translation

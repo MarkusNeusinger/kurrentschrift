@@ -10,7 +10,10 @@ Lern-Schablone: Specimen-Crop + nachgefahrener Schreibpfad +
 Slot-Labels). Nicht alle Kombinationen werden vorkommen — gespeichert
 wird, was die Vorlagen hergeben, und der Bestand wächst über die
 Nachfahr-Schleife (s. H2-Absatz „Trainingsmenge"). Umsetzung der
-Persistenz: PR #250. H0/H3–H5 bleiben Vorschlag.
+Persistenz: PR #250. **H0 umgesetzt** (Bench + wordlab komponieren mit
+den eingefrorenen Laufform-Varianten; Re-Baseline Wörter 0,1169 ·
+Paare 0,1645, Zerlegung in qualitaetsmetrik.md §6 „H0-Anschluss").
+H3–H5 bleiben Vorschlag.
 Konsolidiert die
 Laufform-Runde vom 30./31.07.2026 (PR #246/#247: Median-Laufformen als
 Template-Variante 100, `laufform_by_key` im Composer) und die

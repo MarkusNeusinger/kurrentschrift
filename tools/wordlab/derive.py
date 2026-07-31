@@ -57,6 +57,19 @@ def _payloads_for(case: WordCase) -> dict[str, dict | None]:
     return cache
 
 
+def _laufform_payloads_for(case: WordCase) -> dict[str, dict]:
+    """Rendered Laufform variants for the case's slots — compose selects them
+    per flowing run exactly like production; {} keeps chart behaviour."""
+    out: dict[str, dict] = {}
+    for slot in case.slots:
+        if not slot.key or slot.key in out:
+            continue
+        row = case.laufform.get(slot.key)
+        if row:
+            out[slot.key] = render_payload_for_template(row, case.style_ratio, case.width_resolver, case.nib_units)
+    return out
+
+
 def derive_word(case: WordCase) -> WordDeriveResult:
     """Compose the case (provenance on) and, if it has a specimen, score it.
 
@@ -65,7 +78,7 @@ def derive_word(case: WordCase) -> WordDeriveResult:
     and name the hole instead of raising.
     """
     payloads = _payloads_for(case)
-    composed = compose_word(case.slots, payloads, provenance=True)
+    composed = compose_word(case.slots, payloads, provenance=True, laufform_by_key=_laufform_payloads_for(case) or None)
 
     report: dict | None = None
     segments: list[dict] | None = None
