@@ -150,6 +150,26 @@ DLOOP_SWING_MIN_LAUNCH_DEG = 20.0
 # Abb. 20 measure upright (§4: pairs full-height median 90.75° vs the leaning
 # d-words of Abb. 19), so a run shorter than this stays chart-true.
 ASCENDER_LEAN_MIN_RUN = 3
+# Laufform width scale (jul31): the running hand writes most letters WIDER
+# than their chart cell — measured by M4-fitting all 257 letter occurrences
+# of the Abb.-19 words onto the plates and decomposing template→running
+# form affinely (per-letter medians over ≥5 clean fits, applied where
+# |sx−1| ≥ 0.03). The round bodies e/a/u/o are ALREADY corrected by the
+# target-based FLUENT_BODY_PITCH at payload level (its jul08 targets match
+# the jul31 medians independently — e body 0.31→0.40 ≈ sx 1.083), so this
+# rule covers the rest. Context-gated like the ascender lean: a solitary
+# glyph (Tafel cell, short drill) stays chart-true.
+LAUFFORM_SX: dict[str, float] = {
+    "i": 1.08,
+    "l": 1.09,
+    "h": 1.10,
+    "n": 1.03,
+    "r": 1.09,
+    "t": 0.96,
+    "d": 0.97,
+    "w": 1.05,
+    "longs": 1.11,
+}
 # Baseline garland — the join for ARCADE entries when a letter's stroke ends
 # ABOVE where the next one begins. The plates show the pen leaving the exit,
 # falling into a ROUNDED TURN near the Grundlinie and rising into the next
@@ -1394,6 +1414,15 @@ def compose_word(
             pivot_y = (data.get("template_guides") or {}).get("midband", 1)
             centerlines = [_lean_stroke(cl, shear, pivot_y) for cl in centerlines]
             rings_by_stroke = [[_lean_stroke(ring, shear, pivot_y) for ring in rings] for rings in rings_by_stroke]
+        # Laufform width (see LAUFFORM_SX): scale the bound glyph to its
+        # measured running width, around its own x-origin — centerlines,
+        # rings and the entry anchor alike, before any measurement.
+        laufform_sx = LAUFFORM_SX.get(_key_base(slot.key, slot.position), 0.0) if slot.joins else 0.0
+        if laufform_sx and _joined_run_length(slots, slot_index) >= ASCENDER_LEAN_MIN_RUN:
+            centerlines = [[(x * laufform_sx, y) for x, y in cl] for cl in centerlines]
+            rings_by_stroke = [[[(x * laufform_sx, y) for x, y in ring] for ring in rings] for rings in rings_by_stroke]
+        else:
+            laufform_sx = 0.0
 
         # A detached glyph (digit, punctuation — slot.joins False) closes the
         # letter run before it like a word boundary: the body earns its
@@ -1435,6 +1464,10 @@ def compose_word(
 
         entry = data.get("entry") or {}
         entry_xy: Point = tuple(entry["xy"]) if entry.get("xy") else first_line[0]
+        if laufform_sx and entry.get("xy"):
+            # The payload entry anchor lives in the unscaled glyph frame —
+            # bring it into the Laufform width (first_line is scaled already).
+            entry_xy = (entry_xy[0] * laufform_sx, entry_xy[1])
         # The connector to the NEXT glyph leaves from the body's exit, never a
         # floating mark; point AND tangent come from the rendered centerline.
         exit_xy: Point = body_exit_line[-1]

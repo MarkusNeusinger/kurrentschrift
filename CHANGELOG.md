@@ -105,6 +105,23 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **Running-form width (Laufform): bound letters render at their measured
+  running width.** M4-fitting all 257 letter occurrences of the specimen
+  words onto the plates shows the running hand writes most letters 3–11%
+  wider than their chart cells (e/r/h/l/ſ up to +11%) — the plates get
+  their word width from wider letters with tighter gaps, the composer so
+  far from chart-narrow letters with wider gaps (the root of the
+  "stretched" impression). The target-based fluent body widening already
+  covers the round bodies (its jul08 targets match the new medians
+  independently); the new `LAUFFORM_SX` rule scales the remaining letters
+  (i/l/h/n/r/w/ſ wider, t/d slightly narrower) in bound context only —
+  solitary glyphs and the Tafel stay chart-true, like the ascender lean.
+  Words bench 0.130253 → **0.121625** (largest single improvement since
+  the garland round; 28 words improve, e.g. Gewehr −0.060, Einen −0.048),
+  pairs 0.169987, Gleichzug zero line unchanged, gap-rhythm spread
+  0.197 → 0.186. Golden re-pinned (qualitaetsmetrik.md §6
+  „Laufform-Runde jul31").
+
 - **Fork joins for the long-s and the t/f bar — the two plate-measured
   stem-launch classes.** After a long-s the rising connector no longer
   climbs 0.08 x-heights BESIDE the stem (a sustained parallel track the
