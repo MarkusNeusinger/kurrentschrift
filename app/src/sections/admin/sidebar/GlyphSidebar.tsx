@@ -7,6 +7,7 @@
 // letter here just sets the active glyph the toolbar then operates on.
 
 import GridViewIcon from '@mui/icons-material/GridView';
+import HistoryEduIcon from '@mui/icons-material/HistoryEdu';
 import HomeIcon from '@mui/icons-material/Home';
 import JoinInnerIcon from '@mui/icons-material/JoinInner';
 import LockIcon from '@mui/icons-material/Lock';
@@ -100,6 +101,11 @@ export function GlyphSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
         <Tooltip title={de.admin.sidebar.pairsOverview}>
           <IconButton size="small" aria-label={de.admin.sidebar.pairsOverview} onClick={() => go('/admin/paare')}>
             <JoinInnerIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title={de.admin.sidebar.belegeOverview}>
+          <IconButton size="small" aria-label={de.admin.sidebar.belegeOverview} onClick={() => go('/admin/belege')}>
+            <HistoryEduIcon fontSize="small" />
           </IconButton>
         </Tooltip>
         <Tooltip title={de.admin.sidebar.chartOverview}>

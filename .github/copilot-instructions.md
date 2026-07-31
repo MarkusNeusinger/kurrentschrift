@@ -234,7 +234,11 @@ kurrentschrift/
 │       │                #   /admin/paare: every 2-letter combination of a chosen letter,
 │       │                #   server-composed, capitals only left — redesign R1; override
 │       │                #   badges + cell click → pairs/PairEditorDialog.tsx (R3 stage 2:
-│       │                #   draw the connector, approve, live preview))
+│       │                #   draw the connector, approve, live preview);
+│       │                #   belege/BelegeView.tsx = /admin/belege: every stored word-
+│       │                #   occurrence trace over its specimen crop (GET /word-instances +
+│       │                #   word-samples crop), worst-first — the error-finding surface
+│       │                #   over the occurrence layer, entry point for the word editor)
 │       ├── components/  # reusable UI: PaperBackground, PublicHeader (3-area nav), PublicFooter,
 │       │                #   PageContainer (one column: narrow 760/text 1152/wide 1280), Prose (~66ch
 │       │                #   reading measure), PageHeader (shared page-header: area eyebrow + Playfair
