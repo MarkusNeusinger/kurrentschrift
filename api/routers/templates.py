@@ -174,7 +174,7 @@ async def put_laufform(
     source: Source = Depends(require_source),
     db: AsyncSession = Depends(require_db),
 ):
-    """Store the median RUNNING form as templates variant 1 (jul31 doctrine:
+    """Store the median RUNNING form as templates LAUFFORM_VARIANT (jul31 doctrine:
     chart cell = ductus prior, written words = form model). The anchors must
     match the chart row one-to-one — same count, same stroke topology — so
     stroke starts, corners and crossings carry over unchanged; entry/exit/

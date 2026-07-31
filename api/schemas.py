@@ -542,7 +542,7 @@ class CouplingPointOut(BaseModel):
 
 class LaufformUpsert(BaseModel):
     """Body of `PUT /sources/{id}/templates/{glyph_key}/laufform` — the median
-    running form (templates variant 1) derived from the specimen words. The
+    running form (templates LAUFFORM_VARIANT) derived from the specimen words. The
     anchor list must match the chart row's anchor count exactly: the chart
     cell stays the ductus prior (stroke order, crossings), only the geometry
     comes from the written words."""
