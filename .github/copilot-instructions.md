@@ -513,7 +513,10 @@ Three commit classes, kept strictly separate (see
 `docs/reference/datenablage.md` §1):
 
 1. **Committable:** `/data/sources/` (public-domain only, e.g. Loth 1866
-   SVG) and `/data/samples/own-hand/` (author's own copyright). Each gets
+   SVG; `suetterlin-leitfaden-1926/` archives 21 PD-marked specimen pages
+   of the SUB-Hamburg Leitfaden full digitization — hands-gallery
+   cross-hand material, never a same-hand bench reference) and
+   `/data/samples/own-hand/` (author's own copyright). Each gets
    a `SOURCE.md` with permalink, license, attribution, retrieval date.
 2. **Gitignored:** `/data/corpora/` — only `SOURCE.md` + `fetch_corpus.py`
    are committed, never the data files. Pin DOI versions.
