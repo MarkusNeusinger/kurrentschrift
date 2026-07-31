@@ -456,11 +456,15 @@ BAR_RISE_SLOPE = 0.55
 # capital A-side and the garland/align grammar takes over.
 CAP_RESTART_BASES = frozenset({"S", "O", "B", "K", "P"})
 CAP_EXIT_MAX_Y = 0.55
-# Capital joins rise MONOTONICALLY on the plates (min join y ≥ departure
-# −0.07 over all 22 occurrences) — the garland dip would run parallel
-# over the capital's bowl bottom (the audit doubling) — and the plates
-# give the pair visibly more room than the lowercase ink clearance
-# (band-ink gaps 0.24–0.85, median 0.49).
+# RESTART-class joins (S/O/B/K/P only) rise monotonically on the plates
+# (min join y ≥ departure −0.07) — a garland dip would run parallel over
+# the capital's own bowl bottom (the audit doubling of the first draft) —
+# and get visibly more room (their band-ink gaps run 0.45–0.85). The
+# MID-ENDING capitals (E/F/W/I/D) and the descender-loop ones (G/Z)
+# deliberately keep the lowercase clearance and grammar: their measured
+# plate gaps are tight (E→i 0.24, F→e −0.01, W→e 0.01, G/Z 0.24–0.41),
+# so the wider room and the garland ban are properties of the restart
+# class, not of capitals as such.
 CAP_INK_CLEARANCE = 0.30
 # Travel direction measured over a short ARC-LENGTH window rather than the
 # single final segment — the glyph centerline is a smooth spline through the
@@ -1870,7 +1874,10 @@ def compose_word(
                 cap_restart=bool(prev.get("cap_retrace")),
             )
             if prev.get("cap_retrace"):
-                centerline = prev["cap_retrace"] + centerline
+                # The retrace ends AT the departure the connector starts
+                # from — drop the duplicate so the seam has no zero-length
+                # segment.
+                centerline = prev["cap_retrace"][:-1] + centerline
             centerline = _overlap_extend(centerline)
             connector = {"centerline": [list(p) for p in centerline], "lift": False}
             _apply_pen(connector, centerline, 2 * min(prev["width"], med_half), pen)
