@@ -158,6 +158,36 @@ Originale werden **referenziert, nicht reproduziert**:
 Dieses explizite Provenance-Handling ist zugleich das
 „ich kenne die Trade-offs"-Portfolio-Signal aus dem Naming-Doc.
 
+### Open-Core-Absicherung (technisch)
+
+Das README reserviert die **gelernten Daten** (autorierte Duktus-
+Templates, Laufformen, Vorkommens-Statistik — der DB-Inhalt) ausdrücklich
+außerhalb der MIT-Lizenz. Damit ein Repo-Klon nicht trotzdem „perfekt
+losschreiben" kann, gilt technisch:
+
+- **Bench-Fixtures bleiben gitignored** (`tools/glyphbench/fixtures/`,
+  `tools/wordbench/fixtures/` — sie enthalten die autorierten Templates;
+  Regeneration braucht DB-Zugang). Ernte-Artefakte
+  (`laufform_*.json`, Harvest-Reports) werden nie committet.
+- **Rohdaten-Reads der API sind admin-gegatet:** `GET
+  /sources/{id}/templates/{glyph_key}` (vollständiges Template inkl.
+  Roh-Stylus-Pfad) verlangt `require_admin`; die öffentliche Liste
+  liefert nur Summaries ohne Geometrie. Die occurrence-Reads
+  (`/instances` …) liefern Fit-Ergebnisse über PD-Vorlagen, keine
+  autorierten Templates.
+- **Öffentliche `/write`-Payloads sind bewusste Produkt-Oberfläche**
+  (die SPA rendert clientseitig): gerenderte Geometrie, unter dem
+  README-Nutzungsvorbehalt + [`crawler-richtlinie.md`](crawler-richtlinie.md)
+  (`ai-train=no`) + Cloudflare-Schutz. Wer massenhaft abgreift, verletzt
+  den Vorbehalt — das ist die rechtliche, nicht die technische Grenze.
+- **Bekannte, akzeptierte Ausnahme:** `tests/fixtures/compose_golden.json.gz`
+  pinnt die Composer-Parität mit 11 gerenderten Wörtern (keine
+  Templates, nicht generalisierbar). Folgeaufgabe: das Golden auf
+  synthetische Test-Templates umstellen, dann verschwindet auch das.
+- Ein öffentlicher Datensatz entsteht nur als **bewusster
+  Ziel-7-Release** (architektur.md §17, eigene Lizenz, Zenodo) — nie
+  implizit über Repo oder API.
+
 ---
 
 ## 6. Konkrete gemeinfreie Quellen

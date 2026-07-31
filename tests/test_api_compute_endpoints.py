@@ -61,7 +61,7 @@ async def test_trace_preview_returns_raw_and_refined_without_writing(api: Harnes
     out = res.json()
     assert set(out) == {"raw", "refined"}
     # Dry run: nothing persisted.
-    res = await api.client.request("GET", f"/sources/{source_id}/templates/n")
+    res = await api.client.request("GET", f"/sources/{source_id}/templates/n", headers=api.admin_headers())
     assert res.status == 404
 
 

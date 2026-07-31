@@ -6,6 +6,13 @@ ui_kits/, colors_and_type.css, assets/) with the converter bundle (6 brand compo
 
 ## Shape & key decisions (app-only repo, no Storybook)
 
+- **`previews/_writtenGlyphData.ts` is LOCAL-ONLY (gitignored)** — it embeds
+  real authored diagnostic payloads (the learned dataset's raw form), which
+  stay out of the public repo per the open-core reservation
+  (`docs/reference/quellen-und-rechte.md` §5). Regenerate against the local
+  API: `GET /sources/suetterlin-1922/templates/<key>/diagnostic` (admin
+  token) per previewed glyph, matching the header comment in the file.
+
 - **Package shape with a CURATED entry**, not blind synth-entry. `app/designsync-entry.tsx`
   (`cfg.entry`) re-exports the 6 brand components + an `AppProviders` wrapper
   (ThemeProvider + CssBaseline + MemoryRouter). It lives in `app/` (NOT `app/src/`) on

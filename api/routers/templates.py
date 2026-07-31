@@ -151,10 +151,16 @@ async def list_templates(source: Source = Depends(require_source), db: AsyncSess
     return [TemplateSummary(**row, has_data=True) for row in rows]
 
 
-@router.get("/{glyph_key}", response_model=TemplateOut)
+# Admin-gated as the open-core moat (quellen-und-rechte.md §5): the full row
+# is the learned dataset's raw form (anchors, half_widths, raw stylus path)
+# and no public surface needs it — the public pages render from the /write
+# payloads, and the summary list above carries no geometry. The docstring
+# below stays short because it surfaces in the public OpenAPI docs.
+@router.get("/{glyph_key}", response_model=TemplateOut, dependencies=[Depends(require_admin)])
 async def get_template(
     glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
 ):
+    """The full authored template (admin only)."""
     template = await TemplateRepository(db).get(source.style_id, glyph_key)
     if template is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no canonical for {glyph_key!r}")
