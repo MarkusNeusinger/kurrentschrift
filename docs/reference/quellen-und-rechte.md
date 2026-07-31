@@ -170,7 +170,7 @@ losschreiben" kann, gilt technisch:
   Regeneration braucht DB-Zugang). Ernte-Artefakte
   (`laufform_*.json`, Harvest-Reports) werden nie committet.
 - **Rohdaten-Reads der API sind admin-gegatet:** `GET
-  /sources/{id}/templates/{glyph_key}` (voll­ständiges Template inkl.
+  /sources/{id}/templates/{glyph_key}` (vollständiges Template inkl.
   Roh-Stylus-Pfad) verlangt `require_admin`; die öffentliche Liste
   liefert nur Summaries ohne Geometrie. Die occurrence-Reads
   (`/instances` …) liefern Fit-Ergebnisse über PD-Vorlagen, keine
