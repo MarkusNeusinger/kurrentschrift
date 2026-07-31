@@ -23,6 +23,7 @@ import type {
   GlyphPairOut,
   TracePreviewOut,
   TraceRequest,
+  WordInstanceOut,
   WordSampleOut,
   WordSampleScoreOut,
   WriteGlyphsOut,
@@ -103,6 +104,21 @@ export const getWordSamples = (sourceId: string, retry?: RetryOptions): Promise<
 
 export const wordSampleCropUrl = (sourceId: string, sampleId: string): string =>
   src(sourceId, `/word-samples/${encodeURIComponent(sampleId)}/crop`);
+
+// The stored word-occurrence traces of a source (handmodell H1/H2). Public
+// GET; a row's crop is wordSampleCropUrl(sourceId, row.specimen_id). `word`
+// lists every occurrence of one word TEXT ("wenn" matches wenn + wenn-2).
+export const listWordInstances = (
+  sourceId: string,
+  opts?: { specimenId?: string; word?: string },
+  retry?: RetryOptions,
+): Promise<WordInstanceOut[]> => {
+  const qs = new URLSearchParams();
+  if (opts?.specimenId) qs.set('specimen_id', opts.specimenId);
+  if (opts?.word) qs.set('word', opts.word);
+  const s = qs.toString();
+  return apiFetch(src(sourceId, `/word-instances${s ? `?${s}` : ''}`), {}, retry).then(asJson<WordInstanceOut[]>);
+};
 
 // Admin-only: the frozen wordbench ruler on one specimen vs the CURRENT
 // composition (redesign R1b Stufe 2). CPU-bound server-side — callers fetch

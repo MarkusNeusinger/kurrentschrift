@@ -8,6 +8,7 @@ import { paths } from '@/routes/paths';
 const AdminLayout = lazy(() =>
   import('@/layouts/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })),
 );
+const BelegePage = lazy(() => import('@/pages/admin/BelegePage'));
 const ChartPage = lazy(() => import('@/pages/admin/ChartPage'));
 const ComparePage = lazy(() => import('@/pages/admin/ComparePage'));
 const PairsPage = lazy(() => import('@/pages/admin/PairsPage'));
@@ -28,6 +29,7 @@ export const adminRoutes: RouteObject[] = [
       { path: 'chart', element: <ChartPage /> },
       { path: 'vergleich', element: <ComparePage /> },
       { path: 'paare', element: <PairsPage /> },
+      { path: 'belege', element: <BelegePage /> },
       // Legacy editor deep-links land back on the chart; editing is now wholly
       // in the Einrichtungs-Wizard / Diagnose modals (opened from the toolbar).
       { path: 'edit/:glyphKey', element: <Navigate to={paths.admin.chart} replace /> },
