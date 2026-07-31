@@ -105,6 +105,24 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **Capital handover: the join leaves the capital's WORKING exit, never its
+  ornament.** Prompted by the user spotting that Soldaten's S→o kept a high
+  covering line where the 1922 plate restarts at the baseline; measuring all
+  22 joined capital→lowercase plate occurrences confirmed no capital ever
+  hands over high. Crest and low-ending capitals (S/O/B/K/P) now depart at
+  their last low body pass (local minimum at/below 0.55 x-heights) with the
+  ornament fully drawn and retraced over its own ink; descender-loop
+  capitals (G/Z) already took the fork join; mid enders (E/F/W/I/D) keep
+  their true exit. The round-body top coupling is suppressed after any
+  capital (contradicted by every plate case — round bodies are met on their
+  rising flank with the lead-in intact), capital joins never garland (they
+  rise monotonically on the plates) and get the plates' wider clearance.
+  Words bench 0.121625 → 0.120793, pairs 0.169987 → **0.165297**, and the
+  words Gleichzug audit is **completely clean for the first time** (0
+  gaps, 0 doublings; pairs keep 6 in the parked d→descender class).
+  Seiten 0.101 → 0.068, Silber 0.120 → 0.098, Säbel 0.165 → 0.115. Golden
+  re-pinned (qualitaetsmetrik.md §6 „Kapital-Runde jul31").
+
 - **Running-form width (Laufform): bound letters render at their measured
   running width.** M4-fitting all 257 letter occurrences of the specimen
   words onto the plates shows the running hand writes most letters 3–11%
