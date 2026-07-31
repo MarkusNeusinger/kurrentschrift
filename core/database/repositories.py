@@ -25,6 +25,7 @@ from core.database.models import (
     Style,
     Template,
     WordInstance,
+    WorkItem,
 )
 
 
@@ -504,6 +505,55 @@ class WordInstanceRepository:
             stmt = stmt.where(WordInstance.provenance != "authored")
         result = await self.session.execute(stmt)
         return result.rowcount or 0
+
+
+class WorkItemRepository:
+    """Filed optimization tasks — the Werkbank's Auftragskorb (stage W1)."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def list(self, source_id: str, status: str | None = None) -> list[WorkItem]:
+        """A source's work items, oldest first — the order a session works
+        them off. `status` filters to 'open' (the round's queue) or 'done'."""
+        stmt = select(WorkItem).where(WorkItem.source_id == source_id).order_by(WorkItem.id)
+        if status is not None:
+            stmt = stmt.where(WorkItem.status == status)
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def get(self, item_id: int, source_id: str | None = None) -> WorkItem | None:
+        stmt = select(WorkItem).where(WorkItem.id == item_id)
+        if source_id is not None:
+            stmt = stmt.where(WorkItem.source_id == source_id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def create(self, **values: Any) -> WorkItem:
+        """Insert one item. No upsert: every filing is its own observation —
+        two notes on the same letter are two tasks, not one overwritten row."""
+        row = WorkItem(**values)
+        self.session.add(row)
+        await self.session.flush()
+        return row
+
+    async def update(self, row: WorkItem, **values: Any) -> WorkItem:
+        """Partial update (note / status / resolution) — only the keys the
+        caller actually sent, so a PATCH never clears an unmentioned field."""
+        for key, value in values.items():
+            setattr(row, key, value)
+        await self.session.flush()
+        # The `onupdate` timestamp is computed server-side and left expired by
+        # the flush — refresh explicitly, an implicit reload on attribute
+        # access would be lazy IO in async land (MissingGreenlet).
+        await self.session.refresh(row)
+        return row
+
+    async def delete(self, item_id: int, source_id: str) -> bool:
+        result = await self.session.execute(
+            delete(WorkItem).where(WorkItem.id == item_id, WorkItem.source_id == source_id)
+        )
+        return (result.rowcount or 0) > 0
 
 
 class AggregateRepository:

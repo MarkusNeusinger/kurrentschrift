@@ -14,6 +14,23 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The Auftragskorb: filed optimization tasks instead of screenshots
+  (Werkbank stage W1).** The admin's channel into a working session gets a
+  backend: the new additive `work_items` table (migration `0020`) holds one
+  row per marked element — `kind` names the level (`letter` | `pair` |
+  `word`), the key columns name the element, `specimen_kind`/`specimen_id`
+  name the words.json sample the issue was seen in (same namespace semantics
+  as the occurrence rows), and `note` carries the observation. A working
+  session lists the open items at round start, works them off and closes each
+  with status `done` plus a `resolution` note (what changed, PR reference).
+  All of it runs over the new admin-gated
+  `GET/POST /sources/{id}/work-items` + `PATCH/DELETE …/{item_id}` — unlike
+  the occurrence reads even the list is gated, because these are internal work
+  notes, not measurement or public content. Filing validates that the target
+  is actually workable (a letter item needs its glyph_key, a pair both sides,
+  a word its text or specimen) and that the keys are registry glyphs. Nothing
+  here affects rendering.
+
 - **Occurrence persistence: every clean specimen fit becomes a database row
   (hand-model plan H1/H2).** Per the decision to store occurrences, not just
   medians: the laufform harvest now persists each clean per-occurrence M4 fit
