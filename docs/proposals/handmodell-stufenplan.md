@@ -172,6 +172,14 @@ ist der Folgeschritt. So wächst die Trainingsmenge (Buchstaben ·
 Paare · Wörter, je Statistik + Crop + Nachfahrung) kontinuierlich —
 zugleich die Datengrundlage für den späteren generativen Writer
 ([`kurrent-writer-and-recognizer.md`](kurrent-writer-and-recognizer.md)).
+Zwei bewusste Vertagungen: **Schriftdicken** entlang des
+nachgefahrenen Pfads (aus der `width_map` des Specimens sampelbar,
+Spalten/JSONB sind vorbereitet) bleiben zunächst leer — für Sütterlin
+(Gleichzug, eine Nib-Breite) tragen sie kaum Information; relevant
+werden sie mit den Schwellzug-Schriften. Und der gesamte
+Vorkommens-Aufbau läuft **erst für Sütterlin** (die eine vermessene
+Normhand); Kurrent/Offenbacher folgen erst, wenn das Ergebnis
+überzeugt (H4).
 
 ### H3 — Konstanten werden Hand-Parameter (Vereinfachungs-Runde)
 
