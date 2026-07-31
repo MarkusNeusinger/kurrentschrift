@@ -14,6 +14,20 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The Optimierungs-Werkbank direction and its binding stage/role doctrine,
+  documented.** `docs/proposals/optimierungs-werkbank.md` records the
+  2026-07-31 decisions (ONE admin workbench page — word spine + letter/pair
+  context lenses + Auftragskorb; the Korb as a `work_items` table the AI reads
+  per API) and, centrally, the doctrine that prevents misunderstandings on
+  both sides of a fix task: manual input only where it creates ground truth
+  (chart ductus, word re-tracing where the auto-fit fails, pair overrides as
+  last resort), everything generated gets flagged rather than hand-patched, a
+  Korb entry names where the problem was SEEN while the stage triage (chart →
+  Laufform/fit → class rule → placement → override) is the AI's duty, with a
+  fixed `resolution` format and a "Rückgabe an Autor" path for ground-truth
+  gaps. Indexed in `docs/index.md`; CLAUDE.md and the Copilot twin point to it
+  as mandatory reading before working off a work item.
+
 - **Occurrence persistence: every clean specimen fit becomes a database row
   (hand-model plan H1/H2).** Per the decision to store occurrences, not just
   medians: the laufform harvest now persists each clean per-occurrence M4 fit
