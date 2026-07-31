@@ -105,6 +105,27 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **Fork joins for the long-s and the t/f bar — the two plate-measured
+  stem-launch classes.** After a long-s the rising connector no longer
+  climbs 0.08 x-heights BESIDE the stem (a sustained parallel track the
+  plates never write — the Gleichzug audit's ſ shortlist): it rejoins the
+  stem, retraces it to a fork at ~0.4 of the coupling height and swings
+  out on a straight diagonal into a high coupling; hanging bowls place on
+  the 45° line from the fork while c/t keep their calibrated run-down
+  placement (overlay-verified plate-exact) and couple mid-flank. For t/f
+  the second specimen measurement (all 8 joined occurrences) showed the
+  plates end t's crossbar AT the stem (right of it: no ink — the long
+  chart bar is table form) and leave the STEM on a shallow 16–27° rise
+  into the next letter's apex: in bound context the rendered bar is cut
+  at its own last ink crossing (word-final keeps the chart form) and the
+  join is one straight rise, with placement on that line. Also fixes a
+  latent shared-payload mutation (the stub/bar cuts edited cached stroke
+  lists in place — a word-final t after any bound t lost its bar and
+  Endstrich in cached-payload runs like the wordbench). Words bench
+  0.130439 → 0.130253, pairs 0.174158 → 0.170674, Gleichzug doublings
+  3 → 1 (words) / 17 → 9 (pairs); golden re-pinned
+  (qualitaetsmetrik.md §6 „Gabel-Runde jul30").
+
 - **Height-aware join kerning — ink at different heights may overlap columns
   like on the teaching plates.** The specimen gap measurement (every letter
   of all 58 Abb.-19 words re-fit independently onto its plate) showed the
