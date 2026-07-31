@@ -90,17 +90,23 @@ def harvest(style: str, min_n: int, rmse_max: float) -> tuple[dict[str, dict], l
         fitted_slots: list[int] = []
         unfitted_slots: list[int] = []
         rmse_by_slot: dict[str, float] = {}
+        # The word record's slot indices index into its stored `slots` list,
+        # which filters keyless slots out — track that KEYED index alongside
+        # the full one (`i` stays the composer/pair-instance slot space).
+        keyed_i = -1
         for i, slot in enumerate(case.slots):
+            if slot.key:
+                keyed_i += 1
             items = _body_items(result, i)
             row = case.templates.get(slot.key) if slot.key else None
             if not items or row is None or case.width_map is None:
                 if slot.key:
-                    unfitted_slots.append(i)
+                    unfitted_slots.append(keyed_i)
                 continue
             strokes_px = [_to_px(it["centerline"], xh, tx, ty, baseline_row) for it in items]
             ddx, ddy, at_bound, _before, _after = _fit_letter(edt, strokes_px, xh)
             if at_bound:
-                unfitted_slots.append(i)
+                unfitted_slots.append(keyed_i)
                 continue
             anchors = np.asarray(row["anchors"], dtype=float)
             meta = row.get("trace_meta") or {}
@@ -111,7 +117,7 @@ def harvest(style: str, min_n: int, rmse_max: float) -> tuple[dict[str, dict], l
             )
             skel_local = case.skel & keep[None, :]
             if not skel_local.any():
-                unfitted_slots.append(i)
+                unfitted_slots.append(keyed_i)
                 continue
             payload = result.payloads.get(slot.key) or {}
             first_template = (payload.get("centerlines_template") or [[[0.0, 0.0]]])[0][0]
@@ -133,14 +139,14 @@ def harvest(style: str, min_n: int, rmse_max: float) -> tuple[dict[str, dict], l
                 )
             except Exception as exc:  # noqa: BLE001 — survey tool: skip, but say so
                 print(f"  fit failed: {case.id} slot {i} ({slot.key}): {exc}", flush=True)
-                unfitted_slots.append(i)
+                unfitted_slots.append(keyed_i)
                 continue
             if not fr.fit_meta.get("converged") or float(fr.fit_meta.get("geo_rmse_px", 99)) > rmse_max:
-                unfitted_slots.append(i)
+                unfitted_slots.append(keyed_i)
                 continue
             fitted_raw = np.asarray(fr.anchors, dtype=float)
             if fitted_raw.shape != anchors.shape:
-                unfitted_slots.append(i)
+                unfitted_slots.append(keyed_i)
                 continue
             shift = np.median(fitted_raw - anchors, axis=0)
             fitted = fitted_raw - shift  # shapes, not placements
@@ -148,8 +154,8 @@ def harvest(style: str, min_n: int, rmse_max: float) -> tuple[dict[str, dict], l
             tpl_by_key.setdefault(slot.key, row)
             # The word trace (handmodell word level): this letter's UNCENTERED
             # fitted strokes in the word's shared frame, in writing order.
-            fitted_slots.append(i)
-            rmse_by_slot[str(i)] = round(float(fr.fit_meta.get("geo_rmse_px", 0.0)), 3)
+            fitted_slots.append(keyed_i)
+            rmse_by_slot[str(keyed_i)] = round(float(fr.fit_meta.get("geo_rmse_px", 0.0)), 3)
             word_strokes.extend(
                 _strokes_to_word_units(
                     fitted_raw,
