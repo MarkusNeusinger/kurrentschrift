@@ -14,6 +14,22 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The staged hand-model plan and the July specimen-source research, documented.**
+  `docs/proposals/handmodell-stufenplan.md` consolidates the Laufform round into
+  a staged proposal (H0–H5): confirm the role model (chart cell = ductus prior,
+  the written words of exactly ONE hand = form model, foreign hands = context,
+  never averaged), then fill the schema's empty statistics layer — persist the
+  per-occurrence M4 fits into `instances`/`hands` instead of discarding them
+  after the median, add per-pair join statistics for observed pairs, move
+  measurable hand constants from `core/compose.py` into per-hand aggregates
+  behind a simplification gate, prove hand-genericity on a second historical
+  hand, and finish on the user's own hand ("any text, in my own hand" — vision
+  goal 6, "in meiner Hand, aber jeden Text").
+  `docs/notes/quellen-recherche-2026-07.md` preserves the source-research round
+  (ranked committable finds, rejected items with license reasoning, possible
+  archive requests recorded but not commissioned); `docs/index.md` indexes both
+  and syncs the stale R3–R5 status line.
+
 - **A Gleichzug audit as wordbench report columns — the one-flow, one-width
   invariant made measurable.** A Sütterlin word is written in one flow (pen
   lifts only for diacritics) with a line that is always one nib wide; the new
