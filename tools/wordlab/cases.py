@@ -51,6 +51,9 @@ class WordCase:
     style_ratio: list[float]
     width_resolver: str  # "constant" (Gleichzug) | "pressure" | "broad_nib"
     nib_units: float | None  # source-pooled Gleichzug nib radius (x-height units)
+    # glyph_key -> LAUFFORM_VARIANT row (median running forms); compose selects
+    # them per flowing run exactly like production — empty = chart-only.
+    laufform: dict[str, dict] = field(default_factory=dict)
     origin: str = ""  # human label, e.g. "fixture:suetterlin-1922" / "live:suetterlin-1922"
     scorable: bool = True  # a needed template is unauthored → the metric cannot score it
     # ---- specimen (None for a live case) ----
@@ -98,7 +101,13 @@ def _root_for(fixtures_root: Path, style: str, which: str) -> Path:
     raise KeyError(f"no {which!r} fixtures under {style_root} — run tools/wordbench/export_fixtures first")
 
 
-def _case_from(root: Path, manifest: dict, templates: dict, entry: dict) -> WordCase:
+def _laufform_rows(root: Path) -> dict[str, dict]:
+    """The frozen LAUFFORM_VARIANT rows of a fixture root ({} on older exports)."""
+    path = root / "templates_laufform.json"
+    return json.loads(path.read_text()) if path.exists() else {}
+
+
+def _case_from(root: Path, manifest: dict, templates: dict, entry: dict, laufform: dict) -> WordCase:
     """Build a WordCase from an already-loaded manifest entry (no rescan)."""
     entry_id = entry.get("id", entry["word"])
     word_meta = json.loads((root / entry_id / "word.json").read_text())
@@ -112,6 +121,7 @@ def _case_from(root: Path, manifest: dict, templates: dict, entry: dict) -> Word
         kind=word_meta.get("kind", "word"),
         slots=[GlyphSlot(**s) for s in word_meta["slots"]],
         templates=templates,
+        laufform=laufform,
         style_ratio=manifest.get("style_ratio") or [1, 1, 1],
         width_resolver=manifest.get("width_resolver") or "pressure",
         nib_units=manifest.get("constant_nib_units"),
@@ -140,9 +150,10 @@ def fixture_word_case(
     root = _root_for(fixtures_root, style, which)
     manifest = json.loads((root / "manifest.json").read_text())
     templates = json.loads((root / "templates.json").read_text())
+    laufform = _laufform_rows(root)
     for entry in manifest["words"]:
         if entry.get("id", entry["word"]) == entry_id or entry["word"] == entry_id:
-            return _case_from(root, manifest, templates, entry)
+            return _case_from(root, manifest, templates, entry, laufform)
     raise KeyError(
         f"no {which!r} fixture entry {entry_id!r} under {root} (ids: {[w.get('id', w['word']) for w in manifest['words']][:8]}…)"
     )
@@ -163,12 +174,13 @@ def iter_fixture_word_cases(
     root = _root_for(fixtures_root, style, which)
     manifest = json.loads((root / "manifest.json").read_text())
     templates = json.loads((root / "templates.json").read_text())
+    laufform = _laufform_rows(root)
     cases: list[WordCase] = []
     for entry in manifest["words"]:
         entry_id = entry.get("id", entry["word"])
         if only is not None and entry_id not in only and entry["word"] not in only:
             continue
-        cases.append(_case_from(root, manifest, templates, entry))
+        cases.append(_case_from(root, manifest, templates, entry, laufform))
     return cases
 
 
@@ -220,6 +232,7 @@ async def live_word_case(text: str, source_id: str = "suetterlin-1922") -> WordC
 
     _load_dotenv()
     from core.database.connection import close_db, get_db_context  # noqa: PLC0415 — import after dotenv
+    from core.database.models import LAUFFORM_VARIANT  # noqa: PLC0415
     from core.database.repositories import SourceRepository, StyleRepository, TemplateRepository  # noqa: PLC0415
     from core.shaping import decompose_ligature_slot, glyph_keys_of, shape_text  # noqa: PLC0415
 
@@ -251,6 +264,12 @@ async def live_word_case(text: str, source_id: str = "suetterlin-1922") -> WordC
                 for t in await repo.get_many(src.style_id, extra):
                     rows[t.glyph_key] = _template_row(t)
 
+            # The median running forms, exactly like write.py: compose selects
+            # them per flowing run; no rows → chart behaviour.
+            laufform_rows = {
+                t.glyph_key: _template_row(t) for t in await repo.get_many(src.style_id, keys, variant=LAUFFORM_VARIANT)
+            }
+
             style_ratio = list(src.style_ratio) if src.style_ratio is not None else list(style.default_style_ratio)
             nib_units = None
             if style.width_resolver == "constant":
@@ -265,6 +284,7 @@ async def live_word_case(text: str, source_id: str = "suetterlin-1922") -> WordC
                 kind="word",
                 slots=slots,
                 templates=rows,
+                laufform=laufform_rows,
                 style_ratio=style_ratio,
                 width_resolver=style.width_resolver,
                 nib_units=nib_units,

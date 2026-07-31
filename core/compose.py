@@ -1319,7 +1319,7 @@ def compose_word(
     public ``/write/word`` payload and the golden fixture stay byte-identical.
 
     ``laufform_by_key`` (optional) maps glyph_keys to ALTERNATIVE render
-    payloads — the median running forms (templates variant 1). A glyph uses
+    payloads — the median running forms (templates LAUFFORM_VARIANT). A glyph uses
     its running form only inside a flowing joined run (length ≥
     ASCENDER_LEAN_MIN_RUN, the lean gate); solitary glyphs and short drills
     always render ``data_by_key``. Where a running form is used, the

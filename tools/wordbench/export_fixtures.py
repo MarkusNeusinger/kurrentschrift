@@ -36,6 +36,7 @@ Fixture layout (gitignored — regenerate at will):
     fixtures/<style_id>/<source_id>[-<set>]/   # words -> <source_id>, pairs/custom -> suffixed
       manifest.json            # export stamp, set, page sha256s, style ratio/resolver, pooled nib, word index
       templates.json           # glyph_key -> template row (anchors, half_widths, trace_meta, entry, exit_pt, advance)
+      templates_laufform.json  # glyph_key -> LAUFFORM_VARIANT row (median running forms) — may be empty
       <id>/
         word.json              # id, text, kind, rect, lineature, frozen slots, scorable
         crop.png               # grayscale crop (excludes applied) — overlay background
@@ -176,6 +177,7 @@ async def export(source_id: str, out_dir: Path, which: str) -> None:
 
     # Imported here, after load_dotenv(): the connection module reads env at import time.
     from core.database.connection import get_db_context
+    from core.database.models import LAUFFORM_VARIANT
     from core.database.repositories import SourceRepository, StyleRepository, TemplateRepository
 
     async with get_db_context() as session:
@@ -199,6 +201,13 @@ async def export(source_id: str, out_dir: Path, which: str) -> None:
 
         all_keys = list({k: None for keys in needed.values() for k in keys})
         templates = {t.glyph_key: _template_dict(t) for t in await repo.get_many(source.style_id, all_keys)}
+        # The median running forms (LAUFFORM_VARIANT rows) freeze alongside the
+        # chart templates: production compose selects them per flowing run
+        # (write.py laufform_by_key), so the bench must measure the same state.
+        laufform = {
+            t.glyph_key: _template_dict(t)
+            for t in await repo.get_many(source.style_id, all_keys, variant=LAUFFORM_VARIANT)
+        }
         # Source-pooled Gleichzug nib, frozen at export (api.rendering computes
         # the same live; freezing keeps bench numbers stable across re-traces).
         profiles = await repo.half_widths_for_source(source.style_id, source_id)
@@ -222,6 +231,8 @@ async def export(source_id: str, out_dir: Path, which: str) -> None:
         fixture_root.mkdir(parents=True, exist_ok=True)
         kind_templates = {k: templates[k] for k in needed[set_name] if k in templates}
         (fixture_root / "templates.json").write_text(json.dumps(kind_templates, ensure_ascii=False))
+        kind_laufform = {k: laufform[k] for k in needed[set_name] if k in laufform}
+        (fixture_root / "templates_laufform.json").write_text(json.dumps(kind_laufform, ensure_ascii=False))
 
         index = []
         for w in kind_entries:
@@ -285,11 +296,15 @@ async def export(source_id: str, out_dir: Path, which: str) -> None:
             "style_ratio": source.style_ratio or (style.default_style_ratio if style else None),
             "width_resolver": style.width_resolver if style else None,
             "constant_nib_units": constant_nib_units,
+            "laufform_keys": sorted(kind_laufform),
             "words": index,
         }
         (fixture_root / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1))
         unscorable = [w for w in index if not w["scorable"]]
-        print(f"exported {len(index)} {set_name} to {fixture_root} ({len(unscorable)} unscorable)")
+        print(
+            f"exported {len(index)} {set_name} to {fixture_root} "
+            f"({len(unscorable)} unscorable, {len(kind_laufform)} laufform keys)"
+        )
         if unscorable:
             print(f"  missing templates: {[(w['id'], w['missing_at_export']) for w in unscorable]}")
 

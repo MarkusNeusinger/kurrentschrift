@@ -5,7 +5,10 @@ references come from the fixture snapshot (tools/wordbench/export_fixtures.py).
 The code under test per run is COMPOSITION + RENDERING (core/compose.py +
 core/pipeline.render_payload_for_template). Shaping is deliberately NOT under
 test: the slots are frozen at export, so a core/shaping.py change moves the
-numbers only after an explicit re-export (= a re-baseline). ONE script per
+numbers only after an explicit re-export (= a re-baseline). Composition
+mirrors production: the frozen Laufform variants (templates_laufform.json)
+are passed as ``laufform_by_key`` exactly like ``/write/word`` does —
+``--no-laufform`` runs chart-only as a diagnostic decomposition. ONE script per
 run, like the glyph bench: Kurrent and Sütterlin words are never averaged —
 and neither are words and pairs: ``--set`` selects the fixture set, and the
 pairs of Abb. 20 report their own ``pair_loss`` headline. Entries frozen as
@@ -166,6 +169,12 @@ def main() -> None:
         help="pair-override file (tools/pairlab/harvest.py --out format) composed into every word; "
         "an override run is a SEPARATE measurement, never comparable to the override-free headline",
     )
+    parser.add_argument(
+        "--no-laufform",
+        action="store_true",
+        help="compose chart-only, ignoring the frozen Laufform variants (templates_laufform.json) — "
+        "a diagnostic decomposition run; the headline mirrors production and composes WITH them",
+    )
     args = parser.parse_args()
 
     overrides_by_base: dict[tuple[str, str], dict] = {}
@@ -193,11 +202,19 @@ def main() -> None:
         manifest = json.loads(manifest_path.read_text())
         root = manifest_path.parent
         templates = json.loads((root / "templates.json").read_text())
+        # The frozen Laufform variants (median running forms): production
+        # composes with them per flowing run, so the headline does too. An
+        # older fixture export without the file runs chart-only, unchanged.
+        laufform_path = root / "templates_laufform.json"
+        laufform_rows: dict[str, dict] = (
+            json.loads(laufform_path.read_text()) if laufform_path.exists() and not args.no_laufform else {}
+        )
         nib = manifest.get("constant_nib_units")
         resolver = manifest.get("width_resolver") or "pressure"
         style_ratio = manifest.get("style_ratio") or [1, 1, 1]
 
         payload_cache: dict[str, dict | None] = {}
+        laufform_cache: dict[str, dict | None] = {}
 
         def payload_for(
             key: str,
@@ -211,6 +228,22 @@ def main() -> None:
                 row = rows.get(key)
                 cache[key] = render_payload_for_template(row, ratio, width_resolver, nib_units) if row else None
             return cache[key]
+
+        def laufform_for(
+            key: str,
+            cache: dict = laufform_cache,
+            rows: dict = laufform_rows,
+            ratio: list = style_ratio,
+            width_resolver: str = resolver,
+            nib_units: float | None = nib,
+        ) -> dict | None:
+            if key not in cache:
+                row = rows.get(key)
+                cache[key] = render_payload_for_template(row, ratio, width_resolver, nib_units) if row else None
+            return cache[key]
+
+        if laufform_rows:
+            print(f"laufform: {len(laufform_rows)} variant rows from {laufform_path.parent.name}")
 
         for entry in manifest["words"]:
             entry_id = entry.get("id", entry["word"])
@@ -228,11 +261,13 @@ def main() -> None:
                 # provenance=True only tags items with slot/pair attribution
                 # (needed by the Gleichzug audit's letterform classification);
                 # the scoring reads none of those keys — headline unchanged.
+                laufform_by_key = {s.key: lf for s in slots if s.key and (lf := laufform_for(s.key)) is not None}
                 composed = compose_word(
                     slots,
                     {s.key: payload_for(s.key) for s in slots if s.key},
                     provenance=True,
                     pair_overrides=_slot_overrides(slots, overrides_by_base) or None,
+                    laufform_by_key=laufform_by_key or None,
                 )
                 report = score_word(
                     composed,
@@ -291,6 +326,8 @@ def main() -> None:
     result: dict = {"style": args.style, "set": args.which}
     if args.overrides:
         result["overrides"] = str(args.overrides)
+    if args.no_laufform:
+        result["laufform"] = False
     for kind in ("word", "pair"):
         kind_reports = [r for r in reports if r["kind"] == kind]
         kind_skipped = [s for s in skipped if s["kind"] == kind]

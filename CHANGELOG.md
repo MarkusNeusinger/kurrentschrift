@@ -14,6 +14,18 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **The word bench now composes with the frozen Laufform variants — the
+  measurement stand catches up to production (handmodell plan H0).** The
+  fixture export freezes the `LAUFFORM_VARIANT` template rows (median running
+  forms) as `templates_laufform.json` next to `templates.json`, the runner
+  passes them into `compose_word` exactly like `/write/word` does
+  (`--no-laufform` keeps a chart-only diagnostic run), and `tools/wordlab`
+  (fixture and live path) composes identically so its overlays show what the
+  bench scores. Documented re-baseline in `qualitaetsmetrik.md` §6: words
+  0.1208 → 0.1169, pairs flat at 0.1645 — decomposed into the export shift
+  (five words + one pair newly scorable through the authored capitals) and
+  the Laufform effect proper (−0.0053 on words).
+
 - **Open-core moat hardened: the learned dataset is no longer publicly
   exfiltrable.** The README has always reserved the authored data (ductus
   templates, running forms, statistics) outside the MIT grant; now the

@@ -1265,3 +1265,38 @@ Headline bewegt sich erst nach DB-Schreiben + Fixture-Re-Export
 (dokumentierte Re-Baseline). Achtung Doppel-Korrektur: bei genutzter
 Laufform ist `LAUFFORM_SX` je Slot deaktiviert (die Form trägt ihre
 Breite selbst).
+
+### H0-Anschluss `jul31` — Bench komponiert mit den Laufform-Varianten (Re-Baseline)
+
+Abschluss der Laufform-Runde (handmodell-stufenplan.md H0): die 13
+`LAUFFORM_VARIANT`-Zeilen (a d e g h i l m n r t u w) liegen in der DB,
+Produktion (`/write/word`) komponiert seit der Mechanik-Runde mit ihnen —
+die Bench misst jetzt denselben Stand. Der Export friert sie als
+`templates_laufform.json` neben `templates.json` ein (Manifest-Feld
+`laufform_keys`), der Runner reicht sie als `laufform_by_key` in
+`compose_word` durch; `--no-laufform` läuft chart-only als
+Diagnose-Zerlegung (eigene Zahl, nie die Headline). `tools/wordlab`
+(Fixture- UND Live-Pfad) komponiert identisch, damit das Overlay zeigt,
+was die Bench misst. **Freeze-Regel erweitert:**
+`templates_laufform.json` ist Teil der eingefrorenen Fixtures — ein
+Compose-Loop editiert nie die Laufform-Zeilen.
+
+Re-Baseline in zwei Komponenten (Re-Export + Laufform), gemessen getrennt:
+
+| Messung | Wörter | Paare |
+|---|---|---|
+| alte Fixtures (58/32 scorable) | 0,1208 | 0,1652 |
+| Re-Export chart-only (`--no-laufform`) | 0,1222 | 0,1647 |
+| **Re-Export + Laufformen (neue Baseline)** | **0,1169** | **0,1645** |
+
+Der Export-Shift (+0,0014) kommt aus den 5 Wörtern + 1 Paar, die durch
+die inzwischen autorisierten Kapitale **erstmals scorable** sind
+(`words_scored` 58 → 63, `pairs_scored` 32 → 33, skipped jetzt 0) —
+frisch autorisierte Einträge liegen über dem Schnitt. Der
+Laufform-Effekt allein: **−0,0053** auf die Wörter; die Paare bewegen
+sich praktisch nicht (Lauf-≥3-Schwelle — nur die Dreier-Drills wie
+`ssi` können überhaupt Laufformen ziehen). Die ~0,1136 des
+Median-Anker-Experiments treffen wir wegen des größeren Eintragssets
+nicht exakt — das Experiment lief auf dem alten 58er-Set und tauschte
+die Anker direkt statt über den Varianten-Renderpfad. Neue Headlines:
+**Wörter 0,116886 · Paare 0,164506**.
