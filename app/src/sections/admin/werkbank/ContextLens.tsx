@@ -48,6 +48,7 @@ function OccurrenceThumb({
   onJump: () => void;
 }) {
   const b = cropBoxOf(inst, sample.rect);
+  if (!b) return null;
   const x = Math.max(0, b.x - THUMB_PAD);
   const y = Math.max(0, b.y - THUMB_PAD);
   const w = Math.min(sample.width - x, b.w + 2 * THUMB_PAD);

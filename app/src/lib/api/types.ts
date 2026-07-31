@@ -79,8 +79,10 @@ export interface WordSampleOut {
   midband_y: number;
   // The sample's rect on the plate page, [x0, y0, x1, y1] in PAGE pixels —
   // the origin that turns a page-pixel occurrence box (InstanceOut) into a
-  // crop-local one: cropX = x0 - rect[0], cropY = y0 - rect[1].
-  rect: number[];
+  // crop-local one: cropX = x0 - rect[0], cropY = y0 - rect[1]. Optional
+  // because the endpoint is cached long (stale-while-revalidate spans days):
+  // a browser/CDN may still serve the pre-`rect` schema after a deploy.
+  rect?: number[];
 }
 
 // Fit context of one stored word trace (see tools/laufform/harvest.py). Every

@@ -160,6 +160,7 @@ export function WordSpineCard({ row, sample, sourceId, boxes, selection, onSelec
           </g>
           {boxes.map((inst) => {
             const b = cropBoxOf(inst, sample.rect);
+            if (!b) return null;
             const rmse = inst.measurements.geo_rmse_px;
             const selected = isSelectedLetter(selection, row.specimen_id, inst);
             const mark: Mark = { target: { kind: 'letter', glyphKey: inst.glyph_key }, specimen };
@@ -199,6 +200,7 @@ export function WordSpineCard({ row, sample, sourceId, boxes, selection, onSelec
           {joins.map(({ left, right }) => {
             const lb = cropBoxOf(left, sample.rect);
             const rb = cropBoxOf(right, sample.rect);
+            if (!lb || !rb) return null;
             const selected =
               selection?.target.kind === 'pair' &&
               selection.target.leftKey === left.glyph_key &&

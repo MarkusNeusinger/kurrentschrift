@@ -103,8 +103,12 @@ export const deletePair = (sourceId: string, leftKey: string, rightKey: string):
 
 // The connected-writing specimens of a source (words.json sidecar) — empty for
 // sources without plates. The crop is an <img>-loadable public URL like cropUrl.
+// `v` is a cache-buster, bumped when the response schema grows a field the UI
+// depends on (v=2: `rect`): the endpoint is cached with a days-long
+// stale-while-revalidate window, so without it browsers/CDNs keep serving the
+// old shape long after a deploy.
 export const getWordSamples = (sourceId: string, retry?: RetryOptions): Promise<WordSampleOut[]> =>
-  apiFetch(src(sourceId, '/word-samples'), {}, retry).then(asJson<WordSampleOut[]>);
+  apiFetch(src(sourceId, '/word-samples?v=2'), {}, retry).then(asJson<WordSampleOut[]>);
 
 export const wordSampleCropUrl = (sourceId: string, sampleId: string): string =>
   src(sourceId, `/word-samples/${encodeURIComponent(sampleId)}/crop`);

@@ -74,10 +74,13 @@ export interface CropBox {
 
 // Occurrence boxes are PAGE pixels of the plate, the crop starts at the word
 // sample's rect origin — subtracting it puts the box in the crop's own frame
-// (the SVG viewBox the spine card draws in).
-export function cropBoxOf(inst: InstanceOut, rect: number[]): CropBox {
-  const [rx, ry] = [rect[0] ?? 0, rect[1] ?? 0];
-  return { x: inst.x0 - rx, y: inst.y0 - ry, w: inst.x1 - inst.x0, h: inst.y1 - inst.y0 };
+// (the SVG viewBox the spine card draws in). `rect` may be missing when a
+// browser/CDN still serves the pre-`rect` word-samples schema (the endpoint's
+// stale-while-revalidate spans days) — then there is no valid crop frame and
+// the caller skips the interactive layer instead of drawing at page coords.
+export function cropBoxOf(inst: InstanceOut, rect: number[] | undefined): CropBox | null {
+  if (!rect || rect.length < 2) return null;
+  return { x: inst.x0 - rect[0], y: inst.y0 - rect[1], w: inst.x1 - inst.x0, h: inst.y1 - inst.y0 };
 }
 
 // The request body for one filed task. specimen_kind + specimen_id always go
