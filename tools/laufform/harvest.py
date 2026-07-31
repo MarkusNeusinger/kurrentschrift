@@ -1,21 +1,29 @@
-"""Laufform harvest: median running forms from the specimen words.
+"""Laufform harvest: median running forms + per-occurrence rows.
 
 The jul31 doctrine split (qualitaetsmetrik.md §6): the chart cell is the
 DUCTUS PRIOR (stroke order, crossings), the written specimen words are the
 FORM MODEL. This tool M4-fits every letter occurrence of the frozen Abb.-19
-word fixtures onto the plates, takes per-anchor medians over the clean fits —
-the running shape with the template's own topology intact — and writes them
-as `templates` variant-1 DRAFT rows through the admin API
-(`PUT /sources/{id}/templates/{key}/laufform`).
+word fixtures onto the plates and produces two artefacts:
 
-Dry run prints the per-letter stats and writes ``laufform_drafts.json`` next
-to nothing else; ``--apply`` PUTs the rows (requires ``--base-url`` and the
-``ADMIN_TOKEN`` env var). Never run against prod without an explicit go —
-the composer picks the rows up immediately for every flowing /write/word.
+* per-letter MEDIANS over the clean fits (the running shape with the
+  template's own topology intact), written as `templates` Laufform-variant
+  DRAFT rows through the admin API
+  (`PUT /sources/{id}/templates/{key}/laufform`), and
+* every clean per-occurrence fit itself (handmodell plan H1 — occurrences,
+  not just medians), written as `instances` rows in one batch
+  (`PUT /sources/{id}/instances`, `replace: true`) under the specimen hand.
+
+Dry run prints the per-letter stats and writes ``laufform_drafts.json`` +
+``laufform_occurrences.json``; ``--apply`` PUTs both (requires ``--base-url``
+and the ``ADMIN_TOKEN`` env var). Never run against prod without an explicit
+go — the composer picks the Laufform rows up immediately for every flowing
+/write/word (the occurrence rows never affect rendering).
 
     uv run python -m tools.laufform.harvest [--style suetterlin]
         [--min-n 4] [--rmse-max 2.2] [--out laufform_drafts.json]
-        [--apply --base-url http://localhost:8000 --source-id <id>]
+        [--occ-out laufform_occurrences.json]
+        [--apply --base-url http://localhost:8000 --source-id <id>
+         --hand-id suetterlin-1922-norm]
 """
 
 from __future__ import annotations
@@ -36,10 +44,12 @@ from tools.wordlab.cases import iter_fixture_word_cases
 from tools.wordlab.derive import derive_word
 
 
-def harvest(style: str, min_n: int, rmse_max: float) -> dict[str, dict]:
-    """Per-letter median fitted anchors over the clean word occurrences."""
+def harvest(style: str, min_n: int, rmse_max: float) -> tuple[dict[str, dict], list[dict]]:
+    """Per-letter median fitted anchors over the clean word occurrences, plus
+    every clean fit as an occurrence record (`InstanceItem` wire shape)."""
     per_key: dict[str, list[np.ndarray]] = defaultdict(list)
     tpl_by_key: dict[str, dict] = {}
+    occurrences: list[dict] = []
     for case in iter_fixture_word_cases(which="words", style=style):
         if not case.scorable:
             continue
@@ -92,9 +102,39 @@ def harvest(style: str, min_n: int, rmse_max: float) -> dict[str, dict]:
             fitted = np.asarray(fr.anchors, dtype=float)
             if fitted.shape != anchors.shape:
                 continue
-            fitted = fitted - np.median(fitted - anchors, axis=0)  # shapes, not placements
+            shift = np.median(fitted - anchors, axis=0)
+            fitted = fitted - shift  # shapes, not placements
             per_key[slot.key].append(fitted)
             tpl_by_key.setdefault(slot.key, row)
+            # The occurrence row (handmodell H1): centered shape as anchors,
+            # placement + fit context in measurements, crop in page pixels.
+            rx, ry = (case.rect[0], case.rect[1]) if case.rect else (0, 0)
+            prev_slot = case.slots[i - 1] if i > 0 else None
+            next_slot = case.slots[i + 1] if i + 1 < len(case.slots) else None
+            occurrences.append(
+                {
+                    "glyph_key": slot.key,
+                    "glyph": row.get("glyph") or slot.key,
+                    "position": slot.position or "medial",
+                    "variant": 0,
+                    "y0": int(round(body[:, 1].min())) + ry,
+                    "y1": int(round(body[:, 1].max())) + ry,
+                    "x0": int(round(body[:, 0].min())) + rx,
+                    "x1": int(round(body[:, 0].max())) + rx,
+                    "anchors": fitted.round(4).tolist(),
+                    "half_widths": [],
+                    "measurements": {
+                        "specimen_id": case.id,
+                        "slot": i,
+                        "prev_key": prev_slot.key if prev_slot and not prev_slot.space else None,
+                        "next_key": next_slot.key if next_slot and not next_slot.space else None,
+                        "shift_xh": [round(float(shift[0]), 4), round(float(shift[1]), 4)],
+                        "registration_px": [round(float(ddx), 2), round(float(ddy), 2)],
+                        "geo_rmse_px": round(float(fr.fit_meta.get("geo_rmse_px", 0.0)), 3),
+                        "xh_px": round(float(xh), 2),
+                    },
+                }
+            )
         print(f"fitted {case.id}", flush=True)
 
     out: dict[str, dict] = {}
@@ -105,7 +145,7 @@ def harvest(style: str, min_n: int, rmse_max: float) -> dict[str, dict]:
         tpl = np.asarray(tpl_by_key[key]["anchors"], dtype=float)
         out[key] = {"anchors": med.round(4).tolist(), "n_occurrences": len(fits)}
         print(f"{key:>6}  n={len(fits):>2}  median-vs-chart {float(np.hypot(*(med - tpl).T).mean()):.3f} xh")
-    return out
+    return out, occurrences
 
 
 def apply_drafts(drafts: dict[str, dict], base_url: str, source_id: str, token: str) -> None:
@@ -127,25 +167,46 @@ def apply_drafts(drafts: dict[str, dict], base_url: str, source_id: str, token: 
         raise SystemExit(f"{len(failed)} letters failed: {', '.join(failed)} — re-run --apply to retry")
 
 
+def apply_occurrences(
+    occurrences: list[dict], base_url: str, source_id: str, token: str, hand_id: str, hand_label: str
+) -> None:
+    """One replace-batch: the harvest walks ALL specimen words, so the stored
+    rows are exactly this run's clean fits."""
+    body = {"hand": {"id": hand_id, "label": hand_label, "era": "1922"}, "replace": True, "items": occurrences}
+    req = urllib.request.Request(
+        f"{base_url}/sources/{source_id}/instances",
+        data=json.dumps(body).encode(),
+        method="PUT",
+        headers={"Content-Type": "application/json", "X-Admin-Token": token},
+    )
+    with urllib.request.urlopen(req, timeout=60) as res:
+        print(f"PUT instances: {res.status} {res.read().decode()[:200]}")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--style", default="suetterlin")
     ap.add_argument("--min-n", type=int, default=4)
     ap.add_argument("--rmse-max", type=float, default=2.2)
     ap.add_argument("--out", type=Path, default=Path("laufform_drafts.json"))
+    ap.add_argument("--occ-out", type=Path, default=Path("laufform_occurrences.json"))
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--base-url", default="http://localhost:8000")
     ap.add_argument("--source-id")
+    ap.add_argument("--hand-id", default="suetterlin-1922-norm")
+    ap.add_argument("--hand-label", default="Suetterlin norm hand (Leitfaden 1922, Abb. 19/20)")
     args = ap.parse_args()
 
-    drafts = harvest(args.style, args.min_n, args.rmse_max)
+    drafts, occurrences = harvest(args.style, args.min_n, args.rmse_max)
     args.out.write_text(json.dumps(drafts))
-    print(f"wrote {args.out} ({len(drafts)} letters)")
+    args.occ_out.write_text(json.dumps(occurrences))
+    print(f"wrote {args.out} ({len(drafts)} letters) + {args.occ_out} ({len(occurrences)} occurrences)")
     if args.apply:
         token = os.environ.get("ADMIN_TOKEN")
         if not token or not args.source_id:
             raise SystemExit("--apply needs --source-id and the ADMIN_TOKEN env var")
         apply_drafts(drafts, args.base_url.rstrip("/"), args.source_id, token)
+        apply_occurrences(occurrences, args.base_url.rstrip("/"), args.source_id, token, args.hand_id, args.hand_label)
 
 
 if __name__ == "__main__":

@@ -168,9 +168,13 @@ ebenso die früher (naming-und-setup §1) vertagte Stil-Dimension:
   Hüllkurve pro `(hand, glyph, position, variant)`. Optional später
   textunabhängige Hand-Features (Hinge/Δn-Hinge nach Bulacu/Schomaker).
 
-`instances`/`aggregates` sind angelegt, aber erst der post-MVP-Import füllt
-sie (dort bleibt die Wort-Position eine legitime Beobachtungs-Dimension pro
-Beleg). Seit dem Positions-Rückbau (R2) autorisiert der Admin genau EINE Form
+`instances` wird seit dem Handmodell-Schritt H1 (2026-07-31,
+`docs/proposals/handmodell-stufenplan.md`) von der Laufform-Ernte mit den
+Per-Beleg-Fits der Specimen-Wörter befüllt (die Wort-Position bleibt dort
+eine legitime Beobachtungs-Dimension pro Beleg); die additive Schwester
+`pair_instances` (Migration `0019`) hält jedes sezierte
+Verbindungs-Vorkommen. `aggregates` ist angelegt, der Aggregations-Job
+folgt. Seit dem Positions-Rückbau (R2) autorisiert der Admin genau EINE Form
 pro Glyphe — die positionsabhängigen Verbindungsstriche werden aus
 `entry`/`exit`-Tangenten *generiert* (§4), Anstrich/Auslauf setzt der
 Composer aus dem Slot-Kontext.

@@ -13,7 +13,18 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import defer
 
-from core.database.models import Aggregate, Bbox, GlyphPair, Hand, Instance, QuizWord, Source, Style, Template
+from core.database.models import (
+    Aggregate,
+    Bbox,
+    GlyphPair,
+    Hand,
+    Instance,
+    PairInstance,
+    QuizWord,
+    Source,
+    Style,
+    Template,
+)
 
 
 # Every `upsert` below writes through a CORE insert-on-conflict, which the ORM
@@ -59,6 +70,19 @@ class HandRepository:
     async def list(self) -> list[Hand]:
         result = await self.session.execute(select(Hand).order_by(Hand.id))
         return list(result.scalars().all())
+
+    async def upsert(self, hand_id: str, **fields: Any) -> Hand:
+        """Insert-or-update by primary key — the occurrence batches get-or-create
+        their writer row in the same request."""
+        payload = {"id": hand_id, **fields}
+        stmt = pg_insert(Hand).values(**payload)
+        stmt = stmt.on_conflict_do_update(
+            index_elements=[Hand.id], set_={k: v for k, v in payload.items() if k != "id"}
+        )
+        await self.session.execute(stmt)
+        await self.session.flush()
+        result = await self.session.execute(select(Hand).where(Hand.id == hand_id).execution_options(**REFRESH_LOADED))
+        return result.scalar_one()
 
 
 class SourceRepository:
@@ -337,17 +361,91 @@ class GlyphPairRepository:
 
 
 class InstanceRepository:
-    """Per-text glyph occurrences (§12 layer 1). Defined for the post-MVP import."""
+    """Per-text glyph occurrences (§12 layer 1), filled by the occurrence harvest."""
+
+    # Everything except the identity columns of `uq_instance_loc` updates on conflict.
+    _UPDATE_COLS = (
+        "hand_id",
+        "template_id",
+        "glyph_key",
+        "y1",
+        "x1",
+        "anchors",
+        "half_widths",
+        "raw_path",
+        "measurements",
+    )
 
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def list(self, source_id: str | None = None) -> list[Instance]:
-        stmt = select(Instance).order_by(Instance.glyph_key)
+    async def list(self, source_id: str | None = None, glyph_key: str | None = None) -> list[Instance]:
+        stmt = select(Instance).order_by(Instance.glyph_key, Instance.id)
         if source_id is not None:
             stmt = stmt.where(Instance.source_id == source_id)
+        if glyph_key is not None:
+            stmt = stmt.where(Instance.glyph_key == glyph_key)
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
+
+    async def upsert_many(self, rows: list[dict]) -> int:
+        """Batch insert-or-update on `uq_instance_loc` (source, glyph, position,
+        variant, y0, x0) — a re-harvest of the same specimens refreshes rows in
+        place instead of duplicating occurrences."""
+        if not rows:
+            return 0
+        stmt = pg_insert(Instance).values(rows)
+        stmt = stmt.on_conflict_do_update(
+            constraint="uq_instance_loc",
+            set_={col: stmt.excluded[col] for col in self._UPDATE_COLS} | {"updated_at": func.now()},
+        )
+        await self.session.execute(stmt)
+        await self.session.flush()
+        return len(rows)
+
+    async def delete_for_source(self, source_id: str) -> int:
+        result = await self.session.execute(delete(Instance).where(Instance.source_id == source_id))
+        return result.rowcount or 0
+
+
+class PairInstanceRepository:
+    """Observed letter-join occurrences (handmodell H2), filled by the pair harvest."""
+
+    _UPDATE_COLS = ("hand_id", "left_key", "right_key", "geometry", "measurements")
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def list(
+        self, source_id: str | None = None, left_key: str | None = None, right_key: str | None = None
+    ) -> list[PairInstance]:
+        stmt = select(PairInstance).order_by(PairInstance.left_key, PairInstance.right_key, PairInstance.id)
+        if source_id is not None:
+            stmt = stmt.where(PairInstance.source_id == source_id)
+        if left_key is not None:
+            stmt = stmt.where(PairInstance.left_key == left_key)
+        if right_key is not None:
+            stmt = stmt.where(PairInstance.right_key == right_key)
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def upsert_many(self, rows: list[dict]) -> int:
+        """Batch insert-or-update on `uq_pair_instance_occurrence` (source,
+        specimen, slot) — one row per observed join, re-harvests refresh it."""
+        if not rows:
+            return 0
+        stmt = pg_insert(PairInstance).values(rows)
+        stmt = stmt.on_conflict_do_update(
+            constraint="uq_pair_instance_occurrence",
+            set_={col: stmt.excluded[col] for col in self._UPDATE_COLS} | {"updated_at": func.now()},
+        )
+        await self.session.execute(stmt)
+        await self.session.flush()
+        return len(rows)
+
+    async def delete_for_source(self, source_id: str) -> int:
+        result = await self.session.execute(delete(PairInstance).where(PairInstance.source_id == source_id))
+        return result.rowcount or 0
 
 
 class AggregateRepository:

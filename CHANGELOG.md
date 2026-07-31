@@ -14,6 +14,21 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Occurrence persistence: every clean specimen fit becomes a database row
+  (hand-model plan H1/H2).** Per the decision to store occurrences, not just
+  medians: the laufform harvest now persists each clean per-occurrence M4 fit
+  as an `instances` row (centered shape anchors; placement, specimen/slot
+  context, neighbours and RMSE in `measurements`) and the pairlab harvest can
+  persist EVERY dissected letter join as a row in the new additive
+  `pair_instances` table (migration `0019` — geometry in the `glyph_pairs`
+  frame plus dissection QC, unique per `(source, kind, specimen, slot)` since
+  the word plates and the Abb.-20 drills are separate id namespaces). Both
+  flow through new admin-gated batch endpoints
+  (`PUT /sources/{id}/instances` + `/pair-instances`, public reads alongside)
+  that get-or-create the writer's `hands` row — the first real inhabitants of
+  the statistics layer defined in migration 0004. Occurrence rows never
+  affect rendering; the composer path is untouched.
+
 - **A Gleichzug audit as wordbench report columns — the one-flow, one-width
   invariant made measurable.** A Sütterlin word is written in one flow (pen
   lifts only for diacritics) with a line that is always one nib wide; the new

@@ -397,6 +397,49 @@ class GlyphPair(Base):
     )
 
 
+class PairInstance(Base):
+    """One observed letter-join occurrence from a specimen (handmodell plan H2).
+
+    The per-occurrence layer under the sparse `glyph_pairs` overrides: every
+    clean dissection of a joined adjacent pair on a specimen plate is one row —
+    the natural transition itself, not the letters. `geometry` uses the SAME
+    frame as `GlyphPair.geometry` (connector centerline relative to the left
+    glyph's exit + placement offset, template units) so occurrences and
+    overrides compare directly; `measurements` carries the dissection QC
+    (independent-fit residuals, chamfers, ink-gap flag, …). Statistics over
+    these rows are computed per hand, never across hands
+    (quellen-und-rechte.md §7).
+    """
+
+    __tablename__ = "pair_instances"
+    __table_args__ = (UniqueConstraint("source_id", "kind", "specimen_id", "slot", name="uq_pair_instance_occurrence"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_id: Mapped[str] = mapped_column(
+        String(SOURCE_ID_MAX), ForeignKey("sources.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    hand_id: Mapped[str | None] = mapped_column(
+        String(HAND_ID_MAX), ForeignKey("hands.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    left_key: Mapped[str] = mapped_column(String(GLYPH_KEY_MAX), nullable=False, index=True)
+    right_key: Mapped[str] = mapped_column(String(GLYPH_KEY_MAX), nullable=False, index=True)
+    # The words.json sample the join was observed in + the left letter's slot
+    # index within it. `kind` ('word' | 'pair') completes the identity: the
+    # word plates and the Abb.-20 pair drills are separate id namespaces of
+    # the same source.
+    kind: Mapped[str] = mapped_column(String(KIND_MAX), nullable=False, server_default="word")
+    specimen_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    slot: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    geometry: Mapped[dict] = mapped_column(PORTABLE_JSON, nullable=False)
+    measurements: Mapped[dict] = mapped_column(PORTABLE_JSON, nullable=False, server_default="{}")
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
 class QuizWord(Base):
     """A word shown in the reading quiz plus its form-similar distractors.
 

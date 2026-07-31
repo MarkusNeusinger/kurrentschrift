@@ -73,7 +73,8 @@ agent working in this repo:
 - Frontend feature work that follows the existing `/app/` patterns
   (drag-on-canvas, stylus capture, diagnostic panels).
 - New FastAPI routes that mirror the `api/routers/{health,styles,hands,
-  sources,chart,bboxes,templates,write,word_samples,quiz_words}.py` shape.
+  sources,chart,bboxes,templates,pairs,instances,write,word_samples,
+  quiz_words}.py` shape.
 - Adding numpy/scipy/scikit-image pipeline steps inside `core/`.
 - Writing/improving unit tests under `tests/` (a pytest suite already
   exists — mirror the existing flat `tests/test_<module>.py` layout).
@@ -260,7 +261,9 @@ kurrentschrift/
 │   │                 #   0015 unique (style_id, glyph_key, variant) on templates,
 │   │                 #   0017 position removal (R2): base glyph_keys, sibling collapse,
 │   │                 #   drop templates.position + bboxes.split, unique (style, glyph, variant),
-│   │                 #   0018 glyph_pairs (R3): additive pair-override table, approved gate
+│   │                 #   0018 glyph_pairs (R3): additive pair-override table, approved gate,
+│   │                 #   0019 pair_instances (handmodell H2): observed join occurrences,
+│   │                 #   unique (source, kind, specimen, slot)
 ├── data/             # Sources, samples, derived — SEPARATE LICENSING
 │   ├── sources/      # public-domain originals (Loth 1866, Sütterlin 1922 incl. connected-writing
 │   │                 #   plates + words.json word rects for the word bench, Koch 1928 Offenbacher
@@ -369,8 +372,9 @@ lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberläng
 ### Database Schema (Postgres + SQLAlchemy async)
 
 - Tables: `styles`, `hands`, `sources`, `bboxes`, `templates`,
-  `instances`, `aggregates`, `quiz_words` (the flat reading-quiz word
-  bank — word + JSONB `distractors` + `era`/`note`/`fugen`).
+  `glyph_pairs`, `instances`, `pair_instances`, `aggregates`,
+  `quiz_words` (the flat reading-quiz word bank — word + JSONB
+  `distractors` + `era`/`note`/`fugen`).
 - `styles` is the Grundvorlage/script family (Kurrent · Sütterlin ·
   Offenbacher); it carries `width_resolver` (§5) + lineature defaults.
   The resolver is applied at render time by
@@ -386,8 +390,10 @@ lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberläng
   `(style_id, glyph_key, variant)` — every read keys on `glyph_key`, so it
   is identifying too; the API's 409 backstops are UX on top of the DB
   constraints, not the only defense. `instances` hold per-text occurrences
-  (the fit + `measurements`, §12 layer 1, filled by the post-MVP import);
-  `aggregates` are per-hand stats (§12 layer 2).
+  (the fit + `measurements`, §12 layer 1 — filled by the laufform occurrence
+  harvest since handmodell H1); `pair_instances` hold observed letter-join
+  occurrences (handmodell H2, geometry in the `glyph_pairs` frame);
+  `aggregates` are per-hand stats (§12 layer 2, aggregation job pending).
 - `bboxes` carries the chart crop + freeform eraser `mask_strokes` (replaces
   the old rectangle `excludes`) + baseline/midband calibration + `guides` +
   `locked`. JSONB columns hold structured data; aggregate stats in SQL.

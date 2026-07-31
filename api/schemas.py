@@ -151,6 +151,112 @@ class GlyphPairOut(BaseModel):
     approved: bool
 
 
+# ---------------------------------------------------- Occurrences (handmodell)
+
+
+class HandIn(BaseModel):
+    """The writer a batch of occurrences belongs to (get-or-create).
+
+    `style_id` is taken from the source server-side — a hand is registered
+    under the style it was observed writing."""
+
+    id: str = Field(min_length=1, max_length=64)
+    label: str = Field(min_length=1, max_length=255)
+    era: str | None = Field(default=None, max_length=64)
+    note: str | None = None
+
+
+class InstanceItem(BaseModel):
+    """One glyph occurrence: the per-occurrence M4 fit from a specimen word.
+
+    `anchors` are the fitted anchors CENTERED onto the chart template ("shapes,
+    not placements" — the median over them is the Laufform); the rigid
+    placement remainder and all fit context (specimen id, slot, neighbours,
+    RMSE) live in `measurements`. Crop region in page pixels of the source."""
+
+    glyph_key: str = Field(min_length=1, max_length=32)
+    glyph: str = Field(min_length=1, max_length=8)
+    position: Literal["initial", "medial", "final"]
+    variant: int = 0
+    y0: int
+    y1: int
+    x0: int
+    x1: int
+    anchors: list[tuple[float, float]] = Field(min_length=4, max_length=4096)
+    # Widths are not re-fitted per occurrence (the template prior carries them);
+    # an empty list is the honest default.
+    half_widths: list[float] = Field(default_factory=list)
+    measurements: dict[str, Any] = Field(default_factory=dict)
+
+
+class InstanceBatchIn(BaseModel):
+    """Body of `PUT /sources/{id}/instances` — a harvest run's occurrence rows."""
+
+    hand: HandIn
+    # True wipes the source's stored occurrences first (a full re-harvest);
+    # False upserts on (glyph, position, variant, y0, x0).
+    replace: bool = False
+    items: list[InstanceItem] = Field(min_length=1, max_length=5000)
+
+
+class InstanceOut(BaseModel):
+    glyph_key: str
+    glyph: str
+    position: str
+    variant: int
+    hand_id: str | None = None
+    y0: int
+    y1: int
+    x0: int
+    x1: int
+    anchors: list[list[float]]
+    half_widths: list[float]
+    measurements: dict[str, Any]
+
+
+class BatchStoreOut(BaseModel):
+    hand_id: str
+    stored: int
+    deleted: int = 0
+
+
+class PairInstanceItem(BaseModel):
+    """One observed letter join: the dissected transition, not the letters.
+
+    `geometry` shares PairGeometry's frame (connector relative to the left
+    exit + placement offset) so occurrences compare directly with `glyph_pairs`
+    overrides; `measurements` carries the dissection QC."""
+
+    left_key: str = Field(min_length=1, max_length=32)
+    right_key: str = Field(min_length=1, max_length=32)
+    # 'word' | 'pair': the word plates and the Abb.-20 pair drills are separate
+    # id namespaces of one source — kind completes the occurrence identity.
+    kind: Literal["word", "pair"] = "word"
+    specimen_id: str = Field(min_length=1, max_length=64)
+    slot: int = Field(ge=0)
+    geometry: PairGeometry
+    measurements: dict[str, Any] = Field(default_factory=dict)
+
+
+class PairInstanceBatchIn(BaseModel):
+    """Body of `PUT /sources/{id}/pair-instances`."""
+
+    hand: HandIn
+    replace: bool = False
+    items: list[PairInstanceItem] = Field(min_length=1, max_length=5000)
+
+
+class PairInstanceOut(BaseModel):
+    left_key: str
+    right_key: str
+    kind: str
+    specimen_id: str
+    slot: int
+    hand_id: str | None = None
+    geometry: PairGeometry
+    measurements: dict[str, Any]
+
+
 # ----------------------------------------------------------------------- Bbox
 
 
