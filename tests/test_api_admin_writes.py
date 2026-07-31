@@ -335,3 +335,58 @@ async def test_fit_rejects_out_of_bounds_tuning_params(api: Harness):
             "GET", f"/sources/{source_id}/templates/n/fit", params=params, headers=api.admin_headers()
         )
         assert res.status == 422, f"{params}: expected 422, got {res.status}"
+
+
+async def test_put_laufform_stores_variant_and_write_word_uses_it(api: Harness):
+    """The jul31 doctrine split: the chart row stays the ductus prior, the
+    stored median running form (variant 1) renders for glyphs in a flowing
+    run — /write/word geometry widens, the solo glyph payload stays chart."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    chart = [[0.0, 0.0], [0.05, 0.45], [0.12, 0.62], [0.25, 0.55], [0.32, 0.25], [0.35, 0.0]]
+    wider = [[x * 1.3, y] for x, y in chart]
+
+    # anchor-count mismatch → 422 (the ductus prior must match)
+    res = await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/templates/n/laufform",
+        json_body={"anchors": wider[:-1], "n_occurrences": 9},
+        headers=api.admin_headers(),
+    )
+    assert res.status == 422
+
+    res = await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/templates/n/laufform",
+        json_body={"anchors": wider, "n_occurrences": 9},
+        headers=api.admin_headers(),
+    )
+    assert res.status == 200
+    out = res.json()
+    assert out["variant"] == 1
+    assert out["trace_meta"]["laufform"]["n_occurrences"] == 9
+
+    # A flowing run (nnn, run >= 3) renders the wider running form …
+    res = await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "nnn"})
+    assert res.status == 200
+    items = [it for it in res.json()["items"] if "stroke_width" not in it]
+    span = max(p[0] for p in items[0]["centerline"]) - min(p[0] for p in items[0]["centerline"])
+    assert span > 0.40  # chart span is 0.35; the laufform is 0.455
+
+    # … while the solo glyph payload stays chart-true.
+    res = await api.client.request("GET", f"/sources/{source_id}/write/glyphs", params={"keys": "n"})
+    assert res.status == 200
+    g = res.json()["glyphs"][0]
+    solo_span = max(p[0] for p in g["centerlines_template"][0]) - min(p[0] for p in g["centerlines_template"][0])
+    assert abs(solo_span - 0.35) < 1e-6
+
+    # missing chart row → 409; delete removes the variant
+    res = await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/templates/zz/laufform",
+        json_body={"anchors": wider, "n_occurrences": 1},
+        headers=api.admin_headers(),
+    )
+    assert res.status in (404, 409)
+    res = await api.client.request("DELETE", f"/sources/{source_id}/templates/n/laufform", headers=api.admin_headers())
+    assert res.status == 204

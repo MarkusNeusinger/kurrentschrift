@@ -43,6 +43,14 @@ einem Tag am CDN). Der Admin behält den ungecachten `/diagnostic`.
    Glyphen; optionaler `pen`-Parameter färbt GENERIERTE Striche pro
    Schrift ein. DIE einzige Kompositionsquelle — gepinnt durch das
    Golden-Fixture `tests/fixtures/compose_golden.json.gz`.
+   **Laufform-Varianten** (jul31): `/write/word` lädt zusätzlich die
+   `templates`-Zeilen mit `variant=1` (Median-Laufformen aus den
+   Specimen-Wörtern, geschrieben via
+   `PUT /sources/{id}/templates/{key}/laufform`, Tool
+   `tools/laufform/harvest.py`) und reicht sie als `laufform_by_key` an
+   `compose_word`: Glyphen in einem gebundenen Lauf ≥ 3 rendern die
+   Laufform, Solo-Payloads (`/write/glyphs`), Tafel und kurze Drills
+   bleiben chart-treu. Ohne Zeilen bleibt alles byte-identisch.
 3. **Payload** (`core/pipeline.py::render_payload_for_template`):
    Silhouetten (`outline_paths`, Ringlisten mit `fill-rule: evenodd`),
    `centerlines_template`, `entry`/`exit_pt`, `advance`,

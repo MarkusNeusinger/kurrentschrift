@@ -96,3 +96,32 @@ def test_joined_run_length_counts_letters_and_stops_at_boundaries():
     assert _joined_run_length([digit, *letters], 1) == 3
     assert _joined_run_length([digit], 0) == 0
     assert _joined_run_length([space], 0) == 0
+
+
+def _glyph_items(composed: dict) -> list[dict]:
+    return [it for it in composed["items"] if "stroke_width" not in it and not it.get("diacritic")]
+
+
+def test_laufform_variant_renders_in_flowing_runs_only():
+    # The doctrine split (jul31): chart cell = ductus prior, WRITTEN WORDS =
+    # form model. A stored median running form (templates variant 1) renders
+    # for glyphs in a run >= the lean gate; a short drill stays chart-true.
+    chart = [[0.0, 0.2], [0.2, 0.6], [0.4, 1.0], [0.6, 0.5], [0.8, 0.55]]
+    lauf = [[0.0, 0.2], [0.3, 0.6], [0.6, 1.0], [0.9, 0.5], [1.2, 0.55]]
+    keys = ["n-medial", "u-medial", "i-medial"]
+    data = {k: _payload(chart) for k in keys}
+    alt = {"u-medial": _payload(lauf)}
+
+    long_run = compose_word([_slot(k) for k in keys], data, laufform_by_key=alt)
+    # Glyph items are emitted in slot order — index 1 is the u.
+    u_first = _glyph_items(long_run)[1]
+    span = u_first["centerline"][-1][0] - u_first["centerline"][0][0]
+    assert math.isclose(span, 1.2, abs_tol=1e-6)  # the wider running form
+
+    short_run = compose_word([_slot(k) for k in keys[:2]], data, laufform_by_key=alt)
+    u_short = _glyph_items(short_run)[1]
+    span_short = u_short["centerline"][-1][0] - u_short["centerline"][0][0]
+    assert math.isclose(span_short, 0.8, abs_tol=1e-6)  # chart-true in a 2-drill
+
+    baseline = compose_word([_slot(k) for k in keys], data)
+    assert baseline == compose_word([_slot(k) for k in keys], data, laufform_by_key=None)

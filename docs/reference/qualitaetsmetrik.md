@@ -1247,3 +1247,21 @@ Specimen — Median-Varianz wie „will", das Schriftbild stimmt jetzt).
 Bekannt offen: In (I→n) — unser I-Template endet bei 0,41, die Platte
 zieht den Schweif bis 0,83 weiter (Authoring-Frage, kein Composer-Fix).
 Golden bewusst re-gepinnt.
+
+### Median-Laufformen `jul31` — Doktrin-Split (Experiment → Mechanik)
+
+User-Doktrin: „die geschriebenen Wörter sind das Vorbild, die Glyphen
+zeigen den Duktus … Kreuzungen". Experiment: je Buchstabe der MEDIAN der
+M4-gefitteten Anker über alle sauberen Wort-Vorkommen (218/249 Fits,
+rmse ≤ 2,2 px; Median-vs-Chart nur 0,013–0,039 xh — der regularisierte
+Fit dämpft, die Breiten-Signale sitzen in den Stub-Zonen), Topologie
+bleibt per Konstruktion identisch. Bench mit Median-Ankern statt Chart:
+**Wörter 0,1208 → 0,1136** (bester Stand), Paare leicht schlechter —
+erwartbar, die Abb.-20-Drills sind chart-nah geschrieben; die
+Lauf-≥3-Gattung hält sie ohnehin chart-treu. Entscheid (User):
+Laufformen leben als **templates variant 1** (Architektur-§3-Einheit).
+Mechanik gebaut (Endpoint + compose-Auswahl + `tools/laufform/harvest`),
+Headline bewegt sich erst nach DB-Schreiben + Fixture-Re-Export
+(dokumentierte Re-Baseline). Achtung Doppel-Korrektur: bei genutzter
+Laufform ist `LAUFFORM_SX` je Slot deaktiviert (die Form trägt ihre
+Breite selbst).
