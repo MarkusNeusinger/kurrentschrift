@@ -40,6 +40,7 @@ Per-Instanz-Fit und Aggregation sind die nächsten Meilensteine.
 | Übergangs-Befund (pairlab: Platzierung · Stubs · Klassen) nachschlagen | [Übergangs-Befund](proposals/uebergaenge-befund.md) |
 | Schreibsystem-Redesign (R1–R5: Paar-Matrix, Positions-Rückbau, geerntete Paare, Schräglage) nachschlagen | [Schreibsystem-Redesign](proposals/schreibsystem-redesign.md) |
 | Den Handmodell-Stufenplan (Duktus-Prior · Laufformen · Statistik · eigene Hand) nachschlagen | [Handmodell-Stufenplan](proposals/handmodell-stufenplan.md) |
+| Die Werkbank-Doktrin (wer liefert welche Stufe · Auftragskorb-Protokoll) nachschlagen | [Optimierungs-Werkbank](proposals/optimierungs-werkbank.md) |
 
 ---
 
@@ -87,6 +88,7 @@ docs/
 │   ├── uebergaenge-befund.md     # Befund 2026-07-11: pairlab-Paarsektion — Platzierung dominiert, Stub-Ersatz klassenweise, Optionen O1–O3
 │   ├── schreibsystem-redesign.md # Entscheid 2026-07-17: eine Form pro Glyphe (Positions-Rückbau), Paar-Matrix, geerntete Paar-Overrides, Schräglagen-Befund (R1–R5)
 │   ├── handmodell-stufenplan.md  # Vorschlag 2026-07-31: Statistik-Schicht füllen (H0–H5) — Instances/Aggregates, Paar-Statistik, Konstanten→Hand-Parameter, eigene Hand
+│   ├── optimierungs-werkbank.md  # Entscheid 2026-07-31: EINE Werkbank-Seite + Stufen-/Rollen-Doktrin + work_items-Auftragskorb (W1–W3)
 │   └── kurrent-writer-and-recognizer.md  # Recherche-Notiz (EN): generativer Writer (Graves 2013) als synthetische Datenquelle → billiger Recognizer
 └── notes/                        # Recherchematerial & operative Notizen (nicht Designkern)
     ├── quellen-recherche-2026-07.md  # Recherche Juli 2026: geschriebene Wortvorlagen & echte Hände — Rangliste, Absteiger, mögliche Anfragen
@@ -254,6 +256,14 @@ umgesetzt) — maßgeblich ist der Status-Kopf des jeweiligen Dokuments.
   H0 Bench-Anschluss der Laufformen, H1 `instances`/`hands`
   persistieren, H2 Paar-Statistik, H3 Konstanten → Hand-Parameter
   (Vereinfachungs-Gate), H4 zweite historische Hand, H5 eigene Hand
+- **[Optimierungs-Werkbank](proposals/optimierungs-werkbank.md)** —
+  Richtungsentscheid 2026-07-31: EINE Admin-Werkbank
+  (`/admin/werkbank`: Wort-Rückgrat + Kontext-Linse Buchstabe/Paar +
+  Auftragskorb) statt fragmentierter Tabs, plus die **bindende
+  Stufen-/Rollen-Doktrin** — manuell hinzufügen nur bei Ground Truth
+  (Tafel-Duktus, Wort-Nachfahrung), alles Generierte wird bemängelt —
+  und das `work_items`-Protokoll (Triage-Pflicht der KI, Regel-Fix vor
+  Override, `resolution`-Format, Rückgabe an den Autor)
 - **[Kurrent: Writer → Recognizer](proposals/kurrent-writer-and-recognizer.md)** —
   Recherche-Notiz (Englisch): warum Graves 2013 (RNN-Handschrift-Synthese)
   der Anker für den generativen Writer ist, und wie derselbe Writer als

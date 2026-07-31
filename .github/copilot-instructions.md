@@ -95,6 +95,11 @@ agent working in this repo:
 
 **How to iterate:**
 
+- Before acting on a `work_items` task (the admin's Auftragskorb): read
+  `docs/proposals/optimierungs-werkbank.md` — its stage/role doctrine is
+  binding (triage the pipeline stage first; rule-fix before override;
+  manual input only where it creates ground truth; write the diagnosed
+  stage into `resolution`).
 - Use `@copilot` in PR comments with specific, actionable feedback.
 - Reference doc sections by number (e.g. „architektur.md §3") rather than
   copying prose — the docs are the source of truth.

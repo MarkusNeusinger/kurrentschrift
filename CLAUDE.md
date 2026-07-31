@@ -33,6 +33,7 @@ The design is already settled in the docs; do not re-litigate decisions that hav
 - `docs/reference/quellen-und-rechte.md` + `docs/reference/datenablage.md` — data/licensing rules (see below)
 
 **Read situatively** (only when working on the respective section):
+- `docs/proposals/optimierungs-werkbank.md` — the Werkbank direction (ONE admin page: word spine + context lenses + Auftragskorb) and the BINDING stage/role doctrine: manual input only where it creates ground truth (chart ductus in the wizard, word re-tracing where the auto-fit fails, pair overrides as last resort); everything GENERATED (Laufform, join grammar, placement) gets flagged, never hand-patched. MUST-read before working off any `work_items` Auftrag — §5 defines the AI's triage duty (chart → Laufform/fit → class rule → placement → only then override), rule-fix-before-override, the `resolution` format and the "Rückgabe an Autor" path.
 - `docs/reference/htr-integration.md` — Transkribus API + TrOCR fallback details, PAGE-XML, free-tier logic
 - `docs/reference/animation-rendering.md` — stroke-dashoffset (MVP) and Canvas-2D-stroker (post-MVP) algorithms
 - `docs/reference/styleanalyse.md` — per-instance/per-hand/Hinge-feature layers, heatmap layouts
