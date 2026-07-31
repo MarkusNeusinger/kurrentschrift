@@ -458,12 +458,18 @@ class WordInstanceRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def list(self, source_id: str | None = None, specimen_id: str | None = None) -> list[WordInstance]:
+    async def list(
+        self, source_id: str | None = None, specimen_id: str | None = None, word: str | None = None
+    ) -> list[WordInstance]:
         stmt = select(WordInstance).order_by(WordInstance.kind, WordInstance.specimen_id)
         if source_id is not None:
             stmt = stmt.where(WordInstance.source_id == source_id)
         if specimen_id is not None:
             stmt = stmt.where(WordInstance.specimen_id == specimen_id)
+        if word is not None:
+            # All occurrences of one word TEXT — repeated words have distinct
+            # specimen ids ("wenn", "wenn-2") but share `word`.
+            stmt = stmt.where(WordInstance.word == word)
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 

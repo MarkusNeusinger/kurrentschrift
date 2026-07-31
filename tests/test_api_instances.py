@@ -237,9 +237,20 @@ async def test_put_word_instances_roundtrip_and_authored_protection(api: Harness
     assert rows[0]["provenance"] == "authored"
     assert rows[0]["strokes"] == [[[0.0, 0.0], [2.0, 1.0]]]
 
+    # ?word= lists every occurrence of one word TEXT (repeated words carry
+    # distinct specimen ids but share `word`).
+    await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/word-instances",
+        json_body=_batch([_word_item(specimen_id="wenn-2")]),
+        headers=api.admin_headers(),
+    )
+    res = await api.client.request("GET", f"/sources/{source_id}/word-instances", params={"word": "wenn"})
+    assert {r["specimen_id"] for r in res.json()} == {"wenn", "wenn-2"}
+
     # DELETE protects authored work unless explicitly included.
     res = await api.client.request("DELETE", f"/sources/{source_id}/word-instances", headers=api.admin_headers())
-    assert res.json() == {"deleted": 1}  # only the traced "zu" row
+    assert res.json() == {"deleted": 2}  # only the traced rows ("zu", "wenn-2")
     res = await api.client.request(
         "DELETE",
         f"/sources/{source_id}/word-instances",

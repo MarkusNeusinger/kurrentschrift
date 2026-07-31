@@ -219,11 +219,16 @@ def _word_instance_out(row: WordInstance) -> WordInstanceOut:
 
 @router.get("/word-instances", response_model=list[WordInstanceOut])
 async def list_word_instances(
-    specimen_id: str | None = None, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
+    specimen_id: str | None = None,
+    word: str | None = None,
+    source: Source = Depends(require_source),
+    db: AsyncSession = Depends(require_db),
 ):
-    """The stored word traces of this source (optionally one specimen's).
-    The matching crop comes from `GET …/word-samples/{specimen_id}/crop`."""
-    rows = await WordInstanceRepository(db).list(source_id=source.id, specimen_id=specimen_id)
+    """The stored word traces of this source — all of them, one specimen's
+    (`?specimen_id=wenn-2`), or every occurrence of one word text
+    (`?word=wenn`). The matching crop comes from
+    `GET …/word-samples/{specimen_id}/crop`."""
+    rows = await WordInstanceRepository(db).list(source_id=source.id, specimen_id=specimen_id, word=word)
     return [_word_instance_out(r) for r in rows]
 
 
