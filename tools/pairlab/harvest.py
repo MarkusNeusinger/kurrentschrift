@@ -217,12 +217,14 @@ def harvest_all(
 
 
 def apply_occurrences(
-    occurrences: list[dict], api: str, source_id: str, token: str, hand_id: str, hand_label: str
+    occurrences: list[dict], api: str, source_id: str, token: str, hand_id: str, hand_label: str, *, replace: bool
 ) -> None:
     """Persist EVERY dissected join occurrence as a `pair_instances` row
-    (`PUT /sources/{id}/pair-instances`, one replace-batch). Flagged fits are
-    stored too — `measurements.fit_ok` lets consumers filter; the rows never
-    affect rendering."""
+    (`PUT /sources/{id}/pair-instances`, one batch). Flagged fits are stored
+    too — `measurements.fit_ok` lets consumers filter; the rows never affect
+    rendering. `replace` must only be true for a FULL harvest (all sets, no
+    --ids restriction) — a subset run with replace would wipe the source's
+    stored occurrences and re-insert only the subset."""
     items = []
     for entry in occurrences:
         qc = dict(entry["qc"])
@@ -237,7 +239,7 @@ def apply_occurrences(
                 "measurements": qc,
             }
         )
-    body = {"hand": {"id": hand_id, "label": hand_label, "era": "1922"}, "replace": True, "items": items}
+    body = {"hand": {"id": hand_id, "label": hand_label, "era": "1922"}, "replace": replace, "items": items}
     req = urllib.request.Request(
         f"{api}/sources/{source_id}/pair-instances",
         data=json.dumps(body).encode(),
@@ -339,7 +341,15 @@ def main() -> None:
                 approve.add((left, right))
         apply_drafts(harvested, args.api.rstrip("/"), args.source, token, approve)
         if args.store_occurrences:
-            apply_occurrences(occurrences, args.api.rstrip("/"), args.source, token, args.hand_id, args.hand_label)
+            # Replace only on a FULL harvest — a subset run (--ids, or fewer
+            # fixture sets than words+pairs) upserts instead, so it can never
+            # wipe stored occurrences outside its own scope.
+            full = only_ids is None and {"words", "pairs"} <= set(sets)
+            if not full:
+                print("  subset harvest -> upsert-only (no replace)")
+            apply_occurrences(
+                occurrences, args.api.rstrip("/"), args.source, token, args.hand_id, args.hand_label, replace=full
+            )
 
 
 if __name__ == "__main__":
