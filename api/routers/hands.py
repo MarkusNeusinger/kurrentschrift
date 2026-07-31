@@ -18,7 +18,8 @@ def _to_out(hand: Hand) -> HandOut:
 
 @router.get("", response_model=list[HandOut])
 async def list_hands(response: Response, db: AsyncSession = Depends(require_db)) -> list[HandOut]:
-    # Hands only change with a migration — cache like styles/sources.
+    # Hands change rarely (an occurrence harvest get-or-creates its writer
+    # row) — cache like styles/sources.
     response.headers["Cache-Control"] = CACHE_CONTROL
     return [_to_out(h) for h in await HandRepository(db).list()]
 

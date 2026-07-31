@@ -21,8 +21,12 @@ report to inspect.
 Usage:
     uv run python -m tools.pairlab.harvest [--style suetterlin] [--sets pairs]
         [--ids Bi,Du] [--out temp/pair_harvest.json]
-        [--apply] [--api http://127.0.0.1:8000] [--source suetterlin-1922]
-        [--approve B:i,D:u]
+        [--apply] [--store-occurrences] [--api http://127.0.0.1:8000]
+        [--source suetterlin-1922] [--approve B:i,D:u]
+
+``--store-occurrences`` (with ``--apply``) additionally persists EVERY
+dissected join occurrence as a `pair_instances` row (handmodell plan H2 —
+occurrences, not just the best override draft; never affects rendering).
 
 ``--approve`` marks the named left:right pairs approved in the SAME upsert —
 use only after eyeballing the draft (pair editor or wordlab): approved rows
@@ -180,9 +184,14 @@ def _occurrence_rank(entry: dict) -> tuple:
     return (0 if qc["kind"] == "pair" else 1, 0 if qc["fit_ok"] else 1, max(qc["a_resid"], qc["b_resid"]))
 
 
-def harvest_all(style: str, sets: tuple[str, ...], only_ids: set[str] | None) -> dict[tuple[str, str], dict]:
-    """Dissect every joined pair occurrence in the given fixture sets and keep
-    the best occurrence per (left, right)."""
+def harvest_all(
+    style: str, sets: tuple[str, ...], only_ids: set[str] | None
+) -> tuple[dict[tuple[str, str], dict], list[dict]]:
+    """Dissect every joined pair occurrence in the given fixture sets.
+
+    Returns the best occurrence per (left, right) — the override-draft path —
+    plus ALL dissected occurrences (handmodell plan H2: the occurrences
+    themselves are the data, `--store-occurrences` persists them)."""
     candidates: dict[tuple[str, str], list[dict]] = {}
     for which in sets:
         for case in iter_fixture_word_cases(which=which, style=style):
@@ -202,7 +211,43 @@ def harvest_all(style: str, sets: tuple[str, ...], only_ids: set[str] | None) ->
                 entry["left_key"] = left
                 entry["right_key"] = right
                 candidates.setdefault((left, right), []).append(entry)
-    return {pair: sorted(entries, key=_occurrence_rank)[0] for pair, entries in sorted(candidates.items())}
+    best = {pair: sorted(entries, key=_occurrence_rank)[0] for pair, entries in sorted(candidates.items())}
+    occurrences = [e for entries in candidates.values() for e in entries]
+    return best, occurrences
+
+
+def apply_occurrences(
+    occurrences: list[dict], api: str, source_id: str, token: str, hand_id: str, hand_label: str, *, replace: bool
+) -> None:
+    """Persist EVERY dissected join occurrence as a `pair_instances` row
+    (`PUT /sources/{id}/pair-instances`, one batch). Flagged fits are stored
+    too — `measurements.fit_ok` lets consumers filter; the rows never affect
+    rendering. `replace` must only be true for a FULL harvest (all sets, no
+    --ids restriction) — a subset run with replace would wipe the source's
+    stored occurrences and re-insert only the subset."""
+    items = []
+    for entry in occurrences:
+        qc = dict(entry["qc"])
+        items.append(
+            {
+                "left_key": entry["left_key"],
+                "right_key": entry["right_key"],
+                "kind": qc.pop("kind"),
+                "specimen_id": qc.pop("specimen_id"),
+                "slot": qc.pop("slot"),
+                "geometry": entry["geometry"],
+                "measurements": qc,
+            }
+        )
+    body = {"hand": {"id": hand_id, "label": hand_label, "era": "1922"}, "replace": replace, "items": items}
+    req = urllib.request.Request(
+        f"{api}/sources/{source_id}/pair-instances",
+        data=json.dumps(body).encode(),
+        headers={"Content-Type": "application/json", "X-Admin-Token": token},
+        method="PUT",
+    )
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        print(f"  PUT pair-instances: {resp.status} {resp.read().decode()[:200]}")
 
 
 def apply_drafts(
@@ -244,14 +289,21 @@ def main() -> None:
         "--out", type=Path, default=Path("temp/pair_harvest.json"), help="write the harvest report here"
     )
     parser.add_argument("--apply", action="store_true", help="PUT the drafts via the admin API")
+    parser.add_argument(
+        "--store-occurrences",
+        action="store_true",
+        help="with --apply: additionally persist EVERY dissected occurrence as a pair_instances row",
+    )
     parser.add_argument("--api", default="http://127.0.0.1:8000")
     parser.add_argument("--source", default="suetterlin-1922")
+    parser.add_argument("--hand-id", default="suetterlin-1922-norm")
+    parser.add_argument("--hand-label", default="Suetterlin norm hand (Leitfaden 1922, Abb. 19/20)")
     parser.add_argument("--approve", help="left:right pairs to approve in the same write (e.g. B:i,D:u)")
     args = parser.parse_args()
 
     sets = tuple(s.strip() for s in args.sets.split(",") if s.strip())
     only_ids = {s.strip() for s in args.ids.split(",")} if args.ids else None
-    harvested = harvest_all(args.style, sets, only_ids)
+    harvested, occurrences = harvest_all(args.style, sets, only_ids)
 
     for (left, right), entry in harvested.items():
         qc = entry["qc"]
@@ -271,7 +323,7 @@ def main() -> None:
     args.out.write_text(
         json.dumps([{"left_key": k[0], "right_key": k[1], **v} for k, v in harvested.items()], indent=1)
     )
-    print(f"{len(harvested)} pairs -> {args.out}")
+    print(f"{len(harvested)} pairs ({len(occurrences)} occurrences) -> {args.out}")
 
     if args.apply:
         _load_dotenv()
@@ -288,6 +340,16 @@ def main() -> None:
                     raise SystemExit(f"--approve entry {spec!r}: expected left:right (e.g. B:i)")
                 approve.add((left, right))
         apply_drafts(harvested, args.api.rstrip("/"), args.source, token, approve)
+        if args.store_occurrences:
+            # Replace only on a FULL harvest — a subset run (--ids, or fewer
+            # fixture sets than words+pairs) upserts instead, so it can never
+            # wipe stored occurrences outside its own scope.
+            full = only_ids is None and {"words", "pairs"} <= set(sets)
+            if not full:
+                print("  subset harvest -> upsert-only (no replace)")
+            apply_occurrences(
+                occurrences, args.api.rstrip("/"), args.source, token, args.hand_id, args.hand_label, replace=full
+            )
 
 
 if __name__ == "__main__":

@@ -14,6 +14,28 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Occurrence persistence: every clean specimen fit becomes a database row
+  (hand-model plan H1/H2).** Per the decision to store occurrences, not just
+  medians: the laufform harvest now persists each clean per-occurrence M4 fit
+  as an `instances` row (centered shape anchors; placement, specimen/slot
+  context, neighbours and RMSE in `measurements`) and the pairlab harvest can
+  persist EVERY dissected letter join as a row in the new additive
+  `pair_instances` table (migration `0019` — geometry in the `glyph_pairs`
+  frame plus dissection QC, unique per `(source, kind, specimen, slot)` since
+  the word plates and the Abb.-20 drills are separate id namespaces). The
+  word level completes the training template: `word_instances` stores one
+  traced word per specimen sample — slot labels plus the fitted letter
+  strokes as a pen path in the word's registration frame, pairing with the
+  specimen crop the word-samples endpoints already serve. Word traces carry
+  provenance `traced`/`authored`: an authored row (the future manual admin
+  trace — the training-set growth loop) is never overwritten or replace-wiped
+  by a re-harvest, and `DELETE` spares it unless explicitly included. All
+  three flow through new admin-gated batch endpoints
+  (`PUT /sources/{id}/instances` + `/pair-instances` + `/word-instances`,
+  public reads alongside) that get-or-create the writer's `hands` row — the
+  first real inhabitants of the statistics layer defined in migration 0004.
+  Occurrence rows never affect rendering; the composer path is untouched.
+
 - **The staged hand-model plan and the July specimen-source research, documented.**
   `docs/proposals/handmodell-stufenplan.md` consolidates the Laufform round into
   a staged proposal (H0–H5): confirm the role model (chart cell = ductus prior,

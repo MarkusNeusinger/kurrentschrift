@@ -18,10 +18,12 @@ from core.database.models import (
     GlyphPair,
     Hand,
     Instance,
+    PairInstance,
     QuizWord,
     Source,
     Style,
     Template,
+    WordInstance,
 )
 from core.database.repositories import (
     AggregateRepository,
@@ -29,10 +31,12 @@ from core.database.repositories import (
     GlyphPairRepository,
     HandRepository,
     InstanceRepository,
+    PairInstanceRepository,
     QuizWordRepository,
     SourceRepository,
     StyleRepository,
     TemplateRepository,
+    WordInstanceRepository,
 )
 
 
@@ -49,6 +53,8 @@ __all__ = [
     "HandRepository",
     "Instance",
     "InstanceRepository",
+    "PairInstance",
+    "PairInstanceRepository",
     "QuizWord",
     "QuizWordRepository",
     "Source",
@@ -58,6 +64,8 @@ __all__ = [
     "LAUFFORM_VARIANT",
     "Template",
     "TemplateRepository",
+    "WordInstance",
+    "WordInstanceRepository",
     "close_db",
     "db_init_failed",
     "engine",
