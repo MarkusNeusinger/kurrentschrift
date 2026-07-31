@@ -171,10 +171,13 @@ ebenso die früher (naming-und-setup §1) vertagte Stil-Dimension:
 `instances` wird seit dem Handmodell-Schritt H1 (2026-07-31,
 `docs/proposals/handmodell-stufenplan.md`) von der Laufform-Ernte mit den
 Per-Beleg-Fits der Specimen-Wörter befüllt (die Wort-Position bleibt dort
-eine legitime Beobachtungs-Dimension pro Beleg); die additive Schwester
-`pair_instances` (Migration `0019`) hält jedes sezierte
-Verbindungs-Vorkommen. `aggregates` ist angelegt, der Aggregations-Job
-folgt. Seit dem Positions-Rückbau (R2) autorisiert der Admin genau EINE Form
+eine legitime Beobachtungs-Dimension pro Beleg); die additiven Schwestern
+(Migration `0019`) halten `pair_instances` — jedes sezierte
+Verbindungs-Vorkommen — und `word_instances` — je Specimen-Wort die
+nachgefahrene Gesamt-Schablone (Slot-Labels + Schreibpfad;
+`traced` aus der Ernte, `authored` aus manueller Admin-Nachfahrung, die
+eine Neu-Ernte nie überschreibt). `aggregates` ist angelegt, der
+Aggregations-Job folgt. Seit dem Positions-Rückbau (R2) autorisiert der Admin genau EINE Form
 pro Glyphe — die positionsabhängigen Verbindungsstriche werden aus
 `entry`/`exit`-Tangenten *generiert* (§4), Anstrich/Auslauf setzt der
 Composer aus dem Slot-Kontext.

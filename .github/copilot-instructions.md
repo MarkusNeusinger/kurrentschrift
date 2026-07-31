@@ -262,8 +262,9 @@ kurrentschrift/
 │   │                 #   0017 position removal (R2): base glyph_keys, sibling collapse,
 │   │                 #   drop templates.position + bboxes.split, unique (style, glyph, variant),
 │   │                 #   0018 glyph_pairs (R3): additive pair-override table, approved gate,
-│   │                 #   0019 pair_instances (handmodell H2): observed join occurrences,
-│   │                 #   unique (source, kind, specimen, slot)
+│   │                 #   0019 pair_instances + word_instances (handmodell H1/H2): observed
+│   │                 #   join occurrences (unique source+kind+specimen+slot) and traced
+│   │                 #   word templates (traced/authored, authored survives re-harvests)
 ├── data/             # Sources, samples, derived — SEPARATE LICENSING
 │   ├── sources/      # public-domain originals (Loth 1866, Sütterlin 1922 incl. connected-writing
 │   │                 #   plates + words.json word rects for the word bench, Koch 1928 Offenbacher
@@ -372,9 +373,9 @@ lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberläng
 ### Database Schema (Postgres + SQLAlchemy async)
 
 - Tables: `styles`, `hands`, `sources`, `bboxes`, `templates`,
-  `glyph_pairs`, `instances`, `pair_instances`, `aggregates`,
-  `quiz_words` (the flat reading-quiz word bank — word + JSONB
-  `distractors` + `era`/`note`/`fugen`).
+  `glyph_pairs`, `instances`, `pair_instances`, `word_instances`,
+  `aggregates`, `quiz_words` (the flat reading-quiz word bank — word +
+  JSONB `distractors` + `era`/`note`/`fugen`).
 - `styles` is the Grundvorlage/script family (Kurrent · Sütterlin ·
   Offenbacher); it carries `width_resolver` (§5) + lineature defaults.
   The resolver is applied at render time by
@@ -393,7 +394,10 @@ lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberläng
   (the fit + `measurements`, §12 layer 1 — filled by the laufform occurrence
   harvest since handmodell H1); `pair_instances` hold observed letter-join
   occurrences (handmodell H2, geometry in the `glyph_pairs` frame);
-  `aggregates` are per-hand stats (§12 layer 2, aggregation job pending).
+  `word_instances` hold one traced word per specimen sample (slot labels +
+  pen-path strokes; provenance traced/authored — authored rows are manual
+  admin traces that re-harvests never overwrite); `aggregates` are per-hand
+  stats (§12 layer 2, aggregation job pending).
 - `bboxes` carries the chart crop + freeform eraser `mask_strokes` (replaces
   the old rectangle `excludes`) + baseline/midband calibration + `guides` +
   `locked`. JSONB columns hold structured data; aggregate stats in SQL.

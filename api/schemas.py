@@ -218,6 +218,9 @@ class BatchStoreOut(BaseModel):
     hand_id: str
     stored: int
     deleted: int = 0
+    # Identities whose stored row is authored (manual admin work) — a traced
+    # batch never overwrites them; they are reported instead.
+    skipped: int = 0
 
 
 class PairInstanceItem(BaseModel):
@@ -254,6 +257,53 @@ class PairInstanceOut(BaseModel):
     slot: int
     hand_id: str | None = None
     geometry: PairGeometry
+    measurements: dict[str, Any]
+
+
+class WordInstanceItem(BaseModel):
+    """One traced word occurrence — the full learning template's ductus side.
+
+    `strokes` is the pen path in the word's registration frame (template
+    units, baseline = 0, midband = 1, x from the word origin): one polyline
+    per pen-down stretch. `traced` rows come from the harvest (fitted letter
+    strokes; joins live in pair_instances); `authored` rows are manual admin
+    traces and survive every re-harvest."""
+
+    kind: Literal["word", "pair"] = "word"
+    specimen_id: str = Field(min_length=1, max_length=64)
+    word: str = Field(min_length=1, max_length=64)
+    slots: list[str] = Field(min_length=1, max_length=64)
+    strokes: list[list[list[float]]] = Field(min_length=1, max_length=128)
+    provenance: Literal["traced", "authored"] = "traced"
+    measurements: dict[str, Any] = Field(default_factory=dict)
+
+    def model_post_init(self, __context: Any) -> None:
+        for stroke in self.strokes:
+            if len(stroke) < 2 or len(stroke) > 4096:
+                raise ValueError("each stroke needs 2..4096 points")
+            for pt in stroke:
+                if len(pt) != 2:
+                    raise ValueError("stroke points must be [x, y] pairs")
+                if not all(abs(float(v)) <= 100.0 for v in pt):
+                    raise ValueError("stroke coordinates out of range (template units)")
+
+
+class WordInstanceBatchIn(BaseModel):
+    """Body of `PUT /sources/{id}/word-instances`."""
+
+    hand: HandIn
+    replace: bool = False
+    items: list[WordInstanceItem] = Field(min_length=1, max_length=500)
+
+
+class WordInstanceOut(BaseModel):
+    kind: str
+    specimen_id: str
+    word: str
+    slots: list[str]
+    strokes: list[list[list[float]]]
+    provenance: str
+    hand_id: str | None = None
     measurements: dict[str, Any]
 
 

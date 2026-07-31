@@ -64,7 +64,7 @@ async def test_put_instances_stores_rows_creates_hand_and_links_template(api: Ha
     )
     assert res.status == 200
     out = res.json()
-    assert out == {"hand_id": "test-hand", "stored": 2, "deleted": 0}
+    assert out == {"hand_id": "test-hand", "stored": 2, "deleted": 0, "skipped": 0}
 
     # Public read, fresh rows, measurements intact.
     res = await api.client.request("GET", f"/sources/{source_id}/instances", params={"glyph_key": "n"})
@@ -103,7 +103,7 @@ async def test_put_instances_upserts_on_identity_and_replace_wipes(api: Harness)
         json_body=_batch([_instance_item(x0=300)], replace=True),
         headers=api.admin_headers(),
     )
-    assert res.json() == {"hand_id": "test-hand", "stored": 1, "deleted": 2}
+    assert res.json() == {"hand_id": "test-hand", "stored": 1, "deleted": 2, "skipped": 0}
     res = await api.client.request("GET", f"/sources/{source_id}/instances")
     assert [r["x0"] for r in res.json()] == [300]
 
@@ -143,7 +143,7 @@ async def test_put_pair_instances_stores_occurrences_per_identity(api: Harness):
         headers=api.admin_headers(),
     )
     assert res.status == 200
-    assert res.json() == {"hand_id": "test-hand", "stored": 2, "deleted": 0}
+    assert res.json() == {"hand_id": "test-hand", "stored": 2, "deleted": 0, "skipped": 0}
 
     res = await api.client.request("GET", f"/sources/{source_id}/pair-instances", params={"left_key": "n"})
     rows = res.json()
@@ -172,6 +172,88 @@ async def test_put_pair_instances_gate_and_validation(api: Harness):
         "PUT",
         f"/sources/{source_id}/pair-instances",
         json_body=_batch([_pair_item(right_key="zz9")]),
+        headers=api.admin_headers(),
+    )
+    assert res.status == 422
+
+
+# -------------------------------------------------------------- word instances
+
+
+def _word_item(**overrides) -> dict:
+    item = {
+        "kind": "word",
+        "specimen_id": "wenn",
+        "word": "wenn",
+        "slots": ["w", "e", "n", "n"],
+        "strokes": [[[0.0, 0.0], [0.4, 0.9], [0.8, 0.0]], [[1.0, 0.0], [1.3, 0.6], [1.6, 0.0]]],
+        "provenance": "traced",
+        "measurements": {"xh_px": 31.0, "fitted_slots": [0, 1]},
+    }
+    item.update(overrides)
+    return item
+
+
+async def test_put_word_instances_roundtrip_and_authored_protection(api: Harness):
+    _, source_id = await api.seed_style_and_source()
+    res = await api.client.request(
+        "PUT", f"/sources/{source_id}/word-instances", json_body=_batch([_word_item()]), headers=api.admin_headers()
+    )
+    assert res.status == 200
+    assert res.json() == {"hand_id": "test-hand", "stored": 1, "deleted": 0, "skipped": 0}
+
+    # The admin traces the word manually — authored replaces traced.
+    res = await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/word-instances",
+        json_body=_batch([_word_item(provenance="authored", strokes=[[[0.0, 0.0], [2.0, 1.0]]])]),
+        headers=api.admin_headers(),
+    )
+    assert res.json()["stored"] == 1
+
+    # A re-harvest (traced, replace=true) must NOT touch the authored row:
+    # replace spares it and the traced item for its identity is skipped.
+    res = await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/word-instances",
+        json_body=_batch([_word_item(), _word_item(specimen_id="zu", word="zu", slots=["z", "u"])], replace=True),
+        headers=api.admin_headers(),
+    )
+    assert res.json() == {"hand_id": "test-hand", "stored": 1, "deleted": 0, "skipped": 1}
+
+    res = await api.client.request("GET", f"/sources/{source_id}/word-instances", params={"specimen_id": "wenn"})
+    rows = res.json()
+    assert len(rows) == 1
+    assert rows[0]["provenance"] == "authored"
+    assert rows[0]["strokes"] == [[[0.0, 0.0], [2.0, 1.0]]]
+
+    # DELETE protects authored work unless explicitly included.
+    res = await api.client.request("DELETE", f"/sources/{source_id}/word-instances", headers=api.admin_headers())
+    assert res.json() == {"deleted": 1}  # only the traced "zu" row
+    res = await api.client.request(
+        "DELETE",
+        f"/sources/{source_id}/word-instances",
+        params={"include_authored": "true"},
+        headers=api.admin_headers(),
+    )
+    assert res.json() == {"deleted": 1}
+
+
+async def test_put_word_instances_gate_and_validation(api: Harness):
+    _, source_id = await api.seed_style_and_source()
+    res = await api.client.request("PUT", f"/sources/{source_id}/word-instances", json_body=_batch([_word_item()]))
+    assert res.status == 401
+    res = await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/word-instances",
+        json_body=_batch([_word_item(slots=["w", "zz9"])]),
+        headers=api.admin_headers(),
+    )
+    assert res.status == 422
+    res = await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/word-instances",
+        json_body=_batch([_word_item(strokes=[[[0.0]]])]),
         headers=api.admin_headers(),
     )
     assert res.status == 422

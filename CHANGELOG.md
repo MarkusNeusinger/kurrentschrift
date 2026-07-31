@@ -22,12 +22,19 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   persist EVERY dissected letter join as a row in the new additive
   `pair_instances` table (migration `0019` — geometry in the `glyph_pairs`
   frame plus dissection QC, unique per `(source, kind, specimen, slot)` since
-  the word plates and the Abb.-20 drills are separate id namespaces). Both
-  flow through new admin-gated batch endpoints
-  (`PUT /sources/{id}/instances` + `/pair-instances`, public reads alongside)
-  that get-or-create the writer's `hands` row — the first real inhabitants of
-  the statistics layer defined in migration 0004. Occurrence rows never
-  affect rendering; the composer path is untouched.
+  the word plates and the Abb.-20 drills are separate id namespaces). The
+  word level completes the training template: `word_instances` stores one
+  traced word per specimen sample — slot labels plus the fitted letter
+  strokes as a pen path in the word's registration frame, pairing with the
+  specimen crop the word-samples endpoints already serve. Word traces carry
+  provenance `traced`/`authored`: an authored row (the future manual admin
+  trace — the training-set growth loop) is never overwritten or replace-wiped
+  by a re-harvest, and `DELETE` spares it unless explicitly included. All
+  three flow through new admin-gated batch endpoints
+  (`PUT /sources/{id}/instances` + `/pair-instances` + `/word-instances`,
+  public reads alongside) that get-or-create the writer's `hands` row — the
+  first real inhabitants of the statistics layer defined in migration 0004.
+  Occurrence rows never affect rendering; the composer path is untouched.
 
 - **A Gleichzug audit as wordbench report columns — the one-flow, one-width
   invariant made measurable.** A Sütterlin word is written in one flow (pen

@@ -440,6 +440,48 @@ class PairInstance(Base):
     )
 
 
+class WordInstance(Base):
+    """One traced word occurrence from a specimen — the full learning template.
+
+    The word level of the occurrence layer: the specimen crop (served by the
+    word-samples endpoints from the words.json rect) paired with the traced
+    ductus and its slot labels. `strokes` holds the pen path in template units
+    of the word's registration frame (baseline = 0, midband = 1, x from the
+    word origin), one polyline per pen-down stretch — lifts only where the
+    writing itself lifts. A `traced` row stores the harvest's M4-fitted letter
+    strokes in writing order (the joins live in `pair_instances` under the
+    same `(kind, specimen_id)` — together they assemble the continuous
+    one-flow path); an `authored` row is a manually traced full path from the
+    admin (the training-set growth loop) and is NEVER overwritten by a
+    re-harvest — only another authored write replaces it.
+    """
+
+    __tablename__ = "word_instances"
+    __table_args__ = (UniqueConstraint("source_id", "kind", "specimen_id", name="uq_word_instance_occurrence"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_id: Mapped[str] = mapped_column(
+        String(SOURCE_ID_MAX), ForeignKey("sources.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    hand_id: Mapped[str | None] = mapped_column(
+        String(HAND_ID_MAX), ForeignKey("hands.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    kind: Mapped[str] = mapped_column(String(KIND_MAX), nullable=False, server_default="word")
+    specimen_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    word: Mapped[str] = mapped_column(String(64), nullable=False)
+
+    # Ordered glyph_keys of the shaped word — the labels of the training pair.
+    slots: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False)
+    strokes: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False)
+    provenance: Mapped[str] = mapped_column(String(16), nullable=False)  # 'traced' | 'authored'
+    measurements: Mapped[dict] = mapped_column(PORTABLE_JSON, nullable=False, server_default="{}")
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
 class QuizWord(Base):
     """A word shown in the reading quiz plus its form-similar distractors.
 

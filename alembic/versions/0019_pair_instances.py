@@ -1,10 +1,14 @@
-"""Create pair_instances — observed letter-join occurrences (handmodell H2)
+"""Create pair_instances + word_instances — occurrence layer (handmodell H1/H2)
 
 Additive: the per-occurrence layer under the sparse `glyph_pairs` overrides.
-Every clean dissection of a joined adjacent pair on a specimen plate is one
-row — the natural transition itself (connector + placement offset in the
-GlyphPair.geometry frame, plus dissection QC in `measurements`). Nothing is
-seeded — the pairlab occurrence harvest fills it through the admin API.
+`pair_instances`: every clean dissection of a joined adjacent pair on a
+specimen plate is one row — the natural transition itself (connector +
+placement offset in the GlyphPair.geometry frame, plus dissection QC in
+`measurements`). `word_instances`: one traced word occurrence per specimen
+sample — the full learning template (slot labels + pen-path strokes in the
+word's registration frame; provenance traced/authored, authored = manual
+admin trace that a re-harvest never overwrites). Nothing is seeded — the
+occurrence harvests fill both through the admin API.
 
 Revision ID: 0019
 Revises: 0018
@@ -45,6 +49,26 @@ def upgrade() -> None:
         sa.UniqueConstraint("source_id", "kind", "specimen_id", "slot", name="uq_pair_instance_occurrence"),
     )
 
+    op.create_table(
+        "word_instances",
+        sa.Column("id", sa.Integer(), primary_key=True, autoincrement=True),
+        sa.Column(
+            "source_id", sa.String(64), sa.ForeignKey("sources.id", ondelete="CASCADE"), nullable=False, index=True
+        ),
+        sa.Column("hand_id", sa.String(64), sa.ForeignKey("hands.id", ondelete="SET NULL"), nullable=True, index=True),
+        sa.Column("kind", sa.String(16), nullable=False, server_default="word"),
+        sa.Column("specimen_id", sa.String(64), nullable=False),
+        sa.Column("word", sa.String(64), nullable=False),
+        sa.Column("slots", JSONB(), nullable=False),
+        sa.Column("strokes", JSONB(), nullable=False),
+        sa.Column("provenance", sa.String(16), nullable=False),
+        sa.Column("measurements", JSONB(), nullable=False, server_default="{}"),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.UniqueConstraint("source_id", "kind", "specimen_id", name="uq_word_instance_occurrence"),
+    )
+
 
 def downgrade() -> None:
+    op.drop_table("word_instances")
     op.drop_table("pair_instances")

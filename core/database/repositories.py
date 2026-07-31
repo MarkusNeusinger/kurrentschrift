@@ -24,6 +24,7 @@ from core.database.models import (
     Source,
     Style,
     Template,
+    WordInstance,
 )
 
 
@@ -431,7 +432,8 @@ class PairInstanceRepository:
 
     async def upsert_many(self, rows: list[dict]) -> int:
         """Batch insert-or-update on `uq_pair_instance_occurrence` (source,
-        specimen, slot) — one row per observed join, re-harvests refresh it."""
+        kind, specimen, slot) — one row per observed join, re-harvests refresh
+        it; `kind` separates the word-plate and pair-drill id namespaces."""
         if not rows:
             return 0
         stmt = pg_insert(PairInstance).values(rows)
@@ -445,6 +447,56 @@ class PairInstanceRepository:
 
     async def delete_for_source(self, source_id: str) -> int:
         result = await self.session.execute(delete(PairInstance).where(PairInstance.source_id == source_id))
+        return result.rowcount or 0
+
+
+class WordInstanceRepository:
+    """Traced word occurrences — the full learning templates (crop + ductus)."""
+
+    _UPDATE_COLS = ("hand_id", "word", "slots", "strokes", "provenance", "measurements")
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def list(self, source_id: str | None = None, specimen_id: str | None = None) -> list[WordInstance]:
+        stmt = select(WordInstance).order_by(WordInstance.kind, WordInstance.specimen_id)
+        if source_id is not None:
+            stmt = stmt.where(WordInstance.source_id == source_id)
+        if specimen_id is not None:
+            stmt = stmt.where(WordInstance.specimen_id == specimen_id)
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def authored_identities(self, source_id: str) -> set[tuple[str, str]]:
+        """The (kind, specimen_id) pairs whose stored row is authored — manual
+        admin traces a harvest batch must never overwrite."""
+        result = await self.session.execute(
+            select(WordInstance.kind, WordInstance.specimen_id).where(
+                WordInstance.source_id == source_id, WordInstance.provenance == "authored"
+            )
+        )
+        return {(k, s) for k, s in result.all()}
+
+    async def upsert_many(self, rows: list[dict]) -> int:
+        """Batch insert-or-update on `uq_word_instance_occurrence` (source,
+        kind, specimen) — one trace per specimen sample. Authored-protection is
+        the ROUTER's job (filter against `authored_identities` before calling)."""
+        if not rows:
+            return 0
+        stmt = pg_insert(WordInstance).values(rows)
+        stmt = stmt.on_conflict_do_update(
+            constraint="uq_word_instance_occurrence",
+            set_={col: stmt.excluded[col] for col in self._UPDATE_COLS} | {"updated_at": func.now()},
+        )
+        await self.session.execute(stmt)
+        await self.session.flush()
+        return len(rows)
+
+    async def delete_for_source(self, source_id: str, *, include_authored: bool = False) -> int:
+        stmt = delete(WordInstance).where(WordInstance.source_id == source_id)
+        if not include_authored:
+            stmt = stmt.where(WordInstance.provenance != "authored")
+        result = await self.session.execute(stmt)
         return result.rowcount or 0
 
 

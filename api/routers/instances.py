@@ -15,7 +15,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_admin
 from api.dependencies import require_db, require_source
-from api.schemas import BatchStoreOut, HandIn, InstanceBatchIn, InstanceOut, PairInstanceBatchIn, PairInstanceOut
+from api.schemas import (
+    BatchStoreOut,
+    HandIn,
+    InstanceBatchIn,
+    InstanceOut,
+    PairInstanceBatchIn,
+    PairInstanceOut,
+    WordInstanceBatchIn,
+    WordInstanceOut,
+)
 from core.database import (
     HandRepository,
     Instance,
@@ -24,8 +33,10 @@ from core.database import (
     PairInstanceRepository,
     Source,
     TemplateRepository,
+    WordInstance,
+    WordInstanceRepository,
 )
-from core.shaping import is_registry_glyph_key
+from core.shaping import expected_glyph_key, is_registry_glyph_key
 
 
 router = APIRouter(prefix="/sources/{source_id}", tags=["instances"])
@@ -38,6 +49,21 @@ def _reject_unknown_keys(keys: set[str]) -> None:
     if unknown:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT, detail=f"not registry glyphs: {', '.join(map(repr, unknown))}"
+        )
+
+
+def _reject_key_identity_mismatch(glyph_key: str, glyph: str) -> None:
+    """Backstop: an item's glyph_key and glyph must agree per the registry.
+
+    The occurrence identity conflicts on `glyph` (uq_instance_loc) while the
+    template link resolves by `glyph_key` — a mismatched pair would store an
+    inconsistent row linked to the wrong canonical. Same contract as the
+    templates write path."""
+    expected = expected_glyph_key(glyph)
+    if expected is not None and expected != glyph_key:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=f"glyph_key {glyph_key!r} does not match glyph {glyph!r} (expected {expected!r})",
         )
 
 
@@ -78,6 +104,8 @@ async def put_instances(
     payload: InstanceBatchIn, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
 ):
     _reject_unknown_keys({item.glyph_key for item in payload.items})
+    for item in payload.items:
+        _reject_key_identity_mismatch(item.glyph_key, item.glyph)
     hand_id = await _upsert_hand(db, payload.hand, source.style_id)
     repo = InstanceRepository(db)
     deleted = await repo.delete_for_source(source.id) if payload.replace else 0
@@ -173,4 +201,70 @@ async def put_pair_instances(
 @router.delete("/pair-instances", dependencies=[Depends(require_admin)])
 async def delete_pair_instances(source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)):
     deleted = await PairInstanceRepository(db).delete_for_source(source.id)
+    return {"deleted": deleted}
+
+
+def _word_instance_out(row: WordInstance) -> WordInstanceOut:
+    return WordInstanceOut(
+        kind=row.kind,
+        specimen_id=row.specimen_id,
+        word=row.word,
+        slots=list(row.slots),
+        strokes=row.strokes,
+        provenance=row.provenance,
+        hand_id=row.hand_id,
+        measurements=dict(row.measurements or {}),
+    )
+
+
+@router.get("/word-instances", response_model=list[WordInstanceOut])
+async def list_word_instances(
+    specimen_id: str | None = None, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
+):
+    """The stored word traces of this source (optionally one specimen's).
+    The matching crop comes from `GET …/word-samples/{specimen_id}/crop`."""
+    rows = await WordInstanceRepository(db).list(source_id=source.id, specimen_id=specimen_id)
+    return [_word_instance_out(r) for r in rows]
+
+
+@router.put("/word-instances", response_model=BatchStoreOut, dependencies=[Depends(require_admin)])
+async def put_word_instances(
+    payload: WordInstanceBatchIn, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
+):
+    _reject_unknown_keys({key for item in payload.items for key in item.slots})
+    hand_id = await _upsert_hand(db, payload.hand, source.style_id)
+    repo = WordInstanceRepository(db)
+    # Authored rows are manual admin work — a traced batch (harvest) never
+    # touches them: replace spares them, and traced upserts skip their identity.
+    authored = await repo.authored_identities(source.id)
+    deleted = await repo.delete_for_source(source.id, include_authored=False) if payload.replace else 0
+    by_identity: dict[tuple, dict] = {}
+    skipped = 0
+    for item in payload.items:
+        identity = (item.kind, item.specimen_id)
+        if item.provenance == "traced" and identity in authored:
+            skipped += 1
+            continue
+        by_identity[identity] = {
+            "source_id": source.id,
+            "hand_id": hand_id,
+            "kind": item.kind,
+            "specimen_id": item.specimen_id,
+            "word": item.word,
+            "slots": item.slots,
+            "strokes": item.strokes,
+            "provenance": item.provenance,
+            "measurements": item.measurements,
+        }
+    stored = await repo.upsert_many(list(by_identity.values()))
+    return BatchStoreOut(hand_id=hand_id, stored=stored, deleted=deleted, skipped=skipped)
+
+
+@router.delete("/word-instances", dependencies=[Depends(require_admin)])
+async def delete_word_instances(
+    include_authored: bool = False, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
+):
+    """Wipe the source's word traces. Authored rows survive unless
+    `?include_authored=true` — deleting manual work is an explicit decision."""
+    deleted = await WordInstanceRepository(db).delete_for_source(source.id, include_authored=include_authored)
     return {"deleted": deleted}

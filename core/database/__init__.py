@@ -23,6 +23,7 @@ from core.database.models import (
     Source,
     Style,
     Template,
+    WordInstance,
 )
 from core.database.repositories import (
     AggregateRepository,
@@ -35,6 +36,7 @@ from core.database.repositories import (
     SourceRepository,
     StyleRepository,
     TemplateRepository,
+    WordInstanceRepository,
 )
 
 
@@ -62,6 +64,8 @@ __all__ = [
     "LAUFFORM_VARIANT",
     "Template",
     "TemplateRepository",
+    "WordInstance",
+    "WordInstanceRepository",
     "close_db",
     "db_init_failed",
     "engine",
