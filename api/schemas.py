@@ -101,7 +101,7 @@ class WordSampleOut(BaseModel):
     # client needs this origin to place a letter box inside the crop
     # (crop-local = page − rect[:2]). Public like the rest: this is PD-plate
     # measurement metadata from the committed sidecar, not learned data.
-    rect: list[int] = Field(default_factory=list, min_length=4, max_length=4)
+    rect: list[int] = Field(min_length=4, max_length=4)
 
 
 # ------------------------------------------------------------------ Glyph pair

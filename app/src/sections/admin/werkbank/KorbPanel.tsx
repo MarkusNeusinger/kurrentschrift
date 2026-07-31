@@ -63,12 +63,14 @@ export function KorbPanel({ sourceId, refreshKey }: { sourceId: string; refreshK
   const t = de.admin.werkbank;
   const [items, setItems] = useState<WorkItemOut[] | null>(null);
   const [error, setError] = useState(false);
+  const [deleteError, setDeleteError] = useState(false);
   const [expanded, setExpanded] = useState(true);
   const [showDone, setShowDone] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     setError(false);
+    setDeleteError(false);
     listWorkItems(sourceId, undefined, { retries: 2 })
       .then((rows) => {
         if (!cancelled) setItems(rows);
@@ -86,10 +88,17 @@ export function KorbPanel({ sourceId, refreshKey }: { sourceId: string; refreshK
   const visible = showDone ? [...open, ...done] : open;
 
   // Single click, no confirm: deleting a MISFILING is cheap and this is the
-  // admin's own basket (a worked item is closed with `done` instead).
+  // admin's own basket (a worked item is closed with `done` instead). The
+  // removal is optimistic — a failed DELETE restores the snapshot so the list
+  // stays consistent with the server, plus a warning above it.
   const remove = (id: number) => {
+    const snapshot = items;
+    setDeleteError(false);
     setItems((prev) => (prev ?? []).filter((i) => i.id !== id));
-    deleteWorkItem(sourceId, id).catch(() => setError(true));
+    deleteWorkItem(sourceId, id).catch(() => {
+      setItems(snapshot);
+      setDeleteError(true);
+    });
   };
 
   return (
@@ -103,6 +112,11 @@ export function KorbPanel({ sourceId, refreshKey }: { sourceId: string; refreshK
         </IconButton>
       </Box>
       <Collapse in={expanded}>
+        {deleteError && (
+          <Alert severity="warning" sx={{ mt: 1 }} onClose={() => setDeleteError(false)}>
+            {t.korbDeleteError}
+          </Alert>
+        )}
         {error ? (
           <Alert severity="warning" sx={{ mt: 1 }}>
             {t.korbLoadError}

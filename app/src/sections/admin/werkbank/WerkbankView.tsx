@@ -65,9 +65,9 @@ export function WerkbankView() {
     setEditingPair(null);
     Promise.all([
       listWordInstances(sourceId, undefined, { retries: 2 }),
-      getWordSamples(sourceId),
-      listInstances(sourceId),
-      listPairInstances(sourceId),
+      getWordSamples(sourceId, { retries: 2 }),
+      listInstances(sourceId, undefined, { retries: 2 }),
+      listPairInstances(sourceId, undefined, { retries: 2 }),
     ])
       .then(([wordRows, wordSamples, letterRows, joinRows]) => {
         if (cancelled) return;

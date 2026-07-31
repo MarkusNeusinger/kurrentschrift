@@ -222,6 +222,7 @@ export const admin = {
     korbShowDone: 'erledigte anzeigen',
     korbDelete: 'Auftrag löschen',
     korbLoadError: 'Aufträge konnten nicht geladen werden (Admin-Zugang nötig).',
+    korbDeleteError: 'Löschen fehlgeschlagen — der Auftrag liegt weiter im Korb.',
     kindLetter: 'Buchstabe',
     kindPair: 'Übergang',
     kindWord: 'Wort',
