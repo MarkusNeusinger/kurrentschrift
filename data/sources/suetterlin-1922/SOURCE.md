@@ -128,3 +128,23 @@
              Renderer generiert. Seit 2026-07-05 sind alle 33 Paare als
              `kind: pair`-Einträge in `words.json` vermessen (eigene
              Bench-Headline `pair_loss`, Fixture-Set `suetterlin-1922-pairs`).
+
+## Volldigitalisat-Referenz (Provenienz-Härtung, 2026-07-31)
+
+Das komplette Mutterbuch liegt als PD-markiertes Volldigitalisat der
+SUB Hamburg vor (5. Aufl. 1926, Text und Tafeln laut Verlagsvorworten
+unverändert seit 1917):
+
+- Resolver: https://resolver.sub.uni-hamburg.de/kitodo/PPN1025245350
+- URN:      urn:nbn:de:gbv:18-5-PPN10252453500
+- DDB:      https://www.deutsche-digitale-bibliothek.de/item/2AHKCSHB6SLPIYKJ2KSHR2HI7DYTVVUP
+- DNB-Katalog der 1922er Ausgabe: https://d-nb.info/1124005439
+- Zweitscan (CC BY 4.0): https://digital.ub.uni-paderborn.de/ihd/id/7289766
+
+†1917-Kette dort im Scan selbst belegbar: Vorwort „Berlin, Ostern 1917.
+Ludwig Sütterlin." plus Verlagsvorworte 2. Aufl. 1921 / 5. Aufl. 1926 ohne
+Bearbeiter (Buchseite 9). Druckstock-Identität der 1926er Abb. 19 (S. 53)
+mit `words-abb19.png` visuell verifiziert (zeilen- und formidentisch).
+Ausgewählte Schriftproben-Seiten des Volldigitalisats sind als eigene
+Quelle `data/sources/suetterlin-leitfaden-1926/` committet (Hände-Galerie
+u. a.).
