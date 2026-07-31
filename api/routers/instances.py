@@ -245,6 +245,12 @@ async def put_word_instances(
         if item.provenance == "traced" and identity in authored:
             skipped += 1
             continue
+        # In-batch precedence mirrors the stored contract: an authored item is
+        # never displaced by a later traced one for the same identity.
+        prior = by_identity.get(identity)
+        if prior is not None and prior["provenance"] == "authored" and item.provenance == "traced":
+            skipped += 1
+            continue
         by_identity[identity] = {
             "source_id": source.id,
             "hand_id": hand_id,

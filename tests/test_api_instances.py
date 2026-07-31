@@ -211,6 +211,16 @@ async def test_put_word_instances_roundtrip_and_authored_protection(api: Harness
     )
     assert res.json()["stored"] == 1
 
+    # Within ONE batch an authored item also beats a later traced one for the
+    # same identity — the contract holds regardless of item order.
+    res = await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/word-instances",
+        json_body=_batch([_word_item(provenance="authored", strokes=[[[0.0, 0.0], [2.0, 1.0]]]), _word_item()]),
+        headers=api.admin_headers(),
+    )
+    assert res.json() == {"hand_id": "test-hand", "stored": 1, "deleted": 0, "skipped": 1}
+
     # A re-harvest (traced, replace=true) must NOT touch the authored row:
     # replace spares it and the traced item for its identity is skipped.
     res = await api.client.request(
