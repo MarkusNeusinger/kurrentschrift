@@ -79,6 +79,33 @@ export interface WordSampleOut {
   midband_y: number;
 }
 
+// Fit context of one stored word trace (see tools/laufform/harvest.py). Every
+// field optional: authored rows written by hand may carry less. registration_px
+// + xh_px map trace units to crop pixels: px = (u·xh + tx, baseline_row + ty − v·xh).
+export interface WordInstanceMeasurements {
+  registration_px?: { tx: number; ty: number; baseline_row: number };
+  xh_px?: number;
+  fitted_slots?: number[];
+  unfitted_slots?: number[];
+  geo_rmse_px_by_slot?: Record<string, number>;
+}
+
+// One stored word-occurrence trace (handmodell H1/H2). Mirrors WordInstanceOut
+// in api/schemas.py: slot labels + the traced pen path in the word's
+// registration frame (template units, baseline = 0, midband = 1, y up), one
+// polyline per pen-down stretch. `authored` rows are manual admin traces a
+// re-harvest never overwrites; the matching crop comes from wordSampleCropUrl.
+export interface WordInstanceOut {
+  kind: 'word' | 'pair';
+  specimen_id: string;
+  word: string;
+  slots: string[];
+  strokes: number[][][];
+  provenance: 'traced' | 'authored';
+  hand_id: string | null;
+  measurements: WordInstanceMeasurements;
+}
+
 // Per-segment attribution row of a scored specimen (redesign R1b Stufe 2) —
 // a connector row names the join (`pair`), a glyph row the letter; `penalty`
 // is the row's headline component on the metric's saturation scale.

@@ -57,6 +57,7 @@ export const admin = {
     chartOverview: 'Chart-Übersicht',
     compareOverview: 'Vergleich aller Buchstaben',
     pairsOverview: 'Paar-Matrix (alle Verbindungen)',
+    belegeOverview: 'Belege (nachgefahrene Wörter)',
     overlays: 'Overlays',
     all: 'alle',
     none: 'keine',
@@ -141,6 +142,28 @@ export const admin = {
     saveFailed: 'Speichern fehlgeschlagen.',
     deleteFailed: 'Löschen fehlgeschlagen.',
     editorLoadError: 'Paar-Daten konnten nicht geladen werden.',
+  },
+  // The Belege page (/admin/belege): every stored word-occurrence trace over
+  // its specimen crop, worst first — the error-finding surface over the
+  // occurrence layer (handmodell H1/H2) and the entry point for the coming
+  // word editor (manual re-tracing).
+  belege: {
+    title: 'Belege — nachgefahrene Wörter',
+    intro:
+      'Jedes gespeicherte Wort-Vorkommen der aktiven Vorlage: der Platten-Ausschnitt, darüber der nachgefahrene Schreibpfad. Sortiert nach Fehlern (nicht gefittete Buchstaben zuerst, dann höchste Abweichung) — die Arbeitsliste fürs manuelle Nachfahren.',
+    filterLabel: 'Wort suchen',
+    empty: 'Noch keine gespeicherten Vorkommen — erst die Ernte laufen lassen (tools/laufform/harvest.py --apply).',
+    loadError: 'Belege konnten nicht geladen werden.',
+    cropAlt: 'Platten-Ausschnitt',
+    // {{fitted}}/{{total}} letter slots the automatic fit handled cleanly.
+    fittedChip: '{{fitted}}/{{total}} gefittet',
+    // Followed by the space-joined letters the fit could not place.
+    unfittedPrefix: 'fehlt: ',
+    rmseChip: 'RMSE ⌀ {{value}} px',
+    provenanceTraced: 'automatisch nachgefahren',
+    provenanceAuthored: 'von Hand nachgefahren',
+    // A stored trace whose specimen crop is missing from the sidecar.
+    noSample: 'Kein Platten-Ausschnitt zur specimen_id {{id}} — Sidecar prüfen.',
   },
   diagnostics: {
     // Followed by the glyph label in the dialog title.
