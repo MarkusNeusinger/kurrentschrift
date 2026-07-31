@@ -39,6 +39,7 @@ Per-Instanz-Fit und Aggregation sind die nächsten Meilensteine.
 | Schreib-API, Python-Komposition & Wort-Bench-Plan nachschlagen | [Schreibsystem und Wort-Bench](proposals/schreibsystem-und-wortbench.md) |
 | Übergangs-Befund (pairlab: Platzierung · Stubs · Klassen) nachschlagen | [Übergangs-Befund](proposals/uebergaenge-befund.md) |
 | Schreibsystem-Redesign (R1–R5: Paar-Matrix, Positions-Rückbau, geerntete Paare, Schräglage) nachschlagen | [Schreibsystem-Redesign](proposals/schreibsystem-redesign.md) |
+| Den Handmodell-Stufenplan (Duktus-Prior · Laufformen · Statistik · eigene Hand) nachschlagen | [Handmodell-Stufenplan](proposals/handmodell-stufenplan.md) |
 
 ---
 
@@ -85,8 +86,10 @@ docs/
 │   ├── schreibsystem-und-wortbench.md  # Audit 2026-07-01: Schreib-API, core/compose.py-Port, Wort-Bench, Übergangs-Redesign (Phasen A–E)
 │   ├── uebergaenge-befund.md     # Befund 2026-07-11: pairlab-Paarsektion — Platzierung dominiert, Stub-Ersatz klassenweise, Optionen O1–O3
 │   ├── schreibsystem-redesign.md # Entscheid 2026-07-17: eine Form pro Glyphe (Positions-Rückbau), Paar-Matrix, geerntete Paar-Overrides, Schräglagen-Befund (R1–R5)
+│   ├── handmodell-stufenplan.md  # Vorschlag 2026-07-31: Statistik-Schicht füllen (H0–H5) — Instances/Aggregates, Paar-Statistik, Konstanten→Hand-Parameter, eigene Hand
 │   └── kurrent-writer-and-recognizer.md  # Recherche-Notiz (EN): generativer Writer (Graves 2013) als synthetische Datenquelle → billiger Recognizer
 └── notes/                        # Recherchematerial & operative Notizen (nicht Designkern)
+    ├── quellen-recherche-2026-07.md  # Recherche Juli 2026: geschriebene Wortvorlagen & echte Hände — Rangliste, Absteiger, mögliche Anfragen
     └── stifte-fuer-unterwegs.md  # Stift-/Hardware-Recherche fürs Schreiben unterwegs
 ```
 
@@ -237,14 +240,20 @@ umgesetzt) — maßgeblich ist der Status-Kopf des jeweiligen Dokuments.
   **O1 + O2 (B-Seite) umgesetzt** (Compose-Loop `jul11`), der A-seitige
   d-Stub-Trim gemessen und verworfen; offen: O3 (vertagt)
 - **[Schreibsystem-Redesign](proposals/schreibsystem-redesign.md)** —
-  Richtungsentscheid 2026-07-17 (angenommen; R1 Paar-Matrix, R1b
-  Stufe 1 Wortvergleich und R2 Positions-Rückbau sind umgesetzt,
-  R3–R5 offen): eine Form
+  Richtungsentscheid 2026-07-17 (angenommen; R1–R5 sind umgesetzt,
+  offen ist allein der Live-Import der Ernte-Entwürfe): eine Form
   pro Glyphe mit Positions-Rückbau (R2), Paar-Matrix-Ansicht im Admin
   (R1), sparsame **geerntete** Paar-Overrides mit Versal-Priorität als
   Konkretisierung von Vorschlag B (R3), Platzierungs-Rest + O3-Neubewertung
   (R4) und der neue Schräglagen-Befund (d-Oberschleife lehnt in der
   verbundenen Schrift ~4–5° rechts gegenüber der Chart-Zelle; R5)
+- **[Handmodell-Stufenplan](proposals/handmodell-stufenplan.md)** —
+  Vorschlag 2026-07-31: das Rollenmodell (Tafel = Duktus-Prior ·
+  Wortproben **einer** Hand = Form-Vorbild · fremde Hände = Kontext)
+  bestätigt und die leere Statistik-Schicht in Stufen gefüllt —
+  H0 Bench-Anschluss der Laufformen, H1 `instances`/`hands`
+  persistieren, H2 Paar-Statistik, H3 Konstanten → Hand-Parameter
+  (Vereinfachungs-Gate), H4 zweite historische Hand, H5 eigene Hand
 - **[Kurrent: Writer → Recognizer](proposals/kurrent-writer-and-recognizer.md)** —
   Recherche-Notiz (Englisch): warum Graves 2013 (RNN-Handschrift-Synthese)
   der Anker für den generativen Writer ist, und wie derselbe Writer als
@@ -258,6 +267,11 @@ umgesetzt) — maßgeblich ist der Status-Kopf des jeweiligen Dokuments.
 
 Recherchematerial und operative Notizen außerhalb des Designkerns.
 
+- **[Quellen-Recherche Juli 2026](notes/quellen-recherche-2026-07.md)** —
+  Recherche-Runde 30./31.07.2026 zu geschriebenen Wortvorlagen und
+  echten Händen: Rangliste (SUB-Leitfaden ✅ committet, Berger-Reihe,
+  Dressel, Erker …), Absteiger mit Rechte-Begründung, festgehaltene
+  mögliche Anfragen (nicht beauftragt)
 - **[Stifte für unterwegs](notes/stifte-fuer-unterwegs.md)** — Stift-/
   Hardware-Recherche fürs Kurrent-Schreiben unterwegs
 
