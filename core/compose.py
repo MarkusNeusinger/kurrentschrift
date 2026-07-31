@@ -1318,6 +1318,15 @@ def compose_word(
     attribute a deviation to a letter or a specific join. Default off — the
     public ``/write/word`` payload and the golden fixture stay byte-identical.
 
+    ``laufform_by_key`` (optional) maps glyph_keys to ALTERNATIVE render
+    payloads — the median running forms (templates variant 1). A glyph uses
+    its running form only inside a flowing joined run (length ≥
+    ASCENDER_LEAN_MIN_RUN, the lean gate); solitary glyphs and short drills
+    always render ``data_by_key``. Where a running form is used, the
+    LAUFFORM_SX width factor is suppressed for that slot — the stored form
+    carries its own width. None/missing keys → chart behaviour,
+    byte-identical.
+
     ``pair_overrides`` (redesign R3 / Vorschlag B) maps an adjacent joined
     key pair ``(left_key, right_key)`` to a stored override geometry (the
     APPROVED `glyph_pairs` rows, fetched by the word endpoint):

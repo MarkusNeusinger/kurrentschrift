@@ -113,7 +113,8 @@ def test_laufform_variant_renders_in_flowing_runs_only():
     alt = {"u-medial": _payload(lauf)}
 
     long_run = compose_word([_slot(k) for k in keys], data, laufform_by_key=alt)
-    u_first = [it for it in _glyph_items(long_run) if abs(it["centerline"][-1][1] - 0.55) < 1e-6][1]
+    # Glyph items are emitted in slot order — index 1 is the u.
+    u_first = _glyph_items(long_run)[1]
     span = u_first["centerline"][-1][0] - u_first["centerline"][0][0]
     assert math.isclose(span, 1.2, abs_tol=1e-6)  # the wider running form
 

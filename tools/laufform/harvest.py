@@ -84,7 +84,8 @@ def harvest(style: str, min_n: int, rmse_max: float) -> dict[str, dict]:
                     stroke_starts=meta.get("stroke_starts") or [0],
                     corner_anchors=meta.get("corner_anchors") or [],
                 )
-            except Exception:
+            except Exception as exc:  # noqa: BLE001 — survey tool: skip, but say so
+                print(f"  fit failed: {case.id} slot {i} ({slot.key}): {exc}", flush=True)
                 continue
             if not fr.fit_meta.get("converged") or float(fr.fit_meta.get("geo_rmse_px", 99)) > rmse_max:
                 continue
@@ -108,6 +109,7 @@ def harvest(style: str, min_n: int, rmse_max: float) -> dict[str, dict]:
 
 
 def apply_drafts(drafts: dict[str, dict], base_url: str, source_id: str, token: str) -> None:
+    failed: list[str] = []
     for key, d in drafts.items():
         req = urllib.request.Request(
             f"{base_url}/sources/{source_id}/templates/{key}/laufform",
@@ -115,8 +117,14 @@ def apply_drafts(drafts: dict[str, dict], base_url: str, source_id: str, token: 
             method="PUT",
             headers={"Content-Type": "application/json", "X-Admin-Token": token},
         )
-        with urllib.request.urlopen(req) as res:
-            print(f"PUT {key}: {res.status}")
+        try:
+            with urllib.request.urlopen(req, timeout=30) as res:
+                print(f"PUT {key}: {res.status}")
+        except Exception as exc:  # noqa: BLE001 — keep going, report at the end
+            print(f"PUT {key}: FAILED — {exc}")
+            failed.append(key)
+    if failed:
+        raise SystemExit(f"{len(failed)} letters failed: {', '.join(failed)} — re-run --apply to retry")
 
 
 def main() -> None:
