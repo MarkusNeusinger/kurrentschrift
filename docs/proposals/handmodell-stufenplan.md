@@ -1,6 +1,13 @@
 # Handmodell-Stufenplan 2026-07-31 — Duktus-Prior, Laufformen, Statistik pro Glyphe und Paar, eigene Hand
 
-**Status: Vorschlag — zur Entscheidung.** Konsolidiert die
+**Status: Richtung entschieden (Nutzer, 2026-07-31) für H1 + H2 —
+Vorkommen speichern, nicht nur Mediane:** pro Glyphe *und* pro Paar
+wird jedes saubere Vorkommen als Zeile abgelegt (Glyphen → die
+bestehende `instances`-Tabelle, Fokus die Form selbst und ihre
+Varianten; Paare → eigene additive Tabelle, Fokus der natürliche
+Übergang). Nicht alle Kombinationen werden vorkommen — gespeichert
+wird, was die Vorlagen hergeben. H0/H3–H5 bleiben Vorschlag.
+Konsolidiert die
 Laufform-Runde vom 30./31.07.2026 (PR #246/#247: Median-Laufformen als
 Template-Variante 100, `laufform_by_key` im Composer) und die
 Quellen-Recherche
@@ -135,11 +142,13 @@ Konzept — der Messstand holt den Produktionsstand ein.
 Pro beobachtetem Join der Wort-/Paar-Fixtures (Datenquelle: die
 pairlab-Dissektion — beide Buchstaben unabhängig gefittet):
 Koppelhöhe, Ink-Lücke, Verbindungslänge/-winkel, Dehnung des
-Nachbar-Auslaufs. Ablage konsequent im Instance→Aggregate-Muster
-(Paar-Vorkommen als Messung, Aggregat je `(hand, left_key,
-right_key)`); **Entscheid offen**, ob als additive
-`measurements`-Spalte auf `glyph_pairs` oder eigene kleine Tabelle —
-`glyph_pairs.geometry` bleibt in jedem Fall unangetastet
+Nachbar-Auslaufs. Ablage konsequent im Instance→Aggregate-Muster:
+**entschieden (2026-07-31) ist die eigene additive Tabelle**
+(`pair_instances`: je beobachtetem Join eine Zeile mit
+Connector-Geometrie relativ zum linken Exit, Placement-Offset und
+QC-Messwerten — der natürliche Übergang selbst, nicht die
+Buchstaben); Aggregate je `(hand, left_key, right_key)` folgen
+später. `glyph_pairs.geometry` bleibt unangetastet
 (verbatim-Override, R3). Erste Nutzung rein **lesend**: die
 Audit-/Report-Spalten der Wordbench und der Vergleichs-Tab zeigen
 „gemessen vs. komponiert" pro Paar. Rahmen bleibt
