@@ -1,5 +1,6 @@
 """Pydantic wire types — request/response bodies for the FastAPI routers."""
 
+from datetime import datetime
 from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -305,6 +306,70 @@ class WordInstanceOut(BaseModel):
     provenance: str
     hand_id: str | None = None
     measurements: dict[str, Any]
+
+
+# ------------------------------------------------------- Work items (Werkbank)
+
+
+class WorkItemIn(BaseModel):
+    """Body of `POST /sources/{id}/work-items` — one filed optimization task.
+
+    `kind` names the marked level and decides which target columns are
+    required: 'letter' needs `glyph_key`, 'pair' needs both `left_key` and
+    `right_key`, 'word' needs the `word` text or the `specimen_id` it was seen
+    in. Registry validation of the glyph keys happens in the router (same
+    contract as the occurrence writes)."""
+
+    kind: Literal["letter", "pair", "word"]
+    glyph_key: str | None = Field(default=None, min_length=1, max_length=32)
+    left_key: str | None = Field(default=None, min_length=1, max_length=32)
+    right_key: str | None = Field(default=None, min_length=1, max_length=32)
+    word: str | None = Field(default=None, min_length=1, max_length=64)
+    # Where the issue was seen — the words.json namespace, like the occurrences.
+    specimen_kind: Literal["word", "pair"] | None = None
+    specimen_id: str | None = Field(default=None, min_length=1, max_length=64)
+    note: str = ""
+
+    def model_post_init(self, __context: Any) -> None:
+        # An item whose target is ambiguous is unworkable — the whole point of
+        # the Auftragskorb is that a session can act on the row alone.
+        if self.kind == "letter" and not self.glyph_key:
+            raise ValueError("a letter item needs glyph_key")
+        if self.kind == "pair" and not (self.left_key and self.right_key):
+            raise ValueError("a pair item needs left_key and right_key")
+        if self.kind == "word" and not (self.word or self.specimen_id):
+            raise ValueError("a word item needs word or specimen_id")
+        # The specimen reference is only unambiguous as a pair: an id without
+        # its namespace (word plates vs Abb.-20 drills) may point at nothing.
+        if (self.specimen_id is None) != (self.specimen_kind is None):
+            raise ValueError("specimen_id and specimen_kind must be given together")
+
+
+class WorkItemUpdate(BaseModel):
+    """Body of `PATCH /sources/{id}/work-items/{item_id}` — partial update.
+
+    Setting `status` to 'done' (with the `resolution` note) is how a working
+    session marks an item completed; omitted fields stay untouched."""
+
+    note: str | None = None
+    status: Literal["open", "done"] | None = None
+    resolution: str | None = None
+
+
+class WorkItemOut(BaseModel):
+    id: int
+    kind: str
+    glyph_key: str | None = None
+    left_key: str | None = None
+    right_key: str | None = None
+    word: str | None = None
+    specimen_kind: str | None = None
+    specimen_id: str | None = None
+    note: str
+    status: str
+    resolution: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 # ----------------------------------------------------------------------- Bbox

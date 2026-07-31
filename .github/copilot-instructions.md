@@ -74,7 +74,7 @@ agent working in this repo:
   (drag-on-canvas, stylus capture, diagnostic panels).
 - New FastAPI routes that mirror the `api/routers/{health,styles,hands,
   sources,chart,bboxes,templates,pairs,instances,write,word_samples,
-  quiz_words}.py` shape.
+  work_items,quiz_words}.py` shape.
 - Adding numpy/scipy/scikit-image pipeline steps inside `core/`.
 - Writing/improving unit tests under `tests/` (a pytest suite already
   exists — mirror the existing flat `tests/test_<module>.py` layout).
@@ -211,7 +211,10 @@ kurrentschrift/
 │                     #   segment attribution, missing template ⇒ failed/1.0),
 │                     #   quiz_words (public GET /quiz-words reading-drill bank:
 │                     #   ~500 words, ONE pinned anchor distractor each, rest drawn at runtime by the
-│                     #   shared similarity rules — docs/reference/quiz-wortbank.md)
+│                     #   shared similarity rules — docs/reference/quiz-wortbank.md),
+│                     #   work_items (Werkbank W1 Auftragskorb: FULLY admin-gated
+│                     #   GET/POST/PATCH/DELETE — filed letter/pair/word tasks a session
+│                     #   works off and closes with status done + resolution)
 ├── app/              # React 19 + Vite + MUI SPA (anyplot-style)
 │   └── src/
 │       ├── routes/      # paths.ts route constants + lazy public/admin route sections
@@ -273,7 +276,9 @@ kurrentschrift/
 │   │                 #   0018 glyph_pairs (R3): additive pair-override table, approved gate,
 │   │                 #   0019 pair_instances + word_instances (handmodell H1/H2): observed
 │   │                 #   join occurrences (unique source+kind+specimen+slot) and traced
-│   │                 #   word templates (traced/authored, authored survives re-harvests)
+│   │                 #   word templates (traced/authored, authored survives re-harvests),
+│   │                 #   0020 work_items (Werkbank W1): the Auftragskorb — filed
+│   │                 #   letter/pair/word tasks, open → done + resolution
 ├── data/             # Sources, samples, derived — SEPARATE LICENSING
 │   ├── sources/      # public-domain originals (Loth 1866, Sütterlin 1922 incl. connected-writing
 │   │                 #   plates + words.json word rects for the word bench, Koch 1928 Offenbacher
@@ -383,7 +388,9 @@ lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberläng
 
 - Tables: `styles`, `hands`, `sources`, `bboxes`, `templates`,
   `glyph_pairs`, `instances`, `pair_instances`, `word_instances`,
-  `aggregates`, `quiz_words` (the flat reading-quiz word bank — word +
+  `aggregates`, `work_items` (the Werkbank's Auftragskorb — filed
+  optimization tasks per letter/pair/word, `open` → `done` + resolution),
+  `quiz_words` (the flat reading-quiz word bank — word +
   JSONB `distractors` + `era`/`note`/`fugen`).
 - `styles` is the Grundvorlage/script family (Kurrent · Sütterlin ·
   Offenbacher); it carries `width_resolver` (§5) + lineature defaults.

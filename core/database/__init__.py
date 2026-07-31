@@ -24,6 +24,7 @@ from core.database.models import (
     Style,
     Template,
     WordInstance,
+    WorkItem,
 )
 from core.database.repositories import (
     AggregateRepository,
@@ -37,6 +38,7 @@ from core.database.repositories import (
     StyleRepository,
     TemplateRepository,
     WordInstanceRepository,
+    WorkItemRepository,
 )
 
 
@@ -66,6 +68,8 @@ __all__ = [
     "TemplateRepository",
     "WordInstance",
     "WordInstanceRepository",
+    "WorkItem",
+    "WorkItemRepository",
     "close_db",
     "db_init_failed",
     "engine",
