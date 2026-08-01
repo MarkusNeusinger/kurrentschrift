@@ -27,6 +27,12 @@ the token itself is the `ADMIN_TOKEN` secret in the `kurrentschrift` GCP
 project. Never create a secret version with `echo`: Cloud Run injects the bytes
 verbatim, and a trailing newline no header can carry made the token gate reject
 every value for two months (`docs/reference/frontend-stack.md`).
+In a **claude.ai/code cloud session** there is no `.env` (gitignored, never in
+the checkout) and the Cloud SQL egress gate blocks a locally started API, so the
+deployed API is the only admin path there — `ADMIN_TOKEN`, `VITE_ADMIN_TOKEN`
+and `API_BASE_URL` (= the api subdomain) are configured as environment
+variables. Check with `printenv ADMIN_TOKEN >/dev/null && echo set`; never print
+the value.
 
 ## Read these before substantive work
 
