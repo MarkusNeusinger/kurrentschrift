@@ -18,6 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.middleware.gzip import GZipMiddleware  # noqa: E402
 
 from api.routers import (  # noqa: E402
+    aggregates_router,
     bboxes_router,
     chart_router,
     hands_router,
@@ -99,6 +100,7 @@ app.add_middleware(GZipMiddleware, minimum_size=1024, compresslevel=6)
 app.include_router(health_router)
 app.include_router(styles_router)
 app.include_router(hands_router)
+app.include_router(aggregates_router)
 app.include_router(sources_router)
 app.include_router(chart_router)
 app.include_router(bboxes_router)

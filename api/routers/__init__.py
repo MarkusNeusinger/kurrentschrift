@@ -1,5 +1,6 @@
 """Routers exposed by the FastAPI service."""
 
+from api.routers.aggregates import router as aggregates_router
 from api.routers.bboxes import router as bboxes_router
 from api.routers.chart import router as chart_router
 from api.routers.hands import router as hands_router
@@ -16,6 +17,7 @@ from api.routers.write import router as write_router
 
 
 __all__ = [
+    "aggregates_router",
     "bboxes_router",
     "chart_router",
     "hands_router",

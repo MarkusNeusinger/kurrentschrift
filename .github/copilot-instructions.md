@@ -73,8 +73,8 @@ agent working in this repo:
 - Frontend feature work that follows the existing `/app/` patterns
   (drag-on-canvas, stylus capture, diagnostic panels).
 - New FastAPI routes that mirror the `api/routers/{health,styles,hands,
-  sources,chart,bboxes,templates,pairs,instances,write,word_samples,
-  work_items,quiz_words}.py` shape.
+  sources,chart,bboxes,templates,pairs,instances,aggregates,write,
+  word_samples,work_items,quiz_words}.py` shape.
 - Adding numpy/scipy/scikit-image pipeline steps inside `core/`.
 - Writing/improving unit tests under `tests/` (a pytest suite already
   exists — mirror the existing flat `tests/test_<module>.py` layout).
@@ -191,6 +191,9 @@ kurrentschrift/
 │   │                 #   tools/wordbench/metric.py — which stays as a re-export shim — because
 │   │                 #   the API image ships no tools/ and the admin score endpoint serves the
 │   │                 #   SAME metric; the freeze rule covers it through the shim)
+│   ├── aggregate.py  # Stufenplan H1: instances → per-hand aggregates (per-anchor median =
+│   │                 #   the Laufform, MAD hull, pooled layer-1 stats) + laufform_deviation;
+│   │                 #   pure numpy in core/ because the API image ships no tools/
 │   └── database/     # SQLAlchemy Style + Hand + Source + Bbox + Template + Instance + Aggregate + QuizWord + repos
 ├── api/              # FastAPI service (thin)
 │   ├── main.py
@@ -216,7 +219,12 @@ kurrentschrift/
 │                     #   shared similarity rules — docs/reference/quiz-wortbank.md),
 │                     #   work_items (Werkbank W1 Auftragskorb: FULLY admin-gated
 │                     #   GET/POST/PATCH/DELETE — filed letter/pair/word tasks a session
-│                     #   works off and closes with status done + resolution)
+│                     #   works off and closes with status done + resolution),
+│                     #   aggregates (Stufenplan H1: FULLY admin-gated GET /hands/{id}/aggregates
+│                     #   + POST …/rebuild — condenses a hand's instances into per-anchor
+│                     #   median (= the Laufform) + MAD hull + pooled layer-1 stats per
+│                     #   (glyph_key, variant); reports laufform_dev_xh as the H1 Prüfstein.
+│                     #   Median math in the pure core/aggregate.py; affects no rendering)
 ├── app/              # React 19 + Vite + MUI SPA (anyplot-style)
 │   └── src/
 │       ├── routes/      # paths.ts route constants + lazy public/admin route sections
@@ -291,7 +299,9 @@ kurrentschrift/
 │   │                 #   join occurrences (unique source+kind+specimen+slot) and traced
 │   │                 #   word templates (traced/authored, authored survives re-harvests),
 │   │                 #   0020 work_items (Werkbank W1): the Auftragskorb — filed
-│   │                 #   letter/pair/word tasks, open → done + resolution
+│   │                 #   letter/pair/word tasks, open → done + resolution,
+│   │                 #   0021 aggregates re-keyed to (hand_id, glyph_key, variant)
+│   │                 #   (Stufenplan H1; drop+recreate — the table was never populated)
 ├── data/             # Sources, samples, derived — SEPARATE LICENSING
 │   ├── sources/      # public-domain originals (Loth 1866, Sütterlin 1922 incl. connected-writing
 │   │                 #   plates + words.json word rects for the word bench, Koch 1928 Offenbacher
@@ -426,7 +436,9 @@ lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberläng
   `word_instances` hold one traced word per specimen sample (slot labels +
   pen-path strokes; provenance traced/authored — authored rows are manual
   admin traces that re-harvests never overwrite); `aggregates` are per-hand
-  stats (§12 layer 2, aggregation job pending).
+  stats (§12 layer 2), keyed `(hand_id, glyph_key, variant)` since migration
+  0021 and filled by the admin-gated rebuild endpoint (Stufenplan H1):
+  per-anchor median = the Laufform, MAD hull, pooled layer-1 stats.
 - `bboxes` carries the chart crop + freeform eraser `mask_strokes` (replaces
   the old rectangle `excludes`) + baseline/midband calibration + `guides` +
   `locked`. JSONB columns hold structured data; aggregate stats in SQL.

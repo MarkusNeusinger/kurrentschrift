@@ -314,6 +314,52 @@ class WordInstanceOut(BaseModel):
     measurements: dict[str, Any]
 
 
+class AggregateOut(BaseModel):
+    """One per-hand aggregate (§12 layer 2, Stufenplan H1).
+
+    `cluster_center` is the per-anchor median of the hand's occurrences — the
+    running form in normalised template coordinates (baseline = 0, midband = 1)
+    — and `hull.anchor_mad` its per-anchor, per-axis spread in the same units.
+    `mean_stats` pools the layer-1 measurements (fit RMSE in px, x-height in px,
+    position histogram, distinct specimens)."""
+
+    glyph_key: str
+    glyph: str
+    variant: int
+    cluster_center: list[list[float]]
+    hull: dict[str, Any]
+    mean_stats: dict[str, Any]
+    n_instances: int
+
+
+class AggregateKeySummary(BaseModel):
+    """One rebuilt key in the rebuild report.
+
+    `laufform_dev_xh` is the H1 Prüfstein: the mean anchor distance between the
+    recomputed median and the stored Laufform (template variant 100) in
+    x-height units; None when there is no such row or its anchor count
+    differs."""
+
+    glyph_key: str
+    variant: int
+    n_instances: int
+    laufform_dev_xh: float | None = None
+
+
+class AggregateRebuildOut(BaseModel):
+    """Result of `POST /hands/{hand_id}/aggregates/rebuild`.
+
+    `deleted` counts the hand's previous aggregate rows (the rebuild replaces
+    wholesale), `skipped` the occurrences left out per reason (`anchor_shape`,
+    `below_min_n`)."""
+
+    hand_id: str
+    stored: int
+    deleted: int
+    skipped: dict[str, int]
+    keys: list[AggregateKeySummary]
+
+
 # ------------------------------------------------------- Work items (Werkbank)
 
 

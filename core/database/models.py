@@ -322,23 +322,25 @@ class Instance(Base):
 
 
 class Aggregate(Base):
-    """Per-hand aggregate (§12 layer 2) per (hand, glyph, position, variant).
+    """Per-hand aggregate (§12 layer 2) per (hand, glyph_key, variant).
 
-    Cluster centre of the control points, deviation hull (MAD/covariance), and
-    mean of the layer-1 stats. Defined now; populated by the aggregation job
-    later. Statistics are computed per hand, never averaged across hands
-    (quellen-und-rechte.md §7).
+    Populated by the aggregates rebuild (Stufenplan H1) from the stored
+    `instances` of one hand: `cluster_center` is the per-anchor median — the
+    Laufform, since occurrence anchors are stored centered ("shapes, not
+    placements") — `hull` the per-anchor spread (MAD per axis), `mean_stats`
+    the pooled layer-1 statistics. Statistics are computed per hand, never
+    averaged across hands (quellen-und-rechte.md §7).
     """
 
     __tablename__ = "aggregates"
-    __table_args__ = (UniqueConstraint("hand_id", "glyph", "position", "variant", name="uq_aggregate_hand_gpv"),)
+    __table_args__ = (UniqueConstraint("hand_id", "glyph_key", "variant", name="uq_aggregate_hand_kv"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     hand_id: Mapped[str] = mapped_column(
         String(HAND_ID_MAX), ForeignKey("hands.id", ondelete="CASCADE"), nullable=False, index=True
     )
+    glyph_key: Mapped[str] = mapped_column(String(GLYPH_KEY_MAX), nullable=False, index=True)
     glyph: Mapped[str] = mapped_column(String(GLYPH_CHAR_MAX), nullable=False)
-    position: Mapped[str] = mapped_column(String(POSITION_MAX), nullable=False)
     variant: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
 
     cluster_center: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False, server_default="[]")
