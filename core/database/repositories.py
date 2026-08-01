@@ -381,12 +381,18 @@ class InstanceRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def list(self, source_id: str | None = None, glyph_key: str | None = None) -> list[Instance]:
+    async def list(
+        self, source_id: str | None = None, glyph_key: str | None = None, hand_id: str | None = None
+    ) -> list[Instance]:
         stmt = select(Instance).order_by(Instance.glyph_key, Instance.id)
         if source_id is not None:
             stmt = stmt.where(Instance.source_id == source_id)
         if glyph_key is not None:
             stmt = stmt.where(Instance.glyph_key == glyph_key)
+        if hand_id is not None:
+            # The aggregation reads per HAND across sources — statistics are a
+            # property of the writer, not of the plate they were seen on (§12).
+            stmt = stmt.where(Instance.hand_id == hand_id)
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
@@ -557,14 +563,39 @@ class WorkItemRepository:
 
 
 class AggregateRepository:
-    """Per-hand aggregates (§12 layer 2). Defined for the later aggregation job."""
+    """Per-hand aggregates (§12 layer 2), rebuilt from `instances` (Stufenplan H1)."""
+
+    # Everything except the identity columns of `uq_aggregate_hand_kv`.
+    _UPDATE_COLS = ("glyph", "cluster_center", "hull", "mean_stats", "n_instances")
 
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def list(self, hand_id: str | None = None) -> list[Aggregate]:
-        stmt = select(Aggregate).order_by(Aggregate.glyph)
+    async def list(self, hand_id: str | None = None, glyph_key: str | None = None) -> list[Aggregate]:
+        stmt = select(Aggregate).order_by(Aggregate.glyph_key, Aggregate.variant)
         if hand_id is not None:
             stmt = stmt.where(Aggregate.hand_id == hand_id)
+        if glyph_key is not None:
+            stmt = stmt.where(Aggregate.glyph_key == glyph_key)
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
+
+    async def upsert_many(self, rows: list[dict]) -> int:
+        """Batch insert-or-update on `uq_aggregate_hand_kv` (hand, glyph_key,
+        variant) — a rebuild refreshes the hand's aggregates in place."""
+        if not rows:
+            return 0
+        stmt = pg_insert(Aggregate).values(rows)
+        stmt = stmt.on_conflict_do_update(
+            constraint="uq_aggregate_hand_kv",
+            # The ORM-level `onupdate` never fires through on_conflict_do_update —
+            # stamp the recency column explicitly so admin UIs can trust it.
+            set_={col: stmt.excluded[col] for col in self._UPDATE_COLS} | {"updated_at": func.now()},
+        )
+        await self.session.execute(stmt)
+        await self.session.flush()
+        return len(rows)
+
+    async def delete_for_hand(self, hand_id: str) -> int:
+        result = await self.session.execute(delete(Aggregate).where(Aggregate.hand_id == hand_id))
+        return result.rowcount or 0

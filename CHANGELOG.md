@@ -12,6 +12,27 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **Aggregates rebuild (Handmodell H1): the statistics layer finally gets
+  filled.** `aggregates` has existed since migration `0004` and never held a
+  row; the admin-gated `GET /hands/{hand_id}/aggregates` and
+  `POST …/aggregates/rebuild?min_n=4` now condense a hand's stored `instances`
+  into one aggregate per `(glyph_key, variant)` — the per-anchor elementwise
+  median (which IS the running form, because occurrence anchors are stored
+  centered: "shapes, not placements"), the per-anchor spread as a median
+  absolute deviation hull, the pooled layer-1 statistics (fit RMSE, x-height,
+  position histogram, distinct specimens) and `n_instances`. The median math
+  lives in the new pure `core/aggregate.py` (no DB imports — the API image
+  ships no `tools/`, same rationale as `core/word_metric.py`). The rebuild
+  response reports the H1 Prüfstein per key: `laufform_dev_xh`, the mean anchor
+  distance between the recomputed median and the stored Laufform (template
+  variant 100). Reads are admin-gated too — an aggregate is learned geometry,
+  not public product surface (quellen-und-rechte.md §5) — and nothing here
+  touches rendering. Migration `0021` re-keys the table to
+  `(hand_id, glyph_key, variant)` following the R2 position removal (drop +
+  recreate: the table was empty).
+
 ## [0.21.0] — 2026-08-01 — Optimierungs-Werkbank + open-core moat
 
 ### Added

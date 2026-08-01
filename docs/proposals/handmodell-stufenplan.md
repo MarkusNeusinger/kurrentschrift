@@ -13,7 +13,17 @@ Nachfahr-Schleife (s. H2-Absatz „Trainingsmenge"). Umsetzung der
 Persistenz: PR #250. **H0 umgesetzt** (Bench + wordlab komponieren mit
 den eingefrorenen Laufform-Varianten; Re-Baseline Wörter 0,1169 ·
 Paare 0,1645, Zerlegung in qualitaetsmetrik.md §6 „H0-Anschluss").
-H3–H5 bleiben Vorschlag.
+**Auch der Aggregations-Schritt aus H1 ist umgesetzt:** die
+admin-gesicherten Endpunkte `GET/POST
+/hands/{hand_id}/aggregates[/rebuild]` füllen die seit `0004` leere
+`aggregates`-Tabelle aus den gespeicherten `instances` (Median-Anker +
+MAD-Hülle + gepoolte Schicht-1-Statistik, Rechenkern
+`core/aggregate.py`); Migration `0021` schlüsselt die Tabelle auf
+`(hand_id, glyph_key, variant)` um, und der Prüfstein steht als
+`laufform_dev_xh` je Glyphe in der Rebuild-Antwort (Abstand
+rekonstruierter Median ↔ gespeicherte Laufform). Die Ableitung der
+Varianten-100-Zeile aus dem Aggregat bleibt offen. H3–H5 bleiben
+Vorschlag.
 Konsolidiert die
 Laufform-Runde vom 30./31.07.2026 (PR #246/#247: Median-Laufformen als
 Template-Variante 100, `laufform_by_key` im Composer) und die
