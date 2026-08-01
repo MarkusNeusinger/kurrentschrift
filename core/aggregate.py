@@ -194,9 +194,17 @@ def _is_number(value: Any) -> bool:
 
 
 def _is_xy(point: Any) -> bool:
-    """True for a usable `[x, y]` pair (list, tuple or array row; a scalar is
-    not, and neither is a point with a missing coordinate)."""
-    return hasattr(point, "__len__") and len(point) == 2
+    """True for a usable `[x, y]` pair of real numbers (list, tuple or array
+    row; a scalar is not, and neither is a missing or non-numeric coordinate —
+    a bad point must land in the geometry skip, not abort the rebuild inside
+    the float conversion)."""
+    if not hasattr(point, "__len__") or len(point) != 2:
+        return False
+    try:
+        x, y = point[0], point[1]
+    except (TypeError, KeyError):
+        return False
+    return _is_number(x) and _is_number(y)
 
 
 def _pair_mean_stats(rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
@@ -222,7 +230,7 @@ def _pair_mean_stats(rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
     resids: list[float] = []
     gaps: list[float] = []
     kinds: Counter[str] = Counter()
-    specimens: set[tuple[Any, str]] = set()
+    specimens: set[tuple[str | None, str]] = set()
     for row in rows:
         measurements = row.get("measurements") or {}
         for key, bucket in (("gen_chamfer", gen), ("harvest_chamfer", harvest)):
@@ -246,9 +254,11 @@ def _pair_mean_stats(rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
         specimen_id = row.get("specimen_id")
         if specimen_id is not None:
             # The word plates and the pair drills are separate id namespaces of
-            # the same source, so the specimen identity includes the kind — as
-            # the RAW value, so a missing kind stays distinct from a "None" one.
-            specimens.add((kind, str(specimen_id)))
+            # the same source, so the specimen identity includes the kind — a
+            # missing kind stays None (distinct from a written "None"), any
+            # other value is stringified so a malformed row cannot abort the
+            # rebuild with an unhashable key.
+            specimens.add((str(kind) if kind is not None else None, str(specimen_id)))
 
     stats: dict[str, Any] = {}
     for key, bucket in (("gen_chamfer", gen), ("harvest_chamfer", harvest), ("resid", resids)):

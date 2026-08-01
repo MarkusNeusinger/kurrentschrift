@@ -131,10 +131,12 @@ def test_aggregate_counts_a_ragged_connector_as_a_geometry_skip():
         _row([0.4, 0.0], connector=[[0.0, 0.0], [1.0]]),  # short point
         _row([0.4, 0.0], connector=[[0.0, 0.0], 0.4]),  # scalar entry
         {**_row([0.4, 0.0]), "geometry": {"offset": 0.4, "connector": [[0.0, 0.0], [0.4, 0.0]]}},  # scalar offset
+        _row([0.4, 0.0], connector=[[0.0, 0.0], ["a", "b"]]),  # non-numeric point
+        _row(["a", 0.0]),  # non-numeric offset coordinate
     ]
     aggregates, skipped = aggregate_pair_instances(rows)
     assert aggregates[("n", "e")]["n_instances"] == 1
-    assert skipped["geometry"] == 3
+    assert skipped["geometry"] == 5
 
 
 def test_aggregate_min_n_gate_reports_the_dropped_rows():
@@ -169,6 +171,15 @@ def test_specimen_identity_keeps_a_missing_kind_distinct_from_a_written_one():
     stats = aggregate_pair_instances(rows)[0][("n", "e")]["mean_stats"]
     assert stats["n_specimens"] == 2  # (None, "wenn") and ("word", "wenn")
     assert stats["kinds"] == {"word": 1}
+
+
+def test_specimen_identity_survives_an_unhashable_kind():
+    """A malformed row with a list/dict `kind` must not abort the rebuild on
+    the set insert — any written kind is stringified for the identity."""
+    rows = [_row([0.4, 0.0], kind=["word"]), _row([0.6, 0.0])]
+    stats = aggregate_pair_instances(rows)[0][("n", "e")]["mean_stats"]
+    assert stats["n_specimens"] == 2  # ("['word']", "wenn") and ("word", "wenn")
+    assert stats["kinds"] == {"['word']": 1, "word": 1}
 
 
 def test_mean_stats_pools_the_dissection_qc():
