@@ -34,7 +34,22 @@ Laufform-Zeile ist Render-Zustand. Nur Basis-Varianten speisen sie
 ableiten); Schlüssel ohne Tafel-Zeile oder mit abweichender Ankerzahl
 werden mit Grund gemeldet statt geraten, und die Antwort nennt je
 Glyphe den Abstand *vor* dem Schreiben. Ein anschließender Rebuild
-meldet den Prüfstein als 0. H3–H5 bleiben Vorschlag.
+meldet den Prüfstein als 0. **Auch der Aggregations-Schritt aus H2 ist
+umgesetzt:** die ebenfalls admin-gesicherten Endpunkte `GET/POST
+/hands/{hand_id}/pair-aggregates[/rebuild]` verdichten die
+`pair_instances` einer Hand über alle Quellen hinweg je
+`(left_key, right_key)` in die eigene additive Tabelle
+`pair_aggregates` (Migration `0023`) — Median-Offset,
+bogenlängen-gleichmäßig nachgesampelter Median-Connector, MAD-Hüllen
+für beides und gepoolte Dissektions-QC (`gen_chamfer` als
+Audit-Zahl „gemessen vs. komponiert", Ink-Lücken-Anteil,
+Wort-/Paar-Platten-Histogramm). `min_n` ist hier 1 statt 4, weil Paare
+dünn belegt sind (87 Vorkommen auf 45 Paare der 1922er Platten) — die
+Zeile nennt `n_instances`, damit jeder Leser gewichten kann. Bewusst
+**ohne** Apply-Gegenstück: die Paar-Statistik ist rein lesend,
+`glyph_pairs` bleibt der verbatim übernommene Override (R3) und der
+§4-Generator bleibt Default; am Rendering ändert der Schritt nichts.
+H3–H5 bleiben Vorschlag.
 Konsolidiert die
 Laufform-Runde vom 30./31.07.2026 (PR #246/#247: Median-Laufformen als
 Template-Variante 100, `laufform_by_key` im Composer) und die
@@ -175,8 +190,13 @@ Nachbar-Auslaufs. Ablage konsequent im Instance→Aggregate-Muster:
 (`pair_instances`: je beobachtetem Join eine Zeile mit
 Connector-Geometrie relativ zum linken Exit, Placement-Offset und
 QC-Messwerten — der natürliche Übergang selbst, nicht die
-Buchstaben); Aggregate je `(hand, left_key, right_key)` folgen
-später. `glyph_pairs.geometry` bleibt unangetastet
+Buchstaben); Aggregate je `(hand, left_key, right_key)` sind
+**umgesetzt** — eigene additive Tabelle `pair_aggregates` (Migration
+`0023`), gefüllt über die admin-gesicherten Endpunkte `GET/POST
+/hands/{hand_id}/pair-aggregates[/rebuild]`: Median-Offset,
+bogenlängen-nachgesampelter Median-Connector, MAD-Hüllen und gepoolte
+Dissektions-QC, `min_n` 1 wegen der dünnen Beleglage.
+`glyph_pairs.geometry` bleibt unangetastet
 (verbatim-Override, R3). Erste Nutzung rein **lesend**: die
 Audit-/Report-Spalten der Wordbench und der Vergleichs-Tab zeigen
 „gemessen vs. komponiert" pro Paar. Rahmen bleibt

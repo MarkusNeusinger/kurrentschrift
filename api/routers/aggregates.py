@@ -1,17 +1,25 @@
-"""Per-hand aggregate endpoints (Stufenplan H1): read + rebuild + apply.
+"""Per-hand aggregate endpoints — the statistics layer over the occurrences.
 
-The statistics layer's second stage: `instances` holds every clean occurrence,
-this router condenses them per `(glyph_key, variant)` into the per-anchor
-median (the running form), its spread and the pooled layer-1 statistics.
+Two routers, one per occurrence level:
 
-Unlike the occurrence reads, the WHOLE router is admin-gated: an aggregate is
-learned geometry — the median form of a hand — and therefore part of the
-open-core moat (quellen-und-rechte.md §5), not public product surface. The read
-and the rebuild affect no rendering; the composer keeps reading templates and
-approved `glyph_pairs` only. `POST …/apply-laufform` closes H1's loop and IS a
-render-affecting write — the variant-100 Laufform row becomes a DERIVATION from
-the stored aggregate instead of the harvest's end product — which is exactly
-why it is its own deliberate step and never a side effect of the rebuild.
+* `router` (Stufenplan H1, `/hands/{hand_id}/aggregates`): read + rebuild +
+  apply. `instances` holds every clean glyph occurrence, the rebuild condenses
+  them per `(glyph_key, variant)` into the per-anchor median (the running
+  form), its spread and the pooled layer-1 statistics.
+* `pair_router` (Stufenplan H2, `/hands/{hand_id}/pair-aggregates`): read +
+  rebuild. `pair_instances` holds every dissected letter join, the rebuild
+  condenses them per `(left_key, right_key)` into the median placement offset,
+  the median connector centerline and the pooled dissection QC.
+
+Unlike the occurrence reads, BOTH routers are admin-gated end to end: an
+aggregate is learned geometry — the median form of a hand — and therefore part
+of the open-core moat (quellen-und-rechte.md §5), not public product surface.
+The reads and the rebuilds affect no rendering; the composer keeps reading
+templates and approved `glyph_pairs` only. `POST …/apply-laufform` closes H1's
+loop and IS a render-affecting write — the variant-100 Laufform row becomes a
+DERIVATION from the stored aggregate instead of the harvest's end product —
+which is exactly why it is its own deliberate step and never a side effect of
+the rebuild. The pair side has no such counterpart on purpose (see below).
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -28,8 +36,11 @@ from api.schemas import (
     AggregateKeySummary,
     AggregateOut,
     AggregateRebuildOut,
+    PairAggregateKeySummary,
+    PairAggregateOut,
+    PairAggregateRebuildOut,
 )
-from core.aggregate import aggregate_instances, laufform_deviation
+from core.aggregate import aggregate_instances, aggregate_pair_instances, laufform_deviation
 from core.database import (
     LAUFFORM_VARIANT,
     Aggregate,
@@ -37,11 +48,17 @@ from core.database import (
     Hand,
     HandRepository,
     InstanceRepository,
+    PairAggregate,
+    PairAggregateRepository,
+    PairInstanceRepository,
     TemplateRepository,
 )
 
 
 router = APIRouter(prefix="/hands/{hand_id}/aggregates", tags=["aggregates"], dependencies=[Depends(require_admin)])
+pair_router = APIRouter(
+    prefix="/hands/{hand_id}/pair-aggregates", tags=["aggregates"], dependencies=[Depends(require_admin)]
+)
 
 
 async def require_hand(hand_id: str, db: AsyncSession = Depends(require_db)) -> Hand:
@@ -236,3 +253,102 @@ async def apply_laufform(hand: Hand = Depends(require_hand), db: AsyncSession = 
     # back into the aggregate listing's order so the report reads as one list.
     skipped.sort(key=lambda s: (s.glyph_key, s.variant))
     return AggregateApplyOut(hand_id=hand.id, style_id=hand.style_id, applied=applied, skipped=skipped)
+
+
+# ------------------------------------------------- pair aggregates (Stufenplan H2)
+
+
+def _pair_to_out(row: PairAggregate) -> PairAggregateOut:
+    return PairAggregateOut(
+        left_key=row.left_key,
+        right_key=row.right_key,
+        offset_center=list(row.offset_center or []),
+        connector_center=[list(p) for p in row.connector_center or []],
+        hull=dict(row.hull or {}),
+        mean_stats=dict(row.mean_stats or {}),
+        n_instances=row.n_instances,
+    )
+
+
+@pair_router.get("", response_model=list[PairAggregateOut])
+async def list_pair_aggregates(
+    left_key: str | None = None,
+    right_key: str | None = None,
+    hand: Hand = Depends(require_hand),
+    db: AsyncSession = Depends(require_db),
+):
+    """This hand's stored pair aggregates, by (left_key, right_key). Uncached
+    like the glyph read: the rebuild writes and expects fresh rows.
+
+    `left_key` and `right_key` narrow the listing — together to exactly one
+    transition, singly to every join of one letter: the compare-tab and report
+    consumers ask for a single join's statistics, not the hand's whole matrix.
+    """
+    rows = await PairAggregateRepository(db).list(hand_id=hand.id, left_key=left_key, right_key=right_key)
+    return [_pair_to_out(r) for r in rows]
+
+
+@pair_router.post("/rebuild", response_model=PairAggregateRebuildOut)
+async def rebuild_pair_aggregates(
+    min_n: int = Query(1, ge=1), hand: Hand = Depends(require_hand), db: AsyncSession = Depends(require_db)
+):
+    """Recompute this hand's pair aggregates from its stored join occurrences.
+
+    Reads every `pair_instances` row of the hand ACROSS sources (statistics
+    belong to the writer, not the plate, §12), groups them per
+    `(left_key, right_key)` — pooling the word plates and the pair drills, the
+    same hand writing the same transition — and stores the median placement
+    offset plus the per-point median of the arc-length-resampled connector
+    centerlines, each with its MAD hull. The hand's previous pair aggregates are
+    replaced wholesale, so a pair that no longer qualifies disappears instead of
+    going stale.
+
+    `min_n` defaults to 1 because pairs are sparse: most transitions are
+    attested by a handful of occurrences and some by exactly one, which is still
+    the only measured truth about them. `n_instances` rides along on every row
+    so consumers can weigh it.
+
+    The response reports `gen_chamfer_mean` per pair — the harvest's
+    „gemessen vs. komponiert" distance between the GENERATED connector and the
+    specimen skeleton, the audit number this layer exists for.
+    """
+    occurrences = await PairInstanceRepository(db).list(hand_id=hand.id)
+    rows = [
+        {
+            "left_key": p.left_key,
+            "right_key": p.right_key,
+            "kind": p.kind,
+            "specimen_id": p.specimen_id,
+            "geometry": p.geometry or {},
+            "measurements": p.measurements or {},
+        }
+        for p in occurrences
+    ]
+    aggregates, skipped = aggregate_pair_instances(rows, min_n=min_n)
+
+    repo = PairAggregateRepository(db)
+    deleted = await repo.delete_for_hand(hand.id)
+    stored = await repo.upsert_many(
+        [
+            {"hand_id": hand.id, "left_key": left_key, "right_key": right_key, **agg}
+            for (left_key, right_key), agg in aggregates.items()
+        ]
+    )
+
+    # No `apply` counterpart here, deliberately: the pair statistics are
+    # READ-ONLY by design (Stufenplan H2). `glyph_pairs` stays the sparse
+    # verbatim override the admin approves per pair, the §4 generator stays the
+    # default for everything else — a median join written back into the writing
+    # path would be exactly the bigram database architektur.md §2 rejected. The
+    # first consumers are report surfaces (wordbench audit columns, the
+    # comparison tab's „gemessen vs. komponiert").
+    pairs_out = [
+        PairAggregateKeySummary(
+            left_key=left_key,
+            right_key=right_key,
+            n_instances=agg["n_instances"],
+            gen_chamfer_mean=agg["mean_stats"].get("gen_chamfer", {}).get("mean"),
+        )
+        for (left_key, right_key), agg in sorted(aggregates.items())
+    ]
+    return PairAggregateRebuildOut(hand_id=hand.id, stored=stored, deleted=deleted, skipped=skipped, pairs=pairs_out)
