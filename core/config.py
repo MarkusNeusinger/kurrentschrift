@@ -6,6 +6,7 @@ singleton: `from core.config import settings`.
 
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -58,6 +59,20 @@ class Settings(BaseSettings):
     # JWT but an email not in this list receive 403 — required for the JWT path
     # to authorize anyone.
     admin_allowed_emails_raw: str = ""
+
+    # Secret Manager stores whatever bytes the version was created with, and a
+    # value piped in via `echo` carries a trailing newline. Cloud Run injects
+    # those bytes verbatim (`--set-secrets`), so the setting would keep the
+    # newline while an HTTP header physically cannot transport one — the
+    # X-Admin-Token break-glass path then rejects every request with 401 and no
+    # token value can ever fix it. Strip at the source rather than at each use
+    # site; whitespace is meaningless in all four Secret-Manager-backed values.
+    @field_validator("database_url", "cf_access_team_domain", "cf_access_aud", "admin_token", mode="after")
+    @classmethod
+    def _strip_secret(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return value.strip() or None
 
     @property
     def cors_allow_origin_regex(self) -> str:

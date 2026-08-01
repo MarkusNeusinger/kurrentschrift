@@ -70,6 +70,22 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   response reports the pre-write distance per key, so the answer shows what the
   apply actually changed.
 
+### Fixed
+
+- **The `X-Admin-Token` break-glass path could never authenticate against the
+  deployed API.** The `ADMIN_TOKEN` secret version had been created with a
+  trailing newline; Cloud Run injects secret bytes verbatim, so
+  `settings.admin_token` carried that newline while an HTTP header physically
+  cannot transport one — `secrets.compare_digest` in `api/auth.py` therefore
+  rejected *every* possible token value with 401, and no amount of re-copying
+  the token could fix it. `core/config.py` now strips surrounding whitespace
+  from all four Secret-Manager-backed settings (`database_url`,
+  `cf_access_team_domain`, `cf_access_aud`, `admin_token`) and maps a
+  whitespace-only value to `None`, so the admin gate still fails closed with 503
+  when nothing is configured instead of comparing against an empty string. The
+  malformed secret version was replaced in Secret Manager as well; the new
+  `tests/test_config.py` pins both the stripping and the outage itself.
+
 ## [0.21.0] — 2026-08-01 — Optimierungs-Werkbank + open-core moat
 
 ### Added
