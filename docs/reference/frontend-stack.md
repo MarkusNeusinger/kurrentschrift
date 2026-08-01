@@ -241,13 +241,13 @@ gcloud secrets versions access latest --secret=ADMIN_TOKEN --project=kurrentschr
 
 gegen die Länge desselben Werts in `$(…)` — die Kommando-Substitution
 schluckt den Umbruch, ein naiver Fingerprint-Vergleich meldet also
-fälschlich „identisch", während Prod weiter 401 sagt. Neue Versionen
+fälschlich „identisch“, während Prod weiter 401 sagt. Neue Versionen
 darum immer mit `printf '%s'` anlegen; `core/config.py` strippt seit
 PR #262 zusätzlich alle vier Secret-gestützten Settings und mappt
 Whitespace-only auf `None`, damit das Gate weiter fail-closed bleibt.
 Cloud Run löst `latest` beim **Instanz-Start** auf — eine neue
 Secret-Version wirkt also erst mit dem nächsten Kaltstart oder Deploy,
-und häufiges Pollen hält die Instanz warm und verhindert genau das.
+und häufiges Polling hält die Instanz warm und verhindert genau das.
 
 ### Alternative: GCP Identity-Aware Proxy (IAP)
 
