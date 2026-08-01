@@ -372,6 +372,16 @@ cd app && npm install && npm run dev
 Python package manager: **uv**. Frontend: **npm** (note: anyplot uses
 yarn, kurrentschrift uses npm — `package-lock.json` is checked in).
 
+Admin write endpoints are gated by `require_admin`: set `ADMIN_TOKEN=<x>`
+for the API and the matching `VITE_ADMIN_TOKEN=<x>` in `app/.env` so the
+SPA sends `X-Admin-Token` (without it, local saves return 401). Against
+the DEPLOYED API the same header works **only** via
+`https://api.kurrentschrift.ink` — the apex `/api/*` 302s at the
+Cloudflare Access edge before the header reaches Cloud Run. Never create
+a secret version with `echo`: Cloud Run injects the bytes verbatim, and a
+trailing newline no header can carry made the token gate reject every
+value for two months (`docs/reference/frontend-stack.md`).
+
 Browser at `http://localhost:3000` loads the admin UI: the active source
 chart (switchable at runtime via the sidebar's Vorlage select, persisted per
 browser; `CONFIG.sourceId` in `app/src/global-config.ts` is the source the

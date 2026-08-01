@@ -217,6 +217,38 @@ CI / Break-Glass): `ADMIN_TOKEN` im API-Env, das passende
 beantwortet das Gate jeden geschützten Request mit **503** — ein
 fehlkonfiguriertes Prod-Deploy schlägt geschlossen fehl statt offen.
 
+**Gegen die deployte API: nur über `api.kurrentschrift.ink`.** Die
+Apex-Route `kurrentschrift.ink/api/*` liegt hinter Cloudflare Access und
+antwortet schon an der Edge mit 302 auf den Login — der `X-Admin-Token`
+erreicht Cloud Run dort nie. Das ist das Spiegelbild der Regel für
+öffentliche Reads (`CONFIG.publicApiBase`): die offene Subdomain ist der
+einzige Weg, auf dem ein selbst gesetzter Header ankommt. Verifiziert am
+2026-08-01 — `GET /sources/<id>/work-items` mit `X-Admin-Token` gegen
+`https://api.kurrentschrift.ink` antwortet auf allen vier Sources mit 200.
+
+**Fallstrick Zeilenumbruch.** Cloud Run injiziert Secret-Manager-Werte
+byteweise als Env-Var. Eine mit `echo` angelegte Version trägt ein
+abschließendes `\n`, das ein HTTP-Header nicht transportieren kann —
+`secrets.compare_digest` lehnt dann *jeden* Tokenwert mit 401 ab. Genau
+das war von der Anlage des Secrets (2026-05-27) bis 2026-08-01 der Fall:
+der Break-Glass-Pfad war unbenutzbar, ohne dass es auffiel, weil der
+Browser-Admin über den JWT-Zweig läuft. Diagnose ist die Byte-Differenz,
+nicht der Wert:
+
+```bash
+gcloud secrets versions access latest --secret=ADMIN_TOKEN --project=kurrentschrift | wc -c
+```
+
+gegen die Länge desselben Werts in `$(…)` — die Kommando-Substitution
+schluckt den Umbruch, ein naiver Fingerprint-Vergleich meldet also
+fälschlich „identisch", während Prod weiter 401 sagt. Neue Versionen
+darum immer mit `printf '%s'` anlegen; `core/config.py` strippt seit
+PR #262 zusätzlich alle vier Secret-gestützten Settings und mappt
+Whitespace-only auf `None`, damit das Gate weiter fail-closed bleibt.
+Cloud Run löst `latest` beim **Instanz-Start** auf — eine neue
+Secret-Version wirkt also erst mit dem nächsten Kaltstart oder Deploy,
+und häufiges Polling hält die Instanz warm und verhindert genau das.
+
 ### Alternative: GCP Identity-Aware Proxy (IAP)
 
 Wenn wir Cloudflare gar nicht im Stack haben wollen, ist GCP IAP die
