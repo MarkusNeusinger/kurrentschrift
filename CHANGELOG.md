@@ -32,6 +32,24 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   touches rendering. Migration `0021` re-keys the table to
   `(hand_id, glyph_key, variant)` following the R2 position removal (drop +
   recreate: the table was empty).
+- **The Laufform row is now DERIVED from the aggregate (Handmodell H1
+  complete).** `POST /hands/{hand_id}/aggregates/apply-laufform` (admin-gated)
+  writes the hand's stored aggregates into the style's running-form templates
+  (variant 100): the per-anchor median becomes the anchors — occurrence anchors
+  are stored centered, so the median already sits in the chart row's frame —
+  while widths, stroke topology and entry/exit/advance keep coming from the
+  chart template, through the very `build_laufform_canonical` helper the manual
+  `PUT …/templates/{key}/laufform` uses. With that the variant-100 row stops
+  being the harvest's end product and becomes a derivation from the persisted
+  occurrences, and a following rebuild reports the H1 Prüfstein
+  `laufform_dev_xh` as 0. It reads the STORED aggregates and never recomputes
+  them: writing templates affects rendering, so promoting a statistic into a
+  rendered form stays a deliberate, separate step from the rebuild. Only
+  base-variant aggregates feed it (a variant-100 occurrence would let the row
+  derive from itself); keys without a chart template or with a deviating anchor
+  count are reported as skipped with their reason, never guessed at. The
+  response reports the pre-write distance per key, so the answer shows what the
+  apply actually changed.
 
 ## [0.21.0] — 2026-08-01 — Optimierungs-Werkbank + open-core moat
 

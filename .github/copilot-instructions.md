@@ -224,7 +224,15 @@ kurrentschrift/
 │                     #   + POST …/rebuild — condenses a hand's instances into per-anchor
 │                     #   median (= the Laufform) + MAD hull + pooled layer-1 stats per
 │                     #   (glyph_key, variant); reports laufform_dev_xh as the H1 Prüfstein.
-│                     #   Median math in the pure core/aggregate.py; affects no rendering)
+│                     #   Median math in the pure core/aggregate.py; read+rebuild affect no
+│                     #   rendering. POST …/apply-laufform closes H1: the STORED aggregates
+│                     #   (no recompute) become the style's variant-100 Laufform templates —
+│                     #   median = anchors, widths/topology/entry/exit/advance from the chart
+│                     #   row via the SHARED templates.py::build_laufform_canonical the manual
+│                     #   PUT …/templates/{key}/laufform uses. Own step because it DOES affect
+│                     #   rendering; only base-variant aggregates feed it (never variant 100
+│                     #   itself), missing chart row / anchor-count mismatch is reported as
+│                     #   skipped, each applied key reports its pre-write laufform_dev_xh)
 ├── app/              # React 19 + Vite + MUI SPA (anyplot-style)
 │   └── src/
 │       ├── routes/      # paths.ts route constants + lazy public/admin route sections

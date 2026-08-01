@@ -360,6 +360,45 @@ class AggregateRebuildOut(BaseModel):
     keys: list[AggregateKeySummary]
 
 
+class AggregateApplyKeySummary(BaseModel):
+    """One glyph whose Laufform row was derived from the stored aggregate.
+
+    `laufform_dev_xh` is measured BEFORE the write — the distance the apply
+    just closed (None when no Laufform row existed yet or its anchor count
+    differed); `created` separates a first write from an update."""
+
+    glyph_key: str
+    variant: int
+    n_instances: int
+    laufform_dev_xh: float | None = None
+    created: bool
+
+
+class AggregateApplySkip(BaseModel):
+    """One aggregate the apply left alone, with the reason.
+
+    Reasons: `laufform_variant` / `non_base_variant` (only base-variant
+    aggregates may feed the derived row — never itself), `no_base_template`
+    (the chart ductus prior is missing) and `anchor_count` (aggregate and chart
+    row disagree, so the topology would not carry over)."""
+
+    glyph_key: str
+    variant: int
+    reason: str
+
+
+class AggregateApplyOut(BaseModel):
+    """Result of `POST /hands/{hand_id}/aggregates/apply-laufform` (Stufenplan
+    H1): the stored aggregates written into the style's Laufform rows
+    (templates variant 100). Unlike the rebuild this DOES affect rendering,
+    which is why it is a separate, deliberate step."""
+
+    hand_id: str
+    style_id: str
+    applied: list[AggregateApplyKeySummary]
+    skipped: list[AggregateApplySkip]
+
+
 # ------------------------------------------------------- Work items (Werkbank)
 
 
