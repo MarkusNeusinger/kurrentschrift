@@ -113,6 +113,57 @@ export interface WordInstanceOut {
   measurements: WordInstanceMeasurements;
 }
 
+// One item of `PUT /sources/{id}/word-instances`. Mirrors WordInstanceItem in
+// api/schemas.py — same frame as WordInstanceOut.strokes, plus the schema
+// bounds the editor has to respect (1..128 strokes, 2..4096 points each,
+// |coord| ≤ 100; see sections/admin/belege/registration.ts). `authored` marks a
+// manual admin trace: it replaces a harvested row and survives every re-harvest.
+export interface WordInstanceItemIn {
+  kind: 'word' | 'pair';
+  specimen_id: string;
+  word: string;
+  slots: string[];
+  strokes: Array<Array<[number, number]>>;
+  provenance: 'traced' | 'authored';
+  measurements?: WordInstanceMeasurements;
+}
+
+// The writer a batch of occurrences belongs to (get-or-create). Mirrors HandIn.
+// The server upserts the row wholesale, so a caller editing ONE occurrence
+// echoes the hand back as read (getHand) instead of sending id + label only —
+// otherwise era/note would be wiped as a side effect of saving a trace.
+export interface HandIn {
+  id: string;
+  label: string;
+  era?: string | null;
+  note?: string | null;
+}
+
+export interface HandOut {
+  id: string;
+  style_id: string | null;
+  label: string;
+  era: string | null;
+  note: string | null;
+}
+
+// Body of the word-instance batch PUT. `replace: true` is the harvest's wipe —
+// the word editor sends a single item without it.
+export interface WordInstanceBatchIn {
+  hand: HandIn;
+  replace?: boolean;
+  items: WordInstanceItemIn[];
+}
+
+// Result of an occurrence batch write (BatchStoreOut). `skipped` counts the
+// items the authored-overwrite protection refused.
+export interface BatchStoreOut {
+  hand_id: string;
+  stored: number;
+  deleted: number;
+  skipped: number;
+}
+
 // Fit context of ONE stored letter occurrence (tools/laufform/harvest.py).
 // `specimen_id` + `slot` tie the row back to its word sample and the slot
 // index inside it; `geo_rmse_px` is that fit's residual — the Werkbank's

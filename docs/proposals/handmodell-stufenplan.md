@@ -191,8 +191,8 @@ liefern. Die Engine fährt Wörter selbständig nach (Duktus-Prior +
 M4-Fit, „wie mit einem Stift, absetzen nur wo nötig") → Provenienz
 `traced`; wo sie scheitert, fährt der Admin manuell nach → `authored`,
 von keiner Neu-Ernte je überschrieben. Für Paare existiert diese
-manuelle Schleife bereits (Paar-Editor, R3); ein Wort-Editor im Admin
-ist der Folgeschritt. So wächst die Trainingsmenge (Buchstaben ·
+manuelle Schleife bereits (Paar-Editor, R3); der Wort-Editor im Admin
+ist inzwischen umgesetzt (Werkbank W3, aus jeder Belege-Karte). So wächst die Trainingsmenge (Buchstaben ·
 Paare · Wörter, je Statistik + Crop + Nachfahrung) kontinuierlich —
 zugleich die Datengrundlage für den späteren generativen Writer
 ([`kurrent-writer-and-recognizer.md`](kurrent-writer-and-recognizer.md)).

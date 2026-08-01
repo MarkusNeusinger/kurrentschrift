@@ -276,6 +276,59 @@ async def test_put_word_instances_roundtrip_and_authored_protection(api: Harness
     assert res.json() == {"deleted": 1}
 
 
+async def test_word_editor_single_item_write_keeps_the_other_rows(api: Harness):
+    """The admin word editor's write shape (Werkbank W3): ONE authored item,
+    no `replace` — it must re-trace exactly that occurrence and leave every
+    other stored row alone. The read exposes the row's hand key, which is what
+    the editor echoes back into the batch's `hand`."""
+    _, source_id = await api.seed_style_and_source()
+    await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/word-instances",
+        json_body=_batch([_word_item(), _word_item(specimen_id="zu", word="zu", slots=["z", "u"])]),
+        headers=api.admin_headers(),
+    )
+
+    res = await api.client.request("GET", f"/sources/{source_id}/word-instances", params={"specimen_id": "wenn"})
+    row = res.json()[0]
+    assert row["hand_id"] == "test-hand"
+
+    res = await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/word-instances",
+        json_body={
+            "hand": {"id": row["hand_id"], "label": "Test norm hand", "era": "1922"},
+            "items": [
+                {
+                    "kind": row["kind"],
+                    "specimen_id": row["specimen_id"],
+                    "word": row["word"],
+                    "slots": row["slots"],
+                    "strokes": [[[0.0, 0.0], [0.5, 1.0], [1.0, 0.0]]],
+                    "provenance": "authored",
+                    # Merged measurements: the registration survives, the
+                    # replaced path's fit QC does not.
+                    "measurements": {"registration_px": {"tx": 3.0, "ty": 0.0, "baseline_row": 58.0}, "xh_px": 31.0},
+                }
+            ],
+        },
+        headers=api.admin_headers(),
+    )
+    assert res.json() == {"hand_id": "test-hand", "stored": 1, "deleted": 0, "skipped": 0}
+
+    res = await api.client.request("GET", f"/sources/{source_id}/word-instances")
+    rows = {r["specimen_id"]: r for r in res.json()}
+    assert set(rows) == {"wenn", "zu"}
+    assert rows["wenn"]["provenance"] == "authored"
+    assert rows["wenn"]["slots"] == ["w", "e", "n", "n"]
+    assert rows["wenn"]["strokes"] == [[[0.0, 0.0], [0.5, 1.0], [1.0, 0.0]]]
+    assert rows["wenn"]["measurements"] == {
+        "registration_px": {"tx": 3.0, "ty": 0.0, "baseline_row": 58.0},
+        "xh_px": 31.0,
+    }
+    assert rows["zu"]["provenance"] == "traced"
+
+
 async def test_put_word_instances_gate_and_validation(api: Harness):
     _, source_id = await api.seed_style_and_source()
     res = await api.client.request("PUT", f"/sources/{source_id}/word-instances", json_body=_batch([_word_item()]))

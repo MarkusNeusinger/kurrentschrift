@@ -260,7 +260,11 @@ kurrentschrift/
 │       │                #   belege/BelegeView.tsx = /admin/belege: every stored word-
 │       │                #   occurrence trace over its specimen crop (GET /word-instances +
 │       │                #   word-samples crop), worst-first — the error-finding surface
-│       │                #   over the occurrence layer, entry point for the word editor;
+│       │                #   over the occurrence layer; each card opens
+│       │                #   belege/WordTraceEditorDialog.tsx (Werkbank W3: re-trace the
+│       │                #   ductus over the crop, pen lift = new stroke, undo/reset, save
+│       │                #   as an `authored` word_instance via a single-item batch PUT —
+│       │                #   crop↔trace mapping in the pure belege/registration.ts);
 │       │                #   werkbank/WerkbankView.tsx = /admin/werkbank (Werkbank W2,
 │       │                #   optimierungs-werkbank.md §2): the word spine (Belege cards +
 │       │                #   dashed letter boxes from `instances`, join dots between

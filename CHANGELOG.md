@@ -14,6 +14,25 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Word editor (Werkbank W3): every stored word occurrence can now be
+  re-traced by hand.** Each card on `/admin/belege` opens the new
+  `WordTraceEditorDialog` — the specimen crop as underlay with the row's own
+  registration frame drawn on it (Grundlinie + Mittellinie), the stored trace as
+  the starting point, and pointer/S-Pen capture in which every pen lift
+  (Absetzen) starts a new stroke, exactly like the wizard's Weg step. Per-stroke
+  undo, clear and reset-to-stored; saving writes the path as an `authored`
+  `word_instance` through the existing batch endpoint with a SINGLE item and
+  without `replace`, so the server's overwrite protection re-traces exactly that
+  occurrence and leaves every other row — and every other authored trace —
+  untouched. Slot labels are preserved and the registration (`registration_px`,
+  `xh_px`) is carried over so the row stays displayable, while the replaced
+  path's automatic fit QC is dropped instead of ranking a hand-fixed word by
+  dead numbers. The crop↔trace mapping moved into the pure, unit-tested
+  `sections/admin/belege/registration.ts` shared by the list and the editor, and
+  the frontend API layer grew `putWordInstances` + `getHand` (the occurrence's
+  writer is echoed back as read, so saving a trace cannot wipe the hand's
+  era/note). Authored traces are ground truth for statistics and training, never
+  a rendering patch (optimierungs-werkbank.md §3/§6).
 - **Aggregates rebuild (Handmodell H1): the statistics layer finally gets
   filled.** `aggregates` has existed since migration `0004` and never held a
   row; the admin-gated `GET /hands/{hand_id}/aggregates` and

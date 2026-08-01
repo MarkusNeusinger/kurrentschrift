@@ -7,6 +7,7 @@
 import { CONFIG } from '@/global-config';
 import { apiFetch, asJson, type RetryOptions } from '@/lib/api/client';
 import type {
+  BatchStoreOut,
   BboxIn,
   BboxOut,
   BboxStatusOut,
@@ -15,6 +16,7 @@ import type {
   FitData,
   GlyphOut,
   GlyphSummary,
+  HandOut,
   InstanceOut,
   PairInstanceOut,
   QualityComparison,
@@ -25,6 +27,7 @@ import type {
   GlyphPairOut,
   TracePreviewOut,
   TraceRequest,
+  WordInstanceBatchIn,
   WordInstanceOut,
   WordSampleOut,
   WordSampleScoreOut,
@@ -116,17 +119,36 @@ export const wordSampleCropUrl = (sourceId: string, sampleId: string): string =>
 // The stored word-occurrence traces of a source (handmodell H1/H2). Public
 // GET; a row's crop is wordSampleCropUrl(sourceId, row.specimen_id). `word`
 // lists every occurrence of one word TEXT ("wenn" matches wenn + wenn-2).
+// `bust` re-fetches past any intermediate cache after a write (the word
+// editor's save) — the endpoint itself is uncached.
 export const listWordInstances = (
   sourceId: string,
-  opts?: { specimenId?: string; word?: string },
+  opts?: { specimenId?: string; word?: string; bust?: number },
   retry?: RetryOptions,
 ): Promise<WordInstanceOut[]> => {
   const qs = new URLSearchParams();
   if (opts?.specimenId) qs.set('specimen_id', opts.specimenId);
   if (opts?.word) qs.set('word', opts.word);
+  if (opts?.bust) qs.set('t', String(opts.bust));
   const s = qs.toString();
   return apiFetch(src(sourceId, `/word-instances${s ? `?${s}` : ''}`), {}, retry).then(asJson<WordInstanceOut[]>);
 };
+
+// Admin-gated batch write of word traces (handmodell H1/H2). The word editor
+// sends exactly ONE item with provenance 'authored' and without `replace` — the
+// server's overwrite protection then replaces that occurrence and leaves every
+// other row (and every other authored trace) untouched.
+export const putWordInstances = (sourceId: string, body: WordInstanceBatchIn): Promise<BatchStoreOut> =>
+  apiFetch(src(sourceId, '/word-instances'), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }).then(asJson<BatchStoreOut>);
+
+// One writer. Public read; the word editor uses it to echo the occurrence's
+// hand back into its batch (id + label + era + note) instead of re-inventing it.
+export const getHand = (handId: string, retry?: RetryOptions): Promise<HandOut> =>
+  apiFetch(`${apiRoot()}/hands/${encodeURIComponent(handId)}`, {}, retry).then(asJson<HandOut>);
 
 // The stored LETTER occurrences of a source (handmodell H1). Public GET; the
 // boxes are page pixels of the specimen plate, so a crop-local box needs the
