@@ -5,6 +5,7 @@ works on a chart `source`; this router resolves the source's style and stores
 the canonical there, recording the chart as `provenance_source_id`.
 """
 
+from collections.abc import Sequence
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -167,6 +168,50 @@ async def get_template(
     return _template_to_out(template)
 
 
+def build_laufform_canonical(base: Template, anchors: Sequence[Sequence[float]], laufform_meta: dict) -> dict:
+    """The LAUFFORM_VARIANT canonical for one glyph: median geometry on the
+    chart row's ductus.
+
+    The ONE derivation of a running-form row, shared by the manual
+    `PUT …/laufform` (harvest drafts) and the aggregate-derived apply endpoint
+    (`POST /hands/{id}/aggregates/apply-laufform`, Stufenplan H1) so the two
+    can never produce differently-shaped rows. Everything but the anchors comes
+    from the chart template: widths, stroke topology (`trace_meta`), and
+    entry/exit/advance shifted by their end anchors' delta. `laufform_meta`
+    lands under `trace_meta.laufform` and records where the median came from.
+
+    Args:
+        base: The variant-0 chart template — the ductus prior.
+        anchors: The median anchors, same count as `base.anchors`.
+        laufform_meta: Provenance dict for `trace_meta.laufform`.
+
+    Returns:
+        A canonical dict in `TemplateRepository.upsert` shape.
+    """
+    chart = [tuple(p) for p in base.anchors]
+    canonical: dict[str, Any] = {
+        "glyph": base.glyph,
+        "anchors": [[float(x), float(y)] for x, y in anchors],
+        "half_widths": base.half_widths,
+        # No stylus capture behind a derived variant — an empty path, not
+        # NULL, so every raw_path consumer keeps its list contract.
+        "raw_path": [],
+        "trace_meta": {**(base.trace_meta or {}), "laufform": laufform_meta},
+    }
+    # Entry/exit/advance ride their end anchors: shift the chart fields by the
+    # respective anchor delta (the tangents stay — median deviations are
+    # sub-nib and the composer re-measures tangents off the centerline).
+    d_in = (anchors[0][0] - chart[0][0], anchors[0][1] - chart[0][1])
+    d_out = (anchors[-1][0] - chart[-1][0], anchors[-1][1] - chart[-1][1])
+    for field, delta in (("entry", d_in), ("exit_pt", d_out)):
+        stored = getattr(base, field) or {}
+        if stored.get("xy"):
+            stored = {**stored, "xy": [stored["xy"][0] + delta[0], stored["xy"][1] + delta[1]]}
+        canonical[field] = stored
+    canonical["advance"] = (base.advance or 0.0) + d_out[0]
+    return canonical
+
+
 @router.put("/{glyph_key}/laufform", response_model=TemplateOut, dependencies=[Depends(require_admin)])
 async def put_laufform(
     glyph_key: str,
@@ -183,35 +228,15 @@ async def put_laufform(
     base = await TemplateRepository(db).get(source.style_id, glyph_key, variant=0)
     if base is None:
         raise HTTPException(status.HTTP_409_CONFLICT, detail=f"no chart template for {glyph_key!r} — author it first")
-    chart = [tuple(p) for p in base.anchors]
-    if len(payload.anchors) != len(chart):
+    if len(payload.anchors) != len(base.anchors):
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"anchor count {len(payload.anchors)} != chart row's {len(chart)} — the ductus prior must match",
+            detail=f"anchor count {len(payload.anchors)} != chart row's {len(base.anchors)}"
+            " — the ductus prior must match",
         )
-    canonical: dict[str, Any] = {
-        "glyph": base.glyph,
-        "anchors": [[float(x), float(y)] for x, y in payload.anchors],
-        "half_widths": base.half_widths,
-        # No stylus capture behind a derived variant — an empty path, not
-        # NULL, so every raw_path consumer keeps its list contract.
-        "raw_path": [],
-        "trace_meta": {
-            **(base.trace_meta or {}),
-            "laufform": {"derived_from": "specimen-words", "n_occurrences": payload.n_occurrences},
-        },
-    }
-    # Entry/exit/advance ride their end anchors: shift the chart fields by the
-    # respective anchor delta (the tangents stay — median deviations are
-    # sub-nib and the composer re-measures tangents off the centerline).
-    d_in = (payload.anchors[0][0] - chart[0][0], payload.anchors[0][1] - chart[0][1])
-    d_out = (payload.anchors[-1][0] - chart[-1][0], payload.anchors[-1][1] - chart[-1][1])
-    for field, delta in (("entry", d_in), ("exit_pt", d_out)):
-        stored = getattr(base, field) or {}
-        if stored.get("xy"):
-            stored = {**stored, "xy": [stored["xy"][0] + delta[0], stored["xy"][1] + delta[1]]}
-        canonical[field] = stored
-    canonical["advance"] = (base.advance or 0.0) + d_out[0]
+    canonical = build_laufform_canonical(
+        base, payload.anchors, {"derived_from": "specimen-words", "n_occurrences": payload.n_occurrences}
+    )
     t = await TemplateRepository(db).upsert(
         source.style_id, glyph_key, canonical, variant=LAUFFORM_VARIANT, provenance_source_id=source.id
     )

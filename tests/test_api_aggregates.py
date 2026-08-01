@@ -1,14 +1,19 @@
-"""The per-hand aggregate endpoints (Stufenplan H1): read + rebuild.
+"""The per-hand aggregate endpoints (Stufenplan H1): read + rebuild + apply.
 
 Same in-memory aiosqlite stack as the other HTTP suites (`tests/api_harness.py`
 via the `api` fixture). Occurrences are written through the real
 `PUT /sources/{id}/instances` batch so the hand row is created the way
 production does it. Proves the median/hull round-trip, the min_n gate, the
-replace semantics, the Laufform Prüfstein and the admin gate.
+replace semantics, the Laufform Prüfstein, the aggregate-derived Laufform rows
+and the admin gate.
 """
 
 from __future__ import annotations
 
+import pytest
+from sqlalchemy import select
+
+from core.database import LAUFFORM_VARIANT, Hand, Template
 from tests.api_harness import Harness
 
 
@@ -167,6 +172,170 @@ async def test_rebuild_replaces_stale_rows(api: Harness):
     assert res.json() == []
 
 
+async def _stored_laufform(api: Harness, style_id: str) -> list[dict]:
+    """The style's stored running-form rows as plain dicts (read inside the
+    session, so nothing is touched on a closed one)."""
+    async with api.session_maker() as session:
+        rows = (
+            (
+                await session.execute(
+                    select(Template).where(Template.style_id == style_id, Template.variant == LAUFFORM_VARIANT)
+                )
+            )
+            .scalars()
+            .all()
+        )
+        return [
+            {
+                "glyph_key": r.glyph_key,
+                "glyph": r.glyph,
+                "anchors": [list(a) for a in r.anchors],
+                "half_widths": list(r.half_widths),
+                "raw_path": list(r.raw_path),
+                "advance": r.advance,
+                "exit_pt": dict(r.exit_pt),
+                "trace_meta": dict(r.trace_meta),
+                "provenance_source_id": r.provenance_source_id,
+            }
+            for r in rows
+        ]
+
+
+async def test_apply_laufform_derives_the_variant_100_row_and_closes_the_pruefstein(api: Harness):
+    """H1's last step: the running form becomes a DERIVATION from the stored
+    aggregate — and the rebuild's Prüfstein then reads 0."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    await _seed_occurrences(api, source_id, [0.0, 0.02, 0.06, 0.08])
+    await api.client.request("POST", "/hands/test-hand/aggregates/rebuild", headers=api.admin_headers())
+
+    res = await api.client.request("POST", "/hands/test-hand/aggregates/apply-laufform", headers=api.admin_headers())
+    assert res.status == 200, res.body
+    assert res.json() == {
+        "hand_id": "test-hand",
+        "style_id": style_id,
+        # No Laufform row existed yet, so there is no distance to report.
+        "applied": [{"glyph_key": "n", "variant": 0, "n_instances": 4, "laufform_dev_xh": None, "created": True}],
+        "skipped": [],
+    }
+
+    rows = await _stored_laufform(api, style_id)
+    assert len(rows) == 1
+    row = rows[0]
+    assert row["glyph"] == "n"
+    assert row["anchors"] == _shifted(0.04)
+    # Everything but the anchors comes from the chart row (the ductus prior):
+    # widths and topology carry over, entry/exit/advance ride the end anchors.
+    assert row["half_widths"] == [0.05] * 6
+    assert row["raw_path"] == []
+    assert row["advance"] == pytest.approx(0.49, abs=1e-9)
+    assert row["exit_pt"]["xy"] == pytest.approx([0.39, 0.0], abs=1e-9)
+    assert row["trace_meta"]["laufform"] == {
+        "derived_from": "hand-aggregate",
+        "hand_id": "test-hand",
+        "n_occurrences": 4,
+    }
+    assert row["provenance_source_id"] == source_id
+
+    # The Prüfstein closes: median recomputed from the occurrences == the
+    # stored running form.
+    res = await api.client.request("POST", "/hands/test-hand/aggregates/rebuild", headers=api.admin_headers())
+    assert res.json()["keys"] == [{"glyph_key": "n", "variant": 0, "n_instances": 4, "laufform_dev_xh": 0.0}]
+
+
+async def test_apply_laufform_reports_the_pre_write_distance_and_is_idempotent(api: Harness):
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    await _seed_occurrences(api, source_id, [0.0, 0.02, 0.06, 0.08])
+    await api.client.request("POST", "/hands/test-hand/aggregates/rebuild", headers=api.admin_headers())
+
+    # A hand-written running form that drifted from the occurrences: one anchor
+    # moved by 0.6 over six anchors → mean 0.1.
+    drifted = _shifted(0.04)
+    drifted[2] = [drifted[2][0] + 0.6, drifted[2][1]]
+    res = await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/templates/n/laufform",
+        json_body={"anchors": drifted, "n_occurrences": 4},
+        headers=api.admin_headers(),
+    )
+    assert res.status == 200, res.body
+
+    res = await api.client.request("POST", "/hands/test-hand/aggregates/apply-laufform", headers=api.admin_headers())
+    # The distance is measured BEFORE the write — it is what the apply closed.
+    assert res.json()["applied"] == [
+        {"glyph_key": "n", "variant": 0, "n_instances": 4, "laufform_dev_xh": 0.1, "created": False}
+    ]
+    rows = await _stored_laufform(api, style_id)
+    assert len(rows) == 1 and rows[0]["anchors"] == _shifted(0.04)
+
+    # Second run: an update, not a duplicate row — the unique
+    # (style_id, glyph_key, variant) holds and the distance is now 0.
+    res = await api.client.request("POST", "/hands/test-hand/aggregates/apply-laufform", headers=api.admin_headers())
+    assert res.json()["applied"] == [
+        {"glyph_key": "n", "variant": 0, "n_instances": 4, "laufform_dev_xh": 0.0, "created": False}
+    ]
+    rows = await _stored_laufform(api, style_id)
+    assert len(rows) == 1 and rows[0]["anchors"] == _shifted(0.04)
+
+
+async def test_apply_laufform_skips_and_reports_underivable_keys(api: Harness):
+    """A key without a chart template, one whose anchor count disagrees with
+    it, and every non-base variant are reported instead of guessed at."""
+    style_id, source_id = await api.seed_style_and_source()
+    # 'n' has a chart row (six anchors), 'm' has none; 'e' has one but its
+    # occurrences carry four anchors.
+    await api.seed_template(style_id, source_id, "n", "n")
+    await api.seed_template(style_id, source_id, "e", "e")
+    await _seed_occurrences(api, source_id, [0.0, 0.02, 0.06, 0.08])
+    await _seed_occurrences(api, source_id, [0.0, 0.02, 0.06, 0.08], glyph_key="m", glyph="m")
+    short = [[0.0, 0.0], [0.1, 0.5], [0.2, 0.5], [0.3, 0.0]]
+    items = [
+        _instance_item(glyph_key="e", glyph="e", anchors=short, x0=300 + 10 * n, x1=330 + 10 * n) for n in range(4)
+    ]
+    # The reserved Laufform variant must never feed its own row; other authored
+    # variants have no Laufform row to write into either.
+    items += [_instance_item(variant=v, x0=400 + 10 * n, x1=430 + 10 * n) for v in (1, 100) for n in range(4)]
+    res = await api.client.request(
+        "PUT", f"/sources/{source_id}/instances", json_body=_batch(items), headers=api.admin_headers()
+    )
+    assert res.status == 200, res.body
+    await api.client.request("POST", "/hands/test-hand/aggregates/rebuild", headers=api.admin_headers())
+
+    res = await api.client.request("POST", "/hands/test-hand/aggregates/apply-laufform", headers=api.admin_headers())
+    out = res.json()
+    assert [k["glyph_key"] for k in out["applied"]] == ["n"]
+    assert out["skipped"] == [
+        {"glyph_key": "e", "variant": 0, "reason": "anchor_count"},
+        {"glyph_key": "m", "variant": 0, "reason": "no_base_template"},
+        {"glyph_key": "n", "variant": 1, "reason": "non_base_variant"},
+        {"glyph_key": "n", "variant": 100, "reason": "laufform_variant"},
+    ]
+    assert [r["glyph_key"] for r in await _stored_laufform(api, style_id)] == ["n"]
+
+
+async def test_apply_laufform_without_aggregates_or_style_writes_nothing(api: Harness):
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    await _seed_occurrences(api, source_id, [0.0, 0.02, 0.06, 0.08])
+
+    # Aggregates never rebuilt: an empty summary, and no row is invented from
+    # the occurrences (the rebuild is the one recompute step).
+    res = await api.client.request("POST", "/hands/test-hand/aggregates/apply-laufform", headers=api.admin_headers())
+    assert res.status == 200
+    assert res.json() == {"hand_id": "test-hand", "style_id": style_id, "applied": [], "skipped": []}
+    assert await _stored_laufform(api, style_id) == []
+
+    # A hand without a style has no templates to write into.
+    async with api.session_maker() as session:
+        session.add(Hand(id="styleless-hand", label="No style"))
+        await session.commit()
+    res = await api.client.request(
+        "POST", "/hands/styleless-hand/aggregates/apply-laufform", headers=api.admin_headers()
+    )
+    assert res.status == 409
+
+
 async def test_aggregate_endpoints_are_admin_gated_and_404_unknown_hand(api: Harness):
     style_id, source_id = await api.seed_style_and_source()
     await api.seed_template(style_id, source_id, "n", "n")
@@ -177,8 +346,13 @@ async def test_aggregate_endpoints_are_admin_gated_and_404_unknown_hand(api: Har
     assert res.status == 401
     res = await api.client.request("POST", "/hands/test-hand/aggregates/rebuild")
     assert res.status == 401
+    # The apply WRITES templates — the gate matters twice over here.
+    res = await api.client.request("POST", "/hands/test-hand/aggregates/apply-laufform")
+    assert res.status == 401
 
     res = await api.client.request("GET", "/hands/nope/aggregates", headers=api.admin_headers())
     assert res.status == 404
     res = await api.client.request("POST", "/hands/nope/aggregates/rebuild", headers=api.admin_headers())
+    assert res.status == 404
+    res = await api.client.request("POST", "/hands/nope/aggregates/apply-laufform", headers=api.admin_headers())
     assert res.status == 404

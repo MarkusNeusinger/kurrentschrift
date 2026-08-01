@@ -21,9 +21,20 @@ MAD-Hülle + gepoolte Schicht-1-Statistik, Rechenkern
 `core/aggregate.py`); Migration `0021` schlüsselt die Tabelle auf
 `(hand_id, glyph_key, variant)` um, und der Prüfstein steht als
 `laufform_dev_xh` je Glyphe in der Rebuild-Antwort (Abstand
-rekonstruierter Median ↔ gespeicherte Laufform). Die Ableitung der
-Varianten-100-Zeile aus dem Aggregat bleibt offen. H3–H5 bleiben
-Vorschlag.
+rekonstruierter Median ↔ gespeicherte Laufform). **Damit ist H1
+vollständig:** `POST /hands/{hand_id}/aggregates/apply-laufform`
+(admin-gesichert) leitet die Varianten-100-Zeilen aus den
+*gespeicherten* Aggregaten ab — Median-Anker als Geometrie, Breiten,
+Strich-Topologie und entry/exit/advance weiter aus der Tafel-Zeile,
+über denselben Helfer `build_laufform_canonical`, den auch der manuelle
+`PUT …/templates/{key}/laufform` benutzt. Bewusst ein *eigener*
+Schritt, nicht Teil des Rebuilds: Aggregate sind Statistik, die
+Laufform-Zeile ist Render-Zustand. Nur Basis-Varianten speisen sie
+(eine Varianten-100-Beobachtung würde die Zeile aus sich selbst
+ableiten); Schlüssel ohne Tafel-Zeile oder mit abweichender Ankerzahl
+werden mit Grund gemeldet statt geraten, und die Antwort nennt je
+Glyphe den Abstand *vor* dem Schreiben. Ein anschließender Rebuild
+meldet den Prüfstein als 0. H3–H5 bleiben Vorschlag.
 Konsolidiert die
 Laufform-Runde vom 30./31.07.2026 (PR #246/#247: Median-Laufformen als
 Template-Variante 100, `laufform_by_key` im Composer) und die

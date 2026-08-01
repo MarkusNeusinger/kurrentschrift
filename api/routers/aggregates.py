@@ -1,4 +1,4 @@
-"""Per-hand aggregate endpoints (Stufenplan H1): read + rebuild.
+"""Per-hand aggregate endpoints (Stufenplan H1): read + rebuild + apply.
 
 The statistics layer's second stage: `instances` holds every clean occurrence,
 this router condenses them per `(glyph_key, variant)` into the per-anchor
@@ -6,11 +6,12 @@ median (the running form), its spread and the pooled layer-1 statistics.
 
 Unlike the occurrence reads, the WHOLE router is admin-gated: an aggregate is
 learned geometry — the median form of a hand — and therefore part of the
-open-core moat (quellen-und-rechte.md §5), not public product surface. Nothing
-here affects rendering; the composer keeps reading templates and approved
-`glyph_pairs` only. Deriving the variant-100 Laufform FROM the aggregate is a
-later step; the rebuild only reports how far the two are apart (the H1
-Prüfstein).
+open-core moat (quellen-und-rechte.md §5), not public product surface. The read
+and the rebuild affect no rendering; the composer keeps reading templates and
+approved `glyph_pairs` only. `POST …/apply-laufform` closes H1's loop and IS a
+render-affecting write — the variant-100 Laufform row becomes a DERIVATION from
+the stored aggregate instead of the harvest's end product — which is exactly
+why it is its own deliberate step and never a side effect of the rebuild.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -18,7 +19,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_admin
 from api.dependencies import require_db
-from api.schemas import AggregateKeySummary, AggregateOut, AggregateRebuildOut
+from api.rendering import invalidate_pooled_style
+from api.routers.templates import build_laufform_canonical
+from api.schemas import (
+    AggregateApplyKeySummary,
+    AggregateApplyOut,
+    AggregateApplySkip,
+    AggregateKeySummary,
+    AggregateOut,
+    AggregateRebuildOut,
+)
 from core.aggregate import aggregate_instances, laufform_deviation
 from core.database import (
     LAUFFORM_VARIANT,
@@ -126,3 +136,103 @@ async def rebuild_aggregates(
         for (glyph_key, variant), agg in aggregates.items()
     ]
     return AggregateRebuildOut(hand_id=hand.id, stored=stored, deleted=deleted, skipped=skipped, keys=keys_out)
+
+
+@router.post("/apply-laufform", response_model=AggregateApplyOut)
+async def apply_laufform(hand: Hand = Depends(require_hand), db: AsyncSession = Depends(require_db)):
+    """Derive the style's Laufform rows (templates variant 100) FROM this
+    hand's stored aggregates — the last H1 step.
+
+    Reads the STORED aggregates; it never recomputes them (that is the
+    rebuild's job). The two stay separate on purpose: an aggregate is a
+    statistic, a Laufform row is what `/write/word` renders, so promoting one
+    into the other must be a deliberate act, not a side effect of a rebuild.
+
+    Per aggregate the per-anchor median (`cluster_center`) becomes the running
+    form's anchors — occurrence anchors are stored centered onto the chart
+    template ("shapes, not placements"), so the median already sits in the
+    chart row's frame and needs no re-registration. Everything else — widths,
+    stroke topology, entry/exit/advance — comes from the chart template through
+    the same `build_laufform_canonical` the manual harvest PUT uses, so the
+    ductus prior carries over unchanged.
+
+    Only base-variant (0) aggregates qualify: there is exactly ONE Laufform row
+    per glyph_key, and feeding it from a variant-100 occurrence would let the
+    row derive from itself. Every other aggregate is reported as skipped, as is
+    a key without a chart template or with a deviating anchor count. Idempotent
+    — a second run rewrites the same rows (upsert on the unique
+    `(style_id, glyph_key, variant)`) and reports `laufform_dev_xh` 0.
+    """
+    if not hand.style_id:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, detail=f"hand {hand.id!r} has no style — nothing to write the Laufform into"
+        )
+    rows = await AggregateRepository(db).list(hand_id=hand.id)
+    applied: list[AggregateApplyKeySummary] = []
+    skipped: list[AggregateApplySkip] = []
+
+    usable: list[Aggregate] = []
+    for row in rows:
+        if row.variant == LAUFFORM_VARIANT:
+            # A derived row may never be its own input.
+            skipped.append(AggregateApplySkip(glyph_key=row.glyph_key, variant=row.variant, reason="laufform_variant"))
+        elif row.variant != 0:
+            skipped.append(AggregateApplySkip(glyph_key=row.glyph_key, variant=row.variant, reason="non_base_variant"))
+        else:
+            usable.append(row)
+
+    repo = TemplateRepository(db)
+    keys = sorted({row.glyph_key for row in usable})
+    # Both sides in one query each: the chart rows supply everything but the
+    # anchors, the stored Laufform rows the pre-write Prüfstein distance.
+    base_by_key = {t.glyph_key: t for t in await repo.get_many(hand.style_id, keys, variant=0, render_only=True)}
+    laufform_by_key = {
+        t.glyph_key: t for t in await repo.get_many(hand.style_id, keys, variant=LAUFFORM_VARIANT, render_only=True)
+    }
+
+    for row in usable:
+        base = base_by_key.get(row.glyph_key)
+        if base is None:
+            skipped.append(AggregateApplySkip(glyph_key=row.glyph_key, variant=row.variant, reason="no_base_template"))
+            continue
+        median = [list(a) for a in row.cluster_center or []]
+        if len(median) != len(base.anchors):
+            # Same contract as the manual PUT: the chart row stays the ductus
+            # prior, so the anchor lists must correspond one-to-one.
+            skipped.append(AggregateApplySkip(glyph_key=row.glyph_key, variant=row.variant, reason="anchor_count"))
+            continue
+        # Snapshot the PRE-write anchors: the upsert re-selects with
+        # `populate_existing`, which overwrites this very row object with what
+        # was just written — reading it afterwards would always measure 0.
+        stored_laufform = laufform_by_key.get(row.glyph_key)
+        prev_anchors = [list(a) for a in stored_laufform.anchors] if stored_laufform is not None else None
+        canonical = build_laufform_canonical(
+            base, median, {"derived_from": "hand-aggregate", "hand_id": hand.id, "n_occurrences": row.n_instances}
+        )
+        await repo.upsert(
+            hand.style_id,
+            row.glyph_key,
+            canonical,
+            variant=LAUFFORM_VARIANT,
+            # The chart the ductus prior came from — the aggregate itself spans
+            # every source the hand was observed on, so it names no single one.
+            provenance_source_id=base.provenance_source_id,
+        )
+        applied.append(
+            AggregateApplyKeySummary(
+                glyph_key=row.glyph_key,
+                variant=row.variant,
+                n_instances=row.n_instances,
+                laufform_dev_xh=(laufform_deviation(median, prev_anchors) if prev_anchors is not None else None),
+                created=prev_anchors is None,
+            )
+        )
+
+    # Commit before invalidating the pooled-nib cache — see templates.post_trace.
+    await db.commit()
+    if applied:
+        invalidate_pooled_style(hand.style_id)
+    # The skips are collected in two passes (variants, then per-key) — sort them
+    # back into the aggregate listing's order so the report reads as one list.
+    skipped.sort(key=lambda s: (s.glyph_key, s.variant))
+    return AggregateApplyOut(hand_id=hand.id, style_id=hand.style_id, applied=applied, skipped=skipped)
