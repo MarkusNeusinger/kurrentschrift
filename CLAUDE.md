@@ -20,6 +20,13 @@ In-progress MVP. The monorepo layout (per `docs/concepts/naming-und-setup.md` §
 The earlier `/mvp/` folder (CLI tools + JSON files in the repo) was retired in favour of this DB-backed architecture. The data model splits **canonical templates** from **per-text instances** (architektur.md §3): the authored Grundvorlage lives in `templates.anchors`/`half_widths`/`raw_path` (JSONB, per `(style, glyph, variant)` — ONE row per glyph since the R2 position removal, migration `0017`; a multi-stroke ductus is a flat `raw_path` with sparse `pen_up` markers + `stroke_starts` in `trace_meta`, so the canonical, the diagnostic outline and the M4 fit treat each pen-stroke separately and never bridge a lift); per-occurrence fits + statistics live in `instances.measurements` (filled by the post-MVP import); per-hand aggregates in `aggregates` (§12). `n_anchors` can be changed retroactively and stats are aggregatable in SQL.
 
 **Local dev** (three steps): `uv run alembic upgrade head` (schema), `uv run uvicorn api.main:app --reload --port 8000`, then `cd app && npm install && npm run dev` (Vite on :3000 with `/api` proxy to the API). See `.claude/commands/start.md` for the slash command. Admin **write** endpoints are gated by `require_admin`: in prod via the Cloudflare Access cookie, locally via a shared secret — set `ADMIN_TOKEN=<x>` for the API and the matching `VITE_ADMIN_TOKEN=<x>` in `app/.env` so the SPA sends `X-Admin-Token` (without it, local saves/traces return 401).
+Against the DEPLOYED API the same header works **only** via
+`https://api.kurrentschrift.ink` — the apex `/api/*` 302s at the Cloudflare
+Access edge before the header reaches Cloud Run. Verified working 2026-08-01;
+the token itself is the `ADMIN_TOKEN` secret in the `kurrentschrift` GCP
+project. Never create a secret version with `echo`: Cloud Run injects the bytes
+verbatim, and a trailing newline no header can carry made the token gate reject
+every value for two months (`docs/reference/frontend-stack.md`).
 
 ## Read these before substantive work
 
