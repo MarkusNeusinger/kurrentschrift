@@ -33,6 +33,8 @@ import type {
   WordSampleScoreOut,
   WorkItemIn,
   WorkItemOut,
+  WorkItemStatus,
+  WorkItemUpdate,
   WriteGlyphsOut,
 } from '@/lib/api/types';
 
@@ -183,7 +185,7 @@ export const listPairInstances = (
 // ('open') from the archive ('done'); without it both come back, oldest first.
 export const listWorkItems = (
   sourceId: string,
-  opts?: { status?: 'open' | 'done' },
+  opts?: { status?: WorkItemStatus },
   retry?: RetryOptions,
 ): Promise<WorkItemOut[]> => {
   const qs = opts?.status ? `?status=${opts.status}` : '';
@@ -197,9 +199,19 @@ export const createWorkItem = (sourceId: string, body: WorkItemIn): Promise<Work
     body: JSON.stringify(body),
   }).then(asJson<WorkItemOut>);
 
+// Partial update. The UI's one use is the admin REJECTING a session's
+// restatement: back to 'open' with the correction appended to the note. Acking
+// and closing belong to the working session and are gated by the API's
+// protocol check (§5) — the UI cannot and should not fake them.
+export const patchWorkItem = (sourceId: string, itemId: number, body: WorkItemUpdate): Promise<WorkItemOut> =>
+  apiFetch(src(sourceId, `/work-items/${itemId}`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }).then(asJson<WorkItemOut>);
+
 // Drops a misfiling. A WORKED item is closed with status 'done' + a resolution
-// note instead (the archive stays readable) — that PATCH is the session's job,
-// not the UI's, so it has no wrapper here.
+// note instead, so the archive stays readable.
 export const deleteWorkItem = (sourceId: string, itemId: number): Promise<void> =>
   apiFetch(src(sourceId, `/work-items/${itemId}`), { method: 'DELETE' }).then(asJson<void>);
 

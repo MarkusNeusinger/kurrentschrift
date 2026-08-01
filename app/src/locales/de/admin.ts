@@ -245,6 +245,32 @@ export const admin = {
     korbDelete: 'Auftrag löschen',
     korbLoadError: 'Aufträge konnten nicht geladen werden (Admin-Zugang nötig).',
     korbDeleteError: 'Löschen fehlgeschlagen — der Auftrag liegt weiter im Korb.',
+    // The handling protocol (§5): what the working session wrote back before it
+    // started, and the admin's veto if it understood the wrong thing.
+    korbReturned: 'Zurückgegeben — braucht deine Hand',
+    korbInProgress: 'In Arbeit',
+    korbDoneHeading: 'Erledigt',
+    korbUnderstanding: 'Verstanden als:',
+    korbReproduced: {
+      yes: 'nachvollzogen',
+      partly: 'teilweise nachvollzogen',
+      no: 'nicht nachvollziehbar',
+    },
+    // The diagnosed stage of the writing path (§3), as the archive shows it.
+    korbStage: {
+      chart_ductus: 'Tafel-Duktus',
+      laufform: 'Laufform',
+      join_rule: 'Übergangs-Grammatik',
+      composition: 'Komposition',
+      pair_override: 'Paar-Override',
+      word_trace: 'Wort-Spur',
+      not_reproducible: 'nicht nachvollziehbar',
+    },
+    korbReject: 'missverstanden',
+    korbRejectLabel: 'Was ist gemeint?',
+    korbRejectSubmit: 'zurück in den Korb',
+    korbCorrectionPrefix: 'Korrektur:',
+    korbRejectError: 'Zurückweisen fehlgeschlagen — der Auftrag bleibt in Arbeit.',
     kindLetter: 'Buchstabe',
     kindPair: 'Übergang',
     kindWord: 'Wort',

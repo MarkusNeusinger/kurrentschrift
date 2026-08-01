@@ -1,7 +1,7 @@
 """Pydantic wire types — request/response bodies for the FastAPI routers."""
 
 from datetime import datetime
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, get_args
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -402,6 +402,24 @@ class AggregateApplyOut(BaseModel):
 # ------------------------------------------------------- Work items (Werkbank)
 
 
+# The stages of the writing path a complaint can be caused by
+# (`docs/proposals/optimierungs-werkbank.md` §3), listed in the triage order §5
+# prescribes: chart ductus first, an override only ever last. Closing an item
+# picks exactly one — a closed vocabulary keeps "which stage causes the most
+# complaints" a query instead of a reading task. `not_reproducible` is the
+# honest outcome when the complaint could not be observed at all.
+WorkItemStage = Literal[
+    "chart_ductus", "laufform", "join_rule", "composition", "pair_override", "word_trace", "not_reproducible"
+]
+WORK_ITEM_STAGES: tuple[str, ...] = get_args(WorkItemStage)
+
+# The row's life cycle: filed -> understood -> closed, plus the two exits.
+# 'open' is also where a misunderstood item lands again when the admin rejects
+# the session's restatement; 'returned' means the missing piece is the author's
+# ground truth (§5.6), so the item stays on the human's side of the table.
+WorkItemStatus = Literal["open", "ack", "done", "returned"]
+
+
 class WorkItemIn(BaseModel):
     """Body of `POST /sources/{id}/work-items` — one filed optimization task.
 
@@ -437,18 +455,34 @@ class WorkItemIn(BaseModel):
 
 
 class WorkItemUpdate(BaseModel):
-    """Body of `PATCH /sources/{id}/work-items/{item_id}` — partial update.
+    """Body of `PATCH /work-items/{item_id}` (or its source-scoped twin) —
+    partial update; omitted fields stay untouched.
 
-    Setting `status` to 'done' (with the `resolution` note) is how a working
-    session marks an item completed; omitted fields stay untouched."""
+    This is where the §5 protocol is carried out, and the router enforces the
+    two transitions instead of trusting the doctrine:
+
+    - `status='ack'` — the session restates the task in its own words
+      (`understanding`) and says whether it could reproduce it (`reproduced`).
+      Both are required; the admin sees the restatement in the Auftragskorb and
+      can reject it, which puts the row back to 'open'.
+    - `status='done'` / `'returned'` — requires the earlier `understanding`, a
+      `stage` from the vocabulary and a non-empty `resolution`. An item can
+      therefore never be closed by a session that never said what it understood.
+    """
 
     note: str | None = None
-    status: Literal["open", "done"] | None = None
+    status: WorkItemStatus | None = None
+    understanding: str | None = None
+    reproduced: Literal["yes", "no", "partly"] | None = None
+    stage: WorkItemStage | None = None
     resolution: str | None = None
 
 
 class WorkItemOut(BaseModel):
     id: int
+    # The owning chart source — carried on every row so the source-free
+    # `GET /work-items` round-start read stays actionable on its own.
+    source_id: str
     kind: str
     glyph_key: str | None = None
     left_key: str | None = None
@@ -458,7 +492,12 @@ class WorkItemOut(BaseModel):
     specimen_id: str | None = None
     note: str
     status: str
+    understanding: str | None = None
+    reproduced: str | None = None
+    stage: str | None = None
     resolution: str | None = None
+    acked_at: datetime | None = None
+    closed_at: datetime | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
 

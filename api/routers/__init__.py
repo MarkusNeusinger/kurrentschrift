@@ -13,6 +13,7 @@ from api.routers.styles import router as styles_router
 from api.routers.templates import router as templates_router
 from api.routers.word_samples import router as word_samples_router
 from api.routers.work_items import router as work_items_router
+from api.routers.work_items import session_router as work_items_session_router
 from api.routers.write import router as write_router
 
 
@@ -30,5 +31,6 @@ __all__ = [
     "templates_router",
     "word_samples_router",
     "work_items_router",
+    "work_items_session_router",
     "write_router",
 ]

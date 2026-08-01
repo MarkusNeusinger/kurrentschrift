@@ -521,10 +521,22 @@ class WorkItemRepository:
 
     async def list(self, source_id: str, status: str | None = None) -> list[WorkItem]:
         """A source's work items, oldest first — the order a session works
-        them off. `status` filters to 'open' (the round's queue) or 'done'."""
+        them off. `status` filters to one of open | ack | done | returned."""
         stmt = select(WorkItem).where(WorkItem.source_id == source_id).order_by(WorkItem.id)
         if status is not None:
             stmt = stmt.where(WorkItem.status == status)
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def list_all(self, status: str | None = None, source_id: str | None = None) -> list[WorkItem]:
+        """Work items across ALL sources, oldest first — the round-start queue
+        of a working session, which must not need to know a source id before it
+        can read its own tasks. `source_id` narrows it back down to one chart."""
+        stmt = select(WorkItem).order_by(WorkItem.id)
+        if status is not None:
+            stmt = stmt.where(WorkItem.status == status)
+        if source_id is not None:
+            stmt = stmt.where(WorkItem.source_id == source_id)
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
@@ -544,8 +556,9 @@ class WorkItemRepository:
         return row
 
     async def update(self, row: WorkItem, **values: Any) -> WorkItem:
-        """Partial update (note / status / resolution) — only the keys the
-        caller actually sent, so a PATCH never clears an unmentioned field."""
+        """Partial update (note / status / the §5 protocol fields) — only the
+        keys the caller actually sent, so a PATCH never clears an unmentioned
+        field. The transition rules live in `api.routers.work_items`."""
         for key, value in values.items():
             setattr(row, key, value)
         await self.session.flush()
