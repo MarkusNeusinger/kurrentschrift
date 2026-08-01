@@ -1,16 +1,19 @@
 // Belege (/admin/belege): every stored word-occurrence trace over its specimen
 // crop, worst first — the error-finding surface over the occurrence layer
-// (handmodell H1/H2). Read-only for now; the coming word editor (manual
-// re-tracing → authored rows) will open from these cards.
+// (handmodell H1/H2). Each card opens the word editor (Werkbank W3,
+// WordTraceEditorDialog): manual re-tracing over the crop → an `authored` row
+// that no re-harvest overwrites.
 
-import { Alert, Box, Chip, CircularProgress, TextField, Tooltip, Typography } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
+import { Alert, Box, Button, Chip, CircularProgress, TextField, Tooltip, Typography } from '@mui/material';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAdmin } from '@/context/AdminContext';
 import { useInView } from '@/hooks/useInView';
 import { getWordSamples, listWordInstances, wordSampleCropUrl } from '@/lib/api';
 import type { WordInstanceOut, WordSampleOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
+import { WordTraceEditorDialog } from '@/sections/admin/belege/WordTraceEditorDialog';
+import { registrationMatrix, strokePathD, traceRegistration } from '@/sections/admin/belege/registration';
 import { garamond } from '@/styles/paper';
 
 const FACE_H = 220; // px per card face — matches the compare cards' scale
@@ -27,18 +30,24 @@ function badness(row: WordInstanceOut): number {
   return (row.measurements.unfitted_slots?.length ?? 0) * 10 + (rmseMean(row) ?? 0);
 }
 
-function TraceCard({ row, sample, sourceId }: { row: WordInstanceOut; sample: WordSampleOut; sourceId: string }) {
+function TraceCard({
+  row,
+  sample,
+  sourceId,
+  onEdit,
+}: {
+  row: WordInstanceOut;
+  sample: WordSampleOut;
+  sourceId: string;
+  onEdit: () => void;
+}) {
   const [ref, inView] = useInView<HTMLDivElement>();
   const t = de.admin.belege;
 
   const m = row.measurements;
-  const reg = m.registration_px;
-  const xh = m.xh_px ?? sample.baseline_y - sample.midband_y;
-  const tx = reg?.tx ?? 0;
-  const baselineRow = (reg?.baseline_row ?? sample.baseline_y) + (reg?.ty ?? 0);
-  // Trace units → crop px: px = (u·xh + tx, baseline_row + ty − v·xh); the
-  // matrix does it in one place, so the path d stays in raw trace coordinates.
-  const matrix = `matrix(${xh} 0 0 ${-xh} ${tx} ${baselineRow})`;
+  // Trace units → crop px in ONE place (registration.ts), shared with the word
+  // editor so the drawn line and the stored one cannot drift apart.
+  const matrix = registrationMatrix(traceRegistration(m, sample));
 
   const fitted = m.fitted_slots?.length ?? null;
   // Slot indices index into `slots` (the harvest emits them in that space);
@@ -81,6 +90,10 @@ function TraceCard({ row, sample, sourceId }: { row: WordInstanceOut; sample: Wo
             <Chip size="small" variant="outlined" label={fmt(t.rmseChip, { value: meanRmse.toFixed(2) })} />
           </Tooltip>
         )}
+        <Box sx={{ flex: 1 }} />
+        <Button size="small" variant="outlined" onClick={onEdit}>
+          {t.editOpen}
+        </Button>
       </Box>
       {inView ? (
         <svg
@@ -103,7 +116,7 @@ function TraceCard({ row, sample, sourceId }: { row: WordInstanceOut; sample: Wo
             {row.strokes.map((stroke, i) => (
               <path
                 key={i}
-                d={stroke.map(([x, y], j) => `${j === 0 ? 'M' : 'L'}${x},${y}`).join(' ')}
+                d={strokePathD(stroke)}
                 fill="none"
                 stroke="#1c6b57"
                 strokeOpacity={0.8}
@@ -127,6 +140,8 @@ export function BelegeView() {
   const [samples, setSamples] = useState<WordSampleOut[] | null>(null);
   const [error, setError] = useState(false);
   const [filter, setFilter] = useState('');
+  // The occurrence currently open in the word editor (Werkbank W3).
+  const [editing, setEditing] = useState<WordInstanceOut | null>(null);
   const t = de.admin.belege;
 
   useEffect(() => {
@@ -146,6 +161,14 @@ export function BelegeView() {
     return () => {
       cancelled = true;
     };
+  }, [sourceId]);
+
+  // After a save: re-read the stored rows (cache-busted) so the card shows the
+  // authored trace and drops out of the worst-first ranking.
+  const reloadRows = useCallback(() => {
+    listWordInstances(sourceId, { bust: Date.now() }, { retries: 2 })
+      .then(setRows)
+      .catch(() => setError(true));
   }, [sourceId]);
 
   const sampleById = useMemo(() => new Map((samples ?? []).map((s) => [s.id, s])), [samples]);
@@ -198,10 +221,25 @@ export function BelegeView() {
                   row={r}
                   sample={sampleById.get(r.specimen_id) as WordSampleOut}
                   sourceId={sourceId}
+                  onEdit={() => setEditing(r)}
                 />
               ))}
           </Box>
         </>
+      )}
+      {editing && sampleById.has(editing.specimen_id) && (
+        <WordTraceEditorDialog
+          // Keyed per occurrence: switching cards mounts a fresh editor instead
+          // of carrying the previous word's strokes over.
+          key={`${editing.kind}:${editing.specimen_id}`}
+          open
+          onClose={() => setEditing(null)}
+          row={editing}
+          sample={sampleById.get(editing.specimen_id) as WordSampleOut}
+          sourceId={sourceId}
+          fallbackHandId={source.hand_id}
+          onSaved={reloadRows}
+        />
       )}
     </Box>
   );

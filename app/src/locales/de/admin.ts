@@ -146,8 +146,8 @@ export const admin = {
   },
   // The Belege page (/admin/belege): every stored word-occurrence trace over
   // its specimen crop, worst first — the error-finding surface over the
-  // occurrence layer (handmodell H1/H2) and the entry point for the coming
-  // word editor (manual re-tracing).
+  // occurrence layer (handmodell H1/H2) and the entry point into the word
+  // editor (Werkbank W3: manual re-tracing → authored rows).
   belege: {
     title: 'Belege — nachgefahrene Wörter',
     intro:
@@ -165,6 +165,28 @@ export const admin = {
     provenanceAuthored: 'von Hand nachgefahren',
     // A stored trace whose specimen crop is missing from the sidecar.
     noSample: 'Kein Platten-Ausschnitt zur specimen_id {{id}} — Sidecar prüfen.',
+    // Word editor (Werkbank W3) — manual re-tracing over the specimen crop.
+    editOpen: 'Nachfahren',
+    editorTitle: 'nachfahren · {{specimen}}',
+    editorIntro:
+      'Den Schreibweg mit dem Stift direkt über dem Platten-Ausschnitt nachfahren. Jedes Absetzen beginnt einen neuen Zug — die blaue Grundlinie und die gestrichelte Mittellinie zeigen den Rahmen, in dem der Weg gespeichert wird. Gespeichert wird er als „von Hand nachgefahren" (authored): Grundwahrheit für Statistik und Training, keine Rendering-Korrektur — und von keiner Neu-Ernte je überschrieben.',
+    editorUndo: 'Letzten Zug zurück',
+    editorClear: 'Alle Züge löschen',
+    editorReset: 'Auf gespeicherten Stand zurück',
+    editorShowStored: 'Gespeicherte Spur zeigen',
+    // {{strokes}} = number of strokes the save would write.
+    editorStrokeCount: '{{strokes}} Züge',
+    // {{slots}} = the row's slot labels, unchanged by the editor.
+    editorSlots: 'Buchstaben: {{slots}}',
+    editorAuthoredHint: 'Speichern ersetzt das automatisch nachgefahrene Vorkommen.',
+    editorSave: 'Speichern',
+    editorClose: 'Schließen',
+    editorSaveFailed: 'Speichern fehlgeschlagen.',
+    editorNoHand: 'Keine Hand hinterlegt (weder am Vorkommen noch an der Vorlage) — Speichern nicht möglich.',
+    // Shown when the hands row could not be loaded: saving would wipe its
+    // era/note (the batch upserts the writer row whole), so it stays disabled.
+    editorHandUnresolved:
+      'Die Hand „{{id}}" ließ sich nicht laden — Speichern bleibt deaktiviert, damit ihre Metadaten nicht überschrieben werden.',
   },
   // The Werkbank (/admin/werkbank, proposal optimierungs-werkbank.md §2): ONE
   // optimisation surface — the word spine on the left (where errors become

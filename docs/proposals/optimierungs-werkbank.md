@@ -123,5 +123,14 @@ Ziel-Schlüssel + Specimen-Bezug (wo gesehen) + freie Notiz. Status
 - **W2 — Seite `/admin/werkbank`**: Rückgrat (aus PR #251) + Linsen +
   Korb-UI inkl. Vorsortier-Frage; danach schrittweises Aufgehen von
   Vergleich/Paaren/Belegen.
-- **W3 — Wort-Editor**: Crop als Unterlage, S-Pen-Nachfahren →
-  `authored`-`word_instances` (Endpunkt + Überschreib-Schutz sind live).
+- **W3 — Wort-Editor** (umgesetzt): Crop als Unterlage, S-Pen-Nachfahren
+  → `authored`-`word_instances` (Endpunkt + Überschreib-Schutz waren
+  bereits live). Der Editor (`WordTraceEditorDialog`) öffnet aus jeder
+  Belege-Karte: Registrierungs-Rahmen des Vorkommens (Grundlinie +
+  Mittellinie) über dem Ausschnitt, die gespeicherte Spur als
+  Ausgangspunkt, jedes Absetzen beginnt einen neuen Zug (wie im
+  Wizard-Schritt „Weg"), Zug-weises Zurücknehmen und Zurücksetzen.
+  Gespeichert wird mit **einem** Item ohne `replace` — genau dieses
+  Vorkommen wird ersetzt, alle anderen Zeilen (und jede andere
+  `authored`-Spur) bleiben unberührt; Slot-Labels und Registrierung
+  wandern mit, die Fit-Kennzahlen des ersetzten Pfads nicht.
