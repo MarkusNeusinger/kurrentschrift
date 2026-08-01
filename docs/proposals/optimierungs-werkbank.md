@@ -6,11 +6,11 @@ umschaltende Kontext-Linse + Auftragskorb; die bestehenden Seiten
 (`/admin/vergleich`-Tabs, `/admin/paare`, `/admin/belege`) bleiben, bis
 die Werkbank sie schrittweise ersetzt. **(2) Der Auftragskorb lebt als
 DB-Tabelle `work_items`** mit Admin-API — die KI liest offene Aufträge
-am Rundenstart und meldet je Auftrag erledigt. Umsetzung: W1 (Backend)
-in Arbeit, W2 (Seite) nach Merge von W1 + PR #251 (Belege-Seite = das
-Wort-Rückgrat). §3–§5 sind die **bindende Stufen-/Rollen-Doktrin** für
+am Rundenstart und meldet je Auftrag erledigt. Umsetzung: W1–W4
+umgesetzt (§7). §3–§5 sind die **bindende Stufen-/Rollen-Doktrin** für
 Mensch UND KI — Pflichtlektüre, bevor ein `work_items`-Auftrag
-bearbeitet wird.
+bearbeitet wird; seit W4 erzwingt die API den §5-Ablauf, statt ihn zu
+erhoffen.
 
 ## 1. Anlass
 
@@ -88,22 +88,80 @@ Wizard-/Editor-Absprung vor.
 Ziel-Schlüssel + Specimen-Bezug (wo gesehen) + freie Notiz. Status
 `open`. Mehr ist nicht gefordert.
 
-**KI-Seite — bindend bei jedem Auftrag:**
+**KI-Seite:** Der Rest ist Protokoll — und zwar erzwungenes. Die API
+weist ein unvollständiges Abschließen mit 422 ab (`check_transition` in
+`api/routers/work_items.py`); die Regeln unten sind also keine Bitte,
+sondern die Bedingung, unter der die Zeile überhaupt geschrieben wird.
+Grund: Eine geschlossene Zeile ist der einzige dauerhafte Ertrag der
+Runde. Wer nur „erledigt" hinterlässt, hat die Arbeit gemacht und das
+Wissen weggeworfen.
 
-1. Offene Aufträge lesen: `GET /sources/{id}/work-items?status=open`.
-2. **Triage-Pflicht** entlang §3, in dieser Reihenfolge prüfen:
+### 5.1 Zustände
+
+| Status | Wer setzt ihn | Pflichtfelder |
+|---|---|---|
+| `open` | Mensch (Ablegen) · Mensch (Zurückweisen) | — |
+| `ack` | KI, **bevor** sie etwas ändert | `understanding` + `reproduced` |
+| `done` | KI, nach getaner Arbeit | `understanding` (liegt vor) + `stage` + `resolution` |
+| `returned` | KI, wenn Ground Truth fehlt | wie `done` |
+
+`stage` kommt aus dem festen Vokabular der §3-Tabelle, in der
+Triage-Reihenfolge: `chart_ductus` · `laufform` · `join_rule` ·
+`composition` · `pair_override` · `word_trace` — plus
+`not_reproducible`, das ehrliche Ergebnis, wenn die Beschwerde nicht
+auftrat. Ein geschlossenes Vokabular macht aus dem Archiv eine Abfrage
+(„welche Stufe verursacht die meisten Aufträge?") statt einer Lesearbeit.
+
+### 5.2 Ablauf, bindend bei jedem Auftrag
+
+1. **Aufträge lesen** — `GET /work-items?status=open`, quer über alle
+   Quellen, ohne Vorwissen über `source_id`. Jede Zeile trägt ihre
+   Quelle mit. (Die quellenbezogene Route bleibt für die SPA.)
+2. **Nachprüfen, nicht nacherzählen.** Den Beleg ansehen (Werkbank-Karte,
+   `GET …/word-samples/{id}/score`, `tools/wordlab`, `tools/pairlab`) und
+   festhalten, ob die Beschwerde auftritt: `reproduced` = `yes`/`partly`/`no`.
+3. **Zurückspiegeln** — `PATCH /work-items/{id}` mit `status: "ack"`,
+   `understanding` in eigenen Worten und `reproduced`. Danach sofort
+   weiterarbeiten; das ist keine Freigabeschleife. Hält der Mensch das
+   Verständnis für falsch, weist er es im Korb zurück — die Zeile steht
+   wieder auf `open`, mit seiner Korrektur in der Notiz.
+4. **Triage-Pflicht** entlang §3, in dieser Reihenfolge prüfen:
    Tafel-Duktus falsch? → Laufform/Fit? → Klassenregel? → Platzierung?
    → erst zuletzt: Paar idiosynkratisch (Override)?
-3. **Regel-Fix vor Override.** Ein Override ohne vorherige
+5. **Regel-Fix vor Override.** Ein Override ohne vorherige
    Regel-Prüfung ist ein Doktrin-Verstoß.
-4. Wirkung messen (Wordbench-Guard; Metrik/Fixtures bleiben
+6. Wirkung messen (Wordbench-Guard; Metrik/Fixtures bleiben
    eingefroren) und visuell belegen (Vorher/Nachher).
-5. `resolution` schreiben — benennt die diagnostizierte Stufe, die
-   Änderung, die PR und den Messstand — und Status auf `done` PATCHen.
-6. Ergibt die Triage eine **Ground-Truth-Lücke** (Tafel-Duktus falsch,
-   Fit ohne manuellen Trace unmöglich): Status bleibt `open`,
-   `resolution` beginnt mit „Rückgabe an Autor:" und nennt den konkret
-   benötigten manuellen Schritt (Wizard-Glyphe X, Wort Y nachfahren).
+7. **Abschließen** — `status: "done"` mit `stage` und `resolution`.
+8. Ergibt die Triage eine **Ground-Truth-Lücke** (Tafel-Duktus falsch,
+   Fit ohne manuellen Trace unmöglich): `status: "returned"` statt
+   `done`, `resolution` nennt den konkret benötigten manuellen Schritt
+   (Wizard-Glyphe X, Wort Y nachfahren). Die Zeile bleibt sichtbar im
+   Korb — sie wartet auf den Autor, nicht auf den Algorithmus.
+
+### 5.3 Wie ein guter Eintrag aussieht
+
+`understanding` — drei Sätze, kein Absatz: was ich als Beschwerde
+verstehe · was ich beim Nachprüfen gesehen habe · welche Stufe ich
+zuerst verdächtige. Ohne einleitendes „Verstanden als:" — der Korb
+beschriftet das Feld bereits, die Wiederholung stünde doppelt da.
+
+> Das `n` in „wenn" wirkt zu flach, nicht der Übergang davor.
+> Nachgeprüft an `wenn-19-2`: Score 0.19, die Segment-Attribution legt
+> 0.11 auf den zweiten n-Bogen, der Übergang d→n liegt im Schnitt.
+> Verdacht zuerst auf der Laufform, nicht auf der Tafel-Form — solo
+> stimmt das n.
+
+`resolution` — Stufe, Änderung, PR, Messstand:
+
+> Laufform: Median über 41 Vorkommen neu abgeleitet und angewandt
+> (`apply-laufform`), Bogenhöhe +0,08 xh. PR #265. Wörter-Bench
+> 0.1240 → 0.1214, `wenn-19-2` 0.19 → 0.14. Vorher/Nachher als
+> wordlab-Overlay im PR.
+
+**Quer-Verweis-Regel:** `resolution` nennt die PR, die PR-Beschreibung
+nennt `Korb #<id>`. Damit ist das Archiv von beiden Seiten auffindbar —
+vom Symptom zur Änderung und zurück.
 
 ## 6. Leitplanken
 
@@ -134,3 +192,12 @@ Ziel-Schlüssel + Specimen-Bezug (wo gesehen) + freie Notiz. Status
   Vorkommen wird ersetzt, alle anderen Zeilen (und jede andere
   `authored`-Spur) bleiben unberührt; Slot-Labels und Registrierung
   wandern mit, die Fit-Kennzahlen des ersetzten Pfads nicht.
+- **W4 — Protokoll** (umgesetzt): §5 als erzwungener Ablauf statt
+  Doku-Appell. Migration `0022` ergänzt `understanding` · `reproduced` ·
+  `stage` · `acked_at` · `closed_at`; die API weist ein Abschließen ohne
+  Verständnis, Stufe oder Ergebnis mit 422 ab; der Korb zeigt die
+  Rückspiegelung mit einem „missverstanden"-Knopf, der die Zeile mit der
+  Korrektur zurück auf `open` legt. Dazu der quellenfreie Lesepfad
+  `GET /work-items` (eine Sitzung soll ihre Aufgaben lesen können, ohne
+  vorher eine `source_id` zu erraten) und das Skill
+  `.claude/skills/work-basket/`, das den Ablauf führt.

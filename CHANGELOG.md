@@ -14,6 +14,35 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Auftragskorb protocol (Werkbank W4): a filed task now has to be understood
+  before it can be worked, and diagnosed before it can be closed.** A
+  `work_items` row used to carry only the admin's note and a free-text
+  resolution — the handling doctrine
+  (`docs/proposals/optimierungs-werkbank.md` §5) lived purely in prose, and a
+  bare `PATCH {status: "done"}` closed anything. Migration `0022` adds
+  `understanding` · `reproduced` · `stage` · `acked_at` · `closed_at`
+  (additive, nullable) and the status vocabulary grows to `open` → `ack` →
+  `done`, plus `returned` for the hand-back the doctrine used to express as a
+  string prefix. The API enforces the transitions in the pure, unit-tested
+  `check_transition`: acking requires the session's own restatement of the task
+  and whether it could reproduce the complaint, closing requires that
+  restatement plus a `stage` from the fixed §3 vocabulary (`chart_ductus` ·
+  `laufform` · `join_rule` · `composition` · `pair_override` · `word_trace` ·
+  `not_reproducible`) and a non-empty `resolution` — anything less is a 422
+  naming the missing field. What accumulates is the point: a searchable archive
+  of symptom → verified reproduction → diagnosed stage → change → measured
+  effect, instead of a wall of „erledigt".
+- **A source-free work-item queue, so a session can find its own tasks.**
+  Reading the basket used to require knowing a `source_id` first, which sent a
+  session guessing `/work-items`, collecting a bare `{"detail":"Not Found"}`
+  and grepping the router source for valid ids. The queue is now reachable
+  without any prior knowledge: `GET /work-items[?status=&source_id=]`,
+  `GET/PATCH /work-items/{item_id}`, with each row carrying its own
+  `source_id` back and an unknown `source_id` answering 404 instead of a
+  quietly empty list. The source-scoped routes stay for the SPA. Round start is
+  wired up too — `/prime` lists the open items, and the new `/work-basket`
+  skill runs the protocol end to end (reproduce → restate → triage → rule-fix
+  before override → measure → close).
 - **Word editor (Werkbank W3): every stored word occurrence can now be
   re-traced by hand.** Each card on `/admin/belege` opens the new
   `WordTraceEditorDialog` — the specimen crop as underlay with the row's own
@@ -117,6 +146,16 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **The Auftragskorb card shows what a session understood, and lets the admin
+  say it got it wrong.** `KorbPanel` groups by protocol state — handed back on
+  top (those wait on the author), then the queue, then what is in work, with
+  the archive behind the existing toggle — and renders the session's
+  restatement as its own block with chips for „nachvollzogen" and the
+  diagnosed stage. An acked item carries a `missverstanden` button: one click
+  opens a correction field and puts the row back to `open` with the correction
+  appended to the note, while the rejected restatement stays on the record. The
+  round is deliberately NOT blocking — a session acks and keeps working; the
+  veto exists so a misunderstanding costs one click instead of a whole round.
 - **The word bench now composes with the frozen Laufform variants — the
   measurement stand catches up to production (handmodell plan H0).** The
   fixture export freezes the `LAUFFORM_VARIANT` template rows (median running

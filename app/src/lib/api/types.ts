@@ -240,8 +240,26 @@ export interface WorkItemIn {
   note?: string;
 }
 
+// The stages of the writing path a complaint can be traced to
+// (optimierungs-werkbank.md §3), in the triage order §5 prescribes. Mirrors
+// WORK_ITEM_STAGES in api/schemas.py.
+export type WorkItemStage =
+  | 'chart_ductus'
+  | 'laufform'
+  | 'join_rule'
+  | 'composition'
+  | 'pair_override'
+  | 'word_trace'
+  | 'not_reproducible';
+
+// filed -> understood -> closed, plus the two exits: 'open' is also where a
+// rejected restatement lands again, 'returned' means the author has to supply
+// ground truth before anything can be fixed.
+export type WorkItemStatus = 'open' | 'ack' | 'done' | 'returned';
+
 export interface WorkItemOut {
   id: number;
+  source_id: string;
   kind: 'letter' | 'pair' | 'word';
   glyph_key: string | null;
   left_key: string | null;
@@ -250,10 +268,31 @@ export interface WorkItemOut {
   specimen_kind: string | null;
   specimen_id: string | null;
   note: string;
-  status: 'open' | 'done';
+  status: WorkItemStatus;
+  // The working session's protocol (§5, Werkbank W4): what it understood the
+  // task to be and whether it reproduced the complaint, written BEFORE it
+  // changes anything; then the diagnosed stage and what changed.
+  understanding: string | null;
+  reproduced: 'yes' | 'no' | 'partly' | null;
+  stage: WorkItemStage | null;
   resolution: string | null;
+  acked_at: string | null;
+  closed_at: string | null;
   created_at: string | null;
   updated_at: string | null;
+}
+
+// Partial update. The API enforces the protocol: 'ack' needs understanding +
+// reproduced, 'done'/'returned' need a stored understanding, a stage and a
+// resolution (422 otherwise). The UI only ever sends the way back to 'open' —
+// the admin rejecting a restatement, which is always allowed.
+export interface WorkItemUpdate {
+  note?: string;
+  status?: WorkItemStatus;
+  understanding?: string;
+  reproduced?: 'yes' | 'no' | 'partly';
+  stage?: WorkItemStage;
+  resolution?: string;
 }
 
 // Per-segment attribution row of a scored specimen (redesign R1b Stufe 2) —

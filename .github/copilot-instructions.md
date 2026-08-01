@@ -98,8 +98,11 @@ agent working in this repo:
 - Before acting on a `work_items` task (the admin's Auftragskorb): read
   `docs/proposals/optimierungs-werkbank.md` — its stage/role doctrine is
   binding (triage the pipeline stage first; rule-fix before override;
-  manual input only where it creates ground truth; write the diagnosed
-  stage into `resolution`).
+  manual input only where it creates ground truth). §5 is a protocol the
+  API enforces: reproduce the complaint and PATCH `status: ack` with your
+  own restatement (`understanding` + `reproduced`) before changing
+  anything, then close with `stage` + `resolution` — an incomplete close
+  returns 422. The queue is source-free: `GET /work-items?status=open`.
 - Use `@copilot` in PR comments with specific, actionable feedback.
 - Reference doc sections by number (e.g. „architektur.md §3") rather than
   copying prose — the docs are the source of truth.
@@ -217,9 +220,12 @@ kurrentschrift/
 │                     #   quiz_words (public GET /quiz-words reading-drill bank:
 │                     #   ~500 words, ONE pinned anchor distractor each, rest drawn at runtime by the
 │                     #   shared similarity rules — docs/reference/quiz-wortbank.md),
-│                     #   work_items (Werkbank W1 Auftragskorb: FULLY admin-gated
-│                     #   GET/POST/PATCH/DELETE — filed letter/pair/word tasks a session
-│                     #   works off and closes with status done + resolution),
+│                     #   work_items (Werkbank W1+W4 Auftragskorb: FULLY admin-gated
+│                     #   GET/POST/PATCH/DELETE per source PLUS the source-free
+│                     #   GET/PATCH /work-items a session reads its queue from —
+│                     #   filed letter/pair/word tasks; the API ENFORCES the §5
+│                     #   protocol: ack needs understanding + reproduced, done/returned
+│                     #   need stage (fixed §3 vocabulary) + resolution, else 422),
 │                     #   aggregates (Stufenplan H1: FULLY admin-gated GET /hands/{id}/aggregates
 │                     #   + POST …/rebuild — condenses a hand's instances into per-anchor
 │                     #   median (= the Laufform) + MAD hull + pooled layer-1 stats per
@@ -313,7 +319,9 @@ kurrentschrift/
 │   │                 #   0020 work_items (Werkbank W1): the Auftragskorb — filed
 │   │                 #   letter/pair/word tasks, open → done + resolution,
 │   │                 #   0021 aggregates re-keyed to (hand_id, glyph_key, variant)
-│   │                 #   (Stufenplan H1; drop+recreate — the table was never populated)
+│   │                 #   (Stufenplan H1; drop+recreate — the table was never populated),
+│   │                 #   0022 work_items protocol columns (Werkbank W4): understanding,
+│   │                 #   reproduced, stage, acked_at, closed_at — additive + nullable
 ├── data/             # Sources, samples, derived — SEPARATE LICENSING
 │   ├── sources/      # public-domain originals (Loth 1866, Sütterlin 1922 incl. connected-writing
 │   │                 #   plates + words.json word rects for the word bench, Koch 1928 Offenbacher
@@ -434,7 +442,10 @@ lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberläng
 - Tables: `styles`, `hands`, `sources`, `bboxes`, `templates`,
   `glyph_pairs`, `instances`, `pair_instances`, `word_instances`,
   `aggregates`, `work_items` (the Werkbank's Auftragskorb — filed
-  optimization tasks per letter/pair/word, `open` → `done` + resolution),
+  optimization tasks per letter/pair/word; `open` → `ack` (the session's
+  own restatement + whether it reproduced the complaint) → `done` with
+  the diagnosed `stage` + `resolution`, or `returned` when the author
+  has to supply ground truth),
   `quiz_words` (the flat reading-quiz word bank — word +
   JSONB `distractors` + `era`/`note`/`fugen`).
 - `styles` is the Grundvorlage/script family (Kurrent · Sütterlin ·

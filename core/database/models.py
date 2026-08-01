@@ -492,9 +492,18 @@ class WorkItem(Base):
     the Werkbank and file a row here — `kind` names the level ('letter' | 'pair'
     | 'word'), the key columns name the element, `specimen_kind`/`specimen_id`
     (words.json namespace, same semantics as `PairInstance`) name where the
-    issue was seen, and `note` carries the observation. An AI session lists the
-    open items at round start, works them off and PATCHes the row to
-    status 'done' with a `resolution` (what changed, PR reference).
+    issue was seen, and `note` carries the observation. That is the whole human
+    side — everything after it is the working session's protocol
+    (`docs/proposals/optimierungs-werkbank.md` §5, stage W4).
+
+    A session may not silently close a row. Before it changes anything it
+    restates the task in its own words and says whether it could reproduce the
+    complaint (`understanding` + `reproduced`, status 'ack'); when it is done it
+    names the diagnosed stage of the writing path (`stage`) and what changed
+    (`resolution`, status 'done'), or hands the row back when the missing piece
+    is the author's ground truth (status 'returned'). The API enforces those
+    fields, so the closed rows accumulate into a searchable archive of
+    symptom → diagnosis → change → measured effect.
 
     Internal work notes, not measurement and not content — every endpoint is
     admin-gated, and nothing here ever affects rendering. See
@@ -521,10 +530,24 @@ class WorkItem(Base):
     specimen_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
     note: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
-    status: Mapped[str] = mapped_column(String(16), nullable=False, server_default="open")  # 'open' | 'done'
+    # 'open' (filed or handed back for correction) | 'ack' (understood, being
+    # worked on) | 'done' | 'returned' (needs a manual step from the author).
+    status: Mapped[str] = mapped_column(String(16), nullable=False, server_default="open")
+    # The session's restatement of the task in its own words, written BEFORE it
+    # changes anything, plus whether the complaint reproduced ('yes' | 'no' |
+    # 'partly'). Lets the admin catch a misunderstanding early — and makes
+    # "verified" a recorded fact instead of a claim buried in prose.
+    understanding: Mapped[str | None] = mapped_column(Text, nullable=True)
+    reproduced: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    # The diagnosed stage of the writing path (§3 table), from the fixed
+    # vocabulary in `api.schemas.WORK_ITEM_STAGES` — a closed vocabulary is what
+    # makes "which stage causes the most complaints" a query, not a reading task.
+    stage: Mapped[str | None] = mapped_column(String(24), nullable=True)
     # The working session's completion note — filled by the PATCH that closes it.
     resolution: Mapped[str | None] = mapped_column(Text, nullable=True)
 
+    acked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
