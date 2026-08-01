@@ -165,7 +165,7 @@ export const admin = {
     provenanceAuthored: 'von Hand nachgefahren',
     // A stored trace whose specimen crop is missing from the sidecar.
     noSample: 'Kein Platten-Ausschnitt zur specimen_id {{id}} — Sidecar prüfen.',
-    // Word editor (Werkbank W3) — manual re-tracing over dem Platten-Ausschnitt.
+    // Word editor (Werkbank W3) — manual re-tracing over the specimen crop.
     editOpen: 'Nachfahren',
     editorTitle: 'nachfahren · {{specimen}}',
     editorIntro:
@@ -183,6 +183,10 @@ export const admin = {
     editorClose: 'Schließen',
     editorSaveFailed: 'Speichern fehlgeschlagen.',
     editorNoHand: 'Keine Hand hinterlegt (weder am Vorkommen noch an der Vorlage) — Speichern nicht möglich.',
+    // Shown when the hands row could not be loaded: saving would wipe its
+    // era/note (the batch upserts the writer row whole), so it stays disabled.
+    editorHandUnresolved:
+      'Die Hand „{{id}}" ließ sich nicht laden — Speichern bleibt deaktiviert, damit ihre Metadaten nicht überschrieben werden.',
   },
   // The Werkbank (/admin/werkbank, proposal optimierungs-werkbank.md §2): ONE
   // optimisation surface — the word spine on the left (where errors become

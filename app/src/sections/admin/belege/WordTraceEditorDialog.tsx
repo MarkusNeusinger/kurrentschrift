@@ -69,6 +69,7 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hand, setHand] = useState<HandOut | null>(null);
+  const [handFailed, setHandFailed] = useState(false);
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const gripRef = useRef<Grip>({ current: null });
@@ -81,16 +82,23 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
   // row identity), so the state initialisers above already are the fresh start.
 
   // The hand is echoed back as read: the batch upserts the writer row whole, so
-  // sending id + label only would wipe its era/note as a side effect.
+  // sending anything less than the stored fields would wipe its era/note as a
+  // side effect. Saving stays disabled until the row is resolved.
   useEffect(() => {
     if (!open || !handId) return;
     let cancelled = false;
     getHand(handId, { retries: 1 })
       .then((h) => {
-        if (!cancelled) setHand(h);
+        if (!cancelled) {
+          setHand(h);
+          setHandFailed(false);
+        }
       })
       .catch(() => {
-        if (!cancelled) setHand(null);
+        if (!cancelled) {
+          setHand(null);
+          setHandFailed(true);
+        }
       });
     return () => {
       cancelled = true;
@@ -140,17 +148,15 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
   };
 
   const savable = useMemo(() => sanitizeStrokes(strokes), [strokes]);
-  const canSave = open && dirty && savable.length > 0 && !saving && Boolean(handId);
+  const canSave = open && dirty && savable.length > 0 && !saving && hand !== null;
 
   const save = async () => {
-    if (!handId) return;
+    if (!hand) return;
     setSaving(true);
     setError(null);
     try {
       const res = await putWordInstances(sourceId, {
-        hand: hand
-          ? { id: hand.id, label: hand.label, era: hand.era, note: hand.note }
-          : { id: handId, label: handId },
+        hand: { id: hand.id, label: hand.label, era: hand.era, note: hand.note },
         items: [
           {
             kind: row.kind,
@@ -210,6 +216,11 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
         {!handId && (
           <Alert severity="warning" sx={{ mb: 1 }}>
             {t.editorNoHand}
+          </Alert>
+        )}
+        {handId !== null && handFailed && (
+          <Alert severity="warning" sx={{ mb: 1 }}>
+            {fmt(t.editorHandUnresolved, { id: handId })}
           </Alert>
         )}
         <svg
