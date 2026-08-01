@@ -121,6 +121,12 @@ curl -fsS -X PATCH -H "X-Admin-Token: $ADMIN_TOKEN" -H "Content-Type: applicatio
 The API returns **422 naming the missing field** if the protocol is
 incomplete — that is the reminder, not an obstacle to route around.
 
+Two things it will refuse, both on purpose: acking and closing in ONE
+call (the restatement is only worth writing if it stood there while it
+could still be corrected), and writing a protocol field on a PATCH
+without a `status` (it would slip past the ack gate). Step 2 and step 5
+are two calls, always.
+
 `resolution` names the stage, the change, the PR and the measurement.
 The PR description names `Korb #<id>` in return, so the archive is
 findable from both ends.

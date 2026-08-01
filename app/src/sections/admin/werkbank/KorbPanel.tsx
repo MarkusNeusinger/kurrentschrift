@@ -176,27 +176,41 @@ export function KorbPanel({ sourceId, refreshKey }: { sourceId: string; refreshK
   const doneCount = rows.filter((i) => i.status === 'done').length;
   const visibleCount = groups.reduce((n, g) => n + g.rows.length, 0);
 
-  // Optimistic write with a snapshot rollback, like the delete below: the
-  // basket is the admin's own, and a failed call must not leave the list
-  // claiming something the server never stored.
-  const mutate = (id: number, apply: (row: WorkItemOut) => WorkItemOut, call: () => Promise<unknown>, message: string) => {
-    const snapshot = items;
+  // Undo ONE row's optimistic change — restoring a whole snapshot would revive
+  // rows a concurrent delete already removed, or discard a reject that landed
+  // in the meantime. A row the failed call had removed is re-inserted in id
+  // order, which is the server's own ordering (oldest first).
+  const restore = (row: WorkItemOut) =>
+    setItems((prev) => {
+      const rows = prev ?? [];
+      return rows.some((i) => i.id === row.id)
+        ? rows.map((i) => (i.id === row.id ? row : i))
+        : [...rows, row].sort((a, b) => a.id - b.id);
+    });
+
+  // Optimistic write: the basket is the admin's own, and a failed call must not
+  // leave the list claiming something the server never stored.
+  const mutate = (
+    item: WorkItemOut,
+    apply: (row: WorkItemOut) => WorkItemOut,
+    call: () => Promise<unknown>,
+    message: string,
+  ) => {
     setWriteError(null);
-    setItems((prev) => (prev ?? []).map((i) => (i.id === id ? apply(i) : i)));
+    setItems((prev) => (prev ?? []).map((i) => (i.id === item.id ? apply(i) : i)));
     call().catch(() => {
-      setItems(snapshot);
+      restore(item);
       setWriteError(message);
     });
   };
 
   // Single click, no confirm: deleting a MISFILING is cheap and this is the
   // admin's own basket (a worked item is closed with `done` instead).
-  const remove = (id: number) => {
-    const snapshot = items;
+  const remove = (item: WorkItemOut) => {
     setWriteError(null);
-    setItems((prev) => (prev ?? []).filter((i) => i.id !== id));
-    deleteWorkItem(sourceId, id).catch(() => {
-      setItems(snapshot);
+    setItems((prev) => (prev ?? []).filter((i) => i.id !== item.id));
+    deleteWorkItem(sourceId, item.id).catch(() => {
+      restore(item);
       setWriteError(t.korbDeleteError);
     });
   };
@@ -207,7 +221,7 @@ export function KorbPanel({ sourceId, refreshKey }: { sourceId: string; refreshK
   const reject = (item: WorkItemOut, correction: string) => {
     const note = correction ? `${item.note}\n\n${t.korbCorrectionPrefix} ${correction}`.trim() : item.note;
     mutate(
-      item.id,
+      item,
       (row) => ({ ...row, status: 'open', note, closed_at: null }),
       () => patchWorkItem(sourceId, item.id, { status: 'open', note }),
       t.korbRejectError,
@@ -253,7 +267,7 @@ export function KorbPanel({ sourceId, refreshKey }: { sourceId: string; refreshK
                     <ItemRow
                       key={item.id}
                       item={item}
-                      onDelete={() => remove(item.id)}
+                      onDelete={() => remove(item)}
                       onReject={(correction) => reject(item, correction)}
                     />
                   ))}

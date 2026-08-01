@@ -42,14 +42,21 @@ session_router = APIRouter(prefix="/work-items", tags=["work-items"], dependenci
 
 # What each status transition demands. 'ack' is the restatement gate — the
 # session says what it takes the task to be and whether it saw the problem;
-# 'done'/'returned' additionally need the diagnosed stage and the outcome. The
-# `understanding` in the closing set is what makes the ack step unskippable: it
-# is normally already stored, so a session that never acked cannot close either.
+# closing additionally needs the diagnosed stage and the outcome. `understanding`
+# is NOT in the closing set: it must already be STORED, which is what makes the
+# ack step unskippable (see `check_transition`).
 _REQUIRED_FIELDS: dict[str, tuple[str, ...]] = {
     "ack": ("understanding", "reproduced"),
-    "done": ("understanding", "stage", "resolution"),
-    "returned": ("understanding", "stage", "resolution"),
+    "done": ("stage", "resolution"),
+    "returned": ("stage", "resolution"),
 }
+
+# The fields the protocol owns. They may only be written BY a transition that
+# demands them — a restatement smuggled in on a status-less PATCH would never
+# pass through 'ack', so the Korb could never offer it for rejection.
+_PROTOCOL_FIELDS = ("understanding", "reproduced", "stage", "resolution")
+
+_DOC = "see docs/proposals/optimierungs-werkbank.md §5"
 
 
 def _blank(value: Any) -> bool:
@@ -62,29 +69,47 @@ def check_transition(stored: Mapping[str, Any], changes: Mapping[str, Any]) -> s
     """The §5 protocol as a pure rule: `None` if the PATCH may proceed, else the
     422 message.
 
-    `stored` is the row as it is now, `changes` the fields the PATCH sends; a
-    required field counts as present when either carries it. Updates that do
-    not move the status (a note edit) and the way back to 'open' (the admin
-    rejecting a restatement) are always allowed — rejecting must never be
-    harder than filing.
+    `stored` is the row as it is now, `changes` the fields the PATCH sends. Three
+    rules, all serving the same purpose — the restatement must be visible while
+    it can still be corrected:
+
+    1. Protocol fields travel WITH their transition. A status-less PATCH may
+       edit the note and nothing else.
+    2. 'ack' needs the restatement and whether the complaint reproduced.
+    3. Closing needs a STORED `understanding` — the ack has to have happened in
+       its own step — plus the diagnosed stage and the outcome.
+
+    The way back to 'open' (the admin rejecting a restatement) is always
+    allowed: rejecting must never be harder than filing.
     """
     target = changes.get("status")
     required = _REQUIRED_FIELDS.get(target) if target is not None else None
     if required is None:
+        written = [f for f in _PROTOCOL_FIELDS if f in changes]
+        if written:
+            return (
+                f"protocol fields ({', '.join(written)}) are written by the transition that demands them — "
+                f"send them with status 'ack', 'done' or 'returned' ({_DOC})"
+            )
         return None
+
+    if target != "ack" and _blank(stored.get("understanding")):
+        return (
+            f"an item is closed only after it was understood — PATCH status 'ack' with `understanding` and "
+            f"`reproduced` first, then close it ({_DOC})"
+        )
+
     missing = [f for f in required if _blank(changes.get(f, stored.get(f)))]
     if not missing:
         return None
     listed = ", ".join(missing)
     if target == "ack":
         return (
-            f"status 'ack' records what the session understood before it changes anything — missing: {listed} "
-            "(see docs/proposals/optimierungs-werkbank.md §5)"
+            f"status 'ack' records what the session understood before it changes anything — missing: {listed} ({_DOC})"
         )
     return (
-        f"closing a work item needs the protocol fields — missing: {listed}. `understanding` is written earlier "
-        "with status 'ack', `stage` names the diagnosed stage, `resolution` what changed "
-        "(see docs/proposals/optimierungs-werkbank.md §5)"
+        f"closing a work item needs the protocol fields — missing: {listed}. `stage` names the diagnosed stage, "
+        f"`resolution` what changed ({_DOC})"
     )
 
 

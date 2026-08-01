@@ -29,9 +29,12 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   restatement plus a `stage` from the fixed §3 vocabulary (`chart_ductus` ·
   `laufform` · `join_rule` · `composition` · `pair_override` · `word_trace` ·
   `not_reproducible`) and a non-empty `resolution` — anything less is a 422
-  naming the missing field. What accumulates is the point: a searchable archive
-  of symptom → verified reproduction → diagnosed stage → change → measured
-  effect, instead of a wall of „erledigt".
+  naming the missing field. Acking is deliberately its own call: a protocol
+  field may not travel on a status-less PATCH, and closing needs the
+  restatement to be *stored*, so it cannot be produced at the same moment as
+  the result. What accumulates is the point: a searchable archive of symptom →
+  verified reproduction → diagnosed stage → change → measured effect, instead
+  of a wall of „erledigt".
 - **A source-free work-item queue, so a session can find its own tasks.**
   Reading the basket used to require knowing a `source_id` first, which sent a
   session guessing `/work-items`, collecting a bare `{"detail":"Not Found"}`

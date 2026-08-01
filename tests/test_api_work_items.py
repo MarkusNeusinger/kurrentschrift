@@ -132,6 +132,13 @@ async def test_closing_needs_the_protocol_fields(api: Harness):
     assert res.status == 422
     assert "understanding" in res.json()["detail"]
 
+    # Writing the restatement without the transition would slip past the ack
+    # gate: the row would stay 'open' and the Korb could never offer it for
+    # rejection. Same for a resolution smuggled in on a status-less PATCH.
+    for body in ({"understanding": "verstanden", "reproduced": "yes"}, {"resolution": "gefixt"}):
+        res = await _patch(api, item["id"], body)
+        assert res.status == 422, body
+
     # Acking without saying anything.
     for body in (
         {"status": "ack"},
@@ -302,6 +309,11 @@ async def test_rejects_unworkable_targets_and_unknown_keys(api: Harness):
     [
         # No status move: a note edit never needs protocol fields.
         ({}, {"note": "nachgetragen"}, True),
+        # …but a protocol field may not travel without its transition: a
+        # restatement written onto an 'open' row never passes the ack gate, so
+        # the Korb could never offer it for rejection.
+        ({}, {"understanding": "verstanden", "reproduced": "yes"}, False),
+        ({"understanding": "u"}, {"resolution": "nachgetragen"}, False),
         # Rejecting must never be harder than filing.
         ({"understanding": "…"}, {"status": "open"}, True),
         # 'ack' needs both halves of the restatement.
@@ -319,8 +331,9 @@ async def test_rejects_unworkable_targets_and_unknown_keys(api: Harness):
         # Same gate for the hand-back.
         ({"understanding": "verstanden"}, {"status": "returned", "stage": "chart_ductus", "resolution": "…"}, True),
         ({}, {"status": "returned", "stage": "chart_ductus", "resolution": "…"}, False),
-        # A single PATCH may ack and close at once as long as it carries it all.
-        ({}, {"status": "done", "understanding": "u", "stage": "join_rule", "resolution": "r"}, True),
+        # Acking and closing in ONE call is refused too: the restatement is only
+        # worth writing if it stood there while it could still be corrected.
+        ({}, {"status": "done", "understanding": "u", "stage": "join_rule", "resolution": "r"}, False),
     ],
 )
 def test_check_transition_rules(stored: dict, changes: dict, expected_ok: bool):
@@ -328,10 +341,21 @@ def test_check_transition_rules(stored: dict, changes: dict, expected_ok: bool):
     assert (problem is None) is expected_ok, problem
 
 
-def test_check_transition_names_the_missing_fields():
-    problem = check_transition({}, {"status": "done", "stage": "laufform"})
+def test_check_transition_messages_name_the_way_out():
+    """A 422 has to be self-repairing — it says which field is missing and where
+    the rule lives, so a session fixes itself instead of guessing."""
+    # Never acked: the message points at the ack step, not at the closing fields.
+    problem = check_transition({}, {"status": "done", "stage": "laufform", "resolution": "gefixt"})
+    assert problem is not None and "'ack'" in problem
+
+    # Acked: now it names exactly what the close is missing, and nothing else.
+    problem = check_transition({"understanding": "u"}, {"status": "done", "stage": "laufform"})
     assert problem is not None
-    assert "understanding" in problem and "resolution" in problem
-    assert "stage" not in problem.split("missing:")[1].split(".")[0]
-    # The message points at the doctrine, so a session can fix itself.
-    assert "optimierungs-werkbank.md" in problem
+    assert problem.split("missing:")[1].split(".")[0].strip() == "resolution"
+
+    # A protocol field without its transition says which field and which status.
+    problem = check_transition({}, {"understanding": "u"})
+    assert problem is not None and "understanding" in problem and "'ack'" in problem
+
+    for message in (problem, check_transition({}, {"status": "ack"})):
+        assert message is not None and "optimierungs-werkbank.md" in message

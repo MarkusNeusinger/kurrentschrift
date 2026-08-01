@@ -112,6 +112,14 @@ Triage-Reihenfolge: `chart_ductus` · `laufform` · `join_rule` ·
 auftrat. Ein geschlossenes Vokabular macht aus dem Archiv eine Abfrage
 („welche Stufe verursacht die meisten Aufträge?") statt einer Lesearbeit.
 
+Zwei Regeln machen den Ablauf unumgehbar: Protokollfelder reisen **nur
+mit ihrem Statuswechsel** (ein PATCH ohne `status` darf die Notiz
+ändern und sonst nichts), und `done`/`returned` verlangen ein bereits
+**gespeichertes** `understanding` — Zurückspiegeln und Abschließen in
+einem Aufruf lehnt die API ab. Beides schützt dasselbe: Die
+Rückspiegelung ist nur etwas wert, solange sie dasteht, während sie
+noch korrigiert werden kann.
+
 ### 5.2 Ablauf, bindend bei jedem Auftrag
 
 1. **Aufträge lesen** — `GET /work-items?status=open`, quer über alle
