@@ -224,6 +224,115 @@ export interface PairInstanceOut {
   measurements: PairInstanceMeasurements;
 }
 
+// Pooled layer-1 statistics of ONE glyph aggregate (core/aggregate.py::
+// _mean_stats). Every sub-key is optional by design: a measurement missing
+// across the whole group is omitted rather than written as a null — an absent
+// measurement is not a measured zero.
+export interface AggregateMeanStats {
+  geo_rmse_px?: { mean: number; max: number };
+  xh_px_mean?: number;
+  // Histogram of the occurrence positions (initial/medial/final/…).
+  positions?: Record<string, number>;
+  n_specimens?: number;
+}
+
+// Per-anchor, per-axis median absolute deviation — same order and length as
+// `cluster_center`, in the same template units.
+export interface AggregateHull {
+  anchor_mad?: Array<[number, number]>;
+}
+
+// One per-hand glyph aggregate (Stufenplan H1). Mirrors AggregateOut in
+// api/schemas.py: `cluster_center` is the per-anchor median of the hand's
+// occurrences — the Laufform in normalised template coordinates (baseline = 0,
+// midband = 1, y up) — and `hull.anchor_mad` its spread. Admin-gated read:
+// an aggregate is learned geometry (quellen-und-rechte.md §5).
+export interface AggregateOut {
+  glyph_key: string;
+  glyph: string;
+  variant: number;
+  cluster_center: Array<[number, number]>;
+  hull: AggregateHull;
+  mean_stats: AggregateMeanStats;
+  n_instances: number;
+}
+
+// One rebuilt key in the rebuild report. `laufform_dev_xh` is the H1 Prüfstein
+// (mean anchor distance between the recomputed median and the stored Laufform
+// row, x-height units); null when there is no such row or its anchor count
+// differs.
+export interface AggregateKeySummary {
+  glyph_key: string;
+  variant: number;
+  n_instances: number;
+  laufform_dev_xh: number | null;
+}
+
+// Result of POST /hands/{hand_id}/aggregates/rebuild. `deleted` counts the
+// hand's previous rows (the rebuild replaces wholesale), `skipped` the
+// occurrences left out per reason ('anchor_shape', 'below_min_n').
+export interface AggregateRebuildOut {
+  hand_id: string;
+  stored: number;
+  deleted: number;
+  skipped: Record<string, number>;
+  keys: AggregateKeySummary[];
+}
+
+// Pooled dissection QC of ONE pair aggregate (core/aggregate.py::
+// _pair_mean_stats), same optional-key convention as AggregateMeanStats.
+// `gen_chamfer` is the audit number this layer exists for: how far the
+// GENERATED Übergang sits from the specimen skeleton (x-height units).
+export interface PairAggregateMeanStats {
+  gen_chamfer?: { mean: number; max: number };
+  harvest_chamfer?: { mean: number; max: number };
+  resid?: { mean: number; max: number };
+  gap_ink_share?: number;
+  // Histogram over the word plates vs. the pair drills.
+  kinds?: Record<string, number>;
+  n_specimens?: number;
+}
+
+export interface PairAggregateHull {
+  offset_mad?: [number, number];
+  connector_mad?: Array<[number, number]>;
+}
+
+// One per-hand pair aggregate (Stufenplan H2). Mirrors PairAggregateOut in
+// api/schemas.py — the median transition in the SAME frame as a glyph_pairs
+// override and as every PairInstanceOut.geometry (template units relative to
+// the left glyph's exit, baseline-locked, y up), so occurrences, median and
+// override all draw in one sketch. `connector_center` is the per-point median
+// of the arc-length-resampled centerlines and ends at `offset_center`.
+// Read-only by design: no `apply` counterpart exists, the §4 generator stays
+// the writing path's default.
+export interface PairAggregateOut {
+  left_key: string;
+  right_key: string;
+  offset_center: [number, number];
+  connector_center: Array<[number, number]>;
+  hull: PairAggregateHull;
+  mean_stats: PairAggregateMeanStats;
+  n_instances: number;
+}
+
+export interface PairAggregateKeySummary {
+  left_key: string;
+  right_key: string;
+  n_instances: number;
+  gen_chamfer_mean: number | null;
+}
+
+// Result of POST /hands/{hand_id}/pair-aggregates/rebuild; `skipped` reasons
+// are 'fit_bad', 'geometry', 'below_min_n'.
+export interface PairAggregateRebuildOut {
+  hand_id: string;
+  stored: number;
+  deleted: number;
+  skipped: Record<string, number>;
+  pairs: PairAggregateKeySummary[];
+}
+
 // One filed Auftragskorb task (Werkbank W1). Mirrors WorkItemIn/WorkItemOut in
 // api/schemas.py: `kind` decides which target fields are required ('letter' →
 // glyph_key, 'pair' → left_key + right_key, 'word' → word or specimen_id), and

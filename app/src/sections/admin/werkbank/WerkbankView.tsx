@@ -9,6 +9,13 @@
 // word traces + word samples (the spine), letter instances (the boxes and the
 // letter lens) and pair instances (the pair lens). A few hundred rows each —
 // one round trip beats a request per card.
+//
+// The hand's STATISTICS layers (Stufenplan H1/H2) load separately, keyed on the
+// hand the occurrences name: they are admin-gated and secondary, so a failure
+// there must degrade to "keine Statistik" instead of taking the whole page down
+// with it — same rule the Auftragskorb follows. Letters and joins are two
+// INDEPENDENT layers (own state, own error flag, own refetch): rebuilding one
+// must neither blank the other lens nor swallow its own result caption.
 
 import { Alert, Box, CircularProgress, TextField, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
@@ -18,11 +25,22 @@ import { useAdmin } from '@/context/AdminContext';
 import { LETTER_BY_KEY } from '@/domain/glyphs';
 import {
   getWordSamples,
+  listAggregates,
   listInstances,
+  listPairAggregates,
   listPairInstances,
   listWordInstances,
+  rebuildAggregates,
+  rebuildPairAggregates,
 } from '@/lib/api';
-import type { InstanceOut, PairInstanceOut, WordInstanceOut, WordSampleOut } from '@/lib/api';
+import type {
+  AggregateOut,
+  InstanceOut,
+  PairAggregateOut,
+  PairInstanceOut,
+  WordInstanceOut,
+  WordSampleOut,
+} from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { paths } from '@/routes/paths';
 import { PairEditorDialog } from '@/sections/admin/pairs/PairEditorDialog';
@@ -30,9 +48,42 @@ import { pairKeysOf } from '@/sections/admin/pairs/pairKeys';
 
 import { ContextLens } from './ContextLens';
 import { KorbPanel } from './KorbPanel';
+import type { StatsContext, StatsStatus } from './LensStats';
 import { MarkDialog } from './MarkDialog';
 import { WordSpineCard } from './WordSpineCard';
 import { badness, markKey, pairKeyOf, scrollToCard, type Mark, type Selection } from './model';
+
+// One loaded statistics layer, tagged with the hand it was loaded FOR. Tagging
+// instead of resetting is what makes the two behaviours coexist: a hand switch
+// invalidates the rows implicitly (they are simply not this hand's), while a
+// refetch after a rebuild leaves them mounted until the fresh ones arrive —
+// stale-while-revalidate, so the rebuild's caption stays readable.
+interface StatsLayer<T> {
+  handId: string | null;
+  rows: T[] | null;
+  error: boolean;
+}
+
+// The layer's rows for the CURRENT hand, or null while they still belong to a
+// previous one.
+const rowsFor = <T,>(layer: StatsLayer<T>, handId: string | null): T[] | null =>
+  handId !== null && layer.handId === handId ? layer.rows : null;
+
+function statsContextOf<T>(
+  layer: StatsLayer<T>,
+  rows: T[] | null,
+  handId: string | null,
+  handsMixed: boolean,
+): StatsContext {
+  const status: StatsStatus = !handId
+    ? 'no-hand'
+    : layer.handId === handId && layer.error
+      ? 'unavailable'
+      : rows === null
+        ? 'loading'
+        : 'ready';
+  return { status, handId, handsMixed, layerEmpty: rows !== null && rows.length === 0 };
+}
 
 export function WerkbankView() {
   const { source, sourceId, setActiveGlyph } = useAdmin();
@@ -52,6 +103,21 @@ export function WerkbankView() {
   // ink, not the composition).
   const [korbTick, setKorbTick] = useState(0);
   const [editingPair, setEditingPair] = useState<{ text: string; left: string; right: string } | null>(null);
+  // The statistics layers, loaded per hand rather than per source — one state
+  // each, so a failure or a rebuild stays inside its own layer.
+  const [letterLayer, setLetterLayer] = useState<StatsLayer<AggregateOut>>({
+    handId: null,
+    rows: null,
+    error: false,
+  });
+  const [pairLayer, setPairLayer] = useState<StatsLayer<PairAggregateOut>>({
+    handId: null,
+    rows: null,
+    error: false,
+  });
+  // Bumped by a rebuild so THAT layer refetches (a rebuild replaces wholesale).
+  const [letterTick, setLetterTick] = useState(0);
+  const [pairTick, setPairTick] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -83,6 +149,72 @@ export function WerkbankView() {
       cancelled = true;
     };
   }, [sourceId]);
+
+  // The Werkbank always shows exactly one source and therefore one hand
+  // (optimierungs-werkbank.md §6). WHICH hand comes from the loaded rows, never
+  // from a constant: the most frequent non-null hand_id across all three
+  // occurrence levels. Rows may predate the hands wiring and carry none — if no
+  // row names a hand at all, there simply is no statistics layer to show.
+  // `mixed` is the honesty flag: once a second writer is harvested (the Abb.-22
+  // Schülerhand under its own id), showing one hand's medians over another
+  // hand's occurrences must be said out loud rather than happen silently.
+  const { handId, handsMixed } = useMemo(() => {
+    const counts = new Map<string, number>();
+    const tally = (id: string | null | undefined) => {
+      if (id) counts.set(id, (counts.get(id) ?? 0) + 1);
+    };
+    for (const inst of instances ?? []) tally(inst.hand_id);
+    for (const occ of pairInstances ?? []) tally(occ.hand_id);
+    for (const row of rows ?? []) tally(row.hand_id);
+    let best: string | null = null;
+    let bestCount = 0;
+    for (const [id, count] of counts) {
+      if (count > bestCount) {
+        best = id;
+        bestCount = count;
+      }
+    }
+    return { handId: best, handsMixed: counts.size > 1 };
+  }, [instances, pairInstances, rows]);
+
+  // Deliberately NOT part of the spine's Promise.all, and one effect per layer:
+  // these reads are admin-gated and secondary (a 401, or an empty statistics
+  // table, must leave the word spine and both lenses fully usable), and the
+  // per-layer rebuild refetches only its own list. Nothing is reset here — the
+  // result carries its hand, so a hand switch invalidates the rows on read and
+  // a rebuild refetch keeps the previous ones on screen meanwhile.
+  useEffect(() => {
+    if (!handId) return;
+    let cancelled = false;
+    listAggregates(handId, { retries: 1 })
+      .then((glyphRows) => {
+        if (!cancelled) setLetterLayer({ handId, rows: glyphRows, error: false });
+      })
+      .catch(() => {
+        if (!cancelled) setLetterLayer({ handId, rows: null, error: true });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [handId, letterTick]);
+
+  useEffect(() => {
+    if (!handId) return;
+    let cancelled = false;
+    listPairAggregates(handId, undefined, { retries: 1 })
+      .then((joinRows) => {
+        if (!cancelled) setPairLayer({ handId, rows: joinRows, error: false });
+      })
+      .catch(() => {
+        if (!cancelled) setPairLayer({ handId, rows: null, error: true });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [handId, pairTick]);
+
+  const aggregates = rowsFor(letterLayer, handId);
+  const pairAggregates = rowsFor(pairLayer, handId);
 
   const sampleById = useMemo(() => new Map((samples ?? []).map((s) => [s.id, s])), [samples]);
 
@@ -121,6 +253,22 @@ export function WerkbankView() {
     }
     return map;
   }, [pairInstances]);
+
+  // One row per glyph key, lowest variant wins: the lens asks about the LETTER,
+  // and the base variant is the row the Laufform is derived from.
+  const aggregatesByKey = useMemo(() => {
+    const map = new Map<string, AggregateOut>();
+    for (const agg of aggregates ?? []) {
+      const prev = map.get(agg.glyph_key);
+      if (!prev || agg.variant < prev.variant) map.set(agg.glyph_key, agg);
+    }
+    return map;
+  }, [aggregates]);
+
+  const pairAggregateByKey = useMemo(
+    () => new Map((pairAggregates ?? []).map((agg) => [pairKeyOf(agg.left_key, agg.right_key), agg])),
+    [pairAggregates],
+  );
 
   // Worst first — the same ranking the Belege page uses, and the reason the
   // spine is a work list rather than a gallery.
@@ -161,6 +309,46 @@ export function WerkbankView() {
     const keys = text.length === 2 ? pairKeysOf(text) : null;
     return keys && keys[0] === leftKey && keys[1] === rightKey ? { text, left: leftKey, right: rightKey } : null;
   }, [selection]);
+
+  // What each lens' statistics block can show right now — per layer, so a
+  // failing pair read never mutes the letter block.
+  const letterStats = statsContextOf(letterLayer, aggregates, handId, handsMixed);
+  const pairStats = statsContextOf(pairLayer, pairAggregates, handId, handsMixed);
+
+  const letterAggregate =
+    selection?.target.kind === 'letter' ? aggregatesByKey.get(selection.target.glyphKey) : undefined;
+  const pairAggregate =
+    selection?.target.kind === 'pair'
+      ? pairAggregateByKey.get(pairKeyOf(selection.target.leftKey, selection.target.rightKey))
+      : undefined;
+
+  // Recompute ONE statistics layer and report the outcome back as a caption.
+  // Non-rendering by design (optimierungs-werkbank.md §3): this condenses
+  // occurrences into medians — writing a Laufform row (`apply-laufform`) does
+  // affect rendering and is deliberately not offered on this surface.
+  const rebuildLetterStats = handId
+    ? async () => {
+        const out = await rebuildAggregates(handId);
+        setLetterTick((n) => n + 1);
+        return fmt(t.statsRebuiltLetters, {
+          stored: out.stored,
+          count: out.keys.reduce((n, key) => n + key.n_instances, 0),
+          skipped: Object.values(out.skipped).reduce((n, value) => n + value, 0),
+        });
+      }
+    : undefined;
+
+  const rebuildPairStats = handId
+    ? async () => {
+        const out = await rebuildPairAggregates(handId);
+        setPairTick((n) => n + 1);
+        return fmt(t.statsRebuiltPairs, {
+          stored: out.stored,
+          count: out.pairs.reduce((n, pair) => n + pair.n_instances, 0),
+          skipped: Object.values(out.skipped).reduce((n, value) => n + value, 0),
+        });
+      }
+    : undefined;
 
   const openWizard = (glyphKey: string) => {
     setActiveGlyph(glyphKey);
@@ -269,6 +457,12 @@ export function WerkbankView() {
                 letterOccurrences={letterOccurrences}
                 pairOccurrences={pairOccurrences}
                 sampleById={sampleById}
+                letterAggregate={letterAggregate}
+                pairAggregate={pairAggregate}
+                letterStats={letterStats}
+                pairStats={pairStats}
+                onRebuildAggregates={rebuildLetterStats}
+                onRebuildPairAggregates={rebuildPairStats}
                 onJump={jumpTo}
                 onMark={setMark}
                 onOpenWizard={openWizard}

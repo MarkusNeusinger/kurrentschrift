@@ -7,6 +7,8 @@
 import { CONFIG } from '@/global-config';
 import { apiFetch, asJson, type RetryOptions } from '@/lib/api/client';
 import type {
+  AggregateOut,
+  AggregateRebuildOut,
   BatchStoreOut,
   BboxIn,
   BboxOut,
@@ -18,6 +20,8 @@ import type {
   GlyphSummary,
   HandOut,
   InstanceOut,
+  PairAggregateOut,
+  PairAggregateRebuildOut,
   PairInstanceOut,
   QualityComparison,
   QuizWordOut,
@@ -147,10 +151,46 @@ export const putWordInstances = (sourceId: string, body: WordInstanceBatchIn): P
     body: JSON.stringify(body),
   }).then(asJson<BatchStoreOut>);
 
+// Hand-scoped paths — statistics belong to the WRITER, not to the plate
+// (architektur.md §12), so these are not source-scoped.
+const hnd = (handId: string, path: string) => `${apiRoot()}/hands/${encodeURIComponent(handId)}${path}`;
+
 // One writer. Public read; the word editor uses it to echo the occurrence's
 // hand back into its batch (id + label + era + note) instead of re-inventing it.
 export const getHand = (handId: string, retry?: RetryOptions): Promise<HandOut> =>
-  apiFetch(`${apiRoot()}/hands/${encodeURIComponent(handId)}`, {}, retry).then(asJson<HandOut>);
+  apiFetch(hnd(handId, ''), {}, retry).then(asJson<HandOut>);
+
+// The per-hand statistics over the occurrence layer (Stufenplan H1/H2) —
+// FULLY admin-gated, reads included: an aggregate is learned geometry
+// (quellen-und-rechte.md §5). Read and rebuild affect no rendering, which is
+// why the Werkbank may show and refresh them; the rendering-CHANGING step
+// `POST …/aggregates/apply-laufform` is deliberately not wrapped here
+// (optimierungs-werkbank.md §3: generated stages are displayed, not edited).
+export const listAggregates = (handId: string, retry?: RetryOptions): Promise<AggregateOut[]> =>
+  apiFetch(hnd(handId, '/aggregates'), {}, retry).then(asJson<AggregateOut[]>);
+
+// `leftKey`/`rightKey` narrow the listing to one letter's joins or to exactly
+// one transition; without them the hand's whole matrix comes back.
+export const listPairAggregates = (
+  handId: string,
+  opts?: { leftKey?: string; rightKey?: string },
+  retry?: RetryOptions,
+): Promise<PairAggregateOut[]> => {
+  const qs = new URLSearchParams();
+  if (opts?.leftKey) qs.set('left_key', opts.leftKey);
+  if (opts?.rightKey) qs.set('right_key', opts.rightKey);
+  const s = qs.toString();
+  return apiFetch(hnd(handId, `/pair-aggregates${s ? `?${s}` : ''}`), {}, retry).then(asJson<PairAggregateOut[]>);
+};
+
+// Recompute a hand's aggregates from its stored occurrences, replacing the
+// previous rows wholesale. Each route keeps its OWN `min_n` default (4 for
+// glyphs, 1 for the sparse pairs) — the UI does not second-guess it.
+export const rebuildAggregates = (handId: string): Promise<AggregateRebuildOut> =>
+  apiFetch(hnd(handId, '/aggregates/rebuild'), { method: 'POST' }).then(asJson<AggregateRebuildOut>);
+
+export const rebuildPairAggregates = (handId: string): Promise<PairAggregateRebuildOut> =>
+  apiFetch(hnd(handId, '/pair-aggregates/rebuild'), { method: 'POST' }).then(asJson<PairAggregateRebuildOut>);
 
 // The stored LETTER occurrences of a source (handmodell H1). Public GET; the
 // boxes are page pixels of the specimen plate, so a crop-local box needs the

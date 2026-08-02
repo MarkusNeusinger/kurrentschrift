@@ -237,6 +237,54 @@ export const admin = {
     // from the specimen ink (xh units, lower better).
     genChamfer: 'Generator-Abstand {{value}}',
     fitDoubtful: 'Fit unsicher',
+    // The statistics layers of the Handmodell (Stufenplan H1/H2) inside the
+    // lenses: a letter gets its aggregate median with the MAD spread and the
+    // pooled layer-1 numbers, a join the measured median connector over its
+    // occurrences. Inspection only — nothing is applied (apply-laufform) here.
+    // Both blocks name the hand they were derived for; `statsMixedHands` is the
+    // warning for occurrences that do not all name the same one.
+    statsLetterHeading: 'Statistik',
+    statsPairHeading: 'Gemessen vs. komponiert',
+    statsHand: 'Hand {{hand}}',
+    statsMixedHands: 'mehrere Hände in den Vorkommen — gezeigt: {{hand}}',
+    statsLoading: 'Statistik wird geladen …',
+    statsNoHand: 'Keine Hand an den Vorkommen hinterlegt — ohne Hand gibt es keine Statistik.',
+    statsUnavailable: 'Statistik nicht ladbar (Admin-Zugang nötig).',
+    // Two different silences: the hand has no aggregates at all, or it has
+    // them and this one key is missing from them.
+    statsNoRebuild: 'Noch kein Aggregat-Neuaufbau für diese Hand.',
+    statsNoneLetter: 'Kein Aggregat für diesen Buchstaben (unter der Mindest-Vorkommenszahl).',
+    statsNonePair: 'Kein Aggregat für diesen Übergang (unter der Mindest-Vorkommenszahl oder ohne sauberen Fit).',
+    statsInstances: '{{count}} Vorkommen',
+    statsSpecimens: '{{count}} Vorlagen',
+    statsRmse: 'RMSE ⌀ {{mean}} / max {{max}} px',
+    statsXh: 'x-Höhe ⌀ {{value}} px',
+    statsPositionsLabel: 'Positionen',
+    statsKindsLabel: 'Herkunft',
+    statsLetterSketch: 'Aggregat-Median (Laufform-Quelle)',
+    statsLetterSketchAria: 'Median-Anker von {{key}} mit MAD-Streuung',
+    statsLetterSketchLegend: 'Punkte: Median-Anker · Kreise: MAD-Streuung · Linien: Grund- und Mittellinie',
+    statsPairSketchAria: 'Median-Verbindung {{left}}→{{right}} über den gespeicherten Vorkommen',
+    statsPairSketchLegend: 'dünn: Vorkommen · kräftig: Median · Punkt: Versatz mit MAD',
+    // Occurrences the rebuild itself skipped (fit_bad) are not drawn — said
+    // out loud so the sketch is not read as "all occurrences".
+    statsPairSketchHidden: '{{count}} ohne sauberen Fit ausgeblendet',
+    statsPairReadOnly: 'Nur Anschauung: geschrieben wird weiter der generierte Übergang.',
+    // The pooled dissection QC (all in x-height units, lower better).
+    statsGenChamfer: 'Generator-Abstand ⌀ {{mean}} / max {{max}}',
+    statsHarvestChamfer: 'Ernte-Abstand ⌀ {{value}}',
+    statsResid: 'Fit-Rest ⌀ {{mean}} / max {{max}}',
+    statsGapInk: 'Tinte im Zwischenraum {{value}}',
+    // With and without a stored spread: an absent MAD gets no ± clause at all
+    // („± 0,00" would claim a measurement nobody made).
+    statsOffset: 'Versatz {{x}} / {{y}} ± {{madX}} / {{madY}}',
+    statsOffsetNoMad: 'Versatz {{x}} / {{y}}',
+    // Rebuild (admin POST, per layer). Non-rendering maintenance, deliberately
+    // quiet — the Laufform-Übernahme is NOT offered here.
+    statsRebuild: 'Neu aufbauen',
+    statsRebuildFailed: 'Neuaufbau fehlgeschlagen.',
+    statsRebuiltLetters: '{{stored}} Buchstaben aus {{count}} Vorkommen, {{skipped}} übersprungen',
+    statsRebuiltPairs: '{{stored}} Paare aus {{count}} Vorkommen, {{skipped}} übersprungen',
     // The Auftragskorb.
     korbTitle: 'Auftragskorb',
     korbOpenCount: '{{count}} offen',

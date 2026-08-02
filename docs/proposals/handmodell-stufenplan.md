@@ -49,6 +49,13 @@ Zeile nennt `n_instances`, damit jeder Leser gewichten kann. Bewusst
 **ohne** Apply-Gegenstück: die Paar-Statistik ist rein lesend,
 `glyph_pairs` bleibt der verbatim übernommene Override (R3) und der
 §4-Generator bleibt Default; am Rendering ändert der Schritt nichts.
+**Erste Nutzung, rein lesend:** beide Statistik-Schichten sind seit der
+Werkbank-Stufen-Einsicht in `/admin/werkbank` einsehbar — die
+Buchstaben-Linse zeigt den Aggregat-Median mit MAD-Streuung und
+gepoolter Schicht-1-Statistik, die Paar-Linse die gemessene
+Median-Verbindung über ihren Vorkommen samt Dissektions-QC
+(`gen_chamfer` als Audit-Zahl); Neuaufbau je Schicht per Knopf,
+`apply-laufform` bewusst nicht (optimierungs-werkbank.md §7, W5).
 H3–H5 bleiben Vorschlag.
 Konsolidiert die
 Laufform-Runde vom 30./31.07.2026 (PR #246/#247: Median-Laufformen als

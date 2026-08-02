@@ -15,8 +15,10 @@ export { fmt } from './index';
 export {
   COUPLING_LABELS,
   LINEATUR_LABELS,
+  SPECIMEN_KIND_LABELS,
   STYLE_LABELS,
   ZONE_LABELS,
   couplingLabel,
+  specimenKindLabel,
   styleLabel,
 } from './de/common';
