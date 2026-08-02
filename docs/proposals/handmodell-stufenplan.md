@@ -56,7 +56,21 @@ gepoolter Schicht-1-Statistik, die Paar-Linse die gemessene
 Median-Verbindung über ihren Vorkommen samt Dissektions-QC
 (`gen_chamfer` als Audit-Zahl); Neuaufbau je Schicht per Knopf,
 `apply-laufform` bewusst nicht (optimierungs-werkbank.md §7, W5).
-H3–H5 bleiben Vorschlag.
+**Damit ist die zweite Hälfte der ersten Nutzung ebenfalls
+umgesetzt:** der Verbindungen-Tab von `/admin/vergleich` trägt je
+Paar-Karte die Zeile „Gemessen" zwischen Kopf und Bild —
+Vorkommenszahl (Aggregat-`n_instances`, ersatzweise die zugeordneten
+Vorkommen) und `gen_chamfer`-Mittel als Chips, die ausführlichen
+Zahlen (Streuung, Ernte-Abstand, Fit-Rest, Versatz ± MAD,
+Ink-Lücke, Platten-Histogramm) im Tooltip, dazu „Fit unsicher", wenn
+das Vorkommen *dieser* Vorlage keinen sauberen Fit hat. Geladen wird
+einmal je Quelle (öffentliche `pair-instances` + admin-gesicherte
+`pair-aggregates` der aus den Zeilen abgeleiteten Hand), nie je Karte;
+ohne Admin-Lesezugang bleiben die Vorkommenszahlen stehen. Bewusst nur
+Zahlen: die Median-Skizze bleibt der Werkbank-Linse vorbehalten, eine
+registrierte Überlagerung von gemessenem Connector und komponiertem
+Paar unterbleibt (verschiedene Rahmen — eine falsche Deckung läse sich
+als Beleg). H3–H5 bleiben Vorschlag.
 Konsolidiert die
 Laufform-Runde vom 30./31.07.2026 (PR #246/#247: Median-Laufformen als
 Template-Variante 100, `laufform_by_key` im Composer) und die
@@ -206,7 +220,8 @@ Dissektions-QC, `min_n` 1 wegen der dünnen Beleglage.
 `glyph_pairs.geometry` bleibt unangetastet
 (verbatim-Override, R3). Erste Nutzung rein **lesend**: die
 Audit-/Report-Spalten der Wordbench und der Vergleichs-Tab zeigen
-„gemessen vs. komponiert" pro Paar. Rahmen bleibt
+„gemessen vs. komponiert" pro Paar (Vergleichs-Tab umgesetzt, s.
+Status oben). Rahmen bleibt
 [`planaenderungen.md`](planaenderungen.md) Vorschlag B: der Generator
 bleibt Default, keine Bigram-Datenbank (architektur.md §2, verworfen).
 

@@ -111,6 +111,24 @@ export const admin = {
     scoreError: 'Einzelne Scores konnten nicht berechnet werden.',
     scoreWorstSegments: 'Größte Abweichungen:',
     openPairEditor: 'Im Paar-Editor öffnen',
+    // „Measured vs. composed" on the pair cards (Handmodell H2): what the
+    // occurrence and the aggregate layers know about exactly this join. The
+    // detailed numbers in the tooltip deliberately reuse the wording of the
+    // Werkbank lens (the same statistic must not be named twice differently).
+    measuredLabel: 'Gemessen',
+    measuredGenChamfer: 'Generator-Abstand ⌀ {{value}}',
+    // The four reasons a card can carry no measured median, short enough for
+    // the chip row — the tooltip spells each of them out in the Werkbank's
+    // words. „keine Messung" is reserved for the case it describes: the hand's
+    // aggregates are loaded, this join is simply not among them.
+    measuredNone: 'keine Messung',
+    measuredNoHand: 'keine Hand',
+    measuredNoRebuild: 'kein Aggregat',
+    measuredNoAccess: 'nicht ladbar',
+    measuredFitWarn: 'Fit unsicher',
+    measuredFitHint: 'Der Fit dieses Vorkommens ist als unsicher markiert — die Messung trägt hier wenig.',
+    measuredUnavailable: 'Messwerte der Hand nicht ladbar (Admin-Zugang nötig) — gezeigt werden nur die Vorkommen.',
+    measuredLoadError: 'Vorkommen der Übergänge konnten nicht geladen werden.',
   },
   // The pair matrix (/admin/paare): every two-letter combination of one chosen
   // letter, server-composed — capitals only on the left, per the redesign (R1).

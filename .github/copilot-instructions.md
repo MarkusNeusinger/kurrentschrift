@@ -274,7 +274,16 @@ kurrentschrift/
 │       │                #   sortieren" fetches the admin /score per card sequentially, loss
 │       │                #   chip + worst-first sort; pair cards link into the pair editor
 │       │                #   with the specimen crop as registered underlay (R1b→R3 circle);
-│       │                #   the Fremdhand tab is never scored);
+│       │                #   every pair card also carries the "Gemessen" chip row
+│       │                #   (compare/PairMeasuredChips.tsx + compare/pairMeasurement.ts,
+│       │                #   Handmodell H2): occurrence count + gen_chamfer mean, fuller
+│       │                #   pooled QC in the tooltip, "Fit unsicher" when this specimen's
+│       │                #   own occurrence has fit_ok: false — loaded once per source
+│       │                #   (public pair-instances + admin-gated pair-aggregates of the
+│       │                #   derived modal hand, a failed admin read degrades to the
+│       │                #   occurrence numbers), numbers only (the median sketch stays in
+│       │                #   the Werkbank lens, no registered overlay);
+│       │                #   the Fremdhand tab is never scored and never measured);
 │       │                #   pairs/PairMatrix.tsx =
 │       │                #   /admin/paare: every 2-letter combination of a chosen letter,
 │       │                #   server-composed, capitals only left — redesign R1; override
@@ -393,7 +402,9 @@ ductus with generated Übergänge) — paper-&-ink identity
 per `docs/concepts/style-guide.md` + `docs/concepts/design-system.md`) and the admin behind `/admin/*`
 (Cloudflare Access in prod; `/admin/chart` bbox editor + wizard,
 `/admin/vergleich` whole-alphabet crop-vs-written comparison plus the
-words.json specimen tabs, `/admin/paare` generated pair matrix). **Post-MVP**
+words.json specimen tabs (pair cards carry the measured "Gemessen" readout —
+H2 occurrence/aggregate numbers per join), `/admin/paare` generated pair
+matrix). **Post-MVP**
 the public side grows
 (`/animation`, `/lese-hilfe`, `/lese-lupe/:job`, `/stil-analyse`,
 `/vergleich`, `/open-data`). See `docs/reference/frontend-stack.md`.
