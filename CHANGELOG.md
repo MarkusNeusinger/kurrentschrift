@@ -12,6 +12,8 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+## [0.22.0] — 2026-08-02 — Hand model statistics: aggregates + gemessen vs. komponiert
+
 ### Added
 
 - **Wordbench "gemessen vs. komponiert" columns (Handmodell H2): every composed
@@ -58,7 +60,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `pair_loss` 0.164506 to the last digit before and after, every per-entry loss
   unchanged. Null line: words 188/214 matched, doff median 0.135 · dconn median
   0.115; pairs 30/34, 0.192 · 0.217. The public `/write/word` payload and the
-  compose golden fixture are untouched (provenance stays off by default).
+  compose golden fixture are untouched (provenance stays off by default) (#268).
 - **"Gemessen vs. komponiert" on the Vergleich page's pair cards (Handmodell
   H2, read surface).** The Verbindungen tab showed a specimen beside the
   composed pair and left the verdict entirely to the eye, while the occurrence
@@ -87,7 +89,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   the Verbindungen tab; the Fremdhand tab stays view-only and unmeasured, and
   the numbers are matched by the same base-key pair the pair-editor deep link
   uses, so a card's readout and its "Im Paar-Editor öffnen" can never describe
-  two different joins. Frontend-only, no API change.
+  two different joins. Frontend-only, no API change (#267).
 - **Werkbank "Stufen-Einsicht" (W5): the hand-model statistics layers are now
   visible inside the context lenses.** Both aggregate layers existed and had no
   reader — H1 medians and H2 pair medians were numbers only a rebuild response
@@ -121,7 +123,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   left out of the pair sketch and its bounds (and counted in the caption)
   instead of squashing the median they never fed, an absent MAD prints no „±"
   clause, and an aggregate missing for the selected key reads differently from a
-  hand that was never rebuilt at all.
+  hand that was never rebuilt at all (#266).
 - **Pair aggregates (Handmodell H2): the statistics layer over the observed
   letter joins.** `pair_instances` has held every dissected join since H1/H2,
   but nothing condensed them — the pair level had occurrences and no medians.
@@ -143,7 +145,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   transition; `n_instances` rides along so consumers can weigh it. Deliberately
   without an `apply` counterpart: the pair statistics are read-only by design —
   `glyph_pairs` stays the sparse verbatim override, the §4 join generator stays
-  the default, and nothing here reaches the writing path.
+  the default, and nothing here reaches the writing path (#265).
 - **Auftragskorb protocol (Werkbank W4): a filed task now has to be understood
   before it can be worked, and diagnosed before it can be closed.** A
   `work_items` row used to carry only the admin's note and a free-text
@@ -164,7 +166,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   restatement to be *stored*, so it cannot be produced at the same moment as
   the result. What accumulates is the point: a searchable archive of symptom →
   verified reproduction → diagnosed stage → change → measured effect, instead
-  of a wall of „erledigt".
+  of a wall of „erledigt" (#264).
 - **A source-free work-item queue, so a session can find its own tasks.**
   Reading the basket used to require knowing a `source_id` first, which sent a
   session guessing `/work-items`, collecting a bare `{"detail":"Not Found"}`
@@ -175,7 +177,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   quietly empty list. The source-scoped routes stay for the SPA. Round start is
   wired up too — `/prime` lists the open items, and the new `/work-basket`
   skill runs the protocol end to end (reproduce → restate → triage → rule-fix
-  before override → measure → close).
+  before override → measure → close) (#264).
 - **Word editor (Werkbank W3): every stored word occurrence can now be
   re-traced by hand.** Each card on `/admin/belege` opens the new
   `WordTraceEditorDialog` — the specimen crop as underlay with the row's own
@@ -194,7 +196,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   the frontend API layer grew `putWordInstances` + `getHand` (the occurrence's
   writer is echoed back as read, so saving a trace cannot wipe the hand's
   era/note). Authored traces are ground truth for statistics and training, never
-  a rendering patch (optimierungs-werkbank.md §3/§6).
+  a rendering patch (optimierungs-werkbank.md §3/§6) (#261).
 - **Aggregates rebuild (Handmodell H1): the statistics layer finally gets
   filled.** `aggregates` has existed since migration `0004` and never held a
   row; the admin-gated `GET /hands/{hand_id}/aggregates` and
@@ -212,7 +214,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   not public product surface (quellen-und-rechte.md §5) — and nothing here
   touches rendering. Migration `0021` re-keys the table to
   `(hand_id, glyph_key, variant)` following the R2 position removal (drop +
-  recreate: the table was empty).
+  recreate: the table was empty) (#259).
 - **The Laufform row is now DERIVED from the aggregate (Handmodell H1
   complete).** `POST /hands/{hand_id}/aggregates/apply-laufform` (admin-gated)
   writes the hand's stored aggregates into the style's running-form templates
@@ -230,7 +232,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   derive from itself); keys without a chart template or with a deviating anchor
   count are reported as skipped with their reason, never guessed at. The
   response reports the pre-write distance per key, so the answer shows what the
-  apply actually changed.
+  apply actually changed (#260).
 
 ### Fixed
 
@@ -252,7 +254,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `api.kurrentschrift.ink` (the apex `/api/*` 302s at the Cloudflare Access edge
   first), and Secret Manager versions must be created with `printf '%s'`, never
   `echo` — with the byte-count diagnosis, because command substitution hides the
-  newline and makes a fingerprint comparison report a false match.
+  newline and makes a fingerprint comparison report a false match (#262, #263).
 
 ## [0.21.0] — 2026-08-01 — Optimierungs-Werkbank + open-core moat
 
