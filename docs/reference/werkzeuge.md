@@ -61,7 +61,7 @@ Buchstaben-Vorkommen der Abb.-19-Wörter und schreibt drei Artefakte —
 die per-Buchstabe-Mediane als Laufform-Varianten
 (`PUT /sources/{id}/templates/{key}/laufform`, `variant=100`), jeden
 sauberen Einzelfit als `instances`-Zeile und je Vorlage eine nachgefahrene
-Wortspur als `word_instance` (`authored`-Zeilen bleiben unangetastet).
+Wortspur als `word_instances`-Zeile (`authored`-Zeilen bleiben unangetastet).
 Die Laufform-Zeilen wirken **sofort** auf jedes fließende `/write/word` —
 gegen Prod nur mit ausdrücklicher Freigabe.
 
