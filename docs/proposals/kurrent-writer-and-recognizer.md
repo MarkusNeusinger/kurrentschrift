@@ -1,5 +1,15 @@
 # Kurrent: Generative Writer → Cheap Recognizer
 
+> **Status (2026-08-03): offen.** Reine Recherche-Notiz (englisch verfasst);
+> nichts davon ist gebaut — der heutige Writer ist die regelbasierte
+> Analysis-by-Synthesis-Engine (`core/compose.py`), einen Recognizer gibt es
+> nicht.
+> ML-Synthese bleibt laut [`../concepts/architektur.md`](../concepts/architektur.md)
+> §2 „optionales Spätstadium, nicht der Einstieg“, der Erkennungspfad läuft
+> über [`../reference/htr-integration.md`](../reference/htr-integration.md);
+> die §4-Frage nach dem Federtyp ist inzwischen in
+> [`../concepts/federmodelle.md`](../concepts/federmodelle.md) beantwortet.
+
 > Sprache: Englisch (Recherche-Notiz, Ausnahme gemäß [sprachregelung.md](../reference/sprachregelung.md) §1).
 
 Reference notes for **kurrentschrift.ink**. Two questions answered here:

@@ -1,6 +1,14 @@
 # Crawler-Richtlinie — Suchmaschinen und KI-Agenten
 
-**Status:** Entschieden (2026-07-25). Die Repo-Seite ist umgesetzt; das
+> **Status (2026-08-03): lebend.** Politik-Quelle zu `app/public/robots.txt`
+> (die Datei verweist im Kopf hierher) und `llms.txt`; jede Änderung an diesen
+> Dateien oder an der Cloudflare-Durchsetzung zieht hier nach — §2/§3 am
+> 2026-08-03 gegen `robots.txt` geprüft, deckungsgleich.
+> Zwei Teile altern anders: §1 ist eine Messung vom 2026-07-25, §4 beschreibt
+> Dashboard-Schritte, deren Vollzug im Repo nicht nachprüfbar ist; die
+> Verworfen-Liste bleibt geschlossen.
+
+Die Richtung ist entschieden (2026-07-25). Die Repo-Seite ist umgesetzt; das
 Durchsetzen liegt in der Cloudflare-Zone `kurrentschrift.ink` und ist
 eine Dashboard-Handlung (siehe [§4](#4--was-in-cloudflare-zu-tun-ist)).
 

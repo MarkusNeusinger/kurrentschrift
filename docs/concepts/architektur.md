@@ -1,5 +1,11 @@
 # Architektur-Referenz
 
+> **Status (2026-08-03): bindend.** Entschiedene Architektur; die
+> Verworfen-Listen (§2, §4) sind geschlossen, §3/§12 werden bei
+> Schema-Änderungen nachgezogen (zuletzt Handmodell H1/H2, PR #250/#265).
+> §8/§10 beschreiben die geplante Reihenfolge, nicht den Ist-Stand — der
+> steht in [`mvp-roadmap.md`](mvp-roadmap.md).
+
 Zusammenfassung der bisher getroffenen Entscheidungen und ihrer Begründung.
 Sprache: Deutsch (Prosa) / Englisch (Code, Schema, Identifier).
 
@@ -208,12 +214,12 @@ Buchstabenpaare — aber dieser **bekannte, endliche Satz** muss als eigene
 Primär-Glyphen mit eigenem Duktus in die Bibliothek, NICHT als
 exit→entry-Verkettung. Enumerieren, nicht generieren.
 
-**Offene Erweiterung** (im Staging, siehe
+**Erweiterung — umgesetzt als Redesign R3** (vormals
 [`proposals/planaenderungen.md`](../proposals/planaenderungen.md) Vorschlag B):
-*opportunistische Bigramme* aus Beispieltext-Imports — Override-Schicht für
+*opportunistische Bigramme* — eine sparsame Override-Schicht für
 Buchstabenpaare, die in derselben Hand als konkret beobachtete Verbindung
-vorliegen. Generator-Logik bleibt Default. Wird mit dem Beispieltext-Import
-(post-MVP) relevant.
+vorliegen. Sie liegt als Tabelle `glyph_pairs` vor (Migration `0018`); nur
+`approved`-Zeilen erreichen den Composer, die Generator-Logik bleibt Default.
 
 ---
 

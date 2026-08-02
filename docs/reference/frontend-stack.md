@@ -1,5 +1,12 @@
 # Frontend-Stack
 
+> **Status (2026-08-03): lebend.** Ist-Stand von Stack, Routen, i18n-Soll,
+> Deploy und Admin-Gate; jede Änderung an `app/package.json`,
+> `app/src/routes/paths.ts`, den Cloudbuild-/nginx-Dateien oder `api/auth.py`
+> zieht hier nach.
+> Am 2026-08-03 gegen den Code geprüft und deckungsgleich (Routen inkl.
+> `/admin/werkbank`, PR #266; Admin-Token-Regeln, PR #263).
+
 Technische Spezifikation des Endnutzer-Frontends aus Vision §1 (Einstieg),
 §2 (Lineatur-Konfigurator), §3 (Animation), §4 (Lesen üben), §5 (Lese-Hilfe
 inkl. Lupe), §6 (Stil-Analyse-Upload + Hände-Vergleich), §7 (Open-Data) und

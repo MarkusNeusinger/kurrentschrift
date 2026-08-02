@@ -1,5 +1,12 @@
 # Quiz-Wortbank — Quellen, Kuration, Distraktoren
 
+> **Status (2026-08-03): lebend.** Beschreibt Generator, Distraktor-Modell,
+> Fugen-Marker und Seed-Workflow der Wortbank; jede Änderung an
+> `tools/quizgen/` oder am `similarity`-Zwilling
+> `app/src/sections/quiz/wordBank.ts` zieht hier nach.
+> Zahlen am 2026-08-03 nachgerechnet und korrekt: 495 Wörter,
+> 373 `modern` / 122 `historic`.
+
 Referenz für die Wortbank des Lese-Quiz (Wörter-Modus): woher die Wörter
 kommen, nach welchen Regeln sie kuratiert werden und wie die
 Antwortoptionen entstehen. Implementiert in `tools/quizgen/` (Generator),

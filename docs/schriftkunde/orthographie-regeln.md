@@ -1,5 +1,14 @@
 # Orthographie-Regeln (Kurrent, ca. 1850–1941)
 
+> **Status (2026-08-03): statisch.** Quellenbelegter Regel-Katalog, im Code
+> erst teilweise implementiert: §1.1 (Lang-ſ/Rund-s nach Position) und §2
+> (Ligatur-Satz) sind in `core/shaping.py` umgesetzt; §1.2 bislang NUR über
+> den manuellen Fuge-Marker `|` als Zwischenlösung, §1.3 und §4 gar nicht —
+> das Regel-Modul `core/orthography.py` (M4+) existiert nicht.
+> §7 ist überholt: `templates.position` wurde mit dem Positions-Rückbau R2
+> entfernt (Migration `0017`, PR #214); die Wort-Position ist heute
+> Render-Kontext in `core/shaping.py`, keine gespeicherte Form.
+
 Sammlung typischer Lese- und Schreibregeln der deutschen Kurrentschrift
 des 19. und frühen 20. Jahrhunderts. Geltungsbereich: ca. 1850 bis
 zur Umstellung auf Lateinschrift 1941.

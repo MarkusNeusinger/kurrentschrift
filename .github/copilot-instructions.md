@@ -447,7 +447,7 @@ admin's default) with a draggable rough bbox, then the step-by-step Einrichtungs
 freehand eraser + manual ink brush + per-glyph speck auto-fill + inserted donor cell (Zelle einsetzen —
 copy ink from another chart cell into the crop, stored as `bboxes.patches`, so ü/ö are authored from a
 u/o base plus the ä umlaut), with a binarised "Maske zeigen" preview
-→ Lineatur → Schräglage → Weg → Übersicht/approve→lock) for
+→ Lineatur (incl. Schräglage on the same canvas — no standalone slant step) → Weg → Übersicht/approve→lock) for
 canonical extraction, and the 3-column SVG diagnostic from `/diagnostic`
 JSON. The Weg step records the ductus as one or more pen-strokes — each pen
 lift (Absetzen, e.g. a u's two downstrokes) starts a new stroke rather than

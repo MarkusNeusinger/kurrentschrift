@@ -1,5 +1,12 @@
 # Naming- und OSS-Setup-Entscheidungen
 
+> **Status (2026-08-03): bindend.** Name, Domain, Lizenz, Repo-Layout und die
+> verworfenen Alternativen (§4) sind entschieden.
+> Die eingestreuten Umsetzungshinweise in §1/§3 sind am 2026-08-03 gegen den
+> Code geprüft und stimmen (Stil-Dimension geseedet,
+> `react-helmet-async`/`react-i18next` weiterhin nicht eingebaut) — sie sind
+> keine Aufgabenliste.
+
 Begleitdokument zu [`architektur.md`](architektur.md). Hält fest, *was* für
 Name, Domain, Repo und Lizenz entschieden wurde und *warum* — inklusive
 der bewusst verworfenen Alternativen, damit die Begründung später

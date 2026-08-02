@@ -1,8 +1,12 @@
 # Write-API — die öffentlichen Render-Endpunkte
 
-**Status:** Umgesetzt (2026-07). Dieses Dokument beschreibt den
-ausgelieferten Stand; die Design-Geschichte und verworfenen Alternativen
-stehen im Proposal
+> **Status (2026-08-03): lebend.** Beschreibt die ausgelieferten
+> `/write/*`-Endpunkte; jede Änderung an `api/routers/write.py` (inkl.
+> `compose_word_payload`), `core/shaping.py`, `core/compose.py`, dem
+> Render-Payload oder den Cache-Headern muss hier nachgezogen werden.
+
+Dieses Dokument beschreibt den ausgelieferten Stand; die Design-Geschichte
+und verworfenen Alternativen stehen im Proposal
 [`schreibsystem-und-wortbench.md`](../proposals/schreibsystem-und-wortbench.md).
 
 Die Write-API ist der chart-freie Render-Pfad hinter allen öffentlichen
@@ -44,8 +48,8 @@ einem Tag am CDN). Der Admin behält den ungecachten `/diagnostic`.
    Schrift ein. DIE einzige Kompositionsquelle — gepinnt durch das
    Golden-Fixture `tests/fixtures/compose_golden.json.gz`.
    **Laufform-Varianten** (jul31): `/write/word` lädt zusätzlich die
-   `templates`-Zeilen mit `variant=1` (Median-Laufformen aus den
-   Specimen-Wörtern, geschrieben via
+   `templates`-Zeilen mit `variant=100` (`LAUFFORM_VARIANT` seit PR #247;
+   Median-Laufformen aus den Specimen-Wörtern, geschrieben via
    `PUT /sources/{id}/templates/{key}/laufform`, Tool
    `tools/laufform/harvest.py`) und reicht sie als `laufform_by_key` an
    `compose_word`: Glyphen in einem gebundenen Lauf ≥ 3 rendern die

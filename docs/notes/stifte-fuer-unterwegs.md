@@ -1,5 +1,11 @@
 # **Moderne Schreibinstrumente zur Nachahmung der historischen deutschen Kurrentschrift im beruflichen Alltag**
 
+> **Status (2026-08-03): Befund-Journal.** Einmalige Hardware-Recherche zum
+> Kurrent-Schreiben unterwegs (Stand 2026-05-19, Bootstrap-Commit), seither
+> unverändert und ohne Pflegepflicht.
+> Modell- und Preisangaben altern von selbst — bei Bedarf durch eine neue
+> Recherche ersetzen, nicht nachführen.
+
 ## **Einleitung und historische Morphologie der deutschen Kurrentschrift**
 
 Die deutsche Kurrentschrift, eine distinktive Laufschrift, die bis in die Mitte des 20\. Jahrhunderts im gesamten deutschsprachigen Raum als primäre alltägliche Verkehrsschrift etabliert war, stellt an Schreibgeräte völlig andere mechanische und physikalische Anforderungen als moderne Druck- oder etablierte moderne Schreibschriften. Historisch betrachtet weist die Kurrentschrift eine höchst spezifische Morphologie auf, die auf eine lange evolutionäre Entwicklung seit der frühen Neuzeit zurückgeht. Bereits vor dreihundert Jahren, zur Wirkungszeit von Johann Sebastian Bach – einer Epoche, in der weder Schreibmaschinen noch moderne Füllfederhalter oder gar Kugelschreiber existierten –, formte sich ein Schriftbild, das auf strikten vertikalen und diagonalen Ordnungsprinzipien beruhte.  

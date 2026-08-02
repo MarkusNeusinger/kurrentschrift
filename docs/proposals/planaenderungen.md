@@ -1,5 +1,15 @@
 # Planänderungen — Vorschläge
 
+> **Status (2026-08-03): teil-umgesetzt.** A ist freigegeben und inzwischen
+> vom Positions-Rückbau R2 überholt (Migration `0017`, PR #214), B ist als
+> Redesign R3 umgesetzt (`glyph_pairs`, Migration `0018`,
+> PR #215/#216/#219/#220 — nur `approved`-Zeilen erreichen den Composer),
+> C läuft als Positions-Histogramm im H1-Aggregat (`core/aggregate.py`,
+> PR #259; angezeigt seit PR #266).
+> **Offen ist allein Vorschlag D** (`core/orthography.py`; `core/shaping.py`
+> ist der pragmatische Vorläufer) — A–C stehen hier nur noch als
+> Entscheidungsprotokoll, nicht als Staging.
+
 Staging-Bereich für **vorgeschlagene** Anpassungen an den beschlossenen
 Konzept-Dokumenten unter [`docs/concepts/`](../concepts/). Solange ein
 Vorschlag hier steht, ist er **nicht** Teil der Architektur. Erst nach

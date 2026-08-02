@@ -1,5 +1,13 @@
 # Quellen-Recherche: geschriebene Wörter & echte Hände (Juli 2026)
 
+> **Status (2026-08-03): Befund-Journal.** Momentaufnahme der Recherche-Runde
+> vom 30./31.07.2026 (Stand 2026-07-31) — wird nicht fortgeschrieben,
+> sondern nur durch eine neue Runde abgelöst.
+> Umgesetzt ist allein Nr. 1 (`data/sources/suetterlin-leitfaden-1926/`,
+> PR #248); alles Übrige bleibt per Nutzer-Entscheid unbeauftragte
+> Recherche — keine Commits, keine Anfragen ohne neuen Entscheid, die
+> Rangliste ist keine Aufgabenliste.
+
 **Stand: 2026-07-31.** Synthese der Recherche-Runde vom 30./31.07.2026
 (19-Agenten-Workflow mit unabhängigen Suchkanälen und adversarialen
 Lizenz-Checks). Ausgangsfrage: Gibt es weitere **geschriebene**

@@ -1,5 +1,12 @@
 # Federmodelle — drei Schriften, drei Federn, ein Renderpfad
 
+> **Status (2026-08-03): bindend.** §1–§5 sind entschieden und umgesetzt
+> (PR #170: `core/widths.py`, `chisel_union_rings`, `apply_pen`,
+> `pooled_pen`), die Verworfen-Listen (§2, §4) sind geschlossen.
+> In der Folgearbeiten-Liste §6 ist Punkt 2 erledigt (Petzendorfer-Source,
+> Migration `0012`); 1, 3, 4 und 5 bleiben offen — die Wizard-Vorschau
+> rendert `broad_nib` weiterhin aus den Messbreiten.
+
 Stand: 2026-07-08. Dieses Dokument hält die Entscheidungen fest, mit denen
 das System alle drei Grundvorlagen (Kurrent · Sütterlin · Offenbacher)
 **schreiben** kann: dieselbe Bibliothek, derselbe Composer, dieselbe

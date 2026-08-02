@@ -1,5 +1,13 @@
 # Datenablage und Quellen-Verlinkung im Repo
 
+> **Status (2026-08-03): bindend.** Commit-Klassen (§1) und
+> `SOURCE.md`-Pflichtfelder (§2) gelten unverändert und werden von
+> `/audit-licenses` geprüft; neue Quellen kommen mit eigenem `SOURCE.md`
+> dazu, ohne dass dieses Doc sich ändert.
+> Der Baum in §1 ist Soll-Layout — befüllt sind nur `sources/` (7 Quellen)
+> und `variants/`; der Eigenhand-Plan aus §4 ist von den
+> Sütterlin-Specimen-Platten überholt.
+
 Kurzspezifikation zu [`quellen-und-rechte.md`](quellen-und-rechte.md): *wo* Quellen
 und Varianten physisch liegen und *wie* verlinkt wird. Variante 0
 (Loth 1866) ist die Basis für alle ersten Tests (MVP §8, Testwörter §9).

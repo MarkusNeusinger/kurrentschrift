@@ -1,5 +1,14 @@
 # Design-System — kurrentschrift.ink
 
+> **Status (2026-08-03): lebend.** Beschreibt den Ist-Zustand des
+> öffentlichen Frontends und ist am 2026-08-03 gegen den Code geprüft
+> (Tokens, 19-px-Leiter, Breiten 760/1152/1280, Routenliste).
+> **Mitziehen bei jeder Änderung an `app/src/styles/paper.ts`,
+> `theme/typography.ts`,
+> `components/PageContainer|Prose|PageHeader|PublicHeader|PublicFooter` oder
+> an der öffentlichen Routen-/Bereichsstruktur** — sonst driftet die
+> Bauvorschrift von dem, was ausgeliefert wird.
+
 > **Was dieses Dokument ist:** die *verbindliche, aktuelle* Bauvorschrift der
 > öffentlichen Website — Tokens, Typo-Skala, Breiten, Flächen, Navigation,
 > Komponenten, Bewegung, Lesbarkeit. Es beschreibt den **Ist-Zustand des Codes**
@@ -231,6 +240,7 @@ leitet weiter auf `/schriftkunde` (alter Name). Der Admin liegt unverändert hin
 | `PageHeader` | einheitlicher **Seitenkopf**: Bereichs-Eyebrow + Playfair-Titel + Intro | `eyebrow?`, `title`, `children` (Intro im `Prose`-Maß); jede öffentliche Seite außer Landing-Hero |
 | `CategoryHeading` | **Abschnitts**titel mit Viridian-Kurrent-Initiale auf Haarlinie | innerhalb einer Seite (`/schriftkunde`, `/impressum`, `/tafel`, `/landing`) |
 | `InfoHint` | grünes Kurrent-„(i)" + Popover („Mehr dazu") | app-weit, Detail eine Geste entfernt |
+| `PaperCardLink` | DIE Papier-Karte, die ein Link ist: Hover/Fokus heben sie an, Rand wird viridian | `to`, `sx`; Geschwister-Export `PaperCardCta` (Haarlinie wischt bei Karten-Hover/-Fokus ein) — genutzt von Landing, Hubs, `/schriftkunde` |
 | `HubView` | Hub-Layout (Titel + Lead + Karten-Grid) | `title`, `lead`, `cards[{title,body,cta,to}]` |
 | `HeroWritten` | einspaltiger Landing-Hero: Markenwort wird von einer Feder geschrieben | GLKurrent-Wort (Specimen) hinter `<HeroWord>` als Engine-Swap-Naht (Font jetzt, Engine später) |
 | `WrittenGlyph` | ein Glyph „wie geschrieben" (Ductus-Playback) | weiße Arbeitsfläche |
