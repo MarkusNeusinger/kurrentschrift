@@ -8,7 +8,7 @@
 // scale = (baseline_y - midband_y) px per unit, left-aligned on the crop edge.
 
 import { Alert, Box, Button, Chip, CircularProgress, Tooltip, Typography } from '@mui/material';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
 import { WrittenWord } from '@/components/WrittenWord';
 import { useAdmin } from '@/context/AdminContext';
@@ -21,6 +21,9 @@ import { de } from '@/locales/admin';
 import { PairEditorDialog } from '@/sections/admin/pairs/PairEditorDialog';
 import { pairKeysOf } from '@/sections/admin/pairs/pairKeys';
 import { garamond } from '@/styles/paper';
+
+import { PairMeasuredChips } from './PairMeasuredChips';
+import { usePairMeasurements } from './pairMeasurement';
 
 const FACE_H = 220; // px per face — words are wide, keep cards scannable
 
@@ -114,12 +117,16 @@ function WordCard({
   sourceId,
   overlay,
   score,
+  measured,
   onOpenEditor,
 }: {
   sample: WordSampleOut;
   sourceId: string;
   overlay: boolean;
   score?: WordSampleScoreOut;
+  // The „Gemessen" readout — pair cards only (the caller owns the scope), so
+  // the card itself stays agnostic of the occurrence/aggregate layers.
+  measured?: ReactNode;
   onOpenEditor?: () => void;
 }) {
   const [ref, inView] = useInView<HTMLDivElement>();
@@ -164,6 +171,8 @@ function WordCard({
           </Button>
         )}
       </Box>
+
+      {measured}
 
       {error ? (
         <Alert severity="error" sx={{ py: 0 }}>
@@ -230,6 +239,13 @@ export function WordComparison({ mode, overlay }: { mode: WordCompareMode; overl
   // Per-sample remount counter — bumped after an override save to force the
   // card's composed-word refetch (the render cache entry is evicted with it).
   const [cardTick, setCardTick] = useState<Record<string, number>>({});
+  // The measured layers behind the joins (Handmodell H2) — loaded ONCE per
+  // source for the whole tab and only for the Verbindungen tab: a word card is
+  // many joins at once, and the Fremdhand tab is view-only context that is
+  // never measured against. The tab switch only flips `enabled` (this view
+  // stays mounted), and the hook reuses what it already holds for the source,
+  // so leaving and returning costs no request.
+  const measurements = usePairMeasurements(sourceId, mode === 'pairs');
 
   useEffect(() => {
     let cancelled = false;
@@ -317,6 +333,14 @@ export function WordComparison({ mode, overlay }: { mode: WordCompareMode; overl
           )}
         </Box>
       )}
+      {/* One quiet line for the whole tab, never per card: the measured layer
+          is secondary context — a failed read degrades the cards, it does not
+          break them. */}
+      {mode === 'pairs' && (measurements.status === 'error' || measurements.aggregates.status === 'unavailable') && (
+        <Typography variant="caption" color="text.secondary">
+          {measurements.status === 'error' ? de.admin.compare.measuredLoadError : de.admin.compare.measuredUnavailable}
+        </Typography>
+      )}
       {visible.map((s) => {
         // A pair card links straight into the pair editor (redesign R1b →
         // R3 circle) — with its specimen crop as the editor's underlay.
@@ -330,6 +354,20 @@ export function WordComparison({ mode, overlay }: { mode: WordCompareMode; overl
             sourceId={sourceId}
             overlay={overlay}
             score={scores[s.id]}
+            // Matched by the SAME base-key pair the editor deep link uses, so
+            // the numbers and the „Im Paar-Editor öffnen" target can never
+            // describe two different joins. A ligature-folding pair (no join,
+            // no keys) gets no readout either.
+            measured={
+              keys ? (
+                <PairMeasuredChips
+                  measurements={measurements}
+                  leftKey={keys[0]}
+                  rightKey={keys[1]}
+                  specimenId={s.id}
+                />
+              ) : undefined
+            }
             onOpenEditor={keys ? () => setEditing({ sample: s, left: keys[0], right: keys[1] }) : undefined}
           />
         );

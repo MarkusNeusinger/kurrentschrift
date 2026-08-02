@@ -67,7 +67,9 @@ const num = (value: number, digits: number): string => value.toFixed(digits);
 
 // A wire point is only usable once it really is a finite 2-vector — the rows
 // come from JSONB, so length and finiteness are worth asserting before any
-// bounds math turns a NaN into an invisible sketch.
+// bounds math turns a NaN into an invisible sketch. The offset's MAD goes
+// through the SAME check: a spread is a 2-vector too, and a NaN in it would
+// reach `toFixed` (or a whisker's coordinates) just as easily.
 const isPoint = (p: unknown): p is number[] =>
   Array.isArray(p) && p.length >= 2 && Number.isFinite(p[0]) && Number.isFinite(p[1]);
 
@@ -399,7 +401,7 @@ function PairConnectorSketch({
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      {hasOffset && offsetMad && offsetMad.length >= 2 && (
+      {hasOffset && isPoint(offsetMad) && (
         <g stroke={WERKBANK_COLORS.trace} strokeWidth={u} strokeOpacity={0.6}>
           <line x1={offset[0] - offsetMad[0]} x2={offset[0] + offsetMad[0]} y1={-offset[1]} y2={-offset[1]} />
           <line x1={offset[0]} x2={offset[0]} y1={-(offset[1] - offsetMad[1])} y2={-(offset[1] + offsetMad[1])} />
@@ -460,7 +462,7 @@ export function PairStats({
     // Without a stored MAD the ± clause is dropped entirely: an absent spread
     // printed as „± 0,00" would claim a measurement nobody made.
     numbers.push(
-      offsetMad && offsetMad.length >= 2
+      isPoint(offsetMad)
         ? fmt(t.statsOffset, {
             x: num(offset[0], 2),
             y: num(offset[1], 2),

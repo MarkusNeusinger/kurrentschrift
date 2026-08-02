@@ -56,18 +56,33 @@ gepoolter Schicht-1-Statistik, die Paar-Linse die gemessene
 Median-Verbindung über ihren Vorkommen samt Dissektions-QC
 (`gen_chamfer` als Audit-Zahl); Neuaufbau je Schicht per Knopf,
 `apply-laufform` bewusst nicht (optimierungs-werkbank.md §7, W5).
-**Damit sind die lesenden H2-Oberflächen vollständig:** die zweite
-Hälfte ist die Bench-Seite — die Report-Spalte `meas` in
-`tools/wordbench/run.py` (`tools/wordbench/pairmeas.py`) stellt jeder
-komponierten Verbindung ihre gemessene Vorkommens-Zeile gegenüber
-(`doff` = horizontaler Platzierungs-Versatz im Körper-Rahmen der Ernte,
-`dconn` = start-alignierte Connector-Form, beide in xh), gespeist
-aus dem neuen eingefrorenen Fixture-Artefakt `pair_instances.json`.
-Report-only wie Slant und Gleichzug-Audit: `bench_loss`/`pair_loss`
-blieben bei der Einführung bis zur letzten Stelle identisch
-(qualitaetsmetrik.md §6 „Report-Spalte `meas`"). Die Werkbank sieht
-die Statistik, die Bench misst den Abstand zu ihr — beides ohne
-Eingriff ins Rendering. H3–H5 bleiben Vorschlag.
+**Damit ist die zweite Hälfte der ersten Nutzung ebenfalls
+umgesetzt:** der Verbindungen-Tab von `/admin/vergleich` trägt je
+Paar-Karte die Zeile „Gemessen" zwischen Kopf und Bild —
+Vorkommenszahl (Aggregat-`n_instances`, ersatzweise die zugeordneten
+Vorkommen) und `gen_chamfer`-Mittel als Chips, die ausführlichen
+Zahlen (Streuung, Ernte-Abstand, Fit-Rest, Versatz ± MAD,
+Ink-Lücke, Platten-Histogramm) im Tooltip, dazu „Fit unsicher", wenn
+das Vorkommen *dieser* Vorlage keinen sauberen Fit hat. Geladen wird
+einmal je Quelle (öffentliche `pair-instances` + admin-gesicherte
+`pair-aggregates` der aus den Zeilen abgeleiteten Hand), nie je Karte;
+ohne Admin-Lesezugang bleiben die Vorkommenszahlen stehen. Bewusst nur
+Zahlen: die Median-Skizze bleibt der Werkbank-Linse vorbehalten, eine
+registrierte Überlagerung von gemessenem Connector und komponiertem
+Paar unterbleibt (verschiedene Rahmen — eine falsche Deckung läse sich
+als Beleg).
+**Dazu die Bench-Seite, womit die lesenden H2-Oberflächen vollständig
+sind:** die Report-Spalte `meas` in `tools/wordbench/run.py`
+(`tools/wordbench/pairmeas.py`) stellt jeder komponierten Verbindung
+ihre gemessene Vorkommens-Zeile gegenüber (`doff` = horizontaler
+Platzierungs-Versatz im Körper-Rahmen der Ernte, `dconn` =
+start-alignierte Connector-Form, beide in xh), gespeist aus dem neuen
+eingefrorenen Fixture-Artefakt `pair_instances.json`. Report-only wie
+Slant und Gleichzug-Audit: `bench_loss`/`pair_loss` blieben bei der
+Einführung bis zur letzten Stelle identisch (qualitaetsmetrik.md §6
+„Report-Spalte `meas`"). Die Werkbank sieht die Statistik, der
+Vergleich zeigt sie am Beleg, die Bench misst den Abstand zu ihr —
+alles ohne Eingriff ins Rendering. H3–H5 bleiben Vorschlag.
 Konsolidiert die
 Laufform-Runde vom 30./31.07.2026 (PR #246/#247: Median-Laufformen als
 Template-Variante 100, `laufform_by_key` im Composer) und die
@@ -217,9 +232,10 @@ Dissektions-QC, `min_n` 1 wegen der dünnen Beleglage.
 `glyph_pairs.geometry` bleibt unangetastet
 (verbatim-Override, R3). Erste Nutzung rein **lesend — umgesetzt**: die
 Werkbank-Paar-Linse zeigt die Median-Verbindung über ihren Vorkommen
-(W5), und die Wordbench trägt seit `aug02` die Report-Spalte `meas`
-(`tools/wordbench/pairmeas.py`) — je komponierter Verbindung `doff`
-(horizontale Platzierung im Körper-Rahmen) und `dconn`
+(W5), der Vergleichs-Tab trägt die „Gemessen"-Chips je Paar-Karte (s.
+Status oben), und die Wordbench trägt seit `aug02` die Report-Spalte
+`meas` (`tools/wordbench/pairmeas.py`) — je komponierter Verbindung
+`doff` (horizontale Platzierung im Körper-Rahmen) und `dconn`
 (start-alignierte Connector-Form) gegen die gemessene
 `pair_instances`-Zeile desselben Slots, gespeist aus dem neuen
 eingefrorenen Artefakt `pair_instances.json`; report-only, Headlines
