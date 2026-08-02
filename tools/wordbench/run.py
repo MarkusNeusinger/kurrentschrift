@@ -370,13 +370,17 @@ def main() -> None:
             flow = f"  flow gaps={len(audit['gaps'])} dbl={len(audit['doublings'])}" if audit else ""
             # Measured-vs-composed joins: printed whenever the fixture set
             # carries the artifact, zeros included — a parser must not have to
-            # infer a missing column. '-' where no join matched a measurement.
+            # infer a missing column. '-' where no join matched a measurement;
+            # all-dash when this entry's guard fired (the run-level warning
+            # names the error), so the per-row column set stays stable.
             pm = r.get("pairmeas")
             meas = ""
             if pm:
                 doff = f"{pm['doff_mean']:.3f}" if pm["doff_mean"] is not None else "-"
                 dconn = f"{pm['dconn_mean']:.3f}" if pm["dconn_mean"] is not None else "-"
                 meas = f"  meas n={pm['n_matched']}/{pm['n_joins']} doff={doff} dconn={dconn}"
+            elif "pairmeas_error" in r:
+                meas = "  meas n=-/- doff=- dconn=-"
             print(
                 f"word {r['id']:<15} loss {r['loss']:.6f}  "
                 f"trans {r['transition']:.3f} cover {r['coverage']:.3f} width {r['width']:.3f}  "

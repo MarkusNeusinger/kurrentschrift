@@ -112,7 +112,13 @@ def rows_for_entry(artifact: dict | None, kind: str, specimen_id: str) -> list[d
     drills are separate id namespaces of the same source)."""
     if not artifact:
         return []
-    return [r for r in artifact.get("rows", []) if r["kind"] == kind and r["specimen_id"] == specimen_id]
+    rows = artifact.get("rows", [])
+    if not isinstance(rows, list):
+        return []
+    # Tolerant row access: one malformed row in a hand-edited artifact must
+    # not raise out of the helper — the runner treats the artifact as a
+    # report-only input that can never take the scoring down.
+    return [r for r in rows if isinstance(r, dict) and r.get("kind") == kind and r.get("specimen_id") == specimen_id]
 
 
 def _base_key(slots: Sequence[Any], index: int | None) -> str:
