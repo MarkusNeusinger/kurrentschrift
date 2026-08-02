@@ -41,6 +41,16 @@ Output contract (parsed by the experiment loop — keep the words block stable):
 
 The pairs block (``--set pairs``/``all``) mirrors it with ``pair_loss:``,
 ``worst_pair:``, ``pairs_scored/skipped/failed`` and ``pair_comp_*`` lines.
+
+Report-only columns are appended AFTER that stable block and never enter the
+loss: ``slant`` (R5), the Gleichzug audit (jul30) and — when the fixture set
+carries ``pair_instances.json`` — ``meas`` (handmodell H2): the composed joins
+against the specimen's own dissected ones — ``doff`` the horizontal placement
+delta in the harvest's body frame, ``dconn`` the start-aligned connector-shape
+distance (tools/wordbench/pairmeas.py) — per row as
+``meas n=<matched>/<joins> doff=… dconn=…`` and as ``meas_matched`` +
+``meas_excluded`` (QC-rejected dissections / override-rendered joins) +
+``meas_doff_median``/``meas_dconn_median`` in the block.
 """
 
 from __future__ import annotations
@@ -58,6 +68,7 @@ from core.pipeline import render_payload_for_template
 from core.shaping import GlyphSlot
 from tools.wordbench.gleichzug import audit_composed
 from tools.wordbench.metric import score_word
+from tools.wordbench.pairmeas import compare_joins, load_measured, rows_for_entry
 from tools.wordbench.slant import composed_raster, slant_deg
 
 
@@ -145,6 +156,25 @@ def _print_block(reports: list[dict], skipped: list[dict], kind: str) -> None:
             dbl_total = sum(len(a["doublings"]) for a in audits)
             print(f"{slant_prefix}gleichzug_gaps: {gaps_total}")
             print(f"{slant_prefix}gleichzug_doublings: {dbl_total}")
+        # Measured-vs-composed join medians (report-only, handmodell H2): how
+        # far the generated placement/connector sits from the specimen's own
+        # dissected join. Absent when the fixture set has no
+        # pair_instances.json — an older export keeps running unchanged.
+        meas = [r["pairmeas"] for r in scored if r.get("pairmeas")]
+        if meas:
+            matched = sum(m["n_matched"] for m in meas)
+            total = sum(m["n_joins"] for m in meas)
+            print(f"{slant_prefix}meas_matched: {matched}/{total}")
+            # What the comparison deliberately left out: dissections the
+            # harvest's own QC rejected, and joins rendered from an approved
+            # override (an override IS a harvested centerline).
+            excluded_fit = sum(m.get("excluded_fit", 0) for m in meas)
+            excluded_override = sum(m.get("excluded_override", 0) for m in meas)
+            print(f"{slant_prefix}meas_excluded: fit={excluded_fit} override={excluded_override}")
+            for label in ("doff", "dconn"):
+                values = [m[f"{label}_mean"] for m in meas if m[f"{label}_mean"] is not None]
+                if values:
+                    print(f"{slant_prefix}meas_{label}_median: {float(np.median(values)):.3f}")
 
 
 def main() -> None:
@@ -198,6 +228,9 @@ def main() -> None:
     word_filter = set(args.words.split(",")) if args.words else None
     reports: list[dict] = []
     skipped: list[dict] = []
+    # Entries whose meas guard fired — reported ONCE per run below, so a
+    # systematic schema failure never reads like "this set has no artifact".
+    pairmeas_failures: list[tuple[str, str]] = []
     for manifest_path in manifests:
         manifest = json.loads(manifest_path.read_text())
         root = manifest_path.parent
@@ -244,6 +277,10 @@ def main() -> None:
 
         if laufform_rows:
             print(f"laufform: {len(laufform_rows)} variant rows from {laufform_path.parent.name}")
+        # The frozen MEASURED joins of this set (handmodell H2) — the reference
+        # for the report-only meas columns. None for a fixture set exported
+        # before the artifact existed: the columns are then simply absent.
+        measured_artifact = load_measured(root)
 
         for entry in manifest["words"]:
             entry_id = entry.get("id", entry["word"])
@@ -295,6 +332,16 @@ def main() -> None:
                     report["gleichzug"] = audit_composed(composed)
                 except Exception as exc:
                     report["gleichzug_error"] = f"{type(exc).__name__}: {exc}"
+            # "gemessen vs. komponiert" (handmodell H2) — the same doctrine:
+            # REPORT columns under their OWN guard, never the loss.
+            if composed is not None and measured_artifact is not None:
+                try:
+                    report["pairmeas"] = compare_joins(
+                        composed, slots, rows_for_entry(measured_artifact, kind, entry_id)
+                    )
+                except Exception as exc:
+                    report["pairmeas_error"] = f"{type(exc).__name__}: {exc}"
+                    pairmeas_failures.append((entry_id, report["pairmeas_error"]))
             report["id"] = entry_id
             report["word"] = entry["word"]
             report["kind"] = kind
@@ -303,6 +350,10 @@ def main() -> None:
             if args.artifacts and composed is not None:
                 args.artifacts.mkdir(parents=True, exist_ok=True)
                 _overlay(word_dir, word_meta, composed, report, args.artifacts / f"{entry_id}.png")
+
+    if pairmeas_failures:
+        entry_id, error = pairmeas_failures[0]
+        print(f"warning: meas columns failed on {len(pairmeas_failures)} entries (first {entry_id}: {error})")
 
     for r in sorted(reports, key=lambda r: r["id"]):
         if r["failed"]:
@@ -317,10 +368,19 @@ def main() -> None:
             # included — parsers must not have to infer a missing column.
             audit = r.get("gleichzug")
             flow = f"  flow gaps={len(audit['gaps'])} dbl={len(audit['doublings'])}" if audit else ""
+            # Measured-vs-composed joins: printed whenever the fixture set
+            # carries the artifact, zeros included — a parser must not have to
+            # infer a missing column. '-' where no join matched a measurement.
+            pm = r.get("pairmeas")
+            meas = ""
+            if pm:
+                doff = f"{pm['doff_mean']:.3f}" if pm["doff_mean"] is not None else "-"
+                dconn = f"{pm['dconn_mean']:.3f}" if pm["dconn_mean"] is not None else "-"
+                meas = f"  meas n={pm['n_matched']}/{pm['n_joins']} doff={doff} dconn={dconn}"
             print(
                 f"word {r['id']:<15} loss {r['loss']:.6f}  "
                 f"trans {r['transition']:.3f} cover {r['coverage']:.3f} width {r['width']:.3f}  "
-                f"(tx={reg['tx']:.0f}, ty={reg['ty']:.0f}){slant}{flow}"
+                f"(tx={reg['tx']:.0f}, ty={reg['ty']:.0f}){slant}{flow}{meas}"
             )
 
     result: dict = {"style": args.style, "set": args.which}

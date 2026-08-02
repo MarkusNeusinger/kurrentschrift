@@ -56,7 +56,18 @@ gepoolter Schicht-1-Statistik, die Paar-Linse die gemessene
 Median-Verbindung über ihren Vorkommen samt Dissektions-QC
 (`gen_chamfer` als Audit-Zahl); Neuaufbau je Schicht per Knopf,
 `apply-laufform` bewusst nicht (optimierungs-werkbank.md §7, W5).
-H3–H5 bleiben Vorschlag.
+**Damit sind die lesenden H2-Oberflächen vollständig:** die zweite
+Hälfte ist die Bench-Seite — die Report-Spalte `meas` in
+`tools/wordbench/run.py` (`tools/wordbench/pairmeas.py`) stellt jeder
+komponierten Verbindung ihre gemessene Vorkommens-Zeile gegenüber
+(`doff` = horizontaler Platzierungs-Versatz im Körper-Rahmen der Ernte,
+`dconn` = start-alignierte Connector-Form, beide in xh), gespeist
+aus dem neuen eingefrorenen Fixture-Artefakt `pair_instances.json`.
+Report-only wie Slant und Gleichzug-Audit: `bench_loss`/`pair_loss`
+blieben bei der Einführung bis zur letzten Stelle identisch
+(qualitaetsmetrik.md §6 „Report-Spalte `meas`"). Die Werkbank sieht
+die Statistik, die Bench misst den Abstand zu ihr — beides ohne
+Eingriff ins Rendering. H3–H5 bleiben Vorschlag.
 Konsolidiert die
 Laufform-Runde vom 30./31.07.2026 (PR #246/#247: Median-Laufformen als
 Template-Variante 100, `laufform_by_key` im Composer) und die
@@ -204,9 +215,16 @@ Buchstaben); Aggregate je `(hand, left_key, right_key)` sind
 bogenlängen-nachgesampelter Median-Connector, MAD-Hüllen und gepoolte
 Dissektions-QC, `min_n` 1 wegen der dünnen Beleglage.
 `glyph_pairs.geometry` bleibt unangetastet
-(verbatim-Override, R3). Erste Nutzung rein **lesend**: die
-Audit-/Report-Spalten der Wordbench und der Vergleichs-Tab zeigen
-„gemessen vs. komponiert" pro Paar. Rahmen bleibt
+(verbatim-Override, R3). Erste Nutzung rein **lesend — umgesetzt**: die
+Werkbank-Paar-Linse zeigt die Median-Verbindung über ihren Vorkommen
+(W5), und die Wordbench trägt seit `aug02` die Report-Spalte `meas`
+(`tools/wordbench/pairmeas.py`) — je komponierter Verbindung `doff`
+(horizontale Platzierung im Körper-Rahmen) und `dconn`
+(start-alignierte Connector-Form) gegen die gemessene
+`pair_instances`-Zeile desselben Slots, gespeist aus dem neuen
+eingefrorenen Artefakt `pair_instances.json`; report-only, Headlines
+bei der Einführung byte-identisch (qualitaetsmetrik.md §6). Rahmen
+bleibt
 [`planaenderungen.md`](planaenderungen.md) Vorschlag B: der Generator
 bleibt Default, keine Bigram-Datenbank (architektur.md §2, verworfen).
 
