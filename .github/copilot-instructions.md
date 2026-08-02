@@ -822,8 +822,31 @@ impl-generate pipelines. Conventions:
   effect with `tools/wordbench/run.py --overrides <harvest.json>` (an
   override run is its own number, never the headline). The bench also
   reports a slant column (`slant <spec>/<comp>` per row + medians,
-  `tools/wordbench/slant.py`, 90° = upright) — report-only, never part of
-  the loss.
+  `tools/wordbench/slant.py`, 90° = upright) and, third in that
+  report-column lineage (slant → Gleichzug → meas), the
+  **gemessen-vs-komponiert** column (`tools/wordbench/pairmeas.py`,
+  handmodell H2): per row `meas n=<matched>/<joins> doff=… dconn=…` plus
+  block medians + `meas_excluded` — the composed join against the
+  specimen's own dissected one, `doff` = the HORIZONTAL placement delta
+  in the harvest's BODY frame (the left glyph's last non-diacritic
+  stroke end → the right glyph's first, against the measured
+  `geometry.offset`'s x; the composer's coupling anchors sit up to ~2 xh
+  away after a capital ornament, and the measured y is by construction
+  the composed Δy, so neither is compared), `dconn` = connector shape
+  (mean pointwise distance, arc-length-resampled to
+  `core.aggregate.PAIR_CONNECTOR_POINTS` and each start-aligned, hence
+  translation-free; the composed line still carries its overlap
+  extension/capital retrace, so it is a monotone signal, not a
+  calibrated distance). QC-rejected dissections (`fit_ok`) and
+  override-rendered joins are excluded and counted, never averaged. It
+  reads the NEW frozen fixture artifact `pair_instances.json` (per set,
+  written atomically by `export_fixtures.py`; `--only pair-instances`
+  fills it into existing roots without re-freezing anything else — a
+  corrupt one costs the columns and one warning line, never the run) and
+  needs `compose_word(..., provenance=True)`, which tags glyph items
+  with `slot_index` and states each join's `exit`/`entry` in word
+  coordinates. All of these are report-only, never part of the loss — a
+  headline must stay byte-identical across their introduction.
 - **Never merge a PR yourself** — open it, get it green and
   review-clean (address Copilot review comments, then resolve the
   threads); merging is the maintainer's call.

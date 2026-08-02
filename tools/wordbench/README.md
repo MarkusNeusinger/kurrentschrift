@@ -64,8 +64,11 @@ Everything a run scores against is frozen at export: the binarized +
 despeckled word mask, the skeleton + EDT width map, the SHAPED SLOTS (so a
 shaping change cannot silently move the inputs), the template rows — chart
 AND the `LAUFFORM_VARIANT` running forms (`templates_laufform.json`, passed
-to `compose_word` as `laufform_by_key` exactly like `/write/word`) — and the
-pooled nib. The code under test per run is composition + rendering
+to `compose_word` as `laufform_by_key` exactly like `/write/word`), the
+MEASURED joins of the same specimens (`pair_instances.json` — the reference
+of the report-only `meas` columns; `export_fixtures.py --only pair-instances`
+adds it to an existing fixture root without re-freezing anything else) — and
+the pooled nib. The code under test per run is composition + rendering
 (`compose_word`, `render_payload_for_template`). Registration is part of the
 metric and BOUNDED (scale fixed by the measured lineature; translation
 ±0.6 x-heights / ±4 px, chosen by forward chamfer and reported per word) — an
@@ -88,6 +91,17 @@ loss = 0.45·transition + 0.35·coverage + 0.20·width      (all ∈ [0,1], lowe
 Each scored row also reports `slant <specimen>/<composed>` (redesign R5:
 shear-search estimator in `slant.py`, 90 = upright, < 90 = right-leaning),
 plus per-block medians — report-only diagnostics, never part of the loss.
+The same lineage continues with the Gleichzug audit (`gleichzug.py`) and
+`meas n=<matched>/<joins> doff=… dconn=…` (`pairmeas.py`, handmodell H2):
+each composed join against the specimen's own dissected one — `doff` the
+HORIZONTAL placement delta between the two letters' body endpoints and the
+measured `geometry.offset`'s x (the frame the harvest measured in; the
+composer's coupling anchors and the measured y are deliberately not
+compared), `dconn` the start-aligned, hence translation-free connector-shape
+distance. Block medians plus `meas_excluded` (QC-rejected dissections and
+override-rendered joins, counted rather than averaged) are appended after
+the stable block. Also report-only: a headline must stay byte-identical
+across such a column's introduction.
 - `width` — |log| of the total-ink-width ratio: spacing/rhythm errors that
   per-point chamfer barely sees. For PAIRS this component carries a constant
   positive bias (the plate draws lead-in/lead-out strokes the composed

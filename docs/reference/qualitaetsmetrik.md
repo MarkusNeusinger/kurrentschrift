@@ -1300,3 +1300,121 @@ Median-Anker-Experiments treffen wir wegen des größeren Eintragssets
 nicht exakt — das Experiment lief auf dem alten 58er-Set und tauschte
 die Anker direkt statt über den Varianten-Renderpfad. Neue Headlines:
 **Wörter 0,116886 · Paare 0,164506**.
+
+### Report-Spalte `meas` `aug02` — gemessen vs. komponiert (Handmodell H2)
+
+Dritte Spalte der Report-Linie **Slant (R5) → Gleichzug (jul30) → meas**:
+dieselbe Doktrin, dieselbe Bauweise — eigener try/except, angehängt
+NACH dem stabilen Block, nie Teil des Loss.
+
+Die Vorkommens-Schicht weiß längst, was der Schreiber an jeder
+Verbindung wirklich getan hat: `pair_instances` hält je gefundenem
+Nachbarpaar EINE sezierte Verbindung derselben Specimens, die die Bench
+scort (geerntet von `tools/pairlab/harvest.py`, darum decken sich die
+Slot-Räume), im `glyph_pairs`-Rahmen — Konnektor-Mittellinie und
+Platzierungs-Offset relativ zum Austritt des LINKEN Glyphs,
+grundlinien-fest, Template-Einheiten. Der Composer erzeugt für denselben
+Slot seine eigene Verbindung. Nebeneinandergelegt ergibt das zwei Zahlen
+je Verbindung (`tools/wordbench/pairmeas.py`, xh-Einheiten):
+
+- **`doff`** — Platzierung: der **horizontale** Versatz im
+  **Körper-Rahmen**, `|Δx_komponiert − offset_x_gemessen|`. `Δx` wird
+  genau dort abgelesen, wo die Ernte gemessen hat: zwischen dem Ende der
+  LETZTEN Nicht-Diakritikum-Spur des linken Glyphs und dem Anfang der
+  ERSTEN des rechten (`tools/pairlab/analyze.py`,
+  `a_exit_line[-1]`/`b_first_line[0]`).
+- **`dconn`** — Form: mittlerer punktweiser Abstand der beiden
+  Mittellinien, jede bogenlängen-gleichmäßig auf
+  `core.aggregate.PAIR_CONNECTOR_POINTS` (24) resampelt — dieselbe
+  Parametrisierung wie die Paar-Aggregation — und anschließend auf ihren
+  eigenen ersten Punkt gelegt. **Start-alignierte, damit
+  translations-freie Form-und-Schwung-Distanz**: Platzierung ist allein
+  Sache von `doff`.
+
+**Warum Körper-Rahmen und warum x-only** (Befund der Review, mit
+Messwerten): die Kopplungspunkte des Composers (`exit`/`entry`) sind
+NICHT die Körper-Endpunkte — ein Kapital-Zierauslauf oder ein
+getrimmter Anstrich verschiebt sie um bis zu ~2 xh. Der komponierte
+Offset dort gegen eine im Körper-Rahmen gemessene Zahl gehalten meldet
+einen reinen Rahmen-Artefakt: `Of` kam mit `d_exit` 2,037 auf `doff`
+2,062, `Bi` 1,246/1,287, die sechs Kapital-S-Wörter alle um 1,8 — 24 %
+aller Wort-Verbindungen waren zu ≥80 % Artefakt. Und die y-Komponente
+des gemessenen Offsets trägt **per Konstruktion keine
+Specimen-Information**: die Ernte rechnet den relativen vertikalen
+Fit-Versatz heraus (`end_dy`, `tools/pairlab/harvest.py`), weil der
+Composer beide Glyphen grundlinien-fest setzt — `offset_y` ist also das
+komponierte Körper-Δy zum Erntezeitpunkt. Ein Vergleich dort würde den
+Composer gegen sich selbst messen. Der horizontale Versatz ist zudem
+genau die Größe, die uebergaenge-befund.md Befund 1 als dominant
+ausgewiesen hat (Median-Korrekturbedarf 0,19 xh).
+
+`compose_word(..., provenance=True)` nennt an jedem Verbindungs-Item
+weiterhin die Kopplungspunkte `exit`/`entry` in Wortkoordinaten (der
+Endstrich nur `exit`) — sie sind aus der Mittellinie nicht ablesbar
+(`_overlap_extend` zieht deren ersten Punkt in die vorige Tinte zurück)
+und bleiben für Overlay-Diagnostik nützlich; `doff` liest sie
+ausdrücklich **nicht** mehr.
+
+**Bewusst akzeptierte Vorbehalte.** (1) `doff`: ein HOHER Eintritt
+schneidet Anstrich-Samples von der ersten Spur des rechten Glyphs
+(`entry_trim`) — eine Composer-Entscheidung, die den komponierten
+Körper-Start gegen eine eingefrorene Messung verschieben kann; klein und
+als Verschiebung der ganzen Spalte sichtbar, nicht als Ausreißer.
+(2) `dconn`: die komponierte Mittellinie ist die EMITTIERTE, trägt also
+die Overlap-Verlängerung und nach einem Kapital den Zier-Retrace davor.
+Die Start-Alignierung entfernt die daraus folgende Translation, nicht
+diesen Vorlauf (die sechs Kapital-S-Wörter liegen dadurch bei ~0,82).
+`dconn` ist damit kein kalibrierter Absolutabstand, sondern ein
+monotones Signal (gleiche Verbindung, kleinere Zahl = näher am
+Specimen). Für eine Report-Spalte genügt das.
+
+**Ausschlüsse** (gezählt, nie stillschweigend): eine gemessene Zeile,
+deren Dissektion die Ernte selbst verwirft
+(`measurements.fit_ok` nicht gesetzt — dasselbe Tor, das der
+Paar-Aggregat-Neuaufbau in `core.aggregate.aggregate_pair_instances`
+anlegt: 11 von 199 Wort-Zeilen und 3 von 33 Paar-Zeilen der
+1922er-Platten), und eine Verbindung, die der Composer aus einem
+**freigegebenen Override** gerendert hat — ein Override IST eine
+geerntete Mittellinie, gegen ihr eigenes Quell-Specimen misst sie
+konstruktionsbedingt ~0 (dieselbe Doktrin wie „ein Override-Lauf ist
+seine eigene Zahl").
+
+Ausgabe: je gescorter Zeile `meas n=<zugeordnet>/<Verbindungen>
+doff=… dconn=…` (Nullen inklusive, `-` wo nichts zugeordnet werden
+konnte), je Block `meas_matched` + `meas_excluded: fit=… override=…` +
+`meas_doff_median` + `meas_dconn_median` (Paare-Set mit Präfix `pair_`);
+die Werte landen automatisch im JSON-Report (`pairmeas`). Zugeordnet wird
+über `(kind, specimen_id, from_slot)` UND Übereinstimmung der beiden
+Basis-Keys — passt das Paar nicht (verschobene Slots), zählt die
+Verbindung als nicht zugeordnet, nie als Absturz. Ein unlesbares oder
+kaputtes `pair_instances.json` verhält sich wie ein fehlendes: EINE
+Warnzeile, Spalten weg, Lauf unverändert. Feuert der Per-Eintrag-Guard
+(Schema-Bruch statt fehlendem Artefakt), steht ebenfalls genau eine
+Warnzeile im Lauf — „keine Spalte" und „Spalte kaputt" dürfen von außen
+nicht gleich aussehen.
+
+**Freeze-Regel erweitert** (genau wie bei `templates_laufform.json`):
+`pair_instances.json` ist ein NEUES eingefrorenes Fixture-Artefakt je
+Set, geschrieben vom Export (`--only pair-instances` füllt es additiv in
+bestehende Fixture-Wurzeln, ohne Crops/Masken/Slots/Templates — und damit
+die Headlines — neu einzufrieren). Ein Compose-Loop editiert es nie; ein
+Re-Export ist eine bewusste Re-Baseline DIESER Spalten.
+
+**Headline-Nachweis** (Pflicht bei jeder Report-Spalte): Lauf vorher und
+nachher, `--style suetterlin --set all` — `bench_loss` 0,116886 und
+`pair_loss` 0,164506 bis zur letzten Stelle identisch, ebenso jeder
+Einzelwert (`loss`, Komponenten, Registrierung, Slant, Gleichzug) über
+alle 96 Einträge. Nulllinie der Spalte (Körper-Rahmen, x-only,
+start-aligniert, mit den beiden Ausschlüssen): **Wörter 188/214
+zugeordnet (11 `fit_ok`-Ausschlüsse, 0 Overrides), doff-Median 0,135 ·
+dconn-Median 0,115; Paare 30/34 (3 `fit_ok`), doff-Median 0,192 ·
+dconn-Median 0,217** — die isolierten Drills sitzen erwartungsgemäß
+weiter weg als die Verbindungen im Wortfluss.
+
+Zum Vergleich die verworfene erste Fassung (Kopplungs-Anker,
+euklidisch): Wörter doff-Median 0,178, Paare 0,283. Der Rückgang ist
+kein Fortschritt am Composer, sondern der entfernte Rahmen-Artefakt —
+`Of` fällt von `doff` 2,062 auf 0,070, `wenn` von 0,238 auf 0,227. Die
+schlechtesten Verbindungen sind seither die echten Platzierungsfehler
+(`Za` 0,78 in *Zaum*, `re` 0,71 in *regieren*, `an` 0,65) statt der
+Kapitalanschlüsse.

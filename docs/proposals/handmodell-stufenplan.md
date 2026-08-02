@@ -70,7 +70,19 @@ ohne Admin-Lesezugang bleiben die Vorkommenszahlen stehen. Bewusst nur
 Zahlen: die Median-Skizze bleibt der Werkbank-Linse vorbehalten, eine
 registrierte Überlagerung von gemessenem Connector und komponiertem
 Paar unterbleibt (verschiedene Rahmen — eine falsche Deckung läse sich
-als Beleg). H3–H5 bleiben Vorschlag.
+als Beleg).
+**Dazu die Bench-Seite, womit die lesenden H2-Oberflächen vollständig
+sind:** die Report-Spalte `meas` in `tools/wordbench/run.py`
+(`tools/wordbench/pairmeas.py`) stellt jeder komponierten Verbindung
+ihre gemessene Vorkommens-Zeile gegenüber (`doff` = horizontaler
+Platzierungs-Versatz im Körper-Rahmen der Ernte, `dconn` =
+start-alignierte Connector-Form, beide in xh), gespeist aus dem neuen
+eingefrorenen Fixture-Artefakt `pair_instances.json`. Report-only wie
+Slant und Gleichzug-Audit: `bench_loss`/`pair_loss` blieben bei der
+Einführung bis zur letzten Stelle identisch (qualitaetsmetrik.md §6
+„Report-Spalte `meas`"). Die Werkbank sieht die Statistik, der
+Vergleich zeigt sie am Beleg, die Bench misst den Abstand zu ihr —
+alles ohne Eingriff ins Rendering. H3–H5 bleiben Vorschlag.
 Konsolidiert die
 Laufform-Runde vom 30./31.07.2026 (PR #246/#247: Median-Laufformen als
 Template-Variante 100, `laufform_by_key` im Composer) und die
@@ -218,10 +230,17 @@ Buchstaben); Aggregate je `(hand, left_key, right_key)` sind
 bogenlängen-nachgesampelter Median-Connector, MAD-Hüllen und gepoolte
 Dissektions-QC, `min_n` 1 wegen der dünnen Beleglage.
 `glyph_pairs.geometry` bleibt unangetastet
-(verbatim-Override, R3). Erste Nutzung rein **lesend**: die
-Audit-/Report-Spalten der Wordbench und der Vergleichs-Tab zeigen
-„gemessen vs. komponiert" pro Paar (Vergleichs-Tab umgesetzt, s.
-Status oben). Rahmen bleibt
+(verbatim-Override, R3). Erste Nutzung rein **lesend — umgesetzt**: die
+Werkbank-Paar-Linse zeigt die Median-Verbindung über ihren Vorkommen
+(W5), der Vergleichs-Tab trägt die „Gemessen"-Chips je Paar-Karte (s.
+Status oben), und die Wordbench trägt seit `aug02` die Report-Spalte
+`meas` (`tools/wordbench/pairmeas.py`) — je komponierter Verbindung
+`doff` (horizontale Platzierung im Körper-Rahmen) und `dconn`
+(start-alignierte Connector-Form) gegen die gemessene
+`pair_instances`-Zeile desselben Slots, gespeist aus dem neuen
+eingefrorenen Artefakt `pair_instances.json`; report-only, Headlines
+bei der Einführung byte-identisch (qualitaetsmetrik.md §6). Rahmen
+bleibt
 [`planaenderungen.md`](planaenderungen.md) Vorschlag B: der Generator
 bleibt Default, keine Bigram-Datenbank (architektur.md §2, verworfen).
 

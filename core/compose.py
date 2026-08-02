@@ -1314,9 +1314,12 @@ def compose_word(
 
     ``provenance=True`` (diagnostics only) additionally tags every glyph item
     with ``slot_index``/``glyph_key`` and every connector with ``from_slot``/
-    ``to_slot``/``pair=[prev_key, curr_key]``, so a downstream ruler can
-    attribute a deviation to a letter or a specific join. Default off — the
-    public ``/write/word`` payload and the golden fixture stay byte-identical.
+    ``to_slot``/``pair=[prev_key, curr_key]`` plus the coupling endpoints
+    ``exit``/``entry`` (word coordinates; the Endstrich has no ``entry``), so a
+    downstream ruler can attribute a deviation to a letter or a specific join
+    and compare the composed placement against a measured one. Default off —
+    the public ``/write/word`` payload and the golden fixture stay
+    byte-identical.
 
     ``laufform_by_key`` (optional) maps glyph_keys to ALTERNATIVE render
     payloads — the median running forms (templates LAUFFORM_VARIANT). A glyph uses
@@ -1390,6 +1393,9 @@ def compose_word(
             swing["pair"] = [prev["key"], None]
             swing["from_slot"] = prev["slot_index"]
             swing["to_slot"] = None
+            # The coupling endpoints the join was built from (word coordinates).
+            # The Endstrich has no right glyph, so it carries no "entry".
+            swing["exit"] = [prev["exit"][0], prev["exit"][1]]
         items.append(swing)
         track(centerline)
         cursor_x = centerline[-1][0]
@@ -1883,6 +1889,8 @@ def compose_word(
                 connector["from_slot"] = prev["slot_index"]
                 connector["to_slot"] = slot_index
                 connector["override"] = True
+                connector["exit"] = [ex, ey]
+                connector["entry"] = [entry_xy[0] + dx, entry_xy[1]]
             items.append(connector)
             track(centerline)
         elif joined:
@@ -1916,6 +1924,14 @@ def compose_word(
                 connector["pair"] = [prev["key"], slot.key]
                 connector["from_slot"] = prev["slot_index"]
                 connector["to_slot"] = slot_index
+                # The COUPLING endpoints this join was built from, in word
+                # coordinates: the left glyph's exit and the placed right
+                # glyph's entry. Not readable off the emitted centerline —
+                # _overlap_extend perturbs its first sample and a capital
+                # retrace prepends points — so the measured-vs-composed
+                # comparison (handmodell H2 read surfaces) needs them stated.
+                connector["exit"] = [prev["exit"][0], prev["exit"][1]]
+                connector["entry"] = [entry_xy[0] + dx, entry_xy[1]]
             items.append(connector)
             track(centerline)
 

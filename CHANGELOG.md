@@ -14,6 +14,51 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Wordbench "gemessen vs. komponiert" columns (Handmodell H2): every composed
+  letter join is now reported against the specimen's own dissected one.** The
+  pair layer already knew what the writer did at each join — `pair_instances`
+  holds one dissection per adjacent joined pair of the very specimens the bench
+  scores — but the bench never looked at it, so a worse word said only *that*
+  it got worse. `tools/wordbench/pairmeas.py` puts the two side by side per
+  join: `doff`, the HORIZONTAL placement delta read in the frame the harvest
+  measured in — the two letters' body endpoints (left glyph's last
+  non-diacritic stroke end, right glyph's first non-diacritic stroke start)
+  against the measured `geometry.offset`'s x — and `dconn`, the mean pointwise
+  distance between the two connector centerlines, arc-length-resampled to the
+  same 24 points the pair aggregation uses and then each shifted onto its own
+  first sample, i.e. a translation-free shape-and-sweep distance. The frame is
+  the whole point: the composer's coupling anchors sit up to ~2 xh away from
+  the body endpoints after a capital ornament or a trimmed lead-in, so
+  comparing them against a body-frame measurement reports an artifact rather
+  than an error (`Of` read 2.06 that way, now 0.07). The measured offset's y is
+  excluded by construction — the harvest cancels the relative vertical fit
+  shift, so it is the composed body Δy at harvest time and would measure the
+  composer against itself. The run prints `meas n=<matched>/<joins> doff=…
+  dconn=…` on every scored row (zeros included, `-` where nothing matched) and
+  appends `meas_matched`/`meas_excluded`/`meas_doff_median`/`meas_dconn_median`
+  after the stable headline block, `pair_`-prefixed for the pairs set. Two
+  kinds of join stay out of the medians and are counted instead: a dissection
+  the harvest's own QC rejected (`fit_ok`, the gate the pair-aggregate rebuild
+  applies too — 11 of 199 word rows, 3 of 33 pair rows), and a join rendered
+  from an approved override, which IS a harvested centerline and would score
+  ~0 against its own source. `compose_word(..., provenance=True)` additionally
+  states each join's coupling endpoints `exit`/`entry` in word coordinates (the
+  Endstrich has no `entry`) — not readable off the emitted centerline, kept for
+  overlay diagnostics, deliberately not used by `doff`. The measured joins
+  freeze as a new per-set fixture artifact `pair_instances.json`
+  (`export_fixtures.py`, written atomically, with `--only pair-instances` to
+  fill it into existing fixture roots without re-freezing — and thereby
+  re-baselining — crops, masks, slots or templates); a corrupt or unreadable
+  one costs the columns and one warning line, never the run. Report-only in the
+  strict sense, like the slant column and the Gleichzug audit before it:
+  computed under its own guard so a crash cannot move the number (and says so
+  once per run), matched by `(kind, specimen_id, from_slot)` plus agreeing base
+  keys so a shifted slot counts unmatched rather than comparing the wrong
+  transition, and verified byte-identical — `bench_loss` 0.116886 and
+  `pair_loss` 0.164506 to the last digit before and after, every per-entry loss
+  unchanged. Null line: words 188/214 matched, doff median 0.135 · dconn median
+  0.115; pairs 30/34, 0.192 · 0.217. The public `/write/word` payload and the
+  compose golden fixture are untouched (provenance stays off by default).
 - **"Gemessen vs. komponiert" on the Vergleich page's pair cards (Handmodell
   H2, read surface).** The Verbindungen tab showed a specimen beside the
   composed pair and left the verdict entirely to the eye, while the occurrence
