@@ -14,6 +14,40 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Werkbank "Stufen-Einsicht" (W5): the hand-model statistics layers are now
+  visible inside the context lenses.** Both aggregate layers existed and had no
+  reader — H1 medians and H2 pair medians were numbers only a rebuild response
+  ever printed, while the surface where a complaint is made showed the chart
+  form and the raw occurrences with the whole condensation step invisible
+  between them. The letter lens now draws the stored aggregate between the two:
+  the per-anchor median as an anchor chain with per-anchor MAD circles over the
+  baseline/midband hairlines („Aggregat-Median (Laufform-Quelle)"), plus the
+  pooled layer-1 numbers (occurrences, specimens, fit RMSE ⌀/max, x-height,
+  position histogram). The pair lens gains „Gemessen vs. komponiert": every
+  loaded occurrence connector thin, the median connector bold on top and the
+  median offset as a dot with its MAD whisker — occurrences, median and hull all
+  share the one left-exit frame, so the sketch needs no registration, and a
+  `/write/word` overlay is deliberately not attempted (different frame; the
+  comparison stays side-by-side) — beside the pooled dissection QC with
+  `gen_chamfer` as the audit number. The hand is derived from the loaded rows
+  (the modal non-null `hand_id`, never a constant: the Werkbank shows exactly
+  one source and therefore one hand) and is NAMED in every block's header, with
+  a quiet warning when the occurrences do not all name the same one — one
+  hand's medians over another hand's occurrences must never happen silently.
+  The two layers load and refetch independently (own state, own error flag), so
+  a failing pair read never mutes the letter block and a rebuild leaves the
+  other lens — and its own result caption — untouched; the admin-gated reads sit
+  outside the spine's load, so a 401 or an empty statistics table degrades to a
+  quiet caption and leaves the spine and both lenses fully usable. Each block
+  carries a quiet per-layer rebuild button — that recomputes statistics and
+  touches no rendering, which is also why `apply-laufform` has no button here:
+  it writes Laufform rows, and this surface displays generated stages rather
+  than editing them (optimierungs-werkbank.md §3/§7). The sketches stay honest
+  about their own material: occurrences the rebuild skipped as `fit_bad` are
+  left out of the pair sketch and its bounds (and counted in the caption)
+  instead of squashing the median they never fed, an absent MAD prints no „±"
+  clause, and an aggregate missing for the selected key reads differently from a
+  hand that was never rebuilt at all.
 - **Pair aggregates (Handmodell H2): the statistics layer over the observed
   letter joins.** `pair_instances` has held every dissected join since H1/H2,
   but nothing condensed them — the pair level had occurrences and no medians.

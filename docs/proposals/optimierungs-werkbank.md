@@ -209,3 +209,37 @@ vom Symptom zur Änderung und zurück.
   `GET /work-items` (eine Sitzung soll ihre Aufgaben lesen können, ohne
   vorher eine `source_id` zu erraten) und das Skill
   `.claude/skills/work-basket/`, das den Ablauf führt.
+- **W5 — Stufen-Einsicht** (umgesetzt): die Linsen zeigen jetzt auch die
+  Statistik-Schichten des Handmodells (handmodell-stufenplan.md H1/H2),
+  damit zwischen Tafel-Form und geschriebenem Wort keine Stufe mehr
+  unsichtbar bleibt. **Buchstaben-Linse:** unter der Tafel-Form der
+  Aggregat-Median der Hand als Ankerkette mit MAD-Kreisen über Grund-
+  und Mittellinie („Aggregat-Median (Laufform-Quelle)") plus die
+  gepoolte Schicht-1-Statistik (n, Vorlagen, RMSE ⌀/max, x-Höhe,
+  Positions-Histogramm). **Paar-Linse:** „Gemessen vs. komponiert" —
+  jede geladene Vorkommens-Verbindung dünn, der Median-Connector
+  kräftig darüber, der Median-Versatz als Punkt mit MAD-Whisker (alles
+  im selben Rahmen relativ zum Abgang des linken Glyphs, also ohne
+  Registrierung), daneben die Dissektions-QC mit `gen_chamfer` als
+  Audit-Zahl, Ernte-Abstand, Fit-Rest, Ink-Lücken-Anteil und
+  Herkunfts-Histogramm. Die Hand wird aus den geladenen Vorkommen
+  abgeleitet (häufigste `hand_id`, §6 „genau eine Quelle/Hand"), nie
+  fest verdrahtet — und in jedem Block **benannt**, samt ruhiger
+  Warnzeile, sobald die geladenen Vorkommen mehr als eine Hand nennen
+  (die Abb.-22-Schülerhand kommt irgendwann unter eigener id dazu;
+  stilles Mischen wäre eine Lüge über die Zahlen). Fehlt die Hand oder
+  scheitert der admin-gegatete Read, bleibt die Seite vollständig
+  bedienbar und die Blöcke zeigen eine ruhige Zeile. Beide Schichten
+  laden getrennt: ein Neuaufbau holt nur seine eigene Liste nach, die
+  bisherigen Zeilen bleiben derweil stehen (die andere Linse und die
+  Ergebnis-Zeile des Neuaufbaus bleiben unberührt). Gezeichnet wird nur,
+  was der Neuaufbau auch verdichtet hat — als `fit_bad` übersprungene
+  Vorkommen fehlen in der Paar-Skizze und in ihren Grenzen (Zahl steht
+  in der Bildunterschrift), in der Liste darunter bleiben sie stehen;
+  eine fehlende MAD wird nicht als „± 0,00" ausgegeben. Je Schicht gibt
+  es einen leisen Neuaufbau-Knopf
+  (`POST …/aggregates/rebuild`, `POST …/pair-aggregates/rebuild`) — das
+  ist Wartung an der Statistik, kein Arbeitsschritt. **`apply-laufform`
+  fehlt hier bewusst:** es ändert Rendering und ist damit genau der
+  Griff, den §3 auf dieser Fläche verbietet — angeschaut und
+  reklamiert wird hier, gerechnet und übernommen woanders.

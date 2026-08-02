@@ -293,7 +293,25 @@ kurrentschrift/
 │       │                #   dashed letter boxes from `instances`, join dots between
 │       │                #   adjacent boxes) left, a switching context lens right — letter
 │       │                #   lens (chart form + all occurrences as crop cut-outs, wizard
-│       │                #   jump) / pair lens (pair_instances + pair-editor jump) — plus
+│       │                #   jump) / pair lens (pair_instances + pair-editor jump). Since
+│       │                #   the Stufen-Einsicht (W5) both lenses also show the hand-model
+│       │                #   statistics layers (werkbank/LensStats.tsx): letter = the H1
+│       │                #   aggregate's anchor median + per-anchor MAD circles over
+│       │                #   baseline/midband plus pooled layer-1 stats; pair = "Gemessen
+│       │                #   vs. komponiert", every occurrence connector thin, the H2 median
+│       │                #   connector bold on top, median offset as a dot with MAD whisker
+│       │                #   (one shared left-exit frame, no /write/word overlay) beside the
+│       │                #   dissection QC (gen_chamfer as the audit number). The hand is
+│       │                #   derived from the loaded rows (modal non-null hand_id), never
+│       │                #   hardcoded, and named in each block (warning line when the rows
+│       │                #   name more than one); the admin-gated reads live in their own
+│       │                #   per-layer effects so a 401 degrades to "keine Statistik" and a
+│       │                #   rebuild refetches only its layer (previous rows stay mounted);
+│       │                #   the sketches drop occurrences the rebuild skipped as fit_bad
+│       │                #   (from the polylines AND the bounds, counted in the caption) and
+│       │                #   print no "±" without a stored MAD; a quiet rebuild button per
+│       │                #   layer, and NO apply-laufform here (§3: generated stages are
+│       │                #   displayed, not edited) — plus
 │       │                #   the Auftragskorb over work_items; the ⚑ dialog asks the §4
 │       │                #   pre-sort question for letters (solo-wrong → wizard, files
 │       │                #   nothing). Needs WordSampleOut.rect (page px) to place the

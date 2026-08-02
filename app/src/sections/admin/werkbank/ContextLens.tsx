@@ -1,17 +1,29 @@
 // The Werkbank's context lens (optimierungs-werkbank.md §2): whatever was
 // clicked in the word spine gets its cross-cutting view here — a LETTER with
-// its chart form and every stored word occurrence as a thumbnail, or a JOIN
-// with every dissected occurrence and the way into the pair editor. Clicking
-// an occurrence jumps back into its word; the ⚑ buttons file an Auftrag.
+// its chart form, the hand's statistics and every stored word occurrence as a
+// thumbnail, or a JOIN with the measured median transition over its dissected
+// occurrences and the way into the pair editor. Clicking an occurrence jumps
+// back into its word; the ⚑ buttons file an Auftrag.
+//
+// The statistics blocks (Stufenplan H1/H2) live in LensStats — they are the
+// "Stufen-Einsicht": every layer between the chart form and the written word
+// visible where the complaint is made, and read-only per the §3 doctrine.
 
 import { Alert, Box, Button, Chip, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
 
 import { cropUrl, wordSampleCropUrl } from '@/lib/api';
-import type { InstanceOut, PairInstanceOut, WordSampleOut } from '@/lib/api';
+import type {
+  AggregateOut,
+  InstanceOut,
+  PairAggregateOut,
+  PairInstanceOut,
+  WordSampleOut,
+} from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { garamond } from '@/styles/paper';
 
+import { LetterStats, PairStats, type RebuildFn, type StatsContext } from './LensStats';
 import { WERKBANK_COLORS, cropBoxOf, type Mark, type Selection } from './model';
 
 const THUMB_H = 64; // px — tall enough to judge a letter's run form
@@ -25,6 +37,18 @@ interface Props {
   letterOccurrences: InstanceOut[];
   pairOccurrences: PairInstanceOut[];
   sampleById: Map<string, WordSampleOut>;
+  // The hand's stored statistics for exactly the selected element (undefined =
+  // this key has no aggregate row yet), plus the per-LAYER context that says
+  // which hand they belong to and why they might be missing at all — the two
+  // layers load and rebuild independently, so they carry their own status.
+  letterAggregate?: AggregateOut;
+  pairAggregate?: PairAggregateOut;
+  letterStats: StatsContext;
+  pairStats: StatsContext;
+  // Recompute one statistics layer and report the outcome as a caption;
+  // undefined without a hand to rebuild for.
+  onRebuildAggregates?: RebuildFn;
+  onRebuildPairAggregates?: RebuildFn;
   onJump: (specimenId: string) => void;
   onMark: (mark: Mark) => void;
   onOpenWizard: (glyphKey: string) => void;
@@ -101,6 +125,12 @@ export function ContextLens({
   letterOccurrences,
   pairOccurrences,
   sampleById,
+  letterAggregate,
+  pairAggregate,
+  letterStats,
+  pairStats,
+  onRebuildAggregates,
+  onRebuildPairAggregates,
   onJump,
   onMark,
   onOpenWizard,
@@ -157,6 +187,18 @@ export function ContextLens({
           </Box>
         </Box>
 
+        {/* Between the authored chart form and the raw occurrences: what the
+            hand's occurrences CONDENSE to — the median the Laufform is derived
+            from, with its spread. Keyed on the glyph so a rebuild caption never
+            lingers under the next letter. */}
+        <LetterStats
+          key={glyphKey}
+          glyphKey={glyphKey}
+          aggregate={letterAggregate}
+          stats={letterStats}
+          onRebuild={onRebuildAggregates}
+        />
+
         <Box>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
             {fmt(t.occurrencesLabel, { count: letterOccurrences.length })}
@@ -208,6 +250,16 @@ export function ContextLens({
           {fmt(t.lensSeenIn, { word: selection.specimen.word })}
         </Typography>
       </Box>
+
+      {/* The audit view of this join: the measured median over the occurrences
+          it was condensed from, beside the generator's distance from them. */}
+      <PairStats
+        key={`${leftKey}:${rightKey}`}
+        aggregate={pairAggregate}
+        occurrences={pairOccurrences}
+        stats={pairStats}
+        onRebuild={onRebuildPairAggregates}
+      />
 
       <Box>
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>

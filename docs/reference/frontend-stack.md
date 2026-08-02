@@ -88,7 +88,10 @@ Post-MVP-Phasen (architektur.md §10):
 | Pfad | Inhalt | Status |
 |---|---|---|
 | `/admin/chart` | Bbox-Editor auf Source-Chart; enthält den Einrichtungs-Wizard (Dialog, einzige Autoren-Fläche inkl. Stylus-Trace) und das Diagnose-Modal (3-Spalten + M4-Fit) | existiert |
-| `/admin/vergleich` | Vergleichsansicht: jedes autorisierte Zeichen als Chart-Crop vs. „wie geschrieben", nebeneinander oder überlagert (`sections/admin/compare/GlyphComparison.tsx`) | existiert |
+| `/admin/vergleich` | Vergleichsansicht mit vier Tabs: **Buchstaben** (jedes autorisierte Zeichen als Chart-Crop vs. „wie geschrieben", nebeneinander oder überlagert) + **Wörter · Verbindungen · Andere Hand** (Wortproben neben derselben Komposition, Scores auf Knopfdruck; `sections/admin/compare/`) | existiert |
+| `/admin/paare` | Paar-Matrix: alle Zweier-Verbindungen eines Buchstabens server-komponiert, Zellklick öffnet den Paar-Editor (`sections/admin/pairs/`) | existiert |
+| `/admin/belege` | Belege: jedes gespeicherte Wort-Vorkommen über seinem Platten-Ausschnitt, schlechteste zuerst; öffnet den Wort-Editor zum Nachfahren (`sections/admin/belege/`) | existiert |
+| `/admin/werkbank` | Werkbank: Wort-Rückgrat + Kontext-Linsen (inkl. der Statistik-Schichten H1/H2) + Auftragskorb — die eine Optimierungs-Fläche (`sections/admin/werkbank/`) | existiert |
 | `/admin/sources` | Source-Verwaltung | post-MVP |
 | `/admin/jobs` | HTR-Job-Monitor (Quote-Übersicht) | post-MVP |
 
@@ -340,9 +343,19 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
   + `steps/{Mask,Lineatur,Slant,Trace,Overview}Step`. Einzige Autoren-Fläche.
 - `sections/admin/diagnostics/` — `DiagnosticDialog` (3-Spalten + M4-Fit),
   `DiagnosticView`/`FitView`.
-- `sections/admin/compare/` — `GlyphComparison` (`/admin/vergleich`): jedes
-  autorisierte Zeichen als Chart-Crop vs. „wie geschrieben", nebeneinander
-  oder überlagert.
+- `sections/admin/compare/` — `CompareTabs` (`/admin/vergleich`) mit
+  `GlyphComparison` (jedes autorisierte Zeichen als Chart-Crop vs. „wie
+  geschrieben", nebeneinander oder überlagert) und `WordComparison`
+  (Wortproben vs. Komposition, Scores worst-first).
+- `sections/admin/pairs/` — `PairMatrix` (`/admin/paare`) +
+  `PairEditorDialog` (Kopplung, gezeichneter Verbindungszug, Freigabe).
+- `sections/admin/belege/` — `BelegeView` (`/admin/belege`) +
+  `WordTraceEditorDialog` + die pure, getestete `registration.ts`
+  (Crop ↔ Spur).
+- `sections/admin/werkbank/` — `WerkbankView` (`/admin/werkbank`):
+  `WordSpineCard` (Rückgrat), `ContextLens` + `LensStats`
+  (Buchstaben-/Paar-Linse inkl. der Statistik-Schichten H1/H2),
+  `KorbPanel` + `MarkDialog` (Auftragskorb), pures `model.ts`.
 - `sections/admin/sidebar/GlyphSidebar.tsx` — Buchstaben-Grid aus
   `domain/glyphs.ts`.
 - `components/` — `PaperBackground` (Papier-Atmosphäre), `PublicHeader`
