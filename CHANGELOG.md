@@ -12,6 +12,8 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+## [0.22.0] — 2026-08-02 — Hand model statistics: aggregates + gemessen vs. komponiert
+
 ### Added
 
 - **Wordbench "gemessen vs. komponiert" columns (Handmodell H2): every composed
