@@ -19,6 +19,7 @@ from core.database.models import (
     GlyphPair,
     Hand,
     Instance,
+    PairAggregate,
     PairInstance,
     QuizWord,
     Source,
@@ -425,7 +426,11 @@ class PairInstanceRepository:
         self.session = session
 
     async def list(
-        self, source_id: str | None = None, left_key: str | None = None, right_key: str | None = None
+        self,
+        source_id: str | None = None,
+        left_key: str | None = None,
+        right_key: str | None = None,
+        hand_id: str | None = None,
     ) -> list[PairInstance]:
         stmt = select(PairInstance).order_by(PairInstance.left_key, PairInstance.right_key, PairInstance.id)
         if source_id is not None:
@@ -434,6 +439,10 @@ class PairInstanceRepository:
             stmt = stmt.where(PairInstance.left_key == left_key)
         if right_key is not None:
             stmt = stmt.where(PairInstance.right_key == right_key)
+        if hand_id is not None:
+            # The aggregation reads per HAND across sources — statistics are a
+            # property of the writer, not of the plate they were seen on (§12).
+            stmt = stmt.where(PairInstance.hand_id == hand_id)
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
@@ -611,4 +620,48 @@ class AggregateRepository:
 
     async def delete_for_hand(self, hand_id: str) -> int:
         result = await self.session.execute(delete(Aggregate).where(Aggregate.hand_id == hand_id))
+        return result.rowcount or 0
+
+
+class PairAggregateRepository:
+    """Per-hand pair aggregates (§12 layer 2), rebuilt from `pair_instances` (Stufenplan H2)."""
+
+    # Everything except the identity columns of `uq_pair_aggregate_hand_lr`.
+    _UPDATE_COLS = ("offset_center", "connector_center", "hull", "mean_stats", "n_instances")
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def list(
+        self, hand_id: str | None = None, left_key: str | None = None, right_key: str | None = None
+    ) -> list[PairAggregate]:
+        stmt = select(PairAggregate).order_by(PairAggregate.left_key, PairAggregate.right_key)
+        if hand_id is not None:
+            stmt = stmt.where(PairAggregate.hand_id == hand_id)
+        if left_key is not None:
+            stmt = stmt.where(PairAggregate.left_key == left_key)
+        if right_key is not None:
+            stmt = stmt.where(PairAggregate.right_key == right_key)
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def upsert_many(self, rows: list[dict]) -> int:
+        """Batch insert-or-update on `uq_pair_aggregate_hand_lr` (hand,
+        left_key, right_key) — a rebuild refreshes the hand's pair aggregates
+        in place."""
+        if not rows:
+            return 0
+        stmt = pg_insert(PairAggregate).values(rows)
+        stmt = stmt.on_conflict_do_update(
+            constraint="uq_pair_aggregate_hand_lr",
+            # The ORM-level `onupdate` never fires through on_conflict_do_update —
+            # stamp the recency column explicitly so admin UIs can trust it.
+            set_={col: stmt.excluded[col] for col in self._UPDATE_COLS} | {"updated_at": func.now()},
+        )
+        await self.session.execute(stmt)
+        await self.session.flush()
+        return len(rows)
+
+    async def delete_for_hand(self, hand_id: str) -> int:
+        result = await self.session.execute(delete(PairAggregate).where(PairAggregate.hand_id == hand_id))
         return result.rowcount or 0

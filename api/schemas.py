@@ -399,6 +399,54 @@ class AggregateApplyOut(BaseModel):
     skipped: list[AggregateApplySkip]
 
 
+class PairAggregateOut(BaseModel):
+    """One per-hand pair aggregate (§12 layer 2, Stufenplan H2).
+
+    The natural transition's distribution, in the same frame as a `glyph_pairs`
+    override (template units relative to the LEFT glyph's exit):
+    `offset_center` is the median placement offset, `connector_center` the
+    per-point median of the arc-length-resampled connector centerlines, and
+    `hull` their per-axis spread (`offset_mad`, `connector_mad`). `mean_stats`
+    pools the dissection QC (generated + harvested chamfer, ink-gap share, the
+    word-plate/pair-drill histogram, distinct specimens)."""
+
+    left_key: str
+    right_key: str
+    offset_center: list[float]
+    connector_center: list[list[float]]
+    hull: dict[str, Any]
+    mean_stats: dict[str, Any]
+    n_instances: int
+
+
+class PairAggregateKeySummary(BaseModel):
+    """One rebuilt pair in the pair-rebuild report.
+
+    `gen_chamfer_mean` is the audit number: the mean distance (x-height units)
+    between the GENERATED connector and the specimen skeleton, measured at
+    harvest time — „gemessen vs. komponiert" per pair. None when the stored
+    occurrences carry no such measurement."""
+
+    left_key: str
+    right_key: str
+    n_instances: int
+    gen_chamfer_mean: float | None = None
+
+
+class PairAggregateRebuildOut(BaseModel):
+    """Result of `POST /hands/{hand_id}/pair-aggregates/rebuild`.
+
+    `deleted` counts the hand's previous pair-aggregate rows (the rebuild
+    replaces wholesale), `skipped` the occurrences left out per reason
+    (`fit_bad`, `geometry`, `below_min_n`)."""
+
+    hand_id: str
+    stored: int
+    deleted: int
+    skipped: dict[str, int]
+    pairs: list[PairAggregateKeySummary]
+
+
 # ------------------------------------------------------- Work items (Werkbank)
 
 

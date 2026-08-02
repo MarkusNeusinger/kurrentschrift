@@ -165,7 +165,9 @@ ebenso die früher (naming-und-setup §1) vertagte Stil-Dimension:
 - `instances` — die `control_points`-Fits pro Beleg aus Originaltexten
   (§12 Schicht 1, `measurements`); viele pro `(glyph, position, variant)`.
 - `aggregates` — Per-Hand-Aggregat (§12 Schicht 2): Cluster-Mittelpunkt +
-  Hüllkurve pro `(hand, glyph, position, variant)`. Optional später
+  Hüllkurve pro `(hand, glyph_key, variant)` (Migration `0021`, nach dem
+  Positions-Rückbau R2); die Paar-Ebene analog in `pair_aggregates` pro
+  `(hand, left_key, right_key)` (H2). Optional später
   textunabhängige Hand-Features (Hinge/Δn-Hinge nach Bulacu/Schomaker).
 
 `instances` wird seit dem Handmodell-Schritt H1 (2026-07-31,
@@ -176,8 +178,13 @@ eine legitime Beobachtungs-Dimension pro Beleg); die additiven Schwestern
 Verbindungs-Vorkommen — und `word_instances` — je Specimen-Wort die
 nachgefahrene Gesamt-Schablone (Slot-Labels + Schreibpfad;
 `traced` aus der Ernte, `authored` aus manueller Admin-Nachfahrung, die
-eine Neu-Ernte nie überschreibt). `aggregates` ist angelegt, der
-Aggregations-Job folgt. Seit dem Positions-Rückbau (R2) autorisiert der Admin genau EINE Form
+eine Neu-Ernte nie überschreibt). `aggregates` wird seit H1 vom
+admin-gesicherten Rebuild befüllt (Median-Anker + MAD-Hülle je
+`(hand, glyph_key, variant)`, `apply-laufform` leitet daraus die
+Varianten-100-Zeile ab); die Paar-Ebene liegt seit H2 in der eigenen
+Tabelle `pair_aggregates` je `(hand, left_key, right_key)` —
+Median-Offset + Median-Connector + Hüllen, rein lesende Statistik ohne
+Render-Wirkung. Seit dem Positions-Rückbau (R2) autorisiert der Admin genau EINE Form
 pro Glyphe — die positionsabhängigen Verbindungsstriche werden aus
 `entry`/`exit`-Tangenten *generiert* (§4), Anstrich/Auslauf setzt der
 Composer aus dem Slot-Kontext.

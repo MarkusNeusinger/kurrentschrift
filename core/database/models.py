@@ -353,6 +353,44 @@ class Aggregate(Base):
     )
 
 
+class PairAggregate(Base):
+    """Per-hand pair aggregate (§12 layer 2) per (hand, left_key, right_key).
+
+    Populated by the pair-aggregates rebuild (Stufenplan H2) from the stored
+    `pair_instances` of one hand: the natural transition's distribution —
+    `offset_center` the median placement offset, `connector_center` the
+    per-point median of the arc-length-resampled connector centerlines (both in
+    the `glyph_pairs` frame, template units relative to the left glyph's exit),
+    `hull` their per-axis MAD spread, `mean_stats` the pooled dissection QC.
+    Statistics are computed per hand, never averaged across hands
+    (quellen-und-rechte.md §7).
+
+    Read-only with respect to rendering: `glyph_pairs` stays the sparse verbatim
+    override (redesign R3) and the §4 join generator stays the default — this
+    table is measurement, and its first consumers are report surfaces.
+    """
+
+    __tablename__ = "pair_aggregates"
+    __table_args__ = (UniqueConstraint("hand_id", "left_key", "right_key", name="uq_pair_aggregate_hand_lr"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    hand_id: Mapped[str] = mapped_column(
+        String(HAND_ID_MAX), ForeignKey("hands.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    left_key: Mapped[str] = mapped_column(String(GLYPH_KEY_MAX), nullable=False, index=True)
+    right_key: Mapped[str] = mapped_column(String(GLYPH_KEY_MAX), nullable=False, index=True)
+
+    offset_center: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False, server_default="[]")
+    connector_center: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False, server_default="[]")
+    hull: Mapped[dict] = mapped_column(PORTABLE_JSON, nullable=False, server_default="{}")
+    mean_stats: Mapped[dict] = mapped_column(PORTABLE_JSON, nullable=False, server_default="{}")
+    n_instances: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
 class GlyphPair(Base):
     """An observed/authored letter-pair override (redesign R3, proposal B).
 

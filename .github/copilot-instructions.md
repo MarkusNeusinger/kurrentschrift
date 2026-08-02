@@ -196,8 +196,13 @@ kurrentschrift/
 │   │                 #   SAME metric; the freeze rule covers it through the shim)
 │   ├── aggregate.py  # Stufenplan H1: instances → per-hand aggregates (per-anchor median =
 │   │                 #   the Laufform, MAD hull, pooled layer-1 stats) + laufform_deviation;
+│   │                 #   H2: aggregate_pair_instances — pair_instances → one aggregate per
+│   │                 #   (left_key, right_key): median offset + per-point median of the
+│   │                 #   arc-length-resampled connectors (_resample_polyline, 24 samples) +
+│   │                 #   MAD hulls + pooled dissection QC;
 │   │                 #   pure numpy in core/ because the API image ships no tools/
-│   └── database/     # SQLAlchemy Style + Hand + Source + Bbox + Template + Instance + Aggregate + QuizWord + repos
+│   └── database/     # SQLAlchemy Style + Hand + Source + Bbox + Template + Instance + Aggregate
+│                     #   + PairAggregate + QuizWord + repos
 ├── api/              # FastAPI service (thin)
 │   ├── main.py
 │   ├── schemas.py
@@ -238,7 +243,19 @@ kurrentschrift/
 │                     #   PUT …/templates/{key}/laufform uses. Own step because it DOES affect
 │                     #   rendering; only base-variant aggregates feed it (never variant 100
 │                     #   itself), missing chart row / anchor-count mismatch is reported as
-│                     #   skipped, each applied key reports its pre-write laufform_dev_xh)
+│                     #   skipped, each applied key reports its pre-write laufform_dev_xh.
+│                     #   The SAME module carries the pair twin (Stufenplan H2): admin-gated
+│                     #   GET /hands/{id}/pair-aggregates + POST …/rebuild?min_n=1 — condenses a
+│                     #   hand's pair_instances across sources into the own additive table
+│                     #   pair_aggregates (migration 0023, keyed (hand, left_key, right_key)):
+│                     #   median placement offset + per-point median of the arc-length-resampled
+│                     #   connector centerlines + MAD hulls + pooled dissection QC (gen_chamfer =
+│                     #   the „gemessen vs. komponiert" audit number, ink-gap share, word-plate/
+│                     #   pair-drill histogram); kind is pooled (same hand, same transition),
+│                     #   min_n defaults to 1 because pairs are sparse and n_instances rides
+│                     #   along. Deliberately NO apply step — the pair statistics are read-only,
+│                     #   glyph_pairs stays the verbatim override, the §4 generator stays the
+│                     #   default, rendering untouched)
 ├── app/              # React 19 + Vite + MUI SPA (anyplot-style)
 │   └── src/
 │       ├── routes/      # paths.ts route constants + lazy public/admin route sections
@@ -321,7 +338,10 @@ kurrentschrift/
 │   │                 #   0021 aggregates re-keyed to (hand_id, glyph_key, variant)
 │   │                 #   (Stufenplan H1; drop+recreate — the table was never populated),
 │   │                 #   0022 work_items protocol columns (Werkbank W4): understanding,
-│   │                 #   reproduced, stage, acked_at, closed_at — additive + nullable
+│   │                 #   reproduced, stage, acked_at, closed_at — additive + nullable,
+│   │                 #   0023 pair_aggregates (Stufenplan H2): additive pair twin of
+│   │                 #   aggregates, one row per (hand_id, left_key, right_key), nothing
+│   │                 #   seeded — the rebuild endpoint is its first writer
 ├── data/             # Sources, samples, derived — SEPARATE LICENSING
 │   ├── sources/      # public-domain originals (Loth 1866, Sütterlin 1922 incl. connected-writing
 │   │                 #   plates + words.json word rects for the word bench, Koch 1928 Offenbacher
@@ -441,7 +461,7 @@ lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberläng
 
 - Tables: `styles`, `hands`, `sources`, `bboxes`, `templates`,
   `glyph_pairs`, `instances`, `pair_instances`, `word_instances`,
-  `aggregates`, `work_items` (the Werkbank's Auftragskorb — filed
+  `aggregates`, `pair_aggregates`, `work_items` (the Werkbank's Auftragskorb — filed
   optimization tasks per letter/pair/word; `open` → `ack` (the session's
   own restatement + whether it reproduced the complaint) → `done` with
   the diagnosed `stage` + `resolution`, or `returned` when the author
@@ -471,7 +491,12 @@ lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberläng
   admin traces that re-harvests never overwrite); `aggregates` are per-hand
   stats (§12 layer 2), keyed `(hand_id, glyph_key, variant)` since migration
   0021 and filled by the admin-gated rebuild endpoint (Stufenplan H1):
-  per-anchor median = the Laufform, MAD hull, pooled layer-1 stats.
+  per-anchor median = the Laufform, MAD hull, pooled layer-1 stats;
+  `pair_aggregates` (migration 0023) is their pair twin, keyed
+  `(hand_id, left_key, right_key)` and filled by the admin-gated
+  pair-aggregates rebuild (Stufenplan H2): median placement offset,
+  median connector centerline, MAD hulls, pooled dissection QC —
+  read-only statistics, `glyph_pairs` and the join generator untouched.
 - `bboxes` carries the chart crop + freeform eraser `mask_strokes` (replaces
   the old rectangle `excludes`) + baseline/midband calibration + `guides` +
   `locked`. JSONB columns hold structured data; aggregate stats in SQL.

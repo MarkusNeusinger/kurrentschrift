@@ -1,5 +1,6 @@
 """Routers exposed by the FastAPI service."""
 
+from api.routers.aggregates import pair_router as pair_aggregates_router
 from api.routers.aggregates import router as aggregates_router
 from api.routers.bboxes import router as bboxes_router
 from api.routers.chart import router as chart_router
@@ -24,6 +25,7 @@ __all__ = [
     "hands_router",
     "health_router",
     "instances_router",
+    "pair_aggregates_router",
     "pairs_router",
     "quiz_words_router",
     "sources_router",

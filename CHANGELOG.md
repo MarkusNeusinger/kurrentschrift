@@ -14,6 +14,28 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Pair aggregates (Handmodell H2): the statistics layer over the observed
+  letter joins.** `pair_instances` has held every dissected join since H1/H2,
+  but nothing condensed them — the pair level had occurrences and no medians.
+  Migration `0023` adds the additive `pair_aggregates` table, the pair twin of
+  `aggregates`, keyed `(hand_id, left_key, right_key)`, and the admin-gated
+  `GET /hands/{hand_id}/pair-aggregates` + `POST …/rebuild?min_n=1` fill it
+  from a hand's occurrences across all sources. The math lives in the pure
+  `core/aggregate.py::aggregate_pair_instances`: the placement offset condenses
+  to a per-axis median, the connector centerlines are resampled to 24
+  arc-length-uniform points (`_resample_polyline` — differently-sampled traces
+  of one stroke only line up over arc length) and reduced to a per-point
+  median, both with a MAD hull, alongside pooled dissection QC (`gen_chamfer`
+  as the „gemessen vs. komponiert" audit number, ink-gap share, the
+  word-plate/pair-drill histogram, distinct specimens). `kind` is pooled — an
+  Abb.-19 word join and an Abb.-20 pair drill are the same hand writing the
+  same transition — and `min_n` defaults to 1 rather than the glyph layer's 4,
+  because pairs are sparse (87 occurrences over 45 pairs on the 1922 plates)
+  and one clean dissection is still the only measured truth about that
+  transition; `n_instances` rides along so consumers can weigh it. Deliberately
+  without an `apply` counterpart: the pair statistics are read-only by design —
+  `glyph_pairs` stays the sparse verbatim override, the §4 join generator stays
+  the default, and nothing here reaches the writing path.
 - **Auftragskorb protocol (Werkbank W4): a filed task now has to be understood
   before it can be worked, and diagnosed before it can be closed.** A
   `work_items` row used to carry only the admin's note and a free-text
