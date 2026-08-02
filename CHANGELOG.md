@@ -14,6 +14,35 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **"Gemessen vs. komponiert" on the Vergleich page's pair cards (Handmodell
+  H2, read surface).** The Verbindungen tab showed a specimen beside the
+  composed pair and left the verdict entirely to the eye, while the occurrence
+  and aggregate layers already knew how far the generator sits from the measured
+  median for exactly that join. Each pair card now carries a compact "Gemessen"
+  chip row between header and body: the occurrence count (the aggregate's
+  `n_instances`, falling back to the matched `pair_instances` OF THAT SAME HAND
+  so a card keeps a number without the admin-gated layer, and a second hand
+  harvested on the source can never inflate a number the tooltip credits to one
+  writer) and the `gen_chamfer` mean — the audit number this layer exists for —
+  with the fuller pooled QC in the tooltip (chamfer max, harvest chamfer, fit
+  residual, offset ± MAD, ink-gap share, plate-kind histogram, the named hand),
+  plus a "Fit unsicher" chip when THIS specimen's own occurrence carries
+  `fit_ok: false`. A card without a median says WHICH of the four reasons
+  applies, in the Werkbank's own wording — still loading, no hand on the
+  occurrences, never rebuilt, or not loadable — so "keine Messung" is left to
+  the one case it describes (the hand's aggregates are there, this join is not
+  among them). Both lists load once per source rather than per card — the public
+  pair occurrences, and the pair aggregates of the hand DERIVED from those rows
+  (modal non-null `hand_id`, never a constant), reused as-is when the tab is
+  left and re-entered; a failing admin read degrades to the occurrence numbers
+  behind one quiet notice instead of emptying the tab. Deliberately numbers
+  only: the median-connector sketch stays in the Werkbank's pair lens, and a
+  registered overlay of measured connector on composed pair is not attempted
+  (different frames — a false superposition would read as evidence). Scoped to
+  the Verbindungen tab; the Fremdhand tab stays view-only and unmeasured, and
+  the numbers are matched by the same base-key pair the pair-editor deep link
+  uses, so a card's readout and its "Im Paar-Editor öffnen" can never describe
+  two different joins. Frontend-only, no API change.
 - **Werkbank "Stufen-Einsicht" (W5): the hand-model statistics layers are now
   visible inside the context lenses.** Both aggregate layers existed and had no
   reader — H1 medians and H2 pair medians were numbers only a rebuild response
