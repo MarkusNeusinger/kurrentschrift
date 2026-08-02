@@ -1,6 +1,14 @@
 # Handmodell-Stufenplan 2026-07-31 — Duktus-Prior, Laufformen, Statistik pro Glyphe und Paar, eigene Hand
 
-**Status: Richtung entschieden (Nutzer, 2026-07-31) für H1 + H2 —
+> **Status (2026-08-03): teil-umgesetzt.** H0–H2 sind umgesetzt
+> (PR #250 · #256 · #259 · #260 · #265 · #266 · #267 · #268, ausgeliefert als
+> v0.22.0): Vorkommen persistiert, `aggregates` + `pair_aggregates` gefüllt,
+> `apply-laufform` live, lesende Flächen in Werkbank, Vergleich und Wordbench.
+> Offen bleiben H3–H5 (Konstanten → Hand-Parameter, zweite Hand, eigene
+> Hand); von §3 „Ist-Stand: die drei Lücken“ besteht nur noch Lücke 3, §5
+> (Prüfsteine) und §6 (Verworfen) bleiben bindend.
+
+**Richtung entschieden (Nutzer, 2026-07-31) für H1 + H2 —
 Vorkommen speichern, nicht nur Mediane, auf ALLEN drei Ebenen:** pro
 Glyphe, pro Paar *und* pro Wort wird jedes saubere Vorkommen als Zeile
 abgelegt (Glyphen → die bestehende `instances`-Tabelle, Fokus die Form

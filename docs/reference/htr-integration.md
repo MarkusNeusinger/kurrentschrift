@@ -1,5 +1,11 @@
 # HTR-Integration
 
+> **Status (2026-08-03): offen.** Reiner Entwurf für die Post-MVP-Phase P1 —
+> nichts davon ist gebaut (kein `/htr`-Router, keine
+> `transcriptions`-Tabelle, kein OpenSeadragon/Annotorious im Frontend).
+> Modell-, Preis- und CER-Angaben sind Stand 2026-06 und vor P1-Start neu zu
+> verifizieren.
+
 Technische Spezifikation des Recognition-Stacks für Volltext aus Vision §5
 („Lese-Hilfe für historische Texte" inkl. Lese-Lupe). Ergänzt
 [`architektur.md`](../concepts/architektur.md) §13 und §14.

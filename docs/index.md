@@ -1,11 +1,24 @@
 # Dokumentation
 
+> **Status (2026-08-03): lebend.** Bei jedem neuen, umbenannten oder
+> gelöschten Doc unter `docs/` mitzuführen (Schnellzugriff + Baum +
+> Abschnittsliste); der Abschnitt „Dokument-Status“ trägt die
+> Lifecycle-Aussage je Schicht, damit sie nicht jede Datei einzeln tragen
+> muss.
+> Schichten in Kurzform: `concepts/` = bindende Entscheide · `reference/` =
+> je Doc lebend oder bindend · `schriftkunde/` = statische, quellenbelegte
+> Faktenblätter mit eigenem „Stand“-Datum, die dem Code NICHT folgen ·
+> `proposals/` = Umsetzungsstand im Kopf des jeweiligen Docs · `notes/` =
+> datierte Befund-Journale, die nie fortgeschrieben, nur abgelöst werden.
+
 Interne Design-Docs für das Kurrentschrift-Projekt. Sprache: Deutsch
 (siehe [`reference/sprachregelung.md`](reference/sprachregelung.md) zur
 Begründung). Stand: in-progress MVP — Admin-UI und Canonical-Extraktion
 laufen, die öffentliche Seite schreibt serverseitig komponierte Wörter
 (Federprobe, Tafel, Quiz inkl. Wort-Modus, Schriftkunde, Übungsblätter);
-Per-Instanz-Fit und Aggregation sind die nächsten Meilensteine.
+Per-Vorkommen-Fit und die Statistik je Hand sind gebaut (Handmodell H0–H2,
+Release v0.22.0) — offen ist H3, die Ablösung der Composer-Konstanten durch
+gemessene Hand-Parameter.
 
 ---
 
@@ -13,7 +26,9 @@ Per-Instanz-Fit und Aggregation sind die nächsten Meilensteine.
 
 | Ich will… | Gehe zu |
 |---|---|
+| Wissen, wie aktuell ein Doc ist (bindend · lebend · offen …) | [Dokument-Status](#dokument-status) |
 | Wissen, was die Endnutzer-Website sein soll | [Vision der Website](concepts/vision.md) |
+| Den Weg Scan → Bibliothek → Schreiben → Statistik am Stück verstehen | [Vom Scan zum Schreibsystem](concepts/vom-scan-zum-schreiben.md) |
 | Den Architekturkern verstehen | [Architektur-Referenz](concepts/architektur.md) |
 | Wissen, wie der MVP konkret zerlegt ist | [MVP-Roadmap](concepts/mvp-roadmap.md) |
 | Wissen, warum Name/Domain/Lizenz so gewählt sind | [Naming und OSS-Setup](concepts/naming-und-setup.md) |
@@ -52,6 +67,7 @@ docs/
 ├── contributing.md               # (EN) Was aktuell hilfreich ist und was noch zu früh ist — englisch, vom README verlinkt
 ├── concepts/                     # Architektur, Philosophie, getroffene Entscheidungen
 │   ├── vision.md                 # Was die Endnutzer-Website sein soll (Pitch + Zielgruppe + 7 Ziele in 3 Clustern + Leitprinzipien + Nicht-Ziele)
+│   ├── vom-scan-zum-schreiben.md # Überblick: Tafel + Wortproben + Nachfahren → Bibliothek → Schreiben → Maßstab → Ernte → Statistik → Schleife; finales System vs. Trainingsgerüst
 │   ├── architektur.md            # §1–§17: Analysis-by-Synthesis, Schema, MVP, Animation, HTR, Lese-Lupe, Print, Frontend, Open-Data
 │   ├── mvp-roadmap.md            # Operative Zerlegung des MVP (§8) in Schritt 0 + M0–M7
 │   ├── style-guide.md            # Visuelle Identität Papier & Tinte: Tokens (styles/paper.ts), Typografie, R1–R9-Entscheidungen
@@ -88,12 +104,63 @@ docs/
 │   ├── uebergaenge-befund.md     # Befund 2026-07-11: pairlab-Paarsektion — Platzierung dominiert, Stub-Ersatz klassenweise, Optionen O1–O3
 │   ├── schreibsystem-redesign.md # Entscheid 2026-07-17: eine Form pro Glyphe (Positions-Rückbau), Paar-Matrix, geerntete Paar-Overrides, Schräglagen-Befund (R1–R5)
 │   ├── handmodell-stufenplan.md  # Vorschlag 2026-07-31: Statistik-Schicht füllen (H0–H5) — Instances/Aggregates, Paar-Statistik, Konstanten→Hand-Parameter, eigene Hand
-│   ├── optimierungs-werkbank.md  # Entscheid 2026-07-31: EINE Werkbank-Seite + Stufen-/Rollen-Doktrin + work_items-Auftragskorb (W1–W3)
+│   ├── optimierungs-werkbank.md  # Entscheid 2026-07-31: EINE Werkbank-Seite + Stufen-/Rollen-Doktrin + work_items-Auftragskorb (W1–W5)
 │   └── kurrent-writer-and-recognizer.md  # Recherche-Notiz (EN): generativer Writer (Graves 2013) als synthetische Datenquelle → billiger Recognizer
 └── notes/                        # Recherchematerial & operative Notizen (nicht Designkern)
     ├── quellen-recherche-2026-07.md  # Recherche Juli 2026: geschriebene Wortvorlagen & echte Hände — Rangliste, Absteiger, mögliche Anfragen
     └── stifte-fuer-unterwegs.md  # Stift-/Hardware-Recherche fürs Schreiben unterwegs
 ```
+
+---
+
+## Dokument-Status
+
+Jedes Doc unter `docs/` trägt seit 2026-08-03 direkt unter der Überschrift
+einen Status-Blockquote nach demselben Muster
+(`> **Status (JJJJ-MM-TT): <status>.** …`), damit ein Leser ohne Archäologie
+sieht, ob er einen Plan, ein Protokoll oder eine Beschreibung des laufenden
+Systems vor sich hat. Das Vokabular ist bewusst klein: **bindend** =
+entschieden, wird nur durch eine neue Entscheidung geändert (die
+Verworfen-Listen bleiben geschlossen); **lebend** = beschreibt den Ist-Stand
+des Codes und trägt eine benannte Nachzieh-Pflicht; **teil-umgesetzt** = ein
+Teil ist gebaut, der Rest ist ausdrücklich Zukunft (der Kopf sagt, welcher);
+**umgesetzt-historisch** = vollständig abgearbeitet oder durch eine andere
+Lösung abgelöst, also Entscheidungs- und Messprotokoll statt Arbeitsplan;
+**offen** = nichts davon ist gebaut; **Befund-Journal** = datierte
+Momentaufnahme, die nie fortgeschrieben, sondern nur durch eine neue Runde
+abgelöst wird; **statisch** = quellenbelegtes Nachschlagematerial, das dem
+Code nicht folgt. Die neun `schriftkunde/`-Faktenblätter sind durchweg
+statisch und tragen keinen eigenen Kopf — sie führen ihr „Stand:“-Datum
+ohnehin in den ersten Zeilen; einzige Ausnahme ist
+[`orthographie-regeln.md`](schriftkunde/orthographie-regeln.md), weil dort
+Regeln stehen, die noch nicht implementiert sind.
+
+### Lebende Dokumente und ihr Nachzieh-Anlass
+
+| Doc | Nachziehen bei |
+|---|---|
+| [`index.md`](index.md) | jedem neuen, umbenannten oder gelöschten Doc unter `docs/` (Schnellzugriff + Baum + Abschnittsliste) sowie beim Kopf-Absatz „Stand“, sobald eine Schicht live geht |
+| [`contributing.md`](contributing.md) | neuer öffentlicher Route in `app/src/routes/paths.ts`, gefallenem MVP-Gate (`architektur.md` §8) oder Öffnung für externe PRs — betrifft Absatz 1 und „Not yet useful“ |
+| [`concepts/vom-scan-zum-schreiben.md`](concepts/vom-scan-zum-schreiben.md) | jeder neuen Stufe im Datenfluss, jeder neuen Admin-Fläche und jeder geschlossenen Lücke — insbesondere der Lücken-Liste am Ende, wenn eines der dort verlinkten Issues (#270–#274) schließt |
+| [`concepts/design-system.md`](concepts/design-system.md) | Änderungen an `app/src/styles/paper.ts`, `theme/typography.ts`, `components/PageContainer · Prose · PageHeader · PublicHeader · PublicFooter` oder an der öffentlichen Routen-/Bereichsstruktur (`routes/paths.ts`) |
+| [`reference/write-api.md`](reference/write-api.md) | jeder Änderung an einer `/write/*`-Route (`api/routers/write.py` inkl. `compose_word_payload`), an `core/shaping.py`, `core/compose.py`, `core/pipeline.py::render_payload_for_template`, `api/rendering.py` oder den Cache-Headern in `api/http.py` |
+| [`reference/qualitaetsmetrik.md`](reference/qualitaetsmetrik.md) | jeder Änderung an `core/quality.py`, `core/quality_suetterlin.py`, `core/geometry.py`, `core/word_metric.py`, jedem Re-Baseline der eingefrorenen Fixtures und jedem Bench-/Loop-Lauf, der eine Headline bewegt (neuer datierter Abschnitt) |
+| [`reference/frontend-stack.md`](reference/frontend-stack.md) | Stack-Versionen (`app/package.json`), Routenkarte (`app/src/routes/paths.ts`), Build/Deploy (`app/cloudbuild.yaml`, `api/cloudbuild.yaml`, `app/Dockerfile`, `app/nginx.conf`, Cloud-Run-Parameter) oder Admin-Gate (`api/auth.py`, `core/config.py`, Cloudflare Access) |
+| [`reference/werkzeuge.md`](reference/werkzeuge.md) | jedem neuen, umbenannten oder entfernten Verzeichnis/Einstiegsskript unter `tools/` und jeder geänderten CLI (Flags, Modulpfade, `viz`-Extra, `--live`) |
+| [`reference/quiz-wortbank.md`](reference/quiz-wortbank.md) | Änderungen an `tools/quizgen/corpus.py`/`similarity.py`/`build.py` (inkl. Neuberechnung von `quiz_words.json` → Wortzahl und Era-Verteilung im Kopf nachziehen), am TS-Zwilling `app/src/sections/quiz/wordBank.ts`/`useQuizEngine.ts` und bei jeder Re-Seed-Migration nach dem Muster `0011_quiz_words_reseed.py` |
+| [`reference/crawler-richtlinie.md`](reference/crawler-richtlinie.md) | jeder Änderung an `app/public/robots.txt` oder `app/public/llms.txt` (Gruppen, Content-Signals, Reihenfolge, `Disallow`-Pfade) und an den AI-Crawl-Control-/Bot-Regeln der Cloudflare-Zone |
+
+Drei weitere Dokumente sind **abschnittsweise** pflichtig, obwohl sie als
+Ganzes nicht lebend sind:
+[`reference/animation-rendering.md`](reference/animation-rendering.md) §1/§3
+(bei Änderungen an `WrittenGlyph.tsx`, `useStrokeReveal.ts`,
+`strokeTiming.ts`, `core/widths.py`),
+[`reference/styleanalyse.md`](reference/styleanalyse.md) Schichten 1–2 (bei
+Änderungen an `core/pipeline.py::_measurements`, `core/aggregate.py` oder den
+Aggregat-Tabellen) und
+[`reference/quellen-und-rechte.md`](reference/quellen-und-rechte.md) §5 (bei
+jeder Änderung an Admin-Gates auf Lese-Endpunkten, an den gitignorten
+Bench-Fixtures oder an committeten gerenderten Artefakten).
 
 ---
 
@@ -108,9 +175,17 @@ und was bewusst verworfen wurde.
   animierte Buchstaben), Lesen (Lesen üben · Lese-Hilfe + Lese-Lupe),
   Forschung (Stil-Analyse + Hände vergleichen · Offene Datensätze) —
   Nicht-Ziele, Verhältnis zur bestehenden Landschaft
+- **[Vom Scan zum Schreibsystem](concepts/vom-scan-zum-schreiben.md)** — die
+  eine durchgehende Erzählung des Datenflusses: Tafel + Wortproben +
+  Nachfahren → Buchstaben-Bibliothek → Schreiben → Maßstab → Ernte →
+  Statistik je Hand → Optimierungs-Schleife, dazu „finales System vs.
+  Trainingsgerüst", warum es kein „a vor b" gibt, Aktualität des
+  Gespeicherten und die bekannten Lücken; Einstieg vor der
+  Architektur-Referenz
 - **[Architektur-Referenz](concepts/architektur.md)** — §1–§17:
   Analysis-by-Synthesis, Duktus-Prior, Library-Einheit
-  `(style, glyph, position, variant)`, Schwellzug vs. Tinte, dreistufige
+  `(style, glyph, variant)` (seit dem Positions-Rückbau R2, Migration
+  `0017`), Schwellzug vs. Tinte, dreistufige
   Qualitätspipeline, MVP (vier Gates), Testwörter, Reihenfolge, plus
   Animation-Render, Stil-Analyse, HTR-Integration, Lese-Lupe, Print,
   Frontend-Architektur, Open-Data
@@ -223,24 +298,28 @@ Vorgeschlagene Änderungen an den Konzept-Dokumenten. Der Umsetzungs-Stand
 ist je Eintrag unterschiedlich (einige sind inzwischen weitgehend
 umgesetzt) — maßgeblich ist der Status-Kopf des jeweiligen Dokuments.
 
-- **[Planänderungen](proposals/planaenderungen.md)** — drei offene
-  Vorschläge: §2/§4 systematische Bigramm-Extraktion aus Beispieltext;
-  §3/§6.1 Positions-Verteilung datengetrieben; M4+-Modul
-  `core/orthography.py` (Vorschlag A — `position` als Lehrtafel-Rolle —
-  ist freigegeben und in `architektur.md` §3 eingearbeitet)
+- **[Planänderungen](proposals/planaenderungen.md)** — vier Vorschläge:
+  §2/§4 systematische Bigramm-Extraktion aus Beispieltext; §3/§6.1
+  Positions-Verteilung datengetrieben; M4+-Modul `core/orthography.py`
+  (Vorschlag A — `position` als Lehrtafel-Rolle — ist freigegeben und in
+  `architektur.md` §3 eingearbeitet) — *Status: teil-umgesetzt (nur
+  Vorschlag D offen; A durch R2 überholt, B als R3 gebaut, C im
+  H1-Aggregat)*
 - **[Schreibsystem und Wort-Bench](proposals/schreibsystem-und-wortbench.md)** —
   Audit 2026-07-01: öffentliche Schreib-API (Buchstabe + Wort) statt
   `/diagnostic`-Mitnutzung, Port der Wortkomposition nach
   `core/compose.py`, Wort-Bench gegen verifizierte PD-Wortvorlagen
   (gleiche Hand je Tafel), Übergangs-Redesign mit Exit-Klassen (Phasen A–E)
-  — **weitgehend umgesetzt** (Phasen A–D, 2026-07-02); offen: Phase E
+  — *Status: umgesetzt-historisch (Phasen A–D gebaut, E in anderer Gestalt
+  erledigt)*
 - **[Übergangs-Befund](proposals/uebergaenge-befund.md)** — Befund
   2026-07-11 aus `tools/pairlab` (unabhängige Paar-Sektion, 87 Vorkommen):
   Platzierung ist der größte Einzelfehler, die Standard-Diagonale ist
   generisch richtig, Hoch-Exits (d-Schleife, Deckstrich-Bögen, r-Arm)
   ersetzen die Kopplungs-Stubs klassenweise — Lösungsoptionen O1–O3;
   **O1 + O2 (B-Seite) umgesetzt** (Compose-Loop `jul11`), der A-seitige
-  d-Stub-Trim gemessen und verworfen; offen: O3 (vertagt)
+  d-Stub-Trim gemessen und verworfen — *Status: Befund-Journal (Stand
+  2026-07-11; O1/O2 umgesetzt, O3 durch R3 überholt)*
 - **[Schreibsystem-Redesign](proposals/schreibsystem-redesign.md)** —
   Richtungsentscheid 2026-07-17 (angenommen; R1–R5 sind umgesetzt,
   offen ist allein der Live-Import der Ernte-Entwürfe): eine Form
@@ -248,14 +327,17 @@ umgesetzt) — maßgeblich ist der Status-Kopf des jeweiligen Dokuments.
   (R1), sparsame **geerntete** Paar-Overrides mit Versal-Priorität als
   Konkretisierung von Vorschlag B (R3), Platzierungs-Rest + O3-Neubewertung
   (R4) und der neue Schräglagen-Befund (d-Oberschleife lehnt in der
-  verbundenen Schrift ~4–5° rechts gegenüber der Chart-Zelle; R5)
+  verbundenen Schrift ~4–5° rechts gegenüber der Chart-Zelle; R5) —
+  *Status: umgesetzt-historisch (R1–R5 gebaut; offen allein der Live-Import
+  der Ernte-Entwürfe)*
 - **[Handmodell-Stufenplan](proposals/handmodell-stufenplan.md)** —
   Vorschlag 2026-07-31: das Rollenmodell (Tafel = Duktus-Prior ·
   Wortproben **einer** Hand = Form-Vorbild · fremde Hände = Kontext)
   bestätigt und die leere Statistik-Schicht in Stufen gefüllt —
   H0 Bench-Anschluss der Laufformen, H1 `instances`/`hands`
   persistieren, H2 Paar-Statistik, H3 Konstanten → Hand-Parameter
-  (Vereinfachungs-Gate), H4 zweite historische Hand, H5 eigene Hand
+  (Vereinfachungs-Gate), H4 zweite historische Hand, H5 eigene Hand —
+  *Status: teil-umgesetzt (H0–H2 in v0.22.0 ausgeliefert, H3–H5 offen)*
 - **[Optimierungs-Werkbank](proposals/optimierungs-werkbank.md)** —
   Richtungsentscheid 2026-07-31: EINE Admin-Werkbank
   (`/admin/werkbank`: Wort-Rückgrat + Kontext-Linse Buchstabe/Paar +
@@ -263,13 +345,16 @@ umgesetzt) — maßgeblich ist der Status-Kopf des jeweiligen Dokuments.
   Stufen-/Rollen-Doktrin** — manuell hinzufügen nur bei Ground Truth
   (Tafel-Duktus, Wort-Nachfahrung), alles Generierte wird bemängelt —
   und das `work_items`-Protokoll (Triage-Pflicht der KI, Regel-Fix vor
-  Override, `resolution`-Format, Rückgabe an den Autor)
+  Override, `resolution`-Format, Rückgabe an den Autor) — *Status:
+  teil-umgesetzt (W1–W5 gebaut, §3–§5 bindende Doktrin; offen die Ablösung
+  der Alt-Seiten)*
 - **[Kurrent: Writer → Recognizer](proposals/kurrent-writer-and-recognizer.md)** —
   Recherche-Notiz (Englisch): warum Graves 2013 (RNN-Handschrift-Synthese)
   der Anker für den generativen Writer ist, und wie derselbe Writer als
   synthetische Datenquelle mit perfektem Ground-Truth einen billigen,
   browser-lauffähigen Recognizer trainiert (ein Forward-Pass statt
-  Analysis-by-Synthesis zur Inferenzzeit)
+  Analysis-by-Synthesis zur Inferenzzeit) — *Status: offen (Recherche-Notiz,
+  nichts gebaut)*
 
 ---
 

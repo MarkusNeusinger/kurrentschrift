@@ -1,5 +1,16 @@
 # MVP-Roadmap
 
+> **Status (2026-08-03): teil-umgesetzt.** M0 · M-Admin · M3 · M4 sind
+> umgesetzt, M7 ist als `WrittenGlyph` ausgeliefert (Gate-4-Abnahme weiterhin
+> offen); M1/M2 haben nie stattgefunden — `data/samples/own-hand/` existiert
+> nicht, M5/M6 laufen stattdessen über die gleichhändigen PD-Wortproben und
+> das Handmodell H1/H2 (PR #250 · #259 · #260 · #265), Gate 3 ist in der hier
+> beschriebenen Form nie durchgeführt worden.
+> Die Positions-Schlüsselung (`(glyph, position, variant)`,
+> 11-Template-Tabelle) ist seit Redesign R2 überholt (PR #214, Migration
+> `0017`); der aktuelle Plan steht in
+> [`../proposals/handmodell-stufenplan.md`](../proposals/handmodell-stufenplan.md).
+
 Operative Zerlegung des MVP aus [`architektur.md`](architektur.md) §8 in
 ausführbare Meilensteine. Sprache: Deutsch (Prosa) / Englisch (Code,
 Schema, Pfade — siehe [Sprachregelung](../reference/sprachregelung.md)).

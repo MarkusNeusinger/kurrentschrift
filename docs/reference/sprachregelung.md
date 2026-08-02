@@ -1,5 +1,9 @@
 # Sprachregelung (Docs / Code / README)
 
+> **Status (2026-08-03): bindend.** Festgelegte Sprachregeln mit eigener
+> Verworfen-Liste (§3) — Änderung nur über eine neue Entscheidung, kein
+> Code-Tracking.
+
 Begleitdokument zu [`architektur.md`](../concepts/architektur.md) und
 [`naming-und-setup.md`](../concepts/naming-und-setup.md). Hält fest, *welche* Sprache wo gilt
 und *warum* — inklusive der bewusst verworfenen pauschalen Lösung, damit
@@ -51,7 +55,7 @@ auf Deutsch. Das ist kein Bruch zur anyplot-Linie, sondern dieselbe Regel
   englisch:
 
 ```python
-{"glyph": "ſt", "position": "medial", "variant": 0}   # value = the char; key = English
+{"glyph": "ſt", "variant": 0}   # value = the char; key = English
 ```
 
   Betrifft den geschlossenen Ligatur-Satz (`ch`, `ck`, `tz`, `ſt`, `qu`,

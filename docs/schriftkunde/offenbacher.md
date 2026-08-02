@@ -76,4 +76,5 @@ Offenbacher-Grundvorlage — analog zur Loth-Tafel 1866 für die Kurrent
 Die deutsche Alphabet-Tafel des Hefts (Seitenindex 36, „Das deutsche
 Alphabet …") liegt seit 2026-06 als committete Reserve-Quelle im Repo
 unter `data/sources/koch-1928/` (`chart.jpg` + `SOURCE.md`, PD-old-70,
-aufrecht gedreht) — noch **nicht** in die DB geseedet.
+aufrecht gedreht) — seit Migration `0008` als Offenbacher-Chart-Quelle in
+der DB geseedet und auf der öffentlichen Schreibtafel gerendert.

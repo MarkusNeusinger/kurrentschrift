@@ -1,5 +1,12 @@
 # Quellen- und Rechte-Policy
 
+> **Status (2026-08-03): bindend.** Rechte-Policy (§0–§4, §6–§8); Änderung
+> nur über eine neue Entscheidung.
+> Ausnahme §5 „Open-Core-Absicherung“: die dort aufgezählte technische
+> Gating-Oberfläche ist Ist-Stand und muss bei jeder Änderung an Admin-Gates
+> auf Lese-Endpunkten, an den gitignorten Bench-Fixtures oder an committeten
+> gerenderten Artefakten nachgezogen werden.
+
 Begleitdokument zu [`architektur.md`](../concepts/architektur.md) und
 [`naming-und-setup.md`](../concepts/naming-und-setup.md). Hält fest, *welches Quellmaterial
 ins öffentliche Repo darf*, was nicht, und wie auf Originale verwiesen
@@ -175,6 +182,12 @@ losschreiben" kann, gilt technisch:
   liefert nur Summaries ohne Geometrie. Die occurrence-Reads
   (`/instances` …) liefern Fit-Ergebnisse über PD-Vorlagen, keine
   autorierten Templates.
+- **Die Statistik-Schicht liest ausschließlich admin-gegatet:**
+  `GET /hands/{hand_id}/aggregates` und
+  `GET /hands/{hand_id}/pair-aggregates` (samt ihren
+  `…/rebuild`-Endpunkten, v0.22.0) verlangen `require_admin` — ein
+  Aggregat ist gelernte Geometrie und damit derselbe reservierte Bestand
+  wie die autorierten Templates, auch wenn der Read nichts rendert.
 - **Öffentliche `/write`-Payloads sind bewusste Produkt-Oberfläche**
   (die SPA rendert clientseitig): gerenderte Geometrie, unter dem
   README-Nutzungsvorbehalt + [`crawler-richtlinie.md`](crawler-richtlinie.md)

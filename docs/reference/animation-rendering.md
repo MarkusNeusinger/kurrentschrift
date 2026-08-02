@@ -1,5 +1,13 @@
 # Animation-Rendering
 
+> **Status (2026-08-03): teil-umgesetzt.** §1 (Masken-Sweep-Reveal) und §3
+> (Width-Resolver) sind gebaut und beschreiben Ist-Code (`WrittenGlyph.tsx`,
+> `useStrokeReveal.ts`, `strokeTiming.ts`, `core/widths.py`) — bei Änderungen
+> daran hier nachziehen.
+> §2 (Canvas-2D-Stroker), §4 (Quiz-/Outline-Modus), §5 (Server-Vorrendering)
+> und §6 (Hände nebeneinander) sind offener Post-MVP-Entwurf; die Route
+> `/animation` existiert nicht.
+
 Technische Spezifikation der animierten Buchstaben-Tafel aus Vision §3.
 Ergänzt [`architektur.md`](../concepts/architektur.md) §11 (und §5 für den
 Width-Profile-Resolver).
@@ -168,14 +176,15 @@ class GlyphAnimation {
 ## 3. Width-Profile-Resolver pro Schriftfamilie
 
 Das **gleiche Library-Schema** ([`architektur.md`](../concepts/architektur.md)
-§3) trägt zwei Render-Modi. Die Stil-Eigenschaft `styles.width_resolver`
+§3) trägt drei Render-Modi. Die Stil-Eigenschaft `styles.width_resolver`
 entscheidet (§5):
 
 | Schriftfamilie | Width-Profile-Resolver | Begründung |
 |---|---|---|
-| **Kurrent** (vor 1900) | Druckabhängiger Schwellzug — `half_widths` wird voll genutzt. | Spitzfeder; variable Strichbreite ist Wesensmerkmal. |
-| **Sütterlin** (ab 1911) | Konstant — `half_widths` wird auf den Mittelwert pro Source projiziert. | Redisfeder; konstante Strichbreite ist Designziel. |
-| **Andere** | Erweiterbar (Federtyp-spezifisch). | Skandinavien / Offenbacher / Volksschrift haben jeweils eigene Federn. |
+| **Kurrent** (vor 1900) | `pressure` — druckabhängiger Schwellzug, `half_widths` wird voll genutzt. | Spitzfeder; variable Strichbreite ist Wesensmerkmal. |
+| **Sütterlin** (ab 1911) | `constant` — `half_widths` wird auf den Mittelwert pro Source projiziert. | Redisfeder; konstante Strichbreite ist Designziel. |
+| **Offenbacher** (ab 1927) | `broad_nib` — die Breiten werden auf dem Schreibpfad aus dem Bandzugfeder-Gesetz REGENERIERT (w(φ) = W·\|sin(φ−α)\| + t·\|cos(φ−α)\|, Kochs 15°-Federwinkel); der Diagnose-Pfad fällt auf die Messung zurück. | Bandzugfeder: die Breite ist eine reine Funktion der Strichrichtung, kein Druck — siehe [`federmodelle.md`](../concepts/federmodelle.md) §2. |
+| **Andere** | Erweiterbar (Federtyp-spezifisch). | Skandinavien / Volksschrift haben jeweils eigene Federn. |
 
 ### Implementierung
 
@@ -185,6 +194,8 @@ entscheidet (§5):
 def resolve_widths(template: Template, style: Style) -> list[float]:
     if style.width_resolver == "constant":
         return [pooled_nib] * len(template.half_widths)  # Source-gepoolter Gleichzug
+    if style.width_resolver == "broad_nib":
+        return broad_nib_half_widths(template.points, nib)  # Bandzugfeder-Gesetz
     return template.half_widths  # "pressure": voller Schwellzug
 ```
 

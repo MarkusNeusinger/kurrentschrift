@@ -1,5 +1,16 @@
 # Stil-Analyse
 
+> **Status (2026-08-03): teil-umgesetzt.** Schicht 1
+> (`core/pipeline.py::_measurements`) und Schicht 2 sind gebaut — Aggregate
+> pro Hand für Glyphen und Paare (PR #259 · #260 · #265, Release v0.22.0;
+> `core/aggregate.py`, Tabellen `aggregates`/`pair_aggregates`), sichtbar in
+> der Werkbank (PR #266); beide Abschnitte sind bei Änderungen daran
+> nachzuziehen.
+> Offen: Schicht 3 (Hinge), die Vision-Pfade §2 und die Heatmap-Ausgabe §3.
+> Der Aggregat-Schlüssel heißt seit Migration `0021`
+> `(hand_id, glyph_key, variant)` — der Satz „befüllt wird es durch den
+> Post-MVP-Aggregationsjob (P3)“ ist überholt.
+
 Technische Spezifikation der Stil-Analyse-Pipeline aus Vision §6 (Eigene
 Schrift analysieren, inkl. Hände-vergleichen-Pfad). Ergänzt
 [`architektur.md`](../concepts/architektur.md) §6 (Qualitätspipeline) und

@@ -1,6 +1,17 @@
 # Übergangs-Befund 2026-07-11 — unabhängige Paar-Sektion (pairlab)
 
-**Status:** O1 und O2 (B-Seite) sind umgesetzt — Compose-Loop `jul11`,
+> **Status (2026-08-03): Befund-Journal.** Momentaufnahme aus `tools/pairlab`
+> vom 2026-07-11, wird nicht fortgeschrieben: O1 und O2 (B-Seite) sind
+> umgesetzt (Lauf `jul11`, PR #179), der A-seitige d-Stub-Trim wurde zweimal
+> gemessen und verworfen (`jul11` und R4-Lauf `jul17`, PR #220), O3 ist
+> überholt — die Paar-Overrides existieren seit Redesign R3 als sparsame
+> `glyph_pairs`-Schicht, der §4-Generator bleibt Default.
+> Der methodische Kern (Platzierung aus der Messung herausnehmen, Klassen
+> statt Paare, §5b Duktus-Trace als Soll-Kopplung) bleibt Begründungsquelle
+> für die Composer-Konstanten; der aktuelle Stand der Übergänge steht in
+> [`../reference/qualitaetsmetrik.md`](../reference/qualitaetsmetrik.md) §6.
+
+O1 und O2 (B-Seite) sind umgesetzt — Compose-Loop `jul11`,
 [`qualitaetsmetrik.md`](../reference/qualitaetsmetrik.md) §6 (Wort-Headline
 0,1253 → 0,1183; Joins mit ≥ 0,25 xh Soll-Korrektur 31 → 21). Der
 A-seitige d-Stub-Trim wurde gemessen und VERWORFEN (Deckung besser,

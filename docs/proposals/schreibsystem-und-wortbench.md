@@ -1,6 +1,16 @@
 # Schreibsystem: Schreib-API, Python-Komposition, Wort-Bench
 
-**Status: Vorschlag; Phasen A (PR #142), B (PR #143), C (PR #144) und D (erster Lauf, PR #145) umgesetzt (2026-07-02). Offen: Phase E.**
+> **Status (2026-08-03): umgesetzt-historisch.** Phasen A–D sind umgesetzt
+> (PR #142 · #143 · #144 · #145), Phase E ist in anderer Gestalt erledigt:
+> Chain-Fit und Vorkommen liegen als
+> `instances`/`word_instances`/`pair_instances` vor (Migration `0019`,
+> PR #250, `tools/laufform/harvest.py`), und die dort geplante
+> `word_samples`-Tabelle samt „Wörter“-Wizard-Modus wurde durch den
+> `words.json`-Sidecar und den Werkbank-Wort-Editor (PR #261) ersetzt.
+> §1 ist ein Audit-Snapshot vom 2026-07-01 und beschreibt nicht den heutigen
+> Code; dauerhaft gültig bleiben §3 (geprüfte Wortvorlagen) und §4
+> (Verworfen).
+
 **Erledigt:** Der in §1.2 / Phase C beschriebene Port ist abgeschlossen —
 die Wortkomposition liegt in `core/compose.py` (+ `core/shaping.py`), und
 `app/src/domain/compose.ts` wurde gelöscht. Die `compose.ts`-Erwähnungen

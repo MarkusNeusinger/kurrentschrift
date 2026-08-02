@@ -43,6 +43,54 @@ Checklist for adding or renaming a doc:
 3. If it records a decision, include a „Verworfen“ section for the
    rejected alternatives — that is what makes the decision binding
    (see below).
+4. Give it a status blockquote directly under its H1 (see „Status headers“
+   below) — a new doc without one is incomplete. The only exception is a
+   `schriftkunde/` factsheet, which stays header-free and carries its own
+   „Stand:“ line instead. If the status is `lebend`, also add the file and
+   its update trigger to the table in `docs/index.md` § „Dokument-Status“.
+
+## Status headers (the lifecycle duty)
+
+Every doc under `docs/` opens with one status blockquote directly below its
+H1 — always the same shape, always an absolute date:
+
+```markdown
+> **Status (2026-08-03): teil-umgesetzt.** <one or two sentences: what is
+> built, with PR/migration evidence.> <what is still future, or what must be
+> pulled along when the code changes.>
+```
+
+Vocabulary (small on purpose — do not invent new words):
+
+| Status | Meaning |
+|---|---|
+| `bindend` | Settled decision; changes only via a new decision, Verworfen lists stay closed. |
+| `lebend` | Describes the current code and carries a **named** update trigger. |
+| `teil-umgesetzt` | Part is built, the rest is explicitly future — the header says which. |
+| `umgesetzt-historisch` | Fully worked off or superseded — decision/measurement record, not a plan. |
+| `offen` | Nothing of it is built. |
+| `Befund-Journal` | Dated snapshot; never continued, only replaced by a new round. |
+| `statisch` | Source-backed look-up material that does not follow the code. |
+
+Rules:
+
+1. **Implementing part of a proposal updates its header and its status tag in
+   `docs/index.md` — in the SAME PR as the code.** A shipped stage that still
+   reads „offen“ is how a reader plans work that already exists.
+2. **A new proposal starts at `offen`** and gets its entry (plus tag) in the
+   index in the same commit.
+3. **Absolute dates only** in the header — bump the date whenever you touch
+   the status, never write „aktuell“ or „zuletzt“.
+4. The `schriftkunde/` factsheets stay header-free: the „Dokument-Status“
+   section in `docs/index.md` covers that layer as a whole (they carry their
+   own „Stand:“ line). The one exception is `orthographie-regeln.md`, which
+   documents rules that are not implemented yet.
+5. `docs/contributing.md` keeps an **English** header — it is the
+   `sprachregelung.md` §1 exception (linked from the README); all other
+   headers are German like the docs they sit in.
+6. When a status flips to `lebend`, add the file and its trigger to the table
+   in `docs/index.md` § „Dokument-Status“; when it stops being `lebend`,
+   remove it there.
 
 ## What is settled
 

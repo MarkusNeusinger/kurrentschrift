@@ -1,6 +1,14 @@
 # Schreibsystem-Redesign 2026-07-17 — eine Form pro Glyphe, Paar-Matrix, geerntete Paar-Overrides, Schräglagen-Befund
 
-**Status:** Richtungsentscheid des Nutzers (2026-07-17) nach kritischer
+> **Status (2026-08-03): umgesetzt-historisch.** R1–R5 sind vollständig
+> umgesetzt (PR #212–#220, Migrationen `0017` Positions-Rückbau + `0018`
+> `glyph_pairs`); das Dokument ist Entscheidungs- und Messprotokoll, kein
+> Arbeitsplan, §7 (Verworfen) bleibt geschlossen.
+> Einziger operativer Rest aus R3: die geernteten Paar-Entwürfe sind nie in
+> die geteilte DB importiert worden (`GET /sources/suetterlin-1922/pairs`
+> liefert 0 Zeilen, geprüft 2026-08-03).
+
+Richtungsentscheid des Nutzers (2026-07-17) nach kritischer
 Prüfung: **angenommen** — inklusive des Positions-Rückbaus (R2).
 **R1 und R1b Stufe 1 sind umgesetzt** (2026-07-17: `/admin/paare`
 Paar-Matrix; `/admin/vergleich` mit Wortvorlagen-Tabs über die neuen

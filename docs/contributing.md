@@ -1,5 +1,13 @@
 # Contributing
 
+> **Status (2026-08-03): lebend.** (The status tokens are a fixed German
+> vocabulary — see `index.md` „Dokument-Status".) Written in English by the
+> `sprachregelung.md` §1 exception (linked from the README for an external
+> audience). Paragraph 1 (what is live, where the MVP stands) and "Not yet
+> useful" must be updated whenever a public page ships or an MVP gate
+> (`architektur.md` §8) falls — verified accurate on 2026-08-03; the language
+> rules and the data-contribution policy are settled.
+
 **kurrentschrift is a portfolio project**, currently mid-MVP. The public site (Schriftkunde primer, reading quiz, Schreibtafel, Federprobe live writer, worksheet generator) is live at [kurrentschrift.ink](https://kurrentschrift.ink), the admin UI runs, canonical extraction and the template fit routine work, the design docs (vision + architecture §1–§17 + roadmap) are settled. That shapes what's useful to send right now.
 
 ## Welcome

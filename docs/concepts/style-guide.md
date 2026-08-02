@@ -1,5 +1,12 @@
 # Style-Guide — kurrentschrift.ink
 
+> **Status (2026-08-03): bindend.** Begründung und Historie der visuellen
+> Identität (Pigment-Recherche, Runden R1–R9, Tintenzustände, Sprachton); die
+> Verworfen-Tabellen sind geschlossene Entscheidungen.
+> Zahlen und Token nicht hier nachpflegen — den Ist-Zustand trägt
+> [`design-system.md`](design-system.md); hier kommt nur eine NEUE
+> Gestaltungsentscheidung samt verworfener Alternativen dazu.
+
 Visuelle Identität der Endnutzer-Website. Begleitdokument zu
 [`vision.md`](vision.md). Hält fest, *welcher* Look gilt und
 **warum** — getrennt vom *Was* (Vision) und *Wie* (Architektur).

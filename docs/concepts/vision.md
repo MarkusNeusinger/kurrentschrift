@@ -1,5 +1,12 @@
 # Vision der Website
 
+> **Status (2026-08-03): bindend.** Ziele, Leitprinzipien und Nicht-Ziele
+> stehen fest; die eingebettete Open-Core-Notiz zu Ziel 7 gilt unverändert
+> (technisch verschärft mit PR #254).
+> Der Umsetzungsstand gehört nicht hierher — Reihenfolge in
+> [`architektur.md`](architektur.md) §10, Stand in
+> [`mvp-roadmap.md`](mvp-roadmap.md).
+
 Begleitdokument zu [`architektur.md`](architektur.md) und
 [`naming-und-setup.md`](naming-und-setup.md). Hält fest, *was* die
 Endnutzer-Website unter [kurrentschrift.ink](https://kurrentschrift.ink)

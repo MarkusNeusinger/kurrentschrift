@@ -1,12 +1,19 @@
 # Optimierungs-Werkbank 2026-07-31 — eine Admin-Fläche, Stufen-Doktrin, Auftragskorb
 
-**Status: Richtungsentscheid des Nutzers (2026-07-31, zwei Fragen):
+> **Status (2026-08-03): teil-umgesetzt.** W1–W5 sind umgesetzt
+> (PR #252 · #255 · #261 · #264 · #266); §3–§5 sind weiter bindende Doktrin
+> und werden seit W4 von der API erzwungen (`check_transition`).
+> Offen bleibt allein das in §2/§6 angekündigte Aufgehen von
+> `/admin/vergleich`, `/admin/paare` und `/admin/belege` in der Werkbank —
+> die drei Seiten sind unverändert geroutet.
+
+**Richtungsentscheid des Nutzers (2026-07-31, zwei Fragen):
 (1) EINE neue Werkbank-Seite `/admin/werkbank`** — Wort-Rückgrat +
 umschaltende Kontext-Linse + Auftragskorb; die bestehenden Seiten
 (`/admin/vergleich`-Tabs, `/admin/paare`, `/admin/belege`) bleiben, bis
 die Werkbank sie schrittweise ersetzt. **(2) Der Auftragskorb lebt als
 DB-Tabelle `work_items`** mit Admin-API — die KI liest offene Aufträge
-am Rundenstart und meldet je Auftrag erledigt. Umsetzung: W1–W4
+am Rundenstart und meldet je Auftrag erledigt. Umsetzung: W1–W5
 umgesetzt (§7). §3–§5 sind die **bindende Stufen-/Rollen-Doktrin** für
 Mensch UND KI — Pflichtlektüre, bevor ein `work_items`-Auftrag
 bearbeitet wird; seit W4 erzwingt die API den §5-Ablauf, statt ihn zu
@@ -183,12 +190,13 @@ vom Symptom zur Änderung und zurück.
 
 ## 7. Umsetzung
 
-- **W1 — Backend** (in Arbeit): Migration `0020` `work_items` (Ebene,
+- **W1 — Backend** (umgesetzt): Migration `0020` `work_items` (Ebene,
   Schlüssel, Specimen, Notiz, Status `open`/`done`, `resolution`) +
   admin-gegatete Endpunkte + Tests.
-- **W2 — Seite `/admin/werkbank`**: Rückgrat (aus PR #251) + Linsen +
-  Korb-UI inkl. Vorsortier-Frage; danach schrittweises Aufgehen von
-  Vergleich/Paaren/Belegen.
+- **W2 — Seite `/admin/werkbank`** (umgesetzt): Rückgrat (aus PR #251) +
+  Linsen + Korb-UI inkl. Vorsortier-Frage. Offen bleibt allein das danach
+  angekündigte schrittweise Aufgehen von Vergleich/Paaren/Belegen — die drei
+  Seiten sind unverändert geroutet.
 - **W3 — Wort-Editor** (umgesetzt): Crop als Unterlage, S-Pen-Nachfahren
   → `authored`-`word_instances` (Endpunkt + Überschreib-Schutz waren
   bereits live). Der Editor (`WordTraceEditorDialog`) öffnet aus jeder

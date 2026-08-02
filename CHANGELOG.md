@@ -12,6 +12,65 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **End-to-end overview doc `docs/concepts/vom-scan-zum-schreiben.md`: how the
+  writing system emerges from a chart, the specimen plates and the author's
+  tracing.** The pipeline was documented stage by stage — schema in
+  `architektur.md`, ruler in `qualitaetsmetrik.md`, occurrence and statistics
+  layers in the Handmodell plan, doctrine in the Werkbank proposal — but
+  nowhere as one narrative, so the shape of the whole (what is input, what is
+  derived, what actually renders) had to be reassembled from six documents
+  every time. The new doc walks the six steps once in plain German prose, each
+  with a tight `Fachlich:` / `Im Admin:` / `Wer macht was:` triple, and then
+  answers the three questions the stage-by-stage docs leave implicit: which
+  artefacts are on the writing path at all (`templates` + approved
+  `glyph_pairs` as data, shaping/compose/pen models as rules — everything else
+  measures and never writes), why there is no context-forked `a`-before-`b`
+  template (occurrence anchors are stored centered, so the letter median is the
+  context-free body while transitions are their own per-pair measurement
+  objects — with the honest limit named: body reshaping smears into the letter
+  median, visible as fat exit-side MAD circles), and what goes stale (the
+  Laufform is a materialised snapshot behind explicit manual steps; generated
+  transitions read the current form's exit/entry at every compose and follow
+  automatically, approved overrides deliberately do not). Closes with the six
+  known gaps as of 2026-08-02 and a mapping list into the detail docs. Every
+  route, endpoint, table and constant it names is verified against the repo.
+- **Lifecycle status headers on every doc under `docs/`, a living-docs table
+  with named update triggers, and a `write-docs` duty that keeps them true.**
+  The docs tree had grown past thirty files in which a settled decision, an
+  already-shipped proposal and a pure sketch looked exactly alike — a reader
+  (human or agent) had to reconstruct from PR archaeology whether
+  `htr-integration.md` describes running code (it does not) or whether the
+  Handmodell stages were still ahead (H0–H2 shipped in v0.22.0). Each doc now
+  opens with one blockquote directly under its H1, dated absolutely and drawn
+  from a deliberately small vocabulary — `bindend`, `lebend`,
+  `teil-umgesetzt`, `umgesetzt-historisch`, `offen`, `Befund-Journal`,
+  `statisch` — that states what is built, with PR and migration evidence, and
+  what is still future. `docs/index.md` gains a "Dokument-Status" section
+  explaining the vocabulary plus a table of the living documents with the
+  concrete files whose change obliges an update (for example: `write-api.md`
+  follows every `/write/*` route, `core/shaping.py` and `core/compose.py`;
+  `werkzeuge.md` follows every entry script under `tools/`), and three
+  section-wise obligations for docs that are only partly implemented
+  (`animation-rendering.md` §1/§3, `styleanalyse.md` layers 1–2,
+  `quellen-und-rechte.md` §5). The proposals list carries each stage's status
+  as a short tag, so a shipped stage can no longer read as open work. The
+  `write-docs` skill gets the matching duty: implementing part of a proposal
+  updates its header and its index tag in the SAME PR as the code, a new
+  proposal starts at `offen`, and a doc that turns `lebend` is added to the
+  trigger table. The audit that produced the headers also found stale claims,
+  all fixed in this pass rather than merely flagged: the Laufform rows live on
+  `variant=100` (not `1`), `werkzeuge.md` was missing both harvest tools and
+  the wordbench report modules, the `sprachregelung.md` schema example still
+  carried the `position` key removed by migration `0017`,
+  `qualitaetsmetrik.md` still headlined a July run, `quellen-und-rechte.md` §5
+  did not name the admin-gated aggregate reads, `offenbacher.md` claimed the
+  Koch 1928 chart was unseeded (it has rendered on the public Tafel since
+  migration `0008`), `architektur.md` §4 still called the pair-override layer
+  a staging proposal, `design-system.md` was missing `PaperCardLink`, and the
+  animation width-resolver table listed no `broad_nib`.
+
 ## [0.22.0] — 2026-08-02 — Hand model statistics: aggregates + gemessen vs. komponiert
 
 ### Added

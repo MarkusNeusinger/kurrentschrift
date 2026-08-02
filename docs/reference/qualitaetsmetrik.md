@@ -1,5 +1,11 @@
 # Qualitätsmetrik & Glyph-Bench
 
+> **Status (2026-08-03): lebend.** Fortlaufend gepflegte Messlatte und
+> Baseline-Journal — jeder Bench-Lauf und jedes bewusste Re-Baseline
+> schreibt hier einen datierten Abschnitt fort; aktuelle Headlines:
+> Wörter 0,116886 · Paare 0,164506 (Lauf `aug02`, PR #268).
+> Die Verworfen-Listen (§4, §5, §6) bleiben geschlossen.
+
 Wie die Qualität einer kanonischen Glyphe gemessen wird, wie der
 hermetische Benchmark (`tools/glyphbench`) und der Experiment-Loop
 (`/optimize-glyphs`) damit arbeiten, und was die Läufe bisher gelernt
@@ -11,7 +17,8 @@ liegt in `core/quality.py`, das Werkzeug in `tools/glyphbench/`
 
 Stand: fortlaufend gepflegtes Journal — Grundfassung 2026-06-11 (nach den
 PRs #63–#71), seither mit jedem Lauf/Befund fortgeschrieben; letzter
-Eintrag 2026-07-13 (Merge-Reconciliation `jul09/10` × `jul11`).
+Eintrag 2026-08-02 (Lauf `aug02`, PR #268: Report-Spalte `meas`, Headlines
+Wörter 0,116886 · Paare 0,164506).
 
 > **Zwei Metriken, eine pro Schrift (Stand 2026-06-18).** Kurrent und
 > Sütterlin nutzen verschiedene Schreibgeräte (Spitzfeder/Schwellzug vs.
