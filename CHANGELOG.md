@@ -14,6 +14,45 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **The admin header is the public header.** The workbench sat under a 48 px
+  strip of Garamond-13 buttons while every public page carried the 67 px bar
+  with the wordmark and the Playfair nav — two houses in one product, and the
+  shabbier one was where the actual work happens. The shared chrome now lives
+  in `components/HeaderBar/HeaderBar.tsx`: the sticky, blurred, hairlined bar
+  with an optional content-width cap, the `•kurrentschrift.ink` wordmark with
+  its viridian dot and italic TLD, and the Playfair nav link with the animated
+  viridian underline and `aria-current`. `components/PublicHeader` and
+  `sections/admin/shell/AdminHeader` are both written on top of it; the public
+  bar is visually unchanged, and the admin bar keeps exactly the differences it
+  has reasons for — full-bleed instead of capped, because the workbench needs
+  the width; `zIndex` 1100, so the Korb drawer (1200) and the LetterPicker
+  popover (1300) still sit above it; and its two extra slots, the Vorlage chip
+  (now a link back to the Vorlagen-Auswahl) and the Korb ⚑ badge. Its nav lost
+  the `overflowX: auto` that grew a scrollbar around the hover underline
+  sitting four pixels below the links.
+- **The admin follows the public type system instead of its own hard-coded
+  sizes.** `/admin` opens with `PageContainer` + `PageHeader` (eyebrow
+  „Werkbank", Playfair title, `Prose` intro) over a three-column card grid
+  whose cards name the plate and not only the script; `shell/Panel.tsx`'s
+  `ViewHeader` gained an `eyebrow` (the three views pass their area) and
+  replaced its hard-coded `fontFamily: display, fontSize: 24` with
+  `variant="h4"` plus the design-system heading rule — size from the ladder,
+  face and weight in `sx`; panel titles became `h2` elements; the occurrence
+  caption left 10 px for the 14 px caption floor. The workbench is the surface
+  this project is used from most and should not read as the draft version of
+  its own design system.
+- **The Petzendorfer 1889 chart is hidden from the Vorlagen-Auswahl — hidden,
+  not removed.** Two cards both labelled „Kurrent" make the one choice the
+  whole admin hangs off ambiguous, and the second cannot be authored against
+  yet: it was seeded ahead of time for the digits row Loth 1866 lacks, written
+  by a different hand at ~57° against Loth's ~50°. The new
+  `CONFIG.hiddenSourceIds` filters it out in the two places in
+  `context/AdminContext.tsx` that can produce a selection — the source list
+  itself and the persisted choice read back from localStorage, because a stored
+  hidden id would strand the admin on a Vorlage with no card to switch away
+  from. Nothing is deleted: no migration, no DB change, the row, its chart
+  bytes and every API route stay exactly as they are, and taking the id out of
+  the list brings the card back.
 - **The admin is one workbench in three views instead of five pages with tabs
   and a permanent letter sidebar.** Entering `/admin` now asks the one question
   everything below depends on — which Vorlage — because every letter, join and
@@ -53,6 +92,23 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Fixed
 
+- **A glyph with two coincident anchors returned a 500 — and took the whole
+  batch with it.** `core/template.py::sample_polyline` builds its spline
+  parameter from the cumulative chord length, and a zero-length chord leaves
+  that parameter flat, on which `CubicSpline` raises "`x` must be strictly
+  increasing sequence". Not a theoretical input: anchors are stored rounded to
+  four decimals, so the apex of a short out-and-back stroke can round its two
+  samples onto the same point — the Sütterlin `period` does exactly that — and
+  that one key failed the whole 60-key render batch the new letter overview
+  asks for. The repeat is dropped before splining (a zero-length chord carries
+  no geometry, only the same position twice); a path without one keeps every
+  anchor and every sample byte-identical, which the compose golden fixture
+  confirms. Two unit tests in `tests/test_template.py`.
+- **Occurrence thumbnails cut into the letter.** The crop left a fixed 4 crop px
+  of air around the stored occurrence box, but that box comes from the M4 fit
+  and hugs the centerline, so the ink runs past it on every side. The margin
+  scales with the box now (`max(7, 0.18 · √(w·h))`) and the thumbnail row grew
+  from 64 to 80 px.
 - **The pair-chain fit no longer stalls on letters that are composed on top of
   each other.** `analyze._generate_connector` emits its full Bézier subdivision
   whatever room the placement leaves and floors its handle at 0.05 xh, so where
@@ -98,6 +154,48 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Four faces per letter in the Buchstaben overview, and a grid that can sort
+  itself worst-first.** Original (the chart crop) · Tafel-Form (the authored
+  chart ductus, variant 0) · Laufform (the derived running form, variant 100) ·
+  „Median & Vorkommen" (the H1 aggregate: the per-anchor median with the
+  occurrence chains thin behind it, the MAD circles, and the Laufform actually
+  in use drawn dashed against it) — the source, the two forms the engine can
+  write from it and the statistics they came from, in one row per letter,
+  where the overview used to show chart against written and nothing else. Every
+  face has an honest empty state instead of a blank box: „noch keine Laufform"
+  where none was derived, and for the sketch a hint that distinguishes loading
+  from no hand, from an unavailable admin read, from genuinely no aggregate.
+  Overlay mode still collapses the first two faces into the red silhouette
+  overlay, and the faces are `flex: 1 1 150px`, so they break to 2 × 2 on a
+  phone. The new sort toggle (Alphabet · „Schlechteste zuerst") turns the
+  alphabet into a work list. The sketch itself moved out of
+  `shell/LensStats.tsx` into `shell/AggregateSketch.tsx` plus the pure
+  `shell/sketchGeometry.ts`, so the miniature in the grid is the same drawing
+  as the one in the statistics block, only shorter.
+- **The key numbers under each of them — occurrences, mean fit residual, the
+  stored score and where its points went — and the whole alphabet's scores in
+  one read.** New `GET /sources/{id}/templates/quality` (admin-gated like the
+  raw template row per quellen-und-rechte.md §5, uncached, and declared above
+  `GET /{glyph_key}` so FastAPI cannot swallow the literal path as a glyph key)
+  serves `templates.trace_meta["quality"]` for every row of the style, extracted
+  in SQL by the new `TemplateRepository.list_quality` rather than dragging the
+  dense `pixel_anchors`/`half_widths_px` arrays along with it: 0.145 s for all
+  80 rows, against 0.44 s for a SINGLE glyph through the recomputing per-glyph
+  `/quality`. What it serves is the score at AUTHORING time — the number the
+  derivation stamped onto the row, not a re-score with today's metric code —
+  which the chip tooltip says, and only variant 0 is read, because a Laufform
+  row inherits the chart row's `trace_meta` and its stamped score is therefore
+  a copy, never a verdict on the median geometry. The rest of the grid is as
+  cheap: the render payloads come from two batch requests (`renderCache`'s
+  `fetchRenderGlyphs` gained `variant` and `bust`, which is what makes a
+  Laufform batch possible at all), the statistics from the shared workbench
+  context, and the expensive per-glyph `/diagnostic` is now fetched only for
+  the overlay mode that needs its outline geometry — the grid used to fire one
+  per card, some thirty per visit. Score colour, the score chip and the
+  per-category breakdown moved out of the wizard into
+  `sections/admin/quality/scoreParts.tsx` and are now shared by the wizard
+  preview, the overview and the Diagnose modal, which gained the breakdown it
+  had never shown although its payload always carried it.
 - **`GET /sources/{id}/render-context` — the resolved render context of a
   source at full precision, admin-gated.** Everything a render resolves before
   it draws (lineature, width resolver, the source-pooled Gleichzug nib and the

@@ -129,6 +129,35 @@ describe('renderCache', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it('batches a VARIANT without touching the base entries', async () => {
+    // The admin letter overview prefetches the whole alphabet's Laufform
+    // (variant 100) in one request; it must be its own cache slot, or the
+    // running form would overwrite the chart form of the same key.
+    fetchMock.mockImplementation(() => Promise.resolve(jsonRes(glyphsOut([glyph('a-medial')]))));
+    await rc.fetchRenderGlyphs('src', ['a-medial']);
+    await rc.fetchRenderGlyphs('src', ['a-medial'], 100);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(requestedUrl(0)).not.toContain('variant=');
+    expect(requestedUrl(1)).toContain('variant=100');
+    // Both slots now hit, and the single fetch reads the same entries.
+    await rc.fetchRenderGlyphs('src', ['a-medial']);
+    await rc.fetchRenderGlyph('src', 'a-medial', undefined, 100);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('a batch prefetch honours the version bust it was given', async () => {
+    fetchMock.mockImplementation(() => Promise.resolve(jsonRes(glyphsOut([glyph('a-medial')]))));
+    await rc.fetchRenderGlyphs('src', ['a-medial'], 0, 7);
+    // A versioned single read of the SAME version is a hit — the prefetch
+    // stamped its entries, so the components do not refetch one by one.
+    await rc.fetchRenderGlyph('src', 'a-medial', 7);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    // A newer version goes back to the network.
+    await rc.fetchRenderGlyphs('src', ['a-medial'], 0, 8);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it('evicts a failed entry so a later request can retry', async () => {
     // A 5xx outside the cold-start set (500) fails without internal retries.
     fetchMock.mockResolvedValueOnce(jsonRes({ detail: 'boom' }, 500));

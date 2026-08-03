@@ -761,6 +761,20 @@ export interface QualityData {
   };
 }
 
+// Item of GET /sources/{id}/templates/quality — the score the derivation
+// stamped onto the row (trace_meta.quality), i.e. the quality AT AUTHORING
+// TIME, not a re-score with today's metric. Cheap for a whole alphabet exactly
+// because nothing is recomputed; the per-glyph QualityComparison below is the
+// one that re-derives. Null for rows traced before the metric existed.
+// The list covers EVERY variant of the style. A derived Laufform row (variant
+// 100) inherits the chart row's trace_meta, so it repeats the chart form's
+// score — filter to variant 0 unless you mean exactly that.
+export interface TemplateQualityOut {
+  glyph_key: string;
+  variant: number;
+  quality: QualityData | null;
+}
+
 // GET .../quality payload: what the DB holds vs what a fresh re-derivation
 // with the current pipeline code would achieve (dry run, nothing written).
 export interface QualityComparison {

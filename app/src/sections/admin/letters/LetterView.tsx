@@ -108,7 +108,7 @@ export function LetterView() {
   if (!glyphKey) {
     return (
       <Box sx={{ p: { xs: 2, md: 3 }, overflowY: 'auto' }}>
-        <ViewHeader title={t.overviewTitle} intro={t.overviewIntro}>
+        <ViewHeader eyebrow={de.admin.shell.startEyebrow} title={t.overviewTitle} intro={t.overviewIntro}>
           <LetterPicker onPick={focus}>
             {(open) => (
               <Button size="small" variant="outlined" onClick={open}>
@@ -133,6 +133,7 @@ export function LetterView() {
   return (
     <Box sx={{ p: { xs: 2, md: 3 }, overflowY: 'auto' }}>
       <ViewHeader
+        eyebrow={de.admin.shell.areaLetters}
         title={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             <IconButton size="small" disabled={!prev} aria-label={t.prevLetter} onClick={() => prev && focus(prev)}>

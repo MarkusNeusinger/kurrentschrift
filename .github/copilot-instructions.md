@@ -189,7 +189,13 @@ When in doubt about what's a glyph vs. a variant vs. a deviation, re-read
 kurrentschrift/
 ├── core/             # Pure-Python compute + DB layer
 │   ├── extract.py    # skeleton + distance transform; fill_small_holes (per-glyph speck fill)
-│   ├── template.py   # canonical sampling + outline + slant
+│   ├── template.py   # canonical sampling + outline + slant; sample_polyline drops a
+│   │                 #   coincident anchor pair before splining (4-decimal storage can
+│   │                 #   round the apex of a short out-and-back stroke onto one point,
+│   │                 #   the chord-length parameter goes flat and CubicSpline raises
+│   │                 #   "`x` must be strictly increasing sequence" — a 500 on every
+│   │                 #   render of such a glyph, e.g. the Sütterlin `period`, killing
+│   │                 #   its whole batch; without a repeat every sample is byte-identical)
 │   ├── chart.py      # load + crop_with_mask (eraser + patches + ink brush); crop_mask_to_png_bytes (mask preview)
 │   ├── pipeline.py   # canonical_from_path, diagnostic_for_glyph, render_payload_for_template
 │   ├── shaping.py    # text → glyph_keys (long-s + Fuge marker `|` for round Schluss-s in compounds, ligatures, decompose fallback; digits/punctuation as detached `joins: false` glyphs, positions per joins-run; twin of app shaping.ts)
@@ -215,7 +221,22 @@ kurrentschrift/
 │   ├── schemas.py
 │   ├── dependencies.py
 │   ├── rendering.py  # style resolution + memoised source-pooled nib (templates + write)
-│   └── routers/      # health, styles, hands, sources, chart, bboxes, templates,
+│   └── routers/      # health, styles, hands, sources, chart, bboxes,
+│                     #   templates (public list = geometry-free summaries, the
+│                     #   single-template GET admin-gated (open-core moat); beside it
+│                     #   the admin-gated uncached batch read GET /sources/{id}/
+│                     #   templates/quality → list[TemplateQualityOut] (glyph_key,
+│                     #   variant, quality) served straight from the STORED
+│                     #   templates.trace_meta["quality"] via
+│                     #   TemplateRepository.list_quality, which JSON-indexes the
+│                     #   column instead of loading the dense pixel_anchors/
+│                     #   half_widths_px — the whole alphabet in one request
+│                     #   (0.145 s for 80 rows vs. 0.44 s for ONE glyph through the
+│                     #   recomputing /{glyph_key}/quality) because nothing is
+│                     #   recomputed: it is the score AT AUTHORING TIME the derivation
+│                     #   stamped, null for rows older than the metric, and the route
+│                     #   is declared ABOVE GET /{glyph_key} so the literal path is
+│                     #   not swallowed as a glyph key),
 │                     #   pairs (R3 glyph-pair overrides: public reads + admin PUT/DELETE,
 │                     #   only approved rows reach the composer),
 │                     #   write (public batched render payloads + /word server-side composition,
@@ -277,14 +298,48 @@ kurrentschrift/
 │       │                #   scribe/ (/federprobe live writer), tafel/ (/tafel Schreibtafel),
 │       │                #   quiz/ (useQuizEngine), impressum/,
 │       │                #   admin/shell (the workbench hull shared by all three views:
-│       │                #   AdminHeader (3 areas + Vorlage chip + Korb badge), StartView
-│       │                #   (/admin = the Vorlage picker the area is entered through),
+│       │                #   AdminHeader (3 areas + Vorlage chip + Korb badge) — built on
+│       │                #   the SHARED components/HeaderBar since the design round, so the
+│       │                #   admin bar has the public bar's height, wordmark and nav face
+│       │                #   instead of its old 48px Garamond-13 strip; the deliberate
+│       │                #   differences stay: full-bleed (maxWidth="none", the workbench
+│       │                #   needs the width), zIndex 1100 (under Korb drawer 1200 and
+│       │                #   LetterPicker popover 1300), the Vorlage chip (a RouterLink chip
+│       │                #   to /admin) + the Korb ⚑ badge, and no overflowX: auto on the nav
+│       │                #   (the hover underline sits 4px below the links and grew a
+│       │                #   scrollbar), StartView
+│       │                #   (/admin = the Vorlage picker the area is entered through, on
+│       │                #   PageContainer + PageHeader (eyebrow „Werkbank", Playfair h1,
+│       │                #   Prose intro) over a 3-column card grid that names the plate
+│       │                #   title; it offers only the sources CONFIG.hiddenSourceIds does
+│       │                #   not hide — petzendorfer-1889 today, the second Kurrent chart
+│       │                #   (another hand ~57° vs. Loth ~50°) seeded ahead of the Kurrent
+│       │                #   digits row Loth 1866 lacks, since two cards both labelled
+│       │                #   „Kurrent" only make the entry choice ambiguous. The list is
+│       │                #   applied in context/AdminContext.tsx at exactly two points (the
+│       │                #   one narrowing of the source list + the persisted-selection read,
+│       │                #   so a stored hidden id can't strand the admin on a Vorlage with
+│       │                #   no card to switch away from); NOTHING is deleted — no migration,
+│       │                #   no DB change, the row, its chart bytes and every API route stay
+│       │                #   as they are, removing the id brings it back),
 │       │                #   LetterPicker (the letter grid as an on-demand popover — the
 │       │                #   permanent sidebar is gone), WorkbenchData (THE shared data
 │       │                #   layer: per-source occurrences + per-hand statistics, mounted
 │       │                #   above the outlet so letter → join → word costs no refetch),
 │       │                #   KorbContext/KorbPanel/MarkDialog (⚑ from anywhere, Korb as a
-│       │                #   header drawer), LensStats, OccurrenceThumb, Panel/ViewHeader,
+│       │                #   header drawer), LensStats, AggregateSketch (the H1 aggregate
+│       │                #   drawing lifted out of LensStats behind a `height` prop, so the
+│       │                #   miniature in the letter grid is the same drawing) + the pure
+│       │                #   sketchGeometry.ts (isPoint/boundsOf/pathOf/letterSketchAnchors/
+│       │                #   occurrenceChainsOf/SKETCH_FRAME), OccurrenceThumb (the crop's
+│       │                #   air is proportional — max(7, 0.18·√(w·h)) crop px instead of a
+│       │                #   fixed 4, THUMB_H 80 instead of 64: the stored box comes from the
+│       │                #   M4 fit and hugs the centerline, so the tight crop cut into the
+│       │                #   ink), Panel/ViewHeader (ViewHeader takes an `eyebrow` the three
+│       │                #   views pass and uses variant="h4" + display/600/letterpress
+│       │                #   instead of a hard-coded fontFamily/fontSize — size from the
+│       │                #   ladder, face and weight in sx, per the design-system heading
+│       │                #   rule; Panel titles are component="h2"),
 │       │                #   and the pure, unit-tested focus.ts (subject ⇄ URL) + model.ts),
 │       │                #   admin/{letters,joins,words} (the three views: /admin/buchstaben
 │       │                #   ?g= · /admin/uebergaenge ?l=&r= · /admin/woerter ?w=&s=, each
@@ -292,13 +347,43 @@ kurrentschrift/
 │       │                #   that no plate ever wrote — they still have to look right, and
 │       │                #   work_items takes the specimen ref as optional), plus the
 │       │                #   routeless tool folders admin/{chart,setup-wizard,diagnostics,
-│       │                #   compare,pairs,belege} the views embed. Admin redesign 2026-08
+│       │                #   compare,pairs,belege,quality} the views embed — admin/quality/
+│       │                #   scoreParts.tsx holds scoreColor + the score chip + the
+│       │                #   per-category breakdown, moved out of the wizard so the wizard
+│       │                #   preview, the Diagnose modal (which gained the breakdown it
+│       │                #   never showed although its payload carried it) and the letter
+│       │                #   overview read the same number the same way, while
+│       │                #   setup-wizard/steps/previewParts.tsx keeps only the silhouette
+│       │                #   overlay. Admin redesign 2026-08
 │       │                #   ("aus einem Guss") completed the absorption announced in
 │       │                #   optimierungs-werkbank.md §2/§6; the old paths (/admin/chart,
 │       │                #   /vergleich, /paare, /belege, /werkbank) stay as redirects.
 │       │                #   (compare/GlyphComparison = the Buchstaben overview — every
-│       │                #   authored letter, crop vs. "as written", side-by-side or
-│       │                #   overlaid, each tile opening its letter;
+│       │                #   authored letter as FOUR faces per tile since the design round:
+│       │                #   Original (chart crop) · Tafel-Form (variant 0) · Laufform
+│       │                #   (variant 100) · "Median & Vorkommen" (the H1 aggregate sketch:
+│       │                #   per-anchor median, occurrence chains thin behind it, MAD
+│       │                #   circles, the rendered Laufform dashed), each with an honest
+│       │                #   empty state ("noch keine Laufform"; the sketch distinguishes
+│       │                #   loading / no hand / admin read unavailable / genuinely no
+│       │                #   aggregate); faces are flex: 1 1 150px so they break to 2×2 on
+│       │                #   a phone, overlay mode still collapses the first two into the
+│       │                #   red-silhouette overlay, and each tile carries its key numbers
+│       │                #   (occurrence count, mean fit residual over the stored
+│       │                #   occurrences, the stored image-space score + its per-category
+│       │                #   deductions) plus a sort toggle (Alphabet · Schlechteste
+│       │                #   zuerst) that turns the grid into a work list, each tile
+│       │                #   opening its letter. Cost stayed flat: TWO batch render
+│       │                #   requests for the whole alphabet (renderCache.fetchRenderGlyphs
+│       │                #   gained variant + bust so a Laufform batch is possible at all),
+│       │                #   the statistics from the shared workbench context (no request),
+│       │                #   the scores from the ONE admin templates/quality read — and the
+│       │                #   expensive per-glyph /diagnostic, once fired per card, is now
+│       │                #   fetched ONLY for the overlay mode that needs its outline
+│       │                #   geometry. Only variant 0's stamped score is used (a Laufform
+│       │                #   row inherits the chart row's trace_meta, so its score is a
+│       │                #   copy) and the chip tooltip says it is the score at authoring
+│       │                #   time, not a re-score;
 │       │                #   compare/WordComparison — words.json specimens vs /write/word, overlay
 │       │                #   registered over the sidecar lineature; "Scores berechnen &
 │       │                #   sortieren" fetches the admin /score per card sequentially, loss
@@ -363,7 +448,14 @@ kurrentschrift/
 │       │                #   for letters (solo-wrong → wizard, files nothing). Needs
 │       │                #   WordSampleOut.rect (page px) to place the page-pixel
 │       │                #   occurrence boxes inside a crop)
-│       ├── components/  # reusable UI: PaperBackground, PublicHeader (3-area nav), PublicFooter,
+│       ├── components/  # reusable UI: PaperBackground, HeaderBar (the shared header chrome:
+│       │                #   HeaderBar (sticky, blurred, hairlined, optional content-width cap
+│       │                #   + z-index) + Wordmark (•kurrentschrift.ink, viridian dot, italic
+│       │                #   TLD) + HeaderNavLink (Playfair link, animated viridian underline,
+│       │                #   aria-current) — PublicHeader AND admin/shell/AdminHeader are both
+│       │                #   built on it, so entering the workbench does not change the
+│       │                #   furniture; the public bar is visually unchanged),
+│       │                #   PublicHeader (3-area nav, on HeaderBar), PublicFooter,
 │       │                #   PageContainer (one column: narrow 760/text 1152/wide 1280), Prose (~66ch
 │       │                #   reading measure), PageHeader (shared page-header: area eyebrow + Playfair
 │       │                #   title + intro; every public page bar the landing hero), WrittenGlyph (one glyph), WrittenWord (word/line +
@@ -379,7 +471,9 @@ kurrentschrift/
 │       │                #   SVG path d), bbox.ts, lineatur.ts, pdf.ts
 │       ├── lib/api/     # fetch client (cold-start retry, typed ApiError), endpoints,
 │       │                #   wire types hand-synced with api/schemas.py, renderCache.ts
-│       │                #   (shared render-data cache, batches /write/glyphs per word)
+│       │                #   (shared render-data cache, batches /write/glyphs per word;
+│       │                #   fetchRenderGlyphs keyed by variant + bust, so a whole-alphabet
+│       │                #   Laufform batch is one request)
 │       ├── domain/      # glyphs.ts (registry + lock/quiz helpers); shaping.ts (text → glyph_keys —
 │       │                #   quiz word-bank gating only; word composition moved server-side
 │       │                #   to core/shaping.py + core/compose.py, compose.ts is gone)
@@ -440,7 +534,12 @@ ductus with generated Übergänge) — paper-&-ink identity
 per `docs/concepts/style-guide.md` + `docs/concepts/design-system.md`) and the admin behind `/admin/*`
 (Cloudflare Access in prod). Since the 2026-08 redesign the admin is ONE
 workbench in three views over ONE chosen Vorlage: `/admin` is the Vorlage
-picker, then `/admin/buchstaben` (chart cell · wizard · diagnose · chart
+picker (offering only the sources `CONFIG.hiddenSourceIds` does not hide —
+`petzendorfer-1889` today; nothing is deleted server-side), then
+`/admin/buchstaben` (its overview shows every letter as four faces — chart
+crop · Tafel-Form · Laufform · aggregate median with its occurrences — with
+key numbers, the stored quality score and a worst-first sort; its detail is
+chart cell · wizard · diagnose · chart
 editor · Tafel-Form vs. Laufform · occurrences · H1 statistics),
 `/admin/uebergaenge` (generated join · H2 "Gemessen vs. komponiert" ·
 dissected occurrences · pair matrix · pair editor as the last resort) and
@@ -496,7 +595,11 @@ from fetched chart rows.
 Browser at `http://localhost:3000/admin` loads the workbench: first the Vorlage
 picker (the choice persists per browser; `CONFIG.sourceId` in
 `app/src/global-config.ts` is the source the PUBLIC pages render — currently
-the Sütterlin 1922 Ausgangsschrift — and the admin's default), then
+the Sütterlin 1922 Ausgangsschrift — and the admin's default, while
+`CONFIG.hiddenSourceIds` lists the sources the picker does not offer —
+`petzendorfer-1889` today, a purely client-side omission applied in
+`context/AdminContext.tsx`: nothing is deleted, no migration, the row and its
+API routes stay, removing the id brings the card back), then
 `/admin/buchstaben?g=<key>`, whose Tafel panel opens the source chart with a
 draggable rough bbox and the step-by-step Einrichtungs-Wizard (Ausschluss —
 freehand eraser + manual ink brush + per-glyph speck auto-fill + inserted donor cell (Zelle einsetzen —

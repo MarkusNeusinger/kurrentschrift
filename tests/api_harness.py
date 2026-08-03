@@ -156,13 +156,23 @@ class Harness:
         return style_id, source_id
 
     async def seed_template(
-        self, style_id: str, source_id: str, glyph_key: str, glyph: str, *, variant: int = 0, half_width: float = 0.05
+        self,
+        style_id: str,
+        source_id: str,
+        glyph_key: str,
+        glyph: str,
+        *,
+        variant: int = 0,
+        half_width: float = 0.05,
+        trace_meta: dict | None = None,
     ) -> None:
         """A minimal but render-valid canonical: an n-like arch in template coords
         (baseline = 0, midband = 1) with a constant hairline width profile.
 
         `half_width` is that profile's one value — the pooled-nib tests need
         templates whose widths differ, everything else takes the default.
+        `trace_meta` defaults to empty, i.e. a row the derivation never scored;
+        the stored-quality read needs rows that carry one.
         """
         anchors = [[0.0, 0.0], [0.05, 0.45], [0.12, 0.62], [0.25, 0.55], [0.32, 0.25], [0.35, 0.0]]
         async with self.session_maker() as session:
@@ -179,7 +189,7 @@ class Harness:
                     anchors=anchors,
                     half_widths=[half_width] * len(anchors),
                     raw_path=[],
-                    trace_meta={},
+                    trace_meta=trace_meta or {},
                     measurements={},
                 )
             )

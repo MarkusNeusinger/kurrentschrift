@@ -5,23 +5,23 @@
 //
 // One tone: the cream "paper & ink" identity — it carries across every public
 // page (the former `plain` fallback had no caller and no palette token, so it
-// was removed rather than left as a drift risk).
+// was removed rather than left as a drift risk). The chrome itself (bar,
+// wordmark, nav link) lives in components/HeaderBar and is shared with the
+// admin's AdminHeader, so the two bars cannot drift apart again.
 //
 // Hidden admin entry: 5 quick clicks on the wordmark → /admin (no visible admin
 // link anywhere), which is the Vorlage picker the workbench starts at. The
 // brand still navigates home on a normal single click.
 // Render this OUTSIDE the page's content Container so the bar spans full width.
 
-import { type MouseEvent, type ReactNode, useRef } from 'react';
-import { Box, Link, Stack } from '@mui/material';
-import { alpha } from '@mui/material/styles';
+import { type MouseEvent, useRef } from 'react';
+import { Box, Stack } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-import { PAGE_WIDTHS } from '@/components/PageContainer';
+import { HeaderBar, HeaderNavLink, Wordmark } from '@/components/HeaderBar';
 import { de } from '@/locales';
 import { paths } from '@/routes/paths';
-import { display, paper } from '@/styles/paper';
 
 const ADMIN_TAPS = 5;
 const TAP_WINDOW_MS = 800;
@@ -59,56 +59,15 @@ export function PublicHeader({ sx }: PublicHeaderProps) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const tap = useRef({ count: 0, last: 0 });
-  const textMain = paper.ink;
-  const textSoft = paper.inkSoft;
-  const accent = paper.viridian;
-  // Derive from the palette token: the hardcoded rgba here had drifted from a
-  // pre-retune paper.bg and silently missed the palette change.
-  const barBg = alpha(paper.bg, 0.86);
-  const border = paper.line;
 
-  const navLink = (label: ReactNode, to: string, sx?: SxProps<Theme>) => {
+  const navLink = (label: string, to: string, linkSx?: SxProps<Theme>) => {
     // Current-area indication: the area link stays "on" (ink + full underline
     // + aria-current) while any page of that area is open — the hub itself,
     // its nested routes (/schreiben/uebungsblatt), or the area's standalone
     // tool routes (AREA_ROUTES: /quiz, /tafel → Lesen; /federprobe → Schreiben).
     const roots = AREA_ROUTES[to] ?? [to];
     const active = roots.some((root) => pathname === root || pathname.startsWith(`${root}/`));
-    return (
-      <Link
-        key={to}
-        component={RouterLink}
-        to={to}
-        // "page" only when this IS the open page; a tool page inside the area
-        // (e.g. /quiz under Lesen) gets the generic "true" current-marker.
-        aria-current={active ? (pathname === to ? 'page' : 'true') : undefined}
-        sx={{
-          color: active ? textMain : textSoft,
-          textDecoration: 'none',
-          fontFamily: display,
-          fontSize: { xs: '0.95rem', sm: '1.05rem' },
-          position: 'relative',
-          transition: 'color .25s',
-          '&::after': {
-            content: '""',
-            position: 'absolute',
-            left: 0,
-            bottom: -4,
-            height: '1px',
-            width: active ? '100%' : 0,
-            bgcolor: accent,
-            transition: 'width .3s ease',
-          },
-          '&:hover': { color: textMain },
-          '&:hover::after': { width: '100%' },
-          // Visible keyboard-focus ring (2px viridian, offset).
-          '&:focus-visible': { color: textMain, outline: `2px solid ${accent}`, outlineOffset: 3 },
-          ...sx,
-        }}
-      >
-        {label}
-      </Link>
-    );
+    return <HeaderNavLink key={to} label={label} to={to} active={active} exact={pathname === to} sx={linkSx} />;
   };
 
   // Count quick successive taps on the wordmark; the 5th within the window opens
@@ -127,95 +86,36 @@ export function PublicHeader({ sx }: PublicHeaderProps) {
   };
 
   return (
-    <Box
-      component="header"
-      sx={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 20,
-        bgcolor: barBg,
-        backdropFilter: 'blur(6px)',
-        borderBottom: '1px solid',
-        borderColor: border,
-        ...sx,
-      }}
-    >
+    <HeaderBar sx={sx}>
+      {/* brand — dot + kurrentschrift + .ink (accent italic). 5 taps → admin. */}
+      <Wordmark to={paths.home} onClick={handleWordmark} />
+
+      {/* nav — viridian hover-underline. On sm+ the three areas sit inline on
+          one row; on phones the bar is too narrow, so it stacks into two rows:
+          Lesen + Schreiben together on the lower row (right-aligned) with
+          Schriftkunde centred above them. */}
       <Box
+        component="nav"
         sx={{
-          maxWidth: PAGE_WIDTHS.wide,
-          mx: 'auto',
-          px: { xs: 2.5, sm: 4, md: 6 },
-          py: 1.75,
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: { xs: 1, sm: 2 },
+          flexDirection: { xs: 'column', sm: 'row' },
+          // xs: stretch so the lower Lesen/Schreiben row can right-align to the
+          // bar's right edge while Schriftkunde (alignSelf:center) sits centred
+          // above it. sm+: a normal centred single row.
+          alignItems: { xs: 'stretch', sm: 'center' },
+          columnGap: { sm: 3 },
+          rowGap: 0.5,
         }}
       >
-        {/* brand — dot + kurrentschrift + .ink (accent italic). 5 taps → admin. */}
-        <Box
-          component={RouterLink}
-          to={paths.home}
-          onClick={handleWordmark}
-          sx={{
-            display: 'inline-flex',
-            alignItems: 'baseline',
-            textDecoration: 'none',
-            fontFamily: display,
-            fontWeight: 600,
-            // Fluid so the long ".ink" wordmark eases down on the narrowest
-            // phones instead of forcing the bar wider than the viewport (it used
-            // to overflow ≤360px); holds at 1.5rem on sm+ as before.
-            fontSize: 'clamp(1.05rem, 0.58rem + 2.4vw, 1.5rem)',
-            letterSpacing: '0.02em',
-            color: textMain,
-          }}
+        {navLink(SCHRIFTKUNDE.label, SCHRIFTKUNDE.to, { alignSelf: 'center' })}
+        <Stack
+          direction="row"
+          spacing={{ xs: 1.5, sm: 3 }}
+          sx={{ alignItems: 'center', justifyContent: { xs: 'flex-end', sm: 'flex-start' } }}
         >
-          <Box
-            component="span"
-            sx={{
-              width: '0.42em',
-              height: '0.42em',
-              borderRadius: '50%',
-              bgcolor: accent,
-              alignSelf: 'center',
-              mr: '0.2em',
-              boxShadow: `0 0 6px ${accent}80`,
-            }}
-          />
-          {de.common.brand.name}
-          <Box component="span" sx={{ color: accent, fontStyle: 'italic' }}>
-            {de.common.brand.tld}
-          </Box>
-        </Box>
-
-        {/* nav — viridian hover-underline. On sm+ the three areas sit inline on
-            one row; on phones the bar is too narrow, so it stacks into two rows:
-            Lesen + Schreiben together on the lower row (right-aligned) with
-            Schriftkunde centred above them. */}
-        <Box
-          component="nav"
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', sm: 'row' },
-            // xs: stretch so the lower Lesen/Schreiben row can right-align to the
-            // bar's right edge while Schriftkunde (alignSelf:center) sits centred
-            // above it. sm+: a normal centred single row.
-            alignItems: { xs: 'stretch', sm: 'center' },
-            columnGap: { sm: 3 },
-            rowGap: 0.5,
-          }}
-        >
-          {navLink(SCHRIFTKUNDE.label, SCHRIFTKUNDE.to, { alignSelf: 'center' })}
-          <Stack
-            direction="row"
-            spacing={{ xs: 1.5, sm: 3 }}
-            sx={{ alignItems: 'center', justifyContent: { xs: 'flex-end', sm: 'flex-start' } }}
-          >
-            {READ_WRITE.map((n) => navLink(n.label, n.to))}
-          </Stack>
-        </Box>
+          {READ_WRITE.map((n) => navLink(n.label, n.to))}
+        </Stack>
       </Box>
-    </Box>
+    </HeaderBar>
   );
 }

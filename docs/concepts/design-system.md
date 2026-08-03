@@ -1,11 +1,13 @@
 # Design-System — kurrentschrift.ink
 
 > **Status (2026-08-03): lebend.** Beschreibt den Ist-Zustand des
-> öffentlichen Frontends und ist am 2026-08-03 gegen den Code geprüft
-> (Tokens, 19-px-Leiter, Breiten 760/1152/1280, Routenliste).
+> Frontends und ist am 2026-08-03 gegen den Code geprüft
+> (Tokens, 19-px-Leiter samt Gewichten, Breiten 760/1152/1280, Kopfleiste,
+> Routenliste).
 > **Mitziehen bei jeder Änderung an `app/src/styles/paper.ts`,
 > `theme/typography.ts`,
-> `components/PageContainer|Prose|PageHeader|PublicHeader|PublicFooter` oder
+> `components/PageContainer|Prose|PageHeader|HeaderBar|PublicHeader|PublicFooter`,
+> an der Werkbank-Kopfleiste (`sections/admin/shell/AdminHeader`) oder
 > an der öffentlichen Routen-/Bereichsstruktur** — sonst driftet die
 > Bauvorschrift von dem, was ausgeliefert wird.
 
@@ -13,6 +15,13 @@
 > öffentlichen Website — Tokens, Typo-Skala, Breiten, Flächen, Navigation,
 > Komponenten, Bewegung, Lesbarkeit. Es beschreibt den **Ist-Zustand des Codes**
 > (eine Stellschraube pro Regel), nicht die Entscheidungs­geschichte.
+>
+> **Geltungsbereich Admin:** Die **Typo-Skala (§3, samt Überschriften-Regel) und
+> die Kopfleiste (§7 `HeaderBar`)** gelten auch für die Werkbank unter
+> `/admin/*`; ebenso der Caption-Boden von 14 px (§9). Die Werkbank trägt
+> dieselbe Marke und darf beim Betreten nicht wie eine zweite Anwendung wirken.
+> Ihr **Arbeits-Layout** bleibt eigen: die drei Ansichten laufen vollbreit
+> (§4, „Werkbank — vollbreit").
 >
 > **Begründung & Historie** (warum Viridian, R1–R9, Pigment-Recherche) stehen im
 > [Style-Guide](style-guide.md). **Claude-Design-Spiegelung** (die gesyncten
@@ -84,9 +93,13 @@ proportional mit (Style-Guide §3 „Lesbarkeit vor Epoche").
 | `body1` | `1.1875rem` | **19** | 400 | 1.6 | Fließtext (Default) |
 | `body2` | `1.0625rem` | 17 | 400 | 1.6 | Sekundärtext, dichte Tabellen |
 | `subtitle1` | `1.1875rem` | 19 | 400 | 1.5 | hervorgehobener Vorspann |
-| `subtitle2` | `1.0625rem` | 17 | 400 | 1.5 | kleines Display-Label |
+| `subtitle2` | `1.0625rem` | 17 | 500 | 1.5 | kleines Display-Label, Panel-Titel der Werkbank |
 | `caption` | `0.875rem` | 14 | 400 | 1.55 | Captions, Quellenzeilen (Boden ~14 px) |
 | `overline` | `0.8125rem` | 13 | 500 | — | Eyebrow (`letterSpacing 0.12em`) |
+
+Bei `subtitle2` kommt die **500** aus dem MUI-Default: `theme/typography.ts` setzt
+dort nur `fontSize`/`lineHeight`. (Diese Tabelle nannte bis 2026-08-03 eine 400 —
+Drift; maßgeblich ist der Code, korrigiert wurde das Dokument.)
 
 **Größe kommt vom `variant`, Charakter lokal.** Display-Überschriften (Playfair)
 opten lokal ein — der Variant liefert nur die Größe:
@@ -123,6 +136,17 @@ Garamond-versal-sepia, z. B. `LESEN` / `SCHREIBEN` / `SCHRIFTKUNDE`); die Bereic
 lassen es weg (Titel = Bereich). Darunter optional ein Intro im Lesemaß (`Prose`). So
 sind Schrift, Eyebrow-Stil und linke Kante auf allen Seiten gleich — eine Stellschraube
 (`PageHeader`) statt pro-Seite-Köpfe.
+
+**Werkbank-Köpfe.** Im Admin gilt dieselbe Regel eine Stufe kleiner. Der Ansichtskopf
+(`ViewHeader` in `sections/admin/shell/Panel.tsx`) trägt Bereichs-Eyebrow + Titel in
+**Playfair** (`fontFamily: display`, `fontWeight: 600`), Größe aus **`variant="h4"`** —
+eine Ansicht sitzt unter einer Chrome-Leiste, nicht auf einer Landing-Seite. Panel-Titel
+sind `variant="subtitle2"` in Garamond (`component="h2"`), damit kein Display-Schnitt mit
+den Specimen-Glyphen konkurriert, die die Panels füllen. **Ein hartes `fontSize` auf einem
+Playfair-Titel ist auch im Admin verboten** — Größe aus der Leiter, Face/Gewicht/
+`letterpress` in `sx`. Die **Vorlagen-Auswahl** (`shell/StartView`) ist die eine
+Admin-Seite, die wie eine öffentliche gesetzt ist: `PageContainer` + `PageHeader`
+(reine Wahl, keine Arbeitsfläche).
 
 ---
 
@@ -171,6 +195,16 @@ strukturierten Blöcke wie Porträt+Kontakt oder die Hosting-Tabelle) in einem
 gemeinsamen Maß (`<Box sx={{ maxWidth: '48rem' }}>`). Hier wird **nicht** `Prose`
 verwendet (das wrappt nur laufende Absätze) — die kleinen Blöcke würden vollbreit
 verloren wirken, im Maß bleiben sie als Dokument zusammen.
+
+**Werkbank — vollbreit (Ausnahme).** Die drei Ansichten unter `/admin/*`
+(Buchstaben · Übergänge · Wörter) benutzen **kein** `PageContainer`: sie laufen
+**vollbreit** und tragen ihr eigenes Innenmaß (`p:{xs:2,md:3}`); die Kopfleiste
+setzt dazu `maxWidth='none'` (§7 `AdminHeader`). Grund: Chart-Ausschnitte,
+Buchstabenraster und Paar-Matrizen sind Arbeitsflächen, die die Breite **brauchen** —
+ein 1280er Deckel schneidet dort Evidenz weg, statt Lesbarkeit zu schützen, und
+Fließtext, den das Maß schützen müsste, gibt es hier nicht (Intros kappen bei ~47 rem).
+Die **Vorlagen-Auswahl** (`/admin`) ist die Ausnahme der Ausnahme und sitzt im
+`PageContainer` wie eine öffentliche Seite.
 
 ---
 
@@ -223,7 +257,8 @@ Unklarheit „gehört die Tafel zu Lesen oder Schreiben?".
 
 Routen in `app/src/routes/paths.ts` + `routes/sections/public.tsx`. `/lehrbuch`
 leitet weiter auf `/schriftkunde` (alter Name). Der Admin liegt unverändert hinter
-`/admin/*` (5 Klicks auf die Wortmarke).
+`/admin/*` (5 Klicks auf die Wortmarke) und trägt **dieselbe Leiste** mit seinen
+eigenen drei Bereichen (Buchstaben · Übergänge · Wörter) — §7 `HeaderBar`.
 
 ---
 
@@ -233,7 +268,9 @@ leitet weiter auf `/schriftkunde` (alter Name). Der Admin liegt unverändert hin
 |---|---|---|
 | `PaperBackground` | Papier-Identität (Grund, Korn, Vignette) | umschließt jede öffentliche Seite (via `PublicLayout`) |
 | `PublicLayout` | Chrome: Background + Header + `<main>` + optional Footer | `sx` für `<main>` |
-| `PublicHeader` | sticky Markenleiste + 3-Bereiche-Nav | `tone='paper'\|'plain'`; 5 Taps → Admin |
+| `HeaderBar` | DIE Kopf-Chrome (sticky, `blur(6px)`, Haarlinie) + Geschwister-Exporte `Wordmark` (•kurrentschrift.ink, Viridian-Punkt, kursive TLD) und `HeaderNavLink` (Playfair-Link, Viridian-Unterstrich, `aria-current`) | `maxWidth` (Default `wide`, `'none'` = vollbreit), `zIndex`, `contentSx`; **eine** Leiste für öffentliche Seiten **und** Werkbank |
+| `PublicHeader` | sticky Markenleiste + 3-Bereiche-Nav | auf `HeaderBar` gebaut, Inhalt auf `wide`; nur noch `sx` (die `tone`-Variante hatte keinen Aufrufer und ist entfallen); 5 Taps → Admin |
+| `AdminHeader` | dieselbe Leiste für die Werkbank (`sections/admin/shell`) | **vollbreit** (`maxWidth='none'`, §4), `zIndex 1100` (unter Korb-Drawer 1200 und LetterPicker-Popover 1300) + **zwei Zusatz-Slots**: Vorlagen-Chip (→ `/admin`) und Auftragskorb-⚑ mit Badge |
 | `PublicFooter` | geteilter Footer (Links, Impressum) | Breite `wide` |
 | `PageContainer` | eine Inhaltsspalte, 3 Breiten | `width='narrow'\|'text'\|'wide'\|number`, `component`, `sx` |
 | `Prose` | Lesemaß ~66 Zeichen | `align='left'\|'center'`, `measure='47rem'` |
@@ -271,16 +308,24 @@ Knapp und sinnstiftend (Style-Guide §6, Detailalgorithmen
 Keine gebrochene Schrift und keine Schreibschrift als **Lesetext** — nicht in UI,
 Überschriften oder Fließtext. Historische Formen (Kurrent/Sütterlin/Fraktur) erscheinen
 **ausschließlich als markiertes Specimen** (eigene Fläche, als Beispiel gekennzeichnet).
-Untergrenzen: Body ≥ 19 px, Caption ≥ 14 px. Kontrast: Tinte/Sepia auf Papier, nie
-blass auf blass. Diese Regel hat Vorrang vor jeder Epochen-Anmutung.
+Untergrenzen: Body ≥ 19 px, Caption ≥ 14 px — **auch in der Werkbank** (eine
+Beleg-Kachel beschriftet mit `variant="caption"`, nicht mit 10 px). Kontrast:
+Tinte/Sepia auf Papier, nie blass auf blass. Diese Regel hat Vorrang vor jeder
+Epochen-Anmutung.
 
 ---
 
 ## 10. Pflege & Sync
 
 - Ändert sich eine Zahl/Token hier → `app/src/styles/paper.ts`, `theme/typography.ts`,
-  `components/PageContainer`, `components/Prose`, `components/PageHeader` (Seitenkopf) bzw.
+  `components/PageContainer`, `components/Prose`, `components/PageHeader` (Seitenkopf),
+  `components/HeaderBar` (die eine Kopfleiste, §7) bzw.
   `components/PublicFooter` (Footer-`mt` = der eine Abstand, §4) nachziehen (und umgekehrt).
+- **Der Admin ist mitgemeint**, wo §3 (Typo) und §7 (`HeaderBar`) es sagen: eine Änderung
+  an Leiter oder Kopfleiste wird an **beiden** Leisten (`PublicHeader` +
+  `sections/admin/shell/AdminHeader`) und an den Werkbank-Köpfen (`shell/Panel.tsx`,
+  `shell/StartView.tsx`) geprüft. Das Arbeits-Layout der drei Ansichten ist davon
+  ausgenommen (§4 „Werkbank — vollbreit").
 - [Style-Guide](style-guide.md) trägt die *Begründung/Historie*, dieses Dokument den
   *Ist-Zustand*. [`.design-sync/conventions.md`](../../.design-sync/conventions.md)
   spiegelt die Marke nach Claude Design — bei Marken-Komponenten dort prüfen.

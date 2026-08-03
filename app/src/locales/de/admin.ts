@@ -17,6 +17,7 @@ export const admin = {
     noSource: 'keine Vorlage',
     openKorb: 'Auftragskorb öffnen',
     closeKorb: 'Auftragskorb schließen',
+    startEyebrow: 'Werkbank',
     startTitle: 'Welche Vorlage?',
     startIntro:
       'Alles in der Werkbank gehört zu genau einer Vorlage und ihrer Hand — Buchstaben, Übergänge und Wörter werden immer an einer Schrift gearbeitet. Darum steht die Wahl am Anfang und nicht in einem Menü.',
@@ -33,7 +34,7 @@ export const admin = {
   letters: {
     overviewTitle: 'Buchstaben',
     overviewIntro:
-      'Jeder erstellte Buchstabe als Tafel-Ausschnitt neben „wie geschrieben“ — zum Vergleichen auf einen Blick. „Öffnen“ führt in den einzelnen Buchstaben mit allen Werkzeugen: Ausschnitt, Weg nachfahren, Vorkommen, Statistik.',
+      'Jeder erstellte Buchstabe viermal nebeneinander: der Tafel-Ausschnitt, die daraus geschriebene Tafel-Form, die Laufform für fließende Wörter und die Statistik dahinter — der Median dieser Hand über ihren gemessenen Vorkommen, die Vorkommen selbst dünn dahinter. Daneben die Kennzahlen: wie viele Vorkommen, wie gut die Einpassung sitzt, wie die Form bewertet ist. „Öffnen“ führt in den einzelnen Buchstaben mit allen Werkzeugen.',
     pickLetter: 'Buchstabe wählen',
     prevLetter: 'Vorheriger Buchstabe',
     nextLetter: 'Nächster Buchstabe',
@@ -249,6 +250,33 @@ export const admin = {
     colCrop: 'Original',
     colCanonical: 'Kanonische Form',
     colWritten: 'Wie geschrieben',
+    // The two derived faces beside the pair above: what the composer writes in
+    // running text, and the statistics that form comes from.
+    colLaufform: 'Laufform',
+    colSketch: 'Median & Vorkommen',
+    colSketchHint:
+      'Kräftig: der Median je Anker über den Vorkommen dieser Hand · dünn: die einzelnen Vorkommen · Kreise: MAD-Streuung · gestrichelt rot: die aktuell geschriebene Laufform · Linien: Grund- und Mittellinie.',
+    noLaufformShort: 'noch keine Laufform',
+    // Two different answers, deliberately not one: below the rebuild's minimum
+    // vs. never rebuilt at all for this hand.
+    noAggregateShort: 'zu wenige Vorkommen für eine Statistik',
+    noAggregateLayer: 'Statistik dieser Hand noch nicht gebildet',
+    occurrencesUnknown: 'Vorkommen werden geladen …',
+    // Key numbers per letter — the details stay in the detail view.
+    fitMean: 'Fit ⌀ {{value}} px',
+    fitMeanHint: 'Mittlere Abweichung der eingepassten Vorkommen (geo_rmse) — je kleiner, desto besser sitzt die Form in den Wörtern.',
+    scoreNone: 'kein Score',
+    scoreNoneHint:
+      'Für diese Form ist kein Bildmaß gespeichert — sie wurde vor der Metrik abgeleitet. „Diagnose“ rechnet es neu.',
+    // „Bewertung", not „Deckung": which metric stands behind the number depends
+    // on the script (Kurrent misst Pixel/Breite, Sütterlin Natürlichkeit hinter
+    // einem Deckungs-Gate, qualitaetsmetrik.md §1–§5).
+    scoreHint:
+      'Bewertung der gespeicherten Form gegen ihren Tafel-Ausschnitt — je nach Schrift Deckung oder Natürlichkeit. Gestempelt bei der letzten Ableitung, nicht neu gerechnet; die Neuberechnung steht in der Diagnose.',
+    sortLabel: 'Sortierung',
+    sortAlpha: 'Alphabet',
+    sortWorst: 'Schlechteste zuerst',
+    sortWorstUnavailable: 'Kein gespeicherter Score gelesen — ohne Bewertung gäbe das wieder die alphabetische Reihenfolge.',
     overlayToggle: 'Überlagern',
     overlayHeading: 'Überlagert (Original + Geschrieben in Rot)',
     // The two grids double as the overviews of the Buchstaben/Wörter views, so
@@ -601,6 +629,11 @@ export const admin = {
     intro:
       'Bildraum-Vergleich: Wie gut deckt die gerenderte Silhouette die Originaltinte? Links der gespeicherte Stand, rechts was eine Neuableitung aus dem gezeichneten Weg mit dem aktuellen Code erreichen würde — erst vergleichen, dann übernehmen.',
     computing: 'Qualität wird gerechnet …',
+    // Heading of the per-category breakdown here: the wizard's version says
+    // „(optimiert)" because it breaks down a preview — these two cards break
+    // down a form that exists.
+    breakdownHeading: 'Abzüge nach Kategorie',
+    breakdownHint: 'Wo diese Form Punkte verliert — höher = mehr Abzug, wie im Glyph-Bench.',
     stored: 'Gespeichert',
     candidate: 'Neu ableitbar',
     noCandidate: 'Kein Roh-Weg gespeichert — Neuableitung nicht möglich.',
