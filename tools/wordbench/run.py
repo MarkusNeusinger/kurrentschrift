@@ -126,6 +126,21 @@ def _slot_overrides(slots: list[GlyphSlot], by_base: dict[tuple[str, str], dict]
     return out
 
 
+def load_laufform_payload(path) -> dict[str, dict]:
+    """Read and shape-check a ``--laufform`` file: an object mapping glyph_key -> draft/row.
+
+    A malformed file fails fast with a named SystemExit instead of a traceback —
+    this is a CLI surface, not a library path.
+    """
+    try:
+        payload = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"--laufform {path}: {exc}") from None
+    if not isinstance(payload, dict) or not all(isinstance(v, dict) for v in payload.values()):
+        raise SystemExit(f"--laufform {path}: expected an object mapping glyph_key -> draft/row")
+    return payload
+
+
 def overlay_laufform_rows(
     frozen: dict[str, dict], payload: dict[str, dict], templates: dict[str, dict]
 ) -> dict[str, dict]:
@@ -295,7 +310,7 @@ def main() -> None:
 
     laufform_payload: dict[str, dict] = {}
     if args.laufform:
-        laufform_payload = json.loads(args.laufform.read_text())
+        laufform_payload = load_laufform_payload(args.laufform)
         print(f"laufform: {len(laufform_payload)} rows from {args.laufform} (own number - never the headline)")
 
     t0 = time.perf_counter()

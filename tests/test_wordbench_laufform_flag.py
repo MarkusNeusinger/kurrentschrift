@@ -132,3 +132,26 @@ def test_the_overlay_and_the_chart_only_run_are_mutually_exclusive():
     # did both would report a number nobody could attribute.
     with pytest.raises(SystemExit):
         build_parser().parse_args(["--laufform", "draft.json", "--no-laufform"])
+
+
+def test_a_malformed_overlay_file_fails_fast_by_name(tmp_path):
+    from tools.wordbench.run import load_laufform_payload
+
+    bad_json = tmp_path / "bad.json"
+    bad_json.write_text("{not json")
+    with pytest.raises(SystemExit, match="bad.json"):
+        load_laufform_payload(bad_json)
+
+    a_list = tmp_path / "list.json"
+    a_list.write_text('[{"glyph_key": "a"}]')
+    with pytest.raises(SystemExit, match="object mapping glyph_key"):
+        load_laufform_payload(a_list)
+
+    scalar_value = tmp_path / "scalar.json"
+    scalar_value.write_text('{"a": 5}')
+    with pytest.raises(SystemExit, match="object mapping glyph_key"):
+        load_laufform_payload(scalar_value)
+
+    missing = tmp_path / "missing.json"
+    with pytest.raises(SystemExit, match="missing.json"):
+        load_laufform_payload(missing)
