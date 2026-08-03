@@ -50,6 +50,9 @@ WRITE_ENDPOINTS = [
     # The raw authored template (anchors + stylus path) is the open-core
     # moat — gated like the writes even though it is a read.
     ("GET", "/sources/{src}/templates/a", None),
+    # Same moat: the resolved render context carries the pooled nib/pen, i.e.
+    # geometry measured over every authored template of the source.
+    ("GET", "/sources/{src}/render-context", None),
 ]
 
 
@@ -274,3 +277,56 @@ async def test_write_word_without_templates_reports_missing(api: Harness):
     data = res.json()
     assert sorted(data["missing"]) == sorted(glyph_keys_of(shape_text("nn")))
     assert data["items"] == []
+
+
+# ------------------------------------------------------------- render context
+
+
+async def test_render_context_serves_the_pooled_nib_unrounded(api: Harness):
+    """The reason this endpoint exists: the pooled Gleichzug nib at FULL
+    precision, where the render payload only carries it rounded to 4 decimals.
+
+    Three templates with 0.061 / 0.073 / 0.089 pool to 0.0743…, whose 4-decimal
+    readback is off by ~3e-5 xh — enough to flip a knife-edge ink-clearance
+    decision when an offline renderer reproduces a served composition.
+    """
+    style_id, source_id = await api.seed_style_and_source(width_resolver="constant")
+    for key, half_width in (("n", 0.061), ("e", 0.073), ("a", 0.089)):
+        await api.seed_template(style_id, source_id, key, key, half_width=half_width)
+
+    res = await api.client.request("GET", f"/sources/{source_id}/render-context", headers=api.admin_headers())
+    assert res.status == 200
+    ctx = res.json()
+    expected = (0.061 + 0.073 + 0.089) / 3
+    assert ctx["constant_nib_units"] == pytest.approx(expected, abs=1e-15)
+    # Not merely "close": the value must carry the decimals the payload drops.
+    assert ctx["constant_nib_units"] != round(ctx["constant_nib_units"], 4)
+    assert ctx["width_resolver"] == "constant"
+    assert ctx["style_id"] == style_id
+    assert ctx["style_ratio"] == [2, 1, 2]
+    assert ctx["pen"] is None  # a constant style writes with the nib, not a pen
+
+    # …and it is the SAME nib the public render payload draws with, rounded.
+    written = await api.client.request("GET", f"/sources/{source_id}/write/glyphs", params={"keys": "n"})
+    half_widths = written.json()["glyphs"][0]["half_widths_template"]
+    assert half_widths[0] == pytest.approx(round(expected, 4))
+
+
+async def test_render_context_reports_the_pooled_pen_of_a_pressure_style(api: Harness):
+    style_id, source_id = await api.seed_style_and_source(width_resolver="pressure")
+    await api.seed_template(style_id, source_id, "n", "n", half_width=0.062)
+
+    res = await api.client.request("GET", f"/sources/{source_id}/render-context", headers=api.admin_headers())
+    assert res.status == 200
+    ctx = res.json()
+    # A pressure source has no pooled Gleichzug nib — that scalar is the
+    # constant-width path's, and claiming one here would mis-render.
+    assert ctx["constant_nib_units"] is None
+    assert ctx["pen"]["kind"] == "pressure"
+    assert ctx["pen"]["hairline_half"] == pytest.approx(0.062)
+    assert ctx["pen"]["nib_width_units"] is None
+
+
+async def test_render_context_unknown_source_404(api: Harness):
+    res = await api.client.request("GET", "/sources/no-such-source/render-context", headers=api.admin_headers())
+    assert res.status == 404

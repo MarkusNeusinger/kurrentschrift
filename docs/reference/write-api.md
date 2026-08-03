@@ -64,6 +64,27 @@ Stil-Auflösung + der pro `(style, source)` gepoolte Nib/Pen leben in
 `api/rendering.py` (memoisiert, TTL 10 min, invalidiert bei
 Trace/Resample/Delete).
 
+Alle Zahlen im Payload sind auf **4 Nachkommastellen** gerundet (Anker,
+Halbbreiten, Centerlines, Silhouetten-Ringe — `core/pipeline.py`,
+`core/template.py`): die Rundung ist Teil des eingefrorenen
+Render-Vertrags (Golden-Fixture, Bench-Referenzen) und wird nicht
+angefasst, um irgendwo eine Stelle mehr zu gewinnen.
+
+Wer denselben Render **offline bit-genau reproduzieren** muss, liest den
+aufgelösten Render-Kontext direkt: `GET /sources/{id}/render-context`
+(**admin-gated**, ungecacht, `api/routers/sources.py`) liefert
+`style_id`, `style_ratio`, `slant_deg`, `width_resolver`, den gepoolten
+`constant_nib_units` **ungerundet** und den gepoolten `pen`. Kein
+öffentlicher Read braucht das — der Nib ist über alle autorisierten
+Templates der Quelle gemessene Geometrie (quellen-und-rechte.md §5) und
+lässt sich aus den ausgelieferten Zeilen nicht nachrechnen, weil der Pool
+auch Varianten-Zeilen umfasst, die kein Endpunkt ausliefert. Einziger
+Konsument ist der Fixture-Rebuild ohne DB-Zugang
+(`tools/wordbench/fetch_fixtures.py`): dort entschied früher die
+4-Stellen-Rückrechnung aus `half_widths_template` über knappe
+Ink-Clearance-Entscheidungen und damit über bis zu ~0,02 xh
+Platzierungs-Jitter.
+
 ## Wire-Format (Auszug)
 
 `/write/glyphs` antwortet `{glyphs: [...], missing: [...]}` — nicht

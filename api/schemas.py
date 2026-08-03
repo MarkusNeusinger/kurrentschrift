@@ -81,6 +81,45 @@ class SourceOut(BaseModel):
     note: str | None = None
 
 
+class PenOut(BaseModel):
+    """The source-pooled writing instrument, flattened (`core.widths.PenStyle`).
+
+    `pressure` carries only `hairline_half` (the pooled Haarstrich half-width);
+    `broad_nib` only the three `nib_*` fields (Bandzugfeder calibration). A
+    `constant` style has no pen — the pooled Gleichzug nib is its own scalar.
+    """
+
+    kind: str
+    hairline_half: float | None = None
+    nib_width_units: float | None = None
+    nib_angle_deg: float | None = None
+    nib_edge_fraction: float | None = None
+
+
+class RenderContextOut(BaseModel):
+    """Everything the render path resolves for one source before it draws
+    (`api.rendering.RenderContext`), at FULL float precision.
+
+    Admin-gated: the pooled nib/pen is measured geometry pooled over every
+    authored template of the source (quellen-und-rechte.md §5), and the public
+    surfaces need none of it — they consume the finished `/write` payloads,
+    where the numbers are rounded to the 4 decimals the renderer draws at. This
+    read exists for the tooling that must REPRODUCE a render bit-for-bit
+    offline (`tools/wordbench/fetch_fixtures.py`): a 5th-decimal nib difference
+    flips knife-edge ink-clearance decisions and jitters glyph placement, so
+    the readback off a rounded payload is not precise enough.
+    """
+
+    style_id: str
+    style_ratio: list[float]
+    slant_deg: float
+    width_resolver: str
+    # Pooled Gleichzug nib (constant styles only), unrounded; null otherwise or
+    # when nothing is traced for the source yet.
+    constant_nib_units: float | None = None
+    pen: PenOut | None = None
+
+
 class WordSampleOut(BaseModel):
     """One connected-writing specimen (word or letter pair) from a source's
     `words.json` sidecar — metadata only; the crop bytes come from the sibling
