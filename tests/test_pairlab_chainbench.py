@@ -472,7 +472,18 @@ def _chain_fit() -> ChainFit:
         connector_units=np.array([[0.0, 0.5], [0.3, 0.6]]),
         converged=False,
         converged_local=True,
-        fit_meta={"status": "CONVERGENCE", "n_params": 530},
+        # exactly the keys `chain.fit_pair_chain` writes — the export used to read
+        # a "status" key that never existed, so the termination reason and the
+        # x0-vs-x* energies were silently empty on every row.
+        fit_meta={
+            "optimizer_success": False,
+            "message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+            "iterations": 300,
+            "n_evaluations": 322,
+            "n_params": 530,
+            "energies": {"f": 0.0866, "e_geo": 0.0096, "e_smooth": 7374.08},
+            "energies_initial": {"f": 250.406, "e_geo": 0.0096, "e_smooth": 25039309.76},
+        },
     )
 
 
@@ -506,7 +517,23 @@ def test_fill_chain_placement_maps_the_two_slot_blocks() -> None:
     assert row["chain_l_at_bound"] is False and row["chain_r_at_bound"] is True
     assert row["chain_at_bound"] is True
     assert (row["chain_cut_l"], row["chain_cut_r"]) == (5, 0)
-    assert row["chain_status_msg"] == "CONVERGENCE" and row["chain_n_params"] == 530
+    assert row["chain_n_params"] == 530
+
+
+def test_fill_chain_placement_exports_the_optimizer_termination() -> None:
+    """The stalled-solve instrumentation: WHY the solve stopped and whether it
+    moved at all have to be readable from the row, not inferred from zeros."""
+    row: dict = {}
+    _fill_chain_placement(row, _chain_fit(), slot_a=0)
+    assert row["chain_status_msg"] == "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT"
+    assert row["chain_optimizer_success"] is False
+    assert row["chain_iterations"] == 300 and row["chain_n_evaluations"] == 322
+    assert row["chain_f_initial"] == 250.406 and row["chain_f_final"] == 0.0866
+    assert row["chain_e_smooth_initial"] == 25039309.76
+    assert row["chain_e_geo_initial"] == row["chain_e_geo_final"] == 0.0096  # nothing moved
+    assert row["chain_energies_initial_finite"] is True
+    # terms the meta does not carry come out as None, not as a fabricated 0.0
+    assert row["chain_e_cov_initial"] is None
 
 
 # ------------------------------ the additive `result=` kwarg on dissect_occurrence

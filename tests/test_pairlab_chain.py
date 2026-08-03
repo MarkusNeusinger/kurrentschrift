@@ -30,16 +30,20 @@ from core.fit import (
     _skeleton_points,
 )
 from core.template import build_sample_plan
-from tools.pairlab.analyze import FIT_DX_UNITS, FIT_DY_UNITS
+from tools.pairlab.analyze import FIT_DX_UNITS, FIT_DY_UNITS, _generate_connector
 from tools.pairlab.chain import (
+    CHAIN_CONNECTOR_ANCHOR_SPACING_UNITS,
+    CHAIN_CONNECTOR_MIN_SPAN_UNITS,
     CHAIN_COVERAGE_CAP_UNITS,
     CHAIN_COVERAGE_PER_SEGMENT,
+    CONNECT_SAMPLES,
     ChainSegmentSpec,
     _coverage_huber,
     _letter_cut_anchors,
     _second_difference_operator,
     _segment_converged,
     build_chain_problem,
+    regularise_connector_anchors,
 )
 
 
@@ -518,3 +522,204 @@ def test_chain_converges_on_synthetic_ink() -> None:
     assert segments[0].max_anchor_delta < 0.25
     assert segments[2].max_anchor_delta < 0.25
     assert abs(blocks[0, 0]) < FIT_DX_UNITS and abs(blocks[0, 1]) < FIT_DY_UNITS
+
+
+# ------------------------------------------- the degenerate connector guard
+
+
+def _smoothness_energy(pts: np.ndarray) -> float:
+    """`_ChainProblem._evaluate`'s `e_smooth` for one connector on its own."""
+    op = _second_difference_operator(pts)
+    return float(np.sum((op @ pts) ** 2)) / max(1, op.shape[0])
+
+
+def _cusped_connector(gap: float, exit_deg: float = -80.0, entry_deg: float = 80.0) -> np.ndarray:
+    """The production connector between two letters composed `gap` xh apart.
+
+    At `gap <= 0` the letters touch or overlap and `_generate_connector`'s handle
+    floor (0.05 xh) overrides its own design value `0.4·span`, so the cubic
+    doubles back — the shape the chain must not be initialised from.
+    """
+    p0 = (1.20, 0.30)
+    p3 = (1.20 + gap, 0.35)
+    return np.asarray(_generate_connector(p0, exit_deg, p3, entry_deg), dtype=float).reshape(-1, 2)
+
+
+def test_regularise_leaves_a_roomy_connector_untouched() -> None:
+    """Above the chord threshold the generated connector is passed through
+    byte-identically — the 224 non-degenerate Stage-A solves must not move."""
+    conn = _cusped_connector(0.9)
+    assert len(conn) > 3
+    assert np.hypot(*(conn[-1] - conn[0])) >= CHAIN_CONNECTOR_MIN_SPAN_UNITS
+    assert np.array_equal(regularise_connector_anchors(conn), conn)
+
+
+@pytest.mark.parametrize("gap", [0.04, 0.0, -0.05, -0.12])
+def test_regularise_thins_a_connector_with_no_room(gap: float) -> None:
+    """Zero or negative ink gap: the same curve, re-discretised to a point count
+    its chord can carry — endpoints exact, smoothness back in its calibrated
+    range, and every operator it feeds finite."""
+    conn = _cusped_connector(gap)
+    assert len(conn) > 3
+    span = float(np.hypot(*(conn[-1] - conn[0])))
+    assert span < CHAIN_CONNECTOR_MIN_SPAN_UNITS
+
+    out = regularise_connector_anchors(conn)
+    assert 3 <= len(out) < len(conn)
+    assert len(out) == max(3, round(span / CHAIN_CONNECTOR_ANCHOR_SPACING_UNITS) + 1)
+    # the seam anchors are shared with the two letters and must survive exactly
+    assert np.allclose(out[0], conn[0], atol=1e-12)
+    assert np.allclose(out[-1], conn[-1], atol=1e-12)
+    assert np.isfinite(out).all()
+    # the whole point: the sample clustering that scaled the smoothness block by
+    # 1/ds² is gone, and with it the block's dominance
+    ds_raw = np.hypot(*np.diff(conn, axis=0).T)
+    ds_out = np.hypot(*np.diff(out, axis=0).T)
+    assert ds_out.min() > 3.0 * ds_raw.min()
+    assert _smoothness_energy(out) < _smoothness_energy(conn) / 1.5
+    assert np.isfinite(_second_difference_operator(out)).all()
+
+
+def test_regularise_survives_a_fully_collapsed_connector() -> None:
+    """Two body endpoints on top of each other — zero arc, zero chord.
+
+    The two seam anchors survive and nothing sits between them: an interior
+    anchor would only hand `_second_difference_operator` coincident points to
+    divide by, which is where its 1e-6 spacing floor produces 1e12 rows.
+    """
+    conn = np.tile(np.array([1.2, 0.3]), (CONNECT_SAMPLES + 1, 1))
+    out = regularise_connector_anchors(conn)
+    assert len(out) == 2
+    assert np.isfinite(out).all()
+    assert _second_difference_operator(out).shape[0] == 0
+    # …and such a connector still assembles into a finite chain problem
+    problem = build_chain_problem(
+        [
+            ChainSegmentSpec(
+                kind="letter",
+                anchors=_toy_letter(0.2, 6),
+                slot_index=0,
+                key="a",
+                half_widths=np.full(6, 0.07),
+                seam_in=0,
+                seam_out=5,
+            ),
+            ChainSegmentSpec(kind="connector", anchors=out, seam_in=0, seam_out=1),
+            ChainSegmentSpec(
+                kind="letter",
+                anchors=_toy_letter(1.2, 6),
+                slot_index=1,
+                key="b",
+                half_widths=np.full(6, 0.07),
+                seam_in=0,
+                seam_out=5,
+            ),
+        ],
+        unit_px=UNIT_PX,
+        x_origin_px=4.3,
+        baseline_y_px=45.7,
+        **_flat_fields(),
+    )
+    value, grad = problem.objective(problem.x0)
+    assert np.isfinite(value) and np.all(np.isfinite(grad))
+    assert problem.energy_terms(problem.x0)["e_smooth"] == 0.0
+
+
+def _overlapping_pair_problem(*, regularise: bool, gap: float = 0.0):
+    """A synthetic pair whose two letters touch, with the PRODUCTION connector.
+
+    The ink is the two letters only (they overlap, so the plate shows no join),
+    which is exactly the `base_empty_join` regime the degenerate Stage-A solves
+    live in. `regularise=False` reproduces the pre-fix initialisation.
+    """
+    xh, baseline_row, x_origin = 40.0, 90.0, 30.0
+    t = np.linspace(0.0, 1.0, 9)
+    left = np.column_stack([0.2 + 1.0 * t, 0.15 + 0.55 * np.sin(np.pi * t)])
+    right = np.column_stack([left[-1, 0] + gap + 1.0 * t, 0.15 + 0.55 * np.sin(np.pi * t)])
+    conn = np.asarray(_generate_connector(tuple(left[-1]), -80.0, tuple(right[0]), 80.0), dtype=float).reshape(-1, 2)
+    if regularise:
+        conn = regularise_connector_anchors(conn)
+
+    skel, width_map, _ = _rasterise(
+        np.vstack([left, right]), xh=xh, baseline_row=baseline_row, x_origin=x_origin, width_px=5
+    )
+    half_w = 2.5 / xh
+    shift = np.array([0.12, 0.0])  # placement error both letters have to undo
+    specs = [
+        ChainSegmentSpec(
+            kind="letter",
+            anchors=left + shift,
+            slot_index=0,
+            key="L",
+            half_widths=np.full(len(left), half_w),
+            seam_in=0,
+            seam_out=len(left) - 1,
+        ),
+        ChainSegmentSpec(kind="connector", anchors=conn, seam_in=0, seam_out=len(conn) - 1),
+        ChainSegmentSpec(
+            kind="letter",
+            anchors=right + shift,
+            slot_index=1,
+            key="R",
+            half_widths=np.full(len(right), half_w),
+            seam_in=0,
+            seam_out=len(right) - 1,
+        ),
+    ]
+    problem = build_chain_problem(
+        specs, unit_px=xh, x_origin_px=x_origin, baseline_y_px=baseline_row, **_fields_from(skel, width_map)
+    )
+    return problem, xh
+
+
+@pytest.mark.parametrize("gap", [0.0, -0.02])
+def test_overlapping_pair_solves_instead_of_stalling(gap: float) -> None:
+    """The regression this guard exists for.
+
+    With the raw 24-point cusp the smoothness term dwarfs every data term at
+    `x0`, L-BFGS-B spends its whole budget unbending the connector and the
+    letters come out of the solve where they went in. Re-discretised, the same
+    occurrence has a finite objective, a solve that actually moves its
+    parameters, and letters that land on their ink.
+    """
+    from scipy.optimize import minimize
+
+    from core.fit import DEFAULT_MAX_ITER
+
+    def solve(problem):
+        return minimize(
+            problem.objective,
+            problem.x0,
+            jac=True,
+            method="L-BFGS-B",
+            bounds=problem.bounds,
+            options={"maxiter": DEFAULT_MAX_ITER, "maxfun": 50 * DEFAULT_MAX_ITER},
+        )
+
+    raw, _ = _overlapping_pair_problem(regularise=False, gap=gap)
+    fixed, xh = _overlapping_pair_problem(regularise=True, gap=gap)
+
+    e_raw = raw.energy_terms(raw.x0)
+    e_fixed = fixed.energy_terms(fixed.x0)
+    assert all(np.isfinite(v) for v in e_raw.values())  # never non-finite, before or after
+    assert all(np.isfinite(v) for v in e_fixed.values())
+    # before: the connector's smoothness IS the objective; after: a data term is
+    assert e_raw["e_smooth"] * fixed.smooth_weight > 5.0 * e_raw["e_geo"]
+    assert e_fixed["e_smooth"] * fixed.smooth_weight < e_fixed["e_geo"]
+
+    res_raw = solve(raw)
+    res_fixed = solve(fixed)
+    assert np.isfinite(res_fixed.fun)
+    assert res_fixed.status != 2, f"line search aborted: {res_fixed.message}"
+
+    seg_raw = raw.report_energies(res_raw.x)
+    seg_fixed = fixed.report_energies(res_fixed.x)
+    # the parameters moved — and the letters, not just the connector
+    assert np.max(np.abs(res_fixed.x)) > 0.01
+    for i in (0, 2):
+        assert seg_fixed[i].max_anchor_delta > seg_raw[i].max_anchor_delta
+        assert seg_fixed[i].geo_rmse_px <= CONVERGED_GEO_RMSE_UNITS * xh, (
+            f"segment {i}: geo {seg_fixed[i].geo_rmse_px:.2f}px"
+        )
+    # …and the stalled solve is the one that leaves its letters where they were
+    assert max(seg_raw[0].max_anchor_delta, seg_raw[2].max_anchor_delta) < 0.02
