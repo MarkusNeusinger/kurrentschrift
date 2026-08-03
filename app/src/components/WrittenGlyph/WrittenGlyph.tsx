@@ -91,16 +91,21 @@ interface Props {
   // finished forms, not a second performance). ANDed with the reduced-motion
   // preference, so a static render is the floor either way.
   animate?: boolean;
+  // Which stored form to render: 0 (default) is the authored chart ductus every
+  // public surface writes with, 100 the derived Laufform the admin letter view
+  // shows beside it. A glyph without a row for the variant reports itself
+  // unavailable, exactly like one without a canonical at all.
+  variant?: number;
   // Called if the glyph has no canonical yet (404) so the caller can fall back to
   // the static crop. The component itself renders nothing once unavailable.
   onUnavailable?: () => void;
 }
 
-export function WrittenGlyph({ glyphKey, sourceId = CONFIG.sourceId, durationMs = GLYPH_WRITE_MS, height = 220, tight = false, maxWidth, cacheBust, data: dataProp, onUnavailable, surfaceBg = SURFACE_BG, inkColor, animate: animateProp = true }: Props) {
+export function WrittenGlyph({ glyphKey, sourceId = CONFIG.sourceId, durationMs = GLYPH_WRITE_MS, height = 220, tight = false, maxWidth, cacheBust, data: dataProp, variant = 0, onUnavailable, surfaceBg = SURFACE_BG, inkColor, animate: animateProp = true }: Props) {
   const reducedMotion = usePrefersReducedMotion();
   const uid = useId();
   const [fetched, setFetched] = useState<GlyphRenderData | null>(
-    () => peekRenderGlyph(sourceId, glyphKey, cacheBust) ?? null,
+    () => peekRenderGlyph(sourceId, glyphKey, cacheBust, variant) ?? null,
   );
   const data = dataProp ?? fetched;
   const [error, setError] = useState<string | null>(null);
@@ -126,11 +131,11 @@ export function WrittenGlyph({ glyphKey, sourceId = CONFIG.sourceId, durationMs 
       seedRenderGlyph(sourceId, glyphKey, dataProp, cacheBust);
       return;
     }
-    setFetched(peekRenderGlyph(sourceId, glyphKey, cacheBust) ?? null); // spinner while loading
+    setFetched(peekRenderGlyph(sourceId, glyphKey, cacheBust, variant) ?? null); // spinner while loading
     // Public surfaces render the site-wide source (the default), regardless of
     // which source the admin currently has active. A resolved `null` means no
     // canonical is traced yet → let the caller show the crop instead.
-    fetchRenderGlyph(sourceId, glyphKey, cacheBust)
+    fetchRenderGlyph(sourceId, glyphKey, cacheBust, variant)
       .then((d) => {
         if (cancelled) return;
         if (d === null) {
@@ -146,7 +151,7 @@ export function WrittenGlyph({ glyphKey, sourceId = CONFIG.sourceId, durationMs 
     return () => {
       cancelled = true;
     };
-  }, [glyphKey, sourceId, cacheBust, dataProp]);
+  }, [glyphKey, sourceId, cacheBust, dataProp, variant]);
 
   const replay = useCallback(() => setRun((r) => r + 1), []);
 

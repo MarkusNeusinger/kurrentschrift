@@ -19,7 +19,7 @@ deshalb schnell genug für Cache-Control + gzip.
 
 | Endpunkt | Zweck |
 |---|---|
-| `GET /sources/{id}/write/glyphs?keys=a,n,…` | Batch: pro `glyph_key` (Basis-Keys seit R2, z. B. `a`, `longs`, `ch`) das Render-Payload eines einzelnen Buchstabens; nicht autorisierte Keys landen in `missing`, nie als Fehler |
+| `GET /sources/{id}/write/glyphs?keys=a,n,…[&variant=100]` | Batch: pro `glyph_key` (Basis-Keys seit R2, z. B. `a`, `longs`, `ch`) das Render-Payload eines einzelnen Buchstabens; nicht autorisierte Keys landen in `missing`, nie als Fehler. `variant` wählt die gespeicherte Form — Default 0 ist der autorisierte Tafel-Duktus, den jede öffentliche Fläche schreibt; `100` (`LAUFFORM_VARIANT`) die abgeleitete Laufform, die die Admin-Buchstabenansicht daneben zeigt. Eine Glyphe ohne Zeile für die gefragte Variante verhält sich wie ein unbekannter Key: sie landet in `missing`, statt still auf die Tafel-Form zurückzufallen |
 | `GET /sources/{id}/write/glyphs/{glyph_key}` | Einzel-Read: das Render-Payload EINES Buchstabens; antwortet **404**, wenn noch kein Canonical getraced ist (anders als der Batch, der fehlende Keys in `missing` meldet) |
 | `GET /sources/{id}/write/word?text=…` | Ein ganzes Wort/eine Zeile, serverseitig komponiert |
 

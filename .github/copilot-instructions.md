@@ -264,12 +264,30 @@ kurrentschrift/
 │       │                #   hub/ (/lesen + /schreiben area hubs), worksheet/,
 │       │                #   scribe/ (/federprobe live writer), tafel/ (/tafel Schreibtafel),
 │       │                #   quiz/ (useQuizEngine), impressum/,
-│       │                #   admin/{chart,setup-wizard,diagnostics,sidebar,compare,pairs,
-│       │                #   belege,werkbank}
-│       │                #   (compare/CompareTabs.tsx = /admin/vergleich tabs: Buchstaben
-│       │                #   (GlyphComparison — every authored letter, crop vs. "as written",
-│       │                #   side-by-side or overlaid) + Wörter/Verbindungen/Andere Hand
-│       │                #   (WordComparison — words.json specimens vs /write/word, overlay
+│       │                #   admin/shell (the workbench hull shared by all three views:
+│       │                #   AdminHeader (3 areas + Vorlage chip + Korb badge), StartView
+│       │                #   (/admin = the Vorlage picker the area is entered through),
+│       │                #   LetterPicker (the letter grid as an on-demand popover — the
+│       │                #   permanent sidebar is gone), WorkbenchData (THE shared data
+│       │                #   layer: per-source occurrences + per-hand statistics, mounted
+│       │                #   above the outlet so letter → join → word costs no refetch),
+│       │                #   KorbContext/KorbPanel/MarkDialog (⚑ from anywhere, Korb as a
+│       │                #   header drawer), LensStats, OccurrenceThumb, Panel/ViewHeader,
+│       │                #   and the pure, unit-tested focus.ts (subject ⇄ URL) + model.ts),
+│       │                #   admin/{letters,joins,words} (the three views: /admin/buchstaben
+│       │                #   ?g= · /admin/uebergaenge ?l=&r= · /admin/woerter ?w=&s=, each
+│       │                #   overview ⇄ detail; every level also takes FREELY TYPED targets
+│       │                #   that no plate ever wrote — they still have to look right, and
+│       │                #   work_items takes the specimen ref as optional), plus the
+│       │                #   routeless tool folders admin/{chart,setup-wizard,diagnostics,
+│       │                #   compare,pairs,belege} the views embed. Admin redesign 2026-08
+│       │                #   ("aus einem Guss") completed the absorption announced in
+│       │                #   optimierungs-werkbank.md §2/§6; the old paths (/admin/chart,
+│       │                #   /vergleich, /paare, /belege, /werkbank) stay as redirects.
+│       │                #   (compare/GlyphComparison = the Buchstaben overview — every
+│       │                #   authored letter, crop vs. "as written", side-by-side or
+│       │                #   overlaid, each tile opening its letter;
+│       │                #   compare/WordComparison — words.json specimens vs /write/word, overlay
 │       │                #   registered over the sidecar lineature; "Scores berechnen &
 │       │                #   sortieren" fetches the admin /score per card sequentially, loss
 │       │                #   chip + worst-first sort; pair cards link into the pair editor
@@ -282,29 +300,28 @@ kurrentschrift/
 │       │                #   (public pair-instances + admin-gated pair-aggregates of the
 │       │                #   derived modal hand, a failed admin read degrades to the
 │       │                #   occurrence numbers), numbers only (the median sketch stays in
-│       │                #   the Werkbank lens, no registered overlay);
-│       │                #   the Fremdhand tab is never scored and never measured);
-│       │                #   pairs/PairMatrix.tsx =
-│       │                #   /admin/paare: every 2-letter combination of a chosen letter,
-│       │                #   server-composed, capitals only left — redesign R1; override
-│       │                #   badges + cell click → pairs/PairEditorDialog.tsx (R3 stage 2:
-│       │                #   draw the connector, approve, live preview);
-│       │                #   belege/BelegeView.tsx = /admin/belege: every stored word-
-│       │                #   occurrence trace over its specimen crop (GET /word-instances +
-│       │                #   word-samples crop), worst-first — the error-finding surface
-│       │                #   over the occurrence layer; each card opens
+│       │                #   the pair lens, no registered overlay);
+│       │                #   the Fremdhand list is never scored and never measured);
+│       │                #   pairs/PairMatrix.tsx = the Übergänge overview: every 2-letter
+│       │                #   combination of a chosen letter, server-composed, capitals only
+│       │                #   left — redesign R1; override badges + cell click focuses that
+│       │                #   join, whose detail offers pairs/PairEditorDialog.tsx LAST
+│       │                #   (R3 stage 2: draw the connector, approve, live preview — the
+│       │                #   class rule comes first, per the §3/§4 doctrine);
+│       │                #   words/WordSpineCard.tsx = a stored word-occurrence trace over
+│       │                #   its specimen crop (GET /word-instances + word-samples crop)
+│       │                #   with dashed letter boxes from `instances` and a join dot
+│       │                #   between adjacent boxes, all clickable into the other two
+│       │                #   views — the error-finding surface over the occurrence layer,
+│       │                #   worst-first; "Nachfahren" opens
 │       │                #   belege/WordTraceEditorDialog.tsx (Werkbank W3: re-trace the
 │       │                #   ductus over the crop, pen lift = new stroke, undo/reset, save
 │       │                #   as an `authored` word_instance via a single-item batch PUT —
 │       │                #   crop↔trace mapping in the pure belege/registration.ts);
-│       │                #   werkbank/WerkbankView.tsx = /admin/werkbank (Werkbank W2,
-│       │                #   optimierungs-werkbank.md §2): the word spine (Belege cards +
-│       │                #   dashed letter boxes from `instances`, join dots between
-│       │                #   adjacent boxes) left, a switching context lens right — letter
-│       │                #   lens (chart form + all occurrences as crop cut-outs, wizard
-│       │                #   jump) / pair lens (pair_instances + pair-editor jump). Since
-│       │                #   the Stufen-Einsicht (W5) both lenses also show the hand-model
-│       │                #   statistics layers (werkbank/LensStats.tsx): letter = the H1
+│       │                #   the Stufen-Einsicht (W5) shows the hand-model statistics
+│       │                #   layers in the two views that own them (shell/LensStats.tsx —
+│       │                #   "Statistik der Hand" under a letter, "Gemessen vs. komponiert"
+│       │                #   under a join): letter = the H1
 │       │                #   aggregate's anchor median + per-anchor MAD circles over
 │       │                #   baseline/midband plus pooled layer-1 stats; pair = "Gemessen
 │       │                #   vs. komponiert", every occurrence connector thin, the H2 median
@@ -319,12 +336,13 @@ kurrentschrift/
 │       │                #   the sketches drop occurrences the rebuild skipped as fit_bad
 │       │                #   (from the polylines AND the bounds, counted in the caption) and
 │       │                #   print no "±" without a stored MAD; a quiet rebuild button per
-│       │                #   layer, and NO apply-laufform here (§3: generated stages are
-│       │                #   displayed, not edited) — plus
-│       │                #   the Auftragskorb over work_items; the ⚑ dialog asks the §4
-│       │                #   pre-sort question for letters (solo-wrong → wizard, files
-│       │                #   nothing). Needs WordSampleOut.rect (page px) to place the
-│       │                #   page-pixel occurrence boxes inside a crop)
+│       │                #   layer, and NO apply-laufform anywhere in the admin (§3:
+│       │                #   generated stages are displayed, not edited) — plus
+│       │                #   the Auftragskorb over work_items in the header drawer above
+│       │                #   all three views; the ⚑ dialog asks the §4 pre-sort question
+│       │                #   for letters (solo-wrong → wizard, files nothing). Needs
+│       │                #   WordSampleOut.rect (page px) to place the page-pixel
+│       │                #   occurrence boxes inside a crop)
 │       ├── components/  # reusable UI: PaperBackground, PublicHeader (3-area nav), PublicFooter,
 │       │                #   PageContainer (one column: narrow 760/text 1152/wide 1280), Prose (~66ch
 │       │                #   reading measure), PageHeader (shared page-header: area eyebrow + Playfair
@@ -400,11 +418,16 @@ areas (Schriftkunde · Lesen · Schreiben): `/lesen` (→ `/quiz` reading quiz (
 generator + `/federprobe` live word/sentence writing, synthesised Sütterlin
 ductus with generated Übergänge) — paper-&-ink identity
 per `docs/concepts/style-guide.md` + `docs/concepts/design-system.md`) and the admin behind `/admin/*`
-(Cloudflare Access in prod; `/admin/chart` bbox editor + wizard,
-`/admin/vergleich` whole-alphabet crop-vs-written comparison plus the
-words.json specimen tabs (pair cards carry the measured "Gemessen" readout —
-H2 occurrence/aggregate numbers per join), `/admin/paare` generated pair
-matrix). **Post-MVP**
+(Cloudflare Access in prod). Since the 2026-08 redesign the admin is ONE
+workbench in three views over ONE chosen Vorlage: `/admin` is the Vorlage
+picker, then `/admin/buchstaben` (chart cell · wizard · diagnose · chart
+editor · Tafel-Form vs. Laufform · occurrences · H1 statistics),
+`/admin/uebergaenge` (generated join · H2 "Gemessen vs. komponiert" ·
+dissected occurrences · pair matrix · pair editor as the last resort) and
+`/admin/woerter` (any typed text written by the engine · what it consists of ·
+the traced specimen with its occurrence overlay · score · word editor). Each
+view is overview ⇄ detail with its subject in the query string, and each takes
+freely typed targets that no plate ever wrote. **Post-MVP**
 the public side grows
 (`/animation`, `/lese-hilfe`, `/lese-lupe/:job`, `/stil-analyse`,
 `/vergleich`, `/open-data`). See `docs/reference/frontend-stack.md`.
@@ -439,11 +462,12 @@ a secret version with `echo`: Cloud Run injects the bytes verbatim, and a
 trailing newline no header can carry made the token gate reject every
 value for two months (`docs/reference/frontend-stack.md`).
 
-Browser at `http://localhost:3000` loads the admin UI: the active source
-chart (switchable at runtime via the sidebar's Vorlage select, persisted per
-browser; `CONFIG.sourceId` in `app/src/global-config.ts` is the source the
-PUBLIC pages render — currently the Sütterlin 1922 Ausgangsschrift — and the
-admin's default) with a draggable rough bbox, then the step-by-step Einrichtungs-Wizard (Ausschluss —
+Browser at `http://localhost:3000/admin` loads the workbench: first the Vorlage
+picker (the choice persists per browser; `CONFIG.sourceId` in
+`app/src/global-config.ts` is the source the PUBLIC pages render — currently
+the Sütterlin 1922 Ausgangsschrift — and the admin's default), then
+`/admin/buchstaben?g=<key>`, whose Tafel panel opens the source chart with a
+draggable rough bbox and the step-by-step Einrichtungs-Wizard (Ausschluss —
 freehand eraser + manual ink brush + per-glyph speck auto-fill + inserted donor cell (Zelle einsetzen —
 copy ink from another chart cell into the crop, stored as `bboxes.patches`, so ü/ö are authored from a
 u/o base plus the ä umlaut), with a binarised "Maske zeigen" preview

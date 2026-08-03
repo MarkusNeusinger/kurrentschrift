@@ -7,8 +7,9 @@
 // page (the former `plain` fallback had no caller and no palette token, so it
 // was removed rather than left as a drift risk).
 //
-// Hidden admin entry: 5 quick clicks on the wordmark → /admin/chart (no visible
-// admin link anywhere). The brand still navigates home on a normal single click.
+// Hidden admin entry: 5 quick clicks on the wordmark → /admin (no visible admin
+// link anywhere), which is the Vorlage picker the workbench starts at. The
+// brand still navigates home on a normal single click.
 // Render this OUTSIDE the page's content Container so the bar spans full width.
 
 import { type MouseEvent, type ReactNode, useRef } from 'react';
@@ -121,7 +122,7 @@ export function PublicHeader({ sx }: PublicHeaderProps) {
     if (t.count >= ADMIN_TAPS) {
       t.count = 0;
       e.preventDefault();
-      navigate(paths.admin.chart);
+      navigate(paths.admin.root);
     }
   };
 

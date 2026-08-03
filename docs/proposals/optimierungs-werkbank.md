@@ -1,11 +1,22 @@
 # Optimierungs-Werkbank 2026-07-31 — eine Admin-Fläche, Stufen-Doktrin, Auftragskorb
 
-> **Status (2026-08-03): teil-umgesetzt.** W1–W5 sind umgesetzt
+> **Status (2026-08-03): umgesetzt.** W1–W5 sind umgesetzt
 > (PR #252 · #255 · #261 · #264 · #266); §3–§5 sind weiter bindende Doktrin
 > und werden seit W4 von der API erzwungen (`check_transition`).
-> Offen bleibt allein das in §2/§6 angekündigte Aufgehen von
-> `/admin/vergleich`, `/admin/paare` und `/admin/belege` in der Werkbank —
-> die drei Seiten sind unverändert geroutet.
+> Das in §2/§6 angekündigte Aufgehen von `/admin/vergleich`, `/admin/paare`
+> und `/admin/belege` in der Werkbank ist mit dem Admin-Redesign
+> („aus einem Guss", 2026-08) vollzogen: der ganze Admin IST jetzt die
+> Werkbank — eine Vorlagen-Auswahl unter `/admin` und darunter die drei
+> Ansichten **Buchstaben · Übergänge · Wörter**, jede nach dem Muster
+> Übersicht ⇄ Detail, mit dem Auftragskorb im Header über allen dreien.
+> Die alten Pfade bleiben als Redirects. Zwei Ergänzungen gegenüber dem
+> Zielbild unten: das Rückgrat/Linsen-Nebeneinander wurde zu drei
+> gleichberechtigten Ansichten mit Quer-Absprüngen (das Subjekt steht in der
+> URL, statt in einer Linse rechts), und jede Ebene nimmt **frei
+> eingetippte** Ziele an — eine Kombination oder ein Wort, das keine Platte
+> je geschrieben hat, muss trotzdem richtig aussehen und bemängelbar sein.
+> Die Routen-Karte steht in
+> [`frontend-stack.md`](../reference/frontend-stack.md) §2.
 
 **Richtungsentscheid des Nutzers (2026-07-31, zwei Fragen):
 (1) EINE neue Werkbank-Seite `/admin/werkbank`** — Wort-Rückgrat +

@@ -6,9 +6,11 @@
 // misunderstanding surfaces early and can be rejected here with one click.
 // Returned items sit on top: those need the author, not the algorithm. Done
 // ones stay behind a toggle with their diagnosed stage and resolution, which
-// is what makes the archive worth keeping. Deliberately a card at the top of
-// the right column, not the mockup's floating panel — a fixed overlay would
-// cover the very words the admin is judging.
+// is what makes the archive worth keeping.
+//
+// Since the redesign the panel lives in the shell's Korb drawer rather than on
+// one page: the basket belongs to the whole workbench, and a drawer keeps it
+// off the words the admin is judging while it is closed.
 
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -139,7 +141,17 @@ function ItemRow({
   );
 }
 
-export function KorbPanel({ sourceId, refreshKey }: { sourceId: string; refreshKey: number }) {
+export function KorbPanel({
+  sourceId,
+  refreshKey,
+  onChanged,
+}: {
+  sourceId: string;
+  refreshKey: number;
+  // A mutation the panel applied optimistically — the shell re-reads the open
+  // count from it rather than tracking the same rows twice.
+  onChanged?: () => void;
+}) {
   const t = de.admin.werkbank;
   const [items, setItems] = useState<WorkItemOut[] | null>(null);
   const [error, setError] = useState(false);
@@ -209,9 +221,11 @@ export function KorbPanel({ sourceId, refreshKey }: { sourceId: string; refreshK
   const remove = (item: WorkItemOut) => {
     setWriteError(null);
     setItems((prev) => (prev ?? []).filter((i) => i.id !== item.id));
+    onChanged?.();
     deleteWorkItem(sourceId, item.id).catch(() => {
       restore(item);
       setWriteError(t.korbDeleteError);
+      onChanged?.();
     });
   };
 
@@ -226,6 +240,7 @@ export function KorbPanel({ sourceId, refreshKey }: { sourceId: string; refreshK
       () => patchWorkItem(sourceId, item.id, { status: 'open', note }),
       t.korbRejectError,
     );
+    onChanged?.();
   };
 
   return (

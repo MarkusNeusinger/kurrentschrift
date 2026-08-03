@@ -1,19 +1,11 @@
-// Persistent layout shell: on desktop the sidebar sits on the left next to the
-// page content; on mobile it collapses into a temporary Drawer opened from a
-// top app bar, so the full width is available for the chart / editor.
+// The admin shell: one header over one scrolling work area, on every screen
+// size. The old split — a permanent 280px letter sidebar on desktop, the same
+// sidebar in a Drawer on phones — is gone with the redesign: the letters belong
+// to the Buchstaben view (LetterPicker), the Vorlage to the header, and the
+// Auftragskorb to its own drawer. What is left is genuinely global, so one
+// layout serves both breakpoints and the mobile case stops being a special one.
 
-import MenuIcon from '@mui/icons-material/Menu';
-import {
-  AppBar,
-  Box,
-  Drawer,
-  IconButton,
-  Toolbar,
-  Typography,
-  useMediaQuery,
-} from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { useState } from 'react';
+import { Box } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 
 import { BootStatus } from '@/components/BootStatus';
@@ -21,15 +13,26 @@ import { PaperBackground } from '@/components/PaperBackground';
 import { useAdmin } from '@/context/AdminContext';
 import { AdminModals } from '@/layouts/admin/AdminModals';
 import { de } from '@/locales/admin';
-import { GlyphSidebar } from '@/sections/admin/sidebar/GlyphSidebar';
+import { AdminHeader } from '@/sections/admin/shell/AdminHeader';
+import { KorbProvider, useKorb } from '@/sections/admin/shell/KorbContext';
+import { WorkbenchDataProvider } from '@/sections/admin/shell/WorkbenchData';
 
-const DRAWER_WIDTH = 280;
+// Split out so it can call useKorb() — the provider has to sit above it.
+function AdminShell() {
+  const { openCount, openKorb } = useKorb();
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
+      <AdminHeader openCount={openCount} onOpenKorb={openKorb} />
+      <Box component="main" sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        <Outlet />
+      </Box>
+      <AdminModals />
+    </Box>
+  );
+}
 
 export function AdminLayout() {
   const { source, loadError, waking } = useAdmin();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [navOpen, setNavOpen] = useState(false);
 
   if (loadError) {
     return (
@@ -60,46 +63,16 @@ export function AdminLayout() {
     );
   }
 
-  if (isMobile) {
-    return (
-      <PaperBackground minHeight="100dvh">
-        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
-          <AppBar position="static" color="transparent" elevation={0} sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Toolbar variant="dense" sx={{ gap: 1 }}>
-              <IconButton edge="start" aria-label={de.admin.layout.openMenu} onClick={() => setNavOpen(true)}>
-                <MenuIcon />
-              </IconButton>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                {de.common.brand.name}
-              </Typography>
-            </Toolbar>
-          </AppBar>
-          <Drawer
-            open={navOpen}
-            onClose={() => setNavOpen(false)}
-            ModalProps={{ keepMounted: true }}
-            sx={{ '& .MuiDrawer-paper': { width: DRAWER_WIDTH, maxWidth: '85vw' } }}
-          >
-            <GlyphSidebar onNavigate={() => setNavOpen(false)} />
-          </Drawer>
-          <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <Outlet />
-          </Box>
-          <AdminModals />
-        </Box>
-      </PaperBackground>
-    );
-  }
-
   return (
-    <PaperBackground minHeight="100vh">
-      <Box sx={{ display: 'grid', gridTemplateColumns: `${DRAWER_WIDTH}px 1fr`, height: '100vh' }}>
-        <GlyphSidebar />
-        <Box sx={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          <Outlet />
-        </Box>
-        <AdminModals />
-      </Box>
+    <PaperBackground minHeight="100dvh">
+      {/* Both providers sit ABOVE the outlet, so walking between the three
+          views keeps the loaded occurrences and the basket state — the whole
+          point of one workbench instead of five pages. */}
+      <WorkbenchDataProvider>
+        <KorbProvider>
+          <AdminShell />
+        </KorbProvider>
+      </WorkbenchDataProvider>
     </PaperBackground>
   );
 }

@@ -12,8 +12,9 @@ Covered:
   ADMIN_TOKEN is configured;
 - public reads: /health, /styles + /sources (empty DB → empty list, with
   Cache-Control), /quiz-words;
-- the write path: /write/glyphs batching + `missing`, /write/word happy path
-  from seeded synthetic templates, 404/422 error paths.
+- the write path: /write/glyphs batching + `missing` + the `variant` selector
+  (chart ductus vs. Laufform row), /write/word happy path from seeded synthetic
+  templates, 404/422 error paths.
 """
 
 from __future__ import annotations
@@ -24,6 +25,7 @@ import pytest
 from fastapi import HTTPException
 
 from core.config import settings
+from core.database import LAUFFORM_VARIANT
 from core.shaping import glyph_keys_of, shape_text
 from tests.api_harness import Harness
 
@@ -196,6 +198,32 @@ async def test_write_word_blank_text_422(api: Harness):
 async def test_write_glyphs_empty_keys_422(api: Harness):
     _, source_id = await api.seed_style_and_source()
     res = await api.client.request("GET", f"/sources/{source_id}/write/glyphs", params={"keys": " , "})
+    assert res.status == 422
+
+
+async def test_write_glyphs_variant_selects_the_laufform_row(api: Harness):
+    """`variant` picks WHICH stored form is rendered — the admin letter view
+    shows the chart ductus (0) and the derived Laufform (100) side by side.
+    A key without a row for the asked variant behaves like an unknown key."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    await api.seed_template(style_id, source_id, "n", "n", variant=LAUFFORM_VARIANT)
+    await api.seed_template(style_id, source_id, "e", "e")
+
+    res = await api.client.request(
+        "GET", f"/sources/{source_id}/write/glyphs", params={"keys": "n,e", "variant": str(LAUFFORM_VARIANT)}
+    )
+    assert res.status == 200
+    data = res.json()
+    # Only `n` has a Laufform row; `e` is reported missing rather than falling
+    # back to its chart form, which would silently claim a measurement.
+    assert [g["glyph_key"] for g in data["glyphs"]] == ["n"]
+    assert data["missing"] == ["e"]
+
+
+async def test_write_glyphs_variant_out_of_range_422(api: Harness):
+    _, source_id = await api.seed_style_and_source()
+    res = await api.client.request("GET", f"/sources/{source_id}/write/glyphs", params={"keys": "n", "variant": "-1"})
     assert res.status == 422
 
 

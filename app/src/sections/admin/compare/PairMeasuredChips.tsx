@@ -23,7 +23,7 @@
 import { Box, Chip, Tooltip, Typography } from '@mui/material';
 
 import { de, fmt, specimenKindLabel } from '@/locales/admin';
-import { pairKeyOf } from '@/sections/admin/werkbank/model';
+import { pairKeyOf } from '@/sections/admin/shell/model';
 
 import { countForHand, pairFitUncertain, type AggregateLayerState, type PairMeasurements } from './pairMeasurement';
 

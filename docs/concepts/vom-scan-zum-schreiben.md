@@ -76,13 +76,14 @@ auf, zieht die Anker auf die Tinte (Medial-Axis-Snap) und resampelt kanonisch �
 eine `templates`-Zeile mit `anchors`, `half_widths`, `entry`/`exit`-Tangenten
 samt Kopplungshöhe und `advance`.
 
-**Im Admin:** Einrichtungs-Wizard über `/admin/chart` in vier Schritten —
+**Im Admin:** Einrichtungs-Wizard über `/admin/buchstaben?g=<key>` in vier Schritten —
 **Ausschluss** (Radierer · Tinte · Lücken füllen · Zelle einsetzen · „Maske
 zeigen") → **Lineatur** (Grund-/Mittellinie, und in derselben Fläche die
 Schräglinien) → **Weg** (Zeichnen/Anpassen) → **Übersicht** mit Freigabe und
 Sperre. Dazu das Diagnose-Modal (Ausschnitt · Skelett + Anker · kanonische
 Form · M4-Fit, aus `…/templates/{glyph_key}/diagnostic` + `/fit`) und der Tab
-**Buchstaben** in `/admin/vergleich` (Tafel-Ausschnitt vs. „wie geschrieben").
+die Übersicht von `/admin/buchstaben` (jeder Buchstabe als Tafel-Ausschnitt
+vs. „wie geschrieben") und, im Detail, die Tafel-Form neben der Laufform.
 
 **Wer macht was:** Mensch — Rahmen, Putzen, Lineatur/Schräglage und vor allem
 der Weg (Strichfolge, Absetzpunkte: Autorenwissen, nicht ableitbar).
@@ -125,9 +126,11 @@ gemessener Schwellzug), `constant` (Sütterlin-Gleichzug), `broad_nib`
 **Sichtbar:** öffentlich `/federprobe` (beliebiger Text live geschrieben),
 `/tafel` und `/schreiben/uebungsblatt` — alle über
 `GET /sources/{id}/write/glyphs` bzw. `GET /sources/{id}/write/word?text=…`.
-Im Admin zeigt `/admin/paare` systematisch **jede** Zweierkombination eines
-Buchstabens, serverseitig komponiert, mit Badge für vorhandene Overrides und
-dem Paar-Editor hinter dem Klick.
+Im Admin zeigt `/admin/uebergaenge` systematisch **jede** Zweierkombination
+eines Buchstabens, serverseitig komponiert, mit Badge für vorhandene Overrides;
+ein Klick öffnet die Verbindung samt Messung und — als letztes Mittel — dem
+Paar-Editor. Kombinationen, die keine Platte je geschrieben hat, lassen sich
+dort eintippen: geschrieben werden muss auch, was nie jemand geschrieben hat.
 
 **Wer macht was:** vollständig Algorithmus. Der Mensch greift hier nur als
 Ausnahme ein — der gezeichnete Paar-Override, ausdrücklich letztes Mittel.
@@ -162,13 +165,14 @@ und ausdrücklich **nicht** Teil des Loss: die Schräglagen-Spalte
 (`tools/wordbench/slant.py`), das Gleichzug-Audit (`gleichzug.py`) und die
 Spalte `meas` (`pairmeas.py`, gemessene vs. komponierte Verbindung).
 
-**Im Admin:** die Tabs **Wörter** und **Verbindungen** in `/admin/vergleich` —
+**Im Admin:** die Wortproben-Übersicht von `/admin/woerter` —
 jede Probe neben demselben Wort aus `/write/word`, wahlweise als Overlay über
 den Specimen-Pixeln. „Scores berechnen & sortieren" holt je Karte den
 admin-gesicherten
 `GET /sources/{id}/word-samples/{sample_id}/score` und sortiert schlechteste
-zuerst: das ist die Arbeitsliste. Der Tab **Andere Hand** ist reiner Kontext —
-nie Referenz, nie gescort.
+zuerst: das ist die Arbeitsliste. Die Umschaltung **Andere Hand** ist reiner
+Kontext — nie Referenz, nie gescort. Die Verbindungs-Platten (Abb. 20) mit
+ihren „Gemessen"-Chips sitzen dort, wo sie hingehören: in `/admin/uebergaenge`.
 
 **Wer macht was:** Mensch — die einmalige Vermessung (und ihre visuelle
 Verifikation). Algorithmus — jeder Score seitdem.
@@ -201,13 +205,13 @@ geschrieben über die admin-gesicherten Batch-`PUT`s
 (`/sources/{id}/instances` · `/pair-instances` · `/word-instances`). **Am
 Rendering ändert dieser Schritt nichts.**
 
-**Im Admin:** `/admin/belege` listet jedes gespeicherte Wort-Vorkommen über
-seinem Platten-Ausschnitt, schlechteste zuerst (ungefittete Buchstaben, dann
-mittlerer Fit-Restfehler); jede Karte öffnet den Wort-Editor
-(`WordTraceEditorDialog`), in dem der Admin dort nachfährt, wo der Auto-Fit
-scheitert. Dieselben Karten bilden in `/admin/werkbank` das **Wort-Rückgrat**,
-mit einer gestrichelten Box je gefittetem Buchstaben und einem Punkt auf jedem
-Übergang.
+**Im Admin:** `/admin/woerter?w=<text>` zeigt zu einem Wort jedes gespeicherte
+Vorkommen über seinem Platten-Ausschnitt — mit einer gestrichelten Box je
+gefittetem Buchstaben und einem Punkt auf jedem Übergang, beides anklickbar
+(Box → Buchstaben-Ansicht, Punkt → Übergangs-Ansicht). „Nachfahren" öffnet den
+Wort-Editor (`WordTraceEditorDialog`), in dem der Admin dort nachzieht, wo der
+Auto-Fit scheitert; die Übersicht derselben Ansicht listet alle Proben,
+schlechteste zuerst (ungefittete Buchstaben, dann mittlerer Fit-Restfehler).
 
 **Wer macht was:** Algorithmus — Fit, Dissektion, automatische Nachfahrung.
 Mensch — nur die roten Fälle: das manuelle Nachfahren (`authored`), das Ground
@@ -249,14 +253,14 @@ entry/exit/advance weiter aus der Tafelzeile, über denselben Helfer
 Apply-Gegenstück: `glyph_pairs` bleibt der sparsame verbatim-Override, der
 §4-Generator bleibt Default, die Paar-Statistik ist sein Audit.
 
-**Im Admin:** die beiden Linsen in `/admin/werkbank` (Stufen-Einsicht W5,
-`LensStats.tsx`) — die Buchstaben-Linse zeichnet den Aggregat-Median als
-Ankerkette mit MAD-Kreisen über Grund- und Mittellinie („Aggregat-Median
-(Laufform-Quelle)") plus die gepoolten Zahlen, die Paar-Linse „Gemessen vs.
-komponiert" jede Vorkommens-Verbindung dünn, den Median-Connector kräftig
-darüber und den Median-Versatz als Punkt mit MAD-Whisker. Je Schicht ein
-leiser Neuaufbau-Knopf. Dazu die „Gemessen"-Chips auf den Paar-Karten im
-Verbindungen-Tab. **`apply-laufform` fehlt in der Werkbank bewusst** — es
+**Im Admin:** die Statistik-Blöcke der beiden Ansichten (Stufen-Einsicht W5,
+`shell/LensStats.tsx`) — in `/admin/buchstaben` zeichnet „Statistik der Hand"
+den Aggregat-Median als Ankerkette mit MAD-Kreisen über Grund- und Mittellinie
+(die Laufform-Quelle) plus die gepoolten Zahlen; in `/admin/uebergaenge` zeigt
+„Gemessen vs. komponiert" jede Vorkommens-Verbindung dünn, den Median-Connector
+kräftig darüber und den Median-Versatz als Punkt mit MAD-Whisker. Je Schicht
+ein leiser Neuaufbau-Knopf; dazu die „Gemessen"-Chips auf den Karten der
+Verbindungs-Platten. **`apply-laufform` fehlt in der Werkbank bewusst** — es
 ändert Rendering und ist damit genau der Griff, den die Doktrin auf dieser
 Fläche verbietet (optimierungs-werkbank.md §3/§7); heute ist es nur über die
 API erreichbar, eine eigene Admin-Fläche dafür fehlt noch.
@@ -293,10 +297,14 @@ kann nur mit diagnostizierter `stage` (`chart_ductus` · `laufform` ·
 die Zeile als `returned` an den Autor zurück. Ob eine Änderung bleibt,
 entscheidet das eingefrorene Lineal aus Schritt 3.
 
-**Im Admin:** der Auftragskorb in `/admin/werkbank` (inklusive
-„missverstanden"-Knopf, der eine falsch verstandene Zeile mit Korrektur zurück
-auf `open` legt); quellenfrei lesbar über `GET /work-items?status=open`. Den
-Ablauf führt das Skill `.claude/skills/work-basket/`.
+**Im Admin:** der Auftragskorb liegt seit dem Redesign im Header-Drawer, also
+über allen drei Ansichten; ⚑ gibt es entsprechend in jeder von ihnen — auch für
+eine frei eingetippte Kombination oder ein frei eingetipptes Wort, das gar
+keinen Vorlagenbezug hat (die Zeile sagt das dann, statt einen zu erfinden).
+Der „missverstanden"-Knopf legt eine falsch verstandene Zeile mit Korrektur
+zurück auf `open`; quellenfrei lesbar ist der Korb über
+`GET /work-items?status=open`. Den Ablauf führt das Skill
+`.claude/skills/work-basket/`.
 
 **Wer macht was:** Mensch — reklamieren (wo es weh tut, nicht wo es verursacht
 ist) und die Ground-Truth-Rückläufer. Algorithmus/Sitzung — Reproduktion,

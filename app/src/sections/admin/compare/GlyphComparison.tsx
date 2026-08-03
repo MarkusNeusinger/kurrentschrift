@@ -102,6 +102,7 @@ function CompareCard({
   cropCacheBust,
   reloadKey,
   overlay,
+  onPick,
 }: {
   glyphKey: string;
   letterGlyph: string;
@@ -109,6 +110,7 @@ function CompareCard({
   cropCacheBust: number;
   reloadKey: number;
   overlay: boolean;
+  onPick?: (glyphKey: string) => void;
 }) {
   const [data, setData] = useState<DiagnosticData | null>(null);
   // notFound = no canonical traced yet (typed ApiError 404); anything else is a
@@ -146,9 +148,17 @@ function CompareCard({
     <Box ref={cardRef} sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2, bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', gap: 1 }}>
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
         <Typography sx={{ fontFamily: garamond, fontSize: 28, lineHeight: 1 }}>{letterGlyph}</Typography>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
           {glyphKey}
         </Typography>
+        {/* The grid doubles as the Buchstaben view's overview, so a tile is the
+            way INTO that letter — as an explicit button, not a click target on
+            the whole card (which also carries the written animation). */}
+        {onPick && (
+          <Button size="small" onClick={() => onPick(glyphKey)}>
+            {de.admin.compare.openLetter}
+          </Button>
+        )}
       </Box>
 
       {error ? (
@@ -195,7 +205,7 @@ function CompareCard({
   );
 }
 
-export function GlyphComparison() {
+export function GlyphComparison({ onPick }: { onPick?: (glyphKey: string) => void } = {}) {
   const { source, sourceId, glyphsByKey, cropCacheBust } = useAdmin();
   const [reloadKey, setReloadKey] = useState(0);
   const [overlay, setOverlay] = useState(false);
@@ -206,10 +216,11 @@ export function GlyphComparison() {
   if (!source) return null;
 
   return (
-    <Box sx={{ overflowY: 'auto', height: '100%', p: { xs: 2, md: 3 } }}>
+    // No own page padding/scroll container: since the redesign this grid is a
+    // BLOCK inside the Buchstaben view, which owns both.
+    <Box>
       <Box sx={{ display: 'flex', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2, mb: 2 }}>
         <Box sx={{ flex: 1, minWidth: 260 }}>
-          <Typography variant="h6">{de.admin.compare.title}</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 720 }}>
             {de.admin.compare.intro}
           </Typography>
@@ -238,6 +249,7 @@ export function GlyphComparison() {
               cropCacheBust={cropCacheBust}
               reloadKey={reloadKey}
               overlay={overlay}
+              onPick={onPick}
             />
           ))}
         </Box>

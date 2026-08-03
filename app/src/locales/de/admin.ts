@@ -6,6 +6,131 @@ export const admin = {
   layout: {
     openMenu: 'Menü öffnen',
   },
+  // The shell: the header over all three views, the Vorlage picker the admin is
+  // entered through, and the Auftragskorb drawer.
+  shell: {
+    areaLetters: 'Buchstaben',
+    areaJoins: 'Übergänge',
+    areaWords: 'Wörter',
+    areaNavAria: 'Bereiche der Werkbank',
+    switchSource: 'Vorlage wechseln',
+    noSource: 'keine Vorlage',
+    openKorb: 'Auftragskorb öffnen',
+    closeKorb: 'Auftragskorb schließen',
+    startTitle: 'Welche Vorlage?',
+    startIntro:
+      'Alles in der Werkbank gehört zu genau einer Vorlage und ihrer Hand — Buchstaben, Übergänge und Wörter werden immer an einer Schrift gearbeitet. Darum steht die Wahl am Anfang und nicht in einem Menü.',
+    startRatio: 'Verhältnis {{ratio}}',
+    startSlant: 'Schräglage {{deg}}°',
+    startNoSources: 'Keine Tafel-Vorlagen gefunden — läuft die API und ist die Datenbank eingerichtet?',
+    startHint: 'Die gewählte Vorlage bleibt in diesem Browser gespeichert; die öffentlichen Seiten bleiben unberührt.',
+  },
+  // The Buchstaben view: one letter's whole life, from the chart cell to how it
+  // is finally written, plus the ways over to its joins and its words.
+  letters: {
+    overviewTitle: 'Buchstaben',
+    overviewIntro:
+      'Jeder erstellte Buchstabe als Tafel-Ausschnitt neben „wie geschrieben“ — zum Vergleichen auf einen Blick. „Öffnen“ führt in den einzelnen Buchstaben mit allen Werkzeugen: Ausschnitt, Weg nachfahren, Vorkommen, Statistik.',
+    pickLetter: 'Buchstabe wählen',
+    prevLetter: 'Vorheriger Buchstabe',
+    nextLetter: 'Nächster Buchstabe',
+    toOverview: 'Alle Buchstaben',
+    stateCanonical: 'erstellt',
+    stateBbox: 'nur Ausschnitt',
+    stateEmpty: 'leer',
+    stateLocked: 'gesperrt',
+    occurrenceCount: '{{count}} Vorkommen',
+    tafelTitle: 'Tafel-Ausschnitt',
+    tafelCaption:
+      'Der Ausschnitt aus der Lehrtafel, so wie er nach Radierer, Tinte und Maske in die Verarbeitung geht. „Einrichten“ öffnet den Wizard (Ausschluss · Lineatur · Weg), „Diagnose“ zeigt Skelett, kanonische Form und Einpassung.',
+    noBbox: 'Für diesen Buchstaben gibt es noch keinen Ausschnitt — unten die Tafel öffnen und ein Rechteck ziehen.',
+    showChart: 'Tafel öffnen (Ausschnitt anlegen)',
+    hideChart: 'Tafel schließen',
+    writtenTitle: 'Wie es geschrieben wird',
+    writtenCaption:
+      'Links die Tafel-Form aus dem nachgefahrenen Duktus, rechts die Laufform — der Median aus den Vorkommen in Wörtern, den der Composer in fließenden Läufen einsetzt.',
+    faceChart: 'Tafel-Form (Variante 0)',
+    faceLaufform: 'Laufform (Variante 100)',
+    noLaufform: 'Noch keine Laufform gespeichert — sie entsteht erst aus den Aggregaten (apply-laufform).',
+    noCanonical: 'Noch kein Weg nachgefahren — erst im Wizard zeichnen, dann schreibt die Engine den Buchstaben.',
+    occurrencesTitle: 'Vorkommen in Wörtern ({{count}})',
+    occurrencesCaption:
+      'Jedes vermessene Vorkommen auf den Platten, schlechteste Einpassung zuerst. Ein Klick springt in das Wort, in dem es steht.',
+    loadingOccurrences: 'Vorkommen werden geladen …',
+    statsTitle: 'Statistik der Hand',
+    statsCaption:
+      'Wozu sich die Vorkommen verdichten: der Median je Anker mit seiner Streuung — die Quelle der Laufform. Nur Anschauung; übernommen wird sie ausdrücklich getrennt.',
+    joinsTitle: 'Übergänge dieses Buchstabens',
+    joinsCaption: 'Die Verbindungen, die auf den Platten wirklich gemessen wurden — mit Anzahl der Vorkommen.',
+    noJoins: 'Keine gemessenen Übergänge mit diesem Buchstaben.',
+    allJoins: 'Alle Kombinationen ansehen',
+    wordsTitle: 'Wörter mit diesem Buchstaben',
+    wordsCaption: 'Die Wortproben, in denen der Buchstabe vermessen wurde.',
+    noWords: 'Keine Wortprobe enthält ein vermessenes Vorkommen dieses Buchstabens.',
+  },
+  // The Übergänge view: the generated join first, the measurement beside it,
+  // the override last — the order the stage doctrine prescribes.
+  joins: {
+    overviewTitle: 'Übergänge',
+    overviewIntro:
+      'Der Übergang ist das, was die Engine zwischen zwei Buchstaben erzeugt. Hier steht jede Zweierkombination — auch solche, die keine Platte je geschrieben hat: tippe sie einfach ein. Ein Klick auf eine Zelle öffnet die Verbindung mit Messung, Statistik und (als letztes Mittel) dem Paar-Editor.',
+    pickLeft: 'links',
+    pickRight: 'rechts',
+    freeTextLabel: 'Kombination eintippen',
+    freeTextHint: 'Zwei Zeichen, z. B. „ab“ — auch ohne Vorkommen.',
+    freeTextSubmit: 'Ansehen',
+    freeTextInvalid: 'Das ergibt keine Verbindung — zwei Buchstaben eingeben (ch, ck, tz, ſt, qu, ß sind je EINE Glyphe).',
+    toOverview: 'Alle Kombinationen',
+    generated: 'generiert',
+    occurrenceCount: '{{count}} Vorkommen',
+    writtenTitle: 'Wie es geschrieben wird',
+    writtenCaption:
+      'Beide Buchstaben mit dem generierten Übergang, serverseitig komponiert — genau so, wie die Engine sie in einem Wort schreibt.',
+    writtenCaptionOverride:
+      'Für dieses Paar ist ein freigegebener Override gespeichert: gezeichnet statt generiert, verbatim gerendert.',
+    overrideLastResort:
+      'Erst die Klassenregel schärfen (hebt alle Paare derselben Art), zeichnen nur als letztes Mittel — jeder Override friert eine Stelle ein.',
+    toLetter: 'Buchstabe {{key}}',
+    statsTitle: 'Gemessen vs. komponiert',
+    statsCaption:
+      'Die gemessene Median-Verbindung über den Vorkommen, aus denen sie verdichtet wurde — die Prüfzahl dafür, wie weit der Generator von dieser Hand entfernt liegt.',
+    occurrencesTitle: 'Vorkommen ({{count}})',
+    occurrencesCaption: 'Jede herausgezogene Verbindung auf den Platten, mit dem Abstand zum generierten Zug.',
+    noOccurrences: 'Diese Verbindung kommt auf den Platten nicht vor — beurteilt wird dann allein das Schriftbild oben.',
+    loadingOccurrences: 'Vorkommen werden geladen …',
+    wordsTitle: 'Wörter mit diesem Übergang',
+    wordsCaption: 'Die Wortproben, in denen die Verbindung vermessen wurde.',
+    noWords: 'Keine Wortprobe enthält ein vermessenes Vorkommen dieser Verbindung.',
+    showMatrix: 'Alle Kombinationen einblenden',
+    hideMatrix: 'Alle Kombinationen ausblenden',
+    // The Abb.-20 plates: the only specimens that are pure joins.
+    showSpecimens: 'Verbindungs-Platten der Vorlage einblenden',
+    hideSpecimens: 'Verbindungs-Platten ausblenden',
+  },
+  // The Wörter view: any text, written by the engine — with the traced specimen
+  // underneath wherever this hand happened to write the same word.
+  words: {
+    overviewTitle: 'Wörter',
+    overviewIntro:
+      'Im Wort wird sichtbar, was einzeln noch stimmte. Jede Wortprobe der Vorlage steht neben demselben Wort „wie geschrieben“; „Öffnen“ führt in das einzelne Wort mit Spur, Vorkommen und Bewertung. Oben lässt sich jeder beliebige Text eintippen — auch einer, den keine Platte enthält.',
+    freeTextLabel: 'Wort oder Satz',
+    freeTextHint: 'Beliebiger Text — er muss in keiner Wortprobe vorkommen.',
+    freeTextSubmit: 'Schreiben',
+    filterLabel: 'Proben filtern',
+    toOverview: 'Alle Wortproben',
+    traceCount: '{{count}} Belege',
+    writtenTitle: 'Wie es geschrieben wird',
+    writtenCaption:
+      'Serverseitig komponiert: Buchstaben der Bibliothek, dazwischen die erzeugten Übergänge — dieselbe Ausgabe, die die öffentlichen Seiten schreiben.',
+    partsTitle: 'Woraus es besteht',
+    partsCaption:
+      'Die Buchstaben und die Übergänge dieses Textes. Ein Klick führt in die jeweilige Ansicht — der Weg von „hier stimmt etwas nicht“ zur Ursache.',
+    noJoins: 'Keine verbundenen Übergänge in diesem Text.',
+    noSpecimen:
+      'Zu diesem Text gibt es keine nachgefahrene Wortprobe dieser Hand — beurteilt wird dann allein das Schriftbild oben. Bemängeln geht trotzdem: ⚑ oben.',
+    scoreButton: 'Bewerten',
+    scoreHint: 'Der eingefrorene Wortbench-Maßstab auf genau dieser Komposition (niedriger ist besser).',
+  },
   toolbar: {
     pan: 'Schwenken',
     bbox: 'Bbox',
@@ -82,6 +207,10 @@ export const admin = {
     colWritten: 'Wie geschrieben',
     overlayToggle: 'Überlagern',
     overlayHeading: 'Überlagert (Original + Geschrieben in Rot)',
+    // The two grids double as the overviews of the Buchstaben/Wörter views, so
+    // every card carries the way into its own detail.
+    openLetter: 'Öffnen',
+    openWord: 'Öffnen',
     showCorners: 'Ecken markieren',
     animate: 'Schreiben animieren',
     reload: 'Neu laden',
@@ -130,7 +259,7 @@ export const admin = {
     measuredUnavailable: 'Messwerte der Hand nicht ladbar (Admin-Zugang nötig) — gezeigt werden nur die Vorkommen.',
     measuredLoadError: 'Vorkommen der Übergänge konnten nicht geladen werden.',
   },
-  // The pair matrix (/admin/paare): every two-letter combination of one chosen
+  // The pair matrix (the Übergänge view's overview): every combination of one chosen
   // letter, server-composed — capitals only on the left, per the redesign (R1).
   pairs: {
     title: 'Paar-Matrix',
@@ -162,10 +291,10 @@ export const admin = {
     deleteFailed: 'Löschen fehlgeschlagen.',
     editorLoadError: 'Paar-Daten konnten nicht geladen werden.',
   },
-  // The Belege page (/admin/belege): every stored word-occurrence trace over
-  // its specimen crop, worst first — the error-finding surface over the
-  // occurrence layer (handmodell H1/H2) and the entry point into the word
-  // editor (Werkbank W3: manual re-tracing → authored rows).
+  // The Belege strings (now the Wörter view's specimen cards): a stored
+  // word-occurrence trace over its specimen crop — the error-finding surface
+  // over the occurrence layer (handmodell H1/H2) and the entry point into the
+  // word editor (Werkbank W3: manual re-tracing → authored rows).
   belege: {
     title: 'Belege — nachgefahrene Wörter',
     intro:
@@ -206,13 +335,12 @@ export const admin = {
     editorHandUnresolved:
       'Die Hand „{{id}}" ließ sich nicht laden — Speichern bleibt deaktiviert, damit ihre Metadaten nicht überschrieben werden.',
   },
-  // The Werkbank (/admin/werkbank, proposal optimierungs-werkbank.md §2): ONE
-  // optimisation surface — the word spine on the left (where errors become
-  // visible), a context lens on the right that switches between the clicked
-  // letter and the clicked join, and the Auftragskorb (work_items) that
-  // replaces feedback-by-screenshot. The ⚑ dialog asks the §4 pre-sort
-  // question for letters: solo-wrong belongs in the wizard (the author's own
-  // ductus is the truth), word-only-wrong is an algorithm complaint.
+  // The workbench vocabulary shared by all three views (proposal
+  // optimierungs-werkbank.md §2): the statistics blocks (Stufen-Einsicht), the
+  // occurrence readouts, and the Auftragskorb (work_items) that replaces
+  // feedback-by-screenshot. The ⚑ dialog asks the §4 pre-sort question for
+  // letters: solo-wrong belongs in the wizard (the author's own ductus is the
+  // truth), word-only-wrong is an algorithm complaint.
   werkbank: {
     title: 'Werkbank',
     intro:
@@ -344,6 +472,9 @@ export const admin = {
     dialogTitle: 'Auftrag einreichen',
     dialogTarget: 'Ziel',
     dialogSeenIn: 'gesehen in',
+    // A freely typed combination or word has no plate to point at — the row
+    // says so rather than inventing a reference.
+    dialogNoSpecimen: 'ohne Vorlagenbezug (frei eingetippt)',
     // The §4 pre-sort question — the ONE triage step asked of the human; the
     // stage diagnosis itself stays the working session's duty.
     presortQuestion: 'Sieht der Buchstabe einzeln (in der Tafel-Ansicht daneben) auch falsch aus?',

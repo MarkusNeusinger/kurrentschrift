@@ -72,6 +72,7 @@ def _geometry_response(content: dict) -> Response:
 @router.get("/glyphs")
 async def get_write_glyphs(
     keys: str = Query(..., description="comma-separated glyph_keys, e.g. 'l,e,longs'"),
+    variant: int = Query(0, ge=0, le=999, description=f"template variant; {LAUFFORM_VARIANT} = the Laufform row"),
     source: Source = Depends(require_source),
     db: AsyncSession = Depends(require_db),
 ):
@@ -80,6 +81,13 @@ async def get_write_glyphs(
     Keys without a canonical land in `missing` instead of failing the batch:
     the client renders what exists and falls back per slot (ligature decompose,
     "not yet curated" notice).
+
+    `variant` selects WHICH stored form is rendered. The default 0 is the
+    authored chart ductus every public surface writes with; the admin letter
+    view also asks for `LAUFFORM_VARIANT` to show the derived running form
+    beside it. A variant a glyph has no row for behaves exactly like an unknown
+    key — it lands in `missing`, so asking for the Laufform of a letter that
+    never got one is an empty answer, not an error.
     """
     requested = [k for k in dict.fromkeys(k.strip() for k in keys.split(",")) if k]
     if not requested:
@@ -88,7 +96,7 @@ async def get_write_glyphs(
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail=f"at most {MAX_BATCH_KEYS} keys per request")
 
     ctx = await resolve_render_context(source, db)
-    templates = await TemplateRepository(db).get_many(source.style_id, requested, render_only=True)
+    templates = await TemplateRepository(db).get_many(source.style_id, requested, variant=variant, render_only=True)
     # Dereference the ORM rows into plain dicts ON the event loop — touching a
     # session-bound instance from the threadpool is not thread-safe (an
     # expired/deferred attribute would lazy-load off-loop).

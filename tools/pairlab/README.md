@@ -78,7 +78,7 @@ placement) against `harvest` (the stored centerline) — a harvest that scores
 worse than the generator should stay a draft. Measure the composed effect with
 `tools/wordbench/run.py --set pairs --overrides temp/pair_harvest.json` (an
 override run is its own measurement, never the headline). Review + Freigabe
-stay in the pair editor (`/admin/paare`) — the human gate.
+stay in the pair editor (`/admin/uebergaenge`) — the human gate.
 
 One PNG per pair (rows = occurrences, columns = overlay + profile) into
 `$PAIRLAB_OUT` (else `temp/`). Overlay colours: first letter dark red, second

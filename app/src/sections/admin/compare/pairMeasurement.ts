@@ -17,8 +17,8 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { listPairAggregates, listPairInstances } from '@/lib/api';
 import type { PairAggregateOut, PairInstanceOut } from '@/lib/api';
-import type { StatsStatus } from '@/sections/admin/werkbank/LensStats';
-import { pairKeyOf } from '@/sections/admin/werkbank/model';
+import type { StatsStatus } from '@/sections/admin/shell/LensStats';
+import { pairKeyOf } from '@/sections/admin/shell/model';
 
 // Why a card can show nothing: the tab does not ask for measurements at all
 // ('idle' — words/Fremdhand), the occurrence list is in flight, it failed, or

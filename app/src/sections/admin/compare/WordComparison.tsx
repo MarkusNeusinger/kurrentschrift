@@ -119,6 +119,7 @@ function WordCard({
   score,
   measured,
   onOpenEditor,
+  onPick,
 }: {
   sample: WordSampleOut;
   sourceId: string;
@@ -128,6 +129,9 @@ function WordCard({
   // the card itself stays agnostic of the occurrence/aggregate layers.
   measured?: ReactNode;
   onOpenEditor?: () => void;
+  // Open this specimen in the Wörter view — the list is the overview, the
+  // detail is where its trace, occurrences and score live.
+  onPick?: () => void;
 }) {
   const [ref, inView] = useInView<HTMLDivElement>();
   const [composed, setComposed] = useState<ComposedWordOut | null>(null);
@@ -165,11 +169,18 @@ function WordCard({
         {composed && composed.missing.length > 0 && (
           <Chip size="small" color="warning" label={`${de.admin.compare.missingPrefix}${composed.missing.join(', ')}`} />
         )}
-        {onOpenEditor && (
-          <Button size="small" variant="text" onClick={onOpenEditor} sx={{ ml: 'auto' }}>
-            {de.admin.compare.openPairEditor}
-          </Button>
-        )}
+        <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
+          {onPick && (
+            <Button size="small" variant="text" onClick={onPick}>
+              {de.admin.compare.openWord}
+            </Button>
+          )}
+          {onOpenEditor && (
+            <Button size="small" variant="text" onClick={onOpenEditor}>
+              {de.admin.compare.openPairEditor}
+            </Button>
+          )}
+        </Box>
       </Box>
 
       {measured}
@@ -227,7 +238,19 @@ function WordCard({
   );
 }
 
-export function WordComparison({ mode, overlay }: { mode: WordCompareMode; overlay: boolean }) {
+export function WordComparison({
+  mode,
+  overlay,
+  filterText = '',
+  onPick,
+}: {
+  mode: WordCompareMode;
+  overlay: boolean;
+  // Free-text filter over the specimen words, owned by the surrounding view
+  // (the list is long enough that scrolling for one word is not a plan).
+  filterText?: string;
+  onPick?: (sample: WordSampleOut) => void;
+}) {
   const { source, sourceId } = useAdmin();
   const [samples, setSamples] = useState<WordSampleOut[] | null>(null);
   const [error, setError] = useState(false);
@@ -269,7 +292,10 @@ export function WordComparison({ mode, overlay }: { mode: WordCompareMode; overl
   }, [sourceId]);
 
   const visible = useMemo(() => {
-    const rows = (samples ?? []).filter((s) => matchesMode(s, mode));
+    const needle = filterText.trim().toLowerCase();
+    const rows = (samples ?? [])
+      .filter((s) => matchesMode(s, mode))
+      .filter((s) => !needle || s.word.toLowerCase().includes(needle));
     // Once scored, worst first — that IS the work list. Unscored rows keep
     // their sidecar order at the end. Deliberately NOT while the sweep runs:
     // re-sorting per incoming score would make the cards jump on every
@@ -277,7 +303,7 @@ export function WordComparison({ mode, overlay }: { mode: WordCompareMode; overl
     return rows.length && !scoring && Object.keys(scores).length
       ? [...rows].sort((a, b) => (scores[b.id]?.loss ?? -1) - (scores[a.id]?.loss ?? -1))
       : rows;
-  }, [samples, mode, scores, scoring]);
+  }, [samples, mode, scores, scoring, filterText]);
 
   // Sequentially score every specimen of the tab: the endpoint is CPU-bound
   // server-side (compose + chamfer grid search), a parallel fan-out would
@@ -369,6 +395,7 @@ export function WordComparison({ mode, overlay }: { mode: WordCompareMode; overl
               ) : undefined
             }
             onOpenEditor={keys ? () => setEditing({ sample: s, left: keys[0], right: keys[1] }) : undefined}
+            onPick={onPick ? () => onPick(s) : undefined}
           />
         );
       })}

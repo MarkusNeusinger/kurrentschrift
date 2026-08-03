@@ -13,7 +13,7 @@ composer can replay verbatim:
   columns, spliced to run exit → entry (template units, relative to the exit).
 
 Every harvest lands as an UNAPPROVED draft with ``provenance: harvested`` and
-the specimen id — review + Freigabe happen in the pair editor (/admin/paare),
+the specimen id — review + Freigabe happen in the pair editor (/admin/uebergaenge),
 which stays the human gate. Writes go through the admin API so its registry-key
 and geometry validation applies; without ``--apply`` this only writes a JSON
 report to inspect.

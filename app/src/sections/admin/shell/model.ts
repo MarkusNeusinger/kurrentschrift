@@ -1,7 +1,11 @@
-// Shared vocabulary of the Werkbank (/admin/werkbank): what can be marked or
-// put under the lens, how an occurrence box lands inside a specimen crop, and
-// the colours the spine overlay draws with. Kept out of the component files so
+// Shared vocabulary of the admin workbench: what can be marked as an Auftrag or
+// put under a lens, how an occurrence box lands inside a specimen crop, and the
+// colours the overlays draw with. Kept out of the component files so
 // react-refresh only ever sees components there.
+//
+// This used to live under sections/admin/werkbank — it moved up into the shell
+// when the three views (Buchstaben · Übergänge · Wörter) all became places
+// where an element is inspected and complained about.
 
 import type { InstanceOut, WordInstanceOut, WorkItemIn } from '@/lib/api';
 import { de } from '@/locales/admin';
@@ -24,7 +28,12 @@ export interface SpecimenRef {
 
 export interface Mark {
   target: WerkbankTarget;
-  specimen: SpecimenRef;
+  // Absent when the complaint is about a FREELY TYPED combination or word that
+  // has no specimen at all: the admin must be able to type any letter pair or
+  // word, see how the engine writes it and file that it looks wrong, even where
+  // the plates never wrote it. The API takes the reference as optional — it
+  // only insists that id and kind travel together.
+  specimen?: SpecimenRef;
 }
 
 // A lens selection is a mark whose target has a lens — the word level has none
@@ -44,7 +53,7 @@ export function targetLabel(target: WerkbankTarget): string {
 
 // Identity of one mark — the filing dialog is remounted under this key so its
 // pre-sort/note state always starts fresh instead of being reset by an effect.
-export const markKey = (mark: Mark): string => `${targetLabel(mark.target)}:${mark.specimen.id}`;
+export const markKey = (mark: Mark): string => `${targetLabel(mark.target)}:${mark.specimen?.id ?? '-'}`;
 
 // Stable per-card DOM id, so a lens thumbnail can scroll its word into view.
 export const cardElementId = (specimenId: string): string => `werkbank-card-${specimenId}`;
@@ -53,7 +62,7 @@ export function scrollToCard(specimenId: string): void {
   document.getElementById(cardElementId(specimenId))?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-// Same worst-first ranking as the Belege page: unfitted letters dominate, the
+// Worst-first ranking of a stored word trace: unfitted letters dominate, the
 // mean fit RMSE breaks ties.
 export function rmseMean(row: WordInstanceOut): number | null {
   const values = Object.values(row.measurements.geo_rmse_px_by_slot ?? {});
@@ -84,13 +93,12 @@ export function cropBoxOf(inst: InstanceOut, rect: number[] | undefined): CropBo
 }
 
 // The request body for one filed task. specimen_kind + specimen_id always go
-// together — the API 422s on a half-given reference.
+// together — the API 422s on a half-given reference — and are simply absent for
+// a freely typed target that was never seen on a plate.
 export function workItemBodyOf(mark: Mark, note: string): WorkItemIn {
-  const base = {
-    note,
-    specimen_kind: mark.specimen.kind,
-    specimen_id: mark.specimen.id,
-  };
+  const base = mark.specimen
+    ? { note, specimen_kind: mark.specimen.kind, specimen_id: mark.specimen.id }
+    : { note };
   if (mark.target.kind === 'letter') return { ...base, kind: 'letter', glyph_key: mark.target.glyphKey };
   if (mark.target.kind === 'pair') {
     return { ...base, kind: 'pair', left_key: mark.target.leftKey, right_key: mark.target.rightKey };
@@ -99,10 +107,10 @@ export function workItemBodyOf(mark: Mark, note: string): WorkItemIn {
 }
 
 // Overlay palette — the mockup's paper/ink set mapped onto the repo tokens.
-// The trace green matches the Belege page so both surfaces read alike.
+// The trace green matches the word cards so every surface reads alike.
 export const WERKBANK_COLORS = {
   trace: '#1c6b57',
   box: paper.line, // dashed letter box, recessive
   accent: paper.sepia, // joins + hover
-  selected: pigment.vermilion, // the element the lens currently shows
+  selected: pigment.vermilion, // the element currently focused
 } as const;

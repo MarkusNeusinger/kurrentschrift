@@ -17,8 +17,19 @@ export const paths = {
   tafel: '/tafel',
   quiz: '/quiz',
   impressum: '/impressum',
+  // The admin is one workbench in three views — Buchstaben · Übergänge ·
+  // Wörter — over one chosen Vorlage; /admin itself is the Vorlage picker the
+  // area is entered through. Each view carries its subject in the query string
+  // (sections/admin/shell/focus.ts), so every link between them is a plain URL.
   admin: {
     root: '/admin',
+    letters: '/admin/buchstaben',
+    joins: '/admin/uebergaenge',
+    words: '/admin/woerter',
+  },
+  // Retired admin URLs, kept only as redirect sources so older bookmarks,
+  // notes and work-item links still land on the view that absorbed them.
+  adminLegacy: {
     chart: '/admin/chart',
     compare: '/admin/vergleich',
     pairs: '/admin/paare',
