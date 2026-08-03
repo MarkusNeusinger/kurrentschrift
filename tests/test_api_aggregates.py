@@ -148,6 +148,49 @@ async def test_rebuild_reports_the_laufform_pruefstein(api: Harness):
     assert res.json()["keys"][0]["laufform_dev_xh"] == 0.1
 
 
+async def test_list_reports_the_rendered_laufform_and_its_distance(api: Harness):
+    """The freshness read (issue #270): a plain GET must answer "is what the
+    engine writes still what the statistics say?" — previously only a rebuild
+    or an apply computed that, i.e. only DOING something told you."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    await _seed_occurrences(api, source_id, [0.0, 0.02, 0.06, 0.08])
+    await api.client.request("POST", "/hands/test-hand/aggregates/rebuild", headers=api.admin_headers())
+
+    # No running form stored yet: nothing to compare against, and the row says
+    # so with nulls rather than a fabricated zero distance.
+    res = await api.client.request("GET", "/hands/test-hand/aggregates", headers=api.admin_headers())
+    row = res.json()[0]
+    assert row["laufform_anchors"] is None
+    assert row["laufform_dev_xh"] is None
+
+    # A running form that matches the median reads as distance 0 — and carries
+    # its anchors, so the UI can draw the two on top of each other.
+    res = await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/templates/n/laufform",
+        json_body={"anchors": _shifted(0.04), "n_occurrences": 4},
+        headers=api.admin_headers(),
+    )
+    assert res.status == 200, res.body
+    res = await api.client.request("GET", "/hands/test-hand/aggregates", headers=api.admin_headers())
+    row = res.json()[0]
+    assert row["laufform_anchors"] == _shifted(0.04)
+    assert row["laufform_dev_xh"] == 0.0
+
+    # A drifted running form reads as the distance the apply step would close.
+    drifted = _shifted(0.04)
+    drifted[2] = [drifted[2][0] + 0.6, drifted[2][1]]
+    await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/templates/n/laufform",
+        json_body={"anchors": drifted, "n_occurrences": 4},
+        headers=api.admin_headers(),
+    )
+    res = await api.client.request("GET", "/hands/test-hand/aggregates", headers=api.admin_headers())
+    assert res.json()[0]["laufform_dev_xh"] == 0.1
+
+
 async def test_rebuild_replaces_stale_rows(api: Harness):
     style_id, source_id = await api.seed_style_and_source()
     await api.seed_template(style_id, source_id, "n", "n")

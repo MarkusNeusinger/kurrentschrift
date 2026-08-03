@@ -33,6 +33,7 @@ import { cropUrl } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { ChartView } from '@/sections/admin/chart/ChartView';
 import { GlyphComparison } from '@/sections/admin/compare/GlyphComparison';
+import { LaufformApplyDialog } from '@/sections/admin/letters/LaufformApplyDialog';
 import { LetterStats } from '@/sections/admin/shell/LensStats';
 import { LetterPicker } from '@/sections/admin/shell/LetterPicker';
 import { OccurrenceThumb } from '@/sections/admin/shell/OccurrenceThumb';
@@ -49,13 +50,15 @@ const FACE_H = 190; // px per face in the "wie geschrieben" row
 export function LetterView() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const { sourceId, bboxesByKey, glyphsByKey, cropCacheBust, setActiveGlyph, openWizard, openDiagnose } = useAdmin();
+  const { sourceId, bboxesByKey, glyphsByKey, cropCacheBust, refreshCrop, setActiveGlyph, openWizard, openDiagnose } =
+    useAdmin();
   const workbench = useWorkbench();
   const fileMark = useFileMark();
   const t = de.admin.letters;
 
   const { glyphKey } = readLetterFocus(params);
   const [chartOpen, setChartOpen] = useState(false);
+  const [applyOpen, setApplyOpen] = useState(false);
   // The Laufform face reports itself unavailable when the letter has no
   // variant-100 row — most letters do not, and that is information, not a gap.
   const [noLaufform, setNoLaufform] = useState(false);
@@ -234,6 +237,9 @@ export function LetterView() {
                     sourceId={sourceId}
                     variant={LAUFFORM_VARIANT}
                     height={FACE_H}
+                    // An apply rewrites exactly this row, so the face has to
+                    // refetch when the version stamp moves.
+                    cacheBust={cropCacheBust}
                     tight
                     animate={false}
                     onUnavailable={() => setNoLaufform(true)}
@@ -328,6 +334,57 @@ export function LetterView() {
           </Box>
         </Panel>
       </Box>
+
+      {/* Below everything, and deliberately outside the panel grid: the ONE
+          step that changes what the engine writes (issue #270). The panels
+          above inspect; this one promotes the statistics into rendering, so it
+          is set apart, carries its warning in the block itself and asks for a
+          confirmation that names what will change (optimierungs-werkbank.md
+          §3 bars rendering handles from the inspection surfaces — it does not
+          bar a surface that says out loud what it is). Hand-wide by nature:
+          the endpoint applies a hand's aggregates wholesale. */}
+      <Box
+        sx={{
+          mt: 3,
+          p: 2,
+          border: 1,
+          borderStyle: 'dashed',
+          borderColor: 'warning.main',
+          borderRadius: 2,
+          maxWidth: 760,
+        }}
+      >
+        <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+          {t.applyBlockTitle}
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
+          {t.applyBlockBody}
+        </Typography>
+        {workbench.handId ? (
+          <Button size="small" variant="outlined" color="warning" onClick={() => setApplyOpen(true)}>
+            {t.applyBlockButton}
+          </Button>
+        ) : (
+          <Typography variant="caption" color="text.disabled">
+            {t.applyBlockNoHand}
+          </Typography>
+        )}
+      </Box>
+
+      {applyOpen && workbench.handId && (
+        <LaufformApplyDialog
+          handId={workbench.handId}
+          aggregates={workbench.allAggregates}
+          onClose={() => setApplyOpen(false)}
+          // The written rows are both statistics and rendering now: refetch the
+          // aggregate layer (its freshness numbers just changed) and bust the
+          // render cache so the Laufform face shows what was just written.
+          onApplied={() => {
+            workbench.refreshLetterStats();
+            refreshCrop();
+          }}
+        />
+      )}
 
       {/* The full chart, for drawing or moving THIS letter's cell. Collapsed by
           default: it is the one tool here that needs the whole plate, and it is

@@ -69,24 +69,49 @@ async def require_hand(hand_id: str, db: AsyncSession = Depends(require_db)) -> 
     return hand
 
 
-def _to_out(row: Aggregate) -> AggregateOut:
+def _to_out(row: Aggregate, laufform_anchors: list[list[float]] | None = None) -> AggregateOut:
+    median = [list(a) for a in row.cluster_center or []]
     return AggregateOut(
         glyph_key=row.glyph_key,
         glyph=row.glyph,
         variant=row.variant,
-        cluster_center=[list(a) for a in row.cluster_center or []],
+        cluster_center=median,
         hull=dict(row.hull or {}),
         mean_stats=dict(row.mean_stats or {}),
         n_instances=row.n_instances,
+        laufform_anchors=laufform_anchors,
+        laufform_dev_xh=(laufform_deviation(median, laufform_anchors) if laufform_anchors is not None else None),
     )
 
 
 @router.get("", response_model=list[AggregateOut])
 async def list_aggregates(hand: Hand = Depends(require_hand), db: AsyncSession = Depends(require_db)):
     """This hand's stored aggregates, by glyph_key. Uncached like the
-    occurrence reads: the rebuild writes and expects fresh rows."""
+    occurrence reads: the rebuild writes and expects fresh rows.
+
+    Each row carries the CURRENTLY RENDERED running form beside its median:
+    `laufform_anchors` (the stored template variant 100, null when the glyph
+    has none yet) and `laufform_dev_xh`, their mean anchor distance in x-height
+    units. Without those, "is what the engine writes still what the statistics
+    say?" was answerable only by running a rebuild or an apply — i.e. only by
+    doing something — which is what left `apply-laufform` a blind curl call
+    (issue #270). A plain read answers it now, and 0 means the two agree.
+    """
     rows = await AggregateRepository(db).list(hand_id=hand.id)
-    return [_to_out(r) for r in rows]
+    # One query for the whole listing; a hand without a style has no templates
+    # to compare against, so the freshness columns simply stay null.
+    laufform_by_key: dict[str, list[list[float]]] = {}
+    if hand.style_id and rows:
+        keys = sorted({r.glyph_key for r in rows})
+        laufform_by_key = {
+            t.glyph_key: [list(a) for a in t.anchors]
+            for t in await TemplateRepository(db).get_many(
+                hand.style_id, keys, variant=LAUFFORM_VARIANT, render_only=True
+            )
+        }
+    # Only a BASE-variant aggregate is a Laufform source (the apply step skips
+    # every other one), so only there does a comparison mean anything.
+    return [_to_out(r, laufform_by_key.get(r.glyph_key) if r.variant == 0 else None) for r in rows]
 
 
 @router.post("/rebuild", response_model=AggregateRebuildOut)
