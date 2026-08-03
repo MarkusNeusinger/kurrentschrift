@@ -857,7 +857,25 @@ impl-generate pipelines. Conventions:
   baseline-locked — written through the admin API (`--apply`,
   `--approve left:right` only for measured winners); measure the composed
   effect with `tools/wordbench/run.py --overrides <harvest.json>` (an
-  override run is its own number, never the headline). The bench also
+  override run is its own number, never the headline). Its chain sibling
+  `tools/pairlab/chain.py` (issue #278 Stufe A, no viz extra) fits the
+  SAME join as ONE continuous pen path instead — both chart rows plus
+  the form-unregularised connector as three segments of one anchor
+  array, the seams tied by SHARED anchor indices rather than a penalty,
+  placement kept separate as an unregularised per-slot translation block
+  — so the letter/connector cut stops depending on whether the letters
+  touch (where `_real_join` returns nothing today);
+  `tools/pairlab/chainbench.py` runs the chain and the independent fit
+  over the same frozen occurrences and reports the four Stage-A metrics
+  + kill criteria (`--set all` = words+pairs of the same hand, never the
+  Abb.-22 writer; `--aggregates <file>` supplies M4's MAD floor from
+  `GET /hands/{id}/aggregates`). Measurement only — no DB, no API, no
+  `core/`, no rendering; the measured verdict (conditional go, two named
+  preconditions) is `docs/proposals/uebergaenge-befund.md` §5c.
+  `tools/wordbench/fetch_fixtures.py` is the read-only API twin of
+  `export_fixtures.py` for sessions without Cloud SQL egress —
+  byte-compatible fixture roots over HTTPS, GETs only, `--verify`
+  composes the rebuilt cases against `/write/word`. The bench also
   reports a slant column (`slant <spec>/<comp>` per row + medians,
   `tools/wordbench/slant.py`, 90° = upright) and, third in that
   report-column lineage (slant → Gleichzug → meas), the

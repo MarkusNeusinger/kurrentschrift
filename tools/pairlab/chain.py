@@ -85,10 +85,18 @@ CHAIN_CONNECTOR_MAX_DELTA = 1.0
 # handful of such points out-levers the whole chain.
 CHAIN_COVERAGE_CAP_UNITS = 0.30
 # Weight of the connector-only second-difference (curvature-change) term.
-# Starting value; calibrated once on the Abb.-20 `pairs` set against the
-# measured 0.2–0.4 xh per-side stub-replacement zone, then reported as a chosen
-# model parameter with a stated systematic effect.
-CHAIN_CONNECTOR_SMOOTH_WEIGHT = 1e-3
+# Calibrated once on the Abb.-20 `pairs` set (34 occurrences) against the
+# measured 0.2–0.4 xh per-side stub-replacement zone of
+# `docs/proposals/uebergaenge-befund.md` §5, swept over 0 … 1e-2; see §5c there
+# for the table. The term is what keeps the seam where the hand puts it: at 0
+# the free connector swallows the left letter's tail (share median 0.70 xh,
+# 54 % of sides beyond 0.4 xh), at 1e-3 and above it stiffens the shared seam
+# anchors so hard that letter convergence collapses (0.50 → 0.15 at 1e-2).
+# 1e-5 is the largest weight that keeps the seam inside the measured band
+# (tail-share median 0.37 xh) while letter convergence is at its maximum; its
+# stated systematic effect is a slightly rougher connector (M3 dconn median
+# 0.197 xh vs. 0.178 at 1e-3).
+CHAIN_CONNECTOR_SMOOTH_WEIGHT = 1e-5
 # Coverage points per chain segment: `core.fit.MAX_COVERAGE_POINTS` (300) is a
 # per-GLYPH budget, so the chain scales it as MAX_COVERAGE_POINTS × n_segments.
 # Invariant (asserted in code and in a unit test): coverage density per unit of
