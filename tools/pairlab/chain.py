@@ -25,14 +25,17 @@ Three binding constraints, from the issue:
    an audit number. That smoothness term exists solely because an unregularised
    polyline in a ~1 px-smoothed EDT degenerates into a zig-zag.
 
-**Stage-B seam:** `build_chain_problem` takes a LIST of segments, never a
-hard-coded triple — a whole word is `[L0, C0, L1, C1, …]` under the same index
-map, the same arc-length translation ramp and the same per-segment coverage
-scaling. `fit_pair_chain` is a thin two-letter wrapper over that.
+**Stage B** walks through that seam: `build_chain_problem` always took a LIST of
+segments, so `fit_word_chain` assembles `[L0, C0, L1, C1, …]` for any run of
+joined slots under the same index map, the same arc-length translation ramp and
+the same per-segment coverage scaling, and `fit_pair_chain` is now the thin
+two-letter wrapper over it that `chainbench` reads. `chain_runs` cuts a word
+into those runs (a lone letter is a one-segment chain, not a skipped one).
 """
 
 from __future__ import annotations
 
+import bisect
 import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
@@ -62,6 +65,7 @@ from core.fit import (
     _width_operator,
 )
 from core.geometry import bilinear
+from core.shaping import GlyphSlot
 from core.template import build_sample_plan
 from tools.pairlab.analyze import (
     FIT_DX_UNITS,
@@ -189,6 +193,41 @@ class ChainFit:
     cut_indices: tuple[int, int]  # (cut_L, cut_R), the two shared seam anchors
     connector_units: np.ndarray  # composed-frame connector, for the `dconn` comparison
     converged: bool  # L and R converged; the connector's gate is reported separately
+    converged_local: bool  # …judged on the LETTER-LOCAL coverage windows (the like-for-like gate)
+    fit_meta: dict  # optimiser status, energies, n_params, n_cov, timings
+
+
+@dataclass
+class ChainWordFit:
+    """One RUN of joined slots fitted as a single chain — `[L, C, L, C, …]`.
+
+    The Stage-B generalisation of `ChainFit`, which is this restricted to two
+    letters (and still the frozen public shape `chainbench` reads). Everything
+    that was a left/right pair here becomes a list in writing order: one entry
+    per join for `cut_indices` and `connector_units`, one dict entry per fitted
+    slot for the placement blocks. A one-slot run is a legitimate chain with one
+    segment, no join and an empty connector list — that is how a lone letter
+    (a digit, a word of one character) enters the same code path.
+    """
+
+    case: WordCase
+    slots: list[int]  # the fitted run, in writing order
+    segments: list[ChainSegment]  # [L, C, L, C, …], letters at the even indices
+    slot_shift_units: dict[int, tuple[float, float]]  # per-slot translation block
+    slot_at_bound: dict[int, bool]  # block rests on its FIT_DX/DY_UNITS bound — suspect
+    global_shift_units: tuple[float, float]
+    cut_indices: list[tuple[int, int]]  # per join: (left `seam_out`, right `seam_in`)
+    connector_units: list[np.ndarray]  # per join, composed-frame, for the `dconn` comparison
+    stroke_polylines_px: list[dict]
+    """The fitted chain as PEN-DOWN polylines in crop pixels, in writing order —
+    one entry per stroke of a letter and one per connector, each naming its
+    `kind` · `segment_index` · `slot_index` · `key` · `stroke_index` and
+    carrying `points_px`. This is the shape a word trace is assembled from
+    (`tools.laufform.harvest._strokes_to_word_units` consumes exactly one such
+    polyline per pen-down stroke); consecutive entries meet exactly at the
+    shared seam anchors, so a caller wanting ONE continuous pen path just
+    concatenates them."""
+    converged: bool  # every LETTER segment converged; the connectors' gates are reported per segment
     converged_local: bool  # …judged on the LETTER-LOCAL coverage windows (the like-for-like gate)
     fit_meta: dict  # optimiser status, energies, n_params, n_cov, timings
 
@@ -375,6 +414,14 @@ class _ChainProblem:
     """per segment, into the PLAN anchor array (seam anchors included)."""
     n_letter_anchors: float = 1.0
     n_samples: int = 0
+    seg_of_sample: np.ndarray = field(default_factory=lambda: np.zeros(0, dtype=int))
+    """(n_s,) segment index of every sample — the axis `sample_slices` and the
+    per-segment report are cut along."""
+    stroke_of_sample: np.ndarray = field(default_factory=lambda: np.zeros(0, dtype=int))
+    """(n_s,) chain-wide PEN-STROKE index of every sample. The chain is sampled
+    exactly as a multi-stroke glyph is, so a pen lift inside a letter (the u's
+    two downstrokes) splits its samples here — which is what lets a caller read
+    the fitted chain back out as pen-down polylines instead of one blob."""
 
     # ------------------------------------------------------------------ mapping
 
@@ -765,13 +812,23 @@ def build_chain_problem(
 
     # ---- per-sample segment attribution (segments own contiguous plan ranges)
     seg_of_row: list[int] = []
+    stroke_of_row: list[int] = []
     for (a, _), m in zip(plan.slices, plan.alloc, strict=True):
         seg = next(i for i, (p0, p1) in enumerate(plan_slices) if p0 <= a < p1)
         seg_of_row += [seg] * m
+        # Which pen stroke of the whole chain this plan row belongs to — the
+        # same bounds `build_sample_plan` sampled between, so no sample ever
+        # bridges a pen lift.
+        stroke_of_row += [bisect.bisect_right(stroke_starts_plan, a) - 1] * m
     seg_of_sample = (
         np.delete(np.asarray(seg_of_row, dtype=int), plan.drop_rows)
         if plan.drop_rows
         else np.asarray(seg_of_row, dtype=int)
+    )
+    stroke_of_sample = (
+        np.delete(np.asarray(stroke_of_row, dtype=int), plan.drop_rows)
+        if plan.drop_rows
+        else np.asarray(stroke_of_row, dtype=int)
     )
     sample_slices: list[tuple[int, int]] = []
     for i in range(len(specs)):
@@ -882,10 +939,54 @@ def build_chain_problem(
         plan_slices=plan_slices,
         n_letter_anchors=max(1.0, float(reg_w.sum())),
         n_samples=n_s,
+        seg_of_sample=seg_of_sample,
+        stroke_of_sample=stroke_of_sample,
     )
 
 
 # ------------------------------------------------------------- one occurrence
+
+
+def _slots_join(s0: GlyphSlot, s1: GlyphSlot) -> bool:
+    """Is there a written Übergang between these two adjacent slots?
+
+    The adjacency predicate of `analyze.find_occurrences` and
+    `pairlab.harvest._adjacent_joined`, verbatim: no space on either side, a
+    glyph key on both, and both of the detached-class flags clear (a digit or a
+    punctuation mark renders but no Übergang ever enters or leaves it —
+    architektur.md §4). Mirrored rather than imported so `chain` keeps depending
+    on nothing above itself.
+    """
+    return not (s0.space or s1.space or not s0.key or not s1.key or not (s0.joins and s1.joins))
+
+
+def chain_runs(case: WordCase) -> list[list[int]]:
+    """The case's keyed slots partitioned into maximal runs of JOINED neighbours.
+
+    Every keyed, non-space slot appears in exactly one run, in writing order —
+    so the runs are a partition of what a word-level harvest has to fit, not a
+    selection from it. A run breaks wherever `_slots_join` says the pen lifts:
+    at a space, at a keyless slot, and around a detached glyph (a digit is a run
+    of its own). A lone letter is therefore a one-slot run, which
+    `fit_word_chain` fits as a one-segment chain rather than skipping.
+    """
+    runs: list[list[int]] = []
+    current: list[int] = []
+    for i, slot in enumerate(case.slots):
+        if slot.space or not slot.key:
+            if current:
+                runs.append(current)
+                current = []
+            continue
+        if current and current[-1] == i - 1 and _slots_join(case.slots[i - 1], slot):
+            current.append(i)
+            continue
+        if current:
+            runs.append(current)
+        current = [i]
+    if current:
+        runs.append(current)
+    return runs
 
 
 def _letter_spec(case: WordCase, result: WordDeriveResult, slot_index: int) -> tuple[ChainSegmentSpec, float] | None:
@@ -934,71 +1035,28 @@ def _letter_spec(case: WordCase, result: WordDeriveResult, slot_index: int) -> t
     return spec, offset
 
 
-def fit_pair_chain(
-    case: WordCase, slot_a: int, dissection: JoinDissection, *, result: WordDeriveResult | None = None
-) -> ChainFit | None:
-    """Fit the `slot_a → slot_a + 1` join of `case` as one chain. None when the
-    composition is missing a template or the join has no usable initialisation.
+def _connector_spec(result: WordDeriveResult, slot_a: int) -> ChainSegmentSpec | None:
+    """The generated join between slots `slot_a` and `slot_a + 1` as a segment.
 
-    Thin wrapper over `build_chain_problem`: it only turns one occurrence into
-    the three `ChainSegmentSpec`s and maps the solution back.
+    `analyze._generate_connector` at the COMPOSED placement, read in the same
+    body-endpoint frame `analyze.dissect_occurrence` and
+    `tools.wordbench.pairmeas._body_lines` use, with NO overlap extension, NO
+    capital retrace prefix and NO entry trim — the trimmed lead-in stub is
+    exactly the ownership question the seam calibration measures, so the chain
+    must see it. The generated SHAPE is used verbatim; only the point COUNT is
+    repaired where the chord leaves no room for all of them
+    (`regularise_connector_anchors`). This is the INITIALISATION, never a
+    target: no penalty term ever measures the fitted connector against it.
 
-    * **Frame.** The metric's own registration — `x_origin_px = result.registration["tx"]`,
-      `baseline_y_px = result.baseline_row + result.registration["ty"]`,
-      `unit_px = result.xh_px` — so chain, independent trace and
-      `tools.wordbench.pairmeas` all live in one frame.
-    * **Initialisation.** Chart-row anchors (variant 0) shifted by the composed
-      placement, recovered exactly as `analyze.trace_letter_ductus` recovers it;
-      the connector is `analyze._generate_connector` at the composed placement,
-      with NO overlap extension, NO capital retrace prefix and NO entry trim —
-      the trimmed lead-in stub is precisely the ownership question the seam
-      calibration measures, so the chain must see it. Its SHAPE is used verbatim;
-      only its point count is re-discretised where the chord leaves no room for
-      all of them (`regularise_connector_anchors`). The known Laufform wrinkle
-      in that recovery is preserved, not fixed, so chain and baseline share one
-      init and the shape-delta metric stays honest.
-    * **Seams.** `cut_L` = last anchor of the left letter's last NON-diacritic
-      stroke, `cut_R` = first anchor of the right letter's first non-diacritic
-      stroke (the diacritic rule of `analyze.trace_letter_ductus`).
-    * **Gates.** The fit sees the UNION window; each letter additionally carries
-      its own `analyze.trace_letter_ductus` window as `cov_window_px`, so
-      `ChainSegment.converged_local` / `ChainFit.converged_local` grade it on the
-      same ink the independent M4 trace was graded on (Stage-B precondition 1).
-    * **`result`** may be passed in to reuse a `derive_word` already computed for
-      this case — a word with five joins must not compose itself five times.
-
-    `dissection` supplies the baseline this fit is measured against and the
-    per-occurrence geometry (independent fits, ink extents, the specimen's own
-    join) the harness pairs with the chain's segments.
+    Deliberately free of `JoinDissection` — a word chain has one of these per
+    join and no dissection anywhere.
     """
-    started = time.perf_counter()
-    # The dissection already composed this case; reuse it rather than compose
-    # the word a second time (and a fifth time for a word with five joins).
-    if result is None:
-        result = dissection.result if dissection is not None else derive_word(case)
-    if case.skel is None or case.width_map is None:
+    a_items = _body_items(result, slot_a)
+    b_items = _body_items(result, slot_a + 1)
+    if not a_items or not b_items:
         return None
-    if result.composed["missing"] or result.report is None or result.report.get("failed"):
-        return None
-    if not 0 <= slot_a < len(case.slots) - 1:
-        return None
-
-    xh = float(result.xh_px)
-    tx, ty = float(result.registration["tx"]), float(result.registration["ty"])
-    x_origin_px = tx
-    baseline_y_px = float(result.baseline_row) + ty
-
-    left = _letter_spec(case, result, slot_a)
-    right = _letter_spec(case, result, slot_a + 1)
-    if left is None or right is None:
-        return None
-    spec_l, offset_l = left
-    spec_r, offset_r = right
-
-    # Connector at the COMPOSED placement: the same body-endpoint frame
-    # `dissect_occurrence` and `pairmeas._body_lines` read the join from.
-    a_line = _body_items(result, slot_a)[-1]["centerline"]
-    b_line = _body_items(result, slot_a + 1)[0]["centerline"]
+    a_line = a_items[-1]["centerline"]
+    b_line = b_items[0]["centerline"]
     exit_deg = _endpoint_tangent([tuple(p) for p in a_line], at_end=True)
     entry_deg = _endpoint_tangent([tuple(p) for p in b_line], at_end=False)
     conn = np.asarray(
@@ -1006,50 +1064,159 @@ def fit_pair_chain(
     ).reshape(-1, 2)
     if len(conn) < 3:
         return None
-    # A connector with no room for all its points is re-discretised before it
-    # becomes the initialisation — see `regularise_connector_anchors`; a normal
-    # one comes back unchanged.
     conn = regularise_connector_anchors(conn)
-    spec_c = ChainSegmentSpec(kind="connector", anchors=conn, seam_in=0, seam_out=len(conn) - 1)
+    return ChainSegmentSpec(kind="connector", anchors=conn, seam_in=0, seam_out=len(conn) - 1)
 
-    # Union coverage window: the two letter-local windows of
-    # `trace_letter_ductus` with the hole between them closed. The two windows
-    # themselves are kept on the letter specs — the FIT runs against the union
-    # (owning the connector's ink is the point), the reported letter gate against
-    # the letter's own window, so „converged" means the same thing on both paths.
-    body_a = np.vstack(dissection.a.body_px)
-    body_b = np.vstack(dissection.b.body_px)
-    win_a = (float(body_a[:, 0].min()) - TRACE_WINDOW_MARGIN * xh, float(body_a[:, 0].max()) + TRACE_WINDOW_MARGIN * xh)
-    win_b = (float(body_b[:, 0].min()) - TRACE_WINDOW_MARGIN * xh, float(body_b[:, 0].max()) + TRACE_WINDOW_MARGIN * xh)
-    spec_l.cov_window_px = win_a
-    spec_r.cov_window_px = win_b
-    x_lo = min(win_a[0], win_b[0])
-    x_hi = max(win_a[1], win_b[1])
+
+def _prepare_fields(case: WordCase, x_lo: float, x_hi: float) -> dict | None:
+    """The chain's distance and width fields over the crop columns `[x_lo, x_hi]`.
+
+    The band is the UNION of the run's per-letter coverage windows: the chain
+    must own the ink between its letters, so cutting per letter (as the
+    independent trace does) would hide exactly the transition it measures.
+    Returned as the keyword block `build_chain_problem` takes — smoothed with
+    `core.fit`'s own sigmas, the raw fields kept for the per-segment report.
+    None when the band holds no skeleton pixel at all.
+    """
     cols = np.arange(case.skel.shape[1])
     keep = (cols >= x_lo) & (cols <= x_hi)
     skel_local = case.skel & keep[None, :]
     if not skel_local.any():
         return None
     width_local = np.where(keep[None, :], case.width_map, 0.0)
-
     dist_raw = distance_transform_edt(~skel_local).astype(float)
-    dist_smooth = gaussian_filter(dist_raw, DIST_FIELD_SIGMA_PX)
     _, ink_idx = distance_transform_edt(~np.asarray(width_local > 0), return_indices=True)
     width_raw = width_local[ink_idx[0], ink_idx[1]].astype(float)
-    width_smooth = gaussian_filter(width_raw, WIDTH_FIELD_SIGMA_PX)
+    return {
+        "dist_raw": dist_raw,
+        "dist_smooth": gaussian_filter(dist_raw, DIST_FIELD_SIGMA_PX),
+        "width_raw": width_raw,
+        "width_smooth": gaussian_filter(width_raw, WIDTH_FIELD_SIGMA_PX),
+        "cov_pts": _skeleton_points(skel_local),
+        "crop_shape": skel_local.shape,
+    }
 
-    problem = build_chain_problem(
-        [spec_l, spec_c, spec_r],
-        dist_smooth=dist_smooth,
-        dist_raw=dist_raw,
-        width_smooth=width_smooth,
-        width_raw=width_raw,
-        cov_pts=_skeleton_points(skel_local),
-        unit_px=xh,
-        x_origin_px=x_origin_px,
-        baseline_y_px=baseline_y_px,
-        crop_shape=skel_local.shape,
-    )
+
+def _stroke_polylines_px(problem: _ChainProblem, px: np.ndarray, py: np.ndarray) -> list[dict]:
+    """The fitted chain cut back into pen-down polylines (crop px), in order.
+
+    One entry per maximal run of samples sharing a segment AND a pen stroke: a
+    letter written with a pen lift inside it yields one entry per stroke, a
+    connector exactly one. Runs are additionally cut at segment boundaries, so
+    an entry always names one segment — a caller wanting the continuous pen path
+    across a seam concatenates neighbours (they meet exactly: the seam anchor is
+    one shared parameter).
+    """
+    seg = np.asarray(problem.seg_of_sample, dtype=int)
+    stroke = np.asarray(problem.stroke_of_sample, dtype=int)
+    if not len(seg) or len(seg) != len(px) or len(stroke) != len(seg):
+        return []
+    cuts = np.flatnonzero((np.diff(seg) != 0) | (np.diff(stroke) != 0)) + 1
+    bounds = [0, *cuts.tolist(), len(seg)]
+    per_segment: dict[int, int] = {}
+    out: list[dict] = []
+    for a, b in zip(bounds[:-1], bounds[1:], strict=True):
+        i = int(seg[a])
+        spec = problem.specs[i]
+        n = per_segment.get(i, 0)
+        per_segment[i] = n + 1
+        out.append(
+            {
+                "kind": spec.kind,
+                "segment_index": i,
+                "slot_index": spec.slot_index,
+                "key": spec.key,
+                "stroke_index": n,
+                "points_px": np.column_stack([px[a:b], py[a:b]]),
+            }
+        )
+    return out
+
+
+def fit_word_chain(
+    case: WordCase, slots: Sequence[int], *, result: WordDeriveResult, windows_px: dict[int, tuple[float, float]]
+) -> ChainWordFit | None:
+    """Fit a run of consecutive slots as ONE chain `[L, C, L, C, …]`.
+
+    The Stage-B generalisation of `fit_pair_chain` (which is now a two-slot
+    wrapper over this): every letter of the run is a segment with its own
+    unregularised translation block, every join between them is a
+    form-unregularised connector segment welded to its neighbours by a shared
+    seam anchor, and one L-BFGS-B solve moves all of them at once. A one-slot
+    run is a legitimate chain of one segment with no connector at all.
+
+    * **Frame.** The metric's own registration — `x_origin_px = result.registration["tx"]`,
+      `baseline_y_px = result.baseline_row + result.registration["ty"]`,
+      `unit_px = result.xh_px` — so chain, independent trace and
+      `tools.wordbench.pairmeas` all live in one frame.
+    * **Initialisation.** Chart-row anchors (variant 0) shifted by the composed
+      placement (`_letter_spec`, including its known Laufform wrinkle, preserved
+      on purpose so chain and baseline share one init) and the generated
+      connectors at that same placement (`_connector_spec`).
+    * **Seams.** Per join: the last anchor of the left letter's last
+      NON-diacritic stroke and the first anchor of the right letter's first
+      non-diacritic stroke (`_letter_cut_anchors`, the diacritic rule of
+      `analyze.trace_letter_ductus`) become ONE shared parameter each.
+    * **`windows_px`** maps a slot index to the crop-pixel column window its
+      coverage GATE is read in — for `fit_pair_chain` the two letter-local
+      windows of `analyze.trace_letter_ductus`, for a word-level caller the
+      window around its own per-slot grid fit. Their UNION is the band the fit
+      itself sees (`_prepare_fields`); a slot without an entry keeps the union
+      gate. With no window at all there is no band to cut and the call returns
+      None — the caller's placement diagnosis is what decides the fallback.
+    * **`result`** is required: a word with five joins must compose itself once,
+      not once per run.
+
+    None whenever the chain cannot be built at all — an unfitted composition, a
+    slot without a template or composed body strokes, a join whose connector
+    degenerates, or a coverage band without ink. A run of non-consecutive slots
+    is a caller bug and raises.
+    """
+    started = time.perf_counter()
+    run = [int(s) for s in slots]
+    if not run or any(b != a + 1 for a, b in zip(run[:-1], run[1:], strict=True)):
+        raise ValueError(f"fit_word_chain needs a run of CONSECUTIVE slots, got {list(slots)!r}")
+    if case.skel is None or case.width_map is None:
+        return None
+    if result.composed["missing"] or result.report is None or result.report.get("failed"):
+        return None
+    if run[0] < 0 or run[-1] >= len(case.slots):
+        return None
+
+    xh = float(result.xh_px)
+    tx, ty = float(result.registration["tx"]), float(result.registration["ty"])
+    x_origin_px = tx
+    baseline_y_px = float(result.baseline_row) + ty
+
+    # ---- the chain in writing order: letter, join, letter, join, letter … ----
+    specs: list[ChainSegmentSpec] = []
+    offsets: dict[int, float] = {}
+    for n, slot_index in enumerate(run):
+        made = _letter_spec(case, result, slot_index)
+        if made is None:
+            return None
+        spec, offset = made
+        window = windows_px.get(slot_index)
+        spec.cov_window_px = None if window is None else (float(window[0]), float(window[1]))
+        if n:
+            conn = _connector_spec(result, run[n - 1])
+            if conn is None:
+                return None
+            specs.append(conn)
+        specs.append(spec)
+        offsets[slot_index] = offset
+
+    # The fit runs against the UNION window (owning the joins' ink is the whole
+    # point); the per-letter windows above stay on the specs, where they narrow
+    # the REPORTED gate only.
+    wins = [w for w in (windows_px.get(s) for s in run) if w is not None]
+    if not wins:
+        return None
+    fields = _prepare_fields(case, min(float(w[0]) for w in wins), max(float(w[1]) for w in wins))
+    if fields is None:
+        return None
+
+    problem = build_chain_problem(specs, unit_px=xh, x_origin_px=x_origin_px, baseline_y_px=baseline_y_px, **fields)
     e0 = problem.energy_terms(problem.x0)
     res = minimize(
         problem.objective,
@@ -1064,11 +1231,11 @@ def fit_pair_chain(
 
     segments = problem.report_energies(res.x)
     # Letters report in the chart frame the templates were read from (the
-    # composed placement offset removed), so the harness can difference them
+    # composed placement offset removed), so a caller can difference them
     # against `DuctusTrace.fr.anchors` anchor for anchor.
-    for seg, offset in ((segments[0], offset_l), (segments[2], offset_r)):
-        if seg.fitted_anchors is not None:
-            seg.fitted_anchors = seg.fitted_anchors - np.array([offset, 0.0])
+    for seg in segments:
+        if seg.fitted_anchors is not None and seg.slot_index is not None:
+            seg.fitted_anchors = seg.fitted_anchors - np.array([offsets[seg.slot_index], 0.0])
 
     _, _, blocks, _ = problem.unpack(res.x)
     slot_shift = {slot: (float(blocks[j, 0]), float(blocks[j, 1])) for j, slot in enumerate(problem.slot_blocks)}
@@ -1076,22 +1243,30 @@ def fit_pair_chain(
         slot: bool(abs(dx) >= FIT_DX_UNITS - 1e-9 or abs(dy) >= FIT_DY_UNITS - 1e-9)
         for slot, (dx, dy) in slot_shift.items()
     }
-    c0, c1 = segments[1].sample_slice
     px, py = problem.to_pixels(res.x)
-    connector_units = np.column_stack([(px[c0:c1] - x_origin_px) / xh, (baseline_y_px - py[c0:c1]) / xh])
+    connector_units = [
+        np.column_stack([(px[s0:s1] - x_origin_px) / xh, (baseline_y_px - py[s0:s1]) / xh])
+        for s0, s1 in (seg.sample_slice for seg in segments if seg.kind == "connector")
+    ]
+    # Letters sit at the even positions of `specs`, so join `j` welds
+    # `specs[2j]`'s exit seam to `specs[2j + 2]`'s entry seam.
+    cut_indices = [(int(specs[k].seam_out), int(specs[k + 2].seam_in)) for k in range(0, len(specs) - 2, 2)]
+    letters = [seg for seg in segments if seg.kind == "letter"]
+    connectors = [seg for seg in segments if seg.kind == "connector"]
     terms = problem.energy_terms(res.x)
 
-    return ChainFit(
+    return ChainWordFit(
         case=case,
-        slot_a=slot_a,
+        slots=run,
         segments=segments,
         slot_shift_units=slot_shift,
         slot_at_bound=at_bound,
         global_shift_units=(float(res.x[0]), float(res.x[1])),
-        cut_indices=(int(spec_l.seam_out), int(spec_r.seam_in)),
+        cut_indices=cut_indices,
         connector_units=connector_units,
-        converged=bool(segments[0].converged and segments[2].converged),
-        converged_local=bool(segments[0].converged_local and segments[2].converged_local),
+        stroke_polylines_px=_stroke_polylines_px(problem, px, py),
+        converged=bool(letters) and all(seg.converged for seg in letters),
+        converged_local=bool(letters) and all(seg.converged_local for seg in letters),
         fit_meta={
             "optimizer_success": bool(res.success),
             "message": str(res.message),
@@ -1102,8 +1277,10 @@ def fit_pair_chain(
             "n_anchors_plan": int(len(problem.idx)),
             "n_samples": int(problem.n_samples),
             "n_cov": int(len(problem.cov_pts)),
-            "connector_converged": bool(segments[1].converged),
-            "cov_window_px": {"left": [round(v, 1) for v in win_a], "right": [round(v, 1) for v in win_b]},
+            "connector_converged": bool(all(seg.converged for seg in connectors)) if connectors else None,
+            "cov_window_px": {
+                str(slot): [round(float(v), 1) for v in windows_px[slot]] for slot in run if slot in windows_px
+            },
             "energies": {k: round(v, 6) for k, v in terms.items()},
             "energies_initial": {k: round(v, 6) for k, v in e0.items()},
             "geo_rmse_px": {s.key or s.kind: round(s.geo_rmse_px, 3) for s in segments},
@@ -1112,7 +1289,75 @@ def fit_pair_chain(
             "smooth_weight": problem.smooth_weight,
             "coverage_cap_px": round(problem.cov_cap_px, 3),
             "seconds": round(time.perf_counter() - started, 3),
+            "slots": run,
         },
+    )
+
+
+def fit_pair_chain(
+    case: WordCase, slot_a: int, dissection: JoinDissection, *, result: WordDeriveResult | None = None
+) -> ChainFit | None:
+    """Fit the `slot_a → slot_a + 1` join of `case` as one chain. None when the
+    composition is missing a template or the join has no usable initialisation.
+
+    The two-slot case of `fit_word_chain`, kept as its own entry point because
+    the pair harness (`tools.pairlab.chainbench`) is written against exactly
+    this shape: `ChainFit` carries ONE `cut_indices` tuple and ONE connector
+    instead of a list per join. Everything the model does — frame,
+    initialisation, seams, gates — lives in `fit_word_chain`; this wrapper only
+    reads the two coverage windows off the dissection and narrows the result.
+
+    * **Gates.** The fit sees the UNION window; each letter additionally carries
+      its own `analyze.trace_letter_ductus` window as `cov_window_px`, so
+      `ChainSegment.converged_local` / `ChainFit.converged_local` grade it on the
+      same ink the independent M4 trace was graded on (Stage-B precondition 1).
+    * **`result`** may be passed in to reuse a `derive_word` already computed for
+      this case — a word with five joins must not compose itself five times.
+
+    `dissection` supplies the baseline this fit is measured against and the
+    per-occurrence geometry (independent fits, ink extents, the specimen's own
+    join) the harness pairs with the chain's segments. Only its two letter fits'
+    `body_px` and its cached composition are read here.
+    """
+    # The dissection already composed this case; reuse it rather than compose
+    # the word a second time (and a fifth time for a word with five joins).
+    if result is None:
+        result = dissection.result if dissection is not None else derive_word(case)
+    if case.skel is None or case.width_map is None:
+        return None
+    if result.composed["missing"] or result.report is None or result.report.get("failed"):
+        return None
+    if not 0 <= slot_a < len(case.slots) - 1:
+        return None
+
+    # The two letter-local windows of `trace_letter_ductus`, at the INDEPENDENT
+    # placements the dissection found. `fit_word_chain` closes the hole between
+    # them for the fit itself and keeps each one as its letter's reported gate.
+    xh = float(result.xh_px)
+    body_a = np.vstack(dissection.a.body_px)
+    body_b = np.vstack(dissection.b.body_px)
+    win_a = (float(body_a[:, 0].min()) - TRACE_WINDOW_MARGIN * xh, float(body_a[:, 0].max()) + TRACE_WINDOW_MARGIN * xh)
+    win_b = (float(body_b[:, 0].min()) - TRACE_WINDOW_MARGIN * xh, float(body_b[:, 0].max()) + TRACE_WINDOW_MARGIN * xh)
+
+    fit = fit_word_chain(case, [slot_a, slot_a + 1], result=result, windows_px={slot_a: win_a, slot_a + 1: win_b})
+    if fit is None or not fit.cut_indices or not fit.connector_units:
+        return None
+
+    meta = dict(fit.fit_meta)
+    # The pair harness reads the windows as left/right, not per slot index.
+    meta["cov_window_px"] = {"left": [round(v, 1) for v in win_a], "right": [round(v, 1) for v in win_b]}
+    return ChainFit(
+        case=case,
+        slot_a=slot_a,
+        segments=fit.segments,
+        slot_shift_units=fit.slot_shift_units,
+        slot_at_bound=fit.slot_at_bound,
+        global_shift_units=fit.global_shift_units,
+        cut_indices=fit.cut_indices[0],
+        connector_units=fit.connector_units[0],
+        converged=fit.converged,
+        converged_local=fit.converged_local,
+        fit_meta=meta,
     )
 
 
@@ -1127,7 +1372,10 @@ __all__ = [
     "ChainFit",
     "ChainSegment",
     "ChainSegmentSpec",
+    "ChainWordFit",
     "build_chain_problem",
+    "chain_runs",
     "fit_pair_chain",
+    "fit_word_chain",
     "regularise_connector_anchors",
 ]
