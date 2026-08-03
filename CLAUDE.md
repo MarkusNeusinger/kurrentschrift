@@ -32,7 +32,16 @@ the checkout) and the Cloud SQL egress gate blocks a locally started API, so the
 deployed API is the only admin path there — `ADMIN_TOKEN`, `VITE_ADMIN_TOKEN`
 and `API_BASE_URL` (= the api subdomain) are configured as environment
 variables. Check with `printenv ADMIN_TOKEN >/dev/null && echo set`; never print
-the value.
+the value. The gitignored wordbench fixture roots can be rebuilt entirely over
+that API: `uv run python -m tools.wordbench.fetch_fixtures --set all --verify`
+(GETs only; `--verify` is the acceptance gate, `--no-fetch --verify` checks
+what is already on disk). The source-pooled Gleichzug nib comes exactly from
+the admin-gated `GET /sources/{id}/render-context` (manifest `nib_precision:
+"exact"`, verify gate bit-exact); an API predating that endpoint falls back to
+the 4-decimal `/write/glyphs` readback (`"4dp-readback"`, up to ~0.02 xh
+placement jitter, gate tolerance 0.03 xh). The nib pools ALL template variants
+of the source — including rows no read endpoint serves individually — so it
+cannot be recomputed from fetched chart rows; it must come from the API.
 
 ## Read these before substantive work
 

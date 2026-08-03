@@ -19,10 +19,12 @@ Read map (every call is a GET; nothing here ever writes to DB or API):
     glyph inventory                     GET /sources/{id}/templates      public
     templates.json                      GET /sources/{id}/templates/{k}  ADMIN
     templates_laufform.json             GET /hands/{hand}/aggregates     ADMIN
-    constant_nib_units                  GET /sources/{id}/write/glyphs   public
+    constant_nib_units                  GET /sources/{id}/render-context ADMIN
+                                        (fallback: …/write/glyphs)       public
     pair_instances.json                 GET /sources/{id}/pair-instances public
 
-Two fields are RECONSTRUCTIONS rather than plain reads, and the manifest says so:
+One field is a RECONSTRUCTION rather than a plain read, and one has two
+provenances; the manifest says which:
 
 * the LAUFFORM_VARIANT rows — no endpoint serves a variant-100 template, so
   each row is rebuilt from the chart row plus the aggregate's
@@ -32,21 +34,25 @@ Two fields are RECONSTRUCTIONS rather than plain reads, and the manifest says so
   derivation instead of the apply-step's, and nothing in the render path reads
   it.
 * `constant_nib_units` — the source-pooled Gleichzug nib is a DB aggregate over
-  ALL variants. Under `width_resolver == "constant"` the render payload sets
-  every half width to exactly that nib, so a one-glyph `/write/glyphs`
-  readback recovers it — at the payload's 4-decimal rounding
-  (`"nib_precision": "4dp-readback"`, ≤5e-5 xh). The nib does not enter any
-  centerline, only mask/stroke widths.
+  ALL templates of the source, including variant rows no read endpoint serves.
+  The admin-gated `GET /sources/{id}/render-context` returns it unrounded
+  (`"nib_precision": "exact"`), which is what this module asks for first. An API
+  deployment that predates that endpoint 404s, and the old reconstruction takes
+  over: under `width_resolver == "constant"` the render payload sets every half
+  width to exactly the nib, so a one-glyph `/write/glyphs` readback recovers it
+  — at the payload's 4-decimal rounding (`"nib_precision": "4dp-readback"`,
+  ≤5e-5 xh). The nib does not enter any centerline, only mask/stroke widths.
 
 Because a wrong reconstruction would be invisible in a diff, `--verify` is the
 acceptance gate, in two layers (see `verify`): every rebuilt row is rendered
 locally and held against `GET /write/glyphs` (bit-exact), and rebuilt cases are
 composed locally and held against `GET /write/word` — letter shape bit-exact,
-only glyph placement allowed the jitter the nib readback causes. A mismatch is a
-hard failure. The gate compares `production_row`s, which is where the one KNOWN
-fixture-vs-production divergence is documented: the exporter's rows carry
-`glyph`, the write path's do not, and `core.pipeline._fluent_widen` keys the
-round-letter body widening on exactly that field.
+and glyph placement bit-tight too on an `exact` nib (only a 4dp readback is
+allowed the jitter it causes). A mismatch is a hard failure. The gate compares
+`production_row`s, which is where the one KNOWN fixture-vs-production divergence
+is documented: the exporter's rows carry `glyph`, the write path's do not, and
+`core.pipeline._fluent_widen` keys the round-letter body widening on exactly
+that field.
 
 `ADMIN_TOKEN` is read from the environment and sent as `X-Admin-Token`. It is
 never printed, logged or echoed into an error message.
@@ -103,7 +109,9 @@ USER_AGENT = "kurrentschrift-fetch-fixtures/1.0"
 RETRY_STATUS = frozenset({408, 425, 429, 500, 502, 503, 504})
 RETRY_BACKOFF_S = 0.75
 # What the manifest records about the nib's provenance (see the module docstring).
-NIB_PRECISION = "4dp-readback"
+NIB_EXACT = "exact"  # read unrounded off GET /sources/{id}/render-context
+NIB_READBACK = "4dp-readback"  # recovered from a rounded /write/glyphs payload
+NIB_NONE = "none"  # no pooled nib exists (a pressure/broad-nib source)
 # Provenance stamped into the reconstructed Laufform rows' `trace_meta.laufform`.
 LAUFFORM_META = {"derived_from": "hand-aggregates", "via": "fetch_fixtures"}
 # The verify gate needs a real sample, not a token one (plan §B6: ≥10 cases).
@@ -115,13 +123,27 @@ DEFAULT_SHAPE_TOL = 1e-9
 # Glyph PLACEMENT is the one thing the nib's 4-decimal readback does perturb.
 # Placement reads the silhouette rings (simplified capsule unions), where a
 # 5th-decimal width change can flip a knife-edge ink-clearance decision — the
-# effect is chaotic, not monotone, so it cannot be calibrated away by a finer
-# nib estimate (measured: no nib in the readback bracket makes several words
-# exact simultaneously). Observed maximum over 30 cases across all three sets:
-# 0.0148 xh, zero for every isolated letter pair. This bound is twice that, and
-# a real reconstruction error lands in the SHAPE channel anyway (a stale
-# Laufform row moves anchors by ~0.07 xh WITHIN the glyph).
+# effect is chaotic, not monotone, so it cannot be calibrated away by rounding
+# the readback differently, only by learning the nib itself. Observed maximum
+# over 30 cases across all three sets: 0.0148 xh, zero for every isolated
+# letter pair. This bound is twice that, and a real reconstruction error lands
+# in the SHAPE channel anyway (a stale Laufform row moves anchors by ~0.07 xh
+# WITHIN the glyph).
 DEFAULT_PLACEMENT_TOL = 0.03
+# With an `exact` nib there is no approximated input left: local and served
+# render from identical numbers through identical code, so placement is
+# reproducible bit-for-bit and the gate says so. Measured before the endpoint
+# existed, by sweeping the nib across the readback bracket [0.07305, 0.07315]
+# and composing 12 pair cases against /write/word at each step: at one value
+# near 0.0730988 — and only there — all 12 matched with a worst placement
+# deviation of exactly 0.0, while the readback's 0.0731 left 5 of them off by up
+# to 1.3e-3. The plateau is narrow (a 4e-16 change of that value already flips
+# three of the cases: the ink-clearance decision reads silhouette rings rounded
+# to 2 decimals, so a tie at that boundary tips either way), which is precisely
+# why the nib has to be TRANSPORTED rather than estimated — JSON round-trips a
+# double exactly, an estimate cannot. Applies per fixture root (the manifest
+# records the provenance); an explicit --placement-tol wins.
+EXACT_PLACEMENT_TOL = 1e-9
 
 
 class ApiClient:
@@ -398,10 +420,13 @@ def composition_mismatch(
 def pooled_nib_units(client: ApiClient, source_id: str, width_resolver: str, keys: set[str]) -> float | None:
     """The source-pooled Gleichzug nib, read back off a render payload (§B3).
 
-    Only meaningful for a `constant` source: there `render_payload_for_template`
-    overwrites every half width with the pooled nib, so any authored glyph's
-    payload carries it. A `pressure`/`broad_nib` source has no pooled nib to
-    read back — the fixtures record None, exactly as those runs use it.
+    The FALLBACK path since the API serves the value exactly (see
+    `exact_nib_units`): kept because a deployment older than that endpoint must
+    still be fetchable. Only meaningful for a `constant` source: there
+    `render_payload_for_template` overwrites every half width with the pooled
+    nib, so any authored glyph's payload carries it — rounded to the payload's
+    4 decimals. A `pressure`/`broad_nib` source has no pooled nib to read back
+    — the fixtures record None, exactly as those runs use it.
     """
     if width_resolver != "constant" or not keys:
         return None
@@ -410,6 +435,39 @@ def pooled_nib_units(client: ApiClient, source_id: str, width_resolver: str, key
     glyphs = payload.get("glyphs") or []
     half_widths = glyphs[0].get("half_widths_template") if glyphs else None
     return float(half_widths[0]) if half_widths else None
+
+
+def exact_nib_units(client: ApiClient, source_id: str) -> float | None:
+    """The pooled nib UNROUNDED, from the admin render-context read.
+
+    The pool spans every template of the source — including variant rows no
+    read endpoint serves — so it cannot be recomputed from the fetched chart
+    rows; the API has to state it. `None` when the deployment predates the
+    endpoint (404) or the style has no constant nib, which is exactly when the
+    readback fallback applies.
+    """
+    context = client.get(f"/sources/{quote(source_id, safe='')}/render-context", admin=True, allow_404=True)
+    if not context:
+        return None
+    value = context.get("constant_nib_units")
+    return None if value is None else float(value)
+
+
+def resolve_nib(client: ApiClient, source_id: str, width_resolver: str, keys: set[str]) -> tuple[float | None, str]:
+    """The nib to freeze plus the provenance label the manifest records.
+
+    Exact first, 4-decimal readback second — the difference is invisible in the
+    fixtures but decides whether an offline composition reproduces a served one
+    bit-for-bit (module docstring; `EXACT_PLACEMENT_TOL`).
+    """
+    if width_resolver != "constant":
+        return None, NIB_NONE
+    exact = exact_nib_units(client, source_id)
+    if exact is not None:
+        return exact, NIB_EXACT
+    print("  render-context unavailable — falling back to the 4-decimal nib readback")
+    nib = pooled_nib_units(client, source_id, width_resolver, keys)
+    return nib, (NIB_READBACK if nib is not None else NIB_NONE)
 
 
 def fetch(
@@ -466,7 +524,7 @@ def fetch(
     else:
         print("no hand derivable from the occurrences — fixtures freeze without laufform rows")
 
-    constant_nib_units = pooled_nib_units(client, source_id, style["width_resolver"], set(templates))
+    constant_nib_units, nib_precision = resolve_nib(client, source_id, style["width_resolver"], set(templates))
 
     pages: dict[str, np.ndarray] = {}
     page_shas: dict[str, str] = {}
@@ -509,11 +567,11 @@ def fetch(
             "constant_nib_units": constant_nib_units,
             "laufform_keys": sorted(set_laufform),
             "words": index,
-            # Provenance of THIS root: rebuilt over the API, with the nib read
-            # back off a render payload rather than pooled in SQL.
+            # Provenance of THIS root: rebuilt over the API rather than pooled
+            # in SQL, and at which precision the pooled nib came back.
             "exported_via": "api",
             "api_base": client.base_url,
-            "nib_precision": NIB_PRECISION,
+            "nib_precision": nib_precision,
             "hand_id": hand,
         }
         (fixture_root / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1))
@@ -528,6 +586,21 @@ def fetch(
 
 
 # ------------------------------------------------------------- acceptance gate
+
+
+def _placement_tol_for(root: Path) -> float:
+    """The placement bound a fixture root's own nib provenance earns.
+
+    A root frozen with the exact nib has no approximated input left, so its
+    compositions must reproduce bit-for-bit; a 4-decimal readback keeps the
+    documented jitter allowance. An unstamped (pre-`nib_precision`) or
+    DB-exported root reads as the conservative bound.
+    """
+    try:
+        manifest = json.loads((root / "manifest.json").read_text())
+    except (OSError, ValueError):
+        return DEFAULT_PLACEMENT_TOL
+    return EXACT_PLACEMENT_TOL if manifest.get("nib_precision") == NIB_EXACT else DEFAULT_PLACEMENT_TOL
 
 
 def verify_rows(client: ApiClient, source_id: str, root: Path) -> list[str]:
@@ -574,7 +647,7 @@ def verify(
     *,
     n_cases: int = DEFAULT_VERIFY_CASES,
     shape_tol: float = DEFAULT_SHAPE_TOL,
-    placement_tol: float = DEFAULT_PLACEMENT_TOL,
+    placement_tol: float | None = None,
 ) -> None:
     """Hold the rebuilt fixtures against the deployed API — two layers, hard failure.
 
@@ -589,8 +662,11 @@ def verify(
        composition noise in between.
     2. **compositions** — at least `MIN_VERIFY_CASES` fixture cases across the
        sets, composed locally, must match `GET /write/word` item for item, with
-       letter SHAPE bit-tight and only PLACEMENT allowed to jitter (see
-       `composition_mismatch` and `DEFAULT_PLACEMENT_TOL`).
+       letter SHAPE bit-tight and PLACEMENT held to the precision the root's
+       nib was frozen at: bit-tight on an `exact` nib, the documented jitter
+       bound on a 4-decimal readback (see `composition_mismatch`,
+       `EXACT_PLACEMENT_TOL`, `DEFAULT_PLACEMENT_TOL`). An explicit
+       `placement_tol` overrides both.
 
     Both layers compare `production_row`s — see there for the `glyph`/fluent-widen
     divergence, a property of the fixture contract rather than of this fetch.
@@ -612,6 +688,7 @@ def verify(
             failures.append(f"{set_name}: no fixture root at {root}")
             continue
         failures += verify_rows(client, source_id, root)
+        root_tol = placement_tol if placement_tol is not None else _placement_tol_for(root)
         cases = [
             c for c in iter_fixture_word_cases(which=set_name, style=style_id, fixtures_root=out_dir) if c.scorable
         ]
@@ -624,7 +701,7 @@ def verify(
             case.laufform = {k: production_row(r) for k, r in case.laufform.items()}
             served = client.get(f"/sources/{quote(source_id, safe='')}/write/word", {"text": case.word})
             error, shape, placement = composition_mismatch(
-                derive_word(case).composed["items"], served["items"], shape_tol=shape_tol, placement_tol=placement_tol
+                derive_word(case).composed["items"], served["items"], shape_tol=shape_tol, placement_tol=root_tol
             )
             checked += 1
             exact += placement == 0.0
@@ -634,13 +711,25 @@ def verify(
             label = "ok  " if error is None else "FAIL"
             print(
                 f"  {label} {set_name}/{case.id}: {len(served['items'])} items, "
-                f"shape {shape:.2g}, placement {placement:.3g}"
+                f"shape {shape:.2g}, placement {placement:.3g} (tol {root_tol:g})"
             )
             if error is not None:
                 failures.append(f"{set_name}/{case.id} ({case.word!r}): {error}")
 
     if failures:
-        raise SystemExit("verify FAILED — the rebuilt fixtures do not match the API:\n  " + "\n  ".join(failures))
+        # A root frozen with the exact nib is held bit-tight, so name the escape
+        # hatch when that is what failed — an environment drift (numpy/shapely
+        # in the API image vs. here) is not the operator's typo.
+        tight = any(f"> {EXACT_PLACEMENT_TOL:g}" in f for f in failures)
+        hint = (
+            f"\n(placement held bit-tight because the nib was frozen exact; "
+            f"--placement-tol {DEFAULT_PLACEMENT_TOL:g} restores the readback-era allowance)"
+            if tight
+            else ""
+        )
+        raise SystemExit(
+            "verify FAILED — the rebuilt fixtures do not match the API:\n  " + "\n  ".join(failures) + hint
+        )
     if checked < MIN_VERIFY_CASES:
         raise SystemExit(f"verify inconclusive: only {checked} cases checked, the gate needs {MIN_VERIFY_CASES}")
     print(
@@ -679,8 +768,9 @@ def main() -> None:
     parser.add_argument(
         "--placement-tol",
         type=float,
-        default=DEFAULT_PLACEMENT_TOL,
-        help="glyph-placement tolerance of the gate (xh units)",
+        default=None,
+        help="glyph-placement tolerance of the gate (xh units); default: per root, "
+        f"{EXACT_PLACEMENT_TOL:g} on an exact nib and {DEFAULT_PLACEMENT_TOL:g} on a 4-decimal readback",
     )
     args = parser.parse_args()
 

@@ -482,6 +482,17 @@ a secret version with `echo`: Cloud Run injects the bytes verbatim, and a
 trailing newline no header can carry made the token gate reject every
 value for two months (`docs/reference/frontend-stack.md`).
 
+In a cloud session without Cloud SQL egress, the gitignored wordbench
+fixture roots can be rebuilt entirely over the deployed API:
+`uv run python -m tools.wordbench.fetch_fixtures --set all --verify`
+(GETs only). The source-pooled Gleichzug nib comes exactly from the
+admin-gated `GET /sources/{id}/render-context` (manifest `nib_precision:
+"exact"`, verify gate bit-exact); an API predating that endpoint falls
+back to the 4-decimal `/write/glyphs` readback (up to ~0.02 xh placement
+jitter). The nib pools ALL template variants of the source — including
+rows no read endpoint serves individually — so it cannot be recomputed
+from fetched chart rows.
+
 Browser at `http://localhost:3000/admin` loads the workbench: first the Vorlage
 picker (the choice persists per browser; `CONFIG.sourceId` in
 `app/src/global-config.ts` is the source the PUBLIC pages render — currently

@@ -98,6 +98,26 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **`GET /sources/{id}/render-context` — the resolved render context of a
+  source at full precision, admin-gated.** Everything a render resolves before
+  it draws (lineature, width resolver, the source-pooled Gleichzug nib and the
+  pooled pen), unrounded, where the public `/write` payloads carry the same
+  numbers rounded to the four decimals the renderer draws at. It exists for the
+  one job that needs to reproduce a served payload bit-for-bit offline: the
+  fixture rebuild without Cloud SQL access (`tools/wordbench/fetch_fixtures.py`)
+  used to recover the pooled nib by reading a rounded half width back off
+  `/write/glyphs`, and that ≤5e-5 xh error flipped knife-edge ink-clearance
+  decisions into up to ~0.02 xh of glyph-placement jitter. The fetcher now asks
+  for the exact value first and falls back to the readback on an API that
+  predates the endpoint, records which it got as the manifest's
+  `nib_precision`, and tightens its own acceptance gate accordingly — a root
+  frozen with the exact nib must compose bit-for-bit against `/write/word`
+  instead of within the old jitter allowance. Admin-gated like the raw template
+  read (quellen-und-rechte.md §5): the pool spans every authored template of
+  the source, including variant rows no endpoint serves. The payload rounding
+  itself stays at four decimals — it is part of the frozen render contract, and
+  a fifth decimal would cost ~7 % payload size for nothing the exact scalar
+  does not already fix.
 - **A glossary of the project's own vocabulary — `docs/reference/glossar.md`.**
   The docs, issues and admin UI have grown a private language across the
   optimisation rounds: palaeography (Duktus, Schwellzug, Anstrich/Auslauf),

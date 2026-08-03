@@ -11,19 +11,28 @@ dicts — no network, no DB, no fixtures.
 from __future__ import annotations
 
 import inspect
+import json
 
 import pytest
 
 from tools.wordbench import export_fixtures, fetch_fixtures
 from tools.wordbench.fetch_fixtures import (
+    DEFAULT_PLACEMENT_TOL,
+    EXACT_PLACEMENT_TOL,
+    NIB_EXACT,
+    NIB_NONE,
+    NIB_READBACK,
     ApiClient,
+    _placement_tol_for,
     composition_mismatch,
+    exact_nib_units,
     hand_id_for,
     laufform_row_from_payload,
     laufform_rows_from_aggregates,
     payload_mismatch,
     pooled_nib_units,
     production_row,
+    resolve_nib,
     template_row_from_payload,
 )
 
@@ -202,14 +211,22 @@ def test_payload_mismatch_flags_each_render_field():
 
 
 class _StubClient:
-    """Records the GETs a helper issues and replays a canned payload."""
+    """Records the GETs a helper issues and replays a canned payload.
 
-    def __init__(self, payload):
+    With `routes` the answer depends on the path, and an unlisted path returns
+    None — exactly what `ApiClient.get(..., allow_404=True)` yields for an
+    endpoint the deployed API does not have yet.
+    """
+
+    def __init__(self, payload=None, routes: dict[str, dict] | None = None):
         self.payload = payload
+        self.routes = routes
         self.calls: list[tuple[str, dict | None]] = []
 
     def get(self, path, params=None, **_kwargs):
         self.calls.append((path, params))
+        if self.routes is not None:
+            return self.routes.get(path)
         return self.payload
 
 
@@ -223,6 +240,79 @@ def test_pooled_nib_is_read_back_only_for_a_constant_source():
     pressure = _StubClient({"glyphs": [{"half_widths_template": [0.2]}], "missing": []})
     assert pooled_nib_units(pressure, "s", "pressure", {"a"}) is None
     assert pressure.calls == []
+
+
+RENDER_CONTEXT = "/sources/s/render-context"
+WRITE_GLYPHS = "/sources/s/write/glyphs"
+# The rounded readback and the exact value differ in the 5th decimal — the
+# whole point of the extra read (see fetch_fixtures' module docstring).
+EXACT_NIB = 0.07313333333333334
+READBACK = {"glyphs": [{"half_widths_template": [0.0731, 0.0731]}], "missing": []}
+
+
+def test_exact_nib_is_preferred_over_the_rounded_readback():
+    client = _StubClient(routes={RENDER_CONTEXT: {"constant_nib_units": EXACT_NIB, "width_resolver": "constant"}})
+
+    nib, precision = resolve_nib(client, "s", "constant", {"a", "e"})
+
+    assert nib == EXACT_NIB
+    assert precision == NIB_EXACT
+    # No readback needed — one admin read answers it.
+    assert [path for path, _ in client.calls] == [RENDER_CONTEXT]
+
+
+def test_nib_falls_back_to_the_readback_on_an_api_without_the_endpoint():
+    # The deployed API 404s the render-context read until this change ships;
+    # the fetcher must keep producing a usable root meanwhile.
+    client = _StubClient(routes={WRITE_GLYPHS: READBACK})
+
+    nib, precision = resolve_nib(client, "s", "constant", {"a", "e"})
+
+    assert nib == pytest.approx(0.0731)
+    assert precision == NIB_READBACK
+    assert [path for path, _ in client.calls] == [RENDER_CONTEXT, WRITE_GLYPHS]
+
+
+def test_nib_falls_back_when_the_context_carries_no_nib():
+    """A render context without the field (an older shape, or a source whose
+    templates are all unauthored) is not an exact answer — read back instead."""
+    client = _StubClient(routes={RENDER_CONTEXT: {"width_resolver": "constant"}, WRITE_GLYPHS: READBACK})
+
+    nib, precision = resolve_nib(client, "s", "constant", {"a"})
+
+    assert nib == pytest.approx(0.0731)
+    assert precision == NIB_READBACK
+
+
+def test_no_pooled_nib_for_a_pressure_source():
+    client = _StubClient(routes={})
+    assert resolve_nib(client, "s", "pressure", {"a"}) == (None, NIB_NONE)
+    # Neither read is even issued: a pressure source has no pooled nib.
+    assert client.calls == []
+
+
+def test_exact_nib_read_tolerates_a_missing_endpoint():
+    assert exact_nib_units(_StubClient(routes={}), "s") is None
+
+
+def test_placement_tolerance_follows_the_frozen_nib_precision(tmp_path):
+    """The payoff of the exact nib: a root frozen with it must reproduce
+    bit-for-bit, while an older root keeps its documented jitter allowance."""
+    root = tmp_path / "root"
+    root.mkdir()
+    manifest = root / "manifest.json"
+
+    manifest.write_text(json.dumps({"nib_precision": NIB_EXACT}))
+    assert _placement_tol_for(root) == EXACT_PLACEMENT_TOL
+
+    manifest.write_text(json.dumps({"nib_precision": NIB_READBACK}))
+    assert _placement_tol_for(root) == DEFAULT_PLACEMENT_TOL
+
+    # A DB-exported root carries no such stamp — conservative bound, no crash.
+    manifest.write_text(json.dumps({"style_id": "suetterlin"}))
+    assert _placement_tol_for(root) == DEFAULT_PLACEMENT_TOL
+    manifest.unlink()
+    assert _placement_tol_for(root) == DEFAULT_PLACEMENT_TOL
 
 
 def test_admin_read_without_a_token_fails_without_naming_a_secret():

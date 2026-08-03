@@ -52,7 +52,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · pair_loss §4 · Platzierungsschranke §3 · Provenance §2 · Prüfstein §4
 - **Q** — Quelle §2
-- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Registrierung §2 · Regel-Fix vor Override §5 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Rückgabe an Autor §5
+- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Rückgabe an Autor §5
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spitzfeder §1 · `stage` (work_items) §5 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenlücke §3 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · understanding §5
@@ -329,6 +329,18 @@ gemessene Grund-/Mittellinie je Zeile).
 Ausschnitt und gerechneter Geometrie: Skala aus der gemessenen Lineatur,
 Translation begrenzt gewählt. Bewusst **begrenzt**, damit sich ein
 Experiment nicht durch Verschieben besser rechnen kann.
+
+**Render-Kontext** *(render context)* — alles, was ein Render einer Quelle
+auflöst, **bevor** es zeichnet: Stil, Lineatur-Verhältnis, Schräglage,
+`width_resolver`, der quellen-gepoolte Gleichzug-Nib und die gepoolte
+Feder. Seit dem Nib-Präzisions-Umbau als eigener admin-gegateter Read
+verfügbar — `GET /sources/{id}/render-context`, unrundet, wo die
+öffentlichen `/write`-Payloads dieselben Zahlen auf vier Dezimalen gerundet
+tragen. Sein einziger Zweck: ein serviertes Payload **bit-genau** offline
+reproduzieren zu können (der Fixture-Nachbau, `fetch_fixtures.py`); das
+Manifest-Feld `nib_precision` (`"exact"` · `"4dp-readback"` · `"none"`)
+sagt, welche Nib-Quelle ein Fixture-Root bekam, und das Verify-Gate zieht
+seine Toleranz daraus. → write-api.md
 
 **Ernte** *(harvest)* — der Lauf, der aus den eingefrorenen Vorlagen
 Messergebnisse macht und sie als **Entwürfe** über die admin-gegatete API
