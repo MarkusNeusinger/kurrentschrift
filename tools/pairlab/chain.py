@@ -1,4 +1,4 @@
-"""Pair-scale ductus chain fit (issue #278, Stage A) — CONTRACT STUB.
+"""Pair-scale ductus chain fit (issue #278, Stage A).
 
 `analyze.dissect_occurrence` fits the two letters of a join INDEPENDENTLY and
 then regenerates the connector between them, so neither letter ever sees the ink
@@ -29,23 +29,50 @@ Three binding constraints, from the issue:
 hard-coded triple — a whole word is `[L0, C0, L1, C1, …]` under the same index
 map, the same arc-length translation ramp and the same per-segment coverage
 scaling. `fit_pair_chain` is a thin two-letter wrapper over that.
-
-Nothing below is implemented yet; this file freezes the contract that the model
-(Track B) and the evaluation harness (Track C) are written against.
 """
 
 from __future__ import annotations
 
+import time
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
+from scipy.ndimage import distance_transform_edt, gaussian_filter
+from scipy.optimize import minimize
+from scipy.spatial import cKDTree
 
 from core.compose import CONNECT_SAMPLES as _COMPOSE_CONNECT_SAMPLES
-from core.fit import DEFAULT_COVERAGE_WEIGHT, DEFAULT_LAMBDA_REG, DEFAULT_WIDTH_WEIGHT
-from tools.pairlab.analyze import JoinDissection
+from core.compose import _endpoint_tangent
+from core.fit import (
+    CONVERGED_COVERAGE_RMSE_UNITS,
+    CONVERGED_GEO_RMSE_UNITS,
+    DEFAULT_COVERAGE_WEIGHT,
+    DEFAULT_LAMBDA_REG,
+    DEFAULT_MAX_ITER,
+    DEFAULT_N_SAMPLES,
+    DEFAULT_WIDTH_WEIGHT,
+    DIST_FIELD_SIGMA_PX,
+    MAX_ANCHOR_DELTA,
+    MAX_COVERAGE_POINTS,
+    WIDTH_FIELD_SIGMA_PX,
+    _bilinear_with_grad,
+    _sampling_operator,
+    _skeleton_points,
+    _width_operator,
+)
+from core.geometry import bilinear
+from core.template import build_sample_plan
+from tools.pairlab.analyze import (
+    FIT_DX_UNITS,
+    FIT_DY_UNITS,
+    TRACE_WINDOW_MARGIN,
+    JoinDissection,
+    _body_items,
+    _generate_connector,
+)
 from tools.wordlab.cases import WordCase
-from tools.wordlab.derive import WordDeriveResult
+from tools.wordlab.derive import WordDeriveResult, derive_word
 
 
 # Per-anchor displacement bound (xh) for the connector's interior anchors. Wider
@@ -71,6 +98,13 @@ CHAIN_COVERAGE_PER_SEGMENT = 300
 # re-exported from `core.compose` so a change there cannot silently desync. The
 # two endpoints are SHARED with the letters, the interior 22 are free anchors.
 CONNECT_SAMPLES = _COMPOSE_CONNECT_SAMPLES  # == 24
+
+# Anchor count `core.fit.DEFAULT_N_SAMPLES` was tuned against, so the chain's
+# sample budget keeps the same ~1.5 samples per anchor at any chain length.
+_REFERENCE_ANCHOR_COUNT = 120
+# A stroke floating entirely above the midband is a diacritic (compose's rule,
+# mirrored by `analyze.trace_letter_ductus`) and never carries a seam.
+_DIACRITIC_MIN_Y = 1.0
 
 
 @dataclass
@@ -123,6 +157,84 @@ class ChainFit:
     fit_meta: dict  # optimiser status, energies, n_params, n_cov, timings
 
 
+# ----------------------------------------------------------------- pure helpers
+
+
+def _second_difference_operator(pts: np.ndarray) -> np.ndarray:
+    """(m, K) arc-length-normalised second-difference operator over a polyline.
+
+    The same construction as `core.fit._width_curvature_operator`, applied to 2D
+    POSITIONS instead of the width profile: row `j` reads
+    ``2/(ds_{j-1}+ds_j) · ((a_{j+1}−a_j)/ds_j − (a_j−a_{j-1})/ds_{j-1})``. A
+    collinear chain therefore scores exactly zero at any spacing — the term
+    measures CHANGE of curvature only and knows nothing about the generated
+    Bézier it was initialised from (binding constraint 3). The spacings are
+    frozen at the initial anchors, which keeps the operator linear and the
+    gradient exact.
+    """
+    pts = np.asarray(pts, dtype=float)
+    k = len(pts)
+    if k < 3:
+        return np.zeros((0, k))
+    d = np.diff(pts, axis=0)
+    ds = np.hypot(d[:, 0], d[:, 1])
+    ds[ds <= 0] = 1e-6
+    rows = np.zeros((k - 2, k))
+    for j in range(1, k - 1):
+        scale = 2.0 / (ds[j - 1] + ds[j])
+        rows[j - 1, j - 1] = scale / ds[j - 1]
+        rows[j - 1, j] = -scale * (1.0 / ds[j - 1] + 1.0 / ds[j])
+        rows[j - 1, j + 1] = scale / ds[j]
+    return rows
+
+
+def _coverage_huber(dist: np.ndarray, cap: float) -> tuple[np.ndarray, np.ndarray]:
+    """Huber energy ρ(d) and its scalar derivative ρ'(d), capped at `cap`.
+
+    ``ρ(d) = d²`` up to the cap and ``cap·(2d − cap)`` beyond it, so a skeleton
+    pixel that belongs to neither segment (a neighbour's descender, a speck)
+    keeps pulling but can no longer out-lever the whole chain: its gradient
+    magnitude saturates at ``2·cap`` instead of growing with the distance.
+    """
+    dist = np.asarray(dist, dtype=float)
+    inside = dist <= cap
+    rho = np.where(inside, dist**2, cap * (2.0 * dist - cap))
+    dscale = np.where(inside, 2.0 * dist, 2.0 * cap)
+    return rho, dscale
+
+
+def _letter_cut_anchors(anchors: np.ndarray, stroke_starts: Sequence[int] | None) -> tuple[int, int]:
+    """`(cut_in, cut_out)` — the two seam anchors of one letter.
+
+    `cut_out` is the LAST anchor of the letter's last non-diacritic stroke and
+    `cut_in` the FIRST anchor of its first non-diacritic stroke, using
+    `analyze.trace_letter_ductus`' diacritic rule verbatim: a stroke that is not
+    the first and floats entirely above the midband is a diacritic and must
+    never carry the join (the i's dot does not connect to the next letter).
+    """
+    anchors = np.asarray(anchors, dtype=float)
+    k = len(anchors)
+    starts = [int(s) for s in (stroke_starts or [0]) if int(s) < k]
+    bounds = [*starts, k] if starts else [0, k]
+    diacritic = [
+        si > 0 and bool((anchors[a:b, 1] > _DIACRITIC_MIN_Y).all())
+        for si, (a, b) in enumerate(zip(bounds[:-1], bounds[1:], strict=True))
+    ]
+    body = [i for i, d in enumerate(diacritic) if not d] or [0]
+    return bounds[body[0]], bounds[body[-1] + 1] - 1
+
+
+def _segment_converged(geo_rmse_px: float, cov_rmse_px: float, unit_px: float) -> bool:
+    """`core.fit`'s own convergence gate, applied per chain segment.
+
+    Literally `CONVERGED_GEO_RMSE_UNITS` / `CONVERGED_COVERAGE_RMSE_UNITS`, so a
+    chain segment and a single-letter M4 fit are judged by the same yardstick.
+    """
+    return bool(
+        geo_rmse_px <= CONVERGED_GEO_RMSE_UNITS * unit_px and cov_rmse_px <= CONVERGED_COVERAGE_RMSE_UNITS * unit_px
+    )
+
+
 @dataclass
 class _ChainProblem:
     """Frozen inputs + operators of one chain solve — the chain twin of
@@ -160,6 +272,144 @@ class _ChainProblem:
     smooth_weight: float
     x0: np.ndarray  # initial parameter vector (all zeros: the composed layout)
     bounds: list[tuple[float, float]]  # global shift, slot blocks, per-anchor deltas
+    # ---- internals (not part of the Track-C contract) ----
+    block_op: np.ndarray = field(default_factory=lambda: np.zeros((0, 0)))
+    """(K_free, n_blocks) weight of every slot translation block on every free
+    anchor: 1 on the block's own letter, the arc-length ramp on a connector
+    interior, 0 elsewhere. Linear ⇒ the ramp's gradient is exact."""
+    smooth_op: np.ndarray = field(default_factory=lambda: np.zeros((0, 0)))
+    """(M, K_plan) second differences of the connector blocks only."""
+    plan_slices: list[tuple[int, int]] = field(default_factory=list)
+    """per segment, into the PLAN anchor array (seam anchors included)."""
+    n_letter_anchors: float = 1.0
+    n_samples: int = 0
+
+    # ------------------------------------------------------------------ mapping
+
+    @property
+    def n_blocks(self) -> int:
+        return self.block_op.shape[1]
+
+    def unpack(self, params: np.ndarray) -> tuple[float, float, np.ndarray, np.ndarray]:
+        """`(tx, ty, slot blocks (n_blocks, 2), per-anchor deltas (K_free, 2))`."""
+        nb = self.n_blocks
+        blocks = np.asarray(params[2 : 2 + 2 * nb], dtype=float).reshape(nb, 2)
+        deltas = np.asarray(params[2 + 2 * nb :], dtype=float).reshape(-1, 2)
+        return float(params[0]), float(params[1]), blocks, deltas
+
+    def free_anchors(self, params: np.ndarray) -> np.ndarray:
+        """Effective free anchors: initial + delta + slot ramp + global shift."""
+        tx, ty, blocks, deltas = self.unpack(params)
+        return self.anchors_free + deltas + (self.block_op @ blocks) + np.array([tx, ty])
+
+    def plan_anchors(self, params: np.ndarray) -> np.ndarray:
+        """Effective PLAN anchors — the free array re-expanded through the index
+        map, so both sides of a seam read the exact same coordinates."""
+        return self.free_anchors(params)[self.idx]
+
+    def to_pixels(self, params: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        ap = self.plan_anchors(params)
+        px = self.x_origin_px + (self.sampling_op @ ap[:, 0]) * self.unit_px
+        py = self.baseline_y_px - (self.sampling_op @ ap[:, 1]) * self.unit_px
+        return px, py
+
+    def out_of_crop(self, px: np.ndarray, py: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """Signed distance of each sample beyond the crop border (0 inside) —
+        the clamped fields would otherwise report a flattering residual with no
+        gradient at all outside the crop (`core.fit._InstanceFit.out_of_crop`)."""
+        return px - np.clip(px, 0.0, self.crop_w - 1.0), py - np.clip(py, 0.0, self.crop_h - 1.0)
+
+    # ---------------------------------------------------------------- objective
+
+    def _evaluate(self, params: np.ndarray, want_grad: bool) -> tuple[dict[str, float], np.ndarray | None]:
+        """Shared core of `objective` and `energy_terms` (see their docstrings)."""
+        unit_sq = self.unit_px**2
+        _, _, _, deltas = self.unpack(params)
+        ap = self.plan_anchors(params)
+        px = self.x_origin_px + (self.sampling_op @ ap[:, 0]) * self.unit_px
+        py = self.baseline_y_px - (self.sampling_op @ ap[:, 1]) * self.unit_px
+        n_s = len(px)
+
+        # --- geometry: chain centerline on the skeleton (+ out-of-crop pull) ---
+        d, d_dx, d_dy = _bilinear_with_grad(self.dist_smooth, px, py)
+        ox, oy = self.out_of_crop(px, py)
+        e_geo = float(np.mean(d**2) + np.mean(ox**2 + oy**2)) / unit_sq
+        g_px = 2.0 * (d * d_dx + ox) / (n_s * unit_sq)
+        g_py = 2.0 * (d * d_dy + oy) / (n_s * unit_sq)
+
+        # --- width: letter samples only (the connector has no measurement) ---
+        wm, w_dx, w_dy = _bilinear_with_grad(self.width_smooth, px, py)
+        wr = (wm - self.sw_px) * self.width_mask
+        n_w = max(1.0, float(self.width_mask.sum()))
+        e_wid = float(np.sum(wr**2)) / (n_w * unit_sq)
+        g_px = g_px + self.width_weight * 2.0 * wr * w_dx / (n_w * unit_sq)
+        g_py = g_py + self.width_weight * 2.0 * wr * w_dy / (n_w * unit_sq)
+
+        # --- coverage: capped, over the WHOLE pair window (ICP-frozen) ---
+        pts = np.column_stack([px, py])
+        cdist, cidx = cKDTree(pts).query(self.cov_pts)
+        n_cov = max(1, len(self.cov_pts))
+        rho, dscale = _coverage_huber(cdist, self.cov_cap_px)
+        e_cov = float(np.mean(rho)) / unit_sq
+        e_cov_raw = float(np.mean(cdist**2)) / unit_sq
+        diff = pts[cidx] - self.cov_pts
+        safe = np.where(cdist > 0.0, cdist, 1.0)
+        g_cov = np.zeros((n_s, 2))
+        np.add.at(g_cov, cidx, (dscale / safe)[:, None] * diff / (n_cov * unit_sq))
+        g_px = g_px + self.coverage_weight * g_cov[:, 0]
+        g_py = g_py + self.coverage_weight * g_cov[:, 1]
+
+        # --- Tikhonov on the LETTER anchors only (binding constraint 3) ---
+        e_reg = float(np.sum(self.reg_w * np.sum(deltas**2, axis=1))) / self.n_letter_anchors
+
+        # --- connector curvature-CHANGE only (never distance to the Bézier) ---
+        if self.smooth_op.shape[0]:
+            r = self.smooth_op @ ap
+            m_d2 = self.smooth_op.shape[0]
+            e_smooth = float(np.sum(r**2)) / m_d2
+        else:
+            r = np.zeros((0, 2))
+            m_d2 = 1
+            e_smooth = 0.0
+
+        f = (
+            e_geo
+            + self.width_weight * e_wid
+            + self.coverage_weight * e_cov
+            + self.lambda_reg * e_reg
+            + self.smooth_weight * e_smooth
+        )
+        terms = {
+            "e_geo": e_geo,
+            "e_wid": e_wid,
+            "e_cov": e_cov,
+            "e_cov_uncapped": e_cov_raw,
+            "e_reg": e_reg,
+            "e_smooth": e_smooth,
+            "f": f,
+        }
+        if not want_grad:
+            return terms, None
+
+        # Chain rule: samples → plan anchors → free anchors → parameters.
+        g_plan = np.column_stack(
+            [self.unit_px * (self.sampling_op.T @ g_px), -self.unit_px * (self.sampling_op.T @ g_py)]
+        )
+        if self.smooth_op.shape[0]:
+            g_plan = g_plan + self.smooth_weight * 2.0 * (self.smooth_op.T @ r) / m_d2
+        g_free = np.zeros_like(self.anchors_free)
+        np.add.at(g_free, self.idx, g_plan)
+
+        grad = np.empty_like(params)
+        grad[0] = float(g_free[:, 0].sum())
+        grad[1] = float(g_free[:, 1].sum())
+        nb = self.n_blocks
+        if nb:
+            grad[2 : 2 + 2 * nb] = (self.block_op.T @ g_free).ravel()
+        grad[2 + 2 * nb :] = (
+            g_free + self.lambda_reg * 2.0 * self.reg_w[:, None] * deltas / self.n_letter_anchors
+        ).ravel()
+        return terms, grad
 
     def objective(self, params: np.ndarray) -> tuple[float, np.ndarray]:
         """Total energy and its exact gradient at `params`.
@@ -170,7 +420,16 @@ class _ChainProblem:
         `np.add.at(g_free, idx, g_plan)`, so the shared seam anchors receive the
         contributions of both sides.
         """
-        raise NotImplementedError("Stage A Track B")
+        terms, grad = self._evaluate(np.asarray(params, dtype=float), want_grad=True)
+        return terms["f"], np.zeros_like(params) if grad is None else grad
+
+    def energy_terms(self, params: np.ndarray) -> dict[str, float]:
+        """The individual (unweighted) energies at `params`, on the SMOOTHED
+        fields — what the objective sees, split up for reporting and tests."""
+        terms, _ = self._evaluate(np.asarray(params, dtype=float), want_grad=False)
+        return terms
+
+    # ------------------------------------------------------------- per-segment
 
     def report_energies(self, params: np.ndarray) -> list[ChainSegment]:
         """Per-segment residuals and gates on the UNSMOOTHED fields.
@@ -180,8 +439,68 @@ class _ChainProblem:
         UNCAPPED; the gates are literally `core.fit.CONVERGED_GEO_RMSE_UNITS`
         and `CONVERGED_COVERAGE_RMSE_UNITS`, so a chain segment and a
         single-letter fit are judged by the same yardstick.
+
+        `fitted_anchors` come out in the COMPOSED word frame (initial anchors
+        plus their per-anchor deltas, translations excluded exactly as
+        `core.fit.FitResult.anchors` excludes its global shift); `fit_pair_chain`
+        maps them back into the chart frame the templates were read from.
         """
-        raise NotImplementedError("Stage A Track B")
+        params = np.asarray(params, dtype=float)
+        _, _, _, deltas = self.unpack(params)
+        px, py = self.to_pixels(params)
+        ox, oy = self.out_of_crop(px, py)
+        d_eff = bilinear(self.dist_raw, px, py) + np.hypot(ox, oy)
+        cdist, cidx = cKDTree(np.column_stack([px, py])).query(self.cov_pts)
+
+        segments: list[ChainSegment] = []
+        for spec, (a0, a1), (s0, s1) in zip(self.specs, self.anchor_slices, self.sample_slices, strict=True):
+            geo_rmse = float(np.sqrt(np.mean(d_eff[s0:s1] ** 2))) if s1 > s0 else 0.0
+            sel = (cidx >= s0) & (cidx < s1)
+            n_cov = int(sel.sum())
+            cov_rmse = float(np.sqrt(np.mean(cdist[sel] ** 2))) if n_cov else 0.0
+            seg_deltas = deltas[a0:a1]
+            max_delta = float(np.max(np.hypot(seg_deltas[:, 0], seg_deltas[:, 1]))) if a1 > a0 else 0.0
+            fitted = self.anchors_free[a0:a1] + seg_deltas if spec.kind == "letter" else None
+            segments.append(
+                ChainSegment(
+                    kind=spec.kind,
+                    slot_index=spec.slot_index,
+                    key=spec.key,
+                    anchor_slice=(a0, a1),
+                    sample_slice=(s0, s1),
+                    fitted_anchors=fitted,
+                    polyline_px=np.column_stack([px[s0:s1], py[s0:s1]]),
+                    geo_rmse_px=geo_rmse,
+                    cov_rmse_px=cov_rmse,
+                    n_cov=n_cov,
+                    converged=_segment_converged(geo_rmse, cov_rmse, self.unit_px),
+                    max_anchor_delta=max_delta,
+                )
+            )
+        return segments
+
+
+# ------------------------------------------------------------------- assembly
+
+
+def _seam_ownership(specs: Sequence[ChainSegmentSpec]) -> dict[tuple[int, int], tuple[int, int]]:
+    """`{(borrower segment, local anchor): (owner segment, local anchor)}`.
+
+    Each `seam_out`/`seam_in` pair collapses to ONE free anchor. The LETTER side
+    owns it whenever exactly one side is a letter (the connector must not carry
+    a copy of the glyph's own tail anchor), otherwise the earlier segment wins.
+    """
+    borrowed: dict[tuple[int, int], tuple[int, int]] = {}
+    for i in range(len(specs) - 1):
+        left, right = specs[i], specs[i + 1]
+        if left.seam_out is None or right.seam_in is None:
+            continue
+        left_side, right_side = (i, int(left.seam_out)), (i + 1, int(right.seam_in))
+        if right.kind == "letter" and left.kind != "letter":
+            borrowed[left_side] = right_side
+        else:
+            borrowed[right_side] = left_side
+    return borrowed
 
 
 def build_chain_problem(
@@ -241,7 +560,257 @@ def build_chain_problem(
     / `WIDTH_FIELD_SIGMA_PX`, raw kept for the report), so the problem stays
     testable against a synthetic 60×60 EDT.
     """
-    raise NotImplementedError("Stage A Track B")
+    specs = [
+        ChainSegmentSpec(
+            kind=s.kind,
+            anchors=np.asarray(s.anchors, dtype=float).reshape(-1, 2),
+            slot_index=s.slot_index,
+            key=s.key,
+            stroke_starts=tuple(int(v) for v in (s.stroke_starts or (0,))),
+            corner_anchors=tuple(int(v) for v in (s.corner_anchors or ())),
+            half_widths=None if s.half_widths is None else np.asarray(s.half_widths, dtype=float),
+            seam_in=s.seam_in,
+            seam_out=s.seam_out,
+        )
+        for s in specs
+    ]
+    if not specs:
+        raise ValueError("a chain needs at least one segment")
+    if unit_px <= 0:
+        raise ValueError(f"unit_px must be positive, got {unit_px}")
+    if CHAIN_COVERAGE_PER_SEGMENT < MAX_COVERAGE_POINTS:
+        # Invariant: the chain's coverage density per unit of skeleton x-extent
+        # must never fall below the single-letter fit's (plan §2.5).
+        raise ValueError(
+            f"CHAIN_COVERAGE_PER_SEGMENT ({CHAIN_COVERAGE_PER_SEGMENT}) must not be thinner than "
+            f"core.fit.MAX_COVERAGE_POINTS ({MAX_COVERAGE_POINTS})"
+        )
+
+    # ---- free anchors + index map (the seam is a shared parameter) ----
+    borrowed = _seam_ownership(specs)
+    free_index: dict[tuple[int, int], int] = {}
+    anchor_slices: list[tuple[int, int]] = []
+    anchors_free_rows: list[np.ndarray] = []
+    reg_rows: list[float] = []
+    hw_rows: list[float] = []
+    cursor = 0
+    for i, spec in enumerate(specs):
+        start = cursor
+        for j in range(len(spec.anchors)):
+            if (i, j) in borrowed:
+                continue
+            free_index[(i, j)] = cursor
+            anchors_free_rows.append(spec.anchors[j])
+            reg_rows.append(1.0 if spec.kind == "letter" else 0.0)
+            hw_rows.append(float(spec.half_widths[j]) if spec.half_widths is not None else 0.0)
+            cursor += 1
+        anchor_slices.append((start, cursor))
+    anchors_free = np.asarray(anchors_free_rows, dtype=float).reshape(-1, 2)
+    reg_w = np.asarray(reg_rows, dtype=float)
+    half_widths_free = np.asarray(hw_rows, dtype=float)
+    k_free = len(anchors_free)
+
+    idx_rows: list[int] = []
+    plan_slices: list[tuple[int, int]] = []
+    plan_cursor = 0
+    for i, spec in enumerate(specs):
+        plan_slices.append((plan_cursor, plan_cursor + len(spec.anchors)))
+        plan_cursor += len(spec.anchors)
+        for j in range(len(spec.anchors)):
+            owner = borrowed.get((i, j), (i, j))
+            idx_rows.append(free_index[owner])
+    idx = np.asarray(idx_rows, dtype=int)
+    anchors_plan0 = anchors_free[idx]
+    k_plan = len(idx)
+
+    # ---- sampling plan over the whole chain (a chain is a multi-stroke glyph)
+    stroke_starts_plan: list[int] = []
+    corner_anchors_plan: list[int] = []
+    for spec, (p0, _) in zip(specs, plan_slices, strict=True):
+        if spec.kind == "letter":
+            stroke_starts_plan += [p0 + int(s) for s in spec.stroke_starts if 0 <= int(s) < len(spec.anchors)]
+        else:
+            stroke_starts_plan.append(p0)
+        corner_anchors_plan += [p0 + int(c) for c in spec.corner_anchors if 0 <= int(c) < len(spec.anchors)]
+    stroke_starts_plan = sorted(set(stroke_starts_plan) | {0})
+
+    if n_samples is None:
+        n_samples = int(round(DEFAULT_N_SAMPLES / _REFERENCE_ANCHOR_COUNT * k_plan))
+    n_samples = max(2 * len(stroke_starts_plan), int(n_samples))
+    plan = build_sample_plan(anchors_plan0, stroke_starts_plan, corner_anchors_plan, n_samples)
+    sampling_op = _sampling_operator(anchors_plan0, plan)
+    sw_px = (_width_operator(anchors_plan0, plan) @ half_widths_free[idx]) * unit_px
+    n_s = sampling_op.shape[0]
+
+    # ---- per-sample segment attribution (segments own contiguous plan ranges)
+    seg_of_row: list[int] = []
+    for (a, _), m in zip(plan.slices, plan.alloc, strict=True):
+        seg = next(i for i, (p0, p1) in enumerate(plan_slices) if p0 <= a < p1)
+        seg_of_row += [seg] * m
+    seg_of_sample = (
+        np.delete(np.asarray(seg_of_row, dtype=int), plan.drop_rows)
+        if plan.drop_rows
+        else np.asarray(seg_of_row, dtype=int)
+    )
+    sample_slices: list[tuple[int, int]] = []
+    for i in range(len(specs)):
+        where = np.flatnonzero(seg_of_sample == i)
+        sample_slices.append((int(where[0]), int(where[-1]) + 1) if len(where) else (0, 0))
+    width_mask = np.zeros(n_s)
+    for i, spec in enumerate(specs):
+        if spec.kind == "letter" and spec.half_widths is not None:
+            s0, s1 = sample_slices[i]
+            width_mask[s0:s1] = 1.0
+
+    # ---- slot translation blocks + the connector's arc-length ramp ----
+    slot_order = [s.slot_index for s in specs if s.kind == "letter" and s.slot_index is not None]
+    slot_blocks = {slot: 2 + 2 * j for j, slot in enumerate(dict.fromkeys(slot_order))}
+    block_col = {slot: j for j, slot in enumerate(dict.fromkeys(slot_order))}
+    block_op = np.zeros((k_free, len(block_col)))
+    ramp_rows: list[float] = []
+    for i, spec in enumerate(specs):
+        a0, a1 = anchor_slices[i]
+        if spec.kind == "letter":
+            if spec.slot_index is not None:
+                block_op[a0:a1, block_col[spec.slot_index]] = 1.0
+            continue
+        prev_slot = next((specs[j].slot_index for j in range(i - 1, -1, -1) if specs[j].kind == "letter"), None)
+        next_slot = next((specs[j].slot_index for j in range(i + 1, len(specs)) if specs[j].kind == "letter"), None)
+        seg = np.diff(spec.anchors, axis=0)
+        arcs = np.concatenate([[0.0], np.cumsum(np.hypot(seg[:, 0], seg[:, 1]))])
+        total = arcs[-1] if arcs[-1] > 0 else 1.0
+        s_of_local = arcs / total
+        for j in range(len(spec.anchors)):
+            row = free_index.get((i, j))
+            if row is None:  # a seam anchor: the neighbouring letter's block owns it
+                continue
+            s = float(s_of_local[j])
+            ramp_rows.append(s)
+            if prev_slot is not None and next_slot is not None:
+                block_op[row, block_col[prev_slot]] = 1.0 - s
+                block_op[row, block_col[next_slot]] = s
+            elif prev_slot is not None:
+                block_op[row, block_col[prev_slot]] = 1.0
+            elif next_slot is not None:
+                block_op[row, block_col[next_slot]] = 1.0
+    ramp = np.asarray(ramp_rows, dtype=float)
+
+    # ---- connector curvature-change operator (over its PLAN block) ----
+    smooth_rows = np.zeros((0, k_plan))
+    blocks: list[np.ndarray] = []
+    for i, spec in enumerate(specs):
+        if spec.kind == "letter":
+            continue
+        p0, p1 = plan_slices[i]
+        d2 = _second_difference_operator(anchors_plan0[p0:p1])
+        if not d2.shape[0]:
+            continue
+        block = np.zeros((d2.shape[0], k_plan))
+        block[:, p0:p1] = d2
+        blocks.append(block)
+    if blocks:
+        smooth_rows = np.vstack(blocks)
+
+    # ---- coverage targets over the whole pair window ----
+    cov_pts = np.asarray(cov_pts, dtype=float).reshape(-1, 2)
+    n_cov_max = CHAIN_COVERAGE_PER_SEGMENT * len(specs)
+    if len(cov_pts) > n_cov_max:
+        cov_pts = cov_pts[np.linspace(0, len(cov_pts) - 1, n_cov_max).astype(int)]
+
+    crop_h, crop_w = int(crop_shape[0]), int(crop_shape[1])
+    max_shift_units = float(max(crop_h, crop_w)) / unit_px
+    bounds: list[tuple[float, float]] = [(-max_shift_units, max_shift_units)] * 2
+    bounds += [(-FIT_DX_UNITS, FIT_DX_UNITS), (-FIT_DY_UNITS, FIT_DY_UNITS)] * len(block_col)
+    for i, spec in enumerate(specs):
+        a0, a1 = anchor_slices[i]
+        cap = MAX_ANCHOR_DELTA if spec.kind == "letter" else CHAIN_CONNECTOR_MAX_DELTA
+        bounds += [(-cap, cap)] * (2 * (a1 - a0))
+    x0 = np.zeros(2 + 2 * len(block_col) + 2 * k_free)
+
+    return _ChainProblem(
+        specs=specs,
+        anchors_free=anchors_free,
+        idx=idx,
+        anchor_slices=anchor_slices,
+        sample_slices=sample_slices,
+        slot_blocks=slot_blocks,
+        ramp=ramp,
+        reg_w=reg_w,
+        width_mask=width_mask,
+        sampling_op=sampling_op,
+        sw_px=sw_px,
+        dist_raw=np.asarray(dist_raw, dtype=float),
+        dist_smooth=np.asarray(dist_smooth, dtype=float),
+        width_raw=np.asarray(width_raw, dtype=float),
+        width_smooth=np.asarray(width_smooth, dtype=float),
+        cov_pts=cov_pts,
+        unit_px=float(unit_px),
+        x_origin_px=float(x_origin_px),
+        baseline_y_px=float(baseline_y_px),
+        crop_h=crop_h,
+        crop_w=crop_w,
+        cov_cap_px=float(coverage_cap_units * unit_px),
+        width_weight=float(width_weight),
+        coverage_weight=float(coverage_weight),
+        lambda_reg=float(lambda_reg),
+        smooth_weight=float(smooth_weight),
+        x0=x0,
+        bounds=bounds,
+        block_op=block_op,
+        smooth_op=smooth_rows,
+        plan_slices=plan_slices,
+        n_letter_anchors=max(1.0, float(reg_w.sum())),
+        n_samples=n_s,
+    )
+
+
+# ------------------------------------------------------------- one occurrence
+
+
+def _letter_spec(case: WordCase, result: WordDeriveResult, slot_index: int) -> tuple[ChainSegmentSpec, float] | None:
+    """One letter as a chain segment, plus the chart→composed x offset.
+
+    The chart row (variant 0) is shifted into word coordinates by the composed
+    placement, recovered with `analyze.trace_letter_ductus`' EXACT four lines —
+    including its known Laufform wrinkle (a flowing run may compose the running
+    form, whose first sample is not the chart row's): the residual offset is
+    absorbed by the fit's global translation, and preserving the wrinkle keeps
+    chain and baseline on ONE initialisation so the shape-delta metric stays
+    honest (plan §2.7).
+    """
+    slot = case.slots[slot_index]
+    row = case.templates.get(slot.key) if slot.key else None
+    items = _body_items(result, slot_index)
+    if row is None or not items:
+        return None
+    anchors = np.asarray(row["anchors"], dtype=float)
+    if len(anchors) < 2:
+        return None
+    half_widths = np.asarray(row["half_widths"], dtype=float)
+    meta = row.get("trace_meta") or {}
+
+    payload = result.payloads.get(slot.key) or {}
+    first_template = (payload.get("centerlines_template") or [[[0.0, 0.0]]])[0][0]
+    first_item = items[0]["centerline"][0]
+    dx = first_item[0] - first_template[0]
+
+    offset = dx - float(anchors[0, 0])  # composed_x = chart_x + offset
+    placed = anchors.copy()
+    placed[:, 0] += offset
+    stroke_starts = [int(s) for s in (meta.get("stroke_starts") or [0])]
+    cut_in, cut_out = _letter_cut_anchors(placed, stroke_starts)
+    spec = ChainSegmentSpec(
+        kind="letter",
+        anchors=placed,
+        slot_index=slot_index,
+        key=slot.key,
+        stroke_starts=stroke_starts,
+        corner_anchors=[int(c) for c in (meta.get("corner_anchors") or [])],
+        half_widths=half_widths,
+        seam_in=cut_in,
+        seam_out=cut_out,
+    )
+    return spec, offset
 
 
 def fit_pair_chain(
@@ -275,4 +844,146 @@ def fit_pair_chain(
     per-occurrence geometry (independent fits, ink extents, the specimen's own
     join) the harness pairs with the chain's segments.
     """
-    raise NotImplementedError("Stage A Track B")
+    started = time.perf_counter()
+    # The dissection already composed this case; reuse it rather than compose
+    # the word a second time (and a fifth time for a word with five joins).
+    if result is None:
+        result = dissection.result if dissection is not None else derive_word(case)
+    if case.skel is None or case.width_map is None:
+        return None
+    if result.composed["missing"] or result.report is None or result.report.get("failed"):
+        return None
+    if not 0 <= slot_a < len(case.slots) - 1:
+        return None
+
+    xh = float(result.xh_px)
+    tx, ty = float(result.registration["tx"]), float(result.registration["ty"])
+    x_origin_px = tx
+    baseline_y_px = float(result.baseline_row) + ty
+
+    left = _letter_spec(case, result, slot_a)
+    right = _letter_spec(case, result, slot_a + 1)
+    if left is None or right is None:
+        return None
+    spec_l, offset_l = left
+    spec_r, offset_r = right
+
+    # Connector at the COMPOSED placement: the same body-endpoint frame
+    # `dissect_occurrence` and `pairmeas._body_lines` read the join from.
+    a_line = _body_items(result, slot_a)[-1]["centerline"]
+    b_line = _body_items(result, slot_a + 1)[0]["centerline"]
+    exit_deg = _endpoint_tangent([tuple(p) for p in a_line], at_end=True)
+    entry_deg = _endpoint_tangent([tuple(p) for p in b_line], at_end=False)
+    conn = np.asarray(
+        _generate_connector(tuple(a_line[-1]), exit_deg, tuple(b_line[0]), entry_deg), dtype=float
+    ).reshape(-1, 2)
+    if len(conn) < 3:
+        return None
+    spec_c = ChainSegmentSpec(kind="connector", anchors=conn, seam_in=0, seam_out=len(conn) - 1)
+
+    # Union coverage window: the two letter-local windows of
+    # `trace_letter_ductus` with the hole between them closed.
+    body_a = np.vstack(dissection.a.body_px)
+    body_b = np.vstack(dissection.b.body_px)
+    x_lo = min(float(body_a[:, 0].min()), float(body_b[:, 0].min())) - TRACE_WINDOW_MARGIN * xh
+    x_hi = max(float(body_a[:, 0].max()), float(body_b[:, 0].max())) + TRACE_WINDOW_MARGIN * xh
+    cols = np.arange(case.skel.shape[1])
+    keep = (cols >= x_lo) & (cols <= x_hi)
+    skel_local = case.skel & keep[None, :]
+    if not skel_local.any():
+        return None
+    width_local = np.where(keep[None, :], case.width_map, 0.0)
+
+    dist_raw = distance_transform_edt(~skel_local).astype(float)
+    dist_smooth = gaussian_filter(dist_raw, DIST_FIELD_SIGMA_PX)
+    _, ink_idx = distance_transform_edt(~np.asarray(width_local > 0), return_indices=True)
+    width_raw = width_local[ink_idx[0], ink_idx[1]].astype(float)
+    width_smooth = gaussian_filter(width_raw, WIDTH_FIELD_SIGMA_PX)
+
+    problem = build_chain_problem(
+        [spec_l, spec_c, spec_r],
+        dist_smooth=dist_smooth,
+        dist_raw=dist_raw,
+        width_smooth=width_smooth,
+        width_raw=width_raw,
+        cov_pts=_skeleton_points(skel_local),
+        unit_px=xh,
+        x_origin_px=x_origin_px,
+        baseline_y_px=baseline_y_px,
+        crop_shape=skel_local.shape,
+    )
+    e0 = problem.energy_terms(problem.x0)
+    res = minimize(
+        problem.objective,
+        problem.x0,
+        jac=True,
+        method="L-BFGS-B",
+        bounds=problem.bounds,
+        # Same settings as `core.fit.fit_template_to_instance`: with the analytic
+        # jacobian the evaluation budget must never be the binding stop.
+        options={"maxiter": DEFAULT_MAX_ITER, "maxfun": 50 * DEFAULT_MAX_ITER},
+    )
+
+    segments = problem.report_energies(res.x)
+    # Letters report in the chart frame the templates were read from (the
+    # composed placement offset removed), so the harness can difference them
+    # against `DuctusTrace.fr.anchors` anchor for anchor.
+    for seg, offset in ((segments[0], offset_l), (segments[2], offset_r)):
+        if seg.fitted_anchors is not None:
+            seg.fitted_anchors = seg.fitted_anchors - np.array([offset, 0.0])
+
+    _, _, blocks, _ = problem.unpack(res.x)
+    slot_shift = {slot: (float(blocks[j, 0]), float(blocks[j, 1])) for j, slot in enumerate(problem.slot_blocks)}
+    at_bound = {
+        slot: bool(abs(dx) >= FIT_DX_UNITS - 1e-9 or abs(dy) >= FIT_DY_UNITS - 1e-9)
+        for slot, (dx, dy) in slot_shift.items()
+    }
+    c0, c1 = segments[1].sample_slice
+    px, py = problem.to_pixels(res.x)
+    connector_units = np.column_stack([(px[c0:c1] - x_origin_px) / xh, (baseline_y_px - py[c0:c1]) / xh])
+    terms = problem.energy_terms(res.x)
+
+    return ChainFit(
+        case=case,
+        slot_a=slot_a,
+        segments=segments,
+        slot_shift_units=slot_shift,
+        slot_at_bound=at_bound,
+        global_shift_units=(float(res.x[0]), float(res.x[1])),
+        cut_indices=(int(spec_l.seam_out), int(spec_r.seam_in)),
+        connector_units=connector_units,
+        converged=bool(segments[0].converged and segments[2].converged),
+        fit_meta={
+            "optimizer_success": bool(res.success),
+            "message": str(res.message),
+            "iterations": int(res.nit),
+            "n_evaluations": int(res.nfev),
+            "n_params": int(len(problem.x0)),
+            "n_anchors_free": int(len(problem.anchors_free)),
+            "n_anchors_plan": int(len(problem.idx)),
+            "n_samples": int(problem.n_samples),
+            "n_cov": int(len(problem.cov_pts)),
+            "connector_converged": bool(segments[1].converged),
+            "energies": {k: round(v, 6) for k, v in terms.items()},
+            "energies_initial": {k: round(v, 6) for k, v in e0.items()},
+            "geo_rmse_px": {s.key or s.kind: round(s.geo_rmse_px, 3) for s in segments},
+            "cov_rmse_px": {s.key or s.kind: round(s.cov_rmse_px, 3) for s in segments},
+            "smooth_weight": problem.smooth_weight,
+            "coverage_cap_px": round(problem.cov_cap_px, 3),
+            "seconds": round(time.perf_counter() - started, 3),
+        },
+    )
+
+
+__all__ = [
+    "CHAIN_CONNECTOR_MAX_DELTA",
+    "CHAIN_CONNECTOR_SMOOTH_WEIGHT",
+    "CHAIN_COVERAGE_CAP_UNITS",
+    "CHAIN_COVERAGE_PER_SEGMENT",
+    "CONNECT_SAMPLES",
+    "ChainFit",
+    "ChainSegment",
+    "ChainSegmentSpec",
+    "build_chain_problem",
+    "fit_pair_chain",
+]
