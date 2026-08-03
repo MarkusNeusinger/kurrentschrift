@@ -487,6 +487,84 @@ bestehen, ihre Untergrenze ist jetzt **0,754** statt 0,690. Was der Befund
 `c`, `p` und ein Teil der `e` scheitern schon in der Basislinie an der Deckung —
 das ist Autorenarbeit an den Chart-Zeilen, kein Solver-Thema.
 
+### Nachtrag: loop-exit — die Klasse war zweimal falsch gemessen
+
+Die letzte offene Auflage („`pair_aggregates` bleibt für Ketten-Verbinder zu,
+solange der Schleifen-Exit mit +0,17 xh danebenliegt") stützte sich auf
+bogengleich **0,058 → 0,228 xh** über 26 Vorkommen. Beides ist Messfehler, in
+zwei gestapelten Schichten; der Ketten-Verbinder ist auf dieser Klasse nicht
+schlechter, sondern besser als der erzeugte.
+
+**Schicht 1 — die ink-gelesene Referenz war blind.** `analyze._real_join` liest
+die Feder-Spur nur innerhalb `JOIN_BAND_Y` (Deckel 0,8 xh). Das ist das
+Freiraumband des Komponisten, keine Aussage darüber, wo Übergänge liegen: ein
+Schleifen-Exit verlässt die Form bei y ≈ 1,04–1,13 xh und sein Übergang läuft
+eben bei ≈ 0,9–1,0 xh — komplett darüber. Gemessen über alle 248 Vorkommen sah
+der Tracker in der Klasse nur **4 von 18** Spalten der Lücke (Arkaden-Diagonale
+6/6), jedes `d→*` lieferte 0–5 Punkte, und `connector_points` fiel damit auf die
+gerade Sehne exit→entry zurück. M3 maß auf `d→*` also „Abstand zu einer Geraden",
+und der erzeugte Verbinder gewann, weil er selbst fast eine ist. Zusätzlich wurde
+`seed_y` auf den Deckel geklemmt, ein Viertel xh unter dem echten Abgang, worauf
+die Nächster-y-Regel auf die Tinte **unter** dem Übergang sprang — bei `b→p` auf
+die Unterlänge des p, bei `o→r` ins Leere. Der Deckel folgt jetzt dem Exit
+(`max(JOIN_BAND_Y[1], exit_y)`) — keine neue Konstante, und da er nur steigen
+kann, bleibt jedes Paar mit Exit im Band Feld für Feld identisch. Betroffen sind
+32 Zeilen: alle 17 `d→*`, 14 Deckstrich/Arm (b/o/r bei 0,83–0,97) und `D→u`;
+die `longs→*` mit ihrem Unterlängen-Exit hatten ihre Referenz immer schon.
+
+**Schicht 2 — „bogengleich" war spannengleich, nicht bogengleich.**
+`chainbench.dconn_matched_arc` schnitt alle drei Kurven auf **ein x-Intervall**.
+Das ist nur so lange ein Bogenschnitt, wie eine Kurve in x eindeutig ist — die
+ink-gelesene ist es als Spalten-Track immer, die erzeugte meist, der
+Ketten-Verbinder eines Schleifen-Exits **nicht**: er besitzt den Abstieg von der
+Schleife und den Sturz in den Folgebuchstaben, beide nahezu senkrecht. Im Band
+trug sein Stück deshalb das **1,69-fache** des Referenzbogens bei gleicher
+x-Spanne (Arkade: 0,91-fach), und `dconn` verglich nach dem
+Bogenlängen-Resampling schlicht verschiedene Orte. Jetzt definiert die Referenz
+die Strecke: sie wird wie bisher auf die Tintenlücke geschnitten, die beiden
+anderen Kurven werden auf denselben Schreibabschnitt getrimmt
+(`trim_to_reference_arc`, Schnitt zwischen den nächsten Punkten zu den beiden
+Referenz-Enden).
+
+| M3 bogengleich (gen → Kette) | vorher | nachher |
+|---|---|---|
+| Arkaden-Diagonale (n 132) | 0,027 → 0,034 | 0,026 → 0,029 |
+| Deckstrich/Arm (n 29) | 0,022 → 0,029 | 0,023 → 0,033 |
+| Versal (n 17) | 0,059 → 0,060 | 0,055 → 0,065 |
+| **Schleifen-Exit (n 24)** | 0,058 → **0,228** | **0,074 → 0,050** |
+| gepoolt, paarweiser Median | +0,008 (66/126, p 3·10⁻⁵) | **+0,002 (94/105, p 0,48)** |
+
+Auf den 63 Wort-Tafeln allein — dem Korpus, um den es geht — steht der
+Schleifen-Exit bei **gen 0,081 → Kette 0,034** (n 14, paarweiser Median
+−0,0425). Der erzeugte Verbinder ist dort nach der Korrektur die **schlechteste**
+aller vier Klassen: er sackt unter die Tinte, während die Kette auf ihr liegt
+(Overlays `das`, `der-3`, `laden`, `die`). Das ist ein eigener, offener
+Generator-Befund — O2 aus §6 bleibt damit gültig und ist jetzt beziffert —, aber
+er ändert das Rendering und gehört nicht in diese Messschicht.
+
+M1, M2-Ausbeute, M4 und alle drei Kill-Blöcke sind unberührt: `chain.py` liest
+`_real_join` nicht. M1 buchstabenlokal bleibt exakt **0,754**, jedes
+Konvergenz-, Residuen-, Energie- und Stub-Feld kommt Feld für Feld identisch
+wieder heraus; nur M2s Nenner sinkt von 38 auf **32** leere Übergänge (28/32
+= 88 % Ausbeute), weil sechs davon jetzt lesbare Tinte haben.
+
+**Die Auflage bleibt trotzdem — aus einem neuen, hier erst sichtbaren Grund.**
+Die Klasse ist entlastet, aber die Aufschlüsselung nach Tafelart legt etwas
+anderes frei: auf den **Paar-Übungen der Abb. 20** entgleist der Ketten-Verbinder
+in **11 von 23** Vorkommen (Schleifen-Exit 0,052 → 0,345, Deckstrich 0,018 →
+0,112) — eine lange gerade Diagonale quer durch beide Buchstaben, teils
+rückwärts laufend. Auf den Wort-Tafeln passiert das in 3 % der Zeilen. Keine
+dieser elf Zeilen wird von der heutigen QC erwischt: alle melden
+`chain_c_converged` und `chain_connector_yielded` wahr und liegen auf keiner
+Schranke. Da `pair_aggregates` Wortfuge und Paar-Übung bewusst unter demselben
+`kind` poolt, würde genau dieser Satz die Auditzahl `gen_chamfer` verseuchen.
+Die Auflage steht also weiter, ihre Begründung wechselt aber vollständig: nicht
+mehr „der Schleifen-Exit liegt daneben" (das war die Messung), sondern
+**„der Ketten-Fit degeneriert auf isolierten Paar-Übungen"** — dieselbe Familie
+wie der Nachtrag darüber, anderer Auslöser (kein kurzer Sehnenabstand, sondern
+die komponierte Platzierung zweier freistehender Buchstaben). Das ist die
+nächste Vorbedingung, und sie ist klassenunabhängig.
+
 ### Reproduktion
 
 ```bash

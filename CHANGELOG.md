@@ -53,6 +53,28 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Fixed
 
+- **pairlab measured the loop-exit join class against a reference that was not
+  there, and on an arc that was not matched.** `analyze._real_join` read the
+  specimen's own joining stroke only inside `JOIN_BAND_Y`'s 0.8 xh ceiling — the
+  composer's clearance band, not a statement about where joins live — while a
+  loop exit departs at y ≈ 1.04–1.13 xh and runs level at ≈ 0.9–1.0 xh: the
+  tracker saw 4 of 18 gap columns, every `d→*` occurrence fell back to the
+  straight exit→entry chord, and the clipped seed latched onto the ink below the
+  join (a following descender in `b→p`, empty space in `o→r`). The band ceiling
+  now follows the exit, which needs no new constant and leaves every pair whose
+  exit sits inside the band bit-identical. On top of that
+  `chainbench.dconn_matched_arc` clipped all three curves to one x-interval,
+  which is an arc match only while a curve is single-valued in x — a loop-exit
+  chain connector owns the near-vertical descent off the loop and the plunge
+  into the next letter, so its clipped piece carried 1.69× the reference's arc
+  at the same x-span and `dconn` compared physically different positions; the
+  reference now defines the stretch and the other curves are trimmed to it.
+  Together this turns M3's last open class from `gen 0.058 → chain 0.228` into
+  `0.074 → 0.050` (on the word plates alone `0.081 → 0.034`) and the pooled
+  paired delta from +0.008 (p 3e-5) into +0.002 (p 0.48); M1, M4 and the kill
+  criteria come out field-for-field identical because `chain.py` never reads
+  `_real_join`. See `docs/proposals/uebergaenge-befund.md` §5c, Nachtrag
+  „loop-exit" — which also records why the `pair_aggregates` ban stays anyway.
 - **The pair-chain fit no longer stalls on letters that are composed on top of
   each other.** `analyze._generate_connector` emits its full Bézier subdivision
   whatever room the placement leaves and floors its handle at 0.05 xh, so where

@@ -126,9 +126,10 @@ signals (tail-stub trend · capital partition · seam calibration against the
 the same solves (union gate · letter-local gate · baseline re-graded on the
 union window with the same attribution) plus the failure split into coverage
 and geometry, and M3 prints the `dconn` medians twice — whole curve and
-**arc-matched**, all curves clipped to the specimen's ink gap intersected with
-their own x-spans, since the chain connector owns the stub zones the ink-read
-one does not have:
+**arc-matched**: the ink-read connector cut to the specimen's ink gap
+(intersected with the curves' own x-spans) and the generated and chained one
+trimmed to the same stretch of writing, since the chain connector owns the stub
+zones the ink-read one does not have:
 
 ```bash
 # the Abb.-20 drills — the fast smoke target (34 occurrences, ~30 s)
