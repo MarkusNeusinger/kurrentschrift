@@ -48,6 +48,13 @@ agent working in this repo:
   (Keep-a-Changelog categories, English, bold-titled bullets) — a PR
   without its entry is incomplete. Data-only commits (chart sources,
   authored templates) are exempt; their provenance lives in `SOURCE.md`.
+- **New terms coined by a PR get a glossary entry in the same PR.** Any
+  new Fachbegriff, metric, named failure mode or repo idiom (`gen_chamfer`,
+  „Cusp-Connector“, „like-for-like Gate“) is added to
+  `docs/reference/glossar.md` — themed section plus the alphabetical
+  Schnellindex — so the vocabulary never outruns the place people look it
+  up. Purely internal identifiers with no story stay out; the glossary is
+  for terms a human meets in prose, an issue or the UI.
 - **Prod-touching actions need explicit confirmation first.** Cloud SQL
   DDL/queries, Secret Manager access, and Cloudflare Access policy changes
   are not routine — name the exact action, resource, and any secret id,
@@ -614,6 +621,13 @@ about 17 sections after the May 2026 holistic restructure). Quick index:
 
 Technical specs sit in `docs/reference/*.md`:
 
+- `glossar.md` — the project vocabulary in six themed blocks (script &
+  palaeography · architecture & data model · measurement/fit · metrics &
+  benchmarks · workbench & process · external research), each entry a
+  plain-language explanation plus the module/constant/formula anchor to
+  dig deeper, with an alphabetical quick index on top. Read it when a term
+  in a doc, issue or PR is unfamiliar; **extend it in the same PR that
+  coins a new term or metric**
 - `htr-integration.md` — Transkribus API, TrOCR fallback, PAGE-XML
 - `animation-rendering.md` — stroke-dashoffset (MVP) + Canvas-2D (post-MVP)
 - `styleanalyse.md` — Hinge features, heatmap layouts

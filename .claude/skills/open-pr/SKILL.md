@@ -69,6 +69,13 @@ A `/verify-*` gate only counts if the **diff's own flow** was driven —
 rendering a proxy or injecting state via the API is not verification
 (see the changed-path rule in `/verify-frontend` §2).
 
+**Glossary gate:** if the change COINS a new Fachbegriff, metric, named
+failure mode or repo idiom — anything a reader will meet in the PR body,
+a doc or the UI and could not resolve on their own — it adds the entry to
+`docs/reference/glossar.md` (themed section + alphabetical Schnellindex)
+in the same PR. Format and scope: `/write-docs` § „New terms go in the
+glossary“.
+
 **Changelog gate:** every PR adds its entries to `CHANGELOG.md` under
 `[Unreleased]` (Keep-a-Changelog categories, English, bold-titled
 bullets matching the existing entries) before the PR opens — that file

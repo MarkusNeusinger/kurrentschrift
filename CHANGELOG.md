@@ -98,6 +98,30 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **A glossary of the project's own vocabulary — `docs/reference/glossar.md`.**
+  The docs, issues and admin UI have grown a private language across the
+  optimisation rounds: palaeography (Duktus, Schwellzug, Anstrich/Auslauf),
+  architecture (Bibliothekseinheit, Laufform, Prüfstein, open-core moat),
+  measurement (Kettenfit, Naht, like-for-like Gate, matched arc,
+  Bézier-Handle-Floor, Cusp-Connector, degenerierte Solves) and house metrics
+  (`gen_chamfer`, `doff`, `dconn`, `bench_loss`/`pair_loss`, MAD hull) — none of
+  it explained where a newcomer meets it. Around 115 entries in six themed sections
+  with an alphabetical quick index: each one a plain-language explanation that
+  assumes nothing, plus, where it helps, the formula name and the module or
+  constant it lives in (`core/fit.py::CONVERGED_GEO_RMSE_UNITS`), deliberately
+  enough anchor vocabulary that pasting an entry into any AI chat lets the
+  reader dig further. Includes the four Stage-A chain metrics **M1–M4** with
+  what each asks, how it is computed and where it stands — plus an explicit
+  warning that M1–M4 (chain), M0–M7 (MVP milestones, hence „M4-Fit") and H/R/W
+  numbering are four independent schemes — and a research section (AIoU, LDTW,
+  DTW, HWD, Sigma-Lognormal, G1/G2 continuity) that places the house metrics
+  against the published state of the art.
+- **A standing upkeep rule so the vocabulary cannot outrun the glossary.** Any
+  doc or PR that coins a new Fachbegriff, metric, named failure mode or repo
+  idiom adds its entry in the same change — recorded in `CLAUDE.md` §
+  „Working guardrails", mirrored into `.github/copilot-instructions.md`, spelled
+  out with the entry format in the `/write-docs` skill and enforced at PR time
+  as a gate in `/open-pr`.
 - **The two preconditions Stage A put in front of issue #278's Stage B are
   measured, and they do not both fall the same way.** Stage A compared the chain
   fit against the independent one under two silently different rules, and said
