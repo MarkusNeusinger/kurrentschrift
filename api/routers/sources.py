@@ -74,9 +74,11 @@ def _pen_out(pen: PenStyle | None) -> PenOut | None:
 
 # Admin-gated for the same reason the single-template read is
 # (quellen-und-rechte.md §5): the pooled nib/pen is measured geometry over the
-# source's authored templates. Deliberately uncached — it is a live aggregate
-# over every template of the source (memoised server-side in api.rendering),
-# and its one consumer wants the current value, not a five-minute-old one.
+# source's authored templates. No HTTP caching (unlike the public /write
+# reads): the values come from the same api.rendering memoisation the /write
+# path uses — explicitly invalidated on template writes, 10-minute TTL only as
+# the safety net for out-of-band writes — so a fetch after an authoring change
+# sees the new pool as soon as the API itself does.
 @router.get("/{source_id}/render-context", response_model=RenderContextOut, dependencies=[Depends(require_admin)])
 async def get_render_context(
     source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
