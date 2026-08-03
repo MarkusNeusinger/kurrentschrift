@@ -292,7 +292,10 @@ also nicht stärker, sie stellt sie anders hin.
   Übungspaare haben die größeren Lücken. Die Naht bleibt im gemessenen Band
   bzw. darunter.
 
-### Verdikt und Empfehlung: **bedingtes Ja zu Stufe B**
+### Verdikt der Stufe A: **bedingtes Ja zu Stufe B**
+
+*(Die beiden Vorbedingungen sind inzwischen abgearbeitet — die Nachmessung
+darunter ersetzt die Empfehlung dieses Abschnitts.)*
 
 Stufe A tötet die Idee nicht — kein einziges Kill-Kriterium schlägt an, und das
 stärkste Einzelargument des Issues ist bestätigt: 87 % der heute
@@ -325,6 +328,123 @@ im Median 10,5 s bei ~530 Parametern (248 Vorkommen ≈ 42 min CPU, 7,7 min
 mit `--jobs 8`). Ein siebenbuchstabiges Wort ist rund die vierfache
 Parameterzahl.
 
+### Nachmessung: die beiden Vorbedingungen (Nachtrag, gleicher Tag)
+
+Beide Vorbedingungen sind abgearbeitet — als **Mess**änderung, nicht als
+Modelländerung. Der Fit ist Zeile für Zeile derselbe: M2 (33/38), M4
+(0,0269 xh gegen 0,0112 xh MAD-Boden, 0,0140 vs. 0,0170 xh Chart-Verformung)
+und alle drei Kill-Blöcke kommen im neuen Lauf zahlengleich wieder heraus.
+Verändert wurde ausschließlich, **woran** gemessen wird.
+
+**Änderung 1 — das Buchstaben-Gate hängt am buchstabenlokalen Fenster.**
+Über `chain.ChainSegmentSpec.cov_window_px` trägt jedes Buchstaben-Segment sein
+eigenes `trace_letter_ductus`-Fenster (`body_px ± TRACE_WINDOW_MARGIN·xh`). Der
+**Fit** sieht unverändert das Vereinigungsfenster — dass der Verbinder die Tinte
+der Lücke besitzt, ist der ganze Zweck der Kette und darf nicht wegkalibriert
+werden —, der **gemeldete** Deckungsrest eines Buchstabens zählt aber nur noch
+Punkte aus seinem eigenen Fenster: genau dem Fenster, in dem der unabhängige
+M4-Trace immer schon benotet wurde. Der Verbinder behält das Vereinigungs-Gate.
+Zusätzlich als dritte Spalte die symmetrische Alternative — die
+Basislinien-Traces gegen dieselben Deckungspunkte, mit derselben
+Nächster-Sample-Zuordnung und demselben dritten Konkurrenten (dem erzeugten
+Verbinder), also die Basislinie nach der Kettenregel benotet.
+
+| Gate | Basislinie | Kette | beide/nur Kette/nur Basis/keins | p |
+|---|---|---|---|---|
+| Vereinigungsfenster (Stufe A) | 0,746 | 0,665 | 156/9/29/54 | 0,0017 |
+| **buchstabenlokal (gleichnamig)** | 0,746 | **0,690** | 156/15/29/48 | 0,049 |
+| Basislinie auf Vereinigung | 0,810 | 0,665 | 164/1/37/46 | 3·10⁻¹⁰ |
+
+Nach Satz getrennt (buchstabenlokal): Wörter 0,766 → **0,692** (nur Kette 12,
+nur Basis 28, p = 0,017), Paare 0,618 → 0,676 — bei den isolierten Übungspaaren
+ändert das Fenster gar nichts, dort liegt zwischen den Buchstaben nichts, was
+falsch zugeordnet werden könnte.
+
+Das lokale Fenster streicht überhaupt nur bei **60 von 496** Buchstabenseiten
+Punkte (im Mittel 0,5 % der zugeordneten Deckung) — und kippt damit 6 Vorkommen
+ins Konvergierte. Es waren also wenige fremde Punkte, die den Deckungsrest über
+die Schwelle zogen, nicht ein grundsätzlich anderer Maßstab. Die Fehlerzerlegung
+liegt jetzt exakt vor (pro Zeile mit ihrem eigenen xh gegen `core.fit`s
+Schwellen, nicht mehr überschlagen): von **99** durchgefallenen
+Ketten-Buchstabensegmenten scheitern **58 nur an der Deckung, 12 nur an der
+Geometrie, 29 an beidem**; unter dem lokalen Gate sind es 92 (51/12/29). Die
+Stufe-A-Angabe „70 an der Deckung, 29 an der Geometrie" ist damit präzisiert:
+die Deckung dominiert, aber ein knappes Drittel der Fehlschläge ist (auch)
+Geometrie.
+
+**Befund 1: der M1-Rückstand ist echt, nicht bloß Benotung.** Er schrumpft von
+8,1 auf **5,6 Punkte** und bleibt signifikant; in die andere Richtung gemessen
+wird er sogar größer (0,810 gegen 0,665). Die Stufe-A-Vermutung erklärt einen
+Teil des Abstands, nicht das Ganze. **M1 bleibt verfehlt** — jetzt aber als
+benannte Eigenschaft der Kette statt als Verdacht auf ein Messartefakt, und
+lokalisiert: c (4/14), Z (1/3), m (5/9), p (6/12) tragen den Rückstand, während
+u (20→22/28) und h (11→13/16) gerade die Buchstaben sind, denen das gleichnamige
+Fenster hilft.
+
+**Änderung 2 — M3 auf gleichem Bogen.** Der Ketten-Verbinder besitzt
+konstruktionsbedingt die beiden Stub-Zonen, der ink-gelesene beginnt erst an der
+Tintenlücke; ein Teil des Stufe-A-Abstands war deshalb definitorisch. Die
+Nachmessung schneidet **alle drei** Kurven (erzeugt · Kette · ink-gelesen) auf
+**ein** gemeinsames x-Intervall — die Tintenlücke der Probe
+(`analyze._ink_extent_x`, dieselben Kanten, zwischen denen `_real_join` verfolgt)
+geschnitten mit der eigenen x-Spanne jeder Kurve — und wendet danach die
+unveränderte pairmeas-Formel an (Bogenlängen-Resampling auf
+`PAIR_CONNECTOR_POINTS`, Startpunkt-Ausrichtung, mittlerer punktweiser Abstand).
+
+| M3 | n | generiert | Kette | paarweise Δ | besser/schlechter | p |
+|---|---|---|---|---|---|---|
+| ganze Kurve (Stufe A) | 210 | 0,034 | 0,086 | +0,046 | 25/184 | ≈ 0 |
+| **bogengleich** | 193 | **0,028** | **0,040** | **+0,011** | 63/125 | 1·10⁻⁵ |
+
+Nach Klasse (bogengleich, gen → Kette): Arkaden-Diagonale 0,026 → **0,036** ·
+Deckstrich/Arm 0,023 → **0,029** · Versal 0,058 → **0,060** ·
+Schleifen-Exit 0,058 → **0,228**. Der gemeinsame Bogen ist im Median 0,181 xh
+lang (Tintenlücke im Median 0,251 xh); 17 der 210 Vorkommen haben keinen
+gemeinsamen Bogen und werden gezählt, nie gemittelt.
+
+**Befund 2: rund drei Viertel des Stufe-A-Abstands waren definitorisch.** Der
+Ketten-Verbinder liegt auf gleichem Bogen nur noch 0,011 xh hinter dem
+generierten statt 0,046 xh, bei Deckstrich/Arm (+0,088 → +0,006) und Versalien
+(+0,032 → +0,002) verschwindet der Unterschied praktisch ganz. Was übrig bleibt,
+ist **eine** Klasse: der Schleifen-Exit (d, ſ) mit +0,170 xh — kein Messartefakt,
+sondern derselbe Befund wie in §5, dass die Feder dort das Glyphen-Ende umschreibt
+und die Kette diesen Bogen anders auflöst als die Tinte. M3 geht damit wörtlich
+genommen weiterhin nicht auf, aber die Zahl ist jetzt **belastbar** und zeigt auf
+eine Klasse statt auf das Verfahren.
+
+### Empfehlung nach der Nachmessung: **Ja zu Stufe B, mit benannter Auflage**
+
+Beide Vorbedingungen waren Forderungen an die *Messung*, und beide sind erfüllt.
+Ihr Ergebnis ist gemischt und fällt in verschiedene Richtungen:
+
+* **M3 ist weitgehend entlastet** — der Einwand war zu drei Vierteln
+  definitorisch, der Rest ist auf den Schleifen-Exit konzentriert. Die
+  Kreuzvalidierung gegen Prior-Kontamination ist damit erstmals möglich.
+* **M1 ist bestätigt statt entkräftet** — der Rückstand ist kleiner, aber real.
+  Die Kette konvergiert pro Buchstabe seltener als zwei unabhängige Fits, und
+  das ist eine Eigenschaft des gekoppelten Problems, keine der Benotung.
+
+Zusammen mit dem unverändert gültigen Rest der Stufe A (kein Kill-Kriterium,
+87 % der heute unmessbaren Übergänge werden messbar, 0 statt 13 Schrankenfälle,
+weniger Verformung gegenüber der Chart-Zeile) reicht das für ein **Ja zu
+Stufe B** — aber mit zwei Auflagen, die jetzt *in* Stufe B mitlaufen statt
+davor zu stehen:
+
+1. **Das buchstabenlokale Gate ist ab sofort die M1-Schlagzeile.** Stufe B misst
+   Konvergenz gleichnamig oder gar nicht, und darf 0,690 nicht unterschreiten —
+   ein Wort-Kettenfit mit vier Nähten hat mehr Gelegenheiten, Buchstaben-Enden
+   zu versteifen, nicht weniger.
+2. **Der `pair_aggregates`-Bann bleibt, jetzt aber klassenscharf begründet.**
+   Ketten-Verbinder fließen weiterhin nicht in die Paar-Statistik: nicht mehr,
+   weil die Zahl unvergleichbar wäre (sie ist es jetzt), sondern weil der
+   Schleifen-Exit mit +0,17 xh systematisch danebenliegt und `gen_chamfer`
+   genau davon lebt, unkontaminiert zu sein. Fällt diese Klasse auf das Niveau
+   der übrigen, entfällt die Auflage.
+
+Unverändert gilt: das ist eine **Messschicht**. Nichts hiervon ändert das
+Rendering, `glyph_pairs` bleibt der sparsame Verbatim-Override, der §4-Generator
+bleibt Default.
+
 ### Reproduktion
 
 ```bash
@@ -335,7 +455,19 @@ uv run python -m tools.pairlab.chainbench --set pairs --json temp/cal_1e-5.json
 uv run python -m tools.pairlab.chainbench --set all --jobs 8 \
     --aggregates temp/aggregates.json \
     --json temp/stage_a_full.json --csv temp/stage_a_full.csv
+
+# die Nachmessung (identischer Aufruf; M1 druckt jetzt drei Gates + die
+# Fehlerzerlegung, M3 zusätzlich die bogengleichen Mediane pro Klasse)
+uv run python -m tools.pairlab.chainbench --set all --jobs 8 \
+    --aggregates temp/aggregates.json \
+    --json temp/stage_b_pre.json --csv temp/stage_b_pre.csv
 ```
+
+Die Nachmessung braucht keinen eigenen Schalter: beide Gates und beide
+M3-Varianten stehen in jeder Zeile des JSON/CSV
+(`chain_*_converged` / `chain_*_converged_local`, `base_converged_union`,
+`dconn_*` / `dconn_*_matched`), ein Lauf liefert alle Spalten. Laufzeit
+unverändert ~7,8 min mit `--jobs 8`.
 
 Der MAD-Boden für M4 stammt aus `GET /hands/suetterlin-1922-norm/aggregates`
 (admin-gated, als JSON abgelegt und über `--aggregates` gereicht); ohne die

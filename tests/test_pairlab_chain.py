@@ -334,6 +334,60 @@ def test_per_segment_gates_are_independent() -> None:
     assert broken[2].geo_rmse_px == pytest.approx(segments[2].geo_rmse_px)
 
 
+# ------------------------------- the letter-local coverage gate (#278 Stage B)
+
+
+def test_without_a_window_the_local_gate_is_the_union_gate() -> None:
+    """`cov_window_px=None` — the default and the connector's case — must leave
+    the report bit for bit as it was before the second gate existed."""
+    problem = _toy_problem()
+    for seg in problem.report_energies(problem.x0):
+        assert seg.cov_rmse_local_px == pytest.approx(seg.cov_rmse_px)
+        assert seg.n_cov_local == seg.n_cov
+        assert seg.converged_local == seg.converged
+
+
+def test_letter_local_window_grades_only_its_own_ink() -> None:
+    """A letter's coverage gate must see the ink of ITS window, not the pair's.
+
+    The chain's coverage points span the whole union window, so a letter is
+    charged for connector ink the baseline's letter-local fit never saw. Binding
+    a window to the segment drops exactly those points from the GATE — while the
+    fit (objective, gradient, coverage targets) stays untouched.
+    """
+    problem, xh, _ = _straight_ink_problem()
+    wide = problem.report_energies(problem.x0)
+
+    # The synthetic ink IS the chain's own shape, so the letter's real window
+    # (samples ± the trace margin) would drop nothing; cut it deliberately short
+    # to show what a window does to the gate at all.
+    px, _py = problem.to_pixels(problem.x0)
+    s0, s1 = problem.sample_slices[0]
+    lo, hi = float(px[s0:s1].min()), float(px[s0:s1].max())
+    problem.specs[0].cov_window_px = (lo - 0.15 * xh, lo + 0.6 * (hi - lo))
+    narrow = problem.report_energies(problem.x0)
+
+    assert narrow[0].n_cov_local < narrow[0].n_cov  # union-window ink was dropped
+    assert narrow[0].cov_rmse_px == pytest.approx(wide[0].cov_rmse_px)  # the union number is untouched
+    assert narrow[0].geo_rmse_px == pytest.approx(wide[0].geo_rmse_px)  # …and so is the geometry half
+    # only the segment that carries a window changes; the others keep both gates
+    assert narrow[1].n_cov_local == narrow[1].n_cov
+    assert narrow[2].n_cov_local == narrow[2].n_cov
+
+
+def test_the_local_gate_can_pass_where_the_union_gate_fails() -> None:
+    """The asymmetry Stage-B precondition 1 is about: same fit, same geometry,
+    two verdicts — because the coverage window differs."""
+    problem, xh, _ = _straight_ink_problem()
+    # A window that admits NO coverage point at all: coverage collapses to the
+    # empty-sum convention (0.0), so only the geometry half of the gate remains.
+    problem.specs[0].cov_window_px = (-1e6, -1e6 + 1.0)
+    segments = problem.report_energies(problem.x0)
+    assert segments[0].n_cov_local == 0
+    assert segments[0].cov_rmse_local_px == 0.0
+    assert segments[0].converged_local is (segments[0].geo_rmse_px <= CONVERGED_GEO_RMSE_UNITS * xh)
+
+
 # ------------------------------------------------------------- synthetic ink
 
 

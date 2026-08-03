@@ -869,9 +869,17 @@ impl-generate pipelines. Conventions:
   over the same frozen occurrences and reports the four Stage-A metrics
   + kill criteria (`--set all` = words+pairs of the same hand, never the
   Abb.-22 writer; `--aggregates <file>` supplies M4's MAD floor from
-  `GET /hands/{id}/aggregates`). Measurement only — no DB, no API, no
-  `core/`, no rendering; the measured verdict (conditional go, two named
-  preconditions) is `docs/proposals/uebergaenge-befund.md` §5c.
+  `GET /hands/{id}/aggregates`). M1 prints THREE convergence gates over
+  the same solves — the chain's union window, the LETTER-LOCAL window the
+  independent trace was always graded in (`ChainSegmentSpec.cov_window_px`,
+  the like-for-like column and the one Stage B must quote) and the baseline
+  re-graded on the union window — and M3 prints `dconn` both whole-curve
+  and ARC-MATCHED (all curves clipped to the specimen's ink gap ∩ their own
+  x-spans, since the chain connector owns the stub zones the ink-read one
+  lacks). Measurement only — no DB, no API, no `core/`, no rendering; the
+  measured verdict (after the Stage-B preconditions were re-measured: go,
+  with the M1 deficit named and the `pair_aggregates` ban kept for the
+  loop-exit class) is `docs/proposals/uebergaenge-befund.md` §5c.
   `tools/wordbench/fetch_fixtures.py` is the read-only API twin of
   `export_fixtures.py` for sessions without Cloud SQL egress —
   byte-compatible fixture roots over HTTPS, GETs only, `--verify`
