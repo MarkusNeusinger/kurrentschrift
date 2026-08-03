@@ -142,7 +142,12 @@ class ApiClient:
         self.timeout = timeout
         self.retries = retries
         self._token = token or None
-        self._context = _ssl_context()
+        # Refusing redirects keeps the admin header from ever being resent to a
+        # host other than base_url; build_opener keeps the environment's proxy
+        # handlers. A 3xx therefore fails hard instead of being followed.
+        self._opener = urllib.request.build_opener(
+            _NoRedirectHandler(), urllib.request.HTTPSHandler(context=_ssl_context())
+        )
 
     def get(
         self, path: str, params: dict[str, Any] | None = None, *, admin: bool = False, allow_404: bool = False
@@ -161,7 +166,7 @@ class ApiClient:
         for attempt in range(self.retries + 1):
             try:
                 request = urllib.request.Request(url, headers=headers, method="GET")  # noqa: S310 — https, fixed scheme
-                with urllib.request.urlopen(request, timeout=self.timeout, context=self._context) as response:
+                with self._opener.open(request, timeout=self.timeout) as response:
                     return json.loads(response.read())
             except urllib.error.HTTPError as exc:
                 if exc.code == 404 and allow_404:
@@ -175,6 +180,13 @@ class ApiClient:
             if attempt < self.retries:
                 time.sleep(RETRY_BACKOFF_S * 2**attempt)
         raise SystemExit(f"GET {url} failed after {self.retries + 1} attempts ({last})")
+
+
+class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Turn every 3xx into an HTTPError instead of following it."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # noqa: ANN001, ANN201
+        return None
 
 
 def _ssl_context() -> ssl.SSLContext:

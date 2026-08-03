@@ -238,6 +238,13 @@ def test_client_refuses_a_non_https_base():
     assert "https" in str(excinfo.value)
 
 
+def test_client_never_follows_a_redirect():
+    from tools.wordbench.fetch_fixtures import _NoRedirectHandler
+
+    handler = _NoRedirectHandler()
+    assert handler.redirect_request(None, None, 302, "Found", {}, "https://elsewhere.test") is None
+
+
 def test_fetcher_writes_where_the_consumers_read():
     # Same doctrine as tests/test_lab_fixture_wiring.py: the API-backed sibling
     # must fill the very roots the DB exporter fills, or wordlab/pairlab and
