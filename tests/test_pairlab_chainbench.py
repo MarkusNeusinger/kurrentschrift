@@ -41,6 +41,7 @@ from tools.pairlab.chainbench import (
     polyline_shape_delta,
     sign_test,
     summarize,
+    trim_to_reference_arc,
     union_window_points,
 )
 from tools.wordlab.cases import WordCase
@@ -117,6 +118,28 @@ def test_dconn_matched_arc_removes_the_definitional_stub_distance() -> None:
     value, span = dconn_matched_arc(long_curve, shared, 0.0, 9.0)
     assert span == pytest.approx(1.0)  # intersection of the two x-spans
     assert value == pytest.approx(0.0, abs=1e-6)
+
+
+def test_dconn_matched_arc_matches_the_arc_not_the_x_band() -> None:
+    """A loop-exit chain connector is not single-valued in x: it owns a
+    near-vertical descent off the loop before the level join. Inside the ink
+    gap's x-band that descent adds arc without adding x, so an x-band clip
+    compares physically different positions; the reference-anchored trim keeps
+    only the stretch the ink-read connector covers."""
+    shared = np.column_stack([np.linspace(1.0, 2.0, 40), np.zeros(40)])
+    descent = np.column_stack([np.full(20, 1.0), np.linspace(0.9, 0.0, 20)])  # vertical, inside the band
+    loop_exit_curve = np.vstack([descent, shared])
+    value, span = dconn_matched_arc(loop_exit_curve, shared, 0.0, 9.0)
+    assert span == pytest.approx(1.0)
+    assert value == pytest.approx(0.0, abs=1e-6)  # same stretch of writing → no shape error
+
+
+def test_trim_to_reference_arc_keeps_a_neighbour_on_a_degenerate_snap() -> None:
+    """Both reference ends snapping to one sample must still leave a segment."""
+    curve = np.column_stack([np.linspace(0.0, 1.0, 5), np.zeros(5)])
+    ref = np.array([[0.5, 5.0], [0.5, 5.0]])
+    assert len(trim_to_reference_arc(curve, ref)) >= 2
+    assert len(trim_to_reference_arc(np.zeros((1, 2)), ref)) == 1  # too short to trim
 
 
 def test_dconn_matched_arc_reports_none_without_a_shared_arc() -> None:

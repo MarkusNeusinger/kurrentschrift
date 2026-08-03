@@ -103,6 +103,33 @@ def test_real_join_tracks_continuous_stroke_not_median() -> None:
     assert pts[:, 1].min() >= 29.0  # never jumped to the arm at y=10
 
 
+def test_real_join_band_ceiling_follows_a_high_exit() -> None:
+    """A loop exit departs above `JOIN_BAND_Y`'s 0.8 xh ceiling and its join runs
+    there too. The old fixed ceiling saw none of it and the clipped seed latched
+    onto the descender below; the exit-keyed ceiling tracks the real stroke."""
+    skel = np.zeros((60, 60), dtype=bool)
+    baseline_row, xh = 50.0, 20.0
+    seed_y = baseline_row - 1.1 * xh  # exit at y = 1.1 xh — above the 0.8 band
+    skel[int(baseline_row - 1.0 * xh), 20:40] = True  # the join, level at 1.0 xh
+    skel[int(baseline_row + 0.1 * xh), 20:40] = True  # a descender stub inside the band
+    pts = _real_join(skel, a_max_x=19.5, b_min_x=40.5, seed_y=seed_y, baseline_row=baseline_row, xh=xh)
+    assert len(pts) == 20
+    assert np.allclose(pts[:, 1], baseline_row - 1.0 * xh)  # the join, not the descender
+
+
+def test_real_join_band_ceiling_unchanged_for_a_low_exit() -> None:
+    """The exit-keyed ceiling may only ever RAISE the band: a letter exiting
+    inside the band keeps the ink above it excluded, so every low-exit pair
+    measures exactly as before."""
+    skel = np.zeros((60, 60), dtype=bool)
+    baseline_row, xh = 50.0, 20.0
+    skel[int(baseline_row - 1.5 * xh), 20:40] = True  # a neighbour's ascender crossing the gap
+    skel[int(baseline_row - 0.5 * xh), 20:40] = True  # the join
+    pts = _real_join(skel, a_max_x=19.5, b_min_x=40.5, seed_y=baseline_row - 0.5 * xh, baseline_row=baseline_row, xh=xh)
+    assert len(pts) == 20
+    assert np.allclose(pts[:, 1], baseline_row - 0.5 * xh)
+
+
 def test_real_join_empty_when_letters_touch() -> None:
     skel = np.zeros((20, 20), dtype=bool)
     pts = _real_join(skel, a_max_x=10.0, b_min_x=9.0, seed_y=5.0, baseline_row=15.0, xh=10.0)
