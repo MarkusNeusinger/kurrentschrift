@@ -252,7 +252,7 @@ def assemble_word_strokes(
 
     def weld(tail: np.ndarray, pts: np.ndarray) -> np.ndarray:
         """Append across a seam, dropping the sample the two sides share."""
-        if len(tail) and len(pts) and np.allclose(tail[-1], pts[0], atol=SEAM_DEDUP_PX):
+        if len(tail) and len(pts) and np.allclose(tail[-1], pts[0], rtol=0.0, atol=SEAM_DEDUP_PX):
             pts = pts[1:]
         return np.vstack([tail, pts]) if len(pts) else tail
 
@@ -1028,6 +1028,10 @@ def main() -> None:
     ap.add_argument("--hand-id", default="suetterlin-1922-norm")
     ap.add_argument("--hand-label", default="Suetterlin norm hand (Leitfaden 1922, Abb. 19/20)")
     args = ap.parse_args()
+    if args.jobs < 1:
+        raise SystemExit(f"--jobs must be >= 1, got {args.jobs}")
+    if args.max_cases < 0:
+        raise SystemExit(f"--max-cases must be >= 0 (0 = all), got {args.max_cases}")
 
     sets = tuple(s.strip() for s in args.sets.split(",") if s.strip())
     if not sets:
