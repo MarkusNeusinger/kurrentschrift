@@ -120,6 +120,21 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **A connector degeneracy guard (`tools/pairlab/connector_qc.py`) — the QC
+  the loop-exit fix showed was missing.** On the Abb.-20 pair drills the chain
+  connector silently degenerates in 11 of 23 occurrences (a long straight
+  diagonal through both letters, every convergence gate green). Four pure
+  geometry signals behind a minimum-chord gate — seam share, forward ratio
+  (`net_dx / arc`), arc-vs-gap, straightness×length — calibrated in-sample
+  against the 11 known-bad rows: 11/11 flagged, one demonstrable false
+  positive across 179 labelable word rows (raw flag rate 4.2%, chosen for
+  recall since the guard's job is keeping contaminated joins out of the
+  `gen_chamfer` audit; the stricter setting is one `dataclasses.replace`
+  away and documented). Reported as a `chain_conn_degenerate` column and a
+  worst-first block in the chainbench; the precondition before any chain
+  connector may feed `pair_aggregates`, and gate 5 of the coming word
+  harvest (a flagged connector rejects its adjacent letters too — seam
+  parameters are shared).
 - **`GET /sources/{id}/render-context` — the resolved render context of a
   source at full precision, admin-gated.** Everything a render resolves before
   it draws (lineature, width resolver, the source-pooled Gleichzug nib and the

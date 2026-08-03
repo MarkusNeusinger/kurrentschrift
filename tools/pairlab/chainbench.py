@@ -85,6 +85,7 @@ from tools.pairlab.analyze import (
     _stub_vs_body_delta,
     dissect_occurrence,
 )
+from tools.pairlab.connector_qc import connector_degenerate
 from tools.pairlab.harvest import _adjacent_joined, _px_to_units, connector_points
 from tools.wordlab.cases import DEFAULT_FIXTURES_DIR, REPO_ROOT, WordCase, _root_for, iter_fixture_word_cases
 from tools.wordlab.derive import WordDeriveResult, derive_word
@@ -713,6 +714,11 @@ def _fill_connector_metrics(row: dict, d: JoinDissection, fit: Any, conn: Any) -
     b_min_x, _ = _ink_extent_x(d.b.body_px, baseline_row, xh)
     gap = ((a_max_x - tx) / xh, (b_min_x - tx) / xh)
     row["ink_gap_units"] = _r(gap[1] - gap[0])
+    # The §5c degeneracy guard, on the chain's OWN connector anchors (not the
+    # `connector_points`-processed copy above): the eleven runaway pair-drill
+    # rows pass every existing gate, so this column is the only place they show.
+    if len(chain_u) >= 2:
+        row["chain_conn_degenerate"] = connector_degenerate(chain_u, *gap) or ""
     if ink_conn is not None and chain_abs is not None:
         ink_abs = np.asarray(ink_conn, dtype=float).reshape(-1, 2) + np.asarray(exit_u, dtype=float)
         window = common_x_window([gen_u, chain_abs, ink_abs], *gap)
@@ -1207,6 +1213,46 @@ def print_report(rows: Sequence[dict], *, mad_table: dict, sets: Sequence[str], 
     for cls, group in sorted(by_class.items()):
         t, h = summarize(_values(group, "chain_tail_share")), summarize(_values(group, "chain_head_share"))
         print(f"    {cls:<16} n {t['n']:>3}  tail {_fmt(t['median'])}  head {_fmt(h['median'])}")
+
+    print()
+    print_degenerate_block(chained)
+
+
+def print_degenerate_block(chained: Sequence[dict]) -> None:
+    """The §5c connector-degeneracy guard, per plate kind and per reason.
+
+    Its own block rather than a line inside the seam calibration, because it
+    answers a different question: the seam shares say how far the connector
+    reaches, this says whether the curve is a join at all. The split by `kind` is
+    the whole point — §5c measured the failure at 11/23 on the Abb.-20 pair
+    drills against ~3 % on the word plates, and `pair_aggregates` pools the two
+    under one `kind`, so a pooled rate would hide exactly the set that matters.
+    """
+    print("=== connector degeneracy (tools/pairlab/connector_qc.py) ===")
+    print("  guards what `chain_c_converged` cannot: a straight line laid across both letters fits itself")
+    rated = [r for r in chained if r.get("chain_conn_degenerate") is not None]
+    if not rated:
+        print("  no chain connector carried enough arc to rate")
+        return
+    for label, group in (
+        ("pair drills", [r for r in rated if r.get("kind") == "pair"]),
+        ("word plates", [r for r in rated if r.get("kind") != "pair"]),
+        ("pooled", rated),
+    ):
+        flagged = [r for r in group if r.get("chain_conn_degenerate")]
+        reasons = Counter(r["chain_conn_degenerate"] for r in flagged)
+        print(
+            f"  {label:<12} flagged {_pct(len(flagged), len(group))}"
+            + (f"  {dict(reasons.most_common())}" if reasons else "")
+        )
+    worst = sorted(
+        (r for r in rated if r.get("chain_conn_degenerate")), key=lambda r: -(r.get("dconn_chain_matched") or -1.0)
+    )
+    for r in worst[:10]:
+        print(
+            f"    {r['id']:<14} [{r['kind']}] {r['pair']:<12} {r['chain_conn_degenerate']:<14} "
+            f"dconn chain matched {_fmt(r.get('dconn_chain_matched'))} (gen {_fmt(r.get('dconn_gen_matched'))})"
+        )
 
 
 # ------------------------------------------------------------------------ CLI

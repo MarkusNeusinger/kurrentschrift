@@ -39,7 +39,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **A** — Absetzen §1 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1
 - **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bézier-Handle-Floor §3 · Bibliothekseinheit §2 · bindend §5 · bogengleich §3
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Cusp-Connector §3
-- **D** — dconn §4 · Deckung §3 · degenerierte Solves §3 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · Duktus §1 · Duktus-Prior §1
+- **D** — dconn §4 · Deckung §3 · degenerierte Solves §3 · Degeneriewächter §3 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · Duktus §1 · Duktus-Prior §1
 - **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2
 - **F** — Federtypen §1 · Federwinkel §1 · FID §6 · Fixture-Wurzel §4 · Frozen-Reference-Regel §4 · Fuge §1
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Grundstrich/Haarstrich §1
@@ -523,6 +523,19 @@ Verbinder neu diskretisiert wird: `CHAIN_CONNECTOR_MIN_SPAN_UNITS = 0.20`
 xh. Sie liegt in einem messbar **leeren Band** — alle 24 betroffenen
 Vorkommen hatten eine Sehne ≤ 0,187 xh, alle 224 gesunden ≥ 0,205 xh. Ein
 sauberer Diskriminator, kein getunter Schwellwert.
+
+**Degeneriewächter** *(connector QC)* — die nachgelagerte Prüfung, ob ein
+gefitteter Ketten-Verbinder plausibel eine Schreibbewegung ist, statt quer
+durch beide Buchstaben zu laufen (der zweite Degenerationstyp: formal
+konvergiert, QC grün, aber eine lange gerade Diagonale). Vier reine
+Geometrie-Signale — Naht-Anteil, Vorwärts-Verhältnis (`net_dx / arc`),
+Bogen-zu-Lücke, Geradheit×Länge — hinter einer Mindest-Sehne, kalibriert
+an den 11 bekannten Drill-Fällen (11/11 erkannt, ein nachweisbarer
+Fehlalarm auf 179 belabelbaren Wortzeilen). Solange dieser Wächter nicht
+auf beiden Sets fehlalarmfrei sitzt, bleibt `pair_aggregates` für
+Ketten-Verbinder gesperrt.
+*Technisch:* `tools/pairlab/connector_qc.py::connector_degenerate`,
+Spalte `chain_conn_degenerate` im chainbench-Report.
 
 **Kill-Kriterium** — ein *vorab* festgelegtes Ergebnis, bei dem ein
 Vorhaben abgebrochen wird. Für Stufe A des Kettenfits waren es drei:
