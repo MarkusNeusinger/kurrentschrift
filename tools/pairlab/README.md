@@ -80,6 +80,68 @@ worse than the generator should stay a draft. Measure the composed effect with
 override run is its own measurement, never the headline). Review + Freigabe
 stay in the pair editor (`/admin/uebergaenge`) — the human gate.
 
+## Chain fit (issue #278 Stage A)
+
+Everything above fits the two letters **independently** and reads the join out
+of what is left between them. `tools/pairlab/chain.py` is the alternative:
+`letter → connector → letter` as ONE problem, the way the pen wrote it.
+
+- **Three segments, one anchor array.** Both letters are the **chart row**
+  (variant 0 — never the composed/Laufform geometry, which would make the
+  statistics converge on the renderer), the connector is the generated
+  exit→entry polyline whose 22 interior points are free anchors with **no form
+  regularisation** (regularising them against the generated Bézier would bias
+  `gen_chamfer`, the very audit number they exist to feed).
+- **The seam is a shared anchor index, not a penalty.** The last anchor of the
+  left letter's last non-diacritic stroke and the first of the right letter's
+  are literally the same parameters as the connector's endpoints, so C0
+  continuity holds by construction and the letter/connector boundary stops
+  depending on whether the letters happen to touch on this specimen.
+- **Placement stays placement.** One unregularised translation block per slot,
+  bounded exactly like `analyze._fit_letter`'s grid search; the connector rides
+  an arc-length ramp between its neighbours instead of getting a third block.
+- **Word-wide, capped coverage.** The skeleton window is the union of both
+  letter windows with the hole between them closed, the point budget scales
+  with the segment count, and the coverage distance is Huber-capped so foreign
+  ink in the pair window has bounded leverage.
+- Per-segment residuals and gates (`core.fit`'s own `CONVERGED_*` thresholds),
+  so a failed connector still leaves two usable letters.
+
+`tools/pairlab/chainbench.py` runs BOTH paths over the same occurrences of the
+same frozen specimens and prints the four Stage-A metrics (convergence · joins
+that are empty today · connector shape `dconn` against the ink-read stroke ·
+letter shape against the hand's per-anchor MAD) plus the kill-criterion
+signals (tail-stub trend · capital partition · seam calibration against the
+0.2–0.4 xh stub-replacement zone):
+
+```bash
+# the Abb.-20 drills — the fast smoke target (34 occurrences, ~30 s)
+uv run python -m tools.pairlab.chainbench --set pairs
+
+# the full Stage-A run over words + pairs of the SAME hand (248 occurrences)
+uv run python -m tools.pairlab.chainbench --set all --jobs 8 \
+    --aggregates temp/aggregates.json \
+    --json temp/stage_a.json --csv temp/stage_a.csv
+
+# narrow down while iterating
+uv run python -m tools.pairlab.chainbench --set all --pairs de,on,bi --max-occ 4
+uv run python -m tools.pairlab.chainbench --set pairs --ids Bi,Du
+```
+
+`--set all` means words + pairs and nothing else — the Abb.-22 plates are a
+DIFFERENT writer and are never pooled with this hand. `--aggregates` supplies
+M4's MAD floor from `GET /hands/{hand_id}/aggregates` (admin-gated, dump the
+response to a file); without it M4 reports the deltas and says it has no
+measured floor. Fixtures come from `tools/wordbench/export_fixtures.py` (DB) or
+`tools/wordbench/fetch_fixtures.py` (deployed API, for sessions with no Cloud
+SQL egress).
+
+**Measurement only.** The chain reads frozen fixtures and writes JSON/CSV under
+`temp/`; it never touches the DB, the API, `core/` or rendering, and its
+connectors are not (yet) allowed into `pair_aggregates` — see
+`docs/proposals/uebergaenge-befund.md` §5c for the measured verdict and the two
+preconditions Stage B has to clear first.
+
 One PNG per pair (rows = occurrences, columns = overlay + profile) into
 `$PAIRLAB_OUT` (else `temp/`). Overlay colours: first letter dark red, second
 green, other letters grey — all at their INDEPENDENT placements; the ductus

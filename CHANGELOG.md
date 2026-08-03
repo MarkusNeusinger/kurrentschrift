@@ -74,6 +74,34 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **`pairlab` can fit a letter join the way it was written — as one continuous
+  pen path — and Stage A of issue #278 measured whether that is worth doing.**
+  `tools/pairlab/chain.py` fits `letter → connector → letter` as ONE problem:
+  both chart rows (never the composed Laufform geometry) plus the generated
+  connector, whose interior points are free anchors with no form
+  regularisation, with the two seams tied by *shared anchor indices* rather
+  than a continuity penalty — so the letter/connector boundary stops depending
+  on whether the letters happen to touch on this specimen, which is exactly
+  where today's ink-gap dissection returns nothing. Placement stays a separate
+  unregularised per-slot translation block, the coverage window closes the hole
+  between the letters, and the coverage distance is Huber-capped so foreign ink
+  has bounded leverage. `tools/pairlab/chainbench.py` runs the chain and
+  today's independent fit over the same 248 frozen occurrences and reports the
+  four Stage-A metrics plus the kill-criterion signals. The verdict is mixed
+  and written up honestly in `docs/proposals/uebergaenge-befund.md` §5c: no
+  kill criterion fires, 87 % of the joins that are unmeasurable today become
+  measurable, and the chain deforms letters less than the independent fit — but
+  convergence and connector shape do not pass as specified, so Stage B is a
+  *conditional* go with two named preconditions. Measurement only: nothing here
+  touches the DB, the API, `core/` or rendering.
+- **The word-bench fixtures can be rebuilt from the deployed API, not only from
+  Cloud SQL.** `tools/wordbench/fetch_fixtures.py` is a read-only sibling of
+  `export_fixtures.py` that produces byte-compatible fixture roots over HTTP,
+  reusing the exporter's pure pieces and replacing only the DB block — so a
+  session without Cloud SQL egress (a cloud session, a fresh checkout) can
+  still run the word bench, pairlab and chainbench. GETs only, `ADMIN_TOKEN`
+  from the environment and never echoed, with a `--verify` gate that composes
+  the rebuilt cases locally and compares them against `/write/word`.
 - **The Laufform can be adopted from the admin — deliberately, with the
   difference visible first and a confirmation in front of it.** `apply-laufform`
   is the one step of the whole hand model that changes what the engine writes,

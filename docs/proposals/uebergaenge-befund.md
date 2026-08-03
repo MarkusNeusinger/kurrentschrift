@@ -10,6 +10,9 @@
 > statt Paare, §5b Duktus-Trace als Soll-Kopplung) bleibt Begründungsquelle
 > für die Composer-Konstanten; der aktuelle Stand der Übergänge steht in
 > [`../reference/qualitaetsmetrik.md`](../reference/qualitaetsmetrik.md) §6.
+> **Eine Fortschreibung gibt es doch — §5c (2026-08-03)**: die Kettenfit-Messung
+> zu Issue #278 Stufe A setzt den §5b-Duktus-Trace direkt fort und wird deshalb
+> hier und nicht in einem eigenen Dokument abgelegt.
 
 O1 und O2 (B-Seite) sind umgesetzt — Compose-Loop `jul11`,
 [`qualitaetsmetrik.md`](../reference/qualitaetsmetrik.md) §6 (Wort-Headline
@@ -150,6 +153,195 @@ Exit-Stub vom Fit in die Schleifenflanke absorbiert — genau das ist die zu
 trimmende Strecke. Die O2-Kopplungsanker sind damit nicht mehr Schätzwerte,
 sondern **pro Klasse gemessen**; und für einen späteren Vorschlag-B-Import
 liefert derselbe Fit die geernteten Paar-Geometrien gleich mit.
+
+## 5c. Kettenfit: Buchstabe–Verbinder–Buchstabe als EIN Zug
+## (Nachtrag 2026-08-03, Issue #278 Stufe A)
+
+§5b fährt das echte Paar entlang des Duktus nach, aber in **zwei unabhängigen**
+M4-Fits plus einer nachträglichen Zerlegung des Verbindungszuges
+(`analyze._real_join`). Issue #278 fragt, was passiert, wenn stattdessen
+**eine** Feder durchläuft. `tools/pairlab/chain.py` fittet dazu
+`Buchstabe → Verbinder → Buchstabe` als EIN Problem:
+
+* **Drei Segmente, ein Ankerfeld.** Links und rechts die **Chart-Zeile**
+  (Variante 0 — bindende Randbedingung 2 des Issues, nie die Laufform), in der
+  Mitte der bei der komponierten Platzierung erzeugte Verbinder, dessen 22
+  innere Punkte **freie Anker ohne Formregularisierung** sind (Randbedingung 3).
+* **Die Naht ist ein Ankerindex, keine Strafe.** Der letzte Anker des letzten
+  NICHT-diakritischen Strichs von L und der erste von R sind mit den
+  Verbinder-Endpunkten **dieselben Parameter** — C0-Stetigkeit gilt per
+  Konstruktion, nicht per Gewicht. Damit wandert die Schnittstelle vom
+  Tintenlücken-Kriterium (pro Vorkommen verschieden, bei Berührung undefiniert)
+  auf einen überall gleichen Index.
+* **Platzierung bleibt Platzierung.** Pro Slot ein eigener,
+  **unregularisierter** Translationsblock in den Schranken des heutigen
+  Rastersuchlaufs (`FIT_DX_UNITS` 0,6 / `FIT_DY_UNITS` 0,20); der Verbinder
+  bekommt keinen eigenen Block, sondern eine bogenlängen-lineare Rampe zwischen
+  den beiden Nachbarn.
+* **Deckung paarweit und gekappt.** Das Skelettfenster ist die **Vereinigung**
+  beider Buchstabenfenster mit geschlossenem Loch dazwischen, das
+  Punktbudget skaliert mit der Segmentzahl, und die Deckungsdistanz ist
+  Huber-gekappt (0,30 xh), damit fremde Tinte im Paarfenster begrenzte Hebelwirkung hat.
+
+Gemessen mit `tools/pairlab/chainbench.py`, beide Pfade (heutiger
+Unabhängig-Fit als Basislinie · Kette als Kandidat) über **dieselben**
+Vorkommen derselben eingefrorenen Proben: **248 Vorkommen über 96 Proben und
+134 verschiedene Paare** (214 aus den 63 Wörtern, 34 aus den 33 Paar-Übungen
+der Abb. 20). Die Abb.-22-Schülerschrift ist eine **andere Hand** und bleibt
+draußen.
+
+### Kalibrierung: `CHAIN_CONNECTOR_SMOOTH_WEIGHT`
+
+Der Verbinder darf nicht gegen seine erzeugte Form regularisiert werden (das
+würde `gen_chamfer` zugunsten des Generators verfälschen), braucht aber
+*irgendeine* Glättung, sonst zerfällt eine freie Polylinie im 1-px-geglätteten
+EDT. Gewählt wurde eine reine **Krümmungsänderungs-Strafe** (zweite Differenz
+über die eigenen Anker) — formfrei, aber wirksam. Ein Sweep über den
+Paar-Satz (34 Vorkommen, Basislinien-M1 konstant 0,618):
+
+| Gewicht | M1 Kette | beide/nur Kette/nur Basis/keins | M2 | Verbinder konv. | M3 dconn (Median) | Naht tail (Median) | tail P90 | Seiten > 0,4 xh |
+|---|---|---|---|---|---|---|---|---|
+| 0 | 0,676 | 20/3/1/10 | 8/8 | 34/34 | 0,223 | **0,700** | 2,132 | **54 %** |
+| 3e-6 | 0,676 | 20/3/1/10 | 7/8 | 32/34 | 0,195 | **0,406** | 1,070 | 26 % |
+| **1e-5** | **0,676** | **20/3/1/10** | **7/8** | **31/34** | **0,197** | **0,370** | 1,106 | 24 % |
+| 3e-5 | 0,618 | 19/2/2/11 | 7/8 | 27/34 | 0,190 | 0,374 | 1,073 | 25 % |
+| 1e-4 | 0,559 | 17/2/4/11 | 7/8 | 26/34 | 0,193 | 0,374 | 0,984 | 25 % |
+| 3e-4 | 0,529 | 16/2/5/11 | 7/8 | 23/34 | 0,181 | 0,381 | 0,891 | 25 % |
+| 1e-3 | 0,500 | 15/2/6/11 | 6/8 | 17/34 | 0,178 | 0,339 | 0,913 | 24 % |
+| 3e-3 | 0,294 | 9/1/12/12 | 4/8 | 12/34 | 0,162 | 0,301 | 0,893 | 19 % |
+| 1e-2 | 0,147 | 5/0/16/13 | 2/8 | 7/34 | 0,174 | 0,316 | 0,711 | 22 % |
+
+Die beiden Enden sind je ein eigenes Versagen. **Ohne** Glättung frisst der
+freie Verbinder den Auslauf des linken Buchstabens: Naht-Anteil im Median
+0,70 xh, 54 % aller Seiten jenseits der in §5 gemessenen
+Stub-Ersatzzone von 0,2–0,4 xh — die Segmentierung wäre dann eine Eigenschaft
+des Lösers, keine der Hand. **Mit** starker Glättung versteift die geteilte
+Naht die Buchstaben-Enden mit, und die Buchstaben-Konvergenz bricht ein
+(0,50 bei 1e-3, 0,15 bei 1e-2). Gewählt nach der vorab festgelegten Rangfolge
+(Nahtanteile im gemessenen Band → M1 maximal → M3 minimal):
+**`CHAIN_CONNECTOR_SMOOTH_WEIGHT = 1e-5`** — das größte Gewicht, bei dem der
+Naht-Median noch im Band liegt (0,370 xh; bei 3e-6 verlässt er es mit 0,406)
+und die Buchstaben-Konvergenz auf ihrem Maximum steht. **Systematischer Effekt,
+offen ausgewiesen:** ein etwas rauherer Verbinder — M3 dconn-Median 0,197 xh
+statt 0,178 xh bei 1e-3 — und die Kalibrierung ist am Paar-Satz **in-sample**;
+die Wort-Zahlen unten sind insoweit die ehrlicheren.
+
+### Die vier Stufen-A-Kennzahlen
+
+**M1 — Konvergenz (Ziel: ≥ heutige Trace-Rate). Verfehlt.**
+Gepoolt Basislinie **0,746**, Kette **0,665** (n = 248); paarweise
+beide 156 · nur Kette 9 · nur Basislinie 29 · keins 54, Vorzeichentest
+p = 0,0017. Getrennt: Paar-Satz 0,618 → **0,676** (nur Kette 3, nur Basis 1,
+p = 0,63 — der kalibrierte Satz), Wort-Satz 0,766 → **0,664** (nur Kette 6,
+nur Basis 28, p = 0,0002). Die Diagnose ist wichtiger als die Zahl: von den 99
+durchgefallenen Ketten-Buchstabensegmenten scheitern **70 an der Deckung** und
+nur 29 an der Geometrie, und die Geometrie-Residuen sind praktisch gleich
+(Kette 1,23 px vs. Basislinie 1,15 px im Median). Die Kette wird also nicht
+schlechter, sondern **strenger benotet**: ihr Deckungsfenster schließt das Loch
+zwischen den Buchstaben, und die Verbinder-Tinte wird per Nächster-Sample-Regel
+teils den Buchstaben zugeschlagen, während das buchstabenlokale Fenster der
+Basislinie sie nie sah. Ein Nebenbefund in dieselbe Richtung: die Kette liegt
+in **0 von 248** Vorkommen auf einer Platzierungsschranke, der Rastersuchlauf
+in 13.
+
+**M2 — heute leere Übergänge (die eigentliche Begründung). Erfüllt.**
+`_real_join` liefert bei **38 von 248** Vorkommen nichts (die Buchstaben
+berühren sich), die Kette liefert dort in **33 Fällen (87 %)** einen
+konvergierten Verbinder mit zugeordneter Tinte. Schwerpunkte: c→h 5/6, e→r 4/4,
+e→n · e→l · n→d je 2/2. Das ist genau die Klasse von Übergängen, die heute
+messtechnisch nicht existiert.
+
+**M3 — Verbinderform gegen den aus der Tinte gelesenen Zug. Verfehlt.**
+Wo beide existieren (n = 210): generiert Median **0,034 xh**, Kette **0,086 xh**;
+paarweise Δ +0,046, besser 25 · schlechter 184, p ≈ 0. Nach Klasse
+(gen → Kette): Arkaden-Diagonale 0,030 → 0,078 · Versal 0,063 → 0,095 ·
+Deckstrich/Arm 0,029 → 0,117 · Schleifen-Exit 0,056 → **0,256**. Einschränkung
+bei der Lesart: der Ketten-Verbinder überspannt **konstruktionsbedingt einen
+anderen Bogen** als der ink-gelesene (er besitzt die Stub-Zone, der andere
+beginnt erst an der Tintenlücke), ein Teil der Distanz ist also definitorisch
+und nicht Formfehler. Als Kreuzvalidierung gegen Prior-Kontamination taugt die
+Zahl damit nicht — und positiv belegt ist sie ebenfalls nicht.
+
+**M4 — Buchstabenform gegen das MAD-Rauschen. Knapp verfehlt, aber ohne
+Verzerrungssignal.** Rauschboden aus den H1-Aggregaten der Hand
+(`GET /hands/suetterlin-1922-norm/aggregates`, 13 Schlüssel, gepoolter
+Anker-MAD **0,0112 xh**). Kette vs. unabhängiger Trace: mittlere Δ im Median
+**0,0269 xh** (P90-Δ im Median 0,0571), also gut das Doppelte des Bodens;
+**55 %** der Anker bleiben innerhalb ihres eigenen MAD (aggregat-gestützt für
+370 der 496 Seiten, Median dort 0,558). Entscheidend für die Deutung: die
+**Verformung gegenüber der Chart-Zeile** ist bei der Kette *kleiner* als beim
+unabhängigen Trace (0,0140 vs. 0,0170 xh). Die Kette verbiegt die Buchstaben
+also nicht stärker, sie stellt sie anders hin.
+
+### Kill-Kriterien: keines ausgelöst
+
+* **Auslauf-Stubs.** Das Kill-Signal wäre ein systematisch *größerer*
+  `tail_stub_delta` als beim unabhängigen Trace. Gemessen ist das Gegenteil:
+  paarweise Δ Median **−0,0060 xh**, größer 47 · kleiner 192 · gleich 9,
+  p ≈ 0. Nach Klasse Arkade −0,0070 · Versal −0,0015 · Deckstrich −0,0040 ·
+  Schleifen-Exit +0,0030 (die einzige Klasse mit positivem, aber winzigem
+  Vorzeichen).
+* **Versalien.** n = 22, Basislinie **0,636**, Kette **0,636** — identisch;
+  Geo-RMSE 1,30 px gegen 1,19 px bei den Kleinbuchstaben, maximale
+  Ankerauslenkung 0,126 vs. 0,124. Keine Divergenz genau dort, wo der
+  unabhängige Pfad ohnehin am schwächsten ist.
+* **Nahtkalibrierung.** Naht-Anteil tail Median **0,080 xh** (P90 0,465),
+  head 0,020 (P90 0,259); nur **9 %** aller Seiten liegen über 0,4 xh.
+  Klassenmedian Deckstrich/Arm 0,300 · Schleifen-Exit 0,183 · Arkade 0,069 ·
+  Versal 0,000. Auf dem Paar-Satz allein ist der tail-Median 0,370 — die
+  Übungspaare haben die größeren Lücken. Die Naht bleibt im gemessenen Band
+  bzw. darunter.
+
+### Verdikt und Empfehlung: **bedingtes Ja zu Stufe B**
+
+Stufe A tötet die Idee nicht — kein einziges Kill-Kriterium schlägt an, und das
+stärkste Einzelargument des Issues ist bestätigt: 87 % der heute
+unmessbaren Übergänge werden messbar (M2), die Platzierung wird stabiler
+(0 Schrankenfälle statt 13), die Buchstaben werden weniger verbogen als heute.
+Aber drei der vier Kennzahlen gehen wörtlich genommen nicht auf, und zwei davon
+aus benennbaren, behebbaren Gründen. Empfehlung deshalb **nicht** „go", sondern
+**bedingtes go**, mit zwei Vorbedingungen vor Stufe B:
+
+1. **M1 vergleichbar machen.** Die Deckungszuordnung entscheidet das Ergebnis,
+   nicht die Fitqualität (70 von 99 Fehlschlägen sind Deckungs-, nicht
+   Geometriefehler). Solange ein Buchstabe in der Kette gegen Tinte benotet
+   wird, die ihm im Basislinien-Fenster nie zugerechnet wurde, ist „Konvergenz
+   ≥ heute" keine gleichnamige Größe. Entweder das Buchstaben-Gate auf das
+   buchstabenlokale Fenster zurückbinden oder das Basislinien-Gate auf dasselbe
+   Vereinigungsfenster heben — und dann neu messen.
+2. **M3 auf gleichem Bogen messen.** Erst der auf die Tintenlücken-Endpunkte
+   beschnittene Ketten-Verbinder ist mit dem ink-gelesenen vergleichbar.
+   Bis das gezeigt ist, dürfen Ketten-Verbinder **nicht** in `pair_aggregates`
+   fließen — die Kreuzvalidierung gegen Prior-Kontamination steht aus, und
+   `gen_chamfer` ist die Auditzahl, die genau davon lebt.
+
+Ohnehin unverändert gilt: das ist eine **Messschicht**. Nichts hiervon ändert
+das Rendering, `glyph_pairs` bleibt der sparsame Verbatim-Override, der
+§4-Generator bleibt Default; der einzige Rückweg ins Schreiben bleibt
+`apply-laufform` und die Klassenregeln.
+
+Kostenhinweis für die Stufen-B-Planung: ein Ketten-Fit über ein Paar braucht
+im Median 10,5 s bei ~530 Parametern (248 Vorkommen ≈ 42 min CPU, 7,7 min
+mit `--jobs 8`). Ein siebenbuchstabiges Wort ist rund die vierfache
+Parameterzahl.
+
+### Reproduktion
+
+```bash
+# Kalibrier-Sweep (Konstante in tools/pairlab/chain.py zwischen den Läufen setzen)
+uv run python -m tools.pairlab.chainbench --set pairs --json temp/cal_1e-5.json
+
+# der Stufen-A-Lauf dieses Abschnitts
+uv run python -m tools.pairlab.chainbench --set all --jobs 8 \
+    --aggregates temp/aggregates.json \
+    --json temp/stage_a_full.json --csv temp/stage_a_full.csv
+```
+
+Der MAD-Boden für M4 stammt aus `GET /hands/suetterlin-1922-norm/aggregates`
+(admin-gated, als JSON abgelegt und über `--aggregates` gereicht); ohne die
+Datei berichtet M4 die Deltas ohne gemessenen Boden und sagt das auch.
+Fixtures: `tools/wordbench/fetch_fixtures.py` (API-Pfad, für Sessions ohne
+Cloud-SQL-Zugang) oder `tools/wordbench/export_fixtures.py` (DB-Pfad).
 
 ## 6. Beantwortung der Kernfrage + Lösungsoptionen
 

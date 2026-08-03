@@ -466,15 +466,23 @@ def _ink_extent_x(strokes_px: list[np.ndarray], baseline_row: float, xh: float) 
     return float(band[:, 0].min()), float(band[:, 0].max())
 
 
-def dissect_occurrence(case: WordCase, slot_a: int, *, trace: bool = True) -> JoinDissection | None:
+def dissect_occurrence(
+    case: WordCase, slot_a: int, *, trace: bool = True, result: WordDeriveResult | None = None
+) -> JoinDissection | None:
     """Independent-fit dissection of the join between slots ``slot_a`` and
     ``slot_a + 1``. ``trace`` additionally warps the two letters' templates
     onto the specimen ink along their known ductus (the M4 fit) — the fitted
     pair is the occurrence's ground-truth target for the generator. None when
-    the composition is missing a template."""
+    the composition is missing a template.
+
+    ``result`` may pass in a ``derive_word`` already computed for this case, so
+    a caller walking every join of a word composes it ONCE instead of once per
+    join. Default None keeps the existing behaviour (and every existing caller)
+    unchanged: the composition is derived here.
+    """
     if not case.has_specimen:
         raise ValueError(f"case {case.id!r} has no specimen (live case?) — pairlab dissects fixture occurrences only")
-    result = derive_word(case)
+    result = result if result is not None else derive_word(case)
     if result.composed["missing"] or result.report is None or result.report.get("failed"):
         return None
 

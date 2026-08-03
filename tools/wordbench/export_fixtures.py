@@ -214,6 +214,81 @@ def _shape_entry(w: dict, have: set[str]) -> list[GlyphSlot]:
     return slots
 
 
+def load_sidecar_entries(source_id: str, which: str) -> list[dict]:
+    """The `words.json` entries of one set — with the exporter's own guards.
+
+    Shared with the API-backed sibling (`fetch_fixtures.py`) so both freeze the
+    same entries under the same set names and the same duplicate-id rule.
+    """
+    sidecar_path = REPO_ROOT / "data" / "sources" / source_id / "words.json"
+    if not sidecar_path.exists():
+        raise SystemExit(f"no word sidecar at {sidecar_path}")
+    sidecar = json.loads(sidecar_path.read_text())
+    entries = [w for w in sidecar["words"] if which == "all" or _set_name(w) == which]
+    if not entries:
+        known = sorted({_set_name(w) for w in sidecar["words"]})
+        raise SystemExit(f"no {which!r} entries in {sidecar_path} (sets present: {known})")
+    id_counts = Counter(_entry_id(w) for w in sidecar["words"])
+    dupes = [i for i, n in id_counts.items() if n > 1]
+    if dupes:
+        raise SystemExit(f"duplicate sidecar ids {sorted(dupes)} — give repeated words an explicit 'id'")
+    return entries
+
+
+def freeze_entry(entry_dir: Path, w: dict, page: np.ndarray, slots: list[dict], missing: list[str]) -> dict:
+    """Freeze ONE sidecar entry: crop, scoring mask, skeleton and `word.json`.
+
+    The whole image side of an export lives here — binarise the UNPAINTED crop,
+    clear the excludes component-wise, despeckle, skeletonise — so the DB-backed
+    exporter and the API-backed `fetch_fixtures.py` produce byte-identical
+    references instead of two pipelines that can drift apart. Returns the
+    manifest index row for the entry.
+    """
+    entry_dir.mkdir(parents=True, exist_ok=True)
+    crop = page[w["y0"] : w["y1"], w["x0"] : w["x1"]].copy()
+    rects = [
+        (ex0 - w["x0"], ey0 - w["y0"], ex1 - w["x0"], ey1 - w["y0"]) for ex0, ey0, ex1, ey1 in w.get("exclude", [])
+    ]
+    # Binarise the UNPAINTED crop (a painted-white exclude would leave a
+    # fake ink line along its border — see clear_excluded), then remove
+    # the foreign ink component-wise and despeckle the rest.
+    mask = despeckle(clear_excluded(binarize_adaptive(crop), rects))
+    # The saved crop is the human/overlay view: paint the excludes out.
+    for x0, y0, x1, y1 in rects:
+        crop[max(0, y0) : max(0, y1), max(0, x0) : max(0, x1)] = 1.0
+    skel, width_map = skeleton_and_width(mask)
+
+    entry_id = _entry_id(w)
+    (entry_dir / "word.json").write_text(
+        json.dumps(
+            {
+                "id": entry_id,
+                "word": w["word"],
+                "kind": _kind(w),
+                "page": w["page"],
+                "rect": [w["x0"], w["y0"], w["x1"], w["y1"]],
+                "baseline_y": w["baseline_y"],
+                "midband_y": w["midband_y"],
+                "slots": slots,
+                "missing_at_export": missing,
+                "scorable": not missing,
+            },
+            ensure_ascii=False,
+        )
+    )
+    Image.fromarray((np.clip(crop, 0.0, 1.0) * 255).astype(np.uint8), mode="L").save(entry_dir / "crop.png")
+    Image.fromarray((mask * 255).astype(np.uint8), mode="L").save(entry_dir / "ref_mask.png")
+    np.savez_compressed(entry_dir / "ref_skel.npz", skel=skel, width_map=width_map.astype(np.float32))
+    return {
+        "id": entry_id,
+        "word": w["word"],
+        "kind": _kind(w),
+        "page": w["page"],
+        "missing_at_export": missing,
+        "scorable": not missing,
+    }
+
+
 def _write_pair_instances(fixture_root: Path, pair_rows: list[dict], kinds: set[str], ids: set[str]) -> int:
     """Freeze one set's measured joins — ATOMICALLY.
 
@@ -230,18 +305,7 @@ def _write_pair_instances(fixture_root: Path, pair_rows: list[dict], kinds: set[
 
 
 async def export(source_id: str, out_dir: Path, which: str, only: str | None = None) -> None:
-    sidecar_path = REPO_ROOT / "data" / "sources" / source_id / "words.json"
-    if not sidecar_path.exists():
-        raise SystemExit(f"no word sidecar at {sidecar_path}")
-    sidecar = json.loads(sidecar_path.read_text())
-    entries = [w for w in sidecar["words"] if which == "all" or _set_name(w) == which]
-    if not entries:
-        known = sorted({_set_name(w) for w in sidecar["words"]})
-        raise SystemExit(f"no {which!r} entries in {sidecar_path} (sets present: {known})")
-    id_counts = Counter(_entry_id(w) for w in sidecar["words"])
-    dupes = [i for i, n in id_counts.items() if n > 1]
-    if dupes:
-        raise SystemExit(f"duplicate sidecar ids {sorted(dupes)} — give repeated words an explicit 'id'")
+    entries = load_sidecar_entries(source_id, which)
 
     # Imported here, after load_dotenv(): the connection module reads env at import time.
     from core.database.connection import get_db_context
@@ -340,53 +404,7 @@ async def export(source_id: str, out_dir: Path, which: str, only: str | None = N
             entry_id = _entry_id(w)
             slots = [GlyphSlot(**s) for s in shaped[entry_id]]
             missing = [k for k in glyph_keys_of(slots) if k not in templates]
-            entry_dir = fixture_root / entry_id
-            entry_dir.mkdir(exist_ok=True)
-
-            crop = pages[w["page"]][w["y0"] : w["y1"], w["x0"] : w["x1"]].copy()
-            rects = [
-                (ex0 - w["x0"], ey0 - w["y0"], ex1 - w["x0"], ey1 - w["y0"])
-                for ex0, ey0, ex1, ey1 in w.get("exclude", [])
-            ]
-            # Binarise the UNPAINTED crop (a painted-white exclude would leave a
-            # fake ink line along its border — see clear_excluded), then remove
-            # the foreign ink component-wise and despeckle the rest.
-            mask = despeckle(clear_excluded(binarize_adaptive(crop), rects))
-            # The saved crop is the human/overlay view: paint the excludes out.
-            for x0, y0, x1, y1 in rects:
-                crop[max(0, y0) : max(0, y1), max(0, x0) : max(0, x1)] = 1.0
-            skel, width_map = skeleton_and_width(mask)
-
-            (entry_dir / "word.json").write_text(
-                json.dumps(
-                    {
-                        "id": entry_id,
-                        "word": w["word"],
-                        "kind": _kind(w),
-                        "page": w["page"],
-                        "rect": [w["x0"], w["y0"], w["x1"], w["y1"]],
-                        "baseline_y": w["baseline_y"],
-                        "midband_y": w["midband_y"],
-                        "slots": shaped[entry_id],
-                        "missing_at_export": missing,
-                        "scorable": not missing,
-                    },
-                    ensure_ascii=False,
-                )
-            )
-            Image.fromarray((np.clip(crop, 0.0, 1.0) * 255).astype(np.uint8), mode="L").save(entry_dir / "crop.png")
-            Image.fromarray((mask * 255).astype(np.uint8), mode="L").save(entry_dir / "ref_mask.png")
-            np.savez_compressed(entry_dir / "ref_skel.npz", skel=skel, width_map=width_map.astype(np.float32))
-            index.append(
-                {
-                    "id": entry_id,
-                    "word": w["word"],
-                    "kind": _kind(w),
-                    "page": w["page"],
-                    "missing_at_export": missing,
-                    "scorable": not missing,
-                }
-            )
+            index.append(freeze_entry(fixture_root / entry_id, w, pages[w["page"]], shaped[entry_id], missing))
 
         manifest = {
             "exported_at": datetime.now(UTC).isoformat(timespec="seconds"),
