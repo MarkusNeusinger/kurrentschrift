@@ -120,6 +120,22 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The word harvest can fit whole words as one pen chain (`--path chain`,
+  report-only).** `tools/laufform/harvest.py` gained the Stage-B integration
+  of issue #278: after the existing per-slot grid fits (which keep supplying
+  each letter's local window and the fallback diagnosis), every maximal run of
+  joined slots is fitted as ONE `fit_word_chain` chain, letters pass a
+  five-gate cascade (like-for-like coverage · geo RMSE · placement bound ·
+  anchor count · a degenerate adjacent connector rejects the letter too —
+  seam parameters are shared), and the word records are welded WITH their
+  connectors for the first time — a `traced` row is finally "the word as
+  written", closing the dead `authored` branch. Plus `--jobs` (ProcessPool
+  over cases, order-independent medians), `--sets words,pairs` (the pair
+  drills flow through the same code path), `--diag-csv` (34 columns incl.
+  per-join connector signals), `--max-cases`. The old path stays the default
+  and byte-identical (`--path slot`, pinned by a golden test); `--apply` is
+  refused outside `--path slot --sets words` so the chain path stays
+  report-only until its measurement round passes. 24 new unit tests.
 - **A connector degeneracy guard (`tools/pairlab/connector_qc.py`) — the QC
   the loop-exit fix showed was missing.** On the Abb.-20 pair drills the chain
   connector silently degenerates in 11 of 23 occurrences (a long straight
