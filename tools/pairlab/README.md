@@ -89,9 +89,15 @@ of what is left between them. `tools/pairlab/chain.py` is the alternative:
 - **Three segments, one anchor array.** Both letters are the **chart row**
   (variant 0 — never the composed/Laufform geometry, which would make the
   statistics converge on the renderer), the connector is the generated
-  exit→entry polyline whose 22 interior points are free anchors with **no form
+  exit→entry polyline whose interior points are free anchors with **no form
   regularisation** (regularising them against the generated Bézier would bias
-  `gen_chamfer`, the very audit number they exist to feed).
+  `gen_chamfer`, the very audit number they exist to feed). Where two letters
+  are composed on top of each other the generator's handle floor turns that
+  polyline into a cusp of ~0.05 xh carrying every one of its points, and the
+  curvature-change term (scale 1/ds²) then blows up by ~10⁷ and eats the whole
+  iteration budget — such a connector is re-discretised to the anchor count its
+  chord can carry (`regularise_connector_anchors`): same shape, same endpoints,
+  nothing above the threshold touched.
 - **The seam is a shared anchor index, not a penalty.** The last anchor of the
   left letter's last non-diacritic stroke and the first of the right letter's
   are literally the same parameters as the connector's endpoints, so C0

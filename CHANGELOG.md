@@ -53,6 +53,30 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Fixed
 
+- **The pair-chain fit no longer stalls on letters that are composed on top of
+  each other.** `analyze._generate_connector` emits its full Bézier subdivision
+  whatever room the placement leaves and floors its handle at 0.05 xh, so where
+  two letters touch or overlap the cubic doubles back into a cusp carrying two
+  dozen anchors inside ~0.05 xh of arc. `chain._second_difference_operator`
+  scales as 1/ds², which put the connector's smoothness block into the Hessian
+  ~10⁷ times stiffer than on a normal join: `e_smooth(x0)` 5.2e6 against 53.7,
+  `f(x0)` 51.9 against 0.026, and 24 of the 248 Stage-A occurrences — every
+  `c→h`, `r→e`, `m→u`, `n→e` — burned their whole iteration budget unbending
+  that connector while `e_geo`, `e_cov` and `e_wid` never moved from their
+  starting values at all. `chain.regularise_connector_anchors` now
+  re-discretises a connector whose chord is below
+  `CHAIN_CONNECTOR_MIN_SPAN_UNITS`: the same curve, resampled by arc length to
+  the anchor count that chord can carry (endpoints exact, so the shared seam
+  anchors survive, and nothing above the threshold is touched). The affected
+  occurrences go from 4 to 20 of 24 converged on the letter-local gate.
+- **`chainbench` exported an optimizer status key `chain.py` never writes.** The
+  row read `fit_meta["status"]` while the fit writes `"message"`, so
+  `chain_status_msg` was the empty string on every row and the L-BFGS-B
+  termination reason — the one column that identifies a stalled solve — was
+  invisible. The termination message, `optimizer_success`, the iteration and
+  evaluation counts and the per-term energies at `x0` against `x*` are now all
+  exported, with an explicit flag for a non-finite initial energy (which `_r`
+  would otherwise round into an indistinguishable `None`).
 - **The registered overlay of engine ink over the specimen pixels is back — and
   now also sits on the word evidence card.** The redesign had left it wired to
   a hardcoded `false`, so the sharpest error-finding view in the project was

@@ -559,8 +559,27 @@ def _fill_chain_placement(row: dict, fit: Any, slot_a: int) -> None:
     row["chain_global_dy"] = _r(gy)
     row["chain_cut_l"], row["chain_cut_r"] = (int(fit.cut_indices[0]), int(fit.cut_indices[1]))
     meta = dict(fit.fit_meta or {})
-    row["chain_status_msg"] = str(meta.get("status", ""))[:80]
+    # `chain.fit_pair_chain` writes the L-BFGS-B termination reason under
+    # "message" — reading "status" here left the column empty on every row and
+    # made a degenerate solve indistinguishable from a converged one.
+    row["chain_status_msg"] = str(meta.get("message", ""))[:80]
+    row["chain_optimizer_success"] = None if meta.get("optimizer_success") is None else bool(meta["optimizer_success"])
+    row["chain_iterations"] = meta.get("iterations")
+    row["chain_n_evaluations"] = meta.get("n_evaluations")
     row["chain_n_params"] = meta.get("n_params")
+    # Initial (composed layout) vs. final energies: `f` at x0 equal to `f` at x*
+    # says the solver never left its starting point, and a non-finite initial
+    # term says WHY it could not.
+    e_ini = dict(meta.get("energies_initial") or {})
+    e_fin = dict(meta.get("energies") or {})
+    for term in ("f", "e_geo", "e_wid", "e_cov", "e_reg", "e_smooth"):
+        row[f"chain_{term}_initial"] = _r(e_ini.get(term), 6)
+        row[f"chain_{term}_final"] = _r(e_fin.get(term), 6)
+    # `_r` maps a non-finite value to None, which a reader cannot tell from a
+    # missing key — so the finiteness of x0's energies gets its own flag.
+    row["chain_energies_initial_finite"] = (
+        None if not e_ini else bool(all(math.isfinite(float(v)) for v in e_ini.values()))
+    )
 
 
 def _fill_letter_shape(

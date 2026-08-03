@@ -878,8 +878,17 @@ impl-generate pipelines. Conventions:
   x-spans, since the chain connector owns the stub zones the ink-read one
   lacks). Measurement only — no DB, no API, no `core/`, no rendering; the
   measured verdict (after the Stage-B preconditions were re-measured: go,
-  with the M1 deficit named and the `pair_aggregates` ban kept for the
-  loop-exit class) is `docs/proposals/uebergaenge-befund.md` §5c.
+  with the `pair_aggregates` ban kept for the loop-exit class) is
+  `docs/proposals/uebergaenge-befund.md` §5c. The M1 deficit that verdict
+  named turned out to be an INITIALISATION bug and is gone (0,690 →
+  0,754, §5c Nachtrag): where two letters are composed on top of each
+  other the generator's handle floor makes the connector a cusp of
+  ~0.05 xh carrying all its points, and the curvature-change term (scale
+  1/ds²) then dominated the objective by ~7 orders of magnitude and ate
+  the whole iteration budget while the letters never moved.
+  `chain.regularise_connector_anchors` re-discretises such a connector to
+  the anchor count its chord can carry — same shape, same endpoints,
+  nothing above `CHAIN_CONNECTOR_MIN_SPAN_UNITS` touched.
   `tools/wordbench/fetch_fixtures.py` is the read-only API twin of
   `export_fixtures.py` for sessions without Cloud SQL egress —
   byte-compatible fixture roots over HTTPS, GETs only, `--verify`

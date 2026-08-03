@@ -445,6 +445,48 @@ Unverändert gilt: das ist eine **Messschicht**. Nichts hiervon ändert das
 Rendering, `glyph_pairs` bleibt der sparsame Verbatim-Override, der §4-Generator
 bleibt Default.
 
+### Nachtrag: degenerierte Solves — M1 ist 0,754, nicht 0,690
+
+Der oben als „echte Eigenschaft des gekoppelten Problems" eingestufte
+M1-Rückstand war zu rund zwei Dritteln **ein Fehler in der Initialisierung**.
+`analyze._generate_connector` gibt seine volle Bézier-Unterteilung aus, gleich
+wieviel Platz die Komposition zwischen den Buchstaben lässt, und begrenzt seinen
+Griff nach unten auf 0,05 xh; wo zwei Buchstaben aufeinander sitzen, überschreibt
+dieser Boden den eigenen Entwurfswert `0,4·Sehne`, die Kubik greift weiter aus
+als die Sehne lang ist und kehrt um — zwei Dutzend Anker in einer Kuspe von
+~0,05 xh Bogenlänge, Nachbarpunkte 8·10⁻⁵ xh auseinander.
+`chain._second_difference_operator` skaliert mit 1/ds², der Glättungsblock geht
+damit rund 10⁷-fach steifer in die Hesse-Matrix ein als bei einem normalen
+Übergang: `e_smooth(x0)` 5,2·10⁶ gegen 53,7, `f(x0)` 51,9 gegen 0,026. **24 der
+248 Vorkommen** — jedes `c→h`, `r→e`, `m→u`, `n→e` — verbrauchten ihr gesamtes
+Iterationsbudget auf das Geraderichten dieses Verbinders und beendeten den Solve
+mit `e_geo`, `e_cov` und `e_wid` unverändert auf sechs Nachkommastellen: die
+Buchstaben bewegten sich überhaupt nicht. Sichtbar wurde das erst, nachdem
+`chainbench` die Abbruchmeldung des Optimierers exportierte — die Zeilen lasen
+bis dahin einen Schlüssel `status`, den `chain.py` nie schreibt.
+
+`chain.regularise_connector_anchors` diskretisiert einen Verbinder unterhalb von
+`CHAIN_CONNECTOR_MIN_SPAN_UNITS` Sehne neu: dieselbe Kurve, bogenlängen-treu auf
+die Ankerzahl abgetastet, die diese Sehne tragen kann. Die Form bleibt, die
+Endpunkte bleiben exakt (die Nahtanker sind mit den Buchstaben geteilt), oberhalb
+der Schwelle wird nichts angefasst — die anderen 224 Zeilen kommen Feld für Feld
+identisch wieder heraus, kein einziger Konvergenz-Umschlag.
+
+| Gruppe (buchstabenlokales Gate) | n | Basislinie | Kette vorher | Kette nachher |
+|---|---:|---:|---:|---:|
+| degenerierte Solves | 24 | 0,542 | 0,167 | **0,833** |
+| übrige | 224 | 0,768 | 0,746 | 0,746 |
+| **gepoolt** | 248 | 0,746 | 0,690 | **0,754** |
+
+Damit ist **M1 erfüllt**: die Kette konvergiert gleichnamig gemessen häufiger als
+zwei unabhängige Fits (paarweise 21 nur Kette gegen 19 nur Basislinie statt 15
+gegen 29). M3 bogengleich verschlechtert sich dabei nicht (Kette 0,040 → 0,038,
+paarweiser Median +0,011 → +0,008). Die Auflage 1 oben bleibt inhaltlich
+bestehen, ihre Untergrenze ist jetzt **0,754** statt 0,690. Was der Befund
+„M1 ist bestätigt statt entkräftet" richtig gesehen hat, steht in §5c weiter:
+`c`, `p` und ein Teil der `e` scheitern schon in der Basislinie an der Deckung —
+das ist Autorenarbeit an den Chart-Zeilen, kein Solver-Thema.
+
 ### Reproduktion
 
 ```bash

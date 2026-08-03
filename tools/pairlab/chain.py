@@ -106,6 +106,21 @@ CHAIN_COVERAGE_PER_SEGMENT = 300
 # re-exported from `core.compose` so a change there cannot silently desync. The
 # two endpoints are SHARED with the letters, the interior 22 are free anchors.
 CONNECT_SAMPLES = _COMPOSE_CONNECT_SAMPLES  # == 24
+# Chord (xh) below which the generated connector is RE-DISCRETISED before it
+# becomes the chain's initialisation (`regularise_connector_anchors`).
+# `analyze._generate_connector` always emits its full Bézier subdivision,
+# however little room the composed placement leaves between the two letters —
+# and `_second_difference_operator`'s rows scale as 1/ds², so packing two dozen
+# anchors into a 0.05 xh chord raises the connector's smoothness block by ~7
+# orders of magnitude and L-BFGS-B spends its whole iteration budget there while
+# the letters never move (see `regularise_connector_anchors`). The cut sits in
+# the empty band the Stage-A fixture set measures: every one of the 24 affected
+# occurrences has a chord ≤ 0.187 xh, every one of the other 224 ≥ 0.205 xh.
+CHAIN_CONNECTOR_MIN_SPAN_UNITS = 0.20
+# Target anchor spacing (xh) of a re-discretised connector — the spacing the
+# smoothness weight above was calibrated at (a normal connector's ~0.30 xh chord
+# over its ~23 sample intervals).
+CHAIN_CONNECTOR_ANCHOR_SPACING_UNITS = 0.013
 
 # Anchor count `core.fit.DEFAULT_N_SAMPLES` was tuned against, so the chain's
 # sample budget keeps the same ~1.5 samples per anchor at any chain length.
@@ -207,6 +222,62 @@ def _second_difference_operator(pts: np.ndarray) -> np.ndarray:
         rows[j - 1, j] = -scale * (1.0 / ds[j - 1] + 1.0 / ds[j])
         rows[j - 1, j + 1] = scale / ds[j]
     return rows
+
+
+def regularise_connector_anchors(
+    conn: np.ndarray,
+    *,
+    min_span_units: float = CHAIN_CONNECTOR_MIN_SPAN_UNITS,
+    spacing_units: float = CHAIN_CONNECTOR_ANCHOR_SPACING_UNITS,
+) -> np.ndarray:
+    """Re-discretise a generated connector that is too short for its point count.
+
+    `analyze._generate_connector` emits its full `CONNECT_SAMPLES` Bézier
+    subdivision whatever the composed placement leaves between the two letters,
+    and floors its handle at 0.05 xh. Where two letters are composed nearly on
+    top of each other that floor overrides the generator's own design value
+    `0.4·span`, so the cubic reaches further from the exit than the entry is
+    away and doubles back: every point inside ~0.05 xh of arc, neighbouring
+    samples 8e-5 xh apart.
+
+    That is a harmless RENDERING fallback — the composer draws the stub and
+    moves on — but a hostile INITIALISATION. `_second_difference_operator`'s
+    rows scale as 1/ds², so the connector's block of the objective enters the
+    Hessian ~10⁷× stiffer than on a normal join: measured on the Stage-A fixture
+    set, `e_smooth(x0)` is 5.2e6 (median) on the 24 affected occurrences against
+    53.7 on the other 224, `f(x0)` 51.9 against 0.026, and every one of the 24
+    ends at ``STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT`` with `e_geo`,
+    `e_cov` and `e_wid` unchanged to six decimals from `x0` — the whole budget
+    goes into unbending the connector and the letters never move at all.
+
+    The repair is a DISCRETISATION one, not a shape one: below `min_span_units`
+    of chord the same curve is resampled by uniform arc length to as many
+    anchors as `spacing_units` allows (at least 3, never more than it already
+    has; a fully collapsed connector keeps its two seam anchors and nothing in
+    between), which brings ds back into the range
+    `CHAIN_CONNECTOR_SMOOTH_WEIGHT` was calibrated at. The generated SHAPE is
+    preserved — the endpoints exactly, the interior by arc-length interpolation
+    — so nothing here trades the generator against itself (binding constraint
+    3), and a connector at or above the threshold is returned untouched.
+    """
+    pts = np.asarray(conn, dtype=float).reshape(-1, 2)
+    if len(pts) < 3:
+        return pts
+    span = float(np.hypot(pts[-1, 0] - pts[0, 0], pts[-1, 1] - pts[0, 1]))
+    if span >= min_span_units:
+        return pts
+    seg = np.hypot(*np.diff(pts, axis=0).T)
+    arc = np.concatenate([[0.0], np.cumsum(seg)])
+    if arc[-1] <= 0:
+        # Fully collapsed (the two body endpoints coincide): the two seam
+        # anchors and nothing between them. An interior anchor here would only
+        # give `_second_difference_operator` coincident points to divide by.
+        return pts[[0, -1]]
+    n = int(min(len(pts), max(3, round(span / max(spacing_units, 1e-9)) + 1)))
+    if n >= len(pts):
+        return pts
+    at = np.linspace(0.0, arc[-1], n)
+    return np.column_stack([np.interp(at, arc, pts[:, 0]), np.interp(at, arc, pts[:, 1])])
 
 
 def _coverage_huber(dist: np.ndarray, cap: float) -> tuple[np.ndarray, np.ndarray]:
@@ -881,7 +952,9 @@ def fit_pair_chain(
       the connector is `analyze._generate_connector` at the composed placement,
       with NO overlap extension, NO capital retrace prefix and NO entry trim —
       the trimmed lead-in stub is precisely the ownership question the seam
-      calibration measures, so the chain must see it. The known Laufform wrinkle
+      calibration measures, so the chain must see it. Its SHAPE is used verbatim;
+      only its point count is re-discretised where the chord leaves no room for
+      all of them (`regularise_connector_anchors`). The known Laufform wrinkle
       in that recovery is preserved, not fixed, so chain and baseline share one
       init and the shape-delta metric stays honest.
     * **Seams.** `cut_L` = last anchor of the left letter's last NON-diacritic
@@ -933,6 +1006,10 @@ def fit_pair_chain(
     ).reshape(-1, 2)
     if len(conn) < 3:
         return None
+    # A connector with no room for all its points is re-discretised before it
+    # becomes the initialisation — see `regularise_connector_anchors`; a normal
+    # one comes back unchanged.
+    conn = regularise_connector_anchors(conn)
     spec_c = ChainSegmentSpec(kind="connector", anchors=conn, seam_in=0, seam_out=len(conn) - 1)
 
     # Union coverage window: the two letter-local windows of
@@ -1040,7 +1117,9 @@ def fit_pair_chain(
 
 
 __all__ = [
+    "CHAIN_CONNECTOR_ANCHOR_SPACING_UNITS",
     "CHAIN_CONNECTOR_MAX_DELTA",
+    "CHAIN_CONNECTOR_MIN_SPAN_UNITS",
     "CHAIN_CONNECTOR_SMOOTH_WEIGHT",
     "CHAIN_COVERAGE_CAP_UNITS",
     "CHAIN_COVERAGE_PER_SEGMENT",
@@ -1050,4 +1129,5 @@ __all__ = [
     "ChainSegmentSpec",
     "build_chain_problem",
     "fit_pair_chain",
+    "regularise_connector_anchors",
 ]
