@@ -6,6 +6,7 @@
 # object is not subscriptable" on import). Stringised annotations sidestep that.
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from sqlalchemy import delete, func, select, tuple_
@@ -162,6 +163,23 @@ class BboxRepository:
 _RENDER_ONLY_DEFERS = (defer(Template.raw_path), defer(Template.measurements))
 
 
+def _as_json_object(value: Any) -> dict | None:
+    """Normalise a JSON sub-object selected out of a JSONB/JSON column.
+
+    A SQL-side extraction (`col["key"]`) comes back already decoded on the
+    drivers this repo uses, but the dialects disagree on the wire form, so a
+    driver handing back raw JSON text would otherwise leak a string where every
+    caller expects a mapping. Anything that is not an object (a scalar left by
+    an older row) is dropped rather than passed on half-typed.
+    """
+    if isinstance(value, str):
+        try:
+            value = json.loads(value)
+        except ValueError:
+            return None
+    return value if isinstance(value, dict) else None
+
+
 class TemplateRepository:
     """Canonical templates (Grundvorlage), keyed per style.
 
@@ -205,6 +223,30 @@ class TemplateRepository:
             .order_by(Template.glyph_key, Template.variant)
         )
         return [{"glyph_key": k, "glyph": g, "variant": v, "advance": a} for k, g, v, a in result.all()]
+
+    async def list_quality(self, style_id: str) -> list[dict]:
+        """The stored `trace_meta["quality"]` of every template of one style.
+
+        The admin letter overview wants a score per letter; re-deriving it via
+        `GET .../templates/{key}/quality` costs 0.3–2.5 s per glyph (it re-runs
+        the image pipeline), while the derivation already stamped the score into
+        `trace_meta` at trace/resample time. Extract exactly that sub-object in
+        SQL — selecting whole `trace_meta` blobs would drag the dense
+        `pixel_anchors`/`half_widths_px` arrays of ~60 rows over the wire for a
+        handful of floats.
+
+        Portable across both backends this repo runs on: the index operator
+        compiles to `->` on Postgres (JSONB) and to `JSON_QUOTE(JSON_EXTRACT(…))`
+        on SQLite (the HTTP test harness), and SQLAlchemy's JSON result
+        processing hands back a dict on either. The `json.loads` fallback below
+        covers drivers that hand the extraction back as raw JSON text instead.
+        """
+        result = await self.session.execute(
+            select(Template.glyph_key, Template.variant, Template.trace_meta["quality"])
+            .where(Template.style_id == style_id)
+            .order_by(Template.glyph_key, Template.variant)
+        )
+        return [{"glyph_key": k, "variant": v, "quality": _as_json_object(q)} for k, v, q in result.all()]
 
     async def get_many(
         self, style_id: str, glyph_keys: list[str], variant: int = 0, *, render_only: bool = False

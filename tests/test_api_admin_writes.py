@@ -326,6 +326,52 @@ async def test_delete_template_nonexistent_404(api: Harness):
     assert res.status == 404
 
 
+# ------------------------------------------------------------- stored quality
+
+
+async def test_template_quality_lists_stored_scores_without_recomputing(api: Harness):
+    """The alphabet overview's cheap read: the score the derivation stamped.
+
+    Nothing is re-derived here — the seeded rows have no chart bytes on disk at
+    all, so a handler that re-scored would fail rather than answer. A row whose
+    `trace_meta` carries no `quality` (traced before the metric existed) reports
+    null instead of being dropped, so the overview can show the gap.
+    """
+    style_id, source_id = await api.seed_style_and_source()
+    scored = {"score": 87.5, "loss": 0.125, "iou": 0.83}
+    await api.seed_template(
+        style_id,
+        source_id,
+        "n",
+        "n",
+        # The dense pixel-space meta rides along exactly as in production — the
+        # read must extract the quality sub-object, not the whole blob.
+        trace_meta={"quality": scored, "pixel_anchors": [[10.0, 20.0]] * 40},
+    )
+    await api.seed_template(style_id, source_id, "e", "e")
+
+    res = await api.client.request("GET", f"/sources/{source_id}/templates/quality", headers=api.admin_headers())
+    assert res.status == 200, res.body
+    rows = res.json()
+    assert [r["glyph_key"] for r in rows] == ["e", "n"]
+    assert rows[0]["quality"] is None
+    assert rows[1]["quality"] == scored
+    assert all(r["variant"] == 0 for r in rows)
+    # Only the score travels — the heavy trace_meta keys stay in the DB.
+    assert "pixel_anchors" not in res.body.decode()
+
+
+async def test_template_quality_path_is_not_swallowed_as_a_glyph_key(api: Harness):
+    """Route-order regression: `/templates/{glyph_key}` is declared in the same
+    router, so a later `/templates/quality` would be matched as the glyph_key
+    "quality" and 404 instead of listing."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "quality", "q")
+    res = await api.client.request("GET", f"/sources/{source_id}/templates/quality", headers=api.admin_headers())
+    assert res.status == 200
+    assert res.json() == [{"glyph_key": "quality", "variant": 0, "quality": None}]
+
+
 async def test_fit_rejects_out_of_bounds_tuning_params(api: Harness):
     """The /fit tuning knobs feed a scipy optimisation — reject absurd values
     at the boundary instead of burning CPU on them."""

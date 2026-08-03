@@ -30,6 +30,7 @@ import type {
   StyleOut,
   GlyphPairIn,
   GlyphPairOut,
+  TemplateQualityOut,
   TracePreviewOut,
   TraceRequest,
   WordInstanceBatchIn,
@@ -351,6 +352,17 @@ export const postResample = (
 export const getQuality = (sourceId: string, glyphKey: string): Promise<QualityComparison> =>
   apiFetch(src(sourceId, `/templates/${encodeURIComponent(glyphKey)}/quality`)).then(asJson<QualityComparison>);
 
+// Every letter's STORED score in one admin read — the number the derivation
+// stamped at trace/resample time, not a re-score. The per-glyph getQuality
+// above re-derives from the crop (0.3–2.5 s per glyph), which an alphabet
+// overview cannot afford; use this for the grid and that one for a verdict on
+// a single letter.
+export const getTemplateQuality = (
+  sourceId: string,
+  retry?: RetryOptions,
+): Promise<TemplateQualityOut[]> =>
+  apiFetch(src(sourceId, '/templates/quality'), {}, retry).then(asJson<TemplateQualityOut[]>);
+
 export const getDiagnostic = (sourceId: string, glyphKey: string): Promise<DiagnosticData> =>
   apiFetch(src(sourceId, `/templates/${encodeURIComponent(glyphKey)}/diagnostic`)).then(asJson<DiagnosticData>);
 
@@ -362,16 +374,25 @@ export const getDiagnostic = (sourceId: string, glyphKey: string): Promise<Diagn
 // only one the public surfaces ask for) is the authored chart ductus, 100 the
 // derived Laufform the admin letter view shows beside it. It is omitted from
 // the URL at 0 so the public cache entries keep their existing shape.
+// `bust` is the admin's canonical version stamp. It has to reach the URL, not
+// only the in-memory render cache: the response carries
+// `max-age=300, stale-while-revalidate`, so after a re-trace the browser would
+// answer the identical URL from its own copy for minutes. Same `t=` idiom as
+// the crop and word reads, and likewise omitted when unset so the public
+// entries stay untouched.
 export const getWriteGlyphs = (
   sourceId: string,
   keys: string[],
   retry?: RetryOptions,
   variant = 0,
+  bust?: number,
 ): Promise<WriteGlyphsOut> =>
   apiFetch(
     src(
       sourceId,
-      `/write/glyphs?keys=${encodeURIComponent([...keys].sort().join(','))}${variant ? `&variant=${variant}` : ''}`,
+      `/write/glyphs?keys=${encodeURIComponent([...keys].sort().join(','))}${variant ? `&variant=${variant}` : ''}${
+        bust ? `&t=${bust}` : ''
+      }`,
     ),
     {},
     retry,

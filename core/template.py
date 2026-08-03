@@ -48,6 +48,22 @@ def sample_polyline(
     t = np.concatenate([[0.0], np.cumsum(chord)])
     if t[-1] == 0:
         return np.tile(anchors[:1, 0], n), np.tile(anchors[:1, 1], n), np.tile(widths[:1], n)
+    # A COINCIDENT anchor pair (zero-length chord) leaves t flat there, and both
+    # CubicSpline and np.interp require a strictly increasing parameter —
+    # CubicSpline raises outright ("`x` must be strictly increasing sequence"),
+    # which turned every render of such a glyph into a 500. It happens for real:
+    # anchors are stored rounded to 4 decimals, so the apex of a short
+    # out-and-back stroke (the Sütterlin full stop is one) can round its two
+    # samples onto the same point. Drop the repeat — a zero-length chord carries
+    # no geometry, only the same position twice. Paths without one keep every
+    # anchor and every sample byte-identical.
+    keep = np.concatenate([[True], chord > 0])
+    if not keep.all():
+        anchors = anchors[keep]
+        widths = widths[keep]
+        t = t[keep]
+        if len(anchors) < 2:
+            return np.tile(anchors[:1, 0], n), np.tile(anchors[:1, 1], n), np.tile(widths[:1], n)
     t = t / t[-1]
     if len(anchors) < 3:
         u = np.linspace(0.0, 1.0, n)

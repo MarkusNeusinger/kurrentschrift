@@ -9,7 +9,7 @@
 // run) and renders the optimized silhouette over the crop.
 
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { Box, Chip, CircularProgress, Stack, ToggleButton, Tooltip, Typography } from '@mui/material';
+import { Box, CircularProgress, Stack, ToggleButton, Tooltip, Typography } from '@mui/material';
 import { useEffect, useRef } from 'react';
 
 import { useAdmin } from '@/context/AdminContext';
@@ -17,7 +17,9 @@ import { cropUrl } from '@/lib/api';
 import type { TracePreviewOut } from '@/lib/api';
 import { de } from '@/locales/admin';
 import { HintHeading } from './HintHeading';
-import { ScoreBreakdown, SilhouetteSvg, scoreColor } from './previewParts';
+import { ScoreBreakdown, ScoreChip } from '@/sections/admin/quality/scoreParts';
+
+import { SilhouetteSvg } from './previewParts';
 
 interface Props {
   glyphKey: string;
@@ -92,9 +94,7 @@ export function WegPreview({ glyphKey, cropCacheBust, hasDraftSource, nAnchors, 
       {preview && !previewBusy && (
         <>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {preview.refined.quality && (
-              <Chip size="small" color={scoreColor(preview.refined.quality.score)} label={`${t.score} ${preview.refined.quality.score.toFixed(1)}`} />
-            )}
+            {preview.refined.quality && <ScoreChip score={preview.refined.quality.score} />}
             {delta != null && (
               <Typography variant="caption" sx={{ fontFamily: 'monospace' }} color={delta >= 0 ? 'success.main' : 'error.main'}>
                 {t.delta} {delta >= 0 ? '+' : ''}
