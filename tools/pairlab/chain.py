@@ -129,6 +129,15 @@ class ChainSegmentSpec:
     half_widths: np.ndarray | None = None  # (K,) letters only; connector samples are width-masked
     seam_in: int | None = None  # anchor index shared with the PREVIOUS segment's `seam_out`
     seam_out: int | None = None  # anchor index shared with the NEXT segment's `seam_in`
+    cov_window_px: tuple[float, float] | None = None
+    """Optional `(x_lo, x_hi)` crop-px window this segment's coverage GATE is
+    read in — the letter-local window of `analyze.trace_letter_ductus`. The FIT
+    is unaffected: coverage targets, objective and gradient keep seeing the whole
+    union window (owning the connector ink is the chain's entire point). Only the
+    per-segment report gains a second, like-for-like coverage residual so a chain
+    letter and a single-letter M4 fit are graded on the same ink. None — the
+    connector, and any caller that does not care — makes the local gate identical
+    to the union one."""
 
 
 @dataclass
@@ -145,7 +154,10 @@ class ChainSegment:
     geo_rmse_px: float  # UNSMOOTHED field, template→skeleton
     cov_rmse_px: float  # UNSMOOTHED and UNCAPPED, skeleton→template, attributed by nearest sample
     n_cov: int
-    converged: bool  # both residuals within core.fit's CONVERGED_* thresholds
+    cov_rmse_local_px: float  # …the same, restricted to `spec.cov_window_px` (== cov_rmse_px when None)
+    n_cov_local: int
+    converged: bool  # both residuals within core.fit's CONVERGED_* thresholds, UNION-window coverage
+    converged_local: bool  # …the same gate on the letter-local coverage residual
     max_anchor_delta: float
 
 
@@ -162,6 +174,7 @@ class ChainFit:
     cut_indices: tuple[int, int]  # (cut_L, cut_R), the two shared seam anchors
     connector_units: np.ndarray  # composed-frame connector, for the `dconn` comparison
     converged: bool  # L and R converged; the connector's gate is reported separately
+    converged_local: bool  # …judged on the LETTER-LOCAL coverage windows (the like-for-like gate)
     fit_meta: dict  # optimiser status, energies, n_params, n_cov, timings
 
 
@@ -448,6 +461,15 @@ class _ChainProblem:
         and `CONVERGED_COVERAGE_RMSE_UNITS`, so a chain segment and a
         single-letter fit are judged by the same yardstick.
 
+        **Two coverage gates, both reported** (issue #278 Stage-B precondition 1):
+        `cov_rmse_px`/`converged` count every attributed point of the UNION pair
+        window, `cov_rmse_local_px`/`converged_local` only those inside the
+        segment's own `cov_window_px`. The union number grades a letter against
+        connector ink the letter-local window of `analyze.trace_letter_ductus`
+        never showed the baseline fit, so „chain converges at least as often" is
+        only a like-for-like statement on the LOCAL gate. The fit itself is
+        identical under both — the windows enter the report, never the objective.
+
         `fitted_anchors` come out in the COMPOSED word frame (initial anchors
         plus their per-anchor deltas, translations excluded exactly as
         `core.fit.FitResult.anchors` excludes its global shift); `fit_pair_chain`
@@ -465,7 +487,21 @@ class _ChainProblem:
             geo_rmse = float(np.sqrt(np.mean(d_eff[s0:s1] ** 2))) if s1 > s0 else 0.0
             sel = (cidx >= s0) & (cidx < s1)
             n_cov = int(sel.sum())
+            # A segment with NO attributed coverage point scores 0.0 and therefore
+            # passes the coverage half of its gate on its own: an empty sum has no
+            # residual, and inventing a failure here would punish e.g. a connector
+            # whose ink the two letters happen to own entirely. The gate stays a
+            # statement about the residual only — consumers that need "the segment
+            # actually saw ink" (M2's `chain_connector_yielded`) MUST check
+            # `n_cov > 0` separately.
             cov_rmse = float(np.sqrt(np.mean(cdist[sel] ** 2))) if n_cov else 0.0
+            win = spec.cov_window_px
+            if win is None:
+                n_cov_local, cov_rmse_local = n_cov, cov_rmse
+            else:
+                sel_local = sel & (self.cov_pts[:, 0] >= win[0]) & (self.cov_pts[:, 0] <= win[1])
+                n_cov_local = int(sel_local.sum())
+                cov_rmse_local = float(np.sqrt(np.mean(cdist[sel_local] ** 2))) if n_cov_local else 0.0
             seg_deltas = deltas[a0:a1]
             max_delta = float(np.max(np.hypot(seg_deltas[:, 0], seg_deltas[:, 1]))) if a1 > a0 else 0.0
             fitted = self.anchors_free[a0:a1] + seg_deltas if spec.kind == "letter" else None
@@ -481,7 +517,10 @@ class _ChainProblem:
                     geo_rmse_px=geo_rmse,
                     cov_rmse_px=cov_rmse,
                     n_cov=n_cov,
+                    cov_rmse_local_px=cov_rmse_local,
+                    n_cov_local=n_cov_local,
                     converged=_segment_converged(geo_rmse, cov_rmse, self.unit_px),
+                    converged_local=_segment_converged(geo_rmse, cov_rmse_local, self.unit_px),
                     max_anchor_delta=max_delta,
                 )
             )
@@ -559,6 +598,8 @@ def build_chain_problem(
     * **Coverage.** `cov_pts` are the caller's union-window skeleton points,
       subsampled to `CHAIN_COVERAGE_PER_SEGMENT × len(specs)`; the objective
       applies the Huber cap `coverage_cap_units · unit_px`, ICP-frozen assignment.
+      A spec's optional `cov_window_px` narrows only the REPORTED per-segment
+      coverage gate (see `report_energies`), never the targets the objective sees.
     * **Weights.** `reg_w` is 1 on letter anchors, 0 on connector interiors
       (binding constraint 3), normalised by the letter-anchor count so per-letter
       Tikhonov pressure equals a single-letter fit's; `width_mask` is 0 on
@@ -579,6 +620,7 @@ def build_chain_problem(
             half_widths=None if s.half_widths is None else np.asarray(s.half_widths, dtype=float),
             seam_in=s.seam_in,
             seam_out=s.seam_out,
+            cov_window_px=None if s.cov_window_px is None else (float(s.cov_window_px[0]), float(s.cov_window_px[1])),
         )
         for s in specs
     ]
@@ -845,6 +887,10 @@ def fit_pair_chain(
     * **Seams.** `cut_L` = last anchor of the left letter's last NON-diacritic
       stroke, `cut_R` = first anchor of the right letter's first non-diacritic
       stroke (the diacritic rule of `analyze.trace_letter_ductus`).
+    * **Gates.** The fit sees the UNION window; each letter additionally carries
+      its own `analyze.trace_letter_ductus` window as `cov_window_px`, so
+      `ChainSegment.converged_local` / `ChainFit.converged_local` grade it on the
+      same ink the independent M4 trace was graded on (Stage-B precondition 1).
     * **`result`** may be passed in to reuse a `derive_word` already computed for
       this case — a word with five joins must not compose itself five times.
 
@@ -890,11 +936,18 @@ def fit_pair_chain(
     spec_c = ChainSegmentSpec(kind="connector", anchors=conn, seam_in=0, seam_out=len(conn) - 1)
 
     # Union coverage window: the two letter-local windows of
-    # `trace_letter_ductus` with the hole between them closed.
+    # `trace_letter_ductus` with the hole between them closed. The two windows
+    # themselves are kept on the letter specs — the FIT runs against the union
+    # (owning the connector's ink is the point), the reported letter gate against
+    # the letter's own window, so „converged" means the same thing on both paths.
     body_a = np.vstack(dissection.a.body_px)
     body_b = np.vstack(dissection.b.body_px)
-    x_lo = min(float(body_a[:, 0].min()), float(body_b[:, 0].min())) - TRACE_WINDOW_MARGIN * xh
-    x_hi = max(float(body_a[:, 0].max()), float(body_b[:, 0].max())) + TRACE_WINDOW_MARGIN * xh
+    win_a = (float(body_a[:, 0].min()) - TRACE_WINDOW_MARGIN * xh, float(body_a[:, 0].max()) + TRACE_WINDOW_MARGIN * xh)
+    win_b = (float(body_b[:, 0].min()) - TRACE_WINDOW_MARGIN * xh, float(body_b[:, 0].max()) + TRACE_WINDOW_MARGIN * xh)
+    spec_l.cov_window_px = win_a
+    spec_r.cov_window_px = win_b
+    x_lo = min(win_a[0], win_b[0])
+    x_hi = max(win_a[1], win_b[1])
     cols = np.arange(case.skel.shape[1])
     keep = (cols >= x_lo) & (cols <= x_hi)
     skel_local = case.skel & keep[None, :]
@@ -961,6 +1014,7 @@ def fit_pair_chain(
         cut_indices=(int(spec_l.seam_out), int(spec_r.seam_in)),
         connector_units=connector_units,
         converged=bool(segments[0].converged and segments[2].converged),
+        converged_local=bool(segments[0].converged_local and segments[2].converged_local),
         fit_meta={
             "optimizer_success": bool(res.success),
             "message": str(res.message),
@@ -972,10 +1026,12 @@ def fit_pair_chain(
             "n_samples": int(problem.n_samples),
             "n_cov": int(len(problem.cov_pts)),
             "connector_converged": bool(segments[1].converged),
+            "cov_window_px": {"left": [round(v, 1) for v in win_a], "right": [round(v, 1) for v in win_b]},
             "energies": {k: round(v, 6) for k, v in terms.items()},
             "energies_initial": {k: round(v, 6) for k, v in e0.items()},
             "geo_rmse_px": {s.key or s.kind: round(s.geo_rmse_px, 3) for s in segments},
             "cov_rmse_px": {s.key or s.kind: round(s.cov_rmse_px, 3) for s in segments},
+            "cov_rmse_local_px": {s.key or s.kind: round(s.cov_rmse_local_px, 3) for s in segments},
             "smooth_weight": problem.smooth_weight,
             "coverage_cap_px": round(problem.cov_cap_px, 3),
             "seconds": round(time.perf_counter() - started, 3),

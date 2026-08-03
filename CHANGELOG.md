@@ -74,6 +74,28 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The two preconditions Stage A put in front of issue #278's Stage B are
+  measured, and they do not both fall the same way.** Stage A compared the chain
+  fit against the independent one under two silently different rules, and said
+  so; `chainbench` now removes both differences and re-measures. **M1** grades a
+  chain letter in its own letter-local coverage window — the window the
+  independent M4 trace was always graded in — while the fit keeps seeing the
+  whole pair window, since owning the connector's ink is the chain's entire
+  point; the report carries the union gate, the like-for-like gate and, as the
+  symmetric alternative, the baseline re-graded on the union window. **M3**
+  clips generated, chained and ink-read connector to one common arc (the
+  specimen's ink gap intersected with each curve's own x-span) before applying
+  the unchanged pairmeas formula, because the chain connector owns the two stub
+  zones the ink-read one does not have. The verdict changes accordingly:
+  three quarters of M3's Stage-A gap was definitional (chain 0.086 → 0.040 xh
+  against a bar of 0.034 → 0.028) and what remains sits in a single exit class,
+  while M1's shortfall survives the like-for-like comparison (0.665 → 0.690
+  against an unmoved 0.746) and is therefore a real property of the coupled
+  problem rather than a grading artifact. Written up in
+  `docs/proposals/uebergaenge-befund.md` §5c: the conditional go becomes a go,
+  with the M1 deficit carried into Stage B as a named floor and the
+  `pair_aggregates` ban kept for the loop-exit class. The fit itself is
+  untouched — M2, M4 and all three kill criteria reproduce number for number.
 - **`pairlab` can fit a letter join the way it was written — as one continuous
   pen path — and Stage A of issue #278 measured whether that is worth doing.**
   `tools/pairlab/chain.py` fits `letter → connector → letter` as ONE problem:

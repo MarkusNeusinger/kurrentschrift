@@ -318,8 +318,10 @@ umgesetzt) — maßgeblich ist der Status-Kopf des jeweiligen Dokuments.
   generisch richtig, Hoch-Exits (d-Schleife, Deckstrich-Bögen, r-Arm)
   ersetzen die Kopplungs-Stubs klassenweise — Lösungsoptionen O1–O3;
   **O1 + O2 (B-Seite) umgesetzt** (Compose-Loop `jul11`), der A-seitige
-  d-Stub-Trim gemessen und verworfen — *Status: Befund-Journal (Stand
-  2026-07-11; O1/O2 umgesetzt, O3 durch R3 überholt)*
+  d-Stub-Trim gemessen und verworfen; §5c trägt Stufe A des Kettenfits
+  (Issue #278, 248 Vorkommen) samt Nachmessung der beiden
+  Stufe-B-Vorbedingungen nach — *Status: Befund-Journal (Stand 2026-08-03;
+  O1/O2 umgesetzt, O3 durch R3 überholt, Stufe B freigegeben mit Auflagen)*
 - **[Schreibsystem-Redesign](proposals/schreibsystem-redesign.md)** —
   Richtungsentscheid 2026-07-17 (angenommen; R1–R5 sind umgesetzt,
   offen ist allein der Live-Import der Ernte-Entwürfe): eine Form

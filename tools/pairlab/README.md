@@ -105,14 +105,24 @@ of what is left between them. `tools/pairlab/chain.py` is the alternative:
   with the segment count, and the coverage distance is Huber-capped so foreign
   ink in the pair window has bounded leverage.
 - Per-segment residuals and gates (`core.fit`'s own `CONVERGED_*` thresholds),
-  so a failed connector still leaves two usable letters.
+  so a failed connector still leaves two usable letters. Each letter carries
+  **two** coverage gates: the union window it was fitted against and its own
+  letter-local window (`ChainSegmentSpec.cov_window_px`) — the window the
+  independent M4 trace was always graded in, so „converges at least as often"
+  is a like-for-like statement. Only the report differs; the fit is identical.
 
 `tools/pairlab/chainbench.py` runs BOTH paths over the same occurrences of the
 same frozen specimens and prints the four Stage-A metrics (convergence · joins
 that are empty today · connector shape `dconn` against the ink-read stroke ·
 letter shape against the hand's per-anchor MAD) plus the kill-criterion
 signals (tail-stub trend · capital partition · seam calibration against the
-0.2–0.4 xh stub-replacement zone):
+0.2–0.4 xh stub-replacement zone). M1 prints **three** convergence columns over
+the same solves (union gate · letter-local gate · baseline re-graded on the
+union window with the same attribution) plus the failure split into coverage
+and geometry, and M3 prints the `dconn` medians twice — whole curve and
+**arc-matched**, all curves clipped to the specimen's ink gap intersected with
+their own x-spans, since the chain connector owns the stub zones the ink-read
+one does not have:
 
 ```bash
 # the Abb.-20 drills — the fast smoke target (34 occurrences, ~30 s)
@@ -138,9 +148,11 @@ SQL egress).
 
 **Measurement only.** The chain reads frozen fixtures and writes JSON/CSV under
 `temp/`; it never touches the DB, the API, `core/` or rendering, and its
-connectors are not (yet) allowed into `pair_aggregates` — see
-`docs/proposals/uebergaenge-befund.md` §5c for the measured verdict and the two
-preconditions Stage B has to clear first.
+connectors are still not allowed into `pair_aggregates` — after the re-measured
+Stage-B preconditions the reason is no longer „the number is incomparable" but
+the loop-exit class (d, ſ), which is where the chain connector still misses the
+ink by +0,17 xh. See `docs/proposals/uebergaenge-befund.md` §5c for the verdict,
+the three M1 gates and the arc-matched M3.
 
 One PNG per pair (rows = occurrences, columns = overlay + profile) into
 `$PAIRLAB_OUT` (else `temp/`). Overlay colours: first letter dark red, second

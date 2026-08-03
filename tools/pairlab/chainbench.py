@@ -11,7 +11,11 @@ signals that decide whether the chain is worth a Stage B:
 * **M1 — convergence.** Does the chain converge at least as often as the two
   independent M4 traces? Pooled rate, per-letter rate and the PAIRED table
   (chain-only wins · baseline-only wins · both · neither), so a wash between
-  two equal rates cannot hide a swap.
+  two equal rates cannot hide a swap. Reported under THREE coverage gates,
+  because the gate — not the fit — decided the Stage-A number: the chain's own
+  **union** window, the **letter-local** window the baseline was always graded
+  in (`chain.ChainSegmentSpec.cov_window_px`, the like-for-like column), and the
+  symmetric alternative of grading the **baseline on the union** window.
 * **M2 — joins that are empty today.** Where the letters touch on the plate,
   `analyze._real_join` returns nothing and the occurrence contributes no
   measured join at all. The chain has ink under its connector regardless — how
@@ -21,7 +25,11 @@ signals that decide whether the chain is worth a Stage B:
   computed with `tools/wordbench/pairmeas.py`'s exact formula (arc-length
   resample to `core.aggregate.PAIR_CONNECTOR_POINTS`, each start-aligned, mean
   pointwise distance), for the GENERATED connector and the CHAIN's — the
-  generated number is the bar, the chain's is the candidate.
+  generated number is the bar, the chain's is the candidate. Reported twice: as
+  the whole stored curve (Stage A) and **arc-matched**, i.e. all three curves
+  clipped to the same x-interval — the specimen's ink gap intersected with every
+  curve's own span — because the chain connector owns the stub zones by
+  construction while the ink-read one begins at the gap.
 * **M4 — letter shape.** How far the chain moves each letter away from the
   independent trace, against the per-anchor MAD of the hand's own aggregates as
   the noise floor. A difference below the hand's own spread is not a difference.
@@ -64,11 +72,19 @@ from pathlib import Path
 from typing import Any, Iterable, Sequence
 
 import numpy as np
+from scipy.spatial import cKDTree
 
 from core.aggregate import PAIR_CONNECTOR_POINTS, _resample_polyline
 from core.compose import _key_base
+from core.fit import CONVERGED_COVERAGE_RMSE_UNITS, CONVERGED_GEO_RMSE_UNITS, _skeleton_points
 from tools.pairlab import chain as chain_mod
-from tools.pairlab.analyze import JoinDissection, _ink_extent_x, _stub_vs_body_delta, dissect_occurrence
+from tools.pairlab.analyze import (
+    TRACE_WINDOW_MARGIN,
+    JoinDissection,
+    _ink_extent_x,
+    _stub_vs_body_delta,
+    dissect_occurrence,
+)
 from tools.pairlab.harvest import _adjacent_joined, _px_to_units, connector_points
 from tools.wordlab.cases import DEFAULT_FIXTURES_DIR, REPO_ROOT, WordCase, _root_for, iter_fixture_word_cases
 from tools.wordlab.derive import WordDeriveResult, derive_word
@@ -145,6 +161,132 @@ def dconn(a: Sequence | np.ndarray, b: Sequence | np.ndarray) -> float | None:
     ra = _resample_polyline(pa, PAIR_CONNECTOR_POINTS)
     rb = _resample_polyline(pb, PAIR_CONNECTOR_POINTS)
     return float(np.linalg.norm((ra - ra[0]) - (rb - rb[0]), axis=1).mean())
+
+
+def clip_polyline_x(pts: Sequence | np.ndarray, x_lo: float, x_hi: float) -> np.ndarray:
+    """The part of a polyline inside the vertical band `[x_lo, x_hi]`, with the
+    crossing segments split by linear interpolation.
+
+    `arc_share`'s twin: that one measures how much arc lies on one side, this one
+    returns the arc itself. A non-monotone curve contributes every piece it has
+    inside the band, in traversal order — the pieces are concatenated, so a curve
+    that leaves and re-enters keeps its own sweep instead of being re-ordered.
+    """
+    p = np.asarray(pts, dtype=float).reshape(-1, 2)
+    if len(p) < 2 or not (x_hi > x_lo):
+        return np.zeros((0, 2))
+    out: list[np.ndarray] = []
+    for a, b in zip(p[:-1], p[1:], strict=True):
+        dx = b[0] - a[0]
+        if dx == 0.0:
+            if not (x_lo <= a[0] <= x_hi):
+                continue
+            t0, t1 = 0.0, 1.0
+        else:
+            ta, tb = (x_lo - a[0]) / dx, (x_hi - a[0]) / dx
+            t0, t1 = (ta, tb) if dx > 0 else (tb, ta)
+            t0, t1 = max(0.0, t0), min(1.0, t1)
+            if t1 <= t0:
+                continue
+        for t in (t0, t1):
+            q = a + t * (b - a)
+            if not out or not np.allclose(out[-1], q):
+                out.append(q)
+    return np.asarray(out, dtype=float).reshape(-1, 2)
+
+
+def dconn_matched_arc(
+    a: Sequence | np.ndarray, b: Sequence | np.ndarray, x_lo: float, x_hi: float
+) -> tuple[float | None, float]:
+    """`dconn` on the arc the two curves genuinely share — `(value, span)`.
+
+    Both curves are clipped to `[x_lo, x_hi]` intersected with each one's OWN
+    x-span, then compared by `dconn`'s (and hence pairmeas') formula. Stage-A's
+    M3 compared a chain connector that owns the two stub zones against an
+    ink-read one that starts at the ink gap; a part of that distance was
+    therefore definitional. `(None, 0.0)` when the shared arc is empty — which is
+    exactly what a touching letter pair (no gap, no ink-read join) must report
+    rather than a flattering number off a synthetic chord.
+    """
+    pa = np.asarray(a, dtype=float).reshape(-1, 2)
+    pb = np.asarray(b, dtype=float).reshape(-1, 2)
+    if len(pa) < 2 or len(pb) < 2:
+        return None, 0.0
+    lo = max(float(x_lo), float(pa[:, 0].min()), float(pb[:, 0].min()))
+    hi = min(float(x_hi), float(pa[:, 0].max()), float(pb[:, 0].max()))
+    if not (hi > lo):
+        return None, 0.0
+    return dconn(clip_polyline_x(pa, lo, hi), clip_polyline_x(pb, lo, hi)), hi - lo
+
+
+def common_x_window(curves: Sequence[np.ndarray], x_lo: float, x_hi: float) -> tuple[float, float] | None:
+    """`[x_lo, x_hi]` intersected with every curve's x-span, or None if empty.
+
+    Passed to `dconn_matched_arc` for all pairings of one occurrence, so the
+    generated and the chained connector are judged on the IDENTICAL arc and the
+    M3 table stays a comparison rather than two separate measurements.
+    """
+    lo, hi = float(x_lo), float(x_hi)
+    for c in curves:
+        arr = np.asarray(c, dtype=float).reshape(-1, 2)
+        if len(arr) < 2:
+            return None
+        lo = max(lo, float(arr[:, 0].min()))
+        hi = min(hi, float(arr[:, 0].max()))
+    return (lo, hi) if hi > lo else None
+
+
+def union_window_points(
+    skel: np.ndarray,
+    strokes_a: Sequence[np.ndarray],
+    strokes_b: Sequence[np.ndarray],
+    xh: float,
+    *,
+    margin: float = TRACE_WINDOW_MARGIN,
+    budget: int = chain_mod.CHAIN_COVERAGE_PER_SEGMENT * 3,
+) -> np.ndarray:
+    """The chain's own coverage targets, rebuilt from a dissection.
+
+    `chain.fit_pair_chain` cuts the union of both letter-local windows out of the
+    skeleton and subsamples it to `CHAIN_COVERAGE_PER_SEGMENT × 3`; this repeats
+    that verbatim so the BASELINE traces can be graded against the very same
+    points (M1's third column). Pure — skeleton in, points out.
+    """
+    if skel is None or xh <= 0:
+        return np.zeros((0, 2))
+    body_a = np.vstack(list(strokes_a))
+    body_b = np.vstack(list(strokes_b))
+    x_lo = min(float(body_a[:, 0].min()), float(body_b[:, 0].min())) - margin * xh
+    x_hi = max(float(body_a[:, 0].max()), float(body_b[:, 0].max())) + margin * xh
+    cols = np.arange(skel.shape[1])
+    pts = _skeleton_points(np.asarray(skel, dtype=bool) & ((cols >= x_lo) & (cols <= x_hi))[None, :])
+    if len(pts) > budget:
+        pts = pts[np.linspace(0, len(pts) - 1, budget).astype(int)]
+    return pts
+
+
+def attributed_cov_rmse(cov_pts: np.ndarray, polylines: Sequence[np.ndarray]) -> list[tuple[float, int]]:
+    """Per-polyline `(coverage RMSE px, n attributed)` under the chain's rule.
+
+    Every coverage point goes to the polyline holding its nearest sample —
+    `chain._ChainProblem.report_energies`' attribution, applied to a list of
+    independently fitted centerlines. An empty attribution reports `(0.0, 0)`,
+    the same convention the chain's own per-segment gate uses.
+    """
+    parts = [np.asarray(p, dtype=float).reshape(-1, 2) for p in polylines]
+    pts = np.asarray(cov_pts, dtype=float).reshape(-1, 2)
+    filled = [i for i, p in enumerate(parts) if len(p)]
+    if not len(pts) or not filled:
+        return [(0.0, 0)] * len(parts)
+    stacked = np.vstack([parts[i] for i in filled])
+    owner = np.concatenate([np.full(len(parts[i]), i) for i in filled])
+    dist, idx = cKDTree(stacked).query(pts)
+    out: list[tuple[float, int]] = []
+    for i in range(len(parts)):
+        sel = owner[idx] == i
+        n = int(sel.sum())
+        out.append((float(np.sqrt(np.mean(dist[sel] ** 2))) if n else 0.0, n))
+    return out
 
 
 def arc_share(poly_px: np.ndarray, x_split: float, *, keep_left: bool, xh: float) -> float:
@@ -342,6 +484,39 @@ def _fill_baseline(row: dict, d: JoinDissection) -> None:
     row["base_converged"] = (
         None if d.a_trace is None or d.b_trace is None else bool(d.a_trace.converged and d.b_trace.converged)
     )
+    _fill_baseline_union_gate(row, d)
+
+
+def _fill_baseline_union_gate(row: dict, d: JoinDissection) -> None:
+    """M1's third column — the BASELINE traces graded on the chain's window.
+
+    The symmetric half of Stage-B precondition 1: instead of narrowing the
+    chain's gate to the letter-local window, widen the baseline's to the union
+    one. Coverage is recomputed from scratch over the SAME targets, with the SAME
+    nearest-sample attribution and the SAME `core.fit` threshold the chain's gate
+    uses — and over the same three competitors, because the independent path has
+    a connector too: the regenerated `gen_px` between the two independently
+    placed letters. Only that makes it a mirror of the chain rather than a second
+    rule change (without it the gap ink would fall to the letters and the column
+    would measure the missing connector instead of the window).
+
+    Limitation, stated rather than hidden: only COVERAGE is re-derived. The
+    trace's `geo_rmse_px` still comes from its letter-local fit, so this column
+    is a coverage-side comparison, not a full re-grade.
+    """
+    if d.a_trace is None or d.b_trace is None or d.case.skel is None:
+        return
+    xh = float(d.result.xh_px)
+    cov = union_window_points(d.case.skel, d.a.body_px, d.b.body_px, xh)
+    if not len(cov):
+        return
+    per_seg = attributed_cov_rmse(cov, [d.a_trace.polyline_px, d.gen_px, d.b_trace.polyline_px])
+    row["base_gen_n_cov_union"] = per_seg[1][1]
+    for tag, trace, (rmse, n) in (("a", d.a_trace, per_seg[0]), ("b", d.b_trace, per_seg[2])):
+        row[f"base_{tag}_cov_rmse_union_px"] = _r(rmse)
+        row[f"base_{tag}_n_cov_union"] = n
+        row[f"base_{tag}_converged_union"] = bool(chain_mod._segment_converged(trace.geo_rmse_px, rmse, xh))
+    row["base_converged_union"] = bool(row["base_a_converged_union"] and row["base_b_converged_union"])
 
 
 def _fill_chain_segments(row: dict, fit: Any) -> tuple[Any, Any, Any]:
@@ -353,11 +528,19 @@ def _fill_chain_segments(row: dict, fit: Any) -> tuple[Any, Any, Any]:
     conn = connectors[0] if connectors else None
     for tag, seg in (("l", left), ("c", conn), ("r", right)):
         row[f"chain_{tag}_converged"] = None if seg is None else bool(seg.converged)
+        row[f"chain_{tag}_converged_local"] = None if seg is None else bool(seg.converged_local)
         row[f"chain_{tag}_geo_rmse_px"] = None if seg is None else _r(seg.geo_rmse_px)
         row[f"chain_{tag}_cov_rmse_px"] = None if seg is None else _r(seg.cov_rmse_px)
+        row[f"chain_{tag}_cov_rmse_local_px"] = None if seg is None else _r(seg.cov_rmse_local_px)
         row[f"chain_{tag}_n_cov"] = None if seg is None else int(seg.n_cov)
+        row[f"chain_{tag}_n_cov_local"] = None if seg is None else int(seg.n_cov_local)
         row[f"chain_{tag}_max_anchor_delta"] = None if seg is None else _r(seg.max_anchor_delta)
     row["chain_converged"] = bool(fit.converged)
+    row["chain_converged_local"] = bool(fit.converged_local)
+    # M2's gate is deliberately not `conn.converged` alone: a segment with zero
+    # attributed coverage passes its own gate by convention (see
+    # `chain._ChainProblem.report_energies`), so „the chain recovered this join"
+    # has to assert the ink separately.
     row["chain_connector_yielded"] = bool(conn is not None and conn.converged and conn.n_cov > 0)
     return left, conn, right
 
@@ -431,7 +614,16 @@ def _fill_letter_shape(
 
 def _fill_connector_metrics(row: dict, d: JoinDissection, fit: Any, conn: Any) -> None:
     """M3 (`dconn` for the generated and the chained connector) and the seam
-    calibration shares."""
+    calibration shares.
+
+    Two M3 variants per occurrence. The Stage-A one compares the curves whole;
+    the **arc-matched** one clips generated, chained and ink-read connector to
+    ONE common x-interval — the specimen's ink gap (`analyze._ink_extent_x`, the
+    very extents `_real_join` tracked between) intersected with each curve's own
+    span — before applying the same pairmeas formula. Without that clip the chain
+    is charged for arc the ink-read connector does not have: it owns the two stub
+    zones by construction, the ink-read one begins at the gap.
+    """
     xh = d.result.xh_px
     tx, ty = d.result.registration["tx"], d.result.registration["ty"]
     baseline_row = d.result.baseline_row
@@ -451,19 +643,39 @@ def _fill_connector_metrics(row: dict, d: JoinDissection, fit: Any, conn: Any) -
     if ink_conn is not None:
         row["dconn_gen"] = _r(dconn(gen_u, ink_conn))
 
+    chain_abs: np.ndarray | None = None
     chain_u = np.asarray(getattr(fit, "connector_units", None), dtype=float).reshape(-1, 2)
     if len(chain_u) >= 2:
         # Same construction as the ink side (strictly-between clip, smoothing,
         # downsampling), so the two curves differ by geometry alone.
         chain_conn = connector_points(tuple(chain_u[0]), tuple(chain_u[-1]), chain_u[1:-1], end_dy=0.0)
+        # `connector_points` returns the path RELATIVE to its own start; the
+        # arc-matched clip is an absolute-x operation, so put both curves back
+        # into this occurrence's shared unit frame first.
+        chain_abs = np.asarray(chain_conn, dtype=float).reshape(-1, 2) + np.asarray(chain_u[0], dtype=float)
         if ink_conn is not None:
             row["dconn_chain"] = _r(dconn(chain_conn, ink_conn))
             if row.get("dconn_gen") is not None and row.get("dconn_chain") is not None:
                 row["dconn_delta"] = _r(row["dconn_chain"] - row["dconn_gen"])
 
+    # --- the ink gap, in units: the arc all three curves are matched on ---
+    _, a_max_x = _ink_extent_x(d.a.body_px, baseline_row, xh)
+    b_min_x, _ = _ink_extent_x(d.b.body_px, baseline_row, xh)
+    gap = ((a_max_x - tx) / xh, (b_min_x - tx) / xh)
+    row["ink_gap_units"] = _r(gap[1] - gap[0])
+    if ink_conn is not None and chain_abs is not None:
+        ink_abs = np.asarray(ink_conn, dtype=float).reshape(-1, 2) + np.asarray(exit_u, dtype=float)
+        window = common_x_window([gen_u, chain_abs, ink_abs], *gap)
+        if window is not None:
+            gen_matched, span = dconn_matched_arc(gen_u, ink_abs, *window)
+            chain_matched, _ = dconn_matched_arc(chain_abs, ink_abs, *window)
+            row["matched_arc_units"] = _r(span)
+            row["dconn_gen_matched"] = _r(gen_matched)
+            row["dconn_chain_matched"] = _r(chain_matched)
+            if gen_matched is not None and chain_matched is not None:
+                row["dconn_delta_matched"] = _r(chain_matched - gen_matched)
+
     if conn is not None and len(np.asarray(conn.polyline_px, dtype=float).reshape(-1, 2)) >= 2:
-        _, a_max_x = _ink_extent_x(d.a.body_px, baseline_row, xh)
-        b_min_x, _ = _ink_extent_x(d.b.body_px, baseline_row, xh)
         row["chain_tail_share"] = _r(arc_share(conn.polyline_px, a_max_x, keep_left=True, xh=xh))
         row["chain_head_share"] = _r(arc_share(conn.polyline_px, b_min_x, keep_left=False, xh=xh))
 
@@ -491,6 +703,7 @@ def occurrence_row(case: WordCase, slot_a: int, result: WordDeriveResult, mad_ta
         row["status"] = "skipped"
         row["detail"] = "dissection returned None (missing template / unscorable)"
         return row
+    row["xh_px"] = _r(d.result.xh_px, 2)  # the gates' unit — `gate_failures` needs it per row
     _fill_baseline(row, d)
 
     started = time.perf_counter()
@@ -640,23 +853,54 @@ def paired_counts(rows: Iterable[dict], base_field: str, chain_field: str) -> di
     }
 
 
+def gate_failures(rows: Iterable[dict], *, local: bool) -> dict:
+    """Why chain LETTER segments fail their gate: coverage, geometry, or both.
+
+    Stage A's decisive diagnosis (70 of 99 failures were coverage, not geometry)
+    read off the row columns rather than re-derived, and available for either
+    coverage window — which is exactly the before/after of Stage-B precondition 1.
+    """
+    out = {"n": 0, "cov_only": 0, "geo_only": 0, "both": 0, "neither": 0}
+    for r in rows:
+        xh = r.get("xh_px")
+        if not xh:
+            continue
+        for tag in ("l", "r"):
+            converged = r.get(f"chain_{tag}_converged_local" if local else f"chain_{tag}_converged")
+            if converged is None or converged:
+                continue
+            geo = r.get(f"chain_{tag}_geo_rmse_px")
+            cov = r.get(f"chain_{tag}_cov_rmse_local_px" if local else f"chain_{tag}_cov_rmse_px")
+            geo_bad = geo is not None and float(geo) > CONVERGED_GEO_RMSE_UNITS * float(xh)
+            cov_bad = cov is not None and float(cov) > CONVERGED_COVERAGE_RMSE_UNITS * float(xh)
+            out["n"] += 1
+            out["both" if geo_bad and cov_bad else "geo_only" if geo_bad else "cov_only" if cov_bad else "neither"] += 1
+    return out
+
+
 def per_letter_rates(rows: Iterable[dict]) -> dict[str, dict]:
     """Convergence per glyph key — a letter is counted once per occurrence it
-    takes part in, on whichever side of the join it sits."""
+    takes part in, on whichever side of the join it sits.
+
+    `chain` is the union-window gate, `chain_local` the letter-local one, counted
+    in the SAME pass over the same denominator so the two columns are directly
+    subtractable (a letter whose local gate is missing keeps its union count)."""
     out: dict[str, dict] = {}
     for r in rows:
-        for key_field, base_field, chain_field in (
-            ("chain_l_key", "base_a_converged", "chain_l_converged"),
-            ("chain_r_key", "base_b_converged", "chain_r_converged"),
+        for key_field, base_field, tag in (
+            ("chain_l_key", "base_a_converged", "l"),
+            ("chain_r_key", "base_b_converged", "r"),
         ):
             key = r.get(key_field) or ""
-            b, c = r.get(base_field), r.get(chain_field)
+            b, c = r.get(base_field), r.get(f"chain_{tag}_converged")
             if not key or b is None or c is None:
                 continue
-            entry = out.setdefault(key, {"n": 0, "base": 0, "chain": 0})
+            local = r.get(f"chain_{tag}_converged_local")
+            entry = out.setdefault(key, {"n": 0, "base": 0, "chain": 0, "chain_local": 0})
             entry["n"] += 1
             entry["base"] += bool(b)
             entry["chain"] += bool(c)
+            entry["chain_local"] += bool(c if local is None else local)
     return out
 
 
@@ -722,8 +966,10 @@ def print_rows(rows: Sequence[dict]) -> None:
         print(
             f"  {r['id']:<14} [{r['kind']}]{'!' if r.get('base_at_bound') else ' '} {r['pair']:<12} "
             f"conv base {gate(r.get('base_a_converged'))}{gate(r.get('base_b_converged'))} "
-            f"chain {gate(r.get('chain_l_converged'))}{gate(r.get('chain_c_converged'))}{gate(r.get('chain_r_converged'))}  "
-            f"dconn gen {_fmt(r.get('dconn_gen'))} chain {_fmt(r.get('dconn_chain'))}  "
+            f"chain {gate(r.get('chain_l_converged'))}{gate(r.get('chain_c_converged'))}{gate(r.get('chain_r_converged'))} "
+            f"local {gate(r.get('chain_l_converged_local'))}{gate(r.get('chain_r_converged_local'))}  "
+            f"dconn gen {_fmt(r.get('dconn_gen'))} chain {_fmt(r.get('dconn_chain'))} "
+            f"matched {_fmt(r.get('dconn_gen_matched'))}/{_fmt(r.get('dconn_chain_matched'))}  "
             f"stub {_fmt(r.get('base_a_tail_stub_delta'), 2)}->{_fmt(r.get('chain_l_stub_delta'), 2)}  "
             f"seam {_fmt(r.get('chain_tail_share'), 2)}/{_fmt(r.get('chain_head_share'), 2)}"
             + ("" if r.get("chain_status") == "ok" else f"  [chain {r.get('chain_status')}: {r.get('detail', '')}]")
@@ -754,18 +1000,34 @@ def print_report(rows: Sequence[dict], *, mad_table: dict, sets: Sequence[str], 
 
     print()
     print("=== M1 — convergence (chain vs. the two independent M4 traces) ===")
-    table = paired_counts(chained, "base_converged", "chain_converged")
-    print(f"  pooled  baseline {_fmt(table['base_rate'], 3)}  chain {_fmt(table['chain_rate'], 3)}  (n={table['n']})")
-    print(
-        f"  paired  both {table['both']} · chain-only {table['chain_only']} · "
-        f"baseline-only {table['base_only']} · neither {table['neither']}"
-    )
+    print("  the gate, not the fit, moves these numbers — three coverage windows, same solves:")
+    for label, base_field, chain_field in (
+        ("union gate (Stage A)", "base_converged", "chain_converged"),
+        ("letter-local gate", "base_converged", "chain_converged_local"),
+        ("baseline on union", "base_converged_union", "chain_converged"),
+    ):
+        table = paired_counts(chained, base_field, chain_field)
+        print(
+            f"  {label:<21} baseline {_fmt(table['base_rate'], 3)}  chain {_fmt(table['chain_rate'], 3)}  "
+            f"(n={table['n']})  both {table['both']} · chain-only {table['chain_only']} · "
+            f"baseline-only {table['base_only']} · neither {table['neither']}"
+        )
+    for label, local in (("union", False), ("letter-local", True)):
+        f = gate_failures(chained, local=local)
+        print(
+            f"  failing chain letter segments, {label:<12} n {f['n']:>3}  "
+            f"coverage-only {f['cov_only']} · geometry-only {f['geo_only']} · both {f['both']} · "
+            f"neither {f['neither']}"
+        )
     letters = per_letter_rates(chained)
     if letters:
-        print("  per letter (worst chain rate first):")
-        ranked = sorted(letters.items(), key=lambda kv: (kv[1]["chain"] / kv[1]["n"], -kv[1]["n"]))
+        print("  per letter (worst local chain rate first):")
+        ranked = sorted(letters.items(), key=lambda kv: (kv[1]["chain_local"] / kv[1]["n"], -kv[1]["n"]))
         for key, e in ranked[:20]:
-            print(f"    {key:<8} n {e['n']:>3}  base {_pct(e['base'], e['n']):<14} chain {_pct(e['chain'], e['n'])}")
+            print(
+                f"    {key:<8} n {e['n']:>3}  base {_pct(e['base'], e['n']):<14} "
+                f"chain {_pct(e['chain'], e['n']):<14} chain-local {_pct(e['chain_local'], e['n'])}"
+            )
 
     print()
     print("=== M2 — joins with no readable specimen ink today ===")
@@ -792,12 +1054,36 @@ def print_report(rows: Sequence[dict], *, mad_table: dict, sets: Sequence[str], 
             f"  paired Δ (chain − generated)  median {_fmt(float(np.median(deltas)), 4)}  "
             f"better {st['neg']} · worse {st['pos']} · p {st['p']}"
         )
+    gen_m = summarize(_values(chained, "dconn_gen_matched"))
+    ch_m = summarize(_values(chained, "dconn_chain_matched"))
+    span = summarize(_values(chained, "matched_arc_units"))
+    print("  arc-matched (all curves clipped to the ink gap ∩ their own spans):")
+    print(
+        f"    generated  n {gen_m['n']:>3}  median {_fmt(gen_m['median'])}  mean {_fmt(gen_m['mean'])}  "
+        f"p90 {_fmt(gen_m['p90'])}"
+    )
+    print(
+        f"    chain      n {ch_m['n']:>3}  median {_fmt(ch_m['median'])}  mean {_fmt(ch_m['mean'])}  "
+        f"p90 {_fmt(ch_m['p90'])}"
+    )
+    deltas_m = _values(chained, "dconn_delta_matched")
+    if deltas_m:
+        st_m = sign_test(deltas_m)
+        print(
+            f"    paired Δ (chain − generated)  median {_fmt(float(np.median(deltas_m)), 4)}  "
+            f"better {st_m['neg']} · worse {st_m['pos']} · p {st_m['p']}"
+        )
+    print(f"    matched arc length  median {_fmt(span['median'])} xh  (n {span['n']} of {len(chained)} chained)")
     by_class: dict[str, list[dict]] = defaultdict(list)
     for r in chained:
         by_class[r.get("pair_class", "?")].append(r)
     for cls, group in sorted(by_class.items()):
         g, c = summarize(_values(group, "dconn_gen")), summarize(_values(group, "dconn_chain"))
-        print(f"    {cls:<16} n {c['n']:>3}  gen median {_fmt(g['median'])}  chain median {_fmt(c['median'])}")
+        gm, cm = summarize(_values(group, "dconn_gen_matched")), summarize(_values(group, "dconn_chain_matched"))
+        print(
+            f"    {cls:<16} n {c['n']:>3}  gen {_fmt(g['median'])} → chain {_fmt(c['median'])}   "
+            f"matched (n {cm['n']:>3}) gen {_fmt(gm['median'])} → chain {_fmt(cm['median'])}"
+        )
 
     print()
     print("=== M4 — letter shape vs. the MAD noise floor ===")
