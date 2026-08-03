@@ -27,6 +27,7 @@ gemessene Hand-Parameter.
 | Ich will… | Gehe zu |
 |---|---|
 | Wissen, wie aktuell ein Doc ist (bindend · lebend · offen …) | [Dokument-Status](#dokument-status) |
+| Einen Fachbegriff oder eine Kennzahl nachschlagen (Duktus, Laufform, `gen_chamfer`, M1–M4 …) | [Glossar](reference/glossar.md) |
 | Wissen, was die Endnutzer-Website sein soll | [Vision der Website](concepts/vision.md) |
 | Den Weg Scan → Bibliothek → Schreiben → Statistik am Stück verstehen | [Vom Scan zum Schreibsystem](concepts/vom-scan-zum-schreiben.md) |
 | Den Architekturkern verstehen | [Architektur-Referenz](concepts/architektur.md) |
@@ -75,6 +76,7 @@ docs/
 │   ├── federmodelle.md           # Drei Federn, ein Renderpfad: Bandzugfeder-Gesetz, Spitzfeder-Haarstriche, Ziffern/Satzzeichen (joins:false)
 │   └── naming-und-setup.md       # Repo-Name, Domain, Lizenz, Verzeichnis-Split, Frontend-Stack, Hosting
 ├── reference/                    # Policy- und Technik-Dokumente mit Begründung
+│   ├── glossar.md                # Fachbegriffe & Repo-Redewendungen: Schrift · Architektur · Fit · Metriken · Werkbank · Forschung
 │   ├── sprachregelung.md         # Deutsch/Englisch pro Artefakt
 │   ├── quellen-und-rechte.md     # Was darf rein, was nicht; PD/CC/NC-SA
 │   ├── datenablage.md            # `/data`-Baum, SOURCE.md, Commit-Klassen
@@ -143,6 +145,7 @@ Regeln stehen, die noch nicht implementiert sind.
 | [`contributing.md`](contributing.md) | neuer öffentlicher Route in `app/src/routes/paths.ts`, gefallenem MVP-Gate (`architektur.md` §8) oder Öffnung für externe PRs — betrifft Absatz 1 und „Not yet useful“ |
 | [`concepts/vom-scan-zum-schreiben.md`](concepts/vom-scan-zum-schreiben.md) | jeder neuen Stufe im Datenfluss, jeder neuen Admin-Fläche und jeder geschlossenen Lücke — insbesondere der Lücken-Liste am Ende, wenn eines der dort verlinkten Issues (#270–#274) schließt |
 | [`concepts/design-system.md`](concepts/design-system.md) | Änderungen an `app/src/styles/paper.ts`, `theme/typography.ts`, `components/PageContainer · Prose · PageHeader · PublicHeader · PublicFooter` oder an der öffentlichen Routen-/Bereichsstruktur (`routes/paths.ts`) |
+| [`reference/glossar.md`](reference/glossar.md) | jedem Doc und jedem PR, der einen neuen Fachbegriff, eine neue Kennzahl oder eine neue Redewendung prägt — der Eintrag entsteht im selben PR (Regel auch in `CLAUDE.md` § „Working guardrails“, `.github/copilot-instructions.md` und den Skills `/write-docs` + `/open-pr`) |
 | [`reference/write-api.md`](reference/write-api.md) | jeder Änderung an einer `/write/*`-Route (`api/routers/write.py` inkl. `compose_word_payload`), an `core/shaping.py`, `core/compose.py`, `core/pipeline.py::render_payload_for_template`, `api/rendering.py` oder den Cache-Headern in `api/http.py` |
 | [`reference/qualitaetsmetrik.md`](reference/qualitaetsmetrik.md) | jeder Änderung an `core/quality.py`, `core/quality_suetterlin.py`, `core/geometry.py`, `core/word_metric.py`, jedem Re-Baseline der eingefrorenen Fixtures und jedem Bench-/Loop-Lauf, der eine Headline bewegt (neuer datierter Abschnitt) |
 | [`reference/frontend-stack.md`](reference/frontend-stack.md) | Stack-Versionen (`app/package.json`), Routenkarte (`app/src/routes/paths.ts`), Build/Deploy (`app/cloudbuild.yaml`, `api/cloudbuild.yaml`, `app/Dockerfile`, `app/nginx.conf`, Cloud-Run-Parameter) oder Admin-Gate (`api/auth.py`, `core/config.py`, Cloudflare Access) |
@@ -210,6 +213,14 @@ und was bewusst verworfen wurde.
 
 Policy- und Technik-Dokumente.
 
+- **[Glossar](reference/glossar.md)** — Fachbegriffe und Repo-Redewendungen
+  in sechs Themenblöcken (Schrift & Paläografie · Architektur &
+  Datenmodell · Mess- und Fit-Vokabular · Metriken & Benchmarks ·
+  Werkbank & Prozess · Extern/Forschung), je Eintrag eine
+  allgemeinverständliche Erklärung plus Anker-Vokabular (Formel, Modul,
+  Konstante) zum Weitergraben; alphabetischer Schnellindex oben.
+  **Nachzieh-Pflicht: jeder PR, der einen Begriff oder eine Kennzahl
+  prägt, legt hier einen Eintrag an**
 - **[Sprachregelung](reference/sprachregelung.md)** — Code immer Englisch,
   interne Docs Deutsch, README Englisch, Website v1 Deutsch
 - **[Quellen- und Rechte-Policy](reference/quellen-und-rechte.md)** — Süß

@@ -92,6 +92,35 @@ Rules:
    in `docs/index.md` § „Dokument-Status“; when it stops being `lebend`,
    remove it there.
 
+## New terms go in the glossary (same PR)
+
+`docs/reference/glossar.md` is the one place a reader looks up a term they
+met in a doc, an issue, a PR or the admin UI. It only works if it does not
+lag behind the prose that coins the words.
+
+**Rule: any doc or PR that COINS a new Fachbegriff, metric, named
+constant-with-a-story or repo idiom adds its glossary entry in the SAME
+change.** Coining includes: naming a new measurement (`gen_chamfer`,
+`doff`), naming a failure mode („degenerierte Solves“, „Cusp-Connector“),
+naming a stage or gate („like-for-like Gate“, „Vereinfachungs-Gate“), and
+renaming an existing concept.
+
+Entry shape (German prose, English identifiers as-is):
+
+```markdown
+**Begriff** *(English twin, if one exists)* — one to three sentences that
+assume no prior knowledge. *Technisch:* the formula name, the module or
+constant it lives in (`core/fit.py::CONVERGED_GEO_RMSE_UNITS`), enough
+anchor vocabulary that pasting the entry into any AI chat lets the reader
+dig deeper. → owning-doc.md §n
+```
+
+Then: put the term into the alphabetical Schnellindex at the top of the
+glossary, and file it under the right themed section (§1 Schrift · §2
+Architektur · §3 Mess/Fit · §4 Metriken · §5 Werkbank · §6 Extern). Purely
+internal identifiers with no story do **not** belong there — the glossary
+is for terms a human meets in prose, not an API reference.
+
 ## What is settled
 
 Sections titled **„Verworfen“** (and the recorded style rounds in
@@ -109,6 +138,15 @@ contradicts a Verworfen entry, stop and surface it to the user.
 
   ```bash
   git diff main -- CLAUDE.md .github/copilot-instructions.md
+  ```
+
+- **New terms ↔ `docs/reference/glossar.md`** (see the section above) —
+  after writing, sweep your own diff for words a stranger could not
+  resolve and check each one is in the glossary:
+
+  ```bash
+  grep -o '\*\*[^*]*\*\*' DOC.md | sort -u          # your coined terms (DOC.md = the doc you changed)
+  grep -n 'TERM' docs/reference/glossar.md          # is it there?
   ```
 
 - `docs/index.md` quick-links table ↔ the actual file tree. List the

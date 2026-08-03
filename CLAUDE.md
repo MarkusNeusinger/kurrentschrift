@@ -42,6 +42,7 @@ The design is already settled in the docs; do not re-litigate decisions that hav
 - `docs/concepts/architektur.md` — architecture. §1 (problem split, indexes all sections), §2 (analysis-by-synthesis), §3 (library schema), §4 (ligature exception), §5 (Schwellzug vs ink + width-profile resolver), §6 (3-stage quality pipeline), §7 (the one real research risk), §8 (MVP — four gates), §9 (test words), §10 (build order, post-MVP phases P1–P5). Post-MVP sections: §11 (animation render path), §12 (style analysis pipeline), §13 (HTR integration), §14 (Lese-Lupe), §15 (print pipeline), §16 (frontend architecture), §17 (open-data export).
 - `docs/concepts/mvp-roadmap.md` — actionable breakdown of §8 into Schritt 0 + M0–M7 milestones (M7 = abgespeckte animation, MVP gate 4)
 - `docs/concepts/naming-und-setup.md` — repo/name/license/layout/frontend-stack/hosting decisions
+- `docs/reference/glossar.md` — the project vocabulary: every Fachbegriff and repo idiom from the docs/issues/UI (Duktus-Prior, Laufform, Schwellzug, `gen_chamfer`/`doff`/`dconn`, Bézier-Handle-Floor, Cusp-Connector, the Stage-A metrics M1–M4, AIoU/LDTW …) with a plain-language explanation plus the module/constant anchor to dig deeper. Look a term up here instead of reverse-engineering it; **a PR that coins a new term or metric adds its entry in the same PR**
 - `docs/reference/sprachregelung.md` — language rules (see below)
 - `docs/reference/quellen-und-rechte.md` + `docs/reference/datenablage.md` — data/licensing rules (see below)
 
@@ -82,6 +83,7 @@ Known gaps without a loop yet: admin write flows against the LIVE DB (the HTTP s
 
 - **Never commit on `main`** — branch first, even for a quick "commit and push" outside `/open-pr`.
 - **Every PR updates `CHANGELOG.md`** (`[Unreleased]`, Keep-a-Changelog categories, English, bold-titled bullets like the existing entries) — that file is how releases get posted; a PR without its entry is incomplete. Data-only commits (chart sources, authored templates) are exempt — their provenance lives in `SOURCE.md`.
+- **New terms coined by a PR get a glossary entry in the same PR** — any new Fachbegriff, metric, named failure mode or repo idiom (`gen_chamfer`, „Cusp-Connector“, „like-for-like Gate“) is added to `docs/reference/glossar.md`, themed section plus alphabetical Schnellindex, so the vocabulary never outruns the place people look it up. Format and scope: `/write-docs` § "New terms go in the glossary".
 - **Prod-touching actions need explicit in-session confirmation first** (Cloud SQL DDL/queries, Secret Manager access, Cloudflare Access policies): name the exact action, resource, and any email/secret id, and ask before acting.
 - **Never echo secret values into the transcript** — verify by exit code or metadata.
 - **Modify repo files only with the Edit/Write tools, never via Bash heredocs/sed.** When a Bash command legitimately mutates a tracked file (formatter, codegen, `git checkout`), Read the file again before the next Edit on it — stale-state errors cascade otherwise.
