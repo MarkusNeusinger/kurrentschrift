@@ -98,9 +98,10 @@ export function PairMeasuredChips({
     lines.push(fmt(w.statsResid, { mean: num(meanStats.resid.mean, 3), max: num(meanStats.resid.max, 3) }));
   }
   if (isPoint(offset)) {
-    // Without a stored MAD the ± clause is dropped entirely.
+    // Without a stored MAD the ± clause is dropped entirely — and a singleton
+    // aggregate (n=1) stores a computed zero that is no spread, so it drops too.
     lines.push(
-      isPoint(offsetMad)
+      isPoint(offsetMad) && (aggregate?.n_instances ?? 0) >= 2
         ? fmt(w.statsOffset, {
             x: num(offset[0], 2),
             y: num(offset[1], 2),

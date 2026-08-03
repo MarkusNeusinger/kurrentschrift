@@ -22,6 +22,8 @@ which is exactly why it is its own deliberate step and never a side effect of
 the rebuild. The pair side has no such counterpart on purpose (see below).
 """
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -116,7 +118,7 @@ async def list_aggregates(hand: Hand = Depends(require_hand), db: AsyncSession =
 
 @router.post("/rebuild", response_model=AggregateRebuildOut)
 async def rebuild_aggregates(
-    min_n: int = Query(4, ge=1), hand: Hand = Depends(require_hand), db: AsyncSession = Depends(require_db)
+    min_n: int = Query(1, ge=1), hand: Hand = Depends(require_hand), db: AsyncSession = Depends(require_db)
 ):
     """Recompute this hand's aggregates from its stored occurrences.
 
@@ -126,6 +128,15 @@ async def rebuild_aggregates(
     `min_n` usable occurrences. The hand's previous aggregates are replaced
     wholesale, so a key that no longer qualifies disappears instead of going
     stale.
+
+    `min_n` defaults to 1, like the pair rebuild and for a related reason
+    (issue #273): SEEING a median is measurement — nothing renders from it — so
+    withholding the only evidence there is helps nobody, and nearly every
+    capital stays below four occurrences on the 1922 plates. The caution the
+    old default of 4 encoded belongs one step further on, at `apply-laufform`,
+    where a human reads `n_instances` per glyph and presses a button. The gate
+    itself stays in `core/aggregate.py` and keeps counting `below_min_n` for
+    whatever threshold is passed.
 
     The response carries the H1 Prüfstein per key: `laufform_dev_xh`, the mean
     anchor distance between the recomputed median and the stored Laufform
@@ -181,7 +192,14 @@ async def rebuild_aggregates(
 
 
 @router.post("/apply-laufform", response_model=AggregateApplyOut)
-async def apply_laufform(hand: Hand = Depends(require_hand), db: AsyncSession = Depends(require_db)):
+async def apply_laufform(
+    # Annotated rather than a plain default: a repeated query parameter needs a
+    # list annotation, and a call in a list-typed default is exactly what B008
+    # forbids.
+    glyph_keys: Annotated[list[str] | None, Query()] = None,
+    hand: Hand = Depends(require_hand),
+    db: AsyncSession = Depends(require_db),
+):
     """Derive the style's Laufform rows (templates variant 100) FROM this
     hand's stored aggregates — the last H1 step.
 
@@ -204,6 +222,16 @@ async def apply_laufform(hand: Hand = Depends(require_hand), db: AsyncSession = 
     a key without a chart template or with a deviating anchor count. Idempotent
     — a second run rewrites the same rows (upsert on the unique
     `(style_id, glyph_key, variant)`) and reports `laufform_dev_xh` 0.
+
+    `glyph_keys` narrows the write to the named keys (repeatable query
+    parameter, e.g. `?glyph_keys=a&glyph_keys=n`); absent, every stored
+    aggregate is a candidate as before. The selection exists because the
+    aggregate gate is `min_n = 1` (issue #273): with singletons in the
+    statistics layer, "apply everything or nothing" would force a hand's
+    one-occurrence idiosyncrasies into the writing path together with its
+    well-attested medians. Every key the selection left out is reported back in
+    `excluded`, so the response says what was NOT written just as plainly as
+    what was.
     """
     if not hand.style_id:
         raise HTTPException(
@@ -212,10 +240,19 @@ async def apply_laufform(hand: Hand = Depends(require_hand), db: AsyncSession = 
     rows = await AggregateRepository(db).list(hand_id=hand.id)
     applied: list[AggregateApplyKeySummary] = []
     skipped: list[AggregateApplySkip] = []
+    # None = no selection = every aggregate is a candidate (the pre-#273
+    # behaviour); an EMPTY selection is a deliberate "write nothing" and is not
+    # silently widened back to all.
+    selection = None if glyph_keys is None else set(glyph_keys)
+    excluded: set[str] = set()
 
     usable: list[Aggregate] = []
     for row in rows:
-        if row.variant == LAUFFORM_VARIANT:
+        if selection is not None and row.glyph_key not in selection:
+            # Deselected is not the same as unusable: it never reaches the
+            # variant/topology triage below, and it is reported on its own.
+            excluded.add(row.glyph_key)
+        elif row.variant == LAUFFORM_VARIANT:
             # A derived row may never be its own input.
             skipped.append(AggregateApplySkip(glyph_key=row.glyph_key, variant=row.variant, reason="laufform_variant"))
         elif row.variant != 0:
@@ -277,7 +314,9 @@ async def apply_laufform(hand: Hand = Depends(require_hand), db: AsyncSession = 
     # The skips are collected in two passes (variants, then per-key) — sort them
     # back into the aggregate listing's order so the report reads as one list.
     skipped.sort(key=lambda s: (s.glyph_key, s.variant))
-    return AggregateApplyOut(hand_id=hand.id, style_id=hand.style_id, applied=applied, skipped=skipped)
+    return AggregateApplyOut(
+        hand_id=hand.id, style_id=hand.style_id, applied=applied, skipped=skipped, excluded=sorted(excluded)
+    )
 
 
 # ------------------------------------------------- pair aggregates (Stufenplan H2)
