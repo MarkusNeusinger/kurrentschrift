@@ -260,10 +260,26 @@ den Aggregat-Median als Ankerkette mit MAD-Kreisen über Grund- und Mittellinie
 „Gemessen vs. komponiert" jede Vorkommens-Verbindung dünn, den Median-Connector
 kräftig darüber und den Median-Versatz als Punkt mit MAD-Whisker. Je Schicht
 ein leiser Neuaufbau-Knopf; dazu die „Gemessen"-Chips auf den Karten der
-Verbindungs-Platten. **`apply-laufform` fehlt in der Werkbank bewusst** — es
-ändert Rendering und ist damit genau der Griff, den die Doktrin auf dieser
-Fläche verbietet (optimierungs-werkbank.md §3/§7); heute ist es nur über die
-API erreichbar, eine eigene Admin-Fläche dafür fehlt noch.
+Verbindungs-Platten.
+
+**Der Rückkanal hat seit 2026-08 eine Oberfläche** — und zwar eine, die sich
+von den Inspektionsflächen abhebt, statt sich unter sie zu mischen. In
+`/admin/buchstaben` sagt ein Chip je Buchstabe, ob die geschriebene Laufform
+noch der gespeicherten Statistik entspricht („Laufform aktuell" ·
+„Laufform veraltet · Abstand 0,05" · „noch keine Laufform"), und die
+Median-Skizze zeichnet die **aktuell geschriebene** Laufform gestrichelt rot
+gegen den Median, der sie ersetzen würde — der Unterschied ist damit
+anzusehen, bevor irgendetwas passiert. Die Zahl dahinter kommt neuerdings aus
+einem gewöhnlichen Read: `GET /hands/{id}/aggregates` liefert je Zeile
+`laufform_anchors` und `laufform_dev_xh`, vorher war der Prüfstein nur als
+Nebenprodukt eines Neuaufbaus oder eines Apply zu bekommen (man musste also
+etwas *tun*, um zu erfahren, ob man etwas tun sollte). Das Überschreiben selbst
+sitzt am Fuß der Ansicht in einem eigenen, gestrichelt umrandeten Block und
+verlangt eine **Bestätigung**, die vorher auflistet, was sich ändert: je
+Buchstabe Vorkommenszahl und Abstand, „neu" für eine erstmals geschriebene
+Laufform, „unverändert" für Abstand 0 — danach der Bericht, was geschrieben und
+was übersprungen wurde. Die Doktrin bleibt gewahrt: nicht weil der Griff
+versteckt ist, sondern weil er sich als das ausweist, was er ist.
 
 **Wer macht was:** Algorithmus — Median, Streuung, Prüfstein. Mensch — der
 Beschluss, wann `apply-laufform` läuft.
@@ -414,17 +430,23 @@ Prüfung.
 
 ---
 
-## Bekannte Lücken (Stand 2026-08-02)
+## Bekannte Lücken (Stand 2026-08-03)
 
-- **`apply-laufform` hat nirgends eine Oberfläche** — der einzige Rückkanal von
-  der Statistik ins Rendering ist nur per API-Aufruf erreichbar
+- ~~**`apply-laufform` hat nirgends eine Oberfläche**~~ — **geschlossen
+  (2026-08)**: Freigabe-Block mit Bestätigungsdialog in `/admin/buchstaben`,
+  Frische-Chip und Differenz-Skizze je Buchstabe, `laufform_dev_xh` +
+  `laufform_anchors` auf `GET /hands/{id}/aggregates`
   ([#270](https://github.com/MarkusNeusinger/kurrentschrift/issues/270)).
+  Offen bleibt aus derselben Ausgabe die **Paar-Seite** der Hand-Übersicht: die
+  `pair_aggregates` haben keine Tabelle, nur die Linse je Übergang.
 - **Die Ernte ist aus dem Admin nicht auslösbar** — `tools/laufform/harvest.py`
   und `tools/pairlab/harvest.py` laufen nur auf der Kommandozeile
   ([#272](https://github.com/MarkusNeusinger/kurrentschrift/issues/272)).
-- **Es fehlt eine Hand-Übersicht** — eine Tabelle aller Aggregate einer Hand
-  (Abdeckung, `n`, Streuung, Abstand zur Laufform) auf einen Blick gibt es
-  nicht ([#270](https://github.com/MarkusNeusinger/kurrentschrift/issues/270)).
+- **Die Hand-Übersicht ist halb da** — der Bestätigungsdialog listet alle
+  Buchstaben-Aggregate mit `n` und Abstand zur Laufform, aber nur im Moment der
+  Übernahme und ohne die Paar-Schicht; eine dauerhaft abrufbare Tabelle über
+  beide Schichten (Abdeckung, Streuung) fehlt weiter
+  ([#270](https://github.com/MarkusNeusinger/kurrentschrift/issues/270)).
 - **`min_n` = 4 schließt die Versalien praktisch aus** — Großbuchstaben kommen
   auf den Platten zu selten vor, um die Schwelle zu erreichen, und bekommen
   daher keine Laufform
@@ -433,11 +455,13 @@ Prüfung.
   misst, wie stark die Hand den Buchstabenkörper für den Übergang umformt, aber
   keine Tabelle hält das Ergebnis
   ([#274](https://github.com/MarkusNeusinger/kurrentschrift/issues/274)).
-- **Veraltung ist weder sichtbar noch geprüft** — kein Marker zeigt an, dass
-  Fits, Aggregate oder eine Laufform hinter ihrer Quelle herhinken; für die
-  Laufform-Frische [#270](https://github.com/MarkusNeusinger/kurrentschrift/issues/270),
-  für eingefrorene Paar-Overrides
-  [#271](https://github.com/MarkusNeusinger/kurrentschrift/issues/271).
+- **Veraltung ist nur für die Laufform sichtbar** — dort sagt es der
+  Frische-Chip je Buchstabe (2026-08,
+  [#270](https://github.com/MarkusNeusinger/kurrentschrift/issues/270)). Für
+  Fits, die auf einem inzwischen neu getuschten Tafel-Duktus beruhen, und für
+  eingefrorene Paar-Overrides
+  ([#271](https://github.com/MarkusNeusinger/kurrentschrift/issues/271)) gibt
+  es weiter keinen Marker und keine Prüfung.
 
 ---
 

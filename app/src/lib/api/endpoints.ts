@@ -8,6 +8,7 @@ import { CONFIG } from '@/global-config';
 import { apiFetch, asJson, type RetryOptions } from '@/lib/api/client';
 import type {
   AggregateOut,
+  AggregateApplyOut,
   AggregateRebuildOut,
   BatchStoreOut,
   BboxIn,
@@ -191,6 +192,15 @@ export const rebuildAggregates = (handId: string): Promise<AggregateRebuildOut> 
 
 export const rebuildPairAggregates = (handId: string): Promise<PairAggregateRebuildOut> =>
   apiFetch(hnd(handId, '/pair-aggregates/rebuild'), { method: 'POST' }).then(asJson<PairAggregateRebuildOut>);
+
+// Write the hand's STORED aggregates into the style's Laufform rows (template
+// variant 100) — the one step of the whole hand model that changes what the
+// engine writes. Everything else here measures; this one renders, which is why
+// the UI puts a confirmation in front of it (docs/proposals/
+// optimierungs-werkbank.md §3, issue #270) and why it is deliberately NOT a
+// side effect of the rebuild above.
+export const applyLaufform = (handId: string): Promise<AggregateApplyOut> =>
+  apiFetch(hnd(handId, '/aggregates/apply-laufform'), { method: 'POST' }).then(asJson<AggregateApplyOut>);
 
 // The stored LETTER occurrences of a source (handmodell H1). Public GET; the
 // boxes are page pixels of the specimen plate, so a crop-local box needs the

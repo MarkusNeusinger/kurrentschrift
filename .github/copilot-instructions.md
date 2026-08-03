@@ -235,6 +235,11 @@ kurrentschrift/
 │                     #   + POST …/rebuild — condenses a hand's instances into per-anchor
 │                     #   median (= the Laufform) + MAD hull + pooled layer-1 stats per
 │                     #   (glyph_key, variant); reports laufform_dev_xh as the H1 Prüfstein.
+│                     #   The LIST read carries the freshness pair per row — laufform_anchors
+│                     #   (the rendered variant-100 form) + laufform_dev_xh (its distance to
+│                     #   the median) — so "is what the engine writes still what the stats
+│                     #   say?" is answerable without DOING anything; nulls where the compare
+│                     #   is meaningless (non-base variant, no stored row, anchor mismatch).
 │                     #   Median math in the pure core/aggregate.py; read+rebuild affect no
 │                     #   rendering. POST …/apply-laufform closes H1: the STORED aggregates
 │                     #   (no recompute) become the style's variant-100 Laufform templates —
@@ -336,8 +341,16 @@ kurrentschrift/
 │       │                #   the sketches drop occurrences the rebuild skipped as fit_bad
 │       │                #   (from the polylines AND the bounds, counted in the caption) and
 │       │                #   print no "±" without a stored MAD; a quiet rebuild button per
-│       │                #   layer, and NO apply-laufform anywhere in the admin (§3:
-│       │                #   generated stages are displayed, not edited) — plus
+│       │                #   layer. apply-laufform — the ONE rendering-changing
+│       │                #   step — is deliberately NOT among these inspection
+│       │                #   controls: it lives at the foot of the Buchstaben
+│       │                #   view in its own set-apart block behind
+│       │                #   letters/LaufformApplyDialog (warning → per-glyph
+│       │                #   preview → confirmation → report), and the letter's
+│       │                #   freshness ("Laufform aktuell/veraltet · Abstand")
+│       │                #   plus the dashed rendered-Laufform chain in the
+│       │                #   sketch come from laufform_dev_xh/laufform_anchors
+│       │                #   on GET /hands/{id}/aggregates (issue #270) — plus
 │       │                #   the Auftragskorb over work_items in the header drawer above
 │       │                #   all three views; the ⚑ dialog asks the §4 pre-sort question
 │       │                #   for letters (solo-wrong → wizard, files nothing). Needs

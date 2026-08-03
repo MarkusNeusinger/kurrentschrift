@@ -321,7 +321,14 @@ class AggregateOut(BaseModel):
     running form in normalised template coordinates (baseline = 0, midband = 1)
     — and `hull.anchor_mad` its per-anchor, per-axis spread in the same units.
     `mean_stats` pools the layer-1 measurements (fit RMSE in px, x-height in px,
-    position histogram, distinct specimens)."""
+    position histogram, distinct specimens).
+
+    `laufform_anchors` is what the engine CURRENTLY writes for this glyph in a
+    flowing run (the stored template variant 100), and `laufform_dev_xh` the
+    mean anchor distance between it and the median above — the H1 Prüfstein as
+    a plain read rather than a side effect of a rebuild. Both are null where the
+    comparison has no meaning: a non-base variant (never a Laufform source), a
+    glyph with no stored running form yet, or a differing anchor count."""
 
     glyph_key: str
     glyph: str
@@ -330,6 +337,8 @@ class AggregateOut(BaseModel):
     hull: dict[str, Any]
     mean_stats: dict[str, Any]
     n_instances: int
+    laufform_anchors: list[list[float]] | None = None
+    laufform_dev_xh: float | None = None
 
 
 class AggregateKeySummary(BaseModel):

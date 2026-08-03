@@ -74,6 +74,28 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The Laufform can be adopted from the admin — deliberately, with the
+  difference visible first and a confirmation in front of it.** `apply-laufform`
+  is the one step of the whole hand model that changes what the engine writes,
+  and until now it existed only as a curl call (#270). It gets a surface that
+  matches that weight rather than hiding it: at the foot of the Buchstaben view,
+  in its own set-apart block, a dialog that warns this leaves the measuring half
+  of the system, previews per glyph what would change (occurrences, distance to
+  the Laufform in use, „neu" for a first write, „unverändert" at distance 0),
+  requires an explicit confirmation, and afterwards reports what was written and
+  what was skipped and why. It stays hand-wide because the endpoint is — a UI
+  implying per-glyph choice would lie about what the button does.
+- **Every letter says whether the form the engine writes is still the form the
+  statistics say.** A chip („Laufform aktuell" · „Laufform veraltet · Abstand
+  0,05" · „noch keine Laufform"), and in the median sketch the currently
+  rendered running form drawn dashed against the median that would replace it —
+  the difference is there to look at before anything is overwritten.
+- **`GET /hands/{hand_id}/aggregates` carries the freshness pair per row:**
+  `laufform_anchors` (the rendered variant-100 form) and `laufform_dev_xh` (its
+  distance to the median). The Prüfstein used to exist only as a by-product of
+  a rebuild or an apply, so answering "is this stale?" required doing something
+  first. Null wherever the comparison is meaningless: a non-base variant, no
+  stored running form, a differing anchor count.
 - **The letter statistics draw every occurrence behind the median.** The MAD
   circles gave the spread as a number; the bundle of thin occurrence chains
   gives it as a shape — ten forms hugging the median and one outlier read very

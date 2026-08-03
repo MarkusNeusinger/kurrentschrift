@@ -255,6 +255,13 @@ export interface AggregateOut {
   hull: AggregateHull;
   mean_stats: AggregateMeanStats;
   n_instances: number;
+  // What the engine CURRENTLY writes for this glyph in a flowing run (the
+  // stored template variant 100) and how far it sits from the median above, in
+  // x-height units. Both null where the comparison has no meaning: a non-base
+  // variant, no stored running form yet, or a differing anchor count. This is
+  // the freshness read the deliberate apply step is judged by.
+  laufform_anchors: Array<[number, number]> | null;
+  laufform_dev_xh: number | null;
 }
 
 // One rebuilt key in the rebuild report. `laufform_dev_xh` is the H1 Prüfstein
@@ -277,6 +284,38 @@ export interface AggregateRebuildOut {
   deleted: number;
   skipped: Record<string, number>;
   keys: AggregateKeySummary[];
+}
+
+// One glyph whose Laufform row the apply step derived from the stored
+// aggregate. `laufform_dev_xh` is measured BEFORE the write — the distance the
+// apply just closed (null when no running form existed yet or its anchor count
+// differed); `created` separates a first write from an update.
+export interface AggregateApplyKeySummary {
+  glyph_key: string;
+  variant: number;
+  n_instances: number;
+  laufform_dev_xh: number | null;
+  created: boolean;
+}
+
+// One aggregate the apply left alone. Reasons: 'laufform_variant' /
+// 'non_base_variant' (only base-variant aggregates may feed the derived row —
+// never itself), 'no_base_template' (the chart ductus prior is missing) and
+// 'anchor_count' (aggregate and chart row disagree, so the topology would not
+// carry over).
+export interface AggregateApplySkip {
+  glyph_key: string;
+  variant: number;
+  reason: string;
+}
+
+// Result of POST /hands/{hand_id}/aggregates/apply-laufform — the ONE step that
+// promotes learned statistics into what the engine actually writes.
+export interface AggregateApplyOut {
+  hand_id: string;
+  style_id: string;
+  applied: AggregateApplyKeySummary[];
+  skipped: AggregateApplySkip[];
 }
 
 // Pooled dissection QC of ONE pair aggregate (core/aggregate.py::

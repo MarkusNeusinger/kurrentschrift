@@ -96,7 +96,7 @@ Post-MVP-Phasen (architektur.md §10):
 | Pfad | Inhalt | Status |
 |---|---|---|
 | `/admin` | **Einstieg: die Vorlagen-Auswahl.** Alles darunter gehört zu genau einer Quelle und ihrer Hand, also steht die Wahl am Anfang statt in einem Menü; die aktive Vorlage steht danach im Header und führt mit einem Klick hierher zurück (`sections/admin/shell/StartView.tsx`) | existiert |
-| `/admin/buchstaben[?g=<key>]` | **Buchstaben.** Ohne `g` die Alphabet-Übersicht (Chart-Crop vs. „wie geschrieben", ehemals `/admin/vergleich`-Tab), mit `g` der einzelne Buchstabe mit allen Werkzeugen: Tafel-Ausschnitt + Einrichtungs-Wizard + Diagnose + aufklappbarem Chart-Editor (ehemals `/admin/chart`), Tafel-Form neben Laufform, die Vorkommen aus den Wörtern, die H1-Statistik und die Absprünge zu Übergängen/Wörtern (`sections/admin/letters/`) | existiert |
+| `/admin/buchstaben[?g=<key>]` | **Buchstaben.** Ohne `g` die Alphabet-Übersicht (Chart-Crop vs. „wie geschrieben", ehemals `/admin/vergleich`-Tab), mit `g` der einzelne Buchstabe mit allen Werkzeugen: Tafel-Ausschnitt + Einrichtungs-Wizard + Diagnose + aufklappbarem Chart-Editor (ehemals `/admin/chart`), Tafel-Form neben Laufform, die Vorkommen aus den Wörtern, die H1-Statistik samt Frische-Chip und Differenz-Skizze, die Absprünge zu Übergängen/Wörtern — und am Fuß, bewusst abgesetzt, der **Laufform-Übernahme-Block** mit Bestätigungsdialog (`sections/admin/letters/`, Issue #270) | existiert |
 | `/admin/uebergaenge[?l=<key>&r=<key>]` | **Übergänge.** Ohne Paar die Matrix aller Zweierkombinationen (ehemals `/admin/paare`) plus ein Freitextfeld für JEDE Kombination, mit Paar die komponierte Verbindung, die H2-Statistik „gemessen vs. komponiert", die dissezierten Vorkommen und — als letztes Mittel — der Paar-Editor (`sections/admin/joins/`) | existiert |
 | `/admin/woerter[?w=<text>&s=<specimen>]` | **Wörter.** Ohne `w` die Wortproben-Liste mit Scores (ehemals `/admin/vergleich`-Tabs Wörter/Andere Hand), mit `w` ein beliebiger Text: wie die Engine ihn schreibt, woraus er besteht (Buchstaben + Übergänge als Absprünge) und — wo eine Platte ihn enthält — die nachgefahrene Spur mit Vorkommens-Overlay, Score und Wort-Editor (ehemals `/admin/belege` + `/admin/werkbank`-Rückgrat; `sections/admin/words/`) | existiert |
 | `/admin/sources` | Source-Verwaltung | post-MVP |
@@ -372,7 +372,10 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
   und die puren, getesteten `focus.ts` (Subjekt ⇄ URL) + `model.ts`.
 - `sections/admin/letters/` — `LetterView` (`/admin/buchstaben`): Übersicht
   über `compare/GlyphComparison`, im Detail Tafel-Ausschnitt, Tafel-Form
-  neben Laufform, Vorkommen, H1-Statistik, Absprünge.
+  neben Laufform, Vorkommen, H1-Statistik, Absprünge — plus
+  `LaufformApplyDialog`, die EINE rendernde Aktion des Admins
+  (`POST …/aggregates/apply-laufform`): Warnung, Vorschau je Buchstabe
+  (Vorkommen · Abstand · „neu"), Bestätigung, danach der Bericht.
 - `sections/admin/joins/` — `JoinView` (`/admin/uebergaenge`): Matrix +
   Freitext-Kombination, komponierte Verbindung, H2-Statistik, Vorkommen,
   Paar-Editor.

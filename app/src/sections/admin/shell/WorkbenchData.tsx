@@ -85,6 +85,9 @@ interface WorkbenchState {
   // The hand's statistics, one row per key (lowest variant wins for letters).
   aggregatesByKey: Map<string, AggregateOut>;
   pairAggregateByKey: Map<string, PairAggregateOut>;
+  // Every loaded letter aggregate, unfiltered — what the Laufform apply step
+  // previews, since it acts on the hand as a whole rather than on one key.
+  allAggregates: AggregateOut[];
   handId: string | null;
   letterStats: StatsContext;
   pairStats: StatsContext;
@@ -92,6 +95,9 @@ interface WorkbenchState {
   // undefined without a hand to rebuild for.
   rebuildLetterStats?: () => Promise<string>;
   rebuildPairStats?: () => Promise<string>;
+  // Refetch the letter statistics without recomputing them — after an apply,
+  // which changed the rows' freshness numbers but not the aggregates.
+  refreshLetterStats: () => void;
 }
 
 const Ctx = createContext<WorkbenchState | null>(null);
@@ -258,6 +264,11 @@ export function WorkbenchDataProvider({ children }: { children: ReactNode }) {
     [pairAggregates],
   );
 
+  // A plain refetch of the letter layer — the apply step writes templates, not
+  // aggregates, so the rows themselves are unchanged while their freshness
+  // numbers (`laufform_dev_xh`) are not.
+  const refreshLetterStats = useCallback(() => setLetterTick((n) => n + 1), []);
+
   const rebuildLetterStats = useCallback(async () => {
     if (!handId) throw new Error('no hand');
     const out = await rebuildAggregates(handId);
@@ -295,11 +306,13 @@ export function WorkbenchDataProvider({ children }: { children: ReactNode }) {
       pairsByKey,
       aggregatesByKey,
       pairAggregateByKey,
+      allAggregates: aggregates ?? [],
       handId,
       letterStats: statsContextOf(letterLayer, aggregates, handId, handsMixed),
       pairStats: statsContextOf(pairLayer, pairAggregates, handId, handsMixed),
       rebuildLetterStats: handId ? rebuildLetterStats : undefined,
       rebuildPairStats: handId ? rebuildPairStats : undefined,
+      refreshLetterStats,
     }),
     [
       wordRows,

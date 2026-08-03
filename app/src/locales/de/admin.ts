@@ -70,6 +70,46 @@ export const admin = {
     wordsTitle: 'Wörter mit diesem Buchstaben',
     wordsCaption: 'Die Wortproben, in denen der Buchstabe vermessen wurde.',
     noWords: 'Keine Wortprobe enthält ein vermessenes Vorkommen dieses Buchstabens.',
+    // The one rendering-changing step, kept visually apart from the panels
+    // above it (they inspect; this one writes).
+    applyBlockTitle: 'Laufform übernehmen',
+    applyBlockBody:
+      'Schreibt die gespeicherten Aggregate dieser Hand als Laufform (Variante 100) — ab dann schreibt die Engine in fließenden Läufen den gemessenen Median statt der bisherigen Form. Der einzige Schritt im Handmodell, der das Schreiben verändert.',
+    applyBlockButton: 'Laufform überschreiben …',
+    applyBlockNoHand: 'Ohne Hand an den Vorkommen gibt es keine Aggregate, die übernommen werden könnten.',
+  },
+  // The deliberate promotion of learned statistics into rendering (issue #270).
+  laufform: {
+    title: 'Laufform überschreiben?',
+    warning:
+      'Dieser Schritt verändert, wie die Engine schreibt — auch auf den öffentlichen Seiten. Alles andere im Handmodell misst nur; dies hier wird gerendert.',
+    intro:
+      'Übernommen werden die GESPEICHERTEN Aggregate der Hand „{{hand}}" (nicht neu gerechnet — dafür ist der Neuaufbau da). Anker kommen aus dem Median, Breiten, Strich-Topologie und An-/Abstrich weiterhin aus der Tafelzeile.',
+    previewSummary: '{{total}} Buchstaben mit Aggregat, davon {{changing}} mit Änderung.',
+    nothingToApply: 'Keine übernehmbaren Aggregate — erst die Statistik neu aufbauen.',
+    colGlyph: 'Buchstabe',
+    colOccurrences: 'Vorkommen',
+    // Short on purpose: the column has to survive a 390px dialog, and the
+    // paragraph above already says what the distance is measured against.
+    colDeviation: 'Abstand',
+    cellNew: 'neu',
+    cellUnchanged: 'unverändert',
+    cellIncomparable: 'nicht vergleichbar',
+    confirm: 'Ja, Laufform überschreiben',
+    failed: 'Übernahme fehlgeschlagen — es wurde nichts geschrieben.',
+    doneSummary: '{{applied}} Laufformen geschrieben, {{skipped}} übersprungen.',
+    doneCreated: '{{key}} · neu',
+    doneUpdated: '{{key}} · Abstand {{value}} geschlossen',
+    doneSkippedLabel: 'Übersprungen:',
+    doneHint:
+      'Die Laufform ist jetzt ein Abbild der gespeicherten Statistik. Ändern sich Tafel-Duktus oder Vorkommen, veraltet sie wieder — sichtbar am Abstand hier.',
+    // The endpoint's fixed skip vocabulary.
+    skipReason: {
+      laufform_variant: 'ist selbst schon Laufform',
+      non_base_variant: 'keine Basis-Variante',
+      no_base_template: 'keine Tafelzeile',
+      anchor_count: 'Ankerzahl weicht ab',
+    },
   },
   // The Übergänge view: the generated join first, the measurement beside it,
   // the override last — the order the stage doctrine prescribes.
@@ -421,6 +461,14 @@ export const admin = {
     // answer „sind sich die Vorkommen ähnlich?" the same way.
     statsLetterSketchLegendWithOcc:
       'dünn: die einzelnen Vorkommen · kräftig: Median-Anker · Kreise: MAD-Streuung · Linien: Grund- und Mittellinie',
+    // The dashed chain: what the engine writes TODAY, against the median that
+    // would replace it — the „see the difference" view before the overwrite.
+    statsLetterSketchLegendLaufform: 'gestrichelt rot: die aktuell geschriebene Laufform',
+    // Freshness of the rendered running form, read straight off the row.
+    laufformCurrent: 'Laufform aktuell',
+    laufformStale: 'Laufform veraltet · Abstand {{value}}',
+    laufformNone: 'noch keine Laufform gespeichert',
+    laufformIncomparable: 'Laufform nicht vergleichbar (Ankerzahl)',
     statsPairSketchAria: 'Median-Verbindung {{left}}→{{right}} über den gespeicherten Vorkommen',
     statsPairSketchLegend: 'dünn: Vorkommen · kräftig: Median · Punkt: Versatz mit MAD',
     // Occurrences the rebuild itself skipped (fit_bad) are not drawn — said

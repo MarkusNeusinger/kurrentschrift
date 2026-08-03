@@ -232,17 +232,23 @@ function AggregateSketch({
   anchors,
   glyphKey,
   occurrences,
+  laufform,
 }: {
   anchors: SketchAnchor[];
   glyphKey: string;
   occurrences: number[][][];
+  // The RENDERED running form (template variant 100), drawn dashed against the
+  // median that would replace it. This is the whole "see the difference before
+  // you overwrite it" view: two chains in one frame, no registration needed
+  // because both live in the chart row's coordinates.
+  laufform: number[][];
 }) {
   const t = de.admin.werkbank;
   const points = anchors.map((a) => [a.x, a.y]);
 
   // The occurrence chains stretch the bounds too — clipping them would make
   // the spread look tighter than it is.
-  const { minX, minY, w, h } = boundsOf([...points, ...occurrences.flat()], [0, 1]);
+  const { minX, minY, w, h } = boundsOf([...points, ...occurrences.flat(), ...laufform], [0, 1]);
   const width = Math.max(24, (w / h) * SKETCH_H_LETTER);
   // One display pixel in template units — hairlines and dots stay the same
   // visual size across glyphs of very different extent.
@@ -283,6 +289,20 @@ function AggregateSketch({
         a.mad === undefined ? null : (
           <circle key={`mad-${i}`} cx={a.x} cy={-a.y} r={a.mad} fill={paper.line} fillOpacity={0.35} />
         ),
+      )}
+      {/* What is written TODAY, dashed and in the warning tone — under the
+          median so the median stays the figure and this stays the reference. */}
+      {laufform.length >= 2 && (
+        <path
+          d={pathOf(laufform)}
+          fill="none"
+          stroke={WERKBANK_COLORS.selected}
+          strokeOpacity={0.75}
+          strokeWidth={1.4 * u}
+          strokeDasharray={`${4 * u} ${3 * u}`}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       )}
       <path
         d={pathOf(points)}
@@ -327,6 +347,21 @@ export function LetterStats({
   const occurrenceChains = occurrences
     .map((inst) => (inst.anchors ?? []).filter(isPoint))
     .filter((line) => line.length >= 2);
+  // The rendered running form and its distance to the median. `dev === 0` is a
+  // real answer ("what is written IS the median"), so the null check has to be
+  // explicit — a falsy test would report a fresh Laufform as unknown.
+  const laufform = (aggregate?.laufform_anchors ?? []).filter(isPoint);
+  const dev = aggregate?.laufform_dev_xh ?? null;
+  const freshness =
+    aggregate == null
+      ? null
+      : dev === null
+        ? laufform.length === 0
+          ? { text: t.laufformNone, stale: false }
+          : { text: t.laufformIncomparable, stale: false }
+        : dev === 0
+          ? { text: t.laufformCurrent, stale: false }
+          : { text: fmt(t.laufformStale, { value: num(dev, 3) }), stale: true };
 
   return (
     <Box>
@@ -373,15 +408,31 @@ export function LetterStats({
           {/* Frame, sketch and legend appear together or not at all — a
               bordered empty box with a legend under it promises a drawing that
               is not there. */}
+          {/* Freshness: is what the engine writes still what the statistics
+              say? Read straight off the row (no rebuild needed to find out). */}
+          {freshness && (
+            <Chip
+              size="small"
+              variant="outlined"
+              color={freshness.stale ? 'warning' : 'default'}
+              label={freshness.text}
+              sx={{ alignSelf: 'flex-start' }}
+            />
+          )}
           {anchors.length >= 2 && (
             <Box>
               <Box sx={SKETCH_FRAME}>
-                <AggregateSketch anchors={anchors} glyphKey={glyphKey} occurrences={occurrenceChains} />
+                <AggregateSketch
+                  anchors={anchors}
+                  glyphKey={glyphKey}
+                  occurrences={occurrenceChains}
+                  laufform={laufform}
+                />
               </Box>
               <Typography variant="caption" color="text.disabled" sx={{ display: 'block' }}>
                 {`${t.statsLetterSketch} — ${
                   occurrenceChains.length > 0 ? t.statsLetterSketchLegendWithOcc : t.statsLetterSketchLegend
-                }`}
+                }${laufform.length >= 2 ? ` · ${t.statsLetterSketchLegendLaufform}` : ''}`}
               </Typography>
             </Box>
           )}
