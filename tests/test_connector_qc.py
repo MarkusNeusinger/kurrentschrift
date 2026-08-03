@@ -120,7 +120,7 @@ def test_normal_short_connector_is_silent():
 
 
 def test_genuine_loop_exit_with_sub_threshold_backward_arc_is_silent():
-    """A d-Schleife leaves its form above the midband and dips back left before it
+    """A d loop exit leaves its form above the midband and dips back left before it
     turns down into the next letter. That backward stretch is real writing, not a
     defect — it has to stay under the threshold."""
     conn = [(-0.10, 1.05), (0.18, 0.95), (0.10, 0.72), (0.45, 0.45), (0.80, 0.28), (1.10, 0.15)]

@@ -1,7 +1,7 @@
 """Degeneracy detector for a chain-fitted connector (issue #278, Stage B).
 
 `docs/proposals/uebergaenge-befund.md` §5c closes on a named, unguarded failure:
-on the isolated letter-pair drills of Abb. 20 the chain connector entgleist in
+on the isolated letter-pair drills of Abb. 20 the chain connector derails in
 **11 of 23** occurrences — a long straight diagonal drawn clean through both
 letters, in part running backwards — and *not one of those rows is caught by
 today's QC*. They all report `chain_c_converged` and `chain_connector_yielded`
@@ -16,9 +16,11 @@ fit (the plan's §B.2 design):
 1. **seam share** — arc lying outside the specimen's ink gap, i.e. left of the
    left letter's ink edge plus right of the right letter's. A join legitimately
    reaches into both stub zones; §5 measured that replacement zone at 0.2–0.4 xh
-   per side, so the threshold sits at 0.8 xh *total* — twice the upper band edge,
-   summed over both sides. Beyond that the connector is no longer joining two
-   letters, it is redrawing them.
+   per side. The plan's starting threshold was 0.8 xh *total* (twice the upper
+   band edge, summed over both sides), but calibration showed sound joins
+   routinely claim ~1.1 xh, so the calibrated default is
+   `QcThresholds.max_seam_total_units = 1.3`. Beyond that the connector is no
+   longer joining two letters, it is redrawing them.
 2. **backward arc** — net rightward progress per unit of arc. A German cursive
    join runs left to right and has to *arrive*; the §5c failure does not. The
    plan proposed this as the share of arc travelling with dx < 0, and that form
@@ -211,7 +213,7 @@ def _arc_outside(pts: np.ndarray, x_split: float, *, keep_left: bool) -> float:
 
 
 def connector_signals(
-    connector_units, a_max_x: float, b_min_x: float, xh_units: float = 1.0
+    connector_units: np.ndarray, a_max_x: float, b_min_x: float, xh_units: float = 1.0
 ) -> ConnectorSignals | None:
     """The four raw signals for one connector, or None when there is no curve.
 
@@ -267,7 +269,12 @@ def degenerate_reason(signals: ConnectorSignals, *, thresholds: QcThresholds = D
 
 
 def connector_degenerate(
-    connector_units, a_max_x: float, b_min_x: float, xh_units: float = 1.0, *, thresholds: QcThresholds = DEFAULTS
+    connector_units: np.ndarray,
+    a_max_x: float,
+    b_min_x: float,
+    xh_units: float = 1.0,
+    *,
+    thresholds: QcThresholds = DEFAULTS,
 ) -> str | None:
     """Reason code for a degenerate chain connector, or None if it looks healthy.
 
