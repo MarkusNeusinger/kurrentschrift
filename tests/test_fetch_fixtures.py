@@ -232,6 +232,12 @@ def test_admin_read_without_a_token_fails_without_naming_a_secret():
     assert "ADMIN_TOKEN" in str(excinfo.value)
 
 
+def test_client_refuses_a_non_https_base():
+    with pytest.raises(SystemExit) as excinfo:
+        ApiClient("http://api.example.test", token="t")
+    assert "https" in str(excinfo.value)
+
+
 def test_fetcher_writes_where_the_consumers_read():
     # Same doctrine as tests/test_lab_fixture_wiring.py: the API-backed sibling
     # must fill the very roots the DB exporter fills, or wordlab/pairlab and

@@ -136,6 +136,9 @@ class ApiClient:
 
     def __init__(self, base_url: str, *, token: str | None = None, timeout: float = 120.0, retries: int = 4) -> None:
         self.base_url = base_url.rstrip("/")
+        if not self.base_url.startswith("https://"):
+            # The admin token travels in a header; never allow a scheme that could carry it in plaintext.
+            raise SystemExit(f"API base must be https://, got {self.base_url!r}")
         self.timeout = timeout
         self.retries = retries
         self._token = token or None
