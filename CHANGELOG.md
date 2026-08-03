@@ -109,6 +109,28 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   and hugs the centerline, so the ink runs past it on every side. The margin
   scales with the box now (`max(7, 0.18 · √(w·h))`) and the thumbnail row grew
   from 64 to 80 px.
+- **pairlab measured the loop-exit join class against a reference that was not
+  there, and on an arc that was not matched.** `analyze._real_join` read the
+  specimen's own joining stroke only inside `JOIN_BAND_Y`'s 0.8 xh ceiling — the
+  composer's clearance band, not a statement about where joins live — while a
+  loop exit departs at y ≈ 1.04–1.13 xh and runs level at ≈ 0.9–1.0 xh: the
+  tracker saw 4 of 18 gap columns, every `d→*` occurrence fell back to the
+  straight exit→entry chord, and the clipped seed latched onto the ink below the
+  join (a following descender in `b→p`, empty space in `o→r`). The band ceiling
+  now follows the exit, which needs no new constant and leaves every pair whose
+  exit sits inside the band bit-identical. On top of that
+  `chainbench.dconn_matched_arc` clipped all three curves to one x-interval,
+  which is an arc match only while a curve is single-valued in x — a loop-exit
+  chain connector owns the near-vertical descent off the loop and the plunge
+  into the next letter, so its clipped piece carried 1.69× the reference's arc
+  at the same x-span and `dconn` compared physically different positions; the
+  reference now defines the stretch and the other curves are trimmed to it.
+  Together this turns M3's last open class from `gen 0.058 → chain 0.228` into
+  `0.074 → 0.050` (on the word plates alone `0.081 → 0.034`) and the pooled
+  paired delta from +0.008 (p 3e-5) into +0.002 (p 0.48); M1, M4 and the kill
+  criteria come out field-for-field identical because `chain.py` never reads
+  `_real_join`. See `docs/proposals/uebergaenge-befund.md` §5c, Nachtrag
+  „loop-exit" — which also records why the `pair_aggregates` ban stays anyway.
 - **The pair-chain fit no longer stalls on letters that are composed on top of
   each other.** `analyze._generate_connector` emits its full Bézier subdivision
   whatever room the placement leaves and floors its handle at 0.05 xh, so where
@@ -196,6 +218,21 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `sections/admin/quality/scoreParts.tsx` and are now shared by the wizard
   preview, the overview and the Diagnose modal, which gained the breakdown it
   had never shown although its payload always carried it.
+- **A connector degeneracy guard (`tools/pairlab/connector_qc.py`) — the QC
+  the loop-exit fix showed was missing.** On the Abb.-20 pair drills the chain
+  connector silently degenerates in 11 of 23 occurrences (a long straight
+  diagonal through both letters, every convergence gate green). Four pure
+  geometry signals behind a minimum-chord gate — seam share, forward ratio
+  (`net_dx / arc`), arc-vs-gap, straightness×length — calibrated in-sample
+  against the 11 known-bad rows: 11/11 flagged, one demonstrable false
+  positive across 179 labelable word rows (raw flag rate 4.2%, chosen for
+  recall since the guard's job is keeping contaminated joins out of the
+  `gen_chamfer` audit; the stricter setting is one `dataclasses.replace`
+  away and documented). Reported as a `chain_conn_degenerate` column and a
+  worst-first block in the chainbench; the precondition before any chain
+  connector may feed `pair_aggregates`, and gate 5 of the coming word
+  harvest (a flagged connector rejects its adjacent letters too — seam
+  parameters are shared).
 - **`GET /sources/{id}/render-context` — the resolved render context of a
   source at full precision, admin-gated.** Everything a render resolves before
   it draws (lineature, width resolver, the source-pooled Gleichzug nib and the

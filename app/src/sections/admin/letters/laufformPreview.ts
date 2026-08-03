@@ -35,6 +35,21 @@ export function previewOf(aggregates: AggregateOut[]): Preview[] {
   );
 }
 
+// Below this many occurrences a median is one writing's idiosyncrasy as much as
+// a form model. Since the aggregate gate is `min_n = 1` (issue #273) such rows
+// EXIST — seeing them is measurement, nothing renders — so the caution moved
+// here, to the one step that renders: they are marked in the preview table and
+// start out unselected. Nothing forbids applying them; the human decides with
+// the number in front of them.
+export const LOW_N = 3;
+
+export const isLowN = (row: Preview): boolean => row.nInstances < LOW_N;
+
+// Which rows a freshly opened dialog proposes to write: the well-attested ones.
+// A deliberate proposal, not a filter — every row stays selectable.
+export const defaultSelection = (rows: Preview[]): string[] =>
+  rows.filter((row) => !isLowN(row)).map((row) => row.glyphKey);
+
 // Would this row actually change what the engine writes?
 //
 // A null distance has two very different causes, and only one of them is a

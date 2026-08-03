@@ -26,10 +26,10 @@ signals that decide whether the chain is worth a Stage B:
   resample to `core.aggregate.PAIR_CONNECTOR_POINTS`, each start-aligned, mean
   pointwise distance), for the GENERATED connector and the CHAIN's — the
   generated number is the bar, the chain's is the candidate. Reported twice: as
-  the whole stored curve (Stage A) and **arc-matched**, i.e. all three curves
-  clipped to the same x-interval — the specimen's ink gap intersected with every
-  curve's own span — because the chain connector owns the stub zones by
-  construction while the ink-read one begins at the gap.
+  the whole stored curve (Stage A) and **arc-matched**, i.e. every curve cut to
+  the stretch of writing the ink-read one covers inside the specimen's ink gap,
+  because the chain connector owns the stub zones by construction while the
+  ink-read one begins at the gap.
 * **M4 — letter shape.** How far the chain moves each letter away from the
   independent trace, against the per-anchor MAD of the hand's own aggregates as
   the noise floor. A difference below the hand's own spread is not a difference.
@@ -85,6 +85,7 @@ from tools.pairlab.analyze import (
     _stub_vs_body_delta,
     dissect_occurrence,
 )
+from tools.pairlab.connector_qc import connector_degenerate
 from tools.pairlab.harvest import _adjacent_joined, _px_to_units, connector_points
 from tools.wordlab.cases import DEFAULT_FIXTURES_DIR, REPO_ROOT, WordCase, _root_for, iter_fixture_word_cases
 from tools.wordlab.derive import WordDeriveResult, derive_word
@@ -195,28 +196,58 @@ def clip_polyline_x(pts: Sequence | np.ndarray, x_lo: float, x_hi: float) -> np.
     return np.asarray(out, dtype=float).reshape(-1, 2)
 
 
+def trim_to_reference_arc(curve: Sequence | np.ndarray, reference: Sequence | np.ndarray) -> np.ndarray:
+    """The sub-arc of `curve` covering the same stretch of writing as
+    `reference` — the piece between its closest approaches to the reference's
+    two endpoints.
+
+    The x-band clip this replaces is only an arc match while a curve is
+    single-valued in x. The ink-read connector always is (it is a per-column
+    track), the generated one usually is — but a LOOP-EXIT chain connector is
+    not: it owns the descent off the loop and the plunge into the next letter,
+    both near-vertical, so the band keeps ~1.7× the reference's arc at ~1× its
+    x-span. `dconn` then resamples the two by arc length and compares
+    physically different positions, which reads as shape error and is none.
+    """
+    p = np.asarray(curve, dtype=float).reshape(-1, 2)
+    ref = np.asarray(reference, dtype=float).reshape(-1, 2)
+    if len(p) < 2 or len(ref) < 2:
+        return p
+    i = int(np.argmin(np.hypot(*(p - ref[0]).T)))
+    j = int(np.argmin(np.hypot(*(p - ref[-1]).T)))
+    lo, hi = min(i, j), max(i, j)
+    if hi - lo < 1:  # both ends snapped to the same sample — keep a neighbour
+        lo, hi = max(0, lo - 1), min(len(p) - 1, hi + 1)
+    return p[lo : hi + 1]
+
+
 def dconn_matched_arc(
-    a: Sequence | np.ndarray, b: Sequence | np.ndarray, x_lo: float, x_hi: float
+    curve: Sequence | np.ndarray, reference: Sequence | np.ndarray, x_lo: float, x_hi: float
 ) -> tuple[float | None, float]:
     """`dconn` on the arc the two curves genuinely share — `(value, span)`.
 
-    Both curves are clipped to `[x_lo, x_hi]` intersected with each one's OWN
-    x-span, then compared by `dconn`'s (and hence pairmeas') formula. Stage-A's
-    M3 compared a chain connector that owns the two stub zones against an
-    ink-read one that starts at the ink gap; a part of that distance was
-    therefore definitional. `(None, 0.0)` when the shared arc is empty — which is
-    exactly what a touching letter pair (no gap, no ink-read join) must report
-    rather than a flattering number off a synthetic chord.
+    `reference` (the ink-read connector) defines the stretch: it is clipped to
+    `[x_lo, x_hi]` — the specimen's ink gap intersected with the curves' spans —
+    and `curve` is then trimmed to the sub-arc spanning the same stretch
+    (`trim_to_reference_arc`). Stage-A's M3 compared a chain connector that owns
+    the two stub zones against an ink-read one that starts at the ink gap; a
+    part of that distance was definitional, which is what the clip removes.
+    `(None, 0.0)` when the shared arc is empty — which is exactly what a touching
+    letter pair (no gap, no ink-read join) must report rather than a flattering
+    number off a synthetic chord.
     """
-    pa = np.asarray(a, dtype=float).reshape(-1, 2)
-    pb = np.asarray(b, dtype=float).reshape(-1, 2)
+    pa = np.asarray(curve, dtype=float).reshape(-1, 2)
+    pb = np.asarray(reference, dtype=float).reshape(-1, 2)
     if len(pa) < 2 or len(pb) < 2:
         return None, 0.0
     lo = max(float(x_lo), float(pa[:, 0].min()), float(pb[:, 0].min()))
     hi = min(float(x_hi), float(pa[:, 0].max()), float(pb[:, 0].max()))
     if not (hi > lo):
         return None, 0.0
-    return dconn(clip_polyline_x(pa, lo, hi), clip_polyline_x(pb, lo, hi)), hi - lo
+    clipped_ref = clip_polyline_x(pb, lo, hi)
+    if len(clipped_ref) < 2:
+        return None, hi - lo
+    return dconn(trim_to_reference_arc(pa, clipped_ref), clipped_ref), hi - lo
 
 
 def common_x_window(curves: Sequence[np.ndarray], x_lo: float, x_hi: float) -> tuple[float, float] | None:
@@ -636,12 +667,13 @@ def _fill_connector_metrics(row: dict, d: JoinDissection, fit: Any, conn: Any) -
     calibration shares.
 
     Two M3 variants per occurrence. The Stage-A one compares the curves whole;
-    the **arc-matched** one clips generated, chained and ink-read connector to
-    ONE common x-interval — the specimen's ink gap (`analyze._ink_extent_x`, the
-    very extents `_real_join` tracked between) intersected with each curve's own
-    span — before applying the same pairmeas formula. Without that clip the chain
-    is charged for arc the ink-read connector does not have: it owns the two stub
-    zones by construction, the ink-read one begins at the gap.
+    the **arc-matched** one cuts the ink-read connector to the specimen's ink gap
+    (`analyze._ink_extent_x`, the very extents `_real_join` tracked between,
+    intersected with each curve's own span) and trims the generated and the
+    chained one to the same stretch of writing, before applying the same pairmeas
+    formula. Without that the chain is charged for arc the ink-read connector
+    does not have: it owns the two stub zones by construction, the ink-read one
+    begins at the gap.
     """
     xh = d.result.xh_px
     tx, ty = d.result.registration["tx"], d.result.registration["ty"]
@@ -682,6 +714,11 @@ def _fill_connector_metrics(row: dict, d: JoinDissection, fit: Any, conn: Any) -
     b_min_x, _ = _ink_extent_x(d.b.body_px, baseline_row, xh)
     gap = ((a_max_x - tx) / xh, (b_min_x - tx) / xh)
     row["ink_gap_units"] = _r(gap[1] - gap[0])
+    # The §5c degeneracy guard, on the chain's OWN connector anchors (not the
+    # `connector_points`-processed copy above): the eleven runaway pair-drill
+    # rows pass every existing gate, so this column is the only place they show.
+    if len(chain_u) >= 2:
+        row["chain_conn_degenerate"] = connector_degenerate(chain_u, *gap) or ""
     if ink_conn is not None and chain_abs is not None:
         ink_abs = np.asarray(ink_conn, dtype=float).reshape(-1, 2) + np.asarray(exit_u, dtype=float)
         window = common_x_window([gen_u, chain_abs, ink_abs], *gap)
@@ -1076,7 +1113,7 @@ def print_report(rows: Sequence[dict], *, mad_table: dict, sets: Sequence[str], 
     gen_m = summarize(_values(chained, "dconn_gen_matched"))
     ch_m = summarize(_values(chained, "dconn_chain_matched"))
     span = summarize(_values(chained, "matched_arc_units"))
-    print("  arc-matched (all curves clipped to the ink gap ∩ their own spans):")
+    print("  arc-matched (ink-read cut to the gap ∩ the curves' spans, the others trimmed to that stretch):")
     print(
         f"    generated  n {gen_m['n']:>3}  median {_fmt(gen_m['median'])}  mean {_fmt(gen_m['mean'])}  "
         f"p90 {_fmt(gen_m['p90'])}"
@@ -1176,6 +1213,46 @@ def print_report(rows: Sequence[dict], *, mad_table: dict, sets: Sequence[str], 
     for cls, group in sorted(by_class.items()):
         t, h = summarize(_values(group, "chain_tail_share")), summarize(_values(group, "chain_head_share"))
         print(f"    {cls:<16} n {t['n']:>3}  tail {_fmt(t['median'])}  head {_fmt(h['median'])}")
+
+    print()
+    print_degenerate_block(chained)
+
+
+def print_degenerate_block(chained: Sequence[dict]) -> None:
+    """The §5c connector-degeneracy guard, per plate kind and per reason.
+
+    Its own block rather than a line inside the seam calibration, because it
+    answers a different question: the seam shares say how far the connector
+    reaches, this says whether the curve is a join at all. The split by `kind` is
+    the whole point — §5c measured the failure at 11/23 on the Abb.-20 pair
+    drills against ~3 % on the word plates, and `pair_aggregates` pools the two
+    under one `kind`, so a pooled rate would hide exactly the set that matters.
+    """
+    print("=== connector degeneracy (tools/pairlab/connector_qc.py) ===")
+    print("  guards what `chain_c_converged` cannot: a straight line laid across both letters fits itself")
+    rated = [r for r in chained if r.get("chain_conn_degenerate") is not None]
+    if not rated:
+        print("  no chain connector carried enough arc to rate")
+        return
+    for label, group in (
+        ("pair drills", [r for r in rated if r.get("kind") == "pair"]),
+        ("word plates", [r for r in rated if r.get("kind") != "pair"]),
+        ("pooled", rated),
+    ):
+        flagged = [r for r in group if r.get("chain_conn_degenerate")]
+        reasons = Counter(r["chain_conn_degenerate"] for r in flagged)
+        print(
+            f"  {label:<12} flagged {_pct(len(flagged), len(group))}"
+            + (f"  {dict(reasons.most_common())}" if reasons else "")
+        )
+    worst = sorted(
+        (r for r in rated if r.get("chain_conn_degenerate")), key=lambda r: -(r.get("dconn_chain_matched") or -1.0)
+    )
+    for r in worst[:10]:
+        print(
+            f"    {r['id']:<14} [{r['kind']}] {r['pair']:<12} {r['chain_conn_degenerate']:<14} "
+            f"dconn chain matched {_fmt(r.get('dconn_chain_matched'))} (gen {_fmt(r.get('dconn_gen_matched'))})"
+        )
 
 
 # ------------------------------------------------------------------------ CLI

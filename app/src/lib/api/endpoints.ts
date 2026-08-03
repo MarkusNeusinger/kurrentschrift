@@ -186,8 +186,10 @@ export const listPairAggregates = (
 };
 
 // Recompute a hand's aggregates from its stored occurrences, replacing the
-// previous rows wholesale. Each route keeps its OWN `min_n` default (4 for
-// glyphs, 1 for the sparse pairs) — the UI does not second-guess it.
+// previous rows wholesale. Both routes default to `min_n = 1` — seeing a median
+// renders nothing, so the statistics layer shows every attested key and the
+// caution lives at the apply step below (issue #273). The UI does not
+// second-guess the default.
 export const rebuildAggregates = (handId: string): Promise<AggregateRebuildOut> =>
   apiFetch(hnd(handId, '/aggregates/rebuild'), { method: 'POST' }).then(asJson<AggregateRebuildOut>);
 
@@ -200,8 +202,25 @@ export const rebuildPairAggregates = (handId: string): Promise<PairAggregateRebu
 // the UI puts a confirmation in front of it (docs/proposals/
 // optimierungs-werkbank.md §3, issue #270) and why it is deliberately NOT a
 // side effect of the rebuild above.
-export const applyLaufform = (handId: string): Promise<AggregateApplyOut> =>
-  apiFetch(hnd(handId, '/aggregates/apply-laufform'), { method: 'POST' }).then(asJson<AggregateApplyOut>);
+//
+// `glyphKeys` narrows the write to exactly those letters (repeated query
+// parameter). Omitted, the endpoint writes every stored aggregate — the
+// pre-#273 behaviour; the dialog always sends its selection explicitly, so the
+// request says the same thing the checkboxes did.
+export const applyLaufform = (handId: string, glyphKeys?: string[]): Promise<AggregateApplyOut> => {
+  const qs = new URLSearchParams();
+  // An EMPTY selection must not fall back to "all": no parameter at all is how
+  // the wire says "every key", so an empty array sends one empty value instead
+  // — it matches no glyph, the response excludes everything and nothing is
+  // written. (The dialog disables its confirm anyway; this is the guard for
+  // every other caller.)
+  if (glyphKeys && glyphKeys.length === 0) qs.append('glyph_keys', '');
+  for (const key of glyphKeys ?? []) qs.append('glyph_keys', key);
+  const s = qs.toString();
+  return apiFetch(hnd(handId, `/aggregates/apply-laufform${s ? `?${s}` : ''}`), { method: 'POST' }).then(
+    asJson<AggregateApplyOut>,
+  );
+};
 
 // The stored LETTER occurrences of a source (handmodell H1). Public GET; the
 // boxes are page pixels of the specimen plate, so a crop-local box needs the

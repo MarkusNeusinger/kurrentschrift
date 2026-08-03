@@ -8,17 +8,24 @@ analytic gradient, per-segment gates and an end-to-end solve.
 The gradient test is the load-bearing one: L-BFGS-B's line search aborts
 silently when function and gradient disagree, which looks exactly like "the
 chain does not converge".
+
+The Stage-B half at the bottom does the same for the WORD chain: `chain_runs`
+on hand-built slot lists, and `fit_word_chain` / `fit_pair_chain` on a fully
+synthetic `WordCase` + composition whose ink is rasterised from a known path —
+still no fixtures, no DB, no network.
 """
 
 from __future__ import annotations
 
 import time
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
 from PIL import Image, ImageDraw
 from scipy.ndimage import distance_transform_edt, gaussian_filter
 
+from core.compose import _endpoint_tangent
 from core.extract import skeleton_and_width
 from core.fit import (
     CONVERGED_COVERAGE_RMSE_UNITS,
@@ -29,8 +36,9 @@ from core.fit import (
     _sampling_operator,
     _skeleton_points,
 )
+from core.shaping import GlyphSlot
 from core.template import build_sample_plan
-from tools.pairlab.analyze import FIT_DX_UNITS, FIT_DY_UNITS, _generate_connector
+from tools.pairlab.analyze import FIT_DX_UNITS, FIT_DY_UNITS, TRACE_WINDOW_MARGIN, _generate_connector
 from tools.pairlab.chain import (
     CHAIN_CONNECTOR_ANCHOR_SPACING_UNITS,
     CHAIN_CONNECTOR_MIN_SPAN_UNITS,
@@ -43,8 +51,13 @@ from tools.pairlab.chain import (
     _second_difference_operator,
     _segment_converged,
     build_chain_problem,
+    chain_runs,
+    fit_pair_chain,
+    fit_word_chain,
     regularise_connector_anchors,
 )
+from tools.wordlab.cases import WordCase
+from tools.wordlab.derive import WordDeriveResult
 
 
 UNIT_PX = 20.0
@@ -723,3 +736,295 @@ def test_overlapping_pair_solves_instead_of_stalling(gap: float) -> None:
         )
     # …and the stalled solve is the one that leaves its letters where they were
     assert max(seg_raw[0].max_anchor_delta, seg_raw[2].max_anchor_delta) < 0.02
+
+
+# ============================================================ Stage B: the word
+#
+# `chain_runs` and `fit_word_chain` take a `WordCase` and a composition instead
+# of bare specs. Both are plain dataclasses, so the whole input is hand-built
+# here: one template letter, one composed item per slot at a known placement,
+# and ink rasterised from that same geometry displaced by a known per-slot
+# shift. Still no fixtures, no DB, no network.
+
+
+WORD_XH = 40.0
+WORD_BASELINE_ROW = 110.0
+WORD_X_ORIGIN = 30.0
+LETTER_ADVANCE = 1.6  # xh between two composed letters' origins
+
+
+def _slot(key: str | None = "a", *, space: bool = False, joins: bool = True) -> GlyphSlot:
+    return GlyphSlot(key=key, text=key or " ", position="medial", ligature=False, space=space, joins=joins)
+
+
+def _bare_case(slots: list[GlyphSlot]) -> WordCase:
+    """A `WordCase` with nothing but its slots — all `chain_runs` reads."""
+    return WordCase(
+        id="synthetic",
+        word="".join(s.text for s in slots),
+        kind="word",
+        slots=list(slots),
+        templates={},
+        style_ratio=[1.0, 1.0, 1.0],
+        width_resolver="constant",
+        nib_units=0.07,
+    )
+
+
+# ------------------------------------------------------------------ chain_runs
+
+
+def test_chain_runs_breaks_at_spaces_and_keyless_slots() -> None:
+    slots = [_slot("a"), _slot("n"), _slot(None, space=True), _slot("b"), _slot("u")]
+    assert chain_runs(_bare_case(slots)) == [[0, 1], [3, 4]]
+    # a keyless but non-space slot (a character with no glyph at all) breaks too
+    slots[2] = _slot(None)
+    assert chain_runs(_bare_case(slots)) == [[0, 1], [3, 4]]
+
+
+def test_chain_runs_isolates_non_joining_glyphs() -> None:
+    """A digit renders but no Übergang ever enters or leaves it (§4)."""
+    assert chain_runs(_bare_case([_slot("a"), _slot("1", joins=False), _slot("b")])) == [[0], [1], [2]]
+    assert chain_runs(_bare_case([_slot("1", joins=False), _slot("2", joins=False)])) == [[0], [1]]
+
+
+def test_chain_runs_returns_a_lone_letter_as_a_one_slot_run() -> None:
+    """Not skipped: `fit_word_chain` fits it as a one-segment chain."""
+    assert chain_runs(_bare_case([_slot("a")])) == [[0]]
+    assert chain_runs(_bare_case([])) == []
+    assert chain_runs(_bare_case([_slot(None, space=True)])) == []
+
+
+def test_chain_runs_partitions_every_keyed_slot() -> None:
+    slots = [_slot("l"), _slot("e"), _slot(None, space=True), _slot("1", joins=False), _slot("s"), _slot("t")]
+    runs = chain_runs(_bare_case(slots))
+    assert runs == [[0, 1], [3], [4, 5]]
+    flat = [i for run in runs for i in run]
+    assert flat == sorted(flat)  # writing order, no slot in two runs
+    assert set(flat) == {i for i, s in enumerate(slots) if s.key and not s.space}
+
+
+# --------------------------------------------- a synthetic case + composition
+
+
+def _letter_anchors(k: int = 9) -> np.ndarray:
+    """The one template letter: an arc whose first anchor sits at x = 0, so the
+    placement offset `_letter_spec` recovers is exactly the item's first x."""
+    t = np.linspace(0.0, 1.0, k)
+    return np.column_stack([0.9 * t, 0.15 + 0.55 * np.sin(np.pi * t)])
+
+
+def _synthetic_word(shifts: list[tuple[float, float]], *, width_px: int = 5, k: int = 9):
+    """`(case, result, windows_px, truth_px)` for a run of `len(shifts)` letters.
+
+    The COMPOSITION places the same template every `LETTER_ADVANCE`; the INK is
+    that composition displaced per slot by `shifts[i]`, joined by the production
+    connector between the displaced endpoints. So the chain starts at the
+    undisplaced layout and has to recover exactly `shifts` in its translation
+    parameters, per slot.
+    """
+    anchors = _letter_anchors(k)
+    n = len(shifts)
+    placed = [anchors + np.array([i * LETTER_ADVANCE, 0.0]) for i in range(n)]
+    truth = [p + np.asarray(shifts[i], dtype=float) for i, p in enumerate(placed)]
+
+    path: list[np.ndarray] = [truth[0]]
+    for i in range(n - 1):
+        a_line = [tuple(p) for p in truth[i]]
+        b_line = [tuple(p) for p in truth[i + 1]]
+        conn = np.asarray(
+            _generate_connector(
+                a_line[-1], _endpoint_tangent(a_line, at_end=True), b_line[0], _endpoint_tangent(b_line, at_end=False)
+            ),
+            dtype=float,
+        ).reshape(-1, 2)
+        path.append(conn[1:-1])
+        path.append(truth[i + 1])
+    skel, width_map, shape = _rasterise(
+        np.vstack(path), xh=WORD_XH, baseline_row=WORD_BASELINE_ROW, x_origin=WORD_X_ORIGIN, width_px=width_px
+    )
+
+    half_w = (0.5 * width_px) / WORD_XH
+    case = WordCase(
+        id="synthetic",
+        word="a" * n,
+        kind="word",
+        slots=[_slot("a") for _ in range(n)],
+        templates={
+            "a": {
+                "glyph": "a",
+                "anchors": anchors.tolist(),
+                "half_widths": [half_w] * k,
+                "trace_meta": {"stroke_starts": [0], "corner_anchors": []},
+            }
+        },
+        style_ratio=[1.0, 1.0, 1.0],
+        width_resolver="constant",
+        nib_units=half_w,
+        rect=[0, 0, shape[1], shape[0]],
+        baseline_y=int(WORD_BASELINE_ROW),
+        midband_y=int(WORD_BASELINE_ROW - WORD_XH),
+        crop=np.zeros(shape),
+        skel=skel,
+        width_map=width_map,
+    )
+    result = WordDeriveResult(
+        case=case,
+        payloads={"a": {"centerlines_template": [anchors.tolist()]}},
+        composed={
+            "missing": [],
+            "items": [{"rings": [], "slot_index": i, "centerline": p.tolist()} for i, p in enumerate(placed)],
+        },
+        report={"loss": 0.0},
+        segments=None,
+        xh_px=WORD_XH,
+        baseline_row=WORD_BASELINE_ROW,
+        registration={"tx": WORD_X_ORIGIN, "ty": 0.0, "xh_px": WORD_XH},
+    )
+    truth_px = [
+        np.column_stack([WORD_X_ORIGIN + t[:, 0] * WORD_XH, WORD_BASELINE_ROW - t[:, 1] * WORD_XH]) for t in truth
+    ]
+    windows_px = {
+        i: (float(p[:, 0].min()) - TRACE_WINDOW_MARGIN * WORD_XH, float(p[:, 0].max()) + TRACE_WINDOW_MARGIN * WORD_XH)
+        for i, p in enumerate(truth_px)
+    }
+    return case, result, windows_px, truth_px
+
+
+def _recovered(fit, slot: int) -> np.ndarray:
+    """Total displacement of one slot: the global shift plus its own block."""
+    return np.asarray(fit.global_shift_units) + np.asarray(fit.slot_shift_units[slot])
+
+
+# --------------------------------------------------------------- fit_word_chain
+
+
+def test_word_chain_fits_three_letters_and_recovers_every_slot_shift() -> None:
+    """[L, C, L, C, L] in one solve: three letters on their ink, two joins, and
+    each letter's injected displacement back out of its own block."""
+    injected = [(0.10, 0.0), (-0.08, 0.04), (0.05, -0.03)]
+    case, result, windows, _ = _synthetic_word(injected)
+
+    fit = fit_word_chain(case, [0, 1, 2], result=result, windows_px=windows)
+    assert fit is not None
+    assert fit.slots == [0, 1, 2]
+    assert [s.kind for s in fit.segments] == ["letter", "connector", "letter", "connector", "letter"]
+    assert [s.slot_index for s in fit.segments] == [0, None, 1, None, 2]
+    assert len(fit.cut_indices) == 2
+    assert len(fit.connector_units) == 2
+    assert fit.converged
+
+    for slot, injected_shift in enumerate(injected):
+        assert np.max(np.abs(_recovered(fit, slot) - np.asarray(injected_shift))) <= 0.05, (
+            f"slot {slot}: {_recovered(fit, slot)} vs {injected_shift}"
+        )
+    for seg in fit.segments:
+        if seg.kind == "letter":
+            assert seg.geo_rmse_px <= CONVERGED_GEO_RMSE_UNITS * WORD_XH
+            assert seg.fitted_anchors is not None
+        else:
+            assert seg.fitted_anchors is None
+
+
+def test_word_chain_reports_pen_down_polylines_in_writing_order() -> None:
+    """`stroke_polylines_px` is what a word trace is assembled from: every
+    sample of the chain exactly once, labelled by segment and slot."""
+    case, result, windows, _ = _synthetic_word([(0.05, 0.0), (0.0, 0.0), (-0.05, 0.0)])
+    fit = fit_word_chain(case, [0, 1, 2], result=result, windows_px=windows)
+    assert fit is not None
+    strokes = fit.stroke_polylines_px
+    # one entry per single-stroke letter and one per connector, in order
+    assert [s["kind"] for s in strokes] == ["letter", "connector", "letter", "connector", "letter"]
+    assert [s["slot_index"] for s in strokes] == [0, None, 1, None, 2]
+    assert [s["segment_index"] for s in strokes] == [0, 1, 2, 3, 4]
+    assert {s["stroke_index"] for s in strokes} == {0}
+    assert sum(len(s["points_px"]) for s in strokes) == fit.fit_meta["n_samples"]
+    for entry, seg in zip(strokes, fit.segments, strict=True):
+        assert np.allclose(entry["points_px"], seg.polyline_px)
+
+
+def test_word_chain_fits_a_one_slot_run() -> None:
+    """A lone letter is a one-SEGMENT chain — no join, no connector, same solve."""
+    case, result, windows, _ = _synthetic_word([(0.12, -0.03)])
+    fit = fit_word_chain(case, [0], result=result, windows_px=windows)
+    assert fit is not None
+    assert [s.kind for s in fit.segments] == ["letter"]
+    assert fit.cut_indices == []
+    assert fit.connector_units == []
+    assert fit.fit_meta["connector_converged"] is None
+    assert fit.converged
+    assert np.max(np.abs(_recovered(fit, 0) - np.array([0.12, -0.03]))) <= 0.05
+
+
+def test_word_chain_rejects_a_non_consecutive_run() -> None:
+    """A run is an adjacency statement; a gap in it is a caller bug, not a fit."""
+    case, result, windows, _ = _synthetic_word([(0.0, 0.0)] * 3)
+    with pytest.raises(ValueError, match="CONSECUTIVE"):
+        fit_word_chain(case, [0, 2], result=result, windows_px=windows)
+    with pytest.raises(ValueError):
+        fit_word_chain(case, [], result=result, windows_px=windows)
+
+
+def test_word_chain_needs_a_coverage_window() -> None:
+    """Without one window there is no band to cut — the caller's placement
+    diagnosis decides the fallback, this function does not invent one."""
+    case, result, _windows, _ = _synthetic_word([(0.0, 0.0), (0.0, 0.0)])
+    assert fit_word_chain(case, [0, 1], result=result, windows_px={}) is None
+
+
+# ------------------------------------------------- fit_pair_chain as a wrapper
+
+
+def test_fit_pair_chain_is_the_two_slot_word_chain() -> None:
+    """The frozen pair entry point must be the SAME fit, only narrowed.
+
+    `fit_pair_chain` reads exactly three things off the dissection: the cached
+    composition and the two letters' independently placed body ink (whose
+    x-extent becomes the coverage window), so a stand-in carrying those is a
+    complete input — and its result must agree with the word chain field for
+    field, with the list-per-join fields collapsed to the pair's singletons.
+    """
+    injected = [(0.09, 0.02), (-0.06, -0.03)]
+    case, result, windows, truth_px = _synthetic_word(injected)
+    word = fit_word_chain(case, [0, 1], result=result, windows_px=windows)
+    assert word is not None
+
+    dissection = SimpleNamespace(
+        result=result, a=SimpleNamespace(body_px=[truth_px[0]]), b=SimpleNamespace(body_px=[truth_px[1]])
+    )
+    pair = fit_pair_chain(case, 0, dissection)
+    assert pair is not None
+    assert pair.slot_a == 0
+    assert pair.cut_indices == word.cut_indices[0]
+    assert np.allclose(pair.connector_units, word.connector_units[0])
+    assert pair.slot_shift_units == word.slot_shift_units
+    assert pair.slot_at_bound == word.slot_at_bound
+    assert pair.global_shift_units == word.global_shift_units
+    assert pair.converged == word.converged
+    assert pair.converged_local == word.converged_local
+    for a, b in zip(pair.segments, word.segments, strict=True):
+        assert (a.kind, a.slot_index, a.key) == (b.kind, b.slot_index, b.key)
+        assert a.geo_rmse_px == pytest.approx(b.geo_rmse_px)
+        assert a.cov_rmse_px == pytest.approx(b.cov_rmse_px)
+        assert a.cov_rmse_local_px == pytest.approx(b.cov_rmse_local_px)
+        assert (a.n_cov, a.n_cov_local) == (b.n_cov, b.n_cov_local)
+        assert a.converged == b.converged and a.converged_local == b.converged_local
+    assert pair.fit_meta["energies"] == word.fit_meta["energies"]
+    # …and the one thing the pair harness reads differently
+    assert set(pair.fit_meta["cov_window_px"]) == {"left", "right"}
+    assert pair.fit_meta["cov_window_px"]["left"] == [round(v, 1) for v in windows[0]]
+    assert pair.fit_meta["cov_window_px"]["right"] == [round(v, 1) for v in windows[1]]
+
+
+def test_fit_pair_chain_recovers_the_two_injected_shifts() -> None:
+    """The pair path end to end on synthetic ink — the Stage-A guarantee the
+    refactor must not have moved."""
+    injected = [(0.09, 0.02), (-0.06, -0.03)]
+    case, result, _windows, truth_px = _synthetic_word(injected)
+    dissection = SimpleNamespace(
+        result=result, a=SimpleNamespace(body_px=[truth_px[0]]), b=SimpleNamespace(body_px=[truth_px[1]])
+    )
+    fit = fit_pair_chain(case, 0, dissection)
+    assert fit is not None and fit.converged
+    for slot, injected_shift in enumerate(injected):
+        assert np.max(np.abs(_recovered(fit, slot) - np.asarray(injected_shift))) <= 0.05

@@ -269,8 +269,12 @@ kurrentschrift/
 │                     #   say?" is answerable without DOING anything; nulls where the compare
 │                     #   is meaningless (non-base variant, no stored row, anchor mismatch).
 │                     #   Median math in the pure core/aggregate.py; read+rebuild affect no
-│                     #   rendering. POST …/apply-laufform closes H1: the STORED aggregates
+│                     #   rendering; letter rebuild min_n defaults to 1 since #273 (a key seen
+│                     #   once is visible as a statistic — the caution lives in the apply).
+│                     #   POST …/apply-laufform closes H1: the STORED aggregates
 │                     #   (no recompute) become the style's variant-100 Laufform templates —
+│                     #   selectable per glyph via the repeated glyph_keys query param
+│                     #   (absent = all; the dialog pre-ticks n >= 3, flags thinner rows) —
 │                     #   median = anchors, widths/topology/entry/exit/advance from the chart
 │                     #   row via the SHARED templates.py::build_laufform_canonical the manual
 │                     #   PUT …/templates/{key}/laufform uses. Own step because it DOES affect

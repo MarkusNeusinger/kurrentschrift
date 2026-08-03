@@ -98,11 +98,15 @@ async def test_rebuild_stores_medians_and_hull(api: Harness):
 
 
 async def test_rebuild_min_n_gate_skips_and_reports(api: Harness):
+    """The gate stays parameterised and keeps counting — only the DEFAULT moved
+    (issue #273)."""
     style_id, source_id = await api.seed_style_and_source()
     await api.seed_template(style_id, source_id, "n", "n")
     await _seed_occurrences(api, source_id, [0.0, 0.02, 0.06])
 
-    res = await api.client.request("POST", "/hands/test-hand/aggregates/rebuild", headers=api.admin_headers())
+    res = await api.client.request(
+        "POST", "/hands/test-hand/aggregates/rebuild", params={"min_n": 4}, headers=api.admin_headers()
+    )
     out = res.json()
     assert out["stored"] == 0 and out["keys"] == []
     assert out["skipped"] == {"anchor_shape": 0, "below_min_n": 3}
@@ -114,6 +118,31 @@ async def test_rebuild_min_n_gate_skips_and_reports(api: Harness):
         "POST", "/hands/test-hand/aggregates/rebuild", params={"min_n": 3}, headers=api.admin_headers()
     )
     assert res.json()["stored"] == 1
+
+
+async def test_rebuild_defaults_to_min_n_one(api: Harness):
+    """A key seen ONCE gets an aggregate by default (issue #273): seeing a
+    median renders nothing, so the statistics layer shows every attested key —
+    nearly every capital lives at n = 1..3 on the 1922 plates. The caution moved
+    to `apply-laufform`, which is a separate, selectable step."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    await _seed_occurrences(api, source_id, [0.02])
+
+    res = await api.client.request("POST", "/hands/test-hand/aggregates/rebuild", headers=api.admin_headers())
+    out = res.json()
+    assert out["stored"] == 1
+    assert out["skipped"] == {"anchor_shape": 0, "below_min_n": 0}
+    assert out["keys"] == [{"glyph_key": "n", "variant": 0, "n_instances": 1, "laufform_dev_xh": None}]
+
+    res = await api.client.request("GET", "/hands/test-hand/aggregates", headers=api.admin_headers())
+    row = res.json()[0]
+    # The single occurrence IS the median — and its MAD is a computed zero, not
+    # a measured spread. Stored as the aggregation produces it; the consumers
+    # (LensStats) drop the ± clause on an n = 1 row.
+    assert row["n_instances"] == 1
+    assert row["cluster_center"] == _shifted(0.02)
+    assert row["hull"]["anchor_mad"] == [[0.0, 0.0]] * len(CHART_ANCHORS)
 
 
 async def test_rebuild_reports_the_laufform_pruefstein(api: Harness):
@@ -260,6 +289,8 @@ async def test_apply_laufform_derives_the_variant_100_row_and_closes_the_pruefst
         # No Laufform row existed yet, so there is no distance to report.
         "applied": [{"glyph_key": "n", "variant": 0, "n_instances": 4, "laufform_dev_xh": None, "created": True}],
         "skipped": [],
+        # No `glyph_keys` selection was sent, so nothing was left out by one.
+        "excluded": [],
     }
 
     rows = await _stored_laufform(api, style_id)
@@ -357,6 +388,104 @@ async def test_apply_laufform_skips_and_reports_underivable_keys(api: Harness):
     assert [r["glyph_key"] for r in await _stored_laufform(api, style_id)] == ["n"]
 
 
+async def test_apply_laufform_writes_only_the_selected_keys(api: Harness):
+    """Per-glyph selection (issue #273): with `min_n = 1` in the statistics
+    layer, "all or nothing" would push a hand's one-occurrence idiosyncrasies
+    into the writing path together with its well-attested medians. `glyph_keys`
+    narrows the write, and the response names what it left out."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    await api.seed_template(style_id, source_id, "m", "m")
+    # 'n' well attested, 'm' seen exactly once — the case the selection exists
+    # for, and one the default gate now aggregates.
+    await _seed_occurrences(api, source_id, [0.0, 0.02, 0.06, 0.08])
+    await _seed_occurrences(api, source_id, [0.5], glyph_key="m", glyph="m")
+    await api.client.request("POST", "/hands/test-hand/aggregates/rebuild", headers=api.admin_headers())
+
+    res = await api.client.request(
+        "POST", "/hands/test-hand/aggregates/apply-laufform", params={"glyph_keys": ["n"]}, headers=api.admin_headers()
+    )
+    assert res.status == 200, res.body
+    out = res.json()
+    assert [k["glyph_key"] for k in out["applied"]] == ["n"]
+    # Deselected is its own report — never mixed into the "could not" skips.
+    assert out["excluded"] == ["m"]
+    assert out["skipped"] == []
+    assert [r["glyph_key"] for r in await _stored_laufform(api, style_id)] == ["n"]
+
+    # The thin key stays applicable — the human decides, nothing forbids it.
+    res = await api.client.request(
+        "POST", "/hands/test-hand/aggregates/apply-laufform", params={"glyph_keys": ["m"]}, headers=api.admin_headers()
+    )
+    out = res.json()
+    assert [k["glyph_key"] for k in out["applied"]] == ["m"]
+    assert out["applied"][0]["n_instances"] == 1
+    assert out["excluded"] == ["n"]
+    assert sorted(r["glyph_key"] for r in await _stored_laufform(api, style_id)) == ["m", "n"]
+
+
+async def test_apply_laufform_selection_of_nothing_writes_nothing(api: Harness):
+    """An EMPTY selection is a deliberate "write nothing", not a missing one —
+    the absent parameter is what means "every key"."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    await _seed_occurrences(api, source_id, [0.0, 0.02, 0.06, 0.08])
+    await api.client.request("POST", "/hands/test-hand/aggregates/rebuild", headers=api.admin_headers())
+
+    res = await api.client.request(
+        "POST",
+        "/hands/test-hand/aggregates/apply-laufform",
+        # What `applyLaufform(handId, [])` sends: a present but empty selection.
+        params={"glyph_keys": [""]},
+        headers=api.admin_headers(),
+    )
+    out = res.json()
+    assert out["applied"] == [] and out["skipped"] == [] and out["excluded"] == ["n"]
+    assert await _stored_laufform(api, style_id) == []
+
+    # A key the selection names but the hand has no aggregate for writes
+    # nothing either — and excludes the keys it does have.
+    res = await api.client.request(
+        "POST",
+        "/hands/test-hand/aggregates/apply-laufform",
+        params={"glyph_keys": ["nope"]},
+        headers=api.admin_headers(),
+    )
+    out = res.json()
+    assert out["applied"] == [] and out["excluded"] == ["n"]
+    assert await _stored_laufform(api, style_id) == []
+
+
+async def test_apply_laufform_selection_precedes_the_variant_triage(api: Harness):
+    """A deselected row is not reported as a skip: it never reached the
+    variant/topology triage, so the two lists stay honest about their causes."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    await _seed_occurrences(api, source_id, [0.0, 0.02, 0.06, 0.08])
+    # A second, non-base variant of the SAME key — selected, so the triage does
+    # see it and reports it as before.
+    items = [_instance_item(variant=1, x0=400 + 10 * n, x1=430 + 10 * n) for n in range(4)]
+    items += [
+        _instance_item(glyph_key="m", glyph="m", anchors=_shifted(0.3), x0=500 + 10 * n, x1=530 + 10 * n)
+        for n in range(4)
+    ]
+    res = await api.client.request(
+        "PUT", f"/sources/{source_id}/instances", json_body=_batch(items), headers=api.admin_headers()
+    )
+    assert res.status == 200, res.body
+    await api.client.request("POST", "/hands/test-hand/aggregates/rebuild", headers=api.admin_headers())
+
+    res = await api.client.request(
+        "POST", "/hands/test-hand/aggregates/apply-laufform", params={"glyph_keys": ["n"]}, headers=api.admin_headers()
+    )
+    out = res.json()
+    assert [k["glyph_key"] for k in out["applied"]] == ["n"]
+    # 'n' variant 1 was selected and is reported as underivable; 'm' was not
+    # selected at all and is only excluded.
+    assert out["skipped"] == [{"glyph_key": "n", "variant": 1, "reason": "non_base_variant"}]
+    assert out["excluded"] == ["m"]
+
+
 async def test_apply_laufform_without_aggregates_or_style_writes_nothing(api: Harness):
     style_id, source_id = await api.seed_style_and_source()
     await api.seed_template(style_id, source_id, "n", "n")
@@ -366,7 +495,7 @@ async def test_apply_laufform_without_aggregates_or_style_writes_nothing(api: Ha
     # the occurrences (the rebuild is the one recompute step).
     res = await api.client.request("POST", "/hands/test-hand/aggregates/apply-laufform", headers=api.admin_headers())
     assert res.status == 200
-    assert res.json() == {"hand_id": "test-hand", "style_id": style_id, "applied": [], "skipped": []}
+    assert res.json() == {"hand_id": "test-hand", "style_id": style_id, "applied": [], "skipped": [], "excluded": []}
     assert await _stored_laufform(api, style_id) == []
 
     # A hand without a style has no templates to write into.

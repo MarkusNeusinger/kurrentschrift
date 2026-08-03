@@ -16,15 +16,20 @@
 //   3. Afterwards it reports what actually happened, so the run leaves a
 //      readable trace rather than a silent success.
 //
-// It deliberately offers no per-glyph selection: the endpoint applies a hand's
-// aggregates wholesale, and a UI that implied otherwise would be lying about
-// what the button does.
+// Since issue #273 it also carries the per-glyph SELECTION. The aggregate gate
+// dropped to `min_n = 1` — a key seen once is a statistic like any other, and
+// hiding it helped nobody — which moved the whole question of "how much do I
+// trust this median?" here, to the one step that renders. So the table has a
+// checkbox per row, well-attested rows are proposed pre-checked, thin ones are
+// marked as such, and every row stays selectable: the human decides, the
+// request then says exactly what the checkboxes did (`glyph_keys`).
 
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import {
   Alert,
   Box,
   Button,
+  Checkbox,
   Chip,
   CircularProgress,
   Dialog,
@@ -38,12 +43,12 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { applyLaufform } from '@/lib/api';
 import type { AggregateApplyOut, AggregateOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
-import { previewOf, willChange } from '@/sections/admin/letters/laufformPreview';
+import { LOW_N, defaultSelection, isLowN, previewOf, willChange } from '@/sections/admin/letters/laufformPreview';
 
 // The preview maths live in the pure sibling `laufformPreview.ts`.
 
@@ -65,13 +70,31 @@ export function LaufformApplyDialog({
   const [result, setResult] = useState<AggregateApplyOut | null>(null);
   const [error, setError] = useState(false);
 
-  const rows = previewOf(aggregates);
+  // The aggregates prop is stable for the dialog's lifetime (the letter view
+  // refetches only after `onApplied`), so the preview and its proposed
+  // selection are computed once — recomputing would throw away the admin's
+  // ticks on every render.
+  const rows = useMemo(() => previewOf(aggregates), [aggregates]);
   const changing = rows.filter(willChange).length;
+  const [selected, setSelected] = useState<Set<string>>(() => new Set(defaultSelection(rows)));
+
+  const toggle = (glyphKey: string) =>
+    setSelected((previous) => {
+      const next = new Set(previous);
+      if (!next.delete(glyphKey)) next.add(glyphKey);
+      return next;
+    });
+  const allSelected = rows.length > 0 && selected.size === rows.length;
+  const toggleAll = () => setSelected(allSelected ? new Set() : new Set(rows.map((row) => row.glyphKey)));
 
   const run = () => {
     setBusy(true);
     setError(false);
-    applyLaufform(handId)
+    // Always explicit: an empty selection never becomes "all" by omission.
+    applyLaufform(
+      handId,
+      rows.filter((row) => selected.has(row.glyphKey)).map((row) => row.glyphKey),
+    )
       .then((out) => {
         setResult(out);
         onApplied();
@@ -129,6 +152,13 @@ export function LaufformApplyDialog({
                 </Box>
               </Box>
             )}
+            {result.excluded.length > 0 && (
+              // Not a skip — these were never asked for. Named anyway, so the
+              // report says what was left alone as plainly as what was written.
+              <Typography variant="caption" color="text.secondary">
+                {fmt(t.doneExcluded, { count: result.excluded.length, keys: result.excluded.join(' · ') })}
+              </Typography>
+            )}
             <Typography variant="caption" color="text.secondary">
               {t.doneHint}
             </Typography>
@@ -147,7 +177,12 @@ export function LaufformApplyDialog({
             ) : (
               <>
                 <Typography variant="body2">
-                  {fmt(t.previewSummary, { total: rows.length, changing })}
+                  {`${fmt(t.previewSummary, { total: rows.length, changing })} ${fmt(t.previewSelected, {
+                    selected: selected.size,
+                  })}`}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {fmt(t.previewSelectionHint, { count: LOW_N })}
                 </Typography>
                 {/* Both axes scroll: the list is long, and at 390px the three
                     columns do not fit — clipping the distance column would
@@ -156,6 +191,15 @@ export function LaufformApplyDialog({
                   <Table size="small" stickyHeader>
                     <TableHead>
                       <TableRow>
+                        <TableCell padding="checkbox">
+                          <Checkbox
+                            size="small"
+                            checked={allSelected}
+                            indeterminate={selected.size > 0 && !allSelected}
+                            onChange={toggleAll}
+                            slotProps={{ input: { 'aria-label': t.selectAll } }}
+                          />
+                        </TableCell>
                         <TableCell>{t.colGlyph}</TableCell>
                         <TableCell align="right">{t.colOccurrences}</TableCell>
                         <TableCell align="right">{t.colDeviation}</TableCell>
@@ -163,9 +207,31 @@ export function LaufformApplyDialog({
                     </TableHead>
                     <TableBody>
                       {rows.map((row) => (
-                        <TableRow key={row.glyphKey}>
+                        <TableRow key={row.glyphKey} hover selected={selected.has(row.glyphKey)}>
+                          <TableCell padding="checkbox">
+                            <Checkbox
+                              size="small"
+                              checked={selected.has(row.glyphKey)}
+                              onChange={() => toggle(row.glyphKey)}
+                              slotProps={{ input: { 'aria-label': fmt(t.selectRow, { key: row.glyphKey }) } }}
+                            />
+                          </TableCell>
                           <TableCell>{row.glyphKey}</TableCell>
-                          <TableCell align="right">{row.nInstances}</TableCell>
+                          <TableCell align="right">
+                            {/* The trust cue at the moment of the decision: a
+                                median over one or two occurrences is stated as
+                                such, not left to be read off a bare number. */}
+                            {isLowN(row) ? (
+                              <Chip
+                                size="small"
+                                color="warning"
+                                variant="outlined"
+                                label={fmt(t.cellLowN, { count: row.nInstances })}
+                              />
+                            ) : (
+                              row.nInstances
+                            )}
+                          </TableCell>
                           <TableCell align="right">
                             {row.creates ? (
                               <Chip size="small" color="success" variant="outlined" label={t.cellNew} />
@@ -203,10 +269,11 @@ export function LaufformApplyDialog({
             variant="contained"
             color="warning"
             onClick={run}
-            disabled={busy}
+            // Nothing ticked is not a whole-hand apply — it is nothing to do.
+            disabled={busy || selected.size === 0}
             startIcon={busy ? <CircularProgress size={14} /> : undefined}
           >
-            {t.confirm}
+            {selected.size === 1 ? t.confirmOne : fmt(t.confirm, { count: selected.size })}
           </Button>
         )}
       </DialogActions>

@@ -87,7 +87,14 @@ export const admin = {
     intro:
       'Übernommen werden die GESPEICHERTEN Aggregate der Hand „{{hand}}" (nicht neu gerechnet — dafür ist der Neuaufbau da). Anker kommen aus dem Median, Breiten, Strich-Topologie und An-/Abstrich weiterhin aus der Tafelzeile.',
     previewSummary: '{{total}} Buchstaben mit Aggregat, davon {{changing}} mit Änderung.',
+    previewSelected: '{{selected}} ausgewählt.',
+    // Says both halves of the doctrine: thin medians are proposed unchecked,
+    // and nothing forbids them — the decision stays at the person's table.
+    previewSelectionHint:
+      'Vorgeschlagen sind die Buchstaben mit mindestens {{count}} Vorkommen. Dünner belegte lassen sich ebenso übernehmen — sie sind nur zuerst abgewählt.',
     nothingToApply: 'Keine übernehmbaren Aggregate — erst die Statistik neu aufbauen.',
+    selectAll: 'Alle auswählen',
+    selectRow: '{{key}} auswählen',
     colGlyph: 'Buchstabe',
     colOccurrences: 'Vorkommen',
     // Short on purpose: the column has to survive a 390px dialog, and the
@@ -96,12 +103,18 @@ export const admin = {
     cellNew: 'neu',
     cellUnchanged: 'unverändert',
     cellIncomparable: 'nicht vergleichbar',
-    confirm: 'Ja, Laufform überschreiben',
+    // A median over one or two Vorkommen: stated at the moment of the decision.
+    cellLowN: 'nur {{count}} Vorkommen',
+    // „1 Laufform" vs. „5 Laufformen" — the button says how many rows the tick
+    // marks will actually write.
+    confirm: 'Ja, {{count}} Laufformen überschreiben',
+    confirmOne: 'Ja, 1 Laufform überschreiben',
     failed: 'Übernahme fehlgeschlagen — es wurde nichts geschrieben.',
     doneSummary: '{{applied}} Laufformen geschrieben, {{skipped}} übersprungen.',
     doneCreated: '{{key}} · neu',
     doneUpdated: '{{key}} · Abstand {{value}} geschlossen',
     doneSkippedLabel: 'Übersprungen:',
+    doneExcluded: '{{count}} nicht ausgewählt und daher unverändert: {{keys}}',
     doneHint:
       'Die Laufform ist jetzt ein Abbild der gespeicherten Statistik. Ändern sich Tafel-Duktus oder Vorkommen, veraltet sie wieder — sichtbar am Abstand hier.',
     // The endpoint's fixed skip vocabulary.

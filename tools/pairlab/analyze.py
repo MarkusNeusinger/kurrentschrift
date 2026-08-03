@@ -266,8 +266,21 @@ def _real_join(
     polyline. Where a column holds several strokes (r's Deckstrich arm above
     the actual join), the tracker keeps the y closest to the previous column
     (seeded near A's exit height) instead of blurring them into a median.
-    Empty array when the letters touch/overlap."""
-    row_top = baseline_row - JOIN_BAND_Y[1] * xh
+    Empty array when the letters touch/overlap.
+
+    The band's CEILING follows the exit: a join cannot run higher than the point
+    the pen leaves the letter at, but it very much can run higher than
+    `JOIN_BAND_Y`'s 0.8 xh, which is the composer's clearance band and not a
+    statement about where joins live. A d-type loop exit departs at
+    y ≈ 1.04–1.13 xh and its join runs level at ≈ 0.9–1.0 xh — entirely above
+    that ceiling, so the tracker used to see 4 of 18 gap columns, `seed_y` got
+    clipped a quarter of an x-height below the real departure, and the nearest-y
+    rule then latched onto whatever ink sat BELOW the join (a following
+    descender in `b→p`, empty space in `o→r`). Keying the ceiling on the exit
+    costs no constant and leaves every low-exit pair bit-identical; see
+    `docs/proposals/uebergaenge-befund.md` §5c, Nachtrag „loop-exit"."""
+    exit_units = (baseline_row - seed_y) / xh
+    row_top = baseline_row - max(JOIN_BAND_Y[1], exit_units) * xh
     row_bot = baseline_row - JOIN_BAND_Y[0] * xh
     ys, xs = np.nonzero(skel)
     sel = (xs > a_max_x) & (xs < b_min_x) & (ys >= row_top) & (ys <= row_bot)

@@ -59,12 +59,20 @@ export interface SketchAnchor {
   mad?: number;
 }
 
+// A single occurrence HAS no spread: the median is that occurrence, so every
+// median absolute deviation comes back as an exact 0 — a computed artefact of
+// n = 1, not the measurement "this hand is perfectly consistent here". Since
+// the aggregate gate is `min_n = 1` (issue #273) such rows are normal, so every
+// block drops the spread entirely rather than draw or print a zero: same rule
+// as the pair offset's „an absent MAD prints no ± clause".
+export const hasSpread = (nInstances: number): boolean => nInstances >= 2;
+
 // Anchors zipped with `hull.anchor_mad` BEFORE any validity filtering: the MAD
 // list is positional, so a dropped anchor has to take its own circle with it —
 // indexing the spread with the FILTERED index slides every circle one anchor
 // along.
 export function letterSketchAnchors(aggregate: AggregateOut): SketchAnchor[] {
-  const mad = aggregate.hull.anchor_mad ?? [];
+  const mad = hasSpread(aggregate.n_instances) ? (aggregate.hull.anchor_mad ?? []) : [];
   return (aggregate.cluster_center ?? [])
     .map((point, i) => ({ point, spread: mad[i] }))
     .filter(({ point }) => isPoint(point))

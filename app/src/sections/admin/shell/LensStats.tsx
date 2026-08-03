@@ -28,6 +28,7 @@ import { AggregateSketch } from './AggregateSketch';
 import { WERKBANK_COLORS } from './model';
 import {
   boundsOf,
+  hasSpread,
   isPoint,
   letterSketchAnchors,
   occurrenceChainsOf,
@@ -293,7 +294,9 @@ function PairConnectorSketch({
     .map((occ) => (occ.geometry?.connector ?? []).filter(isPoint))
     .filter((line) => line.length >= 2);
   const offset = aggregate.offset_center ?? [];
-  const offsetMad = aggregate.hull.offset_mad;
+  // No whisker off a single occurrence — a zero-length cross would read as a
+  // measured "no spread" (see `hasSpread`).
+  const offsetMad = hasSpread(aggregate.n_instances) ? aggregate.hull.offset_mad : undefined;
   const hasOffset = isPoint(offset);
 
   // The origin is the left glyph's exit — always in view, it is the reference
@@ -364,7 +367,9 @@ export function PairStats({
 
   const meanStats = aggregate?.mean_stats ?? {};
   const offset = aggregate?.offset_center;
-  const offsetMad = aggregate?.hull.offset_mad;
+  // At n = 1 the MAD is a computed zero, not a measured spread — dropped, so
+  // the ± clause below is left off entirely (`hasSpread`).
+  const offsetMad = aggregate && hasSpread(aggregate.n_instances) ? aggregate.hull.offset_mad : undefined;
   const kinds = Object.entries(meanStats.kinds ?? {});
   const median = (aggregate?.connector_center ?? []).filter(isPoint);
   // The rebuild skips a dissection whose letter fits were not clean (`fit_bad`)
