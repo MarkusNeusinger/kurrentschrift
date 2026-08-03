@@ -43,32 +43,9 @@ import { useState } from 'react';
 import { applyLaufform } from '@/lib/api';
 import type { AggregateApplyOut, AggregateOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
+import { previewOf, willChange } from '@/sections/admin/letters/laufformPreview';
 
-// What the apply WOULD do to one glyph, derived from the same row the letter
-// view already holds — so the preview costs no extra request and cannot
-// disagree with the freshness chips shown beside it.
-interface Preview {
-  glyphKey: string;
-  nInstances: number;
-  dev: number | null;
-  // No stored running form yet: this glyph gains one.
-  creates: boolean;
-}
-
-function previewOf(aggregates: AggregateOut[]): Preview[] {
-  return aggregates
-    // Only base-variant aggregates feed the derived row (a variant-100
-    // aggregate would let the Laufform derive from itself) — the endpoint
-    // skips the rest, so the preview must not promise them either.
-    .filter((agg) => agg.variant === 0)
-    .map((agg) => ({
-      glyphKey: agg.glyph_key,
-      nInstances: agg.n_instances,
-      dev: agg.laufform_dev_xh,
-      creates: agg.laufform_anchors === null,
-    }))
-    .sort((a, b) => (b.dev ?? Infinity) - (a.dev ?? Infinity) || a.glyphKey.localeCompare(b.glyphKey));
-}
+// The preview maths live in the pure sibling `laufformPreview.ts`.
 
 export function LaufformApplyDialog({
   handId,
@@ -89,7 +66,7 @@ export function LaufformApplyDialog({
   const [error, setError] = useState(false);
 
   const rows = previewOf(aggregates);
-  const changing = rows.filter((r) => r.dev === null || r.dev > 0).length;
+  const changing = rows.filter(willChange).length;
 
   const run = () => {
     setBusy(true);
