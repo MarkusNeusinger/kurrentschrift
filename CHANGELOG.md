@@ -112,7 +112,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   enough anchor vocabulary that pasting an entry into any AI chat lets the
   reader dig further. Includes the four Stage-A chain metrics **M1–M4** with
   what each asks, how it is computed and where it stands — plus an explicit
-  warning that M1–M4 (chain), M0–M7 (MVP milestones, hence „M4-Fit") and H/R/W
+  warning that M1–M4 (chain), M0–M7 (MVP milestones, hence "M4-Fit") and H/R/W
   numbering are four independent schemes — and a research section (AIoU, LDTW,
   DTW, HWD, Sigma-Lognormal, G1/G2 continuity) that places the house metrics
   against the published state of the art.

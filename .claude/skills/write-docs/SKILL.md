@@ -145,8 +145,8 @@ contradicts a Verworfen entry, stop and surface it to the user.
   resolve and check each one is in the glossary:
 
   ```bash
-  grep -o '\*\*[^*]*\*\*' <the-doc-you-changed>.md | sort -u   # your coined terms
-  grep -n '<term>' docs/reference/glossar.md                   # is it there?
+  grep -o '\*\*[^*]*\*\*' DOC.md | sort -u          # your coined terms (DOC.md = the doc you changed)
+  grep -n 'TERM' docs/reference/glossar.md          # is it there?
   ```
 
 - `docs/index.md` quick-links table ↔ the actual file tree. List the
