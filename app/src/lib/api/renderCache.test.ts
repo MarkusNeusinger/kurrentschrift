@@ -149,6 +149,10 @@ describe('renderCache', () => {
   it('a batch prefetch honours the version bust it was given', async () => {
     fetchMock.mockImplementation(() => Promise.resolve(jsonRes(glyphsOut([glyph('a-medial')]))));
     await rc.fetchRenderGlyphs('src', ['a-medial'], 0, 7);
+    // The version has to reach the URL too — /write/glyphs is served with
+    // max-age, so a bust that only re-keys the map is answered from the
+    // browser's own copy.
+    expect(requestedUrl(0)).toContain('t=7');
     // A versioned single read of the SAME version is a hit — the prefetch
     // stamped its entries, so the components do not refetch one by one.
     await rc.fetchRenderGlyph('src', 'a-medial', 7);

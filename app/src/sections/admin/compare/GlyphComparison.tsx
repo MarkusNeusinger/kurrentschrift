@@ -600,15 +600,23 @@ export function GlyphComparison({ onPick }: { onPick?: (glyphKey: string) => voi
         >
           <ToggleButton value="alpha">{de.admin.compare.sortAlpha}</ToggleButton>
           {/* Without scores the worst-first order would silently be the
-              alphabet again — the button says so instead of pretending to
-              sort (the read is admin-gated and may 401). */}
-          <Tooltip title={scoresRanked ? '' : de.admin.compare.sortWorstUnavailable}>
-            <span>
-              <ToggleButton value="worst" disabled={!scoresRanked}>
-                {de.admin.compare.sortWorst}
-              </ToggleButton>
-            </span>
-          </Tooltip>
+              alphabet again — the disabled button says so instead of
+              pretending to sort (the read is admin-gated and may 401). The
+              Tooltip exists only in that state: a disabled control swallows
+              the hover events, so it needs the span wrapper — and an
+              always-mounted Tooltip with an empty title would leave that
+              wrapper (and an empty description) on the enabled button too. */}
+          {scoresRanked ? (
+            <ToggleButton value="worst">{de.admin.compare.sortWorst}</ToggleButton>
+          ) : (
+            <Tooltip title={de.admin.compare.sortWorstUnavailable} describeChild>
+              <span>
+                <ToggleButton value="worst" disabled>
+                  {de.admin.compare.sortWorst}
+                </ToggleButton>
+              </span>
+            </Tooltip>
+          )}
         </ToggleButtonGroup>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <FormControlLabel

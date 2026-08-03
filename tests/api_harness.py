@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import itertools
 import json
+from typing import Any
 from urllib.parse import urlencode
 
 from sqlalchemy.ext.asyncio import async_sessionmaker
@@ -167,7 +168,7 @@ class Harness:
         *,
         variant: int = 0,
         half_width: float = 0.05,
-        trace_meta: dict | None = None,
+        trace_meta: dict[str, Any] | None = None,
     ) -> None:
         """A minimal but render-valid canonical: an n-like arch in template coords
         (baseline = 0, midband = 1) with a constant hairline width profile.

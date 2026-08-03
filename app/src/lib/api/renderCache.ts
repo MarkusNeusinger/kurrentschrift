@@ -78,7 +78,10 @@ export function fetchRenderGlyph(
 ): Promise<GlyphRenderData | null> {
   const entry = cache.get(id(sourceId, key, variant));
   if (entry && (bust == null || entry.bust === bust)) return entry.promise;
-  const promise = getWriteGlyphs(sourceId, [key], COLD_START_RETRY, variant).then(
+  // The version travels into the URL as well: the endpoint is cached for
+  // minutes, so a bust that only re-keys this map would still be answered from
+  // the browser's copy.
+  const promise = getWriteGlyphs(sourceId, [key], COLD_START_RETRY, variant, bust).then(
     (out) => out.glyphs.find((g) => g.glyph_key === key) ?? null,
   );
   return put(sourceId, key, bust ?? null, promise, variant).promise;
@@ -105,7 +108,7 @@ export function fetchRenderGlyphs(
     return !entry || (bust != null && entry.bust !== bust);
   });
   if (misses.length) {
-    const byKey = getWriteGlyphs(sourceId, misses, COLD_START_RETRY, variant).then(
+    const byKey = getWriteGlyphs(sourceId, misses, COLD_START_RETRY, variant, bust).then(
       (out) => new Map(out.glyphs.map((g) => [g.glyph_key, g] as const)),
     );
     for (const k of misses) {

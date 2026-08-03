@@ -72,14 +72,15 @@ export function StartView() {
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                  {/* Size from the ladder (h5 = 1.45rem), face and weight in
+                      sx — the design-system heading rule. */}
                   <Typography
                     component="h2"
+                    variant="h5"
                     sx={{
                       flex: 1,
                       fontFamily: display,
                       fontWeight: 600,
-                      fontSize: '1.45rem',
-                      lineHeight: 1.3,
                       color: paper.ink,
                       textShadow: letterpress,
                     }}

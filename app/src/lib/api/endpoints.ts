@@ -374,16 +374,25 @@ export const getDiagnostic = (sourceId: string, glyphKey: string): Promise<Diagn
 // only one the public surfaces ask for) is the authored chart ductus, 100 the
 // derived Laufform the admin letter view shows beside it. It is omitted from
 // the URL at 0 so the public cache entries keep their existing shape.
+// `bust` is the admin's canonical version stamp. It has to reach the URL, not
+// only the in-memory render cache: the response carries
+// `max-age=300, stale-while-revalidate`, so after a re-trace the browser would
+// answer the identical URL from its own copy for minutes. Same `t=` idiom as
+// the crop and word reads, and likewise omitted when unset so the public
+// entries stay untouched.
 export const getWriteGlyphs = (
   sourceId: string,
   keys: string[],
   retry?: RetryOptions,
   variant = 0,
+  bust?: number,
 ): Promise<WriteGlyphsOut> =>
   apiFetch(
     src(
       sourceId,
-      `/write/glyphs?keys=${encodeURIComponent([...keys].sort().join(','))}${variant ? `&variant=${variant}` : ''}`,
+      `/write/glyphs?keys=${encodeURIComponent([...keys].sort().join(','))}${variant ? `&variant=${variant}` : ''}${
+        bust ? `&t=${bust}` : ''
+      }`,
     ),
     {},
     retry,
