@@ -78,28 +78,46 @@ export function fetchRenderGlyph(
 ): Promise<GlyphRenderData | null> {
   const entry = cache.get(id(sourceId, key, variant));
   if (entry && (bust == null || entry.bust === bust)) return entry.promise;
-  const promise = getWriteGlyphs(sourceId, [key], COLD_START_RETRY, variant).then(
+  // The version travels into the URL as well: the endpoint is cached for
+  // minutes, so a bust that only re-keys this map would still be answered from
+  // the browser's copy.
+  const promise = getWriteGlyphs(sourceId, [key], COLD_START_RETRY, variant, bust).then(
     (out) => out.glyphs.find((g) => g.glyph_key === key) ?? null,
   );
   return put(sourceId, key, bust ?? null, promise, variant).promise;
 }
 
 // Fetch (or reuse) the render payloads for a set of glyph keys — all keys not
-// already cached go out as ONE batch request.
-export function fetchRenderGlyphs(sourceId: string, keys: string[]): Promise<Map<string, GlyphRenderData | null>> {
+// already cached go out as ONE batch request. The variant travels with the
+// batch (the admin's letter overview wants the whole alphabet's Laufform, and
+// one request beats thirty single-key ones); it keys the cache exactly like the
+// single fetch, so a later `fetchRenderGlyph(..., 100)` is a cache hit.
+export function fetchRenderGlyphs(
+  sourceId: string,
+  keys: string[],
+  variant = 0,
+  bust?: number,
+): Promise<Map<string, GlyphRenderData | null>> {
   const wanted = [...new Set(keys)];
-  const misses = wanted.filter((k) => !cache.has(id(sourceId, k)));
+  // Same version rule as the single fetch: a versioned caller (the admin, after
+  // a re-derive) only accepts entries stamped with ITS version — otherwise the
+  // prefetch would fill the cache with pre-write payloads that the components'
+  // own versioned reads then discard one by one.
+  const misses = wanted.filter((k) => {
+    const entry = cache.get(id(sourceId, k, variant));
+    return !entry || (bust != null && entry.bust !== bust);
+  });
   if (misses.length) {
-    const byKey = getWriteGlyphs(sourceId, misses, COLD_START_RETRY).then(
+    const byKey = getWriteGlyphs(sourceId, misses, COLD_START_RETRY, variant, bust).then(
       (out) => new Map(out.glyphs.map((g) => [g.glyph_key, g] as const)),
     );
     for (const k of misses) {
-      put(sourceId, k, null, byKey.then((m) => m.get(k) ?? null));
+      put(sourceId, k, bust ?? null, byKey.then((m) => m.get(k) ?? null), variant);
     }
   }
-  return Promise.all(wanted.map((k) => cache.get(id(sourceId, k))!.promise.then((d) => [k, d] as const))).then(
-    (entries) => new Map(entries),
-  );
+  return Promise.all(
+    wanted.map((k) => cache.get(id(sourceId, k, variant))!.promise.then((d) => [k, d] as const)),
+  ).then((entries) => new Map(entries));
 }
 
 // Record an externally supplied payload (the admin Diagnose dialog shares one

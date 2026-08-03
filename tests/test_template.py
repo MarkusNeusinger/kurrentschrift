@@ -38,6 +38,32 @@ def test_sample_polyline_returns_n_points():
     assert len(x) == len(y) == len(w) == 50
 
 
+def test_sample_polyline_survives_a_coincident_anchor_pair():
+    # Anchors are stored rounded to 4 decimals, so the apex of a short
+    # out-and-back stroke (the Sütterlin full stop) can round two samples onto
+    # the same point. The zero-length chord used to make CubicSpline raise
+    # ("`x` must be strictly increasing sequence") — a 500 on every render of
+    # that glyph.
+    anchors = np.array([[0.0, 0.0], [0.0, 0.5], [0.0, 1.0], [0.0, 1.0], [0.0, 0.5], [0.0, 0.0]])
+    widths = np.full(len(anchors), 0.1)
+    x, y, w = sample_polyline(anchors, widths, n=40)
+    assert len(x) == len(y) == len(w) == 40
+    assert np.isfinite(x).all() and np.isfinite(y).all() and np.isfinite(w).all()
+    # The stroke still spans its full extent — the repeat was dropped, not the
+    # apex it sits on.
+    assert y.max() > 0.9
+
+
+def test_sample_polyline_ignores_a_fully_degenerate_path():
+    # Every anchor on one point: no direction to sample, so the answer is that
+    # point n times rather than an exception.
+    anchors = np.tile(np.array([[0.3, 0.7]]), (5, 1))
+    widths = np.full(5, 0.2)
+    x, y, w = sample_polyline(anchors, widths, n=12)
+    assert len(x) == len(y) == len(w) == 12
+    assert np.allclose(x, 0.3) and np.allclose(y, 0.7)
+
+
 def test_stroke_outline_is_closed_polygon():
     x = np.array([0.0, 1.0, 2.0])
     y = np.array([0.0, 0.0, 0.0])

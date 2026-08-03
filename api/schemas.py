@@ -816,6 +816,33 @@ class TemplateSummary(BaseModel):
     has_data: bool
 
 
+class TemplateQualityOut(BaseModel):
+    """Item of `GET /sources/{id}/templates/quality` — the score the derivation
+    STAMPED onto the row, read straight out of `trace_meta.quality`.
+
+    That is the quality AT AUTHORING TIME (the metric code as it stood when the
+    glyph was traced or resampled), not a re-score with today's metric — the
+    per-glyph `GET .../templates/{key}/quality` recomputes from the crop, and
+    the two diverge the moment the metric changes. Cheap enough for a whole
+    alphabet in one request precisely because nothing is recomputed; a letter
+    whose stored score looks stale is re-scored (or resampled) there.
+
+    `quality` is null for rows traced before the metric existed. Its shape
+    depends on the style's metric (Kurrent pixel/width vs. Sütterlin Gleichzug
+    naturalness, qualitaetsmetrik.md §1–§4 vs. §5), hence the open dict.
+
+    One trap for consumers: a derived row (LAUFFORM_VARIANT) inherits the chart
+    row's whole `trace_meta` via `build_laufform_canonical`, so it repeats the
+    CHART form's score — nothing ever scored the median geometry against a
+    crop. Read a variant != 0 score as the prior it came from, not as a verdict
+    on the running form.
+    """
+
+    glyph_key: str
+    variant: int = 0
+    quality: dict[str, Any] | None = None
+
+
 class TemplateOut(BaseModel):
     glyph_key: str
     glyph: str

@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.auth import require_admin
 from api.dependencies import require_db, require_source
 from api.rendering import invalidate_pooled_style, resolve_render_context, resolve_style
-from api.schemas import LaufformUpsert, ResampleRequest, TemplateOut, TemplateSummary, TraceRequest
+from api.schemas import LaufformUpsert, ResampleRequest, TemplateOut, TemplateQualityOut, TemplateSummary, TraceRequest
 from core.database import LAUFFORM_VARIANT, BboxRepository, Source, Template, TemplateRepository
 from core.fit import fit_glyph_to_crop
 from core.pipeline import (
@@ -150,6 +150,22 @@ async def list_templates(source: Source = Depends(require_source), db: AsyncSess
     # tolerates the origin round trip (it already rides the cold-start retry).
     rows = await TemplateRepository(db).list_summaries(source.style_id)
     return [TemplateSummary(**row, has_data=True) for row in rows]
+
+
+# MUST stay above `GET /{glyph_key}`: FastAPI matches routes in declaration
+# order, so a later literal path would be swallowed as a glyph_key.
+# Admin-gated for the same open-core reason as the full row (quellen-und-rechte.md
+# §5) — a quality score is measured over the learned dataset. Uncached like the
+# summary list: the admin expects the fresh number right after a re-derive.
+@router.get("/quality", response_model=list[TemplateQualityOut], dependencies=[Depends(require_admin)])
+async def list_template_quality(source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)):
+    """Every template's stored quality score in one read (admin only).
+
+    The score as the derivation stamped it — see TemplateQualityOut; the
+    per-glyph `/{glyph_key}/quality` below is the one that re-derives.
+    """
+    rows = await TemplateRepository(db).list_quality(source.style_id)
+    return [TemplateQualityOut(**row) for row in rows]
 
 
 # Admin-gated as the open-core moat (quellen-und-rechte.md §5): the full row

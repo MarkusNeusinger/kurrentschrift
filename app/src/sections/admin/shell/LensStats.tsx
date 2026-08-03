@@ -24,29 +24,20 @@ import type { AggregateOut, InstanceOut, PairAggregateOut, PairInstanceOut } fro
 import { de, fmt, specimenKindLabel } from '@/locales/admin';
 import { paper } from '@/styles/paper';
 
+import { AggregateSketch } from './AggregateSketch';
 import { WERKBANK_COLORS } from './model';
+import {
+  boundsOf,
+  hasSpread,
+  isPoint,
+  letterSketchAnchors,
+  occurrenceChainsOf,
+  pathOf,
+  SKETCH_FRAME,
+} from './sketchGeometry';
 
 // Same height as the chart-crop thumbnail the old lens showed above it.
 const SKETCH_H = 90;
-// The letter sketch gets more room since it also carries the occurrence
-// chains: one outlier occurrence (a tail pulled up to ~1.6 x-heights happens)
-// legitimately stretches the frame, and the median must stay legible when it
-// does — the alternative, clipping the outlier, would hide exactly the thing
-// the layer is there to reveal.
-const SKETCH_H_LETTER = 150;
-// Template units of air around the drawn geometry.
-const SKETCH_PAD = 0.3;
-
-// The white work surface a sketch is drawn on — same framing as the chart crop
-// above it in the letter lens.
-const SKETCH_FRAME = {
-  bgcolor: '#fff',
-  borderRadius: 1,
-  border: 1,
-  borderColor: 'divider',
-  p: 0.5,
-  width: 'fit-content',
-} as const;
 
 // Why the block can have nothing to show: the lists are still in flight, the
 // occurrences name no hand at all, or the admin-gated read failed.
@@ -74,36 +65,6 @@ const num = (value: number, digits: number): string => value.toFixed(digits);
 // noun actually inflects („Vorkommen" is invariant, so it needs no twin).
 const specimenCount = (count: number): string =>
   fmt(count === 1 ? de.admin.werkbank.statsSpecimensOne : de.admin.werkbank.statsSpecimens, { count });
-
-// A wire point is only usable once it really is a finite 2-vector — the rows
-// come from JSONB, so length and finiteness are worth asserting before any
-// bounds math turns a NaN into an invisible sketch. The offset's MAD goes
-// through the SAME check: a spread is a 2-vector too, and a NaN in it would
-// reach `toFixed` (or a whisker's coordinates) just as easily.
-const isPoint = (p: unknown): p is number[] =>
-  Array.isArray(p) && p.length >= 2 && Number.isFinite(p[0]) && Number.isFinite(p[1]);
-
-// Bounds of a point cloud in template units, padded, plus the y values that
-// must stay visible (baseline/midband) whatever the geometry does.
-function boundsOf(points: number[][], extraY: number[]): { minX: number; minY: number; w: number; h: number } {
-  const xs = points.map(([x]) => x);
-  const ys = [...points.map(([, y]) => y), ...extraY];
-  const minX = Math.min(...xs) - SKETCH_PAD;
-  const maxX = Math.max(...xs) + SKETCH_PAD;
-  const minY = Math.min(...ys) - SKETCH_PAD;
-  const maxY = Math.max(...ys) + SKETCH_PAD;
-  // Guard against a degenerate cloud (a single anchor, a flat connector):
-  // a zero extent would make the viewBox — and every derived stroke width —
-  // collapse.
-  const w = Math.max(maxX - minX, 0.2);
-  const h = Math.max(maxY - minY, 0.2);
-  return { minX, minY, w, h };
-}
-
-// Template units are y-UP (baseline = 0, midband = 1), SVG is y-down: drawing
-// every point mirrored keeps the viewBox a plain rectangle.
-const pathOf = (points: number[][]): string =>
-  points.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x},${-y}`).join(' ');
 
 // Header of one statistics block: the label plus the quiet per-layer rebuild.
 // Mounted under a key that changes with the selection, so a stale result
@@ -192,141 +153,6 @@ function QuietCaption({ text }: { text: string }) {
   );
 }
 
-// One median anchor together with the spread that belongs to IT.
-interface SketchAnchor {
-  x: number;
-  y: number;
-  // Mean of the two axes' MAD, template units; undefined where the aggregate
-  // carries none (an absent spread is not a zero spread).
-  mad?: number;
-}
-
-// A single occurrence HAS no spread: the median is that occurrence, so every
-// median absolute deviation comes back as an exact 0 — a computed artefact of
-// n = 1, not the measurement "this hand is perfectly consistent here". Since
-// the aggregate gate is `min_n = 1` (issue #273) such rows are normal, so both
-// blocks drop the spread entirely rather than draw or print a zero: same rule
-// as the pair offset's „an absent MAD prints no ± clause".
-const hasSpread = (nInstances: number): boolean => nInstances >= 2;
-
-// Anchors zipped with `hull.anchor_mad` BEFORE any validity filtering: the MAD
-// list is positional, so a dropped anchor has to take its own circle with it —
-// indexing the spread with the FILTERED index slides every circle one anchor
-// along.
-function letterSketchAnchors(aggregate: AggregateOut): SketchAnchor[] {
-  const mad = hasSpread(aggregate.n_instances) ? (aggregate.hull.anchor_mad ?? []) : [];
-  return (aggregate.cluster_center ?? [])
-    .map((point, i) => ({ point, spread: mad[i] }))
-    .filter(({ point }) => isPoint(point))
-    .map(({ point, spread }) => {
-      const r = isPoint(spread) ? (spread[0] + spread[1]) / 2 : 0;
-      return { x: point[0], y: point[1], mad: r > 0 ? r : undefined };
-    });
-}
-
-// The aggregate median as a shape: the anchor chain with a dot per anchor and
-// a light circle of its MAD spread, over the baseline/midband hairlines — and
-// behind it every occurrence the median was condensed from, drawn thin. That
-// last layer is what answers "are the occurrences alike at all?" by eye: the
-// MAD circles give the number, the bundle of chains gives the shape of the
-// spread (a fat circle from two outliers reads very differently from one from
-// an evenly scattered set). Same frame for both, because occurrence anchors
-// are stored CENTERED, exactly like the median.
-//
-// Not a rendering of the letter — the ductus prior's widths and stroke topology
-// stay with the chart row; this is the geometry the Laufform is derived FROM.
-// The caller guarantees at least two anchors (it also owns the frame).
-function AggregateSketch({
-  anchors,
-  glyphKey,
-  occurrences,
-  laufform,
-}: {
-  anchors: SketchAnchor[];
-  glyphKey: string;
-  occurrences: number[][][];
-  // The RENDERED running form (template variant 100), drawn dashed against the
-  // median that would replace it. This is the whole "see the difference before
-  // you overwrite it" view: two chains in one frame, no registration needed
-  // because both live in the chart row's coordinates.
-  laufform: number[][];
-}) {
-  const t = de.admin.werkbank;
-  const points = anchors.map((a) => [a.x, a.y]);
-
-  // The occurrence chains stretch the bounds too — clipping them would make
-  // the spread look tighter than it is.
-  const { minX, minY, w, h } = boundsOf([...points, ...occurrences.flat(), ...laufform], [0, 1]);
-  const width = Math.max(24, (w / h) * SKETCH_H_LETTER);
-  // One display pixel in template units — hairlines and dots stay the same
-  // visual size across glyphs of very different extent.
-  const u = h / SKETCH_H_LETTER;
-
-  return (
-    <svg
-      width={width}
-      height={SKETCH_H_LETTER}
-      viewBox={`${minX} ${-(minY + h)} ${w} ${h}`}
-      role="img"
-      aria-label={fmt(t.statsLetterSketchAria, { key: glyphKey })}
-      style={{ display: 'block', background: '#fff', maxWidth: '100%', height: 'auto' }}
-    >
-      <line x1={minX} x2={minX + w} y1={0} y2={0} stroke={paper.sepiaFaint} strokeWidth={u} />
-      <line
-        x1={minX}
-        x2={minX + w}
-        y1={-1}
-        y2={-1}
-        stroke={paper.sepiaFaint}
-        strokeWidth={u}
-        strokeDasharray={`${4 * u} ${4 * u}`}
-      />
-      {/* Occurrences first: they are the ground the median sits on. */}
-      {occurrences.map((line, i) => (
-        <path
-          key={`occ-${i}`}
-          d={pathOf(line)}
-          fill="none"
-          stroke={paper.line}
-          strokeWidth={u}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      ))}
-      {anchors.map((a, i) =>
-        a.mad === undefined ? null : (
-          <circle key={`mad-${i}`} cx={a.x} cy={-a.y} r={a.mad} fill={paper.line} fillOpacity={0.35} />
-        ),
-      )}
-      {/* What is written TODAY, dashed and in the warning tone — under the
-          median so the median stays the figure and this stays the reference. */}
-      {laufform.length >= 2 && (
-        <path
-          d={pathOf(laufform)}
-          fill="none"
-          stroke={WERKBANK_COLORS.selected}
-          strokeOpacity={0.75}
-          strokeWidth={1.4 * u}
-          strokeDasharray={`${4 * u} ${3 * u}`}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      )}
-      <path
-        d={pathOf(points)}
-        fill="none"
-        stroke={WERKBANK_COLORS.trace}
-        strokeWidth={1.6 * u}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {anchors.map((a, i) => (
-        <circle key={`anchor-${i}`} cx={a.x} cy={-a.y} r={1.6 * u} fill={WERKBANK_COLORS.trace} />
-      ))}
-    </svg>
-  );
-}
-
 export function LetterStats({
   glyphKey,
   aggregate,
@@ -352,9 +178,7 @@ export function LetterStats({
   const anchors = aggregate ? letterSketchAnchors(aggregate) : [];
   // Same validity rule as the median's own anchors — a JSONB row can carry
   // anything, and a NaN would silently blank the whole sketch.
-  const occurrenceChains = occurrences
-    .map((inst) => (inst.anchors ?? []).filter(isPoint))
-    .filter((line) => line.length >= 2);
+  const occurrenceChains = occurrenceChainsOf(occurrences);
   // The rendered running form and its distance to the median. `dev === 0` is a
   // real answer ("what is written IS the median"), so the null check has to be
   // explicit — a falsy test would report a fresh Laufform as unknown.

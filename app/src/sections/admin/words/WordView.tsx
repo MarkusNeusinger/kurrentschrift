@@ -146,7 +146,7 @@ export function WordView() {
   if (!text) {
     return (
       <Box sx={{ p: { xs: 2, md: 3 }, overflowY: 'auto' }}>
-        <ViewHeader title={t.overviewTitle} intro={t.overviewIntro} />
+        <ViewHeader eyebrow={de.admin.shell.startEyebrow} title={t.overviewTitle} intro={t.overviewIntro} />
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'flex-start', mb: 2 }}>
           {input}
           <TextField
@@ -188,9 +188,8 @@ export function WordView() {
   return (
     <Box sx={{ p: { xs: 2, md: 3 }, overflowY: 'auto' }}>
       <ViewHeader
-        title={
-          <Typography sx={{ fontFamily: garamond, fontSize: 28, lineHeight: 1.2 }}>{text}</Typography>
-        }
+        eyebrow={de.admin.shell.areaWords}
+        title={<Typography sx={{ fontFamily: garamond, fontSize: 28, lineHeight: 1.2 }}>{text}</Typography>}
         chips={
           <>
             <Chip

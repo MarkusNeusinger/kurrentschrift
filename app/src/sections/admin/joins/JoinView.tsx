@@ -178,7 +178,7 @@ export function JoinView() {
   if (!leftKey || !rightKey) {
     return (
       <Box sx={{ p: { xs: 2, md: 3 }, overflowY: 'auto' }}>
-        <ViewHeader title={t.overviewTitle} intro={t.overviewIntro} />
+        <ViewHeader eyebrow={de.admin.shell.startEyebrow} title={t.overviewTitle} intro={t.overviewIntro} />
         <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', mb: 3 }}>
           {picker}
           {freeInput}
@@ -213,6 +213,7 @@ export function JoinView() {
   return (
     <Box sx={{ p: { xs: 2, md: 3 }, overflowY: 'auto' }}>
       <ViewHeader
+        eyebrow={de.admin.shell.areaJoins}
         title={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             {picker}

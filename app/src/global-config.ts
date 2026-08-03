@@ -33,6 +33,19 @@ export const CONFIG = {
    */
   sourceId: 'suetterlin-1922',
   /**
+   * Chart sources the admin's Vorlagen-Auswahl does NOT offer. Nothing is
+   * deleted — the row, its chart bytes and its provenance stay exactly as they
+   * are, and every API route keeps serving it; the workbench simply does not
+   * put it up for choice while nobody is authoring on it.
+   *
+   * `petzendorfer-1889` is a SECOND Kurrent chart (another hand, ~57° vs.
+   * Loth's ~50°) that was seeded ahead of time for the Kurrent digits row Loth
+   * 1866 lacks (federmodelle.md §"Quellenlage"). Until that authoring starts,
+   * Kurrent means Loth — two cards both labelled „Kurrent" only make the
+   * entry choice ambiguous. Take the id out of this list to bring it back.
+   */
+  hiddenSourceIds: ['petzendorfer-1889'] as readonly string[],
+  /**
    * Local-dev write auth: in production the admin write endpoints are gated by
    * the Cloudflare Access cookie (forwarded by the CF Worker). For local dev
    * set VITE_ADMIN_TOKEN in app/.env (matching the API's ADMIN_TOKEN); it is

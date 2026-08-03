@@ -66,7 +66,13 @@ export function AdminProvider({
   const [sourceId, setSourceId] = useState<string>(() => {
     if (pinnedSourceId) return pinnedSourceId;
     try {
-      return localStorage.getItem(SOURCE_STORAGE_KEY) ?? CONFIG.sourceId;
+      const stored = localStorage.getItem(SOURCE_STORAGE_KEY);
+      // A persisted id that is no longer offered would strand the admin on a
+      // Vorlage with no card to switch away from — the picker is the only way
+      // out. Fall back to the build default instead (same reasoning as the
+      // 404 recovery below, one step earlier).
+      if (stored && !CONFIG.hiddenSourceIds.includes(stored)) return stored;
+      return CONFIG.sourceId;
     } catch {
       return CONFIG.sourceId;
     }
@@ -132,7 +138,12 @@ function SourceScopedProvider({
         if (cancelled) return;
         setWaking(false);
         setSource(s);
-        setSources(allSources.filter((x) => x.kind === 'chart'));
+        // The ONE narrowing of the source list: chart sources only, minus the
+        // ones the workbench does not currently offer (CONFIG.hiddenSourceIds
+        // — a presentation choice, nothing is deleted server-side).
+        setSources(
+          allSources.filter((x) => x.kind === 'chart' && !CONFIG.hiddenSourceIds.includes(x.id)),
+        );
         const bm: Record<string, BboxOut> = {};
         for (const b of bboxes) bm[b.glyph_key] = b;
         setBboxesByKey(bm);

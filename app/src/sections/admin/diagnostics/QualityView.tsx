@@ -9,24 +9,19 @@
 
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { Alert, Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAdmin } from '@/context/AdminContext';
 import { getQuality, postResample } from '@/lib/api';
 import type { QualityComparison, QualityData } from '@/lib/api';
 import { de } from '@/locales/admin';
+import { ScoreBreakdown, ScoreChip } from '@/sections/admin/quality/scoreParts';
 
 interface Props {
   glyphKey: string;
   // Bumped by the admin context on every trace/resample — refetches the scores.
   cropCacheBust?: number;
-}
-
-function scoreColor(score: number): 'success' | 'warning' | 'error' {
-  if (score >= 85) return 'success';
-  if (score >= 70) return 'warning';
-  return 'error';
 }
 
 function MetricRow({ label, value }: { label: string; value: string }) {
@@ -48,7 +43,7 @@ function MetricCard({ title, q }: { title: string; q: QualityData }) {
         <Typography variant="caption" color="text.secondary">
           {title}
         </Typography>
-        <Chip size="small" color={scoreColor(q.score)} label={`${t.score} ${q.score.toFixed(1)}`} />
+        <ScoreChip score={q.score} />
       </Box>
       <MetricRow label={t.iou} value={q.iou.toFixed(3)} />
       <MetricRow label={t.chamfer} value={`${q.chamfer_mean_px.toFixed(2)} px`} />
@@ -63,6 +58,12 @@ function MetricCard({ title, q }: { title: string; q: QualityData }) {
           <MetricRow label={t.waviness} value={(q.waviness_ratio ?? 0).toFixed(2)} />
         </>
       )}
+      {/* The same payload carries the per-category breakdown the wizard shows;
+          leaving it out here made the Diagnose modal the one place that has the
+          numbers and does not say where the points went. */}
+      <Box sx={{ mt: 0.5 }}>
+        <ScoreBreakdown quality={q} heading={t.breakdownHeading} hint={t.breakdownHint} />
+      </Box>
     </Stack>
   );
 }

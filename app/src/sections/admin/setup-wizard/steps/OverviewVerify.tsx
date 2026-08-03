@@ -8,7 +8,7 @@
 // step computed (or computes it on arrival if the user jumped straight here).
 
 import ReplayIcon from '@mui/icons-material/Replay';
-import { Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { WrittenGlyph } from '@/components/WrittenGlyph';
@@ -17,7 +17,9 @@ import { cropUrl } from '@/lib/api';
 import type { TracePreviewOut } from '@/lib/api';
 import { de } from '@/locales/admin';
 import { HintHeading } from './HintHeading';
-import { ScoreBreakdown, SilhouetteSvg, scoreColor } from './previewParts';
+import { ScoreBreakdown, ScoreChip } from '@/sections/admin/quality/scoreParts';
+
+import { SilhouetteSvg } from './previewParts';
 
 const CELL_H = 150;
 
@@ -149,9 +151,7 @@ export function OverviewVerify({
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-            {refined.quality && (
-              <Chip size="small" color={scoreColor(refined.quality.score)} label={`${de.wizard.optimize.score} ${refined.quality.score.toFixed(1)}`} />
-            )}
+            {refined.quality && <ScoreChip score={refined.quality.score} />}
             {delta != null && (
               <Typography variant="caption" sx={{ fontFamily: 'monospace' }} color={delta >= 0 ? 'success.main' : 'error.main'}>
                 {de.wizard.optimize.delta} {delta >= 0 ? '+' : ''}
