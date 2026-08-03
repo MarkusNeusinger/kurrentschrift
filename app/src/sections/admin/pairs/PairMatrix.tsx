@@ -4,6 +4,11 @@
 // here directly instead of hiding inside a longer word. Cells fetch lazily
 // (IntersectionObserver) through WrittenWord's shared render cache, so a full
 // row of ~60 combinations doesn't fire at once on mount.
+//
+// Since the admin redesign this is the OVERVIEW of the Übergänge view rather
+// than a page: a cell click focuses that join (where the editor, the measured
+// occurrences and the statistics live), instead of opening the editor straight
+// from the grid.
 
 import { Alert, Box, ButtonBase, Chip, Typography } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -17,7 +22,6 @@ import { getPairs } from '@/lib/api';
 import type { GlyphPairOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { garamond } from '@/styles/paper';
-import { PairEditorDialog } from '@/sections/admin/pairs/PairEditorDialog';
 import { pairKeysOf } from '@/sections/admin/pairs/pairKeys';
 
 const CELL_H = 88; // px — big enough to judge a join, small enough for a grid
@@ -101,7 +105,19 @@ function CellGrid({
   );
 }
 
-export function PairMatrix() {
+export function PairMatrix({
+  // The letter the grid opens on — the Übergänge view passes whichever letter
+  // the admin came in with, so arriving from `a` shows a's combinations.
+  activeGlyphKey,
+  onPickPair,
+  // Bumped by the caller after a save in the pair editor, so the badges
+  // (approved / draft) refresh without a reload.
+  refreshKey = 0,
+}: {
+  activeGlyphKey?: string | null;
+  onPickPair: (leftKey: string, rightKey: string) => void;
+  refreshKey?: number;
+}) {
   const { source, sourceId, glyphsByKey } = useAdmin();
   const authored = useMemo(() => {
     const hasCanon = (letter: Letter) => glyphsByKey[glyphKeyFor(letter)]?.has_data === true;
@@ -112,7 +128,9 @@ export function PairMatrix() {
   }, [glyphsByKey]);
   const pickable = useMemo(() => [...authored.lower, ...authored.upper], [authored]);
   const [picked, setPicked] = useState<string | null>(null);
-  const letter = pickable.find((l) => l.glyph === picked) ?? pickable[0];
+  // The caller's letter wins until the admin picks another one here.
+  const fromProp = activeGlyphKey ? pickable.find((l) => glyphKeyFor(l) === activeGlyphKey) : undefined;
+  const letter = pickable.find((l) => l.glyph === picked) ?? fromProp ?? pickable[0];
 
   // Existing overrides (incl. unapproved drafts — the admin fetch carries the
   // auth headers) for the badges + the editor's starting state.
@@ -122,9 +140,7 @@ export function PairMatrix() {
       .then((rows) => setRowsByKeys(new Map(rows.map((r) => [`${r.left_key}|${r.right_key}`, r]))))
       .catch(() => setRowsByKeys(new Map()));
   }, [sourceId]);
-  useEffect(refreshPairs, [refreshPairs]);
-
-  const [editing, setEditing] = useState<{ text: string; left: string; right: string } | null>(null);
+  useEffect(refreshPairs, [refreshPairs, refreshKey]);
 
   if (!source) return null;
 
@@ -138,14 +154,8 @@ export function PairMatrix() {
       : [];
 
   return (
-    <Box sx={{ overflowY: 'auto', height: '100%', p: { xs: 2, md: 3 } }}>
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="h6">{de.admin.pairs.title}</Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 720 }}>
-          {de.admin.pairs.intro}
-        </Typography>
-      </Box>
-
+    // A block inside the Übergänge view: that view owns padding and scrolling.
+    <Box>
       {pickable.length === 0 ? (
         <Alert severity="info">{de.admin.pairs.empty}</Alert>
       ) : (
@@ -185,7 +195,7 @@ export function PairMatrix() {
                   pairs={asFirst}
                   sourceId={sourceId}
                   rowsByKeys={rowsByKeys}
-                  onEdit={(text, left, right) => setEditing({ text, left, right })}
+                  onEdit={(_text, left, right) => onPickPair(left, right)}
                 />
               </Box>
               {asSecond.length > 0 && (
@@ -197,24 +207,13 @@ export function PairMatrix() {
                     pairs={asSecond}
                     sourceId={sourceId}
                     rowsByKeys={rowsByKeys}
-                    onEdit={(text, left, right) => setEditing({ text, left, right })}
+                    onEdit={(_text, left, right) => onPickPair(left, right)}
                   />
                 </Box>
               )}
             </Box>
           )}
         </>
-      )}
-      {editing && (
-        <PairEditorDialog
-          open
-          onClose={() => setEditing(null)}
-          pairText={editing.text}
-          leftKey={editing.left}
-          rightKey={editing.right}
-          sourceId={sourceId}
-          onChanged={refreshPairs}
-        />
       )}
     </Box>
   );

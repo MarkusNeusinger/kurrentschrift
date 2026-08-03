@@ -1,26 +1,25 @@
-// One word of the Werkbank spine: the specimen crop, the stored trace over it
-// (like the Belege page), and on top the INTERACTIVE occurrence layer — a
-// dashed box per fitted letter, a dot per join between two adjacent letters.
-// Clicking switches the context lens; ⚑ (or shift-click) files the element as
-// an Auftrag. Errors become visible in words, so this is where marking starts.
+// One traced word over its specimen crop, with the INTERACTIVE occurrence layer
+// on top — a dashed box per fitted letter, a dot per join between two adjacent
+// letters. Errors become visible in words, so this card is where the walk into
+// the other two views starts: a box opens the letter, a dot the join, ⚑ (or
+// shift-click) files the element as an Auftrag.
 
 import { Box, Chip, Tooltip, Typography } from '@mui/material';
 
 import { useInView } from '@/hooks/useInView';
 import { wordSampleCropUrl } from '@/lib/api';
-import type { InstanceOut, WordInstanceOut, WordSampleOut } from '@/lib/api';
+import type { ComposedWordOut, InstanceOut, WordInstanceOut, WordSampleOut } from '@/lib/api';
+import { polylineToPathD, ringsToPathD } from '@/lib/svg';
 import { de, fmt } from '@/locales/admin';
-import { garamond } from '@/styles/paper';
-
 import {
   WERKBANK_COLORS,
   cardElementId,
   cropBoxOf,
   rmseMean,
   type Mark,
-  type Selection,
   type SpecimenRef,
-} from './model';
+} from '@/sections/admin/shell/model';
+import { garamond } from '@/styles/paper';
 
 const FACE_H = 220; // px per card face — same scale as the compare/Belege cards
 
@@ -30,23 +29,31 @@ interface Props {
   sourceId: string;
   // This specimen's letter occurrences, ascending by composer slot.
   boxes: InstanceOut[];
-  selection: Selection | null;
-  onSelect: (selection: Selection) => void;
+  onOpenLetter: (glyphKey: string) => void;
+  onOpenPair: (leftKey: string, rightKey: string) => void;
   onMark: (mark: Mark) => void;
+  // Extra actions in the card header (the word editor, a score button) — owned
+  // by the view, since what can be done with a trace is its business.
+  actions?: React.ReactNode;
+  // The engine's composition of the same word, drawn over the specimen pixels
+  // when present. THE comparison the whole bench exists for: the sidecar
+  // carries the specimen's crop-local baseline/midband, the composed word
+  // lives in template units (baseline = 0, 1 unit = x-height), so the map is a
+  // pure scale+translate — no eyeballing.
+  composed?: ComposedWordOut | null;
 }
 
-// Is this box the element the lens currently shows? (The boxes are already
-// this specimen's, so the id compare only has to rule out the same letter in
-// another word.)
-function isSelectedLetter(selection: Selection | null, specimenId: string, inst: InstanceOut): boolean {
-  return (
-    selection?.target.kind === 'letter' &&
-    selection.target.glyphKey === inst.glyph_key &&
-    selection.specimen.id === specimenId
-  );
-}
-
-export function WordSpineCard({ row, sample, sourceId, boxes, selection, onSelect, onMark }: Props) {
+export function WordSpineCard({
+  row,
+  sample,
+  sourceId,
+  boxes,
+  onOpenLetter,
+  onOpenPair,
+  onMark,
+  actions,
+  composed,
+}: Props) {
   const [ref, inView] = useInView<HTMLDivElement>();
   const t = de.admin.werkbank;
 
@@ -66,11 +73,17 @@ export function WordSpineCard({ row, sample, sourceId, boxes, selection, onSelec
   // same visual size across crops of very different resolutions.
   const px = sample.height / FACE_H;
 
+  // Engine ink → specimen pixels. Same transform WordComparison's overlay uses
+  // (kept in step with it): px per template unit = baseline − midband, the
+  // engine's left edge aligned to the crop's, y flipped.
+  const unitPx = sample.baseline_y - sample.midband_y;
+  const engineMatrix = composed
+    ? `matrix(${unitPx} 0 0 ${-unitPx} ${-composed.bounds.min_x * unitPx} ${sample.baseline_y})`
+    : null;
+
   const specimen: SpecimenRef = { id: row.specimen_id, kind: row.kind, word: row.word };
-  const selectLetter = (inst: InstanceOut) =>
-    onSelect({ target: { kind: 'letter', glyphKey: inst.glyph_key }, specimen });
-  const selectPair = (left: InstanceOut, right: InstanceOut) =>
-    onSelect({ target: { kind: 'pair', leftKey: left.glyph_key, rightKey: right.glyph_key }, specimen });
+  const selectLetter = (inst: InstanceOut) => onOpenLetter(inst.glyph_key);
+  const selectPair = (left: InstanceOut, right: InstanceOut) => onOpenPair(left.glyph_key, right.glyph_key);
 
   // Shift-click is the mockup's shortcut: mark without going through the lens.
   const activate = (event: { shiftKey?: boolean }, select: () => void, mark: Mark) =>
@@ -117,16 +130,18 @@ export function WordSpineCard({ row, sample, sourceId, boxes, selection, onSelec
         {meanRmse !== null && (
           <Chip size="small" variant="outlined" label={fmt(t.rmseChip, { value: meanRmse.toFixed(2) })} />
         )}
-        <Tooltip title={t.markWord}>
-          <Chip
-            size="small"
-            variant="outlined"
-            clickable
-            label={`⚑ ${t.kindWord}`}
-            onClick={() => onMark({ target: { kind: 'word', word: row.word }, specimen })}
-            sx={{ ml: 'auto' }}
-          />
-        </Tooltip>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto' }}>
+          {actions}
+          <Tooltip title={t.markWord}>
+            <Chip
+              size="small"
+              variant="outlined"
+              clickable
+              label={`⚑ ${t.kindWord}`}
+              onClick={() => onMark({ target: { kind: 'word', word: row.word }, specimen })}
+            />
+          </Tooltip>
+        </Box>
       </Box>
       {inView ? (
         <svg
@@ -158,11 +173,32 @@ export function WordSpineCard({ row, sample, sourceId, boxes, selection, onSelec
               />
             ))}
           </g>
+          {/* The engine's own answer, registered onto the same ink. Red and
+              translucent, exactly as in the comparison list, so „where does
+              the composition leave the original?" is one look. */}
+          {engineMatrix && composed && (
+            <g transform={engineMatrix}>
+              {composed.items.map((it, i) =>
+                it.rings ? (
+                  <path key={i} d={ringsToPathD(it.rings)} fill="#e02030" fillOpacity={0.42} fillRule="evenodd" />
+                ) : (
+                  <path
+                    key={i}
+                    d={polylineToPathD(it.centerline)}
+                    fill="none"
+                    stroke="#e02030"
+                    strokeOpacity={0.42}
+                    strokeWidth={it.stroke_width ?? it.mask_width}
+                    strokeLinecap="round"
+                  />
+                ),
+              )}
+            </g>
+          )}
           {boxes.map((inst) => {
             const b = cropBoxOf(inst, sample.rect);
             if (!b) return null;
             const rmse = inst.measurements.geo_rmse_px;
-            const selected = isSelectedLetter(selection, row.specimen_id, inst);
             const mark: Mark = { target: { kind: 'letter', glyphKey: inst.glyph_key }, specimen };
             return (
               <g
@@ -188,11 +224,10 @@ export function WordSpineCard({ row, sample, sourceId, boxes, selection, onSelec
                   y={b.y}
                   width={b.w}
                   height={b.h}
-                  fill={selected ? WERKBANK_COLORS.selected : 'transparent'}
-                  fillOpacity={selected ? 0.12 : 1}
-                  stroke={selected ? WERKBANK_COLORS.selected : WERKBANK_COLORS.box}
-                  strokeWidth={(selected ? 2 : 1) * px}
-                  strokeDasharray={selected ? undefined : `${3 * px} ${3 * px}`}
+                  fill="transparent"
+                  stroke={WERKBANK_COLORS.box}
+                  strokeWidth={px}
+                  strokeDasharray={`${3 * px} ${3 * px}`}
                 />
               </g>
             );
@@ -201,11 +236,6 @@ export function WordSpineCard({ row, sample, sourceId, boxes, selection, onSelec
             const lb = cropBoxOf(left, sample.rect);
             const rb = cropBoxOf(right, sample.rect);
             if (!lb || !rb) return null;
-            const selected =
-              selection?.target.kind === 'pair' &&
-              selection.target.leftKey === left.glyph_key &&
-              selection.target.rightKey === right.glyph_key &&
-              selection.specimen.id === row.specimen_id;
             const mark: Mark = {
               target: { kind: 'pair', leftKey: left.glyph_key, rightKey: right.glyph_key },
               specimen,
@@ -229,9 +259,9 @@ export function WordSpineCard({ row, sample, sourceId, boxes, selection, onSelec
                   cx={(lb.x + lb.w + rb.x) / 2}
                   cy={sample.height * 0.55}
                   r={8 * px}
-                  fill={selected ? WERKBANK_COLORS.selected : WERKBANK_COLORS.accent}
-                  fillOpacity={selected ? 0.45 : 0.18}
-                  stroke={selected ? WERKBANK_COLORS.selected : WERKBANK_COLORS.accent}
+                  fill={WERKBANK_COLORS.accent}
+                  fillOpacity={0.18}
+                  stroke={WERKBANK_COLORS.accent}
                   strokeWidth={1.2 * px}
                 />
               </g>

@@ -25,10 +25,22 @@ interface Entry {
 }
 
 const cache = new Map<string, Entry>();
-const id = (sourceId: string, key: string) => `${sourceId}|${key}`;
+// The template VARIANT is part of the identity: the admin letter view renders
+// the chart ductus (0) and the derived Laufform (100) of the same glyph side by
+// side, and they must not share one entry. Variant 0 keeps its bare key so the
+// public surfaces' entries are untouched.
+const id = (sourceId: string, key: string, variant = 0) =>
+  variant ? `${sourceId}|${key}@${variant}` : `${sourceId}|${key}`;
 
-function put(sourceId: string, key: string, bust: number | null, promise: Promise<GlyphRenderData | null>): Entry {
+function put(
+  sourceId: string,
+  key: string,
+  bust: number | null,
+  promise: Promise<GlyphRenderData | null>,
+  variant = 0,
+): Entry {
   const entry: Entry = { bust, promise };
+  const slot = id(sourceId, key, variant);
   promise
     .then((d) => {
       entry.settled = d;
@@ -36,29 +48,40 @@ function put(sourceId: string, key: string, bust: number | null, promise: Promis
     .catch(() => {
       // A transient error must not stick — evict so a retry can succeed. Guard
       // against evicting a NEWER entry that already replaced this one.
-      if (cache.get(id(sourceId, key)) === entry) cache.delete(id(sourceId, key));
+      if (cache.get(slot) === entry) cache.delete(slot);
     });
-  cache.set(id(sourceId, key), entry);
+  cache.set(slot, entry);
   return entry;
 }
 
 // Synchronous peek: the resolved payload if this glyph already settled under an
 // acceptable version, `undefined` while unknown/in flight.
-export function peekRenderGlyph(sourceId: string, key: string, bust?: number): GlyphRenderData | null | undefined {
-  const entry = cache.get(id(sourceId, key));
+export function peekRenderGlyph(
+  sourceId: string,
+  key: string,
+  bust?: number,
+  variant = 0,
+): GlyphRenderData | null | undefined {
+  const entry = cache.get(id(sourceId, key, variant));
   if (!entry || (bust != null && entry.bust !== bust)) return undefined;
   return 'settled' in entry ? entry.settled : undefined;
 }
 
 // Fetch (or reuse) one glyph's render payload; resolves to null when no
-// canonical exists yet.
-export function fetchRenderGlyph(sourceId: string, key: string, bust?: number): Promise<GlyphRenderData | null> {
-  const entry = cache.get(id(sourceId, key));
+// canonical exists yet — which is also the answer for a variant this glyph has
+// no row for (the endpoint reports it in `missing`).
+export function fetchRenderGlyph(
+  sourceId: string,
+  key: string,
+  bust?: number,
+  variant = 0,
+): Promise<GlyphRenderData | null> {
+  const entry = cache.get(id(sourceId, key, variant));
   if (entry && (bust == null || entry.bust === bust)) return entry.promise;
-  const promise = getWriteGlyphs(sourceId, [key], COLD_START_RETRY).then(
+  const promise = getWriteGlyphs(sourceId, [key], COLD_START_RETRY, variant).then(
     (out) => out.glyphs.find((g) => g.glyph_key === key) ?? null,
   );
-  return put(sourceId, key, bust ?? null, promise).promise;
+  return put(sourceId, key, bust ?? null, promise, variant).promise;
 }
 
 // Fetch (or reuse) the render payloads for a set of glyph keys — all keys not

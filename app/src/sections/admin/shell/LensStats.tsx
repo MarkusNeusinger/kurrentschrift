@@ -20,15 +20,20 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { Box, Chip, CircularProgress, IconButton, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 
-import type { AggregateOut, PairAggregateOut, PairInstanceOut } from '@/lib/api';
+import type { AggregateOut, InstanceOut, PairAggregateOut, PairInstanceOut } from '@/lib/api';
 import { de, fmt, specimenKindLabel } from '@/locales/admin';
 import { paper } from '@/styles/paper';
 
 import { WERKBANK_COLORS } from './model';
 
-// Same height as the chart-crop thumbnail the letter lens shows above it, so
-// the two read as one row of evidence.
+// Same height as the chart-crop thumbnail the old lens showed above it.
 const SKETCH_H = 90;
+// The letter sketch gets more room since it also carries the occurrence
+// chains: one outlier occurrence (a tail pulled up to ~1.6 x-heights happens)
+// legitimately stretches the frame, and the median must stay legible when it
+// does — the alternative, clipping the outlier, would hide exactly the thing
+// the layer is there to reveal.
+const SKETCH_H_LETTER = 150;
 // Template units of air around the drawn geometry.
 const SKETCH_PAD = 0.3;
 
@@ -64,6 +69,11 @@ export interface StatsContext {
 export type RebuildFn = () => Promise<string>;
 
 const num = (value: number, digits: number): string => value.toFixed(digits);
+
+// „1 Vorlage" vs „2 Vorlagen" — the one count in these blocks whose German
+// noun actually inflects („Vorkommen" is invariant, so it needs no twin).
+const specimenCount = (count: number): string =>
+  fmt(count === 1 ? de.admin.werkbank.statsSpecimensOne : de.admin.werkbank.statsSpecimens, { count });
 
 // A wire point is only usable once it really is a finite 2-vector — the rows
 // come from JSONB, so length and finiteness are worth asserting before any
@@ -152,9 +162,12 @@ function StatsHeader({
 }
 
 // A block never leaves the hand implicit: the numbers of one writer over
-// another writer's occurrences would look exactly the same otherwise.
+// another writer's occurrences would look exactly the same otherwise. Since
+// the redesign the surrounding Panel already carries the block's title, so the
+// header shrinks to the part the title does NOT say — which hand these numbers
+// belong to.
 const headingFor = (heading: string, handId: string | null): string =>
-  handId ? `${heading} (${fmt(de.admin.werkbank.statsHand, { hand: handId })})` : heading;
+  handId ? fmt(de.admin.werkbank.statsHand, { hand: handId }) : heading;
 
 // The one quiet warning line: the occurrences do not all name the same hand
 // (e.g. once the Abb.-22 Schülerhand is harvested under its own id), so say
@@ -204,24 +217,41 @@ function letterSketchAnchors(aggregate: AggregateOut): SketchAnchor[] {
 }
 
 // The aggregate median as a shape: the anchor chain with a dot per anchor and
-// a light circle of its MAD spread, over the baseline/midband hairlines. Not a
-// rendering of the letter — the ductus prior's widths and stroke topology stay
-// with the chart row; this is the geometry the Laufform is derived FROM.
+// a light circle of its MAD spread, over the baseline/midband hairlines — and
+// behind it every occurrence the median was condensed from, drawn thin. That
+// last layer is what answers "are the occurrences alike at all?" by eye: the
+// MAD circles give the number, the bundle of chains gives the shape of the
+// spread (a fat circle from two outliers reads very differently from one from
+// an evenly scattered set). Same frame for both, because occurrence anchors
+// are stored CENTERED, exactly like the median.
+//
+// Not a rendering of the letter — the ductus prior's widths and stroke topology
+// stay with the chart row; this is the geometry the Laufform is derived FROM.
 // The caller guarantees at least two anchors (it also owns the frame).
-function AggregateSketch({ anchors, glyphKey }: { anchors: SketchAnchor[]; glyphKey: string }) {
+function AggregateSketch({
+  anchors,
+  glyphKey,
+  occurrences,
+}: {
+  anchors: SketchAnchor[];
+  glyphKey: string;
+  occurrences: number[][][];
+}) {
   const t = de.admin.werkbank;
   const points = anchors.map((a) => [a.x, a.y]);
 
-  const { minX, minY, w, h } = boundsOf(points, [0, 1]);
-  const width = Math.max(24, (w / h) * SKETCH_H);
+  // The occurrence chains stretch the bounds too — clipping them would make
+  // the spread look tighter than it is.
+  const { minX, minY, w, h } = boundsOf([...points, ...occurrences.flat()], [0, 1]);
+  const width = Math.max(24, (w / h) * SKETCH_H_LETTER);
   // One display pixel in template units — hairlines and dots stay the same
   // visual size across glyphs of very different extent.
-  const u = h / SKETCH_H;
+  const u = h / SKETCH_H_LETTER;
 
   return (
     <svg
       width={width}
-      height={SKETCH_H}
+      height={SKETCH_H_LETTER}
       viewBox={`${minX} ${-(minY + h)} ${w} ${h}`}
       role="img"
       aria-label={fmt(t.statsLetterSketchAria, { key: glyphKey })}
@@ -237,6 +267,18 @@ function AggregateSketch({ anchors, glyphKey }: { anchors: SketchAnchor[]; glyph
         strokeWidth={u}
         strokeDasharray={`${4 * u} ${4 * u}`}
       />
+      {/* Occurrences first: they are the ground the median sits on. */}
+      {occurrences.map((line, i) => (
+        <path
+          key={`occ-${i}`}
+          d={pathOf(line)}
+          fill="none"
+          stroke={paper.line}
+          strokeWidth={u}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      ))}
       {anchors.map((a, i) =>
         a.mad === undefined ? null : (
           <circle key={`mad-${i}`} cx={a.x} cy={-a.y} r={a.mad} fill={paper.line} fillOpacity={0.35} />
@@ -260,11 +302,15 @@ function AggregateSketch({ anchors, glyphKey }: { anchors: SketchAnchor[]; glyph
 export function LetterStats({
   glyphKey,
   aggregate,
+  occurrences = [],
   stats,
   onRebuild,
 }: {
   glyphKey: string;
   aggregate?: AggregateOut;
+  // The stored occurrences of THIS glyph, drawn thin behind the median so the
+  // spread is visible as a shape and not only as a MAD radius.
+  occurrences?: InstanceOut[];
   stats: StatsContext;
   onRebuild?: RebuildFn;
 }) {
@@ -276,6 +322,11 @@ export function LetterStats({
   const rmse = meanStats.geo_rmse_px;
   const positions = Object.entries(meanStats.positions ?? {});
   const anchors = aggregate ? letterSketchAnchors(aggregate) : [];
+  // Same validity rule as the median's own anchors — a JSONB row can carry
+  // anything, and a NaN would silently blank the whole sketch.
+  const occurrenceChains = occurrences
+    .map((inst) => (inst.anchors ?? []).filter(isPoint))
+    .filter((line) => line.length >= 2);
 
   return (
     <Box>
@@ -294,7 +345,7 @@ export function LetterStats({
           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
             <Chip size="small" variant="outlined" label={fmt(t.statsInstances, { count: aggregate.n_instances })} />
             {meanStats.n_specimens !== undefined && (
-              <Chip size="small" variant="outlined" label={fmt(t.statsSpecimens, { count: meanStats.n_specimens })} />
+              <Chip size="small" variant="outlined" label={specimenCount(meanStats.n_specimens)} />
             )}
             {rmse && (
               <Chip
@@ -325,10 +376,12 @@ export function LetterStats({
           {anchors.length >= 2 && (
             <Box>
               <Box sx={SKETCH_FRAME}>
-                <AggregateSketch anchors={anchors} glyphKey={glyphKey} />
+                <AggregateSketch anchors={anchors} glyphKey={glyphKey} occurrences={occurrenceChains} />
               </Box>
               <Typography variant="caption" color="text.disabled" sx={{ display: 'block' }}>
-                {`${t.statsLetterSketch} — ${t.statsLetterSketchLegend}`}
+                {`${t.statsLetterSketch} — ${
+                  occurrenceChains.length > 0 ? t.statsLetterSketchLegendWithOcc : t.statsLetterSketchLegend
+                }`}
               </Typography>
             </Box>
           )}
@@ -443,7 +496,7 @@ export function PairStats({
   // first, then how well the measurement itself stands.
   const numbers: string[] = [];
   if (aggregate) numbers.push(fmt(t.statsInstances, { count: aggregate.n_instances }));
-  if (meanStats.n_specimens !== undefined) numbers.push(fmt(t.statsSpecimens, { count: meanStats.n_specimens }));
+  if (meanStats.n_specimens !== undefined) numbers.push(specimenCount(meanStats.n_specimens));
   if (meanStats.gen_chamfer) {
     numbers.push(
       fmt(t.statsGenChamfer, { mean: num(meanStats.gen_chamfer.mean, 3), max: num(meanStats.gen_chamfer.max, 3) }),

@@ -6,9 +6,11 @@
 // misunderstanding surfaces early and can be rejected here with one click.
 // Returned items sit on top: those need the author, not the algorithm. Done
 // ones stay behind a toggle with their diagnosed stage and resolution, which
-// is what makes the archive worth keeping. Deliberately a card at the top of
-// the right column, not the mockup's floating panel — a fixed overlay would
-// cover the very words the admin is judging.
+// is what makes the archive worth keeping.
+//
+// Since the redesign the panel lives in the shell's Korb drawer rather than on
+// one page: the basket belongs to the whole workbench, and a drawer keeps it
+// off the words the admin is judging while it is closed.
 
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -26,10 +28,12 @@ import {
   Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { deleteWorkItem, listWorkItems, patchWorkItem } from '@/lib/api';
 import type { WorkItemOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
+import { joinsUrl, lettersUrl, wordsUrl } from '@/sections/admin/shell/focus';
 
 // "Buchstabe a" / "Übergang d→a" / "Wort einen" — the level plus its target.
 function workItemLabel(item: WorkItemOut): string {
@@ -39,14 +43,27 @@ function workItemLabel(item: WorkItemOut): string {
   return `${t.kindWord} ${item.word ?? item.specimen_id ?? '?'}`;
 }
 
+// Where a filed task points. Without it the basket is a dead end: it names the
+// thing that is wrong and offers no way to it — while the three views are one
+// link away for exactly these keys. Null only when the row carries no usable
+// target (a word item filed by specimen id alone).
+function workItemUrl(item: WorkItemOut): string | null {
+  if (item.kind === 'letter') return item.glyph_key ? lettersUrl(item.glyph_key) : null;
+  if (item.kind === 'pair') return item.left_key && item.right_key ? joinsUrl(item.left_key, item.right_key) : null;
+  return item.word ? wordsUrl(item.word, item.specimen_id) : null;
+}
+
 function ItemRow({
   item,
   onDelete,
   onReject,
+  onOpen,
 }: {
   item: WorkItemOut;
   onDelete: () => void;
   onReject: (correction: string) => void;
+  // Navigate to the task's subject; absent when the row names no reachable one.
+  onOpen?: () => void;
 }) {
   const t = de.admin.werkbank;
   const [rejecting, setRejecting] = useState(false);
@@ -55,7 +72,23 @@ function ItemRow({
   return (
     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, py: 0.5, borderTop: 1, borderColor: 'divider' }}>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+        <Typography
+          variant="body2"
+          sx={{
+            fontWeight: 600,
+            ...(onOpen && {
+              cursor: 'pointer',
+              color: 'primary.main',
+              '&:hover': { textDecoration: 'underline' },
+            }),
+          }}
+          {...(onOpen && { role: 'link', tabIndex: 0, onClick: onOpen })}
+          onKeyDown={(e) => {
+            if (!onOpen || (e.key !== 'Enter' && e.key !== ' ')) return;
+            e.preventDefault();
+            onOpen();
+          }}
+        >
           {workItemLabel(item)}
           {item.specimen_id && (
             <Typography component="span" variant="caption" color="text.secondary">
@@ -139,7 +172,22 @@ function ItemRow({
   );
 }
 
-export function KorbPanel({ sourceId, refreshKey }: { sourceId: string; refreshKey: number }) {
+export function KorbPanel({
+  sourceId,
+  refreshKey,
+  onChanged,
+  onNavigate,
+}: {
+  sourceId: string;
+  refreshKey: number;
+  // A mutation the panel applied optimistically — the shell re-reads the open
+  // count from it rather than tracking the same rows twice.
+  onChanged?: () => void;
+  // Called just before following a task's link, so the drawer holding the
+  // panel can close itself.
+  onNavigate?: () => void;
+}) {
+  const navigate = useNavigate();
   const t = de.admin.werkbank;
   const [items, setItems] = useState<WorkItemOut[] | null>(null);
   const [error, setError] = useState(false);
@@ -209,9 +257,11 @@ export function KorbPanel({ sourceId, refreshKey }: { sourceId: string; refreshK
   const remove = (item: WorkItemOut) => {
     setWriteError(null);
     setItems((prev) => (prev ?? []).filter((i) => i.id !== item.id));
+    onChanged?.();
     deleteWorkItem(sourceId, item.id).catch(() => {
       restore(item);
       setWriteError(t.korbDeleteError);
+      onChanged?.();
     });
   };
 
@@ -226,6 +276,7 @@ export function KorbPanel({ sourceId, refreshKey }: { sourceId: string; refreshK
       () => patchWorkItem(sourceId, item.id, { status: 'open', note }),
       t.korbRejectError,
     );
+    onChanged?.();
   };
 
   return (
@@ -263,14 +314,25 @@ export function KorbPanel({ sourceId, refreshKey }: { sourceId: string; refreshK
                       {g.heading}
                     </Typography>
                   )}
-                  {g.rows.map((item) => (
-                    <ItemRow
-                      key={item.id}
-                      item={item}
-                      onDelete={() => remove(item)}
-                      onReject={(correction) => reject(item, correction)}
-                    />
-                  ))}
+                  {g.rows.map((item) => {
+                    const url = workItemUrl(item);
+                    return (
+                      <ItemRow
+                        key={item.id}
+                        item={item}
+                        onDelete={() => remove(item)}
+                        onReject={(correction) => reject(item, correction)}
+                        onOpen={
+                          url
+                            ? () => {
+                                onNavigate?.();
+                                navigate(url);
+                              }
+                            : undefined
+                        }
+                      />
+                    );
+                  })}
                 </Box>
               ))}
           </Box>

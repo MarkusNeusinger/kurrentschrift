@@ -5,6 +5,12 @@
 // not in the basket; no means it only breaks inside words, which is algorithm
 // territory (Laufform / fit / join grammar / placement) and gets filed. Every
 // other triage step stays the working session's duty, not the admin's.
+//
+// The specimen reference is optional: a complaint about a FREELY TYPED
+// combination or word is exactly as legitimate as one about a harvested
+// occurrence — the engine writes any text, so any text can look wrong — and
+// then there simply is no plate to point at. The row says so instead of
+// inventing a reference.
 
 import {
   Alert,
@@ -23,6 +29,11 @@ import { createWorkItem } from '@/lib/api';
 import { de } from '@/locales/admin';
 
 import { targetLabel, workItemBodyOf, type Mark } from './model';
+
+// The pre-sort question points at the letter's own chart form. It is only
+// answerable where that form is visible or one click away — which it is
+// everywhere in the redesigned admin, since the Buchstaben view shows the Tafel
+// crop beside the written form.
 
 interface Props {
   mark: Mark;
@@ -65,7 +76,9 @@ export function MarkDialog({ mark, sourceId, onClose, onFiled, onOpenWizard }: P
             <strong>{`${t.dialogTarget}: `}</strong>
             {targetLabel(mark.target)}
             <Typography component="span" variant="caption" color="text.secondary">
-              {` · ${t.dialogSeenIn} ${mark.specimen.word} (${mark.specimen.id})`}
+              {mark.specimen
+                ? ` · ${t.dialogSeenIn} ${mark.specimen.word} (${mark.specimen.id})`
+                : ` · ${t.dialogNoSpecimen}`}
             </Typography>
           </Typography>
 

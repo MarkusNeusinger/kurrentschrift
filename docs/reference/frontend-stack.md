@@ -4,8 +4,9 @@
 > Deploy und Admin-Gate; jede Änderung an `app/package.json`,
 > `app/src/routes/paths.ts`, den Cloudbuild-/nginx-Dateien oder `api/auth.py`
 > zieht hier nach.
-> Am 2026-08-03 gegen den Code geprüft und deckungsgleich (Routen inkl.
-> `/admin/werkbank`, PR #266; Admin-Token-Regeln, PR #263).
+> Am 2026-08-03 gegen den Code geprüft und deckungsgleich (Admin-Routen nach
+> dem Redesign „aus einem Guss": `/admin` Vorlagen-Auswahl + die drei
+> Ansichten Buchstaben · Übergänge · Wörter; Admin-Token-Regeln, PR #263).
 
 Technische Spezifikation des Endnutzer-Frontends aus Vision §1 (Einstieg),
 §2 (Lineatur-Konfigurator), §3 (Animation), §4 (Lesen üben), §5 (Lese-Hilfe
@@ -94,19 +95,28 @@ Post-MVP-Phasen (architektur.md §10):
 
 | Pfad | Inhalt | Status |
 |---|---|---|
-| `/admin/chart` | Bbox-Editor auf Source-Chart; enthält den Einrichtungs-Wizard (Dialog, einzige Autoren-Fläche inkl. Stylus-Trace) und das Diagnose-Modal (3-Spalten + M4-Fit) | existiert |
-| `/admin/vergleich` | Vergleichsansicht mit vier Tabs: **Buchstaben** (jedes autorisierte Zeichen als Chart-Crop vs. „wie geschrieben", nebeneinander oder überlagert) + **Wörter · Verbindungen · Andere Hand** (Wortproben neben derselben Komposition, Scores auf Knopfdruck; `sections/admin/compare/`) | existiert |
-| `/admin/paare` | Paar-Matrix: alle Zweier-Verbindungen eines Buchstabens server-komponiert, Zellklick öffnet den Paar-Editor (`sections/admin/pairs/`) | existiert |
-| `/admin/belege` | Belege: jedes gespeicherte Wort-Vorkommen über seinem Platten-Ausschnitt, schlechteste zuerst; öffnet den Wort-Editor zum Nachfahren (`sections/admin/belege/`) | existiert |
-| `/admin/werkbank` | Werkbank: Wort-Rückgrat + Kontext-Linsen (inkl. der Statistik-Schichten H1/H2) + Auftragskorb — die eine Optimierungs-Fläche (`sections/admin/werkbank/`) | existiert |
+| `/admin` | **Einstieg: die Vorlagen-Auswahl.** Alles darunter gehört zu genau einer Quelle und ihrer Hand, also steht die Wahl am Anfang statt in einem Menü; die aktive Vorlage steht danach im Header und führt mit einem Klick hierher zurück (`sections/admin/shell/StartView.tsx`) | existiert |
+| `/admin/buchstaben[?g=<key>]` | **Buchstaben.** Ohne `g` die Alphabet-Übersicht (Chart-Crop vs. „wie geschrieben", ehemals `/admin/vergleich`-Tab), mit `g` der einzelne Buchstabe mit allen Werkzeugen: Tafel-Ausschnitt + Einrichtungs-Wizard + Diagnose + aufklappbarem Chart-Editor (ehemals `/admin/chart`), Tafel-Form neben Laufform, die Vorkommen aus den Wörtern, die H1-Statistik und die Absprünge zu Übergängen/Wörtern (`sections/admin/letters/`) | existiert |
+| `/admin/uebergaenge[?l=<key>&r=<key>]` | **Übergänge.** Ohne Paar die Matrix aller Zweierkombinationen (ehemals `/admin/paare`) plus ein Freitextfeld für JEDE Kombination, mit Paar die komponierte Verbindung, die H2-Statistik „gemessen vs. komponiert", die dissezierten Vorkommen und — als letztes Mittel — der Paar-Editor (`sections/admin/joins/`) | existiert |
+| `/admin/woerter[?w=<text>&s=<specimen>]` | **Wörter.** Ohne `w` die Wortproben-Liste mit Scores (ehemals `/admin/vergleich`-Tabs Wörter/Andere Hand), mit `w` ein beliebiger Text: wie die Engine ihn schreibt, woraus er besteht (Buchstaben + Übergänge als Absprünge) und — wo eine Platte ihn enthält — die nachgefahrene Spur mit Vorkommens-Overlay, Score und Wort-Editor (ehemals `/admin/belege` + `/admin/werkbank`-Rückgrat; `sections/admin/words/`) | existiert |
 | `/admin/sources` | Source-Verwaltung | post-MVP |
 | `/admin/jobs` | HTR-Job-Monitor (Quote-Übersicht) | post-MVP |
 
-Die Routen-Migration ist erfolgt (Restructure 2026-06): `/` ist die
-öffentliche Landing, der Chart-Editor liegt unter `/admin/chart`
-(`routes/paths.ts`). Eine eigene `/admin/edit/:glyphKey`-Route gibt es
-nicht — die frühere EditorPage wurde durch Wizard + Diagnose-Modal
-innerhalb von `/admin/chart` ersetzt.
+**Admin-Redesign 2026-08 (aus einem Guss):** Die fünf Seiten mit ihren
+Tabs und der Dauer-Sidebar sind zu **drei Ansichten über einer Vorlage**
+zusammengezogen — damit ist das in
+[`optimierungs-werkbank.md`](../proposals/optimierungs-werkbank.md) §2/§6
+angekündigte Aufgehen von Vergleich, Paar-Matrix und Belegen in der
+Werkbank vollzogen. Jede Ansicht folgt demselben Muster **Übersicht ⇄
+Detail**; das Subjekt steht in der Query (`sections/admin/shell/focus.ts`),
+damit jeder Quer-Absprung ein normaler Link ist, der Zurück-Knopf die
+Inspektionsgeschichte läuft und ein Reload dort landet, wo gearbeitet
+wurde. Header (drei Bereiche + Vorlage + Auftragskorb) und die geteilte
+Datenschicht (`shell/WorkbenchData.tsx`) liegen ÜBER dem Outlet, also
+kostet der Weg Buchstabe → Übergang → Wort keinen neuen Ladevorgang.
+Die alten Pfade (`/admin/chart` · `/vergleich` · `/paare` · `/belege` ·
+`/werkbank` · `/edit/:glyphKey`) bleiben als Redirects bestehen, damit
+Lesezeichen und Notizen weiter tragen.
 
 ---
 
@@ -350,21 +360,29 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
   + `steps/{Mask,Lineatur,Slant,Trace,Overview}Step`. Einzige Autoren-Fläche.
 - `sections/admin/diagnostics/` — `DiagnosticDialog` (3-Spalten + M4-Fit),
   `DiagnosticView`/`FitView`.
-- `sections/admin/compare/` — `CompareTabs` (`/admin/vergleich`) mit
-  `GlyphComparison` (jedes autorisierte Zeichen als Chart-Crop vs. „wie
-  geschrieben", nebeneinander oder überlagert) und `WordComparison`
-  (Wortproben vs. Komposition, Scores worst-first).
-- `sections/admin/pairs/` — `PairMatrix` (`/admin/paare`) +
-  `PairEditorDialog` (Kopplung, gezeichneter Verbindungszug, Freigabe).
-- `sections/admin/belege/` — `BelegeView` (`/admin/belege`) +
-  `WordTraceEditorDialog` + die pure, getestete `registration.ts`
-  (Crop ↔ Spur).
-- `sections/admin/werkbank/` — `WerkbankView` (`/admin/werkbank`):
-  `WordSpineCard` (Rückgrat), `ContextLens` + `LensStats`
-  (Buchstaben-/Paar-Linse inkl. der Statistik-Schichten H1/H2),
-  `KorbPanel` + `MarkDialog` (Auftragskorb), pures `model.ts`.
-- `sections/admin/sidebar/GlyphSidebar.tsx` — Buchstaben-Grid aus
-  `domain/glyphs.ts`.
+- `sections/admin/shell/` — die Werkbank-Hülle, die alle drei Ansichten
+  teilen: `AdminHeader` (drei Bereiche + Vorlagen-Chip + Korb-Badge),
+  `StartView` (`/admin`, die Vorlagen-Auswahl), `LetterPicker`
+  (Buchstaben-Grid aus `domain/glyphs.ts` — als Popover statt als
+  Dauer-Sidebar), `WorkbenchData` (die EINE geteilte Datenschicht:
+  Vorkommen je Quelle + die admin-gesicherten Statistik-Schichten je Hand,
+  über dem Outlet montiert), `KorbContext` (⚑ von überall, Korb als
+  Drawer) + `KorbPanel`/`MarkDialog`, `LensStats` (H1/H2-Blöcke),
+  `OccurrenceThumb`, `Panel`/`ViewHeader` (die geteilten Layout-Bausteine)
+  und die puren, getesteten `focus.ts` (Subjekt ⇄ URL) + `model.ts`.
+- `sections/admin/letters/` — `LetterView` (`/admin/buchstaben`): Übersicht
+  über `compare/GlyphComparison`, im Detail Tafel-Ausschnitt, Tafel-Form
+  neben Laufform, Vorkommen, H1-Statistik, Absprünge.
+- `sections/admin/joins/` — `JoinView` (`/admin/uebergaenge`): Matrix +
+  Freitext-Kombination, komponierte Verbindung, H2-Statistik, Vorkommen,
+  Paar-Editor.
+- `sections/admin/words/` — `WordView` (`/admin/woerter`): Freitext-Wort,
+  „woraus es besteht", Belege je Specimen über `WordSpineCard`.
+- `sections/admin/chart/`, `setup-wizard/`, `diagnostics/`, `compare/`,
+  `pairs/`, `belege/` bleiben die WERKZEUGE, die diese drei Ansichten
+  einsetzen (Chart-Editor, Wizard, Diagnose, Vergleichsraster,
+  Paar-Editor, Wort-Editor + die pure `registration.ts`) — sie haben seit
+  dem Redesign keine eigene Route mehr.
 - `components/` — `PaperBackground` (Papier-Atmosphäre), `PublicHeader`
   (3-Bereiche-Nav), `PublicFooter`, `PageContainer` (eine Inhaltsspalte,
   drei Breiten 760/1152/1280), `Prose` (Lesemaß ~66 Zeichen), `PageHeader`

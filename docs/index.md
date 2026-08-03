@@ -339,15 +339,14 @@ umgesetzt) — maßgeblich ist der Status-Kopf des jeweiligen Dokuments.
   (Vereinfachungs-Gate), H4 zweite historische Hand, H5 eigene Hand —
   *Status: teil-umgesetzt (H0–H2 in v0.22.0 ausgeliefert, H3–H5 offen)*
 - **[Optimierungs-Werkbank](proposals/optimierungs-werkbank.md)** —
-  Richtungsentscheid 2026-07-31: EINE Admin-Werkbank
-  (`/admin/werkbank`: Wort-Rückgrat + Kontext-Linse Buchstabe/Paar +
-  Auftragskorb) statt fragmentierter Tabs, plus die **bindende
-  Stufen-/Rollen-Doktrin** — manuell hinzufügen nur bei Ground Truth
-  (Tafel-Duktus, Wort-Nachfahrung), alles Generierte wird bemängelt —
-  und das `work_items`-Protokoll (Triage-Pflicht der KI, Regel-Fix vor
-  Override, `resolution`-Format, Rückgabe an den Autor) — *Status:
-  teil-umgesetzt (W1–W5 gebaut, §3–§5 bindende Doktrin; offen die Ablösung
-  der Alt-Seiten)*
+  Richtungsentscheid 2026-07-31: EINE Admin-Werkbank statt fragmentierter
+  Tabs, plus die **bindende Stufen-/Rollen-Doktrin** — manuell hinzufügen
+  nur bei Ground Truth (Tafel-Duktus, Wort-Nachfahrung), alles Generierte
+  wird bemängelt — und das `work_items`-Protokoll (Triage-Pflicht der KI,
+  Regel-Fix vor Override, `resolution`-Format, Rückgabe an den Autor) —
+  *Status: umgesetzt (W1–W5 gebaut, §3–§5 bindende Doktrin; die Alt-Seiten
+  sind mit dem Admin-Redesign 2026-08 in den drei Ansichten Buchstaben ·
+  Übergänge · Wörter aufgegangen)*
 - **[Kurrent: Writer → Recognizer](proposals/kurrent-writer-and-recognizer.md)** —
   Recherche-Notiz (Englisch): warum Graves 2013 (RNN-Handschrift-Synthese)
   der Anker für den generativen Writer ist, und wie derselbe Writer als

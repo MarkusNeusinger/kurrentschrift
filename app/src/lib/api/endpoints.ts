@@ -329,9 +329,21 @@ export const getDiagnostic = (sourceId: string, glyphKey: string): Promise<Diagn
 // Keys are sorted so the same letter set always yields the same URL — the
 // response carries Cache-Control, so a stable URL turns repeat visits into
 // browser/edge cache hits.
-export const getWriteGlyphs = (sourceId: string, keys: string[], retry?: RetryOptions): Promise<WriteGlyphsOut> =>
+// `variant` selects which stored form is rendered — 0 (the default, and the
+// only one the public surfaces ask for) is the authored chart ductus, 100 the
+// derived Laufform the admin letter view shows beside it. It is omitted from
+// the URL at 0 so the public cache entries keep their existing shape.
+export const getWriteGlyphs = (
+  sourceId: string,
+  keys: string[],
+  retry?: RetryOptions,
+  variant = 0,
+): Promise<WriteGlyphsOut> =>
   apiFetch(
-    src(sourceId, `/write/glyphs?keys=${encodeURIComponent([...keys].sort().join(','))}`),
+    src(
+      sourceId,
+      `/write/glyphs?keys=${encodeURIComponent([...keys].sort().join(','))}${variant ? `&variant=${variant}` : ''}`,
+    ),
     {},
     retry,
   ).then(asJson<WriteGlyphsOut>);

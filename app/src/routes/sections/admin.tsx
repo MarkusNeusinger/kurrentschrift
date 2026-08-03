@@ -8,11 +8,10 @@ import { paths } from '@/routes/paths';
 const AdminLayout = lazy(() =>
   import('@/layouts/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })),
 );
-const BelegePage = lazy(() => import('@/pages/admin/BelegePage'));
-const ChartPage = lazy(() => import('@/pages/admin/ChartPage'));
-const ComparePage = lazy(() => import('@/pages/admin/ComparePage'));
-const PairsPage = lazy(() => import('@/pages/admin/PairsPage'));
-const WerkbankPage = lazy(() => import('@/pages/admin/WerkbankPage'));
+const StartPage = lazy(() => import('@/pages/admin/StartPage'));
+const LettersPage = lazy(() => import('@/pages/admin/LettersPage'));
+const JoinsPage = lazy(() => import('@/pages/admin/JoinsPage'));
+const WordsPage = lazy(() => import('@/pages/admin/WordsPage'));
 
 export const adminRoutes: RouteObject[] = [
   {
@@ -26,15 +25,23 @@ export const adminRoutes: RouteObject[] = [
       </AdminProvider>
     ),
     children: [
-      { index: true, element: <Navigate to={paths.admin.chart} replace /> },
-      { path: 'chart', element: <ChartPage /> },
-      { path: 'vergleich', element: <ComparePage /> },
-      { path: 'paare', element: <PairsPage /> },
-      { path: 'belege', element: <BelegePage /> },
-      { path: 'werkbank', element: <WerkbankPage /> },
-      // Legacy editor deep-links land back on the chart; editing is now wholly
-      // in the Einrichtungs-Wizard / Diagnose modals (opened from the toolbar).
-      { path: 'edit/:glyphKey', element: <Navigate to={paths.admin.chart} replace /> },
+      // The entry is the Vorlage picker, not a work surface: everything below
+      // belongs to exactly one source and its hand, so that choice comes first.
+      { index: true, element: <StartPage /> },
+      { path: 'buchstaben', element: <LettersPage /> },
+      { path: 'uebergaenge', element: <JoinsPage /> },
+      { path: 'woerter', element: <WordsPage /> },
+      // Retired URLs → the view that absorbed each of them, so older bookmarks,
+      // notes and work-item links keep working. The chart editor and the
+      // Diagnose modal live inside the Buchstaben view now; the Belege list and
+      // the Werkbank spine became the Wörter view; the pair matrix became the
+      // Übergänge view.
+      { path: 'chart', element: <Navigate to={paths.admin.letters} replace /> },
+      { path: 'vergleich', element: <Navigate to={paths.admin.letters} replace /> },
+      { path: 'paare', element: <Navigate to={paths.admin.joins} replace /> },
+      { path: 'belege', element: <Navigate to={paths.admin.words} replace /> },
+      { path: 'werkbank', element: <Navigate to={paths.admin.words} replace /> },
+      { path: 'edit/:glyphKey', element: <Navigate to={paths.admin.letters} replace /> },
     ],
   },
 ];

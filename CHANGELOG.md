@@ -12,7 +12,81 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Changed
+
+- **The admin is one workbench in three views instead of five pages with tabs
+  and a permanent letter sidebar.** Entering `/admin` now asks the one question
+  everything below depends on — which Vorlage — because every letter, join and
+  word belongs to exactly one source and its hand; the chosen script is named
+  in the header and one click goes back to switch it. Under it sit exactly
+  three views, each following the same overview ⇄ detail pattern:
+  **`/admin/buchstaben`** carries a letter's whole life in one column (the
+  chart cell with the Einrichtungs-Wizard, the Diagnose modal and the
+  collapsible chart editor, the Tafel-Form beside the derived Laufform, every
+  harvested occurrence as a crop cut-out, the H1 statistics with its median
+  sketch, and chips onward to the letter's joins and words);
+  **`/admin/uebergaenge`** puts the generated join first, the H2 „Gemessen vs.
+  komponiert" measurement beside it and the pair editor last, in the order the
+  stage doctrine triages; **`/admin/woerter`** writes any text, breaks it into
+  the letters and joins it consists of (each a jump into the other two views)
+  and shows the traced specimen with its clickable occurrence overlay wherever
+  a plate of this hand wrote the same word. This completes the absorption of
+  `/admin/vergleich`, `/admin/paare` and `/admin/belege` into the Werkbank that
+  `optimierungs-werkbank.md` §2/§6 announced — the tools themselves are
+  unchanged and simply lost their own routes; the old paths stay as redirects
+  so bookmarks and work-item links keep working.
+- **Every level of the admin now accepts freely typed targets, not only what a
+  plate happens to contain.** Any two-letter combination and any word can be
+  typed, written by the engine and complained about — most combinations were
+  never written by hand anywhere, they still have to look right, and until now
+  there was nowhere in the admin to look at one. A filed `work_item` for such a
+  target carries no specimen reference and says so, rather than inventing one.
+- **One shared data layer and one header above the three views.** The
+  occurrence reads and the per-hand statistics load once for the whole
+  workbench (`sections/admin/shell/WorkbenchData.tsx`), so walking letter →
+  join → word costs no refetch; the Auftragskorb moved into a header drawer, so
+  ⚑ works from wherever the complaint arose. The subject of each view lives in
+  the query string (`shell/focus.ts`, pure and unit-tested), which makes every
+  cross-jump a plain link, the back button an inspection history and a reload
+  land where the work was. The desktop/mobile split is gone with the sidebar:
+  one layout serves both, and the letter grid became an on-demand picker.
+
+### Fixed
+
+- **The registered overlay of engine ink over the specimen pixels is back — and
+  now also sits on the word evidence card.** The redesign had left it wired to
+  a hardcoded `false`, so the sharpest error-finding view in the project was
+  dead code while the surrounding copy still promised it. It returns as a
+  switch (on by default) in the Wörter overview, and the traced-word card now
+  draws the composed word in the same registered frame as the specimen and the
+  trace — original ink, hand trace and engine output in one picture.
+- **A failed occurrence load is now visible instead of spinning forever.** The
+  shared data layer set its error flag but kept the lists at `null`, so
+  `loading` never ended and every occurrence panel sat on a spinner that could
+  not resolve; the state is now ended by the error and reported as one quiet
+  line per block.
+- **Filed tasks in the Auftragskorb link to their subject.** The basket named
+  what was wrong and offered no way to it, although the three views are one
+  link away for exactly those keys — a letter/pair/word row now navigates and
+  closes the drawer.
+- **German singulars:** „1 Beleg" and „1 Vorlage" instead of „1 Belege" /
+  „1 Vorlagen".
+
 ### Added
+
+- **The letter statistics draw every occurrence behind the median.** The MAD
+  circles gave the spread as a number; the bundle of thin occurrence chains
+  gives it as a shape — ten forms hugging the median and one outlier read very
+  differently from an evenly scattered set, and that is the question ("are the
+  occurrences alike at all?") the layer exists to answer. Same reading as the
+  pair sketch already had, in the same frame (occurrence anchors are stored
+  centered, exactly like the median).
+- **`GET /write/glyphs` takes a `variant` parameter.** Default 0 is the
+  authored chart ductus every public surface writes with; `100` renders the
+  derived Laufform, which is what lets the Buchstaben view show the two side by
+  side. A glyph without a row for the asked variant lands in `missing` exactly
+  like an unknown key, so asking for the Laufform of a letter that never got
+  one is an empty answer rather than a silent fallback to the chart form.
 
 - **End-to-end overview doc `docs/concepts/vom-scan-zum-schreiben.md`: how the
   writing system emerges from a chart, the specimen plates and the author's

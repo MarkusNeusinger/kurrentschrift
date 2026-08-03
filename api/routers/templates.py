@@ -408,7 +408,7 @@ async def get_diagnostic(
 
     Re-runs the image pipeline (chart decode + binarise + skeletonise) per
     request — admin-gated like /fit and /quality ("it costs the same CPU").
-    Only the admin surfaces (Diagnose dialog, wizard, /admin/vergleich) consume
+    Only the admin surfaces (Diagnose dialog, wizard, /admin/buchstaben) consume
     it; the public renderer reads the cached /write payloads instead.
     """
     bbox = await BboxRepository(db).get(source.id, glyph_key)

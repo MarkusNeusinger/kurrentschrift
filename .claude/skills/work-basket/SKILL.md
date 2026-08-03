@@ -5,7 +5,8 @@ description: Work off the Werkbank's Auftragskorb (the work_items basket) — re
 
 # Work off the Auftragskorb
 
-The admin marks a bad letter, join or word in `/admin/werkbank` and files
+The admin marks a bad letter, join or word in the workbench (`/admin/buchstaben`
+· `/admin/uebergaenge` · `/admin/woerter` — each view's ⚑) and files
 it as a `work_items` row instead of sending a screenshot. This skill is
 the other half: how a session picks those up and gives back something
 that is still worth reading in a year.

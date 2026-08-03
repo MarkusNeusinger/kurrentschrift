@@ -77,7 +77,7 @@ starren Einzelfits, Konnektor aus dem echten Verbindungsstrich) und legt sie
 als **nicht freigegebene** `glyph_pairs`-Entwürfe mit `provenance:
 harvested` + Specimen-Beleg ab; `--approve left:right` gibt nur gemessene
 Gewinner frei, `--store-occurrences` schreibt zusätzlich die
-`pair_instances`. Freigabe sonst im Paar-Editor unter `/admin/paare`.
+`pair_instances`. Freigabe sonst im Paar-Editor unter `/admin/uebergaenge`.
 
 ```bash
 uv run python -m tools.pairlab.harvest [--style suetterlin] [--sets pairs]
