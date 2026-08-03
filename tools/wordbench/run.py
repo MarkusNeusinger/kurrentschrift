@@ -20,6 +20,12 @@ Usage:
     uv run python -m tools.wordbench.run [--style suetterlin]
         [--set words|pairs|<custom set like abb22>|all] [--words unter,das]
         [--artifacts DIR] [--json report.json] [--compare old.json]
+        [--laufform draft.json | --no-laufform]
+
+    ``--laufform`` composes with CANDIDATE running forms instead of the frozen
+    ones — the Laufform twin of ``--overrides``, and under the same discipline
+    (qualitaetsmetrik.md §6): an overlay run is its OWN number, never the
+    headline, because the frozen fixtures are what the headline is defined on.
 
     ``--set all`` covers ONLY the canonical same-hand sets (words + pairs);
     a custom cross-hand set must be named explicitly so it can never mix
@@ -74,6 +80,10 @@ from tools.wordbench.slant import composed_raster, slant_deg
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 STYLES = ("suetterlin", "kurrent", "offenbacher")
+# Provenance stamped into a Laufform row DERIVED from a --laufform draft, where
+# the frozen rows carry the apply-step's (or the fetcher's). Nothing in the
+# render path reads it; it keeps an artifact traceable to its overlay run.
+LAUFFORM_OVERLAY_META = {"derived_from": "laufform-overlay", "via": "wordbench.run"}
 
 
 def _overlay(word_dir: Path, word_meta: dict, composed: dict, report: dict, out_path: Path) -> None:
@@ -114,6 +124,76 @@ def _slot_overrides(slots: list[GlyphSlot], by_base: dict[tuple[str, str], dict]
         if geometry is not None:
             out[(s0.key, s1.key)] = geometry
     return out
+
+
+def load_laufform_payload(path) -> dict[str, dict]:
+    """Read and shape-check a ``--laufform`` file: an object mapping glyph_key -> draft/row.
+
+    A malformed file fails fast with a named SystemExit instead of a traceback —
+    this is a CLI surface, not a library path.
+    """
+    try:
+        payload = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"--laufform {path}: {exc}") from None
+    if not isinstance(payload, dict) or not all(isinstance(v, dict) for v in payload.values()):
+        raise SystemExit(f"--laufform {path}: expected an object mapping glyph_key -> draft/row")
+    return payload
+
+
+def overlay_laufform_rows(
+    frozen: dict[str, dict], payload: dict[str, dict], templates: dict[str, dict]
+) -> dict[str, dict]:
+    """The frozen Laufform rows with every key the ``--laufform`` file states replaced.
+
+    OVERLAY, not replacement: a candidate file usually carries the handful of
+    glyphs an experiment moved, and every other letter must keep composing
+    exactly as the headline does — otherwise the run measures the absence of
+    the other running forms rather than the candidate.
+
+    Two payload shapes are accepted, because the drafts come from two places:
+
+    * ``{glyph_key: {"anchors": [...], "n_occurrences": N}}`` — a harvest/median
+      DRAFT. The full fixture row is derived from THIS root's chart row through
+      ``fetch_fixtures.laufform_row_from_payload`` — i.e. through
+      ``api.routers.templates.build_laufform_canonical``, the one derivation the
+      write path uses — so widths, stroke topology and the entry/exit/advance
+      shift are identical to a stored variant-100 row by construction.
+    * ``{glyph_key: {row…}}`` — a full fixture row (``anchors`` + ``trace_meta``),
+      taken VERBATIM: something already derived it, re-deriving would overwrite
+      its widths with the chart row's.
+
+    Skipped, never guessed: a key this fixture root has no chart row for (the
+    set simply never composes that glyph) and an anchor count that disagrees
+    with the chart row — the same guard the apply endpoint and
+    ``fetch_fixtures.laufform_rows_from_aggregates`` apply, named per key.
+    """
+    if not payload:
+        return frozen
+    # Deferred: pulls in the API package (build_laufform_canonical), which the
+    # flag-free bench path has no business importing.
+    from tools.wordbench.fetch_fixtures import laufform_row_from_payload
+
+    rows = dict(frozen)
+    for key, value in payload.items():
+        chart = templates.get(key)
+        if chart is None:
+            continue
+        anchors = value.get("anchors")
+        if not anchors:
+            print(f"  skip laufform {key}: no anchors in the overlay file")
+            continue
+        if len(anchors) != len(chart["anchors"]):
+            print(f"  skip laufform {key}: {len(anchors)} overlay anchors vs {len(chart['anchors'])} on the chart row")
+            continue
+        if "trace_meta" in value:
+            rows[key] = value
+            continue
+        meta = dict(LAUFFORM_OVERLAY_META)
+        if value.get("n_occurrences") is not None:
+            meta["n_occurrences"] = value["n_occurrences"]
+        rows[key] = laufform_row_from_payload(chart, anchors, meta)
+    return rows
 
 
 def _print_block(reports: list[dict], skipped: list[dict], kind: str) -> None:
@@ -177,7 +257,7 @@ def _print_block(reports: list[dict], skipped: list[dict], kind: str) -> None:
                     print(f"{slant_prefix}meas_{label}_median: {float(np.median(values)):.3f}")
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--style", default="suetterlin", choices=STYLES)
     parser.add_argument(
@@ -199,19 +279,39 @@ def main() -> None:
         help="pair-override file (tools/pairlab/harvest.py --out format) composed into every word; "
         "an override run is a SEPARATE measurement, never comparable to the override-free headline",
     )
-    parser.add_argument(
+    # The two ways to leave the frozen running forms — never both at once: one
+    # drops them, the other substitutes candidates, and a run that did both
+    # would report a number nobody could attribute.
+    laufform_group = parser.add_mutually_exclusive_group()
+    laufform_group.add_argument(
         "--no-laufform",
         action="store_true",
         help="compose chart-only, ignoring the frozen Laufform variants (templates_laufform.json) — "
         "a diagnostic decomposition run; the headline mirrors production and composes WITH them",
     )
-    args = parser.parse_args()
+    laufform_group.add_argument(
+        "--laufform",
+        type=Path,
+        help="candidate Laufform file overlaid onto the frozen variants (harvest draft "
+        "{glyph_key: {anchors, n_occurrences}} or full fixture rows); keys it does not name keep "
+        "their frozen row — an overlay run is a SEPARATE measurement, never comparable to the headline",
+    )
+    return parser
+
+
+def main() -> None:
+    args = build_parser().parse_args()
 
     overrides_by_base: dict[tuple[str, str], dict] = {}
     if args.overrides:
         for entry in json.loads(args.overrides.read_text()):
             overrides_by_base[(entry["left_key"], entry["right_key"])] = entry["geometry"]
         print(f"overrides: {len(overrides_by_base)} pairs from {args.overrides}")
+
+    laufform_payload: dict[str, dict] = {}
+    if args.laufform:
+        laufform_payload = load_laufform_payload(args.laufform)
+        print(f"laufform: {len(laufform_payload)} rows from {args.laufform} (own number - never the headline)")
 
     t0 = time.perf_counter()
     style_root = args.fixtures / args.style
@@ -242,6 +342,9 @@ def main() -> None:
         laufform_rows: dict[str, dict] = (
             json.loads(laufform_path.read_text()) if laufform_path.exists() and not args.no_laufform else {}
         )
+        # The candidate overlay replaces exactly the keys it names — before the
+        # cached accessors below bind it, so both see one dict.
+        laufform_rows = overlay_laufform_rows(laufform_rows, laufform_payload, templates)
         nib = manifest.get("constant_nib_units")
         resolver = manifest.get("width_resolver") or "pressure"
         style_ratio = manifest.get("style_ratio") or [1, 1, 1]
@@ -390,6 +493,8 @@ def main() -> None:
     result: dict = {"style": args.style, "set": args.which}
     if args.overrides:
         result["overrides"] = str(args.overrides)
+    if args.laufform:
+        result["laufform"] = str(args.laufform)
     if args.no_laufform:
         result["laufform"] = False
     for kind in ("word", "pair"):

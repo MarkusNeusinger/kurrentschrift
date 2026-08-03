@@ -50,6 +50,12 @@ uv run python -m tools.wordbench.run --set pairs --overrides temp/pair_harvest.j
 # run is its own number, never the headline.
 uv run python -m tools.wordbench.run --no-laufform
 
+# Optional: compose with CANDIDATE Laufformen instead of the frozen ones — an
+# OVERLAY (keys the file does not name keep their frozen row). Accepts a
+# harvest draft {glyph_key: {anchors, n_occurrences}} or full fixture rows.
+# Same discipline as --overrides: its own number, never the headline.
+uv run python -m tools.wordbench.run --set pairs --laufform temp/laufform_draft.json
+
 # Box proposal / verification sheets for annotating a new plate (no DB):
 uv run python -m tools.wordbench.propose_boxes --page words-abb19.png --expect-lines 12 --strips
 uv run python -m tools.wordbench.propose_boxes --page words-abb19.png --expect-lines 12 --validate

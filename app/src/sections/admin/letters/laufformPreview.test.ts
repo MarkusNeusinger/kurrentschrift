@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { AggregateOut } from '@/lib/api';
 
-import { previewOf, willChange } from './laufformPreview';
+import { LOW_N, defaultSelection, isLowN, previewOf, willChange } from './laufformPreview';
 
 // Only the fields the preview reads; the rest of AggregateOut is irrelevant
 // here and would only make the cases harder to read.
@@ -37,6 +37,29 @@ describe('previewOf', () => {
       agg({ glyph_key: 'new' }),
     ]);
     expect(rows.map((r) => r.glyphKey)).toEqual(['new', 'big', 'small']);
+  });
+});
+
+describe('low-n marking and the proposed selection', () => {
+  it('marks a median that rests on fewer than LOW_N occurrences', () => {
+    expect(isLowN({ glyphKey: 'A', nInstances: 1, dev: null, creates: true })).toBe(true);
+    expect(isLowN({ glyphKey: 'A', nInstances: LOW_N - 1, dev: null, creates: true })).toBe(true);
+    expect(isLowN({ glyphKey: 'n', nInstances: LOW_N, dev: null, creates: true })).toBe(false);
+  });
+
+  it('proposes the well-attested rows and leaves the thin ones unticked', () => {
+    const rows = previewOf([
+      agg({ glyph_key: 'n', n_instances: 12 }),
+      agg({ glyph_key: 'A', n_instances: 1 }),
+      agg({ glyph_key: 'e', n_instances: LOW_N }),
+    ]);
+    expect(defaultSelection(rows).sort()).toEqual(['e', 'n']);
+  });
+
+  it('proposes nothing when every key is thin — but the rows stay applicable', () => {
+    const rows = previewOf([agg({ glyph_key: 'A', n_instances: 1 }), agg({ glyph_key: 'B', n_instances: 2 })]);
+    expect(defaultSelection(rows)).toEqual([]);
+    expect(rows).toHaveLength(2);
   });
 });
 

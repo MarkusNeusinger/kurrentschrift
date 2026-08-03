@@ -74,7 +74,10 @@ class AsgiClient:
             "scheme": "http",
             "path": path,
             "raw_path": path.encode(),
-            "query_string": urlencode(params or {}).encode(),
+            # doseq: a list value becomes a REPEATED parameter (?k=a&k=b), the
+            # shape FastAPI parses into `list[str]` — without it the list would
+            # arrive as its Python repr.
+            "query_string": urlencode(params or {}, doseq=True).encode(),
             "root_path": "",
             "headers": raw_headers,
             "client": ("testclient", 50000),

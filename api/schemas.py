@@ -439,12 +439,18 @@ class AggregateApplyOut(BaseModel):
     """Result of `POST /hands/{hand_id}/aggregates/apply-laufform` (Stufenplan
     H1): the stored aggregates written into the style's Laufform rows
     (templates variant 100). Unlike the rebuild this DOES affect rendering,
-    which is why it is a separate, deliberate step."""
+    which is why it is a separate, deliberate step.
+
+    `excluded` names the glyph keys a `glyph_keys` selection left out — the
+    request's own doing, not the endpoint's judgement, hence its own list
+    beside `skipped` (which stays the "could not" report). Empty whenever the
+    request named no selection at all."""
 
     hand_id: str
     style_id: str
     applied: list[AggregateApplyKeySummary]
     skipped: list[AggregateApplySkip]
+    excluded: list[str] = []
 
 
 class PairAggregateOut(BaseModel):

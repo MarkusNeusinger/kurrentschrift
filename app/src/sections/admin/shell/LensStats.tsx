@@ -201,12 +201,20 @@ interface SketchAnchor {
   mad?: number;
 }
 
+// A single occurrence HAS no spread: the median is that occurrence, so every
+// median absolute deviation comes back as an exact 0 — a computed artefact of
+// n = 1, not the measurement "this hand is perfectly consistent here". Since
+// the aggregate gate is `min_n = 1` (issue #273) such rows are normal, so both
+// blocks drop the spread entirely rather than draw or print a zero: same rule
+// as the pair offset's „an absent MAD prints no ± clause".
+const hasSpread = (nInstances: number): boolean => nInstances >= 2;
+
 // Anchors zipped with `hull.anchor_mad` BEFORE any validity filtering: the MAD
 // list is positional, so a dropped anchor has to take its own circle with it —
 // indexing the spread with the FILTERED index slides every circle one anchor
 // along.
 function letterSketchAnchors(aggregate: AggregateOut): SketchAnchor[] {
-  const mad = aggregate.hull.anchor_mad ?? [];
+  const mad = hasSpread(aggregate.n_instances) ? (aggregate.hull.anchor_mad ?? []) : [];
   return (aggregate.cluster_center ?? [])
     .map((point, i) => ({ point, spread: mad[i] }))
     .filter(({ point }) => isPoint(point))
@@ -462,7 +470,9 @@ function PairConnectorSketch({
     .map((occ) => (occ.geometry?.connector ?? []).filter(isPoint))
     .filter((line) => line.length >= 2);
   const offset = aggregate.offset_center ?? [];
-  const offsetMad = aggregate.hull.offset_mad;
+  // No whisker off a single occurrence — a zero-length cross would read as a
+  // measured "no spread" (see `hasSpread`).
+  const offsetMad = hasSpread(aggregate.n_instances) ? aggregate.hull.offset_mad : undefined;
   const hasOffset = isPoint(offset);
 
   // The origin is the left glyph's exit — always in view, it is the reference
@@ -533,7 +543,9 @@ export function PairStats({
 
   const meanStats = aggregate?.mean_stats ?? {};
   const offset = aggregate?.offset_center;
-  const offsetMad = aggregate?.hull.offset_mad;
+  // At n = 1 the MAD is a computed zero, not a measured spread — dropped, so
+  // the ± clause below is left off entirely (`hasSpread`).
+  const offsetMad = aggregate && hasSpread(aggregate.n_instances) ? aggregate.hull.offset_mad : undefined;
   const kinds = Object.entries(meanStats.kinds ?? {});
   const median = (aggregate?.connector_center ?? []).filter(isPoint);
   // The rebuild skips a dissection whose letter fits were not clean (`fit_bad`)

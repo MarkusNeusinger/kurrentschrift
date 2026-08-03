@@ -311,11 +311,15 @@ export interface AggregateApplySkip {
 
 // Result of POST /hands/{hand_id}/aggregates/apply-laufform — the ONE step that
 // promotes learned statistics into what the engine actually writes.
+// `excluded` names the glyph keys the request's own `glyph_keys` selection left
+// out — the caller's decision, kept apart from `skipped` (which stays the
+// endpoint's "could not" report). Empty when the request named no selection.
 export interface AggregateApplyOut {
   hand_id: string;
   style_id: string;
   applied: AggregateApplyKeySummary[];
   skipped: AggregateApplySkip[];
+  excluded: string[];
 }
 
 // Pooled dissection QC of ONE pair aggregate (core/aggregate.py::
