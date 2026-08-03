@@ -24,6 +24,9 @@ export const admin = {
     startSlant: 'Schräglage {{deg}}°',
     startNoSources: 'Keine Tafel-Vorlagen gefunden — läuft die API und ist die Datenbank eingerichtet?',
     startHint: 'Die gewählte Vorlage bleibt in diesem Browser gespeichert; die öffentlichen Seiten bleiben unberührt.',
+    // The shared states of every occurrence-backed block.
+    evidenceLoading: 'wird geladen …',
+    evidenceError: 'Die gespeicherten Vorkommen konnten nicht geladen werden — neu laden oder die API prüfen.',
   },
   // The Buchstaben view: one letter's whole life, from the chart cell to how it
   // is finally written, plus the ways over to its joins and its words.
@@ -119,6 +122,7 @@ export const admin = {
     filterLabel: 'Proben filtern',
     toOverview: 'Alle Wortproben',
     traceCount: '{{count}} Belege',
+    traceCountOne: '{{count}} Beleg',
     writtenTitle: 'Wie es geschrieben wird',
     writtenCaption:
       'Serverseitig komponiert: Buchstaben der Bibliothek, dazwischen die erzeugten Übergänge — dieselbe Ausgabe, die die öffentlichen Seiten schreiben.',
@@ -403,6 +407,8 @@ export const admin = {
     statsNonePair: 'Kein Aggregat für diesen Übergang (unter der Mindest-Vorkommenszahl oder ohne sauberen Fit).',
     statsInstances: '{{count}} Vorkommen',
     statsSpecimens: '{{count}} Vorlagen',
+    // German has no plural-s on „Vorkommen", but „Vorlage" needs its singular.
+    statsSpecimensOne: '{{count}} Vorlage',
     statsRmse: 'RMSE ⌀ {{mean}} / max {{max}} px',
     statsXh: 'x-Höhe ⌀ {{value}} px',
     statsPositionsLabel: 'Positionen',
@@ -410,6 +416,11 @@ export const admin = {
     statsLetterSketch: 'Aggregat-Median (Laufform-Quelle)',
     statsLetterSketchAria: 'Median-Anker von {{key}} mit MAD-Streuung',
     statsLetterSketchLegend: 'Punkte: Median-Anker · Kreise: MAD-Streuung · Linien: Grund- und Mittellinie',
+    // With the occurrence chains drawn behind the median: the same reading as
+    // the pair sketch („dünn: Vorkommen · kräftig: Median"), so both layers
+    // answer „sind sich die Vorkommen ähnlich?" the same way.
+    statsLetterSketchLegendWithOcc:
+      'dünn: die einzelnen Vorkommen · kräftig: Median-Anker · Kreise: MAD-Streuung · Linien: Grund- und Mittellinie',
     statsPairSketchAria: 'Median-Verbindung {{left}}→{{right}} über den gespeicherten Vorkommen',
     statsPairSketchLegend: 'dünn: Vorkommen · kräftig: Median · Punkt: Versatz mit MAD',
     // Occurrences the rebuild itself skipped (fit_bad) are not drawn — said

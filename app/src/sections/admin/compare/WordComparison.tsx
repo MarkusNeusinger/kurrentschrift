@@ -340,9 +340,15 @@ export function WordComparison({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 1100 }}>
-      <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 720 }}>
-        {mode === 'other' ? de.admin.compare.otherIntro : de.admin.compare.wordsIntro}
-      </Typography>
+      {/* Only the Fremdhand list still explains itself: its "context, never a
+          reference" caveat is not obvious from the cards. The words intro
+          moved into the view's own header when this became a block — two
+          explanatory paragraphs stacked on each other read as two pages. */}
+      {mode === 'other' && (
+        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 720 }}>
+          {de.admin.compare.otherIntro}
+        </Typography>
+      )}
       {/* The Fremdhand tab is view-only context, never a scoring reference. */}
       {mode !== 'other' && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>

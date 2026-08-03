@@ -85,7 +85,12 @@ export function KorbProvider({ children }: { children: ReactNode }) {
             <CloseIcon fontSize="small" />
           </IconButton>
         </Box>
-        <KorbPanel sourceId={sourceId} refreshKey={tick} onChanged={() => setTick((n) => n + 1)} />
+        <KorbPanel
+          sourceId={sourceId}
+          refreshKey={tick}
+          onChanged={() => setTick((n) => n + 1)}
+          onNavigate={() => setDrawerOpen(false)}
+        />
       </Drawer>
       {mark && (
         <MarkDialog

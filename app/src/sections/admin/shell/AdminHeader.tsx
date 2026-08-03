@@ -75,8 +75,11 @@ export function AdminHeader({ openCount, onOpenKorb }: { openCount: number | nul
           variant="outlined"
           clickable
           onClick={() => navigate(paths.admin.root)}
-          label={source ? styleLabel(source.style_id) : t.noSource}
-          sx={{ maxWidth: 220 }}
+          // Style label AND source id: two of the four sources are „Kurrent"
+          // (loth-1866 and petzendorfer-1889 are different hands of the same
+          // script), so the style alone does not say which one is loaded.
+          label={source ? `${styleLabel(source.style_id)} · ${source.id}` : t.noSource}
+          sx={{ maxWidth: 280 }}
         />
       </Tooltip>
 

@@ -8,10 +8,55 @@
 // shows — the captions matter, because every panel here is a different layer of
 // the pipeline and the layers are easy to confuse.
 
-import { Box, Typography } from '@mui/material';
+import { Alert, Box, CircularProgress, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
 
+import { de } from '@/locales/admin';
 import { display } from '@/styles/paper';
+
+// The three states every occurrence-backed block shares. Kept here rather than
+// repeated per view, because the failure case is the one that used to be
+// missing everywhere: a failed occurrence load must SAY so, not leave a
+// spinner running forever.
+export function EvidenceState({
+  loading,
+  error,
+  empty,
+  emptyText,
+  children,
+}: {
+  loading: boolean;
+  error: boolean;
+  empty?: boolean;
+  emptyText?: string;
+  children: ReactNode;
+}) {
+  if (error) {
+    return (
+      <Alert severity="warning" sx={{ py: 0 }}>
+        {de.admin.shell.evidenceError}
+      </Alert>
+    );
+  }
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <CircularProgress size={14} />
+        <Typography variant="caption" color="text.disabled">
+          {de.admin.shell.evidenceLoading}
+        </Typography>
+      </Box>
+    );
+  }
+  if (empty) {
+    return (
+      <Typography variant="caption" color="text.disabled">
+        {emptyText}
+      </Typography>
+    );
+  }
+  return <>{children}</>;
+}
 
 export function ViewHeader({
   title,

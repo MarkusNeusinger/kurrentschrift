@@ -219,6 +219,10 @@ export function JoinView() {
             <Typography variant="caption" color="text.secondary">
               {`${leftKey}→${rightKey}`}
             </Typography>
+            {/* The free-text field stays reachable INSIDE the detail, like the
+                word field does — typing the next combination must not mean
+                going back to the overview first. */}
+            {freeInput}
           </Box>
         }
         chips={
@@ -276,20 +280,24 @@ export function JoinView() {
               showLineature
             />
           </Box>
+          {/* The two letters first — checking whether the fault is already in
+              one of them is the earlier stage of the triage. The editor comes
+              last and quietly (a `text` button under the doctrine line): the
+              layout must not make the last resort look like the first move. */}
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1.5 }}>
-            <Button size="small" variant="outlined" onClick={() => setEditorOpen(true)}>
-              {de.admin.werkbank.openPairEditor}
-            </Button>
-            <Button size="small" onClick={() => navigate(lettersUrl(leftKey))}>
+            <Button size="small" variant="outlined" onClick={() => navigate(lettersUrl(leftKey))}>
               {fmt(t.toLetter, { key: leftKey })}
             </Button>
-            <Button size="small" onClick={() => navigate(lettersUrl(rightKey))}>
+            <Button size="small" variant="outlined" onClick={() => navigate(lettersUrl(rightKey))}>
               {fmt(t.toLetter, { key: rightKey })}
             </Button>
           </Box>
-          <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1 }}>
+          <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1.5 }}>
             {t.overrideLastResort}
           </Typography>
+          <Button size="small" sx={{ mt: 0.5, px: 0.5 }} onClick={() => setEditorOpen(true)}>
+            {de.admin.werkbank.openPairEditor}
+          </Button>
         </Panel>
 
         {/* 2 — the measured median over the occurrences it condenses. */}

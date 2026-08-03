@@ -8,7 +8,8 @@ import { Box, Chip, Tooltip, Typography } from '@mui/material';
 
 import { useInView } from '@/hooks/useInView';
 import { wordSampleCropUrl } from '@/lib/api';
-import type { InstanceOut, WordInstanceOut, WordSampleOut } from '@/lib/api';
+import type { ComposedWordOut, InstanceOut, WordInstanceOut, WordSampleOut } from '@/lib/api';
+import { polylineToPathD, ringsToPathD } from '@/lib/svg';
 import { de, fmt } from '@/locales/admin';
 import {
   WERKBANK_COLORS,
@@ -34,9 +35,25 @@ interface Props {
   // Extra actions in the card header (the word editor, a score button) — owned
   // by the view, since what can be done with a trace is its business.
   actions?: React.ReactNode;
+  // The engine's composition of the same word, drawn over the specimen pixels
+  // when present. THE comparison the whole bench exists for: the sidecar
+  // carries the specimen's crop-local baseline/midband, the composed word
+  // lives in template units (baseline = 0, 1 unit = x-height), so the map is a
+  // pure scale+translate — no eyeballing.
+  composed?: ComposedWordOut | null;
 }
 
-export function WordSpineCard({ row, sample, sourceId, boxes, onOpenLetter, onOpenPair, onMark, actions }: Props) {
+export function WordSpineCard({
+  row,
+  sample,
+  sourceId,
+  boxes,
+  onOpenLetter,
+  onOpenPair,
+  onMark,
+  actions,
+  composed,
+}: Props) {
   const [ref, inView] = useInView<HTMLDivElement>();
   const t = de.admin.werkbank;
 
@@ -55,6 +72,14 @@ export function WordSpineCard({ row, sample, sourceId, boxes, onOpenLetter, onOp
   // One display pixel in viewBox units — keeps hairlines and hit targets the
   // same visual size across crops of very different resolutions.
   const px = sample.height / FACE_H;
+
+  // Engine ink → specimen pixels. Same transform WordComparison's overlay uses
+  // (kept in step with it): px per template unit = baseline − midband, the
+  // engine's left edge aligned to the crop's, y flipped.
+  const unitPx = sample.baseline_y - sample.midband_y;
+  const engineMatrix = composed
+    ? `matrix(${unitPx} 0 0 ${-unitPx} ${-composed.bounds.min_x * unitPx} ${sample.baseline_y})`
+    : null;
 
   const specimen: SpecimenRef = { id: row.specimen_id, kind: row.kind, word: row.word };
   const selectLetter = (inst: InstanceOut) => onOpenLetter(inst.glyph_key);
@@ -148,6 +173,28 @@ export function WordSpineCard({ row, sample, sourceId, boxes, onOpenLetter, onOp
               />
             ))}
           </g>
+          {/* The engine's own answer, registered onto the same ink. Red and
+              translucent, exactly as in the comparison list, so „where does
+              the composition leave the original?" is one look. */}
+          {engineMatrix && composed && (
+            <g transform={engineMatrix}>
+              {composed.items.map((it, i) =>
+                it.rings ? (
+                  <path key={i} d={ringsToPathD(it.rings)} fill="#e02030" fillOpacity={0.42} fillRule="evenodd" />
+                ) : (
+                  <path
+                    key={i}
+                    d={polylineToPathD(it.centerline)}
+                    fill="none"
+                    stroke="#e02030"
+                    strokeOpacity={0.42}
+                    strokeWidth={it.stroke_width ?? it.mask_width}
+                    strokeLinecap="round"
+                  />
+                ),
+              )}
+            </g>
+          )}
           {boxes.map((inst) => {
             const b = cropBoxOf(inst, sample.rect);
             if (!b) return null;

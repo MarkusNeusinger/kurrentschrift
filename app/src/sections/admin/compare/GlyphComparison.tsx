@@ -219,12 +219,10 @@ export function GlyphComparison({ onPick }: { onPick?: (glyphKey: string) => voi
     // No own page padding/scroll container: since the redesign this grid is a
     // BLOCK inside the Buchstaben view, which owns both.
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2, mb: 2 }}>
-        <Box sx={{ flex: 1, minWidth: 260 }}>
-          <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 720 }}>
-            {de.admin.compare.intro}
-          </Typography>
-        </Box>
+      {/* No own intro paragraph: the Buchstaben view's header already says
+          what this grid is. Only its two controls stay. */}
+      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+        <Box sx={{ flex: 1, minWidth: 0 }} />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <FormControlLabel
             control={<Switch size="small" checked={overlay} onChange={(e) => setOverlay(e.target.checked)} />}

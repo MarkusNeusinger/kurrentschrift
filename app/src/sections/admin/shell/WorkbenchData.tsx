@@ -282,7 +282,10 @@ export function WorkbenchDataProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<WorkbenchState>(
     () => ({
-      loading: wordRows === null || samples === null || instances === null || pairInstances === null,
+      // A failed load ENDS the loading state — otherwise the lists stay null,
+      // `loading` stays true forever and every occurrence panel sits on a
+      // spinner that will never resolve. Callers show `error` instead.
+      loading: !error && (wordRows === null || samples === null || instances === null || pairInstances === null),
       error,
       wordRows: wordRows ?? [],
       samples: samples ?? [],

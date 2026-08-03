@@ -39,7 +39,7 @@ import { OccurrenceThumb } from '@/sections/admin/shell/OccurrenceThumb';
 import { useFileMark } from '@/sections/admin/shell/KorbContext';
 import { useWorkbench } from '@/sections/admin/shell/WorkbenchData';
 import { joinsUrl, neighbourLetters, readLetterFocus, wordsUrl } from '@/sections/admin/shell/focus';
-import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
+import { EvidenceState, Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { garamond } from '@/styles/paper';
 
 // The Laufform is stored as this template variant (core/database LAUFFORM_VARIANT).
@@ -246,15 +246,12 @@ export function LetterView() {
 
         {/* 3 — the raw evidence: every occurrence the harvest kept. */}
         <Panel title={fmt(t.occurrencesTitle, { count: occurrences.length })} caption={t.occurrencesCaption}>
-          {workbench.loading ? (
-            <Typography variant="caption" color="text.disabled">
-              {t.loadingOccurrences}
-            </Typography>
-          ) : occurrences.length === 0 ? (
-            <Typography variant="caption" color="text.disabled">
-              {de.admin.werkbank.noOccurrences}
-            </Typography>
-          ) : (
+          <EvidenceState
+            loading={workbench.loading}
+            error={workbench.error}
+            empty={occurrences.length === 0}
+            emptyText={de.admin.werkbank.noOccurrences}
+          >
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
               {occurrences.map((inst) => {
                 const sample = workbench.sampleById.get(inst.measurements.specimen_id ?? '');
@@ -270,7 +267,7 @@ export function LetterView() {
                 );
               })}
             </Box>
-          )}
+          </EvidenceState>
         </Panel>
 
         {/* 4 — what those occurrences condense to (Stufenplan H1). */}
@@ -279,6 +276,7 @@ export function LetterView() {
             key={glyphKey}
             glyphKey={glyphKey}
             aggregate={aggregate}
+            occurrences={occurrences}
             stats={workbench.letterStats}
             onRebuild={workbench.rebuildLetterStats}
           />

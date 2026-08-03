@@ -10,14 +10,27 @@
 // it. A specimen turns the same word into measurable evidence — but its absence
 // costs only the evidence, never the judgement.
 
-import { Alert, Box, Button, Chip, CircularProgress, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  FormControlLabel,
+  Switch,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { WrittenWord } from '@/components/WrittenWord';
 import { useAdmin } from '@/context/AdminContext';
-import { getWordSampleScore } from '@/lib/api';
-import type { WordSampleScoreOut } from '@/lib/api';
+import { fetchRenderWord, getWordSampleScore } from '@/lib/api';
+import type { ComposedWordOut, WordSampleScoreOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { WordComparison, type WordCompareMode } from '@/sections/admin/compare/WordComparison';
 import { WordTraceEditorDialog } from '@/sections/admin/belege/WordTraceEditorDialog';
@@ -46,6 +59,10 @@ export function WordView() {
   const [draft, setDraft] = useState(text ?? '');
   const [mode, setMode] = useState<WordCompareMode>('words');
   const [filter, setFilter] = useState('');
+  // Engine ink over the specimen pixels — on by default in both the overview
+  // list and the evidence cards, which is where it earns its keep.
+  const [overlay, setOverlay] = useState(true);
+  const [composed, setComposed] = useState<ComposedWordOut | null>(null);
   const [missing, setMissing] = useState<string[]>([]);
   const [editing, setEditing] = useState<string | null>(null);
   const [scores, setScores] = useState<Record<string, WordSampleScoreOut | 'busy' | 'error'>>({});
@@ -54,6 +71,30 @@ export function WordView() {
     setDraft(text ?? '');
     setMissing([]);
   }, [text]);
+
+  // The composed payload for the evidence overlay. WrittenWord keeps its own
+  // internally, so this goes through the SAME shared render cache — one
+  // request per text for the panel above and the overlay below.
+  useEffect(() => {
+    if (!text) {
+      setComposed(null);
+      return;
+    }
+    let cancelled = false;
+    setComposed(null);
+    fetchRenderWord(sourceId, text)
+      .then((c) => {
+        if (!cancelled) setComposed(c);
+      })
+      .catch(() => {
+        // The panel above reports a compose failure already — the overlay just
+        // stays absent rather than claiming a second error.
+        if (!cancelled) setComposed(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [sourceId, text]);
 
   const focus = (next: string | null, sample?: string | null) =>
     setParams(next ? { w: next, ...(sample ? { s: sample } : {}) } : {}, { replace: false });
@@ -125,10 +166,18 @@ export function WordView() {
             <ToggleButton value="words">{de.admin.compare.tabWords}</ToggleButton>
             <ToggleButton value="other">{de.admin.compare.tabOther}</ToggleButton>
           </ToggleButtonGroup>
+          {/* The registered overlay is the sharpest error-finding view the
+              project has — engine ink projected onto the specimen pixels — so
+              it stays one switch away and ON by default, as it was before. */}
+          <FormControlLabel
+            sx={{ mt: 0.25 }}
+            control={<Switch size="small" checked={overlay} onChange={(e) => setOverlay(e.target.checked)} />}
+            label={<Typography variant="caption">{de.admin.compare.overlayToggle}</Typography>}
+          />
         </Box>
         <WordComparison
           mode={mode}
-          overlay={false}
+          overlay={overlay}
           filterText={filter}
           onPick={(sample) => focus(sample.word, sample.id)}
         />
@@ -144,9 +193,19 @@ export function WordView() {
         }
         chips={
           <>
-            <Chip size="small" variant="outlined" label={fmt(t.traceCount, { count: traces.length })} />
+            <Chip
+              size="small"
+              variant="outlined"
+              label={fmt(traces.length === 1 ? t.traceCountOne : t.traceCount, { count: traces.length })}
+            />
             {missing.length > 0 && (
               <Chip size="small" color="warning" label={`${de.admin.compare.missingPrefix}${missing.join(', ')}`} />
+            )}
+            {traces.length > 0 && (
+              <FormControlLabel
+                control={<Switch size="small" checked={overlay} onChange={(e) => setOverlay(e.target.checked)} />}
+                label={<Typography variant="caption">{de.admin.compare.overlayToggle}</Typography>}
+              />
             )}
           </>
         }
@@ -224,7 +283,9 @@ export function WordView() {
         </Panel>
 
         {/* 3 — the measured side, where a plate of this hand wrote the word. */}
-        {workbench.loading ? (
+        {workbench.error ? (
+          <Alert severity="warning">{de.admin.shell.evidenceError}</Alert>
+        ) : workbench.loading ? (
           <Box sx={{ p: 3, display: 'flex', justifyContent: 'center' }}>
             <CircularProgress size={24} />
           </Box>
@@ -242,6 +303,7 @@ export function WordView() {
                 sample={sample}
                 sourceId={sourceId}
                 boxes={workbench.boxesBySpecimen.get(row.specimen_id) ?? []}
+                composed={overlay ? composed : null}
                 onOpenLetter={(glyphKey) => navigate(lettersUrl(glyphKey))}
                 onOpenPair={(leftKey, rightKey) => navigate(joinsUrl(leftKey, rightKey))}
                 onMark={fileMark}
