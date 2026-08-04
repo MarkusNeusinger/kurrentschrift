@@ -659,6 +659,81 @@ Ausbeutegewinn 1→7 und deshalb ein Ansehen-Fall), `b` (±0). Alles mit
    benannte Vorbedingung, die Degeneration des Ketten-Verbinders auf den
    isolierten Paar-Übungen.
 
+### Nachtrag: Stufe B, Runde 2 — der Deckel ist erledigt, das Tor nicht (2026-08-04)
+
+Punkt 1 der Liste ist gemessen und abgeräumt, und die Messung hat die
+Reihenfolge der restlichen Punkte umgeworfen.
+
+**Der Deckel war der bindende Stopp — deutlicher als vermutet.** Sweep über die
+eingefrorenen `words,pairs`-Fixtures (96 Solves, 344 Slot-Zeilen), je ein
+`--diag-csv`-Lauf, mit den neuen Spalten `iterations` / `hit_iteration_cap`:
+
+| `maxiter` | am Deckel | `not_converged_local` | akzeptiert | `geo_rmse` Median | CPU |
+|---|---|---|---|---|---|
+| 300 | 87 (91 %) | 47 | 232 | 1,063 px | 1942 s |
+| 900 | 63 (66 %) | 38 | 238 | 1,030 px | 5315 s |
+| 2700 | 10 (10 %) | 35 | 241 | 1,027 px | 10145 s |
+
+300 war nicht knapp, sondern lag **unter dem Median dessen, was ein
+konvergierender Ketten-Solve braucht**: Median 1211 Iterationen, p25 680,
+p90 2518. Neuer Default `CHAIN_MAX_ITER = 2700` in `tools/pairlab/chain.py` —
+ein EIGENES Budget, nicht `core.fit.DEFAULT_MAX_ITER`, denn das ist ein
+Pro-Glyph-Budget und darf sich durch eine Ketten-Messung nicht mitbewegen (es
+speist Wizard, `/fit`, `/diagnostic`). Die Geometrie ist dort stabil und nicht
+bloß anders: 228 der 241 akzeptierten Slots werden bei **allen drei** Budgets
+akzeptiert, 900 → 2700 bewegt 4 hinein und 1 heraus.
+
+**Punkt 2 ist damit zu einem Drittel erklärt, nicht erledigt.** Der Deckel holt
+von `e` 4 der 9 fehlenden Vorkommen zurück (30 → 34) und von `n` 3 von 5
+(29 → 31). Der Rest ist kein Konvergenzproblem.
+
+**Der eigentliche Befund: das Ausbeutedefizit ist fast vollständig EIN Tor.**
+Gleicher Fixture-Stand, gleiche Sets, gleiche `--rmse-max`, Slot-Pfad gegen
+Ketten-Pfad:
+
+| | akzeptiert |
+|---|---|
+| Slot-Pfad | 270 |
+| Kette @2700 | 241 |
+| Kette + nur vom Konnektor-Wächter verworfen | **287** |
+
+Die 46 Differenzzeilen sind **ausschließlich** an `connector_degenerate`
+gescheitert — dem letzten Tor der Kaskade. Sie haben `converged_local`
+bestanden, liegen unter `--rmse-max`, sind nicht am Anschlag und haben
+passende Ankerzahl; ihr `geo_rmse`-Median ist 1,131 px gegen 1,027 px bei den
+akzeptierten, also schlechter, aber weit innerhalb der 2,2-px-Schranke. Der
+Slot-Pfad kennt dieses Tor **gar nicht**. Auf den gemeinsamen Toren liegt die
+Kette also nicht hinten, sondern mit 287 gegen 270 vorn.
+
+Verteilung der 46: 23 Wort-, 23 Paar-Zeilen — bei 277 Wort- gegen 67
+Paar-Zeilen ist die Rate auf den Paar-Übungen rund viermal so hoch (32,8 %
+gegen 7,9 %; die 7,9 % bestätigen die 7,5 % der Runde 1). Gründe:
+`seam_share` 25, `backward_arc` 22, `arc_vs_gap` 2.
+
+**Konsequenz für die Reihenfolge:** Punkt 3 der Runde-1-Liste ist keine
+Aufräumarbeit am Rand, sondern der dominante Ausbeuteterm und rückt vor Punkt 2
+und 4. Die Frage ist nicht „warum verliert die Kette `e`", sondern **„ist der
+Konnektor-Wächter auf den Paar-Übungen kalibriert oder feuert er dort auf eine
+legitime Form"** — die Paar-Drills sind nah an der Tafelform geschrieben, mit
+kurzen oder fehlenden Verbindern, also genau der Fall, für den die Schwellen
+nicht kalibriert wurden.
+
+**Reproduktion:**
+
+```
+uv run python -m tools.wordbench.fetch_fixtures --set all --verify
+for CAP in 300 900 2700; do
+  KS_CHAIN_MAX_ITER=$CAP uv run python -m tools.laufform.harvest \
+    --sets words,pairs --path chain --jobs 4 --diag-csv temp/diag_$CAP.csv \
+    --out temp/drafts_$CAP.json --occ-out temp/occ_$CAP.json --word-out temp/words_$CAP.json
+done
+uv run python -m tools.laufform.harvest --sets words,pairs --path slot --jobs 4 \
+  --diag-csv temp/diag_slot.csv --out temp/drafts_slot.json \
+  --occ-out temp/occ_slot.json --word-out temp/words_slot.json
+```
+
+Nichts davon berührt die DB oder das Rendering — reine Messung.
+
 ## 6. Beantwortung der Kernfrage + Lösungsoptionen
 
 **Generisch lösbar — als Klassenregel, nicht pro Paar.** Die Abweichungen

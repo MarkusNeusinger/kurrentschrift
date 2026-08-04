@@ -53,7 +53,6 @@ from core.fit import (
     CONVERGED_GEO_RMSE_UNITS,
     DEFAULT_COVERAGE_WEIGHT,
     DEFAULT_LAMBDA_REG,
-    DEFAULT_MAX_ITER,
     DEFAULT_N_SAMPLES,
     DEFAULT_WIDTH_WEIGHT,
     DIST_FIELD_SIGMA_PX,
@@ -113,14 +112,34 @@ CHAIN_COVERAGE_PER_SEGMENT = 300
 # word carries ~820 free parameters where one letter carries a fraction of it,
 # so the same budget buys proportionally fewer descent steps.
 #
-# Measured on the frozen fixtures at 300: the budget, not a convergence
-# criterion, was the binding stop in the overwhelming majority of solves — a
-# truncated solve is not a converged one, and where the truncation lands moves
-# with the initialisation, which is why the harvest was not bit-reproducible
-# across an init change. `CHAIN_MAX_ITER_ENV` allows a sweep without editing
-# this file; the default is the value the measurement settled on.
+# Swept over the frozen words+pairs fixtures (96 solves, 344 slot rows) at
+# 300 · 900 · 2700, `--diag-csv` per run:
+#
+#     cap    capped     not_conv_local   accepted   geo_rmse med   CPU
+#     300    87 (91 %)      47             232        1.063 px    1942 s
+#     900    63 (66 %)      38             238        1.030 px    5315 s
+#    2700    10 (10 %)      35             241        1.027 px   10145 s
+#
+# At 300 the budget — not a convergence criterion — was the stop in 91 % of
+# solves. That is not "a bit tight": of the solves that finish on their own,
+# the MEDIAN takes 546 iterations, and over the whole set the median is 1211
+# (p90 2518), so the old budget sat far below the point where a chain solve
+# typically settles. A truncated solve is not a converged one — it fails
+# `converged_local`, its occurrence is dropped, and where the truncation lands
+# moves with the initialisation, which is why the harvest was not reproducible
+# across the exact-nib change.
+#
+# 2700 is the smallest swept budget at which the budget is no longer the
+# typical stop, and it sits just above the p90 of the observed convergence
+# distribution. The geometry is stable there rather than merely different: 228
+# of the 241 accepted slots are accepted at ALL three budgets, and 900 → 2700
+# moves 4 in and 1 out. The cost is ~2.8 h CPU for the full harvest, which is
+# an occasional offline run and never touches a request path.
+#
+# `CHAIN_MAX_ITER_ENV` re-runs that sweep without editing this file.
 CHAIN_MAX_ITER_ENV = "KS_CHAIN_MAX_ITER"
-CHAIN_MAX_ITER = int(os.environ.get(CHAIN_MAX_ITER_ENV) or DEFAULT_MAX_ITER)
+CHAIN_MAX_ITER_DEFAULT = 2700
+CHAIN_MAX_ITER = int(os.environ.get(CHAIN_MAX_ITER_ENV) or CHAIN_MAX_ITER_DEFAULT)
 # Points on the raw exit→entry connector polyline — the production sample count,
 # re-exported from `core.compose` so a change there cannot silently desync. The
 # two endpoints are SHARED with the letters, the interior 22 are free anchors.

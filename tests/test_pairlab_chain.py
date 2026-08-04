@@ -1042,15 +1042,20 @@ def test_the_chain_iteration_budget_is_its_own_knob(monkeypatch: pytest.MonkeyPa
 
     import tools.pairlab.chain as chain_mod
 
-    assert chain_mod.CHAIN_MAX_ITER == DEFAULT_MAX_ITER  # today's default
+    assert chain_mod.CHAIN_MAX_ITER == chain_mod.CHAIN_MAX_ITER_DEFAULT
+    # The whole point: it is NOT core.fit's per-glyph budget any more.
+    assert chain_mod.CHAIN_MAX_ITER_DEFAULT > DEFAULT_MAX_ITER
 
     monkeypatch.setenv(chain_mod.CHAIN_MAX_ITER_ENV, "1234")
     reloaded = importlib.reload(chain_mod)
     try:
         assert reloaded.CHAIN_MAX_ITER == 1234
-        # core.fit is untouched by the sweep knob — the production fit must not
-        # move because someone measured the chain.
-        assert reloaded.DEFAULT_MAX_ITER == DEFAULT_MAX_ITER
+        # core.fit is untouched by the sweep knob — the production fit behind
+        # the wizard, /fit and /diagnostic must not move because someone
+        # measured the chain.
+        import core.fit
+
+        assert core.fit.DEFAULT_MAX_ITER == DEFAULT_MAX_ITER
     finally:
         monkeypatch.delenv(chain_mod.CHAIN_MAX_ITER_ENV)
         importlib.reload(chain_mod)
@@ -1071,7 +1076,7 @@ def test_a_capped_solve_is_reported_as_capped() -> None:
     generous = chain_mod.fit_word_chain(case, [0, 1, 2], result=result, windows_px=windows)
     assert generous is not None
     assert generous.fit_meta["hit_iteration_cap"] is False
-    assert generous.fit_meta["max_iter"] == DEFAULT_MAX_ITER
+    assert generous.fit_meta["max_iter"] == chain_mod.CHAIN_MAX_ITER_DEFAULT
 
     importlib.reload(chain_mod)
     chain_mod.CHAIN_MAX_ITER = 1

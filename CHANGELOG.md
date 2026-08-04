@@ -14,19 +14,29 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
-- **The word chain has its own iteration budget, and says when the budget was
-  what stopped it.** The chain solve borrowed `core.fit.DEFAULT_MAX_ITER` — a
+- **The word chain has its own iteration budget, and it is no longer the thing
+  that stops the solve.** The chain borrowed `core.fit.DEFAULT_MAX_ITER` — a
   per-GLYPH budget on a per-glyph problem, while a three-slot word chain
-  carries roughly 820 free parameters, so the same 300 iterations buy
-  proportionally fewer descent steps. `tools/pairlab/chain.py` now owns
-  `CHAIN_MAX_ITER` (same default, so nothing moves yet), overridable through
-  `KS_CHAIN_MAX_ITER` so the budget can be swept without editing the file and
-  without a chain measurement silently re-tuning the production M4 fit that
-  the wizard and `/fit` depend on. Alongside it, `fit_meta` and the harvest's
-  `--diag-csv` gained `iterations`, `max_iter` and `hit_iteration_cap`: a
-  capped solve was still descending, so its energies, gates and anchors are a
-  snapshot of an unfinished descent rather than a result — which is exactly
-  what the round-2 measurement needs to read, instead of inferring it.
+  carries roughly 820 free parameters. Measured over the frozen words+pairs
+  fixtures (96 solves, 344 slot rows), **300 iterations was the binding stop in
+  91 % of solves**: not tight but far below the median a converging chain
+  actually needs (1211 iterations, p25 680, p90 2518). A capped solve is still
+  descending, so it fails the convergence gate and its occurrence is dropped —
+  and where the truncation lands moves with the initialisation, which is why
+  the harvest was not reproducible across the exact-nib change.
+  `tools/pairlab/chain.py` now owns `CHAIN_MAX_ITER`, default **2700**, the
+  smallest swept budget at which the budget is no longer the typical stop
+  (10 % capped) and just above the p90 of the observed convergence
+  distribution. `core.fit` is deliberately untouched, so measuring the chain
+  can never re-tune the production M4 fit behind the wizard, `/fit` and
+  `/diagnostic`; `KS_CHAIN_MAX_ITER` re-runs the sweep. Effect: accepted
+  occurrences 232 → 241, `not_converged_local` 47 → 35, `geo_rmse` median
+  1.063 → 1.027 px, at 5.2× the CPU of an occasional offline harvest. The
+  geometry is stable rather than merely different — 228 of the 241 accepted
+  slots are accepted at all three swept budgets. `fit_meta` and the harvest's
+  `--diag-csv` gained `iterations`, `max_iter` and `hit_iteration_cap` so that
+  state is read rather than inferred. Measurement only: no DB, no rendering,
+  no request path. Details in `docs/proposals/uebergaenge-befund.md` §5c.
 
 ### Added
 
