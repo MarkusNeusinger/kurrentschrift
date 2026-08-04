@@ -24,19 +24,24 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   descending, so it fails the convergence gate and its occurrence is dropped —
   and where the truncation lands moves with the initialisation, which is why
   the harvest was not reproducible across the exact-nib change.
-  `tools/pairlab/chain.py` now owns `CHAIN_MAX_ITER`, default **2700**, the
-  smallest swept budget at which the budget is no longer the typical stop
-  (10 % capped) and just above the p90 of the observed convergence
-  distribution. `core.fit` is deliberately untouched, so measuring the chain
-  can never re-tune the production M4 fit behind the wizard, `/fit` and
-  `/diagnostic`; `KS_CHAIN_MAX_ITER` re-runs the sweep. Effect: accepted
-  occurrences 232 → 241, `not_converged_local` 47 → 35, `geo_rmse` median
-  1.063 → 1.027 px, at 5.2× the CPU of an occasional offline harvest. The
-  geometry is stable rather than merely different — 228 of the 241 accepted
-  slots are accepted at all three swept budgets. `fit_meta` and the harvest's
-  `--diag-csv` gained `iterations`, `max_iter` and `hit_iteration_cap` so that
-  state is read rather than inferred. Measurement only: no DB, no rendering,
-  no request path. Details in `docs/proposals/uebergaenge-befund.md` §5c.
+  `tools/pairlab/chain.py` now owns `CHAIN_MAX_ITER`, default **8100**, at
+  which **no solve is truncated at all** (longest observed: 4215 iterations).
+  A budget that binds is the wrong kind of knob — L-BFGS-B stops at its own
+  criteria, so a high ceiling costs nothing for solves that already converged
+  and only the hard tail pays: 2700 → 8100 buys "nothing is cut off" for
+  **+5 % CPU**. It is also demonstrably harmless rather than presumed so —
+  305 of the 344 slot rows are bit-identical to the 2700 run, the 39 that move
+  belong exclusively to the ten formerly-capped specimens, that movement is
+  settling noise (median +0.0010 px, 22 rows worse against 17 better), and all
+  344 gate verdicts are unchanged. `core.fit` is deliberately untouched, so
+  measuring the chain can never re-tune the production M4 fit behind the
+  wizard, `/fit` and `/diagnostic`; `KS_CHAIN_MAX_ITER` re-runs the sweep.
+  Effect against the old 300: accepted occurrences 232 → 241,
+  `not_converged_local` 47 → 35, `geo_rmse` median 1.063 → 1.027 px.
+  `fit_meta` and the harvest's `--diag-csv` gained `iterations`, `max_iter`
+  and `hit_iteration_cap` so that state is read rather than inferred.
+  Measurement only: no DB, no rendering, no request path. Details in
+  `docs/proposals/uebergaenge-befund.md` §5c.
 
 ### Added
 

@@ -673,15 +673,34 @@ eingefrorenen `words,pairs`-Fixtures (96 Solves, 344 Slot-Zeilen), je ein
 | 300 | 87 (91 %) | 47 | 232 | 1,063 px | 1942 s |
 | 900 | 63 (66 %) | 38 | 238 | 1,030 px | 5315 s |
 | 2700 | 10 (10 %) | 35 | 241 | 1,027 px | 10145 s |
+| **8100** | **0 (0 %)** | 35 | 241 | 1,027 px | 10608 s |
 
 300 war nicht knapp, sondern lag **unter dem Median dessen, was ein
 konvergierender Ketten-Solve braucht**: Median 1211 Iterationen, p25 680,
-p90 2518. Neuer Default `CHAIN_MAX_ITER = 2700` in `tools/pairlab/chain.py` —
-ein EIGENES Budget, nicht `core.fit.DEFAULT_MAX_ITER`, denn das ist ein
-Pro-Glyph-Budget und darf sich durch eine Ketten-Messung nicht mitbewegen (es
-speist Wizard, `/fit`, `/diagnostic`). Die Geometrie ist dort stabil und nicht
-bloß anders: 228 der 241 akzeptierten Slots werden bei **allen drei** Budgets
-akzeptiert, 900 → 2700 bewegt 4 hinein und 1 heraus.
+p90 2518, Maximum 4215. Neuer Default `CHAIN_MAX_ITER = 8100` in
+`tools/pairlab/chain.py` — ein EIGENES Budget, nicht
+`core.fit.DEFAULT_MAX_ITER`, denn das ist ein Pro-Glyph-Budget und darf sich
+durch eine Ketten-Messung nicht mitbewegen (es speist Wizard, `/fit`,
+`/diagnostic`).
+
+**Warum 8100 und nicht der Punkt, an dem der Ertrag aufhört zu steigen:** Ein
+Deckel, der überhaupt bindet, ist der falsche Knopf. L-BFGS-B hört bei seinem
+eigenen Kriterium auf, also kostet ein hoher Deckel für jeden bereits
+konvergierenden Solve **nichts** — nur der schwere Rest zahlt. Gemessen ist
+dieser Rest billig: 2700 → 8100 kauft „kein Solve wird mehr abgeschnitten"
+für **+5 % CPU**, bei ~1,9-facher Reserve über dem beobachteten Maximum.
+
+**Und es richtet nachweislich keinen Schaden an** — der Teil, den man prüfen
+und nicht annehmen muss: 305 der 344 Slot-Zeilen sind gegenüber 2700
+**bit-identisch**; die 39 bewegten gehören ausschließlich zu den zehn vorher
+gedeckelten Belegen; die Bewegung ist Setzrauschen (Median +0,0010 px,
+schlimmster Fall +0,0240 px, 22 Zeilen schlechter gegen 17 besser); und
+**alle 344 Gate-Urteile sind unverändert**. Das Ergebnis hört auf, die Antwort
+des Budgets zu sein, und wird die des Modells — ohne eine andere zu werden.
+Die zehn befreiten Solves brauchen 2701–4215 Iterationen, lagen also samt und
+sonders knapp *oberhalb* von 2700; der Wert hätte mitten in der Häufung
+gelegen. Die Geometrie ist über die ganze Leiter stabil: 228 der 241
+akzeptierten Slots werden bei allen Budgets akzeptiert.
 
 **Punkt 2 ist damit zu einem Drittel erklärt, nicht erledigt.** Der Deckel holt
 von `e` 4 der 9 fehlenden Vorkommen zurück (30 → 34) und von `n` 3 von 5
@@ -722,7 +741,7 @@ nicht kalibriert wurden.
 
 ```
 uv run python -m tools.wordbench.fetch_fixtures --set all --verify
-for CAP in 300 900 2700; do
+for CAP in 300 900 2700 8100; do
   KS_CHAIN_MAX_ITER=$CAP uv run python -m tools.laufform.harvest \
     --sets words,pairs --path chain --jobs 4 --diag-csv temp/diag_$CAP.csv \
     --out temp/drafts_$CAP.json --occ-out temp/occ_$CAP.json --word-out temp/words_$CAP.json

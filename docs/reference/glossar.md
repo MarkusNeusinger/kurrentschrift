@@ -433,13 +433,17 @@ verworfen, und **wo genau der Abbruch landet, verschiebt sich mit dem
 Startwert** — daher waren Ernten über eine Init-Änderung hinweg nicht
 reproduzierbar. Lehre: Ein Fit-Ergebnis ist erst dann eines, wenn man weiß,
 *warum* der Solver aufgehört hat.
-*Technisch:* der Kettenfit hat mit `CHAIN_MAX_ITER` (Default 2700) ein
+Merkregel: Ein Deckel, der überhaupt bindet, ist der falsche Knopf — der
+Solver hört ohnehin bei seinem eigenen Kriterium auf, also kostet ein hoher
+Deckel nur dort etwas, wo er gebraucht wird.
+*Technisch:* der Kettenfit hat mit `CHAIN_MAX_ITER` (Default 8100) ein
 EIGENES Budget statt `core.fit.DEFAULT_MAX_ITER` (300) — 300 ist ein
 Pro-Glyph-Budget, eine Wortkette trägt ~820 freie Parameter. Gemessen
-(Median 1211 Iterationen, p90 2518): bei 300 war der Deckel in 91 % der
-Solves der bindende Stopp, bei 2700 in 10 %. `fit_meta["hit_iteration_cap"]`
-und die Spalte im `--diag-csv` machen den Zustand lesbar; `KS_CHAIN_MAX_ITER`
-sweept ihn.
+(Median 1211 Iterationen, p90 2518, Maximum 4215): bei 300 war der Deckel in
+91 % der Solves der bindende Stopp, bei 2700 in 10 %, bei 8100 in keinem —
+für +5 % Rechenzeit, ohne dass sich ein einziges Gate-Urteil ändert.
+`fit_meta["hit_iteration_cap"]` und die Spalte im `--diag-csv` machen den
+Zustand lesbar; `KS_CHAIN_MAX_ITER` sweept ihn.
 
 **Naht** *(seam)* — die Stelle, an der im Kettenfit ein Buchstabe endet und
 der Verbinder beginnt. Kunstgriff: Sie ist **kein Strafterm, sondern ein
