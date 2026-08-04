@@ -14,6 +14,26 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **The first Stage-B chain harvest is written, and the running forms are now
+  derived from whole-word pen paths.** Until now every occurrence in the
+  statistics layer came from fitting one letter at a time; the chain fit
+  (`tools/pairlab/chain.py`) solves letter–connector–letter as a single pen
+  path, and its first full harvest replaced the layer wholesale: **232
+  occurrences** (up from 218, and for the first time including letters read off
+  the Abb. 20 pair drills) and **77 word traces** (up from 58) that carry their
+  connector strokes instead of the letters alone. Rebuilding the hand's
+  aggregates over them yields 35 keys, of which **15 running forms were
+  applied** — `a d e g h i l m n r u w` refreshed, and `S`, `ß` and `z` given a
+  running form for the very first time. `t`, `o`, `c` and `b` were deliberately
+  withheld and are reported as excluded; `t`'s stored running form is
+  consequently, and correctly, stale until its sample recovers. The wordbench
+  headline moves from **0.116886 to 0.115623** on the words (the pairs give up
+  0.001013, the same trade the July running-form round documented: the pair
+  drills are written close to the chart). Documented as a dated re-baseline in
+  `docs/reference/qualitaetsmetrik.md` §6, together with the second effect that
+  fell in the same window — fixtures built from the exact pooled nib rather
+  than the four-decimal readback, which confirms the previously documented
+  headline was right and the export was what had drifted.
 - **The admin header is the public header.** The workbench sat under a 48 px
   strip of Garamond-13 buttons while every public page carried the 67 px bar
   with the wordmark and the Playfair nav — two houses in one product, and the

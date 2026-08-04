@@ -1425,3 +1425,78 @@ kein Fortschritt am Composer, sondern der entfernte Rahmen-Artefakt —
 schlechtesten Verbindungen sind seither die echten Platzierungsfehler
 (`Za` 0,78 in *Zaum*, `re` 0,71 in *regieren*, `an` 0,65) statt der
 Kapitalanschlüsse.
+
+### Re-Baseline `aug04` — Nib-Präzision + erster Stufe-B-Kettenschrieb
+
+Zwei Effekte, die zufällig zusammenfallen und deshalb wie bei der
+Re-Baseline `jul31` **getrennt gemessen** werden: der eine korrigiert die
+Fixtures, der andere ändert die DB.
+
+**1. Nib-Präzision — die dokumentierte Zahl war richtig, der Export war
+es nicht.** Der Gleichzug-Nib ist ein DB-Aggregat über ALLE
+Template-Varianten der Quelle und kann aus gelesenen Chart-Zeilen nicht
+zurückgerechnet werden; er muss transportiert werden. Vor der
+Verfügbarkeit von `GET /sources/{id}/render-context` (PR #288) baute
+`fetch_fixtures` ihn aus der 4-stelligen `/write/glyphs`-Rücklesung
+(`nib_precision: "4dp-readback"`, 0,0731). Fixtures aus dieser Quelle
+messen auf demselben DB-Stand **0,116688**, mit dem exakten Nib
+(0,07309125) **0,116886** — also exakt die oben dokumentierte
+`jul31`-Headline. Die scheinbare Baseline-Drift von 0,000198 war
+demnach ein reines Export-Artefakt; die Headline stand nie falsch im
+Dokument. Nachgemessen, nicht vermutet: dieselbe Bench mit auf 0,0731
+gesetztem Fixture-Nib reproduziert 0,116688 auf alle sechs Stellen. Der
+Mechanismus steht in `fetch_fixtures` (`DEFAULT_PLACEMENT_TOL`): die
+Tintenfreiheits-Entscheidung liest Silhouetten-Ringe auf 2 Stellen
+gerundet, ein Nib-Unterschied in der 5. Stelle kippt sie an
+Messerschneiden chaotisch (beobachtetes Maximum 0,0148 xh Platzierung).
+**Regel:** eine Fixture-Wurzel mit `nib_precision: "4dp-readback"` ist
+kein gültiger Headline-Boden mehr — vor jeder Re-Baseline prüfen, dass
+das Manifest `"exact"` sagt.
+
+**2. Satz-A-Laufform-Schrieb — erster Stufe-B-Kettenschrieb in die DB.**
+Die Wort-Ernte des Ketten-Fits (`tools/pairlab/chain.py`, Stufe B Runde 1,
+uebergaenge-befund.md §5c) hat 232 Vorkommen und 77 Wortspuren
+geschrieben, daraus 35 Aggregate; auf **genau 15 Schlüssel** wurde
+`apply-laufform` angewandt: `a d e g h i l m n r u w` (bestehende
+Laufformen, frische Mediane) **+ `S` `sz` `z`** (Neuanlagen — erste
+Laufformen überhaupt für diese drei). Gemessen gegen die frische
+Nulllinie desselben Fixture-Standes:
+
+| Lauf | `bench_loss` | Δ | `pair_loss` |
+|---|---:|---:|---:|
+| Nulllinie (exakter Nib, vor dem Schrieb) | 0,116886 | — | 0,164506 |
+| **Satz A (15 Schlüssel) — neue Headline** | **0,115623** | **−0,001263** | **0,165519** |
+
+Die Wörter verbessern sich um 0,001263 (Schranke der Freigabe war
+„≤ Nulllinie + 0,0002"), die Paare geben 0,001013 ab — dasselbe Muster
+wie `jul31`: die Abb.-20-Drills sind chart-nah geschrieben, eine
+Laufform zieht sie vom Vorbild weg. Der Effekt ist etwas größer als die
+Vorabmessung auf denselben Medianen (0,116112, −0,000774), weil der
+Schrieb den **gepoolten Nib mitbewegt**: drei zusätzliche
+Variante-100-Zeilen im Pool verschieben ihn von 0,07309125 auf
+0,07302168… Das ist keine Störgröße, sondern die reale Folge des
+Schriebs und Teil der neuen Headline.
+
+**Warum vier Schlüssel bewusst NICHT geschrieben wurden** (je ein Satz,
+alle vier stehen als `excluded` in der Apply-Antwort):
+
+- **`t`** — die Stichprobe bricht von 8 auf 3 Vorkommen ein, unter jedes
+  vernünftige `min_n`, und `t` ist der einzige Schlüssel, dessen
+  `laufform_dev` über seinem eigenen MAD liegt (0,0143 vs. 0,0126). Seine
+  Laufform bleibt stehen und ist damit messbar veraltet — bewusst und
+  richtig, bis der `t`-Deckstrich-Befund (Runde 2) abgearbeitet ist.
+- **`o`** — allein aufgelegt +0,00177 auf `bench_loss`, der klare
+  Ausreißer des Entwurfs, bei nur n=5.
+- **`c`** — allein +0,00022; zugleich der spektakulärste Ausbeutegewinn
+  (1 → 7 Vorkommen), was ihn zum Ansehen-vor-Schreiben-Fall macht.
+- **`b`** — allein ±0; kein Grund zu schreiben, kein Grund zu eilen.
+
+**Verifikations-Gotcha für die nächste Re-Baseline:** `--verify` von
+`fetch_fixtures` vergleicht Schicht 2 gegen `GET …/write/word`, und die
+Route trägt `s-maxage=86400`. Unmittelbar nach einem
+render-ändernden Schrieb antwortet die Cloudflare-Kante mit dem
+VORHERIGEN Stand (`cf-cache-status: HIT`), das Gate meldet dann
+Formabweichungen, die es gar nicht gibt. Schicht 1 (Zeilen gegen
+`/write/glyphs`) lief hier frisch durch und war bit-exakt; die
+Kompositionen wurden mit einem Cache-Busting-Parameter nachgeprüft:
+12/12 bit-exakt, worst shape 0, worst placement 0.
