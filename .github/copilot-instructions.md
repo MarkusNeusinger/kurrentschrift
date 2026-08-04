@@ -409,11 +409,20 @@ kurrentschrift/
 │       │                #   join, whose detail offers pairs/PairEditorDialog.tsx LAST
 │       │                #   (R3 stage 2: draw the connector, approve, live preview — the
 │       │                #   class rule comes first, per the §3/§4 doctrine);
-│       │                #   words/WordSpineCard.tsx = a stored word-occurrence trace over
+│       │                #   words/WordSpineCard.tsx = TWO faces like a letter tile: left
+│       │                #   the MEASUREMENT — a stored word-occurrence trace (green) over
 │       │                #   its specimen crop (GET /word-instances + word-samples crop)
 │       │                #   with dashed letter boxes from `instances` and a join dot
 │       │                #   between adjacent boxes, all clickable into the other two
-│       │                #   views — the error-finding surface over the occurrence layer,
+│       │                #   views — right the ENGINE'S own composition alone, at the SAME
+│       │                #   px-per-unit on the SAME baseline row, so width/slant/rhythm
+│       │                #   compare without rescaling. Both inks use the row's MEASURED
+│       │                #   registration through the shared, tested shell/model.ts
+│       │                #   traceFrameOf/traceMatrix (trace and composition share the
+│       │                #   frame: baseline = 0, 1 unit = x-height); the old left-edge pin
+│       │                #   sat a median 8.9 px (~0.3 xh) left of the ink over the 63
+│       │                #   Sütterlin word rows and survives only where no trace exists.
+│       │                #   The error-finding surface over the occurrence layer,
 │       │                #   worst-first; "Nachfahren" opens
 │       │                #   belege/WordTraceEditorDialog.tsx (Werkbank W3: re-trace the
 │       │                #   ductus over the crop, pen lift = new stroke, undo/reset, save

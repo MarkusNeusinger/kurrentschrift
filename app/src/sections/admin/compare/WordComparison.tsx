@@ -14,12 +14,14 @@ import { WrittenWord } from '@/components/WrittenWord';
 import { useAdmin } from '@/context/AdminContext';
 import { useInView } from '@/hooks/useInView';
 import { getWordSamples, getWordSampleScore, wordSampleCropUrl } from '@/lib/api';
-import type { ComposedWordOut, WordSampleOut, WordSampleScoreOut } from '@/lib/api';
+import type { ComposedWordOut, WordInstanceOut, WordSampleOut, WordSampleScoreOut } from '@/lib/api';
 import { fetchRenderWord, invalidateRenderWord } from '@/lib/api/renderCache';
 import { polylineToPathD, ringsToPathD } from '@/lib/svg';
 import { de } from '@/locales/admin';
 import { PairEditorDialog } from '@/sections/admin/pairs/PairEditorDialog';
 import { pairKeysOf } from '@/sections/admin/pairs/pairKeys';
+import { traceFrameOf, traceMatrix } from '@/sections/admin/shell/model';
+import { useWorkbench } from '@/sections/admin/shell/WorkbenchData';
 import { garamond } from '@/styles/paper';
 
 import { PairMeasuredChips } from './PairMeasuredChips';
@@ -36,13 +38,25 @@ function matchesMode(s: WordSampleOut, mode: WordCompareMode): boolean {
   return mode === 'pairs' ? s.kind === 'pair' : s.kind === 'word';
 }
 
-// Engine ink drawn into the specimen's pixel frame. Same transform idea as
-// CropWrittenOverlay for single glyphs, but the composed word already has its
-// own x-layout — only left-align it to the crop (specimen boxes are tight).
-function SpecimenOverlay({ sample, composed, sourceId }: { sample: WordSampleOut; composed: ComposedWordOut; sourceId: string }) {
-  const unitPx = sample.baseline_y - sample.midband_y; // px per template unit
-  const ex = -composed.bounds.min_x * unitPx; // engine left edge → crop left edge
-  const matrix = `matrix(${unitPx} 0 0 ${-unitPx} ${ex} ${sample.baseline_y})`;
+// Engine ink drawn into the specimen's pixel frame — on the traced row's own
+// MEASURED registration wherever one exists (`traceFrameOf`), which is where
+// the composition actually belongs; only a sample with no trace falls back to
+// pinning the composition's left edge to the crop's.
+function SpecimenOverlay({
+  sample,
+  composed,
+  sourceId,
+  traced,
+}: {
+  sample: WordSampleOut;
+  composed: ComposedWordOut;
+  sourceId: string;
+  traced: WordInstanceOut | null;
+}) {
+  const frame = traceFrameOf(traced, sample);
+  const matrix = traced
+    ? traceMatrix(frame)
+    : `matrix(${frame.xh} 0 0 ${-frame.xh} ${-composed.bounds.min_x * frame.xh} ${frame.baselineRow})`;
   const scale = FACE_H / sample.height;
   return (
     <svg
@@ -66,7 +80,10 @@ function SpecimenOverlay({ sample, composed, sourceId }: { sample: WordSampleOut
           ) : (
             <path
               key={i}
-              d={polylineToPathD(it.centerline)}
+              // flipY off — the enclosing <g> flips already (see lib/svg.ts);
+              // with the default every generated Übergang was mirrored below
+              // the baseline while the letters sat correctly.
+              d={polylineToPathD(it.centerline, 0, false)}
               fill="none"
               stroke="#e02030"
               strokeOpacity={0.42}
@@ -116,6 +133,7 @@ function WordCard({
   sample,
   sourceId,
   overlay,
+  traced,
   score,
   measured,
   onOpenEditor,
@@ -124,6 +142,9 @@ function WordCard({
   sample: WordSampleOut;
   sourceId: string;
   overlay: boolean;
+  // This specimen's stored trace, when one exists — used ONLY for the overlay's
+  // registration (see SpecimenOverlay); the card never draws the trace itself.
+  traced: WordInstanceOut | null;
   score?: WordSampleScoreOut;
   // The „Gemessen" readout — pair cards only (the caller owns the scope), so
   // the card itself stays agnostic of the occurrence/aggregate layers.
@@ -202,7 +223,7 @@ function WordCard({
               {de.admin.compare.overlayHeading}
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: '#fff', borderRadius: 1, px: 1, overflowX: 'auto' }}>
-              <SpecimenOverlay sample={sample} composed={composed} sourceId={sourceId} />
+              <SpecimenOverlay sample={sample} composed={composed} sourceId={sourceId} traced={traced} />
             </Box>
           </Box>
         )
@@ -269,6 +290,11 @@ export function WordComparison({
   // stays mounted), and the hook reuses what it already holds for the source,
   // so leaving and returning costs no request.
   const measurements = usePairMeasurements(sourceId, mode === 'pairs');
+  // The stored traces, only for the overlay's registration — already loaded by
+  // the shell for the whole workbench, so this costs no request. A sample the
+  // harvest never traced simply has none and keeps the left-edge fallback.
+  const { wordRows } = useWorkbench();
+  const tracedById = useMemo(() => new Map(wordRows.map((r) => [r.specimen_id, r])), [wordRows]);
 
   useEffect(() => {
     let cancelled = false;
@@ -385,6 +411,7 @@ export function WordComparison({
             sample={s}
             sourceId={sourceId}
             overlay={overlay}
+            traced={tracedById.get(s.id) ?? null}
             score={scores[s.id]}
             // Matched by the SAME base-key pair the editor deep link uses, so
             // the numbers and the „Im Paar-Editor öffnen" target can never

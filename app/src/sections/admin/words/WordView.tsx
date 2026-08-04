@@ -302,7 +302,11 @@ export function WordView() {
                 sample={sample}
                 sourceId={sourceId}
                 boxes={workbench.boxesBySpecimen.get(row.specimen_id) ?? []}
-                composed={overlay ? composed : null}
+                // The card always gets the composition — its right-hand face
+                // IS the engine's answer. The switch only decides whether the
+                // same ink is additionally projected onto the plate pixels.
+                composed={composed}
+                overlay={overlay}
                 onOpenLetter={(glyphKey) => navigate(lettersUrl(glyphKey))}
                 onOpenPair={(leftKey, rightKey) => navigate(joinsUrl(leftKey, rightKey))}
                 onMark={fileMark}

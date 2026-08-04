@@ -12,7 +12,50 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Generated Übergänge were drawn mirrored below the baseline.** The two SVG
+  path helpers disagreed on the y sign — `ringsToPathD` keeps y by default,
+  `polylineToPathD` always negated it — so any surface drawing both kinds of
+  item under one y-flipping `<g>` got the letters (rings) right side up and the
+  generated connectors (polylines) flipped a second time. They left the word
+  and reappeared as loose strokes under it, in the word cards, the specimen
+  comparison overlay and the pair editor's live preview and its own
+  pointer-drawn connector. Verified in the browser before and after: the
+  connectors of `muß` sat at y [−0.73, −0.48] and [−0.70, −0.40] against a
+  payload of [+0.48, +0.73] and [+0.40, +0.70], an exact sign flip, and the pair
+  editor showed letters at y [0, 1.01] beside a connector at [−0.74, −0.49].
+  `polylineToPathD` now takes the same explicit `flipY` its ring twin has; the
+  asymmetric defaults stay (the public "as written" surfaces rely on them) and a
+  unit test states the rule so the trap cannot be re-entered silently.
+
+- **The engine ink was drawn in the wrong place on every word card.** The
+  overlay that projects a composed word onto its specimen pixels pinned the
+  composition's left edge to the crop's left edge — a convention, not a
+  measurement. Over the 63 Sütterlin word rows that put the engine a median
+  **8.9 px (~0.3 xh) left** of the ink it was supposed to be compared against,
+  so every composition read worse than it is and the deviation an admin saw was
+  mostly registration error. The trace and the composition live in the identical
+  frame (baseline = 0, 1 unit = x-height), so the row's own measured
+  registration places both: the median left-edge error drops to **1.1 px**, and
+  what remains at the right edge is the real width difference — the thing worth
+  looking at. Extracted as the shared, unit-tested
+  `shell/model.ts::traceFrameOf`/`traceMatrix` and applied to the word cards
+  AND the specimen overview list; the left-edge pin survives only as the
+  fallback for a sample no harvest ever traced.
+
 ### Changed
+
+- **A word card is two faces now, like a letter tile.** One frame held the
+  plate crop, the green trace and — overlapping both — the red engine ink, which
+  is three answers to two different questions in one picture. Left is now the
+  MEASUREMENT (plate ink + the traced pen path + the clickable letter boxes and
+  join dots; the engine joins it translucently only when the Überlagern switch
+  is on), right is what the engine writes on its own. Both faces are drawn at
+  the same px-per-unit on the same baseline row, so „trifft der Fit das Wort?"
+  and „was macht das System daraus?" are two glances instead of one untangling,
+  and a width or slant difference is a difference rather than a rendering
+  artefact.
 
 - **The first Stage-B chain harvest is written, and the running forms are now
   derived from whole-word pen paths.** Until now every occurrence in the

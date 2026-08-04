@@ -443,6 +443,13 @@ export const admin = {
     provenanceTraced: 'automatisch nachgefahren',
     provenanceAuthored: 'von Hand nachgefahren',
     noSample: 'Kein Platten-Ausschnitt zur specimen_id {{id}} — Sidecar prüfen.',
+    // The two faces of a word card: left what was MEASURED, right what the
+    // engine writes from it — same scale, same Grundlinie, so „trifft der Fit?"
+    // und „was macht das System daraus?" nebeneinander lesbar sind.
+    faceSpecimen: 'Vorlage + Nachfahrung (grün)',
+    faceSpecimenOverlaid: 'Vorlage + Nachfahrung (grün) + Engine (rot)',
+    faceWritten: 'Vom System geschrieben',
+    faceWrittenPending: 'wird geschrieben …',
     // Interactive overlay elements (also their aria-labels).
     letterBoxAria: 'Buchstabe {{key}} in {{word}} — anklicken für die Buchstaben-Linse',
     joinDotAria: 'Übergang {{left}}→{{right}} in {{word}} — anklicken für die Paar-Linse',
