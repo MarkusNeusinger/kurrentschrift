@@ -31,6 +31,10 @@ Two fitting paths (`--path`), and the SAME artefacts out of both:
   gains the CONNECTORS — the pen run really continues
   `last body stroke of Lᵢ → connectorᵢ → first body stroke of Lᵢ₊₁`, which is
   what closes the dead authored branch the word editor has been drawing over.
+  The gate and the trace answer different questions: the gate decides what
+  becomes a MEASUREMENT (occurrences, medians), the trace shows the whole
+  solved run — a letter the gate rejected is flagged in `measurements`, not
+  cut out of the pen path.
   Deliberately NO `pair_instances` are written or drafted here: the measured
   join geometry stays a REPORT column (`--diag-csv`), and `glyph_pairs` stays
   the sparse verbatim override.
@@ -218,7 +222,7 @@ def _is_diacritic(entry: dict, xh: float, registration: dict) -> bool:
 
 
 def assemble_word_strokes(
-    entries: Sequence[dict], *, accepted_slots: set[int], xh: float, registration: dict
+    entries: Sequence[dict], *, traced_slots: set[int], xh: float, registration: dict
 ) -> list[list[list[float]]]:
     """A chain fit's pen-down polylines → the word record's strokes.
 
@@ -228,10 +232,16 @@ def assemble_word_strokes(
     so the samples coincide exactly). A diacritic and every interior pen lift
     stay their own polyline.
 
-    Only `accepted_slots` contribute: a letter its gate rejected is left out,
-    and with it the connectors on either side, which would otherwise dangle
-    into a letter that is not in the trace. Output is in the word's
-    registration frame, ready for `WordInstanceItem.strokes`.
+    `traced_slots` is every slot the chain actually SOLVED — deliberately not
+    the gate's accepted set. The gate decides what becomes a measurement, not
+    what the trace shows: a wobbly letter must not pollute a Laufform median,
+    but it was still written, and dropping it (plus the connectors on either
+    side) tore the pen path of an otherwise intact run into fragments. A slot
+    the chain never fitted at all — no template, no window, `chain_failed` —
+    has no geometry to show and legitimately stays out, taking its adjacent
+    connectors with it, which would otherwise dangle into a letter that is not
+    in the trace. Output is in the word's registration frame, ready for
+    `WordInstanceItem.strokes`.
     """
     by_segment: dict[int, list[tuple[int, dict]]] = defaultdict(list)
     for i, entry in enumerate(entries):
@@ -259,19 +269,19 @@ def assemble_word_strokes(
     for seg in order:
         items = by_segment[seg]
         if items[0][1]["kind"] == "connector":
-            # A connector survives only BETWEEN two accepted letters — on either
-            # side of a rejected one it would dangle into a letter that is not
+            # A connector survives only BETWEEN two traced letters — on either
+            # side of an untraced one it would dangle into a letter that is not
             # in the trace at all.
             left = max((s for s in order if s < seg and s in letter_slot), default=None)
             right = min((s for s in order if s > seg and s in letter_slot), default=None)
-            joins_accepted = (
+            joins_traced = (
                 left is not None
                 and right is not None
-                and letter_slot[left] in accepted_slots
-                and letter_slot[right] in accepted_slots
+                and letter_slot[left] in traced_slots
+                and letter_slot[right] in traced_slots
             )
             pts = np.asarray(items[0][1]["points_px"], dtype=float).reshape(-1, 2)
-            if not joins_accepted or not len(pts):
+            if not joins_traced or not len(pts):
                 flush()
                 continue
             if current is None:
@@ -280,7 +290,7 @@ def assemble_word_strokes(
                 current[1] = weld(current[1], pts)
             continue
 
-        if letter_slot[seg] not in accepted_slots:
+        if letter_slot[seg] not in traced_slots:
             flush()
             continue
         body = [(i, e) for i, e in items if not _is_diacritic(e, xh, registration)]
@@ -687,6 +697,14 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
     ADJACENT connectors' degeneracy verdict, because the seam is a shared
     parameter), and the word record's strokes carry the connectors, so the
     stored trace is the pen path instead of a set of disconnected letters.
+
+    The gate and the trace answer different questions, so they read different
+    sets. `accepted` (gate `"ok"`) is the STATISTICS layer: the medians and the
+    `instances` rows, where one wobbly letter would pollute a Laufform. The
+    trace is the INSPECTION layer and shows every slot the chain solved, gate
+    or no gate — `measurements` keeps both readable side by side
+    (`traced_slots` vs. `fitted_slots`/`unfitted_slots`, plus `gates`,
+    `converged_local` and `geo_rmse_px_by_slot` per slot).
     """
     per_key: dict[str, list[np.ndarray]] = defaultdict(list)
     occurrences: list[dict] = []
@@ -698,7 +716,8 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
     keyed = _keyed_indices(case)
     grids = _grid_fits(case, result)
 
-    accepted: set[int] = set()
+    accepted: set[int] = set()  # gate "ok" — the occurrences and the medians
+    traced: set[int] = set()  # every slot the chain solved — the word trace
     gate_by_slot: dict[int, str] = {}
     converged_by_slot: dict[int, bool] = {}
     rmse_by_slot: dict[str, float] = {}
@@ -738,6 +757,7 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
             continue
 
         run_slots.append(list(fit.slots))
+        traced.update(int(s) for s in fit.slots)
         cut_indices.append([[int(a), int(b)] for a, b in fit.cut_indices])
         n_params += int(fit.fit_meta.get("n_params", 0))
         seconds += float(fit.fit_meta.get("seconds", 0.0))
@@ -838,8 +858,13 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 }
             )
 
+        # The whole solved run goes into the trace — a gate verdict decides what
+        # is measured, not what was written (the per-slot verdicts stay readable
+        # in `gates`/`converged_local` beside it).
         word_strokes.extend(
-            assemble_word_strokes(fit.stroke_polylines_px, accepted_slots=accepted, xh=xh, registration=registration)
+            assemble_word_strokes(
+                fit.stroke_polylines_px, traced_slots=set(fit.slots), xh=xh, registration=registration
+            )
         )
 
     word_record = None
@@ -850,8 +875,16 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
             registration,
             xh,
             {
+                # `fitted_slots`/`unfitted_slots` keep their meaning: ACCEPTED as
+                # occurrences (gate "ok"), the same statement the slot path
+                # makes. `traced_slots` is the trace's own set — every slot whose
+                # geometry is in `strokes`, gate or no gate — so "shown" and
+                # "measured" are two readable fields instead of one overloaded
+                # one. A slot in `traced_slots` but not in `fitted_slots` is a
+                # letter the admin should see flagged, not a letter that is gone.
                 "fitted_slots": sorted(keyed[s] for s in accepted),
                 "unfitted_slots": sorted(k for s, k in keyed.items() if s not in accepted),
+                "traced_slots": sorted(keyed[s] for s in traced if s in keyed),
                 "geo_rmse_px_by_slot": rmse_by_slot,
                 "fit_path": "chain",
                 "run_slots": run_slots,
@@ -862,7 +895,11 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 "seconds": round(seconds, 3),
             },
         )
-    print(f"chained {case.id}: {len(accepted)}/{len(keyed)} letters, {len(word_strokes)} pen runs", flush=True)
+    print(
+        f"chained {case.id}: {len(accepted)}/{len(keyed)} letters accepted, "
+        f"{len(traced)} traced, {len(word_strokes)} pen runs",
+        flush=True,
+    )
     return CaseHarvest(dict(per_key), occurrences, word_record, diag_rows)
 
 
