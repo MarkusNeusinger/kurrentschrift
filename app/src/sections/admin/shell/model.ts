@@ -92,6 +92,41 @@ export function cropBoxOf(inst: InstanceOut, rect: number[] | undefined): CropBo
   return { x: inst.x0 - rect[0], y: inst.y0 - rect[1], w: inst.x1 - inst.x0, h: inst.y1 - inst.y0 };
 }
 
+// Where a word's units sit in its specimen crop. The stored trace AND the
+// engine's composition of the same word live in the identical frame (baseline
+// = 0, 1 unit = x-height), so ONE map serves both: px = (u·xh + tx,
+// baselineRow − v·xh).
+//
+// This is the row's own MEASURED registration, and it matters: the overlay used
+// to pin the composition to the crop's left edge instead, which put it a median
+// 8.9 px (~0.3 xh) left of the ink over the 63 Sütterlin word rows — every
+// composition read worse than it is. On the measured registration that median
+// drops to 1.1 px; what remains is the real width difference, which is the
+// thing worth seeing. The left-edge pin survives only as the fallback for a
+// sample with no traced row (`row` null) — there is nothing measured to use.
+export interface TraceFrame {
+  xh: number;
+  tx: number;
+  baselineRow: number;
+}
+
+export function traceFrameOf(
+  row: WordInstanceOut | null | undefined,
+  sample: { baseline_y: number; midband_y: number },
+): TraceFrame {
+  const fallback = { xh: sample.baseline_y - sample.midband_y, tx: 0, baselineRow: sample.baseline_y };
+  if (!row) return fallback;
+  const reg = row.measurements.registration_px;
+  return {
+    xh: row.measurements.xh_px ?? fallback.xh,
+    tx: reg?.tx ?? fallback.tx,
+    baselineRow: (reg?.baseline_row ?? fallback.baselineRow) + (reg?.ty ?? 0),
+  };
+}
+
+// SVG transform for a TraceFrame — y flipped, since units grow upwards.
+export const traceMatrix = (f: TraceFrame): string => `matrix(${f.xh} 0 0 ${-f.xh} ${f.tx} ${f.baselineRow})`;
+
 // The request body for one filed task. specimen_kind + specimen_id always go
 // together — the API 422s on a half-given reference — and are simply absent for
 // a freely typed target that was never seen on a plate.
@@ -109,8 +144,14 @@ export function workItemBodyOf(mark: Mark, note: string): WorkItemIn {
 // Overlay palette — the mockup's paper/ink set mapped onto the repo tokens.
 // The trace green matches the word cards so every surface reads alike.
 export const WERKBANK_COLORS = {
-  trace: '#1c6b57',
+  trace: '#1c6b57', // pen paths on WHITE — the aggregate/pair sketches
+  // The same pen path drawn ON TOP of plate ink, where the dark green all but
+  // vanished exactly where it matters: over the stroke it is meant to follow.
+  // A separate token rather than a brightened `trace`, because the sketches
+  // need the dark one to stay readable on their white ground.
+  traceOverInk: '#00b37e',
   box: paper.line, // dashed letter box, recessive
   accent: paper.sepia, // joins + hover
   selected: pigment.vermilion, // the element currently focused
+  engine: '#e02030', // what the engine itself writes — overlay AND its own face
 } as const;

@@ -82,7 +82,11 @@ function ComposedPreview({ composed }: { composed: ComposedWordOut }) {
           ) : (
             <path
               key={i}
-              d={polylineToPathD(it.centerline)}
+              // flipY off: this <g> already flips, and the rings beside it are
+              // drawn unflipped — with the default the generated Übergang was
+              // mirrored below the baseline (letters y [0, 1.01], connector
+              // y [−0.74, −0.49]). See lib/svg.ts.
+              d={polylineToPathD(it.centerline, 0, false)}
               fill="none"
               stroke="#20302c"
               strokeWidth={it.stroke_width ?? it.mask_width}
@@ -363,7 +367,14 @@ export function PairEditorDialog({ open, onClose, pairText, leftKey, rightKey, s
                 <circle cx={rightEntry[0] + rightDx} cy={rightEntry[1]} r={0.035} fill="#8a1f3a" />
                 {connector.length >= 2 && (
                   <path
-                    d={polylineToPathD(connector.map(([x, y]) => [x + leftExit[0], y + leftExit[1]] as Pt))}
+                    // Same flip rule as the preview above: `toTemplate` hands
+                    // back template coordinates (y up) and this <g> flips them,
+                    // so the path must not negate a second time.
+                    d={polylineToPathD(
+                      connector.map(([x, y]) => [x + leftExit[0], y + leftExit[1]] as Pt),
+                      0,
+                      false,
+                    )}
                     fill="none"
                     stroke="#c23a4b"
                     strokeWidth={0.05}
