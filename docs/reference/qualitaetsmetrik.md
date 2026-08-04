@@ -1453,7 +1453,11 @@ Messerschneiden chaotisch (beobachtetes Maximum 0,0148 xh Platzierung).
 kein gültiger Headline-Boden mehr — vor jeder Re-Baseline prüfen, dass
 das Manifest `"exact"` sagt.
 
-**2. Satz-A-Laufform-Schrieb — erster Stufe-B-Kettenschrieb in die DB.**
+**2. Erster Stufe-B-Kettenschrieb in die DB („Satz A").**
+„Satz A" ist das Etikett aus der Entscheidungsrunde für **den freigegebenen
+Teil-Schlüsselsatz** — die 15 Schlüssel unten, gegen den vollen Entwurf von 18
+abgegrenzt (`t`, `o`, `c`, `b` zurückgehalten). Der Begriff steht hier nur für
+diesen einen Schnitt, nicht für eine Stufe.
 Die Wort-Ernte des Ketten-Fits (`tools/pairlab/chain.py`, Stufe B Runde 1,
 uebergaenge-befund.md §5c) hat 232 Vorkommen und 77 Wortspuren
 geschrieben, daraus 35 Aggregate; auf **genau 15 Schlüssel** wurde

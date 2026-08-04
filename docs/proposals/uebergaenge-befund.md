@@ -598,7 +598,7 @@ Cloud-SQL-Zugang) oder `tools/wordbench/export_fixtures.py` (DB-Pfad).
 ### Nachtrag: Stufe B, Runde 1 — Teilschreibung (2026-08-04)
 
 Die erste Ernte über den Ketten-Pfad ist gelaufen und **teilweise** geschrieben.
-Kommando: `tools/laufform/harvest --sets words,pairs --path chain --jobs 8`,
+Kommando: `uv run python -m tools.laufform.harvest --sets words,pairs --path chain --jobs 8`,
 96 Fälle, 344 Slot-Zeilen, **232 Vorkommen** (213/277 Wörter, 19/67 Paare, alle
 Identitäten eindeutig).
 

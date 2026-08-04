@@ -23,8 +23,8 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   the Abb. 20 pair drills) and **77 word traces** (up from 58) that carry their
   connector strokes instead of the letters alone. Rebuilding the hand's
   aggregates over them yields 35 keys, of which **15 running forms were
-  applied** — `a d e g h i l m n r u w` refreshed, and `S`, `ß` and `z` given a
-  running form for the very first time. `t`, `o`, `c` and `b` were deliberately
+  applied** — `a d e g h i l m n r u w` refreshed, and `S`, `sz` (ß) and `z`
+  given a running form for the very first time. `t`, `o`, `c` and `b` were deliberately
   withheld and are reported as excluded; `t`'s stored running form is
   consequently, and correctly, stale until its sample recovers. The wordbench
   headline moves from **0.116886 to 0.115623** on the words (the pairs give up
