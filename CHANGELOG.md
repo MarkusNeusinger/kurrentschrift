@@ -12,6 +12,23 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **The word overlays are switchable one layer at a time, and the words
+  overview reloads like the letters grid.** Three inks over one crop — plate,
+  trace, engine — is a lot, and which pair actually answers the question
+  (ink↔trace, ink↔engine, trace↔engine) changes with the question. Two toggle
+  buttons above the cards, each carrying the swatch its layer draws with, turn
+  the trace and the engine on and off independently, and the face caption names
+  exactly what is drawn. The overview now opens on the plain side-by-side
+  (crop | wie geschrieben) instead of the overlay, with the Überlagern switch
+  one click away, and the two faces shrink together rather than wrapping the
+  written word under the crop. It also gained the letters grid's „Neu laden":
+  because `/write/word` answers with `s-maxage=86400`, the button moves the
+  admin-wide bust stamp through `fetchRenderWord` into the request itself, so
+  the words really recompose after a template, Laufform or override change
+  instead of being served the old composition by the CDN.
+
 ### Fixed
 
 - **Generated Übergänge were drawn mirrored below the baseline.** The two SVG

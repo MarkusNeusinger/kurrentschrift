@@ -145,14 +145,24 @@ const wordCache = new Map<string, Promise<ComposedWordOut>>();
 // override changes what /write/word returns for exactly this text, and a
 // surface that just saved one must not keep showing the pre-override join.
 export function invalidateRenderWord(sourceId: string, text: string): void {
-  wordCache.delete(id(sourceId, text));
+  // Every bust generation of this text, not just the unbusted one — after a
+  // „Neu laden" the live entry carries a `#stamp` suffix, and dropping only
+  // the bare key would leave the surface showing the pre-override join.
+  const prefix = id(sourceId, text);
+  for (const key of [...wordCache.keys()]) {
+    if (key === prefix || key.startsWith(`${prefix}#`)) wordCache.delete(key);
+  }
 }
 
-export function fetchRenderWord(sourceId: string, text: string): Promise<ComposedWordOut> {
-  const key = id(sourceId, text);
+// `bust` is the admin-wide reload stamp (AdminContext.cropCacheBust). It is
+// part of the cache KEY and travels into the request, because `/write/word`
+// answers with `s-maxage=86400` — a reload that only cleared this map would
+// still be served the same composition by the CDN.
+export function fetchRenderWord(sourceId: string, text: string, bust?: number): Promise<ComposedWordOut> {
+  const key = `${id(sourceId, text)}${bust ? `#${bust}` : ''}`;
   let p = wordCache.get(key);
   if (!p) {
-    p = getWriteWord(sourceId, text, COLD_START_RETRY).catch((e) => {
+    p = getWriteWord(sourceId, text, COLD_START_RETRY, bust).catch((e) => {
       // Identity guard (same as the glyph cache): after a FIFO eviction and
       // re-fetch under the same key, the OLD promise's late rejection must not
       // delete the new, valid entry.

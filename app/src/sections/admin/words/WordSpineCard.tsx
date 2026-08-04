@@ -135,6 +135,11 @@ interface Props {
   // Project the engine ink onto the specimen pixels as well. Off, the two faces
   // stay separate and each stays legible; on, the deviation is exact.
   overlay?: boolean;
+  // Draw the stored trace on the specimen face. Separately switchable from the
+  // engine ink: three lines over one crop is a lot, and which pair you want to
+  // compare — ink vs. trace, ink vs. engine, trace vs. engine — changes with
+  // the question being asked.
+  showTrace?: boolean;
 }
 
 export function WordSpineCard({
@@ -148,6 +153,7 @@ export function WordSpineCard({
   actions,
   composed,
   overlay = false,
+  showTrace = true,
 }: Props) {
   const [ref, inView] = useInView<HTMLDivElement>();
   const t = de.admin.werkbank;
@@ -232,9 +238,14 @@ export function WordSpineCard({
         <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', alignItems: 'flex-start' }}>
           {/* Face 1 — the measurement: plate ink, the traced pen path over it,
               and the clickable occurrence layer. */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0, flex: '1 1 320px' }}>
             <Typography variant="caption" color="text.secondary">
-              {overlay && composed ? t.faceSpecimenOverlaid : t.faceSpecimen}
+              {/* The caption names exactly the layers actually drawn — with
+                  both switched off it says so rather than promising ink that
+                  is not there. */}
+              {[t.faceSpecimenBase, showTrace && t.faceLayerTrace, overlay && composed && t.faceLayerEngine]
+                .filter(Boolean)
+                .join(' + ')}
             </Typography>
             <svg
               width={cropW}
@@ -252,7 +263,7 @@ export function WordSpineCard({
                 preserveAspectRatio="none"
               />
               <g transform={matrix}>
-                {row.strokes.map((stroke, i) => (
+                {(showTrace ? row.strokes : []).map((stroke, i) => (
                   <path
                     key={i}
                     d={stroke.map(([x, y], j) => `${j === 0 ? 'M' : 'L'}${x},${y}`).join(' ')}
@@ -348,7 +359,7 @@ export function WordSpineCard({
             </svg>
           </Box>
           {/* Face 2 — the engine's own answer, same scale, same baseline. */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0, flex: '1 1 320px' }}>
             <Typography variant="caption" color="text.secondary">
               {t.faceWritten}
             </Typography>

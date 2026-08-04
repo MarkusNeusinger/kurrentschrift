@@ -35,6 +35,7 @@ import { de, fmt } from '@/locales/admin';
 import { WordComparison, type WordCompareMode } from '@/sections/admin/compare/WordComparison';
 import { WordTraceEditorDialog } from '@/sections/admin/belege/WordTraceEditorDialog';
 import { useFileMark } from '@/sections/admin/shell/KorbContext';
+import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { useWorkbench } from '@/sections/admin/shell/WorkbenchData';
 import { joinsOfText, joinsUrl, keysOfText, lettersUrl, readWordFocus, wordsUrl } from '@/sections/admin/shell/focus';
@@ -44,6 +45,15 @@ import { garamond } from '@/styles/paper';
 import { WordSpineCard } from './WordSpineCard';
 
 const WORD_H = 130; // px — the composed word, large enough to judge the rhythm
+
+// The swatch on a layer toggle — the same colour that layer draws with.
+const LayerDot = ({ color }: { color: string }) => (
+  <Box
+    component="span"
+    aria-hidden
+    sx={{ width: 9, height: 9, borderRadius: '50%', bgcolor: color, mr: 0.75, flexShrink: 0 }}
+  />
+);
 
 export function WordView() {
   const [params, setParams] = useSearchParams();
@@ -59,9 +69,14 @@ export function WordView() {
   const [draft, setDraft] = useState(text ?? '');
   const [mode, setMode] = useState<WordCompareMode>('words');
   const [filter, setFilter] = useState('');
-  // Engine ink over the specimen pixels — on by default in both the overview
-  // list and the evidence cards, which is where it earns its keep.
-  const [overlay, setOverlay] = useState(true);
+  // What is drawn OVER the specimen crop. The overview defaults to the plain
+  // side-by-side (crop | wie geschrieben) — the same first look the letters
+  // grid gives — and the overlay is one switch away for when the exact
+  // deviation is the question. In the detail the two layers are separately
+  // switchable: three inks over one crop is a lot, and which pair matters
+  // (ink↔trace, ink↔engine, trace↔engine) changes with the question.
+  const [overlay, setOverlay] = useState(false);
+  const [showTrace, setShowTrace] = useState(true);
   const [composed, setComposed] = useState<ComposedWordOut | null>(null);
   const [missing, setMissing] = useState<string[]>([]);
   const [editing, setEditing] = useState<string | null>(null);
@@ -201,10 +216,28 @@ export function WordView() {
               <Chip size="small" color="warning" label={`${de.admin.compare.missingPrefix}${missing.join(', ')}`} />
             )}
             {traces.length > 0 && (
-              <FormControlLabel
-                control={<Switch size="small" checked={overlay} onChange={(e) => setOverlay(e.target.checked)} />}
-                label={<Typography variant="caption">{de.admin.compare.overlayToggle}</Typography>}
-              />
+              <ToggleButtonGroup
+                size="small"
+                value={[...(showTrace ? ['trace'] : []), ...(overlay ? ['engine'] : [])]}
+                onChange={(_e, next: string[]) => {
+                  setShowTrace(next.includes('trace'));
+                  setOverlay(next.includes('engine'));
+                }}
+                aria-label={de.admin.werkbank.layersLabel}
+              >
+                {/* A colour dot rather than coloured text: the swatch is the
+                    legend for the line in the crop and stays readable in both
+                    states, where a tinted label made an unselected button look
+                    active. MUI keeps the selected background as the state. */}
+                <ToggleButton value="trace">
+                  <LayerDot color={WERKBANK_COLORS.traceOverInk} />
+                  {de.admin.werkbank.layerTrace}
+                </ToggleButton>
+                <ToggleButton value="engine">
+                  <LayerDot color={WERKBANK_COLORS.engine} />
+                  {de.admin.werkbank.layerEngine}
+                </ToggleButton>
+              </ToggleButtonGroup>
             )}
           </>
         }
@@ -307,6 +340,7 @@ export function WordView() {
                 // same ink is additionally projected onto the plate pixels.
                 composed={composed}
                 overlay={overlay}
+                showTrace={showTrace}
                 onOpenLetter={(glyphKey) => navigate(lettersUrl(glyphKey))}
                 onOpenPair={(leftKey, rightKey) => navigate(joinsUrl(leftKey, rightKey))}
                 onMark={fileMark}

@@ -197,6 +197,46 @@ describe('renderCache', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it('a word bust reaches the URL and gets its own cache slot', async () => {
+    fetchMock.mockImplementation(() => Promise.resolve(jsonRes(word('nn'))));
+    await rc.fetchRenderWord('src', 'nn');
+    await rc.fetchRenderWord('src', 'nn', 7);
+
+    // Re-keying the map alone would not help: /write/word is served with
+    // s-maxage=86400, so a „Neu laden" that never changed the URL would be
+    // answered by the CDN with the very composition it is trying to replace.
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    // `&t=`, not `t=`: the last two characters of `text=` would match that.
+    expect(requestedUrl(0)).not.toContain('&t=');
+    expect(requestedUrl(1)).toContain('&t=7');
+
+    // Same stamp hits, a newer one goes back to the network — otherwise every
+    // card of a reloaded overview would fire its own request.
+    await rc.fetchRenderWord('src', 'nn', 7);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    await rc.fetchRenderWord('src', 'nn', 8);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it('invalidating a word drops every bust generation of it', async () => {
+    fetchMock.mockImplementation(() => Promise.resolve(jsonRes(word('nn'))));
+    await rc.fetchRenderWord('src', 'nn');
+    await rc.fetchRenderWord('src', 'nn', 7);
+    await rc.fetchRenderWord('other', 'nn'); // another source must survive
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+
+    rc.invalidateRenderWord('src', 'nn');
+
+    // After an approved pair override the live entry is usually the STAMPED
+    // one — dropping only the bare key would keep showing the pre-override
+    // join on exactly the surface that just saved it.
+    await rc.fetchRenderWord('src', 'nn');
+    await rc.fetchRenderWord('src', 'nn', 7);
+    expect(fetchMock).toHaveBeenCalledTimes(5);
+    await rc.fetchRenderWord('other', 'nn');
+    expect(fetchMock).toHaveBeenCalledTimes(5);
+  });
+
   it('evicts a failed word so a later request can retry', async () => {
     fetchMock.mockResolvedValueOnce(jsonRes({ detail: 'boom' }, 500));
     await expect(rc.fetchRenderWord('src', 'nn')).rejects.toMatchObject({ status: 500 });
