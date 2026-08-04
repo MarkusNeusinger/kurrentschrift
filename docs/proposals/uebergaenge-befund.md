@@ -595,6 +595,70 @@ Datei berichtet M4 die Deltas ohne gemessenen Boden und sagt das auch.
 Fixtures: `tools/wordbench/fetch_fixtures.py` (API-Pfad, für Sessions ohne
 Cloud-SQL-Zugang) oder `tools/wordbench/export_fixtures.py` (DB-Pfad).
 
+### Nachtrag: Stufe B, Runde 1 — Teilschreibung (2026-08-04)
+
+Die erste Ernte über den Ketten-Pfad ist gelaufen und **teilweise** geschrieben.
+Kommando: `uv run python -m tools.laufform.harvest --sets words,pairs --path chain --jobs 8`,
+96 Fälle, 344 Slot-Zeilen, **232 Vorkommen** (213/277 Wörter, 19/67 Paare, alle
+Identitäten eindeutig).
+
+**Torstand: 5 bestanden · 4 verfehlt · kein Kill ausgelöst.** Verfehlt sind die
+Detektorrate auf den Wort-Tafeln (7,5 % gegen die 3-%-Schranke), die
+Detektorrate auf den Paar-Tafeln (18/34, davon 17 links von `d b longs r D`),
+der **Iterationsdeckel** (87/96 Solves brechen bei `maxiter=300` ab,
+`optimizer_success` 9,4 %) und die Ausbeute auf `e` (−10) und `n` (−5). Kein
+Kill-Kriterium hat gefeuert: M1 buchstabenlokal 0,754 gegen Basislinie 0,746,
+Chart-Verformung Kette 0,0207 gegen Slot 0,0272, `tail_stub` paarweise −0,0040,
+G3 `laufform_dev` Median 0,0068 / Max 0,0118 über die zwölf geschriebenen
+Bestandsschlüssel.
+
+**Der Iterationsdeckel hat eine zweite, erst jetzt sichtbare Folge.** Er stand
+ohnehin als Punkt 1 der Runde-2-Liste, weil ein gedeckelter Solve nicht im
+stationären Punkt endet. Genau das macht die Ernte aber auch **nicht
+bit-reproduzierbar**: der Endpunkt eines abgeschnittenen Solves ist eine
+Funktion seines Startpunkts, und der Startpunkt ist die komponierte
+Platzierung. Eine Wiederholung desselben Laufs auf identischem Code, aber mit
+Fixtures aus dem **exakten** statt dem 4-stellig zurückgelesenen Nib —
+ein Init-Unterschied von 8,75e-6 xh — reproduzierte alles Robuste exakt
+(96/96 Fälle, 344/344 Slot-Zeilen, 19/67 Paare, 16 von 18 Schlüsselzahlen,
+jede `laufform_dev` innerhalb 0,0006) und bewegte genau drei Zahlen um je
+genau 1: `e` 29→28, `a` 13→12, Gesamtstand 233→232. Das ist die Signatur von
+Grenzfall-Kippern an den Toren (`converged_local`, `geo_rmse ≤ 2,2`,
+Konnektor-Degeneriertheit), nicht die anderer Daten. **Konsequenz für die
+Doktrin:** solange 87/96 Solves am Deckel abbrechen, ist „dieselben Zahlen wie
+letztes Mal" kein erreichbares Reproduktionskriterium — jede Fixture-Änderung
+verschiebt einige Grenzfälle. Ein Reproduktions-Gate muss deshalb auf die
+robusten Größen zielen (Fallzahl, Slot-Zeilen, Schlüsselzahlen ±1,
+`laufform_dev`-Toleranz), nicht auf Bit-Gleichheit.
+
+**Geschrieben wurde** (Freigabe des Eigentümers, in-session): 232 Vorkommen
+(`instances`, `replace`), 77 Wortspuren (`word_instances`, `replace`, erstmals
+mit Verbinder-Zügen), Aggregat-Neuaufbau auf 35 Schlüssel und
+`apply-laufform` auf **genau 15**: `a d e g h i l m n r u w` plus die
+Neuanlagen `S` `sz` `z`. Bench-Wirkung gegen die frische Nulllinie desselben
+Fixture-Standes: **Wörter 0,116886 → 0,115623 (−0,001263)**, Paare 0,164506 →
+0,165519 (Details und die Nib-Komponente in qualitaetsmetrik.md §6,
+Re-Baseline `aug04`).
+
+**Nicht geschrieben:** `t` (Stichprobe 8→3, unter jedem sinnvollen `min_n`, und
+der einzige Schlüssel über seinem eigenen MAD — seine Laufform steht jetzt
+bewusst veraltet), `o` (+0,00177 allein), `c` (+0,00022, aber der größte
+Ausbeutegewinn 1→7 und deshalb ein Ansehen-Fall), `b` (±0). Alles mit
+`min_n < 4` bleibt ohnehin außen vor.
+
+**Runde-2-Liste**, in dieser Reihenfolge:
+
+1. **Iterationsdeckel** — 87/96 abgeschnitten; billigste offene Frage und nach
+   dem Obigen zugleich die Ursache der fehlenden Bit-Reproduzierbarkeit.
+2. `e` (−10) und `n` (−5) — zwei Drittel des Ausbeuteverlusts, keine
+   Grenzfälle (Verhältnis-Median 1,50, 11 Blowouts > 2,0); fällt vermutlich
+   mit Punkt 1.
+3. Detektorrate 7,5 % auf den Wort-Tafeln, konzentriert auf `t`-Deckstrich
+   und `e`.
+4. Erst danach `o`, `c`, `b` und die `min_n < 4`-Kandidaten — und die oben
+   benannte Vorbedingung, die Degeneration des Ketten-Verbinders auf den
+   isolierten Paar-Übungen.
+
 ## 6. Beantwortung der Kernfrage + Lösungsoptionen
 
 **Generisch lösbar — als Klassenregel, nicht pro Paar.** Die Abweichungen
