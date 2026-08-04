@@ -7,8 +7,9 @@
 // (baseline = 0, 1 unit = x-height), so the map is a pure scale+translate —
 // scale = (baseline_y - midband_y) px per unit, left-aligned on the crop edge.
 
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { Alert, Box, Button, Chip, CircularProgress, Tooltip, Typography } from '@mui/material';
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
 import { WrittenWord } from '@/components/WrittenWord';
 import { useAdmin } from '@/context/AdminContext';
@@ -134,6 +135,7 @@ function WordCard({
   sourceId,
   overlay,
   traced,
+  bust,
   score,
   measured,
   onOpenEditor,
@@ -145,6 +147,8 @@ function WordCard({
   // This specimen's stored trace, when one exists — used ONLY for the overlay's
   // registration (see SpecimenOverlay); the card never draws the trace itself.
   traced: WordInstanceOut | null;
+  // The admin-wide reload stamp — see `reload` below.
+  bust: number;
   score?: WordSampleScoreOut;
   // The „Gemessen" readout — pair cards only (the caller owns the scope), so
   // the card itself stays agnostic of the occurrence/aggregate layers.
@@ -164,7 +168,7 @@ function WordCard({
   useEffect(() => {
     if (!inView) return;
     let cancelled = false;
-    fetchRenderWord(sourceId, sample.word)
+    fetchRenderWord(sourceId, sample.word, bust)
       .then((c) => {
         if (!cancelled) setComposed(c);
       })
@@ -174,7 +178,7 @@ function WordCard({
     return () => {
       cancelled = true;
     };
-  }, [inView, sourceId, sample.word]);
+  }, [inView, sourceId, sample.word, bust]);
 
   const cropW = (FACE_H / sample.height) * sample.width;
 
@@ -229,7 +233,10 @@ function WordCard({
         )
       ) : (
         <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0 }}>
+          {/* `flex: 1 1 320px` rather than a natural width: side by side is the
+              point, so the two faces shrink together instead of wrapping the
+              written one under the crop — and below ~700px they still stack. */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0, flex: '1 1 320px' }}>
             <Typography variant="caption" color="text.secondary">
               {de.admin.compare.colCrop}
             </Typography>
@@ -245,12 +252,19 @@ function WordCard({
               />
             </Box>
           </Box>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0, flex: '1 1 320px' }}>
             <Typography variant="caption" color="text.secondary">
               {de.admin.compare.colWritten}
             </Typography>
             <Box sx={{ height: FACE_H, display: 'flex', alignItems: 'center', bgcolor: '#fff', borderRadius: 1, px: 1 }}>
-              <WrittenWord text={sample.word} sourceId={sourceId} height={FACE_H * 0.9} animate={false} showLineature />
+              <WrittenWord
+                text={sample.word}
+                sourceId={sourceId}
+                height={FACE_H * 0.9}
+                animate={false}
+                showLineature
+                bust={bust}
+              />
             </Box>
           </Box>
         </Box>
@@ -272,7 +286,7 @@ export function WordComparison({
   filterText?: string;
   onPick?: (sample: WordSampleOut) => void;
 }) {
-  const { source, sourceId } = useAdmin();
+  const { source, sourceId, cropCacheBust, refreshCrop } = useAdmin();
   const [samples, setSamples] = useState<WordSampleOut[] | null>(null);
   const [error, setError] = useState(false);
   const [scores, setScores] = useState<Record<string, WordSampleScoreOut>>({});
@@ -295,6 +309,16 @@ export function WordComparison({
   // harvest never traced simply has none and keeps the left-edge fallback.
   const { wordRows } = useWorkbench();
   const tracedById = useMemo(() => new Map(wordRows.map((r) => [r.specimen_id, r])), [wordRows]);
+
+  // „Neu laden" — the letters grid's button, for words. `refreshCrop` moves the
+  // admin-wide stamp that keys the render cache AND rides the request, so the
+  // written faces really recompose (the CDN holds /write/word for a day); the
+  // crops are re-requested with it, and the cards remount so a card that had
+  // already settled paints the new composition rather than its old state.
+  const reload = useCallback(() => {
+    for (const s of samples ?? []) invalidateRenderWord(sourceId, s.word);
+    refreshCrop();
+  }, [samples, sourceId, refreshCrop]);
 
   useEffect(() => {
     let cancelled = false;
@@ -389,6 +413,12 @@ export function WordComparison({
               {de.admin.compare.scoreError}
             </Typography>
           )}
+          {/* Same affordance as the letters grid: re-compose the written faces
+              after a template, Laufform or override change, instead of
+              reloading the browser tab. */}
+          <Button size="small" variant="outlined" startIcon={<RefreshIcon />} onClick={reload} sx={{ ml: 'auto' }}>
+            {de.admin.compare.reload}
+          </Button>
         </Box>
       )}
       {/* One quiet line for the whole tab, never per card: the measured layer
@@ -407,11 +437,12 @@ export function WordComparison({
           <WordCard
             // The tick remounts the card after an override save, so its
             // "as written" render refetches the just-changed composition.
-            key={`${s.id}:${cardTick[s.id] ?? 0}`}
+            key={`${s.id}:${cardTick[s.id] ?? 0}:${cropCacheBust}`}
             sample={s}
             sourceId={sourceId}
             overlay={overlay}
             traced={tracedById.get(s.id) ?? null}
+            bust={cropCacheBust}
             score={scores[s.id]}
             // Matched by the SAME base-key pair the editor deep link uses, so
             // the numbers and the „Im Paar-Editor öffnen" target can never

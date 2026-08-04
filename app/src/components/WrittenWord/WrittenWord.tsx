@@ -70,6 +70,10 @@ interface Props {
   // passes a neutral label so the image does not leak the solution word to the
   // DOM/screen reader before the answer.
   ariaLabel?: string;
+  // Admin-only reload stamp (AdminContext.cropCacheBust). Moves the render
+  // cache key AND the request, so „Neu laden" actually re-composes instead of
+  // being answered by the client cache or the CDN. Public surfaces omit it.
+  bust?: number;
 }
 
 export function WrittenWord({
@@ -86,6 +90,7 @@ export function WrittenWord({
   onResolved,
   onError,
   ariaLabel,
+  bust,
 }: Props) {
   const reducedMotion = usePrefersReducedMotion();
   const uid = useId();
@@ -103,7 +108,7 @@ export function WrittenWord({
       setComposed({ text: '', items: [], bounds: { min_x: 0, max_x: 1, min_y: 0, max_y: 1 }, guides: null, missing: [] });
       return;
     }
-    fetchRenderWord(sourceId, normalized)
+    fetchRenderWord(sourceId, normalized, bust)
       .then((c) => {
         if (!cancelled) setComposed(c);
       })
@@ -115,7 +120,7 @@ export function WrittenWord({
     };
     // onError intentionally omitted: a fresh closure each render must not refetch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [normalized, sourceId]);
+  }, [normalized, sourceId, bust]);
 
   useEffect(() => {
     if (composed) onResolved?.({ missing: composed.missing, rendered: composed.items.length });
