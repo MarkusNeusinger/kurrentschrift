@@ -263,7 +263,7 @@ def test_assemble_welds_the_seam_and_keeps_the_diacritic_apart() -> None:
         _entry("letter", 2, body_b0, slot=1, key="n", stroke_index=0),
         _entry("letter", 2, body_b1, slot=1, key="n", stroke_index=1),
     ]
-    strokes = assemble_word_strokes(entries, accepted_slots={0, 1}, xh=XH, registration=REGISTRATION)
+    strokes = assemble_word_strokes(entries, traced_slots={0, 1}, xh=XH, registration=REGISTRATION)
 
     assert len(strokes) == 3
     spine, dot_out, lift = strokes
@@ -277,9 +277,10 @@ def test_assemble_welds_the_seam_and_keeps_the_diacritic_apart() -> None:
     assert len(lift) == 2 and lift[0] == pytest.approx([2.1, 0.9], abs=1e-3)
 
 
-def test_assemble_drops_a_rejected_letter_and_its_connectors() -> None:
-    """A letter the gate rejected leaves the trace, and the connectors on
-    either side with it — they would dangle into a letter that is not there."""
+def test_assemble_drops_an_unfitted_letter_and_its_connectors() -> None:
+    """A letter the chain never fitted has no geometry to show, and the
+    connectors on either side go with it — they would dangle into a letter that
+    is not there. That (and only that) is an honest fragment."""
     entries = [
         _entry("letter", 0, [(0.2, 0.2), (1.0, 0.3)], slot=0, key="a", stroke_index=0),
         _entry("connector", 1, [(1.0, 0.3), (1.6, 0.3)]),
@@ -287,7 +288,7 @@ def test_assemble_drops_a_rejected_letter_and_its_connectors() -> None:
         _entry("connector", 3, [(2.4, 0.4), (3.0, 0.4)]),
         _entry("letter", 4, [(3.0, 0.4), (3.8, 0.5)], slot=2, key="c", stroke_index=0),
     ]
-    strokes = assemble_word_strokes(entries, accepted_slots={0, 2}, xh=XH, registration=REGISTRATION)
+    strokes = assemble_word_strokes(entries, traced_slots={0, 2}, xh=XH, registration=REGISTRATION)
     assert len(strokes) == 2
     assert [len(s) for s in strokes] == [2, 2]
     assert strokes[0][0] == pytest.approx([0.2, 0.2], abs=1e-3)
@@ -433,6 +434,8 @@ def test_chain_path_accepts_every_clean_letter(monkeypatch: pytest.MonkeyPatch) 
     assert out.word_record["measurements"]["run_slots"] == [[0, 1, 2]]
     # the whole run is ONE pen path: three letters and the two joins between them
     assert len(out.word_record["strokes"]) == 1
+    assert out.word_record["measurements"]["traced_slots"] == [0, 1, 2]
+    assert out.word_record["measurements"]["fitted_slots"] == [0, 1, 2]
     assert all(o["measurements"]["fit_path"] == "chain" for o in out.occurrences)
 
 
@@ -445,8 +448,11 @@ def test_a_degenerate_connector_rejects_both_adjacent_letters(monkeypatch: pytes
     assert [r["conn_reason"] for r in out.diag_rows][:1] == ["backward_arc"]
     assert [o["measurements"]["slot"] for o in out.occurrences] == [2]
     assert len(out.fits_by_key["a"]) == 1
-    # the surviving letter is traced alone: both its connectors are gone
-    assert [len(s) for s in out.word_record["strokes"]] == [3]
+    # …but the TRACE still shows what the chain solved, all three letters of it
+    record = out.word_record
+    assert record["measurements"]["fitted_slots"] == [2]
+    assert record["measurements"]["traced_slots"] == [0, 1, 2]
+    assert len(record["strokes"]) == 1
 
 
 def test_one_failing_letter_leaves_the_rest_of_the_run(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -458,9 +464,40 @@ def test_one_failing_letter_leaves_the_rest_of_the_run(monkeypatch: pytest.Monke
     record = out.word_record
     assert record["measurements"]["gates"] == {"0": "not_converged_local", "1": "ok", "2": "ok"}
     assert record["measurements"]["unfitted_slots"] == [0]
-    # slots 1 and 2 are still one continuous pen path across their join
+    assert record["measurements"]["traced_slots"] == [0, 1, 2]
+    # the run is one continuous pen path — the rejected letter is FLAGGED, not
+    # cut out (3 body samples each, 3 per connector, both seams deduplicated)
     assert len(record["strokes"]) == 1
-    assert len(record["strokes"][0]) == 3 + 3 - 1 + 3 - 1
+    assert len(record["strokes"][0]) == 3 + (3 - 1) + (3 - 1) + (3 - 1) + (3 - 1)
+
+
+def test_a_failing_middle_letter_keeps_the_pen_path_whole(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The regression this file exists for: a letter whose gate bites in the
+    MIDDLE of a run used to take its two connectors with it and leave three
+    fragments where the hand drew one line. The gate decides what becomes a
+    measurement, not what the trace shows."""
+    out = _run_chain(monkeypatch, bad_letter=1)
+    assert [r["gate"] for r in out.diag_rows] == ["ok", "not_converged_local", "ok"]
+
+    # the occurrence layer is untouched: the wobbly letter is still no statistic
+    assert [o["measurements"]["slot"] for o in out.occurrences] == [0, 2]
+    assert len(out.fits_by_key["a"]) == 2
+
+    record = out.word_record
+    assert record["measurements"]["fitted_slots"] == [0, 2]
+    assert record["measurements"]["unfitted_slots"] == [1]
+    assert record["measurements"]["traced_slots"] == [0, 1, 2]
+    assert record["measurements"]["gates"] == {"0": "ok", "1": "not_converged_local", "2": "ok"}
+    assert record["measurements"]["converged_local"] == {"0": True, "1": False, "2": True}
+
+    # ONE body stroke, not three, and the seams are still deduplicated ACROSS
+    # the formerly dropped letter
+    assert len(record["strokes"]) == 1
+    spine = record["strokes"][0]
+    assert len(spine) == 3 + (3 - 1) + (3 - 1) + (3 - 1) + (3 - 1)
+    assert not any(np.allclose(a, b) for a, b in zip(spine[:-1], spine[1:], strict=True))
+    assert spine[0] == pytest.approx([0.2, 0.3], abs=1e-3)
+    assert spine[-1] == pytest.approx([0.2 + 2 * ADVANCE + 0.8, 0.3], abs=1e-3)
 
 
 def test_chain_path_on_real_ink(monkeypatch: pytest.MonkeyPatch) -> None:

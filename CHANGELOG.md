@@ -112,6 +112,33 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Fixed
 
+- **The gate decides what becomes a measurement, not what the trace shows.** The
+  chain harvest wrote word traces that broke into disconnected fragments:
+  `tools/laufform/harvest.py` assembled the pen path out of the letters its gate
+  cascade had ACCEPTED, so a letter that merely wobbled took itself and the
+  connectors on either side out of the drawing — `Einen` (E-i-n-e-n) was one
+  chain solve over all five slots and came out as three pieces because slots 2
+  and 4 failed `not_converged_local`. Two layers, two questions: `instances` is
+  the statistics layer and stays gated exactly as before (a wobbly letter must
+  not pollute a Laufform median), while `word_instances` is the inspection layer
+  and now carries the WHOLE solved run — every letter segment and every
+  connector the chain produced. Only a slot the chain could not fit at all (no
+  template, no window, `chain_failed`) stays out, because it has no geometry;
+  a trace that splits for that reason is honest. The per-slot verdicts stay
+  readable beside the geometry, and the two sets are two explicit fields rather
+  than one overloaded key: `measurements.traced_slots` is what is drawn,
+  `fitted_slots`/`unfitted_slots` keep meaning "accepted as an occurrence", with
+  `gates`, `converged_local` and `geo_rmse_px_by_slot` unchanged. Measured over
+  the frozen words + pairs fixtures: 27 of the 77 previously written records
+  still hold more than one body stroke, down from 32, and every remaining split
+  is a genuine pen lift (the `E`/`P` ornaments, the u-Bogen, `t`'s crossbar,
+  `ß`, the ä/ü umlauts) or a chain that really did stop — no split is caused by
+  a gate any more. 19 further specimens gain a trace at all, having had every
+  letter rejected and therefore been dropped whole. The occurrence layer is
+  byte-identical across the change (232 rows, the same Laufform drafts), and the
+  longer welded runs stay inside the wire caps (longest stroke 2277 of 4096
+  points, `Galoppieren`; at most 4 of 128 strokes), with the downsampling guard
+  in `cap_word_strokes` reporting rather than 422-ing if they ever do not.
 - **A glyph with two coincident anchors returned a 500 — and took the whole
   batch with it.** `core/template.py::sample_polyline` builds its spline
   parameter from the cumulative chord length, and a zero-length chord leaves
