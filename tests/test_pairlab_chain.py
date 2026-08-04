@@ -30,6 +30,7 @@ from core.extract import skeleton_and_width
 from core.fit import (
     CONVERGED_COVERAGE_RMSE_UNITS,
     CONVERGED_GEO_RMSE_UNITS,
+    DEFAULT_MAX_ITER,
     DIST_FIELD_SIGMA_PX,
     MAX_COVERAGE_POINTS,
     WIDTH_FIELD_SIGMA_PX,
@@ -498,8 +499,6 @@ def test_chain_converges_on_synthetic_ink() -> None:
     were wrong.
     """
     from scipy.optimize import minimize
-
-    from core.fit import DEFAULT_MAX_ITER
 
     injected_l = np.array([0.20, 0.0])
     injected_r = np.array([-0.15, 0.05])
@@ -1028,3 +1027,56 @@ def test_fit_pair_chain_recovers_the_two_injected_shifts() -> None:
     assert fit is not None and fit.converged
     for slot, injected_shift in enumerate(injected):
         assert np.max(np.abs(_recovered(fit, slot) - np.asarray(injected_shift))) <= 0.05
+
+
+def test_the_chain_iteration_budget_is_its_own_knob(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The chain gets its OWN iteration budget, read from the environment.
+
+    Deliberately not `core.fit.DEFAULT_MAX_ITER`: that is a per-GLYPH budget on
+    a per-glyph problem, and a word chain carries an order of magnitude more
+    free parameters, so the same number buys proportionally fewer descent
+    steps. Sharing it would also mean a measurement sweep on the chain silently
+    re-tuned the production M4 fit.
+    """
+    import importlib
+
+    import tools.pairlab.chain as chain_mod
+
+    assert chain_mod.CHAIN_MAX_ITER == DEFAULT_MAX_ITER  # today's default
+
+    monkeypatch.setenv(chain_mod.CHAIN_MAX_ITER_ENV, "1234")
+    reloaded = importlib.reload(chain_mod)
+    try:
+        assert reloaded.CHAIN_MAX_ITER == 1234
+        # core.fit is untouched by the sweep knob — the production fit must not
+        # move because someone measured the chain.
+        assert reloaded.DEFAULT_MAX_ITER == DEFAULT_MAX_ITER
+    finally:
+        monkeypatch.delenv(chain_mod.CHAIN_MAX_ITER_ENV)
+        importlib.reload(chain_mod)
+
+
+def test_a_capped_solve_is_reported_as_capped() -> None:
+    """`hit_iteration_cap` has to be true exactly when the BUDGET stopped the
+    solve — a capped solve is still descending, so every energy, gate and
+    anchor it reports is a snapshot of an unfinished descent rather than a
+    result. Squeezing the budget to one iteration makes that state reachable
+    without waiting for a hard case.
+    """
+    import importlib
+
+    import tools.pairlab.chain as chain_mod
+
+    case, result, windows, _truth = _synthetic_word([(0.09, 0.02), (-0.06, -0.03), (0.04, -0.01)])
+    generous = chain_mod.fit_word_chain(case, [0, 1, 2], result=result, windows_px=windows)
+    assert generous is not None
+    assert generous.fit_meta["hit_iteration_cap"] is False
+    assert generous.fit_meta["max_iter"] == DEFAULT_MAX_ITER
+
+    importlib.reload(chain_mod)
+    chain_mod.CHAIN_MAX_ITER = 1
+    starved = chain_mod.fit_word_chain(case, [0, 1, 2], result=result, windows_px=windows)
+    importlib.reload(chain_mod)
+    assert starved is not None
+    assert starved.fit_meta["hit_iteration_cap"] is True
+    assert starved.fit_meta["iterations"] <= 1

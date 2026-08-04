@@ -127,6 +127,13 @@ DIAG_FIELDS = (
     "conn_forward_ratio",
     "conn_gap_units",
     "n_params",
+    # Chain path only: how many L-BFGS-B iterations the run's solve took and
+    # whether the BUDGET stopped it. A capped solve was still descending, so
+    # every geometry column in this row is a snapshot of an unfinished descent
+    # — read these two before drawing a conclusion from the rest.
+    "iterations",
+    "hit_iteration_cap",
+    "max_iter",
     "seconds",
 )
 
@@ -811,6 +818,9 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 conn_reason_adjacent=",".join(r for r in adjacent if r),
                 conn_reason=conn_reasons.get(n) or "",
                 n_params=int(fit.fit_meta.get("n_params", 0)),
+                iterations=int(fit.fit_meta.get("iterations", 0)),
+                hit_iteration_cap=bool(fit.fit_meta.get("hit_iteration_cap", False)),
+                max_iter=int(fit.fit_meta.get("max_iter", 0)),
                 seconds=round(float(fit.fit_meta.get("seconds", 0.0)), 3),
                 **conn_signals.get(n, {}),
             )

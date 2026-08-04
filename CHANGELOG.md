@@ -14,6 +14,22 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The word chain has its own iteration budget, and says when the budget was
+  what stopped it.** The chain solve borrowed `core.fit.DEFAULT_MAX_ITER` — a
+  per-GLYPH budget on a per-glyph problem, while a three-slot word chain
+  carries roughly 820 free parameters, so the same 300 iterations buy
+  proportionally fewer descent steps. `tools/pairlab/chain.py` now owns
+  `CHAIN_MAX_ITER` (same default, so nothing moves yet), overridable through
+  `KS_CHAIN_MAX_ITER` so the budget can be swept without editing the file and
+  without a chain measurement silently re-tuning the production M4 fit that
+  the wizard and `/fit` depend on. Alongside it, `fit_meta` and the harvest's
+  `--diag-csv` gained `iterations`, `max_iter` and `hit_iteration_cap`: a
+  capped solve was still descending, so its energies, gates and anchors are a
+  snapshot of an unfinished descent rather than a result — which is exactly
+  what the round-2 measurement needs to read, instead of inferring it.
+
+### Added
+
 - **The word overlays are switchable one layer at a time, and the words
   overview reloads like the letters grid.** Three inks over one crop — plate,
   trace, engine — is a lot, and which pair actually answers the question

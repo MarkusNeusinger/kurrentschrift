@@ -36,6 +36,7 @@ into those runs (a lone letter is a one-segment chain, not a skipped one).
 from __future__ import annotations
 
 import bisect
+import os
 import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
@@ -106,6 +107,20 @@ CHAIN_CONNECTOR_SMOOTH_WEIGHT = 1e-5
 # Invariant (asserted in code and in a unit test): coverage density per unit of
 # skeleton x-extent must not fall below the single-letter fit's.
 CHAIN_COVERAGE_PER_SEGMENT = 300
+# L-BFGS-B iteration budget for the CHAIN solve. Deliberately its OWN constant
+# rather than `core.fit.DEFAULT_MAX_ITER` (300): that number is a per-GLYPH
+# budget on a per-glyph problem, and a chain is a different problem — a 3-slot
+# word carries ~820 free parameters where one letter carries a fraction of it,
+# so the same budget buys proportionally fewer descent steps.
+#
+# Measured on the frozen fixtures at 300: the budget, not a convergence
+# criterion, was the binding stop in the overwhelming majority of solves — a
+# truncated solve is not a converged one, and where the truncation lands moves
+# with the initialisation, which is why the harvest was not bit-reproducible
+# across an init change. `CHAIN_MAX_ITER_ENV` allows a sweep without editing
+# this file; the default is the value the measurement settled on.
+CHAIN_MAX_ITER_ENV = "KS_CHAIN_MAX_ITER"
+CHAIN_MAX_ITER = int(os.environ.get(CHAIN_MAX_ITER_ENV) or DEFAULT_MAX_ITER)
 # Points on the raw exit→entry connector polyline — the production sample count,
 # re-exported from `core.compose` so a change there cannot silently desync. The
 # two endpoints are SHARED with the letters, the interior 22 are free anchors.
@@ -1224,9 +1239,10 @@ def fit_word_chain(
         jac=True,
         method="L-BFGS-B",
         bounds=problem.bounds,
-        # Same settings as `core.fit.fit_template_to_instance`: with the analytic
-        # jacobian the evaluation budget must never be the binding stop.
-        options={"maxiter": DEFAULT_MAX_ITER, "maxfun": 50 * DEFAULT_MAX_ITER},
+        # `maxfun` stays 50x the iteration budget, as in
+        # `core.fit.fit_template_to_instance`: with the analytic jacobian the
+        # EVALUATION budget must never be the binding stop.
+        options={"maxiter": CHAIN_MAX_ITER, "maxfun": 50 * CHAIN_MAX_ITER},
     )
 
     segments = problem.report_energies(res.x)
@@ -1271,6 +1287,13 @@ def fit_word_chain(
             "optimizer_success": bool(res.success),
             "message": str(res.message),
             "iterations": int(res.nit),
+            # Whether the BUDGET stopped the solve rather than a convergence
+            # criterion. Read it before believing any geometry below: a capped
+            # solve was still descending, so its energies, its gates and the
+            # anchors it hands the harvest are a snapshot of an unfinished
+            # descent, and where that snapshot lands moves with the init.
+            "hit_iteration_cap": int(res.nit) >= CHAIN_MAX_ITER,
+            "max_iter": CHAIN_MAX_ITER,
             "n_evaluations": int(res.nfev),
             "n_params": int(len(problem.x0)),
             "n_anchors_free": int(len(problem.anchors_free)),
