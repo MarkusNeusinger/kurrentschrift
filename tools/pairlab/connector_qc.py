@@ -70,12 +70,66 @@ contaminated join out of `pair_aggregates` should prefer recall. Both settings
 are one `dataclasses.replace` apart.
 
 Two of the four signals — **arc vs. gap** and **straightness × length** — never
-fire on any of the 248 occurrences. Their thresholds are therefore the plan's
-starting values, carry no evidence, and are kept only as cheap guards against
-failure modes this corpus does not contain.
+fire on any of the 248 occurrences *of this corpus*. Their thresholds are
+therefore the plan's starting values, carry no evidence, and are kept only as
+cheap guards against failure modes this corpus does not contain.
+
+    NOTE (round 2, 2026-08-05): that last sentence does NOT transfer to the
+    harvest. On `tools/laufform/harvest.py --path chain` over the same plates,
+    `arc_vs_gap` trips on 7 of 172 rated connectors (reason code on 2, max
+    3.776) and the straightness pair on 1 — measured twice, independently.
+    The corpora are the same plates but NOT the same numbers: chainbench takes
+    the facing ink edges from the INDEPENDENT dissection fits' body strokes
+    (`chainbench.py`), the harvest from the CHAIN's own fitted strokes and
+    `baseline_row + ty` (`harvest.py`). Different edges move `seam_left`,
+    `seam_right` and the gap, hence every signal derived from them — the
+    word-plate `arc_vs_gap` P99 quoted below as 1.48 is 2.23 on the harvest.
+    Read every number in this docstring as a statement about the chainbench
+    frame only, and re-measure before applying one to the harvest.
 
 Everything here is fitted on 11 positives. It is a guard tuned to a known
 failure, not an independently validated classifier.
+
+Round-2 validation (2026-08-05) — the guard holds up
+----------------------------------------------------
+Two independent studies adjudicated the harvest's 46 letter rejections: a
+blind per-row adjudication with an adversarial refutation pass, and a
+systematic study against an external label nobody had used before — the
+MEASURED ink connectors in the fixtures' `pair_instances.json` (232 of 248
+joins have a twin, all 38 flagged ones included).
+
+    dconn chain↔ink, start-aligned    flagged 0.403   ·   clean 0.093
+    AUC (dconn separates flagged)     0.900 pooled · 0.924 word · 0.890 pair
+
+The decisive evidence uses no shape distance at all: on flagged rows the INK's
+own join travels +0.280 xh forward against +0.283 on clean rows — identical —
+while the CHAIN's fitted ink gap collapses from 0.229 to 0.012 xh, 17 of 38 at
+exactly zero. The specimen says those letters do not touch; the chain stacked
+them and the connector then had to run backwards to arrive. The guard is
+reporting a chain PLACEMENT COLLAPSE, not over-firing on a legitimate shape.
+
+Mechanism, measured two ways and pointing at the same place:
+  * by join — the left glyph's EXIT HEIGHT. High-exit classes (`b d D S longs
+    t k`) flag at 40 % on word plates and 16/16 on the pair drills; everything
+    else at 8 % / 10 %. The pair drills merely over-represent that class
+    (61.5 % against 20.5 %), which is the whole pair/word asymmetry.
+  * by solve — RUN LENGTH. Word flags run 2/78 = 2.6 % at run ≤ 4 against
+    19/136 = 14.0 % at run ≥ 5 (Fisher p = 0.0074), flat across the whole
+    iteration-budget ladder, so it is not solver noise.
+
+Two known measurement defects, both worth ZERO freed slots (verified by replay
+— do not re-derive them):
+  * `_arc_outside` double-charges the shared arc where the letters overlap
+    (`seam_total > arc` on 30 of 248, up to exactly 2.0x, all at gap 0).
+    Capping the seam at the connector's own arc frees no letter: the demoted
+    rows immediately trip `backward_arc` instead.
+  * the seam is charged at every height while `a_max`/`b_min` come only from
+    `JOIN_BAND_Y`, so a `longs` descender return is billed as redrawing.
+
+Where it IS weak: RECALL, not precision. 16 stub connectors (chord below
+`min_chord_units`, never rated) with `forward_ratio < 0` currently deliver 25
+ACCEPTED slots — the same exit retrace, passed only because the chord is short.
+Loosen nothing here before that side is measured.
 """
 
 from __future__ import annotations

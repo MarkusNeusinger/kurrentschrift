@@ -12,6 +12,41 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Changed
+
+- **The connector guard was suspected of eating the chain's yield; it turns out
+  to be reporting a real defect, and the defect is the chain's.** 46 of the
+  chain harvest's rejections failed only `connector_degenerate` — a gate the
+  per-letter path does not have — which looked like an over-strict guard on a
+  population (the Abb. 20 pair drills) it was never calibrated for. Two
+  independent studies of those 46 rows say otherwise, and the decision came
+  from an external label nobody had used: the MEASURED ink connectors already
+  in the fixtures' `pair_instances.json` (232 of 248 joins have a twin,
+  including all 38 flagged). Chain-vs-ink `dconn` is **0.403** on flagged joins
+  against **0.093** on clean ones, AUC 0.900. The decisive evidence uses no
+  shape distance at all: on flagged rows the ink's own join travels +0.280 xh
+  forward against +0.283 on clean rows — identical — while the chain's fitted
+  ink gap collapses from 0.229 to 0.012 xh, 17 of 38 at exactly zero. The
+  specimen says those letters do not touch; the chain stacked them and the
+  connector had to run backwards to arrive. Mechanism, measured two ways: by
+  join it is the left glyph's exit height (high-exit classes flag at 40 % on
+  word plates and 16/16 on the pair drills, everything else at 8–10 %, and the
+  drills simply over-represent that class), by solve it is run length (2.6 % at
+  run ≤ 4 against 14.0 % at run ≥ 5, p = 0.0074, flat across the whole
+  iteration-budget ladder so not solver noise). No threshold was moved: every
+  relaxation was costed against the ink and each one admits genuinely derailed
+  joins, while the guard's measurable weakness is **recall**, not precision (16
+  stub connectors with a negative forward ratio deliver 25 accepted slots today
+  purely because their chord is short). `connector_qc.py`'s docstring is
+  corrected instead: its "two signals never fire" claim holds for the
+  chainbench corpus but **not** for the harvest, because the two harnesses feed
+  the same connectors against different ink edges — every number in that
+  docstring is a chainbench-frame statement and is now labelled as one. Two
+  known measurement defects (the overlap double-count, the seam height-band
+  mismatch) are recorded with their measured effect of **zero freed slots**, so
+  the next round does not re-derive them. Full finding in
+  `docs/proposals/uebergaenge-befund.md` §5c.
+
 ### Added
 
 - **The word chain has its own iteration budget, and it is no longer the thing

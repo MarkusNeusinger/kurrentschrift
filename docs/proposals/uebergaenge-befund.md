@@ -753,6 +753,108 @@ uv run python -m tools.laufform.harvest --sets words,pairs --path slot --jobs 4 
 
 Nichts davon berührt die DB oder das Rendering — reine Messung.
 
+### Nachtrag: Stufe B, Runde 2 — der Wächter hat recht, die Kette nicht (2026-08-05)
+
+Der Ausbeuteterm aus dem Nachtrag darüber ist untersucht: zwei unabhängige
+Studien über dieselben 46 Ablehnungen, eine blind pro Zeile mit adversarialem
+Widerlegungslauf, eine systematisch über Schwellen, Regime und Provenienz.
+
+**Ergebnis: der Konnektor-Wächter ist kein Fehlalarm, sondern meldet einen
+Platzierungskollaps der Kette.** Entschieden hat eine externe Referenz, die
+vorher niemand benutzt hatte — die **gemessenen** Tinten-Verbinder in
+`pair_instances.json` der Fixtures. 232 der 248 Verbindungen haben einen
+Zwilling, alle 38 geflaggten eingeschlossen.
+
+| | geflaggt (38) | sauber (194) |
+|---|---|---|
+| `dconn` Kette↔Tinte, startgleich, 24 Punkte | **0,403** | 0,093 |
+| **gemessener** Vorwärtsweg der Tinte | **+0,280 xh** | +0,283 xh |
+| Tintenlücke der **Kette** | **0,012 xh** | 0,229 xh |
+
+AUC 0,900 gepoolt (0,924 Wort, 0,890 Paar). Die entscheidende Zeile benutzt
+gar kein Formmaß: der Vorwärtsweg der **Tinte** ist auf geflaggten und sauberen
+Zeilen statistisch identisch, während die **Kette** die Lücke auf null drückt
+(17 von 38 exakt null). Die Vorlage sagt, diese Buchstaben berühren sich nicht;
+die Kette hat sie übereinandergeschoben, und der Verbinder musste rückwärts
+laufen, um anzukommen.
+
+**Der Mechanismus, zweifach gemessen, zeigt auf dieselbe Stelle:**
+
+* *Pro Verbindung* — die **Exit-Höhe des linken Glyphen**. Die Hoch-Exit-Klassen
+  (`b d D S longs t k`) werden auf Worttafeln zu 40 % geflaggt und auf den
+  Paar-Übungen zu **16/16**; alles andere zu 8 % bzw. 10 %. Die Paar-Übungen
+  überrepräsentieren diese Klasse schlicht (61,5 % gegen 20,5 %) — das ist die
+  ganze Wort/Paar-Asymmetrie, kein eigenes Regime.
+* *Pro Solve* — die **Lauflänge**. Wort-Flags 2/78 = 2,6 % bei Lauf ≤ 4 gegen
+  19/136 = 14,0 % bei Lauf ≥ 5 (Fisher p = 0,0074), und **flach über die ganze
+  Iterationsleiter** (9,3/10,3/9,8/9,8 % bei 300→8100, während
+  `hit_iteration_cap` von 325 auf 0 fällt) — also kein Solver-Rauschen.
+
+**Was NICHT hilft, mit Preisschild** (alle Zahlen sind Replays über die
+gespeicherten Rohsignale, keine Schätzungen):
+
+| Änderung | freie Slots | was dadurch durchrutscht |
+|---|---|---|
+| `min_forward_ratio` 0,0 → −0,3 | +7 | 6 Verbindungen, 3 über der sauberen p95, schlimmste `dconn` 0,601 |
+| `min_forward_ratio` aus | +21 | 16 Verbindungen, 7 über p95 — die §5c-Fehler wörtlich |
+| `min_chord_units` 0,25 → 0,5 | +13 | 10 Verbindungen, Median `dconn` **0,401** |
+| Wächter ganz aus | +46 | alle 38, davon 21 über p95, schlimmste 0,726 |
+| `max_seam_total_units` 1,3 → 1,5 | +4 | 3 beurteilbare, `dconn` 0,062 / 0,069 / 0,249 |
+
+Nur die letzte Zeile ist billig — und sie ist die einzige, bei der sich die
+beiden Studien **widersprachen**. Die blinde Adjudikation hat genau diese vier
+Zeilen als echte Degenerationen bestätigt; ihre Widerleger verglichen aber
+gegen den *generierten* Verbinder und gegen akzeptierte Kontrollen, nicht gegen
+die Tinte. Nachgerechnet gegen die gemessene Tinte liegen `streiten|0` (0,062)
+und `ssi|0` (0,069) **besser als der Median einer sauberen Verbindung**, `ssi|1`
+innerhalb p95, und `ssi|2` hat keinen Zwilling. Auf der stärkeren Referenz
+gewinnt die systematische Studie. **Die Schwelle bleibt trotzdem vorerst
+stehen:** +4 Slots rechtfertigen es nicht, eine kalibrierte Schwelle gegen einen
+adversarialen Lauf zu bewegen, solange derselbe Befund 15–18 Slots an anderer
+Stelle ausweist — und solange die Schwäche des Wächters nachweislich auf der
+**Recall**-Seite liegt (16 Stub-Verbinder mit `forward_ratio < 0` liefern
+heute 25 *akzeptierte* Slots, nur weil ihre Sehne unter `min_chord_units`
+bleibt).
+
+**Zwei bekannte Messdefekte, beide null Slots wert** — verifiziert, damit die
+nächste Runde sie nicht erneut herleitet: die Doppelzählung des geteilten
+Bogens bei Überlappung (`seam_total > arc` auf 30 von 248, bis exakt 2,0×, alle
+bei Lücke 0) — gekappt fallen die betroffenen Zeilen sofort in `backward_arc`;
+und die Höhenbandlücke, durch die der Rücklauf einer `longs`-Unterlänge als
+Überschreiben des linken Buchstabens verbucht wird.
+
+**Die 2-für-1-Regel bleibt, mit umgekehrter Begründung.** Der Code sagt, der
+Verbinder habe sich aus dem Schwanz des Buchstabens bezahlt; die Residuen
+widerlegen das (die verworfenen Buchstaben sitzen ihrer Tinte nicht schlechter
+auf als im Einzelfit). Richtig ist: der Defekt ist die **relative Platzierung
+des Paares** — eine Eigenschaft der Verbindung, nicht eines Buchstabens —,
+also sind beide per Konstruktion betroffen und kein Pro-Buchstabe-Residuum kann
+darüber entscheiden. Strukturell gilt ausnahmslos: „eigener Grund" ist immer
+der LINKE Slot, „Nachbarschaft" immer der rechte; es ist dieselbe Entscheidung
+von zwei Seiten.
+
+**Und die Ernte-Statistik gibt dem Wächter recht:** bei gleicher Schlüsselzahl
+komponiert sein Schnitt **besser** (Bench 0,118368 gegen 0,120651 für
+„alles behalten", 14 Schlüssel). Sein Schaden ist **Abdeckung, nicht
+Geometrie** — er drückt 7 von 14 Glyphen unter `min_n ≥ 4` (`t` 9→3,
+`longs` 8→3, `b` 5→3, …). Das ist ein Fall für `min_n`, nicht für die Schwellen.
+
+**Neue Runde-2-Liste**, nach dieser Messung:
+
+1. **Der Platzierungskollaps der Kette** — 16 der 38 geflaggten Verbindungen
+   haben eine gefittete Lücke von exakt 0, während die komponierte
+   Initialisierung bei +0,19 … +0,94 vorwärts stand. Zwei konkrete Ansätze:
+   Neu-Initialisierung aus der unabhängigen M4-Platzierung, wo die komponierte
+   Lücke > 0 ist und die gefittete kollabiert; und `regularise_connector_anchors`
+   von der Cusp- auf die Hoch-Exit-Klasse ausweiten. Erwartung 15–18 Slots
+   **ohne Recall-Kosten**, weil es den Defekt behebt statt den Alarm abzustellen.
+2. **Lauflänge** — ob eine Zerlegung langer Wortketten denselben Effekt hat.
+3. Erst danach Schwellen, und dann als Recall- statt Precision-Frage.
+4. Die offene Messung: die Kette müsste ihre Anker auch für *abgelehnte* Slots
+   ausgeben (reine Diagnose, kein Gate-Wechsel), damit „linken Buchstaben
+   behalten, rechten verwerfen" überhaupt bezifferbar wird — heute liegen nur
+   die akzeptierten Fits auf Platte.
+
 ## 6. Beantwortung der Kernfrage + Lösungsoptionen
 
 **Generisch lösbar — als Klassenregel, nicht pro Paar.** Die Abweichungen
