@@ -155,9 +155,11 @@ export const admin = {
     occurrencesCaption:
       'Jede herausgezogene Verbindung als Ausschnitt der Platte — die Tinte selbst, mit dem Abstand Δ zum generierten Zug. Ein Klick springt in das Wort, in dem sie steht.',
     noOccurrences: 'Diese Verbindung kommt auf den Platten nicht vor — beurteilt wird dann allein das Schriftbild oben.',
-    // Occurrences without a showable crop: the plate has no eingepasste Buchstaben
-    // an dieser Stelle, aus denen sich der Ausschnitt schneiden ließe.
-    occurrencesNoCrop: '{{count}} ohne Ausschnitt (Buchstaben dieser Stelle nicht eingepasst):',
+    // Occurrences without a showable crop. Two causes, and the label names
+    // neither: either the plate has no fitted letters at that slot, or the two
+    // harvests disagree about the word's slotting — in both cases the honest
+    // statement is that the spot cannot be located on the plate.
+    occurrencesNoCrop: '{{count}} ohne Ausschnitt (Stelle auf der Platte nicht eindeutig auffindbar):',
     loadingOccurrences: 'Vorkommen werden geladen …',
     wordsTitle: 'Wörter mit diesem Übergang',
     wordsCaption: 'Die Wortproben, in denen die Verbindung vermessen wurde.',
