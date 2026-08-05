@@ -1042,6 +1042,11 @@ def test_the_chain_iteration_budget_is_its_own_knob(monkeypatch: pytest.MonkeyPa
 
     import tools.pairlab.chain as chain_mod
 
+    # Hermetic against a developer's exported sweep knob: the module reads the
+    # env var at import time, so clear it and reload before asserting defaults.
+    monkeypatch.delenv(chain_mod.CHAIN_MAX_ITER_ENV, raising=False)
+    chain_mod = importlib.reload(chain_mod)
+
     assert chain_mod.CHAIN_MAX_ITER == chain_mod.CHAIN_MAX_ITER_DEFAULT
     # The whole point: it is NOT core.fit's per-glyph budget any more.
     assert chain_mod.CHAIN_MAX_ITER_DEFAULT > DEFAULT_MAX_ITER
@@ -1061,7 +1066,7 @@ def test_the_chain_iteration_budget_is_its_own_knob(monkeypatch: pytest.MonkeyPa
         importlib.reload(chain_mod)
 
 
-def test_a_capped_solve_is_reported_as_capped() -> None:
+def test_a_capped_solve_is_reported_as_capped(monkeypatch: pytest.MonkeyPatch) -> None:
     """`hit_iteration_cap` has to be true exactly when the BUDGET stopped the
     solve — a capped solve is still descending, so every energy, gate and
     anchor it reports is a snapshot of an unfinished descent rather than a
@@ -1071,6 +1076,10 @@ def test_a_capped_solve_is_reported_as_capped() -> None:
     import importlib
 
     import tools.pairlab.chain as chain_mod
+
+    # Hermetic against an exported KS_CHAIN_MAX_ITER (read at import time).
+    monkeypatch.delenv(chain_mod.CHAIN_MAX_ITER_ENV, raising=False)
+    chain_mod = importlib.reload(chain_mod)
 
     case, result, windows, _truth = _synthetic_word([(0.09, 0.02), (-0.06, -0.03), (0.04, -0.01)])
     generous = chain_mod.fit_word_chain(case, [0, 1, 2], result=result, windows_px=windows)

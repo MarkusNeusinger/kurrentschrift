@@ -1315,11 +1315,15 @@ def fit_word_chain(
             "message": str(res.message),
             "iterations": int(res.nit),
             # Whether the BUDGET stopped the solve rather than a convergence
-            # criterion. Read it before believing any geometry below: a capped
-            # solve was still descending, so its energies, its gates and the
-            # anchors it hands the harvest are a snapshot of an unfinished
-            # descent, and where that snapshot lands moves with the init.
-            "hit_iteration_cap": int(res.nit) >= CHAIN_MAX_ITER,
+            # criterion — L-BFGS-B status 1 is exactly that stop (iteration OR
+            # evaluation limit; 0 is convergence, 2 an abnormal abort). NOT
+            # `nit >= CHAIN_MAX_ITER`, which would also accuse a solve that
+            # legitimately converges on the final allowed iteration. Read it
+            # before believing any geometry below: a capped solve was still
+            # descending, so its energies, its gates and the anchors it hands
+            # the harvest are a snapshot of an unfinished descent, and where
+            # that snapshot lands moves with the init.
+            "hit_iteration_cap": int(res.status) == 1,
             "max_iter": CHAIN_MAX_ITER,
             "n_evaluations": int(res.nfev),
             "n_params": int(len(problem.x0)),
