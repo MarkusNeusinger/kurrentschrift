@@ -55,7 +55,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Rückgabe an Autor §5
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spitzfeder §1 · `stage` (work_items) §5 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenlücke §3 · Trajektorien-Recovery §6 · Triage-Pflicht §5
-- **Ü** — Übergang §2 · Übergangs-Generator §2 · understanding §5
+- **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Vereinigungsfenster §3 · Verworfen §5 · Vorlage §2
 - **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Editor §5 · Wort-Trace §2
 - **X** — x-Höhe (`xh`) §1
@@ -444,6 +444,28 @@ Pro-Glyph-Budget, eine Wortkette trägt ~820 freie Parameter. Gemessen
 für +5 % Rechenzeit, ohne dass sich ein einziges Gate-Urteil ändert.
 `fit_meta["hit_iteration_cap"]` und die Spalte im `--diag-csv` machen den
 Zustand lesbar; `KS_CHAIN_MAX_ITER` sweept ihn.
+
+**Überlappungsterm** *(overlap term, Exklusivität)* — der Energieterm des
+Kettenfits, der die physikalische Aussage kodiert: **eine Feder schreibt
+denselben Zug nicht zweimal.** Nötig wurde er durch einen Befund der
+Runde 2: Das Objektiv prüfte die *Vereinigung* aller Segmente gegen die
+*Vereinigung* der Tinte und war für die **Zuordnung** blind — ein Buchstabe,
+der die Tinte des Verbinders schluckt, und ein Verbinder, der den
+Buchstabenstrich nachfährt, sahen beide nach guter Deckung aus. Die
+Beckensonde bewies: die gestapelte Lösung war in *jedem* Term billiger
+(5/5 Fälle). Der Term bestraft Sample-Paare **verschiedener** Segmente, die
+näher beieinander liegen als ein Haarstrich breit ist; ausgenommen sind nur
+die Nahtbänder benachbarter Segmente (die gemessene Stub-Zone, in der die
+Hand wirklich Tinte teilt) — Buchstabe-auf-Buchstabe ist nie ausgenommen.
+Wirkung, gemessen im vorregistrierten A/B: die vier Grenzfall-Flags des
+Konnektor-Wächters heilen mechanisch (der Naht-Anteil verschwindet aus der
+Lösung selbst), +4 Vorkommen, null neue Flags.
+*Technisch:* `tools/pairlab/chain.py` — `CHAIN_OVERLAP_RADIUS_UNITS` (0,15),
+`CHAIN_OVERLAP_SEAM_EXEMPT_UNITS` (0,4, aus der Init-Geometrie, damit der
+Gradient exakt bleibt), `CHAIN_OVERLAP_WEIGHT` (0,2, per Sweep + A/B;
+`KS_CHAIN_OVERLAP_WEIGHT` überschreibt). Paarmenge pro Evaluation per
+KD-Baum, stückweise konstant in den Parametern — dieselbe f.ü.-exakte
+Behandlung wie die Deckungszuordnung.
 
 **Naht** *(seam)* — die Stelle, an der im Kettenfit ein Buchstabe endet und
 der Verbinder beginnt. Kunstgriff: Sie ist **kein Strafterm, sondern ein

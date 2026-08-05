@@ -855,6 +855,119 @@ Geometrie** — er drückt 7 von 14 Glyphen unter `min_n ≥ 4` (`t` 9→3,
    behalten, rechten verwerfen" überhaupt bezifferbar wird — heute liegen nur
    die akzeptierten Fits auf Platte.
 
+### Nachtrag: Grid-Seed-A/B — der Kollaps ist eine Eigenschaft des Objektivs (2026-08-05)
+
+Ansatz 1a aus der Liste ist gebaut und gemessen: `fit_word_chain` kann seine
+Translationsblöcke jetzt an der **Grid-Platzierung des Buchstabens auf seiner
+eigenen Tinte** starten statt bei null (= komponierte Platzierung) —
+`--chain-seed grid`, Objektiv unangetastet, nur das betretene Becken ändert
+sich. A/B über die eingefrorenen `words,pairs`-Fixtures, identischer Code,
+Budget 8100, vorab festgelegte Kriterien.
+
+**Ergebnis: der Seed heilt Verbinder, aber keine Ausbeute — und die
+Nachprüfung zeigt warum.**
+
+| | composed | grid |
+|---|---|---|
+| akzeptiert | 241 | **241 (±0)** |
+| geflaggte Verbindungen | 38 | 34 (8 befreit, 4 neu) |
+| `not_converged_local` | 35 | **28 (−7)** |
+| `geo_rmse` / `at_bound` / `connector_degenerate` | 21 / 1 / 46 | 24 / 3 / 48 |
+| `geo_rmse` Median (akzeptiert) | 1,027 px | 1,030 px |
+| Lauflängen-Gradient (Wort, ≥ 5) | 14,0 % | **11,0 %** |
+
+Die 8 befreiten Verbindungen sind **echt geheilt**, nicht nur entflaggt —
+`Seiten|4` Lücke 0 → 0,065 und Vorwärtslauf −0,441 → +0,098, `Silber|4`
+0 → 0,060 und −0,919 → +0,323, `Säbel|2` 0 → 0,425 und −0,466 → +0,403. Und
+7 Buchstaben mehr konvergieren. Aber die Tor-Kaskade verschiebt nur: die
+gewonnenen Zeilen fallen in `geo_rmse`/`at_bound`/`connector_degenerate`, 4
+neue Verbindungen entgleisen (`Galoppieren|8` seamR 0 → 2,761), Netto-Ausbeute
+exakt null, pro Schlüssel ein Nullsummen-Tausch (+5/−5).
+
+**Die entscheidende Nachmessung:** Buchstaben neben noch geflaggten
+Verbindungen wandern **1,8× weiter über ihren Seed hinaus** als saubere
+(Median 0,048 gegen 0,027 xh, p90 0,331 gegen 0,184), und **alle 11** noch
+kollabierten Verbindungen hatten einen gesunden Grid-Seed — die Solves sind
+vom richtigen Start **aktiv in den Kollaps gelaufen**. Der Kollaps ist damit
+keine Initialisierungs-Panne, sondern **das Objektiv bevorzugt das gestapelte
+Becken**: wo zwei Buchstaben dieselbe Tinte belegen, bekommen beide
+Deckungs-Gutschrift — Tinte ist doppelt beanspruchbar, und Stapeln ist billig.
+
+**Konsequenz:** `--chain-seed` bleibt als Messinstrument im Werkzeug (Default
+`composed`, per Vorregistrierung: kein Kriterium für einen Default-Wechsel
+erfüllt). Der nächste Hebel ist **objektivseitig** — entweder
+Deckungs-Exklusivität (ein Skelettpixel zahlt nur einmal, an das nächste
+Segment) oder die Zerlegung langer Ketten (Punkt 2, deren Gradient auch der
+Seed nur von 14,0 auf 11,0 % drückt). Beides ändert, was die Kette *misst*,
+und braucht darum vorab dieselbe Sorte A/B mit Tinten-Gegenprobe wie hier.
+
+Reproduktion: `--chain-seed {composed,grid}` auf demselben Kommando wie oben;
+Seeds und Rest-Reiseweg stehen je Slot im `--diag-csv`
+(`seed_x/y_units` gegen `shift_x/y_units`).
+
+### Nachtrag: der Überlappungsterm — die Exklusivität, die dem Objektiv fehlte (2026-08-05)
+
+Der objektivseitige Weg (Eigentümer-Entscheid: „das perfekte Ergebnis, nicht
+das schnelle") ist gegangen, in vier Schritten, jeder vorregistriert.
+
+**1. Beckensonde — die Behauptung bewiesen, bevor gebaut wurde.** Fünf
+bekannte Kollaps-Fälle (`do` `bp` `sg` · `Seiten` `unter`), je zweimal gelöst:
+frei gegen „Platzierung an der eigenen Tinte festgeheftet" (Blöcke per Bounds
+am Grid-Seed, Anker und Verbinder frei). **5/5: die kollabierte Lösung ist
+billiger — und zwar in *jedem* Term, Deckung eingeschlossen** (Paare bis
+5,3×, Wörter ~1,3×). Damit war die Diagnose eine Ebene tiefer gelegt: nicht
+„Tinte absorbiert beliebig viel Modell", sondern **Zuordnungsblindheit** —
+das Objektiv prüft die Vereinigung der Segmente gegen die Vereinigung der
+Tinte; ein Buchstabe, der Verbinder-Tinte schluckt, und ein Verbinder, der
+den Buchstabenstrich nachfährt, lesen sich beide als gute Deckung. Und der
+Kollaps wandelt regulierte Anker-Verformung in unregulierte, kostenlose
+Block-Translation um (`e_reg` ist einer der beiden Hauptfinanziers).
+
+**2. Der Term.** `e_overlap`: quadratischer Hinge auf Sample-Paare
+**verschiedener** Segmente innerhalb `CHAIN_OVERLAP_RADIUS_UNITS` (0,15 xh —
+innerhalb eines gezeichneten Haarstrichs, Masken-Durchmesser ~0,16). Zwei
+Freistellungen, beide begründet: die Nahtbänder benachbarter Segmente (die
+gemessene 0,2–0,4-xh-Stub-Zone; aus der **Init**-Geometrie, damit der
+analytische Gradient exakt bleibt) — und Buchstabe-auf-Buchstabe **nie**,
+denn Stapeln ist der Fehler, den der Term bepreist. Paarmenge pro Evaluation
+per KD-Baum, stückweise konstant — dieselbe f.ü.-exakte Behandlung wie die
+Deckungszuordnung. Der tragende FD-Gradiententest läuft auf einer
+überlappenden Konfiguration mit zahlendem Term.
+
+**3. Kalibrier-Sweep** (5 Kollaps- + 2 Kontrollfälle × w ∈ {0; 0,05; 0,2; 1;
+5}) — mit einer Selbstkorrektur: die x-Ausdehnungs-Lücke war als
+Kollaps-Messer **falsch**, denn verschachtelte, aber zentrallinien-getrennte
+Buchstaben (diese Hand schiebt das `k` legitim unter den `d`-Deckstrich,
+Runde-1-Befund `dk`) sind kein Doppelschreiben. Ab w = 1 zeigt sich das
+Über-stark-Regime: Buchstaben werden von legitim geteilter Tinte
+weggedrückt (`unter` Slot 4: rmse 0,96 → 1,97 px).
+
+**4. Das A/B** (volle `words,pairs`-Fixtures, w ∈ {0; 0,2; 1,0}):
+
+| w | akzeptiert | Flags (38 Basis) | geheilt / neu | rmse p50 |
+|---|---|---|---|---|
+| 0 | 241 | 38 | — | 1,027 px |
+| **0,2** | **245** | **34** | **4 / 0** | 1,030 px |
+| 1,0 | 242 | 34 | 6 / 2 | 1,034 px |
+
+**Bei w = 0,2 heilen exakt die vier Verbindungen, die die
+Tinten-Adjudikation als die Grenzfälle des Wächters benannt hatte**
+(`streiten|0`, `ssi|0`, `ssi|1`, `regieren|3`) — und zwar mechanisch, nicht
+statistisch: der Naht-Anteil verschwindet aus der Lösung selbst
+(`streiten|0` seam_left 1,178 → 0,136 xh; `ssi|0` 1,360 → 0,258). **Keine
+Schwelle wurde bewegt; die Geometrie wurde repariert, und der Wächter stimmt
+von selbst zu.** Ausbeute +4 (`longs` 3 → 6 — einer der wächter-ausgehungerten
+Schlüssel), null neue Flags, `at_bound` 1 → 0, rmse p50 +0,003 px. Default:
+`CHAIN_OVERLAP_WEIGHT = 0,2`.
+
+**Offen, mit Namen:** die verschachtelten Paar-Übungs-Stapel (`do`, `bp`,
+`dp` …) heilen NICHT — ihre Zentrallinien liegen weiter auseinander als der
+Radius, und nach dem Radius-Rational ist das benachbartes Schreiben, kein
+Doppelschreiben. Ob ihr Ausdehnungs-Überlapp legitimes Unterschieben (wie
+`dk`) oder echter Kollaps ist, entscheidet keine Radius-Vergrößerung, sondern
+bessere Bodenwahrheit — eine autorisierte Nachfahrung dieser Übungen oder die
+Ausgabe der Ketten-Anker für abgelehnte Slots (Punkt 4 der Liste oben).
+
 ## 6. Beantwortung der Kernfrage + Lösungsoptionen
 
 **Generisch lösbar — als Klassenregel, nicht pro Paar.** Die Abweichungen

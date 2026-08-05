@@ -126,6 +126,12 @@ DIAG_FIELDS = (
     "conn_seam_right_units",
     "conn_forward_ratio",
     "conn_gap_units",
+    # Chain path only: where this slot's translation block STARTED (xh units).
+    # Empty under the composed init; under --chain-seed grid it is the grid
+    # placement the descent began from — read `shift_x_units` against it to see
+    # how far the solve moved beyond its seed.
+    "seed_x_units",
+    "seed_y_units",
     "n_params",
     # Chain path only: how many L-BFGS-B iterations the run's solve took and
     # whether the BUDGET stopped it. A capped solve was still descending, so
@@ -145,6 +151,15 @@ class HarvestOptions:
     style: str = "suetterlin"
     rmse_max: float = 2.2
     path: str = "slot"  # "slot" (per-letter M4 fits) | "chain" (word-chain fits)
+    # Where the chain's translation blocks START. "composed" is the historical
+    # init (blocks at zero = the composed layout); "grid" seeds each block at
+    # the letter's own grid placement on its ink — the counter to the placement
+    # collapse of uebergaenge-befund.md §5c, where the composed start sits in a
+    # basin that stacks a high-exit pair and runs the connector backwards. The
+    # objective is identical either way; only the entered basin changes. A grid
+    # fit resting on its own search bound is NOT used as a seed (that placement
+    # is itself suspect), so such slots keep the composed start.
+    chain_seed: str = "composed"  # "composed" | "grid"
 
 
 @dataclass
@@ -625,6 +640,9 @@ def _grid_fits(case, result: WordDeriveResult) -> dict[int, dict]:
             "at_bound": bool(at_bound),
             "resid_before": round(float(before), 4),
             "resid_after": round(float(after), 4),
+            # The grid's placement delta in xh units — the chain's optional
+            # block seed (HarvestOptions.chain_seed == "grid").
+            "shift_units": (float(ddx) / xh, float(ddy) / xh),
         }
     return out
 
@@ -741,7 +759,10 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
 
     for run in _chainable_runs(case, grids):
         windows = {s: grids[s]["window"] for s in run}
-        fit = fit_word_chain(case, run, result=result, windows_px=windows)
+        seeds = (
+            {s: grids[s]["shift_units"] for s in run if not grids[s]["at_bound"]} if opts.chain_seed == "grid" else None
+        )
+        fit = fit_word_chain(case, run, result=result, windows_px=windows, slot_shift_init=seeds)
         run_label = "-".join(str(s) for s in run)
         if fit is None:
             for slot_index in run:
@@ -815,6 +836,13 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 anchor_count_ok=fitted_raw.shape == anchors.shape,
                 shift_x_units=round(float(total_shift[0]), 4),
                 shift_y_units=round(float(total_shift[1]), 4),
+                **dict(
+                    zip(
+                        ("seed_x_units", "seed_y_units"),
+                        fit.fit_meta.get("slot_shift_init", {}).get(str(slot_index), ("", "")),
+                        strict=True,
+                    )
+                ),
                 conn_reason_adjacent=",".join(r for r in adjacent if r),
                 conn_reason=conn_reasons.get(n) or "",
                 n_params=int(fit.fit_meta.get("n_params", 0)),
@@ -941,6 +969,7 @@ def harvest(
     path: str = "slot",
     jobs: int = 1,
     max_cases: int = 0,
+    chain_seed: str = "composed",
 ) -> tuple[dict[str, dict], list[dict], list[dict], list[dict]]:
     """Per-letter median fitted anchors over the clean word occurrences, plus
     every clean fit as an occurrence record (`InstanceItem` wire shape), plus
@@ -953,7 +982,7 @@ def harvest(
     one worker. Iteration order — and therefore the medians — is independent of
     the job count: `ProcessPoolExecutor.map` yields in input order.
     """
-    opts = HarvestOptions(style=style, rmse_max=rmse_max, path=path)
+    opts = HarvestOptions(style=style, rmse_max=rmse_max, path=path, chain_seed=chain_seed)
     cases = [c for which in sets for c in iter_fixture_word_cases(which=which, style=style)]
     if max_cases:
         cases = cases[:max_cases]
@@ -1061,6 +1090,12 @@ def main() -> None:
     ap.add_argument("--style", default="suetterlin")
     ap.add_argument("--sets", default="words", help="comma-separated fixture sets (words,pairs)")
     ap.add_argument("--path", choices=["slot", "chain"], default="slot", help="per-letter M4 fits or word chains")
+    ap.add_argument(
+        "--chain-seed",
+        choices=["composed", "grid"],
+        default="composed",
+        help="where the chain's translation blocks start: the composed layout, or each letter's own grid placement",
+    )
     ap.add_argument("--jobs", type=int, default=1, help="parallel worker processes over CASES (default 1)")
     ap.add_argument("--max-cases", type=int, default=0, help="cap the cases per run (0 = all)")
     ap.add_argument("--min-n", type=int, default=4)
@@ -1077,6 +1112,8 @@ def main() -> None:
     args = ap.parse_args()
     if args.jobs < 1:
         raise SystemExit(f"--jobs must be >= 1, got {args.jobs}")
+    if args.chain_seed != "composed" and args.path != "chain":
+        raise SystemExit("--chain-seed grid only applies to --path chain")
     if args.max_cases < 0:
         raise SystemExit(f"--max-cases must be >= 0 (0 = all), got {args.max_cases}")
 
@@ -1090,7 +1127,14 @@ def main() -> None:
         raise SystemExit("--apply is available for --path slot --sets words only (report-only otherwise)")
 
     drafts, occurrences, word_records, diag_rows = harvest(
-        args.style, args.min_n, args.rmse_max, sets=sets, path=args.path, jobs=args.jobs, max_cases=args.max_cases
+        args.style,
+        args.min_n,
+        args.rmse_max,
+        sets=sets,
+        path=args.path,
+        jobs=args.jobs,
+        max_cases=args.max_cases,
+        chain_seed=args.chain_seed,
     )
     for target in (args.out, args.occ_out, args.word_out):
         target.parent.mkdir(parents=True, exist_ok=True)

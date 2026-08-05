@@ -12,6 +12,58 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **The chain objective learned the one thing a pen always knew: a stroke is
+  not written twice.** The grid-seed A/B's follow-up (the basin probe) proved
+  the placement collapse is a property of the objective — on all five probed
+  collapsing cases the stacked solution scores lower on EVERY term, coverage
+  included, because the objective checks the union of the segments against the
+  union of the ink and is blind to attribution, and the collapse converts
+  Tikhonov-taxed anchor deformation into free block translation. The new
+  `e_overlap` term prices that physics directly: sample pairs of different
+  segments within 0.15 xh (inside one drawn hairline) pay a quadratic hinge,
+  with the measured 0.2–0.4 xh seam stub zone exempt for adjacent segments
+  (init-geometry mask, so the analytic gradient stays exact) and letter-letter
+  stacking never exempt. Calibrated by a pre-registered sweep and a
+  three-config A/B over the frozen fixtures: at the chosen weight **0.2** the
+  term heals exactly the four joins the ink adjudication had named as the
+  guard's marginal fires — mechanically, the seam retrace disappears from the
+  solve itself (`streiten|0` seam share 1.178 → 0.136 xh), so
+  `connector_degenerate` stops firing without any threshold moving. Accepted
+  occurrences 241 → 245 (`longs` 3 → 6), zero new flags, `at_bound` 1 → 0,
+  geo_rmse p50 +0.003 px; weight 1.0 is the measured over-strong regime and
+  was rejected. The interleaved pair-drill stacks stay knowingly open — their
+  centerlines sit beyond the radius, and whether that interleaving is
+  legitimate tucking (the hand demonstrably tucks `k` under a `d` crossbar) or
+  collapse needs ground truth, not a bigger radius. The FD gradient test runs
+  on an overlapping, paying configuration; weight 0 is regression-tested
+  byte-identical to the old objective. Findings in
+  `docs/proposals/uebergaenge-befund.md` §5c, the term in the glossary
+  (Überlappungsterm).
+
+- **The chain can start its letters where their own ink says they are — and
+  measuring that settled what the placement collapse actually is.**
+  `fit_word_chain` gained an optional `slot_shift_init` (harvest flag
+  `--chain-seed grid`): each letter's translation block starts at the grid
+  placement the harvest has always computed for its coverage window, instead
+  of at the composed layout. The objective is untouched — only the basin the
+  descent enters changes — and the A/B over the frozen fixtures ran with
+  pre-registered criteria. Outcome, reported straight: **8 flagged joins are
+  genuinely healed** (collapsed gaps reopen, backward connectors run forward
+  again — e.g. `Silber|4` gap 0 → 0.060 xh, forward −0.919 → +0.323) and 7
+  more letters converge, but 4 other joins derail, the gate cascade reshuffles
+  and the net yield is **exactly zero**, so the default stays `composed`. The
+  decisive follow-up measurement: letters beside still-flagged connectors
+  travel 1.8× further beyond their seed than clean ones, and **all 11**
+  still-collapsed joins started from a healthy seed — the solves walk from the
+  right start INTO the collapse. The placement collapse is therefore a
+  property of the objective (overlapping letters both earn coverage credit for
+  the same ink, so stacking is cheap), not of the initialisation — which
+  redirects the next round at the objective itself. Knob, seed columns in the
+  diag CSV, and three unit tests stay as measurement infrastructure; details
+  in `docs/proposals/uebergaenge-befund.md` §5c.
+
 ### Changed
 
 - **The connector guard was suspected of eating the chain's yield; it turns out

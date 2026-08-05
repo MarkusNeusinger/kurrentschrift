@@ -95,6 +95,7 @@ Known gaps without a loop yet: admin write flows against the LIVE DB (the HTTP s
 - **Prod-touching actions need explicit in-session confirmation first** (Cloud SQL DDL/queries, Secret Manager access, Cloudflare Access policies): name the exact action, resource, and any email/secret id, and ask before acting.
 - **Never echo secret values into the transcript** — verify by exit code or metadata.
 - **Modify repo files only with the Edit/Write tools, never via Bash heredocs/sed.** When a Bash command legitimately mutates a tracked file (formatter, codegen, `git checkout`), Read the file again before the next Edit on it — stale-state errors cascade otherwise.
+- **The perfect result, not the fast one** (owner directive, 2026-08-05): when a cheap symptomatic fix and a correct structural fix compete, take the structural one — even when it looks like a regression at first (the ceiling question of the writing-systems research note). Concretely: fix the model/objective/rule, never mute the alarm; measure with a pre-registered A/B against ground truth (the measured ink) before adopting; an honest negative result that redirects the work is a valid outcome. CPU time on offline measurement runs is not a reason to cut a corner.
 
 ## Language conventions (strict)
 

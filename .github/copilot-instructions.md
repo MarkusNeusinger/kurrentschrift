@@ -65,6 +65,13 @@ agent working in this repo:
   normal review; edit through the editor. When a command legitimately
   rewrites a tracked file (formatter, codegen), re-read it before the next
   edit.
+- **The perfect result, not the fast one** (owner directive, 2026-08-05):
+  when a cheap symptomatic fix and a correct structural fix compete, take
+  the structural one — fix the model/objective/rule, never mute the alarm;
+  measure with a pre-registered A/B against ground truth (the measured ink)
+  before adopting; an honest negative result that redirects the work is a
+  valid outcome. CPU time on offline measurement runs is not a reason to
+  cut a corner.
 - **Claude Code sessions** additionally route work through verified skills
   under `.claude/skills/` (`verify-core` / `verify-api` / `verify-frontend` /
   `verify-migrations`, `write-docs`, `audit-licenses`, `open-pr`,
