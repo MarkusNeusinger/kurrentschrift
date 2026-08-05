@@ -148,6 +148,29 @@ CHAIN_COVERAGE_PER_SEGMENT = 300
 CHAIN_MAX_ITER_ENV = "KS_CHAIN_MAX_ITER"
 CHAIN_MAX_ITER_DEFAULT = 8100
 CHAIN_MAX_ITER = int(os.environ.get(CHAIN_MAX_ITER_ENV) or CHAIN_MAX_ITER_DEFAULT)
+# --- cross-segment overlap (the exclusivity term, round 2) -------------------
+# The basin probe (uebergaenge-befund.md §5c) proved the placement collapse is
+# a property of the OBJECTIVE: on all five probed collapsing cases the stacked
+# solution scores lower on every term, because the objective checks the UNION
+# of the segments against the union of the ink and is blind to attribution — a
+# letter absorbing the connector's ink and a connector retracing a letter's
+# stroke both read as good coverage. The overlap term encodes the physical
+# statement the model was missing: a pen does not write the same stroke twice.
+# Samples of DIFFERENT segments closer than the radius pay a quadratic hinge.
+#
+# Radius: "on the same ridge" — the pooled hairline's mask diameter is
+# ~0.16 xh, so two centerlines within 0.15 xh are inside one drawn stroke.
+CHAIN_OVERLAP_RADIUS_UNITS = 0.15
+# Seam exemption: adjacent segments legitimately share ink near their common
+# seam — §5's measured stub-replacement band is 0.2–0.4 xh per side, so the
+# band's upper edge is exempt. Structural (by init arc distance to the seam
+# sample), so the objective's gradient stays exact.
+CHAIN_OVERLAP_SEAM_EXEMPT_UNITS = 0.4
+# Weight. Default 0.0 = the term is OFF and the objective byte-identical to
+# before — the calibration sweep and the pre-registered A/B set the value, not
+# this file (the same discipline as --chain-seed: measure first, then default).
+CHAIN_OVERLAP_WEIGHT_ENV = "KS_CHAIN_OVERLAP_WEIGHT"
+CHAIN_OVERLAP_WEIGHT = float(os.environ.get(CHAIN_OVERLAP_WEIGHT_ENV) or 0.0)
 # Points on the raw exit→entry connector polyline — the production sample count,
 # re-exported from `core.compose` so a change there cannot silently desync. The
 # two endpoints are SHARED with the letters, the interior 22 are free anchors.
@@ -443,6 +466,9 @@ class _ChainProblem:
     coverage_weight: float
     lambda_reg: float
     smooth_weight: float
+    overlap_weight: float
+    overlap_radius_px: float
+    overlap_exempt: np.ndarray  # (n_s,) True where a sample sits in a seam band
     x0: np.ndarray  # initial parameter vector (all zeros: the composed layout)
     bounds: list[tuple[float, float]]  # global shift, slot blocks, per-anchor deltas
     # ---- internals (not part of the Track-C contract) ----
@@ -540,6 +566,33 @@ class _ChainProblem:
         g_px = g_px + self.coverage_weight * g_cov[:, 0]
         g_py = g_py + self.coverage_weight * g_cov[:, 1]
 
+        # --- cross-segment overlap: a pen does not write a stroke twice ---
+        # Quadratic hinge on sample PAIRS of different segments closer than the
+        # radius, seam bands exempt for ADJACENT segments (the §5 stub zone is
+        # ink the hand really shares). The pair set is recomputed per
+        # evaluation and piecewise-constant in the parameters — the same
+        # a.e.-exact treatment as the coverage assignment above.
+        e_ovl = 0.0
+        if self.overlap_weight > 0.0:
+            pairs = cKDTree(pts).query_pairs(self.overlap_radius_px, output_type="ndarray")
+            if len(pairs):
+                si, sj = self.seg_of_sample[pairs[:, 0]], self.seg_of_sample[pairs[:, 1]]
+                keep = si != sj
+                exempt = (np.abs(si - sj) == 1) & self.overlap_exempt[pairs[:, 0]] & self.overlap_exempt[pairs[:, 1]]
+                pairs = pairs[keep & ~exempt]
+            if len(pairs):
+                dvec = pts[pairs[:, 0]] - pts[pairs[:, 1]]
+                r = np.hypot(dvec[:, 0], dvec[:, 1])
+                safe_r = np.where(r > 0.0, r, 1.0)
+                h = self.overlap_radius_px - r
+                e_ovl = float(np.sum(h**2)) / (n_s * unit_sq)
+                pull = (-2.0 * h / safe_r)[:, None] * dvec / (n_s * unit_sq)
+                g_ovl = np.zeros((n_s, 2))
+                np.add.at(g_ovl, pairs[:, 0], pull)
+                np.add.at(g_ovl, pairs[:, 1], -pull)
+                g_px = g_px + self.overlap_weight * g_ovl[:, 0]
+                g_py = g_py + self.overlap_weight * g_ovl[:, 1]
+
         # --- Tikhonov on the LETTER anchors only (binding constraint 3) ---
         e_reg = float(np.sum(self.reg_w * np.sum(deltas**2, axis=1))) / self.n_letter_anchors
 
@@ -559,6 +612,7 @@ class _ChainProblem:
             + self.coverage_weight * e_cov
             + self.lambda_reg * e_reg
             + self.smooth_weight * e_smooth
+            + self.overlap_weight * e_ovl
         )
         terms = {
             "e_geo": e_geo,
@@ -567,6 +621,7 @@ class _ChainProblem:
             "e_cov_uncapped": e_cov_raw,
             "e_reg": e_reg,
             "e_smooth": e_smooth,
+            "e_overlap": e_ovl,
             "f": f,
         }
         if not want_grad:
@@ -728,6 +783,8 @@ def build_chain_problem(
     lambda_reg: float = DEFAULT_LAMBDA_REG,
     smooth_weight: float = CHAIN_CONNECTOR_SMOOTH_WEIGHT,
     coverage_cap_units: float = CHAIN_COVERAGE_CAP_UNITS,
+    overlap_weight: float | None = None,
+    overlap_radius_units: float = CHAIN_OVERLAP_RADIUS_UNITS,
 ) -> _ChainProblem:
     """Assemble the chain optimisation problem. Pure: no I/O, no DB, no case.
 
@@ -937,6 +994,31 @@ def build_chain_problem(
     if len(cov_pts) > n_cov_max:
         cov_pts = cov_pts[np.linspace(0, len(cov_pts) - 1, n_cov_max).astype(int)]
 
+    # ---- seam bands for the overlap term (structural: INIT geometry only) ----
+    # A sample is "in band" when the initial layout puts it within the §5
+    # stub-replacement reach of a seam its segment participates in. Adjacent
+    # segments legitimately share ink there; the exclusivity term must not
+    # bill the very overlap the hand actually writes. Computed from the init
+    # samples, so the mask is parameter-independent and the objective's
+    # analytic gradient stays exact.
+    s_xy0 = np.column_stack([sampling_op @ anchors_plan0[:, 0], sampling_op @ anchors_plan0[:, 1]])
+    overlap_exempt = np.zeros(n_s, dtype=bool)
+    for i, spec in enumerate(specs):
+        if spec.kind != "connector":
+            continue
+        c0, c1 = sample_slices[i]
+        if c1 <= c0:
+            continue
+        for seam_pt, neighbour in ((s_xy0[c0], i - 1), (s_xy0[c1 - 1], i + 1)):
+            for j in (i, neighbour):
+                if not (0 <= j < len(specs)):
+                    continue
+                j0, j1 = sample_slices[j]
+                if j1 <= j0:
+                    continue
+                near = np.hypot(*(s_xy0[j0:j1] - seam_pt).T) < CHAIN_OVERLAP_SEAM_EXEMPT_UNITS
+                overlap_exempt[j0:j1] |= near
+
     crop_h, crop_w = int(crop_shape[0]), int(crop_shape[1])
     max_shift_units = float(max(crop_h, crop_w)) / unit_px
     bounds: list[tuple[float, float]] = [(-max_shift_units, max_shift_units)] * 2
@@ -974,6 +1056,9 @@ def build_chain_problem(
         coverage_weight=float(coverage_weight),
         lambda_reg=float(lambda_reg),
         smooth_weight=float(smooth_weight),
+        overlap_weight=float(CHAIN_OVERLAP_WEIGHT if overlap_weight is None else overlap_weight),
+        overlap_radius_px=float(overlap_radius_units * unit_px),
+        overlap_exempt=overlap_exempt,
         x0=x0,
         bounds=bounds,
         block_op=block_op,
@@ -1375,6 +1460,7 @@ def fit_word_chain(
             "cov_rmse_local_px": {s.key or s.kind: round(s.cov_rmse_local_px, 3) for s in segments},
             "slot_shift_init": {str(k): list(v) for k, v in applied_seed.items()},
             "smooth_weight": problem.smooth_weight,
+            "overlap_weight": problem.overlap_weight,
             "coverage_cap_px": round(problem.cov_cap_px, 3),
             "seconds": round(time.perf_counter() - started, 3),
             "slots": run,

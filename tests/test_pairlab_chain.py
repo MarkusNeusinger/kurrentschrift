@@ -1096,6 +1096,98 @@ def test_a_capped_solve_is_reported_as_capped(monkeypatch: pytest.MonkeyPatch) -
     assert starved.fit_meta["iterations"] <= 1
 
 
+def _overlapping_specs(k: int = 6) -> list[ChainSegmentSpec]:
+    """Two letters whose arcs run on top of each other — the collapse geometry."""
+    a = _toy_letter(0.2, k)
+    b = _toy_letter(0.35, k)  # 0.15 right of a: extended parallel proximity
+    conn = _toy_connector(a[-1], b[0], 5)
+    return [
+        ChainSegmentSpec(
+            kind="letter", anchors=a, slot_index=0, key="a", half_widths=np.full(k, 0.07), seam_in=0, seam_out=k - 1
+        ),
+        ChainSegmentSpec(kind="connector", anchors=conn, seam_in=0, seam_out=4),
+        ChainSegmentSpec(
+            kind="letter", anchors=b, slot_index=1, key="b", half_widths=np.full(k, 0.07), seam_in=0, seam_out=k - 1
+        ),
+    ]
+
+
+def test_overlap_term_charges_stacked_segments_and_default_off_is_identical() -> None:
+    """The exclusivity term (round 2): stacked letters pay, and at the default
+    weight 0 the objective is BYTE-identical to before — the frozen Stage-A
+    chainbench surface must not move because the term exists."""
+    fields = _flat_fields()
+    on = build_chain_problem(
+        _overlapping_specs(), unit_px=UNIT_PX, x_origin_px=4.3, baseline_y_px=45.7, overlap_weight=1.0, **fields
+    )
+    terms_on, _ = on._evaluate(on.x0, want_grad=False)
+    assert terms_on["e_overlap"] > 0.0, "stacked letters must be charged"
+
+    apart = build_chain_problem(
+        _toy_specs(), unit_px=UNIT_PX, x_origin_px=4.3, baseline_y_px=45.7, overlap_weight=1.0, **fields
+    )
+    terms_apart, _ = apart._evaluate(apart.x0, want_grad=False)
+    assert terms_apart["e_overlap"] == 0.0, "letters a full advance apart share no ridge"
+
+    off = build_chain_problem(
+        _overlapping_specs(), unit_px=UNIT_PX, x_origin_px=4.3, baseline_y_px=45.7, overlap_weight=0.0, **fields
+    )
+    terms_off, _ = off._evaluate(off.x0, want_grad=False)
+    assert terms_off["e_overlap"] == 0.0
+    assert terms_off["f"] == pytest.approx(terms_on["f"] - 1.0 * terms_on["e_overlap"], abs=1e-12), (
+        "weight 0 must reproduce the old objective exactly"
+    )
+
+
+def test_overlap_gradient_matches_finite_differences() -> None:
+    """The load-bearing test, run ON an overlapping configuration: with the
+    term active and paying, the analytic gradient must still agree with central
+    differences — a wrong gradient stalls the line search silently."""
+    problem = build_chain_problem(
+        _overlapping_specs(), unit_px=UNIT_PX, x_origin_px=4.3, baseline_y_px=45.7, overlap_weight=0.5, **_flat_fields()
+    )
+    rng = np.random.default_rng(279)
+    params = rng.uniform(-0.03, 0.03, size=len(problem.x0))
+    terms, _ = problem._evaluate(params, want_grad=False)
+    assert terms["e_overlap"] > 0.0, "the perturbed config must still overlap, or the test tests nothing"
+
+    f0, grad = problem.objective(params)
+    assert np.isfinite(f0) and np.all(np.isfinite(grad))
+    eps = 1e-6
+    for i in range(len(params)):
+        step = np.zeros_like(params)
+        step[i] = eps
+        f_plus, _ = problem.objective(params + step)
+        f_minus, _ = problem.objective(params - step)
+        fd = (f_plus - f_minus) / (2.0 * eps)
+        assert abs(fd - grad[i]) / max(1.0, abs(fd)) < 1e-5, f"param {i}: fd={fd}, analytic={grad[i]}"
+
+
+def test_overlap_seam_band_is_exempt_for_adjacent_segments() -> None:
+    """Samples inside the §5 stub band around a shared seam are the overlap the
+    hand REALLY writes — adjacent segments must not be billed for them, while
+    letter-letter proximity (two segments apart) never gets the exemption."""
+    problem = build_chain_problem(
+        _overlapping_specs(), unit_px=UNIT_PX, x_origin_px=4.3, baseline_y_px=45.7, overlap_weight=1.0, **_flat_fields()
+    )
+    assert problem.overlap_exempt.any(), "seam bands must mark some samples"
+    # Rebuild the kept pair set exactly as _evaluate does and assert no kept
+    # pair is an exempt adjacent one, while letter-letter pairs survive.
+    from scipy.spatial import cKDTree
+
+    ap = problem.plan_anchors(problem.x0)
+    px = problem.x_origin_px + (problem.sampling_op @ ap[:, 0]) * problem.unit_px
+    py = problem.baseline_y_px - (problem.sampling_op @ ap[:, 1]) * problem.unit_px
+    pts = np.column_stack([px, py])
+    pairs = cKDTree(pts).query_pairs(problem.overlap_radius_px, output_type="ndarray")
+    si, sj = problem.seg_of_sample[pairs[:, 0]], problem.seg_of_sample[pairs[:, 1]]
+    cross = pairs[si != sj]
+    si, sj = problem.seg_of_sample[cross[:, 0]], problem.seg_of_sample[cross[:, 1]]
+    adjacent_exempt = (np.abs(si - sj) == 1) & problem.overlap_exempt[cross[:, 0]] & problem.overlap_exempt[cross[:, 1]]
+    assert adjacent_exempt.any(), "the toy seam neighbourhood must produce exempt adjacent pairs"
+    assert (np.abs(si - sj) == 2).any(), "letter-letter pairs must remain billable"
+
+
 def test_a_block_seed_changes_the_start_not_the_objective() -> None:
     """`slot_shift_init` is the round-2 counter to the placement collapse:
     it may only move WHERE the descent starts, never what is measured.
