@@ -176,7 +176,9 @@ function SpecimenBlock({ id }: { id: string }) {
   const onError = useCallback(() => setFallback(true), []);
 
   let content: ReactNode;
-  let caption: string | null = null;
+  // No `= null` seed: every branch below assigns it, so the initialiser would be
+  // dead (`no-useless-assignment`, error in ESLint 10's recommended set).
+  let caption: string;
 
   if (id === 'kurrent') {
     content = <Box sx={fontSpecimenSx}>{t.variants[0].name}</Box>;

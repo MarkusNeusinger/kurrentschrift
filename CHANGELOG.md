@@ -66,6 +66,20 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **ESLint 9 → 10, with the one plugin that blocks it pinned rather than
+  dropped.** Dependabot's bump (#235) could not land on its own: `npm ci` died
+  in the ERESOLVE check because `eslint-plugin-jsx-a11y` still declares a peer
+  range that stops at ESLint 9, and 6.10.2 is its newest release — there is no
+  version to bump to. An `overrides` entry in `app/package.json` pins that peer
+  to ours instead; the plugin runs fine on 10, verified by its rules still
+  firing (`jsx-a11y/no-autofocus` on a canary), and `eslint.config.js` carries
+  the note plus the condition for removing the override again. `@eslint/js`
+  moves to 10 with it. The new recommended set brought exactly one finding:
+  `no-useless-assignment` on a `let caption = null` in `SchriftkundeView` whose
+  every branch assigns before use — the dead initialiser is gone, which also
+  drops a `| null` the type never needed. Lint is back to 0 errors and the same
+  59 known warnings.
+
 - **The connector guard was suspected of eating the chain's yield; it turns out
   to be reporting a real defect, and the defect is the chain's.** 46 of the
   chain harvest's rejections failed only `connector_degenerate` — a gate the
