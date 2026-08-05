@@ -1504,3 +1504,43 @@ Formabweichungen, die es gar nicht gibt. Schicht 1 (Zeilen gegen
 `/write/glyphs`) lief hier frisch durch und war bit-exakt; die
 Kompositionen wurden mit einem Cache-Busting-Parameter nachgeprüft:
 12/12 bit-exakt, worst shape 0, worst placement 0.
+
+### Re-Baseline `aug05` — zweiter Kettenschrieb, mit dem Überlappungsterm
+
+Der erste Schrieb aus dem Objektiv mit Exklusivität (Überlappungsterm,
+PR #300; Befundkette in `uebergaenge-befund.md` §5c). Protokoll wie bei
+`aug04`, alle Tore vorab:
+
+**Reproduktion.** Frische Fixtures (`fetch_fixtures --set all --verify`,
+bit-exakt, exakter Nib) und frische Ernte auf `main` reproduzieren das
+dokumentierte A/B exakt: 245 akzeptierte Slots, Gates 43/20/36, 34 Flags,
+die vier geheilten Verbindungen (`streiten|0`, `ssi|0`, `ssi|1`,
+`regieren|3`) bleiben geheilt. Die Basislinien-Bench reproduziert den
+`aug04`-Stand auf alle sechs Stellen (0,115623 / 0,165519).
+
+**Guard.** Overlay der 18 Entwurfs-Schlüssel (alle n ≥ 4): Wörter
+0,115623 → 0,114694, Paare 0,165519 → 0,164922 — **beide Sets verbessern
+sich**, anders als bei `aug04`, wo die Paare den dokumentierten Trade
+zahlten.
+
+**Geschrieben** (Freigabe des Eigentümers, in-session): 245 Vorkommen
+(`instances`, `replace`, 232 alte ersetzt), 96 Wortspuren
+(`word_instances`, `replace`), Aggregat-Neuaufbau 35 Schlüssel,
+Paar-Aggregate 123 (14 `fit_bad` übersprungen), `apply-laufform` auf
+**alle 18** Entwurfs-Schlüssel — 14 aktualisiert, **4 neu angelegt**
+(`c` `longs` `o` `p` — ihre jeweils erste Laufform; damit sind auch die
+`aug04` bewusst zurückgehaltenen `t` `o` `c` geschrieben, jetzt mit
+n = 4/5/7 statt 3/5/1 und positivem Overlay), 0 übersprungen, 17
+unter `min_n` ausgeschlossen.
+
+**Headline nach dem Schrieb** (frische Fixtures = neuer Live-Stand):
+**Wörter 0,114563** (−0,001060), **Paare 0,164880** (−0,000639).
+Report-Spalte, ehrlich mitgenannt: `meas_dconn_median` der Wörter
+0,116 → 0,127 (reine Report-Größe, nie Teil des Loss).
+
+**Verifikation.** Live-Zählungen 245/96, Varianten-100-Payloads für die
+vier Neuanlagen vorhanden; das `aug04` dokumentierte CDN-Gotcha trat
+erneut auf und wurde erneut per Cache-Bust widerlegt: das Gate mit
+gebusteten `/write/word`-Kompositionen läuft **12/12 bit-exakt** (worst
+shape 0, worst placement 0). Die Kante serviert bis zum Ablauf von
+`s-maxage` den Vortagsstand — bekannt, harmlos, läuft aus.
