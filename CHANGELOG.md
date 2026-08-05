@@ -12,6 +12,30 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **The chain can start its letters where their own ink says they are — and
+  measuring that settled what the placement collapse actually is.**
+  `fit_word_chain` gained an optional `slot_shift_init` (harvest flag
+  `--chain-seed grid`): each letter's translation block starts at the grid
+  placement the harvest has always computed for its coverage window, instead
+  of at the composed layout. The objective is untouched — only the basin the
+  descent enters changes — and the A/B over the frozen fixtures ran with
+  pre-registered criteria. Outcome, reported straight: **8 flagged joins are
+  genuinely healed** (collapsed gaps reopen, backward connectors run forward
+  again — e.g. `Silber|4` gap 0 → 0.060 xh, forward −0.919 → +0.323) and 7
+  more letters converge, but 4 other joins derail, the gate cascade reshuffles
+  and the net yield is **exactly zero**, so the default stays `composed`. The
+  decisive follow-up measurement: letters beside still-flagged connectors
+  travel 1.8× further beyond their seed than clean ones, and **all 11**
+  still-collapsed joins started from a healthy seed — the solves walk from the
+  right start INTO the collapse. The placement collapse is therefore a
+  property of the objective (overlapping letters both earn coverage credit for
+  the same ink, so stacking is cheap), not of the initialisation — which
+  redirects the next round at the objective itself. Knob, seed columns in the
+  diag CSV, and three unit tests stay as measurement infrastructure; details
+  in `docs/proposals/uebergaenge-befund.md` §5c.
+
 ### Changed
 
 - **The connector guard was suspected of eating the chain's yield; it turns out
