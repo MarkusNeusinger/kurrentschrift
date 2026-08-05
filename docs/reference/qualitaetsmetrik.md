@@ -1513,7 +1513,8 @@ PR #300; Befundkette in `uebergaenge-befund.md` §5c). Protokoll wie bei
 
 **Reproduktion.** Frische Fixtures (`fetch_fixtures --set all --verify`,
 bit-exakt, exakter Nib) und frische Ernte auf `main` reproduzieren das
-dokumentierte A/B exakt: 245 akzeptierte Slots, Gates 43/20/36, 34 Flags,
+dokumentierte A/B exakt: 245 akzeptierte Slots, Tor-Verteilung 43/20/36
+(`connector_degenerate` / `geo_rmse` / `not_converged_local`), 34 Flags,
 die vier geheilten Verbindungen (`streiten|0`, `ssi|0`, `ssi|1`,
 `regieren|3`) bleiben geheilt. Die Basislinien-Bench reproduziert den
 `aug04`-Stand auf alle sechs Stellen (0,115623 / 0,165519).
@@ -1528,10 +1529,10 @@ zahlten.
 (`word_instances`, `replace`), Aggregat-Neuaufbau 35 Schlüssel,
 Paar-Aggregate 123 (14 `fit_bad` übersprungen), `apply-laufform` auf
 **alle 18** Entwurfs-Schlüssel — 14 aktualisiert, **4 neu angelegt**
-(`c` `longs` `o` `p` — ihre jeweils erste Laufform; damit sind auch die
-`aug04` bewusst zurückgehaltenen `t` `o` `c` geschrieben, jetzt mit
-n = 4/5/7 statt 3/5/1 und positivem Overlay), 0 übersprungen, 17
-unter `min_n` ausgeschlossen.
+(`c`, `longs`, `o`, `p` — ihre jeweils erste Laufform; damit sind auch
+die `aug04` bewusst zurückgehaltenen Schlüssel geschrieben: `t` mit
+n = 4 statt 3, `o` mit n = 5, `c` mit n = 7 statt 1, alle mit positivem
+Overlay), 0 übersprungen, 17 unter `min_n` ausgeschlossen.
 
 **Headline nach dem Schrieb** (frische Fixtures = neuer Live-Stand):
 **Wörter 0,114563** (−0,001060), **Paare 0,164880** (−0,000639).
