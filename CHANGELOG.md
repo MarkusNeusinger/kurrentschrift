@@ -14,6 +14,22 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The pair focus shows its drill plate like a word: green trace, red engine
+  ink, one registration.** Every Abb.-20 drill is auto-traced into
+  `word_instances` since the harvest, but the Übergänge view only offered the
+  plain crop tile — the traced line and the system's answer met the specimen
+  only two clicks away, in the Wörter detail. `/admin/uebergaenge?l=&r=` now
+  carries a full-width „Platten-Beleg (nachgefahren)" panel wherever a traced
+  drill of exactly that pair exists (matched by shaping the sample's word, the
+  same rule the pair cards use): the same `WordSpineCard` the Wörter view
+  draws — the green Nachfahrung and the translucent engine ink both on the
+  row's measured registration, the engine's own face beside at the same scale
+  — with both layers ON by default and the Wörter detail's layer toggles
+  (`LayerDot` extracted to `shell/` for both views), a „Bewerten" score
+  action, and a jump into the word detail. An override save resets the card
+  through the existing `pairTick` (fresh composition via the render cache's
+  `bust`, stale score dropped); a pair without a drill plate shows no panel.
+
 - **The Übergänge view shows the measured joins as ink, not as chips.** The
   occurrence panel of `/admin/uebergaenge` listed every dissected join by
   specimen id and `gen_chamfer` — it said where a join was measured and never

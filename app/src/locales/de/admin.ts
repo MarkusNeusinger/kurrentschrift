@@ -151,6 +151,11 @@ export const admin = {
     statsTitle: 'Gemessen vs. komponiert',
     statsCaption:
       'Die gemessene Median-Verbindung über den Vorkommen, aus denen sie verdichtet wurde — die Prüfzahl dafür, wie weit der Generator von dieser Hand entfernt liegt.',
+    // The traced drill plate of exactly this pair (the Verbindungs-Platten
+    // cell), shown as the same evidence card the Wörter view uses.
+    drillTitle: 'Platten-Beleg (nachgefahren)',
+    drillCaption:
+      'Die Verbindungs-Platte genau dieser Kombination — grün die Nachfahrung, rot darüber die Engine-Tinte, beide in der vermessenen Registrierung der Spur; rechts schreibt das System dieselbe Verbindung im gleichen Maßstab.',
     occurrencesTitle: 'Vorkommen ({{count}})',
     occurrencesCaption:
       'Jede herausgezogene Verbindung als Ausschnitt der Platte — die Tinte selbst, mit dem Abstand Δ zum generierten Zug. Ein Klick springt in das Wort, in dem sie steht.',

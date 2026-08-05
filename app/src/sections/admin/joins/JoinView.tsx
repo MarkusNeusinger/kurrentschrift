@@ -10,19 +10,32 @@
 // combinations were never written by hand anywhere; they still have to look
 // right, and now they can be looked at and complained about.
 
-import { Box, Button, Chip, Collapse, TextField, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Collapse,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { WrittenWord } from '@/components/WrittenWord';
 import { useAdmin } from '@/context/AdminContext';
-import { getPairs } from '@/lib/api';
-import type { GlyphPairOut, WordSampleOut } from '@/lib/api';
+import { getPairs, getWordSampleScore } from '@/lib/api';
+import type { ComposedWordOut, GlyphPairOut, InstanceOut, WordInstanceOut, WordSampleOut, WordSampleScoreOut } from '@/lib/api';
+import { fetchRenderWord } from '@/lib/api/renderCache';
 import { de, fmt } from '@/locales/admin';
 import { WordComparison } from '@/sections/admin/compare/WordComparison';
 import { PairEditorDialog } from '@/sections/admin/pairs/PairEditorDialog';
 import { PairMatrix } from '@/sections/admin/pairs/PairMatrix';
 import { PairStats } from '@/sections/admin/shell/LensStats';
+import { LayerDot } from '@/sections/admin/shell/LayerDot';
 import { LetterPicker } from '@/sections/admin/shell/LetterPicker';
 import { CropThumb } from '@/sections/admin/shell/OccurrenceThumb';
 import { useFileMark } from '@/sections/admin/shell/KorbContext';
@@ -36,10 +49,104 @@ import {
   textForPair,
   wordsUrl,
 } from '@/sections/admin/shell/focus';
-import { WERKBANK_COLORS, joinCropBoxOf, pairKeyOf, type CropBox } from '@/sections/admin/shell/model';
+import { WERKBANK_COLORS, joinCropBoxOf, pairKeyOf, type CropBox, type Mark } from '@/sections/admin/shell/model';
+import { WordSpineCard } from '@/sections/admin/words/WordSpineCard';
 import { garamond } from '@/styles/paper';
 
 const PREVIEW_H = 150; // px — a join needs room, but stays scannable
+
+// The traced drill plate of THIS pair, shown exactly like a word's evidence
+// card in the Wörter view: the green trace and the engine's ink share the
+// row's measured registration, the engine's own face sits beside at the same
+// scale. Fetches its own composition — the drill's word is normally the pair
+// text, so the shared render cache makes this one request per join.
+function DrillSpecimenCard({
+  row,
+  sample,
+  sourceId,
+  bust,
+  overlay,
+  showTrace,
+  boxes,
+  onOpenLetter,
+  onOpenPair,
+  onMark,
+  onOpenWord,
+}: {
+  row: WordInstanceOut;
+  sample: WordSampleOut;
+  sourceId: string;
+  bust: number;
+  overlay: boolean;
+  showTrace: boolean;
+  boxes: InstanceOut[];
+  onOpenLetter: (glyphKey: string) => void;
+  onOpenPair: (leftKey: string, rightKey: string) => void;
+  onMark: (mark: Mark) => void;
+  onOpenWord: () => void;
+}) {
+  const [composed, setComposed] = useState<ComposedWordOut | null>(null);
+  const [score, setScore] = useState<WordSampleScoreOut | 'busy' | 'error' | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setComposed(null);
+    fetchRenderWord(sourceId, row.word, bust)
+      .then((c) => {
+        if (!cancelled) setComposed(c);
+      })
+      .catch(() => {
+        // The written panel above reports a compose failure already — the
+        // card's engine face just stays pending rather than alarming twice.
+        if (!cancelled) setComposed(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [sourceId, row.word, bust]);
+
+  const runScore = () => {
+    setScore('busy');
+    getWordSampleScore(sourceId, sample.id)
+      .then(setScore)
+      .catch(() => setScore('error'));
+  };
+
+  return (
+    <WordSpineCard
+      row={row}
+      sample={sample}
+      sourceId={sourceId}
+      boxes={boxes}
+      composed={composed}
+      overlay={overlay}
+      showTrace={showTrace}
+      onOpenLetter={onOpenLetter}
+      onOpenPair={onOpenPair}
+      onMark={onMark}
+      actions={
+        <>
+          {score === 'busy' ? (
+            <CircularProgress size={16} />
+          ) : score === 'error' ? (
+            <Chip size="small" color="error" variant="outlined" label={de.admin.compare.scoreFailed} />
+          ) : score ? (
+            <Tooltip title={de.admin.words.scoreHint}>
+              <Chip size="small" variant="outlined" label={`Loss ${score.loss.toFixed(2)}`} />
+            </Tooltip>
+          ) : (
+            <Button size="small" onClick={runScore}>
+              {de.admin.words.scoreButton}
+            </Button>
+          )}
+          <Button size="small" onClick={onOpenWord}>
+            {de.admin.compare.openWord}
+          </Button>
+        </>
+      }
+    />
+  );
+}
 
 export function JoinView() {
   const [params, setParams] = useSearchParams();
@@ -103,6 +210,24 @@ export function JoinView() {
   const pairText = leftKey && rightKey ? textForPair(leftKey, rightKey) : '';
   const occurrences = leftKey && rightKey ? (workbench.pairsByKey.get(pairKeyOf(leftKey, rightKey)) ?? []) : [];
   const aggregate = leftKey && rightKey ? workbench.pairAggregateByKey.get(pairKeyOf(leftKey, rightKey)) : undefined;
+
+  // The traced drill plates of exactly this pair (usually one) — identified by
+  // shaping the sample's word, the same rule the pair cards and the editor
+  // deep link use, so a drill can never attach to a different join than the
+  // one its card links to.
+  const drillRows = useMemo(() => {
+    if (!leftKey || !rightKey) return [];
+    return workbench.wordRows.filter((row) => {
+      if (row.kind !== 'pair' || !workbench.sampleById.has(row.specimen_id)) return false;
+      const keys = pairKeysOfText(row.word);
+      return keys !== null && keys[0] === leftKey && keys[1] === rightKey;
+    });
+  }, [workbench.wordRows, workbench.sampleById, leftKey, rightKey]);
+
+  // Layers over the drill specimen — the Wörter detail's switches, but BOTH on
+  // by default: this panel exists precisely for trace vs. engine.
+  const [drillTrace, setDrillTrace] = useState(true);
+  const [drillEngine, setDrillEngine] = useState(true);
 
   // The dissected occurrences split by whether their ink can be shown. A
   // `pair_instance` stores no pixel box (its geometry is in the glyph_pairs
@@ -335,6 +460,64 @@ export function JoinView() {
             onRebuild={workbench.rebuildPairStats}
           />
         </Panel>
+
+        {/* 2b — the drill plate of exactly this pair, wherever one was traced:
+            the same evidence card the Wörter view shows, so the green trace
+            and the engine's ink meet the specimen HERE, not two clicks away. */}
+        {drillRows.length > 0 && (
+          <Box sx={{ gridColumn: '1 / -1' }}>
+            <Panel
+              title={t.drillTitle}
+              caption={t.drillCaption}
+              actions={
+                <ToggleButtonGroup
+                  size="small"
+                  value={[...(drillTrace ? ['trace'] : []), ...(drillEngine ? ['engine'] : [])]}
+                  onChange={(_e, next: string[]) => {
+                    setDrillTrace(next.includes('trace'));
+                    setDrillEngine(next.includes('engine'));
+                  }}
+                  aria-label={de.admin.werkbank.layersLabel}
+                >
+                  <ToggleButton value="trace">
+                    <LayerDot color={WERKBANK_COLORS.traceOverInk} />
+                    {de.admin.werkbank.layerTrace}
+                  </ToggleButton>
+                  <ToggleButton value="engine">
+                    <LayerDot color={WERKBANK_COLORS.engine} />
+                    {de.admin.werkbank.layerEngine}
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              }
+            >
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {drillRows.map((row) => {
+                  const sample = workbench.sampleById.get(row.specimen_id);
+                  if (!sample) return null;
+                  return (
+                    <DrillSpecimenCard
+                      // Keyed on the save counter: an override save must reset
+                      // the card (fresh composition via `bust`, stale score
+                      // dropped) rather than keep judging the old join.
+                      key={`${row.kind}:${row.specimen_id}:${pairTick}`}
+                      row={row}
+                      sample={sample}
+                      sourceId={sourceId}
+                      bust={pairTick}
+                      overlay={drillEngine}
+                      showTrace={drillTrace}
+                      boxes={workbench.boxesBySpecimen.get(row.specimen_id) ?? []}
+                      onOpenLetter={(key) => navigate(lettersUrl(key))}
+                      onOpenPair={focus}
+                      onMark={fileMark}
+                      onOpenWord={() => navigate(wordsUrl(row.word, row.specimen_id))}
+                    />
+                  );
+                })}
+              </Box>
+            </Panel>
+          </Box>
+        )}
 
         {/* 3 — the raw dissections, one row per occurrence. */}
         <Panel title={fmt(t.occurrencesTitle, { count: occurrences.length })} caption={t.occurrencesCaption}>
