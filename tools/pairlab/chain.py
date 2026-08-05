@@ -166,11 +166,32 @@ CHAIN_OVERLAP_RADIUS_UNITS = 0.15
 # band's upper edge is exempt. Structural (by init arc distance to the seam
 # sample), so the objective's gradient stays exact.
 CHAIN_OVERLAP_SEAM_EXEMPT_UNITS = 0.4
-# Weight. Default 0.0 = the term is OFF and the objective byte-identical to
-# before — the calibration sweep and the pre-registered A/B set the value, not
-# this file (the same discipline as --chain-seed: measure first, then default).
+# Weight 0.2, set by the pre-registered A/B over the frozen fixtures (weights
+# 0 · 0.2 · 1.0, full words+pairs harvest each):
+#
+#   w      accepted   flags (38 base)   freed / new   geo_rmse p50/p90
+#   0.0      241         38                —            1.027 / 1.585
+#   0.2      245         34             4 / 0           1.030 / 1.622
+#   1.0      242         34             6 / 2           1.034 / (geo_rmse gate 21→23)
+#
+# At 0.2 the term heals EXACTLY the four joins the ink adjudication (§5c) had
+# identified as the guard's marginal fires (`streiten|0`, `ssi|0`, `ssi|1`,
+# `regieren|3`) — and it heals them mechanically, not statistically: the seam
+# retrace disappears from the solve itself (`streiten|0` seam_left 1.178 →
+# 0.136 xh, `ssi|0` 1.360 → 0.258), so the guard stops firing without any
+# threshold moving. Yield +4 (`longs` 3 → 6), zero new flags, `at_bound`
+# 1 → 0, rmse p50 +0.003 px. 1.0 is the over-strong regime: it starts pushing
+# letters off legitimately shared ink (two fresh derailments, the geo_rmse
+# gate up 21 → 23) for less yield.
+#
+# What 0.2 does NOT fix, knowingly: the interleaved pair-drill stacks (`do`,
+# `bp`, …) whose centerlines stay farther apart than the radius — by the
+# radius rationale that separation is adjacent writing, not double-writing,
+# and per the round-1 finding (`dk`) this hand really does tuck letters under
+# crossbars, so their legitimacy needs better ground truth, not a bigger
+# radius.
 CHAIN_OVERLAP_WEIGHT_ENV = "KS_CHAIN_OVERLAP_WEIGHT"
-CHAIN_OVERLAP_WEIGHT = float(os.environ.get(CHAIN_OVERLAP_WEIGHT_ENV) or 0.0)
+CHAIN_OVERLAP_WEIGHT = float(os.environ.get(CHAIN_OVERLAP_WEIGHT_ENV) or 0.2)
 # Points on the raw exit→entry connector polyline — the production sample count,
 # re-exported from `core.compose` so a change there cannot silently desync. The
 # two endpoints are SHARED with the letters, the interior 22 are free anchors.

@@ -905,6 +905,69 @@ Reproduktion: `--chain-seed {composed,grid}` auf demselben Kommando wie oben;
 Seeds und Rest-Reiseweg stehen je Slot im `--diag-csv`
 (`seed_x/y_units` gegen `shift_x/y_units`).
 
+### Nachtrag: der Überlappungsterm — die Exklusivität, die dem Objektiv fehlte (2026-08-05)
+
+Der objektivseitige Weg (Eigentümer-Entscheid: „das perfekte Ergebnis, nicht
+das schnelle") ist gegangen, in vier Schritten, jeder vorregistriert.
+
+**1. Beckensonde — die Behauptung bewiesen, bevor gebaut wurde.** Fünf
+bekannte Kollaps-Fälle (`do` `bp` `sg` · `Seiten` `unter`), je zweimal gelöst:
+frei gegen „Platzierung an der eigenen Tinte festgeheftet" (Blöcke per Bounds
+am Grid-Seed, Anker und Verbinder frei). **5/5: die kollabierte Lösung ist
+billiger — und zwar in *jedem* Term, Deckung eingeschlossen** (Paare bis
+5,3×, Wörter ~1,3×). Damit war die Diagnose eine Ebene tiefer gelegt: nicht
+„Tinte absorbiert beliebig viel Modell", sondern **Zuordnungsblindheit** —
+das Objektiv prüft die Vereinigung der Segmente gegen die Vereinigung der
+Tinte; ein Buchstabe, der Verbinder-Tinte schluckt, und ein Verbinder, der
+den Buchstabenstrich nachfährt, lesen sich beide als gute Deckung. Und der
+Kollaps wandelt regulierte Anker-Verformung in unregulierte, kostenlose
+Block-Translation um (`e_reg` ist einer der beiden Hauptfinanziers).
+
+**2. Der Term.** `e_overlap`: quadratischer Hinge auf Sample-Paare
+**verschiedener** Segmente innerhalb `CHAIN_OVERLAP_RADIUS_UNITS` (0,15 xh —
+innerhalb eines gezeichneten Haarstrichs, Masken-Durchmesser ~0,16). Zwei
+Freistellungen, beide begründet: die Nahtbänder benachbarter Segmente (die
+gemessene 0,2–0,4-xh-Stub-Zone; aus der **Init**-Geometrie, damit der
+analytische Gradient exakt bleibt) — und Buchstabe-auf-Buchstabe **nie**,
+denn Stapeln ist der Fehler, den der Term bepreist. Paarmenge pro Evaluation
+per KD-Baum, stückweise konstant — dieselbe f.ü.-exakte Behandlung wie die
+Deckungszuordnung. Der tragende FD-Gradiententest läuft auf einer
+überlappenden Konfiguration mit zahlendem Term.
+
+**3. Kalibrier-Sweep** (5 Kollaps- + 2 Kontrollfälle × w ∈ {0; 0,05; 0,2; 1;
+5}) — mit einer Selbstkorrektur: die x-Ausdehnungs-Lücke war als
+Kollaps-Messer **falsch**, denn verschachtelte, aber zentrallinien-getrennte
+Buchstaben (diese Hand schiebt das `k` legitim unter den `d`-Deckstrich,
+Runde-1-Befund `dk`) sind kein Doppelschreiben. Ab w = 1 zeigt sich das
+Über-stark-Regime: Buchstaben werden von legitim geteilter Tinte
+weggedrückt (`unter` Slot 4: rmse 0,96 → 1,97 px).
+
+**4. Das A/B** (volle `words,pairs`-Fixtures, w ∈ {0; 0,2; 1,0}):
+
+| w | akzeptiert | Flags (38 Basis) | geheilt / neu | rmse p50 |
+|---|---|---|---|---|
+| 0 | 241 | 38 | — | 1,027 px |
+| **0,2** | **245** | **34** | **4 / 0** | 1,030 px |
+| 1,0 | 242 | 34 | 6 / 2 | 1,034 px |
+
+**Bei w = 0,2 heilen exakt die vier Verbindungen, die die
+Tinten-Adjudikation als die Grenzfälle des Wächters benannt hatte**
+(`streiten|0`, `ssi|0`, `ssi|1`, `regieren|3`) — und zwar mechanisch, nicht
+statistisch: der Naht-Anteil verschwindet aus der Lösung selbst
+(`streiten|0` seam_left 1,178 → 0,136 xh; `ssi|0` 1,360 → 0,258). **Keine
+Schwelle wurde bewegt; die Geometrie wurde repariert, und der Wächter stimmt
+von selbst zu.** Ausbeute +4 (`longs` 3 → 6 — einer der wächter-ausgehungerten
+Schlüssel), null neue Flags, `at_bound` 1 → 0, rmse p50 +0,003 px. Default:
+`CHAIN_OVERLAP_WEIGHT = 0,2`.
+
+**Offen, mit Namen:** die verschachtelten Paar-Übungs-Stapel (`do`, `bp`,
+`dp` …) heilen NICHT — ihre Zentrallinien liegen weiter auseinander als der
+Radius, und nach dem Radius-Rational ist das benachbartes Schreiben, kein
+Doppelschreiben. Ob ihr Ausdehnungs-Überlapp legitimes Unterschieben (wie
+`dk`) oder echter Kollaps ist, entscheidet keine Radius-Vergrößerung, sondern
+bessere Bodenwahrheit — eine autorisierte Nachfahrung dieser Übungen oder die
+Ausgabe der Ketten-Anker für abgelehnte Slots (Punkt 4 der Liste oben).
+
 ## 6. Beantwortung der Kernfrage + Lösungsoptionen
 
 **Generisch lösbar — als Klassenregel, nicht pro Paar.** Die Abweichungen

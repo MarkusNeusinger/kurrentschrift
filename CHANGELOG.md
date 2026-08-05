@@ -14,6 +14,34 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The chain objective learned the one thing a pen always knew: a stroke is
+  not written twice.** The grid-seed A/B's follow-up (the basin probe) proved
+  the placement collapse is a property of the objective — on all five probed
+  collapsing cases the stacked solution scores lower on EVERY term, coverage
+  included, because the objective checks the union of the segments against the
+  union of the ink and is blind to attribution, and the collapse converts
+  Tikhonov-taxed anchor deformation into free block translation. The new
+  `e_overlap` term prices that physics directly: sample pairs of different
+  segments within 0.15 xh (inside one drawn hairline) pay a quadratic hinge,
+  with the measured 0.2–0.4 xh seam stub zone exempt for adjacent segments
+  (init-geometry mask, so the analytic gradient stays exact) and letter-letter
+  stacking never exempt. Calibrated by a pre-registered sweep and a
+  three-config A/B over the frozen fixtures: at the chosen weight **0.2** the
+  term heals exactly the four joins the ink adjudication had named as the
+  guard's marginal fires — mechanically, the seam retrace disappears from the
+  solve itself (`streiten|0` seam share 1.178 → 0.136 xh), so
+  `connector_degenerate` stops firing without any threshold moving. Accepted
+  occurrences 241 → 245 (`longs` 3 → 6), zero new flags, `at_bound` 1 → 0,
+  geo_rmse p50 +0.003 px; weight 1.0 is the measured over-strong regime and
+  was rejected. The interleaved pair-drill stacks stay knowingly open — their
+  centerlines sit beyond the radius, and whether that interleaving is
+  legitimate tucking (the hand demonstrably tucks `k` under a `d` crossbar) or
+  collapse needs ground truth, not a bigger radius. The FD gradient test runs
+  on an overlapping, paying configuration; weight 0 is regression-tested
+  byte-identical to the old objective. Findings in
+  `docs/proposals/uebergaenge-befund.md` §5c, the term in the glossary
+  (Überlappungsterm).
+
 - **The chain can start its letters where their own ink says they are — and
   measuring that settled what the placement collapse actually is.**
   `fit_word_chain` gained an optional `slot_shift_init` (harvest flag
