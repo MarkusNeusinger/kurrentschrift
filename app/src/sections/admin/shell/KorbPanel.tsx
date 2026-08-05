@@ -43,7 +43,9 @@ function workItemLabel(item: WorkItemOut): string {
   const t = de.admin.werkbank;
   if (item.kind === 'letter') return `${t.kindLetter} ${item.glyph_key ?? '?'}`;
   if (item.kind === 'pair') return `${t.kindPair} ${item.left_key ?? '?'}→${item.right_key ?? '?'}`;
-  if (item.kind === 'word') return `${t.kindWord} ${item.word ?? item.specimen_id ?? '?'}`;
+  // No `?? specimen_id` here: the row already appends the specimen id after the
+  // label, so a word item filed by its specimen alone printed the id twice.
+  if (item.kind === 'word') return `${t.kindWord} ${item.word ?? '?'}`;
   return item.note.split('\n')[0].trim() || t.kindNote;
 }
 
