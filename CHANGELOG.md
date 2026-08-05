@@ -47,8 +47,6 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   the next round does not re-derive them. Full finding in
   `docs/proposals/uebergaenge-befund.md` §5c.
 
-### Added
-
 - **The word chain has its own iteration budget, and it is no longer the thing
   that stops the solve.** The chain borrowed `core.fit.DEFAULT_MAX_ITER` — a
   per-GLYPH budget on a per-glyph problem, while a three-slot word chain
