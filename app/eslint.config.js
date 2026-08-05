@@ -5,6 +5,13 @@
 // meaningful once the rule actually runs). react-refresh findings are warnings.
 // jsx-a11y guards the SVG-heavy custom-interaction surfaces (quiz, Tafel,
 // admin canvas) against the mechanical accessibility slips a reviewer misses.
+//
+// eslint-plugin-jsx-a11y is the one plugin here whose peer range still stops at
+// ESLint 9 (6.10.2 is its newest release), which is why `npm ci` refused the
+// ESLint 10 bump until `package.json` gained an `overrides` entry pinning its
+// peer to ours. The plugin itself runs fine on 10 — verified by its rules still
+// firing (`jsx-a11y/no-autofocus` on a canary file). Drop the override as soon
+// as upstream ships a release that declares ESLint 10.
 import js from '@eslint/js';
 import globals from 'globals';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
