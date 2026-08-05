@@ -438,7 +438,11 @@ def capsule_union_rings(
 
 
 def erase_silhouette_piece(
-    rings: list[list[list[float]]], piece: Sequence[Sequence[float]], radius: float, decimals: int = 4
+    rings: list[list[list[float]]],
+    piece: Sequence[Sequence[float]],
+    radius: float,
+    decimals: int = 4,
+    keep: Sequence[Sequence[float]] | None = None,
 ) -> list[list[list[float]]]:
     """Erase a stroke silhouette around a removed centerline piece.
 
@@ -451,6 +455,12 @@ def erase_silhouette_piece(
     pairs exteriors with their holes), subtract a round-capped capsule of
     ``radius`` around the removed piece, and re-emit rings under the same
     contract. Returns the input unchanged when there is nothing to erase.
+
+    ``keep`` is the centerline the stroke STILL writes: where the removed
+    piece crosses it (the d's loop-return stub over its own stem), the
+    eraser capsule is cut back to ``radius`` around the kept line so the
+    surviving stroke keeps its ink instead of showing a white bite at the
+    crossing. Ink is only ever spared, never added.
     """
     if not rings or len(piece) < 2:
         return rings
@@ -465,6 +475,8 @@ def erase_silhouette_piece(
     if region is None:
         return rings
     eraser = LineString([(float(x), float(y)) for x, y in piece]).buffer(float(radius))
+    if keep is not None and len(keep) >= 2:
+        eraser = eraser.difference(LineString([(float(x), float(y)) for x, y in keep]).buffer(float(radius)))
     remain = region.difference(eraser)
     if remain.geom_type in ("MultiPolygon", "GeometryCollection"):
         polygons = list(remain.geoms)
