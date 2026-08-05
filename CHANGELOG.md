@@ -14,6 +14,19 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The Übergänge view shows the measured joins as ink, not as chips.** The
+  occurrence panel of `/admin/uebergaenge` listed every dissected join by
+  specimen id and `gen_chamfer` — it said where a join was measured and never
+  what it looks like, which is the one thing a join is judged on. A
+  `pair_instance` carries no pixel box (its geometry lives in the glyph_pairs
+  frame, relative to the left glyph's exit), but it names the specimen and the
+  left glyph's slot, and the letter occurrences of the same plate carry those
+  slots as page-pixel boxes: the new pure `model.ts::joinCropBoxOf` unions the
+  two into the join's own crop box, and the tile from the Buchstaben view
+  (extracted as the generic `CropThumb`) draws it. Slot and glyph key must
+  both match — where the two harvests disagree about a word's slotting, the
+  chip row stays rather than showing the wrong ink.
+
 - **The chain objective learned the one thing a pen always knew: a stroke is
   not written twice.** The grid-seed A/B's follow-up (the basin probe) proved
   the placement collapse is a property of the objective — on all five probed
@@ -87,6 +100,16 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   doublings 8 → 6. Golden compose fixture deliberately re-baselined.
 
 ### Changed
+
+- **Deleting a task in the Auftragskorb asks first.** The bin icon on a
+  work-item row was a single click on a hard DELETE with no undo anywhere in
+  the basket. That is the wrong bargain for a CLOSED item in particular: its
+  handling protocol — the session's restatement, the diagnosed stage, the
+  resolution — is precisely the symptom → diagnosis → change archive the §5
+  protocol exists to accumulate, and one stray tap on a phone emptied it. The
+  icon now opens a confirmation naming the row, and an erledigter Auftrag adds
+  the warning that its record is history plus the pointer to the „erledigte
+  anzeigen" toggle, which hides rather than destroys.
 
 - **ESLint 9 → 10, with the one plugin that blocks it pinned rather than
   dropped.** Dependabot's bump (#235) could not land on its own: `npm ci` died
