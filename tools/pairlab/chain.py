@@ -575,7 +575,10 @@ class _ChainProblem:
 
         # --- coverage: capped, over the WHOLE pair window (ICP-frozen) ---
         pts = np.column_stack([px, py])
-        cdist, cidx = cKDTree(pts).query(self.cov_pts)
+        # One tree per evaluation, shared with the overlap term below — the
+        # points are identical, and the build is the O(n log n) part.
+        tree = cKDTree(pts)
+        cdist, cidx = tree.query(self.cov_pts)
         n_cov = max(1, len(self.cov_pts))
         rho, dscale = _coverage_huber(cdist, self.cov_cap_px)
         e_cov = float(np.mean(rho)) / unit_sq
@@ -595,7 +598,7 @@ class _ChainProblem:
         # a.e.-exact treatment as the coverage assignment above.
         e_ovl = 0.0
         if self.overlap_weight > 0.0:
-            pairs = cKDTree(pts).query_pairs(self.overlap_radius_px, output_type="ndarray")
+            pairs = tree.query_pairs(self.overlap_radius_px, output_type="ndarray")
             if len(pairs):
                 si, sj = self.seg_of_sample[pairs[:, 0]], self.seg_of_sample[pairs[:, 1]]
                 keep = si != sj
