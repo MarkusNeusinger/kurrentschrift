@@ -17,7 +17,7 @@ import numpy as np
 from scipy.ndimage import median_filter, uniform_filter1d
 
 from core.chart import crop_with_mask, load_chart_grayscale
-from core.extract import binarize_adaptive, half_widths_on_medial_axis, skeleton_and_width
+from core.extract import binarize_adaptive, half_widths_on_medial_axis, medial_snap_cap_px, skeleton_and_width
 from core.fit import fit_template_to_instance, refine_template_against_crop
 from core.quality import template_quality_metrics
 from core.template import (
@@ -636,9 +636,7 @@ def canonical_from_path(
                 chord_length(resampled_local[a:b]) for a, b in zip(seg_bounds[:-1], seg_bounds[1:], strict=True)
             )
 
-    # Snap no farther than a quarter x-height: generous against trace wobble,
-    # tight enough not to jump to a neighbouring stroke.
-    hw_px = half_widths_on_medial_axis(resampled_local, skel, mask, width_map, snap_cap_px=max(3.0, 0.25 * unit_px))
+    hw_px = half_widths_on_medial_axis(resampled_local, skel, mask, width_map, snap_cap_px=medial_snap_cap_px(unit_px))
     hw_px, crossing_anchors = _resolve_crossing_widths(resampled_local, hw_px, stroke_starts)
     # Median/box smoothing stays as INITIALISATION; the refine's per-chain
     # curvature regulariser is the final arbiter of the width profile.

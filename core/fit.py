@@ -49,7 +49,7 @@ from scipy.optimize import minimize
 from scipy.spatial import cKDTree
 
 from core.chart import crop_with_mask, load_chart_grayscale
-from core.extract import binarize_adaptive, half_widths_on_medial_axis, skeleton_and_width
+from core.extract import binarize_adaptive, half_widths_on_medial_axis, medial_snap_cap_px, skeleton_and_width
 from core.geometry import bilinear
 from core.template import SamplePlan, build_sample_plan, capsule_union_rings, sample_with_sample_plan
 
@@ -574,7 +574,7 @@ def fit_template_to_instance(
     # under-measures by exactly the centerline's off-axis offset (which the
     # converged tolerance explicitly permits).
     mask = width_map > 0
-    snap_cap_px = max(3.0, 0.25 * unit_px)
+    snap_cap_px = medial_snap_cap_px(unit_px)
     fitted_sample_hw_px = half_widths_on_medial_axis(fitted_polyline_px, skel, mask, width_map, snap_cap_px)
 
     # Effective placement after the global translation (template units → px).

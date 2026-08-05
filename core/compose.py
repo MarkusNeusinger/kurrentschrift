@@ -28,11 +28,13 @@ from __future__ import annotations
 
 import math
 import statistics
+from dataclasses import dataclass
 
 import numpy as np
 
+from core.pipeline import CORNER_WINDOW_UNITS
 from core.shaping import GlyphSlot
-from core.template import chisel_union_rings, erase_silhouette_piece
+from core.template import SILHOUETTE_SIMPLIFY_TOL, chisel_union_rings, erase_silhouette_piece
 from core.widths import PenStyle
 
 
@@ -470,7 +472,25 @@ CAP_INK_CLEARANCE = 0.30
 # single final segment — the glyph centerline is a smooth spline through the
 # anchors, so its true endpoint tangent rarely matches the stored single-chord
 # anchor tangent; the window also rejects the jitter of one short segment.
-TANGENT_WINDOW = 0.12  # x-height units (matches the corner-detection window)
+# THE SAME window the derivation detects corners with (imported, not restated):
+# the connector's G1 launch is judged relative to where corner detection said
+# the ink still turns, so the two windows must move together.
+TANGENT_WINDOW = CORNER_WINDOW_UNITS  # x-height units
+# Bézier handle floors of the generated joins (glossar: Bézier-Handle-Floor) —
+# a connector so short that its span-proportional handles collapse keeps at
+# least this much handle, so the curve stays a curve instead of a cusp. The
+# garland/fork/ride pieces share one floor; the taut fallback cubic carries a
+# slightly higher one (it has no straight ride to hide a stiff start in).
+HANDLE_FLOOR = 0.03
+TAUT_HANDLE_FLOOR = 0.05
+# Silhouette-erase corridor: a trimmed piece (loop stub, t-bar, entry stub) is
+# erased slightly WIDER than the median stroke so the cut leaves no sliver of
+# silhouette standing along the removed centerline.
+ERASE_MARGIN_FACTOR = 1.1
+# Reveal-mask cover of a broad-nib item: the stamped nib's diagonal extent can
+# exceed the stroke's own width — the mask must cover the nib, not just the
+# widest measured direction.
+BROAD_NIB_MASK_FACTOR = 1.15
 
 Point = tuple[float, float]
 
@@ -581,6 +601,18 @@ def _entry_apex_index(line: list[Point]) -> int:
         i += 1
     apex = i - 1
     return apex if 0 < apex < len(line) - 1 else 0
+
+
+def _arm_fuse_apex(first_line: list[Point]) -> int:
+    """Arm-fusion coupling index on B's first stroke: the lead-in apex when it
+    sits at letter scale (ARM_FUSE_MAX_APEX_Y), else 0. THE one shared gate of
+    the fusion — placement pulls the pair in exactly when the connector will
+    fuse at the apex, so the two stages can never disagree about it.
+    """
+    apex = _entry_apex_index(first_line)
+    if apex and first_line[apex][1] <= ARM_FUSE_MAX_APEX_Y:
+        return apex
+    return 0
 
 
 def _flank_candidates(first_line: list[Point]) -> list[int]:
@@ -700,6 +732,24 @@ def _fork_couple_index(first_line: list[Point]) -> int:
     if apex and first_line[apex][1] <= FORK_APEX_MAX_Y:
         return apex
     return _entry_couple_index(first_line, target_y=FORK_ARRIVE_Y)
+
+
+def _fork_height(couple_y: float) -> float:
+    """Fork height for a coupling at ``couple_y``: FORK_RATIO of it, clamped
+    to the measured band (see FORK_RATIO). Placement solves the pair distance
+    from this height and the connector draws the swing from it — one clamp,
+    or the drawn diagonal would not pass through the solved coupling point.
+    """
+    return min(max(FORK_RATIO * couple_y, FORK_Y_MIN), FORK_Y_MAX)
+
+
+def _align_slope(exit_deg: float, land_deg: float) -> float:
+    """The sawtooth pass-through line's slope: ALIGN_SLOPE_RATIO of the mean
+    ink tangent (see ALIGN_SLOPE_RATIO). Placement pulls the pair onto this
+    line and the connector draws the collinear middle piece of it — one
+    formula, so the two stages describe the same diagonal.
+    """
+    return ALIGN_SLOPE_RATIO * math.tan(math.radians((exit_deg + land_deg) / 2))
 
 
 def _stem_crossing_x(line: list[Point], y: float) -> float | None:
@@ -860,6 +910,19 @@ def _sample_bezier(p0: Point, p1: Point, p2: Point, p3: Point, n: int) -> list[P
     return out
 
 
+def _sample_quad_bezier(p0: Point, ctrl: Point, p3: Point, n: int) -> list[Point]:
+    """The quadratic sibling of ``_sample_bezier`` — the two-tangent arcs
+    (Endstrich quadratics, the crest roll) all sample through this one
+    evaluator."""
+    return [
+        (
+            (1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * ctrl[0] + t * t * p3[0],
+            (1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * ctrl[1] + t * t * p3[1],
+        )
+        for t in (i / n for i in range(n + 1))
+    ]
+
+
 def _garland_centerline(p0: Point, d_out: Point, p3: Point, d_in: Point) -> list[Point] | None:
     """Baseline-garland join (see the GARLAND_* constants): a fall cubic that
     kisses the lead-in line (through the entry along its tangent) at the merge
@@ -896,8 +959,8 @@ def _garland_centerline(p0: Point, d_out: Point, p3: Point, d_in: Point) -> list
     # just below the merge IS the rounded garland turn of the school hand.
     fall_span = math.hypot(m[0] - p0[0], m[1] - p0[1])
     fall_dx = m[0] - p0[0]
-    h_out = max(0.03, min(fall_span * 0.4, fall_dx * 0.6))
-    h_in = max(0.03, min(fall_span * 0.4, fall_dx * 0.6))
+    h_out = max(HANDLE_FLOOR, min(fall_span * 0.4, fall_dx * 0.6))
+    h_in = max(HANDLE_FLOOR, min(fall_span * 0.4, fall_dx * 0.6))
     fall = _sample_bezier(
         p0, (p0[0] + h_out * d_out[0], p0[1] + h_out * d_out[1]), (m[0] - h_in * d_in[0], m[1] - h_in * d_in[1]), m, 18
     )
@@ -943,8 +1006,8 @@ def _apply_pen(item: dict, centerline: list[Point], default_width: float, pen: P
     item["mask_width"] = stroke_width * 1.3
     if pen is not None and pen.kind == "broad_nib" and pen.nib is not None:
         pts = np.asarray(centerline, dtype=float)
-        item["rings"] = chisel_union_rings(pts[:, 0], pts[:, 1], pen.nib, simplify_tol=0.002)
-        item["mask_width"] = max(item["mask_width"], pen.nib.width_units * 1.15)
+        item["rings"] = chisel_union_rings(pts[:, 0], pts[:, 1], pen.nib, simplify_tol=SILHOUETTE_SIMPLIFY_TOL)
+        item["mask_width"] = max(item["mask_width"], pen.nib.width_units * BROAD_NIB_MASK_FACTOR)
 
 
 def _endstrike_centerline(p0: Point, tangent_deg: float) -> list[Point] | None:
@@ -971,13 +1034,7 @@ def _endstrike_centerline(p0: Point, tangent_deg: float) -> list[Point] | None:
             a = DLOOP_SWING_RUN / (u[0] + v[0])
             ctrl: Point = (p0[0] + a * u[0], p0[1] + a * u[1])
             p3: Point = (ctrl[0] + a * v[0], ctrl[1] + a * v[1])
-            return [
-                (
-                    (1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * ctrl[0] + t * t * p3[0],
-                    (1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * ctrl[1] + t * t * p3[1],
-                )
-                for t in (i / 10 for i in range(11))
-            ]
+            return _sample_quad_bezier(p0, ctrl, p3, 10)
     if p0[1] >= SWING_MAX_EXIT_Y:
         # High forward exit (r-arm, Deckstrich): a short level Auslauf
         # along the arm — the plates draw no rising flourish this high.
@@ -1012,13 +1069,7 @@ def _endstrike_centerline(p0: Point, tangent_deg: float) -> list[Point] | None:
         t = ((p3[0] - p0[0]) * d_end[1] - (p3[1] - p0[1]) * d_end[0]) / denom
         if 0.0 < t and p0[0] < p0[0] + t * d_out[0] < p3[0]:
             ctrl = (p0[0] + t * d_out[0], p0[1] + t * d_out[1])
-    centerline = [
-        (
-            (1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * ctrl[0] + t * t * p3[0],
-            (1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * ctrl[1] + t * t * p3[1],
-        )
-        for t in (i / 10 for i in range(11))
-    ]
+    centerline = _sample_quad_bezier(p0, ctrl, p3, 10)
     # Truncate at the run cap — a deep exit ends its swing mid-curve.
     # The cap point is interpolated so a coarse sample step can never
     # carry the stroke (and ink_max_x) past the cap.
@@ -1052,6 +1103,8 @@ def _connector_centerline(
     fork_line: list[Point] | None = None,
     stem_launch: Point | None = None,
     cap_restart: bool = False,
+    fork_couple_idx: int | None = None,
+    land_deg: float | None = None,
 ) -> tuple[list[Point], int]:
     """Centerline of the Übergang from A's exit into B's entry + the entry trim.
 
@@ -1062,7 +1115,17 @@ def _connector_centerline(
     index of a straight-fit flank placement decided by the CALLER
     (``_fused_flank_placement`` / ``_flank_couple_steepest``) — the connector
     then IS the straight collinear middle piece of the shared diagonal.
+
+    ``fork_couple_idx`` and ``land_deg`` are the fork/bar coupling index and
+    B's landing tangent the PLACEMENT already computed — passed in rather than
+    re-derived, so the drawn join and the solved distance always read the same
+    anchors (both are pure functions of ``first_line``; None recomputes them
+    for a caller without a placement stage).
     """
+    if fork_couple_idx is None:
+        fork_couple_idx = _fork_couple_index(first_line)
+    if land_deg is None:
+        land_deg = _endpoint_tangent(first_line, at_end=False)
     entry_trim = 0
     p0: Point = exit_pt
     # Bar-exit launch (see BAR_EXIT_BASES): one straight hairline from the
@@ -1070,7 +1133,7 @@ def _connector_centerline(
     # on the same stem-anchored line — rising into a high coupling on B
     # (the measured 16–27° climb into the apex).
     if stem_launch is not None:
-        idx = _fork_couple_index(first_line)
+        idx = fork_couple_idx
         if idx:
             p3b: Point = (first_line[idx][0] + dx, first_line[idx][1])
             if p3b[0] > p0[0] + GARLAND_MIN_DX and p3b[1] > p0[1] + ALIGN_MIN_RISE:
@@ -1078,9 +1141,7 @@ def _connector_centerline(
     # The r-arm into a round body fuses at B's crest APEX (see ARM_FUSE_GAP).
     arm_fuse = 0
     if fuse_base and p0[1] <= HIGH_EXIT_Y and 0.0 <= exit_tangent_deg < ARM_TAN_MAX_DEG:
-        apex = _entry_apex_index(first_line)
-        if apex and first_line[apex][1] <= ARM_FUSE_MAX_APEX_Y:
-            arm_fuse = apex
+        arm_fuse = _arm_fuse_apex(first_line)
     # A HIGH exit couples onto the rising flank of B's first downstroke
     # instead of the entry-stub foot (O2, see ENTRY_COUPLE_Y): the stub
     # piece below the anchor is dropped from centerline AND silhouette. A
@@ -1099,7 +1160,6 @@ def _connector_centerline(
         # foot couples mid-flank instead — the connector is the straight
         # collinear middle piece of one continuous diagonal, the lead-in stub
         # below the coupling point is absorbed by it.
-        land_deg = _endpoint_tangent(first_line, at_end=False)
         if ALIGN_TAN_DEG[0] <= land_deg <= ALIGN_TAN_DEG[1]:
             # Same-slant straight coupling (see SAMESLANT_*): two matching
             # diagonals continue as ONE line arriving high on B's flank —
@@ -1112,7 +1172,7 @@ def _connector_centerline(
                 idx = _sameslant_couple_index(first_line, dx, p0)
                 if idx:
                     return _straight_connector(p0, first_line, dx, idx), idx
-            slope = ALIGN_SLOPE_RATIO * math.tan(math.radians((exit_tangent_deg + land_deg) / 2))
+            slope = _align_slope(exit_tangent_deg, land_deg)
             entry_trim = _flank_couple_index(first_line, dx, p0, slope)
             if entry_trim:
                 return _straight_connector(p0, first_line, dx, entry_trim), entry_trim
@@ -1165,10 +1225,10 @@ def _connector_centerline(
     # unavailable (no stem crossing, no rising lead-in, B not right of the
     # fork).
     if descender and fork_line is not None and span > 0:
-        idx = _fork_couple_index(first_line)
+        idx = fork_couple_idx
         if idx:
             p3c: Point = (first_line[idx][0] + dx, first_line[idx][1])
-            fork_y = min(max(FORK_RATIO * p3c[1], FORK_Y_MIN), FORK_Y_MAX)
+            fork_y = _fork_height(p3c[1])
             x_fork = _stem_crossing_x(fork_line, fork_y)
             x_close = _stem_crossing_x(fork_line, FORK_CLOSE_Y)
             if x_fork is not None:
@@ -1177,8 +1237,7 @@ def _connector_centerline(
                 # point, inside the measured 0.75–0.9 arrival band), not at
                 # the apex — the jul29 verdict keeps c entered low on its
                 # rising Anstrich, never top-coupled like a bowl.
-                land = _endpoint_tangent(first_line, at_end=False)
-                if descender_ride and ALIGN_TAN_DEG[0] <= land <= ALIGN_TAN_DEG[1]:
+                if descender_ride and ALIGN_TAN_DEG[0] <= land_deg <= ALIGN_TAN_DEG[1]:
                     ride_idx = _entry_couple_index(first_line)
                     if ride_idx:
                         idx = ride_idx
@@ -1193,7 +1252,7 @@ def _connector_centerline(
                 close_chord = math.hypot(s0[0] - p0[0], s0[1] - p0[1])
                 if close_chord > 0:
                     d_close = ((s0[0] - p0[0]) / close_chord, (s0[1] - p0[1]) / close_chord)
-                    h = max(0.03, close_chord * 0.4)
+                    h = max(HANDLE_FLOOR, close_chord * 0.4)
                     close = _sample_bezier(
                         p0, (p0[0] + h * d_close[0], p0[1] + h * d_close[1]), (s0[0], s0[1] - h), s0, 10
                     )
@@ -1208,7 +1267,7 @@ def _connector_centerline(
             chord = math.hypot(m[0] - p0[0], m[1] - p0[1])
             if chord > 0 and m[0] > p0[0]:
                 d_start = ((m[0] - p0[0]) / chord, (m[1] - p0[1]) / chord)
-                h = max(0.03, min(chord * 0.4, (m[0] - p0[0]) * 0.6))
+                h = max(HANDLE_FLOOR, min(chord * 0.4, (m[0] - p0[0]) * 0.6))
                 fall = _sample_bezier(
                     p0,
                     (p0[0] + h * d_start[0], p0[1] + h * d_start[1]),
@@ -1251,13 +1310,7 @@ def _connector_centerline(
                 half = CREST_ROLL_LEN / 2
                 ctrl = (p0[0] + half * d_orig[0], p0[1] + half * d_orig[1])
                 roll_end = (ctrl[0] + half * d_out[0], ctrl[1] + half * d_out[1])
-                crest = [
-                    (
-                        (1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * ctrl[0] + t * t * roll_end[0],
-                        (1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * ctrl[1] + t * t * roll_end[1],
-                    )
-                    for t in (i / 5 for i in range(6))
-                ]
+                crest = _sample_quad_bezier(p0, ctrl, roll_end, 5)
                 p0 = roll_end
     # An ARCADE entry that must LOSE height writes as a baseline
     # garland (the school hand's rounded turn); a round body couples
@@ -1280,13 +1333,38 @@ def _connector_centerline(
             # garland audit set out to remove.
             d_in = ((p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span)
         hspan = abs(p3[0] - p0[0])
-        handle = max(0.05, min(span * 0.4, hspan * 0.5))
+        handle = max(TAUT_HANDLE_FLOOR, min(span * 0.4, hspan * 0.5))
         p1: Point = (p0[0] + handle * d_out[0], p0[1] + handle * d_out[1])
         p2: Point = (p3[0] - handle * d_in[0], p3[1] - handle * d_in[1])
         centerline = _sample_bezier(p0, p1, p2, p3, CONNECT_SAMPLES)
     if crest:
         centerline = crest + centerline[1:]
     return centerline, entry_trim
+
+
+@dataclass
+class _PrevGlyph:
+    """The inter-slot interface — what the NEXT slot's placement and connector
+    read off the previous glyph, all in word coordinates (was an untyped
+    dict). The three OPTIONAL fields are the handshakes a special exit sets
+    and the matching join consumes: ``exit_line`` (descender-loop exit → fork
+    join), ``stem_launch`` (bar exit → stem-anchored rise) and ``cap_retrace``
+    (capital ornament → retrace prefix + restart grammar). ``end_swing``
+    writes ``ink_max_x`` back after the Endstrich — the swing's ink is what a
+    detached mark placed next must clear."""
+
+    exit: Point
+    tangent_deg: float
+    width: float
+    ink_max_x: float
+    exit_line: list[Point] | None
+    stem_launch: Point | None
+    cap_retrace: list[Point] | None
+    ink_profile: list[float]
+    key: str | None
+    slot_index: int
+    joins: bool
+    base: str
 
 
 def compose_word(
@@ -1355,7 +1433,7 @@ def compose_word(
     guides: dict | None = None
     cursor_x = 0.0
     # The previous glyph's exit in the composed frame, for the next connector.
-    prev: dict | None = None
+    prev: _PrevGlyph | None = None
 
     min_x = math.inf
     max_x = -math.inf
@@ -1385,27 +1463,27 @@ def compose_word(
     def end_swing() -> None:
         """Emit the word-final Endstrich (geometry in ``_endstrike_centerline``)."""
         nonlocal cursor_x
-        if not prev or not prev["joins"]:
+        if not prev or not prev.joins:
             return
-        centerline = _endstrike_centerline(prev["exit"], prev["tangent_deg"])
+        centerline = _endstrike_centerline(prev.exit, prev.tangent_deg)
         if centerline is None:
             return
         centerline = _overlap_extend(centerline, end=False)
         swing: dict = {"centerline": [list(p) for p in centerline], "lift": False}
-        _apply_pen(swing, centerline, 2 * prev["width"], pen)
+        _apply_pen(swing, centerline, 2 * prev.width, pen)
         if provenance:
-            swing["pair"] = [prev["key"], None]
-            swing["from_slot"] = prev["slot_index"]
+            swing["pair"] = [prev.key, None]
+            swing["from_slot"] = prev.slot_index
             swing["to_slot"] = None
             # The coupling endpoints the join was built from (word coordinates).
             # The Endstrich has no right glyph, so it carries no "entry".
-            swing["exit"] = [prev["exit"][0], prev["exit"][1]]
+            swing["exit"] = [prev.exit[0], prev.exit[1]]
         items.append(swing)
         track(centerline)
         cursor_x = centerline[-1][0]
         # The swing's ink extends the word rightward — a detached mark placed
         # next (comma, period) must clear it, not the letter body alone.
-        prev["ink_max_x"] = max(prev["ink_max_x"], centerline[-1][0])
+        prev.ink_max_x = max(prev.ink_max_x, centerline[-1][0])
 
     for slot_index, slot in enumerate(slots):
         if slot.space:
@@ -1498,7 +1576,7 @@ def compose_word(
         # letter run before it like a word boundary: the body earns its
         # Endstrich and the word's floating marks land before the mark is
         # written.
-        if not slot.joins and prev and prev["joins"]:
+        if not slot.joins and prev and prev.joins:
             end_swing()
             flush_diacritics()
 
@@ -1567,7 +1645,10 @@ def compose_word(
                     # The stub crosses the stroke's own stem (d's crossing) —
                     # spare the kept centerline's ink from the erase.
                     rings_by_stroke[last_body_idx] = erase_silhouette_piece(
-                        rings_by_stroke[last_body_idx], stub_piece, med_half * 1.1, keep=centerlines[last_body_idx]
+                        rings_by_stroke[last_body_idx],
+                        stub_piece,
+                        med_half * ERASE_MARGIN_FACTOR,
+                        keep=centerlines[last_body_idx],
                     )
                 body_exit_line = [tuple(p) for p in centerlines[last_body_idx]]
                 exit_xy = body_exit_line[-1]
@@ -1609,7 +1690,10 @@ def compose_word(
                         centerlines[last_body_idx] = bar[: cut + 1] + [list(stem_launch)]
                         if last_body_idx < len(rings_by_stroke) and rings_by_stroke[last_body_idx]:
                             rings_by_stroke[last_body_idx] = erase_silhouette_piece(
-                                rings_by_stroke[last_body_idx], piece, med_half * 1.1, keep=centerlines[last_body_idx]
+                                rings_by_stroke[last_body_idx],
+                                piece,
+                                med_half * ERASE_MARGIN_FACTOR,
+                                keep=centerlines[last_body_idx],
                             )
                         body_exit_line = [tuple(p) for p in centerlines[last_body_idx]]
                         exit_xy = body_exit_line[-1]
@@ -1688,7 +1772,7 @@ def compose_word(
         # INK_CLEARANCE; with no connector start at the running cursor_x. A
         # detached pairing (either side non-joining) is placed by ink
         # clearance alone — the tighter of the two clearances wins.
-        joined = bool(prev) and prev["joins"] and slot.joins
+        joined = bool(prev) and prev.joins and slot.joins
         # Coupling index of a straight-fit flank placement (the "ne" case) —
         # set by the nested-fall branch, consumed by the connector.
         flank_couple = 0
@@ -1697,15 +1781,22 @@ def compose_word(
         # All-or-nothing: a malformed row (connector under 2 points — e.g. a
         # hand-edited DB row) must not shift the glyph without drawing the
         # join, so it is ignored entirely and the generator path runs.
-        override = (pair_overrides or {}).get((prev["key"], slot.key)) if joined and slot.key else None
+        override = (pair_overrides or {}).get((prev.key, slot.key)) if joined and slot.key else None
         if override is not None and len(override.get("connector") or []) < 2:
             override = None
         if override is not None:
             offset = override.get("offset") or [CONNECT_GAP, 0.0]
-            desired_entry_x = prev["exit"][0] + float(offset[0])
+            desired_entry_x = prev.exit[0] + float(offset[0])
         elif joined:
-            tuck = TUCK_RATE * max(0.0, prev["exit"][1] - TUCK_Y0)
-            forward = _unit(prev["tangent_deg"])[0] > 0.0
+            # ONE scan for the anchors BOTH stages read: the fork/bar coupling
+            # index and B's landing tangent are pure functions of first_line —
+            # computed here, passed into the connector call below, so the
+            # solved distance and the drawn join can never read different
+            # anchors.
+            fork_couple_idx = _fork_couple_index(first_line)
+            entry_land_deg = _endpoint_tangent(first_line, at_end=False)
+            tuck = TUCK_RATE * max(0.0, prev.exit[1] - TUCK_Y0)
+            forward = _unit(prev.tangent_deg)[0] > 0.0
             if forward:
                 # Height-aware kerning (jul30 stretch round, stage 1): clearance
                 # judged per y-bin between A's rightmost and B's leftmost band
@@ -1714,10 +1805,10 @@ def compose_word(
                 # whose below-arm edge + top-bin knob guard were this same
                 # computation at two fixed heights. A capital restart gets
                 # the plates' wider room (see CAP_INK_CLEARANCE).
-                clearance = CAP_INK_CLEARANCE if prev.get("cap_retrace") else INK_CLEARANCE
+                clearance = CAP_INK_CLEARANCE if prev.cap_retrace else INK_CLEARANCE
                 desired_entry_x = max(
-                    prev["exit"][0] + CONNECT_GAP - tuck,
-                    _profile_clearance_x(prev["ink_profile"], ink_min_profile, entry_xy[0], clearance),
+                    prev.exit[0] + CONNECT_GAP - tuck,
+                    _profile_clearance_x(prev.ink_profile, ink_min_profile, entry_xy[0], clearance),
                 )
             else:
                 # Backward exits (w/v bow) keep the scalar full-column
@@ -1726,12 +1817,10 @@ def compose_word(
                 # gap measurement still has w→e WIDER on the plate, so the
                 # bins must not tighten it).
                 desired_entry_x = max(
-                    prev["exit"][0] + CONNECT_GAP - tuck,
-                    prev["ink_max_x"] + BACKWARD_INK_CLEARANCE - (ink_min_x - entry_xy[0]),
+                    prev.exit[0] + CONNECT_GAP - tuck,
+                    prev.ink_max_x + BACKWARD_INK_CLEARANCE - (ink_min_x - entry_xy[0]),
                 )
-            arm_exempt = (
-                forward and BOW_EXIT_Y < prev["exit"][1] <= HIGH_EXIT_Y and prev["tangent_deg"] < ARM_TAN_MAX_DEG
-            )
+            arm_exempt = forward and BOW_EXIT_Y < prev.exit[1] <= HIGH_EXIT_Y and prev.tangent_deg < ARM_TAN_MAX_DEG
             if arm_exempt and _key_base(slot.key, slot.position) in ARM_FUSE_BASES:
                 # Arm fusion (see ARM_FUSE_GAP): the next letter is pulled in
                 # until its lead-in crest sits right at the bow's end — the
@@ -1739,14 +1828,13 @@ def compose_word(
                 # mockups (re AND rr). Deliberately below any clearance:
                 # the joining strokes are meant to touch. Ascender lead-ins
                 # (apex above ARM_FUSE_MAX_APEX_Y) keep the generic couple.
-                couple_idx = _entry_apex_index(first_line)
-                if couple_idx and first_line[couple_idx][1] <= ARM_FUSE_MAX_APEX_Y:
-                    fuse_x = prev["exit"][0] + ARM_FUSE_GAP + entry_xy[0] - first_line[couple_idx][0]
+                couple_idx = _arm_fuse_apex(first_line)
+                if couple_idx:
+                    fuse_x = prev.exit[0] + ARM_FUSE_GAP + entry_xy[0] - first_line[couple_idx][0]
                     desired_entry_x = min(desired_entry_x, fuse_x)
             # Sawtooth pass-through: pull the glyph onto the exit's rise line
             # (see ALIGN_*) so the diagonal continues without a shelf.
-            entry_land_deg = _endpoint_tangent(first_line, at_end=False)
-            rise = first_line[0][1] - prev["exit"][1]
+            rise = first_line[0][1] - prev.exit[1]
             # Fork-join placement (see FORK_SWING_SLOPE): after a
             # descender-loop exit the connector retraces the stem to the fork
             # and swings out at ~45° — B sits where that diagonal reaches its
@@ -1756,19 +1844,19 @@ def compose_word(
             fork_placed = False
             fork_ride_base = _key_base(slot.key, slot.position) in DESCENDER_RIDE_BASES
             if (
-                prev["exit"][1] < DESCENDER_EXIT_Y
-                and _unit(prev["tangent_deg"])[1] < 0
-                and prev.get("exit_line")
+                prev.exit[1] < DESCENDER_EXIT_Y
+                and _unit(prev.tangent_deg)[1] < 0
+                and prev.exit_line
                 # Ride bases keep the calibrated run-down placement below —
                 # the jul30 overlay shows it plate-exact (schwer longs→c
                 # 0.05); the fork only reshapes their ASCENT.
                 and not fork_ride_base
             ):
-                couple_idx = _fork_couple_index(first_line)
+                couple_idx = fork_couple_idx
                 if couple_idx:
                     couple_y = first_line[couple_idx][1]
-                    fork_y = min(max(FORK_RATIO * couple_y, FORK_Y_MIN), FORK_Y_MAX)
-                    x_fork = _stem_crossing_x(prev["exit_line"], fork_y)
+                    fork_y = _fork_height(couple_y)
+                    x_fork = _stem_crossing_x(prev.exit_line, fork_y)
                     if x_fork is not None and couple_y > fork_y + ALIGN_MIN_RISE:
                         fork_desired = (
                             x_fork + (couple_y - fork_y) / FORK_SWING_SLOPE + (entry_xy[0] - first_line[couple_idx][0])
@@ -1778,58 +1866,57 @@ def compose_word(
                         # point (short lead-in) must not crowd B into the
                         # stem (over-tightening showed as a +0.5 xh word
                         # registration shift on schwer/scharfen).
-                        floor_x = _profile_clearance_x(prev["ink_profile"], ink_min_profile, entry_xy[0], INK_CLEARANCE)
+                        floor_x = _profile_clearance_x(prev.ink_profile, ink_min_profile, entry_xy[0], INK_CLEARANCE)
                         desired_entry_x = max(fork_desired, floor_x)
                         fork_placed = True
             # Bar-exit placement (see BAR_RISE_SLOPE): B's coupling point
             # sits on the ~20° rise line from the stem-launch anchor,
             # floored by the per-bin ink clearance — the plates put B off
             # the STEM, not off the (cut) bar tip.
-            if not fork_placed and prev.get("stem_launch"):
-                couple_idx = _fork_couple_index(first_line)
+            if not fork_placed and prev.stem_launch:
+                couple_idx = fork_couple_idx
                 if couple_idx:
                     couple_y = first_line[couple_idx][1]
-                    lx, ly = prev["stem_launch"]
+                    lx, ly = prev.stem_launch
                     if couple_y > ly + ALIGN_MIN_RISE:
                         bar_desired = lx + (couple_y - ly) / BAR_RISE_SLOPE + (entry_xy[0] - first_line[couple_idx][0])
-                        floor_x = _profile_clearance_x(prev["ink_profile"], ink_min_profile, entry_xy[0], INK_CLEARANCE)
+                        floor_x = _profile_clearance_x(prev.ink_profile, ink_min_profile, entry_xy[0], INK_CLEARANCE)
                         desired_entry_x = max(bar_desired, floor_x)
                         fork_placed = True
             if (
                 not fork_placed
-                and prev["exit"][1] < DESCENDER_EXIT_Y
-                and _unit(prev["tangent_deg"])[1] < 0
+                and prev.exit[1] < DESCENDER_EXIT_Y
+                and _unit(prev.tangent_deg)[1] < 0
                 and _key_base(slot.key, slot.position) in DESCENDER_RIDE_BASES
                 and ALIGN_TAN_DEG[0] <= entry_land_deg <= ALIGN_TAN_DEG[1]
                 and first_line[0][1] > 0
             ):
                 run_down = min(first_line[0][1] / math.tan(math.radians(entry_land_deg)), DESCENDER_RETURN_MAX_RUN)
                 desired_entry_x = max(
-                    desired_entry_x,
-                    prev["exit"][0] + DESCENDER_RETURN_GAP + run_down + (entry_xy[0] - first_line[0][0]),
+                    desired_entry_x, prev.exit[0] + DESCENDER_RETURN_GAP + run_down + (entry_xy[0] - first_line[0][0])
                 )
             if (
-                ALIGN_TAN_DEG[0] <= prev["tangent_deg"] <= ALIGN_TAN_DEG[1]
+                ALIGN_TAN_DEG[0] <= prev.tangent_deg <= ALIGN_TAN_DEG[1]
                 and ALIGN_TAN_DEG[0] <= entry_land_deg <= ALIGN_TAN_DEG[1]
                 and rise >= ALIGN_MIN_RISE
                 and first_line[0][1] <= ALIGN_MAX_ENTRY_Y
             ):
-                mean_slope = ALIGN_SLOPE_RATIO * math.tan(math.radians((prev["tangent_deg"] + entry_land_deg) / 2))
-                align_entry_x = prev["exit"][0] + rise / mean_slope + (entry_xy[0] - first_line[0][0])
-                floor_x = _profile_clearance_x(prev["ink_profile"], ink_min_profile, entry_xy[0], ALIGN_MIN_CLEARANCE)
+                mean_slope = _align_slope(prev.tangent_deg, entry_land_deg)
+                align_entry_x = prev.exit[0] + rise / mean_slope + (entry_xy[0] - first_line[0][0])
+                floor_x = _profile_clearance_x(prev.ink_profile, ink_min_profile, entry_xy[0], ALIGN_MIN_CLEARANCE)
                 if align_entry_x < desired_entry_x:
                     desired_entry_x = max(align_entry_x, floor_x)
             elif (
-                ALIGN_TAN_DEG[0] <= prev["tangent_deg"] <= ALIGN_TAN_DEG[1]
+                ALIGN_TAN_DEG[0] <= prev.tangent_deg <= ALIGN_TAN_DEG[1]
                 and rise < ALIGN_MIN_RISE
-                and prev["exit"][1] <= HIGH_COUPLE_EXIT_Y
+                and prev.exit[1] <= HIGH_COUPLE_EXIT_Y
             ):
                 # Nested fall (R4): a rising mid-band exit whose neighbour
                 # enters BELOW it cannot pass through — on the plate the next
                 # letter nests under the exit ink (t's bar, f's flag) instead
                 # of clearing it, so the ink floor relaxes to the align floor.
-                floor_x = _profile_clearance_x(prev["ink_profile"], ink_min_profile, entry_xy[0], ALIGN_MIN_CLEARANCE)
-                desired_entry_x = max(prev["exit"][0] + CONNECT_GAP - tuck, floor_x)
+                floor_x = _profile_clearance_x(prev.ink_profile, ink_min_profile, entry_xy[0], ALIGN_MIN_CLEARANCE)
+                desired_entry_x = max(prev.exit[0] + CONNECT_GAP - tuck, floor_x)
                 # Straight-fit flank coupling (the "ne" case, see the ALIGN_*
                 # constant block): with the entry FOOT at/below the exit no
                 # spacing can make the diagonal collinear at the foot — but
@@ -1841,16 +1928,16 @@ def compose_word(
                 # the stub-relaxed column floor and couple at the top of the
                 # flank window — the steepest straight join the ink allows.
                 if rise > -FLANK_COUPLE_MAX_DROP and ALIGN_TAN_DEG[0] <= entry_land_deg <= ALIGN_TAN_DEG[1]:
-                    full_slope = math.tan(math.radians((prev["tangent_deg"] + entry_land_deg) / 2))
-                    fuse = _fused_flank_placement(first_line, prev["exit"], full_slope, entry_xy[0])
+                    full_slope = math.tan(math.radians((prev.tangent_deg + entry_land_deg) / 2))
+                    fuse = _fused_flank_placement(first_line, prev.exit, full_slope, entry_xy[0])
                     fused = False
                     if fuse is not None and fuse[0] <= desired_entry_x:
                         exempt = (
-                            min(prev["exit"][1], first_line[0][1]) - FUSE_BAND_PAD,
+                            min(prev.exit[1], first_line[0][1]) - FUSE_BAND_PAD,
                             first_line[fuse[1]][1] + FUSE_BAND_PAD,
                         )
                         if _fused_clearance_ok(
-                            prev["ink_profile"],
+                            prev.ink_profile,
                             centerlines,
                             diacritic_flags,
                             fuse[1],
@@ -1862,17 +1949,17 @@ def compose_word(
                             fused = True
                     if not fused:
                         floor_couple = _profile_clearance_x(
-                            prev["ink_profile"], ink_min_profile, entry_xy[0], ALIGN_MIN_CLEARANCE, stub_relaxed=True
+                            prev.ink_profile, ink_min_profile, entry_xy[0], ALIGN_MIN_CLEARANCE, stub_relaxed=True
                         )
                         if math.isfinite(floor_couple) and floor_couple <= desired_entry_x:
-                            steepest = _flank_couple_steepest(first_line, floor_couple - entry_xy[0], prev["exit"])
+                            steepest = _flank_couple_steepest(first_line, floor_couple - entry_xy[0], prev.exit)
                             if steepest:
                                 desired_entry_x, flank_couple = floor_couple, steepest
         elif prev:
             gap = _nonjoin_clearance(_key_base(slot.key, slot.position)) if not slot.joins else math.inf
-            if not prev["joins"]:
-                gap = min(gap, _nonjoin_clearance(prev["base"]))
-            desired_entry_x = prev["ink_max_x"] + gap - (ink_min_x - entry_xy[0])
+            if not prev.joins:
+                gap = min(gap, _nonjoin_clearance(prev.base))
+            desired_entry_x = prev.ink_max_x + gap - (ink_min_x - entry_xy[0])
         else:
             desired_entry_x = cursor_x
         dx = desired_entry_x - entry_xy[0]
@@ -1886,13 +1973,13 @@ def compose_word(
             # The stored join, verbatim: centerline points are relative to the
             # left glyph's exit point (template units; ≥2 points guaranteed by
             # the all-or-nothing check above).
-            ex, ey = prev["exit"]
+            ex, ey = prev.exit
             centerline = [(ex + float(px), ey + float(py)) for px, py in override["connector"]]
             connector = {"centerline": [list(p) for p in centerline], "lift": False}
-            _apply_pen(connector, centerline, 2 * min(prev["width"], med_half), pen)
+            _apply_pen(connector, centerline, 2 * min(prev.width, med_half), pen)
             if provenance:
-                connector["pair"] = [prev["key"], slot.key]
-                connector["from_slot"] = prev["slot_index"]
+                connector["pair"] = [prev.key, slot.key]
+                connector["from_slot"] = prev.slot_index
                 connector["to_slot"] = slot_index
                 connector["override"] = True
                 connector["exit"] = [ex, ey]
@@ -1903,10 +1990,10 @@ def compose_word(
             # HIGH_COUPLE is a lowercase-exit rule: after a CAPITAL the
             # plates never enter a round body at its top (see
             # CAP_RESTART_BASES) — the garland/align grammar runs instead.
-            high_couple = _key_base(slot.key, slot.position) in HIGH_COUPLE_BASES and not prev["base"][:1].isupper()
+            high_couple = _key_base(slot.key, slot.position) in HIGH_COUPLE_BASES and not prev.base[:1].isupper()
             centerline, entry_trim = _connector_centerline(
-                prev["exit"],
-                prev["tangent_deg"],
+                prev.exit,
+                prev.tangent_deg,
                 first_line,
                 dx,
                 high_couple=high_couple,
@@ -1914,21 +2001,23 @@ def compose_word(
                 descender_ride=_key_base(slot.key, slot.position) in DESCENDER_RIDE_BASES,
                 sameslant_couple=_key_base(slot.key, slot.position) in SAMESLANT_COUPLE_BASES,
                 fuse_base=_key_base(slot.key, slot.position) in ARM_FUSE_BASES,
-                fork_line=prev.get("exit_line"),
-                stem_launch=prev.get("stem_launch"),
-                cap_restart=bool(prev.get("cap_retrace")),
+                fork_line=prev.exit_line,
+                stem_launch=prev.stem_launch,
+                cap_restart=bool(prev.cap_retrace),
+                fork_couple_idx=fork_couple_idx,
+                land_deg=entry_land_deg,
             )
-            if prev.get("cap_retrace"):
+            if prev.cap_retrace:
                 # The retrace ends AT the departure the connector starts
                 # from — drop the duplicate so the seam has no zero-length
                 # segment.
-                centerline = prev["cap_retrace"][:-1] + centerline
+                centerline = prev.cap_retrace[:-1] + centerline
             centerline = _overlap_extend(centerline)
             connector = {"centerline": [list(p) for p in centerline], "lift": False}
-            _apply_pen(connector, centerline, 2 * min(prev["width"], med_half), pen)
+            _apply_pen(connector, centerline, 2 * min(prev.width, med_half), pen)
             if provenance:
-                connector["pair"] = [prev["key"], slot.key]
-                connector["from_slot"] = prev["slot_index"]
+                connector["pair"] = [prev.key, slot.key]
+                connector["from_slot"] = prev.slot_index
                 connector["to_slot"] = slot_index
                 # The COUPLING endpoints this join was built from, in word
                 # coordinates: the left glyph's exit and the placed right
@@ -1936,7 +2025,7 @@ def compose_word(
                 # _overlap_extend perturbs its first sample and a capital
                 # retrace prepends points — so the measured-vs-composed
                 # comparison (handmodell H2 read surfaces) needs them stated.
-                connector["exit"] = [prev["exit"][0], prev["exit"][1]]
+                connector["exit"] = [prev.exit[0], prev.exit[1]]
                 connector["entry"] = [entry_xy[0] + dx, entry_xy[1]]
             items.append(connector)
             track(centerline)
@@ -1951,7 +2040,7 @@ def compose_word(
             # The stamped nib's diagonal extent can exceed the widest width the
             # glyph's own stroke directions reach — the reveal mask must cover
             # the nib, not just the widest measured direction.
-            glyph_mask_width = max(glyph_mask_width, pen.nib.width_units * 1.15)
+            glyph_mask_width = max(glyph_mask_width, pen.nib.width_units * BROAD_NIB_MASK_FACTOR)
         for si, cl in enumerate(centerlines):
             src = cl[entry_trim:] if si == 0 and entry_trim else cl
             offset = [(x + dx, y) for x, y in src]
@@ -1962,7 +2051,9 @@ def compose_word(
                 # with the same cut the centerline took. Erased in the glyph's
                 # own frame, BEFORE the dx shift — stub prefix and payload
                 # rings share that frame, so no coordinate round-trips.
-                raw_rings = erase_silhouette_piece(raw_rings, cl[: entry_trim + 1], med_half * 1.1, keep=src)
+                raw_rings = erase_silhouette_piece(
+                    raw_rings, cl[: entry_trim + 1], med_half * ERASE_MARGIN_FACTOR, keep=src
+                )
             rings = [[(x + dx, y) for x, y in ring] for ring in raw_rings]
             item: dict = {
                 "centerline": [list(p) for p in offset],
@@ -1985,25 +2076,25 @@ def compose_word(
                 items.append(item)
 
         exit_abs: Point = (exit_xy[0] + dx, exit_xy[1])
-        prev = {
-            "exit": exit_abs,
-            "tangent_deg": exit_deg,
-            "width": med_half,
-            "ink_max_x": ink_max_x + dx,
+        prev = _PrevGlyph(
+            exit=exit_abs,
+            tangent_deg=exit_deg,
+            width=med_half,
+            ink_max_x=ink_max_x + dx,
             # The exit stroke in word coordinates — the fork join reads the
             # stem descent off it. Only a descender-loop exit needs it.
-            "exit_line": ([(x + dx, y) for x, y in body_exit_line] if exit_xy[1] < DESCENDER_EXIT_Y else None),
+            exit_line=([(x + dx, y) for x, y in body_exit_line] if exit_xy[1] < DESCENDER_EXIT_Y else None),
             # Bar-exit launch anchor (t/f, see BAR_EXIT_*), word coordinates.
-            "stem_launch": (stem_launch[0] + dx, stem_launch[1]) if stem_launch else None,
+            stem_launch=(stem_launch[0] + dx, stem_launch[1]) if stem_launch else None,
             # Capital ornament retrace (see CAP_RESTART_BASES), word coords —
             # prefixed onto the connector so the pen path stays continuous.
-            "cap_retrace": [(x + dx, y) for x, y in cap_retrace] if cap_retrace else None,
-            "ink_profile": [v + dx if math.isfinite(v) else v for v in ink_profile],
-            "key": slot.key,
-            "slot_index": slot_index,
-            "joins": slot.joins,
-            "base": _key_base(slot.key, slot.position),
-        }
+            cap_retrace=[(x + dx, y) for x, y in cap_retrace] if cap_retrace else None,
+            ink_profile=[v + dx if math.isfinite(v) else v for v in ink_profile],
+            key=slot.key,
+            slot_index=slot_index,
+            joins=slot.joins,
+            base=_key_base(slot.key, slot.position),
+        )
         cursor_x = max(exit_abs[0], ink_max_x + dx) if not slot.joins else exit_abs[0]
 
     end_swing()  # the last word's Endstrich …

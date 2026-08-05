@@ -26,6 +26,13 @@ from shapely.geometry import LineString, MultiPoint, Point, Polygon
 from core.widths import BroadNib
 
 
+# Silhouette-payload simplification, template units (x-height = 1): 0.002 ≈ a
+# fifteenth of a pixel at typical chart resolution — invisible, but it halves
+# the payload. ONE tolerance for every ring emitter (the capsule and chisel
+# sweeps below, and the composer's broad-nib connector rings).
+SILHOUETTE_SIMPLIFY_TOL = 0.002
+
+
 def sample_polyline(
     anchors: np.ndarray, half_widths: np.ndarray, n: int = 200
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -567,11 +574,11 @@ def multi_stroke_silhouettes(
     """
     if nib is not None:
         return [
-            chisel_union_rings(sx, sy, nib, simplify_tol=0.002)
+            chisel_union_rings(sx, sy, nib, simplify_tol=SILHOUETTE_SIMPLIFY_TOL)
             for sx, sy, _sw in _multi_stroke_samples(anchors, half_widths, stroke_starts, slant_deg, n, corner_anchors)
         ]
     return [
-        capsule_union_rings(sx, sy, sw, simplify_tol=0.002)
+        capsule_union_rings(sx, sy, sw, simplify_tol=SILHOUETTE_SIMPLIFY_TOL)
         for sx, sy, sw in _multi_stroke_samples(anchors, half_widths, stroke_starts, slant_deg, n, corner_anchors)
     ]
 

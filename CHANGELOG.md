@@ -12,6 +12,40 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Changed
+
+- **The rule work's duplicated computations now agree by construction — a
+  byte-exact structural cleanup of `core/compose.py` and its neighbours.**
+  The placement stage and the connector drawer used to re-derive the same
+  anchors independently and only agreed as long as two code sites stayed in
+  sync: the fork/bar coupling index, the fork height clamp, the sawtooth
+  pass-through slope, the arm-fusion apex gate and B's landing tangent are
+  now computed ONCE (shared helpers `_fork_height`/`_align_slope`/
+  `_arm_fuse_apex`, plus `fork_couple_idx`/`land_deg` passed into
+  `_connector_centerline`), so the solved distance and the drawn join can no
+  longer diverge. The untyped 12-key `prev` dict — the whole inter-slot
+  interface — became the `_PrevGlyph` dataclass with the three exit→join
+  handshakes (`exit_line`/`stem_launch`/`cap_retrace`) as named fields. Silent
+  numeric ties turned into imports or named constants: `TANGENT_WINDOW` now
+  IS `pipeline.CORNER_WINDOW_UNITS` (the comment-only "matches the
+  corner-detection window" tie), the silhouette simplify tolerance is
+  `template.SILHOUETTE_SIMPLIFY_TOL` (was `0.002` restated in three places),
+  the medial-axis snap cap is `extract.medial_snap_cap_px` (was
+  `max(3.0, 0.25·unit_px)` inline in both fit and pipeline), and the
+  erase-corridor/broad-nib-mask/Bézier-handle-floor factors got names. Three
+  inline quadratic Bézier evaluators collapsed into `_sample_quad_bezier`.
+  Deliberately NOT unified: `CONNECT_SAMPLES` vs.
+  `aggregate.PAIR_CONNECTOR_POINTS` (a segment count and a resample point
+  count that merely share the value 24 — an import would fake a coupling),
+  the arm classification's two predicates (they differ in a float round-trip;
+  unifying would change edge behaviour) and `_key_base` (identity since R2,
+  but its removal rests on registry reasoning, not mechanical proof — own
+  follow-up). Verified byte-exact end to end: regenerated golden fixture
+  decompressed byte-identical, a full-precision compose dump over all pen
+  kinds/provenance/laufform/override variants byte-identical, the wordbench
+  words+pairs report identical to the last digit, glyphbench unchanged on
+  both scripts, 780 tests green.
+
 ### Added
 
 - **The pair focus shows its drill plate like a word: green trace, red engine
