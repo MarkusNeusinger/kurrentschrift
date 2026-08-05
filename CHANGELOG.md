@@ -64,6 +64,27 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   diag CSV, and three unit tests stay as measurement infrastructure; details
   in `docs/proposals/uebergaenge-befund.md` §5c.
 
+### Fixed
+
+- **The d→i join stops digging a valley, and the d's crossing keeps its ink**
+  (Korb #4, the „die" complaint). Two class rules in the composer, no
+  overrides: (1) a HIGH reversal exit — the trimmed loop exit of d/round-s
+  falling from its crossing (~1.15 xh) onto the next letter's rising flank —
+  no longer takes the baseline garland; the rescue had already declared its
+  chord truthful, and the garland dug a valley to ~0.5 xh below it followed
+  by a long level run into the entry (the reported „waagrechter
+  Verbindungsstrich"). The taut cubic now falls straight onto the flank, as
+  the two measured d→i dissections show. (2) `erase_silhouette_piece` gained
+  a `keep` parameter — the centerline the stroke STILL writes — and cuts the
+  eraser capsule back around it: the d's loop-return stub crosses its own
+  stem, and erasing the stub used to bite the stem's ink at the crossing (the
+  reported white gap). All three trim sites (loop stub, t-bar, entry stub)
+  pass their kept line; ink is only ever spared, never added. Wordbench:
+  words 0.114563 → 0.114448, pairs 0.164880 → 0.164343 (both sets improve;
+  `die` 0.077 → 0.068, its d→i transition 0.096 → 0.070), report columns
+  `meas_dconn_median` 0.127 → 0.124 / 0.217 → 0.206, pair Gleichzug
+  doublings 8 → 6. Golden compose fixture deliberately re-baselined.
+
 ### Changed
 
 - **ESLint 9 → 10, with the one plugin that blocks it pinned rather than

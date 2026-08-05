@@ -1264,8 +1264,12 @@ def _connector_centerline(
     # high instead and everything else stays the taut cubic. A capital
     # restart never garlands: its join rises monotonically on the plates
     # (see CAP_INK_CLEARANCE) — a dip would run parallel over the
-    # capital's own bowl bottom.
-    centerline = None if high_couple or cap_restart else _garland_centerline(p0, d_out, p3, d_in)
+    # capital's own bowl bottom. A HIGH reversal never garlands either:
+    # the rescue above already declared its chord truthful (the trimmed
+    # loop exit of d/round-s falls STRAIGHT onto B's rising flank on the
+    # plates) — a garland would dig a valley below that chord and leave
+    # a long level run into the entry.
+    centerline = None if high_couple or cap_restart or high_reversal else _garland_centerline(p0, d_out, p3, d_in)
     if centerline is None:
         span = math.hypot(p3[0] - p0[0], p3[1] - p0[1])
         if high_couple and p3[1] < p0[1] and span > 0:
@@ -1560,8 +1564,10 @@ def compose_word(
                 stub_piece = list(centerlines[last_body_idx])[foot_idx:]
                 centerlines[last_body_idx] = list(centerlines[last_body_idx])[: foot_idx + 1]
                 if last_body_idx < len(rings_by_stroke) and rings_by_stroke[last_body_idx]:
+                    # The stub crosses the stroke's own stem (d's crossing) —
+                    # spare the kept centerline's ink from the erase.
                     rings_by_stroke[last_body_idx] = erase_silhouette_piece(
-                        rings_by_stroke[last_body_idx], stub_piece, med_half * 1.1
+                        rings_by_stroke[last_body_idx], stub_piece, med_half * 1.1, keep=centerlines[last_body_idx]
                     )
                 body_exit_line = [tuple(p) for p in centerlines[last_body_idx]]
                 exit_xy = body_exit_line[-1]
@@ -1603,7 +1609,7 @@ def compose_word(
                         centerlines[last_body_idx] = bar[: cut + 1] + [list(stem_launch)]
                         if last_body_idx < len(rings_by_stroke) and rings_by_stroke[last_body_idx]:
                             rings_by_stroke[last_body_idx] = erase_silhouette_piece(
-                                rings_by_stroke[last_body_idx], piece, med_half * 1.1
+                                rings_by_stroke[last_body_idx], piece, med_half * 1.1, keep=centerlines[last_body_idx]
                             )
                         body_exit_line = [tuple(p) for p in centerlines[last_body_idx]]
                         exit_xy = body_exit_line[-1]
@@ -1956,7 +1962,7 @@ def compose_word(
                 # with the same cut the centerline took. Erased in the glyph's
                 # own frame, BEFORE the dx shift — stub prefix and payload
                 # rings share that frame, so no coordinate round-trips.
-                raw_rings = erase_silhouette_piece(raw_rings, cl[: entry_trim + 1], med_half * 1.1)
+                raw_rings = erase_silhouette_piece(raw_rings, cl[: entry_trim + 1], med_half * 1.1, keep=src)
             rings = [[(x + dx, y) for x, y in ring] for ring in raw_rings]
             item: dict = {
                 "centerline": [list(p) for p in offset],
