@@ -8,10 +8,13 @@
 //
 // eslint-plugin-jsx-a11y is the one plugin here whose peer range still stops at
 // ESLint 9 (6.10.2 is its newest release), which is why `npm ci` refused the
-// ESLint 10 bump until `package.json` gained an `overrides` entry pinning its
-// peer to ours. The plugin itself runs fine on 10 — verified by its rules still
-// firing (`jsx-a11y/no-autofocus` on a canary file). Drop the override as soon
-// as upstream ships a release that declares ESLint 10.
+// ESLint 10 bump until `package.json` gained an `overrides` entry for its peer.
+// The plugin itself runs fine on 10 — verified by its rules still firing
+// (`jsx-a11y/no-autofocus` on a canary file). The override names `^10.8.0`
+// rather than `$eslint` on purpose: it may only claim the major this was
+// actually checked against, so the next major bump fails loudly again instead
+// of silently inheriting a permission nobody re-verified. Drop it as soon as
+// upstream ships a release that declares ESLint 10.
 import js from '@eslint/js';
 import globals from 'globals';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
