@@ -74,7 +74,9 @@ Weg landet als `raw_path` mit `pen_up`-Markern und `stroke_starts` in
 `trace_meta`; `core/pipeline.py::canonical_from_path` löst damit die Kreuzungen
 auf, zieht die Anker auf die Tinte (Medial-Axis-Snap) und resampelt kanonisch →
 eine `templates`-Zeile mit `anchors`, `half_widths`, `entry`/`exit`-Tangenten
-samt Kopplungshöhe und `advance`.
+und `advance`. Die Kopplungshöhe steht NICHT dabei — die entscheidet der
+Komponist per Klassenregel (`core/compose.py::HIGH_COUPLE_BASES`,
+architektur.md §3).
 
 **Im Admin:** Einrichtungs-Wizard über `/admin/buchstaben?g=<key>` in vier Schritten —
 **Ausschluss** (Radierer · Tinte · Lücken füllen · Zelle einsetzen · „Maske

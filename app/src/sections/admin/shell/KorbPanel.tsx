@@ -6,7 +6,8 @@
 // misunderstanding surfaces early and can be rejected here with one click.
 // Returned items sit on top: those need the author, not the algorithm. Done
 // ones stay behind a toggle with their diagnosed stage and resolution, which
-// is what makes the archive worth keeping.
+// is what makes the archive worth keeping — and is why the bin icon asks
+// before it deletes rather than emptying that record on one tap.
 //
 // Since the redesign the panel lives in the shell's Korb drawer rather than on
 // one page: the basket belongs to the whole workbench, and a drawer keeps it
@@ -22,6 +23,10 @@ import {
   Button,
   Chip,
   Collapse,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControlLabel,
   IconButton,
   Switch,
@@ -209,6 +214,8 @@ export function KorbPanel({
   const [writeError, setWriteError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(true);
   const [showDone, setShowDone] = useState(false);
+  // The row whose deletion is being confirmed (see `remove`).
+  const [confirming, setConfirming] = useState<WorkItemOut | null>(null);
   // The target-less quick note (see `addNote`).
   const [adding, setAdding] = useState(false);
   const [noteText, setNoteText] = useState('');
@@ -218,6 +225,8 @@ export function KorbPanel({
     let cancelled = false;
     setError(false);
     setWriteError(null);
+    // A question about a row of the previous list must not outlive it.
+    setConfirming(null);
     listWorkItems(sourceId, undefined, { retries: 2 })
       .then((rows) => {
         if (!cancelled) setItems(rows);
@@ -281,9 +290,14 @@ export function KorbPanel({
       });
   };
 
-  // Single click, no confirm: deleting a MISFILING is cheap and this is the
-  // admin's own basket (a worked item is closed with `done` instead).
+  // Deleting is a hard DELETE with no undo anywhere in the basket, so the bin
+  // icon only asks — `confirming` holds the row the question is about. An
+  // erledigter Auftrag is the case that made this necessary: its protocol
+  // (restatement · diagnosed stage · resolution) is the archive of symptom →
+  // diagnosis → change the whole §5 protocol exists to accumulate, and one
+  // stray tap on a phone used to be enough to lose it.
   const remove = (item: WorkItemOut) => {
+    setConfirming(null);
     setWriteError(null);
     setItems((prev) => (prev ?? []).filter((i) => i.id !== item.id));
     deleteWorkItem(sourceId, item.id)
@@ -410,7 +424,7 @@ export function KorbPanel({
                       <ItemRow
                         key={item.id}
                         item={item}
-                        onDelete={() => remove(item)}
+                        onDelete={() => setConfirming(item)}
                         onReject={(correction) => reject(item, correction)}
                         onOpen={
                           url
@@ -435,6 +449,38 @@ export function KorbPanel({
           />
         )}
       </Collapse>
+
+      <Dialog open={confirming !== null} onClose={() => setConfirming(null)} maxWidth="xs" fullWidth>
+        <DialogTitle>{t.korbDeleteConfirmTitle}</DialogTitle>
+        <DialogContent>
+          {confirming && (
+            <>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                {workItemLabel(confirming)}
+                {confirming.specimen_id && (
+                  <Typography component="span" variant="caption" color="text.secondary">
+                    {` · ${confirming.specimen_id}`}
+                  </Typography>
+                )}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                {t.korbDeleteConfirmBody}
+              </Typography>
+              {confirming.status === 'done' && (
+                <Alert severity="warning" sx={{ mt: 1.5 }}>
+                  {t.korbDeleteConfirmArchive}
+                </Alert>
+              )}
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirming(null)}>{t.cancel}</Button>
+          <Button color="error" variant="contained" onClick={() => confirming && remove(confirming)}>
+            {t.korbDeleteConfirmSubmit}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

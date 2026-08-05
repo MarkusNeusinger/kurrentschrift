@@ -674,12 +674,12 @@ class GuideConfig(BaseModel):
     # Whether the ascender/descender rulers apply to this glyph.
     show_ascender: bool = True
     show_descender: bool = True
-    # Coupling height of the stroke's entry/exit — the guide line a neighbouring
-    # letter joins at (architektur.md §3/§4). Persisted per glyph so the chosen
-    # height survives without re-tracing; the trace/resample pipeline writes it
-    # onto entry.coupling / exit_pt.coupling.
-    entry_coupling: Literal["baseline", "midband", "ascender", "descender"] = "baseline"
-    exit_coupling: Literal["baseline", "midband", "ascender", "descender"] = "baseline"
+    # NOTE: `entry_coupling`/`exit_coupling` used to live here. The coupling
+    # height a neighbour joins at is decided by the composer's class rule
+    # (`core/compose.py::HIGH_COUPLE_BASES` — round bodies couple high, arcade
+    # letters low through the baseline garland), never by a stored label, so the
+    # two authored fields were read by nothing. `extra="ignore"` above keeps an
+    # older client's payload valid; stored `guides` JSON is left as it is.
 
 
 class BboxIn(BaseModel):
@@ -769,10 +769,16 @@ class StrokePoint(BaseModel):
     pen_up: bool = False
 
 
-class CouplingPointOut(BaseModel):
+class EndPointOut(BaseModel):
+    """One end of a stroke: where the pen lands/leaves and in which direction.
+
+    Rows authored before the coupling label was dropped still carry a
+    `coupling` key in their stored JSON — Pydantic ignores it by default, and
+    nothing reads it (the coupling height is the composer's class rule).
+    """
+
     xy: list[float]
     tangent_deg: float
-    coupling: Literal["baseline", "midband", "ascender", "descender"]
 
 
 class LaufformUpsert(BaseModel):
@@ -857,8 +863,8 @@ class TemplateOut(BaseModel):
     glyph: str
     variant: int
     advance: float
-    entry: CouplingPointOut
-    exit_pt: CouplingPointOut
+    entry: EndPointOut
+    exit_pt: EndPointOut
     anchors: list[list[float]]
     half_widths: list[float]
     raw_path: list[StrokePoint]

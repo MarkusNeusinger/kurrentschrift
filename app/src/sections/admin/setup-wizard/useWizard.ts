@@ -138,8 +138,6 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
       slantXs: xs,
       showAscender: g.show_ascender ?? true,
       showDescender: g.show_descender ?? true,
-      entryCoupling: g.entry_coupling ?? 'baseline',
-      exitCoupling: g.exit_coupling ?? 'baseline',
     };
   }, [bbox, source]);
 
@@ -180,8 +178,6 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
         slant_xs: guideVals.slantXs,
         show_ascender: guideVals.showAscender,
         show_descender: guideVals.showDescender,
-        entry_coupling: guideVals.entryCoupling,
-        exit_coupling: guideVals.exitCoupling,
         ...patch,
       };
       // Derive the legacy single-line fallback from the RESOLVED slant_xs (after

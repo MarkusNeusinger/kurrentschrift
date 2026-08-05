@@ -145,10 +145,6 @@ export const wizard = {
     resample: 'Neu abtasten',
     anchorsHint:
       'n_anchors = Zahl der Stützpunkte, auf die der Pen-Pfad abgetastet wird. Der Originalpfad bleibt erhalten, also jederzeit ohne Neuzeichnen neu abtastbar.',
-    entryCoupling: 'Kopplung Anfang',
-    exitCoupling: 'Kopplung Ende',
-    couplingHint:
-      'Höhe, auf der ein Nachbarbuchstabe ansetzt (Anfang) bzw. weiterläuft (Ende). Greift bei bestehendem Canonical sofort beim nächsten Speichern.',
   },
   // Inline Weg preview (WegPreview, shown under the Weg controls once saved).
   optimize: {

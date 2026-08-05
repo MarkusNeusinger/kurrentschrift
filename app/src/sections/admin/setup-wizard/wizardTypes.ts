@@ -2,7 +2,6 @@
 // canvas and step panels read, and the commit-callback signatures the canvas
 // uses to hand a finished gesture to the wizard (which validates + persists).
 
-import type { CouplingHeight } from '@/lib/api';
 import { de } from '@/locales/admin';
 
 // Schräglage is folded into the Lineatur step (the writing grid — horizontal
@@ -27,8 +26,6 @@ export interface GuideValues {
   slantXs: number[];
   showAscender: boolean;
   showDescender: boolean;
-  entryCoupling: CouplingHeight;
-  exitCoupling: CouplingHeight;
 }
 
 // The two draggable lineature lines on the Lineatur step.

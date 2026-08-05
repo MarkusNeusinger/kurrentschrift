@@ -92,6 +92,35 @@ export function cropBoxOf(inst: InstanceOut, rect: number[] | undefined): CropBo
   return { x: inst.x0 - rect[0], y: inst.y0 - rect[1], w: inst.x1 - inst.x0, h: inst.y1 - inst.y0 };
 }
 
+// The crop box of a JOIN occurrence — the union of the two letters it runs
+// between. A `pair_instance` stores its geometry in the glyph_pairs frame
+// (template units relative to the left glyph's exit) and therefore carries no
+// pixel box of its own; but it names the specimen and the LEFT glyph's slot
+// (`tools/pairlab/harvest.py::_adjacent_joined` walks adjacent slot pairs), and
+// the letter occurrences of the same plate carry exactly those slots as boxes.
+// So the join's pixels are found rather than stored.
+//
+// Both letters must be present AND carry the expected glyph key: a slot index
+// that lands on a different letter means the two harvests disagree about the
+// word's slotting, and showing the wrong ink is worse than showing none.
+export function joinCropBoxOf(
+  occ: { left_key: string; right_key: string; slot: number },
+  letters: InstanceOut[] | undefined,
+  rect: number[] | undefined,
+): CropBox | null {
+  const at = (slot: number, key: string) =>
+    (letters ?? []).find((i) => i.measurements.slot === slot && i.glyph_key === key);
+  const left = at(occ.slot, occ.left_key);
+  const right = at(occ.slot + 1, occ.right_key);
+  if (!left || !right) return null;
+  const a = cropBoxOf(left, rect);
+  const b = cropBoxOf(right, rect);
+  if (!a || !b) return null;
+  const x = Math.min(a.x, b.x);
+  const y = Math.min(a.y, b.y);
+  return { x, y, w: Math.max(a.x + a.w, b.x + b.w) - x, h: Math.max(a.y + a.h, b.y + b.h) - y };
+}
+
 // Where a word's units sit in its specimen crop. The stored trace AND the
 // engine's composition of the same word live in the identical frame (baseline
 // = 0, 1 unit = x-height), so ONE map serves both: px = (u·xh + tx,

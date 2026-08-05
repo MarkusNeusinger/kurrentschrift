@@ -518,19 +518,12 @@ export interface GlyphPairIn {
 // chart measures ~50°), matching source.slant_deg. slant_xs lists the baseline crossing of each slant line
 // (all share slant_deg) — individually draggable for letters like m/n/u;
 // slant_x is the single-line fallback. Mirrors GuideConfig in api/schemas.py.
-export type CouplingHeight = 'baseline' | 'midband' | 'ascender' | 'descender';
-
 export interface GuideConfig {
   slant_deg?: number | null;
   slant_x?: number | null;
   slant_xs?: number[] | null;
   show_ascender?: boolean;
   show_descender?: boolean;
-  // Coupling height of the stroke's entry/exit — the guide line a neighbouring
-  // letter joins at. Persisted per glyph; the trace/resample pipeline stamps it
-  // onto entry.coupling / exit_pt.coupling.
-  entry_coupling?: CouplingHeight;
-  exit_coupling?: CouplingHeight;
 }
 
 // Item of GET /sources/{id}/bboxes/status — flags + layout scalars only. The
@@ -617,10 +610,13 @@ export interface TraceRequest {
   force?: boolean;
 }
 
-export interface CouplingPointOut {
+// One end of a stroke: where the pen lands/leaves and in which direction.
+// Mirrors EndPointOut in api/schemas.py. Rows authored before the coupling
+// label was dropped still carry a `coupling` key in their stored JSON; nothing
+// reads it (the coupling height is the composer's class rule).
+export interface EndPointOut {
   xy: [number, number];
   tangent_deg: number;
-  coupling: 'baseline' | 'midband' | 'ascender' | 'descender';
 }
 
 export interface GlyphSummary {
@@ -636,8 +632,8 @@ export interface GlyphOut {
   glyph: string;
   variant: number;
   advance: number;
-  entry: CouplingPointOut;
-  exit_pt: CouplingPointOut;
+  entry: EndPointOut;
+  exit_pt: EndPointOut;
   anchors: Array<[number, number]>;
   half_widths: number[];
   raw_path: StrokePoint[];
@@ -672,8 +668,8 @@ export interface GlyphRenderData {
   // places each glyph along the baseline and draws the Übergang from glyph A's
   // `exit_pt` to glyph B's `entry`. `xy` is in the same template frame as
   // `anchors_template`. Optional for back-compat with older payloads.
-  entry?: CouplingPointOut;
-  exit_pt?: CouplingPointOut;
+  entry?: EndPointOut;
+  exit_pt?: EndPointOut;
   advance?: number | null;
 }
 
@@ -840,8 +836,8 @@ export interface FitData {
   advance: number;
   anchors: Array<[number, number]>;
   half_widths: number[];
-  entry: CouplingPointOut;
-  exit_pt: CouplingPointOut;
+  entry: EndPointOut;
+  exit_pt: EndPointOut;
   fit: FitMeta;
   half_widths_px: number[];
   crop_size: { w: number; h: number };

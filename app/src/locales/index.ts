@@ -30,11 +30,4 @@ export function fmt(template: string, params: Record<string, string | number>): 
 
 // Label maps + helpers shared by admin/wizard code (absorbed from the former
 // lib/labels.ts).
-export {
-  COUPLING_LABELS,
-  LINEATUR_LABELS,
-  STYLE_LABELS,
-  ZONE_LABELS,
-  couplingLabel,
-  styleLabel,
-} from './de/common';
+export { LINEATUR_LABELS, STYLE_LABELS, ZONE_LABELS, styleLabel } from './de/common';

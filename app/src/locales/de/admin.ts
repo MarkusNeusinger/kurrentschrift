@@ -152,8 +152,14 @@ export const admin = {
     statsCaption:
       'Die gemessene Median-Verbindung über den Vorkommen, aus denen sie verdichtet wurde — die Prüfzahl dafür, wie weit der Generator von dieser Hand entfernt liegt.',
     occurrencesTitle: 'Vorkommen ({{count}})',
-    occurrencesCaption: 'Jede herausgezogene Verbindung auf den Platten, mit dem Abstand zum generierten Zug.',
+    occurrencesCaption:
+      'Jede herausgezogene Verbindung als Ausschnitt der Platte — die Tinte selbst, mit dem Abstand Δ zum generierten Zug. Ein Klick springt in das Wort, in dem sie steht.',
     noOccurrences: 'Diese Verbindung kommt auf den Platten nicht vor — beurteilt wird dann allein das Schriftbild oben.',
+    // Occurrences without a showable crop. Two causes, and the label names
+    // neither: either the plate has no fitted letters at that slot, or the two
+    // harvests disagree about the word's slotting — in both cases the honest
+    // statement is that the spot cannot be located on the plate.
+    occurrencesNoCrop: '{{count}} ohne Ausschnitt (Stelle auf der Platte nicht eindeutig auffindbar):',
     loadingOccurrences: 'Vorkommen werden geladen …',
     wordsTitle: 'Wörter mit diesem Übergang',
     wordsCaption: 'Die Wortproben, in denen die Verbindung vermessen wurde.',
@@ -479,6 +485,9 @@ export const admin = {
     // Per-occurrence caption of a pair row: the generated Übergang's distance
     // from the specimen ink (xh units, lower better).
     genChamfer: 'Generator-Abstand {{value}}',
+    // The same number under a crop thumbnail, where the tile is ~100 px wide:
+    // „Δ" plus the value, the full wording in the tile's title tooltip.
+    genChamferShort: 'Δ {{value}}',
     fitDoubtful: 'Fit unsicher',
     // The statistics layers of the Handmodell (Stufenplan H1/H2) inside the
     // lenses: a letter gets its aggregate median with the MAD spread and the
@@ -551,6 +560,14 @@ export const admin = {
     korbDelete: 'Auftrag löschen',
     korbLoadError: 'Aufträge konnten nicht geladen werden (Admin-Zugang nötig).',
     korbDeleteError: 'Löschen fehlgeschlagen — der Auftrag liegt weiter im Korb.',
+    // Deleting is irreversible and there is no undo, so it gets a question
+    // first — and an erledigter Auftrag gets a second sentence, because with it
+    // the whole handling record (Verstandenes · Stufe · Auflösung) goes.
+    korbDeleteConfirmTitle: 'Auftrag löschen?',
+    korbDeleteConfirmBody: 'Der Auftrag wird endgültig entfernt — das lässt sich nicht rückgängig machen.',
+    korbDeleteConfirmArchive:
+      'Dieser Auftrag ist bereits abgeschlossen. Sein Protokoll — Verstandenes, diagnostizierte Stufe und Auflösung — ist Historie und kann später noch gebraucht werden. Mit „erledigte anzeigen“ ausblenden statt löschen.',
+    korbDeleteConfirmSubmit: 'Endgültig löschen',
     // The target-less quick note: a general Kleinigkeit (a UI wrinkle, a
     // wording slip) that belongs to no letter and is too small for an Issue.
     korbAddNote: 'Notiz anlegen',

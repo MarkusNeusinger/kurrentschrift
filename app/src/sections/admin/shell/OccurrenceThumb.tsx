@@ -5,7 +5,12 @@
 // "where did I see it?".
 //
 // Extracted from the old Werkbank context lens so the Buchstaben view and any
-// other surface showing occurrences draw them identically.
+// other surface showing occurrences draw them identically. The generic
+// `CropThumb` underneath takes the box directly, which is what lets the
+// Übergänge view show a measured JOIN the same way: a join has no stored box of
+// its own, its pixels are the union of the two letters it runs between
+// (`model.ts::joinCropBoxOf`) — but once that box exists, the tile is the same
+// tile, and a dissection is judged on the ink rather than on a chip.
 //
 // The air around the box is deliberately generous: the stored occurrence box
 // comes from the M4 fit and therefore hugs the CENTERLINE, while the ink runs
@@ -16,11 +21,12 @@
 // pad cut into the letter; it also ignored that a crop's scale varies.
 
 import { Box, Typography } from '@mui/material';
+import type { ReactNode } from 'react';
 
 import { wordSampleCropUrl } from '@/lib/api';
 import type { InstanceOut, WordSampleOut } from '@/lib/api';
 
-import { cropBoxOf } from './model';
+import { cropBoxOf, type CropBox } from './model';
 
 const THUMB_H = 80; // px — tall enough to judge a letter's run form, and raised
 // with the pad below so the extra air does not shrink the letter itself.
@@ -40,29 +46,38 @@ const THUMB_H = 80; // px — tall enough to judge a letter's run form, and rais
 const THUMB_PAD_MIN = 7;
 const THUMB_PAD_SHARE = 0.18;
 
-export function OccurrenceThumb({
-  inst,
+// The tile itself, over ANY box in a specimen crop's frame — a fitted letter or
+// (in the Übergänge view) the two letters a measured join runs between. Only
+// the caption differs between those callers, so only the caption is passed in.
+export function CropThumb({
+  box,
   sample,
   sourceId,
   onJump,
+  label,
+  detail,
+  note,
 }: {
-  inst: InstanceOut;
+  box: CropBox;
   sample: WordSampleOut;
   sourceId: string;
   onJump: () => void;
+  // Left half of the caption — truncates when the tile is narrow.
+  label: string;
+  // Right half — the number the list is ordered or judged by, never truncated.
+  detail?: string;
+  // An extra line under the caption (a QC warning), shown as given.
+  note?: ReactNode;
 }) {
-  const b = cropBoxOf(inst, sample.rect);
-  if (!b) return null;
-  const pad = Math.max(THUMB_PAD_MIN, THUMB_PAD_SHARE * Math.sqrt(b.w * b.h));
-  const x = Math.max(0, b.x - pad);
-  const y = Math.max(0, b.y - pad);
-  const w = Math.min(sample.width - x, b.w + 2 * pad);
-  const h = Math.min(sample.height - y, b.h + 2 * pad);
+  const pad = Math.max(THUMB_PAD_MIN, THUMB_PAD_SHARE * Math.sqrt(box.w * box.h));
+  const x = Math.max(0, box.x - pad);
+  const y = Math.max(0, box.y - pad);
+  const w = Math.min(sample.width - x, box.w + 2 * pad);
+  const h = Math.min(sample.height - y, box.h + 2 * pad);
   if (w <= 0 || h <= 0) return null;
   const scale = THUMB_H / h;
   const tileW = w * scale;
-  const rmse = inst.measurements.geo_rmse_px;
-  const caption = `${sample.id}${rmse === undefined ? '' : ` · ${rmse.toFixed(1)} px`}`;
+  const caption = `${label}${detail ? ` · ${detail}` : ''}`;
 
   return (
     <Box
@@ -103,14 +118,43 @@ export function OccurrenceThumb({
           full text stays reachable as the title tooltip. */}
       <Box sx={{ display: 'flex', gap: 0.5, maxWidth: tileW, width: '100%', justifyContent: 'center' }} title={caption}>
         <Typography variant="caption" color="text.secondary" noWrap sx={{ minWidth: 0, lineHeight: 1.2 }}>
-          {sample.id}
+          {label}
         </Typography>
-        {rmse !== undefined && (
+        {detail && (
           <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0, lineHeight: 1.2 }}>
-            {`· ${rmse.toFixed(1)} px`}
+            {`· ${detail}`}
           </Typography>
         )}
       </Box>
+      {note}
     </Box>
+  );
+}
+
+// One stored LETTER occurrence, captioned with its specimen and fit residual —
+// the number the Buchstaben view sorts by (worst first).
+export function OccurrenceThumb({
+  inst,
+  sample,
+  sourceId,
+  onJump,
+}: {
+  inst: InstanceOut;
+  sample: WordSampleOut;
+  sourceId: string;
+  onJump: () => void;
+}) {
+  const box = cropBoxOf(inst, sample.rect);
+  if (!box) return null;
+  const rmse = inst.measurements.geo_rmse_px;
+  return (
+    <CropThumb
+      box={box}
+      sample={sample}
+      sourceId={sourceId}
+      onJump={onJump}
+      label={sample.id}
+      detail={rmse === undefined ? undefined : `${rmse.toFixed(1)} px`}
+    />
   );
 }

@@ -17,13 +17,14 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { WrittenWord } from '@/components/WrittenWord';
 import { useAdmin } from '@/context/AdminContext';
 import { getPairs } from '@/lib/api';
-import type { GlyphPairOut } from '@/lib/api';
+import type { GlyphPairOut, WordSampleOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { WordComparison } from '@/sections/admin/compare/WordComparison';
 import { PairEditorDialog } from '@/sections/admin/pairs/PairEditorDialog';
 import { PairMatrix } from '@/sections/admin/pairs/PairMatrix';
 import { PairStats } from '@/sections/admin/shell/LensStats';
 import { LetterPicker } from '@/sections/admin/shell/LetterPicker';
+import { CropThumb } from '@/sections/admin/shell/OccurrenceThumb';
 import { useFileMark } from '@/sections/admin/shell/KorbContext';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { useWorkbench } from '@/sections/admin/shell/WorkbenchData';
@@ -35,7 +36,7 @@ import {
   textForPair,
   wordsUrl,
 } from '@/sections/admin/shell/focus';
-import { WERKBANK_COLORS, pairKeyOf } from '@/sections/admin/shell/model';
+import { WERKBANK_COLORS, joinCropBoxOf, pairKeyOf, type CropBox } from '@/sections/admin/shell/model';
 import { garamond } from '@/styles/paper';
 
 const PREVIEW_H = 150; // px — a join needs room, but stays scannable
@@ -102,6 +103,29 @@ export function JoinView() {
   const pairText = leftKey && rightKey ? textForPair(leftKey, rightKey) : '';
   const occurrences = leftKey && rightKey ? (workbench.pairsByKey.get(pairKeyOf(leftKey, rightKey)) ?? []) : [];
   const aggregate = leftKey && rightKey ? workbench.pairAggregateByKey.get(pairKeyOf(leftKey, rightKey)) : undefined;
+
+  // The dissected occurrences split by whether their ink can be shown. A
+  // `pair_instance` stores no pixel box (its geometry is in the glyph_pairs
+  // frame, relative to the left glyph's exit), but it names the specimen and
+  // the LEFT glyph's slot, and the letter occurrences of the same plate carry
+  // those slots as boxes — so the join's crop is the union of the two letters
+  // it runs between. On an Abb.-20 pair drill the whole cell IS the join and
+  // needs no cut, which is the only way those rows get a tile at all: the
+  // letter harvest never fitted the drill plates.
+  const { cropped, plain } = useMemo(() => {
+    const cropped: { occ: (typeof occurrences)[number]; sample: WordSampleOut; box: CropBox }[] = [];
+    const plain: { occ: (typeof occurrences)[number]; sample?: WordSampleOut }[] = [];
+    for (const occ of occurrences) {
+      const sample = workbench.sampleById.get(occ.specimen_id);
+      const box = !sample
+        ? null
+        : (joinCropBoxOf(occ, workbench.boxesBySpecimen.get(occ.specimen_id), sample.rect) ??
+          (occ.kind === 'pair' ? { x: 0, y: 0, w: sample.width, h: sample.height } : null));
+      if (sample && box) cropped.push({ occ, sample, box });
+      else plain.push({ occ, sample });
+    }
+    return { cropped, plain };
+  }, [occurrences, workbench.sampleById, workbench.boxesBySpecimen]);
 
   // The words this join was measured in — the way over into the Wörter view.
   const relatedWords = useMemo(() => {
@@ -323,35 +347,78 @@ export function JoinView() {
               {t.noOccurrences}
             </Typography>
           ) : (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-              {occurrences.map((occ) => {
-                const sample = workbench.sampleById.get(occ.specimen_id);
-                return (
-                  <Box
+            <>
+              {/* The tiles first, as one grid. Interleaving them with the
+                  box-less rows made a ragged column of half-pictures — the
+                  point of the panel is the comparison BETWEEN the plates, and
+                  that only works when the crops stand side by side. */}
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'flex-start' }}>
+                {cropped.map(({ occ, sample, box }) => (
+                  <CropThumb
                     key={`${occ.kind}:${occ.specimen_id}:${occ.slot}`}
-                    sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}
-                  >
-                    <Chip
-                      size="small"
-                      variant="outlined"
-                      clickable
-                      label={occ.specimen_id}
-                      onClick={() => navigate(wordsUrl(sample?.word ?? '', occ.specimen_id))}
-                    />
-                    {occ.measurements.gen_chamfer !== undefined && (
-                      <Typography variant="caption" color="text.secondary">
-                        {fmt(de.admin.werkbank.genChamfer, { value: occ.measurements.gen_chamfer.toFixed(3) })}
-                      </Typography>
-                    )}
-                    {occ.measurements.fit_ok === false && (
-                      <Typography variant="caption" sx={{ color: WERKBANK_COLORS.selected }}>
-                        {de.admin.werkbank.fitDoubtful}
-                      </Typography>
-                    )}
-                  </Box>
-                );
-              })}
-            </Box>
+                    box={box}
+                    sample={sample}
+                    sourceId={sourceId}
+                    onJump={() => navigate(wordsUrl(sample.word, occ.specimen_id))}
+                    label={occ.specimen_id}
+                    detail={
+                      occ.measurements.gen_chamfer === undefined
+                        ? undefined
+                        : fmt(de.admin.werkbank.genChamferShort, {
+                            value: occ.measurements.gen_chamfer.toFixed(3),
+                          })
+                    }
+                    note={
+                      occ.measurements.fit_ok === false ? (
+                        <Typography variant="caption" sx={{ color: WERKBANK_COLORS.selected, lineHeight: 1.2 }}>
+                          {de.admin.werkbank.fitDoubtful}
+                        </Typography>
+                      ) : undefined
+                    }
+                  />
+                ))}
+              </Box>
+
+              {/* Everything with no crop to show: the plate is a pair drill the
+                  letter harvest never fitted, or the two harvests disagree
+                  about this word's slotting. Listed rather than dropped — the
+                  occurrence is counted in the heading and stays reachable —
+                  and said out loud, because a shorter grid than the count
+                  would otherwise read as missing data. */}
+              {plain.length > 0 && (
+                <Box sx={{ mt: cropped.length > 0 ? 1.5 : 0 }}>
+                  {cropped.length > 0 && (
+                    <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 0.5 }}>
+                      {fmt(t.occurrencesNoCrop, { count: plain.length })}
+                    </Typography>
+                  )}
+                  {plain.map(({ occ, sample }) => (
+                    <Box
+                      key={`${occ.kind}:${occ.specimen_id}:${occ.slot}`}
+                      sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', py: 0.25 }}
+                    >
+                      <Chip
+                        size="small"
+                        variant="outlined"
+                        clickable
+                        label={occ.specimen_id}
+                        onClick={() => navigate(wordsUrl(sample?.word ?? '', occ.specimen_id))}
+                      />
+                      {occ.measurements.gen_chamfer !== undefined && (
+                        <Typography variant="caption" color="text.secondary">
+                          {fmt(de.admin.werkbank.genChamfer, { value: occ.measurements.gen_chamfer.toFixed(3) })}
+                        </Typography>
+                      )}
+                      {occ.measurements.fit_ok === false && (
+                        <Typography variant="caption" sx={{ color: WERKBANK_COLORS.selected }}>
+                          {de.admin.werkbank.fitDoubtful}
+                        </Typography>
+                      )}
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </>
           )}
         </Panel>
 

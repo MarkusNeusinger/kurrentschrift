@@ -103,13 +103,11 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
             savablePoints={wizard.savablePoints}
             hasCanonical={hasCanonical}
             busy={busy}
-            guideVals={wizard.guideVals}
             showSaved={wizard.showSaved}
             setShowSaved={wizard.setShowSaved}
             saveTrace={wizard.saveTrace}
             resample={wizard.resample}
             updateBboxField={wizard.updateBboxField}
-            updateGuides={wizard.updateGuides}
             wegTool={wizard.wegTool}
             setWegTool={wizard.setWegTool}
             nudgeRadius={wizard.nudgeRadius}

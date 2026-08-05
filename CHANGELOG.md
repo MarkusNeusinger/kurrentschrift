@@ -14,6 +14,19 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The Übergänge view shows the measured joins as ink, not as chips.** The
+  occurrence panel of `/admin/uebergaenge` listed every dissected join by
+  specimen id and `gen_chamfer` — it said where a join was measured and never
+  what it looks like, which is the one thing a join is judged on. A
+  `pair_instance` carries no pixel box (its geometry lives in the glyph_pairs
+  frame, relative to the left glyph's exit), but it names the specimen and the
+  left glyph's slot, and the letter occurrences of the same plate carry those
+  slots as page-pixel boxes: the new pure `model.ts::joinCropBoxOf` unions the
+  two into the join's own crop box, and the tile from the Buchstaben view
+  (extracted as the generic `CropThumb`) draws it. Slot and glyph key must
+  both match — where the two harvests disagree about a word's slotting, the
+  chip row stays rather than showing the wrong ink.
+
 - **The chain objective learned the one thing a pen always knew: a stroke is
   not written twice.** The grid-seed A/B's follow-up (the basin probe) proved
   the placement collapse is a property of the objective — on all five probed
@@ -86,7 +99,39 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `meas_dconn_median` 0.127 → 0.124 / 0.217 → 0.206, pair Gleichzug
   doublings 8 → 6. Golden compose fixture deliberately re-baselined.
 
+### Removed
+
+- **„Kopplung Anfang/Ende" is gone from the wizard — the field was read by
+  nothing.** The Weg step let a letter's entry/exit coupling height be
+  authored per glyph (Grundlinie · Mittellinie · Oberlinie · Unterlinie); it
+  travelled from `bboxes.guides` through `canonical_from_path` into
+  `templates.entry.coupling` / `exit_pt.coupling` and was carried onto every
+  M4 fit — and there the trail ended. `core/compose.py` decides the coupling
+  height by class rule (`HIGH_COUPLE_BASES`: round bodies e/a/o/c/d/g/q couple
+  high at the apex, arcade letters n/m/i/u low through the baseline garland,
+  measured on Abb. 19/20/22) and never once read the stored label, so the
+  control promised an effect it did not have. Removed end to end: the two
+  dropdowns and their locale strings, the wizard state, the `GuideConfig`
+  fields, the pipeline stamp, the fit carry-over, and `CouplingPointOut` →
+  `EndPointOut` (point + tangent). No migration and no data rewrite — stored
+  `guides` JSON keeps its keys (`extra="ignore"` makes an older client's
+  payload valid, and one of the 77 authored bboxes carries a non-default value
+  nothing ever consumed), and rows authored earlier keep their `coupling` key,
+  which is now simply ignored on read. `architektur.md` §3 and the glossary
+  said the coupling height lives in the template; both now record that the
+  class rule owns it.
+
 ### Changed
+
+- **Deleting a task in the Auftragskorb asks first.** The bin icon on a
+  work-item row was a single click on a hard DELETE with no undo anywhere in
+  the basket. That is the wrong bargain for a CLOSED item in particular: its
+  handling protocol — the session's restatement, the diagnosed stage, the
+  resolution — is precisely the symptom → diagnosis → change archive the §5
+  protocol exists to accumulate, and one stray tap on a phone emptied it. The
+  icon now opens a confirmation naming the row, and an erledigter Auftrag adds
+  the warning that its record is history plus the pointer to the „erledigte
+  anzeigen" toggle, which hides rather than destroys.
 
 - **ESLint 9 → 10, with the one plugin that blocks it pinned rather than
   dropped.** Dependabot's bump (#235) could not land on its own: `npm ci` died

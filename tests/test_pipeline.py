@@ -58,21 +58,17 @@ def test_canonical_contains_measurements(synthetic_chart_path, synthetic_bbox):
     assert abs(m["slant_deg"] - 90.0) < 5.0
 
 
-def test_coupling_defaults_to_baseline(synthetic_chart_path, synthetic_bbox):
-    canon = canonical_from_path(
-        raw_path=_vertical_stylus_path(), bbox=synthetic_bbox, chart_path=synthetic_chart_path, glyph="l", n_anchors=20
-    )
-    assert canon["entry"]["coupling"] == "baseline"
-    assert canon["exit_pt"]["coupling"] == "baseline"
-
-
-def test_coupling_height_from_bbox(synthetic_chart_path, synthetic_bbox):
+def test_entry_exit_carry_point_and_tangent_only(synthetic_chart_path, synthetic_bbox):
+    """No coupling label is stamped any more — the composer decides the coupling
+    height by class rule (`core/compose.py::HIGH_COUPLE_BASES`), and a stored
+    label was read by nothing. A leftover `entry_coupling` on the bbox (older
+    authored rows still carry one in `guides`) must not resurrect the key."""
     bbox = {**synthetic_bbox, "entry_coupling": "midband", "exit_coupling": "ascender"}
     canon = canonical_from_path(
         raw_path=_vertical_stylus_path(), bbox=bbox, chart_path=synthetic_chart_path, glyph="l", n_anchors=20
     )
-    assert canon["entry"]["coupling"] == "midband"
-    assert canon["exit_pt"]["coupling"] == "ascender"
+    for side in ("entry", "exit_pt"):
+        assert set(canon[side]) == {"xy", "tangent_deg"}
 
 
 def test_raw_path_is_preserved(synthetic_chart_path, synthetic_bbox):

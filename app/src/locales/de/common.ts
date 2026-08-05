@@ -29,14 +29,6 @@ export const ZONE_LABELS = {
   descender: 'Unterlänge',
 } as const;
 
-// Coupling height (where a neighbouring letter joins) — same four lines.
-export const COUPLING_LABELS: Record<string, string> = {
-  baseline: 'Grundlinie',
-  midband: 'Mittellinie',
-  ascender: 'Oberlinie',
-  descender: 'Unterlinie',
-};
-
 // Which kind of specimen plate an occurrence was measured on (`kind` on every
 // word/pair occurrence row): a connected-writing word plate vs. a letter-pair
 // drill row.
@@ -53,7 +45,6 @@ export const STYLE_LABELS: Record<string, string> = {
   offenbacher: 'Offenbacher',
 };
 
-export const couplingLabel = (key: string): string => COUPLING_LABELS[key] ?? key;
 export const styleLabel = (key: string): string => STYLE_LABELS[key] ?? key;
 export const specimenKindLabel = (key: string): string => SPECIMEN_KIND_LABELS[key] ?? key;
 
