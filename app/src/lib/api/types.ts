@@ -380,9 +380,11 @@ export interface PairAggregateRebuildOut {
 // api/schemas.py: `kind` decides which target fields are required ('letter' →
 // glyph_key, 'pair' → left_key + right_key, 'word' → word or specimen_id), and
 // specimen_kind/specimen_id must be sent TOGETHER or not at all (422 otherwise
-// — an id without its namespace may point at nothing). Fully admin-gated.
+// — an id without its namespace may point at nothing). 'note' is the
+// target-less fourth kind: a general small thing whose whole content is the
+// `note` text, so that is the field IT requires. Fully admin-gated.
 export interface WorkItemIn {
-  kind: 'letter' | 'pair' | 'word';
+  kind: WorkItemKind;
   glyph_key?: string | null;
   left_key?: string | null;
   right_key?: string | null;
@@ -391,6 +393,10 @@ export interface WorkItemIn {
   specimen_id?: string | null;
   note?: string;
 }
+
+// The marked level. The three doctrine levels plus 'note', which has no target
+// and no writing-path stage — it closes on its resolution alone.
+export type WorkItemKind = 'letter' | 'pair' | 'word' | 'note';
 
 // The stages of the writing path a complaint can be traced to
 // (optimierungs-werkbank.md §3), in the triage order §5 prescribes. Mirrors
@@ -412,7 +418,7 @@ export type WorkItemStatus = 'open' | 'ack' | 'done' | 'returned';
 export interface WorkItemOut {
   id: number;
   source_id: string;
-  kind: 'letter' | 'pair' | 'word';
+  kind: WorkItemKind;
   glyph_key: string | null;
   left_key: string | null;
   right_key: string | null;

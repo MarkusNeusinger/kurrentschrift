@@ -244,6 +244,35 @@ async def test_source_free_queue_across_sources(api: Harness):
     assert res.status == 404
 
 
+async def test_general_note_needs_no_target_and_no_stage(api: Harness):
+    """The target-less fourth kind: a general Kleinigkeit the admin jots into
+    the Korb because it belongs to no glyph and is too small for an issue. Its
+    text is the whole task, and the §3 stage vocabulary — all writing-path
+    stages — has nothing true to say about it, so it closes on the outcome."""
+    _, source_id = await api.seed_style_and_source()
+    note = await _file(api, source_id, {"kind": "note", "note": "Löschen im Korb wirkt erst nach Neuladen."})
+    assert (note["kind"], note["status"]) == ("note", "open")
+    assert (note["glyph_key"], note["left_key"], note["right_key"], note["word"]) == (None,) * 4
+
+    # A note without text would be a row nobody can act on.
+    res = await api.client.request(
+        "POST",
+        f"/sources/{source_id}/work-items",
+        json_body={"kind": "note", "note": "  "},
+        headers=api.admin_headers(),
+    )
+    assert res.status == 422
+
+    # The restatement gate still holds — only the stage requirement drops.
+    res = await _patch(api, note["id"], {"status": "done", "resolution": "behoben"})
+    assert res.status == 422
+    await _ack(api, note["id"], "Die Löschung im Korb schlägt erst nach einem Neuladen durch.")
+
+    res = await _patch(api, note["id"], {"status": "done", "resolution": "Refresh erst nach der Bestätigung."})
+    assert res.status == 200, res.body
+    assert (res.json()["status"], res.json()["stage"]) == ("done", None)
+
+
 async def test_delete_item(api: Harness):
     _, source_id = await api.seed_style_and_source()
     item = await _file(api, source_id, _letter_item())
@@ -334,6 +363,14 @@ async def test_rejects_unworkable_targets_and_unknown_keys(api: Harness):
         # Acking and closing in ONE call is refused too: the restatement is only
         # worth writing if it stood there while it could still be corrected.
         ({}, {"status": "done", "understanding": "u", "stage": "join_rule", "resolution": "r"}, False),
+        # A 'note' has no writing-path stage to name, so it closes on the
+        # outcome alone — but not before it was understood, and a stage stays
+        # allowed where one genuinely applies.
+        ({"kind": "note", "understanding": "u"}, {"status": "done", "resolution": "behoben"}, True),
+        ({"kind": "note"}, {"status": "done", "resolution": "behoben"}, False),
+        ({"kind": "note", "understanding": "u"}, {"status": "done"}, False),
+        ({"kind": "note", "understanding": "u"}, {"status": "returned", "resolution": "braucht dich"}, True),
+        ({"kind": "note", "understanding": "u"}, {"status": "done", "stage": "composition", "resolution": "r"}, True),
     ],
 )
 def test_check_transition_rules(stored: dict, changes: dict, expected_ok: bool):

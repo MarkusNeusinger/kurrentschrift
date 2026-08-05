@@ -45,7 +45,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Grundstrich/Haarstrich §1
 - **H** — H0–H5 §5 · Hand §2 · HTR §6 · Huber-Kappung §3 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
-- **K** — Kettenfit §3 · Kill-Kriterium §3 · Klassenregel §2 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3
+- **K** — Kettenfit §3 · Kill-Kriterium §3 · Klassenregel §2 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5
 - **L** — Labs §4 · Laufform §2 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · matched arc §3 · meas §4 · Messboden §4
 - **N** — Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4
@@ -776,6 +776,15 @@ Autor markiert in der Werkbank einen Buchstaben, ein Paar oder ein Wort
 (⚑) und legt daraus einen Auftrag ab — Ebene, Ziel-Schlüssel, wo gesehen,
 freie Notiz. Mehr ist von der Mensch-Seite nicht gefordert; die Ebene heißt
 **„wo gesehen“, nicht „wo verursacht“**. Migration `0020`/`0022`.
+
+**Korb-Notiz** *(`work_items.kind = "note"`)* — die vierte, zielfreie Ebene
+des Auftragskorbs: eine allgemeine Kleinigkeit ohne Buchstabe, Paar oder
+Wort — eine Admin-UI-Falte, ein schiefes Wort in der Oberfläche —, für die
+sich ein GitHub-Issue nicht lohnt. Ihr ganzer Inhalt ist der Notiztext (das
+einzige Pflichtfeld), angelegt direkt im Korb statt über ⚑, das immer etwas
+Bestimmtes markiert. Läuft dasselbe Protokoll, nur ohne Pflicht-`stage`:
+das Stufen-Vokabular benennt Stufen des Schreibwegs. →
+optimierungs-werkbank.md §5
 
 **Auftragskorb-Protokoll** — der Rest ist Protokoll, und die API
 **erzwingt** es (`check_transition`, 422 bei unvollständigem Abschluss):

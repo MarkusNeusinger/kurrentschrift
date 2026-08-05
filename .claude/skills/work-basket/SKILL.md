@@ -62,6 +62,10 @@ Never restate a complaint you have not looked at. Depending on the level:
 - **letter** — the Werkbank letter lens (chart form vs. every stored
   occurrence, worst residual first); `python -m tools.glyphlab <key>
   --live --stages` for the derivation.
+- **note** — the target-less kind: a general Kleinigkeit (an admin-UI
+  wrinkle, a wording slip) whose whole content is the text. There is no
+  specimen to score; reproduce it where it lives — usually the admin SPA
+  (`/verify-frontend`) or the endpoint the note names.
 
 Write down what you actually measured. `reproduced` is `yes`, `partly`
 or `no` — and `no` is a legitimate outcome, not a failure to try.
@@ -121,6 +125,10 @@ curl -fsS -X PATCH -H "X-Admin-Token: $ADMIN_TOKEN" -H "Content-Type: applicatio
 `composition` · `pair_override` · `word_trace` · `not_reproducible`.
 The API returns **422 naming the missing field** if the protocol is
 incomplete — that is the reminder, not an obstacle to route around.
+
+A `note` row closes on `resolution` alone: every stage in that
+vocabulary names a stage of the WRITING path, and a UI wrinkle has none.
+Send one anyway where it genuinely applies. The ack step is unchanged.
 
 Two things it will refuse, both on purpose: acking and closing in ONE
 call (the restatement is only worth writing if it stood there while it

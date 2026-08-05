@@ -106,6 +106,15 @@ Wizard-/Editor-Absprung vor.
 Ziel-Schlüssel + Specimen-Bezug (wo gesehen) + freie Notiz. Status
 `open`. Mehr ist nicht gefordert.
 
+**Vierte Ebene `note`:** ein Eintrag ganz ohne Ziel — eine allgemeine
+Kleinigkeit (eine Admin-UI-Falte, ein schiefes Wort in der Oberfläche,
+ein „später ansehen"), die zu keiner Glyphe gehört und für die sich ein
+GitHub-Issue nicht lohnt. Ihr ganzer Inhalt ist der Notiztext, den die
+API deshalb als einziges Feld verlangt; angelegt wird sie direkt im
+Korb („Notiz anlegen"), weil ⚑ immer etwas Bestimmtes markiert. Grund:
+Der Korb ist die Schublade, die unterwegs eh offen ist — was hier nicht
+hineinpasst, geht verloren.
+
 **KI-Seite:** Der Rest ist Protokoll — und zwar erzwungenes. Die API
 weist ein unvollständiges Abschließen mit 422 ab (`check_transition` in
 `api/routers/work_items.py`); die Regeln unten sind also keine Bitte,
@@ -129,6 +138,10 @@ Triage-Reihenfolge: `chart_ductus` · `laufform` · `join_rule` ·
 `not_reproducible`, das ehrliche Ergebnis, wenn die Beschwerde nicht
 auftrat. Ein geschlossenes Vokabular macht aus dem Archiv eine Abfrage
 („welche Stufe verursacht die meisten Aufträge?") statt einer Lesearbeit.
+Für einen `note`-Eintrag entfällt `stage` als Pflichtfeld — jede Stufe
+des Vokabulars benennt eine Stufe des SCHREIBWEGS und hätte über eine
+UI-Kleinigkeit nichts Wahres zu sagen; erlaubt bleibt sie, wo sie
+zutrifft. Die Rückspiegelung (`ack`) gilt unverändert.
 
 Zwei Regeln machen den Ablauf unumgehbar: Protokollfelder reisen **nur
 mit ihrem Statuswechsel** (ein PATCH ohne `status` darf die Notiz

@@ -2,9 +2,11 @@
 
 The admin's channel into a working session: instead of screenshotting a bad
 letter, join or word, they mark the element in the Werkbank and file it here.
-These are internal work notes, not measurement and not public content — every
-endpoint is admin-gated (unlike the occurrence reads), and nothing here touches
-rendering.
+Beside those three levels sits the target-less 'note' kind — a general small
+thing jotted straight into the Korb, too small for a GitHub issue and belonging
+to no glyph. These are internal work notes, not measurement and not public
+content — every endpoint is admin-gated (unlike the occurrence reads), and
+nothing here touches rendering.
 
 Two surfaces over the same rows:
 
@@ -51,6 +53,17 @@ _REQUIRED_FIELDS: dict[str, tuple[str, ...]] = {
     "returned": ("stage", "resolution"),
 }
 
+# A 'note' item is a general small thing with no target — a UI wrinkle, a
+# wording slip — so the §3 stage vocabulary (all of it names a stage of the
+# WRITING path) has nothing true to say about it. The restatement gate stays:
+# only the stage requirement drops, and `stage` may still be sent where it
+# genuinely applies.
+_NOTE_REQUIRED_FIELDS: dict[str, tuple[str, ...]] = {
+    "ack": ("understanding", "reproduced"),
+    "done": ("resolution",),
+    "returned": ("resolution",),
+}
+
 # The fields the protocol owns. They may only be written BY a transition that
 # demands them — a restatement smuggled in on a status-less PATCH would never
 # pass through 'ack', so the Korb could never offer it for rejection.
@@ -69,21 +82,23 @@ def check_transition(stored: Mapping[str, Any], changes: Mapping[str, Any]) -> s
     """The §5 protocol as a pure rule: `None` if the PATCH may proceed, else the
     422 message.
 
-    `stored` is the row as it is now, `changes` the fields the PATCH sends. Three
-    rules, all serving the same purpose — the restatement must be visible while
-    it can still be corrected:
+    `stored` is the row as it is now (incl. its `kind`), `changes` the fields the
+    PATCH sends. Three rules, all serving the same purpose — the restatement must
+    be visible while it can still be corrected:
 
     1. Protocol fields travel WITH their transition. A status-less PATCH may
        edit the note and nothing else.
     2. 'ack' needs the restatement and whether the complaint reproduced.
     3. Closing needs a STORED `understanding` — the ack has to have happened in
-       its own step — plus the diagnosed stage and the outcome.
+       its own step — plus the diagnosed stage and the outcome. A 'note' item
+       has no writing-path stage to name, so it closes on the outcome alone.
 
     The way back to 'open' (the admin rejecting a restatement) is always
     allowed: rejecting must never be harder than filing.
     """
     target = changes.get("status")
-    required = _REQUIRED_FIELDS.get(target) if target is not None else None
+    table = _NOTE_REQUIRED_FIELDS if stored.get("kind") == "note" else _REQUIRED_FIELDS
+    required = table.get(target) if target is not None else None
     if required is None:
         written = [f for f in _PROTOCOL_FIELDS if f in changes]
         if written:
@@ -153,7 +168,8 @@ async def _patch_row(row: WorkItem, payload: WorkItemUpdate, db: AsyncSession) -
     it worked is not evidence, the row's own clock is."""
     changes: dict[str, Any] = payload.model_dump(exclude_unset=True, exclude_none=True)
     problem = check_transition(
-        {"understanding": row.understanding, "stage": row.stage, "resolution": row.resolution}, changes
+        {"kind": row.kind, "understanding": row.understanding, "stage": row.stage, "resolution": row.resolution},
+        changes,
     )
     if problem is not None:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail=problem)
