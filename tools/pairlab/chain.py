@@ -1176,7 +1176,12 @@ def _stroke_polylines_px(problem: _ChainProblem, px: np.ndarray, py: np.ndarray)
 
 
 def fit_word_chain(
-    case: WordCase, slots: Sequence[int], *, result: WordDeriveResult, windows_px: dict[int, tuple[float, float]]
+    case: WordCase,
+    slots: Sequence[int],
+    *,
+    result: WordDeriveResult,
+    windows_px: dict[int, tuple[float, float]],
+    slot_shift_init: dict[int, tuple[float, float]] | None = None,
 ) -> ChainWordFit | None:
     """Fit a run of consecutive slots as ONE chain `[L, C, L, C, …]`.
 
@@ -1208,6 +1213,18 @@ def fit_word_chain(
       None — the caller's placement diagnosis is what decides the fallback.
     * **`result`** is required: a word with five joins must compose itself once,
       not once per run.
+    * **`slot_shift_init`** (xh units, per slot) seeds a slot's translation
+      BLOCK away from zero. The default None keeps the historical start — every
+      block at the composed placement. The round-2 adjudication showed why a
+      caller wants this: on high-exit joins the composed start sits in a basin
+      where stacking the two letters lets their strokes claim the connector's
+      ink, the solve collapses the pair's ink gap to zero although the specimen
+      ink runs forward, and the connector doubles back (the placement collapse
+      of uebergaenge-befund.md §5c). Seeding each block at the letter's OWN
+      grid placement starts the descent where the letter's ink actually is —
+      the OBJECTIVE is untouched, so this changes which basin is entered, never
+      what is measured. Values are clipped just inside the block bounds so a
+      seed can never start a solve already at `slot_at_bound`.
 
     None whenever the chain cannot be built at all — an unfitted composition, a
     slot without a template or composed body strokes, a join whose connector
@@ -1259,6 +1276,22 @@ def fit_word_chain(
         return None
 
     problem = build_chain_problem(specs, unit_px=xh, x_origin_px=x_origin_px, baseline_y_px=baseline_y_px, **fields)
+    # Seed the translation blocks BEFORE the initial energies, so `e0` states
+    # the energy of the start the solve actually descends from. Clipped just
+    # inside the bounds: the `slot_at_bound` check reads |dx| >= bound - 1e-9,
+    # and a seed must not be able to pre-trip it.
+    applied_seed: dict[int, tuple[float, float]] = {}
+    for slot_index, (sx, sy) in (slot_shift_init or {}).items():
+        offset_ix = problem.slot_blocks.get(int(slot_index))
+        if offset_ix is None:
+            continue
+        cx = float(np.clip(sx, -(FIT_DX_UNITS - 1e-6), FIT_DX_UNITS - 1e-6))
+        cy = float(np.clip(sy, -(FIT_DY_UNITS - 1e-6), FIT_DY_UNITS - 1e-6))
+        problem.x0[offset_ix] = cx
+        problem.x0[offset_ix + 1] = cy
+        # 6 decimals, not 4: the clip parks a wild seed 1e-6 INSIDE the bound,
+        # and the record must show that property instead of rounding onto it.
+        applied_seed[int(slot_index)] = (round(cx, 6), round(cy, 6))
     e0 = problem.energy_terms(problem.x0)
     res = minimize(
         problem.objective,
@@ -1340,6 +1373,7 @@ def fit_word_chain(
             "geo_rmse_px": {s.key or s.kind: round(s.geo_rmse_px, 3) for s in segments},
             "cov_rmse_px": {s.key or s.kind: round(s.cov_rmse_px, 3) for s in segments},
             "cov_rmse_local_px": {s.key or s.kind: round(s.cov_rmse_local_px, 3) for s in segments},
+            "slot_shift_init": {str(k): list(v) for k, v in applied_seed.items()},
             "smooth_weight": problem.smooth_weight,
             "coverage_cap_px": round(problem.cov_cap_px, 3),
             "seconds": round(time.perf_counter() - started, 3),

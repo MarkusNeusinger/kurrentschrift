@@ -1094,3 +1094,52 @@ def test_a_capped_solve_is_reported_as_capped(monkeypatch: pytest.MonkeyPatch) -
     assert starved is not None
     assert starved.fit_meta["hit_iteration_cap"] is True
     assert starved.fit_meta["iterations"] <= 1
+
+
+def test_a_block_seed_changes_the_start_not_the_objective() -> None:
+    """`slot_shift_init` is the round-2 counter to the placement collapse:
+    it may only move WHERE the descent starts, never what is measured.
+
+    Three properties the A/B rests on: an absent seed and an all-zero seed are
+    the same solve; a seed at the injected truth still recovers that truth (the
+    objective's optimum did not move); and the applied seed is recorded in
+    `fit_meta` for the diagnostics.
+    """
+    injected = [(0.10, 0.0), (-0.08, 0.04), (0.05, -0.03)]
+    case, result, windows, _ = _synthetic_word(injected)
+
+    plain = fit_word_chain(case, [0, 1, 2], result=result, windows_px=windows)
+    zeroed = fit_word_chain(
+        case, [0, 1, 2], result=result, windows_px=windows, slot_shift_init={0: (0.0, 0.0), 1: (0.0, 0.0)}
+    )
+    assert plain is not None and zeroed is not None
+    # Identical start → identical solve, down to the reported energies.
+    assert plain.fit_meta["energies"] == zeroed.fit_meta["energies"]
+    assert plain.fit_meta["slot_shift_init"] == {}
+    assert zeroed.fit_meta["slot_shift_init"] == {"0": [0.0, 0.0], "1": [0.0, 0.0]}
+
+    seeded = fit_word_chain(
+        case, [0, 1, 2], result=result, windows_px=windows, slot_shift_init=dict(enumerate(injected))
+    )
+    assert seeded is not None and seeded.converged
+    for slot, injected_shift in enumerate(injected):
+        assert np.max(np.abs(_recovered(seeded, slot) - np.asarray(injected_shift))) <= 0.05
+    # Starting AT the truth, the blocks barely move from their seed.
+    for slot, (sx, sy) in enumerate(injected):
+        got = np.asarray(seeded.slot_shift_units[slot])
+        assert np.max(np.abs(got - np.array([sx, sy]))) <= 0.05
+
+
+def test_a_block_seed_is_clipped_inside_the_bounds() -> None:
+    """A wild grid delta must not start a solve already at `slot_at_bound` —
+    the seed is clipped strictly inside ±FIT_DX/DY_UNITS, and a slot the run
+    does not contain is ignored rather than crashing the solve."""
+    case, result, windows, _ = _synthetic_word([(0.05, 0.0), (0.0, 0.0)])
+
+    fit = fit_word_chain(
+        case, [0, 1], result=result, windows_px=windows, slot_shift_init={0: (99.0, -99.0), 7: (0.1, 0.1)}
+    )
+    assert fit is not None
+    sx, sy = fit.fit_meta["slot_shift_init"]["0"]
+    assert abs(sx) < FIT_DX_UNITS and abs(sy) < FIT_DY_UNITS
+    assert "7" not in fit.fit_meta["slot_shift_init"]
