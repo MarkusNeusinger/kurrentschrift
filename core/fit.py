@@ -594,12 +594,10 @@ def fit_template_to_instance(
     entry = {
         "xy": [round(float(fitted_anchors[0, 0]), 4), round(float(fitted_anchors[0, 1]), 4)],
         "tangent_deg": round(_tangent_deg(fitted_anchors[0], fitted_anchors[1]), 1),
-        "coupling": "baseline",
     }
     exit_pt = {
         "xy": [round(float(fitted_anchors[-1, 0]), 4), round(float(fitted_anchors[-1, 1]), 4)],
         "tangent_deg": round(_tangent_deg(fitted_anchors[-2], fitted_anchors[-1]), 1),
-        "coupling": "baseline",
     }
     advance = float(max(0.1, fitted_anchors[:, 0].max() - fitted_anchors[:, 0].min()))
 
@@ -1176,12 +1174,10 @@ def refine_template_against_crop(
     entry = {
         "xy": [round(float(fitted_anchors[0, 0]), 4), round(float(fitted_anchors[0, 1]), 4)],
         "tangent_deg": round(_tangent_deg(fitted_anchors[0], fitted_anchors[1]), 1),
-        "coupling": "baseline",
     }
     exit_pt = {
         "xy": [round(float(fitted_anchors[-1, 0]), 4), round(float(fitted_anchors[-1, 1]), 4)],
         "tangent_deg": round(_tangent_deg(fitted_anchors[-2], fitted_anchors[-1]), 1),
-        "coupling": "baseline",
     }
 
     return FitResult(
@@ -1255,12 +1251,6 @@ def fit_glyph_to_crop(
         n_samples=n_samples,
         max_iter=max_iter,
     )
-
-    # Carry the canonical's coupling labels onto the fitted entry/exit.
-    if glyph_row.get("entry", {}).get("coupling"):
-        result.entry["coupling"] = glyph_row["entry"]["coupling"]
-    if glyph_row.get("exit_pt", {}).get("coupling"):
-        result.exit_pt["coupling"] = glyph_row["exit_pt"]["coupling"]
 
     # Filled silhouette of the fit, one ring list per pen-stroke, in crop px —
     # lets the UI overlay the fitted ink (with its measured Schwellzug) on the

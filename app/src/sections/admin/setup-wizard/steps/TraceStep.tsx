@@ -1,7 +1,7 @@
 // Step 4 "Weg" (the ductus trace) — Zeichnen/Anpassen tool toggle (draw new
 // strokes vs. warp-drag the drawn line to smooth a wobble, with a falloff
-// radius), stroke undo/discard, n_anchors + resample, and the entry/exit
-// coupling heights. Strokes are drawn/warped on WizardCanvas. The primary button
+// radius), stroke undo/discard, n_anchors + resample. Strokes are drawn/warped
+// on WizardCanvas. The primary button
 // saves the Weg (the pipeline optimizes on every save); once saved, an inline
 // WegPreview shows the optimized silhouette over the crop with its score.
 
@@ -23,13 +23,10 @@ import {
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { InfoHint } from '@/components/InfoHint';
-import { couplingLabel, de } from '@/locales/admin';
-import type { BboxIn, BboxOut, CouplingHeight, GuideConfig, StrokePoint, TracePreviewOut } from '@/lib/api';
-import type { GuideValues } from '../wizardTypes';
+import { de } from '@/locales/admin';
+import type { BboxIn, BboxOut, StrokePoint, TracePreviewOut } from '@/lib/api';
 import { HintHeading } from './HintHeading';
 import { WegPreview } from './WegPreview';
-
-const COUPLING_OPTIONS: CouplingHeight[] = ['baseline', 'midband', 'ascender', 'descender'];
 
 // Mirrors the server-side bounds on n_anchors (api/schemas.py) so a committed
 // value can never 422.
@@ -43,13 +40,11 @@ export function TraceStep({
   savablePoints,
   hasCanonical,
   busy,
-  guideVals,
   showSaved,
   setShowSaved,
   saveTrace,
   resample,
   updateBboxField,
-  updateGuides,
   wegTool,
   setWegTool,
   nudgeRadius,
@@ -67,13 +62,11 @@ export function TraceStep({
   savablePoints: number;
   hasCanonical: boolean;
   busy: boolean;
-  guideVals: GuideValues;
   showSaved: boolean;
   setShowSaved: (v: boolean) => void;
   saveTrace: (nAnchors: number) => Promise<void>;
   resample: (nAnchors: number) => Promise<void>;
   updateBboxField: (patch: Partial<BboxIn>) => Promise<void>;
-  updateGuides: (patch: Partial<GuideConfig>) => Promise<void>;
   wegTool: 'draw' | 'adjust';
   setWegTool: (t: 'draw' | 'adjust') => void;
   nudgeRadius: number;
@@ -198,23 +191,6 @@ export function TraceStep({
           {de.wizard.trace.resample}
         </Button>
         <InfoHint title={de.wizard.trace.anchorsLabel}>{de.wizard.trace.anchorsHint}</InfoHint>
-      </Box>
-      <Box sx={{ display: 'flex', gap: 1 }}>
-        <TextField select size="small" label={de.wizard.trace.entryCoupling} value={guideVals.entryCoupling} onChange={(e) => updateGuides({ entry_coupling: e.target.value as CouplingHeight })} sx={{ flex: 1 }} slotProps={{ select: { native: true } }}>
-          {COUPLING_OPTIONS.map((c) => (
-            <option key={c} value={c}>
-              {couplingLabel(c)}
-            </option>
-          ))}
-        </TextField>
-        <TextField select size="small" label={de.wizard.trace.exitCoupling} value={guideVals.exitCoupling} onChange={(e) => updateGuides({ exit_coupling: e.target.value as CouplingHeight })} sx={{ flex: 1 }} slotProps={{ select: { native: true } }}>
-          {COUPLING_OPTIONS.map((c) => (
-            <option key={c} value={c}>
-              {couplingLabel(c)}
-            </option>
-          ))}
-        </TextField>
-        <InfoHint title={de.wizard.trace.entryCoupling}>{de.wizard.trace.couplingHint}</InfoHint>
       </Box>
 
       {hasCanonical && (

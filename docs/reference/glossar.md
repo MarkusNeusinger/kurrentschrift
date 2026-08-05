@@ -155,9 +155,13 @@ Bildanalyse ein Problemfall: zwei Striche liegen als eine Tintenspur
 übereinander. → qualitaetsmetrik.md §5
 
 **Kopplungshöhe** *(coupling)* — auf welcher Höhe ein Buchstabe an seinen
-Nachbarn andockt: unten an der Grundlinie oder oben im Mittelband. Das ist
-eine Eigenschaft des Buchstabens (b, o, v, w koppeln oben) und steht im
-Template, nicht in einer Regel. → architektur.md §3
+Nachbarn andockt: unten an der Grundlinie oder oben im Mittelband. Eine
+Eigenschaft des Buchstabens, aber sie steht in der **Klassenregel**, nicht im
+Template: `core/compose.py::HIGH_COUPLE_BASES` koppelt Rundkörper
+(e/a/o/c/d/g/q) oben am Scheitel, Arkadenbuchstaben (n/m/i/u) unten über die
+Grundlinien-Girlande. Das früher pro Glyph autorierte Feld
+`entry/exit.coupling` wurde von nichts gelesen und ist entfernt.
+→ architektur.md §3
 
 **Federtypen** — **Spitzfeder** (elastisch, Breite kommt aus dem Druck →
 Schwellzug, Kurrent) · **Bandzugfeder / Breitkantfeder** (breite,

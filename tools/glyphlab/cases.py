@@ -51,13 +51,11 @@ def _abs_chart(chart_path: str) -> str:
 
 
 def _normalise_bbox(bbox: dict) -> dict:
-    """Fill the optional brush/coupling keys so derivation never KeyErrors."""
+    """Fill the optional brush keys so derivation never KeyErrors."""
     out = dict(bbox)
     out.setdefault("mask_strokes", [])
     out.setdefault("ink_strokes", [])
     out.setdefault("fill_holes_max_area", 0)
-    out.setdefault("entry_coupling", "baseline")
-    out.setdefault("exit_coupling", "baseline")
     return out
 
 

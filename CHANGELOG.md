@@ -99,6 +99,28 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `meas_dconn_median` 0.127 → 0.124 / 0.217 → 0.206, pair Gleichzug
   doublings 8 → 6. Golden compose fixture deliberately re-baselined.
 
+### Removed
+
+- **„Kopplung Anfang/Ende" is gone from the wizard — the field was read by
+  nothing.** The Weg step let a letter's entry/exit coupling height be
+  authored per glyph (Grundlinie · Mittellinie · Oberlinie · Unterlinie); it
+  travelled from `bboxes.guides` through `canonical_from_path` into
+  `templates.entry.coupling` / `exit_pt.coupling` and was carried onto every
+  M4 fit — and there the trail ended. `core/compose.py` decides the coupling
+  height by class rule (`HIGH_COUPLE_BASES`: round bodies e/a/o/c/d/g/q couple
+  high at the apex, arcade letters n/m/i/u low through the baseline garland,
+  measured on Abb. 19/20/22) and never once read the stored label, so the
+  control promised an effect it did not have. Removed end to end: the two
+  dropdowns and their locale strings, the wizard state, the `GuideConfig`
+  fields, the pipeline stamp, the fit carry-over, and `CouplingPointOut` →
+  `EndPointOut` (point + tangent). No migration and no data rewrite — stored
+  `guides` JSON keeps its keys (`extra="ignore"` makes an older client's
+  payload valid, and one of the 77 authored bboxes carries a non-default value
+  nothing ever consumed), and rows authored earlier keep their `coupling` key,
+  which is now simply ignored on read. `architektur.md` §3 and the glossary
+  said the coupling height lives in the template; both now record that the
+  class rule owns it.
+
 ### Changed
 
 - **Deleting a task in the Auftragskorb asks first.** The bin icon on a

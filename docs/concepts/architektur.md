@@ -116,8 +116,8 @@ plus deren Abweichung von der Norm. Drei orthogonale Achsen:
   "canonical": "<ref>",       # shared per (glyph,variant); fixed
   "control_points": [...],    # THIS sample's fit (deviation from canonical)
   "width_profile": [...],     # the Schwellzug (from distance transform)
-  "entry": {"xy": (x, y), "tangent": deg, "coupling": "baseline"},
-  "exit":  {"xy": (x, y), "tangent": deg, "coupling": "midband"},
+  "entry": {"xy": (x, y), "tangent": deg},
+  "exit":  {"xy": (x, y), "tangent": deg},
 }
 ```
 
@@ -126,10 +126,17 @@ Wichtige Festlegungen:
 - **Allographe sind getrennte Glyphen.** Medial ſ (langes s im Wortinneren)
   und finales s (Wortende) sind nicht „dasselbe s mit anderem Übergang",
   sondern verschiedene Duktus. Positionsregel wie in arabischer Schrift.
-- **entry/exit haben einen Punkt UND eine Tangente** (Richtung) UND eine
-  **Kopplungshöhe** (Grundlinie vs. Mittelband). Manche Buchstaben (b, o, v, w)
-  koppeln oben an — das ist eine Glyph-Eigenschaft, im Template festgelegt,
-  von der Engine nur abgelesen.
+- **entry/exit haben einen Punkt UND eine Tangente** (Richtung). Die
+  **Kopplungshöhe** (Grundlinie vs. Mittelband) gehörte ursprünglich als
+  drittes Feld dazu — im Template festgelegt, von der Engine nur abgelesen.
+  Die Umsetzung ging den anderen Weg und ist dabei geblieben: der Komponist
+  entscheidet die Höhe per **Klassenregel** (`core/compose.py`,
+  `HIGH_COUPLE_BASES` — Rundkörper e/a/o/c/d/g/q koppeln oben am Scheitel,
+  Arkadenbuchstaben n/m/i/u unten über die Grundlinien-Girlande; belegt an den
+  Originalen Abb. 19/20/22). Das gespeicherte Label wurde nie gelesen und ist
+  daher entfernt (§4 gilt unverändert: die Verbindung wird generiert, nicht
+  enumeriert). Die Klasse ist damit die Glyph-Eigenschaft — sie steht nur in
+  der Regel statt im Template.
 - **Wiederholte Glyphen** (z. B. zwei `e` in einem Wort) teilen ein
   `canonical`, haben aber je einen eigenen `control_points`-Fit. Das speist
   die Statistik-Schicht (§6).

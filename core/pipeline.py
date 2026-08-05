@@ -511,8 +511,6 @@ def _assemble_canonical_payload(
     exit_xy = [round(float(x_norm[-1]), 4), round(float(y_norm[-1]), 4)]
     entry_tan = float(np.degrees(np.arctan2(y_norm[1] - y_norm[0], x_norm[1] - x_norm[0])))
     exit_tan = float(np.degrees(np.arctan2(y_norm[-1] - y_norm[-2], x_norm[-1] - x_norm[-2])))
-    entry_coupling = bbox.get("entry_coupling", "baseline")
-    exit_coupling = bbox.get("exit_coupling", "baseline")
     advance = float(max(0.1, x_norm.max() - x_norm.min()))
 
     trace_meta: dict = {
@@ -546,8 +544,12 @@ def _assemble_canonical_payload(
         "advance": round(advance, 4),
         "anchors": [[round(float(x), 4), round(float(y), 4)] for x, y in anchors_norm],
         "half_widths": [round(float(h), 4) for h in hw_norm],
-        "entry": {"xy": entry_xy, "tangent_deg": round(entry_tan, 1), "coupling": entry_coupling},
-        "exit_pt": {"xy": exit_xy, "tangent_deg": round(exit_tan, 1), "coupling": exit_coupling},
+        # Point + tangent only. The coupling HEIGHT a neighbour joins at used to
+        # be stamped here from an authored per-glyph label, but the composer
+        # decides it by class rule (`core/compose.py::HIGH_COUPLE_BASES`) and
+        # never read the label — so it is no longer written.
+        "entry": {"xy": entry_xy, "tangent_deg": round(entry_tan, 1)},
+        "exit_pt": {"xy": exit_xy, "tangent_deg": round(exit_tan, 1)},
         "raw_path": _serialize_raw_path(raw_path),
         "trace_meta": trace_meta,
         "measurements": _measurements(anchors_norm, hw_px, path_length_px, bbox),

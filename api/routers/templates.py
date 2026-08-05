@@ -113,16 +113,11 @@ def _bbox_to_dict(bbox) -> dict:
     """The full derivation dict: the shared crop-affecting fields
     (`Bbox.to_pipeline_dict`, so ink/patches/auto-fill can't drift from the crop
     preview) plus the calibration the anchor/width derivation needs on top."""
-    guides = bbox.guides or {}
     return {
         **bbox.to_pipeline_dict(),
         "baseline_y": bbox.baseline_y,
         "midband_y": bbox.midband_y,
         "n_anchors": bbox.n_anchors,
-        # Coupling height travels with the bbox so trace/resample can stamp it
-        # onto the canonical's entry/exit (default baseline when unset).
-        "entry_coupling": guides.get("entry_coupling", "baseline"),
-        "exit_coupling": guides.get("exit_coupling", "baseline"),
     }
 
 

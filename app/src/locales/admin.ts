@@ -13,12 +13,10 @@ export const de = { ...publicDe, admin, wizard } as const;
 // Re-export the shared helpers so admin files need exactly one locales import.
 export { fmt } from './index';
 export {
-  COUPLING_LABELS,
   LINEATUR_LABELS,
   SPECIMEN_KIND_LABELS,
   STYLE_LABELS,
   ZONE_LABELS,
-  couplingLabel,
   specimenKindLabel,
   styleLabel,
 } from './de/common';
