@@ -72,8 +72,9 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   falling from its crossing (~1.15 xh) onto the next letter's rising flank —
   no longer takes the baseline garland; the rescue had already declared its
   chord truthful, and the garland dug a valley to ~0.5 xh below it followed
-  by a long level run into the entry (the reported „waagrechter
-  Verbindungsstrich"). The taut cubic now falls straight onto the flank, as
+  by a long level run into the entry (the complaint's „waagrechter
+  Verbindungsstrich" — the near-horizontal connector stroke). The taut cubic
+  now falls straight onto the flank, as
   the two measured d→i dissections show. (2) `erase_silhouette_piece` gained
   a `keep` parameter — the centerline the stroke STILL writes — and cuts the
   eraser capsule back around it: the d's loop-return stub crosses its own
