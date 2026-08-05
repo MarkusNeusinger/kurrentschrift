@@ -529,9 +529,14 @@ class WorkItemIn(BaseModel):
     required: 'letter' needs `glyph_key`, 'pair' needs both `left_key` and
     `right_key`, 'word' needs the `word` text or the `specimen_id` it was seen
     in. Registry validation of the glyph keys happens in the router (same
-    contract as the occurrence writes)."""
+    contract as the occurrence writes).
 
-    kind: Literal["letter", "pair", "word"]
+    'note' is the fourth kind and the only one with no target at all: a general
+    small thing — a UI wrinkle, a wording slip, a "look at this later" — that is
+    too small for a GitHub issue and belongs to no glyph. Its whole content is
+    the `note`, which is therefore the one field it requires."""
+
+    kind: Literal["letter", "pair", "word", "note"]
     glyph_key: str | None = Field(default=None, min_length=1, max_length=32)
     left_key: str | None = Field(default=None, min_length=1, max_length=32)
     right_key: str | None = Field(default=None, min_length=1, max_length=32)
@@ -550,6 +555,10 @@ class WorkItemIn(BaseModel):
             raise ValueError("a pair item needs left_key and right_key")
         if self.kind == "word" and not (self.word or self.specimen_id):
             raise ValueError("a word item needs word or specimen_id")
+        # A note has no target column to fall back on: an empty one would be an
+        # unreadable row nobody can act on.
+        if self.kind == "note" and not self.note.strip():
+            raise ValueError("a note item needs note text")
         # The specimen reference is only unambiguous as a pair: an id without
         # its namespace (word plates vs Abb.-20 drills) may point at nothing.
         if (self.specimen_id is None) != (self.specimen_kind is None):

@@ -130,6 +130,21 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The Auftragskorb takes general notes — a fourth, target-less kind.** Not
+  every small thing is a letter, a join or a word: an admin-UI wrinkle or a
+  wording slip belongs to no glyph and does not earn a GitHub issue, so until
+  now it had nowhere to go while the admin was on the move. `work_items` gained
+  `kind: "note"`, whose whole content is the note text (the one field it
+  requires, no target columns, no `specimen_ref`), and the Korb drawer gained a
+  „Notiz anlegen" field above the list — the drawer is the surface that is
+  already open, and ⚑ by definition always marks something specific. In the
+  basket a note leads with its own first line instead of the word „Notiz", so a
+  column of them reads as what was noticed. The handling protocol is unchanged
+  except for one field: a note closes on its `resolution` alone, because every
+  stage in the §3 vocabulary names a stage of the *writing* path and has
+  nothing true to say about a UI wrinkle (`stage` stays allowed where it
+  applies). No migration — `work_items.kind` was always a plain string.
+
 - **The word overlays are switchable one layer at a time, and the words
   overview reloads like the letters grid.** Three inks over one crop — plate,
   trace, engine — is a lot, and which pair actually answers the question
@@ -146,6 +161,16 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   instead of being served the old composition by the CDN.
 
 ### Fixed
+
+- **Deleting an item in the Auftragskorb only took effect after a reload.** The
+  panel removed the row optimistically and announced the change to the shell in
+  the same breath — but that announcement bumps the shared `refreshKey` the
+  panel itself re-reads on, so the re-read raced the `DELETE` and usually won:
+  the server's pre-delete rows came back and put the row on screen again, where
+  it sat until the next reload. The basket now reports a mutation only after
+  the server confirmed it, for the delete and for the „missverstanden" rejection
+  alike; a failed call still restores exactly the one row locally and announces
+  nothing, because the server state never moved.
 
 - **Generated Übergänge were drawn mirrored below the baseline.** The two SVG
   path helpers disagreed on the y sign — `ringsToPathD` keeps y by default,

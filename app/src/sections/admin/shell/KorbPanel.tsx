@@ -12,6 +12,7 @@
 // one page: the basket belongs to the whole workbench, and a drawer keeps it
 // off the words the admin is judging while it is closed.
 
+import AddIcon from '@mui/icons-material/Add';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
@@ -30,27 +31,41 @@ import {
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { deleteWorkItem, listWorkItems, patchWorkItem } from '@/lib/api';
+import { createWorkItem, deleteWorkItem, listWorkItems, patchWorkItem } from '@/lib/api';
 import type { WorkItemOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { joinsUrl, lettersUrl, wordsUrl } from '@/sections/admin/shell/focus';
 
 // "Buchstabe a" / "Übergang d→a" / "Wort einen" — the level plus its target.
+// A note has no target: its first line IS the headline, so a basket of notes
+// reads as what was noticed instead of a column of the word "Notiz".
 function workItemLabel(item: WorkItemOut): string {
   const t = de.admin.werkbank;
   if (item.kind === 'letter') return `${t.kindLetter} ${item.glyph_key ?? '?'}`;
   if (item.kind === 'pair') return `${t.kindPair} ${item.left_key ?? '?'}→${item.right_key ?? '?'}`;
-  return `${t.kindWord} ${item.word ?? item.specimen_id ?? '?'}`;
+  // No `?? specimen_id` here: the row already appends the specimen id after the
+  // label, so a word item filed by its specimen alone printed the id twice.
+  if (item.kind === 'word') return `${t.kindWord} ${item.word ?? '?'}`;
+  return item.note.split('\n')[0].trim() || t.kindNote;
+}
+
+// What is left of the note once the label took its share — everything for the
+// three targeted kinds, the lines after the first for a note.
+function workItemBody(item: WorkItemOut): string {
+  if (item.kind !== 'note') return item.note;
+  return item.note.split('\n').slice(1).join('\n').trim();
 }
 
 // Where a filed task points. Without it the basket is a dead end: it names the
 // thing that is wrong and offers no way to it — while the three views are one
 // link away for exactly these keys. Null only when the row carries no usable
-// target (a word item filed by specimen id alone).
+// target — a word item filed by specimen id alone, or a general note, which
+// points at nothing in the workbench by definition.
 function workItemUrl(item: WorkItemOut): string | null {
   if (item.kind === 'letter') return item.glyph_key ? lettersUrl(item.glyph_key) : null;
   if (item.kind === 'pair') return item.left_key && item.right_key ? joinsUrl(item.left_key, item.right_key) : null;
-  return item.word ? wordsUrl(item.word, item.specimen_id) : null;
+  if (item.kind === 'word') return item.word ? wordsUrl(item.word, item.specimen_id) : null;
+  return null;
 }
 
 function ItemRow({
@@ -96,9 +111,9 @@ function ItemRow({
             </Typography>
           )}
         </Typography>
-        {item.note && (
+        {workItemBody(item) && (
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', whiteSpace: 'pre-line' }}>
-            {item.note}
+            {workItemBody(item)}
           </Typography>
         )}
 
@@ -194,6 +209,10 @@ export function KorbPanel({
   const [writeError, setWriteError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(true);
   const [showDone, setShowDone] = useState(false);
+  // The target-less quick note (see `addNote`).
+  const [adding, setAdding] = useState(false);
+  const [noteText, setNoteText] = useState('');
+  const [savingNote, setSavingNote] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -238,6 +257,14 @@ export function KorbPanel({
 
   // Optimistic write: the basket is the admin's own, and a failed call must not
   // leave the list claiming something the server never stored.
+  //
+  // `onChanged` is reported only AFTER the server confirmed. It bumps the
+  // shell's `refreshKey`, and this panel re-reads on that key — announcing the
+  // change up front therefore started a re-read that RACED the write and
+  // usually won, so the server's pre-write rows came back and undid the
+  // optimistic change on screen (a deleted item reappeared and sat there until
+  // the next reload). On failure the row is restored locally and nothing is
+  // announced: the server state never moved.
   const mutate = (
     item: WorkItemOut,
     apply: (row: WorkItemOut) => WorkItemOut,
@@ -246,10 +273,12 @@ export function KorbPanel({
   ) => {
     setWriteError(null);
     setItems((prev) => (prev ?? []).map((i) => (i.id === item.id ? apply(i) : i)));
-    call().catch(() => {
-      restore(item);
-      setWriteError(message);
-    });
+    call()
+      .then(() => onChanged?.())
+      .catch(() => {
+        restore(item);
+        setWriteError(message);
+      });
   };
 
   // Single click, no confirm: deleting a MISFILING is cheap and this is the
@@ -257,12 +286,35 @@ export function KorbPanel({
   const remove = (item: WorkItemOut) => {
     setWriteError(null);
     setItems((prev) => (prev ?? []).filter((i) => i.id !== item.id));
-    onChanged?.();
-    deleteWorkItem(sourceId, item.id).catch(() => {
-      restore(item);
-      setWriteError(t.korbDeleteError);
-      onChanged?.();
-    });
+    deleteWorkItem(sourceId, item.id)
+      .then(() => onChanged?.())
+      .catch(() => {
+        restore(item);
+        setWriteError(t.korbDeleteError);
+      });
+  };
+
+  // A general Kleinigkeit — an admin-UI wrinkle, a wording slip — filed with
+  // nothing but its text. It points at no letter, join or word, so it is
+  // reachable only here: the ⚑ affordance always marks something specific,
+  // while this is the note the admin would otherwise lose because opening a
+  // GitHub issue for it is out of proportion. The stored row is inserted
+  // directly (the server hands it back with its id) so the basket shows it
+  // before the confirming re-read arrives.
+  const addNote = () => {
+    const text = noteText.trim();
+    if (!text || savingNote) return;
+    setSavingNote(true);
+    setWriteError(null);
+    createWorkItem(sourceId, { kind: 'note', note: text })
+      .then((row) => {
+        setItems((prev) => [...(prev ?? []), row]);
+        setNoteText('');
+        setAdding(false);
+        onChanged?.();
+      })
+      .catch(() => setWriteError(t.korbAddError))
+      .finally(() => setSavingNote(false));
   };
 
   // "Missverstanden": the item goes back into the queue with the correction
@@ -276,7 +328,6 @@ export function KorbPanel({
       () => patchWorkItem(sourceId, item.id, { status: 'open', note }),
       t.korbRejectError,
     );
-    onChanged?.();
   };
 
   return (
@@ -290,6 +341,45 @@ export function KorbPanel({
         </IconButton>
       </Box>
       <Collapse in={expanded}>
+        {adding ? (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 1 }}>
+            <TextField
+              multiline
+              minRows={2}
+              size="small"
+              label={t.korbNoteLabel}
+              placeholder={t.korbNotePlaceholder}
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              // ⌘/Strg+Enter files it without reaching for the button — this is
+              // the surface used one-handed on a phone.
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                  e.preventDefault();
+                  addNote();
+                }
+              }}
+            />
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button size="small" variant="contained" onClick={addNote} disabled={savingNote || !noteText.trim()}>
+                {t.korbAddSubmit}
+              </Button>
+              <Button
+                size="small"
+                onClick={() => {
+                  setAdding(false);
+                  setNoteText('');
+                }}
+              >
+                {t.cancel}
+              </Button>
+            </Box>
+          </Box>
+        ) : (
+          <Button size="small" startIcon={<AddIcon fontSize="small" />} sx={{ mt: 0.5 }} onClick={() => setAdding(true)}>
+            {t.korbAddNote}
+          </Button>
+        )}
         {writeError && (
           <Alert severity="warning" sx={{ mt: 1 }} onClose={() => setWriteError(null)}>
             {writeError}

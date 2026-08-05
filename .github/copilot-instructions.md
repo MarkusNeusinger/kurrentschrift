@@ -263,9 +263,15 @@ kurrentschrift/
 │                     #   work_items (Werkbank W1+W4 Auftragskorb: FULLY admin-gated
 │                     #   GET/POST/PATCH/DELETE per source PLUS the source-free
 │                     #   GET/PATCH /work-items a session reads its queue from —
-│                     #   filed letter/pair/word tasks; the API ENFORCES the §5
+│                     #   filed letter/pair/word tasks plus the target-less kind
+│                     #   'note' (a general Kleinigkeit — UI wrinkle, wording slip —
+│                     #   whose whole content is the note text, filed in the Korb
+│                     #   drawer, no migration: kind was always a plain string);
+│                     #   the API ENFORCES the §5
 │                     #   protocol: ack needs understanding + reproduced, done/returned
-│                     #   need stage (fixed §3 vocabulary) + resolution, else 422),
+│                     #   need stage (fixed §3 vocabulary) + resolution, else 422 —
+│                     #   a 'note' closes on resolution alone, the stage vocabulary
+│                     #   names stages of the WRITING path),
 │                     #   aggregates (Stufenplan H1: FULLY admin-gated GET /hands/{id}/aggregates
 │                     #   + POST …/rebuild — condenses a hand's instances into per-anchor
 │                     #   median (= the Laufform) + MAD hull + pooled layer-1 stats per
@@ -513,7 +519,9 @@ kurrentschrift/
 │   │                 #   join occurrences (unique source+kind+specimen+slot) and traced
 │   │                 #   word templates (traced/authored, authored survives re-harvests),
 │   │                 #   0020 work_items (Werkbank W1): the Auftragskorb — filed
-│   │                 #   letter/pair/word tasks, open → done + resolution,
+│   │                 #   letter/pair/word tasks (later also the target-less 'note'
+│   │                 #   kind — no migration, kind is a plain string),
+│   │                 #   open → done + resolution,
 │   │                 #   0021 aggregates re-keyed to (hand_id, glyph_key, variant)
 │   │                 #   (Stufenplan H1; drop+recreate — the table was never populated),
 │   │                 #   0022 work_items protocol columns (Werkbank W4): understanding,
@@ -669,10 +677,11 @@ lineature (Grundlinie · Mittellinie · Oberlinie · Unterlinie; zones Oberläng
 - Tables: `styles`, `hands`, `sources`, `bboxes`, `templates`,
   `glyph_pairs`, `instances`, `pair_instances`, `word_instances`,
   `aggregates`, `pair_aggregates`, `work_items` (the Werkbank's Auftragskorb — filed
-  optimization tasks per letter/pair/word; `open` → `ack` (the session's
+  optimization tasks per letter/pair/word, plus the target-less `note`
+  kind for a general Kleinigkeit; `open` → `ack` (the session's
   own restatement + whether it reproduced the complaint) → `done` with
   the diagnosed `stage` + `resolution`, or `returned` when the author
-  has to supply ground truth),
+  has to supply ground truth; a `note` closes without a `stage`),
   `quiz_words` (the flat reading-quiz word bank — word +
   JSONB `distractors` + `era`/`note`/`fugen`).
 - `styles` is the Grundvorlage/script family (Kurrent · Sütterlin ·

@@ -546,11 +546,18 @@ export const admin = {
     // The Auftragskorb.
     korbTitle: 'Auftragskorb',
     korbOpenCount: '{{count}} offen',
-    korbEmpty: 'Noch keine Aufträge — ⚑ markiert ein Element und legt es hier ab.',
+    korbEmpty: 'Noch keine Aufträge — ⚑ markiert ein Element, „Notiz anlegen“ hält eine Kleinigkeit fest.',
     korbShowDone: 'erledigte anzeigen',
     korbDelete: 'Auftrag löschen',
     korbLoadError: 'Aufträge konnten nicht geladen werden (Admin-Zugang nötig).',
     korbDeleteError: 'Löschen fehlgeschlagen — der Auftrag liegt weiter im Korb.',
+    // The target-less quick note: a general Kleinigkeit (a UI wrinkle, a
+    // wording slip) that belongs to no letter and is too small for an Issue.
+    korbAddNote: 'Notiz anlegen',
+    korbNoteLabel: 'Was ist aufgefallen?',
+    korbNotePlaceholder: 'z. B. „Löschen im Korb wirkt erst nach Neuladen“',
+    korbAddSubmit: 'Ablegen',
+    korbAddError: 'Notiz konnte nicht abgelegt werden.',
     // The handling protocol (§5): what the working session wrote back before it
     // started, and the admin's veto if it understood the wrong thing.
     korbReturned: 'Zurückgegeben — braucht deine Hand',
@@ -580,6 +587,7 @@ export const admin = {
     kindLetter: 'Buchstabe',
     kindPair: 'Übergang',
     kindWord: 'Wort',
+    kindNote: 'Notiz',
     // The filing dialog.
     dialogTitle: 'Auftrag einreichen',
     dialogTarget: 'Ziel',

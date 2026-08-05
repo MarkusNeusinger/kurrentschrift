@@ -534,6 +534,12 @@ class WorkItem(Base):
     side — everything after it is the working session's protocol
     (`docs/proposals/optimierungs-werkbank.md` §5, stage W4).
 
+    The fourth kind, 'note', carries no target at all: a general small thing —
+    an admin-UI wrinkle, a wording slip — jotted straight into the Korb because
+    it is too small for a GitHub issue and belongs to no glyph. Its whole
+    content is the `note`. It runs the same protocol minus the `stage`, which
+    names a stage of the WRITING path and has nothing true to say about it.
+
     A session may not silently close a row. Before it changes anything it
     restates the task in its own words and says whether it could reproduce the
     complaint (`understanding` + `reproduced`, status 'ack'); when it is done it
@@ -554,7 +560,8 @@ class WorkItem(Base):
     source_id: Mapped[str] = mapped_column(
         String(SOURCE_ID_MAX), ForeignKey("sources.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    # The marked level: 'letter' (one glyph_key) | 'pair' (left+right) | 'word'.
+    # The marked level: 'letter' (one glyph_key) | 'pair' (left+right) | 'word'
+    # | 'note' (no target at all, the text is the task).
     kind: Mapped[str] = mapped_column(String(KIND_MAX), nullable=False)
     glyph_key: Mapped[str | None] = mapped_column(String(GLYPH_KEY_MAX), nullable=True)
     left_key: Mapped[str | None] = mapped_column(String(GLYPH_KEY_MAX), nullable=True)
