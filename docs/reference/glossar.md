@@ -44,7 +44,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **F** — Federtypen §1 · Federwinkel §1 · FID §6 · Fixture-Wurzel §4 · Frozen-Reference-Regel §4 · Fuge §1
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Grundstrich/Haarstrich §1
 - **H** — H0–H5 §5 · Hand §2 · HTR §6 · Huber-Kappung §3 · HWD §6
-- **I** — Ink gap §3 · Instance §2 · Isochronie §6
+- **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **K** — Kettenfit §3 · Kill-Kriterium §3 · Klassenregel §2 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3
 - **L** — Labs §4 · Laufform §2 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · matched arc §3 · meas §4 · Messboden §4
@@ -422,6 +422,28 @@ verbundensten ist. Stufe A (Paar-Maßstab) ist gebaut und gemessen; Stufe B
 (Wort-Maßstab) ist freigegeben. **Reine Messschicht, ändert kein
 Rendering.** *Technisch:* `tools/pairlab/chain.py` + `chainbench.py`
 → uebergaenge-befund.md §5c · Issue #278
+
+**Iterationsdeckel** *(iteration cap)* — die Obergrenze, wie viele
+Optimierungsschritte ein Fit machen darf, bevor er abgebrochen wird. Klingt
+nach einer Sicherheitsleine, ist aber eine stille Falle: Wird der Deckel
+erreicht, *meldet* der Optimierer trotzdem ein Ergebnis — nur ist es eine
+Momentaufnahme eines noch laufenden Abstiegs, kein konvergiertes Resultat.
+Solche Zwischenstände fallen durch das Konvergenz-Gate, ihr Vorkommen wird
+verworfen, und **wo genau der Abbruch landet, verschiebt sich mit dem
+Startwert** — daher waren Ernten über eine Init-Änderung hinweg nicht
+reproduzierbar. Lehre: Ein Fit-Ergebnis ist erst dann eines, wenn man weiß,
+*warum* der Solver aufgehört hat.
+Merkregel: Ein Deckel, der überhaupt bindet, ist der falsche Knopf — der
+Solver hört ohnehin bei seinem eigenen Kriterium auf, also kostet ein hoher
+Deckel nur dort etwas, wo er gebraucht wird.
+*Technisch:* der Kettenfit hat mit `CHAIN_MAX_ITER` (Default 8100) ein
+EIGENES Budget statt `core.fit.DEFAULT_MAX_ITER` (300) — 300 ist ein
+Pro-Glyph-Budget, eine Wortkette trägt ~820 freie Parameter. Gemessen
+(Median 1211 Iterationen, p90 2518, Maximum 4215): bei 300 war der Deckel in
+91 % der Solves der bindende Stopp, bei 2700 in 10 %, bei 8100 in keinem —
+für +5 % Rechenzeit, ohne dass sich ein einziges Gate-Urteil ändert.
+`fit_meta["hit_iteration_cap"]` und die Spalte im `--diag-csv` machen den
+Zustand lesbar; `KS_CHAIN_MAX_ITER` sweept ihn.
 
 **Naht** *(seam)* — die Stelle, an der im Kettenfit ein Buchstabe endet und
 der Verbinder beginnt. Kunstgriff: Sie ist **kein Strafterm, sondern ein

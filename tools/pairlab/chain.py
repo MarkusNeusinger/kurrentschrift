@@ -36,6 +36,7 @@ into those runs (a lone letter is a one-segment chain, not a skipped one).
 from __future__ import annotations
 
 import bisect
+import os
 import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
@@ -52,7 +53,6 @@ from core.fit import (
     CONVERGED_GEO_RMSE_UNITS,
     DEFAULT_COVERAGE_WEIGHT,
     DEFAULT_LAMBDA_REG,
-    DEFAULT_MAX_ITER,
     DEFAULT_N_SAMPLES,
     DEFAULT_WIDTH_WEIGHT,
     DIST_FIELD_SIGMA_PX,
@@ -106,6 +106,48 @@ CHAIN_CONNECTOR_SMOOTH_WEIGHT = 1e-5
 # Invariant (asserted in code and in a unit test): coverage density per unit of
 # skeleton x-extent must not fall below the single-letter fit's.
 CHAIN_COVERAGE_PER_SEGMENT = 300
+# L-BFGS-B iteration budget for the CHAIN solve. Deliberately its OWN constant
+# rather than `core.fit.DEFAULT_MAX_ITER` (300): that number is a per-GLYPH
+# budget on a per-glyph problem, and a chain is a different problem — a 3-slot
+# word carries ~820 free parameters where one letter carries a fraction of it,
+# so the same budget buys proportionally fewer descent steps.
+#
+# Swept over the frozen words+pairs fixtures (96 solves, 344 slot rows),
+# one `--diag-csv` run per budget:
+#
+#     cap    capped     not_conv_local   accepted   geo_rmse med   CPU
+#     300    87 (91 %)      47             232        1.063 px    1942 s
+#     900    63 (66 %)      38             238        1.030 px    5315 s
+#    2700    10 (10 %)      35             241        1.027 px   10145 s
+#    8100     0 ( 0 %)      35             241        1.027 px   10608 s
+#
+# At 300 the budget — not a convergence criterion — was the stop in 91 % of
+# solves. That is not "a bit tight": the median chain solve takes 1211
+# iterations (p25 680, p90 2518), so the old budget sat far below the point
+# where one typically settles. A truncated solve is not a converged one — it
+# fails `converged_local`, its occurrence is dropped, and where the truncation
+# lands moves with the initialisation, which is why the harvest was not
+# reproducible across the exact-nib change.
+#
+# The default is 8100 because a budget that binds at all is the wrong kind of
+# knob: L-BFGS-B stops at its own criteria, so raising the ceiling costs
+# nothing for every solve that already converged, and only the hard tail pays.
+# Measured, that tail is cheap — 2700 → 8100 buys "no solve is truncated any
+# more" for **+5 % CPU** (the longest solve needs 4215 iterations, so 8100 is
+# ~1.9× headroom over the observed maximum).
+#
+# Raising it is also demonstrably harmless, which is the part worth checking
+# rather than assuming: 305 of the 344 slot rows are BIT-IDENTICAL to the 2700
+# run, the 39 that move belong exclusively to the ten formerly-capped
+# specimens, that movement is settling noise (median +0.0010 px, worst
+# +0.0240 px, 22 rows worse against 17 better), and all 344 gate verdicts are
+# unchanged. The result stops being the budget's answer and becomes the
+# model's, without becoming a different answer.
+#
+# `CHAIN_MAX_ITER_ENV` re-runs the sweep without editing this file.
+CHAIN_MAX_ITER_ENV = "KS_CHAIN_MAX_ITER"
+CHAIN_MAX_ITER_DEFAULT = 8100
+CHAIN_MAX_ITER = int(os.environ.get(CHAIN_MAX_ITER_ENV) or CHAIN_MAX_ITER_DEFAULT)
 # Points on the raw exit→entry connector polyline — the production sample count,
 # re-exported from `core.compose` so a change there cannot silently desync. The
 # two endpoints are SHARED with the letters, the interior 22 are free anchors.
@@ -1224,9 +1266,10 @@ def fit_word_chain(
         jac=True,
         method="L-BFGS-B",
         bounds=problem.bounds,
-        # Same settings as `core.fit.fit_template_to_instance`: with the analytic
-        # jacobian the evaluation budget must never be the binding stop.
-        options={"maxiter": DEFAULT_MAX_ITER, "maxfun": 50 * DEFAULT_MAX_ITER},
+        # `maxfun` stays 50x the iteration budget, as in
+        # `core.fit.fit_template_to_instance`: with the analytic jacobian the
+        # EVALUATION budget must never be the binding stop.
+        options={"maxiter": CHAIN_MAX_ITER, "maxfun": 50 * CHAIN_MAX_ITER},
     )
 
     segments = problem.report_energies(res.x)
@@ -1271,6 +1314,17 @@ def fit_word_chain(
             "optimizer_success": bool(res.success),
             "message": str(res.message),
             "iterations": int(res.nit),
+            # Whether the BUDGET stopped the solve rather than a convergence
+            # criterion — L-BFGS-B status 1 is exactly that stop (iteration OR
+            # evaluation limit; 0 is convergence, 2 an abnormal abort). NOT
+            # `nit >= CHAIN_MAX_ITER`, which would also accuse a solve that
+            # legitimately converges on the final allowed iteration. Read it
+            # before believing any geometry below: a capped solve was still
+            # descending, so its energies, its gates and the anchors it hands
+            # the harvest are a snapshot of an unfinished descent, and where
+            # that snapshot lands moves with the init.
+            "hit_iteration_cap": int(res.status) == 1,
+            "max_iter": CHAIN_MAX_ITER,
             "n_evaluations": int(res.nfev),
             "n_params": int(len(problem.x0)),
             "n_anchors_free": int(len(problem.anchors_free)),
