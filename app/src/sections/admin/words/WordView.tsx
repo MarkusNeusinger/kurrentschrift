@@ -35,6 +35,7 @@ import { de, fmt } from '@/locales/admin';
 import { WordComparison, type WordCompareMode } from '@/sections/admin/compare/WordComparison';
 import { WordTraceEditorDialog } from '@/sections/admin/belege/WordTraceEditorDialog';
 import { useFileMark } from '@/sections/admin/shell/KorbContext';
+import { LayerDot } from '@/sections/admin/shell/LayerDot';
 import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { useWorkbench } from '@/sections/admin/shell/WorkbenchData';
@@ -45,15 +46,6 @@ import { garamond } from '@/styles/paper';
 import { WordSpineCard } from './WordSpineCard';
 
 const WORD_H = 130; // px — the composed word, large enough to judge the rhythm
-
-// The swatch on a layer toggle — the same colour that layer draws with.
-const LayerDot = ({ color }: { color: string }) => (
-  <Box
-    component="span"
-    aria-hidden
-    sx={{ width: 9, height: 9, borderRadius: '50%', bgcolor: color, mr: 0.75, flexShrink: 0 }}
-  />
-);
 
 export function WordView() {
   const [params, setParams] = useSearchParams();
