@@ -26,9 +26,13 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   longer diverge. The untyped 12-key `prev` dict — the whole inter-slot
   interface — became the `_PrevGlyph` dataclass with the three exit→join
   handshakes (`exit_line`/`stem_launch`/`cap_retrace`) as named fields. Silent
-  numeric ties turned into imports or named constants: `TANGENT_WINDOW` now
-  IS `pipeline.CORNER_WINDOW_UNITS` (the comment-only "matches the
-  corner-detection window" tie), the silhouette simplify tolerance is
+  numeric ties turned into imports or named constants: the composer's
+  `TANGENT_WINDOW` and the derivation's `CORNER_WINDOW_UNITS` now both read
+  `geometry.TANGENT_WINDOW_UNITS` (the comment-only "matches the
+  corner-detection window" tie, shared via the core-import-free tangent
+  module so composition stays clear of the pipeline stack; the frozen
+  metric's same-named constant deliberately remains a mirror by value — the
+  ruler must not follow an experiment), the silhouette simplify tolerance is
   `template.SILHOUETTE_SIMPLIFY_TOL` (was `0.002` restated in three places),
   the medial-axis snap cap is `extract.medial_snap_cap_px` (was
   `max(3.0, 0.25·unit_px)` inline in both fit and pipeline), and the

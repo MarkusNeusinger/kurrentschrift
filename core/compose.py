@@ -32,7 +32,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from core.pipeline import CORNER_WINDOW_UNITS
+from core.geometry import TANGENT_WINDOW_UNITS
 from core.shaping import GlyphSlot
 from core.template import SILHOUETTE_SIMPLIFY_TOL, chisel_union_rings, erase_silhouette_piece
 from core.widths import PenStyle
@@ -475,7 +475,7 @@ CAP_INK_CLEARANCE = 0.30
 # THE SAME window the derivation detects corners with (imported, not restated):
 # the connector's G1 launch is judged relative to where corner detection said
 # the ink still turns, so the two windows must move together.
-TANGENT_WINDOW = CORNER_WINDOW_UNITS  # x-height units
+TANGENT_WINDOW = TANGENT_WINDOW_UNITS  # x-height units
 # Bézier handle floors of the generated joins (glossar: Bézier-Handle-Floor) —
 # a connector so short that its span-proportional handles collapse keeps at
 # least this much handle, so the curve stays a curve instead of a cusp. The
