@@ -84,6 +84,15 @@ def skeleton_and_width(mask: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return skel, width
 
 
+def medial_snap_cap_px(unit_px: float) -> float:
+    """The snap cap for a half-width lookup on the medial axis: no farther
+    than a quarter x-height — generous against trace wobble, tight enough not
+    to jump to a neighbouring stroke — floored at 3 px for low-res crops. ONE
+    formula for the derivation (pipeline) and the M4 fit, so the two measure
+    widths against the same axis."""
+    return max(3.0, 0.25 * unit_px)
+
+
 def half_widths_on_medial_axis(
     points: np.ndarray, skel: np.ndarray, mask: np.ndarray, width_map: np.ndarray, snap_cap_px: float
 ) -> np.ndarray:

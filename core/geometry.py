@@ -25,6 +25,16 @@ import numpy as np
 from scipy.spatial import cKDTree
 
 
+# Arc-length window (x-height units) for estimating a travel tangent on
+# sampled ink. ONE window for the derivation's corner detection
+# (core.pipeline.CORNER_WINDOW_UNITS) and the composer's endpoint tangents
+# (core.compose.TANGENT_WINDOW): the connector's G1 launch is judged relative
+# to where corner detection said the ink still turns, so the two must move
+# together. Lives here because this module is the shared, core-import-free
+# tangent-measurement home.
+TANGENT_WINDOW_UNITS = 0.12
+
+
 def unit_tangents(pts: np.ndarray) -> np.ndarray:
     """Unit tangents of an Mx2 polyline via ``np.gradient`` (== suetterlin._unit_tangents)."""
     pts = np.asarray(pts, dtype=float)

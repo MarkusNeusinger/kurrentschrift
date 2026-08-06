@@ -17,8 +17,9 @@ import numpy as np
 from scipy.ndimage import median_filter, uniform_filter1d
 
 from core.chart import crop_with_mask, load_chart_grayscale
-from core.extract import binarize_adaptive, half_widths_on_medial_axis, skeleton_and_width
+from core.extract import binarize_adaptive, half_widths_on_medial_axis, medial_snap_cap_px, skeleton_and_width
 from core.fit import fit_template_to_instance, refine_template_against_crop
+from core.geometry import TANGENT_WINDOW_UNITS
 from core.quality import template_quality_metrics
 from core.template import (
     allocate_samples,
@@ -59,8 +60,12 @@ SNAP_LAMBDA_REG = 0.25
 # Corner-knot detection (German: Umkehrpunkt) on the dense raw trace. A corner
 # is a within-stroke reversal — pen stays down, direction changes sharply —
 # which a single chord-length spline rounds away. Tangents are estimated over
-# an arc-length window in x-height units so stylus jitter cannot fake a corner:
-CORNER_WINDOW_UNITS = 0.12
+# an arc-length window in x-height units so stylus jitter cannot fake a corner
+# — the SHARED window (core.geometry), which the composer's endpoint tangents
+# read too. The frozen metric's same-named constant deliberately stays a
+# mirror BY VALUE (core/quality_suetterlin.py): the ruler must not follow an
+# experiment on the writing path.
+CORNER_WINDOW_UNITS = TANGENT_WINDOW_UNITS
 # Turning angle (deviation from straight) above which a point is a corner
 # candidate. For a circular arc the deviation over the window is ~window/radius
 # radians, so 75° only triggers below radius ≈ 0.09 x-heights — far tighter
@@ -636,9 +641,7 @@ def canonical_from_path(
                 chord_length(resampled_local[a:b]) for a, b in zip(seg_bounds[:-1], seg_bounds[1:], strict=True)
             )
 
-    # Snap no farther than a quarter x-height: generous against trace wobble,
-    # tight enough not to jump to a neighbouring stroke.
-    hw_px = half_widths_on_medial_axis(resampled_local, skel, mask, width_map, snap_cap_px=max(3.0, 0.25 * unit_px))
+    hw_px = half_widths_on_medial_axis(resampled_local, skel, mask, width_map, snap_cap_px=medial_snap_cap_px(unit_px))
     hw_px, crossing_anchors = _resolve_crossing_widths(resampled_local, hw_px, stroke_starts)
     # Median/box smoothing stays as INITIALISATION; the refine's per-chain
     # curvature regulariser is the final arbiter of the width profile.
