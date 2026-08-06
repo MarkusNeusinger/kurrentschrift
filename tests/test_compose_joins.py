@@ -287,3 +287,52 @@ def test_deep_exit_swing_respects_its_run_cap() -> None:
     assert len(composed["items"]) == 2
     swing = composed["items"][1]["centerline"]
     assert max(x for x, _ in swing) <= exit_pt[0] + SWING_DEEP_MAX_RUN + 1e-9
+
+
+# ------------------------------------------------------- Kringel-stub departure
+# A synthetic b-like ending: rise, small closing loop (the Kringel) whose
+# stub crosses the loop's own entry flank on the way out, tip rising above
+# the knot. Knot at ~(0.67, 0.74), loop top 0.9, stub tip 0.95.
+_KRINGEL_STROKE = [(0.0, 0.0), (0.7, 0.7), (0.55, 0.9), (0.4, 0.8), (0.55, 0.62), (0.9, 0.95)]
+
+
+def _compose_pair(centerline: list[tuple[float, float]], base: str) -> dict:
+    slots = [
+        GlyphSlot(key=base, text=base, position="initial", ligature=False, space=False),
+        GlyphSlot(key="n", text="n", position="final", ligature=False, space=False),
+    ]
+    payloads = {base: _payload(centerline), "n": _payload([(0.0, 0.1), (0.15, 0.4), (0.3, 0.7)])}
+    return compose_word(slots, payloads)
+
+
+def test_kringel_stub_is_cut_in_bound_context() -> None:
+    composed = _compose_pair(_KRINGEL_STROKE, "b")
+    glyph = composed["items"][0]["centerline"]
+    # The stub after the knot is table form: the stroke now ends AT the
+    # loop's self-crossing, below the loop top — the tip at 0.95 is gone.
+    assert glyph[-1][1] < 0.8
+    assert max(y for _, y in glyph) < 0.95 - 1e-6
+    assert math.isclose(glyph[-1][1], 0.736, abs_tol=0.02)
+
+
+def test_kringel_stub_survives_word_finally() -> None:
+    slot = GlyphSlot(key="b", text="b", position="final", ligature=False, space=False)
+    composed = compose_word([slot], {"b": _payload(_KRINGEL_STROKE)})
+    glyph = composed["items"][0]["centerline"]
+    # Unbound, the chart form keeps its finishing stub (like LOOP_EXIT).
+    assert glyph[-1][1] > 0.9
+
+
+def test_kringel_cut_rejects_a_low_bowl_crossing() -> None:
+    low = [(x, y - 0.45) for x, y in _KRINGEL_STROKE]
+    composed = _compose_pair(low, "b")
+    glyph = composed["items"][0]["centerline"]
+    # Knot below KRINGEL_CROSS_MIN_Y: a bowl form, not a Kringel — no cut.
+    assert math.isclose(glyph[-1][1], 0.5, abs_tol=1e-6)
+
+
+def test_kringel_cut_only_for_the_enumerated_bases() -> None:
+    composed = _compose_pair(_KRINGEL_STROKE, "m")
+    glyph = composed["items"][0]["centerline"]
+    # Same geometry under a non-Kringel base keeps its stroke untouched.
+    assert glyph[-1][1] > 0.9
