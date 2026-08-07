@@ -176,6 +176,7 @@ def test_letter_gate_passes_a_clean_letter() -> None:
             rmse_max=2.2,
             at_bound=False,
             anchors_ok=True,
+            spike_ratio=2.5,
             connector_reasons=[None, None],
         )
         == "ok"
@@ -189,6 +190,7 @@ def test_letter_gate_passes_a_clean_letter() -> None:
         ({"geo_rmse_px": 9.0}, "geo_rmse"),
         ({"at_bound": True}, "at_bound"),
         ({"anchors_ok": False}, "anchor_count"),
+        ({"spike_ratio": 9.0}, "anchor_spike"),
         ({"connector_reasons": [None, "backward_arc"]}, "connector_degenerate"),
     ],
 )
@@ -199,6 +201,7 @@ def test_letter_gate_names_the_first_failure(kwargs: dict, expected: str) -> Non
         "rmse_max": 2.2,
         "at_bound": False,
         "anchors_ok": True,
+        "spike_ratio": 2.5,
         "connector_reasons": [None, None],
     }
     assert letter_gate(**{**base, **kwargs}) == expected
@@ -214,6 +217,7 @@ def test_letter_gate_order_is_fixed() -> None:
             rmse_max=2.2,
             at_bound=True,
             anchors_ok=False,
+            spike_ratio=99.0,
             connector_reasons=["seam_share"],
         )
         == "not_converged_local"
@@ -221,9 +225,31 @@ def test_letter_gate_order_is_fixed() -> None:
     # …and the two like-for-like gates are told apart rather than merged
     assert (
         letter_gate(
-            converged_local=True, geo_rmse_px=9.0, rmse_max=2.2, at_bound=True, anchors_ok=True, connector_reasons=[]
+            converged_local=True,
+            geo_rmse_px=9.0,
+            rmse_max=2.2,
+            at_bound=True,
+            anchors_ok=True,
+            spike_ratio=2.5,
+            connector_reasons=[],
         )
         == "geo_rmse"
+    )
+    # The spike is the letter's OWN chain, a degenerate connector a neighbour's
+    # damage — so a letter failing both is reported as `anchor_spike`, and the
+    # docstring's promised precedence is pinned here rather than only in the
+    # end-to-end path.
+    assert (
+        letter_gate(
+            converged_local=True,
+            geo_rmse_px=1.0,
+            rmse_max=2.2,
+            anchors_ok=True,
+            at_bound=False,
+            spike_ratio=9.0,
+            connector_reasons=["backward_arc"],
+        )
+        == "anchor_spike"
     )
 
 

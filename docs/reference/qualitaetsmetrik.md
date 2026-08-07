@@ -1786,22 +1786,57 @@ Körperstrich dominiert und unterschätzt einen Zacken im kurzen: `ue` in
 10,61. Die Verzerrung erzeugte nur falsche NEGATIVE, die Umstellung
 verschärft das Gate also, sie weitet es nicht.
 
+### Zwei Messrahmen, die nicht verwechselt werden dürfen
+
+§8 nennt Zahlen aus **zwei** Quellen, und sie sind nicht vergleichbar:
+
+* **gespeicherte Vorkommen** — die 245 Zeilen, die in der DB stehen. Daraus
+  stammen die Kalibrierungs-Perzentile und die Ablehnungszahl (23).
+* **Nachrechnung** — der A/B-Aufbau aus §7 mit *rekonstruierter*
+  Ernte-Registrierung. Daraus stammen die Tintenabstände, die
+  Scharnier-Tabelle und die Spike-Zahlen der Arme („aus" 3,29, 41
+  Ablehnungen). Ein neutraler Ursprung statt der komponierten Platzierung
+  belastet den Fit stärker, deshalb liegen dort mehr Ausreißer.
+
+Wer die 23 und die 41 nebeneinander liest, liest zwei Populationen.
+Perzentile sind hier durchweg **nearest-rank** (p90 7,28); `np.percentile`
+mit Vorgabe-Interpolation liefert 6,89 — dieselben Daten, andere
+Konvention.
+
 ### Kalibrierung
 
 Über die 245 gespeicherten Vorkommen — die **alle** aus dem Ketten-Pfad
 stammen (`fit_path == "chain"`, 245 von 245), Kalibrierungs- und
 Anwendungspopulation sind also dieselbe: Median 2,68 · p75 3,86 ·
-p90 7,28 · p99 23,29 · max 32,9.
+p90 7,28 · p99 23,29 · max 32,9 (nearest-rank).
 
 Bei **8,0** werden 23 Vorkommen (9,4 %) verworfen und **kein einziger**
 Buchstabe fällt unter `LAUFFORM_MIN_OCCURRENCES` = 3 (auch nicht unter
-die `--min-n`-Vorgabe 4 der Ernte selbst). Bei 6,0 fiele „g" darunter —
-deshalb liegt die Schwelle hier und nicht tiefer.
+die `--min-n`-Vorgabe 4 der Ernte selbst): 12 von 35 lagen schon vorher
+darunter, und es bleiben genau dieselben 12.
 
-Wirkung auf die akzeptierte Menge, gemessen als Abstand der gefitteten
-Mittellinie zur echten Tinte: schlechtester Wert **0,613 → 0,258** x-Höhen,
-p90 **0,194 → 0,149**. Das Gate leistet damit das meiste von dem, was ein
-Fit-Regularisierer leisten sollte — ohne den Fit anzufassen.
+**Was die Tabelle verschweigt und hier stehen muss:** `S`, `s` und `ue`
+gehen 2 → 1. Sie lagen schon unter der Schranke, das Rendering ändert sich
+also nicht — aber der Buchstabe, um den diese ganze Runde ging, hat
+danach **ein einziges** akzeptiertes Vorkommen. Das ist das stärkste
+Argument dafür, die 23 zu *reparieren* statt sie dauerhaft wegzuwerfen
+(siehe „Was offen bleibt").
+
+Warum 8,0 und nicht 6,0: bei 6,0 fiele „g" von 3 auf 2. Das allein wäre
+eine Qualitätsschwelle, kalibriert an einer Deckungs-Nebenwirkung — und
+damit verdächtig. Es trägt nur zusammen mit dem Grund, aus dem die
+Schranke bei 3 liegt: **ab drei Vorkommen überstimmt der Anker-Median ein
+schlechtes Vorkommen.** „g" bei n = 3 ist also genau der Fall, für den die
+Schranke gebaut wurde; ein viertes Gate obendrauf nähme ihm die Laufform,
+ohne dass die vorhandene Absicherung versagt hätte.
+
+Wirkung auf die akzeptierte Menge (Rahmen: Nachrechnung), gemessen als
+Abstand der gefitteten Mittellinie zur echten Tinte: schlechtester Wert
+**0,613 → 0,258** x-Höhen, p90 **0,194 → 0,149**. Das Gate fängt damit die
+*Unstetigkeiten* — es ist ausdrücklich **kein** Detektor für „von der Tinte
+weg": eine glatte, über viele Anker verteilte Abweichung passiert es
+ungehindert, und der verbleibende Rest von 0,258 x-Höhen zeigt, dass es
+solche gibt.
 
 ### Verworfen: das zielgenaue Scharnier im Fit
 
@@ -1841,6 +1876,39 @@ funktioniert. Aber:
 Zusammen mit dem Gate bringt es nur noch `ink_max` MAX 0,258 → 0,172 bei
 fünf akzeptierten Vorkommen weniger und einem Buchstaben unter der
 Schranke. **Nicht übernommen.**
+
+### Was offen bleibt: die Zacken sitzen nicht zufällig
+
+Der Befund, der diese Runde eigentlich weiterträgt — gefunden erst beim
+Gegenlesen, nachdem das Gate schon stand. **22 der 23 verworfenen
+Vorkommen (96 %) haben ihren größten Schritt an einem Eckanker oder an
+einem Strichrand:**
+
+| Buchstabe | Ablehnungen | wo | `corner_anchors` |
+|---|---|---|---|
+| `e` | 7 | 43 (×5), 20, 75 | 19, 42, 74, 100 |
+| `n` | 5 | 16 (×2), 77, 101, 1 | 16, 41, 77, 100 |
+| `i` | 3 | 101, 119, 1 | Strichgrenzen (Punkt ab 100) |
+| `u` | 2 | 119 (×2) | Strichende |
+| `r`, `w` | je 1 | 18, 26 | 17 bzw. 26 |
+| `S` | 1 | 113 | — (keine Eckanker) |
+
+Fünf von sieben `e`-Ablehnungen liegen auf **demselben** Anker. Das ist
+kein Rauschen, sondern eine **systematisch unterbestimmte Ankerklasse**:
+die Abtastung teilt die Spline genau an Eckankern und Strichgrenzen
+(`SamplePlan`), dort hat ein Anker die wenigste Sample-Stützung und damit
+die schwächste Führung durch `e_geo` — bei 180 Samples auf 120 Anker fällt
+das an einer Teilungsstelle sofort ins Gewicht.
+
+Daraus folgt zweierlei. Erstens: die 23 sind **keine 23 unabhängig
+kaputten Messungen, sondern ein Instrumentendefekt** — und damit
+größtenteils rückholbar, statt dauerhaft verloren. Zweitens: das ist der
+einzige Reparaturansatz, den §7 und §8 **nicht** ausschließen, weil beide
+verworfenen Terme auf den falschen Mechanismus zielten. Der nächste
+Schritt ist also nicht ein weiterer Regularisierer, sondern die
+Sample-Stützung dieser Ankerklasse — mit anschließender Neu-Ernte, die die
+23 (samt des zweiten S-Vorkommens) zurückholen würde. Das Gate bleibt
+danach als Rückfalllinie.
 
 ### Die Lehre
 

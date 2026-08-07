@@ -111,10 +111,18 @@ SEAM_DEDUP_PX = 1e-6
 # `--min-n` default of 4. At 6.0 the glyph „g" would fall below the floor, which
 # is why the threshold sits here and not lower.
 #
-# Effect on the accepted set, over those same occurrences: the worst distance of
-# a fitted centerline to the measured ink drops from 0.613 to 0.258 x-heights
-# and its p90 from 0.194 to 0.149 — the gate does most of what a fit-side
-# regulariser was supposed to do, without touching the fit (§7).
+# Why 8.0 and not 6.0: at 6.0 the glyph „g" falls from 3 occurrences to 2. On
+# its own that would be a QUALITY threshold calibrated on a COVERAGE side
+# effect. It only carries together with the reason the floor sits at 3 — from
+# three occurrences on, the per-anchor median outvotes one bad one — so „g" at
+# n = 3 is precisely the case the floor was built for, and a fourth gate on top
+# would take its Laufform away without the existing guard having failed.
+#
+# Effect on the accepted set (measured in the §7 re-run frame, NOT on the stored
+# rows): the worst distance of a fitted centerline to the measured ink drops
+# from 0.613 to 0.258 x-heights, its p90 from 0.194 to 0.149. This catches
+# DISCONTINUITIES; it is deliberately not an off-the-ink detector, and a smooth
+# deviation spread over many anchors passes it untouched.
 MAX_ANCHOR_SPIKE_RATIO = 8.0
 
 DIAG_FIELDS = (
@@ -231,8 +239,18 @@ def anchor_spike_ratio(anchors: np.ndarray, stroke_starts: Sequence[int]) -> flo
     median is dominated by the long body stroke and understates a spike inside
     a short one — measured on the real harvest, `ue` in „Zügel" scores 7.21
     pooled but 10.61 against its own stroke, i.e. the pooled form silently kept
-    a needle. The bias only ever produced false NEGATIVES, so this change
-    tightens the gate rather than widening it.
+    a needle. Over these 245 occurrences the change only ever tightened the gate
+    (25 rows score higher per-stroke, none lower across the threshold) — but
+    that is an empirical fact about this harvest, not a property of the two
+    forms: a short stroke whose own steps are unusually long could in principle
+    score lower per-stroke than pooled.
+
+    LIMIT, deliberately not papered over: a stroke with two anchors yields one
+    step, hence a ratio of exactly 1.0, and a three-anchor stroke makes the
+    median the mean and caps the ratio near 2 — such strokes are structurally
+    exempt. The shortest stroke in the current templates is a ue umlaut dot at
+    10 anchors, so nothing is exempt today; a future template with a 3-anchor
+    stroke would exempt itself silently.
 
     Pen lifts never count: a stroke boundary is the hand setting the pen down
     somewhere else, not a discontinuity of the line. Counting it would reject
@@ -445,7 +463,10 @@ def letter_gate(
     rmse_max: float,
     at_bound: bool,
     anchors_ok: bool,
-    spike_ratio: float = 0.0,
+    # REQUIRED, deliberately not defaulted: a gate input with a passing default
+    # is the exact failure this check was born from — a caller that forgets the
+    # keyword would silently disable it with the whole suite still green.
+    spike_ratio: float,
     connector_reasons: Sequence[str | None] = (),
 ) -> str:
     """The chain path's per-letter gate cascade — `"ok"` or the first reason.
