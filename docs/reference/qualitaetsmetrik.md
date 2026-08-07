@@ -1637,3 +1637,118 @@ das `?variant=`-Deploy noch ausstand): alle drei Roots **0 bad rows,
 der aug07-Befund war zum Messzeitpunkt real, ist im heutigen DB-Stand
 aber konvergiert; mit dem Stored-Read ist die Schicht künftig per
 Konstruktion byte-treu statt per Glück.
+
+---
+
+## 7. Verworfen: Krümmungs-Regularisierer auf dem M4-Fit (`aug07`)
+
+**Ergebnis: verworfen.** Global besteuern, um ein lokales Vergehen zu
+verhindern, kostet auf der Bodenwahrheit mehr als es einbringt. Nicht
+noch einmal in dieser Form versuchen — die tragfähige Alternative steht
+unten.
+
+### Der Befund, der den Versuch ausgelöst hat
+
+Das Sütterlin-`S` wurde mit einem sichtbaren Zacken oben rechts
+geschrieben. Ursachenkette, alles gemessen:
+
+1. Die gerenderte Laufform (Variante 100) stammte aus einem Median über
+   **zwei** Vorkommen. Bei n = 2 ist `np.median` das Mittel der beiden —
+   keinerlei Ausreißerabweisung. (Das ist die
+   **Vorkommensschranke**, `core.aggregate.LAUFFORM_MIN_OCCURRENCES`,
+   seither von `apply-laufform` erzwungen.)
+2. Eines der beiden Vorkommen („Sprünge") trägt einen kaputten M4-Fit:
+   **ein einzelner Anker steht im leeren Papier** — 12 px von der
+   nächsten Tinte, 9,3× der Median-Schrittweite von seinem Nachbarn
+   entfernt — während 119 der 120 Anker sauber auf der Linie liegen. Die
+   beiden `S` sind fast deckungsgleich *geschrieben*; der Unterschied ist
+   der Fit, nicht die Hand.
+3. Der Fit passierte seine QC (`geo_rmse_px` 1,261), weil diese ein
+   Mittel über 240 Samples ist und eine lokale Nadel nicht sehen kann.
+
+Warum der Fit das zulässt: **nichts in der Zielfunktion sieht einen
+EINZELNEN Ausreißer.** `e_geo` ist ein Mittel über `DEFAULT_N_SAMPLES`
+(1,5 Samples je Anker bei K=120), die Tikhonov-Energie ein Mittel über K
+Anker, und `MAX_ANCHOR_DELTA` (0,75) ist viel zu locker. Wo das Template
+länger läuft als die Tinte der Probe, sitzt ein Schwanz-Anker also gratis
+im Nichts.
+
+### Der Versuch
+
+Zweite-Differenzen-Term (Biegeenergie, bogenlängen-normiert) auf dem
+**Verformungsfeld** `anchors − template_anchors`, gebaut aus demselben
+Operator, den die Verfeinerung längst auf das Breitenprofil anwendet.
+Bestraft also die Krümmung, die der Fit *hinzufügt*, nie die des
+Buchstabens — die Schale des S gehört dem Duktus-Prior. Gradient exakt
+(5,6e-10 gegen finite Differenzen), Selektivität ~7e4 (eine Nadel gegen
+eine glatte Ganzbuchstaben-Streckung gleicher Amplitude).
+
+A/B über alle 245 gespeicherten Vorkommen, identischer Aufbau in beiden
+Armen (rekonstruierte Ernte-Registrierung, daher *nicht* die absoluten
+Zahlen der Ernte — nur der Vergleich zählt).
+
+### Was die Formmaße sagten — und warum sie in die Irre führen
+
+| Gewicht | Spike-Median | Fälle > 8× | Streuung MAD | Knick der Median-Kette |
+|---|---|---|---|---|
+| aus  | 3,29 | 39 | 0,0123 | 11,89° |
+| 1e-5 | 1,81 | 17 | 0,0119 |  7,86° |
+| 1e-4 | 1,40 |  7 | 0,0116 |  6,99° |
+| 1e-3 | 1,25 |  0 | 0,0111 |  6,65° |
+
+In 245 von 245 Vorkommen besser, in keinem schlechter. Der Median über
+die Vorkommen wurde um 41 % weniger facettiert. Genau daraus entstand die
+Fehleinschätzung, der Term sei ein reiner Gewinn.
+
+`geo_rmse` stieg dabei (1,017 → 1,192 px), was zunächst als „weigert
+sich, Pixelrauschen hinterherzulaufen" gedeutet wurde. **Diese Deutung
+war für `geo_rmse` vertretbar, wurde aber unzulässig auf `coverage_rmse`
+und die Konvergenzquote ausgedehnt.** Coverage misst Skelett → Template,
+also ob die *gemessene Tinte* noch erreicht wird — das ist die
+Treue-Richtung, kein Rauschen.
+
+### Was die Bodenwahrheit sagt
+
+Abstand der gefitteten **Mittellinie zur Tinte** (x-Höhen), gemessen auf
+dem Skelett der Platte selbst — Maximum bepreist den Fehler, Mittelwert
+bepreist den Schaden:
+
+| Gewicht | ink_max Median | ink_max MAX | ink_mean Median | näher an der Tinte (mittel) |
+|---|---|---|---|---|
+| aus  | 0,0912 | 0,6129 | 0,0258 | — |
+| 1e-5 | 0,0912 | 0,6864 | 0,0279 |  26 / 245 |
+| 1e-4 | 0,0943 | 0,6549 | 0,0295 |   8 / 245 |
+| 1e-3 | 0,1000 | 0,4534 | 0,0313 |   **3 / 245** |
+
+**Der mittlere Abstand zur Tinte verschlechtert sich in 241 von 245
+Vorkommen.** Nur der äußerste Ausläufer bessert sich (Maximum über alle
+Vorkommen 0,61 → 0,45). Der Term repariert also tatsächlich die
+Einzelnadel — aber er zieht dafür die gesamte Kette von der Tinte weg,
+und dieser Preis übersteigt den Gewinn.
+
+### Die Lehre (die eigentliche)
+
+Spike-Maß und Vorkommens-Übereinstimmung sind **Form-Regelmäßigkeitsmaße**.
+Jeder Term, der alles Richtung Prior zieht, verbessert beide — bis hin zum
+Grenzfall „jeder Fit ist die Tafelform plus Verschiebung", wo sie perfekt
+aussehen und nichts mehr gemessen wurde. Sie taugen daher **nie allein**
+als Schiedsrichter; es braucht immer ein Maß, das die *gemessene Tinte*
+bepreist, in beide Richtungen. Der Degenerationstest über die
+Verformungsamplitude (bis 1e-3 stabil, bei 1e-2 Einbruch) war nötig, aber
+nicht hinreichend — er schließt nur den Totalkollaps aus, nicht die
+schleichende Entfernung von der Tinte.
+
+### Was stattdessen zu versuchen ist
+
+Das Vergehen ist **lokal** („Anker im leeren Papier"), die Biegeenergie
+ist eine **globale** Steuer. Ein zielgenauer, **einseitiger** Term wäre
+der nächste Versuch: eine Scharnier-Strafe auf den Abstand eines Ankers
+zur Tinte, die erst jenseits eines Vielfachen der lokalen Strichbreite
+greift. Anker, die auf der Tinte sitzen, zahlen dann exakt null — die
+gemessene Verschlechterung des mittleren Abstands kann per Konstruktion
+nicht auftreten. Offen bleibt die Kalibrierung des Einsatzpunkts und, wie
+hier, die Pflicht, gegen `ink_mean` **und** `ink_max` zu messen.
+
+Unabhängig davon bleibt die Vorkommensschranke die wirksame Absicherung:
+sie verhindert nicht den kaputten Fit, aber dass ein einzelner ihn in den
+Schreibpfad trägt.

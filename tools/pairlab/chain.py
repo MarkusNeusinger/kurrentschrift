@@ -324,7 +324,7 @@ class ChainWordFit:
 def _second_difference_operator(pts: np.ndarray) -> np.ndarray:
     """(m, K) arc-length-normalised second-difference operator over a polyline.
 
-    The same construction as `core.fit._curvature_operator`, applied to 2D
+    The same construction as `core.fit._width_curvature_operator`, applied to 2D
     POSITIONS instead of the width profile: row `j` reads
     ``2/(ds_{j-1}+ds_j) · ((a_{j+1}−a_j)/ds_j − (a_j−a_{j-1})/ds_{j-1})``. A
     collinear chain therefore scores exactly zero at any spacing — the term

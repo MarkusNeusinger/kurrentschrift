@@ -36,7 +36,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
 **§6** Extern/Forschung.
 
-- **A** — Absetzen §1 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1
+- **A** — Absetzen §1 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1
 - **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bézier-Handle-Floor §3 · Bibliothekseinheit §2 · bindend §5 · bogengleich §3
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · degenerierte Solves §3 · Degeneriewächter §3 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · Duktus §1 · Duktus-Prior §1
@@ -54,7 +54,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Rückgabe an Autor §5
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spitzfeder §1 · `stage` (work_items) §5 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
-- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenlücke §3 · Trajektorien-Recovery §6 · Triage-Pflicht §5
+- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenlücke §3 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Vereinigungsfenster §3 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2
 - **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Editor §5 · Wort-Trace §2
@@ -682,6 +682,27 @@ Projekts vor.
 **Dice** — das Flächenmaß daneben: doppelte Überlappung geteilt durch die
 Summe beider Flächen (1 = deckungsgleich). Beantwortet „sieht es aus wie
 der Ausschnitt“, während Chamfer „liegt die Kante auf der Kante“ misst.
+
+**Tintenabstand** *(`ink_max` / `ink_mean`)* — Abstand der gefitteten
+Mittellinie zur **gemessenen Tinte** (Skelett der Platte), in x-Höhen.
+Das Bodenwahrheitsmaß eines Fits, und zwar **in beide Richtungen**: das
+Maximum bepreist den Fehler (ein Stück Linie im leeren Papier), der
+Mittelwert bepreist, ob eine Verbesserung des Maximums damit erkauft
+wurde, dass die ganze Kette von der Tinte wegwandert. Beide zusammen sind
+die Pflichtprüfung für jeden Regularisierer am M4-Fit — **Formmaße allein
+genügen nie** (siehe **Anker im leeren Papier**).
+→ qualitaetsmetrik.md §7
+
+**Anker im leeren Papier** — die benannte Fehlerform des M4-Fits: ein
+*einzelner* Anker verlässt den Strich und kehrt im nächsten Schritt
+zurück (gemessen als Spike-Verhältnis, größter Schritt innerhalb eines
+Strichs geteilt durch den Median-Schritt). Physikalisch unmöglich — eine
+Feder tut das nicht —, für die Zielfunktion aber unsichtbar, weil dort
+alles Mittelwerte sind. Ein solcher Anker vergiftet über den
+Vorkommens-Median die Laufform; die **Vorkommensschranke** verhindert
+nicht seine Entstehung, wohl aber dass ein einzelner ihn in den
+Schreibpfad trägt. Der naheliegende Gegenterm (globale Biegeenergie)
+wurde gemessen und **verworfen**. → qualitaetsmetrik.md §7
 
 **`gen_chamfer`** — **die Auditzahl „gemessen vs. komponiert“.** Abstand
 zwischen dem *erzeugten* Übergang und dem an derselben Stelle aus der

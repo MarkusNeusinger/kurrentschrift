@@ -12,37 +12,27 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
-### Added
+### Changed
 
-- **A second-difference regulariser on the M4 fit's DISPLACEMENT field, off by
-  default pending its adjudication** (`core.fit.DEFAULT_ANCHOR_SMOOTH_WEIGHT`).
-  Chasing the capital S's spike one layer down found the cause: the two `S`
-  occurrences are written almost identically, and the difference is a single
-  anchor the FIT threw off the stroke — in „Sprünge" anchor 113 sits in blank
+- **Recorded a rejected experiment: a curvature regulariser on the M4 fit
+  (`qualitaetsmetrik.md` §7).** Chasing the capital S's spike one layer down
+  found its real cause — the two `S` occurrences are written almost
+  identically, and the difference is a single anchor the FIT parked in blank
   paper, 12 px from the nearest ink and 9.3× the median step off its neighbour,
-  while 119 of 120 anchors lie on the line. Nothing in the objective can see a
-  lone outlier: the geometry residual is a mean over `DEFAULT_N_SAMPLES` (1.5
-  samples per anchor at K=120), the Tikhonov energy a mean over K anchors, and
-  `MAX_ANCHOR_DELTA` (0.75) is far too loose — so where the template is longer
-  than the specimen's ink, a tail anchor can park in empty space for free. The
-  new term penalises the curvature of the deformation, never of the letter (the
-  ductus prior owns the bowl of an S), using the same `_curvature_operator` the
-  refine already applies to the half-width profile — renamed from
-  `_width_curvature_operator` now that both channels use it, chains still
-  breaking at pen lifts and corners. Gradient verified exact against finite
-  differences; the scale separation is the design (a lone needle costs ~7e4× a
-  whole-letter stretch of equal magnitude), pinned by a selectivity test and a
-  no-op-on-a-clean-fit test.
-  A/B over all 245 stored occurrences (reconstructed harvest setup, identical in
-  both arms) shows the defect collapsing monotonically — spike median 3.29 →
-  1.25, occurrences above 8× 39 → 0 at 1e-3, better in 245/245 and worse in none
-  — while `geo_rmse` rises 1.017 → 1.192 px. That number cannot adjudicate the
-  term: it is a mean distance to the skeleton PIXELS, so it rewards exactly the
-  noise-chasing the term exists to stop, and calibrating on it would make
-  overfitting the goal. The weight therefore stays 0.0 (production behaviour
-  byte-identical) until measured on a ruler that prices form rather than pixel
-  proximity — whether repeated occurrences of a letter agree, which is what the
-  aggregate median, and hence the Laufform, is made of.
+  while 119 of 120 anchors sit on the line. Nothing in the objective can see a
+  lone outlier (`e_geo` is a mean over samples, the Tikhonov energy a mean over
+  anchors, `MAX_ANCHOR_DELTA` far too loose). A second-difference penalty on
+  the deformation field fixed the defect convincingly on every SHAPE measure —
+  spike median 3.29 → 1.25, occurrences above 8× 39 → 0, better in 245/245 and
+  worse in none, the aggregate median 41 % less faceted — but on ground truth,
+  the fitted centerline's distance to the measured ink, the mean got WORSE in
+  241 of 245 occurrences. A global tax to stop a local crime: it does remove
+  the needle (worst-case distance 0.61 → 0.45 xh) but drags the whole chain off
+  the stroke to do it. Reverted, with the lesson written down — shape-regularity
+  measures (spike, cross-occurrence agreement) all improve for any term that
+  pulls toward the prior, so they can never adjudicate alone; the next attempt
+  should be a targeted one-sided hinge on an anchor's ink distance, which costs
+  exactly zero for anchors that sit on ink.
 
 ### Fixed
 
