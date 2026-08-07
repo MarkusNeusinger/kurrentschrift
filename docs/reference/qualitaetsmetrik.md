@@ -1574,3 +1574,41 @@ Wordbench byte-identisch (0,110605/0,162783 — Komposition unberührt).
 Gespeicherte Zeilen ändern sich erst durch Re-Derive (`POST
 …/templates/{key}/resample`); der Schrieb ist ein eigener, abgestimmter
 Schritt.
+
+**Schrieb `aug07`** (Freigabe des Eigentümers, in-session, nach Deploy):
+
+- **23 Resamples** (S sofort; danach Y d M A O H V y Oe N Ae X W G x Q z
+  R s P D Ue) — jede Zeile vorher LOKAL abgeleitet und als Overlay über
+  der Chartzelle begutachtet, Server-Scores 23/23 bit-exakt zur lokalen
+  Ableitung. Bewusst NICHT geschrieben: `oe` (der zweite Umlautstrich
+  deckt objektiv schlechter, coverage 0,170 → 0,231) und `U` (Δmax
+  0,001, kein Effekt). `Y` trotz Score-Einbruch geschrieben — die Form
+  liegt sichtbar mittiger in der Tinte, der Einbruch ist der bekannte
+  Collinearity-Folgepunkt.
+- **apply-laufform** auf die 20 bestehenden Variante-100-Schlüssel
+  (explizite `glyph_keys`, keine Neuanlagen), 0 übersprungen.
+- **96 Wortspuren** neu geerntet (Chain-Pfad, words+pairs) und als
+  Upsert OHNE `replace` geschrieben (0 gelöscht) — mit der neuen
+  Absetz-Regel: der Säbel-Trace endet am S-Bogenende und setzt an der
+  Grundlinie frisch an (4 Striche statt 1+2).
+
+**Headline nach dem Schrieb** (frische Fixtures): Wörter **0,110392**
+(−0,000213), Paare **0,165678** (+0,002895). Die Paar-Regression sitzt
+fast vollständig in `dz` +0,083 / `dk` +0,040: das neu abgeleitete d
+trägt jetzt die sanft gebogene Rückenlinie seiner CHARTZELLE (Glyph-Bench
+coverage besser), während der Drill-Schreiber gerader schrieb —
+Chart-Wahrheit gegen Drill-Ähnlichkeit, bewusst zugunsten der Chartzelle
+entschieden (die Laufform der fließenden Wörter kommt ohnehin aus den
+Medianen; die Wörter verbesserten sich: Zügel −0,016, Sprünge −0,013,
+Soldaten −0,010).
+
+**Verifikations-Befund (offen):** Das `--verify`-Gate von
+`fetch_fixtures` läuft nach dieser Runde NICHT bit-exakt: 5 von 96
+Kompositionen weichen ≤ 0,065 xh ab (u-Breite via Fluent-Weitung). Die
+Fixture-Laufformen werden aus den Aggregat-JSONs LOKAL rekonstruiert,
+und mindestens ein Run liegt auf der Messerkante der neuen Toleranz
+(u-Laufform bow 0,034756 bei tol 0,035) — Schwellenvergleiche
+verstärken Wire-Rundung/Umgebungsrauschen zum Flip. Follow-up-Issue:
+Fixtures sollten die GESPEICHERTEN Variante-100-Zeilen lesen statt sie
+nachzubauen (fehlender Admin-Read), und/oder grenznahe Runs müssen
+deterministisch entschieden werden.
