@@ -93,6 +93,23 @@ DIACRITIC_MIN_Y = 1.0
 # first sample repeats the first one's last. Dropped when they are welded into
 # one pen run (px tolerance — the two come out of the same parameter).
 SEAM_DEDUP_PX = 1e-6
+# „Anker im leeren Papier" (glossar.md §4, qualitaetsmetrik.md §7): the spike
+# ratio above which a fitted anchor chain is no longer a measurement of the
+# hand. A pen writes arcs and straight lines; a single anchor that leaves the
+# stroke and returns one step later is physically impossible, but invisible to
+# the fit's objective, where everything is a mean (`e_geo` over
+# DEFAULT_N_SAMPLES, `e_reg` over K anchors, MAX_ANCHOR_DELTA far too loose) —
+# the measured Sütterlin capital S in „Sprünge" passed QC at
+# geo_rmse_px = 1.261 with one anchor 12 px from the nearest ink.
+#
+# Calibrated on the 245 stored occurrences of the Sütterlin harvest: median
+# ratio 2.65, p75 3.88, p90 7.21, p99 21.16, max 32.6. At 8.0 exactly 22
+# occurrences (9.0 %) are rejected and NOT ONE glyph drops below
+# `core.aggregate.LAUFFORM_MIN_OCCURRENCES` = 3 (12 of 35 glyphs are already
+# below it for lack of harvest coverage, and that count is unchanged). At 6.0
+# the glyph „g" would fall below the floor, which is why the threshold sits
+# here and not lower.
+MAX_ANCHOR_SPIKE_RATIO = 8.0
 
 DIAG_FIELDS = (
     "specimen_id",
@@ -117,6 +134,10 @@ DIAG_FIELDS = (
     "n_cov_local",
     "chain_at_bound",
     "anchor_count_ok",
+    # „Anker im leeren Papier": largest in-stroke anchor step over the median
+    # one. Reported on every fitted row, so a run says how far the rejected
+    # ones were over `MAX_ANCHOR_SPIKE_RATIO` and how much air the kept ones had.
+    "anchor_spike_ratio",
     "shift_x_units",
     "shift_y_units",
     "conn_reason_adjacent",
@@ -188,6 +209,38 @@ def _px_to_word_units(px_x: np.ndarray, px_y: np.ndarray, xh: float, registratio
     ux = (np.asarray(px_x, dtype=float) - registration["tx"]) / xh
     uy = (registration["baseline_row"] + registration["ty"] - np.asarray(px_y, dtype=float)) / xh
     return np.column_stack([ux, uy]).round(4)
+
+
+def anchor_spike_ratio(anchors: np.ndarray, stroke_starts: Sequence[int]) -> float:
+    """The „Anker im leeren Papier" spike ratio of a fitted anchor chain.
+
+    The largest step between CONSECUTIVE anchors WITHIN one pen-stroke, divided
+    by the median of those same steps. Both numerator and denominator are in
+    template units, so the ratio is scale-free and comparable across glyphs
+    (and across the 120-anchor capitals and the 6-anchor punctuation alike).
+
+    Pen lifts are excluded: a step whose END index starts a new stroke
+    (`trace_meta.stroke_starts`) is the hand setting the pen down somewhere
+    else, not a discontinuity of the line. Counting it would reject every
+    multi-stroke glyph — i, u, sz, t, ae — for writing exactly what its ductus
+    prescribes.
+
+    Returns 0.0 when there is nothing to judge (no in-stroke step at all), and
+    `inf` when the median step is zero while some step is not: a chain that
+    stands still and then jumps is the very failure this number exists for.
+    """
+    pts = np.asarray(anchors, dtype=float).reshape(-1, 2)
+    if len(pts) < 2:
+        return 0.0
+    steps = np.hypot(*(pts[1:] - pts[:-1]).T)
+    lifts = {int(s) for s in stroke_starts}
+    within = np.array([d for i, d in enumerate(steps) if i + 1 not in lifts], dtype=float)
+    if not len(within):
+        return 0.0
+    largest, median = float(within.max()), float(np.median(within))
+    if median <= 0.0:
+        return float("inf") if largest > 0.0 else 0.0
+    return largest / median
 
 
 def _strokes_to_word_units(
@@ -560,6 +613,30 @@ def _harvest_case_slots(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 _diag_row(case, opts, i, keyed_i, slot.key, accepted=False, gate="anchor_count", converged=True, **grid)
             )
             continue
+        # „Anker im leeren Papier": one anchor left the stroke and came back.
+        # The fit's own QC cannot see it (every term in the objective is a
+        # mean), and the occurrence median would carry the needle straight into
+        # the Laufform — so the OCCURRENCE is rejected here. Not a repair of the
+        # fit: a chain with a discontinuity in it never measured the hand.
+        spike_ratio = anchor_spike_ratio(fitted_raw, stroke_starts)
+        if spike_ratio > MAX_ANCHOR_SPIKE_RATIO:
+            unfitted_slots.append(keyed_i)
+            diag_rows.append(
+                _diag_row(
+                    case,
+                    opts,
+                    i,
+                    keyed_i,
+                    slot.key,
+                    accepted=False,
+                    gate="anchor_spike",
+                    converged=True,
+                    geo_rmse_px=round(geo_rmse, 3),
+                    anchor_spike_ratio=round(spike_ratio, 2),
+                    **grid,
+                )
+            )
+            continue
         shift = np.median(fitted_raw - anchors, axis=0)
         fitted = fitted_raw - shift  # shapes, not placements
         per_key[slot.key].append(fitted)
@@ -615,6 +692,7 @@ def _harvest_case_slots(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 gate="ok",
                 converged=True,
                 geo_rmse_px=round(geo_rmse, 3),
+                anchor_spike_ratio=round(spike_ratio, 2),
                 **grid,
             )
         )

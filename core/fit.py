@@ -67,6 +67,32 @@ DEFAULT_MAX_ITER = 300
 # Cap per-anchor displacement (in template units) so the fit cannot fold the
 # ductus back on itself — a loose topology guard alongside the Tikhonov term.
 MAX_ANCHOR_DELTA = 0.75
+# One-sided distance hinge on the fitted centerline — the guard against the
+# „Anker im leeren Papier": a single anchor thrown off the stroke and back,
+# which the rest of the objective structurally cannot see (the geometry term is
+# a mean over `DEFAULT_N_SAMPLES` samples, the Tikhonov term a mean over K
+# anchors, and `MAX_ANCHOR_DELTA` is far too loose to catch one — so the
+# Sütterlin capital S in „Sprünge" parked anchor 113 twelve pixels from the
+# nearest ink at an unremarkable 1.261 px whole-glyph RMSE).
+#
+# The term is a soft CONSTRAINT, not a preference: a sample whose distance to
+# the skeleton is within `tau` contributes exactly 0.0 to the energy AND
+# exactly 0.0 to the gradient, so the weight may be large without taxing an
+# honest fit at all. That is precisely what the rejected global second-
+# difference (bending) regulariser could not do — it was a global tax to stop a
+# local crime and lost against the measured ink (see
+# docs/reference/qualitaetsmetrik.md §7).
+#
+# NOT YET CALIBRATED. The weight below is 0.0, so production behaviour is
+# byte-identical to the term's absence; the calibration run over the stored
+# occurrences sets the final pair. Only the SCALE tau has to live on is
+# measured so far: over 245 real occurrences the fitted centerline's distance
+# to the measured ink has a median-of-max of 0.091 xh and a p90-of-max of
+# 0.194 xh, while the S defect sat at 0.4 xh — so a threshold that prices the
+# artefact and nothing else lies around 0.15-0.25 xh. The default is that
+# band's middle, a starting point rather than a verdict.
+DEFAULT_HINGE_WEIGHT = 0.0
+DEFAULT_HINGE_TAU_UNITS = 0.2
 # A fit counts as converged when BOTH residuals are within tolerance: the
 # centerline sits near the skeleton (template→skeleton, RMS) AND the skeleton
 # is covered by the template (skeleton→template) — a template collapsed onto a
@@ -215,6 +241,29 @@ def _bilinear_with_grad(
     return val, dx * inside_x, dy * inside_y
 
 
+def _hinge_term(
+    d: np.ndarray, d_dx: np.ndarray, d_dy: np.ndarray, tau_px: float, unit_sq: float
+) -> tuple[float, np.ndarray, np.ndarray]:
+    """One-sided distance hinge + its exact gradient w.r.t. the sample pixels.
+
+    ``e = mean(max(0, d - tau)^2) / unit_sq`` over the centerline samples, where
+    ``d`` is a sample's distance to the skeleton in pixels and ``d_dx``/``d_dy``
+    are that distance field's exact spatial derivatives at the sample (both come
+    straight from the geometry term's `_bilinear_with_grad` call — no second
+    field lookup, no KD query).
+
+    The defining property, and the whole point of the term (see
+    `DEFAULT_HINGE_WEIGHT`): a sample with ``d <= tau`` contributes exactly 0.0
+    to the energy AND exactly 0.0 to the gradient — ``np.maximum`` returns a
+    hard zero there, which propagates through the product bit-exactly. A
+    compliant fit therefore pays nothing at any weight, so the weight can be
+    large enough to act as a constraint instead of a preference.
+    """
+    over = np.maximum(0.0, d - tau_px)
+    scale = 2.0 * over / (len(d) * unit_sq)
+    return float(np.mean(over**2)) / unit_sq, scale * d_dx, scale * d_dy
+
+
 def _sampling_operator(template_anchors: np.ndarray, plan: SamplePlan) -> np.ndarray:
     """(n_samples, K) linear operator mapping anchor coords to centerline samples.
 
@@ -334,6 +383,10 @@ class _InstanceFit:
     width_weight: float
     coverage_weight: float
     lambda_reg: float
+    # One-sided distance hinge: weight, and its threshold already converted to
+    # pixels (``hinge_tau_units * unit_px``). Weight 0.0 disables the term.
+    hinge_weight: float
+    hinge_tau_px: float
 
     def to_pixels(self, params: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         tx, ty = params[0], params[1]
@@ -363,6 +416,13 @@ class _InstanceFit:
         g_px = 2.0 * d * d_dx / (n_s * unit_sq)
         g_py = 2.0 * d * d_dy / (n_s * unit_sq)
 
+        # One-sided hinge on the SAME distance samples: free within tau, then
+        # quadratic. Samples inside the band add exactly zero here — energy and
+        # gradient alike — which is what lets `hinge_weight` be large.
+        e_hinge, h_px, h_py = _hinge_term(d, d_dx, d_dy, self.hinge_tau_px, unit_sq)
+        g_px = g_px + self.hinge_weight * h_px
+        g_py = g_py + self.hinge_weight * h_py
+
         # Out-of-crop pull (geometry-class weight): restores the gradient the
         # clamped fields lose beyond the border.
         ox, oy = self.out_of_crop(px, py)
@@ -389,7 +449,13 @@ class _InstanceFit:
 
         e_reg = float(np.mean(np.sum(deltas**2, axis=1)))
 
-        f = e_geo + self.width_weight * e_wid + self.coverage_weight * e_cov + self.lambda_reg * e_reg
+        f = (
+            e_geo
+            + self.width_weight * e_wid
+            + self.coverage_weight * e_cov
+            + self.lambda_reg * e_reg
+            + self.hinge_weight * e_hinge
+        )
 
         # Chain rule through the pixel mapping: dpx/dtx = unit_px,
         # dpy/dty = -unit_px, dpx/dax = unit_px * S, dpy/day = -unit_px * S.
@@ -433,6 +499,8 @@ def fit_template_to_instance(
     lambda_reg: float = DEFAULT_LAMBDA_REG,
     width_weight: float = DEFAULT_WIDTH_WEIGHT,
     coverage_weight: float = DEFAULT_COVERAGE_WEIGHT,
+    hinge_weight: float = DEFAULT_HINGE_WEIGHT,
+    hinge_tau_units: float = DEFAULT_HINGE_TAU_UNITS,
     max_iter: int = DEFAULT_MAX_ITER,
     max_anchor_delta: float = MAX_ANCHOR_DELTA,
 ) -> FitResult:
@@ -457,6 +525,13 @@ def fit_template_to_instance(
     lambda_reg : Tikhonov weight on per-anchor displacement (topology guard).
     width_weight : weight of the half-width residual relative to geometry.
     coverage_weight : weight of the skeleton→template coverage residual.
+    hinge_weight : weight of the one-sided distance hinge (``DEFAULT_HINGE_WEIGHT``).
+        Samples farther than ``hinge_tau_units`` from the skeleton pay
+        ``(d − tau)²``; samples within the band pay exactly nothing, energy and
+        gradient alike, so a large weight acts as a constraint on the outliers
+        without taxing an honest fit. ``0.0`` disables the term.
+    hinge_tau_units : hinge threshold as a fraction of the x-height — the
+        tolerance band around the skeleton inside which the hinge is silent.
     max_anchor_delta : per-anchor displacement bound in template units. The
         default suits the M4 instance fit; callers refining a trace that
         already sits on the ink pass a tighter bound.
@@ -537,6 +612,8 @@ def fit_template_to_instance(
         width_weight=width_weight,
         coverage_weight=coverage_weight,
         lambda_reg=lambda_reg,
+        hinge_weight=float(hinge_weight),
+        hinge_tau_px=float(hinge_tau_units) * unit_px,
     )
 
     n_params = 2 + 2 * k
@@ -1206,6 +1283,8 @@ def fit_glyph_to_crop(
     lambda_reg: float = DEFAULT_LAMBDA_REG,
     width_weight: float = DEFAULT_WIDTH_WEIGHT,
     coverage_weight: float = DEFAULT_COVERAGE_WEIGHT,
+    hinge_weight: float = DEFAULT_HINGE_WEIGHT,
+    hinge_tau_units: float = DEFAULT_HINGE_TAU_UNITS,
     n_samples: int = DEFAULT_N_SAMPLES,
     max_iter: int = DEFAULT_MAX_ITER,
 ) -> dict:
@@ -1213,6 +1292,8 @@ def fit_glyph_to_crop(
 
     Mirrors `core.pipeline.diagnostic_for_glyph`: loads the chart, crops with
     the eraser mask, binarises, extracts skeleton + distance transform, then fits.
+    ``hinge_weight``/``hinge_tau_units`` are passed straight through to
+    `fit_template_to_instance` (the one-sided distance hinge).
     Returns a JSON-ready overlay dict — a filled library entry plus crop-local
     polylines for the three-way visual check (crop · canonical grey · fit red),
     the skeleton it was fitted to, and the fitted silhouette (`fitted_outline_px`,
@@ -1248,6 +1329,8 @@ def fit_glyph_to_crop(
         lambda_reg=lambda_reg,
         width_weight=width_weight,
         coverage_weight=coverage_weight,
+        hinge_weight=hinge_weight,
+        hinge_tau_units=hinge_tau_units,
         n_samples=n_samples,
         max_iter=max_iter,
     )

@@ -31,6 +31,7 @@ from core.extract import skeleton_and_width
 from core.shaping import GlyphSlot
 from tools.laufform import harvest as harvest_mod
 from tools.laufform.harvest import (
+    MAX_ANCHOR_SPIKE_RATIO,
     MAX_STROKE_POINTS,
     MAX_WORD_STROKES,
     CaseHarvest,
@@ -38,6 +39,7 @@ from tools.laufform.harvest import (
     _chainable_runs,
     _is_diacritic,
     _px_to_word_units,
+    anchor_spike_ratio,
     assemble_word_strokes,
     cap_word_strokes,
     harvest_case,
@@ -223,6 +225,105 @@ def test_letter_gate_order_is_fixed() -> None:
         )
         == "geo_rmse"
     )
+
+
+# ------------------------------------------------- „Anker im leeren Papier"
+
+
+def _even_chain(n: int = 10, step: float = 0.1) -> np.ndarray:
+    """A chain whose every step is exactly `step` — spike ratio 1.0."""
+    return np.column_stack([np.arange(n, dtype=float) * step, np.zeros(n)])
+
+
+def test_anchor_spike_ratio_of_an_even_chain_is_one() -> None:
+    assert anchor_spike_ratio(_even_chain(), [0]) == pytest.approx(1.0)
+
+
+def test_anchor_spike_ratio_of_a_real_letter_is_modest() -> None:
+    """The template arc steps unevenly (fast at the ends, slow over the
+    shoulder) and must stay far below the gate — an honest fit pays nothing."""
+    assert 1.0 <= anchor_spike_ratio(_letter_anchors(), [0]) < MAX_ANCHOR_SPIKE_RATIO
+
+
+def test_anchor_spike_ratio_flags_an_out_and_back_needle() -> None:
+    """The measured failure form: ONE anchor leaves the stroke and returns one
+    step later, every other anchor sitting cleanly on the line."""
+    chain = _even_chain()
+    chain[5, 1] += 1.0
+    assert anchor_spike_ratio(chain, [0]) > MAX_ANCHOR_SPIKE_RATIO
+    # …and the chain it was cut from is untouched
+    assert anchor_spike_ratio(_even_chain(), [0]) == pytest.approx(1.0)
+
+
+def test_a_pen_lift_is_not_a_discontinuity() -> None:
+    """The case that would otherwise reject every multi-stroke glyph (i, u, sz,
+    t, ae): the hand lifts and sets down a whole x-height away, which is a jump
+    of exactly the needle's magnitude but no discontinuity of the LINE."""
+    body = _even_chain(5)
+    dot = _even_chain(4) + np.array([0.2, 1.0])
+    chain = np.vstack([body, dot])
+    assert anchor_spike_ratio(chain, [0, 5]) == pytest.approx(1.0)
+    # read as ONE stroke the very same geometry is over the gate — the
+    # exclusion is what separates a pen lift from a broken fit
+    assert anchor_spike_ratio(chain, [0]) > MAX_ANCHOR_SPIKE_RATIO
+
+
+def test_anchor_spike_ratio_at_the_threshold_boundary() -> None:
+    """Eight steps of 1 and one of 8: median 1, largest 8, ratio exactly 8.0.
+    The gate is `> MAX_ANCHOR_SPIKE_RATIO`, so this one is still accepted."""
+    chain = np.column_stack([np.array([0.0, 1, 2, 3, 4, 5, 6, 7, 8, 16]), np.zeros(10)])
+    assert anchor_spike_ratio(chain, [0]) == pytest.approx(MAX_ANCHOR_SPIKE_RATIO)
+    assert not anchor_spike_ratio(chain, [0]) > MAX_ANCHOR_SPIKE_RATIO
+    chain[-1, 0] += 0.5  # a hair over
+    assert anchor_spike_ratio(chain, [0]) > MAX_ANCHOR_SPIKE_RATIO
+
+
+def test_anchor_spike_ratio_of_a_chain_with_nothing_to_judge() -> None:
+    assert anchor_spike_ratio(np.zeros((0, 2)), [0]) == 0.0
+    assert anchor_spike_ratio(np.array([[0.0, 0.0]]), [0]) == 0.0
+    # every anchor its own stroke: no step lies WITHIN one
+    assert anchor_spike_ratio(_even_chain(3), [0, 1, 2]) == 0.0
+    # a chain that stands still and then jumps is the failure itself
+    standstill = np.array([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1.0, 0.0]])
+    assert anchor_spike_ratio(standstill, [0]) == float("inf")
+    assert anchor_spike_ratio(np.zeros((4, 2)), [0]) == 0.0
+
+
+def test_the_slot_path_rejects_an_anchor_in_blank_paper(monkeypatch: pytest.MonkeyPatch) -> None:
+    """End to end: a fit that passes convergence and `--rmse-max` but carries a
+    needle is no measurement of the hand — it becomes neither an occurrence nor
+    a median, and the diag row says by how much it was over."""
+    case, result = _synthetic_word([(0.06, 0.0), (-0.04, 0.03)])
+    monkeypatch.setattr(harvest_mod, "derive_word", lambda c: result)
+    real_fit = harvest_mod.fit_template_to_instance
+
+    def with_a_needle(*args, **kwargs):
+        fr = real_fit(*args, **kwargs)
+        fr.anchors = fr.anchors.copy()
+        fr.anchors[2, 1] += 6.0  # six x-heights off the stroke and back
+        return fr
+
+    monkeypatch.setattr(harvest_mod, "fit_template_to_instance", with_a_needle)
+    out = harvest_case(case, HarvestOptions(path="slot", rmse_max=3.0))
+
+    assert [r["gate"] for r in out.diag_rows] == ["anchor_spike", "anchor_spike"]
+    assert all(r["accepted"] is False for r in out.diag_rows)
+    assert all(r["anchor_spike_ratio"] > MAX_ANCHOR_SPIKE_RATIO for r in out.diag_rows)
+    assert out.occurrences == []
+    assert out.fits_by_key == {}
+    assert out.word_record is None
+
+
+def test_a_clean_slot_fit_reports_its_spike_ratio(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The same case without the needle passes and still carries the number, so
+    a run can read how much air the ACCEPTED fits had, not only the rejected."""
+    case, result = _synthetic_word([(0.06, 0.0), (-0.04, 0.03)])
+    monkeypatch.setattr(harvest_mod, "derive_word", lambda c: result)
+    out = harvest_case(case, HarvestOptions(path="slot", rmse_max=3.0))
+
+    assert [r["gate"] for r in out.diag_rows] == ["ok", "ok"]
+    assert all(1.0 <= r["anchor_spike_ratio"] <= MAX_ANCHOR_SPIKE_RATIO for r in out.diag_rows)
+    assert len(out.occurrences) == 2
 
 
 # --------------------------------------------------------------- run cutting
