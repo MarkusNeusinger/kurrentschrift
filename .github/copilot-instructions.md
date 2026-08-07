@@ -302,6 +302,13 @@ kurrentschrift/
 │                     #   rendering; only base-variant aggregates feed it (never variant 100
 │                     #   itself), missing chart row / anchor-count mismatch is reported as
 │                     #   skipped, each applied key reports its pre-write laufform_dev_xh.
+│                     #   It ENFORCES the occurrence floor too (core.aggregate.
+│                     #   LAUFFORM_MIN_OCCURRENCES = 3 — where a per-anchor median first
+│                     #   outvotes one bad anchor; at n=2 it is their mean, so one blown-up
+│                     #   fit reaches the writing path at half amplitude — the capital S's
+│                     #   spike): thinner aggregates are skipped as below_min_occurrences
+│                     #   with their count however the request named them, ?min_occurrences=
+│                     #   lowers it deliberately, and the dialog's LOW_N only mirrors it.
 │                     #   The SAME module carries the pair twin (Stufenplan H2): admin-gated
 │                     #   GET /hands/{id}/pair-aggregates + POST …/rebuild?min_n=1 — condenses a
 │                     #   hand's pair_instances across sources into the own additive table

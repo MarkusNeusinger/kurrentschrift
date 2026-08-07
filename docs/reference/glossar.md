@@ -56,7 +56,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spitzfeder §1 · `stage` (work_items) §5 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenlücke §3 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
-- **V** — Variante §2 · Vereinfachungs-Gate §5 · Vereinigungsfenster §3 · Verworfen §5 · Vorlage §2
+- **V** — Variante §2 · Vereinfachungs-Gate §5 · Vereinigungsfenster §3 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2
 - **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Editor §5 · Wort-Trace §2
 - **X** — x-Höhe (`xh`) §1
 - **Z** — Zelle einsetzen §5 · Zwei-Drittel-Gesetz §6
@@ -260,6 +260,19 @@ Rendering.
 `(glyph_key, variant)`: Median-Anker (= die Laufform-Quelle), MAD-Hülle,
 gepoolte Kennzahlen, `n_instances`. Tabelle `aggregates`, Rechenkern
 `core/aggregate.py`, Neuaufbau über `POST /hands/{id}/aggregates/rebuild`.
+
+**Vorkommensschranke** *(`LAUFFORM_MIN_OCCURRENCES` = 3)* — die Mindestzahl
+an Vorkommen, aus denen ein Median in den **Schreibpfad** übernommen werden
+darf. Keine Geschmacksgrenze, sondern die Stelle, ab der der Median
+überhaupt arbeitet: bei n = 2 ist er das *Mittel* der beiden, ein einzelner
+ausgerissener Fit-Anker landet also mit halber Amplitude in der
+geschriebenen Form — genau so bekam das Sütterlin-`S` seinen Zacken oben
+rechts. `apply-laufform` erzwingt die Schranke serverseitig (Skip-Grund
+`below_min_occurrences`, absenkbar über `?min_occurrences=`); das *Sehen*
+eines dünnen Medians bleibt erlaubt, dafür steht die Aggregat-Schranke
+`min_n` getrennt daneben (Standard 1, Issue #273). Doktrin wie beim
+**Auftragskorb-Protokoll**: eine Regel, die die API *durchsetzt*, statt sie
+einem Client zu glauben. Spiegel im SPA: `LOW_N` in `laufformPreview.ts`.
 
 **Paar-Aggregat** *(pair_aggregates)* — dasselbe eine Ebene höher, je
 `(hand, left_key, right_key)`: Median-Versatz und per-Punkt-Median der

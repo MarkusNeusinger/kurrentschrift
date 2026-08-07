@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { AggregateOut } from '@/lib/api';
 
-import { LOW_N, defaultSelection, isLowN, previewOf, willChange } from './laufformPreview';
+import { LOW_N, defaultSelection, isLowN, minOccurrencesFor, previewOf, willChange } from './laufformPreview';
 
 // Only the fields the preview reads; the rest of AggregateOut is irrelevant
 // here and would only make the cases harder to read.
@@ -60,6 +60,29 @@ describe('low-n marking and the proposed selection', () => {
     const rows = previewOf([agg({ glyph_key: 'A', n_instances: 1 }), agg({ glyph_key: 'B', n_instances: 2 })]);
     expect(defaultSelection(rows)).toEqual([]);
     expect(rows).toHaveLength(2);
+  });
+});
+
+describe('minOccurrencesFor', () => {
+  const rows = previewOf([
+    agg({ glyph_key: 'n', n_instances: 12 }),
+    agg({ glyph_key: 'S', n_instances: 2 }),
+    agg({ glyph_key: 'A', n_instances: 1 }),
+  ]);
+
+  it('sends no floor for an ordinary run — the endpoint keeps its own', () => {
+    expect(minOccurrencesFor(rows, new Set(['n']))).toBeUndefined();
+    expect(minOccurrencesFor(rows, new Set())).toBeUndefined();
+  });
+
+  it('lowers the floor to the thinnest ticked row, so the request states the intent', () => {
+    expect(minOccurrencesFor(rows, new Set(['n', 'S']))).toBe(2);
+    expect(minOccurrencesFor(rows, new Set(['S', 'A']))).toBe(1);
+  });
+
+  it('never goes below the endpoint’s ge=1', () => {
+    const zero = previewOf([agg({ glyph_key: 'Z', n_instances: 0 })]);
+    expect(minOccurrencesFor(zero, new Set(['Z']))).toBe(1);
   });
 });
 

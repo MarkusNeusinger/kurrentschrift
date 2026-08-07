@@ -207,7 +207,13 @@ export const rebuildPairAggregates = (handId: string): Promise<PairAggregateRebu
 // parameter). Omitted, the endpoint writes every stored aggregate — the
 // pre-#273 behaviour; the dialog always sends its selection explicitly, so the
 // request says the same thing the checkboxes did.
-export const applyLaufform = (handId: string, glyphKeys?: string[]): Promise<AggregateApplyOut> => {
+export const applyLaufform = (
+  handId: string,
+  glyphKeys?: string[],
+  // Below the endpoint's own floor only on purpose: omitted, the server keeps
+  // its LAUFFORM_MIN_OCCURRENCES and reports thin aggregates as skips.
+  minOccurrences?: number,
+): Promise<AggregateApplyOut> => {
   const qs = new URLSearchParams();
   // An EMPTY selection must not fall back to "all": no parameter at all is how
   // the wire says "every key", so an empty array sends one empty value instead
@@ -216,6 +222,7 @@ export const applyLaufform = (handId: string, glyphKeys?: string[]): Promise<Agg
   // every other caller.)
   if (glyphKeys && glyphKeys.length === 0) qs.append('glyph_keys', '');
   for (const key of glyphKeys ?? []) qs.append('glyph_keys', key);
+  if (minOccurrences !== undefined) qs.set('min_occurrences', String(minOccurrences));
   const s = qs.toString();
   return apiFetch(hnd(handId, `/aggregates/apply-laufform${s ? `?${s}` : ''}`), { method: 'POST' }).then(
     asJson<AggregateApplyOut>,

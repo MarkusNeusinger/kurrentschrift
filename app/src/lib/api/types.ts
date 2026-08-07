@@ -307,6 +307,9 @@ export interface AggregateApplySkip {
   glyph_key: string;
   variant: number;
   reason: string;
+  // Filled for `below_min_occurrences`, where the count IS the reason; null for
+  // the reasons no number took part in.
+  n_instances?: number | null;
 }
 
 // Result of POST /hands/{hand_id}/aggregates/apply-laufform — the ONE step that
