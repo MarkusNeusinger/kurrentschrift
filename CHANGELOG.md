@@ -16,8 +16,8 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 - **Documented the `aug07` write round and its new wordbench baseline**
   (`qualitaetsmetrik.md`): 23 letter resamples under the sharpened
-  verticalisation tolerance (oe and U deliberately held back), apply-laufform
-  on all 20 stored variant-100 keys, 96 word traces re-harvested with the
+  verticalisation tolerance (`oe` and `U` deliberately held back),
+  `apply-laufform` on all 20 stored variant-100 keys, 96 word traces re-harvested with the
   restart-capital pen lift. Headline words 0.110392 / pairs 0.165678 — the
   pair regression sits in the dz/dk drills, whose resampled d now carries its
   chart cell's gently curved back (chart truth over drill similarity). The

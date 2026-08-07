@@ -1577,15 +1577,15 @@ Schritt.
 
 **Schrieb `aug07`** (Freigabe des Eigentümers, in-session, nach Deploy):
 
-- **23 Resamples** (S sofort; danach Y d M A O H V y Oe N Ae X W G x Q z
-  R s P D Ue) — jede Zeile vorher LOKAL abgeleitet und als Overlay über
-  der Chartzelle begutachtet, Server-Scores 23/23 bit-exakt zur lokalen
-  Ableitung. Bewusst NICHT geschrieben: `oe` (der zweite Umlautstrich
-  deckt objektiv schlechter, coverage 0,170 → 0,231) und `U` (Δmax
-  0,001, kein Effekt). `Y` trotz Score-Einbruch geschrieben — die Form
-  liegt sichtbar mittiger in der Tinte, der Einbruch ist der bekannte
-  Collinearity-Folgepunkt.
-- **apply-laufform** auf die 20 bestehenden Variante-100-Schlüssel
+- **23 Resamples** (`S` sofort; danach `Y d M A O H V y Oe N Ae X W G x
+  Q z R s P D Ue`) — jede Zeile vorher LOKAL abgeleitet und als Overlay
+  über der Chartzelle begutachtet, Server-Scores 23/23 bit-exakt zur
+  lokalen Ableitung. Bewusst NICHT geschrieben: `oe` (der zweite
+  Umlautstrich deckt objektiv schlechter, coverage 0,170 → 0,231) und
+  `U` (Δmax 0,001, kein Effekt). `Y` trotz Score-Einbruch geschrieben —
+  die Form liegt sichtbar mittiger in der Tinte, der Einbruch ist der
+  bekannte Collinearity-Folgepunkt.
+- **`apply-laufform`** auf die 20 bestehenden Variante-100-Schlüssel
   (explizite `glyph_keys`, keine Neuanlagen), 0 übersprungen.
 - **96 Wortspuren** neu geerntet (Chain-Pfad, words+pairs) und als
   Upsert OHNE `replace` geschrieben (0 gelöscht) — mit der neuen
