@@ -69,6 +69,7 @@ from scipy.spatial import cKDTree
 from core.chart import crop_with_mask, load_chart_grayscale
 from core.extract import binarize_adaptive, skeleton_and_width
 from core.geometry import (
+    VERTICAL_STRAIGHT_TOL,
     acute_angle_between,
     arc_length,
     detect_crossing_passages,
@@ -582,7 +583,11 @@ def _smooth_snapped_strokes(strokes: list[np.ndarray], unit_px: float) -> list[n
 # and the run stays connected; far parts of arches/loops are untouched.
 VERTICAL_ANGLE_DEG = 15.0  # max angle from vertical for a run to count as a downstroke
 VERTICAL_MIN_LEN_UNITS = 0.45  # min run length (x-height units) to verticalise
-VERTICAL_STRAIGHT_TOL = 0.10  # max bow (fraction of length) — a curve fails and stays round
+# Straightness gate: max bow (fraction of run length) — a curve fails and stays
+# round. THE shared constant with the metric's `detect_vertical_runs` (imported
+# from core.geometry, calibration note there): 0.035 keeps every true Gleichzug
+# stem verticalised and stops flattening the large capitals' oval flanks
+# (Korb #5, the S bowl's fillet corners).
 VERTICAL_EASE_UNITS = 0.20  # raised-cosine fillet length (x-height units) into the curve
 VERTICAL_INSET_UNITS = 0.12  # shrink the perfectly-vertical core by this per end (more curve at the ends)
 # A within-stroke corner (Umkehrpunkt) within this much arc (x-height units)

@@ -108,6 +108,20 @@ def discrete_curvature(pts: np.ndarray, unit_px: float) -> np.ndarray:
     return kappa
 
 
+# Straightness tolerance of the downstroke classification — THE shared constant
+# of the verticalisation pair (the derivation's `_verticalize_downstrokes` and
+# the metric's `detect_vertical_runs` mirror each other by design; both import
+# this so they cannot drift apart). Max bow as a fraction of the run's chord.
+# Calibrated on all 61 authored Sütterlin-1922 letters (Korb #5, the flattened
+# S bowl): genuine Gleichzug downstrokes bow ≤ 3.0 % (b 1.8, f 2.6, k 2.9,
+# longs 0.7), the gently curved flanks of the large oval capitals bow ≥ 3.6 %
+# (S 5.8/6.7, O 5.6, A 5.1, M 5.8, d's round back 5.2) — the old 0.10 swallowed
+# them all and pressed the S bowl flat, with fillet corners at the run ends.
+# 0.035 sits in the measured gap: everything the school norm writes straight
+# stays verticalised, a curved bowl side stays a curve.
+VERTICAL_STRAIGHT_TOL = 0.035
+
+
 def run_is_straight_residual(pts: np.ndarray) -> float:
     """Max perpendicular deviation from the chord, as a fraction of chord length.
 
@@ -175,7 +189,7 @@ def detect_vertical_runs(
     *,
     angle_deg: float = 15.0,
     min_len_units: float = 0.45,
-    straight_tol: float = 0.10,
+    straight_tol: float = VERTICAL_STRAIGHT_TOL,
 ) -> list[tuple[int, int]]:
     """Maximal near-vertical, straight, long-enough runs on the rendered centerline.
 

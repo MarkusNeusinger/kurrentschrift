@@ -62,6 +62,7 @@ from scipy.ndimage import distance_transform_edt, gaussian_filter1d
 from core.chart import crop_with_mask, load_chart_grayscale
 from core.extract import binarize_adaptive, skeleton_and_width
 from core.geometry import (
+    VERTICAL_STRAIGHT_TOL,
     acute_angle_between,
     arc_length,
     bilinear,
@@ -107,7 +108,9 @@ GATE_EXPONENT = 0.5  # G**0.5: the gate must be decent, then naturalness drives 
 # --- feature-detection thresholds (mirror core.suetterlin generation) ---
 VERTICAL_ANGLE_DEG = 15.0
 VERTICAL_MIN_LEN_UNITS = 0.45
-VERTICAL_STRAIGHT_TOL = 0.10
+# VERTICAL_STRAIGHT_TOL is imported from core.geometry — the ONE constant the
+# derivation and this metric share, so the pair cannot drift (see the
+# calibration note at its definition).
 CORNER_WINDOW_UNITS = 0.12  # = core.pipeline.CORNER_WINDOW_UNITS
 CROSS_WINDOW_UNITS = 0.35  # arc each side of a crossing used to fit the through-line
 CROSS_STRAIGHT_TOL = 0.12  # an approach bowed more than this is a curved loop, not a through-line

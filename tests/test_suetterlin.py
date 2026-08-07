@@ -316,6 +316,21 @@ def test_verticalize_leaves_a_curve_round():
     assert np.allclose(out, anchors, atol=1e-6)
 
 
+def test_verticalize_leaves_a_gently_bowed_oval_flank_round():
+    # The Korb-#5 case: a large capital's bowl flank passes near-vertical for
+    # over an x-height while bowing only ~5% of its chord (measured S 5.8/6.7%).
+    # A curve, not a downstroke — it must not be pressed flat with fillet
+    # corners at the run ends.
+    unit_px = 60.0
+    n = 80
+    ys = 100.0 + np.linspace(0.0, 1.2 * unit_px, n)
+    sag = 0.05 * 1.2 * unit_px
+    xs = 200.0 + sag * np.sin(np.pi * (ys - ys[0]) / (1.2 * unit_px))
+    anchors = np.column_stack([xs, ys])
+    out = _verticalize_downstrokes(anchors, [0], unit_px)
+    assert np.allclose(out, anchors, atol=1e-6)
+
+
 def test_smoothing_preserves_endpoints_and_corners():
     unit_px = 50.0
     rng = np.random.default_rng(2)

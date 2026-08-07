@@ -295,6 +295,31 @@ def test_assemble_drops_an_unfitted_letter_and_its_connectors() -> None:
     assert strokes[1][0] == pytest.approx([3.0, 0.4], abs=1e-3)
 
 
+def test_assemble_lifts_after_a_restart_capital() -> None:
+    """Korb #5 (Säbel S→ä): after a restart-class capital the writer sets the
+    pen down fresh near the Grundlinie. The run must end at the capital's body
+    and the connector's retrace prefix (its descent to the lowest point) never
+    enters the trace — only the fresh Ansatz rising into the next letter."""
+    body_s = [(0.2, 0.2), (0.8, 1.6), (1.4, 1.8)]
+    conn = [(1.4, 1.8), (1.45, 1.0), (1.5, 0.05), (1.7, 0.25), (1.9, 0.5)]
+    body_a = [(1.9, 0.5), (2.4, 0.6)]
+    entries = [
+        _entry("letter", 0, body_s, slot=0, key="S", stroke_index=0),
+        _entry("connector", 1, conn),
+        _entry("letter", 2, body_a, slot=1, key="ae", stroke_index=0),
+    ]
+    strokes = assemble_word_strokes(entries, traced_slots={0, 1}, xh=XH, registration=REGISTRATION, restart_slots={0})
+    assert len(strokes) == 2
+    cap, ansatz = strokes
+    assert cap[-1] == pytest.approx([1.4, 1.8], abs=1e-3)  # ends at the capital's ductus end
+    assert ansatz[0] == pytest.approx([1.5, 0.05], abs=1e-3)  # fresh Ansatz at the Grundlinie turn
+    assert ansatz[-1] == pytest.approx([2.4, 0.6], abs=1e-3)  # welded into the next letter
+
+    # Without the restart classification the same geometry stays one pen run.
+    welded = assemble_word_strokes(entries, traced_slots={0, 1}, xh=XH, registration=REGISTRATION)
+    assert len(welded) == 1
+
+
 def test_is_diacritic_mirrors_the_chain_rule() -> None:
     """First stroke never, a later stroke floating entirely above the midband
     always (`chain._letter_cut_anchors`' rule on a polyline)."""

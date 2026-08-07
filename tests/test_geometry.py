@@ -190,6 +190,23 @@ def test_detect_vertical_runs_respects_pen_lifts():
     assert runs == [(0, 19), (20, 39)]
 
 
+def test_detect_vertical_runs_rejects_a_gently_bowed_oval_flank():
+    # A near-vertical arc bowing ~5% of its chord — the flank of a large oval
+    # (the Korb-#5 S bowl) — is a curve, not a downstroke. The old 10%
+    # tolerance swallowed it; the shared 0.035 rejects it.
+    sy = np.linspace(0.0, 60.0, 30)
+    sx = 5.0 + 3.0 * np.sin(np.pi * sy / 60.0)  # sagitta 3px on a 60px chord
+    assert detect_vertical_runs(sx, sy, None, unit_px=100.0) == []
+
+
+def test_detect_vertical_runs_keeps_a_barely_bowed_long_stem():
+    # A real Gleichzug stem bows ~1.5% (the measured b/f/longs population) —
+    # still a downstroke under the tightened tolerance.
+    sy = np.linspace(0.0, 60.0, 30)
+    sx = 5.0 + 0.9 * np.sin(np.pi * sy / 60.0)
+    assert detect_vertical_runs(sx, sy, None, unit_px=100.0) == [(0, 29)]
+
+
 # ------------------------------------------------------- detect_crossing_passages
 
 

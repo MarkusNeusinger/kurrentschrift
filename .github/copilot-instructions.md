@@ -65,6 +65,11 @@ agent working in this repo:
   normal review; edit through the editor. When a command legitimately
   rewrites a tracked file (formatter, codegen), re-read it before the next
   edit.
+- **Manual author tasks are tracked in the owner's Todoist** (project
+  "kurrentschrift", owner directive 2026-08-07): an agent that identifies a
+  step only the human can do (wizard re-trace, rendering-affecting DB apply,
+  bulk re-derive decision) files it there when it has Todoist access —
+  otherwise it names the concrete step prominently in its summary.
 - **The perfect result, not the fast one** (owner directive, 2026-08-05):
   when a cheap symptomatic fix and a correct structural fix compete, take
   the structural one — fix the model/objective/rule, never mute the alarm;
