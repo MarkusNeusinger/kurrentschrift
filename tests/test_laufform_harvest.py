@@ -297,9 +297,9 @@ def test_assemble_drops_an_unfitted_letter_and_its_connectors() -> None:
 
 def test_assemble_lifts_after_a_restart_capital() -> None:
     """Korb #5 (Säbel S→ä): after a restart-class capital the writer sets the
-    pen down fresh near the Grundlinie. The run must end at the capital's body
+    pen down fresh near the baseline (Grundlinie). The run must end at the capital's body
     and the connector's retrace prefix (its descent to the lowest point) never
-    enters the trace — only the fresh Ansatz rising into the next letter."""
+    enters the trace — only the fresh set-down (Ansatz) rising into the next letter."""
     body_s = [(0.2, 0.2), (0.8, 1.6), (1.4, 1.8)]
     conn = [(1.4, 1.8), (1.45, 1.0), (1.5, 0.05), (1.7, 0.25), (1.9, 0.5)]
     body_a = [(1.9, 0.5), (2.4, 0.6)]
@@ -312,7 +312,7 @@ def test_assemble_lifts_after_a_restart_capital() -> None:
     assert len(strokes) == 2
     cap, ansatz = strokes
     assert cap[-1] == pytest.approx([1.4, 1.8], abs=1e-3)  # ends at the capital's ductus end
-    assert ansatz[0] == pytest.approx([1.5, 0.05], abs=1e-3)  # fresh Ansatz at the Grundlinie turn
+    assert ansatz[0] == pytest.approx([1.5, 0.05], abs=1e-3)  # the fresh set-down at the baseline turn
     assert ansatz[-1] == pytest.approx([2.4, 0.6], abs=1e-3)  # welded into the next letter
 
     # Without the restart classification the same geometry stays one pen run.

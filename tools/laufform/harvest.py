@@ -262,11 +262,11 @@ def assemble_word_strokes(
 
     ``restart_slots`` (Korb #5, „Säbel" S→ä): slot indices of the restart-class
     capitals (CAP_RESTART_BASES). The writer LIFTS after such a capital and
-    sets down fresh near the Grundlinie — the composed connector's retrace
+    sets down fresh near the baseline (Grundlinie) — the composed connector's retrace
     prefix (ductus end → working exit, duplicating the capital's own ink) is a
     render construct, not a pen movement the trace may claim. The run ends at
     the capital's body; the connector keeps only its piece from the lowest
-    point onward (the fresh Ansatz rising into the next letter).
+    point onward (the fresh set-down, Ansatz, rising into the next letter).
 
     `traced_slots` is every slot the chain actually SOLVED — deliberately not
     the gate's accepted set. The gate decides what becomes a measurement, not
@@ -322,8 +322,8 @@ def assemble_word_strokes(
                 continue
             if left is not None and letter_slot[left] in restart_slots:
                 # Pen lift after a restart capital: cut the retrace prefix
-                # (crop px, y grows downward — argmax y is the Grundlinie turn)
-                # and start the fresh Ansatz as its own stroke.
+                # (crop px, y grows downward — argmax y is the baseline turn)
+                # and start the fresh set-down as its own stroke.
                 flush()
                 pts = pts[int(np.argmax(pts[:, 1])) :]
                 if len(pts) >= 2:
