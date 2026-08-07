@@ -37,6 +37,27 @@ _GEOMETRY_DECIMALS = 4
 _STATS_DECIMALS = 3
 
 
+# The fewest occurrences a per-anchor median may be PROMOTED INTO THE WRITING
+# PATH from — the floor `apply-laufform` enforces (`LOW_N` in the SPA's
+# `laufformPreview.ts` mirrors it).
+#
+# Three is not a taste threshold, it is where the median starts working: at
+# n = 2 `np.median` returns the MEAN of the two, so a single blown-up fitted
+# anchor lands in the result at half its amplitude, and nothing in the chain
+# pulls it back — neighbouring anchors are medianed independently. From three
+# occurrences on, one bad anchor is outvoted.
+#
+# The failure is not hypothetical. The Sütterlin capital S was derived from two
+# occurrences whose anchor 113 sits 0.357 units apart (its neighbours: 0.01 –
+# 0.03); the half of that difference showed up as a visible spike off the top
+# right of every written S, while the occurrence that carried it passed its own
+# per-glyph fit QC at 1.261 px RMSE. Seeing such a median is still measurement —
+# `aggregate_instances` keeps its own, separate `min_n` gate at the caller's
+# discretion (the rebuild endpoint deliberately passes 1, issue #273) — but
+# writing it is rendering.
+LAUFFORM_MIN_OCCURRENCES = 3
+
+
 def _median_and_mad(stack: np.ndarray) -> tuple[list[list[float]], list[list[float]]]:
     """Per-anchor, per-axis median and median absolute deviation.
 

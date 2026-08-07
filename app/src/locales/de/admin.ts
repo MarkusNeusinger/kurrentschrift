@@ -89,9 +89,10 @@ export const admin = {
     previewSummary: '{{total}} Buchstaben mit Aggregat, davon {{changing}} mit Änderung.',
     previewSelected: '{{selected}} ausgewählt.',
     // Says both halves of the doctrine: thin medians are proposed unchecked,
-    // and nothing forbids them — the decision stays at the person's table.
+    // and a deliberate tick still carries — only now the request says so, and
+    // an unticked thin row is refused by the endpoint rather than by this list.
     previewSelectionHint:
-      'Vorgeschlagen sind die Buchstaben mit mindestens {{count}} Vorkommen. Dünner belegte lassen sich ebenso übernehmen — sie sind nur zuerst abgewählt.',
+      'Vorgeschlagen sind die Buchstaben mit mindestens {{count}} Vorkommen — darunter kann der Median einen einzelnen Ausreißer nicht mehr überstimmen. Dünner belegte lassen sich weiterhin übernehmen, aber nur ausdrücklich angehakt.',
     nothingToApply: 'Keine übernehmbaren Aggregate — erst die Statistik neu aufbauen.',
     selectAll: 'Alle auswählen',
     selectRow: '{{key}} auswählen',
@@ -123,6 +124,7 @@ export const admin = {
       non_base_variant: 'keine Basis-Variante',
       no_base_template: 'keine Tafelzeile',
       anchor_count: 'Ankerzahl weicht ab',
+      below_min_occurrences: 'zu wenige Vorkommen',
     },
   },
   // The Übergänge view: the generated join first, the measurement beside it,

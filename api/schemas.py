@@ -427,12 +427,19 @@ class AggregateApplySkip(BaseModel):
 
     Reasons: `laufform_variant` / `non_base_variant` (only base-variant
     aggregates may feed the derived row — never itself), `no_base_template`
-    (the chart ductus prior is missing) and `anchor_count` (aggregate and chart
-    row disagree, so the topology would not carry over)."""
+    (the chart ductus prior is missing), `anchor_count` (aggregate and chart
+    row disagree, so the topology would not carry over) and
+    `below_min_occurrences` (fewer occurrences than the median needs to reject
+    a bad anchor — see `core.aggregate.LAUFFORM_MIN_OCCURRENCES`).
+
+    `n_instances` is filled for `below_min_occurrences`, where the count IS the
+    reason; the other reasons leave it null rather than repeating a number that
+    played no part in the decision."""
 
     glyph_key: str
     variant: int
     reason: str
+    n_instances: int | None = None
 
 
 class AggregateApplyOut(BaseModel):

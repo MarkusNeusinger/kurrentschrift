@@ -379,11 +379,12 @@ async def test_apply_laufform_skips_and_reports_underivable_keys(api: Harness):
     res = await api.client.request("POST", "/hands/test-hand/aggregates/apply-laufform", headers=api.admin_headers())
     out = res.json()
     assert [k["glyph_key"] for k in out["applied"]] == ["n"]
+    # `n_instances` stays null for every reason no count took part in.
     assert out["skipped"] == [
-        {"glyph_key": "e", "variant": 0, "reason": "anchor_count"},
-        {"glyph_key": "m", "variant": 0, "reason": "no_base_template"},
-        {"glyph_key": "n", "variant": 1, "reason": "non_base_variant"},
-        {"glyph_key": "n", "variant": 100, "reason": "laufform_variant"},
+        {"glyph_key": "e", "variant": 0, "reason": "anchor_count", "n_instances": None},
+        {"glyph_key": "m", "variant": 0, "reason": "no_base_template", "n_instances": None},
+        {"glyph_key": "n", "variant": 1, "reason": "non_base_variant", "n_instances": None},
+        {"glyph_key": "n", "variant": 100, "reason": "laufform_variant", "n_instances": None},
     ]
     assert [r["glyph_key"] for r in await _stored_laufform(api, style_id)] == ["n"]
 
@@ -413,15 +414,104 @@ async def test_apply_laufform_writes_only_the_selected_keys(api: Harness):
     assert out["skipped"] == []
     assert [r["glyph_key"] for r in await _stored_laufform(api, style_id)] == ["n"]
 
-    # The thin key stays applicable — the human decides, nothing forbids it.
+    # The thin key stays applicable — but naming it is no longer enough: the
+    # floor is the endpoint's own judgement, so the request has to lower it.
     res = await api.client.request(
-        "POST", "/hands/test-hand/aggregates/apply-laufform", params={"glyph_keys": ["m"]}, headers=api.admin_headers()
+        "POST",
+        "/hands/test-hand/aggregates/apply-laufform",
+        params={"glyph_keys": ["m"], "min_occurrences": 1},
+        headers=api.admin_headers(),
     )
     out = res.json()
     assert [k["glyph_key"] for k in out["applied"]] == ["m"]
     assert out["applied"][0]["n_instances"] == 1
     assert out["excluded"] == ["n"]
     assert sorted(r["glyph_key"] for r in await _stored_laufform(api, style_id)) == ["m", "n"]
+
+
+async def test_apply_laufform_refuses_a_median_too_thin_to_outvote_an_outlier(api: Harness):
+    """The floor the dialog's proposed selection alone could not hold.
+
+    A re-apply names the keys that ALREADY have a Laufform row, so a key that
+    once earned one from a word harvest kept being re-derived from however thin
+    an aggregate it had since acquired — which is how the Sütterlin capital S
+    came to be written from two occurrences. Naming a key is a request; the
+    floor is the endpoint's judgement, and it holds against a bare call that
+    names nothing at all."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    await api.seed_template(style_id, source_id, "m", "m")
+    # 'n' is well attested; 'm' has the two occurrences whose "median" is their
+    # mean — one bad anchor would land in the writing path at half amplitude.
+    await _seed_occurrences(api, source_id, [0.0, 0.02, 0.06, 0.08])
+    await _seed_occurrences(api, source_id, [0.0, 0.5], glyph_key="m", glyph="m")
+    await api.client.request("POST", "/hands/test-hand/aggregates/rebuild", headers=api.admin_headers())
+
+    # No selection at all — the shape of the scripted round that wrote the S.
+    res = await api.client.request("POST", "/hands/test-hand/aggregates/apply-laufform", headers=api.admin_headers())
+    assert res.status == 200, res.body
+    out = res.json()
+    assert [k["glyph_key"] for k in out["applied"]] == ["n"]
+    # The count IS the reason, so the report carries it.
+    assert out["skipped"] == [{"glyph_key": "m", "variant": 0, "reason": "below_min_occurrences", "n_instances": 2}]
+    assert out["excluded"] == []
+    assert [r["glyph_key"] for r in await _stored_laufform(api, style_id)] == ["n"]
+
+    # Naming the thin key does not lift the floor either — it is not the
+    # request's call.
+    res = await api.client.request(
+        "POST", "/hands/test-hand/aggregates/apply-laufform", params={"glyph_keys": ["m"]}, headers=api.admin_headers()
+    )
+    out = res.json()
+    assert out["applied"] == []
+    assert [s["reason"] for s in out["skipped"]] == ["below_min_occurrences"]
+    assert [r["glyph_key"] for r in await _stored_laufform(api, style_id)] == ["n"]
+
+    # Lowering it explicitly does, and then the request itself says so.
+    res = await api.client.request(
+        "POST", "/hands/test-hand/aggregates/apply-laufform", params={"min_occurrences": 2}, headers=api.admin_headers()
+    )
+    out = res.json()
+    assert sorted(k["glyph_key"] for k in out["applied"]) == ["m", "n"]
+    assert out["skipped"] == []
+    assert sorted(r["glyph_key"] for r in await _stored_laufform(api, style_id)) == ["m", "n"]
+
+
+async def test_apply_laufform_floor_never_relabels_an_underivable_key(api: Harness):
+    """A thin aggregate that could not feed the Laufform ANYWAY keeps the more
+    specific reason.
+
+    The floor is the LAST question in the triage — after the variant AND the
+    topology ones — because every other reason blocks the derivation whatever
+    the count is, and the report exists to say what to do next: "author the
+    chart row" and "the anchor counts disagree" are actionable, "harvest more
+    occurrences" only becomes true once those are answered."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    await api.seed_template(style_id, source_id, "e", "e")
+    await _seed_occurrences(api, source_id, [0.0, 0.02, 0.06, 0.08])
+    # Every underivable case ALSO thin, so each one's reason is a real choice:
+    # two non-base variants, a key with no chart row ('m'), and one whose
+    # occurrences carry a deviating anchor count ('e').
+    items = [_instance_item(variant=v, x0=400 + 10 * v, x1=430 + 10 * v) for v in (1, LAUFFORM_VARIANT)]
+    items += [_instance_item(glyph_key="m", glyph="m", x0=500, x1=530)]
+    short = [[0.0, 0.0], [0.1, 0.5], [0.2, 0.5], [0.3, 0.0]]
+    items += [_instance_item(glyph_key="e", glyph="e", anchors=short, x0=600, x1=630)]
+    res = await api.client.request(
+        "PUT", f"/sources/{source_id}/instances", json_body=_batch(items), headers=api.admin_headers()
+    )
+    assert res.status == 200, res.body
+    await api.client.request("POST", "/hands/test-hand/aggregates/rebuild", headers=api.admin_headers())
+
+    res = await api.client.request("POST", "/hands/test-hand/aggregates/apply-laufform", headers=api.admin_headers())
+    out = res.json()
+    assert [k["glyph_key"] for k in out["applied"]] == ["n"]
+    assert out["skipped"] == [
+        {"glyph_key": "e", "variant": 0, "reason": "anchor_count", "n_instances": None},
+        {"glyph_key": "m", "variant": 0, "reason": "no_base_template", "n_instances": None},
+        {"glyph_key": "n", "variant": 1, "reason": "non_base_variant", "n_instances": None},
+        {"glyph_key": "n", "variant": 100, "reason": "laufform_variant", "n_instances": None},
+    ]
 
 
 async def test_apply_laufform_selection_of_nothing_writes_nothing(api: Harness):
@@ -482,7 +572,7 @@ async def test_apply_laufform_selection_precedes_the_variant_triage(api: Harness
     assert [k["glyph_key"] for k in out["applied"]] == ["n"]
     # 'n' variant 1 was selected and is reported as underivable; 'm' was not
     # selected at all and is only excluded.
-    assert out["skipped"] == [{"glyph_key": "n", "variant": 1, "reason": "non_base_variant"}]
+    assert out["skipped"] == [{"glyph_key": "n", "variant": 1, "reason": "non_base_variant", "n_instances": None}]
     assert out["excluded"] == ["m"]
 
 

@@ -12,8 +12,50 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Changed
+
+- **Recorded a rejected experiment: a curvature regulariser on the M4 fit
+  (`qualitaetsmetrik.md` §7).** Chasing the capital S's spike one layer down
+  found its real cause — the two `S` occurrences are written almost
+  identically, and the difference is a single anchor the FIT parked in blank
+  paper, 12 px from the nearest ink and 9.3× the median step off its neighbour,
+  while 119 of 120 anchors sit on the line. Nothing in the objective can see a
+  lone outlier (`e_geo` is a mean over samples, the Tikhonov energy a mean over
+  anchors, `MAX_ANCHOR_DELTA` far too loose). A second-difference penalty on
+  the deformation field fixed the defect convincingly on every SHAPE measure —
+  spike median 3.29 → 1.25, occurrences above 8× 39 → 0, better in 245/245 and
+  worse in none, the aggregate median 41 % less faceted — but on ground truth,
+  the fitted centerline's distance to the measured ink, the mean got WORSE in
+  241 of 245 occurrences. A global tax to stop a local crime: it does remove
+  the needle (worst-case distance 0.61 → 0.45 xh) but drags the whole chain off
+  the stroke to do it. Reverted, with the lesson written down — shape-regularity
+  measures (spike, cross-occurrence agreement) all improve for any term that
+  pulls toward the prior, so they can never adjudicate alone; the next attempt
+  should be a targeted one-sided hinge on an anchor's ink distance, which costs
+  exactly zero for anchors that sit on ink.
+
 ### Fixed
 
+- **`apply-laufform` enforces the occurrence floor the dialog alone could not
+  hold — the capital S's spike.** The Sütterlin `S` is written from a
+  variant-100 row derived from exactly TWO occurrences (`trace_meta.laufform.
+  n_occurrences = 2`), and at n = 2 `np.median` returns the mean of the two: a
+  fit blow-up in the `Sprünge` occurrence — anchor 113 sitting 0.357 units from
+  its twin where the neighbours sit 0.01–0.03 apart, at an unremarkable 1.261 px
+  per-glyph RMSE — landed in the written form at half amplitude as a visible
+  spike off the top right, with the whole bowl 3.3× more faceted than the chart
+  row (mean turn 13.0° vs. 4.0°). The caution lived only in the SPA dialog's
+  proposed selection (`LOW_N = 3`), and a re-apply names the keys that ALREADY
+  have a Laufform row — so a key that once earned one from a word harvest kept
+  being re-derived from however thin an aggregate it had since acquired.
+  `POST …/aggregates/apply-laufform` now carries the floor itself
+  (`core.aggregate.LAUFFORM_MIN_OCCURRENCES = 3`, where the median starts being
+  able to outvote one bad anchor): a thinner aggregate is reported as
+  `below_min_occurrences` with its count and left alone, however it was named,
+  and `?min_occurrences=` lowers it for the human who means it — the same
+  enforce-don't-trust doctrine as the `work_items` protocol. The dialog keeps
+  proposing and keeps every row tickable; a deliberate tick now travels as the
+  lowered floor instead of as a check nobody ran.
 - **Wordbench fixture Laufform layer is byte-true to the stored rows (issue
   #311).** The admin single-template GET takes a `variant` query parameter, so
   the stored variant-100 (Laufform) rows are readable at all — and

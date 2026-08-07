@@ -48,7 +48,14 @@ import { useMemo, useState } from 'react';
 import { applyLaufform } from '@/lib/api';
 import type { AggregateApplyOut, AggregateOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
-import { LOW_N, defaultSelection, isLowN, previewOf, willChange } from '@/sections/admin/letters/laufformPreview';
+import {
+  LOW_N,
+  defaultSelection,
+  isLowN,
+  minOccurrencesFor,
+  previewOf,
+  willChange,
+} from '@/sections/admin/letters/laufformPreview';
 
 // The preview maths live in the pure sibling `laufformPreview.ts`.
 
@@ -90,10 +97,13 @@ export function LaufformApplyDialog({
   const run = () => {
     setBusy(true);
     setError(false);
-    // Always explicit: an empty selection never becomes "all" by omission.
+    // Always explicit: an empty selection never becomes "all" by omission, and
+    // a deliberately ticked thin row travels as a lowered floor rather than as
+    // a silent one — the endpoint refuses it otherwise.
     applyLaufform(
       handId,
       rows.filter((row) => selected.has(row.glyphKey)).map((row) => row.glyphKey),
+      minOccurrencesFor(rows, selected),
     )
       .then((out) => {
         setResult(out);
@@ -146,7 +156,12 @@ export function LaufformApplyDialog({
                       key={`${skip.glyph_key}:${skip.variant}`}
                       size="small"
                       variant="outlined"
-                      label={`${skip.glyph_key} · ${t.skipReason[skip.reason as keyof typeof t.skipReason] ?? skip.reason}`}
+                      // The occurrence count is the whole reason for a
+                      // `below_min_occurrences` skip, so it rides along; the
+                      // other reasons carry no number and print none.
+                      label={`${skip.glyph_key} · ${
+                        t.skipReason[skip.reason as keyof typeof t.skipReason] ?? skip.reason
+                      }${skip.n_instances == null ? '' : ` (${skip.n_instances})`}`}
                     />
                   ))}
                 </Box>

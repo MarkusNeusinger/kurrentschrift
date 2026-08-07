@@ -35,12 +35,17 @@ export function previewOf(aggregates: AggregateOut[]): Preview[] {
   );
 }
 
-// Below this many occurrences a median is one writing's idiosyncrasy as much as
-// a form model. Since the aggregate gate is `min_n = 1` (issue #273) such rows
-// EXIST — seeing them is measurement, nothing renders — so the caution moved
-// here, to the one step that renders: they are marked in the preview table and
-// start out unselected. Nothing forbids applying them; the human decides with
-// the number in front of them.
+// Below this many occurrences the per-anchor median stops being a form model:
+// at two occurrences it is their MEAN, so one blown-up fitted anchor lands in
+// the written form at half its amplitude (this is how the capital S got its
+// spike). Since the aggregate gate is `min_n = 1` (issue #273) such rows EXIST
+// — seeing them is measurement, nothing renders — so the caution belongs at the
+// one step that renders.
+//
+// MIRROR of `core.aggregate.LAUFFORM_MIN_OCCURRENCES`, which the endpoint now
+// ENFORCES: this list shapes the PROPOSAL, the server decides the write. Keep
+// the two numbers equal — a client that proposed below the server's floor would
+// promise writes that come back as `below_min_occurrences` skips.
 export const LOW_N = 3;
 
 export const isLowN = (row: Preview): boolean => row.nInstances < LOW_N;
@@ -49,6 +54,20 @@ export const isLowN = (row: Preview): boolean => row.nInstances < LOW_N;
 // A deliberate proposal, not a filter — every row stays selectable.
 export const defaultSelection = (rows: Preview[]): string[] =>
   rows.filter((row) => !isLowN(row)).map((row) => row.glyphKey);
+
+// The floor to send with a run, given what the human actually ticked.
+//
+// Undefined leaves the endpoint on its own default — the safe case, and the one
+// every ordinary run takes. A ticked thin row is the deliberate exception the
+// doctrine always allowed, and lowering the floor to that row's own count is
+// how the REQUEST states it: the intent is recorded on the wire instead of
+// being a check nobody ran. It never drops below 1 (the endpoint's `ge=1`), and
+// a tick on a well-attested row alone never lowers anything.
+export const minOccurrencesFor = (rows: Preview[], selected: ReadonlySet<string>): number | undefined => {
+  const thin = rows.filter((row) => selected.has(row.glyphKey) && isLowN(row));
+  if (thin.length === 0) return undefined;
+  return Math.max(1, Math.min(...thin.map((row) => row.nInstances)));
+};
 
 // Would this row actually change what the engine writes?
 //
