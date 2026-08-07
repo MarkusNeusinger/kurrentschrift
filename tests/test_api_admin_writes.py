@@ -439,6 +439,46 @@ async def test_put_laufform_stores_variant_and_write_word_uses_it(api: Harness):
     assert res.status == 204
 
 
+async def test_get_template_serves_the_stored_variant(api: Harness):
+    """Issue #311 („read, don't rebuild"): the single-template GET takes a
+    `variant`, so the wordbench fixture layer can freeze the STORED Laufform
+    row verbatim instead of reconstructing it from the hand's aggregates.
+    The default stays the chart row, and an absent variant is a 404 that
+    names the variant it looked for."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    chart = [[0.0, 0.0], [0.05, 0.45], [0.12, 0.62], [0.25, 0.55], [0.32, 0.25], [0.35, 0.0]]
+    wider = [[x * 1.3, y] for x, y in chart]
+    res = await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/templates/n/laufform",
+        json_body={"anchors": wider, "n_occurrences": 9},
+        headers=api.admin_headers(),
+    )
+    assert res.status == 200
+
+    res = await api.client.request(
+        "GET", f"/sources/{source_id}/templates/n", params={"variant": LAUFFORM_VARIANT}, headers=api.admin_headers()
+    )
+    assert res.status == 200
+    out = res.json()
+    assert out["variant"] == LAUFFORM_VARIANT
+    assert out["anchors"] == wider
+    assert out["trace_meta"]["laufform"]["n_occurrences"] == 9
+
+    # Without the parameter the read stays exactly what it was: the chart row.
+    res = await api.client.request("GET", f"/sources/{source_id}/templates/n", headers=api.admin_headers())
+    assert res.status == 200
+    assert res.json()["variant"] == 0
+
+    # A variant the glyph does not have is a 404 that says which one.
+    res = await api.client.request(
+        "GET", f"/sources/{source_id}/templates/n", params={"variant": 7}, headers=api.admin_headers()
+    )
+    assert res.status == 404
+    assert "variant-7" in res.json()["detail"]
+
+
 async def test_authored_chart_variant_is_never_picked_up_as_laufform(api: Harness):
     """Regression for the jul31 incident: authored chart-form variants live at
     variant 1..n (Sütterlin Q/ü) — /write/word must NOT render them as running

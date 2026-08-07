@@ -1602,13 +1602,38 @@ entschieden (die Laufform der fließenden Wörter kommt ohnehin aus den
 Medianen; die Wörter verbesserten sich: Zügel −0,016, Sprünge −0,013,
 Soldaten −0,010).
 
-**Verifikations-Befund (offen):** Das `--verify`-Gate von
-`fetch_fixtures` läuft nach dieser Runde NICHT bit-exakt: 5 von 96
-Kompositionen weichen ≤ 0,065 xh ab (u-Breite via Fluent-Weitung). Die
-Fixture-Laufformen werden aus den Aggregat-JSONs LOKAL rekonstruiert,
-und mindestens ein Run liegt auf der Messerkante der neuen Toleranz
-(u-Laufform bow 0,034756 bei tol 0,035) — Schwellenvergleiche
-verstärken Wire-Rundung/Umgebungsrauschen zum Flip. Follow-up-Issue:
-Fixtures sollten die GESPEICHERTEN Variante-100-Zeilen lesen statt sie
-nachzubauen (fehlender Admin-Read), und/oder grenznahe Runs müssen
-deterministisch entschieden werden.
+**Verifikations-Befund (gelöst, Issue #311):** Das `--verify`-Gate von
+`fetch_fixtures` lief direkt nach dieser Runde NICHT bit-exakt: 5 von 96
+Kompositionen wichen ≤ 0,065 xh ab (u-Breite via Fluent-Weitung). Zwei
+Ursachen, beide behoben:
+
+1. **Nachbau statt Lesen.** Die Fixture-Laufformen wurden LOKAL aus den
+   Aggregat-JSONs über `build_laufform_canonical` rekonstruiert — ein
+   Nachbau, der an der HEUTIGEN Chartzeile hängt, während die
+   gespeicherte Variante-100-Zeile die Chartzeile ZUM APPLY-ZEITPUNKT
+   trägt; dazu lag mindestens ein Run auf der Messerkante der neuen
+   Toleranz (u-Laufform bow 0,034756 bei tol 0,035), wo ein
+   Schwellenvergleich Sub-1e-4-Rauschen zum diskreten Flip verstärkt.
+   Fix: Der Admin-Einzeltemplate-Read nimmt jetzt `?variant=`, und
+   `fetch_fixtures` liest die GESPEICHERTEN Variante-100-Zeilen
+   wortwörtlich (Manifest `laufform_precision: "stored"`) — dieselbe
+   Philosophie wie der `render-context`-Nib-Read: transportieren, nie
+   nachrechnen. Ein älteres Deployment ignoriert den Parameter, liefert
+   erkennbar die Variante-0-Zeile (`variant`-Feld der Antwort) und fällt
+   sauber auf den Nachbau zurück (`"reconstructed"`). Merkregel an der
+   Konstante (`core/geometry.py`): `VERTICAL_STRAIGHT_TOL` muss zu jedem
+   gemessenen Populationswert echten Abstand halten, und grenznahe
+   Klassifikationen werden gespeichert und transportiert, nie über
+   Umgebungen hinweg re-klassifiziert.
+2. **Ungebustetes Gate.** Das `aug04` dokumentierte CDN-Gotcha steckte
+   auch im Gate selbst: seine `/write`-Reads liefen über die
+   Cloudflare-Kante und konnten den Stand VOR der Schreibrunde
+   „verifizieren". Das Gate bustet jetzt jeden eigenen Read
+   (`_bust_token`) — Ground Truth ist der Origin, nie die Kante.
+
+Kontrollmessung nach dem Fix (gebustetes Gate, Rekonstruktions-Pfad, da
+das `?variant=`-Deploy noch ausstand): alle drei Roots **0 bad rows,
+12/12 Kompositionen bit-exakt** (worst shape 0, worst placement 0) —
+der aug07-Befund war zum Messzeitpunkt real, ist im heutigen DB-Stand
+aber konvergiert; mit dem Stored-Read ist die Schicht künftig per
+Konstruktion byte-treu statt per Glück.

@@ -168,14 +168,22 @@ async def list_template_quality(source: Source = Depends(require_source), db: As
 # and no public surface needs it — the public pages render from the /write
 # payloads, and the summary list above carries no geometry. The docstring
 # below stays short because it surfaces in the public OpenAPI docs.
+# `variant` makes the STORED derived rows readable too (issue #311): the
+# wordbench fixture layer froze a local reconstruction of the Laufform rows
+# before this existed, and a knife-edge classification turned that
+# rebuild-instead-of-read into a discrete render flip. Same philosophy as the
+# render-context nib read — transported, not re-derived.
 @router.get("/{glyph_key}", response_model=TemplateOut, dependencies=[Depends(require_admin)])
 async def get_template(
-    glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
+    glyph_key: str,
+    variant: int = Query(0, ge=0, le=999, description=f"template variant; {LAUFFORM_VARIANT} = the Laufform row"),
+    source: Source = Depends(require_source),
+    db: AsyncSession = Depends(require_db),
 ):
     """The full authored template (admin only)."""
-    template = await TemplateRepository(db).get(source.style_id, glyph_key)
+    template = await TemplateRepository(db).get(source.style_id, glyph_key, variant=variant)
     if template is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no canonical for {glyph_key!r}")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no variant-{variant} canonical for {glyph_key!r}")
     return _template_to_out(template)
 
 

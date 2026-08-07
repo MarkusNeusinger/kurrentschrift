@@ -357,7 +357,11 @@ tragen. Sein einziger Zweck: ein serviertes Payload **bit-genau** offline
 reproduzieren zu können (der Fixture-Nachbau, `fetch_fixtures.py`); das
 Manifest-Feld `nib_precision` (`"exact"` · `"4dp-readback"` · `"none"`)
 sagt, welche Nib-Quelle ein Fixture-Root bekam, und das Verify-Gate zieht
-seine Toleranz daraus. → write-api.md
+seine Toleranz daraus. Sein Laufform-Zwilling `laufform_precision`
+(`"stored"` · `"reconstructed"`) sagt, ob der Root die gespeicherten
+Variante-100-Zeilen wortwörtlich trägt (Einzeltemplate-GET mit
+`?variant=`, Issue #311) oder den Aggregat-Nachbau, auf den ein älteres
+Deployment erkennbar zurückfällt. → write-api.md
 
 **Ernte** *(harvest)* — der Lauf, der aus den eingefrorenen Vorlagen
 Messergebnisse macht und sie als **Entwürfe** über die admin-gegatete API

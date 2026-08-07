@@ -235,7 +235,10 @@ kurrentschrift/
 │   ├── rendering.py  # style resolution + memoised source-pooled nib (templates + write)
 │   └── routers/      # health, styles, hands, sources, chart, bboxes,
 │                     #   templates (public list = geometry-free summaries, the
-│                     #   single-template GET admin-gated (open-core moat); beside it
+│                     #   single-template GET admin-gated (open-core moat) and takes
+│                     #   ?variant= so the STORED derived rows (Laufform 100) are
+│                     #   readable — the wordbench fixture layer freezes them
+│                     #   verbatim instead of rebuilding them, issue #311; beside it
 │                     #   the admin-gated uncached batch read GET /sources/{id}/
 │                     #   templates/quality → list[TemplateQualityOut] (glyph_key,
 │                     #   variant, quality) served straight from the STORED
@@ -623,7 +626,11 @@ admin-gated `GET /sources/{id}/render-context` (manifest `nib_precision:
 back to the 4-decimal `/write/glyphs` readback (up to ~0.02 xh placement
 jitter). The nib pools ALL template variants of the source — including
 rows no read endpoint serves individually — so it cannot be recomputed
-from fetched chart rows.
+from fetched chart rows. The Laufform rows are likewise read VERBATIM
+(single-template GET with `?variant=`, manifest `laufform_precision:
+"stored"`; an older deployment detectably falls back to the aggregate
+reconstruction, issue #311), and the verify gate cache-busts its own
+`/write` reads so it compares against the origin, never the edge cache.
 
 Browser at `http://localhost:3000/admin` loads the workbench: first the Vorlage
 picker (the choice persists per browser; `CONFIG.sourceId` in
