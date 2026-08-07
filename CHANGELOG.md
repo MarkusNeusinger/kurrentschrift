@@ -12,6 +12,16 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Changed
+
+- **Pre-approved the Claude Code Remote scheduling tools for repo sessions**
+  (new committed `.claude/settings.json`): `send_later` and the trigger
+  CRUD/list/fire tools no longer raise a permission prompt — cloud sessions
+  schedule their own PR check-ins constantly, and the container is ephemeral,
+  so the committed project settings are the only place the grant persists.
+  Only the scheduling family is allowed; every other Remote tool (session
+  creation, archiving) still prompts.
+
 ### Fixed
 
 - **Wordbench fixture Laufform layer is byte-true to the stored rows (issue
