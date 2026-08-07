@@ -237,7 +237,10 @@ async def apply_laufform(
     `min_occurrences` is the floor UNDER that selection, and it is the endpoint's
     own judgement rather than the request's: an aggregate thinner than
     `core.aggregate.LAUFFORM_MIN_OCCURRENCES` is reported as
-    `below_min_occurrences` and left alone, however it was named. The caution
+    `below_min_occurrences` and left alone, however it was named — but LAST in
+    the triage: a key whose variant, missing chart row or anchor count already
+    blocks the derivation keeps that reason, because those are what to act on
+    first. The caution
     used to live only in the dialog's proposed selection — which is exactly why
     it did not hold: a re-apply names the keys that ALREADY have a Laufform row,
     so a key that once earned one from a word harvest kept being re-derived from
@@ -272,19 +275,6 @@ async def apply_laufform(
             skipped.append(AggregateApplySkip(glyph_key=row.glyph_key, variant=row.variant, reason="laufform_variant"))
         elif row.variant != 0:
             skipped.append(AggregateApplySkip(glyph_key=row.glyph_key, variant=row.variant, reason="non_base_variant"))
-        elif row.n_instances < min_occurrences:
-            # LAST in the triage: a thin variant-100 or variant-1 aggregate is
-            # underivable for the more specific reason, and saying "too few
-            # occurrences" about a row that could never feed the Laufform anyway
-            # would misname the problem.
-            skipped.append(
-                AggregateApplySkip(
-                    glyph_key=row.glyph_key,
-                    variant=row.variant,
-                    reason="below_min_occurrences",
-                    n_instances=row.n_instances,
-                )
-            )
         else:
             usable.append(row)
 
@@ -307,6 +297,22 @@ async def apply_laufform(
             # Same contract as the manual PUT: the chart row stays the ductus
             # prior, so the anchor lists must correspond one-to-one.
             skipped.append(AggregateApplySkip(glyph_key=row.glyph_key, variant=row.variant, reason="anchor_count"))
+            continue
+        if row.n_instances < min_occurrences:
+            # LAST in the whole triage, after the variant AND the topology
+            # questions: every other reason names something that would block the
+            # derivation whatever the occurrence count is, and the report exists
+            # to say what to DO — "author the chart row" and "the anchor counts
+            # disagree" are actionable, "harvest more occurrences" only becomes
+            # the true next step once the derivable ones are answered.
+            skipped.append(
+                AggregateApplySkip(
+                    glyph_key=row.glyph_key,
+                    variant=row.variant,
+                    reason="below_min_occurrences",
+                    n_instances=row.n_instances,
+                )
+            )
             continue
         # Snapshot the PRE-write anchors: the upsert re-selects with
         # `populate_existing`, which overwrites this very row object with what

@@ -479,14 +479,24 @@ async def test_apply_laufform_refuses_a_median_too_thin_to_outvote_an_outlier(ap
 
 async def test_apply_laufform_floor_never_relabels_an_underivable_key(api: Harness):
     """A thin aggregate that could not feed the Laufform ANYWAY keeps the more
-    specific reason: the floor is the last question in the triage, not the
-    first, so "too few occurrences" is never said about a row whose variant
-    disqualified it to begin with."""
+    specific reason.
+
+    The floor is the LAST question in the triage — after the variant AND the
+    topology ones — because every other reason blocks the derivation whatever
+    the count is, and the report exists to say what to do next: "author the
+    chart row" and "the anchor counts disagree" are actionable, "harvest more
+    occurrences" only becomes true once those are answered."""
     style_id, source_id = await api.seed_style_and_source()
     await api.seed_template(style_id, source_id, "n", "n")
+    await api.seed_template(style_id, source_id, "e", "e")
     await _seed_occurrences(api, source_id, [0.0, 0.02, 0.06, 0.08])
-    # One occurrence each on two non-base variants: thin AND underivable.
+    # Every underivable case ALSO thin, so each one's reason is a real choice:
+    # two non-base variants, a key with no chart row ('m'), and one whose
+    # occurrences carry a deviating anchor count ('e').
     items = [_instance_item(variant=v, x0=400 + 10 * v, x1=430 + 10 * v) for v in (1, LAUFFORM_VARIANT)]
+    items += [_instance_item(glyph_key="m", glyph="m", x0=500, x1=530)]
+    short = [[0.0, 0.0], [0.1, 0.5], [0.2, 0.5], [0.3, 0.0]]
+    items += [_instance_item(glyph_key="e", glyph="e", anchors=short, x0=600, x1=630)]
     res = await api.client.request(
         "PUT", f"/sources/{source_id}/instances", json_body=_batch(items), headers=api.admin_headers()
     )
@@ -497,6 +507,8 @@ async def test_apply_laufform_floor_never_relabels_an_underivable_key(api: Harne
     out = res.json()
     assert [k["glyph_key"] for k in out["applied"]] == ["n"]
     assert out["skipped"] == [
+        {"glyph_key": "e", "variant": 0, "reason": "anchor_count", "n_instances": None},
+        {"glyph_key": "m", "variant": 0, "reason": "no_base_template", "n_instances": None},
         {"glyph_key": "n", "variant": 1, "reason": "non_base_variant", "n_instances": None},
         {"glyph_key": "n", "variant": 100, "reason": "laufform_variant", "n_instances": None},
     ]
