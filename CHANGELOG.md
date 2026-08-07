@@ -12,6 +12,38 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **A second-difference regulariser on the M4 fit's DISPLACEMENT field, off by
+  default pending its adjudication** (`core.fit.DEFAULT_ANCHOR_SMOOTH_WEIGHT`).
+  Chasing the capital S's spike one layer down found the cause: the two `S`
+  occurrences are written almost identically, and the difference is a single
+  anchor the FIT threw off the stroke — in „Sprünge" anchor 113 sits in blank
+  paper, 12 px from the nearest ink and 9.3× the median step off its neighbour,
+  while 119 of 120 anchors lie on the line. Nothing in the objective can see a
+  lone outlier: the geometry residual is a mean over `DEFAULT_N_SAMPLES` (1.5
+  samples per anchor at K=120), the Tikhonov energy a mean over K anchors, and
+  `MAX_ANCHOR_DELTA` (0.75) is far too loose — so where the template is longer
+  than the specimen's ink, a tail anchor can park in empty space for free. The
+  new term penalises the curvature of the deformation, never of the letter (the
+  ductus prior owns the bowl of an S), using the same `_curvature_operator` the
+  refine already applies to the half-width profile — renamed from
+  `_width_curvature_operator` now that both channels use it, chains still
+  breaking at pen lifts and corners. Gradient verified exact against finite
+  differences; the scale separation is the design (a lone needle costs ~7e4× a
+  whole-letter stretch of equal magnitude), pinned by a selectivity test and a
+  no-op-on-a-clean-fit test.
+  A/B over all 245 stored occurrences (reconstructed harvest setup, identical in
+  both arms) shows the defect collapsing monotonically — spike median 3.29 →
+  1.25, occurrences above 8× 39 → 0 at 1e-3, better in 245/245 and worse in none
+  — while `geo_rmse` rises 1.017 → 1.192 px. That number cannot adjudicate the
+  term: it is a mean distance to the skeleton PIXELS, so it rewards exactly the
+  noise-chasing the term exists to stop, and calibrating on it would make
+  overfitting the goal. The weight therefore stays 0.0 (production behaviour
+  byte-identical) until measured on a ruler that prices form rather than pixel
+  proximity — whether repeated occurrences of a letter agree, which is what the
+  aggregate median, and hence the Laufform, is made of.
+
 ### Fixed
 
 - **`apply-laufform` enforces the occurrence floor the dialog alone could not

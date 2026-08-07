@@ -67,6 +67,31 @@ DEFAULT_MAX_ITER = 300
 # Cap per-anchor displacement (in template units) so the fit cannot fold the
 # ductus back on itself — a loose topology guard alongside the Tikhonov term.
 MAX_ANCHOR_DELTA = 0.75
+# Second-difference (arc-length normalised) regulariser on the DISPLACEMENT
+# field, i.e. on `anchors - template_anchors` — the geometry twin of the
+# refine's `DEFAULT_WIDTH_SMOOTH_WEIGHT`, built from the same
+# `_curvature_operator`.
+#
+# It penalises the deformation's curvature, never the letter's: the ductus prior
+# already carries the bowl of an S, and a smooth deformation may stretch, shift
+# and bend it freely — what it may not do is put a needle in one anchor. A pen
+# does not leave the stroke and return within one sample; that is a fit
+# artefact, not Feder physics.
+#
+# Why it was needed: nothing else in the objective sees a LONE outlier. The
+# geometry residual is a mean over `DEFAULT_N_SAMPLES` samples (1.5 per anchor
+# at K=120), the Tikhonov term a mean over K anchors, and `MAX_ANCHOR_DELTA`
+# (0.75) is far too loose to catch one — so where the template is longer than
+# the specimen's ink (a tail anchor with nothing under it), an anchor can park
+# in blank paper for free. The Sütterlin capital S in „Sprünge" did exactly
+# that: anchor 113 sat 12 px from the nearest ink, 9.3x the median step off its
+# neighbour, at an unremarkable 1.261 px whole-glyph RMSE.
+#
+# The scale separation is what makes the term safe: with ~0.05-unit spacing the
+# operator's rows scale like 1/ds^2 (~400), so a 0.4-unit needle scores ~1e8
+# times a whole-letter smooth stretch of the same total magnitude. Calibrated
+# below (see the A/B in docs/reference/qualitaetsmetrik.md).
+DEFAULT_ANCHOR_SMOOTH_WEIGHT = 0.0
 # A fit counts as converged when BOTH residuals are within tolerance: the
 # centerline sits near the skeleton (template→skeleton, RMS) AND the skeleton
 # is covered by the template (skeleton→template) — a template collapsed onto a
@@ -334,6 +359,10 @@ class _InstanceFit:
     width_weight: float
     coverage_weight: float
     lambda_reg: float
+    # (m, K) second-difference operator on the displacement field, and its
+    # weight. A (0, K) operator (no chain long enough) disables the term.
+    d2: np.ndarray
+    anchor_smooth_weight: float
 
     def to_pixels(self, params: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         tx, ty = params[0], params[1]
@@ -389,7 +418,24 @@ class _InstanceFit:
 
         e_reg = float(np.mean(np.sum(deltas**2, axis=1)))
 
-        f = e_geo + self.width_weight * e_wid + self.coverage_weight * e_cov + self.lambda_reg * e_reg
+        # Bending energy of the DEFORMATION (not of the letter): the ductus
+        # prior owns the shape, so only what the fit ADDS to its curvature is
+        # penalised. A smooth stretch is nearly free; a single anchor leaving
+        # the stroke and returning is not.
+        e_curv = 0.0
+        g_curv = None
+        if self.anchor_smooth_weight > 0.0 and len(self.d2):
+            r_curv = self.d2 @ deltas
+            e_curv = float(np.mean(np.sum(r_curv**2, axis=1)))
+            g_curv = 2.0 * (self.d2.T @ r_curv) / len(self.d2)
+
+        f = (
+            e_geo
+            + self.width_weight * e_wid
+            + self.coverage_weight * e_cov
+            + self.lambda_reg * e_reg
+            + self.anchor_smooth_weight * e_curv
+        )
 
         # Chain rule through the pixel mapping: dpx/dtx = unit_px,
         # dpy/dty = -unit_px, dpx/dax = unit_px * S, dpy/day = -unit_px * S.
@@ -399,7 +445,10 @@ class _InstanceFit:
         g_anchors = np.column_stack(
             [self.unit_px * (self.sampling_op.T @ g_px), -self.unit_px * (self.sampling_op.T @ g_py)]
         )
-        grad[2:] = (g_anchors + self.lambda_reg * 2.0 * deltas / k).ravel()
+        grad_anchors = g_anchors + self.lambda_reg * 2.0 * deltas / k
+        if g_curv is not None:
+            grad_anchors = grad_anchors + self.anchor_smooth_weight * g_curv
+        grad[2:] = grad_anchors.ravel()
         return f, grad
 
     def report_energies(self, params: np.ndarray) -> tuple[float, float, float]:
@@ -435,6 +484,7 @@ def fit_template_to_instance(
     coverage_weight: float = DEFAULT_COVERAGE_WEIGHT,
     max_iter: int = DEFAULT_MAX_ITER,
     max_anchor_delta: float = MAX_ANCHOR_DELTA,
+    anchor_smooth_weight: float = DEFAULT_ANCHOR_SMOOTH_WEIGHT,
 ) -> FitResult:
     """Optimise template control points to match one instance skeleton + width.
 
@@ -460,6 +510,10 @@ def fit_template_to_instance(
     max_anchor_delta : per-anchor displacement bound in template units. The
         default suits the M4 instance fit; callers refining a trace that
         already sits on the ink pass a tighter bound.
+    anchor_smooth_weight : weight of the second-difference regulariser on the
+        DISPLACEMENT field — the guard against a lone anchor leaving the stroke
+        and returning, which no mean-based term can see. See
+        `DEFAULT_ANCHOR_SMOOTH_WEIGHT`.
 
     Returns
     -------
@@ -537,6 +591,15 @@ def fit_template_to_instance(
         width_weight=width_weight,
         coverage_weight=coverage_weight,
         lambda_reg=lambda_reg,
+        # Built from the TEMPLATE anchors — the same chains (pen lifts, corners)
+        # the sampling already splits on, so the operator is constant and the
+        # analytic gradient stays exact.
+        d2=(
+            _curvature_operator(template_anchors, stroke_starts, corner_anchors)
+            if anchor_smooth_weight > 0.0
+            else np.zeros((0, k))
+        ),
+        anchor_smooth_weight=anchor_smooth_weight,
     )
 
     n_params = 2 + 2 * k
@@ -718,15 +781,24 @@ def _pressure_cone_cap(anchors: np.ndarray, w0: np.ndarray, stroke_starts: Seque
     return w_hair + (w_max - w_hair) * alignment**PRESSURE_CONE_EXP
 
 
-def _width_curvature_operator(
+def _curvature_operator(
     anchors: np.ndarray, stroke_starts: Sequence[int] | None, corner_anchors: Sequence[int] | None
 ) -> np.ndarray:
     """(m, K) operator whose rows are the arc-length-normalised second
-    differences w''(s) of the half-width profile, per smoothness chain.
+    differences f''(s) of a per-anchor quantity, per smoothness chain.
+
+    Channel-agnostic: the refine applies it to the half-width profile w(s), the
+    instance fit to the two components of the DISPLACEMENT field (see
+    `_FitObjective.objective`). Both want the same thing — no high-frequency
+    wiggle between neighbouring anchors — and both want it measured against arc
+    length rather than index, so a densely sampled stretch is not penalised
+    harder than a sparse one. The spacings come from the TEMPLATE anchors, so
+    the operator is a constant matrix and the analytic gradient stays exact.
 
     Chains break at pen lifts AND at corner anchors: a true Umkehrpunkt has a
-    width-profile kink (pressure released into the turn) that must not be
-    penalised. Returns a (0, K) matrix when no chain is long enough.
+    width-profile kink (pressure released into the turn) — and, on the geometry
+    side, a genuine direction reversal — that must not be penalised. Returns a
+    (0, K) matrix when no chain is long enough.
     """
     k = len(anchors)
     d = np.diff(anchors, axis=0)
@@ -835,7 +907,7 @@ class _RefineRound:
         self.norm_edges = max(1.0, 2.0 * float(self.u.sum()))
         self.norm_caps = max(1.0, float(len(cap_rows)))
 
-        self.d2 = _width_curvature_operator(current_anchors, ctx.stroke_starts, ctx.corner_anchors)
+        self.d2 = _curvature_operator(current_anchors, ctx.stroke_starts, ctx.corner_anchors)
         self.m_d2 = max(1, self.d2.shape[0])
 
     def to_pixels(self, p: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:

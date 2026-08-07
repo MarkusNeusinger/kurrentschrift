@@ -13,7 +13,7 @@ import numpy as np
 
 from core.chart import crop_with_mask, load_chart_grayscale
 from core.extract import binarize_adaptive, skeleton_and_width
-from core.fit import fit_glyph_to_crop, fit_template_to_instance
+from core.fit import _curvature_operator, fit_glyph_to_crop, fit_template_to_instance
 from core.pipeline import canonical_from_path
 
 
@@ -113,6 +113,85 @@ def test_regularisation_limits_deformation(synthetic_chart_path, synthetic_bbox)
     assert tight.fit_meta["reg_energy"] <= loose.fit_meta["reg_energy"]
     # And the loose fit lands closer to the skeleton (lower geometry residual).
     assert loose.fit_meta["geo_rmse_px"] <= tight.fit_meta["geo_rmse_px"] + 1e-6
+
+
+def test_anchor_smoothness_gradient_is_exact():
+    """The displacement-curvature term's analytic gradient matches finite
+    differences — it enters an L-BFGS-B objective, so an approximate one would
+    stall the line search rather than fail loudly."""
+    t = np.linspace(0.0, 2.0 * np.pi, 40)
+    template = np.column_stack([np.cos(t) * 1.2, np.sin(t) * 0.8])
+    d2 = _curvature_operator(template, [0, 20], [30])
+    assert len(d2) > 0
+    deltas = np.random.default_rng(7).normal(scale=0.03, size=template.shape)
+
+    def energy(dl: np.ndarray) -> float:
+        return float(np.mean(np.sum((d2 @ dl) ** 2, axis=1)))
+
+    analytic = 2.0 * (d2.T @ (d2 @ deltas)) / len(d2)
+    numeric = np.zeros_like(deltas)
+    h = 1e-7
+    for i in range(len(deltas)):
+        for axis in range(2):
+            up, down = deltas.copy(), deltas.copy()
+            up[i, axis] += h
+            down[i, axis] -= h
+            numeric[i, axis] = (energy(up) - energy(down)) / (2.0 * h)
+    assert np.abs(numeric - analytic).max() / np.abs(analytic).max() < 1e-6
+
+
+def test_anchor_smoothness_costs_a_needle_far_more_than_a_stretch():
+    """The term must see the ARTEFACT, not the deformation.
+
+    A pen does not leave the stroke and return within one sample; a whole-letter
+    stretch of the same magnitude is ordinary. With ~0.05-unit anchor spacing
+    the operator scales like 1/ds^2, so the two are orders of magnitude apart —
+    which is what lets one weight kill needles without flattening real fits."""
+    t = np.linspace(0.0, 2.0 * np.pi, 40)
+    template = np.column_stack([np.cos(t) * 1.2, np.sin(t) * 0.8])
+    d2 = _curvature_operator(template, [0], [])
+
+    def energy(dl: np.ndarray) -> float:
+        return float(np.mean(np.sum((d2 @ dl) ** 2, axis=1)))
+
+    needle = np.zeros_like(template)
+    needle[15] = [0.3, 0.2]
+    ramp = np.linspace(0.0, 1.0, len(template))
+    stretch = np.column_stack([ramp, ramp * 0.6]) * 0.36  # same peak displacement
+    assert energy(needle) > 1000.0 * energy(stretch)
+
+
+def test_anchor_smoothness_is_inert_on_a_clean_fit(synthetic_chart_path, synthetic_bbox):
+    """Switching the term on must not move a fit that has no needle in it.
+
+    The whole design rests on the scale separation (see the selectivity test):
+    the term is meant to be invisible to ordinary deformation and enormous for a
+    lone excursion. On the synthetic bar the fit is clean, so turning the term
+    on has to be a no-op within noise — a term that also drags honest fits would
+    be paid for in ink fidelity everywhere, not just where the artefact is.
+
+    Note the direction the term acts in: it penalises the curvature of the
+    DEPLACEMENT from the passed template, so it prevents the fit from ADDING a
+    kink. It does not remove one the template itself carries — the ductus prior
+    owns the shape."""
+    canon = _canonical_on_synthetic(synthetic_chart_path, synthetic_bbox)
+    skel, width_map = _crop_skeleton(synthetic_chart_path, synthetic_bbox)
+    anchors = np.asarray(canon["anchors"], dtype=float)
+    half_widths = np.asarray(canon["half_widths"], dtype=float)
+
+    common = {
+        "skel": skel,
+        "width_map": width_map,
+        "unit_px": 100.0,
+        "baseline_y_px": synthetic_bbox["baseline_y"] - synthetic_bbox["y0"],
+        "x_origin_px": 0.0,
+    }
+    off = fit_template_to_instance(anchors, half_widths, anchor_smooth_weight=0.0, **common)
+    on = fit_template_to_instance(anchors, half_widths, anchor_smooth_weight=1e-3, **common)
+
+    moved = np.abs(np.asarray(on.anchors, dtype=float) - np.asarray(off.anchors, dtype=float)).max()
+    assert moved < 0.02, f"term moved a clean fit by {moved:.4f} template units"
+    assert on.fit_meta["geo_rmse_px"] <= off.fit_meta["geo_rmse_px"] + 0.1
 
 
 def test_multi_stroke_fit_carries_stroke_starts(synthetic_chart_path, synthetic_bbox):
