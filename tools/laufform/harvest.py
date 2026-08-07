@@ -102,13 +102,19 @@ SEAM_DEDUP_PX = 1e-6
 # the measured Sütterlin capital S in „Sprünge" passed QC at
 # geo_rmse_px = 1.261 with one anchor 12 px from the nearest ink.
 #
-# Calibrated on the 245 stored occurrences of the Sütterlin harvest: median
-# ratio 2.65, p75 3.88, p90 7.21, p99 21.16, max 32.6. At 8.0 exactly 22
-# occurrences (9.0 %) are rejected and NOT ONE glyph drops below
-# `core.aggregate.LAUFFORM_MIN_OCCURRENCES` = 3 (12 of 35 glyphs are already
-# below it for lack of harvest coverage, and that count is unchanged). At 6.0
-# the glyph „g" would fall below the floor, which is why the threshold sits
-# here and not lower.
+# Calibrated on the 245 stored occurrences of the Sütterlin harvest — which are
+# ALL chain-path fits (`measurements.fit_path == "chain"`, 245 of 245), so the
+# calibration and the gated path are the same population. Distribution of the
+# per-stroke ratio: median 2.68, p75 3.86, p90 7.28, p99 23.29, max 32.9. At 8.0
+# exactly 23 occurrences (9.4 %) are rejected and NOT ONE glyph drops below
+# `core.aggregate.LAUFFORM_MIN_OCCURRENCES` = 3 — nor below the harvest's own
+# `--min-n` default of 4. At 6.0 the glyph „g" would fall below the floor, which
+# is why the threshold sits here and not lower.
+#
+# Effect on the accepted set, over those same occurrences: the worst distance of
+# a fitted centerline to the measured ink drops from 0.613 to 0.258 x-heights
+# and its p90 from 0.194 to 0.149 — the gate does most of what a fit-side
+# regulariser was supposed to do, without touching the fit (§7).
 MAX_ANCHOR_SPIKE_RATIO = 8.0
 
 DIAG_FIELDS = (
@@ -214,33 +220,46 @@ def _px_to_word_units(px_x: np.ndarray, px_y: np.ndarray, xh: float, registratio
 def anchor_spike_ratio(anchors: np.ndarray, stroke_starts: Sequence[int]) -> float:
     """The „Anker im leeren Papier" spike ratio of a fitted anchor chain.
 
-    The largest step between CONSECUTIVE anchors WITHIN one pen-stroke, divided
-    by the median of those same steps. Both numerator and denominator are in
-    template units, so the ratio is scale-free and comparable across glyphs
-    (and across the 120-anchor capitals and the 6-anchor punctuation alike).
+    The largest step between consecutive anchors, measured against the median
+    step OF ITS OWN pen-stroke, maximised over the strokes. Numerator and
+    denominator share a stroke and a unit, so the ratio is scale-free and
+    comparable across glyphs — the 120-anchor capitals and the 6-anchor
+    punctuation alike.
 
-    Pen lifts are excluded: a step whose END index starts a new stroke
-    (`trace_meta.stroke_starts`) is the hand setting the pen down somewhere
-    else, not a discontinuity of the line. Counting it would reject every
-    multi-stroke glyph — i, u, sz, t, ae — for writing exactly what its ductus
-    prescribes.
+    PER STROKE, not pooled, because strokes differ in scale by ~1.5x: an i's
+    body against its dot, a ue's body against its two umlaut dots. A pooled
+    median is dominated by the long body stroke and understates a spike inside
+    a short one — measured on the real harvest, `ue` in „Zügel" scores 7.21
+    pooled but 10.61 against its own stroke, i.e. the pooled form silently kept
+    a needle. The bias only ever produced false NEGATIVES, so this change
+    tightens the gate rather than widening it.
 
-    Returns 0.0 when there is nothing to judge (no in-stroke step at all), and
-    `inf` when the median step is zero while some step is not: a chain that
-    stands still and then jumps is the very failure this number exists for.
+    Pen lifts never count: a stroke boundary is the hand setting the pen down
+    somewhere else, not a discontinuity of the line. Counting it would reject
+    every multi-stroke glyph — i, u, sz, t, ae — for writing exactly what its
+    ductus prescribes.
+
+    Returns 0.0 when there is nothing to judge (no stroke has two anchors), and
+    `inf` when a stroke's median step is zero while some step in it is not: a
+    chain that stands still and then jumps is the very failure this exists for.
     """
     pts = np.asarray(anchors, dtype=float).reshape(-1, 2)
     if len(pts) < 2:
         return 0.0
-    steps = np.hypot(*(pts[1:] - pts[:-1]).T)
-    lifts = {int(s) for s in stroke_starts}
-    within = np.array([d for i, d in enumerate(steps) if i + 1 not in lifts], dtype=float)
-    if not len(within):
-        return 0.0
-    largest, median = float(within.max()), float(np.median(within))
-    if median <= 0.0:
-        return float("inf") if largest > 0.0 else 0.0
-    return largest / median
+    bounds = sorted({0, *(int(s) for s in stroke_starts if 0 < int(s) < len(pts)), len(pts)})
+    worst = 0.0
+    for start, end in zip(bounds[:-1], bounds[1:], strict=True):
+        stroke = pts[start:end]
+        if len(stroke) < 2:
+            continue
+        steps = np.hypot(*(stroke[1:] - stroke[:-1]).T)
+        largest, median = float(steps.max()), float(np.median(steps))
+        if median <= 0.0:
+            if largest > 0.0:
+                return float("inf")
+            continue
+        worst = max(worst, largest / median)
+    return worst
 
 
 def _strokes_to_word_units(
@@ -426,6 +445,7 @@ def letter_gate(
     rmse_max: float,
     at_bound: bool,
     anchors_ok: bool,
+    spike_ratio: float = 0.0,
     connector_reasons: Sequence[str | None] = (),
 ) -> str:
     """The chain path's per-letter gate cascade — `"ok"` or the first reason.
@@ -443,7 +463,14 @@ def letter_gate(
        `analyze.FIT_DX_UNITS`/`FIT_DY_UNITS` bound: the placement is suspect.
     4. `anchor_count` — the fitted array no longer matches the chart row (a
        template changed under the run); nothing downstream could median it.
-    5. `connector_degenerate` — a connector ADJACENT to this letter derailed
+    5. `anchor_spike` — „Anker im leeren Papier": a single anchor left the
+       stroke and came back (`anchor_spike_ratio` over
+       `MAX_ANCHOR_SPIKE_RATIO`). AFTER `anchor_count`, because the ratio of a
+       mis-shaped array says nothing; before the connector reason, because this
+       is the letter's OWN chain rather than a neighbour's damage. Not a repair
+       — a chain with a discontinuity in it never measured the hand, and the
+       fit's own QC cannot see it (every term in that objective is a mean).
+    6. `connector_degenerate` — a connector ADJACENT to this letter derailed
        (`tools.pairlab.connector_qc`). The letter is rejected with it: the
        seam is a shared parameter, so a runaway connector has already paid for
        itself out of the letter's own tail.
@@ -456,6 +483,8 @@ def letter_gate(
         return "at_bound"
     if not anchors_ok:
         return "anchor_count"
+    if spike_ratio > MAX_ANCHOR_SPIKE_RATIO:
+        return "anchor_spike"
     if any(connector_reasons):
         return "connector_degenerate"
     return "ok"
@@ -902,12 +931,17 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 np.asarray(seg.fitted_anchors, dtype=float) if seg.fitted_anchors is not None else np.zeros((0, 2))
             )
             adjacent = [conn_reasons.get(n - 1) if n else None, conn_reasons.get(n)]
+            # Measured on `fitted_raw`, i.e. exactly the array this path stores
+            # (the centering below is a single translation, which leaves every
+            # inter-anchor step — and therefore the ratio — unchanged).
+            spike_ratio = anchor_spike_ratio(fitted_raw, (row.get("trace_meta") or {}).get("stroke_starts") or [0])
             gate = letter_gate(
                 converged_local=bool(seg.converged_local),
                 geo_rmse_px=float(seg.geo_rmse_px),
                 rmse_max=opts.rmse_max,
                 at_bound=bool(fit.slot_at_bound.get(slot_index, False)),
                 anchors_ok=fitted_raw.shape == anchors.shape,
+                spike_ratio=spike_ratio,
                 connector_reasons=adjacent,
             )
             gate_by_slot[slot_index] = gate
@@ -935,6 +969,7 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 n_cov_local=int(seg.n_cov_local),
                 chain_at_bound=bool(fit.slot_at_bound.get(slot_index, False)),
                 anchor_count_ok=fitted_raw.shape == anchors.shape,
+                anchor_spike_ratio=round(spike_ratio, 2),
                 shift_x_units=round(float(total_shift[0]), 4),
                 shift_y_units=round(float(total_shift[1]), 4),
                 **dict(

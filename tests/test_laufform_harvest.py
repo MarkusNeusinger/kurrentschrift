@@ -496,7 +496,9 @@ def _segment(kind: str, *, slot=None, key=None, converged_local=True, geo_rmse_p
     )
 
 
-def _fake_chain_fit(case, *, bad_connector: bool = False, bad_letter: int | None = None) -> ChainWordFit:
+def _fake_chain_fit(
+    case, *, bad_connector: bool = False, bad_letter: int | None = None, needle_letter: int | None = None
+) -> ChainWordFit:
     """A three-letter chain with hand-built geometry — the only way to put a
     KNOWN degenerate connector in front of the gate cascade."""
     anchors = np.asarray(case.templates["a"]["anchors"], dtype=float)
@@ -511,15 +513,13 @@ def _fake_chain_fit(case, *, bad_connector: bool = False, bad_letter: int | None
     segments: list[ChainSegment] = []
     entries: list[dict] = []
     for i in range(3):
+        fitted = anchors + np.array([0.01, 0.0])
+        if needle_letter == i:
+            # „Anker im leeren Papier": one anchor out of the stroke and back.
+            fitted = fitted.copy()
+            fitted[2] = fitted[2] + np.array([0.0, 6.0])
         segments.append(
-            _segment(
-                "letter",
-                slot=i,
-                key="a",
-                anchors=anchors + np.array([0.01, 0.0]),
-                points=bodies[i],
-                converged_local=bad_letter != i,
-            )
+            _segment("letter", slot=i, key="a", anchors=fitted, points=bodies[i], converged_local=bad_letter != i)
         )
         entries.append(_entry("letter", 2 * i, bodies[i], slot=i, key="a"))
         if i < 2:
@@ -563,6 +563,32 @@ def test_chain_path_accepts_every_clean_letter(monkeypatch: pytest.MonkeyPatch) 
     assert out.word_record["measurements"]["traced_slots"] == [0, 1, 2]
     assert out.word_record["measurements"]["fitted_slots"] == [0, 1, 2]
     assert all(o["measurements"]["fit_path"] == "chain" for o in out.occurrences)
+
+
+def test_the_chain_path_rejects_an_anchor_in_blank_paper(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The gate has to sit on the path that actually produced the data.
+
+    Every stored occurrence of the Sütterlin harvest carries
+    `fit_path == "chain"` (245 of 245) — the slot path wrote none of them. A
+    spike check that lives only in `_harvest_case_slots` therefore rejects
+    nothing in production, however well calibrated it is, which is exactly how
+    the capital S in „Sprünge" reached the Laufform with an anchor twelve
+    pixels from the nearest ink.
+    """
+    out = _run_chain(monkeypatch, needle_letter=1)
+    assert [r["gate"] for r in out.diag_rows] == ["ok", "anchor_spike", "ok"]
+    # It reaches neither the occurrence layer nor the Laufform medians.
+    assert len(out.occurrences) == 2
+    assert len(out.fits_by_key["a"]) == 2
+    assert out.word_record["measurements"]["fitted_slots"] == [0, 2]
+    # …but it stays in the INSPECTION layer: the chain path separates what was
+    # solved from what was accepted precisely so a gated letter remains visible
+    # to the admin instead of silently vanishing from the trace.
+    assert out.word_record["measurements"]["traced_slots"] == [0, 1, 2]
+    # The run says how far over it was, on every fitted row.
+    ratios = [r["anchor_spike_ratio"] for r in out.diag_rows]
+    assert ratios[1] > harvest_mod.MAX_ANCHOR_SPIKE_RATIO
+    assert all(r <= harvest_mod.MAX_ANCHOR_SPIKE_RATIO for r in (ratios[0], ratios[2]))
 
 
 def test_a_degenerate_connector_rejects_both_adjacent_letters(monkeypatch: pytest.MonkeyPatch) -> None:

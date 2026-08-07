@@ -12,6 +12,39 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Fixed
+
+- **The harvest rejects the „Anker im leeren Papier" occurrence
+  (`qualitaetsmetrik.md` §8).** A fit that parks one anchor in blank paper — the
+  Sütterlin capital S in „Sprünge" sits 12 px from the nearest ink at 9.3× the
+  median step, while 119 of its 120 anchors lie on the line — is not a
+  measurement of the hand, so the occurrence is now declined rather than
+  medianed into a Laufform. New `anchor_spike_ratio`: the largest step between
+  neighbouring anchors against the median step OF ITS OWN stroke, maximised
+  over the strokes. Per stroke rather than pooled because a long body stroke
+  otherwise inflates the denominator and hides a needle in a short umlaut one
+  (`ue` in „Zügel" scores 7.21 pooled, 10.61 against its own stroke); pen lifts
+  never count, or every multi-stroke glyph would be rejected for writing its own
+  ductus. Gate `anchor_spike` at `MAX_ANCHOR_SPIKE_RATIO = 8.0` on **both**
+  harvest paths, calibrated on the 245 stored occurrences (median 2.68, p90
+  7.28, max 32.9): 23 rejected (9.4 %), and not one glyph drops below
+  `LAUFFORM_MIN_OCCURRENCES`. On the accepted set the worst distance of a fitted
+  centerline to the measured ink falls from 0.613 to 0.258 x-heights and its p90
+  from 0.194 to 0.149 — most of what a fit-side regulariser was meant to do,
+  without touching the fit.
+- **…and it sits on the path that actually produced the data.** The first
+  version of the gate lived only in `_harvest_case_slots`, while all 245 stored
+  occurrences come from `_harvest_case_chain` (`fit_path == "chain"`, 245 of
+  245) — it would have rejected exactly nothing in production, with a green test
+  suite, because every new test pinned the slot path. Found by adversarially
+  injecting the needle into the chain path and getting `['ok','ok','ok']` back.
+  The check is now a step in the chain path's `letter_gate` cascade, after
+  `anchor_count` (the ratio of a mis-shaped array says nothing) and before the
+  connector reason (this is the letter's own chain, not a neighbour's damage),
+  and it excludes the letter from the STATISTICS layer only — the trace keeps
+  it, so a gated letter stays visible to the admin.
+  `test_the_chain_path_rejects_an_anchor_in_blank_paper` holds the hole shut.
+
 ### Changed
 
 - **Recorded a rejected experiment: a curvature regulariser on the M4 fit

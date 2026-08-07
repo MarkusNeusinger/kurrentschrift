@@ -10,18 +10,10 @@ its canonical shape.
 from __future__ import annotations
 
 import numpy as np
-from scipy.ndimage import distance_transform_edt
 
 from core.chart import crop_with_mask, load_chart_grayscale
 from core.extract import binarize_adaptive, skeleton_and_width
-from core.fit import (
-    DEFAULT_HINGE_TAU_UNITS,
-    _bilinear_with_grad,
-    _hinge_term,
-    fit_glyph_to_crop,
-    fit_template_to_instance,
-)
-from core.geometry import bilinear
+from core.fit import fit_glyph_to_crop, fit_template_to_instance
 from core.pipeline import canonical_from_path
 
 
@@ -121,149 +113,6 @@ def test_regularisation_limits_deformation(synthetic_chart_path, synthetic_bbox)
     assert tight.fit_meta["reg_energy"] <= loose.fit_meta["reg_energy"]
     # And the loose fit lands closer to the skeleton (lower geometry residual).
     assert loose.fit_meta["geo_rmse_px"] <= tight.fit_meta["geo_rmse_px"] + 1e-6
-
-
-def _distance_field_to_line(diagonal: bool = False, size: int = 60) -> np.ndarray:
-    """EDT to a single skeleton line — a stand-in for the fit's `dist_smooth`.
-
-    A vertical line gives a known pull direction (distance == |x − 30|); the
-    diagonal variant is used where the y-component of the gradient has to be
-    exercised too, which a y-invariant field cannot do.
-    """
-    skel = np.zeros((size, size), dtype=bool)
-    if diagonal:
-        skel[np.arange(size), np.arange(size)] = True
-    else:
-        skel[:, size // 2] = True
-    return distance_transform_edt(~skel).astype(float)
-
-
-def test_hinge_is_bit_exactly_free_inside_the_band():
-    """A sample within tau costs exactly 0.0 — energy AND gradient.
-
-    The whole design rests on this: because a compliant sample contributes a
-    HARD zero rather than a small number, `hinge_weight` can be raised until the
-    term acts as a constraint on the outliers without taxing an honest fit
-    anywhere. A merely tiny contribution would scale with the weight and turn
-    the hinge back into the sort of global tax that lost against the measured
-    ink (docs/reference/qualitaetsmetrik.md §7).
-    """
-    field = _distance_field_to_line()
-    tau_px = 5.0
-    unit_sq = 100.0**2
-    px = np.array([27.3, 29.1, 30.0, 31.7, 33.9])
-    py = np.array([10.4, 20.6, 30.2, 40.8, 49.1])
-    d, d_dx, d_dy = _bilinear_with_grad(field, px, py)
-    assert d.max() < tau_px  # precondition of the property under test
-    assert np.abs(d_dx).max() > 0.5  # …and the gradient it is multiplied by is NOT zero
-
-    e_hinge, g_px, g_py = _hinge_term(d, d_dx, d_dy, tau_px, unit_sq)
-    assert e_hinge == 0.0
-    assert np.array_equal(g_px, np.zeros_like(g_px))
-    assert np.array_equal(g_py, np.zeros_like(g_py))
-
-
-def test_hinge_weight_does_not_move_a_compliant_fit(synthetic_chart_path, synthetic_bbox):
-    """A fit that never leaves the band is identical at weight 0 and at 1e6.
-
-    The end-to-end form of the zero-cost property: on the synthetic bar the
-    template sits on the ink, so every sample stays far inside tau and the term
-    must be invisible — not "almost", but to the last bit, because the objective
-    and its gradient are bit-identical along the whole L-BFGS-B trajectory.
-    """
-    canon = _canonical_on_synthetic(synthetic_chart_path, synthetic_bbox)
-    skel, width_map = _crop_skeleton(synthetic_chart_path, synthetic_bbox)
-    anchors = np.asarray(canon["anchors"], dtype=float)
-    half_widths = np.asarray(canon["half_widths"], dtype=float)
-
-    common = {
-        "skel": skel,
-        "width_map": width_map,
-        "unit_px": 100.0,
-        "baseline_y_px": synthetic_bbox["baseline_y"] - synthetic_bbox["y0"],
-    }
-    off = fit_template_to_instance(anchors, half_widths, hinge_weight=0.0, **common)
-    on = fit_template_to_instance(anchors, half_widths, hinge_weight=1e6, **common)
-
-    # Precondition: the fitted centerline really is inside the tolerance band.
-    edt = distance_transform_edt(~skel).astype(float)
-    sample_d = bilinear(edt, off.fitted_polyline_px[:, 0], off.fitted_polyline_px[:, 1])
-    assert sample_d.max() < DEFAULT_HINGE_TAU_UNITS * 100.0
-
-    assert np.array_equal(on.anchors, off.anchors)
-    assert np.array_equal(on.fitted_polyline_px, off.fitted_polyline_px)
-    assert on.fit_meta["geo_rmse_px"] == off.fit_meta["geo_rmse_px"]
-
-
-def test_hinge_gradient_matches_finite_differences():
-    """The hinge's analytic gradient is exact where the term actually bites.
-
-    It enters an L-BFGS-B objective whose line search requires function and
-    gradient to agree to machine precision (see the `core.fit` module header);
-    an approximate gradient would not fail loudly, it would quietly stall the
-    fit. Checked on a mix of violating and compliant samples, so both branches
-    of the ``max(0, ·)`` are exercised in one call.
-    """
-    field = _distance_field_to_line(diagonal=True)
-    tau_px = 4.0
-    unit_sq = 100.0**2
-    px = np.array([12.37, 20.63, 30.41, 41.29, 52.11])
-    py = np.array([9.23, 18.47, 29.61, 36.19, 45.83])
-
-    def energy(qx: np.ndarray, qy: np.ndarray) -> float:
-        d_, ddx_, ddy_ = _bilinear_with_grad(field, qx, qy)
-        return _hinge_term(d_, ddx_, ddy_, tau_px, unit_sq)[0]
-
-    d, d_dx, d_dy = _bilinear_with_grad(field, px, py)
-    violating = d > tau_px
-    assert violating.any() and not violating.all()
-    _, g_px, g_py = _hinge_term(d, d_dx, d_dy, tau_px, unit_sq)
-
-    h = 1e-5
-    num_px = np.zeros_like(px)
-    num_py = np.zeros_like(py)
-    for i in range(len(px)):
-        up, down = px.copy(), px.copy()
-        up[i] += h
-        down[i] -= h
-        num_px[i] = (energy(up, py) - energy(down, py)) / (2.0 * h)
-        up, down = py.copy(), py.copy()
-        up[i] += h
-        down[i] -= h
-        num_py[i] = (energy(px, up) - energy(px, down)) / (2.0 * h)
-
-    scale = max(float(np.abs(g_px).max()), float(np.abs(g_py).max()))
-    assert scale > 0.0
-    assert float(np.abs(num_px - g_px).max()) / scale < 1e-6
-    assert float(np.abs(num_py - g_py).max()) / scale < 1e-6
-
-
-def test_hinge_pulls_a_violating_sample_toward_the_ink():
-    """The term must MOVE the offender, not merely price it.
-
-    A sample parked in blank paper sees a strictly decreasing energy as it walks
-    back toward the skeleton, and a gradient pointing away from the ink (so
-    gradient descent walks it back) — until it enters the tolerance band, where
-    the term goes silent.
-    """
-    field = _distance_field_to_line()
-    tau_px = 5.0
-    unit_sq = 100.0**2
-    py = np.array([25.5])
-
-    energies = []
-    for offset in (20.0, 15.0, 10.0, 7.0, 5.5):  # px to the right of the line at x = 30
-        d, d_dx, d_dy = _bilinear_with_grad(field, np.array([30.0 + offset]), py)
-        e_hinge, g_px, _ = _hinge_term(d, d_dx, d_dy, tau_px, unit_sq)
-        energies.append(e_hinge)
-        # Positive d(e)/d(px) on the right-hand side: descent moves it left, onto the ink.
-        assert g_px[0] > 0.0
-    assert all(later < earlier for earlier, later in zip(energies[:-1], energies[1:], strict=True))
-
-    d_in, dx_in, dy_in = _bilinear_with_grad(field, np.array([32.5]), py)
-    e_in, gx_in, _ = _hinge_term(d_in, dx_in, dy_in, tau_px, unit_sq)
-    assert e_in == 0.0
-    assert gx_in[0] == 0.0
 
 
 def test_multi_stroke_fit_carries_stroke_starts(synthetic_chart_path, synthetic_bbox):
