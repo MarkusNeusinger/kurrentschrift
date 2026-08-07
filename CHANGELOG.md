@@ -12,6 +12,23 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Wordbench fixture Laufform layer is byte-true to the stored rows (issue
+  #311).** The admin single-template GET takes a `variant` query parameter, so
+  the stored variant-100 (Laufform) rows are readable at all — and
+  `fetch_fixtures` now freezes them VERBATIM (manifest `laufform_precision:
+  "stored"`) instead of reconstructing them locally from the hand's aggregates,
+  where a chart resample between apply and fetch (or a run on the
+  `VERTICAL_STRAIGHT_TOL` knife edge) turned wire-level noise into a discrete
+  render flip. Same transported-not-recomputed philosophy as the
+  `render-context` nib read; a deployment predating the parameter is detected
+  per response (it serves the variant-0 row, which says so) and falls back to
+  the reconstruction (`"reconstructed"`). The `--verify` gate also cache-busts
+  every one of its own `/write` reads now — the `aug04` CDN gotcha could make
+  it "verify" the edge cache's pre-write-round state. Knife-edge caution
+  documented at the shared constant in `core/geometry.py`.
+
 ### Changed
 
 - **Documented the `aug07` write round and its new wordbench baseline**

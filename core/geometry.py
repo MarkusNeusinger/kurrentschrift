@@ -119,6 +119,14 @@ def discrete_curvature(pts: np.ndarray, unit_px: float) -> np.ndarray:
 # them all and pressed the S bowl flat, with fillet corners at the run ends.
 # 0.035 sits in the measured gap: everything the school norm writes straight
 # stays verticalised, a curved bowl side stays a curve.
+# Knife-edge caution (issue #311): a threshold comparison amplifies sub-1e-4
+# input noise into a DISCRETE geometry flip, so any recalibration must keep a
+# real margin to every measured population value (the u Laufform's long run
+# bows 0.0348 — 2.4e-4 under this tolerance). And borderline classifications
+# are never re-run across environments: whatever geometry a derivation
+# classified is STORED and transported (the fixture layer reads the stored
+# variant-100 rows for exactly this reason), never re-derived remotely and
+# compared bit-exact.
 VERTICAL_STRAIGHT_TOL = 0.035
 
 

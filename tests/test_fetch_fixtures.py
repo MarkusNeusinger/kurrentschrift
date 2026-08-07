@@ -15,6 +15,7 @@ import json
 
 import pytest
 
+from core.database.models import LAUFFORM_VARIANT
 from tools.wordbench import export_fixtures, fetch_fixtures
 from tools.wordbench.fetch_fixtures import (
     DEFAULT_PLACEMENT_TOL,
@@ -33,6 +34,7 @@ from tools.wordbench.fetch_fixtures import (
     pooled_nib_units,
     production_row,
     resolve_nib,
+    stored_laufform_rows,
     template_row_from_payload,
 )
 
@@ -130,6 +132,53 @@ def test_laufform_rows_skip_a_deviating_anchor_count(capsys):
     rows = laufform_rows_from_aggregates([{"glyph_key": "a", "variant": 0, "laufform_anchors": [[0.0, 0.0]]}], chart)
     assert rows == {}
     assert "skip laufform a" in capsys.readouterr().out
+
+
+# The stored variant-100 row as the API serves it — anchors and trace_meta of
+# the APPLY step, not of today's chart row (the #311 distinction).
+LAUFFORM_PAYLOAD = {
+    **CHART_PAYLOAD,
+    "variant": LAUFFORM_VARIANT,
+    "anchors": [[0.1, 0.5], [0.8, 1.0], [1.6, 0.4]],
+    "trace_meta": {"n_anchors": 3, "stroke_starts": [0], "laufform": {"derived_from": "hand-aggregate"}},
+}
+
+
+def test_stored_laufform_rows_read_the_variant_rows_verbatim():
+    summaries = [
+        {"glyph_key": "a", "variant": 0},
+        {"glyph_key": "a", "variant": LAUFFORM_VARIANT},
+        {"glyph_key": "e", "variant": 0},  # no Laufform row — nothing to fetch
+        {"glyph_key": "x", "variant": LAUFFORM_VARIANT},  # not needed by any case
+    ]
+    client = _StubClient(routes={"/sources/s/templates/a": LAUFFORM_PAYLOAD})
+
+    rows = stored_laufform_rows(client, "s", summaries, {"a", "e"})
+
+    assert set(rows) == {"a"}
+    # Verbatim: the stored anchors AND the apply step's own trace_meta — never
+    # a rebuild from today's chart row.
+    assert rows["a"]["anchors"] == LAUFFORM_PAYLOAD["anchors"]
+    assert rows["a"]["trace_meta"]["laufform"] == {"derived_from": "hand-aggregate"}
+    assert set(rows["a"]) == CHART_ROW_KEYS
+    assert client.calls == [("/sources/s/templates/a", {"variant": LAUFFORM_VARIANT})]
+
+
+def test_stored_laufform_rows_detect_a_deployment_without_the_variant_read():
+    # An older FastAPI ignores the unknown query parameter and serves the
+    # chart row; freezing THAT as a Laufform would corrupt every bench number
+    # downstream — the fetcher must fall back to the reconstruction instead.
+    summaries = [{"glyph_key": "a", "variant": LAUFFORM_VARIANT}]
+    client = _StubClient(routes={"/sources/s/templates/a": CHART_PAYLOAD})
+    assert stored_laufform_rows(client, "s", summaries, {"a"}) is None
+
+
+def test_stored_laufform_rows_empty_when_no_variant_rows_exist():
+    # No variant-100 summary → an empty layer IS the stored truth (and never
+    # mistaken for an old deployment): no request is even issued.
+    client = _StubClient(routes={})
+    assert stored_laufform_rows(client, "s", [{"glyph_key": "a", "variant": 0}], {"a"}) == {}
+    assert client.calls == []
 
 
 def test_hand_is_derived_from_the_occurrences():

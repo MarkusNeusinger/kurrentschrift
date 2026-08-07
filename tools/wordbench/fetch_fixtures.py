@@ -18,21 +18,27 @@ Read map (every call is a GET; nothing here ever writes to DB or API):
     width_resolver                      GET /styles/{style_id}           public
     glyph inventory                     GET /sources/{id}/templates      public
     templates.json                      GET /sources/{id}/templates/{k}  ADMIN
-    templates_laufform.json             GET /hands/{hand}/aggregates     ADMIN
+    templates_laufform.json             GET …/templates/{k}?variant=100  ADMIN
+                                        (fallback: /hands/{h}/aggregates) ADMIN
     constant_nib_units                  GET /sources/{id}/render-context ADMIN
                                         (fallback: …/write/glyphs)       public
     pair_instances.json                 GET /sources/{id}/pair-instances public
 
-One field is a RECONSTRUCTION rather than a plain read, and one has two
-provenances; the manifest says which:
+Two artifacts have two provenances; the manifest says which:
 
-* the LAUFFORM_VARIANT rows — no endpoint serves a variant-100 template, so
-  each row is rebuilt from the chart row plus the aggregate's
-  `laufform_anchors` (what the engine currently writes) through the very
+* the LAUFFORM_VARIANT rows — read VERBATIM off the stored variant-100
+  templates via the `variant` parameter on the single-template GET
+  (`laufform_precision: "stored"`, issue #311: read, don't rebuild — the same
+  philosophy as the render-context nib read). A deployment predating that
+  parameter silently serves the variant-0 row instead (an unknown query
+  parameter is ignored), which the response's own `variant` field exposes; the
+  old reconstruction then takes over (`"reconstructed"`): each row is rebuilt
+  from the chart row plus the aggregate's `laufform_anchors` through the very
   function the write path uses, `api.routers.templates.build_laufform_canonical`.
-  Only `trace_meta.laufform` differs from the stored row: it records this
-  derivation instead of the apply-step's, and nothing in the render path reads
-  it.
+  That rebuild is byte-true only while the chart row still matches the one the
+  apply step derived from — a resample between apply and fetch shifts
+  `trace_meta`/widths/entry/exit under the reconstruction, which is exactly the
+  divergence #311 measured.
 * `constant_nib_units` — the source-pooled Gleichzug nib is a DB aggregate over
   ALL templates of the source, including variant rows no read endpoint serves.
   The admin-gated `GET /sources/{id}/render-context` returns it unrounded
@@ -74,6 +80,7 @@ import ssl
 import time
 import urllib.error
 import urllib.request
+import uuid
 from collections import Counter
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
@@ -112,6 +119,9 @@ RETRY_BACKOFF_S = 0.75
 NIB_EXACT = "exact"  # read unrounded off GET /sources/{id}/render-context
 NIB_READBACK = "4dp-readback"  # recovered from a rounded /write/glyphs payload
 NIB_NONE = "none"  # no pooled nib exists (a pressure/broad-nib source)
+# … and about the Laufform rows' provenance (issue #311, see the module docstring).
+LAUFFORM_STORED = "stored"  # the variant-100 rows themselves, verbatim
+LAUFFORM_RECONSTRUCTED = "reconstructed"  # rebuilt from the hand's aggregates (older API)
 # Provenance stamped into the reconstructed Laufform rows' `trace_meta.laufform`.
 LAUFFORM_META = {"derived_from": "hand-aggregates", "via": "fetch_fixtures"}
 # The verify gate needs a real sample, not a token one (plan §B6: ≥10 cases).
@@ -307,6 +317,33 @@ def laufform_rows_from_aggregates(aggregates: list[dict], templates: dict[str, d
             print(f"  skip laufform {key}: {len(anchors)} median anchors vs {len(chart['anchors'])} on the chart row")
             continue
         rows[key] = laufform_row_from_payload(chart, anchors)
+    return rows
+
+
+def stored_laufform_rows(
+    client: ApiClient, source_id: str, summaries: list[dict], keys: set[str]
+) -> dict[str, dict] | None:
+    """The STORED variant-100 rows, verbatim (issue #311: read, don't rebuild).
+
+    The public summary list already names every variant a glyph has, so the
+    keys with a Laufform row are known without an extra probe; each row then
+    comes off the admin single-template GET with `variant=LAUFFORM_VARIANT`.
+    Returns None when the deployed API predates that parameter: an older
+    FastAPI ignores the unknown query parameter and serves the variant-0 chart
+    row instead, which its own `variant` field exposes — silently freezing a
+    chart row as a Laufform would corrupt every bench number downstream.
+    """
+    wanted = sorted({row["glyph_key"] for row in summaries if row.get("variant") == LAUFFORM_VARIANT} & keys)
+    rows: dict[str, dict] = {}
+    for key in wanted:
+        payload = client.get(
+            f"/sources/{quote(source_id, safe='')}/templates/{quote(key, safe='')}",
+            {"variant": LAUFFORM_VARIANT},
+            admin=True,
+        )
+        if payload.get("variant") != LAUFFORM_VARIANT:
+            return None
+        rows[key] = template_row_from_payload(payload)
     return rows
 
 
@@ -516,13 +553,25 @@ def fetch(
     print(f"fetched {len(templates)} chart templates ({len(have)} authored keys on the source)")
 
     hand = hand_id_for(source, pair_rows, hand_id)
-    laufform: dict[str, dict] = {}
-    if hand:
-        aggregates = client.get(f"/hands/{quote(hand, safe='')}/aggregates", admin=True)
-        laufform = laufform_rows_from_aggregates(aggregates, templates)
-        print(f"reconstructed {len(laufform)} laufform rows from hand {hand!r} ({len(aggregates)} aggregates)")
+    stored = stored_laufform_rows(client, source_id, summaries, set(all_keys))
+    if stored is not None:
+        laufform = stored
+        laufform_precision = LAUFFORM_STORED
+        print(f"fetched {len(laufform)} stored laufform rows")
     else:
-        print("no hand derivable from the occurrences — fixtures freeze without laufform rows")
+        # A deployment without the variant read cannot serve the stored rows —
+        # the pre-#311 aggregate reconstruction takes over, and the manifest
+        # says so (the verify gate may then deviate wherever a chart row moved
+        # since the apply step; see the module docstring).
+        laufform_precision = LAUFFORM_RECONSTRUCTED
+        laufform = {}
+        print("  stored-variant read unavailable — reconstructing laufform rows from the hand's aggregates")
+        if hand:
+            aggregates = client.get(f"/hands/{quote(hand, safe='')}/aggregates", admin=True)
+            laufform = laufform_rows_from_aggregates(aggregates, templates)
+            print(f"reconstructed {len(laufform)} laufform rows from hand {hand!r} ({len(aggregates)} aggregates)")
+        else:
+            print("no hand derivable from the occurrences — fixtures freeze without laufform rows")
 
     constant_nib_units, nib_precision = resolve_nib(client, source_id, style["width_resolver"], set(templates))
 
@@ -568,10 +617,12 @@ def fetch(
             "laufform_keys": sorted(set_laufform),
             "words": index,
             # Provenance of THIS root: rebuilt over the API rather than pooled
-            # in SQL, and at which precision the pooled nib came back.
+            # in SQL, at which precision the pooled nib came back, and whether
+            # the Laufform rows are the stored ones or a reconstruction.
             "exported_via": "api",
             "api_base": client.base_url,
             "nib_precision": nib_precision,
+            "laufform_precision": laufform_precision,
             "hand_id": hand,
         }
         (fixture_root / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1))
@@ -603,7 +654,19 @@ def _placement_tol_for(root: Path) -> float:
     return EXACT_PLACEMENT_TOL if manifest.get("nib_precision") == NIB_EXACT else DEFAULT_PLACEMENT_TOL
 
 
-def verify_rows(client: ApiClient, source_id: str, root: Path) -> list[str]:
+def _bust_token() -> str:
+    """One fresh cache-buster per verify run.
+
+    The public /write responses ride Cache-Control through the Cloudflare edge,
+    so an unbusted gate can hold the fixtures against a response cached BEFORE
+    the write round it is supposed to verify (#311's first symptom report mixed
+    exactly such stale hits into the count). A never-seen `bust` value forces
+    every gate read to the origin; the API ignores the parameter.
+    """
+    return uuid.uuid4().hex[:12]
+
+
+def verify_rows(client: ApiClient, source_id: str, root: Path, bust: str) -> list[str]:
     """Layer 1 of the gate: every rebuilt row against what the API renders from the stored one."""
     from core.pipeline import render_payload_for_template
 
@@ -620,7 +683,8 @@ def verify_rows(client: ApiClient, source_id: str, root: Path) -> list[str]:
         for start in range(0, len(keys), MAX_BATCH_KEYS):
             batch = keys[start : start + MAX_BATCH_KEYS]
             response = client.get(
-                f"/sources/{quote(source_id, safe='')}/write/glyphs", {"keys": ",".join(batch), "variant": variant}
+                f"/sources/{quote(source_id, safe='')}/write/glyphs",
+                {"keys": ",".join(batch), "variant": variant, "bust": bust},
             )
             served.update({g["glyph_key"]: g for g in response["glyphs"]})
             for key in response["missing"]:
@@ -670,12 +734,15 @@ def verify(
 
     Both layers compare `production_row`s — see there for the `glyph`/fluent-widen
     divergence, a property of the fixture contract rather than of this fetch.
+    Every gate read is cache-busted (see `_bust_token`): ground truth is the
+    origin, never whatever the edge cache still holds from before a write round.
     """
     from tools.wordlab.cases import iter_fixture_word_cases
     from tools.wordlab.derive import derive_word
 
     set_names = sorted({_set_name(w) for w in load_sidecar_entries(source_id, which)})
     per_set = max(1, -(-n_cases // len(set_names)))
+    bust = _bust_token()
     failures: list[str] = []
     checked = 0
     exact = 0
@@ -687,7 +754,7 @@ def verify(
         if not root.exists():
             failures.append(f"{set_name}: no fixture root at {root}")
             continue
-        failures += verify_rows(client, source_id, root)
+        failures += verify_rows(client, source_id, root, bust)
         root_tol = placement_tol if placement_tol is not None else _placement_tol_for(root)
         cases = [
             c for c in iter_fixture_word_cases(which=set_name, style=style_id, fixtures_root=out_dir) if c.scorable
@@ -699,7 +766,7 @@ def verify(
         for case in cases[::stride][:per_set]:
             case.templates = {k: production_row(r) for k, r in case.templates.items()}
             case.laufform = {k: production_row(r) for k, r in case.laufform.items()}
-            served = client.get(f"/sources/{quote(source_id, safe='')}/write/word", {"text": case.word})
+            served = client.get(f"/sources/{quote(source_id, safe='')}/write/word", {"text": case.word, "bust": bust})
             error, shape, placement = composition_mismatch(
                 derive_word(case).composed["items"], served["items"], shape_tol=shape_tol, placement_tol=root_tol
             )
