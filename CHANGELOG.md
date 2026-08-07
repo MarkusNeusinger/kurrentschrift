@@ -31,6 +31,13 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **Pre-approved the Claude Code Remote scheduling tools for repo sessions**
+  (new committed `.claude/settings.json`): `send_later` and the trigger
+  CRUD/list/fire tools no longer raise a permission prompt — cloud sessions
+  schedule their own PR check-ins constantly, and the container is ephemeral,
+  so the committed project settings are the only place the grant persists.
+  Only the scheduling family is allowed; every other Remote tool (session
+  creation, archiving) still prompts.
 - **Documented the `aug07` write round and its new wordbench baseline**
   (`qualitaetsmetrik.md`): 23 letter resamples under the sharpened
   verticalisation tolerance (`oe` and `U` deliberately held back),
