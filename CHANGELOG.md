@@ -14,6 +14,26 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **Sharpened the verticalisation pair: gently curved capital flanks stay
+  round (Korb #5, the S bowl).** The derivation's downstroke straightening
+  and the Sütterlin metric's vertical-run detector share one new constant
+  `core.geometry.VERTICAL_STRAIGHT_TOL = 0.035` (was three silent copies of
+  0.10): a run must bow at most 3.5 % of its chord to count as a Gleichzug
+  downstroke — calibrated over all 61 authored letters (real stems ≤ 3.0 %,
+  oval capital flanks ≥ 3.6 %). The S bowl (and O/A/M/… flanks) keeps its
+  even curvature instead of being pressed flat with fillet corners; a
+  deliberate metric re-baseline documented in `qualitaetsmetrik.md` §6
+  (`aug07`): glyph bench 0.183765 → 0.175550, every ink-anchored component
+  better, honest loser Y (+0.115, collinearity on its de-straightened
+  crossing). Stored templates change only via re-derive (`resample`).
+- **Word-trace harvest lifts the pen after a restart capital (Korb #5,
+  „Säbel" S→ä).** `assemble_word_strokes` no longer welds the composed
+  connector's retrace prefix into the pen run after an S/O/B/K/P capital:
+  the run ends at the capital's ductus end and the trace's next stroke
+  starts at the connector's Grundlinie turn — the fresh Ansatz the plates
+  show. New `restart_slots` parameter fed from `CAP_RESTART_BASES`; stored
+  traces change only on a re-harvest.
+
 - **Kringel-exit class rule: b and o depart for the join at the bow's
   closing loop, not at the chart cell's rising coupling stub (Korb #5,
   „Säbel").** In bound context the stub after the Kringel's self-crossing

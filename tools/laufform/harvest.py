@@ -72,6 +72,7 @@ from typing import Sequence
 import numpy as np
 from scipy.ndimage import distance_transform_edt
 
+from core.compose import CAP_RESTART_BASES, _key_base
 from core.fit import fit_template_to_instance
 from tools.pairlab.analyze import TRACE_WINDOW_MARGIN, _body_items, _fit_letter, _ink_extent_x, _to_px
 from tools.pairlab.chain import chain_runs, fit_word_chain
@@ -244,7 +245,12 @@ def _is_diacritic(entry: dict, xh: float, registration: dict) -> bool:
 
 
 def assemble_word_strokes(
-    entries: Sequence[dict], *, traced_slots: set[int], xh: float, registration: dict
+    entries: Sequence[dict],
+    *,
+    traced_slots: set[int],
+    xh: float,
+    registration: dict,
+    restart_slots: set[int] | frozenset[int] = frozenset(),
 ) -> list[list[list[float]]]:
     """A chain fit's pen-down polylines → the word record's strokes.
 
@@ -253,6 +259,14 @@ def assemble_word_strokes(
     duplicated seam sample dropped (the two sides share one anchor parameter,
     so the samples coincide exactly). A diacritic and every interior pen lift
     stay their own polyline.
+
+    ``restart_slots`` (Korb #5, „Säbel" S→ä): slot indices of the restart-class
+    capitals (CAP_RESTART_BASES). The writer LIFTS after such a capital and
+    sets down fresh near the baseline (Grundlinie) — the composed connector's retrace
+    prefix (ductus end → working exit, duplicating the capital's own ink) is a
+    render construct, not a pen movement the trace may claim. The run ends at
+    the capital's body; the connector keeps only its piece from the lowest
+    point onward (the fresh set-down, Ansatz, rising into the next letter).
 
     `traced_slots` is every slot the chain actually SOLVED — deliberately not
     the gate's accepted set. The gate decides what becomes a measurement, not
@@ -305,6 +319,15 @@ def assemble_word_strokes(
             pts = np.asarray(items[0][1]["points_px"], dtype=float).reshape(-1, 2)
             if not joins_traced or not len(pts):
                 flush()
+                continue
+            if left is not None and letter_slot[left] in restart_slots:
+                # Pen lift after a restart capital: cut the retrace prefix
+                # (crop px, y grows downward — argmax y is the baseline turn)
+                # and start the fresh set-down as its own stroke.
+                flush()
+                pts = pts[int(np.argmax(pts[:, 1])) :]
+                if len(pts) >= 2:
+                    current = [items[0][0], pts]
                 continue
             if current is None:
                 current = [items[0][0], pts]
@@ -901,7 +924,13 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
         # in `gates`/`converged_local` beside it).
         word_strokes.extend(
             assemble_word_strokes(
-                fit.stroke_polylines_px, traced_slots=set(fit.slots), xh=xh, registration=registration
+                fit.stroke_polylines_px,
+                traced_slots=set(fit.slots),
+                xh=xh,
+                registration=registration,
+                restart_slots={
+                    i for i, s in enumerate(case.slots) if s.key and _key_base(s.key, s.position) in CAP_RESTART_BASES
+                },
             )
         )
 

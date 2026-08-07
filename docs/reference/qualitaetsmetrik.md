@@ -1545,3 +1545,32 @@ erneut auf und wurde erneut per Cache-Bust widerlegt: das Gate mit
 gebusteten `/write/word`-Kompositionen läuft **12/12 bit-exakt** (worst
 shape 0, worst placement 0). Die Kante serviert bis zum Ablauf von
 `s-maxage` den Vortagsstand — bekannt, harmlos, läuft aus.
+
+### Re-Baseline `aug07` — Vertikalisierungs-Paar geschärft (Korb #5, das S)
+
+Die Ableitung (`suetterlin._verticalize_downstrokes`) und die Metrik
+(`geometry.detect_vertical_runs`, §5-Verticality) klassifizieren als Paar
+„fast-vertikal + relativ gerade = Abstrich" und zogen mit der alten
+Toleranz **0,10** (max. Bogen als Anteil der Sehne) auch die sanft
+gebogenen Bauchflanken der großen Kapitälchen platt — sichtbar als die
+Fillet-Ecken im S-Bauch, die Korb #5 bemängelte (die Chartzelle ist ein
+glattes Oval). Kalibrierung über alle 61 authored Buchstaben der
+Sütterlin-1922: echte Gleichzug-Stämme bogen ≤ 3,0 % (b 1,8, f 2,6,
+longs 0,7), Ovalflanken ≥ 3,6 % (S 5,8/6,7, O 5,6, A 5,1, M 5,8).
+**Neue geteilte Konstante `core.geometry.VERTICAL_STRAIGHT_TOL = 0.035`**,
+von Ableitung UND Metrik importiert (vorher drei stille Kopien) — eine
+bewusste Metrik-Änderung außerhalb jedes Experiment-Loops, beide Seiten
+zusammen bewegt.
+
+Glyph-Bench (Fixtures per API-Nachbau, volles Bbox-Dict inkl. `patches`):
+`bench_loss` **0,183765 → 0,175550**; tintenverankerte Komponenten alle
+besser (coverage 0,1722 → 0,1642, smoothness 0,1230 → 0,1158), S
+0,182 → 0,156 mit glattem Bauch mittig in der Tinte. Ehrlicher
+Verlierer: **Y +0,115** — seine entglättete Kurve triggert jetzt den
+Collinearity-Term an der eigenen Kreuzung (Ys Tinten-Deckung verbessert
+sich dabei 0,217 → 0,171; der Term ist auf gebogenen Durchgängen
+möglicherweise übereifrig — offener Folgepunkt, nicht in dieser Runde).
+Wordbench byte-identisch (0,110605/0,162783 — Komposition unberührt).
+Gespeicherte Zeilen ändern sich erst durch Re-Derive (`POST
+…/templates/{key}/resample`); der Schrieb ist ein eigener, abgestimmter
+Schritt.
