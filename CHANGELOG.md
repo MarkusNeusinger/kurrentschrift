@@ -14,6 +14,21 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **Kringel-exit class rule: b and o depart for the join at the bow's
+  closing loop, not at the chart cell's rising coupling stub (Korb #5,
+  „Säbel").** In bound context the stub after the Kringel's self-crossing
+  is cut — centerline and silhouette, like the t-bar — so the join leaves
+  the knot near-level instead of cresting a second time above the bow; a
+  knot departure is excluded from arm fusion (it is no covering arm), and
+  word-final b/o keep the full chart form. As a fallback for bow exits
+  without a detectable knot, a closing bow coupling a round body's top now
+  departs on the falling chord (the arm grammar's shallow-join precedent)
+  instead of the level clamp. Wordbench words 0.114448 → 0.110605, pairs
+  0.164343 → 0.162783 (same fixtures, A/B); biggest movers Zorn −0.113,
+  von −0.048, Soldaten −0.034, Säbel −0.008. Golden compose fixture
+  re-baselined; new unit tests pin the cut, the word-final keep, the
+  low-crossing guard and the base gate.
+
 - **The rule work's duplicated computations now agree by construction — a
   byte-exact structural cleanup of `core/compose.py` and its neighbours.**
   The placement stage and the connector drawer used to re-derive the same

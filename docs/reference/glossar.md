@@ -45,7 +45,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Grundstrich/Haarstrich §1
 - **H** — H0–H5 §5 · Hand §2 · HTR §6 · Huber-Kappung §3 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
-- **K** — Kettenfit §3 · Kill-Kriterium §3 · Klassenregel §2 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5
+- **K** — Kettenfit §3 · Kill-Kriterium §3 · Klassenregel §2 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Kringel-Exit §2
 - **L** — Labs §4 · Laufform §2 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · matched arc §3 · meas §4 · Messboden §4
 - **N** — Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4
@@ -303,12 +303,25 @@ Bogen-Exits, rückwärts zeigende Exits.
 gilt (alle d-Schleifen-Exits, alle Deckstrich-Bögen, alle r-Arme). Das
 Leitprinzip der Optimierung: **eine Klassenregel hebt viele Paare, ein
 Override repariert eine Stelle.** Benannte Klassen im Code: Girlande ·
-Gabel-Join · Bar-Exit · Kapital-Übergabe · Arkaden-Diagonale.
+Gabel-Join · Bar-Exit · Kringel-Exit · Kapital-Übergabe · Arkaden-Diagonale.
 
 **Girlande** — die tief durchhängende Verbindung, die von einem Exit in
 den nächsten Arkaden-Eintritt (n, m, i, u) fällt — das rhythmische
 Grundmuster der verbundenen Schrift.
 *Technisch:* `GARLAND_*` in `core/compose.py`.
+
+**Kringel-Exit** — die Klassenregel für Buchstaben, deren Bogen in der
+kleinen Schluss-Schleife (dem Kringel) endet und deren Chartzelle daraus
+noch einen steigenden Koppel-Stub herausschlägt (b, o) — Tafelform wie
+t's langer Balken. Im gebundenen Kontext wird der Stub am Self-Crossing
+der Schleife (dem Knoten, ~0,77 xh) gekappt — Mittellinie UND Silhouette —
+und der Übergang verlässt den Kringel nahezu eben; ein Knoten-Abgang
+zählt dabei **nicht** als r-Arm (keine Arm-Fusion). Wortfinal bleibt die
+Chartform vollständig. Anlass: Korb #5 („Säbel" b→e — der Generator
+setzte über dem Kringel einen zweiten Scheitel, den die Platte nie
+schreibt).
+*Technisch:* `KRINGEL_EXIT_BASES` + `_last_ink_crossing` in
+`core/compose.py`.
 
 **Override** *(Paar-Override, `glyph_pairs`)* — eine für genau *ein*
 Buchstabenpaar hinterlegte, wörtlich übernommene Verbindung, die den

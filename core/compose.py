@@ -148,6 +148,18 @@ LOOP_EXIT_MIN_STUB = 0.1  # the tip must rise at least this above the foot
 DLOOP_SWING_END_DEG = 40.0
 DLOOP_SWING_RUN = 0.42
 DLOOP_SWING_MIN_LAUNCH_DEG = 20.0
+# Kringel-stub departure (Korb #5, Säbel): b and o close their bow in the
+# small loop (Kringel) and the chart cell flicks a rising coupling stub out
+# of it — table form, like t's long bar. The plates leave the Kringel LEVEL
+# straight into the covering join (Säbel/haben/Silber: one shallow arch, no
+# second crest above the bow). In bound context the stub is cut at the
+# loop's self-crossing — centerline AND silhouette — and the join departs
+# there (~y 0.77 at ~+7°, the arm grammar's band); word-final keeps the
+# full chart form, like LOOP_EXIT. Closed, enumerated set: v/w end in a
+# BACKWARD curl (no rising stub — the guards would reject them anyway).
+KRINGEL_EXIT_BASES = frozenset({"b", "o"})
+KRINGEL_CROSS_MIN_Y = 0.5  # the knot sits in the upper midband, never a bowl crossing
+KRINGEL_MIN_STUB = 0.08  # the tip must rise this much above the knot (a real stub)
 # The lean is a property of FLOWING words: the isolated two-letter drills of
 # Abb. 20 measure upright (§4: pairs full-height median 90.75° vs the leaning
 # d-words of Abb. 19), so a run shorter than this stays chart-true.
@@ -1302,7 +1314,18 @@ def _connector_centerline(
                 d_out = _unit(min(max(launch, BOW_LAUNCH_DEG[0]), 0.0))
         elif launch > BOW_LAUNCH_DEG[1]:
             d_orig = d_out
-            d_out = _unit(min(max(launch, BOW_LAUNCH_DEG[0]), BOW_LAUNCH_DEG[1]))
+            if high_couple and span > 0:
+                # A closing bow coupling a round body's TOP departs on the
+                # falling chord — one single fall, the same shallow-join rule
+                # the arm branch above already writes. The level clamp put a
+                # second crest ABOVE the bow (Säbel b→e: exit 0.98, connector
+                # crested 1.02 before falling to the 0.78 couple point) where
+                # the plates run the Kringel in one shallow arch straight
+                # into the covering join. The crest roll below still rounds
+                # the seam — it now rolls from the ink tangent into the fall.
+                d_out = ((p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span)
+            else:
+                d_out = _unit(min(max(launch, BOW_LAUNCH_DEG[0]), BOW_LAUNCH_DEG[1]))
             if CREST_ROLL_LEN > 0:
                 # Roll over the crest (see CREST_ROLL_LEN): a short
                 # two-tangent arc keeps the bow seam G1; the join
@@ -1620,6 +1643,18 @@ def compose_word(
         # floating mark; point AND tangent come from the rendered centerline.
         exit_xy: Point = body_exit_line[-1]
         exit_deg = _endpoint_tangent(body_exit_line, at_end=True)
+        # Bound context of the NEXT slot — shared by every stub-departure rule
+        # below (loop return, Kringel, bar): only a joined, renderable
+        # neighbour justifies trading the chart cell's finishing stub for the
+        # running form.
+        nxt = slots[slot_index + 1] if slot_index + 1 < len(slots) else None
+        bound_next = (
+            nxt is not None
+            and not nxt.space
+            and bool(nxt.joins)
+            and bool(nxt.key)
+            and bool((data_by_key.get(nxt.key) or {}).get("centerlines_template"))
+        )
         # Loop-return departure (see LOOP_EXIT_BASES): in BOUND context the
         # chart cell's finishing stub is NOT WRITTEN at all — the loop return
         # continues without a set-down straight into the next letter ("der
@@ -1629,14 +1664,6 @@ def compose_word(
         # flowing form. Word-final (and before any detached/missing break)
         # the chart form stays complete and earns its loop finial.
         if slot.joins and _key_base(slot.key, slot.position) in LOOP_EXIT_BASES:
-            nxt = slots[slot_index + 1] if slot_index + 1 < len(slots) else None
-            bound_next = (
-                nxt is not None
-                and not nxt.space
-                and bool(nxt.joins)
-                and bool(nxt.key)
-                and bool((data_by_key.get(nxt.key) or {}).get("centerlines_template"))
-            )
             foot_idx = _loop_return_foot(body_exit_line)
             if foot_idx is not None and bound_next:
                 stub_piece = list(centerlines[last_body_idx])[foot_idx:]
@@ -1654,6 +1681,35 @@ def compose_word(
                 exit_xy = body_exit_line[-1]
                 exit_deg = _endpoint_tangent(body_exit_line, at_end=True)
 
+        # Kringel-stub departure (see KRINGEL_EXIT_BASES): the bow's closing
+        # loop is the knot the running hand departs from — the rising stub
+        # after it is table form. Cut at the stroke's last self-crossing,
+        # centerline AND silhouette, like the t-bar; the join then leaves the
+        # Kringel near-level instead of cresting a second time above the bow.
+        if (
+            slot.joins
+            and _key_base(slot.key, slot.position) in KRINGEL_EXIT_BASES
+            and bound_next
+            and len(body_exit_line) >= 5
+        ):
+            knot_cut = _last_ink_crossing(body_exit_line, [body_exit_line])
+            if knot_cut is not None:
+                knot, cut = knot_cut
+                if knot[1] >= KRINGEL_CROSS_MIN_Y and body_exit_line[-1][1] - knot[1] >= KRINGEL_MIN_STUB:
+                    stroke = list(centerlines[last_body_idx])
+                    piece = [list(knot)] + stroke[cut + 1 :]
+                    centerlines[last_body_idx] = stroke[: cut + 1] + [list(knot)]
+                    if last_body_idx < len(rings_by_stroke) and rings_by_stroke[last_body_idx]:
+                        rings_by_stroke[last_body_idx] = erase_silhouette_piece(
+                            rings_by_stroke[last_body_idx],
+                            piece,
+                            med_half * ERASE_MARGIN_FACTOR,
+                            keep=centerlines[last_body_idx],
+                        )
+                    body_exit_line = [tuple(p) for p in centerlines[last_body_idx]]
+                    exit_xy = body_exit_line[-1]
+                    exit_deg = _endpoint_tangent(body_exit_line, at_end=True)
+
         # Bar exit (see BAR_EXIT_BASES): t's crossbar / f's flag. The anchor
         # is the exit stroke's last crossing with the glyph's own earlier
         # ink. In bound context t's bar is cut AT that crossing — the
@@ -1662,14 +1718,6 @@ def compose_word(
         # Word-final keeps the full chart form, like LOOP_EXIT.
         stem_launch: tuple[float, float] | None = None
         if slot.joins and _key_base(slot.key, slot.position) in BAR_EXIT_BASES and len(body_exit_line) >= 5:
-            nxt = slots[slot_index + 1] if slot_index + 1 < len(slots) else None
-            bound_next = (
-                nxt is not None
-                and not nxt.space
-                and bool(nxt.joins)
-                and bool(nxt.key)
-                and bool((data_by_key.get(nxt.key) or {}).get("centerlines_template"))
-            )
             if bound_next:
                 earlier = [
                     [tuple(p) for p in centerlines[si2]] for si2 in range(last_body_idx) if not diacritic_flags[si2]
@@ -1821,7 +1869,15 @@ def compose_word(
                     prev.ink_max_x + BACKWARD_INK_CLEARANCE - (ink_min_x - entry_xy[0]),
                 )
             arm_exempt = forward and BOW_EXIT_Y < prev.exit[1] <= HIGH_EXIT_Y and prev.tangent_deg < ARM_TAN_MAX_DEG
-            if arm_exempt and _key_base(slot.key, slot.position) in ARM_FUSE_BASES:
+            # A cut Kringel exit (b/o) lands in the arm band (~0.77 at ~+7°)
+            # but is no covering arm: the plates keep daylight between the
+            # knot and the next letter (Säbel b→e) — fusing pulled the body
+            # under the bow.
+            if (
+                arm_exempt
+                and prev.base not in KRINGEL_EXIT_BASES
+                and _key_base(slot.key, slot.position) in ARM_FUSE_BASES
+            ):
                 # Arm fusion (see ARM_FUSE_GAP): the next letter is pulled in
                 # until its lead-in crest sits right at the bow's end — the
                 # covering join degenerates to the short roll of the jul30
@@ -2000,7 +2056,7 @@ def compose_word(
                 flank_trim=flank_couple,
                 descender_ride=_key_base(slot.key, slot.position) in DESCENDER_RIDE_BASES,
                 sameslant_couple=_key_base(slot.key, slot.position) in SAMESLANT_COUPLE_BASES,
-                fuse_base=_key_base(slot.key, slot.position) in ARM_FUSE_BASES,
+                fuse_base=_key_base(slot.key, slot.position) in ARM_FUSE_BASES and prev.base not in KRINGEL_EXIT_BASES,
                 fork_line=prev.exit_line,
                 stem_launch=prev.stem_launch,
                 cap_restart=bool(prev.cap_retrace),
