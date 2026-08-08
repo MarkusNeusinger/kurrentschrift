@@ -101,9 +101,11 @@ sondern die Urteile, gegen die eine Zahl gehalten wird.
 
 **`tools/humanbench`** — der blinde Bewertungsdurchgang über die
 gespeicherten Fits, in drei Schritten und drei Modulen. `build.py` zieht die
-Stichprobe einer Runde und schreibt Payload, Schlüssel, Rückhaltemenge und
-Provenienz-Stempel (geschichtet nach Schwere, **innerhalb** der Bänder
-gemischt, mit blinden Wiederholungen als Verlässlichkeitsschranke).
+Stichprobe einer Runde und schreibt Payload, Schlüssel, **schmalen
+Schlüssel**, Rückhaltemenge und Provenienz-Stempel (geschichtet nach Schwere,
+**innerhalb** der Bänder gemischt, mit blinden Wiederholungen als
+Verlässlichkeitsschranke; `--only` beschränkt eine Runde auf die
+Rückhaltemenge einer früheren).
 `page.py` rendert daraus EINE in sich geschlossene HTML-Seite — Crops als
 `data:`-URIs, Stil und Skript inline, kein Font, kein CDN, kein Netzzugriff;
 der Modus folgt dem Payload statt einem Flag: ein Panel je Bild ergibt den
@@ -118,10 +120,11 @@ Geschrieben wird nirgends — weder in die Datenbank noch über die API.
 `page.py` und `analyse.py` sehen beides überhaupt nicht: Die Seite ist ein
 reiner Renderer, die Auswertung liest nur Dateien. Einzig `build.py` greift
 nach außen, und auch nur lesend — die Vorkommen aus Dateien oder, ohne
-Datei, per GET über die deployte Lese-API. Payload und Schlüssel sind
-Vorkommens-Geometrie und bleiben unter `temp/humanbench/runde-<n>/`
-(git-ignoriert); committet wird allein die menschliche Hälfte unter
-`data/humanbench/` — Urteilstext, Stempel, `SOURCE.md`
+Datei, per GET über die deployte Lese-API. Payload, voller Schlüssel und
+jede Kennzahlentabelle je Vorkommen sind Vorkommens-Geometrie und bleiben
+unter `temp/humanbench/runde-<n>/` (git-ignoriert); committet wird die
+menschliche Hälfte unter `data/humanbench/` — Urteilstext, schmaler
+Schlüssel (uid → Glyph, Wort, Slot), Stempel, `SOURCE.md`
 ([`quellen-und-rechte.md`](quellen-und-rechte.md) §5).
 
 ```bash
@@ -138,7 +141,18 @@ uv run python -m tools.humanbench.analyse \
     --key temp/humanbench/runde-2/key.json \
     --rows temp/humanbench/runde-2/rows.json \
     [--spots temp/humanbench/runde-2/spots.json] [--gate 'spike>=8.0:A']
-    [--drop-unsure] [--json auswertung.json]
+    [--union W,B] [--drop-unsure] [--json auswertung.json]
+```
+
+`--rows`/`--spots` sind Vorkommens-Statistik und liegen deshalb außerhalb des
+Repos; ohne sie laufen Verlässlichkeit, Besetzung, Drift und die Notizen
+vollständig, und die Auswertung sagt, welche Schritte sie auslassen musste —
+über dem committeten Bestand also direkt nachrechenbar:
+
+```bash
+uv run python -m tools.humanbench.analyse \
+    --result data/humanbench/runde-01-urteile.txt \
+    --key    data/humanbench/runde-01-vorkommen.json
 ```
 
 ## Benches und Generator (Verweise)

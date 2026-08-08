@@ -137,8 +137,55 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   flagged for a good occurrence against 58–68 % for an unusable one, with a
   clean gap), which is what justifies treating them with different instruments.
 
+- **What a second judgement round would otherwise have had to rediscover.** A
+  completeness pass over the retired scratchpad scripts, asking not „is this
+  good" but „what is missing before a repetition is genuinely cheaper than the
+  first time". Four gaps closed in the instrument itself: `build.py` now writes
+  the **slim key** (`vorkommen.json`) that gets archived beside the judgements,
+  so the archive is a copy of the key that was judged against rather than a
+  second artefact hand-cut months later — and it carries the `slot`, without
+  which two occurrences of one letter in one word cannot be told apart (round 1
+  had three such words, and its hand-cut key dropped the field). `--only`
+  restricts a round to the occurrences a reserve or key file names, applied
+  BEFORE the severity ranking, which is what the pre-registered rule „develop on
+  the labelled set, confirm on the reserve" needs in order to be runnable at
+  all. The builder now warns, by name, about glyphs whose pen lifts it could not
+  resolve: that read is admin-gated, so an unauthenticated round silently draws
+  every multi-stroke letter bridged and manufactures its own findings. And the
+  stamp records the two repeat rules that are constants rather than flags
+  (`repeat_min_glyph_count`, `repeat_jitter`) plus `code_dirty` — a commit only
+  says which code built a round if the tree was clean. `analyse.py` gains
+  `--union W,B`, the one pre-registered analysis step that had no
+  implementation: two categories the round shows to be inseparable are scored as
+  one column, so confusability costs resolution instead of destroying the
+  statement. Asked for, never default. Documented alongside: the contract of the
+  `--rows`/`--spots` files (what each default metric column meant in round 1) —
+  with the honest note that NOTHING in the repo produces them yet, so the
+  coverage matrix, the gate validation and the place check of a category round
+  still need that fourth module written; that the category-stratified repeats
+  the method doc calls for are watched by the analyser but not yet buildable;
+  and that the per-judgement seconds changed meaning after round 1 and are not
+  comparable across rounds. First tests for `build.py`'s sampling half
+  (`tests/test_humanbench_build.py`), two of which grade a safeguard against the
+  failure it was added for rather than against a snapshot.
+
 ### Fixed
 
+- **Three self-checks and a persistence asymmetry in `tools/humanbench`.** The
+  realised repeat gaps were measured at insertion time, but a repeat spliced in
+  between an earlier pair pushes it further apart — so „gaps 40-65 positions"
+  described a sequence nobody was shown; they are now read off the finished
+  order. In the paired mode the severity band a repeat was drawn from came from
+  the full old snapshot's rank while the bands were cut over the MATCHED rows
+  only, so every occurrence the new snapshot lost pushed repeats towards the
+  last band; the ranks are re-stamped after matching, and the prefix check is
+  graded against the population that was actually banded. And the round-1 page
+  stored `{at, seen, notes, stamps, picks}` while its `restore()` read `spots` —
+  a field nothing ever wrote, so one reload would have dropped every marker
+  placed so far, silently, and the markers are the only part of the judgement
+  independent of our own numbers. The current page persists them; the symmetry
+  is now pinned by a test in both directions, and round 1's stamp says the
+  markers are plausible but not proven complete.
 - **The harvest rejects the „Anker im leeren Papier" occurrence
   (`qualitaetsmetrik.md` §8).** A fit that parks one anchor in blank paper — the
   Sütterlin capital S in „Sprünge" sits 12 px from the nearest ink at 9.3× the

@@ -89,6 +89,21 @@ wertlos, sondern zum **Vorher-Zustand**.
              repräsentative Stichprobe ist. Ohne den Schlüssel ist aus dieser
              Datei kein Vorkommen identifizierbar — das ist beabsichtigt.
 
+## runde-01-vorkommen.json — der schmale Schlüssel, 162 Einträge
+
+- Origin:    aus dem vollen `key.json` der Runde herausgeschnitten (seit der
+             Werkzeug-Fassung schreibt `tools/humanbench/build.py` ihn selbst
+             als `vorkommen.json`).
+- Inhalt:    je Bildschirm `uid` → `glyph`, `word`, `slot`, `repeat_of`. Sonst
+             nichts: keine Anker, keine Schwere, kein Rang, keine Kennzahl.
+- Zweck:     ohne ihn ist `S026:AW#81,76` eine bedeutungslose Zeichenkette.
+             Welcher Buchstabe in welchem Wort einer gemeinfreien Tafel steht,
+             ist keine gelernte Geometrie (Abgrenzung oben). Der `slot` gehört
+             dazu, weil die rundenübergreifende Identität (Glyph, Wort, Slot)
+             ist und drei der Wörter ihren Buchstaben zweimal enthalten; die
+             erste Fassung ließ ihn weg, die Nachtragung ist im Stempel
+             beschrieben und gegen den vollen Schlüssel geprüft.
+
 ## Was hier nicht liegt
 
 Nicht committet, weil gelernter Datensatz bzw. Vorkommens-Statistik

@@ -3,972 +3,1134 @@
   "uid": "S026",
   "glyph": "w",
   "word": "wenn",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S050",
   "glyph": "a",
   "word": "daß",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S144",
   "glyph": "x",
   "word": "vx",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S168",
   "glyph": "e",
   "word": "Pulver",
+  "slot": 4,
   "repeat_of": null
  },
  {
   "uid": "S197",
   "glyph": "e",
   "word": "linken",
+  "slot": 4,
   "repeat_of": null
  },
  {
   "uid": "S048",
   "glyph": "p",
   "word": "rp",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S084",
   "glyph": "i",
   "word": "ein",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S122",
   "glyph": "t",
   "word": "Soldaten",
+  "slot": 5,
   "repeat_of": null
  },
  {
   "uid": "S157",
   "glyph": "n",
   "word": "einen",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S219",
   "glyph": "e",
   "word": "schießen",
+  "slot": 6,
   "repeat_of": null
  },
  {
   "uid": "S027",
   "glyph": "e",
   "word": "der-3",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S093",
   "glyph": "n",
   "word": "kann",
+  "slot": 3,
   "repeat_of": null
  },
  {
   "uid": "S133",
   "glyph": "r",
   "word": "Sporn",
+  "slot": 3,
   "repeat_of": null
  },
  {
   "uid": "S191",
   "glyph": "i",
   "word": "Galoppieren",
+  "slot": 6,
   "repeat_of": null
  },
  {
   "uid": "S240",
   "glyph": "z",
   "word": "rz",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S033",
   "glyph": "w",
   "word": "schwer",
+  "slot": 3,
   "repeat_of": null
  },
  {
   "uid": "S066",
   "glyph": "m",
   "word": "muß-3",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S134",
   "glyph": "t",
   "word": "mit",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S182",
   "glyph": "f",
   "word": "Of",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S231",
   "glyph": "c",
   "word": "scharfen",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S042",
   "glyph": "w",
   "word": "zwei",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S055",
   "glyph": "i",
   "word": "die",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S114",
   "glyph": "i",
   "word": "einen",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S180",
   "glyph": "u",
   "word": "muß-2",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S204",
   "glyph": "t",
   "word": "mit-2",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S007",
   "glyph": "i",
   "word": "die-2",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S059",
   "glyph": "f",
   "word": "scharfen",
+  "slot": 5,
   "repeat_of": null
  },
  {
   "uid": "S126",
   "glyph": "h",
   "word": "auch-2",
+  "slot": 3,
   "repeat_of": null
  },
  {
   "uid": "S148",
   "glyph": "e",
   "word": "zwei",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S201",
   "glyph": "longs",
   "word": "schwer",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S038",
   "glyph": "E",
   "word": "Einen",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S063",
   "glyph": "r",
   "word": "Zorn",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S105",
   "glyph": "o",
   "word": "von",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S181",
   "glyph": "u",
   "word": "Pulver",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S228",
   "glyph": "l",
   "word": "Galoppieren",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S012",
   "glyph": "r",
   "word": "rp",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S070",
   "glyph": "h",
   "word": "han",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S113",
   "glyph": "h",
   "word": "macht",
+  "slot": 3,
   "repeat_of": null
  },
  {
   "uid": "S166",
   "glyph": "e",
   "word": "einer",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S243",
   "glyph": "c",
   "word": "auch",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S031",
   "glyph": "n",
   "word": "scharfen",
+  "slot": 7,
   "repeat_of": null
  },
  {
   "uid": "R12",
   "glyph": "a",
   "word": "daß",
+  "slot": 1,
   "repeat_of": "S050"
  },
  {
   "uid": "S053",
   "glyph": "d",
   "word": "die-2",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S129",
   "glyph": "l",
   "word": "laden",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S161",
   "glyph": "n",
   "word": "Sprünge",
+  "slot": 4,
   "repeat_of": null
  },
  {
   "uid": "S236",
   "glyph": "i",
   "word": "im",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S017",
   "glyph": "d",
   "word": "das",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S083",
   "glyph": "h",
   "word": "Gewehr",
+  "slot": 4,
   "repeat_of": null
  },
  {
   "uid": "S137",
   "glyph": "w",
   "word": "will",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S177",
   "glyph": "r",
   "word": "er",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S215",
   "glyph": "u",
   "word": "auch-2",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S001",
   "glyph": "sz",
   "word": "daß",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S095",
   "glyph": "i",
   "word": "xi",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S131",
   "glyph": "P",
   "word": "Pulver",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S162",
   "glyph": "z",
   "word": "zwei",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "R07",
   "glyph": "n",
   "word": "kann",
+  "slot": 3,
   "repeat_of": "S093"
  },
  {
   "uid": "S223",
   "glyph": "n",
   "word": "schießen",
+  "slot": 7,
   "repeat_of": null
  },
  {
   "uid": "S049",
   "glyph": "a",
   "word": "das",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S082",
   "glyph": "g",
   "word": "Sprünge",
+  "slot": 5,
   "repeat_of": null
  },
  {
   "uid": "S121",
   "glyph": "longs",
   "word": "schießen",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S160",
   "glyph": "n",
   "word": "und-4",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S214",
   "glyph": "r",
   "word": "er-2",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S011",
   "glyph": "g",
   "word": "Zügel",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S064",
   "glyph": "z",
   "word": "zu",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S103",
   "glyph": "n",
   "word": "wenn-2",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S184",
   "glyph": "e",
   "word": "fechten",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S224",
   "glyph": "a",
   "word": "Gaul",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S036",
   "glyph": "u",
   "word": "muß",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S060",
   "glyph": "longs",
   "word": "ssi",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S118",
   "glyph": "u",
   "word": "Kugel",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S172",
   "glyph": "m",
   "word": "mit",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S221",
   "glyph": "l",
   "word": "will",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S025",
   "glyph": "w",
   "word": "Gewehr",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S065",
   "glyph": "Z",
   "word": "Zorn",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S117",
   "glyph": "r",
   "word": "regieren",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S151",
   "glyph": "l",
   "word": "linken",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S200",
   "glyph": "l",
   "word": "Kugel",
+  "slot": 4,
   "repeat_of": null
  },
  {
   "uid": "S008",
   "glyph": "e",
   "word": "Sprünge",
+  "slot": 6,
   "repeat_of": null
  },
  {
   "uid": "S097",
   "glyph": "a",
   "word": "laden",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S138",
   "glyph": "z",
   "word": "zum",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "R02",
   "glyph": "i",
   "word": "die",
+  "slot": 1,
   "repeat_of": "S055"
  },
  {
   "uid": "S163",
   "glyph": "i",
   "word": "Bi",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S235",
   "glyph": "e",
   "word": "schwer",
+  "slot": 4,
   "repeat_of": null
  },
  {
   "uid": "S018",
   "glyph": "d",
   "word": "der-2",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S062",
   "glyph": "sz",
   "word": "ßi",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S115",
   "glyph": "l",
   "word": "Zügel",
+  "slot": 4,
   "repeat_of": null
  },
  {
   "uid": "S185",
   "glyph": "h",
   "word": "auch",
+  "slot": 3,
   "repeat_of": null
  },
  {
   "uid": "R08",
   "glyph": "i",
   "word": "einen",
+  "slot": 1,
   "repeat_of": "S114"
  },
  {
   "uid": "R09",
   "glyph": "e",
   "word": "zwei",
+  "slot": 2,
   "repeat_of": "S148"
  },
  {
   "uid": "S213",
   "glyph": "n",
   "word": "streiten",
+  "slot": 7,
   "repeat_of": null
  },
  {
   "uid": "S020",
   "glyph": "d",
   "word": "Soldaten",
+  "slot": 3,
   "repeat_of": null
  },
  {
   "uid": "S079",
   "glyph": "n",
   "word": "und-3",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S136",
   "glyph": "o",
   "word": "Galoppieren",
+  "slot": 3,
   "repeat_of": null
  },
  {
   "uid": "S186",
   "glyph": "n",
   "word": "und-2",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S242",
   "glyph": "c",
   "word": "schießen",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S034",
   "glyph": "e",
   "word": "haben",
+  "slot": 3,
   "repeat_of": null
  },
  {
   "uid": "S051",
   "glyph": "d",
   "word": "die",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S104",
   "glyph": "n",
   "word": "von",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S194",
   "glyph": "z",
   "word": "vz",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S229",
   "glyph": "b",
   "word": "bz",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S019",
   "glyph": "e",
   "word": "der-2",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S074",
   "glyph": "a",
   "word": "macht",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S140",
   "glyph": "p",
   "word": "Galoppieren",
+  "slot": 5,
   "repeat_of": null
  },
  {
   "uid": "R05",
   "glyph": "i",
   "word": "im",
+  "slot": 0,
   "repeat_of": "S236"
  },
  {
   "uid": "S183",
   "glyph": "z",
   "word": "bz",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S239",
   "glyph": "r",
   "word": "rz",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "R04",
   "glyph": "n",
   "word": "und-4",
+  "slot": 1,
   "repeat_of": "S160"
  },
  {
   "uid": "S037",
   "glyph": "Z",
   "word": "Zügel",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "R01",
   "glyph": "d",
   "word": "das",
+  "slot": 0,
   "repeat_of": "S017"
  },
  {
   "uid": "S056",
   "glyph": "l",
   "word": "Pulver",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S125",
   "glyph": "e",
   "word": "wenn-2",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S165",
   "glyph": "e",
   "word": "die",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S222",
   "glyph": "m",
   "word": "zum",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S005",
   "glyph": "h",
   "word": "fechten",
+  "slot": 3,
   "repeat_of": null
  },
  {
   "uid": "S081",
   "glyph": "e",
   "word": "wenn",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S145",
   "glyph": "b",
   "word": "haben",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "R11",
   "glyph": "a",
   "word": "das",
+  "slot": 1,
   "repeat_of": "S049"
  },
  {
   "uid": "S150",
   "glyph": "h",
   "word": "schwer",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S208",
   "glyph": "i",
   "word": "einer",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S010",
   "glyph": "e",
   "word": "scharfen",
+  "slot": 6,
   "repeat_of": null
  },
  {
   "uid": "S080",
   "glyph": "r",
   "word": "Pulver",
+  "slot": 5,
   "repeat_of": null
  },
  {
   "uid": "R10",
   "glyph": "a",
   "word": "Gaul",
+  "slot": 1,
   "repeat_of": "S224"
  },
  {
   "uid": "S141",
   "glyph": "r",
   "word": "rb",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S179",
   "glyph": "u",
   "word": "unter",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S245",
   "glyph": "i",
   "word": "Einen",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S021",
   "glyph": "S",
   "word": "Säbel",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S085",
   "glyph": "i",
   "word": "linken",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S128",
   "glyph": "i",
   "word": "streiten",
+  "slot": 4,
   "repeat_of": null
  },
  {
   "uid": "R06",
   "glyph": "e",
   "word": "Sprünge",
+  "slot": 6,
   "repeat_of": "S008"
  },
  {
   "uid": "S188",
   "glyph": "h",
   "word": "scharfen",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S217",
   "glyph": "d",
   "word": "und-2",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S028",
   "glyph": "sz",
   "word": "muß-3",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S096",
   "glyph": "a",
   "word": "scharfen",
+  "slot": 3,
   "repeat_of": null
  },
  {
   "uid": "S102",
   "glyph": "F",
   "word": "Feinde",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S154",
   "glyph": "n",
   "word": "haben",
+  "slot": 4,
   "repeat_of": null
  },
  {
   "uid": "S205",
   "glyph": "c",
   "word": "auch-2",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S013",
   "glyph": "G",
   "word": "Gewehr",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S068",
   "glyph": "l",
   "word": "will",
+  "slot": 3,
   "repeat_of": null
  },
  {
   "uid": "S147",
   "glyph": "e",
   "word": "einen",
+  "slot": 3,
   "repeat_of": null
  },
  {
   "uid": "S176",
   "glyph": "r",
   "word": "einer",
+  "slot": 4,
   "repeat_of": null
  },
  {
   "uid": "S199",
   "glyph": "k",
   "word": "linken",
+  "slot": 3,
   "repeat_of": null
  },
  {
   "uid": "S015",
   "glyph": "r",
   "word": "Sprünge",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S075",
   "glyph": "e",
   "word": "Gewehr",
+  "slot": 3,
   "repeat_of": null
  },
  {
   "uid": "R03",
   "glyph": "z",
   "word": "zum",
+  "slot": 0,
   "repeat_of": "S138"
  },
  {
   "uid": "S123",
   "glyph": "W",
   "word": "Wer",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S164",
   "glyph": "d",
   "word": "und-3",
+  "slot": 2,
   "repeat_of": null
  },
  {
   "uid": "S212",
   "glyph": "n",
   "word": "Feinde",
+  "slot": 3,
   "repeat_of": null
  },
  {
   "uid": "S024",
   "glyph": "ue",
   "word": "Zügel",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S077",
   "glyph": "i",
   "word": "ßi",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S107",
   "glyph": "u",
   "word": "und",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S158",
   "glyph": "n",
   "word": "einen",
+  "slot": 4,
   "repeat_of": null
  },
  {
   "uid": "S206",
   "glyph": "e",
   "word": "er",
+  "slot": 0,
   "repeat_of": null
  },
  {
   "uid": "S039",
   "glyph": "s",
   "word": "vs",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S076",
   "glyph": "l",
   "word": "Säbel",
+  "slot": 4,
   "repeat_of": null
  },
  {
   "uid": "S111",
   "glyph": "e",
   "word": "Gewehr",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S159",
   "glyph": "n",
   "word": "regieren",
+  "slot": 7,
   "repeat_of": null
  },
  {
   "uid": "S210",
   "glyph": "n",
   "word": "laden",
+  "slot": 4,
   "repeat_of": null
  },
  {
   "uid": "S029",
   "glyph": "n",
   "word": "In",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S091",
   "glyph": "t",
   "word": "macht",
+  "slot": 4,
   "repeat_of": null
  },
  {
   "uid": "S119",
   "glyph": "u",
   "word": "zu",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S174",
   "glyph": "n",
   "word": "und",
+  "slot": 1,
   "repeat_of": null
  },
  {
   "uid": "S216",
   "glyph": "c",
   "word": "fechten",
+  "slot": 2,
   "repeat_of": null
  }
 ]

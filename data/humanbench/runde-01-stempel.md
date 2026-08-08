@@ -88,19 +88,20 @@ uv run python -m tools.humanbench.analyse \
     --key    data/humanbench/runde-01-vorkommen.json
 ```
 
-Zwei Vorbehalte zu diesem Schlüssel, beide erst nach der Ablage bemerkt:
+Der Schlüssel nennt **`slot` mit**, denn die Identität, über die Runden
+verbunden werden, ist (Glyph, Wort, **Slot**): drei der 150 Bildschirme zeigen
+einen Buchstaben, der im selben Wort zweimal vorkommt (`n` in „einen", `l` in
+„will", `e` in „Gewehr"). Die erste Fassung dieser Datei ließ `slot` weg und
+war für diese sechs Zeilen mehrdeutig; nachgetragen wurde er, indem die
+ursprüngliche Reihung nachgespielt wurde — gleiche Eingabereihenfolge, gleicher
+Filter, gleiche stabile Sortierung nach Schwere, gleiche `S###`-Nummerierung.
+Nur so lösen sich auch die beiden `n` in „einen" auf, deren Schwere auf vier
+Nachkommastellen identisch ist und die ein Wertevergleich nicht trennen kann.
+Die Rekonstruktion wurde gegen den vollen Schlüssel geprüft: 0 Abweichungen in
+Glyph, Wort und Schwere über alle 162 Bildschirme.
 
-* **Ohne `slot`.** Der schmale Schlüssel dieser Runde nennt nur Glyph und
-  Wort; die Identität, über die Runden verbunden werden, ist aber
-  (Glyph, Wort, **Slot**). Drei der 150 Bildschirme zeigen einen Buchstaben,
-  der im selben Wort zweimal vorkommt (`n` in „einen", `l` in „will", `e` in
-  „Gewehr") — diese sechs Zeilen sind aus der Datei allein nicht eindeutig
-  einem Vorkommen zuzuordnen. Für Verlässlichkeit, Besetzung, Drift und die
-  Notizen ist das folgenlos; wer Runde 01 als Vorher-Zustand gegen eine
-  spätere Runde hält, löst sie über den vollen `key.json` des Nachbaus auf.
-  Der Builder schreibt den schmalen Schlüssel seit
-  [`menschliche-bewertung.md`](../../docs/reference/menschliche-bewertung.md)
-  §5 selbst und **mit** `slot`.
+Ein Vorbehalt bleibt:
+
 * **Die Ortsmarker gelten nur ohne Neuladen.** Die Seite dieser Runde
   speicherte den Zwischenstand ohne die gesetzten Marker (§3.10) — ein
   Neuladen hätte alle bis dahin gesetzten verworfen. Die 74 Marker sind

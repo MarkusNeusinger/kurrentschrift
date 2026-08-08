@@ -1129,24 +1129,31 @@ impl-generate pipelines. Conventions:
   judgement pass over the stored fits, answering „which kind of defect
   does any of our numbers see at all?". `build.py` draws a round
   (stratified by severity with a seeded shuffle INSIDE the bands, blind
-  repeats as the reliability bound, a held-out reserve) and writes
-  payload + key + provenance stamp under `temp/humanbench/runde-<n>/`;
+  repeats as the reliability bound, a held-out reserve; `--only` restricts
+  a round to an earlier round's reserve, which is how the pre-registered
+  confirmation pass is run) and writes payload + key + slim key +
+  provenance stamp under `temp/humanbench/runde-<n>/`;
   `page.py` renders one self-contained HTML page from it (category mode
   with one panel per screen, paired before/after with two — the side
   assignment lives in the key alone); `analyse.py` evaluates the emitted
-  result text in the order the plan fixed BEFORE the labels existed —
+  result text in the order the plan fixed BEFORE the labels existed
+  (`--union W,B` is the plan's fallback column for two categories the
+  judge does not separate — asked for, never default) —
   `python -m tools.humanbench.{build,page,analyse}`, no `viz` extra. No
   writes anywhere; `build.py` reads GET-only over the deployed read API
   when no instance file is supplied. Method in
   `docs/reference/menschliche-bewertung.md`, findings in
   `qualitaetsmetrik.md`. Committed under `data/humanbench/` are the
-  judgements AND a slim key (`*-vorkommen.json`: uid → glyph, specimen
-  word, `repeat_of`) — a result line is `S026:AW#81,76`, so without a key
-  the human work would be filed unreadably, and which letter sits in
-  which word of a public-domain plate is not learned geometry. The full
-  key (severity, rank), the payload and every per-occurrence metric table
-  stay out (`quellen-und-rechte.md` §5); `analyse.py` runs without them
-  and reports which steps it skipped.
+  judgements AND the builder-written slim key (`*-vorkommen.json`: uid →
+  glyph, specimen word, slot, `repeat_of`) — a result line is
+  `S026:AW#81,76`, so without a key the human work would be filed
+  unreadably, and which letter sits in which word of a public-domain plate
+  is not learned geometry; the `slot` is in there because the cross-round
+  identity is (glyph, word, slot). The full key (severity, rank), the
+  payload and every per-occurrence metric table stay out
+  (`quellen-und-rechte.md` §5); `analyse.py` runs without them and reports
+  which steps it skipped — and nothing in the repo produces those metric
+  tables yet, so a category round's steps 3-5 still need that module.
 - **Never merge a PR yourself** — open it, get it green and
   review-clean (address Copilot review comments, then resolve the
   threads); merging is the maintainer's call.
