@@ -76,8 +76,16 @@ def read_snapshot(root: Path) -> tuple[dict[str, Any], dict[str, list[dict[str, 
     for model, name in PARENTS:
         path = root / f"{name}.json"
         # Reduce to storable columns here too: the API's Out schemas carry
-        # resolved, computed fields (`authorable`, `style_ratio`, …) that have
-        # no column behind them.
+        # computed fields with no column behind them (`authorable`, …).
+        #
+        # `sources.style_ratio` / `slant_deg` are a different case and are NOT
+        # handled here: they do have columns, nullable ones, and the API serves
+        # them RESOLVED against the style defaults. Writing a resolved value
+        # back would silently turn „inherits the style" into „overrides it with
+        # today's default" — so `fetch.py::_restore_inheritance` puts the null
+        # back while it still has the styles at hand, and this side stores what
+        # the snapshot says. Restoring is about preserving DB semantics, not
+        # merely about dropping computed fields.
         tables[name] = rows_for(model, json.loads(path.read_text()), {}) if path.is_file() else []
 
     for _, name in PRIMARY:

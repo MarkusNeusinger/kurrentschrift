@@ -86,6 +86,32 @@ def _git(*args: str, cwd: Path) -> str:
     return done.stdout.strip() if done.returncode == 0 else ""
 
 
+def _restore_inheritance(sources: list[dict[str, Any]], styles: list[dict[str, Any]]) -> int:
+    """Turn the API's RESOLVED source fields back into the DB's null-means-inherit.
+
+    `Source.style_ratio` and `Source.slant_deg` are nullable per-source
+    overrides, and `GET /sources` returns them already resolved against the
+    style's defaults. Archiving that resolved value and restoring it would turn
+    „inherits the style" into „overrides the style with today's default" —
+    invisible in any render comparison, and only noticed later, when an edit to
+    the style default stops propagating. So a value equal to its style's default
+    is written back as null.
+
+    The one case this cannot get right is an explicit override that happens to
+    equal the default: through this API it is indistinguishable from inheriting,
+    and is normalised to inheriting. The manifest says so.
+    """
+    by_id = {s["id"]: s for s in styles}
+    inheriting = 0
+    for source in sources:
+        style = by_id.get(source.get("style_id")) or {}
+        for field, default_field in (("style_ratio", "default_style_ratio"), ("slant_deg", "default_slant_deg")):
+            if default_field in style and source.get(field) == style[default_field]:
+                source[field] = None
+                inheriting += 1
+    return inheriting
+
+
 def collect(client: ApiClient) -> tuple[dict[str, Any], dict[str, int]]:
     """Read every archived table. Returns (payload tree, per-table row counts)."""
     payload: dict[str, Any] = {"global": {}, "sources": {}}
@@ -95,6 +121,12 @@ def collect(client: ApiClient) -> tuple[dict[str, Any], dict[str, int]]:
         rows = client.get(path, admin=admin)
         payload["global"][name] = rows
         counts[name] = len(rows) if isinstance(rows, list) else 0
+
+    # Deliberately NOT in `counts`: that dict is row counts, and the shrink
+    # check fails a run whose numbers went down. This one legitimately goes
+    # down the moment a source gains a real override — a safety net that cries
+    # wolf is one nobody reads.
+    payload["inherited_fields"] = _restore_inheritance(payload["global"]["sources"], payload["global"]["styles"])
 
     for source in payload["global"]["sources"]:
         sid = source["id"]
@@ -266,6 +298,7 @@ def main(argv: list[str] | None = None) -> int:
         # serve, so a restore from this archive is known to be incomplete here.
         "templates_read_via": payload["templates_read_via"],
         "ambiguous_styles": payload["ambiguous_styles"],
+        "inherited_fields": payload["inherited_fields"],
         # Stated rather than silently lost: what the read endpoints do not
         # serve, so a restore from this archive is known to be inexact here.
         # Both were found by an actual restore drill, not by reading the code.
@@ -275,6 +308,9 @@ def main(argv: list[str] | None = None) -> int:
             " the styles listed in ambiguous_styles",
             "entry/exit_pt lose the legacy `coupling` key on the way out (EndPointOut drops it);"
             " nothing reads it, so this changes no rendering",
+            "sources.style_ratio/slant_deg are served RESOLVED against the style defaults; a value"
+            " equal to its default is archived as null (inherit). An explicit override that happens"
+            " to equal the default is indistinguishable through this API and becomes inherit",
             "aggregates / pair_aggregates are not archived — derived, rebuild them from the occurrences",
         ],
     }
