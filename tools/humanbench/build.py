@@ -768,10 +768,11 @@ def main(argv: list[str] | None = None) -> int:
         # The prefix check that caught the round-1 failure: if the opening
         # screens do not span the whole rank range, the sequence is not a
         # representative sample and the round measures the wrong population.
-        print(
-            f"  prefix check — first {len(ranks)} span ranks {min(ranks)}–{max(ranks)} "
-            f"of 0–{max(e['rank'] for e in shown)}"
-        )
+        # Graded against the POPULATION, never against the drawn sample's own
+        # rank range — that range shrinks with the very tail the check is
+        # supposed to catch, so a sample missing the cleanest cases would score
+        # a full span against itself.
+        print(f"  prefix check — first {len(ranks)} span ranks {min(ranks)}–{max(ranks)} of 0–{len(sets[0]) - 1}")
     print(
         f"  {repeats['n_repeats']} repeats, gaps {repeats['gap_min']}–{repeats['gap_max']} positions, "
         f"glyphs {repeats['glyphs']}"

@@ -620,11 +620,15 @@ def analyse(
     unknown = sorted({v.uid for v in verdicts} - set(key))
     if unknown:
         raise ResultFormatError(f"result carries {len(unknown)} screen(s) the key does not know: {unknown[:5]}")
+    # „Not judged" is a property of the RESULT text, so it is read off the
+    # parsed verdicts — before `--drop-unsure` removes any. A screen the judge
+    # answered with a shrug was judged; reporting it as unjudged as well would
+    # count the same screen under two different complaints.
+    unjudged = [uid for uid in key if uid not in {v.uid for v in verdicts}]
     dropped: list[str] = []
     if drop_unsure:
         dropped = [v.uid for v in verdicts if v.unsure]
         verdicts = [v for v in verdicts if not v.unsure]
-    unjudged = [uid for uid in key if uid not in {v.uid for v in verdicts}]
     return {
         "pass": {
             "tag": parsed.tag,

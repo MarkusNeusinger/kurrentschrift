@@ -115,7 +115,7 @@ stehen in [`menschliche-bewertung.md`](menschliche-bewertung.md), die Befunde
 einer Runde in [`qualitaetsmetrik.md`](qualitaetsmetrik.md).
 
 Geschrieben wird nirgends — weder in die Datenbank noch über die API.
-`page.py` und `analyse.py` sehen beide überhaupt nicht: Die Seite ist ein
+`page.py` und `analyse.py` sehen beides überhaupt nicht: Die Seite ist ein
 reiner Renderer, die Auswertung liest nur Dateien. Einzig `build.py` greift
 nach außen, und auch nur lesend — die Vorkommen aus Dateien oder, ohne
 Datei, per GET über die deployte Lese-API. Payload und Schlüssel sind
