@@ -53,7 +53,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · pair_loss §4 · Platzierungsschranke §3 · Provenance §2 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Rückgabe an Autor §5
-- **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spitzfeder §1 · `stage` (work_items) §5 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenlücke §3 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Vereinigungsfenster §3 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2
@@ -695,14 +695,25 @@ genügen nie** (siehe **Anker im leeren Papier**).
 
 **Anker im leeren Papier** — die benannte Fehlerform des M4-Fits: ein
 *einzelner* Anker verlässt den Strich und kehrt im nächsten Schritt
-zurück (gemessen als Spike-Verhältnis, größter Schritt innerhalb eines
-Strichs geteilt durch den Median-Schritt). Physikalisch unmöglich — eine
-Feder tut das nicht —, für die Zielfunktion aber unsichtbar, weil dort
-alles Mittelwerte sind. Ein solcher Anker vergiftet über den
-Vorkommens-Median die Laufform; die **Vorkommensschranke** verhindert
-nicht seine Entstehung, wohl aber dass ein einzelner ihn in den
-Schreibpfad trägt. Der naheliegende Gegenterm (globale Biegeenergie)
-wurde gemessen und **verworfen**. → qualitaetsmetrik.md §7
+zurück. Physikalisch unmöglich — eine Feder schreibt Bögen und Geraden —,
+für die Zielfunktion aber unsichtbar, weil dort alles Mittelwerte sind.
+Ein solcher Anker vergiftet über den Vorkommens-Median die Laufform.
+Gegenmittel in drei Stufen: die **Vorkommensschranke** verhindert, dass
+ein einzelner ihn in den Schreibpfad trägt; das **Spike-Gate**
+(`anchor_spike`) verwirft die Messung an der Quelle; zwei Fit-Terme
+(globale Biegeenergie, einseitiges Scharnier) wurden gemessen und
+**verworfen**. → qualitaetsmetrik.md §7, §8
+
+**Spike-Verhältnis** *(`anchor_spike_ratio`, Gate `anchor_spike`)* — die
+Kennzahl hinter dem **Anker im leeren Papier**: größter Schritt zwischen
+benachbarten Ankern, gemessen am Median-Schritt **seines eigenen
+Strichs**, maximiert über die Striche. Absetzer zählen nie (eine
+Strichgrenze ist die Hand, die neu ansetzt). Je Strich statt gepoolt,
+weil ein langer Körperstrich sonst den Nenner aufbläht und einen Zacken
+im kurzen Umlautstrich verdeckt. Ab `MAX_ANCHOR_SPIKE_RATIO` = 8,0
+verwirft die Ernte das Vorkommen — nicht als Reparatur, sondern als
+Aussage: eine Kette mit einer Unstetigkeit hat die Hand nie gemessen.
+→ qualitaetsmetrik.md §8
 
 **`gen_chamfer`** — **die Auditzahl „gemessen vs. komponiert“.** Abstand
 zwischen dem *erzeugten* Übergang und dem an derselben Stelle aus der

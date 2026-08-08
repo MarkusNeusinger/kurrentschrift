@@ -1752,3 +1752,178 @@ hier, die Pflicht, gegen `ink_mean` **und** `ink_max` zu messen.
 Unabhängig davon bleibt die Vorkommensschranke die wirksame Absicherung:
 sie verhindert nicht den kaputten Fit, aber dass ein einzelner ihn in den
 Schreibpfad trägt.
+
+---
+
+## 8. Ernte-Gate gegen den „Anker im leeren Papier" (`aug07`)
+
+**Ergebnis: übernommen** — als Gate, nicht als Fit-Term. §7 hatte den
+globalen Biegeterm verworfen; hier steht, was stattdessen wirkt, und
+warum der zweite, *zielgenaue* Fit-Term ebenfalls nicht angenommen wurde.
+
+### Die Einsicht
+
+Der Fit muss den Ausreißer nicht reparieren. **Eine Kette mit einer
+Unstetigkeit hat die Hand nie gemessen** — sie zu verwerfen ist die
+korrekte Aussage, kein Workaround. Die Ernte hat dafür längst ein
+Vokabular (`not_converged_local` · `geo_rmse` · `at_bound` ·
+`anchor_count` · `connector_degenerate`); es fehlte nur der Grund, der
+diesen Fehler sieht.
+
+### Die Kennzahl
+
+`anchor_spike_ratio`: der größte Schritt zwischen benachbarten Ankern,
+gemessen am Median-Schritt **seines eigenen Strichs**, maximiert über die
+Striche. Absetzer zählen nie — eine Strichgrenze ist die Hand, die
+woanders neu ansetzt, keine Unstetigkeit der Linie; würde man sie
+mitzählen, flöge jeder mehrstrichige Buchstabe (i, u, ß, t, ä) dafür
+raus, dass er genau seinen Duktus schreibt.
+
+**Je Strich, nicht gepoolt.** Striche unterscheiden sich um ~1,5× im
+Maßstab (Körper gegen Umlautpunkt). Ein gepoolter Median wird vom langen
+Körperstrich dominiert und unterschätzt einen Zacken im kurzen: `ue` in
+„Zügel" kommt gepoolt auf 7,21 (behalten), gegen den eigenen Strich auf
+10,61. Die Verzerrung erzeugte nur falsche NEGATIVE, die Umstellung
+verschärft das Gate also, sie weitet es nicht.
+
+### Zwei Messrahmen, die nicht verwechselt werden dürfen
+
+§8 nennt Zahlen aus **zwei** Quellen, und sie sind nicht vergleichbar:
+
+* **gespeicherte Vorkommen** — die 245 Zeilen, die in der DB stehen. Daraus
+  stammen die Kalibrierungs-Perzentile und die Ablehnungszahl (23).
+* **Nachrechnung** — der A/B-Aufbau aus §7 mit *rekonstruierter*
+  Ernte-Registrierung. Daraus stammen die Tintenabstände, die
+  Scharnier-Tabelle und die Spike-Zahlen der Arme („aus" 3,29, 41
+  Ablehnungen). Ein neutraler Ursprung statt der komponierten Platzierung
+  belastet den Fit stärker, deshalb liegen dort mehr Ausreißer.
+
+Wer die 23 und die 41 nebeneinander liest, liest zwei Populationen.
+Perzentile sind hier durchweg **nearest-rank** (p90 7,28); `np.percentile`
+mit Vorgabe-Interpolation liefert 6,89 — dieselben Daten, andere
+Konvention.
+
+### Kalibrierung
+
+Über die 245 gespeicherten Vorkommen — die **alle** aus dem Ketten-Pfad
+stammen (`fit_path == "chain"`, 245 von 245), Kalibrierungs- und
+Anwendungspopulation sind also dieselbe: Median 2,68 · p75 3,86 ·
+p90 7,28 · p99 23,29 · max 32,9 (nearest-rank).
+
+Bei **8,0** werden 23 Vorkommen (9,4 %) verworfen und **kein einziger**
+Buchstabe fällt unter `LAUFFORM_MIN_OCCURRENCES` = 3 (auch nicht unter
+die `--min-n`-Vorgabe 4 der Ernte selbst): 12 von 35 lagen schon vorher
+darunter, und es bleiben genau dieselben 12.
+
+**Was die Tabelle verschweigt und hier stehen muss:** `S`, `s` und `ue`
+gehen 2 → 1. Sie lagen schon unter der Schranke, das Rendering ändert sich
+also nicht — aber der Buchstabe, um den diese ganze Runde ging, hat
+danach **ein einziges** akzeptiertes Vorkommen. Das ist das stärkste
+Argument dafür, die 23 zu *reparieren* statt sie dauerhaft wegzuwerfen
+(siehe „Was offen bleibt").
+
+Warum 8,0 und nicht 6,0: bei 6,0 fiele „g" von 3 auf 2. Das allein wäre
+eine Qualitätsschwelle, kalibriert an einer Deckungs-Nebenwirkung — und
+damit verdächtig. Es trägt nur zusammen mit dem Grund, aus dem die
+Schranke bei 3 liegt: **ab drei Vorkommen überstimmt der Anker-Median ein
+schlechtes Vorkommen.** „g" bei n = 3 ist also genau der Fall, für den die
+Schranke gebaut wurde; ein viertes Gate obendrauf nähme ihm die Laufform,
+ohne dass die vorhandene Absicherung versagt hätte.
+
+Wirkung auf die akzeptierte Menge (Rahmen: Nachrechnung), gemessen als
+Abstand der gefitteten Mittellinie zur echten Tinte: schlechtester Wert
+**0,613 → 0,258** x-Höhen, p90 **0,194 → 0,149**. Das Gate fängt damit die
+*Unstetigkeiten* — es ist ausdrücklich **kein** Detektor für „von der Tinte
+weg": eine glatte, über viele Anker verteilte Abweichung passiert es
+ungehindert, und der verbleibende Rest von 0,258 x-Höhen zeigt, dass es
+solche gibt.
+
+### Verworfen: das zielgenaue Scharnier im Fit
+
+§7 hatte als Alternative eine **einseitige Scharnier-Strafe** auf den
+Tintenabstand vorgeschlagen: `mean(max(0, d − τ)²)`, null für alles
+innerhalb von τ, also beliebig hart machbar, ohne ehrliche Fits zu
+besteuern. Gebaut, Gradient exakt, Null-Kosten-Eigenschaft bit-genau
+verifiziert — und über alle 245 Vorkommen bei vier (Gewicht, τ)-Paaren
+gemessen. Ergebnis:
+
+| Arm | ink_max Median | ink_max MAX | ink_mean Median | spike Median | konv. |
+|---|---|---|---|---|---|
+| aus | 0,0912 | 0,6129 | 0,0258 | 3,29 | 224 |
+| w5 τ0,15 | 0,0912 | 0,5842 | 0,0258 | 3,36 | 222 |
+| w50 τ0,15 | 0,0912 | 0,3162 | 0,0258 | 3,41 | 208 |
+| w50 τ0,25 | 0,0912 | 0,3801 | 0,0253 | 3,30 | 218 |
+
+Anders als der Biegeterm lässt es `ink_mean` **unangetastet** (96 von 245
+Fits kommen bit-identisch zurück) — die Null-Kosten-Eigenschaft
+funktioniert. Aber:
+
+1. **Es verfehlt sein Ziel.** Der `spike` bessert sich nicht, er wird
+   eher schlechter (3,29 → 3,41). Das Scharnier begrenzt den *Abstand*,
+   nicht die *Unstetigkeit*: es zieht den Ausreißer auf nahe Tinte, und
+   ein Sprung auf nahe Tinte ist immer noch ein Sprung.
+2. **Es kostet Deckung.** In *jeder* getesteten Konfiguration verliert
+   „G" sein drittes Vorkommen (3 → 2) und damit die Laufform-Fähigkeit;
+   bei w50 zusätzlich vier Vorkommen von „e".
+3. **Es rettet nichts.** Es reduziert die Zahl der Gate-Ablehnungen
+   nicht, es erhöht sie (41 → 43/46).
+4. Zusätzlich fand die Gegenprüfung einen echten Defekt: außerhalb des
+   Crops klemmt `_bilinear_with_grad` den Wert und nullt die Ableitung,
+   das Scharnier berechnet dort bis zu 9 % der Strafe und **null**
+   Rückstellkraft — genau dort, wo der Anker am tiefsten im leeren Papier
+   steht. Jeder andere Distanzterm kompensiert das explizit.
+
+Zusammen mit dem Gate bringt es nur noch `ink_max` MAX 0,258 → 0,172 bei
+fünf akzeptierten Vorkommen weniger und einem Buchstaben unter der
+Schranke. **Nicht übernommen.**
+
+### Was offen bleibt: die Zacken sitzen nicht zufällig
+
+Der Befund, der diese Runde eigentlich weiterträgt — gefunden erst beim
+Gegenlesen, nachdem das Gate schon stand. **22 der 23 verworfenen
+Vorkommen (96 %) haben ihren größten Schritt an einem Eckanker oder an
+einem Strichrand:**
+
+| Buchstabe | Ablehnungen | wo | `corner_anchors` |
+|---|---|---|---|
+| `e` | 7 | 43 (×5), 20, 75 | 19, 42, 74, 100 |
+| `n` | 5 | 16 (×2), 77, 101, 1 | 16, 41, 77, 100 |
+| `i` | 3 | 101, 119, 1 | Strichgrenzen (Punkt ab 100) |
+| `u` | 2 | 119 (×2) | Strichende |
+| `r`, `w` | je 1 | 18, 26 | 17 bzw. 26 |
+| `S` | 1 | 113 | — (keine Eckanker) |
+
+Fünf von sieben `e`-Ablehnungen liegen auf **demselben** Anker. Das ist
+kein Rauschen, sondern eine **systematisch unterbestimmte Ankerklasse**:
+die Abtastung teilt die Spline genau an Eckankern und Strichgrenzen
+(`SamplePlan`), dort hat ein Anker die wenigste Sample-Stützung und damit
+die schwächste Führung durch `e_geo` — bei 180 Samples auf 120 Anker fällt
+das an einer Teilungsstelle sofort ins Gewicht.
+
+Daraus folgt zweierlei. Erstens: die 23 sind **keine 23 unabhängig
+kaputten Messungen, sondern ein Instrumentendefekt** — und damit
+größtenteils rückholbar, statt dauerhaft verloren. Zweitens: das ist der
+einzige Reparaturansatz, den §7 und §8 **nicht** ausschließen, weil beide
+verworfenen Terme auf den falschen Mechanismus zielten. Der nächste
+Schritt ist also nicht ein weiterer Regularisierer, sondern die
+Sample-Stützung dieser Ankerklasse — mit anschließender Neu-Ernte, die die
+23 (samt des zweiten S-Vorkommens) zurückholen würde. Das Gate bleibt
+danach als Rückfalllinie.
+
+### Die Lehre
+
+Zwei aus dieser Runde, beide teuer erkauft:
+
+1. **Das Vergehen benennen, nicht approximieren.** Der Defekt ist eine
+   *Unstetigkeit*. Der Biegeterm bepreiste globale Krümmung, das
+   Scharnier den Abstand — beide sind Stellvertreter, und beide
+   verfehlten. Die Kennzahl, die den Defekt direkt misst
+   (`anchor_spike_ratio`), löst ihn als Gate auf Anhieb.
+2. **Ein Gate gehört an den Pfad, der die Daten produziert.** Die erste
+   Fassung hing in `_harvest_case_slots`, während alle 245 gespeicherten
+   Vorkommen aus `_harvest_case_chain` stammen — sie hätte in Produktion
+   exakt null verworfen, bei grüner Testsuite, weil jeder neue Test den
+   Slot-Pfad pinnte. Gefunden von der adversarischen Gegenprüfung, die
+   die Nadel in den Ketten-Pfad injiziert und `['ok','ok','ok']`
+   zurückbekam. Der Regressionstest
+   `test_the_chain_path_rejects_an_anchor_in_blank_paper` hält das offen.
