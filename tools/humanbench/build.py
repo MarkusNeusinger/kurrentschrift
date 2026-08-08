@@ -171,16 +171,33 @@ class Specimens:
 
 
 def occurrence_rows(
-    instances: list[dict], samples: dict[str, dict], starts: dict[str, list[int]], specimens: Specimens
+    instances: list[dict],
+    samples: dict[str, dict],
+    starts: dict[str, list[int]],
+    specimens: Specimens,
+    dropped: Counter | None = None,
 ) -> list[Occurrence]:
-    """Stored instance rows → occurrences placed in their specimen's crop."""
+    """Stored instance rows → occurrences placed in their specimen's crop.
+
+    `dropped` collects, by reason, the rows that do not become occurrences —
+    the round's population is a FILTERED set, and a filter nobody counted looks
+    exactly like an empty one. The stamp carries the tally so a later round can
+    tell „the harvest changed" from „the filter did".
+    """
     rows: list[Occurrence] = []
     for row in instances:
         measurements = row.get("measurements") or {}
         sample = samples.get(measurements.get("specimen_id"))
         # Variant rows are derived forms, not observations: an occurrence of a
         # running form would be judged against ink it was never fitted to.
-        if not row.get("anchors") or sample is None or int(row.get("variant", 0) or 0) != 0:
+        if not row.get("anchors"):
+            _count(dropped, "no_anchors")
+            continue
+        if sample is None:
+            _count(dropped, "specimen_not_measured")
+            continue
+        if int(row.get("variant", 0) or 0) != 0:
+            _count(dropped, "derived_variant")
             continue
         anchors = np.asarray(row["anchors"], dtype=float)
         xh = float(measurements["xh_px"])
@@ -211,6 +228,11 @@ def occurrence_rows(
             )
         )
     return rows
+
+
+def _count(dropped: Counter | None, reason: str) -> None:
+    if dropped is not None:
+        dropped[reason] += 1
 
 
 def rank_rows(rows: list[Occurrence]) -> list[Occurrence]:
@@ -825,18 +847,24 @@ def main(argv: list[str] | None = None) -> int:
     unlifted = sorted({str(row["glyph_key"]) for rows in raw for row in rows} - set(starts))
 
     wanted = identities_from(json.loads(Path(args.only).read_text(encoding="utf-8"))) if args.only else None
-    sets = []
+    sets, dropped = [], Counter()
     for rows in raw:
         # Restricted BEFORE ranking, so the severity bands are cut over the
         # population that is actually judged — a reserve pass is its own round,
         # not a sample with holes in its ranks.
-        occurrences = occurrence_rows(rows, samples, starts, specimens)
+        occurrences = occurrence_rows(rows, samples, starts, specimens, dropped)
         if wanted is not None:
-            occurrences = [row for row in occurrences if row.identity in wanted]
+            kept = [row for row in occurrences if row.identity in wanted]
+            dropped["not_in_only"] += len(occurrences) - len(kept)
+            occurrences = kept
         sets.append(rank_rows(occurrences))
     if not sets[0]:
         raise SystemExit(f"no occurrence to judge{f' — --only {args.only} matched none' if wanted else ''}")
-    counts: dict[str, Any] = {"occurrences": [len(rows) for rows in sets]}
+    # The population of a round is a FILTERED set; the filter is part of the
+    # stamp, so „the harvest changed" stays distinguishable from „the filter did".
+    counts: dict[str, Any] = {"occurrences": [len(rows) for rows in sets], "dropped": dict(sorted(dropped.items()))}
+    counts["glyphs"] = len({row.glyph_key for row in sets[0]})
+    counts["specimens"] = len({row.specimen_id for row in sets[0]})
     if wanted is not None:
         counts["only_named"] = len(wanted)
 
@@ -861,7 +889,12 @@ def main(argv: list[str] | None = None) -> int:
     shown = [entry for entry in key if not entry["repeat_of"]]
     ranks = [entry["rank"] for entry in shown[:100]]
     print(f"round {args.round} · {mode} · seed {seed} · {counts['occurrences']} occurrences")
-    print(f"  {counts['labelled']} to judge · {len(reserve)} reserved as held-out · {len(items)} screens")
+    print(
+        f"  {counts['labelled']} to judge · {len(reserve)} reserved as held-out · {len(items)} screens"
+        f" · {counts['glyphs']} glyphs over {counts['specimens']} specimens"
+    )
+    if counts["dropped"]:
+        print(f"  not eligible: {counts['dropped']}")
     if ranks:
         # The prefix check that caught the round-1 failure: if the opening
         # screens do not span the whole rank range, the sequence is not a

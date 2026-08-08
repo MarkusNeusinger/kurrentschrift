@@ -650,7 +650,13 @@ im Repo (`tools/dbsnapshot`).
 Quelle und `source_id`, Saat, Bänder, Zoom, Rand, Wiederholungsregeln,
 **Code-Commit und -Branch**, die verwendeten Eingaben (Dateien bzw. API) und
 alle Zählungen (Vorkommen, Bildschirme, gelabelt, zurückgehalten, im paarigen
-Modus auch die nicht zuordenbaren).
+Modus auch die nicht zuordenbaren, dazu Glyphen- und Probenzahl des Satzes und
+— nach Grund aufgeschlüsselt — die **nicht in Frage kommenden** Zeilen: ohne
+Anker, Probe nicht vermessen, abgeleitete Variante, nicht in `--only`). Die
+Grundgesamtheit einer Runde ist ein gefilterter Satz, und ein Filter, den
+niemand gezählt hat, sieht aus wie gar keiner: nur mit dieser Aufschlüsselung
+ist später „die Ernte hat sich geändert" von „der Filter hat sich geändert" zu
+unterscheiden.
 
 Drei Felder sind leicht zu übersehen und tragen den Nachbau: die beiden
 Wiederholungsregeln, die **Konstanten statt Flags** sind

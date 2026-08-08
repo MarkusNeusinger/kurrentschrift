@@ -33,6 +33,7 @@ from tools.humanbench.build import (
     identities_from,
     insert_repeats,
     match_pairs,
+    occurrence_rows,
     parse_args,
     pick_repeats,
     polyline_strokes,
@@ -308,13 +309,16 @@ def test_polyline_strokes_drops_a_lift_that_would_leave_a_single_point():
 
 
 class FakeSpecimens:
-    """Just the crop the renderer asks for — no chart bytes, no skeleton."""
+    """Just the crop and the distance field — no chart bytes, no skeleton."""
 
     def __init__(self, shape=(60, 90)) -> None:
         self._crop = np.zeros(shape, dtype=float)
 
     def crop(self, _sample: dict) -> np.ndarray:
         return self._crop
+
+    def ink_distance(self, _sample: dict) -> np.ndarray:
+        return np.zeros(self._crop.shape, dtype=float)
 
 
 def test_a_paired_screen_draws_both_fits_on_one_image_and_says_nothing_else():
@@ -329,6 +333,52 @@ def test_a_paired_screen_draws_both_fits_on_one_image_and_says_nothing_else():
     assert [set(panel) for panel in item["panels"]] == [{"strokes"}, {"strokes"}]
     assert item["panels"][0]["strokes"] != item["panels"][1]["strokes"]
     assert base64.b64decode(item["img"])[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+def test_ineligible_instance_rows_are_counted_by_reason():
+    """The population of a round is a FILTERED set, and a filter nobody counted
+    looks exactly like an empty one — the stamp has to be able to tell „the
+    harvest changed" from „the filter did"."""
+    sample = {"id": "das", "page": "p.png", "x0": 0, "y0": 0, "x1": 90, "y1": 60}
+    anchors = [[0.0, 0.0], [0.5, 0.4], [1.0, 0.0]]
+    rows = [
+        {
+            "glyph_key": "a",
+            "variant": 0,
+            "anchors": anchors,
+            "x0": 10,
+            "y1": 50,
+            "measurements": {"specimen_id": "das", "xh_px": 20.0, "slot": 1},
+        },
+        {
+            "glyph_key": "a",
+            "variant": 100,
+            "anchors": anchors,
+            "x0": 10,
+            "y1": 50,
+            "measurements": {"specimen_id": "das", "xh_px": 20.0, "slot": 1},
+        },
+        {
+            "glyph_key": "a",
+            "variant": 0,
+            "anchors": [],
+            "x0": 10,
+            "y1": 50,
+            "measurements": {"specimen_id": "das", "xh_px": 20.0, "slot": 2},
+        },
+        {
+            "glyph_key": "a",
+            "variant": 0,
+            "anchors": anchors,
+            "x0": 10,
+            "y1": 50,
+            "measurements": {"specimen_id": "unvermessen", "xh_px": 20.0, "slot": 3},
+        },
+    ]
+    dropped = Counter()
+    kept = occurrence_rows(rows, {"das": sample}, {"a": [0]}, FakeSpecimens(), dropped)
+    assert [row.identity for row in kept] == [("a", "das", 1)]
+    assert dict(dropped) == {"derived_variant": 1, "no_anchors": 1, "specimen_not_measured": 1}
 
 
 # --------------------------------------------------------- key, stamp, --only

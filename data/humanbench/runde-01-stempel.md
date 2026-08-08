@@ -123,6 +123,15 @@ eingefrorenen Bench-Fixtures, die aus demselben Grund nicht im Repo liegen.
 Reproduzierbar ist alles außer dem Menschen; aufgehoben wird deshalb der
 Teil, der es nicht ist — und gerade so viel Beiwerk, dass er lesbar bleibt.
 
+> **Ein Nachbau vergibt andere Anzeige-Ids.** In dieser Runde zählte `S###`
+> den **Schwere-Rang**, im Werkzeug zählt es die **Position** im Durchgang.
+> Beide Nummernkreise sehen gleich aus und decken denselben Bereich, also
+> beschwert sich nichts: `analyse.py` kennt jede Id und ordnet sie trotzdem
+> dem falschen Vorkommen zu. Für diese Urteile ist
+> [`runde-01-vorkommen.json`](runde-01-vorkommen.json) **der** Schlüssel;
+> ein nachgebauter `key.json` wird über `identity` = (Glyph, Wort, Slot)
+> verbunden, niemals über die Id.
+
 Nachbau (die Voreinstellung des Werkzeugs ist `20260000 + Runde`, die Saat
 dieser Runde ist es **nicht** — sie muss ausdrücklich gesetzt werden):
 

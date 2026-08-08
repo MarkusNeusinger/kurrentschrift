@@ -153,8 +153,12 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   resolve: that read is admin-gated, so an unauthenticated round silently draws
   every multi-stroke letter bridged and manufactures its own findings. And the
   stamp records the two repeat rules that are constants rather than flags
-  (`repeat_min_glyph_count`, `repeat_jitter`) plus `code_dirty` — a commit only
-  says which code built a round if the tree was clean. `analyse.py` gains
+  (`repeat_min_glyph_count`, `repeat_jitter`), the glyph and specimen coverage
+  the first round's stamp had to count by hand, the instance rows that were not
+  eligible BROKEN DOWN BY REASON (a filter nobody counted looks exactly like no
+  filter, and only the tally tells „the harvest changed" from „the filter did")
+  and `code_dirty` — a commit only says which code built a round if the tree
+  was clean. `analyse.py` gains
   `--union W,B`, the one pre-registered analysis step that had no
   implementation: two categories the round shows to be inseparable are scored as
   one column, so confusability costs resolution instead of destroying the
