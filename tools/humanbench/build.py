@@ -848,10 +848,10 @@ def main(argv: list[str] | None = None) -> int:
         if report["only_old"] or report["only_new"]:
             print(f"unmatched: {len(report['only_old'])} only in OLD, {len(report['only_new'])} only in NEW")
         items, key, reserve, repeats = build_paired(pairs, specimens, args, rng)
-        mode = "paired"
+        mode, banded = "paired", len(pairs)
     else:
         items, key, reserve, repeats = build_single(sets[0], specimens, args, rng)
-        mode = "single"
+        mode, banded = "single", len(sets[0])
 
     counts.update({"screens": len(items), "labelled": len(items) - repeats["n_repeats"], "reserved": len(reserve)})
     stamp = provenance(args, mode=mode, seed=seed, counts=counts, repeats=repeats, api_used=api_used)
@@ -869,8 +869,9 @@ def main(argv: list[str] | None = None) -> int:
         # Graded against the POPULATION, never against the drawn sample's own
         # rank range — that range shrinks with the very tail the check is
         # supposed to catch, so a sample missing the cleanest cases would score
-        # a full span against itself.
-        print(f"  prefix check — first {len(ranks)} span ranks {min(ranks)}–{max(ranks)} of 0–{len(sets[0]) - 1}")
+        # a full span against itself. The population is the one that was BANDED
+        # (in the paired mode the matched rows, not the whole old snapshot).
+        print(f"  prefix check — first {len(ranks)} span ranks {min(ranks)}–{max(ranks)} of 0–{banded - 1}")
     print(
         f"  {repeats['n_repeats']} repeats, gaps {repeats['gap_min']}–{repeats['gap_max']} positions, "
         f"glyphs {repeats['glyphs']}"

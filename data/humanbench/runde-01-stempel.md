@@ -88,6 +88,25 @@ uv run python -m tools.humanbench.analyse \
     --key    data/humanbench/runde-01-vorkommen.json
 ```
 
+Zwei Vorbehalte zu diesem Schlüssel, beide erst nach der Ablage bemerkt:
+
+* **Ohne `slot`.** Der schmale Schlüssel dieser Runde nennt nur Glyph und
+  Wort; die Identität, über die Runden verbunden werden, ist aber
+  (Glyph, Wort, **Slot**). Drei der 150 Bildschirme zeigen einen Buchstaben,
+  der im selben Wort zweimal vorkommt (`n` in „einen", `l` in „will", `e` in
+  „Gewehr") — diese sechs Zeilen sind aus der Datei allein nicht eindeutig
+  einem Vorkommen zuzuordnen. Für Verlässlichkeit, Besetzung, Drift und die
+  Notizen ist das folgenlos; wer Runde 01 als Vorher-Zustand gegen eine
+  spätere Runde hält, löst sie über den vollen `key.json` des Nachbaus auf.
+  Der Builder schreibt den schmalen Schlüssel seit
+  [`menschliche-bewertung.md`](../../docs/reference/menschliche-bewertung.md)
+  §5 selbst und **mit** `slot`.
+* **Die Ortsmarker gelten nur ohne Neuladen.** Die Seite dieser Runde
+  speicherte den Zwischenstand ohne die gesetzten Marker (§3.10) — ein
+  Neuladen hätte alle bis dahin gesetzten verworfen. Die 74 Marker sind
+  plausibel vollständig (die Quote liegt über die drei Sequenzdrittel stabil
+  bei 28/21/25), belegt ist es nicht.
+
 **Nicht dabei:** der volle `key.json` (zusätzlich Schwere und Rang je
 Vorkommen), `payload.json` (Crops und Vorkommens-Geometrie), `reserve.json`
 und jede Kennzahlentabelle je Vorkommen. Die bleiben unter

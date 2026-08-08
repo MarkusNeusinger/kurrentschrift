@@ -245,6 +245,19 @@ Paare je etwa ein Ja; die Übereinstimmung kommt dann fast ganz aus Einigkeit
 gezielt aus den bekannten Fällen der Vorrunde), was mehr Wiederholungen
 braucht als die voreingestellten 12.
 
+> **Offen — das Werkzeug kann diese Lehre noch nicht ausführen.**
+> `build.py::pick_repeats` zieht nach Häufigkeit und Band, nicht nach
+> Kategorie; die Labels der Vorrunde gehen gar nicht erst hinein. Die
+> Auswertung *überwacht* die Regel bereits
+> (`analyse.py::MIN_REPEAT_POSITIVES` = 3 warnt je Kategorie, deren
+> Wiederholungspaare sie nie getragen haben) — sie greift also erst, wenn die
+> Stunden schon ausgegeben sind. Wer den nächsten **Kategorien**-Durchgang
+> fährt, baut die Schichtung vorher ein (Vorrunden-Urteile + schmaler
+> Schlüssel als Eingabe, Auswahl deckend über die Kategorien), sonst
+> wiederholt die Runde exakt die Messung, die beim ersten Mal nichts ergeben
+> hat. Für den **paarigen** Durchgang (§8) ist das nicht nötig: dort misst
+> die Wiederholung die Seitenneigung, nicht eine Kategorie.
+
 ### 3.3 Rückhaltemenge
 
 `--n-label` bestimmt, wie viele Vorkommen beurteilt werden; der Rest wandert
@@ -256,6 +269,15 @@ gefunden hat, wäre sonst auf denselben Labels abgestimmt **und** bestätigt —
 also gar nicht bestätigt. Regel: **entwickeln auf dem gelabelten Satz,
 bestätigen auf der Reserve.** Ohne diesen zweiten Durchgang gilt eine neue
 Kennzahl als unbestätigt und darf keine Entscheidung tragen.
+
+Der Bestätigungsdurchgang wird nicht neu gewürfelt, sondern **auf genau diese
+Vorkommen eingeschränkt**: `--only <reserve.json>` (auch der schmale
+Schlüssel einer Runde tut es) beschränkt die Grundgesamtheit auf die dort
+genannten Identitäten, und zwar **vor** der Schwere-Sortierung — die Bänder
+werden also über den Satz geschnitten, der wirklich beurteilt wird, statt über
+einen mit Löchern in den Rängen. Ohne dieses Flag zieht ein zweiter Bau mit
+neuer Saat eine frische Mischung aus gelabelten **und** zurückgehaltenen
+Vorkommen, und die Rückhaltemenge ist als Bestätigungssatz verbraucht.
 
 ### 3.4 Proportionaler Rand um den Ausschnitt
 
@@ -286,6 +308,13 @@ Die Polylinie wird an jedem Federheber getrennt
 gezeichnet, zeigt die Seite einen Strich, den die Hand nie gemacht hat. Der
 Beurteiler meldete dann völlig zu Recht einen Fehler, den der Fit gar nicht
 hat — das Instrument produzierte seine eigenen Befunde.
+
+Die Absetz-Indizes kommen aus den Vorlagen, und deren Einzelabruf ist
+**admin-gegatet**: ohne `ADMIN_TOKEN` löst der Bau *keinen einzigen* auf und
+zeichnet jeden mehrstrichigen Buchstaben überbrückt — lautlos, denn eine
+einstrichige Glyphe sieht genauso aus. Der Builder zählt deshalb die Glyphen
+ohne Absetz-Angabe und **warnt namentlich**; diese Warnung ist ein Abbruch
+und keine Randnotiz.
 
 ### 3.7 Ein Marker je Bild — und ein fehlender Marker ist kein Datum
 
@@ -324,6 +353,12 @@ Seite**. Ermüdung und Drift werden damit gemessen statt wegangenommen; eine
 Kaffeepause mitten im Bild darf nicht als langsames Urteil in die Statistik
 gehen.
 
+**Nicht rundenübergreifend vergleichbar:** Runde 01 maß etwas anderes — den
+Abstand zwischen zwei Weiterklicks, Pausen eingeschlossen (daher dort der
+Ausreißer `@1320s`). Die Sekunden einer Runde sind gegen die einer anderen
+also nur zu halten, wenn beide dieselbe Uhr benutzt haben; die Drift
+*innerhalb* einer Runde bleibt in beiden Fassungen aussagekräftig.
+
 ### 3.10 Wiederaufnahme
 
 Der Zustand wird nach jedem Schritt gespeichert und beim Laden
@@ -331,6 +366,17 @@ wiederhergestellt, geschlüsselt über einen Fingerabdruck des Payloads (eine
 andere Runde setzt also nie auf altem Zustand auf). Der gesamte Aufwand des
 Instruments ist menschliche Geduld; sie an einen Tab-Absturz bei Bild 130 zu
 verlieren, ist der teuerste denkbare Fehler.
+
+Daraus folgt eine Regel, die eine Runde gekostet hat: **alles, woraus der
+Ergebnistext gebaut wird, muss gespeichert werden.** Die Seite der Runde 01
+schrieb `{at, seen, notes, stamps, picks}` und *las* beim Laden `spots` —
+ein Feld, das nie jemand geschrieben hatte. Ein einziges Neuladen hätte damit
+sämtliche bis dahin gesetzten Ortsmarker verworfen, still, und ausgerechnet
+die Marker sind der einzige von unserer eigenen Rechnung unabhängige Teil des
+Urteils. Die Asymmetrie ist unsichtbar, solange der Tab offen bleibt — also
+genau dann, wenn niemand hinschaut. Sie ist heute festgenagelt
+(`tests/test_humanbench_page.py`: jedes Zustandsfeld muss in *beiden*
+Richtungen vorkommen).
 
 ---
 
@@ -408,14 +454,30 @@ uv run python -m tools.humanbench.build --round 3 \
     --paired temp/fits-alt.json temp/fits-neu.json
 ```
 
+Ein Bestätigungsdurchgang über die Rückhaltemenge einer früheren Runde
+schränkt zusätzlich ein (§3.3):
+
+```bash
+uv run python -m tools.humanbench.build --round 4 \
+    --only temp/humanbench/runde-2/reserve.json
+```
+
 Geschrieben wird nach `temp/humanbench/runde-<n>/`:
 
-| Datei | Inhalt |
-|---|---|
-| `payload.json` | was die Seite zeichnet — Crop-Bild + Polylinien, sonst nichts |
-| `key.json` | was sie nicht wissen darf — Glyph, Wort, Slot, Schwere, Rang, im paarigen Modus die Seitenzuordnung |
-| `reserve.json` | die Rückhaltemenge (§3.3), ungelabelt |
-| `provenance.json` | der Stempel (§7) |
+| Datei | Inhalt | archivierbar |
+|---|---|---|
+| `payload.json` | was die Seite zeichnet — Crop-Bild + Polylinien, sonst nichts | nein |
+| `key.json` | was sie nicht wissen darf — Glyph, Wort, Slot, Schwere, Rang, im paarigen Modus die Seitenzuordnung | nein |
+| `vorkommen.json` | der **schmale Schlüssel**: uid → Glyph, Wort, Slot, `repeat_of` — was ein Kürzel *meint*, ohne jede Messung | **ja** |
+| `reserve.json` | die Rückhaltemenge (§3.3), ungelabelt | nein |
+| `provenance.json` | der Stempel (§7) | **ja** |
+
+Der schmale Schlüssel wird vom Builder geschrieben und nicht je Runde von
+Hand herausgeschnitten: Das Archiv soll eine **Kopie** des Schlüssels sein,
+gegen den geurteilt wurde, nicht ein zweites, Monate später zusammengestelltes
+Artefakt. Der `slot` steht mit drin, weil er der dritte Teil der Identität ist
+— ohne ihn sind zwei Vorkommen desselben Buchstabens im selben Wort nicht
+auseinanderzuhalten (Runde 01 hatte drei solche Paare).
 
 Ein bereits gefülltes Rundenverzeichnis wird **nicht** überschrieben (`--force`
 erzwingt es): Eine Runde wird einmal geschrieben, sonst weiß hinterher niemand
@@ -485,15 +547,56 @@ uv run python -m tools.humanbench.analyse \
     --key temp/humanbench/runde-2/key.json \
     --rows temp/humanbench/runde-2/rows.json \
     [--spots temp/humanbench/runde-2/spots.json] \
-    [--gate 'spike>=8.0:A'] [--drop-unsure] [--json auswertung.json]
+    [--gate 'spike>=8.0:A'] [--union W,B] [--drop-unsure] [--json auswertung.json]
 ```
 
 Die Reihenfolge steckt im Werkzeug, nicht im Kopf des Auswertenden: Eine
 Auswertung, die nach dem Blick auf die Labels geschrieben wird, lässt sich so
 lange umsortieren, bis sie etwas sagt. `--rows` liefert der Aufrufer als Datei
 (eine Kennzahlen-Zeile je `uid`) — so bleibt die gelernte Geometrie außerhalb
-des Repos (§6), und `--drop-unsure` rechnet die zweite, `U`-freie Fassung, die
-der Plan verlangt.
+des Repos (§6); `--drop-unsure` rechnet die zweite, `U`-freie Fassung, die der
+Plan verlangt, und `--union W,B` legt zwei Kategorien zusammen, die der
+Durchgang als nicht trennbar ausgewiesen hat (§9, der vorregistrierte
+Rückfall — Verwechselbarkeit kostet dann Auflösung statt die Aussage zu
+zerstören). Beides wird **verlangt, nie voreingestellt**: eine Zusammenlegung,
+die von selbst passiert, wäre eine andere Auswertung als die geplante.
+
+#### Die beiden Kennzahlen-Dateien
+
+Ohne sie laufen Verlässlichkeit, Besetzung, Drift und die Notizen vollständig,
+Schritt 3 und 4 fallen aus und Schritt 5 schrumpft auf die Markerquote — das
+Werkzeug sagt jeweils, was es weglassen musste. Beide sind
+**Vorkommens-Statistik** und bleiben unter `temp/` (§6).
+
+`--rows`: eine Zeile je `uid`, Zahlenfelder frei benennbar (`--metrics`), die
+Voreinstellung ist die Spaltenfolge der Runde 01:
+
+| Feld | Was in Runde 01 darunter stand |
+|---|---|
+| `peak` | größter Abstand eines gefitteten Ankers zum nächsten Skelettpixel, in x-Höhen („Spitze → Tinte") |
+| `med` · `p90` | Median bzw. 90. Perzentil derselben Abstände |
+| `off10` · `off20` | Anteil der Anker weiter als 0,10 bzw. 0,20 x-Höhen von der Tinte |
+| `geo` | `geo_rmse_px` des Fits (`core/fit.py`), aus `instances.measurements` |
+| `cov` | `cov_rmse_local_px` desselben Fits |
+| `spike` | `anchor_spike_ratio` (`tools/laufform/harvest.py`), die Kennzahl des ausgelieferten Ernte-Gates |
+
+Boolesche Felder werden **nicht** als AUC gerechnet, sondern als zwei Quoten
+(„Anteil der Kategorie, der die Marke trägt, gegen den Anteil aller anderen");
+so war die Erwartung zu `E` formuliert (`at_edge` = das Maximum sitzt in den
+ersten oder letzten drei Ankern).
+
+`--spots`: je markiertem Bildschirm die Rückrechnung des Bildpunkts auf die
+Ankerkette — `idx` (getroffener Anker), `rel` (Position in der Kette, 0…1),
+`edge_dist` (Anker bis zur nächsten Strichgrenze), `argmax_idx` (wo *unsere*
+Kennzahl ihr Maximum hat).
+
+> **Offen — beide Dateien erzeugt heute kein Werkzeug.** In Runde 01 entstanden
+> sie in Wegwerf-Skripten, die es nicht mehr gibt. Alles Nötige liegt beim
+> Builder (Abstandsfeld, gefittete Punkte, Absetz-Indizes, die gespeicherten
+> Fit-Kennzahlen), der Marker steht in der Ergebniszeile — wer den nächsten
+> Kategorien-Durchgang auswerten will, schreibt diesen Schritt also **einmal**
+> als vierten Baustein neben `build`/`page`/`analyse`, statt ihn erneut
+> wegzuwerfen.
 
 ### Schritt 6 — Aufbewahren
 
@@ -510,6 +613,10 @@ Urteile, Plan, Auswertung und Stempel sichern (§6), die Befunde nach
   Autors an einem bestimmten Tag, **unersetzlich** und nicht neu zu rechnen;
   und sie entstehen in einem Container, der am nächsten Tag weg ist. Sie
   enthalten keine Geometrie: ein Kürzel, ein Bildpunkt, Sekunden, Prosa.
+* **der schmale Schlüssel** (`vorkommen.json`, vom Builder geschrieben) — uid
+  → Glyph, Vorlagenwort, Slot, `repeat_of`. Ohne ihn wäre eine Zeile wie
+  `S026:AW#81,76` eine bedeutungslose Zeichenkette; welcher Buchstabe in
+  welchem Wort einer gemeinfreien Tafel steht, ist keine gelernte Geometrie.
 * **der Auswerteplan und die Auswertung** — Methode und Zahlen.
 * **der Stempel** (`provenance.json`) — Parameter und Zählungen, keine
   Geometrie.
@@ -517,10 +624,11 @@ Urteile, Plan, Auswertung und Stempel sichern (§6), die Befunde nach
 
 **Nicht committet** (bleibt unter `temp/`, git-ignoriert):
 
-* `payload.json` (Crops **und** Vorkommens-Geometrie), `key.json`,
-  `reserve.json` und jede daraus abgeleitete Kennzahlentabelle je Vorkommen.
-  Das ist gelernter Datensatz und Vorkommens-Statistik und fällt unter den
-  Open-Core-Vorbehalt ([`quellen-und-rechte.md`](quellen-und-rechte.md) §5).
+* `payload.json` (Crops **und** Vorkommens-Geometrie), `key.json` (zusätzlich
+  Schwere und Rang), `reserve.json` und jede Kennzahlentabelle je Vorkommen
+  (`rows.json`, `spots.json`). Das ist gelernter Datensatz und
+  Vorkommens-Statistik und fällt unter den Open-Core-Vorbehalt
+  ([`quellen-und-rechte.md`](quellen-und-rechte.md) §5).
 
 **Und der Grund, warum das nichts kostet:** Schlüssel und Payload sind aus
 Saat, Instanz-Schnappschuss und Stempel **deterministisch wiederherstellbar** —
@@ -543,6 +651,14 @@ Quelle und `source_id`, Saat, Bänder, Zoom, Rand, Wiederholungsregeln,
 **Code-Commit und -Branch**, die verwendeten Eingaben (Dateien bzw. API) und
 alle Zählungen (Vorkommen, Bildschirme, gelabelt, zurückgehalten, im paarigen
 Modus auch die nicht zuordenbaren).
+
+Drei Felder sind leicht zu übersehen und tragen den Nachbau: die beiden
+Wiederholungsregeln, die **Konstanten statt Flags** sind
+(`repeat_min_glyph_count`, `repeat_jitter` — eine Änderung daran verschiebt
+lautlos, welche Bildschirme sich wiederholen), und `code_dirty`. Ein Commit
+sagt nur dann, welcher Code die Runde gebaut hat, wenn der Baum sauber war;
+stand `code_dirty` auf `true`, ist der Commit ein Anhaltspunkt und kein
+Nachweis.
 
 **Warum er zwingend ist:** Ein Urteil gilt gegen **einen** Stand des Fits.
 Ändert sich der Algorithmus — und genau das ist der Zweck der Übung —, werden
@@ -638,8 +754,11 @@ Kategorien-Durchgang mit den alten Fits, und die gelabelten Vorkommen paarig.
   warum die operativen Definitionen in §2 so ausführlich ausfallen.
 * **Die Kategorien sind nicht disjunkt.** Fehlerarten treten gemeinsam auf.
   Zeigen Wiederholungen oder Ko-Vorkommen, dass zwei nicht trennbar sind,
-  werden sie als **Vereinigung** ausgewertet: Verwechselbarkeit kostet dann
-  Auflösung, statt die Aussage zu zerstören.
+  werden sie als **Vereinigung** ausgewertet (`analyse.py --union W,B`, eine
+  eigene Spalte neben den Einzelkategorien): Verwechselbarkeit kostet dann
+  Auflösung, statt die Aussage zu zerstören. In Runde 01 war der Rückfall
+  nicht nötig — `W ∩ B` lag bei 20 % der Vereinigung und die Wiederholungen
+  waren einig —, er gehört aber zum Plan und nicht ans Ermessen der Auswertung.
 * **Gemessen wird Sichtbarkeit, nicht Wichtigkeit.** Eine Fehlerart, die der
   Beurteiler zuverlässig erkennt, muss nicht die sein, die das geschriebene
   Wort verdirbt. Was ein Befund auslösen darf, entscheidet der Plan (§4) —
