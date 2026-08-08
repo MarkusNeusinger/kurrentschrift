@@ -36,27 +36,27 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
 **§6** Extern/Forschung.
 
-- **A** — Absetzen §1 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1
-- **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bézier-Handle-Floor §3 · Bibliothekseinheit §2 · bindend §5 · bogengleich §3
+- **A** — Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1 · Ausreißer §4
+- **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · degenerierte Solves §3 · Degeneriewächter §3 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · Duktus §1 · Duktus-Prior §1
 - **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2
-- **F** — Federtypen §1 · Federwinkel §1 · FID §6 · Fixture-Wurzel §4 · Frozen-Reference-Regel §4 · Fuge §1
-- **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Grundstrich/Haarstrich §1
-- **H** — H0–H5 §5 · Hand §2 · HTR §6 · Huber-Kappung §3 · HWD §6
+- **F** — Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · FID §6 · Fixture-Wurzel §4 · Frozen-Reference-Regel §4 · Fuge §1
+- **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Grundstrich/Haarstrich §1 · gut (`G`) §4
+- **H** — H0–H5 §5 · Hand §2 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
-- **K** — Kettenfit §3 · Kill-Kriterium §3 · Klassenregel §2 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Kringel-Exit §2
+- **K** — Kettenfit §3 · Kill-Kriterium §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Kringel-Exit §2
 - **L** — Labs §4 · Laufform §2 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · matched arc §3 · meas §4 · Messboden §4
 - **N** — Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4
-- **O** — Offenbacher §1 · Open-Core-Moat §2 · Override §2
-- **P** — Paar-Aggregat §2 · Paar-Editor §5 · pair_loss §4 · Platzierungsschranke §3 · Provenance §2 · Prüfstein §4
+- **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
+- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Platzierungsschranke §3 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
-- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Rückgabe an Autor §5
+- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenlücke §3 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
-- **V** — Variante §2 · Vereinfachungs-Gate §5 · Vereinigungsfenster §3 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2
+- **V** — Variante §2 · Vereinfachungs-Gate §5 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4
 - **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Editor §5 · Wort-Trace §2
 - **X** — x-Höhe (`xh`) §1
 - **Z** — Zelle einsetzen §5 · Zwei-Drittel-Gesetz §6
@@ -826,15 +826,179 @@ gegen echte Wortproben; chainbench: die beiden Fit-Pfade gegeneinander).
 **Labs** *zeigen*: matplotlib-Overlays, aus denen man sieht, **warum** eine
 Zahl schlecht ist (glyphlab: die Ableitung eines Buchstabens; wordlab: ein
 komponiertes Wort über seiner Vorlage mit Penalty-Callouts; pairlab: die
-Sektion eines Übergangs). Merksatz aus den Läufen: **die Skizzen des Autors
-waren das Messinstrument, der Bench der Regressionswächter.**
-→ werkzeuge.md
+Sektion eines Übergangs). Daneben steht als dritte Gattung **humanbench**,
+das nicht rechnet, sondern *fragt*: es baut den blinden
+**Bewertungsdurchgang** und wertet dessen Urteile aus. Merksatz aus den
+Läufen: **die Skizzen des Autors waren das Messinstrument, der Bench der
+Regressionswächter.** → werkzeuge.md
 
 **Fixture-Wurzel** — das eingefrorene Eingabepaket eines Bench-Sets
 (Crops, Masken, Skelette, Slots, Template-Zeilen, Laufform-Zeilen,
 `pair_instances.json`). Gitignored (Open-Core-Moat), neu erzeugbar über
 `tools/wordbench/export_fixtures.py` (DB-Pfad) oder `fetch_fixtures.py`
 (API-Pfad, für Sitzungen ohne DB-Zugang).
+
+**Bewertungsdurchgang** *(labelling round)* — eine Runde, in der ein Mensch
+gefittete Buchstaben **blind** beurteilt: je Bildschirm ein Ausschnitt der
+Vorlage mit der gezeichneten Mittellinie darüber, dazu eine Kategorie der
+**Fehler-Taxonomie**, ein **Ortsmarker** und, wenn er mag, ein freier Satz.
+Anlass ist die Lücke zwischen Geometrie und Wahrnehmung: `geo_rmse`,
+`cov_rmse_local` und `anchor_spike_ratio` messen Abstände, keine davon
+misst, ob eine Abweichung *stört*. Der Durchgang beantwortet genau eine
+Frage — **welche Fehlerart sieht welche Kennzahl überhaupt?** — und liefert
+ausdrücklich keine Schwellwerte, keinen Detektor und keine Note „wie gut
+sind die Fits“.
+*Technisch:* `tools/humanbench` (`build.py` baut, `page.py` rendert,
+`analyse.py` rechnet in der vorregistrierten Reihenfolge)
+→ menschliche-bewertung.md
+
+**Fehler-Taxonomie** — die sechs Kategorien, in denen ein
+Bewertungsdurchgang urteilt, plus ein Modifikator. Sie sind die
+Schnittstelle zwischen Auge und Zahl — jede spätere Kennzahl wird gegen sie
+gebaut —, deshalb steht ihre operative Definition ausführlich in der
+Methodendoku und nicht nur als Knopfbeschriftung im Code. `G` und `K`
+beantworten die Frage **allein**, die Fehlerarten **addieren sich**, `U`
+kombiniert mit allem. Beurteilt wird die Mittellinie gegen die Tinte
+**ihres eigenen** Buchstabens; die Strichbreite kommt nicht vor.
+
+- **`G` — gut.** Keine Stelle, die man markieren würde. Zugleich die
+  billigste Probe darauf, dass die Regel verstanden wurde: `G` darf in der
+  Auswertung **nie** zusammen mit einer Fehlerart auftauchen — wer zögert,
+  setzt die Fehlerart plus `U`.
+- **`A` — Ausreißer.** *Eine* Stelle springt aus der Kette, die
+  unmittelbaren Nachbarn sitzen richtig; der Fehler ist ein **Punkt** (mit
+  dem Daumen abgedeckt, ist der Buchstabe in Ordnung). Das menschliche
+  Gegenstück zum **Anker im leeren Papier**.
+- **`W` — Gewackel.** Die Linie folgt der Tinte im Groben, zittert aber um
+  ihren Sollverlauf, oder eine Rundung läuft als Vieleck statt als Bogen.
+  Kein einzelner Übeltäter, sondern **Unruhe**. Trägt bis auf Weiteres auch
+  die eckig gelaufene kleine Schleife („der Kringel ist eher ein Quadrat als
+  ein Kreis“), für die eine eigene Kategorie `R` vorgesehen ist.
+- **`B` — Bereich daneben.** Ein **zusammenhängendes Stück** der Kette liegt
+  neben seiner Tinte, für sich glatt und plausibel, nur am falschen Ort.
+  Gegen `A` die Ausdehnung, gegen `W` die Glätte, gegen `K` der Rest des
+  Buchstabens.
+- **`E` — Knick am Rand.** Die Beanstandung sitzt **ausschließlich** im
+  ersten oder letzten Stück der Ankerkette; definierend ist der **Ort, nicht
+  die Form**. Dahinter steckt überwiegend ein **abgeschnittener Anstrich**:
+  der Fit beginnt zu spät, das erste Stück Tinte bleibt unbedeckt, der Knick
+  ist nur dessen sichtbarer Rest. Eine andere Krankheit als ein Ausreißer
+  mittendrin — dort ist Tinte da und der Fit verlässt sie trotzdem.
+- **`K` — komplett daneben.** Kein Schweregrad, sondern ein **Ausschluss**:
+  der Fit gehört nicht zu diesem Buchstaben, es gibt nichts zu markieren.
+  Solche Vorkommen fliegen aus der Bewertung *aller* anderen Kategorien —
+  ein Totalausfall wäre sonst überall ein Positiv und höbe jede AUC, ohne
+  dass eine Kennzahl irgendetwas Spezifisches gesehen hätte.
+- **`U` — unsicher** *(Modifikator)*: Das Urteil steht, der Beurteiler steht
+  nicht dafür ein. Gerechnet wird zweimal, mit und ohne — weichen die
+  Zahlen auseinander, ist das ein Befund über die Kategorie, nicht über die
+  Kennzahl.
+
+*Technisch:* `tools/humanbench/page.py::CATEGORIES`
+→ menschliche-bewertung.md §2 · qualitaetsmetrik.md §9
+
+**Vorregistrierung** *(pre-registration)* — der Auswerteplan wird
+geschrieben, **bevor** die Zahlen da sind: Reihenfolge der Auswertung,
+Ausschlüsse, Mindestbesetzung, die Auflösung, die die Daten überhaupt
+tragen, falsifizierbare Erwartungen und was ein Ergebnis auslösen darf.
+Ohne ihn passt man die Auswertung hinterher an die Daten an — bei sechs
+Kategorien und acht Kennzahlen findet sich immer eine Zelle, die etwas
+zeigt, und niemand weiß hinterher, ob sie gesucht oder gefunden war.
+Bindend wird der Plan erst durch seinen Zusatz: **Was nicht im Plan steht,
+ist eine nachträgliche Idee und wird als solche gekennzeichnet** — mit
+Datum und Anlass, als eigener Nachtrag, ohne eine vorregistrierte
+Auswertung zu ersetzen. Ein Nachtrag *nach* den Labels ist keine
+Vorregistrierung mehr, sondern eine Hypothese für die nächste Runde.
+Dieselbe Disziplin wie das **Kill-Kriterium** (§3) und das vorregistrierte
+A/B vor jeder rendernden Änderung. → menschliche-bewertung.md §4
+
+**Verlässlichkeitsschranke · blinde Wiederholung** *(test–retest)* — ein
+Teil der Bildschirme zeigt ein bereits beurteiltes Vorkommen ein zweites
+Mal, ohne es als Wiederholung kenntlich zu machen. Aus der
+Selbst-Übereinstimmung folgt die Obergrenze dessen, was eine Kennzahl je
+erreichen kann: Wer sich in einer Kategorie nur in 6 von 12 Fällen selbst
+bestätigt, für den kommt auch ein *perfekter* Detektor nicht wesentlich
+darüber hinaus — und der Satz „unsere Kennzahl ist blind für X“ wäre
+**unfalsifizierbar**. Deshalb wird jede AUC mit dieser Schranke berichtet,
+und unter einer vorher genannten Übereinstimmung wird für die Kategorie
+*keine* Blindheit behauptet. Gemessene Lehre: zufällig gezogene
+Wiederholungen messen **seltene** Kategorien nicht — bei 10 % Prävalenz
+enthalten 12 Paare je etwa ein Ja, die Übereinstimmung kommt fast ganz aus
+Einigkeit über die Neins. Wiederholungen sind nach Kategorie zu schichten.
+*Technisch:* `tools/humanbench/build.py::pick_repeats` mit
+`REPEAT_MIN_GLYPH_COUNT`/`REPEAT_JITTER`, Auswertung
+`analyse.py::reliability` → menschliche-bewertung.md §3.2
+
+**Abdeckungsmatrix** *(coverage matrix)* — die Kopf-Ausgabe eines
+Bewertungsdurchgangs: je **Kategorie × Kennzahl** eine AUC gegen „Kategorie
+gesetzt / nicht gesetzt“ (AUC = die Wahrscheinlichkeit, dass die Kennzahl
+ein zufälliges Vorkommen *mit* der Fehlerart höher bewertet als eines
+*ohne*; 0,5 = blind, 1,0 = perfekte Trennung), `K` ausgeschlossen und je
+Zeile mit ihrer **Verlässlichkeitsschranke** daneben. Sie wird **grob**
+gelesen — „sichtbar überhaupt?“, also deutlich über ~0,7 —, nie fein: bei
+10–15 Positiven je Kategorie liegt der Standardfehler bei ≈ 0,09, ein
+Unterschied von 0,04 ist auf solchen Daten nicht auflösbar und wird nicht
+neu verhandelt.
+*Technisch:* `tools/humanbench/analyse.py::coverage_matrix`,
+Standardfehler nach Hanley-McNeil → menschliche-bewertung.md §1
+
+**Rückhaltemenge** *(hold-out)* — der Teil der Stichprobe, der bewusst
+**ungelabelt** bleibt (`reserve.json`, durch dieselbe Austeilung
+bandbalanciert wie der gelabelte Teil). Regel: **entwickeln auf dem
+gelabelten Satz, bestätigen auf der Rückhaltemenge.** Eine Kennzahl, die
+gebaut wird, um zu sehen, was dieser Durchgang gefunden hat, wäre sonst auf
+denselben Labels abgestimmt *und* bestätigt — also gar nicht bestätigt;
+ohne den zweiten Durchgang gilt sie als unbestätigt und darf keine
+Entscheidung tragen. *Technisch:* `tools/humanbench/build.py`, `--n-label`
+→ menschliche-bewertung.md §3.3
+
+**Provenienz-Stempel** *(`provenance.json`)* — was der Builder ungefragt
+neben jede Runde schreibt: Runde, Modus, Bauzeit, Quelle, Saat, Bänder,
+Zoom, Rand, Wiederholungsregeln, **Code-Commit und -Branch**, die
+verwendeten Eingaben und alle Zählungen. Grund: Ein Urteil gilt gegen
+**einen** Stand des Fits. Ändert sich der Algorithmus — und genau das ist
+der Zweck der Übung —, werden die Urteile nicht wertlos, sondern zum
+**Vorher-Zustand**; aber nur, wenn festgehalten ist, worauf sie sich
+bezogen haben. Fehlt der Stempel, ist die zweite Runde keine Fortsetzung,
+sondern eine neue, unvergleichbare Messung — und die erste damit verloren.
+Aus demselben Grund ist das Instrument ein **Werkzeug im Repo** und kein
+Skript je Runde. Nicht zu verwechseln mit der **Provenance** einer
+gespeicherten Geometrie (§2): Jene sagt, wer eine Zeile gezeichnet hat,
+dieser, gegen welchen Stand geurteilt wurde.
+*Technisch:* `tools/humanbench/build.py::provenance`
+→ menschliche-bewertung.md §7
+
+**paariger Blindvergleich** *(paired comparison)* — der
+Vorher/Nachher-Durchgang: dasselbe Vorkommen **zweimal gerechnet**,
+nebeneinander auf **einem** Ausschnitt, eine einzige Frage — „welche Linie
+folgt der Tinte besser?“ — und drei gleichwertige Antworten: links ·
+rechts · **kein Unterschied erkennbar** (das ist ein Ergebnis, keine
+Ausrede — der Streit liegt dann unter der Sichtbarkeit). Er tritt an die
+Stelle eines zweiten Kategorien-Durchgangs, weil „gut“ kein absoluter
+Maßstab ist: Zwischen zwei Sitzungen verschiebt sich die Latte um einen
+unbekannten Betrag, und nach Runde eins weiß der Beurteiler, wonach er
+sucht. Die Seitenzuordnung steht ausschließlich im Schlüssel, die Seiten
+werden je Bildschirm aus der Saat gezogen, Wiederholungen werden
+**gespiegelt** gezeigt. Er misst die **Richtung** („ist es besser
+geworden?“) auf denselben Vorkommen — nicht die Prävalenz je Fehlerart und
+keine Fehlerrate. *Technisch:* `tools/humanbench/build.py::build_paired`
+→ menschliche-bewertung.md §8
+
+**Ortsmarker · Ortsprüfung** — der eine Punkt, den der Beurteiler je Bild in
+den Ausschnitt klickt (die auffälligste Stelle, nicht alle), und die
+Auswertung darüber. Sein Wert liegt darin, dass er **unabhängig von der
+eigenen Rechnung** ist: Eine Ortsaussage, die aus dem selbst berechneten
+Maximum stammt, ist zirkulär und belegt nichts — daran ist die frühere Zahl
+„die Gate-Ablehnungen sitzen an Strichgrenzen“ zerbrochen. Zwei vorab
+festgelegte Auswerteregeln: **ein fehlender Marker ist kein Datum** (nicht
+markiert heißt „nicht markiert“, nie „dort ist kein Fehler“; die
+**Markerquote** wird mitberichtet, denn sinkt sie über die Sequenz, ist das
+Ermüdung und keine Aussage über die Bilder), und **Bilder mit mehreren
+Kategorien zählen nur in die Gesamtfrage**, weil bei einem Punkt nicht
+entscheidbar ist, welcher Fehlerart er gilt.
+*Technisch:* `tools/humanbench/analyse.py::place_check`; die Koordinaten
+stehen im Panel-Pixelrahmen und werden über den Schlüssel auf Ankerindex
+bzw. Strichgrenze zurückgerechnet → menschliche-bewertung.md §3.7
 
 ---
 
@@ -1048,6 +1212,8 @@ REACHED LIMIT`) in Befundtexten wörtlich zitiert werden.
   paläografischen Grundbegriffe (§1 hier ist deren Kurzfassung)
 - [`qualitaetsmetrik.md`](qualitaetsmetrik.md) — alle Metriken im Detail
   samt Baseline-Historie
+- [`menschliche-bewertung.md`](menschliche-bewertung.md) — der blinde
+  Bewertungsdurchgang: Fehler-Taxonomie, Instrumentregeln, Vorregistrierung
 - [`uebergaenge-befund.md`](../proposals/uebergaenge-befund.md) §5/§5c —
   das Übergangs- und Kettenfit-Vokabular in seinem Messkontext
 - [`handmodell-stufenplan.md`](../proposals/handmodell-stufenplan.md) —

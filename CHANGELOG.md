@@ -12,6 +12,131 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **`tools/dbsnapshot` — an archive of the hand-made data, and a restore drill
+  that proves it works.** Two tables in the database cannot be recomputed from
+  anything: `bboxes` (the crop, eraser, ink and donor work) and
+  `templates.raw_path` (the stylus-drawn ductus). Everything else falls back
+  out of those plus the committed chart bytes. Cloud SQL's own backups are
+  instance-wide, keep seven days and cannot be read without restoring an
+  instance; this project's failure mode is slower — a bad apply or re-harvest
+  noticed weeks later — so `fetch.py` files a readable, diffable snapshot into
+  a private repository outside the GCP project. Append-only by construction: a
+  new timestamped directory per run, no overwrite, no delete path at all, and a
+  run that would file fewer rows than the previous one fails instead, because
+  an archive that quietly shrinks looks exactly like a full one in a directory
+  listing. Every call is a GET, through the existing GET-only client, so the
+  tool cannot mutate the deployed system even by accident. `restore.py` is the
+  half that makes the archive more than a guess — an archive nobody has ever
+  restored is a hope — and it is built for drills: the target URL is required
+  and never read from the environment, a URL equal to `DATABASE_URL` is
+  refused, an occupied target needs `--replace` and nothing is written without
+  `--apply`. Templates are archived per STYLE rather than per source, since the
+  unique key is `(style_id, glyph_key, variant)` and reading them per source
+  duplicates every row of a two-source style. The manifest states the gaps it
+  knows rather than hiding them.
+- **`tools/humanbench` — the blind judgement pass over the fits, as a package
+  rather than a scratchpad script.** The automated benches score what a metric
+  can already see; this one produces the other half — the author works through
+  a sample of stored fits by eye, so a metric can be checked against human
+  judgement instead of against itself. `build.py` draws a round and writes its
+  payload, key, held-out reserve and provenance stamp: the sample is stratified
+  by severity WITH a seeded shuffle inside the bands (without it a prefix is
+  not a sample), carries blind repeats as the reliability bound, pads crops
+  proportionally and draws pen lifts as lifts — each safeguard sitting next to
+  the failure it was added for, because a safeguard without its failure is the
+  first thing a later edit removes as noise. `page.py` renders one
+  self-contained HTML page from that payload — crops as `data:` URIs, style and
+  script inline, no font, no CDN, no network — and the mode follows the payload
+  rather than a flag: one panel per screen is the category pass, two are the
+  paired before/after comparison, whose side assignment exists only in the key,
+  so the fix's own author cannot read the answer off the page. Nothing in the
+  package writes anywhere: `page.py` and `analyse.py` see neither DB nor API,
+  and `build.py` reads occurrences from files or, absent those, GET-only over
+  the deployed read API. The method — taxonomy, construction rules, the
+  pre-registered analysis plan — is `docs/reference/menschliche-bewertung.md`
+  (indexed in `docs/index.md` and `reference/werkzeuge.md`); the findings of a
+  round belong to `qualitaetsmetrik.md`. Payload and key are occurrence
+  geometry and stay under `temp/humanbench/runde-<n>/`
+  (`quellen-und-rechte.md` §5); what is committed is the human half alone,
+  under `data/humanbench/` — the round's judgement text plus its provenance
+  stamp and a `SOURCE.md`, with the `.gitignore` boundary drawn as an allowlist
+  (`*.md` and `*-urteile.txt`) so a later round's payload cannot follow them in.
+- **`tools/humanbench/analyse.py` — the labelling pass's evaluation, in the
+  order the plan fixed before the labels existed.** `page.py` collects the
+  judgement and `build.py` decides what is judged; the third piece parses the
+  emitted result text (`<uid>:<codes>[#x,y][@Ns][ "note"]`, category codes read
+  straight from `page.CATEGORIES` so parser and instrument cannot drift) and
+  runs the six pre-registered steps: test-retest reliability from the blind
+  repeats, occupancy, gate validation, the coverage matrix (AUC ± Hanley-McNeil
+  SE per category × metric), the place check over the clicked markers and
+  drift over the sequence. The point is the ORDER: an evaluation written after
+  seeing the labels can always be reordered until it says something, so it is
+  code rather than a scratchpad script, and the second round re-runs the same
+  analysis instead of a new one. Three rules from the plan are enforced rather
+  than trusted — an unset marker is dropped instead of counted as „nothing
+  wrong there", a screen carrying two findings drops out of the per-category
+  place check because its one point cannot be attributed, and „komplett
+  daneben" is excluded from every other category's numbers. A category below
+  `MIN_POSITIVES = 8` gets the words „too few" instead of a number, and a
+  per-category test-retest agreement built on fewer than three positive pairs
+  is flagged as agreement about the negatives — which is exactly what the first
+  round's 12/12 for `A` and `B` were. Reproduces the published round-2 numbers
+  exactly (79 of 150 flagged, gate precision 11/11 against „any finding" and
+  8/11 against the `A` labels, `spike` AUC 0.86 ± 0.06 for `A`, `cov` 0.84 ±
+  0.05 for `W`, 20 of 20 single-labelled `E` markers at a stroke boundary). No
+  DB, no API: the per-occurrence metrics arrive as a file the caller supplies,
+  which is what keeps the learned geometry out of the repo
+  (`quellen-und-rechte.md` §5).
+- **`docs/reference/menschliche-bewertung.md` — the method behind the blind
+  judgement pass, so a repetition is a rebuild rather than a replanning.** The
+  project's numbers measure geometry; the pass measures which kind of defect
+  any of them can see at all, and it deliberately yields no thresholds and no
+  training set. The doc carries the six-category defect taxonomy with an
+  operative definition, a recognition cue and a demarcation against its
+  neighbour for each — three rounds of sharpening, and the most durable result
+  of the exercise — plus every construction rule of the instrument next to the
+  failure it was added for: the stratified sample WITH the shuffle inside the
+  bands (without it a prefix is not a sample and the cleanest cases, where the
+  false positives live, are unreachable), the blind repeats as the reliability
+  bound (without them a low AUC cannot be told from label noise and „our metric
+  is blind to this" is unfalsifiable), the held-out reserve, the proportional
+  crop pad, the cartographic casing, pen lifts drawn as lifts, and one marker
+  per screen with the rule that a missing marker is not a datum. Then the
+  pre-registration (why the analysis plan is written before the labels, what it
+  must fix, and that later additions are marked as such), a round as a
+  step-by-step command sequence, what is kept and what is not and why (the
+  judgements are committed — the author's own statement, unreproducible; key
+  and per-occurrence metrics are not, and are rebuildable from seed and
+  snapshot like the bench fixtures), the provenance stamp and why it is
+  mandatory, why a second category pass cannot prove an improvement, and the
+  known limits. Indexed in `docs/index.md` (quick links, tree, Reference
+  section and the living-document table); the findings themselves belong to
+  `qualitaetsmetrik.md`.
+- **`qualitaetsmetrik.md` §9 — the first round's findings: which defect any of
+  our numbers actually sees.** 162 screens, 150 occurrences plus 12 blind
+  repeats, judged against an analysis plan written before the labels existed.
+  Roughly half the stored fits are clean. The largest defect class is not the
+  one the shipped gate was built for: 23 % is a truncated stroke END —
+  overwhelmingly a stroke start, the entry stroke the fit never reaches — and
+  no metric sees it, because `cov_rmse_local` measures coverage in a window
+  derived from the fit itself, so a fit that starts too late defines its own
+  error away (AUC 0.54 against that class, and 0.26 among the flawed
+  occurrences, where those cases look BETTER than the rest). The shipped
+  `anchor_spike_ratio ≥ 8.0` gate rejected 11 occurrences and not one of them
+  had been called good. The pre-registered prediction that „wobble" would be
+  invisible to every metric is falsified — `cov_rmse` reaches 0.84 for it, and
+  survives every artefact check — which narrows the standing claim „our metrics
+  do not see what bothers a reader" to the outlier class alone. Two earlier
+  statements are withdrawn: „22 of 23 gate rejections sit at corner anchors"
+  was circular (it came from the detector's own maximum), and the human markers
+  refute it no better than they support it at n = 6. Also settles the
+  aggregation question the occurrence floor left open: local defect and
+  globally failed fit are two populations, not one scale (1.7 % of anchors
+  flagged for a good occurrence against 58–68 % for an unusable one, with a
+  clean gap), which is what justifies treating them with different instruments.
+
 ### Fixed
 
 - **The harvest rejects the „Anker im leeren Papier" occurrence

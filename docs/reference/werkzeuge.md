@@ -1,12 +1,12 @@
 # Werkzeuge — die Dev-Tools unter `tools/`
 
-> **Status (2026-08-03): lebend.** Index über die Dev-Tools unter `tools/`;
+> **Status (2026-08-08): lebend.** Index über die Dev-Tools unter `tools/`;
 > jedes neue, umbenannte oder entfernte Werkzeug und jede geänderte CLI
 > (Flags, Modulpfade, `viz`-Extra, `--live`) gehört hier hinein.
 
 Einstiegspunkt für die Entwickler-Werkzeuge, die bislang nur in den
 Agenten-Guides (`CLAUDE.md`, `.github/copilot-instructions.md`)
-dokumentiert waren. Jedes Tool hat eine eigene README im jeweiligen
+dokumentiert waren. Die meisten Tools haben eine eigene README im jeweiligen
 `tools/<name>/`-Verzeichnis mit allen Optionen; hier steht das Wesentliche.
 
 Alle Labs rendern matplotlib-PNGs nach `temp/` (git-ignoriert; Pfad wird
@@ -17,6 +17,11 @@ Generator schreiben nie in die DB. Einzige schreibende Gattung sind die
 beiden **Ernte-Werkzeuge** weiter unten — und auch die schreiben nicht
 selbst, sondern über die admin-gegateten Endpunkte, damit deren Validierung
 greift.
+
+Aus diesem Rahmen fällt allein der **Urteils-Durchgang** ganz unten: er
+braucht kein `viz`-Extra, weil seine Ausgabe eine HTML-Seite statt eines
+matplotlib-PNGs ist, und er kennt kein `--live` — was er überhaupt liest,
+liest er über die deployte Lese-API. Geschrieben wird auch dort nichts.
 
 ## Die drei Inspektions-Labs (sehen, nicht nur messen)
 
@@ -82,6 +87,58 @@ Gewinner frei, `--store-occurrences` schreibt zusätzlich die
 ```bash
 uv run python -m tools.pairlab.harvest [--style suetterlin] [--sets pairs]
     [--ids Bi,Du] [--apply] [--store-occurrences] [--approve B:i,D:u]
+```
+
+## Der Urteils-Durchgang (was keine Kennzahl sieht)
+
+Eigene Gattung, weil weder „Lab“ noch „Bench“ trägt: Ein Lab zeigt EINE
+Ableitung im Detail, damit ein Mensch sie versteht; ein Bench misst mit einer
+Kennzahl gegen eine eingefrorene Referenz. Hier ist der Messfühler selbst der
+**Mensch**, und die Frage lautet nicht „wie viel Abweichung?“, sondern
+„welche Fehlerart sieht welche Kennzahl überhaupt?“. Das Werkzeug steht damit
+*neben* den Benches statt unter ihnen: Es erzeugt nicht eine weitere Zahl,
+sondern die Urteile, gegen die eine Zahl gehalten wird.
+
+**`tools/humanbench`** — der blinde Bewertungsdurchgang über die
+gespeicherten Fits, in drei Schritten und drei Modulen. `build.py` zieht die
+Stichprobe einer Runde und schreibt Payload, Schlüssel, Rückhaltemenge und
+Provenienz-Stempel (geschichtet nach Schwere, **innerhalb** der Bänder
+gemischt, mit blinden Wiederholungen als Verlässlichkeitsschranke).
+`page.py` rendert daraus EINE in sich geschlossene HTML-Seite — Crops als
+`data:`-URIs, Stil und Skript inline, kein Font, kein CDN, kein Netzzugriff;
+der Modus folgt dem Payload statt einem Flag: ein Panel je Bild ergibt den
+Kategorien-Durchgang, zwei den paarigen Vorher/Nachher-Vergleich, dessen
+Seitenzuordnung nur im Schlüssel steht. `analyse.py` wertet den emittierten
+Ergebnistext in der Reihenfolge aus, die der vorregistrierte Plan **vor** den
+Labels festgelegt hat. Verfahren, Fehler-Taxonomie und Aufbewahrungsregeln
+stehen in [`menschliche-bewertung.md`](menschliche-bewertung.md), die Befunde
+einer Runde in [`qualitaetsmetrik.md`](qualitaetsmetrik.md).
+
+Geschrieben wird nirgends — weder in die Datenbank noch über die API.
+`page.py` und `analyse.py` sehen beide überhaupt nicht: Die Seite ist ein
+reiner Renderer, die Auswertung liest nur Dateien. Einzig `build.py` greift
+nach außen, und auch nur lesend — die Vorkommen aus Dateien oder, ohne
+Datei, per GET über die deployte Lese-API. Payload und Schlüssel sind
+Vorkommens-Geometrie und bleiben unter `temp/humanbench/runde-<n>/`
+(git-ignoriert); committet wird allein die menschliche Hälfte unter
+`data/humanbench/` — Urteilstext, Stempel, `SOURCE.md`
+([`quellen-und-rechte.md`](quellen-und-rechte.md) §5).
+
+```bash
+uv run python -m tools.humanbench.build --round 2 --n-label 150 --repeats 12
+uv run python -m tools.humanbench.build --round 3 \
+    --paired temp/fits-alt.json temp/fits-neu.json
+
+uv run python -m tools.humanbench.page \
+    --payload temp/humanbench/runde-2/payload.json \
+    --out temp/humanbench/runde-2/befund.html --round 2
+
+uv run python -m tools.humanbench.analyse \
+    --result temp/humanbench/runde-2/urteile.txt \
+    --key temp/humanbench/runde-2/key.json \
+    --rows temp/humanbench/runde-2/rows.json \
+    [--spots temp/humanbench/runde-2/spots.json] [--gate 'spike>=8.0:A']
+    [--drop-unsure] [--json auswertung.json]
 ```
 
 ## Benches und Generator (Verweise)

@@ -40,6 +40,7 @@ gemessene Hand-Parameter.
 | Animation-Render-Algorithmus nachschlagen | [Animation-Rendering](reference/animation-rendering.md) |
 | Stil-Analyse-Pipeline nachschlagen | [Stil-Analyse](reference/styleanalyse.md) |
 | Qualitätsmetrik, Glyph-Bench & Loop-Erkenntnisse nachschlagen | [Qualitätsmetrik](reference/qualitaetsmetrik.md) |
+| Den blinden Bewertungsdurchgang (Fehler-Taxonomie, Instrument, Vorregistrierung) nachschlagen | [Menschliche Bewertung](reference/menschliche-bewertung.md) |
 | Frontend-Stack & Deploy nachschlagen | [Frontend-Stack](reference/frontend-stack.md) |
 | Quiz-Wortbank (Quellen, Distraktoren, Fugen-Marker) nachschlagen | [Quiz-Wortbank](reference/quiz-wortbank.md) |
 | Öffentliche Render-Endpunkte (`/write/*`) nachschlagen | [Write-API](reference/write-api.md) |
@@ -84,9 +85,10 @@ docs/
 │   ├── animation-rendering.md    # stroke-dashoffset (MVP), Canvas-2D-Stroker (post-MVP), WAAPI
 │   ├── styleanalyse.md           # Per-Hand-Aggregation, Hinge-Features, Heatmap-Layouts
 │   ├── qualitaetsmetrik.md       # Zwei Metriken (Kurrent-Schwellzug §1–4 · Sütterlin-Natürlichkeit §5), bench/Referenzen, Baseline-Historie, Loop-Erkenntnisse + Verworfen
+│   ├── menschliche-bewertung.md  # Blinder Urteilsdurchgang über die Fits (tools/humanbench): Fehler-Taxonomie, Instrumentregeln, Vorregistrierung, Aufbewahrung
 │   ├── quiz-wortbank.md          # Lese-Quiz-Wortbank: Quellen (Kaeding, Genealogie-Felder), Pin+Runtime-Distraktoren, Fugen-Marker
 │   ├── write-api.md              # Öffentliche Render-Endpunkte /write/glyphs + /write/word: Shaping → Komposition → Payload
-│   ├── werkzeuge.md              # Dev-Tools unter tools/: glyphlab/wordlab/pairlab (Inspektions-Labs), Benches, quizgen
+│   ├── werkzeuge.md              # Dev-Tools unter tools/: glyphlab/wordlab/pairlab (Inspektions-Labs), Ernte-Werkzeuge, humanbench (Urteils-Durchgang), Benches, quizgen
 │   ├── crawler-richtlinie.md     # Wer die Seite lesen darf: Suchmaschinen, KI-Abruf vs. KI-Training, robots.txt/llms.txt, Cloudflare
 │   └── frontend-stack.md         # React+Vite+MUI Build, Deploy auf Cloud Run, i18n, Auth-Routen
 ├── schriftkunde/                 # Quellengesicherte Fakten zu den Schriften (wächst inkrementell)
@@ -148,6 +150,7 @@ Regeln stehen, die noch nicht implementiert sind.
 | [`reference/glossar.md`](reference/glossar.md) | jedem Doc und jedem PR, der einen neuen Fachbegriff, eine neue Kennzahl oder eine neue Redewendung prägt — der Eintrag entsteht im selben PR (Regel auch in `CLAUDE.md` § „Working guardrails“, `.github/copilot-instructions.md` und den Skills `/write-docs` + `/open-pr`) |
 | [`reference/write-api.md`](reference/write-api.md) | jeder Änderung an einer `/write/*`-Route (`api/routers/write.py` inkl. `compose_word_payload`), an `core/shaping.py`, `core/compose.py`, `core/pipeline.py::render_payload_for_template`, `api/rendering.py` oder den Cache-Headern in `api/http.py` |
 | [`reference/qualitaetsmetrik.md`](reference/qualitaetsmetrik.md) | jeder Änderung an `core/quality.py`, `core/quality_suetterlin.py`, `core/geometry.py`, `core/word_metric.py`, jedem Re-Baseline der eingefrorenen Fixtures und jedem Bench-/Loop-Lauf, der eine Headline bewegt (neuer datierter Abschnitt) |
+| [`reference/menschliche-bewertung.md`](reference/menschliche-bewertung.md) | jeder Änderung am Instrument `tools/humanbench` (Kategorien in `page.py::CATEGORIES`, Stichproben- und Wiederholungsregeln in `build.py`, Darstellung, neue Modi, CLI) und jeder Runde, deren Aufbau vom beschriebenen Verfahren abweicht — die Befunde selbst gehören nach `reference/qualitaetsmetrik.md` |
 | [`reference/frontend-stack.md`](reference/frontend-stack.md) | Stack-Versionen (`app/package.json`), Routenkarte (`app/src/routes/paths.ts`), Build/Deploy (`app/cloudbuild.yaml`, `api/cloudbuild.yaml`, `app/Dockerfile`, `app/nginx.conf`, Cloud-Run-Parameter) oder Admin-Gate (`api/auth.py`, `core/config.py`, Cloudflare Access) |
 | [`reference/werkzeuge.md`](reference/werkzeuge.md) | jedem neuen, umbenannten oder entfernten Verzeichnis/Einstiegsskript unter `tools/` und jeder geänderten CLI (Flags, Modulpfade, `viz`-Extra, `--live`) |
 | [`reference/quiz-wortbank.md`](reference/quiz-wortbank.md) | Änderungen an `tools/quizgen/corpus.py`/`similarity.py`/`build.py` (inkl. Neuberechnung von `quiz_words.json` → Wortzahl und Era-Verteilung im Kopf nachziehen), am TS-Zwilling `app/src/sections/quiz/wordBank.ts`/`useQuizEngine.ts` und bei jeder Re-Seed-Migration nach dem Muster `0011_quiz_words_reseed.py` |
@@ -256,10 +259,20 @@ Policy- und Technik-Dokumente.
   (Kurrent-Schwellzug §1–§4 · Sütterlin-Natürlichkeit §5), Frozen-
   Reference-Regel, Baseline-Historie, Loop-Erkenntnisse + Verworfen —
   Pflichtlektüre vor jedem `/optimize-glyphs`-Lauf
+- **[Menschliche Bewertung](reference/menschliche-bewertung.md)** — der
+  blinde Urteilsdurchgang über die Fits (`tools/humanbench`): die
+  sechsteilige Fehler-Taxonomie mit operativen Definitionen, die
+  Konstruktionsregeln des Instruments samt ihrer Begründung (geschichtete
+  Stichprobe, blinde Wiederholungen, Rückhaltemenge, Marker-Regeln), die
+  Vorregistrierung des Auswerteplans, Ablauf einer Runde, Provenienz-Stempel
+  und der paarige Vorher/Nachher-Durchgang — die Methode, die Befunde stehen
+  in der Qualitätsmetrik
 - **[Werkzeuge](reference/werkzeuge.md)** — Einstieg in die Dev-Tools
   unter `tools/`: die Inspektions-Labs glyphlab/wordlab/pairlab
-  (matplotlib-Overlays, `--extra viz`, Ausgabe nach `temp/`), Verweise auf
-  glyphbench/wordbench und quizgen
+  (matplotlib-Overlays, `--extra viz`, Ausgabe nach `temp/`), die beiden
+  Ernte-Werkzeuge, der Urteils-Durchgang `tools/humanbench`
+  (build · page · analyse) sowie Verweise auf glyphbench/wordbench und
+  quizgen
 - **[Crawler-Richtlinie](reference/crawler-richtlinie.md)** — wer die
   Seite lesen darf: KI-Abruf/Zitat erlaubt, KI-Training abgelehnt
   (`ai-train=no` als Nutzungsvorbehalt), `robots.txt` als Quelle der

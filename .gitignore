@@ -202,6 +202,23 @@ cython_debug/
 !/data/corpora/*/SOURCE.md
 !/data/corpora/*/fetch_*.py
 /data/derived/from-nc-sa/
+# Human bench: the judgement passes over the fits. Committable is only what a
+# human produced and no rerun can recreate — the result texts (`*-urteile.txt`)
+# and the prose around them (SOURCE.md, the per-round provenance stamp, the
+# analysis plan and its evaluation). Everything a round DERIVES from the
+# learned dataset — payload, answer key, reserve, per-occurrence metric tables,
+# the rendered page — is excluded by default and lives under temp/ instead
+# (docs/reference/menschliche-bewertung.md §6, quellen-und-rechte.md §5).
+/data/humanbench/**
+!/data/humanbench/*.md
+!/data/humanbench/*-urteile.txt
+# …plus the minimal key that makes those results READABLE at all: a result line
+# is `S026:AW#81,76`, which without a key is a meaningless string. The key a
+# round derives holds per-occurrence measurements and stays out; this one is cut
+# down to uid -> glyph, specimen word, repeat_of — facts about public-domain
+# plates, not learned geometry. Committing the judgements without it would file
+# two hours of human work in a form nothing can ever read back.
+!/data/humanbench/*-vorkommen.json
 
 # Glyph bench: DB fixture snapshots + per-run artifacts (regenerate via
 # tools/glyphbench/export_fixtures.py; see tools/glyphbench/README.md).
