@@ -29,7 +29,9 @@ Six steps, in the plan's binding order:
 4. **Coverage matrix** — one AUC per category × metric with its
    Hanley-McNeil standard error, so „sees it at all" can be told from „does
    not". Not a threshold search: at ~15 positives the SE is ≈ 0.09, and two
-   AUCs within it are the same number.
+   AUCs within it are the same number. Two categories the pass shows to be
+   inseparable are scored as their UNION (`--union`): confusability then costs
+   resolution instead of destroying the statement.
 5. **Place check** — over the voluntarily clicked markers only, the one part
    of the pass that is independent of the metrics: does the human's point sit
    where the metric's own maximum sits, and does it sit at a stroke boundary?
@@ -431,18 +433,45 @@ def _value(rows: dict[str, dict], uid: str, metric: str) -> float | None:
     return float(raw) if isinstance(raw, (int, float)) and not isinstance(raw, bool) else None
 
 
+def union_name(codes: Sequence[str]) -> str:
+    """The column name of a union of categories, e.g. ``W∪B``."""
+    return "∪".join(codes)
+
+
+def parse_union(spec: str) -> tuple[str, ...]:
+    """``"W,B"`` -> ``("W", "B")``, validated against the finding categories."""
+    codes = tuple(part.strip().upper() for part in spec.split(",") if part.strip())
+    if len(codes) < 2:
+        raise ValueError(f"union {spec!r} needs at least two categories")
+    unknown = [c for c in codes if c not in FINDING_CODES]
+    if unknown:
+        raise ValueError(f"union {spec!r}: {''.join(unknown)} is not a finding category ({''.join(FINDING_CODES)})")
+    if len(set(codes)) != len(codes):
+        raise ValueError(f"union {spec!r} names a category twice")
+    return codes
+
+
 def coverage_matrix(
     verdicts: Sequence[Verdict],
     key: dict[str, dict],
     rows: dict[str, dict],
     metrics: Sequence[str],
     flags: Sequence[str] | None = None,
+    unions: Sequence[Sequence[str]] = (),
 ) -> dict[str, Any]:
     """Step 4 — one AUC per category × metric, „komplett daneben" excluded.
 
-    Columns are the finding categories that clear `MIN_POSITIVES` plus „any
-    finding"; a thinner category is named as too few rather than given a number
-    nobody could read.
+    Columns are the finding categories that clear `MIN_POSITIVES`, then any
+    requested UNION of categories, then „any finding"; a thinner column is named
+    as too few rather than given a number nobody could read.
+
+    The unions are the plan's step 6, the pre-registered fallback: if the blind
+    repeats or the co-occurrence counts of step 2 show that two categories are
+    not being told apart, they are evaluated TOGETHER. A category the judge
+    cannot separate reliably caps every AUC built on it — but the union of the
+    two is a label they do agree with themselves on, so confusability costs
+    resolution instead of destroying the statement. It is a fallback and not a
+    default: asked for by the caller, after the numbers that justify it.
 
     A BOOLEAN row field (`at_edge` and its like) is a degenerate metric — an
     AUC over two values says less than the two rates do — so those are reported
@@ -453,11 +482,23 @@ def coverage_matrix(
     pool = _evaluated(_shown(verdicts, key))
     columns: list[str] = []
     too_few: list[str] = []
+    tests: list[tuple[str, Any]] = []
     for code in FINDING_CODES:
         n = sum(1 for v in pool if code in v.codes)
-        (columns if n >= MIN_POSITIVES else too_few).append(code)
-
-    tests: list[tuple[str, Any]] = [(code, (lambda c: lambda v: c in v.codes)(code)) for code in columns]
+        if n >= MIN_POSITIVES:
+            columns.append(code)
+            tests.append((code, (lambda c: lambda v: c in v.codes)(code)))
+        else:
+            too_few.append(code)
+    for group in unions:
+        codes = tuple(group)
+        name = union_name(codes)
+        n = sum(1 for v in pool if any(c in v.codes for c in codes))
+        if n >= MIN_POSITIVES:
+            columns.append(name)
+            tests.append((name, (lambda cs: lambda v: any(c in v.codes for c in cs))(codes)))
+        else:
+            too_few.append(name)
     tests.append(("any", lambda v: bool(v.findings)))
 
     cells: dict[str, dict[str, Any]] = {}
@@ -612,6 +653,7 @@ def analyse(
     *,
     metrics: Sequence[str] = DEFAULT_METRICS,
     flags: Sequence[str] | None = None,
+    unions: Sequence[Sequence[str]] = (),
     gate: str = DEFAULT_GATE,
     drop_unsure: bool = False,
 ) -> dict[str, Any]:
@@ -648,7 +690,7 @@ def analyse(
         # it had to leave out — degrading to what the data supports beats
         # demanding a file the archive deliberately does not carry.
         "gate": gate_validation(verdicts, key, rows, gate) if rows else None,
-        "coverage": coverage_matrix(verdicts, key, rows, metrics, flags) if rows else None,
+        "coverage": coverage_matrix(verdicts, key, rows, metrics, flags, unions) if rows else None,
         # Step 5 is NOT gated the same way, because its primary datum is not
         # external: the marker sits in the result line itself (`#x,y`), which is
         # committed. Only the anchor-index geometry comes from `--spots`, and
@@ -841,6 +883,14 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument("--spots", type=Path, help="per-marker place geometry (idx, rel, edge_dist, argmax_idx)")
     parser.add_argument("--metrics", help=f"comma-separated metric names (default: {','.join(DEFAULT_METRICS)})")
     parser.add_argument("--flags", help="comma-separated boolean row fields (default: every boolean field found)")
+    parser.add_argument(
+        "--union",
+        action="append",
+        default=[],
+        metavar="W,B",
+        help="score these categories together as one column (the plan's fallback for two the judge does "
+        "not separate); repeatable",
+    )
     parser.add_argument("--gate", default=DEFAULT_GATE, help=f"gate to validate, default {DEFAULT_GATE}")
     parser.add_argument("--drop-unsure", action="store_true", help="repeat the whole analysis without the U verdicts")
     parser.add_argument("--json", dest="json_out", type=Path, help="also write every number as JSON")
@@ -859,8 +909,17 @@ def main(argv: list[str] | None = None) -> int:
 
     metrics = tuple(m.strip() for m in args.metrics.split(",") if m.strip()) if args.metrics else DEFAULT_METRICS
     flags = tuple(f.strip() for f in args.flags.split(",") if f.strip()) if args.flags else None
+    unions = tuple(parse_union(spec) for spec in args.union)
     result = analyse(
-        parsed, key, rows, geometry, metrics=metrics, flags=flags, gate=args.gate, drop_unsure=args.drop_unsure
+        parsed,
+        key,
+        rows,
+        geometry,
+        metrics=metrics,
+        flags=flags,
+        unions=unions,
+        gate=args.gate,
+        drop_unsure=args.drop_unsure,
     )
     print(format_report(result))
     if args.json_out:

@@ -75,15 +75,37 @@ GLOBAL_READS: tuple[tuple[str, str, bool], ...] = (
 )
 
 
-def _git(*args: str, cwd: Path) -> str:
-    """Run one git command and return its stdout, or "" if git is unavailable."""
+def _git(*args: str, cwd: Path, required: bool = False) -> str:
+    """Run one git command and return its stdout.
+
+    `required=False` is for the informational calls — the manifest's commit id,
+    the archive's branch name — where „git could not tell us" is a fine answer
+    and an empty string carries it.
+
+    `required=True` is for the calls that FILE the snapshot. A failed add,
+    commit or push there must never read as success: the snapshot has already
+    been moved into the archive working tree at that point, so swallowing the
+    error would leave it sitting there uncommitted while the tool reports it
+    archived — precisely the false sense of safety this tool exists to remove.
+    """
     try:
         done = subprocess.run(  # noqa: S603 — fixed argv, no shell
             ["git", *args], cwd=cwd, capture_output=True, text=True, timeout=60, check=False
         )
-    except (OSError, subprocess.SubprocessError):
+    except (OSError, subprocess.SubprocessError) as exc:
+        if required:
+            raise SystemExit(f"git {' '.join(args)} could not run in {cwd}: {exc}") from None
         return ""
-    return done.stdout.strip() if done.returncode == 0 else ""
+    if done.returncode != 0:
+        if required:
+            detail = (done.stderr or done.stdout).strip().splitlines()
+            raise SystemExit(
+                f"git {' '.join(args)} failed in {cwd} (exit {done.returncode}): "
+                f"{detail[-1] if detail else 'no output'}\n"
+                "The snapshot has been moved into the archive but is NOT committed."
+            )
+        return ""
+    return done.stdout.strip()
 
 
 def _restore_inheritance(sources: list[dict[str, Any]], styles: list[dict[str, Any]]) -> int:
@@ -235,11 +257,11 @@ def file_into_archive(snapshot: Path, archive: Path, stamp: str, counts: dict[st
     shutil.move(str(snapshot), str(target))
 
     headline = ", ".join(f"{k} {counts.get(k, 0)}" for k in ("templates", "bboxes", "pairs", "instances"))
-    _git("add", "--", f"{ARCHIVE_SUBDIR}/{stamp}", cwd=archive)
-    _git("commit", "-m", f"snapshot {stamp} ({headline})", cwd=archive)
+    _git("add", "--", f"{ARCHIVE_SUBDIR}/{stamp}", cwd=archive, required=True)
+    _git("commit", "-m", f"snapshot {stamp} ({headline})", cwd=archive, required=True)
     if push:
         branch = _git("rev-parse", "--abbrev-ref", "HEAD", cwd=archive) or "main"
-        out = _git("push", "-u", "origin", branch, cwd=archive)
+        out = _git("push", "-u", "origin", branch, cwd=archive, required=True)
         return f"committed and pushed to {branch}" + (f" ({out})" if out else "")
     return "committed (not pushed — pass --push)"
 

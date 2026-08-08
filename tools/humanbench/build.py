@@ -6,7 +6,9 @@
 The generalised form of the round-2 scratchpad builder. Two modes:
 
 * **single** (default) — one occurrence per screen; the judge names the defect.
-  Writes `payload.json`, `key.json`, `reserve.json`, `provenance.json`.
+  Writes `payload.json`, `key.json`, `vorkommen.json`, `reserve.json`,
+  `provenance.json`. Of those, only `vorkommen.json` and `provenance.json` may
+  be archived alongside the judgements — see `slim_key`.
 * **paired** (`--paired OLD NEW`) — the SAME occurrence twice, one fit from each
   of two instance snapshots, side by side on ONE shared crop image. Which side
   carries which snapshot is drawn from the seed and written to the key only;
@@ -382,9 +384,12 @@ def insert_repeats(
 
     Returns the realised gaps: a repeat that landed too close measures
     short-term memory and has to be visible as such, not averaged into a
-    reliability figure.
+    reliability figure. Measured on the FINISHED sequence, not at insertion
+    time — a later repeat spliced in between the two showings pushes them
+    further apart, so the insertion-time distance is not the distance the judge
+    walks, and the reported number has to be the one that was actually walked.
     """
-    gaps: list[int] = []
+    inserted: list[str] = []
     for n, row in enumerate(picks):
         uid = f"{REPEAT_PREFIX}{n + 1:02d}"
         first = next(i for i, entry in enumerate(key) if entry["uid"] == row.uid)
@@ -392,8 +397,9 @@ def insert_repeats(
         at = min(len(items), first + min_gap + rng.randrange(0, REPEAT_JITTER + 1))
         items.insert(at, render(uid, row, extra))
         key.insert(at, {**key[first], "uid": uid, "repeat_of": row.uid, **extra})
-        gaps.append(at - first)
-    return gaps
+        inserted.append(uid)
+    position = {entry["uid"]: i for i, entry in enumerate(key)}
+    return [position[uid] - position[row.uid] for uid, row in zip(inserted, picks, strict=True)]
 
 
 # ------------------------------------------------------------------- the modes
@@ -439,6 +445,14 @@ def build_paired(
     """
     old_rows = [old for old, _ in pairs]
     by_identity = {old.identity: new for old, new in pairs}
+    # Re-stamp the rank over the MATCHED rows before banding. `stratify` cuts
+    # its bands by position in this list, while `pick_repeats` maps a row to a
+    # band by `rank // band_size`; left at the full snapshot's rank, every
+    # occurrence the new snapshot lost would shift its neighbours into a band
+    # the bands were never cut at, and the repeats would pile into the last one.
+    # The peak ORDER is untouched, so a band still means what it meant before.
+    for i, row in enumerate(old_rows):
+        row.rank = i
     label, reserve, band_size = stratify(old_rows, args.bands, args.n_label, rng)
     for i, row in enumerate(label):
         row.uid = f"{ITEM_PREFIX}{i + 1:03d}"
@@ -513,6 +527,51 @@ def _paired_key_entry(old: Occurrence, new: Occurrence, order: list[str]) -> dic
         "n_new": new.n_anchors,
         "rank": old.rank,
     }
+
+
+def slim_key(key: list[dict]) -> list[dict]:
+    """The committable half of the key: what a uid MEANS, and nothing measured.
+
+    A result line is `S026:AW#81,76`. Without a key it is a string nothing can
+    read back, and the hours the round cost would be archived in an unreadable
+    form. Which letter of which word of a public-domain plate a screen showed is
+    not learned geometry — severity, rank and every per-occurrence number are,
+    and they stay in `key.json` (quellen-und-rechte.md §5).
+
+    `slot` is in here on purpose: it is the third part of the identity that
+    joins one round to the next, and without it two occurrences of the same
+    letter in the same word — round 1 had three such pairs — cannot be told
+    apart when the judgements are carried forward.
+
+    Written by the builder rather than hand-derived per round, so the archived
+    key is a COPY of the key that was judged against instead of a second,
+    slightly different artefact assembled months later.
+    """
+    return [
+        {
+            "uid": entry["uid"],
+            "glyph": entry["glyph"],
+            "word": entry["word"],
+            "slot": entry["slot"],
+            "repeat_of": entry["repeat_of"],
+        }
+        for entry in key
+    ]
+
+
+def identities_from(entries: list[dict]) -> set[tuple[str, str, int]]:
+    """Occurrence identities named by a key or reserve file, for ``--only``.
+
+    Accepts both shapes the builder writes: an explicit `identity` triple, or
+    the flat `glyph`/`word`/`slot` fields of the slim key.
+    """
+    wanted: set[tuple[str, str, int]] = set()
+    for entry in entries:
+        triple = entry.get("identity") or [entry.get("glyph"), entry.get("word"), entry.get("slot", -1)]
+        if triple[0] is None or triple[1] is None:
+            continue
+        wanted.add((str(triple[0]), str(triple[1]), int(triple[2])))
+    return wanted
 
 
 def _repeat_report(picks: list[Occurrence], gaps: list[int]) -> dict:
@@ -630,12 +689,21 @@ def provenance(args: argparse.Namespace, *, mode: str, seed: int, counts: dict, 
         "pad_xh": args.pad_xh,
         "min_repeat_gap": args.min_repeat_gap,
         "repeat_exclude": list(args.repeat_exclude),
+        # The two repeat rules that are module constants rather than flags. A
+        # rebuild is only exact if they are the same, so they belong in the
+        # stamp — an edit to either silently changes which screens repeat.
+        "repeat_min_glyph_count": REPEAT_MIN_GLYPH_COUNT,
+        "repeat_jitter": REPEAT_JITTER,
         "code_commit": git_short_sha(REPO_ROOT),
         "code_branch": git_short_sha(REPO_ROOT, "rev-parse", "--abbrev-ref", "HEAD"),
+        # A commit only says which code built the round if the tree was clean.
+        # False also when git cannot answer at all — same as an empty commit.
+        "code_dirty": bool(git_short_sha(REPO_ROOT, "status", "--porcelain")),
         "inputs": {
             "instances": str(args.instances) if args.instances else None,
             "starts": str(args.starts) if args.starts else None,
             "paired": [str(p) for p in args.paired] if args.paired else None,
+            "only": str(args.only) if args.only else None,
             "api": args.api if api_used else None,
         },
         "counts": counts,
@@ -663,7 +731,11 @@ def write_round(out: Path, built: Round, *, force: bool) -> None:
     # Compact payload, readable key: the payload is machine input for one HTML
     # page, the key and stamp are read by humans doing the evaluation.
     (out / "payload.json").write_text(json.dumps(built.items, separators=(",", ":")), encoding="utf-8")
-    for name, rows in (("key.json", built.key), ("reserve.json", built.reserve)):
+    for name, rows in (
+        ("key.json", built.key),
+        ("vorkommen.json", slim_key(built.key)),  # the committable half — see `slim_key`
+        ("reserve.json", built.reserve),
+    ):
         (out / name).write_text(json.dumps(rows, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     (out / "provenance.json").write_text(
         json.dumps(built.stamp, indent=1, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8"
@@ -705,6 +777,12 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument("--instances", default=None, help="instance rows as JSON [fetched from the API]")
     parser.add_argument("--starts", default=None, help="glyph_key → stroke starts as JSON [fetched from the API]")
     parser.add_argument(
+        "--only",
+        default=None,
+        help="restrict to the occurrences a key or reserve file names — how the held-out reserve of an "
+        "earlier round is judged as its own confirmation pass",
+    )
+    parser.add_argument(
         "--api",
         default=os.environ.get("API_BASE_URL") or DEFAULT_API,
         help=f"deployed read API, used for whatever is not supplied as a file [{DEFAULT_API}]",
@@ -738,9 +816,29 @@ def main(argv: list[str] | None = None) -> int:
     else:
         starts = fetch_stroke_starts(args.api, args.source_id, [r["glyph_key"] for rows in raw for r in rows])
     api_used = not snapshots or not args.starts
+    # A glyph absent from `starts` is drawn as ONE bridged polyline — the §3.6
+    # failure, where the page shows a stroke the writer never made and the judge
+    # correctly reports a defect the fit does not have. It returns silently
+    # because the template read is admin-gated: without ADMIN_TOKEN nothing
+    # resolves and every multi-stroke glyph bridges its lifts. A key present
+    # with `[0]` is a genuinely single-stroke glyph and not a problem.
+    unlifted = sorted({str(row["glyph_key"]) for rows in raw for row in rows} - set(starts))
 
-    sets = [rank_rows(occurrence_rows(rows, samples, starts, specimens)) for rows in raw]
+    wanted = identities_from(json.loads(Path(args.only).read_text(encoding="utf-8"))) if args.only else None
+    sets = []
+    for rows in raw:
+        # Restricted BEFORE ranking, so the severity bands are cut over the
+        # population that is actually judged — a reserve pass is its own round,
+        # not a sample with holes in its ranks.
+        occurrences = occurrence_rows(rows, samples, starts, specimens)
+        if wanted is not None:
+            occurrences = [row for row in occurrences if row.identity in wanted]
+        sets.append(rank_rows(occurrences))
+    if not sets[0]:
+        raise SystemExit(f"no occurrence to judge{f' — --only {args.only} matched none' if wanted else ''}")
     counts: dict[str, Any] = {"occurrences": [len(rows) for rows in sets]}
+    if wanted is not None:
+        counts["only_named"] = len(wanted)
 
     if args.paired:
         pairs, report = match_pairs(sets[0], sets[1])
@@ -777,6 +875,12 @@ def main(argv: list[str] | None = None) -> int:
         f"  {repeats['n_repeats']} repeats, gaps {repeats['gap_min']}–{repeats['gap_max']} positions, "
         f"glyphs {repeats['glyphs']}"
     )
+    if unlifted:
+        print(
+            f"  WARNING: no stroke starts for {len(unlifted)} glyph key(s) — {unlifted[:8]}; their pen lifts are "
+            f"drawn as ONE bridged line, which makes the page show strokes the writer never made "
+            f"(ADMIN_TOKEN missing, or --starts incomplete)"
+        )
     if repeats["n_repeats"] < args.repeats:
         # Said out loud, because a round that quietly placed no repeats reports
         # per-category numbers with no reliability bound to put next to them —
