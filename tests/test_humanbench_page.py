@@ -94,6 +94,25 @@ def test_paired_pages_tag_themselves_differently():
     assert config_of(build_page(PAIRED, round_label="3"), "tag") == "VERGLEICH/3"
 
 
+@pytest.mark.parametrize("state", ["at", "seen", "notes", "spent", "spots", "answers", "picks"])
+def test_every_answer_the_result_is_built_from_survives_a_reload(state):
+    """Whatever the result file is assembled from has to be in `save()`.
+
+    This is the round-1 bug, pinned so it cannot come back: that page wrote
+    `{at, seen, notes, stamps, picks}` and its `restore()` read `raw.spots` —
+    a field nothing ever stored. One reload therefore dropped every marker
+    placed so far, silently, and the markers are the one part of the pass that
+    is independent of our own numbers. The asymmetry is invisible while the tab
+    stays open, which is exactly when nobody looks.
+    """
+    html = build_page(SINGLE)
+    saved = re.search(r"localStorage\.setItem\(CONFIG\.store, JSON\.stringify\((\{.*?\})\)\)", html, re.S)
+    restored = re.search(r"function restore\(\) \{(.*?)\n\}", html, re.S)
+    assert saved and restored, "the resume machinery is no longer recognisable"
+    assert re.search(rf"\b{state}\b", saved.group(1)), f"{state} is not written — a reload would drop it"
+    assert re.search(rf"\b{state}\b", restored.group(1)), f"{state} is written but never read back"
+
+
 # ------------------------------------------------------------------ blindness
 
 

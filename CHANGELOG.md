@@ -171,18 +171,19 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   and it excludes the letter from the STATISTICS layer only — the trace keeps
   it, so a gated letter stays visible to the admin.
   `test_the_chain_path_rejects_an_anchor_in_blank_paper` holds the hole shut.
-- **The spikes are not random — they sit at corner and stroke-terminal
-  anchors.** Located while reviewing the gate: 22 of the 23 rejected
-  occurrences (96 %) have their largest step at a corner anchor or a stroke
-  boundary, and five of the seven rejected `e` occurrences spike at the *same*
-  anchor 43 (its `corner_anchors` are 19, 42, 74, 100). The sample plan splits
-  the spline exactly there, so those anchors carry the least sample support and
-  the weakest pull from `e_geo`. That makes the 23 one instrument defect rather
-  than 23 independent broken measurements — largely recoverable by fixing the
-  support for that anchor class and re-harvesting, which is the one repair
-  candidate the two rejected fit terms (§7 global curvature, §8 distance hinge)
-  do not rule out, since both aimed at the wrong mechanism. Recorded in §8 with
-  the per-glyph table; the gate stays as the backstop either way.
+- **Where the spikes sit — a claim since withdrawn as circular.** Reviewing the
+  gate put 22 of the 23 rejected occurrences (96 %) at a corner anchor or a
+  stroke boundary, with five of the seven rejected `e` occurrences spiking at
+  the *same* anchor 43, and read that as one instrument defect rather than 23
+  broken measurements. The location, however, came from the detector's own
+  maximum, so it could not have said anything else. §9's human markers are the
+  independent test and they do not reproduce it: not one of the six
+  single-labelled outlier markers sits at a stroke boundary, and the click
+  matches the measured maximum in only 45 % of cases overall. The finding is
+  therefore **unsupported rather than disproven** (at n = 6 the markers refute
+  nothing either), and any repair aimed at that anchor class needs a
+  non-circular location analysis first. Recorded in §8 with the per-glyph
+  table and corrected in §9; the gate stays as the backstop either way.
 
 ### Changed
 

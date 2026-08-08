@@ -23,6 +23,7 @@ from tools.humanbench.analyse import (
     hanley_mcneil_se,
     parse_gate,
     parse_result,
+    parse_union,
     roc_auc,
 )
 
@@ -207,6 +208,74 @@ def test_coverage_reports_boolean_row_fields_as_two_rates():
     cov = run()["coverage"]
     # at_edge is set on S004 (a finding) and on S007 (K, excluded from both sides).
     assert cov["flags"]["at_edge"]["any"] == {"set": 1, "n_pos": 4, "set_elsewhere": 0, "n_neg": 3}
+
+
+# --------------------------------------------- the union fallback (plan step 6)
+
+
+def synthetic_pass(rows: list[tuple[str, str, float]]):
+    """A pass written as (uid, codes, metric value) triples.
+
+    The tiny fixture above cannot carry this step: a union only earns a column
+    once it clears `MIN_POSITIVES`, which needs more screens than nine.
+    """
+    text = f"BEFUND/9 geprueft={len(rows)} von {len(rows)}\n" + "".join(f"{uid}:{codes}@5s\n" for uid, codes, _ in rows)
+    key = {uid: {"uid": uid, "repeat_of": None, "glyph": "e", "word": "wenn"} for uid, _, _ in rows}
+    metrics = {uid: {"uid": uid, "m": value} for uid, _, value in rows}
+    return parse_result(text), key, metrics
+
+
+# Five W and five B — neither reaches MIN_POSITIVES on its own, together they do.
+# The metric ranks every finding above every „gut", so the union's AUC is 1.0.
+SPLIT = [(f"S{i:03d}", "W" if i % 2 else "B", 0.5 + i) for i in range(1, 11)]
+SPLIT += [(f"S{i:03d}", "G", 0.0) for i in range(11, 25)]
+
+
+def test_two_categories_too_thin_alone_can_be_scored_as_their_union():
+    """The plan's fallback: confusability costs resolution, it does not destroy
+    the statement."""
+    parsed, key, rows = synthetic_pass(SPLIT)
+    cov = analyse(parsed, key, rows, {}, metrics=("m",), unions=(("W", "B"),))["coverage"]
+    assert "W∪B" in cov["columns"]
+    assert cov["too_few"] == ["A", "W", "B", "E"]  # the members stay named as too thin
+    assert cov["metrics"]["m"]["W∪B"]["n_pos"] == 10
+    assert cov["metrics"]["m"]["W∪B"]["n_neg"] == 14
+    assert cov["metrics"]["m"]["W∪B"]["auc"] == pytest.approx(1.0)
+
+
+def test_a_screen_carrying_both_categories_counts_once_in_their_union():
+    parsed, key, rows = synthetic_pass([*SPLIT, ("S025", "WB", 9.0)])
+    cov = analyse(parsed, key, rows, {}, metrics=("m",), unions=(("W", "B"),))["coverage"]
+    assert cov["metrics"]["m"]["W∪B"]["n_pos"] == 11  # 10 + the one screen, not 12
+
+
+def test_a_union_that_stays_too_thin_gets_no_column_either():
+    thin = [("S001", "W", 1.0), ("S002", "B", 2.0), *[(f"S{i:03d}", "G", 0.0) for i in range(3, 12)]]
+    parsed, key, rows = synthetic_pass(thin)
+    cov = analyse(parsed, key, rows, {}, metrics=("m",), unions=(("W", "B"),))["coverage"]
+    assert cov["columns"] == ["any"]
+    assert "W∪B" in cov["too_few"]
+
+
+def test_without_a_union_the_pre_registered_matrix_is_unchanged():
+    """The fallback is asked for, never default — a plan step that quietly
+    reshaped the default matrix would be a different analysis."""
+    parsed, key, rows = synthetic_pass(SPLIT)
+    plain = analyse(parsed, key, rows, {}, metrics=("m",))["coverage"]
+    assert plain["columns"] == ["any"] and "W∪B" not in plain["too_few"]
+
+
+@pytest.mark.parametrize(
+    "spec, message",
+    [("W", "at least two"), ("W,Z", "not a finding category"), ("W,W", "twice"), ("G,W", "not a finding category")],
+)
+def test_parse_union_refuses_what_would_not_mean_anything(spec, message):
+    with pytest.raises(ValueError, match=message):
+        parse_union(spec)
+
+
+def test_parse_union_normalises_the_spec():
+    assert parse_union(" w , b ") == ("W", "B")
 
 
 def test_place_check_ignores_unmarked_screens_and_multi_finding_ones():
