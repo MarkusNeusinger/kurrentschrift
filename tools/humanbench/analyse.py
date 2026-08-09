@@ -353,10 +353,13 @@ def occupancy(verdicts: Sequence[Verdict], key: dict[str, dict]) -> dict[str, An
         per_category[code] = {"n": n, "share": (n / total) if total else None, "too_few": n < MIN_POSITIVES}
     flagged = [v for v in shown if v.flagged]
     marked = [v for v in flagged if v.spot]
-    # Every modifier, not just `U`: a verdict's SIZE is how many things the
-    # judge named as wrong, and a reservation („ginge besser") is not one of
-    # them. Hard-coding `U` here would silently count each new modifier as an
-    # extra finding.
+    # How many VERDICTS were ticked, not how many findings: `G` and `K` are
+    # verdicts too and count as one, which is what makes the distribution a
+    # description of the judging (how often several things were named at once)
+    # rather than a second prevalence table. Modifiers are excluded because
+    # they qualify a verdict instead of being one — every modifier, not just
+    # `U`, since hard-coding one code would let the next modifier inflate the
+    # size silently.
     sizes = Counter(len(set(v.codes) - set(MODIFIER_CODES)) for v in shown)
     overlap = {}
     for i, left in enumerate(FINDING_CODES):
