@@ -1998,7 +1998,7 @@ eine Aussage über Lesbarkeit, nicht über Schreibqualität, und „47 % gut" da
 nie als „47 % fertig" zitiert werden. Wie weit die guten Fits vom
 Erreichbaren entfernt sind, sagt dieser Durchgang nicht und kann eine absolute
 Skala auch nicht sagen; dafür ist der paarige Vergleich da
-([`menschliche-bewertung.md`](menschliche-bewertung.md) §5).
+([`menschliche-bewertung.md`](menschliche-bewertung.md) §8).
 
 ### Das Gate aus §8, gegen Menschenurteile geprüft
 
