@@ -300,7 +300,13 @@ def _pack(item_id: str, panels: list[dict[str, Any]]) -> dict[str, Any]:
     """
     first = panels[0]
     same = all(p["w"] == first["w"] and p["h"] == first["h"] and p["img"] == first["img"] for p in panels[1:])
-    if same:
+    # The context is hoisted ONLY when every panel carries the same one. The
+    # builder always shares it (it is the specimen's own measured pen path), but
+    # `_panel` accepts a per-panel context, and hoisting the first would then
+    # silently draw one panel's surroundings around the other — the same class
+    # of error as showing a letter without its connectors at all.
+    shared_context = all(p["context"] == first["context"] for p in panels[1:])
+    if same and shared_context:
         item = {
             "id": item_id,
             "w": first["w"],

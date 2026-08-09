@@ -816,6 +816,7 @@ def provenance(args: argparse.Namespace, *, mode: str, seed: int, counts: dict, 
         "inputs": {
             "instances": str(args.instances) if args.instances else None,
             "starts": str(args.starts) if args.starts else None,
+            "word_instances": str(args.word_instances) if args.word_instances else None,
             "paired": [str(p) for p in args.paired] if args.paired else None,
             "only": str(args.only) if args.only else None,
             "api": args.api if api_used else None,
@@ -935,7 +936,7 @@ def main(argv: list[str] | None = None) -> int:
         starts = json.loads(Path(args.starts).read_text(encoding="utf-8"))
     else:
         starts = fetch_stroke_starts(args.api, args.source_id, [r["glyph_key"] for rows in raw for r in rows])
-    api_used = not snapshots or not args.starts
+    api_used = not snapshots or not args.starts or not args.word_instances
     # A glyph absent from `starts` is drawn as ONE bridged polyline — the §3.6
     # failure, where the page shows a stroke the writer never made and the judge
     # correctly reports a defect the fit does not have. It returns silently
@@ -953,8 +954,17 @@ def main(argv: list[str] | None = None) -> int:
     else:
         traces = fetch_word_traces(args.api, args.source_id)
     context = word_trace_context(traces, samples)
-    if not context:
-        print("WARNING: no word traces — letters will be drawn WITHOUT their connectors (round-1 defect)")
+    # Counted per SPECIMEN, not as an all-or-nothing check: traces for some
+    # words and none for others reproduces the round-1 defect on exactly those
+    # screens, and a partial failure that only shows up as silence is the one
+    # this rule exists to prevent.
+    uncovered = sorted({str(row["measurements"]["specimen_id"]) for rows in raw for row in rows} - set(context))
+    if uncovered:
+        print(
+            f"WARNING: no word trace for {len(uncovered)} specimen(s) — their letters are drawn WITHOUT "
+            f"connectors (round-1 defect): {', '.join(uncovered[:12])}"
+            + (f" … +{len(uncovered) - 12}" if len(uncovered) > 12 else "")
+        )
 
     wanted = identities_from(json.loads(Path(args.only).read_text(encoding="utf-8"))) if args.only else None
     sets, dropped = [], Counter()
