@@ -12,6 +12,29 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Fixed
+
+- **The judgement sheet showed a letter without the pen path it was fitted
+  inside — and that cost the first round its headline finding.** The harvest
+  fits a whole word as ONE chain, so the connectors belong to the chain's
+  connector segments and are absent from a letter's own anchors. Round 1 drew
+  only those anchors, every joined letter ended in mid-air on screen, and 23 %
+  of the round was filed as „the entry stroke is missing" — correctly, for what
+  was on screen. Re-measured: the ink beyond the letter sits 0.25 xh from the
+  drawn line but **0.02 xh from the stored pen path** (24 of 26 covered), so
+  the fit had it all along. `build.py` now fetches the word traces and draws
+  them faintly beneath the judged line, and warns when they are missing.
+  The tempting conclusion — „then the labels were an artefact" — is refuted by
+  its own control group: the GOOD screens carry the same undrawn connector ink
+  and MORE of it (0.50 xh vs 0.25), and the same judge did not flag it there.
+  What the labels actually caught is the SEAM between letter and connector,
+  where the stored pen path itself deviates from the ink (0.105 xh against
+  0.047 on good screens, AUC 0.84) — so „a kink at the edge" was literally
+  right, and no per-letter metric can see it because every such window ends at
+  the letter. `qualitaetsmetrik.md` §9 carries the correction, the withdrawn
+  reading and the two failed metric attempts that followed from it; prevalence
+  without `E` is 39 % rather than 53 %.
+
 ### Added
 
 - **`tools/dbsnapshot` — an archive of the hand-made data, and a restore drill

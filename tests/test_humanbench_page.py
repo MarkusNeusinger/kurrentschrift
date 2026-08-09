@@ -11,6 +11,7 @@ stays out of this repo (``docs/reference/quellen-und-rechte.md`` §5).
 
 from __future__ import annotations
 
+import copy
 import re
 
 import pytest
@@ -137,6 +138,26 @@ def test_a_shared_crop_is_inlined_once():
     """Both panels draw on one image; inlining it twice would double the page."""
     items, _ = normalise(PAIRED)
     assert "img" in items[0] and all("img" not in p for p in items[0]["panels"])
+
+
+def test_a_shared_pen_path_is_hoisted_like_the_crop():
+    """It is the specimen's own measured path, identical for both panels."""
+    raw = copy.deepcopy(PAIRED)
+    raw[0]["context"] = [[[0, 0], [5, 5]]]
+    items, _ = normalise(raw)
+    assert items[0]["context"] == [[[0.0, 0.0], [5.0, 5.0]]]
+    assert all("context" not in p for p in items[0]["panels"])
+
+
+def test_panels_with_DIFFERENT_pen_paths_keep_their_own():
+    """Hoisting the first would draw one panel's surroundings around the other —
+    the same class of error as showing a letter without its connectors."""
+    raw = copy.deepcopy(PAIRED)
+    raw[0]["panels"][0]["context"] = [[[0, 0], [5, 5]]]
+    raw[0]["panels"][1]["context"] = [[[9, 9], [1, 1]]]
+    items, _ = normalise(raw)
+    assert "context" not in items[0]
+    assert [p["context"] for p in items[0]["panels"]] == [[[[0.0, 0.0], [5.0, 5.0]]], [[[9.0, 9.0], [1.0, 1.0]]]]
 
 
 # ------------------------------------------------------------- self-containment

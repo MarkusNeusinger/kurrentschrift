@@ -2074,22 +2074,56 @@ Grundlinie" (t), „oben links fängt der Strich nicht am Anfang an" (P),
 „startet aber auch nicht ganz links" (langes ſ, als **gut** gelabelt — die
 wahre Prävalenz liegt also eher über 23 %).
 
-**Warum keine Kennzahl das sieht:** `cov_rmse_local` misst Deckung in einem
-Fenster, das aus dem Fit abgeleitet ist. Ein Fit, der zu spät anfängt,
-definiert seinen eigenen Fehler weg. Die 0,54 unterschätzt das noch — *unter
-den Fehlerbildern* hat `cov` gegen `E` eine AUC von **0,26**: `E`-Fälle sehen
-für `cov` **besser** aus als andere Fehler. Ein erster Reparaturversuch (Tinte
-dem nächstgelegenen Buchstaben zuordnen, dann unerreichte Tinte messen) kam
-auf AUC 0,60 und ist gescheitert: die fehlende Anstrich-Tinte liegt näher am
-Nachbarn als am eigenen ersten Anker. Ein brauchbares Maß muss
-richtungsabhängig sein.
+> **Korrektur (`aug09`): die Überschrift ist falsch, der Befund bleibt.**
+> Es ist **kein** abgeschnittenes Strichende. Die Ernte fittet ein ganzes Wort
+> als EINE Kette (`_harvest_case_chain`, alle 245 Vorkommen tragen
+> `fit_path: "chain"`), und die Verbindungsstücke gehören zu deren
+> Connector-Segmenten, nicht zu den Ankern eines Buchstabens. Das
+> Bewertungsblatt zeichnete nur die Buchstaben-Anker — jeder verbundene
+> Buchstabe endete auf dem Bildschirm in der Luft. Nachgemessen: die Tinte
+> jenseits des Buchstabens liegt 0,25 xh von der GEZEICHNETEN Linie, aber
+> **0,02 xh vom gespeicherten Federweg** (24 von 26 gedeckt). Der Fit hatte
+> sie die ganze Zeit.
+>
+> Die naheliegende Folgerung „dann sind die `E`-Labels ein Artefakt" ist
+> allerdings ebenfalls falsch, und ihre eigene Kontrollgruppe widerlegt sie:
+> **jeder** wortinterne als *gut* gelabelte Buchstabe trägt dieselbe
+> ungezeichnete Connector-Tinte, im Median sogar weiter weg (0,50 xh gegen
+> 0,25 xh). Derselbe Beurteiler sah denselben Hintergrund auf 71 guten Bildern
+> und nannte ihn dort nicht — bei S121 sogar ausdrücklich notiert und trotzdem
+> als gut gewertet.
+>
+> Was `E` real unterscheidet, ist die **Naht**: in der Umgebung der markierten
+> Stelle weicht der gespeicherte Federweg SELBST maximal 0,105 xh von der
+> Tinte ab, gegen 0,047 xh bei den guten — **AUC 0,84** (0,83 auf den reinen
+> `E`-Bildern), dazu +0,032 xh Endanker-Abstand und +60° Endkrümmung im
+> Vergleich gleicher Glyphen. „Knick am Rand" war wörtlich richtig: ein
+> lokaler Defekt am Übergang Buchstabe → Connector.
 
-Zwei Lesarten sind noch nicht getrennt und dürfen nicht verwechselt werden:
-„der Fit beginnt zu spät" gegen „die Vorlage hat keinen Anstrich, die Tinte
-gehört dem generierten Übergang". Die Slot-Zerlegung entscheidet ein Viertel
-vorab: **26 der 35 Fälle sind wortintern, 9 stehen am Wortanfang** — dort gibt
-es links nichts, dem die Tinte gehören könnte. Betroffen sind vor allem `t`
-(4/4) und `i` (7/13), also genau die Buchstaben mit Grundlinien-Anstrich.
+**Warum keine Kennzahl das sieht:** nicht, weil `cov_rmse_local` seinen Fehler
+wegdefiniert — es misst den FIT (Verbindung inbegriffen), während der Mensch
+die ZEICHNUNG (ohne sie) beurteilt hat; die Kennzahl war nicht blind, die
+Darstellung war unvollständig. Der Grund ist ein anderer und bleibt bestehen:
+jede per-Buchstabe-Kennzahl hat ihr Fenster am Buchstaben, und der Defekt sitzt
+an der Naht dahinter. Deshalb `cov` gegen `E` 0,54, und *unter den
+Fehlerbildern* sogar **0,26** — `E`-Fälle sehen für `cov` besser aus als andere
+Fehler, weil ihr Buchstabenteil tatsächlich gut sitzt.
+
+Zwei Kennzahl-Versuche sind daran gescheitert, beide aus derselben falschen
+Ursachenannahme: Tinte dem nächstgelegenen Buchstaben zuordnen (AUC 0,60) und
+ein richtungsabhängiger Korridor entlang der Eintritts-Tangente (0,63). Beide
+suchten unbedeckte Anstrich-Tinte, die es nicht gibt. Der Kandidat, der trägt,
+ist die **naht-lokale Maximalabweichung Federweg ↔ Tinte** (0,84) — entwickelt
+auf denselben 150 Labels und deshalb nach der eigenen Vorregistrierungsregel
+erst an den 95 zurückgehaltenen Vorkommen zu bestätigen.
+
+Zur Slot-Verteilung: **26 der 35 Fälle sind wortintern, 9 stehen auf Slot 0.**
+Die frühere Zuspitzung, `t` (4/4) und `i` führten die Wortanfangs-Fälle an, ist
+datenwidrig — kein einziges `t` steht auf Slot 0, alle vier sind wortintern.
+Und von den 9 Slot-0-Fällen tragen 5 ihren Marker am AUSTRITT, nicht am
+Eintritt; die Gruppe sagt also nichts über fehlende Anstriche am Wortanfang.
+Genau ein Fall (`Z` in „Zügel", 0,28 xh) hat Tinte, die weder Buchstabe noch
+Federweg deckt — dort fehlt wirklich etwas im Modell.
 
 ### Was dabei widerlegt wurde
 
@@ -2134,6 +2168,12 @@ plus Autorfreigabe.
 
 ### Grenzen dieses Durchgangs
 
+* **Der Buchstabe wurde ohne seinen Federweg gezeigt** (siehe die Korrektur
+  oben). Das kostete den Durchgang seine Hauptdeutung und verschiebt die
+  Prävalenz: ohne `E` tragen **59 von 150 = 39 %** der Bilder einen Fehler
+  statt 53 %, und 20 Bilder sind reine `E`. Behoben in
+  `tools/humanbench/build.py::context_strokes`; der nächste Durchgang zeichnet
+  die Verbindungen mit.
 * **Die gelabelten Vorkommen sind die Überlebenden.** Die 99 nie geernteten
   und die 23 vom Gate abgelehnten sind nicht darunter. Eine an diesen Labels
   kalibrierte Kennzahl gilt für neu Geerntetes nur unter Vorbehalt.
@@ -2148,11 +2188,21 @@ plus Autorfreigabe.
 
 ### Die Lehre
 
-1. **Eine Kennzahl kann ihren eigenen Fehler wegdefinieren.**
-   `cov_rmse_local` misst in einem Fenster, das der Fit aufspannt — und wird
-   dadurch bei der häufigsten Fehlerart nicht bloß blind (0,54), sondern
-   verkehrt herum (0,26 unter den Fehlerbildern). Beim Bau einer Kennzahl ist
-   die erste Frage nicht „was misst sie", sondern „wer bestimmt ihr Fenster".
+1. **Ein Messgerät, das weniger zeigt als es misst, erzeugt Befunde.** Das
+   Blatt zeigte den Buchstaben ohne seinen Federweg, und der Durchgang lieferte
+   prompt eine größte Fehlerklasse, die es so nicht gibt. Vor der ersten Runde
+   gehört die Frage gestellt: ist das Gezeigte deckungsgleich mit dem, worüber
+   geurteilt werden soll? Bemerkt wurde es nicht durch eine Messung, sondern
+   weil der Autor sich an die Architektur erinnerte — ein Wort wird als eine
+   Kette gefittet.
+2. **Eine Kennzahl kann am falschen Ort messen.** `cov_rmse_local` endet am
+   Buchstaben, der Defekt sitzt an der Naht dahinter — daher blind (0,54) und
+   unter den Fehlerbildern sogar verkehrt herum (0,26). Beim Bau einer Kennzahl
+   ist die erste Frage nicht „was misst sie", sondern „wo hört ihr Fenster auf".
+3. **Auch die bequeme Widerlegung braucht ihre Kontrollgruppe.** „Alles nur ein
+   Artefakt" wirkte zwingend, bis dieselbe ungezeichnete Tinte auf den GUTEN
+   Bildern auftauchte — dort sogar reichlicher. Eine These, die den Befund
+   erklärt, muss auch erklären, warum sie die Nicht-Befunde nicht erklärt.
 2. **Blinde Wiederholungen sind kein Beiwerk.** Ohne sie wäre „unsere
    Kennzahlen sind blind für Gewackel" unfalsifizierbar geblieben — eine
    niedrige AUC hätte auch Labelrauschen sein können. Sie kosten 8 % der

@@ -265,12 +265,20 @@ def _panel(raw: Any, where: str, shared: dict[str, Any]) -> dict[str, Any]:
         "h": height,
         "img": _data_uri(merged["img"], where),
         "strokes": _strokes(merged.get("strokes", []), where),
+        # Optional, and validated only when present: a panel with no surrounding
+        # pen path is legitimate (a word of one letter, or a round built without
+        # traces), whereas a panel with no JUDGED line is a broken screen.
+        "context": _strokes(merged["context"], f"{where} context") if merged.get("context") else [],
     }
 
 
 def _panels_of(raw: dict[str, Any], where: str) -> list[dict[str, Any]]:
     """Accept the three payload shapes and return fully resolved panels."""
-    shared = {k: raw[k] for k in ("w", "h", "img") if k in raw}
+    # `context` is shared like the image: it is the specimen's own measured pen
+    # path, identical for both panels, so hoisting it cannot leak which side is
+    # which — and drawing it once is what keeps a joined letter from appearing
+    # to stop short (see `build.py::context_strokes`).
+    shared = {k: raw[k] for k in ("w", "h", "img", "context") if k in raw}
     if "panels" in raw:
         panels = raw["panels"]
         if not isinstance(panels, Sequence) or isinstance(panels, str) or not 1 <= len(panels) <= 2:
@@ -292,14 +300,23 @@ def _pack(item_id: str, panels: list[dict[str, Any]]) -> dict[str, Any]:
     """
     first = panels[0]
     same = all(p["w"] == first["w"] and p["h"] == first["h"] and p["img"] == first["img"] for p in panels[1:])
-    if same:
-        return {
+    # The context is hoisted ONLY when every panel carries the same one. The
+    # builder always shares it (it is the specimen's own measured pen path), but
+    # `_panel` accepts a per-panel context, and hoisting the first would then
+    # silently draw one panel's surroundings around the other — the same class
+    # of error as showing a letter without its connectors at all.
+    shared_context = all(p["context"] == first["context"] for p in panels[1:])
+    if same and shared_context:
+        item = {
             "id": item_id,
             "w": first["w"],
             "h": first["h"],
             "img": first["img"],
             "panels": [{"strokes": p["strokes"]} for p in panels],
         }
+        if first["context"]:
+            item["context"] = first["context"]
+        return item
     return {"id": item_id, "panels": panels}
 
 
@@ -838,7 +855,10 @@ function answered(i) {
 // two sides are pixel-identical apart from the line.
 function panelOf(item, i) {
   const p = item.panels[i];
-  return { w: p.w || item.w, h: p.h || item.h, img: p.img || item.img, strokes: p.strokes };
+  return {
+    w: p.w || item.w, h: p.h || item.h, img: p.img || item.img,
+    strokes: p.strokes, context: p.context || item.context || [],
+  };
 }
 
 function drawPanel(el, panel, interactive) {
@@ -859,6 +879,21 @@ function drawPanel(el, panel, interactive) {
   // eye can only find off-ink deviation and every wobble judgement would really
   // be an off-ink judgement. Fixed colours on purpose — the crop is a light
   // work surface in both themes.
+  // The surrounding pen path FIRST and underneath: the letter was fitted inside
+  // it, so without it a joined letter looks as if it stopped short — the round-1
+  // defect. Grey, thin and unhaloed so it reads as context and can never be
+  // mistaken for the line under judgement.
+  for (const stroke of panel.context) {
+    const c = document.createElementNS(ns, 'polyline');
+    c.setAttribute('points', stroke.map((q) => q.join(',')).join(' '));
+    c.setAttribute('fill', 'none');
+    c.setAttribute('stroke', '#7a7268');
+    c.setAttribute('stroke-width', '1');
+    c.setAttribute('stroke-opacity', '0.7');
+    c.setAttribute('stroke-dasharray', '3 3');
+    c.setAttribute('stroke-linecap', 'round');
+    svg.appendChild(c);
+  }
   for (const pass of [{ c: '#fdf6e8', w: 5, o: 0.85 }, { c: '#b03a3a', w: 2, o: 1 }]) {
     for (const stroke of panel.strokes) {
       const p = document.createElementNS(ns, 'polyline');
