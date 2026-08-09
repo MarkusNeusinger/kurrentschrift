@@ -501,8 +501,12 @@ Der Plan gehört zur Runde und wird mit den Urteilen aufbewahrt (§6).
 
 Festlegen, was die Runde beantworten soll: ein **Kategorien-Durchgang**
 (`single`, „was stimmt hier nicht?“) oder ein **paariger Vergleich**
-(`paired`, „welche Linie folgt der Tinte besser?“, §8). Dann den Auswerteplan
-schreiben (§4). Der Plan darf nach dem Bauen entstehen — nie nach dem Labeln.
+(`paired`, §8). Beim paarigen gehört die **Frage selbst** in die Festlegung —
+„welche Linie folgt der Tinte besser?“ solange es eindeutige Fehler gibt,
+„welche sieht echter geschrieben aus?“ erst danach; die beiden messen
+Verschiedenes und ihre Runden sind nicht vergleichbar (§8). Dann den
+Auswerteplan schreiben (§4). Der Plan darf nach dem Bauen entstehen — nie nach
+dem Labeln.
 
 ### Schritt 1 — Bauen
 
@@ -766,6 +770,35 @@ Ein zweiter Kategorien-Durchgang bleibt trotzdem sinnvoll — aber für andere
 Fragen: frische **Prävalenzen** von einem Satz, den der Beurteiler nie gesehen
 hat (die Reserve), und die regelkonforme **Bestätigung** einer neuen Kennzahl
 (§3.3). Nicht als Beleg dafür, dass etwas besser geworden ist.
+
+### Die Frage des Vergleichs ändert sich mit der Qualität
+
+Nicht nebensächlich, sondern die Entscheidung, die eine paarige Runde brauchbar
+oder wertlos macht (Vorgabe des Autors, 2026-08-09):
+
+**Solange es eindeutige Fehler gibt**, ist der Kategorien-Durchgang das
+richtige Werkzeug und die paarige Frage lautet **„welche Linie folgt der Tinte
+besser?"** — eine Genauigkeitsfrage, und Genauigkeit ist genau das, was ein
+Ausreißer oder ein Bereich daneben verletzt.
+
+**Wenn beide Linien gleich gut auf der Tinte liegen**, misst diese Frage nichts
+mehr: zwei genaue Linien sind beide genau. Dann verschiebt sich das Kriterium
+auf **„welche sieht echter geschrieben aus?"** — nicht Nähe zur Tinte, sondern
+ob es nach Hand aussieht. Das ist eine andere Eigenschaft, sie kann der
+Genauigkeit sogar zuwiderlaufen (eine Linie, die jeden Skelett-Zacken
+mitnimmt, ist genauer und sieht weniger geschrieben aus), und sie ist der
+eigentliche Maßstab des Projekts.
+
+Praktisch: Der Wortlaut steckt in `page.py::CHOICES` („Links folgt besser").
+Wer eine paarige Runde auf der Echtheitsfrage fahren will, ändert ihn dort —
+und schreibt in den Auswerteplan, welche der beiden Fragen gestellt wurde.
+Eine Runde, deren Frage nicht im Plan steht, ist hinterher nicht zuzuordnen;
+zwei Runden mit verschiedenen Fragen sind nicht vergleichbar.
+
+Die Reihenfolge ist damit vorgegeben und nicht umkehrbar: **erst die
+eindeutigen Fehler weg** (Kategorien), **dann die Echtheit** (paarig). Ein
+Echtheitsvergleich über Vorkommen, von denen eines noch einen Ausreißer hat,
+misst den Ausreißer.
 
 ### Wie der Vergleich stattdessen aussieht
 
