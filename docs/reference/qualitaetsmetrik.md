@@ -1927,3 +1927,237 @@ Zwei aus dieser Runde, beide teuer erkauft:
    die Nadel in den Ketten-Pfad injiziert und `['ok','ok','ok']`
    zurückbekam. Der Regressionstest
    `test_the_chain_path_rejects_an_anchor_in_blank_paper` hält das offen.
+
+---
+
+## 9. Menschliche Bewertung: was die Kennzahlen sehen — und was nicht (`aug08`)
+
+Die Frage hinter §7 und §8 war nie beantwortet: **bedeutet eine kleinere
+Zahl automatisch besser?** §8 hatte den Verdacht erhärtet, dass die
+Zielfunktion einen sichtbaren Defekt nicht sieht — jeder ihrer Terme ist ein
+Mittelwert über 120 Anker, ein einzelner Ausreißer bewegt sie nicht. Ob das
+auch für die *anderen* Fehlerarten gilt, war Meinung.
+
+Deshalb ein blinder Bewertungsdurchgang: 162 Bildschirme (150 Vorkommen +
+12 blinde Wiederholungen), sechs Fehlerarten mit Mehrfachauswahl, ein
+freiwilliger Ortsmarker je Bild. Der Auswerteplan wurde **vor** den Labels
+geschrieben; Verfahren, Taxonomie und Fallstricke stehen in
+[`menschliche-bewertung.md`](menschliche-bewertung.md), das Werkzeug ist
+`tools/humanbench`. Die Bildschirme zeigten nur Crop und Centerline —
+**keine Kennzahl**, damit das Urteil sie nicht spiegelt.
+
+Was der Durchgang liefert: eine Abdeckungsmatrix (welche Fehlerart sieht
+welche Kennzahl) und eine Validierung des in §8 ausgelieferten Gates. Was er
+nicht liefert und nie sollte: Schwellwerte, einen Skalar-Score, einen
+Trainingsdatensatz.
+
+### Verlässlichkeit zuerst — und ihre Asymmetrie
+
+10 von 12 blinden Wiederholungen ergaben exakt dieselbe Kategorienmenge, je
+Kategorie 11–12/12. Das erlaubt überhaupt erst, von „blind" zu sprechen.
+
+Die Einschränkung ist wichtiger als die Zahl: unter den 12 Paaren enthielten
+`A` und `B` nur je **ein** Ja, `W` drei, `K` **null**. Deren hohe
+Übereinstimmung kommt fast ganz aus Einigkeit über die Neins. Nur `E`
+(6 Ja / 5 Nein / 1 uneinig) ist balanciert und damit belastbar geschätzt.
+
+Die Folge ist **richtungsabhängig**, und das entscheidet, welche Aussagen
+unten tragen: Labelrauschen, das von der Kennzahl unabhängig ist, drückt eine
+AUC gegen 0,5 — es kann eine 0,84 nicht *erzeugen*, nur verkleinern. **Hohe
+Zellen überleben dünne Verlässlichkeit, niedrige nicht.** Also: „Kennzahl X
+sieht `W`" trägt; „Kennzahl X sieht `A`/`B` *nicht*" ist bei diesen
+Besetzungen nicht interpretierbar, und die Gate-Trefferquote hängt an 15
+`A`-Labels, deren Stabilität mit einem einzigen positiven Wiederholungspaar
+abgesichert ist.
+
+Konstruktionsfehler des Instruments, für die nächste Runde vorgemerkt: die
+Wiederholungen wurden aus häufigen Glyphen gezogen, nicht nach
+Verdachtskategorie geschichtet. Bei 10 % `A`-Prävalenz waren ~1,2 `A`-Paare
+zu *erwarten* — der Durchgang konnte die `A`/`B`-Verlässlichkeit gar nicht
+messen.
+
+### Besetzung (150 Vorkommen)
+
+| Kategorie | n | Anteil |
+|---|---|---|
+| `G` gut | 71 | 47,3 % |
+| `E` Knick am Rand | 35 | 23,3 % |
+| `W` Gewackel | 32 | 21,3 % |
+| `B` Bereich daneben | 22 | 14,7 % |
+| `A` Ausreißer | 15 | 10,0 % |
+| `K` komplett daneben | 5 | 3,3 % (zu wenig, nur beschreibend) |
+
+Knapp die Hälfte ist in Ordnung. Kein Drift über die Sitzung; die Mediandauer
+je Urteil fällt 9 s → 7 s → 5 s, der Kategorienmix bleibt stabil.
+
+### Das Gate aus §8, gegen Menschenurteile geprüft
+
+`anchor_spike_ratio ≥ 8,0` lehnt 11 der 145 bewerteten Vorkommen ab
+(`K` ausgeschlossen).
+
+* gegen die `A`-Labels: Genauigkeit 8/11 = 0,73 · Trefferquote 8/15 = 0,53
+* gegen „irgendein Fehler": Genauigkeit **11/11 = 1,00**
+
+Die drei vermeintlichen Fehlalarme tragen `B` bzw. `BE`. **Das Gate hat kein
+einziges als gut gelabeltes Vorkommen verworfen** — bei aufgebrauchtem
+Ablehnungsbudget (12 von 35 Buchstaben liegen schon unter
+`LAUFFORM_MIN_OCCURRENCES`) ist das die Eigenschaft, auf die es ankommt.
+
+Es übersieht die Hälfte der Ausreißer, aber deren Spike-Werte (7,9 · 6,3 ·
+5,9 · 4,7 · 3,3 · 2,0 · 2,0) liegen weit unter der Schwelle — das ist kein
+Schwellwertproblem. Eine Schwelle um 2 würde massenhaft Gutes verwerfen. **Die
+übersehenen Ausreißer gehören dem Fit, nicht dem Gate.**
+
+### Abdeckungsmatrix (AUC, `K` ausgeschlossen, ± Hanley-McNeil-SE)
+
+| Kennzahl | `A` | `W` | `B` | `E` | irgendein |
+|---|---|---|---|---|---|
+| Spitze → Tinte | 0,73±0,08 | 0,71±0,06 | **0,80**±0,06 | **0,71**±0,05 | **0,82**±0,04 |
+| Median → Tinte | 0,49 | 0,68 | 0,55 | 0,51 | 0,63 |
+| 90 % → Tinte | 0,48 | 0,78 | 0,75 | 0,65 | 0,76 |
+| Anteil > 0,10 xh | 0,69 | 0,65 | 0,76 | 0,64 | 0,69 |
+| Anteil > 0,20 xh | 0,63 | 0,48 | 0,51 | 0,50 | 0,53 |
+| `geo_rmse` | 0,60 | 0,81 | 0,80 | 0,63 | 0,79 |
+| `cov_rmse_local` | 0,70 | **0,84**±0,05 | 0,78 | 0,54 | 0,78 |
+| Spike-Verhältnis | **0,86**±0,06 | 0,69 | 0,78 | 0,54 | 0,73 |
+
+Die vorregistrierten Erwartungen und ihr Ausgang:
+
+1. `A` wird von Spike-Verhältnis und Spitze gesehen — **teilweise**: Spike
+   0,86 ja, Spitze 0,73 knapp darunter (innerhalb SE).
+2. `W` wird von **keiner** Kennzahl gesehen (< 0,65) — **falsifiziert**.
+   `cov_rmse` 0,84, `geo_rmse` 0,81.
+3. `E` liegt am Anfang oder Ende der Ankerkette — **bestätigt**: 21/35 = 60 %
+   gegen 19/110 = 17 % bei allen anderen.
+4. `B` wird am besten vom Anteil außerhalb gesehen, nicht von der Spitze —
+   **nicht bestätigt** (0,80 vs. 0,76, innerhalb SE).
+
+Vorhersage 2 war die interessanteste, und sie ist falsch. **Die Aussage
+„unsere Kennzahlen sehen nicht, was stört" gilt nur für die Ausreißer**
+(`geo_rmse` dort 0,60). Für Gewackel und Bereich-daneben sind `geo_rmse` und
+`cov_rmse` gute Detektoren. Die Falsifikation hält schärferer Prüfung stand:
+über die 14 Bilder, die **nur** `W` tragen, gegen die 71 reinen `G` steigt
+`cov` auf 0,87; `cov` trennt `W` auch von den *anderen* Fehlern (0,74, wo
+Spike auf 0,55 und Spitze auf 0,50 fällt); und innerhalb derselben Glyphe
+gepoolt bleiben 0,83. Es ist also kein Ko-Okkurrenz- und kein
+Glyphen-Artefakt.
+
+### Der Hauptbefund: `E` ist ein abgeschnittenes Strichende
+
+74 der 79 Fehlerbilder tragen einen freiwillig gesetzten Ortsmarker (94 %).
+Über die 49 eindeutig einfach gelabelten:
+
+| | n | Anfang < 10 % | Mitte | Ende > 90 % | an Strichgrenze |
+|---|---|---|---|---|---|
+| `A` Ausreißer | 6 | 2 | 4 | 0 | **0** |
+| `W` Gewackel | 14 | 6 | 5 | 3 | 0 |
+| `B` Bereich daneben | 9 | 1 | 7 | 1 | 1 |
+| `E` Knick am Rand | 20 | **15** | 2 | 3 | **20** |
+
+Präzise formuliert — und die 100-%-Zahl ist dabei **kein zweiter Beleg**,
+sondern für 15 der 20 Fälle dieselbe Beobachtung wie „im ersten Zehntel":
+`E` ist ein **abgeschnittenes Strichende**, zu etwa 85 % ein Strichanfang
+(3 der 20 sitzen am Kettenende, 2 an einem internen Strichstart, beide der
+i-Punkt). Nicht ein Knick.
+
+Was den Schluss trägt, ist der **Kontrast bei kategorieblinder Mechanik**:
+die Abbildung Klick → Anker weiß nichts von der Kategorie, und trotzdem
+landen `W` 0/14, `A` 0/6, `B` 1/9 an Strichgrenzen, gegen `E` 20/20 — bei
+einer Basisrate von 7–9 % der Ankerindizes unter Zufallsklicks. Ein
+Abbildungsartefakt kann diesen Kontrast nicht erzeugen. Ein Schnapp-Effekt
+scheidet ohnehin aus: die `E`-Klicks liegen mit Median 0,02 xh (max 0,05)
+praktisch auf dem Anker, und der Crop hat 0,4 xh Polster.
+
+Die Notizen des Autors sagen dasselbe unabhängig: „der Buchstabe fängt zu
+spät an, der halbe Anfangsstrich fehlt, der kommt eigentlich von der
+Grundlinie" (t), „oben links fängt der Strich nicht am Anfang an" (P),
+„startet aber auch nicht ganz links" (langes ſ, als **gut** gelabelt — die
+wahre Prävalenz liegt also eher über 23 %).
+
+**Warum keine Kennzahl das sieht:** `cov_rmse_local` misst Deckung in einem
+Fenster, das aus dem Fit abgeleitet ist. Ein Fit, der zu spät anfängt,
+definiert seinen eigenen Fehler weg. Die 0,54 unterschätzt das noch — *unter
+den Fehlerbildern* hat `cov` gegen `E` eine AUC von **0,26**: `E`-Fälle sehen
+für `cov` **besser** aus als andere Fehler. Ein erster Reparaturversuch (Tinte
+dem nächstgelegenen Buchstaben zuordnen, dann unerreichte Tinte messen) kam
+auf AUC 0,60 und ist gescheitert: die fehlende Anstrich-Tinte liegt näher am
+Nachbarn als am eigenen ersten Anker. Ein brauchbares Maß muss
+richtungsabhängig sein.
+
+Zwei Lesarten sind noch nicht getrennt und dürfen nicht verwechselt werden:
+„der Fit beginnt zu spät" gegen „die Vorlage hat keinen Anstrich, die Tinte
+gehört dem generierten Übergang". Die Slot-Zerlegung entscheidet ein Viertel
+vorab: **26 der 35 Fälle sind wortintern, 9 stehen am Wortanfang** — dort gibt
+es links nichts, dem die Tinte gehören könnte. Betroffen sind vor allem `t`
+(4/4) und `i` (7/13), also genau die Buchstaben mit Grundlinien-Anstrich.
+
+### Was dabei widerlegt wurde
+
+Drei Aussagen aus §8 und aus der laufenden Arbeit halten nicht:
+
+1. **„22 von 23 Gate-Ablehnungen sitzen an Eckankern/Strichgrenzen."** Die
+   Zahl stammt aus dem Maximum des eigenen Detektors und ist zirkulär. Sie ist
+   damit *unbelegt* — aber durch die menschlichen Marker auch nicht widerlegt:
+   0 von 6 ist bei ~8 % Basisrate unter jeder Hypothese der Erwartungswert,
+   und nur 2 der 6 markierten Ausreißer sind überhaupt Gate-Ablehnungen. Wer
+   an dieser Stelle etwas baut, braucht vorher eine nicht-zirkuläre
+   Ortsanalyse.
+2. **Der Klick trifft das gemessene Maximum nur in 45 % der Fälle** (`W` 5/14,
+   `E` 8/20). Der Mensch zeichnet nicht nach, was die Kennzahl anzeigt.
+3. **Die Ortsprüfung ist unabhängig von der Kennzahl, nicht vom Fit.** Der
+   Beurteiler sieht die gefittete Linie; bei `E` ist das sichtbare Symptom ihr
+   Ende. Das entwertet den Kontrast nicht, gehört aber gesagt.
+
+Die vorregistrierte Ausschlussregel „Mehrfachkategorien fallen aus der
+kategoriespezifischen Ortsprüfung" ist nachträglich empirisch bestätigt: von
+den 8 Wiederholungspaaren mit Marker auf beiden Seiten liegen die sechs
+einfach gelabelten 3–12 px auseinander, die beiden Ausreißer (29 px, 97 px)
+sind **genau** die Bilder mit zwei bzw. drei Kategorien.
+
+### Trimm-Kalibrierung: zwei Populationen, bestätigt
+
+Schritt 9 des Auswerteplans, gerechnet über den Anteil eigener Anker jenseits
+von 4·MAD um den per-Anker-Median:
+
+| `G` | `A` | `B` | `W` | `E` | `K` |
+|---|---|---|---|---|---|
+| 1,7 % | 3,3 % | 4,2 % | 4,6 % | 5,0 % | **58–68 %** |
+
+Saubere Lücke: nichts Nicht-`K` über 51 %, kein `K` unter 57 %. Die
+vorregistrierte Erwartung (lokale Defekte nahe dem Gesamtmedian, `K` deutlich
+darüber) ist bestätigt — **lokaler Defekt und global misslungener Fit sind
+zwei Populationen, keine Skala**. Das rechtfertigt, sie mit verschiedenen
+Mitteln zu behandeln: pro Anker trimmen beim Aggregieren gegen das eine,
+ganzflächige Ablehnung gegen das andere. Die Umsetzung ist rendering-ändernd
+(über `apply-laufform`) und braucht deshalb A/B gegen die gemessene Tinte
+plus Autorfreigabe.
+
+### Grenzen dieses Durchgangs
+
+* **Die gelabelten Vorkommen sind die Überlebenden.** Die 99 nie geernteten
+  und die 23 vom Gate abgelehnten sind nicht darunter. Eine an diesen Labels
+  kalibrierte Kennzahl gilt für neu Geerntetes nur unter Vorbehalt.
+* **Breite/Schwellzug war konstruktionsbedingt unsichtbar** — gezeigt wurde
+  nur die Centerline. „Kein Breitenproblem gefunden" wäre daher kein Befund,
+  sondern eine Lücke des Instruments.
+* **Ein Beurteiler.** Test-Retest misst Konsistenz, nicht Konstruktvalidität.
+  Für das Falsifizieren eigener Vorhersagen reicht das; für „was ist schön"
+  nicht.
+* Die 95 zurückgehaltenen Vorkommen sind unangetastet und stehen als
+  Bestätigungssatz für jede neue Kennzahl bereit.
+
+### Die Lehre
+
+1. **Eine Kennzahl kann ihren eigenen Fehler wegdefinieren.**
+   `cov_rmse_local` misst in einem Fenster, das der Fit aufspannt — und wird
+   dadurch bei der häufigsten Fehlerart nicht bloß blind (0,54), sondern
+   verkehrt herum (0,26 unter den Fehlerbildern). Beim Bau einer Kennzahl ist
+   die erste Frage nicht „was misst sie", sondern „wer bestimmt ihr Fenster".
+2. **Blinde Wiederholungen sind kein Beiwerk.** Ohne sie wäre „unsere
+   Kennzahlen sind blind für Gewackel" unfalsifizierbar geblieben — eine
+   niedrige AUC hätte auch Labelrauschen sein können. Sie kosten 8 % der
+   Bildschirme und entscheiden, welche Aussage überhaupt tragen darf.
+3. **Die eigene Ortsbehauptung war zirkulär.** Wer prüft, ob Defekte an
+   Eckankern sitzen, darf dafür nicht das Maximum des eigenen Detektors
+   benutzen. Der freiwillige Marker kostete einen Klick je Bild und ist die
+   einzige Ortsaussage im ganzen Durchgang, die nicht aus der Maschine kommt.

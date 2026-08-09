@@ -61,6 +61,29 @@ agent working in this repo:
   and ask before acting.
 - **Never echo secret values** into logs, comments, or commits — verify by
   exit code or metadata instead.
+- **Archive snapshots: create freely, never destroy** (`tools/dbsnapshot`,
+  owner directive 2026-08-08). The archive holds the only copy of what no
+  recomputation brings back — `bboxes` and `templates.raw_path`. Cloud
+  SQL's own backups are instance-wide and keep 7 days; this project's
+  failure mode is slower (a bad apply noticed weeks later).
+  - Take one freely, and DO take one **before** anything that can
+    overwrite geometry: `apply-laufform`, a migration with DROP/rewrite, a
+    harvest with `replace`, any DDL — and after an authoring session in
+    which letters were traced.
+  - Every snapshot is a new timestamped directory. **Never write into an
+    existing one, never delete, move or rename one** — not to tidy up, not
+    when disk is short; report instead. The archive lives outside the
+    working tree precisely because `git clean -xfd` deletes gitignored
+    files.
+  - Check plausibility before filing (row counts per table; the tool fails
+    a run that would file fewer rows than the previous one). A silent
+    empty snapshot is worse than none — it looks like safety.
+  - Never print archive contents into logs or comments; that is the
+    reserved dataset.
+  - **Restoring is prod-touching** and needs explicit confirmation.
+    `restore.py` is built for drills against a throwaway PostgreSQL: it
+    refuses a URL equal to `DATABASE_URL`, refuses an occupied target
+    without `--replace`, and writes nothing without `--apply`.
 - **Do not mutate tracked files via shell heredocs/`sed`** that bypass
   normal review; edit through the editor. When a command legitimately
   rewrites a tracked file (formatter, codegen), re-read it before the next
@@ -799,6 +822,12 @@ Technical specs sit in `docs/reference/*.md`:
   (`core/quality.py`, pixel/width), §5 Sütterlin/Gleichzug naturalness
   (`core/quality_suetterlin.py` + `core/geometry.py`). Bench runs one
   script per run (`--style suetterlin|kurrent`), no combined bench_loss.
+- `menschliche-bewertung.md` — the method of the blind human judgement
+  pass over the fits (`tools/humanbench`): the six-category defect
+  taxonomy, the instrument's construction rules each next to the failure
+  it was added for, the pre-registered analysis plan, what is kept and
+  what is not. Read it before building or evaluating a round; the
+  findings of a round live in `qualitaetsmetrik.md`, not here
 - `write-api.md` — the public render endpoints `/write/glyphs`,
   `/write/glyphs/{glyph_key}` + `/write/word`: shaping → composition →
   payload, cache behaviour, `missing` semantics (update it when changing
@@ -1095,6 +1124,36 @@ impl-generate pipelines. Conventions:
   with `slot_index` and states each join's `exit`/`entry` in word
   coordinates. All of these are report-only, never part of the loss — a
   headline must stay byte-identical across their introduction.
+- **Human judgement (what no metric sees):** `tools/humanbench` is the
+  one tool whose sensor is a HUMAN rather than a metric — the blind
+  judgement pass over the stored fits, answering „which kind of defect
+  does any of our numbers see at all?". `build.py` draws a round
+  (stratified by severity with a seeded shuffle INSIDE the bands, blind
+  repeats as the reliability bound, a held-out reserve; `--only` restricts
+  a round to an earlier round's reserve, which is how the pre-registered
+  confirmation pass is run) and writes payload + key + slim key +
+  provenance stamp under `temp/humanbench/runde-<n>/`;
+  `page.py` renders one self-contained HTML page from it (category mode
+  with one panel per screen, paired before/after with two — the side
+  assignment lives in the key alone); `analyse.py` evaluates the emitted
+  result text in the order the plan fixed BEFORE the labels existed
+  (`--union W,B` is the plan's fallback column for two categories the
+  judge does not separate — asked for, never default) —
+  `python -m tools.humanbench.{build,page,analyse}`, no `viz` extra. No
+  writes anywhere; `build.py` reads GET-only over the deployed read API
+  when no instance file is supplied. Method in
+  `docs/reference/menschliche-bewertung.md`, findings in
+  `qualitaetsmetrik.md`. Committed under `data/humanbench/` are the
+  judgements AND the builder-written slim key (`*-vorkommen.json`: uid →
+  glyph, specimen word, slot, `repeat_of`) — a result line is
+  `S026:AW#81,76`, so without a key the human work would be filed
+  unreadably, and which letter sits in which word of a public-domain plate
+  is not learned geometry; the `slot` is in there because the cross-round
+  identity is (glyph, word, slot). The full key (severity, rank), the
+  payload and every per-occurrence metric table stay out
+  (`quellen-und-rechte.md` §5); `analyse.py` runs without them and reports
+  which steps it skipped — and nothing in the repo produces those metric
+  tables yet, so a category round's steps 3-5 still need that module.
 - **Never merge a PR yourself** — open it, get it green and
   review-clean (address Copilot review comments, then resolve the
   threads); merging is the maintainer's call.
