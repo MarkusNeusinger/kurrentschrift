@@ -79,6 +79,7 @@ FINDING_CODES: tuple[str, ...] = tuple(c.code for c in CATEGORIES if c.kind == "
 MODIFIER_CODES: tuple[str, ...] = tuple(c.code for c in CATEGORIES if c.kind == "modifier")
 CHOICE_CODES: tuple[str, ...] = tuple(c.code for c in CHOICES)
 CATEGORY_LABEL: dict[str, str] = {c.code: c.tally for c in CATEGORIES}
+TALLY_CODE: dict[str, str] = {c.tally: c.code for c in CATEGORIES}
 
 GOOD = "G"  # the verdict that says nothing is wrong
 UNRATABLE = "K"  # „komplett daneben" — excluded from every other category
@@ -132,6 +133,10 @@ RESULT_LINE = re.compile(
 GATE_SPEC = re.compile(
     r"^(?P<metric>[A-Za-z_][A-Za-z0-9_]*)(?P<op>>=|<=)(?P<value>[-+0-9.eE]+)(?::(?P<category>[A-Z]))?$"
 )
+# The page prints its own per-category count under the verdict lines, so the
+# natural copy-paste carries them. Read rather than skipped: checked against
+# the parsed verdicts, they are a free completeness probe on the paste.
+TALLY_LINE = re.compile(r"^(?P<label>[^:]+):\s*(?P<count>\d+)\s*$")
 
 
 class ResultFormatError(ValueError):
@@ -189,6 +194,11 @@ def parse_result(text: str) -> ParsedResult:
     the category letters in the page's own order; a paired pass writes a single
     choice letter instead and is rejected here — it answers a different
     question and has no categories to evaluate.
+
+    The page closes the emission with its own per-category count
+    (``Gut: 64``). Those lines are read and checked against the verdicts, so a
+    truncated or reassembled paste fails here instead of quietly producing a
+    prevalence table over whatever survived the clipboard.
     """
     lines = [line for line in text.splitlines() if line.strip()]
     if not lines:
@@ -199,7 +209,20 @@ def parse_result(text: str) -> ParsedResult:
 
     verdicts: list[Verdict] = []
     seen: set[str] = set()
+    tallies: dict[str, int] = {}
     for position, line in enumerate(lines[1:]):
+        tally = TALLY_LINE.match(line)
+        if tally and tally.group("label").strip() in TALLY_CODE:
+            code = TALLY_CODE[tally.group("label").strip()]
+            if code in tallies:
+                raise ResultFormatError(f"line {position + 2}: the tally for {code} is given twice")
+            tallies[code] = int(tally.group("count"))
+            continue
+        # The tally block closes the file, so a verdict behind it means the
+        # paste was assembled out of order — and then `position` (the drift
+        # step's sequence index) would no longer be the judging order.
+        if tallies:
+            raise ResultFormatError(f"line {position + 2}: verdict line behind the tally block: {line!r}")
         match = RESULT_LINE.match(line)
         if not match:
             raise ResultFormatError(f"line {position + 2} does not parse: {line!r}")
@@ -222,6 +245,12 @@ def parse_result(text: str) -> ParsedResult:
 
     if len(verdicts) != int(head.group("judged")):
         raise ResultFormatError(f"header claims {head.group('judged')} judged, file carries {len(verdicts)}")
+    for code, claimed in tallies.items():
+        counted = sum(1 for v in verdicts if code in v.codes)
+        if counted != claimed:
+            raise ResultFormatError(
+                f'the page counted {claimed} × „{CATEGORY_LABEL[code]}", the verdict lines carry {counted}'
+            )
     return ParsedResult(head.group("tag"), int(head.group("judged")), int(head.group("total")), tuple(verdicts))
 
 

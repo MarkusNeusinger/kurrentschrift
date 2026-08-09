@@ -102,6 +102,19 @@ def test_parse_result_rejects_a_paired_pass():
         parse_result("VERGLEICH geprueft=1 von 1\nS001:L@4s\n")
 
 
+def test_parse_result_reads_the_pages_tally_block():
+    """The page prints its counts under the verdicts — the natural paste has them."""
+    parsed = parse_result("BEFUND geprueft=3 von 3\nS001:A\nS002:G\nS003:WB\nGut: 1\nGewackel: 1\nBereich: 1\n")
+    assert [v.codes for v in parsed.verdicts] == [("A",), ("G",), ("W", "B")]
+    assert [v.position for v in parsed.verdicts] == [0, 1, 2]
+
+
+def test_parse_result_catches_a_paste_that_lost_lines():
+    """A tally that outruns the verdicts is a truncated clipboard, not a round."""
+    with pytest.raises(ResultFormatError, match="counted 4"):
+        parse_result("BEFUND geprueft=2 von 2\nS001:G\nS002:G\nGut: 4\n")
+
+
 @pytest.mark.parametrize(
     "text, message",
     [
@@ -110,6 +123,8 @@ def test_parse_result_rejects_a_paired_pass():
         ("BEFUND geprueft=2 von 2\nS001:A\nS001:G\n", "judged twice"),
         ("BEFUND geprueft=5 von 5\nS001:A\n", "header claims"),
         ("BEFUND geprueft=1 von 1\nnonsense\n", "does not parse"),
+        ("BEFUND geprueft=2 von 2\nS001:G\nGut: 1\nS002:G\n", "behind the tally block"),
+        ("BEFUND geprueft=1 von 1\nS001:G\nGut: 1\nGut: 1\n", "given twice"),
     ],
 )
 def test_parse_result_rejects_broken_input(text, message):

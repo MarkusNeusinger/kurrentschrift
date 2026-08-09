@@ -39,7 +39,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **A** — Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1 · Ausreißer §4
 - **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Cusp-Connector §3
-- **D** — dconn §4 · Deckung §3 · degenerierte Solves §3 · Degeneriewächter §3 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · Duktus §1 · Duktus-Prior §1
+- **D** — dconn §4 · Deckung §3 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · Duktus §1 · Duktus-Prior §1
 - **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2
 - **F** — Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · FID §6 · Fixture-Wurzel §4 · Frozen-Reference-Regel §4 · Fuge §1
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Grundstrich/Haarstrich §1 · gut (`G`) §4
@@ -736,6 +736,17 @@ eigenen ersten Punkt gelegt. **Start-aligniert, also translationsfrei** —
 die Platzierung ist allein Sache von `doff`. Kein kalibrierter
 Absolutabstand, sondern ein monotones Signal: gleiche Verbindung, kleinere
 Zahl = näher an der Vorlage.
+
+**`d_end`** *(verworfen)* — Abstand des Kettenendes eines gefitteten
+Buchstabens zur nächsten Tinte, in x-Höhen; gedacht als „Nahtstellen-Kennzahl"
+für die Fehlerart `E` („Knick nur am Rand"). Sie hat ihr vorregistriertes
+Bestätigungskriterium auf der Rückhaltemenge **bestanden** (AUC 0,764,
+p = 0,012) und wird trotzdem **nicht geführt**: gegen die anderen Fehlerarten
+trennt sie auf Zufallsniveau (`E` gegen `W`/`B` 0,539), ist also nicht
+nahtspezifisch, und sie bleibt hinter dem längst berechneten `peak` zurück
+(0,888 für „irgendein Mangel" gegen „gut"). Der Eintrag steht hier, weil der
+Name in §9/§10 vorkommt und weil „bestätigt, aber unbrauchbar" die Lehre der
+Runde ist. *Technisch:* qualitaetsmetrik.md §10
 
 **`meas`** *(Report-Spalte)* — die Zeile, die `doff` und `dconn` je
 komponierter Verbindung im Wordbench-Report ausweist, plus Blockmediane

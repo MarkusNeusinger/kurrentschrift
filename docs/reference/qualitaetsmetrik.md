@@ -2213,11 +2213,179 @@ plus Autorfreigabe.
    Artefakt" wirkte zwingend, bis dieselbe ungezeichnete Tinte auf den GUTEN
    Bildern auftauchte — dort sogar reichlicher. Eine These, die den Befund
    erklärt, muss auch erklären, warum sie die Nicht-Befunde nicht erklärt.
-2. **Blinde Wiederholungen sind kein Beiwerk.** Ohne sie wäre „unsere
+4. **Blinde Wiederholungen sind kein Beiwerk.** Ohne sie wäre „unsere
    Kennzahlen sind blind für Gewackel" unfalsifizierbar geblieben — eine
    niedrige AUC hätte auch Labelrauschen sein können. Sie kosten 8 % der
    Bildschirme und entscheiden, welche Aussage überhaupt tragen darf.
-3. **Die eigene Ortsbehauptung war zirkulär.** Wer prüft, ob Defekte an
+5. **Die eigene Ortsbehauptung war zirkulär.** Wer prüft, ob Defekte an
    Eckankern sitzen, darf dafür nicht das Maximum des eigenen Detektors
    benutzen. Der freiwillige Marker kostete einen Klick je Bild und ist die
    einzige Ortsaussage im ganzen Durchgang, die nicht aus der Maschine kommt.
+
+---
+
+## 10. Runde 02: die Rückhaltemenge, und wie eine Kennzahl bestätigt und trotzdem unbrauchbar sein kann (`aug09`)
+
+Der Bestätigungssatz aus §9 — die 95 nie gezeigten Vorkommen — ist gelabelt,
+plus 10 blinde Wiederholungen, 105 von 105 geurteilt. Urteile und Schlüssel:
+[`data/humanbench/runde-02-urteile.txt`](../../data/humanbench/runde-02-urteile.txt),
+Stand des Instruments im zugehörigen Stempel. **Kein Fit hat sich seit §9
+geändert** — was sich geändert hat, ist die Zeichnung: der gespeicherte
+Wort-Federweg wird jetzt blass mitgezeichnet (die Korrektur aus §9).
+
+### Besetzung, und was der Vergleich mit §9 trägt
+
+| Kategorie | Runde 01 (150) | Runde 02 (95) |
+|---|---|---|
+| `G` gut | 47,3 % | **61,1 %** |
+| `B` Bereich daneben | 14,7 % | **18,9 %** |
+| `W` Gewackel | 21,3 % | 14,7 % |
+| `A` Ausreißer | 10,0 % | 7,4 % |
+| `E` Knick am Rand | **23,3 %** | **7,4 %** |
+| `K` nicht bewertbar | 3,3 % | 2,1 % |
+
+Verlässlichkeit: 8 von 10 Wiederholungspaaren tragen dasselbe ganze Urteil.
+Gesichert im Sinne der Schranke aus §9 sind nur `G` (5 positive Paare) und `B`
+(3); `W` hat 2, `E` eines, `A`/`K`/`U` keines. **Die in §9 vorgemerkte
+Konstruktionslehre — Wiederholungen nach Verdachtskategorie schichten — wurde
+wieder nicht umgesetzt, und wieder ist die Verlässlichkeit genau der Kategorien
+unbestimmt, um die es geht.** Kein Drift (Mediandauer 6 s → 5 s → 5 s), `G` nie
+gemeinsam mit einer Fehlerart, Marker auf 94,6 % der bemängelten Bilder.
+
+**Der Verdacht „die Reserve ist einfach ein leichterer Satz" ist gemessen und
+ausgeräumt:** auf der Größe, nach der geschichtet wurde, sind die beiden
+Ziehungen ununterscheidbar — AUC 0,492 ± 0,038, Mediane 0,092 gegen 0,094.
+Für `E` ist die Differenz 23,3 % → 7,4 % ein z ≈ 3,7; Stichprobenzufall
+scheidet aus.
+
+**Was bleibt, ist trotzdem nicht auflösbar.** Zwischen den Runden hat sich
+nicht nur das Instrument geändert, sondern auch der Beurteiler: er ist Autor
+der Korrektur, kannte die Vorhersage „`E` muss fallen" und hat danach gelabelt
+— genau die Lage, für die
+[`menschliche-bewertung.md`](menschliche-bewertung.md) §8 die Schlussfolgerung
+ausdrücklich verbietet. Ein verblindeter Zeichnungsvergleich ist prinzipiell
+unmöglich (man sieht dem Bild an, ob der Verbinder gezeichnet ist). Der
+Prävalenzsturz ist damit **vereinbar mit** der Artefakt-Erklärung und belegt
+sie nicht; der Beleg bleibt die mechanistische Geometriemessung aus §9 (Tinte
+0,25 xh von der Zeichnung, 0,02 xh vom gespeicherten Federweg, 24 von 26
+gedeckt). Die spiegelbildliche Arithmetik „−16 pp `E` ≈ +14 pp `G`" stand
+nicht im Auswerteplan und ist ein Nachtrag, kein getroffener Vorhersagepunkt.
+
+**Und die Gegenrichtung ist offen.** Der blass gezeichnete Federweg kann echte
+Nahtdefekte auch *legitimieren* — das Auge schreibt die Naht-Tinte dem
+Verbinder zu. Geprüft am `d_end` der GUT-Bilder beider Runden: Median 0,032 →
+0,033, aber p90 **0,047 → 0,067** und AUC(Runde 02 > Runde 01) 0,571,
+p = 0,082. Nicht signifikant, aber in genau der befürchteten Richtung: die
+7,4 % `E` sind eher eine Unter- als eine Obergrenze.
+
+### Die Nahtstellen-Kennzahl: bestätigt — und als Kriterium erledigt
+
+Vorregistriert war die Bestätigung von `d_end` (Abstand des Kettenendes zur
+nächsten Tinte, in x-Höhen) auf der Rückhaltemenge. Zwei Dinge mussten vorher
+festgezurrt werden, und eines davon war ein Fehler in §9:
+
+* **Markerfrei.** Die 0,84 aus §9 wählte das gemeinte Ende über den *Klick des
+  Beurteilers*. Auf `G`-Bildern gibt es keinen Klick — die Zahl war also nach
+  oben verzerrt und als Abnahmekriterium ohnehin unbrauchbar, weil im Betrieb
+  kein Mensch klickt. Bestätigt wird die markerfreie Fassung: **das schlechtere
+  der beiden Kettenenden, dieselbe Regel für jeden Bildschirm.**
+* **Kriterium vor der Zahl** (unabhängig gesetzt, bevor gerechnet wurde):
+  bestätigt bei exaktem einseitigem Mann-Whitney p < 0,05 **und**
+  Punktschätzer ≥ 0,75.
+
+Ergebnis: **AUC 0,764, p = 0,0117** bei n = 7 `E` gegen n = 58 `G`. Beide
+Bedingungen erfüllt. Was damit gilt, ist ausschließlich „`d_end` sieht `E`
+deutlich über Zufall"; bei dieser Besetzung ist das 95-%-Intervall rund
+±0,19 breit, „AUC ≈ 0,84 bestätigt" wäre also nicht sagbar.
+
+Zwei **nicht** vorregistrierte Nachprüfungen erledigen die Kennzahl trotzdem
+als Abnahmekriterium:
+
+| Kontrast | AUC |
+|---|---|
+| `E` gegen `G` | 0,764 |
+| `W`/`B` gegen `G` | 0,721 |
+| **`E` gegen `W`/`B`** | **0,539 ± 0,129** |
+
+* **Sie ist nicht nahtspezifisch.** Gegenüber den anderen Fehlerarten trennt
+  sie auf Zufallsniveau. Sie misst „an diesem Fit stimmt etwas nicht", nicht
+  „die Naht stimmt nicht" — der Name war bereits die Behauptung.
+* **Sie schlägt nicht, was wir haben.** Der größte Abstand irgendwo auf der
+  Kette (`peak`, längst berechnet) trifft dasselbe Urteil besser: 0,803 gegen
+  `E`, 0,884 gegen `W`/`B`, **0,888 ± 0,039 für „irgendein Mangel" gegen `G`**.
+  Bei Schwelle 0,13 xh: Genauigkeit 0,83, Trefferquote 0,43.
+
+`d_end` wird deshalb **nicht** als Kennzahl geführt. Der Ertrag der Runde ist
+ein anderer: `peak` ist die beste automatische Entsprechung des Menschenurteils,
+die das Projekt besitzt, und sie ist bereits im Einsatz.
+
+### `B` ist ein `d`-Problem, kein Platzierungsproblem
+
+`B` („ein ganzer Bereich liegt neben der Tinte") ist die einzige Fehlerart
+dieser Runde mit gesicherter Verlässlichkeit, die vorhandenen Kennzahlen sehen
+sie, und ein `B`-Segment verschiebt viele Anker kohärent — bei
+`LAUFFORM_MIN_OCCURRENCES = 3` zieht ein einziges `B`-Vorkommen den
+Per-Anker-Median. Dass sie mit 18,9 % jetzt die größte Klasse ist, trägt
+dagegen nichts (14,7 % → 18,9 % ist z ≈ 0,9); sie führt nur, weil `E`
+zusammengebrochen ist.
+
+Zwei Diagnosen vor jedem Eingriff:
+
+**Platzierung?** Nein. Eine starre Verschiebung des ganzen Buchstabens
+(±0,25 xh, 0,025er Raster) holt aus den `B`-Vorkommen **0 %** des Residuums
+heraus — der Fit sitzt bereits an der bestmöglichen starren Stelle.
+
+| Gruppe | n | RMS jetzt | RMS bestmöglich | entfernt | Verschiebung |
+|---|---|---|---|---|---|
+| `G` | 58 | 0,031 | 0,030 | 0 % | 0,000 xh |
+| `B` | 18 | 0,042 | 0,042 | 0 % | 0,025 xh |
+| `W` | 7 | 0,048 | 0,046 | 3 % | 0,025 xh |
+
+**Über die Glyphen verteilt?** Nein — es konzentriert sich:
+
+| Glyphe | `B` / Vorkommen |
+|---|---|
+| **`d`** | **5 / 7** |
+| `n` | 2 / 13 |
+| `e` | 1 / 15 |
+| `u` · `i` · `r` · `a` | 0 / 7 · 0 / 7 · 0 / 7 · 0 / 5 |
+
+Fünf der sieben `d`-Vorkommen tragen `B`; die übrigen 13 `B`-Fälle verteilen
+sich als Einzelstücke über zehn Glyphen. Nach der Stufendoktrin
+([`optimierungs-werkbank.md`](../proposals/optimierungs-werkbank.md) §5) ist
+das eine Aussage über die **Vorlage** (`chart_ductus` / `laufform`) und nicht
+über die Zielfunktion: `core/fit.py` wäre der falsche Ort. Der nächste Schritt
+ist die Autopsie der `d`-Tafelform gegen ihre fünf bemängelten Vorkommen — und
+erst wenn die `d` sauber ist, sagt der dünne Rest, ob es überhaupt ein
+glyphenübergreifendes `B`-Muster gibt.
+
+### Grenzen dieser Runde
+
+* **Die Reserve ist aufgebraucht.** Jede weitere auf diesen Labels entwickelte
+  Kennzahl hat keinen Bestätigungssatz mehr; der nächste braucht neue Urteile.
+* **`U` = 0** ist kein gewachsenes Zutrauen, sondern möglicherweise eine
+  Verschiebung im Gebrauch des Modifikators. Es macht nur die U-freie
+  Zweitrechnung gegenstandslos.
+* **61,1 % `G`** darf weder als Fit-Verbesserung zitiert werden (kein Fit hat
+  sich geändert) noch als Aussage über die Grundgesamtheit (es sind die
+  Überlebenden von Ernte und Gate).
+* **Das Ernte-Gate gegen die beiden `K`-Fälle** ließ sich nicht prüfen: die
+  gespeicherten `measurements` dieser Vorkommen führen kein
+  `anchor_spike_ratio`, das Gate wirkt bei der Ernte. Für die Gegenprobe aus
+  §8 müsste die Kennzahl aus den Ankern nachgerechnet werden.
+
+### Die Lehre
+
+1. **„Bestätigt" und „brauchbar" sind zwei Fragen.** `d_end` hat sein
+   vorregistriertes Kriterium bestanden und ist trotzdem erledigt — weil
+   niemand vorher gefragt hatte, ob sie das trennt, *wofür* sie benannt war,
+   und ob sie eine vorhandene Kennzahl schlägt. Beide Fragen gehören in die
+   Vorregistrierung, nicht hinterher.
+2. **Ein Kennzahlname ist eine unbewiesene Behauptung.** „Nahtstellen-Kennzahl"
+   klang nach Mechanismus und war eine Hoffnung; gemessen trennt sie `E` nicht
+   von `W`/`B`. Wer eine Kennzahl benennt, hat die Spezifitätsprüfung damit
+   versprochen.
+3. **Eine Korrektur kann in beide Richtungen Artefakte machen.** Der
+   nachgezeichnete Federweg beseitigt das Schweben und kann echte Nahtdefekte
+   maskieren. Die Gegenprobe kostete eine Rechnung und hätte gefehlt, wenn nur
+   die erwartete Richtung geprüft worden wäre.
