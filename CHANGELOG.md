@@ -12,6 +12,23 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **A „could be better" modifier for the judgement pass, because „good" was
+  answering the wrong question.** `G` means „nothing I can name is wrong",
+  which is not „as good as it gets" — so round 2's 47 % good read as „the rest
+  is finished", which the author explicitly did not mean. An absolute scale
+  cannot answer how close a fit is to its ceiling; `P` at least makes the
+  reservation recordable instead of letting it vanish into a `G`. A modifier
+  rather than a category, so the defect classes and the round-to-round
+  prevalence comparisons stay untouched while a new signal appears: plain `G`
+  against `G+P`. If no metric separates those two, that IS the ceiling finding,
+  in measurable form. The real instrument for „better" remains the paired
+  comparison, which needs a second fit snapshot to exist. `analyse.py` now
+  derives „which codes are modifiers" from the category table rather than
+  naming `U` by hand, so a verdict's size counts findings only and the next
+  modifier cannot silently inflate it.
+
 ### Fixed
 
 - **The judgement sheet showed a letter without the pen path it was fitted

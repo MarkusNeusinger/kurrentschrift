@@ -115,6 +115,15 @@ CATEGORIES: tuple[Category, ...] = (
     # Not a severity but a disqualifier: there is nothing to judge there.
     Category("K", "6", "Komplett daneben — nicht bewertbar", "solo", "Komplett daneben", tone="dim"),
     Category("U", "7", "Unsicher", "modifier", "davon unsicher", key_note="7 · zu jeder Wahl"),
+    # „Gut" answers „nothing I can name is wrong", which is NOT „as good as it
+    # gets" — an absolute scale has no way to say „acceptable, but far from the
+    # ceiling", so round 2's 47 % good reads as „the rest is fine" when the
+    # author means no such thing. A modifier keeps the category counts and the
+    # prevalence comparisons intact while making the reservation recordable;
+    # separating plain `G` from `G+P` is then an ordinary question for the
+    # metrics. The paired round remains the real instrument for „better" —
+    # this one only stops the absolute round from overstating what it found.
+    Category("P", "8", "Ginge besser", "modifier", "davon: ginge besser", key_note="8 · zu jeder Wahl"),
 )
 
 # The paired mode's answers. Deliberately three: a winner each way and the

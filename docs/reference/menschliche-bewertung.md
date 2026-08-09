@@ -175,6 +175,27 @@ Auswertung wird **zweimal gerechnet**, einmal mit und einmal ohne die
 `U`-Urteile; weichen die Zahlen auseinander, ist das ein Befund über die
 Kategorie, nicht über die Kennzahl.
 
+### `P` — Ginge besser (Modifikator)
+
+**Definition:** Kein benennbarer Fehler — aber deutlich unter dem, was möglich
+wäre. Kombinierbar mit jeder Wahl, in der Praxis vor allem mit `G`.
+
+**Zweck und Anlass:** `G` beantwortet „mir fällt nichts Falsches auf", und das
+ist etwas anderes als „so gut, wie es geht". Nach Runde 2 lasen sich die 47 %
+`G` als „der Rest ist fertig" — was der Autor ausdrücklich nicht meinte. Eine
+absolute Skala kann die Deckenfrage prinzipiell nicht beantworten; dieser
+Modifikator macht die Einschränkung wenigstens **aufschreibbar**, statt sie in
+einem `G` verschwinden zu lassen.
+
+Als Modifikator und nicht als Kategorie, damit die Fehlerklassen und damit die
+Häufigkeitsvergleiche zwischen den Runden unberührt bleiben. Der Ertrag ist ein
+neues Signal: `G` einfach gegen `G+P`. Trennt keine Kennzahl die beiden, ist
+genau das der Deckenbefund — in messbarer Form.
+
+**Grenze:** ein Notbehelf. Das eigentliche Instrument für „besser" ist der
+paarige Vergleich (§5), der zwei Fit-Stände gegeneinander stellt statt einen
+gegen eine gedachte Idealform.
+
 ### Der Marker
 
 Zusätzlich zur Kategorie markiert der Beurteiler **eine** Stelle im Bild — die
