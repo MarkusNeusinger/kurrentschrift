@@ -282,13 +282,52 @@ def polyline_strokes(
     ]
 
 
-def render_item(uid: str, panels: list[Occurrence], specimens: Specimens, *, zoom: int, pad_xh: float) -> dict:
+def context_strokes(context: list[np.ndarray], window: tuple[int, int, int, int], zoom: int) -> list[list[list[float]]]:
+    """The surrounding PEN PATH in screen space — the connectors, drawn faintly.
+
+    Round 1 shipped without this and it cost the round's headline finding. The
+    harvest fits a whole word as ONE chain (`_harvest_case_chain`), so the
+    connectors belong to the chain's connector segments and are absent from a
+    letter's own anchors. Showing the letter alone made every joined letter end
+    in mid-air, and the judge — correctly reporting what was on screen — filed
+    23 % of the round as „the entry stroke is missing". Re-measured afterwards:
+    the ink beyond the letter sits 0.25 xh from the drawn line but 0.02 xh from
+    the stored pen path, so the fit had it all along.
+
+    The control that settles it: the GOOD screens carry the same undrawn
+    connector ink, and MORE of it (0.50 xh vs 0.25). The judgements were not
+    wrong about the pixels — the drawing was incomplete, and the defect they
+    were pointing at turned out to sit at the SEAM between letter and
+    connector, which cannot be seen at all when the connector is missing.
+    """
+    x0, y0 = window[0], window[1]
+    out = []
+    for path in context:
+        local = (path - np.array([x0, y0])) * zoom
+        if len(local) >= 2:
+            out.append([[round(float(p[0]), 1), round(float(p[1]), 1)] for p in local])
+    return out
+
+
+def render_item(
+    uid: str,
+    panels: list[Occurrence],
+    specimens: Specimens,
+    *,
+    zoom: int,
+    pad_xh: float,
+    context: dict[str, list[np.ndarray]] | None = None,
+) -> dict:
     """One screen: the crop image ONCE, plus one polyline set per panel.
 
     The shared image is what keeps the paired mode blind. Cropping each panel
     to its own line would give the two sides different pixel dimensions and a
     different view of the neighbouring ink — a tell that has nothing to do with
     the fits, and one the judge would learn within a dozen screens.
+
+    `context` carries the specimen's stored pen path per specimen id. It is
+    shared by both panels on purpose: it is the same measured word either way,
+    so drawing it once cannot leak which panel is which.
     """
     sample = panels[0].sample
     crop = specimens.crop(sample)
@@ -300,13 +339,17 @@ def render_item(uid: str, panels: list[Occurrence], specimens: Specimens, *, zoo
     sub = (np.clip(crop[y0:y1, x0:x1], 0, 1) * 255).astype(np.uint8)
     buffer = io.BytesIO()
     Image.fromarray(sub, "L").resize((width, height), Image.LANCZOS).save(buffer, format="PNG", optimize=True)
-    return {
+    item = {
         "id": uid,
         "w": width,
         "h": height,
         "img": base64.b64encode(buffer.getvalue()).decode(),
         "panels": [{"strokes": polyline_strokes(p.points, p.stroke_starts, window, zoom)} for p in panels],
     }
+    paths = (context or {}).get(panels[0].specimen_id)
+    if paths:
+        item["context"] = context_strokes(paths, window, zoom)
+    return item
 
 
 # ---------------------------------------------------------------- stratifying
@@ -428,7 +471,11 @@ def insert_repeats(
 
 
 def build_single(
-    rows: list[Occurrence], specimens: Specimens, args: argparse.Namespace, rng: random.Random
+    rows: list[Occurrence],
+    specimens: Specimens,
+    args: argparse.Namespace,
+    rng: random.Random,
+    context: dict[str, list[np.ndarray]] | None = None,
 ) -> tuple[list[dict], list[dict], list[dict], dict]:
     """The round-2 design: one occurrence per screen, judged into categories."""
     label, reserve, band_size = stratify(rows, args.bands, args.n_label, rng)
@@ -436,7 +483,7 @@ def build_single(
         row.uid = f"{ITEM_PREFIX}{i + 1:03d}"
 
     def render(uid: str, row: Occurrence, _extra: dict | None = None) -> dict:
-        return render_item(uid, [row], specimens, zoom=args.zoom, pad_xh=args.pad_xh)
+        return render_item(uid, [row], specimens, zoom=args.zoom, pad_xh=args.pad_xh, context=context)
 
     items = [render(row.uid, row) for row in label]
     key = [_key_entry(row) for row in label]
@@ -455,7 +502,11 @@ def build_single(
 
 
 def build_paired(
-    pairs: list[tuple[Occurrence, Occurrence]], specimens: Specimens, args: argparse.Namespace, rng: random.Random
+    pairs: list[tuple[Occurrence, Occurrence]],
+    specimens: Specimens,
+    args: argparse.Namespace,
+    rng: random.Random,
+    context: dict[str, list[np.ndarray]] | None = None,
 ) -> tuple[list[dict], list[dict], list[dict], dict]:
     """The before/after round: the same occurrence twice, blind.
 
@@ -486,7 +537,9 @@ def build_paired(
     def render(uid: str, row: Occurrence, extra: dict | None = None) -> dict:
         sides = (extra or {}).get("order") or order[row.uid]
         sided = {SIDE_OLD: row, SIDE_NEW: by_identity[row.identity]}
-        return render_item(uid, [sided[side] for side in sides], specimens, zoom=args.zoom, pad_xh=args.pad_xh)
+        return render_item(
+            uid, [sided[side] for side in sides], specimens, zoom=args.zoom, pad_xh=args.pad_xh, context=context
+        )
 
     items = [render(row.uid, row) for row in label]
     key = [_paired_key_entry(row, by_identity[row.identity], order[row.uid]) for row in label]
@@ -611,6 +664,45 @@ def _repeat_report(picks: list[Occurrence], gaps: list[int]) -> dict:
 def fetch_instances(api: str, source_id: str) -> list[dict]:
     """Stored occurrences over the deployed read API (public, GET only)."""
     return _client(api).get(f"/sources/{source_id}/instances")
+
+
+def fetch_word_traces(api: str, source_id: str) -> list[dict]:
+    """Stored word traces — the pen path incl. connectors (public, GET only)."""
+    return _client(api).get(f"/sources/{source_id}/word-instances")
+
+
+def word_trace_context(traces: list[dict], samples: dict[str, dict]) -> dict[str, list[np.ndarray]]:
+    """Stored word traces → crop-pixel polylines, per specimen id.
+
+    The trace lives in the word's registration frame — baseline v = 0, midband
+    v = 1, y UP — so it is mapped exactly the way the SPA maps it
+    (`app/src/sections/admin/belege/registration.ts::traceToCrop`):
+    ``px = u·xh + tx`` and ``py = (baseline_row + ty) − v·xh``. Restating the
+    formula is unavoidable across the language boundary; getting it wrong is
+    not silent, because the trace then misses the letters by whole x-heights
+    instead of the ~0.01 xh it lands within when the frame is right.
+    """
+    out: dict[str, list[np.ndarray]] = {}
+    for row in traces:
+        specimen = row.get("specimen_id")
+        measurements = row.get("measurements") or {}
+        registration = measurements.get("registration_px") or {}
+        sample = samples.get(specimen)
+        if sample is None or not row.get("strokes"):
+            continue
+        xh = float(measurements.get("xh_px") or (sample["baseline_y"] - sample["midband_y"]))
+        tx = float(registration.get("tx", 0.0))
+        baseline_row = float(registration.get("baseline_row", sample["baseline_y"] - sample["y0"])) + float(
+            registration.get("ty", 0.0)
+        )
+        paths = []
+        for stroke in row["strokes"]:
+            points = np.asarray(stroke, dtype=float)
+            if points.ndim == 2 and points.shape[0] >= 2 and points.shape[1] >= 2:
+                paths.append(np.column_stack([points[:, 0] * xh + tx, baseline_row - points[:, 1] * xh]))
+        if paths:
+            out[specimen] = paths
+    return out
 
 
 def fetch_stroke_starts(api: str, source_id: str, glyph_keys: list[str]) -> dict[str, list[int]]:
@@ -799,6 +891,12 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument("--instances", default=None, help="instance rows as JSON [fetched from the API]")
     parser.add_argument("--starts", default=None, help="glyph_key → stroke starts as JSON [fetched from the API]")
     parser.add_argument(
+        "--word-instances",
+        default=None,
+        help="stored word traces as JSON — the pen path drawn faintly behind each letter "
+        "so a joined letter does not appear to stop short [fetched from the API]",
+    )
+    parser.add_argument(
         "--only",
         default=None,
         help="restrict to the occurrences a key or reserve file names — how the held-out reserve of an "
@@ -846,6 +944,18 @@ def main(argv: list[str] | None = None) -> int:
     # with `[0]` is a genuinely single-stroke glyph and not a problem.
     unlifted = sorted({str(row["glyph_key"]) for rows in raw for row in rows} - set(starts))
 
+    # The pen path the letters were fitted inside. Without it a joined letter
+    # ends in mid-air on screen and the round measures the drawing instead of
+    # the fit — that is what cost round 1 its headline finding, see
+    # `context_strokes`. Absent traces are a warning, never a silent omission.
+    if args.word_instances:
+        traces = json.loads(Path(args.word_instances).read_text(encoding="utf-8"))
+    else:
+        traces = fetch_word_traces(args.api, args.source_id)
+    context = word_trace_context(traces, samples)
+    if not context:
+        print("WARNING: no word traces — letters will be drawn WITHOUT their connectors (round-1 defect)")
+
     wanted = identities_from(json.loads(Path(args.only).read_text(encoding="utf-8"))) if args.only else None
     sets, dropped = [], Counter()
     for rows in raw:
@@ -875,10 +985,10 @@ def main(argv: list[str] | None = None) -> int:
             raise SystemExit("the two snapshots share no occurrence — nothing to compare")
         if report["only_old"] or report["only_new"]:
             print(f"unmatched: {len(report['only_old'])} only in OLD, {len(report['only_new'])} only in NEW")
-        items, key, reserve, repeats = build_paired(pairs, specimens, args, rng)
+        items, key, reserve, repeats = build_paired(pairs, specimens, args, rng, context)
         mode, banded = "paired", len(pairs)
     else:
-        items, key, reserve, repeats = build_single(sets[0], specimens, args, rng)
+        items, key, reserve, repeats = build_single(sets[0], specimens, args, rng, context)
         mode, banded = "single", len(sets[0])
 
     counts.update({"screens": len(items), "labelled": len(items) - repeats["n_repeats"], "reserved": len(reserve)})

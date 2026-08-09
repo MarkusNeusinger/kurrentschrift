@@ -316,6 +316,38 @@ einstrichige Glyphe sieht genauso aus. Der Builder zählt deshalb die Glyphen
 ohne Absetz-Angabe und **warnt namentlich**; diese Warnung ist ein Abbruch
 und keine Randnotiz.
 
+### 3.6a Der Buchstabe wird IN seinem Federweg gezeigt
+
+Die teuerste Regel des Dokuments, weil sie erst nach Runde 1 dazukam und deren
+Hauptbefund gekostet hat.
+
+Die Ernte fittet ein ganzes Wort als **eine Kette**
+(`harvest.py::_harvest_case_chain`, „one solve per run of joined slots"); die
+Verbindungsstücke gehören zu deren Connector-Segmenten und stehen **nicht** in
+den Ankern eines Buchstabens. Runde 1 zeichnete nur diese Anker. Jeder
+verbundene Buchstabe endete dadurch auf dem Bildschirm in der Luft, obwohl der
+Fit weiterlief — und der Beurteiler meldete, korrekt für das Gezeigte, bei 23 %
+der Bilder einen fehlenden Anstrich. Nachgemessen liegt die Tinte jenseits des
+Buchstabens 0,25 xh von der gezeichneten Linie, aber 0,02 xh vom gespeicherten
+Federweg.
+
+`build.py::word_trace_context` holt deshalb die Wort-Traces und
+`context_strokes` legt sie **unter** die Urteilslinie: dünn, grau, gestrichelt,
+ohne Casing — sichtbar als Zusammenhang, niemals verwechselbar mit der Linie,
+über die geurteilt wird. Fehlen die Traces, warnt der Bau ausdrücklich.
+
+Die Lehre ist allgemeiner als der Fall: **was gezeigt wird, muss deckungsgleich
+sein mit dem, worüber geurteilt werden soll.** Zeigt das Blatt weniger als der
+Fit enthält, erzeugt der Durchgang Befunde über die Zeichnung und nennt sie
+Befunde über das Modell.
+
+Und die Gegenprobe gehört dazu: die naheliegende Folgerung „dann waren die
+Meldungen ein Artefakt" ist ihrerseits falsch. Dieselbe ungezeichnete Tinte
+liegt auf den als **gut** gelabelten Bildern, dort sogar weiter weg. Was die
+Meldungen wirklich trafen, war die **Naht** zwischen Buchstabe und Verbindung.
+Eine These, die einen Befund wegerklärt, muss auch erklären, warum sie die
+Nicht-Befunde nicht wegerklärt.
+
 ### 3.7 Ein Marker je Bild — und ein fehlender Marker ist kein Datum
 
 Der Marker ist der einzige Teil des Urteils, der **unabhängig von der eigenen

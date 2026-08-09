@@ -29,6 +29,7 @@ from tools.humanbench.build import (
     REPEAT_JITTER,
     REPEAT_MIN_GLYPH_COUNT,
     Occurrence,
+    context_strokes,
     crop_window,
     identities_from,
     insert_repeats,
@@ -42,6 +43,7 @@ from tools.humanbench.build import (
     render_item,
     slim_key,
     stratify,
+    word_trace_context,
 )
 
 
@@ -444,3 +446,65 @@ def test_parse_args_resolves_the_round_directory(argv):
     args = parse_args(argv)
     assert args.out.name == f"runde-{args.round}"
     assert args.source_id == "suetterlin-1922"
+
+
+# ------------------------------------------------- the pen path around a letter
+#
+# Round 1 drew each letter's own anchors and nothing else, while the harvest
+# fits a whole word as one chain — so every joined letter ended in mid-air and
+# 23 % of the round was filed as „the entry stroke is missing". Re-measured
+# afterwards, the ink beyond the letter sat 0.02 xh from the stored pen path.
+# These tests exist so that drawing cannot silently lose the connectors again.
+
+
+def test_a_word_trace_lands_in_crop_pixels_the_way_the_spa_maps_it():
+    """px = u·xh + tx, py = (baseline_row + ty) − v·xh (registration.ts).
+
+    Getting this wrong is not subtle — the trace then misses the letters by
+    whole x-heights — but it IS silent, so the mapping is pinned here.
+    """
+    samples = {"lesen": {"id": "lesen", "y0": 100, "baseline_y": 180, "midband_y": 150}}
+    traces = [
+        {
+            "specimen_id": "lesen",
+            "strokes": [[[0.0, 0.0], [1.0, 1.0]]],
+            "measurements": {"xh_px": 30.0, "registration_px": {"tx": 12.0, "ty": -2.0, "baseline_row": 70}},
+        }
+    ]
+    context = word_trace_context(traces, samples)
+    assert list(context) == ["lesen"]
+    # baseline row 70 + ty −2 = 68; v = 1 is one x-height ABOVE it, y counted down.
+    assert context["lesen"][0].tolist() == [[12.0, 68.0], [42.0, 38.0]]
+
+
+def test_a_trace_without_a_measured_frame_falls_back_to_the_sidecar_lineature():
+    samples = {"w": {"id": "w", "y0": 100, "baseline_y": 180, "midband_y": 150}}
+    context = word_trace_context(
+        [{"specimen_id": "w", "strokes": [[[0.0, 0.0], [2.0, 0.0]]], "measurements": {}}], samples
+    )
+    assert context["w"][0].tolist() == [[0.0, 80.0], [60.0, 80.0]]  # xh 30 from the lineature, baseline row 80
+
+
+def test_traces_without_a_specimen_or_without_strokes_are_skipped_not_guessed():
+    samples = {"w": {"id": "w", "y0": 0, "baseline_y": 30, "midband_y": 0}}
+    traces = [
+        {"specimen_id": "unknown", "strokes": [[[0, 0], [1, 1]]], "measurements": {}},
+        {"specimen_id": "w", "strokes": [], "measurements": {}},
+        {"specimen_id": "w", "strokes": [[[0, 0]]], "measurements": {}},  # a single point is not a line
+    ]
+    assert word_trace_context(traces, samples) == {}
+
+
+def test_context_is_placed_in_the_same_window_as_the_judged_line():
+    """Both go through the crop window, so they cannot drift apart on screen."""
+    window = (10, 20, 60, 70)
+    drawn = polyline_strokes(np.array([[10.0, 20.0], [20.0, 30.0]]), [0], window, 2)
+    context = context_strokes([np.array([[10.0, 20.0], [30.0, 40.0]])], window, 2)
+    assert drawn[0][0] == context[0][0] == [0.0, 0.0]
+    assert context[0][1] == [40.0, 40.0]
+
+
+def test_a_context_free_round_still_renders():
+    """A word of one letter has no connectors; that is a round, not a failure."""
+    assert context_strokes([], (0, 0, 10, 10), 2) == []
+    assert context_strokes([np.array([[1.0, 1.0]])], (0, 0, 10, 10), 2) == []
