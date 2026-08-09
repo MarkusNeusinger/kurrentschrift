@@ -106,23 +106,14 @@ Basis. Eine `G`-Quote ist deshalb eine Aussage über *Lesbarkeit*, nicht über
 Schreibqualität — „47 % gut" bedeutet „47 % sauber erkennbar" und darf nie als
 „47 % fertig" zitiert werden.
 
-Praktische Folge für `P`: „ginge besser" hat in einem absoluten Durchgang
-keinen Bezugspunkt — auf Stufe 1 ginge fast alles besser, das Merkmal wäre
-immer gesetzt und unterschiede nichts. Den Bezugspunkt liefert stattdessen die
-Pipeline: aus diesen Vorkommen wird der Median, aus dem Median die Laufform,
-mit der die Engine schreibt. `P` heißt deshalb **„diese Form soll die Laufform
-nicht mitbestimmen"** — eine Entscheidung, keine Skala, in einer Sekunde zu
-beantworten und genau die Frage, die heute eine Zahl allein entscheidet.
-
-* `G` allein — erkennbar, **und** ich hätte nichts dagegen, dass diese Form
-  mitbestimmt, wie der Buchstabe später geschrieben wird.
-* `G` + `P` — erkennbar, aber diese Form soll nicht einfließen: etwa weil die
-  Tinte dort selbst krumm geschrieben ist, oder weil die Linie zwar richtig
-  liegt, aber schlaff wirkt, wo sie Schwung haben müsste.
-
-Die frühere Fassung („sparsam, nur wo es gegenüber den Nachbarn abfällt") ist
-verworfen: sie schmuggelt einen relativen Maßstab in eine absolute Skala und
-war beim Urteilen nicht anwendbar.
+Ein Versuch, diese Einschränkung als Modifikator festhaltbar zu machen
+(erst „ginge besser", dann „nicht als Laufform-Vorlage"), ist **verworfen**:
+Bei jedem Bild mit einem Mangel ist die Antwort ohnehin gesetzt — die Ernte
+hält solche Fits längst heraus —, das Merkmal trägt also nur auf den
+`G`-Bildern etwas und bedeutet je nach Begleitkategorie etwas anderes. Ein
+zweideutig gesetztes Label kostet mehr, als eine fehlende Spalte einbringt.
+Die Deckenfrage bleibt damit dort, wo sie hingehört: beim paarigen Vergleich
+(§8), wo es einen Bezugspunkt gibt.
 
 ### `A` — Einzelner Ausreißer
 
@@ -199,27 +190,6 @@ Kombinierbar mit jeder Wahl, auch mit `G` und `K`.
 Auswertung wird **zweimal gerechnet**, einmal mit und einmal ohne die
 `U`-Urteile; weichen die Zahlen auseinander, ist das ein Befund über die
 Kategorie, nicht über die Kennzahl.
-
-### `P` — Ginge besser (Modifikator)
-
-**Definition:** Kein benennbarer Fehler — aber deutlich unter dem, was möglich
-wäre. Kombinierbar mit jeder Wahl, in der Praxis vor allem mit `G`.
-
-**Zweck und Anlass:** `G` beantwortet „mir fällt nichts Falsches auf", und das
-ist etwas anderes als „so gut, wie es geht". Nach Runde 2 lasen sich die 47 %
-`G` als „der Rest ist fertig" — was der Autor ausdrücklich nicht meinte. Eine
-absolute Skala kann die Deckenfrage prinzipiell nicht beantworten; dieser
-Modifikator macht die Einschränkung wenigstens **aufschreibbar**, statt sie in
-einem `G` verschwinden zu lassen.
-
-Als Modifikator und nicht als Kategorie, damit die Fehlerklassen und damit die
-Häufigkeitsvergleiche zwischen den Runden unberührt bleiben. Der Ertrag ist ein
-neues Signal: `G` einfach gegen `G+P`. Trennt keine Kennzahl die beiden, ist
-genau das der Deckenbefund — in messbarer Form.
-
-**Grenze:** ein Notbehelf. Das eigentliche Instrument für „besser" ist der
-paarige Vergleich (§5), der zwei Fit-Stände gegeneinander stellt statt einen
-gegen eine gedachte Idealform.
 
 ### Der Marker
 

@@ -35,22 +35,24 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   reading and the two failed metric attempts that followed from it; prevalence
   without `E` is 39 % rather than 53 %.
 
-### Added
+### Changed
 
-- **A „could be better" modifier for the judgement pass, because „good" was
-  answering the wrong question.** `G` means „nothing I can name is wrong",
-  which is not „as good as it gets" — so round 2's 47 % good read as „the rest
-  is finished", which the author explicitly did not mean. An absolute scale
-  cannot answer how close a fit is to its ceiling; `P` at least makes the
-  reservation recordable instead of letting it vanish into a `G`. A modifier
-  rather than a category, so the defect classes and the round-to-round
-  prevalence comparisons stay untouched while a new signal appears: plain `G`
-  against `G+P`. If no metric separates those two, that IS the ceiling finding,
-  in measurable form. The real instrument for „better" remains the paired
-  comparison, which needs a second fit snapshot to exist. `analyse.py` now
-  derives „which codes are modifiers" from the category table rather than
-  naming `U` by hand, so a verdict's size counts findings only and the next
-  modifier cannot silently inflate it.
+- **„Which codes are modifiers" is derived from the category table instead of
+  naming `U` by hand** (`analyse.py`), so a verdict's size counts the findings a
+  judge actually ticked and a later modifier cannot silently inflate it. The
+  generalisation outlived what prompted it: a „could be better" tick, added so
+  that `G` — „nothing I can name is wrong", which is not „as good as it gets" —
+  could carry the author's reservation instead of swallowing it, and removed
+  again before any round was judged with it. On every screen that already
+  carries a defect the answer is foregone (the harvest holds such fits out
+  anyway), so the tick would only have said something on the `G` screens, and
+  next to each companion category it would have meant something else — a label
+  set is worth less with an ambiguous column than without it. The ceiling
+  question goes back to the one instrument that has a reference point, the
+  paired comparison; `menschliche-bewertung.md` §2 records the attempt and why
+  it was dropped.
+
+### Added
 
 - **`tools/dbsnapshot` — an archive of the hand-made data, and a restore drill
   that proves it works.** Two tables in the database cannot be recomputed from
