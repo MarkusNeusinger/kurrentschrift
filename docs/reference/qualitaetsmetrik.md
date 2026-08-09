@@ -1987,8 +1987,18 @@ messen.
 | `A` Ausreißer | 15 | 10,0 % |
 | `K` komplett daneben | 5 | 3,3 % (zu wenig, nur beschreibend) |
 
-Knapp die Hälfte ist in Ordnung. Kein Drift über die Sitzung; die Mediandauer
-je Urteil fällt 9 s → 7 s → 5 s, der Kategorienmix bleibt stabil.
+Knapp die Hälfte trägt keinen benennbaren Fehler. Kein Drift über die Sitzung;
+die Mediandauer je Urteil fällt 9 s → 7 s → 5 s, der Kategorienmix bleibt
+stabil.
+
+**Wie diese 47 % zu lesen sind** (Kalibrierung des Autors): `G` heißt „der
+Buchstabe ist sauber zu erkennen", **nicht** „schreibperfekt" — die Latte der
+aktuellen Stufe, auf die erst einmal alles kommen soll. Die Quote ist damit
+eine Aussage über Lesbarkeit, nicht über Schreibqualität, und „47 % gut" darf
+nie als „47 % fertig" zitiert werden. Wie weit die guten Fits vom
+Erreichbaren entfernt sind, sagt dieser Durchgang nicht und kann eine absolute
+Skala auch nicht sagen; dafür ist der paarige Vergleich da
+([`menschliche-bewertung.md`](menschliche-bewertung.md) §8).
 
 ### Das Gate aus §8, gegen Menschenurteile geprüft
 

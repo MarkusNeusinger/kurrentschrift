@@ -76,6 +76,7 @@ from tools.humanbench.page import CATEGORIES, CHOICES
 # drift away from the page that produced the file.
 CATEGORY_CODES: tuple[str, ...] = tuple(c.code for c in CATEGORIES)
 FINDING_CODES: tuple[str, ...] = tuple(c.code for c in CATEGORIES if c.kind == "finding")
+MODIFIER_CODES: tuple[str, ...] = tuple(c.code for c in CATEGORIES if c.kind == "modifier")
 CHOICE_CODES: tuple[str, ...] = tuple(c.code for c in CHOICES)
 CATEGORY_LABEL: dict[str, str] = {c.code: c.tally for c in CATEGORIES}
 
@@ -352,7 +353,14 @@ def occupancy(verdicts: Sequence[Verdict], key: dict[str, dict]) -> dict[str, An
         per_category[code] = {"n": n, "share": (n / total) if total else None, "too_few": n < MIN_POSITIVES}
     flagged = [v for v in shown if v.flagged]
     marked = [v for v in flagged if v.spot]
-    sizes = Counter(len(set(v.codes) - {UNSURE}) for v in shown)
+    # How many VERDICTS were ticked, not how many findings: `G` and `K` are
+    # verdicts too and count as one, which is what makes the distribution a
+    # description of the judging (how often several things were named at once)
+    # rather than a second prevalence table. Modifiers are excluded because
+    # they qualify a verdict instead of being one — every modifier, not just
+    # `U`, since hard-coding one code would let the next modifier inflate the
+    # size silently.
+    sizes = Counter(len(set(v.codes) - set(MODIFIER_CODES)) for v in shown)
     overlap = {}
     for i, left in enumerate(FINDING_CODES):
         for right in FINDING_CODES[i + 1 :]:
