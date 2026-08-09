@@ -106,12 +106,23 @@ Basis. Eine `G`-Quote ist deshalb eine Aussage über *Lesbarkeit*, nicht über
 Schreibqualität — „47 % gut" bedeutet „47 % sauber erkennbar" und darf nie als
 „47 % fertig" zitiert werden.
 
-Praktische Folge für `P`: solange die ganze Menge auf Stufe 1 steht, wäre `P`
-auf fast jedem Bild richtig — und ein Merkmal, das immer gesetzt ist,
-unterscheidet nichts. `P` ist deshalb sparsam zu setzen, nur wo ein Buchstabe
-zwar erkennbar ist, aber gegenüber seinen Nachbarn deutlich abfällt. Wer es
-überall setzen würde, setzt es besser gar nicht — auch das ist eine Aussage:
-sie heißt „die Grundgesamtheit ist noch auf Stufe 1".
+Praktische Folge für `P`: „ginge besser" hat in einem absoluten Durchgang
+keinen Bezugspunkt — auf Stufe 1 ginge fast alles besser, das Merkmal wäre
+immer gesetzt und unterschiede nichts. Den Bezugspunkt liefert stattdessen die
+Pipeline: aus diesen Vorkommen wird der Median, aus dem Median die Laufform,
+mit der die Engine schreibt. `P` heißt deshalb **„diese Form soll die Laufform
+nicht mitbestimmen"** — eine Entscheidung, keine Skala, in einer Sekunde zu
+beantworten und genau die Frage, die heute eine Zahl allein entscheidet.
+
+* `G` allein — erkennbar, **und** ich hätte nichts dagegen, dass diese Form
+  mitbestimmt, wie der Buchstabe später geschrieben wird.
+* `G` + `P` — erkennbar, aber diese Form soll nicht einfließen: etwa weil die
+  Tinte dort selbst krumm geschrieben ist, oder weil die Linie zwar richtig
+  liegt, aber schlaff wirkt, wo sie Schwung haben müsste.
+
+Die frühere Fassung („sparsam, nur wo es gegenüber den Nachbarn abfällt") ist
+verworfen: sie schmuggelt einen relativen Maßstab in eine absolute Skala und
+war beim Urteilen nicht anwendbar.
 
 ### `A` — Einzelner Ausreißer
 

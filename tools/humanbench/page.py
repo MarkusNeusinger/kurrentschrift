@@ -126,15 +126,18 @@ CATEGORIES: tuple[Category, ...] = (
     Category(
         "P",
         "8",
-        "Ginge deutlich besser",
+        "Nicht als Laufform-Vorlage",
         "modifier",
-        "davon: ginge besser",
-        # „deutlich" and „sparsam" are the whole calibration. `G` here means
-        # „the letter is cleanly recognisable", not „written perfectly", so at
-        # the current stage almost every fit could be better — and a mark that
-        # is always set discriminates nothing. It is for the ones that stand
-        # out against their neighbours.
-        key_note="8 · zu jeder Wahl · sparsam: nur wenn es gegenüber den anderen abfällt",
+        "davon: nicht als Vorlage",
+        # A DECISION, not a quality scale. „Could be better" has no reference
+        # point in an absolute pass — at this stage almost every fit could be,
+        # so the mark would always be set and discriminate nothing. The
+        # pipeline supplies the reference instead: these occurrences are
+        # medianed into the running form the engine writes with. So the
+        # question is „should this shape have a say in how the letter is
+        # written later?", which is answerable in a second and is the question
+        # a number decides today anyway.
+        key_note="8 · zu jeder Wahl · „diese Form soll die Laufform NICHT mitbestimmen“",
     ),
 )
 
