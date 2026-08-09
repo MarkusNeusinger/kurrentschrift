@@ -99,6 +99,20 @@ Wer zögert, setzt die Fehlerart **plus `U`**, nicht `G`. Daraus folgt die
 billigste Probe darauf, dass die Regel verstanden wurde: In der Auswertung
 darf `G` **nie** gemeinsam mit einer Fehlerart auftauchen.
 
+**Wo die Messlatte liegt — und wo nicht** (Kalibrierung des Autors, 2026-08-09):
+`G` heißt **„der Buchstabe ist sauber zu erkennen"**, nicht „schreibperfekt".
+Das ist die Latte der aktuellen Stufe: erst muss ALLES auf dieses Niveau, als
+Basis. Eine `G`-Quote ist deshalb eine Aussage über *Lesbarkeit*, nicht über
+Schreibqualität — „47 % gut" bedeutet „47 % sauber erkennbar" und darf nie als
+„47 % fertig" zitiert werden.
+
+Praktische Folge für `P`: solange die ganze Menge auf Stufe 1 steht, wäre `P`
+auf fast jedem Bild richtig — und ein Merkmal, das immer gesetzt ist,
+unterscheidet nichts. `P` ist deshalb sparsam zu setzen, nur wo ein Buchstabe
+zwar erkennbar ist, aber gegenüber seinen Nachbarn deutlich abfällt. Wer es
+überall setzen würde, setzt es besser gar nicht — auch das ist eine Aussage:
+sie heißt „die Grundgesamtheit ist noch auf Stufe 1".
+
 ### `A` — Einzelner Ausreißer
 
 **Definition:** Genau eine Stelle springt aus der Kette heraus. Ein Anker

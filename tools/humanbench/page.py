@@ -123,7 +123,19 @@ CATEGORIES: tuple[Category, ...] = (
     # separating plain `G` from `G+P` is then an ordinary question for the
     # metrics. The paired round remains the real instrument for „better" —
     # this one only stops the absolute round from overstating what it found.
-    Category("P", "8", "Ginge besser", "modifier", "davon: ginge besser", key_note="8 · zu jeder Wahl"),
+    Category(
+        "P",
+        "8",
+        "Ginge deutlich besser",
+        "modifier",
+        "davon: ginge besser",
+        # „deutlich" and „sparsam" are the whole calibration. `G` here means
+        # „the letter is cleanly recognisable", not „written perfectly", so at
+        # the current stage almost every fit could be better — and a mark that
+        # is always set discriminates nothing. It is for the ones that stand
+        # out against their neighbours.
+        key_note="8 · zu jeder Wahl · sparsam: nur wenn es gegenüber den anderen abfällt",
+    ),
 )
 
 # The paired mode's answers. Deliberately three: a winner each way and the
