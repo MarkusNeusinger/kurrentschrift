@@ -2975,6 +2975,57 @@ anhebt, braucht sein eigenes A/B.
 
 ---
 
+## 11e. Die Reparatur ist eingebaut (`aug11`)
+
+Nach vier gemessen verworfenen Zielfunktions-Termen (§7 · §8 · §10 · §11d) ist
+der Ausreißer-Anker jetzt dort behoben, wo er landet: **als protokollierte
+Reparatur bei der Ernte** (`tools/pairlab/anchors.py::repair_stranded_anchors`,
+verdrahtet in beide Speicherpfade von `tools/laufform/harvest.py`). Die
+Abwägung hat der Eigentümer ausdrücklich getroffen (2026-08-10): ein
+interpolierter Anker minimal neben der Linie ist der kleinere Defekt; der Peak,
+der über den Per-Anker-Median die Laufform vergiftet, ist der, der weg muss.
+Die drei Bedingungen, die §11 für eine legitime Reparatur festgelegt hat,
+sind erfüllt:
+
+1. **Protokolliert:** `measurements.repaired_anchors` nennt die ersetzten
+   Anker; das Fehlen des Schlüssels heißt unberührt (per Golden-Test
+   byte-identisch gepinnt). Das gespeicherte `anchor_spike_ratio` bleibt die
+   UNreparierte Zahl.
+2. **Das Gate urteilt über die unreparierte Geometrie.** Eine Reparatur ist
+   eine Beinahe-Ablehnung, nie ein Bestehen — kein Schwellwert, kein Ertrag
+   bewegt sich. Ebenso bleibt die Wortspur unrepariert: die Inspektionsebene
+   zeigt, was der Fit wirklich getan hat, und `gradlab`/`bindab` messen weiter
+   die rohe Geometrie.
+3. **Interpolation, nie Snap.** Ein Snap muss an einer Kreuzung einen Ast
+   wählen und wählt den falschen (die Fehlform des §8-Scharniers); die
+   Interpolation der Nachbarn im eigenen Federzug hat keinen Ast zu wählen.
+   Absetzen wird nie überbrückt, zusammenhängende geflaggte Läufe werden als
+   ein Stück ersetzt.
+
+Gemessen am benannten Arbeitssatz (`tools/pairlab/peaklab.py`, 35 Vorkommen,
+davon 5 Kontrollwörter ohne bekannten Peak):
+
+| | Wert |
+|---|---|
+| Vorkommen mit Einzelanker-Ausflug | 10 von 35 |
+| davon in einem Kontrollwort | **0** — der Detektor feuert nur auf die Fehlerform |
+| Spike-Verhältnis der Betroffenen | 7,09 → **3,00** |
+| schlimmster Fall (`e` in „schießen") | 15,07 → 2,96 |
+| nicht bewegt | 1 von 10 (`i` in „zwei": 7,79 → 7,89) |
+
+Der eine Nicht-Beweger ist ehrlich mitzunehmen: dort hat der Ausflug nicht die
+Ein-Anker-Form, die die Interpolation voraussetzt. Und die Grenze bleibt, wie
+sie in §11d gezogen wurde: die Reparatur behebt die `A`-Klasse (Einzelner
+Ausreißer), **nicht** die `B`-Klasse („Bereich daneben") — deren Kandidat ist
+die Landmarken-Korrespondenz (Vorlagen-Kreuzung ↔ Skelett-Kreuzung), mit der
+Abstandsmessung VOR dem Term, wie es §11a vorgemacht hat.
+
+Sichtprüfung: `tools/fitview` (die bewerteten humanbench-Schirme, vorher/
+nachher im Urteilsrahmen samt gesetzter Marker) und `tools/pairlab/peaklab`
+(benannter Arbeitssatz, Ankerkette über der Tinte, Minuten je Runde).
+
+---
+
 ## 12. Die Autopsie der `d`-Tafelform (`aug10`)
 
 §10 hatte den `B`-Befund („Bereich daneben") auf eine Glyphe eingegrenzt —
