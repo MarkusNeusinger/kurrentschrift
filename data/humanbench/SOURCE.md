@@ -3,7 +3,7 @@
 - Title:     Menschliche Bewertungsdurchgänge über die gefitteten Vorkommen
              („Befund-Durchgang" — was stimmt hier nicht?)
 - Author:    Projektautor (eigene Urteile, im Alleingang gefällt)
-- Year:      2026 (Runde 01: erhoben am 2026-08-08)
+- Year:      2026 (Runde 01: erhoben am 2026-08-08 · Runde 02: 2026-08-09)
 - License:   Eigenes Urheberrecht des Projektautors. Kein fremdes Werk und
              kein fremder Scan enthalten — die Dateien bestehen aus
              Kategoriekürzeln, einem Bildpunkt je Bildschirm, Sekunden und
@@ -19,8 +19,8 @@
              weder Anker, noch Vorkommens-Geometrie, noch Kennzahlen je
              Vorkommen. Was ein Kürzel *meint*, steht erst im Schlüssel
              (`key.json`), und der bleibt außerhalb des Repos.
-- Retrieved: 2026-08-08 (Erhebungsdatum Runde 01; „retrieved" = erhoben, die
-             Daten entstehen hier statt abgerufen zu werden)
+- Retrieved: 2026-08-08 (Runde 01) · 2026-08-09 (Runde 02) — „retrieved" =
+             erhoben, die Daten entstehen hier statt abgerufen zu werden
 
 ## Worauf sich die Urteile beziehen
 
@@ -103,6 +103,34 @@ wertlos, sondern zum **Vorher-Zustand**.
              ist und drei der Wörter ihren Buchstaben zweimal enthalten; die
              erste Fassung ließ ihn weg, die Nachtragung ist im Stempel
              beschrieben und gegen den vollen Schlüssel geprüft.
+
+## runde-02-urteile.txt — 105 Zeilen Urteil plus Zählblock, 2,5 KB
+
+- Origin:    Ausgabetext derselben Seite, unverändert übernommen, wie die
+             Seite ihn am 2026-08-09 ausgegeben hat.
+- Processing: keine.
+- Stempel:   [`runde-02-stempel.md`](runde-02-stempel.md)
+- Format:    wie Runde 01, mit zwei Unterschieden: die Kopfzeile lautet
+             `BEFUND/3` (die Seitenkennung zählt Bauläufe, nicht Archivrunden
+             — die Auflösung steht im Stempel), und unter den Urteilszeilen
+             steht der **Zählblock** der Seite (`Gut: 64` …). Er ist mit
+             abgelegt, weil `analyse.py` ihn gegen die Urteilszeilen prüft:
+             ein abgeschnittener Einfügevorgang scheitert damit, statt eine
+             Besetzungstabelle über den Rest zu rechnen.
+- Note:      Diese Runde ist **die Rückhaltemenge der Runde 01** — 95 nie
+             gezeigte Vorkommen plus 10 blinde Wiederholungen. Kein Fit hat
+             sich zwischen den Runden geändert, wohl aber die Zeichnung (der
+             Federweg wird jetzt mitgezeichnet); Prävalenzen der beiden Runden
+             sind deshalb nur mit dem Vorbehalt im Stempel vergleichbar.
+
+## runde-02-vorkommen.json — der schmale Schlüssel, 105 Einträge
+
+- Origin:    von `tools/humanbench/build.py` selbst geschrieben (Format 2),
+             nicht rekonstruiert.
+- Inhalt:    wie Runde 01 — `uid` → `glyph`, `word`, `slot`, `repeat_of`.
+- Achtung:   Die Anzeige-Ids zählen hier die **Position im Durchgang**, in
+             Runde 01 den **Schwere-Rang**. Verbunden wird über
+             `identity` = (Glyph, Wort, Slot), nie über die Id.
 
 ## Was hier nicht liegt
 

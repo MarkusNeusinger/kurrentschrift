@@ -37,6 +37,14 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **`analyse.py` reads the page's tally block instead of choking on it, and
+  uses it as a completeness probe.** The judgement sheet prints its own
+  per-category count under the verdict lines, so the natural copy-paste
+  carries them — and the parser rejected the whole file at the first one. It
+  now parses those lines and checks each against the verdicts: a truncated or
+  reassembled paste fails with the mismatch named, rather than quietly
+  producing a prevalence table over whatever survived the clipboard.
+
 - **„Which codes are modifiers" is derived from the category table instead of
   naming `U` by hand** (`analyse.py`), so a verdict's size counts the findings a
   judge actually ticked and a later modifier cannot silently inflate it. The
@@ -53,6 +61,48 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   it was dropped.
 
 ### Added
+
+- **The hold-out round is judged, and it retires the metric it was meant to
+  confirm.** 95 occurrences the judge had never seen plus 10 blind repeats,
+  all 105 rated with the corrected sheet against unchanged fits. `d_end` — the
+  distance from a letter's chain end to the nearest ink — passed the criterion
+  that was fixed before the number existed (AUC 0.764, exact one-sided
+  p = 0.012) and is dropped anyway, on two checks nobody had pre-registered:
+  it does not separate `E` from the other defect classes (0.539, chance), so
+  it was never seam-specific and the name was the claim; and the plain `peak`
+  we already compute beats it (0.888 for „any defect" against „good"). The
+  development figure also picked the judged end from the human's click, which
+  no acceptance criterion can use — the confirmed variant takes the worse of
+  the two ends under one rule for every screen. `B` („a whole stretch beside
+  the ink") turns out to be a `d` problem rather than a fit problem: a rigid
+  shift removes 0 % of its residual, and 5 of the 7 `d` occurrences carry it
+  while every other frequent glyph sits at 0–2. The prevalence shift
+  (`E` 23.3 % → 7.4 %) is recorded as *consistent with* the instrument fix and
+  explicitly not as proof — the judge knew the prediction and a drawing cannot
+  be blinded — while the opposite artifact is measured and left open: the
+  faint pen path may mask real seam defects (good-screen `d_end` p90
+  0.047 → 0.067, p = 0.08). Findings in `qualitaetsmetrik.md` §10, judgements
+  and slim key under `data/humanbench/runde-02-*`, `d_end` in the glossary as
+  a rejected metric.
+
+- **The location question §9 left open is settled — against the hypothesis,
+  and that closes the last repair path for the outlier class.** §9 withdrew
+  „22 of 23 gate rejections sit at corner anchors" as circular (it came from
+  the maximum of our own detector) and required a non-circular analysis before
+  anything is built there. The 35 human markers of the hold-out round, scored
+  against the landmarks the template itself carries, look like a hit: 42.9 %
+  in a landmark neighbourhood against 23.0 % by chance, p = 0.007. The control
+  removes it entirely — drop the chain ENDS from the landmark set, where `E`
+  („kink only at the edge") sits by definition, and 12.9 % remain against
+  18.4 % expected, p = 0.85. The only location structure in the markers is a
+  tautology; nothing concentrates at corner anchors or internal pen lifts. The
+  strong form of the §8 conjecture is therefore no longer merely unsupported
+  but measured away at any size that would have justified an intervention, so
+  the bending term, the hinge and now the corner-anchor sample support are all
+  out, and the harvest gate stays a fallback that discards rather than repairs.
+  A fourth attempt needs a new diagnosis, not a new objective term. `W`
+  („wobble") is a different matter and remains untried: both rejected terms
+  aimed at the single jump, not at the unsteady line.
 
 - **`tools/dbsnapshot` — an archive of the hand-made data, and a restore drill
   that proves it works.** Two tables in the database cannot be recomputed from

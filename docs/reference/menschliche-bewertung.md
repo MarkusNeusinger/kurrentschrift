@@ -733,6 +733,18 @@ anderes Instrument, dessen Zahlen man nicht gegen die erste halten dürfte.
 
 Stempel und Ergebnistext gehören zusammen aufbewahrt.
 
+### Eine Runde, eine Nummer
+
+Die Archivnummer unter `data/humanbench/runde-<nn>-*` ist **maßgeblich** und
+zählt die abgelegten Runden. `--round` setzt bloß die Kopfzeile des
+Ergebnistextes und wurde bisher zweimal danebengesetzt — Runde 01 trägt
+`BEFUND/2`, Runde 02 trägt `BEFUND/3`, weil der Schalter Bauläufe mitzählte
+statt Runden. Beides steht im jeweiligen Stempel, aufgelöst statt
+stillschweigend geduldet; die Regel für die nächste Runde ist: **`--round` auf
+die Archivnummer setzen**, damit Dateiname und Kopfzeile dieselbe Runde meinen.
+Drei Zählungen für zwei Runden sind genau die Art Unordnung, gegen die dieser
+Abschnitt existiert.
+
 ---
 
 ## 8. Der paarige Folgedurchgang
