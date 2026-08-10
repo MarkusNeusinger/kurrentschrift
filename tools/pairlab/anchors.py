@@ -32,9 +32,14 @@ import numpy as np
 
 
 # An anchor counts as STRANDED when BOTH of its steps are at least this many
-# times the median step of its own pen-stroke. Deliberately NOT the harvest
-# gate's `MAX_ANCHOR_SPIKE_RATIO` (8.0): the gate asks "is this occurrence
-# unusable", this asks "is this the shape of defect the author marked".
+# times the median step of its own pen-stroke. This is the measured SHAPE of the
+# defect rather than a tuned threshold (`qualitaetsmetrik.md` §11): 17 of the
+# author's 22 marked outliers sit on an anchor of exactly this form, and where
+# the marked anchor is genuinely beside the ink the excursion is exactly one
+# anchor long in 12 of 12 cases — which is why a single interior anchor, not a
+# stretch of chain, is what the repair below replaces. Deliberately NOT the
+# harvest gate's `MAX_ANCHOR_SPIKE_RATIO` (8.0): the gate asks "is this
+# occurrence unusable", this asks "is this one anchor a lone excursion".
 STRANDED_STEP_RATIO = 3.0
 # Below this many steps a stroke has no meaningful median to compare against.
 MIN_STROKE_STEPS = 4
@@ -78,13 +83,28 @@ def repair_stranded_anchors(anchors: np.ndarray, stroke_starts: Sequence[int] | 
 
     A maximal run of consecutive flagged anchors is replaced as one piece:
     each flagged anchor moves onto the chord between the nearest unflagged
-    neighbour on each side, at its index-proportional position. Interpolation
-    only — the repaired anchor may sit slightly off the ink where the true
-    stroke curves; that is the accepted trade, and unlike snapping it cannot
-    jump onto the wrong stroke at a crossing. A run touching a stroke's edge
-    has no neighbour on one side and is left untouched (the detector only
-    flags interior anchors, but a run may still reach index 0's or the last
-    index's neighbourhood).
+    neighbour on each side, at its index-proportional position — never
+    interpolated from a flagged neighbour, which would place it against the
+    excursion it is there to remove. A run touching a stroke's edge has no
+    neighbour on one side and is left untouched (the detector only flags
+    interior anchors, but a run may still reach index 0's or the last index's
+    neighbourhood). Every position is read off the UNREPAIRED geometry, so no
+    repair cascades into the next one.
+
+    **Interpolation only — never a snap to nearby ink.** That distinction is
+    the whole reason this is not the hinge rejected in §8: "snap to the nearest
+    ink" has to choose a branch, and at a crossing it chooses the wrong one. A
+    midpoint has no branch to choose. What the repaired anchor claims is
+    narrower and honest — *the fit put this anchor somewhere the ink did not
+    constrain, so report the chain without that excursion rather than with an
+    invented detour* — at the price that it may sit slightly off the ink where
+    the true stroke curves. That is the accepted trade.
+
+    It stays a repair of a MEASUREMENT and is therefore only legitimate under
+    the conditions §11 set out: logged per repair (the returned indices, and
+    the distance moved is readable from the two arrays), and the gate must
+    judge the UNREPAIRED geometry, so a repair is a near-rejection and never a
+    pass.
     """
     flags = sorted(stranded_anchors(anchors, stroke_starts))
     if not flags:

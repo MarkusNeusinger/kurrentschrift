@@ -42,6 +42,19 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   clicked marker as a cross. One self-contained HTML file, minutes per round
   instead of hours — the small-subset human loop the owner asked for.
 
+- **`tools/pairlab/peaklab.py` — the same loop over a NAMED working set.** The
+  sibling of `tools/fitview`: instead of the judged screens it fits a small
+  named set of words (default the five whose outliers the author marked plus
+  three he passed as clean, so a round can tell „the peaks are gone" from
+  „everything got flattened"), reports the lone excursions per letter
+  occurrence with the spike ratio before and after, and with `--png` draws the
+  fitted anchor chain over the specimen ink with every excursion circled —
+  `--compare` puts the fitted and the repaired chain side by side in one
+  window, so a shift is never a zoom. Four minutes per round instead of three
+  hours; detector and repair are the shared ones from `tools/pairlab/anchors.py`,
+  so what it shows is what the harvest does. Measurement only: no DB, no API,
+  nothing renders.
+
 - **Per-term, per-anchor gradient decomposition of the chain fit — the
   diagnosis that has to come before the term.** An optimum is a point where
   the forces cancel, so „what holds the stranded anchor out there" is a

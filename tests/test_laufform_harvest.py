@@ -46,6 +46,7 @@ from tools.laufform.harvest import (
     letter_gate,
 )
 from tools.pairlab.analyze import _generate_connector
+from tools.pairlab.anchors import STRANDED_STEP_RATIO, repair_stranded_anchors
 from tools.pairlab.chain import ChainSegment, ChainWordFit
 from tools.wordlab.cases import WordCase
 from tools.wordlab.derive import WordDeriveResult
@@ -279,6 +280,40 @@ def test_anchor_spike_ratio_flags_an_out_and_back_needle() -> None:
     assert anchor_spike_ratio(chain, [0]) > MAX_ANCHOR_SPIKE_RATIO
     # …and the chain it was cut from is untouched
     assert anchor_spike_ratio(_even_chain(), [0]) == pytest.approx(1.0)
+
+
+def test_the_repair_drives_the_harvest_statistic_back_to_an_even_chain() -> None:
+    """The repair (`tools.pairlab.anchors`) against the harvest's own ruler.
+
+    The geometry of `repair_stranded_anchors` is pinned in
+    `tests/test_anchor_repair.py`; what belongs HERE is that the two agree —
+    the interpolated anchor is exactly what `anchor_spike_ratio` stops seeing.
+    """
+    chain = _even_chain()
+    chain[5, 1] += 1.0
+    fixed, repaired = repair_stranded_anchors(chain, [0])
+    assert repaired == [5]
+    assert fixed[5] == pytest.approx(0.5 * (chain[4] + chain[6]))
+    assert anchor_spike_ratio(fixed, [0]) == pytest.approx(1.0)
+    # every other anchor is untouched — a repair is a local statement
+    assert np.array_equal(np.delete(fixed, 5, axis=0), np.delete(chain, 5, axis=0))
+    # …and a real letter's uneven-but-honest spacing is no defect at all: the
+    # arc steps fast at the ends and slow over the shoulder, and pays nothing.
+    assert repair_stranded_anchors(_letter_anchors(), [0])[1] == []
+
+
+def test_the_repair_ratio_is_the_measured_shape_not_the_gate_threshold() -> None:
+    """`STRANDED_STEP_RATIO` asks "is this ONE anchor a lone excursion",
+    `MAX_ANCHOR_SPIKE_RATIO` asks "is this occurrence unusable" — different
+    questions, so a repair must fire well before the gate does."""
+    assert STRANDED_STEP_RATIO < MAX_ANCHOR_SPIKE_RATIO
+    chain = _even_chain()
+    step = float(np.hypot(*(chain[1] - chain[0])))
+    # Sideways by exactly what makes each neighbouring step 4x the median: over
+    # the repair rule, comfortably under the gate.
+    chain[5, 1] += float(np.sqrt((4.0 * step) ** 2 - step**2))
+    assert STRANDED_STEP_RATIO < anchor_spike_ratio(chain, [0]) < MAX_ANCHOR_SPIKE_RATIO
+    assert repair_stranded_anchors(chain, [0])[1] == [5]
 
 
 def test_a_pen_lift_is_not_a_discontinuity() -> None:

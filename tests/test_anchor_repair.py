@@ -48,6 +48,22 @@ def test_a_single_needle_lands_exactly_on_the_chord() -> None:
     assert pts[6, 1] == 5.0
 
 
+def test_the_repair_never_snaps_to_ink_it_only_interpolates() -> None:
+    """The distinction that separates this from the hinge rejected in §8.
+
+    The interpolated position depends on the two unflagged NEIGHBOURS and on
+    nothing else — no ink, no field, no nearest branch — so translating the
+    whole chain translates the repair with it. A snap could not do that, and
+    that is exactly why at a crossing it picks the wrong stroke.
+    """
+    pts = _even_chain()
+    pts[6, 1] = 5.0
+    here, _ = repair_stranded_anchors(pts, [0])
+    offset = np.array([100.0, -70.0])
+    there, _ = repair_stranded_anchors(pts + offset, [0])
+    np.testing.assert_allclose(there - offset, here, atol=1e-12)
+
+
 def test_a_run_of_two_flagged_anchors_is_repaired_across_the_run() -> None:
     """Two consecutive stranded anchors are replaced as ONE piece: both move
     onto the chord from anchor 4 to anchor 7, each at its index-proportional
