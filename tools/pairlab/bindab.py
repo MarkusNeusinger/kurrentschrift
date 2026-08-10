@@ -42,10 +42,10 @@ import numpy as np
 
 from core.fit import bilinear
 from tools.laufform.harvest import _chainable_runs, _connector_diag, _grid_fits, anchor_spike_ratio, letter_gate
-from tools.pairlab.chain import fit_word_chain
+from tools.pairlab.chain import _ChainProblem, fit_word_chain
 from tools.pairlab.gradlab import stranded_anchors
-from tools.wordlab.cases import iter_fixture_word_cases
-from tools.wordlab.derive import derive_word
+from tools.wordlab.cases import WordCase, iter_fixture_word_cases
+from tools.wordlab.derive import WordDeriveResult, derive_word
 
 
 # Pre-registered in §11b. `CHAIN_OVERLAP_RADIUS_UNITS`' rationale — the repo's
@@ -65,7 +65,7 @@ RMSE_MAX = 2.2
 PRE_REGISTERED_LADDER = (0.0, 0.1, 0.32, 1.0, 3.2)
 
 
-def off_ink_share(problem, params, a0: int, a1: int) -> tuple[float, int]:
+def off_ink_share(problem: _ChainProblem, params: np.ndarray, a0: int, a1: int) -> tuple[float, int]:
     """Share (and count) of a letter's anchors sitting outside the ink.
 
     Read at the ANCHOR positions — `problem.to_pixels` returns the SAMPLE row,
@@ -79,7 +79,9 @@ def off_ink_share(problem, params, a0: int, a1: int) -> tuple[float, int]:
     return (n_off / len(d) if len(d) else 0.0), n_off
 
 
-def _rows_for_arm(case, which: str, weight: float, result, grids) -> list[dict]:
+def _rows_for_arm(
+    case: WordCase, which: str, weight: float, result: WordDeriveResult, grids: dict[int, dict]
+) -> list[dict]:
     """One row per letter occurrence of one case at one weight."""
     rows: list[dict] = []
     xh = result.xh_px
@@ -147,7 +149,7 @@ def _rows_for_arm(case, which: str, weight: float, result, grids) -> list[dict]:
     return rows
 
 
-def case_arms(job: tuple[str, object, tuple[float, ...]]) -> list[dict]:
+def case_arms(job: tuple[str, WordCase, tuple[float, ...]]) -> list[dict]:
     """Every arm of ONE case — composed once, solved once per weight."""
     which, case, weights = job
     try:
@@ -224,7 +226,19 @@ def evaluate(rows: list[dict], base: float, weight: float) -> dict:
     flips = mcnemar(gate)
     accepted_base = sum(1 for a, _ in gate if a)
     accepted_arm = sum(1 for _, b in gate if b)
-    benefit_pct = 100.0 * (off_arm - off_base) / off_base if off_base > 0.0 else 0.0
+    # A zero baseline has no relative change to report, and collapsing that to
+    # 0.0 would print „unchanged" over a baseline the arm has just spoiled. The
+    # three cases are distinct and stay distinct: no events either side is a set
+    # the measure cannot speak about (nan), events introduced against a clean
+    # baseline is an unbounded regression (+inf), and neither can ever satisfy
+    # the pre-registered fall, so `benefit_ok` is False for both by construction
+    # (`nan <= -25` and `inf <= -25` are both False).
+    if off_base > 0.0:
+        benefit_pct = 100.0 * (off_arm - off_base) / off_base
+    elif off_arm > 0.0:
+        benefit_pct = math.inf
+    else:
+        benefit_pct = math.nan
     it = _paired(rows, base, weight, "iterations")
     return {
         "weight": weight,
