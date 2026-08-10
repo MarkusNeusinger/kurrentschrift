@@ -227,10 +227,21 @@ def _second_difference_operator(k: int, stroke_starts: Sequence[int] | None) -> 
 
     Applied to the DISPLACEMENTS, not to the anchors: the chart form already
     carries the ductus' own curvature, so what this measures is whether one
-    anchor moves differently from its neighbours. An affine displacement of a
-    whole stroke — translate, stretch, shear, which is exactly what fitting a
-    template to a hand is for — has a vanishing second difference and costs
-    nothing. A single anchor popping out of the chain costs quadratically.
+    anchor moves differently from its neighbours. A single anchor popping out
+    of the chain costs quadratically; a displacement that varies smoothly along
+    the stroke is cheap.
+
+    What is exactly free is a TRANSLATION, and only that. For a linear map the
+    residual is `(A − I)·(x_{i-1} − 2·x_i + x_{i+1})`, so a stretch or a shear
+    costs in proportion to the chart form's own discrete curvature and to
+    uneven anchor spacing — i.e. most in the loops and turns, which is exactly
+    where a genuine slant adaptation of a hand needs displacement curvature.
+    That is a real cost of this prior, not an oversight: it says „the hand
+    departs from the chart smoothly", which also suppresses a locally sharp
+    departure the chart does not carry. Only the A/B decides whether that
+    trade is worth it. (The operator also works in index space, while
+    `_width_curvature_operator` normalises by arc length — deliberate for now,
+    revisit if the weight ever has to be large.)
 
     That distinction is why this is not the bending term of
     `qualitaetsmetrik.md` §7 (second difference of the ANCHORS, which prices

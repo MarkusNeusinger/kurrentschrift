@@ -34,7 +34,23 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   until the A/B fixes a weight; a test pins that. The analytic gradient is
   checked against finite differences, because a wrong jacobian would not
   raise — L-BFGS-B would just converge elsewhere and the A/B would measure the
-  bug instead of the idea.
+  bug instead of the idea. Corrected on a second reading: a **translation** is
+  exactly free, a stretch or shear is NOT — the residual is
+  `(A − I)·(second difference of the anchors)`, so it costs wherever the chart
+  form is curved, which is where a genuine slant adaptation lives. The first
+  test asserted „affine is free" by displacing the anchors linearly in the
+  INDEX, a weaker statement that hid the gap; both halves are pinned now, and
+  the docstring states the prior's real cost instead of overselling it.
+
+- **The three kinds of point are written down** (`vom-scan-zum-schreiben.md`
+  step 4, glossary): **anchors** are the spline's control points and the fit's
+  degrees of freedom (120), **samples** lie between them and are the ONLY
+  place the objective reads the ink (~180), **steps** are anchor-to-anchor
+  distances and what `anchor_spike_ratio` measures (119). An anchor therefore
+  acts only indirectly, through the one or two samples around it — measuring a
+  restoring force AT an anchor quantifies a force the optimiser never sees,
+  which is exactly the mistake that produced a wrong dead-spot diagnosis. Also
+  noted: `fitted_polyline_px` is the SAMPLE row, not the anchor row.
 
 ### Fixed
 

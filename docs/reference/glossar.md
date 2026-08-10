@@ -36,7 +36,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
 **§6** Extern/Forschung.
 
-- **A** — Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1 · Ausreißer §4
+- **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1 · Ausreißer §4
 - **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · Duktus §1 · Duktus-Prior §1
@@ -736,6 +736,20 @@ eigenen ersten Punkt gelegt. **Start-aligniert, also translationsfrei** —
 die Platzierung ist allein Sache von `doff`. Kein kalibrierter
 Absolutabstand, sondern ein monotones Signal: gleiche Verbindung, kleinere
 Zahl = näher an der Vorlage.
+
+**Anker · Sample · Schritt** — die drei Sorten Punkt, die im Fit alle wie
+Punkte aussehen und ständig verwechselt werden. **Anker** sind die
+Stützpunkte der Spline, also die Freiheitsgrade des Fits (120 je Buchstabe,
+`templates.anchors`). **Samples** liegen auf der Spline zwischen ihnen — und
+NUR dort liest die Zielfunktion die Tinte ab (~180 je Buchstabe); kein Anker
+wird je selbst befragt. **Schritt** ist der Abstand zweier benachbarter Anker,
+worauf `anchor_spike_ratio` misst. Ein Anker wirkt also nur mittelbar, über
+die ein bis zwei Samples in seiner Umgebung; wer die Rückstellkraft am
+Ankerort misst, beziffert eine Kraft, die in der Rechnung nicht vorkommt —
+was einmal eine Fehldiagnose gekostet hat. Achtung auch beim Zeichnen:
+`fitted_polyline_px` ist die SAMPLE-Reihe, nicht die Ankerreihe.
+*Technisch:* `core/fit.py::_sampling_operator`,
+`core/template.py::build_sample_plan` → vom-scan-zum-schreiben.md Schritt 4
 
 **`d_end`** *(verworfen)* — Abstand des Kettenendes eines gefitteten
 Buchstabens zur nächsten Tinte, in x-Höhen; gedacht als „Nahtstellen-Kennzahl"

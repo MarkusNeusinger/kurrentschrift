@@ -158,19 +158,26 @@ def test_second_difference_operator_never_spans_a_pen_lift():
     assert not any(5 in s and 6 in s for s in supports)
 
 
-def test_neighbour_binding_is_free_for_a_smooth_deformation():
-    """Translating, stretching or shearing a stroke must cost nothing.
+def test_neighbour_binding_prices_a_lone_anchor_and_not_a_translation():
+    """A translation is exactly free; a shear is not — and that is a real cost.
 
-    That is the whole point of taking the second difference of the
-    DISPLACEMENTS rather than of the anchors: fitting a template to a hand IS
-    an affine-ish deformation, and only a lone anchor leaving its neighbours
-    behind should be priced.
+    The first draft of this test asserted „affine is free" by displacing the
+    anchors linearly in the INDEX, which is a weaker statement than it looks:
+    for a genuine linear map the residual is `(A − I)·(second difference of the
+    anchors)`, so a stretch or shear costs wherever the chart form is curved.
+    The docstring says so now; this pins both halves.
     """
     d = _second_difference_operator(12, None)
-    affine = np.column_stack([np.arange(12), 3.0 * np.arange(12) - 5.0]).astype(float)
-    assert float(np.max(np.abs(d @ affine))) < 1e-12
-    spike = affine.copy()
-    spike[6] += np.array([0.2, -0.1])  # one anchor pops out of the chain
+    curved = np.column_stack([np.arange(12, dtype=float), np.sin(np.arange(12) / 2.0)])
+
+    translation = curved + np.array([0.3, -0.2])
+    assert float(np.max(np.abs(d @ (translation - curved)))) < 1e-12
+
+    shear = curved @ np.array([[1.0, 0.0], [0.25, 1.0]])
+    assert float(np.max(np.abs(d @ (shear - curved)))) > 1e-3  # not free, by design
+
+    spike = (curved - curved).copy()
+    spike[6] += np.array([0.2, -0.1])  # one anchor pops out of an otherwise still chain
     assert float(np.max(np.abs(d @ spike))) > 0.1
 
 
