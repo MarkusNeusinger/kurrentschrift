@@ -52,6 +52,37 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   column the numbers would invite exactly that conclusion. Measurement only:
   no DB, no API, no rendering, nothing in `core/`.
 
+- **The neighbour-binding term: measured and REJECTED (`qualitaetsmetrik.md`
+  §11b–§11d).** The pre-registered A/B, its criteria committed before any of
+  its numbers existed. Run 1 failed on a ladder that turned out never to have
+  switched the term on — at its top rung the weighted binding contributed
+  4.9e-6 against a geometry term of 2.2e-3, 450× smaller, because the ladder
+  was taken by analogy to `core.fit`'s constant and the operator being the same
+  does not make the objective's energy scale the same. Named as the
+  pre-registration's flaw rather than quietly patched, and re-registered with a
+  ladder calibrated on baseline-only solves.
+  Run 2, calibrated: **the term works and is still wrong.** Stranded anchors
+  98 → 41, spike ratio 2.90 → 1.59 — and the share of stored anchors sitting
+  off the ink RISES 18 %, where a 25 % fall was required. Smoothing the second
+  difference of the displacements stops one anchor from making its excursion
+  alone, so it takes its neighbours along: one anchor in blank paper becomes
+  three, which is the worse failure for a per-anchor median. Cost bounds break
+  on the lowest rung too.
+  The apparent yield gain is fully circular and is the reason the criterion was
+  chosen: accepted occurrences rise 209 → 218 with McNemar significant in the
+  term's favour (p = 0.021), and **every** flip up to weight 1.0 was an
+  occurrence the harvest had rejected for `anchor_spike` — the statistic the
+  term suppresses by construction — while genuine convergence got worse
+  (`not_converged_local` 21 → 31). Measured on §11's original criteria the term
+  would have passed brilliantly on every rung.
+  That closes the fourth repair path for the single-anchor outlier, after the
+  bending term (§7), the hinge (§8) and the corner-anchor diagnosis (§10). What
+  is left is not a fifth term but the cause §11a named: the coverage term's
+  blindness to which segment owns a skeleton point. The hold-out (Abb. 20) was
+  deliberately NOT spent — the protocol confirms only a weight that passed
+  development, and spending a reserve on a refuted hypothesis burns it for the
+  next one.
+
 - **The answer the decomposition was built for, and the term moved to where
   the defect lives (`qualitaetsmetrik.md` §11a).** 96 chain solves, 41 280
   letter anchors, at the optima the stored occurrences came from; 128 stranded

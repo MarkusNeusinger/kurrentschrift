@@ -2687,6 +2687,294 @@ an dem der Anker überhaupt wirkt.
 
 ---
 
+## 11b. Das A/B: vorregistriert, vor dem ersten Lauf (`aug10`)
+
+Geschrieben und committet, **bevor irgendeine Zahl des Versuchs existiert**.
+Das ist der ganze Zweck: §10 Lehre 1 („bestätigt" und „brauchbar" sind zwei
+Fragen, beide gehören in die Vorregistrierung) und §11 Korrektur 2
+(Winner's Curse) lassen sich nicht nachträglich herstellen.
+
+### Die Leiter
+
+`CHAIN_LETTER_BIND_WEIGHT` ∈ **{0 · 1e-4 · 1e-3 · 1e-2}**. Vier Arme, nicht
+mehr — jede Zwischenstufe, die erst nach Sichtung eingeschoben wird, ist eine
+verdeckte Mehrfachprüfung. Die Normierung ist die von
+`core.fit._second_difference_operator` (Indexraum, Mittel über die Zeilen),
+damit ein Gewicht auf beiden Fit-Pfaden ungefähr dasselbe bedeutet.
+
+### Die Teilung
+
+| | Menge | n Fälle |
+|---|---|---|
+| **Entwicklung** | Abb. 19, der `words`-Satz | 63 |
+| **Bestätigung** | Abb. 20, der `pairs`-Satz | 33 |
+
+Entlang der **Platten**, nicht zufällig über die Vorkommen: ein zufälliger
+Schnitt legt Vorkommen **derselben Kettenlösung** auf beide Seiten, und dann
+sind die Hälften nicht unabhängig. Dieselbe Hand, dieselbe Norm, andere Platte.
+Die humanbench-Rückhaltemenge ist mit Runde 02 aufgebraucht (§10) und wird hier
+nicht ein zweites Mal verbraucht — das hier ist eine **eigene** Teilung für eine
+Geometriefrage, die keine Urteile braucht.
+
+Auf der Entwicklungsmenge wird das kleinste wirksame Gewicht gewählt. Auf der
+Bestätigungsmenge läuft **nur dieses eine** Gewicht gegen 0, mit denselben
+Kriterien. Besteht es dort nicht, ist der Term verworfen — nicht nachjustiert.
+
+### Das Kriterium: Nutzen
+
+**Primär, und ausdrücklich nicht `anchor_spike_ratio`.** §11 Korrektur 1: das
+Spike-Verhältnis ist fast dieselbe Statistik, die der Term bestraft — jedes
+Gewicht senkt sie per Konstruktion, auch wenn der Anker weiter im Papier steht.
+Gemessen wird stattdessen **tintenbezogen**:
+
+> **Anteil der Buchstabenanker mit `d_raw` > 0,15 xh am ANKERORT.**
+
+Drei Eigenschaften, jede absichtlich: `d_raw` ist die **ungeglättete** EDT,
+während die Zielfunktion das geglättete Feld liest; gemessen wird **am Anker**,
+wo die Zielfunktion nie hinsieht (§11a); und es ist ein **Schwellenanteil**,
+keine quadratische Summe. Die Schwelle 0,15 xh ist
+`CHAIN_OVERLAP_RADIUS_UNITS` — der im Repo bereits kalibrierte Abstand „noch
+innerhalb eines gezogenen Strichs"; darüber liegt der Anker außerhalb der Tinte.
+
+Am Ankerort und nicht an den Samples, obwohl §11a gezeigt hat, dass dort keine
+Kraft wirkt: **gespeichert wird der Anker.** Er läuft über
+`instances` in die Per-Anker-Mediane und damit in die Laufform, die das
+Live-System schreibt. Wo die Kraft angreift, ist eine Frage an die
+Zielfunktion; wo der Fehler landet, ist eine Frage an das Produkt.
+
+**Bestehensschwelle:** der Anteil muss **relativ um ≥ 25 %** fallen, gepaart je
+Vorkommen gerechnet.
+
+### Das Kriterium: Kosten
+
+§11 Korrektur 3 — keine Mittelwerte allein, gepaart je Vorkommen, mit
+Quantil-Schranken und der Zahl neu scheiternder Vorkommen:
+
+| Größe | Schranke |
+|---|---|
+| `geo_rmse_px`, Median der gepaarten Differenzen | ≤ +5 % |
+| `geo_rmse_px`, p90 der gepaarten Differenzen | ≤ +10 % |
+| `cov_rmse_local_px`, Median gepaart | ≤ +2 % |
+| angenommene Vorkommen (Gate `ok`) | **kein Netto-Verlust** |
+| Gate-Kipper | McNemar, nicht signifikant zuungunsten |
+
+„Unter 23 Ablehnungen" aus §11 ist als Kriterium gestrichen: eine grobe
+Ganzzahl, bei der 23 → 22 Rauschen ist. An seine Stelle tritt der McNemar-Test
+über die Kipprichtungen.
+
+### Das Kriterium: dass es nicht bloß anders rechnet
+
+§11 Korrektur 4. Der Baseline-Arm wird **im selben Lauf** mit Gewicht 0 neu
+gefittet; dass das eine Identität ist, ist keine Behauptung, sondern
+byte-identisch geprüft (§11a). Zusätzlich berichtet wird die Verteilung von
+`iterations` und `hit_iteration_cap` beider Arme: verschiebt ein „wirksames"
+Gewicht nur die Kondition oder das Abbruchverhalten, ist der Nutzen ein
+Artefakt. `interp+snap` ist in beiden Armen aus — es existiert im Code
+ohnehin nicht.
+
+**Die Vorkommen, an denen die Diagnose entstand**, werden ausgewiesen: die 128
+gestrandeten Anker aus §11a sind auf der Entwicklungsmenge mitgemessen worden,
+also ist der Entwicklungsarm in diesem Punkt nicht unschuldig. Die
+Bestätigungsmenge ist es.
+
+### Was das A/B ausdrücklich nicht beantwortet
+
+§11a: der Term ist eine Bremse gegen einen Zug des Deckungsterms, nicht dessen
+Ursache. Ein bestandenes Kriterium heißt „die Bremse wirkt und ist bezahlbar" —
+nicht „die Strandung ist verstanden".
+
+---
+
+## 11c. Lauf 1: die Leiter hat den Term nie eingeschaltet (`aug10`)
+
+Der in §11b vorregistrierte Versuch ist gelaufen — 63 Wörter, vier Arme, 277
+gepaarte Vorkommen. **Kein Gewicht besteht.** Das ist das Ergebnis von
+Protokoll wegen, und es steht.
+
+| Gewicht | Anteil Anker außerhalb der Tinte | relativ | Nutzen | `geo` Median | `cov` Median | angenommen | Kosten |
+|---|---|---|---|---|---|---|---|
+| 0 | 0,0072 | — | — | — | — | 209 | — |
+| 1e-4 | 0,0070 | −2,1 % | nein | +0,02 % | +0,03 % | 209 | ok |
+| 1e-3 | 0,0072 | 0,0 % | nein | +0,03 % | +0,09 % | 209 | ok |
+| 1e-2 | 0,0072 | −0,4 % | nein | +0,10 % | +0,60 % | 210 | ok |
+
+Verlangt waren −25 %. Berichtet, nie Kriterium: die gestrandeten Anker
+(98 → 94 → 102 → 97) — der Term senkt also **nicht einmal die Statistik, für
+die er gebaut wurde**.
+
+### Warum das kein Befund über den Term ist
+
+Die Kosten sind der Hinweis: +0,10 % Median-Restfehler beim **höchsten**
+Gewicht ist keine Zielfunktion, die kämpft, sondern eine, die den Term nicht
+bemerkt. Nachgemessen an den Energien einer Lösung:
+
+| | `e_geo` | `w · e_bind` bei 1e-2 |
+|---|---|---|
+| Wort `das` | 2,23e-3 | **4,9e-6** |
+
+**450-fach kleiner als der Geometrieterm.** Und über acht Baseline-Lösungen
+(Gewicht 0, also ohne jeden Blick auf einen Effekt) ist das Verhältnis
+`e_geo / e_bind` im Median **3,2** (p10 1,5 · p90 5,3): erst ein Gewicht um 3
+stellt die Bindung auf Augenhöhe mit der Geometrie. Die Leiter endete bei
+1e-2 — **rund 320-fach zu niedrig**.
+
+### Der Fehler, benannt
+
+Die Leiter kam aus der Analogie zu `core.fit.DEFAULT_SMOOTH_WEIGHT`, „damit ein
+Gewicht auf beiden Fit-Pfaden ungefähr dasselbe bedeutet" (§11b). Der Operator
+ist derselbe — die **Energieskala der Zielfunktion, in der er steht, ist es
+nicht.** Der Ketten-Pfad normiert anders, seine Restfehler leben in anderen
+Größenordnungen, und ein aus der Ferne übernommenes Gewicht sagt darüber
+nichts. Das ist dieselbe Verwechslung, die §11a an anderer Stelle aufgelöst
+hat: zwei Pfade sind nicht vergleichbar, nur weil der Operator gleich aussieht.
+
+Der Versuch hat damit die Hypothese **nicht geprüft**. Er ist kein Beleg gegen
+den Nachbarschaftsterm; er ist ein Beleg dafür, dass eine Leiter ohne
+Skalenkalibrierung ein leerer Lauf ist. Wer das Ergebnis als „Term wirkt nicht"
+zitiert, zitiert einen Versuch, in dem der Term zu 0,2 % anwesend war.
+
+### Vorregistrierung, Lauf 2
+
+Wieder vor dem Lauf geschrieben und committet. Geändert wird **nur die
+Leiter**; Teilung, Nutzenkriterium (−25 % relativ am tintenbezogenen Maß),
+Kostenschranken und die Prüfungen aus §11 Korrektur 3/4 bleiben Wort für Wort
+die aus §11b.
+
+> **Leiter: 0 · 0,1 · 0,32 · 1,0 · 3,2** — geometrisch im Schritt ×3,16, so
+> gelegt, dass die Bindung am Baseline-Optimum rund 3 % · 10 % · 31 % · 100 %
+> des Geometrieterms beiträgt.
+
+Die Kalibrierung stammt ausschließlich aus **Gewicht-0-Lösungen**, verrät also
+nichts über den Effekt — dieselbe Regel wie bei der Instrumentenprüfung in
+§11b, wo geprüft wurde, dass das Nutzenmaß überhaupt feuert (4 von 19
+Vorkommen, ~0,57 % der Anker).
+
+Zwei Dinge, die dabei ehrlich zu bleiben haben:
+
+* **Die Entwicklungsmenge wird zum zweiten Mal benutzt.** Das ist ihr Zweck,
+  aber es heißt, dass die Wahl des kleinsten wirksamen Gewichts jetzt auf einer
+  zweifach besuchten Menge geschieht. Was die Aussage trägt, ist die
+  **Bestätigungsmenge** — und Abb. 20 ist bis hierher **vollständig unberührt**,
+  kein einziger Arm ist dort gelaufen.
+* **Ein Gewicht um 3 ist kein kleiner Regularisierer mehr.** Wenn die Bindung
+  so viel wiegt wie die Geometrie, formt sie den Buchstaben mit, statt nur
+  einen Ausreißer zu bremsen. Genau dafür sind die Kostenschranken da, und
+  wenn sie reißen, ist das die Antwort und nicht ein Grund, die Leiter noch
+  einmal zu verschieben.
+
+---
+
+## 11d. VERWORFEN: Lauf 2, und warum das Kriterium sich bezahlt gemacht hat (`aug10`)
+
+Mit der kalibrierten Leiter (§11c) **wirkt** der Term. Er tut genau das, wofür
+er gebaut wurde — und wird trotzdem verworfen, weil das eine unabhängige Maß
+zeigt, dass er den Defekt nicht behebt, sondern **verschmiert**.
+
+63 Wörter, fünf Arme, 277 gepaarte Vorkommen.
+
+| Gewicht | gestrandete Anker | Spike-Median | **Anker außerhalb der Tinte** | `geo` Median / p90 | `cov` Median | `ok` |
+|---|---|---|---|---|---|---|
+| 0 | 98 | 2,90 | 0,0072 | — | — | 209 |
+| 0,1 | 79 | 2,53 | 0,0075 (**+4,6 %**) | +0,28 % / +2,21 % | +2,94 % | 214 |
+| 0,32 | 70 | 2,20 | 0,0079 (**+9,6 %**) | +0,62 % / +3,65 % | +5,19 % | 216 |
+| 1,0 | 49 | 1,85 | 0,0085 (**+18,4 %**) | +1,29 % / +6,36 % | +7,74 % | 217 |
+| 3,2 | 41 | 1,59 | 0,0085 (**+18,4 %**) | +2,38 % / +8,75 % | +10,33 % | 218 |
+
+**Der Term erreicht sein eigenes Ziel und verfehlt die Sache.** Die
+gestrandeten Anker fallen um 58 %, das Spike-Verhältnis um 45 % — und
+gleichzeitig stehen **mehr** Anker außerhalb der Tinte, nicht weniger.
+Verlangt waren −25 %; gemessen sind +18 % in die Gegenrichtung. Die
+Kostenschranken reißen zusätzlich schon auf der untersten Sprosse
+(`cov` +2,94 % gegen +2 %).
+
+### Der Mechanismus
+
+Der Term glättet die zweite Differenz der **Verschiebungen**. Ein einzelner
+Anker kann seinen Ausflug damit nicht mehr allein machen — also **nimmt er
+seine Nachbarn mit**. Aus einem Anker im leeren Papier werden drei, die
+gemeinsam etwas neben der Tinte liegen. Für jede Statistik, die auf den
+*Sprung zwischen benachbarten Ankern* schaut, ist das eine Heilung; für die
+Tinte ist es eine Verschlechterung, und für den Per-Anker-Median der Laufform
+ist es die schlimmere Variante, weil jetzt mehrere Anker verunreinigt sind
+statt einer.
+
+### Der Ertrag ist zirkulär — vollständig
+
+Der Ertrag steigt (209 → 218) und McNemar ist ab 0,32 sogar signifikant
+zugunsten des Terms (p = 0,039 · 0,021 · 0,022). Das sieht nach dem
+Live-System-Gewinn aus, um den es geht. Die Aufschlüsselung der Kipper zerstört
+das:
+
+| Gewicht | gewonnen | davon vorher abgelehnt wegen … |
+|---|---|---|
+| 0,1 | +6 | `anchor_spike` 6 |
+| 0,32 | +8 | `anchor_spike` 8 |
+| 1,0 | +9 | `anchor_spike` 9 |
+| 3,2 | +11 | `anchor_spike` 9 · `connector_degenerate` 2 |
+
+**Jeder Gewinn bis Gewicht 1,0 ist ein `anchor_spike`-Fall** — der Tor-Grund,
+den der Term per Konstruktion unterdrückt. Das Gate zählt also dieselbe
+Statistik, die der Term bestraft; sein „Mehr-Ertrag" ist dieselbe Zirkularität
+wie beim verworfenen Nutzenkriterium, eine Ebene höher. Die Verteilung der
+Ablehnungsgründe sagt es direkt:
+
+| Gewicht | `ok` | `anchor_spike` | `not_converged_local` | `connector_degenerate` |
+|---|---|---|---|---|
+| 0 | 209 | 22 | 21 | 20 |
+| 1,0 | 217 | **3** | **31** | 24 |
+| 3,2 | 218 | 3 | 31 | 22 |
+
+Der Term tauscht einen Ablehnungsgrund gegen einen anderen: `anchor_spike`
+22 → 3, `not_converged_local` 21 → 31. Die **Konvergenz wird echt schlechter**,
+und das ist kein Etikett, das der Term kontrolliert.
+
+### Was daran gelungen ist
+
+§11 Korrektur 1 hat sich vollständig bezahlt gemacht. Wäre — wie §11
+ursprünglich vorsah — auf `anchor_spike_ratio` und „Gate-Ablehnungen unter 23"
+gemessen worden, hätte dieser Term auf **jeder** Sprosse glänzend bestanden:
+Spike-Median −45 %, Ablehnungen 68 → 59, McNemar signifikant. Genau die Zahlen,
+die eine Übernahme getragen hätten. Das eine Maß, das nicht in der
+Zielfunktion steht und nicht im Gate zählt — der Abstand des gespeicherten
+Ankers zur Tinte — ist das einzige, das die Wahrheit sagt.
+
+Das ist der Lehrsatz aus §10 („bestätigt" und „brauchbar" sind zwei Fragen) in
+seiner härtesten Form: **eine Kennzahl, die der Eingriff selbst bestraft, kann
+seinen Erfolg nicht bezeugen.**
+
+### Die Bilanz für `A` („Einzelner Ausreißer")
+
+* **Biegeterm** (§7) — verworfen, bepreiste globale Krümmung statt der Unstetigkeit.
+* **Scharnier** (§8) — verworfen, bepreiste den Abstand.
+* **Sample-Stützung der Eckanker-Klasse** (§10) — Diagnose hält der nicht-zirkulären Prüfung nicht stand.
+* **Nachbarbindung** (§11–§11d) — **verworfen**: wirkt, senkt die eigene Zielstatistik um 58 %, und macht die Ankerlage zur Tinte um 18 % schlechter, während sie die Konvergenz kostet.
+* **Das Gate** bleibt die Rückfalllinie, die aussortiert statt zu reparieren.
+
+Vier Wege zu, alle gemessen. Was übrig bleibt, ist kein fünfter Term, sondern
+die **Ursache** aus §11a: der Deckungsterm ist blind dafür, welches Segment
+einen Skelettpunkt besitzt, und zieht deshalb den nächstbesten Anker heran.
+Ein Term, der an der Steifigkeit ansetzt, kann das nicht heilen — dieser Lauf
+ist der Beleg, nicht mehr die Vermutung.
+
+### Die Bestätigungsmenge bleibt unberührt
+
+Kein Arm ist auf Abb. 20 gelaufen. Das Protokoll aus §11b sieht die
+Bestätigung nur für ein Gewicht vor, das auf der Entwicklungsmenge **beide**
+Kriterien besteht; keines tut das. Eine Rückhaltemenge für eine bereits
+gescheiterte Hypothese auszugeben, würde sie für die nächste verbrennen —
+sie steht der Untersuchung der Deckungs-Zuordnung unverbraucht zur Verfügung.
+
+### Zustand im Code
+
+`CHAIN_LETTER_BIND_WEIGHT` bleibt auf 0,0 und ist als gemessen-verworfen
+gekennzeichnet. Der Zwilling `core.fit.DEFAULT_SMOOTH_WEIGHT` auf dem
+Einzelbuchstaben-Pfad ist **nicht** geprüft worden — er steht auf demselben
+Mechanismus, aber auf einer anderen Zielfunktion, und nach der Lehre aus §11c
+wird das hier nicht wieder aus der Ferne übertragen. Er bleibt auf 0,0; wer ihn
+anhebt, braucht sein eigenes A/B.
+
+---
+
 ## 12. Die Autopsie der `d`-Tafelform (`aug10`)
 
 §10 hatte den `B`-Befund („Bereich daneben") auf eine Glyphe eingegrenzt —
