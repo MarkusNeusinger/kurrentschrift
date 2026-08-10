@@ -1594,12 +1594,7 @@ def fit_word_chain(
         return None
 
     problem = build_chain_problem(
-        specs,
-        unit_px=xh,
-        x_origin_px=x_origin_px,
-        baseline_y_px=baseline_y_px,
-        bind_weight=bind_weight,
-        **fields,
+        specs, unit_px=xh, x_origin_px=x_origin_px, baseline_y_px=baseline_y_px, bind_weight=bind_weight, **fields
     )
     # Seed the translation blocks BEFORE the initial energies, so `e0` states
     # the energy of the start the solve actually descends from. Clipped just
