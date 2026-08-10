@@ -280,6 +280,80 @@ def anchor_spike_ratio(anchors: np.ndarray, stroke_starts: Sequence[int]) -> flo
     return worst
 
 
+# Both neighbouring steps at or above this multiple of the stroke's median step
+# is the measured SHAPE of the defect, not a tuned threshold: of the author's 22
+# marked outliers, 17 sit on an anchor of exactly this form, and in 12 of 12
+# cases where the marked anchor is genuinely beside the ink the excursion is
+# exactly one anchor long (`qualitaetsmetrik.md` §11). It is deliberately not
+# `MAX_ANCHOR_SPIKE_RATIO` (8.0): that one asks „is this occurrence unusable",
+# this one asks „is this one anchor a lone excursion".
+SPIKE_REPAIR_RATIO = 3.0
+# One extra pass, because repairing an anchor changes its neighbours' steps and
+# can expose a second lone excursion beside the first. No index is ever repaired
+# twice, so this terminates and cannot walk a whole stroke flat.
+SPIKE_REPAIR_PASSES = 2
+
+
+def repair_anchor_spikes(
+    anchors: np.ndarray, stroke_starts: Sequence[int], *, ratio: float = SPIKE_REPAIR_RATIO
+) -> tuple[np.ndarray, list[dict]]:
+    """Replace a lone anchor that left its neighbours by their midpoint.
+
+    Returns the repaired chain and one record per repair (`index`, `moved`
+    in template units), so a caller can log WHAT it changed instead of
+    silently handing on a different measurement.
+
+    **Interpolation only — never a snap to nearby ink.** That distinction is
+    the whole reason this is not the hinge rejected in `qualitaetsmetrik.md`
+    §8: „snap to the nearest ink" has to choose a branch, and at a crossing it
+    chooses the wrong one. A midpoint has no branch to choose. What it says is
+    narrower and honest: *the fit put this anchor somewhere the ink did not
+    constrain, so report the chain without that excursion rather than with an
+    invented detour.*
+
+    It stays a repair of a MEASUREMENT and is therefore only legitimate under
+    the conditions §11 set out: logged per repair, and the gate must judge the
+    UNREPAIRED geometry, so a repair is a near-rejection and never a pass.
+
+    Per stroke, never across a pen lift, and never on a stroke's first or last
+    anchor — those have no two neighbours to interpolate between.
+    """
+    pts = np.asarray(anchors, dtype=float).reshape(-1, 2).copy()
+    if len(pts) < 3:
+        return pts, []
+    bounds = sorted({0, *(int(s) for s in stroke_starts if 0 < int(s) < len(pts)), len(pts)})
+    repairs: list[dict] = []
+    done: set[int] = set()
+    for _ in range(SPIKE_REPAIR_PASSES):
+        # Collect first, apply after: a repair changes its neighbours' steps, so
+        # deciding and mutating in one sweep would judge later anchors of the
+        # same pass against a chain that is already half repaired. Every
+        # midpoint in a pass is taken from the same, pre-repair geometry.
+        found: list[int] = []
+        for start, end in zip(bounds[:-1], bounds[1:], strict=True):
+            stroke = pts[start:end]
+            if len(stroke) < 3:
+                continue
+            steps = np.hypot(*(stroke[1:] - stroke[:-1]).T)
+            median = float(np.median(steps))
+            if median <= 0.0:
+                continue
+            found += [
+                start + i
+                for i in range(1, len(stroke) - 1)
+                if start + i not in done and steps[i - 1] >= ratio * median and steps[i] >= ratio * median
+            ]
+        if not found:
+            break
+        before = pts.copy()
+        for j in found:
+            mid = 0.5 * (before[j - 1] + before[j + 1])
+            repairs.append({"index": j, "moved": float(np.hypot(*(mid - before[j])))})
+            pts[j] = mid
+            done.add(j)
+    return pts, repairs
+
+
 def _strokes_to_word_units(
     fitted: np.ndarray, stroke_starts: list[int], fit_frame: dict, registration: dict
 ) -> list[list[list[float]]]:

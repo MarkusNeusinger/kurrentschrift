@@ -34,6 +34,7 @@ from tools.laufform.harvest import (
     MAX_ANCHOR_SPIKE_RATIO,
     MAX_STROKE_POINTS,
     MAX_WORD_STROKES,
+    SPIKE_REPAIR_RATIO,
     CaseHarvest,
     HarvestOptions,
     _chainable_runs,
@@ -44,6 +45,7 @@ from tools.laufform.harvest import (
     cap_word_strokes,
     harvest_case,
     letter_gate,
+    repair_anchor_spikes,
 )
 from tools.pairlab.analyze import _generate_connector
 from tools.pairlab.chain import ChainSegment, ChainWordFit
@@ -279,6 +281,77 @@ def test_anchor_spike_ratio_flags_an_out_and_back_needle() -> None:
     assert anchor_spike_ratio(chain, [0]) > MAX_ANCHOR_SPIKE_RATIO
     # …and the chain it was cut from is untouched
     assert anchor_spike_ratio(_even_chain(), [0]) == pytest.approx(1.0)
+
+
+def test_the_repair_puts_a_lone_excursion_back_between_its_neighbours() -> None:
+    """The measured shape of the defect, and the narrowest possible answer to it."""
+    chain = _even_chain()
+    chain[5, 1] += 1.0
+    fixed, repairs = repair_anchor_spikes(chain, [0])
+    assert [r["index"] for r in repairs] == [5]
+    assert repairs[0]["moved"] == pytest.approx(1.0)
+    assert fixed[5] == pytest.approx(0.5 * (chain[4] + chain[6]))
+    assert anchor_spike_ratio(fixed, [0]) == pytest.approx(1.0)
+    # every other anchor is untouched — a repair is a local statement
+    assert np.array_equal(np.delete(fixed, 5, axis=0), np.delete(chain, 5, axis=0))
+
+
+def test_the_repair_never_snaps_to_ink_it_only_interpolates() -> None:
+    """The distinction that separates this from the hinge rejected in §8.
+
+    The midpoint depends on the two NEIGHBOURS and on nothing else — no ink, no
+    field, no nearest branch. So it cannot pick the wrong branch at a crossing,
+    which is exactly how the hinge failed.
+    """
+    chain = _even_chain()
+    chain[5, 1] += 1.0
+    a, _ = repair_anchor_spikes(chain, [0])
+    shifted, _ = repair_anchor_spikes(chain + np.array([100.0, -70.0]), [0])
+    assert shifted - np.array([100.0, -70.0]) == pytest.approx(a)
+
+
+def test_an_even_chain_is_left_completely_alone() -> None:
+    chain = _even_chain()
+    fixed, repairs = repair_anchor_spikes(chain, [0])
+    assert repairs == []
+    assert np.array_equal(fixed, chain)
+    # …and a real letter's uneven-but-honest spacing is not a defect either
+    letter = _letter_anchors()
+    assert repair_anchor_spikes(letter, [0])[1] == []
+
+
+def test_the_repair_never_reaches_across_a_pen_lift() -> None:
+    """A lift is the hand setting down elsewhere. Interpolating across one would
+    invent an anchor in the middle of the air between two strokes."""
+    body = _even_chain(5)
+    dot = _even_chain(4) + np.array([0.2, 1.0])
+    chain = np.vstack([body, dot])
+    fixed, repairs = repair_anchor_spikes(chain, [0, 5])
+    assert repairs == []
+    assert np.array_equal(fixed, chain)
+
+
+def test_a_stroke_end_has_no_two_neighbours_and_is_never_repaired() -> None:
+    chain = _even_chain()
+    chain[0, 1] += 5.0  # the first anchor flies off
+    chain[-1, 1] -= 5.0  # …and so does the last
+    fixed, repairs = repair_anchor_spikes(chain, [0])
+    assert [r["index"] for r in repairs] == []
+    assert np.array_equal(fixed, chain)
+
+
+def test_the_ratio_is_the_measured_shape_not_the_gate_threshold() -> None:
+    """`SPIKE_REPAIR_RATIO` asks „is this ONE anchor a lone excursion",
+    `MAX_ANCHOR_SPIKE_RATIO` asks „is this occurrence unusable" — different
+    questions, so a repair must fire well before the gate does."""
+    assert SPIKE_REPAIR_RATIO < MAX_ANCHOR_SPIKE_RATIO
+    chain = _even_chain()
+    step = float(np.hypot(*(chain[1] - chain[0])))
+    # Sideways by exactly what makes each neighbouring step 4x the median: over
+    # the repair rule, comfortably under the gate.
+    chain[5, 1] += float(np.sqrt((4.0 * step) ** 2 - step**2))
+    assert SPIKE_REPAIR_RATIO < anchor_spike_ratio(chain, [0]) < MAX_ANCHOR_SPIKE_RATIO
+    assert [r["index"] for r in repair_anchor_spikes(chain, [0])[1]] == [5]
 
 
 def test_a_pen_lift_is_not_a_discontinuity() -> None:
