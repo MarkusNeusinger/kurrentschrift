@@ -3180,3 +3180,129 @@ das nicht finden; es ist kein Fehler der Metrik, sondern ihre Zuständigkeit.
   Auslaufabweichung zeigt — beide Lesarten sagen das aber gleichermaßen vorher.
   Trennen lässt sich das nur mit `tools/pairlab` an einem `d`-Übergang.
 * **n = 14.** Eine Glyphe, eine Hand, eine Vorlage.
+
+---
+
+## 13. Die Kreuzung als Landmarke — und die Drift (`aug11`)
+
+Zwei Messrunden zum Eigentümer-Modell: *ein Buchstabe hat eine feste
+Struktur (Kringel, Kreuzung, Schale in fester Reihenfolge); was je Vorkommen
+und je Übergang wandert, ist deren LAGE — die Kreuzung sitzt mal höher, mal
+tiefer, und der Fit muss dem folgen. „Das Wirklich Richtige ist eigentlich
+nur, dass man der schwarzen Linie der Tinte folgen muss."*
+
+Beide Runden liefen mit adversarischer Gegenprüfung jeder tragenden
+Behauptung. Die Bilanz der Gegenprüfung ist selbst ein Befund und steht
+deshalb vorne:
+
+| Runde | Behauptungen | widerlegt |
+|---|---|---|
+| Kreuzungs-Landmarke | 12 | **0** |
+| Drift / Tinte-Start / Breiten | 9 | **9** |
+
+### 13a. Die Kreuzung ist übergangsabhängig — und der Fit folgt ihr nicht
+
+| | Tinten-Kreuzung `d` (Höhe, buchstabenlokal) |
+|---|---|
+| mit Folgebuchstaben (10 Vorkommen, 6 Wörter, 3 Nachfolger) | **0,968 xh** (MAD 0,013) |
+| am Wortende (4) | **1,211 xh** (MAD 0,010) |
+| Differenz | **0,243 xh**, exakter Permutationstest p = 0,005 |
+
+Das ist **19× das Rauschen** aus Wiederholungen desselben Worts (0,013 xh).
+Binär, nicht pro Nachfolger: vor `a` 0,971 · `e` 0,964 · `i` 0,982
+(Kruskal p = 0,70). Im Plattenrahmen gemessen wird die Differenz 0,361 xh —
+Richtung und Signifikanz sind rahmenunabhängig, die **Größe nicht**.
+
+**Der Fit folgt dem nicht.** Dieselbe Aufteilung an der GEFITTETEN Kreuzung:
+**0,011 xh**, p = 0,43 — also 5 % der nötigen Größe, bei r = −0,25 sogar
+leicht falsch gerichtet. Die Tafel-Kreuzung wird auf 0,002 xh reproduziert:
+eine starre Kopie. Die Laufform erbt sie ungefiltert (v0 1,176 → v100
+1,177).
+
+**Warum die Zielfunktion das nicht sehen kann.** Jeder gefittete Anker liegt
+0,019–0,046 xh von der Tinte, also innerhalb eines Haarstrichs. Der
+Landmarken-Fehler von 0,202 xh ist **6× der mittlere Ankerabstand** und
+1,6× der schlechteste Einzelanker. Der Fit ist überall gut und die
+STRUKTUR trotzdem falsch — kein Genauigkeitsproblem, ein
+Zuordnungsproblem. Genau die Blindheit, die §11a am Deckungsterm beziffert
+hat, eine Ebene höher.
+
+**Die Landmarke ist verfügbar.** 26 von 34 eingefrorenen v0-Zeilen tragen
+43 gut konditionierte Selbstkreuzungen (Winkel ≥ 15°, Bogenabstand
+≥ 0,35 xh), stabil auf 0,015 xh über die v0→v100-Ableitung, unverstärkt
+unter 0,03 xh glattem Rauschen — und `core.geometry.detect_crossing_passages`
+findet **alle 43** bereits, robust über prox_px 2–24 px und 5–80°.
+`trace_meta.crossing_anchors` ist auf dem Gleichzug-Pfad absichtlich leer:
+es ist dort die Breiten-Kontaminationsliste von `_resolve_crossing_widths`,
+keine Landmarkenliste. Es fehlt also **kein Detektor, sondern der
+Zuordnungsterm**.
+
+Und ein solcher Term wäre **kein fünfter Anlauf** der verworfenen vier: §7
+(Biegeenergie), §8 (Scharnier), §10 (Eckanker), §11d (Nachbarbindung) haben
+alle einen STELLVERTRETER bepreist — Krümmung, Abstand, Steifigkeit — auf
+einer zuordnungsblinden Zielfunktion. Eine Landmarken-Korrespondenz ist ein
+DATENterm: dieser Punkt gehört auf jenen Punkt.
+
+**Grenzen, die bleiben.** Der Effekt ist nicht allgemein: bei `a`, `l`, `r`,
+`h` ist die Kreuzung *nicht* übergangsabhängig (p = 0,67–0,75) — er tritt
+auf, wo die Kreuzung auf dem AUSLAUFweg liegt (beim `d` Anker 59/110, und
+110–119 ist der in §12 als zu lang gemessene Auslauf: dieselbe Region, zwei
+Symptome). Der Wortende-Arm sind 4 Vorkommen **eines** Worts („und"). Und
+die Zuordnung Lücke ↔ menschliches `B`-Urteil ist NICHT sauber (AUC 0,88;
+innerhalb der verbundenen Gruppe trennt sie die Labels gar nicht).
+Gesichert ist: *die Lücke ist eine Eigenschaft des Übergangs* — nicht, dass
+sie `B` erklärt.
+
+Eine ungeprüfte Hypothese, die vor dem Bau eine Gegenprobe verdient: der
+Überlappungsterm (`CHAIN_OVERLAP_RADIUS_UNITS` 0,15) verbietet dem
+Buchstabenschwanz, auf den Samples des Verbinders zu liegen — und das ist
+genau die Tinte, die der Schwanz besetzen müsste, um die Kreuzung
+herunterzubringen. Möglicherweise ist die Bremse selbstgebaut.
+
+### 13b. Die Drift: Befund bestätigt, mein Mechanismus war falsch
+
+Reproduziert und unbestritten: die Platzierungskorrektur, die jeder
+Buchstabe nach seiner eigenen Tinte braucht, wächst über das Wort —
+`und` (3 Buchstaben) −0,10 xh, `laden` (5) **−0,48**, `unter` (5) −0,55,
+`schießen` (8) −0,59, wobei dort die letzten DREI Buchstaben auf −0,594
+stehen, dem Suchlimit. Gepoolt über 63 Wörter / 214 Schritte: Median
+**−0,062 xh**, 61 % brauchen einen Linkszug. Zwei Buchstaben halten der
+Bootstrap-Prüfung stand: `t` −0,323 (n = 6, KI [−0,422; −0,258]) und
+`e` −0,097 (n = 38, KI [−0,161; −0,065]). Bei `i`, `n`, `w` schrammt das
+Konfidenzintervall an der Null; 17 Glyphen haben n ≤ 4 und tragen keine
+Zahl.
+
+**Widerlegt — und die Korrektur gehört hierher, nicht in eine Fußnote:**
+„die Vorschubbreiten sind zu groß" war als Mechanismus **falsch**.
+`templates.advance` wird auf dem Schreibpfad für einen verbundenen
+Buchstaben **nie gelesen** (`core/compose.py` kennt nur `SPACE_ADV` und
+`MISSING_ADV`); der Schritt entsteht aus `prev.exit[0]` plus den
+Join-Klassen-Zweigen. Es gibt also keine „komponierte Vorschubbreite", die
+man korrigieren könnte — das ERGEBNIS (zu weite Setzung) stimmt, die
+Ursache liegt in den Platzierungsregeln. Damit ist auch „einfach die
+Laufform-Breiten nehmen" keine Option: das Feld wird nicht konsumiert, und
+die Richtung wäre ohnehin falsch (Laufform-Breiten im Median +3 % weiter,
+während 60 % der Schritte nach links müssen). Welcher Anteil auf die LÜCKE
+und welcher auf die BUCHSTABENBREITE geht, ist offen — die Zerlegung wurde
+in der Gegenprüfung ebenfalls gebrochen.
+
+**Der Tinte-Start ist kein neuer Gedanke.** `chain_seed="grid"` ist
+vorhanden, und das A/B dazu ist am 2026-08-05 vorregistriert gelaufen
+(`uebergaenge-befund.md` §5c „Grid-Seed-A/B", angenommen 241 → 241) mit dem
+Ergebnis: Standard bleibt `composed`. Die Wiederholung auf 12 Wörtern
+bestätigt die Form (Gate 39 → 37, McNemar p = 0,754, gepaarte
+Geometrieänderung −0,01 %); der Keim tauscht Ablehnungsgründe
+(`not_converged_local` −2, `geo_rmse` −1 gegen `connector_degenerate` +3).
+Zwei Dinge halten die Frage trotzdem offen, und beide sind Code-Fakten:
+`harvest.py:933` hält den Keim für `at_bound`-Buchstaben ZURÜCK — also
+genau für die abgedrifteten —, und die Gegenprüfung fand im Arm-Aufbau
+jenes A/B einen Vorzeichen-/Rahmenfehler. Wo die Drift groß ist, wirkt der
+Keim messbar (`fechten` n 5,208 → 0,910 px mit Konvergenz-Kipper;
+„festsitzend" 5/20 → 0/20). Das trägt eine **gezielte Rettung**, nicht
+einen neuen Standard — und es braucht ein eigenes, saubereres A/B.
+
+Eine Formulierung ist zurückzunehmen: „der Fit bewegt den Buchstaben nie"
+ist zu stark. Liest man nur den Slot-Block, realisiert der komponierte Arm
+0,342 der geforderten Verschiebung; mit der globalen Wortverschiebung
+zusammen 0,922. Die Wortverschiebung schluckt den Großteil der Drift —
+was bleibt, ist die Verteilung INNERHALB des Worts.
