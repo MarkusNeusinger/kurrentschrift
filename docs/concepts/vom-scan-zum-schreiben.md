@@ -183,6 +183,29 @@ Verifikation). Algorithmus — jeder Score seitdem.
 
 ---
 
+### Drei Sorten Punkt, die alle wie Punkte aussehen
+
+Vorgezogen, weil ab hier alles davon handelt und die Verwechslung schon eine
+Fehldiagnose gekostet hat (`qualitaetsmetrik.md` §10):
+
+| Begriff | Was es ist | Wie viele |
+|---|---|---|
+| **Anker** | Stützpunkte der Spline. Die **Freiheitsgrade** des Fits — was der Optimierer verschieben darf, und was als Buchstabenform gespeichert wird. | 120 je Buchstabe |
+| **Sample** | Punkte **auf** der Spline zwischen den Ankern. Nur hier liest die Zielfunktion die Tinte ab: Abstand, Breite, Deckung. Kein Anker wird je selbst befragt. | ~180 je Buchstabe |
+| **Schritt** | Abstand **zweier benachbarter Anker**. Worauf `anchor_spike_ratio` misst: ein Schritt, der weit über dem Median seines Federzugs liegt, ist der „Anker im leeren Papier". | 119 je Buchstabe |
+
+Die Reihenfolge ist: Anker bewegen → Spline neu abtasten → Samples lesen die
+Tinte → Kraft zurück auf die Anker. **Ein Anker wirkt also nur mittelbar**, über
+die ein bis zwei Samples in seiner Umgebung, und was am Anker selbst steht,
+sieht der Optimierer nie. Wer die Rückstellkraft am Ankerort misst, beziffert
+eine Kraft, die es in der Rechnung nicht gibt.
+
+Dieselben drei Sorten heißen an drei Orten verschieden: als Zahl in der
+Datenbank sind die Anker `templates.anchors` bzw. `instances.anchors`, im Fit
+sind sie die Parameter `deltas`, und im gezeichneten Überlagern sind es die
+Punkte der `fitted_polyline_px` — das ist aber die **Sample**-Reihe, nicht die
+Ankerreihe. Ein Werkzeug, das beides für dasselbe hält, misst Unsinn.
+
 ## Schritt 4 — Die Ernte: das System vermisst jedes Vorkommen
 
 Bis hier lautet die Frage „wie ähnlich ist mein Wort dem Original?". Jetzt

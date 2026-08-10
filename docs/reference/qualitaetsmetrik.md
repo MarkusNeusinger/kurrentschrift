@@ -2439,3 +2439,106 @@ Fit — nach der `d`-Vorlage, die billiger und sicherer ist.
    nachgezeichnete Federweg beseitigt das Schweben und kann echte Nahtdefekte
    maskieren. Die Gegenprobe kostete eine Rechnung und hätte gefehlt, wenn nur
    die erwartete Richtung geprüft worden wäre.
+
+---
+
+## 11. OFFEN: der Nachbarschaftsterm gegen den Einzelanker (`aug10`, vorregistriert)
+
+Kein Ergebnis, sondern ein **festgelegter Plan** — damit das Kriterium nicht
+hinterher an die Zahl angepasst wird. Der Term ist gebaut und liegt inert im
+Repo (`core/fit.py`, `smooth_weight` = 0,0).
+
+### Was gemessen ist
+
+* Der Defekt ist punktförmig: von 22 vom Autor markierten Ausreißern liegt der
+  markierte Anker in 12 Fällen überhaupt neben der Tinte — und in **12 von 12
+  ist der Ausflug genau ein Anker lang**. 17 der 22 sitzen auf einem Anker,
+  dessen BEIDE Nachbarschritte ≥ 3× den Median seines Federzugs betragen.
+* **Kein toter Fleck.** `|∇d|` des geglätteten Feldes am Anker: Median 0,898,
+  0 von 49 auf einem Grat. **Aber diese Messung ist am falschen Ort** — die
+  Zielfunktion liest das Feld nur an den ~180 Samples, nie am Anker
+  (vom-scan-zum-schreiben.md Schritt 4). Sie beziffert eine Kraft, die der
+  Optimierer nicht sieht, und ist damit **kein Beleg**, dass Rückstellkraft
+  vorhanden ist. Nachzuholen: `d` an den Samples zwischen den beiden
+  Nachbarankern.
+* Der Anker ist gegenüber der Tafelform 0,208 Einheiten verschoben, seine vier
+  Nachbarn 0,047 — elffach der Median aller Anker (0,018). Er wurde also
+  dorthin getrieben; die Box-Schranken (0,75) sind nicht bindend.
+
+### Der fehlende Schritt vor jedem Bau
+
+Ein stationärer Punkt bei vorhandener Feldkraft heißt: **eine Gegenkraft
+balanciert**, und die ist unbenannt. Kandidaten, alle im Code und alle in
+derselben Größenordnung (~3e-3): die Spline-Kopplung (negative Nebenkeulen —
+ein hinausgeschobener Stützpunkt kann die Nachbarsamples verbessern), der
+Deckungsterm (ein unbedeckter Skelettrest zieht per ICP), der Breitenterm (auf
+leerem Papier ist das propagierte Feld definiert, Gewicht 0,15), oder: **diese
+Hand schreibt das Chart-Merkmal nicht** — dann repariert der Term einen
+Messwert, den es nicht gibt.
+
+**Erst die Gradientenzerlegung, dann der Term.** Pro Term und pro Anker die
+Kraft am gefundenen Optimum. Bauregel: die Terme unabhängig rechnen und
+prüfen, dass ihre **Summe exakt dem echten Gradienten** entspricht — sonst
+driftet die Diagnostik von der Zielfunktion ab.
+
+### Wo der Term hingehört
+
+**Nicht dorthin, wo er gerade liegt.** Alle 245 gespeicherten Vorkommen kommen
+aus `tools/pairlab/chain.py::fit_word_chain`, das eine **eigene** Zielfunktion
+hat; `core/fit.py::_InstanceFit.objective` wird auf dem Ketten-Pfad nie
+aufgerufen. Der Ketten-Löser besitzt bereits einen Zweite-Differenz-Term —
+aber laut eigener Beschreibung „second differences of the **connector blocks
+only**". Genau in den Buchstabenblöcken, wo die 49 Anker stranden, fehlt die
+Bindung. Der Term in `core/fit.py` deckt denselben Mangel im
+Einzelbuchstaben-Pfad, ist aber nicht der, den das A/B messen will.
+
+Unterschied, der bleibt: der Verbinder-Term nimmt die zweite Differenz der
+ANKER (bogenlängen-normiert) — richtig für einen frei erfundenen Verbinder.
+Für einen Buchstaben wäre das der verworfene Biegeterm aus §7; dort muss es
+die zweite Differenz der VERSCHIEBUNGEN sein.
+
+### Das A/B — und die vier Stellen, an denen es sich schönrechnen lässt
+
+Nutzen: Gate-Ablehnungen unter 23, Sprungverhältnis fällt. Kosten (Abbruch):
+`cov_rmse_local` +2 %, `geo_rmse` +5 %, keine Konvergenz verloren. Genommen
+wird das **kleinste wirksame Gewicht**, nicht das bestaussehende.
+
+Vier Korrekturen daran, aus dem Gegenlesen:
+
+1. **`anchor_spike_ratio` ist fast dieselbe Statistik, die der Term
+   bestraft** — jedes Gewicht senkt sie per Konstruktion, auch wenn der Anker
+   weiter im Papier steht. Es braucht ein tintenbezogenes Kriterium, das
+   **nicht** in der Zielfunktion steht: Anteil der Anker mit `d(Anker)` über
+   Schwelle, vorher/nachher.
+2. **„Kleinstes wirksames Gewicht" auf denselben 245 ist Winner's Curse.**
+   Vorregistrierte Leiter plus Bestätigung auf einer Rückhaltemenge — die des
+   humanbench ist mit Runde 02 aufgebraucht, es braucht eine neue Teilung.
+3. **Die Kostenschranken sind Mittelwerte.** Gepaart je Vorkommen rechnen,
+   dazu Quantil-/Worst-Case-Schranken und die Zahl neu scheiternder
+   Vorkommen. „Unter 23 Ablehnungen" ist eine grobe Ganzzahl — 23 → 22 ist
+   Rauschen; es braucht McNemar über die Gate-Flips.
+4. **Kontamination.** Der Baseline-Arm wird im selben Lauf mit Gewicht 0 neu
+   gefittet (der Term ist inert, das garantiert Identität), nie gegen
+   archivierte Fits verglichen. `interp+snap` ist in **beiden** Armen aus. Die
+   Vorkommen, an denen die Diagnose entstand, werden ausgewiesen. Und geprüft
+   wird, ob ein „wirksames" Gewicht nur Konditionierung oder Stoppverhalten
+   verschiebt (nit-Verteilung beider Arme).
+
+### `interp+snap` — die Nachbearbeitung, und warum sie nicht die Antwort ist
+
+Gemessen über 245 Vorkommen: Gate 23 → 9 Ablehnungen (14 gerettet, 0 neu),
+Peak-Median der 37 Betroffenen 0,1414 → 0,0975 xh, Sprungverhältnis
+6,00 → 3,67, null Verschlechterungen, Detektor trifft in 16 von 17 Fällen den
+markierten Anker. Trotzdem **nicht übernehmen**: „auf die nächste Tinte
+schnappen" ist genau der Mechanismus des in §8 verworfenen Scharniers, nur
+nachgelagert — an Kreuzungen schnappt es auf den falschen Ast. Und ein
+reparierter Anker ist ein **erfundener Messwert**, der über `instances` in die
+Per-Anker-Mediane läuft; gegen den einen schlechten Anker hat die Pipeline mit
+`LAUFFORM_MIN_OCCURRENCES` bereits die richtige Verteidigung.
+
+Legitim nur unter drei Bedingungen: in `fit_meta` als Reparatur protokolliert
+(welche Anker, wie weit), das Gate urteilt über die **unreparierte** Geometrie
+(eine Reparatur ist eine Beinahe-Ablehnung, nie ein Bestehen), und im A/B in
+beiden Armen aus. Als **Diagnostik** ist sie wertvoll: hilft sie systematisch,
+ist das der Beleg für die Sampling-Blindheit oben — dann die Zielfunktion
+reparieren und den Patch wegwerfen.

@@ -12,6 +12,46 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **A neighbour-binding term in the fit objective — shipped inert, for a
+  pre-registered A/B.** The single anchor that runs into blank paper is not
+  stuck in a dead spot: measured at the 49 detected cases, the smoothed
+  distance field pulls at `|∇d|` 0.898 of full strength and none of them sits
+  on a ridge where the gradient would vanish. The anchor was driven there and
+  nothing held it back — it is displaced 0.208 template units from the chart
+  form while its own four neighbours sit at 0.047. The objective had no term
+  for that: geometry, width, coverage and an ABSOLUTE Tikhonov pull per
+  anchor, but nothing on the difference between neighbours.
+  `_second_difference_operator` prices exactly that — the second difference of
+  the DISPLACEMENTS, per pen-stroke, never spanning a lift. Which is neither
+  the bending term of §7 (second difference of the ANCHORS, so it prices the
+  real curvature a script lives on) nor the hinge of §8 (which prices
+  distance, and „a jump onto nearby ink is still a jump"): an affine
+  deformation of a stroke — what fitting a template to a hand IS — costs
+  exactly zero, a lone anchor leaving its neighbours costs quadratically.
+  `smooth_weight` defaults to **0.0**, so the objective is byte-identical
+  until the A/B fixes a weight; a test pins that. The analytic gradient is
+  checked against finite differences, because a wrong jacobian would not
+  raise — L-BFGS-B would just converge elsewhere and the A/B would measure the
+  bug instead of the idea. Corrected on a second reading: a **translation** is
+  exactly free, a stretch or shear is NOT — the residual is
+  `(A − I)·(second difference of the anchors)`, so it costs wherever the chart
+  form is curved, which is where a genuine slant adaptation lives. The first
+  test asserted „affine is free" by displacing the anchors linearly in the
+  INDEX, a weaker statement that hid the gap; both halves are pinned now, and
+  the docstring states the prior's real cost instead of overselling it.
+
+- **The three kinds of point are written down** (`vom-scan-zum-schreiben.md`
+  step 4, glossary): **anchors** are the spline's control points and the fit's
+  degrees of freedom (120), **samples** lie between them and are the ONLY
+  place the objective reads the ink (~180), **steps** are anchor-to-anchor
+  distances and what `anchor_spike_ratio` measures (119). An anchor therefore
+  acts only indirectly, through the one or two samples around it — measuring a
+  restoring force AT an anchor quantifies a force the optimiser never sees,
+  which is exactly the mistake that produced a wrong dead-spot diagnosis. Also
+  noted: `fitted_polyline_px` is the SAMPLE row, not the anchor row.
+
 ### Fixed
 
 - **The judgement sheet showed a letter without the pen path it was fitted
