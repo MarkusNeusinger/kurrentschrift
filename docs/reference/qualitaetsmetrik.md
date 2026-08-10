@@ -2542,3 +2542,143 @@ Legitim nur unter drei Bedingungen: in `fit_meta` als Reparatur protokolliert
 beiden Armen aus. Als **Diagnostik** ist sie wertvoll: hilft sie systematisch,
 ist das der Beleg für die Sampling-Blindheit oben — dann die Zielfunktion
 reparieren und den Patch wegwerfen.
+
+---
+
+## 12. Die Autopsie der `d`-Tafelform (`aug10`)
+
+§10 hatte den `B`-Befund („Bereich daneben") auf eine Glyphe eingegrenzt —
+`d` trägt ihn in 5 von 7 beurteilten Vorkommen, die übrigen 13 `B`-Fälle
+verteilen sich über zehn Glyphen — und daraus die Stufenzuordnung abgeleitet:
+eine Aussage über die **Vorlage**, nicht über die Zielfunktion. Der dort
+benannte nächste Schritt ist hier ausgeführt.
+
+### Was gemessen wurde
+
+Alle 18 `d`-Schirme beider Runden (14 verschiedene Identitäten aus
+`glyph`/`word`/`slot`, dazu vier Blindwiederholungen), die 14 gespeicherten
+`instances`-Zeilen dazu — sie decken sich 1 : 1, keine Lücke in beide
+Richtungen — und die Tafelzeile selbst. Die 5/7 aus §10 ist exakt
+reproduzierbar. Zwei Korrekturen an der Prosa dort: die 13 übrigen `B`-Fälle
+verteilen sich zwar über zehn Glyphen, sind aber nicht durchweg Einzelstücke
+(`n` 2/13, `o` 2/3, `v` 2/2).
+
+**Beide Blindwiederholungen eines `B`-Schirms kamen wieder als `B` zurück** —
+das Urteil ist an dieser Glyphe reproduzierbar und kein Etikettierungszufall.
+
+### Die Form der Abweichung: nicht starr, nicht affin
+
+Je Vorkommen die Abweichung der gefitteten gegen die Tafelform, nacheinander
+bereinigt um die beste Verschiebung (T), eine gleichförmige Skalierung (S) und
+eine volle affine Abbildung (A — Skalierung, Drehung, Scherung/Schräglage
+zusammen). Rest-RMS in xh:
+
+| Gruppe | roh | −T | −S | −A | T erklärt | A erklärt |
+|---|---|---|---|---|---|---|
+| alle 14 | 0,052 | 0,052 | 0,051 | 0,046 | **0,6 %** | 10,6 % |
+| `B`-Zeilen (8) | 0,059 | 0,059 | 0,058 | 0,053 | **0,7 %** | 10,3 % |
+| ohne `B` (6) | 0,042 | 0,042 | 0,041 | 0,038 | 0,2 % | 11,1 % |
+
+Die starre Verschiebung holt 0,6 % heraus — eine **unabhängige Bestätigung**
+der 0 % aus §10, gemessen gegen eine andere Referenz (Tafelform statt Tinte).
+Die volle affine Abbildung kommt auf 10,6 %: **rund 89 % der Abweichung sind
+nicht-affin**, und affin erklärt in den `B`-Zeilen (10,3 %) genauso viel wie in
+den sauberen (11,1 %) — es ist also nicht das, was sie unterscheidet. Es ist
+eine **örtliche Umformung**, und zwar in genau einem Stück Duktus.
+
+### Wo: Schlingenschluss und Auslauf, nicht die Schale
+
+Mittlerer Betrag der Verschiebung je Ankerbereich (xh, ein einziger Federzug,
+`stroke_starts == [0]`, kein Bereich überspringt ein Absetzen):
+
+| Anker | Duktus-Teil | alle | `B` | ohne `B` |
+|---|---|---|---|---|
+| 0–19 | Anstrich + Scheitel (Ecke @12) | 0,043 | 0,049 | 0,036 |
+| 20–49 | Abstrich + Schale | 0,031 | 0,033 | 0,032 |
+| 50–69 | Oberlänge | 0,032 | 0,034 | 0,028 |
+| 70–89 | Schlingenkopf | 0,044 | 0,053 | 0,033 |
+| 90–109 | Schlingenabstieg + Schluss | 0,047 | 0,053 | 0,037 |
+| **110–119** | **Auslauf** | **0,067** | **0,088** | 0,039 |
+
+**Die Schale ist unauffällig** (0,033 gegen 0,032 — in `B`- und sauberen
+Zeilen identisch). Die untere Hälfte der `d` stimmt; die obere ist zu breit.
+Im Vorzeichen gelesen: um Anker 84–95 liegt die Tinte **rechts** der
+Tafelform (die Schlinge baucht zu weit nach links aus), um 110–119 **links**
+(der Auslauf reicht zu weit nach rechts). Zwei Flanken, die nach innen ziehen —
+die Spannweite von Schlinge + Auslauf schrumpft von 1,103 auf ~0,838 Einheiten,
+**−24 %**.
+
+### Die nicht-zirkuläre Gegenprobe
+
+§9/§10 haben eine Ortsaussage schon einmal als zirkulär zurückgezogen (sie kam
+aus dem Maximum des eigenen Detektors). Hier ist die Gegenprobe unabhängig: die
+vom Menschen **freiwillig gesetzten Marker** wurden in den Bildrahmen
+zurückgerechnet, den `tools/humanbench/build.py` aufbaut, und auf den
+gezeichneten Linienzug projiziert. **8 der 10 Marker auf `B`-Schirmen liegen
+bei Anker 92–118** (Median 108, also Schlingenschluss). Das menschliche „was
+fällt zuerst auf" und das Maximum der Verschiebung treffen dieselbe Strecke —
+aus zwei unverbundenen Messungen. Die beiden Ausnahmen sind beide `der`, Erst-
+und Blindwiederholung unabhängig bei Anker 4–5: dort sitzt ein **zweiter,
+eigener Defekt am Anstrich**.
+
+### Der Auslauf hängt am Übergang — und das ist die eigentliche Aussage
+
+| Gruppe | n | trägt `B` | Auslauf-Bogen 110–119 gegen Tafel |
+|---|---|---|---|
+| `d` mit Folgebuchstabe | 10 | **8** (die 2 übrigen: `K` unbeurteilbar, `E`) | −17 % … −33 %, Endpunkt 0,12–0,26 xh zurückgezogen |
+| `d` am Wortende (`und…`) | 4 | **0** (G,G,G,W) | −0,3 % … +6,5 %, Endpunkt +0,004…+0,023 |
+
+**10 von 10 verbundenen `d` kürzen den Auslauf, 0 von 4 unverbundenen.** Die
+Tafelzelle trägt einen vollen isolierten Auslauf; im laufenden Wort gibt es den
+nicht, und der Fit kämpft an genau der Stelle, die der Mensch markiert hat,
+0,2 xh gegen die Vorlage. (`Soldaten` ist die eine Variante: dort wird der
+Auslauf nicht verkürzt, sondern nach unten gedreht, Δy −0,247.)
+
+Der Vergleich `geo_rmse_px` sagt dasselbe ohne jedes Urteil: verbundene `d`
+1,06–1,73 (Mittel 1,44), Wortende-`d` 0,68–1,08 (Mittel 0,86).
+
+### Warum die Autorenmetrik das nicht sieht
+
+Die Tafelzeile `d` hat `trace_meta["quality"]` **85,82 — Rang 46 von 62**
+bewerteten Variante-0-Zeilen, über dem Alphabet-Median 84,16. Abzüge:
+Glattheit 0,138 · Deckung 0,137 · Natürlichkeit 0,077 · Vertikalität 0,060 ·
+Ecke 0,006. **Die Nachzeichnung ist der Tafelzelle treu — die Tafelzelle ist
+nur nicht die Laufform.** Ein bildraum-treues Maß über die isolierte Zelle kann
+das nicht finden; es ist kein Fehler der Metrik, sondern ihre Zuständigkeit.
+
+### Was daraus folgt — und was ausdrücklich nicht
+
+* **`chart_ductus` für die Schlingenflanke.** Die zu weit links ausbauchende
+  Schlinge ist in allen 14 Zeilen da, auch in den vier sauberen
+  Wortende-`d` — also **nicht** übergangsbedingt. Das ist ein Fall für den
+  Einrichtungs-Wizard (menschliche Nachzeichnung, Ground Truth), nicht für Code.
+* **Der Auslauf ist KEIN „Laufform-Endpunkt nach links schieben".** Variante 100
+  trägt die Korrektur bereits — ihr Auslaufanker liegt 0,174 xh links des
+  Tafelankers, exakt der Median der 14 Vorkommen. Aber es ist ein Median über
+  **zwei systematisch verschiedene Grundgesamtheiten**: die vier
+  Wortende-`und` mit legitim vollem Auslauf ziehen ihn zur Mitte (allein über
+  die 10 verbundenen Zeilen wären es −0,196). Eine Laufform kann konstruktiv
+  nicht beides sein. Entweder braucht `d` eine **Variantentrennung**
+  (verbunden / terminal), oder der Auslauf gehört überhaupt nicht in die
+  Ankerkette des Buchstabens, sondern in den Übergangsgenerator. Das ist eine
+  Modellfrage und gehört vor jede Zahl entschieden.
+* **`core/fit.py` bleibt der falsche Ort.** §10s Stufenzuordnung hält der
+  Autopsie stand.
+
+### Grenzen dieses Befunds
+
+* **Die Aufteilung verbunden/terminal ist post hoc.** Sie ist eine
+  Nachschichtung derselben Etiketten, auf denen §10 gebaut ist, und die
+  Rückhaltemenge des humanbench ist mit Runde 02 aufgebraucht — als
+  *Urteils*aussage ist sie eine Hypothese, kein bestätigter Befund. Was
+  unabhängig davon steht, ist die **Geometrie**: „10 von 10 verbundenen kürzen
+  den Auslauf, 0 von 4 nicht" kommt aus den gespeicherten Fits und kennt die
+  Etiketten nicht.
+* **Der Schnitt Buchstabe/Verbinder ist nicht ausgeschlossen.** Die Anker
+  110–119 könnten teilweise davon herrühren, wo die Kette den Buchstaben vom
+  Verbinder trennt, statt von der Hand. Dagegen spricht, dass dort echte
+  Verbindungstinte im Fenster liegt (die Anker sind an Tinte gefittet, nicht
+  frei) und dass die Wortende-Gruppe ohne Schnitt und ohne Verbinder gar keine
+  Auslaufabweichung zeigt — beide Lesarten sagen das aber gleichermaßen vorher.
+  Trennen lässt sich das nur mit `tools/pairlab` an einem `d`-Übergang.
+* **n = 14.** Eine Glyphe, eine Hand, eine Vorlage.

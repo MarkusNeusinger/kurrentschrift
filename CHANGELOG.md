@@ -52,6 +52,30 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   column the numbers would invite exactly that conclusion. Measurement only:
   no DB, no API, no rendering, nothing in `core/`.
 
+- **The autopsy of the `d` chart form (`qualitaetsmetrik.md` §12).** §10 had
+  narrowed the human „Bereich daneben" verdict to one glyph and named the
+  autopsy as the next step; this is it, over all 18 `d` screens, the 14
+  stored occurrences they map onto 1:1, and the chart row itself. The
+  deviation is neither a translation (the best one removes 0.6 %, an
+  independent confirmation of §10's 0 % measured against the ink instead of
+  the chart form) nor affine (a full scale+rotation+shear map reaches 10.6 %,
+  and explains as much in the clean rows as in the flagged ones): ~89 % is
+  non-affine, and it sits in ONE stretch of ductus — the ascender loop's
+  closing run and the exit, anchors ≈ 90–119. The bowl is untouched. The
+  human's own markers, projected back onto the drawn line, land at anchors
+  92–118 in 8 of 10 flagged screens — the same stretch, from an unrelated
+  measurement.
+  The sharp part is geometric and label-free: **all 10 `d`s with a following
+  letter shorten the exit run (−17 % to −33 %), all 4 word-final ones leave
+  it alone.** So the exit defect is join-conditional, and the fix is NOT
+  „move the Laufform's exit left" — variant 100 already carries the median
+  correction, but as one averaged form over two populations that differ
+  systematically, which no single Laufform can be. That is a model question
+  (variant split, or the run-out belongs to the join generator) and is left
+  open rather than guessed. The chart row scores 85.82, rank 46 of 62: the
+  authoring metric is faithful to the chart cell, and the chart cell is not
+  the running form.
+
 - **A neighbour-binding term in the fit objective — shipped inert, for a
   pre-registered A/B.** The single anchor that runs into blank paper is not
   stuck in a dead spot: measured at the 49 detected cases, the smoothed

@@ -763,16 +763,16 @@ class _ChainProblem:
     def gradient_terms(self, params: np.ndarray) -> dict[str, np.ndarray]:
         """Per-term parameter gradient at `params`; `["total"]` is the objective's.
 
-        Six terms — `geo` (the smoothed distance field), `crop` (the
-        out-of-crop pull split off it), `width`, `coverage`, `overlap`,
-        `smooth` (connector curvature change) and `reg` (Tikhonov) — each
-        WEIGHTED as the objective weighs it, so the entries are comparable
-        forces rather than bare energies.
+        One entry per name in `GRADIENT_TERMS` — `geo` (the smoothed distance
+        field), `crop` (the out-of-crop pull split off it), `width`,
+        `coverage`, `overlap`, `smooth` (connector curvature change) and `reg`
+        (Tikhonov) — each WEIGHTED as the objective weighs it, so the entries
+        are comparable forces rather than bare energies.
 
         Every term is folded through the SAME `_fold_*`/`_pack` chain rule the
         objective uses, and the caller-facing check
-        (`gradient_decomposition`) asserts the six re-add to `["total"]`. That
-        is the point of the split: a decomposition that does not reproduce the
+        (`gradient_decomposition`) asserts they re-add to `["total"]`. That is
+        the point of the split: a decomposition that does not reproduce the
         gradient describes a different objective than the one the solver
         followed (`qualitaetsmetrik.md` §11).
 
@@ -1688,9 +1688,9 @@ def gradient_decomposition(problem: _ChainProblem, params: np.ndarray) -> dict[s
     own gradient (`total`) and the residual of `sum(terms) − total`.
 
     Raises `AssertionError` when the sum misses the gradient by more than
-    `GRADIENT_SUM_RTOL` — §11's build rule: „die Terme unabhängig rechnen und
-    prüfen, dass ihre Summe exakt dem echten Gradienten entspricht — sonst
-    driftet die Diagnostik von der Zielfunktion ab."
+    `GRADIENT_SUM_RTOL`. That is §11's build rule: compute the terms
+    independently and check that their sum reproduces the real gradient,
+    or the diagnostic drifts away from the objective it is meant to explain.
 
     An anchor's force is read as the negative descent direction: at a true
     optimum the per-term forces cancel, and WHICH ones cancel is the answer

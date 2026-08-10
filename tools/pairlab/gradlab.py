@@ -37,6 +37,7 @@ import argparse
 import csv
 import json
 import statistics
+from collections.abc import Sequence
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
@@ -46,6 +47,7 @@ from tools.laufform.harvest import _chainable_runs, _grid_fits
 from tools.pairlab.chain import (
     GRADIENT_TERMS,
     _bilinear_with_grad,
+    _ChainProblem,
     fit_word_chain,
     gradient_decomposition,
     sample_slice_of_anchor,
@@ -66,7 +68,7 @@ STRANDED_STEP_RATIO = 3.0
 MIN_STROKE_STEPS = 4
 
 
-def stranded_anchors(anchors: np.ndarray, stroke_starts) -> dict[int, tuple[float, float]]:
+def stranded_anchors(anchors: np.ndarray, stroke_starts: Sequence[int] | None) -> dict[int, tuple[float, float]]:
     """`{local anchor index: (prev step ratio, next step ratio)}` of the strandings.
 
     Per pen-stroke, never across a lift — a lift is the hand setting down
@@ -91,7 +93,7 @@ def stranded_anchors(anchors: np.ndarray, stroke_starts) -> dict[int, tuple[floa
     return out
 
 
-def field_at_samples(problem, params, lo: int, hi: int) -> dict[str, float]:
+def field_at_samples(problem: _ChainProblem, params: np.ndarray | None, lo: int, hi: int) -> dict[str, float | int]:
     """`d` and `|grad d|` at the samples the objective reads for one anchor.
 
     The smoothed field, because that is the one in the energy; the raw EDT
