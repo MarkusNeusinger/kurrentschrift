@@ -42,7 +42,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **D** — dconn §4 · Deckung §3 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · Duktus §1 · Duktus-Prior §1
 - **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2
 - **F** — Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · FID §6 · Fixture-Wurzel §4 · Frozen-Reference-Regel §4 · Fuge §1
-- **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Grundstrich/Haarstrich §1 · gut (`G`) §4
+- **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4
 - **H** — H0–H5 §5 · Hand §2 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **K** — Kettenfit §3 · Kill-Kriterium §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Kringel-Exit §2
@@ -748,6 +748,18 @@ die ein bis zwei Samples in seiner Umgebung; wer die Rückstellkraft am
 Ankerort misst, beziffert eine Kraft, die in der Rechnung nicht vorkommt —
 was einmal eine Fehldiagnose gekostet hat. Achtung auch beim Zeichnen:
 `fitted_polyline_px` ist die SAMPLE-Reihe, nicht die Ankerreihe.
+
+**Gradientenzerlegung** *(`chain.gradient_decomposition`, `tools/pairlab/gradlab.py`)*
+— die Diagnose, die vor jedem neuen Fit-Term steht: die Kraft **je Term und
+je Anker** am gefundenen Optimum. Ein Optimum ist ein Punkt, an dem sich die
+Kräfte aufheben; welcher Term einen Defekt festhält, ist damit eine
+**Messfrage**, keine Vermutung. Bauregel — und der Grund für den Namen:
+die Terme werden einzeln gerechnet und ihre **Summe gegen den echten
+Gradienten geprüft** (`GRADIENT_SUM_RTOL`), sonst beschreibt die Diagnostik
+eine andere Zielfunktion als die, der der Löser gefolgt ist. Gelesen wird
+immer gegen eine **Kontrollpopulation** (dieselben Terme an den unauffälligen
+Ankern derselben Lösung): ein Term, der am Defekt genauso stark zieht wie
+überall, erklärt ihn nicht. → qualitaetsmetrik.md §11
 *Technisch:* `core/fit.py::_sampling_operator`,
 `core/template.py::build_sample_plan` → vom-scan-zum-schreiben.md Schritt 4
 

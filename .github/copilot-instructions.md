@@ -1093,7 +1093,30 @@ impl-generate pipelines. Conventions:
   the whole iteration budget while the letters never moved.
   `chain.regularise_connector_anchors` re-discretises such a connector to
   the anchor count its chord can carry — same shape, same endpoints,
-  nothing above `CHAIN_CONNECTOR_MIN_SPAN_UNITS` touched.
+  nothing above `CHAIN_CONNECTOR_MIN_SPAN_UNITS` touched. Its diagnostic
+  sibling `tools/pairlab/gradlab.py` (no viz extra) answers the question
+  that comes BEFORE any new fit term: at the found optimum, which term
+  holds a stranded anchor where it is? An optimum is a point where the
+  forces cancel, so this is a measurement, not a guess —
+  `chain._ChainProblem.gradient_terms` splits the objective into its
+  seven weighted forces (`geo` · `crop` · `width` · `coverage` ·
+  `overlap` · `smooth` · `reg`) per free anchor, all folded through the
+  SAME chain rule and packing the objective uses, and
+  `chain.gradient_decomposition` re-adds the split and RAISES unless it
+  reproduces the gradient L-BFGS-B actually followed (measured 2.7e-14
+  relative) — a decomposition that does not is diagnosing a different
+  objective. `chain.sample_slice_of_anchor` supplies the reading at the
+  samples between an anchor's two neighbours, i.e. where the objective
+  reads the field at all (never at an anchor;
+  `vom-scan-zum-schreiben.md` Schritt 4). The sweep re-runs the
+  harvest's own solves (`fit_word_chain(keep_solve=True)`, same
+  cases/windows), flags strandings by the shape the author's markings
+  have (both neighbouring steps ≥ 3× the median step of their own
+  pen-stroke, never across a lift) and carries every other letter anchor
+  as a CONTROL population — a term pulling as hard at a healthy anchor
+  as at a stranded one explains nothing. Measurement only: no DB, no
+  API, no `core/`, no rendering; method and criteria in
+  `docs/reference/qualitaetsmetrik.md` §11.
   `tools/wordbench/fetch_fixtures.py` is the read-only API twin of
   `export_fixtures.py` for sessions without Cloud SQL egress —
   byte-compatible fixture roots over HTTPS, GETs only, `--verify`

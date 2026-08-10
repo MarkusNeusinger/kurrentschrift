@@ -39,6 +39,7 @@ from core.fit import (
 )
 from core.shaping import GlyphSlot
 from core.template import build_sample_plan
+from tools.pairlab import chain as chain_mod
 from tools.pairlab.analyze import FIT_DX_UNITS, FIT_DY_UNITS, TRACE_WINDOW_MARGIN, _generate_connector
 from tools.pairlab.chain import (
     CHAIN_CONNECTOR_ANCHOR_SPACING_UNITS,
@@ -204,6 +205,96 @@ def test_gradient_is_consistent_at_the_composed_start() -> None:
         step[i] = eps
         fd = (problem.objective(problem.x0 + step)[0] - problem.objective(problem.x0 - step)[0]) / (2.0 * eps)
         assert abs(fd - grad[i]) < 1e-5 * max(1.0, abs(fd))
+
+
+# ------------------------------------------------------- gradient decomposition
+
+
+def test_decomposition_sums_to_the_objective_gradient() -> None:
+    """§11's build rule: the split must re-add to the gradient the solver used.
+
+    Not a formality — a decomposition that packs or folds differently from the
+    objective diagnoses a different problem, and the whole point of the
+    exercise is to name the force that balances at the found optimum.
+    """
+    problem = _toy_problem(smooth_weight=1e-3)
+    rng = np.random.default_rng(321)
+    for params in (problem.x0, rng.uniform(-0.05, 0.05, size=len(problem.x0))):
+        report = chain_mod.gradient_decomposition(problem, params)  # raises on mismatch
+        assert report["residual_rel"] < 1e-12
+        assert set(report["terms"]) == set(chain_mod.GRADIENT_TERMS)
+        head = 2 + 2 * problem.n_blocks
+        assert report["per_anchor"]["total"].shape == problem.anchors_free.shape
+        assert np.allclose(report["per_anchor"]["geo"], report["terms"]["geo"][head:].reshape(-1, 2))
+
+
+def test_each_term_is_the_whole_gradient_when_it_is_the_only_one() -> None:
+    """Isolation check: with every other weight at 0 the objective IS that term.
+
+    Stronger than the sum check, which a consistent mislabelling would pass.
+    """
+    off = {"width_weight": 0.0, "coverage_weight": 0.0, "overlap_weight": 0.0, "lambda_reg": 0.0, "smooth_weight": 0.0}
+    weights = {
+        "width": {**off, "width_weight": 1.0},
+        "coverage": {**off, "coverage_weight": 1.0},
+        "reg": {**off, "lambda_reg": 1.0},
+        "smooth": {**off, "smooth_weight": 1.0},
+    }
+    rng = np.random.default_rng(11)
+    for name, kwargs in weights.items():
+        problem = _toy_problem(**kwargs)
+        params = rng.uniform(-0.05, 0.05, size=len(problem.x0))
+        terms = problem.gradient_terms(params)
+        # `geo`+`crop` are unweighted and always on, so subtract them out.
+        rest = terms["total"] - terms["geo"] - terms["crop"]
+        assert np.allclose(terms[name], rest, atol=1e-14), name
+        for other in set(chain_mod.GRADIENT_TERMS) - {name, "geo", "crop"}:
+            assert np.allclose(terms[other], 0.0), f"{other} alive at weight 0"
+
+
+def test_the_tikhonov_pull_never_reaches_the_placement_parameters() -> None:
+    """Placement is unregularised — so `reg` must be zero on shift and blocks."""
+    problem = _toy_problem()
+    params = np.random.default_rng(7).uniform(-0.05, 0.05, size=len(problem.x0))
+    head = 2 + 2 * problem.n_blocks
+    assert np.allclose(problem.gradient_terms(params)["reg"][:head], 0.0)
+
+
+def test_the_decomposition_raises_when_it_stops_matching() -> None:
+    """The guard must actually fire — otherwise it is decoration."""
+    problem = _toy_problem()
+
+    class _Drifted:
+        def __init__(self, inner):
+            self._inner = inner
+            self.n_blocks = inner.n_blocks
+
+        def gradient_terms(self, params):
+            terms = dict(self._inner.gradient_terms(params))
+            terms["geo"] = terms["geo"] * 1.01  # a 1 % mislabelled force
+            return terms
+
+        def energy_terms(self, params):
+            return self._inner.energy_terms(params)
+
+    with pytest.raises(AssertionError, match="misses the objective"):
+        chain_mod.gradient_decomposition(_Drifted(problem), problem.x0)
+
+
+def test_the_anchor_sample_window_is_where_the_field_is_actually_read() -> None:
+    """`sample_slice_of_anchor` must return a real, ordered sample window.
+
+    The objective reads the ink only at samples; a force „at the anchor" is a
+    force the optimiser never feels (`vom-scan-zum-schreiben.md` Schritt 4).
+    """
+    problem = _toy_problem()
+    n_s = problem.n_samples or len(problem.to_pixels(problem.x0)[0])
+    seen = 0
+    for i in range(len(problem.anchors_free)):
+        lo, hi = chain_mod.sample_slice_of_anchor(problem, i)
+        assert 0 <= lo <= hi <= n_s
+        seen += hi > lo
+    assert seen == len(problem.anchors_free)  # every free anchor owns samples
 
 
 # ---------------------------------------------------------------- the weights
