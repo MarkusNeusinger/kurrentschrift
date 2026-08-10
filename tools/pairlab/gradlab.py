@@ -37,13 +37,17 @@ import argparse
 import csv
 import json
 import statistics
-from collections.abc import Sequence
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import numpy as np
 
 from tools.laufform.harvest import _chainable_runs, _grid_fits
+
+# The detector lives in `tools.pairlab.anchors` so the harvest's repair, the
+# A/B and this diagnosis can never drift apart; re-exported here because this
+# module is where its consumers historically found it.
+from tools.pairlab.anchors import MIN_STROKE_STEPS, STRANDED_STEP_RATIO, stranded_anchors  # noqa: E402  (re-export)
 from tools.pairlab.chain import (
     GRADIENT_TERMS,
     _bilinear_with_grad,
@@ -56,41 +60,7 @@ from tools.wordlab.cases import iter_fixture_word_cases
 from tools.wordlab.derive import derive_word
 
 
-# An anchor counts as STRANDED when BOTH of its steps are at least this many
-# times the median step of its own pen-stroke. The statistic and the per-stroke
-# discipline are `tools.laufform.harvest.anchor_spike_ratio`'s; the ratio is the
-# one §11 reports the marked outliers against ("17 of 22 sit on an anchor whose
-# BOTH neighbouring steps are >= 3x the median of its pen-stroke"). Deliberately
-# NOT the gate's own 8.0: the gate asks "is this occurrence unusable", this asks
-# "is this the shape of defect the author marked".
-STRANDED_STEP_RATIO = 3.0
-# Below this many steps a stroke has no meaningful median to compare against.
-MIN_STROKE_STEPS = 4
-
-
-def stranded_anchors(anchors: np.ndarray, stroke_starts: Sequence[int] | None) -> dict[int, tuple[float, float]]:
-    """`{local anchor index: (prev step ratio, next step ratio)}` of the strandings.
-
-    Per pen-stroke, never across a lift — a lift is the hand setting down
-    somewhere else, and pricing it would flag every multi-stroke glyph for
-    writing its own ductus.
-    """
-    k = len(anchors)
-    bounds = sorted({0, *(int(s) for s in (stroke_starts or []) if 0 < int(s) < k), k})
-    out: dict[int, tuple[float, float]] = {}
-    for a, b in zip(bounds[:-1], bounds[1:], strict=True):
-        seg = anchors[a:b]
-        if len(seg) < MIN_STROKE_STEPS + 1:
-            continue
-        steps = np.hypot(*np.diff(seg, axis=0).T)
-        med = float(np.median(steps))
-        if not med > 0.0:
-            continue
-        for i in range(1, len(seg) - 1):
-            r_prev, r_next = float(steps[i - 1] / med), float(steps[i] / med)
-            if r_prev >= STRANDED_STEP_RATIO and r_next >= STRANDED_STEP_RATIO:
-                out[a + i] = (r_prev, r_next)
-    return out
+__all__ = ["MIN_STROKE_STEPS", "STRANDED_STEP_RATIO", "stranded_anchors"]
 
 
 def field_at_samples(problem: _ChainProblem, params: np.ndarray | None, lo: int, hi: int) -> dict[str, float | int]:

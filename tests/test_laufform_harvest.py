@@ -338,6 +338,9 @@ def test_the_slot_path_rejects_an_anchor_in_blank_paper(monkeypatch: pytest.Monk
     assert out.occurrences == []
     assert out.fits_by_key == {}
     assert out.word_record is None
+    # over the gate the occurrence is REJECTED exactly as before the repair
+    # existed — a rejected fit is never repaired into acceptance
+    assert all("n_repaired" not in r for r in out.diag_rows)
 
 
 def test_a_clean_slot_fit_reports_its_spike_ratio(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -350,6 +353,48 @@ def test_a_clean_slot_fit_reports_its_spike_ratio(monkeypatch: pytest.MonkeyPatc
     assert [r["gate"] for r in out.diag_rows] == ["ok", "ok"]
     assert all(1.0 <= r["anchor_spike_ratio"] <= MAX_ANCHOR_SPIKE_RATIO for r in out.diag_rows)
     assert len(out.occurrences) == 2
+    # no stranding → nothing repaired: the stored anchors are the fitted ones
+    # byte for byte (`GOLDEN_SLOT_PATH` pins the exact digits) and absence of
+    # the measurements key is the signal.
+    assert [r["n_repaired"] for r in out.diag_rows] == [0, 0]
+    assert all("repaired_anchors" not in o["measurements"] for o in out.occurrences)
+
+
+def test_the_slot_path_repairs_a_sub_gate_spike(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A needle between the repair detector (3x) and the gate (8x): the
+    occurrence is ACCEPTED — the gate judged the unrepaired geometry, and the
+    stored spike ratio stays that number — while what it contributes onward
+    (stored anchors, medians) carries the interpolated anchor, logged. The
+    stored word TRACE keeps showing what the fit actually did."""
+    case, result = _synthetic_word([(0.06, 0.0), (-0.04, 0.03)])
+    monkeypatch.setattr(harvest_mod, "derive_word", lambda c: result)
+    real_fit = harvest_mod.fit_template_to_instance
+
+    def with_a_sub_gate_needle(*args, **kwargs):
+        fr = real_fit(*args, **kwargs)
+        fr.anchors = fr.anchors.copy()
+        fr.anchors[2, 1] += 1.4  # ~4.4x the median step: over 3.0, under the 8.0 gate
+        return fr
+
+    monkeypatch.setattr(harvest_mod, "fit_template_to_instance", with_a_sub_gate_needle)
+    out = harvest_case(case, HarvestOptions(path="slot", rmse_max=3.0))
+
+    assert [r["gate"] for r in out.diag_rows] == ["ok", "ok"]
+    assert [r["n_repaired"] for r in out.diag_rows] == [1, 1]
+    # the stored spike ratio is the UNREPAIRED number
+    assert all(3.0 < r["anchor_spike_ratio"] <= MAX_ANCHOR_SPIKE_RATIO for r in out.diag_rows)
+    for occ in out.occurrences:
+        assert occ["measurements"]["repaired_anchors"] == [2]
+        stored = np.asarray(occ["anchors"], dtype=float)
+        # the repaired anchor sits on the chord between its unflagged
+        # neighbours (centering is a translation, which preserves the relation)
+        assert stored[2] == pytest.approx(0.5 * (stored[1] + stored[3]), abs=2e-4)
+    # the medians read the repaired arrays, not the needle
+    assert all(fitted[2, 1] < 1.0 for fitted in out.fits_by_key["a"])
+    # …but the word TRACE stays UNREPAIRED: the needle is still visible in the
+    # inspection layer (template body tops out near y = 0.7 word units)
+    assert len(out.word_record["strokes"]) == 2
+    assert all(max(p[1] for p in s) > 1.5 for s in out.word_record["strokes"])
 
 
 # --------------------------------------------------------------- run cutting
@@ -523,7 +568,12 @@ def _segment(kind: str, *, slot=None, key=None, converged_local=True, geo_rmse_p
 
 
 def _fake_chain_fit(
-    case, *, bad_connector: bool = False, bad_letter: int | None = None, needle_letter: int | None = None
+    case,
+    *,
+    bad_connector: bool = False,
+    bad_letter: int | None = None,
+    needle_letter: int | None = None,
+    sub_needle_letter: int | None = None,
 ) -> ChainWordFit:
     """A three-letter chain with hand-built geometry — the only way to put a
     KNOWN degenerate connector in front of the gate cascade."""
@@ -544,6 +594,11 @@ def _fake_chain_fit(
             # „Anker im leeren Papier": one anchor out of the stroke and back.
             fitted = fitted.copy()
             fitted[2] = fitted[2] + np.array([0.0, 6.0])
+        if sub_needle_letter == i:
+            # A SUB-gate needle (~4.4x the median step): over the repair
+            # detector's 3.0, under the gate's `MAX_ANCHOR_SPIKE_RATIO`.
+            fitted = fitted.copy()
+            fitted[2] = fitted[2] + np.array([0.0, 1.4])
         segments.append(
             _segment("letter", slot=i, key="a", anchors=fitted, points=bodies[i], converged_local=bad_letter != i)
         )
@@ -589,6 +644,9 @@ def test_chain_path_accepts_every_clean_letter(monkeypatch: pytest.MonkeyPatch) 
     assert out.word_record["measurements"]["traced_slots"] == [0, 1, 2]
     assert out.word_record["measurements"]["fitted_slots"] == [0, 1, 2]
     assert all(o["measurements"]["fit_path"] == "chain" for o in out.occurrences)
+    # no stranding → nothing repaired, and absence of the key is the signal
+    assert [r["n_repaired"] for r in out.diag_rows] == [0, 0, 0]
+    assert all("repaired_anchors" not in o["measurements"] for o in out.occurrences)
 
 
 def test_the_chain_path_rejects_an_anchor_in_blank_paper(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -615,6 +673,36 @@ def test_the_chain_path_rejects_an_anchor_in_blank_paper(monkeypatch: pytest.Mon
     ratios = [r["anchor_spike_ratio"] for r in out.diag_rows]
     assert ratios[1] > harvest_mod.MAX_ANCHOR_SPIKE_RATIO
     assert all(r <= harvest_mod.MAX_ANCHOR_SPIKE_RATIO for r in (ratios[0], ratios[2]))
+    # …and over the gate nothing is repaired: rejection exactly as before —
+    # a rejected fit is never repaired into acceptance.
+    assert [r["n_repaired"] for r in out.diag_rows] == [0, 0, 0]
+    assert all("repaired_anchors" not in o["measurements"] for o in out.occurrences)
+
+
+def test_the_chain_path_repairs_a_sub_gate_spike(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The production path's half of the same rule: a sub-gate needle passes
+    the gate (which judged the UNREPAIRED geometry) and is then interpolated
+    over before the occurrence and the medians see it — logged in
+    `measurements` and the diag row, absent everywhere untouched."""
+    out = _run_chain(monkeypatch, sub_needle_letter=1)
+
+    assert [r["gate"] for r in out.diag_rows] == ["ok", "ok", "ok"]
+    assert [r["n_repaired"] for r in out.diag_rows] == [0, 1, 0]
+    # the stored spike ratio is the UNREPAIRED number
+    ratios = [r["anchor_spike_ratio"] for r in out.diag_rows]
+    assert 3.0 < ratios[1] <= MAX_ANCHOR_SPIKE_RATIO
+
+    occ = {o["measurements"]["slot"]: o for o in out.occurrences}
+    assert occ[1]["measurements"]["repaired_anchors"] == [2]
+    assert "repaired_anchors" not in occ[0]["measurements"]
+    assert "repaired_anchors" not in occ[2]["measurements"]
+    stored = np.asarray(occ[1]["anchors"], dtype=float)
+    # the repaired anchor sits on the chord between its unflagged neighbours
+    # (centering is a translation, which preserves the relation)
+    assert stored[2] == pytest.approx(0.5 * (stored[1] + stored[3]), abs=2e-4)
+    # the medians read the repaired array, not the needle (template body tops
+    # out near y = 0.7; the needle would sit near 2.1)
+    assert out.fits_by_key["a"][1][2, 1] < 1.0
 
 
 def test_a_degenerate_connector_rejects_both_adjacent_letters(monkeypatch: pytest.MonkeyPatch) -> None:
