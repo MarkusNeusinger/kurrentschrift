@@ -85,6 +85,25 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   and slim key under `data/humanbench/runde-02-*`, `d_end` in the glossary as
   a rejected metric.
 
+- **The location question §9 left open is settled — against the hypothesis,
+  and that closes the last repair path for the outlier class.** §9 withdrew
+  „22 of 23 gate rejections sit at corner anchors" as circular (it came from
+  the maximum of our own detector) and required a non-circular analysis before
+  anything is built there. The 35 human markers of the hold-out round, scored
+  against the landmarks the template itself carries, look like a hit: 42.9 %
+  in a landmark neighbourhood against 23.0 % by chance, p = 0.007. The control
+  removes it entirely — drop the chain ENDS from the landmark set, where `E`
+  („kink only at the edge") sits by definition, and 12.9 % remain against
+  18.4 % expected, p = 0.85. The only location structure in the markers is a
+  tautology; nothing concentrates at corner anchors or internal pen lifts. The
+  strong form of the §8 conjecture is therefore no longer merely unsupported
+  but measured away at any size that would have justified an intervention, so
+  the bending term, the hinge and now the corner-anchor sample support are all
+  out, and the harvest gate stays a fallback that discards rather than repairs.
+  A fourth attempt needs a new diagnosis, not a new objective term. `W`
+  („wobble") is a different matter and remains untried: both rejected terms
+  aimed at the single jump, not at the unsteady line.
+
 - **`tools/dbsnapshot` — an archive of the hand-made data, and a restore drill
   that proves it works.** Two tables in the database cannot be recomputed from
   anything: `bboxes` (the crop, eraser, ink and donor work) and

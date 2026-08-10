@@ -2359,6 +2359,56 @@ ist die Autopsie der `d`-Tafelform gegen ihre fünf bemängelten Vorkommen — u
 erst wenn die `d` sauber ist, sagt der dünne Rest, ob es überhaupt ein
 glyphenübergreifendes `B`-Muster gibt.
 
+### Die nicht-zirkuläre Ortsanalyse — und was sie dem Ausreißer-Fix nimmt
+
+§9 hat die Aussage „22 von 23 Gate-Ablehnungen sitzen an Eckankern" als
+zirkulär zurückgezogen (sie kam aus dem Maximum des eigenen Detektors) und
+festgelegt: **wer dort etwas baut, braucht vorher eine nicht-zirkuläre
+Ortsanalyse.** Runde 02 liefert die Daten dafür — 35 vom Menschen gesetzte
+Marker gegen die Landmarken, die die Vorlage selbst führt
+(`trace_meta.corner_anchors` und `stroke_starts`, Nachbarschaft ±3 Anker wie
+`analyse.py::EDGE_ANCHORS`). Nullhypothese ist die Trefferquote, die reines
+Zufallsklicken bei genau dieser Nachbarschaftsgröße erzeugt.
+
+| Landmarken-Satz | Gruppe | n | am Landmark | Zufall | p |
+|---|---|---|---|---|---|
+| **mit** Kettenenden | alle Marker | 35 | 42,9 % | 23,0 % | **0,007** |
+| mit Kettenenden | ohne `E`-Bilder | 28 | 32,1 % | 22,5 % | 0,158 |
+| **ohne** Kettenenden | alle Marker | 31 | 12,9 % | 18,4 % | 0,848 |
+| ohne Kettenenden | ohne `E`-Bilder | 25 | 16,0 % | 17,7 % | 0,669 |
+| ohne Kettenenden | nur `A` | 4 | 50,0 % | 25,2 % | 0,265 |
+
+Zeile 1 sieht nach Befund aus und ist keiner. Nimmt man die **Kettenenden**
+aus dem Landmarken-Satz — dort sitzt `E` definitionsgemäß, „Knick nur am
+Rand" —, verschwindet der Effekt vollständig und liegt sogar unter dem
+Zufall. Es bleibt also: **die einzige Ortsstruktur in den Markern dieser Runde
+ist `E` am Ende, und das ist eine Tautologie.** An Eckankern und inneren
+Absetzern konzentriert sich nichts.
+
+Damit ist die starke Fassung der §8-Vermutung — 96 % der Ablehnungen an einer
+unterbestimmten Ankerklasse — **nicht mehr bloß unbelegt, sondern gemessen
+widerlegt**, jedenfalls in jeder Größenordnung, die einen Eingriff getragen
+hätte; ein schwacher Resteffekt ist bei n = 31 nicht auszuschließen. Der
+letzte offene Reparaturweg für die Ausreißer, den §7 und §8 nicht schon
+ausgeschlossen hatten, ist damit zu. Die Bilanz für `A` steht jetzt so da:
+
+* **Biegeterm** (§7) — verworfen, bepreiste globale Krümmung statt der
+  Unstetigkeit.
+* **Scharnier** (§8) — verworfen, bepreiste den Abstand statt der
+  Unstetigkeit, kostete Deckung und fand nebenbei einen echten Ableitungsfehler
+  am Cropsrand.
+* **Sample-Stützung der Eckanker-Klasse** — die Diagnose dahinter hält der
+  nicht-zirkulären Prüfung nicht stand. **Nicht bauen.**
+* **Das Gate** bleibt, was es ist: eine Rückfalllinie, die aussortiert statt
+  zu reparieren.
+
+Ein vierter Ansatz braucht eine neue Diagnose, nicht eine neue Zielfunktion —
+und die Marker dieser Runde liefern sie nicht. Für `W` („Gewackel") ist
+dagegen noch gar nichts versucht worden: beide verworfenen Terme zielten auf
+den einzelnen Sprung, nicht auf die unruhige Linie, und die Kennzahlen sehen
+`W` (`peak` 0,88 für `W`/`B` gegen `G`). Das ist die nächste offene Frage am
+Fit — nach der `d`-Vorlage, die billiger und sicherer ist.
+
 ### Grenzen dieser Runde
 
 * **Die Reserve ist aufgebraucht.** Jede weitere auf diesen Labels entwickelte
