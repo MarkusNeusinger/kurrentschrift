@@ -14,6 +14,101 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Per-term, per-anchor gradient decomposition of the chain fit — the
+  diagnosis that has to come before the term.** An optimum is a point where
+  the forces cancel, so „what holds the stranded anchor out there" is a
+  measurement, not a guess, and until it is made a new term is a hopeful
+  edit. `_ChainProblem.gradient_terms` splits the objective into its seven
+  weighted forces (`geo` · `crop` · `width` · `coverage` · `overlap` ·
+  `smooth` · `reg`) and reads each one per free anchor. `crop` is split off
+  `e_geo` because the out-of-crop pull is a different statement about a
+  sample than the distance field is.
+  The build rule of the method is wired in as an assertion rather than
+  trusted: every term is folded through the SAME chain rule and the SAME
+  parameter packing the objective uses (`_fold_samples`/`_fold_plan`/`_pack`,
+  now one code path instead of two), and `gradient_decomposition` re-adds the
+  split and raises unless it reproduces the gradient L-BFGS-B actually
+  followed. Measured on a real solve, the split misses it by 2.7e-14
+  relative. A decomposition that does not reproduce the gradient describes a
+  different objective, which is precisely the failure mode that would make
+  the diagnostic drift away from the thing it diagnoses.
+  `sample_slice_of_anchor` supplies the reading the earlier measurement got
+  wrong: the field at the SAMPLES between an anchor's two neighbours. The
+  objective never queries an anchor's own position, so a restoring force
+  measured there quantifies something the optimiser cannot feel.
+  `fit_word_chain(keep_solve=True)` hands back the solved problem and its
+  argmin — off by default, because the problem holds the whole field stack.
+
+- **`tools/pairlab/gradlab.py` — the sweep that runs it over the harvest's own
+  solves.** Same cases, same grid windows, same chain fits as
+  `tools.laufform.harvest`, so the optimum it inspects is the optimum the
+  stored occurrences came from. Per anchor it reports every term's force, the
+  field at that anchor's sample window, and its displacement against its
+  neighbours; the stranding detector is the shape the author's markings
+  actually have (both neighbouring steps at least 3x the median step of their
+  own pen-stroke, never across a lift). Every other letter anchor of the same
+  solves is carried as a CONTROL population — a term that pulls as hard at a
+  healthy anchor as at a stranded one explains nothing, and without that
+  column the numbers would invite exactly that conclusion. Measurement only:
+  no DB, no API, no rendering, nothing in `core/`.
+
+- **The answer the decomposition was built for, and the term moved to where
+  the defect lives (`qualitaetsmetrik.md` §11a).** 96 chain solves, 41 280
+  letter anchors, at the optima the stored occurrences came from; 128 stranded
+  anchors in 82 of 344 occurrences across 27 glyphs, so this is a property of
+  the model and not of a glyph. The sum check held everywhere (worst 1.7e-13).
+  **The coverage term is the driver**: 32.4× its control strength at a
+  stranded anchor, aligned with the displacement to a cosine of −0.996, and
+  decoupled from the distance field (`coverage` vs `geo` 0.912 → 0.554). Two
+  of §11's four candidates die here. The width term is *weaker* at stranded
+  anchors (0.9×). And the Tikhonov pull, which looked like a finding at 8.5×,
+  is force/displacement 4.167e-3 stranded against 4.166e-3 control — the same
+  spring stretched further, identical to four figures. Without the control
+  population that number would have been read as an explanation.
+  §11 had asked which counter-force *holds* the anchor out; measured, the
+  question is the wrong way round. Nothing holds it — the data terms push it
+  there and Tikhonov is the only restraint. The field reading at the samples
+  (the one §11 marked as owed, because no anchor is ever queried) says why
+  that is cheap: 0.1849 xh of anchor travel — ~5.7 px — costs 0.6 px of extra
+  distance to ink at the samples. The spline absorbs the excursion.
+  `CHAIN_LETTER_BIND_WEIGHT` now carries the term on the chain path's LETTER
+  blocks, in the displacement form: second difference of the per-anchor
+  deltas inside a letter's own pen-stroke, never across a lift, never across
+  a segment, never on the anchors (which would be §7's rejected bending
+  term). Default 0.0 and verified byte-identical on a real solve — every
+  number of the pre-term run reproduces exactly — so the A/B's baseline arm
+  is an identity rather than a re-derivation.
+  Stated in the same place rather than left implicit: this term is a
+  stiffness answer to an attribution problem. The measurement says the driver
+  is the coverage term's blindness to which segment owns a skeleton point —
+  the same blindness the overlap term was introduced for, one level down. The
+  A/B measures a brake, not a cause, and a passing criterion must not be read
+  as „the stranding is understood".
+
+- **The autopsy of the `d` chart form (`qualitaetsmetrik.md` §12).** §10 had
+  narrowed the human „Bereich daneben" verdict to one glyph and named the
+  autopsy as the next step; this is it, over all 18 `d` screens, the 14
+  stored occurrences they map onto 1:1, and the chart row itself. The
+  deviation is neither a translation (the best one removes 0.6 %, an
+  independent confirmation of §10's 0 % measured against the ink instead of
+  the chart form) nor affine (a full scale+rotation+shear map reaches 10.6 %,
+  and explains as much in the clean rows as in the flagged ones): ~89 % is
+  non-affine, and it sits in ONE stretch of ductus — the ascender loop's
+  closing run and the exit, anchors ≈ 90–119. The bowl is untouched. The
+  human's own markers, projected back onto the drawn line, land at anchors
+  92–118 in 8 of 10 flagged screens — the same stretch, from an unrelated
+  measurement.
+  The sharp part is geometric and label-free: **all 10 `d`s with a following
+  letter shorten the exit run (−17 % to −33 %), all 4 word-final ones leave
+  it alone.** So the exit defect is join-conditional, and the fix is NOT
+  „move the Laufform's exit left" — variant 100 already carries the median
+  correction, but as one averaged form over two populations that differ
+  systematically, which no single Laufform can be. That is a model question
+  (variant split, or the run-out belongs to the join generator) and is left
+  open rather than guessed. The chart row scores 85.82, rank 46 of 62: the
+  authoring metric is faithful to the chart cell, and the chart cell is not
+  the running form.
+
 - **A neighbour-binding term in the fit objective — shipped inert, for a
   pre-registered A/B.** The single anchor that runs into blank paper is not
   stuck in a dead spot: measured at the 49 detected cases, the smoothed

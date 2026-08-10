@@ -40,6 +40,7 @@ import os
 import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
+from typing import Any
 
 import numpy as np
 from scipy.ndimage import distance_transform_edt, gaussian_filter
@@ -101,6 +102,28 @@ CHAIN_COVERAGE_CAP_UNITS = 0.30
 # stated systematic effect is a slightly rougher connector (M3 dconn median
 # 0.197 xh vs. 0.178 at 1e-3).
 CHAIN_CONNECTOR_SMOOTH_WEIGHT = 1e-5
+# --- neighbour binding on the LETTER blocks (the §11 experiment) -------------
+# Weight of the second difference of the per-anchor DISPLACEMENTS inside a
+# letter's own pen-stroke. `core.fit.DEFAULT_SMOOTH_WEIGHT` is the same term on
+# the single-letter path; this is the twin on the path all 245 stored
+# occurrences actually came from, which `qualitaetsmetrik.md` §11 identified as
+# the place the term has to live.
+#
+# The gradient decomposition that §11 required before building it (§11a, 96
+# solves / 41 280 anchors) says what this term will push against: at a stranded
+# anchor the COVERAGE force is 32x its normal strength and aligned with the
+# displacement to a cosine of −0.996, while the Tikhonov pull is the only
+# restraint and is — measured — nothing but the same spring stretched further
+# (force/displacement 4.167e-3 stranded vs. 4.166e-3 control). So this is a
+# second restraint against a coverage-driven excursion. Read §11a before
+# raising it: the same measurement says the DRIVER is the coverage term's
+# blindness to which segment owns a skeleton point, and a stiffness term makes
+# that pull expensive rather than wrong.
+#
+# DEFAULT 0.0 = the objective is byte-identical to its absence, which is what
+# lets the A/B's baseline arm be an identity instead of a re-derivation.
+CHAIN_LETTER_BIND_WEIGHT_ENV = "KS_CHAIN_LETTER_BIND_WEIGHT"
+CHAIN_LETTER_BIND_WEIGHT = float(os.environ.get(CHAIN_LETTER_BIND_WEIGHT_ENV) or 0.0)
 # Coverage points per chain segment: `core.fit.MAX_COVERAGE_POINTS` (300) is a
 # per-GLYPH budget, so the chain scales it as MAX_COVERAGE_POINTS × n_segments.
 # Invariant (asserted in code and in a unit test): coverage density per unit of
@@ -316,6 +339,15 @@ class ChainWordFit:
     converged: bool  # every LETTER segment converged; the connectors' gates are reported per segment
     converged_local: bool  # …judged on the LETTER-LOCAL coverage windows (the like-for-like gate)
     fit_meta: dict  # optimiser status, energies, n_params, n_cov, timings
+    problem: Any | None = None
+    """The solved `_ChainProblem`, only with `fit_word_chain(keep_solve=True)`.
+
+    Off by default because the problem holds the whole field stack: a harvest
+    over the fixtures would keep every crop alive. `gradlab` asks for it to read
+    the per-term gradient AT the optimum, which needs the very operators the
+    solve used, not a rebuild."""
+    params: np.ndarray | None = None
+    """The optimiser's argmin, in the same parameter layout — see `problem`."""
 
 
 # ----------------------------------------------------------------- pure helpers
@@ -347,6 +379,43 @@ def _second_difference_operator(pts: np.ndarray) -> np.ndarray:
         rows[j - 1, j] = -scale * (1.0 / ds[j - 1] + 1.0 / ds[j])
         rows[j - 1, j + 1] = scale / ds[j]
     return rows
+
+
+def _letter_bind_operator(
+    specs: Sequence[ChainSegmentSpec], anchor_slices: Sequence[tuple[int, int]], k_free: int
+) -> np.ndarray:
+    """(M, K_free) rows reading `δ[i-1] − 2·δ[i] + δ[i+1]` inside each LETTER stroke.
+
+    Three boundaries it never crosses, each for its own reason:
+
+    * **Segment.** A connector's anchors are free geometry with their own term
+      (`smooth_op`); binding a letter's last anchor to a connector's first would
+      price the seam twice and in the wrong currency.
+    * **Pen lift.** A lift is the hand setting down somewhere else, not a
+      discontinuity of one line. Spanning one would bill every multi-stroke
+      glyph for writing its own ductus — the rule
+      `tools.laufform.harvest.anchor_spike_ratio` already follows.
+    * **Anchors, ever.** It reads the DISPLACEMENTS. Applied to the anchors this
+      would be `qualitaetsmetrik.md` §7's rejected bending term.
+
+    Index space, not arc length — matching `core.fit._second_difference_operator`
+    so a weight means roughly the same thing on both fit paths. What that costs
+    is stated there: a stretch or shear is priced in proportion to the chart
+    form's own discrete curvature, so a genuine slant adaptation pays most in
+    the loops. Only the A/B decides whether the trade is worth it.
+    """
+    rows: list[np.ndarray] = []
+    for spec, (a0, a1) in zip(specs, anchor_slices, strict=True):
+        if spec.kind != "letter":
+            continue
+        k = a1 - a0
+        bounds = sorted({0, *(int(s) for s in (spec.stroke_starts or []) if 0 < int(s) < k), k})
+        for lo, hi in zip(bounds[:-1], bounds[1:], strict=True):
+            for i in range(lo + 1, hi - 1):
+                row = np.zeros(k_free)
+                row[a0 + i - 1], row[a0 + i], row[a0 + i + 1] = 1.0, -2.0, 1.0
+                rows.append(row)
+    return np.asarray(rows) if rows else np.zeros((0, k_free))
 
 
 def regularise_connector_anchors(
@@ -487,6 +556,7 @@ class _ChainProblem:
     coverage_weight: float
     lambda_reg: float
     smooth_weight: float
+    bind_weight: float
     overlap_weight: float
     overlap_radius_px: float
     overlap_exempt: np.ndarray  # (n_s,) True where a sample sits in a seam band
@@ -499,6 +569,16 @@ class _ChainProblem:
     interior, 0 elsewhere. Linear ⇒ the ramp's gradient is exact."""
     smooth_op: np.ndarray = field(default_factory=lambda: np.zeros((0, 0)))
     """(M, K_plan) second differences of the connector blocks only."""
+    bind_op: np.ndarray = field(default_factory=lambda: np.zeros((0, 0)))
+    """(M, K_free) second differences of the LETTER blocks' DISPLACEMENTS.
+
+    The connector twin above and this one are deliberately different objects.
+    `smooth_op` reads the ANCHORS of a freely invented connector, arc-length
+    normalised — right for a curve with no template behind it. A letter has a
+    template, and its anchors already carry the ductus' own curvature, so
+    pricing them is §7's rejected bending term. This reads the DISPLACEMENTS
+    instead: a translation of a pen-stroke is exactly free, one anchor leaving
+    its neighbours costs quadratically."""
     plan_slices: list[tuple[int, int]] = field(default_factory=list)
     """per segment, into the PLAN anchor array (seam anchors included)."""
     n_letter_anchors: float = 1.0
@@ -549,8 +629,47 @@ class _ChainProblem:
 
     # ---------------------------------------------------------------- objective
 
-    def _evaluate(self, params: np.ndarray, want_grad: bool) -> tuple[dict[str, float], np.ndarray | None]:
-        """Shared core of `objective` and `energy_terms` (see their docstrings)."""
+    def _pack(self, g_free: np.ndarray, delta_extra: np.ndarray | None) -> np.ndarray:
+        """Fold free-anchor forces (plus a delta-only extra) into a parameter gradient.
+
+        The one place the parameter layout is written down, shared by the
+        objective and by `gradient_terms` — a per-term decomposition that packs
+        differently from the objective would diagnose a different problem.
+        """
+        nb = self.n_blocks
+        grad = np.empty(2 + 2 * nb + g_free.size)
+        grad[0] = float(g_free[:, 0].sum())
+        grad[1] = float(g_free[:, 1].sum())
+        if nb:
+            grad[2 : 2 + 2 * nb] = (self.block_op.T @ g_free).ravel()
+        grad[2 + 2 * nb :] = (g_free if delta_extra is None else g_free + delta_extra).ravel()
+        return grad
+
+    def _fold_samples(self, g_px: np.ndarray, g_py: np.ndarray) -> np.ndarray:
+        """Sample-space forces → free-anchor forces (samples → plan → free)."""
+        g_plan = np.column_stack(
+            [self.unit_px * (self.sampling_op.T @ g_px), -self.unit_px * (self.sampling_op.T @ g_py)]
+        )
+        return self._fold_plan(g_plan)
+
+    def _fold_plan(self, g_plan: np.ndarray) -> np.ndarray:
+        """Plan-anchor forces → free-anchor forces; a seam anchor collects both sides."""
+        g_free = np.zeros_like(self.anchors_free)
+        np.add.at(g_free, self.idx, g_plan)
+        return g_free
+
+    def _evaluate(
+        self, params: np.ndarray, want_grad: bool, grad_terms: dict[str, Any] | None = None
+    ) -> tuple[dict[str, float], np.ndarray | None]:
+        """Shared core of `objective` and `energy_terms` (see their docstrings).
+
+        `grad_terms`, when given, is filled with each term's own force in the
+        space it acts in — sample space for the data terms, plan-anchor space
+        for the connector smoothness, delta space for the Tikhonov pull. The
+        accumulated `g_px`/`g_py` of the hot path stay untouched, so recording
+        the split cannot move the objective; `gradient_terms` re-adds the split
+        and asserts it reproduces the very gradient computed here.
+        """
         unit_sq = self.unit_px**2
         _, _, _, deltas = self.unpack(params)
         ap = self.plan_anchors(params)
@@ -561,9 +680,18 @@ class _ChainProblem:
         # --- geometry: chain centerline on the skeleton (+ out-of-crop pull) ---
         d, d_dx, d_dy = _bilinear_with_grad(self.dist_smooth, px, py)
         ox, oy = self.out_of_crop(px, py)
+        e_geo_field = float(np.mean(d**2)) / unit_sq
+        e_crop = float(np.mean(ox**2 + oy**2)) / unit_sq
         e_geo = float(np.mean(d**2) + np.mean(ox**2 + oy**2)) / unit_sq
         g_px = 2.0 * (d * d_dx + ox) / (n_s * unit_sq)
         g_py = 2.0 * (d * d_dy + oy) / (n_s * unit_sq)
+        samples: dict[str, tuple[np.ndarray, np.ndarray]] = {}
+        if grad_terms is not None:
+            # The distance field and the out-of-crop pull are one term in the
+            # energy but two different statements about a sample, so they are
+            # split here: only the first is „the ink pulls".
+            samples["geo"] = (2.0 * d * d_dx / (n_s * unit_sq), 2.0 * d * d_dy / (n_s * unit_sq))
+            samples["crop"] = (2.0 * ox / (n_s * unit_sq), 2.0 * oy / (n_s * unit_sq))
 
         # --- width: letter samples only (the connector has no measurement) ---
         wm, w_dx, w_dy = _bilinear_with_grad(self.width_smooth, px, py)
@@ -572,6 +700,11 @@ class _ChainProblem:
         e_wid = float(np.sum(wr**2)) / (n_w * unit_sq)
         g_px = g_px + self.width_weight * 2.0 * wr * w_dx / (n_w * unit_sq)
         g_py = g_py + self.width_weight * 2.0 * wr * w_dy / (n_w * unit_sq)
+        if grad_terms is not None:
+            samples["width"] = (
+                self.width_weight * 2.0 * wr * w_dx / (n_w * unit_sq),
+                self.width_weight * 2.0 * wr * w_dy / (n_w * unit_sq),
+            )
 
         # --- coverage: capped, over the WHOLE pair window (ICP-frozen) ---
         pts = np.column_stack([px, py])
@@ -589,6 +722,8 @@ class _ChainProblem:
         np.add.at(g_cov, cidx, (dscale / safe)[:, None] * diff / (n_cov * unit_sq))
         g_px = g_px + self.coverage_weight * g_cov[:, 0]
         g_py = g_py + self.coverage_weight * g_cov[:, 1]
+        if grad_terms is not None:
+            samples["coverage"] = (self.coverage_weight * g_cov[:, 0], self.coverage_weight * g_cov[:, 1])
 
         # --- cross-segment overlap: a pen does not write a stroke twice ---
         # Quadratic hinge on sample PAIRS of different segments closer than the
@@ -616,6 +751,10 @@ class _ChainProblem:
                 np.add.at(g_ovl, pairs[:, 1], -pull)
                 g_px = g_px + self.overlap_weight * g_ovl[:, 0]
                 g_py = g_py + self.overlap_weight * g_ovl[:, 1]
+                if grad_terms is not None:
+                    samples["overlap"] = (self.overlap_weight * g_ovl[:, 0], self.overlap_weight * g_ovl[:, 1])
+        if grad_terms is not None and "overlap" not in samples:
+            samples["overlap"] = (np.zeros(n_s), np.zeros(n_s))
 
         # --- Tikhonov on the LETTER anchors only (binding constraint 3) ---
         e_reg = float(np.sum(self.reg_w * np.sum(deltas**2, axis=1))) / self.n_letter_anchors
@@ -630,6 +769,21 @@ class _ChainProblem:
             m_d2 = 1
             e_smooth = 0.0
 
+        # --- neighbour binding on the LETTER displacements (inert by default) ---
+        # Second difference of the DELTAS within a letter's own pen-stroke: a
+        # translation of the stroke is free, one anchor leaving its neighbours
+        # costs quadratically. Never the second difference of the ANCHORS —
+        # that is §7's rejected bending term, which prices the curvature the
+        # script itself is made of.
+        if self.bind_weight and self.bind_op.shape[0]:
+            b = self.bind_op @ deltas
+            m_b = self.bind_op.shape[0]
+            e_bind = float(np.sum(b**2)) / m_b
+        else:
+            b = np.zeros((0, 2))
+            m_b = 1
+            e_bind = 0.0
+
         f = (
             e_geo
             + self.width_weight * e_wid
@@ -637,15 +791,19 @@ class _ChainProblem:
             + self.lambda_reg * e_reg
             + self.smooth_weight * e_smooth
             + self.overlap_weight * e_ovl
+            + self.bind_weight * e_bind
         )
         terms = {
             "e_geo": e_geo,
+            "e_geo_field": e_geo_field,
+            "e_crop": e_crop,
             "e_wid": e_wid,
             "e_cov": e_cov,
             "e_cov_uncapped": e_cov_raw,
             "e_reg": e_reg,
             "e_smooth": e_smooth,
             "e_overlap": e_ovl,
+            "e_bind": e_bind,
             "f": f,
         }
         if not want_grad:
@@ -655,20 +813,30 @@ class _ChainProblem:
         g_plan = np.column_stack(
             [self.unit_px * (self.sampling_op.T @ g_px), -self.unit_px * (self.sampling_op.T @ g_py)]
         )
+        g_smooth_plan = (
+            self.smooth_weight * 2.0 * (self.smooth_op.T @ r) / m_d2
+            if self.smooth_op.shape[0]
+            else np.zeros_like(g_plan)
+        )
         if self.smooth_op.shape[0]:
-            g_plan = g_plan + self.smooth_weight * 2.0 * (self.smooth_op.T @ r) / m_d2
-        g_free = np.zeros_like(self.anchors_free)
-        np.add.at(g_free, self.idx, g_plan)
-
-        grad = np.empty_like(params)
-        grad[0] = float(g_free[:, 0].sum())
-        grad[1] = float(g_free[:, 1].sum())
-        nb = self.n_blocks
-        if nb:
-            grad[2 : 2 + 2 * nb] = (self.block_op.T @ g_free).ravel()
-        grad[2 + 2 * nb :] = (
-            g_free + self.lambda_reg * 2.0 * self.reg_w[:, None] * deltas / self.n_letter_anchors
-        ).ravel()
+            g_plan = g_plan + g_smooth_plan
+        g_free = self._fold_plan(g_plan)
+        g_reg_delta = self.lambda_reg * 2.0 * self.reg_w[:, None] * deltas / self.n_letter_anchors
+        # At weight 0 `g_delta` stays the reg array itself, so the packed
+        # gradient is bit-identical to the term's absence — what makes the
+        # A/B's baseline arm an identity rather than a re-derivation.
+        g_bind_delta = (
+            self.bind_weight * 2.0 * (self.bind_op.T @ b) / m_b
+            if (self.bind_weight and self.bind_op.shape[0])
+            else None
+        )
+        g_delta = g_reg_delta if g_bind_delta is None else g_reg_delta + g_bind_delta
+        grad = self._pack(g_free, g_delta)
+        if grad_terms is not None:
+            grad_terms["samples"] = samples
+            grad_terms["smooth_plan"] = g_smooth_plan
+            grad_terms["reg_delta"] = g_reg_delta
+            grad_terms["bind_delta"] = np.zeros_like(g_reg_delta) if g_bind_delta is None else g_bind_delta
         return terms, grad
 
     def objective(self, params: np.ndarray) -> tuple[float, np.ndarray]:
@@ -688,6 +856,42 @@ class _ChainProblem:
         fields — what the objective sees, split up for reporting and tests."""
         terms, _ = self._evaluate(np.asarray(params, dtype=float), want_grad=False)
         return terms
+
+    def gradient_terms(self, params: np.ndarray) -> dict[str, np.ndarray]:
+        """Per-term parameter gradient at `params`; `["total"]` is the objective's.
+
+        One entry per name in `GRADIENT_TERMS` — `geo` (the smoothed distance
+        field), `crop` (the out-of-crop pull split off it), `width`,
+        `coverage`, `overlap`, `smooth` (connector curvature change), `reg`
+        (Tikhonov) and `bind` (letter neighbour binding, inert by default) —
+        each WEIGHTED as the objective weighs it, so the entries are comparable
+        forces rather than bare energies.
+
+        Every term is folded through the SAME `_fold_*`/`_pack` chain rule the
+        objective uses, and the caller-facing check
+        (`gradient_decomposition`) asserts they re-add to `["total"]`. That is
+        the point of the split: a decomposition that does not reproduce the
+        gradient describes a different objective than the one the solver
+        followed (`qualitaetsmetrik.md` §11).
+
+        Reading it per anchor: `grad[2 + 2·n_blocks:].reshape(-1, 2)` is the
+        force on every FREE anchor. The first two entries are the global shift,
+        the next `2·n_blocks` the per-slot translation blocks.
+        """
+        params = np.asarray(params, dtype=float)
+        acc: dict[str, Any] = {}
+        _, grad = self._evaluate(params, want_grad=True, grad_terms=acc)
+        out: dict[str, np.ndarray] = {}
+        for name, (g_px_t, g_py_t) in acc["samples"].items():
+            out[name] = self._pack(self._fold_samples(g_px_t, g_py_t), None)
+        out["smooth"] = self._pack(self._fold_plan(acc["smooth_plan"]), None)
+        # The Tikhonov pull is a function of the deltas alone: it reaches
+        # neither the global shift nor a slot block, which is why those two
+        # parameter groups have no restoring force of their own.
+        out["reg"] = self._pack(np.zeros_like(self.anchors_free), acc["reg_delta"])
+        out["bind"] = self._pack(np.zeros_like(self.anchors_free), acc["bind_delta"])
+        out["total"] = grad if grad is not None else np.zeros_like(params)
+        return out
 
     # ------------------------------------------------------------- per-segment
 
@@ -806,6 +1010,7 @@ def build_chain_problem(
     coverage_weight: float = DEFAULT_COVERAGE_WEIGHT,
     lambda_reg: float = DEFAULT_LAMBDA_REG,
     smooth_weight: float = CHAIN_CONNECTOR_SMOOTH_WEIGHT,
+    bind_weight: float | None = None,
     coverage_cap_units: float = CHAIN_COVERAGE_CAP_UNITS,
     overlap_weight: float | None = None,
     overlap_radius_units: float = CHAIN_OVERLAP_RADIUS_UNITS,
@@ -1080,6 +1285,7 @@ def build_chain_problem(
         coverage_weight=float(coverage_weight),
         lambda_reg=float(lambda_reg),
         smooth_weight=float(smooth_weight),
+        bind_weight=float(CHAIN_LETTER_BIND_WEIGHT if bind_weight is None else bind_weight),
         overlap_weight=float(CHAIN_OVERLAP_WEIGHT if overlap_weight is None else overlap_weight),
         overlap_radius_px=float(overlap_radius_units * unit_px),
         overlap_exempt=overlap_exempt,
@@ -1087,6 +1293,7 @@ def build_chain_problem(
         bounds=bounds,
         block_op=block_op,
         smooth_op=smooth_rows,
+        bind_op=_letter_bind_operator(specs, anchor_slices, k_free),
         plan_slices=plan_slices,
         n_letter_anchors=max(1.0, float(reg_w.sum())),
         n_samples=n_s,
@@ -1291,6 +1498,7 @@ def fit_word_chain(
     result: WordDeriveResult,
     windows_px: dict[int, tuple[float, float]],
     slot_shift_init: dict[int, tuple[float, float]] | None = None,
+    keep_solve: bool = False,
 ) -> ChainWordFit | None:
     """Fit a run of consecutive slots as ONE chain `[L, C, L, C, …]`.
 
@@ -1489,6 +1697,8 @@ def fit_word_chain(
             "seconds": round(time.perf_counter() - started, 3),
             "slots": run,
         },
+        problem=problem if keep_solve else None,
+        params=res.x.copy() if keep_solve else None,
     )
 
 
@@ -1559,6 +1769,81 @@ def fit_pair_chain(
     )
 
 
+# ------------------------------------------------------- gradient decomposition
+
+# Every weighted term of the chain objective, in the order they are applied.
+# `geo` and `crop` are the two halves of `e_geo`.
+GRADIENT_TERMS = ("geo", "crop", "width", "coverage", "overlap", "smooth", "reg", "bind")
+# Relative tolerance of the sum check. The split is re-added in a different
+# order than the objective accumulates it, so bit-equality is not on offer;
+# anything above float noise means the decomposition describes a DIFFERENT
+# objective than the one the solver followed, which is the failure
+# `qualitaetsmetrik.md` §11 makes the check for.
+GRADIENT_SUM_RTOL = 1e-9
+
+
+def gradient_decomposition(problem: _ChainProblem, params: np.ndarray) -> dict[str, Any]:
+    """Per-term, per-anchor force at `params` — with the sum check.
+
+    Returns the weighted parameter gradient of each term of `GRADIENT_TERMS`,
+    the same forces reshaped per FREE ANCHOR (`per_anchor`), the objective's
+    own gradient (`total`) and the residual of `sum(terms) − total`.
+
+    Raises `AssertionError` when the sum misses the gradient by more than
+    `GRADIENT_SUM_RTOL`. That is §11's build rule: compute the terms
+    independently and check that their sum reproduces the real gradient,
+    or the diagnostic drifts away from the objective it is meant to explain.
+
+    An anchor's force is read as the negative descent direction: at a true
+    optimum the per-term forces cancel, and WHICH ones cancel is the answer
+    §11 needs before any term is built.
+    """
+    params = np.asarray(params, dtype=float)
+    terms = problem.gradient_terms(params)
+    total = terms["total"]
+    recon = np.zeros_like(total)
+    for name in GRADIENT_TERMS:
+        recon = recon + terms[name]
+    residual = float(np.max(np.abs(recon - total)))
+    scale = float(np.max(np.abs(total)))
+    limit = GRADIENT_SUM_RTOL * max(scale, np.finfo(float).tiny)
+    if not residual <= limit:
+        raise AssertionError(
+            f"gradient decomposition misses the objective's gradient: "
+            f"max|sum-total|={residual:.3e} > {limit:.3e} (|grad|max={scale:.3e})"
+        )
+    head = 2 + 2 * problem.n_blocks
+    return {
+        "terms": {name: terms[name] for name in GRADIENT_TERMS},
+        "total": total,
+        "per_anchor": {name: terms[name][head:].reshape(-1, 2) for name in (*GRADIENT_TERMS, "total")},
+        "residual_abs": residual,
+        "residual_rel": residual / scale if scale > 0.0 else 0.0,
+        "grad_max": scale,
+        "energies": problem.energy_terms(params),
+    }
+
+
+def sample_slice_of_anchor(problem: _ChainProblem, free_index: int) -> tuple[int, int]:
+    """Samples strictly BETWEEN the two neighbours of one free anchor.
+
+    The objective never reads the field at an anchor — only at the ~1.5 samples
+    per anchor the spline carries (`vom-scan-zum-schreiben.md` Schritt 4). A
+    restoring force measured at the anchor's own position quantifies something
+    the optimiser cannot see; this window is where it CAN be read. Empty
+    `(i, i)` when the anchor is a seam borrower with no plan row of its own.
+    """
+    plan_rows = np.flatnonzero(problem.idx == free_index)
+    if not len(plan_rows):
+        return (0, 0)
+    lo, hi = int(plan_rows.min()) - 1, int(plan_rows.max()) + 1
+    # A sample belongs to the window when the sampling operator gives any of the
+    # plan anchors in [lo, hi] a non-zero say in it.
+    rows = problem.sampling_op[:, max(0, lo) : hi + 1]
+    hits = np.flatnonzero(np.abs(rows).sum(axis=1) > 0.0)
+    return (int(hits.min()), int(hits.max()) + 1) if len(hits) else (0, 0)
+
+
 __all__ = [
     "CHAIN_CONNECTOR_ANCHOR_SPACING_UNITS",
     "CHAIN_CONNECTOR_MAX_DELTA",
@@ -1567,6 +1852,8 @@ __all__ = [
     "CHAIN_COVERAGE_CAP_UNITS",
     "CHAIN_COVERAGE_PER_SEGMENT",
     "CONNECT_SAMPLES",
+    "GRADIENT_SUM_RTOL",
+    "GRADIENT_TERMS",
     "ChainFit",
     "ChainSegment",
     "ChainSegmentSpec",
@@ -1575,5 +1862,7 @@ __all__ = [
     "chain_runs",
     "fit_pair_chain",
     "fit_word_chain",
+    "gradient_decomposition",
     "regularise_connector_anchors",
+    "sample_slice_of_anchor",
 ]

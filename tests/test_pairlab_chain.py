@@ -39,6 +39,7 @@ from core.fit import (
 )
 from core.shaping import GlyphSlot
 from core.template import build_sample_plan
+from tools.pairlab import chain as chain_mod
 from tools.pairlab.analyze import FIT_DX_UNITS, FIT_DY_UNITS, TRACE_WINDOW_MARGIN, _generate_connector
 from tools.pairlab.chain import (
     CHAIN_CONNECTOR_ANCHOR_SPACING_UNITS,
@@ -204,6 +205,176 @@ def test_gradient_is_consistent_at_the_composed_start() -> None:
         step[i] = eps
         fd = (problem.objective(problem.x0 + step)[0] - problem.objective(problem.x0 - step)[0]) / (2.0 * eps)
         assert abs(fd - grad[i]) < 1e-5 * max(1.0, abs(fd))
+
+
+# ------------------------------------------------------- gradient decomposition
+
+
+def test_decomposition_sums_to_the_objective_gradient() -> None:
+    """§11's build rule: the split must re-add to the gradient the solver used.
+
+    Not a formality — a decomposition that packs or folds differently from the
+    objective diagnoses a different problem, and the whole point of the
+    exercise is to name the force that balances at the found optimum.
+    """
+    problem = _toy_problem(smooth_weight=1e-3)
+    rng = np.random.default_rng(321)
+    for params in (problem.x0, rng.uniform(-0.05, 0.05, size=len(problem.x0))):
+        report = chain_mod.gradient_decomposition(problem, params)  # raises on mismatch
+        assert report["residual_rel"] < 1e-12
+        assert set(report["terms"]) == set(chain_mod.GRADIENT_TERMS)
+        head = 2 + 2 * problem.n_blocks
+        assert report["per_anchor"]["total"].shape == problem.anchors_free.shape
+        assert np.allclose(report["per_anchor"]["geo"], report["terms"]["geo"][head:].reshape(-1, 2))
+
+
+def test_each_term_is_the_whole_gradient_when_it_is_the_only_one() -> None:
+    """Isolation check: with every other weight at 0 the objective IS that term.
+
+    Stronger than the sum check, which a consistent mislabelling would pass.
+    """
+    off = {"width_weight": 0.0, "coverage_weight": 0.0, "overlap_weight": 0.0, "lambda_reg": 0.0, "smooth_weight": 0.0}
+    weights = {
+        "width": {**off, "width_weight": 1.0},
+        "coverage": {**off, "coverage_weight": 1.0},
+        "reg": {**off, "lambda_reg": 1.0},
+        "smooth": {**off, "smooth_weight": 1.0},
+    }
+    rng = np.random.default_rng(11)
+    for name, kwargs in weights.items():
+        problem = _toy_problem(**kwargs)
+        params = rng.uniform(-0.05, 0.05, size=len(problem.x0))
+        terms = problem.gradient_terms(params)
+        # `geo`+`crop` are unweighted and always on, so subtract them out.
+        rest = terms["total"] - terms["geo"] - terms["crop"]
+        assert np.allclose(terms[name], rest, atol=1e-14), name
+        for other in set(chain_mod.GRADIENT_TERMS) - {name, "geo", "crop"}:
+            assert np.allclose(terms[other], 0.0), f"{other} alive at weight 0"
+
+
+def test_the_tikhonov_pull_never_reaches_the_placement_parameters() -> None:
+    """Placement is unregularised — so `reg` must be zero on shift and blocks."""
+    problem = _toy_problem()
+    params = np.random.default_rng(7).uniform(-0.05, 0.05, size=len(problem.x0))
+    head = 2 + 2 * problem.n_blocks
+    assert np.allclose(problem.gradient_terms(params)["reg"][:head], 0.0)
+
+
+def test_the_decomposition_raises_when_it_stops_matching() -> None:
+    """The guard must actually fire — otherwise it is decoration."""
+    problem = _toy_problem()
+
+    class _Drifted:
+        def __init__(self, inner):
+            self._inner = inner
+            self.n_blocks = inner.n_blocks
+
+        def gradient_terms(self, params):
+            terms = dict(self._inner.gradient_terms(params))
+            terms["geo"] = terms["geo"] * 1.01  # a 1 % mislabelled force
+            return terms
+
+        def energy_terms(self, params):
+            return self._inner.energy_terms(params)
+
+    with pytest.raises(AssertionError, match="misses the objective"):
+        chain_mod.gradient_decomposition(_Drifted(problem), problem.x0)
+
+
+def test_the_anchor_sample_window_is_where_the_field_is_actually_read() -> None:
+    """`sample_slice_of_anchor` must return a real, ordered sample window.
+
+    The objective reads the ink only at samples; a force „at the anchor" is a
+    force the optimiser never feels (`vom-scan-zum-schreiben.md` Schritt 4).
+    """
+    problem = _toy_problem()
+    n_s = problem.n_samples or len(problem.to_pixels(problem.x0)[0])
+    seen = 0
+    for i in range(len(problem.anchors_free)):
+        lo, hi = chain_mod.sample_slice_of_anchor(problem, i)
+        assert 0 <= lo <= hi <= n_s
+        seen += hi > lo
+    assert seen == len(problem.anchors_free)  # every free anchor owns samples
+
+
+# ------------------------------------------- the letter neighbour-binding term
+
+
+def test_the_bind_term_is_byte_identical_at_weight_zero() -> None:
+    """The A/B's baseline arm must be an IDENTITY, not a re-derivation.
+
+    If weight 0 moved the objective by one ulp, the two arms would differ by
+    the term AND by a different solve, and the experiment would measure both.
+    """
+    off, zero = _toy_problem(), _toy_problem(bind_weight=0.0)
+    rng = np.random.default_rng(11)
+    params = rng.uniform(-0.05, 0.05, size=len(off.x0))
+    for a, b in ((off, zero),):
+        fa, ga = a.objective(params)
+        fb, gb = b.objective(params)
+        assert fa == fb  # bit equality, not approx
+        assert np.array_equal(ga, gb)
+    assert off.energy_terms(params)["e_bind"] == 0.0
+
+
+def test_the_bind_term_touches_letters_and_never_crosses_a_lift_or_a_seam() -> None:
+    """Its rows must live inside letter strokes — nowhere else."""
+    problem = _toy_problem(bind_weight=1.0)
+    letters = [(s, sl) for s, sl in zip(problem.specs, problem.anchor_slices, strict=True) if s.kind == "letter"]
+    assert problem.bind_op.shape[1] == len(problem.anchors_free)
+    # every row is a (1, -2, 1) triple wholly inside ONE letter's anchor slice
+    for row in problem.bind_op:
+        nz = np.flatnonzero(row)
+        assert len(nz) == 3 and nz[1] == nz[0] + 1 and nz[2] == nz[1] + 1
+        assert sorted(row[nz]) == [-2.0, 1.0, 1.0]
+        assert any(a0 <= nz[0] and nz[2] < a1 for _, (a0, a1) in letters)
+    # a connector's anchors are never touched
+    for spec, (a0, a1) in zip(problem.specs, problem.anchor_slices, strict=True):
+        if spec.kind == "connector":
+            assert not problem.bind_op[:, a0:a1].any()
+
+
+def test_a_translated_stroke_costs_the_bind_term_nothing() -> None:
+    """Exactly free: a translation. That is what separates it from §7's term."""
+    problem = _toy_problem(bind_weight=1.0)
+    params = problem.x0.copy()
+    head = 2 + 2 * problem.n_blocks
+    deltas = np.zeros_like(problem.anchors_free)
+    for spec, (a0, a1) in zip(problem.specs, problem.anchor_slices, strict=True):
+        if spec.kind == "letter":
+            deltas[a0:a1] = np.array([0.03, -0.02])  # one rigid shift per letter
+    params[head:] = deltas.ravel()
+    assert problem.energy_terms(params)["e_bind"] == pytest.approx(0.0, abs=1e-24)
+
+
+def test_a_lone_anchor_leaving_its_neighbours_costs() -> None:
+    problem = _toy_problem(bind_weight=1.0)
+    params = problem.x0.copy()
+    head = 2 + 2 * problem.n_blocks
+    a0, a1 = next((sl for s, sl in zip(problem.specs, problem.anchor_slices, strict=True) if s.kind == "letter"))
+    deltas = np.zeros_like(problem.anchors_free)
+    deltas[a0 + (a1 - a0) // 2] = np.array([0.0, 0.2])
+    params[head:] = deltas.ravel()
+    assert problem.energy_terms(params)["e_bind"] > 0.0
+
+
+def test_the_bind_gradient_matches_finite_differences_and_the_decomposition() -> None:
+    """A wrong jacobian would not raise — L-BFGS-B would just converge elsewhere
+    and the A/B would faithfully measure the bug."""
+    problem = _toy_problem(bind_weight=0.5)
+    rng = np.random.default_rng(4)
+    params = rng.uniform(-0.05, 0.05, size=len(problem.x0))
+    _, grad = problem.objective(params)
+    eps = 1e-6
+    head = 2 + 2 * problem.n_blocks
+    for i in (0, head, head + 3, head + 11, len(params) - 2):
+        step = np.zeros_like(params)
+        step[i] = eps
+        fd = (problem.objective(params + step)[0] - problem.objective(params - step)[0]) / (2.0 * eps)
+        assert abs(fd - grad[i]) < 1e-5 * max(1.0, abs(fd)), i
+    report = chain_mod.gradient_decomposition(problem, params)  # raises if it drifts
+    assert report["residual_rel"] < 1e-12
+    assert np.any(report["terms"]["bind"] != 0.0)  # …and the term is actually alive
 
 
 # ---------------------------------------------------------------- the weights
