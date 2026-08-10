@@ -52,6 +52,39 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   column the numbers would invite exactly that conclusion. Measurement only:
   no DB, no API, no rendering, nothing in `core/`.
 
+- **The answer the decomposition was built for, and the term moved to where
+  the defect lives (`qualitaetsmetrik.md` §11a).** 96 chain solves, 41 280
+  letter anchors, at the optima the stored occurrences came from; 128 stranded
+  anchors in 82 of 344 occurrences across 27 glyphs, so this is a property of
+  the model and not of a glyph. The sum check held everywhere (worst 1.7e-13).
+  **The coverage term is the driver**: 32.4× its control strength at a
+  stranded anchor, aligned with the displacement to a cosine of −0.996, and
+  decoupled from the distance field (`coverage` vs `geo` 0.912 → 0.554). Two
+  of §11's four candidates die here. The width term is *weaker* at stranded
+  anchors (0.9×). And the Tikhonov pull, which looked like a finding at 8.5×,
+  is force/displacement 4.167e-3 stranded against 4.166e-3 control — the same
+  spring stretched further, identical to four figures. Without the control
+  population that number would have been read as an explanation.
+  §11 had asked which counter-force *holds* the anchor out; measured, the
+  question is the wrong way round. Nothing holds it — the data terms push it
+  there and Tikhonov is the only restraint. The field reading at the samples
+  (the one §11 marked as owed, because no anchor is ever queried) says why
+  that is cheap: 0.1849 xh of anchor travel — ~5.7 px — costs 0.6 px of extra
+  distance to ink at the samples. The spline absorbs the excursion.
+  `CHAIN_LETTER_BIND_WEIGHT` now carries the term on the chain path's LETTER
+  blocks, in the displacement form: second difference of the per-anchor
+  deltas inside a letter's own pen-stroke, never across a lift, never across
+  a segment, never on the anchors (which would be §7's rejected bending
+  term). Default 0.0 and verified byte-identical on a real solve — every
+  number of the pre-term run reproduces exactly — so the A/B's baseline arm
+  is an identity rather than a re-derivation.
+  Stated in the same place rather than left implicit: this term is a
+  stiffness answer to an attribution problem. The measurement says the driver
+  is the coverage term's blindness to which segment owns a skeleton point —
+  the same blindness the overlap term was introduced for, one level down. The
+  A/B measures a brake, not a cause, and a passing criterion must not be read
+  as „the stranding is understood".
+
 - **The autopsy of the `d` chart form (`qualitaetsmetrik.md` §12).** §10 had
   narrowed the human „Bereich daneben" verdict to one glyph and named the
   autopsy as the next step; this is it, over all 18 `d` screens, the 14

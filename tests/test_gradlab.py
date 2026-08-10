@@ -10,7 +10,18 @@ from __future__ import annotations
 
 import numpy as np
 
+from tools.pairlab.chain import GRADIENT_TERMS
 from tools.pairlab.gradlab import STRANDED_STEP_RATIO, field_at_samples, stranded_anchors, summarize
+
+
+def _with_forces(row: dict, **overrides: float) -> dict:
+    """A summary row carrying every term the objective currently has.
+
+    Derived from `GRADIENT_TERMS` rather than spelled out, so adding a term to
+    the objective cannot break these tests for a reason that has nothing to do
+    with what they check.
+    """
+    return {**{f"f_{name}": 0.0 for name in (*GRADIENT_TERMS, "total")}, **row, **overrides}
 
 
 class _Problem:
@@ -74,15 +85,14 @@ def test_the_field_is_read_at_the_samples_not_at_a_point() -> None:
 
 def test_the_summary_separates_the_two_populations() -> None:
     """The comparison IS the finding — a term equal on both sides explains nothing."""
+    hot = {"stranded": 1, "delta_units": 0.2, "delta_neighbours_units": 0.05, "d_smooth_mean_px": 3.0}
+    cold = {"stranded": 0, "delta_units": 0.02, "delta_neighbours_units": 0.02, "d_smooth_mean_px": 1.0}
     rows = [
-        {"stranded": 1, "f_geo": 4.0, "delta_units": 0.2, "delta_neighbours_units": 0.05, "d_smooth_mean_px": 3.0},
-        {"stranded": 1, "f_geo": 6.0, "delta_units": 0.2, "delta_neighbours_units": 0.05, "d_smooth_mean_px": 3.0},
-        {"stranded": 0, "f_geo": 1.0, "delta_units": 0.02, "delta_neighbours_units": 0.02, "d_smooth_mean_px": 1.0},
-        {"stranded": 0, "f_geo": 1.0, "delta_units": 0.02, "delta_neighbours_units": 0.02, "d_smooth_mean_px": 1.0},
+        _with_forces(hot, f_geo=4.0),
+        _with_forces(hot, f_geo=6.0),
+        _with_forces(cold, f_geo=1.0),
+        _with_forces(cold, f_geo=1.0),
     ]
-    for row in rows:  # the summary reads every term, so give them all a value
-        for name in ("crop", "width", "coverage", "overlap", "smooth", "reg", "total"):
-            row[f"f_{name}"] = 0.0
     out = summarize(rows)
     assert (out["n_stranded"], out["n_control"]) == (2, 2)
     assert out["terms"]["geo"]["stranded_median"] == 5.0
@@ -93,9 +103,8 @@ def test_the_summary_separates_the_two_populations() -> None:
 
 def test_the_summary_survives_a_population_with_no_stranding() -> None:
     """Most solves have none — an empty side must report None, not raise."""
-    row = {"stranded": 0, "delta_units": 0.01, "delta_neighbours_units": 0.01}
-    for name in (*("geo", "crop", "width", "coverage", "overlap", "smooth", "reg"), "total"):
-        row[f"f_{name}"] = 1.0
+    row = _with_forces({"stranded": 0, "delta_units": 0.01, "delta_neighbours_units": 0.01})
+    row.update({f"f_{name}": 1.0 for name in (*GRADIENT_TERMS, "total")})
     out = summarize([row])
     assert out["n_stranded"] == 0
     assert out["terms"]["geo"]["stranded_median"] is None

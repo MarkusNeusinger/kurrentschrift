@@ -297,6 +297,86 @@ def test_the_anchor_sample_window_is_where_the_field_is_actually_read() -> None:
     assert seen == len(problem.anchors_free)  # every free anchor owns samples
 
 
+# ------------------------------------------- the letter neighbour-binding term
+
+
+def test_the_bind_term_is_byte_identical_at_weight_zero() -> None:
+    """The A/B's baseline arm must be an IDENTITY, not a re-derivation.
+
+    If weight 0 moved the objective by one ulp, the two arms would differ by
+    the term AND by a different solve, and the experiment would measure both.
+    """
+    off, zero = _toy_problem(), _toy_problem(bind_weight=0.0)
+    rng = np.random.default_rng(11)
+    params = rng.uniform(-0.05, 0.05, size=len(off.x0))
+    for a, b in ((off, zero),):
+        fa, ga = a.objective(params)
+        fb, gb = b.objective(params)
+        assert fa == fb  # bit equality, not approx
+        assert np.array_equal(ga, gb)
+    assert off.energy_terms(params)["e_bind"] == 0.0
+
+
+def test_the_bind_term_touches_letters_and_never_crosses_a_lift_or_a_seam() -> None:
+    """Its rows must live inside letter strokes — nowhere else."""
+    problem = _toy_problem(bind_weight=1.0)
+    letters = [(s, sl) for s, sl in zip(problem.specs, problem.anchor_slices, strict=True) if s.kind == "letter"]
+    assert problem.bind_op.shape[1] == len(problem.anchors_free)
+    # every row is a (1, -2, 1) triple wholly inside ONE letter's anchor slice
+    for row in problem.bind_op:
+        nz = np.flatnonzero(row)
+        assert len(nz) == 3 and nz[1] == nz[0] + 1 and nz[2] == nz[1] + 1
+        assert sorted(row[nz]) == [-2.0, 1.0, 1.0]
+        assert any(a0 <= nz[0] and nz[2] < a1 for _, (a0, a1) in letters)
+    # a connector's anchors are never touched
+    for spec, (a0, a1) in zip(problem.specs, problem.anchor_slices, strict=True):
+        if spec.kind == "connector":
+            assert not problem.bind_op[:, a0:a1].any()
+
+
+def test_a_translated_stroke_costs_the_bind_term_nothing() -> None:
+    """Exactly free: a translation. That is what separates it from §7's term."""
+    problem = _toy_problem(bind_weight=1.0)
+    params = problem.x0.copy()
+    head = 2 + 2 * problem.n_blocks
+    deltas = np.zeros_like(problem.anchors_free)
+    for spec, (a0, a1) in zip(problem.specs, problem.anchor_slices, strict=True):
+        if spec.kind == "letter":
+            deltas[a0:a1] = np.array([0.03, -0.02])  # one rigid shift per letter
+    params[head:] = deltas.ravel()
+    assert problem.energy_terms(params)["e_bind"] == pytest.approx(0.0, abs=1e-24)
+
+
+def test_a_lone_anchor_leaving_its_neighbours_costs() -> None:
+    problem = _toy_problem(bind_weight=1.0)
+    params = problem.x0.copy()
+    head = 2 + 2 * problem.n_blocks
+    a0, a1 = next((sl for s, sl in zip(problem.specs, problem.anchor_slices, strict=True) if s.kind == "letter"))
+    deltas = np.zeros_like(problem.anchors_free)
+    deltas[a0 + (a1 - a0) // 2] = np.array([0.0, 0.2])
+    params[head:] = deltas.ravel()
+    assert problem.energy_terms(params)["e_bind"] > 0.0
+
+
+def test_the_bind_gradient_matches_finite_differences_and_the_decomposition() -> None:
+    """A wrong jacobian would not raise — L-BFGS-B would just converge elsewhere
+    and the A/B would faithfully measure the bug."""
+    problem = _toy_problem(bind_weight=0.5)
+    rng = np.random.default_rng(4)
+    params = rng.uniform(-0.05, 0.05, size=len(problem.x0))
+    _, grad = problem.objective(params)
+    eps = 1e-6
+    head = 2 + 2 * problem.n_blocks
+    for i in (0, head, head + 3, head + 11, len(params) - 2):
+        step = np.zeros_like(params)
+        step[i] = eps
+        fd = (problem.objective(params + step)[0] - problem.objective(params - step)[0]) / (2.0 * eps)
+        assert abs(fd - grad[i]) < 1e-5 * max(1.0, abs(fd)), i
+    report = chain_mod.gradient_decomposition(problem, params)  # raises if it drifts
+    assert report["residual_rel"] < 1e-12
+    assert np.any(report["terms"]["bind"] != 0.0)  # …and the term is actually alive
+
+
 # ---------------------------------------------------------------- the weights
 
 

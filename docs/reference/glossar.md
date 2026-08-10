@@ -48,7 +48,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **K** — Kettenfit §3 · Kill-Kriterium §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Kringel-Exit §2
 - **L** — Labs §4 · Laufform §2 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · matched arc §3 · meas §4 · Messboden §4
-- **N** — Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4
+- **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Platzierungsschranke §3 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
@@ -748,6 +748,22 @@ die ein bis zwei Samples in seiner Umgebung; wer die Rückstellkraft am
 Ankerort misst, beziffert eine Kraft, die in der Rechnung nicht vorkommt —
 was einmal eine Fehldiagnose gekostet hat. Achtung auch beim Zeichnen:
 `fitted_polyline_px` ist die SAMPLE-Reihe, nicht die Ankerreihe.
+
+**Nachbarbindung** *(`core.fit.DEFAULT_SMOOTH_WEIGHT`,
+`chain.CHAIN_LETTER_BIND_WEIGHT`)* — der Fit-Term gegen den **Anker im leeren
+Papier**: die zweite Differenz der **Verschiebungen** je Federzug. Eine
+Verschiebung des ganzen Strichs kostet exakt nichts, ein einzelner Anker, der
+seine Nachbarn verlässt, quadratisch. Das unterscheidet ihn von den beiden
+verworfenen Vorläufern: der **Biegeterm** (§7) nahm die zweite Differenz der
+ANKER und bepreiste damit die Krümmung, aus der eine Schrift besteht; das
+**Scharnier** (§8) bepreiste den Abstand („ein Sprung auf nahe Tinte ist immer
+noch ein Sprung"). Existiert zweimal, weil es zwei Fit-Pfade gibt — im
+Einzelbuchstaben-Fit und in den BUCHSTABENBLÖCKEN der Kette, wo alle
+gespeicherten Vorkommen herkommen; nicht zu verwechseln mit
+`CHAIN_CONNECTOR_SMOOTH_WEIGHT`, der die ANKER eines frei erfundenen Verbinders
+glättet. Beide Gewichte stehen auf 0: der Term ist inert, bis das
+vorregistrierte A/B ihn setzt. Gemessen stemmt er sich gegen den
+**Deckungsterm** (§11a). → qualitaetsmetrik.md §7, §8, §11, §11a
 
 **Gradientenzerlegung** *(`chain.gradient_decomposition`, `tools/pairlab/gradlab.py`)*
 — die Diagnose, die vor jedem neuen Fit-Term steht: die Kraft **je Term und
