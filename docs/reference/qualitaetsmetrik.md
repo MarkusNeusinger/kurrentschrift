@@ -3024,6 +3024,23 @@ Sichtprüfung: `tools/fitview` (die bewerteten humanbench-Schirme, vorher/
 nachher im Urteilsrahmen samt gesetzter Marker) und `tools/pairlab/peaklab`
 (benannter Arbeitssatz, Ankerkette über der Tinte, Minuten je Runde).
 
+**Urteil des Eigentümers am Bild** (2026-08-11, nach Sicht der Vorher/
+Nachher-Überlagerung über den Arbeitssatz): *„ja die peaks sind so weg"*.
+Damit ist die `A`-Klasse an der Stelle geschlossen, an der sie überhaupt
+beurteilbar ist — am Bild, nicht an einer Kennzahl. Das ist die
+Arbeitsform, die die vier verworfenen Terme nie hatten: eine kurze
+Rechenrunde, ein Bild, ein menschliches Urteil.
+
+**Was damit noch NICHT im Live-System ist.** Die Reparatur wirkt bei der
+ERNTE. Bis sie das Geschriebene erreicht, führt der Weg über vier weitere
+Stufen: Neu-Ernte → `instances` → `aggregates`-Rebuild → `apply-laufform`
+→ Rendering. Erst die letzte Stufe ändert, was die Feder schreibt, und
+genau sie ist die einzige, die eine bewusste Freigabe braucht
+(`LAUFFORM_MIN_OCCURRENCES`, Archiv-Momentaufnahme davor). Solange diese
+Kette nicht gelaufen ist, ist der Befund oben eine Aussage über die
+MESSUNG, nicht über das Produkt — und die Klage „viel gelernt, im System
+nichts verbessert" bleibt bis dahin berechtigt.
+
 ---
 
 ## 12. Die Autopsie der `d`-Tafelform (`aug10`)
