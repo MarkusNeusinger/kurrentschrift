@@ -2864,6 +2864,117 @@ Zwei Dinge, die dabei ehrlich zu bleiben haben:
 
 ---
 
+## 11d. VERWORFEN: Lauf 2, und warum das Kriterium sich bezahlt gemacht hat (`aug10`)
+
+Mit der kalibrierten Leiter (§11c) **wirkt** der Term. Er tut genau das, wofür
+er gebaut wurde — und wird trotzdem verworfen, weil das eine unabhängige Maß
+zeigt, dass er den Defekt nicht behebt, sondern **verschmiert**.
+
+63 Wörter, fünf Arme, 277 gepaarte Vorkommen.
+
+| Gewicht | gestrandete Anker | Spike-Median | **Anker außerhalb der Tinte** | `geo` Median / p90 | `cov` Median | `ok` |
+|---|---|---|---|---|---|---|
+| 0 | 98 | 2,90 | 0,0072 | — | — | 209 |
+| 0,1 | 79 | 2,53 | 0,0075 (**+4,6 %**) | +0,28 % / +2,21 % | +2,94 % | 214 |
+| 0,32 | 70 | 2,20 | 0,0079 (**+9,6 %**) | +0,62 % / +3,65 % | +5,19 % | 216 |
+| 1,0 | 49 | 1,85 | 0,0085 (**+18,4 %**) | +1,29 % / +6,36 % | +7,74 % | 217 |
+| 3,2 | 41 | 1,59 | 0,0085 (**+18,4 %**) | +2,38 % / +8,75 % | +10,33 % | 218 |
+
+**Der Term erreicht sein eigenes Ziel und verfehlt die Sache.** Die
+gestrandeten Anker fallen um 58 %, das Spike-Verhältnis um 45 % — und
+gleichzeitig stehen **mehr** Anker außerhalb der Tinte, nicht weniger.
+Verlangt waren −25 %; gemessen sind +18 % in die Gegenrichtung. Die
+Kostenschranken reißen zusätzlich schon auf der untersten Sprosse
+(`cov` +2,94 % gegen +2 %).
+
+### Der Mechanismus
+
+Der Term glättet die zweite Differenz der **Verschiebungen**. Ein einzelner
+Anker kann seinen Ausflug damit nicht mehr allein machen — also **nimmt er
+seine Nachbarn mit**. Aus einem Anker im leeren Papier werden drei, die
+gemeinsam etwas neben der Tinte liegen. Für jede Statistik, die auf den
+*Sprung zwischen benachbarten Ankern* schaut, ist das eine Heilung; für die
+Tinte ist es eine Verschlechterung, und für den Per-Anker-Median der Laufform
+ist es die schlimmere Variante, weil jetzt mehrere Anker verunreinigt sind
+statt einer.
+
+### Der Ertrag ist zirkulär — vollständig
+
+Der Ertrag steigt (209 → 218) und McNemar ist ab 0,32 sogar signifikant
+zugunsten des Terms (p = 0,039 · 0,021 · 0,022). Das sieht nach dem
+Live-System-Gewinn aus, um den es geht. Die Aufschlüsselung der Kipper zerstört
+das:
+
+| Gewicht | gewonnen | davon vorher abgelehnt wegen … |
+|---|---|---|
+| 0,1 | +6 | `anchor_spike` 6 |
+| 0,32 | +8 | `anchor_spike` 8 |
+| 1,0 | +9 | `anchor_spike` 9 |
+| 3,2 | +11 | `anchor_spike` 9 · `connector_degenerate` 2 |
+
+**Jeder Gewinn bis Gewicht 1,0 ist ein `anchor_spike`-Fall** — der Tor-Grund,
+den der Term per Konstruktion unterdrückt. Das Gate zählt also dieselbe
+Statistik, die der Term bestraft; sein „Mehr-Ertrag" ist dieselbe Zirkularität
+wie beim verworfenen Nutzenkriterium, eine Ebene höher. Die Verteilung der
+Ablehnungsgründe sagt es direkt:
+
+| Gewicht | `ok` | `anchor_spike` | `not_converged_local` | `connector_degenerate` |
+|---|---|---|---|---|
+| 0 | 209 | 22 | 21 | 20 |
+| 1,0 | 217 | **3** | **31** | 24 |
+| 3,2 | 218 | 3 | 31 | 22 |
+
+Der Term tauscht einen Ablehnungsgrund gegen einen anderen: `anchor_spike`
+22 → 3, `not_converged_local` 21 → 31. Die **Konvergenz wird echt schlechter**,
+und das ist kein Etikett, das der Term kontrolliert.
+
+### Was daran gelungen ist
+
+§11 Korrektur 1 hat sich vollständig bezahlt gemacht. Wäre — wie §11
+ursprünglich vorsah — auf `anchor_spike_ratio` und „Gate-Ablehnungen unter 23"
+gemessen worden, hätte dieser Term auf **jeder** Sprosse glänzend bestanden:
+Spike-Median −45 %, Ablehnungen 68 → 59, McNemar signifikant. Genau die Zahlen,
+die eine Übernahme getragen hätten. Das eine Maß, das nicht in der
+Zielfunktion steht und nicht im Gate zählt — der Abstand des gespeicherten
+Ankers zur Tinte — ist das einzige, das die Wahrheit sagt.
+
+Das ist der Lehrsatz aus §10 („bestätigt" und „brauchbar" sind zwei Fragen) in
+seiner härtesten Form: **eine Kennzahl, die der Eingriff selbst bestraft, kann
+seinen Erfolg nicht bezeugen.**
+
+### Die Bilanz für `A` („Einzelner Ausreißer")
+
+* **Biegeterm** (§7) — verworfen, bepreiste globale Krümmung statt der Unstetigkeit.
+* **Scharnier** (§8) — verworfen, bepreiste den Abstand.
+* **Sample-Stützung der Eckanker-Klasse** (§10) — Diagnose hält der nicht-zirkulären Prüfung nicht stand.
+* **Nachbarbindung** (§11–§11d) — **verworfen**: wirkt, senkt die eigene Zielstatistik um 58 %, und macht die Ankerlage zur Tinte um 18 % schlechter, während sie die Konvergenz kostet.
+* **Das Gate** bleibt die Rückfalllinie, die aussortiert statt zu reparieren.
+
+Vier Wege zu, alle gemessen. Was übrig bleibt, ist kein fünfter Term, sondern
+die **Ursache** aus §11a: der Deckungsterm ist blind dafür, welches Segment
+einen Skelettpunkt besitzt, und zieht deshalb den nächstbesten Anker heran.
+Ein Term, der an der Steifigkeit ansetzt, kann das nicht heilen — dieser Lauf
+ist der Beleg, nicht mehr die Vermutung.
+
+### Die Bestätigungsmenge bleibt unberührt
+
+Kein Arm ist auf Abb. 20 gelaufen. Das Protokoll aus §11b sieht die
+Bestätigung nur für ein Gewicht vor, das auf der Entwicklungsmenge **beide**
+Kriterien besteht; keines tut das. Eine Rückhaltemenge für eine bereits
+gescheiterte Hypothese auszugeben, würde sie für die nächste verbrennen —
+sie steht der Untersuchung der Deckungs-Zuordnung unverbraucht zur Verfügung.
+
+### Zustand im Code
+
+`CHAIN_LETTER_BIND_WEIGHT` bleibt auf 0,0 und ist als gemessen-verworfen
+gekennzeichnet. Der Zwilling `core.fit.DEFAULT_SMOOTH_WEIGHT` auf dem
+Einzelbuchstaben-Pfad ist **nicht** geprüft worden — er steht auf demselben
+Mechanismus, aber auf einer anderen Zielfunktion, und nach der Lehre aus §11c
+wird das hier nicht wieder aus der Ferne übertragen. Er bleibt auf 0,0; wer ihn
+anhebt, braucht sein eigenes A/B.
+
+---
+
 ## 12. Die Autopsie der `d`-Tafelform (`aug10`)
 
 §10 hatte den `B`-Befund („Bereich daneben") auf eine Glyphe eingegrenzt —

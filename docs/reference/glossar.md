@@ -59,7 +59,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4
 - **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Editor §5 · Wort-Trace §2
 - **X** — x-Höhe (`xh`) §1
-- **Z** — Zelle einsetzen §5 · Zwei-Drittel-Gesetz §6
+- **Z** — Zelle einsetzen §5 · zirkuläres Kriterium §4 · Zwei-Drittel-Gesetz §6
 
 ---
 
@@ -761,9 +761,21 @@ noch ein Sprung"). Existiert zweimal, weil es zwei Fit-Pfade gibt — im
 Einzelbuchstaben-Fit und in den BUCHSTABENBLÖCKEN der Kette, wo alle
 gespeicherten Vorkommen herkommen; nicht zu verwechseln mit
 `CHAIN_CONNECTOR_SMOOTH_WEIGHT`, der die ANKER eines frei erfundenen Verbinders
-glättet. Beide Gewichte stehen auf 0: der Term ist inert, bis das
-vorregistrierte A/B ihn setzt. Gemessen stemmt er sich gegen den
-**Deckungsterm** (§11a). → qualitaetsmetrik.md §7, §8, §11, §11a
+glättet. **Gemessen und verworfen** (§11d): der Term wirkt — gestrandete Anker
+−58 %, Spike-Verhältnis −45 % — und verschiebt trotzdem 18 % **mehr** Anker aus
+der Tinte heraus, weil ein gebremster Anker seine Nachbarn mitnimmt. Aus einem
+Anker im leeren Papier werden drei. Beide Gewichte bleiben auf 0.
+→ qualitaetsmetrik.md §7, §8, §11a, §11d
+
+**Zirkuläres Kriterium** — der Fehlschluss, einen Eingriff an einer Kennzahl zu
+messen, die er selbst bestraft. Zweimal gemessen dokumentiert: die
+**Nachbarbindung** senkt `anchor_spike_ratio` per Konstruktion, und weil das
+Ernte-Gate denselben Grund führt, sah ihr Mehr-Ertrag (209 → 218 angenommene
+Vorkommen, McNemar p = 0,021) wie ein Produktgewinn aus — **jeder** Gewinn war
+ein zuvor mit `anchor_spike` abgelehntes Vorkommen, während die echte
+Konvergenz schlechter wurde. Gegenmittel und Pflicht jeder Vorregistrierung:
+ein Kriterium, das **weder in der Zielfunktion noch im Gate** steht (hier der
+Abstand des gespeicherten Ankers zur Tinte). → qualitaetsmetrik.md §11b, §11d
 
 **Gradientenzerlegung** *(`chain.gradient_decomposition`, `tools/pairlab/gradlab.py`)*
 — die Diagnose, die vor jedem neuen Fit-Term steht: die Kraft **je Term und

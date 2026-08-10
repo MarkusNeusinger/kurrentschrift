@@ -102,26 +102,39 @@ CHAIN_COVERAGE_CAP_UNITS = 0.30
 # stated systematic effect is a slightly rougher connector (M3 dconn median
 # 0.197 xh vs. 0.178 at 1e-3).
 CHAIN_CONNECTOR_SMOOTH_WEIGHT = 1e-5
-# --- neighbour binding on the LETTER blocks (the §11 experiment) -------------
+# --- neighbour binding on the LETTER blocks: MEASURED AND REJECTED -----------
+# Do not raise this weight. The pre-registered A/B ran (§11d): with a
+# scale-calibrated ladder the term WORKS — stranded anchors 98 -> 41, spike
+# ratio 2.90 -> 1.59 — and it makes the thing that matters worse. The share of
+# stored anchors sitting off the ink RISES by 18 %, because smoothing the second
+# difference of the displacements stops one anchor from making its excursion
+# alone: it takes its neighbours along, and one anchor in blank paper becomes
+# three. For the per-anchor Laufform median that is the worse failure.
+# Its apparent yield gain (209 -> 218 accepted) is fully circular: every flip up
+# to weight 1.0 was an occurrence the harvest had rejected for `anchor_spike` —
+# the very statistic this term suppresses by construction — while genuine
+# convergence got worse (`not_converged_local` 21 -> 31).
+# Kept in the code, at 0.0, because the A/B tooling (`tools/pairlab/bindab.py`)
+# is what makes that measurement repeatable, and because a fifth attempt at this
+# class of term should have to reproduce the refutation first.
+# ---------------------------------------------------------------------------
 # Weight of the second difference of the per-anchor DISPLACEMENTS inside a
 # letter's own pen-stroke. `core.fit.DEFAULT_SMOOTH_WEIGHT` is the same term on
 # the single-letter path; this is the twin on the path all 245 stored
 # occurrences actually came from, which `qualitaetsmetrik.md` §11 identified as
 # the place the term has to live.
 #
-# The gradient decomposition that §11 required before building it (§11a, 96
-# solves / 41 280 anchors) says what this term will push against: at a stranded
-# anchor the COVERAGE force is 32x its normal strength and aligned with the
-# displacement to a cosine of −0.996, while the Tikhonov pull is the only
-# restraint and is — measured — nothing but the same spring stretched further
-# (force/displacement 4.167e-3 stranded vs. 4.166e-3 control). So this is a
-# second restraint against a coverage-driven excursion. Read §11a before
-# raising it: the same measurement says the DRIVER is the coverage term's
-# blindness to which segment owns a skeleton point, and a stiffness term makes
-# that pull expensive rather than wrong.
+# The gradient decomposition §11 required before building it (§11a, 96 solves /
+# 41 280 anchors) had already named the limit the A/B then confirmed: at a
+# stranded anchor the COVERAGE force is 32x its normal strength and aligned with
+# the displacement to a cosine of −0.996, so the DRIVER is that term's blindness
+# to which segment owns a skeleton point. A stiffness term makes that pull
+# expensive rather than wrong — and expensive, measured, means it drags the
+# neighbours out too.
 #
-# DEFAULT 0.0 = the objective is byte-identical to its absence, which is what
-# lets the A/B's baseline arm be an identity instead of a re-derivation.
+# DEFAULT 0.0. Besides being the rejected setting, it is also the byte-identical
+# one: at 0.0 the objective is bit-for-bit what it is without the term, which is
+# what let the A/B's baseline arm be an identity instead of a re-derivation.
 CHAIN_LETTER_BIND_WEIGHT_ENV = "KS_CHAIN_LETTER_BIND_WEIGHT"
 CHAIN_LETTER_BIND_WEIGHT = float(os.environ.get(CHAIN_LETTER_BIND_WEIGHT_ENV) or 0.0)
 # Coverage points per chain segment: `core.fit.MAX_COVERAGE_POINTS` (300) is a
