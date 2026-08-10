@@ -1499,6 +1499,7 @@ def fit_word_chain(
     windows_px: dict[int, tuple[float, float]],
     slot_shift_init: dict[int, tuple[float, float]] | None = None,
     keep_solve: bool = False,
+    bind_weight: float | None = None,
 ) -> ChainWordFit | None:
     """Fit a run of consecutive slots as ONE chain `[L, C, L, C, …]`.
 
@@ -1592,7 +1593,14 @@ def fit_word_chain(
     if fields is None:
         return None
 
-    problem = build_chain_problem(specs, unit_px=xh, x_origin_px=x_origin_px, baseline_y_px=baseline_y_px, **fields)
+    problem = build_chain_problem(
+        specs,
+        unit_px=xh,
+        x_origin_px=x_origin_px,
+        baseline_y_px=baseline_y_px,
+        bind_weight=bind_weight,
+        **fields,
+    )
     # Seed the translation blocks BEFORE the initial energies, so `e0` states
     # the energy of the start the solve actually descends from. Clipped just
     # inside the bounds: the `slot_at_bound` check reads |dx| >= bound - 1e-9,
@@ -1692,6 +1700,7 @@ def fit_word_chain(
             "cov_rmse_local_px": {s.key or s.kind: round(s.cov_rmse_local_px, 3) for s in segments},
             "slot_shift_init": {str(k): list(v) for k, v in applied_seed.items()},
             "smooth_weight": problem.smooth_weight,
+            "bind_weight": problem.bind_weight,
             "overlap_weight": problem.overlap_weight,
             "coverage_cap_px": round(problem.cov_cap_px, 3),
             "seconds": round(time.perf_counter() - started, 3),

@@ -2687,6 +2687,104 @@ an dem der Anker überhaupt wirkt.
 
 ---
 
+## 11b. Das A/B: vorregistriert, vor dem ersten Lauf (`aug10`)
+
+Geschrieben und committet, **bevor irgendeine Zahl des Versuchs existiert**.
+Das ist der ganze Zweck: §10 Lehre 1 („bestätigt" und „brauchbar" sind zwei
+Fragen, beide gehören in die Vorregistrierung) und §11 Korrektur 2
+(Winner's Curse) lassen sich nicht nachträglich herstellen.
+
+### Die Leiter
+
+`CHAIN_LETTER_BIND_WEIGHT` ∈ **{0 · 1e-4 · 1e-3 · 1e-2}**. Vier Arme, nicht
+mehr — jede Zwischenstufe, die erst nach Sichtung eingeschoben wird, ist eine
+verdeckte Mehrfachprüfung. Die Normierung ist die von
+`core.fit._second_difference_operator` (Indexraum, Mittel über die Zeilen),
+damit ein Gewicht auf beiden Fit-Pfaden ungefähr dasselbe bedeutet.
+
+### Die Teilung
+
+| | Menge | n Fälle |
+|---|---|---|
+| **Entwicklung** | Abb. 19, der `words`-Satz | 63 |
+| **Bestätigung** | Abb. 20, der `pairs`-Satz | 33 |
+
+Entlang der **Platten**, nicht zufällig über die Vorkommen: ein zufälliger
+Schnitt legt Vorkommen **derselben Kettenlösung** auf beide Seiten, und dann
+sind die Hälften nicht unabhängig. Dieselbe Hand, dieselbe Norm, andere Platte.
+Die humanbench-Rückhaltemenge ist mit Runde 02 aufgebraucht (§10) und wird hier
+nicht ein zweites Mal verbraucht — das hier ist eine **eigene** Teilung für eine
+Geometriefrage, die keine Urteile braucht.
+
+Auf der Entwicklungsmenge wird das kleinste wirksame Gewicht gewählt. Auf der
+Bestätigungsmenge läuft **nur dieses eine** Gewicht gegen 0, mit denselben
+Kriterien. Besteht es dort nicht, ist der Term verworfen — nicht nachjustiert.
+
+### Das Kriterium: Nutzen
+
+**Primär, und ausdrücklich nicht `anchor_spike_ratio`.** §11 Korrektur 1: das
+Spike-Verhältnis ist fast dieselbe Statistik, die der Term bestraft — jedes
+Gewicht senkt sie per Konstruktion, auch wenn der Anker weiter im Papier steht.
+Gemessen wird stattdessen **tintenbezogen**:
+
+> **Anteil der Buchstabenanker mit `d_raw` > 0,15 xh am ANKERORT.**
+
+Drei Eigenschaften, jede absichtlich: `d_raw` ist die **ungeglättete** EDT,
+während die Zielfunktion das geglättete Feld liest; gemessen wird **am Anker**,
+wo die Zielfunktion nie hinsieht (§11a); und es ist ein **Schwellenanteil**,
+keine quadratische Summe. Die Schwelle 0,15 xh ist
+`CHAIN_OVERLAP_RADIUS_UNITS` — der im Repo bereits kalibrierte Abstand „noch
+innerhalb eines gezogenen Strichs"; darüber liegt der Anker außerhalb der Tinte.
+
+Am Ankerort und nicht an den Samples, obwohl §11a gezeigt hat, dass dort keine
+Kraft wirkt: **gespeichert wird der Anker.** Er läuft über
+`instances` in die Per-Anker-Mediane und damit in die Laufform, die das
+Live-System schreibt. Wo die Kraft angreift, ist eine Frage an die
+Zielfunktion; wo der Fehler landet, ist eine Frage an das Produkt.
+
+**Bestehensschwelle:** der Anteil muss **relativ um ≥ 25 %** fallen, gepaart je
+Vorkommen gerechnet.
+
+### Das Kriterium: Kosten
+
+§11 Korrektur 3 — keine Mittelwerte allein, gepaart je Vorkommen, mit
+Quantil-Schranken und der Zahl neu scheiternder Vorkommen:
+
+| Größe | Schranke |
+|---|---|
+| `geo_rmse_px`, Median der gepaarten Differenzen | ≤ +5 % |
+| `geo_rmse_px`, p90 der gepaarten Differenzen | ≤ +10 % |
+| `cov_rmse_local_px`, Median gepaart | ≤ +2 % |
+| angenommene Vorkommen (Gate `ok`) | **kein Netto-Verlust** |
+| Gate-Kipper | McNemar, nicht signifikant zuungunsten |
+
+„Unter 23 Ablehnungen" aus §11 ist als Kriterium gestrichen: eine grobe
+Ganzzahl, bei der 23 → 22 Rauschen ist. An seine Stelle tritt der McNemar-Test
+über die Kipprichtungen.
+
+### Das Kriterium: dass es nicht bloß anders rechnet
+
+§11 Korrektur 4. Der Baseline-Arm wird **im selben Lauf** mit Gewicht 0 neu
+gefittet; dass das eine Identität ist, ist keine Behauptung, sondern
+byte-identisch geprüft (§11a). Zusätzlich berichtet wird die Verteilung von
+`iterations` und `hit_iteration_cap` beider Arme: verschiebt ein „wirksames"
+Gewicht nur die Kondition oder das Abbruchverhalten, ist der Nutzen ein
+Artefakt. `interp+snap` ist in beiden Armen aus — es existiert im Code
+ohnehin nicht.
+
+**Die Vorkommen, an denen die Diagnose entstand**, werden ausgewiesen: die 128
+gestrandeten Anker aus §11a sind auf der Entwicklungsmenge mitgemessen worden,
+also ist der Entwicklungsarm in diesem Punkt nicht unschuldig. Die
+Bestätigungsmenge ist es.
+
+### Was das A/B ausdrücklich nicht beantwortet
+
+§11a: der Term ist eine Bremse gegen einen Zug des Deckungsterms, nicht dessen
+Ursache. Ein bestandenes Kriterium heißt „die Bremse wirkt und ist bezahlbar" —
+nicht „die Strandung ist verstanden".
+
+---
+
 ## 12. Die Autopsie der `d`-Tafelform (`aug10`)
 
 §10 hatte den `B`-Befund („Bereich daneben") auf eine Glyphe eingegrenzt —
