@@ -2785,6 +2785,85 @@ nicht „die Strandung ist verstanden".
 
 ---
 
+## 11c. Lauf 1: die Leiter hat den Term nie eingeschaltet (`aug10`)
+
+Der in §11b vorregistrierte Versuch ist gelaufen — 63 Wörter, vier Arme, 277
+gepaarte Vorkommen. **Kein Gewicht besteht.** Das ist das Ergebnis von
+Protokoll wegen, und es steht.
+
+| Gewicht | Anteil Anker außerhalb der Tinte | relativ | Nutzen | `geo` Median | `cov` Median | angenommen | Kosten |
+|---|---|---|---|---|---|---|---|
+| 0 | 0,0072 | — | — | — | — | 209 | — |
+| 1e-4 | 0,0070 | −2,1 % | nein | +0,02 % | +0,03 % | 209 | ok |
+| 1e-3 | 0,0072 | 0,0 % | nein | +0,03 % | +0,09 % | 209 | ok |
+| 1e-2 | 0,0072 | −0,4 % | nein | +0,10 % | +0,60 % | 210 | ok |
+
+Verlangt waren −25 %. Berichtet, nie Kriterium: die gestrandeten Anker
+(98 → 94 → 102 → 97) — der Term senkt also **nicht einmal die Statistik, für
+die er gebaut wurde**.
+
+### Warum das kein Befund über den Term ist
+
+Die Kosten sind der Hinweis: +0,10 % Median-Restfehler beim **höchsten**
+Gewicht ist keine Zielfunktion, die kämpft, sondern eine, die den Term nicht
+bemerkt. Nachgemessen an den Energien einer Lösung:
+
+| | `e_geo` | `w · e_bind` bei 1e-2 |
+|---|---|---|
+| Wort `das` | 2,23e-3 | **4,9e-6** |
+
+**450-fach kleiner als der Geometrieterm.** Und über acht Baseline-Lösungen
+(Gewicht 0, also ohne jeden Blick auf einen Effekt) ist das Verhältnis
+`e_geo / e_bind` im Median **3,2** (p10 1,5 · p90 5,3): erst ein Gewicht um 3
+stellt die Bindung auf Augenhöhe mit der Geometrie. Die Leiter endete bei
+1e-2 — **rund 320-fach zu niedrig**.
+
+### Der Fehler, benannt
+
+Die Leiter kam aus der Analogie zu `core.fit.DEFAULT_SMOOTH_WEIGHT`, „damit ein
+Gewicht auf beiden Fit-Pfaden ungefähr dasselbe bedeutet" (§11b). Der Operator
+ist derselbe — die **Energieskala der Zielfunktion, in der er steht, ist es
+nicht.** Der Ketten-Pfad normiert anders, seine Restfehler leben in anderen
+Größenordnungen, und ein aus der Ferne übernommenes Gewicht sagt darüber
+nichts. Das ist dieselbe Verwechslung, die §11a an anderer Stelle aufgelöst
+hat: zwei Pfade sind nicht vergleichbar, nur weil der Operator gleich aussieht.
+
+Der Versuch hat damit die Hypothese **nicht geprüft**. Er ist kein Beleg gegen
+den Nachbarschaftsterm; er ist ein Beleg dafür, dass eine Leiter ohne
+Skalenkalibrierung ein leerer Lauf ist. Wer das Ergebnis als „Term wirkt nicht"
+zitiert, zitiert einen Versuch, in dem der Term zu 0,2 % anwesend war.
+
+### Vorregistrierung, Lauf 2
+
+Wieder vor dem Lauf geschrieben und committet. Geändert wird **nur die
+Leiter**; Teilung, Nutzenkriterium (−25 % relativ am tintenbezogenen Maß),
+Kostenschranken und die Prüfungen aus §11 Korrektur 3/4 bleiben Wort für Wort
+die aus §11b.
+
+> **Leiter: 0 · 0,1 · 0,32 · 1,0 · 3,2** — geometrisch im Schritt ×3,16, so
+> gelegt, dass die Bindung am Baseline-Optimum rund 3 % · 10 % · 31 % · 100 %
+> des Geometrieterms beiträgt.
+
+Die Kalibrierung stammt ausschließlich aus **Gewicht-0-Lösungen**, verrät also
+nichts über den Effekt — dieselbe Regel wie bei der Instrumentenprüfung in
+§11b, wo geprüft wurde, dass das Nutzenmaß überhaupt feuert (4 von 19
+Vorkommen, ~0,57 % der Anker).
+
+Zwei Dinge, die dabei ehrlich zu bleiben haben:
+
+* **Die Entwicklungsmenge wird zum zweiten Mal benutzt.** Das ist ihr Zweck,
+  aber es heißt, dass die Wahl des kleinsten wirksamen Gewichts jetzt auf einer
+  zweifach besuchten Menge geschieht. Was die Aussage trägt, ist die
+  **Bestätigungsmenge** — und Abb. 20 ist bis hierher **vollständig unberührt**,
+  kein einziger Arm ist dort gelaufen.
+* **Ein Gewicht um 3 ist kein kleiner Regularisierer mehr.** Wenn die Bindung
+  so viel wiegt wie die Geometrie, formt sie den Buchstaben mit, statt nur
+  einen Ausreißer zu bremsen. Genau dafür sind die Kostenschranken da, und
+  wenn sie reißen, ist das die Antwort und nicht ein Grund, die Leiter noch
+  einmal zu verschieben.
+
+---
+
 ## 12. Die Autopsie der `d`-Tafelform (`aug10`)
 
 §10 hatte den `B`-Befund („Bereich daneben") auf eine Glyphe eingegrenzt —

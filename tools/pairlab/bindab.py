@@ -55,7 +55,14 @@ INK_OFF_UNITS = 0.15
 # The harvest's own acceptance threshold, so a row's gate here is the gate that
 # decides whether the occurrence reaches `instances` in production.
 RMSE_MAX = 2.2
-PRE_REGISTERED_LADDER = (0.0, 1e-4, 1e-3, 1e-2)
+# Run 2's ladder (§11c). Run 1's — 1e-4 · 1e-3 · 1e-2 — was taken by analogy to
+# `core.fit.DEFAULT_SMOOTH_WEIGHT` and never switched the term on: at its top
+# rung the weighted bind energy was 4.9e-6 against `e_geo` 2.2e-3, i.e. 450x
+# smaller. Measured on BASELINE solves only (weight 0, so nothing about the
+# effect leaks), `e_geo / e_bind` is 3.2 in the median (p10 1.5, p90 5.3), so
+# these rungs put the binding at roughly 3 %, 10 %, 31 % and 100 % of the
+# geometry term. Geometric spacing x3.16.
+PRE_REGISTERED_LADDER = (0.0, 0.1, 0.32, 1.0, 3.2)
 
 
 def off_ink_share(problem, params, a0: int, a1: int) -> tuple[float, int]:
