@@ -10,10 +10,11 @@ its canonical shape.
 from __future__ import annotations
 
 import numpy as np
+from scipy.optimize import approx_fprime
 
 from core.chart import crop_with_mask, load_chart_grayscale
 from core.extract import binarize_adaptive, skeleton_and_width
-from core.fit import fit_glyph_to_crop, fit_template_to_instance
+from core.fit import _InstanceFit, _second_difference_operator, fit_glyph_to_crop, fit_template_to_instance
 from core.pipeline import canonical_from_path
 
 
@@ -142,3 +143,86 @@ def test_fit_returns_library_entry_shape(synthetic_chart_path, synthetic_bbox):
     # Overlay polylines present for the crop · canonical · fit visual check.
     assert len(out["fitted_polyline_px"]) == len(out["canonical_polyline_px"]) > 0
     assert len(out["skeleton_polyline_px"]) > 0
+
+
+# ------------------------------------------------- neighbour binding (smooth_weight)
+
+
+def test_second_difference_operator_never_spans_a_pen_lift():
+    """A pen lift is the hand setting down elsewhere, not a kink in the line."""
+    d = _second_difference_operator(10, [0, 6])
+    supports = [sorted(np.nonzero(row)[0].tolist()) for row in d]
+    assert supports == [[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5], [6, 7, 8], [7, 8, 9]]
+    # No row reads across the boundary, so a two-stroke glyph is not penalised
+    # for writing what its ductus prescribes.
+    assert not any(5 in s and 6 in s for s in supports)
+
+
+def test_neighbour_binding_is_free_for_a_smooth_deformation():
+    """Translating, stretching or shearing a stroke must cost nothing.
+
+    That is the whole point of taking the second difference of the
+    DISPLACEMENTS rather than of the anchors: fitting a template to a hand IS
+    an affine-ish deformation, and only a lone anchor leaving its neighbours
+    behind should be priced.
+    """
+    d = _second_difference_operator(12, None)
+    affine = np.column_stack([np.arange(12), 3.0 * np.arange(12) - 5.0]).astype(float)
+    assert float(np.max(np.abs(d @ affine))) < 1e-12
+    spike = affine.copy()
+    spike[6] += np.array([0.2, -0.1])  # one anchor pops out of the chain
+    assert float(np.max(np.abs(d @ spike))) > 0.1
+
+
+def test_neighbour_binding_gradient_matches_finite_differences(synthetic_chart_path, synthetic_bbox):
+    """The analytic gradient of the new term, checked numerically.
+
+    A wrong jacobian here would not raise — L-BFGS-B would simply converge
+    somewhere else, and the A/B that decides the term's fate would measure the
+    bug instead of the idea.
+    """
+    canon = _canonical_on_synthetic(synthetic_chart_path, synthetic_bbox)
+    chart = load_chart_grayscale(synthetic_chart_path)
+    crop = crop_with_mask(chart, synthetic_bbox, fill=1.0)
+    skel, width_map = skeleton_and_width(binarize_adaptive(crop))
+    anchors = np.asarray(canon["anchors"], float)
+    hw = np.asarray(canon["half_widths"], float)
+    unit_px = float(synthetic_bbox["baseline_y"] - synthetic_bbox["midband_y"])
+
+    captured = {}
+    original = _InstanceFit.objective
+
+    def spy(self, params):
+        captured["ctx"] = self
+        return original(self, params)
+
+    _InstanceFit.objective = spy
+    try:
+        fit_template_to_instance(
+            anchors,
+            hw,
+            skel,
+            width_map,
+            unit_px=unit_px,
+            baseline_y_px=float(synthetic_bbox["baseline_y"] - synthetic_bbox["y0"]),
+            smooth_weight=0.5,
+            max_iter=1,
+        )
+    finally:
+        _InstanceFit.objective = original
+
+    ctx = captured["ctx"]
+    rng = np.random.default_rng(11)
+    params = rng.normal(scale=0.02, size=2 + 2 * ctx.k)
+    _, grad = ctx.objective(params)
+    numeric = approx_fprime(params, lambda p: ctx.objective(p)[0], 1e-7)
+    assert np.allclose(grad, numeric, atol=2e-4), float(np.max(np.abs(grad - numeric)))
+
+
+def test_zero_smooth_weight_leaves_the_fit_untouched(synthetic_chart_path, synthetic_bbox):
+    """The term ships inert: adding it may not move a single stored number."""
+    canon = _canonical_on_synthetic(synthetic_chart_path, synthetic_bbox)
+    off = fit_glyph_to_crop(canon, synthetic_bbox, synthetic_chart_path)
+    zero = fit_glyph_to_crop(canon, synthetic_bbox, synthetic_chart_path, smooth_weight=0.0)
+    assert np.array_equal(np.asarray(off["anchors"]), np.asarray(zero["anchors"]))
+    assert off["fit"]["geo_rmse_px"] == zero["fit"]["geo_rmse_px"]

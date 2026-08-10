@@ -12,6 +12,30 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **A neighbour-binding term in the fit objective — shipped inert, for a
+  pre-registered A/B.** The single anchor that runs into blank paper is not
+  stuck in a dead spot: measured at the 49 detected cases, the smoothed
+  distance field pulls at `|∇d|` 0.898 of full strength and none of them sits
+  on a ridge where the gradient would vanish. The anchor was driven there and
+  nothing held it back — it is displaced 0.208 template units from the chart
+  form while its own four neighbours sit at 0.047. The objective had no term
+  for that: geometry, width, coverage and an ABSOLUTE Tikhonov pull per
+  anchor, but nothing on the difference between neighbours.
+  `_second_difference_operator` prices exactly that — the second difference of
+  the DISPLACEMENTS, per pen-stroke, never spanning a lift. Which is neither
+  the bending term of §7 (second difference of the ANCHORS, so it prices the
+  real curvature a script lives on) nor the hinge of §8 (which prices
+  distance, and „a jump onto nearby ink is still a jump"): an affine
+  deformation of a stroke — what fitting a template to a hand IS — costs
+  exactly zero, a lone anchor leaving its neighbours costs quadratically.
+  `smooth_weight` defaults to **0.0**, so the objective is byte-identical
+  until the A/B fixes a weight; a test pins that. The analytic gradient is
+  checked against finite differences, because a wrong jacobian would not
+  raise — L-BFGS-B would just converge elsewhere and the A/B would measure the
+  bug instead of the idea.
+
 ### Fixed
 
 - **The judgement sheet showed a letter without the pen path it was fitted

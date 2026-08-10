@@ -55,6 +55,13 @@ from core.template import SamplePlan, build_sample_plan, capsule_union_rings, sa
 
 
 DEFAULT_LAMBDA_REG = 1.0
+# Neighbour binding on the per-anchor displacements — the answer to the single
+# anchor that runs into blank paper while its neighbours stay put (measured:
+# 0.208 template units against 0.047 for the four neighbours). DEFAULT 0.0 =
+# OFF: the term ships inert so that adding it moves no stored geometry, and
+# the pre-registered A/B (docs/reference/qualitaetsmetrik.md) decides the
+# weight before anything is harvested with it.
+DEFAULT_SMOOTH_WEIGHT = 0.0
 DEFAULT_WIDTH_WEIGHT = 0.15
 DEFAULT_COVERAGE_WEIGHT = 0.3
 # Centerline samples for the fit/refine objectives. Bench-tuned with the
@@ -215,6 +222,36 @@ def _bilinear_with_grad(
     return val, dx * inside_x, dy * inside_y
 
 
+def _second_difference_operator(k: int, stroke_starts: Sequence[int] | None) -> np.ndarray:
+    """Rows that read `d[i-1] - 2·d[i] + d[i+1]` for every interior anchor.
+
+    Applied to the DISPLACEMENTS, not to the anchors: the chart form already
+    carries the ductus' own curvature, so what this measures is whether one
+    anchor moves differently from its neighbours. An affine displacement of a
+    whole stroke — translate, stretch, shear, which is exactly what fitting a
+    template to a hand is for — has a vanishing second difference and costs
+    nothing. A single anchor popping out of the chain costs quadratically.
+
+    That distinction is why this is not the bending term of
+    `qualitaetsmetrik.md` §7 (second difference of the ANCHORS, which prices
+    the real curvature of a script) nor the hinge of §8 (which prices
+    distance, and „a jump onto nearby ink is still a jump").
+
+    PER STROKE: a pen lift is the hand setting down somewhere else, not a
+    discontinuity of the line. Spanning one would penalise every multi-stroke
+    glyph for writing what its ductus prescribes — the same rule
+    `tools/laufform/harvest.py::anchor_spike_ratio` follows.
+    """
+    bounds = sorted({0, *(int(s) for s in (stroke_starts or []) if 0 < int(s) < k), k})
+    rows = []
+    for a, b in zip(bounds[:-1], bounds[1:], strict=True):
+        for i in range(a + 1, b - 1):
+            row = np.zeros(k)
+            row[i - 1], row[i], row[i + 1] = 1.0, -2.0, 1.0
+            rows.append(row)
+    return np.asarray(rows) if rows else np.zeros((0, k))
+
+
 def _sampling_operator(template_anchors: np.ndarray, plan: SamplePlan) -> np.ndarray:
     """(n_samples, K) linear operator mapping anchor coords to centerline samples.
 
@@ -334,6 +371,8 @@ class _InstanceFit:
     width_weight: float
     coverage_weight: float
     lambda_reg: float
+    smooth_op: np.ndarray
+    smooth_weight: float
 
     def to_pixels(self, params: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         tx, ty = params[0], params[1]
@@ -389,7 +428,24 @@ class _InstanceFit:
 
         e_reg = float(np.mean(np.sum(deltas**2, axis=1)))
 
-        f = e_geo + self.width_weight * e_wid + self.coverage_weight * e_cov + self.lambda_reg * e_reg
+        # Neighbour binding on the DISPLACEMENTS (see
+        # `_second_difference_operator`). Off at weight 0, which is the default
+        # until the pre-registered A/B says otherwise — the term is inert, not
+        # merely small, so nothing downstream moves by adding it.
+        e_smooth = 0.0
+        g_smooth = None
+        if self.smooth_weight and len(self.smooth_op):
+            curv = self.smooth_op @ deltas
+            e_smooth = float(np.mean(np.sum(curv**2, axis=1)))
+            g_smooth = 2.0 * (self.smooth_op.T @ curv) / len(self.smooth_op)
+
+        f = (
+            e_geo
+            + self.width_weight * e_wid
+            + self.coverage_weight * e_cov
+            + self.lambda_reg * e_reg
+            + self.smooth_weight * e_smooth
+        )
 
         # Chain rule through the pixel mapping: dpx/dtx = unit_px,
         # dpy/dty = -unit_px, dpx/dax = unit_px * S, dpy/day = -unit_px * S.
@@ -399,7 +455,10 @@ class _InstanceFit:
         g_anchors = np.column_stack(
             [self.unit_px * (self.sampling_op.T @ g_px), -self.unit_px * (self.sampling_op.T @ g_py)]
         )
-        grad[2:] = (g_anchors + self.lambda_reg * 2.0 * deltas / k).ravel()
+        g_delta = g_anchors + self.lambda_reg * 2.0 * deltas / k
+        if g_smooth is not None:
+            g_delta = g_delta + self.smooth_weight * g_smooth
+        grad[2:] = g_delta.ravel()
         return f, grad
 
     def report_energies(self, params: np.ndarray) -> tuple[float, float, float]:
@@ -433,6 +492,7 @@ def fit_template_to_instance(
     lambda_reg: float = DEFAULT_LAMBDA_REG,
     width_weight: float = DEFAULT_WIDTH_WEIGHT,
     coverage_weight: float = DEFAULT_COVERAGE_WEIGHT,
+    smooth_weight: float = DEFAULT_SMOOTH_WEIGHT,
     max_iter: int = DEFAULT_MAX_ITER,
     max_anchor_delta: float = MAX_ANCHOR_DELTA,
 ) -> FitResult:
@@ -455,6 +515,10 @@ def fit_template_to_instance(
         splits the spline there (matching the corner-aware render), so the fit
         does not fight a kink the renderer keeps. ``None`` => no corners.
     lambda_reg : Tikhonov weight on per-anchor displacement (topology guard).
+    smooth_weight : weight on the second difference of the per-anchor
+        DISPLACEMENTS within a pen-stroke — binds an anchor to its neighbours,
+        so a lone runaway costs while a smooth deformation stays free. 0.0
+        (the default) leaves the objective byte-identical.
     width_weight : weight of the half-width residual relative to geometry.
     coverage_weight : weight of the skeleton→template coverage residual.
     max_anchor_delta : per-anchor displacement bound in template units. The
@@ -537,6 +601,8 @@ def fit_template_to_instance(
         width_weight=width_weight,
         coverage_weight=coverage_weight,
         lambda_reg=lambda_reg,
+        smooth_op=_second_difference_operator(k, stroke_starts),
+        smooth_weight=smooth_weight,
     )
 
     n_params = 2 + 2 * k
@@ -625,6 +691,7 @@ def fit_template_to_instance(
         "lambda_reg": lambda_reg,
         "width_weight": width_weight,
         "coverage_weight": coverage_weight,
+        "smooth_weight": smooth_weight,
         "n_samples": n_samples,
     }
 
@@ -1206,6 +1273,7 @@ def fit_glyph_to_crop(
     lambda_reg: float = DEFAULT_LAMBDA_REG,
     width_weight: float = DEFAULT_WIDTH_WEIGHT,
     coverage_weight: float = DEFAULT_COVERAGE_WEIGHT,
+    smooth_weight: float = DEFAULT_SMOOTH_WEIGHT,
     n_samples: int = DEFAULT_N_SAMPLES,
     max_iter: int = DEFAULT_MAX_ITER,
 ) -> dict:
@@ -1248,6 +1316,7 @@ def fit_glyph_to_crop(
         lambda_reg=lambda_reg,
         width_weight=width_weight,
         coverage_weight=coverage_weight,
+        smooth_weight=smooth_weight,
         n_samples=n_samples,
         max_iter=max_iter,
     )
