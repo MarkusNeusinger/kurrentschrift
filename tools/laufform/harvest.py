@@ -75,6 +75,7 @@ from scipy.ndimage import distance_transform_edt
 from core.compose import CAP_RESTART_BASES, _key_base
 from core.fit import fit_template_to_instance
 from tools.pairlab.analyze import TRACE_WINDOW_MARGIN, _body_items, _fit_letter, _ink_extent_x, _to_px
+from tools.pairlab.anchors import repair_stranded_anchors
 from tools.pairlab.chain import chain_runs, fit_word_chain
 from tools.pairlab.connector_qc import connector_degenerate, connector_signals
 from tools.wordlab.cases import iter_fixture_word_cases
@@ -152,6 +153,11 @@ DIAG_FIELDS = (
     # one. Reported on every fitted row, so a run says how far the rejected
     # ones were over `MAX_ANCHOR_SPIKE_RATIO` and how much air the kept ones had.
     "anchor_spike_ratio",
+    # Post-gate repair (`tools.pairlab.anchors`): how many anchors of this
+    # letter were interpolated over before storage. Only ever non-zero on an
+    # ACCEPTED row — the gate and `anchor_spike_ratio` judge the UNREPAIRED
+    # geometry; a repair is a near-rejection, never a pass.
+    "n_repaired",
     "shift_x_units",
     "shift_y_units",
     "conn_reason_adjacent",
@@ -687,11 +693,20 @@ def _harvest_case_slots(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 )
             )
             continue
-        shift = np.median(fitted_raw - anchors, axis=0)
-        fitted = fitted_raw - shift  # shapes, not placements
+        # Post-gate repair (`tools.pairlab.anchors`): the gate above judged the
+        # UNREPAIRED geometry, and the stored `anchor_spike_ratio` stays that
+        # number — a repair is a near-rejection, never a pass. Only what an
+        # ACCEPTED occurrence contributes onward (the centering, the stored
+        # anchors, the medians) uses the interpolated array; with nothing
+        # flagged it IS `fitted_raw` (identity return).
+        repaired, repaired_indices = repair_stranded_anchors(fitted_raw, stroke_starts)
+        shift = np.median(repaired - anchors, axis=0)
+        fitted = repaired - shift  # shapes, not placements
         per_key[slot.key].append(fitted)
         # The word trace (handmodell word level): this letter's UNCENTERED
-        # fitted strokes in the word's shared frame, in writing order.
+        # fitted strokes in the word's shared frame, in writing order — built
+        # from the UNREPAIRED fit on purpose: the trace is the inspection layer
+        # showing what the fit actually did, needle and all.
         fitted_slots.append(keyed_i)
         rmse_by_slot[str(keyed_i)] = round(geo_rmse, 3)
         word_strokes.extend(
@@ -728,6 +743,9 @@ def _harvest_case_slots(case, result: WordDeriveResult, opts: HarvestOptions) ->
                     "registration_px": [round(float(ddx), 2), round(float(ddy), 2)],
                     "geo_rmse_px": round(geo_rmse, 3),
                     "xh_px": round(float(xh), 2),
+                    # Absent when untouched: absence must mean the stored
+                    # anchors are exactly the fitted ones.
+                    **({"repaired_anchors": repaired_indices} if repaired_indices else {}),
                 },
             }
         )
@@ -743,6 +761,7 @@ def _harvest_case_slots(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 converged=True,
                 geo_rmse_px=round(geo_rmse, 3),
                 anchor_spike_ratio=round(spike_ratio, 2),
+                n_repaired=len(repaired_indices),
                 **grid,
             )
         )
@@ -952,10 +971,12 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 np.asarray(seg.fitted_anchors, dtype=float) if seg.fitted_anchors is not None else np.zeros((0, 2))
             )
             adjacent = [conn_reasons.get(n - 1) if n else None, conn_reasons.get(n)]
-            # Measured on `fitted_raw`, i.e. exactly the array this path stores
+            stroke_starts = (row.get("trace_meta") or {}).get("stroke_starts") or [0]
+            # Measured on the UNREPAIRED `fitted_raw` — the gate's verdict and
+            # the stored ratio always describe what the fit actually produced
             # (the centering below is a single translation, which leaves every
             # inter-anchor step — and therefore the ratio — unchanged).
-            spike_ratio = anchor_spike_ratio(fitted_raw, (row.get("trace_meta") or {}).get("stroke_starts") or [0])
+            spike_ratio = anchor_spike_ratio(fitted_raw, stroke_starts)
             gate = letter_gate(
                 converged_local=bool(seg.converged_local),
                 geo_rmse_px=float(seg.geo_rmse_px),
@@ -967,6 +988,14 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
             )
             gate_by_slot[slot_index] = gate
             converged_by_slot[slot_index] = bool(seg.converged_local)
+            # Post-gate repair (`tools.pairlab.anchors`), ACCEPTED letters only:
+            # a repair is a near-rejection, never a pass — the gate above judged
+            # the unrepaired geometry, and a rejected letter is never repaired
+            # into acceptance. The interpolated array is what flows onward into
+            # the centering, the stored occurrence anchors and the medians.
+            repaired, repaired_indices = (
+                repair_stranded_anchors(fitted_raw, stroke_starts) if gate == "ok" else (fitted_raw, [])
+            )
             shift_block = fit.slot_shift_units.get(slot_index, (0.0, 0.0))
             total_shift = (fit.global_shift_units[0] + shift_block[0], fit.global_shift_units[1] + shift_block[1])
             diag = _diag_row(
@@ -991,6 +1020,7 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 chain_at_bound=bool(fit.slot_at_bound.get(slot_index, False)),
                 anchor_count_ok=fitted_raw.shape == anchors.shape,
                 anchor_spike_ratio=round(spike_ratio, 2),
+                n_repaired=len(repaired_indices),
                 shift_x_units=round(float(total_shift[0]), 4),
                 shift_y_units=round(float(total_shift[1]), 4),
                 **dict(
@@ -1014,8 +1044,8 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 continue
 
             accepted.add(slot_index)
-            shift = np.median(fitted_raw - anchors, axis=0)
-            fitted = fitted_raw - shift  # shapes, not placements
+            shift = np.median(repaired - anchors, axis=0)
+            fitted = repaired - shift  # shapes, not placements
             per_key[slot.key].append(fitted)
             rmse_by_slot[str(keyed[slot_index])] = round(float(seg.geo_rmse_px), 3)
             body = np.asarray(seg.polyline_px, dtype=float).reshape(-1, 2)
@@ -1049,13 +1079,18 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
                         "xh_px": round(float(xh), 2),
                         "fit_path": "chain",
                         "run_slots": list(fit.slots),
+                        # Absent when untouched: absence must mean the stored
+                        # anchors are exactly the fitted ones.
+                        **({"repaired_anchors": repaired_indices} if repaired_indices else {}),
                     },
                 }
             )
 
         # The whole solved run goes into the trace — a gate verdict decides what
         # is measured, not what was written (the per-slot verdicts stay readable
-        # in `gates`/`converged_local` beside it).
+        # in `gates`/`converged_local` beside it). The polylines are the fit's
+        # own UNREPAIRED output on purpose: the trace is the inspection layer
+        # showing what the fit actually did, needle and all.
         word_strokes.extend(
             assemble_word_strokes(
                 fit.stroke_polylines_px,

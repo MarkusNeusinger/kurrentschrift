@@ -14,6 +14,47 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The stranded anchor is now REPAIRED at harvest — the accepted alternative
+  to the four rejected objective terms.** `tools/pairlab/anchors.py` holds the
+  shared detector (both neighbouring steps ≥ 3× the median step of the own
+  pen-stroke — the shape of the author-marked defect, 16/17 hit rate) and the
+  repair: a flagged anchor is replaced by the linear interpolation of its
+  nearest unflagged stroke neighbours, never snapping to ink (§8 showed why: at
+  a crossing the nearest ink is the wrong stroke) and never crossing a pen
+  lift. Both harvest storage paths apply it AFTER the gate, only to ACCEPTED
+  occurrences: the gate keeps judging the unrepaired geometry (a repair is a
+  near-rejection, never a pass), the stored `anchor_spike_ratio` stays the
+  unrepaired number, and `measurements.repaired_anchors` lists what was
+  touched — absence means untouched, pinned byte-identical by the golden
+  test. The word trace deliberately stays unrepaired (the inspection layer
+  shows what the fit actually did). The owner's explicit trade (2026-08-10)
+  is recorded at the module: an interpolated anchor slightly off the ink is
+  the lesser defect; the peak that poisons the per-anchor Laufform median is
+  the one that must go. This removes exactly the judged defects — every
+  author-marked peak sat in an accepted fit, so no yield or threshold moves.
+
+- **`tools/fitview` — the before/after page for the judged occurrences.**
+  Re-runs the live chain fit on precisely the humanbench screens the owner
+  marked (default: category `A`, both rounds, blind repeats merged), and
+  renders each occurrence in the SAME frame the judgement used (window pad and
+  4× zoom replicated from `humanbench/build.py`): left the unrepaired anchor
+  polyline, right the repaired one, repaired indices circled, the owner's
+  clicked marker as a cross. One self-contained HTML file, minutes per round
+  instead of hours — the small-subset human loop the owner asked for.
+
+- **`tools/pairlab/peaklab.py` — the same loop over a NAMED working set.** The
+  sibling of `tools/fitview`: instead of the judged screens it fits a small
+  named set of words (default the five whose outliers the author marked plus
+  three he passed as clean, so a round can tell „the peaks are gone" from
+  „everything got flattened"), reports the lone excursions per letter
+  occurrence with the spike ratio before and after, and with `--png` draws the
+  fitted anchor chain over the specimen ink with every excursion circled —
+  `--compare` puts the fitted and the repaired chain side by side in one
+  window, so a shift is never a zoom. Four minutes per round instead of three
+  hours; detector and repair are the shared ones from `tools/pairlab/anchors.py`,
+  so what it shows is what the harvest does. Measurement only: no DB, no API,
+  nothing renders.
+
 - **Per-term, per-anchor gradient decomposition of the chain fit — the
   diagnosis that has to come before the term.** An optimum is a point where
   the forces cancel, so „what holds the stranded anchor out there" is a

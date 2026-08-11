@@ -700,9 +700,13 @@ für die Zielfunktion aber unsichtbar, weil dort alles Mittelwerte sind.
 Ein solcher Anker vergiftet über den Vorkommens-Median die Laufform.
 Gegenmittel in drei Stufen: die **Vorkommensschranke** verhindert, dass
 ein einzelner ihn in den Schreibpfad trägt; das **Spike-Gate**
-(`anchor_spike`) verwirft die Messung an der Quelle; zwei Fit-Terme
-(globale Biegeenergie, einseitiges Scharnier) wurden gemessen und
-**verworfen**. → qualitaetsmetrik.md §7, §8
+(`anchor_spike`) verwirft die unbrauchbare Messung an der Quelle; und seit
+`aug11` wird der Ausflug in ANGENOMMENEN Vorkommen **repariert** —
+Interpolation der Nachbarn im eigenen Federzug, protokolliert in
+`measurements.repaired_anchors`, das Gate urteilt weiter über die
+unreparierte Geometrie. Vier Fit-Terme dagegen (Biegeenergie, Scharnier,
+Eckanker-Stützung, **Nachbarbindung**) wurden gemessen und **verworfen**.
+→ qualitaetsmetrik.md §7, §8, §11d, §11e
 
 **Spike-Verhältnis** *(`anchor_spike_ratio`, Gate `anchor_spike`)* — die
 Kennzahl hinter dem **Anker im leeren Papier**: größter Schritt zwischen

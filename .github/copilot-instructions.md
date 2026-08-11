@@ -1116,7 +1116,21 @@ impl-generate pipelines. Conventions:
   as a CONTROL population — a term pulling as hard at a healthy anchor
   as at a stranded one explains nothing. Measurement only: no DB, no
   API, no `core/`, no rendering; method and criteria in
-  `docs/reference/qualitaetsmetrik.md` §11.
+  `docs/reference/qualitaetsmetrik.md` §11. The stranded anchor itself
+  is REPAIRED at harvest since `aug11` (`tools/pairlab/anchors.py` —
+  the ONE shared detector + `repair_stranded_anchors`, interpolation of
+  the unflagged stroke neighbours, never a snap; wired post-gate into
+  both storage paths of `tools/laufform/harvest.py`, logged as
+  `measurements.repaired_anchors`, the gate keeps judging the
+  UNREPAIRED geometry — the four objective-side terms are all
+  measured-and-rejected, §11e). Its two human-loop viewers:
+  `tools/fitview` (no viz extra — the judged humanbench screens re-fit
+  live and drawn before/after in the SAME window-pad/4×-zoom frame the
+  judgement used, owner markers as crosses, one self-contained HTML)
+  and `tools/pairlab/peaklab.py` (`viz` extra — a small NAMED working
+  set incl. control words, anchor chain over the skeleton with lone
+  excursions circled, `--compare` for fitted vs. repaired; minutes per
+  round, the fast loop for the peak class).
   `tools/wordbench/fetch_fixtures.py` is the read-only API twin of
   `export_fixtures.py` for sessions without Cloud SQL egress —
   byte-compatible fixture roots over HTTPS, GETs only, `--verify`
