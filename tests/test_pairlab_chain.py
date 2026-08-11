@@ -24,6 +24,7 @@ import numpy as np
 import pytest
 from PIL import Image, ImageDraw
 from scipy.ndimage import distance_transform_edt, gaussian_filter
+from scipy.optimize import minimize
 
 from core.compose import _endpoint_tangent
 from core.extract import skeleton_and_width
@@ -46,6 +47,8 @@ from tools.pairlab.chain import (
     CHAIN_CONNECTOR_MIN_SPAN_UNITS,
     CHAIN_COVERAGE_CAP_UNITS,
     CHAIN_COVERAGE_PER_SEGMENT,
+    CHAIN_LANDMARK_TARGET_MARGIN_UNITS,
+    CHAIN_LANDMARK_TARGET_RADIUS_UNITS,
     CONNECT_SAMPLES,
     ChainSegmentSpec,
     _coverage_huber,
@@ -58,6 +61,7 @@ from tools.pairlab.chain import (
     fit_word_chain,
     regularise_connector_anchors,
 )
+from tools.pairlab.landmarks import landmark_crossings
 from tools.wordlab.cases import WordCase
 from tools.wordlab.derive import WordDeriveResult
 
@@ -118,6 +122,56 @@ def _toy_problem(**kwargs):
     return build_chain_problem(
         _toy_specs(), unit_px=UNIT_PX, x_origin_px=4.3, baseline_y_px=45.7, **_flat_fields(), **kwargs
     )
+
+
+def _crossing_letter(x0: float = 0.2, k: int = 24) -> np.ndarray:
+    """A lemniscate of `k` anchors — exactly ONE clean self-crossing, at its waist.
+
+    A `d`'s loop closing over its own downstroke in miniature: the two passes
+    meet at ~66 deg and 1.76 xh apart along the path, so both landmark
+    thresholds are cleared by a wide margin and the test is about the term, not
+    about the detector's edges.
+    """
+    t = np.linspace(0.0, 2.0 * np.pi, k)
+    return np.column_stack([x0 + 0.45 + 0.45 * np.cos(t), 0.6 + 0.35 * np.sin(2.0 * t)])
+
+
+def _skel_with_branch_points(shape: tuple[int, int], centres_px, arm: int = 1) -> np.ndarray:
+    """A synthetic skeleton carrying one 8-neighbour branch point per centre.
+
+    A compact X: the centre pixel has four diagonal neighbours, every arm pixel
+    exactly one, so `skeleton_branch_points` sees one cluster per centre and its
+    centroid is the centre itself.
+    """
+    skel = np.zeros(shape, dtype=bool)
+    for cx, cy in centres_px:
+        c, r = int(round(cx)), int(round(cy))
+        for d in range(-arm, arm + 1):
+            skel[r + d, c + d] = True
+            skel[r - d, c + d] = True
+    return skel
+
+
+def _crossing_problem(*, target_offset_px=(0.0, 0.0), extra_branches=(), skel: bool = True, **kwargs):
+    """`(landmark, problem)` for a one-letter chain whose anchors cross themselves.
+
+    The synthetic skeleton's branch point is placed at the crossing plus
+    `target_offset_px`, so the landmark energy of the initial anchors is a known
+    quantity: `|offset| / unit_px` squared.
+    """
+    anchors = _crossing_letter()
+    lm = landmark_crossings(anchors)[0]
+    spec = ChainSegmentSpec(
+        kind="letter", anchors=anchors, slot_index=0, key="d", half_widths=np.full(len(anchors), 0.07)
+    )
+    fields = _flat_fields()
+    cx = 4.3 + lm.point[0] * UNIT_PX + target_offset_px[0]
+    cy = 45.7 - lm.point[1] * UNIT_PX + target_offset_px[1]
+    fields["skel"] = _skel_with_branch_points(fields["crop_shape"], [(cx, cy), *extra_branches]) if skel else None
+    problem = build_chain_problem(
+        [spec], unit_px=UNIT_PX, x_origin_px=4.3, baseline_y_px=45.7, n_samples=64, **fields, **kwargs
+    )
+    return lm, problem
 
 
 # ------------------------------------------------------------------ index map
@@ -375,6 +429,158 @@ def test_the_bind_gradient_matches_finite_differences_and_the_decomposition() ->
     report = chain_mod.gradient_decomposition(problem, params)  # raises if it drifts
     assert report["residual_rel"] < 1e-12
     assert np.any(report["terms"]["bind"] != 0.0)  # …and the term is actually alive
+
+
+# --------------------------------------------- the crossing-landmark term (§13)
+
+
+def test_the_landmark_term_is_byte_identical_at_weight_zero() -> None:
+    """The probe's baseline arm must be an IDENTITY, not a re-derivation.
+
+    Two claims, and the second is the one that could break: weight 0 with the
+    correspondence PRESENT must be bit-for-bit weight 0 with no correspondence at
+    all. The energy is deliberately still computed (a ladder has to be calibrated
+    against it), so the identity rests on `f + 0.0 * e == f` being exact and on
+    the gradient contribution being skipped rather than added as zeros.
+    """
+    lm, with_data = _crossing_problem()
+    _, without = _crossing_problem(skel=False)
+    assert with_data.landmark_op.shape[0] == 1  # not a vacuous test
+    assert without.landmark_op.shape[0] == 0
+    assert with_data.landmark_weight == 0.0
+    rng = np.random.default_rng(13)
+    params = rng.uniform(-0.05, 0.05, size=len(with_data.x0))
+    for p in (with_data.x0, params):
+        fa, ga = with_data.objective(p)
+        fb, gb = without.objective(p)
+        assert fa == fb  # bit equality, not approx
+        assert np.array_equal(ga, gb)
+        assert np.all(chain_mod.gradient_decomposition(with_data, p)["terms"]["landmark"] == 0.0)
+    # …and the term is nevertheless MEASURABLE at weight 0 — that is the point.
+    assert with_data.energy_terms(params)["e_landmark"] > 0.0
+    assert without.energy_terms(params)["e_landmark"] == 0.0
+    assert lm.seg_i < lm.seg_j
+
+
+def test_the_landmark_estimate_starts_exactly_on_the_detected_crossing() -> None:
+    """P(x0) is the intersection itself — the linearisation's anchor point.
+
+    Both branch points coincide there, so their average is the crossing; away
+    from x0 P is their midpoint, which is what keeps it linear in four anchors.
+    """
+    lm, problem = _crossing_problem()
+    p0 = problem.landmark_op @ problem.plan_anchors(problem.x0)
+    assert p0[0] == pytest.approx(np.asarray(lm.point), abs=1e-12)
+    # exactly four anchors have a say, and their weights sum to 1
+    row = problem.landmark_op[0]
+    assert np.count_nonzero(row) == 4
+    assert row.sum() == pytest.approx(1.0)
+    assert set(np.flatnonzero(row)) == {lm.seg_i, lm.seg_i + 1, lm.seg_j, lm.seg_j + 1}
+
+
+def test_the_landmark_energy_is_the_squared_distance_to_the_ink_crossing() -> None:
+    """One landmark, a known offset: the energy must be exactly that offset².
+
+    In TEMPLATE units, like `e_geo` — the two have to be comparable for the scale
+    calibration (§11c) to mean anything.
+    """
+    offset_px = (3.0, -4.0)
+    lm, problem = _crossing_problem(target_offset_px=offset_px)
+    # The branch point is a PIXEL, so the realised offset is the requested one
+    # rounded onto the grid — recomputed here rather than read off the problem,
+    # so the assertion tests the energy formula and not itself.
+    crossing_px = np.array([4.3 + lm.point[0] * UNIT_PX, 45.7 - lm.point[1] * UNIT_PX])
+    stamp_px = np.round(crossing_px + np.array(offset_px))
+    e = problem.energy_terms(problem.x0)["e_landmark"]
+    assert e == pytest.approx((np.hypot(*(stamp_px - crossing_px)) / UNIT_PX) ** 2, rel=1e-9)
+    # …and a pure rigid shift of the whole letter onto the target zeroes it
+    shift = (stamp_px - crossing_px) / UNIT_PX
+    params = problem.x0.copy()
+    params[0], params[1] = shift[0], -shift[1]
+    assert problem.energy_terms(params)["e_landmark"] == pytest.approx(0.0, abs=1e-24)
+
+
+def test_an_ambiguous_or_absent_ink_crossing_is_dropped_not_guessed() -> None:
+    """A correspondence that cannot be decided must leave no row behind."""
+    # a competing branch point just inside the margin -> ambiguous
+    lm = landmark_crossings(_crossing_letter())[0]
+    rival = (
+        4.3 + lm.point[0] * UNIT_PX,
+        45.7 - lm.point[1] * UNIT_PX + 0.9 * CHAIN_LANDMARK_TARGET_MARGIN_UNITS * UNIT_PX,
+    )
+    _, ambiguous = _crossing_problem(extra_branches=[rival])
+    assert ambiguous.landmark_op.shape[0] == 0
+    assert [e["reason"] for e in ambiguous.landmark_report] == ["ambiguous"]
+    assert ambiguous.energy_terms(ambiguous.x0)["e_landmark"] == 0.0
+    # …and a branch point beyond the search radius is no candidate at all
+    far = 1.2 * CHAIN_LANDMARK_TARGET_RADIUS_UNITS * UNIT_PX
+    _, absent = _crossing_problem(target_offset_px=(far, 0.0))
+    assert absent.landmark_op.shape[0] == 0
+    assert [e["reason"] for e in absent.landmark_report] == ["no_candidate"]
+    assert lm.angle_deg >= 15.0
+
+
+def test_the_landmark_gradient_matches_finite_differences_and_the_decomposition() -> None:
+    """A wrong jacobian would not raise — it would quietly converge elsewhere and
+    the probe would faithfully measure the bug."""
+    _, problem = _crossing_problem(target_offset_px=(4.0, -3.0), landmark_weight=0.7)
+    rng = np.random.default_rng(1313)
+    params = rng.uniform(-0.05, 0.05, size=len(problem.x0))
+    _, grad = problem.objective(params)
+    eps = 1e-6
+    head = 2 + 2 * problem.n_blocks
+    for i in (0, 1, head, head + 1, head + 2 * problem.landmark_op[0].nonzero()[0][0], len(params) - 1):
+        step = np.zeros_like(params)
+        step[i] = eps
+        fd = (problem.objective(params + step)[0] - problem.objective(params - step)[0]) / (2.0 * eps)
+        assert abs(fd - grad[i]) < 1e-5 * max(1.0, abs(fd)), i
+    report = chain_mod.gradient_decomposition(problem, params)  # raises if it drifts
+    assert report["residual_rel"] < 1e-12
+    assert np.any(report["terms"]["landmark"] != 0.0)  # …and the term is alive
+
+
+def test_the_landmark_term_only_ever_reads_letter_anchors() -> None:
+    """A connector has no template structure to place — its columns stay empty."""
+    anchors = _crossing_letter()
+    lm = landmark_crossings(anchors)[0]
+    k = len(anchors)
+    conn = _toy_connector(anchors[-1], anchors[-1] + np.array([0.4, 0.1]), 5)
+    specs = [
+        ChainSegmentSpec(
+            kind="letter",
+            anchors=anchors,
+            slot_index=0,
+            key="d",
+            half_widths=np.full(k, 0.07),
+            seam_in=0,
+            seam_out=k - 1,
+        ),
+        ChainSegmentSpec(kind="connector", anchors=conn, seam_in=0, seam_out=4),
+    ]
+    fields = _flat_fields()
+    fields["skel"] = _skel_with_branch_points(
+        fields["crop_shape"], [(4.3 + lm.point[0] * UNIT_PX, 45.7 - lm.point[1] * UNIT_PX)]
+    )
+    problem = build_chain_problem(specs, unit_px=UNIT_PX, x_origin_px=4.3, baseline_y_px=45.7, n_samples=64, **fields)
+    assert problem.landmark_op.shape == (1, len(problem.idx))
+    p0, p1 = problem.plan_slices[1]
+    assert not problem.landmark_op[:, p0:p1].any()
+
+
+def test_a_weighted_landmark_term_pulls_the_crossing_towards_the_ink() -> None:
+    """Integration: switched on, the solve must actually close some of the gap.
+
+    Not a criterion about any weight — only that the term reaches the optimiser
+    at all, which is exactly what §11c's empty run failed to establish before
+    spending an experiment on it.
+    """
+    offset_px = (0.0, -5.0)  # the ink crossing sits 0.25 xh ABOVE the template's
+    _, base = _crossing_problem(target_offset_px=offset_px)
+    _, armed = _crossing_problem(target_offset_px=offset_px, landmark_weight=2.0)
+    kw = {"jac": True, "method": "L-BFGS-B", "options": {"maxiter": 300}}
+    x_base = minimize(base.objective, base.x0, bounds=base.bounds, **kw).x
+    x_armed = minimize(armed.objective, armed.x0, bounds=armed.bounds, **kw).x
+    assert armed.energy_terms(x_armed)["e_landmark"] < base.energy_terms(x_base)["e_landmark"]
 
 
 # ---------------------------------------------------------------- the weights

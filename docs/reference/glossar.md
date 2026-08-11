@@ -45,8 +45,8 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4
 - **H** — H0–H5 §5 · Hand §2 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
-- **K** — Kettenfit §3 · Kill-Kriterium §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Kringel-Exit §2
-- **L** — Labs §4 · Laufform §2 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
+- **K** — Kettenfit §3 · Kill-Kriterium §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
+- **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · matched arc §3 · meas §4 · Messboden §4
 - **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
@@ -500,6 +500,43 @@ Gradient exakt bleibt), `CHAIN_OVERLAP_WEIGHT` (0,2, per Sweep + A/B;
 `KS_CHAIN_OVERLAP_WEIGHT` überschreibt). Paarmenge pro Evaluation per
 KD-Baum, stückweise konstant in den Parametern — dieselbe f.ü.-exakte
 Behandlung wie die Deckungszuordnung.
+
+**Kreuzungs-Landmarke** *(crossing landmark)* — eine **Selbstkreuzung** der
+Buchstaben-Ankerlinie, die als *Ortsmarke der Struktur* taugt: zwei
+Sehnen, die sich unter mindestens 15° schneiden und (innerhalb desselben
+Federzugs) mindestens 0,35 xh Bogenlänge auseinander liegen. 26 der 34
+eingefrorenen v0-Zeilen tragen zusammen 43 solcher Landmarken. Der Sinn:
+Ein Buchstabe hat eine feste Struktur (Kringel, Kreuzung, Schale in fester
+Reihenfolge), und was je Vorkommen und je Übergang wandert, ist deren
+**Lage** — beim Sütterlin-`d` sitzt die Tinten-Kreuzung mit
+Folgebuchstaben 0,243 xh tiefer als am Wortende.
+*Technisch:* `tools/pairlab/landmarks.py` — `landmark_crossings`
+(`LANDMARK_MIN_ANGLE_DEG`, `LANDMARK_MIN_ARC_SEPARATION_UNITS`,
+`LANDMARK_MERGE_RADIUS_UNITS`); ausdrücklich nicht
+`core.geometry.detect_crossing_passages`, das dieselbe Erscheinung für die
+**Breiten**-Kontaminationsliste vermisst und keinen Schnittpunkt liefert
+→ qualitaetsmetrik.md §13a
+
+**Landmarken-Term** *(landmark correspondence term)* — der Energieterm, der
+eine solche Landmarke auf ihr **Tinten-Gegenstück** zieht: den nächsten
+Verzweigungspunkt des Skeletts (ein Skelettpixel mit ≥ 3 Nachbarn im
+8er-Umfeld, benachbarte zu einem Schwerpunkt verschmolzen). Er ist der
+erste **Daten**-Term dieser Zielfunktion — *dieser Punkt gehört auf jenen
+Punkt* — und damit kein fünfter Anlauf der vier verworfenen Terme (§7
+Biegeenergie, §8 Scharnier, §10 Eckanker, §11d Nachbarbindung), die alle
+einen **Stellvertreter** (Krümmung, Abstand, Steifigkeit) auf einer
+zuordnungsblinden Zielfunktion bepreisten. Linearisiert wie jeder andere
+Operator der Kette: Sehnenpaar und Sehnenparameter werden am Startzustand
+**eingefroren**, die gefittete Kreuzung ist dann der Mittelwert der beiden
+Zweigpunkte und damit linear in vier Ankern (exakter Gradient). Eine
+Zuordnung, die nicht entscheidbar ist, wird **verworfen statt geraten**
+(kein Kandidat im Radius, oder der zweitnächste liegt innerhalb der
+Eindeutigkeitsmarge).
+*Technisch:* `tools/pairlab/chain.py` — `CHAIN_LANDMARK_WEIGHT`
+(**Standard 0,0**, byte-identisch; `KS_CHAIN_LANDMARK_WEIGHT`),
+`CHAIN_LANDMARK_TARGET_RADIUS_UNITS` (0,55), …`_MARGIN_UNITS` (0,25),
+Energie `e_landmark`, Gradientenanteil `landmark`; Sonde
+`tools/pairlab/landmarklab.py` (Skalen-Kalibrierung + Wirkungsmessung)
 
 **Naht** *(seam)* — die Stelle, an der im Kettenfit ein Buchstabe endet und
 der Verbinder beginnt. Kunstgriff: Sie ist **kein Strafterm, sondern ein
