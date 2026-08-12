@@ -1,15 +1,20 @@
 # Dokumentation
 
-> **Status (2026-08-03): lebend.** Bei jedem neuen, umbenannten oder
+> **Status (2026-08-12): lebend.** Bei jedem neuen, umbenannten oder
 > gelöschten Doc unter `docs/` mitzuführen (Schnellzugriff + Baum +
 > Abschnittsliste); der Abschnitt „Dokument-Status“ trägt die
 > Lifecycle-Aussage je Schicht, damit sie nicht jede Datei einzeln tragen
 > muss.
-> Schichten in Kurzform: `concepts/` = bindende Entscheide · `reference/` =
-> je Doc lebend oder bindend · `schriftkunde/` = statische, quellenbelegte
-> Faktenblätter mit eigenem „Stand“-Datum, die dem Code NICHT folgen ·
-> `proposals/` = Umsetzungsstand im Kopf des jeweiligen Docs · `notes/` =
-> datierte Befund-Journale, die nie fortgeschrieben, nur abgelöst werden.
+> Schichten in Kurzform: `concepts/` = Designkern — Entscheidungen und die
+> Grundsatz-Docs, die daraus folgen (teils bindend, teils lebend) ·
+> `reference/` = Nachschlagedokumente, Status je Doc (meist Ist-Stand;
+> HTR/Animation/Stil-Analyse tragen den Status ihrer geplanten
+> Ausbaustufe) · `schriftkunde/` = statische, quellenbelegte Faktenblätter
+> mit eigenem „Stand“-Datum, die dem Code NICHT folgen · `proposals/` =
+> Umsetzungs-Vorschläge und ihre Protokolle, Umsetzungsstand im Kopf des
+> jeweiligen Docs · `research/` = externe Recherche/Literatur, die Ideen
+> liefert und dem Code nie folgt · `notes/` = operative, datierte
+> Befund-Journale, die nie fortgeschrieben, nur abgelöst werden.
 
 Interne Design-Docs für das Kurrentschrift-Projekt. Sprache: Deutsch
 (siehe [`reference/sprachregelung.md`](reference/sprachregelung.md) zur
@@ -58,6 +63,7 @@ gemessene Hand-Parameter.
 | Schreibsystem-Redesign (R1–R5: Paar-Matrix, Positions-Rückbau, geerntete Paare, Schräglage) nachschlagen | [Schreibsystem-Redesign](proposals/schreibsystem-redesign.md) |
 | Den Handmodell-Stufenplan (Duktus-Prior · Laufformen · Statistik · eigene Hand) nachschlagen | [Handmodell-Stufenplan](proposals/handmodell-stufenplan.md) |
 | Die Werkbank-Doktrin (wer liefert welche Stufe · Auftragskorb-Protokoll) nachschlagen | [Optimierungs-Werkbank](proposals/optimierungs-werkbank.md) |
+| Ideen-Recherche lesen (Graves-Writer → Recognizer · Synthese-Verfahren · Plotter-Pipeline) | [Research](#research) |
 
 ---
 
@@ -67,16 +73,16 @@ gemessene Hand-Parameter.
 docs/
 ├── index.md                      # You are here
 ├── contributing.md               # (EN) Was aktuell hilfreich ist und was noch zu früh ist — englisch, vom README verlinkt
-├── concepts/                     # Architektur, Philosophie, getroffene Entscheidungen
+├── concepts/                     # Designkern: Entscheidungen + die Grundsatz-Docs, die daraus folgen
 │   ├── vision.md                 # Was die Endnutzer-Website sein soll (Pitch + Zielgruppe + 7 Ziele in 3 Clustern + Leitprinzipien + Nicht-Ziele)
 │   ├── vom-scan-zum-schreiben.md # Überblick: Tafel + Wortproben + Nachfahren → Bibliothek → Schreiben → Maßstab → Ernte → Statistik → Schleife; finales System vs. Trainingsgerüst
 │   ├── architektur.md            # §1–§17: Analysis-by-Synthesis, Schema, MVP, Animation, HTR, Lese-Lupe, Print, Frontend, Open-Data
 │   ├── mvp-roadmap.md            # Operative Zerlegung des MVP (§8) in Schritt 0 + M0–M7
-│   ├── style-guide.md            # Visuelle Identität Papier & Tinte: Tokens (styles/paper.ts), Typografie, R1–R9-Entscheidungen
+│   ├── style-guide.md            # Visuelle Identität Papier & Tinte: R1–R9-Entscheidungen samt Begründung/Historie (Token-Ist: design-system.md §2)
 │   ├── design-system.md          # Verbindliche Bauvorschrift: Tokens, Typo-Skala (19px), Breiten (PageContainer), Flächen, IA, Komponenten
 │   ├── federmodelle.md           # Drei Federn, ein Renderpfad: Bandzugfeder-Gesetz, Spitzfeder-Haarstriche, Ziffern/Satzzeichen (joins:false)
 │   └── naming-und-setup.md       # Repo-Name, Domain, Lizenz, Verzeichnis-Split, Frontend-Stack, Hosting
-├── reference/                    # Policy- und Technik-Dokumente mit Begründung
+├── reference/                    # Policy- und Technik-Dokumente mit Begründung (Status je Doc)
 │   ├── glossar.md                # Fachbegriffe & Repo-Redewendungen: Schrift · Architektur · Fit · Metriken · Werkbank · Forschung
 │   ├── sprachregelung.md         # Deutsch/Englisch pro Artefakt
 │   ├── quellen-und-rechte.md     # Was darf rein, was nicht; PD/CC/NC-SA
@@ -88,7 +94,7 @@ docs/
 │   ├── menschliche-bewertung.md  # Blinder Urteilsdurchgang über die Fits (tools/humanbench): Fehler-Taxonomie, Instrumentregeln, Vorregistrierung, Aufbewahrung
 │   ├── quiz-wortbank.md          # Lese-Quiz-Wortbank: Quellen (Kaeding, Genealogie-Felder), Pin+Runtime-Distraktoren, Fugen-Marker
 │   ├── write-api.md              # Öffentliche Render-Endpunkte /write/glyphs + /write/word: Shaping → Komposition → Payload
-│   ├── werkzeuge.md              # Dev-Tools unter tools/: glyphlab/wordlab/pairlab (Inspektions-Labs), Ernte-Werkzeuge, humanbench (Urteils-Durchgang), Benches, quizgen
+│   ├── werkzeuge.md              # Dev-Tools unter tools/: Inspektions-Labs + pairlab-Einstiegsskripte, Ernte-Werkzeuge, humanbench/fitview, dbsnapshot, Benches, quizgen
 │   ├── crawler-richtlinie.md     # Wer die Seite lesen darf: Suchmaschinen, KI-Abruf vs. KI-Training, robots.txt/llms.txt, Cloudflare
 │   └── frontend-stack.md         # React+Vite+MUI Build, Deploy auf Cloud Run, i18n, Auth-Routen
 ├── schriftkunde/                 # Quellengesicherte Fakten zu den Schriften (wächst inkrementell)
@@ -102,15 +108,17 @@ docs/
 │   ├── druckschriften.md         # Fraktur/Schwabacher/Textura vs. Kurrent, Kanzleischrift, Neudörffer
 │   ├── lateinische-und-englische-schreibschrift.md  # Abgrenzung Kurrent ↔ lateinische/englische Schreibschrift, Zweischriftigkeit
 │   └── digital.md                # Unicode (ſ U+017F, Ligaturen), UNZ/MUFI, Fonts, Transkription
-├── proposals/                    # Vorgeschlagene Konzept-Änderungen (Umsetzungs-Stand je Eintrag, s. u.)
+├── proposals/                    # Umsetzungs-Vorschläge und ihre Protokolle (Status je Doc, s. u.)
 │   ├── planaenderungen.md        # Staging: §2/§4 Bigramme, §6.1 Positions-Statistik, M4+ core/orthography.py
 │   ├── schreibsystem-und-wortbench.md  # Audit 2026-07-01: Schreib-API, core/compose.py-Port, Wort-Bench, Übergangs-Redesign (Phasen A–E)
 │   ├── uebergaenge-befund.md     # Befund 2026-07-11: pairlab-Paarsektion — Platzierung dominiert, Stub-Ersatz klassenweise, Optionen O1–O3
 │   ├── schreibsystem-redesign.md # Entscheid 2026-07-17: eine Form pro Glyphe (Positions-Rückbau), Paar-Matrix, geerntete Paar-Overrides, Schräglagen-Befund (R1–R5)
 │   ├── handmodell-stufenplan.md  # Vorschlag 2026-07-31: Statistik-Schicht füllen (H0–H5) — Instances/Aggregates, Paar-Statistik, Konstanten→Hand-Parameter, eigene Hand
-│   ├── optimierungs-werkbank.md  # Entscheid 2026-07-31: EINE Werkbank-Seite + Stufen-/Rollen-Doktrin + work_items-Auftragskorb (W1–W5)
+│   └── optimierungs-werkbank.md  # Entscheid 2026-07-31: EINE Werkbank-Seite + Stufen-/Rollen-Doktrin + work_items-Auftragskorb (W1–W5)
+├── research/                     # Externe Recherche/Literatur — liefert Ideen, folgt dem Code nie
+│   ├── graves-handschrift-synthese.md    # Literatur-Report: Graves-2013-Mechanik, Priming/Biasing, Plotter-Pipeline, GAN/Transformer/ScribeTokens, 54 Quellen
 │   └── kurrent-writer-and-recognizer.md  # Recherche-Notiz (EN): generativer Writer (Graves 2013) als synthetische Datenquelle → billiger Recognizer
-└── notes/                        # Recherchematerial & operative Notizen (nicht Designkern)
+└── notes/                        # Operative, datierte Journale (nicht Designkern)
     ├── quellen-recherche-2026-07.md  # Recherche Juli 2026: geschriebene Wortvorlagen & echte Hände — Rangliste, Absteiger, mögliche Anfragen
     └── stifte-fuer-unterwegs.md  # Stift-/Hardware-Recherche fürs Schreiben unterwegs
 ```
@@ -133,7 +141,10 @@ Lösung abgelöst, also Entscheidungs- und Messprotokoll statt Arbeitsplan;
 **offen** = nichts davon ist gebaut; **Befund-Journal** = datierte
 Momentaufnahme, die nie fortgeschrieben, sondern nur durch eine neue Runde
 abgelöst wird; **statisch** = quellenbelegtes Nachschlagematerial, das dem
-Code nicht folgt. Die neun `schriftkunde/`-Faktenblätter sind durchweg
+Code nicht folgt. Die `research/`-Notizen folgen dem Code ebenfalls nie
+und tragen je nach Natur `offen` (eine Idee mit Bauoption) oder
+`Befund-Journal` (eine Literatur-Momentaufnahme). Die neun
+`schriftkunde/`-Faktenblätter sind durchweg
 statisch und tragen keinen eigenen Kopf — sie führen ihr „Stand:“-Datum
 ohnehin in den ersten Zeilen; einzige Ausnahme ist
 [`orthographie-regeln.md`](schriftkunde/orthographie-regeln.md), weil dort
@@ -201,8 +212,9 @@ und was bewusst verworfen wurde.
   `kurrentschrift.ink`, Monorepo-Layout, MIT-Lizenz, Frontend-Stack
   (anyplot-Stil), Hosting (Cloud Run), README als Pitch
 - **[Style-Guide](concepts/style-guide.md)** — visuelle Identität
-  „Papier & Tinte": Tokens (`styles/paper.ts`), Typografie,
-  R1–R9-Entscheidungen samt Begründung/Historie
+  „Papier & Tinte": R1–R9-Entscheidungen samt Begründung/Historie; den
+  Token-Ist-Stand trägt [`design-system.md`](concepts/design-system.md)
+  §2 (Quelle im Code: `styles/paper.ts`)
 - **[Design-System](concepts/design-system.md)** — die verbindliche
   Bauvorschrift der öffentlichen Seiten: Farb-Tokens, 19-px-Typo-Leiter,
   PageContainer-Breiten (760/1152/1280), Flächenregel, IA, Komponenten
@@ -269,10 +281,11 @@ Policy- und Technik-Dokumente.
   in der Qualitätsmetrik
 - **[Werkzeuge](reference/werkzeuge.md)** — Einstieg in die Dev-Tools
   unter `tools/`: die Inspektions-Labs glyphlab/wordlab/pairlab
-  (matplotlib-Overlays, `--extra viz`, Ausgabe nach `temp/`), die beiden
-  Ernte-Werkzeuge, der Urteils-Durchgang `tools/humanbench`
-  (build · page · analyse) sowie Verweise auf glyphbench/wordbench und
-  quizgen
+  (matplotlib-Overlays, `--extra viz`, Ausgabe nach `temp/`) samt der
+  messenden pairlab-Einstiegsskripte, die beiden Ernte-Werkzeuge, der
+  Urteils-Durchgang `tools/humanbench` (build · page · analyse) mit dem
+  Betrachter `tools/fitview`, der Archiv-Schnappschuss `tools/dbsnapshot`
+  sowie Verweise auf glyphbench/wordbench und quizgen
 - **[Crawler-Richtlinie](reference/crawler-richtlinie.md)** — wer die
   Seite lesen darf: KI-Abruf/Zitat erlaubt, KI-Training abgelehnt
   (`ai-train=no` als Nutzungsvorbehalt), `robots.txt` als Quelle der
@@ -318,10 +331,33 @@ frei zugänglichen Quellen, jede Angabe mit Beleg; wächst inkrementell.
 
 ## Proposals
 
-Vorgeschlagene Änderungen an den Konzept-Dokumenten. Der Umsetzungs-Stand
-ist je Eintrag unterschiedlich (einige sind inzwischen weitgehend
-umgesetzt) — maßgeblich ist der Status-Kopf des jeweiligen Dokuments.
+Umsetzungs-Vorschläge und ihre Protokolle. Maßgeblich ist der
+Status-Kopf des jeweiligen Dokuments; die Einträge sind hier nach ihrem
+Statuswort gruppiert, damit Plan und Protokoll auf einen Blick
+auseinanderfallen.
 
+**bindend** — gilt als Doktrin weiter:
+
+- **[Optimierungs-Werkbank](proposals/optimierungs-werkbank.md)** —
+  Richtungsentscheid 2026-07-31: EINE Admin-Werkbank statt fragmentierter
+  Tabs, plus die **bindende Stufen-/Rollen-Doktrin** — manuell hinzufügen
+  nur bei Ground Truth (Tafel-Duktus, Wort-Nachfahrung), alles Generierte
+  wird bemängelt — und das `work_items`-Protokoll (Triage-Pflicht der KI,
+  Regel-Fix vor Override, `resolution`-Format, Rückgabe an den Autor) —
+  *Status: bindend (W1–W5 gebaut, §3–§5 von der API erzwungene Doktrin;
+  die Alt-Seiten sind mit dem Admin-Redesign 2026-08 in den drei
+  Ansichten Buchstaben · Übergänge · Wörter aufgegangen)*
+
+**teil-umgesetzt** — aktive Pläne mit offenem Rest:
+
+- **[Handmodell-Stufenplan](proposals/handmodell-stufenplan.md)** —
+  Vorschlag 2026-07-31: das Rollenmodell (Tafel = Duktus-Prior ·
+  Wortproben **einer** Hand = Form-Vorbild · fremde Hände = Kontext)
+  bestätigt und die leere Statistik-Schicht in Stufen gefüllt —
+  H0 Bench-Anschluss der Laufformen, H1 `instances`/`hands`
+  persistieren, H2 Paar-Statistik, H3 Konstanten → Hand-Parameter
+  (Vereinfachungs-Gate), H4 zweite historische Hand, H5 eigene Hand —
+  *Status: teil-umgesetzt (H0–H2 in v0.22.0 ausgeliefert, H3–H5 offen)*
 - **[Planänderungen](proposals/planaenderungen.md)** — vier Vorschläge:
   §2/§4 systematische Bigramm-Extraktion aus Beispieltext; §3/§6.1
   Positions-Verteilung datengetrieben; M4+-Modul `core/orthography.py`
@@ -329,13 +365,9 @@ umgesetzt) — maßgeblich ist der Status-Kopf des jeweiligen Dokuments.
   `architektur.md` §3 eingearbeitet) — *Status: teil-umgesetzt (nur
   Vorschlag D offen; A durch R2 überholt, B als R3 gebaut, C im
   H1-Aggregat)*
-- **[Schreibsystem und Wort-Bench](proposals/schreibsystem-und-wortbench.md)** —
-  Audit 2026-07-01: öffentliche Schreib-API (Buchstabe + Wort) statt
-  `/diagnostic`-Mitnutzung, Port der Wortkomposition nach
-  `core/compose.py`, Wort-Bench gegen verifizierte PD-Wortvorlagen
-  (gleiche Hand je Tafel), Übergangs-Redesign mit Exit-Klassen (Phasen A–E)
-  — *Status: umgesetzt-historisch (Phasen A–D gebaut, E in anderer Gestalt
-  erledigt)*
+
+**Befund-Journal** — Messprotokoll, Begründungsquelle der Konstanten:
+
 - **[Übergangs-Befund](proposals/uebergaenge-befund.md)** — Befund
   2026-07-11 aus `tools/pairlab` (unabhängige Paar-Sektion, 87 Vorkommen):
   Platzierung ist der größte Einzelfehler, die Standard-Diagonale ist
@@ -346,6 +378,16 @@ umgesetzt) — maßgeblich ist der Status-Kopf des jeweiligen Dokuments.
   (Issue #278, 248 Vorkommen) samt Nachmessung der beiden
   Stufe-B-Vorbedingungen nach — *Status: Befund-Journal (Stand 2026-08-03;
   O1/O2 umgesetzt, O3 durch R3 überholt, Stufe B freigegeben mit Auflagen)*
+
+**umgesetzt-historisch** — abgearbeitete Protokolle:
+
+- **[Schreibsystem und Wort-Bench](proposals/schreibsystem-und-wortbench.md)** —
+  Audit 2026-07-01: öffentliche Schreib-API (Buchstabe + Wort) statt
+  `/diagnostic`-Mitnutzung, Port der Wortkomposition nach
+  `core/compose.py`, Wort-Bench gegen verifizierte PD-Wortvorlagen
+  (gleiche Hand je Tafel), Übergangs-Redesign mit Exit-Klassen (Phasen A–E)
+  — *Status: umgesetzt-historisch (Phasen A–D gebaut, E in anderer Gestalt
+  erledigt)*
 - **[Schreibsystem-Redesign](proposals/schreibsystem-redesign.md)** —
   Richtungsentscheid 2026-07-17 (angenommen; R1–R5 sind umgesetzt,
   offen ist allein der Live-Import der Ernte-Entwürfe): eine Form
@@ -356,36 +398,36 @@ umgesetzt) — maßgeblich ist der Status-Kopf des jeweiligen Dokuments.
   verbundenen Schrift ~4–5° rechts gegenüber der Chart-Zelle; R5) —
   *Status: umgesetzt-historisch (R1–R5 gebaut; offen allein der Live-Import
   der Ernte-Entwürfe)*
-- **[Handmodell-Stufenplan](proposals/handmodell-stufenplan.md)** —
-  Vorschlag 2026-07-31: das Rollenmodell (Tafel = Duktus-Prior ·
-  Wortproben **einer** Hand = Form-Vorbild · fremde Hände = Kontext)
-  bestätigt und die leere Statistik-Schicht in Stufen gefüllt —
-  H0 Bench-Anschluss der Laufformen, H1 `instances`/`hands`
-  persistieren, H2 Paar-Statistik, H3 Konstanten → Hand-Parameter
-  (Vereinfachungs-Gate), H4 zweite historische Hand, H5 eigene Hand —
-  *Status: teil-umgesetzt (H0–H2 in v0.22.0 ausgeliefert, H3–H5 offen)*
-- **[Optimierungs-Werkbank](proposals/optimierungs-werkbank.md)** —
-  Richtungsentscheid 2026-07-31: EINE Admin-Werkbank statt fragmentierter
-  Tabs, plus die **bindende Stufen-/Rollen-Doktrin** — manuell hinzufügen
-  nur bei Ground Truth (Tafel-Duktus, Wort-Nachfahrung), alles Generierte
-  wird bemängelt — und das `work_items`-Protokoll (Triage-Pflicht der KI,
-  Regel-Fix vor Override, `resolution`-Format, Rückgabe an den Autor) —
-  *Status: umgesetzt (W1–W5 gebaut, §3–§5 bindende Doktrin; die Alt-Seiten
-  sind mit dem Admin-Redesign 2026-08 in den drei Ansichten Buchstaben ·
-  Übergänge · Wörter aufgegangen)*
-- **[Kurrent: Writer → Recognizer](proposals/kurrent-writer-and-recognizer.md)** —
+
+---
+
+## Research
+
+Externe Recherche- und Literatur-Notizen — sie liefern Ideen und
+Vergleichsmaßstäbe, folgen dem Code aber nie; Status je Doc (`offen` =
+Idee mit Bauoption, `Befund-Journal` = Literatur-Momentaufnahme).
+
+- **[Kurrent: Writer → Recognizer](research/kurrent-writer-and-recognizer.md)** —
   Recherche-Notiz (Englisch): warum Graves 2013 (RNN-Handschrift-Synthese)
   der Anker für den generativen Writer ist, und wie derselbe Writer als
   synthetische Datenquelle mit perfektem Ground-Truth einen billigen,
   browser-lauffähigen Recognizer trainiert (ein Forward-Pass statt
   Analysis-by-Synthesis zur Inferenzzeit) — *Status: offen (Recherche-Notiz,
   nichts gebaut)*
+- **[Graves-Handschrift-Synthese](research/graves-handschrift-synthese.md)** —
+  Literatur-Report (KI-Recherche, redaktionell bereinigt): die
+  Graves-2013-Mechanik im Detail (MDN, Soft-Window, Priming/Biasing),
+  Datenbedarf, das Online/Offline-Dilemma, die Plotter-Pipeline zur
+  physischen Postkarte und die moderne Verfahrens-Landschaft
+  (ScrabbleGAN/HiGAN · HWT/ScriptViT · ScribeTokens) samt
+  54-Quellen-Bibliografie — *Status: Befund-Journal*
 
 ---
 
 ## Notes
 
-Recherchematerial und operative Notizen außerhalb des Designkerns.
+Operative, datierte Journale außerhalb des Designkerns — nie
+fortgeschrieben, nur durch eine neue Runde abgelöst.
 
 - **[Quellen-Recherche Juli 2026](notes/quellen-recherche-2026-07.md)** —
   Recherche-Runde 30./31.07.2026 zu geschriebenen Wortvorlagen und

@@ -1,7 +1,8 @@
 # Übergangs-Befund 2026-07-11 — unabhängige Paar-Sektion (pairlab)
 
-> **Status (2026-08-03): Befund-Journal.** Momentaufnahme aus `tools/pairlab`
-> vom 2026-07-11, wird nicht fortgeschrieben: O1 und O2 (B-Seite) sind
+> **Status (2026-08-12): Befund-Journal.** Momentaufnahme aus `tools/pairlab`
+> vom 2026-07-11, nicht fortgeschrieben — mit der EINEN benannten
+> Ausnahme §5c (s. u.): O1 und O2 (B-Seite) sind
 > umgesetzt (Lauf `jul11`, PR #179), der A-seitige d-Stub-Trim wurde zweimal
 > gemessen und verworfen (`jul11` und R4-Lauf `jul17`, PR #220), O3 ist
 > überholt — die Paar-Overrides existieren seit Redesign R3 als sparsame
@@ -10,9 +11,9 @@
 > statt Paare, §5b Duktus-Trace als Soll-Kopplung) bleibt Begründungsquelle
 > für die Composer-Konstanten; der aktuelle Stand der Übergänge steht in
 > [`../reference/qualitaetsmetrik.md`](../reference/qualitaetsmetrik.md) §6.
-> **Eine Fortschreibung gibt es doch — §5c (2026-08-03)**: die Kettenfit-Messung
-> zu Issue #278 Stufe A setzt den §5b-Duktus-Trace direkt fort und wird deshalb
-> hier und nicht in einem eigenen Dokument abgelegt.
+> Die Ausnahme — **§5c (2026-08-03)**: die Kettenfit-Messung zu Issue #278
+> Stufe A setzt den §5b-Duktus-Trace direkt fort und ist deshalb hier und
+> nicht in einem eigenen Dokument abgelegt.
 
 O1 und O2 (B-Seite) sind umgesetzt — Compose-Loop `jul11`,
 [`qualitaetsmetrik.md`](../reference/qualitaetsmetrik.md) §6 (Wort-Headline

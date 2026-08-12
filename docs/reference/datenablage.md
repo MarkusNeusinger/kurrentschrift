@@ -1,11 +1,12 @@
 # Datenablage und Quellen-Verlinkung im Repo
 
-> **Status (2026-08-03): bindend.** Commit-Klassen (§1) und
+> **Status (2026-08-12): bindend.** Commit-Klassen (§1) und
 > `SOURCE.md`-Pflichtfelder (§2) gelten unverändert und werden von
 > `/audit-licenses` geprüft; neue Quellen kommen mit eigenem `SOURCE.md`
 > dazu, ohne dass dieses Doc sich ändert.
-> Der Baum in §1 ist Soll-Layout — befüllt sind nur `sources/` (7 Quellen)
-> und `variants/`; der Eigenhand-Plan aus §4 ist von den
+> Der Baum in §1 ist Soll-Layout — befüllt sind `sources/` (7 Quellen),
+> `variants/` und `humanbench/` (Urteile + Slim-Keys der blinden
+> Bewertungsrunden); der Eigenhand-Plan aus §4 ist von den
 > Sütterlin-Specimen-Platten überholt.
 
 Kurzspezifikation zu [`quellen-und-rechte.md`](quellen-und-rechte.md): *wo* Quellen
@@ -43,6 +44,10 @@ eigene Lizenz (Quellen-Rechte §5).
   /derived                    # extrahierte Statistik
     /from-cc-by               # committet OK (CC-BY/CC0-Anteil + Attribution)
     /from-nc-sa               # GITIGNORED — lokal/look-only, nie committen
+  /humanbench                 # committete Urteile + Slim-Keys der blinden
+    SOURCE.md                 # Bewertungsrunden; was drin bleibt und was nicht,
+    runde-01-urteile.txt  …   # regelt quellen-und-rechte.md §5, die Methode
+                              # steht in menschliche-bewertung.md
 ```
 
 Drei Committ-Klassen, scharf getrennt:

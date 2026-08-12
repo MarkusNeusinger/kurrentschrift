@@ -1,15 +1,12 @@
 # Stil-Analyse
 
-> **Status (2026-08-03): teil-umgesetzt.** Schicht 1
+> **Status (2026-08-12): teil-umgesetzt.** Schicht 1
 > (`core/pipeline.py::_measurements`) und Schicht 2 sind gebaut — Aggregate
 > pro Hand für Glyphen und Paare (PR #259 · #260 · #265, Release v0.22.0;
 > `core/aggregate.py`, Tabellen `aggregates`/`pair_aggregates`), sichtbar in
 > der Werkbank (PR #266); beide Abschnitte sind bei Änderungen daran
 > nachzuziehen.
 > Offen: Schicht 3 (Hinge), die Vision-Pfade §2 und die Heatmap-Ausgabe §3.
-> Der Aggregat-Schlüssel heißt seit Migration `0021`
-> `(hand_id, glyph_key, variant)` — der Satz „befüllt wird es durch den
-> Post-MVP-Aggregationsjob (P3)“ ist überholt.
 
 Technische Spezifikation der Stil-Analyse-Pipeline aus Vision §6 (Eigene
 Schrift analysieren, inkl. Hände-vergleichen-Pfad). Ergänzt
@@ -41,10 +38,10 @@ per Text-Vorkommen später `instances.measurements`, beides JSONB):
   Tangenten von der Norm (für Übergangs-Analyse).
 - `cross_count` — Anzahl Selbstüberkreuzungen (Topologie-Indikator).
 
-### Schicht 2 — Per-Hand-Aggregation
+### Schicht 2 — Per-Hand-Aggregation *(gebaut seit Handmodell H1/H2)*
 
 Pro **Hand** (ein Schreiber, ggf. über mehrere Sources) und pro
-`(glyph, position, variant)`-Bucket:
+`(glyph_key, variant)`-Bucket:
 
 - **Cluster-Mittelpunkt** der Kontrollpunkte (Median pro Punkt nach
   Ausreißer-Entfernung — §6 Stufe 1 in
@@ -57,14 +54,16 @@ Resultat: pro Hand eine „Personal Canonical"-Instanz, die als Template für
 beliebige neue Wörter dient (Multi-Stil-Konsequenz aus
 [`architektur.md`](../concepts/architektur.md) §10).
 
-**M5(C) der MVP-Roadmap** liefert die erste Implementierung für die eigene
-Hand. Voller Ausbau zur P3-Phase.
+Die erste Implementierung ist seit Handmodell H1/H2 gebaut
+(`core/aggregate.py`, Rebuild-Endpunkte je Hand); die eigene Hand folgt
+als Stufe H5, voller Ausbau zur P3-Phase.
 
-**Speicherung:** die Tabelle `aggregates` (Migration 0004,
-`core/database/models.py`), gekeyt pro `(hand, glyph, position, variant)`
-— die Hand ist die Aggregationseinheit, nicht die Source. Das Schema
-liegt bereits an; befüllt wird es durch den Post-MVP-Aggregationsjob
-(P3).
+**Speicherung:** die Tabelle `aggregates` (seit Migration `0021` gekeyt
+pro `(hand_id, glyph_key, variant)`; die Paar-Ebene analog in
+`pair_aggregates`, Migration `0023`) — die Hand ist die
+Aggregationseinheit, nicht die Source. Befüllt wird sie vom
+Rebuild-Endpunkt (`POST /hands/{hand_id}/aggregates/rebuild`), nicht
+mehr von einem Post-MVP-Job.
 
 ### Schicht 3 — Textunabhängige Writer-ID *(optional, post-P4)*
 
@@ -106,7 +105,7 @@ Pro Glyph-Instanz die Abweichung von der Per-Hand-Aggregation (Schicht 2)
 visualisieren:
 
 - **Welche Glyphe(n) bist du am inkonsistensten?** — höchste Streuung der
-  Kontrollpunkt-Cluster pro `(glyph, position)`.
+  Kontrollpunkt-Cluster pro `(glyph_key, variant)`.
 - **Wo weichst du am stärksten von der Norm (Loth) ab?** — Abstand
   Personal Canonical → Loth Canonical, pro Glyph.
 - Konkretes Feedback, keine pauschalen Tipps.

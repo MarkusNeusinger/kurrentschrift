@@ -1450,6 +1450,48 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   a staging proposal, `design-system.md` was missing `PaperCardLink`, and the
   animation width-resolver table listed no `broad_nib`.
 
+### Added
+
+- **`docs/research/` — a home for the idea-feeding literature.** New docs
+  layer for external research notes that never follow the code, so the
+  folder taxonomy answers "is this a plan, a protocol or a paper summary?"
+  at a glance: `kurrent-writer-and-recognizer.md` moves there from
+  `proposals/` (which is now purely implementation proposals and their
+  protocols), joined by the new `graves-handschrift-synthese.md` — a
+  54-source literature report on handwriting synthesis (Graves-2013
+  mechanics, priming/biasing, the physical plotter pipeline, the
+  GAN/Transformer/tokenisation successors), editorially cleaned from its
+  deep-research export (25 base64 formula images replaced by text
+  notation, flattened footnote digits turned into readable source
+  references). The index, the write-docs skill, `sprachregelung.md` §1
+  and the copilot docs tree all carry the new layer; two glossary §6
+  entries (MDN, Priming/Biasing) anchor the terms the report brings in.
+
+### Changed
+
+- **Docs drift pass, with the layer taxonomy sharpened to match
+  reality.** The index's layer shorthand no longer claims every
+  `reference/` doc is lebend-or-bindend (HTR/animation/style-analysis
+  carry the status of their planned build-out), `concepts/` is described
+  as the design core it actually is, the proposals index is grouped by
+  status word so plan and protocol separate at a glance, and
+  `optimierungs-werkbank.md` is re-labelled `bindend` — its §3–§5
+  doctrine is API-enforced and read before every basket run; „umgesetzt"
+  was not in the closed status vocabulary. Stale claims fixed in the same
+  pass: the last `position`-keyed tuples in `architektur.md` §3/§12 and
+  `styleanalyse.md` (the schema key is `(glyph_key, variant)` since
+  R2/migration `0021`), architektur §16's pre-redesign admin routes, the
+  metric doc's stale `aug02` headline (actual: words 0,110392 · pairs
+  0,165678, re-baseline `aug07`), style-guide §9's drifted token copy
+  (now a pointer to design-system §2), `werkzeuge.md` missing
+  `dbsnapshot`, `fitview` and the pairlab entry scripts,
+  `datenablage.md` not knowing the committed `data/humanbench/` tree,
+  `naming-und-setup.md` §3 missing `/data` + `/tools`, the
+  `mvp-roadmap.md` head now declaring the retired `/mvp/` folder
+  historical wholesale, and the audit-licenses skill's dead base64
+  exclude (its target was deleted in #209) with the stale
+  woff2-duplicate baseline note.
+
 ## [0.22.0] — 2026-08-02 — Hand model statistics: aggregates + gemessen vs. komponiert
 
 ### Added

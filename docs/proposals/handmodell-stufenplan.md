@@ -264,7 +264,7 @@ manuelle Schleife bereits (Paar-Editor, R3); der Wort-Editor im Admin
 ist inzwischen umgesetzt (Werkbank W3, aus jeder Belege-Karte). So wächst die Trainingsmenge (Buchstaben ·
 Paare · Wörter, je Statistik + Crop + Nachfahrung) kontinuierlich —
 zugleich die Datengrundlage für den späteren generativen Writer
-([`kurrent-writer-and-recognizer.md`](kurrent-writer-and-recognizer.md)).
+([`../research/kurrent-writer-and-recognizer.md`](../research/kurrent-writer-and-recognizer.md)).
 Zwei bewusste Vertagungen: **Schriftdicken** entlang des
 nachgefahrenen Pfads (aus der `width_map` des Specimens sampelbar,
 Spalten/JSONB sind vorbereitet) bleiben zunächst leer — für Sütterlin

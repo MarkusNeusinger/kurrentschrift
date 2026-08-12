@@ -1,6 +1,6 @@
 # Menschliche Bewertung — der blinde Urteilsdurchgang über die Fits
 
-> **Status (2026-08-08): lebend.** Beschreibt das Instrument
+> **Status (2026-08-09): lebend.** Beschreibt das Instrument
 > ([`tools/humanbench`](../../tools/humanbench)) und das Verfahren eines
 > Bewertungsdurchgangs — die Methode, nicht die Ergebnisse. Nachzuziehen bei
 > jeder Änderung am Instrument (Kategorien, Stichproben- und

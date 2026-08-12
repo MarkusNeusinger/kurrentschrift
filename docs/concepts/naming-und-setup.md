@@ -1,8 +1,8 @@
 # Naming- und OSS-Setup-Entscheidungen
 
-> **Status (2026-08-03): bindend.** Name, Domain, Lizenz, Repo-Layout und die
+> **Status (2026-08-12): bindend.** Name, Domain, Lizenz, Repo-Layout und die
 > verworfenen Alternativen (§4) sind entschieden.
-> Die eingestreuten Umsetzungshinweise in §1/§3 sind am 2026-08-03 gegen den
+> Die eingestreuten Umsetzungshinweise in §1/§3 sind am 2026-08-12 gegen den
 > Code geprüft und stimmen (Stil-Dimension geseedet,
 > `react-helmet-async`/`react-i18next` weiterhin nicht eingebaut) — sie sind
 > keine Aufgabenliste.
@@ -116,7 +116,7 @@ einen Open-Source-MCP-Server.
 | **Domain** | `kurrentschrift.ink` |
 | **Repo-Ort** | persönlicher GitHub-Account (Portfolio-Projekt, wie anyplot.ai) |
 | **Repo-Name** | `kurrentschrift` (Monorepo: Code + Website) |
-| **Struktur** | `/core` (Python: extractor, template, DB-Models + Repositories) · `/api` (FastAPI-Backend, dünn) · `/app` (React 19 + Vite SPA — Admin- *und* User-UI, Admin-Routen hinter Auth) · `/alembic` (Postgres-Migrationen) |
+| **Struktur** | `/core` (Python: extractor, template, DB-Models + Repositories) · `/api` (FastAPI-Backend, dünn) · `/app` (React 19 + Vite SPA — Admin- *und* User-UI, Admin-Routen hinter Auth) · `/alembic` (Postgres-Migrationen) · `/data` (Quellen, Korpora, Derivate — eigene Lizenzen je Quelle, siehe [`reference/datenablage.md`](../reference/datenablage.md)) · `/tools` (Dev-Werkzeuge: Labs, Benches, Ernte — siehe [`reference/werkzeuge.md`](../reference/werkzeuge.md)) |
 | **Frontend-Stack** | anyplot-Stil: React 19 + Vite (SWC) + MUI 9 + React Router 7; `react-helmet-async` (SEO) und `react-i18next` (DE/EN) sind post-MVP geplant, noch nicht eingebaut. Details in [`reference/frontend-stack.md`](../reference/frontend-stack.md) und [`architektur.md`](architektur.md) §16. |
 | **Hosting** | GCP / Cloud Run wie anyplot.ai — zwei Services (FastAPI-API + nginx-Static-App), CI/CD via Cloud Build mit getrennten Triggern. Eigenes GCP-Projekt. |
 | **Lizenz** | MIT |

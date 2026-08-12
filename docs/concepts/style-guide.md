@@ -1,6 +1,6 @@
 # Style-Guide — kurrentschrift.ink
 
-> **Status (2026-08-03): bindend.** Begründung und Historie der visuellen
+> **Status (2026-08-12): bindend.** Begründung und Historie der visuellen
 > Identität (Pigment-Recherche, Runden R1–R9, Tintenzustände, Sprachton); die
 > Verworfen-Tabellen sind geschlossene Entscheidungen.
 > Zahlen und Token nicht hier nachpflegen — den Ist-Zustand trägt
@@ -345,33 +345,15 @@ einheitlich tragen. Die neue Regel:
 
 ---
 
-## 9. Token-Referenz (copy-paste)
+## 9. Token-Referenz
 
-```ts
-// Single source of the palette — read by theme/, PaperBackground and PublicHeader.
-const paper = {
-  bg: '#e7dabf',
-  hi: '#f1e8d4',
-  lo: '#d8c7a3',
-  ink: '#241a10',        // iron-gall ink, aged — primary writing/body
-  inkSoft: '#473420',
-  sepia: '#5e4726',      // eyebrows, small labels, "bald" markers — deepened for legibility (~6.3:1)
-  sepiaFaint: '#9a8259', // ruling/Mittellinie tint ONLY — too light for text (2.66:1)
-  viridian: '#40826d',   // the single accent (chromium-oxide green)
-  line: '#b6a079',
-};
-
-// Periodengeerdete Erweiterungen (R1–R5; Hexes approx, siehe §2/§2a)
-const inkState  = { fresh: '#233044', oxidized: '#1c1a17', aged: paper.ink };
-const schulheft = { rulingBlue: '#8fa8c4', rulingBlueFaded: '#a8bcd0', marginRed: '#b03a3a' };
-const pigment   = { vermilion: '#e34234', oxblood: '#6b2e2a', ochre: '#cc7722',
-                    prussianBlue: '#003153', chromeGreen: '#4a6741', oldGold: '#c9a227' };
-
-const garamond = "'EB Garamond', Georgia, 'Times New Roman', serif";
-const display  = "'Playfair Display', 'EB Garamond', Georgia, 'Times New Roman', serif";
-const script   = "'GLKurrent', cursive"; // showpiece only
-const letterpress = `0 1px 0 ${paper.hi}59`; // Deboss der Display-Headlines
-```
+Bis 2026-08-12 stand hier eine Copy-paste-Kopie der Palette; sie war
+gegen den Code gedriftet (u. a. fehlten `viridianText`, das Font-Token
+`suetterlin` und die Karten-/Quiz-Flächen) — genau der Drift, den der
+Status-Kopf dieses Docs ausschließt. Den Ist-Zustand der Tokens trägt
+[`design-system.md`](design-system.md) §2; die einzige Quelle im Code
+ist `app/src/styles/paper.ts`. Hier bleiben die Entscheidungen und ihre
+Historie (§2/§2a), nicht die Zahlen.
 
 ---
 

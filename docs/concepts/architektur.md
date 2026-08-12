@@ -1,6 +1,6 @@
 # Architektur-Referenz
 
-> **Status (2026-08-03): bindend.** Entschiedene Architektur; die
+> **Status (2026-08-12): bindend.** Entschiedene Architektur; die
 > Verworfen-Listen (§2, §4) sind geschlossen, §3/§12 werden bei
 > Schema-Änderungen nachgezogen (zuletzt Handmodell H1/H2, PR #250/#265).
 > §8/§10 beschreiben die geplante Reihenfolge, nicht den Ist-Stand — der
@@ -176,7 +176,7 @@ ebenso die früher (naming-und-setup §1) vertagte Stil-Dimension:
 - `templates` — das kanonische `canonical` pro `(style, glyph,
   variant)`; `provenance_source_id` zeigt auf die getuschte Lehrtafel.
 - `instances` — die `control_points`-Fits pro Beleg aus Originaltexten
-  (§12 Schicht 1, `measurements`); viele pro `(glyph, position, variant)`.
+  (§12 Schicht 1, `measurements`); viele pro `(glyph_key, variant)`.
 - `aggregates` — Per-Hand-Aggregat (§12 Schicht 2): Cluster-Mittelpunkt +
   Hüllkurve pro `(hand, glyph_key, variant)` (Migration `0021`, nach dem
   Positions-Rückbau R2); die Paar-Ebene analog in `pair_aggregates` pro
@@ -563,11 +563,12 @@ Profile. Derselbe §6 deckt Hände nebeneinander vergleichen mit Heatmaps ab.
    `slant_deg`, `mean_half_width_px`, `path_length_px`, `aspect_ratio` für
    jede gefittete Instanz. Erweiterungen pro neuer Größe folgen demselben
    JSONB-Pattern.
-2. **Per-Hand-Aggregation** — *teilweise vorhanden.* Cluster-Mittelpunkt +
-   Hüllkurve pro `(hand, glyph, position, variant)`. M5(C) der Roadmap
-   liefert die erste Implementierung; voller Ausbau zur „personal
-   canonical"-Schicht ist Phase-3-Aufgabe. Speicherung: Tabelle `aggregates`
-   (siehe §3), gefüllt durch den Post-MVP-Aggregationsjob.
+2. **Per-Hand-Aggregation** — *seit Handmodell H1/H2 gebaut.*
+   Cluster-Mittelpunkt + Hüllkurve pro `(hand, glyph_key, variant)`
+   (Migration `0021`; die Paar-Ebene analog in `pair_aggregates`).
+   Speicherung: Tabelle `aggregates` (siehe §3), gefüllt vom
+   Rebuild-Endpunkt der Statistik-Schicht (H1); voller Ausbau zur
+   „personal canonical"-Schicht ist Phase-3-Aufgabe.
 3. **Textunabhängige Writer-ID (optional, post-Phase-3):** **Hinge-** und
    **Δn-Hinge-Features** nach Bulacu/Schomaker — Joint-Distributionen
    benachbarter Konturwinkel, Goldstandard für textunabhängige Writer-
@@ -755,11 +756,14 @@ die heutigen Pfade — steht in
 - **Öffentliche Ziel-Routen (P1+):** Einstieg, Lese-Regeln, Glossar,
   animierte Buchstaben-Tafel, Schreiben-üben (Lineatur-Konfigurator),
   Lese-Hilfe (Upload), Hände vergleichen, Open-Data-Export-Seite.
-- **Admin-Routen (Auth-geschützt):** Bbox-Editor, Stylus-Trace,
-  3-Spalten-Diagnostic, Source-Verwaltung. Code lebt weiter im
-  Verzeichnis `/app/` (kein zweites Frontend); im URL-Raum wandern sie
-  unter `/admin/*` mit Auth-Gate. Details:
-  [`reference/frontend-stack.md`](../reference/frontend-stack.md) §2.
+- **Admin-Routen (Auth-geschützt, Ist-Stand seit dem Redesign „aus
+  einem Guss" 2026-08):** die Vorlagen-Auswahl `/admin` und die drei
+  Ansichten `/admin/buchstaben` · `/admin/uebergaenge` ·
+  `/admin/woerter` (je Übersicht ⇄ Detail, Subjekt im Query-String);
+  die früheren Werkzeug-Routen leben als Redirects fort. Code lebt
+  weiter im Verzeichnis `/app/` (kein zweites Frontend). Details:
+  [`reference/frontend-stack.md`](../reference/frontend-stack.md) §2 und
+  [`design-system.md`](design-system.md) §6.
 
 **Hosting & Deploy:**
 
