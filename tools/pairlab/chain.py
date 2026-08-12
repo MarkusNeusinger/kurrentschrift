@@ -513,9 +513,21 @@ def _landmark_correspondence(
 
     Connectors are deliberately excluded: a connector has no template structure
     to place, and its shape is what the chain measures rather than prescribes.
+
+    Without `skel` there is no correspondence to state at all and the detector is
+    not run: see the early return for why the report is empty rather than full of
+    refusals.
     """
     k_plan = len(anchors_plan0)
-    branch_px = skeleton_branch_points(skel) if skel is not None else np.zeros((0, 2))
+    if skel is None:
+        # No ink side was supplied — the synthetic field stack `build_chain_problem`
+        # documents. Detecting the templates' crossings anyway would file every one
+        # of them as a `no_candidate` DROP, and that reason is a claim about the INK
+        # ("no branch point within the radius") which nothing here ever read. No
+        # correspondence was assigned AND none was refused, so the honest report is
+        # the empty one — and the detector's work is skipped with it.
+        return np.zeros((0, k_plan)), np.zeros((0, 2)), []
+    branch_px = skeleton_branch_points(skel)
     radius_px, margin_px = radius_units * unit_px, margin_units * unit_px
     rows: list[np.ndarray] = []
     targets: list[tuple[float, float]] = []
@@ -734,7 +746,9 @@ class _ChainProblem:
     landmark_report: list[dict] = field(default_factory=list)
     """One entry per DETECTED landmark, kept or dropped, with its `reason`. The
     drops are the interesting half: an ambiguous correspondence must be visible
-    as a refusal rather than silently absent."""
+    as a refusal rather than silently absent — but a refusal is a statement about
+    the ink, so with no skeleton supplied nothing is detected and this stays
+    EMPTY rather than filling with vacuous drops."""
     plan_slices: list[tuple[int, int]] = field(default_factory=list)
     """per segment, into the PLAN anchor array (seam anchors included)."""
     n_letter_anchors: float = 1.0

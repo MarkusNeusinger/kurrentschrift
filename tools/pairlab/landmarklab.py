@@ -121,7 +121,10 @@ def _rows_for_arm(
         for n, seg in enumerate(letters):
             if seg.key != PROBE_KEY:
                 continue
-            slot_index = fit.slots[n]
+            # From the segment itself, never `fit.slots[n]`: `n` indexes the
+            # FILTERED letter list, and reading the run's slot list in lockstep
+            # with it only happens to agree today.
+            slot_index = int(seg.slot_index)
             joined = slot_index + 1 < len(case.slots) and _slots_join(
                 case.slots[slot_index], case.slots[slot_index + 1]
             )

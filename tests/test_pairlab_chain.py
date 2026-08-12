@@ -447,6 +447,11 @@ def test_the_landmark_term_is_byte_identical_at_weight_zero() -> None:
     _, without = _crossing_problem(skel=False)
     assert with_data.landmark_op.shape[0] == 1  # not a vacuous test
     assert without.landmark_op.shape[0] == 0
+    # …and with no ink side the detector does not run at all: a `no_candidate`
+    # drop claims a branch point was looked for and missed, which would be a
+    # statement about ink this arm never had.
+    assert without.landmark_report == []
+    assert [e["reason"] for e in with_data.landmark_report] == ["ok"]
     assert with_data.landmark_weight == 0.0
     rng = np.random.default_rng(13)
     params = rng.uniform(-0.05, 0.05, size=len(with_data.x0))
