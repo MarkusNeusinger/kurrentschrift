@@ -292,18 +292,19 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
           <Slider
             size="small"
             value={zoom}
-            // Down to 0.1: fullscreen made the 1× baseline much larger than
-            // the old dialog width, so natural writing size on a tablet can
-            // sit well below the former 0.25 floor. Fine steps keep the low
-            // end usable (0.25 → 0.20 is a big relative jump).
+            // 0.1–2: fullscreen made the 1× baseline much larger than the old
+            // dialog width, so natural writing size sits well below 1× — and
+            // tablet use showed zoom beyond 2× goes unused while making the
+            // slider too coarse to set precisely (8× packed 158 steps into
+            // its width; 2× leaves 38).
             min={0.1}
-            max={8}
+            max={2}
             step={0.05}
             // Snapped to the 0.05 grid: MUI accumulates min + k·step in
             // floats, so raw values arrive as 0.15000000000000002 etc.
             onChange={(_, v) => setZoom(Math.round((v as number) * 20) / 20)}
             aria-label={t.editorZoom}
-            sx={{ width: 160, flexShrink: 0, mx: 1 }}
+            sx={{ width: 220, flexShrink: 0, mx: 1 }}
           />
           <Button
             size="small"

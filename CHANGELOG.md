@@ -53,7 +53,10 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 - **Trace editor: shrink floor lowered to 0.1× and the drawn line made a
   true 2-CSS-pixel hairline.** Fullscreen made the 1× baseline much
   larger than the old dialog width, so natural writing size on a tablet
-  can sit below the former 0.25× floor (now 0.1–8× in 0.05 steps) — and
+  can sit below the former 0.25× floor (now 0.1–2× in 0.05 steps —
+  capped at 2× because tablet use showed higher zoom unused while
+  packing so many steps into the slider that it was hard to set
+  precisely) — and
   the zoom-compensated stroke width, constant relative to the container,
   drew a line far fatter than the shrunk ink it traced; both overlay
   paths now use `vector-effect: non-scaling-stroke` with fixed pixel
