@@ -377,16 +377,24 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
             {fmt(t.editorHandUnresolved, { id: handId })}
           </Alert>
         )}
-        <Box ref={scrollRef} sx={{ flex: 1, minHeight: 0, overflow: 'auto', borderRadius: '6px' }}>
+        {/* display:flex + margin:auto on the svg centres a small (shrunk) word
+            in BOTH axes of the free canvas area — the writing zone moves to
+            the middle of the screen, away from the header controls a resting
+            pen hand kept grazing; an enlarged word overflows and scrolls
+            exactly as before (margin:auto is the clip-safe centring pattern
+            inside a scroll container). */}
+        <Box ref={scrollRef} sx={{ flex: 1, minHeight: 0, overflow: 'auto', borderRadius: '6px', display: 'flex' }}>
         <svg
           ref={svgRef}
           viewBox={`0 0 ${sample.width} ${sample.height}`}
           style={{
             display: 'block',
             width: `${zoom * 100}%`,
-            // Below 1× the shrunk word sits centred instead of hugging the
-            // left edge of the now-larger canvas area.
-            margin: '0 auto',
+            // Centred in both axes of the canvas area (see the flex container
+            // above) — a shrunk word floats mid-screen instead of hugging the
+            // top edge right under the controls.
+            margin: 'auto',
+            flexShrink: 0,
             background: '#fff',
             borderRadius: 6,
             // NO browser gestures on the canvas: Chromium treats the pen as a
