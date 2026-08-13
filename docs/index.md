@@ -63,7 +63,7 @@ gemessene Hand-Parameter.
 | Schreibsystem-Redesign (R1–R5: Paar-Matrix, Positions-Rückbau, geerntete Paare, Schräglage) nachschlagen | [Schreibsystem-Redesign](proposals/schreibsystem-redesign.md) |
 | Den Handmodell-Stufenplan (Duktus-Prior · Laufformen · Statistik · eigene Hand) nachschlagen | [Handmodell-Stufenplan](proposals/handmodell-stufenplan.md) |
 | Die Werkbank-Doktrin (wer liefert welche Stufe · Auftragskorb-Protokoll) nachschlagen | [Optimierungs-Werkbank](proposals/optimierungs-werkbank.md) |
-| Ideen-Recherche lesen (Graves-Writer → Recognizer · Synthese-Verfahren · Plotter-Pipeline) | [Research](#research) |
+| Ideen-Recherche lesen (Graves-Writer → Recognizer · Synthese-Verfahren · Bildsynthese/Offline-HTG · Plotter-Pipeline) | [Research](#research) |
 
 ---
 
@@ -116,6 +116,7 @@ docs/
 │   ├── handmodell-stufenplan.md  # Vorschlag 2026-07-31: Statistik-Schicht füllen (H0–H5) — Instances/Aggregates, Paar-Statistik, Konstanten→Hand-Parameter, eigene Hand
 │   └── optimierungs-werkbank.md  # Entscheid 2026-07-31: EINE Werkbank-Seite + Stufen-/Rollen-Doktrin + work_items-Auftragskorb (W1–W5)
 ├── research/                     # Externe Recherche/Literatur — liefert Ideen, folgt dem Code nie
+│   ├── bildsynthese-und-stiftbahn.md     # Recherche 2026-08: Offline-HTG auf Kurrent fein-tunen → Trajektorien-Rückgewinnung → Plotter; Datenlage/Lizenzen, Prüfsteine T0–T4
 │   ├── graves-handschrift-synthese.md    # Literatur-Report: Graves-2013-Mechanik, Priming/Biasing, Plotter-Pipeline, GAN/Transformer/ScribeTokens, 54 Quellen
 │   └── kurrent-writer-and-recognizer.md  # Recherche-Notiz (EN): generativer Writer (Graves 2013) als synthetische Datenquelle → billiger Recognizer
 └── notes/                        # Operative, datierte Journale (nicht Designkern)
@@ -407,6 +408,16 @@ Externe Recherche- und Literatur-Notizen — sie liefern Ideen und
 Vergleichsmaßstäbe, folgen dem Code aber nie; Status je Doc (`offen` =
 Idee mit Bauoption, `Befund-Journal` = Literatur-Momentaufnahme).
 
+- **[Bildsynthese und Stiftbahn](research/bildsynthese-und-stiftbahn.md)** —
+  Recherche-Runde 2026-08-13 zum bildbasierten Parallelweg: den Stand der
+  Offline-HTG-Modelle (GAN · Transformer · Diffusion; Favoriten
+  DiffusionPen/One-DM, das Emuru-Font-Pretraining-Rezept), die Daten- und
+  Lizenzlage für Kurrent-Trainingsbilder (CC-BY-Sätze, die Sütterlin-Ära-
+  Lücke), die Offline→Online-Rückgewinnung (InkSight, TRACE, Kettenfit
+  als prior-geführte Route; `word_instances` als einzige
+  Online-Kurrent-Ground-Truth) und die kleinen Prüfsteine T0–T4 bis zur
+  geplotteten Postkarte — *Status: offen (Recherche mit Bauoption,
+  nichts gebaut)*
 - **[Kurrent: Writer → Recognizer](research/kurrent-writer-and-recognizer.md)** —
   Recherche-Notiz (Englisch): warum Graves 2013 (RNN-Handschrift-Synthese)
   der Anker für den generativen Writer ist, und wie derselbe Writer als

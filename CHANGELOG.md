@@ -14,6 +14,23 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Research note on the image-first parallel track: offline handwriting
+  generation for Kurrent and the way back to a pen path.** New
+  `docs/research/bildsynthese-und-stiftbahn.md` surveys the current
+  offline-HTG landscape (GAN · transformer · diffusion families, with
+  DiffusionPen/One-DM as fine-tuning favourites and Emuru's
+  synthetic-font pretraining recipe adapted to the project's own engine
+  as the data-scarcity answer), the licensing-triaged training-data
+  situation for Kurrent word images (CC-BY line datasets, the
+  Sütterlin-era gap, papers linked rather than committed), the
+  offline-to-online trajectory-recovery state of the art (InkSight,
+  TRACE, the geometric route — and the repo's own chain fit as the
+  prior-guided competitor, with the traced `word_instances` as the only
+  existing online Kurrent ground truth and hence the evaluation bench),
+  and a cheap-to-expensive test ladder T0–T4 ending in a plotted
+  postcard A/B against the current engine. Indexed in `docs/index.md`;
+  the external umbrella term HTG gets its glossary entry in §6.
+
 - **The crossing landmark as a DATA term in the chain fit — inert by default,
   with its energy scale calibrated before any weight is proposed.** New pure
   module `tools/pairlab/landmarks.py` finds a ductus polyline's proper
