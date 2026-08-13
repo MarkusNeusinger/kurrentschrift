@@ -427,6 +427,8 @@ export const admin = {
     // panning is an explicit mode instead.
     editorModeDraw: 'Schreiben',
     editorModePan: 'Verschieben',
+    // Accessible name of the mode toggle group.
+    editorModeGroup: 'Modus',
     editorZoomHint: 'Finger sind deaktiviert — zum Verschieben den Schalter nutzen.',
     editorReset: 'Auf gespeicherten Stand zurück',
     editorShowStored: 'Gespeicherte Spur zeigen',

@@ -274,6 +274,7 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
           <ToggleButtonGroup
             size="small"
             exclusive
+            aria-label={t.editorModeGroup}
             value={panMode ? 'pan' : 'draw'}
             onChange={(_, v) => {
               if (v !== null) setPanMode(v === 'pan');
