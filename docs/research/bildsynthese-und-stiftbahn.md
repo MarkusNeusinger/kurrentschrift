@@ -328,6 +328,32 @@ Reihenfolge-Empfehlung: T0 sofort (kostet fast nichts und erdet alle
 Erwartungen), T4/Weg-A-Hälfte ebenfalls früh (sie hängt an keinem
 ML-Schritt), T1→T2→T3 danach in dieser Folge.
 
+### Nachtrag 2026-08-13: der vorgezogene Kleinstschritt — ein Tintenfolger
+
+Aus der Diskussion zur Runde, als Richtung festgehalten: Für unseren
+Fall ist das Literaturproblem überdimensioniert. Wir müssen keine
+fremde, krakelige Handschrift lesen, sondern eine sauber geschriebene
+Ausgangsschrift, deren Text **und** Duktus bekannt sind — und
+Kreuzungen, der benannte harte Fall des ganzen Feldes (§4), sind bei
+uns keine Rätsel, weil der Duktus-Prior sagt, welcher Ast wie
+weiterläuft. Statt gleich ein fremdes Gesamtsystem zu übernehmen, werden
+die optimalen Stücke für genau diesen einfachen Fall zusammengesetzt,
+und der kleinste sinnvolle Schritt ist keiner der ML-Prüfsteine,
+sondern ein **Tintenfolger** aus vorhandenen Teilen: der Kettenfit
+liefert Topologie, Strichfolge und Kreuzungsauflösung als
+Initialisierung; darauf folgt eine Verfeinerungsstufe, die die
+Form-Regularisierung Richtung Vorlage löst und die dicht abgetastete
+Bahn auf das gemessene Skelett der Wortprobe zieht — Geometrie ganz aus
+der Tinte, Ordnung ganz aus dem Prior. Maßstab sind die manuellen
+Nachfahrungen der Abb.-19-Wörter (Punktabstände per DTW/LDTW,
+Fehlerzählung an Schleifenkreuzungen, i-Punkten/Umlauten,
+Deckstrichen); „der Tinte perfekt folgen" ist erreicht, wenn der
+automatische Folger im blinden Paarvergleich (humanbench-Methode) vom
+manuellen Nachfahren nicht mehr unterscheidbar ist. Kein GPU-Training,
+kein Fremdmodell — und jeder Fortschritt zahlt doppelt: sofort als
+automatisches Nachfahren (§5) und später als fertige Route A des
+Rückgewinnungs-Duells T3.
+
 ## 7 Risiken und Grenzen
 
 - **Datenknappheit in der Ziel-Ära.** Für Sütterlin 1911–1941 gibt es
