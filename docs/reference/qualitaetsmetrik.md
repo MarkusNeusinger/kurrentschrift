@@ -3244,6 +3244,18 @@ alle einen STELLVERTRETER bepreist — Krümmung, Abstand, Steifigkeit — auf
 einer zuordnungsblinden Zielfunktion. Eine Landmarken-Korrespondenz ist ein
 DATENterm: dieser Punkt gehört auf jenen Punkt.
 
+**Nachtrag (`aug11`, gleicher Zweig): der Zuordnungsterm existiert jetzt.**
+`tools/pairlab/landmarks.py` trägt den geteilten Detektor (Selbstkreuzungen
+der Ankerlinie + Skelett-Verzweigungspunkte, eine nicht entscheidbare
+Zuordnung wird verworfen statt geraten), und `tools/pairlab/chain.py` preist
+die Korrespondenz als Energieterm — `landmark` ist in `GRADIENT_TERMS`
+aufgenommen, die Zerlegungsprobe deckt ihn also mit ab. Ausgeliefert ist er
+**bewusst inert**: `CHAIN_LANDMARK_WEIGHT` steht auf 0,0 und ist dort
+byte-identisch zur Abwesenheit des Terms (per Test festgenagelt). Die
+Kalibrierung ist offen — die Sonde dafür ist `tools/pairlab/landmarklab.py`,
+und aus dem 14-Vorkommen-Set eines einzigen Buchstabens wird hier absichtlich
+kein Standardgewicht vorgeschlagen.
+
 **Grenzen, die bleiben.** Der Effekt ist nicht allgemein: bei `a`, `l`, `r`,
 `h` ist die Kreuzung *nicht* übergangsabhängig (p = 0,67–0,75) — er tritt
 auf, wo die Kreuzung auf dem AUSLAUFweg liegt (beim `d` Anker 59/110, und

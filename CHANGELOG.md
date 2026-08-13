@@ -14,6 +14,38 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The crossing landmark as a DATA term in the chain fit — inert by default,
+  with its energy scale calibrated before any weight is proposed.** New pure
+  module `tools/pairlab/landmarks.py` finds a ductus polyline's proper
+  self-intersections (chord pair plus both chord parameters, half-open so a
+  crossing on an anchor is counted once, never bridging a pen lift) and
+  classifies the well-conditioned ones as landmarks (≥ 15°, ≥ 0.35 xh arc
+  separation, co-located duplicates merged — this reproduces
+  `qualitaetsmetrik.md` §13a's census exactly: 43 landmarks over 26 of the 34
+  frozen v0 rows). Beside it the ink side: skeleton branch points (≥ 3
+  8-neighbours, adjacent ones collapsed to their centroid) and an explicit
+  refusal to assign an ambiguous one. `tools/pairlab/chain.py` gains the
+  correspondence term over those pairs — linearised the way every other
+  operator of `_ChainProblem` is (chord pair and parameters frozen at the
+  initial anchors, so the fitted crossing is the average of the two branch
+  points and hence LINEAR in four plan anchors, with an exact gradient),
+  weight `CHAIN_LANDMARK_WEIGHT` / `KS_CHAIN_LANDMARK_WEIGHT` **default 0.0**
+  and byte-identical there (value and gradient bit-for-bit the term's absence,
+  pinned by a test), `landmark` added to `GRADIENT_TERMS` so
+  `gradient_decomposition`'s sum check covers it. Why this is not a fifth
+  attempt after §7/§8/§10/§11d: those four priced a PROXY (curvature,
+  distance, stiffness) on an assignment-blind objective, and this states a
+  correspondence — *this point belongs on that point*. `tools/pairlab/landmarklab.py`
+  is the probe: `--calibrate` reads `e_geo / e_landmark` at BASELINE optima
+  only (§11c's lesson — a ladder chosen by analogy put the bind term at 0.2 %
+  of this objective's energy scale and produced an empty experiment), then the
+  effect run reports the fitted crossing height per occurrence against the ink
+  target, pooled by joined vs. word-final, with its costs and with the
+  structure-or-slide column that says whether a weight moved the structure or
+  just translated the letter. Measurement only: no DB, no API, no `core/`, no
+  rendering, and no default weight is proposed from a 14-occurrence
+  single-glyph development set.
+
 - **The stranded anchor is now REPAIRED at harvest — the accepted alternative
   to the four rejected objective terms.** `tools/pairlab/anchors.py` holds the
   shared detector (both neighbouring steps ≥ 3× the median step of the own
