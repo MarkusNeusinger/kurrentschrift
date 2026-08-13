@@ -21,6 +21,8 @@ import {
   DialogTitle,
   FormControlLabel,
   Slider,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from '@mui/material';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -65,10 +67,14 @@ const copyStrokes = (strokes: WordInstanceOut['strokes']): TracePoint[][] =>
 export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fallbackHandId, onSaved }: Props) {
   const t = de.admin.belege;
   const [strokes, setStrokes] = useState<TracePoint[][]>(() => copyStrokes(row.strokes));
-  // Zoom factor for the drawing surface (1 = dialog width). Tracing at natural
-  // writing size matters for a faithful ductus: on a tablet the word crop at
-  // dialog width leaves the x-height far below pen-on-paper scale.
-  const [zoom, setZoom] = useState(1);
+  // Zoom factor for the drawing surface (1 = dialog width). Default 0.2: on
+  // the fullscreen canvas that lands near natural pen-on-paper writing size
+  // (author-calibrated on the tablet), so most words need no adjustment.
+  const [zoom, setZoom] = useState(0.2);
+  // Explicit pan MODE instead of finger gestures: while writing, the resting
+  // hand and stray fingers constantly shoved the view around. In draw mode
+  // touch input is fully inert; in pan mode every pointer drags the view.
+  const [panMode, setPanMode] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [showStored, setShowStored] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -78,10 +84,10 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const gripRef = useRef<Grip>({ current: null });
-  // Finger panning, done by hand: the canvas carries touch-action: none,
-  // because Chromium treats the PEN as a pannable pointer too — with
-  // `pan-x pan-y` a short pen stroke was recognised as a scroll gesture,
-  // the browser fired pointercancel and the drawn line broke off.
+  // Manual panning (only ever active in pan MODE): the canvas carries
+  // touch-action: none, because Chromium treats the PEN as a pannable pointer
+  // too — with `pan-x pan-y` a short pen stroke was recognised as a scroll
+  // gesture, the browser fired pointercancel and the drawn line broke off.
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const panRef = useRef<{ id: number; x: number; y: number; left: number; top: number } | null>(null);
 
@@ -127,9 +133,10 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
   };
 
   const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
-    // Fingers pan the zoomed crop (scrolled by hand below — see panRef);
-    // only pen and mouse draw. This doubles as palm rejection.
-    if (e.pointerType === 'touch') {
+    // Pan is an explicit MODE, never a gesture: in draw mode touch input is
+    // completely inert (the writing hand rests on the display), in pan mode
+    // any pointer — pen, mouse or finger — drags the view.
+    if (panMode) {
       if (panRef.current === null && scrollRef.current) {
         panRef.current = {
           id: e.pointerId,
@@ -142,6 +149,7 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
       }
       return;
     }
+    if (e.pointerType === 'touch') return;
     const p = toTrace(e.clientX, e.clientY);
     if (!p) return;
     // One pointer at a time: a second pen contact must not hijack the stroke
@@ -260,6 +268,21 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
       </DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, pb: 1 }}>
         <Box sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* Draw vs. pan as an explicit toggle (the wizard's Zeichnen/Anpassen
+              pattern): gestures on the canvas cannot coexist with a resting
+              writing hand. */}
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            aria-label={t.editorModeGroup}
+            value={panMode ? 'pan' : 'draw'}
+            onChange={(_, v) => {
+              if (v !== null) setPanMode(v === 'pan');
+            }}
+          >
+            <ToggleButton value="draw">{t.editorModeDraw}</ToggleButton>
+            <ToggleButton value="pan">{t.editorModePan}</ToggleButton>
+          </ToggleButtonGroup>
           {/* The value lives in this permanent label: the slider sits directly
               under the dialog title, so MUI's pop-up value tooltip is clipped
               by the header and never readable. minWidth keeps the row from
@@ -270,18 +293,19 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
           <Slider
             size="small"
             value={zoom}
-            // Down to 0.1: fullscreen made the 1× baseline much larger than
-            // the old dialog width, so natural writing size on a tablet can
-            // sit well below the former 0.25 floor. Fine steps keep the low
-            // end usable (0.25 → 0.20 is a big relative jump).
+            // 0.1–2: fullscreen made the 1× baseline much larger than the old
+            // dialog width, so natural writing size sits well below 1× — and
+            // tablet use showed zoom beyond 2× goes unused while making the
+            // slider too coarse to set precisely (8× packed 158 steps into
+            // its width; 2× leaves 38).
             min={0.1}
-            max={8}
+            max={2}
             step={0.05}
             // Snapped to the 0.05 grid: MUI accumulates min + k·step in
             // floats, so raw values arrive as 0.15000000000000002 etc.
             onChange={(_, v) => setZoom(Math.round((v as number) * 20) / 20)}
             aria-label={t.editorZoom}
-            sx={{ width: 160, flexShrink: 0, mx: 1 }}
+            sx={{ width: 220, flexShrink: 0, mx: 1 }}
           />
           <Button
             size="small"
@@ -354,7 +378,7 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
             // stroke after a short distance and scroll instead. Fingers still
             // pan — via the manual handler on panRef, not the browser.
             touchAction: 'none',
-            cursor: 'crosshair',
+            cursor: panMode ? 'grab' : 'crosshair',
           }}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}

@@ -53,7 +53,10 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 - **Trace editor: shrink floor lowered to 0.1× and the drawn line made a
   true 2-CSS-pixel hairline.** Fullscreen made the 1× baseline much
   larger than the old dialog width, so natural writing size on a tablet
-  can sit below the former 0.25× floor (now 0.1–8× in 0.05 steps) — and
+  can sit below the former 0.25× floor (now 0.1–2× in 0.05 steps —
+  capped at 2× because tablet use showed higher zoom unused while
+  packing so many steps into the slider that it was hard to set
+  precisely) — and
   the zoom-compensated stroke width, constant relative to the container,
   drew a line far fatter than the shrunk ink it traced; both overlay
   paths now use `vector-effect: non-scaling-stroke` with fixed pixel
@@ -62,6 +65,12 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   panning: Chromium treats the pen as a pannable pointer, so the browser
   recognised a short pen stroke as a scroll gesture, fired
   `pointercancel` and broke the drawn line off mid-stroke.
+- **Trace editor: panning is an explicit mode, fingers are fully inert
+  while writing.** Even hand-rolled finger panning fought the writing
+  hand — resting fingers and palm shoved the view around mid-stroke. A
+  Schreiben/Verschieben toggle (the wizard's Zeichnen/Anpassen pattern)
+  replaces the gesture: in draw mode touch input does nothing at all,
+  in pan mode any pointer — pen, mouse or finger — drags the view.
 - **The words overview shows which specimens are already hand-traced.**
   Every card whose stored trace is provenance `authored` carries a
   filled "von Hand" chip and the toolbar counts the tab's progress

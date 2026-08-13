@@ -423,7 +423,13 @@ export const admin = {
     editorClear: 'Alle Züge löschen',
     // Zoom slider: scales the crop up to natural writing size on a tablet.
     editorZoom: 'Größe',
-    editorZoomHint: 'Finger verschieben den Ausschnitt — gezeichnet wird mit Stift oder Maus.',
+    // Fingers are fully inert on the canvas (the writing hand rests there);
+    // panning is an explicit mode instead.
+    editorModeDraw: 'Schreiben',
+    editorModePan: 'Verschieben',
+    // Accessible name of the mode toggle group.
+    editorModeGroup: 'Modus',
+    editorZoomHint: 'Finger sind deaktiviert — zum Verschieben den Schalter nutzen.',
     editorReset: 'Auf gespeicherten Stand zurück',
     editorShowStored: 'Gespeicherte Spur zeigen',
     // {{strokes}} = number of strokes the save would write.
