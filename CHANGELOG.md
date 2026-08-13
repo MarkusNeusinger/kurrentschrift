@@ -30,6 +30,16 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   and a cheap-to-expensive test ladder T0–T4 ending in a plotted
   postcard A/B against the current engine. Indexed in `docs/index.md`;
   the external umbrella term HTG gets its glossary entry in §6.
+- **A zoom slider in the word trace editor, so a word can be re-traced at
+  natural writing size on a tablet.** The W3 editor
+  (`WordTraceEditorDialog`) gains a 1–8× size slider: the crop scales
+  inside a scrollable container, fingers pan the zoomed view
+  (`touch-action: pan-x pan-y`) while pen and mouse draw — touch
+  pointers are ignored by the stroke handlers, which doubles as palm
+  rejection — and the drawn trace keeps a constant on-screen thickness
+  (stroke width divided by zoom), so zooming in reveals the ink instead
+  of a fatter overlay. Groundwork for hand-tracing the `authored`
+  reference set the research note's ink-follower benchmark needs.
 
 - **The crossing landmark as a DATA term in the chain fit — inert by default,
   with its energy scale calibrated before any weight is proposed.** New pure

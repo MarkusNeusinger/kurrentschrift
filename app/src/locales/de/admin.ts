@@ -417,6 +417,9 @@ export const admin = {
       'Den Schreibweg mit dem Stift direkt über dem Platten-Ausschnitt nachfahren. Jedes Absetzen beginnt einen neuen Zug — die blaue Grundlinie und die gestrichelte Mittellinie zeigen den Rahmen, in dem der Weg gespeichert wird. Gespeichert wird er als „von Hand nachgefahren" (authored): Grundwahrheit für Statistik und Training, keine Rendering-Korrektur — und von keiner Neu-Ernte je überschrieben.',
     editorUndo: 'Letzten Zug zurück',
     editorClear: 'Alle Züge löschen',
+    // Zoom slider: scales the crop up to natural writing size on a tablet.
+    editorZoom: 'Größe',
+    editorZoomHint: 'Finger verschieben den Ausschnitt — gezeichnet wird mit Stift oder Maus.',
     editorReset: 'Auf gespeicherten Stand zurück',
     editorShowStored: 'Gespeicherte Spur zeigen',
     // {{strokes}} = number of strokes the save would write.

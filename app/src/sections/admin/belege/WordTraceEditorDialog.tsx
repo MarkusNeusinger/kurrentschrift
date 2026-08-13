@@ -21,6 +21,7 @@ import {
   DialogContent,
   DialogTitle,
   FormControlLabel,
+  Slider,
   Typography,
 } from '@mui/material';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -64,6 +65,10 @@ const copyStrokes = (strokes: WordInstanceOut['strokes']): TracePoint[][] =>
 export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fallbackHandId, onSaved }: Props) {
   const t = de.admin.belege;
   const [strokes, setStrokes] = useState<TracePoint[][]>(() => copyStrokes(row.strokes));
+  // Zoom factor for the drawing surface (1 = dialog width). Tracing at natural
+  // writing size matters for a faithful ductus: on a tablet the word crop at
+  // dialog width leaves the x-height far below pen-on-paper scale.
+  const [zoom, setZoom] = useState(1);
   const [dirty, setDirty] = useState(false);
   const [showStored, setShowStored] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -116,10 +121,13 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
   };
 
   const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    // Fingers pan the zoomed crop (the browser handles the scroll via
+    // touch-action); only pen and mouse draw. This doubles as palm rejection.
+    if (e.pointerType === 'touch') return;
     const p = toTrace(e.clientX, e.clientY);
     if (!p) return;
-    // One pointer at a time: a palm resting beside the S-Pen must not hijack
-    // the stroke the pen is drawing (same rule as the wizard canvas).
+    // One pointer at a time: a second pen contact must not hijack the stroke
+    // the pen is drawing (same rule as the wizard canvas).
     if (!takeGrip(gripRef.current, e.pointerId)) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     setStrokes((prev) => [...prev, [p]]);
@@ -223,15 +231,18 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
             {fmt(t.editorHandUnresolved, { id: handId })}
           </Alert>
         )}
+        <Box sx={{ overflow: 'auto', maxHeight: '62vh', borderRadius: '6px' }}>
         <svg
           ref={svgRef}
           viewBox={`0 0 ${sample.width} ${sample.height}`}
           style={{
             display: 'block',
-            width: '100%',
+            width: `${zoom * 100}%`,
             background: '#fff',
             borderRadius: 6,
-            touchAction: 'none',
+            // Fingers scroll the zoomed crop; pen input still reaches the
+            // pointer handlers (pens don't scroll in the target browsers).
+            touchAction: 'pan-x pan-y',
             cursor: 'crosshair',
           }}
           onPointerDown={onPointerDown}
@@ -278,7 +289,7 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
                   fill="none"
                   stroke="#8b9a95"
                   strokeOpacity={0.6}
-                  strokeWidth={0.05}
+                  strokeWidth={0.05 / zoom}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
@@ -290,13 +301,36 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
                 fill="none"
                 stroke={overlay.draft}
                 strokeOpacity={0.9}
-                strokeWidth={0.07}
+                // Divided by zoom so the drawn line keeps a constant on-screen
+                // thickness: zooming in must reveal the ink, not a fatter trace.
+                strokeWidth={0.07 / zoom}
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
             ))}
           </g>
         </svg>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1.5, mt: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Typography variant="caption" color="text.secondary">
+            {t.editorZoom}
+          </Typography>
+          <Slider
+            size="small"
+            value={zoom}
+            min={1}
+            max={8}
+            step={0.5}
+            onChange={(_, v) => setZoom(v as number)}
+            valueLabelDisplay="auto"
+            valueLabelFormat={(v) => `${v}×`}
+            aria-label={t.editorZoom}
+            sx={{ width: 160, flexShrink: 0 }}
+          />
+          <Typography variant="caption" color="text.secondary">
+            {t.editorZoomHint}
+          </Typography>
+        </Box>
         <Box sx={{ display: 'flex', gap: 1, mt: 1, alignItems: 'center', flexWrap: 'wrap' }}>
           <Button
             size="small"
