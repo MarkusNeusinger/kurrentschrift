@@ -50,6 +50,12 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `InfoHint`, and the size slider now also SHRINKS (0.25–8× in 0.25
   steps, shrunk words centred), because on a tablet the crop at dialog
   width can be larger than natural writing size.
+- **The words overview shows which specimens are already hand-traced.**
+  Every card whose stored trace is provenance `authored` carries a
+  filled "von Hand" chip and the toolbar counts the tab's progress
+  ("0/63 von Hand nachgefahren") — the glanceable state for working
+  through the manual reference set, fed from the shared workbench rows
+  at no extra request.
 
 - **The crossing landmark as a DATA term in the chain fit — inert by default,
   with its energy scale calibrated before any weight is proposed.** New pure
