@@ -244,8 +244,24 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
   // with the pen, the hand rests exactly where footer controls would sit and
   // a graze there used to interrupt the stroke. Nothing clickable below the
   // word — the canvas owns the rest of the viewport.
+  //
+  // The paper suppresses text selection and the context menu: an S-Pen
+  // long-press otherwise selects the hint text (native selection handles +
+  // copy toolbar) or opens the browser context menu mid-stroke. Buttons and
+  // the slider are unaffected; the InfoHint popover renders in a portal
+  // outside the paper and stays selectable.
   return (
-    <Dialog open={open} onClose={onClose} fullScreen>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullScreen
+      slotProps={{
+        paper: {
+          sx: { userSelect: 'none' },
+          onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
+        },
+      }}
+    >
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', py: 1 }}>
         <Typography component="span" sx={{ fontFamily: garamond, fontSize: 24, lineHeight: 1 }}>
           {row.word}
