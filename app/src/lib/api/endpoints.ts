@@ -114,15 +114,30 @@ export const deletePair = (sourceId: string, leftKey: string, rightKey: string):
 
 // The connected-writing specimens of a source (words.json sidecar) — empty for
 // sources without plates. The crop is an <img>-loadable public URL like cropUrl.
-// `v` is a cache-buster, bumped when the response schema grows a field the UI
-// depends on (v=2: `rect`): the endpoint is cached with a days-long
-// stale-while-revalidate window, so without it browsers/CDNs keep serving the
-// old shape long after a deploy.
-export const getWordSamples = (sourceId: string, retry?: RetryOptions): Promise<WordSampleOut[]> =>
-  apiFetch(src(sourceId, '/word-samples?v=2'), {}, retry).then(asJson<WordSampleOut[]>);
+// `v` is a cache-buster, bumped when the response CONTENT changes shape or the
+// sidecar data itself is corrected (v=2: `rect`; v=3: widened rects for
+// haben/ein/einen/zwei/regieren): the endpoint and the crops are cached with a
+// days-long stale-while-revalidate window, so without it browsers/CDNs keep
+// serving the old data long after a deploy. `bust` additionally rides the
+// admin-wide reload stamp, so „Neu laden" re-fetches past every cache.
+const WORD_SAMPLES_V = 3;
 
-export const wordSampleCropUrl = (sourceId: string, sampleId: string): string =>
-  src(sourceId, `/word-samples/${encodeURIComponent(sampleId)}/crop`);
+export const getWordSamples = (
+  sourceId: string,
+  retry?: RetryOptions,
+  bust?: number,
+): Promise<WordSampleOut[]> =>
+  apiFetch(
+    src(sourceId, `/word-samples?v=${WORD_SAMPLES_V}${bust ? `&t=${bust}` : ''}`),
+    {},
+    retry,
+  ).then(asJson<WordSampleOut[]>);
+
+export const wordSampleCropUrl = (sourceId: string, sampleId: string, bust?: number): string =>
+  src(
+    sourceId,
+    `/word-samples/${encodeURIComponent(sampleId)}/crop?v=${WORD_SAMPLES_V}${bust ? `&t=${bust}` : ''}`,
+  );
 
 // The stored word-occurrence traces of a source (handmodell H1/H2). Public
 // GET; a row's crop is wordSampleCropUrl(sourceId, row.specimen_id). `word`
