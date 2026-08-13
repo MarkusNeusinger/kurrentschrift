@@ -76,6 +76,7 @@ from tools.pairlab.analyze import (
     _body_items,
     _generate_connector,
 )
+from tools.pairlab.landmarks import landmark_crossings, nearest_unique_point, skeleton_branch_points
 from tools.wordlab.cases import WordCase
 from tools.wordlab.derive import WordDeriveResult, derive_word
 
@@ -228,6 +229,49 @@ CHAIN_OVERLAP_SEAM_EXEMPT_UNITS = 0.4
 # radius.
 CHAIN_OVERLAP_WEIGHT_ENV = "KS_CHAIN_OVERLAP_WEIGHT"
 CHAIN_OVERLAP_WEIGHT = float(os.environ.get(CHAIN_OVERLAP_WEIGHT_ENV) or 0.2)
+# --- crossing-landmark correspondence (the ASSIGNMENT term) -------------------
+# `qualitaetsmetrik.md` §13a: the ink self-crossing of a JOINED `d` sits 0.243 xh
+# lower than a word-final one (p = 0.005, 19x the within-word noise, binary by
+# joined-ness rather than per successor). The fit does not follow — the same
+# split on the FITTED crossing is 0.011 xh (p = 0.43), and the template crossing
+# is reproduced to 0.002 xh. It cannot follow: every fitted anchor is
+# 0.019–0.046 xh from the ink, so the 0.218 xh landmark gap is ~6x the mean
+# anchor residual. The fit is accurate everywhere and the STRUCTURE is still
+# wrong, which is an ASSIGNMENT problem, not an accuracy one.
+#
+# Why this is not a fifth attempt at the four rejected terms (§7 bending, §8
+# hinge, §10 corner support, §11d neighbour binding): all four priced a PROXY —
+# curvature, distance, stiffness — on an assignment-blind objective. This is a
+# DATA term: *this point of the template belongs on that point of the ink*. It
+# adds a correspondence the objective did not have, rather than a preference
+# about shape.
+#
+# DEFAULT 0.0, and 0.0 is the byte-identical setting: with the energy added last
+# in the `f` sum, `f + 0.0 * e_landmark == f` exactly, and the gradient
+# contribution is skipped outright — so a baseline arm is an IDENTITY rather than
+# a re-derivation (the property that let §11d's A/B be paired at all).
+#
+# NO weight is proposed here. §11c is the standing warning: a ladder chosen by
+# analogy to another fit path's constant put the bind term at 0.2 % of the
+# objective's energy scale and produced an EMPTY experiment. Any weight must be
+# calibrated against `e_geo` at this path's own BASELINE optima first
+# (`tools/pairlab/landmarklab.py --calibrate`).
+CHAIN_LANDMARK_WEIGHT_ENV = "KS_CHAIN_LANDMARK_WEIGHT"
+CHAIN_LANDMARK_WEIGHT = float(os.environ.get(CHAIN_LANDMARK_WEIGHT_ENV) or 0.0)
+# Search radius (xh) around the INITIAL crossing for its ink counterpart — the
+# nearest skeleton branch point. §13a reports the `d` has exactly ONE candidate
+# within 0.55 xh in 14 of 14 occurrences, which is where this comes from, and
+# warns in the same breath that other glyphs are not so clean.
+CHAIN_LANDMARK_TARGET_RADIUS_UNITS = 0.55
+# …and the unambiguity margin (xh): if the second-nearest branch point is within
+# this much of the nearest's distance, WHICH pass the crossing belongs to is not
+# decidable from proximity, and the landmark is DROPPED rather than guessed. A
+# guessed correspondence would state the term's claim about a point chosen by a
+# coin flip and pull the structure onto the wrong pass — §8's rejected hinge
+# failed in exactly that way ("snap to the nearest ink" picks the wrong branch at
+# a crossing). Half the search radius, so a kept assignment is at least 3x
+# nearer than its runner-up at the radius' edge.
+CHAIN_LANDMARK_TARGET_MARGIN_UNITS = 0.25
 # Points on the raw exit→entry connector polyline — the production sample count,
 # re-exported from `core.compose` so a change there cannot silently desync. The
 # two endpoints are SHARED with the letters, the interior 22 are free anchors.
@@ -431,6 +475,105 @@ def _letter_bind_operator(
     return np.asarray(rows) if rows else np.zeros((0, k_free))
 
 
+def _landmark_correspondence(
+    specs: Sequence[ChainSegmentSpec],
+    anchors_plan0: np.ndarray,
+    plan_slices: Sequence[tuple[int, int]],
+    *,
+    skel: np.ndarray | None,
+    unit_px: float,
+    x_origin_px: float,
+    baseline_y_px: float,
+    radius_units: float = CHAIN_LANDMARK_TARGET_RADIUS_UNITS,
+    margin_units: float = CHAIN_LANDMARK_TARGET_MARGIN_UNITS,
+) -> tuple[np.ndarray, np.ndarray, list[dict]]:
+    """`(landmark_op, targets, report)` — the frozen crossing correspondences.
+
+    For every LETTER segment, `landmarks.landmark_crossings` locates the
+    well-conditioned self-intersections of its INITIAL plan anchors and
+    `landmarks.skeleton_branch_points` the ink's branch points; each crossing is
+    assigned the one branch point that is unambiguously nearest to it
+    (`landmarks.nearest_unique_point`), or DROPPED with its reason.
+
+    The linearisation is the same discipline every other operator in
+    `_ChainProblem` follows — `sampling_op`, the ramp, `overlap_exempt` are all
+    frozen at the initial anchors so the gradient stays exactly analytic. Here
+    the four chord indices and the two chord parameters are frozen, and the
+    fitted crossing estimate becomes the average of the two branch points
+
+        P(params) = ½·(A_i + t_i·(A_{i+1} − A_i)) + ½·(A_j + t_j·(A_{j+1} − A_j))
+
+    over the effective PLAN anchors `A`. At the initial anchors the two branch
+    points coincide with the true intersection, so P starts exactly on it; away
+    from them P is the midpoint of the two passes, which is what makes it LINEAR
+    in four anchors and its gradient exact and cheap. `landmark_op` is that
+    linear map, one row per kept landmark; `targets` are the assigned ink points
+    in the same template units (composed frame, y up from the baseline,
+    1 unit = x-height).
+
+    Connectors are deliberately excluded: a connector has no template structure
+    to place, and its shape is what the chain measures rather than prescribes.
+
+    Without `skel` there is no correspondence to state at all and the detector is
+    not run: see the early return for why the report is empty rather than full of
+    refusals.
+    """
+    k_plan = len(anchors_plan0)
+    if skel is None:
+        # No ink side was supplied — the synthetic field stack `build_chain_problem`
+        # documents. Detecting the templates' crossings anyway would file every one
+        # of them as a `no_candidate` DROP, and that reason is a claim about the INK
+        # ("no branch point within the radius") which nothing here ever read. No
+        # correspondence was assigned AND none was refused, so the honest report is
+        # the empty one — and the detector's work is skipped with it.
+        return np.zeros((0, k_plan)), np.zeros((0, 2)), []
+    branch_px = skeleton_branch_points(skel)
+    radius_px, margin_px = radius_units * unit_px, margin_units * unit_px
+    rows: list[np.ndarray] = []
+    targets: list[tuple[float, float]] = []
+    report: list[dict] = []
+    for i, spec in enumerate(specs):
+        if spec.kind != "letter":
+            continue
+        p0, p1 = plan_slices[i]
+        for lm in landmark_crossings(anchors_plan0[p0:p1], spec.stroke_starts):
+            cx = x_origin_px + lm.point[0] * unit_px
+            cy = baseline_y_px - lm.point[1] * unit_px
+            found, reason, dist_px = nearest_unique_point(branch_px, (cx, cy), radius=radius_px, margin=margin_px)
+            entry = {
+                "segment": i,
+                "slot_index": spec.slot_index,
+                "key": spec.key,
+                "seg_i": lm.seg_i,
+                "seg_j": lm.seg_j,
+                # The two chord parameters are part of the FROZEN correspondence,
+                # so a consumer can evaluate P at any params — including for a
+                # landmark that was dropped and has no row in `landmark_op`.
+                "t_i": lm.t_i,
+                "t_j": lm.t_j,
+                "angle_deg": round(lm.angle_deg, 2),
+                "crossing_units": (round(lm.point[0], 4), round(lm.point[1], 4)),
+                "reason": reason,
+                "target_dist_units": round(dist_px / unit_px, 4) if np.isfinite(dist_px) else None,
+            }
+            if found is None:
+                report.append(entry)
+                continue
+            row = np.zeros(k_plan)
+            row[p0 + lm.seg_i] += 0.5 * (1.0 - lm.t_i)
+            row[p0 + lm.seg_i + 1] += 0.5 * lm.t_i
+            row[p0 + lm.seg_j] += 0.5 * (1.0 - lm.t_j)
+            row[p0 + lm.seg_j + 1] += 0.5 * lm.t_j
+            target = ((float(found[0]) - x_origin_px) / unit_px, (baseline_y_px - float(found[1])) / unit_px)
+            rows.append(row)
+            targets.append(target)
+            entry["target_units"] = (round(target[0], 4), round(target[1], 4))
+            report.append(entry)
+    op = np.asarray(rows) if rows else np.zeros((0, k_plan))
+    tgt = np.asarray(targets, dtype=float).reshape(-1, 2)
+    return op, tgt, report
+
+
 def regularise_connector_anchors(
     conn: np.ndarray,
     *,
@@ -570,6 +713,7 @@ class _ChainProblem:
     lambda_reg: float
     smooth_weight: float
     bind_weight: float
+    landmark_weight: float
     overlap_weight: float
     overlap_radius_px: float
     overlap_exempt: np.ndarray  # (n_s,) True where a sample sits in a seam band
@@ -592,6 +736,19 @@ class _ChainProblem:
     pricing them is §7's rejected bending term. This reads the DISPLACEMENTS
     instead: a translation of a pen-stroke is exactly free, one anchor leaving
     its neighbours costs quadratically."""
+    landmark_op: np.ndarray = field(default_factory=lambda: np.zeros((0, 0)))
+    """(n_L, K_plan) linear map from PLAN anchors to the fitted crossing estimate
+    of every kept landmark — `_landmark_correspondence`'s frozen chord pairs and
+    parameters. Empty whenever no skeleton was supplied or nothing could be
+    assigned, which is also the state the term is inert in."""
+    landmark_targets: np.ndarray = field(default_factory=lambda: np.zeros((0, 2)))
+    """(n_L, 2) assigned INK crossings, template units — the term's data."""
+    landmark_report: list[dict] = field(default_factory=list)
+    """One entry per DETECTED landmark, kept or dropped, with its `reason`. The
+    drops are the interesting half: an ambiguous correspondence must be visible
+    as a refusal rather than silently absent — but a refusal is a statement about
+    the ink, so with no skeleton supplied nothing is detected and this stays
+    EMPTY rather than filling with vacuous drops."""
     plan_slices: list[tuple[int, int]] = field(default_factory=list)
     """per segment, into the PLAN anchor array (seam anchors included)."""
     n_letter_anchors: float = 1.0
@@ -797,6 +954,24 @@ class _ChainProblem:
             m_b = 1
             e_bind = 0.0
 
+        # --- crossing landmarks: this point belongs on that point ------------
+        # The ONE data term over the letters' structure. `landmark_op` is frozen
+        # at the initial anchors, so P is linear in four plan anchors per
+        # landmark and this whole block is a matrix product. Computed whenever a
+        # correspondence exists — INCLUDING at weight 0, because the energy at a
+        # baseline optimum is what a weight ladder has to be calibrated against
+        # (§11c). At weight 0 it enters `f` as `+ 0.0 · e_landmark`, i.e. exactly
+        # `+ 0.0`, which is why the addition sits last in the sum below.
+        if self.landmark_op.shape[0]:
+            p_lm = self.landmark_op @ ap
+            r_lm = p_lm - self.landmark_targets
+            m_lm = self.landmark_op.shape[0]
+            e_landmark = float(np.sum(r_lm**2)) / m_lm
+        else:
+            r_lm = np.zeros((0, 2))
+            m_lm = 1
+            e_landmark = 0.0
+
         f = (
             e_geo
             + self.width_weight * e_wid
@@ -805,6 +980,7 @@ class _ChainProblem:
             + self.smooth_weight * e_smooth
             + self.overlap_weight * e_ovl
             + self.bind_weight * e_bind
+            + self.landmark_weight * e_landmark
         )
         terms = {
             "e_geo": e_geo,
@@ -817,6 +993,7 @@ class _ChainProblem:
             "e_smooth": e_smooth,
             "e_overlap": e_ovl,
             "e_bind": e_bind,
+            "e_landmark": e_landmark,
             "f": f,
         }
         if not want_grad:
@@ -833,6 +1010,15 @@ class _ChainProblem:
         )
         if self.smooth_op.shape[0]:
             g_plan = g_plan + g_smooth_plan
+        # Skipped outright at weight 0 — not added as a zero array — so the
+        # packed gradient is bit-identical to the term's absence.
+        g_landmark_plan = (
+            self.landmark_weight * 2.0 * (self.landmark_op.T @ r_lm) / m_lm
+            if (self.landmark_weight and self.landmark_op.shape[0])
+            else None
+        )
+        if g_landmark_plan is not None:
+            g_plan = g_plan + g_landmark_plan
         g_free = self._fold_plan(g_plan)
         g_reg_delta = self.lambda_reg * 2.0 * self.reg_w[:, None] * deltas / self.n_letter_anchors
         # At weight 0 `g_delta` stays the reg array itself, so the packed
@@ -848,6 +1034,7 @@ class _ChainProblem:
         if grad_terms is not None:
             grad_terms["samples"] = samples
             grad_terms["smooth_plan"] = g_smooth_plan
+            grad_terms["landmark_plan"] = np.zeros_like(g_plan) if g_landmark_plan is None else g_landmark_plan
             grad_terms["reg_delta"] = g_reg_delta
             grad_terms["bind_delta"] = np.zeros_like(g_reg_delta) if g_bind_delta is None else g_bind_delta
         return terms, grad
@@ -876,9 +1063,10 @@ class _ChainProblem:
         One entry per name in `GRADIENT_TERMS` — `geo` (the smoothed distance
         field), `crop` (the out-of-crop pull split off it), `width`,
         `coverage`, `overlap`, `smooth` (connector curvature change), `reg`
-        (Tikhonov) and `bind` (letter neighbour binding, inert by default) —
-        each WEIGHTED as the objective weighs it, so the entries are comparable
-        forces rather than bare energies.
+        (Tikhonov), `bind` (letter neighbour binding, inert by default) and
+        `landmark` (crossing correspondence, inert by default) — each WEIGHTED
+        as the objective weighs it, so the entries are comparable forces rather
+        than bare energies.
 
         Every term is folded through the SAME `_fold_*`/`_pack` chain rule the
         objective uses, and the caller-facing check
@@ -898,6 +1086,7 @@ class _ChainProblem:
         for name, (g_px_t, g_py_t) in acc["samples"].items():
             out[name] = self._pack(self._fold_samples(g_px_t, g_py_t), None)
         out["smooth"] = self._pack(self._fold_plan(acc["smooth_plan"]), None)
+        out["landmark"] = self._pack(self._fold_plan(acc["landmark_plan"]), None)
         # The Tikhonov pull is a function of the deltas alone: it reaches
         # neither the global shift nor a slot block, which is why those two
         # parameter groups have no restoring force of their own.
@@ -1018,12 +1207,14 @@ def build_chain_problem(
     x_origin_px: float,
     baseline_y_px: float,
     crop_shape: tuple[int, int],
+    skel: np.ndarray | None = None,
     n_samples: int | None = None,
     width_weight: float = DEFAULT_WIDTH_WEIGHT,
     coverage_weight: float = DEFAULT_COVERAGE_WEIGHT,
     lambda_reg: float = DEFAULT_LAMBDA_REG,
     smooth_weight: float = CHAIN_CONNECTOR_SMOOTH_WEIGHT,
     bind_weight: float | None = None,
+    landmark_weight: float | None = None,
     coverage_cap_units: float = CHAIN_COVERAGE_CAP_UNITS,
     overlap_weight: float | None = None,
     overlap_radius_units: float = CHAIN_OVERLAP_RADIUS_UNITS,
@@ -1063,10 +1254,18 @@ def build_chain_problem(
       (binding constraint 3), normalised by the letter-anchor count so per-letter
       Tikhonov pressure equals a single-letter fit's; `width_mask` is 0 on
       connector samples, which have no stored width measurement.
+    * **Crossing landmarks.** With `skel` given, every letter's initial
+      self-crossings are matched to the skeleton's branch points and frozen as a
+      linear map (`_landmark_correspondence`); without it the term has no data
+      and stays empty. It is inert at its default weight 0 either way — the
+      correspondence is built regardless so its energy can be READ at a baseline
+      optimum, which is what a weight has to be calibrated against (§11c).
 
     Fields arrive already prepared (smoothed with `core.fit.DIST_FIELD_SIGMA_PX`
     / `WIDTH_FIELD_SIGMA_PX`, raw kept for the report), so the problem stays
-    testable against a synthetic 60×60 EDT.
+    testable against a synthetic 60×60 EDT. `skel` is the same band-restricted
+    skeleton those fields were built from (`_prepare_fields`), and it is optional
+    for exactly that reason: a synthetic field stack has no skeleton to pass.
     """
     specs = [
         ChainSegmentSpec(
@@ -1230,6 +1429,17 @@ def build_chain_problem(
     if blocks:
         smooth_rows = np.vstack(blocks)
 
+    # ---- crossing landmarks: the letters' structure against the ink's ----
+    landmark_op, landmark_targets, landmark_report = _landmark_correspondence(
+        specs,
+        anchors_plan0,
+        plan_slices,
+        skel=skel,
+        unit_px=unit_px,
+        x_origin_px=x_origin_px,
+        baseline_y_px=baseline_y_px,
+    )
+
     # ---- coverage targets over the whole pair window ----
     cov_pts = np.asarray(cov_pts, dtype=float).reshape(-1, 2)
     n_cov_max = CHAIN_COVERAGE_PER_SEGMENT * len(specs)
@@ -1299,6 +1509,7 @@ def build_chain_problem(
         lambda_reg=float(lambda_reg),
         smooth_weight=float(smooth_weight),
         bind_weight=float(CHAIN_LETTER_BIND_WEIGHT if bind_weight is None else bind_weight),
+        landmark_weight=float(CHAIN_LANDMARK_WEIGHT if landmark_weight is None else landmark_weight),
         overlap_weight=float(CHAIN_OVERLAP_WEIGHT if overlap_weight is None else overlap_weight),
         overlap_radius_px=float(overlap_radius_units * unit_px),
         overlap_exempt=overlap_exempt,
@@ -1307,6 +1518,9 @@ def build_chain_problem(
         block_op=block_op,
         smooth_op=smooth_rows,
         bind_op=_letter_bind_operator(specs, anchor_slices, k_free),
+        landmark_op=landmark_op,
+        landmark_targets=landmark_targets,
+        landmark_report=landmark_report,
         plan_slices=plan_slices,
         n_letter_anchors=max(1.0, float(reg_w.sum())),
         n_samples=n_s,
@@ -1465,6 +1679,11 @@ def _prepare_fields(case: WordCase, x_lo: float, x_hi: float) -> dict | None:
         "width_smooth": gaussian_filter(width_raw, WIDTH_FIELD_SIGMA_PX),
         "cov_pts": _skeleton_points(skel_local),
         "crop_shape": skel_local.shape,
+        # The band-restricted skeleton itself, for the crossing landmarks' ink
+        # side (`_landmark_correspondence` reads its branch points). The same
+        # array the fields above were derived from, so a landmark target and a
+        # coverage point can never come from different ink.
+        "skel": skel_local,
     }
 
 
@@ -1513,6 +1732,7 @@ def fit_word_chain(
     slot_shift_init: dict[int, tuple[float, float]] | None = None,
     keep_solve: bool = False,
     bind_weight: float | None = None,
+    landmark_weight: float | None = None,
 ) -> ChainWordFit | None:
     """Fit a run of consecutive slots as ONE chain `[L, C, L, C, …]`.
 
@@ -1607,7 +1827,13 @@ def fit_word_chain(
         return None
 
     problem = build_chain_problem(
-        specs, unit_px=xh, x_origin_px=x_origin_px, baseline_y_px=baseline_y_px, bind_weight=bind_weight, **fields
+        specs,
+        unit_px=xh,
+        x_origin_px=x_origin_px,
+        baseline_y_px=baseline_y_px,
+        bind_weight=bind_weight,
+        landmark_weight=landmark_weight,
+        **fields,
     )
     # Seed the translation blocks BEFORE the initial energies, so `e0` states
     # the energy of the start the solve actually descends from. Clipped just
@@ -1710,6 +1936,18 @@ def fit_word_chain(
             "smooth_weight": problem.smooth_weight,
             "bind_weight": problem.bind_weight,
             "overlap_weight": problem.overlap_weight,
+            "landmark_weight": problem.landmark_weight,
+            # How many crossing landmarks got an ink target and how many were
+            # refused, per reason — a term with nothing assigned is inert for a
+            # reason that has to be readable, not inferred from a flat energy.
+            "landmarks": {
+                "n_targets": int(problem.landmark_op.shape[0]),
+                "n_detected": len(problem.landmark_report),
+                "dropped": {
+                    reason: sum(1 for e in problem.landmark_report if e["reason"] == reason)
+                    for reason in sorted({e["reason"] for e in problem.landmark_report if e["reason"] != "ok"})
+                },
+            },
             "coverage_cap_px": round(problem.cov_cap_px, 3),
             "seconds": round(time.perf_counter() - started, 3),
             "slots": run,
@@ -1790,7 +2028,7 @@ def fit_pair_chain(
 
 # Every weighted term of the chain objective, in the order they are applied.
 # `geo` and `crop` are the two halves of `e_geo`.
-GRADIENT_TERMS = ("geo", "crop", "width", "coverage", "overlap", "smooth", "reg", "bind")
+GRADIENT_TERMS = ("geo", "crop", "width", "coverage", "overlap", "smooth", "reg", "bind", "landmark")
 # Relative tolerance of the sum check. The split is re-added in a different
 # order than the objective accumulates it, so bit-equality is not on offer;
 # anything above float noise means the decomposition describes a DIFFERENT
@@ -1868,6 +2106,10 @@ __all__ = [
     "CHAIN_CONNECTOR_SMOOTH_WEIGHT",
     "CHAIN_COVERAGE_CAP_UNITS",
     "CHAIN_COVERAGE_PER_SEGMENT",
+    "CHAIN_LANDMARK_TARGET_MARGIN_UNITS",
+    "CHAIN_LANDMARK_TARGET_RADIUS_UNITS",
+    "CHAIN_LANDMARK_WEIGHT",
+    "CHAIN_LANDMARK_WEIGHT_ENV",
     "CONNECT_SAMPLES",
     "GRADIENT_SUM_RTOL",
     "GRADIENT_TERMS",

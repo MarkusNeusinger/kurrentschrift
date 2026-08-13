@@ -1130,7 +1130,26 @@ impl-generate pipelines. Conventions:
   and `tools/pairlab/peaklab.py` (`viz` extra — a small NAMED working
   set incl. control words, anchor chain over the skeleton with lone
   excursions circled, `--compare` for fitted vs. repaired; minutes per
-  round, the fast loop for the peak class).
+  round, the fast loop for the peak class). Its landmark siblings supply
+  what §13 named as the missing piece: `tools/pairlab/landmarks.py` (no
+  viz extra) is the ONE shared detector — a ductus polyline's proper
+  self-intersections classified as landmarks (≥ 15°, ≥ 0.35 xh arc
+  separation, co-located duplicates merged, never bridging a pen lift)
+  plus the ink side's skeleton branch points, an ambiguous assignment
+  REFUSED rather than guessed — and `chain.py` prices that
+  correspondence as its first DATA term (*this point belongs on that
+  point*, not the proxies of §7/§8/§10/§11d), linearised like every
+  other chain operator (chord pair and parameters frozen at the initial
+  anchors, exact gradient) with `landmark` added to `GRADIENT_TERMS` and
+  weight `CHAIN_LANDMARK_WEIGHT` **default 0.0**, so every solve stays
+  byte-identical until a weight is calibrated.
+  `tools/pairlab/landmarklab.py` (no viz extra) is that calibration lab:
+  `--calibrate` reads `e_geo / e_landmark` at the BASELINE optimum
+  (§11c's lesson — a ladder chosen by analogy measures nothing), the
+  effect run reports the fitted crossing height against the ink target
+  with its costs. Measurement only: no DB, no API, no `core/`, no
+  rendering; no default weight is proposed from a 14-occurrence
+  single-glyph set (`docs/reference/qualitaetsmetrik.md` §13a).
   `tools/wordbench/fetch_fixtures.py` is the read-only API twin of
   `export_fixtures.py` for sessions without Cloud SQL egress —
   byte-compatible fixture roots over HTTPS, GETs only, `--verify`
