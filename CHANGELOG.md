@@ -40,6 +40,16 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   (stroke width divided by zoom), so zooming in reveals the ink instead
   of a fatter overlay. Groundwork for hand-tracing the `authored`
   reference set the research note's ink-follower benchmark needs.
+- **The word trace editor rebuilt around actually writing on a tablet.**
+  First real S-Pen session feedback: the dialog is now fullscreen, every
+  control (save/close, size slider, undo/clear/reset, stored-trace
+  toggle, stroke count) moved into the header ABOVE the drawing surface
+  — while writing, the hand rests exactly where footer controls used to
+  sit and a graze there interrupted the stroke — the canvas owns the
+  whole remaining viewport, the long intro text moved behind an
+  `InfoHint`, and the size slider now also SHRINKS (0.25–8× in 0.25
+  steps, shrunk words centred), because on a tablet the crop at dialog
+  width can be larger than natural writing size.
 
 - **The crossing landmark as a DATA term in the chain fit — inert by default,
   with its energy scale calibrated before any weight is proposed.** New pure
