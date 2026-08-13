@@ -17,7 +17,6 @@ import {
   Button,
   Checkbox,
   Dialog,
-  DialogActions,
   DialogContent,
   DialogTitle,
   FormControlLabel,
@@ -26,6 +25,7 @@ import {
 } from '@mui/material';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { InfoHint } from '@/components/InfoHint';
 import { getHand, putWordInstances, wordSampleCropUrl } from '@/lib/api';
 import type { HandOut, WordInstanceOut, WordSampleOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
@@ -202,20 +202,88 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
 
   const midbandRow = reg.baselineRow - reg.xh;
 
+  // Full screen with every control ABOVE the drawing surface: while writing
+  // with the pen, the hand rests exactly where footer controls would sit and
+  // a graze there used to interrupt the stroke. Nothing clickable below the
+  // word — the canvas owns the rest of the viewport.
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
-      <DialogTitle sx={{ display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap' }}>
-        <Typography component="span" sx={{ fontFamily: garamond, fontSize: 26, lineHeight: 1 }}>
+    <Dialog open={open} onClose={onClose} fullScreen>
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', py: 1 }}>
+        <Typography component="span" sx={{ fontFamily: garamond, fontSize: 24, lineHeight: 1 }}>
           {row.word}
         </Typography>
         <Typography component="span" variant="body2" color="text.secondary">
           {fmt(t.editorTitle, { specimen: row.specimen_id })}
         </Typography>
-      </DialogTitle>
-      <DialogContent>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-          {t.editorIntro}
+        <InfoHint title={t.editOpen}>
+          {t.editorIntro} {t.editorAuthoredHint}
+        </InfoHint>
+        <Typography variant="caption" color="text.secondary" sx={{ ml: 'auto' }}>
+          {fmt(t.editorStrokeCount, { strokes: savable.length })} · {fmt(t.editorSlots, { slots: row.slots.join(' ') })}
         </Typography>
+        <Button size="small" onClick={onClose} disabled={saving}>
+          {t.editorClose}
+        </Button>
+        <Button size="small" variant="contained" onClick={save} disabled={!canSave}>
+          {t.editorSave}
+        </Button>
+      </DialogTitle>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, pb: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Typography variant="caption" color="text.secondary">
+            {t.editorZoom}
+          </Typography>
+          <Slider
+            size="small"
+            value={zoom}
+            min={0.25}
+            max={8}
+            step={0.25}
+            onChange={(_, v) => setZoom(v as number)}
+            valueLabelDisplay="auto"
+            valueLabelFormat={(v) => `${v}×`}
+            aria-label={t.editorZoom}
+            sx={{ width: 160, flexShrink: 0, mx: 1 }}
+          />
+          <Button
+            size="small"
+            onClick={() => {
+              setStrokes((prev) => prev.slice(0, -1));
+              setDirty(true);
+            }}
+            disabled={strokes.length === 0}
+          >
+            {t.editorUndo}
+          </Button>
+          <Button
+            size="small"
+            onClick={() => {
+              setStrokes([]);
+              setDirty(true);
+            }}
+            disabled={strokes.length === 0}
+          >
+            {t.editorClear}
+          </Button>
+          <Button
+            size="small"
+            onClick={() => {
+              setStrokes(copyStrokes(row.strokes));
+              setDirty(false);
+            }}
+            disabled={!dirty}
+          >
+            {t.editorReset}
+          </Button>
+          <FormControlLabel
+            sx={{ mr: 0 }}
+            control={<Checkbox size="small" checked={showStored} onChange={(e) => setShowStored(e.target.checked)} />}
+            label={<Typography variant="caption">{t.editorShowStored}</Typography>}
+          />
+          <Typography variant="caption" color="text.secondary">
+            {t.editorZoomHint}
+          </Typography>
+        </Box>
         {error && (
           <Alert severity="error" sx={{ mb: 1 }}>
             {error}
@@ -231,13 +299,16 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
             {fmt(t.editorHandUnresolved, { id: handId })}
           </Alert>
         )}
-        <Box sx={{ overflow: 'auto', maxHeight: '62vh', borderRadius: '6px' }}>
+        <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', borderRadius: '6px' }}>
         <svg
           ref={svgRef}
           viewBox={`0 0 ${sample.width} ${sample.height}`}
           style={{
             display: 'block',
             width: `${zoom * 100}%`,
+            // Below 1× the shrunk word sits centred instead of hugging the
+            // left edge of the now-larger canvas area.
+            margin: '0 auto',
             background: '#fff',
             borderRadius: 6,
             // Fingers scroll the zoomed crop; pen input still reaches the
@@ -311,78 +382,7 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
           </g>
         </svg>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1.5, mt: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-          <Typography variant="caption" color="text.secondary">
-            {t.editorZoom}
-          </Typography>
-          <Slider
-            size="small"
-            value={zoom}
-            min={1}
-            max={8}
-            step={0.5}
-            onChange={(_, v) => setZoom(v as number)}
-            valueLabelDisplay="auto"
-            valueLabelFormat={(v) => `${v}×`}
-            aria-label={t.editorZoom}
-            sx={{ width: 160, flexShrink: 0 }}
-          />
-          <Typography variant="caption" color="text.secondary">
-            {t.editorZoomHint}
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1, mt: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-          <Button
-            size="small"
-            onClick={() => {
-              setStrokes((prev) => prev.slice(0, -1));
-              setDirty(true);
-            }}
-            disabled={strokes.length === 0}
-          >
-            {t.editorUndo}
-          </Button>
-          <Button
-            size="small"
-            onClick={() => {
-              setStrokes([]);
-              setDirty(true);
-            }}
-            disabled={strokes.length === 0}
-          >
-            {t.editorClear}
-          </Button>
-          <Button
-            size="small"
-            onClick={() => {
-              setStrokes(copyStrokes(row.strokes));
-              setDirty(false);
-            }}
-            disabled={!dirty}
-          >
-            {t.editorReset}
-          </Button>
-          <FormControlLabel
-            sx={{ mr: 0 }}
-            control={<Checkbox size="small" checked={showStored} onChange={(e) => setShowStored(e.target.checked)} />}
-            label={<Typography variant="caption">{t.editorShowStored}</Typography>}
-          />
-          <Typography variant="caption" color="text.secondary">
-            {fmt(t.editorStrokeCount, { strokes: savable.length })} · {fmt(t.editorSlots, { slots: row.slots.join(' ') })}
-          </Typography>
-        </Box>
       </DialogContent>
-      <DialogActions>
-        <Typography variant="caption" color="text.secondary" sx={{ mr: 'auto', ml: 2 }}>
-          {t.editorAuthoredHint}
-        </Typography>
-        <Button onClick={onClose} disabled={saving}>
-          {t.editorClose}
-        </Button>
-        <Button variant="contained" onClick={save} disabled={!canSave}>
-          {t.editorSave}
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 }
