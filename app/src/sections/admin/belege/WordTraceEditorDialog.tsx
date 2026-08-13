@@ -230,8 +230,12 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
       </DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, pb: 1 }}>
         <Box sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-          <Typography variant="caption" color="text.secondary">
-            {t.editorZoom}
+          {/* The value lives in this permanent label: the slider sits directly
+              under the dialog title, so MUI's pop-up value tooltip is clipped
+              by the header and never readable. minWidth keeps the row from
+              jittering as the number's width changes while dragging. */}
+          <Typography variant="caption" color="text.secondary" sx={{ minWidth: 74 }}>
+            {t.editorZoom} {zoom.toLocaleString('de-DE', { maximumFractionDigits: 2 })}×
           </Typography>
           <Slider
             size="small"
@@ -244,8 +248,6 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
             max={8}
             step={0.05}
             onChange={(_, v) => setZoom(v as number)}
-            valueLabelDisplay="auto"
-            valueLabelFormat={(v) => `${v}×`}
             aria-label={t.editorZoom}
             sx={{ width: 160, flexShrink: 0, mx: 1 }}
           />
