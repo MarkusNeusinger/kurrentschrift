@@ -43,7 +43,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2
 - **F** — Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · FID §6 · Fixture-Wurzel §4 · Frozen-Reference-Regel §4 · Fuge §1
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4
-- **H** — H0–H5 §5 · Hand §2 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
+- **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **K** — Kettenfit §3 · Kill-Kriterium §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
@@ -1258,6 +1258,15 @@ darf deshalb deutlich sauberer sein — der Preis ist, dass sein Ergebnis nur
 innerhalb der autorisierten Norm gilt. Eine AIoU-Report-Spalte im Wordbench
 wäre der billigste Weg, unsere Zahlen erstmals literaturvergleichbar zu
 machen.
+
+**HTG** *(Handwritten Text Generation)* — der Literatur-Sammelbegriff für
+Modelle, die Handschrift als **Bild** synthetisieren (Offline-Synthese):
+GANs wie ScrabbleGAN, Transformer wie HWT/VATr, Diffusionsmodelle wie
+DiffusionPen und One-DM. Gegenstück zur Online-Synthese nach Graves, die
+Stiftbahnen statt Pixel erzeugt. Für uns relevant als möglicher
+Parallelweg (Kurrent-Bilder generieren, dann die Bahn zurückgewinnen) —
+Stand der Technik, Datenlage und Prüfsteine in
+[`bildsynthese-und-stiftbahn.md`](../research/bildsynthese-und-stiftbahn.md).
 
 **HWD** *(Handwriting Distance)* — perzeptuelle Distanz im Merkmalsraum
 eines eigens auf Handschrift-*Stil* trainierten Netzes (BMVC 2023).
