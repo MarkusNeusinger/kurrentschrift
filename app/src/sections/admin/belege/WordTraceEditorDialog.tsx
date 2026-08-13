@@ -23,10 +23,9 @@ import {
   Slider,
   Typography,
 } from '@mui/material';
-
-import { InfoHint } from '@/components/InfoHint';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { InfoHint } from '@/components/InfoHint';
 import { getHand, putWordInstances, wordSampleCropUrl } from '@/lib/api';
 import type { HandOut, WordInstanceOut, WordSampleOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';

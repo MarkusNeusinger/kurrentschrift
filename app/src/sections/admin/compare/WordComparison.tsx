@@ -18,7 +18,7 @@ import { getWordSamples, getWordSampleScore, wordSampleCropUrl } from '@/lib/api
 import type { ComposedWordOut, WordInstanceOut, WordSampleOut, WordSampleScoreOut } from '@/lib/api';
 import { fetchRenderWord, invalidateRenderWord } from '@/lib/api/renderCache';
 import { polylineToPathD, ringsToPathD } from '@/lib/svg';
-import { de } from '@/locales/admin';
+import { de, fmt } from '@/locales/admin';
 import { PairEditorDialog } from '@/sections/admin/pairs/PairEditorDialog';
 import { pairKeysOf } from '@/sections/admin/pairs/pairKeys';
 import { traceFrameOf, traceMatrix } from '@/sections/admin/shell/model';
@@ -190,6 +190,14 @@ function WordCard({
           {sample.id}
         </Typography>
         {sample.sample_set && <Chip size="small" label={sample.sample_set} />}
+        {/* The manual-reference progress marker: only an `authored` trace gets
+            a chip — absence IS the "still to do" state, so the list stays
+            scannable while working through the hand-traced reference set. */}
+        {traced?.provenance === 'authored' && (
+          <Tooltip title={de.admin.belege.provenanceAuthored}>
+            <Chip size="small" color="success" label={de.admin.compare.authoredChip} />
+          </Tooltip>
+        )}
         {score && <ScoreChip score={score} />}
         {composed && composed.missing.length > 0 && (
           <Chip size="small" color="warning" label={`${de.admin.compare.missingPrefix}${composed.missing.join(', ')}`} />
@@ -341,6 +349,15 @@ export function WordComparison({
     };
   }, [sourceId]);
 
+  // Progress of the manual reference set for this tab — counted over the
+  // mode's whole specimen list (not the text-filtered slice), so the tally
+  // stays the tab's truth while searching.
+  const authoredTally = useMemo(() => {
+    const rows = (samples ?? []).filter((s) => matchesMode(s, mode));
+    const done = rows.filter((s) => tracedById.get(s.id)?.provenance === 'authored').length;
+    return { done, total: rows.length };
+  }, [samples, mode, tracedById]);
+
   const visible = useMemo(() => {
     const needle = filterText.trim().toLowerCase();
     const rows = (samples ?? [])
@@ -413,6 +430,9 @@ export function WordComparison({
               {de.admin.compare.scoreError}
             </Typography>
           )}
+          <Typography variant="caption" color="text.secondary">
+            {fmt(de.admin.compare.authoredCount, { done: authoredTally.done, total: authoredTally.total })}
+          </Typography>
           {/* Same affordance as the letters grid: re-compose the written faces
               after a template, Laufform or override change, instead of
               reloading the browser tab. */}

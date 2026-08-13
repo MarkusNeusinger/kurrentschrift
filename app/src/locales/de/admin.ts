@@ -330,6 +330,10 @@ export const admin = {
     // Followed by the comma-joined missing glyph_keys.
     missingPrefix: 'fehlend: ',
     specimenAlt: 'Vorlage',
+    // Progress of the manual reference set: per-card chip for an authored
+    // trace (wording shared with belege.provenanceAuthored) + a toolbar tally.
+    authoredChip: 'von Hand ✓',
+    authoredCount: '{{done}}/{{total}} von Hand nachgefahren',
     // Specimen scores (redesign R1b Stufe 2): the frozen wordbench ruler per
     // card, worst first = the work list.
     scoreButton: 'Scores berechnen & sortieren',
