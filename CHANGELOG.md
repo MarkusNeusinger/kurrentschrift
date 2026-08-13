@@ -65,6 +65,15 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   panning: Chromium treats the pen as a pannable pointer, so the browser
   recognised a short pen stroke as a scroll gesture, fired
   `pointercancel` and broke the drawn line off mid-stroke.
+- **Trace editor: text selection and the context menu are suppressed.**
+  An S-Pen long-press mid-stroke selected the hint text (native
+  selection handles + copy toolbar) or opened the browser context menu.
+  The fullscreen dialog's paper now carries `user-select: none` and
+  swallows `contextmenu`; buttons and slider are unaffected, the
+  `InfoHint` popover renders in a portal and stays selectable. A shrunk
+  word is additionally centred in BOTH axes of the canvas area, so the
+  writing zone sits mid-screen instead of directly under the header
+  controls the pen hand kept grazing.
 - **Trace editor: panning is an explicit mode, fingers are fully inert
   while writing.** Even hand-rolled finger panning fought the writing
   hand — resting fingers and palm shoved the view around mid-stroke. A
