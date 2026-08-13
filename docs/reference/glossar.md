@@ -1,6 +1,6 @@
 # Glossar — Fachbegriffe und Repo-Redewendungen
 
-> **Status (2026-08-03): lebend.** Nachschlagewerk über die Begriffe, die
+> **Status (2026-08-12): lebend.** Nachschlagewerk über die Begriffe, die
 > in `docs/`, in Issues/PRs und in der Admin-Oberfläche vorkommen.
 > Nachzieh-Pflicht: **jedes Doc und jeder PR, der einen neuen Fachbegriff
 > oder eine neue Kennzahl prägt, legt im selben Zug einen Eintrag hier an**
@@ -37,7 +37,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§6** Extern/Forschung.
 
 - **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1 · Ausreißer §4
-- **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3
+- **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · Duktus §1 · Duktus-Prior §1
 - **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2
@@ -47,10 +47,10 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **K** — Kettenfit §3 · Kill-Kriterium §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
-- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · matched arc §3 · meas §4 · Messboden §4
+- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4
 - **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
-- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Platzierungsschranke §3 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
+- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
@@ -1296,6 +1296,23 @@ Kettenfit fachlich zu Hause ist. Verwandt und ausdrücklich **nicht**
 gewählt: blindes Skelett-Tracing (löst das Kreuzungsproblem nicht) und
 neuronale Bildsynthese (liefert Raster, keine Bahn — also keinen Duktus,
 keine Strichfolge, keine Animation, keine Belegbarkeit).
+
+**MDN** *(Mixture Density Network)* — Ausgabeschicht, die statt eines
+Punktes eine Mischverteilung vorhersagt (mehrere Gauß-Komponenten samt
+Gewichten). Graves 2013 setzt sie auf ein LSTM, um je Zeitschritt die
+Verteilung des nächsten Stift-Offsets zu modellieren — die Grundlage der
+generativen Handschrift-Synthese. *Technisch:* Parameter μ/σ/ρ/π plus
+Stift-ab-Wahrscheinlichkeit; Kontext in
+[`graves-handschrift-synthese.md`](../research/graves-handschrift-synthese.md)
+und [`kurrent-writer-and-recognizer.md`](../research/kurrent-writer-and-recognizer.md) §1.
+
+**Priming / Biasing** — die zwei Steuerhebel des Graves-Writers:
+*Priming* konditioniert den LSTM-Zustand mit echten Trajektorien eines
+Zielautors, bevor der neue Text generiert wird (Stil-Imitation);
+*Biasing* skaliert zur Laufzeit die Varianz der MDN-Verteilung
+(Lesbarkeit ↔ Natürlichkeit). *Technisch:* Mechanik, Grenzen (Style
+Collapse, OOV-Alignment) und moderne Nachfolger in
+[`graves-handschrift-synthese.md`](../research/graves-handschrift-synthese.md).
 
 **HTR · CER** — *Handwritten Text Recognition* und *Character Error Rate*
 (Anteil falscher Zeichen). Der geplante Lesepfad: Transkribus als

@@ -1,10 +1,11 @@
 # Qualitätsmetrik & Glyph-Bench
 
-> **Status (2026-08-03): lebend.** Fortlaufend gepflegte Messlatte und
+> **Status (2026-08-12): lebend.** Fortlaufend gepflegte Messlatte und
 > Baseline-Journal — jeder Bench-Lauf und jedes bewusste Re-Baseline
 > schreibt hier einen datierten Abschnitt fort; aktuelle Headlines:
-> Wörter 0,116886 · Paare 0,164506 (Lauf `aug02`, PR #268).
-> Die Verworfen-Listen (§4, §5, §6) bleiben geschlossen.
+> Wörter 0,110392 · Paare 0,165678 (Re-Baseline `aug07`); das Journal
+> reicht bis `aug11` (§11e). Die Verworfen-Listen (§4, §5, §6) bleiben
+> geschlossen.
 
 Wie die Qualität einer kanonischen Glyphe gemessen wird, wie der
 hermetische Benchmark (`tools/glyphbench`) und der Experiment-Loop

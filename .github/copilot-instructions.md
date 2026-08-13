@@ -578,10 +578,13 @@ kurrentschrift/
 │                     #   glyphlab/wordlab/pairlab (matplotlib inspection labs),
 │                     #   quizgen (quiz word-bank generator)
 ├── tests/            # CI pytest suite (flat test_<module>.py + shared fixtures)
-├── docs/             # German concept + reference docs
-│   ├── concepts/     # vision, architektur (§1–§17), mvp-roadmap, naming
-│   ├── reference/    # language rules, licensing, HTR, animation, …
-│   └── proposals/    # staged changes (per-entry status in docs/index.md)
+├── docs/             # German design docs (start at docs/index.md)
+│   ├── concepts/     # decisions + the core docs that follow from them (vision, architektur §1–§17, …)
+│   ├── reference/    # look-up docs (language rules, licensing, metrics, tools, …) — status per doc
+│   ├── schriftkunde/ # source-backed factsheets on the scripts themselves
+│   ├── research/     # external research/literature notes feeding ideas (EN allowed)
+│   ├── proposals/    # implementation proposals + their protocols (status in each doc's header)
+│   └── notes/        # operational, dated journals
 ├── .github/          # this file + workflows
 ├── CLAUDE.md         # sibling guide for Claude Code
 └── README.md         # public pitch (English)

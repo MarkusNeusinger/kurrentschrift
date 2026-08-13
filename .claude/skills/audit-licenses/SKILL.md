@@ -37,12 +37,15 @@ git ls-files -z | xargs -0 -I{} du -k "{}" 2>/dev/null | sort -rn | head -20
 images smuggled inside SVGs:
 
 ```bash
-git grep -nlI ';base64,' -- . ':!docs/reference/kurrentschrift-landing.html' || echo "OK: no new data-URI embeddings"
+git grep -nlI ';base64,' -- . ':!tools/fitview/build.py' ':!tools/humanbench/page.py' ':!.claude/skills/audit-licenses/SKILL.md' || echo "OK: no new data-URI embeddings"
 git grep -nE '<image|data:image' -- '*.svg' || echo "OK: no raster payload in tracked SVGs"
 ```
 
-(The one excluded file is a known, documented embedding — the landing
-prototype carries GL-GermanCursive as a data-URI; see baseline.)
+(The excluded files: the two tools GENERATE data-URIs into the
+self-contained HTML pages they write under `temp/` — code constructing
+the string, not an embedded payload — and this skill file quotes the
+pattern itself. The former exclude
+`docs/reference/kurrentschrift-landing.html` was deleted in #209.)
 
 **History** — publishing exposes every blob ever committed, not just
 HEAD. First command: binaries that existed but are gone from HEAD
@@ -122,13 +125,17 @@ judgment flags that greps can't raise:
 
 ## Verified baseline (2026-06-10)
 
-Binary sweep returns exactly five tracked files, all accounted for:
-`data/sources/loth-1866/chart.{jpg,svg}` (PD, SOURCE.md complete),
-`app/src/assets/fonts/gl-germancursive.woff2` (notices),
+Binary sweep returned exactly five tracked files at the time, all
+accounted for: `data/sources/loth-1866/chart.{jpg,svg}` (PD, SOURCE.md
+complete), `app/src/assets/fonts/gl-germancursive.woff2` (notices),
 `app/src/assets/paper-grain.png` (own), plus one known wart:
-`docs/reference/gl-germancursive.woff2` — an **orphaned duplicate**
-(license-clean but unreferenced; the prototype HTML embeds the font
-as base64 instead; same git blob as the assets copy). History is
+`docs/reference/gl-germancursive.woff2` — an orphaned duplicate of the
+assets copy, **deleted together with the landing prototype in #209**
+(the base64 exclude above moved accordingly). Sources committed since
+(Sütterlin 1922 incl. plates + Leitfaden pages, Koch 1928,
+Petzendorfer 1889, humanbench judgements) each carry their own
+SOURCE.md and grow this list — re-run the sweep, don't trust the
+count. History is
 clean (the comm check is empty; deleted paths are own code plus
 `mvp/canonical/*.json`, author-traced geometry over the PD chart).
 Both `@fontsource` packages are in the notices. All other checks

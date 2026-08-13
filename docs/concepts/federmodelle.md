@@ -1,6 +1,6 @@
 # Federmodelle — drei Schriften, drei Federn, ein Renderpfad
 
-> **Status (2026-08-03): bindend.** §1–§5 sind entschieden und umgesetzt
+> **Status (2026-08-12): bindend.** §1–§5 sind entschieden und umgesetzt
 > (PR #170: `core/widths.py`, `chisel_union_rings`, `apply_pen`,
 > `pooled_pen`), die Verworfen-Listen (§2, §4) sind geschlossen.
 > In der Folgearbeiten-Liste §6 ist Punkt 2 erledigt (Petzendorfer-Source,
@@ -264,7 +264,8 @@ Der Masken-Sweep (§11, `animation-rendering.md`) trägt alle drei Federn:
    Zeichen; Kurrent-Restalphabet ab Loth. Reihenfolge: Sütterlin-Ziffern
    zuerst (öffentlich sichtbarster Gewinn).
 2. **Petzendorfer-1889-Source** für Kurrent-Ziffern seeden (Migration
-   nach 0006/0008-Vorbild) — erst bei Authoring-Bedarf.
+   nach 0006/0008-Vorbild) — *erledigt (Migration `0012`); offen bleibt
+   nur das Authoring der Ziffern-Reihe selbst.*
 3. **Offenbacher-Natürlichkeitsmetrik** (w(φ)-Fit, Winkelkonsistenz)
    nach genug authored Templates; bis dahin läuft der Bench über die
    Pixel-Metrik (`STYLE_TO_RESOLVER` kennt `offenbacher` bereits).

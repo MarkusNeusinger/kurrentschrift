@@ -24,22 +24,27 @@ GitHub. Nothing to launch; this skill is the editing contract.
 
 ```
 docs/
-├── concepts/     # Architektur, Philosophie, getroffene Entscheidungen
-├── reference/    # Nachschlage-Dokumente (Stack, Regeln, Pipelines)
+├── concepts/     # Designkern: Entscheidungen + die Grundsatz-Docs, die daraus folgen
+├── reference/    # Nachschlage-Dokumente (Stack, Regeln, Pipelines) — Status je Doc
 ├── schriftkunde/ # Quellengestützte Faktenblätter zu den Schriften
-├── notes/        # Operativer Zustand, Journale (z. B. stifte-fuer-unterwegs)
-└── proposals/    # Offene Vorschläge, noch nicht entschieden
+├── research/     # Externe Recherche/Literatur, die Ideen liefert und dem Code nicht folgt
+├── notes/        # Operative, datierte Journale (z. B. stifte-fuer-unterwegs)
+└── proposals/    # Umsetzungs-Vorschläge und ihre Protokolle (Umsetzungsstand im Kopf)
 ```
 
 Checklist for adding or renaming a doc:
 
 1. Pick the layer: settled decision → `concepts/`, look-up material →
    `reference/`, source-backed script facts → `schriftkunde/`,
-   operational state → `notes/`, not-yet-decided → `proposals/`.
-2. **Add it to the Quick-Links table and the structure tree in
-   `docs/index.md`** — all five layers are indexed there (the tree
-   plus a prose section per layer, incl. `notes/`); keep both in sync
-   with the file system.
+   external research/literature feeding ideas → `research/`,
+   operational state or dated journal → `notes/`, implementation
+   proposal (open or worked off — status lives in its header) →
+   `proposals/`.
+2. **Add it to the structure tree and its layer's prose section in
+   `docs/index.md`** — all six layers are indexed there; keep both in
+   sync with the file system. A Quick-Links row only where a reader
+   would look the doc up (practice: `concepts/`/`reference/`/
+   `schriftkunde/` docs get one, `research/`/`notes/` usually not).
 3. If it records a decision, include a „Verworfen“ section for the
    rejected alternatives — that is what makes the decision binding
    (see below).

@@ -1,6 +1,6 @@
 # Kurrent: Generative Writer → Cheap Recognizer
 
-> **Status (2026-08-03): offen.** Reine Recherche-Notiz (englisch verfasst);
+> **Status (2026-08-12): offen.** Reine Recherche-Notiz (englisch verfasst);
 > nichts davon ist gebaut — der heutige Writer ist die regelbasierte
 > Analysis-by-Synthesis-Engine (`core/compose.py`), einen Recognizer gibt es
 > nicht.
@@ -9,6 +9,11 @@
 > über [`../reference/htr-integration.md`](../reference/htr-integration.md);
 > die §4-Frage nach dem Federtyp ist inzwischen in
 > [`../concepts/federmodelle.md`](../concepts/federmodelle.md) beantwortet.
+> Die Synthese-Mechanik im Detail (MDN, Soft-Window, Priming/Biasing),
+> moderne Alternativen (GAN · Transformer · Tokenisierung) und die
+> Plotter-Pipeline samt 54-Quellen-Bibliografie stehen im
+> Schwester-Journal
+> [`graves-handschrift-synthese.md`](graves-handschrift-synthese.md).
 
 > Sprache: Englisch (Recherche-Notiz, Ausnahme gemäß [sprachregelung.md](../reference/sprachregelung.md) §1).
 

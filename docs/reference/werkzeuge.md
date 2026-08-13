@@ -1,6 +1,6 @@
 # Werkzeuge — die Dev-Tools unter `tools/`
 
-> **Status (2026-08-08): lebend.** Index über die Dev-Tools unter `tools/`;
+> **Status (2026-08-12): lebend.** Index über die Dev-Tools unter `tools/`;
 > jedes neue, umbenannte oder entfernte Werkzeug und jede geänderte CLI
 > (Flags, Modulpfade, `viz`-Extra, `--live`) gehört hier hinein.
 
@@ -52,6 +52,20 @@ Feder Schwanz/Kopf der Glyphen für den Join umformt. Befund + Optionen in
 ```bash
 uv run --extra viz python -m tools.pairlab re [longs,a] [--set words|pairs|all]
 ```
+
+Um `pairlab` herum sind messende Einstiegsskripte gewachsen (keines
+schreibt in DB oder Rendering): `chain.py`/`chainbench.py` — der
+Kettenfit (ein durchgehender Schreibpfad statt unabhängiger Einzelfits)
+und sein Stage-A-Vergleich gegen den unabhängigen Fit über dieselben
+eingefrorenen Vorkommen; `gradlab.py` — zerlegt am gefundenen Optimum
+den Gradienten in die sieben gewichteten Kräfte je freiem Anker
+(Methode: [`qualitaetsmetrik.md`](qualitaetsmetrik.md) §11);
+`anchors.py` — der EINE geteilte Detektor für gestrandete Anker samt
+Reparatur, den die Ernte nach dem Gate anwendet; `bindab.py` — der
+A/B-Runner, der das vorregistrierte Binding-Term-Protokoll ausführt;
+`peaklab.py` (`viz`-Extra) — kleines benanntes Arbeitsset inkl.
+Kontrollwörtern, Ankerkette überm Skelett mit eingekreisten Ausreißern,
+`--compare` für gefittet vs. repariert.
 
 ## Die zwei Ernte-Werkzeuge (Vorlage → DB, über die Admin-API)
 
@@ -153,6 +167,45 @@ vollständig, und die Auswertung sagt, welche Schritte sie auslassen musste —
 uv run python -m tools.humanbench.analyse \
     --result data/humanbench/runde-01-urteile.txt \
     --key    data/humanbench/runde-01-vorkommen.json
+```
+
+**`tools/fitview`** — der Betrachter über die BEURTEILTEN Screens:
+fittet die im Urteils-Durchgang bewerteten Vorkommen live neu und
+zeichnet Vorher/Nachher im SELBEN Fenster-Pad/4×-Zoom-Rahmen, in dem
+geurteilt wurde, die Owner-Markierungen als Kreuze — eine in sich
+geschlossene HTML-Seite, kein `viz`-Extra. Die Minuten-Schleife, um eine
+Reparatur gegen die schon bezahlten menschlichen Urteile zu halten, ohne
+eine neue Runde zu ziehen.
+
+```bash
+uv run python -m tools.fitview [--round 02|all] [--category A|AW] [--limit 40]
+```
+
+## Der Archiv-Schnappschuss (`tools/dbsnapshot`)
+
+Wieder eine eigene Gattung: nicht messen, sondern sichern. `fetch.py`
+zieht über die deployte Lese-API (`ADMIN_TOKEN`) einen Schnappschuss
+dessen, was keine Neuberechnung zurückbringt — `bboxes` und
+`templates.raw_path` —, prüft die Plausibilität gegen das vorige
+Manifest (ein Lauf, der WENIGER Zeilen ablegen würde, schlägt ohne
+`--allow-shrink` fehl) und legt ihn als neues, zeitgestempeltes
+Verzeichnis im PRIVATEN Archiv-Klon außerhalb des Arbeitsbaums ab
+(`--archive` bzw. `KURRENTSCHRIFT_ARCHIVE`; ohne ihn bleibt er im
+Staging unter `--out`). Frei anlegen — und Pflicht vor allem, was
+Geometrie überschreiben kann (`apply-laufform`, Migrationen mit DROP,
+Ernte mit `replace`) sowie nach einer Autoring-Sitzung; nie in ein
+bestehendes Verzeichnis schreiben, nie eines löschen oder umbenennen
+(Regeln: `CLAUDE.md` § „Working guardrails").
+`restore.py` ist für Drills gegen eine Wegwerf-Postgres gebaut: verlangt
+die Ziel-URL explizit (`--database-url`, absichtlich nie aus der
+Umgebung), verweigert ein Ziel gleich `DATABASE_URL`, verweigert ein
+besetztes Ziel ohne `--replace` und schreibt ohne `--apply` nichts —
+ein Restore Richtung Prod ist prod-berührend und braucht die
+ausdrückliche Freigabe des Autors in derselben Sitzung.
+
+```bash
+uv run python -m tools.dbsnapshot.fetch [--archive <privater-klon>] [--push]
+uv run python -m tools.dbsnapshot.restore <snapshot-dir> --database-url postgresql://… [--apply] [--replace]
 ```
 
 ## Benches und Generator (Verweise)
