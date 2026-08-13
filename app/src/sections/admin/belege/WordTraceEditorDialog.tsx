@@ -78,6 +78,12 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const gripRef = useRef<Grip>({ current: null });
+  // Finger panning, done by hand: the canvas carries touch-action: none,
+  // because Chromium treats the PEN as a pannable pointer too — with
+  // `pan-x pan-y` a short pen stroke was recognised as a scroll gesture,
+  // the browser fired pointercancel and the drawn line broke off.
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const panRef = useRef<{ id: number; x: number; y: number; left: number; top: number } | null>(null);
 
   const reg = useMemo(() => traceRegistration(row.measurements, sample), [row.measurements, sample]);
   const matrix = useMemo(() => registrationMatrix(reg), [reg]);
@@ -121,9 +127,21 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
   };
 
   const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
-    // Fingers pan the zoomed crop (the browser handles the scroll via
-    // touch-action); only pen and mouse draw. This doubles as palm rejection.
-    if (e.pointerType === 'touch') return;
+    // Fingers pan the zoomed crop (scrolled by hand below — see panRef);
+    // only pen and mouse draw. This doubles as palm rejection.
+    if (e.pointerType === 'touch') {
+      if (panRef.current === null && scrollRef.current) {
+        panRef.current = {
+          id: e.pointerId,
+          x: e.clientX,
+          y: e.clientY,
+          left: scrollRef.current.scrollLeft,
+          top: scrollRef.current.scrollTop,
+        };
+        e.currentTarget.setPointerCapture(e.pointerId);
+      }
+      return;
+    }
     const p = toTrace(e.clientX, e.clientY);
     if (!p) return;
     // One pointer at a time: a second pen contact must not hijack the stroke
@@ -135,6 +153,14 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
   };
 
   const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    const pan = panRef.current;
+    if (pan && e.pointerId === pan.id) {
+      if (scrollRef.current) {
+        scrollRef.current.scrollLeft = pan.left - (e.clientX - pan.x);
+        scrollRef.current.scrollTop = pan.top - (e.clientY - pan.y);
+      }
+      return;
+    }
     if (!holdsGrip(gripRef.current, e.pointerId)) return;
     const p = toTrace(e.clientX, e.clientY);
     if (!p) return;
@@ -151,6 +177,10 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
   // one. A pen-down that never moved is a stray tap, not a stroke — drop it so
   // undo and the save gate count real strokes only.
   const onPointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (panRef.current?.id === e.pointerId) {
+      panRef.current = null;
+      return;
+    }
     if (!releaseGrip(gripRef.current, e.pointerId)) return;
     setStrokes((prev) => (prev.length && prev[prev.length - 1].length < 2 ? prev.slice(0, -1) : prev));
   };
@@ -247,7 +277,9 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
             min={0.1}
             max={8}
             step={0.05}
-            onChange={(_, v) => setZoom(v as number)}
+            // Snapped to the 0.05 grid: MUI accumulates min + k·step in
+            // floats, so raw values arrive as 0.15000000000000002 etc.
+            onChange={(_, v) => setZoom(Math.round((v as number) * 20) / 20)}
             aria-label={t.editorZoom}
             sx={{ width: 160, flexShrink: 0, mx: 1 }}
           />
@@ -305,7 +337,7 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
             {fmt(t.editorHandUnresolved, { id: handId })}
           </Alert>
         )}
-        <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', borderRadius: '6px' }}>
+        <Box ref={scrollRef} sx={{ flex: 1, minHeight: 0, overflow: 'auto', borderRadius: '6px' }}>
         <svg
           ref={svgRef}
           viewBox={`0 0 ${sample.width} ${sample.height}`}
@@ -317,9 +349,11 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
             margin: '0 auto',
             background: '#fff',
             borderRadius: 6,
-            // Fingers scroll the zoomed crop; pen input still reaches the
-            // pointer handlers (pens don't scroll in the target browsers).
-            touchAction: 'pan-x pan-y',
+            // NO browser gestures on the canvas: Chromium treats the pen as a
+            // pannable pointer, so `pan-x pan-y` let the browser cancel a pen
+            // stroke after a short distance and scroll instead. Fingers still
+            // pan — via the manual handler on panRef, not the browser.
+            touchAction: 'none',
             cursor: 'crosshair',
           }}
           onPointerDown={onPointerDown}
@@ -379,7 +413,7 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
                 fill="none"
                 stroke={overlay.draft}
                 strokeOpacity={0.9}
-                // Fixed 2 DEVICE pixels via non-scaling-stroke: the previous
+                // Fixed 2 CSS pixels via non-scaling-stroke: the previous
                 // zoom-compensated width was constant relative to the CONTAINER,
                 // which on a fullscreen tablet made the line far fatter than the
                 // shrunk ink it was supposed to trace.
