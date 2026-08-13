@@ -50,6 +50,14 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `InfoHint`, and the size slider now also SHRINKS (0.25–8× in 0.25
   steps, shrunk words centred), because on a tablet the crop at dialog
   width can be larger than natural writing size.
+- **Trace editor: shrink floor lowered to 0.1× and the drawn line made a
+  true 2-device-pixel hairline.** Fullscreen made the 1× baseline much
+  larger than the old dialog width, so natural writing size on a tablet
+  can sit below the former 0.25× floor (now 0.1–8× in 0.05 steps) — and
+  the zoom-compensated stroke width, constant relative to the container,
+  drew a line far fatter than the shrunk ink it traced; both overlay
+  paths now use `vector-effect: non-scaling-stroke` with fixed pixel
+  widths, so the trace stays a hairline at every zoom.
 - **The words overview shows which specimens are already hand-traced.**
   Every card whose stored trace is provenance `authored` carries a
   filled "von Hand" chip and the toolbar counts the tab's progress

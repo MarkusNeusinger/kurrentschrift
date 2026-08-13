@@ -236,9 +236,13 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
           <Slider
             size="small"
             value={zoom}
-            min={0.25}
+            // Down to 0.1: fullscreen made the 1× baseline much larger than
+            // the old dialog width, so natural writing size on a tablet can
+            // sit well below the former 0.25 floor. Fine steps keep the low
+            // end usable (0.25 → 0.20 is a big relative jump).
+            min={0.1}
             max={8}
-            step={0.25}
+            step={0.05}
             onChange={(_, v) => setZoom(v as number)}
             valueLabelDisplay="auto"
             valueLabelFormat={(v) => `${v}×`}
@@ -360,7 +364,8 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
                   fill="none"
                   stroke="#8b9a95"
                   strokeOpacity={0.6}
-                  strokeWidth={0.05 / zoom}
+                  strokeWidth={1.5}
+                  vectorEffect="non-scaling-stroke"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
@@ -372,9 +377,12 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
                 fill="none"
                 stroke={overlay.draft}
                 strokeOpacity={0.9}
-                // Divided by zoom so the drawn line keeps a constant on-screen
-                // thickness: zooming in must reveal the ink, not a fatter trace.
-                strokeWidth={0.07 / zoom}
+                // Fixed 2 DEVICE pixels via non-scaling-stroke: the previous
+                // zoom-compensated width was constant relative to the CONTAINER,
+                // which on a fullscreen tablet made the line far fatter than the
+                // shrunk ink it was supposed to trace.
+                strokeWidth={2}
+                vectorEffect="non-scaling-stroke"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
