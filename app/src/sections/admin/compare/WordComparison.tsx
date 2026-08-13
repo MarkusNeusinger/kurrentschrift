@@ -48,11 +48,13 @@ function SpecimenOverlay({
   composed,
   sourceId,
   traced,
+  bust,
 }: {
   sample: WordSampleOut;
   composed: ComposedWordOut;
   sourceId: string;
   traced: WordInstanceOut | null;
+  bust: number;
 }) {
   const frame = traceFrameOf(traced, sample);
   const matrix = traced
@@ -67,7 +69,7 @@ function SpecimenOverlay({
       style={{ display: 'block', background: '#fff', maxWidth: '100%' }}
     >
       <image
-        href={wordSampleCropUrl(sourceId, sample.id)}
+        href={wordSampleCropUrl(sourceId, sample.id, bust)}
         x={0}
         y={0}
         width={sample.width}
@@ -235,7 +237,7 @@ function WordCard({
               {de.admin.compare.overlayHeading}
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: '#fff', borderRadius: 1, px: 1, overflowX: 'auto' }}>
-              <SpecimenOverlay sample={sample} composed={composed} sourceId={sourceId} traced={traced} />
+              <SpecimenOverlay sample={sample} composed={composed} sourceId={sourceId} traced={traced} bust={bust} />
             </Box>
           </Box>
         )
@@ -250,7 +252,7 @@ function WordCard({
             </Typography>
             <Box sx={{ height: FACE_H, display: 'flex', alignItems: 'center', bgcolor: '#fff', borderRadius: 1, px: 1 }}>
               <img
-                src={wordSampleCropUrl(sourceId, sample.id)}
+                src={wordSampleCropUrl(sourceId, sample.id, bust)}
                 alt={`${de.admin.compare.specimenAlt} ${sample.word}`}
                 width={cropW}
                 height={FACE_H}
@@ -337,7 +339,7 @@ export function WordComparison({
     setScoreError(false);
     setEditing(null); // an open pair editor must not outlive its source
     scoringRun.current += 1; // invalidate an in-flight score sweep of the old source
-    getWordSamples(sourceId, { retries: 2 })
+    getWordSamples(sourceId, { retries: 2 }, cropCacheBust)
       .then((rows) => {
         if (!cancelled) setSamples(rows);
       })
@@ -347,7 +349,9 @@ export function WordComparison({
     return () => {
       cancelled = true;
     };
-  }, [sourceId]);
+    // cropCacheBust: „Neu laden" must re-fetch the sample metadata too — the
+    // rects/heights can have changed, and stale dims squash the fresh crops.
+  }, [sourceId, cropCacheBust]);
 
   // Progress of the manual reference set for this tab — counted over the
   // mode's whole specimen list (not the text-filtered slice), so the tally

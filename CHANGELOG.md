@@ -65,6 +65,19 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   panning: Chromium treats the pen as a pannable pointer, so the browser
   recognised a short pen stroke as a scroll gesture, fired
   `pointercancel` and broke the drawn line off mid-stroke.
+- **Word-sample crops actually reach the browser after a sidecar fix.**
+  The #334 rect corrections never arrived on the tablet: the sample
+  metadata URL carried a hard-coded `?v=2` and the crop PNGs no version
+  at all, so the edge cache kept serving the old data for days. Both
+  URLs now share a bumped `WORD_SAMPLES_V` (v=3) and accept the
+  admin-wide reload stamp (`t=`), the words overview re-fetches the
+  metadata on „Neu laden", and stale-metadata/fresh-crop mismatches
+  (which squashed the taller crops) are gone. Alongside, a second
+  sidecar audit for DETACHED marks fully outside their rect — invisible
+  to the #334 edge audit — widened three more rects (the i-Striche of
+  `zwei` and `regieren`, the i-dot of the Abb.-22 `in`); the two stored
+  rows were re-registered through the admin PUT in the same action, the
+  hand-authored `zwei` trace with its strokes untouched.
 - **Trace editor: text selection and the context menu are suppressed.**
   An S-Pen long-press mid-stroke selected the hint text (native
   selection handles + copy toolbar) or opened the browser context menu.
