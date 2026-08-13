@@ -67,10 +67,10 @@ const copyStrokes = (strokes: WordInstanceOut['strokes']): TracePoint[][] =>
 export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fallbackHandId, onSaved }: Props) {
   const t = de.admin.belege;
   const [strokes, setStrokes] = useState<TracePoint[][]>(() => copyStrokes(row.strokes));
-  // Zoom factor for the drawing surface (1 = dialog width). Tracing at natural
-  // writing size matters for a faithful ductus: on a tablet the word crop at
-  // dialog width leaves the x-height far below pen-on-paper scale.
-  const [zoom, setZoom] = useState(1);
+  // Zoom factor for the drawing surface (1 = dialog width). Default 0.2: on
+  // the fullscreen canvas that lands near natural pen-on-paper writing size
+  // (author-calibrated on the tablet), so most words need no adjustment.
+  const [zoom, setZoom] = useState(0.2);
   // Explicit pan MODE instead of finger gestures: while writing, the resting
   // hand and stray fingers constantly shoved the view around. In draw mode
   // touch input is fully inert; in pan mode every pointer drags the view.
