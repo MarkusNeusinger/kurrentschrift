@@ -43,9 +43,11 @@ für Kurrent oder Sütterlin — IAM-OnDB ist modernes Englisch, IRONOFF
 Französisch/Englisch, die CJK-/Indic-Sätze enthalten nichts Deutsches
 Historisches. Die einzigen duktus-geordneten Kurrent-Daten, die diese
 Recherche überhaupt finden konnte, sind die eigenen: die
-S-Pen-Duktus-Vorlagen (`templates.raw_path`) und die nachgefahrenen
-Wortproben (`word_instances`). Das ist zugleich die Schwäche des direkten
-Graves-Wegs und der Trumpf dieses Repos (§4, §5).
+S-Pen-Duktus-Vorlagen (`templates.raw_path`) und die Wortbahnen der
+Ernte (`word_instances` — Stand 2026-08-13 alle 96 Zeilen automatische
+Fits, Provenienz `traced`; manuell per Stift nachgefahren ist noch
+keine, siehe den Nachtrag in §6). Das ist zugleich die Schwäche des
+direkten Graves-Wegs und der Trumpf dieses Repos (§4, §5).
 
 Der Nebeneffekt, der Weg B auch dann interessant macht, wenn die
 Synthese-Hälfte scheitert: Die Rückgewinnungs-Stufe ist auf **echte**
@@ -244,10 +246,14 @@ ist bereits prior-geführte Trajektorien-Rückgewinnung — er muss die
 Strichfolge nicht raten, er kennt sie. Die Rückgewinnung aus §4 hat hier
 also zwei konkurrierende Routen: das externe gelernte Modell (InkSight,
 ggf. fein-getunt) und der eigene prior-geführte Fit. Welche auf
-Kurrent besser ist, ist messbar — denn die nachgefahrenen
-`word_instances` sind die einzige existierende Online-Kurrent-Ground-
-Truth und damit der natürliche Prüfstand (DTW/LDTW/AIoU gegen die
-Nachfahrung, auf denselben Crops).
+Kurrent besser ist, ist messbar — sobald es einen manuell
+nachgefahrenen Referenzsatz gibt. Die heutigen `word_instances` sind
+dafür noch nicht die Wahrheit: alle 96 gespeicherten Bahnen sind selbst
+automatische Ernte-Fits (Provenienz `traced`, kein einziges
+`authored`), also Ausgaben des Kandidaten, nicht sein Maßstab. Der
+Prüfstand entsteht erst, wenn der Autor einen kleinen Satz Wörter im
+Wort-Editor (Werkbank W3) per Stift nachfährt — dann messen
+DTW/LDTW/AIoU gegen diese `authored`-Bahnen auf denselben Crops.
 
 ## 5 Wie Weg B den Weg A aufwertet — auch wenn er „verliert"
 
@@ -286,8 +292,9 @@ Ergebnis ist ein gültiges Ergebnis.
   (`lesen`, `das`, `denen`): dokumentiert die Neue-Schrift-Lücke mit
   Bildern statt Vermutung. (b) InkSight Small-p auf drei Eingaben —
   echte Wortproben-Crops, Engine-Render, ein modernes Vergleichswort —
-  gemessen per DTW/LDTW/AIoU gegen die `word_instances`-Nachfahrung
-  desselben Wortes. *Erkenntnis:* wie groß die Lücke wirklich ist, und
+  gemessen per DTW/LDTW/AIoU gegen die manuell nachgefahrene
+  `authored`-Bahn desselben Wortes (Voraussetzung: der Referenzsatz aus
+  dem Nachtrag unten). *Erkenntnis:* wie groß die Lücke wirklich ist, und
   ob InkSight schon auf sauberen Engine-Rendern scheitert (dann ist
   Fine-Tuning Pflicht, nicht Option).
 - **T1 — Synthetisches Pretraining aus der eigenen Engine (Tage, 1 GPU
@@ -313,8 +320,8 @@ Ergebnis ist ein gültiges Ergebnis.
 - **T3 — Rückgewinnung im Duell (Tage).** Auf denselben Wörtern —
   generierte aus T1/T2 **und** echte Vorlagen-Crops — zwei Routen:
   (A) der eigene prior-geführte Kettenfit, (B) InkSight (erst roh, dann
-  auf Engine-Paaren fein-getunt). Maßstab: die Nachfahrungen
-  (`word_instances`), Maße DTW/LDTW/AIoU plus gezielte Fehlerzählung an
+  auf Engine-Paaren fein-getunt). Maßstab: der manuell nachgefahrene
+  `authored`-Referenzsatz, Maße DTW/LDTW/AIoU plus gezielte Fehlerzählung an
   den bekannten harten Stellen (Schleifenkreuzungen, i-Punkte/Umlaute,
   Deckstriche). *Abbruch für Weg B als Ganzes:* wenn keine Route auf
   generierten Bildern plottbare Bahnen ohne handische Reparatur liefert.
@@ -344,12 +351,20 @@ liefert Topologie, Strichfolge und Kreuzungsauflösung als
 Initialisierung; darauf folgt eine Verfeinerungsstufe, die die
 Form-Regularisierung Richtung Vorlage löst und die dicht abgetastete
 Bahn auf das gemessene Skelett der Wortprobe zieht — Geometrie ganz aus
-der Tinte, Ordnung ganz aus dem Prior. Maßstab sind die manuellen
-Nachfahrungen der Abb.-19-Wörter (Punktabstände per DTW/LDTW,
-Fehlerzählung an Schleifenkreuzungen, i-Punkten/Umlauten,
-Deckstrichen); „der Tinte perfekt folgen" ist erreicht, wenn der
-automatische Folger im blinden Paarvergleich (humanbench-Methode) vom
-manuellen Nachfahren nicht mehr unterscheidbar ist. Kein GPU-Training,
+der Tinte, Ordnung ganz aus dem Prior. Die Voraussetzung dafür ist
+ehrlich benannt: einen manuell nachgefahrenen Referenzsatz gibt es noch
+nicht — alle 96 gespeicherten Wortbahnen sind Stand 2026-08-13 selbst
+Ernte-Fits (Provenienz `traced`), und genau deren Unvollkommenheit ist
+die Beschwerde, die der Tintenfolger beheben soll; ein Kandidat kann
+nicht sein eigener Maßstab sein. Erster Handgriff ist deshalb
+Handarbeit des Autors: ein kleiner Satz Abb.-19-Wörter (10–15, die
+harten Fälle abdeckend — Schleifenkreuzungen, i-Punkte/Umlaute,
+Deckstriche), im Wort-Editor (Werkbank W3) per Stift nachgefahren und
+als `authored` gespeichert. Gemessen wird dann mit Punktabständen per
+DTW/LDTW und Fehlerzählung an genau diesen Stellen; „der Tinte perfekt
+folgen" ist erreicht, wenn der automatische Folger im blinden
+Paarvergleich (humanbench-Methode) vom manuellen Nachfahren nicht mehr
+unterscheidbar ist. Kein GPU-Training,
 kein Fremdmodell — und jeder Fortschritt zahlt doppelt: sofort als
 automatisches Nachfahren (§5) und später als fertige Route A des
 Rückgewinnungs-Duells T3.
