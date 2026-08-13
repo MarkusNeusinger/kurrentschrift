@@ -62,6 +62,12 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   panning: Chromium treats the pen as a pannable pointer, so the browser
   recognised a short pen stroke as a scroll gesture, fired
   `pointercancel` and broke the drawn line off mid-stroke.
+- **Trace editor: panning is an explicit mode, fingers are fully inert
+  while writing.** Even hand-rolled finger panning fought the writing
+  hand — resting fingers and palm shoved the view around mid-stroke. A
+  Schreiben/Verschieben toggle (the wizard's Zeichnen/Anpassen pattern)
+  replaces the gesture: in draw mode touch input does nothing at all,
+  in pan mode any pointer — pen, mouse or finger — drags the view.
 - **The words overview shows which specimens are already hand-traced.**
   Every card whose stored trace is provenance `authored` carries a
   filled "von Hand" chip and the toolbar counts the tab's progress
