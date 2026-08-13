@@ -181,8 +181,8 @@ klassische Feld der **Trajektorien-Recovery** (Glossar §6). Vorab die
 Falle: gewöhnliches Auto-Tracing (potrace, Inkscape-Standard)
 vektorisiert die **Umrisslinie** der Tinte — ein Plotter zeichnet damit
 Buchstaben-Silhouetten doppelt nach statt zu schreiben. Gebraucht wird
-die **Centerline** mit Strichfolge, Richtung und Absetzen; `autotrace
--centerline` liefert zwar Mittellinien, aber als ungeordnete
+die **Centerline** mit Strichfolge, Richtung und Absetzen;
+`autotrace -centerline` liefert zwar Mittellinien, aber als ungeordnete
 Polylinien-Suppe mit Sporen und falsch verbundenen Kreuzungsästen, die
 erst `vpype` (`linemerge`/`linesort`/`linesimplify`) plottbar macht.
 
