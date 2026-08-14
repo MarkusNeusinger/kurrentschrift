@@ -14,6 +14,24 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The duel page shows the DETECTED structures, so the eye can audit the
+  detector against the ink** (`tools/tracebench/view.py::structure_marks`,
+  owner request after the t carried three „retrace" zones): every layer
+  gains rings at the frozen crossing detector's points and translucent
+  bands along its retrace passes — dashed when the pass is an OVERLAP of
+  two pen strokes (the Sütterlin t crossbar riding the entry connector
+  and the exit stroke, which is what those extra zones turned out to be)
+  rather than an out-and-back retrace of one stroke. The distinction is
+  drawn from the stroke indices the frozen `detect_retrace_pairs`
+  already returns; the counters themselves are untouched, no reported
+  number changes, and a „Struktur" toggle hides the markers. The numbers
+  table states every layer's OWN detected counts (crossings, merged
+  retrace zones — the hand reference included) plus two muted
+  ductus-target rows per word: the sum over the ISOLATED letters (hover
+  shows the budget letter by letter) and the whole composition with its
+  generated connectors, whose difference is the joins' contribution. The
+  hint text explains the reading.
+
 - **Arm ⑥b: the class-aware landmark correspondence**
   (`tools/pairlab/follow.py::classed_targets`, target mode
   `extrapolated_classed`) — the pre-registered answer to the

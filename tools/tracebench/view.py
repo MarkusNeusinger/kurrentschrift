@@ -46,8 +46,17 @@ from typing import Any, Sequence
 import numpy as np
 from PIL import Image
 
+from core.geometry import detect_retrace_pairs, stroke_bounds
 from tools.tracebench.candidates import STATUS_OK, Candidate, file_provider
-from tools.tracebench.frames import BenchFrame, arc_length, classify_strokes
+from tools.tracebench.counters import (
+    RESAMPLE_STEP_UNITS,
+    RETRACE_MIN_PAIRS,
+    RETRACE_PROX_UNITS,
+    crossing_points,
+    resampled_strokes,
+    retrace_segments,
+)
+from tools.tracebench.frames import BenchFrame, arc_length, classify_strokes, concat_strokes
 from tools.tracebench.reference import DEFAULT_FIXTURES_DIR, Reference, ReferenceEntry, load_reference
 from tools.tracebench.run import find_fixture_root
 from tools.tracebench.sets import TRACEBENCH_DEV_IDS
@@ -66,6 +75,9 @@ STROKE_WIDTH = 1.5
 # Marks (i-dot, u-Deckstrich, umlaut) are thinner: they are not body ink, and
 # the eye should not read a dot as a stroke (`frames.classify_strokes`).
 MARK_STROKE_WIDTH = 1.0
+# The detected-structure markers (screen px like the stroke widths): a crossing
+# is a small ring, a retrace zone a wide translucent band along its pass.
+CROSS_MARK_RADIUS_PX = 3.0
 # Path coordinates are rounded, which is what makes two runs byte-identical.
 COORD_DECIMALS = 2
 
@@ -120,6 +132,7 @@ class Layer:
     status: str = STATUS_OK
     detail: str = ""
     numbers: dict[str, Any] | None = None
+    structure: "StructureMarks | None" = None
 
     @property
     def ok(self) -> bool:
@@ -162,10 +175,58 @@ def mark_flags(strokes_bench: Sequence[np.ndarray]) -> list[bool]:
     return flags
 
 
-def trace_paths(
+@dataclass(frozen=True)
+class StructureMarks:
+    """The DETECTED structures of one layer, ready to draw over its trace."""
+
+    crossings: list[tuple[float, float]]  # crop px
+    retraces: list[tuple[str, bool]]  # (pass path data in crop px, overlap across strokes)
+    zones: int = 0  # merged retrace ZONES — the ruler's own count (`retrace_segments`)
+
+
+def structure_marks(frame: BenchFrame, strokes_bench: list[np.ndarray]) -> StructureMarks:
+    """Display-only detections, at the ruler's own frozen thresholds.
+
+    The counters stay the ruler — this reads the same frozen primitives so a
+    human can audit the detector against the ink (the owner's standing check:
+    when the detected structures disagree with what the ductus prescribes,
+    something is still wrong — possibly the detection itself). One distinction
+    the ruler does not draw yet is made VISIBLE here: a retrace pass whose
+    partner samples lie in ANOTHER pen stroke is an overlap (a mark riding the
+    body, e.g. the t crossbar along the entry connector), not an out-and-back
+    retrace of one stroke — the page dashes it so the two read differently.
+    """
+    pts, starts = concat_strokes(resampled_strokes(list(strokes_bench), RESAMPLE_STEP_UNITS))
+    if len(pts) < 2:
+        return StructureMarks(crossings=[], retraces=[])
+    crossings = [(float(x), float(y)) for x, y in frame.bench_to_crop_px(crossing_points(list(strokes_bench)))]
+    zone_mids, _zone_arc = retrace_segments(list(strokes_bench))
+    zones = int(np.asarray(zone_mids).reshape(-1, 2).shape[0])
+    idx, partner = detect_retrace_pairs(pts[:, 0], pts[:, 1], starts, prox_px=RETRACE_PROX_UNITS)
+    retraces: list[tuple[str, bool]] = []
+    if len(idx):
+        stroke_of = np.zeros(len(pts), dtype=int)
+        for s, (lo, hi) in enumerate(stroke_bounds(len(pts), starts)):
+            stroke_of[lo:hi] = s
+        partner_of = dict(zip(idx.tolist(), partner.tolist(), strict=True))
+        run: list[int] = []
+        for i in [*np.sort(idx).tolist(), None]:
+            contiguous = bool(run) and i is not None and i == run[-1] + 1 and stroke_of[i] == stroke_of[run[-1]]
+            if contiguous:
+                run.append(i)
+                continue
+            if len(run) >= RETRACE_MIN_PAIRS:
+                seg = frame.bench_to_crop_px(pts[run[0] : run[-1] + 1])
+                overlap = any(stroke_of[int(partner_of[k])] != stroke_of[k] for k in run)
+                retraces.append((stroke_path_data(seg), overlap))
+            run = [] if i is None else [i]
+    return StructureMarks(crossings=crossings, retraces=retraces, zones=zones)
+
+
+def layer_paths(
     frame: BenchFrame, strokes: Sequence[Any], registration_px: dict[str, Any] | None, xh_px: float | None
-) -> list[StrokePath]:
-    """A stored trace -> drawable crop-pixel paths, through the BENCH's math.
+) -> tuple[list[StrokePath], StructureMarks]:
+    """A stored trace -> drawable crop-pixel paths + its detected structures.
 
     `trace_to_bench` applies the row's own registration and `bench_to_crop_px`
     the inverse of the frame — the identical two hops the scorer makes, so the
@@ -177,7 +238,111 @@ def trace_paths(
     for stroke, is_mark in zip(bench, flags, strict=True):
         px = frame.bench_to_crop_px(stroke)
         out.append(StrokePath(d=stroke_path_data(px), length=arc_length(px), mark=is_mark))
-    return [s for s in out if s.d]
+    return [s for s in out if s.d], structure_marks(frame, bench)
+
+
+def trace_paths(
+    frame: BenchFrame, strokes: Sequence[Any], registration_px: dict[str, Any] | None, xh_px: float | None
+) -> list[StrokePath]:
+    """The paths half of `layer_paths` — kept for callers that draw only ink."""
+    return layer_paths(frame, strokes, registration_px, xh_px)[0]
+
+
+@dataclass(frozen=True)
+class SollRow:
+    """One ductus-expectation row of the numbers table (not a drawn layer)."""
+
+    label: str
+    strokes: int | None  # None renders as a dash (a letter sum has no stroke count)
+    crossings: int
+    zones: int
+    per_letter: str = ""  # hover title: the budget letter by letter
+
+
+def ductus_soll(
+    ids: Sequence[str], *, which: str, style: str, fixtures_root: Path
+) -> tuple[dict[str, tuple[SollRow, ...]], list[str]]:
+    """Per word: what the DUCTUS prescribes, for the owner's manual check.
+
+    Two rows per word, both counted by the same frozen detectors as the layer
+    columns: the sum over the ISOLATED letters (each slot's own strokes,
+    including its marks — hover shows the budget letter by letter), and the
+    whole COMPOSITION with its generated connectors. The difference between
+    the two IS the joins' contribution (an entering connector can close a
+    loop the isolated letter does not have, e.g. the e), and a hand count
+    outside both is a finding — in the template, the join grammar or the
+    trace. Composition comes from the frozen fixture cases; a root without
+    them degrades to no rows and a warning, never to a failed page.
+    """
+    try:
+        from tools.wordlab.cases import iter_fixture_word_cases
+        from tools.wordlab.derive import derive_word
+
+        cases = {
+            c.id: c
+            for c in iter_fixture_word_cases(which=which, style=style, only=list(ids), fixtures_root=fixtures_root)
+        }
+    except Exception as exc:  # noqa: BLE001 — the page must render without Soll rather than not at all
+        return {}, [f"Duktus-Soll unavailable ({type(exc).__name__}: {exc}) — rows omitted"]
+    out: dict[str, tuple[SollRow, ...]] = {}
+    warnings: list[str] = []
+    for specimen_id in ids:
+        case = cases.get(specimen_id)
+        if case is None or not getattr(case, "scorable", True):
+            warnings.append(f"{specimen_id}: no scorable fixture case — Duktus-Soll omitted")
+            continue
+        try:
+            items = derive_word(case).composed["items"]
+        except Exception as exc:  # noqa: BLE001 — one word must not cost the page
+            warnings.append(f"{specimen_id}: derive failed ({type(exc).__name__}) — Duktus-Soll omitted")
+            continue
+        slots: dict[int, dict[str, Any]] = {}
+        comp: list[np.ndarray] = []
+        current: list[tuple[float, float]] = []
+        for item in items:
+            pts = [(float(x), float(y)) for x, y in item["centerline"]]
+            slot = item.get("slot_index")
+            if slot is not None:
+                info = slots.setdefault(slot, {"key": None, "strokes": []})
+                if item.get("glyph_key") and not item.get("diacritic"):
+                    info["key"] = item["glyph_key"]
+                info["strokes"].append(np.asarray(pts, dtype=float))
+            if item.get("lift") and current:
+                comp.append(np.asarray(current, dtype=float))
+                current = []
+            for p in pts:
+                if current and abs(current[-1][0] - p[0]) < 1e-12 and abs(current[-1][1] - p[1]) < 1e-12:
+                    continue
+                current.append(p)
+        if current:
+            comp.append(np.asarray(current, dtype=float))
+        sum_cross = sum_zones = 0
+        cells: list[str] = []
+        for slot in sorted(slots):
+            info = slots[slot]
+            n_cross = int(len(crossing_points(info["strokes"])))
+            mids, _arc = retrace_segments(info["strokes"])
+            n_zones = int(np.asarray(mids).reshape(-1, 2).shape[0])
+            sum_cross += n_cross
+            sum_zones += n_zones
+            cells.append(f"{info['key'] or '?'} {n_cross}/{n_zones}")
+        comp_mids, _comp_arc = retrace_segments(comp)
+        out[specimen_id] = (
+            SollRow(
+                label="Duktus-Soll (Σ Buchstaben)",
+                strokes=None,
+                crossings=sum_cross,
+                zones=sum_zones,
+                per_letter="Kreuzungen/Zonen je Buchstabe: " + " · ".join(cells),
+            ),
+            SollRow(
+                label="Komposition (mit Verbindern)",
+                strokes=len(comp),
+                crossings=int(len(crossing_points(comp))),
+                zones=int(np.asarray(comp_mids).reshape(-1, 2).shape[0]),
+            ),
+        )
+    return out, warnings
 
 
 # -------------------------------------------------------------------- colours
@@ -287,6 +452,11 @@ _CSS = """
   .detail { color: #b45309; }
   .hint { color: #666; margin-top: 8px; }
   section.word > h2 { font-size: 16px; margin: 0 0 8px; }
+  tr.soll-row td { color: #6b6b64; background: #f4f4ee; font-style: italic; }
+  g.structure circle.cross { fill: none; stroke-width: 1.4; }
+  g.structure path.retrace { fill: none; stroke-width: 7; opacity: 0.22; }
+  g.structure path.retrace.overlap { stroke-dasharray: 5 4; stroke-width: 4; opacity: 0.4; }
+  body.nostructure g.structure { display: none; }
 """
 
 # `__SPEED__`/`__PAUSE__` are substituted below. Written as a plain string (not
@@ -355,6 +525,7 @@ _JS = """
     if (!t) { return; }
     if (t.classList && t.classList.contains('toggle')) { setVisible(t.getAttribute('data-label'), t.checked); }
     if (t.id === 'speed') { rate = parseFloat(t.value) || 1; }
+    if (t.id === 'structure') { document.body.classList.toggle('nostructure', !t.checked); }
   });
   document.addEventListener('click', function (ev) {
     var t = ev.target;
@@ -408,9 +579,22 @@ def _layer_svg(layer: Layer, layer_id: str) -> str:
         f'vector-effect="non-scaling-stroke"></path>'
         for s in layer.strokes
     )
+    structure = ""
+    if layer.structure and (layer.structure.crossings or layer.structure.retraces):
+        rings = "".join(
+            f'<circle class="cross" cx="{x:.{COORD_DECIMALS}f}" cy="{y:.{COORD_DECIMALS}f}" '
+            f'r="{CROSS_MARK_RADIUS_PX:g}" vector-effect="non-scaling-stroke"></circle>'
+            for x, y in layer.structure.crossings
+        )
+        zones = "".join(
+            f'<path class="retrace{" overlap" if overlap else ""}" d="{d}" vector-effect="non-scaling-stroke"></path>'
+            for d, overlap in layer.structure.retraces
+        )
+        structure = f'<g class="structure">{zones}{rings}</g>'
     return (
         f'<g class="layer" id="{layer_id}" data-label="{html.escape(layer.label, quote=True)}" '
-        f'fill="none" stroke="{layer.color}" stroke-linecap="round" stroke-linejoin="round">{paths}</g>'
+        f'fill="none" stroke="{layer.color}" stroke-linecap="round" stroke-linejoin="round">'
+        f"{structure}{paths}</g>"
     )
 
 
@@ -426,16 +610,39 @@ def _legend_item(layer: Layer) -> str:
 
 def _numbers_row(layer: Layer) -> str:
     note = "" if layer.ok else f' <span class="detail">{html.escape(layer.detail or layer.status)}</span>'
-    # The reference is not a candidate and is never scored against itself here;
-    # its row carries the stroke count (the pen-lift comparison) and dashes.
+    # Every layer — the hand INCLUDED — states its own detected counts, from the
+    # very detectors that placed the rings and bands on the stage (the owner's
+    # check: the numbers must be there and must agree with what is drawn). Only
+    # the four report columns stay relative-to-reference and dash out for the
+    # reference itself.
+    if layer.structure is not None:
+        own = f"<td>{len(layer.structure.crossings)}</td><td>{layer.structure.zones}</td>"
+    else:
+        own = "<td>–</td>" * 2
     cells = _numbers_cells(layer.numbers) if layer.kind == "candidate" else "<td>–</td>" * 4
     return (
         f'<tr class="layer-row"><td><span class="swatch" style="background:{layer.color}"></span> '
-        f"{html.escape(layer.label)}{note}</td><td>{len(layer.strokes)}</td>{cells}</tr>"
+        f"{html.escape(layer.label)}{note}</td><td>{len(layer.strokes)}</td>{own}{cells}</tr>"
     )
 
 
-def word_section(index: int, entry: ReferenceEntry, crop_uri: str, size: tuple[int, int], layers: list[Layer]) -> str:
+def _soll_row(row: SollRow) -> str:
+    title = f' title="{html.escape(row.per_letter, quote=True)}"' if row.per_letter else ""
+    strokes = "–" if row.strokes is None else str(row.strokes)
+    return (
+        f'<tr class="soll-row"{title}><td>◇ {html.escape(row.label)}</td><td>{strokes}</td>'
+        f"<td>{row.crossings}</td><td>{row.zones}</td>" + "<td>–</td>" * 4 + "</tr>"
+    )
+
+
+def word_section(
+    index: int,
+    entry: ReferenceEntry,
+    crop_uri: str,
+    size: tuple[int, int],
+    layers: list[Layer],
+    soll: tuple[SollRow, ...] = (),
+) -> str:
     """One word's stage, legend and numbers table — hidden unless it is current."""
     width, height = size
     # Paint order is not reading order: the hand reference goes LAST so that no
@@ -446,7 +653,13 @@ def word_section(index: int, entry: ReferenceEntry, crop_uri: str, size: tuple[i
     ]
     svg_layers = "".join(_layer_svg(layer, f"w{index}-l{n}") for n, layer in enumerate(painted))
     legend = "".join(_legend_item(layer) for layer in layers)
-    rows = "".join(_numbers_row(layer) for layer in layers)
+    reference_rows = [layer for layer in layers if layer.kind == "reference"]
+    candidate_rows = [layer for layer in layers if layer.kind != "reference"]
+    rows = (
+        "".join(_numbers_row(layer) for layer in reference_rows)
+        + "".join(_soll_row(row) for row in soll)
+        + "".join(_numbers_row(layer) for layer in candidate_rows)
+    )
     return (
         f'<section class="word" data-id="{html.escape(entry.specimen_id, quote=True)}" '
         f'data-word="{html.escape(entry.word, quote=True)}" data-xh="{entry.frame.xh:.4f}" hidden>'
@@ -457,7 +670,8 @@ def word_section(index: int, entry: ReferenceEntry, crop_uri: str, size: tuple[i
         f'<svg viewBox="0 0 {width} {height}" width="{width * STAGE_ZOOM}" height="{height * STAGE_ZOOM}">'
         f"{svg_layers}</svg></div>"
         f'<div class="legend">{legend}</div>'
-        f'<table class="numbers"><thead><tr><th>Verfahren</th><th>Striche</th><th>dtw_xh</th><th>aiou</th>'
+        f'<table class="numbers"><thead><tr><th>Verfahren</th><th>Striche</th><th>Kreuzungen</th>'
+        f"<th>Retrace-Zonen</th><th>dtw_xh</th><th>aiou</th>"
         f"<th>cross m/s</th><th>retrace</th></tr></thead><tbody>{rows}</tbody></table>"
         f"</section>"
     )
@@ -495,11 +709,21 @@ def render_html(sections: list[str], tabs: list[tuple[str, str]], *, title: str,
   <button id="final" type="button">Fertige Bahn</button>
   <label for="speed">Tempo</label>
   <select id="speed">{speeds}</select>
+  <label><input type="checkbox" id="structure" checked> Struktur</label>
 </div>
 {"".join(sections)}
 <div class="hint">Die Seite öffnet mit der FERTIGEN Bahn; „Schreiben abspielen“ schreibt alle
 eingeschalteten Verfahren gleichzeitig in Schreibreihenfolge — Strichdauer proportional zur Bogenlänge
-(konstante Federgeschwindigkeit), jedes Absetzen eine echte Pause. Pfeiltasten ←/→ wechseln das Wort.</div>
+(konstante Federgeschwindigkeit), jedes Absetzen eine echte Pause. Pfeiltasten ←/→ wechseln das Wort.
+„Struktur“ zeigt je Ebene die DETEKTIERTEN Strukturen an den eingefrorenen Schwellen des Lineals:
+Ringe = Schleifenkreuzungen, breite Bänder = Retrace-Zonen — gestrichelt, wenn die Zone eine
+ÜBERLAGERUNG zweier Striche ist (z.&nbsp;B. der t-Querstrich über dem Körper) statt eines
+Hin-und-zurück in einem Strich. So prüft das Auge den Detektor gegen die Tinte. Die ◇-Zeilen sind
+das DUKTUS-SOLL: die Summe der isolierten Buchstaben (Maus darüber zeigt das Budget je Buchstabe)
+und die ganze Komposition mit Verbindern — die Differenz der beiden ist der Beitrag der
+Verbindungen (ein einlaufender Verbinder kann eine Schleife schließen, die der Buchstabe allein
+nicht hat). Weicht die Hand von beiden ab, ist etwas falsch — im Template, in der Join-Grammatik
+oder in der Nachfahrung.</div>
 <script>{js}</script>
 </body>
 </html>
@@ -517,6 +741,7 @@ def build_page(
     *,
     title: str,
     meta: str,
+    soll: dict[str, tuple[SollRow, ...]] | None = None,
 ) -> tuple[str, list[str]]:
     """`(html, warnings)` — the page over the selected words."""
     colors = assign_colors([label for label, _ in candidates])
@@ -533,12 +758,16 @@ def build_page(
             size = img.size
         crop_uri = "data:image/png;base64," + base64.b64encode(crop_path.read_bytes()).decode()
 
+        ref_strokes, ref_structure = layer_paths(
+            entry.frame, entry.row.strokes, entry.row.registration_px, entry.row.xh_px
+        )
         layers = [
             Layer(
                 label=REFERENCE_LABEL,
                 color=COLOR_REFERENCE,
                 kind="reference",
-                strokes=trace_paths(entry.frame, entry.row.strokes, entry.row.registration_px, entry.row.xh_px),
+                strokes=ref_strokes,
+                structure=ref_structure,
             )
         ]
         for label, by_id in candidates:
@@ -555,16 +784,22 @@ def build_page(
                     )
                 )
                 continue
+            cand_strokes, cand_structure = layer_paths(
+                entry.frame, candidate.strokes, candidate.registration_px, candidate.xh_px
+            )
             layers.append(
                 Layer(
                     label=label,
                     color=colors[label],
                     kind="candidate",
-                    strokes=trace_paths(entry.frame, candidate.strokes, candidate.registration_px, candidate.xh_px),
+                    strokes=cand_strokes,
+                    structure=cand_structure,
                     numbers=(reports.get(label) or {}).get(specimen_id),
                 )
             )
-        sections.append(word_section(len(sections), entry, crop_uri, size, layers))
+        sections.append(
+            word_section(len(sections), entry, crop_uri, size, layers, soll=(soll or {}).get(specimen_id, ()))
+        )
         # The tab label is the SPECIMEN id, not the word text: repeated words
         # ("und", "und-2", "und-3") would otherwise render three identical tabs
         # and make the arrow navigation ambiguous. For non-repeats id == word.
@@ -629,8 +864,9 @@ def main(argv: list[str] | None = None) -> int:
         f"{args.style} · Satz {args.which} · Split {args.split} · {len(ids)} Wörter · Wurzel {root.name} · "
         f"Verfahren: {', '.join([REFERENCE_LABEL, *labels])}" + (f" · {args.title}" if args.title else "")
     )
-    page, warnings = build_page(reference, ids, candidates, reports, title=args.title, meta=meta)
-    for line in warnings:
+    soll, soll_warnings = ductus_soll(ids, which=args.which, style=args.style, fixtures_root=args.fixtures)
+    page, warnings = build_page(reference, ids, candidates, reports, title=args.title, meta=meta, soll=soll)
+    for line in [*soll_warnings, *warnings]:
         print(f"  {line}")
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
