@@ -221,8 +221,11 @@ def load_reference(fixture_root: Path) -> Reference:
 
     # Manifest order, with anything the manifest does not mention appended in
     # artifact order rather than dropped — a row the bench can score is never
-    # lost to a bookkeeping mismatch.
-    order = sorted(entries, key=lambda i: (rank.get(i, len(rank)), i))
+    # lost to a bookkeeping mismatch. `entries` preserves the artifact's own
+    # iteration order (dict insertion order), so the fallback key is its
+    # position there, not the specimen id's lexicographic accident.
+    artifact_pos = {specimen_id: n for n, specimen_id in enumerate(entries)}
+    order = sorted(entries, key=lambda i: (rank.get(i, len(rank)), artifact_pos[i]))
     return Reference(root=root, hand_id=artifact.get("hand_id"), entries=entries, order=order, excluded=excluded)
 
 

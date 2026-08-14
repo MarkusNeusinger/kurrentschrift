@@ -31,6 +31,7 @@ a bench run down.
 
 from __future__ import annotations
 
+import copy
 import json
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
@@ -123,7 +124,10 @@ def candidate_from_wire(
     if not violation and "baseline_row" not in registration:
         violation = "registration_px carries no baseline_row"
     return Candidate(
-        strokes=strokes if isinstance(strokes, list) else [],
+        # Deep-copied: the frozen dataclass must own its geometry — an aliased
+        # caller list could be mutated after construction and change what gets
+        # measured, silently breaking determinism.
+        strokes=copy.deepcopy(strokes) if isinstance(strokes, list) else [],
         registration_px=registration,
         xh_px=xh,
         status=STATUS_FAILED if violation else STATUS_OK,

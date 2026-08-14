@@ -282,3 +282,12 @@ def test_a_provider_answers_for_every_id_it_was_asked_about(tmp_path: Path) -> N
     for out in (authored_provider(reference, ids), traced_provider(reference, ids)):
         assert set(out) == set(ids)
         assert all(isinstance(c, Candidate) for c in out.values())
+
+
+def test_a_candidate_owns_its_geometry():
+    # Review finding: an aliased caller list mutated after construction must
+    # not change what gets measured.
+    strokes = [[[0.1, 0.2], [0.3, 0.4]]]
+    candidate = candidate_from_wire(strokes, {"tx": 0, "ty": 0, "baseline_row": 60}, 30.0)
+    strokes[0][0][0] = 99.0
+    assert candidate.strokes[0][0][0] == 0.1
