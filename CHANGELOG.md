@@ -42,6 +42,31 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **`tools/inksight` — the isolated InkSight pipeline (Tintenfolger route
+  B, T0).** Three stages split at a process boundary so no dependency
+  crosses: `prepare.py` (repo env) turns frozen wordbench crops into
+  224×224 white-padded model inputs plus a `frames.json` recording the
+  affine per word, `run_inksight.py` (isolated Python-3.11 venv, the only
+  file importing TensorFlow) asks the released Small-p checkpoint all
+  three prompts per crop — `Derender the ink.` · `Recognize and
+  derender.` · `Derender the ink: <word>`, the last one fed with the word
+  we already know — and decodes its `<ink_token_N>` answer, and
+  `to_candidate.py` (repo env) inverts the affine and converts to the
+  stored `word_instances` trace frame through the SAME
+  `_px_to_word_units` the harvest and the follower use, emitting one
+  tracebench candidate file per prompt. Measurement only: the derendered
+  geometry never reaches `core/`, the database or rendering, and is never
+  a ductus source. Two honesty rules are wired in rather than documented
+  away — the XLA flags InkSight's own `utils/tensorflow.py` sets are
+  replicated before the first TensorFlow import (without them TF ≥ 2.18
+  silently decodes DIFFERENT ink), and the 225-level token grid's
+  resolution floor is reported per word (`grid_step_crop_px`, 1.00–1.38
+  crop px on the dev set) beside the raw ink-token count that exposes a
+  truncated decode. Strokes are emitted exactly as the model produced
+  them: the only judgement applied is the wire contract, and a row that
+  violates it is stamped `failed` with a reason instead of being cleaned
+  up. Weights (Apache 2.0, 518 MB) are downloaded per the README recipe
+  and stay untracked, like the venv and every run artefact.
 - **The tracebench ruler (`tools/tracebench`) — stage B of the
   Tintenfolger plan.** The measurement modules an automatic word tracing
   is graded with, defined by `docs/proposals/tintenfolger.md` §2 and

@@ -1,0 +1,7 @@
+# The isolated TensorFlow venv, the downloaded model weights and every run
+# artefact stay out of the repo: the weights are 518 MB of third-party bytes
+# (Apache 2.0, but not ours to redistribute here) and the outputs are
+# measurement material, not source.
+.venv/
+weights/
+out/

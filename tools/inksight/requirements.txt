@@ -1,0 +1,17 @@
+# Dependencies of the ISOLATED InkSight venv (tools/inksight/.venv) ONLY.
+#
+# These are deliberately NOT in the repo's pyproject.toml: TensorFlow pins the
+# whole environment down to a Python version (tensorflow-text ships no wheels
+# for the repo's interpreter), and the measurement layer must not be able to
+# drag a 600 MB ML runtime into the API image. Install with
+#
+#   uv venv --python 3.11 tools/inksight/.venv
+#   uv pip install -p tools/inksight/.venv/bin/python -r tools/inksight/requirements.txt
+#
+# Only `run_inksight.py` runs in this venv; `prepare.py` and `to_candidate.py`
+# run in the repo environment.
+
+tensorflow-cpu==2.20.0
+tensorflow-text==2.20.1
+numpy>=1.26,<2.3
+pillow>=11,<12
