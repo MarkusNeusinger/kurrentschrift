@@ -38,8 +38,8 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 
 - **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1 · Ausreißer §4
 - **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3
-- **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Cusp-Connector §3
-- **D** — dconn §4 · Deckung §3 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1
+- **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Chronik (tracebench) §4 · Cusp-Connector §3
+- **D** — dconn §4 · Deckung §3 · Duell-Ansicht §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1
 - **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2
 - **F** — Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Frozen-Reference-Regel §4 · Fuge §1
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4
@@ -1042,6 +1042,28 @@ eine Bahn gegen sich selbst, und das authored-Identitäts-Gate schlüge
 auf jedem Deckstrich-Wort an). Robusteste Vergleichszahl ist das
 Bogen-Verhältnis `retrace_arc_ratio`, die Zonen-Counts sind die
 Ortsdiagnose. *Technisch:* `tools/tracebench/counters.py::count_retraces`
+
+**Duell-Ansicht** — die Sichtbarmachung des Tintenfolger-Duells: ein
+selbst-enthaltenes HTML, das je Wort ALLE Bahn-Kandidaten als
+schaltbare Ebenen über dem echten Crop zeigt, die Hand-Nachfahrung
+immer als grüne Referenz, plus die Schreib-Animation — ein Play-Knopf
+animiert alle sichtbaren Bahnen synchron in Schreibreihenfolge
+(`stroke-dashoffset`, konstante Stiftgeschwindigkeit in xh, Absetzen
+als echte Lücke). Finale Form UND Entstehung, nebeneinander statt als
+Zahlenzeile. *Technisch:* `tools/tracebench/view.py`
+→ proposals/tintenfolger.md §4c
+
+**Chronik (tracebench)** — die create-only Rundenhistorie des Duells:
+jeder Optimierungs-/Mess-Lauf wird als zeitgestempeltes Verzeichnis
+NEBEN dem privaten Archiv-Klon abgelegt (Artefakte + Duell-HTML +
+INDEX-Zeile), nach der dbsnapshot-Disziplin — nie löschen, nie
+überschreiben, leere Snapshots verweigert, nichts davon im Repo
+(Bahndaten sind gelernter Datensatz, Open-Core-Regel). So bleibt der
+Fortschritt über die Folger-Runden browsebar; die spätere öffentliche
+Methoden-Seite bedient sich HIER, als bewusste
+Produkt-Flächen-Entscheidung. *Technisch:*
+`tools/tracebench/chronik.py` (`KS_CHRONIK_ROOT` ·
+`$KURRENTSCHRIFT_ARCHIVE`-Nachbar) → proposals/tintenfolger.md §4c
 
 **grid_step_crop_px** — der Präzisionsboden einer InkSight-Bahn: das
 Modell quantisiert seine Ausgabe auf ein 225-Stufen-Gitter über dem auf
