@@ -6,7 +6,7 @@ converts them into the stage-C provider shape (`docs/proposals/tintenfolger.md`
 
     uv run python -m tools.routeg.to_candidate
         [--frames tools/routeg/out/frames.json] [--raw tools/routeg/out/raw]
-        [--out tools/routeg/out/candidates] [--tool routeg-wor]
+        [--out tools/routeg/out/candidates] [--tool routeg-graph]
 
 The frame handling is `tools/inksight/to_candidate.py`'s, deliberately copied
 rather than re-derived — a second implementation of the frame conversion is
