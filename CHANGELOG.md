@@ -73,6 +73,17 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **Follower arms 5 and 6 recorded in the quality-metric §14** (doc-only):
+  the overlap term is acquitted of the §13 brake hypothesis (switching it
+  off is mildly better, the structure veto vs the baseline remains), and
+  the landmark arm — after the geodesic-walk repair made extrapolation
+  fire on real ink — measures null at the middle rung and pointwise
+  significantly worse at full parity. The finding that outranks both
+  arms: 12 of 21 landmark correspondences point at ink with no crossing
+  (touch points, T-junctions) — the correspondence cap; the next
+  pre-registered hypothesis is class-aware correspondence, not more
+  weight. No default adopted.
+
 - **Follower arm 1 result recorded in the quality-metric §14** (doc-only):
   the pre-registered lambda ladder ran paired against the frozen `aug14`
   baseline — every rung fails the co-primary structure gate, so the
