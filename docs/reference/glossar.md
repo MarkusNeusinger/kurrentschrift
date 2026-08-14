@@ -40,11 +40,12 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Duell-Ansicht §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1
-- **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2
+- **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2 · extrapoliertes Landmark-Ziel §3
 - **F** — Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Frozen-Reference-Regel §4 · Fuge §1
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
+- **J** — Junction-Verschiebung §3
 - **K** — Kettenfit §3 · Kill-Kriterium §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4
@@ -470,6 +471,32 @@ nie eine Messung. *Technisch:* `tools/pairlab/follow.py`
 (`follow_word_chain`/`follow_case`, Gewichte PROVISORISCH bis zur
 §14-Arm-Kalibrierung) → proposals/tintenfolger.md ·
 bildsynthese-und-stiftbahn.md §6
+
+**Junction-Verschiebung** *(junction displacement)* — der dokumentierte
+Fehler des Skelett-Branch-Points als Kreuzungs-Marke: Thinning
+verschiebt ihn um bis zu die lokale Strichbreite (±2–4 px bei xh ≈ 30)
+und spaltet eine echte Kreuzung oft in ZWEI Y-Junctions, deren Brücke
+1,2–1,7 Strichbreiten lang ist (auf den Dev-Wörtern gemessen). Ein Term,
+der eine Bahn-Kreuzung auf den rohen Branch-Point zieht, zieht sie
+deshalb an die falsche Stelle. → das extrapolierte Landmark-Ziel.
+
+**extrapoliertes Landmark-Ziel** — die Korrektur der
+Junction-Verschiebung im Tintenfolger: Um den Branch-Point werden die
+einlaufenden Skelett-Äste GEODÄTISCH verfolgt (Dijkstra auf dem
+Skelett, Junction-Cluster absorbiert, Konfluenzen blockiert statt
+verschweißt — die euklidische Annulus-Variante verschweißt auf
+kursiver Tinte die Schenkel), der junction-verzerrte Kern (2×
+Halbbreite) ausgeschlossen, je Ast eine TLS-Richtung gefittet, Äste
+per Gute-Fortsetzung gepaart (Krümmungs-basierte Toleranz) und der
+Schnittpunkt der Fortsetzungen als Ziel genommen — mit isotroper
+Unsicherheit ≈ lokale Halbbreite als 1/σ²-Gewicht (Pre-Whitening des
+bestehenden Operators, kein neuer Term). Verweigert ehrlich:
+Touch-Points (2 Schenkel) und T-Junctions (3) sind BY DESIGN keine
+Kreuzungsziele — auf den Dev-Wörtern sind das 12 von 21
+Korrespondenzen, die Kappe jedes Landmark-Effekts, solange die
+Korrespondenz nicht klassenbewusst wird. *Technisch:*
+`tools/pairlab/follow.py::extrapolated_targets`
+→ qualitaetsmetrik.md §14 (Arm ⑥)
 
 **Retrace-Guard** — die Ausnahme im Tintenfolger, die dessen blinden
 Fleck deckt: Über doppelt beschriebener Tinte belohnen BEIDE Datenterme
