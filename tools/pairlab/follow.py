@@ -47,7 +47,12 @@ stroke width — more than the anchor spacing the term is supposed to correct.
 `extrapolated_targets` re-aims it at the intersection of the incident branches
 extrapolated across the junction, with the local half-width as an isotropic
 uncertainty that enters as a per-target `1/sigma^2` weight
-(`apply_landmark_targets`). Refusals keep the raw branch point and say why. All
+(`apply_landmark_targets`). Finding those branches on real cursive ink is the
+hard half and is done by a GEODESIC walk along the skeleton whose core swallows
+the whole junction CLUSTER — `_incident_branches` says what a Euclidean annulus
+around the branch point gets wrong, and why it refined nothing at all on the
+first ten words. Refusals keep the raw branch point and say why, separating what
+the ink cannot support from what the walk failed to find (`_refine_one`). All
 of it is skipped at `landmark = 0`, which is the shipped default, so the ladder's
 rungs are chosen from measured ratios (`--landmark-calibrate`) rather than by
 analogy — §11c's standing warning.
@@ -69,6 +74,7 @@ residual this solve minimises itself.
 from __future__ import annotations
 
 import argparse
+import heapq
 import json
 import os
 import time
@@ -224,16 +230,22 @@ FOLLOW_LANDMARK_WEIGHT = float(os.environ.get(FOLLOW_LANDMARK_WEIGHT_ENV) or CHA
 FOLLOW_LANDMARK_TARGETS_ENV = "KS_FOLLOW_LANDMARK_TARGETS"
 FOLLOW_LANDMARK_TARGETS = os.environ.get(FOLLOW_LANDMARK_TARGETS_ENV) or "extrapolated"
 LANDMARK_TARGET_MODES = ("extrapolated", "extrapolated_uniform", "raw")
-# Radius (xh) of the skeleton walk around a branch point — how much of each
-# incident branch the straight line is fitted to. 0.5 xh is ~10–15 px on this
-# material: enough beyond the excluded core for a stable direction, and short
-# enough that the branch's OWN curvature does not out-bias the junction
-# displacement being corrected. The proposal's sketch said 1.5–2 xh; that is
-# rejected here on the geometry rather than by taste — a Sütterlin letter is
-# 1–2 xh tall, so a 1.5 xh branch bends by ~5 px against its chord on a
+# FLOOR (xh) on the reach of the skeleton walk around a branch point. 0.5 xh is
+# ~15 px on this material: enough beyond the excluded core for a stable
+# direction, and short enough that the branch's OWN curvature does not out-bias
+# the junction displacement being corrected. The proposal's sketch said 1.5–2 xh;
+# that is rejected here on the geometry rather than by taste — a Sütterlin letter
+# is 1–2 xh tall, so a 1.5 xh branch bends by ~5 px against its chord on a
 # 0.5 xh-radius turn (L²/8R), which is larger than the ±2–4 px the correction is
-# worth. Env-overridable precisely so the arm can measure that claim instead of
-# inheriting it.
+# worth. Measured, a wider window is not merely wasteful but actively wrong: at
+# 1.5 xh the disc reaches around whole letters, and the walk that predated the
+# junction cluster welded 10 of 21 targets' limbs into a single component.
+#
+# It is a floor and not the reach itself: `extrapolated_targets` takes the LARGER
+# of it and `cluster + core + min_branch`, because a walk that stops inside its
+# own junction cluster has no limb to fit. On the dev words the cluster clause
+# binds (24–31 px against this floor's 15), which is the honest statement of how
+# far the walk really goes.
 FOLLOW_LANDMARK_WINDOW_UNITS_ENV = "KS_FOLLOW_LANDMARK_WINDOW_UNITS"
 FOLLOW_LANDMARK_WINDOW_UNITS = float(os.environ.get(FOLLOW_LANDMARK_WINDOW_UNITS_ENV) or 0.5)
 # Junction core to EXCLUDE from the line fits, in local HALF-widths: 2.0 = one
@@ -245,6 +257,25 @@ FOLLOW_LANDMARK_CORE_WIDTHS = 2.0
 # pixel: below ~2 px the "core" would exclude nothing at all and the fit would
 # run straight through the junction blob it is meant to step over.
 FOLLOW_LANDMARK_CORE_MIN_PX = 2.0
+# Junction-CLUSTER radius, in local HALF-widths: how far along the ink the core
+# absorbs further fork pixels before the limbs are cut.
+#
+# Thinning does not turn one shallow crossing into one branch point. It turns it
+# into TWO Y-junctions bridged by a short segment, and the bridge grows as the
+# crossing angle shrinks. A core that stops before the bridge therefore walks a
+# real X as a T: three limbs (two real ones and the bridge), the fourth limb
+# hidden behind the partner Y — and three limbs can yield at most ONE
+# continuation pair, so the refinement refuses by construction, whatever the
+# tolerance says. That is the mechanism behind 16 of the 21 `no_continuation_pair`
+# refusals measured on the dev words.
+#
+# The bound is measured, not assumed: over the 16 distinct junctions the 10 dev
+# words' landmark targets sit on, the partner branch point sits 9.4–13.2 px away
+# by ARC where the local stroke is 6.4–8.4 px wide — 1.2–1.7 stroke widths, i.e.
+# 2.4–3.4 half-widths. 4.0 half-widths (= 2 stroke widths) covers that with
+# headroom and stays well inside the letter, and it is a GEODESIC radius, so a
+# neighbouring stroke passing close in the image is never absorbed.
+FOLLOW_LANDMARK_CLUSTER_WIDTHS = 4.0
 # Minimum branch span (px) OUTSIDE the core. The walk radius is widened to
 # `core + this` where the window would otherwise leave no branch to fit.
 FOLLOW_LANDMARK_MIN_BRANCH_PX = 6.0
@@ -256,11 +287,27 @@ FOLLOW_LANDMARK_MIN_BRANCH_PIXELS = 4
 # stroke continuing through the junction ("gute Fortsetzung"). The pairing is
 # GREEDY-BEST — the smallest deviation is taken first — so this threshold only
 # ever REFUSES a branch that continues into nothing; it is not what tells the
-# right partner from the wrong one. 30° is twice `landmarks.
-# LANDMARK_MIN_ANGLE_DEG`: at the shallowest crossing the frozen detector admits
-# (15°) the WRONG partner already sits 15° from anti-parallel, so a threshold is
-# not the instrument that could separate them anyway.
-FOLLOW_LANDMARK_CONTINUATION_TOL_DEG = 30.0
+# right partner from the wrong one.
+#
+# It was 30°, chosen as twice `landmarks.LANDMARK_MIN_ANGLE_DEG` — an argument
+# about the CROSSING angle, which is not what this number measures. What it
+# measures is how far two limbs of ONE pass deviate from anti-parallel, and on a
+# cursive script that is dominated by the pass's own CURVATURE, not by the
+# crossing: each limb's total-least-squares direction is the tangent at its own
+# midpoint, so a limb spanning arc [s0, s1] is rotated (s0+s1)/2R from the
+# tangent at the junction, and the two limbs rotate opposite ways in the outward
+# frame — deviation (s0+s1)/R.
+#
+# Measured on the dev words, for the pairs whose two limbs really do lie on one
+# arc (circle fit rms < 1 px, n = 6): observed deviation median 18.7°/max 28.4°
+# against a predicted median 21.5°/max 33.8°, agreeing to a median 3.8°. The
+# limbs span 8.4–31.1 px and the tightest radius a continuation is written with
+# is ~70 px (2.3 xh), so the bound the geometry imposes is (10+31)/70 rad ≈ 34°.
+# At 30° that refused four of the eight crossings the walk resolves, each by
+# 0.8–1.5°. 35° clears the geometry; the answer is then FLAT to 45° (measured),
+# so it is not a threshold sitting on a knife edge, and the second pair greedy
+# actually proposes at a non-crossing sits at 148° — the gap is not close.
+FOLLOW_LANDMARK_CONTINUATION_TOL_DEG = 35.0
 # Uncertainty floor (px) of a refined target: one pixel, because the branch
 # point it is measured against is itself a centroid on a pixel grid. Without a
 # floor a hairline junction would claim an arbitrarily precise target and its
@@ -591,17 +638,100 @@ def _principal_direction(pts: np.ndarray) -> np.ndarray | None:
     return u / n if n > 0.0 else None
 
 
+_NEIGHBOUR_STEPS = tuple((dy, dx) for dy in (-1, 0, 1) for dx in (-1, 0, 1) if (dy, dx) != (0, 0))
+_ROOT2 = float(np.sqrt(2.0))
+
+
+def _fork_pixels(m: np.ndarray) -> np.ndarray:
+    """Skeleton pixels with ≥ 3 eight-neighbours — `skeleton_branch_points`' own test.
+
+    Its clusters, not its centroids: the cluster is what a junction core has to
+    swallow, and collapsing it first would only have to be undone here.
+    """
+    pad = np.pad(m, 1).astype(np.int8)
+    h, w = m.shape
+    nb = np.zeros((h, w), dtype=np.int8)
+    for dy in (0, 1, 2):
+        for dx in (0, 1, 2):
+            if dy == 1 and dx == 1:
+                continue
+            nb += pad[dy : dy + h, dx : dx + w]
+    return m & (nb >= 3)
+
+
+def _arc_field(m: np.ndarray, sources: Sequence[tuple[int, int]], cap: float) -> np.ndarray:
+    """Geodesic distance ALONG the skeleton from `sources`, capped at `cap`.
+
+    Dijkstra over the 8-neighbourhood with √2 diagonals — the arc length the ink
+    actually runs, not the straight line between two of its pixels. That
+    difference is the whole point of the walk below: a limb that curls back past
+    the seed is 20 px of ink away and 3 px of image away, and only the first of
+    those two numbers says whether it is still the same limb.
+    """
+    arc = np.full(m.shape, np.inf)
+    h, w = m.shape
+    heap: list[tuple[float, int, int]] = []
+    for r, c in sources:
+        if m[r, c] and arc[r, c] > 0.0:
+            arc[r, c] = 0.0
+            heapq.heappush(heap, (0.0, r, c))
+    while heap:
+        dist, r, c = heapq.heappop(heap)
+        if dist > arc[r, c] or dist > cap:
+            continue
+        for dy, dx in _NEIGHBOUR_STEPS:
+            rr, cc = r + dy, c + dx
+            if not (0 <= rr < h and 0 <= cc < w) or not m[rr, cc]:
+                continue
+            nd = dist + (1.0 if dy == 0 or dx == 0 else _ROOT2)
+            if nd < arc[rr, cc]:
+                arc[rr, cc] = nd
+                heapq.heappush(heap, (nd, rr, cc))
+    return arc
+
+
 def _incident_branches(
-    skel: np.ndarray, seed_px: tuple[float, float], *, radius_px: float, core_px: float, min_pixels: int
-) -> list[dict]:
+    skel: np.ndarray,
+    seed_px: tuple[float, float],
+    *,
+    radius_px: float,
+    core_px: float,
+    min_pixels: int,
+    cluster_px: float = 0.0,
+) -> list[dict] | None:
     """The junction's incident branches: `[{pixels, centroid, direction}, …]`.
 
-    The walk is a SKELETON one, not a disc of the image: only the connected
-    component the junction itself sits in is kept, so a neighbouring stroke that
-    merely passes within the radius contributes nothing. Removing the core
-    (`core_px`, the published displacement bound) is what splits that component
-    into the branches — inside it the passes have merged, which is precisely why
-    the branch point is displaced in the first place.
+    `None` — not `[]` — when the assigned point does not sit on this ink at all.
+    The two are different statements and the caller reports them as different
+    reasons: `None` says the correspondence points at nothing, `[]` says the walk
+    found the ink and no way out of it.
+
+    The walk follows the INK, not a disc of the image. A first version labelled
+    the connected components of a Euclidean annulus around the seed, and on the
+    real Sütterlin skeletons that fails in the one way that matters: two limbs of
+    one junction reconnect INSIDE the annulus — around a tight loop, through the
+    next junction, or simply by running parallel a few pixels apart — and become
+    ONE component whose principal direction is a line through both. Measured on
+    the 10 dev words at xh ≈ 30 px, that annulus is 6–9 px thick and its
+    components reached 19–49 px: a 1-px skeleton arc crossing it can be 13 px at
+    most, so the rest was limbs welded together. Every one of those welds became
+    a refusal (`few_branches` where two limbs merged, `no_continuation_pair`
+    where the merged direction pointed nowhere): 21 of 21 targets stayed raw.
+
+    So: geodesic distance along the skeleton (`_arc_field`), limbs identified at
+    the core boundary and carried outward by the arc-order predecessor, and a
+    CONFLUENCE — a pixel two limbs both reach — blocked rather than assigned, so
+    two limbs that meet again keep their identities instead of merging.
+
+    `core_px` (the published junction-displacement bound) is still what cuts the
+    limbs off the junction, but the core is now a geodesic ball and grows into a
+    junction CLUSTER: `cluster_px` absorbs the fork pixels that lie within it.
+    Thinning splits one shallow crossing into TWO Y-branch points bridged by a
+    short segment, and a core that stops before the bridge sees the bridge as a
+    third limb and the crossing's fourth limb not at all — which is a T-junction
+    to every test downstream. Measured on the same words, that partner branch
+    point sits 9.4–13.2 px away where the local stroke is 6.4–8.4 px wide, i.e.
+    1.2–1.7 stroke widths; `FOLLOW_LANDMARK_CLUSTER_WIDTHS` is that bound.
 
     `direction` is the branch's OWN total-least-squares direction, oriented away
     from the seed — never the bearing `centroid − seed`, which is what a first
@@ -613,39 +743,87 @@ def _incident_branches(
     """
     m = np.asarray(skel, dtype=bool)
     if m.ndim != 2 or not m.any():
-        return []
+        return None
     h, w = m.shape
     cx, cy = float(seed_px[0]), float(seed_px[1])
-    pad = int(np.ceil(radius_px)) + 1
+    pad = int(np.ceil(radius_px + cluster_px)) + 2
     y0, y1 = max(0, int(np.floor(cy)) - pad), min(h, int(np.ceil(cy)) + pad + 1)
     x0, x1 = max(0, int(np.floor(cx)) - pad), min(w, int(np.ceil(cx)) + pad + 1)
     if y1 <= y0 or x1 <= x0:
-        return []
-    yy, xx = np.mgrid[y0:y1, x0:x1]
-    dist = np.hypot(xx - cx, yy - cy)
-    near = m[y0:y1, x0:x1] & (dist <= radius_px)
+        return None
+    near = m[y0:y1, x0:x1]
     if not near.any():
-        return []
+        return None
+    yy, xx = np.mgrid[y0:y1, x0:x1]
+    sy, sx = yy.astype(float), xx.astype(float)
 
-    structure = np.ones((3, 3), dtype=int)
-    comp_labels, _n = label_regions(near, structure=structure)
-    seed_dist = np.where(near, dist, np.inf)
-    flat = int(np.argmin(seed_dist))
-    if not np.isfinite(seed_dist.flat[flat]) or float(seed_dist.flat[flat]) > core_px:
+    dist = np.where(near, np.hypot(sx - cx, sy - cy), np.inf)
+    flat = int(np.argmin(dist))
+    if not np.isfinite(dist.flat[flat]) or float(dist.flat[flat]) > core_px:
         # Nothing of the skeleton within the core: the assigned branch point does
         # not sit on this ink, so there is no junction here to walk.
+        return None
+    start = (int(flat // near.shape[1]), int(flat % near.shape[1]))
+
+    # The walk's reach: the limbs, plus whatever the cluster absorbs on the way.
+    arc = _arc_field(near, [start], radius_px + cluster_px + 1.0)
+    forks = _fork_pixels(near)
+    sources = [start]
+    if cluster_px > 0.0:
+        absorbed = forks & np.isfinite(arc) & (arc <= cluster_px)
+        sources.extend((int(r), int(c)) for r, c in zip(*np.nonzero(absorbed), strict=True))
+    core_arc = _arc_field(near, sources, core_px)
+    core = np.isfinite(core_arc) & (core_arc <= core_px)
+    if not core.any():
+        return None
+
+    structure = np.ones((3, 3), dtype=int)
+    ring = np.zeros_like(near)
+    for r, c in zip(*np.nonzero(core), strict=True):
+        for dy, dx in _NEIGHBOUR_STEPS:
+            rr, cc = r + dy, c + dx
+            if 0 <= rr < near.shape[0] and 0 <= cc < near.shape[1] and near[rr, cc] and not core[rr, cc]:
+                ring[rr, cc] = True
+    ring_labels, n_ring = label_regions(ring, structure=structure)
+    if n_ring == 0:
         return []
-    component = comp_labels == comp_labels.flat[flat]
-    outer = component & (dist > core_px)
-    if not outer.any():
-        return []
-    branch_labels, n_branches = label_regions(outer, structure=structure)
+
+    limb = np.full(near.shape, -1, dtype=np.int32)
+    limb[ring] = ring_labels[ring] - 1
+    blocked = np.zeros_like(near)
+    outside = np.isfinite(arc) & near & ~core
+    for _d, r, c in sorted((float(arc[r, c]), int(r), int(c)) for r, c in zip(*np.nonzero(outside), strict=True)):
+        if arc[r, c] > radius_px:
+            continue
+        if limb[r, c] != -1:
+            continue
+        owners: set[int] = set()
+        best: tuple[float, int] | None = None
+        for dy, dx in _NEIGHBOUR_STEPS:
+            rr, cc = r + dy, c + dx
+            if not (0 <= rr < near.shape[0] and 0 <= cc < near.shape[1]):
+                continue
+            if blocked[rr, cc] or limb[rr, cc] == -1 or arc[rr, cc] >= arc[r, c]:
+                continue
+            owners.add(int(limb[rr, cc]))
+            if best is None or arc[rr, cc] < best[0]:
+                best = (float(arc[rr, cc]), int(limb[rr, cc]))
+        if best is None:
+            continue
+        if len(owners) > 1:
+            # Two limbs of this junction have run back into each other. Neither
+            # owns the confluence and neither grows through it — which is exactly
+            # the weld the Euclidean annulus used to report as one branch.
+            blocked[r, c] = True
+            continue
+        limb[r, c] = best[1]
+
     out: list[dict] = []
-    for i in range(1, n_branches + 1):
-        sel = branch_labels == i
+    for i in range(n_ring):
+        sel = (limb == i) & ~blocked & np.isfinite(arc) & (arc <= radius_px)
         if int(np.count_nonzero(sel)) < min_pixels:
             continue
-        pts = np.column_stack([xx[sel].astype(float), yy[sel].astype(float)])
+        pts = np.column_stack([sx[sel], sy[sel]])
         centroid = pts.mean(axis=0)
         away = centroid - np.array([cx, cy])
         norm = float(np.hypot(away[0], away[1]))
@@ -656,7 +834,15 @@ def _incident_branches(
             continue
         if float(np.dot(direction, away)) < 0.0:
             direction = -direction  # outward, so „anti-parallel" means „continues"
-        out.append({"pixels": pts, "centroid": centroid, "bearing": away / norm, "direction": direction})
+        out.append(
+            {
+                "pixels": pts,
+                "centroid": centroid,
+                "bearing": away / norm,
+                "direction": direction,
+                "arc_px": float(arc[sel].max()),
+            }
+        )
     return out
 
 
@@ -782,6 +968,7 @@ def extrapolated_targets(
     core_min_px: float = FOLLOW_LANDMARK_CORE_MIN_PX,
     min_branch_px: float = FOLLOW_LANDMARK_MIN_BRANCH_PX,
     min_branch_pixels: int = FOLLOW_LANDMARK_MIN_BRANCH_PIXELS,
+    cluster_widths: float = FOLLOW_LANDMARK_CLUSTER_WIDTHS,
     continuation_tol_deg: float = FOLLOW_LANDMARK_CONTINUATION_TOL_DEG,
     min_angle_deg: float = LANDMARK_MIN_ANGLE_DEG,
     max_shift_widths: float = FOLLOW_LANDMARK_MAX_SHIFT_WIDTHS,
@@ -805,15 +992,25 @@ def extrapolated_targets(
        width of the branch point.
 
     Every step REFUSES rather than guesses, and a refusal keeps the raw branch
-    point with its reason recorded — `no_junction` (no skeleton, or the branch
-    point does not sit on ink), `few_branches` (< 3 incident branches),
-    `no_continuation_pair` (fewer than two „gute Fortsetzung" pairs, e.g. a real
-    T-junction), `ill_conditioned` (the two lines are near-parallel, so the
-    intersection slides), `far_from_branch` (the extrapolation landed beyond the
-    published displacement bound, so it is a different junction, not a
-    correction). A raw target is not a failure of the term, only of the
-    refinement; the correspondence itself was refused earlier, by the frozen
-    detector, and is not reconsidered here.
+    point with its reason recorded. The reasons separate what the ink cannot
+    support from what the walk failed to find, because only the second kind is
+    ever worth fixing:
+
+    * BY DESIGN, a property of the ink at that point — `touch_point` (exactly two
+      limbs: a stroke passing through, a retrace touch, a corner), `t_junction`
+      (exactly three limbs, so at most one continuation pair can exist at all),
+      `ill_conditioned` (the two lines are near-parallel and the intersection
+      slides).
+    * A REFUSAL of this refinement — `no_junction` (no skeleton, or the branch
+      point does not sit on ink), `few_branches` (fewer than two limbs: the walk
+      found the ink and no way out of it), `no_continuation_pair` (four or more
+      limbs and still no second pair), `far_from_branch` (the extrapolation
+      landed beyond the published displacement bound, so it is a different
+      junction, not a correction).
+
+    A raw target is not a failure of the term, only of the refinement; the
+    correspondence itself was refused earlier, by the frozen detector, and is not
+    reconsidered here.
 
     Pure measurement: reads `problem`, writes nothing (`apply_landmark_targets`
     is the only thing that touches a problem).
@@ -828,12 +1025,21 @@ def extrapolated_targets(
         x_px, y_px = _to_px(problem, u, v)
         half_width_px, sigmas[row] = _sigma_units(problem, x_px, y_px, floor_px=sigma_floor_px)
         core_px = max(core_widths * half_width_px, core_min_px)
-        radius_px = max(window_units * float(problem.unit_px), core_px + min_branch_px)
+        cluster_px = max(cluster_widths * half_width_px, core_px)
+        # The reach has to clear the CLUSTER, not just the base core: once the
+        # partner Y of a split crossing is absorbed, the limbs start beyond it,
+        # and a radius fixed at the window would leave nothing outside to fit.
+        radius_px = max(window_units * float(problem.unit_px), cluster_px + core_px + min_branch_px)
         branches = (
-            []
+            None
             if skel is None
             else _incident_branches(
-                skel, (x_px, y_px), radius_px=radius_px, core_px=core_px, min_pixels=min_branch_pixels
+                skel,
+                (x_px, y_px),
+                radius_px=radius_px,
+                core_px=core_px,
+                min_pixels=min_branch_pixels,
+                cluster_px=cluster_px,
             )
         )
         entry = {
@@ -841,8 +1047,9 @@ def extrapolated_targets(
             "half_width_px": round(half_width_px, 3),
             "sigma_units": round(float(sigmas[row]), 4),
             "core_px": round(core_px, 2),
+            "cluster_px": round(cluster_px, 2),
             "radius_px": round(radius_px, 2),
-            "n_branches": len(branches),
+            "n_branches": 0 if branches is None else len(branches),
         }
         reason, refined, cross_angle = _refine_one(
             branches,
@@ -873,7 +1080,7 @@ def extrapolated_targets(
 
 
 def _refine_one(
-    branches: Sequence[dict],
+    branches: Sequence[dict] | None,
     *,
     continuation_tol_deg: float,
     min_angle_deg: float,
@@ -881,15 +1088,30 @@ def _refine_one(
     branch_px: tuple[float, float],
 ) -> tuple[str, np.ndarray | None, float | None]:
     """`(reason, refined point | None, crossing angle)` for ONE junction."""
-    if not branches:
+    if branches is None:
         # No skeleton was supplied, or the assigned branch point does not sit on
         # ink at all — a different statement from „this junction has too few
         # branches", and reported as one.
         return "no_junction", None, None
-    if len(branches) < 3:
-        # Two branches are a stroke passing through, not a crossing: there is
-        # nothing for a second line to be extrapolated from.
+    if len(branches) < 2:
+        # A dead end: the walk found the ink but no way out of the junction —
+        # the core swallowed every limb, or the ink simply stops there. That is
+        # a failure of the WALK, not a junction class, and it keeps the bare name.
         return "few_branches", None, None
+    if len(branches) == 2:
+        # Two branches are a stroke passing through, not a crossing — the class
+        # a retrace touch point and a sharp corner both fall in. Named rather
+        # than folded into `few_branches`: this one is a property of the ink, and
+        # no walk, window or tolerance will ever make it refinable. On the dev
+        # words it is 5 of 21 targets, all with the two limbs 39–48° apart.
+        return "touch_point", None, None
+    if len(branches) == 3:
+        # Three limbs make at most ONE continuation pair — `_continuation_pairs`
+        # consumes two branches per pair — so a second line to intersect cannot
+        # exist however the pairing is scored. A real T-junction, refused by
+        # construction and counted as such, which is what separates it from a
+        # four-limb crossing whose second pair the TOLERANCE refused.
+        return "t_junction", None, None
     pairs = _continuation_pairs(branches, tol_deg=continuation_tol_deg)
     if len(pairs) < 2:
         return "no_continuation_pair", None, None

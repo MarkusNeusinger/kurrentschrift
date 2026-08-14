@@ -625,15 +625,84 @@ def test_the_extrapolation_recovers_the_crossing_the_branch_point_hides() -> Non
     assert refined.entries[0]["cross_angle_deg"] == pytest.approx(75.0, abs=5.0)
 
 
+def test_a_crossing_thinning_split_into_two_y_junctions_still_refines() -> None:
+    """The mechanism that kept arm ⑥ inert on every real word, in one canvas.
+
+    Thinning does not turn a shallow crossing into one branch point. It turns it
+    into TWO Y-junctions bridged by a short segment — here two straight passes at
+    ±10° whose skeleton is a bridge with two limbs at each end. A core that stops
+    before the bridge walks that as a T: three limbs (two real, one the bridge)
+    and the crossing's fourth limb behind the partner Y, which no tolerance can
+    repair because three limbs cannot yield two disjoint pairs at all.
+
+    Measured on the dev words, that partner sits 9.4–13.2 px away where the ink
+    is 6.4–8.4 px wide; `FOLLOW_LANDMARK_CLUSTER_WIDTHS` absorbs it, and the four
+    limbs the crossing really has come back. The right answer is known: the two
+    passes cross at the bridge's midpoint, 6 px from the branch point the
+    correspondence was assigned.
+    """
+    skel = np.zeros(JUNCTION_SHAPE, dtype=bool)
+    left, right = (42.0, 45.0), (50.0, 45.0)
+    crossing = np.array([46.0, 45.0])
+    _ray(skel, left, 0.0, 8.0)  # the bridge: where the two passes' ink has merged
+    for angle in (190.0, 170.0):
+        _ray(skel, left, angle, 40.0)
+    for angle in (10.0, -10.0):
+        _ray(skel, right, angle, 40.0)
+    anchors, starts = _cross_anchors(left)
+    problem = _junction_problem(skel, anchors, starts, width_raw=4.0)
+
+    branch_points = skeleton_branch_points(problem.skel)
+    assert len(branch_points) == 2, "the premise: thinning reports the crossing TWICE"
+    assert min(float(np.hypot(*(b - crossing))) for b in branch_points) > 4.0
+
+    refined = extrapolated_targets(problem)
+    assert refined.reasons == ["ok"]
+    assert refined.entries[0]["n_branches"] == 4
+    assert float(np.hypot(*(_target_px(problem, refined) - crossing))) < 1.0
+
+
+def test_two_limbs_that_meet_again_stay_two_limbs() -> None:
+    """A weld inside the walk radius must not fuse two limbs into one branch.
+
+    The Euclidean annulus the first version labelled components in has no way to
+    tell „one branch" from „two branches that touch": on the real skeletons its
+    components reached 19–49 px where a 1-px arc across the annulus is 13 px at
+    most, so limbs were being welded — by a tight loop, by the next junction, or
+    (as here) by ink that simply crosses the annulus. The geodesic walk carries
+    each limb's identity from the core boundary outward and BLOCKS the pixel two
+    limbs both reach, so the weld costs the confluence and nothing else.
+    """
+    centre = (45.0, 45.0)
+    skel = _junction_skeleton(centre, JUNCTION_ANGLES, length=30.0, blob_radius=2.0)
+    a, b = (
+        (centre[0] + 9 * np.cos(np.radians(angle)), centre[1] + 9 * np.sin(np.radians(angle))) for angle in (20.0, 95.0)
+    )
+    _ray(skel, a, float(np.degrees(np.arctan2(b[1] - a[1], b[0] - a[0]))), float(np.hypot(*(np.subtract(b, a)))))
+    anchors, starts = _cross_anchors(centre)
+    problem = _junction_problem(skel, anchors, starts, width_raw=1.5)
+
+    refined = extrapolated_targets(problem)
+    assert refined.reasons == ["ok"]
+    assert refined.entries[0]["n_branches"] == 4, "the welded limbs kept their identities"
+    assert refined.entries[0]["cross_angle_deg"] == pytest.approx(75.0, abs=5.0)
+    assert float(np.hypot(*(_target_px(problem, refined) - np.asarray(centre)))) < 1.0
+
+
 def test_a_t_junction_keeps_the_raw_branch_point() -> None:
     """Three branches make ONE continuation pair — and one line cannot intersect.
 
     The refusal is the point: a T is a real junction with no crossing to
-    extrapolate, so the honest target is the branch point plus the reason.
+    extrapolate, so the honest target is the branch point plus the reason. That
+    reason is its OWN name rather than `no_continuation_pair`, because three
+    limbs can never yield two disjoint pairs however the pairing is scored — a
+    property of the ink, not a refusal the tolerance could ever lift. On the dev
+    words this class is 7 of 21 targets, and reading it as a failed pairing would
+    have sent the work at a threshold that has nothing to say about it.
     """
     centre, problem = _one_junction(angles=(0.0, 180.0, 90.0))
     refined = extrapolated_targets(problem)
-    assert refined.reasons == ["no_continuation_pair"]
+    assert refined.reasons == ["t_junction"]
     assert refined.entries[0]["n_branches"] == 3
     assert np.allclose(refined.targets, refined.raw_targets)
     assert _target_px(problem, refined) == pytest.approx(np.asarray(centre), abs=1e-9)
@@ -655,11 +724,17 @@ def test_a_near_parallel_junction_is_refused_as_ill_conditioned() -> None:
 
 
 def test_two_branches_are_a_passing_stroke_not_a_crossing() -> None:
-    """Below three incident branches there is nothing to extrapolate a second line from."""
-    _centre, problem = _one_junction(angles=(0.0, 180.0, 5.0, 185.0), width_raw=5.5, length=26.0)
+    """Two incident branches are a stroke passing through — its own named class.
+
+    `touch_point`, not `few_branches`: nothing about the ink here can be walked
+    into a crossing, so it is a property of the material rather than a refusal
+    worth chasing. On the dev words it is 5 of 21 targets — every one of them a
+    retrace or a corner the frozen detector matched a ductus crossing to.
+    """
+    _centre, problem = _one_junction(angles=(0.0, 180.0), length=40.0)
     refined = extrapolated_targets(problem)
-    assert refined.reasons == ["few_branches"]
-    assert refined.entries[0]["n_branches"] < 3
+    assert refined.reasons == ["touch_point"]
+    assert refined.entries[0]["n_branches"] == 2
     assert np.allclose(refined.targets, refined.raw_targets)
 
 
