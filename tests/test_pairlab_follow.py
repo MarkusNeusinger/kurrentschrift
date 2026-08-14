@@ -1018,3 +1018,20 @@ def test_a_zone_never_straddles_a_pen_lift() -> None:
     across_lift = np.asarray([0, 0, 0, 1, 1, 1])  # lift between samples 12 and 13
     assert [z.tolist() for z in _zone_runs(where, across_lift)] == [[10, 11, 12], [13, 14, 15]]
     assert _zone_runs(np.asarray([], dtype=int), np.asarray([], dtype=int)) == []
+
+
+def test_a_targeting_from_another_problem_is_refused_loudly() -> None:
+    # Review finding: a length mismatch between targeting and problem must
+    # refuse with the counts, never broadcast or annotate partially.
+    import dataclasses
+
+    _, problem = _one_junction()
+    targeting = landmark_targeting(problem, "extrapolated")
+    doubled = dataclasses.replace(
+        targeting,
+        targets=np.vstack([targeting.targets, targeting.targets]),
+        weights=np.concatenate([np.asarray(targeting.weights), np.asarray(targeting.weights)]),
+        entries=list(targeting.entries) + list(targeting.entries),
+    )
+    with pytest.raises(ValueError, match="build the targeting from THIS problem"):
+        apply_landmark_targets(problem, doubled)

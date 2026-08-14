@@ -1168,6 +1168,13 @@ def apply_landmark_targets(problem: _ChainProblem, targeting: LandmarkTargeting)
     """
     if not len(targeting.targets) or not problem.landmark_op.shape[0]:
         return problem
+    if len(targeting.targets) != problem.landmark_op.shape[0]:
+        # A targeting built from a DIFFERENT (or outdated) problem would
+        # broadcast wrongly or crash unreadably — refuse with the counts.
+        raise ValueError(
+            f"targeting carries {len(targeting.targets)} targets but the problem's landmark "
+            f"operator has {problem.landmark_op.shape[0]} rows — build the targeting from THIS problem"
+        )
     if targeting.mode != "raw":
         scales = np.sqrt(np.asarray(targeting.weights, dtype=float)).reshape(-1, 1)
         problem.landmark_op = problem.landmark_op * scales
@@ -1186,19 +1193,20 @@ def _annotate_report(problem: _ChainProblem, targeting: LandmarkTargeting) -> No
     `refine_reason`, `sigma_units`, `target_weight` and `refine_shift_units`.
     Additive keys only; nothing existing is overwritten.
     """
-    row = 0
-    for entry in problem.landmark_report:
-        if entry.get("reason") != "ok":
-            continue
-        if row >= len(targeting.entries):
-            break
-        refined = targeting.entries[row]
+    kept = [entry for entry in problem.landmark_report if entry.get("reason") == "ok"]
+    if len(kept) != len(targeting.entries):
+        # A silent partial annotation would hide a report/targeting mismatch
+        # and mislead every downstream summary — refuse with the counts.
+        raise ValueError(
+            f"landmark report keeps {len(kept)} correspondences but the targeting carries "
+            f"{len(targeting.entries)} entries — the two were built from different problems"
+        )
+    for entry, refined in zip(kept, targeting.entries, strict=True):
         entry["target_mode"] = targeting.mode
         entry["refine_reason"] = refined["reason"]
         entry["sigma_units"] = refined["sigma_units"]
         entry["target_weight"] = refined.get("weight", 1.0)
         entry["refine_shift_units"] = refined["shift_units"]
-        row += 1
 
 
 def landmark_meta(problem: _ChainProblem, *, mode: str) -> dict:
