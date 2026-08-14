@@ -42,7 +42,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **D** — dconn §4 · Deckung §3 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · Duktus §1 · Duktus-Prior §1
 - **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2
 - **F** — Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Frozen-Reference-Regel §4 · Fuge §1
-- **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4
+- **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **K** — Kettenfit §3 · Kill-Kriterium §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
@@ -991,6 +991,15 @@ Retraces. Ein Kandidat ist wörtlich eine `word_instances`-Zeile; die
 Kriterien sind vorregistriert (qualitaetsmetrik.md §14), ein
 Strukturdefekt vetot jeden Distanzgewinn. *Technisch:* geplant als
 `tools/tracebench/` → proposals/tintenfolger.md §2
+
+**grid_step_crop_px** — der Präzisionsboden einer InkSight-Bahn: das
+Modell quantisiert seine Ausgabe auf ein 225-Stufen-Gitter über dem auf
+Langseite 224 skalierten, weiß gepaddeten Eingabebild, also beträgt ein
+Gitterschritt `max(Langseite/224, 1)` Crop-Pixel — bei unseren 154–310 px
+breiten Wort-Crops bis ~1,4 px. Die Spalte wird je Wort mitreportet,
+damit dieser Anteil des gemessenen Fehlers nie stillschweigend dem
+Kandidaten zugerechnet wird. *Technisch:*
+`tools/inksight/prepare.py` (`frames.json`) → proposals/tintenfolger.md §4
 
 **Bewertungsdurchgang** *(labelling round)* — eine Runde, in der ein Mensch
 gefittete Buchstaben **blind** beurteilt: je Bildschirm ein Ausschnitt der
