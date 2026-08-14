@@ -3682,3 +3682,42 @@ aus den DATENTERMEN kommen — Arm ⑤ (Overlap-Hypothese §13) und vor
 allem Arm ⑥ (Landmark-Term mit extrapolierten Schnittpunkt-Zielen),
 BEVOR irgendeine weitere λ-Feinabstimmung sinnvoll ist. Kein Default
 wird adoptiert; `FOLLOW_*` bleibt `provisional`.
+
+### Arme ⑤ + ⑥ `aug14` — Overlap freigesprochen, die Korrespondenz-Kappe gefunden
+
+**Arm ⑤ (Overlap {0,2 · 0}, ein Faktor gegen die λ=1,0-Schwester):** Die
+§13-Hypothese „Overlap als selbstgebaute Bremse" ist BEANTWORTET — der
+Term ist es nicht. Ihn abzuschalten macht alles mild besser (isoliert:
+dtw −0,2 %, Sign 6/8; Kreuzungen m+s 43 → 38, Retrace-Ratio
+2,09 → 1,87), aber gegen die Chain-Baseline bleibt das Struktur-Veto
+(26 → 38). Keine Adoption; der Freispruch des Terms ist der Befund.
+
+**Arm ⑥ (Landmark 0 / kalibriert, extrapolierte vs. rohe Ziele):**
+Zwei Vorstufen, beide gemessen statt geglaubt: (a) Die Kalibrierung
+(Parität w = 0,507; Sprossen {0,005 · 0,051 · 0,507}) lief nach der
+§11c-Disziplin am Optimum. (b) Die Extrapolation feuerte auf echter
+Tinte zuerst 0/21 — Diagnose auf den realen Skeletten ergab drei
+Mechanismen (euklidisches Annulus-Verschweißen der Schenkel; Thinning
+spaltet eine Kreuzung in zwei Y-Junctions mit 1,2–1,7 Strichbreiten
+Brücke; Sehnen- statt Krümmungstoleranz), Fix per geodätischem Walk +
+krümmungs-abgeleiteter 35°-Toleranz → 8 der 9 verfeinerbaren
+Junctions feuern (Verschiebungen 2,6–4,5 px, im publizierten
+Junction-Bound). Messung dann: mittlere Sprosse isoliert NULL
+(p = 1,0, ext ≡ raw im Rauschen); volle Parität punktweise SIGNIFIKANT
+schlechter (dtw +0,9 %, Sign 8/9, p = 0,039) bei milder
+Strukturlinderung (m+s 43 → 39, bester Folger-Wert — Veto vs. Baseline
+26 bleibt). Keine Adoption, `FOLLOW_*` bleibt `provisional`.
+
+**Der Befund, der beide Arme überragt — die Korrespondenz-Kappe:**
+12 der 21 Landmark-Korrespondenzen der Dev-Wörter zeigen auf Tinte,
+die GAR KEINE Kreuzung trägt (5 Touch-Points mit 2 Schenkeln, 7
+T-Junctions mit 3) — die Bahn kreuzt sich dort, die Tinte nur berührt
+sich. Solange die Korrespondenz diese Klassen nicht kennt, zieht jeder
+Landmark-Zug an der Hälfte der Ziele in eine Struktur, die es nicht
+gibt — das deckelt jeden möglichen Effekt und erklärt das
+Voll-Paritäts-Ergebnis. **Nächste vorregistrierte Hypothese:
+Klassenbewusstsein der Korrespondenz** (Touch-Points/T-Junctions gar
+nicht erst als Kreuzungsziele; folger-seitig umsetzbar, die
+eingefrorene `landmarks.py` bleibt unberührt) — NICHT mehr Gewicht,
+nicht mehr λ-Feinabstimmung. Artefakte: Chronik `arm5-overlap` +
+`arm6-landmark`.
