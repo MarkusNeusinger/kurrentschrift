@@ -363,13 +363,26 @@ def retrace_anchor_mask(problem: _ChainProblem, params: np.ndarray | None = None
         return out
     dominant = np.argmax(np.abs(problem.sampling_op), axis=1)  # sample -> plan anchor
     where = np.flatnonzero(flagged)
-    cuts = np.flatnonzero(np.diff(where) != 1) + 1
-    for zone in np.split(where, cuts):
-        if not len(zone):
-            continue
+    stroke_of = np.searchsorted(np.asarray(_stroke_starts_of(problem), dtype=int), where, side="right")
+    for zone in _zone_runs(where, stroke_of):
         plan = dominant[zone]
         out[np.unique(problem.idx[int(plan.min()) : int(plan.max()) + 1])] = True
     return out
+
+
+def _zone_runs(where: np.ndarray, stroke_of: np.ndarray) -> list[np.ndarray]:
+    """Split flagged sample indices into zones: contiguous AND within one stroke.
+
+    Index contiguity alone would merge two zones whose flagged samples happen
+    to be adjacent across a pen lift — and a zone that straddles a lift cages
+    anchors the pen never retraced (review finding on the follower PR). The
+    stroke id is the second cut condition, mirroring the pen-lift separation
+    `retrace_sample_mask` already enforces on the detector side.
+    """
+    if not len(where):
+        return []
+    cuts = np.flatnonzero((np.diff(where) != 1) | (np.diff(stroke_of) != 0)) + 1
+    return [zone for zone in np.split(where, cuts) if len(zone)]
 
 
 def apply_retrace_guard(problem: _ChainProblem, mask: np.ndarray, *, prox_weight: float) -> _ChainProblem:

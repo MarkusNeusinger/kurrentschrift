@@ -464,3 +464,16 @@ def test_ks_follow_env_overrides_never_touch_the_chain(monkeypatch: pytest.Monke
             monkeypatch.delenv(env, raising=False)
         importlib.reload(follow_mod)
         importlib.reload(chain_mod)
+
+
+def test_a_zone_never_straddles_a_pen_lift() -> None:
+    # Review finding: index-adjacent flagged samples across a stroke boundary
+    # are TWO zones — a merged one would cage anchors the pen never retraced.
+    from tools.pairlab.follow import _zone_runs
+
+    where = np.asarray([10, 11, 12, 13, 14, 15])
+    same_stroke = np.asarray([0, 0, 0, 0, 0, 0])
+    assert [z.tolist() for z in _zone_runs(where, same_stroke)] == [[10, 11, 12, 13, 14, 15]]
+    across_lift = np.asarray([0, 0, 0, 1, 1, 1])  # lift between samples 12 and 13
+    assert [z.tolist() for z in _zone_runs(where, across_lift)] == [[10, 11, 12], [13, 14, 15]]
+    assert _zone_runs(np.asarray([], dtype=int), np.asarray([], dtype=int)) == []
