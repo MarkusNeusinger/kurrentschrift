@@ -186,8 +186,9 @@ def structure_marks(frame: BenchFrame, strokes_bench: list[np.ndarray]) -> Struc
     """Display-only detections, at the ruler's own frozen thresholds.
 
     The counters stay the ruler — this reads the same frozen primitives so a
-    human can audit the detector against the ink (owner request 2026-08-15:
-    „vielleicht ist das Detektieren noch gar nicht sauber"). One distinction
+    human can audit the detector against the ink (the owner's standing check:
+    when the detected structures disagree with what the ductus prescribes,
+    something is still wrong — possibly the detection itself). One distinction
     the ruler does not draw yet is made VISIBLE here: a retrace pass whose
     partner samples lie in ANOTHER pen stroke is an overlap (a mark riding the
     body, e.g. the t crossbar along the entry connector), not an out-and-back
