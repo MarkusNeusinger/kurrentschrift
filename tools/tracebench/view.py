@@ -248,6 +248,103 @@ def trace_paths(
     return layer_paths(frame, strokes, registration_px, xh_px)[0]
 
 
+@dataclass(frozen=True)
+class SollRow:
+    """One ductus-expectation row of the numbers table (not a drawn layer)."""
+
+    label: str
+    strokes: int | None  # None renders as a dash (a letter sum has no stroke count)
+    crossings: int
+    zones: int
+    per_letter: str = ""  # hover title: the budget letter by letter
+
+
+def ductus_soll(
+    ids: Sequence[str], *, which: str, style: str, fixtures_root: Path
+) -> tuple[dict[str, tuple[SollRow, ...]], list[str]]:
+    """Per word: what the DUCTUS prescribes, for the owner's manual check.
+
+    Two rows per word, both counted by the same frozen detectors as the layer
+    columns: the sum over the ISOLATED letters (each slot's own strokes,
+    including its marks — hover shows the budget letter by letter), and the
+    whole COMPOSITION with its generated connectors. The difference between
+    the two IS the joins' contribution (an entering connector can close a
+    loop the isolated letter does not have, e.g. the e), and a hand count
+    outside both is a finding — in the template, the join grammar or the
+    trace. Composition comes from the frozen fixture cases; a root without
+    them degrades to no rows and a warning, never to a failed page.
+    """
+    try:
+        from tools.wordlab.cases import iter_fixture_word_cases
+        from tools.wordlab.derive import derive_word
+
+        cases = {
+            c.id: c
+            for c in iter_fixture_word_cases(which=which, style=style, only=list(ids), fixtures_root=fixtures_root)
+        }
+    except Exception as exc:  # noqa: BLE001 — the page must render without Soll rather than not at all
+        return {}, [f"Duktus-Soll unavailable ({type(exc).__name__}: {exc}) — rows omitted"]
+    out: dict[str, tuple[SollRow, ...]] = {}
+    warnings: list[str] = []
+    for specimen_id in ids:
+        case = cases.get(specimen_id)
+        if case is None or not getattr(case, "scorable", True):
+            warnings.append(f"{specimen_id}: no scorable fixture case — Duktus-Soll omitted")
+            continue
+        try:
+            items = derive_word(case).composed["items"]
+        except Exception as exc:  # noqa: BLE001 — one word must not cost the page
+            warnings.append(f"{specimen_id}: derive failed ({type(exc).__name__}) — Duktus-Soll omitted")
+            continue
+        slots: dict[int, dict[str, Any]] = {}
+        comp: list[np.ndarray] = []
+        current: list[tuple[float, float]] = []
+        for item in items:
+            pts = [(float(x), float(y)) for x, y in item["centerline"]]
+            slot = item.get("slot_index")
+            if slot is not None:
+                info = slots.setdefault(slot, {"key": None, "strokes": []})
+                if item.get("glyph_key") and not item.get("diacritic"):
+                    info["key"] = item["glyph_key"]
+                info["strokes"].append(np.asarray(pts, dtype=float))
+            if item.get("lift") and current:
+                comp.append(np.asarray(current, dtype=float))
+                current = []
+            for p in pts:
+                if current and abs(current[-1][0] - p[0]) < 1e-12 and abs(current[-1][1] - p[1]) < 1e-12:
+                    continue
+                current.append(p)
+        if current:
+            comp.append(np.asarray(current, dtype=float))
+        sum_cross = sum_zones = 0
+        cells: list[str] = []
+        for slot in sorted(slots):
+            info = slots[slot]
+            n_cross = int(len(crossing_points(info["strokes"])))
+            mids, _arc = retrace_segments(info["strokes"])
+            n_zones = int(np.asarray(mids).reshape(-1, 2).shape[0])
+            sum_cross += n_cross
+            sum_zones += n_zones
+            cells.append(f"{info['key'] or '?'} {n_cross}/{n_zones}")
+        comp_mids, _comp_arc = retrace_segments(comp)
+        out[specimen_id] = (
+            SollRow(
+                label="Duktus-Soll (Σ Buchstaben)",
+                strokes=None,
+                crossings=sum_cross,
+                zones=sum_zones,
+                per_letter="Kreuzungen/Zonen je Buchstabe: " + " · ".join(cells),
+            ),
+            SollRow(
+                label="Komposition (mit Verbindern)",
+                strokes=len(comp),
+                crossings=int(len(crossing_points(comp))),
+                zones=int(np.asarray(comp_mids).reshape(-1, 2).shape[0]),
+            ),
+        )
+    return out, warnings
+
+
 # -------------------------------------------------------------------- colours
 
 
@@ -355,6 +452,7 @@ _CSS = """
   .detail { color: #b45309; }
   .hint { color: #666; margin-top: 8px; }
   section.word > h2 { font-size: 16px; margin: 0 0 8px; }
+  tr.soll-row td { color: #6b6b64; background: #f4f4ee; font-style: italic; }
   g.structure circle.cross { fill: none; stroke-width: 1.4; }
   g.structure path.retrace { fill: none; stroke-width: 7; opacity: 0.22; }
   g.structure path.retrace.overlap { stroke-dasharray: 5 4; stroke-width: 4; opacity: 0.4; }
@@ -528,7 +626,23 @@ def _numbers_row(layer: Layer) -> str:
     )
 
 
-def word_section(index: int, entry: ReferenceEntry, crop_uri: str, size: tuple[int, int], layers: list[Layer]) -> str:
+def _soll_row(row: SollRow) -> str:
+    title = f' title="{html.escape(row.per_letter, quote=True)}"' if row.per_letter else ""
+    strokes = "–" if row.strokes is None else str(row.strokes)
+    return (
+        f'<tr class="soll-row"{title}><td>◇ {html.escape(row.label)}</td><td>{strokes}</td>'
+        f"<td>{row.crossings}</td><td>{row.zones}</td>" + "<td>–</td>" * 4 + "</tr>"
+    )
+
+
+def word_section(
+    index: int,
+    entry: ReferenceEntry,
+    crop_uri: str,
+    size: tuple[int, int],
+    layers: list[Layer],
+    soll: tuple[SollRow, ...] = (),
+) -> str:
     """One word's stage, legend and numbers table — hidden unless it is current."""
     width, height = size
     # Paint order is not reading order: the hand reference goes LAST so that no
@@ -539,7 +653,13 @@ def word_section(index: int, entry: ReferenceEntry, crop_uri: str, size: tuple[i
     ]
     svg_layers = "".join(_layer_svg(layer, f"w{index}-l{n}") for n, layer in enumerate(painted))
     legend = "".join(_legend_item(layer) for layer in layers)
-    rows = "".join(_numbers_row(layer) for layer in layers)
+    reference_rows = [layer for layer in layers if layer.kind == "reference"]
+    candidate_rows = [layer for layer in layers if layer.kind != "reference"]
+    rows = (
+        "".join(_numbers_row(layer) for layer in reference_rows)
+        + "".join(_soll_row(row) for row in soll)
+        + "".join(_numbers_row(layer) for layer in candidate_rows)
+    )
     return (
         f'<section class="word" data-id="{html.escape(entry.specimen_id, quote=True)}" '
         f'data-word="{html.escape(entry.word, quote=True)}" data-xh="{entry.frame.xh:.4f}" hidden>'
@@ -598,7 +718,12 @@ eingeschalteten Verfahren gleichzeitig in Schreibreihenfolge — Strichdauer pro
 „Struktur“ zeigt je Ebene die DETEKTIERTEN Strukturen an den eingefrorenen Schwellen des Lineals:
 Ringe = Schleifenkreuzungen, breite Bänder = Retrace-Zonen — gestrichelt, wenn die Zone eine
 ÜBERLAGERUNG zweier Striche ist (z.&nbsp;B. der t-Querstrich über dem Körper) statt eines
-Hin-und-zurück in einem Strich. So prüft das Auge den Detektor gegen die Tinte.</div>
+Hin-und-zurück in einem Strich. So prüft das Auge den Detektor gegen die Tinte. Die ◇-Zeilen sind
+das DUKTUS-SOLL: die Summe der isolierten Buchstaben (Maus darüber zeigt das Budget je Buchstabe)
+und die ganze Komposition mit Verbindern — die Differenz der beiden ist der Beitrag der
+Verbindungen (ein einlaufender Verbinder kann eine Schleife schließen, die der Buchstabe allein
+nicht hat). Weicht die Hand von beiden ab, ist etwas falsch — im Template, in der Join-Grammatik
+oder in der Nachfahrung.</div>
 <script>{js}</script>
 </body>
 </html>
@@ -616,6 +741,7 @@ def build_page(
     *,
     title: str,
     meta: str,
+    soll: dict[str, tuple[SollRow, ...]] | None = None,
 ) -> tuple[str, list[str]]:
     """`(html, warnings)` — the page over the selected words."""
     colors = assign_colors([label for label, _ in candidates])
@@ -671,7 +797,9 @@ def build_page(
                     numbers=(reports.get(label) or {}).get(specimen_id),
                 )
             )
-        sections.append(word_section(len(sections), entry, crop_uri, size, layers))
+        sections.append(
+            word_section(len(sections), entry, crop_uri, size, layers, soll=(soll or {}).get(specimen_id, ()))
+        )
         # The tab label is the SPECIMEN id, not the word text: repeated words
         # ("und", "und-2", "und-3") would otherwise render three identical tabs
         # and make the arrow navigation ambiguous. For non-repeats id == word.
@@ -736,8 +864,9 @@ def main(argv: list[str] | None = None) -> int:
         f"{args.style} · Satz {args.which} · Split {args.split} · {len(ids)} Wörter · Wurzel {root.name} · "
         f"Verfahren: {', '.join([REFERENCE_LABEL, *labels])}" + (f" · {args.title}" if args.title else "")
     )
-    page, warnings = build_page(reference, ids, candidates, reports, title=args.title, meta=meta)
-    for line in warnings:
+    soll, soll_warnings = ductus_soll(ids, which=args.which, style=args.style, fixtures_root=args.fixtures)
+    page, warnings = build_page(reference, ids, candidates, reports, title=args.title, meta=meta, soll=soll)
+    for line in [*soll_warnings, *warnings]:
         print(f"  {line}")
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
