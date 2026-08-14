@@ -3801,3 +3801,63 @@ Arm-①-Befund, hier ein zweites Mal bestätigt). `FOLLOW_*` bleibt
 `extrapolated_classed` der empfohlene Modus (kostenlos schlägt
 schädlich), der Default bleibt bis zum Owner-Go unverändert.
 Artefakte: Chronik `arm6b-classed`.
+
+### Struktur-Zähler v2 `aug16` — Vorregistrierung & Re-Baseline-Deklaration
+
+Anlass: das manuelle Owner-Audit der 10 Dev-Wörter über die
+Duell-Seite — die erste systematische Prüfung der Zähler gegen das
+Duktus-Wissen statt gegen sich selbst. Befund: v1 zählte KONSISTENT
+(dieselben Detektoren auf beiden Seiten, Identitäts-Gate intakt), aber
+teils die falschen Kategorien: ein 17,8°/0,48-xh-Grenzgänger am
+unter-e ist eine Retrace-Ablösung, keine Kreuzung; die
+15°-Winkel-Schwelle schneidet am linken-k mitten durch dieselbe
+Abzweig-Geometrie (12,1°/14,0°/9,0° verworfen, 82°/72° gezählt); der
+mit-Kringel gegen den t-Anstrich (Partner-Lücke 4,3 xh entlang des
+Wegs) ist Vorbeischreiben, kein Retrace; die laden-l-a-Spitze
+(Pass-Arc 0,16/0,24 xh) ist eine auseinanderlaufende Spitze, keine
+Zone.
+
+**Die drei Regeln (Owner-Spezifikation, wörtlich übernommen):**
+
+1. **Kreuzung nur bei DURCHSTOSS** — eine Linie kommt eindeutig auf
+   einer Seite herein und auf der anderen wieder heraus. Formal: TLS-
+   Gerade durch das ±`PIERCE_WINDOW_UNITS`-Fenster (0,25 xh, nie über
+   eine Strichgrenze) JEDES Passes; die Fensterenden des jeweils
+   anderen Passes müssen auf ENTGEGENGESETZTEN Seiten liegen, beide
+   mit |Abstand| ≥ `PIERCE_MARGIN_UNITS` = 0,05 xh (≈ halbe
+   Strichbreite: der andere Strich muss jenseits der eigenen Tinte
+   wieder austreten). Beide Pässe müssen durchstoßen. Die
+   15°-Winkel-Schwelle ENTFÄLLT (der Durchstoß subsumiert sie); die
+   Bogen-Trennung ≥ 0,35 xh bleibt (der Wobble-Pin bleibt gültig).
+   Gemessen an den Dev-Händen: alle sechs Owner-Streitfälle fallen
+   richtig, und die Wort-Zählungen rücken auf die Duktus-Budgets
+   (Wer 5 → 3 = W2+r1, muß 3 → 1 = ß-Budget).
+2. **Retrace nur bei bogen-nahem Partner** — Hin-und-zurück heißt: die
+   Partner-Samples liegen entlang des Wegs UNMITTELBAR daneben.
+   Pass-Klassifikation: Partner im ANDEREN Strich →
+   **Überlagerung**; Partner-Lücke > `RETRACE_MAX_PARTNER_GAP_UNITS`
+   = 1,0 xh → **Berührung** (Vorbeischreiben, mit oder ohne
+   Tinten-Kontakt); Pass-Arc < `RETRACE_MIN_PASS_ARC_UNITS` = 0,30 xh
+   → Spitzen-Graze, keine Zone. Konstanten aus der Messung: echte
+   Zonen haben Lücke 0,38–0,66 und Arc ≥ 0,36; die Owner-Fälle Lücke
+   1,16–8,34 bzw. Arc ≤ 0,24 — der Schnitt bei 1,0/0,30 liegt
+   jeweils mitten im leeren Band.
+3. **Berührung und Überlagerung sind eigene, BERICHTETE Klassen** —
+   gezählt und ausgewiesen (Report/Seite), nie Teil eines Loss.
+
+**Validierung (vorregistriert):** die Owner-Verdikte werden als Tests
+gepinnt — unter-e: keine Kreuzung; linken-k: beide Abzweig-Klassen
+gleich behandelt; mit-t: genau EINE Retrace-Zone im selben Strich, die
+Querstrich-Fälle Überlagerung; laden-l-a: keine Zone; der
+Wobble-Out-and-back bleibt Retrace ohne Ring; und-d bleibt Kreuzung.
+Das Identitäts-Gate (`--candidate authored`) muss exakt bestehen
+bleiben. dtw/aiou/Chamfer/Marken/Lifts sind NICHT berührt.
+
+**Re-Baseline-Deklaration:** `tools/tracebench/counters.py` verlässt
+mit diesem Eintrag DATIERT den Freeze — die v1-Strukturzahlen der
+`aug14`-Baseline und der Arme ①⑤⑥⑥b bleiben gültig und archiviert
+(Chronik), sind aber mit v2-Zahlen NICHT vergleichbar; die
+v2-Baseline-Tabelle folgt in diesem Eintrag nach der Implementierung.
+`landmarks.py`, `core/geometry.py` und der Landmark-Term des Folgers
+bleiben eingefroren (der Chain-Korrespondenz-Zensus §13a behält seine
+eigenen Schwellen).
