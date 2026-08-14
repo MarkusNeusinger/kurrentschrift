@@ -83,10 +83,9 @@ def test_marks_are_flagged_by_the_classifier_not_by_the_viewer() -> None:
 
 
 def test_structure_marks_separate_overlap_from_retrace_and_place_rings() -> None:
-    """The audit layer (owner request): rings are the frozen crossing detector's
-    points in crop pixels, and a retrace pass whose partner samples lie in
-    ANOTHER pen stroke is an OVERLAP (mark riding the body), not an
-    out-and-back retrace — the two must be distinguishable on the page.
+    """The audit layer draws the COUNTERS' v2 classes: rings are the piercing
+    crossings in crop pixels, and every kept anti-parallel pass carries its
+    class — retrace, touch or overlap — so the page and the ruler agree.
     """
     frame = BenchFrame(xh=XH_PX, baseline_row=BASELINE_ROW, entry_id="die")
 
@@ -94,8 +93,8 @@ def test_structure_marks_separate_overlap_from_retrace_and_place_rings() -> None
     # (the owner's pinned question: a wobbly out-and-back is not a crossing).
     out_and_back = [[0.0, 0.5], [1.5, 0.5], [0.05, 0.52]]
     marks = structure_marks(frame, frame.trace_to_bench([out_and_back], REGISTRATION, XH_PX))
-    assert marks.retraces
-    assert all(overlap is False for _d, overlap in marks.retraces)
+    assert marks.passes
+    assert all(cls == "retrace" for _d, cls in marks.passes)
     assert marks.crossings == []
     # …and the table's number is the ruler's MERGED zone count: the two passes
     # of one out-and-back are one zone, not two.
@@ -105,8 +104,8 @@ def test_structure_marks_separate_overlap_from_retrace_and_place_rings() -> None
     body = [[0.0, 0.5], [2.0, 0.5]]
     rider = [[1.8, 0.55], [0.2, 0.55]]
     marks = structure_marks(frame, frame.trace_to_bench([body, rider], REGISTRATION, XH_PX))
-    assert marks.retraces
-    assert any(overlap for _d, overlap in marks.retraces)
+    assert marks.passes
+    assert any(cls == "overlap" for _d, cls in marks.passes)
 
     # Two strokes crossing at a healthy angle: exactly one ring, in crop px.
     marks = structure_marks(

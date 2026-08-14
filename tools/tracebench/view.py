@@ -46,17 +46,9 @@ from typing import Any, Sequence
 import numpy as np
 from PIL import Image
 
-from core.geometry import detect_retrace_pairs, stroke_bounds
 from tools.tracebench.candidates import STATUS_OK, Candidate, file_provider
-from tools.tracebench.counters import (
-    RESAMPLE_STEP_UNITS,
-    RETRACE_MIN_PAIRS,
-    RETRACE_PROX_UNITS,
-    crossing_points,
-    resampled_strokes,
-    retrace_segments,
-)
-from tools.tracebench.frames import BenchFrame, arc_length, classify_strokes, concat_strokes
+from tools.tracebench.counters import classified_pass_points, crossing_points, retrace_segments
+from tools.tracebench.frames import BenchFrame, arc_length, classify_strokes
 from tools.tracebench.reference import DEFAULT_FIXTURES_DIR, Reference, ReferenceEntry, load_reference
 from tools.tracebench.run import find_fixture_root
 from tools.tracebench.sets import TRACEBENCH_DEV_IDS
@@ -180,47 +172,27 @@ class StructureMarks:
     """The DETECTED structures of one layer, ready to draw over its trace."""
 
     crossings: list[tuple[float, float]]  # crop px
-    retraces: list[tuple[str, bool]]  # (pass path data in crop px, overlap across strokes)
+    passes: list[tuple[str, str]]  # (pass path data in crop px, class: retrace | touch | overlap)
     zones: int = 0  # merged retrace ZONES — the ruler's own count (`retrace_segments`)
 
 
 def structure_marks(frame: BenchFrame, strokes_bench: list[np.ndarray]) -> StructureMarks:
-    """Display-only detections, at the ruler's own frozen thresholds.
+    """Display-only detections — the COUNTERS' own v2 classification, drawn.
 
-    The counters stay the ruler — this reads the same frozen primitives so a
-    human can audit the detector against the ink (the owner's standing check:
-    when the detected structures disagree with what the ductus prescribes,
-    something is still wrong — possibly the detection itself). One distinction
-    the ruler does not draw yet is made VISIBLE here: a retrace pass whose
-    partner samples lie in ANOTHER pen stroke is an overlap (a mark riding the
-    body, e.g. the t crossbar along the entry connector), not an out-and-back
-    retrace of one stroke — the page dashes it so the two read differently.
+    Everything comes from `tools.tracebench.counters` (§14 v2): the piercing
+    crossings as rings, and every kept anti-parallel pass with its class —
+    retrace (one stroke writing the same ink twice), touch (writing past each
+    other) and overlap (a mark riding the body). The page draws what the ruler
+    counts, so the owner's audit reads one truth, not two.
     """
-    pts, starts = concat_strokes(resampled_strokes(list(strokes_bench), RESAMPLE_STEP_UNITS))
-    if len(pts) < 2:
-        return StructureMarks(crossings=[], retraces=[])
-    crossings = [(float(x), float(y)) for x, y in frame.bench_to_crop_px(crossing_points(list(strokes_bench)))]
-    zone_mids, _zone_arc = retrace_segments(list(strokes_bench))
+    strokes = [np.asarray(s, dtype=float).reshape(-1, 2) for s in strokes_bench]
+    crossings = [(float(x), float(y)) for x, y in frame.bench_to_crop_px(crossing_points(strokes))]
+    zone_mids, _zone_arc = retrace_segments(strokes)
     zones = int(np.asarray(zone_mids).reshape(-1, 2).shape[0])
-    idx, partner = detect_retrace_pairs(pts[:, 0], pts[:, 1], starts, prox_px=RETRACE_PROX_UNITS)
-    retraces: list[tuple[str, bool]] = []
-    if len(idx):
-        stroke_of = np.zeros(len(pts), dtype=int)
-        for s, (lo, hi) in enumerate(stroke_bounds(len(pts), starts)):
-            stroke_of[lo:hi] = s
-        partner_of = dict(zip(idx.tolist(), partner.tolist(), strict=True))
-        run: list[int] = []
-        for i in [*np.sort(idx).tolist(), None]:
-            contiguous = bool(run) and i is not None and i == run[-1] + 1 and stroke_of[i] == stroke_of[run[-1]]
-            if contiguous:
-                run.append(i)
-                continue
-            if len(run) >= RETRACE_MIN_PAIRS:
-                seg = frame.bench_to_crop_px(pts[run[0] : run[-1] + 1])
-                overlap = any(stroke_of[int(partner_of[k])] != stroke_of[k] for k in run)
-                retraces.append((stroke_path_data(seg), overlap))
-            run = [] if i is None else [i]
-    return StructureMarks(crossings=crossings, retraces=retraces, zones=zones)
+    passes = [
+        (stroke_path_data(frame.bench_to_crop_px(pass_pts)), cls) for pass_pts, cls in classified_pass_points(strokes)
+    ]
+    return StructureMarks(crossings=crossings, passes=passes, zones=zones)
 
 
 def layer_paths(
@@ -454,8 +426,9 @@ _CSS = """
   section.word > h2 { font-size: 16px; margin: 0 0 8px; }
   tr.soll-row td { color: #6b6b64; background: #f4f4ee; font-style: italic; }
   g.structure circle.cross { fill: none; stroke-width: 1.4; }
-  g.structure path.retrace { fill: none; stroke-width: 7; opacity: 0.22; }
-  g.structure path.retrace.overlap { stroke-dasharray: 5 4; stroke-width: 4; opacity: 0.4; }
+  g.structure path.zone { fill: none; stroke-width: 7; opacity: 0.22; }
+  g.structure path.zone.overlap { stroke-dasharray: 5 4; stroke-width: 4; opacity: 0.4; }
+  g.structure path.zone.touch { stroke-dasharray: 1.5 4; stroke-width: 4; opacity: 0.4; stroke-linecap: round; }
   body.nostructure g.structure { display: none; }
 """
 
@@ -596,15 +569,15 @@ def _layer_svg(layer: Layer, layer_id: str) -> str:
         for s in layer.strokes
     )
     structure = ""
-    if layer.structure and (layer.structure.crossings or layer.structure.retraces):
+    if layer.structure and (layer.structure.crossings or layer.structure.passes):
         rings = "".join(
             f'<circle class="cross" cx="{x:.{COORD_DECIMALS}f}" cy="{y:.{COORD_DECIMALS}f}" '
             f'r="{CROSS_MARK_RADIUS_PX:g}" vector-effect="non-scaling-stroke"></circle>'
             for x, y in layer.structure.crossings
         )
         zones = "".join(
-            f'<path class="retrace{" overlap" if overlap else ""}" d="{d}" vector-effect="non-scaling-stroke"></path>'
-            for d, overlap in layer.structure.retraces
+            f'<path class="zone {cls}" d="{d}" vector-effect="non-scaling-stroke"></path>'
+            for d, cls in layer.structure.passes
         )
         structure = f'<g class="structure">{zones}{rings}</g>'
     return (
@@ -731,10 +704,12 @@ def render_html(sections: list[str], tabs: list[tuple[str, str]], *, title: str,
 <div class="hint">Die Seite öffnet mit der FERTIGEN Bahn; „Schreiben abspielen“ schreibt alle
 eingeschalteten Verfahren gleichzeitig in Schreibreihenfolge — Strichdauer proportional zur Bogenlänge
 (konstante Federgeschwindigkeit), jedes Absetzen eine echte Pause. Pfeiltasten ←/→ wechseln das Wort.
-„Struktur“ zeigt je Ebene die DETEKTIERTEN Strukturen an den eingefrorenen Schwellen des Lineals:
-Ringe = Schleifenkreuzungen, breite Bänder = Retrace-Zonen — gestrichelt, wenn die Zone eine
-ÜBERLAGERUNG zweier Striche ist (z.&nbsp;B. der t-Querstrich über dem Körper) statt eines
-Hin-und-zurück in einem Strich. So prüft das Auge den Detektor gegen die Tinte. Die ◇-Zeilen sind
+„Struktur“ zeigt je Ebene die DETEKTIERTEN Strukturen der v2-Zähler (qualitaetsmetrik §14):
+Ringe = DURCHSTOSS-Kreuzungen (eine Linie kommt auf einer Seite herein und auf der anderen
+heraus), breite Bänder = Retrace-Zonen (ein Strich schreibt dieselbe Tinte zweimal, bogen-nah),
+gestrichelt = ÜBERLAGERUNG zweier Striche (z.&nbsp;B. der t-Querstrich über dem Körper),
+gepunktet = BERÜHRUNG (Vorbeischreiben — nahe und entgegengesetzt, aber mit langem Weg
+dazwischen). So prüft das Auge den Zähler gegen die Tinte. Die ◇-Zeilen sind
 das DUKTUS-SOLL: die Summe der isolierten Buchstaben (Maus darüber zeigt das Budget je Buchstabe)
 und die ganze Komposition mit Verbindern — die Differenz der beiden ist der Beitrag der
 Verbindungen (ein einlaufender Verbinder kann eine Schleife schließen, die der Buchstabe allein

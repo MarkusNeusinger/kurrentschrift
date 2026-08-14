@@ -25,7 +25,13 @@ from typing import Any
 import numpy as np
 
 from tools.tracebench.candidates import STATUS_FAILED, STATUS_OK, Candidate
-from tools.tracebench.counters import RESAMPLE_STEP_UNITS, count_crossings, count_retraces, resampled_strokes
+from tools.tracebench.counters import (
+    RESAMPLE_STEP_UNITS,
+    count_crossings,
+    count_retraces,
+    resampled_strokes,
+    structure_zones,
+)
 from tools.tracebench.frames import classify_strokes, concat_body, concat_strokes, lift_stats, match_marks
 from tools.tracebench.metric import aiou, chamfer, dtw
 from tools.tracebench.reference import ReferenceEntry
@@ -67,6 +73,10 @@ _TOTAL_COLUMNS = (
     "cross_ambiguous",
     "retrace_missing",
     "retrace_spurious",
+    "touch_ref",
+    "touch_cand",
+    "overlap_ref",
+    "overlap_cand",
     "direction_uncertain",
 )
 
@@ -241,6 +251,17 @@ def score_word(
         # nothing at all — a ratio against zero is not a number, and the two
         # arcs stay in the row for the reader.
         retrace_arc_ratio=(retraces.arc_cand / retraces.arc_ref) if retraces.arc_ref > 0 else None,
+    )
+    # The v2 classes beside the retrace (§14 `aug16`): writing PAST each other
+    # (touch) and a mark riding the body (overlap) — counted and reported per
+    # side, never matched and never part of any loss.
+    zones_ref = structure_zones(ref_strokes, resample_step=resample_step)
+    zones_cand = structure_zones(cand_strokes, resample_step=resample_step)
+    row.update(
+        touch_ref=len(zones_ref.touch_mids),
+        touch_cand=len(zones_cand.touch_mids),
+        overlap_ref=len(zones_ref.overlap_mids),
+        overlap_cand=len(zones_cand.overlap_mids),
     )
     row.update(lift_stats(ref_body, cand_body))
     flagged, compared = direction_audit(ref_body, cand_body)
