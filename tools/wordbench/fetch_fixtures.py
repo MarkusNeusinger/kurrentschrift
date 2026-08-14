@@ -518,17 +518,29 @@ def fetch(
     entries = load_sidecar_entries(source_id, which)
     source = client.get(f"/sources/{quote(source_id, safe='')}")
     style_id = source["style_id"]
-    style = client.get(f"/styles/{quote(style_id, safe='')}")
-    pair_rows = client.get(f"/sources/{quote(source_id, safe='')}/pair-instances")
-    word_rows = client.get(f"/sources/{quote(source_id, safe='')}/word-instances")
 
     if only:
         # Additive refresh of EXISTING roots — crops, masks, slots and
         # templates stay untouched, so no headline number is re-baselined.
-        # The branch itself is the exporter's, imported so the two paths
-        # cannot drift apart.
+        # Only the endpoints the selected artifact(s) need are read; the
+        # branch itself is the exporter's, imported so the two paths cannot
+        # drift apart.
+        pair_rows = (
+            client.get(f"/sources/{quote(source_id, safe='')}/pair-instances")
+            if only in ("pair-instances", "instances")
+            else []
+        )
+        word_rows = (
+            client.get(f"/sources/{quote(source_id, safe='')}/word-instances")
+            if only in ("word-instances", "instances")
+            else []
+        )
         _refresh_instance_artifacts(only, entries, out_dir / style_id, source_id, pair_rows, word_rows)
         return style_id
+
+    style = client.get(f"/styles/{quote(style_id, safe='')}")
+    pair_rows = client.get(f"/sources/{quote(source_id, safe='')}/pair-instances")
+    word_rows = client.get(f"/sources/{quote(source_id, safe='')}/word-instances")
 
     summaries = client.get(f"/sources/{quote(source_id, safe='')}/templates")
     have = {row["glyph_key"] for row in summaries if row.get("variant", 0) == 0}
