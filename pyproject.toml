@@ -26,7 +26,7 @@ dependencies = [
     "fastapi>=0.141.1",
     "uvicorn[standard]>=0.52.1",
     "pydantic>=2.10",
-    "pydantic-settings>=2.14.2",
+    "pydantic-settings>=2.15.0",
     "python-dotenv>=1.0.0",
     # Admin auth — Cloudflare Access JWT verification against the team JWKS.
     "pyjwt[crypto]>=2.13.0",
@@ -34,7 +34,7 @@ dependencies = [
     "sqlalchemy[asyncio]>=2.0.51",
     "asyncpg>=0.30.0",
     "pg8000>=1.31.0",
-    "alembic>=1.18.5",
+    "alembic>=1.19.0",
     "cloud-sql-python-connector[asyncpg,pg8000]>=1.21.0",
     "shapely>=2.1.2",
     "orjson>=3.11.9",
