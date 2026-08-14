@@ -20,7 +20,7 @@ import numpy as np
 import pytest
 from scipy.ndimage import binary_dilation
 
-from tools.pairlab.landmarks import polyline_self_intersections
+from tools.pairlab.landmarks import LANDMARK_MIN_ARC_SEPARATION_UNITS, polyline_self_intersections
 from tools.tracebench.counters import (
     RESAMPLE_STEP_UNITS,
     RETRACE_MIN_PAIRS,
@@ -290,7 +290,9 @@ def test_a_shallow_antiparallel_crossing_is_retrace_internal() -> None:
     exactly what this suppresses."""
     stroke = np.asarray([[-1.0, 0.0], [2.0, 0.0], [3.0, 0.6], [-2.0, -0.55]], dtype=float)
     raw = polyline_self_intersections(*concat_strokes(resampled_strokes([stroke])))
-    assert any(x.arc_separation >= 0.35 for x in raw), "the premise: the shallow pass really crosses"
+    assert any(x.arc_separation >= LANDMARK_MIN_ARC_SEPARATION_UNITS for x in raw), (
+        "the premise: the shallow pass really crosses"
+    )
     assert len(crossing_points([stroke])) == 0
 
 
@@ -314,7 +316,9 @@ def test_a_release_crossing_its_own_partner_limb_is_no_ring() -> None:
     healthy-crossing tests above)."""
     up_down_release = np.asarray([[0.0, 0.0], [0.0, 1.5], [0.06, 1.5], [0.06, 0.6], [-0.4, 0.4]], dtype=float)
     raw = polyline_self_intersections(*concat_strokes(resampled_strokes([up_down_release])))
-    assert any(x.arc_separation >= 0.35 for x in raw), "the premise: the release really crosses"
+    assert any(x.arc_separation >= LANDMARK_MIN_ARC_SEPARATION_UNITS for x in raw), (
+        "the premise: the release really crosses"
+    )
     assert len(crossing_points([up_down_release])) == 0
 
 

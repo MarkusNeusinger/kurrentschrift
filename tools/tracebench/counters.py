@@ -34,6 +34,7 @@ would not be comparable at all.
 
 from __future__ import annotations
 
+import math
 from dataclasses import asdict, dataclass, field
 
 import numpy as np
@@ -172,7 +173,7 @@ def crossing_points(strokes_bench: list[np.ndarray], *, resample_step: float = R
     n_window = max(2, int(round(PIERCE_WINDOW_UNITS / resample_step)))
     idx, partner = detect_retrace_pairs(pts[:, 0], pts[:, 1], starts, prox_px=RETRACE_PROX_UNITS)
     partner_of = dict(zip(idx.tolist(), partner.tolist(), strict=True))
-    near = max(1, int(round(CROSS_PARTNER_NEAR_UNITS / resample_step)))
+    near = max(1, math.ceil(CROSS_PARTNER_NEAR_UNITS / resample_step))
 
     def _partners_into(a_seg: int, b_seg: int) -> int:
         return sum(
