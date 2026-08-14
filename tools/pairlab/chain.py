@@ -1495,6 +1495,10 @@ def build_chain_problem(
     max_shift_units = float(max(crop_h, crop_w)) / unit_px
     letter_cap = MAX_ANCHOR_DELTA if max_anchor_delta is None else float(max_anchor_delta)
     conn_cap = CHAIN_CONNECTOR_MAX_DELTA if connector_max_delta is None else float(connector_max_delta)
+    if letter_cap <= 0.0 or conn_cap <= 0.0:
+        # A non-positive cap would hand L-BFGS-B an empty/inverted bound box —
+        # anchors silently frozen or an opaque solver failure. Fail loudly here.
+        raise ValueError(f"anchor caps must be positive, got letter {letter_cap!r} / connector {conn_cap!r}")
     bounds: list[tuple[float, float]] = [(-max_shift_units, max_shift_units)] * 2
     bounds += [(-FIT_DX_UNITS, FIT_DX_UNITS), (-FIT_DY_UNITS, FIT_DY_UNITS)] * len(block_col)
     for i, spec in enumerate(specs):

@@ -1685,6 +1685,14 @@ def test_the_bounds_kwargs_override_the_two_per_anchor_caps_only() -> None:
     assert default.bounds[-1] == (-chain_mod.MAX_ANCHOR_DELTA, chain_mod.MAX_ANCHOR_DELTA)
 
 
+def test_a_non_positive_anchor_cap_is_rejected_loudly() -> None:
+    """A zero/negative cap would hand L-BFGS-B an empty bound box — anchors
+    silently frozen or an opaque solver failure — so the assembly refuses."""
+    for kwargs in ({"max_anchor_delta": 0.0}, {"max_anchor_delta": -0.1}, {"connector_max_delta": 0.0}):
+        with pytest.raises(ValueError, match="anchor caps must be positive"):
+            _toy_problem(**kwargs)
+
+
 def test_the_skeleton_is_stored_for_consumers_and_never_read_by_the_objective() -> None:
     """`skel` is carried so a restart can redo its landmark correspondence
     against the SAME ink — the objective must not be able to notice it."""
