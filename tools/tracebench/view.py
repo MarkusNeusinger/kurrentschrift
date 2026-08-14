@@ -477,7 +477,12 @@ _JS = """
   }
   function finalState() {
     stop();
+    // The resting trace carries NO dash at all: dasharray + pathLength +
+    // non-scaling-stroke mis-scale in some engines and swallow the tail of
+    // the longest paths (seen: the hand trace of "unter" ending at the t).
+    // The dash exists only while the writing animation runs.
     [].slice.call(document.querySelectorAll('path.ink')).forEach(function (p) {
+      p.style.strokeDasharray = 'none';
       p.style.strokeDashoffset = '0';
     });
   }
@@ -499,18 +504,29 @@ _JS = """
         var len = parseFloat(p.getAttribute('data-len')) || 0;
         // Constant pen speed: the arc decides the duration, the rate only scales it.
         var dur = Math.max(80, (len / xh) / SPEED_XH_PER_S * 1000) / rate;
-        p.style.strokeDashoffset = '1';
         if (typeof p.animate === 'function') {
+          p.style.strokeDasharray = '1';
+          p.style.strokeDashoffset = '1';
           running.push(p.animate(
             [{ strokeDashoffset: '1' }, { strokeDashoffset: '0' }],
             { duration: dur, delay: t, fill: 'forwards', easing: 'linear' }
           ));
         } else {
+          p.style.strokeDasharray = 'none';
           p.style.strokeDashoffset = '0';
         }
         t += dur + PAUSE_MS / rate;  // the pen lift: a pause, never a bridge
       });
     });
+    // When the writing finishes NATURALLY, drop back into the dash-free
+    // resting state — otherwise the finished strokes keep their dash and the
+    // tail-clip this page just fixed can reappear. A cancelled run (word
+    // switch, replay) rejects the promise and has already been cleaned up.
+    if (running.length) {
+      Promise.all(running.map(function (a) { return a.finished; }))
+        .then(function () { finalState(); })
+        .catch(function () { /* cancelled elsewhere */ });
+    }
   }
   function setVisible(label, visible) {
     [].slice.call(document.querySelectorAll('g.layer')).forEach(function (g) {
@@ -574,7 +590,7 @@ def _numbers_cells(numbers: dict[str, Any] | None) -> str:
 def _layer_svg(layer: Layer, layer_id: str) -> str:
     paths = "".join(
         f'<path class="ink{" mark" if s.mark else ""}" d="{s.d}" data-len="{s.length:.2f}" '
-        f'pathLength="1" stroke-dasharray="1" stroke-dashoffset="0" '
+        f'pathLength="1" '
         f'stroke-width="{MARK_STROKE_WIDTH if s.mark else STROKE_WIDTH}" '
         f'vector-effect="non-scaling-stroke"></path>'
         for s in layer.strokes

@@ -108,6 +108,18 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `touch_point` (5) or `t_junction` (7), i.e. ink with no crossing to
   extrapolate. Still no weight adopted — the default stays 0.0.
 
+### Fixed
+
+- **The duel page's resting trace no longer loses its tail**
+  (`tools/tracebench/view.py`, owner report: the hand trace of „unter"
+  ended at the t on the page while the admin editor showed it complete —
+  the trace DATA was complete, x 9..269 of a 274 px crop). Cause: the
+  static `stroke-dasharray="1"` + `pathLength="1"` +
+  `vector-effect="non-scaling-stroke"` combination mis-scales the dash in
+  some engines and swallows the end of the longest paths. The resting
+  markup now carries no dash at all; the dash is applied by the JS only
+  while the writing animation runs and removed again in the final state.
+
 ### Changed
 
 - **Follower arms 5 and 6 recorded in the quality-metric §14** (doc-only):
