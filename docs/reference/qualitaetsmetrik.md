@@ -3577,3 +3577,58 @@ Metrik-Module, `landmarks.py`, `core/geometry.py`,
 eine datierte Re-Baseline. Artefakte des Laufs:
 `temp/tracebench-baseline-chain.{json,csv}` (gitignoriert), Kommandos in
 `tools/tracebench/README.md`.
+
+### Vorregistrierung der Folger-Arme (`aug14`, VOR dem ersten Sweep)
+
+Das Experiment-Protokoll für die Verfeinerungsstufe
+(`tools/pairlab/follow.py`,
+[`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §3),
+festgehalten
+BEVOR irgendein Arm gelaufen ist. Es gilt die Ein-Knopf-Regel (§11c/§11d:
+dieses Projekt lernt nur aus Ein-Faktor-Leitern) und die §14-Kriterien
+oben — gepaart je Wort gegen die eingefrorene `aug14`-Chain-Baseline,
+**ein Strukturdefekt vetot jeden Distanzgewinn**, Adoption erst nach dem
+Bestätigungssatz.
+
+**Framing (damit das Experiment sich nicht selbst falsch liest):** Die
+Baseline zeigt die Beschwerde in der STRUKTUR (19 erfundene Kreuzungen,
+21 erfundene Retrace-Zonen, Bogen-Verhältnis 1,51) und in zwei
+Kollaps-Wörtern (`unter` 0,439 · `muß` 0,242); die Fläche der
+Punktdistanz ist eng (Median 0,062). Erwartete Gewinne sitzen in den
+Ausreißern und den Struktur-Zählern; ein Arm, der nur den Median poliert
+und Struktur verliert, ist per Veto tot.
+
+**Reihenfolge der Arme** (v1 ändert genau EINE Sache: reg → prox):
+
+| # | Knopf | Stufen | Pflicht-Kostenspalten |
+|---|---|---|---|
+| ① | λ_prox | {0 · 1 % · 10 % · 50 % von e_geo am Solve-1-Optimum (gradlab-Zerlegung) · Chain-Kontrolle} | Zick-Zack-Sichtung, stranded_anchors |
+| ② | rounds | 1 / 2 / until-still (+ absteigende λ-Schedule als Unterarm) | Rundenprotokoll (Motion je Runde) |
+| ③ | samples/Anker | 1,5 / 2,5 / 4 | Laufzeit |
+| ④ | coverage | 0,3 / 0,6 / 1,0 | **stranded_anchors** (§11a: 32× anti-aligned — Reg-Release nimmt die Bremse) |
+| ⑤ | overlap | 0,2 / 0 | §13a-Kreuzungshöhen-Statistik auf die/laden/und (§13-Bremse-Hypothese) |
+| ⑥ | landmark | 0 / kalibriert, Ziele = extrapolierte Schnittpunkte (nie rohe Branch-Points) | Drop-Reasons der Korrespondenz |
+| ⑦ | width | Term wie Chain / als Modulator des Ridge-Pulls | Width-Residual auf Hochkrümmungs-Samples |
+| ⑧ | bind | 0 / kalibriert — NUR falls Zick-Zack λ_prox überlebt | §11d-Statistik in der Trace-Währung neu messen (Pflicht) |
+
+**Erwartete Fehlermodi je Wort** (benannt, damit ein Negativ lesbar ist):
+`unter` Stapel-Kollaps (max_absorption 132) · `laden` eingefrorene
+Kreuzungshöhe (+8 spurious) · `muß` ß-Schleifen-Refusal (2 verlorene
+Kreuzungen) · `Wer` Retrace-Prefix ins Leere · `die`/`mit`/`will`/
+`linken` i-Marken-Attribution · `mit`/`unter` kollabierter t-Deckstrich ·
+`zwei` Grat-Reiten (Width-Residual-Spalte) · `will` Retrace-Ratio 2,15.
+
+**Kill-Kriterien der Formulierung**
+([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §3):
+bestes kalibriertes Setting verliert den gepaarten Sign-Test oder ist
+auf > 2/10 Wörtern schlechter ODER erzeugt einen neuen Strukturdefekt
+auf ≥ 2 Wörtern → Formulierung verworfen, nicht nachgestimmt. λ_prox = 0
+≈ bestes λ_prox → die Release-Prämisse ist widerlegt; das ehrliche
+Negativ kommt hierher, und die nächste Hypothese ist die
+Attributions-/Sampling-Schicht, nicht mehr Gewichts-Tuning.
+stranded_anchors über der Chain-Baseline → der Arm fällt, unabhängig von
+jeder anderen Zahl.
+
+**Was ein Arm-Lauf abliefert:** die `--compare`-Paartabelle gegen
+`temp/tracebench-baseline-chain.json`, die Kostenspalten des Arms, und
+einen datierten Eintrag HIER — auch (gerade) bei einem Negativ.
