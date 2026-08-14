@@ -3686,7 +3686,7 @@ wird adoptiert; `FOLLOW_*` bleibt `provisional`.
 ### Arme ⑤ + ⑥ `aug14` — Overlap freigesprochen, die Korrespondenz-Kappe gefunden
 
 **Arm ⑤ (Overlap {0,2 · 0}, ein Faktor gegen die λ=1,0-Schwester):** Die
-§13-Hypothese „Overlap als selbstgebaute Bremse" ist BEANTWORTET — der
+§13-Hypothese „Overlap als selbstgebaute Bremse“ ist BEANTWORTET — der
 Term ist es nicht. Ihn abzuschalten macht alles mild besser (isoliert:
 dtw −0,2 %, Sign 6/8; Kreuzungen m+s 43 → 38, Retrace-Ratio
 2,09 → 1,87), aber gegen die Chain-Baseline bleibt das Struktur-Veto
