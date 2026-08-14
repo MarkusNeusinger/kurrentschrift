@@ -3632,3 +3632,45 @@ jeder anderen Zahl.
 **Was ein Arm-Lauf abliefert:** die `--compare`-Paartabelle gegen
 `temp/tracebench-baseline-chain.json`, die Kostenspalten des Arms, und
 einen datierten Eintrag HIER — auch (gerade) bei einem Negativ.
+
+### Arm ① `aug14` — die λ_prox-Leiter: Formulierung v1 verworfen, der Tinten-Zug validiert
+
+Erster Lauf des vorregistrierten Protokolls (Leiter {0 · 0,01 · 0,1 ·
+1,0} × Chain-λ, rounds 2, alles andere Chain-Default; je Sprosse
+`--compare` gepaart gegen die eingefrorene `aug14`-Baseline;
+Artefakte je Sprosse in der Chronik).
+
+| λ_prox | dtw Δmed (gepaart) | Sign | aiou | cross m+s | Retrace-Ratio |
+|---|---|---|---|---|---|
+| Chain (Referenz) | — | — | 0,683 | 7+19 = 26 | 1,51 |
+| 0,0 | +0,0001 | 6/4 p=0,75 | **0,784** | 8+43 = **51** | **3,04** |
+| 0,01 | +0,00001 | 5/5 p=1,0 | 0,782 | 9+57 = **66** | 2,58 |
+| 0,1 | +0,00002 | 5/5 p=1,0 | 0,778 | 10+52 = **62** | 2,55 |
+| 1,0 | −0,0008 (−1,5 %) | 3/7 p=0,34 | 0,777 | 10+33 = **43** | 2,09 |
+
+**Verdikt nach den vorregistrierten Kriterien — verworfen, nicht
+nachgestimmt:** Jede Sprosse reißt das Co-Primär-Gate (Netto-Anstieg
+`cross_missing + cross_spurious`, 26 → 43–66), und das Primärkriterium
+(≥ 20 % dtw-Fall) ist mit bestenfalls −1,5 % nirgends in Sicht. Die
+beiden Kollaps-Wörter heilen nicht (`unter` 0,439 → 0,417, `muß`
+0,242 → 0,236). Marken bleiben überall vollständig (0 missing),
+`dtw_reversed_better` überall 0.
+
+**Was der Arm POSITIV bewiesen hat:** Der Tinten-Zug wirkt — AIoU
+steigt auf JEDER Sprosse um ~+0,10 (0,683 → 0,777–0,784): punktweise
+schmiegt sich die freigelassene Bahn deutlich enger an die Tinte. Der
+Preis ist erfundene STRUKTUR (Zick-Zack-Kreuzungen, verdoppelte
+Züge) — die dokumentierte Degenerierung, jetzt beziffert, und schon
+1 % Chain-λ ist keine Bremse (66 statt 51 bei λ=0 liegt im Rauschen
+der Zonen-Zerlegung).
+
+**Prämissen-Lesart (die λ=0-Probe):** λ=0 ist NICHT ≈ bestes λ — die
+Struktur verschlechtert sich monoton mit fallendem λ. Die
+Release-Prämisse ist damit in verschärfter Form bestätigt: Die
+Form-Regularisierung hält nicht nur die Bahn von der Tinte fern,
+sie ist derzeit auch das EINZIGE, was die Struktur zusammenhält.
+Der vorregistrierte nächste Schritt gilt wörtlich: Die Struktur muss
+aus den DATENTERMEN kommen — Arm ⑤ (Overlap-Hypothese §13) und vor
+allem Arm ⑥ (Landmark-Term mit extrapolierten Schnittpunkt-Zielen),
+BEVOR irgendeine weitere λ-Feinabstimmung sinnvoll ist. Kein Default
+wird adoptiert; `FOLLOW_*` bleibt `provisional`.
