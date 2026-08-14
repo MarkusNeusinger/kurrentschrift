@@ -227,8 +227,20 @@ the short version is that the control does exactly what a control should:
 * `aiou_median` **0.833** — *higher* than the hand references score against
   themselves (0.685), because the traversal rides the skeleton by construction.
   Being on the ink is not the same as writing it.
-* `dtw_xh_median` **0.820** — the path through that ink is far from the hand's.
+* `dtw_xh_median` **0.820** against the chain fit's 0.062 — the path through
+  that ink is far from the hand's. That ratio is what route G exists to
+  produce, and it is a LOWER bound on the gap: the reference implementation
+  also models retracing, which is one of the two rows this control loses
+  hardest on.
 * `cross_missing` **15**, `retrace_missing` **15**, `lift_delta_total` **+90** —
   it loses most crossings, never retraces, and lifts about nine extra times per
-  word. Those are the co-primary structure gates, and they are where a
+  word (the hand writes these words in 1–2 pen strokes; the control needs
+  6–18). Those are the co-primary structure gates, and they are where a
   prior-free method fails.
+
+**End-to-end frame check.** Converted back to crop pixels, the candidate's ink
+box sits inside the mask's on every edge by roughly half a stroke width — e.g.
+`die` `x 10..143 / y 9..72` against the mask's `x 7..146 / y 8..75` — which is
+exactly the inset a skeleton has. That says the registration and the
+`_px_to_word_units` chain are right; it says nothing about trace QUALITY, which
+is the bench's job.
