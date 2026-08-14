@@ -242,3 +242,18 @@ def test_the_whole_stack_is_pinned_on_one_synthetic_pair() -> None:
     assert coverage.value == pytest.approx(0.6858345021037868, abs=1e-9)
     assert coverage.k == 1
     assert coverage.iou_k0 == pytest.approx(0.3739565943238731, abs=1e-9)
+
+
+def test_a_wobbly_out_and_back_is_a_retrace_not_a_crossing() -> None:
+    # Owner question (2026-08-14): a hand-traced stroke that goes out and
+    # comes back over itself can genuinely self-intersect under a shallow
+    # angle — those wiggle crossings must land in the RETRACE channel, never
+    # in the crossing counter (the >=15 deg conditioning + arc-separation
+    # guards are what sieve them out).
+    k = 120
+    up = np.column_stack([np.full(k, 0.5) + 0.008 * np.sin(np.linspace(0, 9, k)), np.linspace(0.0, 1.4, k)])
+    back = np.column_stack([np.full(k, 0.5) + 0.015 * np.sin(np.linspace(1.3, 11, k)), np.linspace(1.4, 0.0, k)])
+    stroke = np.vstack([up, back])
+    assert len(crossing_points([stroke])) == 0
+    mids, arc = retrace_segments([stroke])
+    assert len(mids) == 1 and arc > 1.5
