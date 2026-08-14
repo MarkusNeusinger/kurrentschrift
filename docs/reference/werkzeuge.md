@@ -227,5 +227,11 @@ uv run python -m tools.dbsnapshot.restore <snapshot-dir> --database-url postgres
   `authored`-Zeilen der Referenzsatz des geplanten `tools/tracebench`
   sind ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md));
   Refill ohne Re-Baseline: `--only word-instances` bzw. `--only instances`.
+- **`tools/inksight`** — die Route-B-Pipeline des Tintenfolger-Duells
+  ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §4):
+  drei Stufen (Crop-Vorbereitung → Inferenz im ISOLIERTEN
+  Python-3.11-TF-venv → Kandidaten-JSON im Trace-Frame), Gewichte und
+  venv bleiben untracked; reine Messschicht — die Ausgabe erreicht nie
+  `core/`, die DB oder das Rendering.
 - **`tools/quizgen`** — generiert die Lese-Quiz-Wortbank (~500 Wörter);
   Quellen + Distraktor-Modell in [`quiz-wortbank.md`](quiz-wortbank.md).
