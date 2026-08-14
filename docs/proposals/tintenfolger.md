@@ -263,6 +263,30 @@ Kandidaten-Kontrakt (§2.4, eigener `--candidate-file`, isoliertes
 Tool-Verzeichnis nach dem `tools/inksight`-Muster), kein GPU; nach der
 Baseline, unabhängig von Folger und InkSight.
 
+### 4c Duell-Ansicht + Chronik (Owner-Wunsch 2026-08-14)
+
+Die Verfahren sollen SICHTBAR gegeneinander stehen — nicht nur als
+Zahlenzeilen: **`tools/tracebench/view.py`** rendert je Wort alle
+Kandidaten als schaltbare Ebenen über dem echten Crop, die
+Hand-Nachfahrung immer als grüne Referenz (zuletzt gezeichnet, damit
+kein Kandidat sie überdeckt), mit Zahlenleiste je Kandidat — und einem
+Play-Knopf, der alle sichtbaren Bahnen SYNCHRON in Schreibreihenfolge
+animiert (`stroke-dashoffset`, konstante Stiftgeschwindigkeit in xh,
+Absetzen als echte Lücke; die MVP-Animationsdoktrin aus
+animation-rendering.md). Ein selbst-enthaltenes HTML, deterministische
+Bytes, kein CDN.
+
+**Chronik:** Jede Optimierungsrunde wird als create-only Snapshot
+außerhalb des Arbeitsbaums abgelegt (`tools/tracebench/chronik.py`,
+dbsnapshot-Disziplin: Wurzel neben dem privaten Archiv-Klon, nie
+löschen/überschreiben, leere Snapshots verweigert, INDEX.md je Zeile)
+— Bahndaten sind gelernter Datensatz und bleiben per Open-Core-Regel
+aus dem Repo. Benanntes Fernziel des Owners: eine öffentliche
+Website-Seite, die das Verfahren grob erklärt und mit kuratierten
+Beispielen aus dieser Chronik visualisiert, was die Schritte waren —
+eine bewusste Produkt-Flächen-Entscheidung wie `/write`, getroffen
+DANN, nicht implizit jetzt.
+
 ## 5 Verworfen / korrigierte Annahmen
 
 - **„Small-p auf der 4090 fein-tunen" — verworfen (2026-08-14):** Es gibt
@@ -300,7 +324,7 @@ Baseline, unabhängig von Folger und InkSight.
 | **A** | `word_instances.json`-Artefakt + Frame-Gate (Exporter + Fetcher), deklarierter Fixture-Re-Export (Re-Baseline nach #334/#336), dieses Doc | **PR #337** |
 | **B** | `tools/tracebench`-Lineal (Metriken + Zähler + Split) + Vorregistrierung §14 + Glossar | **PR #339** |
 | **C** | Harness + Provider + authored-Gate + erste Baseline-Tabelle (= Freeze-Akt; Kette: dtw 0,062 med · 19 erfundene Kreuzungen · Retrace-Ratio 1,51) | **in diesem PR** |
-| **D** | HTML-Viewer (fitview-Muster) | offen |
+| **D** | **Duell-Ansicht** (alle Kandidaten + Hand-Referenz über dem Crop, final UND als Schreib-Animation) + **Chronik** (create-only Rundenhistorie, dbsnapshot-Muster) | **in diesem PR** |
 | **1** | `tools/pairlab/trace.py`-Move + 3 additive chain.py-Affordances (inert bewiesen) | **PR #338** |
 | **2/3** | `tools/pairlab/follow.py` + CLI + Tests; §14-Vorregistrierung der Arme | offen |
 | **4** | Folger-Sweeps, kalibrierte Defaults (Owner-Go für Adoption) | offen |

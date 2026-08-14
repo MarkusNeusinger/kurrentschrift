@@ -42,6 +42,48 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The duel viewer and the round chronik (`tools/tracebench/view.py` +
+  `chronik.py`) — the methods beside each other AND beside the author's
+  own pen, kept per round.** The bench says which tracing is closer; it
+  cannot show WHAT differs, and it says nothing at all about the half of
+  the question the owner asked on 2026-08-14 — see the methods next to
+  one another and next to the hand re-tracing, both as the finished
+  trace over the plate and as HOW it is written. `view.py` builds one
+  self-contained HTML page in the `tools/fitview` discipline (data:-URI
+  crops, inline CSS/JS, no fonts, no CDN, no network, pinned by a test
+  that refuses any `http(s)://` in the artifact): per word the crop at
+  2×, an SVG overlay in crop-pixel coordinates with one `<g>` per method
+  plus one for the hand reference (green — the Werkbank's own
+  trace-over-ink colour; chain red, follower blue, everything else from
+  a fixed palette), per-method toggles, and the per-word numbers of an
+  attached `--json` report (`dtw_xh`, `aiou`, cross matched/spurious,
+  retrace ratio) beside each. The writing-order animation follows the
+  MVP doctrine of `docs/reference/animation-rendering.md` §1 —
+  `stroke-dasharray`/`stroke-dashoffset` on `pathLength=1`, every
+  visible method started in sync, each stroke's duration proportional to
+  its arc length at a constant pen speed measured in x-heights per
+  second, every pen lift a real pause and a real gap, marks (via
+  `frames.classify_strokes`) drawn thinner. The geometry is never
+  re-derived: both sides travel `BenchFrame.trace_to_bench` →
+  `bench_to_crop_px`, exactly as the scorer reads them, and candidates
+  arrive through the existing file-provider contract, so a file in
+  another frame is refused rather than drawn. No clock is read inside
+  the build (`--title` injects the stamp) and label order never comes
+  from a set, so identical inputs produce identical bytes — asserted
+  across two interpreters with different `PYTHONHASHSEED`.
+  `chronik.py snapshot --label … --files …` then files a round's
+  artifacts into `<root>/<UTC-stamp>-<label>/` with one `INDEX.md` line,
+  under the `tools/dbsnapshot` discipline: create-only (an existing
+  round is never opened, renamed or removed, and there is no delete
+  path), every source verified to exist and carry bytes BEFORE the
+  directory is created, and a root that must lie outside the working
+  tree — `--root` / `KS_CHRONIK_ROOT`, else the `tracebench-chronik`
+  sibling of the `KURRENTSCHRIFT_ARCHIVE` clone, never a silent
+  `temp/` that the next `git clean -xfd` takes away. So the comparisons
+  of every optimisation round persist, and the good ones can later seed
+  a public method explainer. Measurement and display only: no DB, no
+  API, no `core/`, no rendering, and nothing filed inside the
+  repository.
 - **The ink follower (`tools/pairlab/follow.py`) — route A of the
   Tintenfolger plan, with every shipping weight declared PROVISIONAL.**
   A re-linearising restart on the chain fit, exactly as
