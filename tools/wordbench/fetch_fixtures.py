@@ -23,6 +23,7 @@ Read map (every call is a GET; nothing here ever writes to DB or API):
     constant_nib_units                  GET /sources/{id}/render-context ADMIN
                                         (fallback: …/write/glyphs)       public
     pair_instances.json                 GET /sources/{id}/pair-instances public
+    word_instances.json                 GET /sources/{id}/word-instances public
 
 Two artifacts have two provenances; the manifest says which:
 
@@ -97,13 +98,16 @@ from core.shaping import GlyphSlot, glyph_keys_of
 from tools.wordbench.export_fixtures import (
     DEFAULT_OUT_DIR,
     DEFAULT_SOURCE_ID,
+    ONLY_CHOICES,
     REPO_ROOT,
     _entry_id,
     _kind,
+    _refresh_instance_artifacts,
     _root_name,
     _set_name,
     _shape_entry,
     _write_pair_instances,
+    _write_word_instances,
     freeze_entry,
     load_page,
     load_sidecar_entries,
@@ -516,20 +520,14 @@ def fetch(
     style_id = source["style_id"]
     style = client.get(f"/styles/{quote(style_id, safe='')}")
     pair_rows = client.get(f"/sources/{quote(source_id, safe='')}/pair-instances")
+    word_rows = client.get(f"/sources/{quote(source_id, safe='')}/word-instances")
 
-    if only == "pair-instances":
+    if only:
         # Additive refresh of EXISTING roots — crops, masks, slots and
         # templates stay untouched, so no headline number is re-baselined.
-        for set_name in sorted({_set_name(w) for w in entries}):
-            set_entries = [w for w in entries if _set_name(w) == set_name]
-            fixture_root = out_dir / style_id / _root_name(source_id, set_name)
-            if not fixture_root.exists():
-                print(f"skip {set_name}: no fixture root at {fixture_root} — run a full fetch first")
-                continue
-            written = _write_pair_instances(
-                fixture_root, pair_rows, {_kind(w) for w in set_entries}, {_entry_id(w) for w in set_entries}
-            )
-            print(f"wrote {written} measured joins to {fixture_root / 'pair_instances.json'}")
+        # The branch itself is the exporter's, imported so the two paths
+        # cannot drift apart.
+        _refresh_instance_artifacts(only, entries, out_dir / style_id, source_id, pair_rows, word_rows)
         return style_id
 
     summaries = client.get(f"/sources/{quote(source_id, safe='')}/templates")
@@ -597,6 +595,13 @@ def fetch(
         n_measured = _write_pair_instances(
             fixture_root, pair_rows, {_kind(w) for w in set_entries}, {_entry_id(w) for w in set_entries}
         )
+        n_authored, n_traced, n_stale = _write_word_instances(
+            fixture_root,
+            word_rows,
+            {_kind(w) for w in set_entries},
+            {_entry_id(w) for w in set_entries},
+            {_entry_id(w): w for w in set_entries},
+        )
 
         index = []
         for w in set_entries:
@@ -629,7 +634,8 @@ def fetch(
         unscorable = [w for w in index if not w["scorable"]]
         print(
             f"fetched {len(index)} {set_name} to {fixture_root} "
-            f"({len(unscorable)} unscorable, {len(set_laufform)} laufform keys, {n_measured} measured joins)"
+            f"({len(unscorable)} unscorable, {len(set_laufform)} laufform keys, {n_measured} measured joins, "
+            f"{n_authored} authored + {n_traced} traced word traces, {n_stale} frame-stale)"
         )
         if unscorable:
             print(f"  missing templates: {[(w['id'], w['missing_at_export']) for w in unscorable]}")
@@ -822,9 +828,10 @@ def main() -> None:
     )
     parser.add_argument(
         "--only",
-        choices=("pair-instances",),
-        help="refresh JUST this artifact in the EXISTING fixture roots — an older set gains the "
-        "measured joins without re-freezing (and thereby re-baselining) crops, masks, slots and templates",
+        choices=ONLY_CHOICES,
+        help="refresh JUST the measured joins and/or stored word traces in the EXISTING fixture roots "
+        "('instances' = both) — an older set gains them without re-freezing (and thereby re-baselining) "
+        "crops, masks, slots and templates",
     )
     parser.add_argument("--verify", action="store_true", help="run the acceptance gate against GET /write/word")
     parser.add_argument("--no-fetch", action="store_true", help="skip the rebuild and only verify what is on disk")

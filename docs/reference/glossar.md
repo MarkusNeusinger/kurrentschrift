@@ -41,7 +41,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · Duktus §1 · Duktus-Prior §1
 - **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2
-- **F** — Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · FID §6 · Fixture-Wurzel §4 · Frozen-Reference-Regel §4 · Fuge §1
+- **F** — Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Frozen-Reference-Regel §4 · Fuge §1
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
@@ -52,9 +52,9 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
-- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Rückgabe an Autor §5 · Rückhaltemenge §4
+- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
-- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenlücke §3 · Trajektorien-Recovery §6 · Triage-Pflicht §5
+- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenfolger §3 · Tintenlücke §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4
 - **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Editor §5 · Wort-Trace §2
@@ -456,6 +456,18 @@ verbundensten ist. Stufe A (Paar-Maßstab) ist gebaut und gemessen; Stufe B
 (Wort-Maßstab) ist freigegeben. **Reine Messschicht, ändert kein
 Rendering.** *Technisch:* `tools/pairlab/chain.py` + `chainbench.py`
 → uebergaenge-befund.md §5c · Issue #278
+
+**Tintenfolger** *(ink follower)* — die geplante Verfeinerungsstufe ÜBER
+dem Kettenfit: der Kettenfit liefert Topologie, Strichfolge und
+Kreuzungsauflösung als Initialisierung, dann wird die Form-Regularisierung
+Richtung Vorlage GELÖST (der Tikhonov-Term wird im Rebuild zum
+Proximal-Term relativ zum Chain-Optimum, kein Chart-Prior mehr) und die
+Bahn dicht auf das gemessene Skelett gezogen — „Geometrie ganz aus der
+Tinte, Ordnung ganz aus dem Prior“. Maßstab ist der nachgefahrene
+**Referenzsatz** (§4), nie das eigene Residual. Kein neues System, kein
+GPU, kein Fremdmodell; Ausgabe ist eine Wortbahn (Inspektionsschicht),
+nie eine Messung. *Technisch:* geplant als `tools/pairlab/follow.py`
+→ proposals/tintenfolger.md · bildsynthese-und-stiftbahn.md §6
 
 **Iterationsdeckel** *(iteration cap)* — die Obergrenze, wie viele
 Optimierungsschritte ein Fit machen darf, bevor er abgebrochen wird. Klingt
@@ -940,9 +952,45 @@ Regressionswächter.** → werkzeuge.md
 
 **Fixture-Wurzel** — das eingefrorene Eingabepaket eines Bench-Sets
 (Crops, Masken, Skelette, Slots, Template-Zeilen, Laufform-Zeilen,
-`pair_instances.json`). Gitignored (Open-Core-Moat), neu erzeugbar über
+`pair_instances.json`, `word_instances.json`). Gitignored
+(Open-Core-Moat), neu erzeugbar über
 `tools/wordbench/export_fixtures.py` (DB-Pfad) oder `fetch_fixtures.py`
 (API-Pfad, für Sitzungen ohne DB-Zugang).
+
+**Referenzsatz (nachgefahren)** — die manuell per S-Pen nachgefahrenen
+Wortbahnen (`word_instances`, Provenienz `authored`), an denen jeder
+automatische Wortbahn-Kandidat gemessen wird. Der **Entwicklungssatz**
+sind die 10 am 2026-08-13 nachgefahrenen Abb.-19-Wörter (die · laden ·
+linken · mit · muß · und · unter · Wer · will · zwei), eingefroren als
+committete Konstante (append-never); jedes SPÄTER nachgefahrene Wort ist
+per Definition **Rückhaltemenge** (Bestätigungssatz) und wandert nie in
+den Entwicklungssatz — sonst wäre der Halt-out keiner. Ein Kandidat kann
+nie sein eigener Maßstab sein: die `traced`-Ernte-Fits sind Ausgaben des
+Kandidaten, nicht seine Wahrheit. *Technisch:* `word_instances.json` je
+Fixture-Wurzel; geplant `tools/tracebench/sets.py::TRACEBENCH_DEV_IDS`
+→ proposals/tintenfolger.md §1
+
+**Frame-Gate (`frame_stale`)** — der Maschinencheck, dass die
+Registrierung einer gespeicherten Wortbahn noch die eingefrorene
+Rect/Lineatur beschreibt, über deren Crop sie gezeichnet wird:
+`|baseline_row+ty − (baseline_y−y0)| ≤ 4 px` (der vertikale Suchbereich
+des Score-Gitters) und `|xh_px − (baseline_y−midband_y)| ≤ 0,51 px`
+(halbes Pixel über ganzzahliger Lineatur). Fehlschlag STEMPELT die Zeile
+(`frame_stale` mit Grund), droppt sie nie — Konsumenten zählen-und-
+schließen-aus. Generalisiert die #334/#336-Fehlerklasse (Rect unter
+gespeicherter Bahn editiert); beim `--only`-Refill prüft es gegen die
+eingefrorenen `word.json` der Wurzel, beim Voll-Export gegen das Sidecar.
+*Technisch:* `tools/wordbench/export_fixtures.py::_frame_stale_reason`
+
+**tracebench** — der geplante dritte Bench neben glyphbench (Buchstabe)
+und wordbench (komponiertes Wort): er misst WORTBAHN-Kandidaten (Kettenfit,
+Tintenfolger, InkSight, später Fusion) gegen den nachgefahrenen
+Referenzsatz — Punktdistanz (`dtw_xh`), papertreues AIoU gegen die
+Tintenmaske, Richtungs-Chamfer, Fehlerzähler an Kreuzungen/Marken/
+Retraces. Ein Kandidat ist wörtlich eine `word_instances`-Zeile; die
+Kriterien sind vorregistriert (qualitaetsmetrik.md §14), ein
+Strukturdefekt vetot jeden Distanzgewinn. *Technisch:* geplant als
+`tools/tracebench/` → proposals/tintenfolger.md §2
 
 **Bewertungsdurchgang** *(labelling round)* — eine Runde, in der ein Mensch
 gefittete Buchstaben **blind** beurteilt: je Bildschirm ein Ausschnitt der

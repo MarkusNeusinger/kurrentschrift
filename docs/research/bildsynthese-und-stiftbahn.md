@@ -1,6 +1,12 @@
 # Bildbasierte Synthese und der Weg zurück zur Stiftbahn
 
-> **Status (2026-08-13): offen.** Recherche-Runde 2026-08-13 zum
+> **Status (2026-08-14): Tintenfolger-Weg in Umsetzung.** Der §6-Nachtrag
+> ist als Plan konkretisiert und wird gebaut — Referenzsatz, Prüfstand und
+> die zwei Routen stehen in
+> [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md); der
+> Nachtrag 2026-08-14 unten korrigiert zwei Annahmen dieses Journals
+> (Referenzsatz existiert jetzt; ein Small-p-Fine-Tune ist NICHT möglich).
+> Ursprünglicher Stand: Recherche-Runde 2026-08-13 zum
 > bildbasierten Parallelweg: ein Offline-HTG-Modell (Handschrift-*Bild*-
 > Synthese) auf Kurrent/Sütterlin fein-tunen, das generierte Rasterbild per
 > Trajektorien-Rückgewinnung in eine Stiftbahn (SVG/Plotter) überführen —
@@ -44,9 +50,10 @@ Französisch/Englisch, die CJK-/Indic-Sätze enthalten nichts Deutsches
 Historisches. Die einzigen duktus-geordneten Kurrent-Daten, die diese
 Recherche überhaupt finden konnte, sind die eigenen: die
 S-Pen-Duktus-Vorlagen (`templates.raw_path`) und die Wortbahnen der
-Ernte (`word_instances` — Stand 2026-08-13 alle 96 Zeilen automatische
-Fits, Provenienz `traced`; manuell per Stift nachgefahren ist noch
-keine, siehe den Nachtrag in §6). Das ist zugleich die Schwäche des
+Ernte (`word_instances` — Stand 2026-08-14: 86 automatische Fits,
+Provenienz `traced`, plus die ersten **10 manuell per S-Pen
+nachgefahrenen** Bahnen, Provenienz `authored` — der Anfang des
+Referenzsatzes aus dem §6-Nachtrag). Das ist zugleich die Schwäche des
 direkten Graves-Wegs und der Trumpf dieses Repos (§4, §5).
 
 Der Nebeneffekt, der Weg B auch dann interessant macht, wenn die
@@ -209,6 +216,9 @@ Der Stand der lernenden Verfahren:
   Online-Tinte rendern + degradieren" — **genau die Paare, die unsere
   Engine für Kurrent unbegrenzt erzeugen kann.** Ein
   Kurrent-Fine-Tuning von Small-p ist damit ungewöhnlich gut erreichbar.
+  *(Korrektur 2026-08-14, siehe Nachtrag in §6: das Fine-Tuning selbst
+  ist NICHT möglich — kein Trainingscode, keiner angekündigt; das Rezept
+  bleibt, nur mit einem eigenen kleinen Modell als Schüler.)*
 - **Geometrisch, ohne Lernen:** Skelett → Segmentgraph →
   Kreuzungs-Cluster per Gute-Fortsetzung auflösen (Diaz et al. 2022,
   Code offen) — der klassische Weg, an dem auch die
@@ -368,6 +378,35 @@ unterscheidbar ist. Kein GPU-Training,
 kein Fremdmodell — und jeder Fortschritt zahlt doppelt: sofort als
 automatisches Nachfahren (§5) und später als fertige Route A des
 Rückgewinnungs-Duells T3.
+
+### Nachtrag 2026-08-14: Referenzsatz begonnen, Plan im Repo, zwei Korrekturen
+
+Der erste Handgriff ist getan: **10 Abb.-19-Wörter sind per S-Pen
+nachgefahren** und als `authored` gespeichert (die · laden · linken · mit ·
+muß · und · unter · Wer · will · zwei) — der eingefrorene Entwicklungssatz;
+alles später Nachgefahrene (Umlaut, langes ſ, weitere Versalien) wird per
+Append-never-Regel zurückgehaltenes Bestätigungsmaterial. Der Weg vom
+Nachtrag oben zum Bau ist als fortschreibbares Proposal konkretisiert:
+[`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) trägt
+Prüfstand (`tools/tracebench`), Route A (Verfeinerungsstufe auf dem
+Kettenfit) und Route B (InkSight T0), samt vorregistrierten Kriterien in
+qualitaetsmetrik.md §14. Zwei Annahmen dieses Journals hat die
+Challenge-Recherche (2026-08-14, Primärquellen) korrigiert:
+
+1. **Ein Kurrent-Fine-Tuning von InkSight Small-p ist nicht möglich** —
+   das Release ist ein eingefrorenes Inferenz-SavedModel, der
+   PaLI-Trainingsstack war nie open-source und die Autoren haben eine
+   Veröffentlichung abgelehnt (Issue #8 des InkSight-Repos); es gibt
+   keine Community-Fine-Tunes. Das InkSight-REZEPT (echte Bahn rendern +
+   degradieren) bleibt der Trumpf der Engine — nur trainiert es dann ein
+   kleines, eigenes Modell (Cursive-Transformer-Größenordnung), dessen
+   Gewichte als gelernter Datensatz unter die Open-Core-Regel fallen.
+2. **DTW/LDTW/AIoU sind ohne Referenz-Implementierung** (PEN-Net-Repo:
+   nur Trainingscode; TRACE: kein Repo) und ihre publizierten Werte sind
+   an isolierte CASIA-Zeichen und fremde Raster gebunden — der Prüfstand
+   implementiert deshalb eigene, präzise benannte Varianten (`dtw_xh`,
+   papertreues AIoU gegen die Tintenmaske) und validiert sie gegen
+   synthetische Verzerrungen statt gegen Literaturzahlen.
 
 ## 7 Risiken und Grenzen
 

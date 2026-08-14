@@ -14,6 +14,44 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The frozen word-trace artifact (`word_instances.json`) — tracebench
+  stage A.** The wordbench fixture exporter and its API twin freeze the
+  stored word traces of each set alongside the measured joins: every
+  `word_instances` row travels (the 10 hand-`authored` re-tracings that
+  form the Tintenfolger reference set, plus the harvest's `traced` chain
+  fits as context), lean-projected to the frame keys
+  (`registration_px` + `xh_px` + `fit_path`) so both provenances keep
+  the same shape. A machine **frame gate** generalises the #334/#336
+  failure class: a row whose registration no longer matches the frozen
+  rect/lineature it will be drawn over is stamped `frame_stale` with a
+  readable reason — never dropped — and an `--only` refill gates against
+  the root's own frozen `word.json` entries (its live debut stamped
+  exactly the four rows re-registered by #334/#336 when refilled into
+  the pre-#336 roots). `--only` grows `word-instances` and `instances`
+  (both artifacts in one pass), shared verbatim between exporter and
+  fetcher; the fetcher reads the already-public
+  `GET /sources/{id}/word-instances`. The plan the artifact serves —
+  reference set, tracebench ruler, the chain-fit-refinement route vs.
+  the InkSight route, pre-registered criteria — lives in the new
+  `docs/proposals/tintenfolger.md` (indexed in `docs/index.md`);
+  `docs/research/bildsynthese-und-stiftbahn.md` gains the 2026-08-14
+  addendum (reference set begun; the Small-p fine-tune assumption
+  corrected: no training code exists or is coming, so route B re-scopes
+  to a small own model on engine pairs).
+
+### Changed
+
+- **Declared wordbench re-baseline `aug14`** (full fixture re-export, the
+  first since `jul31`): the frozen reference crops now carry the
+  #334/#336 rect corrections (detached i-marks that lay fully outside
+  their rects), and the roots catch up to the `aug07` write round.
+  Headline against the documented `aug07` state: words 0.110392 →
+  **0.110703**, pairs 0.165678 → **0.165688** — composition untouched;
+  the movement sits in the corrected references (`haben`/`ein`/`einen`/
+  `zwei` improve, `regieren` honestly worsens because its i-stroke is
+  finally part of the reference the composition must cover). Documented
+  as a dated section in `docs/reference/qualitaetsmetrik.md` §6.
+
 - **Research note on the image-first parallel track: offline handwriting
   generation for Kurrent and the way back to a pen path.** New
   `docs/research/bildsynthese-und-stiftbahn.md` surveys the current
