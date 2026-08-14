@@ -219,6 +219,12 @@ already be gone.
   threads on the changed lines; that's the loop working, not noise —
   but don't chase it more than a couple of rounds for cosmetic nits;
   surface stalemates to the user.
+- **Never pipe a gate command** — without `set -o pipefail` a pipeline
+  reports the LAST command's exit status, so
+  `ruff format --check | tail -1` let an unformatted file reach a
+  pushed commit (2026-08-14; the fix cost a force-push). Run gates
+  bare and trim their output only after the exit code is captured —
+  or enable `pipefail` explicitly if a pipe is unavoidable.
 - **Local gates first saves whole round trips** — the pipeline runs
   the same checks (pytest + ruff under a
   `uv sync --extra dev --extra test --frozen` env, `npm ci` +

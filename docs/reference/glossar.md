@@ -46,7 +46,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Verschiebung §3
-- **K** — Kettenfit §3 · Kill-Kriterium §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
+- **K** — Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4
 - **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4
@@ -493,10 +493,35 @@ Unsicherheit ≈ lokale Halbbreite als 1/σ²-Gewicht (Pre-Whitening des
 bestehenden Operators, kein neuer Term). Verweigert ehrlich:
 Touch-Points (2 Schenkel) und T-Junctions (3) sind BY DESIGN keine
 Kreuzungsziele — auf den Dev-Wörtern sind das 12 von 21
-Korrespondenzen, die Kappe jedes Landmark-Effekts, solange die
-Korrespondenz nicht klassenbewusst wird. *Technisch:*
-`tools/pairlab/follow.py::extrapolated_targets`
+Korrespondenzen (→ die Korrespondenz-Kappe), die Kappe jedes
+Landmark-Effekts, solange die Korrespondenz nicht klassenbewusst wird.
+*Technisch:* `tools/pairlab/follow.py::extrapolated_targets`
 → qualitaetsmetrik.md §14 (Arm ⑥)
+
+**Korrespondenz-Kappe** — der Befund, der die Arme ⑤/⑥ des
+Tintenfolgers überragt: 12 der 21 Landmark-Korrespondenzen der
+Dev-Wörter zeigen auf Tinte, die GAR KEINE Kreuzung trägt (5
+Touch-Points, 7 T-Junctions) — die BAHN kreuzt sich dort, die Tinte
+berührt sich nur. Solange die Korrespondenz diese Klassen nicht kennt,
+zieht jeder Landmark-Zug an der Hälfte der Ziele in eine Struktur, die
+es nicht gibt; das deckelt jeden möglichen Effekt des Terms, wie stark
+er auch gewichtet wird. → die klassenbewusste Korrespondenz.
+*Technisch:* qualitaetsmetrik.md §14 (Arme ⑤+⑥, `aug14`)
+
+**klassenbewusste Korrespondenz** — die vorregistrierte Antwort auf die
+Korrespondenz-Kappe (Arm ⑥b): die Landmark-Korrespondenz kennt die
+KLASSE ihres Tinten-Ziels. Zeilen, deren Verfeinerungsgrund eine
+By-Design-Nichtkreuzung der Tinte ist (`touch_point` · `t_junction`),
+bekommen Gewicht 0 über das bestehende Pre-Whitening (√w skaliert
+Operator-Zeile UND Ziel — die Zeile zieht nichts und kostet nichts),
+statt weiter am rohen Branch-Point zu ziehen; die 1/σ²-Gewichte der
+überlebenden Zeilen renormieren auf Mittel 1. Die Walk-Fehlschläge
+(`few_branches` · `no_continuation_pair` · …) bleiben Ziele — dort KANN
+die Tinte eine Kreuzung tragen. Folger-seitig; `chain.py` und die
+eingefrorene `landmarks.py` bleiben unberührt. *Technisch:*
+`tools/pairlab/follow.py::classed_targets` (Modus
+`extrapolated_classed`), `LANDMARK_NONCROSSING_REASONS`
+→ qualitaetsmetrik.md §14 (Arm ⑥b)
 
 **Retrace-Guard** — die Ausnahme im Tintenfolger, die dessen blinden
 Fleck deckt: Über doppelt beschriebener Tinte belohnen BEIDE Datenterme

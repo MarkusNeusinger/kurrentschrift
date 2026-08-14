@@ -87,7 +87,8 @@ agent working in this repo:
 - **Do not mutate tracked files via shell heredocs/`sed`** that bypass
   normal review; edit through the editor. When a command legitimately
   rewrites a tracked file (formatter, codegen), re-read it before the next
-  edit.
+  edit. A failed edit anchor ("string not found") means re-read and
+  re-anchor — never fall back to a script-driven rewrite.
 - **Manual author tasks are tracked in the owner's Todoist** (project
   "kurrentschrift", owner directive 2026-08-07): an agent that identifies a
   step only the human can do (wizard re-trace, rendering-affecting DB apply,
