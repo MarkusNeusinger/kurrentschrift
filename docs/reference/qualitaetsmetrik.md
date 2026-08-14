@@ -3483,8 +3483,9 @@ Distanzgewinn.**
 
 Mit dem Commit der ersten Baseline-Tabelle friert das Lineal:
 `tools/tracebench/{metric,frames,counters,sets}.py`,
-`tools/pairlab/landmarks.py`, `core/geometry.py` und die
-Fixture-Roots. Jede spätere Änderung an einem davon ist eine datierte
+`tools/pairlab/landmarks.py`, `core/geometry.py`,
+`core/quality_suetterlin.py` (der Retrace-Zähler importiert dessen
+`MIN_RETRACE_PAIRS`) und die Fixture-Roots. Jede spätere Änderung an einem davon ist eine datierte
 Re-Baseline (wordbench UND tracebench — die Roots sind geteilt).
 VOR diesem Commit sind Lineal-Bugfixes frei: ein kaputter Frame beim
 ersten Lauf ist Debugging, kein p-Hacking — der Unterschied ist HIER
