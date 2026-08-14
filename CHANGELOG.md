@@ -42,6 +42,39 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The tracebench ruler (`tools/tracebench`) — stage B of the
+  Tintenfolger plan.** The measurement modules an automatic word tracing
+  is graded with, defined by `docs/proposals/tintenfolger.md` §2 and
+  built before any candidate exists, so the criteria cannot be chosen
+  after seeing a result. `metric.py` carries the distances and imports
+  NOTHING of this project (numpy and scipy only, pinned by parsing its
+  own imports — a ruler must not be movable by the engine it grades):
+  `dtw` is the `dtw_xh` headline, unconstrained, Euclidean, forward only
+  (writing direction is ductus truth) and normalised by the length of
+  the OPTIMAL warping path, so the number is a distance in x-heights
+  that neither the word's length nor the sampling density moves;
+  `aiou` is the paper-faithful Adaptive IoU against the ink MASK (1-px
+  rasterisation, never bridging a pen lift, 3×3 dilation to the IoU
+  peak), which keeps the width channel out of the geometry number and
+  extends the column to specimens nobody traced; `chamfer` reports both
+  directions unaveraged, because a missing i-dot inflates exactly one of
+  them. `frames.py` builds the comparison frame from the frozen
+  `word.json` alone (crop pixels re-expressed in x-heights) and sends
+  every path through its OWN registration to get there — two rows whose
+  stored labels share no digit land on identical bench points — and adds
+  the stroke bookkeeping the distance cannot do: marks split off the
+  body (`DIACRITIC_MIN_Y` + arc cap), lifts compared as positions rather
+  than as cost, and one shared refusal contract
+  (`ref/cand/matched/missing/spurious/ambiguous/pos_err_xh`) over
+  `landmarks.nearest_unique_point`. `counters.py` puts that contract on
+  the hard places — loop crossings and retrace zones, detected on BOTH
+  sides at one common discretisation with the existing detectors at
+  their own thresholds — so a lost structure is reported as a structure
+  defect instead of dissolving into a small distance. `sets.py` freezes
+  the ten hand-traced development words as an append-never constant.
+  Measurement only: no DB, no API, no `core/` change, no rendering, and
+  no numbers yet — harness, candidate providers and the first baseline
+  table arrive with stage C.
 - **The frozen word-trace artifact (`word_instances.json`) — tracebench
   stage A.** The wordbench fixture exporter and its API twin freeze the
   stored word traces of each set alongside the measured joins: every

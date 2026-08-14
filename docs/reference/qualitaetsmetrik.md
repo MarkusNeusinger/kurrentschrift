@@ -3369,3 +3369,137 @@ ist zu stark. Liest man nur den Slot-Block, realisiert der komponierte Arm
 0,342 der geforderten Verschiebung; mit der globalen Wortverschiebung
 zusammen 0,922. Die Wortverschiebung schluckt den Großteil der Drift —
 was bleibt, ist die Verteilung INNERHALB des Worts.
+
+---
+
+## 14. Tintenfolger-Bench (`tracebench`): der nachgefahrene Referenzsatz als Maßstab (`aug14`)
+
+Vorregistrierung VOR der ersten Zahl (die §11b-Praxis): Definitionen,
+Split, Kriterien und Kill-Kriterien stehen hier, BEVOR irgendein
+Kandidat gemessen wurde. Plan und Begründungen:
+[`../proposals/tintenfolger.md`](../proposals/tintenfolger.md); die
+Werkzeuge: `tools/tracebench/`.
+
+### Was gemessen wird — und in welchem Rahmen
+
+Ein **Kandidat** ist eine automatische Wortbahn über einem Specimen-Crop
+(wörtlich eine `word_instances`-Zeile: Strokes + Registrierung + xh);
+der **Maßstab** ist die manuell per S-Pen nachgefahrene `authored`-Bahn
+desselben Specimens. Verglichen wird NIE in den gespeicherten
+`(u,v)`-Labels (die Registrierung ist Composer-Buchhaltung): jede Bahn
+wird über ihre EIGENE Registrierung nach Crop-px und von dort in den
+**Bench-Frame** gemappt (`xh = baseline_y − midband_y`, Grundlinie =
+`baseline_y − rect[1]` aus der eingefrorenen `word.json`) — der Frame
+hängt damit nur an committeten Daten, ein veralteter Export kann das
+Lineal nicht korrumpieren.
+
+### Die Maße (Definitionen verbatim; keine referenziert publizierte Zahlen)
+
+- **`dtw_xh`** — unconstrained DTW, euklidische Punktdistanz in xh
+  (nicht quadriert), symmetric-1-Schritte, beide Enden verankert, kein
+  Band; **normalisiert durch die Länge T des optimalen Warping-Pfads**
+  (die LDTW-Normalisierung aus PEN-Net Eq. 1). Beide Seiten vorher
+  arc-length-uniform resampelt (`TRACE_RESAMPLE_UNITS`; Startwert 0,02
+  xh, einmaliger dokumentierter Schrittweiten-Sweep 0,02/0,03/0,05 im
+  Baseline-Lauf). **Nur vorwärts** — die Richtung ist Duktus-Wahrheit;
+  `dtw_reversed_better` (Kandidat rückwärts besser?) ist eine reine
+  Report-Spalte. QC-Spalte `dtw_max_absorption` (max. Punkte einer
+  Seite auf EIN Sample der anderen — der Singularitäts-Wächter der
+  Konkatenation). EIGENER Name, bewusst nicht „LDTW": Resampling und
+  xh-Einheit machen die Zahl mit publizierten Werten unvergleichbar.
+- **`aiou`** — papertreu nach PEN-Net §3.1, gegen die eingefrorene
+  **Tintenmaske** (`ref_mask.png`), nie gegen eine Referenzbahn:
+  Kandidat 1 px gerastert (Pen-Lifts nie überbrückt), 3×3-Dilatation
+  iterativ, `max_k IoU(ink, dilate^k(cand))`. Funktioniert deshalb auf
+  allen Wörtern ohne Nachfahrung; Raster = Crop-px (mitreportet).
+- **Chamfer, beide Richtungen getrennt** — `chamfer_cand_ref_xh`
+  (Precision: liegt der Kandidat auf der menschlichen Bahn) und
+  `chamfer_ref_cand_xh` (Recall: deckt er alles ab — ein fehlender
+  i-Punkt bläht NUR diese Hälfte). Kein symmetrisches Mittel.
+- **Strich-Behandlung** — Marken (nicht-erster Strich, komplett über
+  `DIACRITIC_MIN_Y`, Bogen ≤ 0,8 xh: i-Punkt/-Strich, Umlaut,
+  u-Deckstrich) werden VOR dem Body-DTW herausgelöst
+  (Delayed-Strokes-Praxis; entschärft zugleich die Ordnungsfalle der
+  deferred Diakritika der Engine) und per Zentroid mit Refusal
+  gematcht (Radius 0,6 xh, Margin 0,25 xh). Body beider Seiten in
+  Schreibreihenfolge konkateniert; Pen-Lifts bleiben AUSSERHALB der
+  DTW-Kosten → `lift_delta`, `lift_pos_err_xh`.
+- **Fehlerzähler** (je: ref/cand/matched/missing/spurious/ambiguous +
+  Median-Positionsfehler): **Kreuzungen**
+  (`landmarks.landmark_crossings`, Schwellen UNVERÄNDERT aus dem
+  §13a-Zensus; Match 0,55/0,20 xh), **Marken** (s. o.), **Retraces**
+  (`core.geometry.detect_retrace_pairs`, prox 0,15 xh, ≥ 3 Paare;
+  robusteste Zahl `retrace_arc_ratio`).
+- **Validierung ohne Referenz-Implementierung:** Es existiert weltweit
+  keine (PEN-Net-Repo: nur Training; TRACE: kein Repo) — die
+  Unit-Tests kalibrieren gegen synthetische Verzerrungen nach PEN-Nets
+  eigenem Fig.-1-Rezept (halbe Punkte um festen Betrag verschoben:
+  AIoU muss deutlich fallen, wo RMSE konstruktionsbedingt flach
+  bleibt).
+
+### Split (append-never)
+
+`TRACEBENCH_DEV_IDS` = **die · laden · linken · mit · muß · und ·
+unter · Wer · will · zwei** (die 10 am 2026-08-13 nachgefahrenen
+Wörter) — committete Konstante. Jedes SPÄTER nachgefahrene Wort ist
+per Definition Bestätigungsmaterial und wandert NIE in den Dev-Satz
+(eine nach den Zahlen umdefinierbare Rückhaltemenge ist keine).
+`--split confirm` verweigert unter 5 Wörtern; Startup-Assertion: jede
+Dev-Id muss als authored, nicht-`frame_stale` Zeile im Artefakt sein —
+sonst harter Fehler (das Lineal hat ein Wort verloren). Benannte
+Abdeckungslücke des Dev-Satzes: kein Umlaut, kein langes ſ, ein
+einziger Versal — erster Punkt des Bestätigungs-Briefs.
+
+### Kriterien (relativ, gepaart je Wort gegen die Chain-Baseline)
+
+| Rolle | Größe | Schwelle |
+|---|---|---|
+| Primär (Nutzen) | `dtw_xh`, Median der gepaarten Differenzen | ≥ 20 % relativer Fall |
+| Co-Primär (Gate) | `marks_missing` gesamt | kein Netto-Anstieg |
+| Co-Primär (Gate) | `cross_missing + cross_spurious` gesamt | kein Netto-Anstieg |
+| Kosten | p90 der gepaarten `dtw_xh`-Differenzen | ≤ +10 % |
+| Kosten | `aiou`-Median · `chamfer_ref_cand`-Median | fällt nicht |
+| Kosten | `retrace_arc_ratio`-Abstand zu 1,0 | wächst nicht |
+| Sanity | `dtw_reversed_better` | 0 |
+| Sanity | failed/skipped-Wörter | kein Netto-Anstieg |
+
+Bei n = 10 ist der Median der gepaarten Differenzen die ehrliche
+Statistik; ein Sign-Test wird berichtet, nie als Gate gelesen. **Ein
+Strukturdefekt (verlorene Marke, verlorene/erfundene Kreuzung,
+kollabierter Deckstrich, doppelter Strich) vetot jeden
+Distanzgewinn.**
+
+### Kill-Kriterien
+
+- Geometrie besser, aber Marken/Kreuzungen verloren → die Änderung ist
+  verworfen, nicht nachgestimmt (Struktur schlägt Distanz).
+- Ein Gewinn überlebt den Bestätigungssatz nicht → verworfen (§11b
+  wörtlich).
+- `authored` vs. `authored` ist keine exakte Identität (dtw = 0, alle
+  Zähler matched) → das LINEAL ist kaputt; keine Kandidaten-Zahl wird
+  gelesen, bis es repariert ist.
+
+### Freeze-Deklaration
+
+Mit dem Commit der ersten Baseline-Tabelle friert das Lineal:
+`tools/tracebench/{metric,frames,counters,sets}.py`,
+`tools/pairlab/landmarks.py`, `core/geometry.py`,
+`core/quality_suetterlin.py` (der Retrace-Zähler importiert dessen
+`MIN_RETRACE_PAIRS`) und die Fixture-Roots. Jede spätere Änderung an einem davon ist eine datierte
+Re-Baseline (wordbench UND tracebench — die Roots sind geteilt).
+VOR diesem Commit sind Lineal-Bugfixes frei: ein kaputter Frame beim
+ersten Lauf ist Debugging, kein p-Hacking — der Unterschied ist HIER
+festgehalten, nicht hinterher.
+
+### Was der Bench nicht beantwortet
+
+Einen historisch falschen, aber glatten Duktus sieht kein Bahnmaß
+(bildsynthese-und-stiftbahn.md §7); das Endkriterium bleibt der blinde
+Paarvergleich nach humanbench-Methode (Folger ununterscheidbar vom
+manuellen Nachfahren) — mit dem benannten Bias, dass der Autor eigene
+Nachfahrungen beurteilt (Abkühl-Abstand oder Zweitrichter).
+
+### Baseline
+
+_(folgt mit Stufe C — der Freeze-Akt; bis dahin existiert bewusst
+keine Zahl in diesem Abschnitt)_

@@ -277,8 +277,8 @@ Ethik-Notiz der Model-Card).
 
 | Stufe | Inhalt | Stand |
 |---|---|---|
-| **A** | `word_instances.json`-Artefakt + Frame-Gate (Exporter + Fetcher), deklarierter Fixture-Re-Export (Re-Baseline nach #334/#336), dieses Doc | **in diesem PR** |
-| **B** | `tools/tracebench`-Lineal (Metriken + Zähler + Split) + Vorregistrierung §14 + Glossar | offen |
+| **A** | `word_instances.json`-Artefakt + Frame-Gate (Exporter + Fetcher), deklarierter Fixture-Re-Export (Re-Baseline nach #334/#336), dieses Doc | **PR #337** |
+| **B** | `tools/tracebench`-Lineal (Metriken + Zähler + Split) + Vorregistrierung §14 + Glossar | **in diesem PR** |
 | **C** | Harness + Provider + authored-Gate + erste Baseline-Tabelle (= Freeze-Akt) | offen |
 | **D** | HTML-Viewer (fitview-Muster) | offen |
 | **1** | `tools/pairlab/trace.py`-Move + 3 additive chain.py-Affordances (inert bewiesen) | offen |
@@ -289,8 +289,8 @@ Ethik-Notiz der Model-Card).
 | **7** | humanbench-WORT-Runde (neuer Item-Renderer; Bias benannt: der Autor beurteilt eigene Nachfahrungen — Abkühl-Abstand oder Zweitrichter) | offen, braucht den Autor |
 
 **Betriebsregeln:** DB wird von Bench/Folger nie beschrieben; Fixtures +
-`landmarks.py` + `core/geometry.py` sind während einer Folger-Runde
-eingefroren; ein Voll-Re-Export der Fixture-Roots ist IMMER eine
+`landmarks.py` + `core/geometry.py` + `core/quality_suetterlin.py`
+(Retrace-Konstante) sind während einer Folger-Runde eingefroren; ein Voll-Re-Export der Fixture-Roots ist IMMER eine
 deklarierte Doppel-Re-Baseline (wordbench + tracebench) mit datiertem
 §-Eintrag — der erste Akt einer Runde ist `--only instances` gegen die
 bestehenden Roots.
