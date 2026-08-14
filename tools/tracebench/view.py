@@ -518,6 +518,15 @@ _JS = """
         t += dur + PAUSE_MS / rate;  // the pen lift: a pause, never a bridge
       });
     });
+    // When the writing finishes NATURALLY, drop back into the dash-free
+    // resting state — otherwise the finished strokes keep their dash and the
+    // tail-clip this page just fixed can reappear. A cancelled run (word
+    // switch, replay) rejects the promise and has already been cleaned up.
+    if (running.length) {
+      Promise.all(running.map(function (a) { return a.finished; }))
+        .then(function () { finalState(); })
+        .catch(function () { /* cancelled elsewhere */ });
+    }
   }
   function setVisible(label, visible) {
     [].slice.call(document.querySelectorAll('g.layer')).forEach(function (g) {
