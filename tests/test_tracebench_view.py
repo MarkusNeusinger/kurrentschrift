@@ -97,6 +97,9 @@ def test_structure_marks_separate_overlap_from_retrace_and_place_rings() -> None
     assert marks.retraces
     assert all(overlap is False for _d, overlap in marks.retraces)
     assert marks.crossings == []
+    # …and the table's number is the ruler's MERGED zone count: the two passes
+    # of one out-and-back are one zone, not two.
+    assert marks.zones == 1
 
     # A second stroke riding anti-parallel over the first: an overlap zone.
     body = [[0.0, 0.5], [2.0, 0.5]]

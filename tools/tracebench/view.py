@@ -54,6 +54,7 @@ from tools.tracebench.counters import (
     RETRACE_PROX_UNITS,
     crossing_points,
     resampled_strokes,
+    retrace_segments,
 )
 from tools.tracebench.frames import BenchFrame, arc_length, classify_strokes, concat_strokes
 from tools.tracebench.reference import DEFAULT_FIXTURES_DIR, Reference, ReferenceEntry, load_reference
@@ -180,6 +181,7 @@ class StructureMarks:
 
     crossings: list[tuple[float, float]]  # crop px
     retraces: list[tuple[str, bool]]  # (pass path data in crop px, overlap across strokes)
+    zones: int = 0  # merged retrace ZONES — the ruler's own count (`retrace_segments`)
 
 
 def structure_marks(frame: BenchFrame, strokes_bench: list[np.ndarray]) -> StructureMarks:
@@ -198,6 +200,8 @@ def structure_marks(frame: BenchFrame, strokes_bench: list[np.ndarray]) -> Struc
     if len(pts) < 2:
         return StructureMarks(crossings=[], retraces=[])
     crossings = [(float(x), float(y)) for x, y in frame.bench_to_crop_px(crossing_points(list(strokes_bench)))]
+    zone_mids, _zone_arc = retrace_segments(list(strokes_bench))
+    zones = int(np.asarray(zone_mids).reshape(-1, 2).shape[0])
     idx, partner = detect_retrace_pairs(pts[:, 0], pts[:, 1], starts, prox_px=RETRACE_PROX_UNITS)
     retraces: list[tuple[str, bool]] = []
     if len(idx):
@@ -216,7 +220,7 @@ def structure_marks(frame: BenchFrame, strokes_bench: list[np.ndarray]) -> Struc
                 overlap = any(stroke_of[int(partner_of[k])] != stroke_of[k] for k in run)
                 retraces.append((stroke_path_data(seg), overlap))
             run = [] if i is None else [i]
-    return StructureMarks(crossings=crossings, retraces=retraces)
+    return StructureMarks(crossings=crossings, retraces=retraces, zones=zones)
 
 
 def layer_paths(
@@ -508,12 +512,19 @@ def _legend_item(layer: Layer) -> str:
 
 def _numbers_row(layer: Layer) -> str:
     note = "" if layer.ok else f' <span class="detail">{html.escape(layer.detail or layer.status)}</span>'
-    # The reference is not a candidate and is never scored against itself here;
-    # its row carries the stroke count (the pen-lift comparison) and dashes.
+    # Every layer — the hand INCLUDED — states its own detected counts, from the
+    # very detectors that placed the rings and bands on the stage (the owner's
+    # check: the numbers must be there and must agree with what is drawn). Only
+    # the four report columns stay relative-to-reference and dash out for the
+    # reference itself.
+    if layer.structure is not None:
+        own = f"<td>{len(layer.structure.crossings)}</td><td>{layer.structure.zones}</td>"
+    else:
+        own = "<td>–</td>" * 2
     cells = _numbers_cells(layer.numbers) if layer.kind == "candidate" else "<td>–</td>" * 4
     return (
         f'<tr class="layer-row"><td><span class="swatch" style="background:{layer.color}"></span> '
-        f"{html.escape(layer.label)}{note}</td><td>{len(layer.strokes)}</td>{cells}</tr>"
+        f"{html.escape(layer.label)}{note}</td><td>{len(layer.strokes)}</td>{own}{cells}</tr>"
     )
 
 
@@ -539,7 +550,8 @@ def word_section(index: int, entry: ReferenceEntry, crop_uri: str, size: tuple[i
         f'<svg viewBox="0 0 {width} {height}" width="{width * STAGE_ZOOM}" height="{height * STAGE_ZOOM}">'
         f"{svg_layers}</svg></div>"
         f'<div class="legend">{legend}</div>'
-        f'<table class="numbers"><thead><tr><th>Verfahren</th><th>Striche</th><th>dtw_xh</th><th>aiou</th>'
+        f'<table class="numbers"><thead><tr><th>Verfahren</th><th>Striche</th><th>Kreuzungen</th>'
+        f"<th>Retrace-Zonen</th><th>dtw_xh</th><th>aiou</th>"
         f"<th>cross m/s</th><th>retrace</th></tr></thead><tbody>{rows}</tbody></table>"
         f"</section>"
     )
