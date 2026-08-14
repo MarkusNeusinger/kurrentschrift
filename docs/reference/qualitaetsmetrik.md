@@ -3827,11 +3827,18 @@ Zone.
    mit |Abstand| ≥ `PIERCE_MARGIN_UNITS` = 0,05 xh (≈ halbe
    Strichbreite: der andere Strich muss jenseits der eigenen Tinte
    wieder austreten). Beide Pässe müssen durchstoßen. Die
-   15°-Winkel-Schwelle ENTFÄLLT (der Durchstoß subsumiert sie); die
-   Bogen-Trennung ≥ 0,35 xh bleibt (der Wobble-Pin bleibt gültig).
-   Gemessen an den Dev-Händen: alle sechs Owner-Streitfälle fallen
-   richtig, und die Wort-Zählungen rücken auf die Duktus-Budgets
-   (Wer 5 → 3 = W2+r1, muß 3 → 1 = ß-Budget).
+   15°-Winkel-Schwelle ENTFÄLLT als eigene Regel — Fenster × Marge
+   implizieren einen ehrlichen Konditionierungs-Boden von
+   arcsin(0,05/0,25) ≈ 11,5°, unter dem sich zwei Linien im
+   Viertel-xh nicht über die halbe Strichbreite trennen und die Tinte
+   die Frage selbst nicht beantwortet; die Bogen-Trennung ≥ 0,35 xh
+   bleibt (der Wobble-Pin bleibt gültig). Gemessen an den Dev-Händen:
+   die Owner-Streitfälle fallen richtig (der tangentiale unter-e-Ring
+   raus, die und-d-Schleife bleibt), und am linken-k entscheidet EINE
+   Regel statt einer Schwelle: die Schleifen-Schlüsse des Kringels
+   durchstoßen (bleiben), die bloßen Abzweig-Gabelungen nicht (fallen
+   — beide Klassen gleich beurteilt, was die v1-Winkelschwelle nicht
+   leistete).
 2. **Retrace nur bei bogen-nahem Partner** — Hin-und-zurück heißt: die
    Partner-Samples liegen entlang des Wegs UNMITTELBAR daneben.
    Pass-Klassifikation: Partner im ANDEREN Strich →
@@ -3846,9 +3853,10 @@ Zone.
    gezählt und ausgewiesen (Report/Seite), nie Teil eines Loss.
 
 **Validierung (vorregistriert):** die Owner-Verdikte werden als Tests
-gepinnt — unter-e: keine Kreuzung; linken-k: beide Abzweig-Klassen
-gleich behandelt; mit-t: genau EINE Retrace-Zone im selben Strich, die
-Querstrich-Fälle Überlagerung; laden-l-a: keine Zone; der
+gepinnt — unter-e: keine Kreuzung (tangentialer Dip); linken-k: beide
+Abzweig-Klassen nach DERSELBEN Regel beurteilt; mit-t: genau EINE
+Retrace-Zone im selben Strich, die Querstrich-Fälle Überlagerung,
+Kringel-gegen-Anstrich Berührung; laden-l-a: keine Zone; der
 Wobble-Out-and-back bleibt Retrace ohne Ring; und-d bleibt Kreuzung.
 Das Identitäts-Gate (`--candidate authored`) muss exakt bestehen
 bleiben. dtw/aiou/Chamfer/Marken/Lifts sind NICHT berührt.
@@ -3861,3 +3869,30 @@ v2-Baseline-Tabelle folgt in diesem Eintrag nach der Implementierung.
 `landmarks.py`, `core/geometry.py` und der Landmark-Term des Folgers
 bleiben eingefroren (der Chain-Korrespondenz-Zensus §13a behält seine
 eigenen Schwellen).
+
+**v2-Baseline (Kette gegen die Hand, 10 Dev-Wörter; gemessen nach der
+Implementierung, alle Verdikt-Pins grün, Identitäts-Gate PASS):**
+`dtw_xh` 0,061985 med / 0,2618 p90 — byte-gleich zur v1-Baseline, wie
+deklariert (nur die Strukturzähler änderten die Bedeutung). Struktur:
+
+| Zähler | Hand (Σ) | Kette (Σ) | missing+spurious |
+|---|---|---|---|
+| Kreuzungen (Durchstoß) | 27 | 35 | 5+13 = 18 (v1: 26) |
+| Retrace-Zonen | 15 | 18 | 2+5 = 7 (v1: 21 erfunden) |
+| Berührungen | 8 | 17 | berichtet, nie Loss |
+| Überlagerungen | 0 | 6 | berichtet, nie Loss |
+
+Lesart: Von den 19 „erfundenen Kreuzungen" der v1-Kette waren 6
+tangentiale Artefakte, die der Durchstoß nicht mehr zählt — 13
+echte Erfindungen bleiben die Klage. Die 21 „erfundenen
+Retrace-Zonen" der v1 zerlegen sich in 5 echte Erfindungen, **9
+erfundene Berührungen** (die Komposition schreibt Buchstaben zu eng
+aneinander vorbei — eine präzisere Diagnose als „Retrace") und 6
+Überlagerungen. `retrace_arc_ratio` med fällt 1,51 → 0,83: die Kette
+retraced jetzt WENIGER Bogen als die Hand — die ehrliche Richtung,
+denn die echten Hand-Retraces (t-Stamm, ß) sind lang, und die
+Erfindungen sind in ihre eigenen Klassen umgezogen. Hand-seitig
+rücken die Zählungen auf die Duktus-Budgets (Wer 5 → 3 = W2+r1,
+muß 3 → 1 = ß-Budget, unter 5 → 4). Kandidat der Baseline ist die
+verifizierte Chain-Identität (`follow --rounds 0`,
+Byte-Identitäts-Pin) über den File-Provider.

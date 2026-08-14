@@ -110,6 +110,33 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **Structure counters v2 — a dated re-baseline of the trace bench's
+  crossing and retrace counts** (`tools/tracebench/counters.py`,
+  pre-registered in `qualitaetsmetrik.md` §14 `aug16` from the owner's
+  manual audit of the dev words, every constant measured on the named
+  examples). A crossing now exists only where one line PIERCES the
+  other — clearly in on one side and out on the other, both ways
+  (`_pierces`, window 0.25 xh, margin 0.05 xh ≈ half a stroke width) —
+  which retires the 15-degree angle threshold: a retrace release is no
+  crossing however sharp, a piercing loop closure is one however
+  shallow. A retrace requires its partner ARC-NEAR (gap ≤ 1.0 xh) and a
+  real pass (≥ 0.30 xh): anti-parallel proximity with a long way in
+  between is a **touch** (writing past each other), a partner in
+  another pen stroke an **overlap**, a diverging cusp nothing — touch
+  and overlap are counted and reported (`touch_ref/cand`,
+  `overlap_ref/cand`), never part of a loss. The owner's verdicts are
+  pinned as tests, the identity gate still passes exactly, and
+  dtw/aiou/chamfer/marks are untouched (the v2 baseline's dtw is
+  byte-identical to v1). New v2 chain baseline: invented crossings
+  19 → 13 (6 were tangential artifacts), invented retrace zones
+  21 → 5 — the rest reclassifies into 9 invented touches (letters
+  composed too close) and 6 overlaps; hand counts move onto the ductus
+  budgets (Wer 5 → 3, muß 3 → 1). The duel page draws the three zone
+  classes distinctly (solid/dashed/dotted); glossary gains
+  „Durchstoß-Kriterium" and „Berührung (Struktur-Zähler)". v1 numbers
+  of the aug14 baseline and arms 1/5/6/6b stay archived and are not
+  comparable to v2.
+
 - **Follower arms 5 and 6 recorded in the quality-metric §14** (doc-only):
   the overlap term is acquitted of the §13 brake hypothesis (switching it
   off is mildly better, the structure veto vs the baseline remains), and

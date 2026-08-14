@@ -20,15 +20,18 @@ import numpy as np
 import pytest
 from scipy.ndimage import binary_dilation
 
+from tools.pairlab.landmarks import polyline_self_intersections
 from tools.tracebench.counters import (
     RESAMPLE_STEP_UNITS,
     RETRACE_MIN_PAIRS,
     count_crossings,
     count_retraces,
     crossing_points,
+    resampled_strokes,
     retrace_segments,
+    structure_zones,
 )
-from tools.tracebench.frames import BenchFrame, classify_strokes, concat_body, lift_stats, match_marks
+from tools.tracebench.frames import BenchFrame, classify_strokes, concat_body, concat_strokes, lift_stats, match_marks
 from tools.tracebench.metric import aiou, chamfer, dtw, rasterise_strokes
 
 
@@ -217,12 +220,17 @@ def test_the_whole_stack_is_pinned_on_one_synthetic_pair() -> None:
     assert (crossings.ref, crossings.cand, crossings.matched, crossings.missing) == (1, 1, 1, 0)
     assert crossings.pos_err_xh == pytest.approx(0.029999569133293876, abs=1e-9)
 
-    # Two retrace zones: the stem's out-and-back, and the figure eight's own
-    # waist, where the two lobes run anti-parallel past each other.
+    # ONE retrace zone since the v2 re-baseline (§14 `aug16`): the stem's
+    # out-and-back. The figure eight's waist — the two lobes running
+    # anti-parallel PAST each other — is exactly the owner's touch class now,
+    # counted beside the retrace instead of as one.
     retraces = count_retraces(reference, candidate)
-    assert (retraces.ref, retraces.cand, retraces.matched, retraces.spurious) == (2, 2, 2, 0)
-    assert retraces.arc_ref == pytest.approx(2.2192434683079303, abs=1e-9)
-    assert retraces.arc_cand == pytest.approx(2.2626256266292275, abs=1e-9)
+    assert (retraces.ref, retraces.cand, retraces.matched, retraces.spurious) == (1, 1, 1, 0)
+    assert retraces.arc_ref == pytest.approx(2.059301790048808, abs=1e-9)
+    assert retraces.arc_cand == pytest.approx(2.102443523166898, abs=1e-9)
+    for side in (reference, candidate):
+        zones = structure_zones(side)
+        assert (len(zones.touch_mids), len(zones.overlap_mids)) == (1, 0)
 
     marks = match_marks(ref_marks, cand_marks)
     assert (marks.matched, marks.missing, marks.spurious) == (1, 0, 0)
@@ -248,7 +256,7 @@ def test_a_wobbly_out_and_back_is_a_retrace_not_a_crossing() -> None:
     # Owner question (2026-08-14): a hand-traced stroke that goes out and
     # comes back over itself can genuinely self-intersect under a shallow
     # angle — those wiggle crossings must land in the RETRACE channel, never
-    # in the crossing counter (the >=15 deg conditioning + arc-separation
+    # in the crossing counter (since v2 the pierce margin + arc-separation
     # guards are what sieve them out).
     k = 120
     up = np.column_stack([np.full(k, 0.5) + 0.008 * np.sin(np.linspace(0, 9, k)), np.linspace(0.0, 1.4, k)])
@@ -257,3 +265,46 @@ def test_a_wobbly_out_and_back_is_a_retrace_not_a_crossing() -> None:
     assert len(crossing_points([stroke])) == 0
     mids, arc = retrace_segments([stroke])
     assert len(mids) == 1 and arc > 1.5
+
+
+# ---- the §14 v2 owner verdicts, pinned (qualitaetsmetrik.md `aug16`) --------
+
+
+def test_a_tangential_dip_is_not_a_crossing() -> None:
+    """The unter-e verdict: a retrace that dips across and releases on the
+    SAME side has a raw self-intersection but no pierce — no ring."""
+    forth = [[0.0, 0.0], [2.0, 0.0]]
+    back = [[2.0, 0.06], [1.05, 0.06], [1.0, -0.02], [0.95, 0.06], [0.0, 0.06]]
+    stroke = np.asarray(forth + back, dtype=float)
+    raw = polyline_self_intersections(*concat_strokes(resampled_strokes([stroke])))
+    assert raw, "the premise: the dip really does intersect"
+    assert len(crossing_points([stroke])) == 0
+
+
+def test_a_shallow_pierce_is_a_crossing_below_the_retired_angle_threshold() -> None:
+    """The linken-k verdict: ONE rule instead of a threshold. A 13-degree
+    crossing — refused by v1's 15-degree rule — counts, because it clearly
+    exits beyond half a stroke width on the other side within the window."""
+    stroke = np.asarray([[-1.0, 0.0], [2.0, 0.0], [3.0, 0.6], [-2.0, -0.55]], dtype=float)
+    assert len(crossing_points([stroke])) == 1
+
+
+def test_writing_past_each_other_is_a_touch_not_a_retrace() -> None:
+    """The mit Kringel-gegen-Anstrich verdict: anti-parallel proximity with a
+    long way in between is a TOUCH."""
+    stroke = np.asarray(
+        [[0.0, 0.5], [2.0, 0.5], [2.0, 2.0], [3.5, 2.0], [3.5, 0.55], [2.0, 0.55], [0.0, 0.55]], dtype=float
+    )
+    zones = structure_zones([stroke])
+    assert len(zones.touch_mids) == 1
+    assert len(zones.retrace_mids) == 0
+
+
+def test_a_diverging_cusp_is_no_zone_at_all() -> None:
+    """The laden l-a verdict: a sharp cusp whose limbs immediately diverge
+    grazes the proximity rule for a moment and is nothing."""
+    stroke = np.asarray([[0.0, 0.0], [0.0, 2.0], [0.06, 2.0], [1.2, 0.0]], dtype=float)
+    zones = structure_zones([stroke])
+    assert len(zones.retrace_mids) == 0
+    assert len(zones.touch_mids) == 0
+    assert len(zones.overlap_mids) == 0

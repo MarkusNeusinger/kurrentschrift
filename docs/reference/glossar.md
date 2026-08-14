@@ -37,9 +37,9 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§6** Extern/Forschung.
 
 - **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1 · Ausreißer §4
-- **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3
+- **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Chronik (tracebench) §4 · Cusp-Connector §3
-- **D** — dconn §4 · Deckung §3 · Duell-Ansicht §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1
+- **D** — dconn §4 · Deckung §3 · Duell-Ansicht §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2 · extrapoliertes Landmark-Ziel §3
 - **F** — Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Frozen-Reference-Regel §4 · Fuge §1
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4
@@ -1091,9 +1091,43 @@ gemeinsamem 0,02-xh-Raster), wobei Hin- und Rückschenkel EINER
 Aus-und-zurück-Bewegung zu einer Zone fusionieren (über die
 Partner-Indizes des Detektors — sonst verweigert das Zentroid-Matching
 eine Bahn gegen sich selbst, und das authored-Identitäts-Gate schlüge
-auf jedem Deckstrich-Wort an). Robusteste Vergleichszahl ist das
-Bogen-Verhältnis `retrace_arc_ratio`, die Zonen-Counts sind die
-Ortsdiagnose. *Technisch:* `tools/tracebench/counters.py::count_retraces`
+auf jedem Deckstrich-Wort an). Seit den Struktur-Zählern v2
+(qualitaetsmetrik §14 `aug16`) zählt ein Pass nur als Retrace, wenn
+sein Partner BOGEN-NAH liegt (Lücke ≤ 1,0 xh) und der Pass keine
+Spitzen-Graze ist (Arc ≥ 0,30 xh); ferne Antiparallel-Nähe ist eine
+→ Berührung, ein Partner im anderen Strich eine Überlagerung.
+Robusteste Vergleichszahl ist das Bogen-Verhältnis
+`retrace_arc_ratio`, die Zonen-Counts sind die Ortsdiagnose.
+*Technisch:* `tools/tracebench/counters.py::count_retraces`
+
+**Durchstoß-Kriterium** *(pierce test)* — die v2-Definition der
+gezählten Schleifenkreuzung (Owner-Spezifikation aus dem manuellen
+Audit): Eine Kreuzung existiert nur, wo eine Linie die andere
+DURCHBRICHT — eindeutig auf einer Seite herein, auf der anderen
+heraus, beidseitig geprüft. Formal: TLS-Gerade durch das
+±0,25-xh-Fenster jedes Passes; die Fensterenden des anderen Passes
+müssen auf entgegengesetzten Seiten liegen, beide ≥ 0,05 xh
+(≈ halbe Strichbreite) heraus. Ersetzt die 15°-Winkel-Schwelle: eine
+Retrace-Ablösung ist keine Kreuzung, wie spitz ihr Winkel auch sei,
+und ein flacher Schleifen-Schluss ist eine, wie flach er auch sei
+(impliziter Konditionierungs-Boden arcsin(0,05/0,25) ≈ 11,5° — darunter
+beantwortet die Tinte die Frage selbst nicht). *Technisch:*
+`tools/tracebench/counters.py::_pierces`, Konstanten
+`PIERCE_WINDOW_UNITS`/`PIERCE_MARGIN_UNITS`
+→ qualitaetsmetrik.md §14 (Struktur-Zähler v2)
+
+**Berührung (Struktur-Zähler)** *(touch)* — Vorbeischreiben statt
+Retrace: zwei Passagen derselben Bahn laufen nahe und entgegengesetzt
+(der Retrace-Detektor flaggt sie), aber zwischen ihnen liegt entlang
+des Wegs mehr als 1,0 xh — die Feder kam später wieder vorbei, sie
+fuhr nicht zurück. Eigene gezählte und berichtete Klasse neben
+Retrace und Überlagerung (Partner im anderen Strich), nie Teil eines
+Loss; auf der Duell-Seite gepunktet gezeichnet. Die v1-„erfundenen
+Retraces" der Kette waren überwiegend erfundene Berührungen — die
+Komposition schreibt Buchstaben zu eng aneinander vorbei.
+*Technisch:* `tools/tracebench/counters.py::structure_zones`,
+`RETRACE_MAX_PARTNER_GAP_UNITS`
+→ qualitaetsmetrik.md §14 (Struktur-Zähler v2)
 
 **Duell-Ansicht** — die Sichtbarmachung des Tintenfolger-Duells: ein
 selbst-enthaltenes HTML, das je Wort ALLE Bahn-Kandidaten als
