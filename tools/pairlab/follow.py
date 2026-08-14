@@ -41,6 +41,22 @@ keep the FULL chain λ while everything else is released to λ_prox
 (`retrace_anchor_mask`, the same `core.geometry.detect_retrace_pairs` rule at
 0.15 xh the trace bench counts with).
 
+**The landmark targets** (arm ⑥). The chain's crossing correspondence aims at a
+skeleton BRANCH POINT, and thinning displaces that point by up to the local
+stroke width — more than the anchor spacing the term is supposed to correct.
+`extrapolated_targets` re-aims it at the intersection of the incident branches
+extrapolated across the junction, with the local half-width as an isotropic
+uncertainty that enters as a per-target `1/sigma^2` weight
+(`apply_landmark_targets`). Finding those branches on real cursive ink is the
+hard half and is done by a GEODESIC walk along the skeleton whose core swallows
+the whole junction CLUSTER — `_incident_branches` says what a Euclidean annulus
+around the branch point gets wrong, and why it refined nothing at all on the
+first ten words. Refusals keep the raw branch point and say why, separating what
+the ink cannot support from what the walk failed to find (`_refine_one`). All
+of it is skipped at `landmark = 0`, which is the shipped default, so the ladder's
+rungs are chosen from measured ratios (`--landmark-calibrate`) rather than by
+analogy — §11c's standing warning.
+
 **Guard rails** (§3, binding): strictly additive and opt-in; `KS_FOLLOW_*` never
 moves a `CHAIN_*`; no chain solve changes; the harvest gets no follower path
 here; nothing writes to the DB, the API, `core/` or any rendering path. Every
@@ -51,11 +67,14 @@ residual this solve minimises itself.
     uv run python -m tools.pairlab.follow die laden --rounds 2
     uv run python -m tools.pairlab.follow --all --set words --candidate-out temp/follow.json
     uv run python -m tools.pairlab.follow die --sweep prox=1.0,0.1,0.0
+    uv run python -m tools.pairlab.follow --all --landmark-calibrate --json temp/lm-calib.json
+    uv run python -m tools.pairlab.follow --all --landmark <w> --landmark-targets extrapolated
 """
 
 from __future__ import annotations
 
 import argparse
+import heapq
 import json
 import os
 import time
@@ -66,6 +85,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+from scipy.ndimage import label as label_regions
 from scipy.optimize import minimize
 
 from core.compose import CAP_RESTART_BASES, _key_base
@@ -105,6 +125,7 @@ from tools.pairlab.chain import (
     fit_word_chain,
     respec_from_solution,
 )
+from tools.pairlab.landmarks import LANDMARK_MIN_ANGLE_DEG
 from tools.pairlab.trace import assemble_word_strokes, cap_word_strokes
 from tools.wordlab.cases import DEFAULT_FIXTURES_DIR, WordCase, iter_fixture_word_cases
 from tools.wordlab.derive import WordDeriveResult, derive_word
@@ -181,6 +202,129 @@ FOLLOW_OVERLAP_WEIGHT_ENV = "KS_FOLLOW_OVERLAP_WEIGHT"
 FOLLOW_OVERLAP_WEIGHT = float(os.environ.get(FOLLOW_OVERLAP_WEIGHT_ENV) or CHAIN_OVERLAP_WEIGHT)
 FOLLOW_LANDMARK_WEIGHT_ENV = "KS_FOLLOW_LANDMARK_WEIGHT"
 FOLLOW_LANDMARK_WEIGHT = float(os.environ.get(FOLLOW_LANDMARK_WEIGHT_ENV) or CHAIN_LANDMARK_WEIGHT)
+
+# --- arm ⑥: WHERE the landmark term's target sits ----------------------------
+#
+# The chain's correspondence (`chain._landmark_correspondence`) pulls a fitted
+# crossing onto the nearest skeleton BRANCH POINT. That point is systematically
+# the wrong TARGET: thinning displaces a junction's branch point by up to the
+# local stroke width (tintenfolger.md §3, from the published junction
+# literature), i.e. ±2–4 px on this material — LARGER than the ~1.5 px anchor
+# spacing the term exists to correct, so a term aimed at it would price a
+# structure error against a point that carries one of its own. The published
+# correction is to extrapolate the incident centerline branches across the
+# junction and to intersect them, with an isotropic uncertainty of about the
+# local stroke width.
+#
+# Three modes, so the ladder can move ONE thing at a time (§11c/§11d):
+#
+# * `raw` — the chain's branch points verbatim. THE control arm: the term
+#   exactly as it ships today, so „refined targets" is a paired comparison
+#   against the formulation it replaces rather than against nothing.
+# * `extrapolated_uniform` — refined targets, uniform weights.
+# * `extrapolated` — refined targets AND the 1/σ² weighting.
+#
+# NOTHING here is calibrated, and no weight is proposed: at `landmark == 0` the
+# whole block is skipped and every solve stays byte-identical (the term's own
+# inertness rule, `chain.CHAIN_LANDMARK_WEIGHT`).
+FOLLOW_LANDMARK_TARGETS_ENV = "KS_FOLLOW_LANDMARK_TARGETS"
+FOLLOW_LANDMARK_TARGETS = os.environ.get(FOLLOW_LANDMARK_TARGETS_ENV) or "extrapolated"
+LANDMARK_TARGET_MODES = ("extrapolated", "extrapolated_uniform", "raw")
+# FLOOR (xh) on the reach of the skeleton walk around a branch point. 0.5 xh is
+# ~15 px on this material: enough beyond the excluded core for a stable
+# direction, and short enough that the branch's OWN curvature does not out-bias
+# the junction displacement being corrected. The proposal's sketch said 1.5–2 xh;
+# that is rejected here on the geometry rather than by taste — a Sütterlin letter
+# is 1–2 xh tall, so a 1.5 xh branch bends by ~5 px against its chord on a
+# 0.5 xh-radius turn (L²/8R), which is larger than the ±2–4 px the correction is
+# worth. Measured, a wider window is not merely wasteful but actively wrong: at
+# 1.5 xh the disc reaches around whole letters, and the walk that predated the
+# junction cluster welded 10 of 21 targets' limbs into a single component.
+#
+# It is a floor and not the reach itself: `extrapolated_targets` takes the LARGER
+# of it and `cluster + core + min_branch`, because a walk that stops inside its
+# own junction cluster has no limb to fit. On the dev words the cluster clause
+# binds (24–31 px against this floor's 15), which is the honest statement of how
+# far the walk really goes.
+FOLLOW_LANDMARK_WINDOW_UNITS_ENV = "KS_FOLLOW_LANDMARK_WINDOW_UNITS"
+FOLLOW_LANDMARK_WINDOW_UNITS = float(os.environ.get(FOLLOW_LANDMARK_WINDOW_UNITS_ENV) or 0.5)
+# Junction core to EXCLUDE from the line fits, in local HALF-widths: 2.0 = one
+# full stroke width. That is exactly the published displacement bound — the
+# pixels inside it are the ones thinning can have moved, so they are the ones a
+# line fitted to the undistorted branch must not see.
+FOLLOW_LANDMARK_CORE_WIDTHS = 2.0
+# …and its floor in px, for a hairline whose half-width rounds to well under a
+# pixel: below ~2 px the "core" would exclude nothing at all and the fit would
+# run straight through the junction blob it is meant to step over.
+FOLLOW_LANDMARK_CORE_MIN_PX = 2.0
+# Junction-CLUSTER radius, in local HALF-widths: how far along the ink the core
+# absorbs further fork pixels before the limbs are cut.
+#
+# Thinning does not turn one shallow crossing into one branch point. It turns it
+# into TWO Y-junctions bridged by a short segment, and the bridge grows as the
+# crossing angle shrinks. A core that stops before the bridge therefore walks a
+# real X as a T: three limbs (two real ones and the bridge), the fourth limb
+# hidden behind the partner Y — and three limbs can yield at most ONE
+# continuation pair, so the refinement refuses by construction, whatever the
+# tolerance says. That is the mechanism behind 16 of the 21 `no_continuation_pair`
+# refusals measured on the dev words.
+#
+# The bound is measured, not assumed: over the 16 distinct junctions the 10 dev
+# words' landmark targets sit on, the partner branch point sits 9.4–13.2 px away
+# by ARC where the local stroke is 6.4–8.4 px wide — 1.2–1.7 stroke widths, i.e.
+# 2.4–3.4 half-widths. 4.0 half-widths (= 2 stroke widths) covers that with
+# headroom and stays well inside the letter, and it is a GEODESIC radius, so a
+# neighbouring stroke passing close in the image is never absorbed.
+FOLLOW_LANDMARK_CLUSTER_WIDTHS = 4.0
+# Minimum branch span (px) OUTSIDE the core. The walk radius is widened to
+# `core + this` where the window would otherwise leave no branch to fit.
+FOLLOW_LANDMARK_MIN_BRANCH_PX = 6.0
+# …and the minimum pixel count of a branch. A line has 2 degrees of freedom, so
+# 4 pixels is the smallest set that can disagree with it twice over; below that
+# a "direction" is the quantisation grid talking.
+FOLLOW_LANDMARK_MIN_BRANCH_PIXELS = 4
+# How far from anti-parallel two branches may point and still count as ONE
+# stroke continuing through the junction ("gute Fortsetzung"). The pairing is
+# GREEDY-BEST — the smallest deviation is taken first — so this threshold only
+# ever REFUSES a branch that continues into nothing; it is not what tells the
+# right partner from the wrong one.
+#
+# It was 30°, chosen as twice `landmarks.LANDMARK_MIN_ANGLE_DEG` — an argument
+# about the CROSSING angle, which is not what this number measures. What it
+# measures is how far two limbs of ONE pass deviate from anti-parallel, and on a
+# cursive script that is dominated by the pass's own CURVATURE, not by the
+# crossing: each limb's total-least-squares direction is the tangent at its own
+# midpoint, so a limb spanning arc [s0, s1] is rotated (s0+s1)/2R from the
+# tangent at the junction, and the two limbs rotate opposite ways in the outward
+# frame — deviation (s0+s1)/R.
+#
+# Measured on the dev words, for the pairs whose two limbs really do lie on one
+# arc (circle fit rms < 1 px, n = 6): observed deviation median 18.7°/max 28.4°
+# against a predicted median 21.5°/max 33.8°, agreeing to a median 3.8°. The
+# limbs span 8.4–31.1 px and the tightest radius a continuation is written with
+# is ~70 px (2.3 xh), so the bound the geometry imposes is (10+31)/70 rad ≈ 34°.
+# At 30° that refused four of the eight crossings the walk resolves, each by
+# 0.8–1.5°. 35° clears the geometry; the answer is then FLAT to 45° (measured),
+# so it is not a threshold sitting on a knife edge, and the second pair greedy
+# actually proposes at a non-crossing sits at 148° — the gap is not close.
+FOLLOW_LANDMARK_CONTINUATION_TOL_DEG = 35.0
+# Uncertainty floor (px) of a refined target: one pixel, because the branch
+# point it is measured against is itself a centroid on a pixel grid. Without a
+# floor a hairline junction would claim an arbitrarily precise target and its
+# 1/σ² weight would swallow the whole term.
+FOLLOW_LANDMARK_SIGMA_FLOOR_PX = 1.0
+# A refined intersection farther than this many local HALF-widths from the raw
+# branch point is REFUSED (2.0 = one stroke width): the published displacement
+# bound is the local stroke width, so an extrapolation that lands further has
+# not corrected the junction, it has found a different one — and the honest
+# answer is the raw branch point plus the reason.
+FOLLOW_LANDMARK_MAX_SHIFT_WIDTHS = 2.0
+# Multipliers of the PARITY weight the calibration hook reports. Same reading as
+# `landmarklab.calibration`: the parity weight is `e_geo / e_landmark` at the
+# optimum — the weight at which the correspondence weighs as much as the
+# geometry term — and a rung is a fraction of it. §11c is why a ladder is read
+# off the optimum instead of chosen by analogy.
+LANDMARK_CALIBRATION_MULTIPLIERS = (0.01, 0.1, 1.0)
 FOLLOW_WIDTH_WEIGHT_ENV = "KS_FOLLOW_WIDTH_WEIGHT"
 FOLLOW_WIDTH_WEIGHT = float(os.environ.get(FOLLOW_WIDTH_WEIGHT_ENV) or DEFAULT_WIDTH_WEIGHT)
 # The neighbour-binding term is FIXED at 0.0 — the one weight that does NOT
@@ -229,6 +373,10 @@ class FollowWeights:
     width: float = FOLLOW_WIDTH_WEIGHT
     overlap: float = FOLLOW_OVERLAP_WEIGHT
     landmark: float = FOLLOW_LANDMARK_WEIGHT
+    landmark_targets: str = FOLLOW_LANDMARK_TARGETS
+    """WHERE the landmark term aims — `LANDMARK_TARGET_MODES`. Not a weight and
+    therefore not sweepable by `--sweep`; it selects between formulations, and
+    the arm runs one per configuration so each stays a single-factor step."""
     bind: float = FOLLOW_BIND_WEIGHT
     smooth: float = CHAIN_CONNECTOR_SMOOTH_WEIGHT
     max_delta: float = FOLLOW_MAX_DELTA
@@ -412,6 +560,778 @@ def apply_retrace_guard(problem: _ChainProblem, mask: np.ndarray, *, prox_weight
     return problem
 
 
+# --------------------------------------------------------- the landmark targets
+
+
+@dataclass(frozen=True)
+class LandmarkTargeting:
+    """Where the landmark term aims, and how hard, for ONE built problem.
+
+    Row `i` corresponds to row `i` of `problem.landmark_op` — the kept
+    correspondences in detection order, exactly the order `landmarklab.
+    _kept_landmarks` walks. `targets` are in the problem's template units
+    (composed frame, y up from the baseline, 1 unit = x-height), like
+    `problem.landmark_targets`, and are the UNWHITENED points: a consumer that
+    wants to know where the term aims reads them here rather than off a problem
+    the whitening below has already scaled.
+    """
+
+    mode: str
+    targets: np.ndarray  # (n, 2) refined (or raw) ink crossings, template units
+    raw_targets: np.ndarray  # (n, 2) the skeleton branch points they came from
+    sigmas: np.ndarray  # (n,) isotropic 1-sigma uncertainty, template units
+    weights: np.ndarray  # (n,) relative 1/sigma^2 weights, normalised to mean 1
+    reasons: list[str]  # per row: "ok", "raw", or the refusal that kept the raw point
+    entries: list[dict]  # per row, everything the report needs
+
+    @property
+    def shifts_units(self) -> np.ndarray:
+        """(n,) how far the refinement moved each target off its branch point."""
+        if not len(self.targets):
+            return np.zeros(0)
+        d = np.asarray(self.targets, dtype=float) - np.asarray(self.raw_targets, dtype=float)
+        return np.hypot(d[:, 0], d[:, 1])
+
+
+def _to_units(problem: _ChainProblem, x_px: float, y_px: float) -> tuple[float, float]:
+    """Crop px → the problem's template units (`_landmark_correspondence`'s map)."""
+    return (
+        (float(x_px) - problem.x_origin_px) / problem.unit_px,
+        (problem.baseline_y_px - float(y_px)) / problem.unit_px,
+    )
+
+
+def _to_px(problem: _ChainProblem, u: float, v: float) -> tuple[float, float]:
+    """…and back."""
+    return (problem.x_origin_px + float(u) * problem.unit_px, problem.baseline_y_px - float(v) * problem.unit_px)
+
+
+def _local_half_width_px(problem: _ChainProblem, x_px: float, y_px: float) -> float:
+    """The measured ink HALF-width (px) at a crop pixel — the junction's scale.
+
+    `chain._prepare_fields` propagates `case.width_map` (the EDT half-width of
+    every ink pixel) over the whole crop by nearest ink, so the value is defined
+    off the ink too. Read nearest-pixel rather than bilinear on purpose: it is a
+    scale for thresholds, and interpolating it would suggest a precision the
+    distance transform does not have.
+    """
+    field = np.asarray(problem.width_raw, dtype=float)
+    if field.ndim != 2 or not field.size:
+        return 0.0
+    h, w = field.shape
+    r = int(np.clip(round(float(y_px)), 0, h - 1))
+    c = int(np.clip(round(float(x_px)), 0, w - 1))
+    return float(field[r, c])
+
+
+def _principal_direction(pts: np.ndarray) -> np.ndarray | None:
+    """Unit total-least-squares direction of a pixel cloud, or None if it has none."""
+    pts = np.asarray(pts, dtype=float).reshape(-1, 2)
+    if len(pts) < 2:
+        return None
+    centred = pts - pts.mean(axis=0)
+    vals, vecs = np.linalg.eigh(centred.T @ centred)
+    if float(vals[-1]) <= 0.0:
+        return None
+    u = np.asarray(vecs[:, -1], dtype=float)
+    n = float(np.hypot(u[0], u[1]))
+    return u / n if n > 0.0 else None
+
+
+_NEIGHBOUR_STEPS = tuple((dy, dx) for dy in (-1, 0, 1) for dx in (-1, 0, 1) if (dy, dx) != (0, 0))
+_ROOT2 = float(np.sqrt(2.0))
+
+
+def _fork_pixels(m: np.ndarray) -> np.ndarray:
+    """Skeleton pixels with ≥ 3 eight-neighbours — `skeleton_branch_points`' own test.
+
+    Its clusters, not its centroids: the cluster is what a junction core has to
+    swallow, and collapsing it first would only have to be undone here.
+    """
+    pad = np.pad(m, 1).astype(np.int8)
+    h, w = m.shape
+    nb = np.zeros((h, w), dtype=np.int8)
+    for dy in (0, 1, 2):
+        for dx in (0, 1, 2):
+            if dy == 1 and dx == 1:
+                continue
+            nb += pad[dy : dy + h, dx : dx + w]
+    return m & (nb >= 3)
+
+
+def _arc_field(m: np.ndarray, sources: Sequence[tuple[int, int]], cap: float) -> np.ndarray:
+    """Geodesic distance ALONG the skeleton from `sources`, capped at `cap`.
+
+    Dijkstra over the 8-neighbourhood with √2 diagonals — the arc length the ink
+    actually runs, not the straight line between two of its pixels. That
+    difference is the whole point of the walk below: a limb that curls back past
+    the seed is 20 px of ink away and 3 px of image away, and only the first of
+    those two numbers says whether it is still the same limb.
+    """
+    arc = np.full(m.shape, np.inf)
+    h, w = m.shape
+    heap: list[tuple[float, int, int]] = []
+    for r, c in sources:
+        if m[r, c] and arc[r, c] > 0.0:
+            arc[r, c] = 0.0
+            heapq.heappush(heap, (0.0, r, c))
+    while heap:
+        dist, r, c = heapq.heappop(heap)
+        if dist > arc[r, c] or dist > cap:
+            continue
+        for dy, dx in _NEIGHBOUR_STEPS:
+            rr, cc = r + dy, c + dx
+            if not (0 <= rr < h and 0 <= cc < w) or not m[rr, cc]:
+                continue
+            nd = dist + (1.0 if dy == 0 or dx == 0 else _ROOT2)
+            if nd < arc[rr, cc]:
+                arc[rr, cc] = nd
+                heapq.heappush(heap, (nd, rr, cc))
+    return arc
+
+
+def _incident_branches(
+    skel: np.ndarray,
+    seed_px: tuple[float, float],
+    *,
+    radius_px: float,
+    core_px: float,
+    min_pixels: int,
+    cluster_px: float = 0.0,
+) -> list[dict] | None:
+    """The junction's incident branches: `[{pixels, centroid, direction}, …]`.
+
+    `None` — not `[]` — when the assigned point does not sit on this ink at all.
+    The two are different statements and the caller reports them as different
+    reasons: `None` says the correspondence points at nothing, `[]` says the walk
+    found the ink and no way out of it.
+
+    The walk follows the INK, not a disc of the image. A first version labelled
+    the connected components of a Euclidean annulus around the seed, and on the
+    real Sütterlin skeletons that fails in the one way that matters: two limbs of
+    one junction reconnect INSIDE the annulus — around a tight loop, through the
+    next junction, or simply by running parallel a few pixels apart — and become
+    ONE component whose principal direction is a line through both. Measured on
+    the 10 dev words at xh ≈ 30 px, that annulus is 6–9 px thick and its
+    components reached 19–49 px: a 1-px skeleton arc crossing it can be 13 px at
+    most, so the rest was limbs welded together. Every one of those welds became
+    a refusal (`few_branches` where two limbs merged, `no_continuation_pair`
+    where the merged direction pointed nowhere): 21 of 21 targets stayed raw.
+
+    So: geodesic distance along the skeleton (`_arc_field`), limbs identified at
+    the core boundary and carried outward by the arc-order predecessor, and a
+    CONFLUENCE — a pixel two limbs both reach — blocked rather than assigned, so
+    two limbs that meet again keep their identities instead of merging.
+
+    `core_px` (the published junction-displacement bound) is still what cuts the
+    limbs off the junction, but the core is now a geodesic ball and grows into a
+    junction CLUSTER: `cluster_px` absorbs the fork pixels that lie within it.
+    Thinning splits one shallow crossing into TWO Y-branch points bridged by a
+    short segment, and a core that stops before the bridge sees the bridge as a
+    third limb and the crossing's fourth limb not at all — which is a T-junction
+    to every test downstream. Measured on the same words, that partner branch
+    point sits 9.4–13.2 px away where the local stroke is 6.4–8.4 px wide, i.e.
+    1.2–1.7 stroke widths; `FOLLOW_LANDMARK_CLUSTER_WIDTHS` is that bound.
+
+    `direction` is the branch's OWN total-least-squares direction, oriented away
+    from the seed — never the bearing `centroid − seed`, which is what a first
+    version used and what the whole exercise forbids: the seed is a DISPLACED
+    point (that is the premise), so a bearing read from it is skewed by exactly
+    the error being corrected, and two limbs of one stroke can then miss each
+    other's continuation by tens of degrees. The branch's own direction is
+    intrinsic to the ink and carries no such bias.
+    """
+    m = np.asarray(skel, dtype=bool)
+    if m.ndim != 2 or not m.any():
+        return None
+    h, w = m.shape
+    cx, cy = float(seed_px[0]), float(seed_px[1])
+    pad = int(np.ceil(radius_px + cluster_px)) + 2
+    y0, y1 = max(0, int(np.floor(cy)) - pad), min(h, int(np.ceil(cy)) + pad + 1)
+    x0, x1 = max(0, int(np.floor(cx)) - pad), min(w, int(np.ceil(cx)) + pad + 1)
+    if y1 <= y0 or x1 <= x0:
+        return None
+    near = m[y0:y1, x0:x1]
+    if not near.any():
+        return None
+    yy, xx = np.mgrid[y0:y1, x0:x1]
+    sy, sx = yy.astype(float), xx.astype(float)
+
+    dist = np.where(near, np.hypot(sx - cx, sy - cy), np.inf)
+    flat = int(np.argmin(dist))
+    if not np.isfinite(dist.flat[flat]) or float(dist.flat[flat]) > core_px:
+        # Nothing of the skeleton within the core: the assigned branch point does
+        # not sit on this ink, so there is no junction here to walk.
+        return None
+    start = (int(flat // near.shape[1]), int(flat % near.shape[1]))
+
+    # The walk's reach: the limbs, plus whatever the cluster absorbs on the way.
+    arc = _arc_field(near, [start], radius_px + cluster_px + 1.0)
+    forks = _fork_pixels(near)
+    sources = [start]
+    if cluster_px > 0.0:
+        absorbed = forks & np.isfinite(arc) & (arc <= cluster_px)
+        sources.extend((int(r), int(c)) for r, c in zip(*np.nonzero(absorbed), strict=True))
+    core_arc = _arc_field(near, sources, core_px)
+    core = np.isfinite(core_arc) & (core_arc <= core_px)
+    if not core.any():
+        return None
+
+    structure = np.ones((3, 3), dtype=int)
+    ring = np.zeros_like(near)
+    for r, c in zip(*np.nonzero(core), strict=True):
+        for dy, dx in _NEIGHBOUR_STEPS:
+            rr, cc = r + dy, c + dx
+            if 0 <= rr < near.shape[0] and 0 <= cc < near.shape[1] and near[rr, cc] and not core[rr, cc]:
+                ring[rr, cc] = True
+    ring_labels, n_ring = label_regions(ring, structure=structure)
+    if n_ring == 0:
+        return []
+
+    limb = np.full(near.shape, -1, dtype=np.int32)
+    limb[ring] = ring_labels[ring] - 1
+    blocked = np.zeros_like(near)
+    outside = np.isfinite(arc) & near & ~core
+    for _d, r, c in sorted((float(arc[r, c]), int(r), int(c)) for r, c in zip(*np.nonzero(outside), strict=True)):
+        if arc[r, c] > radius_px:
+            continue
+        if limb[r, c] != -1:
+            continue
+        owners: set[int] = set()
+        best: tuple[float, int] | None = None
+        for dy, dx in _NEIGHBOUR_STEPS:
+            rr, cc = r + dy, c + dx
+            if not (0 <= rr < near.shape[0] and 0 <= cc < near.shape[1]):
+                continue
+            if blocked[rr, cc] or limb[rr, cc] == -1 or arc[rr, cc] >= arc[r, c]:
+                continue
+            owners.add(int(limb[rr, cc]))
+            if best is None or arc[rr, cc] < best[0]:
+                best = (float(arc[rr, cc]), int(limb[rr, cc]))
+        if best is None:
+            continue
+        if len(owners) > 1:
+            # Two limbs of this junction have run back into each other. Neither
+            # owns the confluence and neither grows through it — which is exactly
+            # the weld the Euclidean annulus used to report as one branch.
+            blocked[r, c] = True
+            continue
+        limb[r, c] = best[1]
+
+    out: list[dict] = []
+    for i in range(n_ring):
+        sel = (limb == i) & ~blocked & np.isfinite(arc) & (arc <= radius_px)
+        if int(np.count_nonzero(sel)) < min_pixels:
+            continue
+        pts = np.column_stack([sx[sel], sy[sel]])
+        centroid = pts.mean(axis=0)
+        away = centroid - np.array([cx, cy])
+        norm = float(np.hypot(away[0], away[1]))
+        if norm <= 0.0:
+            continue
+        direction = _principal_direction(pts)
+        if direction is None:
+            continue
+        if float(np.dot(direction, away)) < 0.0:
+            direction = -direction  # outward, so „anti-parallel" means „continues"
+        out.append(
+            {
+                "pixels": pts,
+                "centroid": centroid,
+                "bearing": away / norm,
+                "direction": direction,
+                "arc_px": float(arc[sel].max()),
+            }
+        )
+    return out
+
+
+def _continuation_pairs(branches: Sequence[dict], *, tol_deg: float) -> list[tuple[int, int, float]]:
+    """`[(i, j, deviation_deg), …]` — which branches are ONE stroke, best first.
+
+    „Gute Fortsetzung": two branches continue through the junction when their
+    outward directions are anti-parallel. The deviation from anti-parallel is the
+    score, the assignment is GREEDY over it (best pair first, its two branches
+    consumed) and `tol_deg` only refuses. That order matters: at a shallow
+    crossing the wrong partner is only `crossing angle` degrees worse than the
+    right one, so a tolerance can never separate them — the ranking can.
+    """
+    scored: list[tuple[float, int, int]] = []
+    for i in range(len(branches)):
+        for j in range(i + 1, len(branches)):
+            cos = float(np.dot(branches[i]["direction"], branches[j]["direction"]))
+            deviation = float(np.degrees(np.arccos(np.clip(-cos, -1.0, 1.0))))
+            if deviation <= tol_deg:
+                scored.append((deviation, i, j))
+    used: set[int] = set()
+    pairs: list[tuple[int, int, float]] = []
+    for deviation, i, j in sorted(scored):
+        if i in used or j in used:
+            continue
+        used.update((i, j))
+        pairs.append((i, j, deviation))
+    return pairs
+
+
+def _intersect_lines(
+    p1: np.ndarray, u1: np.ndarray, p2: np.ndarray, u2: np.ndarray, *, min_angle_deg: float
+) -> np.ndarray | None:
+    """Intersection of two parameterised lines, or None if it is ill-conditioned.
+
+    `u1`/`u2` are unit vectors, so their cross product IS the sine of the angle
+    between the lines and the conditioning test is the angle test. Below
+    `min_angle_deg` the intersection slides freely along the shared direction —
+    the same refusal, for the same reason, that `landmarks.LANDMARK_MIN_ANGLE_DEG`
+    applies to a polyline's self-crossing.
+    """
+    denominator = float(u1[0] * u2[1] - u1[1] * u2[0])
+    if abs(denominator) < np.sin(np.radians(min_angle_deg)):
+        return None
+    q = np.asarray(p2, dtype=float) - np.asarray(p1, dtype=float)
+    t = float(q[0] * u2[1] - q[1] * u2[0]) / denominator
+    return np.asarray(p1, dtype=float) + t * np.asarray(u1, dtype=float)
+
+
+def _uncertainty_weights(sigmas: np.ndarray) -> np.ndarray:
+    """Relative `1/sigma^2` weights over the targets, normalised to MEAN 1.
+
+    The chain's landmark energy is `sum(r^2) / n` — a MEAN of squared residuals
+    in template units. Weighting it as `sum(w·r^2) / n` with `mean(w) = 1` keeps
+    that scale: a set of equally certain targets reproduces the unweighted
+    energy, so a calibrated weight does not silently change meaning when the
+    uncertainties happen to be uniform, and `e_landmark` stays comparable across
+    words and across the two target modes.
+    """
+    s = np.asarray(sigmas, dtype=float).reshape(-1)
+    if not len(s):
+        return np.zeros(0)
+    inverse = np.zeros_like(s)
+    good = s > 0.0
+    inverse[good] = 1.0 / (s[good] ** 2)
+    total = float(inverse.sum())
+    if total <= 0.0:
+        return np.ones_like(s)
+    return inverse * (len(s) / total)
+
+
+def _sigma_units(problem: _ChainProblem, x_px: float, y_px: float, *, floor_px: float) -> tuple[float, float]:
+    """`(half_width_px, sigma_units)` at a branch point — the target's uncertainty.
+
+    σ is the local HALF-width, floored: the published displacement bound is the
+    full local stroke width, which this treats as a ~2σ statement rather than as
+    a 1σ one, and the floor keeps a hairline from claiming sub-pixel certainty
+    about a point that is itself a pixel-grid centroid.
+    """
+    half_width_px = _local_half_width_px(problem, x_px, y_px)
+    return half_width_px, max(half_width_px, float(floor_px)) / float(problem.unit_px)
+
+
+def raw_landmark_targets(problem: _ChainProblem, *, sigma_floor_px: float = FOLLOW_LANDMARK_SIGMA_FLOOR_PX):
+    """The chain's own branch points as a targeting — the A/B's control arm.
+
+    Nothing is refined and every weight is 1, so applying this is a no-op; it
+    exists so the control arm is expressed in the same object as the treatment
+    and can be measured (`landmark_energy`) by the same code.
+    """
+    targets = np.asarray(problem.landmark_targets, dtype=float).reshape(-1, 2)
+    sigmas = np.zeros(len(targets))
+    entries: list[dict] = []
+    for row, (u, v) in enumerate(targets):
+        x_px, y_px = _to_px(problem, u, v)
+        half_width_px, sigmas[row] = _sigma_units(problem, x_px, y_px, floor_px=sigma_floor_px)
+        entries.append(
+            {
+                "row": row,
+                "reason": "raw",
+                "half_width_px": round(half_width_px, 3),
+                "sigma_units": round(float(sigmas[row]), 4),
+                "shift_units": 0.0,
+            }
+        )
+    return LandmarkTargeting(
+        mode="raw",
+        targets=targets.copy(),
+        raw_targets=targets.copy(),
+        sigmas=sigmas,
+        weights=np.ones(len(targets)),
+        reasons=["raw"] * len(targets),
+        entries=entries,
+    )
+
+
+def extrapolated_targets(
+    problem: _ChainProblem,
+    *,
+    weighted: bool = True,
+    window_units: float = FOLLOW_LANDMARK_WINDOW_UNITS,
+    core_widths: float = FOLLOW_LANDMARK_CORE_WIDTHS,
+    core_min_px: float = FOLLOW_LANDMARK_CORE_MIN_PX,
+    min_branch_px: float = FOLLOW_LANDMARK_MIN_BRANCH_PX,
+    min_branch_pixels: int = FOLLOW_LANDMARK_MIN_BRANCH_PIXELS,
+    cluster_widths: float = FOLLOW_LANDMARK_CLUSTER_WIDTHS,
+    continuation_tol_deg: float = FOLLOW_LANDMARK_CONTINUATION_TOL_DEG,
+    min_angle_deg: float = LANDMARK_MIN_ANGLE_DEG,
+    max_shift_widths: float = FOLLOW_LANDMARK_MAX_SHIFT_WIDTHS,
+    sigma_floor_px: float = FOLLOW_LANDMARK_SIGMA_FLOOR_PX,
+) -> LandmarkTargeting:
+    """Refine every landmark target to the EXTRAPOLATED crossing of its branches.
+
+    For each kept correspondence of `problem` (one row of `landmark_op`, aimed at
+    a skeleton branch point):
+
+    1. read the local ink half-width at the branch point (`_local_half_width_px`)
+       — the junction's own scale, from which the core exclusion, the refusal
+       radius and the uncertainty all follow;
+    2. walk the skeleton around it and cut out the incident branches
+       (`_incident_branches`), dropping everything inside the junction-distorted
+       core;
+    3. pair the branches that continue through the junction
+       (`_continuation_pairs`), fit ONE straight line per pair through both its
+       branches, and intersect the two best pairs' lines (`_intersect_lines`);
+    4. accept that intersection as the target when it lies within one stroke
+       width of the branch point.
+
+    Every step REFUSES rather than guesses, and a refusal keeps the raw branch
+    point with its reason recorded. The reasons separate what the ink cannot
+    support from what the walk failed to find, because only the second kind is
+    ever worth fixing:
+
+    * BY DESIGN, a property of the ink at that point — `touch_point` (exactly two
+      limbs: a stroke passing through, a retrace touch, a corner), `t_junction`
+      (exactly three limbs, so at most one continuation pair can exist at all),
+      `ill_conditioned` (the two lines are near-parallel and the intersection
+      slides).
+    * A REFUSAL of this refinement — `no_junction` (no skeleton, or the branch
+      point does not sit on ink), `few_branches` (fewer than two limbs: the walk
+      found the ink and no way out of it), `no_continuation_pair` (four or more
+      limbs and still no second pair), `far_from_branch` (the extrapolation
+      landed beyond the published displacement bound, so it is a different
+      junction, not a correction).
+
+    A raw target is not a failure of the term, only of the refinement; the
+    correspondence itself was refused earlier, by the frozen detector, and is not
+    reconsidered here.
+
+    Pure measurement: reads `problem`, writes nothing (`apply_landmark_targets`
+    is the only thing that touches a problem).
+    """
+    raw = np.asarray(problem.landmark_targets, dtype=float).reshape(-1, 2)
+    skel = problem.skel
+    targets = raw.copy()
+    sigmas = np.zeros(len(raw))
+    reasons: list[str] = []
+    entries: list[dict] = []
+    for row, (u, v) in enumerate(raw):
+        x_px, y_px = _to_px(problem, u, v)
+        half_width_px, sigmas[row] = _sigma_units(problem, x_px, y_px, floor_px=sigma_floor_px)
+        core_px = max(core_widths * half_width_px, core_min_px)
+        cluster_px = max(cluster_widths * half_width_px, core_px)
+        # The reach has to clear the CLUSTER, not just the base core: once the
+        # partner Y of a split crossing is absorbed, the limbs start beyond it,
+        # and a radius fixed at the window would leave nothing outside to fit.
+        radius_px = max(window_units * float(problem.unit_px), cluster_px + core_px + min_branch_px)
+        branches = (
+            None
+            if skel is None
+            else _incident_branches(
+                skel,
+                (x_px, y_px),
+                radius_px=radius_px,
+                core_px=core_px,
+                min_pixels=min_branch_pixels,
+                cluster_px=cluster_px,
+            )
+        )
+        entry = {
+            "row": row,
+            "half_width_px": round(half_width_px, 3),
+            "sigma_units": round(float(sigmas[row]), 4),
+            "core_px": round(core_px, 2),
+            "cluster_px": round(cluster_px, 2),
+            "radius_px": round(radius_px, 2),
+            "n_branches": 0 if branches is None else len(branches),
+        }
+        reason, refined, cross_angle = _refine_one(
+            branches,
+            continuation_tol_deg=continuation_tol_deg,
+            min_angle_deg=min_angle_deg,
+            max_shift_px=max(max_shift_widths * half_width_px, sigma_floor_px),
+            branch_px=(x_px, y_px),
+        )
+        entry["cross_angle_deg"] = None if cross_angle is None else round(cross_angle, 2)
+        if refined is not None:
+            targets[row] = _to_units(problem, float(refined[0]), float(refined[1]))
+        entry["reason"] = reason
+        entry["shift_units"] = round(float(np.hypot(*(targets[row] - raw[row]))), 4)
+        reasons.append(reason)
+        entries.append(entry)
+    weights = _uncertainty_weights(sigmas) if weighted else np.ones(len(raw))
+    for entry, weight in zip(entries, weights, strict=True):
+        entry["weight"] = round(float(weight), 4)
+    return LandmarkTargeting(
+        mode="extrapolated" if weighted else "extrapolated_uniform",
+        targets=targets,
+        raw_targets=raw.copy(),
+        sigmas=sigmas,
+        weights=weights,
+        reasons=reasons,
+        entries=entries,
+    )
+
+
+def _refine_one(
+    branches: Sequence[dict] | None,
+    *,
+    continuation_tol_deg: float,
+    min_angle_deg: float,
+    max_shift_px: float,
+    branch_px: tuple[float, float],
+) -> tuple[str, np.ndarray | None, float | None]:
+    """`(reason, refined point | None, crossing angle)` for ONE junction."""
+    if branches is None:
+        # No skeleton was supplied, or the assigned branch point does not sit on
+        # ink at all — a different statement from „this junction has too few
+        # branches", and reported as one.
+        return "no_junction", None, None
+    if len(branches) < 2:
+        # A dead end: the walk found the ink but no way out of the junction —
+        # the core swallowed every limb, or the ink simply stops there. That is
+        # a failure of the WALK, not a junction class, and it keeps the bare name.
+        return "few_branches", None, None
+    if len(branches) == 2:
+        # Two branches are a stroke passing through, not a crossing — the class
+        # a retrace touch point and a sharp corner both fall in. Named rather
+        # than folded into `few_branches`: this one is a property of the ink, and
+        # no walk, window or tolerance will ever make it refinable. On the dev
+        # words it is 5 of 21 targets, all with the two limbs 39–48° apart.
+        return "touch_point", None, None
+    if len(branches) == 3:
+        # Three limbs make at most ONE continuation pair — `_continuation_pairs`
+        # consumes two branches per pair — so a second line to intersect cannot
+        # exist however the pairing is scored. A real T-junction, refused by
+        # construction and counted as such, which is what separates it from a
+        # four-limb crossing whose second pair the TOLERANCE refused.
+        return "t_junction", None, None
+    pairs = _continuation_pairs(branches, tol_deg=continuation_tol_deg)
+    if len(pairs) < 2:
+        return "no_continuation_pair", None, None
+    lines: list[tuple[np.ndarray, np.ndarray]] = []
+    for i, j, _deviation in pairs[:2]:
+        pts = np.vstack([branches[i]["pixels"], branches[j]["pixels"]])
+        direction = _principal_direction(pts)
+        if direction is None:
+            return "ill_conditioned", None, None  # a degenerate cloud has no line
+        lines.append((pts.mean(axis=0), direction))
+    (p1, u1), (p2, u2) = lines
+    cross = abs(float(u1[0] * u2[1] - u1[1] * u2[0]))
+    angle = float(np.degrees(np.arcsin(min(1.0, cross))))
+    refined = _intersect_lines(p1, u1, p2, u2, min_angle_deg=min_angle_deg)
+    if refined is None:
+        return "ill_conditioned", None, angle
+    if float(np.hypot(refined[0] - branch_px[0], refined[1] - branch_px[1])) > max_shift_px:
+        return "far_from_branch", None, angle
+    return "ok", refined, angle
+
+
+def landmark_targeting(problem: _ChainProblem, mode: str, **kwargs) -> LandmarkTargeting:
+    """The targeting one `FollowWeights.landmark_targets` mode asks for."""
+    if mode == "raw":
+        return raw_landmark_targets(problem)
+    if mode in ("extrapolated", "extrapolated_uniform"):
+        return extrapolated_targets(problem, weighted=(mode == "extrapolated"), **kwargs)
+    raise ValueError(f"unknown landmark target mode {mode!r}; known: {', '.join(LANDMARK_TARGET_MODES)}")
+
+
+def apply_landmark_targets(problem: _ChainProblem, targeting: LandmarkTargeting) -> _ChainProblem:
+    """Aim the chain's landmark term at `targeting` — by PRE-WHITENING its rows.
+
+    The chain prices `e_landmark = sum_i |P_i − T_i|² / n` with `P_i` a fixed
+    linear map of four plan anchors. Per-target uncertainties enter it without a
+    new term and without touching `chain.py`: scale row `i` of the operator AND
+    target `i` by `sqrt(w_i)` and the residual becomes `sqrt(w_i)·(P_i − T_i)`,
+    so the energy is `sum_i w_i·|P_i − T_i|² / n` and the gradient
+    `op^T·r` folds the same weights through the exact same chain rule. It is the
+    standard whitening transform, and nothing about the operator's structure
+    changes: the row still touches exactly its four anchors.
+
+    The price is that `problem.landmark_op` and `problem.landmark_targets` are no
+    longer readable as „the fitted crossing" and „the ink point" once this has
+    run — divide row `i` by `sqrt(weights[i])`, or (better) read the unwhitened
+    geometry off the `LandmarkTargeting` itself, which is why it carries both the
+    refined and the raw targets. `landmarklab.fitted_crossing` is unaffected: it
+    rebuilds `P` from the frozen chord indices in `landmark_report`, which this
+    only ANNOTATES (`_annotate_report`) and never rescales.
+
+    Mutating the problem in place mirrors `apply_retrace_guard`: both are
+    follower-side adjustments of a chain-built problem, applied once, right after
+    the rebuild, before the solve.
+    """
+    if not len(targeting.targets) or not problem.landmark_op.shape[0]:
+        return problem
+    if len(targeting.targets) != problem.landmark_op.shape[0]:
+        # A targeting built from a DIFFERENT (or outdated) problem would
+        # broadcast wrongly or crash unreadably — refuse with the counts.
+        raise ValueError(
+            f"targeting carries {len(targeting.targets)} targets but the problem's landmark "
+            f"operator has {problem.landmark_op.shape[0]} rows — build the targeting from THIS problem"
+        )
+    if targeting.mode != "raw":
+        scales = np.sqrt(np.asarray(targeting.weights, dtype=float)).reshape(-1, 1)
+        problem.landmark_op = problem.landmark_op * scales
+        problem.landmark_targets = np.asarray(targeting.targets, dtype=float) * scales
+    _annotate_report(problem, targeting)
+    return problem
+
+
+def _annotate_report(problem: _ChainProblem, targeting: LandmarkTargeting) -> None:
+    """Write the refinement's provenance next to the correspondence it refines.
+
+    `landmark_report` already carries one entry per DETECTED landmark with the
+    reason it was kept or dropped — the arm's mandatory cost column. The
+    refinement's own reason belongs beside it rather than in a second list that
+    has to be re-joined later, so the kept entries gain `target_mode`,
+    `refine_reason`, `sigma_units`, `target_weight` and `refine_shift_units`.
+    Additive keys only; nothing existing is overwritten.
+    """
+    kept = [entry for entry in problem.landmark_report if entry.get("reason") == "ok"]
+    if len(kept) != len(targeting.entries):
+        # A silent partial annotation would hide a report/targeting mismatch
+        # and mislead every downstream summary — refuse with the counts.
+        raise ValueError(
+            f"landmark report keeps {len(kept)} correspondences but the targeting carries "
+            f"{len(targeting.entries)} entries — the two were built from different problems"
+        )
+    for entry, refined in zip(kept, targeting.entries, strict=True):
+        entry["target_mode"] = targeting.mode
+        entry["refine_reason"] = refined["reason"]
+        entry["sigma_units"] = refined["sigma_units"]
+        entry["target_weight"] = refined.get("weight", 1.0)
+        entry["refine_shift_units"] = refined["shift_units"]
+
+
+def landmark_meta(problem: _ChainProblem, *, mode: str) -> dict:
+    """What one solve has to state about its landmark term.
+
+    Counts on both sides of the refusal — the correspondences the frozen detector
+    dropped (`drops`, with their reasons) and the refinements that fell back to a
+    raw branch point (`refined`) — because a term that quietly aims at nothing is
+    inert for a reason that must be readable off the run rather than
+    reconstructed afterwards (§13a's rule for the correspondence, applied to the
+    target too).
+    """
+    report = problem.landmark_report
+    kept = [entry for entry in report if entry.get("reason") == "ok"]
+    drops: dict[str, int] = {}
+    refined: dict[str, int] = {}
+    for entry in report:
+        if entry.get("reason") != "ok":
+            drops[str(entry.get("reason"))] = drops.get(str(entry.get("reason")), 0) + 1
+    for entry in kept:
+        if "refine_reason" in entry:
+            refined[str(entry["refine_reason"])] = refined.get(str(entry["refine_reason"]), 0) + 1
+    shifts = [float(entry["refine_shift_units"]) for entry in kept if "refine_shift_units" in entry]
+    sigmas = [float(entry["sigma_units"]) for entry in kept if "sigma_units" in entry]
+    return {
+        "mode": mode,
+        "applied": bool(refined),
+        "n_detected": len(report),
+        "n_targets": int(problem.landmark_op.shape[0]),
+        "drops": drops,
+        "refined": refined,
+        "shift_units_median": round(float(np.median(shifts)), 4) if shifts else None,
+        "sigma_units_median": round(float(np.median(sigmas)), 4) if sigmas else None,
+    }
+
+
+def _merge_landmark_meta(metas: Sequence[dict], *, mode: str) -> dict:
+    """The word's landmark block: the runs' blocks added up, reasons pooled."""
+    merged = {
+        "mode": mode,
+        "applied": any(m.get("applied") for m in metas),
+        "n_detected": sum(int(m.get("n_detected", 0)) for m in metas),
+        "n_targets": sum(int(m.get("n_targets", 0)) for m in metas),
+        "drops": {},
+        "refined": {},
+    }
+    for meta in metas:
+        for field_name in ("drops", "refined"):
+            for reason, count in (meta.get(field_name) or {}).items():
+                merged[field_name][reason] = merged[field_name].get(reason, 0) + int(count)
+    shifts = [m["shift_units_median"] for m in metas if m.get("shift_units_median") is not None]
+    merged["shift_units_median"] = round(float(np.median(shifts)), 4) if shifts else None
+    return merged
+
+
+def landmark_energy(problem: _ChainProblem, params: np.ndarray, targeting: LandmarkTargeting) -> float:
+    """`mean_i w_i·|P_i(params) − T_i|²` — the term's energy for a targeting.
+
+    The same formula `chain._ChainProblem._evaluate` prices, evaluated for a
+    targeting the problem does NOT carry, so the calibration hook can read what a
+    refined target WOULD cost without rebuilding or re-solving anything.
+
+    It reads `landmark_op` as the unwhitened map, i.e. it must run on a problem
+    `apply_landmark_targets` has not touched — which is exactly the calibration
+    path's situation (it solves at weight 0, where nothing is ever applied).
+    """
+    if not problem.landmark_op.shape[0] or not len(targeting.targets):
+        return 0.0
+    residual = (problem.landmark_op @ problem.plan_anchors(np.asarray(params, dtype=float))) - targeting.targets
+    weights = np.asarray(targeting.weights, dtype=float).reshape(-1, 1)
+    return float(np.sum(weights * residual**2) / problem.landmark_op.shape[0])
+
+
+def landmark_calibration(
+    problem: _ChainProblem,
+    params: np.ndarray,
+    targeting: LandmarkTargeting,
+    *,
+    multipliers: Sequence[float] = LANDMARK_CALIBRATION_MULTIPLIERS,
+) -> dict:
+    """Read the term's SCALE at a solved optimum — never pick a weight by analogy.
+
+    `landmarklab.calibration`'s reading, one level up: at the optimum the ratio
+    `e_geo / e_landmark` is the weight at which the correspondence weighs as much
+    as the geometry term (the „parity weight"), and a rung of the ladder is a
+    fraction of it. The would-be energy of a rung is reported next to it, so the
+    arm's rungs come out of measured ratios instead of out of a habit — §11c is
+    the standing warning this obeys: a ladder chosen by analogy to another path's
+    constant put a term at 0.2 % of the objective's scale and measured nothing.
+
+    `share_of_e_geo == multiplier` holds by construction; it is printed as an
+    arithmetic check, not as a finding. The informative numbers are
+    `parity_weight` (what a rung means as an absolute weight) and `e_landmark`
+    (how far the structure actually sits from the ink at this optimum).
+    """
+    terms = problem.energy_terms(np.asarray(params, dtype=float))
+    e_geo = float(terms["e_geo"])
+    e_landmark = landmark_energy(problem, params, targeting)
+    parity = (e_geo / e_landmark) if e_landmark > 0.0 else None
+    candidates = [
+        {
+            "multiplier": float(m),
+            "weight": None if parity is None else float(m) * parity,
+            "would_be_energy": None if parity is None else float(m) * parity * e_landmark,
+            "share_of_e_geo": None if parity is None or e_geo <= 0.0 else float(m) * parity * e_landmark / e_geo,
+        }
+        for m in multipliers
+    ]
+    reasons: dict[str, int] = {}
+    for reason in targeting.reasons:
+        reasons[reason] = reasons.get(reason, 0) + 1
+    return {
+        "mode": targeting.mode,
+        "n_landmarks": int(problem.landmark_op.shape[0]),
+        "n_detected": len(problem.landmark_report),
+        "e_geo": e_geo,
+        "e_landmark": e_landmark,
+        "parity_weight": parity,
+        "candidates": candidates,
+        "reasons": reasons,
+        "sigma_units_median": round(float(np.median(targeting.sigmas)), 4) if len(targeting.sigmas) else None,
+        "shift_units_median": round(float(np.median(targeting.shifts_units)), 4) if len(targeting.targets) else None,
+    }
+
+
 # ------------------------------------------------------------ the round engine
 
 
@@ -444,7 +1364,18 @@ def build_follow_problem(
     rebuilds around them with the follower's weights. What that buys is stated
     in the module docstring; what it MEANS for the Tikhonov term is stated in
     `apply_retrace_guard`.
+
+    The landmark targets are refined here too (arm ⑥) — but ONLY at a positive
+    landmark weight: at 0 the term contributes `+ 0.0` to `f` and no gradient at
+    all, so refining its targets could not move a single anchor and would buy
+    nothing but a changed number in a report and a skeleton walk per landmark.
+    Skipping it is what keeps every arm at `landmark = 0` byte-identical to a
+    follower built before this existed.
     """
+    if weights.landmark_targets not in LANDMARK_TARGET_MODES:
+        raise ValueError(
+            f"unknown landmark target mode {weights.landmark_targets!r}; known: {', '.join(LANDMARK_TARGET_MODES)}"
+        )
     specs = respec_from_solution(problem, params)
     # `build_chain_problem`'s own plan anchor count: one plan row per anchor of
     # every spec (the seams collapse in the FREE array, not the plan one).
@@ -466,6 +1397,8 @@ def build_follow_problem(
         connector_max_delta=weights.connector_max_delta,
         **_fields_of(problem),
     )
+    if weights.landmark > 0.0 and weights.landmark_targets != "raw":
+        apply_landmark_targets(rebuilt, landmark_targeting(rebuilt, weights.landmark_targets))
     mask = (
         retrace_anchor_mask(rebuilt, prox_units=weights.retrace_prox_units)
         if weights.retrace_guard
@@ -500,6 +1433,7 @@ def _solve_round(
         "n_anchors_free": int(len(problem.anchors_free)),
         "n_samples": int(problem.n_samples),
         "n_retrace_anchors": int(np.count_nonzero(mask)),
+        "n_landmarks": int(problem.landmark_op.shape[0]),
         "energy_before": round(float(before["f"]), 6),
         "energy_after": round(float(after["f"]), 6),
         "e_geo_before": round(float(before["e_geo"]), 6),
@@ -653,6 +1587,7 @@ def follow_word_chain(
             "stopped_early": stopped_early,
             "hit_iteration_cap": any(r["hit_iteration_cap"] for r in rounds),
             "retrace_anchors": rounds[-1]["n_retrace_anchors"] if rounds else 0,
+            "landmark": landmark_meta(problem, mode=weights.landmark_targets),
             "n_params": int(len(problem.x0)),
             "n_samples": int(problem.n_samples),
             "geo_rmse_px": {s.key or s.kind: round(s.geo_rmse_px, 3) for s in segments},
@@ -695,6 +1630,7 @@ def follow_derived(
     word_strokes: list[list[list[float]]] = []
     run_slots: list[list[int]] = []
     rounds_by_run: list[list[dict]] = []
+    landmarks_by_run: list[dict] = []
     traced: set[int] = set()
     n_runs = n_failed = n_params = 0
     for run in _chainable_runs(case, grids):
@@ -711,6 +1647,7 @@ def follow_derived(
             continue
         run_slots.append(list(followed.slots))
         rounds_by_run.append(followed.rounds)
+        landmarks_by_run.append(followed.fit_meta.get("landmark", {}))
         traced.update(int(s) for s in followed.slots)
         n_params += int(followed.fit_meta.get("n_params", 0))
         word_strokes.extend(followed.strokes_units)
@@ -725,6 +1662,7 @@ def follow_derived(
         "traced_slots": sorted(traced),
         "run_slots": run_slots,
         "rounds": rounds_by_run,
+        "landmark": _merge_landmark_meta(landmarks_by_run, mode=weights.landmark_targets),
         "n_params": n_params,
         "timings": {"seconds": round(time.perf_counter() - started, 3)},
     }
@@ -810,6 +1748,154 @@ def follow_case(case: WordCase, *, weights: FollowWeights | None = None, chain_s
         }
 
 
+# ----------------------------------------------------- the calibration hook (⑥)
+
+
+def calibrate_case(
+    case: WordCase,
+    *,
+    weights: FollowWeights | None = None,
+    chain_seed: str = "composed",
+    multipliers: Sequence[float] = LANDMARK_CALIBRATION_MULTIPLIERS,
+) -> dict:
+    """One case's landmark SCALE — a normal follower solve at weight 0, then read.
+
+    The whole point is that nothing is solved twice: the follower runs exactly as
+    an arm would (same windows, same runs, same rounds), with the landmark weight
+    forced to 0 so the term is inert and the optimum is the arm's own baseline.
+    Both targetings are then evaluated ON THAT optimum — the raw branch points
+    the chain aims at today and the extrapolated intersections of arm ⑥ — so the
+    rungs of the ladder come out of the two measured ratios rather than out of an
+    analogy (§11c).
+
+    The weight is forced rather than trusted: a calibration read off a solve the
+    term already moved would report the scale of its own effect.
+    """
+    weights = replace(weights or FollowWeights(), landmark=0.0)
+    base = {"kind": case.kind, "specimen_id": case.id, "word": case.word}
+    if not case.scorable:
+        return {**base, "status": STATUS_SKIPPED, "detail": "frozen unscorable (unauthored template)", "runs": []}
+    try:
+        result = derive_word(case)
+    except Exception as exc:  # noqa: BLE001 — one bad case must not end the run
+        return {**base, "status": STATUS_FAILED, "detail": f"{type(exc).__name__}: {exc}", "runs": []}
+    if result.composed.get("missing"):
+        return {
+            **base,
+            "status": STATUS_SKIPPED,
+            "detail": f"composition missing {result.composed['missing']}",
+            "runs": [],
+        }
+
+    grids = _grid_fits(case, result)
+    runs: list[dict] = []
+    for run in _chainable_runs(case, grids):
+        windows = {s: grids[s]["window"] for s in run}
+        seeds = {s: grids[s]["shift_units"] for s in run if not grids[s]["at_bound"]} if chain_seed == "grid" else None
+        chain_fit = fit_word_chain(case, run, result=result, windows_px=windows, slot_shift_init=seeds, keep_solve=True)
+        if chain_fit is None:
+            continue
+        followed = follow_word_chain(
+            case, run, result=result, windows_px=windows, fit=chain_fit, weights=weights, keep_solve=True
+        )
+        if followed is None or followed.problem is None or followed.params is None:
+            continue
+        runs.append(
+            {
+                "slots": list(followed.slots),
+                "modes": {
+                    mode: landmark_calibration(
+                        followed.problem,
+                        followed.params,
+                        landmark_targeting(followed.problem, mode),
+                        multipliers=multipliers,
+                    )
+                    for mode in ("raw", "extrapolated")
+                },
+            }
+        )
+    return {**base, "status": STATUS_OK, "detail": "", "runs": runs}
+
+
+def _calibrate_job(job: tuple[WordCase, FollowWeights, str]) -> dict:
+    case, weights, chain_seed = job
+    row = calibrate_case(case, weights=weights, chain_seed=chain_seed)
+    for run in row["runs"]:
+        for mode, calibration in run["modes"].items():
+            parity = calibration["parity_weight"]
+            print(
+                f"  {case.id:<20} slots {'-'.join(str(s) for s in run['slots']):<7} {mode:<13} "
+                f"n {calibration['n_landmarks']:>2}/{calibration['n_detected']:<2} "
+                f"e_geo {calibration['e_geo']:.4g}  e_lm {calibration['e_landmark']:.4g}  "
+                f"parity {('%.4g' % parity) if parity is not None else '--':>10}",
+                flush=True,
+            )
+    if not row["runs"]:
+        print(f"  {case.id:<20} {row['status']:<8} {row['detail'] or 'no run carried a chain solve'}", flush=True)
+    return row
+
+
+def calibration_report(rows: Sequence[dict], *, multipliers: Sequence[float]) -> dict:
+    """Pool the per-run readings into the table an arm picks its rungs from.
+
+    Medians, never means: one word whose correspondence collapsed onto a nearby
+    branch point would otherwise set the ladder for all ten.
+    """
+    pooled: dict[str, dict] = {}
+    for mode in ("raw", "extrapolated"):
+        readings = [run["modes"][mode] for row in rows for run in row["runs"] if run["modes"].get(mode)]
+        parities = [r["parity_weight"] for r in readings if r["parity_weight"] is not None]
+        energies = [r["e_landmark"] for r in readings if r["n_landmarks"]]
+        geos = [r["e_geo"] for r in readings if r["n_landmarks"]]
+        reasons: dict[str, int] = {}
+        for reading in readings:
+            for reason, count in reading["reasons"].items():
+                reasons[reason] = reasons.get(reason, 0) + int(count)
+        parity_median = float(np.median(parities)) if parities else None
+        pooled[mode] = {
+            "n_solves": len(readings),
+            "n_solves_with_landmark": sum(1 for r in readings if r["n_landmarks"]),
+            "n_landmarks": sum(int(r["n_landmarks"]) for r in readings),
+            "e_geo_median": float(np.median(geos)) if geos else None,
+            "e_landmark_median": float(np.median(energies)) if energies else None,
+            "parity_weight_median": parity_median,
+            "reasons": reasons,
+            "rungs": [
+                {"multiplier": float(m), "weight": None if parity_median is None else float(m) * parity_median}
+                for m in multipliers
+            ],
+        }
+    return {"multipliers": [float(m) for m in multipliers], "modes": pooled}
+
+
+def print_calibration(report: dict) -> None:
+    print()
+    print("LANDMARK CALIBRATION — read at the follower optimum with the term INERT (weight 0)")
+    print(f"{'mode':<14}{'solves':>8}{'with lm':>9}{'targets':>9}{'e_geo':>12}{'e_landmark':>13}{'parity w':>12}")
+    for mode, block in report["modes"].items():
+        print(
+            f"{mode:<14}{block['n_solves']:>8}{block['n_solves_with_landmark']:>9}{block['n_landmarks']:>9}"
+            f"{(block['e_geo_median'] or 0.0):>12.4g}{(block['e_landmark_median'] or 0.0):>13.4g}"
+            f"{(block['parity_weight_median'] or 0.0):>12.4g}"
+        )
+    print()
+    print("RUNGS — a fraction of the parity weight (the weight at which the term equals e_geo)")
+    header = f"{'mode':<14}" + "".join(f"{m:>14g}" for m in report["multipliers"])
+    print(header)
+    for mode, block in report["modes"].items():
+        line = f"{mode:<14}"
+        for rung in block["rungs"]:
+            line += f"{rung['weight']:>14.4g}" if rung["weight"] is not None else f"{'--':>14}"
+        print(line)
+    print()
+    print("REFINEMENT — why a target stayed on its raw branch point")
+    for mode, block in report["modes"].items():
+        print(f"  {mode:<14}{block['reasons'] or '(no target)'}")
+    print()
+    print("A READING, NOT A DEFAULT: no weight is adopted here. The arm runs the rungs")
+    print("against the frozen tracebench baseline and the §14 criteria decide.")
+
+
 # ------------------------------------------------------------ the candidate file
 
 
@@ -893,12 +1979,23 @@ def _load_cases(ids: list[str], *, which: str, style: str, fixtures_root: Path) 
 
 
 def parse_sweep(spec: str) -> tuple[str, list[float]]:
-    """`"prox=1.0,0.1,0"` → `("prox", [1.0, 0.1, 0.0])`, validated against the arms."""
+    """`"prox=1.0,0.1,0"` → `("prox", [1.0, 0.1, 0.0])`, validated against the arms.
+
+    NUMERIC knobs only. A sweep is a ladder of one weight; the two non-numeric
+    fields select a formulation (`landmark_targets`) or switch a guard off
+    (`retrace_guard`), and running those as a "ladder" would compare two
+    different objectives under one label.
+    """
     name, _, raw = spec.partition("=")
     name = name.strip()
-    known = {f.name for f in fields(FollowWeights)}
+    defaults = FollowWeights()
+    known = {
+        f.name
+        for f in fields(FollowWeights)
+        if isinstance(getattr(defaults, f.name), (int, float)) and not isinstance(getattr(defaults, f.name), bool)
+    }
     if name not in known:
-        raise SystemExit(f"--sweep {name!r} is not a FollowWeights field; known: {', '.join(sorted(known))}")
+        raise SystemExit(f"--sweep {name!r} is not a numeric FollowWeights field; known: {', '.join(sorted(known))}")
     try:
         values = [float(v) for v in raw.split(",") if v.strip()]
     except ValueError:
@@ -955,6 +2052,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--samples-per-anchor", type=float, help=f"default {FOLLOW_SAMPLES_PER_ANCHOR:.4g}")
     parser.add_argument("--overlap", type=float, help=f"overlap weight (default {FOLLOW_OVERLAP_WEIGHT})")
     parser.add_argument("--landmark", type=float, help=f"landmark weight (default {FOLLOW_LANDMARK_WEIGHT})")
+    parser.add_argument(
+        "--landmark-targets",
+        choices=list(LANDMARK_TARGET_MODES),
+        default=FOLLOW_LANDMARK_TARGETS,
+        help="where the landmark term aims: extrapolated junction crossings (default), "
+        "the same without the 1/sigma^2 weighting, or the raw branch points (the control arm)",
+    )
+    parser.add_argument(
+        "--landmark-calibrate",
+        action="store_true",
+        help="solve with the term INERT and report e_geo / e_landmark per case — the rungs, measured",
+    )
     parser.add_argument("--bind", type=float, help=f"letter bind weight (default {FOLLOW_BIND_WEIGHT}, rejected term)")
     parser.add_argument("--max-delta", type=float, help=f"per-anchor travel budget (default {FOLLOW_MAX_DELTA})")
     parser.add_argument("--no-retrace-guard", action="store_true", help="release the retrace zones too (a measurement)")
@@ -973,6 +2082,7 @@ def weights_from_args(args: argparse.Namespace) -> FollowWeights:
         "samples_per_anchor": args.samples_per_anchor,
         "overlap": args.overlap,
         "landmark": args.landmark,
+        "landmark_targets": args.landmark_targets,
         "bind": args.bind,
         "max_delta": args.max_delta,
     }
@@ -990,6 +2100,39 @@ def main() -> None:
         raise SystemExit(f"no case matched {args.ids!r} in the {args.which!r} set")
 
     base = weights_from_args(args)
+    if args.landmark_calibrate:
+        print(f"landmark calibration: {len(cases)} cases · set {args.which} · term INERT (weight 0)")
+        jobs = [(c, base, args.chain_seed) for c in cases]
+        if args.jobs > 1:
+            with ProcessPoolExecutor(max_workers=max(1, args.jobs)) as pool:
+                rows = list(pool.map(_calibrate_job, jobs))
+        else:
+            rows = [_calibrate_job(j) for j in jobs]
+        report = calibration_report(rows, multipliers=LANDMARK_CALIBRATION_MULTIPLIERS)
+        print_calibration(report)
+        print(f"runtime {round(time.perf_counter() - started, 1)}s")
+        if args.json:
+            args.json.parent.mkdir(parents=True, exist_ok=True)
+            args.json.write_text(
+                json.dumps(
+                    {
+                        "tool": FOLLOW_TOOL_NAME,
+                        "version": FOLLOW_ARTIFACT_VERSION,
+                        "style": args.style,
+                        "set": args.which,
+                        "mode": "landmark-calibrate",
+                        "weights": asdict(replace(base, landmark=0.0)),
+                        "provisional": True,
+                        "summary": report,
+                        "cases": rows,
+                    },
+                    indent=1,
+                    ensure_ascii=False,
+                )
+            )
+            print(f"wrote {args.json}")
+        return
+
     arms: list[tuple[str, FollowWeights]] = [("base", base)]
     if args.sweep:
         name, values = parse_sweep(args.sweep)
@@ -1007,7 +2150,10 @@ def main() -> None:
     last_infos: list[dict] = []
     last_weights = base
     for label, weights in arms:
-        print(f"arm {label}: prox {weights.prox:g} · rounds {weights.rounds} · coverage {weights.coverage:g}")
+        print(
+            f"arm {label}: prox {weights.prox:g} · rounds {weights.rounds} · coverage {weights.coverage:g}"
+            + (f" · landmark {weights.landmark:g} ({weights.landmark_targets})" if weights.landmark else "")
+        )
         infos = run_arm(cases, weights, chain_seed=args.chain_seed, jobs=max(1, args.jobs))
         report["arms"].append({"label": label, "weights": asdict(weights), "rows": infos})
         last_infos, last_weights = infos, weights
@@ -1039,7 +2185,13 @@ __all__ = [
     "FOLLOW_BIND_WEIGHT",
     "FOLLOW_CONNECTOR_MAX_DELTA",
     "FOLLOW_COVERAGE_WEIGHT",
+    "FOLLOW_LANDMARK_CONTINUATION_TOL_DEG",
+    "FOLLOW_LANDMARK_CORE_WIDTHS",
+    "FOLLOW_LANDMARK_MAX_SHIFT_WIDTHS",
+    "FOLLOW_LANDMARK_SIGMA_FLOOR_PX",
+    "FOLLOW_LANDMARK_TARGETS",
     "FOLLOW_LANDMARK_WEIGHT",
+    "FOLLOW_LANDMARK_WINDOW_UNITS",
     "FOLLOW_MAX_DELTA",
     "FOLLOW_MAX_ITER",
     "FOLLOW_OVERLAP_WEIGHT",
@@ -1050,15 +2202,28 @@ __all__ = [
     "FOLLOW_SAMPLES_PER_ANCHOR",
     "FOLLOW_TOOL_NAME",
     "FOLLOW_WIDTH_WEIGHT",
+    "LANDMARK_CALIBRATION_MULTIPLIERS",
+    "LANDMARK_TARGET_MODES",
     "FollowFit",
     "FollowWeights",
+    "LandmarkTargeting",
+    "apply_landmark_targets",
     "apply_retrace_guard",
     "build_follow_problem",
+    "calibrate_case",
+    "calibration_report",
     "candidate_payload",
+    "extrapolated_targets",
     "follow_case",
     "follow_derived",
     "follow_word_chain",
+    "landmark_calibration",
+    "landmark_energy",
+    "landmark_meta",
+    "landmark_targeting",
     "parse_sweep",
+    "print_calibration",
+    "raw_landmark_targets",
     "retrace_anchor_mask",
     "retrace_sample_mask",
     "run_arm",

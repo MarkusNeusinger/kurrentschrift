@@ -12,6 +12,65 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **Arm ⑥ groundwork: the ink follower's landmark term can aim at the
+  EXTRAPOLATED junction crossing instead of the raw skeleton branch
+  point** (`tools/pairlab/follow.py`, `docs/proposals/tintenfolger.md`
+  §3). Thinning displaces a branch point by up to the local stroke width
+  — more than the anchor spacing the term exists to correct — so
+  `extrapolated_targets` walks the skeleton around each assigned branch
+  point, drops the junction-distorted core (one stroke width), fits one
+  straight line per „gute Fortsetzung" branch pair and intersects them;
+  the local half-width rides along as an isotropic uncertainty and
+  enters as a per-target `1/σ²` weight (mean 1, so the term keeps the
+  scale a weight is calibrated at) by pre-whitening the chain operator's
+  rows — no change to `chain.py`, gradient still exactly analytic. Every
+  step refuses rather than guesses, a refusal keeps the raw point and the
+  reason is reported next to the correspondence's own drop reasons, and
+  the reasons separate what the INK cannot support (`touch_point` ·
+  `t_junction` · `ill_conditioned`) from what this refinement failed to
+  find (`no_junction` · `few_branches` · `no_continuation_pair` ·
+  `far_from_branch`) — only the second kind is ever worth chasing.
+  `--landmark-targets
+  extrapolated|extrapolated_uniform|raw` selects the formulation (the
+  raw arm is the A/B control, the uniform one separates target from
+  weighting), and `--landmark-calibrate` reads `e_geo / e_landmark` at a
+  follower optimum with the term forced INERT, so the arm's rungs come
+  from measured ratios rather than by analogy (§11c). NO weight is
+  adopted: the default stays 0.0, at which the whole block is skipped
+  and every solve is byte-identical (pinned).
+- **…and it now fires on real ink: the junction walk follows the
+  SKELETON and swallows the junction cluster** (`tools/pairlab/follow.py`).
+  Measured on the 10 hand-traced dev words, the first form of the walk
+  refined nothing at all — 21 of 21 targets stayed raw (16
+  `no_continuation_pair`, 5 `few_branches`), and a wider window made it
+  worse rather than better. Two mechanisms, both measured on the real
+  skeletons at xh ≈ 30 px: (1) the walk labelled connected components of
+  a EUCLIDEAN annulus, and on cursive ink two limbs of one junction
+  reconnect inside it — its components reached 19–49 px where a 1-px arc
+  across the 6–9 px annulus is 13 px at most, so limbs were welded into
+  one branch with a meaningless direction; (2) thinning splits one
+  shallow crossing into TWO Y-junctions bridged by a short segment (the
+  partner sits 9.4–13.2 px away where the ink is 6.4–8.4 px wide), and a
+  core stopping before the bridge walks a real X as a T, which three
+  limbs can never repair. The walk is now geodesic along the ink
+  (`_arc_field`), limbs keep their identity from the core boundary
+  outward and a confluence is blocked rather than merged, and the core
+  grows into a junction cluster (`FOLLOW_LANDMARK_CLUSTER_WIDTHS = 4.0`
+  half-widths, the measured bridge bound with headroom).
+  `FOLLOW_LANDMARK_CONTINUATION_TOL_DEG` goes 30° → 35°, from a
+  measurement rather than by loosening: a genuine continuation's chord
+  deviation is the CURVATURE its limbs turn through over the walk span,
+  `(s0+s1)/R`, which reproduces the observed deviations to a median 3.8°
+  (n = 6 pairs whose limbs fit one circle to < 1 px) and bounds them at
+  34° for this geometry — at 30° four of the eight resolvable crossings
+  were refused by 0.8–1.5°, and the result is flat from 35° to 45°.
+  Refinement rate on the dev words 0/21 → 8/21, which is 8 of the 9
+  targets whose junction has four or more limbs at all; the other 12 are
+  `touch_point` (5) or `t_junction` (7), i.e. ink with no crossing to
+  extrapolate. Still no weight adopted — the default stays 0.0.
+
 ### Changed
 
 - **Follower arm 1 result recorded in the quality-metric §14** (doc-only):
