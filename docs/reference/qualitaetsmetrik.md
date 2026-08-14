@@ -3427,9 +3427,13 @@ Lineal nicht korrumpieren.
 - **Fehlerzähler** (je: ref/cand/matched/missing/spurious/ambiguous +
   Median-Positionsfehler): **Kreuzungen**
   (`landmarks.landmark_crossings`, Schwellen UNVERÄNDERT aus dem
-  §13a-Zensus; Match 0,55/0,20 xh), **Marken** (s. o.), **Retraces**
+  §13a-Zensus; Match 0,55 xh als Eins-zu-eins-Assignment über beide
+  POPULATIONEN — die Refusal-Marge gehört allein den Marken, deren
+  Einzelziel-Rahmen sie gebaut wurde; präzisiert nach dem ersten
+  Identitätslauf, s. Baseline unten), **Marken** (s. o., Match mit
+  Refusal 0,6/0,25 xh), **Retraces**
   (`core.geometry.detect_retrace_pairs`, prox 0,15 xh, ≥ 3 Paare;
-  robusteste Zahl `retrace_arc_ratio`).
+  Zonen-Matching wie Kreuzungen; robusteste Zahl `retrace_arc_ratio`).
 - **Validierung ohne Referenz-Implementierung:** Es existiert weltweit
   keine (PEN-Net-Repo: nur Training; TRACE: kein Repo) — die
   Unit-Tests kalibrieren gegen synthetische Verzerrungen nach PEN-Nets
@@ -3499,7 +3503,77 @@ Paarvergleich nach humanbench-Methode (Folger ununterscheidbar vom
 manuellen Nachfahren) — mit dem benannten Bias, dass der Autor eigene
 Nachfahrungen beurteilt (Abkühl-Abstand oder Zweitrichter).
 
-### Baseline
+### Baseline `aug14` — der Kettenfit gegen die Hand (Freeze-Akt)
 
-_(folgt mit Stufe C — der Freeze-Akt; bis dahin existiert bewusst
-keine Zahl in diesem Abschnitt)_
+**Vorspiel, wie §14 es vorsah:** Der erste `--candidate authored`-Lauf
+schlug an — auf `unter`/`mit`/`linken` verweigerte der Kreuzungs-Matcher
+die IDENTITÄT (je 2 missing/spurious/ambiguous), weil zwei ECHTE
+Kreuzungen dieser Wörter näher als die 0,20-xh-Refusal-Marge beieinander
+liegen und `nearest_unique_point` dann selbst bei Distanz 0 verweigert.
+Diagnose: Die Marge gehört dem Einzelziel-Rahmen der Landmarken („dieser
+Duktuspunkt → WELCHER Ast"); Kreuzungs- und Retrace-Zählung sind ein
+anderer Rahmen — beide Seiten tragen die Population DESSELBEN Detektors,
+und zwei Strukturen eine Strichbreite auseinander sind zwei Strukturen,
+keine Ambiguität. Reparatur (im vorregistrierten freien Fenster VOR der
+ersten Baseline): `frames.match_points_one_to_one` — greedy nach
+aufsteigender Distanz, Radius-Cap 0,55 xh, eins-zu-eins; Marken behalten
+die Refusal-Semantik. Danach: **Identitäts-Gate PASS** (dtw 0, beide
+Chamfer 0, alle Zähler voll gematcht, `direction_uncertain` 0 — die 10
+Nachfahrungen stimmen überall mit der Duktus-Richtung des Priors
+überein).
+
+**Fixture-Qualitätsbefund `marks_uncertain` (4/10):** `zwei`, `und`,
+`unter`, `muß` — die Slots erwarten eine Marke (i-Strich bzw.
+u-Deckstrich), die authored-Bahn trägt keinen eigenen schwebenden
+Strich: der Autor hat die Marke verbunden gezeichnet bzw. unterhalb der
+Diakritika-Schwelle angesetzt. Kein Kandidatenfehler; ihre Marken-Zähler
+sind flag-markiert. Für den Bestätigungssatz gilt der Hinweis: Marken
+mit eigenem Absetzen zeichnen, wie die Tafel es tut.
+
+**Die erste Baseline** (`--candidate chain --split dev`, Schritt 0,02,
+446 s, 10/10 gescort, 0 failed):
+
+```
+dtw_xh_median:   0.061985    aiou_median:              0.6831
+dtw_xh_p90:      0.261818    chamfer_cand_ref_median:  0.0398
+dtw_xh_worst:    unter 0.4389 chamfer_ref_cand_median: 0.0467
+marks_missing:   0  (+1 spurious)
+cross_missing:   7   cross_spurious:   19
+retrace_missing: 4   retrace_spurious: 21
+retrace_arc_ratio_median: 1.513
+lift_delta_total: 3  dtw_reversed_better: 0  dtw_max_absorption_max: 132
+```
+
+Je Wort (dtw · aiou · cross m/s · retrace-Ratio): unter **0,439** ·
+0,676 · 0/7 · 1,51 — laden 0,075 · 0,686 · 0/8 · 1,75 — muß **0,242** ·
+0,680 · 2/0 · 0,24 — zwei 0,076 · 0,602 · 2/1 · 1,86 — die 0,077 ·
+0,622 · 0/3 · 1,71 — mit 0,042 · 0,756 · 1/0 · 0,53 — und 0,049 ·
+0,696 · 0/0 · — — linken 0,049 · 0,745 · 1/0 · 1,03 — Wer 0,044 ·
+0,675 · 1/0 · 0,80 — will 0,045 · 0,755 · 0/0 · 2,15.
+
+**Lesart — die vorregistrierte Erwartung in Zahlen:** Die Punktdistanz
+ist meist ordentlich (Median 0,062 xh); die Beschwerde sitzt in der
+STRUKTUR. Die Kette erfindet 19 Kreuzungen und 21 Retrace-Zonen, die
+die Hand nicht schreibt, und retraced 51 % mehr Bogen als der Autor
+(`retrace_arc_ratio` 1,51) — Kollaps-Doppelungen und
+Verbinder-Schleifen, nicht Mess-Rauschen. Zwei Wörter tragen den p90:
+`unter` 0,439 (der bekannte Kollaps-Probefall, `dtw_max_absorption`
+132 — die Singularitäts-Wache zeigt genau dorthin) und `muß` 0,242
+(ß-Schleife, dazu 2 verlorene Kreuzungen). Das sind die Ziele der
+Folger-Arme (①–⑧): Struktur zuerst, Distanz als Wächter.
+
+**Schrittweiten-Sweep (einmalig, dokumentiert):** 0,02 → 0,03 → 0,05
+bewegt `dtw_xh` nur 0,0620 → 0,0631 → 0,0650 (+5 %) und `aiou` gar
+nicht; die Kreuzungszähler wackeln um ±2; das Retrace-Bogen-Maß hängt
+dagegen klar am Schritt (1,51 → 1,37 → 1,17 — gröbere Abtastung
+verschluckt schmale Zonen über die ≥-3-Samples-Schwelle). **0,02 bleibt
+der gepinnte Schritt** — fein genug fürs Strukturmaß, und die Laufzeit
+(447 s vs. 387 s über 10 Wörter) kauft nichts, was die Vergleichbarkeit
+wert wäre.
+
+**Hiermit friert das Lineal** (die Freeze-Deklaration oben ist aktiv):
+Metrik-Module, `landmarks.py`, `core/geometry.py`,
+`core/quality_suetterlin.py`, Fixture-Roots. Jede spätere Änderung ist
+eine datierte Re-Baseline. Artefakte des Laufs:
+`temp/tracebench-baseline-chain.{json,csv}` (gitignoriert), Kommandos in
+`tools/tracebench/README.md`.

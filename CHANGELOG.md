@@ -77,8 +77,31 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   concordance against the candidate) — a backwards human trace is a
   fixture-quality signal, not a model error, which a forward-only DTW
   could not otherwise tell apart. Measurement only: no DB, no API, no
-  `core/` change, no rendering, and still no numbers — the first baseline
-  table is written from a run over the gitignored fixture roots.
+  `core/` change, no rendering.
+
+  **The identity gate earned its keep on its first real run**: it FAILED
+  on unter/mit/linken because the crossing matcher's refusal margin
+  refused two TRUE crossings closer than 0.20 xh even at distance zero —
+  a trace against itself. Repaired inside §14's pre-registered
+  free-fix window: structure populations (crossings, retrace zones) are
+  now matched one-to-one by ascending distance under the radius cap
+  (`frames.match_points_one_to_one`); the refusal margin stays with the
+  marks, whose single-query frame it was built for. After the fix the
+  gate passes exactly (dtw 0, chamfer 0, all counters matched,
+  `direction_uncertain` 0 across all ten hand traces).
+
+  **The first baseline is committed to §14 and freezes the ruler**: the
+  chain fit against the hand scores `dtw_xh` median 0.062 xh (p90 0.262)
+  — but the complaint sits in STRUCTURE, exactly as pre-registered: 19
+  invented crossings, 21 invented retrace zones, retrace-arc ratio 1.51
+  (the chain re-inks 51 % more than the author), with `unter` (0.439,
+  max_absorption 132 — the known collapse case) and `muß` (0.242, two
+  lost crossings) carrying the tail. A one-time step sweep
+  (0.02/0.03/0.05) pins 0.02: `dtw_xh` moves only +5 % across it, the
+  retrace-arc measure is genuinely step-bound. Four reference words are
+  flagged `marks_uncertain` (the author drew the i-stroke/u-bow
+  connected) — a fixture-quality note for the confirmation set, not a
+  candidate error.
 - **The tracebench ruler (`tools/tracebench`) — stage B of the
   Tintenfolger plan.** The measurement modules an automatic word tracing
   is graded with, defined by `docs/proposals/tintenfolger.md` §2 and

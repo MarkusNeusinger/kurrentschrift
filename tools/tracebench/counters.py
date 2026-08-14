@@ -25,7 +25,7 @@ import numpy as np
 from core.geometry import detect_retrace_pairs, stroke_bounds
 from core.quality_suetterlin import MIN_RETRACE_PAIRS
 from tools.pairlab.landmarks import landmark_crossings
-from tools.tracebench.frames import CountResult, arc_length, concat_strokes, match_points
+from tools.tracebench.frames import CountResult, arc_length, concat_strokes, match_points_one_to_one
 from tools.tracebench.metric import resample_by_step
 
 
@@ -34,8 +34,11 @@ from tools.tracebench.metric import resample_by_step
 # coarser path than the distance does.
 RESAMPLE_STEP_UNITS = 0.02
 # Crossing matching, ref against cand (tintenfolger.md §2.3: "Match 0,55 xh").
+# No refusal margin here: structure populations are matched one-to-one
+# (`frames.match_points_one_to_one`) — the margin belongs to the single-query
+# frame of the marks, and refused a trace against itself on the first
+# identity run (§14).
 CROSSING_MATCH_RADIUS_UNITS = 0.55
-CROSSING_MATCH_MARGIN_UNITS = 0.20
 # Proximity below which two passes count as the same ink for a retrace. In bench
 # units, so it is a share of the x-height rather than of a scan resolution;
 # `detect_retrace_pairs` derives its along-path separation from it (3x).
@@ -44,10 +47,9 @@ RETRACE_PROX_UNITS = 0.15  # tintenfolger.md §2.3
 # mirrored from `core.quality_suetterlin.MIN_RETRACE_PAIRS` so the bench and the
 # Sütterlin naturalness metric call the same thing a retrace.
 RETRACE_MIN_PAIRS = MIN_RETRACE_PAIRS
-# Retrace segments are matched at the crossing thresholds: both are "one place
+# Retrace segments are matched at the crossing radius: both are "one place
 # in the word", and giving them separate radii would be two invented numbers.
 RETRACE_MATCH_RADIUS_UNITS = CROSSING_MATCH_RADIUS_UNITS
-RETRACE_MATCH_MARGIN_UNITS = CROSSING_MATCH_MARGIN_UNITS
 
 
 @dataclass(frozen=True)
@@ -87,11 +89,15 @@ def count_crossings(
     ref_strokes: list[np.ndarray], cand_strokes: list[np.ndarray], *, resample_step: float = RESAMPLE_STEP_UNITS
 ) -> CountResult:
     """Loop crossings of the reference against those of the candidate."""
-    return match_points(
+    # One-to-one assignment, no refusal margin: both sides carry the SAME
+    # detector's population, and two true crossings a stroke width apart are
+    # two crossings — the margin refused a trace against ITSELF on the first
+    # identity run (unter/mit/linken, §14). Marks keep the refusal semantics:
+    # theirs is the single-query frame the margin was built for.
+    return match_points_one_to_one(
         crossing_points(ref_strokes, resample_step=resample_step),
         crossing_points(cand_strokes, resample_step=resample_step),
         radius=CROSSING_MATCH_RADIUS_UNITS,
-        margin=CROSSING_MATCH_MARGIN_UNITS,
     )
 
 
@@ -186,15 +192,13 @@ def count_retraces(
     """Retrace zones of the reference against those of the candidate."""
     ref_mid, ref_arc = retrace_segments(ref_strokes, xh_px_equivalent=xh_px_equivalent, resample_step=resample_step)
     cand_mid, cand_arc = retrace_segments(cand_strokes, xh_px_equivalent=xh_px_equivalent, resample_step=resample_step)
-    counts = match_points(ref_mid, cand_mid, radius=RETRACE_MATCH_RADIUS_UNITS, margin=RETRACE_MATCH_MARGIN_UNITS)
+    counts = match_points_one_to_one(ref_mid, cand_mid, radius=RETRACE_MATCH_RADIUS_UNITS)
     return RetraceCount(**asdict(counts), arc_ref=ref_arc, arc_cand=cand_arc)
 
 
 __all__ = [
-    "CROSSING_MATCH_MARGIN_UNITS",
     "CROSSING_MATCH_RADIUS_UNITS",
     "RESAMPLE_STEP_UNITS",
-    "RETRACE_MATCH_MARGIN_UNITS",
     "RETRACE_MATCH_RADIUS_UNITS",
     "RETRACE_MIN_PAIRS",
     "RETRACE_PROX_UNITS",

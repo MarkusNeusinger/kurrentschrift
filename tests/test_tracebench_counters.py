@@ -81,6 +81,23 @@ def test_a_crossing_beyond_the_match_radius_is_two_defects_not_one() -> None:
     assert (far.matched, far.missing, far.spurious) == (0, 1, 1)
 
 
+def test_two_dense_crossings_match_a_trace_against_itself() -> None:
+    # The §14 identity finding (unter/mit/linken): two TRUE crossings closer
+    # than the old 0.20 xh refusal margin must still match at identity — the
+    # population frame is one-to-one assignment, structurally without refusal.
+    left = _lemniscate()
+    right = _lemniscate() + np.asarray([0.12, 0.0])  # overlapping: waists + mutual crossings
+    strokes = [left, right]
+    points = crossing_points(strokes)
+    gaps = np.hypot(*(points[:, None] - points[None, :]).transpose(2, 0, 1))
+    np.fill_diagonal(gaps, np.inf)
+    assert gaps.min() < 0.20  # the dense condition the old margin refused on
+    same = count_crossings(strokes, strokes)
+    assert same.ref == same.cand == same.matched >= 2
+    assert (same.missing, same.spurious, same.ambiguous) == (0, 0, 0)
+    assert same.pos_err_xh == pytest.approx(0.0)
+
+
 def test_the_crossing_detector_never_bridges_a_pen_lift() -> None:
     """An `H` in three pen strokes: the crossbar crosses each stem and nothing else.
 
