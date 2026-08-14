@@ -30,15 +30,19 @@ from typing import Any
 
 import numpy as np
 
-from tools.laufform.harvest import DIACRITIC_MIN_Y
 from tools.pairlab.landmarks import nearest_unique_point
 
 
-# A stroke floating entirely above the midband is a diacritic — the rule of
-# `tools.pairlab.chain._letter_cut_anchors`, imported here through
-# `tools.laufform.harvest.DIACRITIC_MIN_Y` so the bench classifies exactly what
-# the harvest classifies. Arc length caps it: a long stroke that happens to stay
-# in the Oberlänge (a capital's ornament, an ascender loop) is body, not a mark.
+# A stroke floating entirely above the midband is a diacritic — the harvest's
+# own rule (`tools.laufform.harvest.DIACRITIC_MIN_Y`, moving to
+# `tools.pairlab.trace` with the follower groundwork PR). Re-declared rather
+# than imported: the harvest import transitively pulls tools.wordlab and with
+# it matplotlib, and the RULER must stay importable in a lean env. Equality
+# with the harvest's value is pinned by a test, so the two cannot drift apart
+# silently; once the trace module is merged, this becomes a direct import.
+DIACRITIC_MIN_Y = 1.0
+# Arc length caps the mark class: a long stroke that happens to stay in the
+# Oberlänge (a capital's ornament, an ascender loop) is body, not a mark.
 MARK_MAX_ARC_UNITS = 0.8  # tintenfolger.md §2.3 ("Bogenlänge <= 0,8 xh")
 # Mark matching, centroid to centroid, with the refusal semantics of
 # `landmarks.nearest_unique_point`: nothing within the radius is a miss, a

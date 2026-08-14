@@ -277,8 +277,8 @@ Ethik-Notiz der Model-Card).
 
 | Stufe | Inhalt | Stand |
 |---|---|---|
-| **A** | `word_instances.json`-Artefakt + Frame-Gate (Exporter + Fetcher), deklarierter Fixture-Re-Export (Re-Baseline nach #334/#336), dieses Doc | **in diesem PR** |
-| **B** | `tools/tracebench`-Lineal (Metriken + Zähler + Split) + Vorregistrierung §14 + Glossar | offen |
+| **A** | `word_instances.json`-Artefakt + Frame-Gate (Exporter + Fetcher), deklarierter Fixture-Re-Export (Re-Baseline nach #334/#336), dieses Doc | **PR #337** |
+| **B** | `tools/tracebench`-Lineal (Metriken + Zähler + Split) + Vorregistrierung §14 + Glossar | **in diesem PR** |
 | **C** | Harness + Provider + authored-Gate + erste Baseline-Tabelle (= Freeze-Akt) | offen |
 | **D** | HTML-Viewer (fitview-Muster) | offen |
 | **1** | `tools/pairlab/trace.py`-Move + 3 additive chain.py-Affordances (inert bewiesen) | offen |

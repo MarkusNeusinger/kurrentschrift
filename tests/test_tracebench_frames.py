@@ -213,3 +213,13 @@ def test_a_claimed_candidate_leaves_the_pool() -> None:
 
 def test_mark_centroids_ignore_empty_strokes() -> None:
     assert mark_centroids([np.zeros((0, 2)), np.array([[1.0, 2.0], [3.0, 4.0]])]).tolist() == [[2.0, 3.0]]
+
+
+def test_the_mark_threshold_matches_the_harvests_rule():
+    # DIACRITIC_MIN_Y is re-declared in frames.py (the harvest import would
+    # transitively pull matplotlib into the ruler); this pin is what makes the
+    # re-declaration safe — a drift on either side fails here.
+    from tools.laufform.harvest import DIACRITIC_MIN_Y as harvest_value
+    from tools.tracebench.frames import DIACRITIC_MIN_Y
+
+    assert DIACRITIC_MIN_Y == harvest_value
