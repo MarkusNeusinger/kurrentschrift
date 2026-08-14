@@ -3581,7 +3581,9 @@ eine datierte Re-Baseline. Artefakte des Laufs:
 ### Vorregistrierung der Folger-Arme (`aug14`, VOR dem ersten Sweep)
 
 Das Experiment-Protokoll für die Verfeinerungsstufe
-(`tools/pairlab/follow.py`, proposals/tintenfolger.md §3), festgehalten
+(`tools/pairlab/follow.py`,
+[`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §3),
+festgehalten
 BEVOR irgendein Arm gelaufen ist. Es gilt die Ein-Knopf-Regel (§11c/§11d:
 dieses Projekt lernt nur aus Ein-Faktor-Leitern) und die §14-Kriterien
 oben — gepaart je Wort gegen die eingefrorene `aug14`-Chain-Baseline,
@@ -3616,7 +3618,8 @@ Kreuzungen) · `Wer` Retrace-Prefix ins Leere · `die`/`mit`/`will`/
 `linken` i-Marken-Attribution · `mit`/`unter` kollabierter t-Deckstrich ·
 `zwei` Grat-Reiten (Width-Residual-Spalte) · `will` Retrace-Ratio 2,15.
 
-**Kill-Kriterien der Formulierung** (proposals/tintenfolger.md §3):
+**Kill-Kriterien der Formulierung**
+([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §3):
 bestes kalibriertes Setting verliert den gepaarten Sign-Test oder ist
 auf > 2/10 Wörtern schlechter ODER erzeugt einen neuen Strukturdefekt
 auf ≥ 2 Wörtern → Formulierung verworfen, nicht nachgestimmt. λ_prox = 0
