@@ -3956,7 +3956,10 @@ routeg-t0 --split dev`, Schritt 0,02, 175 s, 10/10 gescort, 0 failed.
 Referenzseite identisch zur v2.1-Baseline (23 Kreuzungen · 15
 Retrace-Zonen · 8 Berührungen · 0 Überlagerungen) — dieselben
 eingefrorenen Zähler, also ist die Gegenüberstellung wörtlich
-vergleichbar.
+vergleichbar. Nach den Soll-Spalten (#353) einmal nachgemessen: **jede
+Zahl byte-gleich**, nur die zwei neuen Report-Zeilen kommen hinzu
+(`soll_cross_agree` 7/10, `soll_zones_agree` 6/10) — die
+Report-Spalten-Regel hält also auch für diesen Kandidaten.
 
 ```
 dtw_xh_median:   0.819847    aiou_median:              0.8333
