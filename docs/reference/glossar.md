@@ -39,7 +39,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1 · Ausreißer §4
 - **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Cusp-Connector §3
-- **D** — dconn §4 · Deckung §3 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · Duktus §1 · Duktus-Prior §1
+- **D** — dconn §4 · Deckung §3 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1
 - **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2
 - **F** — Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Frozen-Reference-Regel §4 · Fuge §1
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4
@@ -47,12 +47,12 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **K** — Kettenfit §3 · Kill-Kriterium §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
-- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4
+- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4
 - **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
-- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Rückgabe an Autor §5 · Rückhaltemenge §4
+- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Retrace-Segment §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenfolger §3 · Tintenlücke §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
@@ -982,15 +982,50 @@ gespeicherter Bahn editiert); beim `--only`-Refill prüft es gegen die
 eingefrorenen `word.json` der Wurzel, beim Voll-Export gegen das Sidecar.
 *Technisch:* `tools/wordbench/export_fixtures.py::_frame_stale_reason`
 
-**tracebench** — der geplante dritte Bench neben glyphbench (Buchstabe)
-und wordbench (komponiertes Wort): er misst WORTBAHN-Kandidaten (Kettenfit,
+**tracebench** — der dritte Bench neben glyphbench (Buchstabe) und
+wordbench (komponiertes Wort): er misst WORTBAHN-Kandidaten (Kettenfit,
 Tintenfolger, InkSight, später Fusion) gegen den nachgefahrenen
 Referenzsatz — Punktdistanz (`dtw_xh`), papertreues AIoU gegen die
 Tintenmaske, Richtungs-Chamfer, Fehlerzähler an Kreuzungen/Marken/
 Retraces. Ein Kandidat ist wörtlich eine `word_instances`-Zeile; die
 Kriterien sind vorregistriert (qualitaetsmetrik.md §14), ein
-Strukturdefekt vetot jeden Distanzgewinn. *Technisch:* geplant als
-`tools/tracebench/` → proposals/tintenfolger.md §2
+Strukturdefekt vetot jeden Distanzgewinn. *Technisch:* die Mess-Module
+`tools/tracebench/{metric,frames,counters,sets}.py` (Stufe B); Harness +
+Provider folgen als Stufe C → proposals/tintenfolger.md §2
+
+**`dtw_xh`** — die Headline-Distanz des tracebench: unconstrained DTW
+(euklidisch, in xh, symmetric-1-Schritte, beide Enden verankert, kein
+Band), normalisiert durch die Länge T des optimalen Warping-Pfads (die
+LDTW-Normalisierung, §6), beide Bahnen vorher arc-length-uniform
+resampelt. **Nur vorwärts** — die Richtung ist Duktus-Wahrheit, ein
+rückwärts besser passender Kandidat ist ein Duktus-Fehler
+(Report-Spalte `dtw_reversed_better`, nie verrechnet). Eigener Name,
+bewusst nicht „LDTW": Resampling + xh-Einheit machen die Zahl mit
+publizierten Werten unvergleichbar. QC-Begleiter `dtw_max_absorption`
+(max. Punkte einer Seite auf EIN Sample der anderen — der
+Singularitäts-Wächter). *Technisch:* `tools/tracebench/metric.py::dtw`
+
+**Marke** *(mark)* — die Strichklasse, die der tracebench VOR dem
+Body-Vergleich herauslöst und separat zählt: ein nicht-erster Strich,
+der komplett über `DIACRITIC_MIN_Y` (= 1 xh) schwebt und höchstens
+0,8 xh Bogenlänge hat — i-Punkt/-Strich, Umlautzeichen, u-Deckstrich.
+Der t-Querstrich kreuzt das Mittelband und bleibt Body (ihn zählt der
+Kreuzungszähler). Gematcht per Zentroid mit Refusal; **fehlende Marken
+sind Co-Primär-Gate**, mit gutem Body-`dtw_xh` nicht rückkaufbar — der
+verschluckte i-Punkt ist der dokumentierte Fehlermodus des ganzen
+Felds, den keine publizierte Metrik erfasst. *Technisch:*
+`tools/tracebench/frames.py::classify_strokes`/`match_marks`
+
+**Retrace-Segment** — zweimal beschriebene Tinte als GEZÄHLTE Zone:
+zusammenhängende antiparallele Sample-Paare (Detektor
+`core.geometry.detect_retrace_pairs`, prox 0,15 xh, ≥ 3 Samples auf
+gemeinsamem 0,02-xh-Raster), wobei Hin- und Rückschenkel EINER
+Aus-und-zurück-Bewegung zu einer Zone fusionieren (über die
+Partner-Indizes des Detektors — sonst verweigert das Zentroid-Matching
+eine Bahn gegen sich selbst, und das authored-Identitäts-Gate schlüge
+auf jedem Deckstrich-Wort an). Robusteste Vergleichszahl ist das
+Bogen-Verhältnis `retrace_arc_ratio`, die Zonen-Counts sind die
+Ortsdiagnose. *Technisch:* `tools/tracebench/counters.py::count_retraces`
 
 **grid_step_crop_px** — der Präzisionsboden einer InkSight-Bahn: das
 Modell quantisiert seine Ausgabe auf ein 225-Stufen-Gitter über dem auf
@@ -1299,22 +1334,34 @@ aufeinander abzubilden und ihren Abstand zu messen. Klassiker der
 Handschrift-Literatur, für Trajektorienvergleich aber schlecht kalibriert.
 
 **LDTW** *(Length-independent DTW)* — längenunabhängige Variante davon,
-eingeführt von PEN-Net (ACCV 2022), weil rohes DTW mit der Pfadlänge
-skaliert und lange Wörter automatisch „schlechter“ aussehen. Kleiner ist
-besser.
+eingeführt von PEN-Net (ACCV 2022). Präzise (Primärquelle verbatim
+geprüft, `aug14`): **unconstrained DTW geteilt durch die Länge T des
+gefundenen optimalen Warping-Pfads** (Eq. 1) — kein Band, kein fester
+Schrittvorrat, und der Divisor ist datenabhängig (T ≤ M+N), keine
+Konstante. Kleiner ist besser. Es existiert KEINE
+Referenz-Implementierung (das PEN-Net-Repo enthält nur Trainingscode);
+publizierte Werte hängen an [0,64)-Koordinatenboxen und
+CASIA-Einzelzeichen und sind mit unseren Wort-Zahlen nicht
+vergleichbar. Unsere Headline **`dtw_xh`** (§4) übernimmt genau diese
+T-Normalisierung, resampelt aber beide Seiten arc-length-uniform und
+misst in xh — deshalb der eigene Name.
 
 **AIoU** *(Adaptive Intersection over Union)* — das zweite Maß aus
-derselben Arbeit: eine Überlappungsmessung zwischen rekonstruierter und
-echter Stiftbahn, die den **Einfluss der Strichbreite eliminiert** (ein
-dicker Strich soll nicht automatisch besser überlappen). Größer ist
-besser. **Orientierungspunkt:** Der Stand der Technik der freien
-Trajektorien-Rekonstruktion (Diffusionsmodelle, 2026) liegt bei **AIoU
-≈ 0,75** bei ~1,6 px mittlerer Abweichung. Unser Kettenfit löst ein viel
-engeres Problem (eine Norm, ein autorisierter Duktus-Prior, eine Hand) und
-darf deshalb deutlich sauberer sein — der Preis ist, dass sein Ergebnis nur
-innerhalb der autorisierten Norm gilt. Eine AIoU-Report-Spalte im Wordbench
-wäre der billigste Weg, unsere Zahlen erstmals literaturvergleichbar zu
-machen.
+derselben Arbeit. Präzise (Primärquelle verbatim geprüft, `aug14`): die
+Referenz ist NICHT eine Ground-Truth-Bahn, sondern die
+**OTSU-binarisierte Tintenmaske des Bildes**; nur die VORHERSAGE wird
+1 px gerastert und per 3×3-Dilatation iterativ verbreitert, bis die IoU
+maximal ist — `AIoU = max_k IoU(G, dilate^k(P))`. „Adaptiv" heißt: an
+die argmax-Dilatationsstufe, nicht an eine gemessene Breite; genau das
+eliminiert den Einfluss der Strichbreite. Größer ist besser;
+auflösungsabhängig (Raster immer mitnennen). Publizierte
+Größenordnungen: 0,45–0,55 (PEN-Net, isolierte CASIA-Zeichen), ~0,75
+(Diffusions-Rekonstruktion 2026, ebenfalls Zeichen-Ebene) — beide NIE
+als Zielwerte für verbundene Wörter importieren. Der tracebench (§4)
+implementiert die Spalte papertreu gegen die eingefrorene `ref_mask.png`
+— was sie nebenbei auf alle Wörter ohne Nachfahrung ausdehnt; eine
+Wordbench-Variante (komponierte Maske statt Bahn) bleibt ein eigenes,
+anderes Maß.
 
 **HTG** *(Handwritten Text Generation)* — der Literatur-Sammelbegriff für
 Modelle, die Handschrift als **Bild** synthetisieren (Offline-Synthese):
