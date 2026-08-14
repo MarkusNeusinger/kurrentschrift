@@ -141,7 +141,18 @@ cp tools/routeg/out/candidates/routeg-graph.json temp/routeg-t0.json
 uv run python -m tools.tracebench.run --candidate file \
     --candidate-file temp/routeg-t0.json --label routeg-t0 \
     --json temp/tb-routeg-t0.json
+
+# 5. …and look at it beside the hand reference (the duel page reads this
+#    candidate like any other; add --candidate chain=… for the third layer)
+uv run python -m tools.tracebench.view --split dev \
+    --candidate routeg-t0=temp/routeg-t0.json \
+    --rows routeg-t0=temp/tb-routeg-t0.json --out temp/duell-routeg.html
 ```
+
+The fixture roots are gitignored, so a fresh git worktree has none: run the
+three stages with `--fixtures-root` pointing at the checkout that holds them
+(and `tracebench` with `--fixtures`), or symlink
+`tools/wordbench/fixtures` there.
 
 Stage 2 needs **no isolated venv**: the whole method is numpy plus
 `scipy.ndimage.label`, both already runtime dependencies. The `tools/inksight`
