@@ -3721,3 +3721,46 @@ nicht erst als Kreuzungsziele; folger-seitig umsetzbar, die
 eingefrorene `landmarks.py` bleibt unberührt) — NICHT mehr Gewicht,
 nicht mehr λ-Feinabstimmung. Artefakte: Chronik `arm5-overlap` +
 `arm6-landmark`.
+
+### Arm ⑥b `aug14` — Vorregistrierung: Klassenbewusste Korrespondenz
+
+Geschrieben und committet VOR der ersten Zahl dieses Arms (§11b-Disziplin).
+
+**Hypothese (aus der Korrespondenz-Kappe des ⑤/⑥-Eintrags):** Die Kappe
+ist die bindende Schranke des Landmark-Terms. Erwartung, falsifizierbar:
+Mit klassenbewusster Korrespondenz — Touch-Points und T-Junctions tragen
+Gewicht 0 — verschwindet die punktweise Verschlechterung der vollen
+Parität (Arm ⑥: dtw +0,9 %, Sign 8/9, p = 0,039 gegen die
+λ=1,0-Schwester), und die milde Strukturlinderung (m+s 43 → 39) bleibt
+oder verbessert sich.
+
+**Umsetzung (folger-seitig, das Lineal unberührt):** neuer Zielmodus
+`extrapolated_classed` in `tools/pairlab/follow.py` — die extrapolierte
+Zielbildung selbst unverändert, danach Gewicht 0 für jede Zeile, deren
+Verfeinerungsgrund eine By-Design-Nichtkreuzung der Tinte ist
+(`LANDMARK_NONCROSSING_REASONS` = `touch_point` · `t_junction`); die
+1/σ²-Gewichte der behaltenen Zeilen werden über die BEHALTENEN auf
+Mittel 1 renormiert. Gewicht 0 wirkt über das bestehende Pre-Whitening
+(√w skaliert Operator-Zeile UND Ziel), also ohne jede Änderung an
+`chain.py` oder der eingefrorenen `landmarks.py`. Die Walk-Fehlschläge
+(`few_branches` · `no_continuation_pair` · `no_junction` ·
+`ill_conditioned` · `far_from_branch`) behalten ihr rohes Ziel wie
+bisher — dort KANN die Tinte eine Kreuzung tragen, nur die Verfeinerung
+fand sie nicht.
+
+**Protokoll:** Kalibrierung nach §11c am eigenen Optimum der
+λ=1,0-Schwester (Term inert, classed-Parität gemessen — die Parität
+ändert sich, weil `e_landmark` nur noch die behaltenen Zeilen zählt);
+zwei Sprossen {0,1·Parität · Parität}, Basis identisch mit Arm ⑥
+(prox 1 · rounds 2 · coverage 0,3). Gepaart über die 10 Dev-Wörter
+gegen die λ=1,0-Schwester UND die eingefrorene Chain-Baseline;
+Co-Primär-Gates, Kosten-Wächter und Struktur-Veto unverändert.
+
+**Kill-Kriterien:** Bleibt die volle classed-Parität punktweise
+signifikant schlechter als die Schwester → die Kappe war nicht die
+bindende Schranke, Hypothese verworfen — und mit ihr die Gewichts-Route
+des Landmark-Terms in dieser Formulierung (die nächste Hypothese wäre
+dann die Korrespondenz-Bildung selbst, nicht ihr Gewicht). Steigen
+`marks_missing` oder `cross_missing+spurious` netto gegen die
+Schwester → verworfen. Keine Adoption eines `FOLLOW_*`-Defaults ohne
+Owner-Go, unabhängig vom Ausgang.
