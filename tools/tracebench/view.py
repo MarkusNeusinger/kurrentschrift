@@ -172,7 +172,7 @@ class StructureMarks:
     """The DETECTED structures of one layer, ready to draw over its trace."""
 
     crossings: list[tuple[float, float]]  # crop px
-    retraces: list[tuple[str, str]]  # (pass path data in crop px, class: retrace | touch | overlap)
+    passes: list[tuple[str, str]]  # (pass path data in crop px, class: retrace | touch | overlap)
     zones: int = 0  # merged retrace ZONES — the ruler's own count (`retrace_segments`)
 
 
@@ -189,10 +189,10 @@ def structure_marks(frame: BenchFrame, strokes_bench: list[np.ndarray]) -> Struc
     crossings = [(float(x), float(y)) for x, y in frame.bench_to_crop_px(crossing_points(strokes))]
     zone_mids, _zone_arc = retrace_segments(strokes)
     zones = int(np.asarray(zone_mids).reshape(-1, 2).shape[0])
-    retraces = [
+    passes = [
         (stroke_path_data(frame.bench_to_crop_px(pass_pts)), cls) for pass_pts, cls in classified_pass_points(strokes)
     ]
-    return StructureMarks(crossings=crossings, retraces=retraces, zones=zones)
+    return StructureMarks(crossings=crossings, passes=passes, zones=zones)
 
 
 def layer_paths(
@@ -553,7 +553,7 @@ def _layer_svg(layer: Layer, layer_id: str) -> str:
         for s in layer.strokes
     )
     structure = ""
-    if layer.structure and (layer.structure.crossings or layer.structure.retraces):
+    if layer.structure and (layer.structure.crossings or layer.structure.passes):
         rings = "".join(
             f'<circle class="cross" cx="{x:.{COORD_DECIMALS}f}" cy="{y:.{COORD_DECIMALS}f}" '
             f'r="{CROSS_MARK_RADIUS_PX:g}" vector-effect="non-scaling-stroke"></circle>'
@@ -561,7 +561,7 @@ def _layer_svg(layer: Layer, layer_id: str) -> str:
         )
         zones = "".join(
             f'<path class="zone {cls}" d="{d}" vector-effect="non-scaling-stroke"></path>'
-            for d, cls in layer.structure.retraces
+            for d, cls in layer.structure.passes
         )
         structure = f'<g class="structure">{zones}{rings}</g>'
     return (
