@@ -12,6 +12,32 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **Arm ⑥ groundwork: the ink follower's landmark term can aim at the
+  EXTRAPOLATED junction crossing instead of the raw skeleton branch
+  point** (`tools/pairlab/follow.py`, `docs/proposals/tintenfolger.md`
+  §3). Thinning displaces a branch point by up to the local stroke width
+  — more than the anchor spacing the term exists to correct — so
+  `extrapolated_targets` walks the skeleton around each assigned branch
+  point, drops the junction-distorted core (one stroke width), fits one
+  straight line per „gute Fortsetzung" branch pair and intersects them;
+  the local half-width rides along as an isotropic uncertainty and
+  enters as a per-target `1/σ²` weight (mean 1, so the term keeps the
+  scale a weight is calibrated at) by pre-whitening the chain operator's
+  rows — no change to `chain.py`, gradient still exactly analytic. Every
+  step refuses rather than guesses (`no_junction` · `few_branches` ·
+  `no_continuation_pair` · `ill_conditioned` · `far_from_branch`), a
+  refusal keeps the raw point and the reason is reported next to the
+  correspondence's own drop reasons. `--landmark-targets
+  extrapolated|extrapolated_uniform|raw` selects the formulation (the
+  raw arm is the A/B control, the uniform one separates target from
+  weighting), and `--landmark-calibrate` reads `e_geo / e_landmark` at a
+  follower optimum with the term forced INERT, so the arm's rungs come
+  from measured ratios rather than by analogy (§11c). NO weight is
+  adopted: the default stays 0.0, at which the whole block is skipped
+  and every solve is byte-identical (pinned).
+
 ### Changed
 
 - **Follower arm 1 result recorded in the quality-metric §14** (doc-only):

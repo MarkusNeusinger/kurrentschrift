@@ -14,6 +14,11 @@ Three of them are load-bearing:
   stalls L-BFGS-B silently and looks exactly like „the follower does not help";
 * the `KS_FOLLOW_*` isolation, because a follower sweep that moved a `CHAIN_*`
   would re-tune the measurement path the follower is graded against.
+
+The arm-⑥ half at the bottom adds a fourth: a synthetic JUNCTION whose true
+crossing and whose skeleton branch point are deliberately different points, so
+„the extrapolation corrects the junction displacement" is measured against a
+known answer rather than asserted.
 """
 
 from __future__ import annotations
@@ -31,19 +36,33 @@ from tests.test_pairlab_chain import UNIT_PX, _flat_fields, _synthetic_word
 from tools.pairlab.chain import ChainSegmentSpec, build_chain_problem, fit_word_chain, gradient_decomposition
 from tools.pairlab.follow import (
     CANDIDATE_FRAME,
+    LANDMARK_TARGET_MODES,
     FollowWeights,
+    _intersect_lines,
     _source_id_of,
+    _uncertainty_weights,
     _with,
+    apply_landmark_targets,
     apply_retrace_guard,
     build_follow_problem,
+    calibrate_case,
+    calibration_report,
     candidate_payload,
+    extrapolated_targets,
     follow_case,
     follow_derived,
     follow_word_chain,
+    landmark_calibration,
+    landmark_energy,
+    landmark_meta,
+    landmark_targeting,
     parse_sweep,
+    print_calibration,
+    raw_landmark_targets,
     retrace_anchor_mask,
     retrace_sample_mask,
 )
+from tools.pairlab.landmarks import skeleton_branch_points
 from tools.pairlab.trace import assemble_word_strokes
 
 
@@ -417,8 +436,14 @@ def test_a_swept_arm_keeps_an_integer_knob_an_integer() -> None:
 
 def test_parse_sweep_validates_against_the_weight_fields() -> None:
     assert parse_sweep("prox=1.0,0.1,0") == ("prox", [1.0, 0.1, 0.0])
-    with pytest.raises(SystemExit, match="not a FollowWeights field"):
+    with pytest.raises(SystemExit, match="not a numeric FollowWeights field"):
         parse_sweep("lambda=1.0")
+    # …and the two NON-numeric fields are refused by name: they select a
+    # formulation (`landmark_targets`) or switch a guard off (`retrace_guard`),
+    # and a "ladder" over them would compare two objectives under one label.
+    for field_name in ("landmark_targets", "retrace_guard"):
+        with pytest.raises(SystemExit, match="not a numeric FollowWeights field"):
+            parse_sweep(f"{field_name}=1.0")
     with pytest.raises(SystemExit, match="no values"):
         parse_sweep("prox=")
     with pytest.raises(SystemExit, match="must be numbers"):
@@ -464,6 +489,447 @@ def test_ks_follow_env_overrides_never_touch_the_chain(monkeypatch: pytest.Monke
             monkeypatch.delenv(env, raising=False)
         importlib.reload(follow_mod)
         importlib.reload(chain_mod)
+
+
+# -------------------------------------------- arm ⑥: the extrapolated targets
+#
+# The premise is a geometric fact, so it is BUILT rather than assumed: a junction
+# whose ink is thicker on one side thins to a branch point that is NOT the
+# crossing of the two centerlines. Below, the rays define the true crossing and a
+# blob offset along one of them displaces the branch point away from it — the
+# published junction displacement, in a canvas where the right answer is known.
+
+JUNCTION_ORIGIN_PX = 4.3
+JUNCTION_BASELINE_PX = 60.0
+JUNCTION_SHAPE = (100, 100)
+JUNCTION_ANGLES = (20.0, 200.0, 95.0, 275.0)  # two straight strokes crossing at 75 deg
+
+
+def _junction_units(x_px: float, y_px: float) -> tuple[float, float]:
+    """Crop px → the template units the chain's landmark targets live in."""
+    return ((x_px - JUNCTION_ORIGIN_PX) / UNIT_PX, (JUNCTION_BASELINE_PX - y_px) / UNIT_PX)
+
+
+def _junction_px(u: float, v: float) -> tuple[float, float]:
+    return (JUNCTION_ORIGIN_PX + u * UNIT_PX, JUNCTION_BASELINE_PX - v * UNIT_PX)
+
+
+def _ray(skel: np.ndarray, centre, angle_deg: float, length: float) -> None:
+    """One 1-px skeleton ray, stepped along its DOMINANT axis.
+
+    Stepping along the dominant axis is what keeps it a thinned skeleton: a
+    finer parameterisation would stamp staircase pixels with three neighbours
+    each, and `skeleton_branch_points` would then report a branch point every few
+    pixels along a perfectly straight stroke.
+    """
+    dx, dy = np.cos(np.radians(angle_deg)), np.sin(np.radians(angle_deg))
+    lead = max(abs(dx), abs(dy))
+    for step in range(int(length * lead) + 1):
+        t = step / lead
+        skel[int(round(centre[1] + t * dy)), int(round(centre[0] + t * dx))] = True
+
+
+def _junction_skeleton(centre, angles, *, length: float = 30.0, blob_radius: float = 2.0, blob_offset=(0.0, 0.0)):
+    """Rays from `centre` at `angles`, welded by an ink blob that may sit OFF it."""
+    skel = np.zeros(JUNCTION_SHAPE, dtype=bool)
+    for angle in angles:
+        _ray(skel, centre, angle, length)
+    yy, xx = np.mgrid[0 : JUNCTION_SHAPE[0], 0 : JUNCTION_SHAPE[1]]
+    skel |= np.hypot(xx - (centre[0] + blob_offset[0]), yy - (centre[1] + blob_offset[1])) <= blob_radius
+    return skel
+
+
+def _cross_anchors(centre, angles=(30.0, 105.0), *, half_units: float = 1.2, k: int = 6):
+    """A ductus polyline crossing ITSELF over `centre`: one pen stroke per limb.
+
+    Deliberately at other angles than the ink: the correspondence is what ties
+    the two together, and a polyline that reproduced the ink exactly would let a
+    broken extrapolation pass by coincidence.
+    """
+    strokes = [
+        np.asarray(
+            [
+                _junction_units(
+                    centre[0] + t * np.cos(np.radians(a)) * UNIT_PX, centre[1] + t * np.sin(np.radians(a)) * UNIT_PX
+                )
+                for t in np.linspace(-half_units, half_units, k)
+            ]
+        )
+        for a in angles
+    ]
+    return np.vstack(strokes), [k * i for i in range(len(strokes))]
+
+
+def _junction_problem(skel: np.ndarray, anchors: np.ndarray, starts, *, width_raw=1.5, n_samples: int = 64):
+    fields = _flat_fields(JUNCTION_SHAPE)
+    fields["skel"] = skel
+    fields["width_raw"] = (
+        np.full(JUNCTION_SHAPE, float(width_raw)) if np.isscalar(width_raw) else np.asarray(width_raw, dtype=float)
+    )
+    spec = ChainSegmentSpec(
+        kind="letter",
+        anchors=anchors,
+        slot_index=0,
+        key="x",
+        half_widths=np.full(len(anchors), 0.07),
+        stroke_starts=list(starts),
+    )
+    return build_chain_problem(
+        [spec],
+        unit_px=UNIT_PX,
+        x_origin_px=JUNCTION_ORIGIN_PX,
+        baseline_y_px=JUNCTION_BASELINE_PX,
+        n_samples=n_samples,
+        **fields,
+    )
+
+
+def _one_junction(*, angles=JUNCTION_ANGLES, blob_offset=(0.0, 0.0), width_raw=1.5, length=30.0, blob_radius=2.0):
+    """`(centre_px, problem)` for a one-letter chain over one synthetic junction."""
+    centre = (45.0, 45.0)
+    skel = _junction_skeleton(centre, angles, length=length, blob_radius=blob_radius, blob_offset=blob_offset)
+    anchors, starts = _cross_anchors(centre)
+    problem = _junction_problem(skel, anchors, starts, width_raw=width_raw)
+    assert problem.landmark_op.shape[0] == 1, "the scaffolding must produce exactly one correspondence"
+    return centre, problem
+
+
+def _target_px(problem, targeting, row: int = 0):
+    return np.asarray(_junction_px(*targeting.targets[row]))
+
+
+def test_the_extrapolation_recovers_the_crossing_the_branch_point_hides() -> None:
+    """The whole of arm ⑥ in one measurement, against a KNOWN answer.
+
+    The ink's two centerlines cross at `centre`; the ink blob sits 3 px along one
+    of them, so the thinned skeleton's branch point — what the chain's landmark
+    term aims at today — is displaced from the crossing by more than a pixel.
+    Extrapolating the incident branches across the junction has to put the target
+    back on the crossing.
+    """
+    centre, problem = _one_junction(blob_offset=(3.0, 0.0))
+    branch_points = skeleton_branch_points(problem.skel)
+    assert len(branch_points) == 1
+    displacement = float(np.hypot(*(branch_points[0] - np.asarray(centre))))
+    assert displacement > 1.0, "the premise: the branch point is NOT the crossing"
+
+    raw = raw_landmark_targets(problem)
+    assert _target_px(problem, raw) == pytest.approx(branch_points[0], abs=1e-9)
+
+    refined = extrapolated_targets(problem)
+    assert refined.reasons == ["ok"]
+    assert float(np.hypot(*(_target_px(problem, refined) - np.asarray(centre)))) < 0.5
+    # …and the move is reported in the units the arm's cost column is read in
+    assert refined.shifts_units[0] == pytest.approx(displacement / UNIT_PX, rel=0.25)
+    assert refined.entries[0]["n_branches"] == 4
+    assert refined.entries[0]["cross_angle_deg"] == pytest.approx(75.0, abs=5.0)
+
+
+def test_a_t_junction_keeps_the_raw_branch_point() -> None:
+    """Three branches make ONE continuation pair — and one line cannot intersect.
+
+    The refusal is the point: a T is a real junction with no crossing to
+    extrapolate, so the honest target is the branch point plus the reason.
+    """
+    centre, problem = _one_junction(angles=(0.0, 180.0, 90.0))
+    refined = extrapolated_targets(problem)
+    assert refined.reasons == ["no_continuation_pair"]
+    assert refined.entries[0]["n_branches"] == 3
+    assert np.allclose(refined.targets, refined.raw_targets)
+    assert _target_px(problem, refined) == pytest.approx(np.asarray(centre), abs=1e-9)
+
+
+def test_a_near_parallel_junction_is_refused_as_ill_conditioned() -> None:
+    """Two strokes meeting at 12°: the intersection slides along their direction.
+
+    Same threshold and same reason the frozen detector applies to a polyline's
+    own crossing (`landmarks.LANDMARK_MIN_ANGLE_DEG`) — an ill-conditioned point
+    is not a target, however precisely the arithmetic reports it.
+    """
+    _centre, problem = _one_junction(angles=(0.0, 12.0, 180.0, 192.0), width_raw=5.5, length=26.0)
+    refined = extrapolated_targets(problem)
+    assert refined.reasons == ["ill_conditioned"]
+    assert refined.entries[0]["n_branches"] == 4
+    assert refined.entries[0]["cross_angle_deg"] < 15.0
+    assert np.allclose(refined.targets, refined.raw_targets)
+
+
+def test_two_branches_are_a_passing_stroke_not_a_crossing() -> None:
+    """Below three incident branches there is nothing to extrapolate a second line from."""
+    _centre, problem = _one_junction(angles=(0.0, 180.0, 5.0, 185.0), width_raw=5.5, length=26.0)
+    refined = extrapolated_targets(problem)
+    assert refined.reasons == ["few_branches"]
+    assert refined.entries[0]["n_branches"] < 3
+    assert np.allclose(refined.targets, refined.raw_targets)
+
+
+def test_without_an_ink_side_nothing_is_refined_and_the_reason_says_so() -> None:
+    """„No junction here" is a different statement from „too few branches".
+
+    A correspondence can only exist where a skeleton did, but the walk must still
+    answer honestly when the ink it is handed is empty — the same discipline
+    `chain._landmark_correspondence` follows when no skeleton is supplied at all.
+    """
+    _centre, problem = _one_junction(blob_offset=(3.0, 0.0))
+    problem.skel = None
+    refined = extrapolated_targets(problem)
+    assert refined.reasons == ["no_junction"]
+    assert refined.entries[0]["n_branches"] == 0
+    assert np.allclose(refined.targets, refined.raw_targets)
+
+
+def test_an_extrapolation_beyond_the_displacement_bound_is_refused() -> None:
+    """The published bound is the local stroke width — further is another junction.
+
+    Driven through the threshold rather than through a contrived skeleton: the
+    same junction that refines cleanly above is refused once the bound is put
+    below the correction it wants to make.
+    """
+    _centre, problem = _one_junction(blob_offset=(3.0, 0.0))
+    refined = extrapolated_targets(problem, max_shift_widths=0.01)
+    assert refined.reasons == ["far_from_branch"]
+    assert np.allclose(refined.targets, refined.raw_targets)
+
+
+def test_the_intersection_refuses_a_near_parallel_pair() -> None:
+    """The conditioning guard itself, on two lines and nothing else."""
+    p1, u1 = np.array([0.0, 0.0]), np.array([1.0, 0.0])
+    p2, u2 = np.array([0.0, 4.0]), np.array([np.cos(np.radians(60.0)), -np.sin(np.radians(60.0))])
+    crossing = _intersect_lines(p1, u1, p2, u2, min_angle_deg=15.0)
+    assert crossing is not None
+    assert crossing[1] == pytest.approx(0.0, abs=1e-9)
+    assert crossing[0] == pytest.approx(4.0 / np.tan(np.radians(60.0)), rel=1e-9)
+    shallow = np.array([np.cos(np.radians(5.0)), -np.sin(np.radians(5.0))])
+    assert _intersect_lines(p1, u1, p2, shallow, min_angle_deg=15.0) is None
+
+
+# ------------------------------------------------------------ the uncertainty
+
+
+def test_uncertainty_weights_are_relative_and_average_to_one() -> None:
+    """`1/sigma^2`, normalised so the term keeps the scale it is calibrated at.
+
+    Mean 1 is not cosmetic: `e_landmark` is a MEAN of squared residuals, and a
+    weighting that changed its scale would make a calibrated weight mean
+    something different on every word.
+    """
+    weights = _uncertainty_weights(np.array([0.05, 0.10, 0.20]))
+    assert float(np.mean(weights)) == pytest.approx(1.0)
+    assert weights[0] > weights[1] > weights[2]  # thinner ink, more certain target
+    assert weights[0] / weights[1] == pytest.approx(4.0)  # …quadratically so
+    assert np.allclose(_uncertainty_weights(np.full(4, 0.13)), 1.0)
+    assert _uncertainty_weights(np.zeros(0)).shape == (0,)
+
+
+def test_thicker_ink_buys_a_larger_sigma_and_a_smaller_weight() -> None:
+    """The chain from the ink to the weight, end to end on two real junctions.
+
+    One thin junction on the left, one thick on the right, in ONE problem — the
+    weights are relative, so a comparison across two problems could not see them.
+    """
+    centres = [(30.0, 45.0), (70.0, 45.0)]
+    skel = np.zeros(JUNCTION_SHAPE, dtype=bool)
+    anchors, starts, offset = [], [], 0
+    for centre in centres:
+        skel |= _junction_skeleton(centre, JUNCTION_ANGLES, length=16.0, blob_radius=1.5)
+        block, block_starts = _cross_anchors(centre, half_units=0.5)
+        anchors.append(block)
+        starts.extend(offset + s for s in block_starts)
+        offset += len(block)
+    columns = np.arange(JUNCTION_SHAPE[1])[None, :] * np.ones((JUNCTION_SHAPE[0], 1))
+    problem = _junction_problem(
+        skel, np.vstack(anchors), starts, width_raw=np.where(columns < 50, 1.5, 4.0), n_samples=96
+    )
+    assert problem.landmark_op.shape[0] == 2
+
+    refined = extrapolated_targets(problem)
+    assert refined.reasons == ["ok", "ok"]
+    assert refined.entries[0]["half_width_px"] < refined.entries[1]["half_width_px"]
+    assert refined.sigmas[0] < refined.sigmas[1]
+    assert refined.weights[0] > 1.0 > refined.weights[1]
+    assert float(np.mean(refined.weights)) == pytest.approx(1.0)
+    # …and the uniform arm of the ladder keeps the same targets at weight 1
+    uniform = landmark_targeting(problem, "extrapolated_uniform")
+    assert np.allclose(uniform.targets, refined.targets)
+    assert np.allclose(uniform.weights, 1.0)
+
+
+def test_the_whitening_prices_exactly_the_weighted_residual() -> None:
+    """`e_landmark` after `apply_landmark_targets` IS `mean(w·|P − T|²)`.
+
+    Computed here from the UNWHITENED operator and the plain targets, so the
+    assertion tests the whitening identity rather than restating it.
+    """
+    _centre, problem = _one_junction(blob_offset=(3.0, 0.0), width_raw=2.0)
+    targeting = extrapolated_targets(problem)
+    expected = landmark_energy(problem, problem.x0, targeting)
+    predicted = float(
+        np.sum(
+            targeting.weights[:, None]
+            * ((problem.landmark_op @ problem.plan_anchors(problem.x0)) - targeting.targets) ** 2
+        )
+        / problem.landmark_op.shape[0]
+    )
+    assert expected == pytest.approx(predicted, rel=1e-12)
+
+    apply_landmark_targets(problem, targeting)
+    assert problem.energy_terms(problem.x0)["e_landmark"] == pytest.approx(expected, rel=1e-12)
+    # …and the raw arm is what the term prices without any of this
+    _c2, control = _one_junction(blob_offset=(3.0, 0.0), width_raw=2.0)
+    assert control.energy_terms(control.x0)["e_landmark"] != pytest.approx(expected, rel=1e-6)
+    # the refinement's provenance rides in the report the arm reads its costs off
+    entry = next(e for e in problem.landmark_report if e["reason"] == "ok")
+    assert entry["target_mode"] == "extrapolated"
+    assert entry["refine_reason"] == "ok"
+    assert entry["sigma_units"] > 0.0
+    meta = landmark_meta(problem, mode="extrapolated")
+    assert meta == {
+        "mode": "extrapolated",
+        "applied": True,
+        "n_detected": 1,
+        "n_targets": 1,
+        "drops": {},
+        "refined": {"ok": 1},
+        "shift_units_median": entry["refine_shift_units"],
+        "sigma_units_median": entry["sigma_units"],
+    }
+
+
+# ----------------------------------------------------------------- inertness
+
+
+def test_refined_targets_at_weight_zero_are_byte_identical() -> None:
+    """The term's own inertness rule, extended to its targets.
+
+    At weight 0 the landmark energy enters `f` as `+ 0.0` and contributes no
+    gradient at all, so re-aiming it CANNOT move an anchor — and the equality
+    below is bit equality, not `approx`: an arm at `landmark = 0` is an identity,
+    which is what makes the paired comparison against the frozen chain baseline
+    legitimate.
+    """
+    _centre, aimed = _one_junction(blob_offset=(3.0, 0.0))
+    _centre2, untouched = _one_junction(blob_offset=(3.0, 0.0))
+    apply_landmark_targets(aimed, extrapolated_targets(aimed))
+    assert aimed.landmark_weight == 0.0
+    rng = np.random.default_rng(66)
+    params = rng.uniform(-0.05, 0.05, size=len(aimed.x0))
+    for p in (aimed.x0, params):
+        f_a, g_a = aimed.objective(p)
+        f_b, g_b = untouched.objective(p)
+        assert f_a == f_b
+        assert np.array_equal(g_a, g_b)
+    # …and NOT vacuous: at a positive weight the two aim at different points
+    _c3, armed = _one_junction(blob_offset=(3.0, 0.0))
+    armed.landmark_weight = 1.0
+    before = armed.objective(params)[0]
+    apply_landmark_targets(armed, extrapolated_targets(armed))
+    assert armed.objective(params)[0] != before
+
+
+def test_the_target_mode_changes_nothing_at_landmark_weight_zero(synthetic) -> None:
+    """The follower level of the same claim: identical traces across all modes."""
+    case, result, windows, fit = synthetic
+    traces = {}
+    for mode in LANDMARK_TARGET_MODES:
+        followed = follow_word_chain(
+            case,
+            [0, 1],
+            result=result,
+            windows_px=windows,
+            fit=fit,
+            weights=FollowWeights(rounds=1, landmark=0.0, landmark_targets=mode),
+        )
+        assert followed is not None
+        assert followed.fit_meta["landmark"]["mode"] == mode
+        assert followed.fit_meta["landmark"]["applied"] is False
+        traces[mode] = json.dumps(followed.strokes_units)
+    assert len(set(traces.values())) == 1
+
+
+def test_an_unknown_target_mode_is_a_caller_error(synthetic) -> None:
+    _case, _result, _windows, fit = synthetic
+    with pytest.raises(ValueError, match="unknown landmark target mode"):
+        build_follow_problem(fit.problem, fit.params, FollowWeights(rounds=1, landmark_targets="nearest"))
+    with pytest.raises(ValueError, match="unknown landmark target mode"):
+        landmark_targeting(fit.problem, "nearest")
+
+
+# --------------------------------------------------------- the calibration hook
+
+
+def test_the_calibration_reads_the_scale_and_scales_with_the_multiplier() -> None:
+    """§11c's discipline as arithmetic: rungs are fractions of a MEASURED parity.
+
+    The parity weight is `e_geo / e_landmark` at the optimum, so a rung's
+    would-be energy is that fraction of `e_geo` — which is what makes „1 % of the
+    geometry term" a statement about this objective rather than about another
+    path's constant.
+    """
+    _centre, problem = _one_junction(blob_offset=(3.0, 0.0))
+    targeting = extrapolated_targets(problem)
+    report = landmark_calibration(problem, problem.x0, targeting, multipliers=(0.01, 0.1, 1.0))
+    assert report["mode"] == "extrapolated"
+    assert report["n_landmarks"] == problem.landmark_op.shape[0] == 1
+    assert report["n_detected"] == len(problem.landmark_report)
+    assert report["e_landmark"] == pytest.approx(landmark_energy(problem, problem.x0, targeting))
+    assert report["parity_weight"] == pytest.approx(report["e_geo"] / report["e_landmark"])
+    energies = [c["would_be_energy"] for c in report["candidates"]]
+    assert energies[1] == pytest.approx(10.0 * energies[0])
+    assert energies[2] == pytest.approx(100.0 * energies[0])
+    for candidate in report["candidates"]:
+        assert candidate["share_of_e_geo"] == pytest.approx(candidate["multiplier"])
+        assert candidate["weight"] == pytest.approx(candidate["multiplier"] * report["parity_weight"])
+    assert report["reasons"] == {"ok": 1}
+
+    # the raw arm is calibrated the same way, against its own (different) energy
+    raw = landmark_calibration(problem, problem.x0, raw_landmark_targets(problem), multipliers=(0.1,))
+    assert raw["mode"] == "raw"
+    assert raw["e_geo"] == pytest.approx(report["e_geo"])
+    assert raw["e_landmark"] != pytest.approx(report["e_landmark"], rel=1e-6)
+
+
+def test_a_solve_without_a_correspondence_calibrates_to_nothing(synthetic) -> None:
+    """No landmark, no scale — and no invented number in its place."""
+    _case, _result, _windows, fit = synthetic
+    problem, params = fit.problem, fit.params
+    assert problem.landmark_op.shape[0] == 0
+    report = landmark_calibration(problem, params, raw_landmark_targets(problem))
+    assert report["n_landmarks"] == 0
+    assert report["e_landmark"] == 0.0
+    assert report["parity_weight"] is None
+    assert all(c["weight"] is None and c["would_be_energy"] is None for c in report["candidates"])
+
+
+def test_the_calibration_run_solves_once_with_the_term_forced_inert(synthetic, capsys) -> None:
+    """The CLI path end to end: one follower solve per run, then BOTH modes read.
+
+    The weight is forced to 0 rather than trusted from the caller, because a
+    scale read off a solve the term already moved would report the size of its
+    own effect.
+    """
+    case, _result, _windows, _fit = synthetic
+    row = calibrate_case(case, weights=FollowWeights(rounds=1, landmark=5.0))
+    assert row["status"] == "ok"
+    assert row["specimen_id"] == case.id
+    assert [r["slots"] for r in row["runs"]] == [[0, 1]]
+    assert set(row["runs"][0]["modes"]) == {"raw", "extrapolated"}
+    assert all(m["n_landmarks"] == 0 for m in row["runs"][0]["modes"].values())
+
+    report = calibration_report([row], multipliers=(0.01, 0.1, 1.0))
+    assert report["multipliers"] == [0.01, 0.1, 1.0]
+    assert report["modes"]["extrapolated"]["n_solves"] == 1
+    assert report["modes"]["extrapolated"]["n_solves_with_landmark"] == 0
+    assert report["modes"]["extrapolated"]["parity_weight_median"] is None
+    assert [r["weight"] for r in report["modes"]["raw"]["rungs"]] == [None, None, None]
+    print_calibration(report)
+    assert "LANDMARK CALIBRATION" in capsys.readouterr().out
+
+
+def test_a_calibration_of_an_unscorable_case_is_a_row_not_an_exception() -> None:
+    case, _result, _windows, _truth = _synthetic_word([(0.0, 0.0)])
+    case.scorable = False
+    row = calibrate_case(case)
+    assert row["status"] == "skipped" and row["runs"] == []
 
 
 def test_a_zone_never_straddles_a_pen_lift() -> None:
