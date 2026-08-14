@@ -14,6 +14,19 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The duel page shows the DETECTED structures, so the eye can audit the
+  detector against the ink** (`tools/tracebench/view.py::structure_marks`,
+  owner request after the t carried three „retrace" zones): every layer
+  gains rings at the frozen crossing detector's points and translucent
+  bands along its retrace passes — dashed when the pass is an OVERLAP of
+  two pen strokes (the Sütterlin t crossbar riding the entry connector
+  and the exit stroke, which is what those extra zones turned out to be)
+  rather than an out-and-back retrace of one stroke. The distinction is
+  drawn from the stroke indices the frozen `detect_retrace_pairs`
+  already returns; the counters themselves are untouched, no reported
+  number changes, and a „Struktur" toggle hides the markers. The hint
+  text explains the reading.
+
 - **Arm ⑥ groundwork: the ink follower's landmark term can aim at the
   EXTRAPOLATED junction crossing instead of the raw skeleton branch
   point** (`tools/pairlab/follow.py`, `docs/proposals/tintenfolger.md`

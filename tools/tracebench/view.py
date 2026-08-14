@@ -46,8 +46,16 @@ from typing import Any, Sequence
 import numpy as np
 from PIL import Image
 
+from core.geometry import detect_retrace_pairs, stroke_bounds
 from tools.tracebench.candidates import STATUS_OK, Candidate, file_provider
-from tools.tracebench.frames import BenchFrame, arc_length, classify_strokes
+from tools.tracebench.counters import (
+    RESAMPLE_STEP_UNITS,
+    RETRACE_MIN_PAIRS,
+    RETRACE_PROX_UNITS,
+    crossing_points,
+    resampled_strokes,
+)
+from tools.tracebench.frames import BenchFrame, arc_length, classify_strokes, concat_strokes
 from tools.tracebench.reference import DEFAULT_FIXTURES_DIR, Reference, ReferenceEntry, load_reference
 from tools.tracebench.run import find_fixture_root
 from tools.tracebench.sets import TRACEBENCH_DEV_IDS
@@ -66,6 +74,9 @@ STROKE_WIDTH = 1.5
 # Marks (i-dot, u-Deckstrich, umlaut) are thinner: they are not body ink, and
 # the eye should not read a dot as a stroke (`frames.classify_strokes`).
 MARK_STROKE_WIDTH = 1.0
+# The detected-structure markers (screen px like the stroke widths): a crossing
+# is a small ring, a retrace zone a wide translucent band along its pass.
+CROSS_MARK_RADIUS_PX = 3.0
 # Path coordinates are rounded, which is what makes two runs byte-identical.
 COORD_DECIMALS = 2
 
@@ -120,6 +131,7 @@ class Layer:
     status: str = STATUS_OK
     detail: str = ""
     numbers: dict[str, Any] | None = None
+    structure: "StructureMarks | None" = None
 
     @property
     def ok(self) -> bool:
@@ -162,10 +174,54 @@ def mark_flags(strokes_bench: Sequence[np.ndarray]) -> list[bool]:
     return flags
 
 
-def trace_paths(
+@dataclass(frozen=True)
+class StructureMarks:
+    """The DETECTED structures of one layer, ready to draw over its trace."""
+
+    crossings: list[tuple[float, float]]  # crop px
+    retraces: list[tuple[str, bool]]  # (pass path data in crop px, overlap across strokes)
+
+
+def structure_marks(frame: BenchFrame, strokes_bench: list[np.ndarray]) -> StructureMarks:
+    """Display-only detections, at the ruler's own frozen thresholds.
+
+    The counters stay the ruler — this reads the same frozen primitives so a
+    human can audit the detector against the ink (owner request 2026-08-15:
+    „vielleicht ist das Detektieren noch gar nicht sauber"). One distinction
+    the ruler does not draw yet is made VISIBLE here: a retrace pass whose
+    partner samples lie in ANOTHER pen stroke is an overlap (a mark riding the
+    body, e.g. the t crossbar along the entry connector), not an out-and-back
+    retrace of one stroke — the page dashes it so the two read differently.
+    """
+    pts, starts = concat_strokes(resampled_strokes(list(strokes_bench), RESAMPLE_STEP_UNITS))
+    if len(pts) < 2:
+        return StructureMarks(crossings=[], retraces=[])
+    crossings = [(float(x), float(y)) for x, y in frame.bench_to_crop_px(crossing_points(list(strokes_bench)))]
+    idx, partner = detect_retrace_pairs(pts[:, 0], pts[:, 1], starts, prox_px=RETRACE_PROX_UNITS)
+    retraces: list[tuple[str, bool]] = []
+    if len(idx):
+        stroke_of = np.zeros(len(pts), dtype=int)
+        for s, (lo, hi) in enumerate(stroke_bounds(len(pts), starts)):
+            stroke_of[lo:hi] = s
+        partner_of = dict(zip(idx.tolist(), partner.tolist(), strict=True))
+        run: list[int] = []
+        for i in [*np.sort(idx).tolist(), None]:
+            contiguous = bool(run) and i is not None and i == run[-1] + 1 and stroke_of[i] == stroke_of[run[-1]]
+            if contiguous:
+                run.append(i)
+                continue
+            if len(run) >= RETRACE_MIN_PAIRS:
+                seg = frame.bench_to_crop_px(pts[run[0] : run[-1] + 1])
+                overlap = any(stroke_of[int(partner_of[k])] != stroke_of[k] for k in run)
+                retraces.append((stroke_path_data(seg), overlap))
+            run = [] if i is None else [i]
+    return StructureMarks(crossings=crossings, retraces=retraces)
+
+
+def layer_paths(
     frame: BenchFrame, strokes: Sequence[Any], registration_px: dict[str, Any] | None, xh_px: float | None
-) -> list[StrokePath]:
-    """A stored trace -> drawable crop-pixel paths, through the BENCH's math.
+) -> tuple[list[StrokePath], StructureMarks]:
+    """A stored trace -> drawable crop-pixel paths + its detected structures.
 
     `trace_to_bench` applies the row's own registration and `bench_to_crop_px`
     the inverse of the frame — the identical two hops the scorer makes, so the
@@ -177,7 +233,14 @@ def trace_paths(
     for stroke, is_mark in zip(bench, flags, strict=True):
         px = frame.bench_to_crop_px(stroke)
         out.append(StrokePath(d=stroke_path_data(px), length=arc_length(px), mark=is_mark))
-    return [s for s in out if s.d]
+    return [s for s in out if s.d], structure_marks(frame, bench)
+
+
+def trace_paths(
+    frame: BenchFrame, strokes: Sequence[Any], registration_px: dict[str, Any] | None, xh_px: float | None
+) -> list[StrokePath]:
+    """The paths half of `layer_paths` — kept for callers that draw only ink."""
+    return layer_paths(frame, strokes, registration_px, xh_px)[0]
 
 
 # -------------------------------------------------------------------- colours
@@ -287,6 +350,10 @@ _CSS = """
   .detail { color: #b45309; }
   .hint { color: #666; margin-top: 8px; }
   section.word > h2 { font-size: 16px; margin: 0 0 8px; }
+  g.structure circle.cross { fill: none; stroke-width: 1.4; }
+  g.structure path.retrace { fill: none; stroke-width: 7; opacity: 0.22; }
+  g.structure path.retrace.overlap { stroke-dasharray: 5 4; stroke-width: 4; opacity: 0.4; }
+  body.nostructure g.structure { display: none; }
 """
 
 # `__SPEED__`/`__PAUSE__` are substituted below. Written as a plain string (not
@@ -355,6 +422,7 @@ _JS = """
     if (!t) { return; }
     if (t.classList && t.classList.contains('toggle')) { setVisible(t.getAttribute('data-label'), t.checked); }
     if (t.id === 'speed') { rate = parseFloat(t.value) || 1; }
+    if (t.id === 'structure') { document.body.classList.toggle('nostructure', !t.checked); }
   });
   document.addEventListener('click', function (ev) {
     var t = ev.target;
@@ -408,9 +476,22 @@ def _layer_svg(layer: Layer, layer_id: str) -> str:
         f'vector-effect="non-scaling-stroke"></path>'
         for s in layer.strokes
     )
+    structure = ""
+    if layer.structure and (layer.structure.crossings or layer.structure.retraces):
+        rings = "".join(
+            f'<circle class="cross" cx="{x:.{COORD_DECIMALS}f}" cy="{y:.{COORD_DECIMALS}f}" '
+            f'r="{CROSS_MARK_RADIUS_PX:g}" vector-effect="non-scaling-stroke"></circle>'
+            for x, y in layer.structure.crossings
+        )
+        zones = "".join(
+            f'<path class="retrace{" overlap" if overlap else ""}" d="{d}" vector-effect="non-scaling-stroke"></path>'
+            for d, overlap in layer.structure.retraces
+        )
+        structure = f'<g class="structure">{zones}{rings}</g>'
     return (
         f'<g class="layer" id="{layer_id}" data-label="{html.escape(layer.label, quote=True)}" '
-        f'fill="none" stroke="{layer.color}" stroke-linecap="round" stroke-linejoin="round">{paths}</g>'
+        f'fill="none" stroke="{layer.color}" stroke-linecap="round" stroke-linejoin="round">'
+        f"{structure}{paths}</g>"
     )
 
 
@@ -495,11 +576,16 @@ def render_html(sections: list[str], tabs: list[tuple[str, str]], *, title: str,
   <button id="final" type="button">Fertige Bahn</button>
   <label for="speed">Tempo</label>
   <select id="speed">{speeds}</select>
+  <label><input type="checkbox" id="structure" checked> Struktur</label>
 </div>
 {"".join(sections)}
 <div class="hint">Die Seite öffnet mit der FERTIGEN Bahn; „Schreiben abspielen“ schreibt alle
 eingeschalteten Verfahren gleichzeitig in Schreibreihenfolge — Strichdauer proportional zur Bogenlänge
-(konstante Federgeschwindigkeit), jedes Absetzen eine echte Pause. Pfeiltasten ←/→ wechseln das Wort.</div>
+(konstante Federgeschwindigkeit), jedes Absetzen eine echte Pause. Pfeiltasten ←/→ wechseln das Wort.
+„Struktur“ zeigt je Ebene die DETEKTIERTEN Strukturen an den eingefrorenen Schwellen des Lineals:
+Ringe = Schleifenkreuzungen, breite Bänder = Retrace-Zonen — gestrichelt, wenn die Zone eine
+ÜBERLAGERUNG zweier Striche ist (z.&nbsp;B. der t-Querstrich über dem Körper) statt eines
+Hin-und-zurück in einem Strich. So prüft das Auge den Detektor gegen die Tinte.</div>
 <script>{js}</script>
 </body>
 </html>
@@ -533,12 +619,16 @@ def build_page(
             size = img.size
         crop_uri = "data:image/png;base64," + base64.b64encode(crop_path.read_bytes()).decode()
 
+        ref_strokes, ref_structure = layer_paths(
+            entry.frame, entry.row.strokes, entry.row.registration_px, entry.row.xh_px
+        )
         layers = [
             Layer(
                 label=REFERENCE_LABEL,
                 color=COLOR_REFERENCE,
                 kind="reference",
-                strokes=trace_paths(entry.frame, entry.row.strokes, entry.row.registration_px, entry.row.xh_px),
+                strokes=ref_strokes,
+                structure=ref_structure,
             )
         ]
         for label, by_id in candidates:
@@ -555,12 +645,16 @@ def build_page(
                     )
                 )
                 continue
+            cand_strokes, cand_structure = layer_paths(
+                entry.frame, candidate.strokes, candidate.registration_px, candidate.xh_px
+            )
             layers.append(
                 Layer(
                     label=label,
                     color=colors[label],
                     kind="candidate",
-                    strokes=trace_paths(entry.frame, candidate.strokes, candidate.registration_px, candidate.xh_px),
+                    strokes=cand_strokes,
+                    structure=cand_structure,
                     numbers=(reports.get(label) or {}).get(specimen_id),
                 )
             )

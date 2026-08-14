@@ -37,6 +37,7 @@ from tools.tracebench.view import (
     parse_pairs,
     select_ids,
     stroke_path_data,
+    structure_marks,
     trace_paths,
 )
 
@@ -79,6 +80,39 @@ def test_marks_are_flagged_by_the_classifier_not_by_the_viewer() -> None:
 
     paths = trace_paths(frame, [BODY, MARK], REGISTRATION, XH_PX)
     assert [p.mark for p in paths] == [False, True]
+
+
+def test_structure_marks_separate_overlap_from_retrace_and_place_rings() -> None:
+    """The audit layer (owner request): rings are the frozen crossing detector's
+    points in crop pixels, and a retrace pass whose partner samples lie in
+    ANOTHER pen stroke is an OVERLAP (mark riding the body), not an
+    out-and-back retrace — the two must be distinguishable on the page.
+    """
+    frame = BenchFrame(xh=XH_PX, baseline_row=BASELINE_ROW, entry_id="die")
+
+    # One stroke out and back along its own line: a genuine retrace, no ring
+    # (the owner's pinned question: a wobbly out-and-back is not a crossing).
+    out_and_back = [[0.0, 0.5], [1.5, 0.5], [0.05, 0.52]]
+    marks = structure_marks(frame, frame.trace_to_bench([out_and_back], REGISTRATION, XH_PX))
+    assert marks.retraces
+    assert all(overlap is False for _d, overlap in marks.retraces)
+    assert marks.crossings == []
+
+    # A second stroke riding anti-parallel over the first: an overlap zone.
+    body = [[0.0, 0.5], [2.0, 0.5]]
+    rider = [[1.8, 0.55], [0.2, 0.55]]
+    marks = structure_marks(frame, frame.trace_to_bench([body, rider], REGISTRATION, XH_PX))
+    assert marks.retraces
+    assert any(overlap for _d, overlap in marks.retraces)
+
+    # Two strokes crossing at a healthy angle: exactly one ring, in crop px.
+    marks = structure_marks(
+        frame, frame.trace_to_bench([[[0.0, 0.0], [2.0, 2.0]], [[0.0, 2.0], [2.0, 0.0]]], REGISTRATION, XH_PX)
+    )
+    assert len(marks.crossings) == 1
+    x, y = marks.crossings[0]
+    assert x == pytest.approx(1.0 * XH_PX, abs=0.5)
+    assert y == pytest.approx(BASELINE_ROW - 1.0 * XH_PX, abs=0.5)
 
 
 # -------------------------------------------------------------------- colours
