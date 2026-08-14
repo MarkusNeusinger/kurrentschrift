@@ -316,8 +316,18 @@ def main() -> None:
             for r in rows
             if r.get("soll_zones") is not None and r.get("retrace_ref") is not None
         ]
-        print(f"soll_cross_agree: {sum(1 for a, b in cross_pairs if a == b)}/{len(cross_pairs)} (Hand == Komposition)")
-        print(f"soll_zones_agree: {sum(1 for a, b in zone_pairs if a == b)}/{len(zone_pairs)} (Hand == Komposition)")
+        if cross_pairs:
+            print(
+                f"soll_cross_agree: {sum(1 for a, b in cross_pairs if a == b)}/{len(cross_pairs)} (Hand == Komposition)"
+            )
+        else:
+            print("soll_cross_agree: n/a (no scored row carries a target)")
+        if zone_pairs:
+            print(
+                f"soll_zones_agree: {sum(1 for a, b in zone_pairs if a == b)}/{len(zone_pairs)} (Hand == Komposition)"
+            )
+        else:
+            print("soll_zones_agree: n/a (no scored row carries a target)")
     print(f"resample_step:   {args.resample_step}")
     print(f"runtime_s:       {time.perf_counter() - started:.1f}")
 
