@@ -36,3 +36,18 @@ def test_exporters_write_the_manifest_name_the_consumers_glob():
 
     for module in (glyph_export, word_export):
         assert "manifest.json" in inspect.getsource(module)
+
+
+def test_wordbench_exporter_writes_the_instance_artifacts_the_consumers_read():
+    # `pair_instances.json` is read by tools/wordbench/pairmeas.py, and
+    # `word_instances.json` by the tracebench reference loader (the authored
+    # ground-truth traces, docs/proposals/tintenfolger.md). Pin the literals on
+    # the writer side; the consumer sides pin their own copy, so a rename on
+    # either end fails a test instead of skipping forever.
+    import inspect
+
+    from tools.wordbench import export_fixtures as word_export
+
+    source = inspect.getsource(word_export)
+    assert "pair_instances.json" in source
+    assert "word_instances.json" in source

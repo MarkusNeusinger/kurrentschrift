@@ -1639,6 +1639,56 @@ der aug07-Befund war zum Messzeitpunkt real, ist im heutigen DB-Stand
 aber konvergiert; mit dem Stored-Read ist die Schicht künftig per
 Konstruktion byte-treu statt per Glück.
 
+### Re-Baseline `aug14` — Rect-Korrekturen in den Referenzen + das Wortbahn-Artefakt
+
+Deklarierter Voll-Re-Export der drei Fixture-Roots (der erste seit
+`jul31`), aus zwei Gründen zugleich:
+
+1. **Die Referenz-Crops trugen die #334/#336-Rect-Korrekturen noch
+   nicht** — `haben`/`ein`/`einen` (#334) und `zwei`/`regieren`/abb22-`in`
+   (#336: abgetrennte i-Striche/-Punkte lagen KOMPLETT außerhalb ihrer
+   Rects) waren in den eingefrorenen Masken beschnitten, d. h. die Bench
+   bestrafte Kompositions-Tinte, für die die Referenz gar keine Tinte
+   trug. Zudem lagen die lokalen Roots zwei Schreibrunden zurück
+   (Templates vor dem `aug07`-Schrieb, 13 statt 19 Laufform-Schlüssel) —
+   ihr Stand (Wörter 0,115646 / Paare 0,162325) ist deshalb nur als
+   Transparenz notiert, nicht als Vergleichsanker.
+2. **Das neue Set-Artefakt `word_instances.json`** (PR „tracebench
+   Stufe A", docs/proposals/tintenfolger.md): die gespeicherten
+   Wortbahnen des Sets — die 10 `authored`-Nachfahrungen als künftige
+   tracebench-Referenz, die `traced`-Ernte-Fits als Kontext — mit dem
+   **Frame-Gate** (`FRAME_BASELINE_TOL_PX`/`FRAME_XH_TOL_PX` in
+   `export_fixtures.py`): eine Registrierung, die nicht mehr zur
+   eingefrorenen Rect/Lineatur passt, wird `frame_stale` gestempelt,
+   nie gedroppt. Live-Beweis am Bautag: der `--only`-Refill gegen die
+   ALTEN `jul31`-Roots stempelte exakt die vier #334/#336-Zeilen
+   (`ein` 61 vs. 48±4 · `einen` 59 vs. 48±4 · `regieren` 64 vs. 42±4 ·
+   `zwei` **authored** 64 vs. 44±4); gegen die frischen Roots: 0 stale.
+   Beim Refill prüft das Gate gegen die EINGEFRORENEN `word.json` des
+   Roots (über deren Crop zeichnet der Konsument), beim Voll-Export
+   gegen das Sidecar — am Exporttag identisch.
+
+**Headline gegen den dokumentierten `aug07`-Stand** (0,110392 / 0,165678):
+Wörter **0,110703** (+0,000311), Paare **0,165688** (+0,000010) — die
+Komposition ist unberührt, die Bewegung sitzt in den Referenzen der
+Rect-Wörter. Einzeln (gegen die veralteten Roots, also Rect- UND
+Template-Effekt gemischt): `haben` 0,128 → 0,084, `ein` 0,069 → 0,033,
+`einen` 0,064 → 0,054, `zwei` 0,080 → 0,073 — die Referenzen tragen
+jetzt die Tinte, die die Komposition immer schon schrieb. Ehrlicher
+Verlierer: **`regieren` 0,125 → 0,184** — sein i-Strich ist erstmals
+Teil der Referenz, und die Komposition deckt ihn schlecht; das ist
+keine Regression, sondern eine ehrlicher gewordene Referenz, die eine
+echte Schwäche sichtbar macht. Abb.-22-Schiene (eigene Auswertung, nie
+Teil der Headline): 0,445142 → 0,448502, gleicher Mechanismus beim
+dortigen `in`.
+
+**Diese frischen Roots sind zugleich der Startzustand des tracebench**
+(dessen §14 die eigene Vorregistrierung trägt, sobald das Lineal
+gebaut ist): die Betriebsregel bleibt, dass ein Voll-Re-Export ab jetzt
+IMMER eine deklarierte Doppel-Re-Baseline (wordbench + tracebench) mit
+datiertem Eintrag ist — der erste Akt einer Runde ist `--only
+instances` gegen die bestehenden Roots.
+
 ---
 
 ## 7. Verworfen: Krümmungs-Regularisierer auf dem M4-Fit (`aug07`)

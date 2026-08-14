@@ -63,6 +63,7 @@ gemessene Hand-Parameter.
 | Schreibsystem-Redesign (R1–R5: Paar-Matrix, Positions-Rückbau, geerntete Paare, Schräglage) nachschlagen | [Schreibsystem-Redesign](proposals/schreibsystem-redesign.md) |
 | Den Handmodell-Stufenplan (Duktus-Prior · Laufformen · Statistik · eigene Hand) nachschlagen | [Handmodell-Stufenplan](proposals/handmodell-stufenplan.md) |
 | Die Werkbank-Doktrin (wer liefert welche Stufe · Auftragskorb-Protokoll) nachschlagen | [Optimierungs-Werkbank](proposals/optimierungs-werkbank.md) |
+| Den Tintenfolger-Plan (Prüfstand · Referenzsatz · Routen-Duell) nachschlagen | [Tintenfolger](proposals/tintenfolger.md) |
 | Ideen-Recherche lesen (Graves-Writer → Recognizer · Synthese-Verfahren · Bildsynthese/Offline-HTG · Plotter-Pipeline) | [Research](#research) |
 
 ---
@@ -359,6 +360,16 @@ auseinanderfallen.
   persistieren, H2 Paar-Statistik, H3 Konstanten → Hand-Parameter
   (Vereinfachungs-Gate), H4 zweite historische Hand, H5 eigene Hand —
   *Status: teil-umgesetzt (H0–H2 in v0.22.0 ausgeliefert, H3–H5 offen)*
+- **[Tintenfolger](proposals/tintenfolger.md)** — Plan 2026-08-14 zum
+  §6-Nachtrag des Bildsynthese-Journals: das automatische Nachfahren der
+  Wortproben messbar machen und verbessern — eingefrorener
+  `authored`-Referenzsatz (10 Wörter, append-never-Split), Prüfstand
+  `tools/tracebench` (`dtw_xh` · papertreues AIoU gegen die Tintenmaske ·
+  Richtungs-Chamfer · Fehlerzähler an Kreuzungen/Marken/Retraces), Route A
+  (Verfeinerungsstufe auf dem Kettenfit: Form-Prior → Proximal-Term) gegen
+  Route B (InkSight roh; Fine-Tune als unmöglich verworfen → eigenes
+  kleines Modell auf Engine-Paaren) — *Status: in Arbeit (Stufe A gebaut,
+  B–D und die Routen offen)*
 - **[Planänderungen](proposals/planaenderungen.md)** — vier Vorschläge:
   §2/§4 systematische Bigramm-Extraktion aus Beispieltext; §3/§6.1
   Positions-Verteilung datengetrieben; M4+-Modul `core/orthography.py`

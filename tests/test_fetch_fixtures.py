@@ -392,6 +392,10 @@ def test_fetcher_writes_where_the_consumers_read():
     source = inspect.getsource(fetch_fixtures)
     assert "manifest.json" in source
     assert "pair_instances.json" in source
+    assert "word_instances.json" in source
+    # The --only vocabulary must stay ONE object: the fetcher advertises the
+    # exporter's choices, so the two CLIs cannot drift apart.
+    assert fetch_fixtures.ONLY_CHOICES is export_fixtures.ONLY_CHOICES
 
 
 def test_fetcher_issues_no_write_verbs():

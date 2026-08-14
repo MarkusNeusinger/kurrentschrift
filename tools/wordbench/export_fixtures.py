@@ -38,6 +38,7 @@ Fixture layout (gitignored — regenerate at will):
       templates.json           # glyph_key -> template row (anchors, half_widths, trace_meta, entry, exit_pt, advance)
       templates_laufform.json  # glyph_key -> LAUFFORM_VARIANT row (median running forms) — may be empty
       pair_instances.json      # the MEASURED joins of this set (handmodell H2) — may be empty
+      word_instances.json      # the STORED word traces of this set (authored + traced) — may be empty
       <id>/
         word.json              # id, text, kind, rect, lineature, frozen slots, scorable
         crop.png               # grayscale crop (excludes applied) — overlay background
@@ -53,10 +54,20 @@ artifact: re-exporting it is a deliberate re-baseline of those columns.
 roots, so an older fixture set can gain the artifact without regenerating (and
 thereby re-baselining) the frozen crops, masks, slots and templates.
 
+The STORED word traces of the same specimens (`word_instances` — the harvest's
+chain-path fits plus the admin's manual re-tracings) freeze alongside as
+``word_instances.json``: the ``authored`` rows are the tracebench reference
+set (docs/proposals/tintenfolger.md), the ``traced`` rows travel as context.
+Each row is held against the sidecar entry it will be drawn over — a
+registration that no longer matches the committed rect/lineature (a rect
+edited under a stored trace, the #334/#336 class) is stamped ``frame_stale``
+instead of dropped. ``--only word-instances`` refreshes just this artifact,
+``--only instances`` refreshes both instance artifacts in one pass.
+
 Usage:
     uv run python -m tools.wordbench.export_fixtures [--source suetterlin-1922]
         [--set words|pairs|<custom set like abb22>|all] [--out tools/wordbench/fixtures]
-        [--only pair-instances]
+        [--only pair-instances|word-instances|instances]
 """
 
 from __future__ import annotations
@@ -80,7 +91,7 @@ from PIL import Image
 
 from core.extract import binarize_adaptive, skeleton_and_width
 from core.shaping import GlyphSlot, decompose_ligature_slot, glyph_keys_of, shape_text
-from core.word_metric import clear_excluded, despeckle
+from core.word_metric import TY_RANGE_PX, clear_excluded, despeckle
 
 
 if TYPE_CHECKING:
@@ -190,6 +201,82 @@ def pair_instances_payload(rows: list[dict], kinds: set[str], specimen_ids: set[
     }
 
 
+# The frozen word-trace artifact stays LEAN too: the FRAME (without it the
+# strokes are meaningless numbers) plus the one label saying which fitter
+# produced a `traced` row. The harvest's per-slot auto-fit QC (fitted_slots,
+# gates, geo_rmse_px_by_slot, run_slots, cut_indices, …) is deliberately
+# dropped — the word editor already drops it when a row is re-traced as
+# `authored`, so keeping it would make the two provenances structurally
+# different exactly where a consumer treats them the same.
+WORD_MEASUREMENT_KEYS = ("registration_px", "xh_px", "fit_path")
+
+# Frame gate — the #334/#336 failure class (a sidecar rect edited under a
+# stored trace) made a machine check: a row's registration must still describe
+# the committed rect/lineature it will be drawn over. `baseline_row + ty` may
+# sit at most TY_RANGE_PX off the sidecar baseline — the score grid's vertical
+# search range, which is exactly what an authored row's folded-in ty inherited.
+# `xh_px` is stored round(…, 2) over integer lineature rows, so anything past
+# half a pixel is a moved lineature, not rounding noise.
+FRAME_BASELINE_TOL_PX = float(TY_RANGE_PX)
+FRAME_XH_TOL_PX = 0.51
+
+
+def _frame_stale_reason(measurements: dict, entry: dict | None) -> str | None:
+    """Why a stored trace no longer fits its reference entry — None when it does."""
+    if entry is None:
+        return "no reference entry"
+    registration = measurements.get("registration_px") or {}
+    xh = measurements.get("xh_px")
+    if "baseline_row" not in registration or xh is None:
+        return "no stored registration"
+    baseline = float(registration["baseline_row"]) + float(registration.get("ty") or 0.0)
+    expected_baseline = float(entry["baseline_y"] - entry["y0"])
+    if abs(baseline - expected_baseline) > FRAME_BASELINE_TOL_PX:
+        return f"baseline_row {baseline:g} vs expected {expected_baseline:g}±{FRAME_BASELINE_TOL_PX:g}"
+    expected_xh = float(entry["baseline_y"] - entry["midband_y"])
+    if abs(float(xh) - expected_xh) > FRAME_XH_TOL_PX:
+        return f"xh_px {float(xh):g} vs expected {expected_xh:g}±{FRAME_XH_TOL_PX:g}"
+    return None
+
+
+def word_instances_payload(
+    rows: list[dict], kinds: set[str], specimen_ids: set[str], entries_by_id: dict[str, dict]
+) -> dict:
+    """The frozen stored word traces of ONE fixture set (handmodell H1 / Werkbank W3).
+
+    Same set filter and modal-hand rule as `pair_instances_payload` — and the
+    same leak guard: a custom set (abb22) shares the ``word`` kind with the
+    default set and must never travel with it. Every row of the set freezes,
+    ``authored`` (the manually re-traced tracebench reference set) and
+    ``traced`` (harvest fits) alike; consumers filter on ``provenance``. Each
+    row is held against the sidecar entry it will be drawn over (the frame
+    gate): a stale registration is stamped ``frame_stale`` with its reason,
+    never dropped, so a consumer excludes-and-counts it.
+    """
+    selected = sorted(
+        (r for r in rows if r["kind"] in kinds and r["specimen_id"] in specimen_ids),
+        key=lambda r: (r["kind"], r["specimen_id"]),
+    )
+    hands = Counter(r["hand_id"] for r in selected if r.get("hand_id"))
+    out_rows = []
+    for r in selected:
+        measurements = r.get("measurements") or {}
+        row = {
+            "kind": r["kind"],
+            "specimen_id": r["specimen_id"],
+            "word": r["word"],
+            "slots": r["slots"],
+            "provenance": r["provenance"],
+            "strokes": r["strokes"],
+            "measurements": {k: measurements[k] for k in WORD_MEASUREMENT_KEYS if k in measurements},
+        }
+        stale = _frame_stale_reason(measurements, entries_by_id.get(r["specimen_id"]))
+        if stale:
+            row["frame_stale"] = stale
+        out_rows.append(row)
+    return {"hand_id": hands.most_common(1)[0][0] if hands else None, "rows": out_rows}
+
+
 def _shape_entry(w: dict, have: set[str]) -> list[GlyphSlot]:
     """Frozen slots for one sidecar entry: explicit override or shape_text with
     the ligature-decompose fallback against the current template inventory."""
@@ -289,19 +376,91 @@ def freeze_entry(entry_dir: Path, w: dict, page: np.ndarray, slots: list[dict], 
     }
 
 
-def _write_pair_instances(fixture_root: Path, pair_rows: list[dict], kinds: set[str], ids: set[str]) -> int:
-    """Freeze one set's measured joins — ATOMICALLY.
+def _write_set_artifact(fixture_root: Path, filename: str, payload: dict) -> int:
+    """Freeze one set-level artifact — ATOMICALLY.
 
-    ``--only pair-instances`` overwrites the artifact of an existing fixture
-    root; a half-written file would leave the set with a frozen reference that
+    An ``--only`` refresh overwrites the artifact of an existing fixture root;
+    a half-written file would leave the set with a frozen reference that
     silently no longer parses. Write beside it, then rename in one step.
     """
-    payload = pair_instances_payload(pair_rows, kinds, ids)
-    path = fixture_root / "pair_instances.json"
+    path = fixture_root / filename
     tmp = path.with_name(path.name + ".tmp")
     tmp.write_text(json.dumps(payload, ensure_ascii=False))
     os.replace(tmp, path)
     return len(payload["rows"])
+
+
+def _write_pair_instances(fixture_root: Path, pair_rows: list[dict], kinds: set[str], ids: set[str]) -> int:
+    """Freeze one set's measured joins (see `_write_set_artifact`)."""
+    return _write_set_artifact(fixture_root, "pair_instances.json", pair_instances_payload(pair_rows, kinds, ids))
+
+
+def _write_word_instances(
+    fixture_root: Path, word_rows: list[dict], kinds: set[str], ids: set[str], entries_by_id: dict[str, dict]
+) -> tuple[int, int, int]:
+    """Freeze one set's stored word traces. Returns (authored, traced, frame-stale)."""
+    payload = word_instances_payload(word_rows, kinds, ids, entries_by_id)
+    _write_set_artifact(fixture_root, "word_instances.json", payload)
+    rows = payload["rows"]
+    authored = sum(1 for r in rows if r["provenance"] == "authored")
+    stale = sum(1 for r in rows if "frame_stale" in r)
+    return authored, len(rows) - authored, stale
+
+
+# The two instance artifacts an existing root can gain without a re-baseline;
+# ``instances`` refreshes both in one pass (a tracebench round wants the word
+# traces and the operator would forget the joins).
+ONLY_CHOICES = ("pair-instances", "word-instances", "instances")
+
+
+def _frozen_gate_entries(fixture_root: Path, ids: set[str]) -> dict[str, dict]:
+    """The frame-gate reference for an ``--only`` refill: the ROOT'S OWN frozen entries.
+
+    A refill drops fresh rows into an EXISTING root, so the frame each row must
+    fit is the frozen crop the consumer will draw it over — not today's
+    sidecar. At full-export time the two coincide (the root is written from the
+    sidecar in the same pass); at refill time they can differ, which is exactly
+    the #334/#336 staleness the gate exists to stamp: a rect widened AFTER the
+    root froze leaves the re-registered DB row stale relative to the old crop.
+    """
+    entries: dict[str, dict] = {}
+    for entry_id in ids:
+        try:
+            data = json.loads((fixture_root / entry_id / "word.json").read_text())
+        except (OSError, ValueError):
+            continue  # no frozen entry -> the gate's "no reference entry" reason
+        entries[entry_id] = {"y0": data["rect"][1], "baseline_y": data["baseline_y"], "midband_y": data["midband_y"]}
+    return entries
+
+
+def _refresh_instance_artifacts(
+    only: str, entries: list[dict], style_root: Path, source_id: str, pair_rows: list[dict], word_rows: list[dict]
+) -> None:
+    """The ``--only`` branch, shared verbatim with `fetch_fixtures.py`.
+
+    Refreshes JUST the requested instance artifact(s) inside EXISTING fixture
+    roots — an older set gains them without re-freezing (and thereby
+    re-baselining) crops, masks, slots and templates.
+    """
+    for set_name in sorted({_set_name(w) for w in entries}):
+        set_entries = [w for w in entries if _set_name(w) == set_name]
+        fixture_root = style_root / _root_name(source_id, set_name)
+        if not fixture_root.exists():
+            print(f"skip {set_name}: no fixture root at {fixture_root} — run a full export first")
+            continue
+        kinds = {_kind(w) for w in set_entries}
+        ids = {_entry_id(w) for w in set_entries}
+        if only in ("pair-instances", "instances"):
+            written = _write_pair_instances(fixture_root, pair_rows, kinds, ids)
+            print(f"wrote {written} measured joins to {fixture_root / 'pair_instances.json'}")
+        if only in ("word-instances", "instances"):
+            authored, traced, stale = _write_word_instances(
+                fixture_root, word_rows, kinds, ids, _frozen_gate_entries(fixture_root, ids)
+            )
+            print(
+                f"wrote {authored + traced} word traces to {fixture_root / 'word_instances.json'} "
+                f"({authored} authored, {traced} traced, {stale} frame-stale)"
+            )
 
 
 async def export(source_id: str, out_dir: Path, which: str, only: str | None = None) -> None:
@@ -310,7 +469,13 @@ async def export(source_id: str, out_dir: Path, which: str, only: str | None = N
     # Imported here, after load_dotenv(): the connection module reads env at import time.
     from core.database.connection import get_db_context
     from core.database.models import LAUFFORM_VARIANT
-    from core.database.repositories import PairInstanceRepository, SourceRepository, StyleRepository, TemplateRepository
+    from core.database.repositories import (
+        PairInstanceRepository,
+        SourceRepository,
+        StyleRepository,
+        TemplateRepository,
+        WordInstanceRepository,
+    )
 
     async with get_db_context() as session:
         source = await SourceRepository(session).get(source_id)
@@ -331,20 +496,26 @@ async def export(source_id: str, out_dir: Path, which: str, only: str | None = N
             }
             for p in await PairInstanceRepository(session).list(source_id=source_id)
         ]
-        if only == "pair-instances":
+        # The stored word traces of this source (handmodell H1 / Werkbank W3) —
+        # authored rows are the tracebench reference set, traced rows context.
+        word_rows = [
+            {
+                "kind": i.kind,
+                "specimen_id": i.specimen_id,
+                "word": i.word,
+                "slots": list(i.slots),
+                "provenance": i.provenance,
+                "strokes": i.strokes,
+                "hand_id": i.hand_id,
+                "measurements": i.measurements or {},
+            }
+            for i in await WordInstanceRepository(session).list(source_id=source_id)
+        ]
+        if only:
             # Additive refresh of an EXISTING fixture set: nothing else is
             # touched, so the frozen crops/masks/slots/templates — and with
             # them every headline number — stay exactly as exported.
-            for set_name in sorted({_set_name(w) for w in entries}):
-                set_entries = [w for w in entries if _set_name(w) == set_name]
-                fixture_root = out_dir / source.style_id / _root_name(source_id, set_name)
-                if not fixture_root.exists():
-                    print(f"skip {set_name}: no fixture root at {fixture_root} — run a full export first")
-                    continue
-                written = _write_pair_instances(
-                    fixture_root, pair_rows, {_kind(w) for w in set_entries}, {_entry_id(w) for w in set_entries}
-                )
-                print(f"wrote {written} measured joins to {fixture_root / 'pair_instances.json'}")
+            _refresh_instance_artifacts(only, entries, out_dir / source.style_id, source_id, pair_rows, word_rows)
             return
         style = await StyleRepository(session).get(source.style_id)
         repo = TemplateRepository(session)
@@ -398,6 +569,13 @@ async def export(source_id: str, out_dir: Path, which: str, only: str | None = N
         n_measured = _write_pair_instances(
             fixture_root, pair_rows, {_kind(w) for w in kind_entries}, {_entry_id(w) for w in kind_entries}
         )
+        n_authored, n_traced, n_stale = _write_word_instances(
+            fixture_root,
+            word_rows,
+            {_kind(w) for w in kind_entries},
+            {_entry_id(w) for w in kind_entries},
+            {_entry_id(w): w for w in kind_entries},
+        )
 
         index = []
         for w in kind_entries:
@@ -422,7 +600,8 @@ async def export(source_id: str, out_dir: Path, which: str, only: str | None = N
         unscorable = [w for w in index if not w["scorable"]]
         print(
             f"exported {len(index)} {set_name} to {fixture_root} "
-            f"({len(unscorable)} unscorable, {len(kind_laufform)} laufform keys, {n_measured} measured joins)"
+            f"({len(unscorable)} unscorable, {len(kind_laufform)} laufform keys, {n_measured} measured joins, "
+            f"{n_authored} authored + {n_traced} traced word traces, {n_stale} frame-stale)"
         )
         if unscorable:
             print(f"  missing templates: {[(w['id'], w['missing_at_export']) for w in unscorable]}")
@@ -437,9 +616,10 @@ def main() -> None:
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT_DIR, help="fixtures output dir")
     parser.add_argument(
         "--only",
-        choices=("pair-instances",),
-        help="refresh JUST this artifact in the EXISTING fixture roots — an older set gains the "
-        "measured joins without re-freezing (and thereby re-baselining) crops, masks, slots and templates",
+        choices=ONLY_CHOICES,
+        help="refresh JUST the measured joins and/or stored word traces in the EXISTING fixture roots "
+        "('instances' = both) — an older set gains them without re-freezing (and thereby re-baselining) "
+        "crops, masks, slots and templates",
     )
     args = parser.parse_args()
 

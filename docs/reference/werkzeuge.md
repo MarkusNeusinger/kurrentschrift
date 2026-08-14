@@ -221,6 +221,11 @@ uv run python -m tools.dbsnapshot.restore <snapshot-dir> --database-url postgres
   90° = senkrecht; R5), `gleichzug.py` (Ein-Fluss-/Ein-Breite-Audit auf der
   komponierten Centerline, ohne Vorlagenbezug; `jul30`) und `pairmeas.py`
   („gemessen vs. komponiert“ — die komponierten Joins gegen die sezierten
-  `pair_instances` derselben Vorlagen; `aug02`).
+  `pair_instances` derselben Vorlagen; `aug02`). Die Fixture-Roots frieren
+  seit `aug14` zusätzlich `word_instances.json` ein — die gespeicherten
+  Wortbahnen des Sets samt Frame-Gate (`frame_stale`), deren
+  `authored`-Zeilen der Referenzsatz des geplanten `tools/tracebench`
+  sind ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md));
+  Refill ohne Re-Baseline: `--only word-instances` bzw. `--only instances`.
 - **`tools/quizgen`** — generiert die Lese-Quiz-Wortbank (~500 Wörter);
   Quellen + Distraktor-Modell in [`quiz-wortbank.md`](quiz-wortbank.md).
