@@ -14,6 +14,18 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **Follower arm 1 result recorded in the quality-metric §14** (doc-only):
+  the pre-registered lambda ladder ran paired against the frozen `aug14`
+  baseline — every rung fails the co-primary structure gate, so the
+  naked form-release formulation is rejected by its own veto while the
+  ink pull itself is validated (AIoU +0.10 on every rung). One named
+  protocol deviation (decade ladder with realized ratios instead of the
+  ill-defined percent-of-e_geo dialing at a restart) is recorded in the
+  entry. No default adopted; `FOLLOW_*` stays provisional; next
+  pre-registered steps are the structural data-term arms.
+
+### Changed
+
 - **The word-trace assembly moved to `tools/pairlab/trace.py`, and the chain fit
   gained three additive handles for a re-linearising restart — all four changes
   proven inert.** `assemble_word_strokes` and its helpers left

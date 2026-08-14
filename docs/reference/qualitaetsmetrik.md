@@ -3635,12 +3635,20 @@ einen datierten Eintrag HIER — auch (gerade) bei einem Negativ.
 
 ### Arm ① `aug14` — die λ_prox-Leiter: Formulierung v1 verworfen, der Tinten-Zug validiert
 
-Erster Lauf des vorregistrierten Protokolls (Leiter {0 · 0,01 · 0,1 ·
-1,0} × Chain-λ, rounds 2, alles andere Chain-Default; je Sprosse
-`--compare` gepaart gegen die eingefrorene `aug14`-Baseline;
-Artefakte je Sprosse in der Chronik).
+Erster Lauf des vorregistrierten Protokolls — mit EINER benannten
+Abweichung in der Sprossen-Wahl: Die Vorregistrierung wollte λ so
+kalibrieren, dass e_prox ≈ {1 %, 10 %, 50 %} von e_geo AM
+Solve-1-Optimum liegt; an einem Restart ist das aber schlecht
+definiert, weil e_prox(x0) dort per Konstruktion 0 ist (δ = 0) und der
+Zielwert erst am unbekannten Folger-Optimum entsteht. Gefahren wurde
+deshalb die Dekaden-Leiter **{0 · 0,01 · 0,1 · 1,0} × Chain-λ** und je
+Sprosse das REALISIERTE Verhältnis am Ende gelesen — die
+§11c-konforme Lesart (am Optimum messen statt per Analogie wählen),
+als Abweichung hier festgehalten statt wegdefiniert. Rounds 2, alles
+andere Chain-Default; je Sprosse `--compare` gepaart gegen die
+eingefrorene `aug14`-Baseline; Artefakte je Sprosse in der Chronik.
 
-| λ_prox | dtw Δmed (gepaart) | Sign | aiou | cross m+s | Retrace-Ratio |
+| λ_prox | `dtw_xh` Δmed (gepaart) | Sign | `aiou` | `cross_missing`+`spurious` | `retrace_arc_ratio` |
 |---|---|---|---|---|---|
 | Chain (Referenz) | — | — | 0,683 | 7+19 = 26 | 1,51 |
 | 0,0 | +0,0001 | 6/4 p=0,75 | **0,784** | 8+43 = **51** | **3,04** |
