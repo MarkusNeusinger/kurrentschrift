@@ -3764,3 +3764,40 @@ dann die Korrespondenz-Bildung selbst, nicht ihr Gewicht). Steigen
 `marks_missing` oder `cross_missing+spurious` netto gegen die
 Schwester → verworfen. Keine Adoption eines `FOLLOW_*`-Defaults ohne
 Owner-Go, unabhängig vom Ausgang.
+
+### Arm ⑥b `aug15` — die Kappe WAR die Schranke: klassenbewusst ist der Term punktweise kostenlos, adoptiert wird trotzdem nichts
+
+**Messung (Protokoll wie vorregistriert):** classed-Parität am inerten
+Optimum 0,3704 (Kalibrierung §11c im eigenen Modus; der Zensus ist
+exakt die Kappe: 8 ok · 1 `no_continuation_pair` · 7 `t_junction` · 5
+`touch_point` = 12/21 klassifiziert raus — in den re-linearisierten
+Runde-2-Problemen, deren Korrespondenz der frische Detektor-Lauf neu
+bildet, 11/15). Sprossen {0,037 · 0,370}, Basis prox 1 · rounds 2 ·
+coverage 0,3, gepaart über die 10 Dev-Wörter.
+
+**Ergebnis — die Vorhersage trifft ein:** Die volle classed-Parität
+ist gegen die λ=1,0-Schwester punktweise NICHT mehr schlechter
+(dtw Δ-Median 0,000, Sign 4/2 bei 4 Ties, p = 0,69; die per-Wort-Deltas
+sind gemischtes Rauschen ±0,002 — Arm ⑥ voll war 8/9 schlechter,
+p = 0,039), bei erhaltener Strukturlinderung: cross m+s 43 → 39 (der
+beste Folger-Wert, jetzt ohne punktweise Kosten), Marken 0 → 0,
+AIoU/Chamfer flach. Der Schaden des Arm-⑥-Volllaufs kam also aus den
+12 falschen Zielen, nicht aus dem Gewicht. Ehrlich daneben: (a) die
+Mittelsprosse 0,037 ist isoliert strukturell SCHLECHTER als die
+Schwester (m+s 43 → 47) — die Zähler sind über die Leiter nicht
+monoton; (b) der Retrace-Ratio-Abstand zu 1,0 wächst auf beiden
+Sprossen (1,09 → 1,32 bzw. 1,46) — der Kosten-Wächter meldet, dass
+der Term Retrace-Zonen leicht auseinanderzieht.
+
+**Verdikt:** Hypothese BESTÄTIGT im falsifizierbaren Sinn — und
+trotzdem keine Adoption: gegen die eingefrorene Chain-Baseline steht
+das Struktur-Veto in voller Höhe (cross m+s 26 → 39, Retrace-Gap
+0,51 → 1,32; dtw −1,5 % rel, n. s.; AIoU +0,094 = der validierte
+Tinten-Zug). Der Landmark-Term zielt jetzt sauber und kostet nichts —
+aber die ERFUNDENE Struktur des Folgers entsteht nicht an seinen
+Zielen, sondern in den Datentermen des Form-Release selbst (der
+Arm-①-Befund, hier ein zweites Mal bestätigt). `FOLLOW_*` bleibt
+`provisional`; für jeden KÜNFTIGEN Landmark-Arm ist
+`extrapolated_classed` der empfohlene Modus (kostenlos schlägt
+schädlich), der Default bleibt bis zum Owner-Go unverändert.
+Artefakte: Chronik `arm6b-classed`.
