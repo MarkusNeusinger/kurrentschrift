@@ -110,6 +110,22 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Arm ⑨: the topology guard — a round-level acceptance rule for the
+  ink follower** (`tools/pairlab/follow.py`, pre-registered in
+  `qualitaetsmetrik.md` §14 `aug16`): before the first round the
+  initialisation's own v2.1 structure class counts (crossings, retrace
+  zones, touches, overlaps — measured by the bench's own
+  `tools.tracebench.counters` on the assembled trace) become the
+  budget; a solved round that exceeds any class is re-solved with
+  halved travel bounds (at most `STRUCTURE_GUARD_MAX_RETRIES` = 2
+  times) and otherwise rejected back to the previous geometry
+  (`structure_rejected`, ending the loop). No new objective term — the
+  guard decides acceptance, the solver is untouched.
+  `FollowWeights.structure_guard` defaults to False (byte-identical,
+  pinned); `--structure-guard` enables it per arm, and every guarded
+  round records budget, counts and retries. Glossary gains
+  „Topologie-Wächter". Findings in §14 (Arm ⑨).
+
 - **The bench report carries the ductus target beside every word**
   (`tools/tracebench/soll.py`, the owner's standing test as a report
   column family): `SollRow`/`ductus_soll` moved out of the duel viewer

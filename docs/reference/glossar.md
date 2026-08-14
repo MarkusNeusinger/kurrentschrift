@@ -55,7 +55,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
-- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenfolger §3 · Tintenlücke §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
+- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenfolger §3 · Tintenlücke §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4
 - **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Editor §5 · Wort-Trace §2
@@ -471,6 +471,22 @@ nie eine Messung. *Technisch:* `tools/pairlab/follow.py`
 (`follow_word_chain`/`follow_case`, Gewichte PROVISORISCH bis zur
 §14-Arm-Kalibrierung) → proposals/tintenfolger.md ·
 bildsynthese-und-stiftbahn.md §6
+
+**Topologie-Wächter** *(structure guard)* — Arm ⑨ des Tintenfolgers:
+eine Runden-AKZEPTANZREGEL statt einer Kraft. Vor der ersten Runde
+wird das Struktur-Budget der Initialisierung gemessen (die
+v2.1-Klassenzählung Kreuzungen · Retrace-Zonen · Berührungen ·
+Überlagerungen, mit den Zählern des Lineals auf der assemblierten
+Bahn); eine gelöste Runde wird nur akzeptiert, wenn keine Klassenzahl
+ihr Budget übersteigt — sonst wird sie mit halbierten Reisebudgets neu
+gelöst (höchstens zweimal) und danach auf die Vorrunden-Geometrie
+zurückgewiesen (`structure_rejected`). Trennt die Distanz-Gewinne des
+Form-Release von seinen Struktur-Erfindungen, statt beide gemeinsam am
+Veto scheitern zu lassen; der Owner-Satz dahinter: Kringel, Kreuzungen
+und Retraces sind duktus-fix. *Technisch:*
+`tools/pairlab/follow.py::structure_class_counts` +
+`FollowWeights.structure_guard` (default False = byte-identisch),
+`STRUCTURE_GUARD_MAX_RETRIES` → qualitaetsmetrik.md §14 (Arm ⑨)
 
 **Junction-Verschiebung** *(junction displacement)* — der dokumentierte
 Fehler des Skelett-Branch-Points als Kreuzungs-Marke: Thinning

@@ -127,6 +127,7 @@ from tools.pairlab.chain import (
 )
 from tools.pairlab.landmarks import LANDMARK_MIN_ANGLE_DEG
 from tools.pairlab.trace import assemble_word_strokes, cap_word_strokes
+from tools.tracebench.counters import crossing_points, structure_zones
 from tools.wordlab.cases import DEFAULT_FIXTURES_DIR, WordCase, iter_fixture_word_cases
 from tools.wordlab.derive import WordDeriveResult, derive_word
 
@@ -361,6 +362,11 @@ FOLLOW_BIND_WEIGHT = float(os.environ.get(FOLLOW_BIND_WEIGHT_ENV) or 0.0)
 # and a measurement tool must not import it into the thing it measures.
 FOLLOW_RETRACE_PROX_UNITS_ENV = "KS_FOLLOW_RETRACE_PROX_UNITS"
 FOLLOW_RETRACE_PROX_UNITS = float(os.environ.get(FOLLOW_RETRACE_PROX_UNITS_ENV) or 0.15)
+# Arm ⑨: how often a structure-violating round is re-solved with halved travel
+# bounds before it is rejected back to the previous geometry. Two is the
+# pre-registered number (§14 `aug16`): a third halving leaves ~12 % of the
+# budget, at which point the round IS the previous geometry plus noise.
+STRUCTURE_GUARD_MAX_RETRIES = 2
 
 # The candidate file's mandatory frame literal. Re-declared rather than imported
 # for the same reason `tools.tracebench.candidates` re-declares the wire caps:
@@ -406,6 +412,14 @@ class FollowWeights:
     max_iter: int = FOLLOW_MAX_ITER
     retrace_prox_units: float = FOLLOW_RETRACE_PROX_UNITS
     retrace_guard: bool = True
+    structure_guard: bool = False
+    """Arm ⑨ (§14 `aug16`): a round-level ACCEPTANCE rule, not a force — a
+    solved round whose assembled trace exceeds the initialisation's own v2.1
+    structure class counts (crossings · retrace zones · touches · overlaps,
+    counted by the bench's own `tools.tracebench.counters`) is re-solved with
+    halved travel bounds, at most `STRUCTURE_GUARD_MAX_RETRIES` times, and
+    otherwise rejected back to the previous geometry. Default False = the
+    follower is byte-identical to before the arm existed."""
     provisional: bool = True
 
 
@@ -1395,6 +1409,35 @@ def landmark_calibration(
     }
 
 
+# ---------------------------------------------------- the structure guard (⑨)
+
+
+def structure_class_counts(strokes_units: list) -> dict[str, int]:
+    """The v2.1 structure classes of one assembled trace — the BENCH's own count.
+
+    Counted on the word-record strokes in trace units (1 unit = x-height),
+    exactly the frame the bench maps candidates through, by the very counters
+    the §14 report grades with (`tools.tracebench.counters`) — the guard and
+    the ruler can never disagree about what a crossing or a touch is.
+    """
+    strokes = [np.asarray(s, dtype=float).reshape(-1, 2) for s in strokes_units]
+    strokes = [s for s in strokes if len(s) >= 2]
+    if not strokes:
+        return {"cross": 0, "retrace": 0, "touch": 0, "overlap": 0}
+    zones = structure_zones(strokes)
+    return {
+        "cross": int(len(crossing_points(strokes))),
+        "retrace": int(len(zones.retrace_mids)),
+        "touch": int(len(zones.touch_mids)),
+        "overlap": int(len(zones.overlap_mids)),
+    }
+
+
+def _exceeds_budget(counts: dict[str, int], budget: dict[str, int]) -> bool:
+    """True when any structure class grew beyond the initialisation's count."""
+    return any(int(counts.get(key, 0)) > int(budget.get(key, 0)) for key in budget)
+
+
 # ------------------------------------------------------------ the round engine
 
 
@@ -1590,9 +1633,58 @@ def follow_word_chain(
     rounds: list[dict] = []
     stopped_early = False
 
+    def _assembled_counts(problem_: _ChainProblem, params_: np.ndarray) -> dict[str, int]:
+        px_, py_ = problem_.to_pixels(params_)
+        strokes_ = assemble_word_strokes(
+            _stroke_polylines_px(problem_, px_, py_),
+            traced_slots=set(fit.slots),
+            xh=xh,
+            registration=registration,
+            restart_slots=restart_slots,
+        )
+        return structure_class_counts(strokes_)
+
+    guard_budget: dict[str, int] | None = None
+    if weights.structure_guard:
+        init_strokes = assemble_word_strokes(
+            fit.stroke_polylines_px,
+            traced_slots=set(fit.slots),
+            xh=xh,
+            registration=registration,
+            restart_slots=restart_slots,
+        )
+        guard_budget = structure_class_counts(init_strokes)
+
     for index in range(1, int(weights.rounds) + 1):
-        problem, mask = build_follow_problem(problem, params, weights)
+        prev_problem, prev_params = problem, params
+        problem, mask = build_follow_problem(prev_problem, prev_params, weights)
         params, record = _solve_round(problem, weights, index, mask)
+        if guard_budget is not None:
+            # Arm ⑨ (§14 `aug16`): the acceptance rule. A violating round is
+            # re-solved from the SAME previous geometry with halved travel
+            # bounds; past the retry budget the previous geometry stands.
+            counts = _assembled_counts(problem, params)
+            retries = 0
+            round_weights = weights
+            while _exceeds_budget(counts, guard_budget) and retries < STRUCTURE_GUARD_MAX_RETRIES:
+                retries += 1
+                round_weights = replace(
+                    round_weights,
+                    max_delta=round_weights.max_delta / 2.0,
+                    connector_max_delta=round_weights.connector_max_delta / 2.0,
+                )
+                problem, mask = build_follow_problem(prev_problem, prev_params, round_weights)
+                params, record = _solve_round(problem, round_weights, index, mask)
+                counts = _assembled_counts(problem, params)
+            record["structure_budget"] = dict(guard_budget)
+            record["structure_counts"] = dict(counts)
+            record["structure_retries"] = retries
+            record["structure_rejected"] = _exceeds_budget(counts, guard_budget)
+            if record["structure_rejected"]:
+                rounds.append(record)
+                problem, params = prev_problem, prev_params
+                stopped_early = True
+                break
         rounds.append(record)
         if record["max_anchor_motion_units"] < weights.round_eps_units:
             stopped_early = True
@@ -2131,6 +2223,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--bind", type=float, help=f"letter bind weight (default {FOLLOW_BIND_WEIGHT}, rejected term)")
     parser.add_argument("--max-delta", type=float, help=f"per-anchor travel budget (default {FOLLOW_MAX_DELTA})")
     parser.add_argument("--no-retrace-guard", action="store_true", help="release the retrace zones too (a measurement)")
+    parser.add_argument(
+        "--structure-guard",
+        action="store_true",
+        help="arm 9: reject rounds whose assembled trace exceeds the initialisation's structure class counts",
+    )
     parser.add_argument("--sweep", help="NAME=v1,v2 — one arm per value of a FollowWeights field")
     parser.add_argument("--jobs", type=int, default=1, help="worker processes, pooled over CASES")
     parser.add_argument("--json", type=Path, help="write the full report here")
@@ -2151,7 +2248,7 @@ def weights_from_args(args: argparse.Namespace) -> FollowWeights:
         "max_delta": args.max_delta,
     }
     weights = FollowWeights(**{k: v for k, v in overrides.items() if v is not None})
-    return replace(weights, retrace_guard=not args.no_retrace_guard)
+    return replace(weights, retrace_guard=not args.no_retrace_guard, structure_guard=bool(args.structure_guard))
 
 
 def main() -> None:
@@ -2270,6 +2367,7 @@ __all__ = [
     "LANDMARK_CALIBRATION_MULTIPLIERS",
     "LANDMARK_NONCROSSING_REASONS",
     "LANDMARK_TARGET_MODES",
+    "STRUCTURE_GUARD_MAX_RETRIES",
     "FollowFit",
     "FollowWeights",
     "LandmarkTargeting",
@@ -2294,6 +2392,7 @@ __all__ = [
     "retrace_anchor_mask",
     "retrace_sample_mask",
     "run_arm",
+    "structure_class_counts",
 ]
 
 
