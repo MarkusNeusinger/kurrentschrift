@@ -60,6 +60,7 @@ from tools.tracebench.reference import (
     load_reference,
 )
 from tools.tracebench.sets import TRACEBENCH_DEV_IDS
+from tools.tracebench.soll import ductus_soll, soll_row_fields
 from tools.tracebench.summary import (
     compare,
     identity_gate,
@@ -289,9 +290,44 @@ def main() -> None:
         jobs=max(1, args.jobs),
     )
 
+    # The ductus target beside every row (the owner's standing test: a hand
+    # count outside the target is a finding, a candidate count an invention).
+    # Report-only: no scored number reads these fields, and a fixture root
+    # without composition data degrades to a warning.
+    soll, soll_warnings = ductus_soll(ids, which=args.which, style=args.style, fixtures_root=args.fixtures)
+    for row in rows:
+        entry = soll.get(str(row.get("id")))
+        if entry is not None:
+            row.update(soll_row_fields(entry))
+    for line in soll_warnings:
+        print(f"  {line}")
+
     print_rows(rows)
     summary = summarize(rows, excluded=reference.excluded_counts())
     print_block(summary, label=label, split=args.split)
+    if soll:
+        cross_pairs = [
+            (r["cross_ref"], r["soll_cross"])
+            for r in rows
+            if r.get("soll_cross") is not None and r.get("cross_ref") is not None
+        ]
+        zone_pairs = [
+            (r["retrace_ref"], r["soll_zones"])
+            for r in rows
+            if r.get("soll_zones") is not None and r.get("retrace_ref") is not None
+        ]
+        if cross_pairs:
+            print(
+                f"soll_cross_agree: {sum(1 for a, b in cross_pairs if a == b)}/{len(cross_pairs)} (Hand == Komposition)"
+            )
+        else:
+            print("soll_cross_agree: n/a (no scored row carries a target)")
+        if zone_pairs:
+            print(
+                f"soll_zones_agree: {sum(1 for a, b in zone_pairs if a == b)}/{len(zone_pairs)} (Hand == Komposition)"
+            )
+        else:
+            print("soll_zones_agree: n/a (no scored row carries a target)")
     print(f"resample_step:   {args.resample_step}")
     print(f"runtime_s:       {time.perf_counter() - started:.1f}")
 

@@ -52,6 +52,7 @@ from tools.tracebench.frames import BenchFrame, arc_length, classify_strokes
 from tools.tracebench.reference import DEFAULT_FIXTURES_DIR, Reference, ReferenceEntry, load_reference
 from tools.tracebench.run import find_fixture_root
 from tools.tracebench.sets import TRACEBENCH_DEV_IDS
+from tools.tracebench.soll import SollRow, ductus_soll
 
 
 # The crop `tools/wordbench/export_fixtures.py` freezes beside `word.json` —
@@ -227,108 +228,8 @@ def trace_paths(
     return layer_paths(frame, strokes, registration_px, xh_px)[0]
 
 
-@dataclass(frozen=True)
-class SollRow:
-    """One ductus-expectation row of the numbers table (not a drawn layer)."""
-
-    label: str
-    strokes: int | None  # None renders as a dash (a letter sum has no stroke count)
-    crossings: int
-    zones: int
-    per_letter: str = ""  # hover title: the budget letter by letter
-    touches: int = 0
-    overlaps: int = 0
-
-
-def ductus_soll(
-    ids: Sequence[str], *, which: str, style: str, fixtures_root: Path
-) -> tuple[dict[str, tuple[SollRow, ...]], list[str]]:
-    """Per word: what the DUCTUS prescribes, for the owner's manual check.
-
-    Two rows per word, both counted by the same frozen detectors as the layer
-    columns: the sum over the ISOLATED letters (each slot's own strokes,
-    including its marks — hover shows the budget letter by letter), and the
-    whole COMPOSITION with its generated connectors. The difference between
-    the two IS the joins' contribution (an entering connector can close a
-    loop the isolated letter does not have, e.g. the e), and a hand count
-    outside both is a finding — in the template, the join grammar or the
-    trace. Composition comes from the frozen fixture cases; a root without
-    them degrades to no rows and a warning, never to a failed page.
-    """
-    try:
-        from tools.wordlab.cases import iter_fixture_word_cases
-        from tools.wordlab.derive import derive_word
-
-        cases = {
-            c.id: c
-            for c in iter_fixture_word_cases(which=which, style=style, only=list(ids), fixtures_root=fixtures_root)
-        }
-    except Exception as exc:  # noqa: BLE001 — the page must render without Soll rather than not at all
-        return {}, [f"Duktus-Soll unavailable ({type(exc).__name__}: {exc}) — rows omitted"]
-    out: dict[str, tuple[SollRow, ...]] = {}
-    warnings: list[str] = []
-    for specimen_id in ids:
-        case = cases.get(specimen_id)
-        if case is None or not getattr(case, "scorable", True):
-            warnings.append(f"{specimen_id}: no scorable fixture case — Duktus-Soll omitted")
-            continue
-        try:
-            items = derive_word(case).composed["items"]
-        except Exception as exc:  # noqa: BLE001 — one word must not cost the page
-            warnings.append(f"{specimen_id}: derive failed ({type(exc).__name__}) — Duktus-Soll omitted")
-            continue
-        slots: dict[int, dict[str, Any]] = {}
-        comp: list[np.ndarray] = []
-        current: list[tuple[float, float]] = []
-        for item in items:
-            pts = [(float(x), float(y)) for x, y in item["centerline"]]
-            slot = item.get("slot_index")
-            if slot is not None:
-                info = slots.setdefault(slot, {"key": None, "strokes": []})
-                if item.get("glyph_key") and not item.get("diacritic"):
-                    info["key"] = item["glyph_key"]
-                info["strokes"].append(np.asarray(pts, dtype=float))
-            if item.get("lift") and current:
-                comp.append(np.asarray(current, dtype=float))
-                current = []
-            for p in pts:
-                if current and abs(current[-1][0] - p[0]) < 1e-12 and abs(current[-1][1] - p[1]) < 1e-12:
-                    continue
-                current.append(p)
-        if current:
-            comp.append(np.asarray(current, dtype=float))
-        sum_cross = sum_zones = sum_touch = sum_overlap = 0
-        cells: list[str] = []
-        for slot in sorted(slots):
-            info = slots[slot]
-            n_cross = int(len(crossing_points(info["strokes"])))
-            letter_zones = structure_zones(info["strokes"])
-            sum_cross += n_cross
-            sum_zones += int(len(letter_zones.retrace_mids))
-            sum_touch += int(len(letter_zones.touch_mids))
-            sum_overlap += int(len(letter_zones.overlap_mids))
-            cells.append(f"{info['key'] or '?'} {n_cross}/{len(letter_zones.retrace_mids)}")
-        comp_zones = structure_zones(comp)
-        out[specimen_id] = (
-            SollRow(
-                label="Duktus-Soll (Σ Buchstaben)",
-                strokes=None,
-                crossings=sum_cross,
-                zones=sum_zones,
-                per_letter="Kreuzungen/Zonen je Buchstabe: " + " · ".join(cells),
-                touches=sum_touch,
-                overlaps=sum_overlap,
-            ),
-            SollRow(
-                label="Komposition (mit Verbindern)",
-                strokes=len(comp),
-                crossings=int(len(crossing_points(comp))),
-                zones=int(len(comp_zones.retrace_mids)),
-                touches=int(len(comp_zones.touch_mids)),
-                overlaps=int(len(comp_zones.overlap_mids)),
-            ),
-        )
-    return out, warnings
+# `SollRow`/`ductus_soll` moved to `tools.tracebench.soll` — the bench report
+# consumes the same targets, so the one place the Soll is computed serves both.
 
 
 # -------------------------------------------------------------------- colours

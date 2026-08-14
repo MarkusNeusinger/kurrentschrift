@@ -456,7 +456,15 @@ def print_rows(rows: Sequence[dict]) -> None:
             f"cross {row['cross_matched']}/{row['cross_ref']}"
             f"{'+' + str(row['cross_spurious']) if row['cross_spurious'] else ''}  "
             f"retrace {row['retrace_matched']}/{row['retrace_ref']} r={_fmt(row['retrace_arc_ratio'], 2)}  "
-            f"lift {row['lift_delta']:+d}  {row['secs']:.1f}s"
+            f"lift {row['lift_delta']:+d}"
+            # The ductus target rides at the end of the line when the run could
+            # compute it — appended, so older lines stay parseable unchanged.
+            + (
+                f"  soll c{row['soll_cross']}/z{row['soll_zones']}"
+                if row.get("soll_cross") is not None and row.get("soll_zones") is not None
+                else ""
+            )
+            + f"  {row['secs']:.1f}s"
         )
 
 
