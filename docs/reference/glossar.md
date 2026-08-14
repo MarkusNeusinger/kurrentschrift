@@ -52,7 +52,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
-- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Retrace-Segment §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
+- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenfolger §3 · Tintenlücke §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
@@ -466,8 +466,24 @@ Bahn dicht auf das gemessene Skelett gezogen — „Geometrie ganz aus der
 Tinte, Ordnung ganz aus dem Prior“. Maßstab ist der nachgefahrene
 **Referenzsatz** (§4), nie das eigene Residual. Kein neues System, kein
 GPU, kein Fremdmodell; Ausgabe ist eine Wortbahn (Inspektionsschicht),
-nie eine Messung. *Technisch:* geplant als `tools/pairlab/follow.py`
-→ proposals/tintenfolger.md · bildsynthese-und-stiftbahn.md §6
+nie eine Messung. *Technisch:* `tools/pairlab/follow.py`
+(`follow_word_chain`/`follow_case`, Gewichte PROVISORISCH bis zur
+§14-Arm-Kalibrierung) → proposals/tintenfolger.md ·
+bildsynthese-und-stiftbahn.md §6
+
+**Retrace-Guard** — die Ausnahme im Tintenfolger, die dessen blinden
+Fleck deckt: Über doppelt beschriebener Tinte belohnen BEIDE Datenterme
+den Kollaps zweier Pässe auf eine Linie (Reverse-Coverage ist von einem
+Pass befriedigt, der Ridge-Pull von beiden auf dem Grat), und das
+Einzige, was sie unterscheidet, ist der Form-Prior — den die Stufe
+gerade löst. Der Guard erkennt Retrace-Zonen deshalb auf der
+INIT-Bahn (derselbe Detektor wie der tracebench-Zähler) und lässt die
+betroffenen Anker ihr VOLLES Chain-λ behalten, als per-Anker-
+Reg-Gewicht statt als Bound — nur so koexistiert λ_prox = 0 (die erste
+Sprosse von Arm ①) mit stehendem Guard. `--no-retrace-guard` existiert,
+um den Guard selbst zu MESSEN, nie als Betriebsmodus. *Technisch:*
+`tools/pairlab/follow.py::apply_retrace_guard` →
+proposals/tintenfolger.md §3
 
 **Iterationsdeckel** *(iteration cap)* — die Obergrenze, wie viele
 Optimierungsschritte ein Fit machen darf, bevor er abgebrochen wird. Klingt
