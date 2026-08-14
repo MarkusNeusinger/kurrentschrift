@@ -205,7 +205,10 @@ each, |coordinate| ≤ 100); a row that violates it keeps its geometry and is
 stamped `status: "failed"` with the reason in `meta.detail`. A word the recovery
 crashes on travels as a failed row too, because a control that silently covered
 nine of ten words would report a better median for the nine. Consumers must
-respect `status`.
+respect `status` — the bench does not read the field, but it re-validates every
+row against the SAME bounds (`tools/tracebench/candidates.py::wire_violation`,
+pinned equal by a test), so its verdict and this one agree by construction
+rather than by luck.
 
 ## Tests
 
