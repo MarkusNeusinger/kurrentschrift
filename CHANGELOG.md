@@ -42,6 +42,43 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The tracebench harness (`tools/tracebench/run.py`) — stage C of the
+  Tintenfolger plan, the ruler put to work.** `uv run python -m
+  tools.tracebench.run [--candidate chain|authored|traced|file] [--split
+  dev|confirm|all]` scores an automatic word tracing against the
+  hand-made one and prints the columns
+  `docs/reference/qualitaetsmetrik.md` §14 pre-registered — one stable
+  line per word, then the block, then (with `--compare`) the paired
+  deltas whose sign test is IMPORTED from `tools.pairlab.chainbench`
+  rather than restated. `reference.py` turns the frozen
+  `word_instances.json` plus each entry's `word.json` into bench frames,
+  stored rows and lazily read ink masks, with the `pairmeas` doctrine on
+  the losses: a `frame_stale` row and a row without a frozen entry are
+  excluded AND counted by reason, never silently dropped. `candidates.py`
+  makes a candidate literally a `word_instances` row — validated against
+  the wire caps the write endpoint enforces, so a trace the product could
+  never store is caught rather than praised — behind four providers:
+  `chain` runs the HARVEST's own code path (the trace half of
+  `_harvest_case_chain` was lifted into the public
+  `harvest.chain_word_strokes` and is asserted byte-identical to what the
+  harvest stores; a baseline that is a reimplementation stops being the
+  baseline the moment the two drift), `authored` doubles as the identity
+  gate, `traced` reads the stored harvest rows, and `file` demands the
+  literal `"frame": "word_registration"` so a trace in an unstated frame
+  is refused instead of measured as a catastrophic error. Three rules
+  the CLI ENFORCES rather than trusts: the startup assertion that all ten
+  frozen development words are present as `authored`, non-`frame_stale`
+  rows (a ruler that lost a word reports a better number for the rest),
+  the refusal of `--split confirm` under five words, and the identity
+  gate — `authored` against itself must land on dtw = 0, chamfer = 0 and
+  every counter matched, and a FAIL exits non-zero because from there on
+  no candidate number means anything. Beside them a report-only
+  direction audit of the reference set (per body stroke, endpoint
+  concordance against the candidate) — a backwards human trace is a
+  fixture-quality signal, not a model error, which a forward-only DTW
+  could not otherwise tell apart. Measurement only: no DB, no API, no
+  `core/` change, no rendering, and still no numbers — the first baseline
+  table is written from a run over the gitignored fixture roots.
 - **The tracebench ruler (`tools/tracebench`) — stage B of the
   Tintenfolger plan.** The measurement modules an automatic word tracing
   is graded with, defined by `docs/proposals/tintenfolger.md` §2 and

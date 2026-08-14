@@ -33,6 +33,10 @@ Plan, routes and the pre-registered acceptance criteria live in
 | `frames.py` | The comparison frame (`BenchFrame`: crop pixels re-expressed in x-heights, derived only from the frozen entry) plus the stroke bookkeeping around it — `classify_strokes` (marks vs. body), `concat_body`, `lift_stats`, `match_marks`, and the shared `match_points` refusal contract. |
 | `counters.py` | The structure counters at the hard places: `count_crossings` (over `tools.pairlab.landmarks`) and `count_retraces` (over `core.geometry.detect_retrace_pairs`), both detected on BOTH sides at one common discretisation and matched with refusal. |
 | `sets.py` | `TRACEBENCH_DEV_IDS` — the ten hand-traced development words, append-never. |
+| `reference.py` | The scored-against side: the frozen `word_instances.json` + each entry's `word.json` → one `BenchFrame`, the stored row and the lazily read ink mask per specimen. `frame_stale` and entry-less rows are excluded AND counted; the provenance filter is the caller's. |
+| `candidates.py` | What is graded: `Candidate` (literally a `word_instances` row, wire-bounds validated) plus the four providers — `chain` (through the harvest's own `chain_word_strokes`), `authored` (the identity gate), `traced`, `file` (mandatory literal `"frame": "word_registration"`). A provider failure is a row, never an exception. |
+| `summary.py` | The §14 columns per word (`score_word`), the run's block (`summarize`), the identity gate and the paired `compare` — whose sign test is IMPORTED from `tools.pairlab.chainbench`, never restated. |
+| `run.py` | The CLI: fixture-root discovery, the frozen split with its startup assertion, the providers, `--jobs` (order-preserving), `--json`/`--csv`/`--compare`. |
 
 ## Why the frame is not the stored coordinates
 
@@ -53,9 +57,24 @@ headline; missing marks and lost crossings are co-primary GATES that a distance
 gain cannot buy back; `aiou`, both chamfer halves and `retrace_arc_ratio` are
 cost watchdogs. A structure defect vetoes any distance win.
 
+## Running it
+
+```
+uv run python -m tools.tracebench.run --candidate chain --split dev
+uv run python -m tools.tracebench.run --candidate authored          # the identity gate
+uv run python -m tools.tracebench.run --candidate file --candidate-file follow.json \
+    --label follow-v1 --json follow.json.report --compare chain.report
+```
+
+`--split dev` is the ten frozen words, `--split confirm` the held-out reserve
+(refused under five words), `--split all` prints that a combined number is not a
+held-out number. Every run starts by asserting that all ten development words
+are present as `authored`, non-`frame_stale` rows — a ruler that lost a word
+would report a better number for the rest.
+
 ## Status
 
-Stage B of the ladder: the measurement modules only. The harness
-(`run.py`), the candidate providers (`chain`, `authored` as the identity gate,
-`traced`, `file`), the split handling and the first baseline table arrive with
-stage C.
+Stage C: the harness is complete and the ruler is testable end to end. The first
+BASELINE table — and with it the freeze declaration of
+`docs/reference/qualitaetsmetrik.md` §14 — is written from a run over the real
+fixture roots, which are gitignored and therefore never CI's business.

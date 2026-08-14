@@ -67,7 +67,7 @@ from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Sequence
+from typing import Any, Sequence
 
 import numpy as np
 from scipy.ndimage import distance_transform_edt
@@ -731,6 +731,96 @@ def _connector_diag(fit, xh: float, registration: dict) -> tuple[dict[int, str |
     return reasons, signals
 
 
+@dataclass(frozen=True)
+class ChainRunFit:
+    """One run of joined slots as the chain solved it — `fit is None` when it did not."""
+
+    slots: list[int]
+    fit: Any | None
+
+
+def chain_word_strokes(case, result: WordDeriveResult, opts: HarvestOptions) -> tuple[list[list[list[float]]], dict]:
+    """The chain path's TRACE half: solve every run of joined slots, weld the pen path.
+
+    Lifted out of `_harvest_case_chain` (which now calls it) so that a consumer
+    wanting the PEN PATH and nothing else runs the harvest's own code — the
+    trace bench's `chain` candidate (`tools/tracebench`,
+    `docs/proposals/tintenfolger.md` §2.4). A baseline the bench measures has to
+    be the thing the harvest stores, byte for byte; rebuilt beside it, the two
+    would drift and the bench would grade a candidate nobody ships.
+
+    Returns `(strokes, meta)`. `strokes` are capped and in the word's
+    registration frame — literally what `word_instances.strokes` holds. `meta`
+    carries everything the GRADING half needs so nothing is solved twice:
+
+    * `runs` — one `ChainRunFit` per run, in solve order (the fit is `None`
+      where `fit_word_chain` gave up, which the caller reports as `chain_failed`);
+    * `grids` — the per-slot grid fits the windows and the fallback diagnosis
+      come from (an EDT per case, computed once);
+    * `registration` / `xh` — the frame the strokes are expressed in;
+    * `traced_slots`, `run_slots`, `cut_indices`, `n_params`, `seconds` — the
+      pooled solve diagnostics the word record stores.
+    """
+    xh = result.xh_px
+    registration = {
+        "tx": result.registration["tx"],
+        "ty": result.registration["ty"],
+        "baseline_row": result.baseline_row,
+    }
+    grids = _grid_fits(case, result)
+    restart_slots = {i for i, s in enumerate(case.slots) if s.key and _key_base(s.key, s.position) in CAP_RESTART_BASES}
+
+    runs: list[ChainRunFit] = []
+    word_strokes: list[list[list[float]]] = []
+    traced: set[int] = set()
+    run_slots: list[list[int]] = []
+    cut_indices: list[list[list[int]]] = []
+    n_params = 0
+    seconds = 0.0
+
+    for run in _chainable_runs(case, grids):
+        windows = {s: grids[s]["window"] for s in run}
+        seeds = (
+            {s: grids[s]["shift_units"] for s in run if not grids[s]["at_bound"]} if opts.chain_seed == "grid" else None
+        )
+        fit = fit_word_chain(case, run, result=result, windows_px=windows, slot_shift_init=seeds)
+        runs.append(ChainRunFit(list(run), fit))
+        if fit is None:
+            continue
+        run_slots.append(list(fit.slots))
+        traced.update(int(s) for s in fit.slots)
+        cut_indices.append([[int(a), int(b)] for a, b in fit.cut_indices])
+        n_params += int(fit.fit_meta.get("n_params", 0))
+        seconds += float(fit.fit_meta.get("seconds", 0.0))
+        # The whole solved run goes into the trace — a gate verdict decides what
+        # is measured, not what was written (the per-slot verdicts stay readable
+        # in `gates`/`converged_local` beside it). The polylines are the fit's
+        # own UNREPAIRED output on purpose: the trace is the inspection layer
+        # showing what the fit actually did, needle and all.
+        word_strokes.extend(
+            assemble_word_strokes(
+                fit.stroke_polylines_px,
+                traced_slots=set(fit.slots),
+                xh=xh,
+                registration=registration,
+                restart_slots=restart_slots,
+            )
+        )
+
+    meta = {
+        "runs": runs,
+        "grids": grids,
+        "registration": registration,
+        "xh": xh,
+        "traced_slots": sorted(traced),
+        "run_slots": run_slots,
+        "cut_indices": cut_indices,
+        "n_params": n_params,
+        "seconds": round(seconds, 3),
+    }
+    return cap_word_strokes(word_strokes, label=f"{case.id} (chain)"), meta
+
+
 def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) -> CaseHarvest:
     """The word-chain path (Stage B): one solve per run of joined slots.
 
@@ -752,35 +842,32 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
     per_key: dict[str, list[np.ndarray]] = defaultdict(list)
     occurrences: list[dict] = []
     diag_rows: list[dict] = []
-    xh = result.xh_px
-    tx, ty = result.registration["tx"], result.registration["ty"]
-    baseline_row = result.baseline_row
-    registration = {"tx": tx, "ty": ty, "baseline_row": baseline_row}
+    # The solves and the pen path come from the shared trace half — the same
+    # code the trace bench's `chain` candidate runs, so a measured baseline and
+    # a stored trace can never be two different things.
+    word_strokes, chain_meta = chain_word_strokes(case, result, opts)
+    xh = chain_meta["xh"]
+    registration = chain_meta["registration"]
+    grids = chain_meta["grids"]
     keyed = _keyed_indices(case)
-    grids = _grid_fits(case, result)
 
     accepted: set[int] = set()  # gate "ok" — the occurrences and the medians
-    traced: set[int] = set()  # every slot the chain solved — the word trace
+    traced: set[int] = set(chain_meta["traced_slots"])  # every slot the chain solved — the word trace
     gate_by_slot: dict[int, str] = {}
     converged_by_slot: dict[int, bool] = {}
     rmse_by_slot: dict[str, float] = {}
-    word_strokes: list[list[list[float]]] = []
-    run_slots: list[list[int]] = []
-    cut_indices: list[list[list[int]]] = []
-    n_params = 0
-    seconds = 0.0
+    run_slots: list[list[int]] = chain_meta["run_slots"]
+    cut_indices: list[list[list[int]]] = chain_meta["cut_indices"]
+    n_params = chain_meta["n_params"]
+    seconds = chain_meta["seconds"]
 
     for i, unfittable in enumerate(case.slots):
         if unfittable.key and i not in grids:
             gate_by_slot[i] = "no_template"
             diag_rows.append(_diag_row(case, opts, i, keyed.get(i), unfittable.key, accepted=False, gate="no_template"))
 
-    for run in _chainable_runs(case, grids):
-        windows = {s: grids[s]["window"] for s in run}
-        seeds = (
-            {s: grids[s]["shift_units"] for s in run if not grids[s]["at_bound"]} if opts.chain_seed == "grid" else None
-        )
-        fit = fit_word_chain(case, run, result=result, windows_px=windows, slot_shift_init=seeds)
+    for chain_run in chain_meta["runs"]:
+        run, fit = chain_run.slots, chain_run.fit
         run_label = "-".join(str(s) for s in run)
         if fit is None:
             for slot_index in run:
@@ -802,11 +889,6 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 )
             continue
 
-        run_slots.append(list(fit.slots))
-        traced.update(int(s) for s in fit.slots)
-        cut_indices.append([[int(a), int(b)] for a, b in fit.cut_indices])
-        n_params += int(fit.fit_meta.get("n_params", 0))
-        seconds += float(fit.fit_meta.get("seconds", 0.0))
         conn_reasons, conn_signals = _connector_diag(fit, xh, registration)
         letters = [seg for seg in fit.segments if seg.kind == "letter"]
 
@@ -934,28 +1016,11 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 }
             )
 
-        # The whole solved run goes into the trace — a gate verdict decides what
-        # is measured, not what was written (the per-slot verdicts stay readable
-        # in `gates`/`converged_local` beside it). The polylines are the fit's
-        # own UNREPAIRED output on purpose: the trace is the inspection layer
-        # showing what the fit actually did, needle and all.
-        word_strokes.extend(
-            assemble_word_strokes(
-                fit.stroke_polylines_px,
-                traced_slots=set(fit.slots),
-                xh=xh,
-                registration=registration,
-                restart_slots={
-                    i for i, s in enumerate(case.slots) if s.key and _key_base(s.key, s.position) in CAP_RESTART_BASES
-                },
-            )
-        )
-
     word_record = None
     if word_strokes:
         word_record = _word_record(
             case,
-            cap_word_strokes(word_strokes, label=f"{case.id} (chain)"),
+            word_strokes,
             registration,
             xh,
             {
@@ -976,7 +1041,7 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 "converged_local": {str(keyed[s]): v for s, v in converged_by_slot.items()},
                 "gates": {str(keyed[s]): g for s, g in gate_by_slot.items() if s in keyed},
                 "n_params": n_params,
-                "seconds": round(seconds, 3),
+                "seconds": seconds,
             },
         )
     print(
