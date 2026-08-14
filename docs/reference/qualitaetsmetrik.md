@@ -3882,9 +3882,47 @@ deklariert (nur die Strukturzähler änderten die Bedeutung). Struktur:
 | Berührungen | 8 | 17 | berichtet, nie Loss |
 | Überlagerungen | 0 | 6 | berichtet, nie Loss |
 
-Lesart: Von den 19 „erfundenen Kreuzungen" der v1-Kette waren 6
-tangentiale Artefakte, die der Durchstoß nicht mehr zählt — 13
-echte Erfindungen bleiben die Klage. Die 21 „erfundenen
+**Nachtrag v2.1 (Owner-Audit der v2-Seite, gleicher Tag):** Drei Ringe
+überlebten v2, die Abzweig-Ablösungen sind (unter-t 44,8° · mit-t
+35,0° · zwei-w-Ende 24,0°). Die Regel, die sie trifft, ist die
+wörtliche Anwendung des Owner-Prinzips auf den Ring selbst: Ein Ring,
+dessen beide Chords EINANDER Antiparallel-Partner des
+Retrace-Detektors sind (`CROSS_PARTNER_NEAR_UNITS` 0,16 xh ≈ die
+eigene Proximity des Detektors, ≥ 2 Treffer beidseitig), ist der
+beiläufige Selbstschnitt eines Hin-und-zurück-mit-Ablösung —
+retrace-intern, keine Struktur-Kreuzung. Ein Retrace durch FREMDE
+Tinte (linkens Kringel-Durchgänge) behält seine Ringe: seine Chords
+partnern mit den eigenen Rückschenkeln, nicht miteinander. Gemessen
+fallen exakt die beanstandeten Ringe (plus der gleichartige
+linken-k-Ausgang, 53,1°; Partner-Hits 4–13 beidseitig), jeder
+behaltene liest 0/0. Ehrliche Konsequenz: Für antiparallel-benachbarte
+Paare steigt der effektive Ring-Boden auf die Antiparallel-Toleranz
+des Detektors (25°) — alle echten Hand-Ringe liegen ≥ 45°, der
+13°-Durchstoß-Pin wurde entsprechend auf die v2.1-Semantik
+umgeschrieben. Zwei Entscheidungen dokumentiert: (a) Gezählt werden
+Kreuzungs-ORTE, nicht -Ereignisse — linkens „runter 2× gekreuzt, dann
+zurück-retraced = eigentlich 4" ist als Ereigniszählung richtig, aber
+der Ort ist die stabile Währung: das Duktus-Budget hinge sonst an der
+Retrace-Anzahl, und das Positions-Matching kann ko-lokalisierte
+Ereignisse ohnehin nicht trennen. (b) Berührungen und Überlagerungen
+stehen seither auch in der Zahlen-Tabelle der Duell-Seite.
+
+**v2.1-Baseline (nach dem Nachtrag; Identitäts-Gate PASS, dtw
+byte-gleich):** Hand 23 Kreuzungen · 15 Retrace-Zonen · 8 Berührungen ·
+0 Überlagerungen; Kette 20 · 18 · 17 · 6. Missing+spurious: Kreuzungen
+7+4 = 11 (v2: 18, v1: 26), Zonen 2+5 = 7. Der Löwenanteil der
+v1-„Erfindungen" an den Stapel-Wörtern war RETRACE-INTERN — die
+überlappenden Striche der Kette partnern antiparallel und schneiden
+sich beiläufig; die präzise Klage lautet seither: 4 erfundene Ringe,
+5 erfundene Zonen, 9 erfundene Berührungen (zu enges Vorbeischreiben),
+6 Überlagerungen. Hand je Wort: die 1 · laden 3 · linken 3 (der
+k-Ausgang fiel als Ablösung; das Soll rechnet mit denselben Zählern
+und zieht mit) · mit 2 · muß 1 · und 1 · unter 3 · Wer 3 · will 3 ·
+zwei 3 (= z2+w1).
+
+Lesart (v2-Stand vor dem Nachtrag): Von den 19 „erfundenen Kreuzungen"
+der v1-Kette waren 6 tangentiale Artefakte, die der Durchstoß nicht
+mehr zählt — 13 echte Erfindungen bleiben die Klage. Die 21 „erfundenen
 Retrace-Zonen" der v1 zerlegen sich in 5 echte Erfindungen, **9
 erfundene Berührungen** (die Komposition schreibt Buchstaben zu eng
 aneinander vorbei — eine präzisere Diagnose als „Retrace") und 6

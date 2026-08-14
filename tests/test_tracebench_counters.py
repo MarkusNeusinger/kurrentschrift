@@ -281,12 +281,17 @@ def test_a_tangential_dip_is_not_a_crossing() -> None:
     assert len(crossing_points([stroke])) == 0
 
 
-def test_a_shallow_pierce_is_a_crossing_below_the_retired_angle_threshold() -> None:
-    """The linken-k verdict: ONE rule instead of a threshold. A 13-degree
-    crossing — refused by v1's 15-degree rule — counts, because it clearly
-    exits beyond half a stroke width on the other side within the window."""
+def test_a_shallow_antiparallel_crossing_is_retrace_internal() -> None:
+    """v2.1: a 13-degree crossing between near-anti-parallel passes is the
+    retrace detector's OWN pair (its anti-parallel tolerance is 25 degrees),
+    so its incidental ring is retrace-internal — the owner's release rule
+    outranks „a pierce counts however shallow". Every genuinely kept hand
+    ring measures 45 degrees or more; the zwei-w release at 24 degrees is
+    exactly what this suppresses."""
     stroke = np.asarray([[-1.0, 0.0], [2.0, 0.0], [3.0, 0.6], [-2.0, -0.55]], dtype=float)
-    assert len(crossing_points([stroke])) == 1
+    raw = polyline_self_intersections(*concat_strokes(resampled_strokes([stroke])))
+    assert any(x.arc_separation >= 0.35 for x in raw), "the premise: the shallow pass really crosses"
+    assert len(crossing_points([stroke])) == 0
 
 
 def test_writing_past_each_other_is_a_touch_not_a_retrace() -> None:
@@ -298,6 +303,19 @@ def test_writing_past_each_other_is_a_touch_not_a_retrace() -> None:
     zones = structure_zones([stroke])
     assert len(zones.touch_mids) == 1
     assert len(zones.retrace_mids) == 0
+
+
+def test_a_release_crossing_its_own_partner_limb_is_no_ring() -> None:
+    """v2.1 (the unter-t / mit-t / zwei-w verdict): an out-and-back whose
+    release limb incidentally crosses its OWN partner limb draws a real
+    intersection, but it is retrace-internal — the pen branched off, it did
+    not cross foreign ink. The linken Kringel passages, where a retrace
+    crosses ink that is NOT its partner, keep their rings (pinned by the
+    healthy-crossing tests above)."""
+    up_down_release = np.asarray([[0.0, 0.0], [0.0, 1.5], [0.06, 1.5], [0.06, 0.6], [-0.4, 0.4]], dtype=float)
+    raw = polyline_self_intersections(*concat_strokes(resampled_strokes([up_down_release])))
+    assert any(x.arc_separation >= 0.35 for x in raw), "the premise: the release really crosses"
+    assert len(crossing_points([up_down_release])) == 0
 
 
 def test_a_diverging_cusp_is_no_zone_at_all() -> None:

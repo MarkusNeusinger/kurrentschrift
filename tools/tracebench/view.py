@@ -47,7 +47,7 @@ import numpy as np
 from PIL import Image
 
 from tools.tracebench.candidates import STATUS_OK, Candidate, file_provider
-from tools.tracebench.counters import classified_pass_points, crossing_points, retrace_segments
+from tools.tracebench.counters import classified_pass_points, crossing_points, structure_zones
 from tools.tracebench.frames import BenchFrame, arc_length, classify_strokes
 from tools.tracebench.reference import DEFAULT_FIXTURES_DIR, Reference, ReferenceEntry, load_reference
 from tools.tracebench.run import find_fixture_root
@@ -173,7 +173,9 @@ class StructureMarks:
 
     crossings: list[tuple[float, float]]  # crop px
     passes: list[tuple[str, str]]  # (pass path data in crop px, class: retrace | touch | overlap)
-    zones: int = 0  # merged retrace ZONES — the ruler's own count (`retrace_segments`)
+    zones: int = 0  # merged retrace ZONES — the ruler's own count (`structure_zones`)
+    touches: int = 0  # touch zones (writing past each other)
+    overlaps: int = 0  # overlap zones (a mark riding the body)
 
 
 def structure_marks(frame: BenchFrame, strokes_bench: list[np.ndarray]) -> StructureMarks:
@@ -187,12 +189,17 @@ def structure_marks(frame: BenchFrame, strokes_bench: list[np.ndarray]) -> Struc
     """
     strokes = [np.asarray(s, dtype=float).reshape(-1, 2) for s in strokes_bench]
     crossings = [(float(x), float(y)) for x, y in frame.bench_to_crop_px(crossing_points(strokes))]
-    zone_mids, _zone_arc = retrace_segments(strokes)
-    zones = int(np.asarray(zone_mids).reshape(-1, 2).shape[0])
+    class_zones = structure_zones(strokes)
     passes = [
         (stroke_path_data(frame.bench_to_crop_px(pass_pts)), cls) for pass_pts, cls in classified_pass_points(strokes)
     ]
-    return StructureMarks(crossings=crossings, passes=passes, zones=zones)
+    return StructureMarks(
+        crossings=crossings,
+        passes=passes,
+        zones=int(len(class_zones.retrace_mids)),
+        touches=int(len(class_zones.touch_mids)),
+        overlaps=int(len(class_zones.overlap_mids)),
+    )
 
 
 def layer_paths(
@@ -229,6 +236,8 @@ class SollRow:
     crossings: int
     zones: int
     per_letter: str = ""  # hover title: the budget letter by letter
+    touches: int = 0
+    overlaps: int = 0
 
 
 def ductus_soll(
@@ -288,17 +297,18 @@ def ductus_soll(
                 current.append(p)
         if current:
             comp.append(np.asarray(current, dtype=float))
-        sum_cross = sum_zones = 0
+        sum_cross = sum_zones = sum_touch = sum_overlap = 0
         cells: list[str] = []
         for slot in sorted(slots):
             info = slots[slot]
             n_cross = int(len(crossing_points(info["strokes"])))
-            mids, _arc = retrace_segments(info["strokes"])
-            n_zones = int(np.asarray(mids).reshape(-1, 2).shape[0])
+            letter_zones = structure_zones(info["strokes"])
             sum_cross += n_cross
-            sum_zones += n_zones
-            cells.append(f"{info['key'] or '?'} {n_cross}/{n_zones}")
-        comp_mids, _comp_arc = retrace_segments(comp)
+            sum_zones += int(len(letter_zones.retrace_mids))
+            sum_touch += int(len(letter_zones.touch_mids))
+            sum_overlap += int(len(letter_zones.overlap_mids))
+            cells.append(f"{info['key'] or '?'} {n_cross}/{len(letter_zones.retrace_mids)}")
+        comp_zones = structure_zones(comp)
         out[specimen_id] = (
             SollRow(
                 label="Duktus-Soll (Σ Buchstaben)",
@@ -306,12 +316,16 @@ def ductus_soll(
                 crossings=sum_cross,
                 zones=sum_zones,
                 per_letter="Kreuzungen/Zonen je Buchstabe: " + " · ".join(cells),
+                touches=sum_touch,
+                overlaps=sum_overlap,
             ),
             SollRow(
                 label="Komposition (mit Verbindern)",
                 strokes=len(comp),
                 crossings=int(len(crossing_points(comp))),
-                zones=int(np.asarray(comp_mids).reshape(-1, 2).shape[0]),
+                zones=int(len(comp_zones.retrace_mids)),
+                touches=int(len(comp_zones.touch_mids)),
+                overlaps=int(len(comp_zones.overlap_mids)),
             ),
         )
     return out, warnings
@@ -605,9 +619,12 @@ def _numbers_row(layer: Layer) -> str:
     # the four report columns stay relative-to-reference and dash out for the
     # reference itself.
     if layer.structure is not None:
-        own = f"<td>{len(layer.structure.crossings)}</td><td>{layer.structure.zones}</td>"
+        own = (
+            f"<td>{len(layer.structure.crossings)}</td><td>{layer.structure.zones}</td>"
+            f"<td>{layer.structure.touches}</td><td>{layer.structure.overlaps}</td>"
+        )
     else:
-        own = "<td>–</td>" * 2
+        own = "<td>–</td>" * 4
     cells = _numbers_cells(layer.numbers) if layer.kind == "candidate" else "<td>–</td>" * 4
     return (
         f'<tr class="layer-row"><td><span class="swatch" style="background:{layer.color}"></span> '
@@ -620,7 +637,9 @@ def _soll_row(row: SollRow) -> str:
     strokes = "–" if row.strokes is None else str(row.strokes)
     return (
         f'<tr class="soll-row"{title}><td>◇ {html.escape(row.label)}</td><td>{strokes}</td>'
-        f"<td>{row.crossings}</td><td>{row.zones}</td>" + "<td>–</td>" * 4 + "</tr>"
+        f"<td>{row.crossings}</td><td>{row.zones}</td><td>{row.touches}</td><td>{row.overlaps}</td>"
+        + "<td>–</td>" * 4
+        + "</tr>"
     )
 
 
@@ -660,7 +679,7 @@ def word_section(
         f"{svg_layers}</svg></div>"
         f'<div class="legend">{legend}</div>'
         f'<table class="numbers"><thead><tr><th>Verfahren</th><th>Striche</th><th>Kreuzungen</th>'
-        f"<th>Retrace-Zonen</th><th>dtw_xh</th><th>aiou</th>"
+        f"<th>Retrace-Zonen</th><th>Berührungen</th><th>Überlagerungen</th><th>dtw_xh</th><th>aiou</th>"
         f"<th>cross m/s</th><th>retrace</th></tr></thead><tbody>{rows}</tbody></table>"
         f"</section>"
     )

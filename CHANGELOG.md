@@ -147,7 +147,17 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   classes distinctly (solid/dashed/dotted); glossary gains
   „Durchstoß-Kriterium" and „Berührung (Struktur-Zähler)". v1 numbers
   of the aug14 baseline and arms 1/5/6/6b stay archived and are not
-  comparable to v2.
+  comparable to v2. **v2.1 amendment** (the owner's second audit pass):
+  a ring whose two chords are each other's anti-parallel partners is
+  the incidental self-crossing of one out-and-back-with-release —
+  retrace-internal, suppressed (`CROSS_PARTNER_NEAR_UNITS`); exactly
+  the disputed rings fall (unter-t, mit-t, zwei-w, linken-k-exit)
+  while a retrace through FOREIGN ink keeps its rings. Crossing SITES
+  are counted, not events. The duel page's numbers table gains
+  Berührungen/Überlagerungen columns for every layer and both Soll
+  rows. v2.1 chain baseline: invented rings 4, invented zones 5,
+  invented touches 9, overlaps 6 — most of the stack-word „inventions"
+  were the chain's own overlapping strokes crossing incidentally.
 
 - **Follower arms 5 and 6 recorded in the quality-metric §14** (doc-only):
   the overlap term is acquitted of the §13 brake hypothesis (switching it
