@@ -108,6 +108,22 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `touch_point` (5) or `t_junction` (7), i.e. ink with no crossing to
   extrapolate. Still no weight adopted — the default stays 0.0.
 
+### Added
+
+- **The bench report carries the ductus target beside every word**
+  (`tools/tracebench/soll.py`, the owner's standing test as a report
+  column family): `SollRow`/`ductus_soll` moved out of the duel viewer
+  into a shared module, and `tools/tracebench/run.py` attaches per row
+  the composition's expected structure (`soll_cross`, `soll_zones`,
+  `soll_touch`, `soll_overlap` plus the letters-sum
+  `soll_cross_letters`/`soll_zones_letters`) and prints the agreement
+  lines `soll_cross_agree`/`soll_zones_agree` (hand == composition per
+  word). Report-only — no scored number reads these fields, and a
+  fixture root without composition data degrades to a warning. First
+  reading on the dev words: crossings agree 7/10, zones 6/10, with the
+  disagreements exactly the named composer findings (the t
+  under-crossing, the W retrace, the join-formed loops).
+
 ### Fixed
 
 - **The duel page's resting trace no longer loses its tail**
