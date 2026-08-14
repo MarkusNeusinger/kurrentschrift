@@ -263,8 +263,12 @@ def test_page_carries_both_layers_and_stays_self_contained(tmp_path: Path) -> No
     assert f'data-label="{REFERENCE_LABEL}"' in page
     assert 'data-label="chain"' in page
     assert page.count('<g class="layer"') == 2
-    # …the animation is dash-driven per stroke (animation-rendering.md §1)…
-    assert 'stroke-dasharray="1"' in page
+    # …the animation is dash-driven per stroke (animation-rendering.md §1) but
+    # the RESTING markup carries no dash: dasharray + pathLength +
+    # non-scaling-stroke mis-scale in some engines and swallow the tail of the
+    # longest paths, so the dash exists only while the JS animation runs…
+    assert 'stroke-dasharray="1"' not in page
+    assert "strokeDasharray = '1'" in page
     assert 'pathLength="1"' in page
     assert "data-len=" in page
     # …the crop rides along as a data: URI…
