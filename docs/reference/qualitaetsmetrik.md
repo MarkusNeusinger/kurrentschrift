@@ -3981,8 +3981,14 @@ Kandidat/Hand): die **1,036** · 0,854 · 0/1 · 6/2 — linken **1,026** ·
 0,829 · 1/3 · 16/2 — und 0,428 · 0,838 · 1/1 · 9/2 — mit 0,414 ·
 0,801 · 1/2 · 7/2.
 
-**Gegenüberstellung** (Kettenfit = v2.1-Baseline oben, gleiche Wörter,
-gleiches Lineal):
+**Gegenüberstellung** (gleiche Wörter, gleiches Lineal). Der Kettenfit
+wurde für diese Zeile am selben Tag NEU gerechnet
+(`--candidate chain --split dev`, 2808 s) statt aus der v2.1-Baseline
+abgeschrieben — und reproduziert sie exakt: dtw 0,061985 · aiou 0,6831 ·
+p90 0,261818 · worst `unter` 0,438926 · Chamfer 0,0398/0,0467 ·
+Kreuzungen 7 fehlend/4 erfunden · Zonen 2/5 · `retrace_arc_ratio` 0,830 ·
+Berührungen 8/17 · Überlagerungen 0/6 · `lift_delta_total` 3. Die
+Gegenüberstellung ist damit gemessen, nicht zitiert:
 
 | | Hand (Referenz) | Kettenfit | Route G |
 |---|---|---|---|
