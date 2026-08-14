@@ -131,3 +131,14 @@ def test_the_stamp_is_utc_and_sortable() -> None:
     assert stamp.endswith("Z")
     assert len(stamp) == len("2026-08-14T09-30-00Z")
     assert "/" not in stamp and ":" not in stamp
+
+
+def test_a_file_as_root_is_refused_with_a_readable_message(tmp_path):
+    # Review finding: a root pointing at an existing FILE must refuse like the
+    # other guardrails, not crash later on directory creation.
+    from tools.tracebench.chronik import resolve_root
+
+    not_a_dir = tmp_path / "chronik"
+    not_a_dir.write_text("occupied")
+    with pytest.raises(SystemExit, match="not a directory"):
+        resolve_root(str(not_a_dir))

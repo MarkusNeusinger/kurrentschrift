@@ -565,7 +565,10 @@ def build_page(
                 )
             )
         sections.append(word_section(len(sections), entry, crop_uri, size, layers))
-        tabs.append((entry.word, specimen_id))
+        # The tab label is the SPECIMEN id, not the word text: repeated words
+        # ("und", "und-2", "und-3") would otherwise render three identical tabs
+        # and make the arrow navigation ambiguous. For non-repeats id == word.
+        tabs.append((specimen_id, specimen_id))
     return render_html(sections, tabs, title=title, meta=meta), warnings
 
 

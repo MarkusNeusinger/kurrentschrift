@@ -98,6 +98,8 @@ def resolve_root(explicit: str | None) -> Path:
             f"{root} is inside the working tree {REPO_ROOT} — the chronik holds traced geometry (open-core "
             "reservation) and must survive `git clean -xfd`; choose a directory outside the repository"
         )
+    if root.exists() and not root.is_dir():
+        raise SystemExit(f"{root} exists and is not a directory — the chronik root must be a directory")
     return root
 
 
