@@ -42,6 +42,44 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The ink follower (`tools/pairlab/follow.py`) — route A of the
+  Tintenfolger plan, with every shipping weight declared PROVISIONAL.**
+  A re-linearising restart on the chain fit, exactly as
+  `docs/proposals/tintenfolger.md` §3 formulates it and nothing more:
+  solve 1 is the harvest's own `fit_word_chain`, then each round rebuilds
+  the problem from `respec_from_solution` and solves it again from zero,
+  stopping as soon as a round moves no anchor by more than
+  `FOLLOW_ROUND_EPS_UNITS`. What that buys is the three things the chain
+  freezes at its INITIAL anchors — the chord parameterisation, the
+  landmark correspondence, the overlap seam exemptions — re-frozen at the
+  found optimum, where the fit worked hardest; what it CHANGES is the
+  meaning of one term: with the chain optimum as the initial geometry the
+  Tikhonov term prices displacement from THAT rather than from the chart
+  form, i.e. a proximal/trust-region term instead of a form prior. That
+  change of meaning is the whole of v1; the change of value is the §14
+  arm ① ladder, and until it is measured `FOLLOW_PROX_WEIGHT` stays at
+  the chain's own λ — no default here is calibrated, and
+  `FollowWeights.provisional` stamps that into every artefact the tool
+  writes. The retrace guard is realised as PER-ANCHOR Tikhonov weights
+  (the objective already carried `reg_w`): anchors a retrace zone of the
+  init path spans keep the full chain λ while everything else is released
+  to λ_prox, with the scaling in `reg_w` rather than in `lambda_reg` so
+  that λ_prox = 0 stays expressible with the guard standing. Zones are
+  detected with `core.geometry.detect_retrace_pairs` at 0.15 xh, the
+  trace bench's own rule, mirrored rather than imported — the ruler must
+  not be imported into what it grades. `follow_case` mirrors
+  `harvest.chain_word_strokes` by USING it: the per-slot grid windows,
+  the chainable runs, the welded pen path, the wire caps and the stored
+  record shape are the harvest's own (a test asserts the whole word trace
+  is byte-identical to the harvest's at `rounds=0`), and the follower
+  replaces exactly one thing in that pipeline — the fit each run uses.
+  The CLI writes a `tools/tracebench` file-provider candidate
+  (`--candidate-out`, the mandatory `"frame": "word_registration"`, a
+  word without a pen path excluded AND counted rather than written as an
+  empty candidate) and sweeps one weight per run (`--sweep prox=…`).
+  Strictly additive: `KS_FOLLOW_*` never moves a `CHAIN_*` (pinned by a
+  test), no chain solve changes, the harvest gets no follower path, and
+  nothing here touches the DB, the API, `core/` or rendering.
 - **The tracebench harness (`tools/tracebench/run.py`) — stage C of the
   Tintenfolger plan, the ruler put to work.** `uv run python -m
   tools.tracebench.run [--candidate chain|authored|traced|file] [--split
