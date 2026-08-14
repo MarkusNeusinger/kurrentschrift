@@ -269,6 +269,38 @@ Kandidaten-Kontrakt (§2.4, eigener `--candidate-file`, isoliertes
 Tool-Verzeichnis nach dem `tools/inksight`-Muster), kein GPU; nach der
 Baseline, unabhängig von Folger und InkSight.
 
+**Nachtrag 2026-08-14 — der Referenz-Code ist MATLAB, die Kontrolle ist
+darum eine eigene Minimalfassung (`tools/routeg`):**
+<https://github.com/gioelecrispo/wor> trägt eine echte
+**MIT-Lizenz** (LICENSE-Datei, „Copyright (c) 2020 Gioele Crispo") — die
+Lizenz ist NICHT die Schranke. Die Schranke ist die Laufzeit: 234
+`.m`-Dateien, **MATLAB 2016a+ mit der Image Processing Toolbox**, kein
+PyPI-Paket, kein `setup.py`, keine Octave-Zusage (classdef mit
+`persistent`-Settern, `+logging`-Paketordner); dazu ein unlizenziertes
+`SalernoSkeletonization.jar` im Baum (quellen-und-rechte.md: die Lizenz
+folgt den Bytes — nicht vendorn). Letzter Commit 2022-10-06, ein offener
+PR seit ~4 Jahren. Weder MATLAB noch Octave existieren hier oder in CI,
+also wäre eine `wor()`-Zahl von niemandem reproduzierbar, der die Gates
+dieses Repos laufen lässt. Statt eine Abhängigkeit zu erfinden oder den
+Kontroll-Platz leer zu lassen, füllt ihn die **eigene Minimalfassung**:
+Skelett → Segmentgraph (benachbarte Verzweigungspixel = EIN Knoten, der
+„Cluster" des Papiers) → Greedy-Traversierung per Gute-Fortsetzung, drei
+Entscheidungen (linkester Endpunkt · ein Skalarprodukt am Knoten ·
+Absetzen bei Sackgasse). Die Tür zum echten Lauf bleibt offen:
+`prepare.py` schreibt genau das dokumentierte `wor()`-Eingabeformat (vor-
+gedünntes, 8-verbundenes PNG, Tinte = 0). Bewusst NICHT übernommen sind
+die gewichtete `π_ij`-Fortsetzung samt Cluster-Rang-Klassifikation und
+Dijkstra durch den Cluster — und vor allem der **gelernte
+Startpunkt-Prior** `statisticalInitialPointComputed.mat` (2-D-Gauß, auf
+SigComp2009-UNTERSCHRIFTEN gefittet): eine Kontrolle, die eine gelernte
+Tabelle borgt, ist nicht mehr prior-frei. Ehrlich mitgesagt: Die
+publizierte Abstimmung und Auswertung von WOR ist durchweg auf
+Unterschriften, und das Papier nennt die Dünnungsqualität selbst als
+begrenzenden Faktor — verbundene deutsche Kurrent ist härter als alles
+dort Gemessene. Zahlen des Kontrollaufs in
+[`../reference/qualitaetsmetrik.md`](../reference/qualitaetsmetrik.md)
+§14, Rezept und Provenienz in `tools/routeg/README.md`.
+
 ### 4c Duell-Ansicht + Chronik (Owner-Wunsch 2026-08-14)
 
 Die Verfahren sollen SICHTBAR gegeneinander stehen — nicht nur als

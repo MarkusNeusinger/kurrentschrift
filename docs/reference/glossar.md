@@ -42,7 +42,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **D** — dconn §4 · Deckung §3 · Duell-Ansicht §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2 · extrapoliertes Landmark-Ziel §3
 - **F** — Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Frozen-Reference-Regel §4 · Fuge §1
-- **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4
+- **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Verschiebung §3
@@ -53,7 +53,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
-- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
+- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenfolger §3 · Tintenlücke §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
@@ -1156,6 +1156,35 @@ Methoden-Seite bedient sich HIER, als bewusste
 Produkt-Flächen-Entscheidung. *Technisch:*
 `tools/tracebench/chronik.py` (`KS_CHRONIK_ROOT` ·
 `$KURRENTSCHRIFT_ARCHIVE`-Nachbar) → proposals/tintenfolger.md §4c
+
+**Route G** *(prior-free control)* — der Kontrollkandidat des
+Tintenfolger-Duells: gewinnt eine Schreibreihenfolge AUS DER TINTE
+ALLEIN — Skelett → Segmentgraph → Greedy-Traversierung per
+Gute-Fortsetzung — und macht damit erstmals messbar, was der
+Duktus-Prior wirklich kauft (die Differenz zu Kettenfit/Folger auf
+denselben 10 Dev-Wörtern). Ausdrücklich KEIN Konkurrent: Schlägt der
+Kettenfit ihn nicht klar, ist das ein Befund erster Güte. Er trifft
+genau drei Entscheidungen — linkester Endpunkt als Startpunkt, ein
+Skalarprodukt am Knoten, Absetzen bei Sackgasse — und lehnt jeden
+gelernten Anteil ab (auch den Startpunkt-Prior des Referenz-Codes, der
+auf Unterschriften gefittet ist). Der publizierte MATLAB-Code (Diaz et
+al. 2022, MIT) läuft hier nicht und ist deshalb die *Spezifikation*, nicht
+die Abhängigkeit. *Technisch:* `tools/routeg` (`graph.py` baut,
+`recover.py` läuft, `to_candidate.py` rahmt um; Kandidaten-Label
+`routeg-graph`, nie `routeg-wor`)
+→ proposals/tintenfolger.md §4b, qualitaetsmetrik.md §14
+
+**Gute-Fortsetzung** *(good continuation)* — die Gestalt-Regel, mit der
+ein prior-freies Verfahren an einer Kreuzung entscheidet, welcher Ast
+weiterläuft: der, dessen Richtung die einlaufende am besten fortsetzt.
+In Route G ein einziges Skalarprodukt über ein 5-Punkt-Fenster; im
+Referenzverfahren eine gewichtete Summe `π_ij` aus Außenwinkeln,
+Innenwinkeln und Krümmung plus Dijkstra durch den Cluster. Die
+Kreuzung ist in JEDER zitierten Arbeit der benannte harte Fall — die
+Regel ist das Beste, was ohne Duktus-Wissen zu haben ist, und ihre
+Lücke gegenüber dem Prior ist genau das, was Route G beziffert.
+*Technisch:* `tools/routeg/recover.py::_walk` (`DIRECTION_WINDOW`)
+→ proposals/tintenfolger.md §4b
 
 **grid_step_crop_px** — der Präzisionsboden einer InkSight-Bahn: das
 Modell quantisiert seine Ausgabe auf ein 225-Stufen-Gitter über dem auf
