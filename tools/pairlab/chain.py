@@ -761,6 +761,15 @@ class _ChainProblem:
     exactly as a multi-stroke glyph is, so a pen lift inside a letter (the u's
     two downstrokes) splits its samples here — which is what lets a caller read
     the fitted chain back out as pen-down polylines instead of one blob."""
+    skel: np.ndarray | None = None
+    """The band-restricted skeleton the fields were built from (`_prepare_fields`),
+    kept for CONSUMERS, never read by `_evaluate` — the objective sees only the
+    smoothed fields, and a solve must stay byte-identical to one built before this
+    field existed. `_landmark_correspondence` consumed it once at build time; a
+    re-linearising restart (`respec_from_solution`, tintenfolger.md §3) has to
+    redo that correspondence against the SAME ink, which is why the array is
+    carried rather than looked up again. None whenever the caller supplied no
+    skeleton (the synthetic field stacks)."""
 
     # ------------------------------------------------------------------ mapping
 
@@ -1218,6 +1227,8 @@ def build_chain_problem(
     coverage_cap_units: float = CHAIN_COVERAGE_CAP_UNITS,
     overlap_weight: float | None = None,
     overlap_radius_units: float = CHAIN_OVERLAP_RADIUS_UNITS,
+    max_anchor_delta: float | None = None,
+    connector_max_delta: float | None = None,
 ) -> _ChainProblem:
     """Assemble the chain optimisation problem. Pure: no I/O, no DB, no case.
 
@@ -1244,7 +1255,16 @@ def build_chain_problem(
       double-count placement.
     * **Bounds.** `core.fit.MAX_ANCHOR_DELTA` on letter anchors,
       `CHAIN_CONNECTOR_MAX_DELTA` on connector interiors,
-      `max(crop_h, crop_w) / unit_px` on the global shift.
+      `max(crop_h, crop_w) / unit_px` on the global shift. `max_anchor_delta` /
+      `connector_max_delta` override the two per-anchor caps; None (the default)
+      is the module constant, so a caller that does not mention them gets the
+      historical problem. They exist for a re-linearising restart, whose travel
+      budget is relative to a previous optimum rather than to the chart form
+      (`respec_from_solution`, tintenfolger.md §3). The slot BLOCK bounds stay
+      `FIT_DX_UNITS` / `FIT_DY_UNITS` and are deliberately NOT parameterised
+      alongside: they are an asymmetric x/y pair rather than one cap, and how
+      much placement freedom a second solve should get — none, or the same
+      again — is a decision that belongs to whoever runs one.
     * **Coverage.** `cov_pts` are the caller's union-window skeleton points,
       subsampled to `CHAIN_COVERAGE_PER_SEGMENT × len(specs)`; the objective
       applies the Huber cap `coverage_cap_units · unit_px`, ICP-frozen assignment.
@@ -1473,11 +1493,13 @@ def build_chain_problem(
 
     crop_h, crop_w = int(crop_shape[0]), int(crop_shape[1])
     max_shift_units = float(max(crop_h, crop_w)) / unit_px
+    letter_cap = MAX_ANCHOR_DELTA if max_anchor_delta is None else float(max_anchor_delta)
+    conn_cap = CHAIN_CONNECTOR_MAX_DELTA if connector_max_delta is None else float(connector_max_delta)
     bounds: list[tuple[float, float]] = [(-max_shift_units, max_shift_units)] * 2
     bounds += [(-FIT_DX_UNITS, FIT_DX_UNITS), (-FIT_DY_UNITS, FIT_DY_UNITS)] * len(block_col)
     for i, spec in enumerate(specs):
         a0, a1 = anchor_slices[i]
-        cap = MAX_ANCHOR_DELTA if spec.kind == "letter" else CHAIN_CONNECTOR_MAX_DELTA
+        cap = letter_cap if spec.kind == "letter" else conn_cap
         bounds += [(-cap, cap)] * (2 * (a1 - a0))
     x0 = np.zeros(2 + 2 * len(block_col) + 2 * k_free)
 
@@ -1526,7 +1548,52 @@ def build_chain_problem(
         n_samples=n_s,
         seg_of_sample=seg_of_sample,
         stroke_of_sample=stroke_of_sample,
+        skel=None if skel is None else np.asarray(skel),
     )
+
+
+def respec_from_solution(problem: _ChainProblem, params: np.ndarray) -> list[ChainSegmentSpec]:
+    """The same chain as INPUT again, its anchors at the solved optimum.
+
+    Every field but the geometry is carried over verbatim — kind, slot index,
+    key, pen-lift bounds, corner anchors, half-widths, seam wiring, coverage
+    window — and each spec's anchors become the effective PLAN anchors at
+    `params` (`problem.plan_anchors`), so both sides of a seam receive the one
+    coordinate they shared and a rebuild re-collapses them into one parameter.
+
+    This is what a **re-linearising restart** is built from (`tintenfolger.md`
+    §3): feeding these specs back into `build_chain_problem` freezes the chord
+    parameterisation, the landmark correspondence and the overlap seam
+    exemptions at THIS optimum instead of at the composed initialisation. All
+    three are frozen at the initial anchors by design — that is what keeps the
+    gradient exactly analytic — and all three go stale exactly where the fit
+    worked hardest, after displacements up to `MAX_ANCHOR_DELTA`.
+
+    What it does NOT carry is the parameter vector: a rebuilt problem starts at
+    its own `x0` (deltas and blocks at zero), so the Tikhonov term of the second
+    solve pulls towards THIS geometry rather than towards the chart form — a
+    proximal/trust-region term rather than a form prior. That is the intended
+    change of meaning, not a side effect, and it is the caller's to declare.
+    The solved PLACEMENT is already inside these anchors, so a restart's slot
+    blocks re-open the full `FIT_DX_UNITS` / `FIT_DY_UNITS` freedom on top of
+    it; a caller that does not want that has to keep the blocks pinned itself.
+    """
+    plan = problem.plan_anchors(np.asarray(params, dtype=float))
+    return [
+        ChainSegmentSpec(
+            kind=spec.kind,
+            anchors=plan[p0:p1].copy(),
+            slot_index=spec.slot_index,
+            key=spec.key,
+            stroke_starts=spec.stroke_starts,
+            corner_anchors=spec.corner_anchors,
+            half_widths=None if spec.half_widths is None else spec.half_widths.copy(),
+            seam_in=spec.seam_in,
+            seam_out=spec.seam_out,
+            cov_window_px=spec.cov_window_px,
+        )
+        for spec, (p0, p1) in zip(problem.specs, problem.plan_slices, strict=True)
+    ]
 
 
 # ------------------------------------------------------------- one occurrence
@@ -2123,5 +2190,6 @@ __all__ = [
     "fit_word_chain",
     "gradient_decomposition",
     "regularise_connector_anchors",
+    "respec_from_solution",
     "sample_slice_of_anchor",
 ]

@@ -12,6 +12,34 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Changed
+
+- **The word-trace assembly moved to `tools/pairlab/trace.py`, and the chain fit
+  gained three additive handles for a re-linearising restart — all four changes
+  proven inert.** `assemble_word_strokes` and its helpers left
+  `tools/laufform/harvest.py` bodily unchanged (a pure move, asserted
+  line-for-line) because the coming ink-follower
+  (`tools/pairlab/follow.py`, `docs/proposals/tintenfolger.md` §3) needs the same
+  assembler and `tools.pairlab` importing `tools.laufform` would be an import
+  cycle — the harvest already imports `pairlab.chain`, `pairlab.anchors` and
+  `pairlab.connector_qc`; the same one-shared-module resolution
+  `tools/pairlab/anchors.py` took, with the harvest re-exporting every name so
+  no caller or test changes. In `chain.py`: `respec_from_solution` rebuilds the
+  segment specs with the SOLVED anchors as their initial ones (everything else
+  verbatim), so a second `build_chain_problem` freezes the chord
+  parameterisation, the landmark correspondence and the overlap exemptions at
+  the first solve's optimum instead of at the composed start — measured on the
+  synthetic ink pair, that staleness is ~0.06 xh of sample displacement after
+  0.2 xh of injected placement error; `_ChainProblem.skel` carries the
+  band-restricted skeleton the fields were built from, for consumers only and
+  never read by the objective (pinned by a test that nulls it and re-evaluates);
+  and `build_chain_problem` takes `max_anchor_delta` / `connector_max_delta`,
+  which at their default None are exactly today's module constants. The slot
+  BLOCK bounds stay unparameterised on purpose — they are an asymmetric x/y pair
+  rather than one cap, and a restart's placement budget is its own decision. A
+  chain solve is bit-identical to the pre-change module on both the toy and the
+  rasterised-ink problem, so nothing here re-baselines the harvest.
+
 ### Added
 
 - **Research note on the image-first parallel track: offline handwriting

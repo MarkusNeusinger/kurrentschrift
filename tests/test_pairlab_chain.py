@@ -1617,3 +1617,154 @@ def test_a_block_seed_is_clipped_inside_the_bounds() -> None:
     sx, sy = fit.fit_meta["slot_shift_init"]["0"]
     assert abs(sx) < FIT_DX_UNITS and abs(sy) < FIT_DY_UNITS
     assert "7" not in fit.fit_meta["slot_shift_init"]
+
+
+# ------------------------------------------------- the restart affordances
+#
+# Three additive handles for the re-linearising restart of
+# `docs/proposals/tintenfolger.md` §3 — a second problem built from a first
+# solve's optimum. Each has to be INERT at its default: the chain solves the
+# harvest ran are the population every stored occurrence came from, so an
+# affordance that moves them by one ulp would silently re-baseline the harvest.
+
+
+def _fields_of(problem) -> dict:
+    """The field stack a problem was built from, back as `build_chain_problem`
+    kwargs — including `skel`, which is exactly what its new field is for."""
+    return {
+        "dist_raw": problem.dist_raw,
+        "dist_smooth": problem.dist_smooth,
+        "width_raw": problem.width_raw,
+        "width_smooth": problem.width_smooth,
+        "cov_pts": problem.cov_pts,
+        "crop_shape": (problem.crop_h, problem.crop_w),
+        "skel": problem.skel,
+    }
+
+
+def _rebuilt(problem, params):
+    """`build_chain_problem` again on the respecced chain, same fields, same frame."""
+    return build_chain_problem(
+        chain_mod.respec_from_solution(problem, params),
+        unit_px=problem.unit_px,
+        x_origin_px=problem.x_origin_px,
+        baseline_y_px=problem.baseline_y_px,
+        **_fields_of(problem),
+    )
+
+
+def test_the_new_bounds_kwargs_are_inert_at_their_defaults() -> None:
+    """Naming them as None must build the historical problem, bit for bit."""
+    plain = _toy_problem()
+    named = _toy_problem(max_anchor_delta=None, connector_max_delta=None)
+    assert named.bounds == plain.bounds
+    params = np.random.default_rng(5).uniform(-0.05, 0.05, size=len(plain.x0))
+    f_plain, g_plain = plain.objective(params)
+    f_named, g_named = named.objective(params)
+    assert f_plain == f_named  # bit equality, not approx
+    assert np.array_equal(g_plain, g_named)
+
+
+def test_the_bounds_kwargs_override_the_two_per_anchor_caps_only() -> None:
+    """A restart travels relative to a previous optimum, so its budget is its
+    own — but only the per-ANCHOR budget: the placement blocks keep the search
+    freedom the independent grid fit has, which is what makes chain and
+    baseline comparable at all."""
+    problem = _toy_problem(max_anchor_delta=0.05, connector_max_delta=0.02)
+    head = 2 + 2 * problem.n_blocks
+    caps = np.asarray([hi for _, hi in problem.bounds[head:]]).reshape(-1, 2)
+    for spec, (a0, a1) in zip(problem.specs, problem.anchor_slices, strict=True):
+        expected = 0.05 if spec.kind == "letter" else 0.02
+        assert np.allclose(caps[a0:a1], expected), spec.kind
+        assert np.allclose([lo for lo, _ in problem.bounds[head + 2 * a0 : head + 2 * a1]], -expected)
+    assert problem.bounds[2] == (-FIT_DX_UNITS, FIT_DX_UNITS)
+    assert problem.bounds[3] == (-FIT_DY_UNITS, FIT_DY_UNITS)
+    # …and the defaults are still the module's own constants
+    default = _toy_problem()
+    assert default.bounds[head] == (-chain_mod.MAX_ANCHOR_DELTA, chain_mod.MAX_ANCHOR_DELTA)
+    assert default.bounds[-1] == (-chain_mod.MAX_ANCHOR_DELTA, chain_mod.MAX_ANCHOR_DELTA)
+
+
+def test_the_skeleton_is_stored_for_consumers_and_never_read_by_the_objective() -> None:
+    """`skel` is carried so a restart can redo its landmark correspondence
+    against the SAME ink — the objective must not be able to notice it."""
+    assert _toy_problem().skel is None  # no ink side supplied
+    _, problem = _crossing_problem()
+    assert problem.skel is not None
+    assert problem.skel.shape == (problem.crop_h, problem.crop_w)
+
+    params = np.random.default_rng(3).uniform(-0.05, 0.05, size=len(problem.x0))
+    f_before, g_before = problem.objective(params)
+    problem.skel = None
+    f_after, g_after = problem.objective(params)
+    assert f_before == f_after
+    assert np.array_equal(g_before, g_after)
+
+
+def test_respec_carries_everything_but_the_geometry() -> None:
+    """Windows, seam wiring, pen lifts, corners, widths, keys — verbatim."""
+    problem = _toy_problem()
+    problem.specs[0].cov_window_px = (11.0, 42.0)
+    specs = chain_mod.respec_from_solution(problem, problem.x0)
+    assert len(specs) == len(problem.specs)
+    for new, old in zip(specs, problem.specs, strict=True):
+        assert (new.kind, new.slot_index, new.key) == (old.kind, old.slot_index, old.key)
+        assert new.stroke_starts == old.stroke_starts
+        assert new.corner_anchors == old.corner_anchors
+        assert (new.seam_in, new.seam_out) == (old.seam_in, old.seam_out)
+        assert new.cov_window_px == old.cov_window_px
+        assert (new.half_widths is None) == (old.half_widths is None)
+        if old.half_widths is not None:
+            assert np.array_equal(new.half_widths, old.half_widths)
+        # at x0 the "solution" IS the initialisation, so the anchors come back unchanged
+        assert np.array_equal(new.anchors, old.anchors)
+
+
+def test_a_restart_at_x0_rebuilds_the_very_same_problem() -> None:
+    """The trivial solution: nothing about a restart may be a change of its own,
+    so respec + rebuild at x0 must reproduce the problem down to the samples."""
+    problem = _toy_problem()
+    rebuilt = _rebuilt(problem, problem.x0)
+    assert np.array_equal(rebuilt.anchors_free, problem.anchors_free)
+    assert np.array_equal(rebuilt.idx, problem.idx)
+    assert rebuilt.bounds == problem.bounds
+    px_a, py_a = problem.to_pixels(problem.x0)
+    px_b, py_b = rebuilt.to_pixels(rebuilt.x0)
+    assert np.array_equal(px_a, px_b)
+    assert np.array_equal(py_a, py_b)
+
+
+def test_a_restart_starts_where_the_first_solve_stopped() -> None:
+    """After a real solve the rebuilt problem's INITIAL anchors are the fitted
+    ones, exactly — and its Tikhonov term measures δ from THERE (`e_reg` back to
+    zero), which is the proximal reading the restart is built for.
+
+    What does not carry over is the sampling: the chord parameterisation is
+    frozen at a problem's initial anchors, so the rebuilt spline through the
+    same anchors puts its samples elsewhere. That difference IS the staleness
+    §3 names (~0.06 xh on this synthetic pair, after 0.2 xh of injected
+    placement error) — it is bounded here, not asserted away.
+    """
+    problem, xh, _ = _straight_ink_problem(shift_l=(0.20, 0.0), shift_r=(-0.15, 0.05))
+    res = minimize(
+        problem.objective,
+        problem.x0,
+        jac=True,
+        method="L-BFGS-B",
+        bounds=problem.bounds,
+        options={"maxiter": DEFAULT_MAX_ITER, "maxfun": 50 * DEFAULT_MAX_ITER},
+    )
+    assert problem.energy_terms(res.x)["e_reg"] > 0.0  # the first solve did move anchors
+
+    rebuilt = _rebuilt(problem, res.x)
+    assert np.array_equal(rebuilt.anchors_free, problem.free_anchors(res.x))
+    assert np.array_equal(rebuilt.idx, problem.idx)
+    assert rebuilt.energy_terms(rebuilt.x0)["e_reg"] == 0.0
+
+    px_a, py_a = problem.to_pixels(res.x)
+    px_b, py_b = rebuilt.to_pixels(rebuilt.x0)
+    assert max(np.max(np.abs(px_a - px_b)), np.max(np.abs(py_a - py_b))) < 0.15 * xh
+
+    # the rebuilt problem is a full one: its gradient decomposition still holds
+    report = chain_mod.gradient_decomposition(rebuilt, rebuilt.x0)  # raises on mismatch
+    assert report["residual_rel"] < 1e-12
