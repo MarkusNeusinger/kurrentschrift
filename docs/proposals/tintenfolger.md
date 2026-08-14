@@ -1,10 +1,14 @@
 # Tintenfolger: der Prüfstand und die zwei Routen zur Wortbahn
 
-> **Status (2026-08-14, abends): Prüfstand KOMPLETT — Baseline steht.**
-> Stufen A/B/1/5 sind gemergt (PR #337/#339/#338/#340), Stufe C (Harness +
-> erste Baseline = Freeze-Akt) ist dieser PR; die Kette misst gegen die
-> Hand `dtw_xh` 0,062 med / 19 erfundene Kreuzungen / Retrace-Ratio 1,51
-> (qualitaetsmetrik §14). Als Nächstes: die Folger-Arme (Stufe 2/3).
+> **Status (2026-08-15): Prüfstand komplett, drei Arme gemessen.**
+> Stufen A–D/1/2/3/5 sind gemergt (#337–#344), die Baseline eingefroren
+> (`dtw_xh` 0,062 med / 19 erfundene Kreuzungen / Retrace-Ratio 1,51).
+> Arm ① (#345): nacktes Form-Release vom eigenen Veto verworfen,
+> Tinten-Zug validiert (AIoU +0,10). Arme ⑤+⑥ (#347): Overlap
+> freigesprochen, Landmark-Gewicht null bis kontraproduktiv — bindend
+> ist die **Korrespondenz-Kappe** (12/21 Ziele auf kreuzungsloser
+> Tinte). Aktueller Arm: ⑥b, die klassenbewusste Korrespondenz
+> (qualitaetsmetrik §14). Kein `FOLLOW_*`-Default adoptiert.
 > Ursprünglicher Plan-Kopf: Dieses
 > Doc ist der fortschreibbare Plan zum §6-Nachtrag „Tintenfolger" in
 > [`../research/bildsynthese-und-stiftbahn.md`](../research/bildsynthese-und-stiftbahn.md):
@@ -214,7 +218,9 @@ verlöre Width-Term und Landmark-Op — die zwei Kreuzungs-Auflöser.
 **Arme (einer je Runde, v1 ändert genau EINE Sache: reg→prox):**
 ① λ_prox {0 · 1 % · 10 % · 50 % von e_geo · 1.0-Kontrolle} ② rounds
 ③ samples/Anker ④ coverage (Kostenspalte stranded) ⑤ overlap {0.2, 0}
-(§13-Bremse-Hypothese) ⑥ landmark ⑦ width-Modulator ⑧ bind (zuletzt, nur
+(§13-Bremse-Hypothese) ⑥ landmark · ⑥b klassenbewusste Korrespondenz
+(die vorregistrierte Antwort auf die Korrespondenz-Kappe des
+⑤/⑥-Befunds) ⑦ width-Modulator ⑧ bind (zuletzt, nur
 bei überlebendem Zick-Zack, mit §11d-Nachmess-Pflicht). Erwartete
 Fehlermodi je Wort stehen in §14; Kill-Kriterien s. dort.
 
@@ -323,11 +329,11 @@ DANN, nicht implizit jetzt.
 |---|---|---|
 | **A** | `word_instances.json`-Artefakt + Frame-Gate (Exporter + Fetcher), deklarierter Fixture-Re-Export (Re-Baseline nach #334/#336), dieses Doc | **PR #337** |
 | **B** | `tools/tracebench`-Lineal (Metriken + Zähler + Split) + Vorregistrierung §14 + Glossar | **PR #339** |
-| **C** | Harness + Provider + authored-Gate + erste Baseline-Tabelle (= Freeze-Akt; Kette: dtw 0,062 med · 19 erfundene Kreuzungen · Retrace-Ratio 1,51) | **in diesem PR** |
-| **D** | **Duell-Ansicht** (alle Kandidaten + Hand-Referenz über dem Crop, final UND als Schreib-Animation) + **Chronik** (create-only Rundenhistorie, dbsnapshot-Muster) | **in diesem PR** |
+| **C** | Harness + Provider + authored-Gate + erste Baseline-Tabelle (= Freeze-Akt; Kette: dtw 0,062 med · 19 erfundene Kreuzungen · Retrace-Ratio 1,51) | **PR #341** |
+| **D** | **Duell-Ansicht** (alle Kandidaten + Hand-Referenz über dem Crop, final UND als Schreib-Animation) + **Chronik** (create-only Rundenhistorie, dbsnapshot-Muster) | **PR #344** |
 | **1** | `tools/pairlab/trace.py`-Move + 3 additive chain.py-Affordances (inert bewiesen) | **PR #338** |
-| **2/3** | `tools/pairlab/follow.py` + CLI + Tests; §14-Vorregistrierung der Arme | offen |
-| **4** | Folger-Sweeps, kalibrierte Defaults (Owner-Go für Adoption) | offen |
+| **2/3** | `tools/pairlab/follow.py` + CLI + Tests (**PR #343**); §14-Vorregistrierung der Arme (**PR #342**) | **gemergt** |
+| **4** | Folger-Sweeps: Arm ① λ-Leiter (**PR #345**, ehrliches Negativ), Arm-⑥-Unterbau (**PR #346**), Arme ⑤+⑥ (**PR #347**, Overlap freigesprochen · Korrespondenz-Kappe), Arm ⑥b klassenbewusste Korrespondenz (dieser PR); kein Default adoptiert (Owner-Go nötig) | laufend |
 | **5** | `tools/inksight/`-Pipeline (isoliert, Umgebung verifiziert, erstes Kurrent-Ergebnis) | **PR #340** |
 | **6** | Das Duell: Folger vs. Chain vs. InkSight-roh vs. Route G, ehrliche Negative | offen |
 | **7** | humanbench-WORT-Runde (neuer Item-Renderer; Bias benannt: der Autor beurteilt eigene Nachfahrungen — Abkühl-Abstand oder Zweitrichter) | offen, braucht den Autor |
