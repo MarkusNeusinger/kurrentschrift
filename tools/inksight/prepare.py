@@ -95,13 +95,17 @@ def model_to_crop(u: float, v: float, affine: Affine) -> tuple[float, float]:
     return (u - affine.dx) / affine.scale_x, (v - affine.dy) / affine.scale_y
 
 
-def grid_step_crop_px(crop_w: int, crop_h: int, size: int = MODEL_SIZE) -> float:
+def grid_step_crop_px(affine: Affine) -> float:
     """One token step of the 225-level grid, expressed in crop pixels.
 
-    Clamped at 1.0: below one crop pixel the crop's own resolution is the
-    binding limit, and claiming sub-pixel precision there would be a fiction.
+    Derived from the EFFECTIVE scales (the `int()`-truncated resize makes them
+    differ from the nominal ratio, and the truncation always makes the resized
+    side smaller, i.e. the true step slightly COARSER than the nominal one);
+    the worse of the two axes is the honest floor. Clamped at 1.0: below one
+    crop pixel the crop's own resolution is the binding limit, and claiming
+    sub-pixel precision there would be a fiction.
     """
-    return max(1.0, max(crop_w, crop_h) / size)
+    return max(1.0, 1.0 / affine.scale_x, 1.0 / affine.scale_y)
 
 
 def pad_to_model_frame(image: Image.Image, size: int = MODEL_SIZE) -> tuple[Image.Image, Affine]:
@@ -133,7 +137,7 @@ def prepare_entry(root: Path, entry_id: str, inputs_dir: Path, size: int = MODEL
         "crop_w": crop_w,
         "crop_h": crop_h,
         **asdict(affine),
-        "grid_step_crop_px": round(grid_step_crop_px(crop_w, crop_h, size), 4),
+        "grid_step_crop_px": round(grid_step_crop_px(affine), 4),
     }
 
 

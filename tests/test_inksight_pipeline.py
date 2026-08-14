@@ -111,9 +111,17 @@ def test_padding_puts_the_long_side_on_224_and_centres_the_short_one() -> None:
 
 def test_grid_step_is_clamped_at_one_crop_pixel() -> None:
     # A 448 px crop halves the token resolution; a small crop never claims
-    # sub-pixel precision.
-    assert grid_step_crop_px(448, 100) == pytest.approx(2.0)
-    assert grid_step_crop_px(100, 80) == pytest.approx(1.0)
+    # sub-pixel precision. Derived from the EFFECTIVE scales, so the int()-
+    # truncated resize (which can only coarsen the step) is priced in.
+    _, wide = pad_to_model_frame(Image.new("RGB", (448, 100), (0, 0, 0)))
+    assert grid_step_crop_px(wide) == pytest.approx(448 / 224)
+    _, small = pad_to_model_frame(Image.new("RGB", (100, 80), (0, 0, 0)))
+    assert grid_step_crop_px(small) == pytest.approx(1.0)
+    # The truncation case itself: 300 px → int(300 * 224/300) = 224 exactly,
+    # but 305 px → int(305 * 224/305) = 224 while 305/224 ≈ 1.3616 — the
+    # effective step must be >= the nominal one, never finer.
+    _, odd = pad_to_model_frame(Image.new("RGB", (305, 60), (0, 0, 0)))
+    assert grid_step_crop_px(odd) >= 305 / 224 - 1e-9
 
 
 def test_prepare_entry_writes_the_input_and_its_frame_record(tmp_path) -> None:

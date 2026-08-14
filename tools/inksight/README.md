@@ -135,7 +135,7 @@ Output: `out/candidates/inksight-smallp-raw.<prompt>.json`
  "source_id": "suetterlin-1922", "set": "words", "frame": "word_registration",
  "rows": [{"kind": "word", "specimen_id": "die", "word": "die",
            "registration_px": {"tx": 0, "ty": 0, "baseline_row": 72.0},
-           "xh_px": 31.0, "strokes": [[[0.61, 0.0]]], "status": "ok",
+           "xh_px": 31.0, "strokes": [[[0.61, 0.05], [0.63, 0.91]]], "status": "ok",
            "meta": {"prompt": "...", "n_ink_tokens": 412,
                     "grid_step_crop_px": 1.0, "recognized_text": null}}]}
 ```
