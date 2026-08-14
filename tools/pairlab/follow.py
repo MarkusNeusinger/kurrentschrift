@@ -216,20 +216,34 @@ FOLLOW_LANDMARK_WEIGHT = float(os.environ.get(FOLLOW_LANDMARK_WEIGHT_ENV) or CHA
 # junction and to intersect them, with an isotropic uncertainty of about the
 # local stroke width.
 #
-# Three modes, so the ladder can move ONE thing at a time (§11c/§11d):
+# Four modes, so the ladder can move ONE thing at a time (§11c/§11d):
 #
 # * `raw` — the chain's branch points verbatim. THE control arm: the term
 #   exactly as it ships today, so „refined targets" is a paired comparison
 #   against the formulation it replaces rather than against nothing.
 # * `extrapolated_uniform` — refined targets, uniform weights.
 # * `extrapolated` — refined targets AND the 1/σ² weighting.
+# * `extrapolated_classed` — arm ⑥b: refined targets, 1/σ² weighting, and the
+#   by-design non-crossings CLASSED OUT (weight 0). Arm ⑥ measured that 12 of
+#   the dev words' 21 correspondences aim at ink that carries NO crossing at
+#   all — the path crosses itself where the ink merely touches — which caps any
+#   effect the term can have; this mode is the pre-registered answer
+#   (qualitaetsmetrik.md §14 arm ⑥b): those classes are not crossing targets.
 #
 # NOTHING here is calibrated, and no weight is proposed: at `landmark == 0` the
 # whole block is skipped and every solve stays byte-identical (the term's own
 # inertness rule, `chain.CHAIN_LANDMARK_WEIGHT`).
 FOLLOW_LANDMARK_TARGETS_ENV = "KS_FOLLOW_LANDMARK_TARGETS"
 FOLLOW_LANDMARK_TARGETS = os.environ.get(FOLLOW_LANDMARK_TARGETS_ENV) or "extrapolated"
-LANDMARK_TARGET_MODES = ("extrapolated", "extrapolated_uniform", "raw")
+LANDMARK_TARGET_MODES = ("extrapolated", "extrapolated_uniform", "extrapolated_classed", "raw")
+# The refinement reasons that state the INK at the target carries no crossing —
+# `touch_point` (exactly two limbs: a stroke passing through, a retrace touch, a
+# corner) and `t_junction` (exactly three limbs). They are a property of the ink,
+# not a failure of the walk (`_refine_one` separates the two vocabularies), so
+# `extrapolated_classed` drops these rows from the correspondence entirely; the
+# walk failures keep their raw target as before, because there the ink CAN carry
+# a crossing the refinement merely failed to find.
+LANDMARK_NONCROSSING_REASONS = ("touch_point", "t_junction")
 # FLOOR (xh) on the reach of the skeleton walk around a branch point. 0.5 xh is
 # ~15 px on this material: enough beyond the excluded core for a stable
 # direction, and short enough that the branch's OWN curvature does not out-bias
@@ -325,6 +339,12 @@ FOLLOW_LANDMARK_MAX_SHIFT_WIDTHS = 2.0
 # geometry term — and a rung is a fraction of it. §11c is why a ladder is read
 # off the optimum instead of chosen by analogy.
 LANDMARK_CALIBRATION_MULTIPLIERS = (0.01, 0.1, 1.0)
+# The modes the calibration pass reads at the inert optimum — one row per mode
+# per solve, so an arm picks its rung from a parity MEASURED in its own mode
+# (§11c). `extrapolated_uniform` is deliberately absent: its geometry equals
+# `extrapolated` and only the weighting differs, so its parity carries no new
+# information the ladder could act on.
+LANDMARK_CALIBRATION_MODES = ("raw", "extrapolated", "extrapolated_classed")
 FOLLOW_WIDTH_WEIGHT_ENV = "KS_FOLLOW_WIDTH_WEIGHT"
 FOLLOW_WIDTH_WEIGHT = float(os.environ.get(FOLLOW_WIDTH_WEIGHT_ENV) or DEFAULT_WIDTH_WEIGHT)
 # The neighbour-binding term is FIXED at 0.0 — the one weight that does NOT
@@ -1133,12 +1153,51 @@ def _refine_one(
     return "ok", refined, angle
 
 
+def classed_targets(problem: _ChainProblem, **kwargs) -> LandmarkTargeting:
+    """Extrapolated targets with the by-design non-crossings classed out — arm ⑥b.
+
+    The extrapolation itself is unchanged; afterwards every row whose refinement
+    reason is in `LANDMARK_NONCROSSING_REASONS` gets weight 0. Through the
+    whitening in `apply_landmark_targets` a zero weight scales the operator row
+    AND the target to zero, so the row pulls nothing and costs nothing — the
+    correspondence is removed without touching `chain.py` or the frozen
+    detector. The surviving rows' 1/σ² weights are re-normalised to mean 1 over
+    the KEPT rows, so a kept correspondence weighs the same as it would in
+    `extrapolated` mode with only crossings present.
+    """
+    base = extrapolated_targets(problem, weighted=True, **kwargs)
+    dropped = np.array([reason in LANDMARK_NONCROSSING_REASONS for reason in base.reasons], dtype=bool)
+    weights = np.asarray(base.weights, dtype=float).copy()
+    weights[dropped] = 0.0
+    kept = ~dropped
+    kept_mean = float(weights[kept].mean()) if bool(kept.any()) else 0.0
+    if kept_mean > 0.0:
+        weights[kept] = weights[kept] / kept_mean
+    entries: list[dict] = []
+    for entry, out, weight in zip(base.entries, dropped, weights, strict=True):
+        entry = dict(entry)
+        entry["classed_out"] = bool(out)
+        entry["weight"] = round(float(weight), 4)
+        entries.append(entry)
+    return LandmarkTargeting(
+        mode="extrapolated_classed",
+        targets=base.targets,
+        raw_targets=base.raw_targets,
+        sigmas=base.sigmas,
+        weights=weights,
+        reasons=list(base.reasons),
+        entries=entries,
+    )
+
+
 def landmark_targeting(problem: _ChainProblem, mode: str, **kwargs) -> LandmarkTargeting:
     """The targeting one `FollowWeights.landmark_targets` mode asks for."""
     if mode == "raw":
         return raw_landmark_targets(problem)
     if mode in ("extrapolated", "extrapolated_uniform"):
         return extrapolated_targets(problem, weighted=(mode == "extrapolated"), **kwargs)
+    if mode == "extrapolated_classed":
+        return classed_targets(problem, **kwargs)
     raise ValueError(f"unknown landmark target mode {mode!r}; known: {', '.join(LANDMARK_TARGET_MODES)}")
 
 
@@ -1207,6 +1266,8 @@ def _annotate_report(problem: _ChainProblem, targeting: LandmarkTargeting) -> No
         entry["sigma_units"] = refined["sigma_units"]
         entry["target_weight"] = refined.get("weight", 1.0)
         entry["refine_shift_units"] = refined["shift_units"]
+        if "classed_out" in refined:
+            entry["classed_out"] = refined["classed_out"]
 
 
 def landmark_meta(problem: _ChainProblem, *, mode: str) -> dict:
@@ -1236,6 +1297,7 @@ def landmark_meta(problem: _ChainProblem, *, mode: str) -> dict:
         "applied": bool(refined),
         "n_detected": len(report),
         "n_targets": int(problem.landmark_op.shape[0]),
+        "classed_out": sum(1 for entry in kept if entry.get("classed_out")),
         "drops": drops,
         "refined": refined,
         "shift_units_median": round(float(np.median(shifts)), 4) if shifts else None,
@@ -1250,6 +1312,7 @@ def _merge_landmark_meta(metas: Sequence[dict], *, mode: str) -> dict:
         "applied": any(m.get("applied") for m in metas),
         "n_detected": sum(int(m.get("n_detected", 0)) for m in metas),
         "n_targets": sum(int(m.get("n_targets", 0)) for m in metas),
+        "classed_out": sum(int(m.get("classed_out", 0)) for m in metas),
         "drops": {},
         "refined": {},
     }
@@ -1810,7 +1873,7 @@ def calibrate_case(
                         landmark_targeting(followed.problem, mode),
                         multipliers=multipliers,
                     )
-                    for mode in ("raw", "extrapolated")
+                    for mode in LANDMARK_CALIBRATION_MODES
                 },
             }
         )
@@ -1842,7 +1905,7 @@ def calibration_report(rows: Sequence[dict], *, multipliers: Sequence[float]) ->
     branch point would otherwise set the ladder for all ten.
     """
     pooled: dict[str, dict] = {}
-    for mode in ("raw", "extrapolated"):
+    for mode in LANDMARK_CALIBRATION_MODES:
         readings = [run["modes"][mode] for row in rows for run in row["runs"] if run["modes"].get(mode)]
         parities = [r["parity_weight"] for r in readings if r["parity_weight"] is not None]
         energies = [r["e_landmark"] for r in readings if r["n_landmarks"]]
@@ -2057,7 +2120,8 @@ def build_parser() -> argparse.ArgumentParser:
         choices=list(LANDMARK_TARGET_MODES),
         default=FOLLOW_LANDMARK_TARGETS,
         help="where the landmark term aims: extrapolated junction crossings (default), "
-        "the same without the 1/sigma^2 weighting, or the raw branch points (the control arm)",
+        "the same without the 1/sigma^2 weighting, the same with by-design non-crossings "
+        "classed out (arm 6b), or the raw branch points (the control arm)",
     )
     parser.add_argument(
         "--landmark-calibrate",
@@ -2202,7 +2266,9 @@ __all__ = [
     "FOLLOW_SAMPLES_PER_ANCHOR",
     "FOLLOW_TOOL_NAME",
     "FOLLOW_WIDTH_WEIGHT",
+    "LANDMARK_CALIBRATION_MODES",
     "LANDMARK_CALIBRATION_MULTIPLIERS",
+    "LANDMARK_NONCROSSING_REASONS",
     "LANDMARK_TARGET_MODES",
     "FollowFit",
     "FollowWeights",
@@ -2213,6 +2279,7 @@ __all__ = [
     "calibrate_case",
     "calibration_report",
     "candidate_payload",
+    "classed_targets",
     "extrapolated_targets",
     "follow_case",
     "follow_derived",

@@ -36,8 +36,10 @@ from tests.test_pairlab_chain import UNIT_PX, _flat_fields, _synthetic_word
 from tools.pairlab.chain import ChainSegmentSpec, build_chain_problem, fit_word_chain, gradient_decomposition
 from tools.pairlab.follow import (
     CANDIDATE_FRAME,
+    LANDMARK_CALIBRATION_MODES,
     LANDMARK_TARGET_MODES,
     FollowWeights,
+    LandmarkTargeting,
     _intersect_lines,
     _source_id_of,
     _uncertainty_weights,
@@ -48,6 +50,7 @@ from tools.pairlab.follow import (
     calibrate_case,
     calibration_report,
     candidate_payload,
+    classed_targets,
     extrapolated_targets,
     follow_case,
     follow_derived,
@@ -723,6 +726,96 @@ def test_a_near_parallel_junction_is_refused_as_ill_conditioned() -> None:
     assert np.allclose(refined.targets, refined.raw_targets)
 
 
+def test_the_classed_mode_drops_a_t_junction_from_the_correspondence() -> None:
+    """Arm ⑥b's claim at the unit level: a T-junction is not a crossing target.
+
+    The correspondence row itself stays, in detection order — but its weight is
+    0, and through the whitening the term neither pulls nor costs anything
+    there: with every target classed out, a problem armed at weight 1.0 prices
+    bit-for-bit the same objective as one whose landmark term never fired.
+    """
+    _centre, problem = _one_junction(angles=(0.0, 180.0, 90.0))
+    classed = classed_targets(problem)
+    assert classed.mode == "extrapolated_classed"
+    assert classed.reasons == ["t_junction"]
+    assert classed.weights == pytest.approx([0.0])
+    assert classed.entries[0]["classed_out"] is True
+    assert landmark_energy(problem, problem.x0, classed) == 0.0
+
+    _c2, armed = _one_junction(angles=(0.0, 180.0, 90.0))
+    _c3, untouched = _one_junction(angles=(0.0, 180.0, 90.0))
+    armed.landmark_weight = 1.0
+    apply_landmark_targets(armed, classed_targets(armed))
+    assert landmark_meta(armed, mode="extrapolated_classed")["classed_out"] == 1
+    rng = np.random.default_rng(67)
+    params = rng.uniform(-0.05, 0.05, size=len(armed.x0))
+    for p in (armed.x0, params):
+        f_armed, g_armed = armed.objective(p)
+        f_untouched, g_untouched = untouched.objective(p)
+        assert f_armed == f_untouched
+        assert np.array_equal(g_armed, g_untouched)
+
+
+def test_the_classed_mode_keeps_a_true_crossing_exactly_as_extrapolated() -> None:
+    """The other half of the class rule: a real crossing loses nothing.
+
+    One kept row re-normalises to weight exactly 1, and the target is the same
+    extrapolated intersection — classing out is a filter, never a re-aim.
+    """
+    _centre, problem = _one_junction(blob_offset=(3.0, 0.0))
+    classed = classed_targets(problem)
+    refined = extrapolated_targets(problem)
+    assert classed.reasons == refined.reasons == ["ok"]
+    assert classed.entries[0]["classed_out"] is False
+    assert np.array_equal(classed.targets, refined.targets)
+    assert classed.weights == pytest.approx([1.0])
+
+
+def test_classed_weights_renormalise_over_the_kept_rows_only(monkeypatch) -> None:
+    """Zeroing is per class, re-normalisation is over the SURVIVORS.
+
+    Four rows, two classed out (`t_junction`, `touch_point`) and one walk
+    failure (`far_from_branch`) that keeps its raw target — the kept rows'
+    weights keep their ratio and average exactly 1, so a surviving
+    correspondence weighs the same as it would among crossings only.
+    """
+    reasons = ["ok", "t_junction", "touch_point", "far_from_branch"]
+    base = LandmarkTargeting(
+        mode="extrapolated",
+        targets=np.zeros((4, 2)),
+        raw_targets=np.zeros((4, 2)),
+        sigmas=np.full(4, 0.1),
+        weights=np.array([1.6, 0.4, 0.8, 1.2]),
+        reasons=reasons,
+        entries=[
+            {"row": i, "reason": r, "shift_units": 0.0, "sigma_units": 0.1, "weight": 0.0}
+            for i, r in enumerate(reasons)
+        ],
+    )
+    monkeypatch.setattr("tools.pairlab.follow.extrapolated_targets", lambda problem, **kwargs: base)
+    classed = classed_targets(problem=None)
+    assert classed.weights[1] == 0.0
+    assert classed.weights[2] == 0.0
+    kept = classed.weights[[0, 3]]
+    assert float(kept.mean()) == pytest.approx(1.0)
+    assert kept[0] / kept[1] == pytest.approx(1.6 / 1.2)
+    assert [entry["classed_out"] for entry in classed.entries] == [False, True, True, False]
+
+
+def test_the_classed_calibration_reads_parity_in_its_own_mode() -> None:
+    """§11c for arm ⑥b: the rung comes from a parity measured with the class rule ON.
+
+    On a T-junction the classed term is inert and the calibration says so
+    (energy 0, no parity) instead of quoting the extrapolated mode's number.
+    """
+    _centre, problem = _one_junction(angles=(0.0, 180.0, 90.0))
+    report = landmark_calibration(problem, problem.x0, classed_targets(problem), multipliers=(0.1,))
+    assert report["mode"] == "extrapolated_classed"
+    assert report["e_landmark"] == 0.0
+    assert report["parity_weight"] is None
+    assert "extrapolated_classed" in LANDMARK_CALIBRATION_MODES
+
+
 def test_two_branches_are_a_passing_stroke_not_a_crossing() -> None:
     """Two incident branches are a stroke passing through — its own named class.
 
@@ -863,6 +956,7 @@ def test_the_whitening_prices_exactly_the_weighted_residual() -> None:
         "applied": True,
         "n_detected": 1,
         "n_targets": 1,
+        "classed_out": 0,
         "drops": {},
         "refined": {"ok": 1},
         "shift_units_median": entry["refine_shift_units"],
@@ -987,7 +1081,7 @@ def test_the_calibration_run_solves_once_with_the_term_forced_inert(synthetic, c
     assert row["status"] == "ok"
     assert row["specimen_id"] == case.id
     assert [r["slots"] for r in row["runs"]] == [[0, 1]]
-    assert set(row["runs"][0]["modes"]) == {"raw", "extrapolated"}
+    assert set(row["runs"][0]["modes"]) == set(LANDMARK_CALIBRATION_MODES)
     assert all(m["n_landmarks"] == 0 for m in row["runs"][0]["modes"].values())
 
     report = calibration_report([row], multipliers=(0.01, 0.1, 1.0))

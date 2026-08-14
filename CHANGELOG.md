@@ -24,8 +24,32 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   rather than an out-and-back retrace of one stroke. The distinction is
   drawn from the stroke indices the frozen `detect_retrace_pairs`
   already returns; the counters themselves are untouched, no reported
-  number changes, and a „Struktur" toggle hides the markers. The hint
-  text explains the reading.
+  number changes, and a „Struktur" toggle hides the markers. The numbers
+  table states every layer's OWN detected counts (crossings, merged
+  retrace zones — the hand reference included) plus two muted
+  ductus-target rows per word: the sum over the ISOLATED letters (hover
+  shows the budget letter by letter) and the whole composition with its
+  generated connectors, whose difference is the joins' contribution. The
+  hint text explains the reading.
+
+- **Arm ⑥b: the class-aware landmark correspondence**
+  (`tools/pairlab/follow.py::classed_targets`, target mode
+  `extrapolated_classed`) — the pre-registered answer to the
+  correspondence cap (12 of the dev words' 21 landmark correspondences
+  aim at ink that carries NO crossing at all): a row whose refinement
+  reason is a by-design non-crossing of the ink (`touch_point` ·
+  `t_junction`, `LANDMARK_NONCROSSING_REASONS`) gets weight 0 through
+  the existing pre-whitening — the row neither pulls nor costs anything
+  — while the surviving rows' `1/σ²` weights re-normalise to mean 1 over
+  the survivors; the walk failures keep their raw target, because there
+  the ink CAN carry a crossing the refinement merely failed to find. The
+  calibration pass now reads all three modes
+  (`LANDMARK_CALIBRATION_MODES`), so the arm's rung comes from a parity
+  measured with the class rule ON (§11c). `chain.py` and the frozen
+  `landmarks.py` are untouched, and at `landmark == 0` every solve stays
+  byte-identical. Pre-registration, measurement and verdict in
+  `docs/reference/qualitaetsmetrik.md` §14 (Arm ⑥b); glossary gains
+  „Korrespondenz-Kappe" and „klassenbewusste Korrespondenz".
 
 - **Arm ⑥ groundwork: the ink follower's landmark term can aim at the
   EXTRAPOLATED junction crossing instead of the raw skeleton branch

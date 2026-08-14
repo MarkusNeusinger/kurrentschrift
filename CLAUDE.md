@@ -106,7 +106,7 @@ Known gaps without a loop yet: admin write flows against the LIVE DB (the HTTP s
   - **Never print archive contents into the transcript** — that is the reserved dataset.
   - **Restoring is prod-touching** and needs the author's explicit say-so in the same session. `restore.py` is built for drills against a throwaway PostgreSQL: it refuses a URL equal to `DATABASE_URL`, refuses an occupied target without `--replace`, and writes nothing without `--apply`.
 - **Never echo secret values into the transcript** — verify by exit code or metadata.
-- **Modify repo files only with the Edit/Write tools, never via Bash heredocs/sed.** When a Bash command legitimately mutates a tracked file (formatter, codegen, `git checkout`), Read the file again before the next Edit on it — stale-state errors cascade otherwise.
+- **Modify repo files only with the Edit/Write tools, never via Bash heredocs/sed.** When a Bash command legitimately mutates a tracked file (formatter, codegen, `git checkout`), Read the file again before the next Edit on it — stale-state errors cascade otherwise. The moment this rule gets broken is when an Edit ANCHOR fails ("string not found", "file modified since read") — the answer is a fresh targeted Read plus a longer anchor, never a python-heredoc regex rewrite (2026-08-14 retro: ~15 heredoc writes to glossar/CHANGELOG/qualitaetsmetrik crept in exactly this way).
 - **Manual author tasks go to Todoist** (owner directive, 2026-08-07): whenever
   a session identifies a step only the human can or should do (a wizard
   re-trace, a rendering-affecting DB apply that needs a go, a decision on a
