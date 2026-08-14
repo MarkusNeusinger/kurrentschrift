@@ -3934,3 +3934,54 @@ rücken die Zählungen auf die Duktus-Budgets (Wer 5 → 3 = W2+r1,
 muß 3 → 1 = ß-Budget, unter 5 → 4). Kandidat der Baseline ist die
 verifizierte Chain-Identität (`follow --rounds 0`,
 Byte-Identitäts-Pin) über den File-Provider.
+
+### Arm ⑨ `aug16` — Vorregistrierung: der Topologie-Wächter
+
+Geschrieben und committet VOR der ersten Zahl dieses Arms.
+
+**Befund, der den Arm begründet (v2.1-Zähler):** Schon die
+λ=1,0-Schwester ERFINDET Struktur gegenüber ihrer eigenen
+Chain-Initialisierung — Berührungen 17 → 27, erfundene Zonen 5 → 10,
+Kreuzungen m+s 11 → 15 — und Arm ① zeigte, dass jede Release-Sprosse
+am Struktur-Veto scheitert, während der Tinten-Zug selbst validiert
+ist (AIoU +0,10 überall). Die Hypothese, falsifizierbar: **Die
+Distanz-/AIoU-Gewinne des Release sind von seinen
+Struktur-Erfindungen trennbar.** Der Owner-Satz dazu: Kringel,
+Kreuzungen und Retraces sind duktus-fix und ändern sich durch das
+Verfeinern nicht.
+
+**Mechanismus (folger-seitig, opt-in, kein neuer Objective-Term):**
+eine Runden-AKZEPTANZREGEL statt einer Kraft. Vor Runde 1 wird das
+Struktur-Budget der Initialisierung gemessen — die v2.1-Klassenzählung
+(Kreuzungen · Retrace-Zonen · Berührungen · Überlagerungen,
+`tools.tracebench.counters` auf den assemblierten Pen-down-Polylinien
+des Runs, in xh-Einheiten). Eine gelöste Runde wird nur AKZEPTIERT,
+wenn keine Klassenzahl ihr Budget übersteigt; eine verletzende Runde
+wird mit HALBIERTEN Reisebudgets (`max_delta`/`connector_max_delta`)
+neu gelöst, höchstens zweimal; verletzt sie weiter, behält der Run die
+Geometrie der Vorrunde und die Runde ist als `structure_rejected`
+protokolliert (die Schleife endet — dieselbe Bewegung würde erneut
+scheitern). `FollowWeights.structure_guard` (bool, default False =
+byte-identisch, Pin) schaltet den Wächter je Arm zu; das Lineal misst,
+der Wächter entscheidet — derselbe Zähler, keine zweite Semantik.
+
+**Protokoll:** Sprossen prox ∈ {0,01 · 0,1} (die Release-Sprossen, auf
+denen Arm ① die größten Gewinne bei tödlichem Veto zeigte) und die
+1,0-Schwester als Kontrolle (der Wächter sollte auch ihren
+27-Berührungs-Drift einfangen), Basis sonst Arm-⑥-identisch. Gepaart
+über die 10 Dev-Wörter gegen die eingefrorene v2.1-Chain-Baseline;
+`stranded_anchors` bleibt Pflicht-Kostenspalte.
+
+**Kriterien:** Primär `dtw_xh` (Median der gepaarten Differenzen)
+fällt gegenüber der Chain-Baseline; Co-Primär Marken und Kreuzungen
+ohne Netto-Verschlechterung; der Wächter-KONTRAKT ist selbst messbar:
+jede Klassenzahl des Kandidaten ≤ der Chain-eigenen Zahl (Berührungen
+≤ 17, Zonen-spurious ≤ 5 …). Kosten-Wächter wie §14 üblich.
+
+**Kill-Kriterien:** Blockiert der Wächter auf den Release-Sprossen
+jede Bewegung (dtw im Rauschen der Kette, `max_anchor_motion` ≈ 0) →
+die Gewinne WAREN die Erfindungen, Formulierung verworfen, ehrliches
+Negativ. Laufen die meisten Runden in die Retry-Erschöpfung → der
+Mechanismus (Akzeptanz statt Kraft) ist ungeeignet, nächste Hypothese
+wäre ein differenzierbarer Abstands-Term, nicht mehr Retries. Keine
+Adoption eines Defaults ohne Owner-Go.
