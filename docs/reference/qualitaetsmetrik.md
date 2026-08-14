@@ -3986,7 +3986,7 @@ Mechanismus (Akzeptanz statt Kraft) ist ungeeignet, nächste Hypothese
 wäre ein differenzierbarer Abstands-Term, nicht mehr Retries. Keine
 Adoption eines Defaults ohne Owner-Go.
 
-**Ergebnis (`aug15`, beide Kill-Kriterien gefeuert — das wertvollste
+**Ergebnis (`aug16`, beide Kill-Kriterien gefeuert — das wertvollste
 Negativ der Kampagne):** Der Wächter-KONTRAKT hält perfekt: Auf allen
 drei Sprossen bleibt jede Klassenzahl ≤ der Chain-eigenen (Kreuzungen
 m+s exakt 7+4, Berührungen ≤ 17, Zonen ≤ 7) — zum ersten Mal besteht

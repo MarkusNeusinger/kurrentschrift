@@ -368,10 +368,13 @@ FOLLOW_RETRACE_PROX_UNITS = float(os.environ.get(FOLLOW_RETRACE_PROX_UNITS_ENV) 
 # budget, at which point the round IS the previous geometry plus noise.
 STRUCTURE_GUARD_MAX_RETRIES = 2
 
-# The candidate file's mandatory frame literal. Re-declared rather than imported
-# for the same reason `tools.tracebench.candidates` re-declares the wire caps:
-# the ruler must not be imported into the candidate producer. Pinned against
-# `tools.tracebench.candidates.CANDIDATE_FRAME` by a test.
+# The candidate file's mandatory frame literal. Re-declared rather than
+# imported and pinned against `tools.tracebench.candidates.CANDIDATE_FRAME` by
+# a test: the ruler's SCORING side (metric, matching, summaries) stays out of
+# the candidate producer. The ruler's DETECTORS (`tools.tracebench.counters`)
+# are deliberately shared since arm ⑨ — the structure guard must count exactly
+# what the report counts — and that import is one-directional: the counters
+# never import the follower.
 CANDIDATE_FRAME = "word_registration"
 # Artefact stamp, so a candidate file can always be traced back to the producer.
 FOLLOW_TOOL_NAME = "pairlab.follow"
@@ -472,10 +475,12 @@ def retrace_sample_mask(
     anti-parallel partner lies within `prox_px` and far enough along the path;
     contiguous flagged samples OF ONE PEN STROKE form a pass, and a pass thinner
     than `min_pairs` samples is a graze, not a retrace. That is the trace
-    bench's own recipe (`tools/tracebench/counters.py::retrace_segments`),
-    reproduced here rather than imported — the ruler must not be imported into
-    the thing it grades — minus the zone merging, which only ever mattered for
-    reporting a zone's POSITION.
+    bench's own recipe (`tools/tracebench/counters.py`), reproduced here
+    rather than imported because this mask lives on the PROBLEM's sample
+    arrays and stroke map — a different data shape than the bench's assembled
+    strokes (arm ⑨'s structure guard, which works on the assembled trace,
+    imports the counters directly) — minus the zone merging, which only ever
+    mattered for reporting a zone's POSITION.
 
     A pen lift never welds two passes into one: the stroke bounds come from the
     chain's own `stroke_of_sample`, so a run of flagged samples stops at a lift
@@ -1412,7 +1417,7 @@ def landmark_calibration(
 # ---------------------------------------------------- the structure guard (⑨)
 
 
-def structure_class_counts(strokes_units: list) -> dict[str, int]:
+def structure_class_counts(strokes_units: list[list[list[float]]]) -> dict[str, int]:
     """The v2.1 structure classes of one assembled trace — the BENCH's own count.
 
     Counted on the word-record strokes in trace units (1 unit = x-height),
