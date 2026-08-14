@@ -1111,10 +1111,16 @@ müssen auf entgegengesetzten Seiten liegen, beide ≥ 0,05 xh
 Retrace-Ablösung ist keine Kreuzung, wie spitz ihr Winkel auch sei,
 und ein flacher Schleifen-Schluss ist eine, wie flach er auch sei
 (impliziter Konditionierungs-Boden arcsin(0,05/0,25) ≈ 11,5° — darunter
-beantwortet die Tinte die Frage selbst nicht). *Technisch:*
+beantwortet die Tinte die Frage selbst nicht). Seit v2.1 zusätzlich
+RETRACE-INTERN verweigert: Ein Ring, dessen beide Chords einander
+Antiparallel-Partner des Retrace-Detektors sind, ist der beiläufige
+Selbstschnitt eines Hin-und-zurück-mit-Ablösung, keine
+Struktur-Kreuzung; für antiparallel-benachbarte Paare liegt der
+effektive Boden damit bei der Detektor-Toleranz 25°. Gezählt werden
+Kreuzungs-ORTE, nicht -Ereignisse. *Technisch:*
 `tools/tracebench/counters.py::_pierces`, Konstanten
-`PIERCE_WINDOW_UNITS`/`PIERCE_MARGIN_UNITS`
-→ qualitaetsmetrik.md §14 (Struktur-Zähler v2)
+`PIERCE_WINDOW_UNITS`/`PIERCE_MARGIN_UNITS`/`CROSS_PARTNER_NEAR_UNITS`
+→ qualitaetsmetrik.md §14 (Struktur-Zähler v2 + Nachtrag v2.1)
 
 **Berührung (Struktur-Zähler)** *(touch)* — Vorbeischreiben statt
 Retrace: zwei Passagen derselben Bahn laufen nahe und entgegengesetzt

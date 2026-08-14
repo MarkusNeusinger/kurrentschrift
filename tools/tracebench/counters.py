@@ -91,6 +91,19 @@ RETRACE_MAX_PARTNER_GAP_UNITS = 1.0
 # Measured: cusps (laden l–a, linken l–i) flag 0.04–0.24 xh, genuine zones
 # 0.36 xh and up.
 RETRACE_MIN_PASS_ARC_UNITS = 0.30
+# v2.1 (§14 `aug16`, Nachtrag): a ring whose two chords are each other's
+# anti-parallel PARTNERS is the incidental self-crossing of one
+# out-and-back-with-release — retrace-internal, not a structure crossing (the
+# owner's rule „Retrace, bei dem sich eine Linie löst, ist keine Kreuzung",
+# now applied to the ring the release itself draws). A chord "partners into"
+# the other pass when flagged samples within this arc of it point there —
+# the detector's own proximity radius, rounded up to whole samples. A retrace
+# crossing FOREIGN ink (the linken Kringel passages) stays: its chords partner
+# with their own return limbs, not with each other. Measured: exactly the
+# owner's rings fall (unter-t 44,8°, mit-t 35,0°, zwei-w 24,0°, linken-k-exit
+# 53,1°, partner-hits 4–13 both ways), every kept ring reads 0/0.
+CROSS_PARTNER_NEAR_UNITS = 0.16
+CROSS_PARTNER_MIN_HITS = 2
 
 
 @dataclass(frozen=True)
@@ -157,10 +170,28 @@ def crossing_points(strokes_bench: list[np.ndarray], *, resample_step: float = R
         return np.zeros((0, 2))
     bounds = stroke_bounds(len(pts), starts)
     n_window = max(2, int(round(PIERCE_WINDOW_UNITS / resample_step)))
+    idx, partner = detect_retrace_pairs(pts[:, 0], pts[:, 1], starts, prox_px=RETRACE_PROX_UNITS)
+    partner_of = dict(zip(idx.tolist(), partner.tolist(), strict=True))
+    near = max(1, int(round(CROSS_PARTNER_NEAR_UNITS / resample_step)))
+
+    def _partners_into(a_seg: int, b_seg: int) -> int:
+        return sum(
+            1
+            for k in range(max(0, a_seg - near), a_seg + near + 1)
+            if partner_of.get(k) is not None and abs(int(partner_of[k]) - b_seg) <= near
+        )
+
+    def _retrace_internal(x) -> bool:
+        return (
+            _partners_into(x.seg_i, x.seg_j) >= CROSS_PARTNER_MIN_HITS
+            and _partners_into(x.seg_j, x.seg_i) >= CROSS_PARTNER_MIN_HITS
+        )
+
     found = [
         x
         for x in polyline_self_intersections(pts, starts)
         if x.arc_separation >= LANDMARK_MIN_ARC_SEPARATION_UNITS
+        and not _retrace_internal(x)
         and _pierces(pts, bounds, x.seg_i, x.seg_j, n_window=n_window, margin_units=PIERCE_MARGIN_UNITS)
     ]
     kept: list = []
