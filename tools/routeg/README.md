@@ -130,7 +130,7 @@ components belong to one pen run.
 #    will · zwei).
 uv run python -m tools.routeg.prepare
 
-# 2. The traversal. Pure numpy/scipy, no venv, ~0.1 s for all ten words.
+# 2. The traversal. Pure numpy/scipy, no venv, ~0.7 s for all ten words.
 uv run python -m tools.routeg.recover
 
 # 3. Ordered crop pixels → candidate file

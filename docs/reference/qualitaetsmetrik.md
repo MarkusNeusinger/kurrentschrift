@@ -4006,9 +4006,11 @@ Dinge stehen nebeneinander, und nur zusammen ergeben sie einen Satz:
    Architektur-Arguments.
 3. **Die Struktur bricht ganz weg.** 15 der 23 Kreuzungen verloren, alle
    15 Retrace-Zonen verloren (bauartbedingt — die Traversierung läuft
-   jede Kante genau einmal), und 90 zusätzliche Absetzer: Die Hand
-   schreibt diese Wörter in **1–2 Zügen**, die Kontrolle braucht
-   **6–18**. Genau hier — nicht in der Distanz — sitzt der Unterschied
+   jede Kante genau einmal), und 90 zusätzliche Absetzer (`lift_delta`
+   zählt Körperstriche, Marken sind ausklassifiziert; über alle Striche
+   gerechnet sind es 111 gegen 17). Die Hand schreibt diese Wörter in
+   **1–2 Zügen**, die Kontrolle braucht **6–18**. Genau hier — nicht in
+   der Distanz — sitzt der Unterschied
    zwischen „Tinte nachfahren" und „Schreiben".
 
 **Was das für die Folger-Arme heißt:** Die Kill-Kriterien des §14 sind
@@ -4023,10 +4025,14 @@ wo das endet.
 **Grenzen dieser Zahl, ehrlich benannt:** (a) Die Kontrolle ist eine
 REDUKTION des publizierten Verfahrens, keine Reimplementierung — ohne
 gewichtete `π_ij`-Fortsetzung, ohne Cluster-Rang-Klassifikation, ohne
-Dijkstra durch den Cluster und ohne Retrace-Modell; die echte WOR-Zahl
-läge besser, aber nicht in einer anderen Größenordnung, denn die drei
-fehlenden Bausteine adressieren die Astwahl, nicht das Absetz- und
-Retrace-Budget, an dem hier der Löwenanteil hängt. (b) Sie ist auf
+Dijkstra durch den Cluster und ohne Retrace-Modell. Die echte WOR-Zahl
+läge besser, und **um wie viel, ist hier NICHT gemessen**: Die ersten
+drei fehlenden Bausteine adressieren die Astwahl (also `dtw` und die
+Kreuzungsspalte), das fehlende Retrace-Modell dagegen genau die beiden
+Zeilen, die hier am lautesten sind — Retrace-Zonen und Absetz-Differenz.
+Wer die Lücke zum Prior beziffern will, statt sie nur zu sehen, muss
+diese Zahl mit MATLAB nachziehen; bis dahin ist die Aussage die
+schwächere und sichere: **so weit ist der Weg mindestens.** (b) Sie ist auf
 denselben 10 Dev-Wörtern gemessen wie alles andere und trägt deren
 blinde Flecken (kein Umlautwort, kein langes ſ, eine Majuskel).
 (c) `marks_uncertain` gilt für dieselben 4 Wörter wie in der Baseline.
