@@ -37,6 +37,8 @@ Plan, routes and the pre-registered acceptance criteria live in
 | `candidates.py` | What is graded: `Candidate` (literally a `word_instances` row, wire-bounds validated) plus the four providers — `chain` (through the harvest's own `chain_word_strokes`), `authored` (the identity gate), `traced`, `file` (mandatory literal `"frame": "word_registration"`). A provider failure is a row, never an exception. |
 | `summary.py` | The §14 columns per word (`score_word`), the run's block (`summarize`), the identity gate and the paired `compare` — whose sign test is IMPORTED from `tools.pairlab.chainbench`, never restated. |
 | `run.py` | The CLI: fixture-root discovery, the frozen split with its startup assertion, the providers, `--jobs` (order-preserving), `--json`/`--csv`/`--compare`. |
+| `view.py` | The duel: one self-contained HTML page per round — every method's trace over the crop beside the hand reference, toggleable, with the attached `--json` numbers and a writing-order animation (`stroke-dashoffset`, constant pen speed, pen lifts as pauses). Geometry through `BenchFrame`, bytes deterministic. |
+| `chronik.py` | The create-only round history: `snapshot --label … --files …` files the artifacts of one round outside the working tree and appends one `INDEX.md` line. Never rewrites, never deletes (the `tools/dbsnapshot` discipline). |
 
 ## Why the frame is not the stored coordinates
 
@@ -71,6 +73,30 @@ uv run python -m tools.tracebench.run --candidate file --candidate-file follow.j
 held-out number. Every run starts by asserting that all ten development words
 are present as `authored`, non-`frame_stale` rows — a ruler that lost a word
 would report a better number for the rest.
+
+## Seeing it, and keeping what was seen
+
+```
+uv run python -m tools.tracebench.view --split dev \
+    --candidate chain=chain.json --candidate follow-v1=follow.json \
+    --rows chain=chain.report --rows follow-v1=follow.report \
+    --title "arm1-prox01 · 2026-08-14" --out temp/duell.html
+
+uv run python -m tools.tracebench.chronik snapshot --label arm1-prox01 \
+    --files temp/duell.html follow.json follow.report --note "λ_prox = λ_chain/4"
+uv run python -m tools.tracebench.chronik list
+```
+
+The page opens on the FINISHED trace of every method over the plate, with the
+hand re-tracing painted last so nothing can cover it; „Schreiben abspielen"
+writes all switched-on methods at once in writing order. Both halves of the
+question — what it looks like and how it came about — are answered on one
+screen, and the chronik keeps that screen after the next round overwrites
+`temp/duell.html`. Its root lies OUTSIDE the working tree (`--root` /
+`KS_CHRONIK_ROOT`, else the `tracebench-chronik` sibling of the
+`KURRENTSCHRIFT_ARCHIVE` clone): a round archived under `temp/` disappears with
+the next `git clean -xfd`, and the pages carry traced geometry, which the
+open-core reservation keeps out of the repository.
 
 ## Status
 
