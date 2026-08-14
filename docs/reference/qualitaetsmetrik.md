@@ -3985,3 +3985,30 @@ Negativ. Laufen die meisten Runden in die Retry-Erschöpfung → der
 Mechanismus (Akzeptanz statt Kraft) ist ungeeignet, nächste Hypothese
 wäre ein differenzierbarer Abstands-Term, nicht mehr Retries. Keine
 Adoption eines Defaults ohne Owner-Go.
+
+**Ergebnis (`aug15`, beide Kill-Kriterien gefeuert — das wertvollste
+Negativ der Kampagne):** Der Wächter-KONTRAKT hält perfekt: Auf allen
+drei Sprossen bleibt jede Klassenzahl ≤ der Chain-eigenen (Kreuzungen
+m+s exakt 7+4, Berührungen ≤ 17, Zonen ≤ 7) — zum ersten Mal besteht
+ein released Folger das Struktur-Gate. Aber der Preis beantwortet die
+Hypothese abschlägig: dtw-Δ gegen die Kette ist EXAKT null (Δ-Median
+0,000000; 6–8 von 10 Wörtern byte-identisch, Sign-Test p = 1,0 auf
+allen Sprossen), weil 13 von ~21 Runden nach Retry-Erschöpfung
+zurückgewiesen wurden (26–28 Retries je Arm). Nur der AIoU-Rest der
+akzeptierten, gedämpften Runden bleibt (+0,033 bei prox 0,1 — ein
+Drittel des ungewachten +0,10). **Die Tinten-Gewinne des Release und
+seine Struktur-Erfindungen sind nicht trennbar: die Bewegung zur
+Tinte hin IST das Erfinden** — engeres Aneinander-vorbei-Schreiben
+senkt die Distanz und erzeugt exakt die Berührungen, die die Hand
+nicht hat. Konsequenz für Route A: Der Kettenfit steht bereits am
+struktur-sicheren Optimum dieser Formulierung; die verbleibende
+dtw-Lücke zur Hand ist mit „Form-Prior lösen" in keiner der fünf
+gemessenen Varianten (①⑤⑥⑥b⑨) zu kaufen. Die nächsten Hebel liegen
+COMPOSER-seitig (Platzierung/Joins — die Soll-Abweichler t · W ·
+join-Schleifen, plus die 9 erfundenen Berührungen der Komposition
+selbst) und bei fundamental anderen Kandidaten (Route B). Der
+Wächter selbst bleibt als Werkzeug im Repo (`structure_guard`,
+default False): er ist das erste Instrument, das einen Folger-Lauf
+GARANTIERT struktur-sauber hält, und der prox-0,1-Lauf ist als
+einziger struktur-sauberer Release-Kandidat auf der Duell-Seite.
+Artefakte: Chronik `arm9-wächter`.
