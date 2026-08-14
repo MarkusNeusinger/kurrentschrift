@@ -1,6 +1,11 @@
 # Tintenfolger: der Prüfstand und die zwei Routen zur Wortbahn
 
-> **Status (2026-08-14): in Arbeit — Stufe A (Prüfstand) begonnen.** Dieses
+> **Status (2026-08-14, abends): Prüfstand KOMPLETT — Baseline steht.**
+> Stufen A/B/1/5 sind gemergt (PR #337/#339/#338/#340), Stufe C (Harness +
+> erste Baseline = Freeze-Akt) ist dieser PR; die Kette misst gegen die
+> Hand `dtw_xh` 0,062 med / 19 erfundene Kreuzungen / Retrace-Ratio 1,51
+> (qualitaetsmetrik §14). Als Nächstes: die Folger-Arme (Stufe 2/3).
+> Ursprünglicher Plan-Kopf: Dieses
 > Doc ist der fortschreibbare Plan zum §6-Nachtrag „Tintenfolger" in
 > [`../research/bildsynthese-und-stiftbahn.md`](../research/bildsynthese-und-stiftbahn.md):
 > das automatische Nachfahren der Wortproben (heute der Stage-B-Kettenfit)
@@ -243,6 +248,21 @@ betroffen) oder GPU-Stunde. InkSight-Geometrie bleibt in `tools/`
 (Messschicht) — nie `core/`, DB oder Rendering (deckt sich mit der
 Ethik-Notiz der Model-Card).
 
+### 4b Route G — der prior-freie Kontrollkandidat (Owner-Entscheid 2026-08-14)
+
+Als dritter Kandidat kommt der lernfreie geometrische Klassiker aufs
+Duell: Skelett → Segmentgraph → Kreuzungsauflösung per Gute-Fortsetzung
+(Diaz et al. 2022, Writing-Order-Recovery, Code offen — Quellen im
+Recherche-Doc §8). Seine Rolle ist nicht „Konkurrent", sondern
+**Kontrolle**: Er rät Ordnung und Astwahl OHNE den Duktus-Prior — die
+Differenz zwischen ihm und dem Kettenfit auf denselben 10 Wörtern
+beziffert erstmals, wie viel der Prior wirklich kauft (architektur.md §2
+als gemessene Zahl statt Architektur-Glaube; schlägt der Kettenfit ihn
+NICHT klar, ist das ein Befund erster Güte). Anschluss über den
+Kandidaten-Kontrakt (§2.4, eigener `--candidate-file`, isoliertes
+Tool-Verzeichnis nach dem `tools/inksight`-Muster), kein GPU; nach der
+Baseline, unabhängig von Folger und InkSight.
+
 ## 5 Verworfen / korrigierte Annahmen
 
 - **„Small-p auf der 4090 fein-tunen" — verworfen (2026-08-14):** Es gibt
@@ -278,14 +298,14 @@ Ethik-Notiz der Model-Card).
 | Stufe | Inhalt | Stand |
 |---|---|---|
 | **A** | `word_instances.json`-Artefakt + Frame-Gate (Exporter + Fetcher), deklarierter Fixture-Re-Export (Re-Baseline nach #334/#336), dieses Doc | **PR #337** |
-| **B** | `tools/tracebench`-Lineal (Metriken + Zähler + Split) + Vorregistrierung §14 + Glossar | **in diesem PR** |
-| **C** | Harness + Provider + authored-Gate + erste Baseline-Tabelle (= Freeze-Akt) | offen |
+| **B** | `tools/tracebench`-Lineal (Metriken + Zähler + Split) + Vorregistrierung §14 + Glossar | **PR #339** |
+| **C** | Harness + Provider + authored-Gate + erste Baseline-Tabelle (= Freeze-Akt; Kette: dtw 0,062 med · 19 erfundene Kreuzungen · Retrace-Ratio 1,51) | **in diesem PR** |
 | **D** | HTML-Viewer (fitview-Muster) | offen |
-| **1** | `tools/pairlab/trace.py`-Move + 3 additive chain.py-Affordances (inert bewiesen) | offen |
+| **1** | `tools/pairlab/trace.py`-Move + 3 additive chain.py-Affordances (inert bewiesen) | **PR #338** |
 | **2/3** | `tools/pairlab/follow.py` + CLI + Tests; §14-Vorregistrierung der Arme | offen |
 | **4** | Folger-Sweeps, kalibrierte Defaults (Owner-Go für Adoption) | offen |
-| **5** | `tools/inksight/`-Pipeline (isoliert, keine Gewichte im Repo) | offen |
-| **6** | Das Duell: Folger vs. Chain vs. InkSight-roh, ehrliche Negative | offen |
+| **5** | `tools/inksight/`-Pipeline (isoliert, Umgebung verifiziert, erstes Kurrent-Ergebnis) | **PR #340** |
+| **6** | Das Duell: Folger vs. Chain vs. InkSight-roh vs. Route G, ehrliche Negative | offen |
 | **7** | humanbench-WORT-Runde (neuer Item-Renderer; Bias benannt: der Autor beurteilt eigene Nachfahrungen — Abkühl-Abstand oder Zweitrichter) | offen, braucht den Autor |
 
 **Betriebsregeln:** DB wird von Bench/Folger nie beschrieben; Fixtures +

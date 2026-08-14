@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from tools.glyphbench.export_fixtures import DEFAULT_OUT_DIR as GLYPH_EXPORT_DIR
 from tools.glyphlab.cases import DEFAULT_FIXTURES_DIR as GLYPHLAB_DIR
+from tools.tracebench.reference import DEFAULT_FIXTURES_DIR as TRACEBENCH_DIR
 from tools.wordbench.export_fixtures import DEFAULT_OUT_DIR as WORD_EXPORT_DIR
 from tools.wordlab.cases import DEFAULT_FIXTURES_DIR as WORDLAB_DIR
 
@@ -23,6 +24,13 @@ def test_glyphlab_reads_where_glyphbench_exports():
 
 def test_wordlab_reads_where_wordbench_exports():
     assert WORDLAB_DIR.resolve() == WORD_EXPORT_DIR.resolve()
+
+
+def test_tracebench_reads_where_wordbench_exports():
+    # The trace bench grades over the SAME crops the word bench scores against —
+    # one export, one frozen population. A second fixtures directory would make
+    # the two benches describe different plates without anyone noticing.
+    assert TRACEBENCH_DIR.resolve() == WORD_EXPORT_DIR.resolve()
 
 
 def test_exporters_write_the_manifest_name_the_consumers_glob():
@@ -51,3 +59,14 @@ def test_wordbench_exporter_writes_the_instance_artifacts_the_consumers_read():
     source = inspect.getsource(word_export)
     assert "pair_instances.json" in source
     assert "word_instances.json" in source
+
+
+def test_the_tracebench_reads_the_artifact_name_the_exporter_writes():
+    # The consumer side of the promise the comment above makes: the reference
+    # loader looks for exactly `word_instances.json`, so a rename on either end
+    # fails a test instead of turning every bench run into "no rows found".
+    import inspect
+
+    from tools.tracebench import reference as trace_reference
+
+    assert "word_instances.json" in inspect.getsource(trace_reference)

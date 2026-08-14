@@ -276,6 +276,47 @@ def match_points(ref: np.ndarray, cand: np.ndarray, *, radius: float, margin: fl
     )
 
 
+def match_points_one_to_one(ref: np.ndarray, cand: np.ndarray, *, radius: float) -> CountResult:
+    """Match two point POPULATIONS by greedy one-to-one assignment.
+
+    The refusal margin of `match_points` exists for the single-query frame —
+    "this ductus point belongs on WHICH ink structure", where naming the wrong
+    target corrupts a measurement (the landmarks doctrine). Crossing and
+    retrace counting is a different frame: BOTH sides carry the SAME detector's
+    population, and two true structures a stroke width apart are two
+    structures, not an ambiguity. A margin there refuses to match a trace
+    against ITSELF — the first identity run found exactly that on
+    unter/mit/linken (two crossings < 0.20 xh apart, §14). Greedy by ascending
+    pairwise distance under the radius cap: at identity every pair sits at
+    distance 0 and matches perfectly; a displaced structure simply pays its
+    distance. `ambiguous` is structurally 0 in this frame.
+    """
+    ref_pts = np.asarray(ref, dtype=float).reshape(-1, 2)
+    cand_pts = np.asarray(cand, dtype=float).reshape(-1, 2)
+    errors: list[float] = []
+    if len(ref_pts) and len(cand_pts):
+        distance = np.hypot(ref_pts[:, None, 0] - cand_pts[None, :, 0], ref_pts[:, None, 1] - cand_pts[None, :, 1])
+        while distance.size:
+            i, j = np.unravel_index(int(np.argmin(distance)), distance.shape)
+            if distance[i, j] > radius:
+                break
+            errors.append(float(distance[i, j]))
+            distance[i, :] = np.inf
+            distance[:, j] = np.inf
+            if not np.isfinite(distance).any():
+                break
+    matched = len(errors)
+    return CountResult(
+        ref=len(ref_pts),
+        cand=len(cand_pts),
+        matched=matched,
+        missing=len(ref_pts) - matched,
+        spurious=len(cand_pts) - matched,
+        ambiguous=0,
+        pos_err_xh=float(np.median(errors)) if errors else None,
+    )
+
+
 def mark_centroids(marks: list[np.ndarray]) -> np.ndarray:
     """One point per mark — its centroid, which is what a dot HAS instead of a shape."""
     centres = [np.asarray(m, dtype=float).reshape(-1, 2).mean(axis=0) for m in marks if len(m)]
@@ -314,4 +355,5 @@ __all__ = [
     "mark_centroids",
     "match_marks",
     "match_points",
+    "match_points_one_to_one",
 ]

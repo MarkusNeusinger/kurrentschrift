@@ -823,6 +823,34 @@ def test_chain_path_on_real_ink(monkeypatch: pytest.MonkeyPatch) -> None:
     assert meta["n_params"] > 0
 
 
+def test_the_shared_trace_half_produces_exactly_what_the_harvest_stores(monkeypatch: pytest.MonkeyPatch) -> None:
+    """`chain_word_strokes` is the harvest's own first half, not a sibling of it.
+
+    The trace bench's `chain` candidate runs THIS function
+    (`docs/proposals/tintenfolger.md` §2.4), so a baseline it measures has to be
+    byte-for-byte the pen path the harvest would write into `word_instances` —
+    the moment the two are separate implementations, the bench grades a
+    candidate nobody ships.
+    """
+    case, result = _synthetic_word([(0.06, 0.0), (-0.04, 0.03)])
+    monkeypatch.setattr(harvest_mod, "derive_word", lambda c: result)
+    opts = HarvestOptions(path="chain", rmse_max=2.5)
+    stored = harvest_case(case, opts).word_record
+
+    strokes, meta = harvest_mod.chain_word_strokes(case, result, opts)
+    assert strokes == stored["strokes"]
+    assert meta["registration"]["baseline_row"] == BASELINE_ROW and meta["xh"] == XH
+    assert meta["run_slots"] == stored["measurements"]["run_slots"]
+    assert meta["cut_indices"] == stored["measurements"]["cut_indices"]
+    assert meta["traced_slots"] == stored["measurements"]["traced_slots"]
+    assert meta["n_params"] == stored["measurements"]["n_params"]
+    assert meta["seconds"] > 0.0  # wall clock — the one field two runs may differ on
+    # …and the grading half reads the solves it returns rather than re-solving:
+    # one `fit_word_chain` per run of joined slots, no second pass.
+    assert [r.slots for r in meta["runs"]] == [[0, 1]]
+    assert all(r.fit is not None for r in meta["runs"])
+
+
 def test_an_unscorable_case_yields_nothing(monkeypatch: pytest.MonkeyPatch) -> None:
     case, result = _synthetic_word([(0.0, 0.0), (0.0, 0.0)])
     case.scorable = False

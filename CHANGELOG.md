@@ -42,6 +42,66 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The tracebench harness (`tools/tracebench/run.py`) — stage C of the
+  Tintenfolger plan, the ruler put to work.** `uv run python -m
+  tools.tracebench.run [--candidate chain|authored|traced|file] [--split
+  dev|confirm|all]` scores an automatic word tracing against the
+  hand-made one and prints the columns
+  `docs/reference/qualitaetsmetrik.md` §14 pre-registered — one stable
+  line per word, then the block, then (with `--compare`) the paired
+  deltas whose sign test is IMPORTED from `tools.pairlab.chainbench`
+  rather than restated. `reference.py` turns the frozen
+  `word_instances.json` plus each entry's `word.json` into bench frames,
+  stored rows and lazily read ink masks, with the `pairmeas` doctrine on
+  the losses: a `frame_stale` row and a row without a frozen entry are
+  excluded AND counted by reason, never silently dropped. `candidates.py`
+  makes a candidate literally a `word_instances` row — validated against
+  the wire caps the write endpoint enforces, so a trace the product could
+  never store is caught rather than praised — behind four providers:
+  `chain` runs the HARVEST's own code path (the trace half of
+  `_harvest_case_chain` was lifted into the public
+  `harvest.chain_word_strokes` and is asserted byte-identical to what the
+  harvest stores; a baseline that is a reimplementation stops being the
+  baseline the moment the two drift), `authored` doubles as the identity
+  gate, `traced` reads the stored harvest rows, and `file` demands the
+  literal `"frame": "word_registration"` so a trace in an unstated frame
+  is refused instead of measured as a catastrophic error. Three rules
+  the CLI ENFORCES rather than trusts: the startup assertion that all ten
+  frozen development words are present as `authored`, non-`frame_stale`
+  rows (a ruler that lost a word reports a better number for the rest),
+  the refusal of `--split confirm` under five words, and the identity
+  gate — `authored` against itself must land on dtw = 0, chamfer = 0 and
+  every counter matched, and a FAIL exits non-zero because from there on
+  no candidate number means anything. Beside them a report-only
+  direction audit of the reference set (per body stroke, endpoint
+  concordance against the candidate) — a backwards human trace is a
+  fixture-quality signal, not a model error, which a forward-only DTW
+  could not otherwise tell apart. Measurement only: no DB, no API, no
+  `core/` change, no rendering.
+
+  **The identity gate earned its keep on its first real run**: it FAILED
+  on unter/mit/linken because the crossing matcher's refusal margin
+  refused two TRUE crossings closer than 0.20 xh even at distance zero —
+  a trace against itself. Repaired inside §14's pre-registered
+  free-fix window: structure populations (crossings, retrace zones) are
+  now matched one-to-one by ascending distance under the radius cap
+  (`frames.match_points_one_to_one`); the refusal margin stays with the
+  marks, whose single-query frame it was built for. After the fix the
+  gate passes exactly (dtw 0, chamfer 0, all counters matched,
+  `direction_uncertain` 0 across all ten hand traces).
+
+  **The first baseline is committed to §14 and freezes the ruler**: the
+  chain fit against the hand scores `dtw_xh` median 0.062 xh (p90 0.262)
+  — but the complaint sits in STRUCTURE, exactly as pre-registered: 19
+  invented crossings, 21 invented retrace zones, retrace-arc ratio 1.51
+  (the chain re-inks 51 % more than the author), with `unter` (0.439,
+  max_absorption 132 — the known collapse case) and `muß` (0.242, two
+  lost crossings) carrying the tail. A one-time step sweep
+  (0.02/0.03/0.05) pins 0.02: `dtw_xh` moves only +5 % across it, the
+  retrace-arc measure is genuinely step-bound. Four reference words are
+  flagged `marks_uncertain` (the author drew the i-stroke/u-bow
+  connected) — a fixture-quality note for the confirmation set, not a
+  candidate error.
 - **`tools/inksight` — the isolated InkSight pipeline (Tintenfolger route
   B, T0).** Three stages split at a process boundary so no dependency
   crosses: `prepare.py` (repo env) turns frozen wordbench crops into
