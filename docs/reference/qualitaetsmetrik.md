@@ -4881,3 +4881,37 @@ Eine Hand, eine Norm (96 Proben). Kleine Klassen-n (K1 n=7 ·
 K3 n=6 · K2 n=8+18) → das Nachkalibrierungs-Protokoll
 (tintenfolger.md §7.7) greift, sobald der Bestätigungssatz
 nachgefahren ist.
+
+**P3-K1 gemessen `aug16` — verworfen per eigenem Kill, der Fund
+ist die Frame-Brücke.** Umsetzung als geteilter Kopplungsindex
+(`BAR_ENTRY_COUPLE_Y`; Platzierung und Verbinder lesen denselben
+Anker; die Steig-Wächter für den flachen K1-Zug klassenbewusst
+gelockert), Feuer-Nachweis exakt in der Klasse und nirgends sonst
+(fechten f→e + t→e, streiten/unter/Seiten/Soldaten/scharfen t→e
+bzw. f→e; macht/mit mit wortfinalem t byte-identisch; das
+compose-golden deckt die Klasse mit keinem seiner Wörter ab und
+blieb daher UNGEBROCHEN — die „bricht bauartbedingt"-Erwartung
+der Vorregistrierung war falsch herum). Leiter gegen die
+P2-Baseline 0,108091: 0,50 feuert nie (e-Anstrich startet über
+dem Ziel — die Leiterstufe war leer), 0,56 → 0,108145 · 0,62 →
+0,108190 · 0,78 → 0,108120; `pair_loss` byte-identisch (die
+Abb.-20-Drills enthalten kein Balken→Rund-Paar), doff-Median
+0,130 → 0,132, nicht-monoton je Wort (fechten −0,0059 bei 0,56,
++0,0023 bei 0,62, −0,0041 bei 0,78). Auf JOIN-Ebene stimmen die
+Belege GEGENEINANDER: fechtens t→e halbiert sich (0,12 → 0,06),
+streitens verschlechtert sich (0,04 → 0,07), unter bevorzugt
+0,78 (0,11 → 0,10). Kill (a) feuert (word_loss steigt bei jedem
+feuernden Arm, die Klasse verbessert sich nicht kohärent), also
+VERWORFEN; `BAR_ENTRY_COUPLE_Y` bleibt DEKLARIERT-ABER-NEUTRAL
+(None) für die Bestätigungssatz-Nachkalibrierung (K1 ruht auf
+n = 7). Der Fund: die Vorstudien-Konstanten sind im FIT-Frame
+kohärent (MAD 0,002!), aber die Brücke in den Composer — der
+Kopplungshöhen-Knopf bei gebundener Floor-Platzierung
+(`bar_rise_floor` bindet in allen Klassenwörtern) — reproduziert
+sie nicht: dieselbe Arkaden-Lektion (Beleg-Varianz am
+Ruler-Punkt) eine Klasse weiter, PLUS die neue Hypothese, dass
+nicht die KOPPLUNGSHÖHE, sondern die VERBINDERFORM (gekrümmter
+Einfall statt gerader Balken-Linie) den +126°-Ankunftsfehler
+trägt — das wäre ein anderer Knopf und braucht seine eigene
+Vorregistrierung. K3 und K2 werden trotzdem gemessen (andere
+Mechanismen), mit entsprechend gedämpfter Erwartung.

@@ -492,6 +492,18 @@ FORK_APEX_MAX_Y = 1.05
 BAR_EXIT_BASES = frozenset({"t", "f"})
 BAR_CROSS_MIN_Y = 0.2  # a plausible bar/flag crossing sits mid-band
 BAR_CROSS_MAX_Y = 0.7
+# P3-K1 (pre-registered aug16, qualitaetsmetrik §14 Welle 2 P3): after a
+# bar exit into a ROUND BODY the hand couples LOW on the rising flank
+# (measured arrival y ~0.56 vs. the apex/high-flank couple the generic
+# path targets — the composed arrival angle sat +126 deg off) and the
+# entry stub below the couple is replaced by the join. The shared
+# coupling index keeps placement and connector on the same anchor.
+# None = rule off (generic fork/apex coupling). DECLARED-BUT-NEUTRAL:
+# the aug16 ladder (0.50/0.56/0.62/0.78) was measured-and-rejected —
+# word_loss rose at every firing arm and the class words voted in
+# OPPOSITE directions (fechten's t→e halves, streiten's worsens); the
+# knob stays for the confirmation-set re-calibration (K1 rests on n=7).
+BAR_ENTRY_COUPLE_Y: float | None = None
 # Re-calibrated wave-2 P1: at 0.55 the composed t-joins ran +0.16 xh median
 # past the hand's six dissected ones; 0.69 removes the median surplus at the
 # typical coupling rise (~0.43 xh).
@@ -1178,6 +1190,7 @@ def _connector_centerline(
     cap_restart: bool = False,
     fork_couple_idx: int | None = None,
     land_deg: float | None = None,
+    bar_low_couple: bool = False,
 ) -> tuple[list[Point], int]:
     """Centerline of the Übergang from A's exit into B's entry + the entry trim.
 
@@ -1209,7 +1222,11 @@ def _connector_centerline(
         idx = fork_couple_idx
         if idx:
             p3b: Point = (first_line[idx][0] + dx, first_line[idx][1])
-            if p3b[0] > p0[0] + GARLAND_MIN_DX and p3b[1] > p0[1] + ALIGN_MIN_RISE:
+            # The P3-K1 low couple (see BAR_ENTRY_COUPLE_Y) deliberately
+            # arrives level with or below the bar tip — only rightward
+            # progress is required; the generic bar join keeps its rise.
+            rises = p3b[1] > p0[1] + ALIGN_MIN_RISE
+            if p3b[0] > p0[0] + GARLAND_MIN_DX and (rises or bar_low_couple):
                 return [(p0[0] + (p3b[0] - p0[0]) * t / 10, p0[1] + (p3b[1] - p0[1]) * t / 10) for t in range(11)], idx
     # The r-arm into a round body fuses at B's crest APEX (see ARM_FUSE_GAP).
     arm_fuse = 0
@@ -1942,6 +1959,19 @@ def compose_word(
             # solved distance and the drawn join can never read different
             # anchors.
             fork_couple_idx = _fork_couple_index(first_line)
+            # P3-K1 bar→round coupling (see BAR_ENTRY_COUPLE_Y): drop the
+            # couple point to the low flank target; the overridden index
+            # feeds BOTH the bar-rise placement and the connector.
+            bar_low_couple = False
+            if (
+                BAR_ENTRY_COUPLE_Y is not None
+                and prev.stem_launch
+                and _key_base(slot.key, slot.position) in HIGH_COUPLE_BASES
+            ):
+                low_idx = _entry_couple_index(first_line, target_y=BAR_ENTRY_COUPLE_Y)
+                if low_idx:
+                    fork_couple_idx = low_idx
+                    bar_low_couple = True
             entry_land_deg = _endpoint_tangent(first_line, at_end=False)
             tuck = TUCK_RATE * max(0.0, prev.exit[1] - TUCK_Y0)
             forward = _unit(prev.tangent_deg)[0] > 0.0
@@ -2184,6 +2214,7 @@ def compose_word(
                 cap_restart=bool(prev.cap_retrace),
                 fork_couple_idx=fork_couple_idx,
                 land_deg=entry_land_deg,
+                bar_low_couple=bar_low_couple,
             )
             if prev.cap_retrace:
                 # The retrace ends AT the departure the connector starts
