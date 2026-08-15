@@ -14,6 +14,27 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The per-method optimization plan for the word-tracing campaign**
+  (doc-only, `docs/proposals/tintenfolger.md` §7): built from a
+  per-word × per-method defect matrix over all duel artifacts plus a
+  source-verified research round (four parallel agents). Names the
+  measured levers — two words carry 59.8 % of the chain fit's dtw,
+  the touch class breaks 6 of 7 guard rejections, i-dots sit worse
+  than the prior-free control's — and lays out candidate experiments
+  per method in four waves: composition topology (cut-with-overrun,
+  pass-through coupling; the W onset is a chart-ductus gap for the
+  author, not a composer rule), route-A reformulations (separate
+  mark refit, SDM/density-aware data term, explicit crossing
+  variables, barrier-instead-of-veto, two-pass retrace evidence,
+  GNC schedule), raw-InkSight levers (best-of-N ensembling, tiling
+  to aspect ≤ 2, cheap A/Bs, learned-init + classical refine,
+  prior-driven retrace recovery), the own small trajectory model,
+  and fusion. Every measure requires its own pre-registered §14
+  entry before the first number. §14 (Arm ⑨) gains a dated
+  correction: the "9 invented touches" belong to the chain fit, not
+  the composition (measured: the composition prescribes 2 touches,
+  both w-internal, and 4 t-bar overlaps).
+
 - **Route G: the prior-free control of the Tintenfolger duel**
   (`tools/routeg`, `docs/proposals/tintenfolger.md` §4b) — a third
   candidate that recovers a writing order from the ink ALONE: frozen

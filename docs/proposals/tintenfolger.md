@@ -1,14 +1,16 @@
 # Tintenfolger: der Prüfstand und die zwei Routen zur Wortbahn
 
-> **Status (2026-08-15): Prüfstand komplett, drei Arme gemessen.**
-> Stufen A–D/1/2/3/5 sind gemergt (#337–#344), die Baseline eingefroren
-> (`dtw_xh` 0,062 med / 19 erfundene Kreuzungen / Retrace-Ratio 1,51).
-> Arm ① (#345): nacktes Form-Release vom eigenen Veto verworfen,
-> Tinten-Zug validiert (AIoU +0,10). Arme ⑤+⑥ (#347): Overlap
-> freigesprochen, Landmark-Gewicht null bis kontraproduktiv — bindend
-> ist die **Korrespondenz-Kappe** (12/21 Ziele auf kreuzungsloser
-> Tinte). Aktueller Arm: ⑥b, die klassenbewusste Korrespondenz
-> (qualitaetsmetrik §14). Kein `FOLLOW_*`-Default adoptiert.
+> **Status (2026-08-15): Das Duell ist komplett, der Optimierungsplan
+> steht in §7.** Alle Stufen der Leiter sind gemergt (#337–#356): die
+> Baseline eingefroren (`dtw_xh` 0,062 med, Strukturzähler v2.1),
+> die Arme ①⑤⑥⑥b⑨ gemessen (alle ehrliche Negative; Route-A-Fazit
+> aus Arm ⑨: der Kettenfit steht am struktur-sicheren Optimum DIESER
+> Formulierung), Route G als prior-freie Kontrolle (dtw 0,82 = 13×
+> Kette — was der Duktus-Prior kauft), InkSight-T0 roh gemessen
+> (derender 0,096 = 1,5× Kette, Kreuzungen sauberer, Retraces
+> verloren). Kein `FOLLOW_*`-Default adoptiert. Die nächste Kampagne
+> ist §7: der Optimierungsplan je Verfahren (Befund-Matrix +
+> Recherche-Runde 2026-08-15, vier parallele Agenten).
 > Ursprünglicher Plan-Kopf: Dieses
 > Doc ist der fortschreibbare Plan zum §6-Nachtrag „Tintenfolger" in
 > [`../research/bildsynthese-und-stiftbahn.md`](../research/bildsynthese-und-stiftbahn.md):
@@ -365,9 +367,9 @@ DANN, nicht implizit jetzt.
 | **D** | **Duell-Ansicht** (alle Kandidaten + Hand-Referenz über dem Crop, final UND als Schreib-Animation) + **Chronik** (create-only Rundenhistorie, dbsnapshot-Muster) | **PR #344** |
 | **1** | `tools/pairlab/trace.py`-Move + 3 additive chain.py-Affordances (inert bewiesen) | **PR #338** |
 | **2/3** | `tools/pairlab/follow.py` + CLI + Tests (**PR #343**); §14-Vorregistrierung der Arme (**PR #342**) | **gemergt** |
-| **4** | Folger-Sweeps: Arm ① λ-Leiter (**PR #345**, ehrliches Negativ), Arm-⑥-Unterbau (**PR #346**), Arme ⑤+⑥ (**PR #347**, Overlap freigesprochen · Korrespondenz-Kappe), Arm ⑥b klassenbewusste Korrespondenz (dieser PR); kein Default adoptiert (Owner-Go nötig) | laufend |
+| **4** | Folger-Sweeps: Arm ① λ-Leiter (**PR #345**, ehrliches Negativ), Arm-⑥-Unterbau (**PR #346**), Arme ⑤+⑥ (**PR #347**, Overlap freigesprochen · Korrespondenz-Kappe), Arm ⑥b klassenbewusste Korrespondenz (**PR #348**, Hypothese bestätigt, keine Adoption), Arm ⑨ Topologie-Wächter (**PR #355**, Kontrakt hält, beide Kills feuern — Route-A-Fazit); kein Default adoptiert | **abgeschlossen** |
 | **5** | `tools/inksight/`-Pipeline (isoliert, Umgebung verifiziert, erstes Kurrent-Ergebnis) | **PR #340** |
-| **6** | Das Duell: Folger vs. Chain vs. InkSight-roh vs. Route G, ehrliche Negative | offen |
+| **6** | Das Duell: Struktur-Zähler v2/v2.1 + Soll-Spalten (**PR #351/#352/#353**), Route G (**PR #354**), InkSight-T0 (**PR #356**), Duell-Seite mit 6 Ebenen | **abgeschlossen** |
 | **7** | humanbench-WORT-Runde (neuer Item-Renderer; Bias benannt: der Autor beurteilt eigene Nachfahrungen — Abkühl-Abstand oder Zweitrichter) | offen, braucht den Autor |
 
 **Betriebsregeln:** DB wird von Bench/Folger nie beschrieben; Fixtures +
@@ -376,3 +378,252 @@ DANN, nicht implizit jetzt.
 deklarierte Doppel-Re-Baseline (wordbench + tracebench) mit datiertem
 §-Eintrag — der erste Akt einer Runde ist `--only instances` gegen die
 bestehenden Roots.
+
+## 7 Optimierungsplan je Verfahren (2026-08-15)
+
+Grundlage: die Befund-Matrix „Wort × Verfahren" über alle
+Duell-Artefakte (`temp/tb-v21-chain-r0`, `tb-guard-*`,
+`follow-guard-*-run`, `tb-inksight-*`, `tb-routeg-t0`) plus eine
+Recherche-Runde (vier parallele Agenten: Befund-Mining, Route-A- und
+Route-B-Literatur mit Quellen-Verifikation, Composer-Verortung im
+Code). Jede Maßnahme unten ist ein KANDIDAT — sie wird erst gebaut,
+wenn sie ihren eigenen vorregistrierten §14-Eintrag hat, und nach den
+bestehenden Betriebsregeln gemessen (tracebench + Soll-Spalten
+eingefroren; Composer-Änderungen messen zusätzlich wordbench
+`word_loss`/`pair_loss` und deklarieren den compose-golden-Bruch als
+datierte Re-Baseline).
+
+### 7.1 Befundlage — wo die Fehler wirklich sitzen
+
+1. **Zwei Wörter tragen 59,8 % des Kettenfit-Fehlers:** `unter`
+   (dtw 0,4389 — Berührungs-/Überlagerungs-Stapel: `touch` 1→5,
+   `overlap` 0→3) und `muß` (0,2421 — die ß-Retrace-Zone sitzt am
+   falschen Ort, `retrace_matched` 0). Bei `muß` ist InkSight roh
+   **2,9× besser** als der Kettenfit auf demselben Bild — der Defekt
+   ist fit-spezifisch, nicht bildbedingt.
+2. **Die Berührungs-Klasse bricht 6 von 7 Wächter-Zurückweisungen**
+   und kostet damit den gesamten Release-Gewinn (dtw-Δ Median exakt
+   0,0 auf allen drei prox-Sprossen).
+3. **Strukturdefekte sind dtw-unsichtbar:** `will` schreibt 1 von 3
+   Kreuzungen bei unauffälliger dtw 0,0453, `laden` hat 2 fehlende +
+   2 erfundene Kreuzungen bei 0,0746. Nur die Zähler sehen das.
+4. **Die i-Punkte sitzen beim Kettenfit SCHLECHTER als bei der
+   prior-freien Kontrolle** (`mark_pos_err_xh` Median 0,129 gegen
+   0,046) — ein isolierter, billig behebbarer Defekt.
+5. **InkSight:** `und` ist ein reiner Bahnfehler (0,395 = 8–9,6×
+   Kette bei Struktur-Σ 0), `Wer` scheitert an einem
+   Ein-Punkt-Strich (Kontraktverletzung, `status: failed`), und die
+   Retraces gehen systematisch verloren (11–12 von 15 Zonen, +20/21
+   Pen-Lifts). Verdacht für das „hinten heraus kippt es"-Muster
+   (Owner-Beobachtung an `unter`): die breitesten Crops (bis 310 px,
+   w/h ≈ 4–5) liegen an bzw. jenseits der
+   Aspect-Ratio-Filtergrenze 4,0 der InkSight-Trainingsdaten.
+6. **Korrektur einer §14-Attribution:** die „9 erfundenen
+   Berührungen der Komposition" (Arm-⑨-Fazit) gehören dem
+   KETTENFIT (`touch_cand` 17 gegen Hand 8). Die Komposition selbst
+   schreibt nur 2 Berührungen (beide w-intern) und 4 Überlagerungen
+   (alle t-Balken-intern) vor — sie ist strukturell knapp, aber
+   nicht zu eng. Nachtrag in §14 im selben PR.
+
+### 7.2 Verfahren 1: die Komposition (Initialisierung) — der Top-Hebel
+
+Gemessen: Komposition 22 Kreuzungen gegen Hand 23, aber die Differenz
+ist wortweise größer, als die Summe zeigt (`soll_cross_agree` 7/10,
+`soll_zones_agree` 6/10 — Abweichler `mit`, `unter`, `Wer`, `zwei`,
+`linken`). Drei Mechanismen, alle im Code verortet:
+
+- **K1 — „Schnitt am Kreuzungspunkt" wird „Schnitt mit Überstand".**
+  Drei Klassenregeln schneiden heute je genau eine Kreuzung weg, weil
+  der Strich AM Kreuzungspunkt endet und der Durchstoß-Zähler
+  (`PIERCE_MARGIN_UNITS` 0,05 xh) eine Endpunkt-Berührung nicht
+  zählt: der t-Balken-Schnitt (`BAR_EXIT_BASES`,
+  `core/compose.py:1720-1748`), `LOOP_EXIT` am
+  Schleifen-Selbstschnitt (`:1666-1682`) und `KRINGEL_EXIT`
+  (`:1689-1711`). Kandidat: ein kleiner Überstand (~0,03 xh, auf den
+  Platten nachmessbar) jenseits des Schnittpunkts; beim t zusätzlich
+  die Startanker-Frage (Join ab Stamm vs. ab Balkenende — die
+  Gegenprobe „Schnitt ganz aus" gewinnt die t-Kreuzung, verliert aber
+  die Join-Kreuzung, das Wort-Total bleibt 2/3). Misst:
+  `soll_cross_agree` JE WORT (nie über die Summe — 2 fehlende und 1
+  überzählige Kreuzung heben sich sonst auf), `word_loss` der
+  t-Wörter.
+- **K2 — Pass-Through-Kopplung.** Jede Kopplungsregel endet den
+  Verbinder heute AUF dem Zielbuchstaben (`p3 = couple_line[0]`,
+  `compose.py:1194`) und löscht den Anstrich unter dem
+  Kopplungspunkt (`:2100-2113`); die join-gebildete Schleife (d/e —
+  in `die` ist die EINZIGE Hand-Kreuzung join-gebildet) entsteht nur
+  dort, wo zufällig nicht getrimmt wird. Die Gegenprobe zeigt: Trim
+  abschalten allein erzeugt KEINE Kreuzung (22 bleibt 22, Zonen
+  11→14) — der Wirkstoff ist ein ÜBERSCHIESSEN des Verbinders über
+  den Kopplungspunkt hinaus (~0,08–0,12 xh, Kreuzungshöhe =
+  `ENTRY_COUPLE_Y`). Risiko: Doppelung statt Schleife bei zu kurzem
+  Überstand; `linken` liegt schon bei Soll 4 gegen Hand 3
+  (Über-Kreuzen möglich).
+- **K3 — der W-Ansatz ist KEIN Composer-Fehler.** Der Composer hat
+  gar keinen Eintritts-Retrace-Mechanismus, und die W-Chartzeile ist
+  ein einziger Strich ohne Retrace-Paare und ohne Laufform-Zeile —
+  Stufe `chart_ductus`: das W braucht eine Neu-Tracierung mit
+  Ansatz-Retrace durch den Autor (+ danach die W-Laufform). Ein im
+  Composer ERFUNDENER Ansatz ohne Plattenmessung wäre
+  Doktrin-widrig. → Korb/Todoist, Owner-Schritt.
+- **K4 — keine Berührungs-Maßnahme.** Nach der korrigierten
+  Attribution (§7.1 Punkt 6) gibt es composer-seitig nichts zu
+  entschärfen; die Kandidaten-Konstanten (`ARM_FUSE_GAP`,
+  `ALIGN_MIN_CLEARANCE`) feuern auf diesem Wortsatz nachweislich
+  nicht.
+
+### 7.3 Verfahren 2: Kettenfit + Folger (Route A) — Formulierung statt Gewichte
+
+Das Arm-⑨-Fazit steht: mit DIESER Formulierung (EDT-Punktdatenterm +
+Prox-Release + Budget-Veto nach dem Solve) ist der Fit am
+struktur-sicheren Optimum; weitere Gewichts-Arme sind sinnlos. Was
+bleibt, sind Änderungen der FORMULIERUNG — geordnet nach
+Aufwand/Risiko:
+
+- **A1 — Marken separat nachfitten (billig, isoliert).** Die
+  Kontrolle beweist, dass 0,046 xh Marken-Ortsfehler aus derselben
+  Tinte lesbar ist; der Kettenfit liegt bei 0,129, und bei
+  muß/und/unter/zwei matcht gar keine Marke. Ein Mini-Fit nur der
+  Marken-Striche auf die Restmaske (Tinte minus Körper-Claim), nach
+  dem Körper-Solve, unabhängig vom Solver.
+- **A2 — Datenterm härten: SDM + Dichtebewusstheit.** Der
+  EDT-Punktterm ist tangential blind (Anker rutschen ENTLANG der
+  Tinte) und dichteblind (zwei Pässe auf einer Kante kosten nichts).
+  Squared Distance Minimization (Wang/Pottmann/Liu, ACM TOG 2006)
+  liefert das korrekte lokale Abstandsmodell (tangential weich,
+  normal steif); ein dichtebewusster Chamfer-Term (Density-aware CD,
+  Wu et al., NeurIPS 2021) bestraft Mehrfachzuordnung. Adressiert
+  Stranding UND den Pass-Kollaps mit der kleinsten Code-Änderung.
+- **A3 — Kreuzungen als explizite Variablen.** Die
+  PolyVector-Flow-Zerlegung (Puhachov et al., SIGGRAPH Asia 2021):
+  erst Keypoints (Kreuzungen/Endpunkte), dann Topologie (wer
+  verbindet sich mit wem), dann erst Geometrie. Unser
+  `landmarks.py` ist bereits die Ink-Seite dieser Korrespondenz,
+  und das Duktus-Soll sagt a priori, WELCHE Kreuzungen existieren
+  müssen — die KreuzungsHÖHE wird damit gemessene Variable statt
+  Nebenprodukt. Direkt gegen `laden`/`will`/`zwei` (fehl- oder
+  unplatzierte Kreuzungen bei unauffälliger dtw).
+- **A4 — Barriere statt Veto.** Das IPC-Muster (Li et al., ACM TOG
+  2020): die vom Duktus-SOLL erlaubten Kreuzungspaare werden von der
+  Prüfung ausgenommen, jedes andere Segmentpaar bekommt eine glatte
+  Barriere plus eine kollisionsgefilterte Schrittweite — dann KANN
+  der Fit keine neue Kreuzung erfinden, das Budget-Veto wird
+  strukturell überflüssig (und das Budget kommt aus dem Soll statt
+  aus der Chain-Init, die es heute selbst verletzt). Preis: eigene
+  Line-Search oder eine äußere Augmented-Lagrange-Schleife um
+  L-BFGS-B; das ist die teuerste Route-A-Maßnahme.
+- **A5 — Retrace als Zwei-Pass-Zwang aus Breiten-Evidenz.** Der
+  gemessene Blindfleck beider Datenterme. Die Breite liegt als
+  2·EDT längst vor: eine Zone mit lokaler Breite ≈ 2× Strich-Median
+  ist Doppelpass-Evidenz (Kato/Yasuhara führen „double-traced" als
+  eigenen Kantentyp; StrokeStrip zeigt die gemeinsame
+  Parametrisierung, in der zwei Pässe verschiedene
+  Parameterintervalle belegen und der Kollaps nicht mehr
+  kostenfrei ist). Direkt gegen `muß` (ß-Zone) und die
+  Retrace-Ortsfehler (`laden` 0,246 xh).
+- **A6 — Schedule umdrehen (GNC).** Heute: erst fitten, dann Veto.
+  Standard der Literatur: Struktur-Constraints hart ab Iteration 0,
+  Datenterme über einen Graduated-Non-Convexity-Kern langsam
+  hochfahren (Blake/Zisserman 1987; Yang et al., RA-L 2020). Erst
+  sinnvoll, wenn A4 die harten Constraints liefert.
+
+Reihenfolge: A1 → A2 → A3 → (A4 oder A5) → A6. NICHT wieder
+aufgenommen: weitere λ/Gewichts-Sweeps der alten Formulierung (durch
+①⑤⑥⑥b⑨ erschöpfend negativ beantwortet).
+
+### 7.4 Verfahren 3: InkSight roh (Route B1) — ohne Training
+
+- **B1 — Best-of-N über Input-Augmentierungen (~1 Tag, erster
+  Griff).** N Decodes über augmentierte Crops (Rotation-,
+  Scale-Jitter, Strichbreite — exakt die InkSight-eigenen
+  Trainings-Augmentierungen, also in-distribution), gerankt mit
+  unserem vorhandenen Lineal gegen die GEMESSENE Tinte
+  (Chamfer/DTW). Präzedenz aus derselben Gruppe: Afonin et al.,
+  ICDAR 2023 („more than halving the character error rate").
+  Nebeneffekt: der `Wer`-Ein-Punkt-Strich verschwindet, sobald EIN
+  Ensemble-Mitglied kontraktkonform ist.
+- **B2 — Tiling auf Seitenverhältnis ≤ 2 (1–2 Tage).** Die
+  InkSight-Trainingscrops sind auf 0,5 &lt; w/h &lt; 4,0 gefiltert;
+  unsere breitesten Wörter liegen daran/darüber und verschenken über
+  die Langseiten-Skalierung die halbe Token-Auflösung in y. Zwei
+  überlappende Fenster je breitem Wort, Bahn-Stitching im Overlap —
+  die Rücktransformation existiert in `to_candidate.py` bereits.
+  Erklärungs-Kandidat für das Owner-beobachtete „hinten heraus
+  kompletter Quatsch" bei `unter`.
+- **B3 — billige A/Bs (Stunden).** Padding-Farbe (`pad_black` ist
+  Colab-Default, für Papier-Crops nicht offensichtlich richtig),
+  Kontrast/Binarisierung vor der Inferenz; einmalig `Recognize and
+  derender.` messen (erwartet schlechter: konditioniert auf die
+  eigene Fehllesung — der text-Prompt-Befund legt das nahe).
+  Decoder-Parameter sind im SavedModel NICHT exponiert
+  (`serving_default` nimmt nur `input_text` + `image/encoded`).
+- **B4 — InkSight als Initialisierung des eigenen Fits (Tage).**
+  Das etablierte Muster „learned init + classical refine"
+  (ConvexAdam; Deep Vectorization of Technical Drawings): unsere
+  Verfeinerung existiert bereits, nur die Init wird getauscht.
+  Ehrlich segmentweise einsetzen, nicht global — InkSight ist in
+  dtw 1,5× schlechter, aber an Kreuzungen sauberer und bei `muß`
+  2,9× besser: der Tausch lohnt DORT, wo der Composer-Init
+  nachweislich schwach ist.
+- **B5 — Retrace-Rückgewinnung über den Prior (Tage bis 1 Woche).**
+  Der SET/SORT-Befund benennt das Formulierungsproblem: eine
+  Segment-PERMUTATION kann einen Retrace nicht ausdrücken, eine
+  Segment-SEQUENZ MIT WIEDERHOLUNG schon. Die vom Duktus-Soll
+  geforderten, von InkSight ausgelassenen Zonen werden als
+  Wiederholung des betroffenen Segments wieder eingesetzt, die +20
+  Lifts entlang der Soll-Strichfolge wieder verbunden — Ordnung und
+  Retrace-Wissen kommen vom Prior, die Geometrie bleibt gelernt.
+
+### 7.5 Verfahren 4: eigenes Trajektorien-Modell (Route B2, 4090)
+
+Erst NACH den B1-Hebeln (einziger Punkt mit echtem Projektrisiko).
+Zuschnitt nach Cursive-Transformer-Vorbild (Greydanus/Wimpee 2025:
+442k Parameter, 3.500 Wörter genügten; Repo ohne Lizenz → aus dem
+Paper nachimplementieren, keinen Code kopieren), bildkonditioniert
+per Cross-Attention; Ausgabe ist eine geordnete Koordinatensequenz,
+Retraces sind also NATIV darstellbar — der Punkt, an dem InkSight
+strukturell scheitert. Trainingsdaten: Engine-Renderings
+(kalligrafisch korrekt über die Federmodelle — das verkleinert den
+Sim-to-Real-Gap gegenüber naiven Rasterizern) mit
+Augraphy-Degradation (MIT; Tinten-Bleed, Papiertextur,
+Scan-Artefakte), 3.500–50.000 Wörter, auf der 4090 in 1–2 Wochen
+messbar. Die ~63 getracten Belege sind der Held-out-Realtest; die
+Gewichte bleiben per Open-Core-Regel außerhalb des Repos (auf
+DB-Inhalten trainiert). Skriptübergreifender Transfer ist belegt
+(Diffusion-TR generalisiert von Chinesisch auf ungesehene lateinische
+Buchstaben). Fallback, falls from-scratch stockt: keiner über
+InkSight (kein Trainingscode, §5) — dann ist B4/B5 die Route.
+
+### 7.6 Verfahren 5: Fusion (nach ersten §7-Ergebnissen)
+
+Ordnung/Strichfolge/Retrace-Wissen vom Prior, Geometrie vom besten
+verfügbaren Kandidaten je Region; Übereinstimmung = Konfidenz,
+Widerspruch = Prüfstelle. Publizierte Vorbilder für die Mechanik:
+Raster-to-Vector (Liu et al., ICCV 2017 — Netz schlägt Junctions
+vor, ein Integer-Programm erzwingt die Topologie) und Free2CAD
+(Li et al., SIGGRAPH 2022 — Zwischenergebnisse werden geometrisch
+korrigiert, BEVOR sie als Kontext weiterlaufen: das Gegenmittel
+gegen Reihenfolge-Drift). Ehrlicher Befund der Recherche: KEINE
+publizierte Arbeit fusioniert eine handautorierte Duktus-Bibliothek
+mit einem gelernten Derendering-Modell — hier gibt es kein Rezept
+zum Abschreiben. Die Kontrolle `routeg` wird grundsätzlich NICHT
+optimiert (sie bleibt die Nulllinie des Duktus-Prior-Werts).
+
+### 7.7 Wellen, Messdisziplin, Owner-Schritte
+
+| Welle | Maßnahmen | Charakter |
+|---|---|---|
+| **1** (sofort, billig, unabhängig) | K1 + K2 (Composer-Topologie) · A1 (Marken-Nachfit) · B3 (A/Bs) · B1 (Ensembling) | Stunden bis ~1 Tag je Maßnahme |
+| **2** | B2 (Tiling) · A2 (SDM/DCD) · K3 (Owner: W-Trace + Laufform) | 1–3 Tage je Maßnahme |
+| **3** | A3 (Kreuzungs-Variablen) · B4 (Init-Tausch, segmentweise) · A5 (Zwei-Pass-Zwang) | Tage bis 1 Woche |
+| **4** | A4 (Barriere) · A6 (GNC) · Route B2 (eigenes Modell) · Fusion | die großen Umbauten |
+
+Messdisziplin unverändert: jede Maßnahme bekommt VOR der ersten Zahl
+ihren §14-Eintrag (Hypothese, erwartete Wörter, Kill-Kriterien);
+Composer-Maßnahmen (K1/K2) messen dreifach — `soll_cross_agree`/
+`soll_zones_agree` je Wort, wordbench `word_loss`/`pair_loss` (dürfen
+nicht regressieren) und den deklarierten compose-golden-Bruch als
+datierte Re-Baseline; alle Nachfahr-Maßnahmen laufen auf den 10
+Dev-Wörtern, der Bestätigungssatz (Owner, sobald wieder am Tablet:
+Umlautwort, langes ſ, +1 Versal, Marken mit Absetzen) bleibt der
+Schlussstein, an dem jeder adoptierte Gewinn bestehen muss.
