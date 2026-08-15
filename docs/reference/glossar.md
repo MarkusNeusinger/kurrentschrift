@@ -38,18 +38,18 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 
 - **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1 · Ausreißer §4
 - **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3 · Bowl-Exit-Tuck §2
-- **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Chronik (tracebench) §4 · Cusp-Connector §3
-- **D** — dconn §4 · Deckung §3 · Duell-Ansicht §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
+- **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
+- **D** — dconn §4 · Deckung §3 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2 · extrapoliertes Landmark-Ziel §3
-- **F** — Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Frozen-Reference-Regel §4 · Fuge §1
+- **F** — Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Frozen-Reference-Regel §4 · Fuge §1
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Verschiebung §3
 - **K** — Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
-- **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
+- **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4
-- **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4
+- **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
@@ -57,10 +57,10 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenfolger §3 · Tintenlücke §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
-- **V** — Variante §2 · Vereinfachungs-Gate §5 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4
+- **V** — Variante §2 · Vereinfachungs-Gate §5 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4
 - **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Editor §5 · Wort-Trace §2
 - **X** — x-Höhe (`xh`) §1
-- **Z** — Zelle einsetzen §5 · zirkuläres Kriterium §4 · Zwei-Drittel-Gesetz §6
+- **Z** — Zelle einsetzen §5 · zirkuläres Kriterium §4 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
 
 ---
 
@@ -482,7 +482,10 @@ Motiv: Wo zwei Buchstaben sich berühren, liefert die nachträgliche
 Zerlegung *gar nichts* — genau dort, wo verbundene Schrift am
 verbundensten ist. Stufe A (Paar-Maßstab) ist gebaut und gemessen; Stufe B
 (Wort-Maßstab) ist freigegeben. **Reine Messschicht, ändert kein
-Rendering.** *Technisch:* `tools/pairlab/chain.py` + `chainbench.py`
+Rendering.** Auf der Duell-Seite trägt seit 2026-08-16 die GEWACHTE
+Variante (Struktur-Wächter, Arm ⑨) das Label **Kette** — Owner-
+Entscheid: fit-erfundene Kreuzungen sind nie richtig (→ Duell-Namen).
+*Technisch:* `tools/pairlab/chain.py` + `chainbench.py`
 → uebergaenge-befund.md §5c · Issue #278
 
 **Tintenfolger** *(ink follower)* — die geplante Verfeinerungsstufe ÜBER
@@ -1214,8 +1217,28 @@ auf Unterschriften gefittet ist). Der publizierte MATLAB-Code (Diaz et
 al. 2022, MIT) läuft hier nicht und ist deshalb die *Spezifikation*, nicht
 die Abhängigkeit. *Technisch:* `tools/routeg` (`graph.py` baut,
 `recover.py` läuft, `to_candidate.py` rahmt um; Kandidaten-Label
-`routeg-graph`, nie `routeg-wor`)
+`routeg-graph`, nie `routeg-wor`). *Anzeige-Name auf der Duell-Seite
+seit 2026-08-16:* **Nullprobe** (→ Duell-Namen).
 → proposals/tintenfolger.md §4b, qualitaetsmetrik.md §14
+
+**Duell-Namen** *(display names of the tracing duel)* — die lesbaren
+Verfahrensnamen der Duell-Seite und der späteren öffentlichen
+Methoden-Seite (Owner-Entscheid 2026-08-16), je ↔ technischer Name:
+**Hand** (die eigene S-Pen-Nachfahrung, die Referenz) · **Kette** (der
+Kettenfit MIT Struktur-Wächter — seit dem Entscheid die EINZIGE Kette:
+fit-erfundene Kreuzungen sind nie richtig, join-gebildete stecken im
+Soll-Budget) · **InkSight** (Small-p, derender-Prompt; der text-Prompt
+war Diagnose und ist von der Seite genommen) · **Nullprobe** (die
+prior-freie Kontrolle, technisch Route G/`tools/routeg` — die Probe
+ohne Wirkstoff). Geplant: **Zögling** (eigenes Trajektorien-Modell auf
+Engine-Paaren, Route B2) · **Vier Augen** (Fusion beider Routen) ·
+**Feinschliff** (Natürlichkeitsfilter als zweite Stufe) · **Chor**
+(ordnungs-bewusste Auswahl unter Varianten) · **Lotse** (Arbeitstitel:
+Skelett direkt fahren, Duktus als Karte an Abzweigungen). Technische
+Namen bleiben in Code und datierten §14-Einträgen unverändert — dieser
+Eintrag ist die Übersetzungstabelle. *Technisch:* Label-Marker in
+`tools/tracebench/view.py` (`CHAIN_MARKERS`/`CONTROL_MARKERS`)
+→ proposals/tintenfolger.md §7.8
 
 **Gute-Fortsetzung** *(good continuation)* — die Gestalt-Regel, mit der
 ein prior-freies Verfahren an einer Kreuzung entscheidet, welcher Ast

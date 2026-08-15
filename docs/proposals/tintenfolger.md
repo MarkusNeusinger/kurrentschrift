@@ -652,3 +652,53 @@ sich um > 0,05 xh bewegt oder deren Varianz-Verdikt kippt
 datierte Nachkalibrierung mit den P1/P2-Gates, (4) die
 `--split confirm`-Wörter bleiben dabei Bestätigung und wandern NIE
 in den Dev-Satz (Append-never).
+
+### 7.8 Namensfamilie und die Lotse-Route (Owner-Entscheid 2026-08-16)
+
+**Die Anzeige-Namen.** Die Duell-Seite (und die spätere öffentliche
+Methoden-Seite) führt die Verfahren unter lesbaren Namen; die
+technischen Namen (Kettenfit, Route G, `routeg-graph`) bleiben in
+Code und datierten §14-Einträgen unverändert — die Übersetzungstabelle
+ist der Glossar-Eintrag „Duell-Namen":
+
+| Anzeige-Name | technisch | Stand |
+|---|---|---|
+| **Hand** | die eigene S-Pen-Nachfahrung (Referenz) | steht |
+| **Kette** | Kettenfit MIT Struktur-Wächter (Arm ⑨) | steht |
+| **InkSight** | Small-p, derender-Prompt | steht (text-Prompt = Diagnose, von der Seite genommen) |
+| **Nullprobe** | Route G / `tools/routeg` | steht |
+| **Zögling** | eigenes Trajektorien-Modell (Route B2, §7.5) | geplant |
+| **Vier Augen** | Fusion (§7.6) | geplant |
+| **Feinschliff** | Natürlichkeitsfilter (zweite Stufe, Glättung mit Struktur-Wächter) | Kandidat |
+| **Chor** | ordnungs-bewusste Auswahl unter Varianten (B1-Nachfolger) | Welle 3 |
+| **Lotse** *(Arbeitstitel)* | Skelett direkt fahren, Duktus als Karte (unten) | Idee |
+
+**„Kette+ ist die einzige Kette."** Owner-Entscheid nach der
+Kreuzungs-Frage: es gibt KEIN Beispiel, wo eine vom Fit ERFUNDENE
+Kreuzung das Wort richtiger macht — join-gebildete Kreuzungen (der
+einlaufende Verbinder formt die e-Schleife) stecken bereits im
+Soll-Budget, und wo die HAND mehr kreuzt als die Komposition
+(t-Deckstrich, ß, e-Einläufe), ist das ein Composer-Defekt, der am
+Soll zu fixen ist, nie eine Fit-Freiheit. Die Duell-Seite zeigt
+darum nur noch die gewachte Variante als „Kette". Die
+PRODUKTIONS-Seite (structure_guard als Harvest-Default für die
+`traced`-Zeilen) ist ein eigener, messungs-affiner Schritt mit
+eigener §14-Vorregistrierung: dtw-neutral erwartet (Arm ⑨ maß Δ
+exakt 0), die Strukturzähler müssen Richtung Soll fallen, dbsnapshot
+vor jedem Re-Harvest, Owner-Go vor dem DB-Write.
+
+**Route „Lotse" (Owner-Idee 2026-08-16).** Nicht Buchstabe
+auflegen-und-verformen (Kette), sondern wie die Nullprobe DIREKT auf
+der Tinten-Mitte fahren (Skelett-Graph) — und nur an den
+Entscheidungsstellen (Kreuzung, Berührung, Abzweig, Lücke) den
+Duktus wie eine KARTE fragen: links oder rechts? Geometrie damit
+ganz aus dem Skelett (die Nullprobe zeigt, dass genau das perfekt
+auf der Tinte liegt: AIoU 0,833 > Hand 0,685), Ordnung, Topologie
+und jeder Abbiege-Entscheid ganz aus dem Prior (komponierte Bahn
+oder Chain-Init als Karte) — die Doktrin „Geometrie aus der Tinte,
+Ordnung aus dem Prior" radikaler als die Kette, und kein
+#278-Bruch, denn der Duktus entscheidet die Route. Bausteine liegen
+bereit: der routeg-Skelettgraph, `landmarks.py`, das Soll-Budget
+(Kreuzungen/Retraces a priori), Retrace = dieselbe Kante zweimal
+fahren, Marken per Prior zuweisen, Lücken als Prior-Brücke. Eigene
+§14-Vorregistrierung VOR der ersten Zahl, wenn begonnen.

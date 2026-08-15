@@ -12,6 +12,43 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Changed
+
+- **Duel-method display names decided and propagated** (owner decision
+  2026-08-16): the readable method family is Hand · Kette · InkSight ·
+  Nullprobe (planned: Zögling · Vier Augen · Feinschliff · Chor ·
+  Lotse as working title). The structure-guarded chain run is THE
+  „Kette" (fit-invented crossings are never right — join-formed ones
+  live in the Soll budget, hand-vs-composition gaps are composer
+  defects to fix at the source), the duel page carries ONE InkSight
+  (the text-prompt variant was diagnosis and leaves the page), and
+  the prior-free control is the „Nullprobe". The translation table
+  lives in the new glossary entry „Duell-Namen"
+  (+ `tintenfolger.md` §7.8 incl. the new owner-proposed „Lotse"
+  route sketch: ride the skeleton mid-ink, ask the ductus like a map
+  at junctions); technical names (Kettenfit, Route G, `routeg-graph`)
+  stay unchanged in code and dated §14 entries, with display-name
+  pointers added to `tools/routeg` and `tools/pairlab/follow.py`.
+
+### Fixed
+
+- **Duel viewer: the writing animation, the control's visibility, and
+  two lay legends** (`tools/tracebench/view.py`, all from the owner's
+  page review): the write-on animation now dashes in REAL geometric
+  units via `getTotalLength` instead of the normalised unit
+  pathLength — the old combination with `non-scaling-stroke`
+  mis-rendered in some engines as ink writing on the left while
+  erasing on the right until the final state snapped in; the
+  prior-free control gets a pinned high-chroma cyan (the order-based
+  palette had handed it the brown that vanished against the sepia
+  plate); a „Die Verfahren in einem Satz" explainer names per layer
+  what each method uses (human hand · ductus library + ink · learned
+  open model without ductus · pure image processing), and a column
+  legend explains dtw_xh/aiou/cross/retrace in lay terms — including
+  the honest note that none of today's columns punishes micro-wobble
+  smoothness. The regenerated page is republished to the same
+  artifact URL.
+
 ### Added
 
 - **Wave 1, B1: best-of-N InkSight ensembling — rejected by its own

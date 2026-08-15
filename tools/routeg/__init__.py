@@ -1,5 +1,8 @@
 """Route G of the Tintenfolger duel — the prior-free geometric CONTROL.
 
+Display name on the duel page and in German docs: "Nullprobe" (the blank
+probe — owner decision 2026-08-16, see the glossary entry "Duell-Namen").
+
 Recovers a writing order from the ink alone: skeleton → segment graph →
 traversal, with no ductus prior, no template and no learning anywhere. Its role
 is not "competitor" but control — the difference between it and the chain fit on

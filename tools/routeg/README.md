@@ -1,5 +1,8 @@
 # routeg — the prior-free control of the Tintenfolger duel (measurement only)
 
+> Display name on the duel page and in German docs: **Nullprobe**
+> (owner decision 2026-08-16; glossary entry „Duell-Namen").
+
 Recovers a writing order from the ink alone — skeleton → segment graph →
 good-continuation traversal — and turns it into a `tools/tracebench` candidate.
 This is route G of `docs/proposals/tintenfolger.md` §4b.
