@@ -88,16 +88,20 @@ BOWL_EXIT_TUCK_BASES = frozenset({"b", "c", "d", "o"})
 BOWL_EXIT_CLEARANCE = 0.0
 ARCADE_ENTRY_BASES = frozenset({"m", "n"})
 ARCADE_ENTRY_CLEARANCE = INK_CLEARANCE  # declared-but-neutral by construction
-# Clearance when the previous exit tangent points BACKWARD (the w/v bow curls
-# left at its end): there the join must travel over the whole bow before it
-# can fall into the next entry — the plates give those pairs visibly more room
-# (pairlab calibration 2026-07-11: w→e/i occurrences need +0.23 xh median on
-# top of the composed spacing; 0.30 was the bench optimum of that era's
-# 0.24–0.37 sweep). Re-calibrated wave-2 P1 against the 19 DISSECTED backward
-# joins of the hand (the better instrument: harvest body frame, per-join):
-# the composed advance ran +0.19 median past the measured one — the jul-11
-# number was read against the pre-registration-fix overlay.
+# Clearance when the previous exit tangent points BACKWARD: the join must
+# travel back over the exit before it can fall into the next entry. 0.11 is
+# the wave-2 P1 re-calibration against the hand's dissected backward joins
+# (w/v bows ran +0.21 median past them at the jul-11 value 0.30, which was
+# read against the pre-registration-fix overlay; capital returns prefer the
+# tight value on the bench too, W per dissection as well). The named
+# EXCEPTION is longs: its descender-loop return needs the old room — the
+# owner's streiten find; reducing it pushed longs→t to −0.16 per dissection
+# and the global registration dragged the whole word off the ink. The two
+# bench longs-words split their ruler vote (streiten −0.034 / schießen
+# +0.025), the dissected longs row sides with 0.30; the confirmation set
+# re-checks this exception.
 BACKWARD_INK_CLEARANCE = 0.11
+LONGS_BACKWARD_CLEARANCE = 0.30
 # The y-band the ink clearance is measured in: where connectors travel and the
 # next letter's body sits. Ink above it (ascender loops) or below (descenders)
 # may overlap the neighbour's column like on the teaching plates.
@@ -1959,9 +1963,9 @@ def compose_word(
                 # can fall into the next entry (calibrated jul-11; the jul30
                 # gap measurement still has w→e WIDER on the plate, so the
                 # bins must not tighten it).
+                backward_clearance = LONGS_BACKWARD_CLEARANCE if prev.base == "longs" else BACKWARD_INK_CLEARANCE
                 desired_entry_x = max(
-                    prev.exit[0] + CONNECT_GAP - tuck,
-                    prev.ink_max_x + BACKWARD_INK_CLEARANCE - (ink_min_x - entry_xy[0]),
+                    prev.exit[0] + CONNECT_GAP - tuck, prev.ink_max_x + backward_clearance - (ink_min_x - entry_xy[0])
                 )
                 placement_rule = "backward_clearance"
             arm_exempt = forward and BOW_EXIT_Y < prev.exit[1] <= HIGH_EXIT_Y and prev.tangent_deg < ARM_TAN_MAX_DEG

@@ -14,6 +14,26 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Wave 2, P1b: the backward-clearance class gets its named longs
+  exception** (`core/compose.py`, owner find on the streiten
+  overlay: the word's FIRST letter sat beside the ink). The P1
+  per-join re-measurement on streiten itself acquitted the t-exits
+  (−0.07/−0.04 after calibration) and convicted `longs→t`: the
+  longs descender exits BACKWARD and fell into the uniformly
+  reduced backward clearance (−0.156 per dissection; the global
+  registration then pushed the whole word off the ink). Re-split by
+  left letter: w/v (n=12) and capital W want the re-calibrated
+  0.11; `longs` keeps `LONGS_BACKWARD_CLEARANCE` = 0.30 as the
+  named exception (its dissected row sides with 0.30; the two bench
+  longs-words split their ruler vote — confirmation-set item).
+  `word_loss` 0.108991 → **0.108446**, `pair_loss` unchanged,
+  exactly ONE word moves vs. merged P1 (streiten 0.189 → 0.154),
+  soll agreement unchanged; the in-between attempt (restoring ALL
+  non-w/v backward exits to 0.30) was measured and rejected — a
+  correction class can be cut too wide, too. compose-golden
+  regenerated as the declared re-baseline; §14 records the
+  corrected attribution in a dated addendum.
+
 - **Wave 2, P1: the advance calibration from the measured joins —
   the red now sits on the ink** (`core/compose.py`; owner find on
   the K1b overlays: the composition drifted progressively right of
