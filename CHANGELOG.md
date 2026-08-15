@@ -14,6 +14,33 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Wave 2, P1: the advance calibration from the measured joins —
+  the red now sits on the ink** (`core/compose.py`; owner find on
+  the K1b overlays: the composition drifted progressively right of
+  the specimen ink on long words). Diagnosis chain, all
+  pre-registered in `qualitaetsmetrik.md` §14 („Welle 2 · P1"): a
+  per-slot drift profile over the 63 bench words (median −0.0375 xh
+  per letter too wide), then the SIGNED per-join advance error over
+  the 218 dissected joins of the hand (median +0.05, two class
+  errors in opposite directions), then report-only placement-rule
+  provenance on every generated connector — the one uniform
+  ink-clearance floor carried both classes. Adopted after a
+  single-knob decomposition sweep: the BOUNDED bowl-exit tuck
+  (b/c/d/o clearance 0.0 — columns may touch, never overlap; the
+  full measured tuck collided in word context and was rejected),
+  the backward w/v clearance 0.30 → 0.11 (the jul-11 value was
+  calibrated against the pre-registration-fix overlay), and the
+  bar rise slope 0.55 → 0.69. Honest negative kept on record: the
+  measured arcade-entry air (n/m, −0.18 per dissection) regresses
+  the word bench and is not adopted; the r→e arm-fuse deficit is
+  real but entangled with the r-arm template length. Results:
+  `word_loss` 0.110983 → **0.108991**, `pair_loss` 0.165725 →
+  **0.146602** (the largest pair improvement in the bench's
+  history), `meas_doff` median 0.195 → **0.131**, signed overall
+  median +0.050 → +0.010, and `zwei` gains its second retrace zone
+  (`soll_zones_agree` 8/10 → 9/10). compose-golden regenerated as
+  the declared re-baseline. Glossary gains „Bowl-Exit-Tuck".
+
 - **Wave 1, A1: the opt-in mark refit halves the chain candidate's
   mark position error** (`tools/pairlab/marks.py`, wired as
   `HarvestOptions.mark_refit` → `tools.tracebench.run --mark-refit`,

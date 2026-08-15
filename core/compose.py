@@ -71,14 +71,33 @@ CONNECT_GAP = 0.16
 # words the bench flagged as far too narrow (einen/einer/wenn/zwei) all contain
 # such exits, while exit≈ink-edge words (das, mit) were already sized right.
 INK_CLEARANCE = 0.14
+# Class-aware clearance (wave-2 P1, calibrated on the 218 dissected joins of
+# the 1922 hand — qualitaetsmetrik §14 "Welle 2 · P1"): the one uniform floor
+# carried both class errors with opposite signs. After a CLOSED-BOWL exit
+# (b/o/c/d) the hand tucks the next letter toward the bowl's counter — the
+# measured surplus was +0.20 xh median (b +0.42 · o +0.30 · c +0.25 ·
+# d +0.12). The adopted clearance is the BOUNDED tuck 0.0 (columns may
+# touch, never overlap): the full measured tuck (−0.06, permitted overlap)
+# kept the pair gain but regressed the word bench through collisions —
+# measured and rejected in the §14 sweep. The mirrored ARCADE-entry air
+# (n/m after a non-bowl letter, −0.18 measured) regressed the word bench
+# with no pair effect and is deliberately NOT adopted (honest negative in
+# §14); the constant stays at the base clearance so the class reads as
+# declared-but-neutral.
+BOWL_EXIT_TUCK_BASES = frozenset({"b", "c", "d", "o"})
+BOWL_EXIT_CLEARANCE = 0.0
+ARCADE_ENTRY_BASES = frozenset({"m", "n"})
+ARCADE_ENTRY_CLEARANCE = 0.14
 # Clearance when the previous exit tangent points BACKWARD (the w/v bow curls
 # left at its end): there the join must travel over the whole bow before it
 # can fall into the next entry — the plates give those pairs visibly more room
 # (pairlab calibration 2026-07-11: w→e/i occurrences need +0.23 xh median on
-# top of the composed spacing; the standard clearance already handled the
-# audit's collapse, this widens it to the measured rhythm — 0.30 is the bench
-# optimum of the 0.24–0.37 sweep, slightly under the raw calibration median).
-BACKWARD_INK_CLEARANCE = 0.30
+# top of the composed spacing; 0.30 was the bench optimum of that era's
+# 0.24–0.37 sweep). Re-calibrated wave-2 P1 against the 19 DISSECTED backward
+# joins of the hand (the better instrument: harvest body frame, per-join):
+# the composed advance ran +0.19 median past the measured one — the jul-11
+# number was read against the pre-registration-fix overlay.
+BACKWARD_INK_CLEARANCE = 0.11
 # The y-band the ink clearance is measured in: where connectors travel and the
 # next letter's body sits. Ink above it (ascender loops) or below (descenders)
 # may overlap the neighbour's column like on the teaching plates.
@@ -459,7 +478,10 @@ FORK_APEX_MAX_Y = 1.05
 BAR_EXIT_BASES = frozenset({"t", "f"})
 BAR_CROSS_MIN_Y = 0.2  # a plausible bar/flag crossing sits mid-band
 BAR_CROSS_MAX_Y = 0.7
-BAR_RISE_SLOPE = 0.55
+# Re-calibrated wave-2 P1: at 0.55 the composed t-joins ran +0.16 xh median
+# past the hand's six dissected ones; 0.69 removes the median surplus at the
+# typical coupling rise (~0.43 xh).
+BAR_RISE_SLOPE = 0.69
 # Kept bar arc past the stem crossing (xh). Measured on the authored
 # references: mit's free word-final bar tip sits 0.16–0.22 xh past its
 # stem passes; unter's bound exit pass clears the stem ink ~0.1 xh
@@ -1917,7 +1939,16 @@ def compose_word(
                 # whose below-arm edge + top-bin knob guard were this same
                 # computation at two fixed heights. A capital restart gets
                 # the plates' wider room (see CAP_INK_CLEARANCE).
-                clearance = CAP_INK_CLEARANCE if prev.cap_retrace else INK_CLEARANCE
+                if prev.cap_retrace:
+                    clearance = CAP_INK_CLEARANCE
+                elif prev.base in BOWL_EXIT_TUCK_BASES:
+                    # Bowl-exit tuck (see BOWL_EXIT_TUCK_BASES): the hand
+                    # nests the next letter into the bowl's counter.
+                    clearance = BOWL_EXIT_CLEARANCE
+                elif _key_base(slot.key, slot.position) in ARCADE_ENTRY_BASES:
+                    clearance = ARCADE_ENTRY_CLEARANCE
+                else:
+                    clearance = INK_CLEARANCE
                 gap_term = prev.exit[0] + CONNECT_GAP - tuck
                 floor_term = _profile_clearance_x(prev.ink_profile, ink_min_profile, entry_xy[0], clearance)
                 desired_entry_x = max(gap_term, floor_term)

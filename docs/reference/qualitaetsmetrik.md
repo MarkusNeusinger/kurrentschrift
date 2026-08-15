@@ -4510,3 +4510,39 @@ erlaubt; dazu zwei klar überschießende Spezialregeln (Rückwärts-
 Clearance, Balken-Steiglinie). Stufe (ii) kalibriert genau diese
 vier Stellen aus den gemessenen Medianen; `arm_fuse` erst nach
 Sichtprüfung.
+
+**Stufe (ii) gemessen — Einzelzerlegung, drei adoptiert, eine
+ehrlich verworfen.** Vorab die `arm_fuse`-Sichtprüfung: das
+Defizit ist REAL (Drift +0,49 und doff −0,66 zeigen in dieselbe
+Richtung, das fusionierte e sitzt sichtbar zu nah am r), aber mit
+der LÄNGE des r-Arms im Template verschränkt — eine reine
+Platzierungskorrektur risse die Berührung auf; bleibt draußen
+(eigener Kandidat, mutmaßlich Chart-/Laufform-Stufe). Der
+Gesamt-Fix aller vier Kalibrierungen verletzte Gate (a)
+(`word_loss` 0,110983 → 0,114252 bei `pair_loss` −0,023) — die
+Einzelzerlegung fand die Ursachen: **Bowl-Voll-Tuck** (Clearance
+−0,06, erlaubte Überlappung) allein: words +0,0015 / pairs −0,022
+— die Überlappung kollidiert im Wortkontext; **gebundener Tuck**
+(Clearance 0,0, Berührung statt Überlappung): words −0,0001 /
+pairs **−0,018** — hält fast den ganzen Paar-Gewinn ohne
+Wort-Kosten → ADOPTIERT. **Arkaden-Luft** (0,32) allein: words
++0,0043, pairs unbewegt → VERWORFEN als ehrliches Negativ (das
+per-Dissektion gemessene Defizit −0,18 bleibt stehen und
+unerklärt adressiert; Wiedervorlage am Bestätigungssatz).
+**Rückwärts-Clearance** 0,30 → 0,11: words −0,0019 / pairs
+−0,0013 → ADOPTIERT (die jul-11-Kalibrierung 0,30 war gegen das
+Overlay der Vor-Registrierungs-Ära gelesen). **Balken-Steigung**
+0,55 → 0,69: ruler-neutral (words +0,00003), doff-wahr →
+ADOPTIERT. **Endstand A′+C+D:** `word_loss` 0,110983 →
+**0,108991** (Gate a ✓), `pair_loss` 0,165725 → **0,146602**
+(größte Paar-Verbesserung der Bench-Historie), `meas_doff`-Median
+0,195 → **0,131**; signierte Klassen-Mediane: gesamt +0,050 →
+**+0,010** (Ziel |≤0,02| ✓), backward +0,189 → −0,001, bar
++0,159 → −0,040, Bowl-Floor +0,206 → +0,049 — nichts überschießt
+(Gate b ✓). Gate (c): `soll_cross_agree` 9/10 unverändert,
+`soll_zones_agree` 8/10 → **9/10** — `zwei` gewinnt durch die
+kalibrierte w-Platzierung seine zweite Retrace-Zone (= Hand); die
+einzigen Rest-Abweichler sind die zwei Chart-Fälle (linken-k,
+Wer-W). compose-golden als deklarierte Re-Baseline regeneriert,
+1260 Tests grün. Die Werte-Historie der Wordbench-Headline wird in
+§6 beim nächsten Release-Schnitt nachgeführt.
