@@ -4555,3 +4555,30 @@ verteilt den Rest übers Wort (longs→t springt von 0,03 auf 0,36,
 ohne dass eine adoptierte Regel diesen Join berührt). Die
 t-Join-Stichprobe ist dünn (n=6, Spanne +0,15…+0,21) — der
 Bestätigungssatz prüft die 0,69 nach.
+
+**Nachtrag P1b `aug15` — der streiten-Fund des Owners korrigiert
+die Rückwärts-Klasse.** Die t-Exit-Attribution des Absatzes oben
+war FALSCH: die per-Join-Nachmessung an `streiten` selbst zeigt
+die t-Joins nach der Kalibrierung fast perfekt (t→r −0,067 ·
+t→e −0,040) — der Schuldige ist `longs→t`, denn der
+longs-Abschwung exitiert RÜCKWÄRTS und fiel mit in die pauschal
+reduzierte Rückwärts-Clearance (−0,156 per Dissektion, und die
+globale Registrierung schob das ganze Wort neben die Tinte —
+Owner: „gleich der erste Buchstabe liegt nicht übereinander").
+Die Klassen-Nachmessung je linkem Buchstaben: w/v (n=12) wollen
+die 0,11 (jetzt +0,02, alt +0,21), Versal-W will sie ebenfalls
+(per Ruler UND Dissektion), die übrigen Versalien sind
+n=1-Singletons mit Ruler-Dissektions-Konflikt und bleiben beim
+Ruler-Präferenzwert 0,11 — die benannte AUSNAHME ist `longs`
+(`LONGS_BACKWARD_CLEARANCE` 0,30): sein Abschwung-Rücklauf
+braucht den alten Raum (die zwei Bench-longs-Wörter splitten ihr
+Ruler-Votum ±0,03, die einzige dissezierte longs-Zeile stimmt für
+0,30; Wiedervorlage am Bestätigungssatz). Endstand P1b:
+`word_loss` 0,108991 → **0,108446**, `pair_loss` unverändert
+0,146602, gegen den gemergten P1-Stand bewegt sich EXAKT ein Wort
+(`streiten` 0,189 → 0,154), Soll-Agree unverändert 9/10 · 9/10,
+compose-golden regeneriert (deklarierte Re-Baseline). Der
+Fehlversuch dazwischen — ALLE Nicht-w/v-Rückwärts-Exits auf 0,30
+zurück — wurde gemessen und verworfen (words +0,0009, drei Wörter
+regressieren): auch eine Korrektur-Klasse kann zu breit
+geschnitten sein.
