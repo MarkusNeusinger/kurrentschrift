@@ -4915,3 +4915,34 @@ Einfall statt gerader Balken-Linie) den +126°-Ankunftsfehler
 trägt — das wäre ein anderer Knopf und braucht seine eigene
 Vorregistrierung. K3 und K2 werden trotzdem gemessen (andere
 Mechanismen), mit entsprechend gedämpfter Erwartung.
+
+**P3-K3 gemessen `aug16` — verworfen am Paar-Gate; der Fund ist
+der Wort/Drill-Split.** Vorab die Diagnose: die Klasse koppelt
+heute INKONSISTENT — o→r trimmt auf den generischen 0,78-Punkt
+(ÜBER dem Soll-Band 0,685), o→n/w→i koppeln am Chart-Fuß
+(0,58–0,63, darunter), weil ein Spline-Resampling-Zittern von
+0,0004 xh den strengen Monotonie-Wächter von
+`_entry_couple_index` abbrechen lässt — der generische O2-Trim
+ist für Arkaden-Köpfe still deaktiviert (eigener
+Bugfix-Kandidat, nicht in dieser Regel behoben; K3 nutzt einen
+jitter-toleranten lokalen Scan, Schwelle 0,02/Sample). Regel
+umgesetzt als klassen-einheitliche Kopplung bei Fuß + Lift
+(ersetzt beide Fehlstände), Feuer-Nachweis exakt in der Klasse
+(von o→n · will w→i · Zorn/Sporn o→r · Drills on/bi/wi),
+Kontrollen (kann/wenn/schwer/zwei) byte-identisch, das
+compose-golden bricht hier WIRKLICH (wovon/Morgen tragen die
+Klasse). Leiter: words 0,108091 → 0,108082 (0,07) → 0,107971
+(0,11) — die WÖRTER stimmen erstmals größtenteils GLEICHGERICHTET
+für die Regel (von −0,0090 · will −0,0019 · Sporn +0,0002 ·
+Zorn +0,0031); aber pairs 0,146602 → 0,147337 (0,07) → 0,147162
+(0,11), getragen vom Drill `on` (+0,0172, dazu bi +0,0018,
+wi −0,0006). Gate (a) verlangt BEIDE Lineale → VERWORFEN,
+`COVER_ARCADE_ENTRY_LIFT` bleibt DEKLARIERT-ABER-NEUTRAL (0,0)
+für die Bestätigungssatz-Nachkalibrierung (K3 ruht auf n = 6).
+Der Fund: das Wort `von` und der Drill `on` — nach H2-Doktrin
+DERSELBE Übergang derselben Hand — stimmen am Ruler
+GEGENEINANDER (−0,0090 vs. +0,0172); die Beleg-Varianz-Serie
+(Arkaden-Luft · K1 · K3) hat damit ihre dritte Ausprägung:
+Wort-Platte vs. Paar-Drill. Offen bleibt der gemessene
+o→r-Überstand (0,78 komponiert vs. 0,685 Soll), den Zorn beim
+Absenken trotzdem ablehnt.

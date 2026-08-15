@@ -504,6 +504,21 @@ BAR_CROSS_MAX_Y = 0.7
 # OPPOSITE directions (fechten's t→e halves, streiten's worsens); the
 # knob stays for the confirmation-set re-calibration (K1 rests on n=7).
 BAR_ENTRY_COUPLE_Y: float | None = None
+# P3-K3 (pre-registered aug16, qualitaetsmetrik §14 Welle 2 P3): after a
+# cover-bow exit (o/b Kringel, w/v bow) the hand meets an arcade letter's
+# Anstrich ABOVE its mid-height chart foot (measured arrival y 0.685 vs
+# the composed 0.58-0.63 foot coupling). The lift raises the couple point
+# to the first lead-in sample this many xh above B's foot; the piece
+# below is replaced by the join. 0.0 = rule off. DECLARED-BUT-NEUTRAL:
+# the aug16 ladder (0.07/0.11) was measured-and-rejected on the pair
+# gate — the WORDS vote for the lift (von −0.009, will −0.002, net
+# word_loss falls), but the Abb.-20 DRILLS of the same joins reject it
+# (on +0.017, bi +0.002, pair_loss rises) — word context and drill
+# context of the SAME transition disagree; kept for the
+# confirmation-set re-calibration (K3 rests on n=6).
+COVER_ARCADE_EXIT_BASES = frozenset({"o", "b", "v", "w"})
+COVER_ARCADE_ENTRY_BASES = frozenset({"n", "m", "i", "r"})
+COVER_ARCADE_ENTRY_LIFT = 0.0
 # Re-calibrated wave-2 P1: at 0.55 the composed t-joins ran +0.16 xh median
 # past the hand's six dissected ones; 0.69 removes the median surplus at the
 # typical coupling rise (~0.43 xh).
@@ -1191,6 +1206,7 @@ def _connector_centerline(
     fork_couple_idx: int | None = None,
     land_deg: float | None = None,
     bar_low_couple: bool = False,
+    arcade_lift_idx: int = 0,
 ) -> tuple[list[Point], int]:
     """Centerline of the Übergang from A's exit into B's entry + the entry trim.
 
@@ -1266,6 +1282,12 @@ def _connector_centerline(
             entry_trim = _flank_couple_index(first_line, dx, p0, slope)
             if entry_trim:
                 return _straight_connector(p0, first_line, dx, entry_trim), entry_trim
+    # P3-K3 cover-bow → arcade couple (see COVER_ARCADE_ENTRY_LIFT): the
+    # class couples at foot + lift, REPLACING what the generic path chose —
+    # today that is inconsistently the foot (o→n, jitter-blocked 0.78 trim)
+    # or the full 0.78 trim (o→r, above the measured arrival band).
+    if arcade_lift_idx:
+        entry_trim = arcade_lift_idx
     couple_line = first_line[entry_trim:]
     # End exactly on the next glyph's first ink sample so the join sits
     # on the centerline the entry tangent is measured from.
@@ -2199,6 +2221,27 @@ def compose_word(
             # plates never enter a round body at its top (see
             # CAP_RESTART_BASES) — the garland/align grammar runs instead.
             high_couple = _key_base(slot.key, slot.position) in HIGH_COUPLE_BASES and not prev.base[:1].isupper()
+            # P3-K3 (see COVER_ARCADE_ENTRY_LIFT): the lifted arcade couple
+            # index, passed as a connector fallback.
+            arcade_lift_idx = 0
+            if (
+                COVER_ARCADE_ENTRY_LIFT > 0.0
+                and prev.base in COVER_ARCADE_EXIT_BASES
+                and _key_base(slot.key, slot.position) in COVER_ARCADE_ENTRY_BASES
+                and first_line
+            ):
+                # Jitter-tolerant scan instead of _entry_couple_index: the
+                # spline-resampled lead-in carries sub-0.001 y-dips that its
+                # strict monotony guard reads as "turns downward" (the same
+                # jitter silently disables the generic 0.78 trim for arcade
+                # heads); a real apex turn falls far faster than 0.02/sample.
+                target = first_line[0][1] + COVER_ARCADE_ENTRY_LIFT
+                for i in range(1, len(first_line) - 1):
+                    if first_line[i][1] >= target:
+                        arcade_lift_idx = i
+                        break
+                    if first_line[i][1] < first_line[i - 1][1] - 0.02:
+                        break
             centerline, entry_trim = _connector_centerline(
                 prev.exit,
                 prev.tangent_deg,
@@ -2215,6 +2258,7 @@ def compose_word(
                 fork_couple_idx=fork_couple_idx,
                 land_deg=entry_land_deg,
                 bar_low_couple=bar_low_couple,
+                arcade_lift_idx=arcade_lift_idx,
             )
             if prev.cap_retrace:
                 # The retrace ends AT the departure the connector starts
