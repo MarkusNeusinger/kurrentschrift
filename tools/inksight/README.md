@@ -174,6 +174,18 @@ prepare → to_candidate, and the candidate contract (frame literal, wire bounds
 `status` on violation). `run_inksight.py` is deliberately not unit-tested —
 it cannot even be imported in this environment; its check is the smoke run.
 
+## Measured on the full T0 run (2026-08-15)
+
+All ten dev words, this machine (WSL2, 8 cores, `tensorflow-cpu`): `derender`
+and `text` cost ≈ 2–6 min per word; `r+d` cost ≈ 43 min per word (it decodes
+recognition text first) and was cut after ONE data point — which suffices for
+the OOD diagnosis: the model reads the Sütterlin „Wer" as `Olomi`. No call
+reached the 1024-token ceiling (max 441, `linken`). Bench results and the
+reading (raw Small-p at 1.5× the chain fit's dtw and 8.6× ahead of the
+prior-free control; crossings cleaner than the chain, retraces lost; the
+`text` prompt WORSE than plain `derender` on this out-of-distribution script)
+live in `docs/reference/qualitaetsmetrik.md` §14 „Route B T0".
+
 ## Measured on the smoke run (2026-08-14)
 
 Machine: WSL2, 8 cores, no GPU (`tensorflow-cpu`), the environment recipe

@@ -110,6 +110,20 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Route B T0 measured: raw InkSight Small-p on the dev words**
+  (doc-only — the pipeline shipped in #340; results in
+  `qualitaetsmetrik.md` §14 „Route B T0" and the tool README). Raw,
+  unadapted, CPU: `derender` lands at dtw 0.0956 median — 1.5× the
+  chain fit and 8.6× ahead of the prior-free control — with CLEANER
+  crossings than the chain (1 invented ring) but most retraces lost
+  (+20 pen lifts): exactly the class the ductus prior owns. Against
+  the paper's ablation, the word-conditioned `text` prompt is WORSE
+  than plain `derender` on this out-of-distribution script, and the
+  `r+d` prompt (43 min/word on CPU) was cut after one diagnostic data
+  point — it reads the Sütterlin „Wer" as „Olomi". T0 is the
+  documented OOD baseline; the next route-B step remains an own small
+  trajectory model on engine pairs.
+
 - **The bench report carries the ductus target beside every word**
   (`tools/tracebench/soll.py`, the owner's standing test as a report
   column family): `SollRow`/`ductus_soll` moved out of the duel viewer
