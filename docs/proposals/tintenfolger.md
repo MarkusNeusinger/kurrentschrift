@@ -448,8 +448,9 @@ ist wortweise größer, als die Summe zeigt (`soll_cross_agree` 7/10,
   überzählige Kreuzung heben sich sonst auf), `word_loss` der
   t-Wörter.
 - **K2 — Pass-Through-Kopplung.** Jede Kopplungsregel endet den
-  Verbinder heute AUF dem Zielbuchstaben (`p3 = couple_line[0]`,
-  `compose.py:1194`) und löscht den Anstrich unter dem
+  Verbinder heute AUF dem Zielbuchstaben (der Endpunkt `p3` ist das
+  x-verschobene erste Tinten-Sample des Zielglyphen,
+  `core/compose.py:1194`) und löscht den Anstrich unter dem
   Kopplungspunkt (`:2100-2113`); die join-gebildete Schleife (d/e —
   in `die` ist die EINZIGE Hand-Kreuzung join-gebildet) entsteht nur
   dort, wo zufällig nicht getrimmt wird. Die Gegenprobe zeigt: Trim

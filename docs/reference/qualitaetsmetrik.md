@@ -4067,6 +4067,8 @@ liegt aber bei den Schnitt-Klassenregeln und der Kopplung
 (Unter-Kreuzen), nicht bei den Berührungen; Plan in
 `../proposals/tintenfolger.md` §7.
 
+### Route G `aug14` — die prior-freie Kontrolle: was der Duktus-Prior kauft
+
 Der Kontrollkandidat aus
 [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §4b, jetzt
 gemessen. **Was gelaufen ist, ist nicht der publizierte Code:** Das
