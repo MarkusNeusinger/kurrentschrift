@@ -403,16 +403,18 @@ _JS = """
       var t = 0;
       [].slice.call(g.querySelectorAll('path.ink')).forEach(function (p) {
         var len = parseFloat(p.getAttribute('data-len')) || 0;
-        // Constant pen speed: the arc decides the duration, the rate only scales it.
-        var dur = Math.max(80, (len / xh) / SPEED_XH_PER_S * 1000) / rate;
+        // Dash in REAL user units via getTotalLength — the normalised
+        // unit-pathLength + dash + non-scaling-stroke combination
+        // mis-renders during the animation in some engines (ink appearing
+        // to write on the left while erasing on the right; owner review
+        // 2026-08-15). The geometric length avoids the buggy code path.
+        var geo = len;
+        try { geo = p.getTotalLength() || len; } catch (err) { /* keep data-len */ }
+        // Constant pen speed: the arc decides the duration, the rate only
+        // scales it. The duration uses the SAME geometric length as the dash
+        // (the rounded path differs slightly from the unrounded data-len).
+        var dur = Math.max(80, (geo / xh) / SPEED_XH_PER_S * 1000) / rate;
         if (typeof p.animate === 'function') {
-          // Dash in REAL user units via getTotalLength — the normalised
-          // unit-pathLength + dash + non-scaling-stroke combination
-          // mis-renders during the animation in some engines (ink appearing
-          // to write on the left while erasing on the right; owner review
-          // 2026-08-15). The geometric length avoids the buggy code path.
-          var geo = len;
-          try { geo = p.getTotalLength() || len; } catch (err) { /* keep data-len */ }
           p.style.strokeDasharray = geo + ' ' + geo;
           p.style.strokeDashoffset = String(geo);
           running.push(p.animate(
