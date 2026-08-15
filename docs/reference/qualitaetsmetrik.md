@@ -4946,3 +4946,27 @@ GEGENEINANDER (−0,0090 vs. +0,0172); die Beleg-Varianz-Serie
 Wort-Platte vs. Paar-Drill. Offen bleibt der gemessene
 o→r-Überstand (0,78 komponiert vs. 0,685 Soll), den Zorn beim
 Absenken trotzdem ablehnt.
+
+**P3-K2 gemessen `aug16` — eindeutig verworfen: beide Lineale
+monoton gegen die Drehung.** Umsetzung als gedrehter Abgang auf
+dem geretteten Chord (`LOOP_ROUND_EXIT_ROT_DEG`; der d→Rund-Zug
+ist heute der High-Reversal-gerettete STRAIGHT-Chord — die Kubik
+krümmt mit gedrehtem d_out den Start, die Ankunft behält ihren
+Chord; der zweimal verworfene Stub-Trim blieb unangetastet).
+Feuer-Nachweis exakt in der Klasse (laden/der d→e · das/Soldaten
+d→a · Drill do; die d→i still), nur das Verbinder-Item bewegt
+sich. Leiter: words 0,108091 → 0,108286 (+24°) → 0,108409
+(+48°), pairs 0,146602 → 0,146694 → 0,146764 — BEIDE Lineale
+monoton schlechter, ohne Klassen-Split. Kill (a) feuert glatt →
+VERWORFEN, Konstante bleibt deklariert-aber-neutral (0,0). Damit
+ist die P3-Runde KOMPLETT: alle drei vorregistrierten
+Entry-Regeln sind gemessen und ehrlich negativ — die im
+FIT-Frame hochkohärenten Kopf-Konstanten der Vorstudie
+überleben die Brücke in den Composer an KEINEM der drei
+registrierten Knöpfe am aktuellen Ruler-Punkt. Stehend bleiben:
+(i) die Verbinderform-Hypothese für den +126°-Balken-Fehler
+(eigene Pre-Reg), (ii) der Jitter-Bugfix am O2-Trim (eigene
+Pre-Reg, latent für ALLE Arkaden-Köpfe), (iii) die
+Nachkalibrierung aller drei Knöpfe am Bestätigungssatz
+(Klassen-n 6–8 sind der wahrscheinlichste Grund, warum
+Median-Regeln gegen Beleg-Varianz verlieren).

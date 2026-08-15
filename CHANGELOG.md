@@ -14,6 +14,27 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Wave 2, P3: head coarticulation as entry class rules — all three
+  measured, all three honest negatives** (`core/compose.py` +
+  `qualitaetsmetrik.md` §14 „Welle 2 · P3"; owner priority). The
+  pre-study (248 dissected occurrences, Laufform-relative) proved the
+  asymmetry — tails are per-class constants, heads are real
+  coarticulation after high exits (p < 0.0001) — and three
+  pre-registered entry rules mapped it into the composer: K1 the low
+  bar→round couple (`BAR_ENTRY_COUPLE_Y`, shared placement/connector
+  index), K3 the unified cover-bow→arcade couple lift
+  (`COVER_ARCADE_ENTRY_LIFT`, replacing today's inconsistent
+  foot-vs-0.78 coupling), K2 the rotated d→round departure on the
+  rescued chord (`LOOP_ROUND_EXIT_ROT_DEG`, never the twice-rejected
+  stub trim). Every ladder was measured and killed by its own
+  pre-registered gate: K1's class words vote in opposite directions,
+  K3 wins the words but loses the drills of the SAME joins (von
+  −0.009 vs. drill `on` +0.017 — the word/drill split is the find),
+  K2 loses both rulers monotonically. All three knobs ship
+  DECLARED-BUT-NEUTRAL for the confirmation-set re-calibration;
+  rendering stays byte-identical. Side find: a 0.0004-xh spline
+  resampling jitter silently disables the generic 0.78 entry trim
+  for arcade heads (own bugfix candidate).
 - **Wave 1, B1: best-of-N InkSight ensembling — rejected by its own
   gate; the selection signal is the finding**
   (`tools/inksight/{augment,ensemble}.py` + a back-compatible

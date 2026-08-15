@@ -519,6 +519,16 @@ BAR_ENTRY_COUPLE_Y: float | None = None
 COVER_ARCADE_EXIT_BASES = frozenset({"o", "b", "v", "w"})
 COVER_ARCADE_ENTRY_BASES = frozenset({"n", "m", "i", "r"})
 COVER_ARCADE_ENTRY_LIFT = 0.0
+# P3-K2 (pre-registered aug16, qualitaetsmetrik §14 Welle 2 P3): the hand
+# departs d's trimmed loop exit ROTATED off the straight chord the
+# high-reversal rescue declares (measured compose-relative departure
+# error +48.0° ± 0.8, with the reach growing in 0 of 18 occurrences —
+# the twice-rejected stub TRIM stays untouched; the knob is the ANGLE).
+# Degrees counterclockwise added to the rescued chord departure; the
+# taut cubic then curves the launch while the arrival keeps its chord.
+# 0.0 = rule off.
+LOOP_ROUND_EXIT_ROT_DEG = 0.0
+LOOP_ROUND_ENTRY_BASES = frozenset({"e", "a", "o"})
 # Re-calibrated wave-2 P1: at 0.55 the composed t-joins ran +0.16 xh median
 # past the hand's six dissected ones; 0.69 removes the median surplus at the
 # typical coupling rise (~0.43 xh).
@@ -1207,6 +1217,7 @@ def _connector_centerline(
     land_deg: float | None = None,
     bar_low_couple: bool = False,
     arcade_lift_idx: int = 0,
+    loop_rotate_deg: float = 0.0,
 ) -> tuple[list[Point], int]:
     """Centerline of the Übergang from A's exit into B's entry + the entry trim.
 
@@ -1311,6 +1322,11 @@ def _connector_centerline(
     rescued = ((p0[1] < DESCENDER_EXIT_Y and d_out[1] < 0) or backward or high_reversal) and span > 0
     if rescued:
         d_out = ((p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span)
+        # P3-K2 loop→round departure (see LOOP_ROUND_EXIT_ROT_DEG): the
+        # hand leaves the trimmed loop rotated off this chord — curve the
+        # launch, keep the arrival on its chord.
+        if loop_rotate_deg:
+            d_out = _unit(math.degrees(math.atan2(d_out[1], d_out[0])) + loop_rotate_deg)
     # The entry tangent is measured from the COUPLED lead-in (the stub
     # dropped after a high exit, O2/ENTRY_COUPLE_Y); the bow-launch
     # clamp of the jul11 branch is subsumed by the crest-roll block
@@ -2242,6 +2258,13 @@ def compose_word(
                         break
                     if first_line[i][1] < first_line[i - 1][1] - 0.02:
                         break
+            # P3-K2 (see LOOP_ROUND_EXIT_ROT_DEG): the rotated loop→round
+            # departure, applied by the connector on its rescued chord.
+            loop_rotate_deg = (
+                LOOP_ROUND_EXIT_ROT_DEG
+                if prev.base == "d" and _key_base(slot.key, slot.position) in LOOP_ROUND_ENTRY_BASES
+                else 0.0
+            )
             centerline, entry_trim = _connector_centerline(
                 prev.exit,
                 prev.tangent_deg,
@@ -2259,6 +2282,7 @@ def compose_word(
                 land_deg=entry_land_deg,
                 bar_low_couple=bar_low_couple,
                 arcade_lift_idx=arcade_lift_idx,
+                loop_rotate_deg=loop_rotate_deg,
             )
             if prev.cap_retrace:
                 # The retrace ends AT the departure the connector starts
