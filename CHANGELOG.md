@@ -145,6 +145,32 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Arm ⑨: the topology guard — a round-level acceptance rule for the
+  ink follower** (`tools/pairlab/follow.py`, pre-registered in
+  `qualitaetsmetrik.md` §14 `aug16`): before the first round the
+  initialisation's own v2.1 structure class counts (crossings, retrace
+  zones, touches, overlaps — measured by the bench's own
+  `tools.tracebench.counters` on the assembled trace) become the
+  budget; a solved round that exceeds any class is re-solved with
+  halved travel bounds (at most `STRUCTURE_GUARD_MAX_RETRIES` = 2
+  times) and otherwise rejected back to the previous geometry
+  (`structure_rejected`, ending the loop). No new objective term — the
+  guard decides acceptance, the solver is untouched.
+  `FollowWeights.structure_guard` defaults to False (byte-identical,
+  pinned); `--structure-guard` enables it per arm, and every guarded
+  round records budget, counts and retries. Glossary gains
+  „Topologie-Wächter". Measured verdict in §14 (Arm ⑨): the guard's
+  contract holds perfectly on every rung — the first released follower
+  to pass the structure gate — but both pre-registered kill criteria
+  fire: dtw against the chain is exactly null (6–8 of 10 words
+  byte-identical, p = 1.0) because 13 of ~21 rounds exhaust their
+  retries. The release's ink gains and its structure inventions are
+  NOT separable — moving toward the ink IS the inventing. Route-A
+  conclusion: the chain fit already sits at the structure-safe optimum
+  of this formulation; the next levers are composer-side (placement,
+  joins) and route B. The guard stays in the repo as the first tool
+  that keeps a follower run guaranteed structure-clean.
+
 - **The bench report carries the ductus target beside every word**
   (`tools/tracebench/soll.py`, the owner's standing test as a report
   column family): `SollRow`/`ductus_soll` moved out of the duel viewer

@@ -3935,6 +3935,84 @@ muß 3 → 1 = ß-Budget, unter 5 → 4). Kandidat der Baseline ist die
 verifizierte Chain-Identität (`follow --rounds 0`,
 Byte-Identitäts-Pin) über den File-Provider.
 
+### Arm ⑨ `aug16` — Vorregistrierung: der Topologie-Wächter
+
+Geschrieben und committet VOR der ersten Zahl dieses Arms.
+
+**Befund, der den Arm begründet (v2.1-Zähler):** Schon die
+λ=1,0-Schwester ERFINDET Struktur gegenüber ihrer eigenen
+Chain-Initialisierung — Berührungen 17 → 27, erfundene Zonen 5 → 10,
+Kreuzungen m+s 11 → 15 — und Arm ① zeigte, dass jede Release-Sprosse
+am Struktur-Veto scheitert, während der Tinten-Zug selbst validiert
+ist (AIoU +0,10 überall). Die Hypothese, falsifizierbar: **Die
+Distanz-/AIoU-Gewinne des Release sind von seinen
+Struktur-Erfindungen trennbar.** Der Owner-Satz dazu: Kringel,
+Kreuzungen und Retraces sind duktus-fix und ändern sich durch das
+Verfeinern nicht.
+
+**Mechanismus (folger-seitig, opt-in, kein neuer Objective-Term):**
+eine Runden-AKZEPTANZREGEL statt einer Kraft. Vor Runde 1 wird das
+Struktur-Budget der Initialisierung gemessen — die v2.1-Klassenzählung
+(Kreuzungen · Retrace-Zonen · Berührungen · Überlagerungen,
+`tools.tracebench.counters` auf den assemblierten Pen-down-Polylinien
+des Runs, in xh-Einheiten). Eine gelöste Runde wird nur AKZEPTIERT,
+wenn keine Klassenzahl ihr Budget übersteigt; eine verletzende Runde
+wird mit HALBIERTEN Reisebudgets (`max_delta`/`connector_max_delta`)
+neu gelöst, höchstens zweimal; verletzt sie weiter, behält der Run die
+Geometrie der Vorrunde und die Runde ist als `structure_rejected`
+protokolliert (die Schleife endet — dieselbe Bewegung würde erneut
+scheitern). `FollowWeights.structure_guard` (bool, default False =
+byte-identisch, Pin) schaltet den Wächter je Arm zu; das Lineal misst,
+der Wächter entscheidet — derselbe Zähler, keine zweite Semantik.
+
+**Protokoll:** Sprossen prox ∈ {0,01 · 0,1} (die Release-Sprossen, auf
+denen Arm ① die größten Gewinne bei tödlichem Veto zeigte) und die
+1,0-Schwester als Kontrolle (der Wächter sollte auch ihren
+27-Berührungs-Drift einfangen), Basis sonst Arm-⑥-identisch. Gepaart
+über die 10 Dev-Wörter gegen die eingefrorene v2.1-Chain-Baseline;
+`stranded_anchors` bleibt Pflicht-Kostenspalte.
+
+**Kriterien:** Primär `dtw_xh` (Median der gepaarten Differenzen)
+fällt gegenüber der Chain-Baseline; Co-Primär Marken und Kreuzungen
+ohne Netto-Verschlechterung; der Wächter-KONTRAKT ist selbst messbar:
+jede Klassenzahl des Kandidaten ≤ der Chain-eigenen Zahl (Berührungen
+≤ 17, Zonen-spurious ≤ 5 …). Kosten-Wächter wie §14 üblich.
+
+**Kill-Kriterien:** Blockiert der Wächter auf den Release-Sprossen
+jede Bewegung (dtw im Rauschen der Kette, `max_anchor_motion` ≈ 0) →
+die Gewinne WAREN die Erfindungen, Formulierung verworfen, ehrliches
+Negativ. Laufen die meisten Runden in die Retry-Erschöpfung → der
+Mechanismus (Akzeptanz statt Kraft) ist ungeeignet, nächste Hypothese
+wäre ein differenzierbarer Abstands-Term, nicht mehr Retries. Keine
+Adoption eines Defaults ohne Owner-Go.
+
+**Ergebnis (`aug16`, beide Kill-Kriterien gefeuert — das wertvollste
+Negativ der Kampagne):** Der Wächter-KONTRAKT hält perfekt: Auf allen
+drei Sprossen bleibt jede Klassenzahl ≤ der Chain-eigenen (Kreuzungen
+m+s exakt 7+4, Berührungen ≤ 17, Zonen ≤ 7) — zum ersten Mal besteht
+ein released Folger das Struktur-Gate. Aber der Preis beantwortet die
+Hypothese abschlägig: dtw-Δ gegen die Kette ist EXAKT null (Δ-Median
+0,000000; 6–8 von 10 Wörtern byte-identisch, Sign-Test p = 1,0 auf
+allen Sprossen), weil 13 von ~21 Runden nach Retry-Erschöpfung
+zurückgewiesen wurden (26–28 Retries je Arm). Nur der AIoU-Rest der
+akzeptierten, gedämpften Runden bleibt (+0,033 bei prox 0,1 — ein
+Drittel des ungewachten +0,10). **Die Tinten-Gewinne des Release und
+seine Struktur-Erfindungen sind nicht trennbar: die Bewegung zur
+Tinte hin IST das Erfinden** — engeres Aneinander-vorbei-Schreiben
+senkt die Distanz und erzeugt exakt die Berührungen, die die Hand
+nicht hat. Konsequenz für Route A: Der Kettenfit steht bereits am
+struktur-sicheren Optimum dieser Formulierung; die verbleibende
+dtw-Lücke zur Hand ist mit „Form-Prior lösen" in keiner der fünf
+gemessenen Varianten (①⑤⑥⑥b⑨) zu kaufen. Die nächsten Hebel liegen
+COMPOSER-seitig (Platzierung/Joins — die Soll-Abweichler t · W ·
+join-Schleifen, plus die 9 erfundenen Berührungen der Komposition
+selbst) und bei fundamental anderen Kandidaten (Route B). Der
+Wächter selbst bleibt als Werkzeug im Repo (`structure_guard`,
+default False): er ist das erste Instrument, das einen Folger-Lauf
+GARANTIERT struktur-sauber hält, und der prox-0,1-Lauf ist als
+einziger struktur-sauberer Release-Kandidat auf der Duell-Seite.
+Artefakte: Chronik `arm9-wächter`.
+
 ### Route G `aug14` — die prior-freie Kontrolle: was der Duktus-Prior kauft
 
 Der Kontrollkandidat aus
