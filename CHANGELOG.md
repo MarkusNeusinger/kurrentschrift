@@ -14,6 +14,25 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Wave 1, K1: the bound t-bar keeps a measured overrun past its stem
+  crossing** (`core/compose.py`, `BAR_CROSS_OVERRUN_UNITS` = 0.2 xh,
+  measured on the authored references of `mit` and `unter`; the join
+  launches from the bar tip while the next letter's placement stays
+  anchored to the STEM). Pre-registered and measured in
+  `qualitaetsmetrik.md` §14 „Welle 1 · K1": the registered expectation
+  was REFUTED and the refutation is the find — at word level the
+  composed pen path always pierced the stem (the crossing was
+  bookkept as a join contribution), so K1 moves the ductus-fixed
+  crossing into the letter itself (the bound t's per-letter cell
+  becomes 1/1, matching the hand) without changing word topology. The
+  REAL t deficit sits in the stem retrace: the hand descends and
+  re-ascends the stem as two offset passes, the composition bridges
+  the return collinearly — invisible to the counters; K1b (an offset
+  generated return pass) is named as the next candidate. Gates:
+  `bench_loss` +0.0003 (kill threshold 0.002), `pair_loss`
+  byte-identical, only t-words moved; the compose-golden fixture is
+  regenerated as a declared re-baseline.
+
 - **The per-method optimization plan for the word-tracing campaign**
   (doc-only, `docs/proposals/tintenfolger.md` §7): built from a
   per-word × per-method defect matrix over all duel artifacts plus a

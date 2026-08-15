@@ -436,25 +436,36 @@ FORK_APEX_MAX_Y = 1.05
 # below it is drawn by the join, as the old baseline ride did). Bowls
 # keep the apex couple (the sa/sg drills).
 # Bar exit (t's crossbar, f's flag — jul30 plate measurement over all 8
-# joined occurrences): on the plates t's crossbar is a short DEAD-END
-# stroke ending AT the stem (right of it: 0.00–0.03 xh of ink — the chart
-# cell's long bar is table form, not running form), and the join is one
-# hairline leaving the STEM at y ≈ 0.34–0.53, rising at 16–27° into the
-# next letter's apex (0.88–1.00) at +1.16–1.52 xh from the stem. f's LOW
-# flag instead crosses the stem and CONTINUES as that very join. In bound
-# context t's rendered bar is therefore cut at the stem (word-final keeps
-# the full chart bar, like LOOP_EXIT) and the join launches from the
-# bar/stem CROSSING; f's flag tip continues along the same stem-anchored
-# rise line. The anchor is the exit stroke's LAST crossing with the
-# glyph's own earlier ink (t: the separate bar stroke crossing the body;
-# f: the flag self-crossing its stem inside the one stroke). A closed,
-# enumerated A-set — geometry alone cannot tell t's dead-end bar from a
+# joined occurrences): on the plates the ink right of t's stem at bar
+# height (0.00–0.03 xh of BAR ink — the chart cell's long bar is table
+# form, not running form) belongs to the join, one hairline leaving at
+# y ≈ 0.34–0.53 and rising at 16–27° into the next letter's apex
+# (0.88–1.00) at +1.16–1.52 xh from the stem. f's LOW flag instead
+# crosses the stem and CONTINUES as that very join. The authored hand
+# reference (aug15, qualitaetsmetrik §14 Welle 1 K1) settles the
+# TOPOLOGY of that ink: the exit pass runs THROUGH the stem (crossing
+# it) and continues as the join without a stop — so in bound context
+# t's rendered bar is cut a short measured overrun PAST its stem
+# crossing (word-final keeps the full chart bar, like LOOP_EXIT) and
+# the join launches from that bar tip; the stem crossing itself stays
+# the placement anchor (`stem_launch` — the plates put B off the STEM).
+# f's flag tip continues along the same stem-anchored rise line. The
+# anchor is the exit stroke's LAST crossing with the glyph's own
+# earlier ink (t: the separate bar stroke crossing the body; f: the
+# flag self-crossing its stem inside the one stroke). A closed,
+# enumerated A-set — geometry alone cannot tell t's crossbar from a
 # genuine crossing form like x, whose crossing stroke is a real letter
 # part.
 BAR_EXIT_BASES = frozenset({"t", "f"})
 BAR_CROSS_MIN_Y = 0.2  # a plausible bar/flag crossing sits mid-band
 BAR_CROSS_MAX_Y = 0.7
 BAR_RISE_SLOPE = 0.55
+# Kept bar arc past the stem crossing (xh). Measured on the authored
+# references: mit's free word-final bar tip sits 0.16–0.22 xh past its
+# stem passes; unter's bound exit pass clears the stem ink ~0.1 xh
+# after piercing it. Must exceed the structure counters' pierce margin
+# (0.05 xh) for the ductus-fixed crossing to register as one.
+BAR_CROSS_OVERRUN_UNITS = 0.2
 # Capital handover (jul31 — user find on Soldaten S→o, then measured on all
 # 22 joined capital→lowercase plate occurrences): NO high covering line
 # exists after any capital. The join is the ordinary lowercase grammar
@@ -1141,9 +1152,9 @@ def _connector_centerline(
     entry_trim = 0
     p0: Point = exit_pt
     # Bar-exit launch (see BAR_EXIT_BASES): one straight hairline from the
-    # exit — t's cut bar ends AT the bar/stem crossing, f's flag tip lies
-    # on the same stem-anchored line — rising into a high coupling on B
-    # (the measured 16–27° climb into the apex).
+    # exit — t's cut bar ends a measured overrun PAST the bar/stem
+    # crossing, f's flag tip lies on the same stem-anchored line — rising
+    # into a high coupling on B (the measured 16–27° climb into the apex).
     if stem_launch is not None:
         idx = fork_couple_idx
         if idx:
@@ -1712,10 +1723,12 @@ def compose_word(
 
         # Bar exit (see BAR_EXIT_BASES): t's crossbar / f's flag. The anchor
         # is the exit stroke's last crossing with the glyph's own earlier
-        # ink. In bound context t's bar is cut AT that crossing — the
-        # plates' running form ends it at the stem — and the join launches
-        # from there; f keeps its flag tip and only anchors the rise line.
-        # Word-final keeps the full chart form, like LOOP_EXIT.
+        # ink. In bound context t's bar is cut a measured overrun PAST
+        # that crossing (BAR_CROSS_OVERRUN_UNITS — the hand's exit pass
+        # runs through the stem) and the join launches from the kept bar
+        # tip; the crossing itself stays the placement anchor. f keeps its
+        # flag tip and only anchors the rise line. Word-final keeps the
+        # full chart form, like LOOP_EXIT.
         stem_launch: tuple[float, float] | None = None
         if slot.joins and _key_base(slot.key, slot.position) in BAR_EXIT_BASES and len(body_exit_line) >= 5:
             if bound_next:
@@ -1727,16 +1740,48 @@ def compose_word(
                     stem_launch = crossing[0]
                     cut = crossing[1]
                     if _key_base(slot.key, slot.position) == "t" and cut + 1 < len(body_exit_line):
-                        # Dead-end crossbar: everything right of the
-                        # crossing is table form — cut it, centerline AND
-                        # silhouette; the exit becomes the crossing itself.
+                        # Crossbar cut with overrun: everything past the
+                        # measured overrun beyond the stem crossing is
+                        # table form — cut it, centerline AND silhouette.
+                        # The kept tail pierces the stem (the hand's exit
+                        # pass runs THROUGH it) and the join launches from
+                        # the bar tip; `stem_launch` stays the placement
+                        # anchor.
                         bar = list(centerlines[last_body_idx])
-                        # The crossing lies INSIDE segment cut→cut+1: the
-                        # erased piece starts AT the crossing so the kept
-                        # sub-segment up to it survives the erase.
-                        piece = [list(stem_launch)] + bar[cut + 1 :]
-                        centerlines[last_body_idx] = bar[: cut + 1] + [list(stem_launch)]
-                        if last_body_idx < len(rings_by_stroke) and rings_by_stroke[last_body_idx]:
+                        # The crossing lies INSIDE segment cut→cut+1: walk
+                        # the overrun arc from the crossing along the
+                        # remaining bar, then cut; the erased piece starts
+                        # AT the kept tip so everything kept survives the
+                        # erase.
+                        kept_tail: list[list[float]] = [list(stem_launch)]
+                        remaining = BAR_CROSS_OVERRUN_UNITS
+                        prev_pt = stem_launch
+                        tail_end = cut
+                        for bi in range(cut + 1, len(bar)):
+                            seg = math.dist(prev_pt, bar[bi])
+                            if seg >= remaining:
+                                if seg > 1e-12:
+                                    f = remaining / seg
+                                    kept_tail.append(
+                                        [
+                                            prev_pt[0] + (bar[bi][0] - prev_pt[0]) * f,
+                                            prev_pt[1] + (bar[bi][1] - prev_pt[1]) * f,
+                                        ]
+                                    )
+                                tail_end = bi - 1
+                                break
+                            remaining -= seg
+                            kept_tail.append(list(bar[bi]))
+                            prev_pt = bar[bi]
+                            tail_end = bi
+                        erased = bar[tail_end + 1 :]
+                        if erased and erased[0] == kept_tail[-1]:
+                            # The overrun landed exactly on a bar sample —
+                            # drop the duplicate seam point.
+                            erased = erased[1:]
+                        piece = [list(kept_tail[-1])] + erased
+                        centerlines[last_body_idx] = bar[: cut + 1] + kept_tail
+                        if len(piece) > 1 and last_body_idx < len(rings_by_stroke) and rings_by_stroke[last_body_idx]:
                             rings_by_stroke[last_body_idx] = erase_silhouette_piece(
                                 rings_by_stroke[last_body_idx],
                                 piece,
