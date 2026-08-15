@@ -3935,7 +3935,7 @@ muß 3 → 1 = ß-Budget, unter 5 → 4). Kandidat der Baseline ist die
 verifizierte Chain-Identität (`follow --rounds 0`,
 Byte-Identitäts-Pin) über den File-Provider.
 
-### Route B T0 `aug16` — InkSight Small-p roh auf den Dev-Wörtern
+### Route B T0 `aug15` — InkSight Small-p roh auf den Dev-Wörtern
 
 Der T0-Prüfstein aus tintenfolger.md §4: das veröffentlichte
 Small-p-Checkpoint (Apache 2.0), unadaptiert, CPU, über die
