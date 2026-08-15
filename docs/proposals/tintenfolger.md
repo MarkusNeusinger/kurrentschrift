@@ -702,3 +702,27 @@ bereit: der routeg-Skelettgraph, `landmarks.py`, das Soll-Budget
 (Kreuzungen/Retraces a priori), Retrace = dieselbe Kante zweimal
 fahren, Marken per Prior zuweisen, Lücken als Prior-Brücke. Eigene
 §14-Vorregistrierung VOR der ersten Zahl, wenn begonnen.
+
+### 7.9 Rettungswege der ehrlichen Negative (stehende Liste)
+
+**Owner-Direktive 2026-08-16** (nach der P3-0/3-Runde): Ideen, die
+beim Verwerfen aufkommen — und was eine verworfene Maßnahme doch noch
+ins Ziel bringen könnte — werden festgehalten statt in §14-Schwänzen
+zu verstreuen. Stehende Regel: **jeder §14-Ergebnis-Eintrag eines
+Verworfenen schließt mit benannten Rettungswegen oder explizit
+„keiner benannt"**, und diese Tabelle wird im selben PR ergänzt.
+Leitplanke: Konversion heißt immer neuer MECHANISMUS, neue EVIDENZ
+oder neuer SENSOR mit frischer Vorregistrierung — nie derselbe Knopf
+mit weicheren Gates (das wäre genau das Nachstimmen, das die
+Disziplin verhindert).
+
+| Verworfen (§14) | Fund / gemessene Decke | Rettungsweg | Auslöser |
+|---|---|---|---|
+| B1 Best-of-N (`aug15`) | Orakel −0,0124 in denselben N Antworten bewiesen; Ranker ist ordnungs-blind | ordnungs-bewusstes Auswahlsignal („Chor", Ziel +0,0067) | Welle 3 |
+| P3-K1 Balken→Rund (`aug16`) | +126°-Ankunftsfehler bleibt real; verworfen wurde nur der HÖHEN-Knopf | Verbinder-FORM: gekrümmter Einfall statt gerader Balken-Linie | eigene Pre-Reg |
+| P3-K3 Arkaden-Lift (`aug16`) | Wort/Drill-Split desselben Joins; Nebenfund: Spline-Jitter deaktiviert den generischen O2-Trim für Arkaden-Köpfe | (a) O2-Trim-Jitter-Bugfix als eigener Gewinnkandidat; (b) Kontext-Regel statt Uniform-Konstante | (a) sofort pre-registrierbar; (b) Bestätigungssatz |
+| P3-K2 d-Abgangswinkel (`aug16`) | beide Lineale monoton dagegen, kein Split | nur Nachkalibrierung (Klassen-n 8/18) | Bestätigungssatz |
+| Arm ⑨ Topologie-Wächter (`aug16`) | Tinten-Gewinn und Struktur-Erfindung in DIESER Formulierung untrennbar; `structure_guard` bleibt Werkzeug | Route „Lotse" (§7.8): Skelett fahren, Duktus als Karte | eigene Pre-Reg |
+| Arm ⑥/⑥b Landmark-Gewicht (`aug14`) | Korrespondenz-Kappe gelöst (classed punktweise kostenlos), Gewicht trotzdem nutzlos im Folger-Setting | klassenbewusste Ziele stehen bereit für ein Setting, in dem die Kreuzung wirklich wandern kann (Lotse) | mit der Lotse-Runde |
+| P2a Arkaden-Luft · P1 Diagonalen-Trim (`aug15`) | Beleg-Varianz ±0,1 xh, Ruler monoton dagegen | Dissektions-Forderung im Nachkalibrierungs-Protokoll (§7.7) | Bestätigungssatz |
+| Methodik-Lücke (quer, `aug16`) | drei Kills wurden von Netto-Deltas ≤ 0,0007 entschieden — das Lineal ZUCKT dort nur, die Gates machen daraus ein Nein | humanbench-WORT-Runde als vorregistrierter Tie-Breaker für ruler-indifferente Fälle (\|Netto-Δ\| < ε bei starker Dissektions-Evidenz) | eigene Pre-Reg + Runde |
