@@ -12,43 +12,6 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
-### Changed
-
-- **Duel-method display names decided and propagated** (owner decision
-  2026-08-16): the readable method family is Hand · Kette · InkSight ·
-  Nullprobe (planned: Zögling · Vier Augen · Feinschliff · Chor ·
-  Lotse as working title). The structure-guarded chain run is THE
-  „Kette" (fit-invented crossings are never right — join-formed ones
-  live in the Soll budget, hand-vs-composition gaps are composer
-  defects to fix at the source), the duel page carries ONE InkSight
-  (the text-prompt variant was diagnosis and leaves the page), and
-  the prior-free control is the „Nullprobe". The translation table
-  lives in the new glossary entry „Duell-Namen"
-  (+ `tintenfolger.md` §7.8 incl. the new owner-proposed „Lotse"
-  route sketch: ride the skeleton mid-ink, ask the ductus like a map
-  at junctions); technical names (Kettenfit, Route G, `routeg-graph`)
-  stay unchanged in code and dated §14 entries, with display-name
-  pointers added to `tools/routeg` and `tools/pairlab/follow.py`.
-
-### Fixed
-
-- **Duel viewer: the writing animation, the control's visibility, and
-  two lay legends** (`tools/tracebench/view.py`, all from the owner's
-  page review): the write-on animation now dashes in REAL geometric
-  units via `getTotalLength` instead of the normalised unit
-  pathLength — the old combination with `non-scaling-stroke`
-  mis-rendered in some engines as ink writing on the left while
-  erasing on the right until the final state snapped in; the
-  prior-free control gets a pinned high-chroma cyan (the order-based
-  palette had handed it the brown that vanished against the sepia
-  plate); a „Die Verfahren in einem Satz" explainer names per layer
-  what each method uses (human hand · ductus library + ink · learned
-  open model without ductus · pure image processing), and a column
-  legend explains dtw_xh/aiou/cross/retrace in lay terms — including
-  the honest note that none of today's columns punishes micro-wobble
-  smoothness. The regenerated page is republished to the same
-  artifact URL.
-
 ### Added
 
 - **Wave 2, P3: head coarticulation as entry class rules — all three
@@ -71,7 +34,12 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   DECLARED-BUT-NEUTRAL for the confirmation-set re-calibration;
   rendering stays byte-identical. Side find: a 0.0004-xh spline
   resampling jitter silently disables the generic 0.78 entry trim
-  for arcade heads (own bugfix candidate).
+  for arcade heads (own bugfix candidate) (#366).
+
+## [0.26.0] — 2026-08-15 — Optimization plan + wave 1 + advance round + viewer polish
+
+### Added
+
 - **Wave 1, B1: best-of-N InkSight ensembling — rejected by its own
   gate; the selection signal is the finding**
   (`tools/inksight/{augment,ensemble}.py` + a back-compatible
@@ -93,7 +61,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   like-for-like, and augmentation costs contract conformance
   (median 4 of 10 variants survive per word). The infrastructure
   stays; the named successor is an order-aware selection signal
-  with the measured +0.0067 gap as target and −0.0124 as ceiling.
+  with the measured +0.0067 gap as target and −0.0124 as ceiling (#364).
 
 - **Wave 2, P2: the align floor becomes the bounded touch; the
   arcade air is closed as hand variance** (`core/compose.py`,
@@ -113,7 +81,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   ways per specimen (wenn −0.030 vs wenn-2 +0.089; dissected spread
   MAD 0.096), so the hand's own arcade variance, not a calibration
   error, carries that class; revisit only with the confirmation
-  set. compose-golden regenerated as the declared re-baseline.
+  set. compose-golden regenerated as the declared re-baseline (#363).
 
 - **Wave 2, P1b: the backward-clearance class gets its named longs
   exception** (`core/compose.py`, owner find on the streiten
@@ -133,7 +101,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   non-w/v backward exits to 0.30) was measured and rejected — a
   correction class can be cut too wide, too. compose-golden
   regenerated as the declared re-baseline; §14 records the
-  corrected attribution in a dated addendum.
+  corrected attribution in a dated addendum (#362).
 
 - **Wave 2, P1: the advance calibration from the measured joins —
   the red now sits on the ink** (`core/compose.py`; owner find on
@@ -160,7 +128,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   history), `meas_doff` median 0.195 → **0.131**, signed overall
   median +0.050 → +0.010, and `zwei` gains its second retrace zone
   (`soll_zones_agree` 8/10 → 9/10). compose-golden regenerated as
-  the declared re-baseline. Glossary gains „Bowl-Exit-Tuck".
+  the declared re-baseline. Glossary gains „Bowl-Exit-Tuck" (#361).
 
 - **Wave 1, A1: the opt-in mark refit halves the chain candidate's
   mark position error** (`tools/pairlab/marks.py`, wired as
@@ -180,7 +148,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   enters STORED traces is a separate author decision gated on the
   confirmation set. Side find recorded as candidate A1b: the harvest
   and the ruler classify a long u-bow differently (no arc cap vs.
-  0.8 xh), so four reference words carry no matchable mark at all.
+  0.8 xh), so four reference words carry no matchable mark at all (#360).
 
 - **Wave 1, K1b: the t writes its crossbar without a pen lift — the
   offset stem-return pass** (`core/compose.py`,
@@ -199,7 +167,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   ±0.00004, only t-words moved, compose-golden regenerated as a
   declared re-baseline. The entry also declares the post-K1 chain
   baseline `r1` (cascade of K1 into the fit): only `unter` differs
-  from `r0` (+0.0301 dtw at one invented crossing fewer).
+  from `r0` (+0.0301 dtw at one invented crossing fewer) (#359).
 
 - **Wave 1, K1: the bound t-bar keeps a measured overrun past its stem
   crossing** (`core/compose.py`, `BAR_CROSS_OVERRUN_UNITS` = 0.2 xh,
@@ -218,7 +186,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   generated return pass) is named as the next candidate. Gates:
   `bench_loss` +0.0003 (kill threshold 0.002), `pair_loss`
   byte-identical, only t-words moved; the compose-golden fixture is
-  regenerated as a declared re-baseline.
+  regenerated as a declared re-baseline (#358).
 
 - **The per-method optimization plan for the word-tracing campaign**
   (doc-only, `docs/proposals/tintenfolger.md` §7): built from a
@@ -239,7 +207,48 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   entry before the first number. §14 (Arm ⑨) gains a dated
   correction: the "9 invented touches" belong to the chain fit, not
   the composition (measured: the composition prescribes 2 touches,
-  both w-internal, and 4 t-bar overlaps).
+  both w-internal, and 4 t-bar overlaps) (#357).
+
+### Changed
+
+- **Duel-method display names decided and propagated** (owner decision
+  2026-08-16): the readable method family is Hand · Kette · InkSight ·
+  Nullprobe (planned: Zögling · Vier Augen · Feinschliff · Chor ·
+  Lotse as working title). The structure-guarded chain run is THE
+  „Kette" (fit-invented crossings are never right — join-formed ones
+  live in the Soll budget, hand-vs-composition gaps are composer
+  defects to fix at the source), the duel page carries ONE InkSight
+  (the text-prompt variant was diagnosis and leaves the page), and
+  the prior-free control is the „Nullprobe". The translation table
+  lives in the new glossary entry „Duell-Namen"
+  (+ `tintenfolger.md` §7.8 incl. the new owner-proposed „Lotse"
+  route sketch: ride the skeleton mid-ink, ask the ductus like a map
+  at junctions); technical names (Kettenfit, Route G, `routeg-graph`)
+  stay unchanged in code and dated §14 entries, with display-name
+  pointers added to `tools/routeg` and `tools/pairlab/follow.py` (#365).
+
+### Fixed
+
+- **Duel viewer: the writing animation, the control's visibility, and
+  two lay legends** (`tools/tracebench/view.py`, all from the owner's
+  page review): the write-on animation now dashes in REAL geometric
+  units via `getTotalLength` instead of the normalised unit
+  pathLength — the old combination with `non-scaling-stroke`
+  mis-rendered in some engines as ink writing on the left while
+  erasing on the right until the final state snapped in; the
+  prior-free control gets a pinned high-chroma cyan (the order-based
+  palette had handed it the brown that vanished against the sepia
+  plate); a „Die Verfahren in einem Satz" explainer names per layer
+  what each method uses (human hand · ductus library + ink · learned
+  open model without ductus · pure image processing), and a column
+  legend explains dtw_xh/aiou/cross/retrace in lay terms — including
+  the honest note that none of today's columns punishes micro-wobble
+  smoothness. The regenerated page is republished to the same
+  artifact URL (#365).
+
+## [0.25.0] — 2026-08-15 — Trace editor rebuild + the tracing duel: tracebench stages, routes A/B/G, arms, structure counters
+
+### Added
 
 - **Route G: the prior-free control of the Tintenfolger duel**
   (`tools/routeg`, `docs/proposals/tintenfolger.md` §4b) — a third
@@ -274,7 +283,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   the hand references score against themselves — while `dtw_xh_median`
   is 0.820 and the structure gates collapse (15 crossings missing, 15
   retraces missing, +90 pen lifts). Riding the ink is not writing it,
-  which is exactly what a control is for.
+  which is exactly what a control is for (#354).
 
 - **The duel page shows the DETECTED structures, so the eye can audit the
   detector against the ink** (`tools/tracebench/view.py::structure_marks`,
@@ -292,7 +301,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   ductus-target rows per word: the sum over the ISOLATED letters (hover
   shows the budget letter by letter) and the whole composition with its
   generated connectors, whose difference is the joins' contribution. The
-  hint text explains the reading.
+  hint text explains the reading (#349).
 
 - **Arm ⑥b: the class-aware landmark correspondence**
   (`tools/pairlab/follow.py::classed_targets`, target mode
@@ -311,7 +320,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `landmarks.py` are untouched, and at `landmark == 0` every solve stays
   byte-identical. Pre-registration, measurement and verdict in
   `docs/reference/qualitaetsmetrik.md` §14 (Arm ⑥b); glossary gains
-  „Korrespondenz-Kappe" and „klassenbewusste Korrespondenz".
+  „Korrespondenz-Kappe" and „klassenbewusste Korrespondenz" (#348).
 
 - **Arm ⑥ groundwork: the ink follower's landmark term can aim at the
   EXTRAPOLATED junction crossing instead of the raw skeleton branch
@@ -338,7 +347,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   follower optimum with the term forced INERT, so the arm's rungs come
   from measured ratios rather than by analogy (§11c). NO weight is
   adopted: the default stays 0.0, at which the whole block is skipped
-  and every solve is byte-identical (pinned).
+  and every solve is byte-identical (pinned) (#346).
 - **…and it now fires on real ink: the junction walk follows the
   SKELETON and swallows the junction cluster** (`tools/pairlab/follow.py`).
   Measured on the 10 hand-traced dev words, the first form of the walk
@@ -368,9 +377,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   Refinement rate on the dev words 0/21 → 8/21, which is 8 of the 9
   targets whose junction has four or more limbs at all; the other 12 are
   `touch_point` (5) or `t_junction` (7), i.e. ink with no crossing to
-  extrapolate. Still no weight adopted — the default stays 0.0.
-
-### Added
+  extrapolate. Still no weight adopted — the default stays 0.0 (#346).
 
 - **Route B T0 measured: raw InkSight Small-p on the dev words**
   (doc-only — the pipeline shipped in #340; results in
@@ -384,7 +391,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `r+d` prompt (43 min/word on CPU) was cut after one diagnostic data
   point — it reads the Sütterlin „Wer" as „Olomi". T0 is the
   documented OOD baseline; the next route-B step remains an own small
-  trajectory model on engine pairs.
+  trajectory model on engine pairs (#356).
 
 - **Arm ⑨: the topology guard — a round-level acceptance rule for the
   ink follower** (`tools/pairlab/follow.py`, pre-registered in
@@ -410,7 +417,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   conclusion: the chain fit already sits at the structure-safe optimum
   of this formulation; the next levers are composer-side (placement,
   joins) and route B. The guard stays in the repo as the first tool
-  that keeps a follower run guaranteed structure-clean.
+  that keeps a follower run guaranteed structure-clean (#355).
 
 - **The bench report carries the ductus target beside every word**
   (`tools/tracebench/soll.py`, the owner's standing test as a report
@@ -424,109 +431,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   fixture root without composition data degrades to a warning. First
   reading on the dev words: crossings agree 7/10, zones 6/10, with the
   disagreements exactly the named composer findings (the t
-  under-crossing, the W retrace, the join-formed loops).
-
-### Fixed
-
-- **The duel page's resting trace no longer loses its tail**
-  (`tools/tracebench/view.py`, owner report: the hand trace of „unter"
-  ended at the t on the page while the admin editor showed it complete —
-  the trace DATA was complete, x 9..269 of a 274 px crop). Cause: the
-  static `stroke-dasharray="1"` + `pathLength="1"` +
-  `vector-effect="non-scaling-stroke"` combination mis-scales the dash in
-  some engines and swallows the end of the longest paths. The resting
-  markup now carries no dash at all; the dash is applied by the JS only
-  while the writing animation runs and removed again in the final state.
-
-### Changed
-
-- **Structure counters v2 — a dated re-baseline of the trace bench's
-  crossing and retrace counts** (`tools/tracebench/counters.py`,
-  pre-registered in `qualitaetsmetrik.md` §14 `aug16` from the owner's
-  manual audit of the dev words, every constant measured on the named
-  examples). A crossing now exists only where one line PIERCES the
-  other — clearly in on one side and out on the other, both ways
-  (`_pierces`, window 0.25 xh, margin 0.05 xh ≈ half a stroke width) —
-  which retires the 15-degree angle threshold: a retrace release is no
-  crossing however sharp, a piercing loop closure is one however
-  shallow. A retrace requires its partner ARC-NEAR (gap ≤ 1.0 xh) and a
-  real pass (≥ 0.30 xh): anti-parallel proximity with a long way in
-  between is a **touch** (writing past each other), a partner in
-  another pen stroke an **overlap**, a diverging cusp nothing — touch
-  and overlap are counted and reported (`touch_ref/cand`,
-  `overlap_ref/cand`), never part of a loss. The owner's verdicts are
-  pinned as tests, the identity gate still passes exactly, and
-  dtw/aiou/chamfer/marks are untouched (the v2 baseline's dtw is
-  byte-identical to v1). New v2 chain baseline: invented crossings
-  19 → 13 (6 were tangential artifacts), invented retrace zones
-  21 → 5 — the rest reclassifies into 9 invented touches (letters
-  composed too close) and 6 overlaps; hand counts move onto the ductus
-  budgets (Wer 5 → 3, muß 3 → 1). The duel page draws the three zone
-  classes distinctly (solid/dashed/dotted); glossary gains
-  „Durchstoß-Kriterium" and „Berührung (Struktur-Zähler)". v1 numbers
-  of the aug14 baseline and arms 1/5/6/6b stay archived and are not
-  comparable to v2. **v2.1 amendment** (the owner's second audit pass):
-  a ring whose two chords are each other's anti-parallel partners is
-  the incidental self-crossing of one out-and-back-with-release —
-  retrace-internal, suppressed (`CROSS_PARTNER_NEAR_UNITS`); exactly
-  the disputed rings fall (unter-t, mit-t, zwei-w, linken-k-exit)
-  while a retrace through FOREIGN ink keeps its rings. Crossing SITES
-  are counted, not events. The duel page's numbers table gains
-  Berührungen/Überlagerungen columns for every layer and both Soll
-  rows. v2.1 chain baseline: invented rings 4, invented zones 5,
-  invented touches 9, overlaps 6 — most of the stack-word „inventions"
-  were the chain's own overlapping strokes crossing incidentally.
-
-- **Follower arms 5 and 6 recorded in the quality-metric §14** (doc-only):
-  the overlap term is acquitted of the §13 brake hypothesis (switching it
-  off is mildly better, the structure veto vs the baseline remains), and
-  the landmark arm — after the geodesic-walk repair made extrapolation
-  fire on real ink — measures null at the middle rung and pointwise
-  significantly worse at full parity. The finding that outranks both
-  arms: 12 of 21 landmark correspondences point at ink with no crossing
-  (touch points, T-junctions) — the correspondence cap; the next
-  pre-registered hypothesis is class-aware correspondence, not more
-  weight. No default adopted.
-
-- **Follower arm 1 result recorded in the quality-metric §14** (doc-only):
-  the pre-registered lambda ladder ran paired against the frozen `aug14`
-  baseline — every rung fails the co-primary structure gate, so the
-  naked form-release formulation is rejected by its own veto while the
-  ink pull itself is validated (AIoU +0.10 on every rung). One named
-  protocol deviation (decade ladder with realized ratios instead of the
-  ill-defined percent-of-e_geo dialing at a restart) is recorded in the
-  entry. No default adopted; `FOLLOW_*` stays provisional; next
-  pre-registered steps are the structural data-term arms.
-
-### Changed
-
-- **The word-trace assembly moved to `tools/pairlab/trace.py`, and the chain fit
-  gained three additive handles for a re-linearising restart — all four changes
-  proven inert.** `assemble_word_strokes` and its helpers left
-  `tools/laufform/harvest.py` bodily unchanged (a pure move, asserted
-  line-for-line) because the coming ink-follower
-  (`tools/pairlab/follow.py`, `docs/proposals/tintenfolger.md` §3) needs the same
-  assembler and `tools.pairlab` importing `tools.laufform` would be an import
-  cycle — the harvest already imports `pairlab.chain`, `pairlab.anchors` and
-  `pairlab.connector_qc`; the same one-shared-module resolution
-  `tools/pairlab/anchors.py` took, with the harvest re-exporting every name so
-  no caller or test changes. In `chain.py`: `respec_from_solution` rebuilds the
-  segment specs with the SOLVED anchors as their initial ones (everything else
-  verbatim), so a second `build_chain_problem` freezes the chord
-  parameterisation, the landmark correspondence and the overlap exemptions at
-  the first solve's optimum instead of at the composed start — measured on the
-  synthetic ink pair, that staleness is ~0.06 xh of sample displacement after
-  0.2 xh of injected placement error; `_ChainProblem.skel` carries the
-  band-restricted skeleton the fields were built from, for consumers only and
-  never read by the objective (pinned by a test that nulls it and re-evaluates);
-  and `build_chain_problem` takes `max_anchor_delta` / `connector_max_delta`,
-  which at their default None are exactly today's module constants. The slot
-  BLOCK bounds stay unparameterised on purpose — they are an asymmetric x/y pair
-  rather than one cap, and a restart's placement budget is its own decision. A
-  chain solve is bit-identical to the pre-change module on both the toy and the
-  rasterised-ink problem, so nothing here re-baselines the harvest.
-
-### Added
+  under-crossing, the W retrace, the join-formed loops) (#353).
 
 - **The duel viewer and the round chronik (`tools/tracebench/view.py` +
   `chronik.py`) — the methods beside each other AND beside the author's
@@ -569,7 +474,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   of every optimisation round persist, and the good ones can later seed
   a public method explainer. Measurement and display only: no DB, no
   API, no `core/`, no rendering, and nothing filed inside the
-  repository.
+  repository (#344).
 - **The ink follower (`tools/pairlab/follow.py`) — route A of the
   Tintenfolger plan, with every shipping weight declared PROVISIONAL.**
   A re-linearising restart on the chain fit, exactly as
@@ -607,7 +512,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   empty candidate) and sweeps one weight per run (`--sweep prox=…`).
   Strictly additive: `KS_FOLLOW_*` never moves a `CHAIN_*` (pinned by a
   test), no chain solve changes, the harvest gets no follower path, and
-  nothing here touches the DB, the API, `core/` or rendering.
+  nothing here touches the DB, the API, `core/` or rendering (#343).
 - **The tracebench harness (`tools/tracebench/run.py`) — stage C of the
   Tintenfolger plan, the ruler put to work.** `uv run python -m
   tools.tracebench.run [--candidate chain|authored|traced|file] [--split
@@ -667,7 +572,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   retrace-arc measure is genuinely step-bound. Four reference words are
   flagged `marks_uncertain` (the author drew the i-stroke/u-bow
   connected) — a fixture-quality note for the confirmation set, not a
-  candidate error.
+  candidate error (#341).
 - **`tools/inksight` — the isolated InkSight pipeline (Tintenfolger route
   B, T0).** Three stages split at a process boundary so no dependency
   crosses: `prepare.py` (repo env) turns frozen wordbench crops into
@@ -692,7 +597,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   them: the only judgement applied is the wire contract, and a row that
   violates it is stamped `failed` with a reason instead of being cleaned
   up. Weights (Apache 2.0, 518 MB) are downloaded per the README recipe
-  and stay untracked, like the venv and every run artefact.
+  and stay untracked, like the venv and every run artefact (#340).
 - **The tracebench ruler (`tools/tracebench`) — stage B of the
   Tintenfolger plan.** The measurement modules an automatic word tracing
   is graded with, defined by `docs/proposals/tintenfolger.md` §2 and
@@ -725,7 +630,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   the ten hand-traced development words as an append-never constant.
   Measurement only: no DB, no API, no `core/` change, no rendering, and
   no numbers yet — harness, candidate providers and the first baseline
-  table arrive with stage C.
+  table arrive with stage C (#339).
 - **The frozen word-trace artifact (`word_instances.json`) — tracebench
   stage A.** The wordbench fixture exporter and its API twin freeze the
   stored word traces of each set alongside the measured joins: every
@@ -749,9 +654,108 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `docs/research/bildsynthese-und-stiftbahn.md` gains the 2026-08-14
   addendum (reference set begun; the Small-p fine-tune assumption
   corrected: no training code exists or is coming, so route B re-scopes
-  to a small own model on engine pairs).
+  to a small own model on engine pairs) (#337).
+
+- **`docs/research/` — a home for the idea-feeding literature.** New docs
+  layer for external research notes that never follow the code, so the
+  folder taxonomy answers "is this a plan, a protocol or a paper summary?"
+  at a glance: `kurrent-writer-and-recognizer.md` moves there from
+  `proposals/` (which is now purely implementation proposals and their
+  protocols), joined by the new `graves-handschrift-synthese.md` — a
+  54-source literature report on handwriting synthesis (Graves-2013
+  mechanics, priming/biasing, the physical plotter pipeline, the
+  GAN/Transformer/tokenisation successors), editorially cleaned from its
+  deep-research export (25 base64 formula images replaced by text
+  notation, flattened footnote digits turned into readable source
+  references). The index, the write-docs skill, `sprachregelung.md` §1
+  and the copilot docs tree all carry the new layer; two glossary §6
+  entries (MDN, Priming/Biasing) anchor the terms the report brings in (#329).
 
 ### Changed
+
+- **Structure counters v2 — a dated re-baseline of the trace bench's
+  crossing and retrace counts** (`tools/tracebench/counters.py`,
+  pre-registered in `qualitaetsmetrik.md` §14 `aug16` from the owner's
+  manual audit of the dev words, every constant measured on the named
+  examples). A crossing now exists only where one line PIERCES the
+  other — clearly in on one side and out on the other, both ways
+  (`_pierces`, window 0.25 xh, margin 0.05 xh ≈ half a stroke width) —
+  which retires the 15-degree angle threshold: a retrace release is no
+  crossing however sharp, a piercing loop closure is one however
+  shallow. A retrace requires its partner ARC-NEAR (gap ≤ 1.0 xh) and a
+  real pass (≥ 0.30 xh): anti-parallel proximity with a long way in
+  between is a **touch** (writing past each other), a partner in
+  another pen stroke an **overlap**, a diverging cusp nothing — touch
+  and overlap are counted and reported (`touch_ref/cand`,
+  `overlap_ref/cand`), never part of a loss. The owner's verdicts are
+  pinned as tests, the identity gate still passes exactly, and
+  dtw/aiou/chamfer/marks are untouched (the v2 baseline's dtw is
+  byte-identical to v1). New v2 chain baseline: invented crossings
+  19 → 13 (6 were tangential artifacts), invented retrace zones
+  21 → 5 — the rest reclassifies into 9 invented touches (letters
+  composed too close) and 6 overlaps; hand counts move onto the ductus
+  budgets (Wer 5 → 3, muß 3 → 1). The duel page draws the three zone
+  classes distinctly (solid/dashed/dotted); glossary gains
+  „Durchstoß-Kriterium" and „Berührung (Struktur-Zähler)". v1 numbers
+  of the aug14 baseline and arms 1/5/6/6b stay archived and are not
+  comparable to v2. **v2.1 amendment** (the owner's second audit pass):
+  a ring whose two chords are each other's anti-parallel partners is
+  the incidental self-crossing of one out-and-back-with-release —
+  retrace-internal, suppressed (`CROSS_PARTNER_NEAR_UNITS`); exactly
+  the disputed rings fall (unter-t, mit-t, zwei-w, linken-k-exit)
+  while a retrace through FOREIGN ink keeps its rings. Crossing SITES
+  are counted, not events. The duel page's numbers table gains
+  Berührungen/Überlagerungen columns for every layer and both Soll
+  rows. v2.1 chain baseline: invented rings 4, invented zones 5,
+  invented touches 9, overlaps 6 — most of the stack-word „inventions"
+  were the chain's own overlapping strokes crossing incidentally (#351).
+
+- **Follower arms 5 and 6 recorded in the quality-metric §14** (doc-only):
+  the overlap term is acquitted of the §13 brake hypothesis (switching it
+  off is mildly better, the structure veto vs the baseline remains), and
+  the landmark arm — after the geodesic-walk repair made extrapolation
+  fire on real ink — measures null at the middle rung and pointwise
+  significantly worse at full parity. The finding that outranks both
+  arms: 12 of 21 landmark correspondences point at ink with no crossing
+  (touch points, T-junctions) — the correspondence cap; the next
+  pre-registered hypothesis is class-aware correspondence, not more
+  weight. No default adopted (#347).
+
+- **Follower arm 1 result recorded in the quality-metric §14** (doc-only):
+  the pre-registered lambda ladder ran paired against the frozen `aug14`
+  baseline — every rung fails the co-primary structure gate, so the
+  naked form-release formulation is rejected by its own veto while the
+  ink pull itself is validated (AIoU +0.10 on every rung). One named
+  protocol deviation (decade ladder with realized ratios instead of the
+  ill-defined percent-of-e_geo dialing at a restart) is recorded in the
+  entry. No default adopted; `FOLLOW_*` stays provisional; next
+  pre-registered steps are the structural data-term arms (#345).
+
+- **The word-trace assembly moved to `tools/pairlab/trace.py`, and the chain fit
+  gained three additive handles for a re-linearising restart — all four changes
+  proven inert.** `assemble_word_strokes` and its helpers left
+  `tools/laufform/harvest.py` bodily unchanged (a pure move, asserted
+  line-for-line) because the coming ink-follower
+  (`tools/pairlab/follow.py`, `docs/proposals/tintenfolger.md` §3) needs the same
+  assembler and `tools.pairlab` importing `tools.laufform` would be an import
+  cycle — the harvest already imports `pairlab.chain`, `pairlab.anchors` and
+  `pairlab.connector_qc`; the same one-shared-module resolution
+  `tools/pairlab/anchors.py` took, with the harvest re-exporting every name so
+  no caller or test changes. In `chain.py`: `respec_from_solution` rebuilds the
+  segment specs with the SOLVED anchors as their initial ones (everything else
+  verbatim), so a second `build_chain_problem` freezes the chord
+  parameterisation, the landmark correspondence and the overlap exemptions at
+  the first solve's optimum instead of at the composed start — measured on the
+  synthetic ink pair, that staleness is ~0.06 xh of sample displacement after
+  0.2 xh of injected placement error; `_ChainProblem.skel` carries the
+  band-restricted skeleton the fields were built from, for consumers only and
+  never read by the objective (pinned by a test that nulls it and re-evaluates);
+  and `build_chain_problem` takes `max_anchor_delta` / `connector_max_delta`,
+  which at their default None are exactly today's module constants. The slot
+  BLOCK bounds stay unparameterised on purpose — they are an asymmetric x/y pair
+  rather than one cap, and a restart's placement budget is its own decision. A
+  chain solve is bit-identical to the pre-change module on both the toy and the
+  rasterised-ink problem, so nothing here re-baselines the harvest (#338).
 
 - **Declared wordbench re-baseline `aug14`** (full fixture re-export, the
   first since `jul31`): the frozen reference crops now carry the
@@ -762,7 +766,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   the movement sits in the corrected references (`haben`/`ein`/`einen`/
   `zwei` improve, `regieren` honestly worsens because its i-stroke is
   finally part of the reference the composition must cover). Documented
-  as a dated section in `docs/reference/qualitaetsmetrik.md` §6.
+  as a dated section in `docs/reference/qualitaetsmetrik.md` §6 (#337).
 
 - **Research note on the image-first parallel track: offline handwriting
   generation for Kurrent and the way back to a pen path.** New
@@ -779,7 +783,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   existing online Kurrent ground truth and hence the evaluation bench),
   and a cheap-to-expensive test ladder T0–T4 ending in a plotted
   postcard A/B against the current engine. Indexed in `docs/index.md`;
-  the external umbrella term HTG gets its glossary entry in §6.
+  the external umbrella term HTG gets its glossary entry in §6 (#330).
 - **A zoom slider in the word trace editor, so a word can be re-traced at
   natural writing size on a tablet.** The W3 editor
   (`WordTraceEditorDialog`) gains a 1–8× size slider: the crop scales
@@ -789,7 +793,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   rejection — and the drawn trace keeps a constant on-screen thickness
   (stroke width divided by zoom), so zooming in reveals the ink instead
   of a fatter overlay. Groundwork for hand-tracing the `authored`
-  reference set the research note's ink-follower benchmark needs.
+  reference set the research note's ink-follower benchmark needs (#330).
 - **The word trace editor rebuilt around actually writing on a tablet.**
   First real S-Pen session feedback: the dialog is now fullscreen, every
   control (save/close, size slider, undo/clear/reset, stored-trace
@@ -799,7 +803,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   whole remaining viewport, the long intro text moved behind an
   `InfoHint`, and the size slider now also SHRINKS (0.25–8× in 0.25
   steps, shrunk words centred), because on a tablet the crop at dialog
-  width can be larger than natural writing size.
+  width can be larger than natural writing size (#331).
 - **Trace editor: shrink floor lowered to 0.1× and the drawn line made a
   true 2-CSS-pixel hairline.** Fullscreen made the 1× baseline much
   larger than the old dialog width, so natural writing size on a tablet
@@ -814,7 +818,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   drops `touch-action: pan-x pan-y` for `none` with hand-rolled finger
   panning: Chromium treats the pen as a pannable pointer, so the browser
   recognised a short pen stroke as a scroll gesture, fired
-  `pointercancel` and broke the drawn line off mid-stroke.
+  `pointercancel` and broke the drawn line off mid-stroke (#332).
 - **Word-sample crops actually reach the browser after a sidecar fix.**
   The #334 rect corrections never arrived on the tablet: the sample
   metadata URL carried a hard-coded `?v=2` and the crop PNGs no version
@@ -827,7 +831,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   to the #334 edge audit — widened three more rects (the i-Striche of
   `zwei` and `regieren`, the i-dot of the Abb.-22 `in`); the two stored
   rows were re-registered through the admin PUT in the same action, the
-  hand-authored `zwei` trace with its strokes untouched.
+  hand-authored `zwei` trace with its strokes untouched (#336).
 - **Trace editor: text selection and the context menu are suppressed.**
   An S-Pen long-press mid-stroke selected the hint text (native
   selection handles + copy toolbar) or opened the browser context menu.
@@ -836,19 +840,19 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `InfoHint` popover renders in a portal and stays selectable. A shrunk
   word is additionally centred in BOTH axes of the canvas area, so the
   writing zone sits mid-screen instead of directly under the header
-  controls the pen hand kept grazing.
+  controls the pen hand kept grazing (#335).
 - **Trace editor: panning is an explicit mode, fingers are fully inert
   while writing.** Even hand-rolled finger panning fought the writing
   hand — resting fingers and palm shoved the view around mid-stroke. A
   Schreiben/Verschieben toggle (the wizard's Zeichnen/Anpassen pattern)
   replaces the gesture: in draw mode touch input does nothing at all,
-  in pan mode any pointer — pen, mouse or finger — drags the view.
+  in pan mode any pointer — pen, mouse or finger — drags the view (#333).
 - **The words overview shows which specimens are already hand-traced.**
   Every card whose stored trace is provenance `authored` carries a
   filled "von Hand" chip and the toolbar counts the tab's progress
   ("0/63 von Hand nachgefahren") — the glanceable state for working
   through the manual reference set, fed from the shared workbench rows
-  at no extra request.
+  at no extra request (#331).
 
 - **The crossing landmark as a DATA term in the chain fit — inert by default,
   with its energy scale calibrated before any weight is proposed.** New pure
@@ -880,260 +884,44 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   structure-or-slide column that says whether a weight moved the structure or
   just translated the letter. Measurement only: no DB, no API, no `core/`, no
   rendering, and no default weight is proposed from a 14-occurrence
-  single-glyph development set.
+  single-glyph development set (#328).
 
-- **The stranded anchor is now REPAIRED at harvest — the accepted alternative
-  to the four rejected objective terms.** `tools/pairlab/anchors.py` holds the
-  shared detector (both neighbouring steps ≥ 3× the median step of the own
-  pen-stroke — the shape of the author-marked defect, 16/17 hit rate) and the
-  repair: a flagged anchor is replaced by the linear interpolation of its
-  nearest unflagged stroke neighbours, never snapping to ink (§8 showed why: at
-  a crossing the nearest ink is the wrong stroke) and never crossing a pen
-  lift. Both harvest storage paths apply it AFTER the gate, only to ACCEPTED
-  occurrences: the gate keeps judging the unrepaired geometry (a repair is a
-  near-rejection, never a pass), the stored `anchor_spike_ratio` stays the
-  unrepaired number, and `measurements.repaired_anchors` lists what was
-  touched — absence means untouched, pinned byte-identical by the golden
-  test. The word trace deliberately stays unrepaired (the inspection layer
-  shows what the fit actually did). The owner's explicit trade (2026-08-10)
-  is recorded at the module: an interpolated anchor slightly off the ink is
-  the lesser defect; the peak that poisons the per-anchor Laufform median is
-  the one that must go. This removes exactly the judged defects — every
-  author-marked peak sat in an accepted fit, so no yield or threshold moves.
-
-- **`tools/fitview` — the before/after page for the judged occurrences.**
-  Re-runs the live chain fit on precisely the humanbench screens the owner
-  marked (default: category `A`, both rounds, blind repeats merged), and
-  renders each occurrence in the SAME frame the judgement used (window pad and
-  4× zoom replicated from `humanbench/build.py`): left the unrepaired anchor
-  polyline, right the repaired one, repaired indices circled, the owner's
-  clicked marker as a cross. One self-contained HTML file, minutes per round
-  instead of hours — the small-subset human loop the owner asked for.
-
-- **`tools/pairlab/peaklab.py` — the same loop over a NAMED working set.** The
-  sibling of `tools/fitview`: instead of the judged screens it fits a small
-  named set of words (default the five whose outliers the author marked plus
-  three he passed as clean, so a round can tell „the peaks are gone" from
-  „everything got flattened"), reports the lone excursions per letter
-  occurrence with the spike ratio before and after, and with `--png` draws the
-  fitted anchor chain over the specimen ink with every excursion circled —
-  `--compare` puts the fitted and the repaired chain side by side in one
-  window, so a shift is never a zoom. Four minutes per round instead of three
-  hours; detector and repair are the shared ones from `tools/pairlab/anchors.py`,
-  so what it shows is what the harvest does. Measurement only: no DB, no API,
-  nothing renders.
-
-- **Per-term, per-anchor gradient decomposition of the chain fit — the
-  diagnosis that has to come before the term.** An optimum is a point where
-  the forces cancel, so „what holds the stranded anchor out there" is a
-  measurement, not a guess, and until it is made a new term is a hopeful
-  edit. `_ChainProblem.gradient_terms` splits the objective into its seven
-  weighted forces (`geo` · `crop` · `width` · `coverage` · `overlap` ·
-  `smooth` · `reg`) and reads each one per free anchor. `crop` is split off
-  `e_geo` because the out-of-crop pull is a different statement about a
-  sample than the distance field is.
-  The build rule of the method is wired in as an assertion rather than
-  trusted: every term is folded through the SAME chain rule and the SAME
-  parameter packing the objective uses (`_fold_samples`/`_fold_plan`/`_pack`,
-  now one code path instead of two), and `gradient_decomposition` re-adds the
-  split and raises unless it reproduces the gradient L-BFGS-B actually
-  followed. Measured on a real solve, the split misses it by 2.7e-14
-  relative. A decomposition that does not reproduce the gradient describes a
-  different objective, which is precisely the failure mode that would make
-  the diagnostic drift away from the thing it diagnoses.
-  `sample_slice_of_anchor` supplies the reading the earlier measurement got
-  wrong: the field at the SAMPLES between an anchor's two neighbours. The
-  objective never queries an anchor's own position, so a restoring force
-  measured there quantifies something the optimiser cannot feel.
-  `fit_word_chain(keep_solve=True)` hands back the solved problem and its
-  argmin — off by default, because the problem holds the whole field stack.
-
-- **`tools/pairlab/gradlab.py` — the sweep that runs it over the harvest's own
-  solves.** Same cases, same grid windows, same chain fits as
-  `tools.laufform.harvest`, so the optimum it inspects is the optimum the
-  stored occurrences came from. Per anchor it reports every term's force, the
-  field at that anchor's sample window, and its displacement against its
-  neighbours; the stranding detector is the shape the author's markings
-  actually have (both neighbouring steps at least 3x the median step of their
-  own pen-stroke, never across a lift). Every other letter anchor of the same
-  solves is carried as a CONTROL population — a term that pulls as hard at a
-  healthy anchor as at a stranded one explains nothing, and without that
-  column the numbers would invite exactly that conclusion. Measurement only:
-  no DB, no API, no rendering, nothing in `core/`.
-
-- **The neighbour-binding term: measured and REJECTED (`qualitaetsmetrik.md`
-  §11b–§11d).** The pre-registered A/B, its criteria committed before any of
-  its numbers existed. Run 1 failed on a ladder that turned out never to have
-  switched the term on — at its top rung the weighted binding contributed
-  4.9e-6 against a geometry term of 2.2e-3, 450× smaller, because the ladder
-  was taken by analogy to `core.fit`'s constant and the operator being the same
-  does not make the objective's energy scale the same. Named as the
-  pre-registration's flaw rather than quietly patched, and re-registered with a
-  ladder calibrated on baseline-only solves.
-  Run 2, calibrated: **the term works and is still wrong.** Stranded anchors
-  98 → 41, spike ratio 2.90 → 1.59 — and the share of stored anchors sitting
-  off the ink RISES 18 %, where a 25 % fall was required. Smoothing the second
-  difference of the displacements stops one anchor from making its excursion
-  alone, so it takes its neighbours along: one anchor in blank paper becomes
-  three, which is the worse failure for a per-anchor median. Cost bounds break
-  on the lowest rung too.
-  The apparent yield gain is fully circular and is the reason the criterion was
-  chosen: accepted occurrences rise 209 → 218 with McNemar significant in the
-  term's favour (p = 0.021), and **every** flip up to weight 1.0 was an
-  occurrence the harvest had rejected for `anchor_spike` — the statistic the
-  term suppresses by construction — while genuine convergence got worse
-  (`not_converged_local` 21 → 31). Measured on §11's original criteria the term
-  would have passed brilliantly on every rung.
-  That closes the fourth repair path for the single-anchor outlier, after the
-  bending term (§7), the hinge (§8) and the corner-anchor diagnosis (§10). What
-  is left is not a fifth term but the cause §11a named: the coverage term's
-  blindness to which segment owns a skeleton point. The hold-out (Abb. 20) was
-  deliberately NOT spent — the protocol confirms only a weight that passed
-  development, and spending a reserve on a refuted hypothesis burns it for the
-  next one.
-
-- **The answer the decomposition was built for, and the term moved to where
-  the defect lives (`qualitaetsmetrik.md` §11a).** 96 chain solves, 41 280
-  letter anchors, at the optima the stored occurrences came from; 128 stranded
-  anchors in 82 of 344 occurrences across 27 glyphs, so this is a property of
-  the model and not of a glyph. The sum check held everywhere (worst 1.7e-13).
-  **The coverage term is the driver**: 32.4× its control strength at a
-  stranded anchor, aligned with the displacement to a cosine of −0.996, and
-  decoupled from the distance field (`coverage` vs `geo` 0.912 → 0.554). Two
-  of §11's four candidates die here. The width term is *weaker* at stranded
-  anchors (0.9×). And the Tikhonov pull, which looked like a finding at 8.5×,
-  is force/displacement 4.167e-3 stranded against 4.166e-3 control — the same
-  spring stretched further, identical to four figures. Without the control
-  population that number would have been read as an explanation.
-  §11 had asked which counter-force *holds* the anchor out; measured, the
-  question is the wrong way round. Nothing holds it — the data terms push it
-  there and Tikhonov is the only restraint. The field reading at the samples
-  (the one §11 marked as owed, because no anchor is ever queried) says why
-  that is cheap: 0.1849 xh of anchor travel — ~5.7 px — costs 0.6 px of extra
-  distance to ink at the samples. The spline absorbs the excursion.
-  `CHAIN_LETTER_BIND_WEIGHT` now carries the term on the chain path's LETTER
-  blocks, in the displacement form: second difference of the per-anchor
-  deltas inside a letter's own pen-stroke, never across a lift, never across
-  a segment, never on the anchors (which would be §7's rejected bending
-  term). Default 0.0 and verified byte-identical on a real solve — every
-  number of the pre-term run reproduces exactly — so the A/B's baseline arm
-  is an identity rather than a re-derivation.
-  Stated in the same place rather than left implicit: this term is a
-  stiffness answer to an attribution problem. The measurement says the driver
-  is the coverage term's blindness to which segment owns a skeleton point —
-  the same blindness the overlap term was introduced for, one level down. The
-  A/B measures a brake, not a cause, and a passing criterion must not be read
-  as „the stranding is understood".
-
-- **The autopsy of the `d` chart form (`qualitaetsmetrik.md` §12).** §10 had
-  narrowed the human „Bereich daneben" verdict to one glyph and named the
-  autopsy as the next step; this is it, over all 18 `d` screens, the 14
-  stored occurrences they map onto 1:1, and the chart row itself. The
-  deviation is neither a translation (the best one removes 0.6 %, an
-  independent confirmation of §10's 0 % measured against the ink instead of
-  the chart form) nor affine (a full scale+rotation+shear map reaches 10.6 %,
-  and explains as much in the clean rows as in the flagged ones): ~89 % is
-  non-affine, and it sits in ONE stretch of ductus — the ascender loop's
-  closing run and the exit, anchors ≈ 90–119. The bowl is untouched. The
-  human's own markers, projected back onto the drawn line, land at anchors
-  92–118 in 8 of 10 flagged screens — the same stretch, from an unrelated
-  measurement.
-  The sharp part is geometric and label-free: **all 10 `d`s with a following
-  letter shorten the exit run (−17 % to −33 %), all 4 word-final ones leave
-  it alone.** So the exit defect is join-conditional, and the fix is NOT
-  „move the Laufform's exit left" — variant 100 already carries the median
-  correction, but as one averaged form over two populations that differ
-  systematically, which no single Laufform can be. That is a model question
-  (variant split, or the run-out belongs to the join generator) and is left
-  open rather than guessed. The chart row scores 85.82, rank 46 of 62: the
-  authoring metric is faithful to the chart cell, and the chart cell is not
-  the running form.
-
-- **A neighbour-binding term in the fit objective — shipped inert, for a
-  pre-registered A/B.** The single anchor that runs into blank paper is not
-  stuck in a dead spot: measured at the 49 detected cases, the smoothed
-  distance field pulls at `|∇d|` 0.898 of full strength and none of them sits
-  on a ridge where the gradient would vanish. The anchor was driven there and
-  nothing held it back — it is displaced 0.208 template units from the chart
-  form while its own four neighbours sit at 0.047. The objective had no term
-  for that: geometry, width, coverage and an ABSOLUTE Tikhonov pull per
-  anchor, but nothing on the difference between neighbours.
-  `_second_difference_operator` prices exactly that — the second difference of
-  the DISPLACEMENTS, per pen-stroke, never spanning a lift. Which is neither
-  the bending term of §7 (second difference of the ANCHORS, so it prices the
-  real curvature a script lives on) nor the hinge of §8 (which prices
-  distance, and „a jump onto nearby ink is still a jump"): an affine
-  deformation of a stroke — what fitting a template to a hand IS — costs
-  exactly zero, a lone anchor leaving its neighbours costs quadratically.
-  `smooth_weight` defaults to **0.0**, so the objective is byte-identical
-  until the A/B fixes a weight; a test pins that. The analytic gradient is
-  checked against finite differences, because a wrong jacobian would not
-  raise — L-BFGS-B would just converge elsewhere and the A/B would measure the
-  bug instead of the idea. Corrected on a second reading: a **translation** is
-  exactly free, a stretch or shear is NOT — the residual is
-  `(A − I)·(second difference of the anchors)`, so it costs wherever the chart
-  form is curved, which is where a genuine slant adaptation lives. The first
-  test asserted „affine is free" by displacing the anchors linearly in the
-  INDEX, a weaker statement that hid the gap; both halves are pinned now, and
-  the docstring states the prior's real cost instead of overselling it.
-
-- **The three kinds of point are written down** (`vom-scan-zum-schreiben.md`
-  step 4, glossary): **anchors** are the spline's control points and the fit's
-  degrees of freedom (120), **samples** lie between them and are the ONLY
-  place the objective reads the ink (~180), **steps** are anchor-to-anchor
-  distances and what `anchor_spike_ratio` measures (119). An anchor therefore
-  acts only indirectly, through the one or two samples around it — measuring a
-  restoring force AT an anchor quantifies a force the optimiser never sees,
-  which is exactly the mistake that produced a wrong dead-spot diagnosis. Also
-  noted: `fitted_polyline_px` is the SAMPLE row, not the anchor row.
+- **Docs drift pass, with the layer taxonomy sharpened to match
+  reality.** The index's layer shorthand no longer claims every
+  `reference/` doc is lebend-or-bindend (HTR/animation/style-analysis
+  carry the status of their planned build-out), `concepts/` is described
+  as the design core it actually is, the proposals index is grouped by
+  status word so plan and protocol separate at a glance, and
+  `optimierungs-werkbank.md` is re-labelled `bindend` — its §3–§5
+  doctrine is API-enforced and read before every basket run; „umgesetzt"
+  was not in the closed status vocabulary. Stale claims fixed in the same
+  pass: the last `position`-keyed tuples in `architektur.md` §3/§12 and
+  `styleanalyse.md` (the schema key is `(glyph_key, variant)` since
+  R2/migration `0021`), architektur §16's pre-redesign admin routes, the
+  metric doc's stale `aug02` headline (actual: words 0,110392 · pairs
+  0,165678, re-baseline `aug07`), style-guide §9's drifted token copy
+  (now a pointer to design-system §2), `werkzeuge.md` missing
+  `dbsnapshot`, `fitview` and the pairlab entry scripts,
+  `datenablage.md` not knowing the committed `data/humanbench/` tree,
+  `naming-und-setup.md` §3 missing `/data` + `/tools`, the
+  `mvp-roadmap.md` head now declaring the retired `/mvp/` folder
+  historical wholesale, and the audit-licenses skill's dead base64
+  exclude (its target was deleted in #209) with the stale
+  woff2-duplicate baseline note (#329).
 
 ### Fixed
 
-- **The judgement sheet showed a letter without the pen path it was fitted
-  inside — and that cost the first round its headline finding.** The harvest
-  fits a whole word as ONE chain, so the connectors belong to the chain's
-  connector segments and are absent from a letter's own anchors. Round 1 drew
-  only those anchors, every joined letter ended in mid-air on screen, and 23 %
-  of the round was filed as „the entry stroke is missing" — correctly, for what
-  was on screen. Re-measured: the ink beyond the letter sits 0.25 xh from the
-  drawn line but **0.02 xh from the stored pen path** (24 of 26 covered), so
-  the fit had it all along. `build.py` now fetches the word traces and draws
-  them faintly beneath the judged line, and warns when they are missing.
-  The tempting conclusion — „then the labels were an artefact" — is refuted by
-  its own control group: the GOOD screens carry the same undrawn connector ink
-  and MORE of it (0.50 xh vs 0.25), and the same judge did not flag it there.
-  What the labels actually caught is the SEAM between letter and connector,
-  where the stored pen path itself deviates from the ink (0.105 xh against
-  0.047 on good screens, AUC 0.84) — so „a kink at the edge" was literally
-  right, and no per-letter metric can see it because every such window ends at
-  the letter. `qualitaetsmetrik.md` §9 carries the correction, the withdrawn
-  reading and the two failed metric attempts that followed from it; prevalence
-  without `E` is 39 % rather than 53 %.
+- **The duel page's resting trace no longer loses its tail**
+  (`tools/tracebench/view.py`, owner report: the hand trace of „unter"
+  ended at the t on the page while the admin editor showed it complete —
+  the trace DATA was complete, x 9..269 of a 274 px crop). Cause: the
+  static `stroke-dasharray="1"` + `pathLength="1"` +
+  `vector-effect="non-scaling-stroke"` combination mis-scales the dash in
+  some engines and swallows the end of the longest paths. The resting
+  markup now carries no dash at all; the dash is applied by the JS only
+  while the writing animation runs and removed again in the final state (#350).
 
-### Changed
-
-- **`analyse.py` reads the page's tally block instead of choking on it, and
-  uses it as a completeness probe.** The judgement sheet prints its own
-  per-category count under the verdict lines, so the natural copy-paste
-  carries them — and the parser rejected the whole file at the first one. It
-  now parses those lines and checks each against the verdicts: a truncated or
-  reassembled paste fails with the mismatch named, rather than quietly
-  producing a prevalence table over whatever survived the clipboard.
-
-- **„Which codes are modifiers" is derived from the category table instead of
-  naming `U` by hand** (`analyse.py`), so a verdict's size counts the findings a
-  judge actually ticked and a later modifier cannot silently inflate it. The
-  generalisation outlived what prompted it: a „could be better" tick, added so
-  that `G` — „nothing I can name is wrong", which is not „as good as it gets" —
-  could carry the author's reservation instead of swallowing it, and removed
-  again before any round was judged with it. On every screen that already
-  carries a defect the answer is foregone (the harvest holds such fits out
-  anyway), so the tick would only have said something on the `G` screens, and
-  next to each companion category it would have meant something else — a label
-  set is worth less with an ambiguous column than without it. The ceiling
-  question goes back to the one instrument that has a reference point, the
-  paired comparison; `menschliche-bewertung.md` §2 records the attempt and why
-  it was dropped.
+## [0.24.0] — 2026-08-11 — Class rules, floors, human judgement pass, stranded-anchor repair
 
 ### Added
 
@@ -1158,7 +946,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   faint pen path may mask real seam defects (good-screen `d_end` p90
   0.047 → 0.067, p = 0.08). Findings in `qualitaetsmetrik.md` §10, judgements
   and slim key under `data/humanbench/runde-02-*`, `d_end` in the glossary as
-  a rejected metric.
+  a rejected metric (#320).
 
 - **The location question §9 left open is settled — against the hypothesis,
   and that closes the last repair path for the outlier class.** §9 withdrew
@@ -1177,7 +965,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   out, and the harvest gate stays a fallback that discards rather than repairs.
   A fourth attempt needs a new diagnosis, not a new objective term. `W`
   („wobble") is a different matter and remains untried: both rejected terms
-  aimed at the single jump, not at the unsteady line.
+  aimed at the single jump, not at the unsteady line (#320).
 
 - **`tools/dbsnapshot` — an archive of the hand-made data, and a restore drill
   that proves it works.** Two tables in the database cannot be recomputed from
@@ -1200,7 +988,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `--apply`. Templates are archived per STYLE rather than per source, since the
   unique key is `(style_id, glyph_key, variant)` and reading them per source
   duplicates every row of a two-source style. The manifest states the gaps it
-  knows rather than hiding them.
+  knows rather than hiding them (#317).
 - **`tools/humanbench` — the blind judgement pass over the fits, as a package
   rather than a scratchpad script.** The automated benches score what a metric
   can already see; this one produces the other half — the author works through
@@ -1227,7 +1015,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   (`quellen-und-rechte.md` §5); what is committed is the human half alone,
   under `data/humanbench/` — the round's judgement text plus its provenance
   stamp and a `SOURCE.md`, with the `.gitignore` boundary drawn as an allowlist
-  (`*.md` and `*-urteile.txt`) so a later round's payload cannot follow them in.
+  (`*.md` and `*-urteile.txt`) so a later round's payload cannot follow them in (#317).
 - **`tools/humanbench/analyse.py` — the labelling pass's evaluation, in the
   order the plan fixed before the labels existed.** `page.py` collects the
   judgement and `build.py` decides what is judged; the third piece parses the
@@ -1253,7 +1041,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   0.05 for `W`, 20 of 20 single-labelled `E` markers at a stroke boundary). No
   DB, no API: the per-occurrence metrics arrive as a file the caller supplies,
   which is what keeps the learned geometry out of the repo
-  (`quellen-und-rechte.md` §5).
+  (`quellen-und-rechte.md` §5) (#317).
 - **`docs/reference/menschliche-bewertung.md` — the method behind the blind
   judgement pass, so a repetition is a rebuild rather than a replanning.** The
   project's numbers measure geometry; the pass measures which kind of defect
@@ -1278,7 +1066,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   mandatory, why a second category pass cannot prove an improvement, and the
   known limits. Indexed in `docs/index.md` (quick links, tree, Reference
   section and the living-document table); the findings themselves belong to
-  `qualitaetsmetrik.md`.
+  `qualitaetsmetrik.md` (#317).
 - **`qualitaetsmetrik.md` §9 — the first round's findings: which defect any of
   our numbers actually sees.** 162 screens, 150 occurrences plus 12 blind
   repeats, judged against an analysis plan written before the labels existed.
@@ -1300,7 +1088,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   aggregation question the occurrence floor left open: local defect and
   globally failed fit are two populations, not one scale (1.7 % of anchors
   flagged for a good occurrence against 58–68 % for an unusable one, with a
-  clean gap), which is what justifies treating them with different instruments.
+  clean gap), which is what justifies treating them with different instruments (#317).
 
 - **What a second judgement round would otherwise have had to rediscover.** A
   completeness pass over the retired scratchpad scripts, asking not „is this
@@ -1336,72 +1124,266 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   and that the per-judgement seconds changed meaning after round 1 and are not
   comparable across rounds. First tests for `build.py`'s sampling half
   (`tests/test_humanbench_build.py`), two of which grade a safeguard against the
-  failure it was added for rather than against a snapshot.
+  failure it was added for rather than against a snapshot (#317).
 
-### Fixed
+- **The pair focus shows its drill plate like a word: green trace, red engine
+  ink, one registration.** Every Abb.-20 drill is auto-traced into
+  `word_instances` since the harvest, but the Übergänge view only offered the
+  plain crop tile — the traced line and the system's answer met the specimen
+  only two clicks away, in the Wörter detail. `/admin/uebergaenge?l=&r=` now
+  carries a full-width „Platten-Beleg (nachgefahren)" panel wherever a traced
+  drill of exactly that pair exists (matched by shaping the sample's word, the
+  same rule the pair cards use): the same `WordSpineCard` the Wörter view
+  draws — the green Nachfahrung and the translucent engine ink both on the
+  row's measured registration, the engine's own face beside at the same scale
+  — with both layers ON by default and the Wörter detail's layer toggles
+  (`LayerDot` extracted to `shell/` for both views), a „Bewerten" score
+  action, and a jump into the word detail. An override save resets the card
+  through the existing `pairTick` (fresh composition via the render cache's
+  `bust`, stale score dropped); a pair without a drill plate shows no panel (#307).
 
-- **Three self-checks and a persistence asymmetry in `tools/humanbench`.** The
-  realised repeat gaps were measured at insertion time, but a repeat spliced in
-  between an earlier pair pushes it further apart — so „gaps 40-65 positions"
-  described a sequence nobody was shown; they are now read off the finished
-  order. In the paired mode the severity band a repeat was drawn from came from
-  the full old snapshot's rank while the bands were cut over the MATCHED rows
-  only, so every occurrence the new snapshot lost pushed repeats towards the
-  last band; the ranks are re-stamped after matching, and the prefix check is
-  graded against the population that was actually banded. And the round-1 page
-  stored `{at, seen, notes, stamps, picks}` while its `restore()` read `spots` —
-  a field nothing ever wrote, so one reload would have dropped every marker
-  placed so far, silently, and the markers are the only part of the judgement
-  independent of our own numbers. The current page persists them; the symmetry
-  is now pinned by a test in both directions, and round 1's stamp says the
-  markers are plausible but not proven complete.
-- **The harvest rejects the „Anker im leeren Papier" occurrence
-  (`qualitaetsmetrik.md` §8).** A fit that parks one anchor in blank paper — the
-  Sütterlin capital S in „Sprünge" sits 12 px from the nearest ink at 9.3× the
-  median step, while 119 of its 120 anchors lie on the line — is not a
-  measurement of the hand, so the occurrence is now declined rather than
-  medianed into a Laufform. New `anchor_spike_ratio`: the largest step between
-  neighbouring anchors against the median step OF ITS OWN stroke, maximised
-  over the strokes. Per stroke rather than pooled because a long body stroke
-  otherwise inflates the denominator and hides a needle in a short umlaut one
-  (`ue` in „Zügel" scores 7.21 pooled, 10.61 against its own stroke); pen lifts
-  never count, or every multi-stroke glyph would be rejected for writing its own
-  ductus. Gate `anchor_spike` at `MAX_ANCHOR_SPIKE_RATIO = 8.0` on **both**
-  harvest paths, calibrated on the 245 stored occurrences (median 2.68, p90
-  7.28, max 32.9): 23 rejected (9.4 %), and not one glyph drops below
-  `LAUFFORM_MIN_OCCURRENCES` — though `S`, `s` and `ue` each go 2 → 1, all three
-  already below that floor. On the accepted set the worst distance of a fitted
-  centerline to the measured ink falls from 0.613 to 0.258 x-heights and its p90
-  from 0.194 to 0.149. It catches DISCONTINUITIES and only those: a smooth
-  deviation spread over many anchors passes untouched, and the 0.258 xh that
-  remains says such residuals exist.
-- **…and it sits on the path that actually produced the data.** The first
-  version of the gate lived only in `_harvest_case_slots`, while all 245 stored
-  occurrences come from `_harvest_case_chain` (`fit_path == "chain"`, 245 of
-  245) — it would have rejected exactly nothing in production, with a green test
-  suite, because every new test pinned the slot path. Found by adversarially
-  injecting the needle into the chain path and getting `['ok','ok','ok']` back.
-  The check is now a step in the chain path's `letter_gate` cascade, after
-  `anchor_count` (the ratio of a mis-shaped array says nothing) and before the
-  connector reason (this is the letter's own chain, not a neighbour's damage),
-  and it excludes the letter from the STATISTICS layer only — the trace keeps
-  it, so a gated letter stays visible to the admin.
-  `test_the_chain_path_rejects_an_anchor_in_blank_paper` holds the hole shut.
-- **Where the spikes sit — a claim since withdrawn as circular.** Reviewing the
-  gate put 22 of the 23 rejected occurrences (96 %) at a corner anchor or a
-  stroke boundary, with five of the seven rejected `e` occurrences spiking at
-  the *same* anchor 43, and read that as one instrument defect rather than 23
-  broken measurements. The location, however, came from the detector's own
-  maximum, so it could not have said anything else. §9's human markers are the
-  independent test and they do not reproduce it: not one of the six
-  single-labelled outlier markers sits at a stroke boundary, and the click
-  matches the measured maximum in only 45 % of cases overall. The finding is
-  therefore **unsupported rather than disproven** (at n = 6 the markers refute
-  nothing either), and any repair aimed at that anchor class needs a
-  non-circular location analysis first. Recorded in §8 with the per-glyph
-  table and corrected in §9; the gate stays as the backstop either way.
+- **The Übergänge view shows the measured joins as ink, not as chips.** The
+  occurrence panel of `/admin/uebergaenge` listed every dissected join by
+  specimen id and `gen_chamfer` — it said where a join was measured and never
+  what it looks like, which is the one thing a join is judged on. A
+  `pair_instance` carries no pixel box (its geometry lives in the glyph_pairs
+  frame, relative to the left glyph's exit), but it names the specimen and the
+  left glyph's slot, and the letter occurrences of the same plate carry those
+  slots as page-pixel boxes: the new pure `model.ts::joinCropBoxOf` unions the
+  two into the join's own crop box, and the tile from the Buchstaben view
+  (extracted as the generic `CropThumb`) draws it. Slot and glyph key must
+  both match — where the two harvests disagree about a word's slotting, the
+  chip row stays rather than showing the wrong ink (#306).
 
 ### Changed
+
+- **The stranded anchor is now REPAIRED at harvest — the accepted alternative
+  to the four rejected objective terms.** `tools/pairlab/anchors.py` holds the
+  shared detector (both neighbouring steps ≥ 3× the median step of the own
+  pen-stroke — the shape of the author-marked defect, 16/17 hit rate) and the
+  repair: a flagged anchor is replaced by the linear interpolation of its
+  nearest unflagged stroke neighbours, never snapping to ink (§8 showed why: at
+  a crossing the nearest ink is the wrong stroke) and never crossing a pen
+  lift. Both harvest storage paths apply it AFTER the gate, only to ACCEPTED
+  occurrences: the gate keeps judging the unrepaired geometry (a repair is a
+  near-rejection, never a pass), the stored `anchor_spike_ratio` stays the
+  unrepaired number, and `measurements.repaired_anchors` lists what was
+  touched — absence means untouched, pinned byte-identical by the golden
+  test. The word trace deliberately stays unrepaired (the inspection layer
+  shows what the fit actually did). The owner's explicit trade (2026-08-10)
+  is recorded at the module: an interpolated anchor slightly off the ink is
+  the lesser defect; the peak that poisons the per-anchor Laufform median is
+  the one that must go. This removes exactly the judged defects — every
+  author-marked peak sat in an accepted fit, so no yield or threshold moves (#327).
+
+- **`tools/fitview` — the before/after page for the judged occurrences.**
+  Re-runs the live chain fit on precisely the humanbench screens the owner
+  marked (default: category `A`, both rounds, blind repeats merged), and
+  renders each occurrence in the SAME frame the judgement used (window pad and
+  4× zoom replicated from `humanbench/build.py`): left the unrepaired anchor
+  polyline, right the repaired one, repaired indices circled, the owner's
+  clicked marker as a cross. One self-contained HTML file, minutes per round
+  instead of hours — the small-subset human loop the owner asked for (#327).
+
+- **`tools/pairlab/peaklab.py` — the same loop over a NAMED working set.** The
+  sibling of `tools/fitview`: instead of the judged screens it fits a small
+  named set of words (default the five whose outliers the author marked plus
+  three he passed as clean, so a round can tell „the peaks are gone" from
+  „everything got flattened"), reports the lone excursions per letter
+  occurrence with the spike ratio before and after, and with `--png` draws the
+  fitted anchor chain over the specimen ink with every excursion circled —
+  `--compare` puts the fitted and the repaired chain side by side in one
+  window, so a shift is never a zoom. Four minutes per round instead of three
+  hours; detector and repair are the shared ones from `tools/pairlab/anchors.py`,
+  so what it shows is what the harvest does. Measurement only: no DB, no API,
+  nothing renders (#327).
+
+- **Per-term, per-anchor gradient decomposition of the chain fit — the
+  diagnosis that has to come before the term.** An optimum is a point where
+  the forces cancel, so „what holds the stranded anchor out there" is a
+  measurement, not a guess, and until it is made a new term is a hopeful
+  edit. `_ChainProblem.gradient_terms` splits the objective into its seven
+  weighted forces (`geo` · `crop` · `width` · `coverage` · `overlap` ·
+  `smooth` · `reg`) and reads each one per free anchor. `crop` is split off
+  `e_geo` because the out-of-crop pull is a different statement about a
+  sample than the distance field is.
+  The build rule of the method is wired in as an assertion rather than
+  trusted: every term is folded through the SAME chain rule and the SAME
+  parameter packing the objective uses (`_fold_samples`/`_fold_plan`/`_pack`,
+  now one code path instead of two), and `gradient_decomposition` re-adds the
+  split and raises unless it reproduces the gradient L-BFGS-B actually
+  followed. Measured on a real solve, the split misses it by 2.7e-14
+  relative. A decomposition that does not reproduce the gradient describes a
+  different objective, which is precisely the failure mode that would make
+  the diagnostic drift away from the thing it diagnoses.
+  `sample_slice_of_anchor` supplies the reading the earlier measurement got
+  wrong: the field at the SAMPLES between an anchor's two neighbours. The
+  objective never queries an anchor's own position, so a restoring force
+  measured there quantifies something the optimiser cannot feel.
+  `fit_word_chain(keep_solve=True)` hands back the solved problem and its
+  argmin — off by default, because the problem holds the whole field stack (#322).
+
+- **`tools/pairlab/gradlab.py` — the sweep that runs it over the harvest's own
+  solves.** Same cases, same grid windows, same chain fits as
+  `tools.laufform.harvest`, so the optimum it inspects is the optimum the
+  stored occurrences came from. Per anchor it reports every term's force, the
+  field at that anchor's sample window, and its displacement against its
+  neighbours; the stranding detector is the shape the author's markings
+  actually have (both neighbouring steps at least 3x the median step of their
+  own pen-stroke, never across a lift). Every other letter anchor of the same
+  solves is carried as a CONTROL population — a term that pulls as hard at a
+  healthy anchor as at a stranded one explains nothing, and without that
+  column the numbers would invite exactly that conclusion. Measurement only:
+  no DB, no API, no rendering, nothing in `core/` (#322).
+
+- **The neighbour-binding term: measured and REJECTED (`qualitaetsmetrik.md`
+  §11b–§11d).** The pre-registered A/B, its criteria committed before any of
+  its numbers existed. Run 1 failed on a ladder that turned out never to have
+  switched the term on — at its top rung the weighted binding contributed
+  4.9e-6 against a geometry term of 2.2e-3, 450× smaller, because the ladder
+  was taken by analogy to `core.fit`'s constant and the operator being the same
+  does not make the objective's energy scale the same. Named as the
+  pre-registration's flaw rather than quietly patched, and re-registered with a
+  ladder calibrated on baseline-only solves.
+  Run 2, calibrated: **the term works and is still wrong.** Stranded anchors
+  98 → 41, spike ratio 2.90 → 1.59 — and the share of stored anchors sitting
+  off the ink RISES 18 %, where a 25 % fall was required. Smoothing the second
+  difference of the displacements stops one anchor from making its excursion
+  alone, so it takes its neighbours along: one anchor in blank paper becomes
+  three, which is the worse failure for a per-anchor median. Cost bounds break
+  on the lowest rung too.
+  The apparent yield gain is fully circular and is the reason the criterion was
+  chosen: accepted occurrences rise 209 → 218 with McNemar significant in the
+  term's favour (p = 0.021), and **every** flip up to weight 1.0 was an
+  occurrence the harvest had rejected for `anchor_spike` — the statistic the
+  term suppresses by construction — while genuine convergence got worse
+  (`not_converged_local` 21 → 31). Measured on §11's original criteria the term
+  would have passed brilliantly on every rung.
+  That closes the fourth repair path for the single-anchor outlier, after the
+  bending term (§7), the hinge (§8) and the corner-anchor diagnosis (§10). What
+  is left is not a fifth term but the cause §11a named: the coverage term's
+  blindness to which segment owns a skeleton point. The hold-out (Abb. 20) was
+  deliberately NOT spent — the protocol confirms only a weight that passed
+  development, and spending a reserve on a refuted hypothesis burns it for the
+  next one (#326).
+
+- **The answer the decomposition was built for, and the term moved to where
+  the defect lives (`qualitaetsmetrik.md` §11a).** 96 chain solves, 41 280
+  letter anchors, at the optima the stored occurrences came from; 128 stranded
+  anchors in 82 of 344 occurrences across 27 glyphs, so this is a property of
+  the model and not of a glyph. The sum check held everywhere (worst 1.7e-13).
+  **The coverage term is the driver**: 32.4× its control strength at a
+  stranded anchor, aligned with the displacement to a cosine of −0.996, and
+  decoupled from the distance field (`coverage` vs `geo` 0.912 → 0.554). Two
+  of §11's four candidates die here. The width term is *weaker* at stranded
+  anchors (0.9×). And the Tikhonov pull, which looked like a finding at 8.5×,
+  is force/displacement 4.167e-3 stranded against 4.166e-3 control — the same
+  spring stretched further, identical to four figures. Without the control
+  population that number would have been read as an explanation.
+  §11 had asked which counter-force *holds* the anchor out; measured, the
+  question is the wrong way round. Nothing holds it — the data terms push it
+  there and Tikhonov is the only restraint. The field reading at the samples
+  (the one §11 marked as owed, because no anchor is ever queried) says why
+  that is cheap: 0.1849 xh of anchor travel — ~5.7 px — costs 0.6 px of extra
+  distance to ink at the samples. The spline absorbs the excursion.
+  `CHAIN_LETTER_BIND_WEIGHT` now carries the term on the chain path's LETTER
+  blocks, in the displacement form: second difference of the per-anchor
+  deltas inside a letter's own pen-stroke, never across a lift, never across
+  a segment, never on the anchors (which would be §7's rejected bending
+  term). Default 0.0 and verified byte-identical on a real solve — every
+  number of the pre-term run reproduces exactly — so the A/B's baseline arm
+  is an identity rather than a re-derivation.
+  Stated in the same place rather than left implicit: this term is a
+  stiffness answer to an attribution problem. The measurement says the driver
+  is the coverage term's blindness to which segment owns a skeleton point —
+  the same blindness the overlap term was introduced for, one level down. The
+  A/B measures a brake, not a cause, and a passing criterion must not be read
+  as „the stranding is understood" (#322).
+
+- **The autopsy of the `d` chart form (`qualitaetsmetrik.md` §12).** §10 had
+  narrowed the human „Bereich daneben" verdict to one glyph and named the
+  autopsy as the next step; this is it, over all 18 `d` screens, the 14
+  stored occurrences they map onto 1:1, and the chart row itself. The
+  deviation is neither a translation (the best one removes 0.6 %, an
+  independent confirmation of §10's 0 % measured against the ink instead of
+  the chart form) nor affine (a full scale+rotation+shear map reaches 10.6 %,
+  and explains as much in the clean rows as in the flagged ones): ~89 % is
+  non-affine, and it sits in ONE stretch of ductus — the ascender loop's
+  closing run and the exit, anchors ≈ 90–119. The bowl is untouched. The
+  human's own markers, projected back onto the drawn line, land at anchors
+  92–118 in 8 of 10 flagged screens — the same stretch, from an unrelated
+  measurement.
+  The sharp part is geometric and label-free: **all 10 `d`s with a following
+  letter shorten the exit run (−17 % to −33 %), all 4 word-final ones leave
+  it alone.** So the exit defect is join-conditional, and the fix is NOT
+  „move the Laufform's exit left" — variant 100 already carries the median
+  correction, but as one averaged form over two populations that differ
+  systematically, which no single Laufform can be. That is a model question
+  (variant split, or the run-out belongs to the join generator) and is left
+  open rather than guessed. The chart row scores 85.82, rank 46 of 62: the
+  authoring metric is faithful to the chart cell, and the chart cell is not
+  the running form (#322).
+
+- **A neighbour-binding term in the fit objective — shipped inert, for a
+  pre-registered A/B.** The single anchor that runs into blank paper is not
+  stuck in a dead spot: measured at the 49 detected cases, the smoothed
+  distance field pulls at `|∇d|` 0.898 of full strength and none of them sits
+  on a ridge where the gradient would vanish. The anchor was driven there and
+  nothing held it back — it is displaced 0.208 template units from the chart
+  form while its own four neighbours sit at 0.047. The objective had no term
+  for that: geometry, width, coverage and an ABSOLUTE Tikhonov pull per
+  anchor, but nothing on the difference between neighbours.
+  `_second_difference_operator` prices exactly that — the second difference of
+  the DISPLACEMENTS, per pen-stroke, never spanning a lift. Which is neither
+  the bending term of §7 (second difference of the ANCHORS, so it prices the
+  real curvature a script lives on) nor the hinge of §8 (which prices
+  distance, and „a jump onto nearby ink is still a jump"): an affine
+  deformation of a stroke — what fitting a template to a hand IS — costs
+  exactly zero, a lone anchor leaving its neighbours costs quadratically.
+  `smooth_weight` defaults to **0.0**, so the objective is byte-identical
+  until the A/B fixes a weight; a test pins that. The analytic gradient is
+  checked against finite differences, because a wrong jacobian would not
+  raise — L-BFGS-B would just converge elsewhere and the A/B would measure the
+  bug instead of the idea. Corrected on a second reading: a **translation** is
+  exactly free, a stretch or shear is NOT — the residual is
+  `(A − I)·(second difference of the anchors)`, so it costs wherever the chart
+  form is curved, which is where a genuine slant adaptation lives. The first
+  test asserted „affine is free" by displacing the anchors linearly in the
+  INDEX, a weaker statement that hid the gap; both halves are pinned now, and
+  the docstring states the prior's real cost instead of overselling it (#321).
+
+- **The three kinds of point are written down** (`vom-scan-zum-schreiben.md`
+  step 4, glossary): **anchors** are the spline's control points and the fit's
+  degrees of freedom (120), **samples** lie between them and are the ONLY
+  place the objective reads the ink (~180), **steps** are anchor-to-anchor
+  distances and what `anchor_spike_ratio` measures (119). An anchor therefore
+  acts only indirectly, through the one or two samples around it — measuring a
+  restoring force AT an anchor quantifies a force the optimiser never sees,
+  which is exactly the mistake that produced a wrong dead-spot diagnosis. Also
+  noted: `fitted_polyline_px` is the SAMPLE row, not the anchor row (#321).
+
+- **`analyse.py` reads the page's tally block instead of choking on it, and
+  uses it as a completeness probe.** The judgement sheet prints its own
+  per-category count under the verdict lines, so the natural copy-paste
+  carries them — and the parser rejected the whole file at the first one. It
+  now parses those lines and checks each against the verdicts: a truncated or
+  reassembled paste fails with the mismatch named, rather than quietly
+  producing a prevalence table over whatever survived the clipboard (#320).
+
+- **„Which codes are modifiers" is derived from the category table instead of
+  naming `U` by hand** (`analyse.py`), so a verdict's size counts the findings a
+  judge actually ticked and a later modifier cannot silently inflate it. The
+  generalisation outlived what prompted it: a „could be better" tick, added so
+  that `G` — „nothing I can name is wrong", which is not „as good as it gets" —
+  could carry the author's reservation instead of swallowing it, and removed
+  again before any round was judged with it. On every screen that already
+  carries a defect the answer is foregone (the harvest holds such fits out
+  anyway), so the tick would only have said something on the `G` screens, and
+  next to each companion category it would have meant something else — a label
+  set is worth less with an ambiguous column than without it. The ceiling
+  question goes back to the one instrument that has a reference point, the
+  paired comparison; `menschliche-bewertung.md` §2 records the attempt and why
+  it was dropped (#319).
 
 - **Recorded a rejected experiment: a curvature regulariser on the M4 fit
   (`qualitaetsmetrik.md` §7).** Chasing the capital S's spike one layer down
@@ -1421,46 +1403,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   measures (spike, cross-occurrence agreement) all improve for any term that
   pulls toward the prior, so they can never adjudicate alone; the next attempt
   should be a targeted one-sided hinge on an anchor's ink distance, which costs
-  exactly zero for anchors that sit on ink.
-
-### Fixed
-
-- **`apply-laufform` enforces the occurrence floor the dialog alone could not
-  hold — the capital S's spike.** The Sütterlin `S` is written from a
-  variant-100 row derived from exactly TWO occurrences (`trace_meta.laufform.
-  n_occurrences = 2`), and at n = 2 `np.median` returns the mean of the two: a
-  fit blow-up in the `Sprünge` occurrence — anchor 113 sitting 0.357 units from
-  its twin where the neighbours sit 0.01–0.03 apart, at an unremarkable 1.261 px
-  per-glyph RMSE — landed in the written form at half amplitude as a visible
-  spike off the top right, with the whole bowl 3.3× more faceted than the chart
-  row (mean turn 13.0° vs. 4.0°). The caution lived only in the SPA dialog's
-  proposed selection (`LOW_N = 3`), and a re-apply names the keys that ALREADY
-  have a Laufform row — so a key that once earned one from a word harvest kept
-  being re-derived from however thin an aggregate it had since acquired.
-  `POST …/aggregates/apply-laufform` now carries the floor itself
-  (`core.aggregate.LAUFFORM_MIN_OCCURRENCES = 3`, where the median starts being
-  able to outvote one bad anchor): a thinner aggregate is reported as
-  `below_min_occurrences` with its count and left alone, however it was named,
-  and `?min_occurrences=` lowers it for the human who means it — the same
-  enforce-don't-trust doctrine as the `work_items` protocol. The dialog keeps
-  proposing and keeps every row tickable; a deliberate tick now travels as the
-  lowered floor instead of as a check nobody ran.
-- **Wordbench fixture Laufform layer is byte-true to the stored rows (issue
-  #311).** The admin single-template GET takes a `variant` query parameter, so
-  the stored variant-100 (Laufform) rows are readable at all — and
-  `fetch_fixtures` now freezes them VERBATIM (manifest `laufform_precision:
-  "stored"`) instead of reconstructing them locally from the hand's aggregates,
-  where a chart resample between apply and fetch (or a run on the
-  `VERTICAL_STRAIGHT_TOL` knife edge) turned wire-level noise into a discrete
-  render flip. Same transported-not-recomputed philosophy as the
-  `render-context` nib read; a deployment predating the parameter is detected
-  per response (it serves the variant-0 row, which says so) and falls back to
-  the reconstruction (`"reconstructed"`). The `--verify` gate also cache-busts
-  every one of its own `/write` reads now — the `aug04` CDN gotcha could make
-  it "verify" the edge cache's pre-write-round state. Knife-edge caution
-  documented at the shared constant in `core/geometry.py`.
-
-### Changed
+  exactly zero for anchors that sit on ink (#315).
 
 - **Pre-approved the Claude Code Remote scheduling tools for repo sessions**
   (new committed `.claude/settings.json`): `send_later` and the trigger
@@ -1468,7 +1411,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   schedule their own PR check-ins constantly, and the container is ephemeral,
   so the committed project settings are the only place the grant persists.
   Only the scheduling family is allowed; every other Remote tool (session
-  creation, archiving) still prompts.
+  creation, archiving) still prompts (#314).
 - **Documented the `aug07` write round and its new wordbench baseline**
   (`qualitaetsmetrik.md`): 23 letter resamples under the sharpened
   verticalisation tolerance (`oe` and `U` deliberately held back),
@@ -1477,7 +1420,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   pair regression sits in the dz/dk drills, whose resampled d now carries its
   chart cell's gently curved back (chart truth over drill similarity). The
   open verification finding — the fixture Laufform layer is rebuilt locally
-  and one run sits on the tolerance knife edge — is issue #311.
+  and one run sits on the tolerance knife edge — is issue #311 (#312).
 - **Sharpened the verticalisation pair: gently curved capital flanks stay
   round (Korb #5, the S bowl).** The derivation's downstroke straightening
   and the Sütterlin metric's vertical-run detector share one new constant
@@ -1489,14 +1432,14 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   deliberate metric re-baseline documented in `qualitaetsmetrik.md` §6
   (`aug07`): glyph bench 0.183765 → 0.175550, every ink-anchored component
   better, honest loser Y (+0.115, collinearity on its de-straightened
-  crossing). Stored templates change only via re-derive (`resample`).
+  crossing). Stored templates change only via re-derive (`resample`) (#310).
 - **Word-trace harvest lifts the pen after a restart capital (Korb #5,
   „Säbel" S→ä).** `assemble_word_strokes` no longer welds the composed
   connector's retrace prefix into the pen run after an S/O/B/K/P capital:
   the run ends at the capital's ductus end and the trace's next stroke
   starts at the connector's Grundlinie turn — the fresh Ansatz the plates
   show. New `restart_slots` parameter fed from `CAP_RESTART_BASES`; stored
-  traces change only on a re-harvest.
+  traces change only on a re-harvest (#310).
 
 - **Kringel-exit class rule: b and o depart for the join at the bow's
   closing loop, not at the chart cell's rising coupling stub (Korb #5,
@@ -1511,7 +1454,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   0.164343 → 0.162783 (same fixtures, A/B); biggest movers Zorn −0.113,
   von −0.048, Soldaten −0.034, Säbel −0.008. Golden compose fixture
   re-baselined; new unit tests pin the cut, the word-final keep, the
-  low-crossing guard and the base gate.
+  low-crossing guard and the base gate (#309).
 
 - **The rule work's duplicated computations now agree by construction — a
   byte-exact structural cleanup of `core/compose.py` and its neighbours.**
@@ -1547,38 +1490,196 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   decompressed byte-identical, a full-precision compose dump over all pen
   kinds/provenance/laufform/override variants byte-identical, the wordbench
   words+pairs report identical to the last digit, glyphbench unchanged on
-  both scripts, 780 tests green.
+  both scripts, 780 tests green (#308).
+
+- **Deleting a task in the Auftragskorb asks first.** The bin icon on a
+  work-item row was a single click on a hard DELETE with no undo anywhere in
+  the basket. That is the wrong bargain for a CLOSED item in particular: its
+  handling protocol — the session's restatement, the diagnosed stage, the
+  resolution — is precisely the symptom → diagnosis → change archive the §5
+  protocol exists to accumulate, and one stray tap on a phone emptied it. The
+  icon now opens a confirmation naming the row, and an erledigter Auftrag adds
+  the warning that its record is history plus the pointer to the „erledigte
+  anzeigen" toggle, which hides rather than destroys (#306).
+
+- **ESLint 9 → 10, with the one plugin that blocks it pinned rather than
+  dropped.** Dependabot's bump (#235) could not land on its own: `npm ci` died
+  in the ERESOLVE check because `eslint-plugin-jsx-a11y` still declares a peer
+  range that stops at ESLint 9, and 6.10.2 is its newest release — there is no
+  version to bump to. An `overrides` entry in `app/package.json` pins that peer
+  to ours instead; the plugin runs fine on 10, verified by its rules still
+  firing (`jsx-a11y/no-autofocus` on a canary), and `eslint.config.js` carries
+  the note plus the condition for removing the override again. `@eslint/js`
+  moves to 10 with it. The new recommended set brought exactly one finding:
+  `no-useless-assignment` on a `let caption = null` in `SchriftkundeView` whose
+  every branch assigns before use — the dead initialiser is gone, which also
+  drops a `| null` the type never needed. Lint is back to 0 errors and the same
+  59 known warnings (#304).
+
+### Removed
+
+- **„Kopplung Anfang/Ende" is gone from the wizard — the field was read by
+  nothing.** The Weg step let a letter's entry/exit coupling height be
+  authored per glyph (Grundlinie · Mittellinie · Oberlinie · Unterlinie); it
+  travelled from `bboxes.guides` through `canonical_from_path` into
+  `templates.entry.coupling` / `exit_pt.coupling` and was carried onto every
+  M4 fit — and there the trail ended. `core/compose.py` decides the coupling
+  height by class rule (`HIGH_COUPLE_BASES`: round bodies e/a/o/c/d/g/q couple
+  high at the apex, arcade letters n/m/i/u low through the baseline garland,
+  measured on Abb. 19/20/22) and never once read the stored label, so the
+  control promised an effect it did not have. Removed end to end: the two
+  dropdowns and their locale strings, the wizard state, the `GuideConfig`
+  fields, the pipeline stamp, the fit carry-over, and `CouplingPointOut` →
+  `EndPointOut` (point + tangent). No migration and no data rewrite — stored
+  `guides` JSON keeps its keys (`extra="ignore"` makes an older client's
+  payload valid, and one of the 77 authored bboxes carries a non-default value
+  nothing ever consumed), and rows authored earlier keep their `coupling` key,
+  which is now simply ignored on read. `architektur.md` §3 and the glossary
+  said the coupling height lives in the template; both now record that the
+  class rule owns it (#306).
+
+### Fixed
+
+- **The judgement sheet showed a letter without the pen path it was fitted
+  inside — and that cost the first round its headline finding.** The harvest
+  fits a whole word as ONE chain, so the connectors belong to the chain's
+  connector segments and are absent from a letter's own anchors. Round 1 drew
+  only those anchors, every joined letter ended in mid-air on screen, and 23 %
+  of the round was filed as „the entry stroke is missing" — correctly, for what
+  was on screen. Re-measured: the ink beyond the letter sits 0.25 xh from the
+  drawn line but **0.02 xh from the stored pen path** (24 of 26 covered), so
+  the fit had it all along. `build.py` now fetches the word traces and draws
+  them faintly beneath the judged line, and warns when they are missing.
+  The tempting conclusion — „then the labels were an artefact" — is refuted by
+  its own control group: the GOOD screens carry the same undrawn connector ink
+  and MORE of it (0.50 xh vs 0.25), and the same judge did not flag it there.
+  What the labels actually caught is the SEAM between letter and connector,
+  where the stored pen path itself deviates from the ink (0.105 xh against
+  0.047 on good screens, AUC 0.84) — so „a kink at the edge" was literally
+  right, and no per-letter metric can see it because every such window ends at
+  the letter. `qualitaetsmetrik.md` §9 carries the correction, the withdrawn
+  reading and the two failed metric attempts that followed from it; prevalence
+  without `E` is 39 % rather than 53 % (#318).
+
+- **Three self-checks and a persistence asymmetry in `tools/humanbench`.** The
+  realised repeat gaps were measured at insertion time, but a repeat spliced in
+  between an earlier pair pushes it further apart — so „gaps 40-65 positions"
+  described a sequence nobody was shown; they are now read off the finished
+  order. In the paired mode the severity band a repeat was drawn from came from
+  the full old snapshot's rank while the bands were cut over the MATCHED rows
+  only, so every occurrence the new snapshot lost pushed repeats towards the
+  last band; the ranks are re-stamped after matching, and the prefix check is
+  graded against the population that was actually banded. And the round-1 page
+  stored `{at, seen, notes, stamps, picks}` while its `restore()` read `spots` —
+  a field nothing ever wrote, so one reload would have dropped every marker
+  placed so far, silently, and the markers are the only part of the judgement
+  independent of our own numbers. The current page persists them; the symmetry
+  is now pinned by a test in both directions, and round 1's stamp says the
+  markers are plausible but not proven complete (#317).
+- **The harvest rejects the „Anker im leeren Papier" occurrence
+  (`qualitaetsmetrik.md` §8).** A fit that parks one anchor in blank paper — the
+  Sütterlin capital S in „Sprünge" sits 12 px from the nearest ink at 9.3× the
+  median step, while 119 of its 120 anchors lie on the line — is not a
+  measurement of the hand, so the occurrence is now declined rather than
+  medianed into a Laufform. New `anchor_spike_ratio`: the largest step between
+  neighbouring anchors against the median step OF ITS OWN stroke, maximised
+  over the strokes. Per stroke rather than pooled because a long body stroke
+  otherwise inflates the denominator and hides a needle in a short umlaut one
+  (`ue` in „Zügel" scores 7.21 pooled, 10.61 against its own stroke); pen lifts
+  never count, or every multi-stroke glyph would be rejected for writing its own
+  ductus. Gate `anchor_spike` at `MAX_ANCHOR_SPIKE_RATIO = 8.0` on **both**
+  harvest paths, calibrated on the 245 stored occurrences (median 2.68, p90
+  7.28, max 32.9): 23 rejected (9.4 %), and not one glyph drops below
+  `LAUFFORM_MIN_OCCURRENCES` — though `S`, `s` and `ue` each go 2 → 1, all three
+  already below that floor. On the accepted set the worst distance of a fitted
+  centerline to the measured ink falls from 0.613 to 0.258 x-heights and its p90
+  from 0.194 to 0.149. It catches DISCONTINUITIES and only those: a smooth
+  deviation spread over many anchors passes untouched, and the 0.258 xh that
+  remains says such residuals exist (#316).
+- **…and it sits on the path that actually produced the data.** The first
+  version of the gate lived only in `_harvest_case_slots`, while all 245 stored
+  occurrences come from `_harvest_case_chain` (`fit_path == "chain"`, 245 of
+  245) — it would have rejected exactly nothing in production, with a green test
+  suite, because every new test pinned the slot path. Found by adversarially
+  injecting the needle into the chain path and getting `['ok','ok','ok']` back.
+  The check is now a step in the chain path's `letter_gate` cascade, after
+  `anchor_count` (the ratio of a mis-shaped array says nothing) and before the
+  connector reason (this is the letter's own chain, not a neighbour's damage),
+  and it excludes the letter from the STATISTICS layer only — the trace keeps
+  it, so a gated letter stays visible to the admin.
+  `test_the_chain_path_rejects_an_anchor_in_blank_paper` holds the hole shut (#316).
+- **Where the spikes sit — a claim since withdrawn as circular.** Reviewing the
+  gate put 22 of the 23 rejected occurrences (96 %) at a corner anchor or a
+  stroke boundary, with five of the seven rejected `e` occurrences spiking at
+  the *same* anchor 43, and read that as one instrument defect rather than 23
+  broken measurements. The location, however, came from the detector's own
+  maximum, so it could not have said anything else. §9's human markers are the
+  independent test and they do not reproduce it: not one of the six
+  single-labelled outlier markers sits at a stroke boundary, and the click
+  matches the measured maximum in only 45 % of cases overall. The finding is
+  therefore **unsupported rather than disproven** (at n = 6 the markers refute
+  nothing either), and any repair aimed at that anchor class needs a
+  non-circular location analysis first. Recorded in §8 with the per-glyph
+  table and corrected in §9; the gate stays as the backstop either way (#317).
+
+- **`apply-laufform` enforces the occurrence floor the dialog alone could not
+  hold — the capital S's spike.** The Sütterlin `S` is written from a
+  variant-100 row derived from exactly TWO occurrences (`trace_meta.laufform.
+  n_occurrences = 2`), and at n = 2 `np.median` returns the mean of the two: a
+  fit blow-up in the `Sprünge` occurrence — anchor 113 sitting 0.357 units from
+  its twin where the neighbours sit 0.01–0.03 apart, at an unremarkable 1.261 px
+  per-glyph RMSE — landed in the written form at half amplitude as a visible
+  spike off the top right, with the whole bowl 3.3× more faceted than the chart
+  row (mean turn 13.0° vs. 4.0°). The caution lived only in the SPA dialog's
+  proposed selection (`LOW_N = 3`), and a re-apply names the keys that ALREADY
+  have a Laufform row — so a key that once earned one from a word harvest kept
+  being re-derived from however thin an aggregate it had since acquired.
+  `POST …/aggregates/apply-laufform` now carries the floor itself
+  (`core.aggregate.LAUFFORM_MIN_OCCURRENCES = 3`, where the median starts being
+  able to outvote one bad anchor): a thinner aggregate is reported as
+  `below_min_occurrences` with its count and left alone, however it was named,
+  and `?min_occurrences=` lowers it for the human who means it — the same
+  enforce-don't-trust doctrine as the `work_items` protocol. The dialog keeps
+  proposing and keeps every row tickable; a deliberate tick now travels as the
+  lowered floor instead of as a check nobody ran (#315).
+- **Wordbench fixture Laufform layer is byte-true to the stored rows (issue
+  #311).** The admin single-template GET takes a `variant` query parameter, so
+  the stored variant-100 (Laufform) rows are readable at all — and
+  `fetch_fixtures` now freezes them VERBATIM (manifest `laufform_precision:
+  "stored"`) instead of reconstructing them locally from the hand's aggregates,
+  where a chart resample between apply and fetch (or a run on the
+  `VERTICAL_STRAIGHT_TOL` knife edge) turned wire-level noise into a discrete
+  render flip. Same transported-not-recomputed philosophy as the
+  `render-context` nib read; a deployment predating the parameter is detected
+  per response (it serves the variant-0 row, which says so) and falls back to
+  the reconstruction (`"reconstructed"`). The `--verify` gate also cache-busts
+  every one of its own `/write` reads now — the `aug04` CDN gotcha could make
+  it "verify" the edge cache's pre-write-round state. Knife-edge caution
+  documented at the shared constant in `core/geometry.py` (#313).
+
+- **The d→i join stops digging a valley, and the d's crossing keeps its ink**
+  (Korb #4, the „die" complaint). Two class rules in the composer, no
+  overrides: (1) a HIGH reversal exit — the trimmed loop exit of d/round-s
+  falling from its crossing (~1.15 xh) onto the next letter's rising flank —
+  no longer takes the baseline garland; the rescue had already declared its
+  chord truthful, and the garland dug a valley to ~0.5 xh below it followed
+  by a long level run into the entry (the complaint's „waagrechter
+  Verbindungsstrich" — the near-horizontal connector stroke). The taut cubic
+  now falls straight onto the flank, as
+  the two measured d→i dissections show. (2) `erase_silhouette_piece` gained
+  a `keep` parameter — the centerline the stroke STILL writes — and cuts the
+  eraser capsule back around it: the d's loop-return stub crosses its own
+  stem, and erasing the stub used to bite the stem's ink at the crossing (the
+  reported white gap). All three trim sites (loop stub, t-bar, entry stub)
+  pass their kept line; ink is only ever spared, never added. Wordbench:
+  words 0.114563 → 0.114448, pairs 0.164880 → 0.164343 (both sets improve;
+  `die` 0.077 → 0.068, its d→i transition 0.096 → 0.070), report columns
+  `meas_dconn_median` 0.127 → 0.124 / 0.217 → 0.206, pair Gleichzug
+  doublings 8 → 6. Golden compose fixture deliberately re-baselined (#305).
+
+## [0.23.0] — 2026-08-05 — The word-scale chain fit era
 
 ### Added
-
-- **The pair focus shows its drill plate like a word: green trace, red engine
-  ink, one registration.** Every Abb.-20 drill is auto-traced into
-  `word_instances` since the harvest, but the Übergänge view only offered the
-  plain crop tile — the traced line and the system's answer met the specimen
-  only two clicks away, in the Wörter detail. `/admin/uebergaenge?l=&r=` now
-  carries a full-width „Platten-Beleg (nachgefahren)" panel wherever a traced
-  drill of exactly that pair exists (matched by shaping the sample's word, the
-  same rule the pair cards use): the same `WordSpineCard` the Wörter view
-  draws — the green Nachfahrung and the translucent engine ink both on the
-  row's measured registration, the engine's own face beside at the same scale
-  — with both layers ON by default and the Wörter detail's layer toggles
-  (`LayerDot` extracted to `shell/` for both views), a „Bewerten" score
-  action, and a jump into the word detail. An override save resets the card
-  through the existing `pairTick` (fresh composition via the render cache's
-  `bust`, stale score dropped); a pair without a drill plate shows no panel.
-
-- **The Übergänge view shows the measured joins as ink, not as chips.** The
-  occurrence panel of `/admin/uebergaenge` listed every dissected join by
-  specimen id and `gen_chamfer` — it said where a join was measured and never
-  what it looks like, which is the one thing a join is judged on. A
-  `pair_instance` carries no pixel box (its geometry lives in the glyph_pairs
-  frame, relative to the left glyph's exit), but it names the specimen and the
-  left glyph's slot, and the letter occurrences of the same plate carry those
-  slots as page-pixel boxes: the new pure `model.ts::joinCropBoxOf` unions the
-  two into the join's own crop box, and the tile from the Buchstaben view
-  (extracted as the generic `CropThumb`) draws it. Slot and glyph key must
-  both match — where the two harvests disagree about a word's slotting, the
-  chip row stays rather than showing the wrong ink.
 
 - **The chain objective learned the one thing a pen always knew: a stroke is
   not written twice.** The grid-seed A/B's follow-up (the basin probe) proved
@@ -1606,7 +1707,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   on an overlapping, paying configuration; weight 0 is regression-tested
   byte-identical to the old objective. Findings in
   `docs/proposals/uebergaenge-befund.md` §5c, the term in the glossary
-  (Überlappungsterm).
+  (Überlappungsterm) (#300).
 
 - **The chain can start its letters where their own ink says they are — and
   measuring that settled what the placement collapse actually is.**
@@ -1628,141 +1729,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   the same ink, so stacking is cheap), not of the initialisation — which
   redirects the next round at the objective itself. Knob, seed columns in the
   diag CSV, and three unit tests stay as measurement infrastructure; details
-  in `docs/proposals/uebergaenge-befund.md` §5c.
-
-### Fixed
-
-- **The d→i join stops digging a valley, and the d's crossing keeps its ink**
-  (Korb #4, the „die" complaint). Two class rules in the composer, no
-  overrides: (1) a HIGH reversal exit — the trimmed loop exit of d/round-s
-  falling from its crossing (~1.15 xh) onto the next letter's rising flank —
-  no longer takes the baseline garland; the rescue had already declared its
-  chord truthful, and the garland dug a valley to ~0.5 xh below it followed
-  by a long level run into the entry (the complaint's „waagrechter
-  Verbindungsstrich" — the near-horizontal connector stroke). The taut cubic
-  now falls straight onto the flank, as
-  the two measured d→i dissections show. (2) `erase_silhouette_piece` gained
-  a `keep` parameter — the centerline the stroke STILL writes — and cuts the
-  eraser capsule back around it: the d's loop-return stub crosses its own
-  stem, and erasing the stub used to bite the stem's ink at the crossing (the
-  reported white gap). All three trim sites (loop stub, t-bar, entry stub)
-  pass their kept line; ink is only ever spared, never added. Wordbench:
-  words 0.114563 → 0.114448, pairs 0.164880 → 0.164343 (both sets improve;
-  `die` 0.077 → 0.068, its d→i transition 0.096 → 0.070), report columns
-  `meas_dconn_median` 0.127 → 0.124 / 0.217 → 0.206, pair Gleichzug
-  doublings 8 → 6. Golden compose fixture deliberately re-baselined.
-
-### Removed
-
-- **„Kopplung Anfang/Ende" is gone from the wizard — the field was read by
-  nothing.** The Weg step let a letter's entry/exit coupling height be
-  authored per glyph (Grundlinie · Mittellinie · Oberlinie · Unterlinie); it
-  travelled from `bboxes.guides` through `canonical_from_path` into
-  `templates.entry.coupling` / `exit_pt.coupling` and was carried onto every
-  M4 fit — and there the trail ended. `core/compose.py` decides the coupling
-  height by class rule (`HIGH_COUPLE_BASES`: round bodies e/a/o/c/d/g/q couple
-  high at the apex, arcade letters n/m/i/u low through the baseline garland,
-  measured on Abb. 19/20/22) and never once read the stored label, so the
-  control promised an effect it did not have. Removed end to end: the two
-  dropdowns and their locale strings, the wizard state, the `GuideConfig`
-  fields, the pipeline stamp, the fit carry-over, and `CouplingPointOut` →
-  `EndPointOut` (point + tangent). No migration and no data rewrite — stored
-  `guides` JSON keeps its keys (`extra="ignore"` makes an older client's
-  payload valid, and one of the 77 authored bboxes carries a non-default value
-  nothing ever consumed), and rows authored earlier keep their `coupling` key,
-  which is now simply ignored on read. `architektur.md` §3 and the glossary
-  said the coupling height lives in the template; both now record that the
-  class rule owns it.
-
-### Changed
-
-- **Deleting a task in the Auftragskorb asks first.** The bin icon on a
-  work-item row was a single click on a hard DELETE with no undo anywhere in
-  the basket. That is the wrong bargain for a CLOSED item in particular: its
-  handling protocol — the session's restatement, the diagnosed stage, the
-  resolution — is precisely the symptom → diagnosis → change archive the §5
-  protocol exists to accumulate, and one stray tap on a phone emptied it. The
-  icon now opens a confirmation naming the row, and an erledigter Auftrag adds
-  the warning that its record is history plus the pointer to the „erledigte
-  anzeigen" toggle, which hides rather than destroys.
-
-- **ESLint 9 → 10, with the one plugin that blocks it pinned rather than
-  dropped.** Dependabot's bump (#235) could not land on its own: `npm ci` died
-  in the ERESOLVE check because `eslint-plugin-jsx-a11y` still declares a peer
-  range that stops at ESLint 9, and 6.10.2 is its newest release — there is no
-  version to bump to. An `overrides` entry in `app/package.json` pins that peer
-  to ours instead; the plugin runs fine on 10, verified by its rules still
-  firing (`jsx-a11y/no-autofocus` on a canary), and `eslint.config.js` carries
-  the note plus the condition for removing the override again. `@eslint/js`
-  moves to 10 with it. The new recommended set brought exactly one finding:
-  `no-useless-assignment` on a `let caption = null` in `SchriftkundeView` whose
-  every branch assigns before use — the dead initialiser is gone, which also
-  drops a `| null` the type never needed. Lint is back to 0 errors and the same
-  59 known warnings.
-
-- **The connector guard was suspected of eating the chain's yield; it turns out
-  to be reporting a real defect, and the defect is the chain's.** 46 of the
-  chain harvest's rejections failed only `connector_degenerate` — a gate the
-  per-letter path does not have — which looked like an over-strict guard on a
-  population (the Abb. 20 pair drills) it was never calibrated for. Two
-  independent studies of those 46 rows say otherwise, and the decision came
-  from an external label nobody had used: the MEASURED ink connectors already
-  in the fixtures' `pair_instances.json` (232 of 248 joins have a twin,
-  including all 38 flagged). Chain-vs-ink `dconn` is **0.403** on flagged joins
-  against **0.093** on clean ones, AUC 0.900. The decisive evidence uses no
-  shape distance at all: on flagged rows the ink's own join travels +0.280 xh
-  forward against +0.283 on clean rows — identical — while the chain's fitted
-  ink gap collapses from 0.229 to 0.012 xh, 17 of 38 at exactly zero. The
-  specimen says those letters do not touch; the chain stacked them and the
-  connector had to run backwards to arrive. Mechanism, measured two ways: by
-  join it is the left glyph's exit height (high-exit classes flag at 40 % on
-  word plates and 16/16 on the pair drills, everything else at 8–10 %, and the
-  drills simply over-represent that class), by solve it is run length (2.6 % at
-  run ≤ 4 against 14.0 % at run ≥ 5, p = 0.0074, flat across the whole
-  iteration-budget ladder so not solver noise). No threshold was moved: every
-  relaxation was costed against the ink and each one admits genuinely derailed
-  joins, while the guard's measurable weakness is **recall**, not precision (16
-  stub connectors with a negative forward ratio deliver 25 accepted slots today
-  purely because their chord is short). `connector_qc.py`'s docstring is
-  corrected instead: its "two signals never fire" claim holds for the
-  chainbench corpus but **not** for the harvest, because the two harnesses feed
-  the same connectors against different ink edges — every number in that
-  docstring is a chainbench-frame statement and is now labelled as one. Two
-  known measurement defects (the overlap double-count, the seam height-band
-  mismatch) are recorded with their measured effect of **zero freed slots**, so
-  the next round does not re-derive them. Full finding in
-  `docs/proposals/uebergaenge-befund.md` §5c.
-
-- **The word chain has its own iteration budget, and it is no longer the thing
-  that stops the solve.** The chain borrowed `core.fit.DEFAULT_MAX_ITER` — a
-  per-GLYPH budget on a per-glyph problem, while a three-slot word chain
-  carries roughly 820 free parameters. Measured over the frozen words+pairs
-  fixtures (96 solves, 344 slot rows), **300 iterations was the binding stop in
-  91 % of solves**: not tight but far below the median a converging chain
-  actually needs (1211 iterations, p25 680, p90 2518). A capped solve is still
-  descending, so it fails the convergence gate and its occurrence is dropped —
-  and where the truncation lands moves with the initialisation, which is why
-  the harvest was not reproducible across the exact-nib change.
-  `tools/pairlab/chain.py` now owns `CHAIN_MAX_ITER`, default **8100**, at
-  which **no solve is truncated at all** (longest observed: 4215 iterations).
-  A budget that binds is the wrong kind of knob — L-BFGS-B stops at its own
-  criteria, so a high ceiling costs nothing for solves that already converged
-  and only the hard tail pays: 2700 → 8100 buys "nothing is cut off" for
-  **+5 % CPU**. It is also demonstrably harmless rather than presumed so —
-  305 of the 344 slot rows are bit-identical to the 2700 run, the 39 that move
-  belong exclusively to the ten formerly-capped specimens, that movement is
-  settling noise (median +0.0010 px, 22 rows worse against 17 better), and all
-  344 gate verdicts are unchanged. `core.fit` is deliberately untouched, so
-  measuring the chain can never re-tune the production M4 fit behind the
-  wizard, `/fit` and `/diagnostic`; `KS_CHAIN_MAX_ITER` re-runs the sweep.
-  Effect against the old 300: accepted occurrences 232 → 241,
-  `not_converged_local` 47 → 35, `geo_rmse` median 1.063 → 1.027 px.
-  `fit_meta` and the harvest's `--diag-csv` gained `iterations`, `max_iter`
-  and `hit_iteration_cap` so that state is read rather than inferred.
-  Measurement only: no DB, no rendering, no request path. Details in
-  `docs/proposals/uebergaenge-befund.md` §5c.
-
-### Added
+  in `docs/proposals/uebergaenge-befund.md` §5c (#300).
 
 - **The Auftragskorb takes general notes — a fourth, target-less kind.** Not
   every small thing is a letter, a join or a word: an admin-UI wrinkle or a
@@ -1777,7 +1744,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   except for one field: a note closes on its `resolution` alone, because every
   stage in the §3 vocabulary names a stage of the *writing* path and has
   nothing true to say about a UI wrinkle (`stage` stays allowed where it
-  applies). No migration — `work_items.kind` was always a plain string.
+  applies). No migration — `work_items.kind` was always a plain string (#301).
 
 - **The word overlays are switchable one layer at a time, and the words
   overview reloads like the letters grid.** Three inks over one crop — plate,
@@ -1792,271 +1759,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   because `/write/word` answers with `s-maxage=86400`, the button moves the
   admin-wide bust stamp through `fetchRenderWord` into the request itself, so
   the words really recompose after a template, Laufform or override change
-  instead of being served the old composition by the CDN.
-
-### Fixed
-
-- **Deleting an item in the Auftragskorb only took effect after a reload.** The
-  panel removed the row optimistically and announced the change to the shell in
-  the same breath — but that announcement bumps the shared `refreshKey` the
-  panel itself re-reads on, so the re-read raced the `DELETE` and usually won:
-  the server's pre-delete rows came back and put the row on screen again, where
-  it sat until the next reload. The basket now reports a mutation only after
-  the server confirmed it, for the delete and for the „missverstanden" rejection
-  alike; a failed call still restores exactly the one row locally and announces
-  nothing, because the server state never moved.
-
-- **Generated Übergänge were drawn mirrored below the baseline.** The two SVG
-  path helpers disagreed on the y sign — `ringsToPathD` keeps y by default,
-  `polylineToPathD` always negated it — so any surface drawing both kinds of
-  item under one y-flipping `<g>` got the letters (rings) right side up and the
-  generated connectors (polylines) flipped a second time. They left the word
-  and reappeared as loose strokes under it, in the word cards, the specimen
-  comparison overlay and the pair editor's live preview and its own
-  pointer-drawn connector. Verified in the browser before and after: the
-  connectors of `muß` sat at y [−0.73, −0.48] and [−0.70, −0.40] against a
-  payload of [+0.48, +0.73] and [+0.40, +0.70], an exact sign flip, and the pair
-  editor showed letters at y [0, 1.01] beside a connector at [−0.74, −0.49].
-  `polylineToPathD` now takes the same explicit `flipY` its ring twin has; the
-  asymmetric defaults stay (the public "as written" surfaces rely on them) and a
-  unit test states the rule so the trap cannot be re-entered silently.
-
-- **The engine ink was drawn in the wrong place on every word card.** The
-  overlay that projects a composed word onto its specimen pixels pinned the
-  composition's left edge to the crop's left edge — a convention, not a
-  measurement. Over the 63 Sütterlin word rows that put the engine a median
-  **8.9 px (~0.3 xh) left** of the ink it was supposed to be compared against,
-  so every composition read worse than it is and the deviation an admin saw was
-  mostly registration error. The trace and the composition live in the identical
-  frame (baseline = 0, 1 unit = x-height), so the row's own measured
-  registration places both: the median left-edge error drops to **1.1 px**, and
-  what remains at the right edge is the real width difference — the thing worth
-  looking at. Extracted as the shared, unit-tested
-  `shell/model.ts::traceFrameOf`/`traceMatrix` and applied to the word cards
-  AND the specimen overview list; the left-edge pin survives only as the
-  fallback for a sample no harvest ever traced.
-
-### Changed
-
-- **A word card is two faces now, like a letter tile.** One frame held the
-  plate crop, the green trace and — overlapping both — the red engine ink, which
-  is three answers to two different questions in one picture. Left is now the
-  MEASUREMENT (plate ink + the traced pen path + the clickable letter boxes and
-  join dots; the engine joins it translucently only when the Überlagern switch
-  is on), right is what the engine writes on its own. Both faces are drawn at
-  the same px-per-unit on the same baseline row, so „trifft der Fit das Wort?"
-  and „was macht das System daraus?" are two glances instead of one untangling,
-  and a width or slant difference is a difference rather than a rendering
-  artefact.
-
-- **The first Stage-B chain harvest is written, and the running forms are now
-  derived from whole-word pen paths.** Until now every occurrence in the
-  statistics layer came from fitting one letter at a time; the chain fit
-  (`tools/pairlab/chain.py`) solves letter–connector–letter as a single pen
-  path, and its first full harvest replaced the layer wholesale: **232
-  occurrences** (up from 218, and for the first time including letters read off
-  the Abb. 20 pair drills) and **77 word traces** (up from 58) that carry their
-  connector strokes instead of the letters alone. Rebuilding the hand's
-  aggregates over them yields 35 keys, of which **15 running forms were
-  applied** — `a d e g h i l m n r u w` refreshed, and `S`, `sz` (ß) and `z`
-  given a running form for the very first time. `t`, `o`, `c` and `b` were deliberately
-  withheld and are reported as excluded; `t`'s stored running form is
-  consequently, and correctly, stale until its sample recovers. The wordbench
-  headline moves from **0.116886 to 0.115623** on the words (the pairs give up
-  0.001013, the same trade the July running-form round documented: the pair
-  drills are written close to the chart). Documented as a dated re-baseline in
-  `docs/reference/qualitaetsmetrik.md` §6, together with the second effect that
-  fell in the same window — fixtures built from the exact pooled nib rather
-  than the four-decimal readback, which confirms the previously documented
-  headline was right and the export was what had drifted.
-- **The admin header is the public header.** The workbench sat under a 48 px
-  strip of Garamond-13 buttons while every public page carried the 67 px bar
-  with the wordmark and the Playfair nav — two houses in one product, and the
-  shabbier one was where the actual work happens. The shared chrome now lives
-  in `components/HeaderBar/HeaderBar.tsx`: the sticky, blurred, hairlined bar
-  with an optional content-width cap, the `•kurrentschrift.ink` wordmark with
-  its viridian dot and italic TLD, and the Playfair nav link with the animated
-  viridian underline and `aria-current`. `components/PublicHeader` and
-  `sections/admin/shell/AdminHeader` are both written on top of it; the public
-  bar is visually unchanged, and the admin bar keeps exactly the differences it
-  has reasons for — full-bleed instead of capped, because the workbench needs
-  the width; `zIndex` 1100, so the Korb drawer (1200) and the LetterPicker
-  popover (1300) still sit above it; and its two extra slots, the Vorlage chip
-  (now a link back to the Vorlagen-Auswahl) and the Korb ⚑ badge. Its nav lost
-  the `overflowX: auto` that grew a scrollbar around the hover underline
-  sitting four pixels below the links.
-- **The admin follows the public type system instead of its own hard-coded
-  sizes.** `/admin` opens with `PageContainer` + `PageHeader` (eyebrow
-  „Werkbank", Playfair title, `Prose` intro) over a three-column card grid
-  whose cards name the plate and not only the script; `shell/Panel.tsx`'s
-  `ViewHeader` gained an `eyebrow` (the three views pass their area) and
-  replaced its hard-coded `fontFamily: display, fontSize: 24` with
-  `variant="h4"` plus the design-system heading rule — size from the ladder,
-  face and weight in `sx`; panel titles became `h2` elements; the occurrence
-  caption left 10 px for the 14 px caption floor. The workbench is the surface
-  this project is used from most and should not read as the draft version of
-  its own design system.
-- **The Petzendorfer 1889 chart is hidden from the Vorlagen-Auswahl — hidden,
-  not removed.** Two cards both labelled „Kurrent" make the one choice the
-  whole admin hangs off ambiguous, and the second cannot be authored against
-  yet: it was seeded ahead of time for the digits row Loth 1866 lacks, written
-  by a different hand at ~57° against Loth's ~50°. The new
-  `CONFIG.hiddenSourceIds` filters it out in the two places in
-  `context/AdminContext.tsx` that can produce a selection — the source list
-  itself and the persisted choice read back from localStorage, because a stored
-  hidden id would strand the admin on a Vorlage with no card to switch away
-  from. Nothing is deleted: no migration, no DB change, the row, its chart
-  bytes and every API route stay exactly as they are, and taking the id out of
-  the list brings the card back.
-- **The admin is one workbench in three views instead of five pages with tabs
-  and a permanent letter sidebar.** Entering `/admin` now asks the one question
-  everything below depends on — which Vorlage — because every letter, join and
-  word belongs to exactly one source and its hand; the chosen script is named
-  in the header and one click goes back to switch it. Under it sit exactly
-  three views, each following the same overview ⇄ detail pattern:
-  **`/admin/buchstaben`** carries a letter's whole life in one column (the
-  chart cell with the Einrichtungs-Wizard, the Diagnose modal and the
-  collapsible chart editor, the Tafel-Form beside the derived Laufform, every
-  harvested occurrence as a crop cut-out, the H1 statistics with its median
-  sketch, and chips onward to the letter's joins and words);
-  **`/admin/uebergaenge`** puts the generated join first, the H2 „Gemessen vs.
-  komponiert" measurement beside it and the pair editor last, in the order the
-  stage doctrine triages; **`/admin/woerter`** writes any text, breaks it into
-  the letters and joins it consists of (each a jump into the other two views)
-  and shows the traced specimen with its clickable occurrence overlay wherever
-  a plate of this hand wrote the same word. This completes the absorption of
-  `/admin/vergleich`, `/admin/paare` and `/admin/belege` into the Werkbank that
-  `optimierungs-werkbank.md` §2/§6 announced — the tools themselves are
-  unchanged and simply lost their own routes; the old paths stay as redirects
-  so bookmarks and work-item links keep working.
-- **Every level of the admin now accepts freely typed targets, not only what a
-  plate happens to contain.** Any two-letter combination and any word can be
-  typed, written by the engine and complained about — most combinations were
-  never written by hand anywhere, they still have to look right, and until now
-  there was nowhere in the admin to look at one. A filed `work_item` for such a
-  target carries no specimen reference and says so, rather than inventing one.
-- **One shared data layer and one header above the three views.** The
-  occurrence reads and the per-hand statistics load once for the whole
-  workbench (`sections/admin/shell/WorkbenchData.tsx`), so walking letter →
-  join → word costs no refetch; the Auftragskorb moved into a header drawer, so
-  ⚑ works from wherever the complaint arose. The subject of each view lives in
-  the query string (`shell/focus.ts`, pure and unit-tested), which makes every
-  cross-jump a plain link, the back button an inspection history and a reload
-  land where the work was. The desktop/mobile split is gone with the sidebar:
-  one layout serves both, and the letter grid became an on-demand picker.
-
-### Fixed
-
-- **The gate decides what becomes a measurement, not what the trace shows.** The
-  chain harvest wrote word traces that broke into disconnected fragments:
-  `tools/laufform/harvest.py` assembled the pen path out of the letters its gate
-  cascade had ACCEPTED, so a letter that merely wobbled took itself and the
-  connectors on either side out of the drawing — `Einen` (E-i-n-e-n) was one
-  chain solve over all five slots and came out as three pieces because slots 2
-  and 4 failed `not_converged_local`. Two layers, two questions: `instances` is
-  the statistics layer and stays gated exactly as before (a wobbly letter must
-  not pollute a Laufform median), while `word_instances` is the inspection layer
-  and now carries the WHOLE solved run — every letter segment and every
-  connector the chain produced. Only a slot the chain could not fit at all (no
-  template, no window, `chain_failed`) stays out, because it has no geometry;
-  a trace that splits for that reason is honest. The per-slot verdicts stay
-  readable beside the geometry, and the two sets are two explicit fields rather
-  than one overloaded key: `measurements.traced_slots` is what is drawn,
-  `fitted_slots`/`unfitted_slots` keep meaning "accepted as an occurrence", with
-  `gates`, `converged_local` and `geo_rmse_px_by_slot` unchanged. Measured over
-  the frozen words + pairs fixtures: 27 of the 77 previously written records
-  still hold more than one body stroke, down from 32, and every remaining split
-  is a genuine pen lift (the `E`/`P` ornaments, the u-Bogen, `t`'s crossbar,
-  `ß`, the ä/ü umlauts) or a chain that really did stop — no split is caused by
-  a gate any more. 19 further specimens gain a trace at all, having had every
-  letter rejected and therefore been dropped whole. The occurrence layer is
-  byte-identical across the change (232 rows, the same Laufform drafts), and the
-  longer welded runs stay inside the wire caps (longest stroke 2277 of 4096
-  points, `Galoppieren`; at most 4 of 128 strokes), with the downsampling guard
-  in `cap_word_strokes` reporting rather than 422-ing if they ever do not.
-- **A glyph with two coincident anchors returned a 500 — and took the whole
-  batch with it.** `core/template.py::sample_polyline` builds its spline
-  parameter from the cumulative chord length, and a zero-length chord leaves
-  that parameter flat, on which `CubicSpline` raises "`x` must be strictly
-  increasing sequence". Not a theoretical input: anchors are stored rounded to
-  four decimals, so the apex of a short out-and-back stroke can round its two
-  samples onto the same point — the Sütterlin `period` does exactly that — and
-  that one key failed the whole 60-key render batch the new letter overview
-  asks for. The repeat is dropped before splining (a zero-length chord carries
-  no geometry, only the same position twice); a path without one keeps every
-  anchor and every sample byte-identical, which the compose golden fixture
-  confirms. Two unit tests in `tests/test_template.py`.
-- **Occurrence thumbnails cut into the letter.** The crop left a fixed 4 crop px
-  of air around the stored occurrence box, but that box comes from the M4 fit
-  and hugs the centerline, so the ink runs past it on every side. The margin
-  scales with the box now (`max(7, 0.18 · √(w·h))`) and the thumbnail row grew
-  from 64 to 80 px.
-- **pairlab measured the loop-exit join class against a reference that was not
-  there, and on an arc that was not matched.** `analyze._real_join` read the
-  specimen's own joining stroke only inside `JOIN_BAND_Y`'s 0.8 xh ceiling — the
-  composer's clearance band, not a statement about where joins live — while a
-  loop exit departs at y ≈ 1.04–1.13 xh and runs level at ≈ 0.9–1.0 xh: the
-  tracker saw 4 of 18 gap columns, every `d→*` occurrence fell back to the
-  straight exit→entry chord, and the clipped seed latched onto the ink below the
-  join (a following descender in `b→p`, empty space in `o→r`). The band ceiling
-  now follows the exit, which needs no new constant and leaves every pair whose
-  exit sits inside the band bit-identical. On top of that
-  `chainbench.dconn_matched_arc` clipped all three curves to one x-interval,
-  which is an arc match only while a curve is single-valued in x — a loop-exit
-  chain connector owns the near-vertical descent off the loop and the plunge
-  into the next letter, so its clipped piece carried 1.69× the reference's arc
-  at the same x-span and `dconn` compared physically different positions; the
-  reference now defines the stretch and the other curves are trimmed to it.
-  Together this turns M3's last open class from `gen 0.058 → chain 0.228` into
-  `0.074 → 0.050` (on the word plates alone `0.081 → 0.034`) and the pooled
-  paired delta from +0.008 (p 3e-5) into +0.002 (p 0.48); M1, M4 and the kill
-  criteria come out field-for-field identical because `chain.py` never reads
-  `_real_join`. See `docs/proposals/uebergaenge-befund.md` §5c, Nachtrag
-  „loop-exit" — which also records why the `pair_aggregates` ban stays anyway.
-- **The pair-chain fit no longer stalls on letters that are composed on top of
-  each other.** `analyze._generate_connector` emits its full Bézier subdivision
-  whatever room the placement leaves and floors its handle at 0.05 xh, so where
-  two letters touch or overlap the cubic doubles back into a cusp carrying two
-  dozen anchors inside ~0.05 xh of arc. `chain._second_difference_operator`
-  scales as 1/ds², which put the connector's smoothness block into the Hessian
-  ~10⁷ times stiffer than on a normal join: `e_smooth(x0)` 5.2e6 against 53.7,
-  `f(x0)` 51.9 against 0.026, and 24 of the 248 Stage-A occurrences — every
-  `c→h`, `r→e`, `m→u`, `n→e` — burned their whole iteration budget unbending
-  that connector while `e_geo`, `e_cov` and `e_wid` never moved from their
-  starting values at all. `chain.regularise_connector_anchors` now
-  re-discretises a connector whose chord is below
-  `CHAIN_CONNECTOR_MIN_SPAN_UNITS`: the same curve, resampled by arc length to
-  the anchor count that chord can carry (endpoints exact, so the shared seam
-  anchors survive, and nothing above the threshold is touched). The affected
-  occurrences go from 4 to 20 of 24 converged on the letter-local gate.
-- **`chainbench` exported an optimizer status key `chain.py` never writes.** The
-  row read `fit_meta["status"]` while the fit writes `"message"`, so
-  `chain_status_msg` was the empty string on every row and the L-BFGS-B
-  termination reason — the one column that identifies a stalled solve — was
-  invisible. The termination message, `optimizer_success`, the iteration and
-  evaluation counts and the per-term energies at `x0` against `x*` are now all
-  exported, with an explicit flag for a non-finite initial energy (which `_r`
-  would otherwise round into an indistinguishable `None`).
-- **The registered overlay of engine ink over the specimen pixels is back — and
-  now also sits on the word evidence card.** The redesign had left it wired to
-  a hardcoded `false`, so the sharpest error-finding view in the project was
-  dead code while the surrounding copy still promised it. It returns as a
-  switch (on by default) in the Wörter overview, and the traced-word card now
-  draws the composed word in the same registered frame as the specimen and the
-  trace — original ink, hand trace and engine output in one picture.
-- **A failed occurrence load is now visible instead of spinning forever.** The
-  shared data layer set its error flag but kept the lists at `null`, so
-  `loading` never ended and every occurrence panel sat on a spinner that could
-  not resolve; the state is now ended by the error and reported as one quiet
-  line per block.
-- **Filed tasks in the Auftragskorb link to their subject.** The basket named
-  what was wrong and offered no way to it, although the three views are one
-  link away for exactly those keys — a letter/pair/word row now navigates and
-  closes the drawer.
-- **German singulars:** „1 Beleg" and „1 Vorlage" instead of „1 Belege" /
-  „1 Vorlagen".
-
-### Added
+  instead of being served the old composition by the CDN (#298).
 
 - **The word harvest can fit whole words as one pen chain (`--path chain`,
   report-only).** `tools/laufform/harvest.py` gained the Stage-B integration
@@ -2073,7 +1776,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   per-join connector signals), `--max-cases`. The old path stays the default
   and byte-identical (`--path slot`, pinned by a golden test); `--apply` is
   refused outside `--path slot --sets words` so the chain path stays
-  report-only until its measurement round passes. 24 new unit tests.
+  report-only until its measurement round passes. 24 new unit tests (#294).
 - **Four faces per letter in the Buchstaben overview, and a grid that can sort
   itself worst-first.** Original (the chart crop) · Tafel-Form (the authored
   chart ductus, variant 0) · Laufform (the derived running form, variant 100) ·
@@ -2091,7 +1794,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   alphabet into a work list. The sketch itself moved out of
   `shell/LensStats.tsx` into `shell/AggregateSketch.tsx` plus the pure
   `shell/sketchGeometry.ts`, so the miniature in the grid is the same drawing
-  as the one in the statistics block, only shorter.
+  as the one in the statistics block, only shorter (#293).
 - **The key numbers under each of them — occurrences, mean fit residual, the
   stored score and where its points went — and the whole alphabet's scores in
   one read.** New `GET /sources/{id}/templates/quality` (admin-gated like the
@@ -2115,7 +1818,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   per-category breakdown moved out of the wizard into
   `sections/admin/quality/scoreParts.tsx` and are now shared by the wizard
   preview, the overview and the Diagnose modal, which gained the breakdown it
-  had never shown although its payload always carried it.
+  had never shown although its payload always carried it (#293).
 - **A connector degeneracy guard (`tools/pairlab/connector_qc.py`) — the QC
   the loop-exit fix showed was missing.** On the Abb.-20 pair drills the chain
   connector silently degenerates in 11 of 23 occurrences (a long straight
@@ -2130,7 +1833,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   worst-first block in the chainbench; the precondition before any chain
   connector may feed `pair_aggregates`, and gate 5 of the coming word
   harvest (a flagged connector rejects its adjacent letters too — seam
-  parameters are shared).
+  parameters are shared) (#292).
 - **`GET /sources/{id}/render-context` — the resolved render context of a
   source at full precision, admin-gated.** Everything a render resolves before
   it draws (lineature, width resolver, the source-pooled Gleichzug nib and the
@@ -2150,7 +1853,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   the source, including variant rows no endpoint serves. The payload rounding
   itself stays at four decimals — it is part of the frozen render contract, and
   a fifth decimal would cost ~7 % payload size for nothing the exact scalar
-  does not already fix.
+  does not already fix (#288).
 - **A glossary of the project's own vocabulary — `docs/reference/glossar.md`.**
   The docs, issues and admin UI have grown a private language across the
   optimisation rounds: palaeography (Duktus, Schwellzug, Anstrich/Auslauf),
@@ -2168,13 +1871,13 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   warning that M1–M4 (chain), M0–M7 (MVP milestones, hence "M4-Fit") and H/R/W
   numbering are four independent schemes — and a research section (AIoU, LDTW,
   DTW, HWD, Sigma-Lognormal, G1/G2 continuity) that places the house metrics
-  against the published state of the art.
+  against the published state of the art (#286).
 - **A standing upkeep rule so the vocabulary cannot outrun the glossary.** Any
   doc or PR that coins a new Fachbegriff, metric, named failure mode or repo
   idiom adds its entry in the same change — recorded in `CLAUDE.md` §
   „Working guardrails", mirrored into `.github/copilot-instructions.md`, spelled
   out with the entry format in the `/write-docs` skill and enforced at PR time
-  as a gate in `/open-pr`.
+  as a gate in `/open-pr` (#286).
 - **The two preconditions Stage A put in front of issue #278's Stage B are
   measured, and they do not both fall the same way.** Stage A compared the chain
   fit against the independent one under two silently different rules, and said
@@ -2196,7 +1899,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `docs/proposals/uebergaenge-befund.md` §5c: the conditional go becomes a go,
   with the M1 deficit carried into Stage B as a named floor and the
   `pair_aggregates` ban kept for the loop-exit class. The fit itself is
-  untouched — M2, M4 and all three kill criteria reproduce number for number.
+  untouched — M2, M4 and all three kill criteria reproduce number for number (#284).
 - **`pairlab` can fit a letter join the way it was written — as one continuous
   pen path — and Stage A of issue #278 measured whether that is worth doing.**
   `tools/pairlab/chain.py` fits `letter → connector → letter` as ONE problem:
@@ -2216,7 +1919,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   measurable, and the chain deforms letters less than the independent fit — but
   convergence and connector shape do not pass as specified, so Stage B is a
   *conditional* go with two named preconditions. Measurement only: nothing here
-  touches the DB, the API, `core/` or rendering.
+  touches the DB, the API, `core/` or rendering (#283).
 - **The word-bench fixtures can be rebuilt from the deployed API, not only from
   Cloud SQL.** `tools/wordbench/fetch_fixtures.py` is a read-only sibling of
   `export_fixtures.py` that produces byte-compatible fixture roots over HTTP,
@@ -2224,7 +1927,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   session without Cloud SQL egress (a cloud session, a fresh checkout) can
   still run the word bench, pairlab and chainbench. GETs only, `ADMIN_TOKEN`
   from the environment and never echoed, with a `--verify` gate that composes
-  the rebuilt cases locally and compares them against `/write/word`.
+  the rebuilt cases locally and compares them against `/write/word` (#283).
 - **The Laufform can be adopted from the admin — deliberately, with the
   difference visible first and a confirmation in front of it.** `apply-laufform`
   is the one step of the whole hand model that changes what the engine writes,
@@ -2235,31 +1938,31 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   the Laufform in use, „neu" for a first write, „unverändert" at distance 0),
   requires an explicit confirmation, and afterwards reports what was written and
   what was skipped and why. It stays hand-wide because the endpoint is — a UI
-  implying per-glyph choice would lie about what the button does.
+  implying per-glyph choice would lie about what the button does (#277).
 - **Every letter says whether the form the engine writes is still the form the
   statistics say.** A chip („Laufform aktuell" · „Laufform veraltet · Abstand
   0,05" · „noch keine Laufform"), and in the median sketch the currently
   rendered running form drawn dashed against the median that would replace it —
-  the difference is there to look at before anything is overwritten.
+  the difference is there to look at before anything is overwritten (#277).
 - **`GET /hands/{hand_id}/aggregates` carries the freshness pair per row:**
   `laufform_anchors` (the rendered variant-100 form) and `laufform_dev_xh` (its
   distance to the median). The Prüfstein used to exist only as a by-product of
   a rebuild or an apply, so answering "is this stale?" required doing something
   first. Null wherever the comparison is meaningless: a non-base variant, no
-  stored running form, a differing anchor count.
+  stored running form, a differing anchor count (#277).
 - **The letter statistics draw every occurrence behind the median.** The MAD
   circles gave the spread as a number; the bundle of thin occurrence chains
   gives it as a shape — ten forms hugging the median and one outlier read very
   differently from an evenly scattered set, and that is the question ("are the
   occurrences alike at all?") the layer exists to answer. Same reading as the
   pair sketch already had, in the same frame (occurrence anchors are stored
-  centered, exactly like the median).
+  centered, exactly like the median) (#276).
 - **`GET /write/glyphs` takes a `variant` parameter.** Default 0 is the
   authored chart ductus every public surface writes with; `100` renders the
   derived Laufform, which is what lets the Buchstaben view show the two side by
   side. A glyph without a row for the asked variant lands in `missing` exactly
   like an unknown key, so asking for the Laufform of a letter that never got
-  one is an empty answer rather than a silent fallback to the chart form.
+  one is an empty answer rather than a silent fallback to the chart form (#276).
 
 - **End-to-end overview doc `docs/concepts/vom-scan-zum-schreiben.md`: how the
   writing system emerges from a chart, the specimen plates and the author's
@@ -2282,7 +1985,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   transitions read the current form's exit/entry at every compose and follow
   automatically, approved overrides deliberately do not). Closes with the six
   known gaps as of 2026-08-02 and a mapping list into the detail docs. Every
-  route, endpoint, table and constant it names is verified against the repo.
+  route, endpoint, table and constant it names is verified against the repo (#275).
 - **Lifecycle status headers on every doc under `docs/`, a living-docs table
   with named update triggers, and a `write-docs` duty that keeps them true.**
   The docs tree had grown past thirty files in which a settled decision, an
@@ -2316,49 +2019,329 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   Koch 1928 chart was unseeded (it has rendered on the public Tafel since
   migration `0008`), `architektur.md` §4 still called the pair-override layer
   a staging proposal, `design-system.md` was missing `PaperCardLink`, and the
-  animation width-resolver table listed no `broad_nib`.
-
-### Added
-
-- **`docs/research/` — a home for the idea-feeding literature.** New docs
-  layer for external research notes that never follow the code, so the
-  folder taxonomy answers "is this a plan, a protocol or a paper summary?"
-  at a glance: `kurrent-writer-and-recognizer.md` moves there from
-  `proposals/` (which is now purely implementation proposals and their
-  protocols), joined by the new `graves-handschrift-synthese.md` — a
-  54-source literature report on handwriting synthesis (Graves-2013
-  mechanics, priming/biasing, the physical plotter pipeline, the
-  GAN/Transformer/tokenisation successors), editorially cleaned from its
-  deep-research export (25 base64 formula images replaced by text
-  notation, flattened footnote digits turned into readable source
-  references). The index, the write-docs skill, `sprachregelung.md` §1
-  and the copilot docs tree all carry the new layer; two glossary §6
-  entries (MDN, Priming/Biasing) anchor the terms the report brings in.
+  animation width-resolver table listed no `broad_nib` (#275).
 
 ### Changed
 
-- **Docs drift pass, with the layer taxonomy sharpened to match
-  reality.** The index's layer shorthand no longer claims every
-  `reference/` doc is lebend-or-bindend (HTR/animation/style-analysis
-  carry the status of their planned build-out), `concepts/` is described
-  as the design core it actually is, the proposals index is grouped by
-  status word so plan and protocol separate at a glance, and
-  `optimierungs-werkbank.md` is re-labelled `bindend` — its §3–§5
-  doctrine is API-enforced and read before every basket run; „umgesetzt"
-  was not in the closed status vocabulary. Stale claims fixed in the same
-  pass: the last `position`-keyed tuples in `architektur.md` §3/§12 and
-  `styleanalyse.md` (the schema key is `(glyph_key, variant)` since
-  R2/migration `0021`), architektur §16's pre-redesign admin routes, the
-  metric doc's stale `aug02` headline (actual: words 0,110392 · pairs
-  0,165678, re-baseline `aug07`), style-guide §9's drifted token copy
-  (now a pointer to design-system §2), `werkzeuge.md` missing
-  `dbsnapshot`, `fitview` and the pairlab entry scripts,
-  `datenablage.md` not knowing the committed `data/humanbench/` tree,
-  `naming-und-setup.md` §3 missing `/data` + `/tools`, the
-  `mvp-roadmap.md` head now declaring the retired `/mvp/` folder
-  historical wholesale, and the audit-licenses skill's dead base64
-  exclude (its target was deleted in #209) with the stale
-  woff2-duplicate baseline note.
+- **The connector guard was suspected of eating the chain's yield; it turns out
+  to be reporting a real defect, and the defect is the chain's.** 46 of the
+  chain harvest's rejections failed only `connector_degenerate` — a gate the
+  per-letter path does not have — which looked like an over-strict guard on a
+  population (the Abb. 20 pair drills) it was never calibrated for. Two
+  independent studies of those 46 rows say otherwise, and the decision came
+  from an external label nobody had used: the MEASURED ink connectors already
+  in the fixtures' `pair_instances.json` (232 of 248 joins have a twin,
+  including all 38 flagged). Chain-vs-ink `dconn` is **0.403** on flagged joins
+  against **0.093** on clean ones, AUC 0.900. The decisive evidence uses no
+  shape distance at all: on flagged rows the ink's own join travels +0.280 xh
+  forward against +0.283 on clean rows — identical — while the chain's fitted
+  ink gap collapses from 0.229 to 0.012 xh, 17 of 38 at exactly zero. The
+  specimen says those letters do not touch; the chain stacked them and the
+  connector had to run backwards to arrive. Mechanism, measured two ways: by
+  join it is the left glyph's exit height (high-exit classes flag at 40 % on
+  word plates and 16/16 on the pair drills, everything else at 8–10 %, and the
+  drills simply over-represent that class), by solve it is run length (2.6 % at
+  run ≤ 4 against 14.0 % at run ≥ 5, p = 0.0074, flat across the whole
+  iteration-budget ladder so not solver noise). No threshold was moved: every
+  relaxation was costed against the ink and each one admits genuinely derailed
+  joins, while the guard's measurable weakness is **recall**, not precision (16
+  stub connectors with a negative forward ratio deliver 25 accepted slots today
+  purely because their chord is short). `connector_qc.py`'s docstring is
+  corrected instead: its "two signals never fire" claim holds for the
+  chainbench corpus but **not** for the harvest, because the two harnesses feed
+  the same connectors against different ink edges — every number in that
+  docstring is a chainbench-frame statement and is now labelled as one. Two
+  known measurement defects (the overlap double-count, the seam height-band
+  mismatch) are recorded with their measured effect of **zero freed slots**, so
+  the next round does not re-derive them. Full finding in
+  `docs/proposals/uebergaenge-befund.md` §5c (#299).
+
+- **The word chain has its own iteration budget, and it is no longer the thing
+  that stops the solve.** The chain borrowed `core.fit.DEFAULT_MAX_ITER` — a
+  per-GLYPH budget on a per-glyph problem, while a three-slot word chain
+  carries roughly 820 free parameters. Measured over the frozen words+pairs
+  fixtures (96 solves, 344 slot rows), **300 iterations was the binding stop in
+  91 % of solves**: not tight but far below the median a converging chain
+  actually needs (1211 iterations, p25 680, p90 2518). A capped solve is still
+  descending, so it fails the convergence gate and its occurrence is dropped —
+  and where the truncation lands moves with the initialisation, which is why
+  the harvest was not reproducible across the exact-nib change.
+  `tools/pairlab/chain.py` now owns `CHAIN_MAX_ITER`, default **8100**, at
+  which **no solve is truncated at all** (longest observed: 4215 iterations).
+  A budget that binds is the wrong kind of knob — L-BFGS-B stops at its own
+  criteria, so a high ceiling costs nothing for solves that already converged
+  and only the hard tail pays: 2700 → 8100 buys "nothing is cut off" for
+  **+5 % CPU**. It is also demonstrably harmless rather than presumed so —
+  305 of the 344 slot rows are bit-identical to the 2700 run, the 39 that move
+  belong exclusively to the ten formerly-capped specimens, that movement is
+  settling noise (median +0.0010 px, 22 rows worse against 17 better), and all
+  344 gate verdicts are unchanged. `core.fit` is deliberately untouched, so
+  measuring the chain can never re-tune the production M4 fit behind the
+  wizard, `/fit` and `/diagnostic`; `KS_CHAIN_MAX_ITER` re-runs the sweep.
+  Effect against the old 300: accepted occurrences 232 → 241,
+  `not_converged_local` 47 → 35, `geo_rmse` median 1.063 → 1.027 px.
+  `fit_meta` and the harvest's `--diag-csv` gained `iterations`, `max_iter`
+  and `hit_iteration_cap` so that state is read rather than inferred.
+  Measurement only: no DB, no rendering, no request path. Details in
+  `docs/proposals/uebergaenge-befund.md` §5c (#299).
+
+- **A word card is two faces now, like a letter tile.** One frame held the
+  plate crop, the green trace and — overlapping both — the red engine ink, which
+  is three answers to two different questions in one picture. Left is now the
+  MEASUREMENT (plate ink + the traced pen path + the clickable letter boxes and
+  join dots; the engine joins it translucently only when the Überlagern switch
+  is on), right is what the engine writes on its own. Both faces are drawn at
+  the same px-per-unit on the same baseline row, so „trifft der Fit das Wort?"
+  and „was macht das System daraus?" are two glances instead of one untangling,
+  and a width or slant difference is a difference rather than a rendering
+  artefact (#297).
+
+- **The first Stage-B chain harvest is written, and the running forms are now
+  derived from whole-word pen paths.** Until now every occurrence in the
+  statistics layer came from fitting one letter at a time; the chain fit
+  (`tools/pairlab/chain.py`) solves letter–connector–letter as a single pen
+  path, and its first full harvest replaced the layer wholesale: **232
+  occurrences** (up from 218, and for the first time including letters read off
+  the Abb. 20 pair drills) and **77 word traces** (up from 58) that carry their
+  connector strokes instead of the letters alone. Rebuilding the hand's
+  aggregates over them yields 35 keys, of which **15 running forms were
+  applied** — `a d e g h i l m n r u w` refreshed, and `S`, `sz` (ß) and `z`
+  given a running form for the very first time. `t`, `o`, `c` and `b` were deliberately
+  withheld and are reported as excluded; `t`'s stored running form is
+  consequently, and correctly, stale until its sample recovers. The wordbench
+  headline moves from **0.116886 to 0.115623** on the words (the pairs give up
+  0.001013, the same trade the July running-form round documented: the pair
+  drills are written close to the chart). Documented as a dated re-baseline in
+  `docs/reference/qualitaetsmetrik.md` §6, together with the second effect that
+  fell in the same window — fixtures built from the exact pooled nib rather
+  than the four-decimal readback, which confirms the previously documented
+  headline was right and the export was what had drifted (#295).
+- **The admin header is the public header.** The workbench sat under a 48 px
+  strip of Garamond-13 buttons while every public page carried the 67 px bar
+  with the wordmark and the Playfair nav — two houses in one product, and the
+  shabbier one was where the actual work happens. The shared chrome now lives
+  in `components/HeaderBar/HeaderBar.tsx`: the sticky, blurred, hairlined bar
+  with an optional content-width cap, the `•kurrentschrift.ink` wordmark with
+  its viridian dot and italic TLD, and the Playfair nav link with the animated
+  viridian underline and `aria-current`. `components/PublicHeader` and
+  `sections/admin/shell/AdminHeader` are both written on top of it; the public
+  bar is visually unchanged, and the admin bar keeps exactly the differences it
+  has reasons for — full-bleed instead of capped, because the workbench needs
+  the width; `zIndex` 1100, so the Korb drawer (1200) and the LetterPicker
+  popover (1300) still sit above it; and its two extra slots, the Vorlage chip
+  (now a link back to the Vorlagen-Auswahl) and the Korb ⚑ badge. Its nav lost
+  the `overflowX: auto` that grew a scrollbar around the hover underline
+  sitting four pixels below the links (#293).
+- **The admin follows the public type system instead of its own hard-coded
+  sizes.** `/admin` opens with `PageContainer` + `PageHeader` (eyebrow
+  „Werkbank", Playfair title, `Prose` intro) over a three-column card grid
+  whose cards name the plate and not only the script; `shell/Panel.tsx`'s
+  `ViewHeader` gained an `eyebrow` (the three views pass their area) and
+  replaced its hard-coded `fontFamily: display, fontSize: 24` with
+  `variant="h4"` plus the design-system heading rule — size from the ladder,
+  face and weight in `sx`; panel titles became `h2` elements; the occurrence
+  caption left 10 px for the 14 px caption floor. The workbench is the surface
+  this project is used from most and should not read as the draft version of
+  its own design system (#293).
+- **The Petzendorfer 1889 chart is hidden from the Vorlagen-Auswahl — hidden,
+  not removed.** Two cards both labelled „Kurrent" make the one choice the
+  whole admin hangs off ambiguous, and the second cannot be authored against
+  yet: it was seeded ahead of time for the digits row Loth 1866 lacks, written
+  by a different hand at ~57° against Loth's ~50°. The new
+  `CONFIG.hiddenSourceIds` filters it out in the two places in
+  `context/AdminContext.tsx` that can produce a selection — the source list
+  itself and the persisted choice read back from localStorage, because a stored
+  hidden id would strand the admin on a Vorlage with no card to switch away
+  from. Nothing is deleted: no migration, no DB change, the row, its chart
+  bytes and every API route stay exactly as they are, and taking the id out of
+  the list brings the card back (#293).
+- **The admin is one workbench in three views instead of five pages with tabs
+  and a permanent letter sidebar.** Entering `/admin` now asks the one question
+  everything below depends on — which Vorlage — because every letter, join and
+  word belongs to exactly one source and its hand; the chosen script is named
+  in the header and one click goes back to switch it. Under it sit exactly
+  three views, each following the same overview ⇄ detail pattern:
+  **`/admin/buchstaben`** carries a letter's whole life in one column (the
+  chart cell with the Einrichtungs-Wizard, the Diagnose modal and the
+  collapsible chart editor, the Tafel-Form beside the derived Laufform, every
+  harvested occurrence as a crop cut-out, the H1 statistics with its median
+  sketch, and chips onward to the letter's joins and words);
+  **`/admin/uebergaenge`** puts the generated join first, the H2 „Gemessen vs.
+  komponiert" measurement beside it and the pair editor last, in the order the
+  stage doctrine triages; **`/admin/woerter`** writes any text, breaks it into
+  the letters and joins it consists of (each a jump into the other two views)
+  and shows the traced specimen with its clickable occurrence overlay wherever
+  a plate of this hand wrote the same word. This completes the absorption of
+  `/admin/vergleich`, `/admin/paare` and `/admin/belege` into the Werkbank that
+  `optimierungs-werkbank.md` §2/§6 announced — the tools themselves are
+  unchanged and simply lost their own routes; the old paths stay as redirects
+  so bookmarks and work-item links keep working (#276).
+- **Every level of the admin now accepts freely typed targets, not only what a
+  plate happens to contain.** Any two-letter combination and any word can be
+  typed, written by the engine and complained about — most combinations were
+  never written by hand anywhere, they still have to look right, and until now
+  there was nowhere in the admin to look at one. A filed `work_item` for such a
+  target carries no specimen reference and says so, rather than inventing one (#276).
+- **One shared data layer and one header above the three views.** The
+  occurrence reads and the per-hand statistics load once for the whole
+  workbench (`sections/admin/shell/WorkbenchData.tsx`), so walking letter →
+  join → word costs no refetch; the Auftragskorb moved into a header drawer, so
+  ⚑ works from wherever the complaint arose. The subject of each view lives in
+  the query string (`shell/focus.ts`, pure and unit-tested), which makes every
+  cross-jump a plain link, the back button an inspection history and a reload
+  land where the work was. The desktop/mobile split is gone with the sidebar:
+  one layout serves both, and the letter grid became an on-demand picker (#276).
+
+### Fixed
+
+- **Deleting an item in the Auftragskorb only took effect after a reload.** The
+  panel removed the row optimistically and announced the change to the shell in
+  the same breath — but that announcement bumps the shared `refreshKey` the
+  panel itself re-reads on, so the re-read raced the `DELETE` and usually won:
+  the server's pre-delete rows came back and put the row on screen again, where
+  it sat until the next reload. The basket now reports a mutation only after
+  the server confirmed it, for the delete and for the „missverstanden" rejection
+  alike; a failed call still restores exactly the one row locally and announces
+  nothing, because the server state never moved (#301).
+
+- **Generated Übergänge were drawn mirrored below the baseline.** The two SVG
+  path helpers disagreed on the y sign — `ringsToPathD` keeps y by default,
+  `polylineToPathD` always negated it — so any surface drawing both kinds of
+  item under one y-flipping `<g>` got the letters (rings) right side up and the
+  generated connectors (polylines) flipped a second time. They left the word
+  and reappeared as loose strokes under it, in the word cards, the specimen
+  comparison overlay and the pair editor's live preview and its own
+  pointer-drawn connector. Verified in the browser before and after: the
+  connectors of `muß` sat at y [−0.73, −0.48] and [−0.70, −0.40] against a
+  payload of [+0.48, +0.73] and [+0.40, +0.70], an exact sign flip, and the pair
+  editor showed letters at y [0, 1.01] beside a connector at [−0.74, −0.49].
+  `polylineToPathD` now takes the same explicit `flipY` its ring twin has; the
+  asymmetric defaults stay (the public "as written" surfaces rely on them) and a
+  unit test states the rule so the trap cannot be re-entered silently (#297).
+
+- **The engine ink was drawn in the wrong place on every word card.** The
+  overlay that projects a composed word onto its specimen pixels pinned the
+  composition's left edge to the crop's left edge — a convention, not a
+  measurement. Over the 63 Sütterlin word rows that put the engine a median
+  **8.9 px (~0.3 xh) left** of the ink it was supposed to be compared against,
+  so every composition read worse than it is and the deviation an admin saw was
+  mostly registration error. The trace and the composition live in the identical
+  frame (baseline = 0, 1 unit = x-height), so the row's own measured
+  registration places both: the median left-edge error drops to **1.1 px**, and
+  what remains at the right edge is the real width difference — the thing worth
+  looking at. Extracted as the shared, unit-tested
+  `shell/model.ts::traceFrameOf`/`traceMatrix` and applied to the word cards
+  AND the specimen overview list; the left-edge pin survives only as the
+  fallback for a sample no harvest ever traced (#297).
+
+- **The gate decides what becomes a measurement, not what the trace shows.** The
+  chain harvest wrote word traces that broke into disconnected fragments:
+  `tools/laufform/harvest.py` assembled the pen path out of the letters its gate
+  cascade had ACCEPTED, so a letter that merely wobbled took itself and the
+  connectors on either side out of the drawing — `Einen` (E-i-n-e-n) was one
+  chain solve over all five slots and came out as three pieces because slots 2
+  and 4 failed `not_converged_local`. Two layers, two questions: `instances` is
+  the statistics layer and stays gated exactly as before (a wobbly letter must
+  not pollute a Laufform median), while `word_instances` is the inspection layer
+  and now carries the WHOLE solved run — every letter segment and every
+  connector the chain produced. Only a slot the chain could not fit at all (no
+  template, no window, `chain_failed`) stays out, because it has no geometry;
+  a trace that splits for that reason is honest. The per-slot verdicts stay
+  readable beside the geometry, and the two sets are two explicit fields rather
+  than one overloaded key: `measurements.traced_slots` is what is drawn,
+  `fitted_slots`/`unfitted_slots` keep meaning "accepted as an occurrence", with
+  `gates`, `converged_local` and `geo_rmse_px_by_slot` unchanged. Measured over
+  the frozen words + pairs fixtures: 27 of the 77 previously written records
+  still hold more than one body stroke, down from 32, and every remaining split
+  is a genuine pen lift (the `E`/`P` ornaments, the u-Bogen, `t`'s crossbar,
+  `ß`, the ä/ü umlauts) or a chain that really did stop — no split is caused by
+  a gate any more. 19 further specimens gain a trace at all, having had every
+  letter rejected and therefore been dropped whole. The occurrence layer is
+  byte-identical across the change (232 rows, the same Laufform drafts), and the
+  longer welded runs stay inside the wire caps (longest stroke 2277 of 4096
+  points, `Galoppieren`; at most 4 of 128 strokes), with the downsampling guard
+  in `cap_word_strokes` reporting rather than 422-ing if they ever do not (#296).
+- **A glyph with two coincident anchors returned a 500 — and took the whole
+  batch with it.** `core/template.py::sample_polyline` builds its spline
+  parameter from the cumulative chord length, and a zero-length chord leaves
+  that parameter flat, on which `CubicSpline` raises "`x` must be strictly
+  increasing sequence". Not a theoretical input: anchors are stored rounded to
+  four decimals, so the apex of a short out-and-back stroke can round its two
+  samples onto the same point — the Sütterlin `period` does exactly that — and
+  that one key failed the whole 60-key render batch the new letter overview
+  asks for. The repeat is dropped before splining (a zero-length chord carries
+  no geometry, only the same position twice); a path without one keeps every
+  anchor and every sample byte-identical, which the compose golden fixture
+  confirms. Two unit tests in `tests/test_template.py` (#293).
+- **Occurrence thumbnails cut into the letter.** The crop left a fixed 4 crop px
+  of air around the stored occurrence box, but that box comes from the M4 fit
+  and hugs the centerline, so the ink runs past it on every side. The margin
+  scales with the box now (`max(7, 0.18 · √(w·h))`) and the thumbnail row grew
+  from 64 to 80 px (#293).
+- **pairlab measured the loop-exit join class against a reference that was not
+  there, and on an arc that was not matched.** `analyze._real_join` read the
+  specimen's own joining stroke only inside `JOIN_BAND_Y`'s 0.8 xh ceiling — the
+  composer's clearance band, not a statement about where joins live — while a
+  loop exit departs at y ≈ 1.04–1.13 xh and runs level at ≈ 0.9–1.0 xh: the
+  tracker saw 4 of 18 gap columns, every `d→*` occurrence fell back to the
+  straight exit→entry chord, and the clipped seed latched onto the ink below the
+  join (a following descender in `b→p`, empty space in `o→r`). The band ceiling
+  now follows the exit, which needs no new constant and leaves every pair whose
+  exit sits inside the band bit-identical. On top of that
+  `chainbench.dconn_matched_arc` clipped all three curves to one x-interval,
+  which is an arc match only while a curve is single-valued in x — a loop-exit
+  chain connector owns the near-vertical descent off the loop and the plunge
+  into the next letter, so its clipped piece carried 1.69× the reference's arc
+  at the same x-span and `dconn` compared physically different positions; the
+  reference now defines the stretch and the other curves are trimmed to it.
+  Together this turns M3's last open class from `gen 0.058 → chain 0.228` into
+  `0.074 → 0.050` (on the word plates alone `0.081 → 0.034`) and the pooled
+  paired delta from +0.008 (p 3e-5) into +0.002 (p 0.48); M1, M4 and the kill
+  criteria come out field-for-field identical because `chain.py` never reads
+  `_real_join`. See `docs/proposals/uebergaenge-befund.md` §5c, Nachtrag
+  „loop-exit" — which also records why the `pair_aggregates` ban stays anyway (#290).
+- **The pair-chain fit no longer stalls on letters that are composed on top of
+  each other.** `analyze._generate_connector` emits its full Bézier subdivision
+  whatever room the placement leaves and floors its handle at 0.05 xh, so where
+  two letters touch or overlap the cubic doubles back into a cusp carrying two
+  dozen anchors inside ~0.05 xh of arc. `chain._second_difference_operator`
+  scales as 1/ds², which put the connector's smoothness block into the Hessian
+  ~10⁷ times stiffer than on a normal join: `e_smooth(x0)` 5.2e6 against 53.7,
+  `f(x0)` 51.9 against 0.026, and 24 of the 248 Stage-A occurrences — every
+  `c→h`, `r→e`, `m→u`, `n→e` — burned their whole iteration budget unbending
+  that connector while `e_geo`, `e_cov` and `e_wid` never moved from their
+  starting values at all. `chain.regularise_connector_anchors` now
+  re-discretises a connector whose chord is below
+  `CHAIN_CONNECTOR_MIN_SPAN_UNITS`: the same curve, resampled by arc length to
+  the anchor count that chord can carry (endpoints exact, so the shared seam
+  anchors survive, and nothing above the threshold is touched). The affected
+  occurrences go from 4 to 20 of 24 converged on the letter-local gate (#285).
+- **`chainbench` exported an optimizer status key `chain.py` never writes.** The
+  row read `fit_meta["status"]` while the fit writes `"message"`, so
+  `chain_status_msg` was the empty string on every row and the L-BFGS-B
+  termination reason — the one column that identifies a stalled solve — was
+  invisible. The termination message, `optimizer_success`, the iteration and
+  evaluation counts and the per-term energies at `x0` against `x*` are now all
+  exported, with an explicit flag for a non-finite initial energy (which `_r`
+  would otherwise round into an indistinguishable `None`) (#285).
+- **The registered overlay of engine ink over the specimen pixels is back — and
+  now also sits on the word evidence card.** The redesign had left it wired to
+  a hardcoded `false`, so the sharpest error-finding view in the project was
+  dead code while the surrounding copy still promised it. It returns as a
+  switch (on by default) in the Wörter overview, and the traced-word card now
+  draws the composed word in the same registered frame as the specimen and the
+  trace — original ink, hand trace and engine output in one picture (#276).
+- **A failed occurrence load is now visible instead of spinning forever.** The
+  shared data layer set its error flag but kept the lists at `null`, so
+  `loading` never ended and every occurrence panel sat on a spinner that could
+  not resolve; the state is now ended by the error and reported as one quiet
+  line per block (#276).
+- **Filed tasks in the Auftragskorb link to their subject.** The basket named
+  what was wrong and offered no way to it, although the three views are one
+  link away for exactly those keys — a letter/pair/word row now navigates and
+  closes the drawer (#276).
+- **German singulars:** „1 Beleg" and „1 Vorlage" instead of „1 Belege" /
+  „1 Vorlagen" (#276).
 
 ## [0.22.0] — 2026-08-02 — Hand model statistics: aggregates + gemessen vs. komponiert
 
