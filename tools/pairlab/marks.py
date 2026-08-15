@@ -65,6 +65,9 @@ from scipy.spatial import cKDTree
 
 from tools.pairlab.landmarks import nearest_unique_point
 from tools.pairlab.trace import _is_diacritic, _px_to_word_units
+from tools.tracebench.frames import MARK_MATCH_MARGIN_UNITS as _RULER_MARGIN
+from tools.tracebench.frames import MARK_MATCH_RADIUS_UNITS as _RULER_RADIUS
+from tools.tracebench.frames import MARK_MAX_ARC_UNITS as _RULER_MAX_ARC
 
 
 # ------------------------------------------------------------------ constants
@@ -73,22 +76,23 @@ from tools.pairlab.trace import _is_diacritic, _px_to_word_units
 # knobs, so a sweep needs no edit of this file. Every name is `KS_MARK_*`.
 
 # **The search radius.** How far from its composed position a mark may be moved.
-# It is the bench's OWN mark-match radius (`tracebench.frames.MARK_MATCH_RADIUS_
-# UNITS` = 0.6): a refit that could move a mark further than the ruler is
-# willing to call "the same mark" would not be correcting a position, it would
-# be inventing a match. The measured error it has to cover is 0.129 xh median,
-# so 0.6 is generous by a factor of ~4.5 and still short of the 0.8 xh at which
-# the bench stops classifying a stroke as a mark at all.
+# It IS the bench's own mark-match radius, imported so refit and ruler stay
+# coupled by construction (a refit that could move a mark further than the
+# ruler is willing to call "the same mark" would not be correcting a position,
+# it would be inventing a match; if the ruler is ever re-baselined, the refit
+# follows visibly through that declaration instead of drifting silently). The
+# measured error it has to cover is 0.129 xh median, so 0.6 is generous by a
+# factor of ~4.5 and still short of the 0.8 xh at which the bench stops
+# classifying a stroke as a mark at all.
 MARK_SEARCH_RADIUS_UNITS_ENV = "KS_MARK_SEARCH_RADIUS_UNITS"
-MARK_SEARCH_RADIUS_UNITS = float(os.environ.get(MARK_SEARCH_RADIUS_UNITS_ENV) or 0.6)
+MARK_SEARCH_RADIUS_UNITS = float(os.environ.get(MARK_SEARCH_RADIUS_UNITS_ENV) or _RULER_RADIUS)
 
 # **The ambiguity margin.** A second ink cluster whose distance is within this
-# of the nearest makes the assignment undecidable from proximity. Mirrors
-# `tracebench.frames.MARK_MATCH_MARGIN_UNITS` (0.25) for the same reason the
-# radius mirrors its twin: the refit and the ruler should call the same
-# situation ambiguous.
+# of the nearest makes the assignment undecidable from proximity. Imported from
+# the ruler for the same reason the radius is: the refit and the ruler must
+# call the same situation ambiguous.
 MARK_MATCH_MARGIN_UNITS_ENV = "KS_MARK_MATCH_MARGIN_UNITS"
-MARK_MATCH_MARGIN_UNITS = float(os.environ.get(MARK_MATCH_MARGIN_UNITS_ENV) or 0.25)
+MARK_MATCH_MARGIN_UNITS = float(os.environ.get(MARK_MATCH_MARGIN_UNITS_ENV) or _RULER_MARGIN)
 
 # **What the body claims.** Ink within this distance of the fitted body path is
 # the body's and is removed before any mark looks for a target. 0.15 xh is the
@@ -102,11 +106,11 @@ MARK_BODY_CLAIM_UNITS = float(os.environ.get(MARK_BODY_CLAIM_UNITS_ENV) or 0.15)
 # **How big a mark's ink can be.** A skeleton is one pixel wide, so a cluster's
 # pixel count is its arc length in pixels; divided by the x-height it is the
 # same number the bench classifies marks with. The cap is 2x the bench's
-# `MARK_MAX_ARC_UNITS` (0.8) — deliberately loose, because this one only has to
-# keep a mark off ink the bench would NEVER call a mark: a missed ascender, an
-# unfitted letter, a plate speck grown into a stroke.
+# `MARK_MAX_ARC_UNITS` (imported) — deliberately loose, because this one only
+# has to keep a mark off ink the bench would NEVER call a mark: a missed
+# ascender, an unfitted letter, a plate speck grown into a stroke.
 MARK_MAX_INK_ARC_UNITS_ENV = "KS_MARK_MAX_INK_ARC_UNITS"
-MARK_MAX_INK_ARC_UNITS = float(os.environ.get(MARK_MAX_INK_ARC_UNITS_ENV) or 1.6)
+MARK_MAX_INK_ARC_UNITS = float(os.environ.get(MARK_MAX_INK_ARC_UNITS_ENV) or 2 * _RULER_MAX_ARC)
 
 # Sampling step for the body path when the claim is computed. Half a pixel is
 # `tracebench.metric.RASTER_STEP_PX`'s reasoning: consecutive samples are then
