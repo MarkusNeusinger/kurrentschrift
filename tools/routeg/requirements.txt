@@ -1,0 +1,19 @@
+# Route G needs NO isolated venv — this file records that finding rather than
+# creating an environment, and it is the whole dependency surface of the three
+# stages. Everything listed is already a runtime dependency of the repo, so
+#
+#   uv run python -m tools.routeg.prepare
+#   uv run python -m tools.routeg.recover
+#   uv run python -m tools.routeg.to_candidate
+#
+# is the complete recipe. Contrast `tools/inksight/requirements.txt`, which
+# exists because TensorFlow pins a whole interpreter and had to be walled off.
+#
+# The reference implementation (github.com/gioelecrispo/wor, MIT) is MATLAB
+# 2016a+ with the Image Processing Toolbox, so it has no representation here at
+# all: there is no pip package to pin and no venv that could host it. See
+# README § "Why the reference implementation is not what runs here".
+
+numpy>=2.5.1
+scipy>=1.18.0
+pillow>=12.3.0

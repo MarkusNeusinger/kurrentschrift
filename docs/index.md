@@ -368,8 +368,11 @@ auseinanderfallen.
   Richtungs-Chamfer · Fehlerzähler an Kreuzungen/Marken/Retraces), Route A
   (Verfeinerungsstufe auf dem Kettenfit: Form-Prior → Proximal-Term) gegen
   Route B (InkSight roh; Fine-Tune als unmöglich verworfen → eigenes
-  kleines Modell auf Engine-Paaren) — *Status: in Arbeit (Stufe A gebaut,
-  B–D und die Routen offen)*
+  kleines Modell auf Engine-Paaren) und Route G (die prior-freie
+  geometrische Kontrolle `tools/routeg`: beziffert, was der Duktus-Prior
+  kauft — Referenz-Code ist MATLAB, darum eigene Minimalfassung) —
+  *Status: in Arbeit (Stufe A gebaut, Route G gemessen, B–D und die
+  übrigen Routen offen)*
 - **[Planänderungen](proposals/planaenderungen.md)** — vier Vorschläge:
   §2/§4 systematische Bigramm-Extraktion aus Beispieltext; §3/§6.1
   Positions-Verteilung datengetrieben; M4+-Modul `core/orthography.py`

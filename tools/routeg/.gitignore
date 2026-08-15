@@ -1,0 +1,6 @@
+# The isolated venv, any third-party clone and every run artefact stay out of
+# the repo: foreign source is not ours to redistribute from here, and the
+# outputs are measurement material, not source.
+.venv/
+vendor/
+out/
