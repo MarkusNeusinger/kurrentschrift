@@ -4271,3 +4271,53 @@ Spitze statt am Schnittpunkt, derselbe Weg), und die
 Buchstaben-Attribution stimmt jetzt mit der Hand überein; das
 compose-golden-Fixture wurde als deklarierte Re-Baseline
 regeneriert. K1b ist der nächste Composer-Kandidat der Welle.
+
+### Welle 1 · K1b `aug15` — Vorregistrierung: der versetzte Stamm-Rückpass des t
+
+Geschrieben und committet VOR der ersten Zahl dieser Maßnahme
+(der in K1s Ergebnis benannte Kandidat; Plan
+`../proposals/tintenfolger.md` §7.2).
+
+**Hypothese.** Das verbleibende t-Defizit (`unter` `soll_cross` 2
+vs. Hand 3 · `soll_zones` 2 vs. 3; `mit` 1 vs. 2 · 1 vs. 2; dazu
+`lift_delta` +1 der Kette auf beiden Wörtern) kommt daher, dass die
+Komposition zwischen Stammfuß und Deckstrich ABSETZT, wo die Hand
+den Stamm mit VERSATZ retraced: Abstrich x≈4,60, Aufstrich x≈4,65,
+der Auslauf durchsticht BEIDE Pässe (Kreuzungs-Sites 0,07 xh
+auseinander). Ein generierter Rückpass — der Balkenstrich verliert
+seinen Lift und wird stattdessen mit einer Brücke Stammfuß →
+Balkenstart als Präfix versehen, nach rechts ausgebuchtet um
+`BAR_RETRACE_BULGE_UNITS` — stellt Zonen, Kreuzungen und Strichzahl
+der Hand wieder her. Vorbild ist der Capital-Retrace
+(`cap_retrace`): das Präfix ist generierte Centerline OHNE eigene
+Silhouette, die gedruckte Tinte ändert sich nicht (der Versatz
+bleibt innerhalb der Schwellzug-Breite).
+
+**Konstante, gemessen statt gewählt.** `BAR_RETRACE_BULGE_UNITS =
+0.06`: der Aufstrich der Hand liegt 0,05–0,07 xh rechts des
+Abstrichs (unter x≈4,60→4,65; die zwei Kreuzungs-Sites der Hand
+liegen 0,07 auseinander und werden vom Zähler als getrennte Sites
+geführt — ein kleinerer Versatz würde zu EINER Site verschmelzen).
+Nur Basis t; das Präfix wird nur gebaut, wenn der vorige Strich
+unterhalb des Balkenstarts endet und horizontal nahe liegt
+(Stamm-Geometrie), sonst bleibt der Lift.
+
+**Erwartung.** `soll_cross`: `unter` 2→3, `mit` 1→2 (= Hand);
+`soll_zones`: `unter` 2→3, `mit` 1→2 (= Hand);
+`soll_cross_agree` 7/10 → 9/10, `soll_zones_agree` 6/10 → 8/10;
+Ketten-`lift_delta` auf mit/unter −1 (erst im nächsten
+Kettenlauf sichtbar).
+
+**Messgrößen und Kill-Kriterien.**
+(a) Die Erwartungs-Zellen oben JE WORT; jedes NICHT-t-Wort, das
+eine Übereinstimmung verliert → verworfen. Ein Über-Kreuzen
+(`unter` > 3 oder `mit` > 2) → verworfen (Versatz zu groß oder
+Präfix kreuzt selbst).
+(b) wordbench `--set all`: Headlines nicht > +0,002; Bewegung nur
+in t-Wörtern.
+(c) compose-golden bricht bauartbedingt → deklarierte Re-Baseline
+im selben PR, kein Akzeptanzkriterium.
+(d) Die deklarierte Post-K1-Kettenbaseline
+(`temp/tb-chain-r1-postk1.json`, Kaskade aus K1) ist der
+Vergleichspunkt des nächsten Kettenlaufs; K1b selbst wird zuerst
+auf Soll-Ebene abgenommen.
