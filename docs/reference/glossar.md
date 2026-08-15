@@ -37,7 +37,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§6** Extern/Forschung.
 
 - **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1 · Ausreißer §4
-- **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3
+- **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Duell-Ansicht §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2 · extrapoliertes Landmark-Ziel §3
@@ -336,6 +336,20 @@ setzte über dem Kringel einen zweiten Scheitel, den die Platte nie
 schreibt).
 *Technisch:* `KRINGEL_EXIT_BASES` + `_last_ink_crossing` in
 `core/compose.py`.
+
+**Bowl-Exit-Tuck** — die klassenbewusste Clearance nach einem
+geschlossenen Rundkörper-Ausgang (b/c/d/o): die Hand rückt den
+Folgebuchstaben an den Kessel heran (gemessen +0,20 xh Überschuss der
+einheitlichen Clearance über 218 sezierte Joins, b +0,42 · o +0,30 ·
+c +0,25 · d +0,12), die Klassen-Clearance erlaubt deshalb BERÜHRUNG
+der Tintenspalten (0,0) — bewusst nicht die volle gemessene
+Überlappung (−0,06), die im Wortkontext kollidierte (Welle 2 · P1,
+`aug15`: der gebundene Tuck hält −0,018 `pair_loss` bei neutralen
+Wörtern). Schwester-Befund, ehrlich NICHT adoptiert: die
+Arkaden-Luft (n/m brauchen laut Dissektion +0,18 mehr Raum, die
+Wordbench widerspricht).
+*Technisch:* `BOWL_EXIT_TUCK_BASES`/`BOWL_EXIT_CLEARANCE` in
+`core/compose.py`; Messung qualitaetsmetrik.md §14 „Welle 2 · P1".
 
 **Stamm-Rückpass (versetzt)** — die generierte Brücke, mit der die
 Komposition den t-Deckstrich OHNE Absetzen anschließt (Welle 1 · K1b,
