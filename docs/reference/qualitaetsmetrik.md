@@ -4271,3 +4271,44 @@ Spitze statt am Schnittpunkt, derselbe Weg), und die
 Buchstaben-Attribution stimmt jetzt mit der Hand überein; das
 compose-golden-Fixture wurde als deklarierte Re-Baseline
 regeneriert. K1b ist der nächste Composer-Kandidat der Welle.
+
+### Welle 1 · B1 `aug15` — Vorregistrierung: Best-of-N über Input-Augmentierungen (InkSight)
+
+Geschrieben und committet VOR der ersten Zahl dieser Maßnahme
+(Plan: `../proposals/tintenfolger.md` §7.4; Infrastruktur
+`tools/inksight/{augment,ensemble}.py`, Ranker ausschließlich gegen
+die gemessene Tinte).
+
+**Hypothese.** Ein einzelner Decode ist ein Zug aus einer auf
+Sütterlin instabilen bedingten Verteilung; N deterministische
+Augmentierungs-Varianten (Rotation ±2/±4° × Füllgrad — exakt die
+InkSight-eigenen Trainings-Augmentierungen) plus ein Tinten-Ranker
+(beidseitiges Chamfer gegen `ref_skel`, Kontraktverletzung
+disqualifiziert) verbessern die Bahn. Präzedenz: Afonin et al.,
+ICDAR 2023 (dieselbe Forschungsgruppe, „more than halving the
+character error rate").
+
+**Owner-Direktive (2026-08-15).** Gemessen wird nicht nur der
+Gewinner: ALLE Varianten werden einzeln gegen die Handbahn
+gebencht. Die ORAKEL-Spalte — die per Hand-dtw beste Variante je
+Wort gegen die Wahl des Tinten-Rankers — beziffert, was die
+ehrliche Tinten-Auswahl kostet; die Handbahn bleibt Prüfung, die
+Tinte das einzige Auswahlsignal.
+
+**Messgrößen und Kill-Kriterien** (Dev-Split, Vergleich gegen die
+eingefrorene T0-derender-Zeile `temp/tb-inksight-derender.json`,
+dtw-Median 0,0956, 9 gewertete Wörter + `Wer` failed):
+(a) Primär: gepaarter dtw_xh-Median Best-of-N vs. T0-derender;
+Median-Δ ≥ 0 (keine Verbesserung) = Maßnahme verworfen.
+(b) Struktur netto: `cross_missing+spurious` und
+`retrace_missing+spurious` dürfen sich in Summe nicht
+verschlechtern.
+(c) `Wer` (T0: failed an einem Ein-Punkt-Strich): erwartet geheilt,
+sobald EIN konformes Ensemble-Mitglied existiert; bleibt es failed,
+wird das berichtet, ist aber kein Kill.
+(d) Die Orakel-Lücke (Median der gepaarten Differenz
+Ranker-Wahl − Hand-Orakel) wird berichtet — eine große Lücke ist
+ein Befund über das Auswahlsignal, kein Kill.
+(e) Determinismus-Gate: die Identitäts-Variante `rot+0_s100` muss
+tokengleich zur T0-Antwort decodieren; weicht sie ab, ist der
+LAUF ungültig (nicht die Maßnahme).
