@@ -4970,3 +4970,58 @@ Pre-Reg, latent für ALLE Arkaden-Köpfe), (iii) die
 Nachkalibrierung aller drei Knöpfe am Bestätigungssatz
 (Klassen-n 6–8 sind der wahrscheinlichste Grund, warum
 Median-Regeln gegen Beleg-Varianz verlieren).
+
+### Wächter als Produktions-Kette `aug16` — Vorregistrierung: die gewachte Bahn wird die gespeicherte
+
+Geschrieben und committet VOR der ersten Zahl der Messung.
+Owner-Entscheid der Namensrunde (2026-08-16): „Kette+ sollte
+einfach das einzige Kette sein" — fit-erfundene Kreuzungen sind
+nie richtig (join-gebildete stecken im Soll-Budget, Hand-vs-
+Komposition-Lücken sind Composer-Defekte). Die Duell-Seite zeigt
+das schon; DIESER Eintrag misst die PRODUKTIONS-Seite: sollen die
+`traced`-`word_instances` (die 53 nicht nachgefahrenen Wörter +
+Drills) künftig die STRUKTUR-GEWACHTE Bahn speichern statt der
+rohen Kettenfit-Bahn?
+
+**Konfiguration.** Exakt die Ebene, die die Duell-Seite als
+„Kette" führt: `follow_word_chain` mit `structure_guard` (Arm ⑨,
+Budget aus der eigenen Chain-Initialisierung, Retry-Leiter wie
+released) auf der Basis `prox 0.1 · rounds 2 · coverage 0.3`;
+Kontroll-Arm die rohe Kette (`rounds 0`, derselbe Codepfad).
+Beide über ALLE 63 Wörter des words-Sets (nicht nur die 17
+Dev-Fälle — die Produktion speichert alle).
+
+**Bindende Leitplanke (aus §2.2 der Kampagne):** der Tausch darf
+NUR `word_record["strokes"]` betreffen — `occurrences`,
+`letter_gate`, `instances` und alle Messungen bleiben die des
+Kettenfits; `pair_aggregates` sieht Chain-Verbinder ohnehin nie.
+Kein DB-Write in diesem Schritt: die Messung läuft offline über
+die eingefrorenen Fixtures; der Re-Harvest selbst braucht
+Owner-Go + dbsnapshot und `provenance` bleibt `traced`
+(`fit_path` würde die gewachte Herkunft tragen).
+
+**Messgrößen.** (a) Auf den 10 authored-Referenzen: `dtw_xh`
+gepaart gewacht vs. roh — Arm ⑨ maß Δ exakt 0 auf den Dev-Fällen,
+erwartet wird NEUTRALITÄT. (b) Auf ALLEN 63 Wörtern (referenzfrei
+messbar): die Strukturzähler v2.1 gegen das je-Wort-SOLL
+(`soll_cross`/`soll_zones`-Abstände) — die rohe Kette erfand auf
+den Dev-Wörtern ~21 Kreuzungen über ihre eigene Initialisierung
+(laden 3→11, unter 3→12); erwartet wird, dass die gewachte Bahn
+je Wort näher am Soll liegt und NIRGENDS weiter. (c) `aiou`
+gegen die Tintenmaske je Wort (darf nicht fallen — der Wächter
+darf Ink-Deckung nicht kaufen, indem er sie opfert). (d) Marken:
+`marks_missing/spurious` unverändert. (e) Laufzeit je Wort
+(Produktions-Tauglichkeit; die Retry-Leiter kostet).
+
+**Gates und Kill-Kriterien.** Adoptions-Empfehlung nur wenn:
+(i) dev-`dtw_xh` gepaart |Median-Δ| ≤ 0,002 und kein Einzelwort
+über +0,01; (ii) Struktur-Abstand zum Soll (Kreuzungen + Zonen,
+je Wort) gewacht ≤ roh ÜBERALL und irgendwo strikt besser;
+(iii) `aiou`-Median fällt nicht (> −0,005); (iv) Marken
+unverändert; (v) kein Wort scheitert (failed/skipped) das roh
+durchläuft. Kill: EIN Wort mit MEHR Soll-Abstand als roh →
+nicht adoptiert (der Wächter-Kontrakt wäre gebrochen — das wäre
+ein Bug, kein Tuning-Fall); Laufzeit im Mittel > 5 min/Wort →
+Empfehlung nur mit benanntem Budget. Ergebnis wird hier datiert
+nachgetragen; die ADOPTION selbst (Re-Harvest, DB) bleibt ein
+eigener Schritt hinter Owner-Go.
