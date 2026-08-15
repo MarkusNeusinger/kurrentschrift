@@ -629,3 +629,26 @@ datierte Re-Baseline; alle Nachfahr-Maßnahmen laufen auf den 10
 Dev-Wörtern, der Bestätigungssatz (Owner, sobald wieder am Tablet:
 Umlautwort, langes ſ, +1 Versal, Marken mit Absetzen) bleibt der
 Schlussstein, an dem jeder adoptierte Gewinn bestehen muss.
+
+**Nachkalibrierungs-Protokoll bei neuen authored-Wörtern**
+(Owner-Direktive 2026-08-15: „nur 10 Wörter — fix einplanen, dass
+weiter getuned wird, wenn mehr verfügbar sind"). Die Evidenz der
+Kalibrierungen hat zwei EHRLICH VERSCHIEDENE Böden: Die
+VORSCHUB-Konstanten (Bowl-Tuck, w/v-Rückwärts, Balken-Steigung,
+align-Floor) ruhen auf den ~218 QC-gefilterten Dissektionen des
+HARVESTS über alle 63 Wörter + 33 Drills — aus dem Scan lesbar,
+ohne Nachfahrung, solide n. Die TOPOLOGIE- und ORDNUNGS-Wahrheiten
+(dtw, Strukturzähler, Marken-Orte, Soll-Vergleiche, Retraces —
+alles, was der Scan prinzipiell NICHT hergibt: Strichfolge,
+Absetzen, doppelt beschriebene Tinte) ruhen auf den 10
+nachgefahrenen Wörtern und sind entsprechend dünn (Balken-Klasse
+n=6, longs-Rückwärts n=1). DESHALB, stehend: Jede neue
+authored-Charge löst denselben Ablauf aus — (1) `--only
+word-instances`-Refill der Fixture-Roots, (2) die
+Diagnose-Erhebung neu (Drift-Profil + signierte doff-Attribution
+je Platzierungsregel), (3) jede Konstante, deren Klassen-Median
+sich um > 0,05 xh bewegt oder deren Varianz-Verdikt kippt
+(Arkaden-Luft!, Diagonalen-Trim, longs-Ausnahme), bekommt eine
+datierte Nachkalibrierung mit den P1/P2-Gates, (4) die
+`--split confirm`-Wörter bleiben dabei Bestätigung und wandern NIE
+in den Dev-Satz (Append-never).
