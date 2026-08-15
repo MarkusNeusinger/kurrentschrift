@@ -4406,3 +4406,314 @@ der Reihenfolge sieht (Soll-Duktus-Struktur statt reiner
 Überdeckung), gemessen gegen die hier gemessene Orakel-Lücke von
 +0,0067 xh als Zielgröße und −0,0124 als Deckel. `Wer` bleibt als
 Nebenergebnis geheilt, ist aber allein keine Adoption wert.
+
+### Welle 1 · A1 `aug15` — Vorregistrierung: der Marken-Nachfit
+
+Geschrieben und committet VOR der ersten Zahl dieser Maßnahme
+(Plan: `../proposals/tintenfolger.md` §7.3; Infrastruktur
+`tools/pairlab/marks.py`, opt-in `--mark-refit`, default byte-identisch).
+
+**Hypothese.** Die Marken des Kettenfit-Kandidaten stehen an ihrer
+Kompositions-Position statt auf der gemessenen Marken-Tinte
+(`mark_pos_err_xh` Median 0,129 gegen 0,046 der prior-freien
+Kontrolle; bei muß/und/unter/zwei matcht keine Marke). Ein rigider
+Nachfit (reine Translation) jeder Marke auf die vom Körper nicht
+beanspruchte Skelett-Tinte, mit Verweigerung bei Ambiguität
+(Suchradius 0,6 xh = die Match-Grenze des Lineals, Margin 0,25),
+senkt den Ortsfehler, ohne irgendetwas anderes zu bewegen.
+
+**Nachfit-Ziel ist ausschließlich die TINTE** (ref_skel), nie die
+authored-Referenz — gemessen wird ausschließlich GEGEN die Hand.
+
+**Messgrößen und Kill-Kriterien** (gepaart über die 10 Dev-Wörter
+des eingefrorenen Splits, Vergleich gegen die deklarierte
+Post-K1-Kettenbaseline `tb-chain-r1-postk1`):
+(a) Primär: `mark_pos_err_xh`-Median fällt; `marks_matched` steigt
+oder bleibt (ein VERLORENES Match = verworfen).
+(b) Do-no-harm: `dtw_xh` byte-gleich auf Wörtern ohne bewegte Marke
+und ohne Netto-Verschlechterung insgesamt; Strukturzähler
+(cross/zones/touch/overlap) exakt unverändert — der Nachfit bewegt
+nur Marken-Striche; jede Abweichung = verworfen.
+(c) `marks_spurious` darf nicht steigen (zwei 1,0 heute).
+(d) Verweigerungen werden gezählt und benannt (meta.mark_refit),
+nie still übergangen.
+
+**Ergebnis (gemessen nach dem Commit oben, Lauf `tb-a1-marks`
+gegen `tb-chain-r1-postk1`).** Die Hypothese ist BESTÄTIGT, mit
+einer Einschränkung, die erst der Lauf sichtbar gemacht hat.
+Primär: `mark_pos_err_xh` Median **0,1285 → 0,0576** (−55 %; Mittel
+0,1217 → 0,0530), und zwar auf JEDEM der vier Wörter, die das Lineal
+überhaupt paaren kann — `die` 0,0675 → 0,0560 · `mit` 0,1071 →
+0,0194 · `linken` 0,1624 → 0,0592 · `will` 0,1499 → 0,0775.
+`marks_matched` bleibt 4/4 (kein Match verloren), `marks_missing` 0,
+`marks_spurious` 1 → 1, `marks_ambiguous` 0. Damit schließt A1 rund
+86 % des Abstands zur prior-freien Kontrolle (0,046): der Kettenfit
+konnte die Markentinte immer lesen, er hat sie nur nie gefragt.
+Do-no-harm hält vollständig: die Strukturzähler sind über ALLE zehn
+Wörter exakt unverändert (0 abweichende Zellen über
+cross/retrace/touch/overlap/soll/lift), `dtw_xh` ist auf 7 von 10
+Wörtern byte-gleich, der gepaarte Median-Δ ist 0,0000 und der
+Vorzeichentest n=3/pos 2/neg 1 mit p=1,0. Nebenbei verbessern sich
+die tintenseitigen Spalten (`aiou` 0,6831 → 0,6884, beide Chamfer-
+Mediane −0,0003) — genau das Vorzeichen, das „die Marke sitzt jetzt
+auf Tinte" erwarten lässt. Verweigerungen: KEINE. Acht der zehn
+Wörter tragen genau eine Marke, alle acht wurden bewegt (Median-
+Verschiebung 0,073–0,127 xh, alle weit innerhalb des 0,6-xh-Radius),
+`laden` und `Wer` haben gar keine.
+
+**Die Einschränkung, und sie ist der eigentliche Fund.** Das
+PRIMÄRMASS ruht auf 4 der 10 Wörter: bei `unter`, `und`, `muß` und
+`zwei` steht `marks_uncertain` — die AUTHORED-Referenz enthält dort
+gar keinen als Marke klassifizierten Strich (die Hand schreibt den
+u-Bogen angebunden, nicht schwebend), also gibt es nichts zu paaren.
+Genau diese Wörter zeigen den zweiten Effekt: die Harvest-Regel
+`_is_diacritic` (schwebt über der Mittellinie, KEINE Bogenlängen-
+Grenze) nimmt den langen u-Bogen als Marke, das Lineal
+(`classify_strokes`, Deckel 0,8 xh) zählt ihn als Körper — deshalb
+landet seine Verschiebung dort in der Körper-DTW statt in der
+Marken-Spalte: `unter` −0,0008 (besser), `und` +0,0010, `muß`
++0,0020. Das ist der gesamte dtw-Effekt des Laufs; er hebt den
+Headline-Median um +0,0005 (0,061985 → 0,062474), weil `und` zufällig
+auf der Median-Position sitzt. Bei den fünf i-Punkt-Wörtern bleibt
+die DTW byte-gleich, weil das Lineal die Marke vor der Körper-DTW
+heraustrennt. Kandidat A1b (eigene Vorregistrierung, NICHT Teil
+dieses Ergebnisses, weil er nach Sicht der Daten formuliert ist): den
+Nachfit auf Striche mit Bogenlänge ≤ `MARK_MAX_ARC_UNITS`
+beschränken, also auf genau die Klasse, die „Marke" heißt — der
+u-Bogen wäre dann wieder Sache des Körper-Solves.
+
+ENTSCHEIDUNG: **BEHALTEN.** Kein Kill-Kriterium feuert (kein
+verlorenes Match, kein zusätzliches `marks_spurious`, Strukturzähler
+exakt gleich, keine Netto-dtw-Verschlechterung), und das Primärmaß
+mehr als halbiert sich. Der Schalter bleibt vorerst opt-in
+(`--mark-refit`, `HarvestOptions.mark_refit`, default AUS): der
+Kettenfit-Kandidat ist die eingefrorene Baseline, und ob A1 in die
+GESPEICHERTE Bahn wandert, ist ein eigener Autoren-Entscheid — der
+Bestätigungssatz (`--split confirm`) ist die Bedingung dafür, weil
+vier gepaarte Wörter eine schmale Grundlage für eine Adoption sind.
+
+### Welle 1 · K1b `aug15` — Vorregistrierung: der versetzte Stamm-Rückpass des t
+
+Geschrieben und committet VOR der ersten Zahl dieser Maßnahme
+(der in K1s Ergebnis benannte Kandidat; Plan
+`../proposals/tintenfolger.md` §7.2).
+
+**Hypothese.** Das verbleibende t-Defizit (`unter` `soll_cross` 2
+vs. Hand 3 · `soll_zones` 2 vs. 3; `mit` 1 vs. 2 · 1 vs. 2; dazu
+`lift_delta` +1 der Kette auf beiden Wörtern) kommt daher, dass die
+Komposition zwischen Stammfuß und Deckstrich ABSETZT, wo die Hand
+den Stamm mit VERSATZ retraced: Abstrich x≈4,60, Aufstrich x≈4,65,
+der Auslauf durchsticht BEIDE Pässe (Kreuzungs-Sites 0,07 xh
+auseinander). Ein generierter Rückpass — der Balkenstrich verliert
+seinen Lift und wird stattdessen mit einer Brücke Stammfuß →
+Balkenstart als Präfix versehen, nach rechts ausgebuchtet um
+`BAR_RETRACE_BULGE_UNITS` — stellt Zonen, Kreuzungen und Strichzahl
+der Hand wieder her. Vorbild ist der Capital-Retrace
+(`cap_retrace`): das Präfix ist generierte Centerline OHNE eigene
+Silhouette, die gedruckte Tinte ändert sich nicht (der Versatz
+bleibt innerhalb der Schwellzug-Breite).
+
+**Konstante, gemessen statt gewählt.** `BAR_RETRACE_BULGE_UNITS =
+0.06`: der Aufstrich der Hand liegt 0,05–0,07 xh rechts des
+Abstrichs (unter x≈4,60→4,65; die zwei Kreuzungs-Sites der Hand
+liegen 0,07 auseinander und werden vom Zähler als getrennte Sites
+geführt — ein kleinerer Versatz würde zu EINER Site verschmelzen).
+Nur Basis t; das Präfix wird nur gebaut, wenn der vorige Strich
+unterhalb des Balkenstarts endet und horizontal nahe liegt
+(Stamm-Geometrie), sonst bleibt der Lift.
+
+**Erwartung.** `soll_cross`: `unter` 2→3, `mit` 1→2 (= Hand);
+`soll_zones`: `unter` 2→3, `mit` 1→2 (= Hand);
+`soll_cross_agree` 7/10 → 9/10, `soll_zones_agree` 6/10 → 8/10;
+Ketten-`lift_delta` auf mit/unter −1 (erst im nächsten
+Kettenlauf sichtbar).
+
+**Messgrößen und Kill-Kriterien.**
+(a) Die Erwartungs-Zellen oben JE WORT; jedes NICHT-t-Wort, das
+eine Übereinstimmung verliert → verworfen. Ein Über-Kreuzen
+(`unter` > 3 oder `mit` > 2) → verworfen (Versatz zu groß oder
+Präfix kreuzt selbst).
+(b) wordbench `--set all`: Headlines nicht > +0,002; Bewegung nur
+in t-Wörtern.
+(c) compose-golden bricht bauartbedingt → deklarierte Re-Baseline
+im selben PR, kein Akzeptanzkriterium.
+(d) Die deklarierte Post-K1-Kettenbaseline
+(`temp/tb-chain-r1-postk1.json`, Kaskade aus K1) ist der
+Vergleichspunkt des nächsten Kettenlaufs; K1b selbst wird zuerst
+auf Soll-Ebene abgenommen.
+
+**Ergebnis (gemessen nach dem Commit oben).** Die Erwartung trifft
+Zelle für Zelle ein: `soll_cross` `unter` 2→**3** und `mit` 1→**2**
+(beide = Hand), `soll_zones` `unter` 2→**3** und `mit` 1→**2**
+(beide = Hand), `soll_cross_agree` 7/10 → **9/10**,
+`soll_zones_agree` 6/10 → **8/10**; kein Über-Kreuzen, kein
+Nicht-t-Wort bewegt. Die per-Letter-Zelle des t wird 2/1 — der
+Auslauf durchsticht jetzt Abstrich UND versetzten Aufstrich, wie
+die Hand. Unangekündigter Bonus: die 4 `soll_overlap`-Einträge der
+t-Wörter (Balken-gegen-Stamm) verschwinden vollständig (Hand hat
+dort ebenfalls 0), je eine Berührung bleibt (`mit` 1 vs Hand 2,
+`unter` 1 = Hand 1). Verbleibende Abweichler sind die bekannten
+Chart-Fälle: `linken` (k zählt im Soll eine Kreuzung mehr als die
+Hand schreibt), `Wer` (W-Ansatz-Retrace, Chart-Lücke, Korb) und
+`zwei` (z-Retrace, mutmaßlich dieselbe Klasse — bei der
+W-Neutracierung mitprüfen). Gates: wordbench `bench_loss` 0,110992
+→ 0,110983 (−0,00001), `pair_loss` 0,165688 → 0,165725 (+0,00004,
+Schwelle 0,002), bewegt ausschließlich t-Wörter (macht · mit ·
+mit-2 · Seiten · Soldaten · fechten · streiten · unter, alle
+≤ ±0,0005); compose-golden regeneriert (deklarierte Re-Baseline);
+1240 Tests grün. ENTSCHEIDUNG: BEHALTEN. — Nebenbefund, hier
+deklariert: die Post-K1-KETTENbaseline `r1` (der Vergleichspunkt
+aller folgenden Kettenläufe) unterscheidet sich von `r0` in genau
+EINEM Wort: `unter` dtw 0,4389 → 0,4690 (+0,0301) bei einer
+erfundenen Kreuzung WENIGER (`cross_spurious` 4→3); die übrigen 9
+Wörter sind byte-identisch. Der ohnehin chaotische unter-Fit
+reagiert auf die veränderte Initialisierung — die dtw-Zahl der
+Kette ist dort schlechter, ihre Topologie besser; der als nächstes
+anstehende Kettenlauf (A1) vergleicht gegen r1.
+
+### Welle 2 · P1 `aug15` — Vorregistrierung: die Vorschub-Kalibrierung aus den gemessenen Joins
+
+Geschrieben und committet VOR der ersten Zahl der Maßnahme.
+Anlass ist ein Owner-Fund an den K1b-Sichtprüfungs-Overlays: auf
+langen Wörtern wandert die Komposition nach hinten sichtbar rechts
+von der Specimen-Tinte weg („das Rot muss auf dem Ink liegen").
+
+**Befund (Diagnose-Skripte, Session `aug15`).** (a) Drift-Profil
+über die 63 Bench-Wörter — je Slot der best-passende x-Versatz der
+komponierten Buchstaben gegen das Specimen-Skelett, ZUSÄTZLICH zur
+globalen Registrierung des Lineals: Drift-Median −0,10 xh
+(Mittel −0,25), −0,0375 xh je Slot; Vorsicht Arkaden-Aliasing (i/n/m
+rasten beim Best-Fit um einen ganzen Bogen, Einzelsprünge ±1 xh sind
+Artefakte). (b) Die identitäts-sichere Zahl: die SIGNIERTE
+doff-Verteilung über 218 gemessene Joins (pairmeas-Frame, Betrag
+durch Vorzeichen ersetzt): Median **+0,05 xh je Join**, 138/218 zu
+weit — aber KEIN globaler Faktor, sondern zwei Klassenfehler in
+Gegenrichtung: zu WEIT laufen Ausgänge aus Rundkörpern/Schleifen und
+Eingänge in e/r (b→e +0,41 · f→e +0,31 · o→r +0,30 · c→h +0,25 n=6 ·
+w→e +0,20 · t→e +0,15 · e→r +0,14 n=13 · d→e +0,12); zu ENG laufen
+Eingänge in die Arkaden (e→n −0,13 n=12 · u→n −0,23 · i→n −0,24 ·
+n→n −0,21 · u→m −0,31) sowie r→e (−0,66 n=3 — Verdacht
+Frame-Kaveat des Arm-Fuse, vor jeder Korrektur visuell prüfen).
+
+**Maßnahme in zwei Stufen.**
+(i) MECHANISMUS-ATTRIBUTION statt additiver Fudges: die Komposition
+bekommt unter `provenance=True` ein report-only Feld, das je
+platziertem Glyph benennt, WELCHE Platzierungsregel gefeuert hat
+(Fork/Bar-Rise/Arm-Fuse/Girlande/High-Couple …) und ob der
+Ink-Clearance-Floor gebunden hat; die 218 signierten Fehler werden
+danach gruppiert. Erwartung: die Zu-weit-Klasse korreliert mit
+gebundenem Clearance-Floor bzw. einer benennbaren Kopplungsregel,
+die Zu-eng-Klasse mit der Girlanden-Kopplung. Sonderfrage: hat K1s
+Balken-Tail den t→e-Vorschub über den Ink-Floor verschoben?
+(ii) REGEL-FIX der(s) verantwortlichen Mechanismus(se) — Klassen-
+regel, kein Pair-Override, Konstanten aus den gemessenen Medianen.
+
+**Messgrößen und Kill-Kriterien.**
+(a) Primär: wordbench `word_loss` fällt (trans ist die größte
+Komponente); ein Fix, der `word_loss` nicht senkt, wird verworfen.
+(b) Die signierte doff-Verteilung: Klassen-Mediane bewegen sich
+Richtung 0, der Gesamt-Median |≤ 0,02|; keine Klasse darf das
+Vorzeichen ÜBERSCHIESSEN (neuer Betrag > alter Betrag = verworfen).
+(c) Struktur-Wächter: `soll_cross_agree`/`soll_zones_agree`
+unverändert (Platzierung darf keine Topologie kaufen).
+(d) `pair_loss` nicht über +0,002; compose-golden bricht
+bauartbedingt → deklarierte Re-Baseline im selben PR.
+(e) Stufe (i) ist report-only und muss headline-byte-identisch
+sein; zusätzlich wird eine report-only DRIFT-Spalte im Bench
+erwogen (eigener, kleiner Schritt — nie Teil eines Loss).
+(f) Kill für Stufe (ii): erklärt kein Mechanismus die Mehrheit
+seines Klassenfehlers, wird NICHT gefixt, sondern der Befund als
+ehrliches Negativ dokumentiert und die Frage an die nächste
+Werkzeug-Stufe (H2-Klassen-Statistik) zurückgegeben.
+
+**Stufe (i) gemessen — die Attribution trennt sauber** (Feld
+`placement` am Konnektor unter `provenance`, golden/Payload
+byte-identisch, 73 Tests grün). Die 218 signierten Fehler nach
+entscheidender Regel: `clearance_floor` **n=116** (der
+Ink-Clearance-Floor entscheidet die HÄLFTE aller Platzierungen),
+median +0,048 — aber gespalten: nach RUNDEM linken Buchstaben
+**+0,206 (n=47)**, in ARKADEN (n/m) **−0,182 (n=31)**, in e +0,104
+(n=18). Dazu `backward_clearance` **+0,189 (n=19)** (w/v-Bögen),
+`bar_rise` **+0,159 (n=6)** (die t-Steiglinie), `align(_floor)`
++0,07 (n=36, mild), `connect_gap` −0,042 (n=26, fein),
+`arm_fuse` **−0,507 (n=5)** — wie vorregistriert VOR jeder
+Korrektur visuell zu prüfen (Frame-Kaveat-Verdacht). Lesart: der
+EINE Floor trägt beide Klassenfehler mit entgegengesetztem
+Vorzeichen — die Hand lässt Arkaden MEHR Luft und taucht nach
+Rundkörpern ENGER in die Lücke, als die einheitliche Clearance
+erlaubt; dazu zwei klar überschießende Spezialregeln (Rückwärts-
+Clearance, Balken-Steiglinie). Stufe (ii) kalibriert genau diese
+vier Stellen aus den gemessenen Medianen; `arm_fuse` erst nach
+Sichtprüfung.
+
+**Stufe (ii) gemessen — Einzelzerlegung, drei adoptiert, eine
+ehrlich verworfen.** Vorab die `arm_fuse`-Sichtprüfung: das
+Defizit ist REAL (Drift +0,49 und doff −0,66 zeigen in dieselbe
+Richtung, das fusionierte e sitzt sichtbar zu nah am r), aber mit
+der LÄNGE des r-Arms im Template verschränkt — eine reine
+Platzierungskorrektur risse die Berührung auf; bleibt draußen
+(eigener Kandidat, mutmaßlich Chart-/Laufform-Stufe). Der
+Gesamt-Fix aller vier Kalibrierungen verletzte Gate (a)
+(`word_loss` 0,110983 → 0,114252 bei `pair_loss` −0,023) — die
+Einzelzerlegung fand die Ursachen: **Bowl-Voll-Tuck** (Clearance
+−0,06, erlaubte Überlappung) allein: words +0,0015 / pairs −0,022
+— die Überlappung kollidiert im Wortkontext; **gebundener Tuck**
+(Clearance 0,0, Berührung statt Überlappung): words −0,0001 /
+pairs **−0,018** — hält fast den ganzen Paar-Gewinn ohne
+Wort-Kosten → ADOPTIERT. **Arkaden-Luft** (0,32) allein: words
++0,0043, pairs unbewegt → VERWORFEN als ehrliches Negativ (das
+per-Dissektion gemessene Defizit −0,18 bleibt stehen und
+unerklärt adressiert; Wiedervorlage am Bestätigungssatz).
+**Rückwärts-Clearance** 0,30 → 0,11: words −0,0019 / pairs
+−0,0013 → ADOPTIERT (die jul-11-Kalibrierung 0,30 war gegen das
+Overlay der Vor-Registrierungs-Ära gelesen). **Balken-Steigung**
+0,55 → 0,69: ruler-neutral (words +0,00003), doff-wahr →
+ADOPTIERT. **Endstand A′+C+D:** `word_loss` 0,110983 →
+**0,108991** (Gate a ✓), `pair_loss` 0,165725 → **0,146602**
+(größte Paar-Verbesserung der Bench-Historie), `meas_doff`-Median
+0,195 → **0,131**; signierte Klassen-Mediane: gesamt +0,050 →
+**+0,010** (Ziel |≤0,02| ✓), backward +0,189 → −0,001, bar
++0,159 → −0,040, Bowl-Floor +0,206 → +0,049 — nichts überschießt
+(Gate b ✓). Gate (c): `soll_cross_agree` 9/10 unverändert,
+`soll_zones_agree` 8/10 → **9/10** — `zwei` gewinnt durch die
+kalibrierte w-Platzierung seine zweite Retrace-Zone (= Hand); die
+einzigen Rest-Abweichler sind die zwei Chart-Fälle (linken-k,
+Wer-W). compose-golden als deklarierte Re-Baseline regeneriert,
+1260 Tests grün. Die Werte-Historie der Wordbench-Headline wird in
+§6 beim nächsten Release-Schnitt nachgeführt. Ehrliche
+per-Wort-Streuung der Median-Kalibrierung, benannt statt
+versteckt: `unter` 0,107 → 0,083 und `fechten` 0,222 → 0,173
+gewinnen groß, `streiten` verliert einzeln 0,114 → 0,189 — es ist
+das einzige Dev-Wort mit ZWEI t-Exits (t→r und t→e), die
+Steigungs-Kalibrierung wirkt doppelt und die globale Registrierung
+verteilt den Rest übers Wort (longs→t springt von 0,03 auf 0,36,
+ohne dass eine adoptierte Regel diesen Join berührt). Die
+t-Join-Stichprobe ist dünn (n=6, Spanne +0,15…+0,21) — der
+Bestätigungssatz prüft die 0,69 nach.
+
+**Nachtrag P1b `aug15` — der streiten-Fund des Owners korrigiert
+die Rückwärts-Klasse.** Die t-Exit-Attribution des Absatzes oben
+war FALSCH: die per-Join-Nachmessung an `streiten` selbst zeigt
+die t-Joins nach der Kalibrierung fast perfekt (t→r −0,067 ·
+t→e −0,040) — der Schuldige ist `longs→t`, denn der
+longs-Abschwung exitiert RÜCKWÄRTS und fiel mit in die pauschal
+reduzierte Rückwärts-Clearance (−0,156 per Dissektion, und die
+globale Registrierung schob das ganze Wort neben die Tinte —
+Owner: „gleich der erste Buchstabe liegt nicht übereinander").
+Die Klassen-Nachmessung je linkem Buchstaben: w/v (n=12) wollen
+die 0,11 (jetzt +0,02, alt +0,21), Versal-W will sie ebenfalls
+(per Ruler UND Dissektion), die übrigen Versalien sind
+n=1-Singletons mit Ruler-Dissektions-Konflikt und bleiben beim
+Ruler-Präferenzwert 0,11 — die benannte AUSNAHME ist `longs`
+(`LONGS_BACKWARD_CLEARANCE` 0,30): sein Abschwung-Rücklauf
+braucht den alten Raum (die zwei Bench-longs-Wörter splitten ihr
+Ruler-Votum ±0,03, die einzige dissezierte longs-Zeile stimmt für
+0,30; Wiedervorlage am Bestätigungssatz). Endstand P1b:
+`word_loss` 0,108991 → **0,108446**, `pair_loss` unverändert
+0,146602, gegen den gemergten P1-Stand bewegt sich EXAKT ein Wort
+(`streiten` 0,189 → 0,154), Soll-Agree unverändert 9/10 · 9/10,
+compose-golden regeneriert (deklarierte Re-Baseline). Der
+Fehlversuch dazwischen — ALLE Nicht-w/v-Rückwärts-Exits auf 0,30
+zurück — wurde gemessen und verworfen (words +0,0009, drei Wörter
+regressieren): auch eine Korrektur-Klasse kann zu breit
+geschnitten sein.

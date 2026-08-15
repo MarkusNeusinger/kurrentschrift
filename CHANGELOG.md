@@ -14,6 +14,115 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Wave 1, B1: best-of-N InkSight ensembling — rejected by its own
+  gate; the selection signal is the finding**
+  (`tools/inksight/{augment,ensemble}.py` + a back-compatible
+  `--manifest` decode mode; pre-registered and measured in
+  `qualitaetsmetrik.md` §14 „Welle 1 · B1"). Ten deterministic
+  augmentation variants per word (InkSight's own training
+  augmentations), decoded on CPU (100 decodes), ranked exclusively
+  against the MEASURED ink (symmetric skeleton chamfer — never the
+  authored reference), every variant additionally benched against
+  the hand per the owner's oracle directive. The determinism gate
+  passed token-identically on all ten identity decodes. The primary
+  gate FIRES: the ink-ranked winner ties the plain decode exactly
+  (paired median +0.000, p = 1.0) — but the ORACLE column proves a
+  paired −0.0124 median (better on 7 of 9 words) sits inside the
+  same N answers: the coverage-based ranker is blind to traversal
+  ORDER (on `unter` two variants sit 10 % apart in the selection
+  metric and factor 4.9 apart in dtw). Side results: `Wer` is
+  healed (T0's contract failure), structure is net cleaner
+  like-for-like, and augmentation costs contract conformance
+  (median 4 of 10 variants survive per word). The infrastructure
+  stays; the named successor is an order-aware selection signal
+  with the measured +0.0067 gap as target and −0.0124 as ceiling.
+
+- **Wave 2, P1b: the backward-clearance class gets its named longs
+  exception** (`core/compose.py`, owner find on the streiten
+  overlay: the word's FIRST letter sat beside the ink). The P1
+  per-join re-measurement on streiten itself acquitted the t-exits
+  (−0.07/−0.04 after calibration) and convicted `longs→t`: the
+  longs descender exits BACKWARD and fell into the uniformly
+  reduced backward clearance (−0.156 per dissection; the global
+  registration then pushed the whole word off the ink). Re-split by
+  left letter: w/v (n=12) and capital W want the re-calibrated
+  0.11; `longs` keeps `LONGS_BACKWARD_CLEARANCE` = 0.30 as the
+  named exception (its dissected row sides with 0.30; the two bench
+  longs-words split their ruler vote — confirmation-set item).
+  `word_loss` 0.108991 → **0.108446**, `pair_loss` unchanged,
+  exactly ONE word moves vs. merged P1 (streiten 0.189 → 0.154),
+  soll agreement unchanged; the in-between attempt (restoring ALL
+  non-w/v backward exits to 0.30) was measured and rejected — a
+  correction class can be cut too wide, too. compose-golden
+  regenerated as the declared re-baseline; §14 records the
+  corrected attribution in a dated addendum.
+
+- **Wave 2, P1: the advance calibration from the measured joins —
+  the red now sits on the ink** (`core/compose.py`; owner find on
+  the K1b overlays: the composition drifted progressively right of
+  the specimen ink on long words). Diagnosis chain, all
+  pre-registered in `qualitaetsmetrik.md` §14 („Welle 2 · P1"): a
+  per-slot drift profile over the 63 bench words (median −0.0375 xh
+  per letter too wide), then the SIGNED per-join advance error over
+  the 218 dissected joins of the hand (median +0.05, two class
+  errors in opposite directions), then report-only placement-rule
+  provenance on every generated connector — the one uniform
+  ink-clearance floor carried both classes. Adopted after a
+  single-knob decomposition sweep: the BOUNDED bowl-exit tuck
+  (b/c/d/o clearance 0.0 — columns may touch, never overlap; the
+  full measured tuck collided in word context and was rejected),
+  the backward w/v clearance 0.30 → 0.11 (the jul-11 value was
+  calibrated against the pre-registration-fix overlay), and the
+  bar rise slope 0.55 → 0.69. Honest negative kept on record: the
+  measured arcade-entry air (n/m, −0.18 per dissection) regresses
+  the word bench and is not adopted; the r→e arm-fuse deficit is
+  real but entangled with the r-arm template length. Results:
+  `word_loss` 0.110983 → **0.108991**, `pair_loss` 0.165725 →
+  **0.146602** (the largest pair improvement in the bench's
+  history), `meas_doff` median 0.195 → **0.131**, signed overall
+  median +0.050 → +0.010, and `zwei` gains its second retrace zone
+  (`soll_zones_agree` 8/10 → 9/10). compose-golden regenerated as
+  the declared re-baseline. Glossary gains „Bowl-Exit-Tuck".
+
+- **Wave 1, A1: the opt-in mark refit halves the chain candidate's
+  mark position error** (`tools/pairlab/marks.py`, wired as
+  `HarvestOptions.mark_refit` → `tools.tracebench.run --mark-refit`,
+  default off with a proven byte-identical baseline): after the body
+  solve, each diacritic mark is rigidly translated onto the skeleton
+  ink the body did not claim — assignment via the shared
+  `nearest_unique_point` with refusal on ambiguity (search radius
+  0.6 xh = the ruler's own match limit), contested clusters leave
+  both marks untouched, and every verdict is reported in
+  `meta.mark_refit`. Pre-registered and measured in
+  `qualitaetsmetrik.md` §14 („Welle 1 · A1"): `mark_pos_err_xh`
+  median 0.1285 → 0.0576 (−55 %, all four pairable words improve,
+  closing ~86 % of the gap to the prior-free control), structure
+  counters exactly unchanged across all ten words, zero refusals,
+  `marks_spurious` unchanged — KEPT, opt-in; whether the refit ever
+  enters STORED traces is a separate author decision gated on the
+  confirmation set. Side find recorded as candidate A1b: the harvest
+  and the ruler classify a long u-bow differently (no arc cap vs.
+  0.8 xh), so four reference words carry no matchable mark at all.
+
+- **Wave 1, K1b: the t writes its crossbar without a pen lift — the
+  offset stem-return pass** (`core/compose.py`,
+  `BAR_RETRACE_BULGE_UNITS` = 0.06 xh measured from the hand's
+  descent/ascent offset): the bar stroke is prefixed with a generated
+  bridge from the previous stroke's foot up to the bar start —
+  centerline only, no silhouette (the cap_retrace pattern), bulged
+  right so the counters see a second pass — and loses its lift.
+  Pre-registered and measured in `qualitaetsmetrik.md` §14 („Welle 1
+  · K1b"): the expectation lands cell for cell — `unter` reaches
+  3 crossings/3 retrace zones and `mit` 2/2 (both = the hand),
+  `soll_cross_agree` 7/10 → 9/10, `soll_zones_agree` 6/10 → 8/10, and
+  the four bar-against-stem `soll_overlap` entries disappear (the
+  hand has none). Remaining disagreements are the known chart cases
+  (linken-k, Wer-W, zwei-z). Gates: wordbench headlines within
+  ±0.00004, only t-words moved, compose-golden regenerated as a
+  declared re-baseline. The entry also declares the post-K1 chain
+  baseline `r1` (cascade of K1 into the fit): only `unter` differs
+  from `r0` (+0.0301 dtw at one invented crossing fewer).
+
 - **Wave 1, K1: the bound t-bar keeps a measured overrun past its stem
   crossing** (`core/compose.py`, `BAR_CROSS_OVERRUN_UNITS` = 0.2 xh,
   measured on the authored references of `mit` and `unter`; the join

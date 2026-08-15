@@ -614,9 +614,10 @@ optimiert (sie bleibt die Nulllinie des Duktus-Prior-Werts).
 
 | Welle | Maßnahmen | Charakter |
 |---|---|---|
-| **1** (sofort, billig, unabhängig) | K1 + K2 (Composer-Topologie) · A1 (Marken-Nachfit) · B3 (A/Bs) · B1 (Ensembling) | Stunden bis ~1 Tag je Maßnahme |
-| **2** | B2 (Tiling) · A2 (SDM/DCD) · K3 (Owner: W-Trace + Laufform) | 1–3 Tage je Maßnahme |
-| **3** | A3 (Kreuzungs-Variablen) · B4 (Init-Tausch, segmentweise) · A5 (Zwei-Pass-Zwang) | Tage bis 1 Woche |
+| **1** (sofort, billig, unabhängig) | K1 ✓ (#358) · K1b ✓ (#359, ersetzte K2: der Evidenz-Rest war das Stamm-Retrace, nicht die Kopplung) · A1 ✓ (#360, −55 % Marken-Ortsfehler, opt-in) · B1 ✓ gemessen (ehrliches Negativ: Orakel-Lücke = der Fund) · B3 (A/Bs, offen) | **abgeschlossen bis auf B3** |
+| **1b — Vorschub** (Owner-Fund an den K1b-Overlays) | P1 ✓ (#361: Bowl-Tuck · w/v-Rückwärts · Balken-Steigung) · P1b ✓ (#362: longs-Ausnahme) · P2 ✓ (#363: align-Floor; Arkaden = Beleg-Varianz, geschlossen) — `word_loss` 0,1110 → 0,1081, `pair_loss` 0,1657 → 0,1466 | **abgeschlossen**; §14 „Welle 2 · P1/P1b/P2" |
+| **2** | **P3 KOARTIKULATION (Owner-Priorität „zeitnah", 2026-08-15): kontextabhängige Kopf-/Schwanz-Flexibilität der Buchstaben — die Hand formt Ein-/Ausläufe je Nachbar um (pairlab-Dissektionen); Pilotfall r→e (−0,51: die Hand streckt den r-Arm in die Verbindung, das Template bleibt starr)** · B2 (Tiling) · A2 (SDM/DCD) · K3 (Owner: W-Trace + Laufform, z prüfen) | P3 zuerst; je eigene Vorregistrierung |
+| **3** | A3 (Kreuzungs-Variablen) · B4 (Init-Tausch, segmentweise) · A5 (Zwei-Pass-Zwang) · ordnungs-bewusstes B1-Auswahlsignal (Ziel +0,0067, Deckel −0,0124) | Tage bis 1 Woche |
 | **4** | A4 (Barriere) · A6 (GNC) · Route B2 (eigenes Modell) · Fusion | die großen Umbauten |
 
 Messdisziplin unverändert: jede Maßnahme bekommt VOR der ersten Zahl

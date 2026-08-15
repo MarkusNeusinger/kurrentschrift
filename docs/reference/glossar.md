@@ -37,7 +37,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§6** Extern/Forschung.
 
 - **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1 · Ausreißer §4
-- **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3
+- **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Duell-Ansicht §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2 · extrapoliertes Landmark-Ziel §3
@@ -54,7 +54,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenfolger §3 · Tintenlücke §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4
@@ -336,6 +336,33 @@ setzte über dem Kringel einen zweiten Scheitel, den die Platte nie
 schreibt).
 *Technisch:* `KRINGEL_EXIT_BASES` + `_last_ink_crossing` in
 `core/compose.py`.
+
+**Bowl-Exit-Tuck** — die klassenbewusste Clearance nach einem
+geschlossenen Rundkörper-Ausgang (b/c/d/o): die Hand rückt den
+Folgebuchstaben an den Kessel heran (gemessen +0,20 xh Überschuss der
+einheitlichen Clearance über 218 sezierte Joins, b +0,42 · o +0,30 ·
+c +0,25 · d +0,12), die Klassen-Clearance erlaubt deshalb BERÜHRUNG
+der Tintenspalten (0,0) — bewusst nicht die volle gemessene
+Überlappung (−0,06), die im Wortkontext kollidierte (Welle 2 · P1,
+`aug15`: der gebundene Tuck hält −0,018 `pair_loss` bei neutralen
+Wörtern). Schwester-Befund, ehrlich NICHT adoptiert: die
+Arkaden-Luft (n/m brauchen laut Dissektion +0,18 mehr Raum, die
+Wordbench widerspricht).
+*Technisch:* `BOWL_EXIT_TUCK_BASES`/`BOWL_EXIT_CLEARANCE` in
+`core/compose.py`; Messung qualitaetsmetrik.md §14 „Welle 2 · P1".
+
+**Stamm-Rückpass (versetzt)** — die generierte Brücke, mit der die
+Komposition den t-Deckstrich OHNE Absetzen anschließt (Welle 1 · K1b,
+`aug15`): vom Stammfuß zurück hinauf zum Balkenstart, um 0,06 xh nach
+rechts ausgebuchtet, damit die Strukturzähler ZWEI Pässe sehen — wie
+die Hand, deren Aufstrich 0,05–0,07 xh rechts des Abstrichs liegt.
+Nur Mittellinie, keine Silhouette (das `cap_retrace`-Muster); auf dem
+outline-gestützten Render-Pfad bleibt die gedruckte Tinte dadurch
+unverändert. Der Balkenstrich verliert seinen Lift; der Auslauf
+durchsticht Abstrich UND Rückpass, womit `unter`/`mit` ihre
+Hand-Zählungen erreichen.
+*Technisch:* `BAR_RETRACE_BULGE_UNITS` (+ `_MAX_DX`/`_MIN_RISE`) in
+`core/compose.py`; Messung qualitaetsmetrik.md §14 „Welle 1 · K1b".
 
 **Override** *(Paar-Override, `glyph_pairs`)* — eine für genau *ein*
 Buchstabenpaar hinterlegte, wörtlich übernommene Verbindung, die den

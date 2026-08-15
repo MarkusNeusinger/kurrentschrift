@@ -8,7 +8,7 @@ the candidate is either a stored row, a recomputed chain fit or a file.
         [--split dev|confirm|all] [--words die,mit] [--candidate chain]
         [--candidate-file follow.json] [--label follow-v1] [--jobs 4]
         [--json report.json] [--csv rows.csv] [--compare baseline.json]
-        [--resample-step 0.02]
+        [--resample-step 0.02] [--mark-refit]
 
 Three rules the CLI enforces rather than trusts (qualitaetsmetrik.md §14):
 
@@ -151,13 +151,23 @@ def select_split(reference: Reference, split: str, words: str | None) -> tuple[l
 
 def build_provider(args: argparse.Namespace) -> tuple[Provider, str]:
     """`(provider, label)` for `--candidate` — the label travels into every row."""
+    if args.mark_refit and args.candidate != "chain":
+        raise SystemExit(
+            "--mark-refit changes how the CHAIN candidate is built and does nothing for --candidate "
+            f"{args.candidate} — a stored row and a file are read as they are"
+        )
     if args.candidate == "file":
         if not args.candidate_file:
             raise SystemExit("--candidate file needs --candidate-file <path>")
         return file_provider(args.candidate_file), args.label or args.candidate_file.name
     if args.candidate == "chain":
-        provider = chain_provider(style=args.style, which=args.which, fixtures_root=args.fixtures)
-        return provider, args.label or "chain"
+        provider = chain_provider(
+            style=args.style, which=args.which, fixtures_root=args.fixtures, mark_refit=args.mark_refit
+        )
+        # A1 is a VARIANT of the baseline, so it may not answer to the baseline's
+        # name: an unlabelled run is called `chain+marks`, and a report cannot be
+        # mistaken for the frozen `chain` number it has to be compared against.
+        return provider, args.label or ("chain+marks" if args.mark_refit else "chain")
     if args.candidate == "authored":
         return authored_provider, args.label or "authored"
     return traced_provider, args.label or "traced"
@@ -234,6 +244,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--words", help="comma-separated id/word filter applied on top of the split")
     parser.add_argument("--candidate", default="chain", choices=PROVIDER_NAMES)
     parser.add_argument("--candidate-file", type=Path, help="candidate JSON for --candidate file")
+    parser.add_argument(
+        "--mark-refit",
+        action="store_true",
+        help="measure A1 (tintenfolger.md §7.3): refit the marks (i-dot, umlaut, u-bow) onto the ink the "
+        "body did not claim after the chain solve. --candidate chain only; the run is labelled chain+marks "
+        "because it is a variant of the baseline, not the baseline",
+    )
     parser.add_argument("--label", help="name of this candidate in the rows (default: the provider's name)")
     parser.add_argument("--jobs", type=int, default=1, help="parallel scoring workers (order-preserving)")
     parser.add_argument("--json", type=Path, help="write the full report here")
