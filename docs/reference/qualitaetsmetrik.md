@@ -4435,3 +4435,58 @@ Wörter sind byte-identisch. Der ohnehin chaotische unter-Fit
 reagiert auf die veränderte Initialisierung — die dtw-Zahl der
 Kette ist dort schlechter, ihre Topologie besser; der als nächstes
 anstehende Kettenlauf (A1) vergleicht gegen r1.
+
+### Welle 2 · P1 `aug15` — Vorregistrierung: die Vorschub-Kalibrierung aus den gemessenen Joins
+
+Geschrieben und committet VOR der ersten Zahl der Maßnahme.
+Anlass ist ein Owner-Fund an den K1b-Sichtprüfungs-Overlays: auf
+langen Wörtern wandert die Komposition nach hinten sichtbar rechts
+von der Specimen-Tinte weg („das Rot muss auf dem Ink liegen").
+
+**Befund (Diagnose-Skripte, Session `aug15`).** (a) Drift-Profil
+über die 63 Bench-Wörter — je Slot der best-passende x-Versatz der
+komponierten Buchstaben gegen das Specimen-Skelett, ZUSÄTZLICH zur
+globalen Registrierung des Lineals: Drift-Median −0,10 xh
+(Mittel −0,25), −0,0375 xh je Slot; Vorsicht Arkaden-Aliasing (i/n/m
+rasten beim Best-Fit um einen ganzen Bogen, Einzelsprünge ±1 xh sind
+Artefakte). (b) Die identitäts-sichere Zahl: die SIGNIERTE
+doff-Verteilung über 218 gemessene Joins (pairmeas-Frame, Betrag
+durch Vorzeichen ersetzt): Median **+0,05 xh je Join**, 138/218 zu
+weit — aber KEIN globaler Faktor, sondern zwei Klassenfehler in
+Gegenrichtung: zu WEIT laufen Ausgänge aus Rundkörpern/Schleifen und
+Eingänge in e/r (b→e +0,41 · f→e +0,31 · o→r +0,30 · c→h +0,25 n=6 ·
+w→e +0,20 · t→e +0,15 · e→r +0,14 n=13 · d→e +0,12); zu ENG laufen
+Eingänge in die Arkaden (e→n −0,13 n=12 · u→n −0,23 · i→n −0,24 ·
+n→n −0,21 · u→m −0,31) sowie r→e (−0,66 n=3 — Verdacht
+Frame-Kaveat des Arm-Fuse, vor jeder Korrektur visuell prüfen).
+
+**Maßnahme in zwei Stufen.**
+(i) MECHANISMUS-ATTRIBUTION statt additiver Fudges: die Komposition
+bekommt unter `provenance=True` ein report-only Feld, das je
+platziertem Glyph benennt, WELCHE Platzierungsregel gefeuert hat
+(Fork/Bar-Rise/Arm-Fuse/Girlande/High-Couple …) und ob der
+Ink-Clearance-Floor gebunden hat; die 218 signierten Fehler werden
+danach gruppiert. Erwartung: die Zu-weit-Klasse korreliert mit
+gebundenem Clearance-Floor bzw. einer benennbaren Kopplungsregel,
+die Zu-eng-Klasse mit der Girlanden-Kopplung. Sonderfrage: hat K1s
+Balken-Tail den t→e-Vorschub über den Ink-Floor verschoben?
+(ii) REGEL-FIX der(s) verantwortlichen Mechanismus(se) — Klassen-
+regel, kein Pair-Override, Konstanten aus den gemessenen Medianen.
+
+**Messgrößen und Kill-Kriterien.**
+(a) Primär: wordbench `word_loss` fällt (trans ist die größte
+Komponente); ein Fix, der `word_loss` nicht senkt, wird verworfen.
+(b) Die signierte doff-Verteilung: Klassen-Mediane bewegen sich
+Richtung 0, der Gesamt-Median |≤ 0,02|; keine Klasse darf das
+Vorzeichen ÜBERSCHIESSEN (neuer Betrag > alter Betrag = verworfen).
+(c) Struktur-Wächter: `soll_cross_agree`/`soll_zones_agree`
+unverändert (Platzierung darf keine Topologie kaufen).
+(d) `pair_loss` nicht über +0,002; compose-golden bricht
+bauartbedingt → deklarierte Re-Baseline im selben PR.
+(e) Stufe (i) ist report-only und muss headline-byte-identisch
+sein; zusätzlich wird eine report-only DRIFT-Spalte im Bench
+erwogen (eigener, kleiner Schritt — nie Teil eines Loss).
+(f) Kill für Stufe (ii): erklärt kein Mechanismus die Mehrheit
+seines Klassenfehlers, wird NICHT gefixt, sondern der Befund als
+ehrliches Negativ dokumentiert und die Frage an die nächste
+Werkzeug-Stufe (H2-Klassen-Statistik) zurückgegeben.
