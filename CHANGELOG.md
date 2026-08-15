@@ -14,6 +14,45 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Wave 1, A1: the opt-in mark refit halves the chain candidate's
+  mark position error** (`tools/pairlab/marks.py`, wired as
+  `HarvestOptions.mark_refit` → `tools.tracebench.run --mark-refit`,
+  default off with a proven byte-identical baseline): after the body
+  solve, each diacritic mark is rigidly translated onto the skeleton
+  ink the body did not claim — assignment via the shared
+  `nearest_unique_point` with refusal on ambiguity (search radius
+  0.6 xh = the ruler's own match limit), contested clusters leave
+  both marks untouched, and every verdict is reported in
+  `meta.mark_refit`. Pre-registered and measured in
+  `qualitaetsmetrik.md` §14 („Welle 1 · A1"): `mark_pos_err_xh`
+  median 0.1285 → 0.0576 (−55 %, all four pairable words improve,
+  closing ~86 % of the gap to the prior-free control), structure
+  counters exactly unchanged across all ten words, zero refusals,
+  `marks_spurious` unchanged — KEPT, opt-in; whether the refit ever
+  enters STORED traces is a separate author decision gated on the
+  confirmation set. Side find recorded as candidate A1b: the harvest
+  and the ruler classify a long u-bow differently (no arc cap vs.
+  0.8 xh), so four reference words carry no matchable mark at all.
+
+- **Wave 1, K1b: the t writes its crossbar without a pen lift — the
+  offset stem-return pass** (`core/compose.py`,
+  `BAR_RETRACE_BULGE_UNITS` = 0.06 xh measured from the hand's
+  descent/ascent offset): the bar stroke is prefixed with a generated
+  bridge from the previous stroke's foot up to the bar start —
+  centerline only, no silhouette (the cap_retrace pattern), bulged
+  right so the counters see a second pass — and loses its lift.
+  Pre-registered and measured in `qualitaetsmetrik.md` §14 („Welle 1
+  · K1b"): the expectation lands cell for cell — `unter` reaches
+  3 crossings/3 retrace zones and `mit` 2/2 (both = the hand),
+  `soll_cross_agree` 7/10 → 9/10, `soll_zones_agree` 6/10 → 8/10, and
+  the four bar-against-stem `soll_overlap` entries disappear (the
+  hand has none). Remaining disagreements are the known chart cases
+  (linken-k, Wer-W, zwei-z). Gates: wordbench headlines within
+  ±0.00004, only t-words moved, compose-golden regenerated as a
+  declared re-baseline. The entry also declares the post-K1 chain
+  baseline `r1` (cascade of K1 into the fit): only `unter` differs
+  from `r0` (+0.0301 dtw at one invented crossing fewer).
+
 - **Wave 1, K1: the bound t-bar keeps a measured overrun past its stem
   crossing** (`core/compose.py`, `BAR_CROSS_OVERRUN_UNITS` = 0.2 xh,
   measured on the authored references of `mit` and `unter`; the join

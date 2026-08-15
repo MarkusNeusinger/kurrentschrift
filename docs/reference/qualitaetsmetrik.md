@@ -4356,3 +4356,82 @@ Kettenfit-Kandidat ist die eingefrorene Baseline, und ob A1 in die
 GESPEICHERTE Bahn wandert, ist ein eigener Autoren-Entscheid — der
 Bestätigungssatz (`--split confirm`) ist die Bedingung dafür, weil
 vier gepaarte Wörter eine schmale Grundlage für eine Adoption sind.
+
+### Welle 1 · K1b `aug15` — Vorregistrierung: der versetzte Stamm-Rückpass des t
+
+Geschrieben und committet VOR der ersten Zahl dieser Maßnahme
+(der in K1s Ergebnis benannte Kandidat; Plan
+`../proposals/tintenfolger.md` §7.2).
+
+**Hypothese.** Das verbleibende t-Defizit (`unter` `soll_cross` 2
+vs. Hand 3 · `soll_zones` 2 vs. 3; `mit` 1 vs. 2 · 1 vs. 2; dazu
+`lift_delta` +1 der Kette auf beiden Wörtern) kommt daher, dass die
+Komposition zwischen Stammfuß und Deckstrich ABSETZT, wo die Hand
+den Stamm mit VERSATZ retraced: Abstrich x≈4,60, Aufstrich x≈4,65,
+der Auslauf durchsticht BEIDE Pässe (Kreuzungs-Sites 0,07 xh
+auseinander). Ein generierter Rückpass — der Balkenstrich verliert
+seinen Lift und wird stattdessen mit einer Brücke Stammfuß →
+Balkenstart als Präfix versehen, nach rechts ausgebuchtet um
+`BAR_RETRACE_BULGE_UNITS` — stellt Zonen, Kreuzungen und Strichzahl
+der Hand wieder her. Vorbild ist der Capital-Retrace
+(`cap_retrace`): das Präfix ist generierte Centerline OHNE eigene
+Silhouette, die gedruckte Tinte ändert sich nicht (der Versatz
+bleibt innerhalb der Schwellzug-Breite).
+
+**Konstante, gemessen statt gewählt.** `BAR_RETRACE_BULGE_UNITS =
+0.06`: der Aufstrich der Hand liegt 0,05–0,07 xh rechts des
+Abstrichs (unter x≈4,60→4,65; die zwei Kreuzungs-Sites der Hand
+liegen 0,07 auseinander und werden vom Zähler als getrennte Sites
+geführt — ein kleinerer Versatz würde zu EINER Site verschmelzen).
+Nur Basis t; das Präfix wird nur gebaut, wenn der vorige Strich
+unterhalb des Balkenstarts endet und horizontal nahe liegt
+(Stamm-Geometrie), sonst bleibt der Lift.
+
+**Erwartung.** `soll_cross`: `unter` 2→3, `mit` 1→2 (= Hand);
+`soll_zones`: `unter` 2→3, `mit` 1→2 (= Hand);
+`soll_cross_agree` 7/10 → 9/10, `soll_zones_agree` 6/10 → 8/10;
+Ketten-`lift_delta` auf mit/unter −1 (erst im nächsten
+Kettenlauf sichtbar).
+
+**Messgrößen und Kill-Kriterien.**
+(a) Die Erwartungs-Zellen oben JE WORT; jedes NICHT-t-Wort, das
+eine Übereinstimmung verliert → verworfen. Ein Über-Kreuzen
+(`unter` > 3 oder `mit` > 2) → verworfen (Versatz zu groß oder
+Präfix kreuzt selbst).
+(b) wordbench `--set all`: Headlines nicht > +0,002; Bewegung nur
+in t-Wörtern.
+(c) compose-golden bricht bauartbedingt → deklarierte Re-Baseline
+im selben PR, kein Akzeptanzkriterium.
+(d) Die deklarierte Post-K1-Kettenbaseline
+(`temp/tb-chain-r1-postk1.json`, Kaskade aus K1) ist der
+Vergleichspunkt des nächsten Kettenlaufs; K1b selbst wird zuerst
+auf Soll-Ebene abgenommen.
+
+**Ergebnis (gemessen nach dem Commit oben).** Die Erwartung trifft
+Zelle für Zelle ein: `soll_cross` `unter` 2→**3** und `mit` 1→**2**
+(beide = Hand), `soll_zones` `unter` 2→**3** und `mit` 1→**2**
+(beide = Hand), `soll_cross_agree` 7/10 → **9/10**,
+`soll_zones_agree` 6/10 → **8/10**; kein Über-Kreuzen, kein
+Nicht-t-Wort bewegt. Die per-Letter-Zelle des t wird 2/1 — der
+Auslauf durchsticht jetzt Abstrich UND versetzten Aufstrich, wie
+die Hand. Unangekündigter Bonus: die 4 `soll_overlap`-Einträge der
+t-Wörter (Balken-gegen-Stamm) verschwinden vollständig (Hand hat
+dort ebenfalls 0), je eine Berührung bleibt (`mit` 1 vs Hand 2,
+`unter` 1 = Hand 1). Verbleibende Abweichler sind die bekannten
+Chart-Fälle: `linken` (k zählt im Soll eine Kreuzung mehr als die
+Hand schreibt), `Wer` (W-Ansatz-Retrace, Chart-Lücke, Korb) und
+`zwei` (z-Retrace, mutmaßlich dieselbe Klasse — bei der
+W-Neutracierung mitprüfen). Gates: wordbench `bench_loss` 0,110992
+→ 0,110983 (−0,00001), `pair_loss` 0,165688 → 0,165725 (+0,00004,
+Schwelle 0,002), bewegt ausschließlich t-Wörter (macht · mit ·
+mit-2 · Seiten · Soldaten · fechten · streiten · unter, alle
+≤ ±0,0005); compose-golden regeneriert (deklarierte Re-Baseline);
+1240 Tests grün. ENTSCHEIDUNG: BEHALTEN. — Nebenbefund, hier
+deklariert: die Post-K1-KETTENbaseline `r1` (der Vergleichspunkt
+aller folgenden Kettenläufe) unterscheidet sich von `r0` in genau
+EINEM Wort: `unter` dtw 0,4389 → 0,4690 (+0,0301) bei einer
+erfundenen Kreuzung WENIGER (`cross_spurious` 4→3); die übrigen 9
+Wörter sind byte-identisch. Der ohnehin chaotische unter-Fit
+reagiert auf die veränderte Initialisierung — die dtw-Zahl der
+Kette ist dort schlechter, ihre Topologie besser; der als nächstes
+anstehende Kettenlauf (A1) vergleicht gegen r1.
