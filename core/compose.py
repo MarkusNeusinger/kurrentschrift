@@ -341,8 +341,18 @@ ALIGN_MIN_RISE = 0.02  # entry must sit above the exit for a pass-through
 # rising mid-band exit whose neighbour enters below it — t's bar, f's flag —
 # nests over the next letter instead of clearing its full ink column; the
 # jul17 sweep put the nested floor exactly at the align floor, and shrinking
-# the connect gap on top of it never bound).
-ALIGN_MIN_CLEARANCE = 0.06
+# the connect gap on top of it never bound). Wave-2 P2 re-calibration: 0.0 =
+# the bounded touch (columns may meet, never overlap — the bowl-tuck
+# semantics); the floor-bound align/nested joins ran +0.07/+0.06 median past
+# the hand's dissected ones at 0.06.
+ALIGN_MIN_CLEARANCE = 0.0
+# The floor-free pass-through diagonal ALSO lands a measured constant too far
+# right (+0.074 median over 19 dissected joins, rise-INDEPENDENT — an
+# additive set-off, not a slope error). The trim is DECLARED BUT NEUTRAL:
+# the ruler rejected it at every dose (0.07: +0.0020 · 0.035 on top of the
+# floor: +0.0011) — the same specimen-variance verdict as the arcade air;
+# the dissected demand stays on record for the confirmation set.
+ALIGN_ADVANCE_TRIM_UNITS = 0.0
 # The plates couple slightly FLATTER than the letters' internal diagonals (a
 # subtle set-off remains between two sawtooth letters) — pull onto a line of
 # this fraction of the mean tangent slope, not the full slope.
@@ -2063,7 +2073,9 @@ def compose_word(
                 and first_line[0][1] <= ALIGN_MAX_ENTRY_Y
             ):
                 mean_slope = _align_slope(prev.tangent_deg, entry_land_deg)
-                align_entry_x = prev.exit[0] + rise / mean_slope + (entry_xy[0] - first_line[0][0])
+                align_entry_x = (
+                    prev.exit[0] + rise / mean_slope + (entry_xy[0] - first_line[0][0]) - ALIGN_ADVANCE_TRIM_UNITS
+                )
                 floor_x = _profile_clearance_x(prev.ink_profile, ink_min_profile, entry_xy[0], ALIGN_MIN_CLEARANCE)
                 if align_entry_x < desired_entry_x:
                     desired_entry_x = max(align_entry_x, floor_x)
