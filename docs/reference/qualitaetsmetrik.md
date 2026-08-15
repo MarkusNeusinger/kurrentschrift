@@ -4780,3 +4780,193 @@ longs-Ausnahme · Balken-Steigung · align/nested-Floor; als
 Beleg-Varianz geschlossen Arkaden-Luft · Diagonalen-Trim; offen
 bleiben die zwei NICHT-Kalibrier-Fälle `arm_fuse`/r-Arm-Länge
 (Chart-Frage) und `descender_ride` (n=2, zu dünn).
+
+### Welle 2 · P3 `aug16` — Vorregistrierung: Kopf-Koartikulation als Entry-Klassenregeln
+
+Geschrieben und committet VOR der ersten Zahl der Maßnahme.
+Owner-Priorität „zeitnah" (2026-08-15): kontextabhängige
+Kopf-/Schwanz-Flexibilität der Buchstaben als nächster
+Composer-Baustein nach der Vorschub-Runde.
+
+**Vorstudie (Session `aug15`, 248 Vorkommen / 134 Paare über
+words+pairs).** Werkzeug: `pairlab.dissect_occurrence(trace=True)`
+über alle Fixture-Vorkommen, mit Zerlegung der M4-Ankerverschiebung
+in starren Anteil (Median über die Körperanker), Längs-/Quer-
+Residuum an der Template-Tangente und die verschiebungs-invariante
+Reichweite des ganzen Anschluss-Strichs; Permutationstests;
+Skripte im Session-Scratchpad (`coart.py --against laufform`,
+Rohdaten `coart_lauf.json`). Der Befund ist eine ASYMMETRIE:
+
+(a) Der SCHWANZ (linke Seite) ist KEINE Koartikulation: die
+Umformung hängt nicht vom Nachfolger ab (p = 0,19–0,55) und ist je
+Exit-Klasse eine Konstante mit winzigem MAD (Arkaden +0,079 ±
+0,011 · d −0,144 ± 0,010 · Balken −0,053 ± 0,010). Das ist eine
+Chart-/Laufform-Frage und AUSSERHALB dieses Eintrags — ebenso der
+pauschale +7–10-%-Reichweitenzuwachs des Anschluss-Strichs.
+(b) Der KOPF (rechte Seite) IST Koartikulation: nach einem
+Hoch-Exit (Balken, d-Schleife, Deckstrich-Bogen, r-Arm) sitzt der
+Ankunftspunkt +0,10 xh weiter rechts und +0,10 xh höher, der
+Eingangs-Strich ist 0,09–0,15 xh kürzer als nach flachem Exit
+(p < 0,0001 in jeder geprüften Population). Die Laufform trägt
+davon nur ein Viertel des Betrags und nichts vom Senkrechten
+(Δ 0,084 xh, p < 0,00002) — sie KANN es bauartbedingt nicht
+tragen, weil sie eine Form je Glyph ist. Deshalb Klassenregeln im
+Composer; alle Konstanten LAUFFORM-relativ erhoben (pairlab misst
+gegen die Chart-Zeile, komponiert wird die Laufform).
+
+**Die drei vorregistrierten Entry-Regeln** (Median ± MAD in xh;
+Basislinie `arkade→arkade` n = 65: Reichweite +0,093 ± 0,017,
+cp dx −0,046 ± 0,010, Ankunft y 0,570 ± 0,033). Umsetzungs-
+Reihenfolge **K1 → K3 → K2** (K1 = schärfster Effekt, K3 = reine
+Höhenregel = billigster Eingriff, K2 = riskantester wegen des
+zweimal verworfenen Stub-Trims), je Regel EIN Knopf mit eigener
+Leiter, gepaart gemessen, erst adoptieren, dann die nächste:
+
+* **P3-K1 · Balken → Rundkörper** (`BAR_EXIT_BASES` t/f → e/a/o
+  …): gemessen cp dx **+0,157 ± 0,002**, cp dy +0,075 ± 0,011,
+  Kopfstrich-Reichweite −0,089 ± 0,005 (n = 7: t→e, f→e);
+  compose-relativer Ankunftswinkel **+126,1° ± 4,3** — der Zug
+  kommt heute praktisch aus der Gegenrichtung an. Regel: nach
+  Balken-Exit koppelt der Verbinder TIEFER auf der Anstiegsflanke
+  (Soll-Ankunft y ≈ 0,56 statt einheitlich `ENTRY_COUPLE_Y` 0,78)
+  und der Entry-Stub verliert ≈ 0,09 Reichweite. Knopf: klassen-
+  eigenes `BAR_ENTRY_COUPLE_Y`, Leiter 0,50 / 0,56 / 0,62 / 0,78
+  (= aus).
+* **P3-K3 · Deckstrich-Bogen → Arkade** (o/b/v/w → n/m/i/r):
+  gemessen cp dy **+0,074 ± 0,022** bei cp dx +0,038 ± 0,011 und
+  Reichweite −0,001 ± 0,027 (n = 6: o→n, b→i, w→i, o→r),
+  Soll-Ankunft y 0,685 gegen Basislinie 0,570. Reine HÖHEN-Regel,
+  kein Längeneingriff. Knopf: Anhebung des Arkaden-Ankunftspunkts
+  nach Deckstrich-Exit, Leiter +0,00 / +0,07 / +0,11.
+* **P3-K2 · Schleifen-Exit → Rundkörper** (d → e/a/o): gemessen
+  Kopfseite cp dx +0,080 ± 0,025, cp dy +0,052, Reichweite −0,086
+  (n = 8), Soll-Ankunft y 0,628; A-Seite d-Abgangswinkel
+  compose-relativ **+48,0° ± 0,8** bei Reichweiten-Wachstum in
+  0 von 18 Vorkommen. **Ausdrücklich: der reine d-Stub-Trim ist
+  zweimal gemessen-und-verworfen (`jul11`, `jul17`/PR #220) und
+  wird NICHT wiederholt** — das neue Signal ist der WINKEL, nicht
+  die Länge. Knopf: Drehung des d-Abgangswinkels Richtung
+  gemessener Tangente, Leiter +0° (= aus) / +24° / +48°.
+
+**Nicht in dieser Vorregistrierung** (benannt, damit es niemand
+hineinliest): (a) `arm_fuse`/r→e — die Formeffekte erklären ≤ 20 %
+der −0,51-Lücke, bleibt Platzierung/Armlänge, wie P1 schloss;
+(b) der pauschale Reichweitenzuwachs (Chart-/Laufform-Frage);
+(c) alle Versal-Paare (n=1-Singletons).
+
+**Messgrößen und Kill-Kriterien** (wie die P1-Familie).
+(a) Primär: wordbench `word_loss` UND `pair_loss` (eingefrorenes
+Lineal) dürfen nicht steigen; Erwartung ist Verbesserung auf den
+Wörtern der jeweiligen Klasse. (b) Die signierte doff-Attribution
+der betroffenen Klasse bewegt sich Richtung 0, ohne das Vorzeichen
+zu ÜBERSCHIESSEN. (c) Struktur-Wächter: `soll_cross_agree`/
+`soll_zones_agree` je Wort unverändert (eine Entry-Regel darf
+keine Topologie kaufen). (d) Sichtprüfung der betroffenen Wörter.
+(e) Jede Regel bricht deklariert das compose-golden (Entry-
+Kopplung ändert komponierte Bahnen): REGEN_GOLDEN=1-Re-Baseline im
+selben PR, letter-only bleibt byte-identisch. (f) Kill: eine
+Regel, die ihre eigene Klasse verbessert, aber `word_loss`/
+`pair_loss` verschlechtert, wird verworfen, nicht nachgestimmt;
+ein K2, dessen Winkel-Drehung das Fehlerbild der verworfenen
+Stub-Trims reproduziert, widerlegt die Winkel-Hypothese —
+ehrliches Negativ mit Datum; keine Adoption allein auf der
+Klassen-Metrik.
+
+**Grenzen (aus der Vorstudie übernommen).** Zensur bei ≈ 0,17 xh:
+das M4-Trace-Fenster ist Körperbreite ± 0,15 xh, das |cp dx|-
+Histogramm bricht genau dort ab — alle Beträge sind UNTERE
+Schranken. Konfundierte Köpfe h/d/l (nur ein Kontext) begründen
+keine Regel — trennbar sind e (7 Kontexte), i (5), r (4), a (3).
+Eine Hand, eine Norm (96 Proben). Kleine Klassen-n (K1 n=7 ·
+K3 n=6 · K2 n=8+18) → das Nachkalibrierungs-Protokoll
+(tintenfolger.md §7.7) greift, sobald der Bestätigungssatz
+nachgefahren ist.
+
+**P3-K1 gemessen `aug16` — verworfen per eigenem Kill, der Fund
+ist die Frame-Brücke.** Umsetzung als geteilter Kopplungsindex
+(`BAR_ENTRY_COUPLE_Y`; Platzierung und Verbinder lesen denselben
+Anker; die Steig-Wächter für den flachen K1-Zug klassenbewusst
+gelockert), Feuer-Nachweis exakt in der Klasse und nirgends sonst
+(fechten f→e + t→e, streiten/unter/Seiten/Soldaten/scharfen t→e
+bzw. f→e; macht/mit mit wortfinalem t byte-identisch; das
+compose-golden deckt die Klasse mit keinem seiner Wörter ab und
+blieb daher UNGEBROCHEN — die „bricht bauartbedingt"-Erwartung
+der Vorregistrierung war falsch herum). Leiter gegen die
+P2-Baseline 0,108091: 0,50 feuert nie (e-Anstrich startet über
+dem Ziel — die Leiterstufe war leer), 0,56 → 0,108145 · 0,62 →
+0,108190 · 0,78 → 0,108120; `pair_loss` byte-identisch (die
+Abb.-20-Drills enthalten kein Balken→Rund-Paar), doff-Median
+0,130 → 0,132, nicht-monoton je Wort (fechten −0,0059 bei 0,56,
++0,0023 bei 0,62, −0,0041 bei 0,78). Auf JOIN-Ebene stimmen die
+Belege GEGENEINANDER: fechtens t→e halbiert sich (0,12 → 0,06),
+streitens verschlechtert sich (0,04 → 0,07), unter bevorzugt
+0,78 (0,11 → 0,10). Kill (a) feuert (word_loss steigt bei jedem
+feuernden Arm, die Klasse verbessert sich nicht kohärent), also
+VERWORFEN; `BAR_ENTRY_COUPLE_Y` bleibt DEKLARIERT-ABER-NEUTRAL
+(None) für die Bestätigungssatz-Nachkalibrierung (K1 ruht auf
+n = 7). Der Fund: die Vorstudien-Konstanten sind im FIT-Frame
+kohärent (MAD 0,002!), aber die Brücke in den Composer — der
+Kopplungshöhen-Knopf bei gebundener Floor-Platzierung
+(`bar_rise_floor` bindet in allen Klassenwörtern) — reproduziert
+sie nicht: dieselbe Arkaden-Lektion (Beleg-Varianz am
+Ruler-Punkt) eine Klasse weiter, PLUS die neue Hypothese, dass
+nicht die KOPPLUNGSHÖHE, sondern die VERBINDERFORM (gekrümmter
+Einfall statt gerader Balken-Linie) den +126°-Ankunftsfehler
+trägt — das wäre ein anderer Knopf und braucht seine eigene
+Vorregistrierung. K3 und K2 werden trotzdem gemessen (andere
+Mechanismen), mit entsprechend gedämpfter Erwartung.
+
+**P3-K3 gemessen `aug16` — verworfen am Paar-Gate; der Fund ist
+der Wort/Drill-Split.** Vorab die Diagnose: die Klasse koppelt
+heute INKONSISTENT — o→r trimmt auf den generischen 0,78-Punkt
+(ÜBER dem Soll-Band 0,685), o→n/w→i koppeln am Chart-Fuß
+(0,58–0,63, darunter), weil ein Spline-Resampling-Zittern von
+0,0004 xh den strengen Monotonie-Wächter von
+`_entry_couple_index` abbrechen lässt — der generische O2-Trim
+ist für Arkaden-Köpfe still deaktiviert (eigener
+Bugfix-Kandidat, nicht in dieser Regel behoben; K3 nutzt einen
+jitter-toleranten lokalen Scan, Schwelle 0,02/Sample). Regel
+umgesetzt als klassen-einheitliche Kopplung bei Fuß + Lift
+(ersetzt beide Fehlstände), Feuer-Nachweis exakt in der Klasse
+(von o→n · will w→i · Zorn/Sporn o→r · Drills on/bi/wi),
+Kontrollen (kann/wenn/schwer/zwei) byte-identisch, das
+compose-golden bricht hier WIRKLICH (wovon/Morgen tragen die
+Klasse). Leiter: words 0,108091 → 0,108082 (0,07) → 0,107971
+(0,11) — die WÖRTER stimmen erstmals größtenteils GLEICHGERICHTET
+für die Regel (von −0,0090 · will −0,0019 · Sporn +0,0002 ·
+Zorn +0,0031); aber pairs 0,146602 → 0,147337 (0,07) → 0,147162
+(0,11), getragen vom Drill `on` (+0,0172, dazu bi +0,0018,
+wi −0,0006). Gate (a) verlangt BEIDE Lineale → VERWORFEN,
+`COVER_ARCADE_ENTRY_LIFT` bleibt DEKLARIERT-ABER-NEUTRAL (0,0)
+für die Bestätigungssatz-Nachkalibrierung (K3 ruht auf n = 6).
+Der Fund: das Wort `von` und der Drill `on` — nach H2-Doktrin
+DERSELBE Übergang derselben Hand — stimmen am Ruler
+GEGENEINANDER (−0,0090 vs. +0,0172); die Beleg-Varianz-Serie
+(Arkaden-Luft · K1 · K3) hat damit ihre dritte Ausprägung:
+Wort-Platte vs. Paar-Drill. Offen bleibt der gemessene
+o→r-Überstand (0,78 komponiert vs. 0,685 Soll), den Zorn beim
+Absenken trotzdem ablehnt.
+
+**P3-K2 gemessen `aug16` — eindeutig verworfen: beide Lineale
+monoton gegen die Drehung.** Umsetzung als gedrehter Abgang auf
+dem geretteten Chord (`LOOP_ROUND_EXIT_ROT_DEG`; der d→Rund-Zug
+ist heute der High-Reversal-gerettete STRAIGHT-Chord — die Kubik
+krümmt mit gedrehtem d_out den Start, die Ankunft behält ihren
+Chord; der zweimal verworfene Stub-Trim blieb unangetastet).
+Feuer-Nachweis exakt in der Klasse (laden/der d→e · das/Soldaten
+d→a · Drill do; die d→i still), nur das Verbinder-Item bewegt
+sich. Leiter: words 0,108091 → 0,108286 (+24°) → 0,108409
+(+48°), pairs 0,146602 → 0,146694 → 0,146764 — BEIDE Lineale
+monoton schlechter, ohne Klassen-Split. Kill (a) feuert glatt →
+VERWORFEN, Konstante bleibt deklariert-aber-neutral (0,0). Damit
+ist die P3-Runde KOMPLETT: alle drei vorregistrierten
+Entry-Regeln sind gemessen und ehrlich negativ — die im
+FIT-Frame hochkohärenten Kopf-Konstanten der Vorstudie
+überleben die Brücke in den Composer an KEINEM der drei
+registrierten Knöpfe am aktuellen Ruler-Punkt. Stehend bleiben:
+(i) die Verbinderform-Hypothese für den +126°-Balken-Fehler
+(eigene Pre-Reg), (ii) der Jitter-Bugfix am O2-Trim (eigene
+Pre-Reg, latent für ALLE Arkaden-Köpfe), (iii) die
+Nachkalibrierung aller drei Knöpfe am Bestätigungssatz
+(Klassen-n 6–8 sind der wahrscheinlichste Grund, warum
+Median-Regeln gegen Beleg-Varianz verlieren).

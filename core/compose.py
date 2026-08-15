@@ -492,6 +492,43 @@ FORK_APEX_MAX_Y = 1.05
 BAR_EXIT_BASES = frozenset({"t", "f"})
 BAR_CROSS_MIN_Y = 0.2  # a plausible bar/flag crossing sits mid-band
 BAR_CROSS_MAX_Y = 0.7
+# P3-K1 (pre-registered aug16, qualitaetsmetrik §14 Welle 2 P3): after a
+# bar exit into a ROUND BODY the hand couples LOW on the rising flank
+# (measured arrival y ~0.56 vs. the apex/high-flank couple the generic
+# path targets — the composed arrival angle sat +126 deg off) and the
+# entry stub below the couple is replaced by the join. The shared
+# coupling index keeps placement and connector on the same anchor.
+# None = rule off (generic fork/apex coupling). DECLARED-BUT-NEUTRAL:
+# the aug16 ladder (0.50/0.56/0.62/0.78) was measured-and-rejected —
+# word_loss rose at every firing arm and the class words voted in
+# OPPOSITE directions (fechten's t→e halves, streiten's worsens); the
+# knob stays for the confirmation-set re-calibration (K1 rests on n=7).
+BAR_ENTRY_COUPLE_Y: float | None = None
+# P3-K3 (pre-registered aug16, qualitaetsmetrik §14 Welle 2 P3): after a
+# cover-bow exit (o/b Kringel, w/v bow) the hand meets an arcade letter's
+# Anstrich ABOVE its mid-height chart foot (measured arrival y 0.685 vs
+# the composed 0.58-0.63 foot coupling). The lift raises the couple point
+# to the first lead-in sample this many xh above B's foot; the piece
+# below is replaced by the join. 0.0 = rule off. DECLARED-BUT-NEUTRAL:
+# the aug16 ladder (0.07/0.11) was measured-and-rejected on the pair
+# gate — the WORDS vote for the lift (von −0.009, will −0.002, net
+# word_loss falls), but the Abb.-20 DRILLS of the same joins reject it
+# (on +0.017, bi +0.002, pair_loss rises) — word context and drill
+# context of the SAME transition disagree; kept for the
+# confirmation-set re-calibration (K3 rests on n=6).
+COVER_ARCADE_EXIT_BASES = frozenset({"o", "b", "v", "w"})
+COVER_ARCADE_ENTRY_BASES = frozenset({"n", "m", "i", "r"})
+COVER_ARCADE_ENTRY_LIFT = 0.0
+# P3-K2 (pre-registered aug16, qualitaetsmetrik §14 Welle 2 P3): the hand
+# departs d's trimmed loop exit ROTATED off the straight chord the
+# high-reversal rescue declares (measured compose-relative departure
+# error +48.0° ± 0.8, with the reach growing in 0 of 18 occurrences —
+# the twice-rejected stub TRIM stays untouched; the knob is the ANGLE).
+# Degrees counterclockwise added to the rescued chord departure; the
+# taut cubic then curves the launch while the arrival keeps its chord.
+# 0.0 = rule off.
+LOOP_ROUND_EXIT_ROT_DEG = 0.0
+LOOP_ROUND_ENTRY_BASES = frozenset({"e", "a", "o"})
 # Re-calibrated wave-2 P1: at 0.55 the composed t-joins ran +0.16 xh median
 # past the hand's six dissected ones; 0.69 removes the median surplus at the
 # typical coupling rise (~0.43 xh).
@@ -1178,6 +1215,9 @@ def _connector_centerline(
     cap_restart: bool = False,
     fork_couple_idx: int | None = None,
     land_deg: float | None = None,
+    bar_low_couple: bool = False,
+    arcade_lift_idx: int = 0,
+    loop_rotate_deg: float = 0.0,
 ) -> tuple[list[Point], int]:
     """Centerline of the Übergang from A's exit into B's entry + the entry trim.
 
@@ -1209,7 +1249,11 @@ def _connector_centerline(
         idx = fork_couple_idx
         if idx:
             p3b: Point = (first_line[idx][0] + dx, first_line[idx][1])
-            if p3b[0] > p0[0] + GARLAND_MIN_DX and p3b[1] > p0[1] + ALIGN_MIN_RISE:
+            # The P3-K1 low couple (see BAR_ENTRY_COUPLE_Y) deliberately
+            # arrives level with or below the bar tip — only rightward
+            # progress is required; the generic bar join keeps its rise.
+            rises = p3b[1] > p0[1] + ALIGN_MIN_RISE
+            if p3b[0] > p0[0] + GARLAND_MIN_DX and (rises or bar_low_couple):
                 return [(p0[0] + (p3b[0] - p0[0]) * t / 10, p0[1] + (p3b[1] - p0[1]) * t / 10) for t in range(11)], idx
     # The r-arm into a round body fuses at B's crest APEX (see ARM_FUSE_GAP).
     arm_fuse = 0
@@ -1249,6 +1293,12 @@ def _connector_centerline(
             entry_trim = _flank_couple_index(first_line, dx, p0, slope)
             if entry_trim:
                 return _straight_connector(p0, first_line, dx, entry_trim), entry_trim
+    # P3-K3 cover-bow → arcade couple (see COVER_ARCADE_ENTRY_LIFT): the
+    # class couples at foot + lift, REPLACING what the generic path chose —
+    # today that is inconsistently the foot (o→n, jitter-blocked 0.78 trim)
+    # or the full 0.78 trim (o→r, above the measured arrival band).
+    if arcade_lift_idx:
+        entry_trim = arcade_lift_idx
     couple_line = first_line[entry_trim:]
     # End exactly on the next glyph's first ink sample so the join sits
     # on the centerline the entry tangent is measured from.
@@ -1272,6 +1322,11 @@ def _connector_centerline(
     rescued = ((p0[1] < DESCENDER_EXIT_Y and d_out[1] < 0) or backward or high_reversal) and span > 0
     if rescued:
         d_out = ((p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span)
+        # P3-K2 loop→round departure (see LOOP_ROUND_EXIT_ROT_DEG): the
+        # hand leaves the trimmed loop rotated off this chord — curve the
+        # launch, keep the arrival on its chord.
+        if loop_rotate_deg:
+            d_out = _unit(math.degrees(math.atan2(d_out[1], d_out[0])) + loop_rotate_deg)
     # The entry tangent is measured from the COUPLED lead-in (the stub
     # dropped after a high exit, O2/ENTRY_COUPLE_Y); the bow-launch
     # clamp of the jul11 branch is subsumed by the crest-roll block
@@ -1942,6 +1997,19 @@ def compose_word(
             # solved distance and the drawn join can never read different
             # anchors.
             fork_couple_idx = _fork_couple_index(first_line)
+            # P3-K1 bar→round coupling (see BAR_ENTRY_COUPLE_Y): drop the
+            # couple point to the low flank target; the overridden index
+            # feeds BOTH the bar-rise placement and the connector.
+            bar_low_couple = False
+            if (
+                BAR_ENTRY_COUPLE_Y is not None
+                and prev.stem_launch
+                and _key_base(slot.key, slot.position) in HIGH_COUPLE_BASES
+            ):
+                low_idx = _entry_couple_index(first_line, target_y=BAR_ENTRY_COUPLE_Y)
+                if low_idx:
+                    fork_couple_idx = low_idx
+                    bar_low_couple = True
             entry_land_deg = _endpoint_tangent(first_line, at_end=False)
             tuck = TUCK_RATE * max(0.0, prev.exit[1] - TUCK_Y0)
             forward = _unit(prev.tangent_deg)[0] > 0.0
@@ -2169,6 +2237,34 @@ def compose_word(
             # plates never enter a round body at its top (see
             # CAP_RESTART_BASES) — the garland/align grammar runs instead.
             high_couple = _key_base(slot.key, slot.position) in HIGH_COUPLE_BASES and not prev.base[:1].isupper()
+            # P3-K3 (see COVER_ARCADE_ENTRY_LIFT): the lifted arcade couple
+            # index, passed as a connector fallback.
+            arcade_lift_idx = 0
+            if (
+                COVER_ARCADE_ENTRY_LIFT > 0.0
+                and prev.base in COVER_ARCADE_EXIT_BASES
+                and _key_base(slot.key, slot.position) in COVER_ARCADE_ENTRY_BASES
+                and first_line
+            ):
+                # Jitter-tolerant scan instead of _entry_couple_index: the
+                # spline-resampled lead-in carries sub-0.001 y-dips that its
+                # strict monotony guard reads as "turns downward" (the same
+                # jitter silently disables the generic 0.78 trim for arcade
+                # heads); a real apex turn falls far faster than 0.02/sample.
+                target = first_line[0][1] + COVER_ARCADE_ENTRY_LIFT
+                for i in range(1, len(first_line) - 1):
+                    if first_line[i][1] >= target:
+                        arcade_lift_idx = i
+                        break
+                    if first_line[i][1] < first_line[i - 1][1] - 0.02:
+                        break
+            # P3-K2 (see LOOP_ROUND_EXIT_ROT_DEG): the rotated loop→round
+            # departure, applied by the connector on its rescued chord.
+            loop_rotate_deg = (
+                LOOP_ROUND_EXIT_ROT_DEG
+                if prev.base == "d" and _key_base(slot.key, slot.position) in LOOP_ROUND_ENTRY_BASES
+                else 0.0
+            )
             centerline, entry_trim = _connector_centerline(
                 prev.exit,
                 prev.tangent_deg,
@@ -2184,6 +2280,9 @@ def compose_word(
                 cap_restart=bool(prev.cap_retrace),
                 fork_couple_idx=fork_couple_idx,
                 land_deg=entry_land_deg,
+                bar_low_couple=bar_low_couple,
+                arcade_lift_idx=arcade_lift_idx,
+                loop_rotate_deg=loop_rotate_deg,
             )
             if prev.cap_retrace:
                 # The retrace ends AT the departure the connector starts
