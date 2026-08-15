@@ -2161,16 +2161,8 @@ def compose_word(
             # an offset retrace — generated centerline only, the silhouette
             # rings stay the payload's.
             bar_retrace: list[tuple[float, float]] | None = None
-            if (
-                si > 0
-                and not diacritic_flags[si]
-                and _key_base(slot.key, slot.position) == "t"
-                and len(src) >= 2
-            ):
-                prev_body = next(
-                    (centerlines[sj] for sj in range(si - 1, -1, -1) if not diacritic_flags[sj]),
-                    None,
-                )
+            if si > 0 and not diacritic_flags[si] and _key_base(slot.key, slot.position) == "t" and len(src) >= 2:
+                prev_body = next((centerlines[sj] for sj in range(si - 1, -1, -1) if not diacritic_flags[sj]), None)
                 if prev_body:
                     foot = prev_body[-1]
                     start = src[0]
