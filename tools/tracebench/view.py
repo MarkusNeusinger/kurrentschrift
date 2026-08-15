@@ -102,7 +102,7 @@ PALETTE = ("#8e24aa", "#ef6c00", "#c2185b", "#3949ab", "#00838f", "#6d4c41")
 # chain stays red and the follower blue however the CLI arguments are ordered.
 CHAIN_MARKERS = ("chain", "kette")
 FOLLOWER_MARKERS = ("follow", "folger", "wächter", "waechter", "guard")
-CONTROL_MARKERS = ("kontrolle", "routeg", "control")
+CONTROL_MARKERS = ("kontrolle", "routeg", "control", "nullprobe")
 
 REFERENCE_LABEL = "Hand (Referenz)"
 
@@ -630,7 +630,8 @@ def method_explainer(labels: Sequence[str], colors: dict[str, str]) -> str:
         elif any(m in lowered for m in CHAIN_MARKERS):
             text = (
                 "der Kettenfit: legt unsere Duktus-Vorlagen (Strichfolge, Kreuzungswissen) an die Tinte "
-                "und verformt sie elastisch (nutzt: Duktus-Bibliothek + Tinte)."
+                "und verformt sie elastisch; ein Wächter verbietet dabei, Kreuzungen oder Doppelstriche "
+                "zu erfinden (nutzt: Duktus-Bibliothek + Tinte)."
             )
         elif "inksight" in lowered:
             text = (
@@ -640,8 +641,8 @@ def method_explainer(labels: Sequence[str], colors: dict[str, str]) -> str:
             )
         elif any(m in lowered for m in CONTROL_MARKERS):
             text = (
-                "die prior-freie Kontrolle: reine Bildverarbeitung (Skelett + plausibelste Wegfortsetzung), "
-                "kein Modell, kein Duktus — die Nulllinie, die zeigt, was das Duktus-Wissen wert ist."
+                "die Nullprobe: reine Bildverarbeitung (Skelett + plausibelste Wegfortsetzung), "
+                "kein Modell, kein Duktus — die Probe ohne Wirkstoff, die zeigt, was das Duktus-Wissen wert ist."
             )
         else:
             text = "Kandidat aus Datei (keine hinterlegte Kurzbeschreibung)."
