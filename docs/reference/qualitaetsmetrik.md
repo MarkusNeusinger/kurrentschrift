@@ -4271,3 +4271,34 @@ Spitze statt am Schnittpunkt, derselbe Weg), und die
 Buchstaben-Attribution stimmt jetzt mit der Hand überein; das
 compose-golden-Fixture wurde als deklarierte Re-Baseline
 regeneriert. K1b ist der nächste Composer-Kandidat der Welle.
+
+### Welle 1 · A1 `aug15` — Vorregistrierung: der Marken-Nachfit
+
+Geschrieben und committet VOR der ersten Zahl dieser Maßnahme
+(Plan: `../proposals/tintenfolger.md` §7.3; Infrastruktur
+`tools/pairlab/marks.py`, opt-in `--mark-refit`, default byte-identisch).
+
+**Hypothese.** Die Marken des Kettenfit-Kandidaten stehen an ihrer
+Kompositions-Position statt auf der gemessenen Marken-Tinte
+(`mark_pos_err_xh` Median 0,129 gegen 0,046 der prior-freien
+Kontrolle; bei muß/und/unter/zwei matcht keine Marke). Ein rigider
+Nachfit (reine Translation) jeder Marke auf die vom Körper nicht
+beanspruchte Skelett-Tinte, mit Verweigerung bei Ambiguität
+(Suchradius 0,6 xh = die Match-Grenze des Lineals, Margin 0,25),
+senkt den Ortsfehler, ohne irgendetwas anderes zu bewegen.
+
+**Nachfit-Ziel ist ausschließlich die TINTE** (ref_skel), nie die
+authored-Referenz — gemessen wird ausschließlich GEGEN die Hand.
+
+**Messgrößen und Kill-Kriterien** (gepaart über die 10 Dev-Wörter
+des eingefrorenen Splits, Vergleich gegen die deklarierte
+Post-K1-Kettenbaseline `tb-chain-r1-postk1`):
+(a) Primär: `mark_pos_err_xh`-Median fällt; `marks_matched` steigt
+oder bleibt (ein VERLORENES Match = verworfen).
+(b) Do-no-harm: `dtw_xh` byte-gleich auf Wörtern ohne bewegte Marke
+und ohne Netto-Verschlechterung insgesamt; Strukturzähler
+(cross/zones/touch/overlap) exakt unverändert — der Nachfit bewegt
+nur Marken-Striche; jede Abweichung = verworfen.
+(c) `marks_spurious` darf nicht steigen (zwei 1,0 heute).
+(d) Verweigerungen werden gezählt und benannt (meta.mark_refit),
+nie still übergangen.
