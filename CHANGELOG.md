@@ -14,6 +14,26 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Wave 2, P2: the align floor becomes the bounded touch; the
+  arcade air is closed as hand variance** (`core/compose.py`,
+  continuing the owner's directive that the x-drift is still real
+  and the work must continue). The measured align-class error (+0.072 median over 36
+  dissected joins) is rise-INDEPENDENT, so the two registered knobs
+  were an additive diagonal trim and the align/nested clearance
+  floor. The single-knob sweep adopted the FLOOR
+  (`ALIGN_MIN_CLEARANCE` 0.06 → 0.0 — columns may touch, never
+  overlap, the bowl-tuck semantics): `word_loss` 0.108446 →
+  **0.108091**, `fechten` 0.173 → **0.144** (its f→e align_floor
+  was the +0.31 outlier; cumulative 0.222 → 0.144 over the advance
+  round), `pair_loss` and soll agreement unchanged. The diagonal
+  TRIM is declared-but-neutral (rejected by the ruler at every
+  dose) — and the §14 entry closes the ARCADE AIR with a mechanism
+  exhibit instead of a constant: under air the same word votes both
+  ways per specimen (wenn −0.030 vs wenn-2 +0.089; dissected spread
+  MAD 0.096), so the hand's own arcade variance, not a calibration
+  error, carries that class; revisit only with the confirmation
+  set. compose-golden regenerated as the declared re-baseline.
+
 - **Wave 2, P1b: the backward-clearance class gets its named longs
   exception** (`core/compose.py`, owner find on the streiten
   overlay: the word's FIRST letter sat beside the ink). The P1

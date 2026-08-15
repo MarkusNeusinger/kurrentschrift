@@ -4582,3 +4582,66 @@ Fehlversuch dazwischen — ALLE Nicht-w/v-Rückwärts-Exits auf 0,30
 zurück — wurde gemessen und verworfen (words +0,0009, drei Wörter
 regressieren): auch eine Korrektur-Klasse kann zu breit
 geschnitten sein.
+
+### Welle 2 · P2 `aug15` — Vorregistrierung: die align-Klasse und der Arkaden-Varianz-Befund
+
+Geschrieben und committet VOR der ersten Zahl der Maßnahme; setzt
+die Owner-Direktive „die x-Verschiebung ist noch real, weitermachen"
+um. Zwei Teile — eine Kalibrierung und ein GESCHLOSSENER Befund.
+
+**(A) Arkaden-Luft — geschlossen als Hand-Varianz, KEIN
+Kalibrierfehler.** Die Dissektion verlangt +0,18 Luft vor Arkaden,
+das Lineal lehnt jede getestete Dosis ab (0,32: words +0,0037 ·
+0,23: +0,0008). Der Mechanismus-Test löst den Widerspruch: unter
+Luft wird `wenn` besser (−0,030) und `wenn-2` — DASSELBE Wort,
+anderer Beleg — deutlich schlechter (+0,089); die vier
+`und`-Belege stimmen gemischt ab; die dissezierten
+Arkaden-Deltas streuen MAD 0,096 (p10..p90 −0,13..+0,12) bei
+Median −0,004 unter Luft. Die Hand schreibt die Arkaden-Weite von
+Beleg zu Beleg ±0,1 xh verschieden — die Komposition kann nur
+EINEN Punkt im Band wählen und bleibt am Ruler-Punkt. Keine
+Konstante wird geändert; Wiedervorlage ausschließlich mit dem
+Bestätigungssatz.
+
+**(B) align-Klasse — die letzte kalibrierbare Vorschub-Masse.**
+36 gemessene Joins, Median +0,072, und der Fehler ist
+STEIGUNGS-UNABHÄNGIG (klein-rise +0,069 / groß-rise +0,074,
+Korrelation −0,28) — also ADDITIV, kein Steigungsproblem wie beim
+Balken. Zwei Unter-Mechanismen, je ein Knopf, Einzelzerlegung wie
+P1: (i) die reine Durchlauf-Diagonale (`align`, n=19, +0,074) —
+ein gemessener Abzug `ALIGN_ADVANCE_TRIM_UNITS = 0.07` auf das
+Diagonalen-Ziel; (ii) der gebundene align-Floor (`align_floor`,
+n=17, +0,069) — `ALIGN_MIN_CLEARANCE` 0,06 → **0,0**: dieselbe
+Berührungs-Semantik wie der adoptierte Bowl-Tuck (Spalten dürfen
+sich berühren, nie überlappen).
+
+**Messgrößen und Kill-Kriterien** (identisch zur P1-Familie):
+(a) wordbench `word_loss` fällt gegen 0,108446, sonst verworfen —
+je Knopf einzeln UND in Kombination gemessen; (b) die
+align-Klassen-Mediane bewegen sich Richtung 0 ohne Überschießen;
+(c) `pair_loss` nicht > +0,002; (d) `soll_*_agree` unverändert;
+(e) compose-golden bricht bauartbedingt → deklarierte Re-Baseline.
+Erwartete Ausreißer, vorab benannt: `Z→a` +0,94 und `a→n` −0,645
+sind n=1-Extreme und werden von keiner Konstante gejagt.
+
+**Ergebnis (gemessen nach dem Commit oben).** Einzelzerlegung wie
+registriert: Knopf (i), der Diagonalen-Trim, wird vom Lineal bei
+jeder Dosis abgelehnt (0,07 allein: +0,0020 · 0,035 auf dem Floor:
++0,0011) — dasselbe Beleg-Varianz-Verdikt wie die Arkaden-Luft;
+die Konstante bleibt DEKLARIERT-ABER-NEUTRAL (0,0), die
+Dissektions-Forderung steht für den Bestätigungssatz im Protokoll.
+Knopf (ii), der Berührungs-Floor (`ALIGN_MIN_CLEARANCE` 0,06 →
+0,0), BESTEHT: `word_loss` 0,108446 → **0,108091**, `pair_loss`
+byte-gleich, `soll_*_agree` unverändert 9/10 · 9/10. Die Streuung:
+9 Wörter besser (voran `fechten` 0,173 → **0,144** — sein
+f→e-align_floor war der +0,31-Ausreißer; kumuliert seit Beginn der
+Vorschub-Runde 0,222 → 0,144), größter Einzelverlierer `Zaum`
++0,022 (der vorab benannte `Z→a`-Ausreißer reagiert auf den
+Floor). compose-golden regeneriert (deklarierte Re-Baseline),
+1260 Tests grün. ENTSCHEIDUNG: Floor ADOPTIERT, Trim NEUTRAL.
+Damit ist die kalibrierbare Vorschub-Masse der 218 gemessenen
+Joins abgearbeitet: adoptiert Bowl-Tuck · w/v-Rückwärts ·
+longs-Ausnahme · Balken-Steigung · align/nested-Floor; als
+Beleg-Varianz geschlossen Arkaden-Luft · Diagonalen-Trim; offen
+bleiben die zwei NICHT-Kalibrier-Fälle `arm_fuse`/r-Arm-Länge
+(Chart-Frage) und `descender_ride` (n=2, zu dünn).
