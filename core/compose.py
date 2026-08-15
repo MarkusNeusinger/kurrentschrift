@@ -87,7 +87,7 @@ INK_CLEARANCE = 0.14
 BOWL_EXIT_TUCK_BASES = frozenset({"b", "c", "d", "o"})
 BOWL_EXIT_CLEARANCE = 0.0
 ARCADE_ENTRY_BASES = frozenset({"m", "n"})
-ARCADE_ENTRY_CLEARANCE = 0.14
+ARCADE_ENTRY_CLEARANCE = INK_CLEARANCE  # declared-but-neutral by construction
 # Clearance when the previous exit tangent points BACKWARD (the w/v bow curls
 # left at its end): there the join must travel over the whole bow before it
 # can fall into the next entry — the plates give those pairs visibly more room
