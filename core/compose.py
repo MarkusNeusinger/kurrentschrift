@@ -471,10 +471,12 @@ BAR_CROSS_OVERRUN_UNITS = 0.2
 # pass (authored references: ascent 0.05–0.07 xh right of the descent
 # — two crossing sites 0.07 xh apart, counted separately). The bar
 # stroke is therefore prefixed with a generated bridge (centerline
-# only, no silhouette — the cap_retrace pattern; the offset stays
-# inside the Schwellzug width so the printed ink is unchanged) and
-# loses its lift. Guards keep the bridge a stem retrace: the previous
-# stroke must end below the bar start and horizontally near it.
+# only, no silhouette — the cap_retrace pattern; on the outline-backed
+# rendering path the printed ink is unchanged, and the offset stays
+# inside the Schwellzug width so even a centerline-ribbon fallback
+# draws it over the stem's own ink) and loses its lift. Guards keep
+# the bridge a stem retrace: the previous stroke must end below the
+# bar start and horizontally near it.
 BAR_RETRACE_BULGE_UNITS = 0.06
 BAR_RETRACE_MAX_DX_UNITS = 0.3
 BAR_RETRACE_MIN_RISE_UNITS = 0.15
@@ -2158,8 +2160,10 @@ def compose_word(
             src = cl[entry_trim:] if si == 0 and entry_trim else cl
             # t's crossbar keeps the pen down (see BAR_RETRACE_BULGE_UNITS):
             # bridge the previous body stroke's foot up to the bar start as
-            # an offset retrace — generated centerline only, the silhouette
-            # rings stay the payload's.
+            # an offset retrace — generated centerline only; the silhouette
+            # rings stay the payload's, so outline-backed rendering is
+            # unchanged (a ribbon fallback sweeps the bridge over the
+            # stem's own ink).
             bar_retrace: list[tuple[float, float]] | None = None
             if si > 0 and not diacritic_flags[si] and _key_base(slot.key, slot.position) == "t" and len(src) >= 2:
                 prev_body = next((centerlines[sj] for sj in range(si - 1, -1, -1) if not diacritic_flags[sj]), None)
