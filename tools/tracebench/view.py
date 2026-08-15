@@ -91,13 +91,18 @@ COLOR_REFERENCE = "#00b37e"
 # engine red; the follower takes fitview's marker blue.
 COLOR_CHAIN = "#e02030"
 COLOR_FOLLOWER = "#1565c0"
+# The prior-free control gets a pinned high-chroma cyan: the palette's
+# order-based hand-out gave it the brown, which disappears against the
+# sepia plate ink (owner review 2026-08-15).
+COLOR_CONTROL = "#00acc1"
 # Everything else, handed out in order — deterministic, never random.
-PALETTE = ("#8e24aa", "#ef6c00", "#6d4c41", "#c2185b", "#3949ab", "#00838f")
+PALETTE = ("#8e24aa", "#ef6c00", "#c2185b", "#3949ab", "#00838f", "#6d4c41")
 
 # Label fragments that pin a colour by MEANING rather than by call order, so the
 # chain stays red and the follower blue however the CLI arguments are ordered.
 CHAIN_MARKERS = ("chain", "kette")
-FOLLOWER_MARKERS = ("follow", "folger")
+FOLLOWER_MARKERS = ("follow", "folger", "wächter", "waechter", "guard")
+CONTROL_MARKERS = ("kontrolle", "routeg", "control")
 
 REFERENCE_LABEL = "Hand (Referenz)"
 
@@ -250,6 +255,8 @@ def assign_colors(labels: Sequence[str]) -> dict[str, str]:
             colors[label] = COLOR_CHAIN
         elif any(marker in lowered for marker in FOLLOWER_MARKERS):
             colors[label] = COLOR_FOLLOWER
+        elif any(marker in lowered for marker in CONTROL_MARKERS):
+            colors[label] = COLOR_CONTROL
         else:
             colors[label] = PALETTE[taken % len(PALETTE)]
             taken += 1
@@ -338,6 +345,12 @@ _CSS = """
   table.numbers thead th { background: #f2f2ec; font-weight: 600; }
   .detail { color: #b45309; }
   .hint { color: #666; margin-top: 8px; }
+  details.methods { margin: 6px 0 12px; color: #444; }
+  details.methods summary { cursor: pointer; font-weight: 600; }
+  details.methods ul { margin: 6px 0 0; padding-left: 18px; }
+  details.methods li { margin-bottom: 4px; max-width: 78ch; }
+  details.methods .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+                         margin-right: 6px; vertical-align: -1px; }
   section.word > h2 { font-size: 16px; margin: 0 0 8px; }
   tr.soll-row td { color: #6b6b64; background: #f4f4ee; font-style: italic; }
   g.structure circle.cross { fill: none; stroke-width: 1.4; }
@@ -393,10 +406,17 @@ _JS = """
         // Constant pen speed: the arc decides the duration, the rate only scales it.
         var dur = Math.max(80, (len / xh) / SPEED_XH_PER_S * 1000) / rate;
         if (typeof p.animate === 'function') {
-          p.style.strokeDasharray = '1';
-          p.style.strokeDashoffset = '1';
+          // Dash in REAL user units via getTotalLength — the normalised
+          // unit-pathLength + dash + non-scaling-stroke combination
+          // mis-renders during the animation in some engines (ink appearing
+          // to write on the left while erasing on the right; owner review
+          // 2026-08-15). The geometric length avoids the buggy code path.
+          var geo = len;
+          try { geo = p.getTotalLength() || len; } catch (err) { /* keep data-len */ }
+          p.style.strokeDasharray = geo + ' ' + geo;
+          p.style.strokeDashoffset = String(geo);
           running.push(p.animate(
-            [{ strokeDashoffset: '1' }, { strokeDashoffset: '0' }],
+            [{ strokeDashoffset: String(geo) }, { strokeDashoffset: '0' }],
             { duration: dur, delay: t, fill: 'forwards', easing: 'linear' }
           ));
         } else {
@@ -478,7 +498,6 @@ def _numbers_cells(numbers: dict[str, Any] | None) -> str:
 def _layer_svg(layer: Layer, layer_id: str) -> str:
     paths = "".join(
         f'<path class="ink{" mark" if s.mark else ""}" d="{s.d}" data-len="{s.length:.2f}" '
-        f'pathLength="1" '
         f'stroke-width="{MARK_STROKE_WIDTH if s.mark else STROKE_WIDTH}" '
         f'vector-effect="non-scaling-stroke"></path>'
         for s in layer.strokes
@@ -586,7 +605,53 @@ def word_section(
     )
 
 
-def render_html(sections: list[str], tabs: list[tuple[str, str]], *, title: str, meta: str) -> str:
+def method_explainer(labels: Sequence[str], colors: dict[str, str]) -> str:
+    """A lay one-liner per layer: what each method USES (owner review 2026-08-15).
+
+    Matched on the same label markers the colours use, with an honest generic
+    fallback — a page must never invent a description for an unknown candidate.
+    """
+    lines = [
+        (
+            COLOR_REFERENCE,
+            REFERENCE_LABEL,
+            "die eigene Nachfahrung am Tablet — die Messlatte, gegen die alle anderen antreten (nutzt: Mensch + Stift).",
+        )
+    ]
+    for label in labels:
+        lowered = label.lower()
+        if any(m in lowered for m in FOLLOWER_MARKERS):
+            text = (
+                "wie die Kette, zieht die Bahn danach näher an die Tinte — ein Wächter verbietet dabei, "
+                "neue Kreuzungen oder Doppelstriche zu erfinden (nutzt: Duktus-Bibliothek + Tinte)."
+            )
+        elif any(m in lowered for m in CHAIN_MARKERS):
+            text = (
+                "der Kettenfit: legt unsere Duktus-Vorlagen (Strichfolge, Kreuzungswissen) an die Tinte "
+                "und verformt sie elastisch (nutzt: Duktus-Bibliothek + Tinte)."
+            )
+        elif "inksight" in lowered:
+            text = (
+                "InkSight, ein offenes Google-Modell (Apache 2.0): hat Schreibbewegungen aus Millionen "
+                "moderner Schriftproben gelernt, kennt weder Sütterlin noch unsere Vorlagen — hier roh "
+                "angewendet (nutzt: gelerntes Modell, keinen Duktus)."
+            )
+        elif any(m in lowered for m in CONTROL_MARKERS):
+            text = (
+                "die prior-freie Kontrolle: reine Bildverarbeitung (Skelett + plausibelste Wegfortsetzung), "
+                "kein Modell, kein Duktus — die Nulllinie, die zeigt, was das Duktus-Wissen wert ist."
+            )
+        else:
+            text = "Kandidat aus Datei (keine hinterlegte Kurzbeschreibung)."
+        lines.append((colors.get(label, "#555"), label, text))
+    items = "".join(
+        f'<li><span class="dot" style="background:{color}"></span><b>{html.escape(label)}</b> — {html.escape(text)}</li>'
+        for color, label, text in lines
+    )
+    return f'<details class="methods" open><summary>Die Verfahren in einem Satz</summary><ul>{items}</ul></details>'
+
+
+def render_html(sections: list[str], tabs: list[tuple[str, str]], *, title: str, meta: str, explainer: str = "") -> str:
     """The whole page: title block, word tabs, playback controls, the words."""
     heading = "tracebench — Duell"
     page_title = f"{heading} · {title}" if title else heading
@@ -610,6 +675,7 @@ def render_html(sections: list[str], tabs: list[tuple[str, str]], *, title: str,
 <body>
 <h1>{html.escape(heading)}</h1>
 <div class="meta">{meta}</div>
+{explainer}
 <div class="tabs">{tab_html}</div>
 <div class="bar">
   <button id="prev" type="button">← zurück</button>
@@ -635,6 +701,19 @@ und die ganze Komposition mit Verbindern — die Differenz der beiden ist der Be
 Verbindungen (ein einlaufender Verbinder kann eine Schleife schließen, die der Buchstabe allein
 nicht hat). Weicht die Hand von beiden ab, ist etwas falsch — im Template, in der Join-Grammatik
 oder in der Nachfahrung.</div>
+<div class="hint"><b>Was die Zahlenspalten bedeuten:</b>
+<b>dtw_xh</b> = mittlerer Abstand der Bahn zur Hand-Nachfahrung nach bestmöglicher
+Punkt-zu-Punkt-Zuordnung, in x-Höhen — die Kopfzahl, klein ist gut.
+<b>aiou</b> = wie gut die Bahn die TINTE überdeckt (Pixel-Überlappung nach Aufdickung, groß ist
+gut) — Warnung: sie misst nur, WO Tinte liegt, nicht WIE sie durchlaufen wird; die chaotische
+Kontrolle schlägt hier sogar die Hand, deshalb ist aiou nie die Kopfzahl.
+<b>cross m/s</b> = Schleifen-Kreuzungen: getroffen (m) / erfunden (s) gegenüber der Hand.
+<b>retrace</b> = Bogen-Verhältnis doppelt beschriebener Tinte (1,0 = wie die Hand; darunter
+verliert das Verfahren Deckstriche, darüber erfindet es welche).
+Diese vier decken ABSTAND und TOPOLOGIE ab; der Bench misst mehr (Marken-Orte, Absetzer,
+Chamfer in beide Richtungen) — und ehrlich benannt fehlt allen eine GLÄTTE-Spalte: die
+Mikro-Wackler, die man einer Bahn beim Nachschreiben mit fester Stiftdicke ansieht, bestraft
+heute keine dieser Zahlen.</div>
 <script>{js}</script>
 </body>
 </html>
@@ -656,6 +735,7 @@ def build_page(
 ) -> tuple[str, list[str]]:
     """`(html, warnings)` — the page over the selected words."""
     colors = assign_colors([label for label, _ in candidates])
+    explainer = method_explainer([label for label, _ in candidates], colors)
     sections: list[str] = []
     tabs: list[tuple[str, str]] = []
     warnings: list[str] = []
@@ -715,7 +795,7 @@ def build_page(
         # ("und", "und-2", "und-3") would otherwise render three identical tabs
         # and make the arrow navigation ambiguous. For non-repeats id == word.
         tabs.append((specimen_id, specimen_id))
-    return render_html(sections, tabs, title=title, meta=meta), warnings
+    return render_html(sections, tabs, title=title, meta=meta, explainer=explainer), warnings
 
 
 def build_parser() -> argparse.ArgumentParser:

@@ -12,6 +12,25 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Duel viewer: the writing animation, the control's visibility, and
+  two lay legends** (`tools/tracebench/view.py`, all from the owner's
+  page review): the write-on animation now dashes in REAL geometric
+  units via `getTotalLength` instead of the normalised unit
+  pathLength — the old combination with `non-scaling-stroke`
+  mis-rendered in some engines as ink writing on the left while
+  erasing on the right until the final state snapped in; the
+  prior-free control gets a pinned high-chroma cyan (the order-based
+  palette had handed it the brown that vanished against the sepia
+  plate); a „Die Verfahren in einem Satz" explainer names per layer
+  what each method uses (human hand · ductus library + ink · learned
+  open model without ductus · pure image processing), and a column
+  legend explains dtw_xh/aiou/cross/retrace in lay terms — including
+  the honest note that none of today's columns punishes micro-wobble
+  smoothness. The regenerated page is republished to the same
+  artifact URL.
+
 ### Added
 
 - **Wave 1, B1: best-of-N InkSight ensembling — rejected by its own
