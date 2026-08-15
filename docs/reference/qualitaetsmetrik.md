@@ -4321,3 +4321,32 @@ im selben PR, kein Akzeptanzkriterium.
 (`temp/tb-chain-r1-postk1.json`, Kaskade aus K1) ist der
 Vergleichspunkt des nächsten Kettenlaufs; K1b selbst wird zuerst
 auf Soll-Ebene abgenommen.
+
+**Ergebnis (gemessen nach dem Commit oben).** Die Erwartung trifft
+Zelle für Zelle ein: `soll_cross` `unter` 2→**3** und `mit` 1→**2**
+(beide = Hand), `soll_zones` `unter` 2→**3** und `mit` 1→**2**
+(beide = Hand), `soll_cross_agree` 7/10 → **9/10**,
+`soll_zones_agree` 6/10 → **8/10**; kein Über-Kreuzen, kein
+Nicht-t-Wort bewegt. Die per-Letter-Zelle des t wird 2/1 — der
+Auslauf durchsticht jetzt Abstrich UND versetzten Aufstrich, wie
+die Hand. Unangekündigter Bonus: die 4 `soll_overlap`-Einträge der
+t-Wörter (Balken-gegen-Stamm) verschwinden vollständig (Hand hat
+dort ebenfalls 0), je eine Berührung bleibt (`mit` 1 vs Hand 2,
+`unter` 1 = Hand 1). Verbleibende Abweichler sind die bekannten
+Chart-Fälle: `linken` (k zählt im Soll eine Kreuzung mehr als die
+Hand schreibt), `Wer` (W-Ansatz-Retrace, Chart-Lücke, Korb) und
+`zwei` (z-Retrace, mutmaßlich dieselbe Klasse — bei der
+W-Neutracierung mitprüfen). Gates: wordbench `bench_loss` 0,110992
+→ 0,110983 (−0,00001), `pair_loss` 0,165688 → 0,165725 (+0,00004,
+Schwelle 0,002), bewegt ausschließlich t-Wörter (macht · mit ·
+mit-2 · Seiten · Soldaten · fechten · streiten · unter, alle
+≤ ±0,0005); compose-golden regeneriert (deklarierte Re-Baseline);
+1240 Tests grün. ENTSCHEIDUNG: BEHALTEN. — Nebenbefund, hier
+deklariert: die Post-K1-KETTENbaseline `r1` (der Vergleichspunkt
+aller folgenden Kettenläufe) unterscheidet sich von `r0` in genau
+EINEM Wort: `unter` dtw 0,4389 → 0,4690 (+0,0301) bei einer
+erfundenen Kreuzung WENIGER (`cross_spurious` 4→3); die übrigen 9
+Wörter sind byte-identisch. Der ohnehin chaotische unter-Fit
+reagiert auf die veränderte Initialisierung — die dtw-Zahl der
+Kette ist dort schlechter, ihre Topologie besser; der als nächstes
+anstehende Kettenlauf (A1) vergleicht gegen r1.
