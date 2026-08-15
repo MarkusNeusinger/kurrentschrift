@@ -4179,3 +4179,60 @@ blinde Flecken (kein Umlautwort, kein langes ſ, eine Majuskel).
 (c) `marks_uncertain` gilt für dieselben 4 Wörter wie in der Baseline.
 Artefakte: `temp/routeg-t0.json`, `temp/tb-routeg-t0.{json,txt}`
 (gitignoriert); Rezept in `tools/routeg/README.md`.
+
+### Welle 1 · K1 `aug15` — Vorregistrierung: t-Balken-Schnitt mit Überstand
+
+Geschrieben und committet VOR der ersten Zahl dieser Maßnahme
+(Plan: `../proposals/tintenfolger.md` §7.2).
+
+**Hypothese.** Das gebundene t unter-kreuzt, weil die
+Balken-Schnittregel (`BAR_EXIT_BASES`, `core/compose.py`) den
+Deckstrich exakt AN seiner Kreuzung mit dem Stamm endet — für den
+Durchstoß-Zähler (`PIERCE_MARGIN_UNITS` 0,05 xh) ist ein Endpunkt
+keine Kreuzung. Ein kleiner Überstand jenseits des Schnittpunkts
+stellt die duktus-fixe Kreuzung wieder her, ohne die
+B-Platzierung zu bewegen (deren Anker bleibt der STAMM,
+`stem_launch`); der Join startet an der neuen Balkenspitze statt am
+Stamm — wie auf den Platten, wo der Balken durch den Stamm läuft und
+erst dahinter in die Verbindung übergeht.
+
+**Konstante, gemessen statt gewählt.** `BAR_CROSS_OVERRUN_UNITS =
+0.2`: In der authored-Referenz von `mit` (wortfinales t, der Balken
+endet frei) liegt die Balkenspitze 0,16–0,22 xh rechts der beiden
+Stamm-Pässe (Spitze x≈4,78 gegen Kreuzungen x≈4,56/4,62). Die
+authored-Referenz von `unter` (gebundenes t) präzisiert die
+MECHANIK: die Hand schreibt keinen toten Balken — der Deckstrich ist
+eine Schleife (Stamm runter/retrace hoch, kleine Linksschleife auf
+Mittelhöhe), deren Auslauf-Pass den Stamm DURCHSTICHT (Kreuzungen
+mit Abstrich x≈4,63 und Aufstrich x≈4,70), ~0,1 xh danach frei von
+der Stammtinte ist und ohne Absatz als die jul30-gemessene
+16–27°-Join-Haarlinie weitersteigt. Der jul30-Ink-Befund („0,00–0,03
+xh Balkentinte rechts des Stamms") und diese Bahn beschreiben
+DIESELBE Tinte — verschieden ist die Topologie: die Platte hat dort
+Join-Tinte, und der Stift läuft DURCH den Stamm, nicht bis an ihn.
+Überstand + Join-Start an der Spitze reproduzieren diese Topologie
+mit minimalem Eingriff (der Balken bleibt der authored Chart-Strich;
+die Linksschleifen-Form selbst wäre eine Chart-Duktus-Frage). 0,2
+liegt im Beleg-Bereich beider Wörter und komfortabel über der
+Pierce-Marge.
+
+**Erwartung.** `unter` `soll_cross` 2→3 (= Übereinstimmung mit der
+Hand); `mit` bleibt 1 (das dortige Defizit ist ein Join-Effekt, K2).
+Die `soll_overlap`-Einträge der t-Wörter (heute 2× `mit`, 2×
+`unter`, alle Balken-gegen-Stamm) können sich umklassifizieren —
+berichtet, nicht Kriterium.
+
+**Messgrößen und Kill-Kriterien.**
+(a) `soll_cross_agree`/`soll_zones_agree` JE WORT über die 10
+Dev-Wörter: kein Wort außer den t-Wörtern darf seine
+Übereinstimmung verlieren, sonst verworfen.
+(b) wordbench `uv run python -m tools.wordbench.run --style
+suetterlin --set all`: `word_loss` und `pair_loss` dürfen nicht über
+Rausch-Niveau regressieren (> +0,002 auf einer Headline =
+verworfen); erwartet ist Bewegung NUR in t-Wörtern.
+(c) Das compose-golden-Fixture bricht BY CONSTRUCTION (gebundene
+t-Geometrie ändert sich) — der Regen (`REGEN_GOLDEN=1`) ist Teil des
+PRs und wird hier als deklarierte Re-Baseline geführt; er ist KEIN
+Akzeptanzkriterium.
+(d) Sichtprüfung der beiden t-Wörter auf der Duell-/Werkbank-Seite
+(der Balken darf nicht als abgesetzter Stummel wirken).
