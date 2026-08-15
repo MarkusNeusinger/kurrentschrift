@@ -4545,4 +4545,13 @@ kalibrierte w-Platzierung seine zweite Retrace-Zone (= Hand); die
 einzigen Rest-Abweichler sind die zwei Chart-Fälle (linken-k,
 Wer-W). compose-golden als deklarierte Re-Baseline regeneriert,
 1260 Tests grün. Die Werte-Historie der Wordbench-Headline wird in
-§6 beim nächsten Release-Schnitt nachgeführt.
+§6 beim nächsten Release-Schnitt nachgeführt. Ehrliche
+per-Wort-Streuung der Median-Kalibrierung, benannt statt
+versteckt: `unter` 0,107 → 0,083 und `fechten` 0,222 → 0,173
+gewinnen groß, `streiten` verliert einzeln 0,114 → 0,189 — es ist
+das einzige Dev-Wort mit ZWEI t-Exits (t→r und t→e), die
+Steigungs-Kalibrierung wirkt doppelt und die globale Registrierung
+verteilt den Rest übers Wort (longs→t springt von 0,03 auf 0,36,
+ohne dass eine adoptierte Regel diesen Join berührt). Die
+t-Join-Stichprobe ist dünn (n=6, Spanne +0,15…+0,21) — der
+Bestätigungssatz prüft die 0,69 nach.
