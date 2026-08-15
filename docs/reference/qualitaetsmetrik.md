@@ -4230,7 +4230,7 @@ Dev-Wörter: kein Wort außer den t-Wörtern darf seine
 suetterlin --set all`: `word_loss` und `pair_loss` dürfen nicht über
 Rausch-Niveau regressieren (> +0,002 auf einer Headline =
 verworfen); erwartet ist Bewegung NUR in t-Wörtern.
-(c) Das compose-golden-Fixture bricht BY CONSTRUCTION (gebundene
+(c) Das compose-golden-Fixture bricht bauartbedingt (gebundene
 t-Geometrie ändert sich) — der Regen (`REGEN_GOLDEN=1`) ist Teil des
 PRs und wird hier als deklarierte Re-Baseline geführt; er ist KEIN
 Akzeptanzkriterium.

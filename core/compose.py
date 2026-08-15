@@ -1723,10 +1723,12 @@ def compose_word(
 
         # Bar exit (see BAR_EXIT_BASES): t's crossbar / f's flag. The anchor
         # is the exit stroke's last crossing with the glyph's own earlier
-        # ink. In bound context t's bar is cut AT that crossing — the
-        # plates' running form ends it at the stem — and the join launches
-        # from there; f keeps its flag tip and only anchors the rise line.
-        # Word-final keeps the full chart form, like LOOP_EXIT.
+        # ink. In bound context t's bar is cut a measured overrun PAST
+        # that crossing (BAR_CROSS_OVERRUN_UNITS — the hand's exit pass
+        # runs through the stem) and the join launches from the kept bar
+        # tip; the crossing itself stays the placement anchor. f keeps its
+        # flag tip and only anchors the rise line. Word-final keeps the
+        # full chart form, like LOOP_EXIT.
         stem_launch: tuple[float, float] | None = None
         if slot.joins and _key_base(slot.key, slot.position) in BAR_EXIT_BASES and len(body_exit_line) >= 5:
             if bound_next:
@@ -1772,7 +1774,12 @@ def compose_word(
                             kept_tail.append(list(bar[bi]))
                             prev_pt = bar[bi]
                             tail_end = bi
-                        piece = [list(kept_tail[-1])] + bar[tail_end + 1 :]
+                        erased = bar[tail_end + 1 :]
+                        if erased and erased[0] == kept_tail[-1]:
+                            # The overrun landed exactly on a bar sample —
+                            # drop the duplicate seam point.
+                            erased = erased[1:]
+                        piece = [list(kept_tail[-1])] + erased
                         centerlines[last_body_idx] = bar[: cut + 1] + kept_tail
                         if len(piece) > 1 and last_body_idx < len(rings_by_stroke) and rings_by_stroke[last_body_idx]:
                             rings_by_stroke[last_body_idx] = erase_silhouette_piece(
