@@ -14,6 +14,29 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Wave 1, B1: best-of-N InkSight ensembling — rejected by its own
+  gate; the selection signal is the finding**
+  (`tools/inksight/{augment,ensemble}.py` + a back-compatible
+  `--manifest` decode mode; pre-registered and measured in
+  `qualitaetsmetrik.md` §14 „Welle 1 · B1"). Ten deterministic
+  augmentation variants per word (InkSight's own training
+  augmentations), decoded on CPU (100 decodes), ranked exclusively
+  against the MEASURED ink (symmetric skeleton chamfer — never the
+  authored reference), every variant additionally benched against
+  the hand per the owner's oracle directive. The determinism gate
+  passed token-identically on all ten identity decodes. The primary
+  gate FIRES: the ink-ranked winner ties the plain decode exactly
+  (paired median +0.000, p = 1.0) — but the ORACLE column proves a
+  paired −0.0124 median (better on 7 of 9 words) sits inside the
+  same N answers: the coverage-based ranker is blind to traversal
+  ORDER (on `unter` two variants sit 10 % apart in the selection
+  metric and factor 4.9 apart in dtw). Side results: `Wer` is
+  healed (T0's contract failure), structure is net cleaner
+  like-for-like, and augmentation costs contract conformance
+  (median 4 of 10 variants survive per word). The infrastructure
+  stays; the named successor is an order-aware selection signal
+  with the measured +0.0067 gap as target and −0.0124 as ceiling.
+
 - **Wave 2, P2: the align floor becomes the bounded touch; the
   arcade air is closed as hand variance** (`core/compose.py`,
   continuing the owner's directive that the x-drift is still real

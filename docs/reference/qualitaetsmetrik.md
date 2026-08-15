@@ -4272,6 +4272,141 @@ Buchstaben-Attribution stimmt jetzt mit der Hand überein; das
 compose-golden-Fixture wurde als deklarierte Re-Baseline
 regeneriert. K1b ist der nächste Composer-Kandidat der Welle.
 
+### Welle 1 · B1 `aug15` — Vorregistrierung: Best-of-N über Input-Augmentierungen (InkSight)
+
+Geschrieben und committet VOR der ersten Zahl dieser Maßnahme
+(Plan: `../proposals/tintenfolger.md` §7.4; Infrastruktur
+`tools/inksight/{augment,ensemble}.py`, Ranker ausschließlich gegen
+die gemessene Tinte).
+
+**Hypothese.** Ein einzelner Decode ist ein Zug aus einer auf
+Sütterlin instabilen bedingten Verteilung; N deterministische
+Augmentierungs-Varianten (Rotation ±2/±4° × Füllgrad — exakt die
+InkSight-eigenen Trainings-Augmentierungen) plus ein Tinten-Ranker
+(beidseitiges Chamfer gegen `ref_skel`, Kontraktverletzung
+disqualifiziert) verbessern die Bahn. Präzedenz: Afonin et al.,
+ICDAR 2023 (dieselbe Forschungsgruppe, „more than halving the
+character error rate").
+
+**Owner-Direktive (2026-08-15).** Gemessen wird nicht nur der
+Gewinner: ALLE Varianten werden einzeln gegen die Handbahn
+gebencht. Die ORAKEL-Spalte — die per Hand-dtw beste Variante je
+Wort gegen die Wahl des Tinten-Rankers — beziffert, was die
+ehrliche Tinten-Auswahl kostet; die Handbahn bleibt Prüfung, die
+Tinte das einzige Auswahlsignal.
+
+**Messgrößen und Kill-Kriterien** (Dev-Split, Vergleich gegen die
+eingefrorene T0-derender-Zeile `temp/tb-inksight-derender.json`,
+dtw-Median 0,0956, 9 gewertete Wörter + `Wer` failed):
+(a) Primär: gepaarter dtw_xh-Median Best-of-N vs. T0-derender;
+Median-Δ ≥ 0 (keine Verbesserung) = Maßnahme verworfen.
+(b) Struktur netto: `cross_missing+spurious` und
+`retrace_missing+spurious` dürfen sich in Summe nicht
+verschlechtern.
+(c) `Wer` (T0: failed an einem Ein-Punkt-Strich): erwartet geheilt,
+sobald EIN konformes Ensemble-Mitglied existiert; bleibt es failed,
+wird das berichtet, ist aber kein Kill.
+(d) Die Orakel-Lücke (Median der gepaarten Differenz
+Ranker-Wahl − Hand-Orakel) wird berichtet — eine große Lücke ist
+ein Befund über das Auswahlsignal, kein Kill.
+(e) Determinismus-Gate: die Identitäts-Variante `rot+0_s100` muss
+tokengleich zur T0-Antwort decodieren; weicht sie ab, ist der
+LAUF ungültig (nicht die Maßnahme).
+
+**Ergebnis (gemessen nach dem Commit oben).** Der Lauf ist GÜLTIG,
+die Maßnahme ist nach ihrer eigenen Regel VERWORFEN — und der Fund
+steckt in der Orakel-Spalte, die genau dafür vorregistriert war.
+
+*Gate (e) zuerst:* die Identitäts-Variante `rot+0_s100` decodiert
+bei ALLEN zehn Wörtern tokengleich zur eingefrorenen T0-Antwort
+(rekonstruierte Token-Sequenz, `n_ink_tokens` 149…441 identisch,
+`n_invalid_tokens` überall 0, Strichlisten punktgleich; die
+Eingabe-PNGs sind ohnehin byte-identisch zu denen von `prepare.py`).
+100/100 Rohantworten geparst, 10 Varianten je Wort, ein
+Decoder-Deckel-Treffer (`laden`/`rot+4_s092`, 1023 von 1024 Token =
+abgeschnittene Tinte, ohnehin kontraktverletzend).
+
+*Gate (a), die Entscheidung:* gepaarter dtw_xh-Median Best-of-N
+gegen T0-derender **+0,0000** (9 gepaarte Wörter; 4 besser, 4
+schlechter, 1 unverändert; Vorzeichentest p = 1,0; Median absolut
+0,0956 → 0,0960). Δ ≥ 0 heißt laut Vorregistrierung: **verworfen**.
+Die Tinten-Zahlen bewegen sich dabei ALLE in die erwartete Richtung
+— `aiou` 0,6969 → 0,7057, `chamfer_cand_ref` 0,0430 → 0,0388, die
+Ranker-Summe je Wort 0 bis −40 % gegen die Identität. Der Ranker
+hat also genau das optimiert, was ihm aufgetragen war; nur ist das
+nicht, was dtw misst.
+
+*Gate (b):* Struktur netto NICHT schlechter — auf denselben neun
+Wörtern Kreuzungen (missing+spurious) 10 → 6, Retraces 13 → 14,
+Summe 23 → 20. Der Zehn-Wort-Block liest 23 → 25, weil `Wer`
+überhaupt erst gewertet werden KANN und seine eigenen Defekte
+mitbringt; die Like-for-like-Spalte ist die Antwort auf „wurde es
+schlechter".
+
+*Gate (c):* `Wer` ist GEHEILT — T0 scheiterte an einem
+Ein-Punkt-Strich, Best-of-N liefert eine speicherbare Zeile (dtw
+0,1378 über `rot-2_s092`). Von zehn Varianten waren dort genau zwei
+kontraktkonform: das Ensemble hat die Heilung mit seinem letzten
+Mitglied bezahlt, nicht mit Redundanz.
+
+*Gate (d), der eigentliche Befund — die Orakel-Lücke.* Je Wort
+Ranker-Wahl (dtw) · Hand-Orakel (dtw) · T0: `Wer` `rot-2_s092`
+0,1378 · dieselbe 0,1378 · failed | `die` `rot+2_s092` 0,0385 ·
+`rot+0_s092` 0,0312 · 0,0395 | `laden` `rot+0_s100` 0,0607 ·
+dieselbe · 0,0607 | `linken` `rot-2_s100` 0,1081 · dieselbe ·
+0,1227 | `mit` `rot-2_s100` 0,0758 · `rot+4_s092` 0,0361 · 0,0421 |
+`muß` `rot+4_s100` 0,0886 · `rot+0_s100` 0,0808 · 0,0808 | `und`
+`rot+4_s100` 0,3795 · dieselbe · 0,3952 | `unter` `rot-4_s100`
+0,3966 · `rot-2_s100` 0,0813 · 0,3898 | `will` `rot+4_s100` 0,0960
+· `rot-4_s100` 0,0516 · 0,0956 | `zwei` `rot+4_s100` 0,1129 ·
+`rot+2_s100` 0,1069 · 0,1193. Median der gepaarten Differenz
+(Ranker − Orakel) **+0,0067 xh**, Treffer in 4 von 10 Wörtern. Und
+die Kehrseite derselben Tabelle: das ORAKEL hätte einen gepaarten
+Median von **−0,0124** geliefert (7 von 9 Wörtern besser, Median
+absolut 0,0808) — Gate (a) also klar bestanden. Die N Antworten
+ENTHALTEN die Verbesserung; das Auswahlsignal findet sie nicht.
+
+*Warum nicht — an einem Wort abzulesen.* Bei `unter` stehen vier
+kontraktkonforme Varianten zur Wahl; der Tinten-Ranker setzt
+`rot-4_s100` (Chamfer-Summe 0,0759) vor `rot-2_s100` (0,0841), also
+10 % Abstand im Auswahlmaß — in der Handbahn liegen zwischen beiden
+0,3966 gegen 0,0813, ein Faktor 4,9. Bei `mit` dasselbe Muster mit
+8 % Chamfer-Abstand und +0,0337 dtw gegen T0 (die größte
+Einzelregression des Laufs). Das ist keine Kalibrierfrage: ein
+beidseitiges Chamfer gegen das Skelett misst ÜBERDECKUNG und Nähe,
+dtw misst Reihenfolge und Korrespondenz. Wo eine Variante die Tinte
+gleich gut bedeckt, sie aber in anderer Ordnung durchläuft, ist der
+Ranker per Konstruktion blind — und genau diese Wörter (`unter`,
+`mit`) sind die Berührungs-/Überlagerungsfälle aus §7.1.
+
+*Zweiter Befund: die Augmentierung kostet Kontraktkonformität.* Nur
+`rot+0_s100` und `rot-2_s100` schaffen 9 von 10 Wörtern; die
+Füllgrad-Varianten kommen auf 3–4. Nach Disqualifikation bleiben im
+Median 4 von 10 Mitgliedern, bei fünf Wörtern ≤ 4 und bei `und`,
+`laden`, `Wer` nur 2 — das Ensemble schrumpft ausgerechnet dort, wo
+es gebraucht würde. Einziges Wort mit 10/10 gültigen Mitgliedern ist
+`die` (kleinster Crop, 154 px). Die Ein-Punkt-Striche sind also kein
+`Wer`-Sonderfall, sondern die Reaktion des Modells auf verschobene
+Eingaben. Repariert wird nichts (§2.4): eine geflickte Zeile ließe
+das Modell besser aussehen, als es ist.
+
+*Kein systematischer Gewinner.* Der Ranker wählt 7× reine Rotation,
+2× Füllgrad, 1× die Identität; das Orakel verteilt sich auf ACHT
+verschiedene Varianten. Es gibt keine bessere feste Vorverarbeitung,
+die man einfach adoptieren könnte — der Gewinn ist wortweise und
+steht und fällt mit der Auswahl.
+
+**ENTSCHEIDUNG: VERWORFEN** als Default (Gate (a) feuert; nichts in
+`core/`, an der DB oder am Rendering wird berührt — die Maßnahme
+lebte ohnehin nur im Messlayer). Behalten wird die INFRASTRUKTUR
+(`tools/inksight/{augment,ensemble}.py` inkl. `--per-variant`), denn
+sie hat die eigentliche Frage erst messbar gemacht. Der Nachfolger
+ist NICHT „mehr Varianten", sondern das Auswahlsignal: ein Ranker,
+der Reihenfolge sieht (Soll-Duktus-Struktur statt reiner
+Überdeckung), gemessen gegen die hier gemessene Orakel-Lücke von
++0,0067 xh als Zielgröße und −0,0124 als Deckel. `Wer` bleibt als
+Nebenergebnis geheilt, ist aber allein keine Adoption wert.
+
 ### Welle 1 · A1 `aug15` — Vorregistrierung: der Marken-Nachfit
 
 Geschrieben und committet VOR der ersten Zahl dieser Maßnahme

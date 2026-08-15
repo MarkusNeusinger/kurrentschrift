@@ -614,9 +614,10 @@ optimiert (sie bleibt die Nulllinie des Duktus-Prior-Werts).
 
 | Welle | Maßnahmen | Charakter |
 |---|---|---|
-| **1** (sofort, billig, unabhängig) | K1 + K2 (Composer-Topologie) · A1 (Marken-Nachfit) · B3 (A/Bs) · B1 (Ensembling) | Stunden bis ~1 Tag je Maßnahme |
-| **2** | B2 (Tiling) · A2 (SDM/DCD) · K3 (Owner: W-Trace + Laufform) | 1–3 Tage je Maßnahme |
-| **3** | A3 (Kreuzungs-Variablen) · B4 (Init-Tausch, segmentweise) · A5 (Zwei-Pass-Zwang) | Tage bis 1 Woche |
+| **1** (sofort, billig, unabhängig) | K1 ✓ (#358) · K1b ✓ (#359, ersetzte K2: der Evidenz-Rest war das Stamm-Retrace, nicht die Kopplung) · A1 ✓ (#360, −55 % Marken-Ortsfehler, opt-in) · B1 ✓ gemessen (ehrliches Negativ: Orakel-Lücke = der Fund) · B3 (A/Bs, offen) | **abgeschlossen bis auf B3** |
+| **1b — Vorschub** (Owner-Fund an den K1b-Overlays) | P1 ✓ (#361: Bowl-Tuck · w/v-Rückwärts · Balken-Steigung) · P1b ✓ (#362: longs-Ausnahme) · P2 ✓ (#363: align-Floor; Arkaden = Beleg-Varianz, geschlossen) — `word_loss` 0,1110 → 0,1081, `pair_loss` 0,1657 → 0,1466 | **abgeschlossen**; §14 „Welle 2 · P1/P1b/P2" |
+| **2** | **P3 KOARTIKULATION (Owner-Priorität „zeitnah", 2026-08-15): kontextabhängige Kopf-/Schwanz-Flexibilität der Buchstaben — die Hand formt Ein-/Ausläufe je Nachbar um (pairlab-Dissektionen); Pilotfall r→e (−0,51: die Hand streckt den r-Arm in die Verbindung, das Template bleibt starr)** · B2 (Tiling) · A2 (SDM/DCD) · K3 (Owner: W-Trace + Laufform, z prüfen) | P3 zuerst; je eigene Vorregistrierung |
+| **3** | A3 (Kreuzungs-Variablen) · B4 (Init-Tausch, segmentweise) · A5 (Zwei-Pass-Zwang) · ordnungs-bewusstes B1-Auswahlsignal (Ziel +0,0067, Deckel −0,0124) | Tage bis 1 Woche |
 | **4** | A4 (Barriere) · A6 (GNC) · Route B2 (eigenes Modell) · Fusion | die großen Umbauten |
 
 Messdisziplin unverändert: jede Maßnahme bekommt VOR der ersten Zahl
@@ -628,3 +629,26 @@ datierte Re-Baseline; alle Nachfahr-Maßnahmen laufen auf den 10
 Dev-Wörtern, der Bestätigungssatz (Owner, sobald wieder am Tablet:
 Umlautwort, langes ſ, +1 Versal, Marken mit Absetzen) bleibt der
 Schlussstein, an dem jeder adoptierte Gewinn bestehen muss.
+
+**Nachkalibrierungs-Protokoll bei neuen authored-Wörtern**
+(Owner-Direktive 2026-08-15: „nur 10 Wörter — fix einplanen, dass
+weiter getuned wird, wenn mehr verfügbar sind"). Die Evidenz der
+Kalibrierungen hat zwei EHRLICH VERSCHIEDENE Böden: Die
+VORSCHUB-Konstanten (Bowl-Tuck, w/v-Rückwärts, Balken-Steigung,
+align-Floor) ruhen auf den ~218 QC-gefilterten Dissektionen des
+HARVESTS über alle 63 Wörter + 33 Drills — aus dem Scan lesbar,
+ohne Nachfahrung, solide n. Die TOPOLOGIE- und ORDNUNGS-Wahrheiten
+(dtw, Strukturzähler, Marken-Orte, Soll-Vergleiche, Retraces —
+alles, was der Scan prinzipiell NICHT hergibt: Strichfolge,
+Absetzen, doppelt beschriebene Tinte) ruhen auf den 10
+nachgefahrenen Wörtern und sind entsprechend dünn (Balken-Klasse
+n=6, longs-Rückwärts n=1). DESHALB, stehend: Jede neue
+authored-Charge löst denselben Ablauf aus — (1) `--only
+word-instances`-Refill der Fixture-Roots, (2) die
+Diagnose-Erhebung neu (Drift-Profil + signierte doff-Attribution
+je Platzierungsregel), (3) jede Konstante, deren Klassen-Median
+sich um > 0,05 xh bewegt oder deren Varianz-Verdikt kippt
+(Arkaden-Luft!, Diagonalen-Trim, longs-Ausnahme), bekommt eine
+datierte Nachkalibrierung mit den P1/P2-Gates, (4) die
+`--split confirm`-Wörter bleiben dabei Bestätigung und wandern NIE
+in den Dev-Satz (Append-never).
