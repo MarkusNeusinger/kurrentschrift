@@ -38,6 +38,7 @@ from tools.pairlab.follow import (
     CANDIDATE_FRAME,
     LANDMARK_CALIBRATION_MODES,
     LANDMARK_TARGET_MODES,
+    STRUCTURE_GUARD_MAX_RETRIES,
     FollowWeights,
     LandmarkTargeting,
     _intersect_lines,
@@ -194,6 +195,70 @@ def test_the_round_loop_stops_when_nothing_moved(synthetic) -> None:
     assert len(followed.rounds) == 1
     assert followed.fit_meta["stopped_early"] is True
     assert followed.fit_meta["rounds_requested"] == 3
+
+
+# ----------------------------------------------------------- the structure guard
+
+
+def test_the_structure_guard_defaults_off_and_records_nothing(synthetic) -> None:
+    """Arm ⑨'s inertness rule: without the flag the follower is untouched."""
+    assert FollowWeights().structure_guard is False
+    case, result, windows, fit = synthetic
+    followed = follow_word_chain(
+        case, [0, 1], result=result, windows_px=windows, fit=fit, weights=FollowWeights(rounds=1)
+    )
+    assert followed is not None
+    assert "structure_counts" not in followed.rounds[0]
+
+
+def test_a_clean_round_passes_the_guard_with_its_counts_recorded(synthetic, monkeypatch) -> None:
+    """A round inside the budget solves exactly as without the guard, and the
+    record carries budget, counts and zero retries for the report."""
+    case, result, windows, fit = synthetic
+    monkeypatch.setattr(
+        "tools.pairlab.follow.structure_class_counts",
+        lambda strokes: {"cross": 0, "retrace": 0, "touch": 0, "overlap": 0},
+    )
+    plain = follow_word_chain(case, [0, 1], result=result, windows_px=windows, fit=fit, weights=FollowWeights(rounds=1))
+    guarded = follow_word_chain(
+        case, [0, 1], result=result, windows_px=windows, fit=fit, weights=FollowWeights(rounds=1, structure_guard=True)
+    )
+    assert plain is not None and guarded is not None
+    assert guarded.strokes_units == plain.strokes_units
+    record = guarded.rounds[0]
+    assert record["structure_rejected"] is False
+    assert record["structure_retries"] == 0
+    assert record["structure_counts"] == record["structure_budget"]
+
+
+def test_a_violating_round_is_rejected_back_to_the_previous_geometry(synthetic, monkeypatch) -> None:
+    """The acceptance rule end to end: budget from the init, two halved-bounds
+    retries, then the previous geometry stands — here the chain identity."""
+    case, result, windows, fit = synthetic
+    calls = {"n": 0}
+
+    def fake_counts(strokes):
+        calls["n"] += 1
+        # First call measures the INIT's budget; every solved round after it
+        # reports an invented crossing, so no retry can ever satisfy the guard.
+        if calls["n"] == 1:
+            return {"cross": 0, "retrace": 0, "touch": 0, "overlap": 0}
+        return {"cross": 1, "retrace": 0, "touch": 0, "overlap": 0}
+
+    monkeypatch.setattr("tools.pairlab.follow.structure_class_counts", fake_counts)
+    identity = follow_word_chain(
+        case, [0, 1], result=result, windows_px=windows, fit=fit, weights=FollowWeights(rounds=0)
+    )
+    guarded = follow_word_chain(
+        case, [0, 1], result=result, windows_px=windows, fit=fit, weights=FollowWeights(rounds=2, structure_guard=True)
+    )
+    assert identity is not None and guarded is not None
+    record = guarded.rounds[0]
+    assert record["structure_rejected"] is True
+    assert record["structure_retries"] == STRUCTURE_GUARD_MAX_RETRIES
+    assert len(guarded.rounds) == 1  # the loop ends on rejection
+    assert guarded.fit_meta["stopped_early"] is True
+    assert guarded.strokes_units == identity.strokes_units  # the init stands
 
 
 # ------------------------------------------------------------- the retrace guard
