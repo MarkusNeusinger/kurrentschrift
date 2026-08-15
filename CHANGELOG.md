@@ -16,8 +16,8 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 - **Wave 2, P2: the align floor becomes the bounded touch; the
   arcade air is closed as hand variance** (`core/compose.py`,
-  continuing the owner's „die x-Verschiebung ist noch real"
-  directive). The measured align-class error (+0.072 median over 36
+  continuing the owner's directive that the x-drift is still real
+  and the work must continue). The measured align-class error (+0.072 median over 36
   dissected joins) is rise-INDEPENDENT, so the two registered knobs
   were an additive diagonal trim and the align/nested clearance
   floor. The single-knob sweep adopted the FLOOR
