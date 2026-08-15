@@ -4236,3 +4236,38 @@ PRs und wird hier als deklarierte Re-Baseline geführt; er ist KEIN
 Akzeptanzkriterium.
 (d) Sichtprüfung der beiden t-Wörter auf der Duell-/Werkbank-Seite
 (der Balken darf nicht als abgesetzter Stummel wirken).
+
+**Ergebnis (gemessen nach dem Commit oben).** Die registrierte
+Erwartung ist WIDERLEGT — und die Widerlegung ist der Fund. Auf
+WORT-Ebene ändert der Überstand die Topologie exakt gar nicht: die
+Kreuzungspunkte der komponierten `unter` sind vor und nach K1
+byte-nah identisch ((4,72 · 0,28) und (7,70 · 0,26)), `soll_cross`
+bleibt 2, die Agree-Zeilen bleiben 7/10 und 6/10. Der Grund: die
+t-Kreuzung EXISTIERTE schon immer — der Stift-Weg
+Balken-Rücklauf → Schnittpunkt → Join-Haarlinie ist EIN
+Pen-down-Zug und durchstößt den Stamm; verbucht war sie nur beim
+JOIN (`comp − Σ Buchstaben`), weil der Balken als eigener Strich am
+Schnittpunkt endete. K1 verschiebt die Kreuzung in den Buchstaben
+(Σ Buchstaben 1→2, die per-Letter-Zelle des gebundenen t wird 1/1
+und trägt damit den Duktus-Fingerabdruck selbst; der scheinbare
+„Join-Beitrag +1" bei `unter` war eine Fehlbuchung dieser
+Balken-Kreuzung, kein d/e-artiger Schleifenbeitrag). Das ECHTE
+Defizit (`unter` 2 vs 3, `mit` 1 vs 2) sitzt im STAMM-RETRACE: die
+Hand schreibt den t-Stamm hinunter und VERSETZT wieder hinauf
+(Abstrich x≈4,60, Aufstrich x≈4,65 — der Auslauf durchsticht ZWEI
+Pässe und die Rückkehr kreuzt den Abstrich ein drittes Mal), die
+Komposition überbrückt den Rückweg KOLLINEAR auf dem Stamm — für
+den Zähler unsichtbar. Kandidat K1b (eigene Vorregistrierung, nicht
+Teil dieses Ergebnisses): die generierte Stamm-Rückkehr als
+versetzten Pass führen (~0,05 xh, innerhalb der Schwellzug-Breite —
+auf der Platte unsichtbar, im Zähler zwei Pässe). Gates: Headline
+`bench_loss` 0,110703 → 0,110992 (+0,0003, Kill-Schwelle 0,002),
+`pair_loss` byte-gleich 0,165688, bewegt haben sich AUSSCHLIESSLICH
+t-Wörter (Seiten +0,00001 · Soldaten +0,0007 · streiten +0,0036 ·
+unter +0,0038 · fechten +0,0100); kein Nicht-t-Wort verliert
+Übereinstimmung. ENTSCHEIDUNG: BEHALTEN — kein Kill-Kriterium
+feuert, die Tinte ist quasi unverändert (der Join beginnt an der
+Spitze statt am Schnittpunkt, derselbe Weg), und die
+Buchstaben-Attribution stimmt jetzt mit der Hand überein; das
+compose-golden-Fixture wurde als deklarierte Re-Baseline
+regeneriert. K1b ist der nächste Composer-Kandidat der Welle.
