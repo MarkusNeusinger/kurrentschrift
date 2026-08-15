@@ -1,5 +1,9 @@
 """The ink follower: a re-linearising restart that pulls the chain onto the ink.
 
+The structure-guarded run of this follower is what the duel page labels
+"Kette" (owner decision 2026-08-16: the guarded variant is THE chain; see the
+glossary entry "Duell-Namen").
+
 Route A of `docs/proposals/tintenfolger.md` §3, and nothing else. The chain fit
 (`tools.pairlab.chain`) is a MEASUREMENT fit: its Tikhonov term deliberately
 pulls the path towards the chart form so a hand statistic stays robust. As an

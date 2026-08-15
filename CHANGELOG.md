@@ -12,6 +12,24 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Changed
+
+- **Duel-method display names decided and propagated** (owner decision
+  2026-08-16): the readable method family is Hand · Kette · InkSight ·
+  Nullprobe (planned: Zögling · Vier Augen · Feinschliff · Chor ·
+  Lotse as working title). The structure-guarded chain run is THE
+  „Kette" (fit-invented crossings are never right — join-formed ones
+  live in the Soll budget, hand-vs-composition gaps are composer
+  defects to fix at the source), the duel page carries ONE InkSight
+  (the text-prompt variant was diagnosis and leaves the page), and
+  the prior-free control is the „Nullprobe". The translation table
+  lives in the new glossary entry „Duell-Namen"
+  (+ `tintenfolger.md` §7.8 incl. the new owner-proposed „Lotse"
+  route sketch: ride the skeleton mid-ink, ask the ductus like a map
+  at junctions); technical names (Kettenfit, Route G, `routeg-graph`)
+  stay unchanged in code and dated §14 entries, with display-name
+  pointers added to `tools/routeg` and `tools/pairlab/follow.py`.
+
 ### Fixed
 
 - **Duel viewer: the writing animation, the control's visibility, and

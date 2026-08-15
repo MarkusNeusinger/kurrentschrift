@@ -369,10 +369,11 @@ auseinanderfallen.
   (Verfeinerungsstufe auf dem Kettenfit: Form-Prior → Proximal-Term) gegen
   Route B (InkSight roh; Fine-Tune als unmöglich verworfen → eigenes
   kleines Modell auf Engine-Paaren) und Route G (die prior-freie
-  geometrische Kontrolle `tools/routeg`: beziffert, was der Duktus-Prior
-  kauft — Referenz-Code ist MATLAB, darum eigene Minimalfassung) —
-  *Status: in Arbeit (Stufe A gebaut, Route G gemessen, B–D und die
-  übrigen Routen offen)*
+  geometrische Kontrolle `tools/routeg`, Anzeige-Name **Nullprobe**:
+  beziffert, was der Duktus-Prior kauft — Referenz-Code ist MATLAB,
+  darum eigene Minimalfassung); Anzeige-Namen aller Verfahren im
+  Glossar-Eintrag „Duell-Namen" —
+  *Status: Duell komplett gemessen, Optimierungsplan §7 in Arbeit*
 - **[Planänderungen](proposals/planaenderungen.md)** — vier Vorschläge:
   §2/§4 systematische Bigramm-Extraktion aus Beispieltext; §3/§6.1
   Positions-Verteilung datengetrieben; M4+-Modul `core/orthography.py`
