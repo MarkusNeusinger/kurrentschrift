@@ -14,6 +14,41 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Route G: the prior-free control of the Tintenfolger duel**
+  (`tools/routeg`, `docs/proposals/tintenfolger.md` §4b) — a third
+  candidate that recovers a writing order from the ink ALONE: frozen
+  skeleton → segment graph (adjacent branch pixels merged into one node,
+  the paper's crossing „cluster") → greedy traversal by good
+  continuation, converted into a `tools/tracebench` candidate through the
+  harvest's own `_px_to_word_units`. Its role is control, not
+  competitor: the distance between it and the chain fit on the same ten
+  words is the first measured number for what the ductus prior buys.
+  Measurement only — no DB, no API, no `core/`, no rendering.
+
+  **The reference implementation is not what runs here, and the reason is
+  documented rather than papered over.**
+  <https://github.com/gioelecrispo/wor> (Diaz et al. 2022) carries a real
+  MIT licence, so the licence is not the blocker — the runtime is: 234
+  MATLAB `.m` files needing MATLAB 2016a+ with the Image Processing
+  Toolbox, no PyPI package, no Octave path, an unlicensed
+  `SalernoSkeletonization.jar` in the tree, and no commit since
+  2022-10-06. Neither MATLAB nor Octave exists here or in CI, so a
+  `wor()` number would be reproducible by nobody running this repo's
+  gates. The control is therefore a deliberate MINIMAL own reduction —
+  three decisions, each named beside the reference's richer one it
+  replaces — and it explicitly declines the reference's learned
+  start-point prior (a 2-D Gaussian fitted on SigComp2009 SIGNATURES),
+  because a control that borrows a learned table is not prior-free.
+  `prepare.py` still writes exactly `wor()`'s documented input format, so
+  only stage 2 would have to be swapped by anyone holding a MATLAB
+  licence.
+
+  Measured on the frozen dev split: `aiou_median` 0.833 — *higher* than
+  the hand references score against themselves — while `dtw_xh_median`
+  is 0.820 and the structure gates collapse (15 crossings missing, 15
+  retraces missing, +90 pen lifts). Riding the ink is not writing it,
+  which is exactly what a control is for.
+
 - **The duel page shows the DETECTED structures, so the eye can audit the
   detector against the ink** (`tools/tracebench/view.py::structure_marks`,
   owner request after the t carried three „retrace" zones): every layer

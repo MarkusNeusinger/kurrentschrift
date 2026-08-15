@@ -4012,3 +4012,116 @@ default False): er ist das erste Instrument, das einen Folger-Lauf
 GARANTIERT struktur-sauber hält, und der prox-0,1-Lauf ist als
 einziger struktur-sauberer Release-Kandidat auf der Duell-Seite.
 Artefakte: Chronik `arm9-wächter`.
+
+### Route G `aug14` — die prior-freie Kontrolle: was der Duktus-Prior kauft
+
+Der Kontrollkandidat aus
+[`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §4b, jetzt
+gemessen. **Was gelaufen ist, ist nicht der publizierte Code:** Das
+Referenz-Repo (Diaz et al. 2022) ist MATLAB 2016a+ mit Image Processing
+Toolbox — MIT lizenziert, aber hier und in CI nicht ausführbar, also
+wäre eine `wor()`-Zahl von niemandem nachrechenbar (Befund und
+Belegstellen im §4b-Nachtrag). Gelaufen ist die eigene Minimalfassung
+`tools/routeg`: eingefrorenes Skelett → Segmentgraph (benachbarte
+Verzweigungspixel = EIN Knoten) → Greedy-Traversierung, drei
+Entscheidungen (linkester Endpunkt · ein Skalarprodukt am Knoten ·
+Absetzen bei Sackgasse), **kein gelernter Anteil, kein Template, keine
+Ground Truth**. Das Kandidatenlabel heißt darum `routeg-graph`, nicht
+`routeg-wor`.
+
+Lauf: `--candidate file --candidate-file temp/routeg-t0.json --label
+routeg-t0 --split dev`, Schritt 0,02, 175 s, 10/10 gescort, 0 failed.
+Referenzseite identisch zur v2.1-Baseline (23 Kreuzungen · 15
+Retrace-Zonen · 8 Berührungen · 0 Überlagerungen) — dieselben
+eingefrorenen Zähler, also ist die Gegenüberstellung wörtlich
+vergleichbar. Nach den Soll-Spalten (#353) einmal nachgemessen: **jede
+Zahl byte-gleich**, nur die zwei neuen Report-Zeilen kommen hinzu
+(`soll_cross_agree` 7/10, `soll_zones_agree` 6/10) — die
+Report-Spalten-Regel hält also auch für diesen Kandidaten.
+
+```
+dtw_xh_median:   0.819847    aiou_median:              0.8333
+dtw_xh_p90:      1.026691    chamfer_cand_ref_median:  0.0365
+dtw_xh_worst:    die 1.0355  chamfer_ref_cand_median:  0.0411
+marks_missing:   0   marks_spurious:   4
+cross_missing:   15  cross_spurious:   3
+retrace_missing: 15  retrace_spurious: 0
+retrace_arc_ratio_median: 0.000
+lift_delta_total: 90  dtw_reversed_better: 0  dtw_max_absorption_max: 222
+touch_ref 8 / touch_cand 4 · overlap_ref 0 / overlap_cand 25
+```
+
+Je Wort (dtw · aiou · Kreuzungen gefunden/Soll · Striche
+Kandidat/Hand): die **1,036** · 0,854 · 0/1 · 6/2 — linken **1,026** ·
+0,821 · 1/3 · 18/2 — zwei 0,907 · 0,813 · 1/3 · 13/1 — laden 0,833 ·
+0,859 · 2/3 · 11/1 — will 0,832 · 0,841 · 0/3 · 9/2 — Wer 0,808 ·
+0,880 · 0/3 · 11/1 — muß 0,681 · 0,829 · 1/1 · 11/2 — unter 0,656 ·
+0,829 · 1/3 · 16/2 — und 0,428 · 0,838 · 1/1 · 9/2 — mit 0,414 ·
+0,801 · 1/2 · 7/2.
+
+**Gegenüberstellung** (gleiche Wörter, gleiches Lineal). Der Kettenfit
+wurde für diese Zeile am selben Tag NEU gerechnet
+(`--candidate chain --split dev`, 2808 s) statt aus der v2.1-Baseline
+abgeschrieben — und reproduziert sie exakt: dtw 0,061985 · aiou 0,6831 ·
+p90 0,261818 · worst `unter` 0,438926 · Chamfer 0,0398/0,0467 ·
+Kreuzungen 7 fehlend/4 erfunden · Zonen 2/5 · `retrace_arc_ratio` 0,830 ·
+Berührungen 8/17 · Überlagerungen 0/6 · `lift_delta_total` 3. Die
+Gegenüberstellung ist damit gemessen, nicht zitiert:
+
+| | Hand (Referenz) | Kettenfit | Route G |
+|---|---|---|---|
+| `dtw_xh` Median | 0 (Identitäts-Gate) | **0,062** | **0,820** |
+| `aiou` Median | 0,685 | 0,683 | **0,833** |
+| Kreuzungen (Soll 23) | 23 | 20 · 7 fehlen, 4 erfunden | 8 · **15 fehlen**, 3 erfunden |
+| Retrace-Zonen (Soll 15) | 15 | 18 · 2 fehlen, 5 erfunden | 0 · **15 fehlen**, 0 erfunden |
+| Absetz-Differenz Σ | 0 | 3 | **90** |
+
+**Lesart — die Kontrolle tut genau, was eine Kontrolle soll.** Drei
+Dinge stehen nebeneinander, und nur zusammen ergeben sie einen Satz:
+
+1. **`aiou` ist HÖHER als die der Hand gegen sich selbst** (0,833 gegen
+   0,685). Das ist kein Sieg, sondern der Beweis, dass die Spalte
+   Tintendeckung misst und nicht Schreiben: Die Traversierung läuft
+   qua Konstruktion auf dem Skelett, die Handbahn ist ein Stiftweg, der
+   die Tinte nicht deckungsgleich abfährt. **Auf der Tinte zu liegen
+   ist nicht dasselbe wie sie zu schreiben** — die schärfste verfügbare
+   Warnung davor, `aiou` je als Kopfzahl zu lesen.
+2. **`dtw_xh` ist 13× so groß wie beim Kettenfit** (0,820 gegen 0,062).
+   Das ist die Zahl, für die Route G gebaut wurde: So weit ist der Weg
+   durch dieselbe Tinte, wenn niemand weiß, wie man schreibt.
+   architektur.md §2 hat damit erstmals eine Messzahl statt eines
+   Architektur-Arguments.
+3. **Die Struktur bricht ganz weg.** 15 der 23 Kreuzungen verloren, alle
+   15 Retrace-Zonen verloren (bauartbedingt — die Traversierung läuft
+   jede Kante genau einmal), und 90 zusätzliche Absetzer (`lift_delta`
+   zählt Körperstriche, Marken sind ausklassifiziert; über alle Striche
+   gerechnet sind es 111 gegen 17). Die Hand schreibt diese Wörter in
+   **1–2 Zügen**, die Kontrolle braucht **6–18**. Genau hier — nicht in
+   der Distanz — sitzt der Unterschied
+   zwischen „Tinte nachfahren" und „Schreiben".
+
+**Was das für die Folger-Arme heißt:** Die Kill-Kriterien des §14 sind
+gegen den Kettenfit vorregistriert, und Route G bestätigt deren
+Richtung ohne sie zu berühren — der Prior schlägt die prior-freie
+Kontrolle klar (der Fall „schlägt ihn NICHT klar" aus §4b tritt nicht
+ein), und zwar in der STRUKTUR deutlicher als in der Distanz. Route G
+ist damit erledigt als Frage und bleibt als Bodenmarke: Ein Folgerarm,
+der Struktur gegen Distanz eintauscht, kann an dieser Zeile ablesen,
+wo das endet.
+
+**Grenzen dieser Zahl, ehrlich benannt:** (a) Die Kontrolle ist eine
+REDUKTION des publizierten Verfahrens, keine Reimplementierung — ohne
+gewichtete `π_ij`-Fortsetzung, ohne Cluster-Rang-Klassifikation, ohne
+Dijkstra durch den Cluster und ohne Retrace-Modell. Die echte WOR-Zahl
+läge besser, und **um wie viel, ist hier NICHT gemessen**: Die ersten
+drei fehlenden Bausteine adressieren die Astwahl (also `dtw` und die
+Kreuzungsspalte), das fehlende Retrace-Modell dagegen genau die beiden
+Zeilen, die hier am lautesten sind — Retrace-Zonen und Absetz-Differenz.
+Wer die Lücke zum Prior beziffern will, statt sie nur zu sehen, muss
+diese Zahl mit MATLAB nachziehen; bis dahin ist die Aussage die
+schwächere und sichere: **so weit ist der Weg mindestens.** (b) Sie ist auf
+denselben 10 Dev-Wörtern gemessen wie alles andere und trägt deren
+blinde Flecken (kein Umlautwort, kein langes ſ, eine Majuskel).
+(c) `marks_uncertain` gilt für dieselben 4 Wörter wie in der Baseline.
+Artefakte: `temp/routeg-t0.json`, `temp/tb-routeg-t0.{json,txt}`
+(gitignoriert); Rezept in `tools/routeg/README.md`.
