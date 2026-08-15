@@ -9,7 +9,15 @@ candidate contract `to_candidate.py` writes — `docs/proposals/tintenfolger.md`
     uv run python -m tools.inksight.ensemble
         [--manifest tools/inksight/out/frames_ensemble.json]
         [--raw tools/inksight/out/raw] [--out tools/inksight/out/candidates]
-        [--prompt derender] [--fixtures-root ...]
+        [--prompt derender] [--fixtures-root ...] [--per-variant]
+
+`--per-variant` additionally writes ONE candidate file per grid member
+(`<tool>-<variant>.<prompt>.json`), which is what the §14 pre-registration of B1
+asks for: every variant benched against the hand trace individually, so the
+ORACLE column — the per-word best variant by hand-dtw — can be set beside the
+ink ranker's pick and the price of the honest selection signal becomes a number
+instead of an assumption. The selection itself is unaffected; those files are
+bench INPUT, never a candidate anyone would ship.
 
 **The ranker grades against the INK, never against a reference trace.** This is
 the load-bearing rule of the whole measure, so it is worth saying twice: the
@@ -214,6 +222,60 @@ def _rank_report(evaluation: dict) -> dict:
     return line
 
 
+def _row(evaluation: dict, frame_record: dict, registration: dict, xh: float, meta: dict) -> dict:
+    """One candidate row around one evaluated variant's geometry, verbatim."""
+    if evaluation["detail"]:
+        meta["detail"] = evaluation["detail"]
+    return {
+        "kind": frame_record.get("kind", "word"),
+        "specimen_id": frame_record["id"],
+        "word": frame_record["word"],
+        "registration_px": registration,
+        "xh_px": xh,
+        "strokes": evaluation["strokes"],
+        "status": evaluation["status"],
+        "meta": meta,
+    }
+
+
+def _base_meta(evaluation: dict, ink_source: str) -> dict:
+    """The meta both row kinds share: what the model answered, how it ranked."""
+    raw = evaluation["raw"]
+    meta = {
+        "prompt": raw.get("prompt"),
+        "prompt_key": raw.get("prompt_key"),
+        "n_ink_tokens": raw.get("n_ink_tokens"),
+        "n_invalid_tokens": raw.get("n_invalid_tokens"),
+        "grid_step_crop_px": evaluation["grid_step_crop_px"],
+        "recognized_text": raw.get("recognized_text"),
+        "variant": evaluation["variant"],
+        "rotation_deg": evaluation["rotation_deg"],
+        "scale": evaluation["scale"],
+        # Named in full so a reader of the archive never has to guess what the
+        # selection was made against.
+        "rank_metric": "chamfer_sum_xh_vs_measured_ink",
+        "ink_source": ink_source,
+        "rank_resample_px": RANK_RESAMPLE_PX,
+    }
+    for key in ("rank_sum_xh", "chamfer_cand_ink_xh", "chamfer_ink_cand_xh"):
+        value = evaluation[key]
+        meta[key] = None if math.isinf(value) else round(value, 6)
+    return meta
+
+
+def build_variant_row(evaluation: dict, frame_record: dict, word_json: dict, ink_source: str) -> dict:
+    """ONE variant's own candidate row — the per-variant bench input.
+
+    The §14 pre-registration of B1 requires every variant to be benched against
+    the hand trace individually, so that the ORACLE column (the per-word best
+    variant by hand-dtw) can be set beside the ink ranker's pick and the price of
+    the honest selection signal can be stated as a number. This row is that
+    input: the same contract, the same verbatim geometry, one variant per file.
+    """
+    registration, xh = registration_of(word_json)
+    return _row(evaluation, frame_record, registration, xh, _base_meta(evaluation, ink_source))
+
+
 def build_ensemble_row(
     evaluations: list[dict], frame_record: dict, word_json: dict, ink_source: str, n_planned: int
 ) -> dict:
@@ -223,39 +285,13 @@ def build_ensemble_row(
     registration, xh = registration_of(word_json)
     ranked = sorted(evaluations, key=rank_key)
     winner = ranked[0]
-    raw = winner["raw"]
-    meta = {
-        "prompt": raw.get("prompt"),
-        "prompt_key": raw.get("prompt_key"),
-        "n_ink_tokens": raw.get("n_ink_tokens"),
-        "n_invalid_tokens": raw.get("n_invalid_tokens"),
-        "grid_step_crop_px": winner["grid_step_crop_px"],
-        "recognized_text": raw.get("recognized_text"),
-        "variant": winner["variant"],
-        "rotation_deg": winner["rotation_deg"],
-        "scale": winner["scale"],
+    meta = _base_meta(winner, ink_source) | {
         "ensemble_n": len(evaluations),
         "ensemble_n_planned": n_planned,
         "ensemble_n_valid": sum(1 for item in evaluations if item["status"] == "ok"),
-        # Named in full so a reader of the archive never has to guess what the
-        # selection was made against.
-        "rank_metric": "chamfer_sum_xh_vs_measured_ink",
-        "ink_source": ink_source,
-        "rank_resample_px": RANK_RESAMPLE_PX,
         "ranking": [_rank_report(item) for item in ranked],
     }
-    if winner["detail"]:
-        meta["detail"] = winner["detail"]
-    return {
-        "kind": frame_record.get("kind", "word"),
-        "specimen_id": frame_record["id"],
-        "word": frame_record["word"],
-        "registration_px": registration,
-        "xh_px": xh,
-        "strokes": winner["strokes"],
-        "status": winner["status"],
-        "meta": meta,
-    }
+    return _row(winner, frame_record, registration, xh, meta)
 
 
 def _read_answers(raw_dir: Path, entry_id: str, variants: dict, prompt_key: str) -> list[tuple[dict, dict]]:
@@ -280,6 +316,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--fixtures-root", type=Path, default=None, help="default: the root augment.py recorded")
     parser.add_argument("--tool", default=TOOL_NAME)
     parser.add_argument("--version", default=None, help="default: today (UTC)")
+    parser.add_argument(
+        "--per-variant",
+        action="store_true",
+        help="also write ONE candidate file per variant (the §14 oracle column's bench input)",
+    )
     args = parser.parse_args(argv)
 
     payload = json.loads(args.manifest.read_text(encoding="utf-8"))
@@ -290,6 +331,7 @@ def main(argv: list[str] | None = None) -> int:
     identity = (payload.get("grid") or {}).get("identity")
 
     rows: list[dict] = []
+    per_variant: dict[str, list[dict]] = {}
     skipped = 0
     for entry_id in ids:
         frame_record = frames.get(entry_id)
@@ -319,6 +361,10 @@ def main(argv: list[str] | None = None) -> int:
         ]
         row = build_ensemble_row(evaluations, frame_record, word_json, ink_source, len(frame_record["variants"]))
         rows.append(row)
+        if args.per_variant:
+            for evaluation in evaluations:
+                variant_rows = per_variant.setdefault(evaluation["variant"], [])
+                variant_rows.append(build_variant_row(evaluation, frame_record, word_json, ink_source))
 
         meta = row["meta"]
         table = {item["variant"]: item["rank_sum_xh"] for item in meta["ranking"]}
@@ -336,23 +382,36 @@ def main(argv: list[str] | None = None) -> int:
         print(f"no ensembled rows produced from {args.raw}")
         return 1
 
-    rows.sort(key=lambda row: row["specimen_id"])
+    version = args.version or datetime.now(UTC).date().isoformat()
+
+    def write(tool: str, document_rows: list[dict]) -> Path:
+        document_rows.sort(key=lambda row: row["specimen_id"])
+        document = {
+            "tool": tool,
+            "version": version,
+            "style": style,
+            "source_id": source_id,
+            "set": set_name,
+            "frame": CANDIDATE_FRAME,
+            "rows": document_rows,
+        }
+        target = args.out / f"{tool}.{args.prompt}.json"
+        target.write_text(json.dumps(document, indent=2, ensure_ascii=False), encoding="utf-8")
+        return target
+
     args.out.mkdir(parents=True, exist_ok=True)
-    document = {
-        "tool": args.tool,
-        "version": args.version or datetime.now(UTC).date().isoformat(),
-        "style": style,
-        "source_id": source_id,
-        "set": set_name,
-        "frame": CANDIDATE_FRAME,
-        "rows": rows,
-    }
-    target = args.out / f"{args.tool}.{args.prompt}.json"
-    target.write_text(json.dumps(document, indent=2, ensure_ascii=False), encoding="utf-8")
+    target = write(args.tool, rows)
     failed = [row for row in rows if row["status"] != "ok"]
     print(f"{target}  rows {len(rows)}  failed {len(failed)}" + (f"  skipped {skipped}" if skipped else ""))
     for row in failed:
         print(f"  ! {row['specimen_id']}: {row['meta'].get('detail')} (no conforming variant in the ensemble)")
+
+    for name, variant_rows in sorted(per_variant.items()):
+        # Own tool label per variant: a bench archive that cannot tell two
+        # candidate files apart is worthless the day the two disagree.
+        variant_target = write(f"{args.tool}-{name}", variant_rows)
+        variant_failed = sum(1 for row in variant_rows if row["status"] != "ok")
+        print(f"  {variant_target.name}  rows {len(variant_rows)}  failed {variant_failed}")
     return 0
 
 

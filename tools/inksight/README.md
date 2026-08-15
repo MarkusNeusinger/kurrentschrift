@@ -175,14 +175,22 @@ uv run python -m tools.inksight.augment \
 tools/inksight/.venv/bin/python -m tools.inksight.run_inksight \
   --manifest tools/inksight/out/frames_ensemble.json
 
-# 3. Rank the variants against the ink, write the winner (repo env)
-uv run python -m tools.inksight.ensemble
+# 3. Rank the variants against the ink, write the winner (repo env).
+#    --per-variant additionally writes one candidate file per grid member.
+uv run python -m tools.inksight.ensemble --per-variant
 ```
 
 Output: `out/candidates/inksight-smallp-bestofN.derender.json`, the SAME
 candidate contract stage 3 writes (`frame: "word_registration"`, one
 `word_instances`-shaped row per word), with the winning variant, both rank halves
 and the full ranking table in each row's `meta`.
+
+With `--per-variant` there is one `…-bestofN-<variant>.derender.json` beside it
+per grid member. That is what the §14 pre-registration asks for: every variant
+benched against the hand trace individually, so the ORACLE column — the per-word
+best variant by hand-dtw — can be set beside the ink ranker's pick and the price
+of the honest selection signal becomes a number instead of an assumption. Those
+files are bench INPUT; the selection itself never sees a hand trace.
 
 **The ranker grades against the measured INK, never against the reference.**
 Per variant, the decoded path is inverted through that variant's own affine

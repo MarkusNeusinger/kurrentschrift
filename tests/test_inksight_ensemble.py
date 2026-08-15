@@ -47,6 +47,7 @@ from tools.inksight.ensemble import (
     SKELETON_FILE,
     TOOL_NAME,
     build_ensemble_row,
+    build_variant_row,
     evaluate_variant,
     load_ink_points,
     rank_against_ink,
@@ -331,6 +332,36 @@ def test_an_all_broken_ensemble_still_produces_a_failed_row() -> None:
     assert row["meta"]["variant"] == better["variant"]
     assert "detail" in row["meta"]
     assert row["meta"]["ensemble_n_valid"] == 0
+
+
+def test_every_variant_can_be_emitted_as_its_own_bench_row() -> None:
+    # The §14 oracle column needs each variant scored against the hand trace on
+    # its own, so each must be expressible in the same contract — with ITS
+    # geometry and ITS rank numbers, and without the winner's ranking table.
+    ink = _ink_column(100)
+    near = _evaluation([[[100.0, 10.0], [100.0, 60.0]]], (0.0, 1.0), ink, 0)
+    far = _evaluation([[[112.0, 10.0], [112.0, 60.0]]], (-2.0, 1.0), ink, 1)
+    frame_record = _frame_record([near["variant"], far["variant"]])
+
+    rows = [build_variant_row(item, frame_record, _word_json(), SKELETON_FILE) for item in (near, far)]
+
+    assert [row["meta"]["variant"] for row in rows] == [near["variant"], far["variant"]]
+    assert rows[0]["strokes"] == near["strokes"]
+    assert rows[1]["strokes"] == far["strokes"]
+    assert rows[0]["meta"]["rank_sum_xh"] < rows[1]["meta"]["rank_sum_xh"]
+    assert all("ranking" not in row["meta"] for row in rows)
+    assert all(row["registration_px"] == {"tx": 0, "ty": 0, "baseline_row": BASELINE_Y} for row in rows)
+    # A losing variant is a perfectly valid row: the oracle needs the losers.
+    assert all(row["status"] == "ok" for row in rows)
+
+
+def test_a_disqualified_variant_keeps_its_reason_in_its_own_row() -> None:
+    ink = _ink_column(100)
+    broken = _evaluation([[[100.0, 35.0]]], (0.0, 1.0), ink, 0)
+    row = build_variant_row(broken, _frame_record([broken["variant"]]), _word_json(), SKELETON_FILE)
+    assert row["status"] == "failed"
+    assert "1 point" in row["meta"]["detail"]
+    assert len(row["strokes"]) == 1
 
 
 def test_the_row_is_the_candidate_contract_the_bench_reads() -> None:
