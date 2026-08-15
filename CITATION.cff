@@ -14,8 +14,8 @@ authors:
     given-names: Markus
     email: admin@kurrentschrift.ink
 license: MIT
-version: 0.22.0
-date-released: "2026-08-02"
+version: 0.26.0
+date-released: "2026-08-15"
 repository-code: "https://github.com/MarkusNeusinger/kurrentschrift"
 url: "https://kurrentschrift.ink"
 keywords:
