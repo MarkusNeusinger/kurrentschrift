@@ -14,6 +14,20 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The rescue-path register: every honest negative names its way back
+  into the game** (owner directive 2026-08-16, after the P3 0/3 round):
+  `tintenfolger.md` §7.9 collects, per rejected measure, the finding or
+  measured ceiling, the named conversion path and its trigger (B1's
+  proven −0.0124 oracle → the order-aware „Chor" selector; K1's real
+  +126° arrival error → the connector-FORM hypothesis; K3's jitter
+  side-find → the O2-trim bugfix candidate; arm 9 → the „Lotse" route;
+  the cross-cutting one: kills decided by net deltas the ruler barely
+  registers get a pre-registered humanbench word round as tie-breaker).
+  Standing rule recorded there and in the new glossary entry
+  „Rettungsweg": every rejected §14 entry closes with its rescue paths
+  (or an explicit „none named"), and a rescue path is always a NEW
+  mechanism, new evidence or new sensor with a fresh pre-registration —
+  never the same knob re-run with softer gates.
 - **Wave 2, P3: head coarticulation as entry class rules — all three
   measured, all three honest negatives** (`core/compose.py` +
   `qualitaetsmetrik.md` §14 „Welle 2 · P3"; owner priority). The

@@ -53,7 +53,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
-- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
+- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenfolger §3 · Tintenlücke §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
@@ -1535,6 +1535,18 @@ Nebeneffekt.**
 Entscheidungen mitsamt Begründung. Sie werden beim Überarbeiten eines Docs
 nicht geschwächt oder gelöscht; neue Argumente gehen nach
 `docs/proposals/`. Der Zweck: dieselbe Sackgasse nicht zweimal laufen.
+
+**Rettungsweg** *(conversion path)* — die beim VERWERFEN einer Maßnahme
+benannte Idee, die sie doch noch ins Ziel bringen könnte (Owner-Direktive
+2026-08-16). Jeder §14-Ergebnis-Eintrag eines ehrlichen Negativs schließt
+mit seinen Rettungswegen (oder explizit „keiner benannt"); die zentrale
+stehende Liste ist tintenfolger.md §7.9. Ein Rettungsweg ist immer ein
+NEUER Mechanismus, neue Evidenz (Bestätigungssatz) oder ein neuer Sensor
+(z. B. der blinde Menschvergleich als Tie-Breaker) mit frischer
+Vorregistrierung — nie derselbe Knopf mit weicheren Gates. Verhältnis zu
+„Verworfen": das Verdikt bleibt geschlossen; der Rettungsweg ist die
+separat vorregistrierte NÄCHSTE Hypothese, nicht seine Wiedereröffnung.
+→ proposals/tintenfolger.md §7.9 · qualitaetsmetrik.md §14
 
 **Status-Vokabular der Docs** — jedes Doc trägt unter der Überschrift einen
 Status mit absolutem Datum: **bindend** (entschieden) · **lebend**
