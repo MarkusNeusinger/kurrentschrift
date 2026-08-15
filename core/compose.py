@@ -466,6 +466,20 @@ BAR_RISE_SLOPE = 0.55
 # after piercing it. Must exceed the structure counters' pierce margin
 # (0.05 xh) for the ductus-fixed crossing to register as one.
 BAR_CROSS_OVERRUN_UNITS = 0.2
+# The t writes its crossbar WITHOUT a pen lift: the hand retraces the
+# stem from its foot back up to the bar start as a slightly OFFSET
+# pass (authored references: ascent 0.05–0.07 xh right of the descent
+# — two crossing sites 0.07 xh apart, counted separately). The bar
+# stroke is therefore prefixed with a generated bridge (centerline
+# only, no silhouette — the cap_retrace pattern; on the outline-backed
+# rendering path the printed ink is unchanged, and the offset stays
+# inside the Schwellzug width so even a centerline-ribbon fallback
+# draws it over the stem's own ink) and loses its lift. Guards keep
+# the bridge a stem retrace: the previous stroke must end below the
+# bar start and horizontally near it.
+BAR_RETRACE_BULGE_UNITS = 0.06
+BAR_RETRACE_MAX_DX_UNITS = 0.3
+BAR_RETRACE_MIN_RISE_UNITS = 0.15
 # Capital handover (jul31 — user find on Soldaten S→o, then measured on all
 # 22 joined capital→lowercase plate occurrences): NO high covering line
 # exists after any capital. The join is the ordinary lowercase grammar
@@ -2144,6 +2158,32 @@ def compose_word(
             glyph_mask_width = max(glyph_mask_width, pen.nib.width_units * BROAD_NIB_MASK_FACTOR)
         for si, cl in enumerate(centerlines):
             src = cl[entry_trim:] if si == 0 and entry_trim else cl
+            # t's crossbar keeps the pen down (see BAR_RETRACE_BULGE_UNITS):
+            # bridge the previous body stroke's foot up to the bar start as
+            # an offset retrace — generated centerline only; the silhouette
+            # rings stay the payload's, so outline-backed rendering is
+            # unchanged (a ribbon fallback sweeps the bridge over the
+            # stem's own ink).
+            bar_retrace: list[tuple[float, float]] | None = None
+            if si > 0 and not diacritic_flags[si] and _key_base(slot.key, slot.position) == "t" and len(src) >= 2:
+                prev_body = next((centerlines[sj] for sj in range(si - 1, -1, -1) if not diacritic_flags[sj]), None)
+                if prev_body:
+                    foot = prev_body[-1]
+                    start = src[0]
+                    rise = start[1] - foot[1]
+                    if rise >= BAR_RETRACE_MIN_RISE_UNITS and abs(start[0] - foot[0]) <= BAR_RETRACE_MAX_DX_UNITS:
+                        n = max(3, int(math.ceil(rise / 0.05)))
+                        bar_retrace = [
+                            (
+                                foot[0]
+                                + (start[0] - foot[0]) * (k / n)
+                                + BAR_RETRACE_BULGE_UNITS * math.sin(math.pi * k / n),
+                                foot[1] + rise * (k / n),
+                            )
+                            for k in range(n)
+                        ]
+            if bar_retrace:
+                src = bar_retrace + [tuple(p) for p in src]
             offset = [(x + dx, y) for x, y in src]
             raw_rings = rings_by_stroke[si] if si < len(rings_by_stroke) else []
             if si == 0 and entry_trim and raw_rings:
@@ -2159,8 +2199,10 @@ def compose_word(
             item: dict = {
                 "centerline": [list(p) for p in offset],
                 "mask_width": glyph_mask_width,
-                # a within-glyph pen lift precedes every stroke after the first
-                "lift": si > 0 or detached_entry,
+                # a within-glyph pen lift precedes every stroke after the
+                # first — except a bar with a retrace bridge, which keeps
+                # the pen down like the hand does
+                "lift": (si > 0 and bar_retrace is None) or detached_entry,
             }
             if provenance:
                 item["slot_index"] = slot_index

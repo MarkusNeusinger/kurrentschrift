@@ -14,6 +14,25 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Wave 1, K1b: the t writes its crossbar without a pen lift — the
+  offset stem-return pass** (`core/compose.py`,
+  `BAR_RETRACE_BULGE_UNITS` = 0.06 xh measured from the hand's
+  descent/ascent offset): the bar stroke is prefixed with a generated
+  bridge from the previous stroke's foot up to the bar start —
+  centerline only, no silhouette (the cap_retrace pattern), bulged
+  right so the counters see a second pass — and loses its lift.
+  Pre-registered and measured in `qualitaetsmetrik.md` §14 („Welle 1
+  · K1b"): the expectation lands cell for cell — `unter` reaches
+  3 crossings/3 retrace zones and `mit` 2/2 (both = the hand),
+  `soll_cross_agree` 7/10 → 9/10, `soll_zones_agree` 6/10 → 8/10, and
+  the four bar-against-stem `soll_overlap` entries disappear (the
+  hand has none). Remaining disagreements are the known chart cases
+  (linken-k, Wer-W, zwei-z). Gates: wordbench headlines within
+  ±0.00004, only t-words moved, compose-golden regenerated as a
+  declared re-baseline. The entry also declares the post-K1 chain
+  baseline `r1` (cascade of K1 into the fit): only `unter` differs
+  from `r0` (+0.0301 dtw at one invented crossing fewer).
+
 - **Wave 1, K1: the bound t-bar keeps a measured overrun past its stem
   crossing** (`core/compose.py`, `BAR_CROSS_OVERRUN_UNITS` = 0.2 xh,
   measured on the authored references of `mit` and `unter`; the join
