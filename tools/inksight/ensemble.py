@@ -372,7 +372,12 @@ def main(argv: list[str] | None = None) -> int:
         # The identity member is the plain pipeline's own input, so its score is
         # the honest "did the ensemble buy anything?" comparison.
         plain = table.get(identity) if identity else None
-        gain = f"  plain {plain:.4f} ({(best - plain) / plain:+.1%})" if plain and best else ""
+        gain = ""
+        if plain is not None and best is not None:
+            # A 0.0 chamfer is a legitimate score — compare on presence, not
+            # truthiness, and guard the ratio against a zero plain explicitly.
+            rel = f" ({(best - plain) / plain:+.1%})" if plain else ""
+            gain = f"  plain {plain:.4f}{rel}"
         print(
             f"  {entry_id:<12} winner {meta['variant']:<12} sum {'--' if best is None else f'{best:.4f}'} xh"
             f"  valid {meta['ensemble_n_valid']}/{meta['ensemble_n']}{gain}  [{row['status']}]"
