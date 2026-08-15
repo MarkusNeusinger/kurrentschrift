@@ -3935,6 +3935,47 @@ muß 3 → 1 = ß-Budget, unter 5 → 4). Kandidat der Baseline ist die
 verifizierte Chain-Identität (`follow --rounds 0`,
 Byte-Identitäts-Pin) über den File-Provider.
 
+### Route B T0 `aug15` — InkSight Small-p roh auf den Dev-Wörtern
+
+Der T0-Prüfstein aus tintenfolger.md §4: das veröffentlichte
+Small-p-Checkpoint (Apache 2.0), unadaptiert, CPU, über die
+`tools/inksight`-Pipeline (#340) — Umgebung wie im README verifiziert
+(Python 3.11 · tf-cpu 2.20.0 · tf-text 2.20.1, XLA-Flags gesetzt).
+Laufzeit-Befund: `derender`/`text` ≈ 2–6 min je Wort auf 8 Kernen;
+der `r+d`-Prompt (erst Texterkennung, dann Tinte) ≈ 43 min je Wort und
+wurde nach EINEM Datenpunkt abgebrochen — der eine genügt für die
+OOD-Diagnose: das Modell liest das Sütterlin-„Wer" als „Olomi".
+Kein Call erreichte den 1024-Token-Deckel (max. 441, linken); die
+Gitter-Auflösung lag bei 1,00–1,41 Crop-px je Wort.
+
+| Kandidat | dtw med | p90 | AIoU | cross m+s | Zonen m+s | Lifts Δ |
+|---|---|---|---|---|---|---|
+| Kette (v2.1-Baseline) | 0,0620 | 0,262 | 0,683 | 7+4 | 2+5 | +3 |
+| **InkSight derender** | **0,0956** | 0,391 | 0,697 | **9+1** | 11+2 | +21 |
+| InkSight text | 0,1145 | 0,383 | 0,680 | **5+1** | 12+1 | +20 |
+| routeg-Kontrolle | 0,8198 | 1,027 | 0,833 | 15+3 | 15+0 | +90 |
+
+Lesart: (a) Roh und nie auf deutscher Kurrentschrift trainiert landet
+Small-p bei **1,5× der Kette** und **8,6× vor der prior-freien
+Kontrolle** — die Route-B-Prämisse (gelernte Verfahren tragen echtes
+Geometrie-Wissen bei) ist damit bestätigt, nicht nur behauptet.
+(b) Überraschung gegen die Paper-Ablation: der `text`-Prompt („Derender
+the ink: <wort>") ist SCHLECHTER als das nackte `derender` — die
+Wort-Konditionierung zieht das Modell bei einer Schrift, deren
+Buchstabenformen es nicht kennt, Richtung lateinischer Schreibung
+statt zur Tinte. (c) Die KREUZUNGS-Struktur des Modells ist sauberer
+als die der Kette (nur 1 erfundener Ring auf beiden Prompts, text
+verpasst nur 5 von 23) — was fehlt, sind die RETRACES (11–12 von 15
+verloren; das Modell setzt ab statt zurückzufahren, +20 Lifts, 3–9
+Striche je Wort) — exakt die Klasse, die der Duktus-Prior beherrscht.
+Schlechtestes Wort beider Prompts: und (0,395/0,396 — es schreibt das
+„und" als lateinisches Wortbild). Konsequenz wie in §4b geplant: T0
+ist die dokumentierte OOD-Basislinie; der nächste Route-B-Schritt
+bleibt das EIGENE kleine Trajektorien-Modell auf Engine-Paaren
+(Fine-Tuning von Small-p ist ohne Trainingscode unmöglich).
+Artefakte: Chronik `inksight-t0`; Kandidaten/Rohantworten bleiben
+unter `tools/inksight/out/` (gitignored, Messschicht).
+
 ### Arm ⑨ `aug16` — Vorregistrierung: der Topologie-Wächter
 
 Geschrieben und committet VOR der ersten Zahl dieses Arms.
