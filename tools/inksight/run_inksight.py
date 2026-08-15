@@ -10,6 +10,23 @@ root, so that `tools.inksight.tokens` is importable:
         [--frames tools/inksight/out/frames.json] \\
         [--out tools/inksight/out/raw] [--prompts all|derender|r+d|text]
 
+The B1 ensemble (`docs/proposals/tintenfolger.md` §7.4) is the same call with
+the extended sidecar instead of the plain one — the manifest names the variant
+PNGs `augment.py` wrote, and every variant gets its own raw answer
+`<id>.<variant>.<prompt>.json`:
+
+    tools/inksight/.venv/bin/python -m tools.inksight.run_inksight \\
+        --manifest tools/inksight/out/frames_ensemble.json \\
+        --inputs tools/inksight/out/inputs_ensemble
+
+The prompt default differs between the two modes ON PURPOSE: the plain run asks
+all three prompts of ONE input, the ensemble run asks ONE prompt of N inputs.
+Asking all three per variant would triple an already N-fold decode budget, and
+the T0 measurement already found `derender` the best of the three on this
+script — so `--prompts` defaults to `derender` in manifest mode and to `all`
+without it. Everything else is shared: same model call, same decode, same record
+shape (plus a `variant` field), so a plain run's output stays byte-identical.
+
 DELIBERATELY NOT UNIT-TESTED: every line below either configures or calls
 TensorFlow, which the repo environment cannot import at all (the repo needs
 Python >= 3.13, tensorflow-text caps at 3.11). The testable parts live in
@@ -34,6 +51,7 @@ import shlex
 import statistics
 import time
 import traceback
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -53,6 +71,75 @@ PROMPTS: dict[str, str] = {
 
 DEFAULT_MODEL_DIR = Path("tools/inksight/weights/small-p-cpu")
 DEFAULT_OUT = Path("tools/inksight/out")
+
+# The prompt a manifest (ensemble) run asks when none is named — see the module
+# docstring for why it is not `all`.
+ENSEMBLE_DEFAULT_PROMPT = "derender"
+
+
+@dataclass(frozen=True)
+class _Job:
+    """One model call's input: which image, for which word, under which name.
+
+    `stem` is the raw answer's file stem before the prompt key — `<id>` for a
+    plain run, `<id>.<variant>` for an ensemble run — and `variant` is None
+    exactly when there is no augmentation, which is what keeps a plain run's
+    record byte-identical to what it wrote before this mode existed.
+    """
+
+    entry_id: str
+    word: str
+    image_path: Path
+    stem: str
+    variant: str | None = None
+
+
+def _plain_jobs(frames: dict, ids: list[str], inputs: Path) -> tuple[list[_Job], int]:
+    """The classic one-input-per-word jobs, plus the count that had no input."""
+    jobs: list[_Job] = []
+    missing = 0
+    for entry_id in ids:
+        frame = frames.get(entry_id)
+        image_path = inputs / f"{entry_id}.png"
+        if frame is None or not image_path.is_file():
+            print(f"  ! {entry_id}: no frame record or input image — skipped")
+            missing += 1
+            continue
+        jobs.append(_Job(entry_id=entry_id, word=frame["word"], image_path=image_path, stem=entry_id))
+    return jobs, missing
+
+
+def _ensemble_jobs(frames: dict, ids: list[str], inputs: Path) -> tuple[list[_Job], int]:
+    """One job per (word, variant) of the extended manifest.
+
+    A variant whose PNG is missing is skipped and counted — the ensemble simply
+    shrinks by one member, which `ensemble.py` reports as `n` rather than
+    silently assuming N.
+    """
+    jobs: list[_Job] = []
+    missing = 0
+    for entry_id in ids:
+        frame = frames.get(entry_id)
+        if frame is None:
+            print(f"  ! {entry_id}: no frame record — skipped")
+            missing += 1
+            continue
+        for name, variant in frame["variants"].items():
+            image_path = inputs / variant.get("image", f"{entry_id}.{name}.png")
+            if not image_path.is_file():
+                print(f"  ! {entry_id} [{name}]: no input image — skipped")
+                missing += 1
+                continue
+            jobs.append(
+                _Job(
+                    entry_id=entry_id,
+                    word=frame["word"],
+                    image_path=image_path,
+                    stem=f"{entry_id}.{name}",
+                    variant=name,
+                )
+            )
+    return jobs, missing
 
 
 def configure_xla_flags(environ: dict[str, str] | None = None) -> str:
@@ -110,21 +197,50 @@ def _output_text(outputs: dict) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--model-dir", type=Path, default=DEFAULT_MODEL_DIR)
-    parser.add_argument("--inputs", type=Path, default=DEFAULT_OUT / "inputs")
+    parser.add_argument(
+        "--inputs", type=Path, default=None, help="default: out/inputs — or the manifest's own `inputs_dir`"
+    )
     parser.add_argument("--frames", type=Path, default=DEFAULT_OUT / "frames.json")
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT / "raw")
-    parser.add_argument("--prompts", default="all", choices=["all", *PROMPTS])
+    parser.add_argument(
+        "--prompts",
+        default=None,
+        choices=["all", *PROMPTS],
+        help=f"default: all — or {ENSEMBLE_DEFAULT_PROMPT} with --manifest",
+    )
     parser.add_argument("--ids", nargs="*", default=None, help="restrict to these fixture ids")
+    parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=None,
+        help="frames_ensemble.json — decode every augmented variant instead of the plain input (B1)",
+    )
     args = parser.parse_args(argv)
 
     flags = configure_xla_flags()
     print(f"XLA_FLAGS={flags}")
     tf = _load_tensorflow()
 
-    frames = json.loads(args.frames.read_text(encoding="utf-8"))["frames"]
+    sidecar: Path = args.manifest or args.frames
+    payload = json.loads(sidecar.read_text(encoding="utf-8"))
+    frames = payload["frames"]
     ids = list(args.ids) if args.ids else list(frames)
-    prompt_keys = list(PROMPTS) if args.prompts == "all" else [args.prompts]
+    prompts = args.prompts or (ENSEMBLE_DEFAULT_PROMPT if args.manifest else "all")
+    prompt_keys = list(PROMPTS) if prompts == "all" else [prompts]
     args.out.mkdir(parents=True, exist_ok=True)
+
+    # The extended manifest names the directory `augment.py` wrote its variants
+    # to, so the ensemble recipe needs no second path argument that must agree
+    # with the first. An explicit `--inputs` still wins.
+    default_inputs = (
+        Path(payload["inputs_dir"]) if args.manifest and "inputs_dir" in payload else DEFAULT_OUT / "inputs"
+    )
+    inputs: Path = args.inputs or default_inputs
+
+    build_jobs = _ensemble_jobs if args.manifest else _plain_jobs
+    jobs, failures = build_jobs(frames, ids, inputs)
+    if args.manifest:
+        print(f"ensemble mode: {len(jobs)} inputs from {inputs} over {len(ids)} words, prompt {prompts!r}")
 
     load_started = time.perf_counter()
     model = tf.saved_model.load(str(args.model_dir))
@@ -133,19 +249,12 @@ def main(argv: list[str] | None = None) -> int:
     print(f"model loaded in {time.perf_counter() - load_started:.1f}s (inputs: {text_arg}, {image_arg})")
 
     timings: list[float] = []
-    failures = 0
-    for entry_id in ids:
-        frame = frames.get(entry_id)
-        image_path = args.inputs / f"{entry_id}.png"
-        if frame is None or not image_path.is_file():
-            print(f"  ! {entry_id}: no frame record or input image — skipped")
-            failures += 1
-            continue
-        image = tf.io.decode_image(tf.io.read_file(str(image_path)), channels=3)
+    for job in jobs:
+        image = tf.io.decode_image(tf.io.read_file(str(job.image_path)), channels=3)
         encoded = tf.reshape(tf.io.encode_jpeg(image), (1, 1))
 
         for key in prompt_keys:
-            prompt = PROMPTS[key].format(word=frame["word"])
+            prompt = PROMPTS[key].format(word=job.word)
             try:
                 started = time.perf_counter()
                 outputs = concrete_function(**{text_arg: tf.constant([prompt]), image_arg: encoded})
@@ -153,14 +262,14 @@ def main(argv: list[str] | None = None) -> int:
                 answer = _output_text(outputs)
             except Exception:  # noqa: BLE001 - one bad word must never kill the run
                 failures += 1
-                print(f"  ! {entry_id} [{key}]: call failed\n{traceback.format_exc()}")
+                print(f"  ! {job.stem} [{key}]: call failed\n{traceback.format_exc()}")
                 continue
 
             timings.append(elapsed)
             ink = decode_ink(answer)
             record = {
-                "id": entry_id,
-                "word": frame["word"],
+                "id": job.entry_id,
+                "word": job.word,
                 "prompt": prompt,
                 "prompt_key": key,
                 # Only the recognise-and-derender prompt is asked for text; for
@@ -173,14 +282,18 @@ def main(argv: list[str] | None = None) -> int:
                 "model_dir": str(args.model_dir),
                 "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
             }
-            (args.out / f"{entry_id}.{key}.json").write_text(
+            if job.variant is not None:
+                # Appended rather than woven in: a plain run writes the record
+                # it always wrote, byte for byte.
+                record["variant"] = job.variant
+            (args.out / f"{job.stem}.{key}.json").write_text(
                 json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8"
             )
             points = sum(len(s) for s in ink.strokes)
             # The decoder context is 1024 tokens (~500 points): a word that ran
             # into it is truncated ink, and the token count is what shows it.
             print(
-                f"  {entry_id:<12} [{key:<8}] {elapsed:6.1f}s  "
+                f"  {job.stem:<12} [{key:<8}] {elapsed:6.1f}s  "
                 f"tokens {ink.n_ink_tokens:>4}  strokes {len(ink.strokes):>3}  points {points:>4}"
                 + (f"  invalid {ink.n_invalid_tokens}" if ink.n_invalid_tokens else "")
                 + (f"  text {ink.text_without_ink!r}" if key == "r+d" else "")

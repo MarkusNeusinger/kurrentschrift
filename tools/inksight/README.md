@@ -28,6 +28,12 @@ is split at the process boundary, and only two small pure modules cross it
 | 2 | `run_inksight.py` | **isolated venv** | PNG × prompt → raw `<ink_token_N>` decode → `out/raw/<id>.<prompt>.json` |
 | 3 | `to_candidate.py` | repo | invert the affine, convert to the stored trace frame → one candidate file per prompt |
 
+The B1 ensemble (see "Ensembling (B1)" below) keeps that split and swaps stages
+1 and 3 for augmenting twins: `augment.py` writes N inputs per word instead of
+one, `run_inksight.py` gains a `--manifest` mode that decodes them all, and
+`ensemble.py` ranks the answers against the measured ink and writes the winner.
+Stage 2 stays the only file that imports TensorFlow.
+
 ## Environment recipe
 
 ```bash
@@ -149,6 +155,73 @@ edge on purpose: a stray single-point stroke fails its row instead of being
 quietly deleted, because a repaired candidate would make the model look better
 than it is. Consumers must respect `status`.
 
+## Ensembling (B1)
+
+Best-of-N over input augmentations — `docs/proposals/tintenfolger.md` §7.4,
+measure B1. The checkpoint is frozen and its decoder parameters are not exposed,
+so the only handle left is the INPUT: decode the same word N times over a named
+grid of slightly perturbed crops (rotation and scale jitter — InkSight's own
+training augmentations, hence in-distribution) and keep the best answer. Three
+commands, the same three stages with an augmenting first one:
+
+```bash
+# 1. Crops → N model inputs each + frames_ensemble.json (repo env).
+#    Default grid: rot ∈ {0, ∓2, ∓4}° × scale ∈ {1.0, 0.92} = 10 variants.
+uv run python -m tools.inksight.augment \
+  --fixtures-root tools/wordbench/fixtures/suetterlin/suetterlin-1922
+
+# 2. The model (isolated venv, from the repo root). One prompt, N inputs:
+#    `--prompts` defaults to `derender` in manifest mode.
+tools/inksight/.venv/bin/python -m tools.inksight.run_inksight \
+  --manifest tools/inksight/out/frames_ensemble.json
+
+# 3. Rank the variants against the ink, write the winner (repo env)
+uv run python -m tools.inksight.ensemble
+```
+
+Output: `out/candidates/inksight-smallp-bestofN.derender.json`, the SAME
+candidate contract stage 3 writes (`frame: "word_registration"`, one
+`word_instances`-shaped row per word), with the winning variant, both rank halves
+and the full ranking table in each row's `meta`.
+
+**The ranker grades against the measured INK, never against the reference.**
+Per variant, the decoded path is inverted through that variant's own affine
+chain back to crop pixels and compared with `ref_skel.npz` — the frozen thinning
+of the specimen's own binarised ink, the same artifact the bench's AIoU column
+grades against (`ref_mask.png` is the fallback, and which one was used is
+recorded per row). Both chamfer directions are computed separately and summed:
+
+```
+rank = mean_{p in path} min_dist(p, ink) + mean_{q in ink} min_dist(q, path)
+```
+
+kept apart until the sum because a decode that writes only half the word scores
+well on the first half and badly on the second — the symmetric mean would hide
+exactly that. The author's hand traces (`word_instances`, provenance `authored`)
+are the EXAMINATION and must never enter the selection; nothing in `ensemble.py`
+reads them.
+
+Two properties worth relying on:
+
+* the **identity variant** (`rot+0_s100`) is part of the grid and its input PNG
+  is byte-identical to what `prepare.py` writes, so the plain decode is always
+  among the candidates and it wins every tie;
+* a variant whose decode violates the wire contract (the T0 run's `Wer`
+  single-point stroke) is **disqualified, not crashed on**: it is ranked and
+  reported but sorts behind every conforming variant, and only an ensemble in
+  which NO member conforms still produces a `status: "failed"` row.
+
+The winner is passed through **unchanged** — the arc-length resampling exists
+for the ranker and nothing else. Best-of-N is a selection among answers the
+model actually produced; the moment this stage edits a path, the number stops
+being InkSight's.
+
+**Scoring runs come after the pre-registration, not before.** The B1
+infrastructure is measured only once its own `docs/reference/qualitaetsmetrik.md`
+§14 entry is written (hypothesis, the frozen dev set, the kill criteria) —
+including the honest note that the selection target (ink) and the bench's
+chamfer columns (hand trace) are different targets but correlated ones.
+
 ## Provenance of the weights
 
 * **Model:** InkSight Small-p, Google Research — <https://github.com/google-research/inksight>,
@@ -173,6 +246,15 @@ must agree across the process boundary: the token decode (pair order, the
 prepare → to_candidate, and the candidate contract (frame literal, wire bounds,
 `status` on violation). `run_inksight.py` is deliberately not unit-tested —
 it cannot even be imported in this environment; its check is the smoke run.
+
+`tests/test_inksight_ensemble.py` does the same for B1: the augmented affine
+chain in both directions AND through the JSON sidecar (an inversion off by a
+pixel would be reported as model error), that the variant list is a named
+deterministic grid with the identity first, that the identity's input is
+byte-identical to the plain pipeline's, the ranker's ORDER on synthetic paths
+(closer wins; the two halves stay apart; an empty answer is unrankable rather
+than perfect), the disqualification rule (a contract violation loses even when
+its geometry ranks best) and the candidate contract of the ensembled row.
 
 ## Measured on the full T0 run (2026-08-15)
 
