@@ -4490,3 +4490,23 @@ erwogen (eigener, kleiner Schritt — nie Teil eines Loss).
 seines Klassenfehlers, wird NICHT gefixt, sondern der Befund als
 ehrliches Negativ dokumentiert und die Frage an die nächste
 Werkzeug-Stufe (H2-Klassen-Statistik) zurückgegeben.
+
+**Stufe (i) gemessen — die Attribution trennt sauber** (Feld
+`placement` am Konnektor unter `provenance`, golden/Payload
+byte-identisch, 73 Tests grün). Die 218 signierten Fehler nach
+entscheidender Regel: `clearance_floor` **n=116** (der
+Ink-Clearance-Floor entscheidet die HÄLFTE aller Platzierungen),
+median +0,048 — aber gespalten: nach RUNDEM linken Buchstaben
+**+0,206 (n=47)**, in ARKADEN (n/m) **−0,182 (n=31)**, in e +0,104
+(n=18). Dazu `backward_clearance` **+0,189 (n=19)** (w/v-Bögen),
+`bar_rise` **+0,159 (n=6)** (die t-Steiglinie), `align(_floor)`
++0,07 (n=36, mild), `connect_gap` −0,042 (n=26, fein),
+`arm_fuse` **−0,507 (n=5)** — wie vorregistriert VOR jeder
+Korrektur visuell zu prüfen (Frame-Kaveat-Verdacht). Lesart: der
+EINE Floor trägt beide Klassenfehler mit entgegengesetztem
+Vorzeichen — die Hand lässt Arkaden MEHR Luft und taucht nach
+Rundkörpern ENGER in die Lücke, als die einheitliche Clearance
+erlaubt; dazu zwei klar überschießende Spezialregeln (Rückwärts-
+Clearance, Balken-Steiglinie). Stufe (ii) kalibriert genau diese
+vier Stellen aus den gemessenen Medianen; `arm_fuse` erst nach
+Sichtprüfung.

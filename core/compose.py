@@ -1891,9 +1891,14 @@ def compose_word(
         override = (pair_overrides or {}).get((prev.key, slot.key)) if joined and slot.key else None
         if override is not None and len(override.get("connector") or []) < 2:
             override = None
+        # Which placement rule decided desired_entry_x (report-only, emitted
+        # on the connector under provenance — wave-2 P1 mechanism attribution;
+        # "*_floor" names mean the ink-clearance floor out-bound the rule).
+        placement_rule: str | None = None
         if override is not None:
             offset = override.get("offset") or [CONNECT_GAP, 0.0]
             desired_entry_x = prev.exit[0] + float(offset[0])
+            placement_rule = "override"
         elif joined:
             # ONE scan for the anchors BOTH stages read: the fork/bar coupling
             # index and B's landing tangent are pure functions of first_line —
@@ -1913,10 +1918,10 @@ def compose_word(
                 # computation at two fixed heights. A capital restart gets
                 # the plates' wider room (see CAP_INK_CLEARANCE).
                 clearance = CAP_INK_CLEARANCE if prev.cap_retrace else INK_CLEARANCE
-                desired_entry_x = max(
-                    prev.exit[0] + CONNECT_GAP - tuck,
-                    _profile_clearance_x(prev.ink_profile, ink_min_profile, entry_xy[0], clearance),
-                )
+                gap_term = prev.exit[0] + CONNECT_GAP - tuck
+                floor_term = _profile_clearance_x(prev.ink_profile, ink_min_profile, entry_xy[0], clearance)
+                desired_entry_x = max(gap_term, floor_term)
+                placement_rule = "clearance_floor" if floor_term > gap_term else "connect_gap"
             else:
                 # Backward exits (w/v bow) keep the scalar full-column
                 # clearance: the join must travel over the whole bow before it
@@ -1927,6 +1932,7 @@ def compose_word(
                     prev.exit[0] + CONNECT_GAP - tuck,
                     prev.ink_max_x + BACKWARD_INK_CLEARANCE - (ink_min_x - entry_xy[0]),
                 )
+                placement_rule = "backward_clearance"
             arm_exempt = forward and BOW_EXIT_Y < prev.exit[1] <= HIGH_EXIT_Y and prev.tangent_deg < ARM_TAN_MAX_DEG
             # A cut Kringel exit (b/o) lands in the arm band (~0.77 at ~+7°)
             # but is no covering arm: the plates keep daylight between the
@@ -1946,6 +1952,8 @@ def compose_word(
                 couple_idx = _arm_fuse_apex(first_line)
                 if couple_idx:
                     fuse_x = prev.exit[0] + ARM_FUSE_GAP + entry_xy[0] - first_line[couple_idx][0]
+                    if fuse_x < desired_entry_x:
+                        placement_rule = "arm_fuse"
                     desired_entry_x = min(desired_entry_x, fuse_x)
             # Sawtooth pass-through: pull the glyph onto the exit's rise line
             # (see ALIGN_*) so the diagonal continues without a shelf.
@@ -1983,6 +1991,7 @@ def compose_word(
                         # registration shift on schwer/scharfen).
                         floor_x = _profile_clearance_x(prev.ink_profile, ink_min_profile, entry_xy[0], INK_CLEARANCE)
                         desired_entry_x = max(fork_desired, floor_x)
+                        placement_rule = "fork_floor" if floor_x > fork_desired else "fork"
                         fork_placed = True
             # Bar-exit placement (see BAR_RISE_SLOPE): B's coupling point
             # sits on the ~20° rise line from the stem-launch anchor,
@@ -1997,6 +2006,7 @@ def compose_word(
                         bar_desired = lx + (couple_y - ly) / BAR_RISE_SLOPE + (entry_xy[0] - first_line[couple_idx][0])
                         floor_x = _profile_clearance_x(prev.ink_profile, ink_min_profile, entry_xy[0], INK_CLEARANCE)
                         desired_entry_x = max(bar_desired, floor_x)
+                        placement_rule = "bar_rise_floor" if floor_x > bar_desired else "bar_rise"
                         fork_placed = True
             if (
                 not fork_placed
@@ -2007,9 +2017,10 @@ def compose_word(
                 and first_line[0][1] > 0
             ):
                 run_down = min(first_line[0][1] / math.tan(math.radians(entry_land_deg)), DESCENDER_RETURN_MAX_RUN)
-                desired_entry_x = max(
-                    desired_entry_x, prev.exit[0] + DESCENDER_RETURN_GAP + run_down + (entry_xy[0] - first_line[0][0])
-                )
+                ride_x = prev.exit[0] + DESCENDER_RETURN_GAP + run_down + (entry_xy[0] - first_line[0][0])
+                if ride_x > desired_entry_x:
+                    placement_rule = "descender_ride"
+                desired_entry_x = max(desired_entry_x, ride_x)
             if (
                 ALIGN_TAN_DEG[0] <= prev.tangent_deg <= ALIGN_TAN_DEG[1]
                 and ALIGN_TAN_DEG[0] <= entry_land_deg <= ALIGN_TAN_DEG[1]
@@ -2021,6 +2032,7 @@ def compose_word(
                 floor_x = _profile_clearance_x(prev.ink_profile, ink_min_profile, entry_xy[0], ALIGN_MIN_CLEARANCE)
                 if align_entry_x < desired_entry_x:
                     desired_entry_x = max(align_entry_x, floor_x)
+                    placement_rule = "align_floor" if floor_x > align_entry_x else "align"
             elif (
                 ALIGN_TAN_DEG[0] <= prev.tangent_deg <= ALIGN_TAN_DEG[1]
                 and rise < ALIGN_MIN_RISE
@@ -2032,6 +2044,7 @@ def compose_word(
                 # of clearing it, so the ink floor relaxes to the align floor.
                 floor_x = _profile_clearance_x(prev.ink_profile, ink_min_profile, entry_xy[0], ALIGN_MIN_CLEARANCE)
                 desired_entry_x = max(prev.exit[0] + CONNECT_GAP - tuck, floor_x)
+                placement_rule = "nested_fall_floor" if floor_x > prev.exit[0] + CONNECT_GAP - tuck else "nested_fall"
                 # Straight-fit flank coupling (the "ne" case, see the ALIGN_*
                 # constant block): with the entry FOOT at/below the exit no
                 # spacing can make the diagonal collinear at the foot — but
@@ -2062,6 +2075,7 @@ def compose_word(
                         ):
                             desired_entry_x, flank_couple = fuse
                             fused = True
+                            placement_rule = "flank_fuse"
                     if not fused:
                         floor_couple = _profile_clearance_x(
                             prev.ink_profile, ink_min_profile, entry_xy[0], ALIGN_MIN_CLEARANCE, stub_relaxed=True
@@ -2070,6 +2084,7 @@ def compose_word(
                             steepest = _flank_couple_steepest(first_line, floor_couple - entry_xy[0], prev.exit)
                             if steepest:
                                 desired_entry_x, flank_couple = floor_couple, steepest
+                                placement_rule = "flank_floor"
         elif prev:
             gap = _nonjoin_clearance(_key_base(slot.key, slot.position)) if not slot.joins else math.inf
             if not prev.joins:
@@ -2097,6 +2112,7 @@ def compose_word(
                 connector["from_slot"] = prev.slot_index
                 connector["to_slot"] = slot_index
                 connector["override"] = True
+                connector["placement"] = placement_rule
                 connector["exit"] = [ex, ey]
                 connector["entry"] = [entry_xy[0] + dx, entry_xy[1]]
             items.append(connector)
@@ -2134,6 +2150,7 @@ def compose_word(
                 connector["pair"] = [prev.key, slot.key]
                 connector["from_slot"] = prev.slot_index
                 connector["to_slot"] = slot_index
+                connector["placement"] = placement_rule
                 # The COUPLING endpoints this join was built from, in word
                 # coordinates: the left glyph's exit and the placed right
                 # glyph's entry. Not readable off the emitted centerline —
