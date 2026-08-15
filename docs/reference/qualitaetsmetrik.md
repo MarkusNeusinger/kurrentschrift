@@ -4623,3 +4623,25 @@ align-Klassen-Mediane bewegen sich Richtung 0 ohne Überschießen;
 (e) compose-golden bricht bauartbedingt → deklarierte Re-Baseline.
 Erwartete Ausreißer, vorab benannt: `Z→a` +0,94 und `a→n` −0,645
 sind n=1-Extreme und werden von keiner Konstante gejagt.
+
+**Ergebnis (gemessen nach dem Commit oben).** Einzelzerlegung wie
+registriert: Knopf (i), der Diagonalen-Trim, wird vom Lineal bei
+jeder Dosis abgelehnt (0,07 allein: +0,0020 · 0,035 auf dem Floor:
++0,0011) — dasselbe Beleg-Varianz-Verdikt wie die Arkaden-Luft;
+die Konstante bleibt DEKLARIERT-ABER-NEUTRAL (0,0), die
+Dissektions-Forderung steht für den Bestätigungssatz im Protokoll.
+Knopf (ii), der Berührungs-Floor (`ALIGN_MIN_CLEARANCE` 0,06 →
+0,0), BESTEHT: `word_loss` 0,108446 → **0,108091**, `pair_loss`
+byte-gleich, `soll_*_agree` unverändert 9/10 · 9/10. Die Streuung:
+9 Wörter besser (voran `fechten` 0,173 → **0,144** — sein
+f→e-align_floor war der +0,31-Ausreißer; kumuliert seit Beginn der
+Vorschub-Runde 0,222 → 0,144), größter Einzelverlierer `Zaum`
++0,022 (der vorab benannte `Z→a`-Ausreißer reagiert auf den
+Floor). compose-golden regeneriert (deklarierte Re-Baseline),
+1260 Tests grün. ENTSCHEIDUNG: Floor ADOPTIERT, Trim NEUTRAL.
+Damit ist die kalibrierbare Vorschub-Masse der 218 gemessenen
+Joins abgearbeitet: adoptiert Bowl-Tuck · w/v-Rückwärts ·
+longs-Ausnahme · Balken-Steigung · align/nested-Floor; als
+Beleg-Varianz geschlossen Arkaden-Luft · Diagonalen-Trim; offen
+bleiben die zwei NICHT-Kalibrier-Fälle `arm_fuse`/r-Arm-Länge
+(Chart-Frage) und `descender_ride` (n=2, zu dünn).
