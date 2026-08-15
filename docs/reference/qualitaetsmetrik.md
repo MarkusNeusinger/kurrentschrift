@@ -4054,6 +4054,19 @@ GARANTIERT struktur-sauber hält, und der prox-0,1-Lauf ist als
 einziger struktur-sauberer Release-Kandidat auf der Duell-Seite.
 Artefakte: Chronik `arm9-wächter`.
 
+**Nachtrag `aug15` — korrigierte Attribution der Berührungen.** Die
+Formulierung „die 9 erfundenen Berührungen der Komposition selbst"
+oben ist falsch zugeordnet: nachgemessen mit den eingefrorenen
+v2.1-Zählern über die Fixtures schreibt die KOMPOSITION der 10
+Dev-Wörter nur 2 Berührungen (beide w-intern: `will` x≈1,95, `zwei`
+x≈3,10) und 4 Überlagerungen (alle t-Balken-gegen-Stamm in
+`mit`/`unter`) vor — keine einzige zwischen zwei Buchstaben. Der
+Überschuss von 8 auf 17 Berührungen gehört dem KETTENFIT
+(`touch_cand` 17 gegen Hand 8). Der Composer-Hebel bleibt real,
+liegt aber bei den Schnitt-Klassenregeln und der Kopplung
+(Unter-Kreuzen), nicht bei den Berührungen; Plan in
+`../proposals/tintenfolger.md` §7.
+
 ### Route G `aug14` — die prior-freie Kontrolle: was der Duktus-Prior kauft
 
 Der Kontrollkandidat aus
