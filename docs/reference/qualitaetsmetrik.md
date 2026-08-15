@@ -4302,3 +4302,57 @@ nur Marken-Striche; jede Abweichung = verworfen.
 (c) `marks_spurious` darf nicht steigen (zwei 1,0 heute).
 (d) Verweigerungen werden gezählt und benannt (meta.mark_refit),
 nie still übergangen.
+
+**Ergebnis (gemessen nach dem Commit oben, Lauf `tb-a1-marks`
+gegen `tb-chain-r1-postk1`).** Die Hypothese ist BESTÄTIGT, mit
+einer Einschränkung, die erst der Lauf sichtbar gemacht hat.
+Primär: `mark_pos_err_xh` Median **0,1285 → 0,0576** (−55 %; Mittel
+0,1217 → 0,0530), und zwar auf JEDEM der vier Wörter, die das Lineal
+überhaupt paaren kann — `die` 0,0675 → 0,0560 · `mit` 0,1071 →
+0,0194 · `linken` 0,1624 → 0,0592 · `will` 0,1499 → 0,0775.
+`marks_matched` bleibt 4/4 (kein Match verloren), `marks_missing` 0,
+`marks_spurious` 1 → 1, `marks_ambiguous` 0. Damit schließt A1 rund
+86 % des Abstands zur prior-freien Kontrolle (0,046): der Kettenfit
+konnte die Markentinte immer lesen, er hat sie nur nie gefragt.
+Do-no-harm hält vollständig: die Strukturzähler sind über ALLE zehn
+Wörter exakt unverändert (0 abweichende Zellen über
+cross/retrace/touch/overlap/soll/lift), `dtw_xh` ist auf 7 von 10
+Wörtern byte-gleich, der gepaarte Median-Δ ist 0,0000 und der
+Vorzeichentest n=3/pos 2/neg 1 mit p=1,0. Nebenbei verbessern sich
+die tintenseitigen Spalten (`aiou` 0,6831 → 0,6884, beide Chamfer-
+Mediane −0,0003) — genau das Vorzeichen, das „die Marke sitzt jetzt
+auf Tinte" erwarten lässt. Verweigerungen: KEINE. Acht der zehn
+Wörter tragen genau eine Marke, alle acht wurden bewegt (Median-
+Verschiebung 0,073–0,127 xh, alle weit innerhalb des 0,6-xh-Radius),
+`laden` und `Wer` haben gar keine.
+
+**Die Einschränkung, und sie ist der eigentliche Fund.** Das
+PRIMÄRMASS ruht auf 4 der 10 Wörter: bei `unter`, `und`, `muß` und
+`zwei` steht `marks_uncertain` — die AUTHORED-Referenz enthält dort
+gar keinen als Marke klassifizierten Strich (die Hand schreibt den
+u-Bogen angebunden, nicht schwebend), also gibt es nichts zu paaren.
+Genau diese Wörter zeigen den zweiten Effekt: die Harvest-Regel
+`_is_diacritic` (schwebt über der Mittellinie, KEINE Bogenlängen-
+Grenze) nimmt den langen u-Bogen als Marke, das Lineal
+(`classify_strokes`, Deckel 0,8 xh) zählt ihn als Körper — deshalb
+landet seine Verschiebung dort in der Körper-DTW statt in der
+Marken-Spalte: `unter` −0,0008 (besser), `und` +0,0010, `muß`
++0,0020. Das ist der gesamte dtw-Effekt des Laufs; er hebt den
+Headline-Median um +0,0005 (0,061985 → 0,062474), weil `und` zufällig
+auf der Median-Position sitzt. Bei den fünf i-Punkt-Wörtern bleibt
+die DTW byte-gleich, weil das Lineal die Marke vor der Körper-DTW
+heraustrennt. Kandidat A1b (eigene Vorregistrierung, NICHT Teil
+dieses Ergebnisses, weil er nach Sicht der Daten formuliert ist): den
+Nachfit auf Striche mit Bogenlänge ≤ `MARK_MAX_ARC_UNITS`
+beschränken, also auf genau die Klasse, die „Marke" heißt — der
+u-Bogen wäre dann wieder Sache des Körper-Solves.
+
+ENTSCHEIDUNG: **BEHALTEN.** Kein Kill-Kriterium feuert (kein
+verlorenes Match, kein zusätzliches `marks_spurious`, Strukturzähler
+exakt gleich, keine Netto-dtw-Verschlechterung), und das Primärmaß
+mehr als halbiert sich. Der Schalter bleibt vorerst opt-in
+(`--mark-refit`, `HarvestOptions.mark_refit`, default AUS): der
+Kettenfit-Kandidat ist die eingefrorene Baseline, und ob A1 in die
+GESPEICHERTE Bahn wandert, ist ein eigener Autoren-Entscheid — der
+Bestätigungssatz (`--split confirm`) ist die Bedingung dafür, weil
+vier gepaarte Wörter eine schmale Grundlage für eine Adoption sind.
