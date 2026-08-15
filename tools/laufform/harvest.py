@@ -65,7 +65,7 @@ import os
 import urllib.request
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -78,6 +78,7 @@ from tools.pairlab.analyze import TRACE_WINDOW_MARGIN, _body_items, _fit_letter,
 from tools.pairlab.anchors import repair_stranded_anchors
 from tools.pairlab.chain import chain_runs, fit_word_chain
 from tools.pairlab.connector_qc import connector_degenerate, connector_signals
+from tools.pairlab.marks import mark_refit_summary, refit_word_marks
 
 # The word-trace assembly lives in `tools.pairlab.trace` so the ink-follower can
 # use it without the import cycle `pairlab -> laufform -> pairlab`; re-exported
@@ -216,6 +217,15 @@ class HarvestOptions:
     # fit resting on its own search bound is NOT used as a seed (that placement
     # is itself suspect), so such slots keep the composed start.
     chain_seed: str = "composed"  # "composed" | "grid"
+    # Measure A1 (`docs/proposals/tintenfolger.md` §7.3): after the body solve,
+    # refit each MARK stroke (i-dot, umlaut, u-bow) onto the ink the body did
+    # not claim (`tools.pairlab.marks`). Default OFF and deliberately without a
+    # CLI flag on the harvest itself: what the harvest STORES is the trace
+    # bench's `chain` baseline, and a baseline that quietly changed would make
+    # every measured delta unreadable. The bench turns it on for a candidate run
+    # (`tools.tracebench.run --mark-refit`); adopting it into the stored trace
+    # is a separate, measured decision.
+    mark_refit: bool = False
 
 
 @dataclass
@@ -759,7 +769,17 @@ def chain_word_strokes(case, result: WordDeriveResult, opts: HarvestOptions) -> 
       come from (an EDT per case, computed once);
     * `registration` / `xh` — the frame the strokes are expressed in;
     * `traced_slots`, `run_slots`, `cut_indices`, `n_params`, `seconds` — the
-      pooled solve diagnostics the word record stores.
+      pooled solve diagnostics the word record stores;
+    * `mark_refit` — the A1 roll-up plus one row per mark, `None` while the
+      measure is off (which is the default, and then this function's output is
+      byte-identical to what it produced before A1 existed).
+
+    The solves and the assembly are two loops rather than one because the
+    optional mark refit sits between them and has to see the WHOLE word: its
+    body claim must cover every run, or a mark of one run could be pulled onto
+    ink another run's letter already accounts for. With the measure off the
+    entries handed to the assembler are literally `fit.stroke_polylines_px`, in
+    the same order, so nothing about the baseline changes.
     """
     xh = result.xh_px
     registration = {
@@ -771,6 +791,7 @@ def chain_word_strokes(case, result: WordDeriveResult, opts: HarvestOptions) -> 
     restart_slots = {i for i, s in enumerate(case.slots) if s.key and _key_base(s.key, s.position) in CAP_RESTART_BASES}
 
     runs: list[ChainRunFit] = []
+    solved: list[Any] = []  # the fits whose pen path goes into the trace, in solve order
     word_strokes: list[list[list[float]]] = []
     traced: set[int] = set()
     run_slots: list[list[int]] = []
@@ -792,6 +813,25 @@ def chain_word_strokes(case, result: WordDeriveResult, opts: HarvestOptions) -> 
         cut_indices.append([[int(a), int(b)] for a, b in fit.cut_indices])
         n_params += int(fit.fit_meta.get("n_params", 0))
         seconds += float(fit.fit_meta.get("seconds", 0.0))
+        solved.append(fit)
+
+    entries_by_run = [fit.stroke_polylines_px for fit in solved]
+    mark_meta: dict | None = None
+    if opts.mark_refit:
+        # A1 (tintenfolger.md §7.3): the marks alone, moved onto the ink the
+        # body left over. It changes only diacritic polylines and only by a
+        # translation, so no body anchor and no seam can move here — and it
+        # COPIES rather than mutates, so `fit.stroke_polylines_px` stays the
+        # solve's own output and the gates, the connector QC and the occurrence
+        # rows below keep judging the unrefitted geometry. The refit changes
+        # what the trace SHOWS, never what the harvest MEASURES (the same
+        # separation `tools.pairlab.anchors`' repair keeps).
+        entries_by_run, mark_reports = refit_word_marks(
+            entries_by_run, xh=xh, registration=registration, skeleton=case.skel, options=None
+        )
+        mark_meta = {**mark_refit_summary(mark_reports), "rows": [asdict(r) for r in mark_reports]}
+
+    for fit, entries in zip(solved, entries_by_run, strict=True):
         # The whole solved run goes into the trace — a gate verdict decides what
         # is measured, not what was written (the per-slot verdicts stay readable
         # in `gates`/`converged_local` beside it). The polylines are the fit's
@@ -799,11 +839,7 @@ def chain_word_strokes(case, result: WordDeriveResult, opts: HarvestOptions) -> 
         # showing what the fit actually did, needle and all.
         word_strokes.extend(
             assemble_word_strokes(
-                fit.stroke_polylines_px,
-                traced_slots=set(fit.slots),
-                xh=xh,
-                registration=registration,
-                restart_slots=restart_slots,
+                entries, traced_slots=set(fit.slots), xh=xh, registration=registration, restart_slots=restart_slots
             )
         )
 
@@ -817,6 +853,7 @@ def chain_word_strokes(case, result: WordDeriveResult, opts: HarvestOptions) -> 
         "cut_indices": cut_indices,
         "n_params": n_params,
         "seconds": round(seconds, 3),
+        "mark_refit": mark_meta,
     }
     return cap_word_strokes(word_strokes, label=f"{case.id} (chain)"), meta
 

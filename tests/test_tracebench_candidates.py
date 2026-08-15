@@ -246,6 +246,33 @@ def test_the_chain_provider_returns_what_the_harvest_would_store(
     assert candidate.meta["traced_slots"] == stored["measurements"]["traced_slots"]
 
 
+def test_the_chain_candidate_is_the_baseline_until_a1_is_asked_for(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`mark_refit` (tintenfolger.md §7.3 A1) reaches the harvest options, and
+    only on request — the default provider still builds the stored baseline, and
+    its rows carry no `mark_refit` key at all, so a report can never be read as
+    an A1 run that was actually the baseline."""
+    from tests.test_laufform_harvest import _synthetic_word  # noqa: PLC0415
+    from tools.tracebench import candidates as candidates_mod  # noqa: PLC0415
+    from tools.tracebench.candidates import _chain_options  # noqa: PLC0415
+
+    assert _chain_options("suetterlin", "composed").mark_refit is False
+    assert _chain_options("suetterlin", "composed", True).mark_refit is True
+
+    case, result = _synthetic_word([(0.06, 0.0), (-0.04, 0.03)])
+    reference = load_reference(write_root(tmp_path, [row(case.id)]))
+    monkeypatch.setattr(candidates_mod, "_chain_cases", lambda *a, **kw: {case.id: case})
+    monkeypatch.setattr(candidates_mod, "_chain_derive", lambda c: result)
+
+    baseline = chain_provider(fixtures_root=tmp_path)(reference, [case.id])[case.id]
+    with_a1 = chain_provider(fixtures_root=tmp_path, mark_refit=True)(reference, [case.id])[case.id]
+
+    assert "mark_refit" not in baseline.meta
+    assert with_a1.meta["mark_refit"]["marks"] == 0  # the synthetic ductus has no diacritic
+    assert with_a1.strokes == baseline.strokes
+
+
 def test_a_word_without_a_fixture_case_is_a_skipped_row(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     from tools.tracebench import candidates as candidates_mod  # noqa: PLC0415
 

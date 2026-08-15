@@ -284,14 +284,19 @@ def _chain_record(case: Any, strokes: list, registration: dict, xh: float) -> di
     return _word_record(case, strokes, registration, xh, {})
 
 
-def _chain_options(style: str, chain_seed: str) -> Any:
+def _chain_options(style: str, chain_seed: str, mark_refit: bool = False) -> Any:
     from tools.laufform.harvest import HarvestOptions  # noqa: PLC0415
 
-    return HarvestOptions(style=style, path="chain", chain_seed=chain_seed)
+    return HarvestOptions(style=style, path="chain", chain_seed=chain_seed, mark_refit=mark_refit)
 
 
 def chain_provider(
-    *, style: str = "suetterlin", which: str = "words", fixtures_root: Path | None = None, chain_seed: str = "composed"
+    *,
+    style: str = "suetterlin",
+    which: str = "words",
+    fixtures_root: Path | None = None,
+    chain_seed: str = "composed",
+    mark_refit: bool = False,
 ) -> Provider:
     """The Stage-B chain fit — run through the HARVEST's own code path.
 
@@ -305,12 +310,18 @@ def chain_provider(
     the two drift — which is what
     `tests/test_tracebench_candidates.py` asserts on the harvest's own synthetic
     specimen.
+
+    `mark_refit` is measure A1 of `docs/proposals/tintenfolger.md` §7.3 — the
+    marks refitted onto their own ink after the body solve
+    (`tools.pairlab.marks`). Default False, because with it the candidate is no
+    longer the stored baseline but a variant of it; a run that switches it on is
+    its OWN pre-registered measurement and says so in its label.
     """
     root = Path(fixtures_root) if fixtures_root is not None else DEFAULT_FIXTURES_DIR
 
     def provide(reference: Reference, specimen_ids: Sequence[str]) -> dict[str, Candidate]:
         ids = list(specimen_ids)
-        opts = _chain_options(style, chain_seed)
+        opts = _chain_options(style, chain_seed, mark_refit)
         cases = _chain_cases(which=which, style=style, only=ids, fixtures_root=root)
         out: dict[str, Candidate] = {}
         for specimen_id in ids:
@@ -350,6 +361,9 @@ def chain_provider(
                     "run_slots": meta["run_slots"],
                     "n_params": meta["n_params"],
                     "seconds": meta["seconds"],
+                    # Absent (not None) while A1 is off, so a baseline row and
+                    # an A1 row are distinguishable in the report itself.
+                    **({"mark_refit": meta["mark_refit"]} if meta.get("mark_refit") is not None else {}),
                 },
             )
         return out

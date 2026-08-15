@@ -851,6 +851,78 @@ def test_the_shared_trace_half_produces_exactly_what_the_harvest_stores(monkeypa
     assert all(r.fit is not None for r in meta["runs"])
 
 
+# ------------------------------------------------- the mark refit (A1, opt-in)
+
+
+def test_the_mark_refit_is_off_by_default_and_the_chain_path_never_reaches_it(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Measure A1 (tintenfolger.md §7.3) is strictly opt-in.
+
+    The stored trace IS the trace bench's `chain` baseline, so the default path
+    must not merely produce the same numbers — it must not run the new code at
+    all. A refit that raises on sight proves that stronger statement.
+    """
+    case, result = _synthetic_word([(0.06, 0.0), (-0.04, 0.03)])
+    monkeypatch.setattr(harvest_mod, "derive_word", lambda c: result)
+
+    def _must_not_be_called(*args, **kwargs):  # pragma: no cover - the assertion is that it is not
+        raise AssertionError("the mark refit ran although HarvestOptions.mark_refit is False")
+
+    monkeypatch.setattr(harvest_mod, "refit_word_marks", _must_not_be_called)
+
+    assert HarvestOptions().mark_refit is False
+    strokes, meta = harvest_mod.chain_word_strokes(case, result, HarvestOptions(path="chain", rmse_max=2.5))
+    assert meta["mark_refit"] is None
+    assert harvest_case(case, HarvestOptions(path="chain", rmse_max=2.5)).word_record["strokes"] == strokes
+
+
+def test_turning_the_mark_refit_on_leaves_a_word_without_marks_untouched(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The wiring end to end: the flag reaches the refit, and a word whose ductus
+    has no diacritic at all comes back byte-identical with an empty report."""
+    case, result = _synthetic_word([(0.06, 0.0), (-0.04, 0.03)])
+    monkeypatch.setattr(harvest_mod, "derive_word", lambda c: result)
+
+    baseline, _ = harvest_mod.chain_word_strokes(case, result, HarvestOptions(path="chain", rmse_max=2.5))
+    strokes, meta = harvest_mod.chain_word_strokes(
+        case, result, HarvestOptions(path="chain", rmse_max=2.5, mark_refit=True)
+    )
+    assert strokes == baseline
+    assert meta["mark_refit"] == {
+        "marks": 0,
+        "moved": 0,
+        "refused": 0,
+        "reasons": {},
+        "median_shift_units": None,
+        "max_shift_units": None,
+        "rows": [],
+    }
+
+
+def test_the_mark_refit_sees_the_whole_word_and_the_specimen_ink(monkeypatch: pytest.MonkeyPatch) -> None:
+    """What A1 is handed decides what it can do wrong.
+
+    The body claim has to cover EVERY solved run — a mark of one run must not be
+    pulled onto ink another run's letter already accounts for — and the ink it
+    reads is the case's own frozen skeleton in the frame the polylines live in.
+    """
+    case, result = _synthetic_word([(0.06, 0.0), (-0.04, 0.03)])
+    monkeypatch.setattr(harvest_mod, "derive_word", lambda c: result)
+    real = harvest_mod.refit_word_marks
+    seen: dict = {}
+
+    def _spy(entries_by_run, **kwargs):
+        seen.update(kwargs, runs=len(entries_by_run), entries=[len(e) for e in entries_by_run])
+        return real(entries_by_run, **kwargs)
+
+    monkeypatch.setattr(harvest_mod, "refit_word_marks", _spy)
+    _, meta = harvest_mod.chain_word_strokes(case, result, HarvestOptions(path="chain", mark_refit=True))
+
+    assert seen["runs"] == len(meta["run_slots"]) == 1
+    assert seen["entries"][0] == len(meta["runs"][0].fit.stroke_polylines_px)
+    assert seen["skeleton"] is case.skel
+    assert seen["xh"] == XH
+    assert seen["registration"] == REGISTRATION
+
+
 def test_an_unscorable_case_yields_nothing(monkeypatch: pytest.MonkeyPatch) -> None:
     case, result = _synthetic_word([(0.0, 0.0), (0.0, 0.0)])
     case.scorable = False

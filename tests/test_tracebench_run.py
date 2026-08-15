@@ -23,6 +23,8 @@ from tools.tracebench.reference import load_reference
 from tools.tracebench.run import (
     MIN_CONFIRM_WORDS,
     assert_dev_set_intact,
+    build_parser,
+    build_provider,
     find_fixture_root,
     main,
     score_all,
@@ -257,3 +259,20 @@ def test_a_root_without_the_artifact_stops_with_a_named_message(
     (fixtures / "suetterlin" / "suetterlin-1922" / "word_instances.json").unlink()
     with pytest.raises(SystemExit, match="word_instances"):
         _run(monkeypatch, fixtures, "--candidate", "authored")
+
+
+# --------------------------------------------------------- the A1 mark refit
+
+
+def test_the_chain_candidate_keeps_its_name_until_a1_is_asked_for() -> None:
+    """`chain` is the frozen baseline's name — an A1 run may not answer to it."""
+    assert build_provider(build_parser().parse_args([]))[1] == "chain"
+    assert build_provider(build_parser().parse_args(["--mark-refit"]))[1] == "chain+marks"
+    assert build_provider(build_parser().parse_args(["--mark-refit", "--label", "a1-r1"]))[1] == "a1-r1"
+
+
+def test_the_mark_refit_flag_is_refused_where_it_would_do_nothing() -> None:
+    """It changes how the CHAIN candidate is BUILT; a stored row is read as it is."""
+    for candidate in ("authored", "traced"):
+        with pytest.raises(SystemExit, match="--mark-refit"):
+            build_provider(build_parser().parse_args(["--mark-refit", "--candidate", candidate]))
