@@ -16,7 +16,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 - **The rescue-path register: every honest negative names its way back
   into the game** (owner directive 2026-08-16, after the P3 0/3 round):
-  `tintenfolger.md` §7.9 collects, per rejected measure, the finding or
+  `docs/proposals/tintenfolger.md` §7.9 collects, per rejected measure, the finding or
   measured ceiling, the named conversion path and its trigger (B1's
   proven −0.0124 oracle → the order-aware „Chor" selector; K1's real
   +126° arrival error → the connector-FORM hypothesis; K3's jitter

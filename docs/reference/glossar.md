@@ -1540,7 +1540,7 @@ nicht geschwächt oder gelöscht; neue Argumente gehen nach
 benannte Idee, die sie doch noch ins Ziel bringen könnte (Owner-Direktive
 2026-08-16). Jeder §14-Ergebnis-Eintrag eines ehrlichen Negativs schließt
 mit seinen Rettungswegen (oder explizit „keiner benannt"); die zentrale
-stehende Liste ist tintenfolger.md §7.9. Ein Rettungsweg ist immer ein
+stehende Liste ist proposals/tintenfolger.md §7.9. Ein Rettungsweg ist immer ein
 NEUER Mechanismus, neue Evidenz (Bestätigungssatz) oder ein neuer Sensor
 (z. B. der blinde Menschvergleich als Tie-Breaker) mit frischer
 Vorregistrierung — nie derselbe Knopf mit weicheren Gates. Verhältnis zu
