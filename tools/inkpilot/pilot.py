@@ -107,6 +107,11 @@ TAIL_RUNOUT_MAX_UNITS = 1.0
 # 1.66, aiou -0.002).
 RIDE_DOUBLE_MAP_PRIORITY = True
 RIDE_DOUBLE_MIN_GAP = 4  # samples between visits before it counts as a pass
+# v0.6 (pre-registered): the smoothing pass over the 8-connected pixel
+# zigzag — per iteration the local mean (1, 2, 1) / 4 over each stroke with
+# FIXED endpoints. Structure is a GATE, not code: the bench counters must
+# stay byte-identical or the arm is rejected. 0 = off.
+SMOOTH_ITERATIONS = 0
 
 
 @dataclass(frozen=True)
@@ -580,6 +585,21 @@ def run_out_tails(strokes: list[np.ndarray], pg: PilotGraph, xh_px: float, max_u
     return out
 
 
+def smooth_strokes(strokes: list[np.ndarray], iterations: int) -> list[np.ndarray]:
+    """v0.6: iterations of the (1, 2, 1)/4 local mean, endpoints fixed."""
+    if iterations <= 0:
+        return strokes
+    out = []
+    for pts in strokes:
+        p = pts.astype(float).copy()
+        for _ in range(iterations):
+            if len(p) < 3:
+                break
+            p[1:-1] = (p[:-2] + 2.0 * p[1:-1] + p[2:]) / 4.0
+        out.append(p)
+    return out
+
+
 def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
     """All strokes of one word, plus provenance details for the record."""
     result = derive_word(case)
@@ -624,6 +644,8 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
         )
     if DOUBLE_PASS_OFFSET_FRACTION > 0.0 and case.width_map is not None:
         strokes = offset_double_passes(strokes, np.asarray(case.width_map, dtype=float), DOUBLE_PASS_OFFSET_FRACTION)
+    if SMOOTH_ITERATIONS > 0:
+        strokes = smooth_strokes(strokes, SMOOTH_ITERATIONS)
     detail = {
         "nodes": len(pg.graph.nodes),
         "edges": len(pg.graph.edges),
