@@ -242,6 +242,17 @@ Drill-Dev-Zwang (nichts ist verbrannt), also zwei Gruppen:
   Bestätigung B erst für große Entscheidungen. (IDs wie im Sidecar;
   sa/sg/ssi schreiben auf der Platte ſ.)
 
+Die Versiegelung betrifft AUSSCHLIESSLICH die Rolle als nachgefahrene
+Trace-Referenz (das Ink-Folgen). Die KOMPOSITIONS-Messung läuft
+unverändert über alle 33: `wordbench --set pairs` (`pair_loss`) misst
+die komponierten Joins gegen die Drill-Tinte, und die sezierten
+`pair_instances` (doff/dconn, pairmeas) bleiben Platzierungs-Evidenz —
+genau darin liegt der Wert der Drills fürs RICHTIGE SCHREIBEN: 31 der
+33 tragen Übergänge, die in keinem einzigen der 63 Wörter vorkommen
+(nur `on` und `wi` überlappen). Fürs Schreiben sind sie damit die
+einzige Evidenz dieser Join-Klassen; fürs Ink-Folgen sind sie
+Rückhaltematerial.
+
 ## 3 Route A: die Verfeinerungsstufe (`tools/pairlab/follow.py`)
 
 **Formulierung: re-linearisierender Restart, KEIN Snake.** Zweiter Solve
