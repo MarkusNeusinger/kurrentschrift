@@ -5105,3 +5105,55 @@ Kreuzungs-Invariante ohnehin vorzeichnet; als „Topologie-Budget
 K0" seit aug15 als künftiger Arm benannt). Der wäre eine eigene
 Vorregistrierung; bis dahin bleibt die Produktions-Adoption
 offen und der Re-Harvest hinter Owner-Go + dbsnapshot.
+
+### Route „Lotse" `aug16` — Vorregistrierung: Skelett fahren, Duktus als Karte
+
+Geschrieben und committet VOR der ersten Bench-Zahl. Owner-Idee
+(2026-08-16, tintenfolger.md §7.8): nicht Buchstabe auflegen und
+verformen (Kette), sondern wie die Nullprobe DIREKT auf der
+Tinten-Mitte fahren und nur an Entscheidungsstellen den Duktus als
+KARTE fragen. Arm ⑨s Fazit („Tinten-Gewinn und Struktur-Erfindung
+in DIESER Formulierung untrennbar") benannte genau diese andere
+Formulierung als Rettungsweg (§7.9).
+
+**Implementierung** (`tools/inkpilot`, Anzeige-Name „Lotse"):
+Karte = die komponierte Bahn in Crop-px (wordlab-Transform auf der
+gefitteten Registrierung der Zeile); Wasserweg = der
+routeg-Skelettgraph; Ritt = GLOBALE Zuordnung Karten-Sample →
+Grat-Punkt (Viterbi über die Sample-Kette: Graph-Fahrkosten +
+Karten-Abweichung + Brücken-Zustand), verbunden über kürzeste
+Pixelketten-Wege — der Abbiege-Entscheid an jeder Kreuzung fällt
+aus der Route der Karte; Kanten dürfen doppelt gefahren werden
+(Retrace); wo keine Tinte liegt, überbrückt die Karte; führende und
+folgende Brücken ohne Wieder-Aufstieg werden GETRIMMT (komponierte
+Luft ist kein Federstrich). Kein #278-Bruch: Ordnung, Richtung und
+Marken-Zuweisung kommen vollständig vom Prior. v0-Konstanten
+(unkalibriert, deklariert): `SAMPLE_STEP` 0,12 xh · `BOARD_RADIUS`
+0,6 xh · `DEVIATION_WEIGHT` 2 · `BRIDGE_EMIT` 2,5×Radius ·
+`MAX_RIDE_FACTOR` 8. Laufzeit ~0,1–0,3 s/Wort (kein Solver).
+Unit-Tests auf dem synthetischen Kreuz: Gleistreue, Karten-Abbiegen
+an der Kreuzung, Luft-Trimm, Lücken-Brücke, Frame-Roundtrip.
+
+**Messgrößen (Dev-Split, gegen die eingefrorene Baseline).**
+(a) `dtw_xh` gepaart Lotse vs. Kette (Baseline 0,062 med) — die
+Hypothese der Route: Tinten-Mitte + Karten-Ordnung schlägt den
+Mess-Fit als NACHFAHRER. (b) Strukturzähler + Soll-Spalten (die
+Karte bringt das Soll mit; erfundene Kreuzungen wären
+Graph-Artefakte). (c) `marks_missing/spurious` (Marken per Karte
+zugewiesen). (d) `aiou` (konstruktionsbedingt hoch — Erwartung ≥
+Kette). (e) Brücken-Anteil je Wort als QC-Spalte — viel Brücke
+heißt, die KARTE verließ die Tinte: ein Kompositions-Defizit, kein
+Lotse-Fehler, report-only ausgewiesen.
+
+**Gates und Kill-Kriterien (relativ, keine publizierten Zahlen).**
+Ernst zu nehmen ist die Route, wenn `dtw_xh` gepaart die Kette
+schlägt (Median der Differenzen < 0, Sign-Test beschreibend) OHNE
+Netto-Verschlechterung bei Kreuzungen und Marken. Kill:
+Struktur-Erfindungen über der Kette (Graph-Grate erzeugen
+Falsch-Kreuzungen) oder Marken-Verluste → Formulierung zurück ans
+Reißbrett, ehrliches Negativ mit Fund. Erwartete Fehlermodi
+benannt: der Pixel-Zickzack der 8er-Skelettkette (kostet dtw
+wenig, ist der benannte Feinschliff-Kandidat), Doppelpass-Zonen
+(das Skelett hat EINE Linie, wo die Hand zwei schrieb — der Ritt
+fährt sie zweimal, korrekt per Karte, aber deckungsgleich statt
+versetzt), der ß-Kringel in muß.
