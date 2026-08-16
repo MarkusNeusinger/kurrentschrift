@@ -16,7 +16,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 - **Durable working rules lifted from machine-local session memory into
   the repo instructions** (`CLAUDE.md` guardrails + the
-  `copilot-instructions.md` mirror), so cloud/web sessions — which never
+  `.github/copilot-instructions.md` mirror), so cloud/web sessions — which never
   see the local memory directory — inherit them: the rescue-path duty for
   rejected measures, the squash-merge race recovery (fresh branch +
   cherry-pick, wait for "green and review-clean"), Opus for delegated
