@@ -5157,3 +5157,34 @@ wenig, ist der benannte Feinschliff-Kandidat), Doppelpass-Zonen
 (das Skelett hat EINE Linie, wo die Hand zwei schrieb — der Ritt
 fährt sie zweimal, korrekt per Karte, aber deckungsgleich statt
 versetzt), der ß-Kringel in muß.
+
+**v0.1 gemessen `aug16` — Gate verfehlt, aber mit dem stärksten
+Einzelwort-Fund der Kampagne.** Dev-Split, 10/10 ok, 22,5 s
+Gesamtlauf. `dtw_xh` Median 0,119 gegen Kette 0,062 — die Route
+verliert den Median klar (8/10 Wörter schlechter). ABER die
+Verteilung erzählt zwei Geschichten: **unter — das
+Katastrophen-Wort der Kette (0,4501, der Stapel-Kollaps) — fällt
+auf 0,0641 (−0,386)**, muß ebenfalls besser (−0,021), und `aiou`
+steigt fast überall (laden 0,686 → 0,801 · will 0,753 → 0,816 —
+die Tinten-Mitte hält, was die Nullprobe versprach). Die zwei
+Verlust-Mechanismen, beide vorregistriert erwartet, einer davon in
+voller Stärke: (1) **`cross_cand = 0 auf JEDEM Wort** — 23
+Hand-Kreuzungen fehlen komplett: wo Striche sich kreuzen, teilen
+sich die Ritte die SELBEN Skelett-Pixelketten durch den Knoten,
+zwei Pässe fallen deckungsgleich zusammen und schneiden sich nie
+transversal (stattdessen 12 unechte Retrace-Zonen,
+`retrace_arc_ratio` 2,49). (2) `und` bricht aus (+0,294,
+Einzelfall-Autopsie offen). Kill-Kriterium „Struktur-Erfindung"
+feuert NICHT (0 unechte Kreuzungen, 0 Marken-Verluste) — aber das
+Gate (Kette schlagen ohne Struktur-Netto-Verlust) ist verfehlt:
+VERWORFEN als v0.1, Route NICHT geschlossen. Rettungswege
+(§7.9-Regel): (i) **der versetzte Doppelpass aus Breiten-Evidenz**
+— genau §7-Maßnahme A5: auf mehrfach gefahrenen Kanten die Pässe
+um einen Bruchteil der GEMESSENEN lokalen Strichbreite
+(`width_map` liegt im Fixture!) senkrecht auseinanderlegen, dann
+schneiden sich die Züge transversal wie die Hand; (ii) der
+Feinschliff über den Pixel-Zickzack; (iii) die und-Autopsie. Der
+unter-Befund steht unabhängig davon: wo der Ketten-Fit
+strukturell scheitert, liefert die Karten-Fahrt bereits jetzt
+eine um Faktor 7 bessere Bahn — die Fusion („Vier Augen") hat
+damit ihr erstes gemessenes Argument.

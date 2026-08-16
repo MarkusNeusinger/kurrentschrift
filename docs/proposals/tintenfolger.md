@@ -671,7 +671,7 @@ ist der Glossar-Eintrag „Duell-Namen":
 | **Vier Augen** | Fusion (§7.6) | geplant |
 | **Feinschliff** | Natürlichkeitsfilter (zweite Stufe, Glättung mit Struktur-Wächter) | Kandidat |
 | **Chor** | ordnungs-bewusste Auswahl unter Varianten (B1-Nachfolger) | Welle 3 |
-| **Lotse** *(Arbeitstitel)* | Skelett direkt fahren, Duktus als Karte (unten) | Idee |
+| **Lotse** *(Arbeitstitel)* | Skelett direkt fahren, Duktus als Karte (unten) | v0.1 gebaut + gemessen (`tools/inkpilot`, §14 „Route Lotse": Gate verfehlt — Kreuzungs-Kollaps auf geteilten Gleisen —, aber unter 0,450 → 0,064; Rettungsweg A5 versetzter Doppelpass) |
 
 **„Kette+ ist die einzige Kette."** Owner-Entscheid nach der
 Kreuzungs-Frage: es gibt KEIN Beispiel, wo eine vom Fit ERFUNDENE
