@@ -22,7 +22,11 @@ Persistenz: PR #250. **H0 umgesetzt** (Bench + wordlab komponieren mit
 den eingefrorenen Laufform-Varianten; Re-Baseline Wörter 0,1169 ·
 Paare 0,1645, Zerlegung in qualitaetsmetrik.md §6 „H0-Anschluss").
 **Auch der Aggregations-Schritt aus H1 ist umgesetzt:** die
-admin-gesicherten Endpunkte `GET/POST
+`hands`-Zeile des Schreibers legen die admin-gesicherten Batch-`PUT`s
+des `instances`-Routers per get-or-create in derselben Anfrage an
+(eine unter anderem Stil registrierte id wird verweigert) — kein
+eigener Anlege-Schritt nötig; die admin-gesicherten Endpunkte
+`GET/POST
 /hands/{hand_id}/aggregates[/rebuild]` füllen die seit `0004` leere
 `aggregates`-Tabelle aus den gespeicherten `instances` (Median-Anker +
 MAD-Hülle + gepoolte Schicht-1-Statistik, Rechenkern

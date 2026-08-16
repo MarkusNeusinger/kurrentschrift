@@ -20,7 +20,13 @@ kollabiert — eine abweichende Schwester überlebt als `variant` —,
 Compose-Golden-Fixture blieb in der Geometrie byte-identisch).
 **R3 ist umgesetzt** (2026-07-17, Migration `0018` + Paar-Editor).
 **R1b Stufe 2 ist umgesetzt** (2026-07-17: Admin-Score-Endpunkt +
-Score-Chips/Sortierung im Wortvergleich, s. R1b).
+Score-Chips/Sortierung im Wortvergleich, s. R1b). *Überholt in einem
+Detail:* die dort beschriebene Overlay-Registrierung über
+Sidecar-Lineatur/linke Crop-Kante ist seit dem Handmodell VERWORFEN —
+jede gemessen-vs-komponiert-Zeichnung reitet auf der gemessenen
+Registrierung der Zeile (`frontend-stack.md` §7, Registrierungs-Regel);
+die Kanten-Ausrichtung überlebt nur, wo keine nachgefahrene Zeile
+existiert.
 **Der Ernte-Importer sowie R4 und R5 sind umgesetzt** (2026-07-18,
 Issue #218: `tools/pairlab/harvest.py` + Wordbench-`--overrides`, R4-Loop
 `jul17` mit Nested-Fall-Keep und O3-Neubewertung, R5 Slant-Spalte +

@@ -92,7 +92,12 @@ orthographie-regeln.md §1
 Buchstabenverbindung. Der geschlossene Satz im Projekt: `ch` · `ck` · `tz`
 · `ſt` · `qu` · `ß`. Sie werden als eigene Glyphen mit eigenem Duktus
 gespeichert („enumerieren, nicht generieren“) — im Gegensatz zu beliebigen
-Buchstabenpaaren, deren Verbindung erzeugt wird. → architektur.md §4
+Buchstabenpaaren, deren Verbindung erzeugt wird. Fehlt der Canonical eines
+Clusters, zerfällt der Slot beim Shaping in seine Einzelbuchstaben
+(Rückfall, `ch` · `ck` · `tz` · `ſt` · `qu`); `ß` bleibt davon
+ausgenommen und ATOMAR — sein ſs/ſz-Zerfall ist selbst eine
+Allographen-Frage, und ein naiver Split schriebe mitten im Wort ſſ.
+→ architektur.md §4 · write-api.md „Pipeline“
 
 **Fuge** *(morpheme boundary)* — die Nahtstelle in einem zusammengesetzten
 Wort (Donners·tag, Aus·flug). Sie ist orthographisch relevant, weil dort
@@ -225,6 +230,10 @@ Grundform (Variante 0), im Gegensatz zur gemessenen Laufform.
 **Bbox** — die Zuschnitt-Konfiguration einer Chart-Zelle: Rechteck,
 Radierer-Striche, gemalte Tinte, Lineatur-Kalibrierung, eingesetzte
 Spender-Zellen (`patches`), Anzahl der Anker, `locked`. Tabelle `bboxes`.
+*Technisch:* `core/chart.py` ist das Lade- und Zuschnitt-Modul —
+`crop_with_mask` komponiert den freihändigen Radierer (`mask_strokes`),
+die eingesetzten Spender-Zellen (`patches`) und den manuellen
+Tinte-Pinsel (`ink_strokes`) in den Ausschnitt.
 
 **Template** — die kanonische Form einer Glyphe: **Anker** (die Stützpunkte
 der Mittellinie), `half_widths` (das gemessene Breitenprofil),
@@ -279,7 +288,11 @@ einem Client zu glauben. Spiegel im SPA: `LOW_N` in `laufformPreview.ts`.
 `(hand, left_key, right_key)`: Median-Versatz und per-Punkt-Median der
 gemessenen Verbindungslinien plus gepoolte QC. **Bewusst ohne
 Apply-Schritt** — die Paar-Statistik ist rein lesend, das Rendering rührt
-sie nicht an. Migration `0023`. → handmodell-stufenplan.md H2
+sie nicht an. `kind` wird dabei **gepoolt**: ein Wort-Join (Abb. 19) und
+ein Paar-Drill (Abb. 20) landen in EINER Aggregat-Zeile, weil beide
+derselbe Übergang derselben Hand sind; das Wort-/Paar-Platten-Histogramm
+bleibt in der gepoolten QC stehen, damit die Mischung sichtbar ist.
+Migration `0023`. → handmodell-stufenplan.md H2
 
 **glyph_key** — der Schlüssel einer Glyphe als bare Basis: `a`, `longs`,
 `ch`. Seit Redesign R2 ohne Positions-Suffix (früher `a-medial`).
@@ -291,7 +304,12 @@ Vorkommen, Segment-Bewertungen und Übergänge werden über
 
 **Shaping** — Text → geordnete Glyph-Schlüssel: Lang-s-/Rund-s-Regel,
 Fugen-Marker, Ligatur-Erkennung, Positionszuweisung, Ziffern und
-Satzzeichen als nicht verbindende Glyphen. Existiert **zweimal** —
+Satzzeichen als nicht verbindende Glyphen — dazu der **Ligatur-Zerfall**
+als Rückfall, wenn der Canonical eines Clusters fehlt: die
+Teilbuchstaben erben die Wortposition des Clusters (erster `initial`,
+letzter `final`, dazwischen medial), `ß` bleibt atomar
+(`core/shaping.py::decompose_ligature_slot`, TS-Zwilling
+`decomposeLigatureSlot`). Existiert **zweimal** —
 `core/shaping.py` (maßgeblich) und `app/src/domain/shaping.ts` (nur noch
 fürs Quiz); ein gemeinsames Fixture hält beide synchron.
 
@@ -1503,6 +1521,11 @@ freihändig Tinte *hinzufügen* · kleine Sprenkel automatisch schließen
 wurde) · Tinte aus einer *anderen* Zelle derselben Tafel einkopieren
 (`bboxes.patches` — so entsteht ein ü aus u-Basis + ä-Umlaut, obwohl es
 keine eigene ü-Zelle gibt).
+*Technisch:* Alle drei Tinten-Eingriffe komponiert
+`core/chart.py::crop_with_mask` **vor** der Binarisierung in den
+Ausschnitt — sie ändern also, was die Maske überhaupt sieht;
+`crop_mask_to_png_bytes` rendert daraus die binarisierte Vorschau
+(„Maske zeigen“) mit farbcodierter Auto-Füllung.
 
 **Wort-Editor · Paar-Editor** — die beiden manuellen Ground-Truth-Flächen:
 der Wort-Editor lässt ein misslungenes automatisches Nachfahren von Hand

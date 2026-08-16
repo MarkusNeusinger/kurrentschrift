@@ -357,6 +357,19 @@ lokale Totband den legitimen Kantenversatz auch an Schlaufen-Kreuzungen (b/d/g/o
 bestraft. Tests: `tests/test_quality_components.py` pinnt jetzt **Treue füllt > unterfüllt** statt
 parallel > divergent. `core/quality_suetterlin.py` + `core/geometry.py` bleiben im Loop eingefroren.
 
+### Der gespeicherte Score ist der Stand der Ableitung (gilt für beide Skript-Metriken)
+
+Der Wert in `templates.trace_meta["quality"]` ist der Score **zum
+Autorierungszeitpunkt** — die Zahl, die die Ableitung damals gestempelt hat,
+keine Neubewertung mit der heutigen Metrik. Für Zeilen, die vor der Metrik
+getract wurden, steht dort `null`. Eine Laufform-Zeile (Variante 100) erbt
+das `trace_meta` der Chart-Zeile, ihr Score ist also eine **Kopie** — in der
+Oberfläche wird deshalb nur der gestempelte Score der Variante 0 verwendet.
+Neu abgeleitet wird ausschließlich über den per-Glyphen-Endpunkt
+`GET …/templates/{glyph_key}/quality`; gespeicherter und nachgerechneter Wert
+gehen in dem Moment auseinander, in dem sich die Metrik ändert — jede
+Re-Baseline (§2) macht die gespeicherten Zahlen historisch.
+
 ---
 
 ## 6. Wort-Bench: Übergänge gegen echte Wortproben (2026-07-02)

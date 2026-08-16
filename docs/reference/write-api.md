@@ -37,6 +37,18 @@ einem Tag am CDN). Der Admin behält den ungecachten `/diagnostic`.
    `joins: false`-Glyphen. Python-Zwilling des Quiz-Shapings
    `app/src/domain/shaping.ts`, gepinnt durch
    `tests/fixtures/shaping_cases.json`.
+   **Ligatur-Zerfall als Rückfall:** Fehlt der Canonical eines Clusters
+   aus dem geschlossenen Satz (`ch` · `ck` · `tz` · `ſt` · `qu` · `ß`
+   — Ausnahme ß, siehe unten), zerfällt der Slot in seine
+   Einzelbuchstaben — das Wort schreibt sich
+   dann mit einem generierten Übergang weiter, statt eine Lücke mit
+   gebrochenen Verbindungsstrichen zu hinterlassen. Die Teilbuchstaben
+   erben die Wortposition des Clusters (der erste behält `initial`, der
+   letzte `final`, die dazwischen sind medial). `ß` bleibt bewusst
+   ATOMAR: sein historischer ſs/ſz-Zerfall ist selbst eine
+   Allographen-Frage, und ein naiver Split schriebe mitten im Wort ſſ.
+   `core/shaping.py::decompose_ligature_slot`, im TS-Zwilling
+   `decomposeLigatureSlot`.
 2. **Komposition** (`core/compose.py::compose_word`): freigegebene
    Paar-Overrides (`glyph_pairs`, Redesign R3) werden pro Wort in EINER
    Query geladen und ersetzen für genau ihr Nachbarpaar den generierten
@@ -101,3 +113,8 @@ Alle „as written“-Flächen holen ihre Daten über den EINEN geteilten
 Render-Cache `app/src/lib/api/renderCache.ts` (Batching pro
 Wort/Tafel über `/write/glyphs`, Wort-Cache FIFO-gekappt, Cold-Start-
 Retry). Kein privater Render-Cache außerhalb dieses Moduls.
+
+Der Cache-Schlüssel von `fetchRenderGlyphs` umfasst `variant` **und**
+`bust` — erst diese Schlüsselung macht einen Batch über das ganze
+Alphabet in der Laufform (Variante 100) und cache-umgehende
+Live-Vorschauen über den EINEN geteilten Cache überhaupt möglich.

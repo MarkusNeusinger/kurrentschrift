@@ -12,7 +12,31 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Changed
+
+- **The agent instructions went on a diet — details moved into the docs
+  they belong to** (`CLAUDE.md` 82 → ~24 KB, `.github/copilot-instructions.md`
+  mirrored): the "Repository state" prose dump became a compact per-directory
+  map with invariants + doc pointers, the self-verification section became a
+  routing table, and the 23 facts that lived ONLY in the instructions
+  (frontend routes/deploy details, glossary-grade idioms, write-API
+  semantics, licensing footnotes …) were moved into their owning docs
+  (`frontend-stack.md`, `glossar.md`, `werkzeuge.md`, `write-api.md`,
+  `qualitaetsmetrik.md`, `quellen-und-rechte.md`, `architektur.md`,
+  `datenablage.md`) so nothing was dropped — the instructions now say where
+  things live and which rules bind, the docs say what is true.
+
 ### Added
+
+- **Durable working rules lifted from machine-local session memory into
+  the repo instructions** (`CLAUDE.md` guardrails + the
+  `.github/copilot-instructions.md` mirror), so cloud/web sessions — which never
+  see the local memory directory — inherit them: the rescue-path duty for
+  rejected measures, the squash-merge race recovery (fresh branch +
+  cherry-pick, wait for "green and review-clean"), Opus for delegated
+  agents (Claude-side only), BLAS thread pinning for solver measurement
+  runs, no AI-development disclosure on the public site, and legibility
+  over period authenticity in UI.
 
 - **The O2-trim jitter, pre-registered with both outcomes valid — and
   the bug turns out to be an accidental class rule** (`core/compose.py`

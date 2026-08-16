@@ -109,6 +109,11 @@ Originalseiten `manuscript`. Manuskript-Quellen verweisen optional auf eine
 `hands`-Zeile (ein Schreiber) — so rechnet die Statistik pro Hand (§7,
 [`styleanalyse.md`](styleanalyse.md)), nicht über Hände gemittelt.
 
+Die **Bytes selbst bleiben auf der Platte**: die gemeinfreien Tafeln und
+Platten liegen committet unter `data/sources/<id>/` (`chart.jpg` usw.), und
+die DB speichert in `chart_path` ausschließlich den **repo-relativen Pfad**
+dorthin — Bilddaten hält sie nie.
+
 Für ein **Korpus** (gitignored, nur Metadaten committet) zusätzlich die
 gemischte Lizenz explizit pro Teilkorpus:
 
