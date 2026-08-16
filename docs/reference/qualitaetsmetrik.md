@@ -5209,7 +5209,30 @@ den getrennten Pässen), `retrace_arc_ratio` fällt Richtung 1,
 minimal nachgeben (der Versatz verlässt den Grat um < eine halbe
 Strichbreite — per Definition innerhalb der Tinte). Gates wie
 v0.1; Zusatz-Kill: sinkt `aiou` im Median um > 0,02, kauft der
-Versatz Struktur mit Tinten-Deckung und wird verworfen. Der
+Versatz Struktur mit Tinten-Deckung und wird verworfen.
+
+**A5-Arm gemessen `aug16` — verworfen; der Parallel-Versatz ist
+der falsche Mechanismus, der richtige heißt Knoten-Sehne.**
+Leiter (dev, 10/10 ok): 0,35 → dtw 0,1156 · aiou −0,018 (hält
+das Zusatz-Kill knapp) · aber nur **3 von 23 Kreuzungen kehren
+zurück** (+2 unechte); 0,5 → 13 fehlend (+6 unechte), aiou
+−0,032 → vom eigenen Zusatz-Kill VERWORFEN. Die Erwartung
+(„mehrheitlich zurück") verfehlen beide klar, Konstante bleibt
+0,0. Der Fund: versetzte Pässe sind getrennte, aber weiterhin
+FAST PARALLELE Züge — der Kreuzungs-Detektor verlangt zu Recht
+einen echten Schnittwinkel (≥ 15°), und den erzeugt ein
+Parallel-Versatz nur an den flachen Zonen-Enden, nicht dort, wo
+die Hand kreuzt. Die Hand kreuzt am KNOTEN in echten Winkeln:
+zwei Pässe treten aus vier verschiedenen Richtungen durch die
+Kreuzungs-Nachbarschaft, das Skelett zwingt beide auf dieselbe
+geteilte Schiene und knickt sie um die Ecke. Der präzisere
+Rettungsweg (benannt, eigene Messung): **der Knoten-Sehnen-
+Schnitt** — wo ein Ritt einen Verzweigungsknoten durchquert,
+lokal die SEHNE seines eigenen Eintritts→Austritts fahren statt
+der geteilten Knoten-Schiene (die Kreuzung entsteht dann von
+selbst, wo sich zwei Sehnen schneiden — die Extrapolations-Idee
+der §13a-Landmark-Ziele, hier als Konstruktion statt als
+Zielterm). Der
 unter-Befund steht unabhängig davon: wo der Ketten-Fit
 strukturell scheitert, liefert die Karten-Fahrt bereits jetzt
 eine um Faktor 7 bessere Bahn — die Fusion („Vier Augen") hat
