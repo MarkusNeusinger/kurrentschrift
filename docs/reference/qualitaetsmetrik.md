@@ -5232,7 +5232,27 @@ lokal die SEHNE seines eigenen Eintritts→Austritts fahren statt
 der geteilten Knoten-Schiene (die Kreuzung entsteht dann von
 selbst, wo sich zwei Sehnen schneiden — die Extrapolations-Idee
 der §13a-Landmark-Ziele, hier als Konstruktion statt als
-Zielterm). Der
+Zielterm).
+
+**Vorregistrierter v0.3-Arm (Knoten-Sehne), VOR seiner ersten
+Zahl.** EIN Knopf: `JUNCTION_CHORD_RADIUS_FRACTION` — um jeden
+VERZWEIGUNGS-Knoten (≥ 3 einlaufende Kanten) wird eine
+Nachbarschaft vom Radius Knopf × lokale EDT-Halbbreite gelegt;
+jeder maximale Lauf von Ritt-Punkten innerhalb dieser
+Nachbarschaft (eine Knoten-Durchquerung) wird durch die GERADE
+SEHNE seiner beiden Randpunkte ersetzt, sofern der Lauf kurz ist
+(Bogen < 4 × Radius — ein Zug, der den Knoten nur streift, bleibt
+unangetastet). Zwei Pässe aus verschiedenen Richtungspaaren
+erzeugen zwei verschiedene Sehnen, die sich in echtem Winkel
+schneiden; auch der EINFACH-Pass profitiert (die Sehne begradigt
+den Umweg, den die geteilte Skelett-Schiene der Feder andichtet
+— die publizierte Junction-Verschiebung um ±Strichbreite).
+Leiter 0,0 (= aus) / 1,0 / 1,5. Erwartung: fehlende Kreuzungen
+kehren am KNOTEN zurück (nicht an Zonen-Enden wie beim
+Parallel-Versatz), dtw fällt auch auf kreuzungsarmen Wörtern
+leicht (Umweg-Begradigung); `aiou` gibt in der
+Knoten-Nachbarschaft nach — dieselbe Zusatz-Kill-Schranke wie
+A5 (Median-Δ > −0,02 verworfen). Übrige Gates wie v0.1. Der
 unter-Befund steht unabhängig davon: wo der Ketten-Fit
 strukturell scheitert, liefert die Karten-Fahrt bereits jetzt
 eine um Faktor 7 bessere Bahn — die Fusion („Vier Augen") hat
