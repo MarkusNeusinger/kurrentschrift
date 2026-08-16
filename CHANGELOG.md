@@ -30,7 +30,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   one word never cross the split boundary; movement is only ever blind
   and pre-registered toward dev, never back. The Abb.-20 pair drills
   stay a separate sealed pool (the K3 word/drill lesson); the glossary
-  entry „Referenzsatz" carries the revised invariant.
+  entry "Referenzsatz" carries the revised invariant.
 
 - **The word editor gets an adjust mode, and the Wörter view a review
   stack of the hand-authored traces** (Werkbank W3). „Anpassen" — the
