@@ -14,6 +14,24 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The Lotse route (owner idea): ride the skeleton mid-ink, ask the
+  ductus like a map — built, pre-registered, first honest numbers**
+  (`tools/inkpilot` + §14 „Route Lotse" + a pinned viewer colour).
+  Geometry comes entirely from the measured skeleton (the routeg
+  graph), order and every junction decision from the composed word
+  acting as the map: a global Viterbi assignment of map samples to
+  ridge points (graph ride cost + map deviation + a bridge state),
+  connected by shortest pixel-chain walks; leading/trailing bridges
+  over blank paper are trimmed. ~0.1 s per word, six unit tests on a
+  synthetic cross. First measurement (dev split): the gate is missed
+  (dtw median 0.119 vs the chain's 0.062; hand crossings collapse to
+  zero because double passes share the same skeleton rails through a
+  junction and never intersect transversally) — but `unter`, the
+  chain's catastrophe word, falls 0.450 → 0.064 and aiou rises almost
+  everywhere. Named rescue paths: the width-evidence offset double
+  pass (plan measure A5, the fixture's `width_map`), the smoothing
+  stage, and the `und` autopsy; the route stays open.
+
 - **The guarded chain measured as the production trace — pre-registered
   over all 63 words, with a two-sided guard built as the executed
   rescue path** (`tools/pairlab/follow.py` `--structure-guard-two-sided`

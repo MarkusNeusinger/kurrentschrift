@@ -103,6 +103,11 @@ PALETTE = ("#8e24aa", "#ef6c00", "#c2185b", "#3949ab", "#00838f", "#6d4c41")
 CHAIN_MARKERS = ("chain", "kette")
 FOLLOWER_MARKERS = ("follow", "folger", "wächter", "waechter", "guard")
 CONTROL_MARKERS = ("kontrolle", "routeg", "control", "nullprobe")
+# The Lotse (tools/inkpilot) gets a pinned vivid pink: the order-based
+# palette handed it a hue that vanished against the sepia plate (owner
+# review of the first inspection page, 2026-08-16).
+COLOR_PILOT = "#e91e63"
+PILOT_MARKERS = ("lotse", "pilot")
 
 REFERENCE_LABEL = "Hand (Referenz)"
 
@@ -257,6 +262,8 @@ def assign_colors(labels: Sequence[str]) -> dict[str, str]:
             colors[label] = COLOR_FOLLOWER
         elif any(marker in lowered for marker in CONTROL_MARKERS):
             colors[label] = COLOR_CONTROL
+        elif any(marker in lowered for marker in PILOT_MARKERS):
+            colors[label] = COLOR_PILOT
         else:
             colors[label] = PALETTE[taken % len(PALETTE)]
             taken += 1
@@ -643,6 +650,12 @@ def method_explainer(labels: Sequence[str], colors: dict[str, str]) -> str:
             text = (
                 "die Nullprobe: reine Bildverarbeitung (Skelett + plausibelste Wegfortsetzung), "
                 "kein Modell, kein Duktus — die Probe ohne Wirkstoff, die zeigt, was das Duktus-Wissen wert ist."
+            )
+        elif any(m in lowered for m in PILOT_MARKERS):
+            text = (
+                "der Lotse: fährt die gemessene Tinten-Mitte direkt (Skelettgraph) und fragt an jeder "
+                "Abzweigung den Duktus wie eine Karte — links oder rechts? (nutzt: Tinte als Geometrie, "
+                "Duktus als Route)."
             )
         else:
             text = "Kandidat aus Datei (keine hinterlegte Kurzbeschreibung)."

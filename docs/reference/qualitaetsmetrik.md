@@ -5105,3 +5105,155 @@ Kreuzungs-Invariante ohnehin vorzeichnet; als „Topologie-Budget
 K0" seit aug15 als künftiger Arm benannt). Der wäre eine eigene
 Vorregistrierung; bis dahin bleibt die Produktions-Adoption
 offen und der Re-Harvest hinter Owner-Go + dbsnapshot.
+
+### Route „Lotse" `aug16` — Vorregistrierung: Skelett fahren, Duktus als Karte
+
+Geschrieben und committet VOR der ersten Bench-Zahl. Owner-Idee
+(2026-08-16, tintenfolger.md §7.8): nicht Buchstabe auflegen und
+verformen (Kette), sondern wie die Nullprobe DIREKT auf der
+Tinten-Mitte fahren und nur an Entscheidungsstellen den Duktus als
+KARTE fragen. Arm ⑨s Fazit („Tinten-Gewinn und Struktur-Erfindung
+in DIESER Formulierung untrennbar") benannte genau diese andere
+Formulierung als Rettungsweg (§7.9).
+
+**Implementierung** (`tools/inkpilot`, Anzeige-Name „Lotse"):
+Karte = die komponierte Bahn in Crop-px (wordlab-Transform auf der
+gefitteten Registrierung der Zeile); Wasserweg = der
+routeg-Skelettgraph; Ritt = GLOBALE Zuordnung Karten-Sample →
+Grat-Punkt (Viterbi über die Sample-Kette: Graph-Fahrkosten +
+Karten-Abweichung + Brücken-Zustand), verbunden über kürzeste
+Pixelketten-Wege — der Abbiege-Entscheid an jeder Kreuzung fällt
+aus der Route der Karte; Kanten dürfen doppelt gefahren werden
+(Retrace); wo keine Tinte liegt, überbrückt die Karte; führende und
+folgende Brücken ohne Wieder-Aufstieg werden GETRIMMT (komponierte
+Luft ist kein Federstrich). Kein #278-Bruch: Ordnung, Richtung und
+Marken-Zuweisung kommen vollständig vom Prior. v0-Konstanten
+(unkalibriert, deklariert): `SAMPLE_STEP` 0,12 xh · `BOARD_RADIUS`
+0,6 xh · `DEVIATION_WEIGHT` 2 · `BRIDGE_EMIT` 2,5×Radius ·
+`MAX_RIDE_FACTOR` 8. Laufzeit ~0,1–0,3 s/Wort (kein Solver).
+Unit-Tests auf dem synthetischen Kreuz: Gleistreue, Karten-Abbiegen
+an der Kreuzung, Luft-Trimm, Lücken-Brücke, Frame-Roundtrip.
+
+**Messgrößen (Dev-Split, gegen die eingefrorene Baseline).**
+(a) `dtw_xh` gepaart Lotse vs. Kette (Baseline 0,062 med) — die
+Hypothese der Route: Tinten-Mitte + Karten-Ordnung schlägt den
+Mess-Fit als NACHFAHRER. (b) Strukturzähler + Soll-Spalten (die
+Karte bringt das Soll mit; erfundene Kreuzungen wären
+Graph-Artefakte). (c) `marks_missing/spurious` (Marken per Karte
+zugewiesen). (d) `aiou` (konstruktionsbedingt hoch — Erwartung ≥
+Kette). (e) Brücken-Anteil je Wort als QC-Spalte — viel Brücke
+heißt, die KARTE verließ die Tinte: ein Kompositions-Defizit, kein
+Lotse-Fehler, report-only ausgewiesen.
+
+**Gates und Kill-Kriterien (relativ, keine publizierten Zahlen).**
+Ernst zu nehmen ist die Route, wenn `dtw_xh` gepaart die Kette
+schlägt (Median der Differenzen < 0, Sign-Test beschreibend) OHNE
+Netto-Verschlechterung bei Kreuzungen und Marken. Kill:
+Struktur-Erfindungen über der Kette (Graph-Grate erzeugen
+Falsch-Kreuzungen) oder Marken-Verluste → Formulierung zurück ans
+Reißbrett, ehrliches Negativ mit Fund. Erwartete Fehlermodi
+benannt: der Pixel-Zickzack der 8er-Skelettkette (kostet dtw
+wenig, ist der benannte Feinschliff-Kandidat), Doppelpass-Zonen
+(das Skelett hat EINE Linie, wo die Hand zwei schrieb — der Ritt
+fährt sie zweimal, korrekt per Karte, aber deckungsgleich statt
+versetzt), der ß-Kringel in muß.
+
+**v0.1 gemessen `aug16` — Gate verfehlt, aber mit dem stärksten
+Einzelwort-Fund der Kampagne.** Dev-Split, 10/10 ok, 22,5 s
+Gesamtlauf. `dtw_xh` Median 0,119 gegen Kette 0,062 — die Route
+verliert den Median klar (8/10 Wörter schlechter). ABER die
+Verteilung erzählt zwei Geschichten: **unter — das
+Katastrophen-Wort der Kette (0,4501, der Stapel-Kollaps) — fällt
+auf 0,0641 (−0,386)**, muß ebenfalls besser (−0,021), und `aiou`
+steigt fast überall (laden 0,686 → 0,801 · will 0,753 → 0,816 —
+die Tinten-Mitte hält, was die Nullprobe versprach). Die zwei
+Verlust-Mechanismen, beide vorregistriert erwartet, einer davon in
+voller Stärke: (1) **`cross_cand = 0 auf JEDEM Wort** — 23
+Hand-Kreuzungen fehlen komplett: wo Striche sich kreuzen, teilen
+sich die Ritte die SELBEN Skelett-Pixelketten durch den Knoten,
+zwei Pässe fallen deckungsgleich zusammen und schneiden sich nie
+transversal (stattdessen 12 unechte Retrace-Zonen,
+`retrace_arc_ratio` 2,49). (2) `und` bricht aus (+0,294) —
+Autopsie: die Geometrie ist praktisch PERFEKT (Chamfer beidseitig
+0,031/0,053, besser als die Kette), der dtw-Ausreißer besteht aus
+einem 4,15-xh-Deckungs-Doppelritt am d-Stamm (der A5-Fall in
+Reinform) plus einem Klassifikations-Kipp: der
+skelett-VERKÜRZTE u-Deckbogen des Lotsen (Skelett endet eine
+halbe Strichbreite vor der Tintenspitze) fällt unter die
+0,8-xh-Marken-Schwelle, der längere der Hand nicht — die
+Body-Mengen unterscheiden sich strukturell und das forward-DTW
+zahlt den ganzen Umweg. Kill-Kriterium „Struktur-Erfindung"
+feuert NICHT (0 unechte Kreuzungen, 0 Marken-Verluste) — aber das
+Gate (Kette schlagen ohne Struktur-Netto-Verlust) ist verfehlt:
+VERWORFEN als v0.1, Route NICHT geschlossen. Rettungswege
+(§7.9-Regel): (i) **der versetzte Doppelpass aus Breiten-Evidenz**
+— genau §7-Maßnahme A5: auf mehrfach gefahrenen Kanten die Pässe
+um einen Bruchteil der GEMESSENEN lokalen Strichbreite
+(`width_map` liegt im Fixture!) senkrecht auseinanderlegen, dann
+schneiden sich die Züge transversal wie die Hand; (ii) der
+Feinschliff über den Pixel-Zickzack; (iii) die und-Autopsie.
+
+**Vorregistrierter v0.2-Arm (A5, versetzter Doppelpass), VOR
+seiner ersten Zahl.** EIN Knopf: `DOUBLE_PASS_OFFSET_FRACTION` —
+jeder Ritt-Punkt auf einem Skelett-Pixel, das im WORT insgesamt
+mehrfach befahren wird, weicht um diesen Bruchteil der lokalen
+EDT-HALBBREITE (`width_map` des Fixtures) NACH RECHTS seiner
+Fahrtrichtung aus; gegenläufige Pässe trennen sich dadurch von
+selbst auf gegenüberliegende Seiten (die Vorzeichen-Konvention
+der Hand), gleichläufige (Overlap-Klasse) bleiben deckungsgleich,
+Einfachpässe und Brücken bleiben unberührt (Tinten-Mitte hält).
+Leiter 0,0 (= aus) / 0,35 / 0,5. Erwartung: die 23 fehlenden
+Kreuzungen kehren mehrheitlich zurück (transversale Schnitte an
+den getrennten Pässen), `retrace_arc_ratio` fällt Richtung 1,
+`und` verliert seinen Doppelritt-Anteil; `aiou` darf dafür
+minimal nachgeben (der Versatz verlässt den Grat um < eine halbe
+Strichbreite — per Definition innerhalb der Tinte). Gates wie
+v0.1; Zusatz-Kill: sinkt `aiou` im Median um > 0,02, kauft der
+Versatz Struktur mit Tinten-Deckung und wird verworfen.
+
+**A5-Arm gemessen `aug16` — verworfen; der Parallel-Versatz ist
+der falsche Mechanismus, der richtige heißt Knoten-Sehne.**
+Leiter (dev, 10/10 ok): 0,35 → dtw 0,1156 · aiou −0,018 (hält
+das Zusatz-Kill knapp) · aber nur **3 von 23 Kreuzungen kehren
+zurück** (+2 unechte); 0,5 → 13 fehlend (+6 unechte), aiou
+−0,032 → vom eigenen Zusatz-Kill VERWORFEN. Die Erwartung
+(„mehrheitlich zurück") verfehlen beide klar, Konstante bleibt
+0,0. Der Fund: versetzte Pässe sind getrennte, aber weiterhin
+FAST PARALLELE Züge — der Kreuzungs-Detektor verlangt zu Recht
+einen echten Schnittwinkel (≥ 15°), und den erzeugt ein
+Parallel-Versatz nur an den flachen Zonen-Enden, nicht dort, wo
+die Hand kreuzt. Die Hand kreuzt am KNOTEN in echten Winkeln:
+zwei Pässe treten aus vier verschiedenen Richtungen durch die
+Kreuzungs-Nachbarschaft, das Skelett zwingt beide auf dieselbe
+geteilte Schiene und knickt sie um die Ecke. Der präzisere
+Rettungsweg (benannt, eigene Messung): **der Knoten-Sehnen-
+Schnitt** — wo ein Ritt einen Verzweigungsknoten durchquert,
+lokal die SEHNE seines eigenen Eintritts→Austritts fahren statt
+der geteilten Knoten-Schiene (die Kreuzung entsteht dann von
+selbst, wo sich zwei Sehnen schneiden — die Extrapolations-Idee
+der §13a-Landmark-Ziele, hier als Konstruktion statt als
+Zielterm).
+
+**Vorregistrierter v0.3-Arm (Knoten-Sehne), VOR seiner ersten
+Zahl.** EIN Knopf: `JUNCTION_CHORD_RADIUS_FRACTION` — um jeden
+VERZWEIGUNGS-Knoten (≥ 3 einlaufende Kanten) wird eine
+Nachbarschaft vom Radius Knopf × lokale EDT-Halbbreite gelegt;
+jeder maximale Lauf von Ritt-Punkten innerhalb dieser
+Nachbarschaft (eine Knoten-Durchquerung) wird durch die GERADE
+SEHNE seiner beiden Randpunkte ersetzt, sofern der Lauf kurz ist
+(Bogen < 4 × Radius — ein Zug, der den Knoten nur streift, bleibt
+unangetastet). Zwei Pässe aus verschiedenen Richtungspaaren
+erzeugen zwei verschiedene Sehnen, die sich in echtem Winkel
+schneiden; auch der EINFACH-Pass profitiert (die Sehne begradigt
+den Umweg, den die geteilte Skelett-Schiene der Feder andichtet
+— die publizierte Junction-Verschiebung um ±Strichbreite).
+Leiter 0,0 (= aus) / 1,0 / 1,5. Erwartung: fehlende Kreuzungen
+kehren am KNOTEN zurück (nicht an Zonen-Enden wie beim
+Parallel-Versatz), dtw fällt auch auf kreuzungsarmen Wörtern
+leicht (Umweg-Begradigung); `aiou` gibt in der
+Knoten-Nachbarschaft nach — dieselbe Zusatz-Kill-Schranke wie
+A5 (Median-Δ > −0,02 verworfen). Übrige Gates wie v0.1. Der
+unter-Befund steht unabhängig davon: wo der Ketten-Fit
+strukturell scheitert, liefert die Karten-Fahrt bereits jetzt
+eine um Faktor 7 bessere Bahn — die Fusion („Vier Augen") hat
+damit ihr erstes gemessenes Argument.
