@@ -5325,3 +5325,27 @@ gedeckt), keine Struktur-Änderung (ein Grad-1-Auslauf kann weder
 kreuzen noch retracen). Kill: verlängert der Auslauf in
 Wirklichkeit einen SPORN des Skeletts (unechte Marken/Spitzen —
 `marks_spurious` oder `dtw` netto schlechter), wird er verworfen.
+
+**Beide Arme gemessen `aug16` — der Owner-Fund-Arm ADOPTIERT, die
+Karten-Vorfahrt ehrliche Null.** (a) Schienen-Auslauf (dev,
+10/10 ok): 0,6 → dtw 0,1053 · 1,0 → **dtw 0,1007** (v0.1: 0,1192),
+`und` **0,3428 → 0,0874** — die fehlende d-/Auslauf-Spitze WAR der
+Ausreißer —, `aiou` 0,747 → 0,765, `marks_spurious` 3 → 1 (der
+verlängerte u-Deckbogen springt zurück über die
+0,8-xh-Marken-Schwelle: auch der Klassifikations-Kipp der
+und-Autopsie heilt), Kreuzungen exakt unverändert (23 fehlend —
+wie konstruiert), `retrace_spurious` 12 → 14 (+2, benannt: zwei
+verlängerte Enden fallen in Deckungs-Zonen). Gates bestanden →
+**ADOPTIERT, `TAIL_RUNOUT_MAX_UNITS` = 1,0.** (b) Karten-Vorfahrt:
+dtw 0,1179 · aiou −0,014 · Kreuzungen 22 statt 23 fehlend (+1
+unecht) · `und` UNVERÄNDERT — die SELBST-Retraces der Karte sind
+in den Dev-Wörtern zu selten (das t mit Stamm-Rückpass kommt nur
+in mit/unter/streiten vor, unds Doppelritt entsteht RITT-seitig
+an einer Tinten-Schleife, die die Karte nur EINMAL passiert): der
+Karten-Trigger war die falsche Zone. VERWORFEN (Erwartung klar
+verfehlt), Knopf bleibt False; benannter Nachfolger: dieselbe
+Karten-Fahrt, aber in RITT-seitig erkannten Doppelzonen (die
+A5-Erkennung, die v0.4-Geometrie — Kombination, eigene Pre-Reg).
+Stand der Route damit: dev-dtw 0,101 gegen Kette 0,062 (Lücke
+2,0× → 1,6×), `aiou` klar über der Kette, Kreuzungs-Kollaps auf
+geteilten Schienen bleibt DER offene Block.

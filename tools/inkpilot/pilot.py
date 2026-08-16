@@ -41,6 +41,7 @@ from pathlib import Path
 import numpy as np
 from scipy.spatial import cKDTree
 
+from core.geometry import detect_retrace_pairs
 from tools.routeg.graph import SkeletonGraph, build_graph
 from tools.wordlab.cases import WordCase
 from tools.wordlab.derive import WordDeriveResult, derive_word
@@ -79,6 +80,22 @@ DOUBLE_PASS_OFFSET_FRACTION = 0.0
 # 0.0 = off.
 JUNCTION_CHORD_RADIUS_FRACTION = 0.0
 JUNCTION_CHORD_MAX_ARC_FACTOR = 4.0
+# Map right-of-way in double-pass zones (v0.4 arm, pre-registered): where the
+# MAP retraces itself the skeleton rail is degenerate (it merges the hand's
+# two passes over the whole overlap) while the composed map carries the
+# crossing — there the ride takes the map itself (bridge state forced),
+# everywhere else nothing changes. Zones come from the frozen ruler's own
+# retrace detector, read on the map samples.
+MAP_PRIORITY_IN_RETRACE = False
+MAP_RETRACE_PROX_UNITS = 0.15  # the ruler's own proximity (core.geometry)
+# Rail run-out (pre-registered; owner find "the d line stops at the
+# crossing"): when a ride stroke ends on a rail that runs WITHOUT branching
+# into a degree-1 skeleton endpoint closer than this (in x-heights), the ride
+# continues to the rail's end — the map undershoots the inked tip (loop-exit
+# trim, the +7-10% reach find), the ink does not. Symmetric at stroke starts.
+# 0.0 = off. ADOPTED aug16 at 1.0 (dev: dtw median 0.119 -> 0.101, the und
+# outlier 0.343 -> 0.087, aiou up, spurious marks halved, structure untouched).
+TAIL_RUNOUT_MAX_UNITS = 1.0
 
 
 @dataclass(frozen=True)
@@ -300,9 +317,21 @@ def pilot_stroke(pg: PilotGraph, stroke_px: np.ndarray, xh_px: float) -> np.ndar
     bridge_emit = BRIDGE_EMIT_FACTOR * radius
     n = len(samples)
 
+    # v0.4 map right-of-way: samples inside the MAP's own retrace zones ride
+    # the map (bridge state forced) — the rail is degenerate there, the map
+    # carries the crossing. Zones from the frozen ruler's own detector.
+    map_priority = np.zeros(n, dtype=bool)
+    if MAP_PRIORITY_IN_RETRACE and n >= 4:
+        ia, ib = detect_retrace_pairs(samples[:, 0], samples[:, 1], None, prox_px=MAP_RETRACE_PROX_UNITS * xh_px)
+        for arr in (ia, ib):
+            map_priority[np.asarray(arr, dtype=int)] = True
+
     # States per sample: [(loc | None for bridge, emission cost), ...]
     states: list[list[tuple[PixelLoc | None, float]]] = []
-    for s in samples:
+    for k, s in enumerate(samples):
+        if map_priority[k]:
+            states.append([(None, 0.0)])
+            continue
         idx = pg.tree.query_ball_point(s, r=radius) if pg.tree is not None else []
         if len(idx) > MAX_CANDIDATES:
             idx = sorted(idx, key=lambda i: float(np.hypot(*(pg.coords[i] - s))))[:MAX_CANDIDATES]
@@ -350,11 +379,15 @@ def pilot_stroke(pg: PilotGraph, stroke_px: np.ndarray, xh_px: float) -> np.ndar
         seq.append(states[k - 1][j][0])
     seq.reverse()
 
-    # Trim bridge runs at the ends that never (re)board.
-    first = next((k for k, s in enumerate(seq) if s is not None), None)
+    # Trim bridge runs at the ends that never (re)board — forced map-priority
+    # samples count as boarded (the map IS the ride there, not missing ink).
+    def rides(k: int) -> bool:
+        return seq[k] is not None or bool(map_priority[k])
+
+    first = next((k for k in range(len(seq)) if rides(k)), None)
     if first is None:
         return samples  # pure bridge: no ink under the whole map stroke
-    last = max(k for k, s in enumerate(seq) if s is not None)
+    last = max(k for k in range(len(seq)) if rides(k))
     seq = seq[first : last + 1]
     samples = samples[first : last + 1]
 
@@ -471,6 +504,57 @@ def cut_junction_chords(
     return out
 
 
+def run_out_tails(strokes: list[np.ndarray], pg: PilotGraph, xh_px: float, max_units: float) -> list[np.ndarray]:
+    """Owner-find arm: continue a ride to the rail's inked end.
+
+    The map undershoots the inked tip (the loop-exit trim, the +7-10% reach
+    find), so a ride stroke can stop mid-rail while the ink runs on. When the
+    stroke's end sits on a rail that reaches a DEGREE-1 skeleton endpoint
+    without branching, closer than ``max_units`` x-heights, the ride continues
+    to the rail's end. Symmetric at stroke starts (via reversal). A degree-1
+    run-out can neither cross nor retrace — structure is untouched by
+    construction.
+    """
+    if max_units <= 0.0:
+        return strokes
+    by_px: dict[tuple[int, int], list[PixelLoc]] = {}
+    for coord, loc in zip(pg.coords, pg.locs, strict=True):
+        by_px.setdefault((int(round(coord[0])), int(round(coord[1]))), []).append(loc)
+    max_px = max_units * xh_px
+
+    def key_of(pt: np.ndarray) -> tuple[int, int]:
+        return (int(round(float(pt[0]))), int(round(float(pt[1]))))
+
+    def extend_end(pts: np.ndarray) -> np.ndarray:
+        if len(pts) < 2:
+            return pts
+        locs = by_px.get(key_of(pts[-1]))
+        if not locs:
+            return pts
+        travel = pts[-1] - pts[-2]
+        best: np.ndarray | None = None
+        for loc in locs:
+            edge = pg.graph.edges[loc.edge]
+            chain = np.asarray(edge.points, dtype=float)
+            for rest, node in ((chain[loc.index + 1 :], edge.b), (chain[: loc.index][::-1], edge.a)):
+                if len(rest) == 0 or len(pg.graph.incident.get(node, [])) != 1:
+                    continue
+                step = rest[0] - pts[-1]
+                if float(step @ travel) <= 0.0:
+                    continue  # that side runs backwards against the stroke
+                arc = float(np.hypot(*np.diff(np.vstack([pts[-1:], rest]), axis=0).T).sum())
+                if arc <= max_px and (best is None or len(rest) > len(best)):
+                    best = rest
+        return np.vstack([pts, best]) if best is not None else pts
+
+    out = []
+    for pts in strokes:
+        pts = extend_end(pts)
+        pts = extend_end(pts[::-1])[::-1]
+        out.append(pts)
+    return out
+
+
 def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
     """All strokes of one word, plus provenance details for the record."""
     result = derive_word(case)
@@ -478,6 +562,8 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
     xh_px = float(result.registration.get("xh_px", result.xh_px))
     strokes = [pilot_stroke(pg, s, xh_px) for s in map_strokes_px(result)]
     strokes = [s for s in strokes if len(s) >= 2]
+    if TAIL_RUNOUT_MAX_UNITS > 0.0:
+        strokes = run_out_tails(strokes, pg, xh_px, TAIL_RUNOUT_MAX_UNITS)
     if JUNCTION_CHORD_RADIUS_FRACTION > 0.0 and case.width_map is not None:
         strokes = cut_junction_chords(
             strokes, pg, np.asarray(case.width_map, dtype=float), JUNCTION_CHORD_RADIUS_FRACTION
