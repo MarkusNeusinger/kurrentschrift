@@ -179,7 +179,15 @@ losschreiben" kann, gilt technisch:
 - **Rohdaten-Reads der API sind admin-gegatet:** `GET
   /sources/{id}/templates/{glyph_key}` (vollständiges Template inkl.
   Roh-Stylus-Pfad) verlangt `require_admin`; die öffentliche Liste
-  liefert nur Summaries ohne Geometrie. Die occurrence-Reads
+  liefert nur Summaries ohne Geometrie. Ebenso admin-gegatet ist der
+  ungecachte Stapel-Read `GET /sources/{id}/templates/quality` →
+  `list[TemplateQualityOut]` (glyph_key + variant + quality): er liefert
+  den **gespeicherten** Score direkt aus `templates.trace_meta["quality"]`
+  über `TemplateRepository.list_quality`, das die Spalte per JSON-Index
+  abfragt statt die dichten `pixel_anchors`/`half_widths_px` zu laden —
+  das ganze Alphabet in einer Anfrage (0,145 s für 80 Zeilen gegenüber
+  0,44 s für EINE Glyphe über das nachrechnende `/{glyph_key}/quality`).
+  Die occurrence-Reads
   (`/instances` …) liefern Fit-Ergebnisse über PD-Vorlagen, keine
   autorierten Templates.
 - **Die Statistik-Schicht liest ausschließlich admin-gegatet:**

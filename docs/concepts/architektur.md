@@ -183,6 +183,11 @@ ebenso die früher (naming-und-setup §1) vertagte Stil-Dimension:
   `(hand, left_key, right_key)` (H2). Optional später
   textunabhängige Hand-Features (Hinge/Δn-Hinge nach Bulacu/Schomaker).
 
+Genau darin liegt der Gewinn gegenüber den JSON-Dateien des
+zurückgebauten `/mvp/`-Ordners: `n_anchors` ist **nachträglich änderbar**
+(die Ankerzahl ist eine Einstellung pro Bbox, keine eingefrorene
+Konstante), und die Statistik der Einzelbelege ist in SQL aggregierbar.
+
 `instances` wird seit dem Handmodell-Schritt H1 (2026-07-31,
 `docs/proposals/handmodell-stufenplan.md`) von der Laufform-Ernte mit den
 Per-Beleg-Fits der Specimen-Wörter befüllt (die Wort-Position bleibt dort

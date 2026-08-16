@@ -65,7 +65,16 @@ Reparatur, den die Ernte nach dem Gate anwendet; `bindab.py` — der
 A/B-Runner, der das vorregistrierte Binding-Term-Protokoll ausführt;
 `peaklab.py` (`viz`-Extra) — kleines benanntes Arbeitsset inkl.
 Kontrollwörtern, Ankerkette überm Skelett mit eingekreisten Ausreißern,
-`--compare` für gefittet vs. repariert.
+`--compare` für gefittet vs. repariert; `landmarks.py` — der EINE
+geteilte Landmarken-Detektor (die echten Selbstkreuzungen einer
+Duktus-Polylinie plus die Verzweigungspunkte des Skeletts, eine
+mehrdeutige Zuordnung wird verweigert statt geraten); `landmarklab.py` —
+das Kalibrier- und Wirkungs-Labor dazu (`--calibrate` liest
+`e_geo / e_landmark` am Baseline-Optimum, der Wirkungslauf hält die
+gefittete Kreuzungshöhe gegen das Tinten-Ziel) für den Landmarken-Term
+`CHAIN_LANDMARK_WEIGHT`, Voreinstellung 0,0. Beide brauchen kein
+`viz`-Extra und sind reine Messung — kein DB-, API-, `core/`- oder
+Rendering-Zugriff.
 
 ## Die zwei Ernte-Werkzeuge (Vorlage → DB, über die Admin-API)
 
@@ -81,6 +90,12 @@ die per-Buchstabe-Mediane als Laufform-Varianten
 (`PUT /sources/{id}/templates/{key}/laufform`, `variant=100`), jeden
 sauberen Einzelfit als `instances`-Zeile und je Vorlage eine nachgefahrene
 Wortspur als `word_instances`-Zeile (`authored`-Zeilen bleiben unangetastet).
+Die `hands`-Zeile der schreibenden Hand entsteht dabei im selben Request:
+die admin-gegateten Batch-`PUT`s des `instances`-Routers legen sie an,
+falls sie fehlt (get-or-create), und verweigern eine Id, die bereits
+unter einem anderen Stil registriert ist — eine Hand entsteht also durch
+eine Ernte-Schreibung, nicht durch eine Migration oder einen manuellen
+Schritt (→ [`../proposals/handmodell-stufenplan.md`](../proposals/handmodell-stufenplan.md) H1).
 Die Laufform-Zeilen wirken **sofort** auf jedes fließende `/write/word` —
 gegen Prod nur mit ausdrücklicher Freigabe.
 
@@ -227,6 +242,11 @@ uv run python -m tools.dbsnapshot.restore <snapshot-dir> --database-url postgres
   `authored`-Zeilen der Referenzsatz des geplanten `tools/tracebench`
   sind ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md));
   Refill ohne Re-Baseline: `--only word-instances` bzw. `--only instances`.
+  Ohne Cloud-SQL-Zugang baut `fetch_fixtures.py` dieselben Roots
+  byte-kompatibel über HTTPS auf — der rein lesende Zwilling von
+  `export_fixtures.py`, ausschließlich GETs, mit `--verify` als
+  Abnahme-Gate:
+  `uv run python -m tools.wordbench.fetch_fixtures --set all --verify`.
 - **`tools/inksight`** — die Route-B-Pipeline des Tintenfolger-Duells
   ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §4):
   drei Stufen (Crop-Vorbereitung → Inferenz im ISOLIERTEN
