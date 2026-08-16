@@ -66,8 +66,19 @@ MAX_RIDE_FACTOR = 8.0  # rides above this x step are treated as unreachable
 # skeleton pixel the WORD rides more than once shifts by this fraction of the
 # local EDT half-width to the RIGHT of its travel direction — opposite-running
 # passes separate onto opposite sides (the hand's sign convention), single
-# passes and bridges stay mid-ink. 0.0 = off.
+# passes and bridges stay mid-ink. 0.0 = off. Measured-and-rejected aug16
+# (near-parallel offset lines never cross transversally); kept declared.
 DOUBLE_PASS_OFFSET_FRACTION = 0.0
+# The junction chord (v0.3 arm, pre-registered): every maximal run of ride
+# points inside a branch node's neighbourhood (radius = this fraction of the
+# local EDT half-width) is replaced by the straight chord of its boundary
+# points — the pen went straight through where the skeleton's shared rail
+# forces a corner, and two passes from different direction pairs cross
+# transversally where their chords intersect. Runs longer than
+# JUNCTION_CHORD_MAX_ARC_FACTOR x radius merely skirt the node and stay.
+# 0.0 = off.
+JUNCTION_CHORD_RADIUS_FRACTION = 0.0
+JUNCTION_CHORD_MAX_ARC_FACTOR = 4.0
 
 
 @dataclass(frozen=True)
@@ -410,6 +421,56 @@ def offset_double_passes(strokes: list[np.ndarray], width_map: np.ndarray, fract
     return out
 
 
+def cut_junction_chords(
+    strokes: list[np.ndarray], pg: PilotGraph, width_map: np.ndarray, fraction: float
+) -> list[np.ndarray]:
+    """v0.3: straighten every branch-node passage to its entry->exit chord.
+
+    Branch nodes (>= 3 incident edges) collapse the ink's crossing region onto
+    one shared rail with a forced corner; the pen went straight through. Every
+    maximal run of ride points within ``fraction`` x local half-width of such a
+    node is replaced by the straight chord of its boundary points — short runs
+    only (a stroke that merely skirts the node keeps its curve), and two
+    passes from different direction pairs regain their transversal crossing
+    where the chords intersect.
+    """
+    if fraction <= 0.0:
+        return strokes
+    branch_nodes = [n for n in range(len(pg.graph.nodes)) if len(pg.graph.incident.get(n, [])) >= 3]
+    if not branch_nodes:
+        return strokes
+    h, w = width_map.shape
+    centers = np.asarray([pg.graph.nodes[n] for n in branch_nodes], dtype=float)  # (x, y)
+    radii = np.empty(len(branch_nodes))
+    for i, (x, y) in enumerate(centers):
+        xi, yi = int(round(x)), int(round(y))
+        half = float(width_map[yi, xi]) if 0 <= yi < h and 0 <= xi < w else 1.5
+        radii[i] = max(1.5, fraction * half)
+    out: list[np.ndarray] = []
+    for pts in strokes:
+        d = np.hypot(pts[:, None, 0] - centers[None, :, 0], pts[:, None, 1] - centers[None, :, 1])
+        near = (d <= radii[None, :]).any(axis=1)
+        keep = np.ones(len(pts), dtype=bool)
+        k = 0
+        while k < len(pts):
+            if not near[k]:
+                k += 1
+                continue
+            j = k
+            while j < len(pts) and near[j]:
+                j += 1
+            # Run k..j-1 sits inside a node neighbourhood. Replace its interior
+            # by the chord (drop the interior points) when the run is short.
+            run = pts[k:j]
+            arc = float(np.hypot(*np.diff(run, axis=0).T).sum()) if len(run) > 1 else 0.0
+            r_here = float(radii[np.argmin(d[k])])
+            if 0 < k and j < len(pts) and arc <= JUNCTION_CHORD_MAX_ARC_FACTOR * r_here:
+                keep[k:j] = False
+            k = j
+        out.append(pts[keep] if keep.sum() >= 2 else pts)
+    return out
+
+
 def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
     """All strokes of one word, plus provenance details for the record."""
     result = derive_word(case)
@@ -417,6 +478,10 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
     xh_px = float(result.registration.get("xh_px", result.xh_px))
     strokes = [pilot_stroke(pg, s, xh_px) for s in map_strokes_px(result)]
     strokes = [s for s in strokes if len(s) >= 2]
+    if JUNCTION_CHORD_RADIUS_FRACTION > 0.0 and case.width_map is not None:
+        strokes = cut_junction_chords(
+            strokes, pg, np.asarray(case.width_map, dtype=float), JUNCTION_CHORD_RADIUS_FRACTION
+        )
     if DOUBLE_PASS_OFFSET_FRACTION > 0.0 and case.width_map is not None:
         strokes = offset_double_passes(strokes, np.asarray(case.width_map, dtype=float), DOUBLE_PASS_OFFSET_FRACTION)
     detail = {
