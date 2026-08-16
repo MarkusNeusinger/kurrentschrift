@@ -5349,3 +5349,48 @@ A5-Erkennung, die v0.4-Geometrie — Kombination, eigene Pre-Reg).
 Stand der Route damit: dev-dtw 0,101 gegen Kette 0,062 (Lücke
 2,0× → 1,6×), `aiou` klar über der Kette, Kreuzungs-Kollaps auf
 geteilten Schienen bleibt DER offene Block.
+
+### Route „Lotse" v0.5 `aug16` — Vorregistrierung: Karten-Geometrie in Ritt-Doppelzonen
+
+Geschrieben und committet VOR der ersten Zahl. Die benannte
+Kombination aus den zwei verworfenen Armen: die ERKENNUNG des A5
+(wo besucht der Ritt dasselbe Skelett-Pixel mehrfach — dort ist
+die Schiene degeneriert, das Skelett hat die zwei Hand-Pässe
+verschmolzen) mit der GEOMETRIE des v0.4 (dort die Karte fahren,
+die den Doppelpass MIT Kreuzung komponiert). EIN Knopf:
+`RIDE_DOUBLE_MAP_PRIORITY` (aus/an) — die Sample-Zuweisungen des
+Wortes werden in SCHREIB-Reihenfolge durchlaufen; ein Sample,
+dessen zugewiesenes Schienen-Pixel im Wort schon einmal besetzt
+wurde, fährt statt der Schiene die KARTE (sein eigenes
+Karten-Sample, brücken-gleich verbunden) — der ERSTE Pass bleibt
+auf der Tinten-Mitte, jeder SPÄTERE fährt die komponierte
+Geometrie mit ihrer Kreuzung. Erwartung: die Schienen-Klasse der
+23 fehlenden Kreuzungen kehrt substanziell zurück, `und`s
+Rest-Doppelritt verschwindet, `retrace_arc_ratio` fällt Richtung
+Hand-Niveau; `aiou` gibt nur in den Doppelzonen nach — dieselbe
+Zusatz-Kill-Schranke (Median-Δ > −0,02 verworfen). Kill
+zusätzlich: erzeugt die Karten-Geometrie in den Zonen UNECHTE
+Kreuzungen über das Soll (`cross_spurious` netto > +2), ist die
+Karten-Platzierung dort zu schlecht — verworfen, zurück zur
+Sub-Strich-Trennung. Basis ist der adoptierte Stand (Auslauf 1,0).
+
+**Gemessen `aug16` — ALLE Gates bestehen, ADOPTIERT.** Dev,
+10/10 ok: dtw-Median 0,1007 → **0,0853**; `und` 0,0874 →
+**0,0431** — schlägt dort erstmals die KETTE (0,0491); **5 der 23
+fehlenden Kreuzungen kehren zurück** (18 fehlend, +1 unecht —
+innerhalb der ≤+2-Schranke); `retrace_spurious` 14 → 11,
+`retrace_arc_ratio` 2,48 → **1,66** (Richtung Hand, wie
+vorregistriert); `aiou` −0,002 (weit innerhalb der Schranke).
+`RIDE_DOUBLE_MAP_PRIORITY` = True. Routen-Stand: **0,0853 gegen
+Kette 0,0620 (Lücke 1,4×)**, und die Komplementarität ist jetzt
+messbar scharf — der Lotse schlägt die Kette auf genau den
+STRUKTUR-schweren Wörtern (unter −0,387 · muß −0,129 ·
+und −0,006), verliert auf den einfachen (die glatte
+Regularisierung der Kette gewinnt, wo nichts kollabiert):
+mit +0,042 · will +0,081 · zwei +0,056. Das ORAKEL der Fusion
+(je Wort das bessere Verfahren, nur als Decke, kein Ergebnis):
+Median **0,0563** — besser als jede Einzelroute, schlechtestes
+Wort 0,113 statt 0,450 (Kette) bzw. 0,132 (Lotse). „Vier Augen"
+hat damit seine erste bezifferte Decke; der ehrliche
+Auswahl-Mechanismus (ohne Referenz!) ist die offene Frage — die
+Lehre aus B1 (der ordnungs-blinde Ranker) gilt hier wörtlich.

@@ -96,6 +96,17 @@ MAP_RETRACE_PROX_UNITS = 0.15  # the ruler's own proximity (core.geometry)
 # 0.0 = off. ADOPTED aug16 at 1.0 (dev: dtw median 0.119 -> 0.101, the und
 # outlier 0.343 -> 0.087, aiou up, spurious marks halved, structure untouched).
 TAIL_RUNOUT_MAX_UNITS = 1.0
+# v0.5 (pre-registered): map geometry in RIDE-side double zones — a sample
+# whose assigned rail pixel is already occupied by an EARLIER pass of the
+# word rides the MAP instead (the skeleton merged the hand's two passes
+# there; the composed map carries the crossing). The first pass keeps the
+# ink's mid-line, every later one takes the composed geometry. Re-occupation
+# within the same pass (dense samples on one pixel) does not count.
+# ADOPTED aug16 (dev: dtw 0.101 -> 0.085, und 0.087 -> 0.043 — now beating
+# the chain there —, 5 of 23 missing crossings return, arc ratio 2.48 ->
+# 1.66, aiou -0.002).
+RIDE_DOUBLE_MAP_PRIORITY = True
+RIDE_DOUBLE_MIN_GAP = 4  # samples between visits before it counts as a pass
 
 
 @dataclass(frozen=True)
@@ -298,18 +309,17 @@ def resample(stroke: np.ndarray, step_px: float) -> np.ndarray:
 # ----------------------------------------------------------------- the ride
 
 
-def pilot_stroke(pg: PilotGraph, stroke_px: np.ndarray, xh_px: float) -> np.ndarray:
-    """One map stroke ridden along the skeleton, bridged where ink is absent.
+def _assign_stroke(pg: PilotGraph, stroke_px: np.ndarray, xh_px: float) -> tuple[np.ndarray, list[PixelLoc | None]]:
+    """The GLOBAL sample->ridge assignment of one map stroke (samples, seq).
 
-    The assignment sample -> ridge point is solved GLOBALLY (Viterbi over the
-    sample chain): a greedy walk boards the first plausible rail and then
-    cascades — on the composed m, whose arcade runs narrower than the ink's,
-    it boarded the wrong rail and bridged across the counters (the „mit"
-    finding of the first Sichtprüfung). States per sample are the nearby
-    ridge points plus one BRIDGE state; transitions price the graph ride,
-    emissions the deviation from the map. Leading and trailing bridge runs
-    that never re-board are TRIMMED — ink that does not exist (a composed
-    Auslauf over blank paper) is not a pen stroke.
+    Solved as a Viterbi over the sample chain: a greedy walk boards the first
+    plausible rail and then cascades — on the composed m, whose arcade runs
+    narrower than the ink's, it boarded the wrong rail and bridged across the
+    counters (the „mit" finding of the first inspection page). States per
+    sample are the nearby ridge points plus one BRIDGE state; transitions
+    price the graph ride, emissions the deviation from the map. Leading and
+    trailing bridge runs that never re-board are TRIMMED — ink that does not
+    exist (a composed run-out over blank paper) is not a pen stroke.
     """
     samples = resample(stroke_px, SAMPLE_STEP_UNITS * xh_px)
     radius = BOARD_RADIUS_UNITS * xh_px
@@ -386,15 +396,23 @@ def pilot_stroke(pg: PilotGraph, stroke_px: np.ndarray, xh_px: float) -> np.ndar
 
     first = next((k for k in range(len(seq)) if rides(k)), None)
     if first is None:
-        return samples  # pure bridge: no ink under the whole map stroke
+        return samples, [None] * len(samples)  # pure bridge: no ink under the map
     last = max(k for k in range(len(seq)) if rides(k))
-    seq = seq[first : last + 1]
-    samples = samples[first : last + 1]
+    return samples[first : last + 1], seq[first : last + 1]
 
+
+def _assemble_ride(
+    pg: PilotGraph, samples: np.ndarray, seq: list[PixelLoc | None], map_mask: np.ndarray | None = None
+) -> np.ndarray:
+    """Assembled pen stroke: rails between assignments, map points elsewhere.
+
+    ``map_mask`` marks samples that ride the MAP regardless of their rail
+    assignment (the v0.5 double-zone right-of-way).
+    """
     out: list[np.ndarray] = []
     prev: PixelLoc | None = None
-    for s, loc in zip(samples, seq, strict=True):
-        if loc is None:
+    for k, (s, loc) in enumerate(zip(samples, seq, strict=True)):
+        if loc is None or (map_mask is not None and map_mask[k]):
             out.append(s)
             prev = None
             continue
@@ -407,6 +425,12 @@ def pilot_stroke(pg: PilotGraph, stroke_px: np.ndarray, xh_px: float) -> np.ndar
     keep = np.ones(len(pts), dtype=bool)
     keep[1:] = np.hypot(*np.diff(pts, axis=0).T) > 1e-9
     return pts[keep]
+
+
+def pilot_stroke(pg: PilotGraph, stroke_px: np.ndarray, xh_px: float) -> np.ndarray:
+    """One map stroke ridden along the skeleton (assignment + assembly)."""
+    samples, seq = _assign_stroke(pg, stroke_px, xh_px)
+    return _assemble_ride(pg, samples, seq)
 
 
 def offset_double_passes(strokes: list[np.ndarray], width_map: np.ndarray, fraction: float) -> list[np.ndarray]:
@@ -561,7 +585,36 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
     result = derive_word(case)
     pg = PilotGraph(np.asarray(case.skel, dtype=bool))
     xh_px = float(result.registration.get("xh_px", result.xh_px))
-    strokes = [pilot_stroke(pg, s, xh_px) for s in map_strokes_px(result)]
+    assignments = [_assign_stroke(pg, s, xh_px) for s in map_strokes_px(result)]
+    if RIDE_DOUBLE_MAP_PRIORITY:
+        # Word-global double detection in WRITING order: the first pass of a
+        # rail pixel keeps the rail, every later pass rides the map.
+        seen: dict[tuple[int, int], int] = {}
+        # The counter is a WRITING-ORDER clock, deliberately ticking on every
+        # sample including bridges: a pen that leaves a pixel — even over a
+        # gap in the ink — and comes back has made a second pass; only dense
+        # consecutive samples parked on one pixel are the same visit.
+        counter = 0
+        masks: list[np.ndarray] = []
+        for samples, seq in assignments:
+            mask = np.zeros(len(samples), dtype=bool)
+            for k, loc in enumerate(seq):
+                counter += 1
+                if loc is None:
+                    continue
+                px = pg.px_of(loc)
+                key = (int(round(px[0])), int(round(px[1])))
+                last = seen.get(key)
+                if last is not None and counter - last > RIDE_DOUBLE_MIN_GAP:
+                    mask[k] = True
+                else:
+                    seen[key] = counter
+            masks.append(mask)
+        strokes = [
+            _assemble_ride(pg, samples, seq, mask) for (samples, seq), mask in zip(assignments, masks, strict=True)
+        ]
+    else:
+        strokes = [_assemble_ride(pg, samples, seq) for samples, seq in assignments]
     strokes = [s for s in strokes if len(s) >= 2]
     if TAIL_RUNOUT_MAX_UNITS > 0.0:
         strokes = run_out_tails(strokes, pg, xh_px, TAIL_RUNOUT_MAX_UNITS)
