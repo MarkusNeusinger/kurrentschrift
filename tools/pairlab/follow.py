@@ -420,7 +420,6 @@ class FollowWeights:
     retrace_prox_units: float = FOLLOW_RETRACE_PROX_UNITS
     retrace_guard: bool = True
     structure_guard: bool = False
-    structure_guard_two_sided: bool = False
     """Arm ⑨ (§14 `aug16`): a round-level ACCEPTANCE rule, not a force — a
     solved round whose assembled trace exceeds the initialisation's own v2.1
     structure class counts (crossings · retrace zones · touches · overlaps,
@@ -428,6 +427,12 @@ class FollowWeights:
     halved travel bounds, at most `STRUCTURE_GUARD_MAX_RETRIES` times, and
     otherwise rejected back to the previous geometry. Default False = the
     follower is byte-identical to before the arm existed."""
+    structure_guard_two_sided: bool = False
+    """§14 „Wächter als Produktions-Kette" (`aug16`): the K0-invariant guard —
+    the same acceptance rule, but the initialisation's counts bind in BOTH
+    directions: a round that LOSES init structure (the ink pull collapsing a
+    small loop) is rejected exactly like one that invents it. Implies the
+    one-sided guard on the CLI; here it only sharpens the comparison."""
     provisional: bool = True
 
 
