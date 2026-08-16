@@ -62,6 +62,12 @@ RIDE_WEIGHT = 1.0
 DEVIATION_WEIGHT = 2.0
 BRIDGE_EMIT_FACTOR = 2.5  # x radius, the bridge state's per-sample price
 MAX_RIDE_FACTOR = 8.0  # rides above this x step are treated as unreachable
+# A5, the offset double pass (v0.2 arm, pre-registered): every ride point on a
+# skeleton pixel the WORD rides more than once shifts by this fraction of the
+# local EDT half-width to the RIGHT of its travel direction — opposite-running
+# passes separate onto opposite sides (the hand's sign convention), single
+# passes and bridges stay mid-ink. 0.0 = off.
+DOUBLE_PASS_OFFSET_FRACTION = 0.0
 
 
 @dataclass(frozen=True)
@@ -359,6 +365,51 @@ def pilot_stroke(pg: PilotGraph, stroke_px: np.ndarray, xh_px: float) -> np.ndar
     return pts[keep]
 
 
+def offset_double_passes(strokes: list[np.ndarray], width_map: np.ndarray, fraction: float) -> list[np.ndarray]:
+    """A5: shift multiply-ridden skeleton pixels off the shared rail.
+
+    Ride points ARE skeleton pixels (integer coordinates), so provenance is a
+    coordinate lookup; bridge points (fractional map samples) never match and
+    stay untouched. Every point whose pixel the whole WORD visits more than
+    once moves by ``fraction`` of the local EDT half-width to the RIGHT of its
+    travel direction — opposite-running passes land on opposite flanks of the
+    stroke and cross transversally where the hand's two passes do.
+    """
+    if fraction <= 0.0:
+        return strokes
+    visits: dict[tuple[int, int], int] = {}
+    keys_per_stroke: list[list[tuple[int, int] | None]] = []
+    h, w = width_map.shape
+    for pts in strokes:
+        keys: list[tuple[int, int] | None] = []
+        for x, y in pts:
+            xi, yi = int(round(x)), int(round(y))
+            on_skel = abs(x - xi) < 1e-6 and abs(y - yi) < 1e-6 and 0 <= yi < h and 0 <= xi < w
+            key = (xi, yi) if on_skel else None
+            keys.append(key)
+            if key is not None:
+                visits[key] = visits.get(key, 0) + 1
+        keys_per_stroke.append(keys)
+    out: list[np.ndarray] = []
+    for pts, keys in zip(strokes, keys_per_stroke, strict=True):
+        shifted = pts.astype(float).copy()
+        if len(pts) >= 2:
+            tangents = np.gradient(pts.astype(float), axis=0)
+            norms = np.hypot(tangents[:, 0], tangents[:, 1])
+            norms[norms == 0] = 1.0
+            tangents /= norms[:, None]
+            for k, key in enumerate(keys):
+                if key is None or visits.get(key, 0) < 2:
+                    continue
+                half = float(width_map[key[1], key[0]])
+                dx, dy = tangents[k]
+                # Right of travel in image coordinates (y down): (-dy, dx).
+                shifted[k, 0] += -dy * fraction * half
+                shifted[k, 1] += dx * fraction * half
+        out.append(shifted)
+    return out
+
+
 def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
     """All strokes of one word, plus provenance details for the record."""
     result = derive_word(case)
@@ -366,6 +417,8 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
     xh_px = float(result.registration.get("xh_px", result.xh_px))
     strokes = [pilot_stroke(pg, s, xh_px) for s in map_strokes_px(result)]
     strokes = [s for s in strokes if len(s) >= 2]
+    if DOUBLE_PASS_OFFSET_FRACTION > 0.0 and case.width_map is not None:
+        strokes = offset_double_passes(strokes, np.asarray(case.width_map, dtype=float), DOUBLE_PASS_OFFSET_FRACTION)
     detail = {
         "nodes": len(pg.graph.nodes),
         "edges": len(pg.graph.edges),
