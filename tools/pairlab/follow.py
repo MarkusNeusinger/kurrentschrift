@@ -427,6 +427,12 @@ class FollowWeights:
     halved travel bounds, at most `STRUCTURE_GUARD_MAX_RETRIES` times, and
     otherwise rejected back to the previous geometry. Default False = the
     follower is byte-identical to before the arm existed."""
+    structure_guard_two_sided: bool = False
+    """§14 „Wächter als Produktions-Kette" (`aug16`): the K0-invariant guard —
+    the same acceptance rule, but the initialisation's counts bind in BOTH
+    directions: a round that LOSES init structure (the ink pull collapsing a
+    small loop) is rejected exactly like one that invents it. Implies the
+    one-sided guard on the CLI; here it only sharpens the comparison."""
     provisional: bool = True
 
 
@@ -1447,6 +1453,16 @@ def _exceeds_budget(counts: dict[str, int], budget: dict[str, int]) -> bool:
     return any(int(counts.get(key, 0)) > int(budget.get(key, 0)) for key in budget)
 
 
+def _breaks_budget(counts: dict[str, int], budget: dict[str, int], *, two_sided: bool) -> bool:
+    """The guard's acceptance test. One-sided caps inventions; two-sided also
+    rejects LOSSES — the K0 invariant makes the initialisation's structure
+    count binding in both directions (the aug16 full-set run measured the
+    ink pull collapsing small loops on Sporn/einer/er-3 unpunished)."""
+    if two_sided:
+        return any(int(counts.get(key, 0)) != int(budget.get(key, 0)) for key in budget)
+    return _exceeds_budget(counts, budget)
+
+
 # ------------------------------------------------------------ the round engine
 
 
@@ -1672,10 +1688,11 @@ def follow_word_chain(
             # Arm ⑨ (§14 `aug16`): the acceptance rule. A violating round is
             # re-solved from the SAME previous geometry with halved travel
             # bounds; past the retry budget the previous geometry stands.
+            two_sided = bool(weights.structure_guard_two_sided)
             counts = _assembled_counts(problem, params)
             retries = 0
             round_weights = weights
-            while _exceeds_budget(counts, guard_budget) and retries < STRUCTURE_GUARD_MAX_RETRIES:
+            while _breaks_budget(counts, guard_budget, two_sided=two_sided) and retries < STRUCTURE_GUARD_MAX_RETRIES:
                 retries += 1
                 round_weights = replace(
                     round_weights,
@@ -1688,7 +1705,7 @@ def follow_word_chain(
             record["structure_budget"] = dict(guard_budget)
             record["structure_counts"] = dict(counts)
             record["structure_retries"] = retries
-            record["structure_rejected"] = _exceeds_budget(counts, guard_budget)
+            record["structure_rejected"] = _breaks_budget(counts, guard_budget, two_sided=two_sided)
             if record["structure_rejected"]:
                 rounds.append(record)
                 problem, params = prev_problem, prev_params
@@ -2237,6 +2254,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="arm 9: reject rounds whose assembled trace exceeds the initialisation's structure class counts",
     )
+    parser.add_argument(
+        "--structure-guard-two-sided",
+        action="store_true",
+        help="the K0-invariant guard: also reject rounds that LOSE initialisation structure (implies --structure-guard)",
+    )
     parser.add_argument("--sweep", help="NAME=v1,v2 — one arm per value of a FollowWeights field")
     parser.add_argument("--jobs", type=int, default=1, help="worker processes, pooled over CASES")
     parser.add_argument("--json", type=Path, help="write the full report here")
@@ -2257,7 +2279,12 @@ def weights_from_args(args: argparse.Namespace) -> FollowWeights:
         "max_delta": args.max_delta,
     }
     weights = FollowWeights(**{k: v for k, v in overrides.items() if v is not None})
-    return replace(weights, retrace_guard=not args.no_retrace_guard, structure_guard=bool(args.structure_guard))
+    return replace(
+        weights,
+        retrace_guard=not args.no_retrace_guard,
+        structure_guard=bool(args.structure_guard or args.structure_guard_two_sided),
+        structure_guard_two_sided=bool(args.structure_guard_two_sided),
+    )
 
 
 def main() -> None:

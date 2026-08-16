@@ -4970,3 +4970,138 @@ Pre-Reg, latent für ALLE Arkaden-Köpfe), (iii) die
 Nachkalibrierung aller drei Knöpfe am Bestätigungssatz
 (Klassen-n 6–8 sind der wahrscheinlichste Grund, warum
 Median-Regeln gegen Beleg-Varianz verlieren).
+
+### Wächter als Produktions-Kette `aug16` — Vorregistrierung: die gewachte Bahn wird die gespeicherte
+
+Geschrieben und committet VOR der ersten Zahl der Messung.
+Owner-Entscheid der Namensrunde (2026-08-16): „Kette+ sollte
+einfach das einzige Kette sein" — fit-erfundene Kreuzungen sind
+nie richtig (join-gebildete stecken im Soll-Budget, Hand-vs-
+Komposition-Lücken sind Composer-Defekte). Die Duell-Seite zeigt
+das schon; DIESER Eintrag misst die PRODUKTIONS-Seite: sollen die
+`traced`-`word_instances` (die 53 nicht nachgefahrenen Wörter +
+Drills) künftig die STRUKTUR-GEWACHTE Bahn speichern statt der
+rohen Kettenfit-Bahn?
+
+**Konfiguration.** Exakt die Ebene, die die Duell-Seite als
+„Kette" führt: `follow_word_chain` mit `structure_guard` (Arm ⑨,
+Budget aus der eigenen Chain-Initialisierung, Retry-Leiter wie
+released) auf der Basis `prox 0.1 · rounds 2 · coverage 0.3`;
+Kontroll-Arm die rohe Kette (`rounds 0`, derselbe Codepfad).
+Beide über ALLE 63 Wörter des words-Sets (nicht nur die 17
+Dev-Fälle — die Produktion speichert alle).
+
+**Bindende Leitplanke (aus §2.2 der Kampagne):** der Tausch darf
+NUR `word_record["strokes"]` betreffen — `occurrences`,
+`letter_gate`, `instances` und alle Messungen bleiben die des
+Kettenfits; `pair_aggregates` sieht Chain-Verbinder ohnehin nie.
+Kein DB-Write in diesem Schritt: die Messung läuft offline über
+die eingefrorenen Fixtures; der Re-Harvest selbst braucht
+Owner-Go + dbsnapshot und `provenance` bleibt `traced`
+(`fit_path` würde die gewachte Herkunft tragen).
+
+**Messgrößen.** (a) Auf den 10 authored-Referenzen: `dtw_xh`
+gepaart gewacht vs. roh — Arm ⑨ maß Δ exakt 0 auf den Dev-Fällen,
+erwartet wird NEUTRALITÄT. (b) Auf ALLEN 63 Wörtern (referenzfrei
+messbar): die Strukturzähler v2.1 gegen das je-Wort-SOLL
+(`soll_cross`/`soll_zones`-Abstände) — die rohe Kette erfand auf
+den Dev-Wörtern ~21 Kreuzungen über ihre eigene Initialisierung
+(laden 3→11, unter 3→12); erwartet wird, dass die gewachte Bahn
+je Wort näher am Soll liegt und NIRGENDS weiter. (c) `aiou`
+gegen die Tintenmaske je Wort (darf nicht fallen — der Wächter
+darf Ink-Deckung nicht kaufen, indem er sie opfert). (d) Marken:
+`marks_missing/spurious` unverändert. (e) Laufzeit je Wort
+(Produktions-Tauglichkeit; die Retry-Leiter kostet).
+
+**Gates und Kill-Kriterien.** Adoptions-Empfehlung nur wenn:
+(i) dev-`dtw_xh` gepaart |Median-Δ| ≤ 0,002 und kein Einzelwort
+über +0,01; (ii) Struktur-Abstand zum Soll (Kreuzungen + Zonen,
+je Wort) gewacht ≤ roh ÜBERALL und irgendwo strikt besser;
+(iii) `aiou`-Median fällt nicht (> −0,005); (iv) Marken
+unverändert; (v) kein Wort scheitert (failed/skipped) das roh
+durchläuft. Kill: EIN Wort mit MEHR Soll-Abstand als roh →
+nicht adoptiert (der Wächter-Kontrakt wäre gebrochen — das wäre
+ein Bug, kein Tuning-Fall); Laufzeit im Mittel > 5 min/Wort →
+Empfehlung nur mit benanntem Budget. Ergebnis wird hier datiert
+nachgetragen; die ADOPTION selbst (Re-Harvest, DB) bleibt ein
+eigener Schritt hinter Owner-Go.
+
+**Gemessen `aug16` — drei Gates bestehen glänzend, das
+Struktur-Gate findet die LÜCKE des einseitigen Wächters.** Beide
+Läufe 63/63 ok (roh 87 min · gewacht 5,3 h = 302 s/Wort — HAARE
+über dem 5-min-Budget von Gate (e), benannt). (i) dev-`dtw_xh`:
+Median-Δ exakt 0,0000, drei Wörter BESSER (unter −0,0300 ·
+und −0,0077 · mit −0,0003), keins schlechter — mehr als
+Neutralität. (iii) `aiou` fällt NIRGENDS (min-Δ 0,0000, max
++0,1103). (iv) Marken byte-gleich. ABER Gate (ii): 1 Wort näher
+am Soll (unter 3→2, eine Zonen-Erfindung weg), 59 gleich,
+**3 Wörter WEITER weg** — und alle drei sind Kreuzungs-VERLUSTE
+(Sporn cross 3→2 bei Soll 3 · einer 1→0 bei Soll 1 · er-3 1→0
+bei Soll 1): der released Wächter deckelt nur ERFINDUNGEN über
+das Init-Budget, die Tinten-Anziehung darf aber ungestraft eine
+kleine Schleife KOLLABIEREN. Per Kill-Kriterium NICHT adoptiert.
+Rettungsweg (benannt nach §7.9-Regel, hier sofort ausgeführt):
+**der zweiseitige Wächter** — die K0-Invariante sagt, die
+Strukturzahl ist deterministisch aus dem Duktus, also ist das
+Init-Budget in BEIDE Richtungen bindend; ein Round, der eine
+Init-Kreuzung verliert, wird genauso zurückgewiesen wie einer,
+der eine erfindet.
+
+**Vorregistrierter Folge-Arm (zweiseitig), VOR seiner ersten
+Zahl:** identische Konfiguration, `structure_guard` prüft
+Gleichheit statt Obergrenze (`--structure-guard-two-sided`,
+Retry-Leiter unverändert). Erwartung: die drei Verluste
+verschwinden (Retry oder Rückfall auf die Vorrunden-Geometrie),
+unter behält seinen Gewinn, dev-dtw bleibt im (i)-Band —
+plausibel opfert `unter` einen Teil der −0,0300, wo der Gewinn
+aus einem Verlust-Round kam. Gates unverändert die von oben;
+Kill unverändert: EIN Wort weiter vom Soll als roh → nicht
+adoptiert.
+
+**Zweiseitig gemessen `aug16` — erst der Umgebungs-Fund, dann
+ein sauberes Pareto-Bild.** Der erste Vergleich (2s gegen die
+Nacht-Baseline) zeigte 6 scheinbare Regressionen — die Isolation
+entlarvte sie als MESSFEHLER DES AUFBAUS: **der Ketten-Solve ist
+über BLAS-Thread-Umgebungen hinweg nicht bit-reproduzierbar**
+(dasselbe Wort, derselbe Code, rounds 0: capped-1-job vs.
+uncapped-3-jobs ergeben verschiedene Bahnen; an
+Struktur-Grenzfällen kippen dann Zähler). Der Revert-Pfad des
+Wächters ist dagegen KORREKT (Isolations-Paar rounds-0 vs.
+zweiseitig-revertiert byte-identisch). Zwei Konsequenzen,
+stehend: Solve-Vergleiche nur noch in IDENTISCHER Umgebung
+(`OPENBLAS_NUM_THREADS`/`OMP_NUM_THREADS` gepinnt), und eine
+Produktions-Verdrahtung muss die Thread-Zahl pinnen. Nebenbei
+löste der Pin das Laufzeit-Gate (e) vollständig: die
+Thread-Übersättigung (3 Worker × ~15 Threads auf 8 Kernen) war
+der ganze Kostentreiber — gedeckelt läuft die rohe Kette über
+63 Wörter in 2,7 min und der ZWEISEITIGE Wächter in 18,3 min
+(≈ 17 s/Wort, weit unter dem 5-min-Budget; einseitig-ungedeckelt
+waren es 5,3 h).
+
+Der SAUBERE Vergleich (Kette und 2s-Wächter in identischer
+Umgebung, 63/63 ok): Gate (ii) Struktur: **0 besser · 63 gleich ·
+0 schlechter** — Gesamt-Soll-Abstand exakt 104 = 104; der
+beidseitige Veto friert die Struktur konstruktionsbedingt auf
+Init-Niveau ein (auch unters Zonen-REPARATUR aus dem einseitigen
+Lauf wird vetiert — der Preis der Symmetrie). Gate (i) dev-dtw:
+Median-Δ 0,0000, max-Δ 0,0000, zwei Wörter besser (und −0,0077 ·
+mit −0,0003), keins schlechter. Gate (iii) aiou: min-Δ −0,0023
+(Sporn, über der −0,005-Schranke), max +0,1199. Gate (iv) Marken
+byte-gleich. FORMAL: die Adoptionsbedingung verlangt „irgendwo
+strikt besser" auf der Struktur-Achse — die kann ein
+beidseitiger Veto NIE erfüllen; der Arm ist damit nach dem
+Buchstaben der Vorregistrierung NICHT adoptiert, obwohl er auf
+jeder gemessenen Achse gleich-oder-besser ist (nie schlechter:
+Struktur eingefroren, Tinte näher, Hand-Abstand nie größer).
+LESART: der zweiseitige Wächter ist die SICHERE Produktions-Bahn
+(primum non nocere gegenüber der rohen Kette), und die
+Entscheidung wird eine Owner-Abwägung statt eines Gate-Automatismus:
+(a) zweiseitig adoptieren (sicher, tinten-näher, Struktur =
+Kette), (b) rohe Kette behalten, (c) der benannte RETTUNGSWEG
+für „strikt besser": der **soll-bewusste K0-Wächter** —
+Struktur-Änderung nur zulassen, wenn sie sich dem
+Kompositions-Soll NÄHERT (die Richtung, die die
+Kreuzungs-Invariante ohnehin vorzeichnet; als „Topologie-Budget
+K0" seit aug15 als künftiger Arm benannt). Der wäre eine eigene
+Vorregistrierung; bis dahin bleibt die Produktions-Adoption
+offen und der Re-Harvest hinter Owner-Go + dbsnapshot.
