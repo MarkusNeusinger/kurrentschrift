@@ -5349,3 +5349,27 @@ A5-Erkennung, die v0.4-Geometrie — Kombination, eigene Pre-Reg).
 Stand der Route damit: dev-dtw 0,101 gegen Kette 0,062 (Lücke
 2,0× → 1,6×), `aiou` klar über der Kette, Kreuzungs-Kollaps auf
 geteilten Schienen bleibt DER offene Block.
+
+### Route „Lotse" v0.5 `aug16` — Vorregistrierung: Karten-Geometrie in Ritt-Doppelzonen
+
+Geschrieben und committet VOR der ersten Zahl. Die benannte
+Kombination aus den zwei verworfenen Armen: die ERKENNUNG des A5
+(wo besucht der Ritt dasselbe Skelett-Pixel mehrfach — dort ist
+die Schiene degeneriert, das Skelett hat die zwei Hand-Pässe
+verschmolzen) mit der GEOMETRIE des v0.4 (dort die Karte fahren,
+die den Doppelpass MIT Kreuzung komponiert). EIN Knopf:
+`RIDE_DOUBLE_MAP_PRIORITY` (aus/an) — die Sample-Zuweisungen des
+Wortes werden in SCHREIB-Reihenfolge durchlaufen; ein Sample,
+dessen zugewiesenes Schienen-Pixel im Wort schon einmal besetzt
+wurde, fährt statt der Schiene die KARTE (sein eigenes
+Karten-Sample, brücken-gleich verbunden) — der ERSTE Pass bleibt
+auf der Tinten-Mitte, jeder SPÄTERE fährt die komponierte
+Geometrie mit ihrer Kreuzung. Erwartung: die Schienen-Klasse der
+23 fehlenden Kreuzungen kehrt substanziell zurück, `und`s
+Rest-Doppelritt verschwindet, `retrace_arc_ratio` fällt Richtung
+Hand-Niveau; `aiou` gibt nur in den Doppelzonen nach — dieselbe
+Zusatz-Kill-Schranke (Median-Δ > −0,02 verworfen). Kill
+zusätzlich: erzeugt die Karten-Geometrie in den Zonen UNECHTE
+Kreuzungen über das Soll (`cross_spurious` netto > +2), ist die
+Karten-Platzierung dort zu schlecht — verworfen, zurück zur
+Sub-Strich-Trennung. Basis ist der adoptierte Stand (Auslauf 1,0).
