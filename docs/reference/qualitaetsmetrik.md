@@ -5394,3 +5394,43 @@ Wort 0,113 statt 0,450 (Kette) bzw. 0,132 (Lotse). „Vier Augen"
 hat damit seine erste bezifferte Decke; der ehrliche
 Auswahl-Mechanismus (ohne Referenz!) ist die offene Frage — die
 Lehre aus B1 (der ordnungs-blinde Ranker) gilt hier wörtlich.
+
+**Auswähler-Diagnostik `aug16` (explorativ, KEIN Ergebnis —
+festgehalten, damit die Sackgassen benannt sind):** drei
+referenzfreie Signale auf den 10 Dev-Wörtern geprüft, keines
+trennt: (i) Soll-Distanz der Kette (zwei hat 4 und die Kette
+gewinnt trotzdem; die drei Lotse-Siege liegen bei 0–1);
+(ii) p90-Tinten-Restfehler der Kette (Lotse-Siege bei
+0,057–0,068, aber die/zwei gewinnen für die Kette im selben
+Band); (iii) Lotse-eigene `retrace_arc_ratio` flaggt zuverlässig
+nur die GROSSEN Lotse-Niederlagen (≥ 4 ⇒ Kette, 4/4), die
+resultierende Einweg-Regel bleibt aber unter der Kette (Median
+0,0746), weil die kleinen Ketten-Siege (Wer/linken/mit,
++0,03–0,04) mitverloren gehen. Struktur des Problems:
+asymmetrische Einsätze (Kette gewinnt 7/10 knapp, Lotse 3/10
+riesig) — der Auswähler braucht ein Signal für „die Kette
+scheitert HIER" mit sehr niedriger Falsch-Positiv-Rate.
+Kandidaten für die echte Pre-Reg, wenn der Bestätigungssatz da
+ist: fit-interne Flags der Kette (at_bound/Konvergenz je Slot)
+und die Kombination arc-ratio-Einweg + Restfehler. Auf n=10 wird
+KEINE Regel adoptiert (Dev-Fishing-Verbot).
+
+### Route „Lotse" v0.6 `aug16` — Vorregistrierung: der Feinschliff
+
+Geschrieben und committet VOR der ersten Zahl. Der benannte
+Kandidat aus der Duell-Review (Owner: Mikro-Wackler sichtbar,
+„wenn der Schreiber der Linie mit fester Stiftdicke nachgeht,
+sieht man die Wackler in der dicken Linie"): die 8er-Pixelkette
+des Skeletts zickzackt mit ±0,5 px; auf den GLATTEN Wörtern, wo
+die Kette heute noch gewinnt, ist das ein flächiger dtw-Beitrag.
+EIN Knopf: `SMOOTH_ITERATIONS` — je Iteration das lokale Mittel
+x_i ← (x_{i−1} + 2·x_i + x_{i+1}) / 4 über jeden Ritt-Strich,
+ENDPUNKTE FIX (der adoptierte Schienen-Auslauf bleibt exakt);
+Leiter 0 (= aus) / 2 / 4. Struktur-Wächter als Gate statt als
+Code: `cross/retrace/touch/overlap`-Zähler und Marken müssen
+byte-gleich bleiben (eine 1-px-Glättung, die eine Kreuzung
+unmacht, ist verworfen — Ecken und Retraces sind ECHTE Merkmale,
+die Doktrin der Natürlichkeitsmetrik in §5); `aiou`-Median-Δ >
+−0,02 = verworfen. Erwartung: dtw fällt breit (auch auf den
+Ketten-Siegen), `aiou` ~neutral (die Glättung bleibt binnen
+halber Strichbreite).
