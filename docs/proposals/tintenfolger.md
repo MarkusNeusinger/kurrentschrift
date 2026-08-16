@@ -669,7 +669,7 @@ ist der Glossar-Eintrag „Duell-Namen":
 | **Nullprobe** | Route G / `tools/routeg` | steht |
 | **Zögling** | eigenes Trajektorien-Modell (Route B2, §7.5) | geplant |
 | **Vier Augen** | Fusion (§7.6) | geplant |
-| **Feinschliff** | Natürlichkeitsfilter (zweite Stufe, Glättung mit Struktur-Wächter) | Kandidat |
+| **Feinschliff** | Natürlichkeitsfilter (zweite Stufe, Glättung mit Struktur-Wächter) | als MESS-Arm verworfen (§14 Lotse v0.6 `aug16`: das Lineal sieht den Zickzack nie — Resampling schluckt ihn; Glättung ist eine reine Darstellungsstufe beim Konsumenten) |
 | **Chor** | ordnungs-bewusste Auswahl unter Varianten (B1-Nachfolger) | Welle 3 |
 | **Lotse** *(Arbeitstitel)* | Skelett direkt fahren, Duktus als Karte (unten) | v0.1 gebaut + gemessen (`tools/inkpilot`, §14 „Route Lotse": Gate verfehlt — Kreuzungs-Kollaps auf geteilten Gleisen —, aber unter 0,450 → 0,064; Rettungsweg A5 versetzter Doppelpass) |
 
