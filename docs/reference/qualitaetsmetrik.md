@@ -5434,3 +5434,18 @@ die Doktrin der Natürlichkeitsmetrik in §5); `aiou`-Median-Δ >
 −0,02 = verworfen. Erwartung: dtw fällt breit (auch auf den
 Ketten-Siegen), `aiou` ~neutral (die Glättung bleibt binnen
 halber Strichbreite).
+
+**Gemessen `aug16` — beide Stufen verworfen; die
+Zickzack-Hypothese ist fürs LINEAL widerlegt.** it2 → dtw 0,0860
+· aiou −0,022 · Zähler NICHT byte-gleich (cross 18→17 fehlend,
+1→0 unecht; retrace 0→1 fehlend); it4 → dtw 0,0869 · aiou −0,029
+· retrace 0→3 fehlend. Alle drei Gates verletzt, Konstante bleibt
+0. Die Lehre: das 0,02-xh-Arc-Resampling des `dtw_xh` schluckt
+den ±0,5-px-Zickzack ohnehin (beide Seiten werden identisch
+abgetastet) — die Glättung kauft auf der Messachse NICHTS und
+bezahlt mit Tinten-Deckung und Grenzfall-Struktur. Der
+Mikro-Wackler ist damit als SICHT-Problem des späteren
+NACHSCHREIBERS eingeordnet, nicht als Mess-Problem: der
+Feinschliff gehört, wenn überhaupt, an den KONSUMENTEN der Bahn
+(Renderer/Editor-Anzeige, eine reine Darstellungsstufe), nie in
+den gemessenen Kandidaten. §7.9-Zeile entsprechend.
