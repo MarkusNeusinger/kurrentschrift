@@ -590,6 +590,10 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
         # Word-global double detection in WRITING order: the first pass of a
         # rail pixel keeps the rail, every later pass rides the map.
         seen: dict[tuple[int, int], int] = {}
+        # The counter is a WRITING-ORDER clock, deliberately ticking on every
+        # sample including bridges: a pen that leaves a pixel — even over a
+        # gap in the ink — and comes back has made a second pass; only dense
+        # consecutive samples parked on one pixel are the same visit.
         counter = 0
         masks: list[np.ndarray] = []
         for samples, seq in assignments:
