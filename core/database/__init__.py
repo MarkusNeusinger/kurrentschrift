@@ -26,6 +26,7 @@ from core.database.models import (
     Template,
     WordInstance,
     WorkItem,
+    template_render_row,
 )
 from core.database.repositories import (
     AggregateRepository,
@@ -81,4 +82,5 @@ __all__ = [
     "get_db_context",
     "init_db",
     "is_db_configured",
+    "template_render_row",
 ]

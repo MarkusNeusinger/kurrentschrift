@@ -247,6 +247,50 @@ async def test_write_glyphs_batch_and_missing(api: Harness):
         assert field in payload
 
 
+async def test_write_glyphs_widen_round_bodies_on_the_gleichzug_path(api: Harness):
+    """Issue #289 regression: the write path's row builder must pass `glyph`
+    through, or `core.pipeline._fluent_widen` (FLUENT_BODY_PITCH) silently dies
+    on `/write` while the wordbench fixtures keep measuring with it.
+
+    A pinched `e` body (verticals 0.30 apart, target 0.40) on a Gleichzug
+    (`constant`) style must come back widened: the growth of 0.10 shifts the
+    exit and the advance right by exactly that much.
+    """
+    style_id, source_id = await api.seed_style_and_source(width_resolver="constant")
+    x2 = 0.8  # second body vertical: 0.5 + the pinched 0.30 pitch
+    anchors = [
+        [0.0, 0.55],
+        [0.25, 0.75],
+        [0.5, 1.0],
+        [0.5, 0.5],
+        [0.5, 0.0],
+        [x2 - 0.1, 0.9],
+        [x2, 1.0],
+        [x2, 0.5],
+        [x2, 0.0],
+        [x2 + 0.2, 0.25],
+        [x2 + 0.45, 0.5],
+    ]
+    await api.seed_template(
+        style_id,
+        source_id,
+        "e",
+        "e",
+        anchors=anchors,
+        advance=x2 + 0.45,
+        entry={"xy": [0.0, 0.55]},
+        exit_pt={"xy": [x2 + 0.45, 0.5]},
+        trace_meta={"stroke_starts": [0]},
+    )
+    res = await api.client.request("GET", f"/sources/{source_id}/write/glyphs", params={"keys": "e"})
+    assert res.status == 200
+    payload = res.json()["glyphs"][0]
+    grow = (0.40 / 0.30 - 1.0) * 0.30  # FLUENT_BODY_PITCH["e"] over the seeded pitch
+    assert payload["advance"] == pytest.approx(x2 + 0.45 + grow, abs=1e-6)
+    assert payload["exit_pt"]["xy"][0] == pytest.approx(x2 + 0.45 + grow, abs=1e-6)
+    assert payload["entry"]["xy"] == [0.0, 0.55]  # left of the body — stays put
+
+
 async def test_write_word_happy_path_with_seeded_templates(api: Harness):
     """Compose a whole word from synthetic canonicals seeded via the session.
 

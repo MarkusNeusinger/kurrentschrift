@@ -204,18 +204,6 @@ def _load_dotenv() -> None:
         os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
 
 
-def _template_row(t) -> dict:
-    """ORM Template → the plain dict render_payload_for_template consumes."""
-    return {
-        "anchors": list(t.anchors),
-        "half_widths": list(t.half_widths),
-        "trace_meta": dict(t.trace_meta or {}),
-        "entry": dict(t.entry) if t.entry else {},
-        "exit_pt": dict(t.exit_pt) if t.exit_pt else {},
-        "advance": t.advance,
-    }
-
-
 async def live_word_case(text: str, source_id: str = "suetterlin-1922") -> WordCase:
     """READ-ONLY: shape `text` and pull the templates it needs from Cloud SQL.
 
@@ -232,7 +220,7 @@ async def live_word_case(text: str, source_id: str = "suetterlin-1922") -> WordC
 
     _load_dotenv()
     from core.database.connection import close_db, get_db_context  # noqa: PLC0415 — import after dotenv
-    from core.database.models import LAUFFORM_VARIANT  # noqa: PLC0415
+    from core.database.models import LAUFFORM_VARIANT, template_render_row  # noqa: PLC0415
     from core.database.repositories import SourceRepository, StyleRepository, TemplateRepository  # noqa: PLC0415
     from core.shaping import decompose_ligature_slot, glyph_keys_of, shape_text  # noqa: PLC0415
 
@@ -248,7 +236,7 @@ async def live_word_case(text: str, source_id: str = "suetterlin-1922") -> WordC
 
             slots = shape_text(normalized)
             keys = glyph_keys_of(slots)
-            rows = {t.glyph_key: _template_row(t) for t in await repo.get_many(src.style_id, keys)}
+            rows = {t.glyph_key: template_render_row(t) for t in await repo.get_many(src.style_id, keys)}
             # Ligature fallback (one extra query, only when something is missing) —
             # mirrors write.py so a closed-set cluster without a canonical decomposes.
             if any(sl.ligature and sl.key and sl.key not in rows for sl in slots):
@@ -262,12 +250,13 @@ async def live_word_case(text: str, source_id: str = "suetterlin-1922") -> WordC
                 keys = glyph_keys_of(slots)
                 extra = [k for k in keys if k not in rows]
                 for t in await repo.get_many(src.style_id, extra):
-                    rows[t.glyph_key] = _template_row(t)
+                    rows[t.glyph_key] = template_render_row(t)
 
             # The median running forms, exactly like write.py: compose selects
             # them per flowing run; no rows → chart behaviour.
             laufform_rows = {
-                t.glyph_key: _template_row(t) for t in await repo.get_many(src.style_id, keys, variant=LAUFFORM_VARIANT)
+                t.glyph_key: template_render_row(t)
+                for t in await repo.get_many(src.style_id, keys, variant=LAUFFORM_VARIANT)
             }
 
             style_ratio = list(src.style_ratio) if src.style_ratio is not None else list(style.default_style_ratio)

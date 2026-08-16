@@ -169,6 +169,10 @@ class Harness:
         variant: int = 0,
         half_width: float = 0.05,
         trace_meta: dict[str, Any] | None = None,
+        anchors: list[list[float]] | None = None,
+        advance: float | None = None,
+        entry: dict[str, Any] | None = None,
+        exit_pt: dict[str, Any] | None = None,
     ) -> None:
         """A minimal but render-valid canonical: an n-like arch in template coords
         (baseline = 0, midband = 1) with a constant hairline width profile.
@@ -176,9 +180,15 @@ class Harness:
         `half_width` is that profile's one value — the pooled-nib tests need
         templates whose widths differ, everything else takes the default.
         `trace_meta` defaults to empty, i.e. a row the derivation never scored;
-        the stored-quality read needs rows that carry one.
+        the stored-quality read needs rows that carry one. The geometry
+        overrides let a test seed a specific shape (e.g. the fluent-widening
+        test's pinched round body) without growing another seeder.
         """
-        anchors = [[0.0, 0.0], [0.05, 0.45], [0.12, 0.62], [0.25, 0.55], [0.32, 0.25], [0.35, 0.0]]
+        anchors = (
+            anchors
+            if anchors is not None
+            else [[0.0, 0.0], [0.05, 0.45], [0.12, 0.62], [0.25, 0.55], [0.32, 0.25], [0.35, 0.0]]
+        )
         async with self.session_maker() as session:
             session.add(
                 Template(
@@ -187,9 +197,13 @@ class Harness:
                     glyph_key=glyph_key,
                     glyph=glyph,
                     variant=variant,
-                    advance=0.45,
-                    entry={"xy": [0.0, 0.0], "tangent_deg": 60.0, "coupling": "baseline"},
-                    exit_pt={"xy": [0.35, 0.0], "tangent_deg": -60.0, "coupling": "baseline"},
+                    advance=advance if advance is not None else 0.45,
+                    entry=entry
+                    if entry is not None
+                    else {"xy": [0.0, 0.0], "tangent_deg": 60.0, "coupling": "baseline"},
+                    exit_pt=exit_pt
+                    if exit_pt is not None
+                    else {"xy": [0.35, 0.0], "tangent_deg": -60.0, "coupling": "baseline"},
                     anchors=anchors,
                     half_widths=[half_width] * len(anchors),
                     raw_path=[],

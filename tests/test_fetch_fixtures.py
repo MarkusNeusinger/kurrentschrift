@@ -32,7 +32,6 @@ from tools.wordbench.fetch_fixtures import (
     laufform_rows_from_aggregates,
     payload_mismatch,
     pooled_nib_units,
-    production_row,
     resolve_nib,
     stored_laufform_rows,
     template_row_from_payload,
@@ -236,12 +235,12 @@ def test_composition_mismatch_names_a_structural_difference():
     assert "item 0" in error
 
 
-def test_production_row_drops_the_field_the_write_path_drops():
-    # `glyph` keys core.pipeline._fluent_widen; the write path never passes it.
+def test_fixture_row_carries_the_widening_key():
+    # `glyph` keys core.pipeline._fluent_widen; since issue #289 the write path
+    # passes it too (template_render_row), so the gate compares full rows.
     row = template_row_from_payload(CHART_PAYLOAD)
-    stripped = production_row(row)
-    assert "glyph" not in stripped
-    assert set(stripped) == CHART_ROW_KEYS - {"glyph"}
+    assert row["glyph"] == "a"
+    assert set(row) == CHART_ROW_KEYS
 
 
 def test_payload_mismatch_flags_each_render_field():

@@ -70,7 +70,17 @@ einem Tag am CDN). Der Admin behält den ungecachten `/diagnostic`.
 3. **Payload** (`core/pipeline.py::render_payload_for_template`):
    Silhouetten (`outline_paths`, Ringlisten mit `fill-rule: evenodd`),
    `centerlines_template`, `entry`/`exit_pt`, `advance`,
-   `template_guides`.
+   `template_guides`. Auf dem Gleichzug-Pfad (`width_resolver:
+   "constant"`) wendet der Payload-Schritt die **Fluent-Weitung** an
+   (`FLUENT_BODY_PITCH`, qualitaetsmetrik.md „Fluent-Weitung"): die
+   Chart-Zelle quetscht die Rundkörper e/a/u/o; beim Rendern strecken sie
+   auf den an den Wortproben (Abb. 19) gemessenen Pitch der fließenden
+   Schrift, `entry`/`exit_pt`/`advance` rücken mit. Die Template-Zeile dafür baut
+   überall `core.database.models.template_render_row` — der EINE
+   Produktions-Row-Builder inkl. `glyph`-Feld, auf dem die Weitung keyt
+   (#289: zwei handgerollte Kopien ohne das Feld hatten sie auf `/write`
+   still deaktiviert; Parität Exporter↔Produktion pinnt
+   `tests/test_render_row.py`).
 
 Stil-Auflösung + der pro `(style, source)` gepoolte Nib/Pen leben in
 `api/rendering.py` (memoisiert, TTL 10 min, invalidiert bei

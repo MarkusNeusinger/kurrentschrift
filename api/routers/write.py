@@ -20,7 +20,14 @@ from api.dependencies import require_db, require_source
 from api.http import CACHE_CONTROL
 from api.rendering import render_payload_cached, resolve_render_context
 from core.compose import compose_word
-from core.database import LAUFFORM_VARIANT, GlyphPairRepository, Source, Template, TemplateRepository
+from core.database import (
+    LAUFFORM_VARIANT,
+    GlyphPairRepository,
+    Source,
+    Template,
+    TemplateRepository,
+    template_render_row,
+)
 from core.shaping import decompose_ligature_slot, glyph_keys_of, shape_text
 
 
@@ -35,20 +42,9 @@ MAX_BATCH_KEYS = 80
 MAX_TEXT_LEN = 160
 
 
-def _template_to_glyph_row(t: Template) -> dict:
-    return {
-        "anchors": list(t.anchors),
-        "half_widths": list(t.half_widths),
-        "trace_meta": dict(t.trace_meta or {}),
-        "entry": dict(t.entry) if t.entry else {},
-        "exit_pt": dict(t.exit_pt) if t.exit_pt else {},
-        "advance": t.advance,
-    }
-
-
 def _template_render_entry(t: Template) -> dict:
     """Row dict plus the identity fields the payload memo keys on."""
-    return {"row": _template_to_glyph_row(t), "id": t.id, "updated_at": t.updated_at}
+    return {"row": template_render_row(t), "id": t.id, "updated_at": t.updated_at}
 
 
 def _cached_payload(entry: dict, glyph_key: str, ctx) -> dict:
