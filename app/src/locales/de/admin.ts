@@ -201,6 +201,21 @@ export const admin = {
       'Zu diesem Text gibt es keine nachgefahrene Wortprobe dieser Hand — beurteilt wird dann allein das Schriftbild oben. Bemängeln geht trotzdem: ⚑ oben.',
     scoreButton: 'Bewerten',
     scoreHint: 'Der eingefrorene Wortbench-Maßstab auf genau dieser Komposition (niedriger ist besser).',
+    // Nachfahr-Übersicht: the overview's third tab — every hand-authored word
+    // trace stacked over its crop, as a quality pass over one's own pen work.
+    tabAuthored: 'Nachgefahren',
+    reviewEmpty: 'Noch keine von Hand nachgefahrenen Wortproben.',
+    reviewCount: '{{count}} von Hand nachgefahrene Bahnen',
+    reviewCountOne: '{{count}} von Hand nachgefahrene Bahn',
+    // Blend the plate ink out — a wobble reads best on the naked line.
+    reviewBareToggle: 'Nur die Bahn',
+    reviewOpenWord: 'Zum Wort',
+    reviewDevChip: 'Entwicklungssatz',
+    reviewDevChipHint:
+      'Eines der zehn eingefrorenen Lineal-Wörter des Trace-Benchs — neu speichern verändert die Referenz aller bisherigen Messungen.',
+    reviewFrameStale: 'Rahmen veraltet',
+    reviewFrameStaleHint:
+      'Die gespeicherte Registrierung passt nicht mehr zur Lineatur der Wortprobe — beim nächsten Fixture-Abgleich fiele diese Bahn aus dem Bench. „Nachfahren" öffnet die Bahn im aktuellen Rahmen; Speichern dort schreibt ihn fest.',
   },
   toolbar: {
     pan: 'Schwenken',
@@ -426,10 +441,26 @@ export const admin = {
     // Fingers are fully inert on the canvas (the writing hand rests there);
     // panning is an explicit mode instead.
     editorModeDraw: 'Schreiben',
+    // Anpassen drags the drawn line locally (the wizard's Weg mechanism) —
+    // for the one tablet wobble a whole redraw would be disproportionate to.
+    editorModeAdjust: 'Anpassen',
     editorModePan: 'Verschieben',
     // Accessible name of the mode toggle group.
     editorModeGroup: 'Modus',
     editorZoomHint: 'Finger sind deaktiviert — zum Verschieben den Schalter nutzen.',
+    // Falloff radius of the adjust drag, in x-heights.
+    editorNudgeRadius: 'Radius',
+    editorAdjustHint:
+      'Die Bahn mit dem Stift an einer Stelle ziehen: Punkte im Kreis folgen, außen läuft die Linie weich zurück. Züge werden nie geteilt oder zusammengelegt — nur verschoben.',
+    // Saving one of the ten frozen dev-split words re-baselines the trace
+    // bench (docs/proposals/tintenfolger.md §2.4) — warn, don't block.
+    editorDevWordWarning:
+      'Dieses Wort gehört zum eingefrorenen Entwicklungssatz des Trace-Benchs (Lineal). Speichern verändert die Referenz, gegen die alle bisherigen Messungen liefen — danach ist ein datierter §14-Re-Baseline-Eintrag plus Fixture-Abgleich fällig.',
+    editorSaveDevConfirm: 'Trotzdem speichern',
+    // Shown when the stored registration failed the frame gate: the editor
+    // re-expressed the strokes into the sample's current frame on open.
+    editorFrameReanchored:
+      'Der gespeicherte Rahmen war veraltet — die Bahn liegt jetzt im aktuellen Rahmen der Wortprobe (gleiche Lage im Ausschnitt). Speichern schreibt den neuen Rahmen fest.',
     editorReset: 'Auf gespeicherten Stand zurück',
     editorShowStored: 'Gespeicherte Spur zeigen',
     // {{strokes}} = number of strokes the save would write.

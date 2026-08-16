@@ -12,6 +12,34 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **The word editor gets an adjust mode, and the Wörter view a review
+  stack of the hand-authored traces** (Werkbank W3). „Anpassen" — the
+  wizard's Weg mechanism ported to the word editor — drags the drawn
+  line locally with a smoothstep falloff (radius slider in x-heights,
+  falloff ring under the pointer), so one tablet wobble no longer costs
+  a whole redraw; strokes are never split, merged, reordered or
+  reversed and points only move (the trace bench measures pen-lift
+  structure and writing order — pinned by unit tests on
+  `warpTraceStrokes`). Saving one of the ten frozen dev-split words now
+  asks once explicitly („Trotzdem speichern") — that save changes the
+  frozen ruler's reference and owes a dated §14 re-baseline. The new
+  „Nachgefahren" tab stacks every `authored` trace over its specimen
+  crop (or bare on white — wobbles read best on the naked line), badges
+  dev-split membership and client-side frame staleness (the fixture
+  exporter's own gate tolerances), and jumps straight into the editor;
+  a save now refetches the trace list (`refreshWordTraces`), so the
+  evidence views show the stored state instead of the load-time
+  snapshot. A `frame_stale` row heals on open: the editor re-expresses
+  the strokes through the stale frame into the sample's current one
+  (same place on the crop pixels) and the save stores the fresh
+  registration — so the badge's remedy really is re-tracing, instead
+  of the save echoing the stale frame back forever. Gesture handling
+  is hardened against mid-drag mode flips (a stray toolbar graze can
+  no longer weld pen samples onto a stored stroke — the move handler
+  branches on the live gesture, never on the mode).
+
 ### Changed
 
 - **The agent instructions went on a diet — details moved into the docs
