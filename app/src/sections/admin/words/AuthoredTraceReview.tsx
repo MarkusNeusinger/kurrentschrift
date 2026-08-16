@@ -2,12 +2,13 @@
 // each over its own specimen crop. A quality pass over one's OWN pen work:
 // after a tablet session the author scans down the column, spots where a line
 // sat beside the ink or wobbled, and jumps straight into the editor to fix
-// exactly that spot (Anpassen mode). Only `authored` rows appear — the
-// automatic fits have their own faces in the compare view; here the question
-// is „wie sauber ist meine Bahn?", nothing else.
+// exactly that spot (adjust mode). Only `authored` rows appear — the automatic
+// fits have their own faces in the compare view; the only question here is
+// how clean the author's own line is.
 //
-// The crop can be blended out („nur die Bahn"): a wobble reads best on the
-// naked line, a registration error only against the ink — both one switch.
+// The crop can be blended out (the "Nur die Bahn" switch): a wobble reads best
+// on the naked line, a registration error only against the ink — one switch
+// serves both readings.
 
 import { Alert, Box, Button, Chip, CircularProgress, FormControlLabel, Switch, Tooltip, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';

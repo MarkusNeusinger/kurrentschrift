@@ -157,11 +157,13 @@ export function WorkbenchDataProvider({ children }: { children: ReactNode }) {
   }, [sourceId]);
 
   // The word-trace refetch: one list, replacing wholesale. Tick 0 is the
-  // initial load above — this effect only ever runs a REfetch.
+  // initial load above — this effect only ever runs a REfetch, and it runs
+  // right after a write, so it busts past any intermediate cache (the
+  // endpoint itself is uncached; `bust` covers whatever sits in between).
   useEffect(() => {
     if (wordTick === 0) return;
     let cancelled = false;
-    listWordInstances(sourceId, undefined, { retries: 2 })
+    listWordInstances(sourceId, { bust: Date.now() }, { retries: 2 })
       .then((words) => {
         if (!cancelled) setWordRows(words);
       })
