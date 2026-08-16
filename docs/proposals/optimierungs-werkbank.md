@@ -234,6 +234,28 @@ vom Symptom zur Änderung und zurück.
   Vorkommen wird ersetzt, alle anderen Zeilen (und jede andere
   `authored`-Spur) bleiben unberührt; Slot-Labels und Registrierung
   wandern mit, die Fit-Kennzahlen des ersetzten Pfads nicht.
+  Seit aug16 zusätzlich: ein **Anpassen-Modus** (dritter Schalter neben
+  Schreiben/Verschieben, der Mechanismus des Wizard-„Anpassen"): die
+  Bahn an einer Stelle mit dem Stift ziehen, Punkte im einstellbaren
+  Radius (xh-Einheiten) folgen mit Smoothstep-Falloff — ein
+  Tablet-Wackler lässt sich glätten, ohne das Wort neu zu fahren. Züge
+  werden dabei nie geteilt, zusammengelegt, umgeordnet oder umgekehrt
+  (der Trace-Bench misst Absetz-Struktur und Schreibrichtung), Punkte
+  nur verschoben, nie erzeugt oder verworfen. Bei den zehn eingefrorenen
+  Entwicklungssatz-Wörtern (`tools/tracebench/sets.py`) warnt der Editor
+  vor dem Speichern einmal explizit — ein Save dort verändert das
+  Lineal (datierter §14-Re-Baseline + Fixture-Abgleich fällig). Einen
+  veralteten Registrierungs-Rahmen (Frame-Gate des Fixture-Exports)
+  heilt der Editor beim Öffnen: die Bahn wird durch den alten Rahmen in
+  den aktuellen der Wortprobe umgerechnet (gleiche Lage im Ausschnitt),
+  Speichern schreibt den frischen Rahmen fest. Und die
+  **Nachfahr-Übersicht** (dritter Tab der Wörter-Übersicht,
+  `AuthoredTraceReview`): alle `authored`-Bahnen der Quelle
+  untereinander über ihrem Crop — wahlweise „Nur die Bahn" auf Weiß —
+  als Qualitäts-Sichtung der eigenen Stiftarbeit, mit
+  Entwicklungssatz-Kennzeichnung, „Rahmen veraltet"-Badge (die
+  Frame-Gate-Toleranzen des Fixture-Exports, client-seitig gerechnet)
+  und direktem Absprung in den Editor.
 - **W4 — Protokoll** (umgesetzt): §5 als erzwungener Ablauf statt
   Doku-Appell. Migration `0022` ergänzt `understanding` · `reproduced` ·
   `stage` · `acked_at` · `closed_at`; die API weist ein Abschließen ohne

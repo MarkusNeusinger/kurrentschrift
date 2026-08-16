@@ -98,6 +98,10 @@ interface WorkbenchState {
   // Refetch the letter statistics without recomputing them — after an apply,
   // which changed the rows' freshness numbers but not the aggregates.
   refreshLetterStats: () => void;
+  // Refetch ONLY the word traces (uncached read) — the word editor's save
+  // replaces one row, and the evidence views must show the stored state, not
+  // the load-time snapshot.
+  refreshWordTraces: () => void;
 }
 
 const Ctx = createContext<WorkbenchState | null>(null);
@@ -120,6 +124,9 @@ export function WorkbenchDataProvider({ children }: { children: ReactNode }) {
   // Bumped by a rebuild so THAT layer refetches (a rebuild replaces wholesale).
   const [letterTick, setLetterTick] = useState(0);
   const [pairTick, setPairTick] = useState(0);
+  // Bumped by a word-editor save so the traces refetch without reloading the
+  // whole occurrence bundle (samples/instances are untouched by that save).
+  const [wordTick, setWordTick] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -148,6 +155,25 @@ export function WorkbenchDataProvider({ children }: { children: ReactNode }) {
       cancelled = true;
     };
   }, [sourceId]);
+
+  // The word-trace refetch: one list, replacing wholesale. Tick 0 is the
+  // initial load above — this effect only ever runs a REfetch, and it runs
+  // right after a write, so it busts past any intermediate cache (the
+  // endpoint itself is uncached; `bust` covers whatever sits in between).
+  useEffect(() => {
+    if (wordTick === 0) return;
+    let cancelled = false;
+    listWordInstances(sourceId, { bust: Date.now() }, { retries: 2 })
+      .then((words) => {
+        if (!cancelled) setWordRows(words);
+      })
+      .catch(() => {
+        // The stale rows stay — a failed refresh must not blank the evidence.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [sourceId, wordTick]);
 
   // WHICH hand comes from the loaded rows: the most frequent non-null hand_id
   // across all three occurrence levels. Rows may predate the hands wiring and
@@ -269,6 +295,8 @@ export function WorkbenchDataProvider({ children }: { children: ReactNode }) {
   // numbers (`laufform_dev_xh`) are not.
   const refreshLetterStats = useCallback(() => setLetterTick((n) => n + 1), []);
 
+  const refreshWordTraces = useCallback(() => setWordTick((n) => n + 1), []);
+
   const rebuildLetterStats = useCallback(async () => {
     if (!handId) throw new Error('no hand');
     const out = await rebuildAggregates(handId);
@@ -313,6 +341,7 @@ export function WorkbenchDataProvider({ children }: { children: ReactNode }) {
       rebuildLetterStats: handId ? rebuildLetterStats : undefined,
       rebuildPairStats: handId ? rebuildPairStats : undefined,
       refreshLetterStats,
+      refreshWordTraces,
     }),
     [
       wordRows,

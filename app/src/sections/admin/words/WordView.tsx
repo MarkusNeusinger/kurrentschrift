@@ -43,6 +43,7 @@ import { joinsOfText, joinsUrl, keysOfText, lettersUrl, readWordFocus, wordsUrl 
 import { badness } from '@/sections/admin/shell/model';
 import { garamond } from '@/styles/paper';
 
+import { AuthoredTraceReview } from './AuthoredTraceReview';
 import { WordSpineCard } from './WordSpineCard';
 
 const WORD_H = 130; // px — the composed word, large enough to judge the rhythm
@@ -59,7 +60,9 @@ export function WordView() {
   // The input is free until submitted — typing must not re-compose on every
   // keystroke (each distinct text is a server composition).
   const [draft, setDraft] = useState(text ?? '');
-  const [mode, setMode] = useState<WordCompareMode>('words');
+  // The overview's third tab is not a compare mode: it stacks the hand-authored
+  // traces alone, as a quality pass over one's own pen work.
+  const [mode, setMode] = useState<WordCompareMode | 'authored'>('words');
   const [filter, setFilter] = useState('');
   // What is drawn OVER the specimen crop. The overview defaults to the plain
   // side-by-side (crop | wie geschrieben) — the same first look the letters
@@ -167,27 +170,35 @@ export function WordView() {
             size="small"
             exclusive
             value={mode}
-            onChange={(_e, next: WordCompareMode | null) => next && setMode(next)}
+            onChange={(_e, next: WordCompareMode | 'authored' | null) => next && setMode(next)}
             sx={{ mt: 0.25 }}
           >
             <ToggleButton value="words">{de.admin.compare.tabWords}</ToggleButton>
             <ToggleButton value="other">{de.admin.compare.tabOther}</ToggleButton>
+            <ToggleButton value="authored">{t.tabAuthored}</ToggleButton>
           </ToggleButtonGroup>
           {/* The registered overlay is the sharpest error-finding view the
               project has — engine ink projected onto the specimen pixels — so
-              it stays one switch away and ON by default, as it was before. */}
-          <FormControlLabel
-            sx={{ mt: 0.25 }}
-            control={<Switch size="small" checked={overlay} onChange={(e) => setOverlay(e.target.checked)} />}
-            label={<Typography variant="caption">{de.admin.compare.overlayToggle}</Typography>}
-          />
+              it stays one switch away and ON by default, as it was before.
+              The authored review has no engine layer, so the switch hides. */}
+          {mode !== 'authored' && (
+            <FormControlLabel
+              sx={{ mt: 0.25 }}
+              control={<Switch size="small" checked={overlay} onChange={(e) => setOverlay(e.target.checked)} />}
+              label={<Typography variant="caption">{de.admin.compare.overlayToggle}</Typography>}
+            />
+          )}
         </Box>
-        <WordComparison
-          mode={mode}
-          overlay={overlay}
-          filterText={filter}
-          onPick={(sample) => focus(sample.word, sample.id)}
-        />
+        {mode === 'authored' ? (
+          <AuthoredTraceReview filterText={filter} onPickWord={(word, sampleId) => focus(word, sampleId)} />
+        ) : (
+          <WordComparison
+            mode={mode}
+            overlay={overlay}
+            filterText={filter}
+            onPick={(sample) => focus(sample.word, sample.id)}
+          />
+        )}
       </Box>
     );
   }
@@ -378,10 +389,11 @@ export function WordView() {
               fallbackHandId={source?.hand_id ?? null}
               onClose={() => setEditing(null)}
               // A saved authored trace replaces the row the workbench holds —
-              // the URL re-navigation is the cheapest honest refresh: it lands
-              // on the same word and remounts the evidence.
+              // refetch the traces so the evidence shows the stored state, and
+              // re-navigate so the URL still names the specimen.
               onSaved={() => {
                 setEditing(null);
+                workbench.refreshWordTraces();
                 navigate(wordsUrl(text, sample.id), { replace: true });
               }}
             />

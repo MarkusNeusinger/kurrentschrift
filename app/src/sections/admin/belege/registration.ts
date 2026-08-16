@@ -31,6 +31,46 @@ export const MAX_TRACE_COORD = 100;
 /** Rounding of the stored coordinates — 1e-4 xh is far below pen precision. */
 const COORD_DECIMALS = 4;
 
+// The wordbench frame gate's tolerances (export_fixtures._frame_stale_reason):
+// a stored registration drifted farther than this from the sidecar lineature
+// is stamped `frame_stale` on the next fixture refill and drops out of the
+// bench. Re-declared here like the schema bounds above — the SPA badges and
+// heals what the exporter would reject.
+export const FRAME_BASELINE_TOL_PX = 4;
+export const FRAME_XH_TOL_PX = 0.51;
+
+/**
+ * Whether a resolved registration no longer fits the sample's own lineature —
+ * the SPA twin of the exporter's frame gate. `traceRegistration` already folds
+ * `ty` into `baselineRow`, exactly like the exporter's `baseline_row + ty`;
+ * `sample.baseline_y`/`midband_y` are crop-local rows.
+ */
+export function frameStale(
+  reg: TraceRegistration,
+  sample: { baseline_y: number; midband_y: number },
+): boolean {
+  return (
+    Math.abs(reg.baselineRow - sample.baseline_y) > FRAME_BASELINE_TOL_PX ||
+    Math.abs(reg.xh - (sample.baseline_y - sample.midband_y)) > FRAME_XH_TOL_PX
+  );
+}
+
+/**
+ * Re-express strokes drawn in one registration frame in another: through the
+ * old frame into crop pixels, back through the new one. The line keeps its
+ * place on the CROP PIXELS — which is all a stale frame still knows — while
+ * the coordinates re-anchor to the frame the sidecar defines today. The word
+ * editor uses this to heal a `frame_stale` row on open, so a save genuinely
+ * clears the badge instead of echoing the stale frame back.
+ */
+export function reanchorStrokes(
+  strokes: TracePoint[][],
+  from: TraceRegistration,
+  to: TraceRegistration,
+): TracePoint[][] {
+  return strokes.map((stroke) => stroke.map((p) => cropToTrace(to, traceToCrop(from, p))));
+}
+
 /**
  * The row's own registration if the harvest measured one, else the sidecar's
  * lineature — the fallback keeps a hand-written row without measurements
@@ -69,6 +109,35 @@ export const cropToTrace = (r: TraceRegistration, [px, py]: TracePoint): TracePo
 /** One stroke as an SVG path in trace units (draw it inside registrationMatrix). */
 export const strokePathD = (stroke: TracePoint[]): string =>
   stroke.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x},${y}`).join(' ');
+
+/**
+ * Warp a snapshot of the strokes toward a drag (the editor's Anpassen mode,
+ * same mechanism as the wizard's Weg adjust): every point within `radius`
+ * (x-height units) of the grab point moves by the drag delta, weighted by a
+ * smoothstep falloff — the grabbed spot follows the pointer fully, the line
+ * eases back to its stored shape at the rim, so a local wobble irons out
+ * without a hard kink. Strokes are never merged, split, reordered or reversed
+ * (the bench measures pen-lift structure and writing order), and no points
+ * are inserted or dropped — only moved.
+ */
+export function warpTraceStrokes(
+  snapshot: TracePoint[][],
+  [grabX, grabY]: TracePoint,
+  dx: number,
+  dy: number,
+  radius: number,
+): TracePoint[][] {
+  const r2 = radius * radius;
+  return snapshot.map((stroke) =>
+    stroke.map((p) => {
+      const d2 = (p[0] - grabX) ** 2 + (p[1] - grabY) ** 2;
+      if (d2 >= r2) return p;
+      const t = 1 - Math.sqrt(d2) / radius;
+      const w = t * t * (3 - 2 * t); // smoothstep
+      return [p[0] + dx * w, p[1] + dy * w] as TracePoint;
+    }),
+  );
+}
 
 const round = (v: number): number => {
   const f = 10 ** COORD_DECIMALS;
