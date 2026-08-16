@@ -5257,3 +5257,23 @@ unter-Befund steht unabhängig davon: wo der Ketten-Fit
 strukturell scheitert, liefert die Karten-Fahrt bereits jetzt
 eine um Faktor 7 bessere Bahn — die Fusion („Vier Augen") hat
 damit ihr erstes gemessenes Argument.
+
+**Vorregistrierter v0.4-Arm (Karten-Vorfahrt in Doppelpass-Zonen),
+VOR seiner ersten Zahl.** Der v0.3-Fund lokalisierte die fehlenden
+Kreuzungen auf den LANGEN geteilten Schienen (Skelett verschmilzt
+die zwei Pässe der Hand über die ganze Überlappungsstrecke); dort
+ist die Schiene DEGENERIERT und die KARTE hat die Wahrheit (das
+Struktur-Soll ist duktus-deterministisch, die Komposition schreibt
+den Doppelpass mit Kreuzung). EIN Knopf: `MAP_PRIORITY_IN_RETRACE`
+(aus/an) — Karten-Samples, die in einer SELBST-Retrace-Zone der
+Karte liegen (Zonen via `core.geometry.detect_retrace_pairs` auf
+den Karten-Strichen, dem Detektor des eingefrorenen Lineals, hier
+nur LESEND auf der Karte), bekommen im Viterbi ausschließlich den
+Brücken-Zustand: der Zug fährt dort die Karte selbst, mit ihrer
+komponierten Kreuzung und ihrem versetzten Doppelpass; außerhalb
+der Zonen ändert sich nichts. Erwartung: die Schienen-Klasse der
+fehlenden Kreuzungen kehrt zurück (und der 4-xh-Doppelritt in
+`und` verschwindet), `aiou` gibt nur INNERHALB der Zonen nach —
+dieselbe Zusatz-Kill-Schranke (Median-Δ > −0,02 verworfen);
+übrige Gates wie v0.1. Zusätzliche QC-Spalte: Karten-Anteil je
+Wort (Brücken-Bogen/Gesamt-Bogen), report-only.
