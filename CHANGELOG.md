@@ -14,6 +14,24 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The O2-trim jitter, pre-registered with both outcomes valid — and
+  the bug turns out to be an accidental class rule** (`core/compose.py`
+  `ENTRY_FLANK_DIP_TOL`, kept at 0.0; §14 „O2-Trim-Jitter"). The K3
+  side find made testable: a tolerance of 0.02 xh on the rising-flank
+  walk restores the intended 0.78 trim for arcade heads whose spline
+  lead-ins jitter in the first step. Measured: word_loss +4e−6 (a
+  wash), pair_loss byte-identical, and exactly THREE words move —
+  splitting precisely along K3's arrival ladder: von (o→n) −0.0126
+  (the restored trim is a clear win there), Zorn/Sporn (o→r) +0.0112
+  and +0.0017 (o→r wants to arrive lower, as K3 measured). Today's
+  strict guard accidentally implements exactly that class split
+  (n lead-ins jitter, r lead-ins do not), and the frozen ruler prefers
+  it by micrometres — so per the pre-registered criterion the bug
+  stays, documented instead of silent, and the real finding is that
+  the UNIFORM O2 target height for arcade heads is wrong: a proper
+  class rule (n high, r lower) goes on the table as its own
+  pre-registration once the confirmation set exists.
+
 - **Lotse v0.5 adopted: map geometry in ride-side double zones — the
   first crossings return, and the fusion ceiling gets its number**
   (`tools/inkpilot`, §14 „Route Lotse v0.5"). The combination of the

@@ -305,6 +305,12 @@ TUCK_Y0 = 0.6
 # the fitted arrivals (0.58–0.70) — the join lands on the upper flank.
 HIGH_COUPLE_EXIT_Y = 0.7
 ENTRY_COUPLE_Y = 0.78
+# The rising-flank walk of _entry_couple_index tolerates this much drop per
+# sample (xh) before reading a head turn: the spline-resampled lead-ins carry
+# ~0.0004-xh jitter that the strict guard mistook for a turn, silently
+# disabling the 0.78 trim for arcade heads (P3-K3 side find, §14 „O2-Trim-
+# Jitter"). 0.0 = the historical strict guard.
+ENTRY_FLANK_DIP_TOL = 0.0
 # Arm fusion (the jul30 mockup on "re"): the arm's small bow rolls DIRECTLY
 # onto the round body's top — the pair is pulled together until B's top
 # couple point (the ENTRY_COUPLE_Y trim) sits ARM_FUSE_GAP right of the
@@ -686,14 +692,17 @@ def _entry_couple_index(line: list[Point], target_y: float = ENTRY_COUPLE_Y) -> 
     height, it turns downward before reaching it (then its head is a real
     form, not a stub), or only the stroke's very last sample reaches it —
     the trimmed line must keep at least two samples for the entry-tangent
-    estimate.
+    estimate. "Turns downward" tolerates ENTRY_FLANK_DIP_TOL of drop per
+    sample: the spline-resampled lead-ins carry sub-0.001-xh jitter that
+    a strict monotony guard read as a head turn, which silently disabled
+    the 0.78 trim for arcade heads (found by P3-K3, §14).
     """
     if len(line) < 3 or line[0][1] >= target_y:
         return 0
     for i in range(1, len(line) - 1):
         if line[i][1] >= target_y:
             return i
-        if line[i][1] < line[i - 1][1]:
+        if line[i][1] < line[i - 1][1] - ENTRY_FLANK_DIP_TOL:
             return 0
     return 0
 
