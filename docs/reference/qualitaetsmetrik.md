@@ -5373,3 +5373,24 @@ zusätzlich: erzeugt die Karten-Geometrie in den Zonen UNECHTE
 Kreuzungen über das Soll (`cross_spurious` netto > +2), ist die
 Karten-Platzierung dort zu schlecht — verworfen, zurück zur
 Sub-Strich-Trennung. Basis ist der adoptierte Stand (Auslauf 1,0).
+
+**Gemessen `aug16` — ALLE Gates bestehen, ADOPTIERT.** Dev,
+10/10 ok: dtw-Median 0,1007 → **0,0853**; `und` 0,0874 →
+**0,0431** — schlägt dort erstmals die KETTE (0,0491); **5 der 23
+fehlenden Kreuzungen kehren zurück** (18 fehlend, +1 unecht —
+innerhalb der ≤+2-Schranke); `retrace_spurious` 14 → 11,
+`retrace_arc_ratio` 2,48 → **1,66** (Richtung Hand, wie
+vorregistriert); `aiou` −0,002 (weit innerhalb der Schranke).
+`RIDE_DOUBLE_MAP_PRIORITY` = True. Routen-Stand: **0,0853 gegen
+Kette 0,0620 (Lücke 1,4×)**, und die Komplementarität ist jetzt
+messbar scharf — der Lotse schlägt die Kette auf genau den
+STRUKTUR-schweren Wörtern (unter −0,387 · muß −0,129 ·
+und −0,006), verliert auf den einfachen (die glatte
+Regularisierung der Kette gewinnt, wo nichts kollabiert):
+mit +0,042 · will +0,081 · zwei +0,056. Das ORAKEL der Fusion
+(je Wort das bessere Verfahren, nur als Decke, kein Ergebnis):
+Median **0,0563** — besser als jede Einzelroute, schlechtestes
+Wort 0,113 statt 0,450 (Kette) bzw. 0,132 (Lotse). „Vier Augen"
+hat damit seine erste bezifferte Decke; der ehrliche
+Auswahl-Mechanismus (ohne Referenz!) ist die offene Frage — die
+Lehre aus B1 (der ordnungs-blinde Ranker) gilt hier wörtlich.

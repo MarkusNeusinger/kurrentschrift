@@ -14,6 +14,24 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Lotse v0.5 adopted: map geometry in ride-side double zones — the
+  first crossings return, and the fusion ceiling gets its number**
+  (`tools/inkpilot`, §14 „Route Lotse v0.5"). The combination of the
+  two parked arms — A5's detection (which rail pixels does the word
+  ride twice) with v0.4's geometry (ride the composed map there, it
+  carries the crossing): the first pass keeps the ink's mid-line,
+  every later pass takes the map. All pre-registered gates pass: dev
+  dtw median 0.101 → 0.085, `und` 0.087 → 0.043 (now beating the
+  chain there), 5 of 23 missing crossings return (+1 spurious, within
+  bounds), retrace arc ratio 2.48 → 1.66, aiou −0.002. Route standing
+  0.085 vs the chain's 0.062 (gap 1.4×) with sharp complementarity —
+  the Lotse wins exactly the structure-heavy words (unter −0.387,
+  muß −0.129), the chain the smooth ones. The per-word oracle fusion
+  („Vier Augen" ceiling, not a result) now measures 0.056 — better
+  than either route alone; the honest reference-free selector remains
+  the open question, with B1's order-blind-ranker lesson applying
+  verbatim.
+
 - **Lotse arms round two: the rail run-out (owner find) adopted, three
   others honestly parked** (`tools/inkpilot`, §14 arms). The owner's
   review find — "the d line stops at the crossing" — turned into the
