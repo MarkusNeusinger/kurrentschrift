@@ -25,6 +25,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--style", default="suetterlin")
     parser.add_argument("--out", type=Path, default=Path("temp/inkpilot.json"))
     args = parser.parse_args(argv)
+    if not args.ids and not args.all:
+        parser.error("name case ids or pass --all — otherwise the run writes an empty candidate file")
 
     wanted = set(args.ids)
     rows = []

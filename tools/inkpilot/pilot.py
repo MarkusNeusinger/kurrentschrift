@@ -113,7 +113,7 @@ class PilotGraph:
             d, node = heapq.heappop(heap)
             if d > dist.get(node, float("inf")):
                 continue
-            for other, n in adj.get(node, ()):  # noqa: B905 - pairs, not zip
+            for other, n in adj.get(node, ()):
                 nd = d + n
                 if nd < dist.get(other, float("inf")):
                     dist[other] = nd

@@ -105,7 +105,7 @@ FOLLOWER_MARKERS = ("follow", "folger", "wächter", "waechter", "guard")
 CONTROL_MARKERS = ("kontrolle", "routeg", "control", "nullprobe")
 # The Lotse (tools/inkpilot) gets a pinned vivid pink: the order-based
 # palette handed it a hue that vanished against the sepia plate (owner
-# review of the first Sichtprüfung, 2026-08-16).
+# review of the first inspection page, 2026-08-16).
 COLOR_PILOT = "#e91e63"
 PILOT_MARKERS = ("lotse", "pilot")
 
