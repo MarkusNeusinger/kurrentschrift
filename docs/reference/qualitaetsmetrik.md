@@ -5252,7 +5252,34 @@ kehren am KNOTEN zurück (nicht an Zonen-Enden wie beim
 Parallel-Versatz), dtw fällt auch auf kreuzungsarmen Wörtern
 leicht (Umweg-Begradigung); `aiou` gibt in der
 Knoten-Nachbarschaft nach — dieselbe Zusatz-Kill-Schranke wie
-A5 (Median-Δ > −0,02 verworfen). Übrige Gates wie v0.1. Der
+A5 (Median-Δ > −0,02 verworfen). Übrige Gates wie v0.1.
+
+**v0.3 gemessen `aug16` — verworfen; der Fund lokalisiert die
+fehlenden Kreuzungen endgültig.** Leiter (dev, 10/10 ok):
+1,0 → dtw 0,1211 · aiou 0,702 (−0,045!) · Kreuzungen 23 → 21
+fehlend; 1,5 → dtw 0,1252 · aiou 0,637 (−0,110) · 19 fehlend.
+Beide Stufen vom aiou-Zusatz-Kill VERWORFEN, beide Knöpfe bleiben
+0,0. Der Fund: nur 2–4 der 23 fehlenden Kreuzungen sitzen an
+Punkt-Knoten — die Mehrheit liegt auf **LANGEN geteilten
+Schienen** (bis 4 xh: der Schleife-auf-Stamm-Kollaps der
+Skelettierung verschmilzt die zwei Pässe der Hand über die ganze
+Überlappungsstrecke), und dort erreicht keine lokale
+Knoten-Chirurgie sie; die Sehnen kosten dafür ÜBERALL Deckung
+(auch Einfach-Pässe durch gekrümmte Knoten werden begradigt, wo
+die Feder wirklich kurvte). Damit sind die drei Lotse-Verluste
+mechanisch vollständig kartiert und die zwei ehrlichen Wege
+benannt (§7.9): (i) **Sub-Strich-Trennung aus Breiten-Evidenz
+über ganze Zonen** — wo die gemessene Breite die
+Einfachstrich-Breite deutlich übersteigt, liegen zwei Pässe in
+der Tinte; ihre Trennung ist ein eigenes Forschungsstück (die
+A5-Intuition war über die EVIDENZ richtig und über die GEOMETRIE
+falsch); (ii) pragmatisch die **Karten-Vorfahrt in
+Doppelpass-Zonen** — der Lotse hält die Karte ohnehin in der
+Hand, und die Karte HAT die Kreuzung (das Soll ist
+duktus-deterministisch): in Zonen, die die Karte als Doppelpass
+ausweist, fährt der Zug die KARTE statt der degenerierten
+Schiene — der Brücken-Modus, gezielt eingesetzt. Beides eigene
+Vorregistrierungen; v0.1 bleibt der gemessene Stand der Route. Der
 unter-Befund steht unabhängig davon: wo der Ketten-Fit
 strukturell scheitert, liefert die Karten-Fahrt bereits jetzt
 eine um Faktor 7 bessere Bahn — die Fusion („Vier Augen") hat
