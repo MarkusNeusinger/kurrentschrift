@@ -5025,3 +5025,35 @@ ein Bug, kein Tuning-Fall); Laufzeit im Mittel > 5 min/Wort →
 Empfehlung nur mit benanntem Budget. Ergebnis wird hier datiert
 nachgetragen; die ADOPTION selbst (Re-Harvest, DB) bleibt ein
 eigener Schritt hinter Owner-Go.
+
+**Gemessen `aug16` — drei Gates bestehen glänzend, das
+Struktur-Gate findet die LÜCKE des einseitigen Wächters.** Beide
+Läufe 63/63 ok (roh 87 min · gewacht 5,3 h = 302 s/Wort — HAARE
+über dem 5-min-Budget von Gate (e), benannt). (i) dev-`dtw_xh`:
+Median-Δ exakt 0,0000, drei Wörter BESSER (unter −0,0300 ·
+und −0,0077 · mit −0,0003), keins schlechter — mehr als
+Neutralität. (iii) `aiou` fällt NIRGENDS (min-Δ 0,0000, max
++0,1103). (iv) Marken byte-gleich. ABER Gate (ii): 1 Wort näher
+am Soll (unter 3→2, eine Zonen-Erfindung weg), 59 gleich,
+**3 Wörter WEITER weg** — und alle drei sind Kreuzungs-VERLUSTE
+(Sporn cross 3→2 bei Soll 3 · einer 1→0 bei Soll 1 · er-3 1→0
+bei Soll 1): der released Wächter deckelt nur ERFINDUNGEN über
+das Init-Budget, die Tinten-Anziehung darf aber ungestraft eine
+kleine Schleife KOLLABIEREN. Per Kill-Kriterium NICHT adoptiert.
+Rettungsweg (benannt nach §7.9-Regel, hier sofort ausgeführt):
+**der zweiseitige Wächter** — die K0-Invariante sagt, die
+Strukturzahl ist deterministisch aus dem Duktus, also ist das
+Init-Budget in BEIDE Richtungen bindend; ein Round, der eine
+Init-Kreuzung verliert, wird genauso zurückgewiesen wie einer,
+der eine erfindet.
+
+**Vorregistrierter Folge-Arm (zweiseitig), VOR seiner ersten
+Zahl:** identische Konfiguration, `structure_guard` prüft
+Gleichheit statt Obergrenze (`--structure-guard-two-sided`,
+Retry-Leiter unverändert). Erwartung: die drei Verluste
+verschwinden (Retry oder Rückfall auf die Vorrunden-Geometrie),
+unter behält seinen Gewinn, dev-dtw bleibt im (i)-Band —
+plausibel opfert `unter` einen Teil der −0,0300, wo der Gewinn
+aus einem Verlust-Round kam. Gates unverändert die von oben;
+Kill unverändert: EIN Wort weiter vom Soll als roh → nicht
+adoptiert.
