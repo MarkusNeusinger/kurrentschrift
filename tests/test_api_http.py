@@ -278,8 +278,8 @@ async def test_write_glyphs_widen_round_bodies_on_the_gleichzug_path(api: Harnes
         "e",
         anchors=anchors,
         advance=x2 + 0.45,
-        entry={"xy": [0.0, 0.55]},
-        exit_pt={"xy": [x2 + 0.45, 0.5]},
+        entry={"xy": [0.0, 0.55], "tangent_deg": 40.0, "coupling": "midband"},
+        exit_pt={"xy": [x2 + 0.45, 0.5], "tangent_deg": 40.0, "coupling": "midband"},
         trace_meta={"stroke_starts": [0]},
     )
     res = await api.client.request("GET", f"/sources/{source_id}/write/glyphs", params={"keys": "e"})
@@ -289,6 +289,7 @@ async def test_write_glyphs_widen_round_bodies_on_the_gleichzug_path(api: Harnes
     assert payload["advance"] == pytest.approx(x2 + 0.45 + grow, abs=1e-6)
     assert payload["exit_pt"]["xy"][0] == pytest.approx(x2 + 0.45 + grow, abs=1e-6)
     assert payload["entry"]["xy"] == [0.0, 0.55]  # left of the body — stays put
+    assert payload["exit_pt"]["tangent_deg"] == 40.0  # direction rides along untouched
 
 
 async def test_write_word_happy_path_with_seeded_templates(api: Harness):

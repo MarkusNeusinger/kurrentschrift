@@ -12,9 +12,7 @@ the other.
 
 from __future__ import annotations
 
-from types import SimpleNamespace
-
-from core.database.models import template_render_row
+from core.database.models import Template, template_render_row
 from tools.wordbench.export_fixtures import _template_dict
 
 
@@ -23,39 +21,43 @@ from tools.wordbench.export_fixtures import _template_dict
 FIXTURE_BOOKKEEPING = {"glyph_key", "updated_at"}
 
 
-def _stub_template() -> SimpleNamespace:
-    return SimpleNamespace(
+def _transient_template() -> Template:
+    # A real (never-flushed) ORM instance: what both builders actually consume.
+    return Template(
+        style_id="teststyle",
         glyph_key="e",
         glyph="e",
+        variant=0,
         advance=0.45,
-        entry={"xy": [0.0, 0.0], "tangent_deg": 60.0},
-        exit_pt={"xy": [0.45, 0.0], "tangent_deg": -60.0},
+        entry={"xy": [0.0, 0.0], "tangent_deg": 60.0, "coupling": "baseline"},
+        exit_pt={"xy": [0.45, 0.0], "tangent_deg": -60.0, "coupling": "baseline"},
         anchors=[[0.0, 0.0], [0.2, 1.0], [0.45, 0.0]],
         half_widths=[0.05, 0.05, 0.05],
+        raw_path=[],
         trace_meta={"stroke_starts": [0]},
-        updated_at=None,
+        measurements={},
     )
 
 
 def test_render_row_carries_the_widening_key() -> None:
-    assert template_render_row(_stub_template())["glyph"] == "e"
+    assert template_render_row(_transient_template())["glyph"] == "e"
 
 
 def test_fixture_exporter_row_is_the_render_row_plus_bookkeeping() -> None:
-    stub = _stub_template()
-    row = template_render_row(stub)
-    fixture = _template_dict(stub)
+    template = _transient_template()
+    row = template_render_row(template)
+    fixture = _template_dict(template)
     assert set(fixture) == set(row) | FIXTURE_BOOKKEEPING
     for key, value in row.items():
         assert fixture[key] == value, key
 
 
 def test_render_row_tolerates_empty_json_fields() -> None:
-    stub = _stub_template()
-    stub.entry = None
-    stub.exit_pt = None
-    stub.trace_meta = None
-    row = template_render_row(stub)
+    template = _transient_template()
+    template.entry = None
+    template.exit_pt = None
+    template.trace_meta = None
+    row = template_render_row(template)
     assert row["entry"] == {}
     assert row["exit_pt"] == {}
     assert row["trace_meta"] == {}

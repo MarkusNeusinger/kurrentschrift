@@ -276,9 +276,9 @@ class Template(Base):
     style: Mapped[Style] = relationship(back_populates="templates")
 
 
-def template_render_row(t) -> dict:
-    """`Template` (or anything with its attributes) → the plain dict the render
-    layer consumes (`core.pipeline.render_payload_for_template`).
+def template_render_row(t: Template) -> dict:
+    """`Template` → the plain dict the render layer consumes
+    (`core.pipeline.render_payload_for_template`).
 
     THE single row builder for every production render path — `/write/*` and
     the labs' live-DB mirror (`tools/wordlab/cases.py`). `glyph` belongs in it:
