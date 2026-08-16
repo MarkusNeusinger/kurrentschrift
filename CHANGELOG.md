@@ -14,6 +14,16 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Durable working rules lifted from machine-local session memory into
+  the repo instructions** (`CLAUDE.md` guardrails + the
+  `copilot-instructions.md` mirror), so cloud/web sessions — which never
+  see the local memory directory — inherit them: the rescue-path duty for
+  rejected measures, the squash-merge race recovery (fresh branch +
+  cherry-pick, wait for "green and review-clean"), Opus for delegated
+  agents (Claude-side only), BLAS thread pinning for solver measurement
+  runs, no AI-development disclosure on the public site, and legibility
+  over period authenticity in UI.
+
 - **The O2-trim jitter, pre-registered with both outcomes valid — and
   the bug turns out to be an accidental class rule** (`core/compose.py`
   `ENTRY_FLANK_DIP_TOL`, kept at 0.0; §14 „O2-Trim-Jitter"). The K3

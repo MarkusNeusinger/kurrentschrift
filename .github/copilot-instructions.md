@@ -101,6 +101,22 @@ agent working in this repo:
   before adopting; an honest negative result that redirects the work is a
   valid outcome. CPU time on offline measurement runs is not a reason to
   cut a corner.
+- **Every rejected measure names its rescue paths** (owner directive,
+  2026-08-16): a `qualitaetsmetrik.md` §14 entry that closes as an honest
+  negative ends with the named ways it could still reach the goal (new
+  mechanism, new evidence, new sensor — each with a fresh pre-registration;
+  never the same knob re-run with softer gates), and the standing table
+  `docs/proposals/tintenfolger.md` §7.9 gets its row in the same PR.
+- **Solver measurement runs must pin BLAS threads**
+  (`OPENBLAS_NUM_THREADS`/`OMP_NUM_THREADS`; finding of 2026-08-16,
+  `qualitaetsmetrik.md` §14): the chain solve is not bit-reproducible across
+  thread environments, so cross-run comparisons are only valid within one
+  pinned setting.
+- **No AI-development disclosure on the public site** (owner directive):
+  legal/about pages carry no „KI-gestützt entwickelt" notices.
+- **Legibility over period authenticity in UI** (owner Leitsatz): no broken
+  type in navigation, headlines or body copy; historic letterforms appear
+  only as clearly marked specimens.
 - **Claude Code sessions** additionally route work through verified skills
   under `.claude/skills/` (`verify-core` / `verify-api` / `verify-frontend` /
   `verify-migrations`, `write-docs`, `audit-licenses`, `open-pr`,

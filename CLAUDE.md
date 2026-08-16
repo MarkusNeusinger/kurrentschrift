@@ -115,6 +115,12 @@ Known gaps without a loop yet: admin write flows against the LIVE DB (the HTTP s
   context — instead of leaving it buried in a chat reply. Korb rows still
   carry the protocol; the Todoist task is the actionable pointer.
 - **The perfect result, not the fast one** (owner directive, 2026-08-05): when a cheap symptomatic fix and a correct structural fix compete, take the structural one — even when it looks like a regression at first (the ceiling question of the writing-systems research note). Concretely: fix the model/objective/rule, never mute the alarm; measure with a pre-registered A/B against ground truth (the measured ink) before adopting; an honest negative result that redirects the work is a valid outcome. CPU time on offline measurement runs is not a reason to cut a corner.
+- **Every rejected measure names its rescue paths** (owner directive, 2026-08-16): a §14 entry that closes as an honest negative ends with the named ways it could still reach the goal (new mechanism, new evidence, new sensor — each with a fresh pre-registration; never the same knob re-run with softer gates), and the standing table `docs/proposals/tintenfolger.md` §7.9 gets its row in the same PR.
+- **The owner merges PRs live, and squash-merges can race your last pushes** (seen twice on 2026-08-16): announce "green and review-clean" and prefer waiting for the merge before pushing more; after a race, recover by cutting a fresh branch from the merged main and cherry-picking exactly the missing commits — never re-push the stale branch.
+- **Delegated agents and workflows run on Opus** (owner directive, 2026-08-11): pass `model: opus` when spawning subagents/workflows unless a task clearly needs otherwise.
+- **Solver measurement runs must pin BLAS threads** (`OPENBLAS_NUM_THREADS`/`OMP_NUM_THREADS`, finding of 2026-08-16, `qualitaetsmetrik.md` §14 „Wächter als Produktions-Kette"): the chain solve is not bit-reproducible across thread environments, so cross-run comparisons are only valid within one pinned setting — and pinning also collapses runtimes (63-word chain: 87 → 2.7 min).
+- **No AI-development disclosure on the public site** (owner directive): legal/about pages carry no „KI-gestützt entwickelt" notices; strip AI credits inherited from anyplot templates.
+- **Legibility over period authenticity in UI** (owner Leitsatz): no broken type in navigation, headlines or body copy; historic letterforms appear only as clearly marked specimens.
 
 ## Language conventions (strict)
 
