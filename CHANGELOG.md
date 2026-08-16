@@ -14,6 +14,24 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Lotse arms round two: the rail run-out (owner find) adopted, three
+  others honestly parked** (`tools/inkpilot`, §14 arms). The owner's
+  review find — "the d line stops at the crossing" — turned into the
+  pre-registered rail run-out: a ride ending on a rail that runs
+  unbranched into a degree-1 skeleton endpoint within 1 xh continues
+  to the rail's end (the composed map undershoots inked tips via the
+  loop-exit trim and the +7–10% reach gap; the ink does not). Adopted
+  at 1.0: dev dtw median 0.119 → 0.101, the `und` outlier 0.343 →
+  0.087, aiou up, spurious marks halved, structure untouched by
+  construction. The junction chord (v0.3) and the map right-of-way
+  (v0.4) measured and rejected by their own gates — the missing
+  crossings live on LONG shared rails the skeleton merges over the
+  whole overlap, which neither node surgery nor map-side retrace
+  zones reach; named successors: sub-stroke separation from width
+  evidence, and map geometry in ride-side double zones. Route
+  standing: dev dtw 0.101 vs the chain's 0.062 (gap 2.0× → 1.6×),
+  aiou clearly above the chain.
+
 - **The Lotse route (owner idea): ride the skeleton mid-ink, ask the
   ductus like a map — built, pre-registered, first honest numbers**
   (`tools/inkpilot` + §14 „Route Lotse" + a pinned viewer colour).

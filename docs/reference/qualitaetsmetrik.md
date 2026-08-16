@@ -5252,8 +5252,100 @@ kehren am KNOTEN zurück (nicht an Zonen-Enden wie beim
 Parallel-Versatz), dtw fällt auch auf kreuzungsarmen Wörtern
 leicht (Umweg-Begradigung); `aiou` gibt in der
 Knoten-Nachbarschaft nach — dieselbe Zusatz-Kill-Schranke wie
-A5 (Median-Δ > −0,02 verworfen). Übrige Gates wie v0.1. Der
+A5 (Median-Δ > −0,02 verworfen). Übrige Gates wie v0.1.
+
+**v0.3 gemessen `aug16` — verworfen; der Fund lokalisiert die
+fehlenden Kreuzungen endgültig.** Leiter (dev, 10/10 ok):
+1,0 → dtw 0,1211 · aiou 0,702 (−0,045!) · Kreuzungen 23 → 21
+fehlend; 1,5 → dtw 0,1252 · aiou 0,637 (−0,110) · 19 fehlend.
+Beide Stufen vom aiou-Zusatz-Kill VERWORFEN, beide Knöpfe bleiben
+0,0. Der Fund: nur 2–4 der 23 fehlenden Kreuzungen sitzen an
+Punkt-Knoten — die Mehrheit liegt auf **LANGEN geteilten
+Schienen** (bis 4 xh: der Schleife-auf-Stamm-Kollaps der
+Skelettierung verschmilzt die zwei Pässe der Hand über die ganze
+Überlappungsstrecke), und dort erreicht keine lokale
+Knoten-Chirurgie sie; die Sehnen kosten dafür ÜBERALL Deckung
+(auch Einfach-Pässe durch gekrümmte Knoten werden begradigt, wo
+die Feder wirklich kurvte). Damit sind die drei Lotse-Verluste
+mechanisch vollständig kartiert und die zwei ehrlichen Wege
+benannt (§7.9): (i) **Sub-Strich-Trennung aus Breiten-Evidenz
+über ganze Zonen** — wo die gemessene Breite die
+Einfachstrich-Breite deutlich übersteigt, liegen zwei Pässe in
+der Tinte; ihre Trennung ist ein eigenes Forschungsstück (die
+A5-Intuition war über die EVIDENZ richtig und über die GEOMETRIE
+falsch); (ii) pragmatisch die **Karten-Vorfahrt in
+Doppelpass-Zonen** — der Lotse hält die Karte ohnehin in der
+Hand, und die Karte HAT die Kreuzung (das Soll ist
+duktus-deterministisch): in Zonen, die die Karte als Doppelpass
+ausweist, fährt der Zug die KARTE statt der degenerierten
+Schiene — der Brücken-Modus, gezielt eingesetzt. Beides eigene
+Vorregistrierungen; v0.1 bleibt der gemessene Stand der Route. Der
 unter-Befund steht unabhängig davon: wo der Ketten-Fit
 strukturell scheitert, liefert die Karten-Fahrt bereits jetzt
 eine um Faktor 7 bessere Bahn — die Fusion („Vier Augen") hat
 damit ihr erstes gemessenes Argument.
+
+**Vorregistrierter v0.4-Arm (Karten-Vorfahrt in Doppelpass-Zonen),
+VOR seiner ersten Zahl.** Der v0.3-Fund lokalisierte die fehlenden
+Kreuzungen auf den LANGEN geteilten Schienen (Skelett verschmilzt
+die zwei Pässe der Hand über die ganze Überlappungsstrecke); dort
+ist die Schiene DEGENERIERT und die KARTE hat die Wahrheit (das
+Struktur-Soll ist duktus-deterministisch, die Komposition schreibt
+den Doppelpass mit Kreuzung). EIN Knopf: `MAP_PRIORITY_IN_RETRACE`
+(aus/an) — Karten-Samples, die in einer SELBST-Retrace-Zone der
+Karte liegen (Zonen via `core.geometry.detect_retrace_pairs` auf
+den Karten-Strichen, dem Detektor des eingefrorenen Lineals, hier
+nur LESEND auf der Karte), bekommen im Viterbi ausschließlich den
+Brücken-Zustand: der Zug fährt dort die Karte selbst, mit ihrer
+komponierten Kreuzung und ihrem versetzten Doppelpass; außerhalb
+der Zonen ändert sich nichts. Erwartung: die Schienen-Klasse der
+fehlenden Kreuzungen kehrt zurück (und der 4-xh-Doppelritt in
+`und` verschwindet), `aiou` gibt nur INNERHALB der Zonen nach —
+dieselbe Zusatz-Kill-Schranke (Median-Δ > −0,02 verworfen);
+übrige Gates wie v0.1. Zusätzliche QC-Spalte: Karten-Anteil je
+Wort (Brücken-Bogen/Gesamt-Bogen), report-only.
+
+**Vorregistrierter Zusatz-Arm (Schienen-Auslauf), VOR seiner
+ersten Zahl — Owner-Fund an der v0.1-Sichtprüfung (2026-08-16):
+„beim d geht die Linie nach der Kreuzung nicht weiter bis zum
+Ende".** Diagnose: die KARTE endet dort, wo die Komposition den
+gebundenen Schleifen-Abgang an der Kreuzung trimmt (Loop-Exit-
+Regel) bzw. wo der komponierte Auslauf generell kürzer reicht als
+die Tinte (der +7–10-%-Reichweiten-Befund der P3-Vorstudie) — und
+der Lotse fährt nur, wohin die Karte führt; die getintete Spitze
+hinter dem letzten Karten-Sample bleibt ungeritten. EIN Knopf:
+`TAIL_RUNOUT_MAX_UNITS` — endet ein Ritt-Strich auf einer
+Schiene, die ohne Verzweigung in einen Grad-1-ENDPUNKT des
+Skeletts ausläuft, und liegt dieser näher als der Knopf (in xh),
+fährt der Zug bis zum Schienen-Ende weiter (symmetrisch am
+Strich-ANFANG). Leiter 0,0 (= aus) / 0,6 / 1,0. Erwartung: die
+d-Spitzen und Wort-Ausläufe schließen (sichtbar + `dtw` an den
+betroffenen Wörtern), `aiou` steigt eher (mehr getintete Bahn
+gedeckt), keine Struktur-Änderung (ein Grad-1-Auslauf kann weder
+kreuzen noch retracen). Kill: verlängert der Auslauf in
+Wirklichkeit einen SPORN des Skeletts (unechte Marken/Spitzen —
+`marks_spurious` oder `dtw` netto schlechter), wird er verworfen.
+
+**Beide Arme gemessen `aug16` — der Owner-Fund-Arm ADOPTIERT, die
+Karten-Vorfahrt ehrliche Null.** (a) Schienen-Auslauf (dev,
+10/10 ok): 0,6 → dtw 0,1053 · 1,0 → **dtw 0,1007** (v0.1: 0,1192),
+`und` **0,3428 → 0,0874** — die fehlende d-/Auslauf-Spitze WAR der
+Ausreißer —, `aiou` 0,747 → 0,765, `marks_spurious` 3 → 1 (der
+verlängerte u-Deckbogen springt zurück über die
+0,8-xh-Marken-Schwelle: auch der Klassifikations-Kipp der
+und-Autopsie heilt), Kreuzungen exakt unverändert (23 fehlend —
+wie konstruiert), `retrace_spurious` 12 → 14 (+2, benannt: zwei
+verlängerte Enden fallen in Deckungs-Zonen). Gates bestanden →
+**ADOPTIERT, `TAIL_RUNOUT_MAX_UNITS` = 1,0.** (b) Karten-Vorfahrt:
+dtw 0,1179 · aiou −0,014 · Kreuzungen 22 statt 23 fehlend (+1
+unecht) · `und` UNVERÄNDERT — die SELBST-Retraces der Karte sind
+in den Dev-Wörtern zu selten (das t mit Stamm-Rückpass kommt nur
+in mit/unter/streiten vor, unds Doppelritt entsteht RITT-seitig
+an einer Tinten-Schleife, die die Karte nur EINMAL passiert): der
+Karten-Trigger war die falsche Zone. VERWORFEN (Erwartung klar
+verfehlt), Knopf bleibt False; benannter Nachfolger: dieselbe
+Karten-Fahrt, aber in RITT-seitig erkannten Doppelzonen (die
+A5-Erkennung, die v0.4-Geometrie — Kombination, eigene Pre-Reg).
+Stand der Route damit: dev-dtw 0,101 gegen Kette 0,062 (Lücke
+2,0× → 1,6×), `aiou` klar über der Kette, Kreuzungs-Kollaps auf
+geteilten Schienen bleibt DER offene Block.
