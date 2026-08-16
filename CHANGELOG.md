@@ -28,9 +28,13 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `TRACEBENCH_DEV_IDS` change take effect at 63/63 as a declared ruler
   change with a dated re-baseline of every standing route. Repeats of
   one word never cross the split boundary; movement is only ever blind
-  and pre-registered toward dev, never back. The Abb.-20 pair drills
-  stay a separate sealed pool (the K3 word/drill lesson); the glossary
-  entry "Referenzsatz" carries the revised invariant.
+  and pre-registered toward dev, never back. The 33 Abb.-20 pair
+  drills stay outside the word split (the K3 word/drill lesson) and
+  get their own blind two-way split drawn now, while no drill was ever
+  traced or benched: 18 open (for pre-registered word/drill diagnoses
+  and future drill tuning) and 15 sealed, keyed by the left letter's
+  exit class; the glossary entry "Referenzsatz" carries the revised
+  invariant.
 
 - **The word editor gets an adjust mode, and the Wörter view a review
   stack of the hand-authored traces** (Werkbank W3). „Anpassen" — the

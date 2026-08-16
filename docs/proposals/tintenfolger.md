@@ -224,14 +224,23 @@ darf EIN weiteres Versal-Wort mit eigener Vorregistrierung von A nach
 Dev wandern — BEVOR die erste Kapital-Tuning-Zahl gelesen ist, nie
 danach. Der umgekehrte Weg (Dev → Bestätigung) existiert nicht.
 
-**Drills sind keine Wörter.** Die Abb.-20-Paare bilden einen EIGENEN
-Pool außerhalb dieses Splits, standardmäßig versiegelt; geöffnet nur mit
-benannter Wort/Drill-Frage (die K3-Lektion aus §7.9: derselbe Join
+**Drills sind keine Wörter.** Die 33 Abb.-20-Paare bilden einen EIGENEN
+Pool außerhalb des Wort-Splits (die K3-Lektion aus §7.9: derselbe Join
 verhält sich im Wort und im Drill gegenläufig — gemischt verwässern
-beide Signale). Eine Dev/Bestätigungs-Teilung der Drills wird erst
-gezogen, wenn erstmals Drill-TUNING vorregistriert wird — blind nach
-demselben Muster (bis dahin ist kein Drill je getraced oder
-trace-gebencht worden, die Blindheit ist vollständig).
+beide Signale). Ihre eigene Zweiteilung wird HIERMIT gezogen — jetzt,
+weil kein Drill je getraced oder trace-gebencht wurde und die Blindheit
+darum vollständig ist. Schlüssel: Exit-Klasse des linken Buchstabens
+(Kringel b/o · Schleife d/s · r-Arm · Rückwärts-Curl v/w/x · ſ · ß ·
+Versal), je Klasse alphabetisch alternierend. Es gibt keinen
+Drill-Dev-Zwang (nichts ist verbrannt), also zwei Gruppen:
+
+- **Drill-offen (18):** bi · Bi · bs · bz · df · do · ds · dx · In ·
+  rb · rx · sa · ssi · vp · vx · wi · Wu · ßi — für vorregistrierte
+  Wort/Drill-Diagnosen und etwaiges künftiges Drill-Tuning.
+- **Drill-versiegelt (15):** bp · bx · dk · dp · dt · Du · dz · Of ·
+  on · rp · rz · sg · vs · vz · xi — Bestätigungsmaterial, öffnet wie
+  Bestätigung B erst für große Entscheidungen. (IDs wie im Sidecar;
+  sa/sg/ssi schreiben auf der Platte ſ.)
 
 ## 3 Route A: die Verfeinerungsstufe (`tools/pairlab/follow.py`)
 
