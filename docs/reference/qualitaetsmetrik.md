@@ -5449,3 +5449,29 @@ NACHSCHREIBERS eingeordnet, nicht als Mess-Problem: der
 Feinschliff gehört, wenn überhaupt, an den KONSUMENTEN der Bahn
 (Renderer/Editor-Anzeige, eine reine Darstellungsstufe), nie in
 den gemessenen Kandidaten. §7.9-Zeile entsprechend.
+
+### O2-Trim-Jitter `aug16` — Vorregistrierung: der Bugfix, der auch verlieren darf
+
+Geschrieben und committet VOR der ersten Zahl. Der K3-Nebenfund
+(§14 „Welle 2 · P3"): `_entry_couple_index` bricht seinen
+Flanken-Aufstieg bei JEDEM Mini-Rückgang ab (`y[i] < y[i−1]`,
+ohne Toleranz) — das Spline-Resampling der komponierten Bahnen
+trägt aber ±0,0004-xh-Zittern, und so ist der generische
+O2-0,78-Trim für Arkaden-Köpfe (deren Anstriche das Zittern im
+ersten Schritt zeigen) STILL DEAKTIVIERT: Hoch-Exits in n/m/i/r
+koppeln heute am Chart-Fuß statt am beabsichtigten 0,78-Punkt.
+EIN Knopf: `ENTRY_FLANK_DIP_TOL` — der Aufstiegs-Wächter toleriert
+Rückgänge bis zu diesem Betrag je Sample (in xh); ein echter
+Kopf-Umschwung fällt weit schneller. Leiter 0,0 (= heutiges
+Verhalten) / 0,02 (die Schwelle, die der K3-Lokalscan bereits
+verwendet). BEIDE Ausgänge sind vorregistriert gültig:
+(a) Bench besser oder gleich → Bugfix ADOPTIERT (die beabsichtigte
+O2-Semantik gilt wieder); (b) Bench schlechter → der Bug ist
+TRAGEND (das Lineal bevorzugt die Fuß-Kopplung, die der Bug
+zufällig herstellt — dann ist nicht die Toleranz falsch, sondern
+die O2-Zielhöhe für Arkaden-Köpfe, und DAS wird als eigener
+Befund verbucht; Konstante bleibt 0, Rethink benannt). Gates:
+wordbench `word_loss` + `pair_loss` (eingefroren), `soll_*_agree`
+unverändert, Sichtprüfung der bewegten Wörter; compose-golden
+bricht, wo Hoch-Exit→Arkade in den golden-Wörtern vorkommt
+(wovon o→n! Morgen o→r!) → deklarierte Re-Baseline bei Adoption.
