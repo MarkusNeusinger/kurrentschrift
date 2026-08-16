@@ -5191,7 +5191,25 @@ VERWORFEN als v0.1, Route NICHT geschlossen. Rettungswege
 um einen Bruchteil der GEMESSENEN lokalen Strichbreite
 (`width_map` liegt im Fixture!) senkrecht auseinanderlegen, dann
 schneiden sich die Züge transversal wie die Hand; (ii) der
-Feinschliff über den Pixel-Zickzack; (iii) die und-Autopsie. Der
+Feinschliff über den Pixel-Zickzack; (iii) die und-Autopsie.
+
+**Vorregistrierter v0.2-Arm (A5, versetzter Doppelpass), VOR
+seiner ersten Zahl.** EIN Knopf: `DOUBLE_PASS_OFFSET_FRACTION` —
+jeder Ritt-Punkt auf einem Skelett-Pixel, das im WORT insgesamt
+mehrfach befahren wird, weicht um diesen Bruchteil der lokalen
+EDT-HALBBREITE (`width_map` des Fixtures) NACH RECHTS seiner
+Fahrtrichtung aus; gegenläufige Pässe trennen sich dadurch von
+selbst auf gegenüberliegende Seiten (die Vorzeichen-Konvention
+der Hand), gleichläufige (Overlap-Klasse) bleiben deckungsgleich,
+Einfachpässe und Brücken bleiben unberührt (Tinten-Mitte hält).
+Leiter 0,0 (= aus) / 0,35 / 0,5. Erwartung: die 23 fehlenden
+Kreuzungen kehren mehrheitlich zurück (transversale Schnitte an
+den getrennten Pässen), `retrace_arc_ratio` fällt Richtung 1,
+`und` verliert seinen Doppelritt-Anteil; `aiou` darf dafür
+minimal nachgeben (der Versatz verlässt den Grat um < eine halbe
+Strichbreite — per Definition innerhalb der Tinte). Gates wie
+v0.1; Zusatz-Kill: sinkt `aiou` im Median um > 0,02, kauft der
+Versatz Struktur mit Tinten-Deckung und wird verworfen. Der
 unter-Befund steht unabhängig davon: wo der Ketten-Fit
 strukturell scheitert, liefert die Karten-Fahrt bereits jetzt
 eine um Faktor 7 bessere Bahn — die Fusion („Vier Augen") hat
