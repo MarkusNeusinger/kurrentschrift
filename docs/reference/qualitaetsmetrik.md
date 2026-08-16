@@ -5304,3 +5304,24 @@ fehlenden Kreuzungen kehrt zurück (und der 4-xh-Doppelritt in
 dieselbe Zusatz-Kill-Schranke (Median-Δ > −0,02 verworfen);
 übrige Gates wie v0.1. Zusätzliche QC-Spalte: Karten-Anteil je
 Wort (Brücken-Bogen/Gesamt-Bogen), report-only.
+
+**Vorregistrierter Zusatz-Arm (Schienen-Auslauf), VOR seiner
+ersten Zahl — Owner-Fund an der v0.1-Sichtprüfung (2026-08-16):
+„beim d geht die Linie nach der Kreuzung nicht weiter bis zum
+Ende".** Diagnose: die KARTE endet dort, wo die Komposition den
+gebundenen Schleifen-Abgang an der Kreuzung trimmt (Loop-Exit-
+Regel) bzw. wo der komponierte Auslauf generell kürzer reicht als
+die Tinte (der +7–10-%-Reichweiten-Befund der P3-Vorstudie) — und
+der Lotse fährt nur, wohin die Karte führt; die getintete Spitze
+hinter dem letzten Karten-Sample bleibt ungeritten. EIN Knopf:
+`TAIL_RUNOUT_MAX_UNITS` — endet ein Ritt-Strich auf einer
+Schiene, die ohne Verzweigung in einen Grad-1-ENDPUNKT des
+Skeletts ausläuft, und liegt dieser näher als der Knopf (in xh),
+fährt der Zug bis zum Schienen-Ende weiter (symmetrisch am
+Strich-ANFANG). Leiter 0,0 (= aus) / 0,6 / 1,0. Erwartung: die
+d-Spitzen und Wort-Ausläufe schließen (sichtbar + `dtw` an den
+betroffenen Wörtern), `aiou` steigt eher (mehr getintete Bahn
+gedeckt), keine Struktur-Änderung (ein Grad-1-Auslauf kann weder
+kreuzen noch retracen). Kill: verlängert der Auslauf in
+Wirklichkeit einen SPORN des Skeletts (unechte Marken/Spitzen —
+`marks_spurious` oder `dtw` netto schlechter), wird er verworfen.
