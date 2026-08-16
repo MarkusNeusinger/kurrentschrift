@@ -5475,3 +5475,22 @@ wordbench `word_loss` + `pair_loss` (eingefroren), `soll_*_agree`
 unverändert, Sichtprüfung der bewegten Wörter; compose-golden
 bricht, wo Hoch-Exit→Arkade in den golden-Wörtern vorkommt
 (wovon o→n! Morgen o→r!) → deklarierte Re-Baseline bei Adoption.
+
+**Gemessen `aug16` — Ausgang (b), und der Bug erweist sich als
+ZUFÄLLIGE KLASSENREGEL.** Toleranz 0,02: `word_loss` 0,108091 →
+0,108095 (+4e−6, hauchdünn schlechter), `pair_loss` byte-gleich,
+genau DREI Wörter bewegen sich — und sie spalten sich exakt
+entlang der K3-Ankunfts-Leiter: **von (o→n) −0,0126** (der
+reparierte 0,78-Trim ist für o→n ein klarer Gewinn — mehr als
+K3s 0,685-Lift je holte), aber **Zorn (o→r) +0,0112** und Sporn
+(o→r) +0,0017 (o→r will TIEFER ankommen, wie K3 maß). Der
+Jitter-Bug implementiert heute unabsichtlich genau diesen Split
+(n-Anstriche zittern im ersten Schritt → Fuß; r-Anstriche nicht →
+0,78), und das Lineal bevorzugt ihn netto um Mikrometer.
+VERDIKT: Toleranz bleibt 0,0 (per Kriterium (b)); der eigentliche
+Befund ist, dass die UNIFORME O2-Zielhöhe für Arkaden-Köpfe falsch
+ist und die richtige Struktur eine KLASSENREGEL wäre (n hoch,
+r tiefer — von-Gewinn ernten, ohne Zorn zu bezahlen). Die gehört
+als eigene Pre-Reg auf den Tisch, ehrlicherweise erst mit dem
+Bestätigungssatz (dieselbe n≤8-Vorsicht wie bei P3); bis dahin
+trägt der Bug — dokumentiert statt still.
