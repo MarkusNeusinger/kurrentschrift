@@ -276,6 +276,29 @@ class Template(Base):
     style: Mapped[Style] = relationship(back_populates="templates")
 
 
+def template_render_row(t: Template) -> dict:
+    """`Template` → the plain dict the render layer consumes
+    (`core.pipeline.render_payload_for_template`).
+
+    THE single row builder for every production render path — `/write/*` and
+    the labs' live-DB mirror (`tools/wordlab/cases.py`). `glyph` belongs in it:
+    `core.pipeline._fluent_widen` keys the round-letter body widening on that
+    field, and two hand-rolled copies of this dict each dropped it, so `/write`
+    composed without the widening while the wordbench fixtures (which carry
+    `glyph`) measured with it (issue #289). The fixture exporter's row is this
+    shape plus bookkeeping; `tests/test_render_row.py` pins the two together.
+    """
+    return {
+        "glyph": t.glyph,
+        "anchors": list(t.anchors),
+        "half_widths": list(t.half_widths),
+        "trace_meta": dict(t.trace_meta or {}),
+        "entry": dict(t.entry) if t.entry else {},
+        "exit_pt": dict(t.exit_pt) if t.exit_pt else {},
+        "advance": t.advance,
+    }
+
+
 class Instance(Base):
     """One glyph occurrence extracted from a real text (post-MVP import target).
 

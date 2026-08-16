@@ -56,10 +56,10 @@ locally and held against `GET /write/glyphs` (bit-exact), and rebuilt cases are
 composed locally and held against `GET /write/word` — letter shape bit-exact,
 and glyph placement bit-tight too on an `exact` nib (only a 4dp readback is
 allowed the jitter it causes). A mismatch is a hard failure. The gate compares
-`production_row`s, which is where the one KNOWN fixture-vs-production divergence
-is documented: the exporter's rows carry `glyph`, the write path's do not, and
-`core.pipeline._fluent_widen` keys the round-letter body widening on exactly
-that field.
+the full fixture rows: since issue #289 the write path builds its rows through
+the same `core.database.models.template_render_row` shape, `glyph` included,
+so the fluent body widening (`core.pipeline._fluent_widen`) applies on both
+sides — `--verify` therefore needs a deployed API at or after that fix.
 
 `ADMIN_TOKEN` is read from the environment and sent as `X-Admin-Token`. It is
 never printed, logged or echoed into an error message.
@@ -364,22 +364,6 @@ def hand_id_for(source: dict, pair_rows: list[dict], override: str | None = None
     if hands:
         return hands.most_common(1)[0][0]
     return source.get("hand_id")
-
-
-def production_row(row: dict) -> dict:
-    """A fixture template row as the WRITE path sees it — without `glyph`.
-
-    Not a fix, a calibration for the gate: the exporter's fixture rows carry
-    `glyph` (`export_fixtures._template_dict`) while every production render
-    path drops it (`api/routers/write.py::_template_to_glyph_row`,
-    `tools/wordlab/cases.py::_template_row`). Since `core.pipeline._fluent_widen`
-    keys the round-letter body widening on exactly that field, a fixture row
-    widens e/a/u/o where `/write/word` does not — a PRE-EXISTING property of the
-    frozen fixtures, unrelated to where the rows were read from. The rebuilt
-    rows keep `glyph` so they stay byte-compatible with a DB export; the gate
-    strips it so it compares the reconstruction, not that divergence.
-    """
-    return {k: v for k, v in row.items() if k != "glyph"}
 
 
 def payload_mismatch(local: dict, served: dict, tolerance: float = 1e-9) -> str | None:
@@ -711,7 +695,7 @@ def verify_rows(client: ApiClient, source_id: str, root: Path, bust: str) -> lis
         for key in keys:
             if key not in served:
                 continue
-            local = render_payload_for_template(production_row(rows[key]), style_ratio, width_resolver, nib)
+            local = render_payload_for_template(rows[key], style_ratio, width_resolver, nib)
             error = payload_mismatch(local, served[key])
             if error:
                 failures.append(f"{root.name}/{filename}: {key!r} {error}")
@@ -750,8 +734,9 @@ def verify(
        `EXACT_PLACEMENT_TOL`, `DEFAULT_PLACEMENT_TOL`). An explicit
        `placement_tol` overrides both.
 
-    Both layers compare `production_row`s — see there for the `glyph`/fluent-widen
-    divergence, a property of the fixture contract rather than of this fetch.
+    Both layers compare the full fixture rows, `glyph` included — production
+    builds its rows through the same shape since issue #289 (see the module
+    docstring), so the fluent body widening applies on both sides.
     Every gate read is cache-busted (see `_bust_token`): ground truth is the
     origin, never whatever the edge cache still holds from before a write round.
     """
@@ -782,8 +767,6 @@ def verify(
             continue
         stride = max(1, len(cases) // per_set)
         for case in cases[::stride][:per_set]:
-            case.templates = {k: production_row(r) for k, r in case.templates.items()}
-            case.laufform = {k: production_row(r) for k, r in case.laufform.items()}
             served = client.get(f"/sources/{quote(source_id, safe='')}/write/word", {"text": case.word, "bust": bust})
             error, shape, placement = composition_mismatch(
                 derive_word(case).composed["items"], served["items"], shape_tol=shape_tol, placement_tol=root_tol

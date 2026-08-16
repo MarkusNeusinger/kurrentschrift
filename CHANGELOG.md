@@ -167,6 +167,27 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   resampling jitter silently disables the generic 0.78 entry trim
   for arcade heads (own bugfix candidate) (#366).
 
+### Fixed
+
+- **The fluent body widening is alive on `/write` again — production now
+  renders what the bench has been measuring all along** (#289). The
+  round-letter body widening (`core/pipeline.py` `FLUENT_BODY_PITCH`,
+  the deliberate jul08 overlay decision) keys on the template row's
+  `glyph` field, and both production row builders — the write router's
+  and the labs' live-DB mirror — hand-rolled that dict without it, so
+  every `/write/glyphs` + `/write/word` render composed with pinched
+  e/a/u/o bodies while the wordbench fixtures (whose rows carry
+  `glyph`) measured with the widening on. One shared builder
+  (`core.database.models.template_render_row`) now feeds both paths, a
+  parity test pins the fixture exporter's row to that exact shape plus
+  bookkeeping (`tests/test_render_row.py`), an HTTP regression test
+  holds the widening on the Gleichzug path, and the fixture-rebuild
+  gate (`tools/wordbench/fetch_fixtures.py`) compares full rows
+  instead of stripping `glyph` — its `--verify` therefore needs a
+  deployed API at or after this fix. Bench numbers are untouched by
+  construction (the fixtures already carried the field); only the
+  served geometry moves, toward what the frozen rulers measured.
+
 ## [0.26.0] — 2026-08-15 — Optimization plan + wave 1 + advance round + viewer polish
 
 ### Added

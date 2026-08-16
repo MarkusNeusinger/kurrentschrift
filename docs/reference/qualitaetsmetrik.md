@@ -699,6 +699,21 @@ auch 0,101 — die geweiteten Rundformen liegen auf der Probe). Paare
 Rauschens der 0,1240; die Wahrheit der Buchstabenformen war hier das
 Kriterium, nicht die Proxy-Zahl).
 
+**Nachtrag aug16 (#289):** Auf dem `/write`-Pfad war die Weitung von
+Anfang an still deaktiviert — die zwei handgerollten
+Produktions-Row-Builder (write-Router, wordlab-Live-Spiegel) ließen das
+`glyph`-Feld weg, auf dem `_fluent_widen` keyt; nur die
+Bench-Fixture-Rows trugen es (Divergenz gemessen beim
+Fixture-Rebuild-Gate von PR #283: 0,145 xh auf `on`, 0,147 xh auf `u`).
+Der Bench hat also durchgehend den hier beschlossenen Zustand gemessen,
+die Auslieferung nicht. Seit #289 baut EIN gemeinsamer Builder
+(`core.database.models.template_render_row`) die Rows beider Pfade, ein
+Paritätstest (`tests/test_render_row.py`) pinnt den Fixture-Exporter an
+dieselbe Form, und das `--verify`-Gate vergleicht volle Rows statt
+`glyph` zu strippen. Bench-Zahlen per Konstruktion unverändert; nur die
+ausgelieferte Geometrie bewegt sich — auf den Zustand zu, den die
+eingefrorenen Lineale immer gemessen haben.
+
 ### Befund `jul11` — pairlab: unabhängige Paar-Sektion (2026-07-11)
 
 Diagnostik-Ausbau, Composer und Messlatte unverändert: `tools/pairlab`
