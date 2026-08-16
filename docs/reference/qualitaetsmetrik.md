@@ -5057,3 +5057,51 @@ plausibel opfert `unter` einen Teil der −0,0300, wo der Gewinn
 aus einem Verlust-Round kam. Gates unverändert die von oben;
 Kill unverändert: EIN Wort weiter vom Soll als roh → nicht
 adoptiert.
+
+**Zweiseitig gemessen `aug16` — erst der Umgebungs-Fund, dann
+ein sauberes Pareto-Bild.** Der erste Vergleich (2s gegen die
+Nacht-Baseline) zeigte 6 scheinbare Regressionen — die Isolation
+entlarvte sie als MESSFEHLER DES AUFBAUS: **der Ketten-Solve ist
+über BLAS-Thread-Umgebungen hinweg nicht bit-reproduzierbar**
+(dasselbe Wort, derselbe Code, rounds 0: capped-1-job vs.
+uncapped-3-jobs ergeben verschiedene Bahnen; an
+Struktur-Grenzfällen kippen dann Zähler). Der Revert-Pfad des
+Wächters ist dagegen KORREKT (Isolations-Paar rounds-0 vs.
+zweiseitig-revertiert byte-identisch). Zwei Konsequenzen,
+stehend: Solve-Vergleiche nur noch in IDENTISCHER Umgebung
+(`OPENBLAS_NUM_THREADS`/`OMP_NUM_THREADS` gepinnt), und eine
+Produktions-Verdrahtung muss die Thread-Zahl pinnen. Nebenbei
+löste der Pin das Laufzeit-Gate (e) vollständig: die
+Thread-Übersättigung (3 Worker × ~15 Threads auf 8 Kernen) war
+der ganze Kostentreiber — gedeckelt läuft die rohe Kette über
+63 Wörter in 2,7 min und der ZWEISEITIGE Wächter in 18,3 min
+(≈ 17 s/Wort, weit unter dem 5-min-Budget; einseitig-ungedeckelt
+waren es 5,3 h).
+
+Der SAUBERE Vergleich (Kette und 2s-Wächter in identischer
+Umgebung, 63/63 ok): Gate (ii) Struktur: **0 besser · 63 gleich ·
+0 schlechter** — Gesamt-Soll-Abstand exakt 104 = 104; der
+beidseitige Veto friert die Struktur konstruktionsbedingt auf
+Init-Niveau ein (auch unters Zonen-REPARATUR aus dem einseitigen
+Lauf wird vetiert — der Preis der Symmetrie). Gate (i) dev-dtw:
+Median-Δ 0,0000, max-Δ 0,0000, zwei Wörter besser (und −0,0077 ·
+mit −0,0003), keins schlechter. Gate (iii) aiou: min-Δ −0,0023
+(Sporn, über der −0,005-Schranke), max +0,1199. Gate (iv) Marken
+byte-gleich. FORMAL: die Adoptionsbedingung verlangt „irgendwo
+strikt besser" auf der Struktur-Achse — die kann ein
+beidseitiger Veto NIE erfüllen; der Arm ist damit nach dem
+Buchstaben der Vorregistrierung NICHT adoptiert, obwohl er auf
+jeder gemessenen Achse gleich-oder-besser ist (nie schlechter:
+Struktur eingefroren, Tinte näher, Hand-Abstand nie größer).
+LESART: der zweiseitige Wächter ist die SICHERE Produktions-Bahn
+(primum non nocere gegenüber der rohen Kette), und die
+Entscheidung wird eine Owner-Abwägung statt eines Gate-Automatismus:
+(a) zweiseitig adoptieren (sicher, tinten-näher, Struktur =
+Kette), (b) rohe Kette behalten, (c) der benannte RETTUNGSWEG
+für „strikt besser": der **soll-bewusste K0-Wächter** —
+Struktur-Änderung nur zulassen, wenn sie sich dem
+Kompositions-Soll NÄHERT (die Richtung, die die
+Kreuzungs-Invariante ohnehin vorzeichnet; als „Topologie-Budget
+K0" seit aug15 als künftiger Arm benannt). Der wäre eine eigene
+Vorregistrierung; bis dahin bleibt die Produktions-Adoption
+offen und der Re-Harvest hinter Owner-Go + dbsnapshot.
