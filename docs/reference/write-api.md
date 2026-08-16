@@ -38,8 +38,9 @@ einem Tag am CDN). Der Admin behält den ungecachten `/diagnostic`.
    `app/src/domain/shaping.ts`, gepinnt durch
    `tests/fixtures/shaping_cases.json`.
    **Ligatur-Zerfall als Rückfall:** Fehlt der Canonical eines Clusters
-   aus dem geschlossenen Satz (`ch` · `ck` · `tz` · `ſt` · `qu`),
-   zerfällt der Slot in seine Einzelbuchstaben — das Wort schreibt sich
+   aus dem geschlossenen Satz (`ch` · `ck` · `tz` · `ſt` · `qu` · `ß`
+   — Ausnahme ß, siehe unten), zerfällt der Slot in seine
+   Einzelbuchstaben — das Wort schreibt sich
    dann mit einem generierten Übergang weiter, statt eine Lücke mit
    gebrochenen Verbindungsstrichen zu hinterlassen. Die Teilbuchstaben
    erben die Wortposition des Clusters (der erste behält `initial`, der
