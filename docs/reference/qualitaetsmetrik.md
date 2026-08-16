@@ -5173,8 +5173,16 @@ Hand-Kreuzungen fehlen komplett: wo Striche sich kreuzen, teilen
 sich die Ritte die SELBEN Skelett-Pixelketten durch den Knoten,
 zwei Pässe fallen deckungsgleich zusammen und schneiden sich nie
 transversal (stattdessen 12 unechte Retrace-Zonen,
-`retrace_arc_ratio` 2,49). (2) `und` bricht aus (+0,294,
-Einzelfall-Autopsie offen). Kill-Kriterium „Struktur-Erfindung"
+`retrace_arc_ratio` 2,49). (2) `und` bricht aus (+0,294) —
+Autopsie: die Geometrie ist praktisch PERFEKT (Chamfer beidseitig
+0,031/0,053, besser als die Kette), der dtw-Ausreißer besteht aus
+einem 4,15-xh-Deckungs-Doppelritt am d-Stamm (der A5-Fall in
+Reinform) plus einem Klassifikations-Kipp: der
+skelett-VERKÜRZTE u-Deckbogen des Lotsen (Skelett endet eine
+halbe Strichbreite vor der Tintenspitze) fällt unter die
+0,8-xh-Marken-Schwelle, der längere der Hand nicht — die
+Body-Mengen unterscheiden sich strukturell und das forward-DTW
+zahlt den ganzen Umweg. Kill-Kriterium „Struktur-Erfindung"
 feuert NICHT (0 unechte Kreuzungen, 0 Marken-Verluste) — aber das
 Gate (Kette schlagen ohne Struktur-Netto-Verlust) ist verfehlt:
 VERWORFEN als v0.1, Route NICHT geschlossen. Rettungswege
