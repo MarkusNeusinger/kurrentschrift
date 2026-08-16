@@ -75,6 +75,31 @@ def test_mid_stroke_gap_is_bridged_not_trimmed() -> None:
     assert steps.max() < 8.0
 
 
+def test_tail_runout_extends_to_the_rail_end() -> None:
+    from tools.inkpilot.pilot import run_out_tails
+
+    pg = PilotGraph(cross_skeleton())
+    # A ride that stops mid-bar at x = 25; the bar's degree-1 end sits at
+    # x = 35, i.e. 10 px = 1.0 xh away at xh = 10.
+    ride = np.column_stack([np.arange(22.0, 26.0), np.full(4, 20.0)])
+    out = run_out_tails([ride], pg, xh_px=10.0, max_units=1.2)[0]
+    assert out[:, 0].max() >= 34.0
+    # Too short a budget: no extension.
+    out = run_out_tails([ride], pg, xh_px=10.0, max_units=0.3)[0]
+    assert out[:, 0].max() < 27.0
+
+
+def test_tail_runout_never_crosses_a_junction() -> None:
+    from tools.inkpilot.pilot import run_out_tails
+
+    pg = PilotGraph(cross_skeleton())
+    # The ride ends BEFORE the centre junction; the forward rail ends at the
+    # degree-4 node, so nothing may be appended in that direction.
+    ride = np.column_stack([np.arange(8.0, 15.0), np.full(7, 20.0)])
+    out = run_out_tails([ride], pg, xh_px=10.0, max_units=2.0)[0]
+    assert out[:, 0].max() < 20.0
+
+
 def test_units_roundtrip() -> None:
     reg = {"tx": 3.0, "ty": -2.0, "xh_px": 25.0}
     strokes = [np.asarray([[10.0, 40.0], [20.0, 30.0]])]

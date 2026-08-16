@@ -533,6 +533,7 @@ def run_out_tails(strokes: list[np.ndarray], pg: PilotGraph, xh_px: float, max_u
             return pts
         travel = pts[-1] - pts[-2]
         best: np.ndarray | None = None
+        best_arc = 0.0
         for loc in locs:
             edge = pg.graph.edges[loc.edge]
             chain = np.asarray(edge.points, dtype=float)
@@ -543,8 +544,8 @@ def run_out_tails(strokes: list[np.ndarray], pg: PilotGraph, xh_px: float, max_u
                 if float(step @ travel) <= 0.0:
                     continue  # that side runs backwards against the stroke
                 arc = float(np.hypot(*np.diff(np.vstack([pts[-1:], rest]), axis=0).T).sum())
-                if arc <= max_px and (best is None or len(rest) > len(best)):
-                    best = rest
+                if arc <= max_px and arc > best_arc:
+                    best, best_arc = rest, arc
         return np.vstack([pts, best]) if best is not None else pts
 
     out = []
