@@ -14,6 +14,27 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The guarded chain measured as the production trace — pre-registered
+  over all 63 words, with a two-sided guard built as the executed
+  rescue path** (`tools/pairlab/follow.py` `--structure-guard-two-sided`
+  + `qualitaetsmetrik.md` §14 „Wächter als Produktions-Kette"). The
+  released one-sided guard passes three gates outright (never worse on
+  the 10 authored references and better on three of them, ink coverage
+  never falls, marks byte-identical) but loses one soll-required
+  crossing on three words — it caps structure INVENTIONS while the ink
+  pull may collapse a small loop unpunished. The two-sided guard
+  (init counts binding in BOTH directions per the K0 invariant) then
+  measured as a clean Pareto picture: structure frozen at the chain's
+  level on all 63 words, dtw never worse and better on two, aiou up to
+  +0.12 — formally NOT auto-adopted because a both-ways veto can never
+  satisfy the „strictly better somewhere" leg; the adoption is now an
+  owner decision, with the soll-aware K0 guard named as the next
+  rescue path. Two standing findings en route: the chain solve is not
+  bit-reproducible across BLAS thread environments (solve comparisons
+  and any production wiring must pin `OPENBLAS_NUM_THREADS`), and
+  pinning the threads collapsed the runtime gate entirely (raw chain
+  63 words: 87 min → 2.7 min; two-sided guard: ≈17 s/word).
+
 - **The rescue-path register: every honest negative names its way back
   into the game** (owner directive 2026-08-16, after the P3 0/3 round):
   `docs/proposals/tintenfolger.md` §7.9 collects, per rejected measure, the finding or
