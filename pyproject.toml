@@ -18,7 +18,7 @@ keywords = [
 ]
 dependencies = [
     # Scientific stack — ductus extraction, distance transform, skeletonisation
-    "numpy>=2.5.1",
+    "numpy>=2.5.2",
     "scipy>=1.18.0",
     "scikit-image>=0.24",
     "pillow>=12.3.0",
@@ -34,7 +34,7 @@ dependencies = [
     "sqlalchemy[asyncio]>=2.0.51",
     "asyncpg>=0.30.0",
     "pg8000>=1.31.0",
-    "alembic>=1.19.0",
+    "alembic>=1.19.1",
     "cloud-sql-python-connector[asyncpg,pg8000]>=1.21.0",
     "shapely>=2.1.2",
     "orjson>=3.11.9",
@@ -47,7 +47,7 @@ viz = [
     "matplotlib>=3.11.1",
 ]
 dev = [
-    "ruff>=0.16.1",
+    "ruff>=0.16.3",
     # Type stubs for the numpy/scipy-heavy core (dev-only — never in the runtime image).
     "scipy-stubs~=1.18.0",
     "kurrentschrift[viz]",
