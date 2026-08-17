@@ -37,7 +37,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§6** Extern/Forschung.
 
 - **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1 · Ausreißer §4
-- **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3 · Bowl-Exit-Tuck §2
+- **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2 · extrapoliertes Landmark-Ziel §3
@@ -1092,15 +1092,23 @@ Regressionswächter.** → werkzeuge.md
 **Referenzsatz (nachgefahren)** — die manuell per S-Pen nachgefahrenen
 Wortbahnen (`word_instances`, Provenienz `authored`), an denen jeder
 automatische Wortbahn-Kandidat gemessen wird. Der **Entwicklungssatz**
-sind die 10 am 2026-08-13 nachgefahrenen Abb.-19-Wörter (die · laden ·
-linken · mit · muß · und · unter · Wer · will · zwei), eingefroren als
-committete Konstante (append-never); jedes SPÄTER nachgefahrene Wort ist
-per Definition **Rückhaltemenge** (Bestätigungssatz) und wandert nie in
-den Entwicklungssatz — sonst wäre der Halt-out keiner. Ein Kandidat kann
-nie sein eigener Maßstab sein: die `traced`-Ernte-Fits sind Ausgaben des
-Kandidaten, nicht seine Wahrheit. *Technisch:* `word_instances.json` je
-Fixture-Wurzel; geplant `tools/tracebench/sets.py::TRACEBENCH_DEV_IDS`
-→ proposals/tintenfolger.md §1
+(Tuning) sind heute die 10 am 2026-08-13 nachgefahrenen Abb.-19-Wörter
+(die · laden · linken · mit · muß · und · unter · Wer · will · zwei),
+committete Konstante; jedes SPÄTER nachgefahrene Wort ist per Definition
+**Rückhaltemenge** (Bestätigungssatz). Die tragende Invariante: Bewegung
+gibt es nur BLIND und vorregistriert in Richtung Entwicklungssatz, nie
+zurück — ein Wort, auf dem je getunt oder dessen Zahl je gelesen wurde,
+kann nie wieder Prüfmaterial werden. Seit der **Split-Neuziehung**
+(tintenfolger.md §2.5, vorregistriert 2026-08-16) ist die Rückhaltemenge
+zweigeteilt: **Bestätigung A** (offen für vorregistrierte
+Bestätigungsmessungen) und **Bestätigung B** (VERSIEGELT, öffnet erst
+für die großen Adoptionsentscheidungen); der Entwicklungssatz wächst bei
+Vollausbau der 63 Wörter deklariert um Galoppieren + das (12 Wörter /
+19 Vorkommen). Ein Kandidat kann nie sein eigener Maßstab sein: die
+`traced`-Ernte-Fits sind Ausgaben des Kandidaten, nicht seine Wahrheit.
+*Technisch:* `word_instances.json` je Fixture-Wurzel;
+`tools/tracebench/sets.py::TRACEBENCH_DEV_IDS`
+→ proposals/tintenfolger.md §1 + §2.5
 
 **Frame-Gate (`frame_stale`)** — der Maschinencheck, dass die
 Registrierung einer gespeicherten Wortbahn noch die eingefrorene

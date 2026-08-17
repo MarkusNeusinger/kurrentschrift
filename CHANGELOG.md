@@ -14,6 +14,28 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The dev/confirmation split re-draw, pre-registered before any number
+  exists** (`docs/proposals/tintenfolger.md` §2.5, owner decision
+  2026-08-16). Once all 63 words are hand-traced, the trace bench's
+  split moves from "the ten first-traced words" to a stratified,
+  performance-blind key over letter classes: dev stays minimal (the ten
+  burned words + Galoppieren + das — the only two additions needed for
+  every writing-mechanics class to appear at least twice), and the
+  held-out material is split into an open confirmation half (A, 19
+  words) and a SEALED half (B, 19 words) that only opens for the major
+  adoption decisions — staged reveal against confirmation wear-out.
+  The seal is in force immediately; the dev extension and the
+  `TRACEBENCH_DEV_IDS` change take effect at 63/63 as a declared ruler
+  change with a dated re-baseline of every standing route. Repeats of
+  one word never cross the split boundary; movement is only ever blind
+  and pre-registered toward dev, never back. The 33 Abb.-20 pair
+  drills stay outside the word split (the K3 word/drill lesson) and
+  get their own blind two-way split drawn now, while no drill was ever
+  traced or benched: 18 open (for pre-registered word/drill diagnoses
+  and future drill tuning) and 15 sealed, keyed by the left letter's
+  exit class; the glossary entry "Referenzsatz" carries the revised
+  invariant.
+
 - **The word editor gets an adjust mode, and the Wörter view a review
   stack of the hand-authored traces** (Werkbank W3). „Anpassen" — the
   wizard's Weg mechanism ported to the word editor — drags the drawn

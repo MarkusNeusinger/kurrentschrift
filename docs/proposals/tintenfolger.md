@@ -177,6 +177,82 @@ verworfen, nicht nachgestimmt. Mit dem Commit der ersten Baseline-Tabelle
 friert das Lineal (Metrik-Module, `landmarks.py`, `core/geometry.py`,
 Fixture-Roots) — jede spätere Änderung ist eine datierte Re-Baseline.
 
+### 2.5 Split-Neuziehung (vorregistriert 2026-08-16, Owner-Go)
+
+Die 10 Dev-Wörter aus §2.4 sind die zufällig ZUERST nachgefahrenen — kein
+gewählter Schnitt. Owner-Entscheid: Sobald **alle 63 Wörter** `authored`
+sind, wird der Split stratifiziert neu gezogen. Der Schlüssel ist hiermit
+VOR jeder Zahl festgelegt (performance-blind: er liest ausschließlich die
+eingefrorenen Slot-Inhalte, nie eine Bench-Zahl; die neu nachgefahrenen
+Wörter waren zum Zeitpunkt dieser Festlegung noch nie gebencht).
+
+**Der Schlüssel.** Buchstaben-Klassen über `glyph_keys`: Arkade
+(n m i u ü) · Rundkörper (a o e c ä ö) · Schleifen-Oberlänge (l h k b f t)
+· d-Schleife (d) · Unterlänge (g z p q j) · s-Formen (s ſ ß) · r-Arm (r)
+· w/v/x · Versal · Marken-Träger (i u ü ä ö t z ß). Wiederholungen
+(die-2, muß-2/-3, und-2/-3/-4 …) splitten als WORT, nie über die Grenze.
+Die 10 getunten Wörter sind VERBRANNT und liegen zwingend auf der
+Dev-Seite; frei verteilt werden nur die 53 übrigen. Dev wird greedy
+aufgefüllt, bis jede Klasse ≥ 2-mal vertreten ist (Gewinn = meiste noch
+unterdeckte Klassen; Gleichstand: weniger Vorkommen, dann alphabetisch);
+der Rest teilt sich klassensortiert alternierend in zwei Hälften.
+
+**Die Zuordnung (hiermit fixiert, 12 / 19 / 19 Wörter):**
+
+- **Dev (Tuning, 19 Vorkommen):** die 10 aus §2.4 + **Galoppieren** +
+  **das**.
+- **Bestätigung A (offen, 20 Vorkommen):** Einen · Gaul · Gewehr · Kugel
+  · Silber · Soldaten · Sporn · Säbel · Zorn · auch(+1) · daß · ein ·
+  han · im · macht · regieren · scharfen · von · zu („+n" =
+  Wiederholungs-Vorkommen desselben Worts).
+- **Bestätigung B (VERSIEGELT, 24 Vorkommen):** Feinde · Pulver · Seiten
+  · Sprünge · Zaum · Zügel · an · der(+2) · einen · einer · er(+2) ·
+  fechten · haben · kann · schießen · schwer · streiten · wenn(+1) · zum.
+
+**Inkraftsetzung, zweistufig.** Die **Versiegelung gilt ab sofort**:
+Bestätigungswörter werden außerhalb einer vorregistrierten
+Bestätigungsmessung nicht gebencht, B-Wörter gar nicht — B öffnet erst
+für die großen Adoptionsentscheidungen (gestaffeltes Aufdecken gegen
+Bestätigungs-Abnutzung). Die **Dev-Erweiterung** (Galoppieren + das,
+Änderung von `TRACEBENCH_DEV_IDS` in `tools/tracebench/sets.py`) tritt
+erst in Kraft, wenn alle 63 Wörter `authored` sind — als deklarierte
+Lineal-Änderung mit datiertem Re-Baseline-Lauf aller stehenden Routen
+(Kette · Lotse · InkSight · Nullprobe) auf dem neuen Dev-Satz.
+
+**Benannter Notausgang.** Wird die Kapital-Join-Klasse Tuning-Fokus,
+darf EIN weiteres Versal-Wort mit eigener Vorregistrierung von A nach
+Dev wandern — BEVOR die erste Kapital-Tuning-Zahl gelesen ist, nie
+danach. Der umgekehrte Weg (Dev → Bestätigung) existiert nicht.
+
+**Drills sind keine Wörter.** Die 33 Abb.-20-Paare bilden einen EIGENEN
+Pool außerhalb des Wort-Splits (die K3-Lektion aus §7.9: derselbe Join
+verhält sich im Wort und im Drill gegenläufig — gemischt verwässern
+beide Signale). Ihre eigene Zweiteilung wird HIERMIT gezogen — jetzt,
+weil kein Drill je getraced oder trace-gebencht wurde und die Blindheit
+darum vollständig ist. Schlüssel: Exit-Klasse des linken Buchstabens
+(Kringel b/o · Schleife d/s · r-Arm · Rückwärts-Curl v/w/x · ſ · ß ·
+Versal), je Klasse alphabetisch alternierend. Es gibt keinen
+Drill-Dev-Zwang (nichts ist verbrannt), also zwei Gruppen:
+
+- **Drill-offen (18):** bi · Bi · bs · bz · df · do · ds · dx · In ·
+  rb · rx · sa · ssi · vp · vx · wi · Wu · ßi — für vorregistrierte
+  Wort/Drill-Diagnosen und etwaiges künftiges Drill-Tuning.
+- **Drill-versiegelt (15):** bp · bx · dk · dp · dt · Du · dz · Of ·
+  on · rp · rz · sg · vs · vz · xi — Bestätigungsmaterial, öffnet wie
+  Bestätigung B erst für große Entscheidungen. (IDs wie im Sidecar;
+  sa/sg/ssi schreiben auf der Platte ſ.)
+
+Die Versiegelung betrifft AUSSCHLIESSLICH die Rolle als nachgefahrene
+Trace-Referenz (das Ink-Folgen). Die KOMPOSITIONS-Messung läuft
+unverändert über alle 33: `wordbench --set pairs` (`pair_loss`) misst
+die komponierten Joins gegen die Drill-Tinte, und die sezierten
+`pair_instances` (doff/dconn, pairmeas) bleiben Platzierungs-Evidenz —
+genau darin liegt der Wert der Drills fürs RICHTIGE SCHREIBEN: 31 der
+33 tragen Übergänge, die in keinem einzigen der 63 Wörter vorkommen
+(nur `on` und `wi` überlappen). Fürs Schreiben sind sie damit die
+einzige Evidenz dieser Join-Klassen; fürs Ink-Folgen sind sie
+Rückhaltematerial.
+
 ## 3 Route A: die Verfeinerungsstufe (`tools/pairlab/follow.py`)
 
 **Formulierung: re-linearisierender Restart, KEIN Snake.** Zweiter Solve
