@@ -146,6 +146,13 @@ MAP_CROSSING_WINDOW_UNITS = 0.35
 # POSITION comes from the ink — the doctrine applied to the window itself.
 # Natural bridges (missing ink) and the adopted v0.5/v0.7 zones are untouched.
 MAP_CROSSING_PIN = True
+# Same-stroke arc floor for a MAP self-intersection: two chords closer than
+# this along the chain meet at a polyline corner, not a crossing. Mirrors the
+# counters' 0.35-xh arc rule (`tools/pairlab/landmarks.py::
+# LANDMARK_MIN_ARC_SEPARATION_UNITS`) as a SNAPSHOT — deliberately not
+# imported, so a dated ruler re-baseline cannot silently move an adopted
+# candidate mechanism.
+MAP_CROSSING_MIN_ARC_UNITS = 0.35
 # v0.6 (pre-registered): the smoothing pass over the 8-connected pixel
 # zigzag — per iteration the local mean (1, 2, 1) / 4 over each stroke with
 # FIXED endpoints. Structure is a GATE, not code: the bench counters must
@@ -388,7 +395,7 @@ def map_crossing_masks(samples_per_stroke: list[np.ndarray], window_units: float
     """
     masks = [np.zeros(len(s), dtype=bool) for s in samples_per_stroke]
     reach = int(round(window_units / SAMPLE_STEP_UNITS))
-    min_sep = max(2, int(round(0.35 / SAMPLE_STEP_UNITS)))
+    min_sep = max(2, int(round(MAP_CROSSING_MIN_ARC_UNITS / SAMPLE_STEP_UNITS)))
     for ai in range(len(samples_per_stroke)):
         for bi in range(ai, len(samples_per_stroke)):
             pairs = _segment_intersections(
@@ -410,7 +417,12 @@ def _assign_stroke(
     samples: np.ndarray | None = None,
     forced_priority: np.ndarray | None = None,
 ) -> tuple[np.ndarray, list[PixelLoc | None], np.ndarray]:
-    """The GLOBAL sample->ridge assignment of one map stroke (samples, seq).
+    """The GLOBAL sample->ridge assignment of one map stroke.
+
+    Returns `(samples, seq, forced)`: the (possibly trimmed) samples, their
+    per-sample assignment (`PixelLoc` or `None` for the bridge state), and the
+    equally trimmed v0.8 forced-window mask so the caller can pin exactly
+    those runs (`_pin_forced_runs`).
 
     Solved as a Viterbi over the sample chain: a greedy walk boards the first
     plausible rail and then cascades — on the composed m, whose arcade runs

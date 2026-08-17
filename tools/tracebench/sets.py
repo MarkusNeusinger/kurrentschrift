@@ -9,8 +9,8 @@ The ids below are the DEV side of the stratified split pre-registered in
 `docs/proposals/tintenfolger.md` §2.5 (2026-08-16, performance-blind: drawn
 from the frozen slot contents before any of the newly traced words was ever
 benched): the ten burned words above plus `Galoppieren` and `das`, and — per
-the §2.5 repetition rule ("Wiederholungen splitten als WORT, nie über die
-Grenze") — every repeat occurrence of a dev word (`die-2`, `mit-2`,
+the §2.5 repetition rule (repeat occurrences split as a WORD, never across
+the boundary) — every repeat occurrence of a dev word (`die-2`, `mit-2`,
 `muß-2/-3`, `und-2/-3/-4`): 19 specimen rows in total. Activated 2026-08-17
 as a declared ruler change with a dated re-baseline of all standing routes
 (qualitaetsmetrik.md §14), on the owner's in-session go — the dev words were
