@@ -5635,11 +5635,32 @@ der referenzfreie Auswähler bleibt die offene Frage (die
 `aug16`-Diagnostik gilt: kein Signal trennt auf Dev-n, keine
 Regel wird auf dem Dev-Satz adoptiert).
 
-*(Die InkSight-T0-Zeile folgt in diesem Eintrag nach dem Ende des
-CPU-Laufs derselben Session — 19 Crops × derender-Prompt; die
-neuen Crops enthalten mit Galoppieren erstmals ein Wort JENSEITS
-der InkSight-Trainingsfiltergrenze w/h 4,0: Ratio 4,34 — der
-vorregistrierte B2-Prüffall.)*
+**InkSight T0 auf dem 19er-Satz** (derender-Prompt, CPU 4 Kerne,
+median 429 s/Wort — deutlich über den 2–6 min der 8-Kern-Messung;
+`to_candidate` unverändert): **14/19 gescort, 5 failed** am
+Ein-Punkt-Strich-Kontraktbruch — und zwar die GESAMTE und-Familie
+(und, und-3, und-4) plus muß-2 und die-2; die T0-Klasse, die auf
+dem 10er-Satz `Wer` traf, wandert mit den Crops (Wer scort
+diesmal 0,1033). dtw-Median 0,0951 (10er-Satz: 0,0956 —
+konsistent) · p90 0,297 · worst unter 0,390 · aiou 0,6955 ·
+`retrace_missing` 18 (r ≈ 0 fast überall) · **lift_delta +47** —
+die bekannte Signatur: das Modell setzt ab, statt zurückzufahren.
+Kreuzungen weiter vergleichsweise sauber (15 fehlend/2 unecht auf
+14 Wörtern). Stärken bleiben komplementär: die muß-Klasse schlägt
+die Kette klar (muß 0,081 · muß-3 0,097 gegen 0,242/0,234), die
+0,039. **Der B2-Prüffall ist bestätigt, deutlicher als erwartet:
+Galoppieren (Crop-Ratio 4,34 > Trainingsfiltergrenze 4,0) kollabiert
+flächig** — aiou **0,347** (jedes andere Wort ≥ 0,59), beide
+Chamfer ~0,11 (3× Satz-Median), +13 Lifts, cross 2/8, Marken
+0/1+1: die Langseiten-Skalierung verschenkt die halbe
+y-Token-Auflösung, das Wortbild zersplittert. Die
+§7.4-B2-Maßnahme (Tiling auf w/h ≤ 2) hat damit ihren gemessenen
+Probestein; Priorität unverändert Welle 2. Diagnose-Spalte:
+`direction_uncertain` 3 = wieder exakt die muß-Klasse (wie beim
+Lotsen — ein Hinweis auf die ß-Strich-Zerlegung dieser Referenzen,
+Autopsie-Kandidat der L2-Restliste). Damit sind ALLE stehenden
+Routen auf dem 19er-Dev-Satz vermessen; der Eintrag ist
+vollständig.
 
 ### Route „Lotse" v0.7 `aug17` — Vorregistrierung: die Zonen-Ausweitung der Kartenfahrt (L1)
 
