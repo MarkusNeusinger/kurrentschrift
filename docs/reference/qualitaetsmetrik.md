@@ -5800,3 +5800,40 @@ einzige benannte Kostenquelle), dtw hält oder fällt weiter.
 der Versatz nicht in der Karten-LAGE, sondern die Karte ist im
 Fenster FORMfremd — dann ist die ehrliche Grenze erreicht und
 der Rest gehört der Sub-Strich-Trennung (§7.9).
+
+**Gemessen `aug17` — 0,35 ADOPTIERT (alle Gates bestanden), 0,6
+vom aiou-Kill verworfen (−0,039). Die stärkste Zahl der
+Kampagne.** Leiter (dev-19, je 19/19 ok): w0,35 gepinnt → dtw
+**0,0578** (Ketten-Niveau 0,0579; gepaart gegen die Kette
+**Δ-Median −0,0183 = −24 %** — erstmals erfüllt eine Route das
+Primär-Kriterium „≥ 20 % Fall") · p90 **0,1179** (Kette 0,2363)
+· worst muß-2 0,1473 · `cross_missing` 3, `spurious` 4
+(Netto-Defekte 32 → **7**) · `marks_missing` 0 (die Kette
+verliert 1 — der Lotse findet Galoppierens i-Punkt per Karte) ·
+retrace 5+4 · touch 20 · aiou 0,7351 (Δ −0,0142, hält) ·
+reversed 0. Die Wort-Tabelle dreht das Komplementaritäts-Bild:
+der Lotse gewinnt jetzt JEDES strukturschwere Wort (unter
+−0,376 · Galoppieren −0,147 · muß −0,126 · muß-3 −0,109 ·
+muß-2 −0,061 · die-2 −0,041 · die −0,035 · das −0,024 · zwei
+−0,018 · laden −0,018) und verliert die glatten nur noch
+mikroskopisch (will +0,006 statt +0,081 — die gepinnten
+Fenster reparierten auch die Schleifen-GEOMETRIE; Maximum
+linken +0,019). Sign-Test 10:9 (beschreibend). w0,6 →
+cross_missing 1, aber aiou 0,7106 (−0,0387) → Kill.
+`MAP_CROSSING_WINDOW_UNITS` = 0,35, `MAP_CROSSING_PIN` = True.
+
+**Die verbleibenden 7 Defekte sind kartiert und fast
+vollständig SOLL-Differenzen, keine Ritt-Fehler:** Galoppieren
+2/8 fehlend = exakt die p-Unterlängen-Kreuzungen, die schon der
+KOMPOSITION fehlen (kein Fenster ohne Karten-Kreuzung — der
+G1-Autorenschritt aus §7.10 ist jetzt der limitierende Faktor
+dieses Worts); linken +3 und mit-2 +1 unecht = exakt die
+vorbenannten Soll-Kreuzungen, die DIESE Hand nicht schreibt
+(Beleg-Varianz, im v0.8-Risiko benannt); unter 1/3 fehlend als
+letzter echter Ritt-Rest. Routen-Stand nach der Runde: **der
+Lotse steht auf dem 19er-Dev-Satz erstmals GLEICHAUF mit der
+Kette im Median, halbiert ihren p90, schlägt sie gepaart um
+24 % und trägt die sauberere Struktur** — die
+Bestätigungssätze (A, dann B) bleiben der Schlussstein, bevor
+daraus eine Adoptionsentscheidung jenseits der
+Routen-Konstanten wird.

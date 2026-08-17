@@ -759,7 +759,7 @@ ist der Glossar-Eintrag „Duell-Namen":
 | **Vier Augen** | Fusion (§7.6) | geplant |
 | **Feinschliff** | Natürlichkeitsfilter (zweite Stufe, Glättung mit Struktur-Wächter) | als MESS-Arm verworfen (§14 Lotse v0.6 `aug16`: das Lineal sieht den Zickzack nie — Resampling schluckt ihn; Glättung ist eine reine Darstellungsstufe beim Konsumenten) |
 | **Chor** | ordnungs-bewusste Auswahl unter Varianten (B1-Nachfolger) | Welle 3 |
-| **Lotse** *(Arbeitstitel)* | Skelett direkt fahren, Duktus als Karte (unten) | v0.1 gebaut + gemessen (`tools/inkpilot`, §14 „Route Lotse": Gate verfehlt — Kreuzungs-Kollaps auf geteilten Gleisen —, aber unter 0,450 → 0,064; Rettungsweg A5 versetzter Doppelpass) |
+| **Lotse** *(Arbeitstitel)* | Skelett direkt fahren, Duktus als Karte (unten) | v0.9 (`aug17`, §14): dev-19 dtw 0,0578 = Ketten-Niveau, gepaart −24 %, p90 halbiert, Netto-Kreuzungsdefekte 7 (Rest = Soll-Differenzen); adoptiert: Auslauf 1,0 · Doppelzonen-Kartenfahrt · Zonen-Ausweitung 0,35 · gepinnte Selbstschnitt-Fenster 0,35 |
 
 **„Kette+ ist die einzige Kette."** Owner-Entscheid nach der
 Kreuzungs-Frage: es gibt KEIN Beispiel, wo eine vom Fit ERFUNDENE
@@ -881,8 +881,9 @@ Galoppieren). Jede Maßnahme ist ein KANDIDAT mit eigener
 
 | # | Maßnahme | Mechanismus | Stufe/Route | Stand |
 |---|---|---|---|---|
-| L1 | **Zonen-Ausweitung der Ritt-Doppelzonen-Kartenfahrt** (`RIDE_DOUBLE_ZONE_MARGIN_UNITS`) | der v0.5-Trigger bleibt, seine Wirkung wird zum ZONEN-Fenster ausgeweitet — der spätere Pass fährt die Karte durch den GANZEN Pinch, das X entsteht mit dem Winkel der Karte | Lotse | §14-Pre-Reg `aug17`, gemessen in dieser Runde |
-| L2 | ß-Klasse des Lotsen (Bögen-Strich ohne Stamm-Durchstoß, Sporn-Ritte) | Autopsie nach L1 (L1 kann die Stamm-Kreuzung schon liefern); dann eigener Arm | Lotse | nach L1 |
+| L1 | **Zonen-Ausweitung der Ritt-Doppelzonen-Kartenfahrt** (`RIDE_DOUBLE_ZONE_MARGIN_UNITS`) | der v0.5-Trigger bleibt, seine Wirkung wird zum ZONEN-Fenster ausgeweitet — der spätere Pass fährt die Karte durch den GANZEN Pinch, das X entsteht mit dem Winkel der Karte | Lotse | **v0.7 adoptiert 0,35** (§14; Punkt-Pinch-Klasse; Schleifen-Klasse blieb → L1b) |
+| L1b/L1c | **Karten-Vorfahrt an Karten-Selbstschnitten**, roh (v0.8) bzw. ans Ink gepinnt (v0.9) | die Schleifen-Klasse ist kein Occupancy-Fall — der Ritt ersetzt den Karten-Selbstschnitt durch einen Board-Hop; das Fenster fährt die Karte, gepinnt an die Board-Punkte | Lotse | **v0.8 verworfen (aiou-Kill), v0.9 adoptiert 0,35** (§14: dev-19 gepaart −24 %, Netto-Defekte 7) |
+| L2 | ß-Klasse des Lotsen (Bögen-Strich ohne Stamm-Durchstoß, Sporn-Ritte) | Autopsie nach L1 (L1 kann die Stamm-Kreuzung schon liefern); dann eigener Arm | Lotse | durch v0.9 weitgehend gedeckt (muß-Klasse −0,06…−0,13, ß-Kreuzung zurück); Rest-Autopsie mit dem Bestätigungssatz |
 | G1 | p-Unterlängen-Schleife (Tafel kreuzt, Vorlage retraced) | Autorenentscheid Chart/Laufform — KEIN Composer-Hack (Doktrin: Manual nur, wo es Ground Truth schafft) | chart_ductus | Todoist an den Autor |
 | A3′ | Kreuzungs-Höhen als Variablen (jetzt mit das/die-Stapel-Evidenz) | die §7.3-A3-Route, unverändert Welle 3 | Kette | wartet |
 | B2 | Tiling w/h ≤ 2 | die §7.4-Maßnahme; Galoppieren-T0-Zahl entscheidet die Dringlichkeit | InkSight | nach dem T0-Lauf dieser Session |

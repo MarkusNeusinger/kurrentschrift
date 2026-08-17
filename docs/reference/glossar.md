@@ -45,7 +45,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
-- **J** — Junction-Verschiebung §3
+- **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4
@@ -1171,6 +1171,22 @@ Spitzen-Graze ist (Arc ≥ 0,30 xh); ferne Antiparallel-Nähe ist eine
 Robusteste Vergleichszahl ist das Bogen-Verhältnis
 `retrace_arc_ratio`, die Zonen-Counts sind die Ortsdiagnose.
 *Technisch:* `tools/tracebench/counters.py::count_retraces`
+
+**Junction-Pinch** — der `aug17` benannte Verlustmechanismus der
+Lotse-Route an Schleifenschlüssen: Der Viterbi-Ritt routet beide
+Pässe eines Selbstschnitts über dieselben 1–3 Korridor-Pixel des
+Skelett-Knotens; statt eines transversalen X entstehen zwei
+tangentiale Y-Zusammenläufe, die das Durchstoß-Kriterium zu Recht
+nicht zählt. Zwei Unterklassen mit verschiedenen Heilmitteln: der
+PUNKT-Pinch (der spätere Pass belegt Korridor-Pixel erneut —
+erreichbar über die Zonen-Ausweitung der Kartenfahrt, v0.7) und die
+SCHLEIFEN-Klasse (der Aufwärts-Pass boardet die verschmolzene
+Schiene genau auf Kreuzungshöhe, es gibt keine Wiederbelegung —
+erreichbar nur über Karten-Vorfahrt an Karten-Selbstschnitten,
+v0.8/v0.9). *Technisch:* `tools/inkpilot/pilot.py`
+(`RIDE_DOUBLE_ZONE_MARGIN_UNITS`, `MAP_CROSSING_WINDOW_UNITS`,
+`MAP_CROSSING_PIN`) → qualitaetsmetrik.md §14 „Lotse v0.7–v0.9",
+proposals/tintenfolger.md §7.10
 
 **Durchstoß-Kriterium** *(pierce test)* — die v2-Definition der
 gezählten Schleifenkreuzung (Owner-Spezifikation aus dem manuellen

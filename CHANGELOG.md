@@ -14,6 +14,43 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The 19-row dev split is live, with a dated re-baseline of every
+  standing route** (tintenfolger.md §2.5 activation addendum, owner go
+  2026-08-17). The author traced the complete dev assignment (all 19
+  occurrences, Galoppieren and das included), so `TRACEBENCH_DEV_IDS`
+  now carries the pre-registered §2.5 dev side; the confirmation seal
+  on sets A and B is untouched. §14 "Re-Baseline aug17" records the
+  new state: identity gate PASS 19/19, chain dtw median 0.0579 (worst
+  unter 0.450; the muß class now weighs three-fold at 0.21–0.24, and
+  Galoppieren arrives at 0.235 with 5 lost crossings), Lotse 0.0850,
+  Nullprobe +1092 % (what the ductus prior buys, re-measured), fusion
+  oracle ceiling 0.0491. The wordbench headlines are byte-identical
+  (0.108091 / 0.146602), so the ruler change is purely the split
+  extension. Findings and the measure plan: tintenfolger.md §7.10;
+  the p-descender question (the plate crosses where the template
+  retraces) went to the author as a Todoist task.
+- **Lotse v0.7 and v0.9 adopted, v0.8 honestly rejected — the
+  junction-pinch campaign** (`tools/inkpilot/pilot.py`, all three §14
+  pre-registered before their first numbers). v0.7 widens the adopted
+  ride-double trigger's effect into a zone
+  (`RIDE_DOUBLE_ZONE_MARGIN_UNITS` = 0.35): crossing defects 35 → 32,
+  retrace-arc gap 0.285 → 0.044 — and the honest miss that the loop
+  class is unreachable by ANY occupancy trigger (the up-pass boards
+  the merged rail at crossing height). v0.8 (map right-of-way around
+  the map's own self-intersections) proves the topology completely —
+  net crossing defects 32 → 4, dtw median under the chain for the
+  first time — but rides the raw composed map and pays with ink
+  coverage: both rungs rejected by the pre-registered aiou kill,
+  rescue path named (§7.9). v0.9 keeps the windows and PINS them onto
+  the ink's boarding points (topology and angle from the map, position
+  from the ink): all gates pass at window 0.35 — dev-19 dtw median
+  0.0578 (level with the chain, paired Δ-median −24 % — the first
+  route ever to meet the §14 primary criterion), p90 halved, net
+  crossing defects down to 7, and those 7 are mapped to soll-vs-hand
+  disagreements rather than ride failures. The confirmation sets
+  remain the keystone before any adoption beyond route constants.
+  New glossary entry: Junction-Pinch.
+
 - **The dev/confirmation split re-draw, pre-registered before any number
   exists** (`docs/proposals/tintenfolger.md` §2.5, owner decision
   2026-08-16). Once all 63 words are hand-traced, the trace bench's
