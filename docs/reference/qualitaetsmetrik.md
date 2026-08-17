@@ -5747,3 +5747,56 @@ dann zu weit von der Tinte), ist der ehrliche Rest die
 Sub-Strich-Trennung aus Breiten-Evidenz (§7.9) — und die
 Karten-PLATZIERUNG wird als eigener Befund an die
 Kompositions-Schiene zurückgegeben.
+
+**Gemessen `aug17` — BEIDE Stufen vom aiou-Kill verworfen; die
+Topologie-Hypothese ist zugleich SO STARK bestätigt wie kein
+Arm zuvor.** Leiter (dev-19, je 19/19 ok): w0,35 →
+**cross_missing 27 → 2, spurious 5 → 2** (Netto-Defekte 32 → 4),
+`retrace_spurious` 21 → 3, touch 38 → 20, **dtw-Median 0,0858 →
+0,0576** — erstmals unter der Kette (0,0579; gepaart Δ-Median
+−0,0075, Sign 11:8), p90 0,1187 gegen Kette 0,2363 — aber aiou
+0,7493 → 0,7264 (Δ −0,0229 < −0,02) und Recall-Chamfer 0,0492 →
+0,0522: **Kill feuert um 0,003.** w0,6 → gleiche Strukturzahlen
+(2+2), aiou 0,6744 (−0,075) → tiefer Kill. Der Sichtbeweis
+(will/muß-Fenster): alle drei will-Kreuzungen und die
+ß-Stamm-Kreuzung kehren zurück — die Schleifen-Klasse ist
+GENAU die vorregistrierte. Diagnose des Kills: die Fenster
+fahren die ROHE Karte, und deren lokaler Versatz zur Tinte
+(bis ~0,5 xh — die bekannte Platzierungs-Toleranz der
+Komposition) verlässt den Tintenkörper; der Wächter tut exakt
+seinen Dienst — „Geometrie aus der Tinte" ist in den Fenstern
+verletzt. Rettungsweg (benannt, eigene Pre-Reg unten): die
+Fenster ans Ink PINNEN — Topologie und Winkel von der Karte,
+die Lage von den Board-Punkten der Tinte. §7.9-Zeile im selben
+PR.
+
+### Route „Lotse" v0.9 `aug17` — Vorregistrierung: gepinnte Selbstschnitt-Fenster (L1c)
+
+Geschrieben und committet VOR der ersten Zahl. Der v0.8-Befund:
+die Selbstschnitt-Fenster liefern die Struktur vollständig
+(Netto-Defekte 32 → 4), bezahlen aber mit der ROHEN
+Karten-Geometrie — deren lokaler Versatz kostet Tinten-Deckung
+(aiou-Kill). v0.9 behält Trigger und Fenster UNVERÄNDERT und
+ändert allein die GEOMETRIE der Fenster-Strecke: jeder maximale
+Fenster-Lauf wird als Ganzes so verschoben, dass seine Enden auf
+den benachbarten BOARD-Punkten der Tinte liegen (linear
+interpolierter Versatz zwischen beiden End-Offsets; Läufe an
+Strich-Enden nehmen den einen verfügbaren Offset konstant; reine
+Karten-Striche bleiben roh). Damit stammen Topologie und
+Kreuzungswinkel weiter von der Karte, die LAGE aber von der
+Tinte — „Geometrie aus der Tinte, Ordnung aus dem Prior", auf
+das Fenster selbst angewandt. Natürliche Brücken (fehlende
+Tinte) bleiben unangetastet; die adoptierten v0.5/v0.7-Zonen
+ebenso.
+
+**EIN Knopf: dieselbe `MAP_CROSSING_WINDOW_UNITS`-Leiter 0,35 /
+0,6, jetzt mit Pinning (`MAP_CROSSING_PIN` fest an, kein eigener
+Suchknopf).** Erwartung: Strukturzahlen ~wie v0.8 (2+2 bleibt),
+aiou kehrt Richtung v0.7-Niveau zurück (der Versatz war die
+einzige benannte Kostenquelle), dtw hält oder fällt weiter.
+**Gates unverändert wie v0.8** (Netto-Defekte ≤ 32, aiou-Δ ≥
+−0,02 gegen 0,7493, p90 ≤ +10 % gegen Kette, Marken, reversed
+= 0). Kill: bleibt aiou auch gepinnt unter der Schranke, liegt
+der Versatz nicht in der Karten-LAGE, sondern die Karte ist im
+Fenster FORMfremd — dann ist die ehrliche Grenze erreicht und
+der Rest gehört der Sub-Strich-Trennung (§7.9).

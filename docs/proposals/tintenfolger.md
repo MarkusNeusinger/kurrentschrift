@@ -814,6 +814,7 @@ Disziplin verhindert).
 | Arm ⑥/⑥b Landmark-Gewicht (`aug14`) | Korrespondenz-Kappe gelöst (classed punktweise kostenlos), Gewicht trotzdem nutzlos im Folger-Setting | klassenbewusste Ziele stehen bereit für ein Setting, in dem die Kreuzung wirklich wandern kann (Lotse) | mit der Lotse-Runde |
 | P2a Arkaden-Luft · P1 Diagonalen-Trim (`aug15`) | Beleg-Varianz ±0,1 xh, Ruler monoton dagegen | Dissektions-Forderung im Nachkalibrierungs-Protokoll (§7.7) | Bestätigungssatz |
 | Methodik-Lücke (quer, `aug16`) | drei Kills wurden von Netto-Deltas ≤ 0,0007 entschieden — das Lineal ZUCKT dort nur, die Gates machen daraus ein Nein | humanbench-WORT-Runde als vorregistrierter Tie-Breaker für ruler-indifferente Fälle (\|Netto-Δ\| < ε bei starker Dissektions-Evidenz) | eigene Pre-Reg + Runde |
+| Lotse v0.8 Selbstschnitt-Fenster (`aug17`) | Topologie vollständig bestätigt (Netto-Defekte 32 → 4, dtw erstmals unter der Kette), aber die ROHE Karten-Geometrie der Fenster kostet Tinten-Deckung (aiou-Kill um 0,003 bzw. 0,075) | v0.9: dieselben Fenster ans Ink GEPINNT (Topologie/Winkel von der Karte, Lage von den Board-Punkten) | eigene Pre-Reg, gemessen in derselben Runde |
 
 ### 7.10 Runde aug17: die Befund-Matrix des 19er-Dev-Satzes und der Maßnahmenplan
 
