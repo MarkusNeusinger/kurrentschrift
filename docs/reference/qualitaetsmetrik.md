@@ -5688,3 +5688,62 @@ das Soll, ist die Karten-Platzierung dort zu schlecht —
 verworfen, zurück zur Sub-Strich-Trennung (§7.9). Beide
 Leiter-Stufen werden gemessen, adoptiert wird höchstens EINE
 (die bessere, sofern sie alle Gates besteht).
+
+**Gemessen `aug17` — 0,35 ADOPTIERT (alle Gates bestanden), 0,7
+vom aiou-Kill verworfen; die Erwartung traf nur TEILWEISE — der
+Fund präzisiert die Schleifen-Klasse endgültig.** Leiter (dev-19,
+je 19/19 ok): 0,35 → dtw 0,0858 (v0.5: 0,0850, +0,0008) · aiou
+0,7493 (−0,0138, hält) · **cross_missing 31 → 27, Netto-Defekte
+35 → 32** · retrace 5+22 → 4+21 · **`retrace_arc_ratio`-Gap
+0,285 → 0,044** (Median 0,956 — praktisch Hand-Niveau) · touch
+41 → 38, overlap 2 → 1 · p90 +1,1 %. 0,7 → aiou 0,7404
+(−0,0227) → Zusatz-Kill. Struktur vor Distanz, alle Wächter im
+Rahmen → `RIDE_DOUBLE_ZONE_MARGIN_UNITS` = 0,35. ABER: die
+Rückkehrer (Wer +2, Galoppieren +1, die-2 +1) sind die
+PUNKT-Pinch-Unterklasse — die erwarteten Schleifen-Rückkehrer
+(will 2× l, zwei, die, unter, muß-Stamm) blieben ALLE bei 0.
+Autopsie-Bild (will, v0.5 vs. m035): der Aufwärts-Pass BOARDET
+die verschmolzene Schiene genau auf Kreuzungshöhe — unterhalb
+des Schleifenschlusses existiert gar keine Pixel-Wiederbelegung,
+die ein Occupancy-Trigger sehen könnte; der Selbstschnitt der
+Karte wird beim Aufsteigen durch einen tangentialen Board-Hop
+ERSETZT. Ein Occupancy-Mechanismus kann diese Klasse
+prinzipiell nicht erreichen — der Rettungsweg ist ein ANDERER
+Trigger (unten), keine weichere Schwelle.
+
+### Route „Lotse" v0.8 `aug17` — Vorregistrierung: Karten-Vorfahrt an Karten-Selbstschnitten (L1b)
+
+Geschrieben und committet VOR der ersten Zahl. Der v0.7-Fund:
+die Schleifen-Klasse der fehlenden Kreuzungen (will/zwei/die/
+unter/muß u. a., der Großteil der verbleibenden 27) entsteht
+NICHT durch Doppel-Belegung, sondern durch den Board-Hop — der
+Ritt ersetzt den Selbstschnitt der Karte durch ein tangentiales
+Aufsteigen auf die verschmolzene Schiene. Die KARTE hat die
+Kreuzung (das Soll ist duktus-deterministisch, ihre
+Selbstschnitte sind berechenbar); der neue TRIGGER ist darum der
+**Karten-Selbstschnitt selbst**: Um jeden Selbstschnittpunkt der
+komponierten Karten-Striche bekommen die Karten-Samples BEIDER
+beteiligter Pässe innerhalb eines Bogenfensters im Viterbi
+ausschließlich den Brücken-Zustand (die v0.4-Geometrie, mit dem
+richtigen Auslöser) — beide Züge fahren die Karte durch die
+Kreuzung, das X ist das X der Karte, mit ihrem Winkel; außerhalb
+der Fenster ändert sich nichts, v0.5 + v0.7 bleiben aktiv.
+
+**EIN Knopf: `MAP_CROSSING_WINDOW_UNITS`** (0,0 = aus). Leiter
+0,35 / 0,6. Erwartung: die Schleifen-Klasse kehrt zurück —
+konkret will (2× l-Schleife), zwei, die/die-2, unter (bis 3),
+die muß-Stamm-Kreuzung (×3) und weitere Galoppieren-Anteile;
+`cross_missing` fällt klar unter 27, Ziel-Richtung ≤ 15 (das
+Ketten-Niveau). Benanntes Risiko: an Soll-Kreuzungen, die DIESE
+Hand nicht schreibt (linken 4 vs 3, mit-2 2 vs 1), zeichnet das
+Fenster ein X, das die Hand nicht hat → +spurious dort ist
+erwartbar und im Gate enthalten. **Gates:** Marken und
+`cross_missing+spurious` ohne Netto-Anstieg gegenüber dem
+v0.7-Stand (27+5 = 32); aiou-Median-Δ < −0,02 gegenüber 0,7493 =
+verworfen; p90-Wächter ≤ +10 % gegen die Kette wie gehabt;
+`dtw_reversed_better` = 0. Kill: bleibt die Schleifen-Klasse
+auch mit erzwungener Karten-Fahrt aus (die Karte selbst liegt
+dann zu weit von der Tinte), ist der ehrliche Rest die
+Sub-Strich-Trennung aus Breiten-Evidenz (§7.9) — und die
+Karten-PLATZIERUNG wird als eigener Befund an die
+Kompositions-Schiene zurückgegeben.

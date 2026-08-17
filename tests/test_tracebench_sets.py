@@ -13,9 +13,32 @@ import pytest
 from tools.tracebench.sets import TRACEBENCH_DEV_IDS
 
 
-def test_the_development_split_is_exactly_the_ten_hand_traced_words() -> None:
-    assert TRACEBENCH_DEV_IDS == {"die", "laden", "linken", "mit", "muß", "und", "unter", "Wer", "will", "zwei"}
-    assert len(TRACEBENCH_DEV_IDS) == 10
+def test_the_development_split_is_exactly_the_frozen_dev_assignment() -> None:
+    # The §2.5 assignment (tintenfolger.md), activated 2026-08-17 as a declared
+    # ruler change: the ten burned words of 2026-08-13, the two extension words,
+    # and every repeat occurrence of a dev word (repetitions split as a WORD).
+    assert TRACEBENCH_DEV_IDS == {
+        "die",
+        "laden",
+        "linken",
+        "mit",
+        "muß",
+        "und",
+        "unter",
+        "Wer",
+        "will",
+        "zwei",
+        "Galoppieren",
+        "das",
+        "die-2",
+        "mit-2",
+        "muß-2",
+        "muß-3",
+        "und-2",
+        "und-3",
+        "und-4",
+    }
+    assert len(TRACEBENCH_DEV_IDS) == 19
 
 
 def test_the_split_cannot_be_appended_to() -> None:

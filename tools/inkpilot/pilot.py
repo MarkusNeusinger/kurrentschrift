@@ -107,6 +107,19 @@ TAIL_RUNOUT_MAX_UNITS = 1.0
 # 1.66, aiou -0.002).
 RIDE_DOUBLE_MAP_PRIORITY = True
 RIDE_DOUBLE_MIN_GAP = 4  # samples between visits before it counts as a pass
+# v0.7 (pre-registered, L1 of the aug17 round): widen each v0.5-triggered
+# sample's map right-of-way to its neighbours within this arc distance (in
+# x-heights, along the sample chain of the same stroke). At a junction pinch
+# the later pass re-occupies only 1-3 corridor pixels, so v0.5 rides the map
+# for 1-2 samples — too narrow to turn the two tangential merges into a
+# transversal crossing. The trigger stays; its EFFECT becomes a zone. 0.0 = off.
+# ADOPTED aug17 at 0.35 (dev-19: cross missing 31 -> 27, net defects 35 -> 32,
+# retrace-arc gap 0.285 -> 0.044, touch 41 -> 38 at dtw +0.0008 / aiou -0.014 —
+# all gates pass; 0.7 rejected by the aiou kill). Honest miss: the recovered
+# crossings are the POINT-pinch subclass; the loop class (the up-pass boards
+# the merged rail AT crossing height, so no pixel is ever re-occupied there)
+# stays and is the v0.8 arm's target.
+RIDE_DOUBLE_ZONE_MARGIN_UNITS = 0.35
 # v0.6 (pre-registered): the smoothing pass over the 8-connected pixel
 # zigzag — per iteration the local mean (1, 2, 1) / 4 over each stroke with
 # FIXED endpoints. Structure is a GATE, not code: the bench counters must
@@ -630,6 +643,19 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
                 else:
                     seen[key] = counter
             masks.append(mask)
+        if RIDE_DOUBLE_ZONE_MARGIN_UNITS > 0.0:
+            # v0.7 zone widening: dilate each stroke's mask along its sample
+            # chain. Samples are equally spaced at SAMPLE_STEP_UNITS, so the
+            # margin converts to a fixed sample radius.
+            reach = int(round(RIDE_DOUBLE_ZONE_MARGIN_UNITS / SAMPLE_STEP_UNITS))
+            widened: list[np.ndarray] = []
+            for mask in masks:
+                out = mask.copy()
+                for k in np.flatnonzero(mask):
+                    lo = max(0, k - reach)
+                    out[lo : k + reach + 1] = True
+                widened.append(out)
+            masks = widened
         strokes = [
             _assemble_ride(pg, samples, seq, mask) for (samples, seq), mask in zip(assignments, masks, strict=True)
         ]
