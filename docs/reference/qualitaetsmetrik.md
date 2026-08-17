@@ -5522,3 +5522,169 @@ r tiefer — von-Gewinn ernten, ohne Zorn zu bezahlen). Die gehört
 als eigene Pre-Reg auf den Tisch, ehrlicherweise erst mit dem
 Bestätigungssatz (dieselbe n≤8-Vorsicht wie bei P3); bis dahin
 trägt der Bug — dokumentiert statt still.
+
+### Re-Baseline `aug17` — der 19er-Dev-Satz: Dev-Erweiterung aktiviert, alle stehenden Routen neu vermessen
+
+**Anlass und Deklaration.** Der Autor hat den kompletten Dev-Satz der
+§2.5-Zuordnung nachgefahren (alle 19 Vorkommen `authored`, inkl. der
+zwei neuen Wörter **Galoppieren** und **das** und aller
+Wiederholungs-Vorkommen; Bestätigung A stand bei 5/20, B bei 4/24 —
+beide bleiben versiegelt). Owner-Go in Session (2026-08-17): die
+Dev-Erweiterung tritt VOR der Voll-Autorisierung in Kraft
+(Aktivierungs-Nachtrag in tintenfolger.md §2.5 — die Zuordnung war
+seit 2026-08-16 fixiert und performance-blind, Galoppieren/das nie
+gebencht, der Weg Dev → Bestätigung existiert nicht).
+`TRACEBENCH_DEV_IDS` führt seither 19 Ids (Wiederholungen splitten
+als WORT, §2.5). Zugleich ist dies die deklarierte
+**Doppel-Re-Baseline** der Betriebsregeln: die Fixture-Roots wurden
+in der Cloud-Session über `fetch_fixtures --set all --verify` neu
+gebaut (kein `--only`-Refill möglich — frischer Klon hat keine
+Roots; Verify: 12 Kompositionen und alle Template-Zeilen bit-exakt
+gegen die deployte API), die Vorher-Zahlen (`aug14`/`aug16`-Stände)
+sind mit den heutigen NICHT vergleichbar. Alle Routen laufen mit
+gepinnten BLAS-Threads (`OPENBLAS_NUM_THREADS=1`,
+`OMP_NUM_THREADS=1`).
+
+**Identitäts-Gate (vor jeder Kandidaten-Zahl): PASS auf 19/19** —
+dtw 0, beide Chamfer 0, alle Zähler voll gematcht,
+`direction_uncertain` 0 (auch die 9 neuen Nachfahrungen stimmen
+überall mit der Duktus-Richtung des Priors überein — Galoppieren
+eingeschlossen). Fixture-Qualitätssignale, keine Kandidatenfehler:
+`marks_uncertain` 9/19 (der Autor zeichnet Marken teils verbunden
+bzw. unter der Diakritika-Schwelle — der Bestätigungs-Brief-Hinweis
+„Marken mit eigenem Absetzen" gilt weiter); `soll_cross_agree`
+16/19, `soll_zones_agree` 18/19 (Abweichler unten je Wort).
+
+**Die Kette auf dem 19er-Satz** (`--candidate chain --split dev`,
+Schritt 0,02, 19/19 gescort, 0 failed, 163 s):
+
+```
+dtw_xh_median:   0.057853    aiou_median:              0.6940
+dtw_xh_p90:      0.236331    chamfer_cand_ref_median:  0.0380
+dtw_xh_worst:    unter 0.4503 chamfer_ref_cand_median: 0.0400
+marks_missing:   1  marks_spurious: 1
+cross_missing:   15  cross_spurious: 7
+retrace_missing: 7   retrace_spurious: 13
+retrace_arc_ratio_median: 0.641
+touch 13 Hand / 24 Kette · overlap 0 Hand / 8 Kette
+lift_delta_total: +7  dtw_reversed_better: 0  max_absorption_max: 93
+```
+
+Je Wort (dtw · cross matched/ref+spurious · Auffälligkeit):
+unter **0,4503** · 1/3 · der bekannte Stapel-Kollaps, unverändert —
+muß **0,2421** / muß-2 **0,2082** / muß-3 **0,2337** · je 1/1 ·
+die ß-Retrace-Zone fehlt in ALLEN drei Vorkommen (0/1 gematcht,
+r 0,18–0,24): der Defekt ist reproduzierbar klassenhaft, kein
+Einzel-Beleg — **Galoppieren 0,2349** · **3/8** (5 verlorene
+Kreuzungen, die schwerste Struktur-Zahl des Satzes) · dazu die
+fehlende i-Marke (0/1), lift +1, r 1,84 — das 22,7-s-Solve ist auch
+der Laufzeit-Ausreißer — das 0,0579 · 3/3**+2** · zwei erfundene
+Kreuzungen — die 0,0745/die-2 0,0746 · je +1/+2 erfundene —
+laden 0,0746 · 1/3+2 — zwei 0,0761 · 1/3 — will 0,0451 · 1/3 —
+mit 0,0426/mit-2 0,0376 · 1/2 bzw. 1/1 — Wer 0,0432 · 3/3 —
+und-Familie 0,0280–0,0491 · 1/1 · sauber.
+
+Lesart: Der Median sinkt leicht (0,0620 → 0,0579), weil die
+Wiederholungs-Vorkommen mehrheitlich leichte Wörter sind — die
+KLAGE wächst trotzdem: die muß-Klasse trägt jetzt dreifach, und
+Galoppieren bringt eine neue Fehlerklasse (Versal-Kette + lange
+Wortspanne) mit 5 verlorenen Kreuzungen und einem
+Berührungs-/Überlagerungs-Aufwuchs (touch 24 vs. 13, overlap 8
+vs. 0), den die 10er-Baseline so nicht zeigte.
+
+**Der Lotse auf dem 19er-Satz** (adoptierter Stand: Auslauf 1,0 +
+Ritt-Doppelzonen-Kartenfahrt; 19/19 ok, 83 s): dtw-Median
+**0,0850** · p90 0,1273 · worst muß-2 0,1466 · aiou **0,7631**
+(klar über der Kette 0,6940) · `marks_missing` 0 ·
+`cross_missing` **31** (+4 unecht) · `retrace_spurious` 22 ·
+touch 41 (Hand 13). Gepaart gegen die Kette: Δ-Median +0,0099,
+Sign-Test 10:9 — zahlenmäßig unentschieden, aber die Einsätze
+bleiben asymmetrisch, jetzt mit VIER großen Lotse-Siegen statt
+drei: **unter −0,387 · muß −0,129 · muß-3 −0,121 · Galoppieren
+−0,112 · muß-2 −0,062 · die-2 −0,044**, dagegen 10 kleine bis
+mittlere Niederlagen (max. will +0,081). Die muß-Klasse gewinnt
+der Lotse GESCHLOSSEN (alle drei Vorkommen ~0,11–0,15 gegen
+0,21–0,24) — der Komplementaritäts-Befund der 10er-Runde
+generalisiert auf die neuen Belege, statt zu verschwinden.
+Diagnose-Spalten: `direction_uncertain` 3 = exakt die drei
+muß-Vorkommen (je 1 von 2 geprüften Strichen — der ß-Bereich;
+Autopsie-Kandidat, kein Gate-Bruch); `will` trägt r = 14,9
+(pathologischer Deckungs-Doppelritt), laden 6,4 · Galoppieren 6,3
+· die 4,5. **Die Kreuzungs-Verlustkarte ist vollständig:** JEDES
+Wort verliert (31 von 46 Hand-Kreuzungen fehlen), Galoppieren
+alle 8, zwei/Wer/will/unter je 3/3 bzw. 0 gematcht — und auch die
+join-gebildete die-Kreuzung (soll_letters 0) fällt dem
+Schienen-Kollaps zum Opfer. Der offene Block der Route (v0.3-Fund:
+lange geteilte Schienen, Schleifen-Kollaps der Skelettierung) ist
+damit auf dem größeren Satz DER dominante Verlustmechanismus.
+
+**Die Nullprobe auf dem 19er-Satz** (routeg, 19/19 ok): dtw-Median
+0,6189 — alle 19 Wörter schlechter als die Kette (Sign-Test 19:0),
+rel. Median **+1092 %**; aiou 0,8290 (wie immer die beste
+Tinten-Deckung — Skelett-Mitte), `cross_missing` 27,
+`lift_delta` +167. Galoppieren ohne Prior: **1,906**. Der Wert
+des Duktus-Priors, auf 19 Wörtern neu beziffert: Faktor ~11 im
+Median, am langen Versal-Wort Faktor 8 gegen die Kette bzw. 15
+gegen den Lotsen.
+
+**Das Orakel der Fusion, neu beziffert** (je Wort das bessere aus
+Kette/Lotse — Decke, kein Ergebnis): Median **0,0491** · p90
+0,115 · schlechtestes Wort muß-2 0,1466 (statt 0,450 Kette bzw.
+0,147 Lotse). Die Decke liegt weiter unter beiden Einzelrouten;
+der referenzfreie Auswähler bleibt die offene Frage (die
+`aug16`-Diagnostik gilt: kein Signal trennt auf Dev-n, keine
+Regel wird auf dem Dev-Satz adoptiert).
+
+*(Die InkSight-T0-Zeile folgt in diesem Eintrag nach dem Ende des
+CPU-Laufs derselben Session — 19 Crops × derender-Prompt; die
+neuen Crops enthalten mit Galoppieren erstmals ein Wort JENSEITS
+der InkSight-Trainingsfiltergrenze w/h 4,0: Ratio 4,34 — der
+vorregistrierte B2-Prüffall.)*
+
+### Route „Lotse" v0.7 `aug17` — Vorregistrierung: die Zonen-Ausweitung der Kartenfahrt (L1)
+
+Geschrieben und committet VOR der ersten Zahl. Die Autopsie der
+Re-Baseline (tintenfolger.md §7.10, Befund 3) lokalisiert die 31
+fehlenden Kreuzungen im **Junction-Pinch**: der Viterbi routet
+beide Pässe eines Schleifenschlusses über dieselben 1–3
+Korridor-Pixel; die adoptierte v0.5-Kartenfahrt triggert dort
+korrekt, aber nur auf 1–2 Samples — ein einzelnes
+karten-gerittenes Sample macht aus den zwei tangentialen
+Y-Zusammenläufen kein transversales X (Instrumentierung `will`:
+4 von 173 Samples map-priorisiert, je 1 pro l-Schleifenschluss;
+Fenster-Bilder will/die/muß). Neuer MECHANISMUS im Sinne der
+§7.9-Leitplanke: nicht der Trigger wird weicher, seine WIRKUNG
+wird räumlich ausgeweitet.
+
+**EIN Knopf: `RIDE_DOUBLE_ZONE_MARGIN_UNITS`** — jedes
+v0.5-getriggerte Sample weitet die Karten-Vorfahrt auf seine
+Nachbar-Samples innerhalb dieses Bogenabstands (in xh, entlang
+der Sample-Kette desselben Strichs) aus; der spätere Pass fährt
+damit die KARTE durch den ganzen Pinch statt durch 1–2 Punkte,
+und das X entsteht mit dem Kreuzungswinkel der komponierten
+Karte. Einfachpässe, Brücken und alles außerhalb der geweiteten
+Zonen bleiben unberührt; der erste Pass bleibt auf der
+Tinten-Mitte. Leiter 0,0 (= aus, heutiges Verhalten) / 0,35 /
+0,7.
+
+**Erwartung (benannt, damit ein Negativ lesbar ist):** die
+Junction-Pinch-Klasse der 31 fehlenden Kreuzungen kehrt
+substanziell zurück — konkret erwartete Rückkehrer: die zwei
+l-Schleifen in `will` (4,22/5,28), die d-Schleifen in
+die/die-2/das/laden, die z/w-Schlüsse in `zwei`, Anteile der 8
+Galoppieren-Kreuzungen und die ß-Stamm-Kreuzung der muß-Klasse
+(dann entfällt L2 teilweise); `retrace_spurious` (22) und
+`touch_cand` (41) fallen Richtung Hand-Niveau; dtw auf den
+Struktur-Wörtern fällt oder hält. `aiou` gibt nur INNERHALB der
+geweiteten Zonen nach.
+
+**Gates und Kills (wie v0.1/v0.5):** Kette-Vergleich gepaart
+gegen die `aug17`-Baseline; Co-Primär-Gates Marken und
+`cross_missing+spurious` ohne Netto-Anstieg gegenüber dem
+v0.5-Lotse-Stand (31+4); **Zusatz-Kill `aiou`-Median-Δ < −0,02
+gegenüber dem v0.5-Stand (0,7631) = verworfen**; erzeugt die
+Karten-Geometrie in den Zonen netto > +2 unechte Kreuzungen über
+das Soll, ist die Karten-Platzierung dort zu schlecht —
+verworfen, zurück zur Sub-Strich-Trennung (§7.9). Beide
+Leiter-Stufen werden gemessen, adoptiert wird höchstens EINE
+(die bessere, sofern sie alle Gates besteht).

@@ -219,6 +219,18 @@ erst in Kraft, wenn alle 63 Wörter `authored` sind — als deklarierte
 Lineal-Änderung mit datiertem Re-Baseline-Lauf aller stehenden Routen
 (Kette · Lotse · InkSight · Nullprobe) auf dem neuen Dev-Satz.
 
+**Aktivierungs-Nachtrag (Owner-Go in Session, 2026-08-17):** Die
+Dev-Erweiterung tritt VOR der Voll-Autorisierung in Kraft — zu dem
+Zeitpunkt, an dem der DEV-Satz vollständig `authored` ist (alle 19
+Vorkommen, inkl. Galoppieren + das; Bestätigung A stand bei 5/20,
+B bei 4/24). Das ändert am Blindheits-Argument nichts: die Zuordnung
+selbst war seit 2026-08-16 fixiert, Galoppieren/das waren nie
+gebencht, und der Weg Dev → Bestätigung existiert nicht — vorgezogen
+wird nur der Messbeginn, nicht die Wahl. Die Versiegelung von A/B
+gilt unverändert. Der datierte Re-Baseline-Lauf der stehenden Routen
+auf dem 19er-Dev-Satz steht in `qualitaetsmetrik.md` §14
+(„Re-Baseline `aug17`").
+
 **Benannter Notausgang.** Wird die Kapital-Join-Klasse Tuning-Fokus,
 darf EIN weiteres Versal-Wort mit eigener Vorregistrierung von A nach
 Dev wandern — BEVOR die erste Kapital-Tuning-Zahl gelesen ist, nie
@@ -802,3 +814,80 @@ Disziplin verhindert).
 | Arm ⑥/⑥b Landmark-Gewicht (`aug14`) | Korrespondenz-Kappe gelöst (classed punktweise kostenlos), Gewicht trotzdem nutzlos im Folger-Setting | klassenbewusste Ziele stehen bereit für ein Setting, in dem die Kreuzung wirklich wandern kann (Lotse) | mit der Lotse-Runde |
 | P2a Arkaden-Luft · P1 Diagonalen-Trim (`aug15`) | Beleg-Varianz ±0,1 xh, Ruler monoton dagegen | Dissektions-Forderung im Nachkalibrierungs-Protokoll (§7.7) | Bestätigungssatz |
 | Methodik-Lücke (quer, `aug16`) | drei Kills wurden von Netto-Deltas ≤ 0,0007 entschieden — das Lineal ZUCKT dort nur, die Gates machen daraus ein Nein | humanbench-WORT-Runde als vorregistrierter Tie-Breaker für ruler-indifferente Fälle (\|Netto-Δ\| < ε bei starker Dissektions-Evidenz) | eigene Pre-Reg + Runde |
+
+### 7.10 Runde aug17: die Befund-Matrix des 19er-Dev-Satzes und der Maßnahmenplan
+
+Grundlage: die Re-Baseline aller stehenden Routen auf dem
+aktivierten 19er-Dev-Satz (qualitaetsmetrik.md §14 „Re-Baseline
+`aug17`") plus die Autopsien derselben Session (Kreuzungs-
+Positionskarten Hand/Kette/Lotse, Ritt-Instrumentierung `will`,
+Fenster-Bilder will/die/muß, Kompositions-Soll-Abgleich
+Galoppieren). Jede Maßnahme ist ein KANDIDAT mit eigener
+§14-Vorregistrierung vor der ersten Zahl.
+
+**Befundlage — präzisiert gegenüber §7.1:**
+
+1. **Die muß-Klasse ist klassenhaft, kein Einzel-Beleg:** alle drei
+   Vorkommen tragen beim Kettenfit dtw 0,21–0,24 mit derselben
+   Signatur (ß-Retrace-Zone 0/1 gematcht, r 0,18–0,24). Der Lotse
+   gewinnt die Klasse geschlossen (0,11–0,15), verliert aber die
+   ß-Stamm-Kreuzung und führt die ß-Bögen als eigenen Strich ohne
+   Stamm-Durchstoß (+1 Lift je Vorkommen, `direction_uncertain`
+   je 1 Strich — Autopsie-Bild: Bögen erreichen den Stamm nie,
+   der Stamm selbst ist ein Deckungs-Ritt-Gewirr mit
+   Skelett-Spornen).
+2. **Galoppieren (neu, 0,2349 Kette) zerlegt sich in DREI
+   Mechanismen:** (a) 2 der 8 Hand-Kreuzungen fehlen schon der
+   KOMPOSITION — die p-Unterlängen: die Tafel-Hand schreibt die
+   p-Rückkehr als schmale Schleife (Kreuzung bei v ≈ 0,1–0,2),
+   die Vorlage als exakten Retrace → Stufe `chart_ductus`/
+   Laufform, Autorenfrage (wie K3/W-Ansatz); (b) 3 weitere hat
+   die Komposition, der FIT verliert sie (die §13a-Höhenfrage);
+   (c) der Lotse verliert alle 8 (Befund 3). Dazu die fehlende
+   i-Marke und +1 Lift.
+3. **Der Lotse-Kreuzungsverlust ist mechanisch lokalisiert — der
+   JUNCTION-PINCH:** am Schleifenschluss routet der Viterbi beide
+   Pässe über dieselben 1–3 Korridor-Pixel des Knotens; statt
+   eines transversalen X entstehen zwei tangentiale
+   Y-Zusammenläufe, die der Durchstoß-Zähler zu Recht nicht
+   zählt. Die adoptierte v0.5-Kartenfahrt TRIGGERT dort korrekt —
+   aber nur auf 1–2 Samples (Instrumentierung `will`: 4 von 173
+   Samples, je 1 pro l-Schleifenschluss), und ein einzelnes
+   karten-gerittenes Sample macht aus dem Pinch kein X. Der
+   Trigger ist richtig, die WIRKUNG zu schmal. 31 von 46
+   Hand-Kreuzungen fehlen; JEDES Wort verliert, auch die
+   join-gebildete die-Kreuzung.
+4. **Die Kreuzungs-HÖHE bleibt der Ketten-Restdefekt der kleinen
+   Wörter:** das stapelt die d-Schleifen-Kreuzung dreifach auf
+   1,0–1,26 xh (Hand 0,94 → 2 unechte), die/die-2 setzen sie
+   0,25–0,3 xh zu hoch — dieselbe §13a-Klasse, jetzt mit
+   frischen Belegen.
+5. **Soll-Abweichler des 19er-Satzes benannt:** Galoppieren 6 vs 8
+   (Befund 2a), Wer-Zonen 1 vs 2 (der W-Ansatz-Retrace, K3 —
+   steht beim Autor), linken 4 vs 3 und mit-2 2 vs 1
+   (Beleg-Varianz: DIESE Hand kreuzt das t nicht).
+6. **InkSight-Prüffall:** der Galoppieren-Crop liegt mit
+   w/h = 4,34 ERSTMALS jenseits der
+   InkSight-Trainingsfiltergrenze 4,0 — der vorregistrierte
+   B2-Fall (Tiling) hat damit seinen Probestein im Dev-Satz.
+7. **Fusion-Orakel neu:** 0,0491 (worst muß-2 0,147) — die Decke
+   liegt weiter unter beiden Routen; der referenzfreie Auswähler
+   bleibt bis zum Bestätigungssatz gesperrt (Dev-Fishing-Verbot).
+8. **Fixture-Qualität:** `marks_uncertain` 9/19 (verbundene
+   Marken) — der Bestätigungs-Brief-Hinweis gilt fort.
+
+**Maßnahmenplan (Reihenfolge = erwarteter Ertrag ÷ Risiko):**
+
+| # | Maßnahme | Mechanismus | Stufe/Route | Stand |
+|---|---|---|---|---|
+| L1 | **Zonen-Ausweitung der Ritt-Doppelzonen-Kartenfahrt** (`RIDE_DOUBLE_ZONE_MARGIN_UNITS`) | der v0.5-Trigger bleibt, seine Wirkung wird zum ZONEN-Fenster ausgeweitet — der spätere Pass fährt die Karte durch den GANZEN Pinch, das X entsteht mit dem Winkel der Karte | Lotse | §14-Pre-Reg `aug17`, gemessen in dieser Runde |
+| L2 | ß-Klasse des Lotsen (Bögen-Strich ohne Stamm-Durchstoß, Sporn-Ritte) | Autopsie nach L1 (L1 kann die Stamm-Kreuzung schon liefern); dann eigener Arm | Lotse | nach L1 |
+| G1 | p-Unterlängen-Schleife (Tafel kreuzt, Vorlage retraced) | Autorenentscheid Chart/Laufform — KEIN Composer-Hack (Doktrin: Manual nur, wo es Ground Truth schafft) | chart_ductus | Todoist an den Autor |
+| A3′ | Kreuzungs-Höhen als Variablen (jetzt mit das/die-Stapel-Evidenz) | die §7.3-A3-Route, unverändert Welle 3 | Kette | wartet |
+| B2 | Tiling w/h ≤ 2 | die §7.4-Maßnahme; Galoppieren-T0-Zahl entscheidet die Dringlichkeit | InkSight | nach dem T0-Lauf dieser Session |
+| — | Auswähler „Vier Augen" | gesperrt bis Bestätigungssatz | Fusion | steht |
+
+Messdisziplin unverändert (§7.7): Lotse-Arme messen auf dem
+19er-Dev-Satz gegen die `aug17`-Ketten-Baseline, Gates wie v0.1
+plus die aiou-Zusatz-Kill-Schranke; Komposition/Kette bleiben in
+dieser Runde unberührt (kein compose-golden-Bruch).
