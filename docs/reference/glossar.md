@@ -57,7 +57,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenfolger §3 · Tintenlücke §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
-- **V** — Variante §2 · Vereinfachungs-Gate §5 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4
+- **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4
 - **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Editor §5 · Wort-Trace §2
 - **X** — x-Höhe (`xh`) §1
 - **Z** — Zelle einsetzen §5 · zirkuläres Kriterium §4 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
@@ -1281,6 +1281,19 @@ Namen bleiben in Code und datierten §14-Einträgen unverändert — dieser
 Eintrag ist die Übersetzungstabelle. *Technisch:* Label-Marker in
 `tools/tracebench/view.py` (`CHAIN_MARKERS`/`CONTROL_MARKERS`)
 → proposals/tintenfolger.md §7.8
+
+**Verfahrensseite** — die Register-Seite eines Duell-Verfahrens unter
+`docs/reference/` (verfahren-kette · -lotse · -inksight ·
+-nullprobe): Steckbrief (Anzeige-Name, Code-Heimat, aktuell
+adoptierte Konstanten) plus Versions-/Arm-Ledger mit Verdikt und
+§14-Anker. Die Konvention (eine Versionsnummer je vorregistriertem
+Arm; Stand = Menge der adoptierten Mechanismen; keine rückwirkende
+Umnummerierung; die Nullprobe bewusst unversioniert) steht in der
+Übersicht. Register, keine zweite Wahrheit: jede Zahl dort ist ein
+datiertes Zitat, der Beleg wohnt in qualitaetsmetrik.md §14.
+*Technisch:* `docs/reference/verfahren.md` (Übersicht + Konvention),
+Nachzieh-Pflicht in docs/index.md § „Dokument-Status"
+→ reference/verfahren.md
 
 **Gute-Fortsetzung** *(good continuation)* — die Gestalt-Regel, mit der
 ein prior-freies Verfahren an einer Kreuzung entscheidet, welcher Ast
