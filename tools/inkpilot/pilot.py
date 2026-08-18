@@ -107,6 +107,52 @@ TAIL_RUNOUT_MAX_UNITS = 1.0
 # 1.66, aiou -0.002).
 RIDE_DOUBLE_MAP_PRIORITY = True
 RIDE_DOUBLE_MIN_GAP = 4  # samples between visits before it counts as a pass
+# v0.7 (pre-registered, L1 of the aug17 round): widen each v0.5-triggered
+# sample's map right-of-way to its neighbours within this arc distance (in
+# x-heights, along the sample chain of the same stroke). At a junction pinch
+# the later pass re-occupies only 1-3 corridor pixels, so v0.5 rides the map
+# for 1-2 samples — too narrow to turn the two tangential merges into a
+# transversal crossing. The trigger stays; its EFFECT becomes a zone. 0.0 = off.
+# ADOPTED aug17 at 0.35 (dev-19: cross missing 31 -> 27, net defects 35 -> 32,
+# retrace-arc gap 0.285 -> 0.044, touch 41 -> 38 at dtw +0.0008 / aiou -0.014 —
+# all gates pass; 0.7 rejected by the aiou kill). Honest miss: the recovered
+# crossings are the POINT-pinch subclass; the loop class (the up-pass boards
+# the merged rail AT crossing height, so no pixel is ever re-occupied there)
+# stays and is the v0.8 arm's target.
+RIDE_DOUBLE_ZONE_MARGIN_UNITS = 0.35
+# v0.8 (pre-registered, L1b): map right-of-way around the MAP's own
+# self-intersections. The loop class of missing crossings is not a double
+# occupancy — the ride REPLACES the map's self-crossing with a tangential
+# board-hop onto the merged rail, so no occupancy trigger can see it. The map
+# HAS the crossing (the soll is ductus-deterministic and its self-intersections
+# are computable): map samples of BOTH involved passes within this arc window
+# (in x-heights) of a self-intersection ride the map (bridge state forced in
+# the Viterbi — the v0.4 geometry with the right trigger). 0.0 = off.
+# Measured-and-rejected aug17 as RAW map geometry (structure lands completely:
+# net crossing defects 32 -> 4, dtw median under the chain — but the map's
+# local offset to the ink breaches the aiou kill). ADOPTED aug17 at 0.35 in
+# the PINNED v0.9 form below (dev-19: net crossing defects 32 -> 7, dtw
+# median 0.0858 -> 0.0578 — level with the chain, paired Δ-median -24 % —,
+# p90 0.118 vs chain 0.236, aiou -0.0142 within the kill; 0.6 rejected by
+# the aiou kill at -0.039). The residual defects are soll-vs-hand
+# disagreements (Galoppieren's p loops missing from the composition itself,
+# linken/mit-2 soll crossings this hand does not write), not ride failures.
+MAP_CROSSING_WINDOW_UNITS = 0.35
+# v0.9 (pre-registered, L1c): pin each forced-window run onto the ink. The
+# window's map sub-polyline is shifted as a whole so its ends meet the
+# neighbouring boarding points of the ride (linearly interpolated offset
+# between the two end offsets; a run at a stroke end uses its one available
+# offset as a constant). Topology and crossing angle stay the map's, the
+# POSITION comes from the ink — the doctrine applied to the window itself.
+# Natural bridges (missing ink) and the adopted v0.5/v0.7 zones are untouched.
+MAP_CROSSING_PIN = True
+# Same-stroke arc floor for a MAP self-intersection: two chords closer than
+# this along the chain meet at a polyline corner, not a crossing. Mirrors the
+# counters' 0.35-xh arc rule (`tools/pairlab/landmarks.py::
+# LANDMARK_MIN_ARC_SEPARATION_UNITS`) as a SNAPSHOT — deliberately not
+# imported, so a dated ruler re-baseline cannot silently move an adopted
+# candidate mechanism.
+MAP_CROSSING_MIN_ARC_UNITS = 0.35
 # v0.6 (pre-registered): the smoothing pass over the 8-connected pixel
 # zigzag — per iteration the local mean (1, 2, 1) / 4 over each stroke with
 # FIXED endpoints. Structure is a GATE, not code: the bench counters must
@@ -311,11 +357,72 @@ def resample(stroke: np.ndarray, step_px: float) -> np.ndarray:
     return np.column_stack([xs, ys])
 
 
+def _segment_intersections(a: np.ndarray, b: np.ndarray, min_sep: int | None) -> list[tuple[int, int]]:
+    """Index pairs (i, j) where segment a[i:i+2] properly crosses b[j:j+2].
+
+    Proper crossing only (both parameters strictly inside), so shared sample
+    points of consecutive segments never count. `min_sep` — for the
+    same-stroke case — additionally drops pairs closer than that many samples
+    along the chain: neighbouring segments of one polyline meet at their
+    joint, which is a corner, not a self-crossing.
+    """
+    if len(a) < 2 or len(b) < 2:
+        return []
+    p, r = a[:-1], a[1:] - a[:-1]
+    q, s = b[:-1], b[1:] - b[:-1]
+    rxs = r[:, None, 0] * s[None, :, 1] - r[:, None, 1] * s[None, :, 0]
+    qp = q[None, :, :] - p[:, None, :]
+    qpxr = qp[..., 0] * r[:, None, 1] - qp[..., 1] * r[:, None, 0]
+    qpxs = qp[..., 0] * s[None, :, 1] - qp[..., 1] * s[None, :, 0]
+    with np.errstate(divide="ignore", invalid="ignore"):
+        t = qpxs / rxs
+        u = qpxr / rxs
+    hit = (np.abs(rxs) > 1e-12) & (t > 0.0) & (t < 1.0) & (u > 0.0) & (u < 1.0)
+    ij = np.argwhere(hit)
+    if min_sep is not None and len(ij):
+        ij = ij[np.abs(ij[:, 0] - ij[:, 1]) >= min_sep]
+    return [(int(i), int(j)) for i, j in ij]
+
+
+def map_crossing_masks(samples_per_stroke: list[np.ndarray], window_units: float) -> list[np.ndarray]:
+    """v0.8: per-stroke masks of samples near a MAP self-intersection.
+
+    Both passes through each self-crossing of the composed map get map
+    right-of-way for `window_units` of arc to either side, so the ride draws
+    the map's own X instead of board-hopping onto the merged rail. The
+    same-stroke separation floor mirrors the counters' 0.35-xh arc rule — a
+    polyline corner is not a crossing.
+    """
+    masks = [np.zeros(len(s), dtype=bool) for s in samples_per_stroke]
+    reach = int(round(window_units / SAMPLE_STEP_UNITS))
+    min_sep = max(2, int(round(MAP_CROSSING_MIN_ARC_UNITS / SAMPLE_STEP_UNITS)))
+    for ai in range(len(samples_per_stroke)):
+        for bi in range(ai, len(samples_per_stroke)):
+            pairs = _segment_intersections(
+                samples_per_stroke[ai], samples_per_stroke[bi], min_sep if ai == bi else None
+            )
+            for i, j in pairs:
+                masks[ai][max(0, i - reach) : i + reach + 2] = True
+                masks[bi][max(0, j - reach) : j + reach + 2] = True
+    return masks
+
+
 # ----------------------------------------------------------------- the ride
 
 
-def _assign_stroke(pg: PilotGraph, stroke_px: np.ndarray, xh_px: float) -> tuple[np.ndarray, list[PixelLoc | None]]:
-    """The GLOBAL sample->ridge assignment of one map stroke (samples, seq).
+def _assign_stroke(
+    pg: PilotGraph,
+    stroke_px: np.ndarray,
+    xh_px: float,
+    samples: np.ndarray | None = None,
+    forced_priority: np.ndarray | None = None,
+) -> tuple[np.ndarray, list[PixelLoc | None], np.ndarray]:
+    """The GLOBAL sample->ridge assignment of one map stroke.
+
+    Returns `(samples, seq, forced)`: the (possibly trimmed) samples, their
+    per-sample assignment (`PixelLoc` or `None` for the bridge state), and the
+    equally trimmed v0.8 forced-window mask so the caller can pin exactly
+    those runs (`_pin_forced_runs`).
 
     Solved as a Viterbi over the sample chain: a greedy walk boards the first
     plausible rail and then cascades — on the composed m, whose arcade runs
@@ -326,7 +433,8 @@ def _assign_stroke(pg: PilotGraph, stroke_px: np.ndarray, xh_px: float) -> tuple
     trailing bridge runs that never re-board are TRIMMED — ink that does not
     exist (a composed run-out over blank paper) is not a pen stroke.
     """
-    samples = resample(stroke_px, SAMPLE_STEP_UNITS * xh_px)
+    if samples is None:
+        samples = resample(stroke_px, SAMPLE_STEP_UNITS * xh_px)
     radius = BOARD_RADIUS_UNITS * xh_px
     max_ride = MAX_RIDE_FACTOR * SAMPLE_STEP_UNITS * xh_px
     bridge_emit = BRIDGE_EMIT_FACTOR * radius
@@ -335,11 +443,18 @@ def _assign_stroke(pg: PilotGraph, stroke_px: np.ndarray, xh_px: float) -> tuple
     # v0.4 map right-of-way: samples inside the MAP's own retrace zones ride
     # the map (bridge state forced) — the rail is degenerate there, the map
     # carries the crossing. Zones from the frozen ruler's own detector.
+    # v0.8 adds `forced_priority`: samples near a MAP self-intersection ride
+    # the map too (the loop class of the missing crossings — the ride's
+    # board-hop otherwise replaces the map's X with a tangential merge).
     map_priority = np.zeros(n, dtype=bool)
     if MAP_PRIORITY_IN_RETRACE and n >= 4:
         ia, ib = detect_retrace_pairs(samples[:, 0], samples[:, 1], None, prox_px=MAP_RETRACE_PROX_UNITS * xh_px)
         for arr in (ia, ib):
             map_priority[np.asarray(arr, dtype=int)] = True
+    forced = np.zeros(n, dtype=bool)
+    if forced_priority is not None:
+        forced = np.asarray(forced_priority, dtype=bool)[:n].copy()
+        map_priority |= forced
 
     # States per sample: [(loc | None for bridge, emission cost), ...]
     states: list[list[tuple[PixelLoc | None, float]]] = []
@@ -401,9 +516,9 @@ def _assign_stroke(pg: PilotGraph, stroke_px: np.ndarray, xh_px: float) -> tuple
 
     first = next((k for k in range(len(seq)) if rides(k)), None)
     if first is None:
-        return samples, [None] * len(samples)  # pure bridge: no ink under the map
+        return samples, [None] * len(samples), forced  # pure bridge: no ink under the map
     last = max(k for k in range(len(seq)) if rides(k))
-    return samples[first : last + 1], seq[first : last + 1]
+    return samples[first : last + 1], seq[first : last + 1], forced[first : last + 1]
 
 
 def _assemble_ride(
@@ -432,9 +547,52 @@ def _assemble_ride(
     return pts[keep]
 
 
+def _pin_forced_runs(pg: PilotGraph, samples: np.ndarray, seq: list[PixelLoc | None], forced: np.ndarray) -> np.ndarray:
+    """v0.9: shift each forced-window run so its ends meet the boarding points.
+
+    The window keeps the map's topology and crossing angle; its POSITION comes
+    from the ink — the offset between the run's boundary map samples and their
+    neighbouring rail assignments is interpolated linearly across the run. A
+    run bordered by a natural bridge inherits a zero offset on that side, a
+    run at a stroke end uses its one available offset as a constant, and a
+    stroke that is forced in its entirety stays raw.
+    """
+    if not MAP_CROSSING_PIN or not bool(forced.any()):
+        return samples
+    out = samples.astype(float).copy()
+    n = len(samples)
+    k = 0
+    while k < n:
+        if not (forced[k] and seq[k] is None):
+            k += 1
+            continue
+        end = k
+        while end + 1 < n and forced[end + 1] and seq[end + 1] is None:
+            end += 1
+        d_a = d_b = None
+        if k > 0:
+            d_a = (pg.px_of(seq[k - 1]) - samples[k - 1]) if seq[k - 1] is not None else np.zeros(2)
+        if end + 1 < n:
+            d_b = (pg.px_of(seq[end + 1]) - samples[end + 1]) if seq[end + 1] is not None else np.zeros(2)
+        if d_a is None and d_b is None:
+            k = end + 1
+            continue
+        if d_a is None:
+            d_a = d_b
+        if d_b is None:
+            d_b = d_a
+        span = float((end + 1) - (k - 1))
+        for i in range(k, end + 1):
+            t = (i - (k - 1)) / span
+            out[i] = samples[i] + (1.0 - t) * d_a + t * d_b
+        k = end + 1
+    return out
+
+
 def pilot_stroke(pg: PilotGraph, stroke_px: np.ndarray, xh_px: float) -> np.ndarray:
     """One map stroke ridden along the skeleton (assignment + assembly)."""
-    samples, seq = _assign_stroke(pg, stroke_px, xh_px)
+    samples, seq, forced = _assign_stroke(pg, stroke_px, xh_px)
+    samples = _pin_forced_runs(pg, samples, seq, forced)
     return _assemble_ride(pg, samples, seq)
 
 
@@ -605,7 +763,17 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
     result = derive_word(case)
     pg = PilotGraph(np.asarray(case.skel, dtype=bool))
     xh_px = float(result.registration.get("xh_px", result.xh_px))
-    assignments = [_assign_stroke(pg, s, xh_px) for s in map_strokes_px(result)]
+    maps = map_strokes_px(result)
+    samples_per = [resample(s, SAMPLE_STEP_UNITS * xh_px) for s in maps]
+    if MAP_CROSSING_WINDOW_UNITS > 0.0:
+        forced = map_crossing_masks(samples_per, MAP_CROSSING_WINDOW_UNITS)
+    else:
+        forced = [None] * len(maps)
+    assignments = [
+        _assign_stroke(pg, s, xh_px, samples=sp, forced_priority=f)
+        for s, sp, f in zip(maps, samples_per, forced, strict=True)
+    ]
+    assignments = [(_pin_forced_runs(pg, samples, seq, forced_mask), seq) for samples, seq, forced_mask in assignments]
     if RIDE_DOUBLE_MAP_PRIORITY:
         # Word-global double detection in WRITING order: the first pass of a
         # rail pixel keeps the rail, every later pass rides the map.
@@ -630,6 +798,19 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
                 else:
                     seen[key] = counter
             masks.append(mask)
+        if RIDE_DOUBLE_ZONE_MARGIN_UNITS > 0.0:
+            # v0.7 zone widening: dilate each stroke's mask along its sample
+            # chain. Samples are equally spaced at SAMPLE_STEP_UNITS, so the
+            # margin converts to a fixed sample radius.
+            reach = int(round(RIDE_DOUBLE_ZONE_MARGIN_UNITS / SAMPLE_STEP_UNITS))
+            widened: list[np.ndarray] = []
+            for mask in masks:
+                out = mask.copy()
+                for k in np.flatnonzero(mask):
+                    lo = max(0, k - reach)
+                    out[lo : k + reach + 1] = True
+                widened.append(out)
+            masks = widened
         strokes = [
             _assemble_ride(pg, samples, seq, mask) for (samples, seq), mask in zip(assignments, masks, strict=True)
         ]
