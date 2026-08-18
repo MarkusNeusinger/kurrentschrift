@@ -84,8 +84,9 @@ auf Deutsch. Das ist kein Bruch zur anyplot-Linie, sondern dieselbe Regel
 
 **Owner-Entscheid 2026-08-18.** Für alle **englischen Artefakte** —
 README, CHANGELOG, `docs/contributing.md`, die `tools/*/README.md`, die
-Skills unter `.claude/skills/`, `CLAUDE.md`/`copilot-instructions.md`,
-Commit-/PR-Prosa und englisch markierte `research/`-Notizen — gilt der
+Skills unter `.claude/skills/`,
+`CLAUDE.md`/`.github/copilot-instructions.md`, Commit-/PR-Prosa und
+englisch markierte `docs/research/`-Notizen — gilt der
 [Google developer documentation style guide](https://developers.google.com/style)
 als **Referenz-Fallback**: Er beantwortet Stilfragen, für die dieses
 Dokument und die Repo-Konventionen keine eigene Regel haben. Er ist
@@ -100,8 +101,8 @@ geschrieben wird):
 - Serial comma.
 - **Beschreibende Linktexte** — nie „here“/„this“.
 - Zeitlose Formulierungen: kein „currently“, kein Vorab-Ankündigen
-  künftiger Features (deckt sich mit der Absolute-Datums-Regel der
-  Docs).
+  künftiger Features (deckt sich damit, dass die Docs durchweg
+  absolute Daten schreiben statt „aktuell“/„zuletzt“).
 - Barrierefreie, inklusive Sprache; Alt-Texte für Bilder.
 - Im Fließtext „for example“/„that is“ statt `e.g.`/`i.e.`; in
   Klammern, Tabellen und Code-Kommentaren bleibt die Kurzform
@@ -109,9 +110,10 @@ geschrieben wird):
 
 **Benannte Haus-Abweichungen — sie gewinnen über den Guide:**
 
-1. **ISO-Daten (JJJJ-MM-TT)** statt „August 18, 2026“ — die
-   Absolute-Datums-Regel der Docs erfüllt das Eindeutigkeits-Ziel des
-   Guides besser als sein Prosa-Format.
+1. **ISO-Daten (JJJJ-MM-TT)** statt „August 18, 2026“ — die Docs
+   schreiben durchweg absolute ISO-Daten (Status-Köpfe, datierte
+   Einträge); das erfüllt das Eindeutigkeits-Ziel des Guides besser
+   als sein Prosa-Format.
 2. **Gespacte Gedankenstriche ( — )** bleiben Hausstil in allen
    Sprachen; die ungespacte Google-Form wird nicht übernommen.
 3. **Narrative Begründungs-READMEs und Warum-Kommentare bleiben.**
@@ -128,7 +130,7 @@ case, beschreibende Linktexte, Alt-Texte, inklusive Sprache, zeitlose
 Formulierungen — die Teile des Guides, die keine englische Grammatik
 voraussetzen.
 
-**Nur vorwärts wirkend (Boy-Scout-Regel).** Die Regeln gelten für
+**Nur vorwärts wirkend.** Die Regeln gelten für
 neuen und ohnehin angefassten Text. Es gibt KEINEN rückwirkenden
 Repo-Sweep (gemessen 2026-08-18: allein 1.174 gespacte
 Gedankenstriche und 28 `e.g.`/`i.e.` in den englischen Artefakten —

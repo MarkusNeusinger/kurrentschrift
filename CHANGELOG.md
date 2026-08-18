@@ -26,11 +26,11 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   house rules win over the guide: ISO dates, spaced dashes ( — ), the
   narrative rationale style of READMEs and why-comments, untranslated
   German domain terms. Language-neutral mechanics apply to new German
-  docs too. Forward-only (boy-scout rule) — no retroactive restyle
-  sweep (measured: 1,174 spaced dashes and 28 Latin abbreviations in
-  the English artifacts alone), and the changelog history is never
-  rewritten. Anchored in the write-docs and open-pr skills and in the
-  CLAUDE.md/copilot-instructions pair.
+  docs too. Forward-only — no retroactive restyle sweep (measured:
+  1,174 spaced dashes and 28 Latin abbreviations in the English
+  artifacts alone), and the changelog history is never rewritten.
+  Anchored in the `/write-docs` and `/open-pr` skills, in `CLAUDE.md`
+  and in `.github/copilot-instructions.md`.
 
 - **Method pages: one register page per tracing-duel route, with a
   shared versioning convention** (`docs/reference/verfahren.md` plus
