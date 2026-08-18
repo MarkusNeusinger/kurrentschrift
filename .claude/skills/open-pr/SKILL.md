@@ -104,7 +104,9 @@ becomes a formality.
 ## 2 · Open the PR
 
 Never commit on `main` — branch first. Commit messages and PR
-title/body are English (sprachregelung: GitHub-facing text). Push is
+title/body are English (sprachregelung: GitHub-facing text; style per
+sprachregelung.md §4 — Google developer documentation style guide as
+the fallback, house rules win). Push is
 the same in both environments:
 
 ```bash

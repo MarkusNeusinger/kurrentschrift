@@ -23,6 +23,12 @@ lives in the German design docs under `docs/` (start at `docs/index.md`).
     German.
   - **Website v1: German;** English follows (Vision Leitprinzip
     „Zweisprachig").
+  - **English artifacts follow the Google developer documentation style
+    guide as a FALLBACK** (`sprachregelung.md` §4, owner decision
+    2026-08-18): it answers style questions the repo has no rule for;
+    named house rules win (ISO dates, spaced dashes, narrative
+    rationale style, untranslated German domain terms). Forward-only —
+    never restyle-sweep existing text.
   - German technical terms without an established English translation get
     an English identifier and one explanatory comment, e.g.
     `width_profile  # Schwellzug: pressure-driven stroke-width modulation`.
