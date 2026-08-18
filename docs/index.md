@@ -51,7 +51,7 @@ gemessene Hand-Parameter.
 | Öffentliche Render-Endpunkte (`/write/*`) nachschlagen | [Write-API](reference/write-api.md) |
 | Dev-Werkzeuge (glyphlab/wordlab/pairlab, Benches, quizgen) nachschlagen | [Werkzeuge](reference/werkzeuge.md) |
 | Wissen, welche Crawler/KI-Agenten die Seite lesen dürfen | [Crawler-Richtlinie](reference/crawler-richtlinie.md) |
-| Sprache für Code, Docs, README nachschlagen | [Sprachregelung](reference/sprachregelung.md) |
+| Sprache und englischen Stil für Code, Docs, README nachschlagen | [Sprachregelung](reference/sprachregelung.md) |
 | Wissen, was ins öffentliche Repo darf | [Quellen- und Rechte-Policy](reference/quellen-und-rechte.md) |
 | Den `/data`-Baum verstehen | [Datenablage](reference/datenablage.md) |
 | Lese-Regeln (Rund-s, Ligaturen, …) nachschlagen | [Orthographie-Regeln](schriftkunde/orthographie-regeln.md) |
@@ -86,7 +86,7 @@ docs/
 │   └── naming-und-setup.md       # Repo-Name, Domain, Lizenz, Verzeichnis-Split, Frontend-Stack, Hosting
 ├── reference/                    # Policy- und Technik-Dokumente mit Begründung (Status je Doc)
 │   ├── glossar.md                # Fachbegriffe & Repo-Redewendungen: Schrift · Architektur · Fit · Metriken · Werkbank · Forschung
-│   ├── sprachregelung.md         # Deutsch/Englisch pro Artefakt
+│   ├── sprachregelung.md         # Deutsch/Englisch pro Artefakt + englischer Stil (§4: Google-Guide als Referenz-Fallback, Haus-Abweichungen)
 │   ├── quellen-und-rechte.md     # Was darf rein, was nicht; PD/CC/NC-SA
 │   ├── datenablage.md            # `/data`-Baum, SOURCE.md, Commit-Klassen
 │   ├── htr-integration.md        # Transkribus-API + TrOCR-Fallback, PAGE-XML, Free-Tier

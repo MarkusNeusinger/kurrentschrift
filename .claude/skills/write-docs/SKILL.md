@@ -20,6 +20,15 @@ GitHub. Nothing to launch; this skill is the editing contract.
 - Glyphs are data, not code: schema keys English, values the actual
   characters (`ſt`, `a-medial`).
 
+**English style: follow `docs/reference/sprachregelung.md` §4.** New
+or touched ENGLISH text (READMEs, CHANGELOG entries, contributing,
+skills, PR/commit prose) follows the Google developer documentation
+style guide wherever the repo has no rule of its own — §4 carries the
+adopted core, the house rules that WIN over the guide, and the
+language-neutral mechanics that apply to new German docs too. Read §4
+before writing; do not restate its rules here. Forward-only: never
+sweep existing text just to restyle it.
+
 ## Where a new doc goes
 
 ```
