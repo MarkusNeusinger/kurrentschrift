@@ -1,9 +1,9 @@
 # Verfahrensseite Lotse
 
-> **Status (2026-08-18): lebend.** Register-Seite des Verfahrens „Lotse"
+> **Status (2026-08-18): lebend.** Register-Seite des Verfahrens „Lotse“
 > (Konvention: [`verfahren.md`](verfahren.md)). Nachzieh-Pflicht: Jeder
 > §14-Eintrag zu einem Lotse-Arm (adoptiert oder verworfen) ergänzt hier
-> seine Ledger-Zeile; eine Adoption aktualisiert „Aktueller Stand".
+> seine Ledger-Zeile; eine Adoption aktualisiert „Aktueller Stand“.
 
 ## Steckbrief
 
@@ -23,14 +23,14 @@ Adoptierte Konstanten (`tools/inkpilot/pilot.py`):
 `RIDE_DOUBLE_MAP_PRIORITY` = True (v0.5) ·
 `RIDE_DOUBLE_ZONE_MARGIN_UNITS` = 0,35 (v0.7) ·
 `MAP_CROSSING_WINDOW_UNITS` = 0,35 + `MAP_CROSSING_PIN` = True (v0.9).
-Zahlen (dev-19, §14 „Lotse v0.9 aug17"): dtw **0,0578** med
+Zahlen (dev-19, §14 „Lotse v0.9 aug17“): dtw **0,0578** med
 (Ketten-Niveau; gepaart **−24 %**, erstmals das §14-Primärkriterium
 erfüllt) · p90 0,118 (Kette 0,236) · Netto-Kreuzungsdefekte **7** —
 davon fast alle Soll-vs-Hand-Differenzen (Galoppierens p-Schleifen
 fehlen der Komposition selbst; linken/mit-2-Soll-Kreuzungen, die diese
 Hand nicht schreibt), keine Ritt-Fehler. `marks_missing` 0.
 
-## Ledger (Versionen; Belege in §14 „Route Lotse …")
+## Ledger (Versionen; Belege in §14 „Route Lotse …“)
 
 | Datum | Version/Arm | Ein Knopf / Mechanismus | Verdikt |
 |---|---|---|---|
@@ -55,5 +55,5 @@ v0.7/v0.8/v0.9-Kette ist seine vollständige Abarbeitung.
 - Der **Bestätigungssatz** (A, dann B) als Schlussstein, bevor aus dem
   Dev-Gewinn eine Adoptionsentscheidung jenseits der Routen-Konstanten
   wird (Versiegelung: tintenfolger.md §2.5).
-- Fusion „Vier Augen": Orakel-Decke 0,0491 (aug17); der referenzfreie
+- Fusion „Vier Augen“: Orakel-Decke 0,0491 (aug17); der referenzfreie
   Auswähler bleibt bis zum Bestätigungssatz gesperrt.

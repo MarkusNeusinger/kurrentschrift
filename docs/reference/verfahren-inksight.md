@@ -1,14 +1,14 @@
 # Verfahrensseite InkSight
 
 > **Status (2026-08-18): lebend.** Register-Seite des Verfahrens
-> „InkSight" (Konvention: [`verfahren.md`](verfahren.md)).
+> „InkSight“ (Konvention: [`verfahren.md`](verfahren.md)).
 > Nachzieh-Pflicht: Jeder §14-Eintrag zu einer InkSight-Stufe oder
 > -Maßnahme ergänzt hier seine Ledger-Zeile; eine adoptierte Stufe
-> aktualisiert „Aktueller Stand".
+> aktualisiert „Aktueller Stand“.
 
 ## Steckbrief
 
-- **Anzeige-Name:** InkSight (Glossar „Duell-Namen"); der
+- **Anzeige-Name:** InkSight (Glossar „Duell-Namen“); der
   `text`-Prompt ist Diagnose und von der Duell-Seite genommen.
 - **Technisch:** `tools/inksight` — drei Stufen (`prepare` →
   `run_inksight` im isolierten Python-3.11-TF-venv → `to_candidate`),
@@ -22,11 +22,11 @@
   adoptierte Anpassungsmaßnahme (z. B. B2-Tiling) definierte T1.
   Fine-Tuning ist KEINE Option (verworfen, tintenfolger.md §5 — kein
   Trainingscode); der gelernte Nachfolger ist die eigene Route
-  „Zögling" (§7.5).
+  „Zögling“ (§7.5).
 
 ## Aktueller Stand: T0 (2026-08-17)
 
-Zahlen (dev-19, §14 „Re-Baseline aug17", InkSight-Absatz):
+Zahlen (dev-19, §14 „Re-Baseline aug17“, InkSight-Absatz):
 **14/19 gescort, 5 failed** am Ein-Punkt-Strich-Kontraktbruch (die
 ganze und-Familie + muß-2/die-2 — die Fehlerklasse wandert mit den
 Crops) · dtw 0,0951 med (10er-Satz: 0,0956 — konsistent) ·
@@ -41,9 +41,9 @@ Chamfer ~3× Satz-Median, +13 Lifts.
 
 | Datum | Stufe/Maßnahme | Mechanismus | Verdikt | §14-Eintrag |
 |---|---|---|---|---|
-| aug15 | T0 (10er-Dev) | Small-p roh, `derender`/`text` | gemessen: 0,0956 med = 1,5× Kette; `text` schlechter als `derender`; Retraces verloren | „Route B T0 aug15" |
-| aug15 | B1 Best-of-N | Ensemble über Input-Augmentierungen, Ranker gegen die Tinte | verworfen (ehrliches Negativ: Orakel −0,0124 bewiesen, Ranker ordnungs-blind → Rettungsweg „Chor", Welle 3) | „Welle 1 · B1 aug15" |
-| aug17 | T0 (19er-Dev) | wie T0, neue Crops | gemessen: Zahlen oben; B2-Prüffall Galoppieren bestätigt | „Re-Baseline aug17" |
+| aug15 | T0 (10er-Dev) | Small-p roh, `derender`/`text` | gemessen: 0,0956 med = 1,5× Kette; `text` schlechter als `derender`; Retraces verloren | „Route B T0 aug15“ |
+| aug15 | B1 Best-of-N | Ensemble über Input-Augmentierungen, Ranker gegen die Tinte | verworfen (ehrliches Negativ: Orakel −0,0124 bewiesen, Ranker ordnungs-blind → Rettungsweg „Chor“, Welle 3) | „Welle 1 · B1 aug15“ |
+| aug17 | T0 (19er-Dev) | wie T0, neue Crops | gemessen: Zahlen oben; B2-Prüffall Galoppieren bestätigt | „Re-Baseline aug17“ |
 
 ## Stehende Maßnahmen (tintenfolger.md §7.4)
 

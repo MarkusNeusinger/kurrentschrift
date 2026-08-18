@@ -5,7 +5,7 @@
 > (unten). Nachzieh-Pflicht: Jeder §14-Eintrag, der einen Arm oder eine
 > Stufe eines Verfahrens misst (adoptiert ODER verworfen), ergänzt im
 > selben PR die Ledger-Zeile der betroffenen Verfahrensseite und — bei
-> Adoption — deren „Aktueller Stand".
+> Adoption — deren „Aktueller Stand“.
 
 Die Tintenfolger-Kampagne ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md))
 lässt mehrere Verfahren gegeneinander antreten; ihre Historie wächst als
@@ -44,7 +44,7 @@ Zahl hier ist ein datiertes Zitat, der Beleg wohnt im benannten
 
 ## Die Verfahren
 
-| Anzeige-Name | Seite | Stand (2026-08-18, dev-19, §14 „Re-Baseline aug17" ff.) |
+| Anzeige-Name | Seite | Stand (2026-08-18, dev-19, §14 „Re-Baseline aug17“ ff.) |
 |---|---|---|
 | **Kette** | [`verfahren-kette.md`](verfahren-kette.md) | v1 — dtw 0,0579 med · p90 0,236 · worst unter 0,450 |
 | **Lotse** | [`verfahren-lotse.md`](verfahren-lotse.md) | v0.9-Stand — dtw 0,0578 med · gepaart −24 % gegen die Kette · p90 0,118 · Netto-Kreuzungsdefekte 7 |
@@ -53,6 +53,6 @@ Zahl hier ist ein datiertes Zitat, der Beleg wohnt im benannten
 
 Geplante Verfahren (Zögling · Vier Augen · Chor) haben noch keinen
 Kandidaten und darum keine Seite — ihr Stand wohnt in der
-Duell-Namen-Tabelle (tintenfolger.md §7.8, Glossar „Duell-Namen");
+Duell-Namen-Tabelle (tintenfolger.md §7.8, Glossar „Duell-Namen“);
 die erste Vorregistrierung eines solchen Verfahrens legt seine Seite
 im selben PR an.

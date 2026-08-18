@@ -1283,16 +1283,17 @@ Eintrag ist die Übersetzungstabelle. *Technisch:* Label-Marker in
 → proposals/tintenfolger.md §7.8
 
 **Verfahrensseite** — die Register-Seite eines Duell-Verfahrens unter
-`docs/reference/` (verfahren-kette · -lotse · -inksight ·
--nullprobe): Steckbrief (Anzeige-Name, Code-Heimat, aktuell
-adoptierte Konstanten) plus Versions-/Arm-Ledger mit Verdikt und
-§14-Anker. Die Konvention (eine Versionsnummer je vorregistriertem
-Arm; Stand = Menge der adoptierten Mechanismen; keine rückwirkende
-Umnummerierung; die Nullprobe bewusst unversioniert) steht in der
-Übersicht. Register, keine zweite Wahrheit: jede Zahl dort ist ein
-datiertes Zitat, der Beleg wohnt in qualitaetsmetrik.md §14.
-*Technisch:* `docs/reference/verfahren.md` (Übersicht + Konvention),
-Nachzieh-Pflicht in docs/index.md § „Dokument-Status"
+`docs/reference/` (`verfahren-kette.md` · `verfahren-lotse.md` ·
+`verfahren-inksight.md` · `verfahren-nullprobe.md`): Steckbrief
+(Anzeige-Name, Code-Heimat, aktuell adoptierte Konstanten) plus
+Versions-/Arm-Ledger mit Verdikt und §14-Anker. Die Konvention (eine
+Versionsnummer je vorregistriertem Arm; Stand = Menge der adoptierten
+Mechanismen; keine rückwirkende Umnummerierung; die Nullprobe bewusst
+unversioniert) steht in der Übersicht. Register, keine zweite
+Wahrheit: jede Zahl dort ist ein datiertes Zitat, der Beleg wohnt in
+qualitaetsmetrik.md §14. *Technisch:*
+`docs/reference/verfahren.md` (Übersicht + Konvention),
+Nachzieh-Pflicht in docs/index.md § „Dokument-Status“
 → reference/verfahren.md
 
 **Gute-Fortsetzung** *(good continuation)* — die Gestalt-Regel, mit der

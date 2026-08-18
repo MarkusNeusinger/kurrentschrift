@@ -16,8 +16,8 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 - **Method pages: one register page per tracing-duel route, with a
   shared versioning convention** (`docs/reference/verfahren.md` plus
-  `verfahren-kette` · `-lotse` · `-inksight` · `-nullprobe`; owner
-  request 2026-08-18). Each page carries the method's profile (display
+  `verfahren-kette.md` · `verfahren-lotse.md` · `verfahren-inksight.md`
+  · `verfahren-nullprobe.md`; owner request 2026-08-18). Each page carries the method's profile (display
   name, code home, currently adopted constants) and a dated
   version/arm ledger with verdicts and §14 anchors — a register, never
   a second source of truth: every number is a dated quote, the
@@ -29,7 +29,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   formulation change; the Nullprobe is deliberately unversioned (a
   control that learns is no control). Indexed in `docs/index.md`
   (tree, quick links, Dokument-Status trigger), new glossary entry
-  „Verfahrensseite", pointer in tintenfolger.md §7.8; the stale
+  "Verfahrensseite", pointer in tintenfolger.md §7.8; the stale
   `tintenfolger.md` line missing from the index tree was added along
   the way.
 - **The 19-row dev split is live, with a dated re-baseline of every
