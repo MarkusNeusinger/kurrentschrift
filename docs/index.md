@@ -64,6 +64,7 @@ gemessene Hand-Parameter.
 | Den Handmodell-Stufenplan (Duktus-Prior · Laufformen · Statistik · eigene Hand) nachschlagen | [Handmodell-Stufenplan](proposals/handmodell-stufenplan.md) |
 | Die Werkbank-Doktrin (wer liefert welche Stufe · Auftragskorb-Protokoll) nachschlagen | [Optimierungs-Werkbank](proposals/optimierungs-werkbank.md) |
 | Den Tintenfolger-Plan (Prüfstand · Referenzsatz · Routen-Duell) nachschlagen | [Tintenfolger](proposals/tintenfolger.md) |
+| Ein Duell-Verfahren (Kette · Lotse · InkSight · Nullprobe) mit Steckbrief und Versions-Ledger nachschlagen | [Verfahrensseiten](reference/verfahren.md) |
 | Ideen-Recherche lesen (Graves-Writer → Recognizer · Synthese-Verfahren · Bildsynthese/Offline-HTG · Plotter-Pipeline) | [Research](#research) |
 
 ---
@@ -96,6 +97,11 @@ docs/
 │   ├── quiz-wortbank.md          # Lese-Quiz-Wortbank: Quellen (Kaeding, Genealogie-Felder), Pin+Runtime-Distraktoren, Fugen-Marker
 │   ├── write-api.md              # Öffentliche Render-Endpunkte /write/glyphs + /write/word: Shaping → Komposition → Payload
 │   ├── werkzeuge.md              # Dev-Tools unter tools/: Inspektions-Labs + pairlab-Einstiegsskripte, Ernte-Werkzeuge, humanbench/fitview, dbsnapshot, Benches, quizgen
+│   ├── verfahren.md              # Verfahrensseiten-Übersicht: Versions-Konvention der Duell-Routen, Register-Regel (Zahlen wohnen in §14)
+│   ├── verfahren-kette.md        # Kette: Steckbrief, Stand v1, Arm-Ledger ①–⑨/A1, v2-Anwärter (A2–A6)
+│   ├── verfahren-lotse.md        # Lotse: Steckbrief, Stand v0.9, Versions-Ledger v0.1–v0.9 + Schienen-Auslauf, offene Blöcke
+│   ├── verfahren-inksight.md     # InkSight: Steckbrief, Stand T0, Ledger (T0 · B1), stehende Maßnahmen B2–B5
+│   ├── verfahren-nullprobe.md    # Nullprobe: Steckbrief, Kontroll-Doktrin (bewusst unversioniert), Mess-Ledger
 │   ├── crawler-richtlinie.md     # Wer die Seite lesen darf: Suchmaschinen, KI-Abruf vs. KI-Training, robots.txt/llms.txt, Cloudflare
 │   └── frontend-stack.md         # React+Vite+MUI Build, Deploy auf Cloud Run, i18n, Auth-Routen
 ├── schriftkunde/                 # Quellengesicherte Fakten zu den Schriften (wächst inkrementell)
@@ -115,7 +121,8 @@ docs/
 │   ├── uebergaenge-befund.md     # Befund 2026-07-11: pairlab-Paarsektion — Platzierung dominiert, Stub-Ersatz klassenweise, Optionen O1–O3
 │   ├── schreibsystem-redesign.md # Entscheid 2026-07-17: eine Form pro Glyphe (Positions-Rückbau), Paar-Matrix, geerntete Paar-Overrides, Schräglagen-Befund (R1–R5)
 │   ├── handmodell-stufenplan.md  # Vorschlag 2026-07-31: Statistik-Schicht füllen (H0–H5) — Instances/Aggregates, Paar-Statistik, Konstanten→Hand-Parameter, eigene Hand
-│   └── optimierungs-werkbank.md  # Entscheid 2026-07-31: EINE Werkbank-Seite + Stufen-/Rollen-Doktrin + work_items-Auftragskorb (W1–W5)
+│   ├── optimierungs-werkbank.md  # Entscheid 2026-07-31: EINE Werkbank-Seite + Stufen-/Rollen-Doktrin + work_items-Auftragskorb (W1–W5)
+│   └── tintenfolger.md           # Plan 2026-08-14: Prüfstand (tracebench), nachgefahrener Referenzsatz + Split, Routen-Duell (Kette · Lotse · InkSight · Nullprobe), Optimierungsplan §7
 ├── research/                     # Externe Recherche/Literatur — liefert Ideen, folgt dem Code nie
 │   ├── bildsynthese-und-stiftbahn.md     # Recherche 2026-08: Offline-HTG auf Kurrent fein-tunen → Trajektorien-Rückgewinnung → Plotter; Datenlage/Lizenzen, Prüfsteine T0–T4
 │   ├── graves-handschrift-synthese.md    # Literatur-Report: Graves-2013-Mechanik, Priming/Biasing, Plotter-Pipeline, GAN/Transformer/ScribeTokens, 54 Quellen
@@ -168,6 +175,7 @@ Regeln stehen, die noch nicht implementiert sind.
 | [`reference/werkzeuge.md`](reference/werkzeuge.md) | jedem neuen, umbenannten oder entfernten Verzeichnis/Einstiegsskript unter `tools/` und jeder geänderten CLI (Flags, Modulpfade, `viz`-Extra, `--live`) |
 | [`reference/quiz-wortbank.md`](reference/quiz-wortbank.md) | Änderungen an `tools/quizgen/corpus.py`/`similarity.py`/`build.py` (inkl. Neuberechnung von `quiz_words.json` → Wortzahl und Era-Verteilung im Kopf nachziehen), am TS-Zwilling `app/src/sections/quiz/wordBank.ts`/`useQuizEngine.ts` und bei jeder Re-Seed-Migration nach dem Muster `0011_quiz_words_reseed.py` |
 | [`reference/crawler-richtlinie.md`](reference/crawler-richtlinie.md) | jeder Änderung an `app/public/robots.txt` oder `app/public/llms.txt` (Gruppen, Content-Signals, Reihenfolge, `Disallow`-Pfade) und an den AI-Crawl-Control-/Bot-Regeln der Cloudflare-Zone |
+| [`reference/verfahren.md`](reference/verfahren.md) samt den vier Verfahrensseiten (`verfahren-kette.md` · `verfahren-lotse.md` · `verfahren-inksight.md` · `verfahren-nullprobe.md`) | jedem §14-Eintrag, der einen Arm oder eine Stufe eines Duell-Verfahrens misst (adoptiert oder verworfen) — Ledger-Zeile im selben PR; bei Adoption zusätzlich „Aktueller Stand“ der betroffenen Seite und die Stand-Spalte der Übersicht |
 
 Drei weitere Dokumente sind **abschnittsweise** pflichtig, obwohl sie als
 Ganzes nicht lebend sind:
@@ -288,6 +296,14 @@ Policy- und Technik-Dokumente.
   Urteils-Durchgang `tools/humanbench` (build · page · analyse) mit dem
   Betrachter `tools/fitview`, der Archiv-Schnappschuss `tools/dbsnapshot`
   sowie Verweise auf glyphbench/wordbench und quizgen
+- **[Verfahrensseiten](reference/verfahren.md)** — das Register der
+  Tintenfolger-Routen: je Verfahren ein Steckbrief (Anzeige-Name,
+  Code-Heimat, aktuell adoptierte Konstanten) plus Versions-/Arm-Ledger
+  mit Verdikt und §14-Anker — [Kette](reference/verfahren-kette.md) ·
+  [Lotse](reference/verfahren-lotse.md) ·
+  [InkSight](reference/verfahren-inksight.md) ·
+  [Nullprobe](reference/verfahren-nullprobe.md); die Zahlen selbst
+  wohnen ausschließlich in der Qualitätsmetrik §14
 - **[Crawler-Richtlinie](reference/crawler-richtlinie.md)** — wer die
   Seite lesen darf: KI-Abruf/Zitat erlaubt, KI-Training abgelehnt
   (`ai-train=no` als Nutzungsvorbehalt), `robots.txt` als Quelle der

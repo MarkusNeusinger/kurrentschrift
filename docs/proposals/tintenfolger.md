@@ -761,6 +761,13 @@ ist der Glossar-Eintrag „Duell-Namen":
 | **Chor** | ordnungs-bewusste Auswahl unter Varianten (B1-Nachfolger) | Welle 3 |
 | **Lotse** *(Arbeitstitel)* | Skelett direkt fahren, Duktus als Karte (unten) | v0.9 (`aug17`, §14): dev-19 dtw 0,0578 = Ketten-Niveau, gepaart −24 %, p90 halbiert, Netto-Kreuzungsdefekte 7 (Rest = Soll-Differenzen); adoptiert: Auslauf 1,0 · Doppelzonen-Kartenfahrt · Zonen-Ausweitung 0,35 · gepinnte Selbstschnitt-Fenster 0,35 |
 
+**Verfahrensseiten (seit 2026-08-18):** Je stehendem Verfahren führt
+eine Register-Seite Steckbrief + Versions-Ledger —
+[`../reference/verfahren.md`](../reference/verfahren.md) (Übersicht +
+Versions-Konvention) mit den Seiten Kette · Lotse · InkSight ·
+Nullprobe. Diese Tabelle bleibt die Übersetzungstabelle der Namen;
+Zahlen wohnen weiter in qualitaetsmetrik.md §14.
+
 **„Kette+ ist die einzige Kette."** Owner-Entscheid nach der
 Kreuzungs-Frage: es gibt KEIN Beispiel, wo eine vom Fit ERFUNDENE
 Kreuzung das Wort richtiger macht — join-gebildete Kreuzungen (der
