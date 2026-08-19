@@ -555,7 +555,7 @@ def _layer_svg(layer: Layer, layer_id: str) -> str:
         structure = f'<g class="structure">{zones}{rings}</g>'
     return (
         f'<g class="layer" id="{layer_id}" data-label="{html.escape(layer.label, quote=True)}" '
-        f'data-kind="{layer.kind}" '
+        f'data-kind="{html.escape(layer.kind, quote=True)}" '
         f'fill="none" stroke="{layer.color}" stroke-linecap="round" stroke-linejoin="round">'
         f"{structure}{paths}</g>"
     )
