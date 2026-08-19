@@ -167,6 +167,54 @@ def test_pin_map_runs_interpolates_between_knots() -> None:
     assert 19.0 < out[12, 1] < 22.0
 
 
+def test_untwist_removes_a_weave_pair_and_keeps_a_lone_crossing() -> None:
+    from tools.inkpilot import pilot as P
+    from tools.inkpilot.pilot import _chain_intersections, untwist_strokes
+
+    # Stroke A: a straight horizontal line. Stroke B: runs parallel below it,
+    # pokes across it in a short wiggle (two crossings 0.3 xh apart), then
+    # much later crosses it once for real and stays above.
+    xh = 10.0
+    a = np.column_stack([np.linspace(0.0, 60.0, 121), np.full(121, 20.0)])
+    xs = np.linspace(0.0, 60.0, 121)
+    ys = np.full(121, 22.0)
+    ys[(xs > 10.0) & (xs < 13.0)] = 18.0  # the weave: across and back
+    ys[xs > 40.0] = 16.0  # the real crossing, far from any partner
+    b = np.column_stack([xs, ys])
+
+    def events_of(strokes):
+        chain = np.vstack(strokes)
+        seg = np.vstack([np.zeros((1, 2)), np.diff(chain, axis=0)])
+        arc = np.cumsum(np.hypot(seg[:, 0], seg[:, 1]))
+        lift = len(strokes[0]) - 1  # the virtual segment between the strokes
+        raw = _chain_intersections(chain, P.MAP_CROSSING_MIN_ARC_UNITS * xh, arc)
+        return [e for e in raw if e[0] != lift and e[1] != lift]
+
+    assert len(events_of([a, b])) == 3  # two weave events + one real crossing
+
+    out, n = untwist_strokes([a, b], xh_px=xh, window_units=0.8)
+    assert n == 1  # exactly one pair untwisted
+    assert len(events_of(out)) == 1  # the lone real crossing survives
+    # Direction and point count untouched; stroke A never moved.
+    assert np.allclose(out[0], a)
+    assert len(out[1]) == len(b)
+    assert np.all(np.diff(out[1][:, 0]) >= 0.0)
+
+
+def test_untwist_leaves_separate_crossings_alone() -> None:
+    from tools.inkpilot.pilot import untwist_strokes
+
+    # Two genuine crossings 2.5 xh apart — no pair within the window.
+    xh = 10.0
+    a = np.column_stack([np.linspace(0.0, 60.0, 121), np.full(121, 20.0)])
+    xs = np.linspace(0.0, 60.0, 121)
+    ys = np.where((xs > 15.0) & (xs < 40.0), 24.0, 16.0)
+    b = np.column_stack([xs, ys])
+    out, n = untwist_strokes([a, b], xh_px=xh, window_units=0.8)
+    assert n == 0
+    assert np.allclose(out[1], b)
+
+
 def test_pin_map_runs_fuses_overlapping_plateaus_rigidly() -> None:
     from tools.inkpilot.pilot import _pin_map_runs
 
