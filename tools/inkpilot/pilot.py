@@ -1012,12 +1012,13 @@ def map_self_intersections(samples_per_stroke: list[np.ndarray]) -> np.ndarray:
 def untwist_strokes(
     strokes: list[np.ndarray], xh_px: float, window_units: float, soll_points: np.ndarray | None = None
 ) -> tuple[list[np.ndarray], int]:
-    """v0.13: remove weave duplicates pairwise by mirroring the shorter wiggle.
+    """v0.13: remove weave duplicates pairwise by mirroring the wiggle arc.
 
     Two intersection events form a pair when both their arc gaps are within
     the window and their crossing points within half of it — genuinely
     separate crossings (the l loops, a full x-height apart) never qualify.
-    The shorter arc between the pair's parameters is mirrored across the
+    THE WIGGLE — the side with the larger maximal chord deviation (the
+    pre-reg precision pinned by the unit test) — is mirrored across the
     chord P1->P2: both crossings of the pair vanish, the parity of the site
     is preserved (3 -> 1, 5 -> 1, 6 -> 0), direction stays untouched. A
     wiggle spanning a pen lift is left alone — a mirror across strokes would
@@ -1086,8 +1087,9 @@ def untwist_strokes(
                 continue
             i2, j2, p2 = events[best]
             # The two candidate wiggles, as half-open index ranges of points
-            # strictly between the pair's segments; the shorter VALID one
-            # (non-empty, within one pen stroke) is mirrored.
+            # strictly between the pair's segments; the VALID one (non-empty,
+            # within one pen stroke) with the larger chord deviation is
+            # mirrored — see the wiggle selection below.
             chord = p2 - p1
             norm = float(np.hypot(*chord))
             if norm < 1e-9:
