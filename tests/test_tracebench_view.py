@@ -144,6 +144,19 @@ def test_arc_positions_accumulate_ink_only_and_name_the_lifts() -> None:
     assert lifts == [pytest.approx(1.0)]
 
 
+def test_hover_map_always_carries_the_final_sample() -> None:
+    """The cursor clamps to the full arc, so the map must reach the word's end
+    even when the stride does not land on the last sample.
+    """
+    from tools.tracebench.view import residual_map_json
+
+    arc = np.linspace(0.0, 1.3, 14)  # 14 samples: stride 5 alone would stop at index 10
+    crop = np.column_stack([arc * 10.0, np.full(14, 7.0)])
+    payload = json.loads(residual_map_json(arc, crop))
+    assert payload["arc"][-1] == pytest.approx(1.3)
+    assert payload["px"][-1] == [13.0, 7.0]
+
+
 def test_decimation_keeps_every_peak() -> None:
     """Striding may thin the flat stretches, never swallow a spike."""
     spiky = np.column_stack([np.linspace(0.0, 1.0, 1000), np.zeros(1000)])

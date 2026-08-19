@@ -805,6 +805,11 @@ def residual_map_json(arc_x: np.ndarray, crop_pts: np.ndarray) -> str:
     couple the page bytes to the platform's shortest-repr behaviour.
     """
     idx = list(range(0, len(arc_x), RESID_MAP_STRIDE))
+    # The last sample always rides along: the cursor clamps to the full arc,
+    # so a stride that ends short would leave the probe unable to reach the
+    # word's end (Copilot review, PR #388).
+    if idx and idx[-1] != len(arc_x) - 1:
+        idx.append(len(arc_x) - 1)
     arc = ",".join(f"{arc_x[i]:.2f}" for i in idx)
     px = ",".join(f"[{crop_pts[i][0]:.1f},{crop_pts[i][1]:.1f}]" for i in idx)
     return f'{{"arc":[{arc}],"px":[{px}]}}'
