@@ -47,8 +47,15 @@ import numpy as np
 from PIL import Image
 
 from tools.tracebench.candidates import STATUS_OK, Candidate, file_provider
-from tools.tracebench.counters import classified_pass_points, crossing_points, structure_zones
-from tools.tracebench.frames import BenchFrame, arc_length, classify_strokes
+from tools.tracebench.counters import (
+    RESAMPLE_STEP_UNITS,
+    classified_pass_points,
+    crossing_points,
+    resampled_strokes,
+    structure_zones,
+)
+from tools.tracebench.frames import BenchFrame, arc_length, classify_strokes, concat_body
+from tools.tracebench.metric import dtw
 from tools.tracebench.reference import DEFAULT_FIXTURES_DIR, Reference, ReferenceEntry, load_reference
 from tools.tracebench.run import find_fixture_root
 from tools.tracebench.sets import TRACEBENCH_DEV_IDS
@@ -110,6 +117,25 @@ COLOR_PILOT = "#e91e63"
 PILOT_MARKERS = ("lotse", "pilot")
 
 REFERENCE_LABEL = "Hand (Referenz)"
+
+# ---- the residual profile: candidate minus hand, along the headline's own DTW.
+# Plot geometry in CSS pixels — fixed, so two chronik pages diff cleanly.
+RESID_PLOT_W = 860
+RESID_PLOT_H = 120
+RESID_MARGIN_L = 44
+RESID_MARGIN_R = 10
+RESID_MARGIN_T = 8
+RESID_MARGIN_B = 26
+# Peak-preserving decimation: at most this many chart samples per candidate.
+# Within each stride window the WORST sample survives, so a genuine spike can
+# never be smoothed away by the display — only the flat stretches thin out.
+RESID_MAX_SAMPLES = 500
+# The y-axis never collapses below this, so a clean word still shows its scale
+# and two words' profiles stay visually comparable.
+RESID_MIN_YMAX_XH = 0.3
+# Hover map decimation: the probe that jumps to the word image needs ~0.1 xh
+# of arc precision, not the full 0.02 xh sampling.
+RESID_MAP_STRIDE = 5
 
 
 # ------------------------------------------------------------------ geometry
@@ -242,6 +268,78 @@ def trace_paths(
 # consumes the same targets, so the one place the Soll is computed serves both.
 
 
+# ------------------------------------------------------------------ residuals
+
+
+@dataclass(frozen=True)
+class ResidualLine:
+    """One candidate's residual profile: (arc position, distance) in x-heights."""
+
+    label: str
+    color: str
+    points: np.ndarray  # (k, 2) — x = arc along the REFERENCE body ink, y = distance
+
+
+def body_arc_positions(resampled_body: list[np.ndarray]) -> tuple[np.ndarray, list[float]]:
+    """Per concatenated body sample: its INK arc position, plus the pen lifts.
+
+    Arc accumulates within a stroke and adds NOTHING at a pen lift — the jump
+    between two strokes is never written ink (`metric.rasterise_strokes` keeps
+    the same rule). The second value is the arc position of every lift, which
+    is where the chart draws its stroke-boundary markers.
+    """
+    xs: list[np.ndarray] = []
+    lifts: list[float] = []
+    offset = 0.0
+    for index, stroke in enumerate(resampled_body):
+        pts = np.asarray(stroke, dtype=float).reshape(-1, 2)
+        seg = np.hypot(*np.diff(pts, axis=0).T) if len(pts) > 1 else np.zeros(0)
+        arc = np.concatenate([[0.0], np.cumsum(seg)])[: len(pts)]
+        xs.append(offset + arc)
+        offset += float(arc[-1]) if len(arc) else 0.0
+        if index < len(resampled_body) - 1:
+            lifts.append(offset)
+    return (np.concatenate(xs) if xs else np.zeros(0)), lifts
+
+
+def residual_values(ref_seq: np.ndarray, cand_seq: np.ndarray) -> np.ndarray:
+    """Per reference sample: mean matched distance of the headline's own DTW.
+
+    The alignment is `metric.dtw`'s optimal warping path — the exact pairing
+    `dtw_xh` averages over, never a nearest-neighbour re-derivation (which
+    would read a backwards stroke as agreement). Equal point counts are not
+    assumed: where several candidate points are absorbed by one reference
+    sample, that sample carries their mean distance.
+    """
+    result = dtw(ref_seq, cand_seq)
+    matched_ref = np.asarray(ref_seq, dtype=float)[result.pairs[:, 0]]
+    matched_cand = np.asarray(cand_seq, dtype=float)[result.pairs[:, 1]]
+    d = np.hypot(*(matched_ref - matched_cand).T)
+    sums = np.zeros(len(ref_seq))
+    counts = np.zeros(len(ref_seq))
+    np.add.at(sums, result.pairs[:, 0], d)
+    np.add.at(counts, result.pairs[:, 0], 1.0)
+    return sums / np.maximum(counts, 1.0)
+
+
+def decimate_peaks(points: np.ndarray, max_samples: int = RESID_MAX_SAMPLES) -> np.ndarray:
+    """At most `max_samples` chart points — per window, the WORST one survives.
+
+    Plain striding could drop a one-window spike and show "sauber" where the
+    ruler measured "daneben"; keeping each window's maximum preserves every
+    peak exactly (a clean stretch stays near zero either way).
+    """
+    pts = np.asarray(points, dtype=float).reshape(-1, 2)
+    if len(pts) <= max_samples:
+        return pts
+    stride = int(np.ceil(len(pts) / max_samples))
+    keep = [
+        pts[start : start + stride][int(np.argmax(pts[start : start + stride, 1]))]
+        for start in range(0, len(pts), stride)
+    ]
+    return np.asarray(keep, dtype=float).reshape(-1, 2)
+
+
 # -------------------------------------------------------------------- colours
 
 
@@ -365,6 +463,15 @@ _CSS = """
   g.structure path.zone.overlap { stroke-dasharray: 5 4; stroke-width: 4; opacity: 0.4; }
   g.structure path.zone.touch { stroke-dasharray: 1.5 4; stroke-width: 4; opacity: 0.4; stroke-linecap: round; }
   body.nostructure g.structure { display: none; }
+  .resid { margin-top: 12px; }
+  svg.resid-chart { display: block; background: #fff; border: 1px solid #ddd; touch-action: none; }
+  svg.resid-chart text { font: 10px system-ui, sans-serif; fill: #666; }
+  svg.resid-chart rect.plot { fill: none; stroke: #e2e2dd; }
+  svg.resid-chart line.grid { stroke: #f0f0ea; }
+  svg.resid-chart line.lift { stroke: #bbb; stroke-dasharray: 3 3; }
+  svg.resid-chart polyline { fill: none; stroke-width: 1.5; }
+  svg.resid-chart line.resid-cursor { stroke: #f59e0b; visibility: hidden; }
+  circle.probe { fill: none; stroke: #f59e0b; stroke-width: 2; visibility: hidden; }
 """
 
 # `__SPEED__`/`__PAUSE__` are substituted below. Written as a plain string (not
@@ -505,6 +612,46 @@ _JS = r"""
     if (ev.key === 'ArrowLeft') { show(index - 1); ev.preventDefault(); }
     else if (ev.key === 'ArrowRight') { show(index + 1); ev.preventDefault(); }
   });
+  // The residual probe: hovering the profile finds the nearest reference
+  // sample by arc position and pins the orange probe onto that spot of the
+  // hand's trace in the stage above — "the mountain in the chart is HERE in
+  // the word".
+  [].slice.call(document.querySelectorAll('svg.resid-chart')).forEach(function (svg) {
+    var section = svg.closest('section.word');
+    if (!section) { return; }
+    var mapEl = section.querySelector('script.resid-map');
+    var probe = section.querySelector('circle.probe');
+    var cursor = svg.querySelector('line.resid-cursor');
+    var data = null;
+    svg.addEventListener('pointermove', function (ev) {
+      if (!mapEl || !cursor) { return; }
+      if (!data) {
+        try { data = JSON.parse(mapEl.textContent); } catch (err) { data = { arc: [], px: [] }; }
+      }
+      if (!data.arc.length) { return; }
+      var rect = svg.getBoundingClientRect();
+      var ml = parseFloat(svg.getAttribute('data-ml')) || 0;
+      var pw = parseFloat(svg.getAttribute('data-pw')) || 1;
+      var arcTotal = parseFloat(svg.getAttribute('data-arc')) || 1;
+      var a = (ev.clientX - rect.left - ml) / pw * arcTotal;
+      a = Math.max(0, Math.min(arcTotal, a));
+      var lo = 0, hi = data.arc.length - 1;
+      while (lo < hi) { var mid = (lo + hi) >> 1; if (data.arc[mid] < a) { lo = mid + 1; } else { hi = mid; } }
+      var x = ml + a / arcTotal * pw;
+      cursor.setAttribute('x1', x.toFixed(1));
+      cursor.setAttribute('x2', x.toFixed(1));
+      cursor.style.visibility = 'visible';
+      if (probe && data.px[lo]) {
+        probe.setAttribute('cx', data.px[lo][0]);
+        probe.setAttribute('cy', data.px[lo][1]);
+        probe.style.visibility = 'visible';
+      }
+    });
+    svg.addEventListener('pointerleave', function () {
+      if (cursor) { cursor.style.visibility = 'hidden'; }
+      if (probe) { probe.style.visibility = 'hidden'; }
+    });
+  });
   show(0);
 })();
 """
@@ -603,6 +750,102 @@ def _soll_row(row: SollRow) -> str:
     )
 
 
+def _resid_grid_step(ymax: float) -> float:
+    """Horizontal gridline spacing that keeps the label count readable."""
+    if ymax <= 0.6:
+        return 0.1
+    if ymax <= 1.2:
+        return 0.2
+    return 0.5
+
+
+def residual_chart(lines: list[ResidualLine], lifts: list[float], arc_total: float) -> str:
+    """The residual profile of one word as a self-contained SVG.
+
+    x = arc along the hand's body ink, y = distance to the candidate along the
+    headline's own DTW pairing — flat near zero reads "sauber", a mountain
+    reads "daneben", and hovering asks the map script where in the word it is.
+    """
+    if not lines or arc_total <= 0.0:
+        return ""
+    ymax = max(RESID_MIN_YMAX_XH, float(np.ceil(max(float(line.points[:, 1].max()) for line in lines) * 10.0) / 10.0))
+    width = RESID_MARGIN_L + RESID_PLOT_W + RESID_MARGIN_R
+    height = RESID_MARGIN_T + RESID_PLOT_H + RESID_MARGIN_B
+
+    def sx(a: float) -> float:
+        return RESID_MARGIN_L + a / arc_total * RESID_PLOT_W
+
+    def sy(v: float) -> float:
+        return RESID_MARGIN_T + RESID_PLOT_H * (1.0 - v / ymax)
+
+    grid: list[str] = []
+    step = _resid_grid_step(ymax)
+    v = 0.0
+    while v <= ymax + 1e-9:
+        y = sy(v)
+        grid.append(
+            f'<line class="grid" x1="{RESID_MARGIN_L}" y1="{y:.1f}" '
+            f'x2="{RESID_MARGIN_L + RESID_PLOT_W}" y2="{y:.1f}"></line>'
+            f'<text x="{RESID_MARGIN_L - 5}" y="{y + 3.5:.1f}" text-anchor="end">{v:.1f}</text>'
+        )
+        v += step
+    x_step = 2.0 if arc_total <= 12.0 else 5.0
+    a = 0.0
+    while a <= arc_total + 1e-9:
+        x = sx(a)
+        grid.append(
+            f'<line class="grid" x1="{x:.1f}" y1="{RESID_MARGIN_T}" '
+            f'x2="{x:.1f}" y2="{RESID_MARGIN_T + RESID_PLOT_H}"></line>'
+            f'<text x="{x:.1f}" y="{RESID_MARGIN_T + RESID_PLOT_H + 12}" text-anchor="middle">{a:g}</text>'
+        )
+        a += x_step
+    lift_marks = "".join(
+        f'<line class="lift" x1="{sx(lift):.1f}" y1="{RESID_MARGIN_T}" '
+        f'x2="{sx(lift):.1f}" y2="{RESID_MARGIN_T + RESID_PLOT_H}"></line>'
+        for lift in lifts
+    )
+    # The candidate groups reuse the trace layers' class + data-label, so the
+    # legend checkbox that hides a method's ink hides its profile with it.
+    curves = "".join(
+        f'<g class="layer" data-label="{html.escape(line.label, quote=True)}">'
+        f'<polyline stroke="{line.color}" points="'
+        + " ".join(f"{sx(px):.1f},{sy(py):.1f}" for px, py in line.points)
+        + '"></polyline></g>'
+        for line in lines
+    )
+    caption = (
+        f'<text x="{RESID_MARGIN_L + RESID_PLOT_W / 2:.0f}" y="{height - 3}" text-anchor="middle">'
+        f"Bogenlänge entlang der Hand-Nachfahrung (xh) → Abstand des Verfahrens (xh)</text>"
+    )
+    cursor = (
+        f'<line class="resid-cursor" x1="0" y1="{RESID_MARGIN_T}" x2="0" y2="{RESID_MARGIN_T + RESID_PLOT_H}"></line>'
+    )
+    return (
+        f'<svg class="resid-chart" width="{width}" height="{height}" viewBox="0 0 {width} {height}" '
+        f'data-ml="{RESID_MARGIN_L}" data-pw="{RESID_PLOT_W}" data-arc="{arc_total:.2f}">'
+        f'<rect class="plot" x="{RESID_MARGIN_L}" y="{RESID_MARGIN_T}" '
+        f'width="{RESID_PLOT_W}" height="{RESID_PLOT_H}"></rect>'
+        f"{''.join(grid)}{lift_marks}{curves}{cursor}{caption}</svg>"
+    )
+
+
+def residual_map_json(arc_x: np.ndarray, crop_pts: np.ndarray) -> str:
+    """The hover map: decimated `(arc, crop px)` pairs, hand-formatted JSON.
+
+    Hand-formatted so the byte layout is fixed — `json.dumps` float repr would
+    couple the page bytes to the platform's shortest-repr behaviour.
+    """
+    idx = list(range(0, len(arc_x), RESID_MAP_STRIDE))
+    # The last sample always rides along: the cursor clamps to the full arc,
+    # so a stride that ends short would leave the probe unable to reach the
+    # word's end (Copilot review, PR #388).
+    if idx and idx[-1] != len(arc_x) - 1:
+        idx.append(len(arc_x) - 1)
+    arc = ",".join(f"{arc_x[i]:.2f}" for i in idx)
+    px = ",".join(f"[{crop_pts[i][0]:.1f},{crop_pts[i][1]:.1f}]" for i in idx)
+    return f'{{"arc":[{arc}],"px":[{px}]}}'
+
+
 def word_section(
     index: int,
     entry: ReferenceEntry,
@@ -610,6 +853,7 @@ def word_section(
     size: tuple[int, int],
     layers: list[Layer],
     soll: tuple[SollRow, ...] = (),
+    resid: str = "",
 ) -> str:
     """One word's stage, legend and numbers table — hidden unless it is current."""
     width, height = size
@@ -636,11 +880,12 @@ def word_section(
         f'<img src="{crop_uri}" width="{width * STAGE_ZOOM}" height="{height * STAGE_ZOOM}" '
         f'alt="Ausschnitt „{html.escape(entry.word, quote=True)}“">'
         f'<svg viewBox="0 0 {width} {height}" width="{width * STAGE_ZOOM}" height="{height * STAGE_ZOOM}">'
-        f"{svg_layers}</svg></div>"
+        f'{svg_layers}<circle class="probe" r="4" vector-effect="non-scaling-stroke"></circle></svg></div>'
         f'<div class="legend">{legend}</div>'
         f'<table class="numbers"><thead><tr><th>Verfahren</th><th>Striche</th><th>Kreuzungen</th>'
         f"<th>Retrace-Zonen</th><th>Berührungen</th><th>Überlagerungen</th><th>dtw_xh</th><th>aiou</th>"
         f"<th>cross m/s</th><th>retrace</th></tr></thead><tbody>{rows}</tbody></table>"
+        f"{resid}"
         f"</section>"
     )
 
@@ -765,6 +1010,17 @@ Diese vier decken ABSTAND und TOPOLOGIE ab; der Bench misst mehr (Marken-Orte, A
 Chamfer in beide Richtungen) — und ehrlich benannt fehlt allen eine GLÄTTE-Spalte: die
 Mikro-Wackler, die man einer Bahn beim Nachschreiben mit fester Stiftdicke ansieht, bestraft
 heute keine dieser Zahlen.</div>
+<div class="hint"><b>Residualprofil</b> (die Kurve unter der Tabelle): zieht die Hand-Nachfahrung
+von jeder Methoden-Bahn ab — aber nicht Punkt n gegen Punkt n (bei gleicher Punktzahl wäre nach
+der ersten Extraschleife alles Folgende verschoben und ein Phantomfehler), sondern entlang der
+optimalen DTW-Zuordnung, mit der auch die Kopfzahl gemessen wird: beide Körper-Bahnen werden
+bogenlängen-gleichmäßig abgetastet (0,02&nbsp;xh), und jedes Referenz-Sample trägt den mittleren
+Abstand seiner zugeordneten Kandidaten-Punkte, in x-Höhen. Der Mittelwert über alle
+Zuordnungspaare IST <b>dtw_xh</b> — das Profil zeigt, WO die Zahl herkommt: flach nahe 0 =
+sauber, Berge = daneben. Gestrichelte Senkrechte = Absetzer der Hand; Marken (i-Punkte,
+u-Bögen, Umlaute) bleiben wie in der Kopfzahl außen vor. Maus über dem Profil setzt eine orange
+Sonde an die entsprechende Stelle der Hand-Bahn im Bild; die Legenden-Häkchen schalten die
+Kurve mit der Bahn zusammen.</div>
 <script>{js}</script>
 </body>
 </html>
@@ -812,6 +1068,14 @@ def build_page(
                 structure=ref_structure,
             )
         ]
+        # The residual profile compares BODY sequences exactly as the headline
+        # does: marks held out, per-stroke arc-length resampling at the ruler's
+        # own step, concatenation in writing order.
+        ref_bench = entry.frame.trace_to_bench(entry.row.strokes, entry.row.registration_px, entry.row.xh_px)
+        ref_body_rs = resampled_strokes(classify_strokes(ref_bench)[0], RESAMPLE_STEP_UNITS)
+        ref_seq = concat_body(ref_body_rs)
+        arc_x, lifts = body_arc_positions(ref_body_rs)
+        resid_lines: list[ResidualLine] = []
         for label, by_id in candidates:
             candidate = by_id.get(specimen_id)
             if candidate is None or not candidate.ok:
@@ -839,8 +1103,24 @@ def build_page(
                     numbers=(reports.get(label) or {}).get(specimen_id),
                 )
             )
+            cand_bench = entry.frame.trace_to_bench(candidate.strokes, candidate.registration_px, candidate.xh_px)
+            cand_seq = concat_body(resampled_strokes(classify_strokes(cand_bench)[0], RESAMPLE_STEP_UNITS))
+            if len(ref_seq) and len(cand_seq):
+                profile = np.column_stack([arc_x, residual_values(ref_seq, cand_seq)])
+                resid_lines.append(ResidualLine(label=label, color=colors[label], points=decimate_peaks(profile)))
+        resid = ""
+        if resid_lines and len(arc_x):
+            chart = residual_chart(resid_lines, lifts, float(arc_x[-1]))
+            if chart:
+                map_json = residual_map_json(arc_x, entry.frame.bench_to_crop_px(ref_seq))
+                resid = (
+                    f'<div class="resid">{chart}'
+                    f'<script type="application/json" class="resid-map">{map_json}</script></div>'
+                )
         sections.append(
-            word_section(len(sections), entry, crop_uri, size, layers, soll=(soll or {}).get(specimen_id, ()))
+            word_section(
+                len(sections), entry, crop_uri, size, layers, soll=(soll or {}).get(specimen_id, ()), resid=resid
+            )
         )
         # The tab label is the SPECIMEN id, not the word text: repeated words
         # ("und", "und-2", "und-3") would otherwise render three identical tabs

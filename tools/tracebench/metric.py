@@ -29,7 +29,7 @@ The three measures and why each exists:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 from scipy.ndimage import binary_dilation
@@ -62,6 +62,12 @@ class DtwResult:
     mean_xh: float
     path_len: int  # T — the number of matched pairs on the optimal path
     max_absorption: int  # most points of one side absorbed by ONE point of the other
+    # The optimal warping path itself, `(path_len, 2)` int32 `(i, j)` pairs in
+    # forward order — display-grade access to the alignment the numbers above
+    # summarise (the `counters.classified_pass_points` pattern: a viewer that
+    # re-derived the alignment could drift from the ruler). Excluded from
+    # equality/repr; it changes NO measured value.
+    pairs: np.ndarray = field(compare=False, repr=False, default_factory=lambda: np.zeros((0, 2), dtype=np.int32))
 
 
 @dataclass(frozen=True)
@@ -172,7 +178,8 @@ def dtw(a: np.ndarray, b: np.ndarray) -> DtwResult:
 
     path_len = len(rows)
     absorption = max(int(np.bincount(rows).max()), int(np.bincount(cols).max()))
-    return DtwResult(mean_xh=float(cur[m - 1]) / path_len, path_len=path_len, max_absorption=absorption)
+    pairs = np.column_stack([rows[::-1], cols[::-1]]).astype(np.int32)
+    return DtwResult(mean_xh=float(cur[m - 1]) / path_len, path_len=path_len, max_absorption=absorption, pairs=pairs)
 
 
 def rasterise_strokes(strokes: list[np.ndarray], shape: tuple[int, int]) -> np.ndarray:
