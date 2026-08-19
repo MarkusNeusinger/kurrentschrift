@@ -39,6 +39,32 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   named rescue path. New glossary terms: Plateau-Anker,
   Doppel-X-Duplikat.
 
+- **Lotse v0.12 "Plateau-Sehne" measured and rejected — the wiggle WAS
+  the crossing** (pre-registered §14 `aug19`, arm L1f). Replacing each
+  pass's sub-path inside a fused plateau by its chord was meant to make
+  the double-X duplicate constructively impossible; instead it killed
+  the missing class (1 → 8) and the retrace zones, because at loop
+  closures both passes run tangentially and their chords are parallel —
+  only the map's wiggle carries the transversality. Both rungs rejected
+  by their own kill criterion; rescue paths (untwisting the smaller
+  wiggle arc, asymmetric chord) named in the standing §7.9 table.
+
+- **A1 mark refit re-measured on the 19-row dev set: mark position
+  error −73 %** (§7.7 recalibration protocol; no new knob, the same
+  opt-in `--mark-refit` variant). Median 0.111 → 0.030 xh, all six
+  mark-carrying dev words improve, body and structure byte-neutral —
+  the wave-1 win (−55 % on 10 words) generalizes to the 9 new
+  tracings. Adoption into the stored chain stays gated on the
+  confirmation set, now with 6 instead of 4 paired words.
+
+- **Duel view: a "Feinschliff (nur Anzeige)" toggle** smooths the
+  CANDIDATE traces for the eye ((1, 2, 1)/4, endpoints fixed, three
+  iterations) — the display-stage consequence of the v0.6 verdict (the
+  ruler never sees the pixel zigzag, so smoothing belongs to the
+  consumer, never into the measured candidate). The hand reference,
+  the mark dots and every number stay raw; the toggle is off by
+  default and the page bytes stay deterministic.
+
 - **English style anchored: the Google developer documentation style
   guide becomes the reference fallback for the repository's English
   artifacts** (`sprachregelung.md` §4, owner decision 2026-08-18;
