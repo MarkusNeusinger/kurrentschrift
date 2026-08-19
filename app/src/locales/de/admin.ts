@@ -512,6 +512,15 @@ export const admin = {
     layersLabel: 'Ebenen über der Vorlage',
     layerTrace: 'Nachfahrung',
     layerEngine: 'Engine',
+    // The Abstandsprofil under a word card: nearest distance of the engine
+    // composition per point of the stored trace. A DISPLAY measure of the
+    // Werkbank — deliberately not the bench's DTW residual (glossar:
+    // Abstandsprofil vs. Residualprofil), which the caption says outright so
+    // the curve is never read as dtw_xh.
+    profileTitle: 'Abstandsprofil',
+    profileCaption:
+      'Abstand der Engine-Bahn zur Nachfahrung, je Punkt der Nachfahrung (nächster Abstand, in x-Höhen; Anzeige-Maß, nicht die Bench-Zahl dtw_xh). Flach nahe 0 = deckungsgleich, Berge = daneben; gestrichelte Senkrechte = Absetzer. Maus über der Kurve zeigt die Stelle im Ausschnitt.',
+    profileAxis: 'Bogenlänge der Nachfahrung (xh) → Abstand der Engine (xh)',
     // Interactive overlay elements (also their aria-labels).
     letterBoxAria: 'Buchstabe {{key}} in {{word}} — anklicken für die Buchstaben-Linse',
     joinDotAria: 'Übergang {{left}}→{{right}} in {{word}} — anklicken für die Paar-Linse',

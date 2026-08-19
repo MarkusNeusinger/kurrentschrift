@@ -163,6 +163,26 @@ def test_absorption_names_the_singularity_it_is_there_to_watch() -> None:
     assert dtw(flat, flat).max_absorption == 1
 
 
+def test_the_exposed_path_is_the_one_the_headline_averages_over() -> None:
+    """`pairs` is display plumbing, not a second metric: anchored at both ends,
+    monotone, `path_len` pairs long — and the mean of its pairwise distances IS
+    `mean_xh`, so a residual profile drawn from it can never disagree with the
+    number it explains.
+    """
+    rng = np.random.default_rng(11)
+    a, b = rng.normal(size=(41, 2)), rng.normal(size=(29, 2))
+    result = dtw(a, b)
+    assert result.pairs.shape == (result.path_len, 2)
+    assert result.pairs[0].tolist() == [0, 0]
+    assert result.pairs[-1].tolist() == [len(a) - 1, len(b) - 1]
+    assert (np.diff(result.pairs, axis=0) >= 0).all()  # forward only, both sides
+    distances = np.hypot(*(a[result.pairs[:, 0]] - b[result.pairs[:, 1]]).T)
+    assert float(distances.mean()) == pytest.approx(result.mean_xh, rel=1e-12)
+    # …and at identity every pair sits on the diagonal at distance zero.
+    identity = dtw(a, a)
+    assert identity.pairs[:, 0].tolist() == identity.pairs[:, 1].tolist()
+
+
 # --------------------------------------------------------------------- the AIoU
 
 

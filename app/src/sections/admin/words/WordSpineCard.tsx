@@ -20,6 +20,7 @@
 // what is left over at the right edge is the real width difference.
 
 import { Box, Chip, Tooltip, Typography } from '@mui/material';
+import { useMemo, useState } from 'react';
 
 import { useInView } from '@/hooks/useInView';
 import { wordSampleCropUrl } from '@/lib/api';
@@ -37,6 +38,9 @@ import {
   type SpecimenRef,
 } from '@/sections/admin/shell/model';
 import { garamond, paper } from '@/styles/paper';
+
+import { DistanceProfileChart, PROBE_COLOR } from './DistanceProfileChart';
+import { distanceProfile, type ProfilePoint } from './distanceProfile';
 
 const FACE_H = 220; // px per card face — same scale as the compare/Belege cards
 const FACE_PAD = 6; // crop px of air around the engine face's own ink
@@ -157,6 +161,21 @@ export function WordSpineCard({
 }: Props) {
   const [ref, inView] = useInView<HTMLDivElement>();
   const t = de.admin.werkbank;
+  // The hovered profile point, pinned as a probe onto the specimen face —
+  // curve and crop answer "WHERE in the word" together.
+  const [probe, setProbe] = useState<ProfilePoint | null>(null);
+
+  // The Abstandsprofil (display measure, see distanceProfile.ts) — trace and
+  // composition already share one unit frame, so no registration enters here.
+  // Computed only for a visible card: the brute-force nearest-segment scan is
+  // fine for one word, not for a whole stack of offscreen ones.
+  const profile = useMemo(() => {
+    if (!inView || !composed || row.strokes.length === 0) return null;
+    return distanceProfile(
+      row.strokes,
+      composed.items.map((it) => it.centerline),
+    );
+  }, [inView, composed, row.strokes]);
 
   const m = row.measurements;
   // ONE frame for both inks — the trace and the engine ride the same matrix.
@@ -235,6 +254,7 @@ export function WordSpineCard({
         </Box>
       </Box>
       {inView ? (
+        <>
         <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', alignItems: 'flex-start' }}>
           {/* Face 1 — the measurement: plate ink, the traced pen path over it,
               and the clickable occurrence layer. */}
@@ -278,6 +298,12 @@ export function WordSpineCard({
                     strokeLinejoin="round"
                   />
                 ))}
+                {probe && (
+                  // The Abstandsprofil's probe: the hovered curve point, pinned
+                  // onto the trace it was sampled from. Same accent as the duel
+                  // page's probe — the gesture reads the same on both surfaces.
+                  <circle cx={probe.u} cy={probe.v} r={0.16} fill="none" stroke={PROBE_COLOR} strokeWidth={0.07} />
+                )}
               </g>
               {overlay && composed && (
                 <g transform={matrix}>
@@ -386,6 +412,20 @@ export function WordSpineCard({
             )}
           </Box>
         </Box>
+        {/* The Abstandsprofil — WHERE the composition sits beside the author's
+            line, along that line. Only where both inks exist; the caption
+            carries the display-measure disclaimer so nobody reads dtw_xh. */}
+        {profile && profile.points.length > 1 && (
+          <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+            <Typography variant="caption" color="text.secondary">
+              {`${t.profileTitle} — ${t.profileCaption}`}
+            </Typography>
+            <Box sx={{ overflowX: 'auto', border: 1, borderColor: 'divider', borderRadius: 1, alignSelf: 'flex-start', maxWidth: '100%' }}>
+              <DistanceProfileChart profile={profile} axisLabel={t.profileAxis} onHover={setProbe} />
+            </Box>
+          </Box>
+        )}
+        </>
       ) : (
         <Box sx={{ height: FACE_H }} />
       )}
