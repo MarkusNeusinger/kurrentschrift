@@ -189,6 +189,16 @@ PIN_KNOT_NODE_RADIUS_UNITS = 1.0  # fixed anchor search radius, not a ladder kno
 # anchor offsets; interpolation continues between plateaus and run
 # boundaries. 0.0 = point knots (the rejected v0.10 field).
 PIN_KNOT_PLATEAU_UNITS = 0.35
+# v0.12 (pre-registered, L1f): the plateau chord. 4 of v0.11's 6 spurious
+# crossings are DOUBLE-X duplicates — a pinned window pass wiggles through
+# the node neighbourhood and cuts the other pass twice. Inside every fused
+# plateau interval each pass's sub-path is replaced by its CHORD (interior
+# samples linear between the interval's own boundary samples): two chords
+# cross at most once, so the duplicate is constructively impossible. Unlike
+# the rejected v0.3 junction chord this straightens only MAP geometry that
+# already sits in a rigid plateau (deviation bounded by the plateau width);
+# rail rides are untouched. False = the v0.11 field.
+PIN_PLATEAU_CHORD = False
 
 
 @dataclass(frozen=True)
@@ -734,20 +744,20 @@ def _pin_map_runs(
             d_a = (pg.px_of(seq[k - 1]) - samples[k - 1]) if seq[k - 1] is not None else np.zeros(2)
             pts.append((float(k - 1), d_a))
         anchors = [(float(i), off) for i, off in knots if k <= i <= end]
+        plateaus: list[tuple[float, float, list[np.ndarray]]] = []
         if PIN_KNOT_PLATEAU_UNITS > 0.0 and anchors:
             # v0.11: rigid plateaus — constant offset over +-plateau around
             # each anchor, overlapping plateaus fused to one interval with
             # the mean of their anchors' offsets, clipped to the run.
             reach = PIN_KNOT_PLATEAU_UNITS / SAMPLE_STEP_UNITS
-            merged: list[tuple[float, float, list[np.ndarray]]] = []
             for i, off in anchors:
                 lo, hi = max(float(k), i - reach), min(float(end), i + reach)
-                if merged and lo <= merged[-1][1]:
-                    prev_lo, prev_hi, offs = merged[-1]
-                    merged[-1] = (prev_lo, max(prev_hi, hi), [*offs, off])
+                if plateaus and lo <= plateaus[-1][1]:
+                    prev_lo, prev_hi, offs = plateaus[-1]
+                    plateaus[-1] = (prev_lo, max(prev_hi, hi), [*offs, off])
                 else:
-                    merged.append((lo, hi, [off]))
-            for lo, hi, offs in merged:
+                    plateaus.append((lo, hi, [off]))
+            for lo, hi, offs in plateaus:
                 mean = np.mean(np.asarray(offs), axis=0)
                 pts.append((lo, mean))
                 if hi > lo:
@@ -764,6 +774,14 @@ def _pin_map_runs(
             idx = np.arange(k, end + 1, dtype=float)
             out[k : end + 1, 0] = samples[k : end + 1, 0] + np.interp(idx, xs, offs[:, 0])
             out[k : end + 1, 1] = samples[k : end + 1, 1] + np.interp(idx, xs, offs[:, 1])
+            if PIN_PLATEAU_CHORD:
+                # v0.12: straighten each pass's sub-path inside a fused
+                # plateau to its chord — two chords cross at most once.
+                for lo, hi, _ in plateaus:
+                    lo_i, hi_i = int(np.ceil(lo)), int(np.floor(hi))
+                    if hi_i - lo_i >= 2:
+                        t = np.linspace(0.0, 1.0, hi_i - lo_i + 1)[:, None]
+                        out[lo_i : hi_i + 1] = (1.0 - t) * out[lo_i] + t * out[hi_i]
         k = end + 1
     return out
 

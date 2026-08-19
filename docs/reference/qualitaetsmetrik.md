@@ -6103,3 +6103,31 @@ höchstens EINE Stufe (die bessere, sofern alle Gates bestehen).
 Kill: kostet die Sehne Missing-Kreuzungen (der Wackel WAR das X)
 oder aiou, bleibt v0.11 stehen und die Duplikat-Frage geht als
 ehrliches Negativ mit benanntem Rest in §7.9.
+
+**Gemessen `aug19` — BEIDE Stufen verworfen, das benannte Kill
+feuert in voller Stärke: der Wackel WAR das X.** Leiter (dev-19,
+je 19/19 ok): "windows"+Sehne → `cross_missing` 1 → **8**,
+spurious 6 → 1, `retrace_missing` 6 → **12**, dtw auf 16 von 19
+Wörtern schlechter (Δ-Median +0,0014, Sign 3:16, p=0,004), aiou
+−0,0075; "all"+Sehne → 7 missing / 2 spurious, gleiches Bild. Die
+Diagnose ist geometrisch eindeutig: an den Sütterlin-Schleifen-
+schlüssen laufen beide Pässe TANGENTIAL durch die Knoten-
+Nachbarschaft (die Junction-Pinch-Geometrie) — ihre Sehnen sind
+nahe-parallel und schneiden sich GAR NICHT; erst der Wiggle der
+Karten-Teilbahn stellt die Transversalität her, und er trägt
+Kreuzung UND Duplikat untrennbar. Zugleich zerstören die Sehnen
+die Retrace-Zonen im Plateau (12 fehlend). VERWORFEN,
+`PIN_PLATEAU_CHORD` bleibt False; v0.11 "windows" bleibt der
+adoptierte Stand. Rettungswege (§7.9-Regel, je eigene Pre-Reg):
+(i) **Entdrillung statt Begradigung** — Duplikat-PAARE desselben
+Pass-Paars (Kreuzungs-Orte < 0,3 xh) topologisch entdrillen, indem
+der kleinere Wiggle-Bogen zwischen den beiden Schnittpunkten
+EINES Passes gespiegelt wird (entfernt genau ein X, erhält das
+andere samt Winkel); (ii) **asymmetrische Sehne** — nur der
+SPÄTERE Pass wird begradigt, der frühere behält seine Kurve
+(bricht die Parallel-Degenerierung, weil nur eine Seite
+linearisiert). Beides bleibt hinter der Feststellung eingereiht,
+dass die 4 Duplikate KEINE Topologie-Erfindung sind (das X ist
+real, nur doppelt gezählt) — der Leidensdruck ist entsprechend
+klein, und die "all"-Wiedervorlage wartet auf den Mechanismus,
+der die Duplikate schließt, ohne das X zu kosten.

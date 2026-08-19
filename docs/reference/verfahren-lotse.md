@@ -50,6 +50,7 @@ Doppel-X-Duplikate (4 von 6).
 | aug17 | v0.9 | dieselben Fenster, ans Ink **gepinnt** (`MAP_CROSSING_PIN`) | **adoptiert 0,35** (dtw 0,0578, gepaart −24 %, Defekte 7) |
 | aug19 | v0.10 (L1d) | `MAP_RUN_PIN_KNOTS` roh — Knoten-Anker als Punkt-Knoten (Owner-Fund: k-Kringel/W/r) | verworfen (Punkt-Feld schert an der Kreuzung: Merge/Oskulation in dichten Clustern; Gewinnseite real: aiou +0,027, Ortsfehler halbiert, Spurious-Heilung) |
 | aug19 | v0.11 (L1e) | dieselben Anker als **Plateau-Feld** (starre Cluster-Translation, global fusioniert) | **adoptiert "windows"** (Defekte 7, missing 3 → 1 inkl. Galoppieren-p-Rückkehr, Ortsfehler −43 %, k-Kringel nachgefahren; "all" um ein Doppel-X verworfen) |
+| aug19 | v0.12 (L1f) | `PIN_PLATEAU_CHORD` — Plateau-Sehne gegen die Doppel-X-Duplikate | verworfen (der Wackel WAR das X: Sehnen an Schleifenschlüssen parallel, missing 1 → 8, Retraces zerstört; Rettungswege Entdrillung/asymmetrische Sehne benannt) |
 
 Benannter Fehlermodus der Route: **Junction-Pinch** (Glossar) — die
 v0.7/v0.8/v0.9-Kette ist seine vollständige Abarbeitung; seit v0.11
@@ -58,10 +59,13 @@ Rest-Spurious-Klasse.
 
 ## Offene Blöcke
 
-- **Doppel-X-Duplikate** (4 der 6 Spurious): EIN X je Knoten-Cluster
-  erzwingen (Begradigung der Fenster-Teilbahn je Pass) — schaltet
-  zugleich die verworfene "all"-Stufe (Zonen-Rides/Brücken-Pinning)
-  frei.
+- **Doppel-X-Duplikate** (4 der 6 Spurious): die Plateau-Sehne
+  (v0.12) ist daran gescheitert — der Wackel trägt Kreuzung und
+  Duplikat untrennbar; benannte nächste Mechanismen sind Entdrillung
+  bzw. asymmetrische Sehne (§7.9). Erst ein Erfolg dort schaltet die
+  "all"-Stufe (Zonen-Rides/Brücken-Pinning) wieder frei. Die
+  Duplikate sind keine Topologie-Erfindung (das X ist real, nur
+  doppelt gezählt) — Leidensdruck klein.
 - **Karten-Form-Klasse**: die k-Kopfschleife fährt auch gepinnt
   formfremd (komponierter Bogen tiefer/schmaler als diese Hand), der
   W-Ansatz bleibt K3 — Kompositions-/Autorenschiene, kein Ritt-Fehler.
