@@ -36,7 +36,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
 **§6** Extern/Forschung.
 
-- **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1 · Ausreißer §4
+- **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1 · Ausreißer §4
 - **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
@@ -1518,6 +1518,22 @@ Worts sind Menschenarbeit; Laufform, Übergangs-Grammatik und Komposition
 sind Algorithmus-Territorium und werden reklamiert, nicht von Hand
 gepatcht. Begründung: **„Ein Mangel schärft die Regel für alle Wörter, ein
 manueller Eingriff repariert genau eine Stelle.“** → optimierungs-werkbank.md §3
+
+**Abstandsprofil (Werkbank)** — die Kurve unter einer Wort-Karte der
+Werkbank (`/admin/woerter`, Detail): je Punkt der gespeicherten
+Nachfahrung der NÄCHSTE Abstand zur Engine-Komposition, in x-Höhen,
+über der Bogenlänge der Nachfahrung — flach nahe 0 = deckungsgleich,
+Berge = daneben; Hover setzt eine Sonde an die Stelle im
+Platten-Ausschnitt. Ein **Anzeige-Maß der Werkbank**, bewusst NICHT
+das Residualprofil der Duell-Seite (→ §4): Nachfahrung und Komposition
+segmentieren ihre Striche verschieden (generierte Verbinder,
+aufgeschobene Marken), eine Schreibreihenfolge-Zuordnung (DTW) würde
+dort Segmentierung als Fehler melden — deshalb nächster Abstand statt
+Zuordnung, und deshalb nie mit `dtw_xh` zu verwechseln. Eine Richtung
+(Nachfahrung → Engine): überschüssige Engine-Tinte zeigt die
+Overlay-Ansicht, nicht diese Kurve. *Technisch:*
+`app/src/sections/admin/words/distanceProfile.ts` +
+`DistanceProfileChart.tsx` → proposals/optimierungs-werkbank.md
 
 **Auftragskorb** *(`work_items`)* — statt Screenshots eine Tabelle: Der
 Autor markiert in der Werkbank einen Buchstaben, ein Paar oder ein Wort

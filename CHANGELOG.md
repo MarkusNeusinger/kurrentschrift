@@ -14,6 +14,23 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Werkbank word cards: an Abstandsprofil under each word — where the
+  composition sits beside the author's line**
+  (`app/src/sections/admin/words/distanceProfile.ts` +
+  `DistanceProfileChart.tsx`, wired into `WordSpineCard`). For every
+  point along the stored trace the curve plots the nearest distance to
+  the engine composition's centerlines, in x-heights over the trace's
+  ink arc — flat near zero reads congruent, a mountain reads
+  off-track, pen lifts appear as dashed markers, and hovering the
+  curve pins a probe onto the matching spot of the specimen face. A
+  display measure by design, not the duel page's DTW residual: trace
+  and composition segment their strokes differently (generated
+  connectors, deferred diacritics), so a writing-order pairing would
+  report segmentation as error — the caption says so outright, and
+  the extra-engine-ink direction stays the overlay's job. Pure
+  computation module with vitest coverage; new term "Abstandsprofil
+  (Werkbank)" added to the glossary.
+
 - **Duel page: a residual profile per word — where the headline number
   comes from** (`tools/tracebench/view.py`). Below each word's numbers
   table the page now plots, per candidate method, the distance to the
