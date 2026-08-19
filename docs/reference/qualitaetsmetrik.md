@@ -6327,6 +6327,44 @@ die Partition bewegt keinen Punkt, nur die Reihenfolge.
 bleibt als Archäologie-Knopf, das Mess-CLI-Flag entfällt mit
 der Adoption).
 
+### Kette K-B `aug19` — Vorregistrierung: die Zacken-Reparatur im Trace
+
+Geschrieben und committet VOR der ersten Zahl. Die Zacken-Klasse
+des Owner-Sichtbefunds (Galoppieren: das V in den i-Punkt — EIN
+Polylinien-Punkt springt 0,44 xh weg und zurück —, die Nadel am
+Kopf des ersten p — drei Punkte, 6–11× der Median-Schrittweite)
+ist exakt die §11-Ausreißer-Form, für die der geteilte Detektor
+`tools.pairlab.anchors` gebaut und an 17 von 22 Owner-Markierungen
+validiert wurde. Die STATISTIK-Schicht repariert sie seit §11e;
+der Trace zeigt sie bisher absichtlich roh („inspection layer,
+needle and all") — eine Doktrin von VOR der Tintenfolger-Kampagne,
+in der der Trace zum PRODUKT wurde. **EIN Knopf:
+`HarvestOptions.trace_repair`** (CLI `--trace-repair`, Label
+`chain+repair` — das A1-Muster: ändert, was der Trace ZEIGT, nie,
+was die Ernte MISST): `repair_stranded_anchors` — DIESELBE
+geteilte Funktion, kein Zweitbau; das Kriterium ist skalenfrei
+(Schritt-Verhältnisse je Strich) — läuft je assembliertem
+Trace-Strich; Läufe konsekutiv geflaggter Punkte werden als ein
+Stück auf die Sehne der ungeflaggten Nachbarn interpoliert, nie
+auf Tinte gesnappt, Anzahl geloggt (`trace_repaired` im Meta).
+
+**Erwartung:** die beiden Galoppieren-Zacken verschwinden
+(sichtbar + dtw dort leicht runter); der i-Punkt-Strich fällt
+ohne Ausreißer unter die 0,8-xh-Marken-Schwelle — die fehlende
+i-Marke DARF heilen (`marks_missing` 1 → 0); alle übrigen
+Dev-Wörter ±0,002; `aiou` ~neutral (Zacken liegen in Luft).
+**Gates:** kein Dev-Wort schlechter als +0,002; Struktur- und
+Markenzähler ohne Netto-Verlust; `aiou`-Median-Δ > −0,005;
+reversed = 0. Kill: kostet die Reparatur irgendwo eine ECHTE
+Struktur (ein „Spike", der in Wahrheit ein Kreuzungsschenkel
+war), ist der Polylinien-Einsatz des Detektors verworfen und der
+Weg zurück die Anker-Ebene (keep_solve-Plumbing, eigene
+Pre-Reg). Bestehen alle Gates: Adoption als **Kette v3** (die
+Trace-Doktrin-Zeile in `chain_word_strokes` wird im selben
+Commit umgeschrieben — der Trace ist seit der Kampagne Produkt,
+die Inspektion der rohen Nadel bleibt über
+`trace_repair=False` erreichbar).
+
 **Re-Baseline Kette v2 `aug19` (deklariert, lokale Umgebung der
 Runde):** dtw-Median 0,0576 (unverändert — die Median-Wörter
 waren nie betroffen) · **p90 0,2355 → 0,0988** · worst jetzt
