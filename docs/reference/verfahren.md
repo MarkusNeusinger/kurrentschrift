@@ -46,8 +46,8 @@ Zahl hier ist ein datiertes Zitat, der Beleg wohnt im benannten
 
 | Anzeige-Name | Seite | Stand (2026-08-18, dev-19, §14 „Re-Baseline aug17“ ff.) |
 |---|---|---|
-| **Kette** | [`verfahren-kette.md`](verfahren-kette.md) | v1 — dtw 0,0579 med · p90 0,236 · worst unter 0,450 |
-| **Lotse** | [`verfahren-lotse.md`](verfahren-lotse.md) | v0.11-Stand — dtw 0,0596 med · gepaart −18 % gegen die Kette · p90 0,113 · Netto-Kreuzungsdefekte 7 (missing 1) · Kreuzungs-Ortsfehler 0,066 xh |
+| **Kette** | [`verfahren-kette.md`](verfahren-kette.md) | **v2** (`aug19`, marken-endständige Assembly) — dtw 0,0576 med · p90 0,099 · worst Galoppieren 0,233 |
+| **Lotse** | [`verfahren-lotse.md`](verfahren-lotse.md) | v0.11-Stand — dtw 0,0596 med · gepaart gegen Kette v2 ±0 (Sign 10:9) · p90 0,113 · Netto-Kreuzungsdefekte 7 (missing 1) · Kreuzungs-Ortsfehler 0,066 xh |
 | **InkSight** | [`verfahren-inksight.md`](verfahren-inksight.md) | T0 (roh) — dtw 0,0951 med · 5/19 failed · Galoppieren-B2-Kollaps |
 | **Nullprobe** | [`verfahren-nullprobe.md`](verfahren-nullprobe.md) | unversioniert (Kontrolle) — dtw 0,619 med |
 

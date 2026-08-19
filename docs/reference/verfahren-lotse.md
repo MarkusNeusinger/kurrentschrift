@@ -26,13 +26,18 @@ Adoptierte Konstanten (`tools/inkpilot/pilot.py`):
 `MAP_RUN_PIN_KNOTS` = "windows" + `PIN_KNOT_PLATEAU_UNITS` = 0,35
 (v0.11 — Knoten-Anker mit Plateau-Feld in den Fenster-Läufen).
 Zahlen (dev-19, §14 „Lotse v0.11 aug19“, lokale Basis): dtw 0,0596
-med (gepaart gegen die Kette **−18 %**) · p90 **0,113** (Kette
-0,236) · Netto-Kreuzungsdefekte **7**, davon `cross_missing` **1**
-(nur unters letzter Ritt-Rest — Galoppierens p-Schleifen-X kehren
-zurück, obwohl die Komposition sie nicht hat) ·
+med · p90 **0,113** · Netto-Kreuzungsdefekte **7**, davon
+`cross_missing` **1** (nur unters letzter Ritt-Rest — Galoppierens
+p-Schleifen-X kehren zurück, obwohl die Komposition sie nicht hat) ·
 Kreuzungs-Ortsfehler-Median **0,066 xh** (v0.9: 0,116) ·
 `marks_missing` 0 · aiou 0,743. Dominante Rest-Spurious-Klasse:
-Doppel-X-Duplikate (4 von 6).
+Doppel-X-Duplikate (4 von 6). **Paarung seit der
+Kette-v2-Re-Baseline (`aug19`, marken-endständige Assembly): Δ-Median
++0,0007, Sign 10:9 — GLEICHSTAND im Median** (der −24-%/−18-%-Vorsprung
+gegen v1 bestand fast vollständig aus deren Assembly-Artefakt); die
+Kette führt beim p90 (0,099 gegen 0,113), der Lotse bei Struktur
+(7 gegen 21 Netto-Defekte), Marken (0 gegen 1), aiou (0,743 gegen
+0,693) und Kreuzungs-Ortsfehler.
 
 ## Ledger (Versionen; Belege in §14 „Route Lotse …“)
 

@@ -48,7 +48,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
-- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4
+- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4
 - **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Plateau-Anker §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
@@ -1205,6 +1205,22 @@ Mittel-Offset — der dichte Cluster verschiebt sich als Ganzes.
 *Technisch:* `tools/inkpilot/pilot.py` (`MAP_RUN_PIN_KNOTS`,
 `PIN_KNOT_PLATEAU_UNITS`, `map_crossing_knots`, `_pin_map_runs`) →
 qualitaetsmetrik.md §14 „Lotse v0.10/v0.11 `aug19`"
+
+**Marken-endständige Assembly** — die `aug19` als **Kette v2**
+adoptierte Formulierungsänderung (K-A): der Ketten-Kandidat emittiert
+die Diakritika-Striche eines Wortes (Assembler-Kriterium: alle
+Samples über `DIACRITIC_MIN_Y`) NACH allen Körper-Strichen, in der
+komponierten Engine-Ordnung, die auch die Hand schreibt — die
+v1-Assembly setzte sie je RUN zwischen die Läufe, und das
+ordnungstreue forward-DTW zahlte die Sequenz-Inversion als die
+gesamte unter/muß-Kollaps-Klasse (unter 0,4503 → 0,0854 bei
+byte-identischer Geometrie; Kette-p90 0,236 → 0,099). Eine reine
+ORDNUNGS-Änderung der Strichliste; ihre Adoption war die erste
+datierte Re-Baseline eines Duell-Kandidaten (alle gepaarten
+Vergleiche rechnen seither gegen v2). *Technisch:*
+`tools/laufform/harvest.py` (`HarvestOptions.marks_last`,
+`chain_word_strokes`), `tools/pairlab/trace.py::
+diacritic_stroke_units` → qualitaetsmetrik.md §14 „Kette K-A `aug19`"
 
 **Doppel-X-Duplikat** — die seit Lotse v0.11 dominante
 Rest-Spurious-Klasse des Kreuzungszählers (4 der 6 Zählungen):

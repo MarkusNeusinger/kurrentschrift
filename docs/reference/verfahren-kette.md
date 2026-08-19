@@ -21,27 +21,28 @@
   ist er die prior-geführte Referenz-Route (Route A) und in der
   Produktion die Quelle der `traced`-Zeilen.
 
-## Aktueller Stand: v1 (2026-08-17)
+## Aktueller Stand: v2 (2026-08-19) — die marken-endständige Assembly
 
 Formulierung: EDT-Punktdatenterm + Landmark-/Width-Operatoren +
 Budget-Veto; als Folger-Aufsatz der re-linearisierende Restart
 (`follow.py`, reg→prox) mit Struktur-Wächter (Arm ⑨) — dessen gewachte
-Bahn ist die Duell-Kette. Der Marken-Nachfit (A1) ist adoptiert, aber
-**opt-in** (`--mark-refit`), nicht Teil des Duell-Defaults. Zahlen
-(dev-19, §14 „Re-Baseline aug17“): dtw 0,0579 med · p90 0,236 ·
-worst unter 0,450; bekannte Klassen-Defekte: die Kollaps-Klasse unter + muß×3 (seit
-`aug19` als ORDNUNGS-dominiert autopsiert — die KETTEN-ASSEMBLY
-emittiert den abgesetzten Deckbogen ZWISCHEN den Runs, Hand und
-Engine-Ordnung setzen ihn ans Ende; Ordnungs-Permutation beweist:
-unter 0,450 → 0,085 bei byte-identischer Geometrie, §14
-„L2-Rest-Autopsie“), Kreuzungs-Höhen-Drift (das/die, §13a),
-Galoppieren 5 verlorene Kreuzungen, das er-Gekritzel in unter als
-echter Rest-Stapel (~0,085).
+Bahn ist die Duell-Kette. **v2 (K-A, §14 `aug19`):** die Assembly
+emittiert Diakritika-Striche NACH allen Körper-Strichen
+(`HarvestOptions.marks_last` = True; die komponierte Engine-Ordnung,
+die die Hand teilt) — eine reine Ordnungs-Änderung, kein Punkt bewegt
+sich; sie löste die gesamte unter/muß-Kollaps-Klasse (unter 0,450 →
+0,085). Der Marken-Nachfit (A1) bleibt **opt-in** (`--mark-refit`).
+Zahlen (dev-19, §14 „Kette K-A `aug19`"-Re-Baseline): dtw 0,0576 med ·
+**p90 0,0988** · worst Galoppieren 0,233; bekannte Klassen-Defekte:
+das er-Gekritzel in unter als echter Rest (~0,085, versetzter
+Karten-Init), Kreuzungs-Höhen-Drift (das/die, §13a), Galoppieren 5
+verlorene Kreuzungen, Zacken-Klasse (Ausreißer-Anker im Trace —
+i-Punkt-V, p-Nadel; die Statistik-Schicht repariert sie längst, der
+Trace zeigt sie absichtlich roh).
 
-**Versionierung ab hier:** v1 ist der heutige Stand; die Nummer bumpt
-nur bei einer ADOPTIERTEN Formulierungsänderung (die A-Kandidaten
-unten). Die abgeschlossenen Gewichts-Arme werden nicht rückwirkend
-nummeriert (Konvention Nr. 3).
+**Versionierung:** v2 seit 2026-08-19 (erste adoptierte
+Formulierungsänderung). Die abgeschlossenen Gewichts-Arme werden nicht
+rückwirkend nummeriert (Konvention Nr. 3).
 
 ## Ledger (datierte Arme und Entscheide; Belege in §14)
 
@@ -57,18 +58,18 @@ nummeriert (Konvention Nr. 3).
 | aug17 | Re-Baseline 19er-Dev-Satz | — | dev-19-Zahlen oben | „Re-Baseline aug17“ |
 | aug19 | A1-Nachmessung dev-19 | dieselbe opt-in Variante, §7.7-Protokoll | Marken-Ortsfehler-Median 0,111 → 0,030 (−73 %), Körper/Struktur byte-neutral — der Welle-1-Gewinn generalisiert | „Welle 1 · A1 aug15“ (Nachtrag) |
 | aug19 | soll-bewusster K0-Wächter | `--structure-guard-soll`: Intervall je Klasse zwischen Init-Budget und Kompositions-Soll | GEMESSEN: 4 von 5 Gates bestehen (7 strikte dev-dtw-Gewinne, aiou nie negativ, dev-Median 0,0576 → 0,0494) — Struktur friert 107 = 107, „strikt besser" scheitert an der runden-ATOMAREN Rückweisung (unter-Protokoll); als sichere Produktions-Bahn dominiert er den zweiseitigen; Rettungsweg zonale Rückweisung (§7.9) | „Wächter als Produktions-Kette aug16“ (Nachtrag `aug19`) |
+| aug19 | **K-A marken-endständige Assembly** | `HarvestOptions.marks_last` — Diakritika hinter alle Körper-Striche (reine Ordnungs-Änderung) | **ADOPTIERT als v2** (alle Gates exakt: die vier Kollaps-Wörter −0,12 bis −0,37, alles andere byte-gleich; p90 0,236 → 0,099; der Lotse-Vorsprung gegen v1 erweist sich als Artefakt — gepaart gegen v2 Gleichstand) | „Kette K-A `aug19`“ |
 
-## Stehende v2-Anwärter (Formulierungsänderungen, tintenfolger.md §7.3)
+## Stehende v3-Anwärter (Formulierungsänderungen, tintenfolger.md §7.3)
 
-**Marken-endständige Assembly** (neu `aug19`, der Top-Anwärter nach
-der L2-Autopsie: abgesetzte Deckbogen-/Markenstriche NACH allen Runs
-emittieren, in der komponierten Engine-Ordnung — erwartete Wirkung
-aus der Permutations-Probe: p90 0,236 → ~0,11 bei byte-identischer
-Geometrie; ändert den eingefrorenen Baseline-Kandidaten = deklarierte
-Re-Baseline aller gepaarten Vergleiche) · A2 (SDM + Dichtebewusstheit,
-Welle 2 — Ziele Stranding/Doppelpass, NICHT muß/unter) · A3
-(Kreuzungen als explizite Variablen — jetzt mit der
-das/die-Höhenstapel-Evidenz aus §7.10) · A5 (Zwei-Pass-Zwang aus
-Breiten-Evidenz) · A4 (Barriere statt Veto) · A6 (GNC-Schedule).
-NICHT wieder aufgenommen werden Gewichts-Sweeps der alten
-Formulierung — durch ①⑤⑥⑥b⑨ erschöpfend negativ beantwortet.
+**Zacken-Reparatur im Trace** (neu `aug19`: die Ausreißer-Anker-Klasse
+— i-Punkt-V, p-Nadel — mit dem geteilten Detektor
+`tools.pairlab.anchors` auch in der TRACE-Schicht reparieren, nach dem
+A1-Muster „ändert, was der Trace ZEIGT, nie, was die Ernte MISST";
+eigene Pre-Reg) · A2 (SDM + Dichtebewusstheit, Welle 2 — Ziele
+Stranding/Doppelpass, NICHT muß/unter) · A3 (Kreuzungen als explizite
+Variablen — jetzt mit der das/die-Höhenstapel-Evidenz aus §7.10) ·
+A5 (Zwei-Pass-Zwang aus Breiten-Evidenz) · A4 (Barriere statt Veto) ·
+A6 (GNC-Schedule). NICHT wieder aufgenommen werden Gewichts-Sweeps
+der alten Formulierung — durch ①⑤⑥⑥b⑨ erschöpfend negativ
+beantwortet.

@@ -92,6 +92,7 @@ from tools.pairlab.trace import (
     _px_to_word_units,
     assemble_word_strokes,
     cap_word_strokes,
+    diacritic_stroke_units,
 )
 from tools.wordlab.cases import iter_fixture_word_cases
 from tools.wordlab.derive import WordDeriveResult, derive_word
@@ -226,6 +227,16 @@ class HarvestOptions:
     # (`tools.tracebench.run --mark-refit`); adopting it into the stored trace
     # is a separate, measured decision.
     mark_refit: bool = False
+    # K-A (§14 `aug19`), ADOPTED as Kette v2: emit the word's diacritic
+    # strokes AFTER all body strokes, in the composed engine order the hand
+    # shares — the v1 per-run assembly interleaved them between the runs, and
+    # the trace bench paid the sequence inversion as the whole unter/muß
+    # collapse class (measured: unter 0.4503 -> 0.0854, muß family -0.12 to
+    # -0.14, every other word and every geometry column byte-identical). A
+    # pure ORDER change of the assembled stroke list — no point moves. True
+    # is the v2 baseline (a dated re-baseline of the bench); False reproduces
+    # the v1 ordering for archaeology.
+    marks_last: bool = True
 
 
 @dataclass
@@ -842,6 +853,14 @@ def chain_word_strokes(case, result: WordDeriveResult, opts: HarvestOptions) -> 
                 entries, traced_slots=set(fit.slots), xh=xh, registration=registration, restart_slots=restart_slots
             )
         )
+
+    if opts.marks_last:
+        # K-A: stable partition — diacritics (the assembler's OWN criterion,
+        # read off the word-units strokes) move behind every body stroke,
+        # order inside both groups untouched, no point moves.
+        body = [s for s in word_strokes if not diacritic_stroke_units(s)]
+        marks = [s for s in word_strokes if diacritic_stroke_units(s)]
+        word_strokes = body + marks
 
     meta = {
         "runs": runs,

@@ -57,6 +57,23 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   tracings. Adoption into the stored chain stays gated on the
   confirmation set, now with 6 instead of 4 paired words.
 
+- **Kette v2: the marks-last assembly, adopted with a dated
+  re-baseline** (pre-registered §14 "Kette K-A aug19", owner go
+  "weiter optimieren"). `HarvestOptions.marks_last` (default True)
+  emits a word's diacritic strokes after all body strokes in the
+  composed engine order the hand shares; the v1 per-run assembly
+  interleaved them between the runs. Measured exactly as
+  pre-registered: the four collapse words fall (unter 0.4503 →
+  0.0854, muß family −0.12 to −0.14), every other word and every
+  geometry column byte-identical — a pure order change. The chain's
+  dev p90 drops 0.236 → 0.099 and its worst word is now Galoppieren;
+  paired against v2 the Lotse's −18 % advantage disappears entirely
+  (Δ-median +0.0007, sign 10:9) — the routes now tie on median, the
+  chain leads on p90, the Lotse keeps structure, marks, aiou and
+  crossing position. The production re-harvest of the stored traced
+  rows stays behind owner go + dbsnapshot. New glossary term:
+  Marken-endständige Assembly.
+
 - **The chain's collapse class (unter 0.450, muß ×3 ~0.22) is an
   ORDER artifact of the candidate assembly — proven by permutation**
   (§14 "L2-Rest-Autopsie", corrected same-day after an owner

@@ -6314,3 +6314,37 @@ deklariert: ALLE gepaarten Routen-Vergleiche rechnen ab dann
 gegen die v2-Kette, die alten Zahlen bleiben als
 v1-Geschichte lesbar; der PRODUKTIONS-Re-Harvest (DB) bleibt
 davon getrennt hinter Owner-Go + dbsnapshot.
+
+**Gemessen `aug19` — ALLE Gates bestehen exakt wie
+vorregistriert, ADOPTIERT als Kette v2.** Dev-19, gepaart gegen
+die v1-Baseline: **unter 0,4503 → 0,0854 (−0,365) · muß-3
+0,2339 → 0,0962 · muß 0,2419 → 0,1096 · muß-2 0,2084 →
+0,0877**; die übrigen 15 Wörter Δ exakt 0,0000, und JEDE
+Geometrie-Spalte byte-gleich (aiou 0,6929, beide Chamfer,
+cross 14+7, marks 1+1, retrace 6+13, touch 25, reversed 0) —
+die Partition bewegt keinen Punkt, nur die Reihenfolge.
+`HarvestOptions.marks_last` = True ist der v2-Default (False
+bleibt als Archäologie-Knopf, das Mess-CLI-Flag entfällt mit
+der Adoption).
+
+**Re-Baseline Kette v2 `aug19` (deklariert, lokale Umgebung der
+Runde):** dtw-Median 0,0576 (unverändert — die Median-Wörter
+waren nie betroffen) · **p90 0,2355 → 0,0988** · worst jetzt
+**Galoppieren 0,2329** (der echte unter-Rest: 0,0854, das
+er-Gekritzel aus dem versetzten Karten-Init) · Struktur- und
+Markenspalten identisch zu v1. **Gepaarte Routen-Vergleiche
+gegen v2:** Lotse v0.11 Δ-Median **+0,0007** (Sign 10:9,
+p=1,0) — der −18-%-Vorsprung der Lotse-Route gegen v1 bestand
+zu praktisch 100 % aus dem Assembly-Artefakt; die Routen
+stehen jetzt im Median GLEICHAUF, die Kette führt beim p90
+(0,0988 gegen 0,1129), der Lotse behält die Struktur (7 gegen
+21 Netto-Kreuzungsdefekte), die Marken (0 gegen 1 fehlend),
+aiou (0,7434 gegen 0,6929) und den Kreuzungs-Ortsfehler
+(0,066 gegen 0,083 xh). Das Fusions-Orakel und die
+InkSight-/Nullprobe-Paarungen sind mit ihrer nächsten Messung
+gegen v2 neu zu beziffern (lokal nicht neu gerechnet — die
+absoluten Wortwerte dieser Routen ändern sich nicht, nur ihre
+Deltas). Der PRODUKTIONS-Re-Harvest der `traced`-Zeilen mit
+v2-Ordnung bleibt hinter Owner-Go + dbsnapshot (die
+Fixture-`traced`-Zeilen tragen bis dahin die v1-Ordnung —
+der Bench rechnet den `chain`-Kandidaten ohnehin frisch).
