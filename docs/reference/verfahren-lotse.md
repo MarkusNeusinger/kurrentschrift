@@ -69,8 +69,14 @@ Rest-Spurious-Klasse.
 - **Karten-Form-Klasse**: die k-Kopfschleife fährt auch gepinnt
   formfremd (komponierter Bogen tiefer/schmaler als diese Hand), der
   W-Ansatz bleibt K3 — Kompositions-/Autorenschiene, kein Ritt-Fehler.
-- Rest-Autopsie muß-Klasse (`direction_uncertain` je 1 Strich — die
-  ß-Strich-Zerlegung der Referenzen, §7.10 L2-Rest).
+- ~~Rest-Autopsie muß-Klasse~~ **erledigt `aug19`** (§14
+  „L2-Rest-Autopsie"): die Klasse ist ORDNUNGS-dominiert — der Autor
+  hängt den ü-Deckbogen VERBUNDEN ans Wortende, die Komposition setzt
+  ihn nach der u-Gruppe; die Marken-Trennung des Lineals greift nur
+  bei abgesetzten Marken. Referenz-seitige Fixture-Eigenschaft
+  (Klasse `marks_uncertain`), deckelt muß für ALLE Routen; Optionen
+  beim Owner (Neu-Nachfahrung mit Absetzen = deklarierte
+  Lineal-Änderung, oder dokumentiert stehen lassen).
 - Der **Bestätigungssatz** (A, dann B) als Schlussstein, bevor aus dem
   Dev-Gewinn eine Adoptionsentscheidung jenseits der Routen-Konstanten
   wird (Versiegelung: tintenfolger.md §2.5).

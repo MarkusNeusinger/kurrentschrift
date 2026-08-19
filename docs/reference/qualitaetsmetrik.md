@@ -6131,3 +6131,46 @@ dass die 4 Duplikate KEINE Topologie-Erfindung sind (das X ist
 real, nur doppelt gezählt) — der Leidensdruck ist entsprechend
 klein, und die "all"-Wiedervorlage wartet auf den Mechanismus,
 der die Duplikate schließt, ohne das X zu kosten.
+
+### L2-Rest-Autopsie `aug19` — die muß-Klasse ist ORDNUNGS-dominiert: der verbundene ü-Deckbogen
+
+Befund, kein Knopf (die in §7.10 L2 und in der `aug17`-Re-Baseline
+benannte Rest-Autopsie „ß-Strich-Zerlegung der Referenzen", jetzt
+ausgeführt). Methode: DTW-Kostenprofil entlang des Referenz-Bogens
+(Diagnose-DP im Scratch, Zonen > 0,15 xh) plus
+Wegpunkt-Sequenzen beider Seiten für `muß`.
+
+**Der Mechanismus.** Die Hand schreibt das ganze Wort in EINEM
+Federzug (Body 2 Strokes, 1171+59 Samples) und hängt den
+ü-DECKBOGEN VERBUNDEN ans WORTENDE: Wegpunkte …85 % (6,2 · 0,0 —
+ß fertig) → 90 % (5,2 · 0,8) → 95 % (4,2 · 1,7) → 100 %
+(4,8 · 1,9) — die letzten ~13 % des Bogens (≈ 3 xh) laufen zurück
+über das ü. Die Kette komponiert denselben Bogen direkt nach der
+u-Gruppe (Wegpunkte 70–80 % bei u 4,0–4,9 · v 1,6–1,7) und
+schreibt DANACH die ß-Bögen. Weil der Bogen OHNE Absetzen
+angebunden ist, kann die Marken-Heraustrennung des Lineals
+(`classify_strokes` — eigene Striche, Deckel 0,8 xh) ihn nicht
+herausnehmen: er bleibt im Body, und das forward-DTW zahlt die
+Sequenz-Inversion in voller Länge doppelt (Kostenzonen: ß-Stamm
+bis 1,7 xh bei 61–69 % · Rücklauf-Zone 87–100 % bis 2,6 xh).
+Genau die „Deferred-Diakritika-Ordnungsfalle", gegen die die
+Marken-Trennung gebaut wurde — sie greift nur bei ABGESETZTEN
+Marken.
+
+**Einordnung.** (a) Die muß-Klassen-Headline (Kette 0,21–0,24 ×3)
+trägt einen großen Referenz-seitigen Ordnungs-Anteil — dieselbe
+Fixture-Qualitätsklasse wie `marks_uncertain` 9/19 (der Autor
+zeichnet Marken teils verbunden; der Bestätigungs-Brief-Hinweis
+„Marken mit eigenem Absetzen" gilt fort). Auch die
+Lotse-/InkSight-Gewinne auf muß (0,11–0,15) sind durch denselben
+Anteil nach unten gedeckelt. (b) A2 (SDM/DCD-Datenterm) kann
+diese Klasse NICHT erreichen (kein Geometrie-, ein
+Sequenz-Fehler) — die A2-Erwartung ist entsprechend
+zurückzustufen (Stranding/Doppelpass bleiben seine Ziele, muß
+nicht). (c) Optionen, beide Owner-Entscheide: die drei
+muß-Referenzen mit ABGESETZTEM ü-Bogen neu nachfahren
+(deklarierte Lineal-Änderung + datierter Re-Baseline-Lauf aller
+Routen) ODER die Klasse als dokumentierte Referenz-Eigenschaft
+stehen lassen (Zahlen bleiben vergleichbar, tragen aber den
+benannten Ordnungs-Anteil). KEINE Gate- oder Lineal-Änderung aus
+dieser Autopsie.
