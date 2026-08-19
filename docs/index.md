@@ -99,7 +99,7 @@ docs/
 │   ├── werkzeuge.md              # Dev-Tools unter tools/: Inspektions-Labs + pairlab-Einstiegsskripte, Ernte-Werkzeuge, humanbench/fitview, dbsnapshot, Benches, quizgen
 │   ├── verfahren.md              # Verfahrensseiten-Übersicht: Versions-Konvention der Duell-Routen, Register-Regel (Zahlen wohnen in §14)
 │   ├── verfahren-kette.md        # Kette: Steckbrief, Stand v1, Arm-Ledger ①–⑨/A1, v2-Anwärter (A2–A6)
-│   ├── verfahren-lotse.md        # Lotse: Steckbrief, Stand v0.9, Versions-Ledger v0.1–v0.9 + Schienen-Auslauf, offene Blöcke
+│   ├── verfahren-lotse.md        # Lotse: Steckbrief, Stand v0.11, Versions-Ledger v0.1–v0.12 + Schienen-Auslauf, offene Blöcke
 │   ├── verfahren-inksight.md     # InkSight: Steckbrief, Stand T0, Ledger (T0 · B1), stehende Maßnahmen B2–B5
 │   ├── verfahren-nullprobe.md    # Nullprobe: Steckbrief, Kontroll-Doktrin (bewusst unversioniert), Mess-Ledger
 │   ├── crawler-richtlinie.md     # Wer die Seite lesen darf: Suchmaschinen, KI-Abruf vs. KI-Training, robots.txt/llms.txt, Cloudflare

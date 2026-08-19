@@ -476,7 +476,7 @@ _CSS = """
 
 # `__SPEED__`/`__PAUSE__` are substituted below. Written as a plain string (not
 # an f-string) so the JS braces stay JS braces.
-_JS = """
+_JS = r"""
 (function () {
   var SPEED_XH_PER_S = __SPEED__;
   var PAUSE_MS = __PAUSE__;
@@ -560,12 +560,42 @@ _JS = """
       if (c.getAttribute('data-label') === label) { c.checked = visible; }
     });
   }
+  // Feinschliff — a pure DISPLAY stage at the consumer, per the v0.6 verdict
+  // (qualitaetsmetrik §14: the ruler never sees the pixel zigzag, so smoothing
+  // belongs to the renderer, never into the measured candidate). Candidates
+  // only; the hand reference and the mark dots stay raw.
+  function smoothD(d, iters) {
+    var nums = d.match(/-?\d+(?:\.\d+)?/g);
+    if (!nums || nums.length < 8) { return d; }
+    var xs = [], ys = [], i, k;
+    for (i = 0; i < nums.length - 1; i += 2) { xs.push(parseFloat(nums[i])); ys.push(parseFloat(nums[i + 1])); }
+    for (i = 0; i < iters; i++) {
+      var nx = xs.slice(), ny = ys.slice();
+      for (k = 1; k < xs.length - 1; k++) {
+        nx[k] = (xs[k - 1] + 2 * xs[k] + xs[k + 1]) / 4;
+        ny[k] = (ys[k - 1] + 2 * ys[k] + ys[k + 1]) / 4;
+      }
+      xs = nx; ys = ny;
+    }
+    var out = 'M ' + xs[0].toFixed(2) + ',' + ys[0].toFixed(2);
+    for (k = 1; k < xs.length; k++) { out += ' L ' + xs[k].toFixed(2) + ',' + ys[k].toFixed(2); }
+    return out;
+  }
+  function setFeinschliff(on) {
+    [].slice.call(document.querySelectorAll('g.layer[data-kind="candidate"] path.ink')).forEach(function (p) {
+      if (p.classList.contains('mark')) { return; }
+      if (!p.getAttribute('data-d-raw')) { p.setAttribute('data-d-raw', p.getAttribute('d')); }
+      p.setAttribute('d', on ? smoothD(p.getAttribute('data-d-raw'), 3) : p.getAttribute('data-d-raw'));
+    });
+    finalState();
+  }
   document.addEventListener('change', function (ev) {
     var t = ev.target;
     if (!t) { return; }
     if (t.classList && t.classList.contains('toggle')) { setVisible(t.getAttribute('data-label'), t.checked); }
     if (t.id === 'speed') { rate = parseFloat(t.value) || 1; }
     if (t.id === 'structure') { document.body.classList.toggle('nostructure', !t.checked); }
+    if (t.id === 'feinschliff') { setFeinschliff(t.checked); }
   });
   document.addEventListener('click', function (ev) {
     var t = ev.target;
@@ -672,6 +702,7 @@ def _layer_svg(layer: Layer, layer_id: str) -> str:
         structure = f'<g class="structure">{zones}{rings}</g>'
     return (
         f'<g class="layer" id="{layer_id}" data-label="{html.escape(layer.label, quote=True)}" '
+        f'data-kind="{html.escape(layer.kind, quote=True)}" '
         f'fill="none" stroke="{layer.color}" stroke-linecap="round" stroke-linejoin="round">'
         f"{structure}{paths}</g>"
     )
@@ -946,6 +977,7 @@ def render_html(sections: list[str], tabs: list[tuple[str, str]], *, title: str,
   <label for="speed">Tempo</label>
   <select id="speed">{speeds}</select>
   <label><input type="checkbox" id="structure" checked> Struktur</label>
+  <label><input type="checkbox" id="feinschliff"> Feinschliff (nur Anzeige)</label>
 </div>
 {"".join(sections)}
 <div class="hint">Die Seite öffnet mit der FERTIGEN Bahn; „Schreiben abspielen“ schreibt alle
@@ -956,7 +988,10 @@ Ringe = DURCHSTOSS-Kreuzungen (eine Linie kommt auf einer Seite herein und auf d
 heraus), breite Bänder = Retrace-Zonen (ein Strich schreibt dieselbe Tinte zweimal, bogen-nah),
 gestrichelt = ÜBERLAGERUNG zweier Striche (z.&nbsp;B. der t-Querstrich über dem Körper),
 gepunktet = BERÜHRUNG (Vorbeischreiben — nahe und entgegengesetzt, aber mit langem Weg
-dazwischen). So prüft das Auge den Zähler gegen die Tinte. Die ◇-Zeilen sind
+dazwischen). „Feinschliff (nur Anzeige)“ glättet die KANDIDATEN-Bahnen für das Auge
+((1,&nbsp;2,&nbsp;1)/4, Endpunkte fix — die Darstellungsstufe des v0.6-Verdikts: das Lineal sieht den
+Pixel-Zickzack nie, also gehört Glättung zum Konsumenten und nie in den gemessenen Kandidaten);
+die Hand-Referenz und alle Zahlen bleiben roh. So prüft das Auge den Zähler gegen die Tinte. Die ◇-Zeilen sind
 das DUKTUS-SOLL: die Summe der isolierten Buchstaben (Maus darüber zeigt das Budget je Buchstabe)
 und die ganze Komposition mit Verbindern — die Differenz der beiden ist der Beitrag der
 Verbindungen (ein einlaufender Verbinder kann eine Schleife schließen, die der Buchstabe allein

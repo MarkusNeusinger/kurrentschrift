@@ -231,6 +231,46 @@ def test_a_clean_round_passes_the_guard_with_its_counts_recorded(synthetic, monk
     assert record["structure_counts"] == record["structure_budget"]
 
 
+def test_the_soll_guard_accepts_only_movement_toward_the_soll() -> None:
+    """The aug19 interval rule: every class must lie between the init budget
+    and the composed soll — never past the soll, never away from the budget,
+    and exact equality wherever the two agree (the two-sided special case)."""
+    from tools.pairlab.follow import _breaks_budget
+
+    budget = {"cross": 3, "retrace": 2, "touch": 0, "overlap": 0}
+    soll = {"cross": 1, "retrace": 2, "touch": 0, "overlap": 0}
+    ok = dict(budget)
+    for cross in (3, 2, 1):  # toward the soll, endpoints included
+        assert _breaks_budget({**ok, "cross": cross}, budget, two_sided=False, soll=soll) is False
+    assert _breaks_budget({**ok, "cross": 0}, budget, two_sided=False, soll=soll) is True  # past the soll
+    assert _breaks_budget({**ok, "cross": 4}, budget, two_sided=False, soll=soll) is True  # away from it
+    # A class the two agree on freezes exactly.
+    assert _breaks_budget({**ok, "retrace": 1}, budget, two_sided=False, soll=soll) is True
+    assert _breaks_budget({**ok, "retrace": 3}, budget, two_sided=False, soll=soll) is True
+
+
+def test_the_soll_guard_records_the_soll_counts(synthetic, monkeypatch) -> None:
+    """With the flag the record carries the composed init's counts alongside
+    budget and counts, so a report reader can see the interval that judged."""
+    case, result, windows, fit = synthetic
+    monkeypatch.setattr(
+        "tools.pairlab.follow.structure_class_counts",
+        lambda strokes: {"cross": 0, "retrace": 0, "touch": 0, "overlap": 0},
+    )
+    followed = follow_word_chain(
+        case,
+        [0, 1],
+        result=result,
+        windows_px=windows,
+        fit=fit,
+        weights=FollowWeights(rounds=1, structure_guard=True, structure_guard_soll=True),
+    )
+    assert followed is not None
+    record = followed.rounds[0]
+    assert record["structure_soll"] == {"cross": 0, "retrace": 0, "touch": 0, "overlap": 0}
+    assert record["structure_rejected"] is False
+
+
 def test_a_violating_round_is_rejected_back_to_the_previous_geometry(synthetic, monkeypatch) -> None:
     """The acceptance rule end to end: budget from the init, two halved-bounds
     retries, then the previous geometry stands — here the chain identity."""

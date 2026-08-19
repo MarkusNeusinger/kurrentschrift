@@ -273,6 +273,33 @@ def test_the_chain_candidate_is_the_baseline_until_a1_is_asked_for(
     assert with_a1.strokes == baseline.strokes
 
 
+def test_marks_last_is_the_v2_baseline_and_reorders_only(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`marks_last` (§14 K-A, adopted as Kette v2) defaults ON; on a word
+    without diacritics v2 and the v1 ordering are byte-identical — the measure
+    is a pure ORDER change and may never move a point."""
+    from tests.test_laufform_harvest import _synthetic_word  # noqa: PLC0415
+    from tools.pairlab.trace import diacritic_stroke_units  # noqa: PLC0415
+    from tools.tracebench import candidates as candidates_mod  # noqa: PLC0415
+    from tools.tracebench.candidates import _chain_options  # noqa: PLC0415
+
+    assert _chain_options("suetterlin", "composed").marks_last is True  # the v2 baseline
+    assert _chain_options("suetterlin", "composed", marks_last=False).marks_last is False  # v1 archaeology
+    assert _chain_options("suetterlin", "composed").trace_repair is True  # the v3 baseline (K-B)
+    assert _chain_options("suetterlin", "composed", trace_repair=False).trace_repair is False  # needle archaeology
+    # The assembler's own criterion, read off word-units strokes.
+    assert diacritic_stroke_units([[0.1, 1.4], [0.3, 1.6]]) is True
+    assert diacritic_stroke_units([[0.1, 0.2], [0.3, 1.6]]) is False
+
+    case, result = _synthetic_word([(0.06, 0.0), (-0.04, 0.03)])
+    reference = load_reference(write_root(tmp_path, [row(case.id)]))
+    monkeypatch.setattr(candidates_mod, "_chain_cases", lambda *a, **kw: {case.id: case})
+    monkeypatch.setattr(candidates_mod, "_chain_derive", lambda c: result)
+
+    v2 = chain_provider(fixtures_root=tmp_path)(reference, [case.id])[case.id]
+    v1 = chain_provider(fixtures_root=tmp_path, marks_last=False)(reference, [case.id])[case.id]
+    assert v2.strokes == v1.strokes  # no diacritic -> nothing to move
+
+
 def test_a_word_without_a_fixture_case_is_a_skipped_row(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     from tools.tracebench import candidates as candidates_mod  # noqa: PLC0415
 

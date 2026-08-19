@@ -81,6 +81,18 @@ def _is_diacritic(entry: dict, xh: float, registration: dict) -> bool:
     return bool((uy > DIACRITIC_MIN_Y).all())
 
 
+def diacritic_stroke_units(stroke: Sequence[Sequence[float]]) -> bool:
+    """The assembler's own diacritic rule, read off a WORD-UNITS stroke.
+
+    The same `DIACRITIC_MIN_Y` criterion `_is_diacritic` applies before the
+    px→units transform — one rule, two frames. Used by the marks-last
+    assembly (K-A, §14 `aug19`) to partition an assembled word's strokes
+    without re-deriving what the assembler already decided.
+    """
+    pts = np.asarray(stroke, dtype=float).reshape(-1, 2)
+    return bool(len(pts)) and bool((pts[:, 1] > DIACRITIC_MIN_Y).all())
+
+
 def assemble_word_strokes(
     entries: Sequence[dict],
     *,
@@ -209,5 +221,6 @@ __all__ = [
     "MAX_WORD_STROKES",
     "SEAM_DEDUP_PX",
     "assemble_word_strokes",
+    "diacritic_stroke_units",
     "cap_word_strokes",
 ]

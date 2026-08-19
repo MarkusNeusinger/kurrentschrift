@@ -4520,6 +4520,21 @@ GESPEICHERTE Bahn wandert, ist ein eigener Autoren-Entscheid — der
 Bestätigungssatz (`--split confirm`) ist die Bedingung dafür, weil
 vier gepaarte Wörter eine schmale Grundlage für eine Adoption sind.
 
+**Nachmessung `aug19` auf dem 19er-Dev-Satz** (§7.7
+Nachkalibrierungs-Protokoll; kein neuer Knopf, dieselbe opt-in
+Variante `--mark-refit`, lokale Basis der v0.10/v0.11-Runde):
+`mark_pos_err_xh`-Median **0,111 → 0,030 (−73 %)**, ALLE sechs
+markentragenden Dev-Wörter verbessern sich (die 0,072 → 0,036 ·
+mit 0,106 → 0,019 · linken 0,160 → 0,059 · will 0,150 → 0,078 ·
+mit-2 0,116 → 0,023 · die-2 0,055 → 0,019); Körper byte-neutral
+(dtw-Δ-Median 0,0000, 10 ties), Marken- und Strukturzähler exakt
+unverändert (Galoppierens fehlende i-Marke bleibt fehlend — der
+Nachfit repariert Positionen, erfindet keine Striche). Der
+Welle-1-Gewinn generalisiert damit auf die 9 neuen Nachfahrungen,
+stärker als auf dem 10er-Satz (−55 %). Die Adoptionsbedingung
+(Bestätigungssatz) bleibt; die Grundlage ist jetzt 6 statt 4
+gepaarte Wörter.
+
 ### Welle 1 · K1b `aug15` — Vorregistrierung: der versetzte Stamm-Rückpass des t
 
 Geschrieben und committet VOR der ersten Zahl dieser Maßnahme
@@ -5133,6 +5148,82 @@ Kreuzungs-Invariante ohnehin vorzeichnet; als „Topologie-Budget
 K0" seit aug15 als künftiger Arm benannt). Der wäre eine eigene
 Vorregistrierung; bis dahin bleibt die Produktions-Adoption
 offen und der Re-Harvest hinter Owner-Go + dbsnapshot.
+
+**Vorregistrierung `aug19` — der soll-bewusste K0-Wächter
+(Rettungsweg (c)), VOR seiner ersten Zahl.** EIN Knopf:
+`--structure-guard-soll` (`FollowWeights.structure_guard_soll`,
+impliziert den Wächter; Basis-Konfiguration unverändert die der
+Produktions-Messung: prox 0,1 · rounds 2 · coverage 0,3). Die
+Akzeptanzregel wird ein INTERVALL je Klasse: mit B = Zählung am
+Chain-Optimum (dem Init der Runden, wie bisher) und S = Zählung
+der KOMPONIERTEN Init-Geometrie (die Bahn bei x0 = 0, durch
+DENSELBEN Assembler und DIESELBEN v2.1-Zähler wie Budget und
+Runden — das Soll ist duktus-deterministisch und hier ohne jede
+Zweitimplementierung ablesbar) muss jede Klasse c des
+Runden-Ergebnisses in [min(B_c, S_c), max(B_c, S_c)] liegen:
+Bewegung nur RICHTUNG Soll, nie darüber hinaus, nie davon weg;
+bei B_c = S_c friert die Klasse exakt (der zweiseitige
+Spezialfall). Retry-Leiter unverändert.
+
+**Messplan.** Beide Arme über alle 63 Wörter des words-Sets in
+EINER gepinnten Umgebung (`OPENBLAS_NUM_THREADS=1`,
+`OMP_NUM_THREADS=1` — die aug16-Lehre): Kontrolle = rounds 0
+(die rohe Kette durch denselben Codepfad), Kandidat =
+soll-bewusst gewacht; `--candidate-out` beider Läufe, Zahlen
+über den tracebench-File-Provider (dev-19) plus eine
+referenzfreie Auswertung über alle 63 (Strukturzähler vs.
+Soll-Spalten aus `tools.tracebench.soll`, `aiou` gegen
+`ref_mask.png`). Die 9 versiegelten authored-Zeilen werden dabei
+NICHT als Trace-Referenz gelesen (dev-Gate nur über die 19
+Dev-Zeilen; Maske und Soll sind referenzfrei).
+
+**Gates (die der Produktions-Messung, unverändert):**
+(i) dev-`dtw_xh` gepaart |Median-Δ| ≤ 0,002, kein Dev-Wort über
++0,01; (ii) Struktur-Abstand zum Soll je Wort
+(|cross−soll| + |zones−soll|) gewacht ≤ roh ÜBERALL und irgendwo
+strikt besser; (iii) `aiou` je Wort min-Δ > −0,005; (iv) Marken
+unverändert; (v) kein Wort scheitert, das roh durchläuft;
+Laufzeit-Budget 5 min/Wort (gepinnt erwartet ≈ 20 s). Kill wie
+gehabt: EIN Wort weiter vom Soll als roh → nicht adoptiert (das
+wäre ein Wächter-Bug). Erwartung: unters Zonen-Reparatur aus dem
+einseitigen Lauf kehrt zurück (Init 12 → Richtung Soll), die
+drei Kreuzungs-Kollapse (Sporn/einer/er-3) bleiben vetiert,
+„irgendwo strikt besser" wird damit erstmals erfüllbar. Besteht
+alles, ist die Adoptions-EMPFEHLUNG automatisch erfüllt; der
+Re-Harvest selbst bleibt Owner-Go + dbsnapshot.
+
+**Gemessen `aug19` — vier von fünf Gates bestehen (Gate (i)
+sogar mit SIEBEN strikten dtw-Gewinnen), die Struktur-Klausel
+bleibt formal unerfüllbar — und das Runden-Protokoll benennt
+den Mechanismus exakt.** Beide Arme 63/63 ok, identisch
+gepinnte Umgebung, gewacht 651 s gesamt (≈ 10,3 s/Wort — weit
+im Budget). (i) dev-19 gepaart: Median-Δ 0,0000, KEIN Wort
+schlechter, sieben strikt besser (das −0,0123 · und −0,0074 ·
+muß-2 −0,0065 · und-3 −0,0041 · will/mit/und-2 klein); der
+eigene dev-Median fällt 0,0576 → 0,0494. (iii) `aiou` je Wort
+NIE negativ, bis +0,108 (und), dev-Median +0,024; beide
+Chamfer-Hälften besser. (iv) Marken byte-gleich 1+1.
+(ii) ABER: Gesamt-Soll-Abstand exakt **107 = 107** (0 besser ·
+63 gleich · 0 schlechter) — wieder friert die Struktur. Das
+`unter`-Protokoll zeigt warum: Runde 1 bewegt overlap 3 → 2
+(RICHTUNG Soll 0, im Intervall erlaubt), bündelt das aber im
+selben Solve mit touch 3 → 6 (WEG vom Soll 0) — die
+runden-ATOMARE Rückweisung (auch nach zwei Halbierungs-Retries)
+verwirft die Reparatur mitsamt der Verletzung. Die Soll-Richtung
+ist also nicht die Schranke; die ATOMARITÄT ist es. NICHT
+adoptiert (nach dem Buchstaben der Klausel), aber als
+PRODUKTIONS-KandIDAT dominiert der soll-bewusste Wächter den
+zweiseitigen auf jeder gemessenen Achse (nirgends schlechter,
+sieben Dev-Wörter strikt tinten-näher, aiou bis +0,11, Struktur
+= Kette). Die Owner-Abwägung erweitert sich auf: (a) zweiseitig
+· (b) roh · (c′) **soll-bewusst (die beste sichere Bahn dieser
+Messreihe)** · (d) der benannte nächste Mechanismus für „strikt
+besser": **zonale Rückweisung** — nicht der ganze Round wird
+verworfen, sondern nur die Anker-Nachbarschaft der
+VERLETZENDEN Zone wird auf die Vorrunden-Geometrie zurückgesetzt
+bzw. eingefroren und nachgelöst, sodass eine gebündelte
+Soll-Reparatur den Round überlebt (eigene Vorregistrierung,
+§7.9-Zeile im selben PR).
 
 ### Route „Lotse" `aug16` — Vorregistrierung: Skelett fahren, Duktus als Karte
 
@@ -5858,3 +5949,473 @@ Kette im Median, halbiert ihren p90, schlägt sie gepaart um
 Bestätigungssätze (A, dann B) bleiben der Schlussstein, bevor
 daraus eine Adoptionsentscheidung jenseits der
 Routen-Konstanten wird.
+
+### Route „Lotse" v0.10 `aug19` — Vorregistrierung: Knoten-Anker-Pinnung der Karten-Läufe (L1d)
+
+Geschrieben und committet VOR der ersten Zahl. Anlass: der
+Owner-Sichtbefund an der Duell-Ansicht (2026-08-19) — „beim k wird
+der untere Kringel nicht nachgefahren", das W in `Wer` „macht
+Quatsch", der r/e-Auslauf in `Galoppieren` fährt eckige Luft-Züge.
+Die Kategorien-Autopsie (Instrumentierung: jedes Sample nach
+Mechanismus eingefärbt — Schiene · Brücke · Doppelzonen-Ride ·
+Fenster) lokalisiert die Exkursionen vollständig in der
+KARTEN-Geometrie, in zwei Klassen:
+
+1. **Verschmolzene Fenster-Läufe.** `map_crossing_masks` legt um
+   JEDEN Karten-Selbstschnitt ±0,35 xh; wo Selbstschnitte dicht
+   stehen, ketten die Fenster zu EINEM Lauf (linken: 4,32 xh am
+   k-Komplex aus Kopfschleife + Kringel + Stamm — 71 von 253
+   Samples; mit: 2,76 xh am t-Rückpass; Galoppieren: 3,72 und
+   2,64 xh; ein Einzel-Fenster wäre 0,96 xh). Die v0.9-Pinnung
+   interpoliert NUR zwischen den Lauf-ENDEN — über solche Läufe
+   reicht sie die rohe (bis ~0,5 xh versetzte) Karten-Form im
+   Innern durch: exakt die „Quatsch"-Züge des Sichtbefunds.
+2. **Rohe Doppelzonen-Rides und Brücken.** Die adoptierten
+   v0.5/v0.7-Zonen-Rides und die natürlichen Brücken zeichnen die
+   Karte weiterhin UNGEPINNT (Wer: 13, Galoppieren: 32
+   Zone-Samples) — dieselbe Fehlerklasse, die v0.9 für die
+   Fenster bereits behoben hat.
+
+**Anker-Evidenz (vor der Maßnahme gemessen):** jeder
+Karten-Selbstschnitt der vier Verlierer-Wörter hat einen
+Skelett-VERZWEIGUNGSKNOTEN in ≤ 0,6 xh (Median 0,06–0,19; mit
+6/6, linken 16/16, Wer 10/10, Galoppieren 32/32 innerhalb 1,0 xh)
+— die Tinte benennt den Ort der Kreuzung selbst, das Fenster muss
+ihn nur ansteuern.
+
+**EIN Mechanismus: die verallgemeinerte Pinnung.** Jeder
+Karten-Lauf wird über eine Offset-Polylinie mit KNOTEN gepinnt:
+die Lauf-Grenzen (benachbarte Board-Punkte — die v0.9-Mathematik,
+unverändert) PLUS je Karten-Selbstschnitt im Lauf ein ANKER
+(Offset = nächster Verzweigungsknoten − Selbstschnittpunkt,
+Suchradius `PIN_KNOT_NODE_RADIUS_UNITS` = 1,0 xh fest, kein
+Suchknopf; ohne Knoten in Reichweite entfällt der Anker). Linear
+zwischen benachbarten Knoten, konstant jenseits der äußersten;
+ein Lauf ganz ohne Knoten bleibt roh (wie v0.9s „Strich ganz aus
+Karte"). Beide Pässe eines Selbstschnitts erhalten denselben
+Anker — das X der Karte landet konstruktiv auf dem Knoten der
+Tinte (die §13a-Extrapolations-Idee als Konstruktion, dieselbe
+Verwandtschaft wie beim v0.3-Arm, jetzt ohne dessen
+Flächen-Kosten, weil nur KARTEN-Läufe bewegt werden, nie
+Schienen-Ritte).
+
+**Leiter (`MAP_RUN_PIN_KNOTS`): "off" (= v0.9) / "windows" (nur
+Fenster-Läufe bekommen Knoten-Pinnung) / "all" ("windows" +
+dieselbe Knoten-Pinnung für Doppelzonen-Rides und natürliche
+Brücken).** Beide Stufen werden gemessen, adoptiert wird
+höchstens EINE. Erwartung: linken/mit/mit-2/Wer/Galoppieren
+fallen in dtw (die fünf tragen die größten Ketten-Vorsprünge des
+v0.9-Stands), `aiou` steigt (weniger Luft), Kreuzungs-ZAHLEN
+unverändert (Topologie bleibt die der Karte), Kreuzungs-Ortsfehler
+fällt; keine neue Struktur.
+
+**Umgebungs-Deklaration.** Diese Runde läuft lokal (WSL2, BLAS
+gepinnt); die aug17-Zahlen stammen aus der Cloud-Session. Neu
+gemessene lokale Basis: Kette dtw 0,0576 med (aug17: 0,0579 —
+Solver-Umgebungsvarianz, dokumentierte Klasse), Lotse v0.9
+0,0578 · aiou 0,7351 · cross 3+4 · marks 0+1 (deterministisch,
+BYTE-gleich mit aug17). Alle gepaarten Vergleiche dieser Runde
+laufen gegen die LOKALE Kette.
+
+**Gates (wie v0.9):** Marken und `cross_missing+spurious` ohne
+Netto-Anstieg gegenüber dem v0.9-Stand (3+4 = 7);
+`aiou`-Median-Δ ≥ −0,02 gegen 0,7351; p90 ≤ +10 % gegen die
+Kette; `dtw_reversed_better` = 0. Zusatz-Kill: `cross_spurious`
+netto > +2 → die Anker greifen den falschen Knoten (das benannte
+Risiko der dichten Regionen — Galoppieren p90-Ankerabstand
+0,51 xh) → verworfen, Rettungsweg wäre ein kleinerer Suchradius
+NUR mit frischer Vorregistrierung.
+
+**Gemessen `aug19` — BEIDE Stufen vom Kreuzungs-Gate verworfen;
+der Fund benennt den Degenerierungs-Mechanismus präzise und die
+Gewinnseite ist die stärkste Tinten-Deckung der Route.** Leiter
+(dev-19, je 19/19 ok): "windows" → Netto-Kreuzungsdefekte 6+3 =
+9 (> 7) · aiou 0,7616 (+0,027!) · dtw gepaart gegen Kette
+−0,0097 (schlechter als v0.9s −0,0182); "all" → Defekte 5+5 =
+10 (> 7) · aiou 0,7616 · gepaart gegen v0.9: 14 von 19 Wörtern
+besser (Δ-Median −0,0037, Sign 14:5, p=0,064), beide
+Chamfer-Hälften besser, `retrace_arc_ratio`-Gap −0,047,
+**Kreuzungs-Ortsfehler-Median 0,116 → 0,083 xh** und die
+SPURIOUS-Klasse heilt (linken 3 → 1, mit-2 1 → 0 — wo die Hand
+das Soll-X nicht schreibt, hat die Tinte keinen Knoten, und der
+Anker degeneriert das Karten-X von selbst: der Mechanismus
+arbeitet in beide Richtungen). Der Sichtbefund bestätigt: der
+k-Kringel in `linken` wird erstmals nachgefahren, der
+V-Spike unter die Grundlinie ist weg. ABER die Anker KOSTEN
+Kreuzungen genau dort, wo sie dicht stehen: `mit` verliert eins
+der zwei nur 0,07 xh getrennten t-X (auf einen Punkt gezogen →
+Detektor-Merge), `zwei` beide z-Unterschleifen-X (0,25 xh
+Abstand, gemittelte Offsets → Berührung statt Durchstoß),
+`will` das zweite l-X (Punktlandung beider Pässe auf dem Knoten
+→ oskulierend statt piercend), und `Galoppieren` fabriziert 4
+unechte an Interpolations-Knicken des dichten „ieren"-Clusters.
+Diagnose in einem Satz: **das Offset-Feld der Punkt-Knoten
+variiert nahe der Kreuzung zu schnell — Scherung und Mittelung
+zerstören genau die Transversalität, die der Anker herstellen
+soll.** VERWORFEN (beide Stufen), `MAP_RUN_PIN_KNOTS` bleibt
+"off". Rettungsweg (benannt, eigene Pre-Reg unten): das
+Offset-Feld um jeden Anker lokal KONSTANT machen — reine
+Translation erhält jedes X exakt (v0.11); §7.9-Zeile im selben
+PR.
+
+### Route „Lotse" v0.11 `aug19` — Vorregistrierung: Plateau-Anker (stückweise-starre Fenster, L1e)
+
+Geschrieben und committet VOR der ersten Zahl. Der v0.10-Fund:
+Anker-Offsets als PUNKT-Knoten scheren das Offset-Feld an genau
+den Stellen, deren Transversalität sie sichern sollen — eine
+Kreuzung überlebt eine lokal REINE TRANSLATION dagegen exakt
+(beide Pässe verschieben sich gleich, das X wandert starr mit).
+Der neue MECHANISMUS: jedes Anker-Offset wirkt als **Plateau**
+konstanter Breite statt als Punkt — `PIN_KNOT_PLATEAU_UNITS` =
+0,35 xh beidseitig (= der Fensterradius, deklariert fest, kein
+Suchknopf); überlappende Plateaus VERSCHMELZEN zu einem
+Intervall mit dem Mittel ihrer Anker-Offsets (der dichte
+Cluster wird als Ganzes starr verschoben — beide X bleiben
+erhalten, jedes landet ≤ halber Clusterbreite neben seinem
+Knoten, weit innerhalb des 0,55-xh-Matchers); zwischen Plateaus
+und zu den Lauf-Grenzen wird weiter linear interpoliert — die
+Scherung wandert in die kreuzungsfreien Zwischenstrecken.
+Mittelung je EINZEL-Index entfällt (sie war die zweite
+Degenerierungsquelle).
+
+**Leiter: dieselben zwei Stufen wie v0.10 ("windows" / "all"),
+jetzt mit Plateau-Feld.** Gates unverändert (Netto-Defekte ≤ 7,
+aiou-Δ ≥ −0,02 gegen 0,7351, p90 ≤ +10 % gegen Kette, Marken,
+reversed = 0, `cross_spurious` netto ≤ +2). Erwartung: die
+v0.10-Gewinne bleiben (aiou ~0,76, Ortsfehler ~0,083,
+Spurious-Heilung, k-Kringel), die vier Verlust-Stellen
+(mit-t-Doppel, zwei-z-Doppel, will-l2, Galoppieren-Knicke)
+kehren auf den v0.9-Stand zurück. Kill: verliert auch das
+Plateau-Feld Kreuzungen in den dichten Clustern, ist die
+Anker-Idee an der Dichte-Grenze ehrlich gescheitert und der
+Rest gehört der Karten-FORM (Kompositions-Schiene: der
+k-Kopfschleifen-Bogen bleibt auch gepinnt formfremd —
+eigener Befund unten).
+
+**Gemessen `aug19` — "windows" ADOPTIERT (alle Gates bestanden),
+"all" um genau ein Doppel-X verworfen; eine
+Semantik-Korrektur unterwegs, beide Messungen berichtet.** Die
+Erstmessung implementierte die Verschmelzung LAUF-lokal — kreuzende
+Pässe konnten so verschiedene Plateau-Mittel bekommen, und `mit`/
+`zwei` verloren weiter je ein echtes X: die deklarierte Semantik
+(„der dichte Cluster wird als Ganzes starr verschoben") verlangt
+die GLOBALE Fusion über alle beteiligten Pässe (Union-Find über
+die Anker-Identitäten). Mit der deklarierten Semantik (dev-19,
+je 19/19 ok):
+
+- **"windows": Netto-Kreuzungsdefekte 1+6 = 7 (= v0.9-Stand,
+  Gate hält), `cross_missing` 3 → 1** — mit/zwei/will vollständig
+  zurück, und **Galoppierens zwei Kompositions-fehlende
+  p-Unterlängen-X kehren als einzige ECHTE Struktur-Neuheit der
+  Route zurück** (das Plateau-Feld öffnet den Karten-Retrace zur
+  Schleife, wie die Tafel sie schreibt — der G1-Autorenschritt
+  verliert seinen Rang als limitierender Faktor); Rest-Missing
+  ist allein unters letzter Ritt-Rest. Kreuzungs-Ortsfehler-Median
+  **0,116 → 0,066 xh (−43 %)** · aiou 0,7434 (+0,0083) · p90
+  0,1179 → **0,1129** · marks 0+1 unverändert · rev 0 · gepaart
+  gegen v0.9: Δ-Median −0,0018, Sign 13:6. Kosten, ehrlich:
+  eigener dtw-Median 0,0578 → 0,0596, gepaart gegen die Kette
+  −0,0137 = **−18,0 %** (v0.9: −24 %) — der Präzedenzfall ist
+  v0.7 („Struktur vor Distanz"); `retrace_missing` 5 → 6; und die
+  Spurious-Klasse wechselt ihren Charakter: 6 statt 4, davon
+  linken 3 → 1 GEHEILT, aber 4 der 6 sind **Doppel-X-Duplikate**
+  (dieselbe Kreuzung zweimal gezeichnet, weil die gepinnten
+  Pässe durch den Knoten doppelt wackeln: Galoppieren 2, mit-2 1,
+  will 1) plus ein echtes Erfundenes (Galoppieren u≈13,4).
+  `MAP_RUN_PIN_KNOTS` = "windows".
+- **"all"**: identische Heilung, aiou sogar 0,7521, aber
+  Galoppieren trägt ein viertes Spurious → Netto 8 > 7,
+  VERWORFEN um genau dieses eine Doppel-X. Die Zonen-Rides und
+  Brücken (der Rest-Kasten in Galoppieren x≈360, die
+  Wer-Diagonale) bleiben damit roh — ihr Pinning ist hinter der
+  Doppel-X-Frage eingereiht, nicht verworfen.
+
+Sichtbefund zum Owner-Anlass: **der k-Kringel in `linken` wird
+nachgefahren**, der V-Spike ist weg; verbleibend fährt die
+k-KOPFSCHLEIFE als flacher Bogen durchs Schleifen-Innere — die
+KARTE selbst ist dort formfremd (der komponierte k-Bogen liegt
+tiefer/schmaler als diese Hand schreibt): ein
+Kompositions-/Laufform-Befund, kein Ritt-Fehler, notiert für die
+Kompositions-Schiene. Offene Blöcke nach der Runde:
+(i) die Doppel-X-Duplikate — der benannte nächste Mechanismus
+ist EIN X je Knoten-Cluster (Begradigung der Fenster-Teilbahn je
+Pass durch den Knoten), er würde zugleich die "all"-Stufe
+freischalten; (ii) die Karten-Form-Klasse (k-Kopfschleife,
+W-Ansatz = K3, Autorenschritt). §7.9-Zeilen im selben PR.
+
+### Route „Lotse" v0.12 `aug19` — Vorregistrierung: die Plateau-Sehne (Doppel-X-Begradigung, L1f)
+
+Geschrieben und committet VOR der ersten Zahl. Der v0.11-Rest:
+4 der 6 Spurious sind Doppel-X-Duplikate — die gepinnte
+Fenster-Teilbahn eines Passes WACKELT durch die
+Knoten-Nachbarschaft und schneidet den anderen Pass zweimal
+(Kreuzungs-Orte 0,06–0,11 xh auseinander), dazu ein an einem
+Interpolations-Knick erfundenes X (Galoppieren u≈13,4). Der neue
+MECHANISMUS: **innerhalb jedes (verschmolzenen) Plateau-Intervalls
+wird die Teilbahn jedes Passes durch ihre SEHNE ersetzt**
+(Interior-Samples linear zwischen den beiden Intervall-Rändern des
+eigenen Passes) — zwei Sehnen schneiden sich höchstens EINMAL, das
+Doppel-X ist konstruktiv unmöglich. Verwandt mit dem verworfenen
+v0.3 (Knoten-Sehne), aber ohne dessen Flächen-Kosten: v0.3
+begradigte SCHIENEN-Ritte überall (aiou-Kill −0,045); die
+Plateau-Sehne begradigt nur KARTEN-Geometrie, die bereits im
+starren Plateau liegt — die Abweichung ist durch die Plateau-Breite
+(±0,35 xh) gedeckelt, und Schienen-Ritte bleiben unberührt.
+
+**Leiter: "windows"+Sehne / "all"+Sehne** (EIN Knopf
+`PIN_PLATEAU_CHORD` aus/an; die "all"-Wiedervorlage ist der in
+§7.9 benannte Rettungsweg — die Zonen-Rides und Brücken werden
+erst gepinnt, wenn die Sehne die Doppel-X-Quelle schließt).
+**Gates gegen den v0.11-Stand:** Netto-Kreuzungsdefekte ≤ 7 UND
+`cross_spurious` ≤ 6 (kein Anstieg); `cross_missing` ≤ 1 (die
+geheilte Missing-Klasse darf nicht zurückfallen);
+`aiou`-Median-Δ ≥ −0,02 gegen 0,7434; Marken ohne Netto-Anstieg;
+p90 ≤ +10 % gegen die Kette; `dtw_reversed_better` = 0.
+Erwartung: die 4 Duplikate verschwinden (spurious → ~2), dtw
+~neutral, aiou ~neutral (Sehne bleibt im Plateau); bei "all"
+zusätzlich der Galoppieren-Rest-Kasten (x≈360) und die
+Wer-Diagonale gepinnt, aiou eher steigend. Adoptiert wird
+höchstens EINE Stufe (die bessere, sofern alle Gates bestehen).
+Kill: kostet die Sehne Missing-Kreuzungen (der Wackel WAR das X)
+oder aiou, bleibt v0.11 stehen und die Duplikat-Frage geht als
+ehrliches Negativ mit benanntem Rest in §7.9.
+
+**Gemessen `aug19` — BEIDE Stufen verworfen, das benannte Kill
+feuert in voller Stärke: der Wackel WAR das X.** Leiter (dev-19,
+je 19/19 ok): "windows"+Sehne → `cross_missing` 1 → **8**,
+spurious 6 → 1, `retrace_missing` 6 → **12**, dtw auf 16 von 19
+Wörtern schlechter (Δ-Median +0,0014, Sign 3:16, p=0,004), aiou
+−0,0075; "all"+Sehne → 7 missing / 2 spurious, gleiches Bild. Die
+Diagnose ist geometrisch eindeutig: an den Sütterlin-Schleifen-
+schlüssen laufen beide Pässe TANGENTIAL durch die Knoten-
+Nachbarschaft (die Junction-Pinch-Geometrie) — ihre Sehnen sind
+nahe-parallel und schneiden sich GAR NICHT; erst der Wiggle der
+Karten-Teilbahn stellt die Transversalität her, und er trägt
+Kreuzung UND Duplikat untrennbar. Zugleich zerstören die Sehnen
+die Retrace-Zonen im Plateau (12 fehlend). VERWORFEN,
+`PIN_PLATEAU_CHORD` bleibt False; v0.11 "windows" bleibt der
+adoptierte Stand. Rettungswege (§7.9-Regel, je eigene Pre-Reg):
+(i) **Entdrillung statt Begradigung** — Duplikat-PAARE desselben
+Pass-Paars (Kreuzungs-Orte < 0,3 xh) topologisch entdrillen, indem
+der kleinere Wiggle-Bogen zwischen den beiden Schnittpunkten
+EINES Passes gespiegelt wird (entfernt genau ein X, erhält das
+andere samt Winkel); (ii) **asymmetrische Sehne** — nur der
+SPÄTERE Pass wird begradigt, der frühere behält seine Kurve
+(bricht die Parallel-Degenerierung, weil nur eine Seite
+linearisiert). Beides bleibt hinter der Feststellung eingereiht,
+dass die 4 Duplikate KEINE Topologie-Erfindung sind (das X ist
+real, nur doppelt gezählt) — der Leidensdruck ist entsprechend
+klein, und die "all"-Wiedervorlage wartet auf den Mechanismus,
+der die Duplikate schließt, ohne das X zu kosten.
+
+### L2-Rest-Autopsie `aug19` — die Kollaps-Klasse (unter + muß×3) ist ORDNUNGS-dominiert: der Deckbogen sitzt in der Ketten-Assembly an der falschen Sequenz-Position
+
+Befund, kein Knopf (die in §7.10 L2 und in der `aug17`-Re-Baseline
+benannte Rest-Autopsie, ausgeführt und noch am selben Tag um eine
+FALSCHE Erst-Attribution korrigiert — beide Fassungen stehen der
+Ehrlichkeit halber im Verlauf dieses Branches). Auslöser der
+Korrektur: die Owner-Frage „das er von unter ist ja ganz schlecht —
+war das schon immer so?" und der Lotse-Widerspruch (0,063 auf
+derselben Referenz — ein Referenz-Defekt hätte JEDE Route deckeln
+müssen).
+
+**Die Erst-Fassung war doppelt falsch:** (1) das Diagnose-Skript
+resampelte NACH der Body-Konkatenation statt je Strich — die
+Absetz-Sprünge wurden zu synthetischen Bogen-Zonen (das Lineal
+selbst resampelt je Strich, `summary.score_word` →
+`resampled_strokes`; die „Rücklauf-Zonen" bis 6,75 xh waren zum
+Teil Artefakt); (2) der ü-/u-Deckbogen ist NICHT verbunden
+gezeichnet — er ist in allen betroffenen Referenzen ein eigener,
+ABGESETZTER Strich (unter: 54 Samples · Bogen 1,10 xh; muß: 59
+Samples), liegt damit aber über der 0,8-xh-Marken-Schwelle von
+`classify_strokes` und bleibt zu Recht im Body (die bekannte
+und-Autopsie-Klasse „Deckbogen über der Marken-Schwelle").
+
+**Der wirkliche Mechanismus — mit Beweis-Messung.** Die
+Body-Sequenzen: Hand = [Wort, Deckbogen] (Bogen ZULETZT; dieselbe
+Ordnung fährt der Lotse, dessen Karte die komponierte
+Engine-Ordnung mit endständigen Marken übernimmt — darum sein
+0,063). Der KETTEN-Kandidat assembliert dagegen je RUN
+zusammenhängender Slots und emittiert den Deckbogen ZWISCHEN den
+Runs: unter = [u..t (12,6 xh) · Bogen (1,0 xh) · e..r (12,8 xh)],
+muß-Familie analog [erster Teil · Bogen · Rest]. Das forward-DTW
+konkateniert in Schreibreihenfolge (die Ordnung IST die Wahrheit)
+und zahlt die Sequenz-Inversion voll — `dtw_max_absorption` 132
+(der Singularitäts-Wächter zeigte seit `aug14` exakt hierhin).
+Beweis durch die Ordnungs-Permutation (Geometrie byte-identisch,
+NUR der Bogen ans Ende sortiert): **unter 0,4503 → 0,0854 ·
+muß 0,2419 → 0,1096 · muß-2 0,2084 → 0,0877 · muß-3 0,2339 →
+0,0962**; der Permutations-Sweep über ALLE 19 Dev-Wörter findet
+außerhalb dieser vier keinen einzigen Ordnungs-Gewinn — die
+Klasse ist vollständig und exakt die Kollaps-Klasse der Baseline.
+`unter` war seit der ersten Zahl so (aug14: 0,4389 „der bekannte
+Kollaps-Probefall"); es war nie primär das sichtbare
+er-Gekritzel — das kostet den REST (~0,085, der echte
+Berührungs-/Überlagerungs-Stapel bleibt die zweite, kleinere
+Baustelle).
+
+**Einordnung.** (a) Die Kollaps-Headline der Kette (59,8 % des
+Fehlers, §7.1) ist zu ~2/3 eine ASSEMBLY-Eigenschaft des
+Kandidaten, kein Fit- und kein Referenz-Defekt; auch die
+gespeicherten `traced`-Produktionszeilen tragen dieselbe
+Strichfolge. (b) Benannter Kandidat (eigene Vorregistrierung,
+nicht Teil dieses Befunds): **die marken-endständige
+Ketten-Assembly** — der Kandidat emittiert abgesetzte
+Deckbogen-/Markenstriche NACH allen Runs, in der komponierten
+Engine-Ordnung, die Lotse und Hand ohnehin teilen. Erwartung aus
+der Permutations-Probe: Kette p90 0,236 → ~0,11, unter −0,36,
+muß-Klasse −0,11 bis −0,13; das ist eine Änderung des
+EINGEFRORENEN Baseline-Kandidaten und damit eine deklarierte
+Re-Baseline (alle gepaarten Routen-Vergleiche verschieben sich —
+ehrlich gesagt: der Lotse-Vorsprung auf unter/muß schrumpft
+entsprechend, er schlug dort zum Teil ein Assembly-Artefakt).
+(c) Die Referenzen sind SAUBER — der Todoist-Entscheid
+„muß neu nachfahren" ist gegenstandslos und wird zurückgezogen;
+der Brief-Hinweis „Marken mit eigenem Absetzen" bleibt für
+KÜNFTIGE Nachfahrungen sinnvoll (kleine Marken unter der
+Schwelle profitieren vom Zentroid-Matching). (d) A2 (SDM/DCD)
+bleibt für muß/unter zurückgestuft — Stranding/Doppelpass sind
+seine Ziele. KEINE Gate- oder Lineal-Änderung aus dieser
+Autopsie.
+
+### Kette K-A `aug19` — Vorregistrierung: die marken-endständige Assembly (Owner-Go „weiter optimieren")
+
+Geschrieben und committet VOR der ersten Zahl. Der benannte
+Top-Kandidat aus der (korrigierten) L2-Rest-Autopsie:
+`assemble_word_strokes` läuft heute JE RUN, und die
+Diakritika-Striche eines Runs (der eigene Assembler-Begriff:
+alle Samples über `DIACRITIC_MIN_Y` = 1,0) landen dadurch
+ZWISCHEN den Runs in der Schreibreihenfolge — Hand und
+komponierte Engine-Ordnung schreiben sie am WORTENDE. **EIN
+Knopf: `HarvestOptions.marks_last`** (CLI `--marks-last`,
+Label `chain+order` — wie `--mark-refit` eine Variante der
+Baseline, nie die Baseline selbst): die assemblierten Striche
+des Wortes werden stabil partitioniert, Diakritika (der
+Assembler-eigene Begriff, auf den Word-Unit-Strichen
+angewandt) hinter alle Körper-Striche, Reihenfolge innerhalb
+beider Gruppen unverändert. Reine ORDNUNGS-Änderung: kein
+Punkt bewegt sich.
+
+**Erwartung (aus der Permutations-Probe der Autopsie):**
+unter −0,36 (0,4503 → ~0,085), muß-Familie −0,11 bis −0,13;
+alle geometrie-basierten Spalten IDENTISCH (aiou, Chamfer,
+Struktur- und Markenzähler — dieselbe Segmentmenge), einzig
+`dtw_xh` (und die Lift-Positionsspalten) bewegen sich; kein
+anderes Dev-Wort ändert sich über ±0,002 (der Sweep fand
+keinen weiteren Ordnungs-Gewinn).
+
+**Gates:** (i) die vier Kollaps-Wörter fallen je um > 0,05;
+(ii) KEIN Dev-Wort steigt um > 0,002; (iii) aiou/Chamfer/
+Zähler byte-gleich (eine Abweichung wäre ein Bug der
+Partition, kein Tuning-Fall — Kill); (iv) `dtw_reversed_better`
+= 0. Bestehen alle: ADOPTION als Kette v2 (die erste
+Formulierungsänderung der Route) mit datierter Re-Baseline —
+deklariert: ALLE gepaarten Routen-Vergleiche rechnen ab dann
+gegen die v2-Kette, die alten Zahlen bleiben als
+v1-Geschichte lesbar; der PRODUKTIONS-Re-Harvest (DB) bleibt
+davon getrennt hinter Owner-Go + dbsnapshot.
+
+**Gemessen `aug19` — ALLE Gates bestehen exakt wie
+vorregistriert, ADOPTIERT als Kette v2.** Dev-19, gepaart gegen
+die v1-Baseline: **unter 0,4503 → 0,0854 (−0,365) · muß-3
+0,2339 → 0,0962 · muß 0,2419 → 0,1096 · muß-2 0,2084 →
+0,0877**; die übrigen 15 Wörter Δ exakt 0,0000, und JEDE
+Geometrie-Spalte byte-gleich (aiou 0,6929, beide Chamfer,
+cross 14+7, marks 1+1, retrace 6+13, touch 25, reversed 0) —
+die Partition bewegt keinen Punkt, nur die Reihenfolge.
+`HarvestOptions.marks_last` = True ist der v2-Default (False
+bleibt als Archäologie-Knopf, das Mess-CLI-Flag entfällt mit
+der Adoption).
+
+### Kette K-B `aug19` — Vorregistrierung: die Zacken-Reparatur im Trace
+
+Geschrieben und committet VOR der ersten Zahl. Die Zacken-Klasse
+des Owner-Sichtbefunds (Galoppieren: das V in den i-Punkt — EIN
+Polylinien-Punkt springt 0,44 xh weg und zurück —, die Nadel am
+Kopf des ersten p — drei Punkte, 6–11× der Median-Schrittweite)
+ist exakt die §11-Ausreißer-Form, für die der geteilte Detektor
+`tools.pairlab.anchors` gebaut und an 17 von 22 Owner-Markierungen
+validiert wurde. Die STATISTIK-Schicht repariert sie seit §11e;
+der Trace zeigt sie bisher absichtlich roh („inspection layer,
+needle and all") — eine Doktrin von VOR der Tintenfolger-Kampagne,
+in der der Trace zum PRODUKT wurde. **EIN Knopf:
+`HarvestOptions.trace_repair`** (CLI `--trace-repair`, Label
+`chain+repair` — das A1-Muster: ändert, was der Trace ZEIGT, nie,
+was die Ernte MISST): `repair_stranded_anchors` — DIESELBE
+geteilte Funktion, kein Zweitbau; das Kriterium ist skalenfrei
+(Schritt-Verhältnisse je Strich) — läuft je assembliertem
+Trace-Strich; Läufe konsekutiv geflaggter Punkte werden als ein
+Stück auf die Sehne der ungeflaggten Nachbarn interpoliert, nie
+auf Tinte gesnappt, Anzahl geloggt (`trace_repaired` im Meta).
+
+**Erwartung:** die beiden Galoppieren-Zacken verschwinden
+(sichtbar + dtw dort leicht runter); der i-Punkt-Strich fällt
+ohne Ausreißer unter die 0,8-xh-Marken-Schwelle — die fehlende
+i-Marke DARF heilen (`marks_missing` 1 → 0); alle übrigen
+Dev-Wörter ±0,002; `aiou` ~neutral (Zacken liegen in Luft).
+**Gates:** kein Dev-Wort schlechter als +0,002; Struktur- und
+Markenzähler ohne Netto-Verlust; `aiou`-Median-Δ > −0,005;
+reversed = 0. Kill: kostet die Reparatur irgendwo eine ECHTE
+Struktur (ein „Spike", der in Wahrheit ein Kreuzungsschenkel
+war), ist der Polylinien-Einsatz des Detektors verworfen und der
+Weg zurück die Anker-Ebene (keep_solve-Plumbing, eigene
+Pre-Reg). Bestehen alle Gates: Adoption als **Kette v3** (die
+Trace-Doktrin-Zeile in `chain_word_strokes` wird im selben
+Commit umgeschrieben — der Trace ist seit der Kampagne Produkt,
+die Inspektion der rohen Nadel bleibt über
+`trace_repair=False` erreichbar).
+
+**Gemessen `aug19` — alle Gates bestehen, ADOPTIERT als Kette
+v3; die Zacken trugen fast den ganzen Galoppieren-Rest.**
+Dev-19, gepaart gegen v2: **Galoppieren 0,2329 → 0,0401
+(−0,193)** — die V-Zacke in den i-Punkt und die p-Nadel waren
+sein dominanter Fehler, und wie vorregistriert erhofft fällt
+der reparierte i-Punkt-Strich unter die Marken-Schwelle:
+**`marks_missing` 1 → 0**, `lift_delta` Galoppieren +1 → 0 —
+dazu die-2 −0,026, zwei −0,015; kein Wort über +0,0016 (unter,
+im Rahmen des +0,002-Gates). Zähler: `retrace_spurious` 13 → 6
+und `touch` 25 → 21 (die Zacken WAREN die unechten Zonen),
+Kreuzungen exakt unverändert, `aiou` +0,006,
+`max_absorption` 94 → 79. Ehrlich benannt: `retrace_missing`
+6 → 7 — die Autopsie (Flag-Positionen + Sichtprüfung) verortet
+alle sieben unter-Reparaturen bei u 5,6–6,6 IM er-Gekritzel
+(der echte t-Stamm-Retrace bei u 4,7–5,1 bleibt unberührt):
+eine ZUFALLS-Korrespondenz von Tangle-Geometrie löst sich, die
+Netto-Retrace-Defekte fallen 19 → 13 — das Kill („echte
+Struktur") feuert nicht. `trace_repair` = True ist der
+v3-Default (False = Nadel-Archäologie), die Doktrin-Zeile in
+`chain_word_strokes` ist umgeschrieben.
+
+**Re-Baseline Kette v3 `aug19` (deklariert):** dtw-Median
+**0,0491** · p90 **0,0894** · worst **muß 0,1096** · marks 0+1
+· aiou 0,6987 · cross 14+7 · retrace 7+6 · touch 21. Gepaarte
+Vergleiche gegen v3: **Lotse v0.11 Δ-Median +0,0016 (Sign
+12:7)** — nach zwei reinen Trace-Schicht-Fixes führt die KETTE
+erstmals auf Median UND p90; der Lotse behält Struktur (7
+gegen 21 Netto-Kreuzungsdefekte), aiou (0,743) und
+Kreuzungs-Ortsfehler (0,066 gegen 0,083 xh). Tagesbogen der
+Route: 0,0576/0,2355 → 0,0491/0,0894, ohne dass sich ein
+einziger Fit-Parameter bewegt hat — beide Gewinne lagen in der
+KANDIDATEN-SchICHT (Ordnung + Ausreißer), nicht im Solver.
+
+**Re-Baseline Kette v2 `aug19` (deklariert, lokale Umgebung der
+Runde):** dtw-Median 0,0576 (unverändert — die Median-Wörter
+waren nie betroffen) · **p90 0,2355 → 0,0988** · worst jetzt
+**Galoppieren 0,2329** (der echte unter-Rest: 0,0854, das
+er-Gekritzel aus dem versetzten Karten-Init) · Struktur- und
+Markenspalten identisch zu v1. **Gepaarte Routen-Vergleiche
+gegen v2:** Lotse v0.11 Δ-Median **+0,0007** (Sign 10:9,
+p=1,0) — der −18-%-Vorsprung der Lotse-Route gegen v1 bestand
+zu praktisch 100 % aus dem Assembly-Artefakt; die Routen
+stehen jetzt im Median GLEICHAUF, die Kette führt beim p90
+(0,0988 gegen 0,1129), der Lotse behält die Struktur (7 gegen
+21 Netto-Kreuzungsdefekte), die Marken (0 gegen 1 fehlend),
+aiou (0,7434 gegen 0,6929) und den Kreuzungs-Ortsfehler
+(0,066 gegen 0,083 xh). Das Fusions-Orakel und die
+InkSight-/Nullprobe-Paarungen sind mit ihrer nächsten Messung
+gegen v2 neu zu beziffern (lokal nicht neu gerechnet — die
+absoluten Wortwerte dieser Routen ändern sich nicht, nur ihre
+Deltas). Der PRODUKTIONS-Re-Harvest der `traced`-Zeilen mit
+v2-Ordnung bleibt hinter Owner-Go + dbsnapshot (die
+Fixture-`traced`-Zeilen tragen bis dahin die v1-Ordnung —
+der Bench rechnet den `chain`-Kandidaten ohnehin frisch).

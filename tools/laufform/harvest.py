@@ -92,6 +92,7 @@ from tools.pairlab.trace import (
     _px_to_word_units,
     assemble_word_strokes,
     cap_word_strokes,
+    diacritic_stroke_units,
 )
 from tools.wordlab.cases import iter_fixture_word_cases
 from tools.wordlab.derive import WordDeriveResult, derive_word
@@ -226,6 +227,27 @@ class HarvestOptions:
     # (`tools.tracebench.run --mark-refit`); adopting it into the stored trace
     # is a separate, measured decision.
     mark_refit: bool = False
+    # K-A (§14 `aug19`), ADOPTED as Kette v2: emit the word's diacritic
+    # strokes AFTER all body strokes, in the composed engine order the hand
+    # shares — the v1 per-run assembly interleaved them between the runs, and
+    # the trace bench paid the sequence inversion as the whole unter/muß
+    # collapse class (measured: unter 0.4503 -> 0.0854, muß family -0.12 to
+    # -0.14, every other word and every geometry column byte-identical). A
+    # pure ORDER change of the assembled stroke list — no point moves. True
+    # is the v2 baseline (a dated re-baseline of the bench); False reproduces
+    # the v1 ordering for archaeology.
+    marks_last: bool = True
+    # K-B (§14 `aug19`), ADOPTED as Kette v3: repair the §11 outlier class (a
+    # lone anchor excursion — the i-dot V, the p-head needle) on the
+    # assembled TRACE strokes, with the very detector the statistics layer
+    # has used since §11e (`tools.pairlab.anchors`, scale-free step ratios,
+    # runs replaced by the chord of their unflagged neighbours, never snapped
+    # to ink, count logged as `trace_repaired`). The A1 pattern: changes what
+    # the trace SHOWS, never what the harvest MEASURES. Measured: Galoppieren
+    # 0.233 -> 0.040 (the missing i-mark heals), retrace/touch counters fall
+    # toward the hand, no word moves beyond +0.0016. True is the v3
+    # baseline; False shows the raw needles for inspection archaeology.
+    trace_repair: bool = True
 
 
 @dataclass
@@ -834,14 +856,36 @@ def chain_word_strokes(case, result: WordDeriveResult, opts: HarvestOptions) -> 
     for fit, entries in zip(solved, entries_by_run, strict=True):
         # The whole solved run goes into the trace — a gate verdict decides what
         # is measured, not what was written (the per-slot verdicts stay readable
-        # in `gates`/`converged_local` beside it). The polylines are the fit's
-        # own UNREPAIRED output on purpose: the trace is the inspection layer
-        # showing what the fit actually did, needle and all.
+        # in `gates`/`converged_local` beside it). Since the K-B adoption
+        # (Kette v3) the trace is a PRODUCT surface of the Tintenfolger
+        # campaign and gets the §11 outlier repair below (`trace_repair`);
+        # the raw needle-and-all inspection view stays reachable with
+        # `trace_repair=False`.
         word_strokes.extend(
             assemble_word_strokes(
                 entries, traced_slots=set(fit.slots), xh=xh, registration=registration, restart_slots=restart_slots
             )
         )
+
+    if opts.marks_last:
+        # K-A: stable partition — diacritics (the assembler's OWN criterion,
+        # read off the word-units strokes) move behind every body stroke,
+        # order inside both groups untouched, no point moves.
+        body = [s for s in word_strokes if not diacritic_stroke_units(s)]
+        marks = [s for s in word_strokes if diacritic_stroke_units(s)]
+        word_strokes = body + marks
+
+    trace_repaired = 0
+    if opts.trace_repair:
+        # K-B: the §11 outlier repair on the TRACE strokes — the shared
+        # detector, per stroke, scale-free; logged, never a snap to ink.
+        repaired_strokes: list[list[list[float]]] = []
+        for stroke in word_strokes:
+            pts = np.asarray(stroke, dtype=float).reshape(-1, 2)
+            repaired, indices = repair_stranded_anchors(pts, None)
+            trace_repaired += len(indices)
+            repaired_strokes.append(repaired.tolist() if indices else stroke)
+        word_strokes = repaired_strokes
 
     meta = {
         "runs": runs,
@@ -854,6 +898,7 @@ def chain_word_strokes(case, result: WordDeriveResult, opts: HarvestOptions) -> 
         "n_params": n_params,
         "seconds": round(seconds, 3),
         "mark_refit": mark_meta,
+        **({"trace_repaired": trace_repaired} if opts.trace_repair else {}),
     }
     return cap_word_strokes(word_strokes, label=f"{case.id} (chain)"), meta
 

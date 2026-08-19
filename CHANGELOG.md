@@ -14,6 +14,129 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Lotse v0.10/v0.11: junction-anchored pinning of the map runs —
+  v0.11 "windows" adopted, the k curl is finally traced** (pre-registered
+  §14 `aug19`, arms L1d/L1e; owner's visual find: the k's lower curl
+  untraced, the capital W riding air, angular runs at r/e). The autopsy
+  localized the excursions in MERGED crossing windows (up to 4.3 xh in
+  one run at linken's k) whose v0.9 end-only pinning passes the raw,
+  locally offset map form through their middle, plus the still-raw
+  double-zone rides and bridges. v0.10 (anchors as point knots: offset =
+  nearest skeleton branch node minus map self-intersection) was
+  measured-and-rejected — a point field shears at exactly the crossings
+  it anchors (merge/osculation in dense clusters). v0.11 makes each
+  anchor a rigid PLATEAU (0.35 xh) with GLOBAL cluster fusion
+  (union-find across passes), so dense clusters translate as a whole
+  and every X survives. Adopted "windows" on dev-19: net crossing
+  defects 7 (= v0.9) with `cross_missing` healed 3 → 1 — Galoppieren's
+  two p-loop crossings return although the composition itself lacks
+  them —, crossing position error median 0.116 → 0.066 xh (−43 %),
+  aiou +0.008, p90 0.118 → 0.113; honest costs: own dtw median
+  0.0578 → 0.0596, paired-vs-chain −24 % → −18 %, and the residual
+  spurious class is now dominated by double-drawn X duplicates (4 of
+  6, named next mechanism). The "all" rung (zone rides + bridges
+  pinned too) failed its gate by exactly one duplicate X and stays a
+  named rescue path. New glossary terms: Plateau-Anker,
+  Doppel-X-Duplikat.
+
+- **Lotse v0.12 "Plateau-Sehne" measured and rejected — the wiggle WAS
+  the crossing** (pre-registered §14 `aug19`, arm L1f). Replacing each
+  pass's sub-path inside a fused plateau by its chord was meant to make
+  the double-X duplicate constructively impossible; instead it killed
+  the missing class (1 → 8) and the retrace zones, because at loop
+  closures both passes run tangentially and their chords are parallel —
+  only the map's wiggle carries the transversality. Both rungs rejected
+  by their own kill criterion; rescue paths (untwisting the smaller
+  wiggle arc, asymmetric chord) named in the standing §7.9 table.
+
+- **A1 mark refit re-measured on the 19-row dev set: mark position
+  error −73 %** (§7.7 recalibration protocol; no new knob, the same
+  opt-in `--mark-refit` variant). Median 0.111 → 0.030 xh, all six
+  mark-carrying dev words improve, body and structure byte-neutral —
+  the wave-1 win (−55 % on 10 words) generalizes to the 9 new
+  tracings. Adoption into the stored chain stays gated on the
+  confirmation set, now with 6 instead of 4 paired words.
+
+- **Kette v3: the trace-level spike repair, adopted with a dated
+  re-baseline** (pre-registered §14 "Kette K-B aug19"). The §11
+  outlier class the owner spotted (the V into the i-dot, the needle
+  on the first p — single points jumping 3×+ the stroke's median
+  step and back) is repaired on the assembled trace strokes with the
+  very detector the statistics layer has used since §11e
+  (`tools.pairlab.anchors`; scale-free, runs chorded between
+  unflagged neighbours, never snapped to ink, logged) — the A1
+  pattern: changes what the trace shows, never what the harvest
+  measures. Measured: Galoppieren 0.233 → 0.040 (the spikes carried
+  almost its whole residual), the missing i-mark heals (the repaired
+  dot falls back under the 0.8-xh mark threshold), retrace-spurious
+  13 → 6, touch 25 → 21, no word beyond +0.0016; the one lost
+  retrace match is autopsied as a coincidental correspondence inside
+  unter's tangle. Chain v3 baseline: dev median 0.0491, p90 0.0894,
+  worst muß 0.110, marks 0 — after two pure candidate-layer fixes
+  the chain leads the Lotse on median and p90 without a single
+  solver parameter moving; the old needle-and-all inspection view
+  stays reachable via `trace_repair=False`.
+
+- **Kette v2: the marks-last assembly, adopted with a dated
+  re-baseline** (pre-registered §14 "Kette K-A aug19", owner go
+  "weiter optimieren"). `HarvestOptions.marks_last` (default True)
+  emits a word's diacritic strokes after all body strokes in the
+  composed engine order the hand shares; the v1 per-run assembly
+  interleaved them between the runs. Measured exactly as
+  pre-registered: the four collapse words fall (unter 0.4503 →
+  0.0854, muß family −0.12 to −0.14), every other word and every
+  geometry column byte-identical — a pure order change. The chain's
+  dev p90 drops 0.236 → 0.099 and its worst word is now Galoppieren;
+  paired against v2 the Lotse's −18 % advantage disappears entirely
+  (Δ-median +0.0007, sign 10:9) — the routes now tie on median, the
+  chain leads on p90, the Lotse keeps structure, marks, aiou and
+  crossing position. The production re-harvest of the stored traced
+  rows stays behind owner go + dbsnapshot. New glossary term:
+  Marken-endständige Assembly.
+
+- **The chain's collapse class (unter 0.450, muß ×3 ~0.22) is an
+  ORDER artifact of the candidate assembly — proven by permutation**
+  (§14 "L2-Rest-Autopsie", corrected same-day after an owner
+  question exposed a wrong first attribution). The lifted u/ü top
+  bow sits above the 0.8-xh mark threshold and stays in the body;
+  the hand (and the engine's composed order, which the Lotse rides)
+  writes it LAST, while the chain assembly emits it BETWEEN the
+  slot runs. Re-ordering only that stroke — geometry byte-identical
+  — drops unter 0.4503 → 0.0854 and the muß family 0.21–0.24 →
+  0.088–0.110; a permutation sweep over all 19 dev words finds no
+  other order gain. Named top candidate for the Kette:
+  marks-last assembly (own pre-registration; changes the frozen
+  baseline, hence a declared re-baseline — the Lotse's wins on
+  those words partly beat this artifact). The references are clean;
+  the earlier "re-trace muß" decision task is withdrawn.
+
+- **The soll-aware K0 guard (`--structure-guard-soll`): built,
+  pre-registered and measured over all 63 words** — the named rescue
+  path (c) of the production-chain question. Acceptance becomes an
+  interval per structure class between the chain optimum's count and
+  the composed init's count (x0 through the same assembler and
+  counters): movement only toward the soll. Measured against the raw
+  chain in one pinned environment: four of five gates pass — seven
+  dev words strictly ink-closer (das −0.012, und −0.007, muß-2
+  −0.007; dev median 0.0576 → 0.0494), aiou never negative (up to
+  +0.11), marks byte-equal, 63/63 ok at ~10 s/word — but the
+  structure axis freezes again (soll distance 107 = 107), and the
+  round protocol proves why: the round-ATOMIC rejection discards a
+  bundled soll-ward repair together with its violation (unter:
+  overlap 3 → 2 allowed, touch 3 → 6 forbidden, one solve). Formally
+  not adopted; as a production candidate it dominates the two-sided
+  guard on every measured axis. Named next mechanism: zonal
+  rejection (freeze only the violating zone's anchors), own
+  pre-registration.
+
+- **Duel view: a "Feinschliff (nur Anzeige)" toggle** smooths the
+  CANDIDATE traces for the eye ((1, 2, 1)/4, endpoints fixed, three
+  iterations) — the display-stage consequence of the v0.6 verdict (the
+  ruler never sees the pixel zigzag, so smoothing belongs to the
+  consumer, never into the measured candidate). The hand reference,
+  the mark dots and every number stay raw; the toggle is off by
+  default and the page bytes stay deterministic.
+
 - **Werkbank word cards: an Abstandsprofil under each word — where the
   composition sits beside the author's line**
   (`app/src/sections/admin/words/distanceProfile.ts` +

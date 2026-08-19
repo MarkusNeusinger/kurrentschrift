@@ -39,7 +39,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1 · Ausreißer §4
 - **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
-- **D** — dconn §4 · Deckung §3 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
+- **D** — dconn §4 · Deckung §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2 · extrapoliertes Landmark-Ziel §3
 - **F** — Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Frozen-Reference-Regel §4 · Fuge §1
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4 · Gute-Fortsetzung §4
@@ -48,10 +48,10 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
-- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4
+- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4
 - **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
-- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
+- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Plateau-Anker §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
@@ -1187,6 +1187,52 @@ v0.8/v0.9). *Technisch:* `tools/inkpilot/pilot.py`
 (`RIDE_DOUBLE_ZONE_MARGIN_UNITS`, `MAP_CROSSING_WINDOW_UNITS`,
 `MAP_CROSSING_PIN`) → qualitaetsmetrik.md §14 „Lotse v0.7–v0.9",
 proposals/tintenfolger.md §7.10
+
+**Plateau-Anker** — der `aug19` adoptierte Pinnungs-Mechanismus der
+Lotse-Route (v0.11, L1e): Jeder Karten-Selbstschnitt in einem
+Fenster-Lauf erhält einen ANKER (Offset = nächster
+Skelett-Verzweigungsknoten − Schnittpunkt, Suchradius 1,0 xh), und
+das Offset wirkt als starres PLATEAU von ±0,35 xh statt als
+Punkt-Knoten — eine Kreuzung überlebt eine lokal konstante
+Verschiebung exakt (beide Pässe verschieben sich gleich, das X
+wandert starr auf den Tinten-Knoten), während Punkt-Knoten das
+Offset-Feld an genau der Kreuzung scheren, die sie sichern sollen
+(das gemessene v0.10-Negativ: Merge/Oskulation in dichten Clustern).
+Plateaus, die sich entlang IRGENDEINES beteiligten Passes
+überlappen, verschmelzen GLOBAL (Union-Find über die
+Anker-Identitäten) zu einem Cluster mit einem gemeinsamen
+Mittel-Offset — der dichte Cluster verschiebt sich als Ganzes.
+*Technisch:* `tools/inkpilot/pilot.py` (`MAP_RUN_PIN_KNOTS`,
+`PIN_KNOT_PLATEAU_UNITS`, `map_crossing_knots`, `_pin_map_runs`) →
+qualitaetsmetrik.md §14 „Lotse v0.10/v0.11 `aug19`"
+
+**Marken-endständige Assembly** — die `aug19` als **Kette v2**
+adoptierte Formulierungsänderung (K-A): der Ketten-Kandidat emittiert
+die Diakritika-Striche eines Wortes (Assembler-Kriterium: alle
+Samples über `DIACRITIC_MIN_Y`) NACH allen Körper-Strichen, in der
+komponierten Engine-Ordnung, die auch die Hand schreibt — die
+v1-Assembly setzte sie je RUN zwischen die Läufe, und das
+ordnungstreue forward-DTW zahlte die Sequenz-Inversion als die
+gesamte unter/muß-Kollaps-Klasse (unter 0,4503 → 0,0854 bei
+byte-identischer Geometrie; Kette-p90 0,236 → 0,099). Eine reine
+ORDNUNGS-Änderung der Strichliste; ihre Adoption war die erste
+datierte Re-Baseline eines Duell-Kandidaten (alle gepaarten
+Vergleiche rechnen seither gegen v2). *Technisch:*
+`tools/laufform/harvest.py` (`HarvestOptions.marks_last`,
+`chain_word_strokes`), `tools/pairlab/trace.py::
+diacritic_stroke_units` → qualitaetsmetrik.md §14 „Kette K-A `aug19`"
+
+**Doppel-X-Duplikat** — die seit Lotse v0.11 dominante
+Rest-Spurious-Klasse des Kreuzungszählers (4 der 6 Zählungen):
+Dieselbe Hand-Kreuzung wird vom Kandidaten ZWEIMAL gezeichnet, weil
+die gepinnten Fenster-Pässe doppelt durch die Knoten-Nachbarschaft
+wackeln — zwei nah beieinanderliegende Kreuzungs-ORTE, von denen
+einer matcht und der andere als unecht zählt. Kein
+Topologie-Erfindungs-Fehler (das X ist real, nur doppelt); benannter
+nächster Mechanismus: EIN X je Knoten-Cluster (Begradigung der
+Fenster-Teilbahn je Pass durch den Knoten). *Technisch:*
+qualitaetsmetrik.md §14 „Lotse v0.11 `aug19`",
+proposals/tintenfolger.md §7.9
 
 **Durchstoß-Kriterium** *(pierce test)* — die v2-Definition der
 gezählten Schleifenkreuzung (Owner-Spezifikation aus dem manuellen

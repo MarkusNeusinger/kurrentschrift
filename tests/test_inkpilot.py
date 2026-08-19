@@ -116,3 +116,70 @@ def test_resample_is_arc_regular() -> None:
     steps = np.hypot(*np.diff(out, axis=0).T)
     assert np.all(steps < 1.5)
     assert len(out) >= 18
+
+
+def test_crossing_knots_anchor_on_the_junction() -> None:
+    from tools.inkpilot.pilot import map_crossing_knots
+
+    pg = PilotGraph(cross_skeleton())
+    # Two map strokes crossing at (22, 18) — 2 px off the skeleton's
+    # junction at (20, 20). The knot must carry the offset onto the node.
+    a = resample(np.asarray([[12.0, 8.0], [32.0, 28.0]]), step_px=1.2)
+    b = resample(np.asarray([[12.0, 28.0], [32.0, 8.0]]), step_px=1.2)
+    knots = map_crossing_knots(pg, [a, b], xh_px=10.0)
+    assert knots[0] and knots[1]
+    _, off = knots[0][0]
+    assert off == pytest.approx([-2.0, 2.0], abs=0.75)
+
+
+def test_pin_map_runs_moves_the_run_onto_the_anchor() -> None:
+    from tools.inkpilot.pilot import _pin_map_runs
+
+    pg = PilotGraph(cross_skeleton())
+    samples = resample(np.asarray([[12.0, 8.0], [32.0, 28.0]]), step_px=1.2)
+    seq = [None] * len(samples)  # a pure map run: no boundary offsets
+    run_mask = np.ones(len(samples), dtype=bool)
+    mid = len(samples) // 2
+    out = _pin_map_runs(pg, samples, seq, run_mask, [(mid, np.asarray([-2.0, 2.0]))])
+    # One knot, no boundaries: the whole run shifts by the constant anchor
+    # offset, so the former crossing point now sits on the junction.
+    assert out[mid] == pytest.approx(samples[mid] + [-2.0, 2.0], abs=1e-9)
+    assert out[0] == pytest.approx(samples[0] + [-2.0, 2.0], abs=1e-9)
+
+
+def test_pin_map_runs_interpolates_between_knots() -> None:
+    from tools.inkpilot.pilot import _pin_map_runs
+
+    pg = PilotGraph(cross_skeleton())
+    samples = np.column_stack([np.linspace(6.0, 34.0, 15), np.full(15, 19.0)])
+    # Rail boundaries at both ends, one anchor knot in the middle: the run
+    # must blend linearly between the three offsets instead of passing the
+    # raw map through its interior (the merged-window failure of v0.9).
+    seq: list = [None] * 15
+    seq[0] = min(pg.locs, key=lambda loc: float(np.hypot(*(pg.px_of(loc) - samples[0]))))
+    seq[-1] = min(pg.locs, key=lambda loc: float(np.hypot(*(pg.px_of(loc) - samples[-1]))))
+    run_mask = np.zeros(15, dtype=bool)
+    run_mask[1:-1] = True
+    out = _pin_map_runs(pg, samples, seq, run_mask, [(7, np.asarray([0.0, 3.0]))])
+    assert out[7, 1] == pytest.approx(22.0)
+    # Beyond the anchor's plateau, towards the right boundary, the offset
+    # must blend strictly between the two — not pass the raw sample through.
+    assert 19.0 < out[12, 1] < 22.0
+
+
+def test_pin_map_runs_fuses_overlapping_plateaus_rigidly() -> None:
+    from tools.inkpilot.pilot import _pin_map_runs
+
+    pg = PilotGraph(cross_skeleton())
+    samples = np.column_stack([np.linspace(6.0, 34.0, 24), np.full(24, 19.0)])
+    seq: list = [None] * 24
+    run_mask = np.ones(24, dtype=bool)
+    # Two anchors three samples apart: their plateaus overlap and must fuse
+    # into ONE rigid interval carrying the mean offset — a dense crossing
+    # cluster translates as a whole instead of shearing (the v0.10 negative).
+    knots = [(10, np.asarray([0.0, 2.0])), (13, np.asarray([0.0, 4.0]))]
+    out = _pin_map_runs(pg, samples, seq, run_mask, knots)
+    d10 = out[10] - samples[10]
+    d13 = out[13] - samples[13]
+    assert d10 == pytest.approx([0.0, 3.0], abs=1e-9)
+    assert d13 == pytest.approx(d10, abs=1e-9)

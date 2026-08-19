@@ -284,10 +284,19 @@ def _chain_record(case: Any, strokes: list, registration: dict, xh: float) -> di
     return _word_record(case, strokes, registration, xh, {})
 
 
-def _chain_options(style: str, chain_seed: str, mark_refit: bool = False) -> Any:
+def _chain_options(
+    style: str, chain_seed: str, mark_refit: bool = False, marks_last: bool = True, trace_repair: bool = True
+) -> Any:
     from tools.laufform.harvest import HarvestOptions  # noqa: PLC0415
 
-    return HarvestOptions(style=style, path="chain", chain_seed=chain_seed, mark_refit=mark_refit)
+    return HarvestOptions(
+        style=style,
+        path="chain",
+        chain_seed=chain_seed,
+        mark_refit=mark_refit,
+        marks_last=marks_last,
+        trace_repair=trace_repair,
+    )
 
 
 def chain_provider(
@@ -297,6 +306,8 @@ def chain_provider(
     fixtures_root: Path | None = None,
     chain_seed: str = "composed",
     mark_refit: bool = False,
+    marks_last: bool = True,
+    trace_repair: bool = True,
 ) -> Provider:
     """The Stage-B chain fit — run through the HARVEST's own code path.
 
@@ -321,7 +332,7 @@ def chain_provider(
 
     def provide(reference: Reference, specimen_ids: Sequence[str]) -> dict[str, Candidate]:
         ids = list(specimen_ids)
-        opts = _chain_options(style, chain_seed, mark_refit)
+        opts = _chain_options(style, chain_seed, mark_refit, marks_last, trace_repair)
         cases = _chain_cases(which=which, style=style, only=ids, fixtures_root=root)
         out: dict[str, Candidate] = {}
         for specimen_id in ids:
