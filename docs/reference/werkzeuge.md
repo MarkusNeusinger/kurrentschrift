@@ -248,7 +248,7 @@ uv run python -m tools.dbsnapshot.restore <snapshot-dir> --database-url postgres
   Abnahme-Gate:
   `uv run python -m tools.wordbench.fetch_fixtures --set all --verify`.
   Zwei Overlay-Flags für Trocken-Experimente (`aug19` erstmals im
-  Feld, Laufform-Arme LF1–LF3): `--laufform <datei.json>` komponiert
+  Feld, Laufform-Arme LF1–LF3): `--laufform <Datei.json>` komponiert
   mit KANDIDATEN-Laufformen (Harvest-Draft `{anchors, n_occurrences}`
   oder volle Fixture-Zeile; Overlay — unbenannte Glyphen behalten die
   eingefrorene Zeile) und `--no-laufform` komponiert chart-treu ohne

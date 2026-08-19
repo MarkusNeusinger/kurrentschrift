@@ -17,7 +17,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 - **The Laufform night: all three owner-flagged map-form sites (G, W, p)
   resolve into ONE layer, and the topology repair becomes the first
   adopted Laufform arm** (pre-registered §14 `aug19` arms LF1/LF2/LF3/
-  LF3b, all measured dry — no DB write). Two code autopsies first
+  LF3b, all measured dry — no DB writes). Two code autopsies first
   overturned both late-evening mechanisms: the W→e join does not balloon
   (the composed W simply sits ~0.4 xh left of the hand's apexes — the W
   Laufform gap), and p is no composer class case — the STORED p Laufform
