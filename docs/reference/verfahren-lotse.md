@@ -66,9 +66,17 @@ Rest-Spurious-Klasse.
   "all"-Stufe (Zonen-Rides/Brücken-Pinning) wieder frei. Die
   Duplikate sind keine Topologie-Erfindung (das X ist real, nur
   doppelt gezählt) — Leidensdruck klein.
-- **Karten-Form-Klasse**: die k-Kopfschleife fährt auch gepinnt
-  formfremd (komponierter Bogen tiefer/schmaler als diese Hand), der
-  W-Ansatz bleibt K3 — Kompositions-/Autorenschiene, kein Ritt-Fehler.
+- **Karten-Form-Klasse** (Katalog nach der Owner-Sichtrunde `aug19`,
+  Karten-Overlays): die k-Kopfschleife (tiefer/schmaler), das
+  Galoppieren-G (Oval ~halb so breit wie der Beleg, Unterschleife
+  spitz), die e→r-Strecke in `unter` (r-Kringel rechts neben der
+  Tinte), die W→e-Schleife in `Wer` (K3) und der Vorschub-Drift der
+  Galoppieren-Endsilben (~0,2–0,3 xh) — überall fährt der Lotse in
+  Zonen/Brücken die formfremde Karte roh („windows" pinnt nur
+  Fenster), und die Kette erbt dieselben Stellen als Init.
+  Kompositions-/Autorenschiene (Todoist „Karten-Form-Klasse"), kein
+  Ritt-Fehler; die „all"-Stufe würde die SICHTBARKEIT beim Lotsen
+  dämpfen, hängt hinter der Entdrillung.
 - ~~Rest-Autopsie muß-Klasse~~ **erledigt `aug19`, Attribution noch
   am selben Tag korrigiert** (§14 „L2-Rest-Autopsie"): die
   Kollaps-Klasse (unter + muß×3) ist ORDNUNGS-dominiert — aber
