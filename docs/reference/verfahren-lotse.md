@@ -81,16 +81,18 @@ Rest-Spurious-Klasse.
   Karten-Form-Regionen (G-Kopf, p). Wiedervorlage NACH den
   Karten-Form-Autorenschritten — die zahlen damit doppelt.
 - **Karten-Form-Klasse** (Katalog nach der Owner-Sichtrunde `aug19`,
-  Karten-Overlays): die k-Kopfschleife (tiefer/schmaler), das
-  Galoppieren-G (Oval ~halb so breit wie der Beleg, Unterschleife
-  spitz), die e→r-Strecke in `unter` (r-Kringel rechts neben der
-  Tinte), die W→e-Schleife in `Wer` (K3) und der Vorschub-Drift der
-  Galoppieren-Endsilben (~0,2–0,3 xh) — überall fährt der Lotse in
-  Zonen/Brücken die formfremde Karte roh („windows" pinnt nur
-  Fenster), und die Kette erbt dieselben Stellen als Init.
-  Kompositions-/Autorenschiene (Todoist „Karten-Form-Klasse"), kein
-  Ritt-Fehler; die „all"-Stufe würde die SICHTBARKEIT beim Lotsen
-  dämpfen, hängt hinter der Entdrillung.
+  Karten-Overlays; **präzisiert im späten Nachtrag**, §14 v0.15):
+  überwiegend eine **Laufform-Lücke, kein Chart-Fehler** — 43 von 62
+  Glyphen (alle Versalien, k, s, v, x …) komponieren aus der rohen
+  Chart-Form, weil ihnen die Laufform-Variante fehlt (G: 3 QC-Fits
+  unter min-n 4, k/W: je 1); das Chart-G ist gut, DIESE Hand
+  schreibt das Oval ~65 % breiter. Messbarer Kandidat:
+  **Versalien-Laufform-Ausnahme** (min-n 3, eigene Pre-Reg,
+  wordbench-Gates, Owner-Go vor DB-Write). Echte Autorenschritte
+  bleiben W-Ansatz-Retrace (K3, Duktus-Inhalt) und
+  p-Unterlängen-Entscheid; eigene Klassen bleiben die
+  e→r-Platzierung in `unter`, die o→r-Höhe und der Vorschub-Drift
+  der Galoppieren-Endsilben.
 - ~~Rest-Autopsie muß-Klasse~~ **erledigt `aug19`, Attribution noch
   am selben Tag korrigiert** (§14 „L2-Rest-Autopsie"): die
   Kollaps-Klasse (unter + muß×3) ist ORDNUNGS-dominiert — aber

@@ -6586,3 +6586,28 @@ die KARTEN-FORM-Autorenschritte, danach sind v0.14 und eine
 soll-geführte Entdrillung (dann mit vertrauenswürdiger Karte,
 Positions- statt Zähl-Matching) gemeinsam wiedervorzulegen.
 §7.9-Zeile im selben PR.
+
+**Nachtrag `aug19` spät — die Karten-Form-Decke ist präzisiert:
+überwiegend eine LAUFFORM-LÜCKE, kein Chart-Fehler
+(Owner-Einwand „das G-Template sieht doch gut aus" — bestätigt).**
+Diagnose in der DB (nur lesend): **43 von 62 Glyphen haben KEINE
+Laufform-Variante** — darunter ALLE Versalien, k, s, v, x, b, f,
+q, j und die Umlaute; die Komposition setzt dort die rohe
+Chart-Form ein. Ursache je Owner-Stelle: G hat 3 QC-Fits (unter
+`--min-n` 4), k und W je EINEN. Das Chart-G selbst ist gut
+(chart-treu); DIESE Tafel-Hand schreibt das Oval aber ~65 %
+breiter (Beleg ~1,76 xh gegen Karte ~1,06), und die Schicht, die
+Hand-Breite trägt, ist per Architektur die LAUFFORM — die beim G
+mangels n fehlt. Die drei vorhandenen G-Fits ziehen in die
+richtige Richtung (u-Breite 1,74–1,96 gegen Template 1,69), sind
+als Mess-Fits aber chart-regularisiert. Das r hat dagegen eine
+Laufform (18 Fits) — seine Abweichungen bleiben die
+dokumentierten o→r-/Platzierungs-Klassen. Konsequenz für die
+Rettungswege: der „G-Chart-Autorenschritt" ENTFÄLLT (kein
+Re-Trace — Chart bleibt kanonisch); an seine Stelle tritt der
+messbare Kandidat **Versalien-Laufform-Ausnahme** (`--min-n` 3
+für Versalien bzw. eine G-Laufform aus den 3 Fits, eigene
+Pre-Reg mit wordbench-Gates + Owner-Go vor dem DB-Write). ECHTE
+Autorenschritte bleiben: der W-Ansatz-Retrace (K3 —
+Duktus-INHALT, nicht Breite), der p-Unterlängen-Entscheid und
+der Bestätigungssatz.
