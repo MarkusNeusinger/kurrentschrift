@@ -167,8 +167,8 @@ def build_provider(args: argparse.Namespace) -> tuple[Provider, str]:
         # A1 is a VARIANT of the baseline, so it may not answer to the baseline's
         # name: an unlabelled run is called `chain+marks`, and a report cannot be
         # mistaken for the frozen `chain` number it has to be compared against.
-        # (K-A, the marks-last assembly, IS the baseline since its aug19
-        # adoption as Kette v2 — no flag, no variant label.)
+        # (K-A and K-B — marks-last assembly and trace repair — ARE the baseline
+        # since their aug19 adoptions as Kette v2/v3: no flag, no variant label.)
         return provider, args.label or ("chain+marks" if args.mark_refit else "chain")
     if args.candidate == "authored":
         return authored_provider, args.label or "authored"

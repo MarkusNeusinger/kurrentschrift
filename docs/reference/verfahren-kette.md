@@ -21,7 +21,7 @@
   ist er die prior-geführte Referenz-Route (Route A) und in der
   Produktion die Quelle der `traced`-Zeilen.
 
-## Aktueller Stand: v2 (2026-08-19) — die marken-endständige Assembly
+## Aktueller Stand: v3 (2026-08-19) — Assembly-Ordnung + Trace-Reparatur
 
 Formulierung: EDT-Punktdatenterm + Landmark-/Width-Operatoren +
 Budget-Veto; als Folger-Aufsatz der re-linearisierende Restart
@@ -29,19 +29,23 @@ Budget-Veto; als Folger-Aufsatz der re-linearisierende Restart
 Bahn ist die Duell-Kette. **v2 (K-A, §14 `aug19`):** die Assembly
 emittiert Diakritika-Striche NACH allen Körper-Strichen
 (`HarvestOptions.marks_last` = True; die komponierte Engine-Ordnung,
-die die Hand teilt) — eine reine Ordnungs-Änderung, kein Punkt bewegt
-sich; sie löste die gesamte unter/muß-Kollaps-Klasse (unter 0,450 →
-0,085). Der Marken-Nachfit (A1) bleibt **opt-in** (`--mark-refit`).
-Zahlen (dev-19, §14 „Kette K-A `aug19`"-Re-Baseline): dtw 0,0576 med ·
-**p90 0,0988** · worst Galoppieren 0,233; bekannte Klassen-Defekte:
-das er-Gekritzel in unter als echter Rest (~0,085, versetzter
-Karten-Init), Kreuzungs-Höhen-Drift (das/die, §13a), Galoppieren 5
-verlorene Kreuzungen, Zacken-Klasse (Ausreißer-Anker im Trace —
-i-Punkt-V, p-Nadel; die Statistik-Schicht repariert sie längst, der
-Trace zeigt sie absichtlich roh).
+die die Hand teilt) — eine reine Ordnungs-Änderung, sie löste die
+gesamte unter/muß-Kollaps-Klasse (unter 0,450 → 0,085). **v3 (K-B,
+§14 `aug19`):** die §11-Ausreißer-Reparatur des geteilten Detektors
+läuft auch auf den TRACE-Strichen (`HarvestOptions.trace_repair` =
+True; A1-Muster — ändert, was der Trace zeigt, nie, was die Ernte
+misst) — sie löste die Zacken-Klasse (Galoppieren 0,233 → 0,040, die
+fehlende i-Marke heilt). Der Marken-Nachfit (A1) bleibt **opt-in**
+(`--mark-refit`). Zahlen (dev-19, §14-Re-Baseline v3): **dtw 0,0491
+med · p90 0,0894 · worst muß 0,110 · marks 0 fehlend**; bekannte
+Klassen-Defekte: das er-Gekritzel in unter als echter Rest (~0,087,
+versetzter Karten-Init), Kreuzungs-Höhen-Drift (das/die, §13a),
+Galoppieren 5 verlorene Kreuzungen, Struktur-Erfindungen (Netto 21
+Kreuzungsdefekte gegen 7 beim Lotsen).
 
-**Versionierung:** v2 seit 2026-08-19 (erste adoptierte
-Formulierungsänderung). Die abgeschlossenen Gewichts-Arme werden nicht
+**Versionierung:** v2 und v3 seit 2026-08-19 (die ersten adoptierten
+Formulierungsänderungen — beide in der KANDIDATEN-Schicht, kein
+Fit-Parameter bewegt). Die abgeschlossenen Gewichts-Arme werden nicht
 rückwirkend nummeriert (Konvention Nr. 3).
 
 ## Ledger (datierte Arme und Entscheide; Belege in §14)
@@ -59,17 +63,14 @@ rückwirkend nummeriert (Konvention Nr. 3).
 | aug19 | A1-Nachmessung dev-19 | dieselbe opt-in Variante, §7.7-Protokoll | Marken-Ortsfehler-Median 0,111 → 0,030 (−73 %), Körper/Struktur byte-neutral — der Welle-1-Gewinn generalisiert | „Welle 1 · A1 aug15“ (Nachtrag) |
 | aug19 | soll-bewusster K0-Wächter | `--structure-guard-soll`: Intervall je Klasse zwischen Init-Budget und Kompositions-Soll | GEMESSEN: 4 von 5 Gates bestehen (7 strikte dev-dtw-Gewinne, aiou nie negativ, dev-Median 0,0576 → 0,0494) — Struktur friert 107 = 107, „strikt besser" scheitert an der runden-ATOMAREN Rückweisung (unter-Protokoll); als sichere Produktions-Bahn dominiert er den zweiseitigen; Rettungsweg zonale Rückweisung (§7.9) | „Wächter als Produktions-Kette aug16“ (Nachtrag `aug19`) |
 | aug19 | **K-A marken-endständige Assembly** | `HarvestOptions.marks_last` — Diakritika hinter alle Körper-Striche (reine Ordnungs-Änderung) | **ADOPTIERT als v2** (alle Gates exakt: die vier Kollaps-Wörter −0,12 bis −0,37, alles andere byte-gleich; p90 0,236 → 0,099; der Lotse-Vorsprung gegen v1 erweist sich als Artefakt — gepaart gegen v2 Gleichstand) | „Kette K-A `aug19`“ |
+| aug19 | **K-B Zacken-Reparatur im Trace** | `HarvestOptions.trace_repair` — der geteilte §11-Detektor auf den Trace-Strichen (A1-Muster) | **ADOPTIERT als v3** (Galoppieren 0,233 → 0,040, i-Marke heilt, retrace-spurious 13 → 6, touch 25 → 21; kein Wort über +0,0016; der verlorene unter-Zonen-Match ist autopsiert eine Zufalls-Korrespondenz im er-Gekritzel) | „Kette K-B `aug19`“ |
 
-## Stehende v3-Anwärter (Formulierungsänderungen, tintenfolger.md §7.3)
+## Stehende v4-Anwärter (Formulierungsänderungen, tintenfolger.md §7.3)
 
-**Zacken-Reparatur im Trace** (neu `aug19`: die Ausreißer-Anker-Klasse
-— i-Punkt-V, p-Nadel — mit dem geteilten Detektor
-`tools.pairlab.anchors` auch in der TRACE-Schicht reparieren, nach dem
-A1-Muster „ändert, was der Trace ZEIGT, nie, was die Ernte MISST";
-eigene Pre-Reg) · A2 (SDM + Dichtebewusstheit, Welle 2 — Ziele
-Stranding/Doppelpass, NICHT muß/unter) · A3 (Kreuzungen als explizite
-Variablen — jetzt mit der das/die-Höhenstapel-Evidenz aus §7.10) ·
-A5 (Zwei-Pass-Zwang aus Breiten-Evidenz) · A4 (Barriere statt Veto) ·
-A6 (GNC-Schedule). NICHT wieder aufgenommen werden Gewichts-Sweeps
-der alten Formulierung — durch ①⑤⑥⑥b⑨ erschöpfend negativ
-beantwortet.
+A2 (SDM + Dichtebewusstheit, Welle 2 — Ziele Stranding/Doppelpass,
+NICHT muß/unter) · A3 (Kreuzungen als explizite Variablen — jetzt mit
+der das/die-Höhenstapel-Evidenz aus §7.10) · A5 (Zwei-Pass-Zwang aus
+Breiten-Evidenz) · A4 (Barriere statt Veto) · A6 (GNC-Schedule) ·
+zonale Rückweisung des K0-Wächters (§7.9). NICHT wieder aufgenommen
+werden Gewichts-Sweeps der alten Formulierung — durch ①⑤⑥⑥b⑨
+erschöpfend negativ beantwortet.

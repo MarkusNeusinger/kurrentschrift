@@ -6365,6 +6365,39 @@ Commit umgeschrieben — der Trace ist seit der Kampagne Produkt,
 die Inspektion der rohen Nadel bleibt über
 `trace_repair=False` erreichbar).
 
+**Gemessen `aug19` — alle Gates bestehen, ADOPTIERT als Kette
+v3; die Zacken trugen fast den ganzen Galoppieren-Rest.**
+Dev-19, gepaart gegen v2: **Galoppieren 0,2329 → 0,0401
+(−0,193)** — die V-Zacke in den i-Punkt und die p-Nadel waren
+sein dominanter Fehler, und wie vorregistriert erhofft fällt
+der reparierte i-Punkt-Strich unter die Marken-Schwelle:
+**`marks_missing` 1 → 0**, `lift_delta` Galoppieren +1 → 0 —
+dazu die-2 −0,026, zwei −0,015; kein Wort über +0,0016 (unter,
+im Rahmen des +0,002-Gates). Zähler: `retrace_spurious` 13 → 6
+und `touch` 25 → 21 (die Zacken WAREN die unechten Zonen),
+Kreuzungen exakt unverändert, `aiou` +0,006,
+`max_absorption` 94 → 79. Ehrlich benannt: `retrace_missing`
+6 → 7 — die Autopsie (Flag-Positionen + Sichtprüfung) verortet
+alle sieben unter-Reparaturen bei u 5,6–6,6 IM er-Gekritzel
+(der echte t-Stamm-Retrace bei u 4,7–5,1 bleibt unberührt):
+eine ZUFALLS-Korrespondenz von Tangle-Geometrie löst sich, die
+Netto-Retrace-Defekte fallen 19 → 13 — das Kill („echte
+Struktur") feuert nicht. `trace_repair` = True ist der
+v3-Default (False = Nadel-Archäologie), die Doktrin-Zeile in
+`chain_word_strokes` ist umgeschrieben.
+
+**Re-Baseline Kette v3 `aug19` (deklariert):** dtw-Median
+**0,0491** · p90 **0,0894** · worst **muß 0,1096** · marks 0+1
+· aiou 0,6987 · cross 14+7 · retrace 7+6 · touch 21. Gepaarte
+Vergleiche gegen v3: **Lotse v0.11 Δ-Median +0,0016 (Sign
+12:7)** — nach zwei reinen Trace-Schicht-Fixes führt die KETTE
+erstmals auf Median UND p90; der Lotse behält Struktur (7
+gegen 21 Netto-Kreuzungsdefekte), aiou (0,743) und
+Kreuzungs-Ortsfehler (0,066 gegen 0,083 xh). Tagesbogen der
+Route: 0,0576/0,2355 → 0,0491/0,0894, ohne dass sich ein
+einziger Fit-Parameter bewegt hat — beide Gewinne lagen in der
+KANDIDATEN-SchICHT (Ordnung + Ausreißer), nicht im Solver.
+
 **Re-Baseline Kette v2 `aug19` (deklariert, lokale Umgebung der
 Runde):** dtw-Median 0,0576 (unverändert — die Median-Wörter
 waren nie betroffen) · **p90 0,2355 → 0,0988** · worst jetzt

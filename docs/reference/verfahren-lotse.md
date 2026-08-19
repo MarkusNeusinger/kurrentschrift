@@ -31,13 +31,14 @@ med · p90 **0,113** · Netto-Kreuzungsdefekte **7**, davon
 p-Schleifen-X kehren zurück, obwohl die Komposition sie nicht hat) ·
 Kreuzungs-Ortsfehler-Median **0,066 xh** (v0.9: 0,116) ·
 `marks_missing` 0 · aiou 0,743. Dominante Rest-Spurious-Klasse:
-Doppel-X-Duplikate (4 von 6). **Paarung seit der
-Kette-v2-Re-Baseline (`aug19`, marken-endständige Assembly): Δ-Median
-+0,0007, Sign 10:9 — GLEICHSTAND im Median** (der −24-%/−18-%-Vorsprung
-gegen v1 bestand fast vollständig aus deren Assembly-Artefakt); die
-Kette führt beim p90 (0,099 gegen 0,113), der Lotse bei Struktur
-(7 gegen 21 Netto-Defekte), Marken (0 gegen 1), aiou (0,743 gegen
-0,693) und Kreuzungs-Ortsfehler.
+Doppel-X-Duplikate (4 von 6). **Paarung seit den
+Kette-v2/v3-Re-Baselines (`aug19`, Assembly-Ordnung +
+Trace-Reparatur): Δ-Median +0,0016, Sign 12:7 — die Kette führt
+erstmals knapp auf Median (0,0491) und p90 (0,089 gegen 0,113)**
+(der −24-%/−18-%-Vorsprung gegen v1 bestand fast vollständig aus
+deren Kandidaten-Schicht-Artefakten); der Lotse behält Struktur
+(7 gegen 21 Netto-Defekte), aiou (0,743 gegen 0,699) und den
+Kreuzungs-Ortsfehler (0,066 gegen 0,083 xh).
 
 ## Ledger (Versionen; Belege in §14 „Route Lotse …“)
 

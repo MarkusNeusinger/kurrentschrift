@@ -57,6 +57,26 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   tracings. Adoption into the stored chain stays gated on the
   confirmation set, now with 6 instead of 4 paired words.
 
+- **Kette v3: the trace-level spike repair, adopted with a dated
+  re-baseline** (pre-registered §14 "Kette K-B aug19"). The §11
+  outlier class the owner spotted (the V into the i-dot, the needle
+  on the first p — single points jumping 3×+ the stroke's median
+  step and back) is repaired on the assembled trace strokes with the
+  very detector the statistics layer has used since §11e
+  (`tools.pairlab.anchors`; scale-free, runs chorded between
+  unflagged neighbours, never snapped to ink, logged) — the A1
+  pattern: changes what the trace shows, never what the harvest
+  measures. Measured: Galoppieren 0.233 → 0.040 (the spikes carried
+  almost its whole residual), the missing i-mark heals (the repaired
+  dot falls back under the 0.8-xh mark threshold), retrace-spurious
+  13 → 6, touch 25 → 21, no word beyond +0.0016; the one lost
+  retrace match is autopsied as a coincidental correspondence inside
+  unter's tangle. Chain v3 baseline: dev median 0.0491, p90 0.0894,
+  worst muß 0.110, marks 0 — after two pure candidate-layer fixes
+  the chain leads the Lotse on median and p90 without a single
+  solver parameter moving; the old needle-and-all inspection view
+  stays reachable via `trace_repair=False`.
+
 - **Kette v2: the marks-last assembly, adopted with a dated
   re-baseline** (pre-registered §14 "Kette K-A aug19", owner go
   "weiter optimieren"). `HarvestOptions.marks_last` (default True)
