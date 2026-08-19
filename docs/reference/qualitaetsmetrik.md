@@ -6525,3 +6525,39 @@ p-Unterlängen — exakt die beiden Gate-Brecher; §7.7-Protokoll
 misst dann neu) — der Sichtbeweis verdoppelt den Ertrag dieser
 Autorenschritte: sie reparieren Komposition UND schalten die
 saubere Zonen-Fahrt frei.
+
+### Route „Lotse" v0.15 `aug19` — Vorregistrierung: die soll-budgetierte Entdrillung (L1h)
+
+Geschrieben und committet VOR der ersten Zahl (nach dem
+Owner-Merge von #387 und „weiter"; Cherry-pick-Recovery des
+Squash-Rennens dokumentiert im Branch). Der v0.13-Fund: das
+0,8-Fenster heilt alle Duplikate, tötet aber genuin nahe ECHTE
+Paare (mits t-Doppel, 0,07 xh) — Geometrie allein trennt die
+Klassen nicht. Der vorregistrierte Diskriminator ist das SOLL:
+die KARTE kennt ihre eigenen Selbstschnitte, also weiß der
+Kandidat, wie viele Kreuzungen in eine Nachbarschaft gehören
+(mits Doppel steht in der Karte, die Gewebe nicht).
+
+**EIN Knopf: `UNTWIST_SOLL_BUDGET`** (False = v0.13-Verhalten;
+True = Budget-Regel). Die Regel: ein Ereignis-Paar darf nur
+entdrillt werden, wenn die Nachbarschaft danach nicht UNTER ihr
+Soll fällt — `n_events_near − 2 ≥ n_soll_near`, mit
+`n_events_near` = Kandidaten-Schnitt-Ereignisse und
+`n_soll_near` = Karten-Selbstschnitte im festen Radius
+`UNTWIST_SOLL_RADIUS_UNITS` = 0,55 xh um den Paar-Mittelpunkt
+(der Matcher-Radius des Lineals, als deklarierter Snapshot,
+kein Suchknopf). Damit ist mits Doppel konstruktiv geschützt
+(3 − 2 < 2), während die Gewebe (Soll 0–1, Ereignisse 3–6)
+paarweise fallen.
+
+**Leiter: Budget an × Fenster {0,5 · 0,8}** — die Hypothese ist,
+dass das weite Fenster ERST mit dem Budget sicher wird und dann
+auch mit-2s und Galoppierens Rest-Duplikate erreicht. Gates
+gegen den v0.13-Stand (missing 1 · spurious 5 · Netto 6):
+`cross_missing` ≤ 1 (steigt es, hat auch das Budget ein echtes
+Paar nicht geschützt — Kill, Rettungsweg wäre Matching gegen
+die Soll-POSITIONEN statt Zählungen); `cross_spurious` fällt
+netto (Erwartung ≤ 3); Marken unverändert; Retrace ohne
+Netto-Anstieg; `aiou`-Median-Δ ≥ −0,02 gegen 0,7398; dtw je
+Wort ±0,003; p90 ≤ 0,113; reversed 0. Adoptiert wird höchstens
+EINE Stufe.
