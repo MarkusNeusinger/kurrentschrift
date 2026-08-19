@@ -6745,3 +6745,58 @@ Endpoint `?min_occurrences=1` als ausdrückliche Owner-Aussage.
 Danach (und erst danach) die vorregistrierte Wiedervorlage
 v0.14 + soll-geführte Entdrillung (§7.9) — trocken auf der
 Kandidaten-Karte bereits in dieser Runde vormessbar.
+
+### Laufform LF2 `aug19` — Vorregistrierung: der Topologie-Wächter (h & p)
+
+Geschrieben und committet VOR der ersten Gate-Zahl; die
+Autopsie-Zahlen darunter sind Diagnostik (wie die
+L2-Rest-Autopsie), keine Arm-Messung.
+
+**Autopsie-Befund.** (1) Auf ANKER-Ebene ist die p-Topologie
+intakt (Chart X=3, Laufform X=3, beide akzeptierten
+Occurrence-Fits X=5/3, frischer Median X=3) — verloren geht das
+GEZÄHLTE X erst nach Spline-Sampling an den v2.1-Kriterien: der
+Median verengt den Annäherungs-Spalt der Schenkel
+(Anker 0,029 → 0,022, gesampelt 0,126 → 0,081 xh), und der
+Retrace-Filter kippt. Es ist also KEIN Fit-Defekt, sondern ein
+Schwellen-Kipp durch die Median-Verengung. (2) Der Lineal-Sweep
+(per-Letter-Soll-Zellen aller 63 Wörter, mit gegen ohne
+gespeicherte Laufformen) findet GENAU ZWEI Verlierer und keinen
+Gewinner: **h 2 → 0 gezählte Kreuzungen in JEDEM der 10 Slots**
+und **p 1 → 0 in allen 4** (Galoppieren ×2, Sporn, Sprünge).
+(3) Gegenprobe Hand: die authored h-Wörter kreuzen real (haben
+und scharfen je 1 Ascender-X bei v ≈ 0,91/0,95) — die
+h-Laufform löscht eine geschriebene Kreuzung. (Das Chart zählt
+am h 2; ob die Hand die zweite schreibt, prüft der
+Soll-Abgleich mit — berichtet, nicht Kriterium.)
+
+**Mechanismus.** Die Schichtungs-Doktrin (architektur.md §3/§5,
+jul31-Split): das Chart trägt den DUKTUS (Strichfolge,
+Kreuzungs-Auflösung), die Laufform trägt die HAND-BREITE. Eine
+Laufform-Zeile, die eine gezählte Chart-Kreuzung ihres Glyphen
+löscht, überschreibt den Prior statt ihn zu weiten. Der Wächter
+setzt die Schichtung durch: solche Zeilen werden nicht
+komponiert (Fallback: rohe Chart-Form), bis eine
+topologie-erhaltende Aggregation existiert.
+
+**EIN Knopf: der Wächter an/aus.** Die Wirkmenge ist
+DETERMINISTISCH aus dem Sweep (keine Handauswahl): {h, p}.
+
+**Messung (trocken, Root-Kopie ohne h/p-Laufform).**
+(a) wordbench `--set all --fixtures <wächter-root>`
+(Off-Headline): `word_loss`/`pair_loss` ≤ +0,002; erwartete
+Bewegung nur in h/p-Wörtern. Die Erwartung ist zweiseitig
+ehrlich: der Wächter KOSTET die h-Laufbreite — die Tinte darf
+es spüren, die Struktur muss es zurückzahlen.
+(b) Soll-Abgleich je Wort: erwartet Galoppieren 6 → 8 (die zwei
+p-Rückkehr-X der Hand), Sporn/Sprünge +1, h-Wörter +2 je h;
+kein Wort verliert Übereinstimmung.
+(c) Lotse auf der Wächter-Karte gegen die v0.13-Basis:
+`cross_missing` ≤ 1 · Netto-Defekte ≤ 6 · aiou-Median-Δ ≥ −0,02
+· Marken unverändert · dtw je Wort ±0,003 außer h/p-Wörtern ·
+reversed 0.
+**Benannter Rettungsweg im Verwerfungsfall:** die
+topologie-erhaltende Aggregation (Median mit
+Kreuzungs-Anker-Ausrichtung statt roher Anker-Median) als
+eigener Arm — der Wächter bliebe dann als Write-Path-Guard
+(eine Zeile, die Topologie verliert, wird nie gespeichert).
