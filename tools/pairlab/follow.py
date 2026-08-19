@@ -433,6 +433,16 @@ class FollowWeights:
     directions: a round that LOSES init structure (the ink pull collapsing a
     small loop) is rejected exactly like one that invents it. Implies the
     one-sided guard on the CLI; here it only sharpens the comparison."""
+    structure_guard_soll: bool = False
+    """§14 „Wächter als Produktions-Kette" (`aug19`), rescue path (c): the
+    soll-aware K0 guard. Every structure class of a round must lie in the
+    closed interval between the chain optimum's count (the rounds' init,
+    exactly the one-sided budget) and the COMPOSED init geometry's count
+    (the trace at x0 = 0 through the same assembler and counters — the
+    ductus-deterministic soll without a second implementation): movement
+    only TOWARD the soll, never past it, never away; a class the two agree
+    on freezes exactly (the two-sided special case). Implies the guard;
+    takes precedence over `structure_guard_two_sided`."""
     provisional: bool = True
 
 
@@ -1453,11 +1463,24 @@ def _exceeds_budget(counts: dict[str, int], budget: dict[str, int]) -> bool:
     return any(int(counts.get(key, 0)) > int(budget.get(key, 0)) for key in budget)
 
 
-def _breaks_budget(counts: dict[str, int], budget: dict[str, int], *, two_sided: bool) -> bool:
+def _breaks_budget(
+    counts: dict[str, int], budget: dict[str, int], *, two_sided: bool, soll: dict[str, int] | None = None
+) -> bool:
     """The guard's acceptance test. One-sided caps inventions; two-sided also
     rejects LOSSES — the K0 invariant makes the initialisation's structure
     count binding in both directions (the aug16 full-set run measured the
-    ink pull collapsing small loops on Sporn/einer/er-3 unpunished)."""
+    ink pull collapsing small loops on Sporn/einer/er-3 unpunished). With
+    `soll` (the aug19 soll-aware form) every class must lie in the closed
+    interval between budget and soll: movement only toward the soll, never
+    past it, never away — the interval collapses to two-sided equality
+    wherever the two counts agree."""
+    if soll is not None:
+        for key in budget:
+            b, n = int(budget.get(key, 0)), int(counts.get(key, 0))
+            s = int(soll.get(key, b))
+            if not (min(b, s) <= n <= max(b, s)):
+                return True
+        return False
     if two_sided:
         return any(int(counts.get(key, 0)) != int(budget.get(key, 0)) for key in budget)
     return _exceeds_budget(counts, budget)
@@ -1670,6 +1693,7 @@ def follow_word_chain(
         return structure_class_counts(strokes_)
 
     guard_budget: dict[str, int] | None = None
+    guard_soll: dict[str, int] | None = None
     if weights.structure_guard:
         init_strokes = assemble_word_strokes(
             fit.stroke_polylines_px,
@@ -1679,6 +1703,11 @@ def follow_word_chain(
             restart_slots=restart_slots,
         )
         guard_budget = structure_class_counts(init_strokes)
+        if weights.structure_guard_soll:
+            # aug19, rescue path (c): the soll is the COMPOSED init geometry —
+            # the trace at x0 = 0 through the very assembler and counters the
+            # budget and every round go through (no second implementation).
+            guard_soll = _assembled_counts(fit.problem, np.zeros_like(fit.params))
 
     for index in range(1, int(weights.rounds) + 1):
         prev_problem, prev_params = problem, params
@@ -1692,7 +1721,10 @@ def follow_word_chain(
             counts = _assembled_counts(problem, params)
             retries = 0
             round_weights = weights
-            while _breaks_budget(counts, guard_budget, two_sided=two_sided) and retries < STRUCTURE_GUARD_MAX_RETRIES:
+            while (
+                _breaks_budget(counts, guard_budget, two_sided=two_sided, soll=guard_soll)
+                and retries < STRUCTURE_GUARD_MAX_RETRIES
+            ):
                 retries += 1
                 round_weights = replace(
                     round_weights,
@@ -1703,9 +1735,11 @@ def follow_word_chain(
                 params, record = _solve_round(problem, round_weights, index, mask)
                 counts = _assembled_counts(problem, params)
             record["structure_budget"] = dict(guard_budget)
+            if guard_soll is not None:
+                record["structure_soll"] = dict(guard_soll)
             record["structure_counts"] = dict(counts)
             record["structure_retries"] = retries
-            record["structure_rejected"] = _breaks_budget(counts, guard_budget, two_sided=two_sided)
+            record["structure_rejected"] = _breaks_budget(counts, guard_budget, two_sided=two_sided, soll=guard_soll)
             if record["structure_rejected"]:
                 rounds.append(record)
                 problem, params = prev_problem, prev_params
@@ -2259,6 +2293,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="the K0-invariant guard: also reject rounds that LOSE initialisation structure (implies --structure-guard)",
     )
+    parser.add_argument(
+        "--structure-guard-soll",
+        action="store_true",
+        help="the soll-aware K0 guard (aug19): every class may move only TOWARD the composed init's "
+        "structure count, never past it, never away (implies --structure-guard)",
+    )
     parser.add_argument("--sweep", help="NAME=v1,v2 — one arm per value of a FollowWeights field")
     parser.add_argument("--jobs", type=int, default=1, help="worker processes, pooled over CASES")
     parser.add_argument("--json", type=Path, help="write the full report here")
@@ -2282,8 +2322,9 @@ def weights_from_args(args: argparse.Namespace) -> FollowWeights:
     return replace(
         weights,
         retrace_guard=not args.no_retrace_guard,
-        structure_guard=bool(args.structure_guard or args.structure_guard_two_sided),
+        structure_guard=bool(args.structure_guard or args.structure_guard_two_sided or args.structure_guard_soll),
         structure_guard_two_sided=bool(args.structure_guard_two_sided),
+        structure_guard_soll=bool(args.structure_guard_soll),
     )
 
 

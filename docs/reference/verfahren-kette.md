@@ -29,9 +29,11 @@ Budget-Veto; als Folger-Aufsatz der re-linearisierende Restart
 Bahn ist die Duell-Kette. Der Marken-Nachfit (A1) ist adoptiert, aber
 **opt-in** (`--mark-refit`), nicht Teil des Duell-Defaults. Zahlen
 (dev-19, §14 „Re-Baseline aug17“): dtw 0,0579 med · p90 0,236 ·
-worst unter 0,450; bekannte Klassen-Defekte: muß-Klasse (ß-Zone,
-3 Vorkommen 0,21–0,24), Kreuzungs-Höhen-Drift (das/die, §13a),
-Galoppieren 5 verlorene Kreuzungen.
+worst unter 0,450; bekannte Klassen-Defekte: muß-Klasse (seit `aug19`
+als ORDNUNGS-dominiert autopsiert — der verbundene ü-Deckbogen sitzt
+bei der Hand am Wortende; Referenz-Eigenschaft, §14
+„L2-Rest-Autopsie“), Kreuzungs-Höhen-Drift (das/die, §13a),
+Galoppieren 5 verlorene Kreuzungen, unter-Stapel (Init-/Basin-Klasse).
 
 **Versionierung ab hier:** v1 ist der heutige Stand; die Nummer bumpt
 nur bei einer ADOPTIERTEN Formulierungsänderung (die A-Kandidaten
@@ -48,8 +50,10 @@ nummeriert (Konvention Nr. 3).
 | aug15 | Arm ⑥b | klassenbewusste Korrespondenz | Hypothese bestätigt, keine Adoption | „Arm ⑥b aug15“ |
 | aug15 | A1 Marken-Nachfit | Mini-Fit der Marken auf die Restmaske | **adoptiert (opt-in)**, −55 % Marken-Ortsfehler | „Welle 1 · A1 aug15“ |
 | aug16 | Arm ⑨ Topologie-Wächter | Struktur-Budget als Veto | Route-A-Fazit: Formulierung am struktur-sicheren Optimum; **gewachte Variante = Duell-Kette** | „Arm ⑨ aug16“ |
-| aug16 | Wächter als Produktions-Kette | `structure_guard` als Harvest-Default | vorregistriert, offen (Owner-Go + dbsnapshot vor DB-Write) | „Wächter als Produktions-Kette aug16“ |
+| aug16 | Wächter als Produktions-Kette | `structure_guard` als Harvest-Default | GEMESSEN: einseitig vom eigenen Kill verworfen (3 Kreuzungs-Kollapse ungestraft), zweiseitig Pareto-sicher, aber „irgendwo strikt besser“ formal unerfüllbar — Owner-Abwägung (a)/(b)/(c) offen | „Wächter als Produktions-Kette aug16“ |
 | aug17 | Re-Baseline 19er-Dev-Satz | — | dev-19-Zahlen oben | „Re-Baseline aug17“ |
+| aug19 | A1-Nachmessung dev-19 | dieselbe opt-in Variante, §7.7-Protokoll | Marken-Ortsfehler-Median 0,111 → 0,030 (−73 %), Körper/Struktur byte-neutral — der Welle-1-Gewinn generalisiert | „Welle 1 · A1 aug15“ (Nachtrag) |
+| aug19 | soll-bewusster K0-Wächter | `--structure-guard-soll`: Intervall je Klasse zwischen Init-Budget und Kompositions-Soll | vorregistriert; Messung dieser Runde | „Wächter als Produktions-Kette aug16“ (Nachtrag `aug19`) |
 
 ## Stehende v2-Anwärter (Formulierungsänderungen, tintenfolger.md §7.3)
 
