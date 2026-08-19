@@ -5858,3 +5858,79 @@ Kette im Median, halbiert ihren p90, schlägt sie gepaart um
 Bestätigungssätze (A, dann B) bleiben der Schlussstein, bevor
 daraus eine Adoptionsentscheidung jenseits der
 Routen-Konstanten wird.
+
+### Route „Lotse" v0.10 `aug19` — Vorregistrierung: Knoten-Anker-Pinnung der Karten-Läufe (L1d)
+
+Geschrieben und committet VOR der ersten Zahl. Anlass: der
+Owner-Sichtbefund an der Duell-Ansicht (2026-08-19) — „beim k wird
+der untere Kringel nicht nachgefahren", das W in `Wer` „macht
+Quatsch", der r/e-Auslauf in `Galoppieren` fährt eckige Luft-Züge.
+Die Kategorien-Autopsie (Instrumentierung: jedes Sample nach
+Mechanismus eingefärbt — Schiene · Brücke · Doppelzonen-Ride ·
+Fenster) lokalisiert die Exkursionen vollständig in der
+KARTEN-Geometrie, in zwei Klassen:
+
+1. **Verschmolzene Fenster-Läufe.** `map_crossing_masks` legt um
+   JEDEN Karten-Selbstschnitt ±0,35 xh; wo Selbstschnitte dicht
+   stehen, ketten die Fenster zu EINEM Lauf (linken: 4,32 xh am
+   k-Komplex aus Kopfschleife + Kringel + Stamm — 71 von 253
+   Samples; mit: 2,76 xh am t-Rückpass; Galoppieren: 3,72 und
+   2,64 xh; ein Einzel-Fenster wäre 0,96 xh). Die v0.9-Pinnung
+   interpoliert NUR zwischen den Lauf-ENDEN — über solche Läufe
+   reicht sie die rohe (bis ~0,5 xh versetzte) Karten-Form im
+   Innern durch: exakt die „Quatsch"-Züge des Sichtbefunds.
+2. **Rohe Doppelzonen-Rides und Brücken.** Die adoptierten
+   v0.5/v0.7-Zonen-Rides und die natürlichen Brücken zeichnen die
+   Karte weiterhin UNGEPINNT (Wer: 13, Galoppieren: 32
+   Zone-Samples) — dieselbe Fehlerklasse, die v0.9 für die
+   Fenster bereits behoben hat.
+
+**Anker-Evidenz (vor der Maßnahme gemessen):** jeder
+Karten-Selbstschnitt der vier Verlierer-Wörter hat einen
+Skelett-VERZWEIGUNGSKNOTEN in ≤ 0,6 xh (Median 0,06–0,19; mit
+6/6, linken 16/16, Wer 10/10, Galoppieren 32/32 innerhalb 1,0 xh)
+— die Tinte benennt den Ort der Kreuzung selbst, das Fenster muss
+ihn nur ansteuern.
+
+**EIN Mechanismus: die verallgemeinerte Pinnung.** Jeder
+Karten-Lauf wird über eine Offset-Polylinie mit KNOTEN gepinnt:
+die Lauf-Grenzen (benachbarte Board-Punkte — die v0.9-Mathematik,
+unverändert) PLUS je Karten-Selbstschnitt im Lauf ein ANKER
+(Offset = nächster Verzweigungsknoten − Selbstschnittpunkt,
+Suchradius `PIN_KNOT_NODE_RADIUS_UNITS` = 1,0 xh fest, kein
+Suchknopf; ohne Knoten in Reichweite entfällt der Anker). Linear
+zwischen benachbarten Knoten, konstant jenseits der äußersten;
+ein Lauf ganz ohne Knoten bleibt roh (wie v0.9s „Strich ganz aus
+Karte"). Beide Pässe eines Selbstschnitts erhalten denselben
+Anker — das X der Karte landet konstruktiv auf dem Knoten der
+Tinte (die §13a-Extrapolations-Idee als Konstruktion, dieselbe
+Verwandtschaft wie beim v0.3-Arm, jetzt ohne dessen
+Flächen-Kosten, weil nur KARTEN-Läufe bewegt werden, nie
+Schienen-Ritte).
+
+**Leiter (`MAP_RUN_PIN_KNOTS`): "off" (= v0.9) / "windows" (nur
+Fenster-Läufe bekommen Knoten-Pinnung) / "all" ("windows" +
+dieselbe Knoten-Pinnung für Doppelzonen-Rides und natürliche
+Brücken).** Beide Stufen werden gemessen, adoptiert wird
+höchstens EINE. Erwartung: linken/mit/mit-2/Wer/Galoppieren
+fallen in dtw (die fünf tragen die größten Ketten-Vorsprünge des
+v0.9-Stands), `aiou` steigt (weniger Luft), Kreuzungs-ZAHLEN
+unverändert (Topologie bleibt die der Karte), Kreuzungs-Ortsfehler
+fällt; keine neue Struktur.
+
+**Umgebungs-Deklaration.** Diese Runde läuft lokal (WSL2, BLAS
+gepinnt); die aug17-Zahlen stammen aus der Cloud-Session. Neu
+gemessene lokale Basis: Kette dtw 0,0576 med (aug17: 0,0579 —
+Solver-Umgebungsvarianz, dokumentierte Klasse), Lotse v0.9
+0,0578 · aiou 0,7351 · cross 3+4 · marks 0+1 (deterministisch,
+BYTE-gleich mit aug17). Alle gepaarten Vergleiche dieser Runde
+laufen gegen die LOKALE Kette.
+
+**Gates (wie v0.9):** Marken und `cross_missing+spurious` ohne
+Netto-Anstieg gegenüber dem v0.9-Stand (3+4 = 7);
+`aiou`-Median-Δ ≥ −0,02 gegen 0,7351; p90 ≤ +10 % gegen die
+Kette; `dtw_reversed_better` = 0. Zusatz-Kill: `cross_spurious`
+netto > +2 → die Anker greifen den falschen Knoten (das benannte
+Risiko der dichten Regionen — Galoppieren p90-Ankerabstand
+0,51 xh) → verworfen, Rettungsweg wäre ein kleinerer Suchradius
+NUR mit frischer Vorregistrierung.
