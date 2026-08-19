@@ -4520,6 +4520,21 @@ GESPEICHERTE Bahn wandert, ist ein eigener Autoren-Entscheid — der
 Bestätigungssatz (`--split confirm`) ist die Bedingung dafür, weil
 vier gepaarte Wörter eine schmale Grundlage für eine Adoption sind.
 
+**Nachmessung `aug19` auf dem 19er-Dev-Satz** (§7.7
+Nachkalibrierungs-Protokoll; kein neuer Knopf, dieselbe opt-in
+Variante `--mark-refit`, lokale Basis der v0.10/v0.11-Runde):
+`mark_pos_err_xh`-Median **0,111 → 0,030 (−73 %)**, ALLE sechs
+markentragenden Dev-Wörter verbessern sich (die 0,072 → 0,036 ·
+mit 0,106 → 0,019 · linken 0,160 → 0,059 · will 0,150 → 0,078 ·
+mit-2 0,116 → 0,023 · die-2 0,055 → 0,019); Körper byte-neutral
+(dtw-Δ-Median 0,0000, 10 ties), Marken- und Strukturzähler exakt
+unverändert (Galoppierens fehlende i-Marke bleibt fehlend — der
+Nachfit repariert Positionen, erfindet keine Striche). Der
+Welle-1-Gewinn generalisiert damit auf die 9 neuen Nachfahrungen,
+stärker als auf dem 10er-Satz (−55 %). Die Adoptionsbedingung
+(Bestätigungssatz) bleibt; die Grundlage ist jetzt 6 statt 4
+gepaarte Wörter.
+
 ### Welle 1 · K1b `aug15` — Vorregistrierung: der versetzte Stamm-Rückpass des t
 
 Geschrieben und committet VOR der ersten Zahl dieser Maßnahme
@@ -6051,3 +6066,40 @@ ist EIN X je Knoten-Cluster (Begradigung der Fenster-Teilbahn je
 Pass durch den Knoten), er würde zugleich die "all"-Stufe
 freischalten; (ii) die Karten-Form-Klasse (k-Kopfschleife,
 W-Ansatz = K3, Autorenschritt). §7.9-Zeilen im selben PR.
+
+### Route „Lotse" v0.12 `aug19` — Vorregistrierung: die Plateau-Sehne (Doppel-X-Begradigung, L1f)
+
+Geschrieben und committet VOR der ersten Zahl. Der v0.11-Rest:
+4 der 6 Spurious sind Doppel-X-Duplikate — die gepinnte
+Fenster-Teilbahn eines Passes WACKELT durch die
+Knoten-Nachbarschaft und schneidet den anderen Pass zweimal
+(Kreuzungs-Orte 0,06–0,11 xh auseinander), dazu ein an einem
+Interpolations-Knick erfundenes X (Galoppieren u≈13,4). Der neue
+MECHANISMUS: **innerhalb jedes (verschmolzenen) Plateau-Intervalls
+wird die Teilbahn jedes Passes durch ihre SEHNE ersetzt**
+(Interior-Samples linear zwischen den beiden Intervall-Rändern des
+eigenen Passes) — zwei Sehnen schneiden sich höchstens EINMAL, das
+Doppel-X ist konstruktiv unmöglich. Verwandt mit dem verworfenen
+v0.3 (Knoten-Sehne), aber ohne dessen Flächen-Kosten: v0.3
+begradigte SCHIENEN-Ritte überall (aiou-Kill −0,045); die
+Plateau-Sehne begradigt nur KARTEN-Geometrie, die bereits im
+starren Plateau liegt — die Abweichung ist durch die Plateau-Breite
+(±0,35 xh) gedeckelt, und Schienen-Ritte bleiben unberührt.
+
+**Leiter: "windows"+Sehne / "all"+Sehne** (EIN Knopf
+`PIN_PLATEAU_CHORD` aus/an; die "all"-Wiedervorlage ist der in
+§7.9 benannte Rettungsweg — die Zonen-Rides und Brücken werden
+erst gepinnt, wenn die Sehne die Doppel-X-Quelle schließt).
+**Gates gegen den v0.11-Stand:** Netto-Kreuzungsdefekte ≤ 7 UND
+`cross_spurious` ≤ 6 (kein Anstieg); `cross_missing` ≤ 1 (die
+geheilte Missing-Klasse darf nicht zurückfallen);
+`aiou`-Median-Δ ≥ −0,02 gegen 0,7434; Marken ohne Netto-Anstieg;
+p90 ≤ +10 % gegen die Kette; `dtw_reversed_better` = 0.
+Erwartung: die 4 Duplikate verschwinden (spurious → ~2), dtw
+~neutral, aiou ~neutral (Sehne bleibt im Plateau); bei "all"
+zusätzlich der Galoppieren-Rest-Kasten (x≈360) und die
+Wer-Diagonale gepinnt, aiou eher steigend. Adoptiert wird
+höchstens EINE Stufe (die bessere, sofern alle Gates bestehen).
+Kill: kostet die Sehne Missing-Kreuzungen (der Wackel WAR das X)
+oder aiou, bleibt v0.11 stehen und die Duplikat-Frage geht als
+ehrliches Negativ mit benanntem Rest in §7.9.
