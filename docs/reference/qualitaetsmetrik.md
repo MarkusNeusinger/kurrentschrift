@@ -6208,45 +6208,72 @@ real, nur doppelt gezählt) — der Leidensdruck ist entsprechend
 klein, und die "all"-Wiedervorlage wartet auf den Mechanismus,
 der die Duplikate schließt, ohne das X zu kosten.
 
-### L2-Rest-Autopsie `aug19` — die muß-Klasse ist ORDNUNGS-dominiert: der verbundene ü-Deckbogen
+### L2-Rest-Autopsie `aug19` — die Kollaps-Klasse (unter + muß×3) ist ORDNUNGS-dominiert: der Deckbogen sitzt in der Ketten-Assembly an der falschen Sequenz-Position
 
 Befund, kein Knopf (die in §7.10 L2 und in der `aug17`-Re-Baseline
-benannte Rest-Autopsie „ß-Strich-Zerlegung der Referenzen", jetzt
-ausgeführt). Methode: DTW-Kostenprofil entlang des Referenz-Bogens
-(Diagnose-DP im Scratch, Zonen > 0,15 xh) plus
-Wegpunkt-Sequenzen beider Seiten für `muß`.
+benannte Rest-Autopsie, ausgeführt und noch am selben Tag um eine
+FALSCHE Erst-Attribution korrigiert — beide Fassungen stehen der
+Ehrlichkeit halber im Verlauf dieses Branches). Auslöser der
+Korrektur: die Owner-Frage „das er von unter ist ja ganz schlecht —
+war das schon immer so?" und der Lotse-Widerspruch (0,063 auf
+derselben Referenz — ein Referenz-Defekt hätte JEDE Route deckeln
+müssen).
 
-**Der Mechanismus.** Die Hand schreibt das ganze Wort in EINEM
-Federzug (Body 2 Strokes, 1171+59 Samples) und hängt den
-ü-DECKBOGEN VERBUNDEN ans WORTENDE: Wegpunkte …85 % (6,2 · 0,0 —
-ß fertig) → 90 % (5,2 · 0,8) → 95 % (4,2 · 1,7) → 100 %
-(4,8 · 1,9) — die letzten ~13 % des Bogens (≈ 3 xh) laufen zurück
-über das ü. Die Kette komponiert denselben Bogen direkt nach der
-u-Gruppe (Wegpunkte 70–80 % bei u 4,0–4,9 · v 1,6–1,7) und
-schreibt DANACH die ß-Bögen. Weil der Bogen OHNE Absetzen
-angebunden ist, kann die Marken-Heraustrennung des Lineals
-(`classify_strokes` — eigene Striche, Deckel 0,8 xh) ihn nicht
-herausnehmen: er bleibt im Body, und das forward-DTW zahlt die
-Sequenz-Inversion in voller Länge doppelt (Kostenzonen: ß-Stamm
-bis 1,7 xh bei 61–69 % · Rücklauf-Zone 87–100 % bis 2,6 xh).
-Genau die „Deferred-Diakritika-Ordnungsfalle", gegen die die
-Marken-Trennung gebaut wurde — sie greift nur bei ABGESETZTEN
-Marken.
+**Die Erst-Fassung war doppelt falsch:** (1) das Diagnose-Skript
+resampelte NACH der Body-Konkatenation statt je Strich — die
+Absetz-Sprünge wurden zu synthetischen Bogen-Zonen (das Lineal
+selbst resampelt je Strich, `summary.score_word` →
+`resampled_strokes`; die „Rücklauf-Zonen" bis 6,75 xh waren zum
+Teil Artefakt); (2) der ü-/u-Deckbogen ist NICHT verbunden
+gezeichnet — er ist in allen betroffenen Referenzen ein eigener,
+ABGESETZTER Strich (unter: 54 Samples · Bogen 1,10 xh; muß: 59
+Samples), liegt damit aber über der 0,8-xh-Marken-Schwelle von
+`classify_strokes` und bleibt zu Recht im Body (die bekannte
+und-Autopsie-Klasse „Deckbogen über der Marken-Schwelle").
 
-**Einordnung.** (a) Die muß-Klassen-Headline (Kette 0,21–0,24 ×3)
-trägt einen großen Referenz-seitigen Ordnungs-Anteil — dieselbe
-Fixture-Qualitätsklasse wie `marks_uncertain` 9/19 (der Autor
-zeichnet Marken teils verbunden; der Bestätigungs-Brief-Hinweis
-„Marken mit eigenem Absetzen" gilt fort). Auch die
-Lotse-/InkSight-Gewinne auf muß (0,11–0,15) sind durch denselben
-Anteil nach unten gedeckelt. (b) A2 (SDM/DCD-Datenterm) kann
-diese Klasse NICHT erreichen (kein Geometrie-, ein
-Sequenz-Fehler) — die A2-Erwartung ist entsprechend
-zurückzustufen (Stranding/Doppelpass bleiben seine Ziele, muß
-nicht). (c) Optionen, beide Owner-Entscheide: die drei
-muß-Referenzen mit ABGESETZTEM ü-Bogen neu nachfahren
-(deklarierte Lineal-Änderung + datierter Re-Baseline-Lauf aller
-Routen) ODER die Klasse als dokumentierte Referenz-Eigenschaft
-stehen lassen (Zahlen bleiben vergleichbar, tragen aber den
-benannten Ordnungs-Anteil). KEINE Gate- oder Lineal-Änderung aus
-dieser Autopsie.
+**Der wirkliche Mechanismus — mit Beweis-Messung.** Die
+Body-Sequenzen: Hand = [Wort, Deckbogen] (Bogen ZULETZT; dieselbe
+Ordnung fährt der Lotse, dessen Karte die komponierte
+Engine-Ordnung mit endständigen Marken übernimmt — darum sein
+0,063). Der KETTEN-Kandidat assembliert dagegen je RUN
+zusammenhängender Slots und emittiert den Deckbogen ZWISCHEN den
+Runs: unter = [u..t (12,6 xh) · Bogen (1,0 xh) · e..r (12,8 xh)],
+muß-Familie analog [erster Teil · Bogen · Rest]. Das forward-DTW
+konkateniert in Schreibreihenfolge (die Ordnung IST die Wahrheit)
+und zahlt die Sequenz-Inversion voll — `dtw_max_absorption` 132
+(der Singularitäts-Wächter zeigte seit `aug14` exakt hierhin).
+Beweis durch die Ordnungs-Permutation (Geometrie byte-identisch,
+NUR der Bogen ans Ende sortiert): **unter 0,4503 → 0,0854 ·
+muß 0,2419 → 0,1096 · muß-2 0,2084 → 0,0877 · muß-3 0,2339 →
+0,0962**; der Permutations-Sweep über ALLE 19 Dev-Wörter findet
+außerhalb dieser vier keinen einzigen Ordnungs-Gewinn — die
+Klasse ist vollständig und exakt die Kollaps-Klasse der Baseline.
+`unter` war seit der ersten Zahl so (aug14: 0,4389 „der bekannte
+Kollaps-Probefall"); es war nie primär das sichtbare
+er-Gekritzel — das kostet den REST (~0,085, der echte
+Berührungs-/Überlagerungs-Stapel bleibt die zweite, kleinere
+Baustelle).
+
+**Einordnung.** (a) Die Kollaps-Headline der Kette (59,8 % des
+Fehlers, §7.1) ist zu ~2/3 eine ASSEMBLY-Eigenschaft des
+Kandidaten, kein Fit- und kein Referenz-Defekt; auch die
+gespeicherten `traced`-Produktionszeilen tragen dieselbe
+Strichfolge. (b) Benannter Kandidat (eigene Vorregistrierung,
+nicht Teil dieses Befunds): **die marken-endständige
+Ketten-Assembly** — der Kandidat emittiert abgesetzte
+Deckbogen-/Markenstriche NACH allen Runs, in der komponierten
+Engine-Ordnung, die Lotse und Hand ohnehin teilen. Erwartung aus
+der Permutations-Probe: Kette p90 0,236 → ~0,11, unter −0,36,
+muß-Klasse −0,11 bis −0,13; das ist eine Änderung des
+EINGEFRORENEN Baseline-Kandidaten und damit eine deklarierte
+Re-Baseline (alle gepaarten Routen-Vergleiche verschieben sich —
+ehrlich gesagt: der Lotse-Vorsprung auf unter/muß schrumpft
+entsprechend, er schlug dort zum Teil ein Assembly-Artefakt).
+(c) Die Referenzen sind SAUBER — der Todoist-Entscheid
+„muß neu nachfahren" ist gegenstandslos und wird zurückgezogen;
+der Brief-Hinweis „Marken mit eigenem Absetzen" bleibt für
+KÜNFTIGE Nachfahrungen sinnvoll (kleine Marken unter der
+Schwelle profitieren vom Zentroid-Matching). (d) A2 (SDM/DCD)
+bleibt für muß/unter zurückgestuft — Stranding/Doppelpass sind
+seine Ziele. KEINE Gate- oder Lineal-Änderung aus dieser
+Autopsie.

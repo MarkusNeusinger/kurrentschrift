@@ -57,6 +57,22 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   tracings. Adoption into the stored chain stays gated on the
   confirmation set, now with 6 instead of 4 paired words.
 
+- **The chain's collapse class (unter 0.450, muß ×3 ~0.22) is an
+  ORDER artifact of the candidate assembly — proven by permutation**
+  (§14 "L2-Rest-Autopsie", corrected same-day after an owner
+  question exposed a wrong first attribution). The lifted u/ü top
+  bow sits above the 0.8-xh mark threshold and stays in the body;
+  the hand (and the engine's composed order, which the Lotse rides)
+  writes it LAST, while the chain assembly emits it BETWEEN the
+  slot runs. Re-ordering only that stroke — geometry byte-identical
+  — drops unter 0.4503 → 0.0854 and the muß family 0.21–0.24 →
+  0.088–0.110; a permutation sweep over all 19 dev words finds no
+  other order gain. Named top candidate for the Kette:
+  marks-last assembly (own pre-registration; changes the frozen
+  baseline, hence a declared re-baseline — the Lotse's wins on
+  those words partly beat this artifact). The references are clean;
+  the earlier "re-trace muß" decision task is withdrawn.
+
 - **The soll-aware K0 guard (`--structure-guard-soll`): built,
   pre-registered and measured over all 63 words** — the named rescue
   path (c) of the production-chain question. Acceptance becomes an

@@ -29,11 +29,14 @@ Budget-Veto; als Folger-Aufsatz der re-linearisierende Restart
 Bahn ist die Duell-Kette. Der Marken-Nachfit (A1) ist adoptiert, aber
 **opt-in** (`--mark-refit`), nicht Teil des Duell-Defaults. Zahlen
 (dev-19, §14 „Re-Baseline aug17“): dtw 0,0579 med · p90 0,236 ·
-worst unter 0,450; bekannte Klassen-Defekte: muß-Klasse (seit `aug19`
-als ORDNUNGS-dominiert autopsiert — der verbundene ü-Deckbogen sitzt
-bei der Hand am Wortende; Referenz-Eigenschaft, §14
+worst unter 0,450; bekannte Klassen-Defekte: die Kollaps-Klasse unter + muß×3 (seit
+`aug19` als ORDNUNGS-dominiert autopsiert — die KETTEN-ASSEMBLY
+emittiert den abgesetzten Deckbogen ZWISCHEN den Runs, Hand und
+Engine-Ordnung setzen ihn ans Ende; Ordnungs-Permutation beweist:
+unter 0,450 → 0,085 bei byte-identischer Geometrie, §14
 „L2-Rest-Autopsie“), Kreuzungs-Höhen-Drift (das/die, §13a),
-Galoppieren 5 verlorene Kreuzungen, unter-Stapel (Init-/Basin-Klasse).
+Galoppieren 5 verlorene Kreuzungen, das er-Gekritzel in unter als
+echter Rest-Stapel (~0,085).
 
 **Versionierung ab hier:** v1 ist der heutige Stand; die Nummer bumpt
 nur bei einer ADOPTIERTEN Formulierungsänderung (die A-Kandidaten
@@ -57,8 +60,15 @@ nummeriert (Konvention Nr. 3).
 
 ## Stehende v2-Anwärter (Formulierungsänderungen, tintenfolger.md §7.3)
 
-A2 (SDM + Dichtebewusstheit, Welle 2) · A3 (Kreuzungen als explizite
-Variablen — jetzt mit der das/die-Höhenstapel-Evidenz aus §7.10) ·
-A5 (Zwei-Pass-Zwang aus Breiten-Evidenz) · A4 (Barriere statt Veto) ·
-A6 (GNC-Schedule). NICHT wieder aufgenommen werden Gewichts-Sweeps der
-alten Formulierung — durch ①⑤⑥⑥b⑨ erschöpfend negativ beantwortet.
+**Marken-endständige Assembly** (neu `aug19`, der Top-Anwärter nach
+der L2-Autopsie: abgesetzte Deckbogen-/Markenstriche NACH allen Runs
+emittieren, in der komponierten Engine-Ordnung — erwartete Wirkung
+aus der Permutations-Probe: p90 0,236 → ~0,11 bei byte-identischer
+Geometrie; ändert den eingefrorenen Baseline-Kandidaten = deklarierte
+Re-Baseline aller gepaarten Vergleiche) · A2 (SDM + Dichtebewusstheit,
+Welle 2 — Ziele Stranding/Doppelpass, NICHT muß/unter) · A3
+(Kreuzungen als explizite Variablen — jetzt mit der
+das/die-Höhenstapel-Evidenz aus §7.10) · A5 (Zwei-Pass-Zwang aus
+Breiten-Evidenz) · A4 (Barriere statt Veto) · A6 (GNC-Schedule).
+NICHT wieder aufgenommen werden Gewichts-Sweeps der alten
+Formulierung — durch ①⑤⑥⑥b⑨ erschöpfend negativ beantwortet.
