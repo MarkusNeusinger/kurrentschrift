@@ -4299,6 +4299,11 @@ Spitze statt am Schnittpunkt, derselbe Weg), und die
 Buchstaben-Attribution stimmt jetzt mit der Hand überein; das
 compose-golden-Fixture wurde als deklarierte Re-Baseline
 regeneriert. K1b ist der nächste Composer-Kandidat der Welle.
+*(Datierter Nachtrag `aug19`: die v2.1-Retrace-Filterrunde hat
+die t-Ring-Zählungen, die K1s Zähler-Begründung trugen, wieder
+entfernt (§ „Struktur-Zähler v2" Nachtrag) — K1 bleibt adoptiert
+allein auf dem Attributions-Argument: die Balken-Kreuzung gehört
+in den Buchstaben, nicht in den Join.)*
 
 ### Welle 1 · B1 `aug15` — Vorregistrierung: Best-of-N über Input-Augmentierungen (InkSight)
 
@@ -6934,3 +6939,48 @@ explizit mitgeprüft. Gates unverändert LF3 (a)–(d), inklusive
 „Marken unverändert" und Galoppieren-KOMPOSITIONS-Soll → 8.
 Hält LF3b, ist SEINE Karte die Kandidaten-Karte der
 v0.14-Wiedervorlage.
+
+**Gemessen `aug19` — ALLE Gates bestehen: LF3b ist der erste
+adoptierte Laufform-Arm (Kandidaten-Zustand, trocken).**
+Reparatur-Lauf am Kompositions-Orakel: **p t=0,578 gegen
+Kompositions-Ziel 8** · F 0,391 · K 0,328 · k 0,250 · f 0,477 ·
+b 0,672 · P 0,008; E/S/W/Z/ae/s/ue/v passieren; G und h bleiben
+unreparierbar → Chart-Fallback. Zahlen: (a) wordbench 0,108091
+→ 0,107105, pair byte-gleich, nur Laufform-Wörter. (b)
+**Galoppieren KOMPOSITIONS-Soll 6 → 8 = Übereinstimmung mit der
+Hand**, `soll_cross_agree` 16 → 17/19, kein Wort verliert. (c)
+Lotse gegen v0.13: dtw-Median 0,0585 → **0,0573** · aiou 0,7398
+→ **0,7484** · spurious 5 → 4 (Netto 5) · `cross_missing` 1 ·
+**Marken unverändert** (der i-Punkt bleibt — das minimale t
+liegt unter dem LF2-Kipp-Punkt) · Wer +0,007/linken −0,003
+(beide Laufform-Wörter, Ausnahme greift) · reversed 0.
+Einordnung: Galoppieren zählt jetzt spurious 2 statt 3 bei
+soll-treuer Karte; der Wer-dtw-Preis kommt vom verrauschten
+n=1-W-Draft (wordbench Wer +0,0267) — für den späteren DB-Write
+bleibt die Stufen-/Glyphen-Auswahl eine Owner-Entscheidung je
+Glyph (LF1-Regeln). Die LF3b-Karte ist die Kandidaten-Karte der
+Wiedervorlage unten.
+
+### Wiedervorlage v0.14 `aug19` — Vorregistrierung: die „all"-Stufe auf der LF3b-Karte
+
+Geschrieben und committet VOR der ersten Zahl. Einlösung der
+stehenden §7.9-Zeilen (v0.11-„all", v0.14, v0.15): die
+Wiedervorlage NACH den Laufform-Armen, trocken auf der
+injizierten Kandidaten-Karte. Der originale v0.14-Bruch lag
+exakt an den zwei Laufform-Defekten (G-Kopf-X stirbt an der
+formfremden Karte, p erfindet eines) — auf der LF3b-Karte fährt
+G die Chart-Form und p die reparierte Laufform.
+
+**EIN Knopf: `MAP_RUN_PIN_KNOTS` = "all"** (der deklarierte
+v0.11-Schalter; Zonen-Rides und Brücken werden mitgepinnt),
+alles andere der adoptierte v0.13-Stack; Karte = LF3b.
+**Vergleichsbasis ist der v0.13-Stack AUF DERSELBEN
+LF3b-Karte** (die Zahlen des LF3b-Blocks oben: Netto 5,
+missing 1, aiou 0,7484, dtw 0,0573) — karten-gleich, also ohne
+Laufform-Ausnahmen. Gates: Netto-Defekte < 5 (echter
+Struktur-Gewinn, sonst kein Grund für „all") · `cross_missing`
+≤ 1 · aiou-Median-Δ ≥ −0,02 · Marken unverändert · dtw je Wort
+±0,003 · reversed 0. Erwartung aus dem v0.14-Sichtbeweis: das
+G-Kopf-X wird jetzt hand-gleich geritten UND zählt; scheitert
+es erneut, ist die Karten-Form als Ursache widerlegt und der
+Riss liegt im Ritt selbst (neuer Befund, eigener Rettungsweg).
