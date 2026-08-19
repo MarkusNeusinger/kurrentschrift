@@ -86,13 +86,16 @@ Rest-Spurious-Klasse.
   Glyphen (alle Versalien, k, s, v, x …) komponieren aus der rohen
   Chart-Form, weil ihnen die Laufform-Variante fehlt (G: 3 QC-Fits
   unter min-n 4, k/W: je 1); das Chart-G ist gut, DIESE Hand
-  schreibt das Oval ~65 % breiter. Messbarer Kandidat:
-  **Versalien-Laufform-Ausnahme** (min-n 3, eigene Pre-Reg,
-  wordbench-Gates, Owner-Go vor DB-Write). Echte Autorenschritte
-  bleiben W-Ansatz-Retrace (K3, Duktus-Inhalt) und
-  p-Unterlängen-Entscheid; eigene Klassen bleiben die
-  e→r-Platzierung in `unter`, die o→r-Höhe und der Vorschub-Drift
-  der Galoppieren-Endsilben.
+  schreibt das Oval ~65 % breiter. Messbare Kandidaten (nach den
+  drei Owner-Einwänden `aug19` spät, §14 Nachträge):
+  **Versalien-Laufform-Ausnahme** (min-n 3) ·
+  **W→e-Join-Autopsie** (die Komposition bläst die e-Schleife nach
+  dem Kapital-Exit zum Ballon; der alte K3-„W-Trace"-Autorenschritt
+  ist zurückgezogen — die aktuelle Referenz zeigt keinen
+  Ansatz-Retrace) · **p-Rückkehr-Überstand** (K1-Klasse: die Hand
+  durchsticht, die Komposition läuft tangential ein) ·
+  e→r-Platzierung in `unter` · o→r-Höhe · Vorschub-Drift.
+  Autorenschritt im engen Sinn bleibt nur der Bestätigungssatz.
 - ~~Rest-Autopsie muß-Klasse~~ **erledigt `aug19`, Attribution noch
   am selben Tag korrigiert** (§14 „L2-Rest-Autopsie"): die
   Kollaps-Klasse (unter + muß×3) ist ORDNUNGS-dominiert — aber

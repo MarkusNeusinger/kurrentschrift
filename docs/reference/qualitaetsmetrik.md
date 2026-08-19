@@ -6611,3 +6611,32 @@ Pre-Reg mit wordbench-Gates + Owner-Go vor dem DB-Write). ECHTE
 Autorenschritte bleiben: der W-Ansatz-Retrace (K3 —
 Duktus-INHALT, nicht Breite), der p-Unterlängen-Entscheid und
 der Bestätigungssatz.
+
+**Zweiter Nachtrag `aug19` spät — auch W und p lösen sich auf
+(Owner-Einwand „W und p sehen auch gut aus", je Detektor-Daten
+und Bild geprüft):** (1) **W**: Die aktuelle Wer-Referenz hat
+KEINEN Ansatz-Retrace am W — die K3-These stammt aus der Zeit
+VOR der 19er-Nachfahrung. Die fehlende Soll-Zone (Wer 1 vs 2)
+ist die doppelt gefahrene e→r-DIAGONALE der Hand
+(Zonen-Mitte 2,96 · 0,62 — Schreibgewohnheit, Beleg-Eigenschaft);
+das reale W-Problem ist der **W→e-JOIN der Komposition**, der
+die e-Schleife zu einem Ballon über volle Oberlänge aufbläst
+(Join-Grammatik nach Kapital-Exit — eigener Kompositions-Arm,
+kein Autorenschritt). Der „W-Trace"-Autorenschritt ist damit
+zurückgezogen. (2) **p**: Die Komposition fährt die große
+Unterschleife MIT (Soll-Retrace-Zonen 7,34/8,82 decken sich mit
+der Hand); der ganze Unterschied ist ein DURCHSTOSS-Detail —
+die Hand-Rückkehr durchsticht die Abwärtslinie (X bei v 0,10
+bzw. 0,17), die komponierte Rückkehr läuft tangential ein und
+zählt darum als Retrace statt als Kreuzung. Das ist die
+K1-Klasse („Schnitt mit Überstand", am t-Balken gemessen und
+adoptiert): ein an beiden p-Belegen nachmessbarer
+Rückkehr-Überstand als Composer-Klassenregel, eigene Pre-Reg
+mit `soll_cross_agree`-je-Wort- und wordbench-Gates — der
+G1-„Autorenentscheid" reduziert sich auf die Abnahme dieser
+gemessenen Regel. Nach den drei Owner-Einwänden dieses Abends
+bleibt vom ursprünglichen Autoren-Katalog damit als
+Autorenschritt im engen Sinn nur noch der BESTÄTIGUNGSSATZ;
+alles andere (Versalien-Laufform · W→e-Join · p-Überstand ·
+e→r-Platzierung · o→r-Höhe · Vorschub-Drift) ist als messbarer
+Kompositions- oder Laufform-Arm eingeordnet.
