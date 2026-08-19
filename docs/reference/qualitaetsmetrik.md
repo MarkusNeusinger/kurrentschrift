@@ -6419,3 +6419,59 @@ Deltas). Der PRODUKTIONS-Re-Harvest der `traced`-Zeilen mit
 v2-Ordnung bleibt hinter Owner-Go + dbsnapshot (die
 Fixture-`traced`-Zeilen tragen bis dahin die v1-Ordnung —
 der Bench rechnet den `chain`-Kandidaten ohnehin frisch).
+
+### Route „Lotse" v0.13/v0.14 `aug19` — Vorregistrierung: die Entdrillung, dann die „all"-Stufe (Owner-Go „weiter mit lotse neben ink")
+
+Geschrieben und committet VOR der ersten Zahl. Ziel ist der
+letzte Owner-Punkt der Runde: der Lotse fährt in Doppelzonen und
+Brücken noch die ROHE Karte („windows" pinnt nur Fenster) — die
+G-Kästen, die r-Geraden, der Galoppieren-Kasten, die
+Wer-Diagonale. Die „all"-Stufe scheiterte am 19. um genau EIN
+Doppel-X; der Blocker sind die Duplikate.
+
+**Autopsie vor dem Mechanismus (Roh-Ereignis-Zählung, proper
+segment intersections der Body-Kette, 0,35-xh-Eigenbogen-Floor):**
+die Duplikat-Orte sind GEWEBE — mehrere Schnitt-Ereignisse
+desselben Pass-Paars in kleinem Fenster: mit-2 trägt DREI
+Ereignisse, wo die Hand einmal kreuzt (Orte 5,08/5,14) · will
+trägt neben dem echten Schnitt (1,94) drei Gewebe-Ereignisse um
+2,2–2,3 · Galoppieren fünf um 8,7–9,1 (Hand 1) und sechs um
+13,3–13,5 (Hand 0). Der v0.12-Befund erklärt sich damit
+vollständig: die Sehne entfernte ALLE Schnitte einer Stelle —
+die Parität verlangt aber PAARWEISES Entfernen (3 → 1 · 5 → 1 ·
+6 → 0), das genau die topologisch nötige Kreuzung stehen lässt.
+
+**Der Mechanismus (v0.13, EIN Knopf `UNTWIST_WINDOW_UNITS`,
+0 = aus, Leiter 0,5 / 0,8):** Auf den assemblierten
+Kandidaten-Strichen werden Schnitt-Ereignis-PAARE gesucht, deren
+BEIDE Bogenabstände ≤ Knopf und deren Schnittpunkte ≤ Knopf/2
+auseinanderliegen (echte getrennte Kreuzungen wie wills
+l-Schleifen liegen weit darüber und bleiben unberührt). Je Paar
+wird der KÜRZERE Wiggle-Bogen zwischen seinen beiden
+Ereignis-Parametern an der Sehne P1→P2 GESPIEGELT — der Bogen
+wechselt die Seite, beide Schnitte des Paars verschwinden,
+Richtung und Parametrisierung bleiben erhalten, die Geometrie
+bleibt in der Wiggle-Amplitude (< Fenster). Iterativ bis kein
+Paar mehr feuert (Deckel 8 Durchläufe je Wort), Anzahl geloggt.
+
+**Stufen:** v0.13 = "windows" + Entdrillung; v0.14 = "all" +
+Entdrillung (die §7.9-Wiedervorlage: Zonen-Rides und natürliche
+Brücken bekommen die Knoten-Plateau-Pinnung der Fenster).
+Adoptiert wird höchstens EINE Konfiguration (die beste, die alle
+Gates besteht).
+
+**Gates v0.13 (gegen den v0.11-Stand):** `cross_missing` ≤ 1
+(NICHTS Echtes verlieren — steigt es, feuert das Kill),
+`cross_spurious` fällt netto (Erwartung 6 → ≤ 3), Marken
+unverändert, Retrace-Zähler ohne Netto-Anstieg, `aiou`-Median-Δ
+≥ −0,02 gegen 0,7434, dtw je Wort ±0,003, p90 ≤ 0,113
+(v0.11-Stand), reversed 0. **Gates v0.14 (gegen den
+v0.13-Stand):** Netto-Kreuzungsdefekte ≤ v0.13, `aiou` steigt
+oder hält (die Zonen verlassen die Luft — fällt aiou, ist die
+Pinnung dort falsch verdrahtet), dtw-Median hält (±0,003),
+Sichtprüfung der vier Owner-Stellen (G · unter/Galoppieren-r ·
+Galoppieren-Kasten x≈360 · Wer-Diagonale) wird dem Ergebnis
+beigelegt. Paarungen beschreibend gegen die Kette v3
+(0,0491/0,0894). Kill v0.14: erzeugt die Zonen-Pinnung neue
+Netto-Defekte, bleibt v0.13 (bzw. v0.11) stehen und der Rest
+gehört der Karten-Form-Schiene.
