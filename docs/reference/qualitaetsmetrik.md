@@ -5934,3 +5934,69 @@ netto > +2 → die Anker greifen den falschen Knoten (das benannte
 Risiko der dichten Regionen — Galoppieren p90-Ankerabstand
 0,51 xh) → verworfen, Rettungsweg wäre ein kleinerer Suchradius
 NUR mit frischer Vorregistrierung.
+
+**Gemessen `aug19` — BEIDE Stufen vom Kreuzungs-Gate verworfen;
+der Fund benennt den Degenerierungs-Mechanismus präzise und die
+Gewinnseite ist die stärkste Tinten-Deckung der Route.** Leiter
+(dev-19, je 19/19 ok): "windows" → Netto-Kreuzungsdefekte 6+3 =
+9 (> 7) · aiou 0,7616 (+0,027!) · dtw gepaart gegen Kette
+−0,0097 (schlechter als v0.9s −0,0182); "all" → Defekte 5+5 =
+10 (> 7) · aiou 0,7616 · gepaart gegen v0.9: 14 von 19 Wörtern
+besser (Δ-Median −0,0037, Sign 14:5, p=0,064), beide
+Chamfer-Hälften besser, `retrace_arc_ratio`-Gap −0,047,
+**Kreuzungs-Ortsfehler-Median 0,116 → 0,083 xh** und die
+SPURIOUS-Klasse heilt (linken 3 → 1, mit-2 1 → 0 — wo die Hand
+das Soll-X nicht schreibt, hat die Tinte keinen Knoten, und der
+Anker degeneriert das Karten-X von selbst: der Mechanismus
+arbeitet in beide Richtungen). Der Sichtbefund bestätigt: der
+k-Kringel in `linken` wird erstmals nachgefahren, der
+V-Spike unter die Grundlinie ist weg. ABER die Anker KOSTEN
+Kreuzungen genau dort, wo sie dicht stehen: `mit` verliert eins
+der zwei nur 0,07 xh getrennten t-X (auf einen Punkt gezogen →
+Detektor-Merge), `zwei` beide z-Unterschleifen-X (0,25 xh
+Abstand, gemittelte Offsets → Berührung statt Durchstoß),
+`will` das zweite l-X (Punktlandung beider Pässe auf dem Knoten
+→ oskulierend statt piercend), und `Galoppieren` fabriziert 4
+unechte an Interpolations-Knicken des dichten „ieren"-Clusters.
+Diagnose in einem Satz: **das Offset-Feld der Punkt-Knoten
+variiert nahe der Kreuzung zu schnell — Scherung und Mittelung
+zerstören genau die Transversalität, die der Anker herstellen
+soll.** VERWORFEN (beide Stufen), `MAP_RUN_PIN_KNOTS` bleibt
+"off". Rettungsweg (benannt, eigene Pre-Reg unten): das
+Offset-Feld um jeden Anker lokal KONSTANT machen — reine
+Translation erhält jedes X exakt (v0.11); §7.9-Zeile im selben
+PR.
+
+### Route „Lotse" v0.11 `aug19` — Vorregistrierung: Plateau-Anker (stückweise-starre Fenster, L1e)
+
+Geschrieben und committet VOR der ersten Zahl. Der v0.10-Fund:
+Anker-Offsets als PUNKT-Knoten scheren das Offset-Feld an genau
+den Stellen, deren Transversalität sie sichern sollen — eine
+Kreuzung überlebt eine lokal REINE TRANSLATION dagegen exakt
+(beide Pässe verschieben sich gleich, das X wandert starr mit).
+Der neue MECHANISMUS: jedes Anker-Offset wirkt als **Plateau**
+konstanter Breite statt als Punkt — `PIN_KNOT_PLATEAU_UNITS` =
+0,35 xh beidseitig (= der Fensterradius, deklariert fest, kein
+Suchknopf); überlappende Plateaus VERSCHMELZEN zu einem
+Intervall mit dem Mittel ihrer Anker-Offsets (der dichte
+Cluster wird als Ganzes starr verschoben — beide X bleiben
+erhalten, jedes landet ≤ halber Clusterbreite neben seinem
+Knoten, weit innerhalb des 0,55-xh-Matchers); zwischen Plateaus
+und zu den Lauf-Grenzen wird weiter linear interpoliert — die
+Scherung wandert in die kreuzungsfreien Zwischenstrecken.
+Mittelung je EINZEL-Index entfällt (sie war die zweite
+Degenerierungsquelle).
+
+**Leiter: dieselben zwei Stufen wie v0.10 ("windows" / "all"),
+jetzt mit Plateau-Feld.** Gates unverändert (Netto-Defekte ≤ 7,
+aiou-Δ ≥ −0,02 gegen 0,7351, p90 ≤ +10 % gegen Kette, Marken,
+reversed = 0, `cross_spurious` netto ≤ +2). Erwartung: die
+v0.10-Gewinne bleiben (aiou ~0,76, Ortsfehler ~0,083,
+Spurious-Heilung, k-Kringel), die vier Verlust-Stellen
+(mit-t-Doppel, zwei-z-Doppel, will-l2, Galoppieren-Knicke)
+kehren auf den v0.9-Stand zurück. Kill: verliert auch das
+Plateau-Feld Kreuzungen in den dichten Clustern, ist die
+Anker-Idee an der Dichte-Grenze ehrlich gescheitert und der
+Rest gehört der Karten-FORM (Kompositions-Schiene: der
+k-Kopfschleifen-Bogen bleibt auch gepinnt formfremd —
+eigener Befund unten).
