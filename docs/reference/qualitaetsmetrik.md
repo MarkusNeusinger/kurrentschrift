@@ -6447,12 +6447,19 @@ Kandidaten-Strichen werden Schnitt-Ereignis-PAARE gesucht, deren
 BEIDE Bogenabstände ≤ Knopf und deren Schnittpunkte ≤ Knopf/2
 auseinanderliegen (echte getrennte Kreuzungen wie wills
 l-Schleifen liegen weit darüber und bleiben unberührt). Je Paar
-wird der KÜRZERE Wiggle-Bogen zwischen seinen beiden
+wird der Wiggle-Bogen zwischen seinen beiden
 Ereignis-Parametern an der Sehne P1→P2 GESPIEGELT — der Bogen
 wechselt die Seite, beide Schnitte des Paars verschwinden,
 Richtung und Parametrisierung bleiben erhalten, die Geometrie
 bleibt in der Wiggle-Amplitude (< Fenster). Iterativ bis kein
 Paar mehr feuert (Deckel 8 Durchläufe je Wort), Anzahl geloggt.
+*Präzisierung VOR der ersten Bench-Zahl (Synthetik-Fund des
+Unit-Tests, im Test gepinnt):* „der Wiggle" ist die Seite mit
+der GRÖSSEREN maximalen Sehnen-Abweichung — die ursprüngliche
+„kürzere-Bogen"-Heuristik ist degeneriert (die sehnen-nahe
+Gegenseite hat Bogenlänge ≈ Sehnenlänge und die Spiegelung
+wäre ein No-op); eine Seite ohne messbare Abweichung ist nie
+der Wiggle.
 
 **Stufen:** v0.13 = "windows" + Entdrillung; v0.14 = "all" +
 Entdrillung (die §7.9-Wiedervorlage: Zonen-Rides und natürliche
@@ -6475,3 +6482,46 @@ beigelegt. Paarungen beschreibend gegen die Kette v3
 (0,0491/0,0894). Kill v0.14: erzeugt die Zonen-Pinnung neue
 Netto-Defekte, bleibt v0.13 (bzw. v0.11) stehen und der Rest
 gehört der Karten-Form-Schiene.
+
+**Gemessen `aug19` — v0.13 bei 0,5 ADOPTIERT; 0,8 vom eigenen
+Kill verworfen und der Diskriminator sauber benannt; v0.14 per
+Gate verworfen, mit dem stärksten SICHTBEWEIS der Runde.**
+
+*v0.13 (dev-19, je 19/19 ok):* **w0,5** (16 Paare entdrillt) →
+`cross_missing` 1 (unverändert), `cross_spurious` 6 → **5**
+(wills Duplikat heilt), Marken/Retrace unverändert, `aiou`
+−0,0036, dtw je Wort ≤ ±0,0011, p90 0,1129 — ALLE Gates
+bestehen, **Netto-Defekte 7 → 6**, `UNTWIST_WINDOW_UNITS` =
+0,5. **w0,8** (32 Paare) → spurious 6 → 2, aber
+`cross_missing` 1 → **6**: das weite Fenster entdrillt auch
+GENUIN nahe ECHTE Paare (mits t-Doppel bei 0,07 xh, unters und
+Galoppierens enge X) — vom eigenen Kill verworfen. Der Befund
+benennt die Grenze exakt: GEOMETRIE allein kann ein
+Gewebe-Duplikat nicht von einem echten engen Doppel
+unterscheiden — der ehrliche Diskriminator ist das SOLL (die
+Karte weiß, wie viele Kreuzungen in eine Nachbarschaft
+gehören: mits Doppel steht im Soll, die Gewebe nicht) →
+Rettungsweg **soll-budgetierte Entdrillung**, eigene Pre-Reg
+(§7.9-Zeile im selben PR).
+
+*v0.14 („all" + Entdrillung 0,5; 13 Paare):* die
+Tinten-Gewinne kommen wie erhofft — `aiou` 0,7398 → **0,7521**,
+Precision-Chamfer −0,0021, dtw 8:1 Wörter besser (mit-2/mit
+−0,009, muß-2/-3, Galoppieren, Wer), und der SICHTBEWEIS ist
+der stärkste der Runde: **das G wird erstmals fast wie von der
+Hand geritten** (Oval, Kopfschleife, Stamm, Unterschleife am
+Ink — alle Luft-Kästen weg), auch der Galoppieren-Rest-Kasten
+und die er-Region legen sich an. ABER die Strukturzähler
+kippen in GENAU den zwei schlimmsten Karten-Form-Regionen:
+Galoppieren verliert das G-Kopf-X ((1,6·1,67) — die gepinnte,
+formfremde G-Karte schließt die Schleife nicht, wo die Tafel
+kreuzt) und erfindet eines am p (7,97·0,83) — Netto 6 → 8 >
+Gate, VERWORFEN wie vorregistriert („der Rest gehört der
+Karten-Form-Schiene", hier wörtlich eingetreten). Konstanten:
+`MAP_RUN_PIN_KNOTS` bleibt "windows". Rettungsweg:
+**Wiedervorlage von v0.14 NACH den
+Karten-Form-Autorenschritten** (G-Chart/Laufform,
+p-Unterlängen — exakt die beiden Gate-Brecher; §7.7-Protokoll
+misst dann neu) — der Sichtbeweis verdoppelt den Ertrag dieser
+Autorenschritte: sie reparieren Komposition UND schalten die
+saubere Zonen-Fahrt frei.

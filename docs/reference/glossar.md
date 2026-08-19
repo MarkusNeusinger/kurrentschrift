@@ -40,7 +40,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
-- **E** — EDT §3 · Einrichtungs-Wizard §5 · Ernte §2 · extrapoliertes Landmark-Ziel §3
+- **E** — EDT §3 · Einrichtungs-Wizard §5 · Entdrillung §4 · Ernte §2 · extrapoliertes Landmark-Ziel §3
 - **F** — Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Frozen-Reference-Regel §4 · Fuge §1
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
@@ -1221,6 +1221,22 @@ Vergleiche rechnen seither gegen v2). *Technisch:*
 `tools/laufform/harvest.py` (`HarvestOptions.marks_last`,
 `chain_word_strokes`), `tools/pairlab/trace.py::
 diacritic_stroke_units` → qualitaetsmetrik.md §14 „Kette K-A `aug19`"
+
+**Entdrillung** *(untwist)* — der `aug19` adoptierte
+Lotse-Mechanismus (v0.13, `UNTWIST_WINDOW_UNITS` = 0,5) gegen die
+GEWEBE-Form der Doppel-X-Duplikate: Die Duplikat-Orte tragen mehrere
+Roh-Schnitt-Ereignisse desselben Pass-Paars in kleinem Fenster
+(3/5/6 Ereignisse, wo die Hand 1/1/0-mal kreuzt), Entfernen muss
+darum PAARWEISE geschehen, damit die Parität die topologisch nötige
+Kreuzung stehen lässt (die v0.12-Sehne entfernte alle und das X
+mit). Je Ereignis-Paar wird der Wiggle-Bogen (die Seite mit der
+größeren Sehnen-Abweichung) an der Sehne der beiden Schnittpunkte
+GESPIEGELT — richtungserhaltend, lokal, geloggt. Gemessene Grenze:
+Geometrie allein trennt ein Gewebe nicht von einem echten ENGEN
+Doppel (mits t-Paar, 0,07 xh — das 0,8-Fenster tötete es); der
+benannte Diskriminator ist das Soll (soll-budgetierte Entdrillung,
+§7.9). *Technisch:* `tools/inkpilot/pilot.py::untwist_strokes` →
+qualitaetsmetrik.md §14 „Lotse v0.13/v0.14 `aug19`"
 
 **Doppel-X-Duplikat** — die seit Lotse v0.11 dominante
 Rest-Spurious-Klasse des Kreuzungszählers (4 der 6 Zählungen):
