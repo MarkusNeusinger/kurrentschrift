@@ -6277,3 +6277,40 @@ Schwelle profitieren vom Zentroid-Matching). (d) A2 (SDM/DCD)
 bleibt für muß/unter zurückgestuft — Stranding/Doppelpass sind
 seine Ziele. KEINE Gate- oder Lineal-Änderung aus dieser
 Autopsie.
+
+### Kette K-A `aug19` — Vorregistrierung: die marken-endständige Assembly (Owner-Go „weiter optimieren")
+
+Geschrieben und committet VOR der ersten Zahl. Der benannte
+Top-Kandidat aus der (korrigierten) L2-Rest-Autopsie:
+`assemble_word_strokes` läuft heute JE RUN, und die
+Diakritika-Striche eines Runs (der eigene Assembler-Begriff:
+alle Samples über `DIACRITIC_MIN_Y` = 1,0) landen dadurch
+ZWISCHEN den Runs in der Schreibreihenfolge — Hand und
+komponierte Engine-Ordnung schreiben sie am WORTENDE. **EIN
+Knopf: `HarvestOptions.marks_last`** (CLI `--marks-last`,
+Label `chain+order` — wie `--mark-refit` eine Variante der
+Baseline, nie die Baseline selbst): die assemblierten Striche
+des Wortes werden stabil partitioniert, Diakritika (der
+Assembler-eigene Begriff, auf den Word-Unit-Strichen
+angewandt) hinter alle Körper-Striche, Reihenfolge innerhalb
+beider Gruppen unverändert. Reine ORDNUNGS-Änderung: kein
+Punkt bewegt sich.
+
+**Erwartung (aus der Permutations-Probe der Autopsie):**
+unter −0,36 (0,4503 → ~0,085), muß-Familie −0,11 bis −0,13;
+alle geometrie-basierten Spalten IDENTISCH (aiou, Chamfer,
+Struktur- und Markenzähler — dieselbe Segmentmenge), einzig
+`dtw_xh` (und die Lift-Positionsspalten) bewegen sich; kein
+anderes Dev-Wort ändert sich über ±0,002 (der Sweep fand
+keinen weiteren Ordnungs-Gewinn).
+
+**Gates:** (i) die vier Kollaps-Wörter fallen je um > 0,05;
+(ii) KEIN Dev-Wort steigt um > 0,002; (iii) aiou/Chamfer/
+Zähler byte-gleich (eine Abweichung wäre ein Bug der
+Partition, kein Tuning-Fall — Kill); (iv) `dtw_reversed_better`
+= 0. Bestehen alle: ADOPTION als Kette v2 (die erste
+Formulierungsänderung der Route) mit datierter Re-Baseline —
+deklariert: ALLE gepaarten Routen-Vergleiche rechnen ab dann
+gegen die v2-Kette, die alten Zahlen bleiben als
+v1-Geschichte lesbar; der PRODUKTIONS-Re-Harvest (DB) bleibt
+davon getrennt hinter Owner-Go + dbsnapshot.
