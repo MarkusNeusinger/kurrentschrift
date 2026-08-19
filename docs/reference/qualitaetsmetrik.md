@@ -6984,3 +6984,25 @@ Struktur-Gewinn, sonst kein Grund für „all") · `cross_missing`
 G-Kopf-X wird jetzt hand-gleich geritten UND zählt; scheitert
 es erneut, ist die Karten-Form als Ursache widerlegt und der
 Riss liegt im Ritt selbst (neuer Befund, eigener Rettungsweg).
+
+**Gemessen `aug19` — verworfen per Gate, und die registrierte
+Falsifikation feuert: die Karten-Form ist als Ursache der
+„all"-Bruchstelle WIDERLEGT.** Auf der LF3b-Karte gewinnt die
+„all"-Stufe erneut Tinte (aiou 0,7484 → 0,7521 · p90 0,1129 →
+0,1117 · chamfer 0,0410 → 0,0371 · dtw-Verbesserungen −0,004
+bis −0,009 in Galoppieren, mit, mit-2, muß-2, muß-3 — KEIN
+dtw-Verlierer; Marken unverändert; reversed 0) — aber die
+Struktur kippt WIEDER und WIEDER in Galoppieren: missing 1 → 2
+(das G-Kopf-X), spurious 4 → 5, Netto 7 > 5. Dieselbe
+Bruchstelle auf der jetzt topologie-sauberen Chart-G-Karte
+heißt: nicht die Karten-FORM bricht den G-Kopf, sondern der
+RITT im dichten G-Knoten-Komplex unter der „all"-Pinnung.
+Rettungswege: (a) **G-Kopf-Ritt-Autopsie unter „all"**
+(Instrumentierung wie die will-Autopsie der v0.7-Runde), dann
+(b) eine SELEKTIVE Stufe (Brücken und Zonen-Rides getrennt
+pinnen — der deklarierte Schalter kennt die Trennung noch
+nicht, sie wäre ein neuer, vorzuregistrierender Mechanismus).
+Die drei Gewebe-Rest-Duplikate und die soll-geführte
+Entdrillung (Positions-Matching auf der jetzt
+vertrauenswürdigen Karte) bleiben die stehenden nächsten Arme
+(§7.9). §7.9-Zeile aktualisiert im selben PR.

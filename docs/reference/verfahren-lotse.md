@@ -61,6 +61,7 @@ Kreuzungs-Ortsfehler (0,066 gegen 0,083 xh).
 | aug19 | v0.13 (L1g) | `UNTWIST_WINDOW_UNITS` — paarweise Entdrillung der Gewebe-Duplikate (Spiegelung des Wiggle-Bogens an der Paar-Sehne) | **adoptiert 0,5** (Netto-Defekte 7 → 6, wills Duplikat heilt; 0,8 vom Kill verworfen — Geometrie trennt Gewebe nicht von echten engen Doppeln → soll-budgetierte Entdrillung als Rettungsweg) |
 | aug19 | v0.14 | „all" + Entdrillung — Zonen-Rides/Brücken mit Knoten-Plateau-Pinnung | verworfen per Gate (Netto 8 > 6: G-Kopf-X stirbt an der formfremden G-Karte, p erfindet eines) — aber aiou +0,012 und der stärkste Sichtbeweis der Runde (das G fast hand-gleich geritten); Wiedervorlage nach den Karten-Form-Autorenschritten |
 | aug19 | v0.15 (L1h) | `UNTWIST_SOLL_BUDGET` — Entdrillung nur, wo die Nachbarschaft nicht unter ihr Karten-Soll fällt | verworfen (das Budget erbt die Karten-Platzierungsfehler: unters echtes Paar stirbt trotz Budget, wills Fix wird fälschlich vetiert — dritte Bestätigung der Karten-Form-Decke; Wiedervorlage mit v0.14 nach den Autorenschritten) |
+| aug19 | Wiedervorlage v0.14 auf der LF3b-Karte | `MAP_RUN_PIN_KNOTS` = "all" auf der topologie-reparierten Kandidaten-Karte (§14 LF3b) | verworfen per Gate (Netto 7 > 5, Riss WIEDER Galoppieren) — **die Karten-Form-These der „all"-Stufe ist damit widerlegt**: der Bruch liegt im Ritt des dichten G-Knoten-Komplexes; Tinten-Gewinne erneut bestätigt (aiou +0,004, p90 −0,001, kein dtw-Verlierer) → G-Kopf-Ritt-Autopsie, dann selektive Pinn-Stufe |
 
 Benannter Fehlermodus der Route: **Junction-Pinch** (Glossar) — die
 v0.7/v0.8/v0.9-Kette ist seine vollständige Abarbeitung; seit v0.11
@@ -71,15 +72,21 @@ Rest-Spurious-Klasse.
 
 - **Rest-Duplikate** (3 Gewebe über dem 0,5-Fenster): die
   paarweise Entdrillung (v0.13) heilt wills Duplikat; das weite
-  Fenster (0,8) scheiterte am Diskriminator (Geometrie trennt
-  Gewebe nicht von echten engen Doppeln wie mits t-Paar) — der
-  benannte Weg ist die **soll-budgetierte Entdrillung** (§7.9).
-- **„all"-Stufe (v0.14)**: gemessen und per Gate verworfen — die
-  Tinten-Gewinne sind real (aiou +0,012, das G erstmals fast
-  hand-gleich geritten, Sichtbeweis in der Chronik), aber die
-  Struktur kippt exakt an den zwei schlimmsten
-  Karten-Form-Regionen (G-Kopf, p). Wiedervorlage NACH den
-  Karten-Form-Autorenschritten — die zahlen damit doppelt.
+  Fenster (0,8) scheiterte am Diskriminator, das Soll-BUDGET
+  (v0.15) an den Karten-Platzierungsfehlern — der benannte Weg
+  ist seit `aug19` spät die **soll-geführte Entdrillung mit
+  POSITIONS-Matching auf der vertrauenswürdigen LF3b-Karte**
+  (§7.9, eigene Pre-Reg).
+- **„all"-Stufe (v0.14)**: zweimal gemessen, zweimal per Gate
+  verworfen — und die zweite Messung (`aug19` spät, auf der
+  topologie-reparierten LF3b-Karte) hat die Karten-Form-These
+  WIDERLEGT: die Struktur kippt erneut exakt am Galoppieren-
+  G-Knoten-Komplex, obwohl die Karte dort jetzt chart-sauber
+  ist. Die Tinten-Gewinne bestätigen sich in beiden Messungen
+  (aiou +0,012 bzw. +0,004, kein dtw-Verlierer). Nächster
+  Schritt: **G-Kopf-Ritt-Autopsie unter „all"**, danach ggf.
+  eine selektive Pinn-Stufe (Brücken und Zonen-Rides getrennt —
+  neuer Mechanismus, eigene Pre-Reg).
 - **Karten-Form-Klasse** (Katalog nach der Owner-Sichtrunde `aug19`,
   Karten-Overlays; **präzisiert im späten Nachtrag**, §14 v0.15):
   überwiegend eine **Laufform-Lücke, kein Chart-Fehler** — 43 von 62
@@ -94,11 +101,18 @@ Rest-Spurious-Klasse.
   reproduziert nicht: die komponierte W-Form liegt ~0,4 xh links
   der Hand-Apexe) und **p = Laufform-AGGREGATIONS-Defekt** (das
   Chart-p kreuzt, die gespeicherte p-Laufform hat den Durchstoß an
-  den Anker-Median verloren). Messbare Arme: **LF1
-  „Lücken-Schluss"** (Evidenz-Boden min-n 3 bzw. 1, nur
-  Lücken-Glyphen) · **LF2 „p-Topologie"** (nach Autopsie) ·
-  e→r-Platzierung in `unter` · o→r-Höhe · Vorschub-Drift.
-  Autorenschritt im engen Sinn bleibt nur der Bestätigungssatz.
+  den Anker-Median verloren). **Noch am selben Abend gemessen
+  (§14 LF1/LF2/LF3/LF3b):** LF1 (Lücken-Schluss roh) und LF2
+  (Topologie-Wächter als Voll-Entfernung) sind ehrliche Negative
+  mit scharfen Funden (der rohe Anker-Median frisst
+  Schleifenschluss-Topologie — h, p gespeichert, G-Draft frisch);
+  **LF3b (Topologie-Reparatur am Kompositions-Orakel) besteht
+  alle Gates und ist als Kandidaten-Karte adoptiert** (trocken:
+  Galoppieren-Soll 6 → 8 = Hand, aiou 0,7398 → 0,7484,
+  wordbench −0,0010; DB-Write hinter dbsnapshot + Owner-Go).
+  Offen bleiben die Platzierungs-Klassen: e→r-Platzierung in
+  `unter` · o→r-Höhe · Vorschub-Drift. Autorenschritt im engen
+  Sinn bleibt nur der Bestätigungssatz.
 - ~~Rest-Autopsie muß-Klasse~~ **erledigt `aug19`, Attribution noch
   am selben Tag korrigiert** (§14 „L2-Rest-Autopsie"): die
   Kollaps-Klasse (unter + muß×3) ist ORDNUNGS-dominiert — aber
