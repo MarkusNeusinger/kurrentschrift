@@ -6419,3 +6419,170 @@ Deltas). Der PRODUKTIONS-Re-Harvest der `traced`-Zeilen mit
 v2-Ordnung bleibt hinter Owner-Go + dbsnapshot (die
 Fixture-`traced`-Zeilen tragen bis dahin die v1-Ordnung —
 der Bench rechnet den `chain`-Kandidaten ohnehin frisch).
+
+### Route „Lotse" v0.13/v0.14 `aug19` — Vorregistrierung: die Entdrillung, dann die „all"-Stufe (Owner-Go „weiter mit lotse neben ink")
+
+Geschrieben und committet VOR der ersten Zahl. Ziel ist der
+letzte Owner-Punkt der Runde: der Lotse fährt in Doppelzonen und
+Brücken noch die ROHE Karte („windows" pinnt nur Fenster) — die
+G-Kästen, die r-Geraden, der Galoppieren-Kasten, die
+Wer-Diagonale. Die „all"-Stufe scheiterte am 19. um genau EIN
+Doppel-X; der Blocker sind die Duplikate.
+
+**Autopsie vor dem Mechanismus (Roh-Ereignis-Zählung, proper
+segment intersections der Body-Kette, 0,35-xh-Eigenbogen-Floor):**
+die Duplikat-Orte sind GEWEBE — mehrere Schnitt-Ereignisse
+desselben Pass-Paars in kleinem Fenster: mit-2 trägt DREI
+Ereignisse, wo die Hand einmal kreuzt (Orte 5,08/5,14) · will
+trägt neben dem echten Schnitt (1,94) drei Gewebe-Ereignisse um
+2,2–2,3 · Galoppieren fünf um 8,7–9,1 (Hand 1) und sechs um
+13,3–13,5 (Hand 0). Der v0.12-Befund erklärt sich damit
+vollständig: die Sehne entfernte ALLE Schnitte einer Stelle —
+die Parität verlangt aber PAARWEISES Entfernen (3 → 1 · 5 → 1 ·
+6 → 0), das genau die topologisch nötige Kreuzung stehen lässt.
+
+**Der Mechanismus (v0.13, EIN Knopf `UNTWIST_WINDOW_UNITS`,
+0 = aus, Leiter 0,5 / 0,8):** Auf den assemblierten
+Kandidaten-Strichen werden Schnitt-Ereignis-PAARE gesucht, deren
+BEIDE Bogenabstände ≤ Knopf und deren Schnittpunkte ≤ Knopf/2
+auseinanderliegen (echte getrennte Kreuzungen wie wills
+l-Schleifen liegen weit darüber und bleiben unberührt). Je Paar
+wird der Wiggle-Bogen zwischen seinen beiden
+Ereignis-Parametern an der Sehne P1→P2 GESPIEGELT — der Bogen
+wechselt die Seite, beide Schnitte des Paars verschwinden,
+Richtung und Parametrisierung bleiben erhalten, die Geometrie
+bleibt in der Wiggle-Amplitude (< Fenster). Iterativ bis kein
+Paar mehr feuert (Deckel 8 Durchläufe je Wort), Anzahl geloggt.
+*Präzisierung VOR der ersten Bench-Zahl (Synthetik-Fund des
+Unit-Tests, im Test gepinnt):* „der Wiggle" ist die Seite mit
+der GRÖSSEREN maximalen Sehnen-Abweichung — die ursprüngliche
+„kürzere-Bogen"-Heuristik ist degeneriert (die sehnen-nahe
+Gegenseite hat Bogenlänge ≈ Sehnenlänge und die Spiegelung
+wäre ein No-op); eine Seite ohne messbare Abweichung ist nie
+der Wiggle.
+
+**Stufen:** v0.13 = "windows" + Entdrillung; v0.14 = "all" +
+Entdrillung (die §7.9-Wiedervorlage: Zonen-Rides und natürliche
+Brücken bekommen die Knoten-Plateau-Pinnung der Fenster).
+Adoptiert wird höchstens EINE Konfiguration (die beste, die alle
+Gates besteht).
+
+**Gates v0.13 (gegen den v0.11-Stand):** `cross_missing` ≤ 1
+(NICHTS Echtes verlieren — steigt es, feuert das Kill),
+`cross_spurious` fällt netto (Erwartung 6 → ≤ 3), Marken
+unverändert, Retrace-Zähler ohne Netto-Anstieg, `aiou`-Median-Δ
+≥ −0,02 gegen 0,7434, dtw je Wort ±0,003, p90 ≤ 0,113
+(v0.11-Stand), reversed 0. **Gates v0.14 (gegen den
+v0.13-Stand):** Netto-Kreuzungsdefekte ≤ v0.13, `aiou` steigt
+oder hält (die Zonen verlassen die Luft — fällt aiou, ist die
+Pinnung dort falsch verdrahtet), dtw-Median hält (±0,003),
+Sichtprüfung der vier Owner-Stellen (G · unter/Galoppieren-r ·
+Galoppieren-Kasten x≈360 · Wer-Diagonale) wird dem Ergebnis
+beigelegt. Paarungen beschreibend gegen die Kette v3
+(0,0491/0,0894). Kill v0.14: erzeugt die Zonen-Pinnung neue
+Netto-Defekte, bleibt v0.13 (bzw. v0.11) stehen und der Rest
+gehört der Karten-Form-Schiene.
+
+**Gemessen `aug19` — v0.13 bei 0,5 ADOPTIERT; 0,8 vom eigenen
+Kill verworfen und der Diskriminator sauber benannt; v0.14 per
+Gate verworfen, mit dem stärksten SICHTBEWEIS der Runde.**
+
+*v0.13 (dev-19, je 19/19 ok):* **w0,5** (16 Paare entdrillt) →
+`cross_missing` 1 (unverändert), `cross_spurious` 6 → **5**
+(wills Duplikat heilt), Marken/Retrace unverändert, `aiou`
+−0,0036, dtw je Wort ≤ ±0,0011, p90 0,1129 — ALLE Gates
+bestehen, **Netto-Defekte 7 → 6**, `UNTWIST_WINDOW_UNITS` =
+0,5. **w0,8** (32 Paare) → spurious 6 → 2, aber
+`cross_missing` 1 → **6**: das weite Fenster entdrillt auch
+GENUIN nahe ECHTE Paare (mits t-Doppel bei 0,07 xh, unters und
+Galoppierens enge X) — vom eigenen Kill verworfen. Der Befund
+benennt die Grenze exakt: GEOMETRIE allein kann ein
+Gewebe-Duplikat nicht von einem echten engen Doppel
+unterscheiden — der ehrliche Diskriminator ist das SOLL (die
+Karte weiß, wie viele Kreuzungen in eine Nachbarschaft
+gehören: mits Doppel steht im Soll, die Gewebe nicht) →
+Rettungsweg **soll-budgetierte Entdrillung**, eigene Pre-Reg
+(§7.9-Zeile im selben PR).
+
+*v0.14 („all" + Entdrillung 0,5; 13 Paare):* die
+Tinten-Gewinne kommen wie erhofft — `aiou` 0,7398 → **0,7521**,
+Precision-Chamfer −0,0021, dtw 8:1 Wörter besser (mit-2/mit
+−0,009, muß-2/-3, Galoppieren, Wer), und der SICHTBEWEIS ist
+der stärkste der Runde: **das G wird erstmals fast wie von der
+Hand geritten** (Oval, Kopfschleife, Stamm, Unterschleife am
+Ink — alle Luft-Kästen weg), auch der Galoppieren-Rest-Kasten
+und die er-Region legen sich an. ABER die Strukturzähler
+kippen in GENAU den zwei schlimmsten Karten-Form-Regionen:
+Galoppieren verliert das G-Kopf-X ((1,6·1,67) — die gepinnte,
+formfremde G-Karte schließt die Schleife nicht, wo die Tafel
+kreuzt) und erfindet eines am p (7,97·0,83) — Netto 6 → 8 >
+Gate, VERWORFEN wie vorregistriert („der Rest gehört der
+Karten-Form-Schiene", hier wörtlich eingetreten). Konstanten:
+`MAP_RUN_PIN_KNOTS` bleibt "windows". Rettungsweg:
+**Wiedervorlage von v0.14 NACH den
+Karten-Form-Autorenschritten** (G-Chart/Laufform,
+p-Unterlängen — exakt die beiden Gate-Brecher; §7.7-Protokoll
+misst dann neu) — der Sichtbeweis verdoppelt den Ertrag dieser
+Autorenschritte: sie reparieren Komposition UND schalten die
+saubere Zonen-Fahrt frei.
+
+### Route „Lotse" v0.15 `aug19` — Vorregistrierung: die soll-budgetierte Entdrillung (L1h)
+
+Geschrieben und committet VOR der ersten Zahl (nach dem
+Owner-Merge von #387 und „weiter"; Cherry-pick-Recovery des
+Squash-Rennens dokumentiert im Branch). Der v0.13-Fund: das
+0,8-Fenster heilt alle Duplikate, tötet aber genuin nahe ECHTE
+Paare (mits t-Doppel, 0,07 xh) — Geometrie allein trennt die
+Klassen nicht. Der vorregistrierte Diskriminator ist das SOLL:
+die KARTE kennt ihre eigenen Selbstschnitte, also weiß der
+Kandidat, wie viele Kreuzungen in eine Nachbarschaft gehören
+(mits Doppel steht in der Karte, die Gewebe nicht).
+
+**EIN Knopf: `UNTWIST_SOLL_BUDGET`** (False = v0.13-Verhalten;
+True = Budget-Regel). Die Regel: ein Ereignis-Paar darf nur
+entdrillt werden, wenn die Nachbarschaft danach nicht UNTER ihr
+Soll fällt — `n_events_near − 2 ≥ n_soll_near`, mit
+`n_events_near` = Kandidaten-Schnitt-Ereignisse und
+`n_soll_near` = Karten-Selbstschnitte im festen Radius
+`UNTWIST_SOLL_RADIUS_UNITS` = 0,55 xh um den Paar-Mittelpunkt
+(der Matcher-Radius des Lineals, als deklarierter Snapshot,
+kein Suchknopf). Damit ist mits Doppel konstruktiv geschützt
+(3 − 2 < 2), während die Gewebe (Soll 0–1, Ereignisse 3–6)
+paarweise fallen.
+
+**Leiter: Budget an × Fenster {0,5 · 0,8}** — die Hypothese ist,
+dass das weite Fenster ERST mit dem Budget sicher wird und dann
+auch mit-2s und Galoppierens Rest-Duplikate erreicht. Gates
+gegen den v0.13-Stand (missing 1 · spurious 5 · Netto 6):
+`cross_missing` ≤ 1 (steigt es, hat auch das Budget ein echtes
+Paar nicht geschützt — Kill, Rettungsweg wäre Matching gegen
+die Soll-POSITIONEN statt Zählungen); `cross_spurious` fällt
+netto (Erwartung ≤ 3); Marken unverändert; Retrace ohne
+Netto-Anstieg; `aiou`-Median-Δ ≥ −0,02 gegen 0,7398; dtw je
+Wort ±0,003; p90 ≤ 0,113; reversed 0. Adoptiert wird höchstens
+EINE Stufe.
+
+**Gemessen `aug19` — BEIDE Stufen verworfen; der Fund schließt
+den Tag mit der dritten unabhängigen Bestätigung derselben
+Wurzel.** Leiter (dev-19, je 19/19 ok): w0,5+Budget → nur noch
+6 statt 16 Paare entdrillt, `cross_spurious` 5 → **6** — das
+Budget VETIERT ausgerechnet wills bereits geheilten Fix: die
+feste 0,55-Radius-Zählung wirft das benachbarte ECHTE
+l-Kreuzungs-X (0,28 xh entfernt) mit in die
+Gewebe-Nachbarschaft, und die Arithmetik wird fälschlich
+konservativ. w0,8+Budget → zusätzlich `cross_missing` 1 → **2**:
+in unters e→r-Region — der am schlechtesten platzierten
+Karten-Stelle der Runde — liegen die Karten-Selbstschnitte
+NEBEN der Tinte, das echte Paar hat dort kein Soll in
+Reichweite und stirbt trotz Budget: **das Soll-Budget erbt
+exakt die Karten-Platzierungsfehler, die v0.14 schon als
+Gate-Brecher maß.** Beide Stufen von ihren Gates verworfen,
+`UNTWIST_SOLL_BUDGET` bleibt False (Knopf + Test bleiben
+deklariert); v0.13 (Geometrie-only, 0,5) bleibt der adoptierte
+Stand. Die Lehre in einem Satz: Punkt-, Zonen- und jetzt auch
+BUDGET-Verfeinerungen des Lotsen sind alle an derselben Decke —
+die drei verbleibenden Duplikate und die „all"-Stufe warten auf
+die KARTEN-FORM-Autorenschritte, danach sind v0.14 und eine
+soll-geführte Entdrillung (dann mit vertrauenswürdiger Karte,
+Positions- statt Zähl-Matching) gemeinsam wiedervorzulegen.
+§7.9-Zeile im selben PR.

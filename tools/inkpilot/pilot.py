@@ -158,6 +158,32 @@ MAP_CROSSING_MIN_ARC_UNITS = 0.35
 # FIXED endpoints. Structure is a GATE, not code: the bench counters must
 # stay byte-identical or the arm is rejected. 0 = off.
 SMOOTH_ITERATIONS = 0
+# v0.13 (pre-registered, L1g): pairwise untwisting of weave duplicates. The
+# duplicate-X sites are WEAVES — several intersection events of the same
+# pass pair inside a small window (3/5/6 raw events where the hand crosses
+# 1/1/0 times), so removal must be PAIRWISE to keep the parity (the v0.12
+# chord removed all of them and the crossing with it). A pair = two events
+# whose arc gaps on BOTH sides are <= this window (in xh) and whose crossing
+# points lie within half of it; the WIGGLE arc between the pair's parameters
+# (the side with the larger chord deviation — the pre-reg precision pinned
+# by the unit test) is MIRRORED across the chord P1->P2 — both crossings of
+# the pair vanish, direction and parametrisation stay, the geometry stays
+# within the wiggle's own amplitude. Iterated to a fixed cap, count logged.
+# ADOPTED aug19 at 0.5 (dev-19: net crossing defects 7 -> 6, will's
+# duplicate heals, everything else within gates); 0.8 rejected by its own
+# kill (it untwists genuinely close REAL pairs — mit's t double at 0.07 xh).
+# The remaining duplicates need the soll-budgeted discriminator (§7.9).
+UNTWIST_WINDOW_UNITS = 0.5
+UNTWIST_MAX_PASSES = 8
+# v0.15 (pre-registered, L1h): the soll-budgeted untwist. Geometry alone
+# cannot tell a weave duplicate from a genuinely close REAL pair, but the
+# MAP knows its own self-intersections — a pair may only untwist where the
+# neighbourhood does not fall BELOW its soll afterwards
+# (n_events_near - 2 >= n_soll_near, counted in the fixed matcher-radius
+# snapshot below). mit's t double (soll 2) is protected by construction;
+# the weaves (soll 0-1, events 3-6) fall pairwise. False = v0.13 behaviour.
+UNTWIST_SOLL_BUDGET = False
+UNTWIST_SOLL_RADIUS_UNITS = 0.55  # the ruler's matcher radius, as a snapshot
 # v0.10 (pre-registered, L1d): junction-anchored pinning of map runs. The
 # owner's visual find (the k curl untraced, the W riding air) autopsied to
 # MERGED crossing windows — where map self-intersections sit densely the
@@ -940,6 +966,169 @@ def run_out_tails(strokes: list[np.ndarray], pg: PilotGraph, xh_px: float, max_u
     return out
 
 
+def _chain_intersections(pts: np.ndarray, min_arc_px: float, arc: np.ndarray) -> list[tuple[int, int, np.ndarray]]:
+    """Proper self-intersections of one point chain: `(i, j, point)` with i < j.
+
+    Pairs closer than `min_arc_px` ALONG the chain are polyline corners, not
+    crossings — the counters' own same-stroke floor, applied in arc length so
+    the mixed sampling density of rail and map stretches cannot bias it.
+    """
+    p = pts[:-1]
+    r = pts[1:] - pts[:-1]
+    out: list[tuple[int, int, np.ndarray]] = []
+    n = len(p)
+    for i in range(n):
+        rxs = r[i, 0] * r[:, 1] - r[i, 1] * r[:, 0]
+        qp = p - p[i]
+        with np.errstate(divide="ignore", invalid="ignore"):
+            t = (qp[:, 0] * r[:, 1] - qp[:, 1] * r[:, 0]) / rxs
+            u = (qp[:, 0] * r[i, 1] - qp[:, 1] * r[i, 0]) / rxs
+        ok = (np.abs(rxs) > 1e-12) & (t > 0.0) & (t < 1.0) & (u > 0.0) & (u < 1.0)
+        ok[: i + 1] = False  # each pair once, i < j
+        for j in np.flatnonzero(ok):
+            if arc[j] - arc[i] < min_arc_px:
+                continue
+            out.append((i, int(j), p[i] + t[j] * r[i]))
+    return out
+
+
+def map_self_intersections(samples_per_stroke: list[np.ndarray]) -> np.ndarray:
+    """All proper self-intersection points of the composed map, in crop px.
+
+    The same pair enumeration `map_crossing_masks` and `map_crossing_knots`
+    walk (min-arc floor for the same-stroke case) — here only the POINTS,
+    as the v0.15 soll budget of the untwist.
+    """
+    min_sep = max(2, int(round(MAP_CROSSING_MIN_ARC_UNITS / SAMPLE_STEP_UNITS)))
+    pts: list[np.ndarray] = []
+    for ai in range(len(samples_per_stroke)):
+        for bi in range(ai, len(samples_per_stroke)):
+            a, b = samples_per_stroke[ai], samples_per_stroke[bi]
+            for i, j in _segment_intersections(a, b, min_sep if ai == bi else None):
+                pts.append(_intersection_point(a[i], a[i + 1], b[j], b[j + 1]))
+    return np.asarray(pts, dtype=float).reshape(-1, 2)
+
+
+def untwist_strokes(
+    strokes: list[np.ndarray], xh_px: float, window_units: float, soll_points: np.ndarray | None = None
+) -> tuple[list[np.ndarray], int]:
+    """v0.13: remove weave duplicates pairwise by mirroring the wiggle arc.
+
+    Two intersection events form a pair when both their arc gaps are within
+    the window and their crossing points within half of it — genuinely
+    separate crossings (the l loops, a full x-height apart) never qualify.
+    THE WIGGLE — the side with the larger maximal chord deviation (the
+    pre-reg precision pinned by the unit test) — is mirrored across the
+    chord P1->P2: both crossings of the pair vanish, the parity of the site
+    is preserved (3 -> 1, 5 -> 1, 6 -> 0), direction stays untouched. A
+    wiggle spanning a pen lift is left alone — a mirror across strokes would
+    invent pen travel.
+
+    v0.15 (`soll_points`, with `UNTWIST_SOLL_BUDGET`): the MAP's own
+    self-intersections budget every neighbourhood — a pair may only untwist
+    when `n_events_near - 2 >= n_soll_near` in the fixed matcher-radius
+    snapshot, so a genuinely close REAL pair (mit's t double, soll 2) is
+    protected by construction while the weaves (soll 0-1) fall pairwise.
+    """
+    if window_units <= 0.0 or not strokes:
+        return strokes, 0
+    window_px = window_units * xh_px
+    soll = None
+    if UNTWIST_SOLL_BUDGET and soll_points is not None:
+        soll = np.asarray(soll_points, dtype=float).reshape(-1, 2)
+    soll_radius_px = UNTWIST_SOLL_RADIUS_UNITS * xh_px
+    lengths = [len(s) for s in strokes]
+    bounds = np.cumsum([0, *lengths])
+    pts = np.vstack(strokes).astype(float)
+    total = 0
+    for _ in range(UNTWIST_MAX_PASSES):
+        seg = np.vstack([np.zeros((1, 2)), np.diff(pts, axis=0)])
+        arc = np.cumsum(np.hypot(seg[:, 0], seg[:, 1]))
+        events = _chain_intersections(pts, MAP_CROSSING_MIN_ARC_UNITS * xh_px, arc)
+        # Cross-stroke "intersections" of the concatenated chain via the
+        # virtual lift segment are impossible here: each stroke keeps its own
+        # rows, and a segment index on a boundary row belongs to the lift —
+        # exclude it.
+        lift_rows = {int(b) - 1 for b in bounds[1:-1]}
+        events = [e for e in events if e[0] not in lift_rows and e[1] not in lift_rows]
+        events.sort(key=lambda e: (e[0], e[1]))
+        fixed_any = False
+        used: set[int] = set()
+        dirty: list[tuple[int, int]] = []  # mirrored point ranges of THIS pass
+        for a in range(len(events)):
+            if a in used:
+                continue
+            i1, j1, p1 = events[a]
+            if any(lo_ - 1 <= s <= hi_ for s in (i1, j1) for lo_, hi_ in dirty):
+                continue
+            best = None
+            for b in range(a + 1, len(events)):
+                if b in used:
+                    continue
+                i2, j2, p2 = events[b]
+                if any(lo_ - 1 <= s <= hi_ for s in (i2, j2) for lo_, hi_ in dirty):
+                    continue
+                if abs(arc[i2] - arc[i1]) > window_px or abs(arc[j2] - arc[j1]) > window_px:
+                    continue
+                if float(np.hypot(*(p2 - p1))) > window_px / 2.0:
+                    continue
+                if soll is not None:
+                    # v0.15 budget: never untwist a neighbourhood below its
+                    # soll. Events and soll crossings counted around the
+                    # pair's midpoint in the fixed matcher radius.
+                    mid = (p1 + p2) / 2.0
+                    n_events = sum(1 for _, _, pe in events if float(np.hypot(*(pe - mid))) <= soll_radius_px)
+                    n_soll = int(np.sum(np.hypot(soll[:, 0] - mid[0], soll[:, 1] - mid[1]) <= soll_radius_px))
+                    if n_events - 2 < n_soll:
+                        continue
+                best = b
+                break
+            if best is None:
+                continue
+            i2, j2, p2 = events[best]
+            # The two candidate wiggles, as half-open index ranges of points
+            # strictly between the pair's segments; the VALID one (non-empty,
+            # within one pen stroke) with the larger chord deviation is
+            # mirrored — see the wiggle selection below.
+            chord = p2 - p1
+            norm = float(np.hypot(*chord))
+            if norm < 1e-9:
+                continue
+            d = chord / norm
+            # THE WIGGLE is the side with the larger maximal chord deviation
+            # (pre-reg precision, pinned by the unit test: the chord-side
+            # counterpart has arc ~ chord length, so an arc-length pick is
+            # degenerate and its mirror a no-op). A side without measurable
+            # deviation is never the wiggle.
+            sides = []
+            for lo_, hi_ in ((min(i1, i2) + 1, max(i1, i2) + 1), (min(j1, j2) + 1, max(j1, j2) + 1)):
+                if hi_ <= lo_:
+                    continue
+                stroke_of = np.searchsorted(bounds, [lo_, hi_ - 1], side="right")
+                if stroke_of[0] != stroke_of[1]:
+                    continue  # the wiggle spans a pen lift
+                rel_ = pts[lo_:hi_] - p1
+                dev = float(np.max(np.abs(rel_[:, 0] * d[1] - rel_[:, 1] * d[0]), initial=0.0))
+                if dev > 1e-6:
+                    sides.append((dev, lo_, hi_))
+            if not sides:
+                continue
+            _, lo, hi = max(sides)
+            rel = pts[lo:hi] - p1
+            along = rel @ d
+            across = rel - np.outer(along, d)
+            pts[lo:hi] = p1 + np.outer(along, d) - across  # the mirror
+            used.update((a, best))
+            dirty.append((lo, hi))
+            total += 1
+            fixed_any = True
+        if not fixed_any:
+            break
+    if not total:
+        return strokes, 0
+    return [pts[bounds[k] : bounds[k + 1]] for k in range(len(strokes))], total
+
+
 def smooth_strokes(strokes: list[np.ndarray], iterations: int) -> list[np.ndarray]:
     """v0.6: iterations of the (1, 2, 1)/4 local mean, endpoints fixed."""
     if iterations <= 0:
@@ -1044,6 +1233,10 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
         strokes = offset_double_passes(strokes, np.asarray(case.width_map, dtype=float), DOUBLE_PASS_OFFSET_FRACTION)
     if SMOOTH_ITERATIONS > 0:
         strokes = smooth_strokes(strokes, SMOOTH_ITERATIONS)
+    untwisted = 0
+    if UNTWIST_WINDOW_UNITS > 0.0:
+        soll_pts = map_self_intersections(samples_per) if UNTWIST_SOLL_BUDGET else None
+        strokes, untwisted = untwist_strokes(strokes, xh_px, UNTWIST_WINDOW_UNITS, soll_points=soll_pts)
     detail = {
         "nodes": len(pg.graph.nodes),
         "edges": len(pg.graph.edges),
@@ -1051,6 +1244,7 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
         "registration": result.registration,
         "baseline_row": result.baseline_row,
         "xh_px": xh_px,
+        **({"untwisted": untwisted} if UNTWIST_WINDOW_UNITS > 0.0 else {}),
     }
     return strokes, detail
 

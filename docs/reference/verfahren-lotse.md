@@ -16,7 +16,7 @@
   Prior" radikaler als die Kette: direkt auf der Tinten-Mitte fahren,
   den Duktus nur an Entscheidungsstellen als KARTE fragen.
 
-## Aktueller Stand: v0.11 (2026-08-19)
+## Aktueller Stand: v0.13 (2026-08-19)
 
 Adoptierte Konstanten (`tools/inkpilot/pilot.py`):
 `TAIL_RUNOUT_MAX_UNITS` = 1,0 (Schienen-Auslauf) ·
@@ -24,14 +24,15 @@ Adoptierte Konstanten (`tools/inkpilot/pilot.py`):
 `RIDE_DOUBLE_ZONE_MARGIN_UNITS` = 0,35 (v0.7) ·
 `MAP_CROSSING_WINDOW_UNITS` = 0,35 + `MAP_CROSSING_PIN` = True (v0.9) ·
 `MAP_RUN_PIN_KNOTS` = "windows" + `PIN_KNOT_PLATEAU_UNITS` = 0,35
-(v0.11 — Knoten-Anker mit Plateau-Feld in den Fenster-Läufen).
-Zahlen (dev-19, §14 „Lotse v0.11 aug19“, lokale Basis): dtw 0,0596
-med · p90 **0,113** · Netto-Kreuzungsdefekte **7**, davon
-`cross_missing` **1** (nur unters letzter Ritt-Rest — Galoppierens
-p-Schleifen-X kehren zurück, obwohl die Komposition sie nicht hat) ·
-Kreuzungs-Ortsfehler-Median **0,066 xh** (v0.9: 0,116) ·
-`marks_missing` 0 · aiou 0,743. Dominante Rest-Spurious-Klasse:
-Doppel-X-Duplikate (4 von 6). **Paarung seit den
+(v0.11 — Knoten-Anker mit Plateau-Feld in den Fenster-Läufen) ·
+`UNTWIST_WINDOW_UNITS` = 0,5 (v0.13 — paarweise Entdrillung der
+Gewebe-Duplikate). Zahlen (dev-19, §14 „Lotse v0.13 aug19“, lokale
+Basis): dtw 0,0585 med · p90 **0,113** ·
+**Netto-Kreuzungsdefekte 6** (missing 1 — nur unters letzter
+Ritt-Rest; wills Duplikat entdrillt) · Kreuzungs-Ortsfehler-Median
+**0,066 xh** · `marks_missing` 0 · aiou 0,740. Rest-Spurious:
+3 Gewebe-Duplikate über dem 0,5-Fenster (Galoppieren, mit-2) —
+warten auf die soll-budgetierte Entdrillung. **Paarung seit den
 Kette-v2/v3-Re-Baselines (`aug19`, Assembly-Ordnung +
 Trace-Reparatur): Δ-Median +0,0016, Sign 12:7 — die Kette führt
 erstmals knapp auf Median (0,0491) und p90 (0,089 gegen 0,113)**
@@ -57,6 +58,9 @@ Kreuzungs-Ortsfehler (0,066 gegen 0,083 xh).
 | aug19 | v0.10 (L1d) | `MAP_RUN_PIN_KNOTS` roh — Knoten-Anker als Punkt-Knoten (Owner-Fund: k-Kringel/W/r) | verworfen (Punkt-Feld schert an der Kreuzung: Merge/Oskulation in dichten Clustern; Gewinnseite real: aiou +0,027, Ortsfehler halbiert, Spurious-Heilung) |
 | aug19 | v0.11 (L1e) | dieselben Anker als **Plateau-Feld** (starre Cluster-Translation, global fusioniert) | **adoptiert "windows"** (Defekte 7, missing 3 → 1 inkl. Galoppieren-p-Rückkehr, Ortsfehler −43 %, k-Kringel nachgefahren; "all" um ein Doppel-X verworfen) |
 | aug19 | v0.12 (L1f) | `PIN_PLATEAU_CHORD` — Plateau-Sehne gegen die Doppel-X-Duplikate | verworfen (der Wackel WAR das X: Sehnen an Schleifenschlüssen parallel, missing 1 → 8, Retraces zerstört; Rettungswege Entdrillung/asymmetrische Sehne benannt) |
+| aug19 | v0.13 (L1g) | `UNTWIST_WINDOW_UNITS` — paarweise Entdrillung der Gewebe-Duplikate (Spiegelung des Wiggle-Bogens an der Paar-Sehne) | **adoptiert 0,5** (Netto-Defekte 7 → 6, wills Duplikat heilt; 0,8 vom Kill verworfen — Geometrie trennt Gewebe nicht von echten engen Doppeln → soll-budgetierte Entdrillung als Rettungsweg) |
+| aug19 | v0.14 | „all" + Entdrillung — Zonen-Rides/Brücken mit Knoten-Plateau-Pinnung | verworfen per Gate (Netto 8 > 6: G-Kopf-X stirbt an der formfremden G-Karte, p erfindet eines) — aber aiou +0,012 und der stärkste Sichtbeweis der Runde (das G fast hand-gleich geritten); Wiedervorlage nach den Karten-Form-Autorenschritten |
+| aug19 | v0.15 (L1h) | `UNTWIST_SOLL_BUDGET` — Entdrillung nur, wo die Nachbarschaft nicht unter ihr Karten-Soll fällt | verworfen (das Budget erbt die Karten-Platzierungsfehler: unters echtes Paar stirbt trotz Budget, wills Fix wird fälschlich vetiert — dritte Bestätigung der Karten-Form-Decke; Wiedervorlage mit v0.14 nach den Autorenschritten) |
 
 Benannter Fehlermodus der Route: **Junction-Pinch** (Glossar) — die
 v0.7/v0.8/v0.9-Kette ist seine vollständige Abarbeitung; seit v0.11
@@ -65,13 +69,17 @@ Rest-Spurious-Klasse.
 
 ## Offene Blöcke
 
-- **Doppel-X-Duplikate** (4 der 6 Spurious): die Plateau-Sehne
-  (v0.12) ist daran gescheitert — der Wackel trägt Kreuzung und
-  Duplikat untrennbar; benannte nächste Mechanismen sind Entdrillung
-  bzw. asymmetrische Sehne (§7.9). Erst ein Erfolg dort schaltet die
-  "all"-Stufe (Zonen-Rides/Brücken-Pinning) wieder frei. Die
-  Duplikate sind keine Topologie-Erfindung (das X ist real, nur
-  doppelt gezählt) — Leidensdruck klein.
+- **Rest-Duplikate** (3 Gewebe über dem 0,5-Fenster): die
+  paarweise Entdrillung (v0.13) heilt wills Duplikat; das weite
+  Fenster (0,8) scheiterte am Diskriminator (Geometrie trennt
+  Gewebe nicht von echten engen Doppeln wie mits t-Paar) — der
+  benannte Weg ist die **soll-budgetierte Entdrillung** (§7.9).
+- **„all"-Stufe (v0.14)**: gemessen und per Gate verworfen — die
+  Tinten-Gewinne sind real (aiou +0,012, das G erstmals fast
+  hand-gleich geritten, Sichtbeweis in der Chronik), aber die
+  Struktur kippt exakt an den zwei schlimmsten
+  Karten-Form-Regionen (G-Kopf, p). Wiedervorlage NACH den
+  Karten-Form-Autorenschritten — die zahlen damit doppelt.
 - **Karten-Form-Klasse** (Katalog nach der Owner-Sichtrunde `aug19`,
   Karten-Overlays): die k-Kopfschleife (tiefer/schmaler), das
   Galoppieren-G (Oval ~halb so breit wie der Beleg, Unterschleife

@@ -57,6 +57,42 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   tracings. Adoption into the stored chain stays gated on the
   confirmation set, now with 6 instead of 4 paired words.
 
+- **Lotse v0.15 (soll-budgeted untwisting): built, measured, honest
+  negative — the third independent confirmation of the map-form
+  ceiling** (pre-registered §14 "Lotse v0.15 aug19"). The budget
+  rule (never untwist a neighbourhood below the map's own
+  self-intersection count, fixed 0.55-xh matcher-radius snapshot)
+  inherits exactly the map placement errors v0.14 measured: at
+  unter's displaced e→r map the real pair dies despite the budget,
+  and the radius count lumps will's neighbouring REAL crossing into
+  the weave's neighbourhood and falsely vetoes its healed fix. Both
+  rungs rejected by their gates; v0.13 (geometry-only, 0.5) stays
+  the adopted state, the declared knob and its unit test remain.
+  The remaining three duplicates and the "all" rung now explicitly
+  wait for the map-form author steps, after which v0.14 and a
+  position-matched soll guidance are to be re-measured together.
+
+- **Lotse v0.13 "Entdrillung" adopted; v0.14 (the "all" rung)
+  measured with the round's strongest visual proof and rejected by
+  its gate** (pre-registered §14 "Lotse v0.13/v0.14 aug19", owner go
+  "weiter mit lotse neben ink"). The duplicate autopsy shows every
+  duplicate site is a WEAVE (3/5/6 raw intersection events where the
+  hand crosses 1/1/0 times), so removal must be pairwise — the
+  untwist mirrors the wiggle arc (larger chord deviation; precision
+  pinned by a unit test) across the pair's chord, direction
+  preserved. Adopted at 0.5: net crossing defects 7 → 6, will's
+  duplicate heals; 0.8 killed by its own gate — geometry alone
+  cannot tell a weave from a genuinely close REAL pair (mit's t
+  double at 0.07 xh), naming the soll-budgeted discriminator as the
+  next mechanism. v0.14 (zones and bridges pinned, plus untwist)
+  delivers the ink gains (aiou +0.012, 8:1 words better, the
+  capital G ridden almost hand-like for the first time — the air
+  boxes gone) but flips structure in exactly the two worst map-form
+  regions (the G head crossing dies on the form-alien composed G,
+  the p invents one): rejected as pre-registered, to be re-measured
+  after the map-form author steps, which now pay double. New
+  glossary term: Entdrillung.
+
 - **Kette v3: the trace-level spike repair, adopted with a dated
   re-baseline** (pre-registered §14 "Kette K-B aug19"). The §11
   outlier class the owner spotted (the V into the i-dot, the needle
