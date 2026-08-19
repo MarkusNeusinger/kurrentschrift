@@ -31,10 +31,13 @@ from tools.tracebench.view import (
     PALETTE,
     REFERENCE_LABEL,
     assign_colors,
+    body_arc_positions,
     build_parser,
+    decimate_peaks,
     main,
     mark_flags,
     parse_pairs,
+    residual_values,
     select_ids,
     stroke_path_data,
     structure_marks,
@@ -115,6 +118,40 @@ def test_structure_marks_separate_overlap_from_retrace_and_place_rings() -> None
     x, y = marks.crossings[0]
     assert x == pytest.approx(1.0 * XH_PX, abs=0.5)
     assert y == pytest.approx(BASELINE_ROW - 1.0 * XH_PX, abs=0.5)
+
+
+# ------------------------------------------------------------------ residuals
+
+
+def test_residual_zero_at_identity_and_the_offset_under_a_pure_shift() -> None:
+    """The profile is the headline's own pairing: identity reads flat zero, a
+    perpendicular shift reads flat at exactly the shift — never a re-derived
+    nearest-neighbour distance that could disagree with `dtw_xh`.
+    """
+    line = np.column_stack([np.linspace(0.0, 4.0, 201), np.zeros(201)])
+    assert residual_values(line, line) == pytest.approx(np.zeros(201), abs=1e-12)
+    assert residual_values(line, line + np.array([0.0, 0.07])) == pytest.approx(np.full(201, 0.07), abs=1e-9)
+
+
+def test_arc_positions_accumulate_ink_only_and_name_the_lifts() -> None:
+    """The x-axis is written ink: the jump between two strokes adds no arc,
+    and every pen lift becomes a marker position.
+    """
+    two = [np.array([[0.0, 0.0], [1.0, 0.0]]), np.array([[1.5, 0.0], [2.5, 0.0]])]
+    arc_x, lifts = body_arc_positions(two)
+    assert len(arc_x) == 4
+    assert arc_x[-1] == pytest.approx(2.0)  # 1.0 + 1.0 of ink, the 0.5 jump uncounted
+    assert lifts == [pytest.approx(1.0)]
+
+
+def test_decimation_keeps_every_peak() -> None:
+    """Striding may thin the flat stretches, never swallow a spike."""
+    spiky = np.column_stack([np.linspace(0.0, 1.0, 1000), np.zeros(1000)])
+    spiky[500, 1] = 0.9
+    out = decimate_peaks(spiky, 100)
+    assert len(out) <= 100
+    assert out[:, 1].max() == pytest.approx(0.9)
+    assert (np.diff(out[:, 0]) > 0).all()  # …and x stays monotone
 
 
 # -------------------------------------------------------------------- colours
@@ -261,7 +298,12 @@ def test_page_carries_both_layers_and_stays_self_contained(tmp_path: Path) -> No
     assert 'data-id="die"' in page
     assert f'data-label="{REFERENCE_LABEL}"' in page
     assert 'data-label="chain"' in page
-    assert page.count('<g class="layer"') == 2
+    # Two trace layers on the stage, plus the candidate's residual curve, which
+    # shares the layer class so the legend checkbox toggles both together.
+    assert page.count('<g class="layer"') == 3
+    assert '<svg class="resid-chart"' in page
+    assert 'class="resid-map"' in page
+    assert '<circle class="probe"' in page
     # …the animation is dash-driven per stroke (animation-rendering.md §1) but
     # the RESTING markup carries no dash, and the dash the JS applies during
     # the animation uses the REAL geometric length (getTotalLength): the

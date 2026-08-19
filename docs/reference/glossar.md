@@ -53,7 +53,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
-- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
+- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenfolger §3 · Tintenlücke §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
@@ -1232,6 +1232,23 @@ animiert alle sichtbaren Bahnen synchron in Schreibreihenfolge
 als echte Lücke). Finale Form UND Entstehung, nebeneinander statt als
 Zahlenzeile. *Technisch:* `tools/tracebench/view.py`
 → proposals/tintenfolger.md §4c
+
+**Residualprofil** — die Kurve unter jedem Wort der Duell-Ansicht, die
+je Verfahren zeigt, WO die Kopfzahl `dtw_xh` herkommt: x = Bogenlänge
+entlang der Hand-Nachfahrung (nur Tinte, Absetzer als gestrichelte
+Marker), y = Abstand der Kandidaten-Bahn in x-Höhen. Kein naives
+Punkt-n-gegen-Punkt-n bei gleicher Punktzahl (das verschöbe nach der
+ersten Extraschleife alles Folgende zum Phantomfehler), sondern der
+per-Sample-Abstand ENTLANG der optimalen DTW-Zuordnung, die auch die
+Kopfzahl mittelt — deshalb ist der Mittelwert über alle
+Zuordnungspaare exakt `dtw_xh`, und das Profil kann der Zahl nie
+widersprechen. Flach nahe 0 = sauber, Berge = daneben; Marken bleiben
+wie in der Kopfzahl außen vor; die Anzeige-Dezimierung behält je
+Fenster das SCHLECHTESTE Sample (ein Ausreißer kann nicht
+weggeglättet werden), und Hover setzt eine Sonde an die entsprechende
+Wortstelle. *Technisch:* `tools/tracebench/view.py::residual_values`
+(über den Warping-Pfad `metric.DtwResult.pairs` — Anzeige-Zugang zur
+Zuordnung, zahlenneutral) → reference/qualitaetsmetrik.md §14
 
 **Chronik (tracebench)** — die create-only Rundenhistorie des Duells:
 jeder Optimierungs-/Mess-Lauf wird als zeitgestempeltes Verzeichnis

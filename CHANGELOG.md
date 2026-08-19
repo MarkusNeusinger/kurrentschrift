@@ -14,6 +14,27 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Duel page: a residual profile per word — where the headline number
+  comes from** (`tools/tracebench/view.py`). Below each word's numbers
+  table the page now plots, per candidate method, the distance to the
+  hand re-tracing along the hand's body arc (in x-heights) — flat near
+  zero reads clean, a mountain reads off-track. The profile follows
+  the optimal DTW pairing the headline `dtw_xh` averages over — never
+  a same-point-count subtraction, which would turn everything after
+  the first extra loop into a phantom error — so the curve's mean over
+  the pairing IS `dtw_xh` and the chart can never disagree with the
+  number it explains. Pen lifts of the hand appear as dashed markers,
+  marks stay held out exactly as in the headline, the legend
+  checkboxes toggle curve and trace together, display decimation
+  keeps each window's WORST sample so a spike cannot be smoothed
+  away, and hovering the chart pins an orange probe onto the
+  matching spot of the hand's trace in the word image. To feed the
+  chart, `metric.DtwResult` now also carries the optimal warping
+  path (`pairs`) — display-grade access to the alignment in the
+  `classified_pass_points` tradition; every measured value is
+  untouched (pinned by the existing metric tests). New term
+  "Residualprofil" added to the glossary.
+
 - **English style anchored: the Google developer documentation style
   guide becomes the reference fallback for the repository's English
   artifacts** (`sprachregelung.md` §4, owner decision 2026-08-18;
