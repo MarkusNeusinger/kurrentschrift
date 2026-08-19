@@ -57,6 +57,25 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   tracings. Adoption into the stored chain stays gated on the
   confirmation set, now with 6 instead of 4 paired words.
 
+- **The soll-aware K0 guard (`--structure-guard-soll`): built,
+  pre-registered and measured over all 63 words** — the named rescue
+  path (c) of the production-chain question. Acceptance becomes an
+  interval per structure class between the chain optimum's count and
+  the composed init's count (x0 through the same assembler and
+  counters): movement only toward the soll. Measured against the raw
+  chain in one pinned environment: four of five gates pass — seven
+  dev words strictly ink-closer (das −0.012, und −0.007, muß-2
+  −0.007; dev median 0.0576 → 0.0494), aiou never negative (up to
+  +0.11), marks byte-equal, 63/63 ok at ~10 s/word — but the
+  structure axis freezes again (soll distance 107 = 107), and the
+  round protocol proves why: the round-ATOMIC rejection discards a
+  bundled soll-ward repair together with its violation (unter:
+  overlap 3 → 2 allowed, touch 3 → 6 forbidden, one solve). Formally
+  not adopted; as a production candidate it dominates the two-sided
+  guard on every measured axis. Named next mechanism: zonal
+  rejection (freeze only the violating zone's anchors), own
+  pre-registration.
+
 - **Duel view: a "Feinschliff (nur Anzeige)" toggle** smooths the
   CANDIDATE traces for the eye ((1, 2, 1)/4, endpoints fixed, three
   iterations) — the display-stage consequence of the v0.6 verdict (the

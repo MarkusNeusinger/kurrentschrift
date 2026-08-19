@@ -53,7 +53,7 @@ nummeriert (Konvention Nr. 3).
 | aug16 | Wächter als Produktions-Kette | `structure_guard` als Harvest-Default | GEMESSEN: einseitig vom eigenen Kill verworfen (3 Kreuzungs-Kollapse ungestraft), zweiseitig Pareto-sicher, aber „irgendwo strikt besser“ formal unerfüllbar — Owner-Abwägung (a)/(b)/(c) offen | „Wächter als Produktions-Kette aug16“ |
 | aug17 | Re-Baseline 19er-Dev-Satz | — | dev-19-Zahlen oben | „Re-Baseline aug17“ |
 | aug19 | A1-Nachmessung dev-19 | dieselbe opt-in Variante, §7.7-Protokoll | Marken-Ortsfehler-Median 0,111 → 0,030 (−73 %), Körper/Struktur byte-neutral — der Welle-1-Gewinn generalisiert | „Welle 1 · A1 aug15“ (Nachtrag) |
-| aug19 | soll-bewusster K0-Wächter | `--structure-guard-soll`: Intervall je Klasse zwischen Init-Budget und Kompositions-Soll | vorregistriert; Messung dieser Runde | „Wächter als Produktions-Kette aug16“ (Nachtrag `aug19`) |
+| aug19 | soll-bewusster K0-Wächter | `--structure-guard-soll`: Intervall je Klasse zwischen Init-Budget und Kompositions-Soll | GEMESSEN: 4 von 5 Gates bestehen (7 strikte dev-dtw-Gewinne, aiou nie negativ, dev-Median 0,0576 → 0,0494) — Struktur friert 107 = 107, „strikt besser" scheitert an der runden-ATOMAREN Rückweisung (unter-Protokoll); als sichere Produktions-Bahn dominiert er den zweiseitigen; Rettungsweg zonale Rückweisung (§7.9) | „Wächter als Produktions-Kette aug16“ (Nachtrag `aug19`) |
 
 ## Stehende v2-Anwärter (Formulierungsänderungen, tintenfolger.md §7.3)
 

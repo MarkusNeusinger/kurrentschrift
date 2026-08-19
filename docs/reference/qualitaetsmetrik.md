@@ -5192,6 +5192,39 @@ drei Kreuzungs-Kollapse (Sporn/einer/er-3) bleiben vetiert,
 alles, ist die Adoptions-EMPFEHLUNG automatisch erfüllt; der
 Re-Harvest selbst bleibt Owner-Go + dbsnapshot.
 
+**Gemessen `aug19` — vier von fünf Gates bestehen (Gate (i)
+sogar mit SIEBEN strikten dtw-Gewinnen), die Struktur-Klausel
+bleibt formal unerfüllbar — und das Runden-Protokoll benennt
+den Mechanismus exakt.** Beide Arme 63/63 ok, identisch
+gepinnte Umgebung, gewacht 651 s gesamt (≈ 10,3 s/Wort — weit
+im Budget). (i) dev-19 gepaart: Median-Δ 0,0000, KEIN Wort
+schlechter, sieben strikt besser (das −0,0123 · und −0,0074 ·
+muß-2 −0,0065 · und-3 −0,0041 · will/mit/und-2 klein); der
+eigene dev-Median fällt 0,0576 → 0,0494. (iii) `aiou` je Wort
+NIE negativ, bis +0,108 (und), dev-Median +0,024; beide
+Chamfer-Hälften besser. (iv) Marken byte-gleich 1+1.
+(ii) ABER: Gesamt-Soll-Abstand exakt **107 = 107** (0 besser ·
+63 gleich · 0 schlechter) — wieder friert die Struktur. Das
+`unter`-Protokoll zeigt warum: Runde 1 bewegt overlap 3 → 2
+(RICHTUNG Soll 0, im Intervall erlaubt), bündelt das aber im
+selben Solve mit touch 3 → 6 (WEG vom Soll 0) — die
+runden-ATOMARE Rückweisung (auch nach zwei Halbierungs-Retries)
+verwirft die Reparatur mitsamt der Verletzung. Die Soll-Richtung
+ist also nicht die Schranke; die ATOMARITÄT ist es. NICHT
+adoptiert (nach dem Buchstaben der Klausel), aber als
+PRODUKTIONS-KandIDAT dominiert der soll-bewusste Wächter den
+zweiseitigen auf jeder gemessenen Achse (nirgends schlechter,
+sieben Dev-Wörter strikt tinten-näher, aiou bis +0,11, Struktur
+= Kette). Die Owner-Abwägung erweitert sich auf: (a) zweiseitig
+· (b) roh · (c′) **soll-bewusst (die beste sichere Bahn dieser
+Messreihe)** · (d) der benannte nächste Mechanismus für „strikt
+besser": **zonale Rückweisung** — nicht der ganze Round wird
+verworfen, sondern nur die Anker-Nachbarschaft der
+VERLETZENDEN Zone wird auf die Vorrunden-Geometrie zurückgesetzt
+bzw. eingefroren und nachgelöst, sodass eine gebündelte
+Soll-Reparatur den Round überlebt (eigene Vorregistrierung,
+§7.9-Zeile im selben PR).
+
 ### Route „Lotse" `aug16` — Vorregistrierung: Skelett fahren, Duktus als Karte
 
 Geschrieben und committet VOR der ersten Bench-Zahl. Owner-Idee
