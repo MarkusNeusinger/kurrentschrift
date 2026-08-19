@@ -6640,3 +6640,108 @@ Autorenschritt im engen Sinn nur noch der BESTÄTIGUNGSSATZ;
 alles andere (Versalien-Laufform · W→e-Join · p-Überstand ·
 e→r-Platzierung · o→r-Höhe · Vorschub-Drift) ist als messbarer
 Kompositions- oder Laufform-Arm eingeordnet.
+
+**Dritter Nachtrag `aug19` spät — die Autopsien korrigieren BEIDE
+Mechanismen des zweiten Nachtrags; die Wurzel wird dadurch
+einheitlicher, nicht kleiner.** Zwei unabhängige Code-Autopsien
+(Recon-Runde, je mit Repro auf der eingefrorenen Karte) drehen
+die Detail-Diagnosen:
+
+(1) **W: der Join balloniert NICHT.** Auf der komponierten
+Wer-Karte bleibt der W→e-Verbinder in y ≤ 0,56, das komponierte e
+endet normal bei 0,943, Entry-Trim 0 — der „Oberlängen-Ballon"
+des zweiten Nachtrags war die dritte W-SCHLEIFE DER REFERENZ über
+der zu weit links komponierten e-Position. Der echte Befund: die
+komponierten W-Apexe liegen bei x 0,45/1,16/2,38 gegen die Hand
+0,81/1,51/2,82 (~0,4 xh links, Höhen binnen 0,05 xh), das
+komponierte e startet bei x 2,88 MITTEN in der dritten
+Hand-Schleife. Das ist die Laufform-Lücke des W (1 QC-Fit, kein
+`LAUFFORM_SX`-Eintrag) — der „W→e-Join-Arm" entfällt, das W fällt
+in den Lücken-Schluss (LF1).
+
+(2) **p: kein Composer-Klassenfall — die gespeicherte p-LAUFFORM
+hat den Durchstoß an den Median verloren.** p steht in KEINER
+Klassentabelle (`LOOP_EXIT_BASES` = {d, s}; die
+Descender-Maschinerie feuert bei Exit-y +0,79 nie) — die Rückkehr
+ist authored Geometrie. Die komponierten p-Kreuzungen EXISTIEREN
+sogar (2,5–4,8× über der Pierce-Marge) und fallen erst am
+v2.1-Retrace-Filter: die Schenkel laufen vor dem X zu eng/parallel
+(Partner-Kriterium 0,16 xh). Wurzel: das CHART-p behält isoliert
+seine Kreuzung (1), die gespeicherte LAUFFORM verliert sie (0) —
+der Anker-Median hat den Schleifenschluss glattgebügelt
+(Annäherungs-Spalt 0,126 → 0,081 xh). Das Hand-Soll, an beiden
+p-Belegen gemessen: Kreuzungswinkel 67,6°/65,6°, 0,05-xh-Freigang
+nach 0,073/0,065 xh Bogen, die Rückkehr steigt bis v ≈ 0,92 in
+den Join. Der im zweiten Nachtrag skizzierte
+K1c-Composer-Überstand ist damit UNGEMESSEN zurückgezogen (nie
+vorregistriert, keine Zahl erzeugt); an seine Stelle tritt der
+Laufform-Arm **LF2 „p-Topologie"** — Autopsie des
+Occurrence-Stapels zuerst (verlieren die Einzel-Fits das X, oder
+frisst erst der Median es?), dann eigene Pre-Reg.
+
+Damit ziehen ALLE drei Owner-Stellen des Abends (G, W, p) auf
+DIESELBE Schicht: die Laufform — als Lücke (G/W/k: 15 der 34
+Fixture-Glyphen ohne Variante 100, darunter alle Versalien) und
+als Aggregations-Defekt (p). Der Karten-Form-Katalog des Abends
+besteht aus zwei Laufform-Armen (LF1/LF2) plus den
+Platzierungs-Klassen (e→r · o→r · Vorschub-Drift).
+
+### Laufform LF1 `aug19` — Vorregistrierung: der Lücken-Schluss (Evidenz-Boden der Scan-Fits)
+
+Geschrieben und committet VOR der ersten Zahl (Owner-Go „weiter
+ohne Pause die Punkte abarbeiten" nach den drei Einwänden;
+Rettungsweg-Konversion der §7.9-Zeilen v0.14/v0.15 und des ersten
+Nachtrags „Versalien-Laufform-Ausnahme").
+
+**Hypothese.** 15 der 34 Fixture-Glyphen (alle Versalien, dazu
+ae · b · f · k · s · ue · v) haben keine Laufform-Variante — die
+Komposition setzt dort die rohe Chart-Form ein, und die Schicht,
+die per Architektur die Hand-Breite trägt, schweigt. Die drei
+schlimmsten Karten-Form-Stellen der Lotse-Runde (G-Kopf, W-Apexe,
+k-Kringel) liegen alle in dieser Lücke. Der Harvest
+(`tools/laufform/harvest.py`, offline gegen die eingefrorene
+Root, keine DB) kann die Lücke aus den vorhandenen Scan-Fits
+schließen; blockiert hat bisher allein sein CLI-Boden
+`--min-n 4` (G: 3 QC-Fits; der SERVER-Boden für echte Writes ist
+`LAUFFORM_MIN_OCCURRENCES` = 3).
+
+**EIN Knopf: der Evidenz-Boden `--min-n`, Leiter {3 · 1}** —
+angewendet ausschließlich auf LÜCKEN-Glyphen (ohne gespeicherte
+Variante 100); gespeicherte Laufformen werden nie überlagert.
+Stufe 3 ist die „Versalien-Laufform-Ausnahme" des ersten
+Nachtrags (erwartet: G); Stufe 1 die Dünn-Evidenz-Stufe
+(erwartet zusätzlich W, k, …— die Fit-Zahl je Glyph wird
+berichtet, eine n=1-„Laufform" ist der eine Fit selbst). Evidenz
+sind NUR die M4/Chain-Scan-Fits der eingefrorenen Tinte — keine
+authored Traces, also keine Zirkularität gegen das
+tracebench-Lineal; Pfad `--path chain --sets words` (die
+Produktions-Evidenz der 245 gespeicherten Instanzen), BLAS
+gepinnt.
+
+**Messung (alles TROCKEN, kein DB-Write).**
+(a) wordbench `--style suetterlin --set all --laufform <drafts>`
+— per Doktrin §6 eine OFF-HEADLINE-Kandidatenzahl. Gates:
+`word_loss`/`pair_loss` ≤ +0,002 gegen die stehende Basis
+0,108091 / 0,146602; bewegen dürfen sich nur Wörter/Paare mit
+Lücken-Glyphen.
+(b) Soll-Abgleich auf einer gepatchten Kopie der Fixture-Root
+(templates_laufform.json + Drafts): `soll_cross_agree`/
+`soll_zones_agree` JE WORT — kein Wort verliert Übereinstimmung.
+(c) Lotse auf der Kandidaten-Karte (Treiber über gepatchte
+Cases, adoptierter v0.13-Stand): dev-19 gegen die v0.13-Basis —
+`cross_missing` ≤ 1 · Netto-Kreuzungsdefekte ≤ 6 ·
+aiou-Median-Δ ≥ −0,02 gegen 0,7398 · Marken unverändert · dtw je
+Wort ±0,003 außer in Wörtern mit Lücken-Glyphen · reversed 0.
+Deklariertes Registrierungs-Kaveat: das Overlay bewegt Karte UND
+tx/ty-Registrierung (word_metric-Gridsearch) — die Vergleiche
+messen Karten- plus Platzierungs-Effekt gemeinsam, so gewollt.
+(d) Sichtprüfung der G/W/k-Wörter (Overlay-Bilder).
+
+**Adoption/Write.** Adoptiert wird höchstens EINE Stufe, und nur
+als KANDIDATEN-Zustand (trocken). Ein DB-Write (PUT laufform je
+Glyph bzw. `apply-laufform`) ist ein separater Schritt hinter
+`dbsnapshot` + explizitem Owner-Go; für n<3-Zeilen erzwingt der
+Endpoint `?min_occurrences=1` als ausdrückliche Owner-Aussage.
+Danach (und erst danach) die vorregistrierte Wiedervorlage
+v0.14 + soll-geführte Entdrillung (§7.9) — trocken auf der
+Kandidaten-Karte bereits in dieser Runde vormessbar.

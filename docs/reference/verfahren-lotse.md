@@ -86,14 +86,17 @@ Rest-Spurious-Klasse.
   Glyphen (alle Versalien, k, s, v, x …) komponieren aus der rohen
   Chart-Form, weil ihnen die Laufform-Variante fehlt (G: 3 QC-Fits
   unter min-n 4, k/W: je 1); das Chart-G ist gut, DIESE Hand
-  schreibt das Oval ~65 % breiter. Messbare Kandidaten (nach den
-  drei Owner-Einwänden `aug19` spät, §14 Nachträge):
-  **Versalien-Laufform-Ausnahme** (min-n 3) ·
-  **W→e-Join-Autopsie** (die Komposition bläst die e-Schleife nach
-  dem Kapital-Exit zum Ballon; der alte K3-„W-Trace"-Autorenschritt
-  ist zurückgezogen — die aktuelle Referenz zeigt keinen
-  Ansatz-Retrace) · **p-Rückkehr-Überstand** (K1-Klasse: die Hand
-  durchsticht, die Komposition läuft tangential ein) ·
+  schreibt das Oval ~65 % breiter. Die Autopsien des Abends (§14
+  „Dritter Nachtrag") ziehen ALLE drei Owner-Stellen auf dieselbe
+  Schicht: **G/W/k = Laufform-LÜCKE** (der alte
+  K3-„W-Trace"-Autorenschritt ist zurückgezogen — die Referenz
+  zeigt keinen Ansatz-Retrace, und der vermutete W→e-Join-Ballon
+  reproduziert nicht: die komponierte W-Form liegt ~0,4 xh links
+  der Hand-Apexe) und **p = Laufform-AGGREGATIONS-Defekt** (das
+  Chart-p kreuzt, die gespeicherte p-Laufform hat den Durchstoß an
+  den Anker-Median verloren). Messbare Arme: **LF1
+  „Lücken-Schluss"** (Evidenz-Boden min-n 3 bzw. 1, nur
+  Lücken-Glyphen) · **LF2 „p-Topologie"** (nach Autopsie) ·
   e→r-Platzierung in `unter` · o→r-Höhe · Vorschub-Drift.
   Autorenschritt im engen Sinn bleibt nur der Bestätigungssatz.
 - ~~Rest-Autopsie muß-Klasse~~ **erledigt `aug19`, Attribution noch
