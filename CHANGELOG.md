@@ -14,6 +14,31 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Lotse v0.10/v0.11: junction-anchored pinning of the map runs —
+  v0.11 "windows" adopted, the k curl is finally traced** (pre-registered
+  §14 `aug19`, arms L1d/L1e; owner's visual find: the k's lower curl
+  untraced, the capital W riding air, angular runs at r/e). The autopsy
+  localized the excursions in MERGED crossing windows (up to 4.3 xh in
+  one run at linken's k) whose v0.9 end-only pinning passes the raw,
+  locally offset map form through their middle, plus the still-raw
+  double-zone rides and bridges. v0.10 (anchors as point knots: offset =
+  nearest skeleton branch node minus map self-intersection) was
+  measured-and-rejected — a point field shears at exactly the crossings
+  it anchors (merge/osculation in dense clusters). v0.11 makes each
+  anchor a rigid PLATEAU (0.35 xh) with GLOBAL cluster fusion
+  (union-find across passes), so dense clusters translate as a whole
+  and every X survives. Adopted "windows" on dev-19: net crossing
+  defects 7 (= v0.9) with `cross_missing` healed 3 → 1 — Galoppieren's
+  two p-loop crossings return although the composition itself lacks
+  them —, crossing position error median 0.116 → 0.066 xh (−43 %),
+  aiou +0.008, p90 0.118 → 0.113; honest costs: own dtw median
+  0.0578 → 0.0596, paired-vs-chain −24 % → −18 %, and the residual
+  spurious class is now dominated by double-drawn X duplicates (4 of
+  6, named next mechanism). The "all" rung (zone rides + bridges
+  pinned too) failed its gate by exactly one duplicate X and stays a
+  named rescue path. New glossary terms: Plateau-Anker,
+  Doppel-X-Duplikat.
+
 - **English style anchored: the Google developer documentation style
   guide becomes the reference fallback for the repository's English
   artifacts** (`sprachregelung.md` §4, owner decision 2026-08-18;

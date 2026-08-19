@@ -6000,3 +6000,54 @@ Anker-Idee an der Dichte-Grenze ehrlich gescheitert und der
 Rest gehört der Karten-FORM (Kompositions-Schiene: der
 k-Kopfschleifen-Bogen bleibt auch gepinnt formfremd —
 eigener Befund unten).
+
+**Gemessen `aug19` — "windows" ADOPTIERT (alle Gates bestanden),
+"all" um genau ein Doppel-X verworfen; eine
+Semantik-Korrektur unterwegs, beide Messungen berichtet.** Die
+Erstmessung implementierte die Verschmelzung LAUF-lokal — kreuzende
+Pässe konnten so verschiedene Plateau-Mittel bekommen, und `mit`/
+`zwei` verloren weiter je ein echtes X: die deklarierte Semantik
+(„der dichte Cluster wird als Ganzes starr verschoben") verlangt
+die GLOBALE Fusion über alle beteiligten Pässe (Union-Find über
+die Anker-Identitäten). Mit der deklarierten Semantik (dev-19,
+je 19/19 ok):
+
+- **"windows": Netto-Kreuzungsdefekte 1+6 = 7 (= v0.9-Stand,
+  Gate hält), `cross_missing` 3 → 1** — mit/zwei/will vollständig
+  zurück, und **Galoppierens zwei Kompositions-fehlende
+  p-Unterlängen-X kehren als einzige ECHTE Struktur-Neuheit der
+  Route zurück** (das Plateau-Feld öffnet den Karten-Retrace zur
+  Schleife, wie die Tafel sie schreibt — der G1-Autorenschritt
+  verliert seinen Rang als limitierender Faktor); Rest-Missing
+  ist allein unters letzter Ritt-Rest. Kreuzungs-Ortsfehler-Median
+  **0,116 → 0,066 xh (−43 %)** · aiou 0,7434 (+0,0083) · p90
+  0,1179 → **0,1129** · marks 0+1 unverändert · rev 0 · gepaart
+  gegen v0.9: Δ-Median −0,0018, Sign 13:6. Kosten, ehrlich:
+  eigener dtw-Median 0,0578 → 0,0596, gepaart gegen die Kette
+  −0,0137 = **−18,0 %** (v0.9: −24 %) — der Präzedenzfall ist
+  v0.7 („Struktur vor Distanz"); `retrace_missing` 5 → 6; und die
+  Spurious-Klasse wechselt ihren Charakter: 6 statt 4, davon
+  linken 3 → 1 GEHEILT, aber 4 der 6 sind **Doppel-X-Duplikate**
+  (dieselbe Kreuzung zweimal gezeichnet, weil die gepinnten
+  Pässe durch den Knoten doppelt wackeln: Galoppieren 2, mit-2 1,
+  will 1) plus ein echtes Erfundenes (Galoppieren u≈13,4).
+  `MAP_RUN_PIN_KNOTS` = "windows".
+- **"all"**: identische Heilung, aiou sogar 0,7521, aber
+  Galoppieren trägt ein viertes Spurious → Netto 8 > 7,
+  VERWORFEN um genau dieses eine Doppel-X. Die Zonen-Rides und
+  Brücken (der Rest-Kasten in Galoppieren x≈360, die
+  Wer-Diagonale) bleiben damit roh — ihr Pinning ist hinter der
+  Doppel-X-Frage eingereiht, nicht verworfen.
+
+Sichtbefund zum Owner-Anlass: **der k-Kringel in `linken` wird
+nachgefahren**, der V-Spike ist weg; verbleibend fährt die
+k-KOPFSCHLEIFE als flacher Bogen durchs Schleifen-Innere — die
+KARTE selbst ist dort formfremd (der komponierte k-Bogen liegt
+tiefer/schmaler als diese Hand schreibt): ein
+Kompositions-/Laufform-Befund, kein Ritt-Fehler, notiert für die
+Kompositions-Schiene. Offene Blöcke nach der Runde:
+(i) die Doppel-X-Duplikate — der benannte nächste Mechanismus
+ist EIN X je Knoten-Cluster (Begradigung der Fenster-Teilbahn je
+Pass durch den Knoten), er würde zugleich die "all"-Stufe
+freischalten; (ii) die Karten-Form-Klasse (k-Kopfschleife,
+W-Ansatz = K3, Autorenschritt). §7.9-Zeilen im selben PR.

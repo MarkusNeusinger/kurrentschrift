@@ -158,6 +158,37 @@ MAP_CROSSING_MIN_ARC_UNITS = 0.35
 # FIXED endpoints. Structure is a GATE, not code: the bench counters must
 # stay byte-identical or the arm is rejected. 0 = off.
 SMOOTH_ITERATIONS = 0
+# v0.10 (pre-registered, L1d): junction-anchored pinning of map runs. The
+# owner's visual find (the k curl untraced, the W riding air) autopsied to
+# MERGED crossing windows — where map self-intersections sit densely the
+# +-0.35-xh windows chain into runs of up to 4.3 xh, and the v0.9 end-only
+# interpolation passes the raw (locally offset) map form through their
+# middle — plus the still-raw v0.5/v0.7 zone rides and natural bridges.
+# The generalisation: every map run is pinned over an offset polyline whose
+# KNOTS are the run boundaries (the v0.9 math, unchanged) PLUS one anchor
+# per map self-intersection inside the run — offset = nearest skeleton
+# BRANCH node (within PIN_KNOT_NODE_RADIUS_UNITS) minus the intersection
+# point; linear between knots, constant beyond the outermost, raw without
+# any. "off" = v0.9 · "windows" = knot pinning for the forced crossing
+# windows only · "all" = the same for double-zone rides and bridges too.
+# v0.10 (raw point knots) measured-and-rejected aug19: the point field
+# shears at the crossings it anchors. ADOPTED aug19 as v0.11 "windows"
+# (plateau field below): dev-19 net crossing defects 7 (= v0.9) with the
+# missing class healed to 1 (Galoppieren's two composition-missing p
+# crossings return), crossing position error 0.116 -> 0.066 xh, aiou
+# +0.008, p90 0.118 -> 0.113; "all" rejected (net 8 — one duplicate X
+# beyond the gate).
+MAP_RUN_PIN_KNOTS = "windows"
+PIN_KNOT_NODE_RADIUS_UNITS = 1.0  # fixed anchor search radius, not a ladder knob
+# v0.11 (pre-registered, L1e): each anchor offset acts as a rigid PLATEAU of
+# this half-width (in xh) instead of a point knot — a crossing survives a
+# locally constant offset field exactly (both passes translate equally, the X
+# moves rigidly), while v0.10's point knots sheared the field at the crossing
+# itself (merge/osculation in dense clusters, the measured aug19 negative).
+# Overlapping plateaus fuse into one interval carrying the mean of their
+# anchor offsets; interpolation continues between plateaus and run
+# boundaries. 0.0 = point knots (the rejected v0.10 field).
+PIN_KNOT_PLATEAU_UNITS = 0.35
 
 
 @dataclass(frozen=True)
@@ -589,6 +620,154 @@ def _pin_forced_runs(pg: PilotGraph, samples: np.ndarray, seq: list[PixelLoc | N
     return out
 
 
+def map_crossing_knots(
+    pg: PilotGraph, samples_per_stroke: list[np.ndarray], xh_px: float
+) -> list[list[tuple[int, np.ndarray]]]:
+    """v0.10: one anchor knot per map self-intersection, per stroke.
+
+    For every self-intersection of the (unpinned) map samples the nearest
+    skeleton BRANCH node within PIN_KNOT_NODE_RADIUS_UNITS names where the ink
+    itself puts that crossing; the knot's offset moves the intersection point
+    onto the node. Both involved passes receive the same anchor, so the map's
+    X lands on the ink's junction constructively. Intersections without a
+    branch node in reach contribute no knot (the boundary interpolation of
+    `_pin_map_runs` covers them, which is exactly the v0.9 behaviour).
+
+    v0.11's declared plateau semantics ("a dense cluster shifts rigidly as a
+    whole") is GLOBAL across passes: anchors whose plateaus chain-overlap
+    along any stroke form one cluster, and every member carries the cluster's
+    mean offset — two crossing passes therefore translate equally and their X
+    survives exactly. The clustering happens here (union-find over anchor
+    identities, which the per-stroke view of `_pin_map_runs` cannot see).
+    """
+    branch = [n for n in range(len(pg.graph.nodes)) if len(pg.graph.incident.get(n, [])) >= 3]
+    centers = np.asarray([pg.graph.nodes[n] for n in branch], dtype=float).reshape(-1, 2)
+    if not len(centers):
+        return [[] for _ in samples_per_stroke]
+    radius = PIN_KNOT_NODE_RADIUS_UNITS * xh_px
+    min_sep = max(2, int(round(MAP_CROSSING_MIN_ARC_UNITS / SAMPLE_STEP_UNITS)))
+    offsets: list[np.ndarray] = []  # per anchor id
+    placements: list[list[tuple[int, int]]] = [[] for _ in samples_per_stroke]  # (index, anchor_id)
+    for ai in range(len(samples_per_stroke)):
+        for bi in range(ai, len(samples_per_stroke)):
+            a, b = samples_per_stroke[ai], samples_per_stroke[bi]
+            for i, j in _segment_intersections(a, b, min_sep if ai == bi else None):
+                pt = _intersection_point(a[i], a[i + 1], b[j], b[j + 1])
+                d = np.hypot(centers[:, 0] - pt[0], centers[:, 1] - pt[1])
+                best = int(np.argmin(d))
+                if float(d[best]) > radius:
+                    continue
+                anchor_id = len(offsets)
+                offsets.append(centers[best] - pt)
+                placements[ai].append((i, anchor_id))
+                placements[bi].append((j, anchor_id))
+    if not offsets:
+        return [[] for _ in samples_per_stroke]
+    # Union-find over anchors whose plateaus chain-overlap along any stroke.
+    parent = list(range(len(offsets)))
+
+    def find(x: int) -> int:
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    reach = PIN_KNOT_PLATEAU_UNITS / SAMPLE_STEP_UNITS if PIN_KNOT_PLATEAU_UNITS > 0.0 else 0.0
+    for per in placements:
+        per.sort()
+        for (i_a, id_a), (i_b, id_b) in zip(per, per[1:], strict=False):
+            if i_b - i_a <= 2 * reach:
+                parent[find(id_a)] = find(id_b)
+    clusters: dict[int, list[int]] = {}
+    for anchor_id in range(len(offsets)):
+        clusters.setdefault(find(anchor_id), []).append(anchor_id)
+    fused = {root: np.mean(np.asarray([offsets[m] for m in members]), axis=0) for root, members in clusters.items()}
+    out: list[list[tuple[int, np.ndarray]]] = []
+    for per in placements:
+        seen: dict[int, np.ndarray] = {}
+        for i, anchor_id in per:
+            seen.setdefault(i, fused[find(anchor_id)])
+        out.append(sorted(seen.items()))
+    return out
+
+
+def _intersection_point(p0: np.ndarray, p1: np.ndarray, q0: np.ndarray, q1: np.ndarray) -> np.ndarray:
+    """The proper intersection of two segments (midpoint fallback if parallel)."""
+    r, s = p1 - p0, q1 - q0
+    rxs = float(r[0] * s[1] - r[1] * s[0])
+    if abs(rxs) < 1e-12:
+        return (p0 + p1 + q0 + q1) / 4.0
+    qp = q0 - p0
+    t = float(qp[0] * s[1] - qp[1] * s[0]) / rxs
+    return p0 + t * r
+
+
+def _pin_map_runs(
+    pg: PilotGraph,
+    samples: np.ndarray,
+    seq: list[PixelLoc | None],
+    run_mask: np.ndarray,
+    knots: list[tuple[int, np.ndarray]],
+) -> np.ndarray:
+    """v0.10: pin every masked map run over its offset-knot polyline.
+
+    Knots per run: the neighbouring boarding points (a bridge neighbour
+    contributes a zero offset, exactly as v0.9's `_pin_forced_runs`) plus the
+    junction anchors of `map_crossing_knots` that fall inside the run. Linear
+    interpolation between consecutive knots, constant beyond the outermost;
+    a run without any knot stays raw.
+    """
+    if not bool(run_mask.any()):
+        return samples
+    out = samples.astype(float).copy()
+    n = len(samples)
+    k = 0
+    while k < n:
+        if not run_mask[k]:
+            k += 1
+            continue
+        end = k
+        while end + 1 < n and run_mask[end + 1]:
+            end += 1
+        pts: list[tuple[float, np.ndarray]] = []
+        if k > 0:
+            d_a = (pg.px_of(seq[k - 1]) - samples[k - 1]) if seq[k - 1] is not None else np.zeros(2)
+            pts.append((float(k - 1), d_a))
+        anchors = [(float(i), off) for i, off in knots if k <= i <= end]
+        if PIN_KNOT_PLATEAU_UNITS > 0.0 and anchors:
+            # v0.11: rigid plateaus — constant offset over +-plateau around
+            # each anchor, overlapping plateaus fused to one interval with
+            # the mean of their anchors' offsets, clipped to the run.
+            reach = PIN_KNOT_PLATEAU_UNITS / SAMPLE_STEP_UNITS
+            merged: list[tuple[float, float, list[np.ndarray]]] = []
+            for i, off in anchors:
+                lo, hi = max(float(k), i - reach), min(float(end), i + reach)
+                if merged and lo <= merged[-1][1]:
+                    prev_lo, prev_hi, offs = merged[-1]
+                    merged[-1] = (prev_lo, max(prev_hi, hi), [*offs, off])
+                else:
+                    merged.append((lo, hi, [off]))
+            for lo, hi, offs in merged:
+                mean = np.mean(np.asarray(offs), axis=0)
+                pts.append((lo, mean))
+                if hi > lo:
+                    pts.append((hi, mean))
+        else:
+            pts.extend(anchors)
+        if end + 1 < n:
+            d_b = (pg.px_of(seq[end + 1]) - samples[end + 1]) if seq[end + 1] is not None else np.zeros(2)
+            pts.append((float(end + 1), d_b))
+        if pts:
+            pts.sort(key=lambda p: p[0])
+            xs = np.asarray([p[0] for p in pts])
+            offs = np.asarray([p[1] for p in pts]).reshape(-1, 2)
+            idx = np.arange(k, end + 1, dtype=float)
+            out[k : end + 1, 0] = samples[k : end + 1, 0] + np.interp(idx, xs, offs[:, 0])
+            out[k : end + 1, 1] = samples[k : end + 1, 1] + np.interp(idx, xs, offs[:, 1])
+        k = end + 1
+    return out
+
+
 def pilot_stroke(pg: PilotGraph, stroke_px: np.ndarray, xh_px: float) -> np.ndarray:
     """One map stroke ridden along the skeleton (assignment + assembly)."""
     samples, seq, forced = _assign_stroke(pg, stroke_px, xh_px)
@@ -769,11 +948,11 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
         forced = map_crossing_masks(samples_per, MAP_CROSSING_WINDOW_UNITS)
     else:
         forced = [None] * len(maps)
-    assignments = [
+    raw_assignments = [
         _assign_stroke(pg, s, xh_px, samples=sp, forced_priority=f)
         for s, sp, f in zip(maps, samples_per, forced, strict=True)
     ]
-    assignments = [(_pin_forced_runs(pg, samples, seq, forced_mask), seq) for samples, seq, forced_mask in assignments]
+    masks: list[np.ndarray] | None = None
     if RIDE_DOUBLE_MAP_PRIORITY:
         # Word-global double detection in WRITING order: the first pass of a
         # rail pixel keeps the rail, every later pass rides the map.
@@ -783,8 +962,8 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
         # gap in the ink — and comes back has made a second pass; only dense
         # consecutive samples parked on one pixel are the same visit.
         counter = 0
-        masks: list[np.ndarray] = []
-        for samples, seq in assignments:
+        masks = []
+        for samples, seq, _ in raw_assignments:
             mask = np.zeros(len(samples), dtype=bool)
             for k, loc in enumerate(seq):
                 counter += 1
@@ -811,6 +990,26 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
                     out[lo : k + reach + 1] = True
                 widened.append(out)
             masks = widened
+    if MAP_RUN_PIN_KNOTS == "off":
+        assignments = [
+            (_pin_forced_runs(pg, samples, seq, forced_mask), seq) for samples, seq, forced_mask in raw_assignments
+        ]
+    else:
+        # v0.10: knot pinning — junction anchors from the UNPINNED samples,
+        # then one generalized pinning pass per mode ("windows" pins the
+        # forced crossing windows with interior knots; "all" additionally
+        # pins the double-zone rides and the natural bridges).
+        knot_rows = map_crossing_knots(pg, [samples for samples, _, _ in raw_assignments], xh_px)
+        assignments = []
+        for si, (samples, seq, forced_mask) in enumerate(raw_assignments):
+            bridge = np.asarray([loc is None for loc in seq], dtype=bool)
+            if MAP_RUN_PIN_KNOTS == "windows":
+                run_mask = bridge & np.asarray(forced_mask, dtype=bool)
+            else:
+                zone = masks[si] if masks is not None else np.zeros(len(samples), dtype=bool)
+                run_mask = bridge | zone
+            assignments.append((_pin_map_runs(pg, samples, seq, run_mask, knot_rows[si]), seq))
+    if masks is not None:
         strokes = [
             _assemble_ride(pg, samples, seq, mask) for (samples, seq), mask in zip(assignments, masks, strict=True)
         ]
