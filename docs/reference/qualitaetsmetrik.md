@@ -5149,6 +5149,49 @@ K0" seit aug15 als künftiger Arm benannt). Der wäre eine eigene
 Vorregistrierung; bis dahin bleibt die Produktions-Adoption
 offen und der Re-Harvest hinter Owner-Go + dbsnapshot.
 
+**Vorregistrierung `aug19` — der soll-bewusste K0-Wächter
+(Rettungsweg (c)), VOR seiner ersten Zahl.** EIN Knopf:
+`--structure-guard-soll` (`FollowWeights.structure_guard_soll`,
+impliziert den Wächter; Basis-Konfiguration unverändert die der
+Produktions-Messung: prox 0,1 · rounds 2 · coverage 0,3). Die
+Akzeptanzregel wird ein INTERVALL je Klasse: mit B = Zählung am
+Chain-Optimum (dem Init der Runden, wie bisher) und S = Zählung
+der KOMPONIERTEN Init-Geometrie (die Bahn bei x0 = 0, durch
+DENSELBEN Assembler und DIESELBEN v2.1-Zähler wie Budget und
+Runden — das Soll ist duktus-deterministisch und hier ohne jede
+Zweitimplementierung ablesbar) muss jede Klasse c des
+Runden-Ergebnisses in [min(B_c, S_c), max(B_c, S_c)] liegen:
+Bewegung nur RICHTUNG Soll, nie darüber hinaus, nie davon weg;
+bei B_c = S_c friert die Klasse exakt (der zweiseitige
+Spezialfall). Retry-Leiter unverändert.
+
+**Messplan.** Beide Arme über alle 63 Wörter des words-Sets in
+EINER gepinnten Umgebung (`OPENBLAS_NUM_THREADS=1`,
+`OMP_NUM_THREADS=1` — die aug16-Lehre): Kontrolle = rounds 0
+(die rohe Kette durch denselben Codepfad), Kandidat =
+soll-bewusst gewacht; `--candidate-out` beider Läufe, Zahlen
+über den tracebench-File-Provider (dev-19) plus eine
+referenzfreie Auswertung über alle 63 (Strukturzähler vs.
+Soll-Spalten aus `tools.tracebench.soll`, `aiou` gegen
+`ref_mask.png`). Die 9 versiegelten authored-Zeilen werden dabei
+NICHT als Trace-Referenz gelesen (dev-Gate nur über die 19
+Dev-Zeilen; Maske und Soll sind referenzfrei).
+
+**Gates (die der Produktions-Messung, unverändert):**
+(i) dev-`dtw_xh` gepaart |Median-Δ| ≤ 0,002, kein Dev-Wort über
++0,01; (ii) Struktur-Abstand zum Soll je Wort
+(|cross−soll| + |zones−soll|) gewacht ≤ roh ÜBERALL und irgendwo
+strikt besser; (iii) `aiou` je Wort min-Δ > −0,005; (iv) Marken
+unverändert; (v) kein Wort scheitert, das roh durchläuft;
+Laufzeit-Budget 5 min/Wort (gepinnt erwartet ≈ 20 s). Kill wie
+gehabt: EIN Wort weiter vom Soll als roh → nicht adoptiert (das
+wäre ein Wächter-Bug). Erwartung: unters Zonen-Reparatur aus dem
+einseitigen Lauf kehrt zurück (Init 12 → Richtung Soll), die
+drei Kreuzungs-Kollapse (Sporn/einer/er-3) bleiben vetiert,
+„irgendwo strikt besser" wird damit erstmals erfüllbar. Besteht
+alles, ist die Adoptions-EMPFEHLUNG automatisch erfüllt; der
+Re-Harvest selbst bleibt Owner-Go + dbsnapshot.
+
 ### Route „Lotse" `aug16` — Vorregistrierung: Skelett fahren, Duktus als Karte
 
 Geschrieben und committet VOR der ersten Bench-Zahl. Owner-Idee
