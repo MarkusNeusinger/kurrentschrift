@@ -201,6 +201,32 @@ def test_untwist_removes_a_weave_pair_and_keeps_a_lone_crossing() -> None:
     assert np.all(np.diff(out[1][:, 0]) >= 0.0)
 
 
+def test_soll_budget_protects_a_real_close_pair_and_frees_a_weave(monkeypatch) -> None:
+    from tools.inkpilot import pilot as P
+    from tools.inkpilot.pilot import untwist_strokes
+
+    # A close REAL double crossing (two crossings 0.4 xh apart, like mit's t):
+    # B pokes across A and back — geometrically identical to a weave. Without
+    # the budget the wide window untwists it; with soll = 2 crossings in that
+    # neighbourhood it is protected. A weave with soll = 0 still falls.
+    xh = 10.0
+    a = np.column_stack([np.linspace(0.0, 60.0, 121), np.full(121, 20.0)])
+    xs = np.linspace(0.0, 60.0, 121)
+    ys = np.full(121, 22.0)
+    ys[(xs > 10.0) & (xs < 14.0)] = 18.0  # the "real double" site (soll 2)
+    ys[(xs > 40.0) & (xs < 44.0)] = 18.0  # the weave site (soll 0)
+    b = np.column_stack([xs, ys])
+    monkeypatch.setattr(P, "UNTWIST_SOLL_BUDGET", True)
+    soll = np.asarray([[10.0, 20.0], [14.0, 20.0]])  # the map crosses twice at site 1
+    out, n = untwist_strokes([a, b], xh_px=xh, window_units=0.8, soll_points=soll)
+    assert n == 1  # only the soll-free weave fell
+    kept = out[1]
+    site1 = kept[(kept[:, 0] > 10.0) & (kept[:, 0] < 14.0), 1]
+    site2 = kept[(kept[:, 0] > 40.0) & (kept[:, 0] < 44.0), 1]
+    assert site1.min() < 19.0  # the protected double still pokes across
+    assert site2.min() > 21.0  # the weave was mirrored away
+
+
 def test_untwist_leaves_separate_crossings_alone() -> None:
     from tools.inkpilot.pilot import untwist_strokes
 

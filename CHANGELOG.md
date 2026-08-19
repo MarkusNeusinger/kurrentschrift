@@ -57,6 +57,21 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   tracings. Adoption into the stored chain stays gated on the
   confirmation set, now with 6 instead of 4 paired words.
 
+- **Lotse v0.15 (soll-budgeted untwisting): built, measured, honest
+  negative — the third independent confirmation of the map-form
+  ceiling** (pre-registered §14 "Lotse v0.15 aug19"). The budget
+  rule (never untwist a neighbourhood below the map's own
+  self-intersection count, fixed 0.55-xh matcher-radius snapshot)
+  inherits exactly the map placement errors v0.14 measured: at
+  unter's displaced e→r map the real pair dies despite the budget,
+  and the radius count lumps will's neighbouring REAL crossing into
+  the weave's neighbourhood and falsely vetoes its healed fix. Both
+  rungs rejected by their gates; v0.13 (geometry-only, 0.5) stays
+  the adopted state, the declared knob and its unit test remain.
+  The remaining three duplicates and the "all" rung now explicitly
+  wait for the map-form author steps, after which v0.14 and a
+  position-matched soll guidance are to be re-measured together.
+
 - **Lotse v0.13 "Entdrillung" adopted; v0.14 (the "all" rung)
   measured with the round's strongest visual proof and rejected by
   its gate** (pre-registered §14 "Lotse v0.13/v0.14 aug19", owner go

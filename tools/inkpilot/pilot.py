@@ -175,6 +175,15 @@ SMOOTH_ITERATIONS = 0
 # The remaining duplicates need the soll-budgeted discriminator (§7.9).
 UNTWIST_WINDOW_UNITS = 0.5
 UNTWIST_MAX_PASSES = 8
+# v0.15 (pre-registered, L1h): the soll-budgeted untwist. Geometry alone
+# cannot tell a weave duplicate from a genuinely close REAL pair, but the
+# MAP knows its own self-intersections — a pair may only untwist where the
+# neighbourhood does not fall BELOW its soll afterwards
+# (n_events_near - 2 >= n_soll_near, counted in the fixed matcher-radius
+# snapshot below). mit's t double (soll 2) is protected by construction;
+# the weaves (soll 0-1, events 3-6) fall pairwise. False = v0.13 behaviour.
+UNTWIST_SOLL_BUDGET = False
+UNTWIST_SOLL_RADIUS_UNITS = 0.55  # the ruler's matcher radius, as a snapshot
 # v0.10 (pre-registered, L1d): junction-anchored pinning of map runs. The
 # owner's visual find (the k curl untraced, the W riding air) autopsied to
 # MERGED crossing windows — where map self-intersections sit densely the
@@ -983,7 +992,26 @@ def _chain_intersections(pts: np.ndarray, min_arc_px: float, arc: np.ndarray) ->
     return out
 
 
-def untwist_strokes(strokes: list[np.ndarray], xh_px: float, window_units: float) -> tuple[list[np.ndarray], int]:
+def map_self_intersections(samples_per_stroke: list[np.ndarray]) -> np.ndarray:
+    """All proper self-intersection points of the composed map, in crop px.
+
+    The same pair enumeration `map_crossing_masks` and `map_crossing_knots`
+    walk (min-arc floor for the same-stroke case) — here only the POINTS,
+    as the v0.15 soll budget of the untwist.
+    """
+    min_sep = max(2, int(round(MAP_CROSSING_MIN_ARC_UNITS / SAMPLE_STEP_UNITS)))
+    pts: list[np.ndarray] = []
+    for ai in range(len(samples_per_stroke)):
+        for bi in range(ai, len(samples_per_stroke)):
+            a, b = samples_per_stroke[ai], samples_per_stroke[bi]
+            for i, j in _segment_intersections(a, b, min_sep if ai == bi else None):
+                pts.append(_intersection_point(a[i], a[i + 1], b[j], b[j + 1]))
+    return np.asarray(pts, dtype=float).reshape(-1, 2)
+
+
+def untwist_strokes(
+    strokes: list[np.ndarray], xh_px: float, window_units: float, soll_points: np.ndarray | None = None
+) -> tuple[list[np.ndarray], int]:
     """v0.13: remove weave duplicates pairwise by mirroring the shorter wiggle.
 
     Two intersection events form a pair when both their arc gaps are within
@@ -994,10 +1022,20 @@ def untwist_strokes(strokes: list[np.ndarray], xh_px: float, window_units: float
     is preserved (3 -> 1, 5 -> 1, 6 -> 0), direction stays untouched. A
     wiggle spanning a pen lift is left alone — a mirror across strokes would
     invent pen travel.
+
+    v0.15 (`soll_points`, with `UNTWIST_SOLL_BUDGET`): the MAP's own
+    self-intersections budget every neighbourhood — a pair may only untwist
+    when `n_events_near - 2 >= n_soll_near` in the fixed matcher-radius
+    snapshot, so a genuinely close REAL pair (mit's t double, soll 2) is
+    protected by construction while the weaves (soll 0-1) fall pairwise.
     """
     if window_units <= 0.0 or not strokes:
         return strokes, 0
     window_px = window_units * xh_px
+    soll = None
+    if UNTWIST_SOLL_BUDGET and soll_points is not None:
+        soll = np.asarray(soll_points, dtype=float).reshape(-1, 2)
+    soll_radius_px = UNTWIST_SOLL_RADIUS_UNITS * xh_px
     lengths = [len(s) for s in strokes]
     bounds = np.cumsum([0, *lengths])
     pts = np.vstack(strokes).astype(float)
@@ -1033,6 +1071,15 @@ def untwist_strokes(strokes: list[np.ndarray], xh_px: float, window_units: float
                     continue
                 if float(np.hypot(*(p2 - p1))) > window_px / 2.0:
                     continue
+                if soll is not None:
+                    # v0.15 budget: never untwist a neighbourhood below its
+                    # soll. Events and soll crossings counted around the
+                    # pair's midpoint in the fixed matcher radius.
+                    mid = (p1 + p2) / 2.0
+                    n_events = sum(1 for _, _, pe in events if float(np.hypot(*(pe - mid))) <= soll_radius_px)
+                    n_soll = int(np.sum(np.hypot(soll[:, 0] - mid[0], soll[:, 1] - mid[1]) <= soll_radius_px))
+                    if n_events - 2 < n_soll:
+                        continue
                 best = b
                 break
             if best is None:
@@ -1186,7 +1233,8 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
         strokes = smooth_strokes(strokes, SMOOTH_ITERATIONS)
     untwisted = 0
     if UNTWIST_WINDOW_UNITS > 0.0:
-        strokes, untwisted = untwist_strokes(strokes, xh_px, UNTWIST_WINDOW_UNITS)
+        soll_pts = map_self_intersections(samples_per) if UNTWIST_SOLL_BUDGET else None
+        strokes, untwisted = untwist_strokes(strokes, xh_px, UNTWIST_WINDOW_UNITS, soll_points=soll_pts)
     detail = {
         "nodes": len(pg.graph.nodes),
         "edges": len(pg.graph.edges),

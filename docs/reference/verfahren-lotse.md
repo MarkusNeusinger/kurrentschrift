@@ -60,6 +60,7 @@ Kreuzungs-Ortsfehler (0,066 gegen 0,083 xh).
 | aug19 | v0.12 (L1f) | `PIN_PLATEAU_CHORD` — Plateau-Sehne gegen die Doppel-X-Duplikate | verworfen (der Wackel WAR das X: Sehnen an Schleifenschlüssen parallel, missing 1 → 8, Retraces zerstört; Rettungswege Entdrillung/asymmetrische Sehne benannt) |
 | aug19 | v0.13 (L1g) | `UNTWIST_WINDOW_UNITS` — paarweise Entdrillung der Gewebe-Duplikate (Spiegelung des Wiggle-Bogens an der Paar-Sehne) | **adoptiert 0,5** (Netto-Defekte 7 → 6, wills Duplikat heilt; 0,8 vom Kill verworfen — Geometrie trennt Gewebe nicht von echten engen Doppeln → soll-budgetierte Entdrillung als Rettungsweg) |
 | aug19 | v0.14 | „all" + Entdrillung — Zonen-Rides/Brücken mit Knoten-Plateau-Pinnung | verworfen per Gate (Netto 8 > 6: G-Kopf-X stirbt an der formfremden G-Karte, p erfindet eines) — aber aiou +0,012 und der stärkste Sichtbeweis der Runde (das G fast hand-gleich geritten); Wiedervorlage nach den Karten-Form-Autorenschritten |
+| aug19 | v0.15 (L1h) | `UNTWIST_SOLL_BUDGET` — Entdrillung nur, wo die Nachbarschaft nicht unter ihr Karten-Soll fällt | verworfen (das Budget erbt die Karten-Platzierungsfehler: unters echtes Paar stirbt trotz Budget, wills Fix wird fälschlich vetiert — dritte Bestätigung der Karten-Form-Decke; Wiedervorlage mit v0.14 nach den Autorenschritten) |
 
 Benannter Fehlermodus der Route: **Junction-Pinch** (Glossar) — die
 v0.7/v0.8/v0.9-Kette ist seine vollständige Abarbeitung; seit v0.11

@@ -6561,3 +6561,28 @@ netto (Erwartung ≤ 3); Marken unverändert; Retrace ohne
 Netto-Anstieg; `aiou`-Median-Δ ≥ −0,02 gegen 0,7398; dtw je
 Wort ±0,003; p90 ≤ 0,113; reversed 0. Adoptiert wird höchstens
 EINE Stufe.
+
+**Gemessen `aug19` — BEIDE Stufen verworfen; der Fund schließt
+den Tag mit der dritten unabhängigen Bestätigung derselben
+Wurzel.** Leiter (dev-19, je 19/19 ok): w0,5+Budget → nur noch
+6 statt 16 Paare entdrillt, `cross_spurious` 5 → **6** — das
+Budget VETIERT ausgerechnet wills bereits geheilten Fix: die
+feste 0,55-Radius-Zählung wirft das benachbarte ECHTE
+l-Kreuzungs-X (0,28 xh entfernt) mit in die
+Gewebe-Nachbarschaft, und die Arithmetik wird fälschlich
+konservativ. w0,8+Budget → zusätzlich `cross_missing` 1 → **2**:
+in unters e→r-Region — der am schlechtesten platzierten
+Karten-Stelle der Runde — liegen die Karten-Selbstschnitte
+NEBEN der Tinte, das echte Paar hat dort kein Soll in
+Reichweite und stirbt trotz Budget: **das Soll-Budget erbt
+exakt die Karten-Platzierungsfehler, die v0.14 schon als
+Gate-Brecher maß.** Beide Stufen von ihren Gates verworfen,
+`UNTWIST_SOLL_BUDGET` bleibt False (Knopf + Test bleiben
+deklariert); v0.13 (Geometrie-only, 0,5) bleibt der adoptierte
+Stand. Die Lehre in einem Satz: Punkt-, Zonen- und jetzt auch
+BUDGET-Verfeinerungen des Lotsen sind alle an derselben Decke —
+die drei verbleibenden Duplikate und die „all"-Stufe warten auf
+die KARTEN-FORM-Autorenschritte, danach sind v0.14 und eine
+soll-geführte Entdrillung (dann mit vertrauenswürdiger Karte,
+Positions- statt Zähl-Matching) gemeinsam wiedervorzulegen.
+§7.9-Zeile im selben PR.
