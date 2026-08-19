@@ -247,6 +247,13 @@ uv run python -m tools.dbsnapshot.restore <snapshot-dir> --database-url postgres
   `export_fixtures.py`, ausschließlich GETs, mit `--verify` als
   Abnahme-Gate:
   `uv run python -m tools.wordbench.fetch_fixtures --set all --verify`.
+  Zwei Overlay-Flags für Trocken-Experimente (`aug19` erstmals im
+  Feld, Laufform-Arme LF1–LF3): `--laufform <datei.json>` komponiert
+  mit KANDIDATEN-Laufformen (Harvest-Draft `{anchors, n_occurrences}`
+  oder volle Fixture-Zeile; Overlay — unbenannte Glyphen behalten die
+  eingefrorene Zeile) und `--no-laufform` komponiert chart-treu ohne
+  jede Laufform. Beide liefern per Doktrin §6 eine
+  OFF-HEADLINE-Kandidatenzahl, nie die Headline.
 - **`tools/inksight`** — die Route-B-Pipeline des Tintenfolger-Duells
   ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §4):
   drei Stufen (Crop-Vorbereitung → Inferenz im ISOLIERTEN

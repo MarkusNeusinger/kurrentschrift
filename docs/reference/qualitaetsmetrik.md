@@ -6893,3 +6893,44 @@ Hält LF3 seine Gates, ist seine Karte die KANDIDATEN-KARTE der
 vorregistrierten v0.14-Wiedervorlage (§7.9) — trocken noch in
 derselben Runde; ein DB-Write bleibt hinter dbsnapshot +
 Owner-Go (LF1-Regeln gelten fort).
+
+**Gemessen `aug19` — (a) und (c) bestehen vollständig, (b)
+verfehlt das Kompositions-Soll: nicht adoptiert wie gemessen,
+der Riss ist auf die ORAKEL-EBENE lokalisiert.** Reparatur-Lauf:
+F t=0,133 · K t=0,352 · k t=0,219 · f t=0,484 · b t=0,703 ·
+**p t=0,562** repariert; E/P/S/W/Z/ae/s/ue/v passieren
+unberührt; **G und h sind im 0,5-Fenster unreparierbar** →
+Chart-Fallback (der registrierte Restfall — auch der frische
+Detektor-Fund: die Drafts F/K/b/f/k hätten ihre Topologie
+ebenso still verloren). Zahlen: wordbench 0,108091 → 0,107089
+(pair byte-gleich; nur Laufform-Wörter; die Z/S/P/E/K-Gewinne
+bleiben, h zahlt seinen LF2-Preis fort, weil unreparierbar →
+Chart). Lotse: dtw-Median 0,0585 → 0,0573 · aiou 0,7398 →
+0,7470 · spurious 5 → 4 (netto 5) · `cross_missing` 1 ·
+**Marken unverändert — der LF2-i-Punkt-Kipp kehrt NICHT
+zurück** · linken-Soll 4 → 3 = Übereinstimmung. Aber
+Galoppieren: `soll_cross_letters` 5 → 7 (beide p-Zellen zurück)
+bei KOMPOSITIONS-Soll unverändert 6 — das minimale t des
+Buchstaben-Zellen-Orakels überlebt den Kompositions-Kontext
+(Verbinder, Trims, Retrace-Partner benachbarter Züge) nicht;
+LF2 (volles Chart-p) erreichte dort 8. Der Mechanismus ist
+richtig, das Orakel zu schwach — Konversion LF3b unten.
+
+### Laufform LF3b `aug19` — Vorregistrierung: die Topologie-Reparatur am Kompositions-Orakel
+
+Geschrieben und committet VOR der ersten Zahl. Identischer
+Mechanismus wie LF3 (lokale Chart-Rückblendung, 0,5-xh-Fenster,
+minimales t per Bisektion, Chart-Fallback als Restfall) mit
+EINER Präzisierung: das Bisektions-Orakel ist das
+**KOMPOSITIONS-Soll des Repräsentanten-Wortes** (die
+„Komposition (mit Verbindern)"-Zählung des Lineals) statt der
+Buchstaben-Zelle — repariert ist eine Form erst, wenn die
+Kreuzung im komponierten Wort zählt, nicht nur im
+Buchstaben-Frame. Erwartung: p repariert bei höherem t
+(0,56 < t ≤ 1), die übrigen Reparaturen ziehen ggf. nach.
+Risiko, ehrlich benannt: je näher t an 1, desto näher rückt die
+Karte an das LF2-Verhalten — der Galoppieren-i-Punkt-Kipp wird
+explizit mitgeprüft. Gates unverändert LF3 (a)–(d), inklusive
+„Marken unverändert" und Galoppieren-KOMPOSITIONS-Soll → 8.
+Hält LF3b, ist SEINE Karte die Kandidaten-Karte der
+v0.14-Wiedervorlage.
