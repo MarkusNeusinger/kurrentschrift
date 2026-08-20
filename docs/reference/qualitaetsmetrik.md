@@ -7105,3 +7105,40 @@ kein Gate, ist die Pinn-Familie auf dieser Karte erschöpft und
 jeder weitere Weg führt über die p-Platzierung (K1-Arm,
 tintenfolger.md §7.9). Wordbench ist unberührt (reine
 Kandidaten-Schicht, kein `core/`-Anfassen).
+
+**Gemessen `aug20` — Sprosse A (bridges+Budget) ADOPTIERT; die
+Zonen-Sprossen scheitern exakt an der vorhergesagten
+p-Oskulation, aber das Budget rettet das G-Kopf-X auf dev-19.**
+Identitäts-Check: die neu gebaute LF3b-Karte reproduziert die
+`aug19`-Kandidaten-Rows STROKE-GLEICH, die Identitäts-Sprosse
+und Sprosse 0 (windows+Budget) sind zähler- und zahlengleich mit
+der Basis — die Messkette steht, und das Budget ist auf der
+windows-Stufe gratis. **Sprosse A:** Struktur an JEDER Stelle
+identisch zur Basis (Netto 5, missing 1, Marken unverändert,
+reversed 0, Ortsfehler 0,069 =), dazu reine Gewinne: p90 0,1129
+→ **0,1122** · chamfer 0,0410 → **0,0404** · dtw-Mittel 0,0660 →
+0,0651 · aiou-Mittel 0,7199 → 0,7216 · vier Wörter gewinnen dtw
+−0,0035 bis −0,0059 (muß-2, Galoppieren, mit, muß-3) und aiou
+bis +0,0117 — **kein einziges Wort verliert** (schlechteste
+dtw-Änderung ±0,0000, keine aiou-Verluste), mits Retrace-Zone
+heilt (`retrace_missing` 1 → 0). Ehrliche Protokoll-Notiz: das
+Gate „dtw je Wort ±0,003" war ZWEISEITIG formuliert und wird
+ausschließlich auf der GEWINN-Seite durchbrochen; es wird nach
+seinem dokumentierten Schutzzweck (kein Wort VERLIERT > 0,003)
+gelesen, künftige Pre-Regs formulieren es einseitig.
+Tie-Break r0/A („mehr Tinte"): aiou-Median gleich, je Wort aber
+4 Gewinne / 0 Verluste → A. **Sprossen B/C: verworfen per Gate**
+(Netto 6 > 5 — genau der eine Galoppieren-p-Oskulations-Spurious
+(7,97·0,83), die Zonen-Pinnung zieht die zwei Pässe von 0,17 auf
+0,01 xh zusammen und der Pierce-Zähler kippt); die Kern-These
+der Autopsie bestätigt sich auf dev-19: **das G-Kopf-X überlebt
+unter Budget in BEIDEN Zonen-Sprossen** (Galoppieren missing
+0 → 0 statt v0.14s 0 → 1). C trägt die stärksten Tinten-Werte
+der Route (chamfer 0,0371, p90 0,1117, aiou-Median +0,0038,
+mit-2 dtw −0,0090/aiou +0,0321), zahlt aber zusätzlich zwei
+kleine dtw-Preise (Wer +0,0018, die +0,0017). Rettungsweg der
+Zonen-Stufe: NACH der p-Platzierungs-Reparatur (K1-Arm)
+wiedervorlegen — der einzige Struktur-Preis gehört der
+Platzierungs-Familie, nicht dem Ritt. Neuer adoptierter Stack:
+`MAP_RUN_PIN_KNOTS = "bridges"` + `UNTWIST_SOLL_BUDGET = True`
+(Lineal-Soll). Artefakte: `temp/tb-aug20/lotse-v16-*`.

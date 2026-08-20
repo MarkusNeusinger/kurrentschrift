@@ -227,6 +227,48 @@ def test_soll_budget_protects_a_real_close_pair_and_frees_a_weave(monkeypatch) -
     assert site2.min() > 21.0  # the weave was mirrored away
 
 
+def test_pin_run_mask_stages_partition_all() -> None:
+    import pytest
+
+    from tools.inkpilot.pilot import pin_run_mask
+
+    bridge = np.asarray([True, True, False, False, True, False])
+    forced = np.asarray([True, False, True, False, False, False])
+    zone = np.asarray([False, False, True, True, False, False])
+    windows = pin_run_mask("windows", bridge, forced, zone)
+    bridges = pin_run_mask("bridges", bridge, forced, zone)
+    zones = pin_run_mask("zones", bridge, forced, zone)
+    all_ = pin_run_mask("all", bridge, forced, zone)
+    assert np.array_equal(windows, bridge & forced)
+    assert np.array_equal(bridges, bridge)
+    assert np.array_equal(zones, (bridge & forced) | zone)
+    # The selective stages compose exactly to "all" — the v0.16 contract.
+    assert np.array_equal(bridges | zones, all_)
+    assert np.array_equal(all_, bridge | zone)
+    with pytest.raises(ValueError):
+        pin_run_mask("plateau", bridge, forced, zone)
+
+
+def test_ruler_soll_ignores_a_touch_and_counts_proper_pierces() -> None:
+    from tools.inkpilot.pilot import map_self_intersections
+
+    # The v0.16 soll source is the frozen crossing detector: a map pass that
+    # only TOUCHES another (clears it by less than the pierce margin) is no
+    # soll crossing, a proper pierce is exactly one point — where the raw
+    # segment enumeration double-counted (the aug20 autopsy).
+    xh = 10.0
+    a = np.column_stack([np.linspace(0.0, 80.0, 161), np.full(161, 20.0)])
+    xs = np.linspace(0.0, 80.0, 161)
+    touch = np.full(161, 26.0)
+    touch[(xs > 18.0) & (xs < 22.0)] = 19.6  # 0.04 xh past the line: a touch
+    pierce = np.full(161, 26.0)
+    pierce[(xs > 58.0) & (xs < 66.0)] = 10.0  # a full x-height through: a pierce
+    assert len(map_self_intersections([a, np.column_stack([xs, touch])], xh)) == 0
+    pts = map_self_intersections([a, np.column_stack([xs, pierce])], xh)
+    assert len(pts) == 2  # in and out of the poke — two proper crossings
+    assert np.all(np.abs(pts[:, 1] - 20.0) < 1.0)
+
+
 def test_untwist_leaves_separate_crossings_alone() -> None:
     from tools.inkpilot.pilot import untwist_strokes
 

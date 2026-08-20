@@ -43,6 +43,7 @@ from scipy.spatial import cKDTree
 
 from core.geometry import detect_retrace_pairs
 from tools.routeg.graph import SkeletonGraph, build_graph
+from tools.tracebench.counters import crossing_points
 from tools.wordlab.cases import WordCase
 from tools.wordlab.derive import WordDeriveResult, derive_word
 
@@ -182,7 +183,13 @@ UNTWIST_MAX_PASSES = 8
 # (n_events_near - 2 >= n_soll_near, counted in the fixed matcher-radius
 # snapshot below). mit's t double (soll 2) is protected by construction;
 # the weaves (soll 0-1, events 3-6) fall pairwise. False = v0.13 behaviour.
-UNTWIST_SOLL_BUDGET = False
+# v0.16 (L1i): the soll SOURCE is the RULER's own crossing detector on the
+# map (pierce filter, arc floor, merge) — the aug20 autopsy found the raw
+# segment enumeration double-counts every map crossing (will 10 raw vs 4
+# counted), which is exactly v0.15's false veto at will. ADOPTED aug20 with
+# the "bridges" stage (dev-19: counter-identical to the v0.13 base at every
+# site, mit's retrace heals, and the budget is free on "windows").
+UNTWIST_SOLL_BUDGET = True
 UNTWIST_SOLL_RADIUS_UNITS = 0.55  # the ruler's matcher radius, as a snapshot
 # v0.10 (pre-registered, L1d): junction-anchored pinning of map runs. The
 # owner's visual find (the k curl untraced, the W riding air) autopsied to
@@ -196,15 +203,24 @@ UNTWIST_SOLL_RADIUS_UNITS = 0.55  # the ruler's matcher radius, as a snapshot
 # BRANCH node (within PIN_KNOT_NODE_RADIUS_UNITS) minus the intersection
 # point; linear between knots, constant beyond the outermost, raw without
 # any. "off" = v0.9 · "windows" = knot pinning for the forced crossing
-# windows only · "all" = the same for double-zone rides and bridges too.
+# windows only · "all" = the same for double-zone rides and bridges too ·
+# v0.16 selective stages (L1i): "bridges" = every natural bridge without
+# the zones, "zones" = the forced windows plus the double-zone rides
+# without the bare bridges; bridges UNION zones = all.
 # v0.10 (raw point knots) measured-and-rejected aug19: the point field
 # shears at the crossings it anchors. ADOPTED aug19 as v0.11 "windows"
 # (plateau field below): dev-19 net crossing defects 7 (= v0.9) with the
 # missing class healed to 1 (Galoppieren's two composition-missing p
 # crossings return), crossing position error 0.116 -> 0.066 xh, aiou
 # +0.008, p90 0.118 -> 0.113; "all" rejected (net 8 — one duplicate X
-# beyond the gate).
-MAP_RUN_PIN_KNOTS = "windows"
+# beyond the gate). ADOPTED aug20 as v0.16 "bridges" (with the ruler-soll
+# budget below): structure counter-identical to the v0.13/LF3b base at
+# every site, pure ink gains (p90 0.1129 -> 0.1122, chamfer 0.0410 ->
+# 0.0404, four words -0.0035..-0.0059 dtw, no loser); "zones"/"all" fail
+# their net gate by exactly the Galoppieren p osculation (+1 spurious,
+# placement family) while the budget keeps the G head X — re-submission
+# after the p placement arm (tintenfolger.md §7.9).
+MAP_RUN_PIN_KNOTS = "bridges"
 PIN_KNOT_NODE_RADIUS_UNITS = 1.0  # fixed anchor search radius, not a ladder knob
 # v0.11 (pre-registered, L1e): each anchor offset acts as a rigid PLATEAU of
 # this half-width (in xh) instead of a point knot — a crossing survives a
@@ -656,6 +672,24 @@ def _pin_forced_runs(pg: PilotGraph, samples: np.ndarray, seq: list[PixelLoc | N
     return out
 
 
+def pin_run_mask(stage: str, bridge: np.ndarray, forced: np.ndarray, zone: np.ndarray) -> np.ndarray:
+    """The samples one pinning stage covers (v0.10/v0.16 stage semantics).
+
+    "windows" pins only the forced crossing windows on bridges; "bridges"
+    every natural bridge without the zones; "zones" the forced windows plus
+    the double-zone rides without the bare bridges; "all" their union.
+    """
+    if stage == "windows":
+        return bridge & forced
+    if stage == "bridges":
+        return bridge.copy()
+    if stage == "zones":
+        return (bridge & forced) | zone
+    if stage == "all":
+        return bridge | zone
+    raise ValueError(f"unknown pin stage {stage!r}")
+
+
 def map_crossing_knots(
     pg: PilotGraph, samples_per_stroke: list[np.ndarray], xh_px: float
 ) -> list[list[tuple[int, np.ndarray]]]:
@@ -992,21 +1026,17 @@ def _chain_intersections(pts: np.ndarray, min_arc_px: float, arc: np.ndarray) ->
     return out
 
 
-def map_self_intersections(samples_per_stroke: list[np.ndarray]) -> np.ndarray:
-    """All proper self-intersection points of the composed map, in crop px.
+def map_self_intersections(samples_per_stroke: list[np.ndarray], xh_px: float) -> np.ndarray:
+    """The RULER's crossing population of the composed map, in crop px.
 
-    The same pair enumeration `map_crossing_masks` and `map_crossing_knots`
-    walk (min-arc floor for the same-stroke case) — here only the POINTS,
-    as the v0.15 soll budget of the untwist.
+    v0.16: the soll source of the untwist budget is the frozen crossing
+    detector itself (`crossing_points`: pierce filter, arc floor, merge) on
+    the xh-scaled map — the raw segment enumeration double-counts every map
+    crossing (~2x, the aug20 autopsy), which was exactly v0.15's false veto.
     """
-    min_sep = max(2, int(round(MAP_CROSSING_MIN_ARC_UNITS / SAMPLE_STEP_UNITS)))
-    pts: list[np.ndarray] = []
-    for ai in range(len(samples_per_stroke)):
-        for bi in range(ai, len(samples_per_stroke)):
-            a, b = samples_per_stroke[ai], samples_per_stroke[bi]
-            for i, j in _segment_intersections(a, b, min_sep if ai == bi else None):
-                pts.append(_intersection_point(a[i], a[i + 1], b[j], b[j + 1]))
-    return np.asarray(pts, dtype=float).reshape(-1, 2)
+    scaled = [np.asarray(s, dtype=float) / xh_px for s in samples_per_stroke]
+    pts = crossing_points(scaled)
+    return np.asarray(pts, dtype=float).reshape(-1, 2) * xh_px
 
 
 def untwist_strokes(
@@ -1210,11 +1240,8 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
         assignments = []
         for si, (samples, seq, forced_mask) in enumerate(raw_assignments):
             bridge = np.asarray([loc is None for loc in seq], dtype=bool)
-            if MAP_RUN_PIN_KNOTS == "windows":
-                run_mask = bridge & np.asarray(forced_mask, dtype=bool)
-            else:
-                zone = masks[si] if masks is not None else np.zeros(len(samples), dtype=bool)
-                run_mask = bridge | zone
+            zone = masks[si] if masks is not None else np.zeros(len(samples), dtype=bool)
+            run_mask = pin_run_mask(MAP_RUN_PIN_KNOTS, bridge, np.asarray(forced_mask, dtype=bool), zone)
             assignments.append((_pin_map_runs(pg, samples, seq, run_mask, knot_rows[si]), seq))
     if masks is not None:
         strokes = [
@@ -1235,7 +1262,7 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
         strokes = smooth_strokes(strokes, SMOOTH_ITERATIONS)
     untwisted = 0
     if UNTWIST_WINDOW_UNITS > 0.0:
-        soll_pts = map_self_intersections(samples_per) if UNTWIST_SOLL_BUDGET else None
+        soll_pts = map_self_intersections(samples_per, xh_px) if UNTWIST_SOLL_BUDGET else None
         strokes, untwisted = untwist_strokes(strokes, xh_px, UNTWIST_WINDOW_UNITS, soll_points=soll_pts)
     detail = {
         "nodes": len(pg.graph.nodes),
