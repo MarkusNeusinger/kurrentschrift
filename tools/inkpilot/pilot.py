@@ -65,10 +65,19 @@ MAX_CANDIDATES = 14
 # deviation per pixel of distance map-sample -> ridge point, and the bridge
 # state priced so that riding within the radius always beats bridging, while
 # a detour around the block (ride far above the direct hop) does not.
+# v0.19 (pre-registered, L1l): the economy is STEP-INVARIANT — emissions
+# (deviation and bridge price) count per sample while transitions count
+# per arc, so a finer step used to double emission totals against ride
+# costs (the measured v0.18 "sticks to rails" drift); per-sample emissions
+# are therefore scaled by SAMPLE_STEP_UNITS / 0.12 (exactly 1.0 at the
+# adopted step), the ride cap and the double clock are denominated in xh
+# (0.96 = 8 x 0.12 · 0.48 = 4 x 0.12 — their v0.17 values), and the
+# legacy step/sample constants they replace are retired.
 RIDE_WEIGHT = 1.0
 DEVIATION_WEIGHT = 2.0
 BRIDGE_EMIT_FACTOR = 2.5  # x radius, the bridge state's per-sample price
-MAX_RIDE_FACTOR = 8.0  # rides above this x step are treated as unreachable
+EMIT_REFERENCE_STEP_UNITS = 0.12  # per-sample emissions scale by step/this
+MAX_RIDE_UNITS = 0.96  # rides above this (in xh) are treated as unreachable
 # A5, the offset double pass (v0.2 arm, pre-registered): every ride point on a
 # skeleton pixel the WORD rides more than once shifts by this fraction of the
 # local EDT half-width to the RIGHT of its travel direction — opposite-running
@@ -112,7 +121,14 @@ TAIL_RUNOUT_MAX_UNITS = 1.0
 # the chain there —, 5 of 23 missing crossings return, arc ratio 2.48 ->
 # 1.66, aiou -0.002).
 RIDE_DOUBLE_MAP_PRIORITY = True
-RIDE_DOUBLE_MIN_GAP = 4  # samples between visits before it counts as a pass
+RIDE_DOUBLE_MIN_GAP_UNITS = 0.48  # arc between visits before it counts as a pass (v0.19: was 4 samples)
+
+
+def ride_double_min_gap() -> int:
+    """The double clock's minimum gap in SAMPLES at the current step."""
+    return max(1, int(round(RIDE_DOUBLE_MIN_GAP_UNITS / SAMPLE_STEP_UNITS)))
+
+
 # v0.7 (pre-registered, L1 of the aug17 round): widen each v0.5-triggered
 # sample's map right-of-way to its neighbours within this arc distance (in
 # x-heights, along the sample chain of the same stroke). At a junction pinch
@@ -540,8 +556,12 @@ def _assign_stroke(
     if samples is None:
         samples = resample(stroke_px, SAMPLE_STEP_UNITS * xh_px)
     radius = BOARD_RADIUS_UNITS * xh_px
-    max_ride = MAX_RIDE_FACTOR * SAMPLE_STEP_UNITS * xh_px
-    bridge_emit = BRIDGE_EMIT_FACTOR * radius
+    max_ride = MAX_RIDE_UNITS * xh_px
+    # v0.19: per-sample emissions scale with the step so their PATH totals
+    # are step-invariant against the per-arc transition costs (1.0 at the
+    # adopted 0.12 step — byte-neutral there).
+    emit_scale = SAMPLE_STEP_UNITS / EMIT_REFERENCE_STEP_UNITS
+    bridge_emit = BRIDGE_EMIT_FACTOR * radius * emit_scale
     n = len(samples)
 
     # v0.4 map right-of-way: samples inside the MAP's own retrace zones ride
@@ -570,7 +590,7 @@ def _assign_stroke(
         if len(idx) > MAX_CANDIDATES:
             idx = sorted(idx, key=lambda i: float(np.hypot(*(pg.coords[i] - s))))[:MAX_CANDIDATES]
         row: list[tuple[PixelLoc | None, float]] = [
-            (pg.locs[i], DEVIATION_WEIGHT * float(np.hypot(*(pg.coords[i] - s)))) for i in idx
+            (pg.locs[i], DEVIATION_WEIGHT * emit_scale * float(np.hypot(*(pg.coords[i] - s)))) for i in idx
         ]
         row.append((None, bridge_emit))
         states.append(row)
@@ -1256,6 +1276,7 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
         # gap in the ink — and comes back has made a second pass; only dense
         # consecutive samples parked on one pixel are the same visit.
         counter = 0
+        min_gap = ride_double_min_gap()
         masks = []
         for samples, seq, _ in raw_assignments:
             mask = np.zeros(len(samples), dtype=bool)
@@ -1266,7 +1287,7 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
                 px = pg.px_of(loc)
                 key = (int(round(px[0])), int(round(px[1])))
                 last = seen.get(key)
-                if last is not None and counter - last > RIDE_DOUBLE_MIN_GAP:
+                if last is not None and counter - last > min_gap:
                     mask[k] = True
                 else:
                     seen[key] = counter
