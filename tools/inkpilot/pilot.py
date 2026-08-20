@@ -204,9 +204,10 @@ UNTWIST_SOLL_RADIUS_UNITS = 0.55  # the ruler's matcher radius, as a snapshot
 # point; linear between knots, constant beyond the outermost, raw without
 # any. "off" = v0.9 · "windows" = knot pinning for the forced crossing
 # windows only · "all" = the same for double-zone rides and bridges too ·
-# v0.16 selective stages (L1i): "bridges" = every natural bridge without
-# the zones, "zones" = the forced windows plus the double-zone rides
-# without the bare bridges; bridges UNION zones = all.
+# v0.16 selective stages (L1i): "bridges" = every natural bridge, "zones"
+# = the forced windows plus the double-zone rides; the stages overlap
+# where a widened zone reaches into a bridge, and bridges UNION zones =
+# all.
 # v0.10 (raw point knots) measured-and-rejected aug19: the point field
 # shears at the crossings it anchors. ADOPTED aug19 as v0.11 "windows"
 # (plateau field below): dev-19 net crossing defects 7 (= v0.9) with the
@@ -676,8 +677,10 @@ def pin_run_mask(stage: str, bridge: np.ndarray, forced: np.ndarray, zone: np.nd
     """The samples one pinning stage covers (v0.10/v0.16 stage semantics).
 
     "windows" pins only the forced crossing windows on bridges; "bridges"
-    every natural bridge without the zones; "zones" the forced windows plus
-    the double-zone rides without the bare bridges; "all" their union.
+    every natural bridge; "zones" the forced windows plus the double-zone
+    rides. The two selective stages deliberately overlap where the widened
+    double zone reaches into a bridge — their UNION is exactly "all", their
+    difference is which run segmentation those samples fall into.
     """
     if stage == "windows":
         return bridge & forced

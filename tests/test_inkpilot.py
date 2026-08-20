@@ -254,8 +254,9 @@ def test_ruler_soll_ignores_a_touch_and_counts_proper_pierces() -> None:
 
     # The v0.16 soll source is the frozen crossing detector: a map pass that
     # only TOUCHES another (clears it by less than the pierce margin) is no
-    # soll crossing, a proper pierce is exactly one point — where the raw
-    # segment enumeration double-counted (the aug20 autopsy).
+    # soll crossing, and each proper crossing is exactly ONE point — the
+    # through-poke below crosses twice (enter + exit), so two points, where
+    # the raw segment enumeration double-counted each (the aug20 autopsy).
     xh = 10.0
     a = np.column_stack([np.linspace(0.0, 80.0, 161), np.full(161, 20.0)])
     xs = np.linspace(0.0, 80.0, 161)
