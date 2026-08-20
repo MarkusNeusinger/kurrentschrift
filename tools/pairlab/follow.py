@@ -1865,7 +1865,7 @@ def follow_word_chain(
                     two_sided,
                 )
                 pinned: list[int] = []
-                if len(sites_units):
+                if len(sites_units) and len(problem.anchors_free):
                     # Sites are trace units; anchors live in the problem frame —
                     # compare in crop px (the assembler's own inverse transform).
                     sx = sites_units[:, 0] * xh + float(registration.get("tx", 0.0))
@@ -2499,7 +2499,13 @@ def weights_from_args(args: argparse.Namespace) -> FollowWeights:
     return replace(
         weights,
         retrace_guard=not args.no_retrace_guard,
-        structure_guard=bool(args.structure_guard or args.structure_guard_two_sided or args.structure_guard_soll),
+        structure_guard=bool(
+            args.structure_guard
+            or args.structure_guard_two_sided
+            or args.structure_guard_soll
+            or args.structure_guard_ratchet
+            or float(args.structure_guard_zone) > 0.0
+        ),
         structure_guard_two_sided=bool(args.structure_guard_two_sided),
         structure_guard_soll=bool(args.structure_guard_soll),
         structure_guard_zone_units=float(args.structure_guard_zone),
