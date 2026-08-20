@@ -7439,3 +7439,121 @@ Schichten (Zonen-Stufe nach p-Oskulations-Mechanik, anderer
 Solver); die nächsten Mess-Arme der Kampagne liegen auf der
 KETTE (K0-zonale Rückweisung, §7.9) und bei InkSight.
 Artefakte: `temp/tb-aug20/probe-v20-w0*`.
+
+### Kette K0-Z `aug20` — Vorregistrierung: die zonale Rückweisung
+
+Geschrieben und committet VOR der ersten Zahl. Einlösung des
+stehenden §7.9-Rettungswegs der K0-Wächter-Zeile: Das
+aug19-Protokoll bewies die RUNDEN-ATOMARE Rückweisung als Decke —
+unters gebündelte Soll-Reparatur (overlap 3 → 2 erlaubt UND
+touch 3 → 6 verboten, beides in EINEM Solve) wird als Ganzes
+verworfen, die Struktur friert (107 = 107).
+
+**Mechanismus.** Nach den bestehenden Halbierungs-Retries
+(`STRUCTURE_GUARD_MAX_RETRIES`), VOR dem Voll-Revert: (1) Die
+Klassen-PUNKTE des Kandidaten und der Vorrunden-Geometrie werden
+durch DASSELBE Assemblat und DIESELBEN Zähler bestimmt wie Budget
+und Soll (`crossing_points`-Positionen, `structure_zones`-Mids —
+keine Zweitimplementierung); Verletzungs-Orte sind je verletzter
+Klasse die per Eins-zu-eins-Matching (0,55-Lineal-Radius)
+überzähligen Kandidaten-Events bzw. verlorenen Vorrunden-Events.
+(2) Alle freien Anker im ZONEN-Radius um einen Verletzungs-Ort
+werden auf die Vorrunden-Geometrie gepinnt (Delta-Bounds (0,0)).
+(3) EIN Nach-Solve mit den Original-Bounds der Runde für die
+übrigen Anker; hält das Budget, ist die Runde ANGENOMMEN — sonst
+Voll-Revert wie bisher. **EIN Knopf:**
+`structure_guard_zone_units`, Leiter {0,55 · 1,0}; 0 = heutiges
+Verhalten (Identitäts-Erwartung: byte-gleiche Kandidaten).
+
+**Messanordnung.** 63 Wörter (`--all`), Stack
+`--structure-guard-soll` + Zone, BLAS gepinnt; **Basis = der
+aug19-K0-soll-Lauf** (`temp/tb-aug19/k0-soll-cand.json`;
+`follow.py` seit #387 unverändert, zusätzlich der
+Zone-0-Identitäts-Check). Bewertung nach dem k0-Protokoll
+(referenzfrei: Soll-Abstand = |cross − Kompositions-Soll| +
+|retrace − Zonen-Soll| je Wort; aiou gegen die Tinte) plus
+dev-19-Referenzbench.
+
+**Gates:** Gesamt-Soll-Abstand sinkt IRGENDWO strikt und steigt
+je Wort NIRGENDS · aiou je Wort ≥ −0,003 · dev-19: kein Wort
+verliert mehr als 0,003 dtw (einseitig), Marken unverändert,
+reversed 0, Netto-Kreuzungsdefekte ≤ Basis · Laufzeit-Report.
+**Adoption: die Sprosse mit dem besten Gesamt-Soll-Abstand, die
+alle Gates hält; Gleichstand → kleinerer Radius.** Ehrliche
+Erwartung: unters Bündel-Fall überlebt zonal (die touch-Zone
+friert, die overlap-Reparatur bleibt); benanntes Risiko: die
+Pinn-NÄHTE (Grenze gepinnt/frei) können eigene Artefakte formen
+— genau dafür stehen die je-Wort-Gates.
+
+**Gemessen `aug20` nacht — beide Sprossen verworfen per Gate,
+an ZWEI knappen Rissen gegen den größten Tinten-Gewinn der
+Ketten-Geschichte; die Konversion ist präzise benannt.**
+Identität: Zone 0 reproduziert den aug19-K0-soll-Lauf
+BYTE-GLEICH (Messkette validiert). **Die Substanz:** Zone 1,0
+rettet 59 von 79 bisher rundenatomar verworfenen Runden
+(0,55: 53/77), Gesamt-Soll-Abstand 107 → **102** (5 besser ·
+1 schlechter), und die geretteten Runden tragen die
+Tinten-Verfeinerung, die die atomare Rückweisung mit
+verwarf: **aiou +0,05 bis +0,154 über das halbe Set**
+(Gewehr +0,154 · an +0,115 · Kugel +0,112 · Wer +0,100 ·
+muß +0,097; Median +0,0030), dev-19 VOLLSTÄNDIG grün
+(schlechtester dtw-Verlust +0,0008, Netto 21 → 20, dtw-Median
+0,0494 → **0,0472** — Bestwert der Route, Marken unverändert,
+reversed 0). **Die zwei Gate-Risse:** (a) daß Soll-Dist 2 → 3 —
+die INTERVALL-RÜCKWÄRTS-Klasse: das Akzeptanz-Intervall
+[min(Budget,Soll), max] ist über die Runden STATISCH, eine
+akzeptierte Runde darf eine Klasse legal vom bereits erreichten
+Stand ZURÜCK Richtung Budget tragen (retrace 1 → 2 im Intervall
+[1,2]); (b) „ein" aiou −0,0049 (einziger Verlierer, knapp über
+der 0,003-Schwelle). Protokoll-Notiz: die Erstauswertung las
+die Follow-Registrierung fälschlich unter `measurements`
+(top-level ist richtig — das dokumentierte aug19-Gotcha) und
+verwusch die aiou-Deltas; korrigiert vor jeder Entscheidung.
+Konversion: **K0-Z-R, das Ratschen-Budget** (unten).
+
+### Kette K0-Z-R `aug20` — Vorregistrierung: das Ratschen-Budget
+
+Geschrieben und committet VOR der ersten Zahl. Der benannte
+Fix der Intervall-Rückwärts-Klasse: **nach jeder AKZEPTIERTEN
+Runde wird das Budget auf deren Klassen-Stände gesetzt** — das
+Intervall der Folgerunde ist [min(Stand, Soll), max(Stand,
+Soll)], Bewegung geht nur noch WEITER Richtung Soll, nie
+zurück (die daß-Klasse stirbt konstruktiv). **EIN Knopf:**
+`structure_guard_ratchet` (bool, nur mit Soll-Guard sinnvoll);
+Leiter: Ratsche+Zone {0 · 0,55 · 1,0} — Sprosse 0 isoliert die
+Ratsche auf dem heutigen atomaren Guard. Messanordnung und
+Gates unverändert K0-Z (Basis bleibt der aug19-K0-soll-Lauf).
+Ehrliche Erwartung: Zone-1,0+Ratsche hält das daß-Gate; das
+„ein"-aiou-Gate (−0,0049) entscheidet über Adoption — es wird
+NICHT aufgeweicht.
+
+**Gemessen `aug20` nacht — verworfen per Gate; die
+daß-Autopsie findet die Wurzel eine Ebene tiefer: ZWEI
+SOLL-QUELLEN divergieren.** Die Ratsche allein (Zone 0) ist
+exakt neutral (107 = 107 — der atomare Guard bewegte sich nie
+rückwärts). **Ratsche+0,55 ist die stärkste Sprosse der
+Ketten-Geschichte: Gesamt-Soll-Abstand 107 → 99** (7 besser ·
+1 schlechter), **NULL aiou-Verlierer** (min −0,0017, „ein"
+dreht auf +0,0118), Tinten-Gewinne bis +0,131 — und reißt
+trotzdem zwei Gates: daß bleibt 2 → 3, und dev-19 zeigt zwei
++0,0142 dtw (bei aiou +0,0920 ebendort — der Tinte-gegen-
+Bahn-Trade) plus unter `retrace_missing` 1 → 2. Ratsche+1,0:
+dev-19 vollständig grün, aber 63er-Risse (daß · „ein"
+−0,0049). **Die daß-Runden-Records klären den hartnäckigen
+Riss:** Die zonal gerettete Runde ist gegen das GUARD-Soll
+völlig legal (retrace → 2; `structure_zones` zählt am
+komponierten daß-Init 2 Retrace-Zonen), aber die
+k0-METRIK rechnet mit `ductus_soll` comp.zones = **1** —
+zwei Pipelines, dieselbe Komposition, verschiedene
+Zonen-Zahl. Der Guard tut, was sein Soll sagt; die Metrik
+bestraft es. Das ist DASSELBE „zwei Lineale"-Muster, das am
+Morgen die Lotse-Soll-Quelle kostete. Rettungswege: (1)
+**Soll-Quellen-Autopsie** (welche der beiden Zählungen der
+daß-Komposition ist die richtige — Assembly-Detail oder
+Detektor-Floor?), dann die Wiedervorlage mit VEREINHEITLICHTER
+Quelle (Budget, Guard-Soll, Runden-Counts und Metrik durch
+EINE Pipeline); (2) der zwei-dtw-Trade als eigene Frage
+(+0,0142 Bahn gegen +0,0920 Tinte — ggf. ein Fall für den
+humanbench-Tie-Breaker, §7.9 Methodik-Zeile). Implementierung
+bleibt deklariert-off (`zone 0` byte-identisch bewiesen,
+Ratsche default False). Artefakte: `temp/tb-aug20/k0z*`.

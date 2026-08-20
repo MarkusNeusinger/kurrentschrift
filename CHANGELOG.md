@@ -14,6 +14,31 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Chain K0-Z and K0-Z-R: the zonal rejection and the ratchet budget,
+  measured to two honest negatives that carry the route's strongest
+  numbers — and a two-soll-sources find** (§14 `aug20` night,
+  pre-registered arms). The zonal rejection localises a structure-guard
+  violation (one-to-one position diff of the class points through the
+  same assembler and counters as the budget), pins the free anchors
+  around it to the previous geometry, and re-solves the round once —
+  saving a bundled repair instead of rejecting it whole. Zone 0 is
+  byte-identical to the aug19 run; zone 1.0 rescues 59 of 79 previously
+  discarded rounds with the largest ink gain the chain has seen (aiou
+  up to +0.154, soll distance 107 → 102, dev dtw median 0.0494 →
+  0.0472, dev-19 fully green). The ratchet (budget snaps to every
+  accepted round's counts) plus zone 0.55 reaches soll 107 → **99**
+  with ZERO per-word aiou losers — and still fails one gate: daß 2 → 3,
+  whose autopsy finds the real root one layer down: the guard's soll
+  (`structure_zones` on the composed init: 2 retrace zones) and the
+  metric's soll (`ductus_soll`: 1) DIVERGE on the same composition —
+  the day's "two rulers" pattern again, now on the chain. Both arms
+  stay declared-off (`--structure-guard-zone`,
+  `--structure-guard-ratchet`); standing rescue: the soll-source
+  autopsy, then re-submission with ONE pipeline for budget, guard soll,
+  round counts and metric. The evaluation also re-hit the documented
+  aug19 gotcha (follow rows carry registration at top level) — caught
+  and corrected before any verdict.
+
 - **The operating-point smoothing candidate falls to the window fine
   ladder — the map/sampling family is exhausted** (§14 `aug20` night,
   second Nachtrag). The fine window ladder {0.02, 0.03, 0.04, 0.06} at

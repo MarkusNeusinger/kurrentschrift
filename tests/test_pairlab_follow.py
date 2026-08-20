@@ -1234,3 +1234,37 @@ def test_a_targeting_from_another_problem_is_refused_loudly() -> None:
     )
     with pytest.raises(ValueError, match="build the targeting from THIS problem"):
         apply_landmark_targets(problem, doubled)
+
+
+def test_zone_violation_sites_name_inventions_and_losses() -> None:
+    from tools.pairlab.follow import _class_interval, _zone_violation_sites, structure_class_points
+
+    # Interval logic mirrors _breaks_budget exactly.
+    assert _class_interval("cross", {"cross": 3}, None, False) == (0, 3)
+    assert _class_interval("cross", {"cross": 3}, None, True) == (3, 3)
+    assert _class_interval("cross", {"cross": 3}, {"cross": 1}, False) == (1, 3)
+    assert _class_interval("cross", {"cross": 1}, {"cross": 4}, False) == (1, 4)
+
+    # An over-count names the UNMATCHED candidate event (the invention at
+    # (9, 0)); the shared crossing at the origin is matched away.
+    cand = {"cross": np.asarray([[0.1, 0.05], [9.0, 0.0]]), "retrace": np.zeros((0, 2))}
+    prev = {"cross": np.asarray([[0.0, 0.0]]), "retrace": np.zeros((0, 2))}
+    sites = _zone_violation_sites(cand, prev, {"cross": 1, "retrace": 0}, None, False)
+    assert len(sites) == 1 and sites[0][0] == 9.0
+
+    # An under-count (soll interval) names the LOST previous event.
+    cand2 = {"cross": np.zeros((0, 2)), "retrace": np.zeros((0, 2))}
+    prev2 = {"cross": np.asarray([[4.0, 1.0]]), "retrace": np.zeros((0, 2))}
+    sites2 = _zone_violation_sites(cand2, prev2, {"cross": 1, "retrace": 0}, {"cross": 2, "retrace": 0}, False)
+    assert len(sites2) == 1 and sites2[0][0] == 4.0
+
+    # Points and counts are the same detector: parity holds on a real trace.
+    a = np.column_stack([np.linspace(0.0, 6.0, 121), np.full(121, 0.5)])
+    ys = np.full(121, 0.9)
+    ys[(a[:, 0] > 2.6) & (a[:, 0] < 3.4)] = 0.1
+    b = np.column_stack([a[:, 0], ys])
+    pts = structure_class_points([a.tolist(), b.tolist()])
+    from tools.pairlab.follow import structure_class_counts
+
+    counts = structure_class_counts([a.tolist(), b.tolist()])
+    assert {k: len(v) for k, v in pts.items()} == counts
