@@ -7415,3 +7415,26 @@ ein X ein. Falls aufgegriffen: eigene Pre-Reg als
 Betriebspunkt-Arm mit Fenster-Leiter, kein Anhängsel der
 Auflösungs-Familie. Der Glätter bleibt deklariert-off im Code.
 Artefakte: `temp/tb-aug20/probe-v20-*`.
+
+**Zweiter Nachtrag `aug20` nacht — auch der Betriebspunkt-
+Kandidat ist an den Proben verworfen.** Die Fenster-Feinleiter
+{0,02 · 0,03 · 0,04 · 0,06} bei Schritt 0,12 (fünf Proben-Worte,
+volles Lineal) zeigt: (1) die Fenster unter 0,06 sind
+KERNEL-QUANTISIERT identisch (alle drei → 3-Punkte-Box auf dem
+0,02-Grid); (2) **kein Fenster ist ohne Verlierer** — Kernel-3
+gewinnt Wer (dtw −0,0035/aiou +0,0251) und unter (das t-X2
+erscheint), zahlt aber bei Galoppieren (+0,0065 dtw, Spurious
++1, neue Retrace-Defekte) und mit (aiou −0,0158); Fenster 0,06
+gewinnt mit (aiou +0,0967), kippt Wer (+0,0309). Die Effekte
+springen nichtlinear und gegenläufig zwischen den Sprossen —
+das sind ENTSCHEIDUNGS-KIPP-PUNKTE des Viterbi (jede
+Karten-Störung verschiebt Board-Entscheidungen chaotisch),
+keine systematische Verbesserung; wort-weise Optima wären
+Fischerei. Gesamtbefund des Tages damit geschlossen: **die
+Route sitzt am Betriebspunkt in einem empfindlichen Optimum —
+Karten- und Abtastungs-Manipulationen sind als Familie
+erschöpft.** Die verbliebenen Lotse-Wege führen über andere
+Schichten (Zonen-Stufe nach p-Oskulations-Mechanik, anderer
+Solver); die nächsten Mess-Arme der Kampagne liegen auf der
+KETTE (K0-zonale Rückweisung, §7.9) und bei InkSight.
+Artefakte: `temp/tb-aug20/probe-v20-w0*`.
