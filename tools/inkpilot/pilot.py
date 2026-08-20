@@ -201,8 +201,11 @@ UNTWIST_SOLL_RADIUS_UNITS = 0.55  # the ruler's matcher radius, as a snapshot
 # 2 -> ... -> 0, the aug20 unter dump). "reserve" therefore matches the
 # ruler soll to the events one-to-one ONCE per pass; a reserved event is
 # unpairable — the map knows that crossing, it is untouchable.
-# "radius" = the v0.15/v0.16 count.
-UNTWIST_SOLL_MATCHING = "radius"
+# "radius" = the v0.15/v0.16 count. ADOPTED aug20 per the pre-declared
+# parity rule: dev-19 counter-identical to v0.16 on both roots (every
+# gate PASS), the protective class pinned by the unit test, fewer
+# needless mirrors (Galoppieren 15 -> 11).
+UNTWIST_SOLL_MATCHING = "reserve"
 # v0.10 (pre-registered, L1d): junction-anchored pinning of map runs. The
 # owner's visual find (the k curl untraced, the W riding air) autopsied to
 # MERGED crossing windows — where map self-intersections sit densely the

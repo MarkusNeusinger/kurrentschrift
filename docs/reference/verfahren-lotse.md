@@ -16,7 +16,7 @@
   Prior" radikaler als die Kette: direkt auf der Tinten-Mitte fahren,
   den Duktus nur an Entscheidungsstellen als KARTE fragen.
 
-## Aktueller Stand: v0.16 (2026-08-20)
+## Aktueller Stand: v0.17 (2026-08-20)
 
 Adoptierte Konstanten (`tools/inkpilot/pilot.py`):
 `TAIL_RUNOUT_MAX_UNITS` = 1,0 (Schienen-Auslauf) ·
@@ -29,8 +29,12 @@ allen natürlichen Brücken) · `UNTWIST_WINDOW_UNITS` = 0,5 (v0.13 —
 paarweise Entdrillung) · `UNTWIST_SOLL_BUDGET` = True (v0.16 —
 **Lineal-Soll-Budget**: die Entdrillung darf keine Nachbarschaft
 unter ihr Karten-Soll ziehen, gezählt vom gefrorenen
-Kreuzungs-Detektor auf der Karte). Zahlen (dev-19, gefrorener Root,
-§14 „Lotse v0.16 aug20"): dtw 0,0585 med · p90 **0,1122** ·
+Kreuzungs-Detektor auf der Karte) · `UNTWIST_SOLL_MATCHING` =
+"reserve" (v0.17 — **Reservierungs-Veto**: das Soll wird je Pass
+eins-zu-eins auf die Events gematcht, reservierte Events sind
+unpaarbar; adoptiert bei Zähler-Parität per vorregistrierter
+Konstruktions-Regel). Zahlen (dev-19, gefrorener Root,
+§14 „Lotse v0.16/v0.17 aug20"): dtw 0,0585 med · p90 **0,1122** ·
 **Netto-Kreuzungsdefekte 6** (missing 1 — nur unters letzter
 Ritt-Rest) · Kreuzungs-Ortsfehler-Median **0,066 xh** ·
 `marks_missing` 0 · aiou 0,740 — Struktur WORTGLEICH zu v0.13,
@@ -69,6 +73,8 @@ Kreuzungs-Ortsfehler (0,066 gegen 0,083 xh).
 | aug19 | Wiedervorlage v0.14 auf der LF3b-Karte | `MAP_RUN_PIN_KNOTS` = "all" auf der topologie-reparierten Kandidaten-Karte (§14 LF3b) | verworfen per Gate (Netto 7 > 5, Riss WIEDER Galoppieren) — **die Karten-Form-These der „all"-Stufe ist damit widerlegt**: der Bruch liegt im Ritt des dichten G-Knoten-Komplexes; Tinten-Gewinne erneut bestätigt (aiou +0,004, p90 −0,001, kein dtw-Verlierer) → G-Kopf-Ritt-Autopsie, dann selektive Pinn-Stufe |
 | aug20 | G-Kopf-Ritt-Autopsie *(Befund, kein Arm)* | instrumentierte Pinn-Schicht + Entdrillungs-Forensik auf der stroke-gleich reproduzierten LF3b-Karte | **der Riss ist die parität-blinde ENTDRILLUNG, nicht die Pinnung** (vor der Entdrillung hat „all" das G-Kopf-X und den sichtbar saubersten Ritt; die Paar-Spiegelung frisst echtes X + Duplikat, 2 → 0 wo die Hand 1 schreibt); v0.15s Fehlschlag = Soll-DOPPELZÄHLUNG (will roh 10 gegen wahre 4); 0,8-Fenster erneut tot mit Mechanismus (unter verliert alle drei X — Platzierungs-Decke, 4. Bestätigung) |
 | aug20 | v0.16 (L1i) | selektive Pinn-Leiter (`bridges` · `zones` · `all`) mit **Lineal-Soll-Budget** (§7.7-Wiedervorlage v0.14+v0.15; Soll-Quelle = der gefrorene Kreuzungs-Detektor auf der Karte) | **adoptiert "bridges"+Budget** (Struktur stellen-identisch zur Basis, kein Wort verliert; p90 0,1129 → 0,1122, chamfer 0,0410 → 0,0404, vier Wörter −0,0035..−0,0059 dtw, mits Retrace heilt); zones/all verworfen per Gate (Netto 6 > 5 — exakt die eine Galoppieren-p-Oskulation; **das G-Kopf-X überlebt dort unter Budget**) → Zonen-Stufe nach dem K1-p-Platzierungs-Arm wiedervorlegen |
+| aug20 | Karten-Soll-Autopsie *(Befund, kein Arm)* | Platzierungskarte dev-19 (Lineal-Soll ↔ Hand-X) + Veto-Forensik an unter@0,8 | **die „Platzierungs-Decke" ist eine SOLL-VOLLSTÄNDIGKEITS-Lücke**: die Karte kennt 40/41 Hand-X (Ortsfehler median 0,150 xh; blind nur unters e→r); die p-„0,85-Kreuzungen" waren Artefakte der rohen Doppelzählung; jedes Zähl-Veto (Radius UND Delta) fällt an unters 12-Events-über-1-Soll-Cluster als Commons-Problem; das 0,8-Fenster bleibt auch mit Reservierung tot (unters u-n-Doppel: Hand 2 X, Karte kennt 1) → **Karten-Soll-Vollständigkeit an Join-Schleifen = Composer-Arm** |
+| aug20 | v0.17 (L1j) | **Reservierungs-Veto** (`UNTWIST_SOLL_MATCHING` = "reserve"): Soll je Pass eins-zu-eins auf die Events gematcht, reservierte Events unpaarbar | **adoptiert per vorregistrierter Paritäts-Regel** (beide Roots zähler-identisch je Wort, alle Gates PASS; die Schutzklasse im Unit-Test gepinnt, Spiegelungen sinken: Galoppieren 15 → 11) — das Budget-Veto erfüllt seine Semantik jetzt konstruktiv |
 
 Benannter Fehlermodus der Route: **Junction-Pinch** (Glossar) — die
 v0.7/v0.8/v0.9-Kette ist seine vollständige Abarbeitung; seit v0.11
@@ -77,14 +83,18 @@ Rest-Spurious-Klasse.
 
 ## Offene Blöcke
 
-- **Rest-Duplikate** (Gewebe über dem 0,5-Fenster): das
-  Lineal-Soll-Budget ist seit v0.16 adoptiert, aber das FENSTER
-  bleibt 0,5 — die `aug20`-Nachmessung zeigt 0,8 auch MIT Budget
-  tot (Galoppieren würde komplett heilen, unter verliert alle
-  drei X, weil die Karte unters Kreuzungs-ORTE nicht kennt;
-  Punkt-Abstand trennt nicht). Weg: erst die
-  Platzierungs-Reparatur der Karte (K1-p-Arm, e→r), dann das
-  Fenster wiedervorlegen (§7.9).
+- **Rest-Duplikate** (Gewebe über dem 0,5-Fenster): Budget
+  (v0.16) und Reservierungs-Veto (v0.17) sind adoptiert, aber das
+  FENSTER bleibt 0,5 — die `aug20`-Autopsie zeigt 0,8 auch mit
+  Reservierung tot: Galoppieren würde komplett heilen (−2), aber
+  unters linkes u-n-Doppel fällt, weil die KARTE dort nur eine
+  Kreuzung führt, wo die Hand zwei schreibt (Soll-
+  VOLLSTÄNDIGKEIT, nicht Platzierung — die Platzierungskarte
+  matcht 40/41 Hand-X bei 0,150 xh). Weg: der
+  **Karten-Soll-Vollständigkeits-Arm** (Composer: Join-Schleifen-
+  Kreuzungen — u-n-Doppel, e-Einläufe, unters e→r; der
+  aug15-Befund „Hand 34 > Komposition 25"), dann das Fenster
+  wiedervorlegen (§7.9).
 - **Zonen-Stufe** (der Rest der „all"-Familie): die
   `aug20`-Autopsie hat den v0.14-Riss aufgelöst (parität-blinde
   Entdrillung, nicht die Pinnung) und v0.16 hat „bridges"+Budget

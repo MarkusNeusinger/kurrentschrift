@@ -7212,3 +7212,18 @@ die die Radius-Zählung nur approximiert — der Unit-Test pinnt
 die Klasse, die Proben zeigen Parität mit weniger Spiegelungen
 (Galoppieren 15 → 11). Ehrliche Erwartung: Zähler-Parität,
 leichte Geometrie-Schonung; jede Regression tötet den Arm.
+
+**Gemessen `aug20` — ADOPTIERT per Paritäts-Regel.** Auf beiden
+Roots (LF3b-Karte und gefrorener Root) ist die
+Reservierungs-Sprosse **zähler-identisch je Wort** (kein Zähler
+bewegt sich, keine dtw-Bewegung > 0,0015, aiou-Median-Δ +0,0000,
+reversed 0 — alle Gates PASS; LF3b: Netto 5, dtw 0,0573,
+p90 0,1122; frozen: Netto 6, dtw 0,0585). Der neue Default:
+`UNTWIST_SOLL_MATCHING = "reserve"` — das Budget-Veto erfüllt
+seine Semantik jetzt konstruktiv statt approximativ; die
+Schutzklasse (Radius-Zählung tötet ein soll-gedecktes Paar unter
+Event-Inflation) ist im Unit-Test gepinnt. Der nächste benannte
+Hebel bleibt der Karten-Soll-Vollständigkeits-Arm (Composer,
+Join-Schleifen — Autopsie oben); dahinter warten 0,8-Fenster und
+Zonen-Stufe als Wiedervorlagen. Artefakte:
+`temp/tb-aug20/lotse-v17-*`.

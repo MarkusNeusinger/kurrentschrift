@@ -47,7 +47,7 @@ Zahl hier ist ein datiertes Zitat, der Beleg wohnt im benannten
 | Anzeige-Name | Seite | Stand (2026-08-20, dev-19, §14 „Re-Baseline aug17“ ff.) |
 |---|---|---|
 | **Kette** | [`verfahren-kette.md`](verfahren-kette.md) | **v3** (`aug19`, Assembly-Ordnung + Trace-Reparatur) — dtw 0,0491 med · p90 0,089 · worst muß 0,110 · marks 0 |
-| **Lotse** | [`verfahren-lotse.md`](verfahren-lotse.md) | v0.16-Stand — dtw 0,0585 med · p90 0,112 · Netto-Kreuzungsdefekte 6 (missing 1) · Kreuzungs-Ortsfehler 0,066 xh · aiou 0,740 |
+| **Lotse** | [`verfahren-lotse.md`](verfahren-lotse.md) | v0.17-Stand — dtw 0,0585 med · p90 0,112 · Netto-Kreuzungsdefekte 6 (missing 1) · Kreuzungs-Ortsfehler 0,066 xh · aiou 0,740 |
 | **InkSight** | [`verfahren-inksight.md`](verfahren-inksight.md) | T0 (roh) — dtw 0,0951 med · 5/19 failed · Galoppieren-B2-Kollaps |
 | **Nullprobe** | [`verfahren-nullprobe.md`](verfahren-nullprobe.md) | unversioniert (Kontrolle) — dtw 0,619 med |
 
