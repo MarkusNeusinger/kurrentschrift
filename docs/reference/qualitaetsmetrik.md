@@ -7484,3 +7484,45 @@ Erwartung: unters Bündel-Fall überlebt zonal (die touch-Zone
 friert, die overlap-Reparatur bleibt); benanntes Risiko: die
 Pinn-NÄHTE (Grenze gepinnt/frei) können eigene Artefakte formen
 — genau dafür stehen die je-Wort-Gates.
+
+**Gemessen `aug20` nacht — beide Sprossen verworfen per Gate,
+an ZWEI knappen Rissen gegen den größten Tinten-Gewinn der
+Ketten-Geschichte; die Konversion ist präzise benannt.**
+Identität: Zone 0 reproduziert den aug19-K0-soll-Lauf
+BYTE-GLEICH (Messkette validiert). **Die Substanz:** Zone 1,0
+rettet 59 von 79 bisher rundenatomar verworfenen Runden
+(0,55: 53/77), Gesamt-Soll-Abstand 107 → **102** (5 besser ·
+1 schlechter), und die geretteten Runden tragen die
+Tinten-Verfeinerung, die die atomare Rückweisung mit
+verwarf: **aiou +0,05 bis +0,154 über das halbe Set**
+(Gewehr +0,154 · an +0,115 · Kugel +0,112 · Wer +0,100 ·
+muß +0,097; Median +0,0030), dev-19 VOLLSTÄNDIG grün
+(schlechtester dtw-Verlust +0,0008, Netto 21 → 20, dtw-Median
+0,0494 → **0,0472** — Bestwert der Route, Marken unverändert,
+reversed 0). **Die zwei Gate-Risse:** (a) daß Soll-Dist 2 → 3 —
+die INTERVALL-RÜCKWÄRTS-Klasse: das Akzeptanz-Intervall
+[min(Budget,Soll), max] ist über die Runden STATISCH, eine
+akzeptierte Runde darf eine Klasse legal vom bereits erreichten
+Stand ZURÜCK Richtung Budget tragen (retrace 1 → 2 im Intervall
+[1,2]); (b) „ein" aiou −0,0049 (einziger Verlierer, knapp über
+der 0,003-Schwelle). Protokoll-Notiz: die Erstauswertung las
+die Follow-Registrierung fälschlich unter `measurements`
+(top-level ist richtig — das dokumentierte aug19-Gotcha) und
+verwusch die aiou-Deltas; korrigiert vor jeder Entscheidung.
+Konversion: **K0-Z-R, das Ratschen-Budget** (unten).
+
+### Kette K0-Z-R `aug20` — Vorregistrierung: das Ratschen-Budget
+
+Geschrieben und committet VOR der ersten Zahl. Der benannte
+Fix der Intervall-Rückwärts-Klasse: **nach jeder AKZEPTIERTEN
+Runde wird das Budget auf deren Klassen-Stände gesetzt** — das
+Intervall der Folgerunde ist [min(Stand, Soll), max(Stand,
+Soll)], Bewegung geht nur noch WEITER Richtung Soll, nie
+zurück (die daß-Klasse stirbt konstruktiv). **EIN Knopf:**
+`structure_guard_ratchet` (bool, nur mit Soll-Guard sinnvoll);
+Leiter: Ratsche+Zone {0 · 0,55 · 1,0} — Sprosse 0 isoliert die
+Ratsche auf dem heutigen atomaren Guard. Messanordnung und
+Gates unverändert K0-Z (Basis bleibt der aug19-K0-soll-Lauf).
+Ehrliche Erwartung: Zone-1,0+Ratsche hält das daß-Gate; das
+„ein"-aiou-Gate (−0,0049) entscheidet über Adoption — es wird
+NICHT aufgeweicht.
