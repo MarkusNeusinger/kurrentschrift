@@ -7439,3 +7439,48 @@ Schichten (Zonen-Stufe nach p-Oskulations-Mechanik, anderer
 Solver); die nächsten Mess-Arme der Kampagne liegen auf der
 KETTE (K0-zonale Rückweisung, §7.9) und bei InkSight.
 Artefakte: `temp/tb-aug20/probe-v20-w0*`.
+
+### Kette K0-Z `aug20` — Vorregistrierung: die zonale Rückweisung
+
+Geschrieben und committet VOR der ersten Zahl. Einlösung des
+stehenden §7.9-Rettungswegs der K0-Wächter-Zeile: Das
+aug19-Protokoll bewies die RUNDEN-ATOMARE Rückweisung als Decke —
+unters gebündelte Soll-Reparatur (overlap 3 → 2 erlaubt UND
+touch 3 → 6 verboten, beides in EINEM Solve) wird als Ganzes
+verworfen, die Struktur friert (107 = 107).
+
+**Mechanismus.** Nach den bestehenden Halbierungs-Retries
+(`STRUCTURE_GUARD_MAX_RETRIES`), VOR dem Voll-Revert: (1) Die
+Klassen-PUNKTE des Kandidaten und der Vorrunden-Geometrie werden
+durch DASSELBE Assemblat und DIESELBEN Zähler bestimmt wie Budget
+und Soll (`crossing_points`-Positionen, `structure_zones`-Mids —
+keine Zweitimplementierung); Verletzungs-Orte sind je verletzter
+Klasse die per Eins-zu-eins-Matching (0,55-Lineal-Radius)
+überzähligen Kandidaten-Events bzw. verlorenen Vorrunden-Events.
+(2) Alle freien Anker im ZONEN-Radius um einen Verletzungs-Ort
+werden auf die Vorrunden-Geometrie gepinnt (Delta-Bounds (0,0)).
+(3) EIN Nach-Solve mit den Original-Bounds der Runde für die
+übrigen Anker; hält das Budget, ist die Runde ANGENOMMEN — sonst
+Voll-Revert wie bisher. **EIN Knopf:**
+`structure_guard_zone_units`, Leiter {0,55 · 1,0}; 0 = heutiges
+Verhalten (Identitäts-Erwartung: byte-gleiche Kandidaten).
+
+**Messanordnung.** 63 Wörter (`--all`), Stack
+`--structure-guard-soll` + Zone, BLAS gepinnt; **Basis = der
+aug19-K0-soll-Lauf** (`temp/tb-aug19/k0-soll-cand.json`;
+`follow.py` seit #387 unverändert, zusätzlich der
+Zone-0-Identitäts-Check). Bewertung nach dem k0-Protokoll
+(referenzfrei: Soll-Abstand = |cross − Kompositions-Soll| +
+|retrace − Zonen-Soll| je Wort; aiou gegen die Tinte) plus
+dev-19-Referenzbench.
+
+**Gates:** Gesamt-Soll-Abstand sinkt IRGENDWO strikt und steigt
+je Wort NIRGENDS · aiou je Wort ≥ −0,003 · dev-19: kein Wort
+verliert mehr als 0,003 dtw (einseitig), Marken unverändert,
+reversed 0, Netto-Kreuzungsdefekte ≤ Basis · Laufzeit-Report.
+**Adoption: die Sprosse mit dem besten Gesamt-Soll-Abstand, die
+alle Gates hält; Gleichstand → kleinerer Radius.** Ehrliche
+Erwartung: unters Bündel-Fall überlebt zonal (die touch-Zone
+friert, die overlap-Reparatur bleibt); benanntes Risiko: die
+Pinn-NÄHTE (Grenze gepinnt/frei) können eigene Artefakte formen
+— genau dafür stehen die je-Wort-Gates.
