@@ -51,7 +51,7 @@ from tools.wordlab.derive import WordDeriveResult, derive_word
 # Map sampling step and boarding radius, in x-heights. The 0.12 step was
 # picked as finer than the counters' ARC floor (0.35 xh) — but the aug20
 # t-stem autopsy found it coarser than the finest countable POINT
-# structure: a crossing pair 0.06 xh apart (t stem descent x bar and
+# structure: a crossing pair 0.06 xh apart (t-stem descent x bar and
 # repass x bar) cannot exist on a 0.12-xh polyline, in the ride path and
 # the budget's soll alike (v0.18 pre-registration, L1k: the resolution
 # ladder). The radius must reach the right rail even where the composed
