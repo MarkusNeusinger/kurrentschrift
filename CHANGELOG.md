@@ -14,6 +14,21 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The operating-point smoothing candidate falls to the window fine
+  ladder — the map/sampling family is exhausted** (§14 `aug20` night,
+  second Nachtrag). The fine window ladder {0.02, 0.03, 0.04, 0.06} at
+  the adopted 0.12 step shows the sub-0.06 windows kernel-quantized to
+  one identical rung (a 3-point box kernel on the 0.02-xh grid), and NO
+  window without a loser: the 3-point-kernel rung wins Wer
+  and makes unter's t-stem X appear but pays at Galoppieren (+1
+  spurious, new retrace defects) and mit; 0.06 wins mit (aiou +0.0967)
+  but flips Wer (+0.0309). The effects jump non-linearly between rungs —
+  Viterbi decision tipping points, not systematics; per-word optima
+  would be fishing. Day verdict closed: the route sits in a sensitive
+  optimum at its operating point, and the remaining campaign arms move
+  to other layers (chain K0 zonal rejection, InkSight, the zone stage's
+  p-osculation mechanics).
+
 - **The smoothing probes close the resolution family: the final coupling
   is the Viterbi's decision granularity** (§14 `aug20` night). The
   announced rescue — an along-path box smoother at counter scale before
