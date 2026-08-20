@@ -48,11 +48,16 @@ from tools.wordlab.cases import WordCase
 from tools.wordlab.derive import WordDeriveResult, derive_word
 
 
-# Map sampling step and boarding radius, in x-heights. The step is finer than
-# any structure the counters see (0.35 xh arc separation); the radius must
-# reach the right rail even where the composed map runs an arcade narrow
-# (the P1 drift find: arcades alias by up to ~1 xh) — the global ride below,
-# not the radius, is what keeps the pilot off the WRONG rail.
+# Map sampling step and boarding radius, in x-heights. The 0.12 step was
+# picked as finer than the counters' ARC floor (0.35 xh) — but the aug20
+# t-stem autopsy found it coarser than the finest countable POINT
+# structure: a crossing pair 0.06 xh apart (t stem descent x bar and
+# repass x bar) cannot exist on a 0.12-xh polyline, in the ride path and
+# the budget's soll alike (v0.18 pre-registration, L1k: the resolution
+# ladder). The radius must reach the right rail even where the composed
+# map runs an arcade narrow (the P1 drift find: arcades alias by up to
+# ~1 xh) — the global ride below, not the radius, is what keeps the pilot
+# off the WRONG rail.
 SAMPLE_STEP_UNITS = 0.12
 BOARD_RADIUS_UNITS = 0.6
 MAX_CANDIDATES = 14

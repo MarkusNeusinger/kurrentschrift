@@ -7231,3 +7231,58 @@ Hebel bleibt der Karten-Soll-Vollständigkeits-Arm (Composer,
 Join- und Rückpass-Schleifen — Autopsie oben); dahinter warten 0,8-Fenster und
 Zonen-Stufe als Wiedervorlagen. Artefakte:
 `temp/tb-aug20/lotse-v17-*`.
+
+### Lotse t-Stamm-Ritt-Autopsie `aug20` — die „Vollständigkeits-Lücke" ist eine AUFLÖSUNGS-Grenze
+
+Fortsetzung am Nachmittag; die Kette der Korrekturen wird eine
+Stufe tiefer einheitlich. Drei Messungen:
+
+**(1) Die KOMPOSITION führt das t-Stamm-Doppel — überall.** Auf
+den rohen Kompositions-Centerlines zählt das Lineal an unters t
+ZWEI Soll-X ((4,72·0,28)+(4,78·0,30), 0,06 xh auseinander;
+Bar × Abstieg und Bar × Rückpass-Brücke) — und die
+Platzierungskarte auf ROHER Karte matcht **41 von 41** Hand-X
+(Ortsfehler median 0,159 xh). Die „Soll-Vollständigkeits-Lücke"
+des Vormittags war KEINE Kompositions-Lücke: das 0,12-xh-
+Resampling der Soll-Quelle kollabiert das 0,06-Doppel zu einem
+Punkt (40/41). Ein Zwischen-Mechanismus „Soll-Quelle = rohe
+Karte" wurde gebaut und an den Proben gemessen: WIRKUNGSLOS
+(unter@0,8 unverändert) — er behebt nur das Soll-Symptom,
+nicht die Wurzel; verworfen vor jeder dev-Zahl, nicht
+eingecheckt.
+
+**(2) Die Wurzel: `SAMPLE_STEP_UNITS` = 0,12 ist gröber als die
+feinste zählbare PUNKT-Struktur.** Der Schritt wurde am
+ARC-Floor der Zähler (0,35 xh) bemessen — aber ein X-PAAR mit
+0,06 xh Punkt-Abstand kann auf einer 0,12-xh-Polyline nicht
+existieren: die RITT-BAHN selbst entsteht aus diesen Samples.
+Der t-Ritt (Bild `temp/tb-aug20/t-stem-ride.png`): der gesamte
+Fuß-Brücke-Balken-Komplex ist eine natürliche Brücke (board
+None), die gepinnte Karte trägt beide X — die 0,12er-Abtastung
+verschmilzt sie; unters missing 1 („letzter Ritt-Rest") ist
+exakt dieses zweite t-X.
+
+**(3) Der Ein-Wort-Beweis (halber Schritt, 0,06):** unter
+matched 3/3 — **der letzte missing des Dev-Satzes heilt**;
+Galoppieren spurious 2 → 1 (ein Rest-Gewebe verschwindet mit);
+mit stabil; Laufzeit +8 % (2,2 → 2,3 s bzw. 13,0 → 14,1 s).
+
+### Lotse v0.18 (L1k) `aug20` — Vorregistrierung: die Auflösungs-Leiter
+
+Geschrieben und committet VOR der ersten dev-19-Zahl. **EIN
+Knopf: `SAMPLE_STEP_UNITS`, Leiter {0,06 · 0,04}** (0,12 =
+Basis-Stand v0.17), alles andere der adoptierte Stack. Gemessen
+auf dev-19, LF3b-Karte UND gefrorener Root, BLAS gepinnt;
+Basen = die v0.17-Läufe.
+
+**Gates je Sprosse:** Netto ≤ Basis (LF3b 5 · frozen 6) ·
+`cross_missing` ≤ Basis (1) · Marken unverändert · reversed 0 ·
+kein Wort verliert mehr als 0,003 dtw (einseitig) ·
+aiou-Median-Δ ≥ 0 · Laufzeit-Report (kein Gate, aber
+dokumentiert). **Adoption: die Sprosse mit dem besten Netto;
+bei Gleichstand die GRÖBERE** (Laufzeit). Ehrliche Erwartung
+aus den Proben: 0,06 heilt unters missing und ein
+Galoppieren-Gewebe (Netto-Erwartung LF3b 5 → 3); 0,04 ist die
+Kontroll-Sprosse gegen Auflösungs-Fischerei — gewinnt sie
+NICHT weiter, ist 0,06 der Punkt, an dem die Struktur
+auskonvergiert.
