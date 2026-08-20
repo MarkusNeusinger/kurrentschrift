@@ -192,7 +192,7 @@ UNTWIST_MAX_PASSES = 8
 UNTWIST_SOLL_BUDGET = True
 UNTWIST_SOLL_RADIUS_UNITS = 0.55  # the ruler's matcher radius, as a snapshot
 # v0.17 (pre-registered, L1j): the RESERVATION veto — the standing §7.9
-# rescue ("Positions- statt Zähl-Matching"). The radius COUNT inherits
+# rescue (position matching instead of the count). The radius COUNT inherits
 # event inflation in dense neighbourhoods (the 0.8-window kill at unter
 # fired with n_events - 2 >= n_soll although the pair carried real
 # crossings), and a per-pair matched-count DELTA fails the same site as a
