@@ -7725,3 +7725,51 @@ authored, 0 frame-stale; ändert für zwei `marks_expected`
 0 → 1, keine Körperbahn. Alle dev-19-Zahlen dieses Eintrags
 sind gegen den Refill-Stand gescored, die K0-Z-R-Zahlen oben
 gegen den Vor-Stand (zwei-Marken-Spalte nicht vergleichbar).
+
+**Gemessen `aug20` nacht — ALLE SECHS GATES BESTANDEN; die
+größte Struktur- UND Tintenbewegung der Ketten-Geschichte, bei
+null Verlierern.** Artefakte `temp/tb-aug20/kc-*`
+(`kc-ident*` · `kc-on*` · `kc-eval.txt` · `kc-*-dev*`), BLAS
+gepinnt, 4 Worker, 63 Wörter in 958 s (Identität) / 969 s
+(K-C, +1 %). **(1) Identität:** Flag aus = 63/63 Wörter
+byte-gleich zur K0-Z-Basis. **(2) Konstruktions-Vorhersage:**
+23 Wörter tragen Fremdtinte (44 Komponenten, exakt die 44 der
+Vorab-Messung), die 40 anderen sind unter dem Flag 40/40
+byte-gleich. **(3) 63er, k0-Protokoll: Gesamt-Soll-Abstand
+107 → 86** (11 besser · 52 gleich · 0 schlechter — K0-Z-R
+erreichte 99 und riss dabei Gates): Galoppieren 7 → 2, kann
+5 → 3, regieren 4 → 2, zwei 4 → 2, Einen 2 → 0, Zaum 2 → 0,
+schwer 2 → 0, wenn-2 1 → 0, Soldaten/die-2/schießen je −1.
+**aiou: kein einziges Wort unter ±0, Median der 23 bewegten
++0,02, Maximum Wer +0,0991** (macht +0,078, Einen +0,081,
+wenn-2 +0,081, und-4 +0,068, er-3 +0,040). **(4) dev-19:**
+dtw-Median 0,0494 → **0,0453** (Bestwert der Route; K0-Z-R:
+0,0472), aiou-Median 0,717 → **0,747**, schlechtester
+dtw-Verlust **+0,0002** (die-2), Marken `missing` 1 → 0 (der
+Galoppieren-Punkt), `spurious` 0 = 0, reversed 0, Netto-
+Kreuzungsdefekte 21 → 19, **unechte Retrace-Zonen 13 → 7**,
+Lifts Δ 7 → 6. Je Wort: **Galoppieren 0,2329 → 0,0383**
+(−83 %, i-Punkt-Strich kompakt, E1/E3-Nadeln weg, Retrace
+0/4 → 0/0), **zwei 0,0726 → 0,0558** (beide w-Nadeln weg:
+Retrace 0/2 → 0/0, aiou +0,027), Wer 0,0435 → 0,0363 (aiou
++0,099), und-4 0,0433 → 0,0393 (aiou +0,068), die-2
+0,0746 → 0,0748 (aiou +0,008, Kreuzung 2/0 → 1/0 — die
+V-Nadel bleibt, wie vorhergesagt: ihr Magnet ist die eigene
+Marke). **(5) Hand-Claim:** 0 Treffer — die nächste gedroppte
+Komponente liegt 0,53 xh von einer Hand-Bahn (zweis C2), alle
+anderen ≥ 0,76 xh. **(6)** Laufzeit +1 %.
+
+Die Vorhersagen der Pre-Reg hielten wörtlich: Wörter ohne
+Fremdtinte byte-gleich, zwei/Galoppieren geheilt, Wer „≈
+gleich" war zu vorsichtig (+0,099 aiou — der Fleck HATTE
+gezogen, nur nicht die nächste Bahn, sondern die Coverage),
+die-2 ungeheilt. **Status: alle Gates bestanden → Adoption
+wartet auf das Autor-Go (Kette v4 = `ink_evidence=True` als
+Folger-Default, datierte Re-Baseline aller Ketten-Zahlen;
+derselbe Default auf dem Harvest).** Bis dahin declared-off.
+Lesart für die Kampagne: die Fremdtinte war eine
+Störquelle UNTER allen bisherigen Kettenarmen — K0-Z-R, die
+λ-Leiter, die Wächter-Runden haben gegen sie gemessen; die
+Wiedervorlage der stärksten verworfenen Sprosse (K0-Z-R 0,55)
+auf K-C-Evidenz ist der naheliegende nächste Arm, NACH der
+Soll-Quellen-Autopsie, die K0-Z-R ohnehin braucht.

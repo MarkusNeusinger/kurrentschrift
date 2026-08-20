@@ -14,8 +14,15 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
-- **Chain K-C: the ink-evidence mask, pre-registered from the author's
-  "Flecken" find** (§14 `aug20` evening). The author read the K0-Z-R
+- **Chain K-C: the ink-evidence mask — pre-registered from the author's
+  "Flecken" find and measured to a pass on all six gates** (§14 `aug20`
+  evening/night; soll distance 107 → **86** over 63 words with 11 better
+  and 0 worse, ZERO aiou losers and gains up to +0.099, dev-19 dtw
+  median 0.0494 → **0.0453** and aiou median 0.717 → 0.747, worst
+  per-word dtw loss +0.0002, Galoppieren 0.233 → 0.038, zwei 0.073 →
+  0.056, spurious retrace zones 13 → 7, the 40 words without foreign
+  ink byte-identical as predicted, hand-claim check 0 hits; stays
+  declared-off until the author's go). The author read the K0-Z-R
   duel page and asked whether paper specks pull the follower off the
   letters; a four-word autopsy plus a code map confirmed it for three of
   the four complaints with numbers (zwei: both w needles terminate

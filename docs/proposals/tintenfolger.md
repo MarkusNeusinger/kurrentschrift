@@ -635,7 +635,12 @@ Aufwand/Risiko:
   Fit sieht ALLE Komponenten der eingefrorenen Maske als Zugfeld und
   Coverage-Ziel; Dunkelheit trennt echte von fremden Komponenten
   vollständig (Lücke 0,38–0,74). Evidenz-Hygiene VOR jeder
-  Formulierungsänderung — §14 „Kette K-C", eigene Vorregistrierung.
+  Formulierungsänderung — §14 „Kette K-C". **GEMESSEN `aug20` nacht:
+  alle sechs Gates bestanden** (Soll 107 → 86 bei 0 schlechter, null
+  aiou-Verlierer, dev-dtw-Median 0,0453 = Bestwert, Galoppieren −83 %,
+  40 fremdtintenfreie Wörter byte-gleich); Adoption als Kette v4
+  wartet auf das Autor-Go. Nächster Kettenarm: K0-Z-R-Wiedervorlage
+  auf K-C-Evidenz nach der Soll-Quellen-Autopsie.
 - **A8 / K-D — Tinten-Korridor (Autor-Idee, 2026-08-20).** Eine
   Sperrzone um die erweiterte Tinte, die die Bahn nicht durchstoßen
   darf (Barriere auf dem Abstandsfeld statt weichem Zug): verbietet
