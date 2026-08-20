@@ -494,15 +494,18 @@ def smooth_map_strokes(strokes: list[np.ndarray], xh_px: float, window_units: fl
     kernel = np.ones(2 * half + 1) / (2 * half + 1)
     out: list[np.ndarray] = []
     for s in strokes:
-        pts = resample(np.asarray(s, dtype=float), fine)
+        arr = np.asarray(s, dtype=float)
+        pts = resample(arr, fine)
         if len(pts) <= 2 * half + 1:
-            out.append(np.asarray(s, dtype=float))
+            out.append(arr)
             continue
         sm = np.empty_like(pts)
         for d in range(2):
             padded = np.concatenate([pts[half:0:-1, d], pts[:, d], pts[-2 : -2 - half : -1, d]])
             sm[:, d] = np.convolve(padded, kernel, mode="valid")
-        sm[0], sm[-1] = pts[0], pts[-1]
+        # The ORIGINAL pen-down/up points, not the resampled ones — the
+        # arc-regular resample may stop short of the true end by < 1 step.
+        sm[0], sm[-1] = arr[0], arr[-1]
         out.append(sm)
     return out
 
