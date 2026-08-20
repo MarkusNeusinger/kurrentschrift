@@ -75,6 +75,22 @@ def test_mid_stroke_gap_is_bridged_not_trimmed() -> None:
     assert steps.max() < 8.0
 
 
+def test_map_smoothing_eats_wiggle_and_keeps_endpoints() -> None:
+    from tools.inkpilot.pilot import smooth_map_strokes
+
+    xh = 10.0
+    xs = np.linspace(0.0, 60.0, 601)
+    wiggly = np.column_stack([xs, 20.0 + 0.5 * np.sin(xs * 2.0 * np.pi / 1.0)])  # 0.1-xh period
+    out = smooth_map_strokes([wiggly], xh, window_units=0.12)[0]
+    # The intra-pass wiggle is damped well below its 0.5 amplitude...
+    assert np.abs(out[5:-5, 1] - 20.0).max() < 0.3
+    # ...and the pen-down/up endpoints stay exact.
+    assert np.allclose(out[0], wiggly[0]) and np.allclose(out[-1], wiggly[-1])
+    # Window 0 is the identity.
+    same = smooth_map_strokes([wiggly], xh, window_units=0.0)
+    assert same[0] is wiggly
+
+
 def test_ride_economy_is_step_invariant(monkeypatch) -> None:
     from tools.inkpilot import pilot as P
 

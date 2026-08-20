@@ -78,6 +78,18 @@ DEVIATION_WEIGHT = 2.0
 BRIDGE_EMIT_FACTOR = 2.5  # x radius, the bridge state's per-sample price
 EMIT_REFERENCE_STEP_UNITS = 0.12  # per-sample emissions scale by step/this
 MAX_RIDE_UNITS = 0.96  # rides above this (in xh) are treated as unreachable
+# Map smoothing (L1m): an along-path box smoother at counter scale BEFORE
+# any sampling — built as the rescue of the twice-rejected resolution
+# ladder and PROBED-REJECTED for that purpose aug20 (the fine-step drift
+# persists on the smoothed map: the coupling is the Viterbi's DECISION
+# granularity, and the resolution family is closed). Kept declared-off as
+# the measured OPERATING-POINT candidate: at step 0.12 a 0.06 window
+# showed mixed, partly large probe effects (mit aiou +0.0967, muß-2's
+# retrace defects heal, unter's second t-stem X appears · Wer +0.0309 dtw,
+# Galoppieren trades one X) — its own pre-registration with a window
+# ladder if taken up. Pass offsets survive (along-path smoothing cannot
+# mix separated passes); stroke endpoints stay exact. 0.0 = off.
+MAP_SMOOTH_WINDOW_UNITS = 0.0
 # A5, the offset double pass (v0.2 arm, pre-registered): every ride point on a
 # skeleton pixel the WORD rides more than once shifts by this fraction of the
 # local EDT half-width to the RIGHT of its travel direction — opposite-running
@@ -464,6 +476,38 @@ def map_strokes_px(result: WordDeriveResult) -> list[np.ndarray]:
     if current:
         strokes.append(np.vstack(current))
     return strokes
+
+
+def smooth_map_strokes(strokes: list[np.ndarray], xh_px: float, window_units: float) -> list[np.ndarray]:
+    """v0.20: along-path box smoothing of the composed map at counter scale.
+
+    Each stroke is resampled to the ruler's own 0.02-xh grid and box-filtered
+    over the given arc window; the pen-down/up endpoints stay exact and the
+    padding reflects, so ends neither shrink nor round away. Along-path
+    smoothing eats intra-pass micro-wiggle but cannot mix two separated
+    passes — lateral pass offsets (the t-stem double) survive.
+    """
+    if window_units <= 0.0:
+        return strokes
+    fine = 0.02 * xh_px
+    half = max(1, int(round((window_units * xh_px) / (2.0 * fine))))
+    kernel = np.ones(2 * half + 1) / (2 * half + 1)
+    out: list[np.ndarray] = []
+    for s in strokes:
+        arr = np.asarray(s, dtype=float)
+        pts = resample(arr, fine)
+        if len(pts) <= 2 * half + 1:
+            out.append(arr)
+            continue
+        sm = np.empty_like(pts)
+        for d in range(2):
+            padded = np.concatenate([pts[half:0:-1, d], pts[:, d], pts[-2 : -2 - half : -1, d]])
+            sm[:, d] = np.convolve(padded, kernel, mode="valid")
+        # The ORIGINAL pen-down/up points, not the resampled ones — the
+        # arc-regular resample may stop short of the true end by < 1 step.
+        sm[0], sm[-1] = arr[0], arr[-1]
+        out.append(sm)
+    return out
 
 
 def resample(stroke: np.ndarray, step_px: float) -> np.ndarray:
@@ -1257,6 +1301,8 @@ def pilot_word(case: WordCase) -> tuple[list[np.ndarray], dict]:
     pg = PilotGraph(np.asarray(case.skel, dtype=bool))
     xh_px = float(result.registration.get("xh_px", result.xh_px))
     maps = map_strokes_px(result)
+    if MAP_SMOOTH_WINDOW_UNITS > 0.0:
+        maps = smooth_map_strokes(maps, xh_px, MAP_SMOOTH_WINDOW_UNITS)
     samples_per = [resample(s, SAMPLE_STEP_UNITS * xh_px) for s in maps]
     if MAP_CROSSING_WINDOW_UNITS > 0.0:
         forced = map_crossing_masks(samples_per, MAP_CROSSING_WINDOW_UNITS)
