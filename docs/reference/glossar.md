@@ -1300,21 +1300,21 @@ Kaskade räumt die Stelle trotzdem leer). *Technisch:*
 `UNTWIST_SOLL_MATCHING` →
 qualitaetsmetrik.md §14 „Lotse v0.16/v0.17 `aug20`"
 
-**Karten-Soll-Vollständigkeit** — der `aug20` benannte gemeinsame
-Nenner der verbliebenen Lotse-Blocker (Zonen-p-Oskulation ·
-0,8-Fenster-unter · unters t-Stamm-Doppel): Nicht die ORTE der
-bekannten Karten-Kreuzungen sind das Problem (die
-Platzierungskarte matcht 40 von 41 Hand-X bei 0,150 xh
-Median-Fehler), sondern die Kreuzungen, die die Karte GAR NICHT
-führt — die komponierten Joins und Rückpässe unter-kreuzen, wo
-die echte Hand schleift (das zweite X am t-Stamm — Abstieg +
-0,07-xh-versetzter Rückpass, der K1b-Befund —, e-Einläufe, ß;
-der aug15-Befund „Hand 34 > Komposition 25"). Soll-gestützte
-Wächter können nur schützen, was das Soll kennt. Benannter Weg:
-ein Composer-Arm (Join- und Rückpass-Schleifen) mit
-wordbench-Gates, danach die Wiedervorlagen von 0,8-Fenster und
-Zonen-Stufe. *Technisch:* qualitaetsmetrik.md §14
-„Karten-Soll-Autopsie `aug20`", tintenfolger.md §7.9
+**Karten-Soll-Vollständigkeit** — die `aug20` gestellte Frage
+nach den Kreuzungen, die die Karte GAR NICHT führt (Wächter
+können nur schützen, was das Soll kennt) — **noch am selben Tag
+GEMESSEN beantwortet: die Karte ist vollständig.** Die
+Platzierungskarte auf der ROHEN komponierten Karte matcht
+**41 von 41** Hand-X des Dev-Satzes (Ortsfehler median
+0,159 xh); die vermeintliche Lücke (unters t-Stamm-Doppel:
+Abstieg + 0,07-xh-versetzter Rückpass, der K1b-Befund) war die
+0,12-xh-ABTASTUNG von Soll-Quelle und Ritt-Bahn — eine
+Auflösungs-Grenze (v0.18), keine Kompositions-Lücke. Was
+karten-seitig bleibt, sind Soll-X ohne Hand-Partner (mit-2,
+linken: die Karte kreuzt, wo DIESE Hand nicht kreuzt) —
+Beleg-Varianz, kein Fehler. *Technisch:* qualitaetsmetrik.md §14
+„Karten-Soll-Autopsie"/„t-Stamm-Ritt-Autopsie `aug20`",
+tintenfolger.md §7.9
 
 **Doppel-X-Duplikat** — die seit Lotse v0.11 dominante
 Rest-Spurious-Klasse des Kreuzungszählers (4 der 6 Zählungen):
