@@ -129,6 +129,7 @@ from tools.pairlab.chain import (
     fit_word_chain,
     respec_from_solution,
 )
+from tools.pairlab.ink_evidence import INK_EVIDENCE_PAPER_FRACTION, InkEvidenceOptions, ink_evidence_case
 from tools.pairlab.landmarks import LANDMARK_MIN_ANGLE_DEG
 from tools.pairlab.trace import assemble_word_strokes, cap_word_strokes
 from tools.tracebench.counters import crossing_points, structure_zones
@@ -459,6 +460,20 @@ class FollowWeights:
     only TOWARD the soll, never past it, never away; a class the two agree
     on freezes exactly (the two-sided special case). Implies the guard;
     takes precedence over `structure_guard_two_sided`."""
+    ink_evidence: bool = False
+    """K-C (§14 `aug20`, the owner's "Flecken" find): before the grid fits and
+    the solve, drop every non-main ink component that is paper-grey rather
+    than ink-dark from the case's `skel`/`width_map`
+    (`tools.pairlab.ink_evidence`) — specks, show-through of the sheet's
+    reverse, everything the frozen binarisation kept that the word never
+    wrote. The largest component (the word) and every component as dark as
+    it (i-dots, u-bows, broken stroke fragments) stay. The bench's frozen
+    mask is untouched; only what pulls the FIT changes. Default False = the
+    case object passes through untouched, byte-identical to before."""
+    ink_evidence_paper_fraction: float = INK_EVIDENCE_PAPER_FRACTION
+    """Where on the main-ink → paper grey scale a component stops being ink.
+    A measured class boundary (real ≤ 0.38, foreign ≥ 0.74 over the 63
+    fixtures), not a tuning knob; stamped so an artefact records it."""
     provisional: bool = True
 
 
@@ -2004,6 +2019,11 @@ def follow_derived(
     started = time.perf_counter()
     xh = result.xh_px
     registration = _registration_of(result)
+    # K-C: the ink the fit may see — AFTER `derive_word` (the frozen wordbench
+    # ruler and the registration were taken on the full ink) and BEFORE the
+    # grid fits, so seed windows, solve fields and coverage targets all come
+    # from ONE evidence. Off → the very same case object, nothing to diff.
+    case, ink_report = ink_evidence_case(case, _ink_options(weights))
     grids = _grid_fits(case, result)
 
     word_strokes: list[list[list[float]]] = []
@@ -2044,6 +2064,9 @@ def follow_derived(
         "landmark": _merge_landmark_meta(landmarks_by_run, mode=weights.landmark_targets),
         "n_params": n_params,
         "timings": {"seconds": round(time.perf_counter() - started, 3)},
+        # Only while the measure is on: the key's absence keeps the default
+        # artefact byte-identical to every report written before K-C.
+        **({"ink_evidence": ink_report.as_dict()} if ink_report is not None else {}),
     }
     if not word_strokes:
         return {
@@ -2070,6 +2093,13 @@ def follow_derived(
         "detail": "",
         "meta": meta,
     }
+
+
+def _ink_options(weights: FollowWeights) -> InkEvidenceOptions | None:
+    """K-C's options from a configuration — None (= identity) while the measure is off."""
+    return (
+        InkEvidenceOptions(paper_fraction=float(weights.ink_evidence_paper_fraction)) if weights.ink_evidence else None
+    )
 
 
 def follow_case(case: WordCase, *, weights: FollowWeights | None = None, chain_seed: str = "composed") -> dict:
@@ -2166,6 +2196,7 @@ def calibrate_case(
             "runs": [],
         }
 
+    case, _ink_report = ink_evidence_case(case, _ink_options(weights))  # K-C, the same evidence as `follow_derived`
     grids = _grid_fits(case, result)
     runs: list[dict] = []
     for run in _chainable_runs(case, grids):
@@ -2476,6 +2507,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="K0-Z (aug20): zonal rejection radius in x-heights — pin only the anchors around the "
         "violating zone and re-solve once instead of rejecting the whole round (0 = round-atomic)",
     )
+    parser.add_argument(
+        "--ink-evidence",
+        action="store_true",
+        help="K-C (aug20): drop paper-grey non-main ink components (specks, show-through) from the "
+        "evidence the fit is pulled by — the frozen bench mask stays as it is",
+    )
+    parser.add_argument(
+        "--ink-evidence-paper-fraction",
+        type=float,
+        default=INK_EVIDENCE_PAPER_FRACTION,
+        help=f"K-C class boundary on the main-ink→paper grey scale (default {INK_EVIDENCE_PAPER_FRACTION})",
+    )
     parser.add_argument("--sweep", help="NAME=v1,v2 — one arm per value of a FollowWeights field")
     parser.add_argument("--jobs", type=int, default=1, help="worker processes, pooled over CASES")
     parser.add_argument("--json", type=Path, help="write the full report here")
@@ -2510,6 +2553,8 @@ def weights_from_args(args: argparse.Namespace) -> FollowWeights:
         structure_guard_soll=bool(args.structure_guard_soll),
         structure_guard_zone_units=float(args.structure_guard_zone),
         structure_guard_ratchet=bool(args.structure_guard_ratchet),
+        ink_evidence=bool(args.ink_evidence),
+        ink_evidence_paper_fraction=float(args.ink_evidence_paper_fraction),
     )
 
 

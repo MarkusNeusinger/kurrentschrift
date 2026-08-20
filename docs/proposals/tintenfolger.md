@@ -627,9 +627,28 @@ Aufwand/Risiko:
   hochfahren (Blake/Zisserman 1987; Yang et al., RA-L 2020). Erst
   sinnvoll, wenn A4 die harten Constraints liefert.
 
-Reihenfolge: A1 → A2 → A3 → (A4 oder A5) → A6. NICHT wieder
-aufgenommen: weitere λ/Gewichts-Sweeps der alten Formulierung (durch
-①⑤⑥⑥b⑨ erschöpfend negativ beantwortet).
+- **A7 / K-C — Tinten-Evidenz-Maske (Owner-Fund „Flecken",
+  2026-08-20).** Der Owner las die K0-Z-R-Augenschein-Seite und
+  fragte nach Flecken; die Autopsie bestätigte es an zwei (zwei
+  Nadeln enden IM Fleck), Galoppieren (Durchschein der Rückseite,
+  drei von vier Exkursionen) und die-2 (dort die eigene Marke). Der
+  Fit sieht ALLE Komponenten der eingefrorenen Maske als Zugfeld und
+  Coverage-Ziel; Dunkelheit trennt echte von fremden Komponenten
+  vollständig (Lücke 0,38–0,74). Evidenz-Hygiene VOR jeder
+  Formulierungsänderung — §14 „Kette K-C", eigene Vorregistrierung.
+- **A8 / K-D — Tinten-Korridor (Owner-Idee, 2026-08-20).** Eine
+  Sperrzone um die erweiterte Tinte, die die Bahn nicht durchstoßen
+  darf (Barriere auf dem Abstandsfeld statt weichem Zug): verbietet
+  Schräg-Abkürzungen durch Gegenschleifen (unters e) und Nadeln ins
+  Papier unabhängig von der Maske. Benanntes Risiko: ein versetzter
+  Seed (unter: 0,65 xh) erreicht seine Tinte dann nicht mehr über
+  Papier und wird auf der falschen eingesperrt — unters Wurzel ist
+  die komponierte e-Breite (§7.2), die kein Korridor heilt. Eigene
+  Pre-Reg NACH K-C.
+
+Reihenfolge: K-C → A1 → A2 → A3 → (A4 oder A5 oder K-D) → A6. NICHT
+wieder aufgenommen: weitere λ/Gewichts-Sweeps der alten Formulierung
+(durch ①⑤⑥⑥b⑨ erschöpfend negativ beantwortet).
 
 ### 7.4 Verfahren 3: InkSight roh (Route B1) — ohne Training
 

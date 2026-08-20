@@ -41,7 +41,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — EDT §3 · Einrichtungs-Wizard §5 · Entdrillung §4 · Ernte §2 · extrapoliertes Landmark-Ziel §3
-- **F** — Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Frozen-Reference-Regel §4 · Fuge §1
+- **F** — Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
@@ -55,7 +55,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
-- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenfolger §3 · Tintenlücke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
+- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4
 - **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Editor §5 · Wort-Trace §2
@@ -529,6 +529,35 @@ nie eine Messung. *Technisch:* `tools/pairlab/follow.py`
 (`follow_word_chain`/`follow_case`, Gewichte PROVISORISCH bis zur
 §14-Arm-Kalibrierung) → proposals/tintenfolger.md ·
 bildsynthese-und-stiftbahn.md §6
+
+**Fremdtinte** *(foreign ink)* — Tinte im Wort-Crop, die das Wort nie
+geschrieben hat und die die eingefrorene Binarisierung trotzdem behält:
+Papierflecken, **Durchschein** der Rückseite (Galoppieren: sechs
+Fragmente, halb so dunkel wie die Schrift), Reste der Nachbarzeile.
+Für den Kettenfit/Folger ist jede solche Komponente zugleich Zugfeld-
+Magnet und Coverage-Ziel — die Nadeln „ins Papier" (zwei w-Fuß,
+Galoppieren) enden messbar darauf. Gemessener Fund (2026-08-20, 90
+Nicht-Haupt-Komponenten der 63 Fixtures): FLÄCHE trennt Fremdtinte nicht
+von echten Marken, DUNKELHEIT trennt vollständig (rel 0,74–0,92 gegen
+0,01–0,38). Nicht zu verwechseln mit der **eigenen Marke** als Magnet
+(die-2: der i-Punkt zieht die Körperbahn) — dunkel, echt, und vom
+Darkness-Filter bewusst behalten. *Technisch:*
+`tools/pairlab/ink_evidence.py` → qualitaetsmetrik.md §14 „Kette K-C"
+
+**Tinten-Evidenz-Maske** *(ink-evidence mask, Kette K-C)* — die Maßnahme
+gegen Fremdtinte: vor Seed-Fenstern und Solve wird jede Nicht-Haupt-
+Komponente der Maske, deren Median-Grau näher am Papier als an der
+Haupttinte liegt (`paper_fraction` 0,5 = Mitte der gemessenen Lücke, kein
+Knopf), aus `skel` und `width_map` des Falls gelöscht; die größte
+Komponente ist das Wort und bleibt immer. Aus — oder nichts zu droppen —
+heißt derselbe `WordCase` (Identität), darum sind Wörter ohne Fremdtinte
+byte-identisch. Ändert NUR, was den Fit zieht; das Bench-Lineal
+(`ref_mask`, AIoU, Zähler) bleibt eingefroren — die Torpfosten stehen.
+Flags `FollowWeights.ink_evidence` (`--ink-evidence`) und
+`HarvestOptions.ink_evidence`, beide declared-off bis zur gemessenen
+Adoption; Drop-Liste je Wort in `meta.ink_evidence`. *Technisch:*
+`tools/pairlab/ink_evidence.py`, Einsatz in `follow_derived` und
+`harvest.chain_word_strokes` → qualitaetsmetrik.md §14 „Kette K-C"
 
 **Topologie-Wächter** *(structure guard)* — Arm ⑨ des Tintenfolgers:
 eine Runden-AKZEPTANZREGEL statt einer Kraft. Vor der ersten Runde
