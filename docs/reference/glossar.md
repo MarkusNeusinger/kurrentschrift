@@ -46,14 +46,14 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
-- **K** — Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
+- **K** — Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4
 - **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Plateau-Anker §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
-- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
+- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenfolger §3 · Tintenlücke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
@@ -1288,10 +1288,33 @@ Karten-Schnitt ~doppelt listen (will: 10 roh gegen 4 gezählt) — exakt
 wills falsches v0.15-Veto; mit Lineal-Zählung löst sich das Veto, das
 G-Kopf-Veto feuert korrekt, mits echtes t-Doppel bleibt geschützt.
 Gehört zur v0.16-Leiter der selektiven Pinn-Stufen (`bridges` ·
-`zones`; bridges ∪ zones = all). *Technisch:*
+`zones`; bridges ∪ zones = all). Seit v0.17 arbeitet das Veto als
+**Reservierungs-Veto**: das Soll wird je Entdrillungs-Pass
+eins-zu-eins auf die Ereignisse gematcht, reservierte Ereignisse
+sind unpaarbar — jede ZÄHL-Variante (Radius wie Delta) fällt in
+dichten Clustern als Commons-Problem (unters 12 Events über
+1 Soll: jede Einzelentfernung findet einen Ersatz-Matcher, die
+Kaskade räumt die Stelle trotzdem leer). *Technisch:*
 `tools/inkpilot/pilot.py::map_self_intersections` (Soll-Quelle),
-`::pin_run_mask` (Stufen), `UNTWIST_SOLL_BUDGET` →
-qualitaetsmetrik.md §14 „Lotse v0.16 `aug20`"
+`::pin_run_mask` (Stufen), `UNTWIST_SOLL_BUDGET` ·
+`UNTWIST_SOLL_MATCHING` →
+qualitaetsmetrik.md §14 „Lotse v0.16/v0.17 `aug20`"
+
+**Karten-Soll-Vollständigkeit** — der `aug20` benannte gemeinsame
+Nenner der verbliebenen Lotse-Blocker (Zonen-p-Oskulation ·
+0,8-Fenster-unter · unters t-Stamm-Doppel): Nicht die ORTE der
+bekannten Karten-Kreuzungen sind das Problem (die
+Platzierungskarte matcht 40 von 41 Hand-X bei 0,150 xh
+Median-Fehler), sondern die Kreuzungen, die die Karte GAR NICHT
+führt — die komponierten Joins und Rückpässe unter-kreuzen, wo
+die echte Hand schleift (das zweite X am t-Stamm — Abstieg +
+0,07-xh-versetzter Rückpass, der K1b-Befund —, e-Einläufe, ß;
+der aug15-Befund „Hand 34 > Komposition 25"). Soll-gestützte
+Wächter können nur schützen, was das Soll kennt. Benannter Weg:
+ein Composer-Arm (Join- und Rückpass-Schleifen) mit
+wordbench-Gates, danach die Wiedervorlagen von 0,8-Fenster und
+Zonen-Stufe. *Technisch:* qualitaetsmetrik.md §14
+„Karten-Soll-Autopsie `aug20`", tintenfolger.md §7.9
 
 **Doppel-X-Duplikat** — die seit Lotse v0.11 dominante
 Rest-Spurious-Klasse des Kreuzungszählers (4 der 6 Zählungen):

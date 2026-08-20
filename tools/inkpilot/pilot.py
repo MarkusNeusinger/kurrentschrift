@@ -191,6 +191,21 @@ UNTWIST_MAX_PASSES = 8
 # site, mit's retrace heals, and the budget is free on "windows").
 UNTWIST_SOLL_BUDGET = True
 UNTWIST_SOLL_RADIUS_UNITS = 0.55  # the ruler's matcher radius, as a snapshot
+# v0.17 (pre-registered, L1j): the RESERVATION veto — the standing §7.9
+# rescue (position matching instead of the count). The radius COUNT inherits
+# event inflation in dense neighbourhoods (the 0.8-window kill at unter
+# fired with n_events - 2 >= n_soll although the pair carried real
+# crossings), and a per-pair matched-count DELTA fails the same site as a
+# commons problem: with 12 events over 1 soll every single removal is
+# covered by a substitute, the cascade still empties the site (matched
+# 2 -> ... -> 0, the aug20 unter dump). "reserve" therefore matches the
+# ruler soll to the events one-to-one ONCE per pass; a reserved event is
+# unpairable — the map knows that crossing, it is untouchable.
+# "radius" = the v0.15/v0.16 count. ADOPTED aug20 per the pre-declared
+# parity rule: dev-19 counter-identical to v0.16 on both roots (every
+# gate PASS), the protective class pinned by the unit test, fewer
+# needless mirrors (Galoppieren 15 -> 11).
+UNTWIST_SOLL_MATCHING = "reserve"
 # v0.10 (pre-registered, L1d): junction-anchored pinning of map runs. The
 # owner's visual find (the k curl untraced, the W riding air) autopsied to
 # MERGED crossing windows — where map self-intersections sit densely the
@@ -1042,6 +1057,30 @@ def map_self_intersections(samples_per_stroke: list[np.ndarray], xh_px: float) -
     return np.asarray(pts, dtype=float).reshape(-1, 2) * xh_px
 
 
+def _greedy_soll_reserved(points: list[np.ndarray], soll: np.ndarray, radius_px: float) -> set[int]:
+    """Indices of the event points a one-to-one soll match reserves.
+
+    Nearest-first greedy at the ruler's matcher radius — the same semantics
+    the ruler's own matcher uses. The v0.17 reservation veto makes these
+    events unpairable for the untwist.
+    """
+    if not points or not len(soll):
+        return set()
+    pts = np.asarray(points, dtype=float).reshape(-1, 2)
+    d = np.linalg.norm(pts[:, None, :] - soll[None, :, :], axis=2)
+    order = np.dstack(np.unravel_index(np.argsort(d, axis=None), d.shape))[0]
+    used_p: set[int] = set()
+    used_s: set[int] = set()
+    for pi, si in order:
+        if d[pi, si] > radius_px:
+            break
+        if int(pi) in used_p or int(si) in used_s:
+            continue
+        used_p.add(int(pi))
+        used_s.add(int(si))
+    return used_p
+
+
 def untwist_strokes(
     strokes: list[np.ndarray], xh_px: float, window_units: float, soll_points: np.ndarray | None = None
 ) -> tuple[list[np.ndarray], int]:
@@ -1062,6 +1101,10 @@ def untwist_strokes(
     when `n_events_near - 2 >= n_soll_near` in the fixed matcher-radius
     snapshot, so a genuinely close REAL pair (mit's t double, soll 2) is
     protected by construction while the weaves (soll 0-1) fall pairwise.
+    v0.17 (`UNTWIST_SOLL_MATCHING = "reserve"`): the soll is matched to the
+    events one-to-one once per pass and the matched events are unpairable —
+    a per-pair count (radius or delta) dissolves in dense event clusters,
+    where every single removal finds a substitute (the aug20 unter dump).
     """
     if window_units <= 0.0 or not strokes:
         return strokes, 0
@@ -1085,18 +1128,23 @@ def untwist_strokes(
         lift_rows = {int(b) - 1 for b in bounds[1:-1]}
         events = [e for e in events if e[0] not in lift_rows and e[1] not in lift_rows]
         events.sort(key=lambda e: (e[0], e[1]))
+        reserved: set[int] = set()
+        if soll is not None and UNTWIST_SOLL_MATCHING == "reserve":
+            # v0.17: one-to-one soll match once per pass; reserved events are
+            # unpairable — the map knows those crossings.
+            reserved = _greedy_soll_reserved([pe for _, _, pe in events], soll, soll_radius_px)
         fixed_any = False
         used: set[int] = set()
         dirty: list[tuple[int, int]] = []  # mirrored point ranges of THIS pass
         for a in range(len(events)):
-            if a in used:
+            if a in used or a in reserved:
                 continue
             i1, j1, p1 = events[a]
             if any(lo_ - 1 <= s <= hi_ for s in (i1, j1) for lo_, hi_ in dirty):
                 continue
             best = None
             for b in range(a + 1, len(events)):
-                if b in used:
+                if b in used or b in reserved:
                     continue
                 i2, j2, p2 = events[b]
                 if any(lo_ - 1 <= s <= hi_ for s in (i2, j2) for lo_, hi_ in dirty):
@@ -1105,10 +1153,11 @@ def untwist_strokes(
                     continue
                 if float(np.hypot(*(p2 - p1))) > window_px / 2.0:
                     continue
-                if soll is not None:
+                if soll is not None and UNTWIST_SOLL_MATCHING != "reserve":
                     # v0.15 budget: never untwist a neighbourhood below its
                     # soll. Events and soll crossings counted around the
-                    # pair's midpoint in the fixed matcher radius.
+                    # pair's midpoint in the fixed matcher radius. (Under
+                    # "reserve" the reservation above IS the veto.)
                     mid = (p1 + p2) / 2.0
                     n_events = sum(1 for _, _, pe in events if float(np.hypot(*(pe - mid))) <= soll_radius_px)
                     n_soll = int(np.sum(np.hypot(soll[:, 0] - mid[0], soll[:, 1] - mid[1]) <= soll_radius_px))

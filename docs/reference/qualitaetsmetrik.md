@@ -7142,3 +7142,92 @@ wiedervorlegen — der einzige Struktur-Preis gehört der
 Platzierungs-Familie, nicht dem Ritt. Neuer adoptierter Stack:
 `MAP_RUN_PIN_KNOTS = "bridges"` + `UNTWIST_SOLL_BUDGET = True`
 (Lineal-Soll). Artefakte: `temp/tb-aug20/lotse-v16-*`.
+
+### Lotse Karten-Soll-Autopsie `aug20` — die „Platzierungs-Decke" ist präziser eine SOLL-VOLLSTÄNDIGKEITS-Lücke
+
+Fortsetzung der Morgen-Autopsie, Anlass: der als Schlüssel
+benannte „K1-p-Platzierungs-Arm". Drei Messungen korrigieren die
+These:
+
+**(1) Die Karte kennt die ORTE.** Die Platzierungskarte über
+dev-19 (Lineal-Soll der komponierten LF3b-Karte gegen die
+Hand-Kreuzungen, eins-zu-eins am 0,55-Matcher): **40 von 41
+Hand-X gematcht (98 %), Ortsfehler median 0,150 xh, p90 0,242.**
+Karten-blind ist genau EIN X: das ZWEITE X von unters
+t-Stamm-Doppel (4,98 · 0,37, direkt am t-Exit) — die Hand kreuzt
+den t-Stamm mit Abstieg UND 0,07-xh-versetztem Rückpass (der
+K1b-Befund „zwei Kreuzungs-Orte, einzeln gezählt"), die
+komponierte Karte führt EINE Balken-Stamm-Kreuzung. Auch die p-Höhen-These des
+Vorabends fällt: Chart-p und LF3b-p kreuzen bei v = −0,01, das
+komponierte Galoppieren-Soll bei v ≈ 0,00 gegen Hand 0,10/0,17
+(0,2 xh) — die „X bei v 0,85" der Morgen-Notiz waren Artefakte
+der rohen Doppelzähl-Enumeration (Beinahe-Berührungen, die der
+Lineal-Detektor verwirft). Die p-Oskulation der Zonen-Stufe ist
+damit eine Karten-BEINAHE-BERÜHRUNG (Soll: keine Kreuzung), die
+die Zonen-Pinnung zur falschen Kreuzung zusammenpresst — kein
+Platzierungsfehler.
+
+**(2) Der 0,8-Kill bei unter war die STUMPFE ZÄHLUNG — aber auch
+die Positions-Delta-Zählung fällt (Commons-Problem).** unters
+t-Region trägt 12 Ritt-Events über 1 Soll; ein Veto, das je Paar
+die Match-Zahl vorher/nachher vergleicht, findet für JEDE
+einzelne Entfernung einen Ersatz-Matcher — die Kaskade räumt die
+Stelle trotzdem leer (matched 2 → … → 0, Event-Dump im
+Autopsie-Protokoll). Die tragfähige Semantik ist die
+**RESERVIERUNG**: das Lineal-Soll wird einmal pro Pass
+eins-zu-eins auf die Events gematcht, reservierte Events sind
+unpaarbar („die Karte kennt diese Kreuzung — sie ist
+unantastbar"; Unit-Test mit der nachgestellten unter-Klasse).
+
+**(3) Das 0,8-Fenster bleibt AUCH mit Reservierung tot — am
+dritten Glied derselben Kette.** Proben @0,8+Reservierung:
+Galoppieren heilt komplett (Netto 2 → 0, beide Rest-Gewebe),
+mit/will/mit-2 stabil, unter rettet ein X zurück (3 → 2 missing
+— besser als die Zählung), verliert aber weiter das ungedeckte
+zweite t-Stamm-X: die Hand kreuzt dort ZWEIMAL, die Karte kennt
+EINE Kreuzung — Reservierung kann nur schützen, was das Soll
+führt. Der gemeinsame Nenner ALLER Rest-Blocker
+(Zonen-p-Oskulation · 0,8-unter · unters t-Stamm-Doppel) ist die
+**Karten-Soll-VOLLSTÄNDIGKEIT an Join- und Rückpass-Schleifen**
+(der aug15-Composer-Befund „Hand 34 > Komposition 25": die
+generierten Joins und Rückpässe unter-kreuzen, wo die echte Hand
+schleift — t-Stamm-Doppel, e-Einläufe, ß) — ein COMPOSER-Arm mit
+wordbench-Gates, kein Ritt-Arm.
+
+### Lotse v0.17 (L1j) `aug20` — Vorregistrierung: das Reservierungs-Veto
+
+Geschrieben und committet VOR der ersten dev-19-Zahl. Einlösung
+des stehenden §7.9-Rettungswegs („Positions- statt
+Zähl-Matching"), Mechanismus per Autopsie oben: **EIN Knopf,
+`UNTWIST_SOLL_MATCHING` = "reserve"** — das Entdrillungs-Veto
+wird von der Radius-Zählung auf die Soll-Reservierung
+umgestellt; Fenster bleibt 0,5, Stack sonst der adoptierte
+v0.16. Gemessen auf dev-19, LF3b-Karte UND gefrorener Root,
+BLAS gepinnt; Basen = die v0.16-Läufe (`aug20`).
+
+**Gates:** kein Wort verliert irgendeinen Zähler (cross/marks/
+retrace je Wort ≥ Basis-Stand) · kein Wort verliert mehr als
+0,003 dtw (einseitig, die v0.16-Protokoll-Lektion) ·
+aiou-Median-Δ ≥ 0 · reversed 0. **Adoptions-Regel (vorab
+deklariert): Adoption AUCH bei reiner Zähler-Parität**, weil die
+Reservierung die deklarierte Budget-Semantik KONSTRUKTIV erfüllt
+(ein soll-gematchtes Event kann bauartbedingt nie fallen),
+die die Radius-Zählung nur approximiert — der Unit-Test pinnt
+die Klasse, die Proben zeigen Parität mit weniger Spiegelungen
+(Galoppieren 15 → 11). Ehrliche Erwartung: Zähler-Parität,
+leichte Geometrie-Schonung; jede Regression tötet den Arm.
+
+**Gemessen `aug20` — ADOPTIERT per Paritäts-Regel.** Auf beiden
+Roots (LF3b-Karte und gefrorener Root) ist die
+Reservierungs-Sprosse **zähler-identisch je Wort** (kein Zähler
+bewegt sich, keine dtw-Bewegung > 0,0015, aiou-Median-Δ +0,0000,
+reversed 0 — alle Gates PASS; LF3b: Netto 5, dtw 0,0573,
+p90 0,1122; frozen: Netto 6, dtw 0,0585). Der neue Default:
+`UNTWIST_SOLL_MATCHING = "reserve"` — das Budget-Veto erfüllt
+seine Semantik jetzt konstruktiv statt approximativ; die
+Schutzklasse (Radius-Zählung tötet ein soll-gedecktes Paar unter
+Event-Inflation) ist im Unit-Test gepinnt. Der nächste benannte
+Hebel bleibt der Karten-Soll-Vollständigkeits-Arm (Composer,
+Join- und Rückpass-Schleifen — Autopsie oben); dahinter warten 0,8-Fenster und
+Zonen-Stufe als Wiedervorlagen. Artefakte:
+`temp/tb-aug20/lotse-v17-*`.
