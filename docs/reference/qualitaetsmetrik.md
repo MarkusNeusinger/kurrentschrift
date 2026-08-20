@@ -7153,8 +7153,11 @@ These:
 dev-19 (Lineal-Soll der komponierten LF3b-Karte gegen die
 Hand-Kreuzungen, eins-zu-eins am 0,55-Matcher): **40 von 41
 Hand-X gematcht (98 %), Ortsfehler median 0,150 xh, p90 0,242.**
-Karten-blind ist genau EIN X: unters e→r-Stelle (4,98 · 0,37) —
-der stehende Platzierungs-Arm. Auch die p-Höhen-These des
+Karten-blind ist genau EIN X: das ZWEITE X von unters
+t-Stamm-Doppel (4,98 · 0,37, direkt am t-Exit) — die Hand kreuzt
+den t-Stamm mit Abstieg UND 0,07-xh-versetztem Rückpass (der
+K1b-Befund „zwei Kreuzungs-Orte, einzeln gezählt"), die
+komponierte Karte führt EINE Balken-Stamm-Kreuzung. Auch die p-Höhen-These des
 Vorabends fällt: Chart-p und LF3b-p kreuzen bei v = −0,01, das
 komponierte Galoppieren-Soll bei v ≈ 0,00 gegen Hand 0,10/0,17
 (0,2 xh) — die „X bei v 0,85" der Morgen-Notiz waren Artefakte
@@ -7180,15 +7183,16 @@ unantastbar"; Unit-Test mit der nachgestellten unter-Klasse).
 dritten Glied derselben Kette.** Proben @0,8+Reservierung:
 Galoppieren heilt komplett (Netto 2 → 0, beide Rest-Gewebe),
 mit/will/mit-2 stabil, unter rettet ein X zurück (3 → 2 missing
-— besser als die Zählung), verliert aber weiter sein LINKES
-u-n-Doppel: die Hand kreuzt dort ZWEIMAL, die Karte kennt EINE
-Kreuzung — Reservierung kann nur schützen, was das Soll führt.
-Der gemeinsame Nenner ALLER Rest-Blocker (Zonen-p-Oskulation ·
-0,8-unter · unters e→r) ist die
-**Karten-Soll-VOLLSTÄNDIGKEIT an Join-Schleifen** (der
-aug15-Composer-Befund „Hand 34 > Komposition 25": die
-generierten Joins unter-kreuzen, wo die echte Hand schleift) —
-ein COMPOSER-Arm mit wordbench-Gates, kein Ritt-Arm.
+— besser als die Zählung), verliert aber weiter das ungedeckte
+zweite t-Stamm-X: die Hand kreuzt dort ZWEIMAL, die Karte kennt
+EINE Kreuzung — Reservierung kann nur schützen, was das Soll
+führt. Der gemeinsame Nenner ALLER Rest-Blocker
+(Zonen-p-Oskulation · 0,8-unter · unters t-Stamm-Doppel) ist die
+**Karten-Soll-VOLLSTÄNDIGKEIT an Join- und Rückpass-Schleifen**
+(der aug15-Composer-Befund „Hand 34 > Komposition 25": die
+generierten Joins und Rückpässe unter-kreuzen, wo die echte Hand
+schleift — t-Stamm-Doppel, e-Einläufe, ß) — ein COMPOSER-Arm mit
+wordbench-Gates, kein Ritt-Arm.
 
 ### Lotse v0.17 (L1j) `aug20` — Vorregistrierung: das Reservierungs-Veto
 
@@ -7224,6 +7228,6 @@ seine Semantik jetzt konstruktiv statt approximativ; die
 Schutzklasse (Radius-Zählung tötet ein soll-gedecktes Paar unter
 Event-Inflation) ist im Unit-Test gepinnt. Der nächste benannte
 Hebel bleibt der Karten-Soll-Vollständigkeits-Arm (Composer,
-Join-Schleifen — Autopsie oben); dahinter warten 0,8-Fenster und
+Join- und Rückpass-Schleifen — Autopsie oben); dahinter warten 0,8-Fenster und
 Zonen-Stufe als Wiedervorlagen. Artefakte:
 `temp/tb-aug20/lotse-v17-*`.

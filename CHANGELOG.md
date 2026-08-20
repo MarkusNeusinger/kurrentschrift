@@ -18,10 +18,10 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   COMPLETENESS gap, and Lotse v0.17 adopts the reservation veto** (§14
   `aug20`, pre-registered). The placement map over dev-19 matches 40 of
   41 hand crossings against the composed map's ruler soll (median error
-  0.150 xh; map-blind only unter's e→r site) — the evening's "p crosses
-  at v 0.85" turns out to be artifacts of the raw double-count
-  enumeration, and the p osculation is a map near-touch, not a placement
-  error. The 0.8-window kill at unter dissolves into a commons problem
+  0.150 xh; map-blind only the second X of unter's t-stem double) — the
+  evening's "p crosses at v 0.85" turns out to be artifacts of the raw
+  double-count enumeration, and the p osculation is a map near-touch,
+  not a placement error. The 0.8-window kill at unter dissolves into a commons problem
   of every per-pair COUNT veto (12 events over 1 soll: each single
   removal finds a substitute matcher, the cascade still empties the
   site); the viable semantics is RESERVATION — the ruler soll matched
@@ -30,10 +30,11 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   per word, every gate PASS → adopted per the pre-declared parity rule
   (`UNTWIST_SOLL_MATCHING="reserve"`); the untwist now needs fewer
   mirrors (Galoppieren 15 → 11). Even with reservation the 0.8 window
-  stays dead: unter's left u-n double is a crossing the map does not
-  carry (hand crosses twice, the composed join once) — the common
-  denominator of every remaining blocker, converted into the named
-  composer arm "Karten-Soll-Vollständigkeit an Join-Schleifen"
+  stays dead: the second X of unter's t-stem double is a crossing the
+  map does not carry (the hand crosses the stem with the descent AND
+  the 0.07-xh offset repass — the K1b finding — while the composed bar
+  crosses once) — the common denominator of every remaining blocker,
+  converted into the named composer arm "Karten-Soll-Vollständigkeit"
   (glossary entry; §7.9 row updated).
 
 - **The G head ride autopsy resolves the v0.14 tear, and Lotse v0.16

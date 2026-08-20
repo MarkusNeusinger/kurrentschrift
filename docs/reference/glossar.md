@@ -1302,14 +1302,16 @@ qualitaetsmetrik.md §14 „Lotse v0.16/v0.17 `aug20`"
 
 **Karten-Soll-Vollständigkeit** — der `aug20` benannte gemeinsame
 Nenner der verbliebenen Lotse-Blocker (Zonen-p-Oskulation ·
-0,8-Fenster-unter · unters e→r): Nicht die ORTE der bekannten
-Karten-Kreuzungen sind das Problem (die Platzierungskarte matcht
-40 von 41 Hand-X bei 0,150 xh Median-Fehler), sondern die
-Kreuzungen, die die Karte GAR NICHT führt — die komponierten
-Joins unter-kreuzen, wo die echte Hand schleift (u-n-Doppel,
-e-Einläufe; der aug15-Befund „Hand 34 > Komposition 25").
-Soll-gestützte Wächter können nur schützen, was das Soll kennt.
-Benannter Weg: ein Composer-Arm (Join-Schleifen-Kreuzungen) mit
+0,8-Fenster-unter · unters t-Stamm-Doppel): Nicht die ORTE der
+bekannten Karten-Kreuzungen sind das Problem (die
+Platzierungskarte matcht 40 von 41 Hand-X bei 0,150 xh
+Median-Fehler), sondern die Kreuzungen, die die Karte GAR NICHT
+führt — die komponierten Joins und Rückpässe unter-kreuzen, wo
+die echte Hand schleift (das zweite X am t-Stamm — Abstieg +
+0,07-xh-versetzter Rückpass, der K1b-Befund —, e-Einläufe, ß;
+der aug15-Befund „Hand 34 > Komposition 25"). Soll-gestützte
+Wächter können nur schützen, was das Soll kennt. Benannter Weg:
+ein Composer-Arm (Join- und Rückpass-Schleifen) mit
 wordbench-Gates, danach die Wiedervorlagen von 0,8-Fenster und
 Zonen-Stufe. *Technisch:* qualitaetsmetrik.md §14
 „Karten-Soll-Autopsie `aug20`", tintenfolger.md §7.9
