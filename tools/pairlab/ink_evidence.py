@@ -17,7 +17,8 @@ u-bow, a broken-off stroke fragment) is as dark as the word body; a speck or
 a show-through fragment is paper-grey. On the scale `rel = (median grey of the
 component − median grey of the main ink) / (median paper grey − median grey
 of the main ink)` the 46 real components lie at 0.01–0.38 and the 44 foreign
-ones at 0.74–0.92 — a gap of 0.36 with nothing in it. `PAPER_FRACTION = 0.5`
+ones at 0.74–0.92 — a gap of 0.36 with nothing in it.
+`INK_EVIDENCE_PAPER_FRACTION = 0.5` (`InkEvidenceOptions.paper_fraction`)
 sits in the middle of that gap; any value in (0.38, 0.74) selects the same
 components. The rule is therefore NOT a knob to tune but a measured class
 boundary, and it needs no composition, no size floor and no hand reference.
@@ -93,6 +94,10 @@ class InkEvidenceReport:
     paper_grey_median: float
     components: list[InkComponent] = field(default_factory=list)
     reason: str = ""  # why nothing was applied (contrast, missing crop, …)
+    # The component label image the verdicts refer to — what the masking step
+    # erases by. Carried on the report so the labelling runs once; never
+    # serialised (`as_dict` lists the fields it exports explicitly).
+    labels: np.ndarray | None = field(default=None, repr=False, compare=False)
 
     @property
     def dropped(self) -> list[InkComponent]:
@@ -174,7 +179,7 @@ def classify_components(
                 dropped=bool(rel > paper_fraction),
             )
         )
-    report._labels = labels  # type: ignore[attr-defined]  # kept for the masking step, not serialised
+    report.labels = labels
     return report
 
 
@@ -194,10 +199,9 @@ def ink_evidence_case(case: Any, options: InkEvidenceOptions | None = None) -> t
         return case, InkEvidenceReport(False, options.paper_fraction, 0, 0, 0.0, 1.0, reason="no specimen")
     report = classify_components(case.skel, case.width_map, case.crop, paper_fraction=options.paper_fraction)
     dropped = report.dropped
-    if not report.applied or not dropped:
+    if not report.applied or not dropped or report.labels is None:
         return case, report
-    labels = report._labels  # type: ignore[attr-defined]
-    drop = np.isin(labels, [c.label for c in dropped])
+    drop = np.isin(report.labels, [c.label for c in dropped])
     skel = np.asarray(case.skel, dtype=bool) & ~drop
     width_map = np.where(drop, 0, np.asarray(case.width_map)).astype(np.asarray(case.width_map).dtype)
     return replace(case, skel=skel, width_map=width_map), report
