@@ -7420,8 +7420,9 @@ Artefakte: `temp/tb-aug20/probe-v20-*`.
 Kandidat ist an den Proben verworfen.** Die Fenster-Feinleiter
 {0,02 · 0,03 · 0,04 · 0,06} bei Schritt 0,12 (fünf Proben-Worte,
 volles Lineal) zeigt: (1) die Fenster unter 0,06 sind
-KERNEL-QUANTISIERT identisch (alle drei → 3-Punkte-Box auf dem
-0,02-Grid); (2) **kein Fenster ist ohne Verlierer** — Kernel-3
+KERNEL-QUANTISIERT identisch (alle drei → dieselbe 3-Punkte-Box
+auf dem 0,02-Grid, im Folgenden „Kernel-3"); (2) **kein Fenster
+ist ohne Verlierer** — Kernel-3
 gewinnt Wer (dtw −0,0035/aiou +0,0251) und unter (das t-X2
 erscheint), zahlt aber bei Galoppieren (+0,0065 dtw, Spurious
 +1, neue Retrace-Defekte) und mit (aiou −0,0158); Fenster 0,06
