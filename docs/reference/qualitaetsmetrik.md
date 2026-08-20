@@ -7286,3 +7286,40 @@ Galoppieren-Gewebe (Netto-Erwartung LF3b 5 → 3); 0,04 ist die
 Kontroll-Sprosse gegen Auflösungs-Fischerei — gewinnt sie
 NICHT weiter, ist 0,06 der Punkt, an dem die Struktur
 auskonvergiert.
+
+**Gemessen `aug20` — BEIDE Sprossen verworfen per Gate; die
+Auflösungs-These bestätigt sich, aber der Schritt ist kein
+freier Knopf.** Die Kreuzungs-Struktur liefert exakt die
+Erwartung: 0,06 → **Netto 3** (LF3b; frozen 6 → 3), unters
+missing heilt (der letzte des Dev-Satzes), Galoppieren verliert
+ein Gewebe — die stärkste Netto-Zahl der Route. Aber die
+GEOMETRIE zahlt flächig: dtw-Verlierer weit über dem Gate
+(muß-2 +0,0352 · muß-3 +0,0156 · mit +0,0142 · Galoppieren
++0,0087), aiou-Median −0,0044, p90 0,1122 → 0,1153, und NEUE
+Retrace-Defekte (Galoppieren `retrace_missing`/`spurious`
+0 → 2/2, laden +1). 0,04 verschärft alles (aiou-Median −0,0274,
+will verliert sogar ein X) — die Kontroll-Sprosse feuert: das
+ist ÖKONOMIE-Drift, keine Konvergenz. Befund: die
+Ritt-Ökonomie ist SAMPLE-DENOMINIERT — `RIDE_DOUBLE_MIN_GAP`
+ist in Samples definiert (4 Samples = 0,48 xh bei 0,12, nur
+0,24 bei 0,06), und `BRIDGE_EMIT_FACTOR` bepreist Brücken PRO
+SAMPLE (gleiche Brücken-LÄNGE kostet bei halbem Schritt das
+Doppelte → der Viterbi meidet Brücken, klebt an Schienen, die
+muß-Familie kippt). Rettungswege: (a) **feine Emission** —
+Entscheidungs- und AUSGABE-Auflösung trennen: der Ritt
+entscheidet auf 0,12, gepinnte Strecken emittieren die ROHE
+Karte plus Offset-Feld. **Noch am selben Nachmittag gebaut und
+an den Proben VERWORFEN:** die rohe Karten-Geometrie trägt
+Kompositions-MIKROSTRUKTUR (Nahtstellen, Mini-Gewebe), die die
+0,12-Glättung bisher stillschweigend versteckt hat — Galoppieren
+explodiert auf 32 Spurious, mit +3, und unters t-X2 erscheint
+trotzdem nicht; Code zurückgebaut, nie dev-gemessen. Der
+stehende Weg ist damit (b): **schritt-invariante Reskalierung**
+der sample-denominierten Ökonomie (`RIDE_DOUBLE_MIN_GAP` in xh
+statt Samples, Brücken-Preis pro ARC statt pro Sample), dann die
+Auflösungs-Leiter wiedervorlegen — eigene Pre-Reg. Nebenbefund
+fürs Protokoll: dieselbe Glättung, die die Mikrostruktur
+versteckt, ist auch der Grund, warum die Karte als
+RITT-GRUNDLAGE funktioniert — Auflösung ist beim Lotse kein
+freies Gut, sondern Teil des Filters. §7.9-Zeile im selben PR.
+Artefakte: `temp/tb-aug20/lotse-v18-*`.

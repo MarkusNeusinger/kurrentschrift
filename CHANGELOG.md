@@ -14,6 +14,27 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The t-stem ride autopsy dissolves the completeness gap into a
+  RESOLUTION limit, and the v0.18 resolution ladder closes as an honest
+  negative with the route's best structure number in hand** (§14 `aug20`,
+  pre-registered). The raw composition carries unter's t-stem double
+  everywhere — the placement map on the RAW map matches **41 of 41** hand
+  crossings (median 0.159 xh), so the composer is innocent: the "gap" is
+  `SAMPLE_STEP_UNITS` = 0.12 being coarser than a 0.06-xh crossing pair,
+  in the budget's soll and the ride path alike. The pre-registered ladder
+  {0.06, 0.04} confirmed the structure thesis exactly (net 5 → **3**,
+  unter's last missing heals, a Galoppieren weave falls) but failed its
+  geometry gates: the ride economy is sample-denominated
+  (`RIDE_DOUBLE_MIN_GAP` counts samples, `BRIDGE_EMIT_FACTOR` prices per
+  sample), so halving the step re-prices every bridge and the muß family
+  drifts up to +0.035 dtw; 0.04 drifts further — economy, not
+  convergence. The fine-emission rescue (decide at 0.12, emit the raw
+  map) died in probes: the raw map carries composition micro-structure
+  the 0.12 smoothing silently hid (32 spurious on Galoppieren) — the
+  smoothing is part of the filter. Standing rescue: step-invariant
+  rescaling of the ride economy, then re-submit the ladder; §7.9 rows
+  updated, the Karten-Soll-Vollständigkeit glossary entry corrected.
+
 - **The map-soll autopsy dissolves the placement ceiling into a soll
   COMPLETENESS gap, and Lotse v0.17 adopts the reservation veto** (§14
   `aug20`, pre-registered). The placement map over dev-19 matches 40 of

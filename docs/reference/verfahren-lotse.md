@@ -75,6 +75,8 @@ Kreuzungs-Ortsfehler (0,066 gegen 0,083 xh).
 | aug20 | v0.16 (L1i) | selektive Pinn-Leiter (`bridges` · `zones` · `all`) mit **Lineal-Soll-Budget** (§7.7-Wiedervorlage v0.14+v0.15; Soll-Quelle = der gefrorene Kreuzungs-Detektor auf der Karte) | **adoptiert "bridges"+Budget** (Struktur stellen-identisch zur Basis, kein Wort verliert; p90 0,1129 → 0,1122, chamfer 0,0410 → 0,0404, vier Wörter −0,0035..−0,0059 dtw, mits Retrace heilt); zones/all verworfen per Gate (Netto 6 > 5 — exakt die eine Galoppieren-p-Oskulation; **das G-Kopf-X überlebt dort unter Budget**) → Zonen-Stufe nach dem K1-p-Platzierungs-Arm wiedervorlegen |
 | aug20 | Karten-Soll-Autopsie *(Befund, kein Arm)* | Platzierungskarte dev-19 (Lineal-Soll ↔ Hand-X) + Veto-Forensik an unter@0,8 | **die „Platzierungs-Decke" ist eine SOLL-VOLLSTÄNDIGKEITS-Lücke**: die Karte kennt 40/41 Hand-X (Ortsfehler median 0,150 xh; blind nur das zweite X von unters t-Stamm-Doppel); die p-„0,85-Kreuzungen" waren Artefakte der rohen Doppelzählung; jedes Zähl-Veto (Radius UND Delta) fällt an unters 12-Events-über-1-Soll-Cluster als Commons-Problem; das 0,8-Fenster bleibt auch mit Reservierung tot (t-Stamm-Doppel: Hand 2 X, Karte kennt 1) → **Karten-Soll-Vollständigkeit an Join- und Rückpass-Schleifen = Composer-Arm** |
 | aug20 | v0.17 (L1j) | **Reservierungs-Veto** (`UNTWIST_SOLL_MATCHING` = "reserve"): Soll je Pass eins-zu-eins auf die Events gematcht, reservierte Events unpaarbar | **adoptiert per vorregistrierter Paritäts-Regel** (beide Roots zähler-identisch je Wort, alle Gates PASS; die Schutzklasse im Unit-Test gepinnt, Spiegelungen sinken: Galoppieren 15 → 11) — das Budget-Veto erfüllt seine Semantik jetzt konstruktiv |
+| aug20 | t-Stamm-Ritt-Autopsie *(Befund, kein Arm)* | Schicht-Triage an unters letztem missing (dem zweiten t-Stamm-X) | **die „Vollständigkeits-Lücke" ist eine AUFLÖSUNGS-Grenze**: die rohe Komposition führt das t-Doppel überall (Platzierungskarte auf ROHER Karte: 41/41 Hand-X, median 0,159 xh) — `SAMPLE_STEP_UNITS` = 0,12 ist gröber als das 0,06-xh-X-Paar, in Soll-Quelle UND Ritt-Bahn; ein „Soll-Quelle roh"-Zwischenknopf war an den Proben wirkungslos (Symptom, nicht Wurzel) |
+| aug20 | v0.18 (L1k) | **Auflösungs-Leiter** `SAMPLE_STEP_UNITS` {0,06 · 0,04} | verworfen per Gate — die Struktur-These bestätigt sich exakt (Netto 5 → **3**, unters missing heilt, ein Galoppieren-Gewebe fällt: die beste Netto-Zahl der Route), aber der Schritt ist kein freier Knopf: die Ritt-ÖKONOMIE ist sample-denominiert (`RIDE_DOUBLE_MIN_GAP` in Samples, Brücken-Preis pro Sample) → dtw-Verlierer bis +0,035 (muß-Familie), aiou-Median −0,004, neue Retrace-Defekte; 0,04 verschärft (Ökonomie-Drift, keine Konvergenz). Rettungsweg (a) „feine Emission" an den Proben verworfen (rohe Karte trägt Mikrostruktur: 32 Spurious); stehend bleibt (b) **schritt-invariante Reskalierung**, dann Wiedervorlage |
 
 Benannter Fehlermodus der Route: **Junction-Pinch** (Glossar) — die
 v0.7/v0.8/v0.9-Kette ist seine vollständige Abarbeitung; seit v0.11
@@ -89,13 +91,14 @@ Rest-Spurious-Klasse.
   Reservierung tot: Galoppieren würde komplett heilen (−2), aber
   das zweite X von unters t-Stamm-Doppel fällt, weil die KARTE
   dort nur eine Kreuzung führt, wo die Hand zwei schreibt
-  (Abstieg + 0,07-xh-versetzter Rückpass, der K1b-Befund; Soll-
-  VOLLSTÄNDIGKEIT, nicht Platzierung — die Platzierungskarte
-  matcht 40/41 Hand-X bei 0,150 xh). Weg: der
-  **Karten-Soll-Vollständigkeits-Arm** (Composer: Join- und
-  Rückpass-Schleifen — t-Stamm-Doppel, e-Einläufe, ß; der
-  aug15-Befund „Hand 34 > Komposition 25"), dann das Fenster
-  wiedervorlegen (§7.9).
+  (Abstieg + 0,07-xh-versetzter Rückpass, der K1b-Befund).
+  **Präzisiert von der t-Stamm-Autopsie (`aug20` spät):** die
+  rohe Komposition führt das Doppel überall (41/41 Hand-X auf
+  ROHER Karte) — die „Lücke" ist die 0,12-xh-ABTASTUNG (Soll-
+  Quelle und Ritt-Bahn); der Composer ist unschuldig. Weg: die
+  **schritt-invariante Reskalierung** der sample-denominierten
+  Ritt-Ökonomie (v0.18-Rettungsweg b), dann Auflösungs-Leiter
+  UND Fenster wiedervorlegen (§7.9).
 - **Zonen-Stufe** (der Rest der „all"-Familie): die
   `aug20`-Autopsie hat den v0.14-Riss aufgelöst (parität-blinde
   Entdrillung, nicht die Pinnung) und v0.16 hat „bridges"+Budget
