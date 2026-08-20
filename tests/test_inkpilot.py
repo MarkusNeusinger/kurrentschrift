@@ -270,6 +270,40 @@ def test_ruler_soll_ignores_a_touch_and_counts_proper_pierces() -> None:
     assert np.all(np.abs(pts[:, 1] - 20.0) < 1.0)
 
 
+def test_reservation_veto_protects_where_the_radius_count_fails(monkeypatch) -> None:
+    from tools.inkpilot import pilot as P
+    from tools.inkpilot.pilot import untwist_strokes
+
+    # The measured unter-0.8 failure class: a pair carrying the site's ONE
+    # real crossing sits next to a soll-free weave whose events inflate the
+    # radius count (n_events - 2 >= n_soll releases the veto and the real X
+    # dies). The reservation veto matches the soll to the events one-to-one
+    # up front: the matched event is unpairable -> the real pair is vetoed;
+    # the weave next door stays removable.
+    xh = 10.0
+    a = np.column_stack([np.linspace(0.0, 30.0, 121), np.full(121, 20.0)])
+    xs = np.linspace(0.0, 30.0, 121)
+    ys = np.full(121, 20.8)
+    ys[(xs > 10.0) & (xs < 12.0)] = 19.4  # the real site (soll: ONE crossing)
+    ys[(xs > 16.0) & (xs < 17.0)] = 19.4  # the weave (soll: none)
+    b = np.column_stack([xs, ys])
+    soll = np.asarray([[10.0, 20.0]])
+    monkeypatch.setattr(P, "UNTWIST_SOLL_BUDGET", True)
+
+    monkeypatch.setattr(P, "UNTWIST_SOLL_MATCHING", "radius")
+    out_r, n_r = untwist_strokes([a, b.copy()], xh_px=xh, window_units=0.5, soll_points=soll)
+    site1_r = out_r[1][(out_r[1][:, 0] > 10.0) & (out_r[1][:, 0] < 12.0), 1]
+    assert site1_r.min() > 20.0  # the radius count lets the real pair fall
+
+    monkeypatch.setattr(P, "UNTWIST_SOLL_MATCHING", "reserve")
+    out_p, n_p = untwist_strokes([a, b.copy()], xh_px=xh, window_units=0.5, soll_points=soll)
+    assert n_p == 1  # only the weave fell
+    site1 = out_p[1][(out_p[1][:, 0] > 10.0) & (out_p[1][:, 0] < 12.0), 1]
+    site2 = out_p[1][(out_p[1][:, 0] > 16.0) & (out_p[1][:, 0] < 17.0), 1]
+    assert site1.min() < 19.6  # the matched real site still pokes across
+    assert site2.min() > 20.0  # the soll-free weave was mirrored away
+
+
 def test_untwist_leaves_separate_crossings_alone() -> None:
     from tools.inkpilot.pilot import untwist_strokes
 
