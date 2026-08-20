@@ -7323,3 +7323,39 @@ versteckt, ist auch der Grund, warum die Karte als
 RITT-GRUNDLAGE funktioniert — Auflösung ist beim Lotse kein
 freies Gut, sondern Teil des Filters. §7.9-Zeile im selben PR.
 Artefakte: `temp/tb-aug20/lotse-v18-*`.
+
+### Lotse v0.19 (L1l) `aug20` — Vorregistrierung: die schritt-invariante Ökonomie + Wiedervorlage der Auflösungs-Leiter
+
+Geschrieben und committet VOR der ersten dev-19-Zahl.
+§7.7-Wiedervorlage der v0.18-Leiter mit dem im Negativ benannten
+Mechanismus. Die Kostenmodell-Lektüre präzisiert die
+v0.18-Diagnose: Emissionen (Schienen-Abweichung UND
+Brückenpreis) zählen PRO SAMPLE, Transitionen (Ritt) pro BOGEN —
+bei halbem Schritt verdoppeln sich die Emissions-Summen relativ
+zu den Ritt-Kosten (Schienen werden relativ billiger: das
+gemessene „klebt an Schienen"); dazu sind `MAX_RIDE_FACTOR`
+(8 × Schritt: die Ritt-Reichweite halbiert sich) und
+`RIDE_DOUBLE_MIN_GAP` (4 Samples: die Doppel-Uhr wird
+schärfer) explizit schritt-denominiert.
+
+**Mechanismus (die deklarierte Re-Denominierung, bei 0,12
+byte-neutral):** (1) Emissions-Skala `SAMPLE_STEP_UNITS / 0,12`
+auf beide Emissions-Terme — die Pfad-Summen werden
+schritt-invariant, bei 0,12 exakt 1; (2) `MAX_RIDE_UNITS` =
+0,96 xh (= 8 × 0,12) statt des Schritt-Faktors; (3)
+`RIDE_DOUBLE_MIN_GAP_UNITS` = 0,48 xh (= 4 × 0,12), zur
+Laufzeit in Samples gerundet. **EIN wirksamer Knopf bleibt der
+Schritt.** Leiter auf beiden Roots: **Sprosse 0** = 0,12 mit
+Re-Denominierung — MUSS byte-identische Kandidaten-Rows zu
+v0.17 liefern (harter Identitäts-Check des Refactors; jede
+Abweichung tötet den Arm) · **A** = 0,06 · **B** = 0,04.
+
+**Gates je Sprosse (wie v0.18):** Netto ≤ Basis (LF3b 5 ·
+frozen 6) · `cross_missing` ≤ 1 · Marken unverändert ·
+reversed 0 · kein Wort verliert mehr als 0,003 dtw (einseitig)
+· aiou-Median-Δ ≥ 0 · Laufzeit-Report. **Adoption: die Sprosse
+mit dem besten Netto, bei Gleichstand die gröbere.** Ehrliche
+Erwartung: die v0.18-Struktur-Ernte (Netto → 3) OHNE den
+Ökonomie-Drift; scheitert die Geometrie erneut, liegt eine
+weitere, noch unbenannte Schritt-Abhängigkeit vor (eigene
+Autopsie, kein Knopf-Nachdrehen).
