@@ -4299,6 +4299,11 @@ Spitze statt am Schnittpunkt, derselbe Weg), und die
 Buchstaben-Attribution stimmt jetzt mit der Hand überein; das
 compose-golden-Fixture wurde als deklarierte Re-Baseline
 regeneriert. K1b ist der nächste Composer-Kandidat der Welle.
+*(Datierter Nachtrag `aug19`: die v2.1-Retrace-Filterrunde hat
+die t-Ring-Zählungen, die K1s Zähler-Begründung trugen, wieder
+entfernt (§ „Struktur-Zähler v2" Nachtrag) — K1 bleibt adoptiert
+allein auf dem Attributions-Argument: die Balken-Kreuzung gehört
+in den Buchstaben, nicht in den Join.)*
 
 ### Welle 1 · B1 `aug15` — Vorregistrierung: Best-of-N über Input-Augmentierungen (InkSight)
 
@@ -6586,3 +6591,418 @@ die KARTEN-FORM-Autorenschritte, danach sind v0.14 und eine
 soll-geführte Entdrillung (dann mit vertrauenswürdiger Karte,
 Positions- statt Zähl-Matching) gemeinsam wiedervorzulegen.
 §7.9-Zeile im selben PR.
+
+**Nachtrag `aug19` spät — die Karten-Form-Decke ist präzisiert:
+überwiegend eine LAUFFORM-LÜCKE, kein Chart-Fehler
+(Owner-Einwand „das G-Template sieht doch gut aus" — bestätigt).**
+Diagnose in der DB (nur lesend): **43 von 62 Glyphen haben KEINE
+Laufform-Variante** — darunter ALLE Versalien, k, s, v, x, b, f,
+q, j und die Umlaute; die Komposition setzt dort die rohe
+Chart-Form ein. Ursache je Owner-Stelle: G hat 3 QC-Fits (unter
+`--min-n` 4), k und W je EINEN. Das Chart-G selbst ist gut
+(chart-treu); DIESE Tafel-Hand schreibt das Oval aber ~65 %
+breiter (Beleg ~1,76 xh gegen Karte ~1,06), und die Schicht, die
+Hand-Breite trägt, ist per Architektur die LAUFFORM — die beim G
+mangels n fehlt. Die drei vorhandenen G-Fits ziehen in die
+richtige Richtung (u-Breite 1,74–1,96 gegen Template 1,69), sind
+als Mess-Fits aber chart-regularisiert. Das r hat dagegen eine
+Laufform (18 Fits) — seine Abweichungen bleiben die
+dokumentierten o→r-/Platzierungs-Klassen. Konsequenz für die
+Rettungswege: der „G-Chart-Autorenschritt" ENTFÄLLT (kein
+Re-Trace — Chart bleibt kanonisch); an seine Stelle tritt der
+messbare Kandidat **Versalien-Laufform-Ausnahme** (`--min-n` 3
+für Versalien bzw. eine G-Laufform aus den 3 Fits, eigene
+Pre-Reg mit wordbench-Gates + Owner-Go vor dem DB-Write). ECHTE
+Autorenschritte bleiben: der W-Ansatz-Retrace (K3 —
+Duktus-INHALT, nicht Breite), der p-Unterlängen-Entscheid und
+der Bestätigungssatz.
+
+**Zweiter Nachtrag `aug19` spät — auch W und p lösen sich auf
+(Owner-Einwand „W und p sehen auch gut aus", je Detektor-Daten
+und Bild geprüft):** (1) **W**: Die aktuelle Wer-Referenz hat
+KEINEN Ansatz-Retrace am W — die K3-These stammt aus der Zeit
+VOR der 19er-Nachfahrung. Die fehlende Soll-Zone (Wer 1 vs 2)
+ist die doppelt gefahrene e→r-DIAGONALE der Hand
+(Zonen-Mitte 2,96 · 0,62 — Schreibgewohnheit, Beleg-Eigenschaft);
+das reale W-Problem ist der **W→e-JOIN der Komposition**, der
+die e-Schleife zu einem Ballon über volle Oberlänge aufbläst
+(Join-Grammatik nach Kapital-Exit — eigener Kompositions-Arm,
+kein Autorenschritt). Der „W-Trace"-Autorenschritt ist damit
+zurückgezogen. (2) **p**: Die Komposition fährt die große
+Unterschleife MIT (Soll-Retrace-Zonen 7,34/8,82 decken sich mit
+der Hand); der ganze Unterschied ist ein DURCHSTOSS-Detail —
+die Hand-Rückkehr durchsticht die Abwärtslinie (X bei v 0,10
+bzw. 0,17), die komponierte Rückkehr läuft tangential ein und
+zählt darum als Retrace statt als Kreuzung. Das ist die
+K1-Klasse („Schnitt mit Überstand", am t-Balken gemessen und
+adoptiert): ein an beiden p-Belegen nachmessbarer
+Rückkehr-Überstand als Composer-Klassenregel, eigene Pre-Reg
+mit `soll_cross_agree`-je-Wort- und wordbench-Gates — der
+G1-„Autorenentscheid" reduziert sich auf die Abnahme dieser
+gemessenen Regel. Nach den drei Owner-Einwänden dieses Abends
+bleibt vom ursprünglichen Autoren-Katalog damit als
+Autorenschritt im engen Sinn nur noch der BESTÄTIGUNGSSATZ;
+alles andere (Versalien-Laufform · W→e-Join · p-Überstand ·
+e→r-Platzierung · o→r-Höhe · Vorschub-Drift) ist als messbarer
+Kompositions- oder Laufform-Arm eingeordnet.
+
+**Dritter Nachtrag `aug19` spät — die Autopsien korrigieren BEIDE
+Mechanismen des zweiten Nachtrags; die Wurzel wird dadurch
+einheitlicher, nicht kleiner.** Zwei unabhängige Code-Autopsien
+(Recon-Runde, je mit Repro auf der eingefrorenen Karte) drehen
+die Detail-Diagnosen:
+
+(1) **W: der Join balloniert NICHT.** Auf der komponierten
+Wer-Karte bleibt der W→e-Verbinder in y ≤ 0,56, das komponierte e
+endet normal bei 0,943, Entry-Trim 0 — der „Oberlängen-Ballon"
+des zweiten Nachtrags war die dritte W-SCHLEIFE DER REFERENZ über
+der zu weit links komponierten e-Position. Der echte Befund: die
+komponierten W-Apexe liegen bei x 0,45/1,16/2,38 gegen die Hand
+0,81/1,51/2,82 (~0,4 xh links, Höhen binnen 0,05 xh), das
+komponierte e startet bei x 2,88 MITTEN in der dritten
+Hand-Schleife. Das ist die Laufform-Lücke des W (1 QC-Fit, kein
+`LAUFFORM_SX`-Eintrag) — der „W→e-Join-Arm" entfällt, das W fällt
+in den Lücken-Schluss (LF1).
+
+(2) **p: kein Composer-Klassenfall — die gespeicherte p-LAUFFORM
+hat den Durchstoß an den Median verloren.** p steht in KEINER
+Klassentabelle (`LOOP_EXIT_BASES` = {d, s}; die
+Descender-Maschinerie feuert bei Exit-y +0,79 nie) — die Rückkehr
+ist authored Geometrie. Die komponierten p-Kreuzungen EXISTIEREN
+sogar (2,5–4,8× über der Pierce-Marge) und fallen erst am
+v2.1-Retrace-Filter: die Schenkel laufen vor dem X zu eng/parallel
+(Partner-Kriterium 0,16 xh). Wurzel: das CHART-p behält isoliert
+seine Kreuzung (1), die gespeicherte LAUFFORM verliert sie (0) —
+der Anker-Median hat den Schleifenschluss glattgebügelt
+(Annäherungs-Spalt 0,126 → 0,081 xh). Das Hand-Soll, an beiden
+p-Belegen gemessen: Kreuzungswinkel 67,6°/65,6°, 0,05-xh-Freigang
+nach 0,073/0,065 xh Bogen, die Rückkehr steigt bis v ≈ 0,92 in
+den Join. Der im zweiten Nachtrag skizzierte
+K1c-Composer-Überstand ist damit UNGEMESSEN zurückgezogen (nie
+vorregistriert, keine Zahl erzeugt); an seine Stelle tritt der
+Laufform-Arm **LF2 „p-Topologie"** — Autopsie des
+Occurrence-Stapels zuerst (verlieren die Einzel-Fits das X, oder
+frisst erst der Median es?), dann eigene Pre-Reg.
+
+Damit ziehen ALLE drei Owner-Stellen des Abends (G, W, p) auf
+DIESELBE Schicht: die Laufform — als Lücke (G/W/k: 15 der 34
+Fixture-Glyphen ohne Variante 100, darunter alle Versalien) und
+als Aggregations-Defekt (p). Der Karten-Form-Katalog des Abends
+besteht aus zwei Laufform-Armen (LF1/LF2) plus den
+Platzierungs-Klassen (e→r · o→r · Vorschub-Drift).
+
+### Laufform LF1 `aug19` — Vorregistrierung: der Lücken-Schluss (Evidenz-Boden der Scan-Fits)
+
+Geschrieben und committet VOR der ersten Zahl (Owner-Go „weiter
+ohne Pause die Punkte abarbeiten" nach den drei Einwänden;
+Rettungsweg-Konversion der §7.9-Zeilen v0.14/v0.15 und des ersten
+Nachtrags „Versalien-Laufform-Ausnahme").
+
+**Hypothese.** 15 der 34 Fixture-Glyphen (alle Versalien, dazu
+ae · b · f · k · s · ue · v) haben keine Laufform-Variante — die
+Komposition setzt dort die rohe Chart-Form ein, und die Schicht,
+die per Architektur die Hand-Breite trägt, schweigt. Die drei
+schlimmsten Karten-Form-Stellen der Lotse-Runde (G-Kopf, W-Apexe,
+k-Kringel) liegen alle in dieser Lücke. Der Harvest
+(`tools/laufform/harvest.py`, offline gegen die eingefrorene
+Root, keine DB) kann die Lücke aus den vorhandenen Scan-Fits
+schließen; blockiert hat bisher allein sein CLI-Boden
+`--min-n 4` (G: 3 QC-Fits; der SERVER-Boden für echte Writes ist
+`LAUFFORM_MIN_OCCURRENCES` = 3).
+
+**EIN Knopf: der Evidenz-Boden `--min-n`, Leiter {3 · 1}** —
+angewendet ausschließlich auf LÜCKEN-Glyphen (ohne gespeicherte
+Variante 100); gespeicherte Laufformen werden nie überlagert.
+Stufe 3 ist die „Versalien-Laufform-Ausnahme" des ersten
+Nachtrags (erwartet: G); Stufe 1 die Dünn-Evidenz-Stufe
+(erwartet zusätzlich W, k, …— die Fit-Zahl je Glyph wird
+berichtet, eine n=1-„Laufform" ist der eine Fit selbst). Evidenz
+sind NUR die M4/Chain-Scan-Fits der eingefrorenen Tinte — keine
+authored Traces, also keine Zirkularität gegen das
+tracebench-Lineal; Pfad `--path chain --sets words` (die
+Produktions-Evidenz der 245 gespeicherten Instanzen), BLAS
+gepinnt.
+
+**Messung (alles TROCKEN, kein DB-Write).**
+(a) wordbench `--style suetterlin --set all --laufform <drafts>`
+— per Doktrin §6 eine OFF-HEADLINE-Kandidatenzahl. Gates:
+`word_loss`/`pair_loss` ≤ +0,002 gegen die stehende Basis
+0,108091 / 0,146602; bewegen dürfen sich nur Wörter/Paare mit
+Lücken-Glyphen.
+(b) Soll-Abgleich auf einer gepatchten Kopie der Fixture-Root
+(templates_laufform.json + Drafts): `soll_cross_agree`/
+`soll_zones_agree` JE WORT — kein Wort verliert Übereinstimmung.
+(c) Lotse auf der Kandidaten-Karte (Treiber über gepatchte
+Cases, adoptierter v0.13-Stand): dev-19 gegen die v0.13-Basis —
+`cross_missing` ≤ 1 · Netto-Kreuzungsdefekte ≤ 6 ·
+aiou-Median-Δ ≥ −0,02 gegen 0,7398 · Marken unverändert · dtw je
+Wort ±0,003 außer in Wörtern mit Lücken-Glyphen · reversed 0.
+Deklariertes Registrierungs-Kaveat: das Overlay bewegt Karte UND
+tx/ty-Registrierung (word_metric-Gridsearch) — die Vergleiche
+messen Karten- plus Platzierungs-Effekt gemeinsam, so gewollt.
+(d) Sichtprüfung der G/W/k-Wörter (Overlay-Bilder).
+
+**Adoption/Write.** Adoptiert wird höchstens EINE Stufe, und nur
+als KANDIDATEN-Zustand (trocken). Ein DB-Write (PUT laufform je
+Glyph bzw. `apply-laufform`) ist ein separater Schritt hinter
+`dbsnapshot` + explizitem Owner-Go; für n<3-Zeilen erzwingt der
+Endpoint `?min_occurrences=1` als ausdrückliche Owner-Aussage.
+Danach (und erst danach) die vorregistrierte Wiedervorlage
+v0.14 + soll-geführte Entdrillung (§7.9) — trocken auf der
+Kandidaten-Karte bereits in dieser Runde vormessbar.
+
+**Gemessen `aug19` — BEIDE Stufen verworfen, an EINEM exakt
+lokalisierten Riss; die Gewinnseite ist die größte der
+Lotse-Kampagne.** Harvest offline (211/277 Fits akzeptiert):
+JEDES Lücken-Glyph hat ≥ 1 Fit — Stufe 3 = {G n=3, Z n=3},
+Stufe 1 = alle 15. **Stufe 3:** wordbench 0,108091 → 0,107215
+(pair byte-gleich; nur Lücken-Wörter: Z-Wörter −0,012…−0,017,
+Gewehr −0,0096, Galoppieren −0,0061, Gaul +0,0049). Lotse:
+Galoppieren dtw −0,010, `cross_spurious` 5 → 3 (die
+G-Kopf-Duplikate heilen!) — ABER `cross_missing` 1 → 2 und
+Galoppieren-Soll 6 → 5: **der frische G-Median verliert die
+zweite Chart-G-Kreuzung** — Gate (c) verletzt, Stufe verworfen.
+**Stufe 1:** wordbench 0,108091 → 0,105664 (18 Wörter besser,
+6 schlechter — die n=1-Drafts streuen: Wer +0,0267, das
++0,0094, kann +0,0066 gegen Sprünge −0,0392, Zügel −0,0201,
+Pulver −0,0143, Einen −0,0140, linken −0,0127). Lotse:
+dtw-Median 0,0585 → 0,0572, **aiou 0,7398 → 0,7527**,
+spurious 5 → 3, linken-Soll 4 → 3 = Übereinstimmung (Hand 3),
+Marken sauber — und DASSELBE G-Gate (`cross_missing` 2) →
+verworfen. Befund: die Verwerfungs-Ursache ist in beiden Stufen
+die TOPOLOGIE der aggregierten Form, nie die Breite — der
+G-Median zählt 1 statt 2, und die drei G-Einzelfits zählen
+selbst nur 0/1/1 (auch die chart-regularisierte M4-Passung
+erhält die gezählte Kreuzung nicht zuverlässig). Rettungsweg:
+LF3 (Topologie-Reparatur), §7.9-Zeile im selben PR.
+
+### Laufform LF2 `aug19` — Vorregistrierung: der Topologie-Wächter (h & p)
+
+Geschrieben und committet VOR der ersten Gate-Zahl; die
+Autopsie-Zahlen darunter sind Diagnostik (wie die
+L2-Rest-Autopsie), keine Arm-Messung.
+
+**Autopsie-Befund.** (1) Auf ANKER-Ebene ist die p-Topologie
+intakt (Chart X=3, Laufform X=3, beide akzeptierten
+Occurrence-Fits X=5/3, frischer Median X=3) — verloren geht das
+GEZÄHLTE X erst nach Spline-Sampling an den v2.1-Kriterien: der
+Median verengt den Annäherungs-Spalt der Schenkel
+(Anker 0,029 → 0,022, gesampelt 0,126 → 0,081 xh), und der
+Retrace-Filter kippt. Es ist also KEIN Fit-Defekt, sondern ein
+Schwellen-Kipp durch die Median-Verengung. (2) Der Lineal-Sweep
+(per-Letter-Soll-Zellen aller 63 Wörter, mit gegen ohne
+gespeicherte Laufformen) findet GENAU ZWEI Verlierer und keinen
+Gewinner: **h 2 → 0 gezählte Kreuzungen in JEDEM der 10 Slots**
+und **p 1 → 0 in allen 4** (Galoppieren ×2, Sporn, Sprünge).
+(3) Gegenprobe Hand: die authored h-Wörter kreuzen real (haben
+und scharfen je 1 Ascender-X bei v ≈ 0,91/0,95) — die
+h-Laufform löscht eine geschriebene Kreuzung. (Das Chart zählt
+am h 2; ob die Hand die zweite schreibt, prüft der
+Soll-Abgleich mit — berichtet, nicht Kriterium.)
+
+**Mechanismus.** Die Schichtungs-Doktrin (architektur.md §3/§5,
+jul31-Split): das Chart trägt den DUKTUS (Strichfolge,
+Kreuzungs-Auflösung), die Laufform trägt die HAND-BREITE. Eine
+Laufform-Zeile, die eine gezählte Chart-Kreuzung ihres Glyphen
+löscht, überschreibt den Prior statt ihn zu weiten. Der Wächter
+setzt die Schichtung durch: solche Zeilen werden nicht
+komponiert (Fallback: rohe Chart-Form), bis eine
+topologie-erhaltende Aggregation existiert.
+
+**EIN Knopf: der Wächter an/aus.** Die Wirkmenge ist
+DETERMINISTISCH aus dem Sweep (keine Handauswahl): {h, p}.
+
+**Messung (trocken, Root-Kopie ohne h/p-Laufform).**
+(a) wordbench `--set all --fixtures <wächter-root>`
+(Off-Headline): `word_loss`/`pair_loss` ≤ +0,002; erwartete
+Bewegung nur in h/p-Wörtern. Die Erwartung ist zweiseitig
+ehrlich: der Wächter KOSTET die h-Laufbreite — die Tinte darf
+es spüren, die Struktur muss es zurückzahlen.
+(b) Soll-Abgleich je Wort: erwartet Galoppieren 6 → 8 (die zwei
+p-Rückkehr-X der Hand), Sporn/Sprünge +1, h-Wörter +2 je h;
+kein Wort verliert Übereinstimmung.
+(c) Lotse auf der Wächter-Karte gegen die v0.13-Basis:
+`cross_missing` ≤ 1 · Netto-Defekte ≤ 6 · aiou-Median-Δ ≥ −0,02
+· Marken unverändert · dtw je Wort ±0,003 außer h/p-Wörtern ·
+reversed 0.
+**Benannter Rettungsweg im Verwerfungsfall:** die
+topologie-erhaltende Aggregation (Median mit
+Kreuzungs-Anker-Ausrichtung statt roher Anker-Median) als
+eigener Arm — der Wächter bliebe dann als Write-Path-Guard
+(eine Zeile, die Topologie verliert, wird nie gespeichert).
+
+**Gemessen `aug19` — Kern-Erwartung erfüllt, trotzdem VERWORFEN
+in der Voll-Entfernungs-Form (Marken-Gate).**
+(a) wordbench 0,108091 → 0,109448 (+0,00136, unter der
+Kill-Schwelle; nur h/p-Wörter bewegen sich — zweiseitig wie
+registriert: han −0,0103, Gewehr −0,0080, macht/schwer/haben
+−0,003 gegen schießen +0,0340, Galoppieren +0,0256, fechten
++0,0237, auch-2 +0,0158 — der Preis der vollen
+Breiten-Entfernung ist real).
+(b) **Galoppieren-Soll 6 → 8 = Übereinstimmung mit der Hand (8)
+erreicht** — die registrierte Kern-Erwartung; die h-Zellen
+zählen konstruktionsbedingt wieder 2 (Chart-Form).
+(c) Lotse: netto 4 (spurious 5 → 3) bei `cross_missing` 1,
+aiou unverändert — ABER der Galoppieren-i-PUNKT fällt aus dem
+Ritt (Kandidat 2 Strokes → 1, `marks_missing` 0 → 1): die
+Karten-Verschiebung um die chart-p-Unterschleifen kippt eine
+marginale Ritt-Komponente. „Marken unverändert" ist verletzt →
+verworfen. Der Wächter bleibt als WRITE-PATH-Prinzip richtig
+(nie eine Zeile speichern, die Topologie verliert); als
+Kompositions-Fallback kostet er Breite und kippt den Ritt.
+Rettungsweg (bereits oben benannt, jetzt quantifiziert):
+**Reparatur statt Entfernung** — LF3, §7.9-Zeile im selben PR.
+
+### Laufform LF3 `aug19` — Vorregistrierung: die Topologie-Reparatur (lokale Chart-Rückblendung)
+
+Geschrieben und committet VOR der ersten Zahl. Konversion der
+LF1/LF2-Negative: drei unabhängig gemessene Instanzen desselben
+Mechanismus (gespeicherte h- und p-Laufform, frischer G-Draft)
+zeigen, dass der rohe Anker-Median gezählte Chart-Kreuzungen
+glattbügelt; LF2 hat bewiesen, dass die Topologie-Rückkehr die
+Struktur zahlt (Galoppieren-Soll 8, netto 4), die volle
+Chart-Rücksetzung aber Tinte kostet und den Ritt kippt.
+
+**Mechanismus.** Für jede Laufform-Form (gespeicherte Zeile ODER
+Lücken-Draft), die eine gezählte Chart-Kreuzung ihres Glyphen
+verliert (Detektor = der LF2-Sweep), wird der Median nicht
+verworfen und nicht ersetzt, sondern LOKAL repariert: die Anker
+im festen Bogen-Fenster (0,5 xh) um die verlorene
+Chart-Kreuzung blenden minimal zur Chart-Geometrie zurück —
+`t` per Bisektion als KLEINSTES t ∈ [0, 1], das die gezählte
+Kreuzung wiederherstellt (linearer Falloff zum Fensterrand;
+deterministisch, kein Handknopf; findet die Bisektion kein t,
+fällt das Glyph auf die Chart-Form zurück = LF2-Verhalten als
+Restfall). Breite bleibt Laufform, Topologie bleibt Chart — die
+Schichtungs-Doktrin als Konstruktion statt als Filter.
+
+**EIN Knopf: Reparatur an/aus.** Wirkmenge deterministisch aus
+dem Detektor: gespeicherte {h, p} plus jeder Lücken-Draft, der
+ihn reißt (aktuell G; Z passiert unrepariert). Kandidaten-Karte:
+eingefrorene Root + reparierte h/p + alle 15 Lücken-Drafts
+(reparierte, wo nötig) — alles durch den EINEN kanonischen
+Builder (`laufform_row_from_payload`).
+
+**Messung (trocken).**
+(a) wordbench `--set all` mit der Kandidaten-Menge: Headlines
+≤ +0,002 gegen 0,108091 / 0,146602; Erwartung: die h/p-Wörter
+BEHALTEN ihre Laufform-Gewinne (der LF2-Preis verschwindet).
+(b) Soll je Wort: Galoppieren → 8, kein Wort verliert; die
+Frage der zweiten Hand-h-Kreuzung wird berichtet.
+(c) Lotse gegen die v0.13-Basis: `cross_missing` ≤ 1 ·
+Netto-Defekte ≤ 6 · **Marken unverändert** (der i-Punkt-Kipp
+von LF2 darf nicht wiederkehren) · aiou-Median-Δ ≥ −0,02 ·
+dtw je Wort ±0,003 außer Laufform-Wörtern · reversed 0.
+(d) Sichtprüfung G/W/k/h/p.
+Hält LF3 seine Gates, ist seine Karte die KANDIDATEN-KARTE der
+vorregistrierten v0.14-Wiedervorlage (§7.9) — trocken noch in
+derselben Runde; ein DB-Write bleibt hinter dbsnapshot +
+Owner-Go (LF1-Regeln gelten fort).
+
+**Gemessen `aug19` — (a) und (c) bestehen vollständig, (b)
+verfehlt das Kompositions-Soll: nicht adoptiert wie gemessen,
+der Riss ist auf die ORAKEL-EBENE lokalisiert.** Reparatur-Lauf:
+F t=0,133 · K t=0,352 · k t=0,219 · f t=0,484 · b t=0,703 ·
+**p t=0,562** repariert; E/P/S/W/Z/ae/s/ue/v passieren
+unberührt; **G und h sind im 0,5-Fenster unreparierbar** →
+Chart-Fallback (der registrierte Restfall — auch der frische
+Detektor-Fund: die Drafts F/K/b/f/k hätten ihre Topologie
+ebenso still verloren). Zahlen: wordbench 0,108091 → 0,107089
+(pair byte-gleich; nur Laufform-Wörter; die Z/S/P/E/K-Gewinne
+bleiben, h zahlt seinen LF2-Preis fort, weil unreparierbar →
+Chart). Lotse: dtw-Median 0,0585 → 0,0573 · aiou 0,7398 →
+0,7470 · spurious 5 → 4 (netto 5) · `cross_missing` 1 ·
+**Marken unverändert — der LF2-i-Punkt-Kipp kehrt NICHT
+zurück** · linken-Soll 4 → 3 = Übereinstimmung. Aber
+Galoppieren: `soll_cross_letters` 5 → 7 (beide p-Zellen zurück)
+bei KOMPOSITIONS-Soll unverändert 6 — das minimale t des
+Buchstaben-Zellen-Orakels überlebt den Kompositions-Kontext
+(Verbinder, Trims, Retrace-Partner benachbarter Züge) nicht;
+LF2 (volles Chart-p) erreichte dort 8. Der Mechanismus ist
+richtig, das Orakel zu schwach — Konversion LF3b unten.
+
+### Laufform LF3b `aug19` — Vorregistrierung: die Topologie-Reparatur am Kompositions-Orakel
+
+Geschrieben und committet VOR der ersten Zahl. Identischer
+Mechanismus wie LF3 (lokale Chart-Rückblendung, 0,5-xh-Fenster,
+minimales t per Bisektion, Chart-Fallback als Restfall) mit
+EINER Präzisierung: das Bisektions-Orakel ist das
+**KOMPOSITIONS-Soll des Repräsentanten-Wortes** (die
+„Komposition (mit Verbindern)"-Zählung des Lineals) statt der
+Buchstaben-Zelle — repariert ist eine Form erst, wenn die
+Kreuzung im komponierten Wort zählt, nicht nur im
+Buchstaben-Frame. Erwartung: p repariert bei höherem t
+(0,56 < t ≤ 1), die übrigen Reparaturen ziehen ggf. nach.
+Risiko, ehrlich benannt: je näher t an 1, desto näher rückt die
+Karte an das LF2-Verhalten — der Galoppieren-i-Punkt-Kipp wird
+explizit mitgeprüft. Gates unverändert LF3 (a)–(d), inklusive
+„Marken unverändert" und Galoppieren-KOMPOSITIONS-Soll → 8.
+Hält LF3b, ist SEINE Karte die Kandidaten-Karte der
+v0.14-Wiedervorlage.
+
+**Gemessen `aug19` — ALLE Gates bestehen: LF3b ist der erste
+adoptierte Laufform-Arm (Kandidaten-Zustand, trocken).**
+Reparatur-Lauf am Kompositions-Orakel: **p t=0,578 gegen
+Kompositions-Ziel 8** · F 0,391 · K 0,328 · k 0,250 · f 0,477 ·
+b 0,672 · P 0,008; E/S/W/Z/ae/s/ue/v passieren; G und h bleiben
+unreparierbar → Chart-Fallback. Zahlen: (a) wordbench 0,108091
+→ 0,107105, pair byte-gleich, nur Laufform-Wörter. (b)
+**Galoppieren KOMPOSITIONS-Soll 6 → 8 = Übereinstimmung mit der
+Hand**, `soll_cross_agree` 16 → 17/19, kein Wort verliert. (c)
+Lotse gegen v0.13: dtw-Median 0,0585 → **0,0573** · aiou 0,7398
+→ **0,7484** · spurious 5 → 4 (Netto 5) · `cross_missing` 1 ·
+**Marken unverändert** (der i-Punkt bleibt — das minimale t
+liegt unter dem LF2-Kipp-Punkt) · Wer +0,007/linken −0,003
+(beide Laufform-Wörter, Ausnahme greift) · reversed 0.
+Einordnung: Galoppieren zählt jetzt spurious 2 statt 3 bei
+soll-treuer Karte; der Wer-dtw-Preis kommt vom verrauschten
+n=1-W-Draft (wordbench Wer +0,0267) — für den späteren DB-Write
+bleibt die Stufen-/Glyphen-Auswahl eine Owner-Entscheidung je
+Glyph (LF1-Regeln). Die LF3b-Karte ist die Kandidaten-Karte der
+Wiedervorlage unten.
+
+### Wiedervorlage v0.14 `aug19` — Vorregistrierung: die „all"-Stufe auf der LF3b-Karte
+
+Geschrieben und committet VOR der ersten Zahl. Einlösung der
+stehenden §7.9-Zeilen (v0.11-„all", v0.14, v0.15): die
+Wiedervorlage NACH den Laufform-Armen, trocken auf der
+injizierten Kandidaten-Karte. Der originale v0.14-Bruch lag
+exakt an den zwei Laufform-Defekten (G-Kopf-X stirbt an der
+formfremden Karte, p erfindet eines) — auf der LF3b-Karte fährt
+G die Chart-Form und p die reparierte Laufform.
+
+**EIN Knopf: `MAP_RUN_PIN_KNOTS` = "all"** (der deklarierte
+v0.11-Schalter; Zonen-Rides und Brücken werden mitgepinnt),
+alles andere der adoptierte v0.13-Stack; Karte = LF3b.
+**Vergleichsbasis ist der v0.13-Stack AUF DERSELBEN
+LF3b-Karte** (die Zahlen des LF3b-Blocks oben: Netto 5,
+missing 1, aiou 0,7484, dtw 0,0573) — karten-gleich, also ohne
+Laufform-Ausnahmen. Gates: Netto-Defekte < 5 (echter
+Struktur-Gewinn, sonst kein Grund für „all") · `cross_missing`
+≤ 1 · aiou-Median-Δ ≥ −0,02 · Marken unverändert · dtw je Wort
+±0,003 · reversed 0. Erwartung aus dem v0.14-Sichtbeweis: das
+G-Kopf-X wird jetzt hand-gleich geritten UND zählt; scheitert
+es erneut, ist die Karten-Form als Ursache widerlegt und der
+Riss liegt im Ritt selbst (neuer Befund, eigener Rettungsweg).
+
+**Gemessen `aug19` — verworfen per Gate, und die registrierte
+Falsifikation feuert: die Karten-Form ist als Ursache der
+„all"-Bruchstelle WIDERLEGT.** Auf der LF3b-Karte gewinnt die
+„all"-Stufe erneut Tinte (aiou 0,7484 → 0,7521 · p90 0,1129 →
+0,1117 · chamfer 0,0410 → 0,0371 · dtw-Verbesserungen −0,004
+bis −0,009 in Galoppieren, mit, mit-2, muß-2, muß-3 — KEIN
+dtw-Verlierer; Marken unverändert; reversed 0) — aber die
+Struktur kippt WIEDER und WIEDER in Galoppieren: missing 1 → 2
+(das G-Kopf-X), spurious 4 → 5, Netto 7 > 5. Dieselbe
+Bruchstelle auf der jetzt topologie-sauberen Chart-G-Karte
+heißt: nicht die Karten-FORM bricht den G-Kopf, sondern der
+RITT im dichten G-Knoten-Komplex unter der „all"-Pinnung.
+Rettungswege: (a) **G-Kopf-Ritt-Autopsie unter „all"**
+(Instrumentierung wie die will-Autopsie der v0.7-Runde), dann
+(b) eine SELEKTIVE Stufe (Brücken und Zonen-Rides getrennt
+pinnen — der deklarierte Schalter kennt die Trennung noch
+nicht, sie wäre ein neuer, vorzuregistrierender Mechanismus).
+Die drei Gewebe-Rest-Duplikate und die soll-geführte
+Entdrillung (Positions-Matching auf der jetzt
+vertrauenswürdigen Karte) bleiben die stehenden nächsten Arme
+(§7.9). §7.9-Zeile aktualisiert im selben PR.

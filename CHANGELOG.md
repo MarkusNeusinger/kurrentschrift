@@ -14,6 +14,47 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The Laufform night: all three owner-flagged map-form sites (G, W, p)
+  resolve into ONE layer, and the topology repair becomes the first
+  adopted Laufform arm** (pre-registered §14 `aug19` arms LF1/LF2/LF3/
+  LF3b, all measured dry — no DB writes). Two code autopsies first
+  overturned both late-evening mechanisms: the W→e join does not balloon
+  (the composed W simply sits ~0.4 xh left of the hand's apexes — the W
+  Laufform gap), and p is no composer class case — the STORED p Laufform
+  lost its pierce to the anchor median (the chart form keeps it; the
+  v2.1 retrace filter then rightly drops the tangential X). The ruler
+  sweep found exactly two stored rows that delete counted chart
+  crossings (h: 2→0 in every slot, p: 1→0) and the LF1 run added a
+  fresh third instance (the n=3 G draft) — the plain per-anchor median
+  systematically flattens loop closures. LF1 (gap-filling drafts for
+  the 15 glyphs without a running form, one knob: evidence floor
+  min-n {3,1}) and LF2 (guard = compose the chart form instead of a
+  topology-losing row) were honestly rejected on their own gates; LF3b
+  repairs the topology instead: anchors blend locally back to chart in
+  a 0.5-xh window around the lost crossing, with the smallest t (found
+  by bisection) that restores the COMPOSITION-level counted crossing.
+  LF3b passed every gate: Galoppieren's composition soll reaches 8 =
+  hand agreement (p repaired at t=0.578), marks unchanged, Lotse aiou
+  0.7398 → 0.7484, dtw median 0.0585 → 0.0573, net defects 5,
+  wordbench 0.108091 → 0.107105 with pair_loss byte-identical — the
+  candidate map for the standing v0.14 re-submission. Glossary gains
+  Laufform-Lücke, Laufform-Topologie-Wächter and Topologie-Reparatur;
+  werkzeuge.md documents the wordbench `--laufform`/`--no-laufform`
+  overlay flags. Any DB write of the candidate rows stays behind
+  dbsnapshot + an explicit owner go.
+
+- **The v0.14 "all" re-submission on the repaired map refutes the
+  map-form hypothesis for that rung** (pre-registered §14 `aug19`,
+  redeeming the standing §7.9 rescue rows). On the topology-clean
+  candidate map the "all" pinning again wins ink (aiou 0.7484 → 0.7521,
+  p90 −0.001, five words' dtw −0.004..−0.009, not a single dtw loser)
+  and again breaks structure at the SAME Galoppieren site (net 7 > 5) —
+  so the G-head break is a property of the ride through the dense
+  G junction complex, not of the map form. Named rescue paths: an
+  instrumented G-head ride autopsy under "all", then a selective
+  pinning rung (bridges and zone rides separated) as its own
+  pre-registered mechanism.
+
 - **Lotse v0.10/v0.11: junction-anchored pinning of the map runs —
   v0.11 "windows" adopted, the k curl is finally traced** (pre-registered
   §14 `aug19`, arms L1d/L1e; owner's visual find: the k's lower curl

@@ -47,7 +47,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
-- **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
+- **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4
 - **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
@@ -55,7 +55,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
-- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenfolger §3 · Tintenlücke §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
+- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenfolger §3 · Tintenlücke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4
 - **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Editor §5 · Wort-Trace §2
@@ -258,6 +258,16 @@ Template-Variante 100 und wird nur in fließenden Läufen benutzt.
 Composer-Zugriff über `laufform_by_key`; entsteht als **Ableitung** aus
 den Aggregaten via `POST /hands/{id}/aggregates/apply-laufform`.
 → handmodell-stufenplan.md H1
+
+**Laufform-Lücke** — der Zustand eines Glyphen OHNE gespeicherte
+Laufform-Variante: die Komposition setzt die rohe Chart-Form ein, und
+die Schicht, die per Architektur die Hand-Breite trägt, schweigt.
+Stand `aug19`: 15 der 34 Fixture-Glyphen der Sütterlin-1922-Root
+(alle Versalien, dazu ae · b · f · k · s · ue · v) — der `aug19`
+diagnostizierte Haupt-Anteil der „Karten-Form-Decke" der Lotse-Route
+(G-Kopf, W-Apexe, k-Kringel liegen alle in der Lücke). *Technisch:*
+Glyph ohne `variant=100`-Zeile; Lücken-Schluss-Arm LF1 →
+qualitaetsmetrik.md §14 („Laufform LF1")
 
 **Instance** *(Vorkommen / occurrence)* — **ein** beobachtetes Auftreten
 einer Glyphe auf einer Vorlage, samt seinem Fit-Ergebnis. Die Rohdaten der
@@ -534,7 +544,33 @@ Veto scheitern zu lassen; der Owner-Satz dahinter: Kringel, Kreuzungen
 und Retraces sind duktus-fix. *Technisch:*
 `tools/pairlab/follow.py::structure_class_counts` +
 `FollowWeights.structure_guard` (default False = byte-identisch),
-`STRUCTURE_GUARD_MAX_RETRIES` → qualitaetsmetrik.md §14 (Arm ⑨)
+`STRUCTURE_GUARD_MAX_RETRIES` → qualitaetsmetrik.md §14 (Arm ⑨).
+Nicht zu verwechseln mit dem **Laufform-Topologie-Wächter** (unten) —
+gleicher Geist (Duktus-Topologie ist unantastbar), andere Schicht.
+
+**Laufform-Topologie-Wächter** *(LF2)* — die Schichtungs-Regel auf der
+Laufform-Ebene: eine Laufform-Zeile, die eine GEZÄHLTE Chart-Kreuzung
+ihres Glyphen löscht, überschreibt den Duktus-Prior statt ihn zu
+weiten und wird nicht komponiert (Fallback rohe Chart-Form). Der
+`aug19`-Sweep fand genau zwei gespeicherte Verlierer (h: 2 → 0 in
+jedem Slot · p: 1 → 0) und der LF1-Lauf einen frischen (G-Draft) —
+der rohe Anker-Median bügelt Schleifenschlüsse glatt
+(„Median-Verengung": der Annäherungs-Spalt der Schenkel schrumpft,
+und der v2.1-Retrace-Filter kippt das tangentiale X). Als
+Voll-Entfernung gemessen und verworfen (Tinten-Preis, Marken-Kipp);
+als WRITE-PATH-Prinzip bleibt er stehen. → qualitaetsmetrik.md §14
+(„Laufform LF2"), Nachfolger: Topologie-Reparatur (LF3)
+
+**Topologie-Reparatur** *(Chart-Rückblendung, LF3)* — die Konversion
+des Laufform-Topologie-Wächters von Filter zu Konstruktion: verliert
+eine Laufform-Form (gespeicherte Zeile oder Lücken-Draft) eine
+gezählte Chart-Kreuzung, blenden die Anker im festen 0,5-xh-Fenster
+um die verlorene Kreuzung minimal zur Chart-Geometrie zurück —
+`t` per Bisektion als kleinstes t ∈ [0, 1], das die Zählung
+wiederherstellt (linearer Falloff, deterministisch); scheitert auch
+t = 1, fällt das Glyph auf die Chart-Form zurück. Breite bleibt
+Laufform, Topologie bleibt Chart. → qualitaetsmetrik.md §14
+(„Laufform LF3")
 
 **Junction-Verschiebung** *(junction displacement)* — der dokumentierte
 Fehler des Skelett-Branch-Points als Kreuzungs-Marke: Thinning
