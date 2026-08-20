@@ -7388,3 +7388,30 @@ Zähler-Skala VOR der Feinabtastung** (eine Glättung ENTLANG der
 Bahn erhält Pass-Versätze wie das 0,06-t-Doppel, frisst aber
 Intra-Pass-Wiggle) — eigene Pre-Reg; §7.9-Zeile im selben PR.
 Artefakte: `temp/tb-aug20/lotse-v19-*`.
+
+**Nachtrag `aug20` nacht — die Glättungs-Proben schließen die
+Auflösungs-Familie.** Der Glätter wurde gebaut
+(`smooth_map_strokes`: 0,02-xh-Grid, Box-Fenster entlang der
+Bahn, Endpunkte exakt; `MAP_SMOOTH_WINDOW_UNITS`, deklariert-off)
+und mit vollem Lineal an fünf Proben-Worten gemessen (unter ·
+Galoppieren · mit · Wer · muß-2; Fenster {0,06 · 0,12} ×
+Schritt {0,06 · 0,12}): **Der Feinschritt-Drift besteht auf
+geglätteter Karte UNVERÄNDERT fort** (Wer +0,0331, muß-2
++0,0219, mit +0,0126 — Fensterbreite ohne Einfluss; Galoppieren
+sogar mit neuen Retrace-Defekten). Damit ist die dritte und
+letzte Kopplung benannt: nicht Ökonomie (v0.19 ✓ invariant),
+nicht Emission, nicht Karten-Geometrie — die
+**ENTSCHEIDUNGS-GRANULARITÄT des Viterbi selbst** (mehr Samples
+= mehr Umsteigepunkte = andere Pfade). Die Auflösungs-Familie
+ist vollständig ausgemessen und GESCHLOSSEN; 0,12 ist der
+Betriebspunkt, unters zweites t-Stamm-X die bleibende
+Auflösungs-Grenze (kein weiterer Leiter-Anlauf ohne
+grundsätzlich anderen Solver). Nebenbefund als NEUER, eigener
+Kandidat: die Glättung AM Betriebspunkt (Fenster 0,06 · Schritt
+0,12) zeigt gemischte, teils große Effekte — mit aiou +0,0967
+und dtw −0,0275, muß-2 heilt beide Retrace-Defekte, unters
+t-X2 erscheint; aber Wer +0,0309 dtw und Galoppieren tauscht
+ein X ein. Falls aufgegriffen: eigene Pre-Reg als
+Betriebspunkt-Arm mit Fenster-Leiter, kein Anhängsel der
+Auflösungs-Familie. Der Glätter bleibt deklariert-off im Code.
+Artefakte: `temp/tb-aug20/probe-v20-*`.

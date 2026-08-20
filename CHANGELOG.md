@@ -14,6 +14,25 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The smoothing probes close the resolution family: the final coupling
+  is the Viterbi's decision granularity** (§14 `aug20` night). The
+  announced rescue — an along-path box smoother at counter scale before
+  sampling (`smooth_map_strokes`, endpoint-exact, declared off) — was
+  built and probed with the full ruler on five words: the fine-step
+  drift persists unchanged on the smoothed map (Wer +0.033, window width
+  irrelevant), so the coupling is neither economy (v0.19 made it
+  invariant) nor emission nor map geometry but the decision granularity
+  itself — more samples mean more switching points and different paths.
+  The resolution family (v0.18, v0.19, smoothing) is measured out and
+  closed: 0.12 stays the operating point, unter's second t-stem crossing
+  the standing resolution limit, with no further ladder attempt without
+  a fundamentally different solver. Side finding, recorded as its own
+  future candidate: smoothing AT the operating point shows mixed, partly
+  large effects (mit aiou +0.0967 and dtw −0.0275, muß-2's retrace
+  defects heal, unter's t-stem X appears · Wer +0.0309 dtw, Galoppieren
+  trades one crossing) — its own pre-registration with a window ladder
+  if taken up. §7.9 row updated.
+
 - **Lotse v0.19: the ride economy becomes step-invariant (proven
   byte-neutral), and the resolution ladder's second rejection names the
   final coupling** (§14 `aug20`, pre-registered). The re-denomination —
