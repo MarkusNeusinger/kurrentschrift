@@ -7359,3 +7359,32 @@ Erwartung: die v0.18-Struktur-Ernte (Netto → 3) OHNE den
 Ökonomie-Drift; scheitert die Geometrie erneut, liegt eine
 weitere, noch unbenannte Schritt-Abhängigkeit vor (eigene
 Autopsie, kein Knopf-Nachdrehen).
+
+**Gemessen `aug20` — Sprosse 0 byte-identisch (die
+Re-Denominierung BLEIBT als bewiesen neutrale Grundlage);
+die Leiter-Sprossen erneut verworfen, und die vorregistrierte
+Falsifikation benennt die letzte Kopplung.** Sprosse 0
+reproduziert die v0.17-Kandidaten-Rows auf BEIDEN Roots
+stroke-für-stroke — der Refactor ist am Betriebspunkt exakt
+neutral und macht künftige Schritt-Arme erst sauber messbar;
+`MAX_RIDE_UNITS` = 0,96 · `RIDE_DOUBLE_MIN_GAP_UNITS` = 0,48 ·
+Emissions-Skala `Schritt/0,12` sind der neue Stand. **A (0,06):
+verworfen** — unters missing heilt weiter (LF3b-Netto bleibt
+aber 5, weil Galoppieren jetzt einen Spurious GEWINNT statt
+eines Gewebes zu verlieren), und der Geometrie-Drift ist nicht
+beseitigt, nur umverteilt (Wer +0,0309, muß-2 +0,0221, mit
++0,0101; neue Retrace-Defekte; frozen-aiou-Median −0,0049).
+**B (0,04): klar schlechter** (Netto steigt beidseitig,
+aiou-Median −0,024/−0,030). Befund: die verbleibende
+Schritt-Abhängigkeit ist die EMISSIONS-FEINHEIT selbst —
+feinere Brücken-/Zonen-Strecken emittieren die
+Karten-MIKROSTRUKTUR mit (die abgeschwächte Form des
+fine-emission-Befunds: dieselbe Feinheit, die das t-Doppel
+trägt, trägt die Kompositions-Wiggle). Struktur-Gewinn und
+Geometrie-Verlust sind über die Auflösung GEKOPPELT; 0,12
+bleibt der Betriebspunkt, unters t-X2 die dokumentierte
+Auflösungs-Grenze. Rettungsweg: **Karten-Glättung auf
+Zähler-Skala VOR der Feinabtastung** (eine Glättung ENTLANG der
+Bahn erhält Pass-Versätze wie das 0,06-t-Doppel, frisst aber
+Intra-Pass-Wiggle) — eigene Pre-Reg; §7.9-Zeile im selben PR.
+Artefakte: `temp/tb-aug20/lotse-v19-*`.

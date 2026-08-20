@@ -14,6 +14,25 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Lotse v0.19: the ride economy becomes step-invariant (proven
+  byte-neutral), and the resolution ladder's second rejection names the
+  final coupling** (§14 `aug20`, pre-registered). The re-denomination —
+  per-sample emissions scaled by `step/0.12`, `MAX_RIDE_UNITS` = 0.96
+  and `RIDE_DOUBLE_MIN_GAP_UNITS` = 0.48 in xh instead of steps/samples
+  — reproduces the v0.17 candidate rows byte-identically on both roots
+  (rung 0), so it stays as a neutral foundation that makes future step
+  arms measurable at all. The re-submitted ladder rungs {0.06, 0.04}
+  fail their geometry gates again with the drift redistributed, not
+  removed (Wer +0.031, muß-2 +0.022, new retrace defects): the remaining
+  step dependence is the EMISSION fineness itself — finer bridge runs
+  emit the map's composition micro-structure along with the wanted
+  topology, so structure gain and geometry loss hang on the same
+  resolution. 0.12 stays the operating point, unter's second t-stem
+  crossing the documented resolution limit. Standing rescue: smooth the
+  map at counter scale BEFORE fine sampling (an along-path smoother
+  keeps pass offsets like the 0.06-xh t double but eats intra-pass
+  wiggle); §7.9 row updated.
+
 - **The t-stem ride autopsy dissolves the completeness gap into a
   RESOLUTION limit, and the v0.18 resolution ladder closes as an honest
   negative with the route's best structure number in hand** (§14 `aug20`,
