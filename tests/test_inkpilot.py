@@ -75,6 +75,36 @@ def test_mid_stroke_gap_is_bridged_not_trimmed() -> None:
     assert steps.max() < 8.0
 
 
+def test_ride_economy_is_step_invariant(monkeypatch) -> None:
+    from tools.inkpilot import pilot as P
+
+    # v0.19: the economy must not flip between riding and bridging when the
+    # sample step changes — same skeleton, same map, half the step: both
+    # rail pieces stay boarded, the mid gap stays bridged, and the bridged
+    # ARC share of the stroke stays put (per-sample emissions scale by
+    # step/0.12, so path totals are invariant against per-arc ride costs).
+    skel = cross_skeleton()
+    skel[20, 15:25] = False  # break the horizontal bar in the middle
+    skel[5 : 41 - 5, 20] = False  # remove the vertical bar entirely
+    xs = np.linspace(6.0, 34.0, 40)
+    stroke = np.column_stack([xs, np.full_like(xs, 20.0)])
+    shares = {}
+    for step in (0.12, 0.06):
+        monkeypatch.setattr(P, "SAMPLE_STEP_UNITS", step)
+        pg = P.PilotGraph(skel)
+        _, seq, _ = P._assign_stroke(pg, stroke, xh_px=10.0)
+        bridged = np.asarray([loc is None for loc in seq])
+        assert not bridged[0] and not bridged[-1]  # both rail pieces boarded
+        assert bridged.any()  # the gap is bridged, not trimmed
+        shares[step] = float(bridged.mean())
+    assert abs(shares[0.12] - shares[0.06]) < 0.08
+    # The double clock re-denominates to the same 0.48-xh arc.
+    monkeypatch.setattr(P, "SAMPLE_STEP_UNITS", 0.12)
+    assert P.ride_double_min_gap() == 4
+    monkeypatch.setattr(P, "SAMPLE_STEP_UNITS", 0.06)
+    assert P.ride_double_min_gap() == 8
+
+
 def test_tail_runout_extends_to_the_rail_end() -> None:
     from tools.inkpilot.pilot import run_out_tails
 
