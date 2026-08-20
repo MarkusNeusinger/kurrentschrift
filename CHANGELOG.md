@@ -14,8 +14,8 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
-- **Chain K-C: the ink-evidence mask, pre-registered from the owner's
-  "Flecken" find** (§14 `aug20` evening). The owner read the K0-Z-R
+- **Chain K-C: the ink-evidence mask, pre-registered from the author's
+  "Flecken" find** (§14 `aug20` evening). The author read the K0-Z-R
   duel page and asked whether paper specks pull the follower off the
   letters; a four-word autopsy plus a code map confirmed it for three of
   the four complaints with numbers (zwei: both w needles terminate
@@ -36,9 +36,9 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   (`--ink-evidence`) and `HarvestOptions.ink_evidence`, both
   declared-off; the bench's own mask stays frozen. Glossary:
   „Fremdtinte", „Tinten-Evidenz-Maske"; plan rows A7/K-C and the
-  owner's corridor idea A8/K-D in `tintenfolger.md` §7.3. The zwei
+  author's corridor idea A8/K-D in `tintenfolger.md` §7.3. The zwei
   fixture's hand trace was refilled (`--only word-instances`) after the
-  owner added the forgotten i-dot.
+  author added the forgotten i-dot.
 - **Chain K0-Z and K0-Z-R: the zonal rejection and the ratchet budget,
   measured to two honest negatives that carry the route's strongest
   numbers — and a two-soll-sources find** (§14 `aug20` night,

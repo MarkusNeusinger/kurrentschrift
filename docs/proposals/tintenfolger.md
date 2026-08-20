@@ -627,8 +627,8 @@ Aufwand/Risiko:
   hochfahren (Blake/Zisserman 1987; Yang et al., RA-L 2020). Erst
   sinnvoll, wenn A4 die harten Constraints liefert.
 
-- **A7 / K-C — Tinten-Evidenz-Maske (Owner-Fund „Flecken",
-  2026-08-20).** Der Owner las die K0-Z-R-Augenschein-Seite und
+- **A7 / K-C — Tinten-Evidenz-Maske (Autor-Fund „Flecken",
+  2026-08-20).** Der Autor las die K0-Z-R-Augenschein-Seite und
   fragte nach Flecken; die Autopsie bestätigte es an zwei (zwei
   Nadeln enden IM Fleck), Galoppieren (Durchschein der Rückseite,
   drei von vier Exkursionen) und die-2 (dort die eigene Marke). Der
@@ -636,7 +636,7 @@ Aufwand/Risiko:
   Coverage-Ziel; Dunkelheit trennt echte von fremden Komponenten
   vollständig (Lücke 0,38–0,74). Evidenz-Hygiene VOR jeder
   Formulierungsänderung — §14 „Kette K-C", eigene Vorregistrierung.
-- **A8 / K-D — Tinten-Korridor (Owner-Idee, 2026-08-20).** Eine
+- **A8 / K-D — Tinten-Korridor (Autor-Idee, 2026-08-20).** Eine
   Sperrzone um die erweiterte Tinte, die die Bahn nicht durchstoßen
   darf (Barriere auf dem Abstandsfeld statt weichem Zug): verbietet
   Schräg-Abkürzungen durch Gegenschleifen (unters e) und Nadeln ins

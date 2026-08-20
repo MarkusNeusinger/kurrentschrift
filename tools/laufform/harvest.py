@@ -249,7 +249,7 @@ class HarvestOptions:
     # toward the hand, no word moves beyond +0.0016. True is the v3
     # baseline; False shows the raw needles for inspection archaeology.
     trace_repair: bool = True
-    # K-C (§14 `aug20`, the owner's "Flecken" find): drop paper-grey non-main
+    # K-C (§14 `aug20`, the author's "Flecken" find): drop paper-grey non-main
     # ink components (specks, show-through) from the evidence the CHAIN is
     # pulled by — `tools.pairlab.ink_evidence`, applied once at the top of
     # `chain_word_strokes`, after `derive_word` took ruler and registration on

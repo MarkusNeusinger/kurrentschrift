@@ -461,7 +461,7 @@ class FollowWeights:
     on freezes exactly (the two-sided special case). Implies the guard;
     takes precedence over `structure_guard_two_sided`."""
     ink_evidence: bool = False
-    """K-C (§14 `aug20`, the owner's "Flecken" find): before the grid fits and
+    """K-C (§14 `aug20`, the author's "Flecken" find): before the grid fits and
     the solve, drop every non-main ink component that is paper-grey rather
     than ink-dark from the case's `skel`/`width_map`
     (`tools.pairlab.ink_evidence`) — specks, show-through of the sheet's

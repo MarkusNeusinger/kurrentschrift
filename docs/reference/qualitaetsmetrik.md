@@ -7558,16 +7558,16 @@ humanbench-Tie-Breaker, §7.9 Methodik-Zeile). Implementierung
 bleibt deklariert-off (`zone 0` byte-identisch bewiesen,
 Ratsche default False). Artefakte: `temp/tb-aug20/k0z*`.
 
-### Kette K-C `aug20` — Vorregistrierung: die Tinten-Evidenz-Maske (Owner-Fund „Flecken")
+### Kette K-C `aug20` — Vorregistrierung: die Tinten-Evidenz-Maske (Autor-Fund „Flecken")
 
 Geschrieben und committet VOR der ersten Zahl. **Anlass:** der
-Owner sah sich am Abend die K0-Z-R-Augenschein-Seite (Hand ·
+Autor sah sich am Abend die K0-Z-R-Augenschein-Seite (Hand ·
 Kette-Basis · Ratsche 0,55/1,0, 19 Dev-Wörter) an und meldete
 vier Stellen: zwei (w-Fuß: „riesiger Ausschlag weit weg von der
 Tinte", w-Eck oben Richtung Papier — „sind Flecken
 verantwortlich?"), die-2 (Kreuzung: „Punkte werden zum i-Punkt
 gezogen"), Galoppieren (i-Punkt-Ausreißer Richtung Fleck),
-unter (e→r „total falsch"). Hypothese des Owners: Fremdtinte
+unter (e→r „total falsch"). Hypothese des Autors: Fremdtinte
 zieht den Folger an → eine Maske/„weiße Zone" um die Schrift,
 außerhalb derer nichts mehr zieht.
 
@@ -7613,7 +7613,7 @@ u-Bogen zuletzt, Kette in der Mitte; Bogenlänge 1,10 xh >
 paart Bogen gegen e/r: nur Reihenfolge korrigiert 0,450 →
 0,084); r-Auslauf in unter UND Wer 0,46–0,49 xh zu kurz
 (komponierter r-Auslauf). → Composer-Auftrag e-Breite (§7.2),
-Owner-Entscheid zur Bogen-Klassifikation (eingefrorenes Lineal,
+Autor-Entscheid zur Bogen-Klassifikation (eingefrorenes Lineal,
 hier NICHT angefasst).
 
 **Mechanik (Code-Karte).** Kette und Folger lesen die Tinte an
@@ -7685,7 +7685,7 @@ reißt sie, ist die Messkette falsch, nicht die Maßnahme);
 Wort ≥ −0,003; (4) dev-19: kein Wort verliert > 0,003 dtw,
 `marks_missing + marks_spurious` je Wort nicht schlechter,
 reversed 0, Netto-Kreuzungsdefekte ≤ Basis; (5) Hand-Claim
-0 Treffer; (6) Laufzeit-Report. **Adoption: alle Gates → Owner-
+0 Treffer; (6) Laufzeit-Report. **Adoption: alle Gates → Autor-
 Go → Kette v4 (`ink_evidence=True` als Folger-Default, datierte
 Re-Baseline) und derselbe Default auf dem Harvest.**
 
@@ -7701,7 +7701,7 @@ ist die eigene, dunkle Marke; der benannte Nachfolger ist die
 **Marken-Claim-Trennung** (Körper-Evidenz ohne Marken-
 Komponenten, Marken-Striche mit ihrer eigenen), ein Eingriff
 in `_prepare_fields` je Segment, eigene Pre-Reg. Zweiter
-benannter Nachfolger, Owner-Idee vom selben Abend: **K-D
+benannter Nachfolger, Autor-Idee vom selben Abend: **K-D
 Tinten-Korridor** — eine Sperrzone um die erweiterte Tinte,
 die die Bahn nicht durchstoßen darf (Barriere auf
 `dist_raw > r`), gegen Schräg-Abkürzungen durch Gegenschleifen
@@ -7716,7 +7716,7 @@ behaltenen Tinte (300 Ziele auf weniger Pixel) — Teil der
 Maßnahme, aber `cov_rmse`-Diagnosen sind über das Flag hinweg
 nicht vergleichbar.
 
-**Lineal-Notiz (aug20 Abend):** der Owner hat den beim
+**Lineal-Notiz (aug20 Abend):** der Autor hat den beim
 Nachfahren vergessenen i-Punkt von zwei nachgeholt (live: 2
 Striche, 1161 + 34 Punkte). Refill ohne Re-Baseline per
 `fetch_fixtures --set words --only word-instances`

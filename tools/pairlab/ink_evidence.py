@@ -1,7 +1,7 @@
 """The ink-evidence mask: which ink components a word fit is allowed to see.
 
 Measure K-C of the Tintenfolger campaign (`docs/reference/qualitaetsmetrik.md`
-§14 `aug20`, the owner's "Flecken" find). The chain fit and the follower read
+§14 `aug20`, the author's "Flecken" find). The chain fit and the follower read
 the crop's ink at ONE place each (`tools.pairlab.chain._prepare_fields` via the
 case's `skel`/`width_map`), and they read ALL of it: every connected component
 of the frozen mask is a distance-field attractor AND a coverage target, so a
