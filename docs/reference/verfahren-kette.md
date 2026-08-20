@@ -64,6 +64,8 @@ rückwirkend nummeriert (Konvention Nr. 3).
 | aug19 | soll-bewusster K0-Wächter | `--structure-guard-soll`: Intervall je Klasse zwischen Init-Budget und Kompositions-Soll | GEMESSEN: 4 von 5 Gates bestehen (7 strikte dev-dtw-Gewinne, aiou nie negativ, dev-Median 0,0576 → 0,0494) — Struktur friert 107 = 107, „strikt besser" scheitert an der runden-ATOMAREN Rückweisung (unter-Protokoll); als sichere Produktions-Bahn dominiert er den zweiseitigen; Rettungsweg zonale Rückweisung (§7.9) | „Wächter als Produktions-Kette aug16“ (Nachtrag `aug19`) |
 | aug19 | **K-A marken-endständige Assembly** | `HarvestOptions.marks_last` — Diakritika hinter alle Körper-Striche (reine Ordnungs-Änderung) | **ADOPTIERT als v2** (alle Gates exakt: die vier Kollaps-Wörter −0,12 bis −0,37, alles andere byte-gleich; p90 0,236 → 0,099; der Lotse-Vorsprung gegen v1 erweist sich als Artefakt — gepaart gegen v2 Gleichstand) | „Kette K-A `aug19`“ |
 | aug19 | **K-B Zacken-Reparatur im Trace** | `HarvestOptions.trace_repair` — der geteilte §11-Detektor auf den Trace-Strichen (A1-Muster) | **ADOPTIERT als v3** (Galoppieren 0,233 → 0,040, i-Marke heilt, retrace-spurious 13 → 6, touch 25 → 21; kein Wort über +0,0016; der verlorene unter-Zonen-Match ist autopsiert eine Zufalls-Korrespondenz im er-Gekritzel) | „Kette K-B `aug19`“ |
+| aug20 | K0-Z zonale Rückweisung | `--structure-guard-zone`: Verletzungs-Orte per Positions-Diff, Anker-Pinnen im Radius, EIN Nach-Solve statt Voll-Revert (Leiter {0,55 · 1,0}) | verworfen per Gate an zwei knappen Rissen — aber die Substanz ist der größte Tinten-Gewinn der Route (Zone 1,0: 59/79 atomar verworfene Runden gerettet, Soll 107 → 102, aiou bis +0,154, dev-dtw-Median 0,0494 → 0,0472 bei komplett grünem dev-19); Zone 0 byte-identisch | „Kette K0-Z `aug20`“ |
+| aug20 | K0-Z-R Ratschen-Budget | `--structure-guard-ratchet`: das Budget ratscht nach jeder akzeptierten Runde Richtung Soll | verworfen per Gate — Ratsche+0,55 = stärkste Sprosse der Ketten-Geschichte (Soll 107 → **99**, NULL aiou-Verlierer, „ein" heilt), aber daß bleibt 2 → 3: **die daß-Autopsie findet ZWEI DIVERGIERENDE SOLL-QUELLEN** (Guard: `structure_zones` am Init = 2 Retrace · Metrik: `ductus_soll` = 1) — das „zwei Lineale"-Muster des Tages; dazu zweis dtw+0,0142-gegen-aiou+0,0920-Trade. Rettungsweg: Soll-Quellen-Autopsie, dann Wiedervorlage mit EINER Pipeline | „Kette K0-Z-R `aug20`“ |
 
 ## Stehende v4-Anwärter (Formulierungsänderungen, tintenfolger.md §7.3)
 
@@ -71,6 +73,11 @@ A2 (SDM + Dichtebewusstheit, Welle 2 — Ziele Stranding/Doppelpass,
 NICHT muß/unter) · A3 (Kreuzungen als explizite Variablen — jetzt mit
 der das/die-Höhenstapel-Evidenz aus §7.10) · A5 (Zwei-Pass-Zwang aus
 Breiten-Evidenz) · A4 (Barriere statt Veto) · A6 (GNC-Schedule) ·
-zonale Rückweisung des K0-Wächters (§7.9). NICHT wieder aufgenommen
-werden Gewichts-Sweeps der alten Formulierung — durch ①⑤⑥⑥b⑨
-erschöpfend negativ beantwortet.
+~~zonale Rückweisung des K0-Wächters~~ (gemessen `aug20`: K0-Z/K0-Z-R —
+beide per Gate verworfen, aber die Ratsche+0,55-Sprosse ist die
+stärkste der Routen-Geschichte; der stehende Weg ist die
+**Soll-Quellen-Autopsie** (Guard-`structure_zones` vs.
+Metrik-`ductus_soll` divergieren an daß um eine Retrace-Zone) und
+danach die Wiedervorlage mit EINER Soll-Pipeline, §7.9). NICHT wieder
+aufgenommen werden Gewichts-Sweeps der alten Formulierung — durch
+①⑤⑥⑥b⑨ erschöpfend negativ beantwortet.

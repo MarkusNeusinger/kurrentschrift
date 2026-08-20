@@ -7526,3 +7526,34 @@ Gates unverändert K0-Z (Basis bleibt der aug19-K0-soll-Lauf).
 Ehrliche Erwartung: Zone-1,0+Ratsche hält das daß-Gate; das
 „ein"-aiou-Gate (−0,0049) entscheidet über Adoption — es wird
 NICHT aufgeweicht.
+
+**Gemessen `aug20` nacht — verworfen per Gate; die
+daß-Autopsie findet die Wurzel eine Ebene tiefer: ZWEI
+SOLL-QUELLEN divergieren.** Die Ratsche allein (Zone 0) ist
+exakt neutral (107 = 107 — der atomare Guard bewegte sich nie
+rückwärts). **Ratsche+0,55 ist die stärkste Sprosse der
+Ketten-Geschichte: Gesamt-Soll-Abstand 107 → 99** (7 besser ·
+1 schlechter), **NULL aiou-Verlierer** (min −0,0017, „ein"
+dreht auf +0,0118), Tinten-Gewinne bis +0,131 — und reißt
+trotzdem zwei Gates: daß bleibt 2 → 3, und dev-19 zeigt zwei
++0,0142 dtw (bei aiou +0,0920 ebendort — der Tinte-gegen-
+Bahn-Trade) plus unter `retrace_missing` 1 → 2. Ratsche+1,0:
+dev-19 vollständig grün, aber 63er-Risse (daß · „ein"
+−0,0049). **Die daß-Runden-Records klären den hartnäckigen
+Riss:** Die zonal gerettete Runde ist gegen das GUARD-Soll
+völlig legal (retrace → 2; `structure_zones` zählt am
+komponierten daß-Init 2 Retrace-Zonen), aber die
+k0-METRIK rechnet mit `ductus_soll` comp.zones = **1** —
+zwei Pipelines, dieselbe Komposition, verschiedene
+Zonen-Zahl. Der Guard tut, was sein Soll sagt; die Metrik
+bestraft es. Das ist DASSELBE „zwei Lineale"-Muster, das am
+Morgen die Lotse-Soll-Quelle kostete. Rettungswege: (1)
+**Soll-Quellen-Autopsie** (welche der beiden Zählungen der
+daß-Komposition ist die richtige — Assembly-Detail oder
+Detektor-Floor?), dann die Wiedervorlage mit VEREINHEITLICHTER
+Quelle (Budget, Guard-Soll, Runden-Counts und Metrik durch
+EINE Pipeline); (2) der zwei-dtw-Trade als eigene Frage
+(+0,0142 Bahn gegen +0,0920 Tinte — ggf. ein Fall für den
+humanbench-Tie-Breaker, §7.9 Methodik-Zeile). Implementierung
+bleibt deklariert-off (`zone 0` byte-identisch bewiesen,
+Ratsche default False). Artefakte: `temp/tb-aug20/k0z*`.

@@ -433,6 +433,22 @@ class FollowWeights:
     directions: a round that LOSES init structure (the ink pull collapsing a
     small loop) is rejected exactly like one that invents it. Implies the
     one-sided guard on the CLI; here it only sharpens the comparison."""
+    structure_guard_ratchet: bool = False
+    """K0-Z-R (§14 `aug20`): after every ACCEPTED round the guard budget
+    snaps to that round's class counts, so the soll interval only ever
+    tightens — movement continues toward the soll and can never legally
+    fall back toward the original budget (the daß class of K0-Z). Only
+    meaningful with the soll guard."""
+    structure_guard_zone_units: float = 0.0
+    """K0-Z (§14 `aug20`): the ZONAL rejection radius, in x-heights. After
+    the halving retries and before the full revert, the budget violations
+    are localised (`_zone_violation_sites`), every free anchor within this
+    radius of a violation site is pinned to the previous geometry (its
+    delta bounds collapse to (0, 0); slot blocks and the global shift stay
+    free — word-wide parameters have no zone), and the round is re-solved
+    ONCE with the round's original bounds for the rest. Holds the budget →
+    the round is accepted with its non-zonal repairs intact; otherwise the
+    full revert stands. 0.0 = today's round-atomic behaviour."""
     structure_guard_soll: bool = False
     """§14 „Wächter als Produktions-Kette" (`aug19`), rescue path (c): the
     soll-aware K0 guard. Every structure class of a round must lie in the
@@ -1486,6 +1502,94 @@ def _breaks_budget(
     return _exceeds_budget(counts, budget)
 
 
+def structure_class_points(strokes_units: list[list[list[float]]]) -> dict[str, np.ndarray]:
+    """The v2.1 structure classes of one assembled trace, as POINTS per class.
+
+    The positional twin of `structure_class_counts` — same strokes, same
+    counters (`crossing_points` returns the crossing points themselves, the
+    zone classes their mids), so `len(points[k]) == counts[k]` always. The
+    K0-Z zonal rejection localises budget violations with these.
+    """
+    strokes = [np.asarray(s, dtype=float).reshape(-1, 2) for s in strokes_units]
+    strokes = [s for s in strokes if len(s) >= 2]
+    empty = np.zeros((0, 2))
+    if not strokes:
+        return {"cross": empty, "retrace": empty, "touch": empty, "overlap": empty}
+    zones = structure_zones(strokes)
+    return {
+        "cross": np.asarray(crossing_points(strokes), dtype=float).reshape(-1, 2),
+        "retrace": np.asarray(zones.retrace_mids, dtype=float).reshape(-1, 2),
+        "touch": np.asarray(zones.touch_mids, dtype=float).reshape(-1, 2),
+        "overlap": np.asarray(zones.overlap_mids, dtype=float).reshape(-1, 2),
+    }
+
+
+def _class_interval(key: str, budget: dict[str, int], soll: dict[str, int] | None, two_sided: bool) -> tuple[int, int]:
+    """The per-class acceptance interval — exactly `_breaks_budget`'s rule."""
+    b = int(budget.get(key, 0))
+    if soll is not None:
+        s = int(soll.get(key, b))
+        return min(b, s), max(b, s)
+    if two_sided:
+        return b, b
+    return 0, b
+
+
+def _unmatched_points(a: np.ndarray, b: np.ndarray, radius: float) -> tuple[np.ndarray, np.ndarray]:
+    """One-to-one nearest-first matching; returns (a-unmatched, b-unmatched)."""
+    a = np.asarray(a, dtype=float).reshape(-1, 2)
+    b = np.asarray(b, dtype=float).reshape(-1, 2)
+    if not len(a) or not len(b):
+        return a, b
+    d = np.linalg.norm(a[:, None, :] - b[None, :, :], axis=2)
+    order = np.dstack(np.unravel_index(np.argsort(d, axis=None), d.shape))[0]
+    used_a: set[int] = set()
+    used_b: set[int] = set()
+    for ai, bi in order:
+        if d[ai, bi] > radius:
+            break
+        if int(ai) in used_a or int(bi) in used_b:
+            continue
+        used_a.add(int(ai))
+        used_b.add(int(bi))
+    return a[[i for i in range(len(a)) if i not in used_a]], b[[i for i in range(len(b)) if i not in used_b]]
+
+
+# The K0-Z site matcher pairs candidate and previous-geometry events of one
+# class before naming violations; the ruler's own crossing matcher radius.
+ZONE_SITE_MATCH_RADIUS_UNITS = 0.55
+
+
+def _zone_violation_sites(
+    cand_points: dict[str, np.ndarray],
+    prev_points: dict[str, np.ndarray],
+    budget: dict[str, int],
+    soll: dict[str, int] | None,
+    two_sided: bool,
+) -> np.ndarray:
+    """K0-Z (§14 `aug20`): the trace-unit positions of the budget violations.
+
+    Per violated class: candidate and previous-geometry events are matched
+    one-to-one at the ruler radius; an over-count names the UNMATCHED
+    candidate events (the inventions), an under-count the unmatched previous
+    events (the losses). Classes inside their interval contribute nothing.
+    """
+    sites: list[np.ndarray] = []
+    for key in budget:
+        lo, hi = _class_interval(key, budget, soll, two_sided)
+        cand = cand_points.get(key, np.zeros((0, 2)))
+        n = len(cand)
+        if lo <= n <= hi:
+            continue
+        extra_cand, lost_prev = _unmatched_points(
+            cand, prev_points.get(key, np.zeros((0, 2))), ZONE_SITE_MATCH_RADIUS_UNITS
+        )
+        sites.append(extra_cand if n > hi else lost_prev)
+    if not sites:
+        return np.zeros((0, 2))
+    return np.vstack(sites)
+
+
 # ------------------------------------------------------------ the round engine
 
 
@@ -1734,6 +1838,62 @@ def follow_word_chain(
                 problem, mask = build_follow_problem(prev_problem, prev_params, round_weights)
                 params, record = _solve_round(problem, round_weights, index, mask)
                 counts = _assembled_counts(problem, params)
+            zone_units = float(weights.structure_guard_zone_units or 0.0)
+            if zone_units > 0.0 and _breaks_budget(counts, guard_budget, two_sided=two_sided, soll=guard_soll):
+                # K0-Z (§14 `aug20`): zonal rejection. Localise the violations
+                # on the FAILING candidate against the round's own previous
+                # geometry (x0 = 0 through the same assembler and counters),
+                # pin the free anchors around them to that geometry, and give
+                # the round ONE re-solve with its ORIGINAL bounds elsewhere —
+                # a bundled repair keeps its good half instead of dying whole.
+                def _assembled_points(problem_: _ChainProblem, params_: np.ndarray) -> dict[str, np.ndarray]:
+                    px_, py_ = problem_.to_pixels(params_)
+                    strokes_ = assemble_word_strokes(
+                        _stroke_polylines_px(problem_, px_, py_),
+                        traced_slots=set(fit.slots),
+                        xh=xh,
+                        registration=registration,
+                        restart_slots=restart_slots,
+                    )
+                    return structure_class_points(strokes_)
+
+                sites_units = _zone_violation_sites(
+                    _assembled_points(problem, params),
+                    _assembled_points(problem, np.zeros_like(params)),
+                    guard_budget,
+                    guard_soll,
+                    two_sided,
+                )
+                pinned: list[int] = []
+                if len(sites_units):
+                    # Sites are trace units; anchors live in the problem frame —
+                    # compare in crop px (the assembler's own inverse transform).
+                    sx = sites_units[:, 0] * xh + float(registration.get("tx", 0.0))
+                    sy = (
+                        float(registration["baseline_row"])
+                        + float(registration.get("ty", 0.0))
+                        - sites_units[:, 1] * xh
+                    )
+                    problem_z, mask_z = build_follow_problem(prev_problem, prev_params, weights)
+                    ax = problem_z.x_origin_px + problem_z.anchors_free[:, 0] * problem_z.unit_px
+                    ay = problem_z.baseline_y_px - problem_z.anchors_free[:, 1] * problem_z.unit_px
+                    radius_px = zone_units * problem_z.unit_px
+                    d = np.hypot(ax[:, None] - sx[None, :], ay[:, None] - sy[None, :])
+                    pinned = [int(i) for i in np.flatnonzero(d.min(axis=1) <= radius_px)]
+                    off = 2 + 2 * problem_z.n_blocks
+                    for ai in pinned:
+                        problem_z.bounds[off + 2 * ai] = (0.0, 0.0)
+                        problem_z.bounds[off + 2 * ai + 1] = (0.0, 0.0)
+                    if pinned:
+                        params_z, record_z = _solve_round(problem_z, weights, index, mask_z)
+                        counts_z = _assembled_counts(problem_z, params_z)
+                        if not _breaks_budget(counts_z, guard_budget, two_sided=two_sided, soll=guard_soll):
+                            problem, params, record, counts = problem_z, params_z, record_z, counts_z
+                record["structure_zonal"] = {
+                    "sites": int(len(sites_units)),
+                    "pinned": int(len(pinned)),
+                    "accepted": not _breaks_budget(counts, guard_budget, two_sided=two_sided, soll=guard_soll),
+                }
             record["structure_budget"] = dict(guard_budget)
             if guard_soll is not None:
                 record["structure_soll"] = dict(guard_soll)
@@ -1745,6 +1905,10 @@ def follow_word_chain(
                 problem, params = prev_problem, prev_params
                 stopped_early = True
                 break
+            if weights.structure_guard_ratchet:
+                # K0-Z-R: the accepted counts become the budget — the soll
+                # interval only ever tightens across rounds.
+                guard_budget = dict(counts)
         rounds.append(record)
         if record["max_anchor_motion_units"] < weights.round_eps_units:
             stopped_early = True
@@ -2299,6 +2463,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="the soll-aware K0 guard (aug19): every class may move only TOWARD the composed init's "
         "structure count, never past it, never away (implies --structure-guard)",
     )
+    parser.add_argument(
+        "--structure-guard-ratchet",
+        action="store_true",
+        help="K0-Z-R (aug20): after every accepted round the budget snaps to its class counts — "
+        "the soll interval only tightens, movement never falls back (use with --structure-guard-soll)",
+    )
+    parser.add_argument(
+        "--structure-guard-zone",
+        type=float,
+        default=0.0,
+        help="K0-Z (aug20): zonal rejection radius in x-heights — pin only the anchors around the "
+        "violating zone and re-solve once instead of rejecting the whole round (0 = round-atomic)",
+    )
     parser.add_argument("--sweep", help="NAME=v1,v2 — one arm per value of a FollowWeights field")
     parser.add_argument("--jobs", type=int, default=1, help="worker processes, pooled over CASES")
     parser.add_argument("--json", type=Path, help="write the full report here")
@@ -2325,6 +2502,8 @@ def weights_from_args(args: argparse.Namespace) -> FollowWeights:
         structure_guard=bool(args.structure_guard or args.structure_guard_two_sided or args.structure_guard_soll),
         structure_guard_two_sided=bool(args.structure_guard_two_sided),
         structure_guard_soll=bool(args.structure_guard_soll),
+        structure_guard_zone_units=float(args.structure_guard_zone),
+        structure_guard_ratchet=bool(args.structure_guard_ratchet),
     )
 
 
