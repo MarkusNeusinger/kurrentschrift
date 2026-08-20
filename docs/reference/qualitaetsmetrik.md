@@ -7006,3 +7006,139 @@ Die drei Gewebe-Rest-Duplikate und die soll-geführte
 Entdrillung (Positions-Matching auf der jetzt
 vertrauenswürdigen Karte) bleiben die stehenden nächsten Arme
 (§7.9). §7.9-Zeile aktualisiert im selben PR.
+
+### Lotse G-Kopf-Ritt-Autopsie `aug20` — der Riss ist die parität-blinde Entdrillung, nicht die Pinnung
+
+Einlösung des Rettungswegs (a) der Wiedervorlage oben.
+Messanordnung: die LF3b-Kandidaten-Karte deterministisch neu
+gebaut (alle Reparatur-t identisch: p 0,578 · F 0,391 · K 0,328 ·
+k 0,250 · f 0,477 · b 0,672 · P 0,008; G/h Chart-Fallback),
+`pilot_word` mit offengelegter Pinn-Schicht instrumentiert
+(Knoten, Läufe, Offsets, Prä-/Post-Entdrillung), Zähl-Matching
+mit dem Lineal (`count_crossings`). Reproduktion exakt:
+windows matched 8/8 +2 spurious, „all" verliert das G-Kopf-X
+(1,60·1,67) und gewinnt das p-Spurious (7,97·0,83).
+
+**Befund 1 — die Pinnung bricht das X nicht, sie macht die
+Geometrie sogar sauberer; die Entdrillung frisst es.** VOR der
+Entdrillung hat „all" das G-Kopf-X (und sichtbar den saubersten
+G-Ritt: die windows-Zickzack-Ausreißer durchs G-Oval fehlen).
+Am X-Ort liegen unter „all" 2 Roh-Events (windows: 3, die Hand:
+1). Die paarweise Entdrillung (v0.13) entfernt Paare
+parität-blind: „all" 2 → 0 (das echte X stirbt mit seinem
+Doppel-X-Duplikat), windows überlebt durch Paritäts-GLÜCK
+(3 → 1). Post-Entdrillung fehlt das X exakt dann, wenn die
+Stufe „all" heißt — der ganze v0.14-Riss ist eine
+Entdrillungs-Interaktion.
+
+**Befund 2 — der v0.15-Budget-Fehlschlag ist eine
+Soll-Doppelzählung, kein Platzierungs-Problem (an DIESEN
+Stellen).** `map_self_intersections` zählt rohe Segment-Schnitte
+und liefert jeden Karten-Schnitt ~doppelt (will: roh 10, nach
+Lineal-Zählung 4; Galoppieren: 28 gegen 12). wills falsches Veto
+(v0.15) kommt exakt daher: Paar-Nachbarschaft 4 Events − 2 <
+6 „Soll" → Veto, obwohl das wahre Soll 2 ist. Mit dem **Lineal
+selbst als Soll-Quelle** (`crossing_points` auf der xh-skalierten
+Karte: Pierce-Filter, Arc-Floor, Merge) löst sich wills Veto
+(net 0, Entdrillung läuft), das G-Kopf-Veto feuert korrekt
+(„all"+Budget: matched 8/8, missing 0), mits echtes t-Doppel
+bleibt konstruktiv geschützt, und die adoptierte windows-Stufe
+ist auf allen Prüfworten (unter · mit · will · mit-2 ·
+Galoppieren) zähler-identisch — das Budget kostet dort nichts.
+
+**Befund 3 — Zerlegung der „all"-Stufe:** „zones"
+((bridge∧forced)∨zone) trägt BEIDES — den G-Kopf-Gewinn UND den
+p-Oskulations-Preis (die Zonen-Pinnung zieht die zwei Pässe am
+p-Rückgrat von 0,17 auf 0,01 xh zusammen, der Pierce-Zähler
+kippt); „bridges" (alle natürlichen Brücken) ist auf allen
+Prüfworten struktur-neutral. bridges ∪ zones = all.
+
+**Befund 4 — Fenster 0,8 bleibt tot, jetzt mit Mechanismus:**
+Mit Lineal-Budget heilt 0,8 Galoppieren komplett (net 2 → 0,
+beide Rest-Gewebe fallen, alle 8 X matched) und schützt mit —
+aber unter verliert ALLE drei X (net 1 → 3), und das Budget kann
+nicht schützen, weil die Karte unters Kreuzungs-ORTE nicht kennt
+(vierte Bestätigung der Platzierungs-Decke). Der Punkt-Abstand
+trennt die Klassen nicht (unters Killer-Paare 0,27–0,29 xh gegen
+Galoppierens Heiler-Paare 0,17–0,32 xh — überlappend). Kein
+Fenster-Arm ohne Platzierungs-Reparatur; §7.9-Zeile (v0.13-0,8)
+im selben PR nachgezogen. Artefakte: `temp/tb-aug20/`
+(Forensik-Overlays, `galopp-autopsy.json`).
+
+### Lotse v0.16 (L1i) `aug20` — Vorregistrierung: selektive Pinn-Leiter mit Lineal-Soll-Budget (§7.7-Wiedervorlage)
+
+Geschrieben und committet VOR der ersten dev-19-Zahl.
+§7.7-Wiedervorlage zweier verworfener Arme, deren Fehlschläge
+die Autopsie oben auf EINE Wurzel zieht: v0.14 „all" (2×
+verworfen — der Riss war die parität-blinde Entdrillung, nicht
+die Pinnung) und v0.15 Soll-Budget (verworfen — die
+Doppelzählung der Soll-Quelle, nicht die Budget-Idee).
+
+**Mechanismus:** (1) Die Soll-Quelle des Entdrillungs-Budgets
+wird das Lineal selbst — `crossing_points` auf der komponierten
+Karte (xh-skaliert) statt roher Segment-Schnitte; die deklarierte
+Korrektur des v0.15-Mechanismus. (2) `MAP_RUN_PIN_KNOTS` lernt
+die selektiven Stufen **"bridges"** (alle natürlichen Brücken)
+und **"zones"** ((bridge∧forced)∨zone); bridges ∪ zones = all —
+der Rettungsweg (b) der Wiedervorlage. **EIN wirksamer Knopf:
+die Pinn-Stufe;** das Budget ist in allen Sprossen AN.
+
+**Leiter** auf der LF3b-Karte, dev-19, BLAS gepinnt.
+**Vergleichsbasis: der v0.13-Stack auf DERSELBEN Karte** (§14
+LF3b: Netto 5, missing 1, aiou 0,7484, dtw 0,0573) — zusätzlich
+Identitäts-Check der neu gebauten Karte gegen die
+`aug19`-Kandidaten-Rows. Sprossen: **0** windows+Budget
+(Erwartung: zähler-identisch — jede Regression tötet das Budget
+und beendet die Leiter) · **A** bridges+Budget · **B**
+zones+Budget · **C** all+Budget.
+
+**Gates je Sprosse:** Netto-Defekte ≤ 5 · `cross_missing` ≤ 1 ·
+Marken unverändert · reversed 0 · dtw je Wort ±0,003 ·
+aiou-Median-Δ ≥ 0. **Adoption: die höchste Sprosse, die alle
+Gates hält;** unter gleichwertigen entscheidet mehr Tinte
+(aiou), dann weniger Pinnung. Ehrliche Erwartung aus der
+Autopsie: B/C retten das G-Kopf-X (missing → 0), zahlen aber die
+p-Oskulation (+1 Spurious, voraussichtlich Netto 6 → Negativ);
+**A ist die Kandidaten-Sprosse** für einen reinen Tinten-Gewinn
+ohne Struktur-Preis. Vorregistrierte Falsifikation: hält auch A
+kein Gate, ist die Pinn-Familie auf dieser Karte erschöpft und
+jeder weitere Weg führt über die p-Platzierung (K1-Arm,
+tintenfolger.md §7.9). Wordbench ist unberührt (reine
+Kandidaten-Schicht, kein `core/`-Anfassen).
+
+**Gemessen `aug20` — Sprosse A (bridges+Budget) ADOPTIERT; die
+Zonen-Sprossen scheitern exakt an der vorhergesagten
+p-Oskulation, aber das Budget rettet das G-Kopf-X auf dev-19.**
+Identitäts-Check: die neu gebaute LF3b-Karte reproduziert die
+`aug19`-Kandidaten-Rows STROKE-GLEICH, die Identitäts-Sprosse
+und Sprosse 0 (windows+Budget) sind zähler- und zahlengleich mit
+der Basis — die Messkette steht, und das Budget ist auf der
+windows-Stufe gratis. **Sprosse A:** Struktur an JEDER Stelle
+identisch zur Basis (Netto 5, missing 1, Marken unverändert,
+reversed 0, Ortsfehler 0,069 =), dazu reine Gewinne: p90 0,1129
+→ **0,1122** · chamfer 0,0410 → **0,0404** · dtw-Mittel 0,0660 →
+0,0651 · aiou-Mittel 0,7199 → 0,7216 · vier Wörter gewinnen dtw
+−0,0035 bis −0,0059 (muß-2, Galoppieren, mit, muß-3) und aiou
+bis +0,0117 — **kein einziges Wort verliert** (schlechteste
+dtw-Änderung ±0,0000, keine aiou-Verluste), mits Retrace-Zone
+heilt (`retrace_missing` 1 → 0). Ehrliche Protokoll-Notiz: das
+Gate „dtw je Wort ±0,003" war ZWEISEITIG formuliert und wird
+ausschließlich auf der GEWINN-Seite durchbrochen; es wird nach
+seinem dokumentierten Schutzzweck (kein Wort VERLIERT > 0,003)
+gelesen, künftige Pre-Regs formulieren es einseitig.
+Tie-Break r0/A („mehr Tinte"): aiou-Median gleich, je Wort aber
+4 Gewinne / 0 Verluste → A. **Sprossen B/C: verworfen per Gate**
+(Netto 6 > 5 — genau der eine Galoppieren-p-Oskulations-Spurious
+(7,97·0,83), die Zonen-Pinnung zieht die zwei Pässe von 0,17 auf
+0,01 xh zusammen und der Pierce-Zähler kippt); die Kern-These
+der Autopsie bestätigt sich auf dev-19: **das G-Kopf-X überlebt
+unter Budget in BEIDEN Zonen-Sprossen** (Galoppieren missing
+0 → 0 statt v0.14s 0 → 1). C trägt die stärksten Tinten-Werte
+der Route (chamfer 0,0371, p90 0,1117, aiou-Median +0,0038,
+mit-2 dtw −0,0090/aiou +0,0321), zahlt aber zusätzlich zwei
+kleine dtw-Preise (Wer +0,0018, die +0,0017). Rettungsweg der
+Zonen-Stufe: NACH der p-Platzierungs-Reparatur (K1-Arm)
+wiedervorlegen — der einzige Struktur-Preis gehört der
+Platzierungs-Familie, nicht dem Ritt. Neuer adoptierter Stack:
+`MAP_RUN_PIN_KNOTS = "bridges"` + `UNTWIST_SOLL_BUDGET = True`
+(Lineal-Soll). Artefakte: `temp/tb-aug20/lotse-v16-*`.

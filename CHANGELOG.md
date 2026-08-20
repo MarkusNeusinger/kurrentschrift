@@ -14,6 +14,33 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The G head ride autopsy resolves the v0.14 tear, and Lotse v0.16
+  adopts the "bridges" pin stage with the ruler-soll budget** (§14
+  `aug20`, pre-registered before the first dev-19 number). The autopsy
+  found the tear one layer lower than every prior hypothesis: BEFORE the
+  untwist, the "all" stage keeps the Galoppieren G head crossing and
+  rides visibly cleanest — the parity-blind pairwise untwist then
+  removes the real X together with its weave duplicate (2 → 0 where the
+  hand writes 1; "windows" survived only by parity luck, 3 → 1). The
+  v0.15 budget failure dissolves the same way: the raw segment
+  enumeration lists every map crossing ~twice (will: 10 raw vs 4
+  counted), which is exactly will's false veto — with the frozen
+  crossing detector itself as the soll source (pierce filter, arc
+  floor, merge) the veto arithmetic comes out right at every probed
+  site. The pre-registered four-rung ladder then adopted
+  `MAP_RUN_PIN_KNOTS="bridges"` + `UNTWIST_SOLL_BUDGET=True`:
+  structure counter-identical to the v0.13 base at every site on both
+  the LF3b candidate map and the frozen root, no losing word, p90
+  0.1129 → 0.1122, chamfer 0.0410 → 0.0404, four words gain
+  −0.0035..−0.0059 dtw and up to +0.0117 aiou, mit's retrace zone
+  heals. The zones/all rungs fail their net gate by exactly the one
+  Galoppieren p osculation (+1 spurious, placement family) while the
+  budget keeps the G head X — their re-submission waits behind the
+  K1 p placement arm; the 0.8 untwist window stays rejected with
+  mechanism (unter loses all three X because the map does not know
+  its crossing places — fourth confirmation of the placement
+  ceiling). New glossary entry: Lineal-Soll-Budget.
+
 - **The Laufform night: all three owner-flagged map-form sites (G, W, p)
   resolve into ONE layer, and the topology repair becomes the first
   adopted Laufform arm** (pre-registered §14 `aug19` arms LF1/LF2/LF3/

@@ -47,7 +47,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
-- **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
+- **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4
 - **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
@@ -1267,12 +1267,31 @@ darum PAARWEISE geschehen, damit die Parität die topologisch nötige
 Kreuzung stehen lässt (die v0.12-Sehne entfernte alle und das X
 mit). Je Ereignis-Paar wird der Wiggle-Bogen (die Seite mit der
 größeren Sehnen-Abweichung) an der Sehne der beiden Schnittpunkte
-GESPIEGELT — richtungserhaltend, lokal, geloggt. Gemessene Grenze:
+GESPIEGELT — richtungserhaltend, lokal, geloggt. Gemessene Grenzen:
 Geometrie allein trennt ein Gewebe nicht von einem echten ENGEN
-Doppel (mits t-Paar, 0,07 xh — das 0,8-Fenster tötete es); der
-benannte Diskriminator ist das Soll (soll-budgetierte Entdrillung,
-§7.9). *Technisch:* `tools/inkpilot/pilot.py::untwist_strokes` →
-qualitaetsmetrik.md §14 „Lotse v0.13/v0.14 `aug19`"
+Doppel (mits t-Paar, 0,07 xh — das 0,8-Fenster tötete es), und die
+Paar-Entfernung ist PARITÄT-BLIND — die `aug20`-Autopsie zeigt sie
+am Galoppieren-G-Kopf das echte X mitsamt seinem Duplikat fressen
+(2 → 0, wo die Hand 1 schreibt); der benannte Diskriminator ist das
+Lineal-Soll-Budget (eigener Eintrag). *Technisch:*
+`tools/inkpilot/pilot.py::untwist_strokes` → qualitaetsmetrik.md §14
+„Lotse v0.13/v0.14 `aug19`", „G-Kopf-Ritt-Autopsie `aug20`"
+
+**Lineal-Soll-Budget** *(ruler-soll budget)* — die `aug20`-Korrektur
+der soll-budgetierten Entdrillung (v0.15/v0.16): Ein Entdrillungs-Paar
+darf nur fallen, wo die Ereignis-Nachbarschaft danach nicht unter ihr
+Karten-Soll rutscht — und das Soll zählt der GEFRORENE
+Kreuzungs-Detektor des Lineals selbst (`crossing_points` auf der
+xh-skalierten Karte: Durchstoß-Kriterium, Arc-Floor, Merge) statt
+roher Segment-Schnitte. Die Autopsie fand die rohe Zählung jeden
+Karten-Schnitt ~doppelt listen (will: 10 roh gegen 4 gezählt) — exakt
+wills falsches v0.15-Veto; mit Lineal-Zählung löst sich das Veto, das
+G-Kopf-Veto feuert korrekt, mits echtes t-Doppel bleibt geschützt.
+Gehört zur v0.16-Leiter der selektiven Pinn-Stufen (`bridges` ·
+`zones`; bridges ∪ zones = all). *Technisch:*
+`tools/inkpilot/pilot.py::map_self_intersections` (Soll-Quelle),
+`::pin_run_mask` (Stufen), `UNTWIST_SOLL_BUDGET` →
+qualitaetsmetrik.md §14 „Lotse v0.16 `aug20`"
 
 **Doppel-X-Duplikat** — die seit Lotse v0.11 dominante
 Rest-Spurious-Klasse des Kreuzungszählers (4 der 6 Zählungen):

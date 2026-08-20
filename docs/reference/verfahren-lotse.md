@@ -16,29 +16,34 @@
   Prior" radikaler als die Kette: direkt auf der Tinten-Mitte fahren,
   den Duktus nur an Entscheidungsstellen als KARTE fragen.
 
-## Aktueller Stand: v0.13 (2026-08-19)
+## Aktueller Stand: v0.16 (2026-08-20)
 
 Adoptierte Konstanten (`tools/inkpilot/pilot.py`):
 `TAIL_RUNOUT_MAX_UNITS` = 1,0 (Schienen-Auslauf) ·
 `RIDE_DOUBLE_MAP_PRIORITY` = True (v0.5) ·
 `RIDE_DOUBLE_ZONE_MARGIN_UNITS` = 0,35 (v0.7) ·
 `MAP_CROSSING_WINDOW_UNITS` = 0,35 + `MAP_CROSSING_PIN` = True (v0.9) ·
-`MAP_RUN_PIN_KNOTS` = "windows" + `PIN_KNOT_PLATEAU_UNITS` = 0,35
-(v0.11 — Knoten-Anker mit Plateau-Feld in den Fenster-Läufen) ·
-`UNTWIST_WINDOW_UNITS` = 0,5 (v0.13 — paarweise Entdrillung der
-Gewebe-Duplikate). Zahlen (dev-19, §14 „Lotse v0.13 aug19“, lokale
-Basis): dtw 0,0585 med · p90 **0,113** ·
+`MAP_RUN_PIN_KNOTS` = **"bridges"** + `PIN_KNOT_PLATEAU_UNITS` = 0,35
+(v0.11/v0.16 — Knoten-Anker mit Plateau-Feld in Fenster-Läufen UND
+allen natürlichen Brücken) · `UNTWIST_WINDOW_UNITS` = 0,5 (v0.13 —
+paarweise Entdrillung) · `UNTWIST_SOLL_BUDGET` = True (v0.16 —
+**Lineal-Soll-Budget**: die Entdrillung darf keine Nachbarschaft
+unter ihr Karten-Soll ziehen, gezählt vom gefrorenen
+Kreuzungs-Detektor auf der Karte). Zahlen (dev-19, gefrorener Root,
+§14 „Lotse v0.16 aug20"): dtw 0,0585 med · p90 **0,1122** ·
 **Netto-Kreuzungsdefekte 6** (missing 1 — nur unters letzter
-Ritt-Rest; wills Duplikat entdrillt) · Kreuzungs-Ortsfehler-Median
-**0,066 xh** · `marks_missing` 0 · aiou 0,740. Rest-Spurious:
-3 Gewebe-Duplikate über dem 0,5-Fenster (Galoppieren, mit-2) —
-warten auf die soll-budgetierte Entdrillung. **Paarung seit den
+Ritt-Rest) · Kreuzungs-Ortsfehler-Median **0,066 xh** ·
+`marks_missing` 0 · aiou 0,740 — Struktur WORTGLEICH zu v0.13,
+kein Wort verliert (beste dtw-Gewinne −0,0035..−0,0059: muß-2,
+Galoppieren, mit, muß-3; aiou bis +0,0117). Rest-Spurious:
+Gewebe-Duplikate über dem 0,5-Fenster — warten auf die
+Platzierungs-Reparatur der Karte (dann Fenster-Wiedervorlage). **Paarung seit den
 Kette-v2/v3-Re-Baselines (`aug19`, Assembly-Ordnung +
-Trace-Reparatur): Δ-Median +0,0016, Sign 12:7 — die Kette führt
-erstmals knapp auf Median (0,0491) und p90 (0,089 gegen 0,113)**
-(der −24-%/−18-%-Vorsprung gegen v1 bestand fast vollständig aus
+Trace-Reparatur): die Kette führt knapp auf Median (0,0491 gegen
+0,0585) und p90 (0,089 gegen 0,112 nach v0.16)** (der
+−24-%/−18-%-Vorsprung gegen v1 bestand fast vollständig aus
 deren Kandidaten-Schicht-Artefakten); der Lotse behält Struktur
-(7 gegen 21 Netto-Defekte), aiou (0,743 gegen 0,699) und den
+(6 gegen 21 Netto-Defekte), aiou (0,743 gegen 0,699) und den
 Kreuzungs-Ortsfehler (0,066 gegen 0,083 xh).
 
 ## Ledger (Versionen; Belege in §14 „Route Lotse …“)
@@ -62,6 +67,8 @@ Kreuzungs-Ortsfehler (0,066 gegen 0,083 xh).
 | aug19 | v0.14 | „all" + Entdrillung — Zonen-Rides/Brücken mit Knoten-Plateau-Pinnung | verworfen per Gate (Netto 8 > 6: G-Kopf-X stirbt an der formfremden G-Karte, p erfindet eines) — aber aiou +0,012 und der stärkste Sichtbeweis der Runde (das G fast hand-gleich geritten); Wiedervorlage nach den Karten-Form-Autorenschritten |
 | aug19 | v0.15 (L1h) | `UNTWIST_SOLL_BUDGET` — Entdrillung nur, wo die Nachbarschaft nicht unter ihr Karten-Soll fällt | verworfen (das Budget erbt die Karten-Platzierungsfehler: unters echtes Paar stirbt trotz Budget, wills Fix wird fälschlich vetiert — dritte Bestätigung der Karten-Form-Decke; Wiedervorlage mit v0.14 nach den Autorenschritten) |
 | aug19 | Wiedervorlage v0.14 auf der LF3b-Karte | `MAP_RUN_PIN_KNOTS` = "all" auf der topologie-reparierten Kandidaten-Karte (§14 LF3b) | verworfen per Gate (Netto 7 > 5, Riss WIEDER Galoppieren) — **die Karten-Form-These der „all"-Stufe ist damit widerlegt**: der Bruch liegt im Ritt des dichten G-Knoten-Komplexes; Tinten-Gewinne erneut bestätigt (aiou +0,004, p90 −0,001, kein dtw-Verlierer) → G-Kopf-Ritt-Autopsie, dann selektive Pinn-Stufe |
+| aug20 | G-Kopf-Ritt-Autopsie *(Befund, kein Arm)* | instrumentierte Pinn-Schicht + Entdrillungs-Forensik auf der stroke-gleich reproduzierten LF3b-Karte | **der Riss ist die parität-blinde ENTDRILLUNG, nicht die Pinnung** (vor der Entdrillung hat „all" das G-Kopf-X und den sichtbar saubersten Ritt; die Paar-Spiegelung frisst echtes X + Duplikat, 2 → 0 wo die Hand 1 schreibt); v0.15s Fehlschlag = Soll-DOPPELZÄHLUNG (will roh 10 gegen wahre 4); 0,8-Fenster erneut tot mit Mechanismus (unter verliert alle drei X — Platzierungs-Decke, 4. Bestätigung) |
+| aug20 | v0.16 (L1i) | selektive Pinn-Leiter (`bridges` · `zones` · `all`) mit **Lineal-Soll-Budget** (§7.7-Wiedervorlage v0.14+v0.15; Soll-Quelle = der gefrorene Kreuzungs-Detektor auf der Karte) | **adoptiert "bridges"+Budget** (Struktur stellen-identisch zur Basis, kein Wort verliert; p90 0,1129 → 0,1122, chamfer 0,0410 → 0,0404, vier Wörter −0,0035..−0,0059 dtw, mits Retrace heilt); zones/all verworfen per Gate (Netto 6 > 5 — exakt die eine Galoppieren-p-Oskulation; **das G-Kopf-X überlebt dort unter Budget**) → Zonen-Stufe nach dem K1-p-Platzierungs-Arm wiedervorlegen |
 
 Benannter Fehlermodus der Route: **Junction-Pinch** (Glossar) — die
 v0.7/v0.8/v0.9-Kette ist seine vollständige Abarbeitung; seit v0.11
@@ -70,23 +77,24 @@ Rest-Spurious-Klasse.
 
 ## Offene Blöcke
 
-- **Rest-Duplikate** (3 Gewebe über dem 0,5-Fenster): die
-  paarweise Entdrillung (v0.13) heilt wills Duplikat; das weite
-  Fenster (0,8) scheiterte am Diskriminator, das Soll-BUDGET
-  (v0.15) an den Karten-Platzierungsfehlern — der benannte Weg
-  ist seit `aug19` spät die **soll-geführte Entdrillung mit
-  POSITIONS-Matching auf der vertrauenswürdigen LF3b-Karte**
-  (§7.9, eigene Pre-Reg).
-- **„all"-Stufe (v0.14)**: zweimal gemessen, zweimal per Gate
-  verworfen — und die zweite Messung (`aug19` spät, auf der
-  topologie-reparierten LF3b-Karte) hat die Karten-Form-These
-  WIDERLEGT: die Struktur kippt erneut exakt am Galoppieren-
-  G-Knoten-Komplex, obwohl die Karte dort jetzt chart-sauber
-  ist. Die Tinten-Gewinne bestätigen sich in beiden Messungen
-  (aiou +0,012 bzw. +0,004, kein dtw-Verlierer). Nächster
-  Schritt: **G-Kopf-Ritt-Autopsie unter „all"**, danach ggf.
-  eine selektive Pinn-Stufe (Brücken und Zonen-Rides getrennt —
-  neuer Mechanismus, eigene Pre-Reg).
+- **Rest-Duplikate** (Gewebe über dem 0,5-Fenster): das
+  Lineal-Soll-Budget ist seit v0.16 adoptiert, aber das FENSTER
+  bleibt 0,5 — die `aug20`-Nachmessung zeigt 0,8 auch MIT Budget
+  tot (Galoppieren würde komplett heilen, unter verliert alle
+  drei X, weil die Karte unters Kreuzungs-ORTE nicht kennt;
+  Punkt-Abstand trennt nicht). Weg: erst die
+  Platzierungs-Reparatur der Karte (K1-p-Arm, e→r), dann das
+  Fenster wiedervorlegen (§7.9).
+- **Zonen-Stufe** (der Rest der „all"-Familie): die
+  `aug20`-Autopsie hat den v0.14-Riss aufgelöst (parität-blinde
+  Entdrillung, nicht die Pinnung) und v0.16 hat „bridges"+Budget
+  adoptiert; „zones"/„all" scheitern nur noch an EINEM
+  Struktur-Preis — der Galoppieren-p-Oskulation (die
+  Zonen-Pinnung zieht die zwei Pässe von 0,17 auf 0,01 xh
+  zusammen, der Pierce-Zähler kippt; Platzierungs-Familie).
+  Das G-Kopf-X überlebt dort unter Budget, die Tinten-Werte
+  wären die stärksten der Route (chamfer 0,0371, aiou-Median
+  +0,0038). Wiedervorlage NACH dem K1-p-Platzierungs-Arm.
 - **Karten-Form-Klasse** (Katalog nach der Owner-Sichtrunde `aug19`,
   Karten-Overlays; **präzisiert im späten Nachtrag**, §14 v0.15):
   überwiegend eine **Laufform-Lücke, kein Chart-Fehler** — 43 von 62
