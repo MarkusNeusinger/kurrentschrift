@@ -12,6 +12,15 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Fixed
+
+- **`k0eval` refuses an empty scoring set instead of quietly reporting
+  0 words.** When `ductus_soll` yields no targets (missing wordlab
+  deps, broken fixture cases), the run would have continued into a
+  meaningless evaluation — the soll distance is the core metric. The
+  guard `scoring_ids` now fails fast with a clear error, pinned by a
+  unit test.
+
 ### Changed
 
 - **Four durable working rules lifted from the 2026-08-21 campaign
