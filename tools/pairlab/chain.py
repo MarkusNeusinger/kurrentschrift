@@ -44,6 +44,7 @@ from typing import Any
 
 import numpy as np
 from scipy.ndimage import distance_transform_edt, gaussian_filter
+from scipy.ndimage import label as label_regions
 from scipy.optimize import minimize
 from scipy.spatial import cKDTree
 
@@ -77,6 +78,7 @@ from tools.pairlab.analyze import (
     _generate_connector,
 )
 from tools.pairlab.landmarks import landmark_crossings, nearest_unique_point, skeleton_branch_points
+from tools.pairlab.trace import diacritic_stroke_units
 from tools.wordlab.cases import WordCase
 from tools.wordlab.derive import WordDeriveResult, derive_word
 
@@ -198,6 +200,14 @@ CHAIN_MAX_ITER = int(os.environ.get(CHAIN_MAX_ITER_ENV) or CHAIN_MAX_ITER_DEFAUL
 # Radius: "on the same ridge" — the pooled hairline's mask diameter is
 # ~0.16 xh, so two centerlines within 0.15 xh are inside one drawn stroke.
 CHAIN_OVERLAP_RADIUS_UNITS = 0.15
+# K-E stage 1 (§14 `aug21`, the mark-claim separation): how far a mark
+# stroke's composed init reaches to claim its dark ink component. The ruler's
+# own mark-match radius (`tools/tracebench/frames.py` MARK_MATCH_RADIUS_UNITS,
+# tintenfolger.md §2.3), mirrored rather than imported — the bench is the
+# ruler and a measurement fit must not import it; equality is pinned by a
+# test. NOT a tuning knob: a claim is the same question as a mark match
+# ("does this ink belong to that diacritic"), so it uses the same answer.
+MARK_CLAIM_RADIUS_UNITS = 0.6
 # Seam exemption: adjacent segments legitimately share ink near their common
 # seam — §5's measured stub-replacement band is 0.2–0.4 xh per side, so the
 # band's upper edge is exempt. Structural (by init arc distance to the seam
@@ -770,6 +780,15 @@ class _ChainProblem:
     redo that correspondence against the SAME ink, which is why the array is
     carried rather than looked up again. None whenever the caller supplied no
     skeleton (the synthetic field stacks)."""
+    mark_fields: list[dict] = field(default_factory=list)
+    """K-E stage 1 (§14 `aug21`): one field stack per CLAIMED mark component —
+    `dist_raw/dist_smooth/width_raw/width_smooth/cov_pts` plus the claiming
+    stroke's `(seg, start)` key. Empty = the measure is off and every code
+    path below is byte-identical to before it existed."""
+    field_of_sample: np.ndarray | None = None
+    """(n_s,) field class of every sample — 0 = body, k+1 = `mark_fields[k]`.
+    None whenever `mark_fields` is empty, which is what keeps the hot path's
+    single-field lookups untouched by default."""
 
     # ------------------------------------------------------------------ mapping
 
@@ -824,6 +843,62 @@ class _ChainProblem:
         grad[2 + 2 * nb :] = (g_free if delta_extra is None else g_free + delta_extra).ravel()
         return grad
 
+    def _field_lookup(self, name: str, px: np.ndarray, py: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Per-sample bilinear `(value, d/dx, d/dy)` of one field, class-aware.
+
+        With `field_of_sample` unset this is exactly the single-field lookup
+        every solve before K-E ran; with it, each sample reads the stack of
+        ITS class — body or its claimed mark component — and nothing else.
+        """
+        if self.field_of_sample is None:
+            return _bilinear_with_grad(getattr(self, name), px, py)
+        v, vx, vy = np.zeros(len(px)), np.zeros(len(px)), np.zeros(len(px))
+        for k in range(len(self.mark_fields) + 1):
+            rows = self.field_of_sample == k
+            if not rows.any():
+                continue
+            arr = getattr(self, name) if k == 0 else self.mark_fields[k - 1][name]
+            v[rows], vx[rows], vy[rows] = _bilinear_with_grad(arr, px[rows], py[rows])
+        return v, vx, vy
+
+    def _field_values(self, name: str, px: np.ndarray, py: np.ndarray) -> np.ndarray:
+        """`_field_lookup` without the gradient — the report path's raw read."""
+        if self.field_of_sample is None:
+            return bilinear(getattr(self, name), px, py)
+        v = np.zeros(len(px))
+        for k in range(len(self.mark_fields) + 1):
+            rows = self.field_of_sample == k
+            if rows.any():
+                v[rows] = bilinear(getattr(self, name) if k == 0 else self.mark_fields[k - 1][name], px[rows], py[rows])
+        return v
+
+    def _coverage_assignment(self, pts: np.ndarray, tree: cKDTree) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """`(distance, nearest GLOBAL sample index, target point)` per coverage target.
+
+        With `field_of_sample` unset: the historical one-pot query against the
+        shared tree, byte-identical. With it (K-E): every class's targets query
+        only that class's samples — a mark component can no longer drag the
+        nearest BODY sample to itself, and body ink cannot claim a mark stroke.
+        """
+        if self.field_of_sample is None:
+            cdist, cidx = tree.query(self.cov_pts)
+            return cdist, cidx, self.cov_pts
+        parts: list[tuple[np.ndarray, np.ndarray, np.ndarray]] = []
+        for k in range(len(self.mark_fields) + 1):
+            cov = self.cov_pts if k == 0 else self.mark_fields[k - 1]["cov_pts"]
+            rows = np.flatnonzero(self.field_of_sample == k)
+            if not len(cov) or not len(rows):
+                continue
+            d, i = cKDTree(pts[rows]).query(cov)
+            parts.append((d, rows[i], cov))
+        if not parts:
+            return np.zeros(0), np.zeros(0, dtype=int), np.zeros((0, 2))
+        return (
+            np.concatenate([p[0] for p in parts]),
+            np.concatenate([p[1] for p in parts]),
+            np.vstack([p[2] for p in parts]),
+        )
+
     def _fold_samples(self, g_px: np.ndarray, g_py: np.ndarray) -> np.ndarray:
         """Sample-space forces → free-anchor forces (samples → plan → free)."""
         g_plan = np.column_stack(
@@ -857,7 +932,7 @@ class _ChainProblem:
         n_s = len(px)
 
         # --- geometry: chain centerline on the skeleton (+ out-of-crop pull) ---
-        d, d_dx, d_dy = _bilinear_with_grad(self.dist_smooth, px, py)
+        d, d_dx, d_dy = self._field_lookup("dist_smooth", px, py)
         ox, oy = self.out_of_crop(px, py)
         e_geo_field = float(np.mean(d**2)) / unit_sq
         e_crop = float(np.mean(ox**2 + oy**2)) / unit_sq
@@ -873,7 +948,7 @@ class _ChainProblem:
             samples["crop"] = (2.0 * ox / (n_s * unit_sq), 2.0 * oy / (n_s * unit_sq))
 
         # --- width: letter samples only (the connector has no measurement) ---
-        wm, w_dx, w_dy = _bilinear_with_grad(self.width_smooth, px, py)
+        wm, w_dx, w_dy = self._field_lookup("width_smooth", px, py)
         wr = (wm - self.sw_px) * self.width_mask
         n_w = max(1.0, float(self.width_mask.sum()))
         e_wid = float(np.sum(wr**2)) / (n_w * unit_sq)
@@ -890,12 +965,12 @@ class _ChainProblem:
         # One tree per evaluation, shared with the overlap term below — the
         # points are identical, and the build is the O(n log n) part.
         tree = cKDTree(pts)
-        cdist, cidx = tree.query(self.cov_pts)
-        n_cov = max(1, len(self.cov_pts))
+        cdist, cidx, cov_all = self._coverage_assignment(pts, tree)
+        n_cov = max(1, len(cov_all))
         rho, dscale = _coverage_huber(cdist, self.cov_cap_px)
         e_cov = float(np.mean(rho)) / unit_sq
         e_cov_raw = float(np.mean(cdist**2)) / unit_sq
-        diff = pts[cidx] - self.cov_pts
+        diff = pts[cidx] - cov_all
         safe = np.where(cdist > 0.0, cdist, 1.0)
         g_cov = np.zeros((n_s, 2))
         np.add.at(g_cov, cidx, (dscale / safe)[:, None] * diff / (n_cov * unit_sq))
@@ -1133,8 +1208,9 @@ class _ChainProblem:
         _, _, _, deltas = self.unpack(params)
         px, py = self.to_pixels(params)
         ox, oy = self.out_of_crop(px, py)
-        d_eff = bilinear(self.dist_raw, px, py) + np.hypot(ox, oy)
-        cdist, cidx = cKDTree(np.column_stack([px, py])).query(self.cov_pts)
+        d_eff = self._field_values("dist_raw", px, py) + np.hypot(ox, oy)
+        pts = np.column_stack([px, py])
+        cdist, cidx, cov_all = self._coverage_assignment(pts, cKDTree(pts))
 
         segments: list[ChainSegment] = []
         for spec, (a0, a1), (s0, s1) in zip(self.specs, self.anchor_slices, self.sample_slices, strict=True):
@@ -1153,7 +1229,7 @@ class _ChainProblem:
             if win is None:
                 n_cov_local, cov_rmse_local = n_cov, cov_rmse
             else:
-                sel_local = sel & (self.cov_pts[:, 0] >= win[0]) & (self.cov_pts[:, 0] <= win[1])
+                sel_local = sel & (cov_all[:, 0] >= win[0]) & (cov_all[:, 0] <= win[1])
                 n_cov_local = int(sel_local.sum())
                 cov_rmse_local = float(np.sqrt(np.mean(cdist[sel_local] ** 2))) if n_cov_local else 0.0
             seg_deltas = deltas[a0:a1]
@@ -1229,6 +1305,7 @@ def build_chain_problem(
     overlap_radius_units: float = CHAIN_OVERLAP_RADIUS_UNITS,
     max_anchor_delta: float | None = None,
     connector_max_delta: float | None = None,
+    mark_fields: Sequence[dict] | None = None,
 ) -> _ChainProblem:
     """Assemble the chain optimisation problem. Pure: no I/O, no DB, no case.
 
@@ -1491,6 +1568,30 @@ def build_chain_problem(
                 near = np.hypot(*(s_xy0[j0:j1] - seam_pt).T) < CHAIN_OVERLAP_SEAM_EXEMPT_UNITS
                 overlap_exempt[j0:j1] |= near
 
+    # ---- K-E stage 1: which samples read which field stack --------------------
+    # A claimed mark stroke is one PEN stroke of one letter segment, named by
+    # `(seg, start)` — the very key `respec_from_solution` carries verbatim, so
+    # the mapping survives every re-linearising round. A claim whose stroke the
+    # plan does not know (a degenerate spec) is dropped loudly rather than
+    # silently misassigned.
+    kept_mark_fields: list[dict] = []
+    field_of_sample: np.ndarray | None = None
+    for mf in mark_fields or ():
+        i = int(mf["seg"])
+        if not (0 <= i < len(specs)):
+            continue
+        plan_row = plan_slices[i][0] + int(mf["start"])
+        if plan_row not in stroke_starts_plan:
+            continue
+        g = stroke_starts_plan.index(plan_row)
+        chosen = (seg_of_sample == i) & (stroke_of_sample == g)
+        if not chosen.any():
+            continue
+        if field_of_sample is None:
+            field_of_sample = np.zeros(n_s, dtype=int)
+        kept_mark_fields.append(mf)
+        field_of_sample[chosen] = len(kept_mark_fields)
+
     crop_h, crop_w = int(crop_shape[0]), int(crop_shape[1])
     max_shift_units = float(max(crop_h, crop_w)) / unit_px
     letter_cap = MAX_ANCHOR_DELTA if max_anchor_delta is None else float(max_anchor_delta)
@@ -1553,6 +1654,8 @@ def build_chain_problem(
         seg_of_sample=seg_of_sample,
         stroke_of_sample=stroke_of_sample,
         skel=None if skel is None else np.asarray(skel),
+        mark_fields=kept_mark_fields,
+        field_of_sample=field_of_sample if kept_mark_fields else None,
     )
 
 
@@ -1724,7 +1827,81 @@ def _connector_spec(result: WordDeriveResult, slot_a: int) -> ChainSegmentSpec |
     return ChainSegmentSpec(kind="connector", anchors=conn, seam_in=0, seam_out=len(conn) - 1)
 
 
-def _prepare_fields(case: WordCase, x_lo: float, x_hi: float) -> dict | None:
+def _field_stack(skel: np.ndarray, width: np.ndarray) -> dict:
+    """One `(skel, width)` pair as the field block the objective reads."""
+    dist_raw = distance_transform_edt(~skel).astype(float)
+    _, ink_idx = distance_transform_edt(~np.asarray(width > 0), return_indices=True)
+    width_raw = width[ink_idx[0], ink_idx[1]].astype(float)
+    return {
+        "dist_raw": dist_raw,
+        "dist_smooth": gaussian_filter(dist_raw, DIST_FIELD_SIGMA_PX),
+        "width_raw": width_raw,
+        "width_smooth": gaussian_filter(width_raw, WIDTH_FIELD_SIGMA_PX),
+        "cov_pts": _skeleton_points(skel),
+    }
+
+
+def _claim_mark_components(
+    skel_local: np.ndarray, width_local: np.ndarray, mark_strokes_px: Sequence[dict], unit_px: float
+) -> tuple[list[dict], list[dict]]:
+    """K-E stage 1: which non-main ink components the mark strokes claim.
+
+    A component is claimed by the mark stroke whose INIT polyline comes
+    closest, and only within the ruler's own mark radius
+    (`MARK_CLAIM_RADIUS_UNITS` = `tracebench.frames.MARK_MATCH_RADIUS_UNITS`,
+    mirrored not imported — the ruler must not enter the thing it measures).
+    The largest component is the word body and is never claimed; a component
+    no mark stroke reaches stays body evidence (the han/Sporn fragments); a
+    mark stroke that claims nothing changes nothing. Returns
+    `(claims, report)`: one claim per CLAIMED component, carrying the mask to
+    split the fields with, and the per-word claim list §14 "Kette K-E"
+    requires — a silent claim would be the failure mode that makes a negative
+    unreadable.
+    """
+    mask = np.asarray(width_local > 0)
+    labels, n_components = label_regions(mask, structure=np.ones((3, 3), dtype=bool))
+    if n_components < 2:
+        return [], []
+    areas = np.bincount(labels.ravel())[1:]
+    main_label = int(np.argmax(areas)) + 1
+    claims: list[dict] = []
+    report: list[dict] = []
+    radius_px = MARK_CLAIM_RADIUS_UNITS * unit_px
+    trees = [cKDTree(np.asarray(m["points_px"], dtype=float).reshape(-1, 2)) for m in mark_strokes_px]
+    for component in range(1, n_components + 1):
+        if component == main_label:
+            continue
+        ys, xs = np.nonzero(labels == component)
+        pixels = np.column_stack([xs, ys]).astype(float)  # (x, y) like every point here
+        best: tuple[float, int] | None = None
+        for k, tree in enumerate(trees):
+            d = float(tree.query(pixels)[0].min())
+            if d <= radius_px and (best is None or d < best[0]):
+                best = (d, k)
+        if best is None:
+            continue
+        d_px, k = best
+        stroke = mark_strokes_px[k]
+        component_mask = labels == component
+        skel_px = int((skel_local & component_mask).sum())
+        row = {
+            "seg": int(stroke["seg"]),
+            "start": int(stroke["start"]),
+            "key": stroke.get("key"),
+            "area_px": int(areas[component - 1]),
+            "skel_px": skel_px,
+            "dist_units": round(d_px / unit_px, 4),
+            "centroid_px": [round(float(xs.mean()), 1), round(float(ys.mean()), 1)],
+        }
+        report.append(row)
+        if skel_px:  # a claim without a skeleton pixel has no field to offer
+            claims.append({**row, "mask": component_mask})
+    return claims, report
+
+
+def _prepare_fields(
+    case: WordCase, x_lo: float, x_hi: float, *, mark_strokes_px: Sequence[dict] | None = None, unit_px: float = 0.0
+) -> dict | None:
     """The chain's distance and width fields over the crop columns `[x_lo, x_hi]`.
 
     The band is the UNION of the run's per-letter coverage windows: the chain
@@ -1733,6 +1910,14 @@ def _prepare_fields(case: WordCase, x_lo: float, x_hi: float) -> dict | None:
     Returned as the keyword block `build_chain_problem` takes — smoothed with
     `core.fit`'s own sigmas, the raw fields kept for the per-segment report.
     None when the band holds no skeleton pixel at all.
+
+    With `mark_strokes_px` (K-E stage 1, §14 `aug21` — the mark-claim
+    separation, off by default): every claimed mark component leaves the BODY
+    stack — distance, width and coverage — and becomes its own field stack
+    under `mark_fields`, keyed to its claiming stroke `(seg, start)`; the
+    claim list rides along as `mark_claims`. With no stroke, no claim, or no
+    body skeleton left, the return is exactly the unsplit block — words
+    without a firing claim stay byte-identical by construction.
     """
     cols = np.arange(case.skel.shape[1])
     keep = (cols >= x_lo) & (cols <= x_hi)
@@ -1740,21 +1925,45 @@ def _prepare_fields(case: WordCase, x_lo: float, x_hi: float) -> dict | None:
     if not skel_local.any():
         return None
     width_local = np.where(keep[None, :], case.width_map, 0.0)
-    dist_raw = distance_transform_edt(~skel_local).astype(float)
-    _, ink_idx = distance_transform_edt(~np.asarray(width_local > 0), return_indices=True)
-    width_raw = width_local[ink_idx[0], ink_idx[1]].astype(float)
+    claims: list[dict] = []
+    report: list[dict] = []
+    if mark_strokes_px:
+        claims, report = _claim_mark_components(skel_local, width_local, mark_strokes_px, unit_px)
+    if claims:
+        claimed = np.zeros_like(skel_local)
+        for claim in claims:
+            claimed |= claim["mask"]
+        skel_body = skel_local & ~claimed
+        if skel_body.any():
+            width_body = np.where(claimed, 0.0, width_local)
+            mark_fields = [
+                {
+                    "seg": claim["seg"],
+                    "start": claim["start"],
+                    **_field_stack(skel_local & claim["mask"], np.where(claim["mask"], width_local, 0.0)),
+                }
+                for claim in claims
+            ]
+            return {
+                **_field_stack(skel_body, width_body),
+                "crop_shape": skel_local.shape,
+                # Landmarks read the BODY skeleton: dots carry no branch
+                # points, and the one-evidence rule holds per class.
+                "skel": skel_body,
+                "mark_fields": mark_fields,
+                "mark_claims": report,
+            }
+        # A body with nothing left is a degenerate claim set — fall through to
+        # the unsplit block rather than fit a word against no ink.
     return {
-        "dist_raw": dist_raw,
-        "dist_smooth": gaussian_filter(dist_raw, DIST_FIELD_SIGMA_PX),
-        "width_raw": width_raw,
-        "width_smooth": gaussian_filter(width_raw, WIDTH_FIELD_SIGMA_PX),
-        "cov_pts": _skeleton_points(skel_local),
+        **_field_stack(skel_local, width_local),
         "crop_shape": skel_local.shape,
         # The band-restricted skeleton itself, for the crossing landmarks' ink
         # side (`_landmark_correspondence` reads its branch points). The same
         # array the fields above were derived from, so a landmark target and a
         # coverage point can never come from different ink.
         "skel": skel_local,
+        **({"mark_claims": report} if mark_strokes_px else {}),
     }
 
 
@@ -1804,6 +2013,7 @@ def fit_word_chain(
     keep_solve: bool = False,
     bind_weight: float | None = None,
     landmark_weight: float | None = None,
+    mark_claim: bool = False,
 ) -> ChainWordFit | None:
     """Fit a run of consecutive slots as ONE chain `[L, C, L, C, …]`.
 
@@ -1893,9 +2103,42 @@ def fit_word_chain(
     wins = [w for w in (windows_px.get(s) for s in run) if w is not None]
     if not wins:
         return None
-    fields = _prepare_fields(case, min(float(w[0]) for w in wins), max(float(w[1]) for w in wins))
+    # K-E stage 1 (`mark_claim`, §14 `aug21`): the mark strokes of the COMPOSED
+    # init, in crop px — the assembler's own diacritic rule on each pen stroke
+    # of each letter spec (the K-A criterion, word units, no second
+    # implementation). They claim their dark component in `_prepare_fields`;
+    # with no diacritic stroke in the run the list is empty and the field
+    # block is the unsplit one, byte-identical by construction.
+    mark_strokes_px: list[dict] = []
+    if mark_claim:
+        for i, spec in enumerate(specs):
+            if spec.kind != "letter":
+                continue
+            starts = [int(s) for s in spec.stroke_starts] + [len(spec.anchors)]
+            for s0, s1 in zip(starts[:-1], starts[1:], strict=True):
+                stroke_units = spec.anchors[s0:s1]
+                if len(stroke_units) < 2 or not diacritic_stroke_units(stroke_units):
+                    continue
+                mark_strokes_px.append(
+                    {
+                        "seg": i,
+                        "start": s0,
+                        "key": spec.key,
+                        "points_px": np.column_stack(
+                            [x_origin_px + stroke_units[:, 0] * xh, baseline_y_px - stroke_units[:, 1] * xh]
+                        ),
+                    }
+                )
+    fields = _prepare_fields(
+        case,
+        min(float(w[0]) for w in wins),
+        max(float(w[1]) for w in wins),
+        mark_strokes_px=mark_strokes_px if mark_claim else None,
+        unit_px=xh,
+    )
     if fields is None:
         return None
+    mark_claims = fields.pop("mark_claims", None)
 
     problem = build_chain_problem(
         specs,
@@ -2008,6 +2251,10 @@ def fit_word_chain(
             "bind_weight": problem.bind_weight,
             "overlap_weight": problem.overlap_weight,
             "landmark_weight": problem.landmark_weight,
+            # Only while K-E is on: the claim list (may be empty — a run
+            # without a firing claim says so instead of staying silent), and
+            # the key's absence keeps every default artefact byte-identical.
+            **({"mark_claims": mark_claims or []} if mark_claim else {}),
             # How many crossing landmarks got an ink target and how many were
             # refused, per reason — a term with nothing assigned is inert for a
             # reason that has to be readable, not inferred from a flat energy.

@@ -476,6 +476,16 @@ class FollowWeights:
     """Where on the main-ink → paper grey scale a component stops being ink.
     A measured class boundary (real ≤ 0.38, foreign ≥ 0.74 over the 63
     fixtures), not a tuning knob; stamped so an artefact records it."""
+    mark_claim: bool = False
+    """K-E stage 1 (§14 `aug21`): the mark-claim separation — a diacritic
+    stroke of the composed init (the K-A assembler criterion) claims its dark
+    non-main ink component within the ruler's 0.6-xh mark radius, and a claim
+    switches BOTH pull channels: the component leaves the body's distance/
+    width fields and coverage pot, the mark's samples read exclusively their
+    component (`tools.pairlab.chain._prepare_fields` →
+    `build_chain_problem`). No claim → nothing changes; words without a
+    firing claim stay byte-identical by construction. Default False =
+    declared-off until the measured adoption."""
     provisional: bool = True
 
 
@@ -1625,6 +1635,10 @@ def _fields_of(problem: _ChainProblem) -> dict:
         "cov_pts": problem.cov_pts,
         "crop_shape": (problem.crop_h, problem.crop_w),
         "skel": problem.skel,
+        # K-E: the claimed mark stacks ride into every re-linearised round —
+        # the (seg, start) keys survive `respec_from_solution` verbatim, so
+        # the rebuilt problem re-derives the same sample classes. Empty = off.
+        "mark_fields": problem.mark_fields,
     }
 
 
@@ -2034,14 +2048,25 @@ def follow_derived(
     landmarks_by_run: list[dict] = []
     traced: set[int] = set()
     n_runs = n_failed = n_params = 0
+    claims_by_run: list[list[dict]] = []
     for run in _chainable_runs(case, grids):
         n_runs += 1
         windows = {s: grids[s]["window"] for s in run}
         seeds = {s: grids[s]["shift_units"] for s in run if not grids[s]["at_bound"]} if chain_seed == "grid" else None
-        chain_fit = fit_word_chain(case, run, result=result, windows_px=windows, slot_shift_init=seeds, keep_solve=True)
+        chain_fit = fit_word_chain(
+            case,
+            run,
+            result=result,
+            windows_px=windows,
+            slot_shift_init=seeds,
+            keep_solve=True,
+            mark_claim=weights.mark_claim,
+        )
         if chain_fit is None:
             n_failed += 1
             continue
+        if weights.mark_claim:
+            claims_by_run.append(chain_fit.fit_meta.get("mark_claims", []))
         followed = follow_word_chain(case, run, result=result, windows_px=windows, fit=chain_fit, weights=weights)
         if followed is None:
             n_failed += 1
@@ -2069,6 +2094,10 @@ def follow_derived(
         # Only while the measure is on: the key's absence keeps an archaeology
         # artefact (`--no-ink-evidence`) byte-identical to every pre-K-C report.
         **({"ink_evidence": ink_report.as_dict()} if ink_report is not None else {}),
+        # K-E's claim list per run — present exactly while the measure is on,
+        # empty lists included (a word without a firing claim SAYS so; §14
+        # "Kette K-E": a silent claim would make a negative unreadable).
+        **({"mark_claims": claims_by_run} if weights.mark_claim else {}),
     }
     if not word_strokes:
         return {
@@ -2204,7 +2233,15 @@ def calibrate_case(
     for run in _chainable_runs(case, grids):
         windows = {s: grids[s]["window"] for s in run}
         seeds = {s: grids[s]["shift_units"] for s in run if not grids[s]["at_bound"]} if chain_seed == "grid" else None
-        chain_fit = fit_word_chain(case, run, result=result, windows_px=windows, slot_shift_init=seeds, keep_solve=True)
+        chain_fit = fit_word_chain(
+            case,
+            run,
+            result=result,
+            windows_px=windows,
+            slot_shift_init=seeds,
+            keep_solve=True,
+            mark_claim=weights.mark_claim,
+        )
         if chain_fit is None:
             continue
         followed = follow_word_chain(
@@ -2522,6 +2559,13 @@ def build_parser() -> argparse.ArgumentParser:
         default=INK_EVIDENCE_PAPER_FRACTION,
         help=f"K-C class boundary on the main-ink→paper grey scale (default {INK_EVIDENCE_PAPER_FRACTION})",
     )
+    parser.add_argument(
+        "--mark-claim",
+        action="store_true",
+        help="K-E stage 1 (aug21): a composed mark stroke claims its dark ink component within the "
+        "ruler's 0.6-xh mark radius — the component leaves the body's fields and coverage pot, the "
+        "mark's samples read only their component; words without a firing claim are byte-identical",
+    )
     parser.add_argument("--sweep", help="NAME=v1,v2 — one arm per value of a FollowWeights field")
     parser.add_argument("--jobs", type=int, default=1, help="worker processes, pooled over CASES")
     parser.add_argument("--json", type=Path, help="write the full report here")
@@ -2558,6 +2602,7 @@ def weights_from_args(args: argparse.Namespace) -> FollowWeights:
         structure_guard_ratchet=bool(args.structure_guard_ratchet),
         ink_evidence=not args.no_ink_evidence,
         ink_evidence_paper_fraction=float(args.ink_evidence_paper_fraction),
+        mark_claim=bool(args.mark_claim),
     )
 
 
