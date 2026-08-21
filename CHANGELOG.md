@@ -556,6 +556,36 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **Chain v4: the ink-evidence mask is now the default on the follower,
+  the harvest and the tracebench chain provider — the author's go on the
+  measured K-C pass, with a dated re-baseline** (§14 „Kette v4 `aug21`").
+  `FollowWeights.ink_evidence` and `HarvestOptions.ink_evidence` flip to
+  True; the CLI grows `--no-ink-evidence` (the `retrace_guard` negation
+  pattern) and `chain_provider` an `ink_evidence` kwarg, both as the
+  byte-identical pre-v4 archaeology path — no algorithm code moves, and
+  the frozen bench mask still grades against ALL ink. Re-measured from
+  scratch in a second pinned environment (fixtures re-fetched bit-exact,
+  BLAS pinned, both arms paired): the pre-flip chain provider reproduces
+  the declared v3 baseline exactly (dtw median 0.049135, p90 0.0891,
+  worst muß 0.1097); the full-63 archaeology run is byte-identical to
+  the pre-flip default; 23 words drop 44 components — exactly the aug20
+  count — with all 40 drop-free words byte-identical. The flip itself:
+  soll distance 103 → **85** (11 better / 1 worse), dev-19 dtw median
+  0.0491 → **0.0448**, aiou median 0.7161 → **0.7481**, spurious
+  retrace zones 13 → 7, the Galoppieren i-dot heals (marks missing
+  1 → 0), worst per-word dev loss +0.0004 (die-2, whose magnet is the
+  word's OWN mark — the named successor is the mark-claim separation).
+  Honestly named environment variance vs aug20: base soll 103 vs 107,
+  die-2 soll −1 there / +1 here, streiten aiou −0.0075 here. Declared
+  re-baseline v4: chain provider dev-19 dtw median 0.0491 · p90 0.0891
+  · worst muß 0.1097 · aiou 0.7021; follower soll-stack dtw median
+  0.0448 · aiou 0.7481 · 63-word soll distance 85. Route pairings
+  (Lotse, InkSight, Nullprobe) re-quantify against v4 at their next
+  measurement; the production re-harvest of stored `traced` rows stays
+  behind owner-go + dbsnapshot. Docs: §14 entry, verfahren-kette.md
+  (v4 + ledger row), glossary „Tinten-Evidenz-Maske" updated,
+  tintenfolger.md §7.3 K-C marked adopted.
+
 - **The agent instructions went on a diet — details moved into the docs
   they belong to** (`CLAUDE.md` 82 → ~24 KB, `.github/copilot-instructions.md`
   mirrored): the "Repository state" prose dump became a compact per-directory
