@@ -8051,3 +8051,41 @@ Treiber war; die-2/die/Struktur-Gewinne bleiben (sie hängen an
 Distanz+Coverage). Bleiben die Risse, ist der Treiber die
 Coverage-Umverteilung selbst → K-E-Familie schließt, der
 Rest-Trade geht den humanbench-Weg (§7.9).
+
+**Gemessen `aug21` — verworfen per Gate (3), die
+Breiten-Hypothese ist SAUBER WIDERLEGT, die Familie schließt
+nach der eigenen Vorregistrierung.** Artefakte
+`tb-aug21/ke2-*`, 931 s. Die Heilungen bleiben exakt bestehen
+(die-2: Soll 4 → 2, dtw −0,0282, V-Nadel weg im Augenschein;
+die −0,0161; dev-Median exakt gehalten; netto-Kreuzungen
+22 → 19; Retrace 6+6; 63er-Soll 85 → 81, Sprünges
+K-E1-Soll-Riss heilt, unter/Seiten je +1 bleiben) — und die
+vier aiou-Risse bleiben ebenso: auch −0,0270, schießen
+−0,0255, Einen −0,0147, muß-2 −0,0131. **Der Beweis-Kern: 55
+der 63 K-E2-Kandidaten sind BYTE-GLEICH zu K-E1 — darunter
+auch und muß-2, zwei der vier Verlierer:** für sie war der
+Breitenfeld-Split nachweislich vollständig inert (kein Sample
+ihrer Solves las je einen abweichenden Breitenwert); bei
+Einen/schießen bewegt die Breite das Wort minimal und der Riss
+bleibt in gleicher Höhe. Der Treiber des diffusen
+Körper-Deckungsverlusts ist damit die
+Distanzfeld-/Coverage-UMVERTEILUNG selbst — die beiden Kanäle,
+die zugleich die Heilung tragen: Gewinn und Verlust dieser
+Formulierung sind nicht weiter trennbar, exakt das
+Arm-⑨-Muster eine Schicht tiefer. `mark_claim` bleibt
+declared-off (K-E2-Mechanik im Code, nie adoptiert). **Stufe 2
+(Kringel) wird NICHT eröffnet** — die Autor-Bedingung „nur
+wenn Stufe 1 hält" ist nicht erfüllt. Rettungswege (§7.9
+aktualisiert im selben PR): (1) der **humanbench-Tie-Breaker**
+— der Fall ist der vorregistrierte Methodik-Fall in Reinform
+(aiou-Median der bewegten −0,0002 = Lineal-Indifferenz; vier
+lokale aiou-Verluste −0,013…−0,027 gegen die-2-Heilung,
+netto-Kreuzungen −3, Retrace −2: ob ein Mensch die
+K-E-Bahnen als besser beurteilt, kann nur die blinde Runde
+sagen); (2) **Distanzfeld-NUR-Claim** (neuer Mechanismus:
+Coverage-Topf bleibt völlig unangetastet = v4-Ökonomie, nur
+das Anziehungsfeld wird je Klasse getrennt — die
+die-2-V-Nadel war laut Autopsie 4,2× distanzfeld-getrieben;
+frische Pre-Reg, Risiko: die Coverage-Drag-Hälfte der
+Nadel-Klasse bleibt); (3) Claim-Schärfung für Bogen-Strecken
+(gegen die verbliebenen unter/Seiten-Soll-Risse; nachrangig).

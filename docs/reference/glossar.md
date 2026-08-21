@@ -574,9 +574,14 @@ Retrace-Zonen an kleinen Kringeln. Stufe 1 = Marken-Claim-Trennung
 (eindeutige Zuweisung per Duktus); Stufe 2 = Kringel (braucht den
 Duktus-Prior als Verbrauchs-Zuordnung: jeder Tinten-Punkt wird von
 genau einer Strecke verbraucht), nur bei haltender Stufe 1.
-*Technisch:* `tools/pairlab/chain.py` (Feld-Aufbau in
+*Gemessen `aug21` (K-E1 + Ein-Faktor-Konversion K-E2): beide per
+aiou-Gate verworfen* — die benannten Ziele heilen (die-2s V-Nadel
+weg), aber vier diffuse Körper-Deckungs-Risse hängen an denselben
+Kanälen wie die Heilung; Stufe 2 nicht eröffnet, Wege §7.9
+(humanbench · Distanzfeld-NUR-Claim). *Technisch:*
+`tools/pairlab/chain.py` (Feld-Aufbau in
 `fit_word_chain`/`_prepare_fields`) → qualitaetsmetrik.md §14
-„Kette K-E", tintenfolger.md §7.3 A9/K-E
+„Kette K-E"/„Kette K-E2", tintenfolger.md §7.3 A9/K-E
 
 **Marken-Claim-Trennung** *(mark-claim separation, K-E Stufe 1)* —
 die eindeutige Hälfte der Tinten-Zuweisung per Strecke: eine
@@ -588,10 +593,12 @@ Claim schaltet beide Zug-Kanäle um: die Komponente verlässt Feld und
 Coverage-Topf der Körper-Samples, die Marken-Samples lesen
 ausschließlich ihre Komponente. Ohne Claim ändert sich nichts —
 Marken ohne Tinte suchen wie heute, Körper-Bruchstücke bleiben
-Körper-Evidenz. EIN Knopf `mark_claim` (`--mark-claim`),
-declared-off bis zur gemessenen Adoption. *Technisch:*
+Körper-Evidenz. EIN Knopf `mark_claim` (`--mark-claim`), nach den
+`aug21`-Messungen (K-E1 · K-E2) declared-off geblieben — verworfen
+per aiou-Gate bei spektakulärer die-2-Heilung; der Code trägt die
+K-E2-Form (Breitenfelder ungeteilt). *Technisch:*
 `tools/pairlab/chain.py`, Knopf in `FollowWeights`/`HarvestOptions`
-→ qualitaetsmetrik.md §14 „Kette K-E"
+→ qualitaetsmetrik.md §14 „Kette K-E"/„Kette K-E2"
 
 **Topologie-Wächter** *(structure guard)* — Arm ⑨ des Tintenfolgers:
 eine Runden-AKZEPTANZREGEL statt einer Kraft. Vor der ersten Runde

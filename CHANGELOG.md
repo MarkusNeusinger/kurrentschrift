@@ -14,6 +14,47 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Chain K-E, per-stroke ink assignment stage 1 (the mark-claim
+  separation): implemented, pre-registered, and measured to two honest
+  negatives that heal the named target and refute the width hypothesis
+  by byte identity** (§14 `aug21` „Kette K-E"/„Kette K-E2"; the
+  author's follow-up to K-C — after the foreign ink, the remaining
+  magnet is the word's OWN dark mark, die-2's i-dot pulling the d-loop
+  into the V needle, and the same effect flattened is the suspect
+  behind the 7 remaining spurious retrace zones at small loops). The
+  mechanism, one intervention point in `fit_word_chain`'s field build:
+  a composed mark stroke (the assembler's own diacritic criterion)
+  claims its dark non-main component within the ruler's 0.6-xh mark
+  radius (`MARK_CLAIM_RADIUS_UNITS`, mirrored and test-pinned), and a
+  claim moves the component out of the body's distance field and
+  coverage pot while the claiming stroke's samples read exclusively
+  their component (`_ChainProblem.field_of_sample`/`mark_fields`,
+  carried through every re-linearised round; exact analytic gradient
+  pinned by finite differences; claim list in the run meta so a silent
+  claim cannot happen). One knob `mark_claim` (`--mark-claim`,
+  `FollowWeights` + `HarvestOptions`), declared-off. Measured on the
+  63-word soll stack in one pinned environment: identity and the
+  construction prediction hold exactly (26 claim-free words
+  byte-identical; 37 firing claims — i-dots, u-bows, umlaut pairs);
+  **die-2 heals on every axis (soll distance 4 → 1, dtw −0.0281, the
+  V needle visibly gone)**, die −0.016, net crossing defects 22 → 18,
+  spurious retraces 7 → 6, the dev-19 median exactly held — but the
+  aiou gate tears at four diffuse losers (auch, schießen, Einen,
+  muß-2; −0.013 to −0.027), whose per-pixel autopsy shows BODY
+  coverage lost across the whole word width: a basin redistribution,
+  not a mark effect. The one-factor conversion **K-E2** (width fields
+  stay unsplit — width is a measurement target, not an attractor)
+  refutes the width suspicion cleanly: 55/63 candidates byte-identical
+  to K-E1, among them two of the four losers, so the driver is the
+  distance-field/coverage redistribution itself — gain and loss of
+  this formulation are inseparable, the arm-⑨ pattern one layer down.
+  Family closed per its own pre-registration; stage 2 (the loops)
+  stays unopened per the author's condition; standing rescue paths in
+  `tintenfolger.md` §7.9 (the pre-registered humanbench tie-breaker
+  case in pure form · a distance-field-only claim · bow-claim
+  sharpening). Glossary: „Tinten-Zuweisung per Strecke",
+  „Marken-Claim-Trennung"; ledger rows on the Verfahrensseite.
+
 - **Chain K-C: the ink-evidence mask — pre-registered from the author's
   "Flecken" find and measured to a pass on all six gates** (§14 `aug20`
   evening/night; soll distance 107 → **86** over 63 words with 11 better

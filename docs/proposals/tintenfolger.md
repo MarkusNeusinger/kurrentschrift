@@ -660,6 +660,15 @@ Aufwand/Risiko:
   **Stufe 2 (Kringel):** nur bei haltender Stufe 1 — braucht den
   Duktus-Prior als Verbrauchs-Zuordnung; Messgröße unechte
   Retrace-Zonen an Schleifenbuchstaben; eigene Pre-Reg.
+  **GEMESSEN `aug21`: K-E1 und die Ein-Faktor-Konversion K-E2
+  (Breitenfelder ungeteilt) beide per aiou-Gate verworfen** — die
+  benannten Ziele heilen (die-2: Soll 4 → 1/2, dtw −0,028, V-Nadel
+  weg; netto-Kreuzungen −3, Retrace −2), aber vier diffuse
+  Körper-Deckungs-Risse hängen nachweislich an denselben
+  Distanz-/Coverage-Kanälen wie die Heilung (Breiten-Hypothese
+  per Byte-Identität widerlegt). Familie geschlossen, Stufe 2
+  nicht eröffnet; Wege §7.9 (humanbench-Tie-Breaker ·
+  Distanzfeld-NUR-Claim).
 - **A8 / K-D — Tinten-Korridor (Autor-Idee, 2026-08-20).** Eine
   Sperrzone um die erweiterte Tinte, die die Bahn nicht durchstoßen
   darf (Barriere auf dem Abstandsfeld statt weichem Zug): verbietet
@@ -890,7 +899,7 @@ Disziplin verhindert).
 | Laufform LF1 Lücken-Schluss, beide Stufen (`aug19`) | die Gewinnseite ist die größte der Lotse-Kampagne (aiou 0,7398 → 0,7527, wordbench −0,0024, spurious 5 → 3, linken-Soll heilt) — verworfen an EINEM Riss: der frische G-Median verliert die zweite Chart-G-Kreuzung (`cross_missing` 2 > 1), und auch die G-Einzelfits zählen nur 0/1/1 | **Topologie-Reparatur LF3**: lokale Chart-Rückblendung im 0,5-xh-Fenster um die verlorene Kreuzung, minimales t per Bisektion — Breite bleibt Laufform, Topologie bleibt Chart | eigene Pre-Reg, gemessen in derselben Runde |
 | Laufform LF2 Topologie-Wächter, Voll-Entfernung (`aug19`) | Kern-Erwartung erfüllt (Galoppieren-Soll 6 → 8 = Hand-Übereinstimmung, netto 4), aber die volle Breiten-Entfernung kostet Tinte (+0,00136, schießen +0,034) und kippt den Galoppieren-i-Punkt aus dem Ritt (Marken-Gate) | Reparatur statt Entfernung (→ LF3); der Wächter selbst bleibt als Write-Path-Prinzip (nie eine Zeile speichern, die Topologie verliert) | eigene Pre-Reg, gemessen in derselben Runde |
 | Laufform LF3 Buchstaben-Orakel (`aug19`) | Mechanismus richtig (Marken bleiben, aiou +0,007), Orakel zu schwach: das minimale Zellen-t überlebt den Kompositions-Kontext nicht (Galoppieren Buchstaben-Soll 7, Kompositions-Soll bleibt 6) | Kompositions-Orakel → **UMGESETZT als LF3b, alle Gates bestanden, als Kandidaten-Karte adoptiert** | erledigt |
-| K-E1 Marken-Claim-Trennung (`aug21`) | die benannten Ziele heilen spektakulär (die-2: Soll 4 → 1, dtw −0,0281, V-Nadel weg; netto-Kreuzungen 22 → 18, Retrace 14 → 12), aber vier DIFFUSE aiou-Risse (auch/schießen/Einen/muß-2, −0,013 bis −0,027): verloren geht Körper-Deckung über die ganze Wortbreite — Basin-Umverteilung des Körper-Solves nach dem Entzug, kein Marken-Effekt; Verdächtige: Breitenfeld-Split (Messziel-Kanal, wirkt über die ganze Marken-Voronoi-Region) · Coverage-Normierung (1–3 % Verwässerung) | (1) **K-E2**: Ein-Faktor-Konversion — Breitenfelder ungeteilt, Distanz+Coverage-Split bleibt (eigene Pre-Reg, identische Gates); (2) humanbench-Tie-Breaker für den Rest-Trade (aiou-Median der bewegten −0,0002 = Lineal-Indifferenz bei starken Struktur-Gewinnen); (3) Claim-Schärfung für Bogen-Strecken (Seiten/Sprünge-Soll-Risse ↔ Claim-Distanz ≥ 0,3 xh) | K-E2 sofort; (2)/(3) danach |
+| K-E1/K-E2 Marken-Claim-Trennung (`aug21`) | die benannten Ziele heilen spektakulär (die-2: Soll 4 → 1 bzw. 2, dtw −0,028, V-Nadel weg; netto-Kreuzungen 22 → 18/19, Retrace 14 → 12, dev-Median exakt gehalten), aber vier DIFFUSE aiou-Risse (auch/schießen/Einen/muß-2, −0,013 bis −0,027): Körper-Deckung über die ganze Wortbreite. **K-E2 (Ein-Faktor: Breitenfelder ungeteilt) widerlegt die Breiten-Hypothese sauber** — 55/63 Kandidaten byte-gleich zu K-E1, darunter auch und muß-2 (zwei der vier Verlierer: der Breiten-Kanal war für sie inert); der Treiber ist die Distanzfeld-/Coverage-UMVERTEILUNG selbst, dieselben Kanäle tragen die Heilung — Gewinn und Verlust in DIESER Formulierung untrennbar (das Arm-⑨-Muster eine Schicht tiefer). Stufe 2 (Kringel) nicht eröffnet (Autor-Bedingung) | (1) **humanbench-Tie-Breaker** — der vorregistrierte Methodik-Fall in Reinform (aiou-Median der bewegten −0,0002 = Lineal-Indifferenz; lokale aiou-Verluste gegen die-2-Heilung + Struktur-Gewinne); (2) **Distanzfeld-NUR-Claim** (Coverage-Topf bleibt v4-Ökonomie, nur das Anziehungsfeld trennt je Klasse; die die-2-Nadel war 4,2× distanzfeld-getrieben; frische Pre-Reg); (3) Claim-Schärfung für Bogen-Strecken (unter/Seiten-Soll-Risse; nachrangig) | (1) Autor-Entscheid/Runde; (2) eigene Pre-Reg; (3) danach |
 
 ### 7.10 Runde aug17: die Befund-Matrix des 19er-Dev-Satzes und der Maßnahmenplan
 
