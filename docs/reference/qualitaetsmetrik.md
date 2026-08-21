@@ -8089,3 +8089,86 @@ die-2-V-Nadel war laut Autopsie 4,2× distanzfeld-getrieben;
 frische Pre-Reg, Risiko: die Coverage-Drag-Hälfte der
 Nadel-Klasse bleibt); (3) Claim-Schärfung für Bogen-Strecken
 (gegen die verbliebenen unter/Seiten-Soll-Risse; nachrangig).
+
+### Kette K0-S `aug21` — Soll-Quellen-Autopsie (daß) + Vorregistrierung: EINE Soll-Pipeline und die K0-Z-R-Wiedervorlage
+
+**Die Autopsie (VOR dieser Pre-Reg, Skript/Bilder Scratchpad
+`tb-aug21/soll_autopsy.py` + `dass-soll-autopsy.png`): der
+K0-Z-R-daß-Riss war ein INIT-ARTEFAKT im Wächter-Soll — die
+Metrik hatte recht.** Beide Pipelines nutzen DIESELBEN Zähler
+(`tools.tracebench.counters`); die Divergenz liegt allein in
+der Eingabe-Geometrie. An daß (d·a·ſz): die Metrik-Quelle
+(`ductus_soll` auf den komponierten Items, lift-gesplittet)
+zählt cross 3 · retrace 1 (ſz-Zone bei 3,74/1,48) · touch 0;
+die Wächter-Quelle (Ketten-Init bei x0 = 0 durch
+`_stroke_polylines_px` + Assembler) zählt cross 3 · retrace 2
+· touch 1 — die zusätzliche Zone bei (1,22 · 1,20) plus die
+Berührung bei (1,17 · 1,16) sitzen am d-KOPF: die
+Init-Geometrie (Chart-Anker + generierter Verbinder) drückt
+den d-Schleifenschluss zu einem PLATTGEZOGENEN SPLITTER
+(zwei fast parallele Pässe), den der 0,15-xh-Detektor korrekt
+als Retrace + Touch liest; die kanonische Komposition kreuzt
+dort sauber und trägt nichts. (Nebenbefund, notiert für die
+Kringel-Frage: der Splitter ist exakt die Geometrie-Klasse
+„Kringel plattgezogen" — hier als Artefakt der Init, nicht
+der Tinte.) Die Architektur ist eindeutig: `core/compose` ist
+DIE Kompositions-Quelle der Wahrheit; das aug19-Wächter-Soll
+las stattdessen die Init-Nachbildung (Chart-Anker samt
+Laufform-Wrinkle) — der „ohne Zweitimplementierung"-Anspruch
+galt für die ZÄHLER, nicht für die Geometrie.
+
+**Maßnahme K0-S (EIN Knopf).** `FollowWeights.soll_source`
+(`--soll-source`, Default `"init"` = heutiges Verhalten,
+byte-identisch): bei `"composition"` kommt das Wächter-Soll
+aus dem KOMPOSITIONS-Builder — die Item→Strich-Logik wird aus
+`tools/tracebench/soll.py::ductus_soll` als
+`composition_strokes` herausfaktorisiert (reiner Refactor,
+`ductus_soll` selbst bleibt byte-identisch) und vom Folger je
+Run auf den zusammenhängenden Item-Span der Run-Slots
+angewandt (Slots des Runs plus die Verbinder-Items zwischen
+ihnen, lift-gesplittet, Marken-Items an ihrem Item-Ort).
+Damit gilt: BUDGET = Init-Zählung (die Runden starten dort),
+RUNDEN-COUNTS = Kandidaten-Zählung (was gelöst wurde), SOLL =
+Kompositions-Zählung — drei Messungen, EIN Zähler-Satz, und
+das Soll kommt erstmals aus der kanonischen Quelle. Das
+Akzeptanz-Intervall je Klasse bleibt [min(B,S), max(B,S)] —
+es enthält B immer, der Wächter verlangt nie Unerreichbares.
+
+**Messanordnung (Leiter, Basis = v4-Stand dieser Umgebung,
+BLAS gepinnt, `--jobs 4`, Soll-Stack).** Sprosse 0:
+**Divergenz-Karte** — beide Soll-Zählungen je Wort über alle
+63, ohne Solve (wo divergieren Init und Komposition noch,
+außer an daß?); referenzfrei, reine Diagnose. Sprosse 1:
+`--structure-guard-soll --soll-source composition` (der
+atomare Soll-Wächter auf der neuen Quelle). Sprosse 2:
+dieselbe Quelle + `--structure-guard-ratchet
+--structure-guard-zone 0.55` — **die K0-Z-R-Wiedervorlage**
+(§7.9-Rettungsweg der stärksten je gemessenen Sprosse: Soll
+107 → 99 bei NULL aiou-Verlierern, damals an daß und dem
+zwei-Trade gerissen; beide Risse sind seither adressiert —
+daß durch diese Quelle, zweis Fremdtinten-Magneten durch v4).
+
+**Gates (unverändert K0-Z, keines weicher):** Identität
+(`soll_source=init` byte-gleich zur v4-Basis) · Soll-Abstand
+sinkt IRGENDWO strikt und steigt je Wort NIRGENDS (auf der
+EINEN Metrik — Soll-Quelle jetzt für Wächter und k0-Protokoll
+identisch) · aiou je Wort ≥ −0,003 · dev-19: kein Wort über
++0,003 dtw, Marken nicht schlechter, reversed 0,
+Netto-Kreuzungsdefekte ≤ Basis · Laufzeit-Report. Adoption:
+die beste Sprosse, die alle Gates hält; Gleichstand → die
+einfachere (Sprosse 1 vor 2).
+
+**Ehrliche Erwartung.** Die daß-Klasse stirbt konstruktiv
+(Intervall [1,2] statt [2,2] — Bewegung nur noch Richtung
+Komposition); die Divergenz-Karte zeigt vermutlich weitere
+Init-Artefakt-Solls (jede weitere Divergenz ÖFFNET ein
+Intervall — Teil der Maßnahme, die Karte macht es lesbar);
+die alte K0-Z-R-Substanz ist auf v4-Evidenz NEU zu beziffern
+— zweis damaliger dtw-Trade hing an Fremdtinten-Magneten, die
+v4 gedroppt hat, ob er verschwindet, entscheidet die Messung.
+Benannte Risiken: (a) ein Kompositions-Soll, das strukturell
+über dem Init liegt (S > B), erlaubt der Ratsche Bewegung
+NACH OBEN Richtung Soll — gewollt, aber neu; die je-Wort-Gates
+decken es; (b) die Run-Restriktion der Items (Mehr-Run-Wörter)
+ist neue Mechanik — der Identitäts-Pfad und die
+Divergenz-Karte prüfen sie, bevor ein Solve sie sieht.
