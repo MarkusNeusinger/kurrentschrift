@@ -25,7 +25,7 @@ def test_a_root_without_cases_degrades_to_a_warning(tmp_path: Path) -> None:
     assert "Duktus-Soll" in warnings[0]
 
 
-def _item(points, *, slot=None, lift=False):
+def _item(points: list[list[float]], *, slot: int | None = None, lift: bool = False) -> dict[str, object]:
     return {"centerline": points, "slot_index": slot, "lift": lift}
 
 
