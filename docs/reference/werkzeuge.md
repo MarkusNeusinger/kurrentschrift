@@ -285,7 +285,8 @@ uv run python -m tools.dbsnapshot.restore <snapshot-dir> --database-url postgres
   5. **Sensoren/Augenschein nach Bedarf**:
      `uv run python -m tools.tracebench.excursions <cand.json>` (das
      Papier-Exkursions-Inventar, der stehende K-D-Sensor) und
-     `tools/tracebench/view.py` (die Duell-/Augenschein-Seite).
+     `uv run python -m tools.tracebench.view` (die
+     Duell-/Augenschein-Seite).
   Invarianten: alles reine Messschicht (nie DB/`core/`/Rendering);
   gepaarte Vergleiche gelten nur innerhalb EINER gepinnten Umgebung
   (aug16-Lehre); der Dev-Split ist eingefroren und append-never.
