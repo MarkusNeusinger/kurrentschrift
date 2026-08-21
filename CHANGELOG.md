@@ -12,6 +12,25 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Changed
+
+- **Four durable working rules lifted from the 2026-08-21 campaign
+  session's friction into the agent instructions and the PR skill**
+  (`CLAUDE.md` + the `.github/copilot-instructions.md` mirror where the
+  rule is shared, `.claude/skills/open-pr/SKILL.md`): the recipe for
+  restarting a mandated branch after its squash-merge when force-push is
+  blocked by the cloud classifier (content-neutral merge of the stale
+  remote tip, every conflicted file resolved with `--ours`, marker grep
+  and an EMPTY diff against the pre-merge head required before the
+  commit — `git add -A` during an unresolved merge committed conflict
+  markers once); the heredoc ban now names appending with `>>`
+  explicitly (a §14 entry slipped in via `cat >>`); the cloud
+  fixture-rebuild note gains the `uv sync --all-extras` prerequisite
+  (the verify path imports matplotlib from the `viz` extra and fails on
+  a fresh cloud venv); and the open-pr skill documents that a cancelled
+  Copilot review run may never deliver — one re-request, then green plus
+  zero threads counts as review-clean by absence.
+
 ### Added
 
 - **Chain K-D, the ink corridor: closed as objectless after v4 by its
