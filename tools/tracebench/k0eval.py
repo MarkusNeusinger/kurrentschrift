@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections import Counter
 from pathlib import Path
 
 from tools.tracebench.candidates import file_provider
@@ -90,18 +91,19 @@ def main() -> None:
     base = eval_candidate(args.base, reference, soll_rows, ids)
     print(f"== {args.base.name}: total soll distance {_total(base)}")
     if args.candidate is None:
-        unscored = 0
+        unscored: Counter[str] = Counter()
         for sid in ids:
             row = base[sid]
             if row["status"] != "ok":
-                unscored += 1
+                unscored[str(row["status"])] += 1
                 continue
             print(
                 f"  {sid:14s} cross {row['cross']}/{row['soll_cross']} zones {row['zones']}/{row['soll_zones']} "
                 f"dist {row['soll_dist']} aiou {row['aiou']:.4f}"
             )
         if unscored:
-            print(f"  ({unscored} words not in the candidate file)")
+            detail = ", ".join(f"{status} {n}" for status, n in sorted(unscored.items()))
+            print(f"  ({sum(unscored.values())} words unscored: {detail})")
         if args.json:
             args.json.write_text(json.dumps({args.base.name: base}, indent=1, default=str))
             print(f"wrote {args.json}")
@@ -114,14 +116,14 @@ def main() -> None:
     moved: list[str] = []
     losers: list[tuple[str, float]] = []
     moved_deltas: list[float] = []
-    unscored = 0
+    unscored: Counter[str] = Counter()
     for sid in ids:
         a, b = base[sid], cand[sid]
         if a["status"] != "ok" or b["status"] != "ok":
             if a["status"] != b["status"]:
                 print(f"  {sid:14s} base={a['status']} cand={b['status']}")
             else:
-                unscored += 1
+                unscored[str(a["status"])] += 1
             continue
         same_bytes = a["strokes_key"] == b["strokes_key"]
         (identical if same_bytes else moved).append(sid)
@@ -141,7 +143,8 @@ def main() -> None:
                 f"{'identical' if same_bytes else 'moved'}"
             )
     if unscored:
-        print(f"  ({unscored} words in neither candidate file)")
+        detail = ", ".join(f"{status} {n}" for status, n in sorted(unscored.items()))
+        print(f"  ({sum(unscored.values())} words unscored on both sides: {detail})")
     print(f"\nsoll distance total: {_total(base)} -> {_total(cand)} ({better} better / {same} same / {worse} worse)")
     if moved_deltas:
         ordered = sorted(moved_deltas)
