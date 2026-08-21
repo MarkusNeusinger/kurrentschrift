@@ -646,6 +646,29 @@ Aufwand/Risiko:
   (Tinten-Zuweisung per Strecke: Stufe 1 Marken, Stufe 2 Kringel),
   dann Soll-Quellen-Autopsie (daß) → K0-Z-R-Wiedervorlage auf
   K-C-Evidenz → K-D Tinten-Korridor.
+- **A9 / K-E — Tinten-Zuweisung per Strecke (Autor-Ansatz,
+  2026-08-21).** Nicht welche Tinte zieht (K-C), sondern WEN sie
+  ziehen darf: heute sehen alle Samples eines Runs ein Feld und
+  einen Coverage-Topf — der eigene i-Punkt zieht in die-2 die
+  d-Schleife (V-Nadel, der einzige v4-Verlierer), und dasselbe
+  plattgezogen ist der Verdacht hinter den 7 verbliebenen
+  unechten Retrace-Zonen an kleinen Kringeln. **Stufe 1
+  (Marken-Claim-Trennung):** Marken-Strecken (Assembler-Kriterium
+  am Init) claimen ihre dunkle Komponente im
+  0,6-xh-Lineal-Radius; ein Claim schaltet Feld UND Coverage um,
+  ohne Claim ändert sich nichts. Pre-Reg §14 „Kette K-E".
+  **Stufe 2 (Kringel):** nur bei haltender Stufe 1 — braucht den
+  Duktus-Prior als Verbrauchs-Zuordnung; Messgröße unechte
+  Retrace-Zonen an Schleifenbuchstaben; eigene Pre-Reg.
+  **GEMESSEN `aug21`: K-E1 und die Ein-Faktor-Konversion K-E2
+  (Breitenfelder ungeteilt) beide per aiou-Gate verworfen** — die
+  benannten Ziele heilen (die-2: Soll 4 → 1/2, dtw −0,028, V-Nadel
+  weg; netto-Kreuzungen −3, Retrace −2), aber vier diffuse
+  Körper-Deckungs-Risse hängen nachweislich an denselben
+  Distanz-/Coverage-Kanälen wie die Heilung (Breiten-Hypothese
+  per Byte-Identität widerlegt). Familie geschlossen, Stufe 2
+  nicht eröffnet; Wege §7.9 (humanbench-Tie-Breaker ·
+  Distanzfeld-NUR-Claim).
 - **A8 / K-D — Tinten-Korridor (Autor-Idee, 2026-08-20).** Eine
   Sperrzone um die erweiterte Tinte, die die Bahn nicht durchstoßen
   darf (Barriere auf dem Abstandsfeld statt weichem Zug): verbietet
@@ -656,7 +679,10 @@ Aufwand/Risiko:
   die komponierte e-Breite (§7.2), die kein Korridor heilt. Eigene
   Pre-Reg NACH K-C.
 
-Reihenfolge: K-C → A1 → A2 → A3 → (A4 oder A5 oder K-D) → A6. NICHT
+Reihenfolge (Autor-Auftrag `aug21`): K-C ✓ (v4) → K-E Stufe 1 →
+(K-E Stufe 2 nur bei haltender Stufe 1) → Soll-Quellen-Autopsie
+(daß) → K0-Z-R-Wiedervorlage auf K-C-Evidenz → K-D; danach
+A2 → A3 → (A4 oder A5) → A6. A1 ist adoptiert (opt-in). NICHT
 wieder aufgenommen: weitere λ/Gewichts-Sweeps der alten Formulierung
 (durch ①⑤⑥⑥b⑨ erschöpfend negativ beantwortet).
 
@@ -873,6 +899,7 @@ Disziplin verhindert).
 | Laufform LF1 Lücken-Schluss, beide Stufen (`aug19`) | die Gewinnseite ist die größte der Lotse-Kampagne (aiou 0,7398 → 0,7527, wordbench −0,0024, spurious 5 → 3, linken-Soll heilt) — verworfen an EINEM Riss: der frische G-Median verliert die zweite Chart-G-Kreuzung (`cross_missing` 2 > 1), und auch die G-Einzelfits zählen nur 0/1/1 | **Topologie-Reparatur LF3**: lokale Chart-Rückblendung im 0,5-xh-Fenster um die verlorene Kreuzung, minimales t per Bisektion — Breite bleibt Laufform, Topologie bleibt Chart | eigene Pre-Reg, gemessen in derselben Runde |
 | Laufform LF2 Topologie-Wächter, Voll-Entfernung (`aug19`) | Kern-Erwartung erfüllt (Galoppieren-Soll 6 → 8 = Hand-Übereinstimmung, netto 4), aber die volle Breiten-Entfernung kostet Tinte (+0,00136, schießen +0,034) und kippt den Galoppieren-i-Punkt aus dem Ritt (Marken-Gate) | Reparatur statt Entfernung (→ LF3); der Wächter selbst bleibt als Write-Path-Prinzip (nie eine Zeile speichern, die Topologie verliert) | eigene Pre-Reg, gemessen in derselben Runde |
 | Laufform LF3 Buchstaben-Orakel (`aug19`) | Mechanismus richtig (Marken bleiben, aiou +0,007), Orakel zu schwach: das minimale Zellen-t überlebt den Kompositions-Kontext nicht (Galoppieren Buchstaben-Soll 7, Kompositions-Soll bleibt 6) | Kompositions-Orakel → **UMGESETZT als LF3b, alle Gates bestanden, als Kandidaten-Karte adoptiert** | erledigt |
+| K-E1/K-E2 Marken-Claim-Trennung (`aug21`) | die benannten Ziele heilen spektakulär (die-2: Soll 4 → 1 bzw. 2, dtw −0,028, V-Nadel weg; netto-Kreuzungen 22 → 18/19, Retrace 14 → 12, dev-Median exakt gehalten), aber vier DIFFUSE aiou-Risse (auch/schießen/Einen/muß-2, −0,013 bis −0,027): Körper-Deckung über die ganze Wortbreite. **K-E2 (Ein-Faktor: Breitenfelder ungeteilt) widerlegt die Breiten-Hypothese sauber** — 55/63 Kandidaten byte-gleich zu K-E1, darunter auch und muß-2 (zwei der vier Verlierer: der Breiten-Kanal war für sie inert); der Treiber ist die Distanzfeld-/Coverage-UMVERTEILUNG selbst, dieselben Kanäle tragen die Heilung — Gewinn und Verlust in DIESER Formulierung untrennbar (das Arm-⑨-Muster eine Schicht tiefer). Stufe 2 (Kringel) nicht eröffnet (Autor-Bedingung) | (1) **humanbench-Tie-Breaker** — der vorregistrierte Methodik-Fall in Reinform (aiou-Median der bewegten −0,0002 = Lineal-Indifferenz; lokale aiou-Verluste gegen die-2-Heilung + Struktur-Gewinne); (2) **Distanzfeld-NUR-Claim** (Coverage-Topf bleibt v4-Ökonomie, nur das Anziehungsfeld trennt je Klasse; die die-2-Nadel war 4,2× distanzfeld-getrieben; frische Pre-Reg); (3) Claim-Schärfung für Bogen-Strecken (unter/Seiten-Soll-Risse; nachrangig) | (1) Autor-Entscheid/Runde; (2) eigene Pre-Reg; (3) danach |
 
 ### 7.10 Runde aug17: die Befund-Matrix des 19er-Dev-Satzes und der Maßnahmenplan
 
