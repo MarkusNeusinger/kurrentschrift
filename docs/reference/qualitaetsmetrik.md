@@ -7869,3 +7869,107 @@ Owner-Go + dbsnapshot. Nächste Kettenarme
 (Tinten-Zuweisung per Strecke, eigene Pre-Reg), dann
 Soll-Quellen-Autopsie (daß) → K0-Z-R-Wiedervorlage auf
 K-C-Evidenz → K-D Tinten-Korridor.
+
+### Kette K-E `aug21` — Vorregistrierung: Tinten-Zuweisung per Strecke, Stufe 1: die Marken-Claim-Trennung
+
+Geschrieben und committet VOR der ersten Zahl. **Anlass
+(Autor-Fund, Kampagnen-Auftrag 2026-08-21):** die K-C-Autopsie
+benannte den Magneten, den keine Fremdtinten-Maske erreichen
+kann: in die-2 zieht der EIGENE i-Punkt die d-Schleife (die
+V-Nadel — Spitze 0,051 xh von der Punkt-Maske, Achse 3,2°
+parallel zum Punkt-Strich, ohne den Punkt im Feld 4,2× teurer;
+unter v4 der EINZIGE 63er-Verlierer, Soll-Abstand 3 → 4, dev-dtw
++0,0004). Der Autor vermutet dasselbe PLATTGEZOGEN in kleinen
+Kringeln — Kandidat für die 7 verbliebenen unechten
+Retrace-Zonen des v4-Stands. K-C hat die fremde Tinte entfernt;
+die eigene, dunkle Marke bleibt konstruktionsbedingt im Feld.
+Die Wurzel ist keine Masken-, sondern eine ZUWEISUNGS-Frage:
+heute sehen ALLE Samples eines Runs EIN Feld und EINEN
+Coverage-Topf (`_prepare_fields`: ein Spaltenband;
+`build_chain_problem`: ein `dist_smooth` für alle Samples, und
+jeder Coverage-Punkt zieht das NÄCHSTE Sample, egal welcher
+Strecke es gehört).
+
+**Maßnahme (Stufe 1 — nur Marken, wo der Duktus die Zuweisung
+eindeutig macht).** (1) Marken-STRECKEN: Striche eines
+Buchstaben-Segments, deren komponierte Init-Geometrie das
+Assembler-Kriterium erfüllt (`trace.diacritic_stroke_units`,
+alle Punkte > 1,0 xh — die K-A-Regel, keine
+Zweitimplementierung): der i-Punkt (Anker 100–120 des i), der
+u-Bogen (97–120 des u); der t-Querbalken fällt korrekt NICHT
+darunter (durchquert das Mittelband). (2) Marken-KOMPONENTEN:
+Nicht-Haupt-Komponenten der v4-Evidenz (NACH der
+Tinten-Evidenz-Maske — eine Evidenz, ein Stand), deren
+minimaler Abstand zur Init-Marken-Strecke ≤ 0,6 xh liegt
+(`MARK_MATCH_RADIUS_UNITS`, der Marken-Radius des Lineals —
+KEIN neuer Knopf); konkurrieren zwei Strecken, gewinnt die
+nächste. (3) Ein CLAIM (Strecke ↔ Komponente) schaltet BEIDE
+Zug-Kanäle um: die Komponente verlässt Distanz- und Breitenfeld
+und Coverage-Topf der Körper-Samples; die Marken-Samples der
+Strecke lesen ausschließlich das Feld IHRER Komponente, und
+deren Coverage-Punkte ziehen nur noch diese Samples. OHNE Claim
+ändert sich NICHTS: eine Marken-Strecke ohne dunkle Komponente
+behält das Körperfeld (der heutige Suchweg — die
+nicht-geschriebene Marke wird nicht neu behandelt), eine
+Komponente ohne Marken-Strecke bleibt Körper-Evidenz (die
+han/Sporn-Bruchstücke). Landmarks lesen das Körper-Skelett ohne
+geclaimte Komponenten (Punkte tragen keine Verzweigungen).
+Einsatzpunkt genau EINER: der Feld-Aufbau in `fit_word_chain`
+(`_prepare_fields` → `build_chain_problem`,
+Sample-Klassen-Maske nach dem `width_mask`-Muster), vom Folger
+über `_fields_of` in jede Runde weitergereicht; Seed-Fenster und
+Grid-Fits unverändert (die Marke gehört ihrem Buchstaben — die
+Fensterung war nie das Problem). EIN Knopf: `mark_claim`
+(`FollowWeights.mark_claim`, CLI `--mark-claim`;
+`HarvestOptions.mark_claim` declared-off — das K-C-Muster:
+erst der Folger, die Ernte-Adoption ist eine eigene
+Entscheidung). Claim-Liste je Wort im Report
+(Strecke, Komponente, Fläche, Abstand) — ein stiller Claim wäre
+der Fehlermodus, der ein Negativ unlesbar macht.
+
+**Messanordnung.** Basis = der aug21-v4-Stand DIESER Umgebung
+(§14 „Kette v4": Folger-Soll-Stack-Kandidat `kc-v4-cand` +
+dev-19-Scores); Läufe in derselben gepinnten Umgebung (BLAS 1,
+`--jobs 4`), Stack `--structure-guard-soll`, 63 Wörter:
+Identität (Flag aus — byte-gleich zur v4-Basis) und K-E
+(`--mark-claim`). Bewertung: k0-Protokoll (Soll-Abstand + aiou
+je Wort) + dev-19-File-Provider, gepaart; Augenschein die-2.
+
+**Gates (Autor-Vorgabe + Standard):** (1) Identität: Flag aus =
+byte-gleich; (2) Wörter ohne feuernden Claim byte-gleich
+(Konstruktions-Vorhersage — reißt sie, ist die Messkette
+falsch); (3) kein aiou-Verlierer (je Wort ≥ −0,003); (4)
+dev-19-dtw nicht schlechter: kein Wort über +0,003, Median
+nicht schlechter; (5) **die-2 gewinnt messbar:** Soll-Abstand
+4 → ≤ 3 ODER dtw ≤ −0,005, UND die V-Nadel im Augenschein weg;
+(6) Marken nicht schlechter, reversed 0, Netto-Kreuzungsdefekte
+≤ Basis; (7) Laufzeit-Report. Adoption: alle Gates → Autor-Go
+(dann Folger-Default, das v4-Muster); Stufe 2 (Kringel) wird
+NUR bei haltender Stufe 1 vorregistriert.
+
+**Ehrliche Erwartung.** die-2 heilt (der Magnet verliert beide
+Kanäle — die d-Schleife hat keinen Grund mehr, die V zu
+formen); Galoppieren: der i-Punkt-Strich wird
+komponentengebunden (Rest ~0,038 → gleich oder leicht besser);
+unter/kann u. a. bewegen sich über den u-Bogen-Claim (das
+Körperfeld ändert sich um den Bogen), erwartet klein; von den 7
+unechten Retrace-Zonen dürfen NUR die marken-verursachten
+fallen — die Kringel-Klasse (Schleifenbuchstaben) bleibt
+stehen und wird als Diagnose-Spalte für Stufe 2 ausgewiesen.
+Benannte Risiken: (a) ein Claim auf ein Körper-Bruchstück —
+der 0,6-xh-Radius von einer FLOATENDEN Strecke deckt das ab,
+die Claim-Liste macht es lesbar; (b) eine Marke, deren Tinte
+den Körper BERÜHRT (eine Komponente mit der Haupttinte) —
+kein Claim möglich, heutiges Verhalten, benannte
+Stufe-1-Grenze; (c) die Körper-Coverage-Dichte verschiebt sich
+(Marken-Pixel verlassen den Topf) — Teil der Maßnahme,
+`cov_rmse` über das Flag hinweg nicht vergleichbar.
+
+**Stufe 2 (nur wenn Stufe 1 hält, eigene Pre-Reg):** die
+Kringel — die Zuweisung, wo sie NICHT eindeutig ist (zwei
+Körper-Strecken teilen sich dieselbe Tinte einer kleinen
+Schleife, und der Coverage-Topf lässt einen Pass die Arbeit
+beider erledigen); braucht den Duktus-Prior als
+VERBRAUCHS-ZUORDNUNG (jeder Tinten-Punkt wird von genau einer
+Strecke verbraucht); Messgröße: unechte Retrace-Zonen an
+Schleifenbuchstaben.

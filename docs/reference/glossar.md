@@ -48,14 +48,14 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
-- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4
+- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4
 - **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Plateau-Anker §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
-- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
+- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4
 - **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Editor §5 · Wort-Trace §2
@@ -562,6 +562,36 @@ Drop-Liste je Wort in `meta.ink_evidence`. *Technisch:*
 `tools/pairlab/ink_evidence.py`, Einsatz in `follow_derived` und
 `harvest.chain_word_strokes` → qualitaetsmetrik.md §14 „Kette K-C"
 (Messung) + „Kette v4" (Re-Baseline)
+
+**Tinten-Zuweisung per Strecke** *(per-stroke ink assignment, Kette
+K-E)* — der Autor-Ansatz nach K-C: nicht WELCHE Tinte zieht, sondern
+WEN sie ziehen darf. Heute sehen alle Samples eines Ketten-Runs EIN
+Distanzfeld und EINEN Coverage-Topf — jede Tinte zieht das nächste
+Sample, egal zu welcher Strecke (Strich) es gehört; so zieht in
+die-2 der eigene i-Punkt die d-Schleife (die V-Nadel), und dasselbe
+plattgezogen ist der Verdacht hinter den verbliebenen unechten
+Retrace-Zonen an kleinen Kringeln. Stufe 1 = Marken-Claim-Trennung
+(eindeutige Zuweisung per Duktus); Stufe 2 = Kringel (braucht den
+Duktus-Prior als Verbrauchs-Zuordnung: jeder Tinten-Punkt wird von
+genau einer Strecke verbraucht), nur bei haltender Stufe 1.
+*Technisch:* `tools/pairlab/chain.py` (Feld-Aufbau in
+`fit_word_chain`/`_prepare_fields`) → qualitaetsmetrik.md §14
+„Kette K-E", tintenfolger.md §7.3 A9/K-E
+
+**Marken-Claim-Trennung** *(mark-claim separation, K-E Stufe 1)* —
+die eindeutige Hälfte der Tinten-Zuweisung per Strecke: eine
+Marken-Strecke (Strich eines Buchstaben-Segments, dessen Init das
+Assembler-Kriterium `diacritic_stroke_units` erfüllt — i-Punkt,
+u-Bogen; der t-Querbalken nicht) CLAIMT die dunkle
+Nicht-Haupt-Komponente im 0,6-xh-Marken-Radius des Lineals. Ein
+Claim schaltet beide Zug-Kanäle um: die Komponente verlässt Feld und
+Coverage-Topf der Körper-Samples, die Marken-Samples lesen
+ausschließlich ihre Komponente. Ohne Claim ändert sich nichts —
+Marken ohne Tinte suchen wie heute, Körper-Bruchstücke bleiben
+Körper-Evidenz. EIN Knopf `mark_claim` (`--mark-claim`),
+declared-off bis zur gemessenen Adoption. *Technisch:*
+`tools/pairlab/chain.py`, Knopf in `FollowWeights`/`HarvestOptions`
+→ qualitaetsmetrik.md §14 „Kette K-E"
 
 **Topologie-Wächter** *(structure guard)* — Arm ⑨ des Tintenfolgers:
 eine Runden-AKZEPTANZREGEL statt einer Kraft. Vor der ersten Runde

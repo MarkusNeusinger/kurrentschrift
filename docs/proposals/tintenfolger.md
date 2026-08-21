@@ -646,6 +646,20 @@ Aufwand/Risiko:
   (Tinten-Zuweisung per Strecke: Stufe 1 Marken, Stufe 2 Kringel),
   dann Soll-Quellen-Autopsie (daß) → K0-Z-R-Wiedervorlage auf
   K-C-Evidenz → K-D Tinten-Korridor.
+- **A9 / K-E — Tinten-Zuweisung per Strecke (Autor-Ansatz,
+  2026-08-21).** Nicht welche Tinte zieht (K-C), sondern WEN sie
+  ziehen darf: heute sehen alle Samples eines Runs ein Feld und
+  einen Coverage-Topf — der eigene i-Punkt zieht in die-2 die
+  d-Schleife (V-Nadel, der einzige v4-Verlierer), und dasselbe
+  plattgezogen ist der Verdacht hinter den 7 verbliebenen
+  unechten Retrace-Zonen an kleinen Kringeln. **Stufe 1
+  (Marken-Claim-Trennung):** Marken-Strecken (Assembler-Kriterium
+  am Init) claimen ihre dunkle Komponente im
+  0,6-xh-Lineal-Radius; ein Claim schaltet Feld UND Coverage um,
+  ohne Claim ändert sich nichts. Pre-Reg §14 „Kette K-E".
+  **Stufe 2 (Kringel):** nur bei haltender Stufe 1 — braucht den
+  Duktus-Prior als Verbrauchs-Zuordnung; Messgröße unechte
+  Retrace-Zonen an Schleifenbuchstaben; eigene Pre-Reg.
 - **A8 / K-D — Tinten-Korridor (Autor-Idee, 2026-08-20).** Eine
   Sperrzone um die erweiterte Tinte, die die Bahn nicht durchstoßen
   darf (Barriere auf dem Abstandsfeld statt weichem Zug): verbietet
@@ -656,7 +670,10 @@ Aufwand/Risiko:
   die komponierte e-Breite (§7.2), die kein Korridor heilt. Eigene
   Pre-Reg NACH K-C.
 
-Reihenfolge: K-C → A1 → A2 → A3 → (A4 oder A5 oder K-D) → A6. NICHT
+Reihenfolge (Autor-Auftrag `aug21`): K-C ✓ (v4) → K-E Stufe 1 →
+(K-E Stufe 2 nur bei haltender Stufe 1) → Soll-Quellen-Autopsie
+(daß) → K0-Z-R-Wiedervorlage auf K-C-Evidenz → K-D; danach
+A2 → A3 → (A4 oder A5) → A6. A1 ist adoptiert (opt-in). NICHT
 wieder aufgenommen: weitere λ/Gewichts-Sweeps der alten Formulierung
 (durch ①⑤⑥⑥b⑨ erschöpfend negativ beantwortet).
 

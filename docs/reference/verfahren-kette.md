@@ -86,7 +86,7 @@ rückwirkend nummeriert (Konvention Nr. 3).
 **Marken-Claim-Trennung** (Tinten-Zuweisung per Strecke, der in K-C
 benannte die-2-Nachfolger: Körper-Evidenz ohne Marken-Komponenten,
 Marken-Striche mit ihrer eigenen — Stufe 1 Marken, Stufe 2 Kringel;
-eigene Pre-Reg) · A2 (SDM + Dichtebewusstheit, Welle 2 — Ziele
+**vorregistriert als A9/K-E, §14 „Kette K-E `aug21`", in Messung**) · A2 (SDM + Dichtebewusstheit, Welle 2 — Ziele
 Stranding/Doppelpass,
 NICHT muß/unter) · A3 (Kreuzungen als explizite Variablen — jetzt mit
 der das/die-Höhenstapel-Evidenz aus §7.10) · A5 (Zwei-Pass-Zwang aus
