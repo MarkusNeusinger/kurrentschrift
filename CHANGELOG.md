@@ -14,6 +14,23 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Chain K-D, the ink corridor: closed as objectless after v4 by its
+  own pre-registered object test — no implementation, a positive
+  finding about the route's state** (§14 `aug21` „Kette K-D"; the
+  final item of the author's campaign sequence). The corridor idea
+  (a keep-out zone around the extended ink the path may not pierce)
+  predates the K-C measurement, and rung 0 — an excursion inventory
+  over the existing v4-base and v5-contender candidates, no solve —
+  shows the target class is gone: not a single word of the 63 reaches
+  0.35 xh of paper excursion on either candidate (set maximum: zum at
+  0.33 xh), while the autopsied aug20 needle class sat at 0.5–0.83 xh.
+  The root treatment (K-C dropping the foreign-ink magnets from the
+  evidence) outran the symptom ban. The decision rule was declared
+  before the number; the inventory script stays as a standing sensor,
+  and the revival trigger (a future inventory or arm showing a new
+  paper-needle class → the barrier with a fresh pre-registration and
+  the author's named unter lock-in risk) is registered in §7.9.
+
 - **Chain K0-S: the soll-source autopsy vindicates the metric, ONE
   soll pipeline is built, and the K0-Z-R resubmission passes every
   gate — with the old zwei trade inverted** (§14 `aug21` „Kette
