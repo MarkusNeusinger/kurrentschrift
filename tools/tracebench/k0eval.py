@@ -31,6 +31,7 @@ from tools.tracebench.reference import DEFAULT_FIXTURES_DIR, Reference, load_ref
 from tools.tracebench.run import find_fixture_root
 from tools.tracebench.soll import SollRow, ductus_soll
 
+
 STYLE = "suetterlin"
 WHICH = "words"
 # The standing per-word aiou gate of the §14 chain arms (K-C onward): a word
@@ -84,20 +85,23 @@ def main() -> None:
     for warning in warnings:
         print(f"WARN {warning}")
     ids = [i for i in reference.order if i in soll_rows]
-    print(f"{len(ids)} words scored")
+    print(f"{len(ids)} words in the k0 scoring set")
 
     base = eval_candidate(args.base, reference, soll_rows, ids)
     print(f"== {args.base.name}: total soll distance {_total(base)}")
     if args.candidate is None:
+        unscored = 0
         for sid in ids:
             row = base[sid]
             if row["status"] != "ok":
-                print(f"  {sid:14s} {row['status']}")
+                unscored += 1
                 continue
             print(
                 f"  {sid:14s} cross {row['cross']}/{row['soll_cross']} zones {row['zones']}/{row['soll_zones']} "
                 f"dist {row['soll_dist']} aiou {row['aiou']:.4f}"
             )
+        if unscored:
+            print(f"  ({unscored} words not in the candidate file)")
         if args.json:
             args.json.write_text(json.dumps({args.base.name: base}, indent=1, default=str))
             print(f"wrote {args.json}")
@@ -110,10 +114,14 @@ def main() -> None:
     moved: list[str] = []
     losers: list[tuple[str, float]] = []
     moved_deltas: list[float] = []
+    unscored = 0
     for sid in ids:
         a, b = base[sid], cand[sid]
         if a["status"] != "ok" or b["status"] != "ok":
-            print(f"  {sid:14s} base={a['status']} cand={b['status']}")
+            if a["status"] != b["status"]:
+                print(f"  {sid:14s} base={a['status']} cand={b['status']}")
+            else:
+                unscored += 1
             continue
         same_bytes = a["strokes_key"] == b["strokes_key"]
         (identical if same_bytes else moved).append(sid)
@@ -132,10 +140,16 @@ def main() -> None:
                 f"aiou {a['aiou']:.4f} -> {b['aiou']:.4f} ({d_aiou:+.4f})  "
                 f"{'identical' if same_bytes else 'moved'}"
             )
+    if unscored:
+        print(f"  ({unscored} words in neither candidate file)")
     print(f"\nsoll distance total: {_total(base)} -> {_total(cand)} ({better} better / {same} same / {worse} worse)")
     if moved_deltas:
         ordered = sorted(moved_deltas)
-        median = ordered[len(ordered) // 2] if len(ordered) % 2 else (ordered[len(ordered) // 2 - 1] + ordered[len(ordered) // 2]) / 2
+        median = (
+            ordered[len(ordered) // 2]
+            if len(ordered) % 2
+            else (ordered[len(ordered) // 2 - 1] + ordered[len(ordered) // 2]) / 2
+        )
         print(
             f"aiou over the {len(moved)} moved words: min {min(moved_deltas):+.4f} "
             f"median {median:+.4f} max {max(moved_deltas):+.4f}"
@@ -143,9 +157,7 @@ def main() -> None:
     print(f"aiou losers (below {AIOU_LOSER_GATE}): {len(losers)}{' -> ' + str(losers) if losers else ''}")
     print(f"byte-identical rows: {len(identical)}/{len(identical) + len(moved)}; moved: {sorted(moved)}")
     if args.json:
-        args.json.write_text(
-            json.dumps({args.base.name: base, args.candidate.name: cand}, indent=1, default=str)
-        )
+        args.json.write_text(json.dumps({args.base.name: base, args.candidate.name: cand}, indent=1, default=str))
         print(f"wrote {args.json}")
 
 
