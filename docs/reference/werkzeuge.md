@@ -239,8 +239,8 @@ uv run python -m tools.dbsnapshot.restore <snapshot-dir> --database-url postgres
   `pair_instances` derselben Vorlagen; `aug02`). Die Fixture-Roots frieren
   seit `aug14` zusätzlich `word_instances.json` ein — die gespeicherten
   Wortbahnen des Sets samt Frame-Gate (`frame_stale`), deren
-  `authored`-Zeilen der Referenzsatz des geplanten `tools/tracebench`
-  sind ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md));
+  `authored`-Zeilen der Referenzsatz von `tools/tracebench` sind
+  ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md));
   Refill ohne Re-Baseline: `--only word-instances` bzw. `--only instances`.
   Ohne Cloud-SQL-Zugang baut `fetch_fixtures.py` dieselben Roots
   byte-kompatibel über HTTPS auf — der rein lesende Zwilling von
@@ -254,6 +254,41 @@ uv run python -m tools.dbsnapshot.restore <snapshot-dir> --database-url postgres
   eingefrorene Zeile) und `--no-laufform` komponiert chart-treu ohne
   jede Laufform. Beide liefern per Doktrin §6 eine
   OFF-HEADLINE-Kandidatenzahl, nie die Headline.
+- **`tools/tracebench` + `tools/pairlab/follow`** — das Lineal und der
+  Mess-Kandidat des Tintenfolger-Duells
+  ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md);
+  Zahlen und Vorregistrierungen in
+  [`qualitaetsmetrik.md`](qualitaetsmetrik.md) §14). Die stehende
+  Mess-Liturgie einer Runde, wie sie die §14-Einträge seit `aug19`
+  fahren:
+  1. **Erster Akt** (Cloud-Session): `uv sync --all-extras`, dann
+     `uv run python -m tools.wordbench.fetch_fixtures --set all
+     --verify` (bit-exakte Abnahme der Fixture-Roots).
+  2. **Folger-Lauf** (der Duell-Kette-Kandidat; Mess-Stack-Konvention
+     seit K0-Z ist `--structure-guard-soll`): BLAS gepinnt und
+     `--jobs 4`, z. B. `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
+     uv run python -m tools.pairlab.follow --all --set words
+     --structure-guard-soll --jobs 4 --json … --candidate-out …` —
+     `--candidate-out` schreibt den File-Provider-Kandidaten, die
+     Arm-Flags (`--mark-claim`, `--soll-source`,
+     `--structure-guard-ratchet` …) stehen im `--help` und je Arm in
+     seinem §14-Eintrag.
+  3. **dev-19-Scoring**: `uv run python -m tools.tracebench --split dev
+     --candidate file --candidate-file <cand.json> --json …
+     --compare <basis-report.json>` — gepaarte Deltas, Zähler, Gates.
+  4. **63er-k0-Protokoll**: `uv run python -m tools.tracebench.k0eval
+     <basis-cand.json> <arm-cand.json>` — referenzfrei über alle
+     Wörter: Soll-Abstand je Wort (Kompositions-Soll durch
+     `ductus_soll`), `aiou` gegen die eingefrorene Maske,
+     Byte-Identitäts-Klassen; ersetzt die bis `aug21` je Runde neu
+     geschriebenen Scratch-Skripte.
+  5. **Sensoren/Augenschein nach Bedarf**:
+     `uv run python -m tools.tracebench.excursions <cand.json>` (das
+     Papier-Exkursions-Inventar, der stehende K-D-Sensor) und
+     `tools/tracebench/view.py` (die Duell-/Augenschein-Seite).
+  Invarianten: alles reine Messschicht (nie DB/`core/`/Rendering);
+  gepaarte Vergleiche gelten nur innerhalb EINER gepinnten Umgebung
+  (aug16-Lehre); der Dev-Split ist eingefroren und append-never.
 - **`tools/inksight`** — die Route-B-Pipeline des Tintenfolger-Duells
   ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §4):
   drei Stufen (Crop-Vorbereitung → Inferenz im ISOLIERTEN

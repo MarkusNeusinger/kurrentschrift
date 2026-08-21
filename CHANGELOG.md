@@ -14,6 +14,26 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The campaign's measurement liturgy becomes documentation and a
+  standing tool: werkzeuge.md learns the tracebench/follow loop, and
+  the k0-protocol evaluation ships as `tools/tracebench/k0eval.py`**
+  (session retro 2026-08-21, points 2+3). `werkzeuge.md`'s bench
+  section — which still called `tools/tracebench` "geplant" — gains
+  the standing five-step round liturgy the §14 entries have been
+  running since `aug19`: extras + bit-exact fixture fetch first, the
+  pinned follower run on the soll-stack convention with
+  `--candidate-out`, the dev-19 file-provider scoring with
+  `--compare`, the reference-free 63-word k0 protocol, and the
+  sensors/Augenschein tools. The k0 evaluation itself — per word the
+  soll distance against the composition soll through `ductus_soll`
+  (the one soll pipeline since K0-S), `aiou` against the frozen mask,
+  paired totals, the standing −0.003 aiou-loser gate and the
+  byte-identity classes every identity gate reads — had been re-written
+  as a scratchpad script every round and died with each container;
+  `k0eval.py` is the durable form. Glossary: the `aug20`-coined
+  „k0-Protokoll" finally gets its entry (themed section +
+  Schnellindex).
+
 - **Chain K-D, the ink corridor: closed as objectless after v4 by its
   own pre-registered object test — no implementation, a positive
   finding about the route's state** (§14 `aug21` „Kette K-D"; the
