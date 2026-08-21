@@ -553,11 +553,15 @@ Komponente ist das Wort und bleibt immer. Aus — oder nichts zu droppen —
 heißt derselbe `WordCase` (Identität), darum sind Wörter ohne Fremdtinte
 byte-identisch. Ändert NUR, was den Fit zieht; das Bench-Lineal
 (`ref_mask`, AIoU, Zähler) bleibt eingefroren — die Torpfosten stehen.
-Flags `FollowWeights.ink_evidence` (`--ink-evidence`) und
-`HarvestOptions.ink_evidence`, beide declared-off bis zur gemessenen
-Adoption; Drop-Liste je Wort in `meta.ink_evidence`. *Technisch:*
+Nach dem aug20-Sechs-Gates-Pass und dem Autor-Go als **Kette v4**
+adoptiert (`aug21`): `FollowWeights.ink_evidence` und
+`HarvestOptions.ink_evidence` sind seither DEFAULT an (auch im
+`chain`-Provider des Tracebench); Archäologie-Pfad `--no-ink-evidence`
+bzw. `ink_evidence=False` = der Vor-v4-Stand, byte-identisch.
+Drop-Liste je Wort in `meta.ink_evidence`. *Technisch:*
 `tools/pairlab/ink_evidence.py`, Einsatz in `follow_derived` und
 `harvest.chain_word_strokes` → qualitaetsmetrik.md §14 „Kette K-C"
+(Messung) + „Kette v4" (Re-Baseline)
 
 **Topologie-Wächter** *(structure guard)* — Arm ⑨ des Tintenfolgers:
 eine Runden-AKZEPTANZREGEL statt einer Kraft. Vor der ersten Runde

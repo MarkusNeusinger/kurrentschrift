@@ -460,7 +460,7 @@ class FollowWeights:
     only TOWARD the soll, never past it, never away; a class the two agree
     on freezes exactly (the two-sided special case). Implies the guard;
     takes precedence over `structure_guard_two_sided`."""
-    ink_evidence: bool = False
+    ink_evidence: bool = True
     """K-C (§14 `aug20`, the author's "Flecken" find): before the grid fits and
     the solve, drop every non-main ink component that is paper-grey rather
     than ink-dark from the case's `skel`/`width_map`
@@ -468,8 +468,10 @@ class FollowWeights:
     reverse, everything the frozen binarisation kept that the word never
     wrote. The largest component (the word) and every component as dark as
     it (i-dots, u-bows, broken stroke fragments) stay. The bench's frozen
-    mask is untouched; only what pulls the FIT changes. Default False = the
-    case object passes through untouched, byte-identical to before."""
+    mask is untouched; only what pulls the FIT changes. Default True since
+    Kette v4 (§14 `aug21` re-baseline — all six aug20 gates passed, author's
+    go); False (`--no-ink-evidence`) is the archaeology path: the case object
+    passes through untouched, byte-identical to the pre-v4 follower."""
     ink_evidence_paper_fraction: float = INK_EVIDENCE_PAPER_FRACTION
     """Where on the main-ink → paper grey scale a component stops being ink.
     A measured class boundary (real ≤ 0.38, foreign ≥ 0.74 over the 63
@@ -2064,8 +2066,8 @@ def follow_derived(
         "landmark": _merge_landmark_meta(landmarks_by_run, mode=weights.landmark_targets),
         "n_params": n_params,
         "timings": {"seconds": round(time.perf_counter() - started, 3)},
-        # Only while the measure is on: the key's absence keeps the default
-        # artefact byte-identical to every report written before K-C.
+        # Only while the measure is on: the key's absence keeps an archaeology
+        # artefact (`--no-ink-evidence`) byte-identical to every pre-K-C report.
         **({"ink_evidence": ink_report.as_dict()} if ink_report is not None else {}),
     }
     if not word_strokes:
@@ -2508,10 +2510,11 @@ def build_parser() -> argparse.ArgumentParser:
         "violating zone and re-solve once instead of rejecting the whole round (0 = round-atomic)",
     )
     parser.add_argument(
-        "--ink-evidence",
+        "--no-ink-evidence",
         action="store_true",
-        help="K-C (aug20): drop paper-grey non-main ink components (specks, show-through) from the "
-        "evidence the fit is pulled by — the frozen bench mask stays as it is",
+        help="switch the K-C ink-evidence mask OFF (the Kette v4 default drops paper-grey non-main "
+        "components — specks, show-through — from the evidence the fit is pulled by; the frozen bench "
+        "mask stays as it is). Off = the pre-v4 follower, byte-identical, for archaeology runs",
     )
     parser.add_argument(
         "--ink-evidence-paper-fraction",
@@ -2553,7 +2556,7 @@ def weights_from_args(args: argparse.Namespace) -> FollowWeights:
         structure_guard_soll=bool(args.structure_guard_soll),
         structure_guard_zone_units=float(args.structure_guard_zone),
         structure_guard_ratchet=bool(args.structure_guard_ratchet),
-        ink_evidence=bool(args.ink_evidence),
+        ink_evidence=not args.no_ink_evidence,
         ink_evidence_paper_fraction=float(args.ink_evidence_paper_fraction),
     )
 

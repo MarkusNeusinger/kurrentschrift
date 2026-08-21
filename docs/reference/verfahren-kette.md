@@ -21,7 +21,7 @@
   ist er die prior-geführte Referenz-Route (Route A) und in der
   Produktion die Quelle der `traced`-Zeilen.
 
-## Aktueller Stand: v3 (2026-08-19) — Assembly-Ordnung + Trace-Reparatur
+## Aktueller Stand: v4 (2026-08-21) — Tinten-Evidenz-Maske als Default
 
 Formulierung: EDT-Punktdatenterm + Landmark-/Width-Operatoren +
 Budget-Veto; als Folger-Aufsatz der re-linearisierende Restart
@@ -35,16 +35,29 @@ gesamte unter/muß-Kollaps-Klasse (unter 0,450 → 0,085). **v3 (K-B,
 läuft auch auf den TRACE-Strichen (`HarvestOptions.trace_repair` =
 True; A1-Muster — ändert, was der Trace zeigt, nie, was die Ernte
 misst) — sie löste die Zacken-Klasse (Galoppieren 0,233 → 0,040, die
-fehlende i-Marke heilt). Der Marken-Nachfit (A1) bleibt **opt-in**
-(`--mark-refit`). Zahlen (dev-19, §14-Re-Baseline v3): **dtw 0,0491
-med · p90 0,0894 · worst muß 0,110 · marks 0 fehlend**; bekannte
+fehlende i-Marke heilt). **v4 (K-C, §14 `aug20` Messung + `aug21`
+Adoption):** die Tinten-Evidenz-Maske — papiergraue
+Nicht-Haupt-Komponenten (Flecken, Rückseiten-Durchschein) werden vor
+Seed-Fenstern und Solve aus der Evidenz gelöscht, die den Fit zieht
+(`FollowWeights.ink_evidence` = `HarvestOptions.ink_evidence` = True;
+Archäologie `--no-ink-evidence`); das Bench-Lineal bleibt eingefroren.
+Erste adoptierte Änderung dessen, was der Fit MISST: Soll-Abstand
+107 → 86 (aug20) bzw. 103 → 85 (aug21-Umgebung), Galoppieren-dtw
+−83 %, null dev-Verlierer über +0,0004. Der Marken-Nachfit (A1)
+bleibt **opt-in** (`--mark-refit`). Zahlen (dev-19, §14-Re-Baseline
+v4 `aug21`, `chain`-Provider): **dtw 0,0491 med · p90 0,0891 · worst
+muß 0,110 · marks 0 fehlend · aiou 0,7021**; Folger-Soll-Stack:
+dtw-Median 0,0448 · aiou 0,7481 · 63er-Soll-Abstand 85. Bekannte
 Klassen-Defekte: das er-Gekritzel in unter als echter Rest (~0,087,
-versetzter Karten-Init), Kreuzungs-Höhen-Drift (das/die, §13a),
-Galoppieren 5 verlorene Kreuzungen, Struktur-Erfindungen (Netto 21
-Kreuzungsdefekte gegen 7 beim Lotsen).
+versetzter Karten-Init + Composer-e-Breite §7.2), die
+Reihenfolge-Lineal-Frage (u-Bogen/Deckbogen als Körper — Folger-p90
+0,235), Kreuzungs-Höhen-Drift (das/die, §13a), die-2s V-Nadel in die
+EIGENE Marke (benannter Nachfolger: Marken-Claim-Trennung),
+Struktur-Erfindungen (netto 21–22 Kreuzungsdefekte gegen 7 beim
+Lotsen).
 
-**Versionierung:** v2 und v3 seit 2026-08-19 (die ersten adoptierten
-Formulierungsänderungen — beide in der KANDIDATEN-Schicht, kein
+**Versionierung:** v2 und v3 seit 2026-08-19 (Kandidaten-Schicht),
+v4 seit 2026-08-21 (Evidenz-Schicht — was der Fit sehen darf; kein
 Fit-Parameter bewegt). Die abgeschlossenen Gewichts-Arme werden nicht
 rückwirkend nummeriert (Konvention Nr. 3).
 
@@ -66,10 +79,15 @@ rückwirkend nummeriert (Konvention Nr. 3).
 | aug19 | **K-B Zacken-Reparatur im Trace** | `HarvestOptions.trace_repair` — der geteilte §11-Detektor auf den Trace-Strichen (A1-Muster) | **ADOPTIERT als v3** (Galoppieren 0,233 → 0,040, i-Marke heilt, retrace-spurious 13 → 6, touch 25 → 21; kein Wort über +0,0016; der verlorene unter-Zonen-Match ist autopsiert eine Zufalls-Korrespondenz im er-Gekritzel) | „Kette K-B `aug19`“ |
 | aug20 | K0-Z zonale Rückweisung | `--structure-guard-zone`: Verletzungs-Orte per Positions-Diff, Anker-Pinnen im Radius, EIN Nach-Solve statt Voll-Revert (Leiter {0,55 · 1,0}) | verworfen per Gate an zwei knappen Rissen — aber die Substanz ist der größte Tinten-Gewinn der Route (Zone 1,0: 59/79 atomar verworfene Runden gerettet, Soll 107 → 102, aiou bis +0,154, dev-dtw-Median 0,0494 → 0,0472 bei komplett grünem dev-19); Zone 0 byte-identisch | „Kette K0-Z `aug20`“ |
 | aug20 | K0-Z-R Ratschen-Budget | `--structure-guard-ratchet`: das Budget ratscht nach jeder akzeptierten Runde Richtung Soll | verworfen per Gate — Ratsche+0,55 = stärkste Sprosse der Ketten-Geschichte (Soll 107 → **99**, NULL aiou-Verlierer, „ein" heilt), aber daß bleibt 2 → 3: **die daß-Autopsie findet ZWEI DIVERGIERENDE SOLL-QUELLEN** (Guard: `structure_zones` am Init = 2 Retrace · Metrik: `ductus_soll` = 1) — das „zwei Lineale"-Muster des Tages; dazu zweis dtw+0,0142-gegen-aiou+0,0920-Trade. Rettungsweg: Soll-Quellen-Autopsie, dann Wiedervorlage mit EINER Pipeline | „Kette K0-Z-R `aug20`“ |
+| aug20/21 | **K-C Tinten-Evidenz-Maske** (Autor-Fund „Flecken") | `ink_evidence` — papiergraue Nicht-Haupt-Komponenten (rel > 0,5 auf der Grau-Skala, gemessene Lücke 0,38–0,74) raus aus `skel`/`width_map`, bevor irgendetwas den Fit zieht; Lineal eingefroren | **ADOPTIERT als v4** (`aug20`: alle sechs Gates — Soll 107 → 86 bei 0 schlechter, null aiou-Verlierer, dev-dtw-Median 0,0494 → 0,0453 = Bestwert, Galoppieren −83 %, beide zwei-Nadeln weg, 40 fremdtintenfreie Wörter byte-gleich, Hand-Claim 0; `aug21` Autor-Go + Flip beider Defaults, Re-Baseline in zweiter Umgebung reproduziert das Muster: Soll 103 → 85, dev 0,0491 → 0,0448, kein Verlierer über +0,0004; die-2 bleibt vorhersagegemäß ungeheilt — der Magnet ist die EIGENE Marke) | „Kette K-C `aug20`“ + „Kette v4 `aug21`“ |
 
-## Stehende v4-Anwärter (Formulierungsänderungen, tintenfolger.md §7.3)
+## Stehende v5-Anwärter (Formulierungsänderungen, tintenfolger.md §7.3)
 
-A2 (SDM + Dichtebewusstheit, Welle 2 — Ziele Stranding/Doppelpass,
+**Marken-Claim-Trennung** (Tinten-Zuweisung per Strecke, der in K-C
+benannte die-2-Nachfolger: Körper-Evidenz ohne Marken-Komponenten,
+Marken-Striche mit ihrer eigenen — Stufe 1 Marken, Stufe 2 Kringel;
+eigene Pre-Reg) · A2 (SDM + Dichtebewusstheit, Welle 2 — Ziele
+Stranding/Doppelpass,
 NICHT muß/unter) · A3 (Kreuzungen als explizite Variablen — jetzt mit
 der das/die-Höhenstapel-Evidenz aus §7.10) · A5 (Zwei-Pass-Zwang aus
 Breiten-Evidenz) · A4 (Barriere statt Veto) · A6 (GNC-Schedule) ·

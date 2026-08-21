@@ -285,7 +285,12 @@ def _chain_record(case: Any, strokes: list, registration: dict, xh: float) -> di
 
 
 def _chain_options(
-    style: str, chain_seed: str, mark_refit: bool = False, marks_last: bool = True, trace_repair: bool = True
+    style: str,
+    chain_seed: str,
+    mark_refit: bool = False,
+    marks_last: bool = True,
+    trace_repair: bool = True,
+    ink_evidence: bool = True,
 ) -> Any:
     from tools.laufform.harvest import HarvestOptions  # noqa: PLC0415
 
@@ -296,6 +301,7 @@ def _chain_options(
         mark_refit=mark_refit,
         marks_last=marks_last,
         trace_repair=trace_repair,
+        ink_evidence=ink_evidence,
     )
 
 
@@ -308,6 +314,7 @@ def chain_provider(
     mark_refit: bool = False,
     marks_last: bool = True,
     trace_repair: bool = True,
+    ink_evidence: bool = True,
 ) -> Provider:
     """The Stage-B chain fit — run through the HARVEST's own code path.
 
@@ -332,7 +339,7 @@ def chain_provider(
 
     def provide(reference: Reference, specimen_ids: Sequence[str]) -> dict[str, Candidate]:
         ids = list(specimen_ids)
-        opts = _chain_options(style, chain_seed, mark_refit, marks_last, trace_repair)
+        opts = _chain_options(style, chain_seed, mark_refit, marks_last, trace_repair, ink_evidence)
         cases = _chain_cases(which=which, style=style, only=ids, fixtures_root=root)
         out: dict[str, Candidate] = {}
         for specimen_id in ids:

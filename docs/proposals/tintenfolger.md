@@ -638,9 +638,14 @@ Aufwand/Risiko:
   Formulierungsänderung — §14 „Kette K-C". **GEMESSEN `aug20` nacht:
   alle sechs Gates bestanden** (Soll 107 → 86 bei 0 schlechter, null
   aiou-Verlierer, dev-dtw-Median 0,0453 = Bestwert, Galoppieren −83 %,
-  40 fremdtintenfreie Wörter byte-gleich); Adoption als Kette v4
-  wartet auf das Autor-Go. Nächster Kettenarm: K0-Z-R-Wiedervorlage
-  auf K-C-Evidenz nach der Soll-Quellen-Autopsie.
+  40 fremdtintenfreie Wörter byte-gleich). **ADOPTIERT als Kette v4
+  (`aug21`, Autor-Go):** `ink_evidence=True` als Folger- UND
+  Harvest-Default (Archäologie `--no-ink-evidence`), datierte
+  Re-Baseline §14 „Kette v4 `aug21`". Nächste Kettenarme
+  (Kampagnen-Reihenfolge, Autor `aug21`): Marken-Claim-Trennung
+  (Tinten-Zuweisung per Strecke: Stufe 1 Marken, Stufe 2 Kringel),
+  dann Soll-Quellen-Autopsie (daß) → K0-Z-R-Wiedervorlage auf
+  K-C-Evidenz → K-D Tinten-Korridor.
 - **A8 / K-D — Tinten-Korridor (Autor-Idee, 2026-08-20).** Eine
   Sperrzone um die erweiterte Tinte, die die Bahn nicht durchstoßen
   darf (Barriere auf dem Abstandsfeld statt weichem Zug): verbietet

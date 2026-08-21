@@ -286,6 +286,8 @@ def test_marks_last_is_the_v2_baseline_and_reorders_only(tmp_path: Path, monkeyp
     assert _chain_options("suetterlin", "composed", marks_last=False).marks_last is False  # v1 archaeology
     assert _chain_options("suetterlin", "composed").trace_repair is True  # the v3 baseline (K-B)
     assert _chain_options("suetterlin", "composed", trace_repair=False).trace_repair is False  # needle archaeology
+    assert _chain_options("suetterlin", "composed").ink_evidence is True  # the v4 baseline (K-C)
+    assert _chain_options("suetterlin", "composed", ink_evidence=False).ink_evidence is False  # pre-v4 archaeology
     # The assembler's own criterion, read off word-units strokes.
     assert diacritic_stroke_units([[0.1, 1.4], [0.3, 1.6]]) is True
     assert diacritic_stroke_units([[0.1, 0.2], [0.3, 1.6]]) is False

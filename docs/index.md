@@ -98,7 +98,7 @@ docs/
 │   ├── write-api.md              # Öffentliche Render-Endpunkte /write/glyphs + /write/word: Shaping → Komposition → Payload
 │   ├── werkzeuge.md              # Dev-Tools unter tools/: Inspektions-Labs + pairlab-Einstiegsskripte, Ernte-Werkzeuge, humanbench/fitview, dbsnapshot, Benches, quizgen
 │   ├── verfahren.md              # Verfahrensseiten-Übersicht: Versions-Konvention der Duell-Routen, Register-Regel (Zahlen wohnen in §14)
-│   ├── verfahren-kette.md        # Kette: Steckbrief, Stand v1, Arm-Ledger ①–⑨/A1, v2-Anwärter (A2–A6)
+│   ├── verfahren-kette.md        # Kette: Steckbrief, Stand v4 (Tinten-Evidenz), Arm-Ledger ①–⑨/A1/K-A…K-C/K0-Z, v5-Anwärter
 │   ├── verfahren-lotse.md        # Lotse: Steckbrief, Stand v0.11, Versions-Ledger v0.1–v0.12 + Schienen-Auslauf, offene Blöcke
 │   ├── verfahren-inksight.md     # InkSight: Steckbrief, Stand T0, Ledger (T0 · B1), stehende Maßnahmen B2–B5
 │   ├── verfahren-nullprobe.md    # Nullprobe: Steckbrief, Kontroll-Doktrin (bewusst unversioniert), Mess-Ledger

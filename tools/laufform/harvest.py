@@ -254,11 +254,14 @@ class HarvestOptions:
     # pulled by — `tools.pairlab.ink_evidence`, applied once at the top of
     # `chain_word_strokes`, after `derive_word` took ruler and registration on
     # the full ink. Unlike A1/K-A/K-B this changes what the harvest MEASURES
-    # (the solve sees different ink), which is why it is declared-off on the
-    # harvest and measured on the follower first (`tools.pairlab.follow
-    # --ink-evidence`); adoption into the stored trace is its own decision.
-    # False = the case object passes through untouched, byte-identical.
-    ink_evidence: bool = False
+    # (the solve sees different ink), so it was declared-off and measured on
+    # the follower first; all six aug20 gates passed and the author's go made
+    # True the Kette v4 baseline (§14 `aug21` re-baseline) — the same evidence
+    # on follower, harvest and the tracebench chain provider. False is the
+    # pre-v4 archaeology path: the case object passes through untouched,
+    # byte-identical. A production re-harvest of the stored `traced` rows
+    # stays behind owner-go + dbsnapshot, as for every trace-shaping default.
+    ink_evidence: bool = True
 
 
 @dataclass

@@ -124,7 +124,8 @@ def test_a_live_case_and_a_flat_picture_pass_through() -> None:
     assert same is flat and not report.applied and "contrast" in report.reason
 
 
-def test_the_measure_defaults_off_everywhere() -> None:
-    assert FollowWeights().ink_evidence is False
+def test_the_measure_defaults_on_everywhere() -> None:
+    """Kette v4 (§14 `aug21`): the mask is the default on follower and harvest alike."""
+    assert FollowWeights().ink_evidence is True
     assert FollowWeights().ink_evidence_paper_fraction == INK_EVIDENCE_PAPER_FRACTION
-    assert HarvestOptions().ink_evidence is False
+    assert HarvestOptions().ink_evidence is True

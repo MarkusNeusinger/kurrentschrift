@@ -7767,9 +7767,105 @@ die-2 ungeheilt. **Status: alle Gates bestanden → Adoption
 wartet auf das Autor-Go (Kette v4 = `ink_evidence=True` als
 Folger-Default, datierte Re-Baseline aller Ketten-Zahlen;
 derselbe Default auf dem Harvest).** Bis dahin declared-off.
-Lesart für die Kampagne: die Fremdtinte war eine
+*(Eingelöst `aug21`: Autor-Go, Flip und Re-Baseline im Eintrag
+„Kette v4 `aug21`" unten.)* Lesart für die Kampagne: die
+Fremdtinte war eine
 Störquelle UNTER allen bisherigen Kettenarmen — K0-Z-R, die
 λ-Leiter, die Wächter-Runden haben gegen sie gemessen; die
 Wiedervorlage der stärksten verworfenen Sprosse (K0-Z-R 0,55)
 auf K-C-Evidenz ist der naheliegende nächste Arm, NACH der
 Soll-Quellen-Autopsie, die K0-Z-R ohnehin braucht.
+
+### Kette v4 `aug21` — Adoption K-C: die Tinten-Evidenz-Maske wird Default (datierte Re-Baseline)
+
+**Autor-Go (2026-08-21, Kampagnen-Auftrag):** K-C wird als
+Kette v4 geflippt. Der Flip: `FollowWeights.ink_evidence = True`
+(CLI-Archäologie `--no-ink-evidence`, das
+`retrace_guard`-Muster), `HarvestOptions.ink_evidence = True`
+(erreicht den `chain`-Provider des Tracebench über die
+Options-Defaults; neues Provider-Kwarg `ink_evidence` für
+Archäologie-Läufe, das `marks_last`/`trace_repair`-Muster), die
+Default-Pins in `test_pairlab_ink_evidence` /
+`test_tracebench_candidates` auf v4 gedreht. Kein
+Algorithmus-Code bewegt sich — nur Defaults und CLI-Verdrahtung.
+
+**Messanordnung.** Frische Cloud-Umgebung (die aug20-Artefakte
+liegen dort nicht vor), darum BEIDE Arme neu gemessen — erster
+Akt `fetch_fixtures --set all --verify` (bit-exakt, 12/12
+Kompositionen), dann in EINER gepinnten Umgebung
+(`OPENBLAS_NUM_THREADS=1`, `OMP_NUM_THREADS=1`, `--jobs 4`):
+Vor-Flip-Basis und Nach-Flip-v4 je 63 Wörter auf dem
+K-C-Stack (`--structure-guard-soll`), dazu der `chain`-Provider
+dev-19 vor/nach dem Flip; Bewertung k0-Protokoll (Soll-Abstand +
+aiou je Wort, 63) + dev-19-File-Provider, gepaart.
+
+**Validierung der Messkette:** (1) Der Vor-Flip-`chain`-Provider
+reproduziert die deklarierte v3-Baseline EXAKT (dtw-Median
+0,049135 · p90 0,0891 · worst muß 0,1097; die kleinen
+Zähler-Abweichungen — marks 0+0 statt 0+1, cross 15+6, touch 22 —
+sind der dokumentierte zwei-i-Punkt-Refill des Lineals).
+(2) Identitäts-Gate: der Nach-Flip-Archäologie-Lauf
+(`--no-ink-evidence`, volle 63) ist byte-gleich zum
+Vor-Flip-Default — der Flip ist eine reine Default-Änderung.
+(3) Konstruktions-Vorhersage: 23 Wörter tragen Drops, 44
+Komponenten — EXAKT die aug20-Zählung; alle 40 drop-freien
+Wörter byte-gleich, 4 gedroppte ohne Bahnwirkung (Sporn, Zügel,
+im, von: Fremdkomponente außerhalb jedes Run-Bandes), 19 bewegt.
+
+**Gemessen (gepaart, Basis → v4, diese Umgebung):** 63er
+k0-Protokoll: **Gesamt-Soll-Abstand 103 → 85** (11 besser · 51
+gleich · 1 schlechter) — Galoppieren 7 → 2, zwei 4 → 2,
+kann 4 → 3, regieren 3 → 2, schwer/Einen/Zaum je 2 → 0,
+wenn-2 1 → 0, Soldaten/schießen/fechten je −1; der eine
+Verlierer ist die-2 3 → 4 (unten). **aiou der 19 bewegten:
+Median +0,0245, Maximum Wer +0,0985** (Einen +0,0964, wenn-2
++0,0830, macht +0,0785, und-4 +0,0691, er-3 +0,0577); EIN
+Verlierer streiten −0,0075. **dev-19 (File-Provider): dtw-Median
+0,0491 → 0,0448**, aiou-Median 0,7161 → **0,7481**, Marken
+`missing` 1 → 0 (der Galoppieren-Punkt), `spurious` 0 = 0,
+reversed 0, **unechte Retrace-Zonen 13 → 7**, Lifts Δ 7 → 6,
+Kreuzungen 15+7 → 14+8 (netto 22 = 22); je Wort: **Galoppieren
+0,2349 → 0,0385**, zwei 0,0726 → 0,0556, Wer 0,0432 → 0,0369,
+und-4 0,0433 → 0,0390, schlechtester Verlust **die-2 +0,0004**,
+14/19 byte-gleich. `chain`-Provider dev-19 (die
+rounds-0-Produktionsfläche): Median-Δ 0,0000 (zwei −0,0024,
+Galoppieren −0,0011, und-4 −0,0009, die-2 +0,0009), aiou-Median
+0,6993 → 0,7021, p90/worst unverändert — der große K-C-Hebel
+liegt erwartungsgemäß im FOLGER (Coverage-Zieher), nicht im
+rounds-0-Kettenfit. Laufzeit 63er: 752 s Basis, 628 s v4.
+
+**Umgebungs-Ehrlichkeit.** Die aug20-Messung lief in einer
+anderen Umgebung; die dokumentierte Solver-Sensitivität
+(aug16-Lehre) zeigt sich als kleine je-Wort-Varianz der BASIS
+(Soll-Abstand dort 107, hier 103; kann/regieren-Basis je −1)
+und an zwei Stellen im Delta: die-2 dort −1, hier +1
+Soll-Abstand (bei dev-dtw +0,0004 — der Magnet der V-Nadel ist
+die EIGENE Marke, K-C heilt sie vorhersagegemäß nicht; genau
+dafür steht die Marken-Claim-Trennung als benannter Nachfolger),
+und streiten dort ±0, hier aiou −0,0075. Die Adoption stützt
+sich auf das bestandene aug20-Sechs-Gates-Protokoll plus die
+heutige Reproduktion des Muster-Kerns (18 Punkte Soll-Gewinn,
+null dev-dtw-Verlierer über +0,0004, aiou-Median +0,03) in einer
+zweiten Umgebung; die gepaarten Deltas sind innerhalb JE einer
+gepinnten Umgebung gültig, nie zwischen beiden.
+
+**Re-Baseline Kette v4 `aug21` (deklariert):** `chain`-Provider
+dev-19: dtw-Median **0,0491** · p90 **0,0891** · worst
+**muß 0,1097** · aiou 0,7021 · marks 0+0 · cross 14+7 ·
+retrace 7+6 · touch 21. Folger auf dem Soll-Stack
+(`--structure-guard-soll`, die Duell-Kette): dtw-Median
+**0,0448** · aiou-Median **0,7481** · marks 0+0 · cross 14+8 ·
+retrace 7+7 · 63er-Soll-Abstand **85**. Der p90/worst des
+Folger-Kandidaten (0,2354 / unter 0,4503) trägt die bekannte
+REIHENFOLGE-Lineal-Frage der K-C-Autopsie (u-Bogen/Deckbogen als
+Körper mitten im Wort; der Chain-Provider zeigt sie dank
+`marks_last` nicht) — der Autor-Entscheid zur
+Bogen-Klassifikation steht unverändert aus. Gepaarte Vergleiche
+anderer Routen (Lotse, InkSight, Nullprobe) sind mit ihrer
+nächsten Messung gegen v4 neu zu beziffern; der
+PRODUKTIONS-Re-Harvest der `traced`-Zeilen bleibt hinter
+Owner-Go + dbsnapshot. Nächste Kettenarme
+(Kampagnen-Reihenfolge): Marken-Claim-Trennung
+(Tinten-Zuweisung per Strecke, eigene Pre-Reg), dann
+Soll-Quellen-Autopsie (daß) → K0-Z-R-Wiedervorlage auf
+K-C-Evidenz → K-D Tinten-Korridor.
