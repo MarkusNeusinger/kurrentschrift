@@ -262,11 +262,12 @@ class HarvestOptions:
     # byte-identical. A production re-harvest of the stored `traced` rows
     # stays behind owner-go + dbsnapshot, as for every trace-shaping default.
     ink_evidence: bool = True
-    # K-E stage 1 (§14 `aug21`): the mark-claim separation — a composed mark
-    # stroke claims its dark ink component, the claim splits distance/width
-    # fields and coverage pot per stroke class inside `fit_word_chain`.
-    # Declared-off on the harvest (the K-C pattern: measured on the follower
-    # first; adoption into what the harvest measures is its own decision).
+    # K-E stage 1 (§14 `aug21`, K-E2 form): the mark-claim separation — a
+    # composed mark stroke claims its dark ink component, the claim splits
+    # distance field and coverage pot per stroke class inside
+    # `fit_word_chain` (the width fields stay whole). Declared-off on the
+    # harvest (the K-C pattern: measured on the follower first; adoption
+    # into what the harvest measures is its own decision).
     mark_claim: bool = False
 
 

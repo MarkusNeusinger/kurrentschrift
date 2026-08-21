@@ -477,15 +477,17 @@ class FollowWeights:
     A measured class boundary (real ≤ 0.38, foreign ≥ 0.74 over the 63
     fixtures), not a tuning knob; stamped so an artefact records it."""
     mark_claim: bool = False
-    """K-E stage 1 (§14 `aug21`): the mark-claim separation — a diacritic
-    stroke of the composed init (the K-A assembler criterion) claims its dark
-    non-main ink component within the ruler's 0.6-xh mark radius, and a claim
-    switches BOTH pull channels: the component leaves the body's distance/
-    width fields and coverage pot, the mark's samples read exclusively their
-    component (`tools.pairlab.chain._prepare_fields` →
-    `build_chain_problem`). No claim → nothing changes; words without a
-    firing claim stay byte-identical by construction. Default False =
-    declared-off until the measured adoption."""
+    """K-E stage 1 (§14 `aug21`, K-E2 form): the mark-claim separation — a
+    diacritic stroke of the composed init (the K-A assembler criterion)
+    claims its dark non-main ink component within the ruler's 0.6-xh mark
+    radius, and a claim switches the two ATTRACTOR channels: the component
+    leaves the body's distance field and coverage pot, the mark's samples
+    read exclusively their component (`tools.pairlab.chain._prepare_fields`
+    → `build_chain_problem`). The WIDTH fields stay whole — width is a
+    measurement target, and K-E1 measured its split as the suspect behind
+    the diffuse body-coverage loss. No claim → nothing changes; words
+    without a firing claim stay byte-identical by construction. Default
+    False = declared-off until the measured adoption."""
     provisional: bool = True
 
 

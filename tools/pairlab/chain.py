@@ -781,10 +781,11 @@ class _ChainProblem:
     carried rather than looked up again. None whenever the caller supplied no
     skeleton (the synthetic field stacks)."""
     mark_fields: list[dict] = field(default_factory=list)
-    """K-E stage 1 (§14 `aug21`): one field stack per CLAIMED mark component —
-    `dist_raw/dist_smooth/width_raw/width_smooth/cov_pts` plus the claiming
-    stroke's `(seg, start)` key. Empty = the measure is off and every code
-    path below is byte-identical to before it existed."""
+    """K-E stage 1 (§14 `aug21`, K-E2 form): one field stack per CLAIMED mark
+    component — `dist_raw/dist_smooth/cov_pts` plus the claiming stroke's
+    `(seg, start)` key; no width keys, the width fields stay whole. Empty =
+    the measure is off and every code path below is byte-identical to before
+    it existed."""
     field_of_sample: np.ndarray | None = None
     """(n_s,) field class of every sample — 0 = body, k+1 = `mark_fields[k]`.
     None whenever `mark_fields` is empty, which is what keeps the hot path's
@@ -849,6 +850,8 @@ class _ChainProblem:
         With `field_of_sample` unset this is exactly the single-field lookup
         every solve before K-E ran; with it, each sample reads the stack of
         ITS class — body or its claimed mark component — and nothing else.
+        Serves the DISTANCE fields only: the width fields stay whole (K-E2),
+        so their lookups never come through here.
         """
         if self.field_of_sample is None:
             return _bilinear_with_grad(getattr(self, name), px, py)
@@ -948,7 +951,11 @@ class _ChainProblem:
             samples["crop"] = (2.0 * ox / (n_s * unit_sq), 2.0 * oy / (n_s * unit_sq))
 
         # --- width: letter samples only (the connector has no measurement) ---
-        wm, w_dx, w_dy = self._field_lookup("width_smooth", px, py)
+        # Deliberately NOT class-split (K-E2, §14 `aug21`): width is a
+        # measurement target, and every sample reads the one field propagated
+        # from all kept ink — K-E1 measured the split as the diffuse-loss
+        # suspect, and the mark stacks carry no width since.
+        wm, w_dx, w_dy = _bilinear_with_grad(self.width_smooth, px, py)
         wr = (wm - self.sw_px) * self.width_mask
         n_w = max(1.0, float(self.width_mask.sum()))
         e_wid = float(np.sum(wr**2)) / (n_w * unit_sq)
@@ -1935,17 +1942,29 @@ def _prepare_fields(
             claimed |= claim["mask"]
         skel_body = skel_local & ~claimed
         if skel_body.any():
-            width_body = np.where(claimed, 0.0, width_local)
+            # K-E2 (§14 `aug21`): the WIDTH fields stay unsplit — width is a
+            # measurement target (per-sample soll-ist), not an attractor, and
+            # K-E1 measured its split as the suspect behind the diffuse body
+            # coverage loss (targets rewritten over each mark's whole Voronoi
+            # region). Distance field and coverage pot split as before — the
+            # two channels that carried die-2's needle magnet.
+            dist_split = _field_stack(skel_body, width_local)
             mark_fields = [
                 {
                     "seg": claim["seg"],
                     "start": claim["start"],
-                    **_field_stack(skel_local & claim["mask"], np.where(claim["mask"], width_local, 0.0)),
+                    **{
+                        k: v
+                        for k, v in _field_stack(
+                            skel_local & claim["mask"], np.where(claim["mask"], width_local, 0.0)
+                        ).items()
+                        if k in ("dist_raw", "dist_smooth", "cov_pts")
+                    },
                 }
                 for claim in claims
             ]
             return {
-                **_field_stack(skel_body, width_body),
+                **dist_split,
                 "crop_shape": skel_local.shape,
                 # Landmarks read the BODY skeleton: dots carry no branch
                 # points, and the one-evidence rule holds per class.

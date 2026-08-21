@@ -85,6 +85,10 @@ def test_a_near_mark_stroke_claims_the_dot_and_the_fields_split() -> None:
     assert (mark["seg"], mark["start"]) == (0, 6)
     assert mark["dist_raw"][12, 31] == 0.0 and mark["dist_raw"][40, 40] > 10.0
     assert (mark["cov_pts"][:, 1] < 20).all()
+    # K-E2: the width channel is NOT split — the mark stack carries no width,
+    # and the body width field still propagates from ALL kept ink (the dot).
+    assert "width_raw" not in mark and "width_smooth" not in mark
+    assert fields["width_raw"][12, 31] > 0.0
 
 
 def test_a_far_blob_is_not_claimed_and_the_block_stays_unsplit() -> None:
@@ -143,10 +147,12 @@ def _dotted_problem():
         "cov_pts": _skeleton_points(ink),
         "crop_shape": shape,
     }
-    # the dot's own component sits where the composed dot lands (~14, 21)
+    # the dot's own component sits where the composed dot lands (~14, 21);
+    # width keys stripped exactly as `_prepare_fields` ships them (K-E2)
     dot_ink = np.zeros(shape, dtype=bool)
     dot_ink[20:23, 13:16] = True
-    mark = {"seg": 0, "start": 6, **_field_stack(dot_ink, np.where(dot_ink, 1.5, 0.0))}
+    stack = {k: v for k, v in _field_stack(dot_ink, np.where(dot_ink, 1.5, 0.0)).items() if "width" not in k}
+    mark = {"seg": 0, "start": 6, **stack}
     return build_chain_problem(
         _dotted_specs(),
         unit_px=UNIT_PX,
