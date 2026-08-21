@@ -1244,8 +1244,10 @@ Provider folgen als Stufe C → proposals/tintenfolger.md §2
 **Soll-Abstand** |Kreuzungen − Kompositions-Soll| + |Retrace-Zonen −
 Zonen-Soll| (Soll aus `ductus_soll`, seit K0-S die EINE Soll-Pipeline
 mit dem Wächter) plus `aiou` gegen die eingefrorene Maske; gepaart
-über eine Basis mit Byte-Identitäts-Klassen (welche Zeilen sich
-zwischen zwei Kandidaten überhaupt bewegten — die Grundlage der
+über eine Basis mit Strich-Identitäts-Klassen (welche Zeilen sich
+zwischen zwei Kandidaten überhaupt bewegten — verglichen werden die
+geparsten Strichzüge, nicht die Datei-Bytes; in den §14-Einträgen
+bis `aug21` „byte-identisch“ genannt — die Grundlage der
 Identitäts- und Konstruktions-Vorhersage-Gates). Die stehende
 aiou-Verlierer-Schwelle je Wort ist −0,003 (Messrauschen). Bis
 `aug21` je Runde als Scratch-Skript neu gebaut, seither

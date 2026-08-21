@@ -47,10 +47,12 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   soll distance against the composition soll through `ductus_soll`
   (the one soll pipeline since K0-S), `aiou` against the frozen mask,
   paired totals, the standing −0.003 aiou-loser gate and the
-  byte-identity classes every identity gate reads — had been re-written
-  as a scratchpad script every round and died with each container;
-  `k0eval.py` is the durable form. Glossary: the `aug20`-coined
-  „k0-Protokoll" finally gets its entry (themed section +
+  stroke-identity classes every identity gate reads — had been
+  re-written as a scratchpad script every round and died with each
+  container; `k0eval.py` is the durable form, with the paired
+  classification factored into a pure `pair_rows` and pinned by unit
+  tests over a `tmp_path` fixture tree. Glossary: the `aug20`-coined
+  „k0-Protokoll“ finally gets its entry (themed section +
   Schnellindex).
 
 - **Chain K-D, the ink corridor: closed as objectless after v4 by its

@@ -7,8 +7,10 @@ since K0-S the one soll pipeline the structure guard shares), the soll
 distance |cross − soll| + |zones − soll|, and `aiou` against the frozen ink
 mask. With two candidate files the report pairs them: totals, per-word
 soll-distance movement, the aiou losers against the standing −0.003 gate, and
-the byte-identity classes (rows whose strokes are byte-equal between the two
-files) that every identity and construction-prediction gate reads.
+the stroke-identity classes (rows whose parsed strokes are structurally equal
+between the two files) that every identity and construction-prediction gate
+reads. The `--json` report carries everything except the strokes themselves —
+they serve only the in-process identity check.
 
 Until `aug21` every round re-wrote this as a scratchpad script (`kc-eval`,
 `ke-k0-eval`, …) that died with its container; this module is the standing
@@ -43,7 +45,7 @@ AIOU_LOSER_GATE = -0.003
 def eval_candidate(
     path: Path, reference: Reference, soll_rows: dict[str, tuple[SollRow, ...]], ids: list[str]
 ) -> dict[str, dict[str, object]]:
-    """Per word: candidate counts, soll distance, aiou, and the byte identity key."""
+    """Per word: candidate counts, soll distance, aiou, and the strokes for identity."""
     cands = file_provider(str(path))(reference, ids)
     rows: dict[str, dict[str, object]] = {}
     for sid in ids:
@@ -64,13 +66,61 @@ def eval_candidate(
             "soll_zones": comp.zones,
             "soll_dist": abs(n_cross - comp.crossings) + abs(n_zones - comp.zones),
             "aiou": aiou([entry.frame.bench_to_crop_px(s) for s in strokes], entry.ink_mask()).value,
-            "strokes_key": json.dumps(cand.strokes),
+            "strokes": cand.strokes,
         }
     return rows
 
 
 def _total(rows: dict[str, dict[str, object]]) -> int:
     return sum(int(r["soll_dist"]) for r in rows.values() if r["status"] == "ok")
+
+
+def pair_rows(
+    base: dict[str, dict[str, object]], cand: dict[str, dict[str, object]], ids: list[str]
+) -> dict[str, object]:
+    """The paired classification every §14 gate reads — pure, printing stays in main.
+
+    Returns per class the word lists: soll-distance movement (better/same/
+    worse), stroke identity (identical/moved, compared on the parsed strokes),
+    the aiou losers below the standing gate, the aiou deltas of the moved
+    words, plus the rows scored on neither side (unscored, a per-status
+    Counter) and those failing on one side only (mismatched).
+    """
+    out: dict[str, object] = {
+        "better": [],
+        "same": [],
+        "worse": [],
+        "identical": [],
+        "moved": [],
+        "losers": [],
+        "moved_deltas": [],
+        "unscored": Counter(),
+        "mismatched": [],
+    }
+    for sid in ids:
+        a, b = base[sid], cand[sid]
+        if a["status"] != "ok" or b["status"] != "ok":
+            if a["status"] != b["status"]:
+                out["mismatched"].append(sid)
+            else:
+                out["unscored"][str(a["status"])] += 1
+            continue
+        same_strokes = a["strokes"] == b["strokes"]
+        out["identical" if same_strokes else "moved"].append(sid)
+        d_soll = int(b["soll_dist"]) - int(a["soll_dist"])
+        out["better" if d_soll < 0 else "worse" if d_soll > 0 else "same"].append(sid)
+        d_aiou = float(b["aiou"]) - float(a["aiou"])
+        if not same_strokes:
+            out["moved_deltas"].append(d_aiou)
+        if d_aiou < AIOU_LOSER_GATE:
+            out["losers"].append((sid, round(d_aiou, 4)))
+    return out
+
+
+def report_rows(rows: dict[str, dict[str, object]]) -> dict[str, dict[str, object]]:
+    """The JSON-report view of the rows: the strokes serve only the in-process
+    identity check and would multiply the report's size, so they stay out."""
+    return {sid: {k: v for k, v in r.items() if k != "strokes"} for sid, r in rows.items()}
 
 
 def main() -> None:
@@ -105,47 +155,40 @@ def main() -> None:
             detail = ", ".join(f"{status} {n}" for status, n in sorted(unscored.items()))
             print(f"  ({sum(unscored.values())} words unscored: {detail})")
         if args.json:
-            args.json.write_text(json.dumps({args.base.name: base}, indent=1, default=str))
+            args.json.parent.mkdir(parents=True, exist_ok=True)
+            args.json.write_text(json.dumps({args.base.name: report_rows(base)}, indent=1))
             print(f"wrote {args.json}")
         return
 
     cand = eval_candidate(args.candidate, reference, soll_rows, ids)
     print(f"== {args.candidate.name}: total soll distance {_total(cand)}")
-    better = worse = same = 0
-    identical: list[str] = []
-    moved: list[str] = []
-    losers: list[tuple[str, float]] = []
-    moved_deltas: list[float] = []
-    unscored: Counter[str] = Counter()
+    pairing = pair_rows(base, cand, ids)
+    mismatched = set(pairing["mismatched"])
+    identical = set(pairing["identical"])
     for sid in ids:
         a, b = base[sid], cand[sid]
-        if a["status"] != "ok" or b["status"] != "ok":
-            if a["status"] != b["status"]:
-                print(f"  {sid:14s} base={a['status']} cand={b['status']}")
-            else:
-                unscored[str(a["status"])] += 1
+        if sid in mismatched:
+            print(f"  {sid:14s} base={a['status']} cand={b['status']}")
             continue
-        same_bytes = a["strokes_key"] == b["strokes_key"]
-        (identical if same_bytes else moved).append(sid)
+        if a["status"] != "ok" or b["status"] != "ok":
+            continue
         d_soll = int(b["soll_dist"]) - int(a["soll_dist"])
-        better += d_soll < 0
-        worse += d_soll > 0
-        same += d_soll == 0
         d_aiou = float(b["aiou"]) - float(a["aiou"])
-        if not same_bytes:
-            moved_deltas.append(d_aiou)
-        if d_aiou < AIOU_LOSER_GATE:
-            losers.append((sid, round(d_aiou, 4)))
-        if d_soll or not same_bytes:
+        if d_soll or sid not in identical:
             print(
                 f"  {sid:14s} dist {a['soll_dist']} -> {b['soll_dist']}  "
                 f"aiou {a['aiou']:.4f} -> {b['aiou']:.4f} ({d_aiou:+.4f})  "
-                f"{'identical' if same_bytes else 'moved'}"
+                f"{'identical' if sid in identical else 'moved'}"
             )
+    unscored = pairing["unscored"]
     if unscored:
         detail = ", ".join(f"{status} {n}" for status, n in sorted(unscored.items()))
         print(f"  ({sum(unscored.values())} words unscored on both sides: {detail})")
-    print(f"\nsoll distance total: {_total(base)} -> {_total(cand)} ({better} better / {same} same / {worse} worse)")
+    print(
+        f"\nsoll distance total: {_total(base)} -> {_total(cand)} "
+        f"({len(pairing['better'])} better / {len(pairing['same'])} same / {len(pairing['worse'])} worse)"
+    )
+    moved_deltas = pairing["moved_deltas"]
     if moved_deltas:
         ordered = sorted(moved_deltas)
         median = (
@@ -154,13 +197,20 @@ def main() -> None:
             else (ordered[len(ordered) // 2 - 1] + ordered[len(ordered) // 2]) / 2
         )
         print(
-            f"aiou over the {len(moved)} moved words: min {min(moved_deltas):+.4f} "
+            f"aiou over the {len(pairing['moved'])} moved words: min {min(moved_deltas):+.4f} "
             f"median {median:+.4f} max {max(moved_deltas):+.4f}"
         )
+    losers = pairing["losers"]
     print(f"aiou losers (below {AIOU_LOSER_GATE}): {len(losers)}{' -> ' + str(losers) if losers else ''}")
-    print(f"byte-identical rows: {len(identical)}/{len(identical) + len(moved)}; moved: {sorted(moved)}")
+    print(
+        f"stroke-identical rows: {len(identical)}/{len(identical) + len(pairing['moved'])}; "
+        f"moved: {sorted(pairing['moved'])}"
+    )
     if args.json:
-        args.json.write_text(json.dumps({args.base.name: base, args.candidate.name: cand}, indent=1, default=str))
+        args.json.parent.mkdir(parents=True, exist_ok=True)
+        args.json.write_text(
+            json.dumps({args.base.name: report_rows(base), args.candidate.name: report_rows(cand)}, indent=1)
+        )
         print(f"wrote {args.json}")
 
 

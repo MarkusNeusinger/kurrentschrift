@@ -280,8 +280,9 @@ uv run python -m tools.dbsnapshot.restore <snapshot-dir> --database-url postgres
      <basis-cand.json> <arm-cand.json>` — referenzfrei über alle
      Wörter: Soll-Abstand je Wort (Kompositions-Soll durch
      `ductus_soll`), `aiou` gegen die eingefrorene Maske,
-     Byte-Identitäts-Klassen; ersetzt die bis `aug21` je Runde neu
-     geschriebenen Scratch-Skripte.
+     Strich-Identitäts-Klassen (verglichen werden die geparsten
+     Strichzüge, nicht die Datei-Bytes); ersetzt die bis `aug21` je
+     Runde neu geschriebenen Scratch-Skripte.
   5. **Sensoren/Augenschein nach Bedarf**:
      `uv run python -m tools.tracebench.excursions <cand.json>` (das
      Papier-Exkursions-Inventar, der stehende K-D-Sensor) und
