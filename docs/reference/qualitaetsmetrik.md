@@ -8172,3 +8172,45 @@ NACH OBEN Richtung Soll — gewollt, aber neu; die je-Wort-Gates
 decken es; (b) die Run-Restriktion der Items (Mehr-Run-Wörter)
 ist neue Mechanik — der Identitäts-Pfad und die
 Divergenz-Karte prüfen sie, bevor ein Solve sie sieht.
+
+**Gemessen `aug21` — ALLE GATES bestehen auf BEIDEN Sprossen;
+die Wiedervorlage holt die K0-Z-R-Substanz ohne einen einzigen
+Riss, und der alte zwei-Trade INVERTIERT.** Artefakte
+`tb-aug21/k0s-*`, BLAS gepinnt, 4 Worker. **Sprosse 0
+(Divergenz-Karte, ohne Solve): 40 der 63 Runs divergieren** —
+daß war Muster, nicht Ausreißer: JEDES d-Wort (die · das ·
+der×3 · laden · daß · die-2 · Feinde) trägt die
+daß-Signatur (Init zählt am d-Kopf +1 Retrace/+1 Touch, die
+Komposition nicht — der plattgezogene Init-Splitter ist
+systematisch); in der Gegenrichtung verliert die Init
+Strukturen, die die Komposition trägt (mit/mit-2/wenn/wenn-2/
+will/zwei: je +1 Kreuzung/Retrace/Touch im Kompositions-Soll),
+dazu beidseitige Kreuzungs-Divergenzen (haben 5 → 3, han/auch/
+auch-2 3 → 1 als Init-Mehrzählung; Soldaten/unter/streiten
++1 in der Komposition). **Identität:** `soll_source=init`
+byte-gleich zur v4-Basis (4-Wort-Spot inkl. daß, 4/4; der neue
+Code berührt nur den Soll-Zweig). **Sprosse 1 (atomarer
+Soll-Wächter, Kompositions-Quelle, 642 s): Soll 85 → 80** (4
+besser · 59 gleich · **0 schlechter**; bewegt nur Kugel,
+Silber, Soldaten, das), aiou-Ausschlag einzig das −0,0005
+(Rauschen), Maximum +0,1045; dev-19 praktisch byte-neutral
+(Median-Δ 0, 18/19 ties, `cross_spurious` 8 → 6). **Sprosse 2
+(Ratsche + Zone 0,55, Kompositions-Quelle, 897 s = +6 %):
+Soll 85 → 77 (7 besser · 0 schlechter), 30 Wörter bewegt,
+aiou-Median der bewegten +0,0589, Maximum +0,1316, einziger
+Ausschlag das −0,0005; dev-19: aiou-Median 0,7481 → 0,7697
+(+0,0216 — der größte dev-Tintengewinn der Kampagne), beide
+Chamfer-Hälften besser, dtw-Median-Δ 0,0000, schlechtester
+Verlust +0,0014 (und-2), Gewinne muß-3 −0,0154 · zwei −0,0100
+· die −0,0068 · muß −0,0030; Marken 0+0, reversed 0,
+Kreuzungen 14+5 (netto 22 → 19), Retrace 7+7 unverändert.**
+Der K0-Z-R-Trade von zwei (+0,0142 dtw gegen +0,092 aiou) ist
+INVERTIERT (−0,0100 dtw UND Tinten-Gewinn): seine Magneten
+waren die Fremdtinte, die v4 seither droppt — beide
+aug20-Risse (daß-Soll, zwei-Trade) sind damit als GELÖST
+gemessen, nicht weggeschwellt. **Adoption: Sprosse 2 ist die
+beste Sprosse, die alle Gates hält → wartet auf das Autor-Go
+(Kette v5 = Soll-Stack `soll_source=composition` + Ratsche +
+Zone 0,55 als Duell-/Folger-Konfiguration, datierte
+Re-Baseline).** Bis dahin bleibt alles declared-off
+(`soll_source` Default `init`, Ratsche/Zone Default aus).

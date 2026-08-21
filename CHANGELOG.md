@@ -14,6 +14,41 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Chain K0-S: the soll-source autopsy vindicates the metric, ONE
+  soll pipeline is built, and the K0-Z-R resubmission passes every
+  gate — with the old zwei trade inverted** (§14 `aug21` „Kette
+  K0-S"; the campaign step after K-E). The daß autopsy settles the
+  aug20 two-soll-sources find: both pipelines always shared the bench
+  counters, and the divergence was input geometry alone — the guard's
+  aug19 soll read the chain INIT (chart anchors + generated
+  connectors), which squeezes the d-head loop closure into a
+  flattened sliver that the 0.15-xh detector correctly counts as
+  retrace + touch, while the canonical composition crosses cleanly
+  there. The divergence map (ladder rung 0, no solve) shows it was a
+  pattern, not an outlier: 40 of 63 runs diverge, and EVERY d word
+  (die, das, der×3, laden, daß, die-2, Feinde) carries the daß
+  signature. The measure, one knob (`FollowWeights.soll_source`,
+  `--soll-source`, default `init` = byte-identical): `composition`
+  feeds the structure guard's soll from `composition_strokes` — the
+  item→strokes builder factored out of `ductus_soll` (the metric's
+  counting is byte-identical through it), run-restricted so a
+  deferred mark can never drag a foreign letter's body into the run.
+  Budget stays the init count, round counts stay the candidate count,
+  the target comes from the canonical source. Measured on the ladder
+  (identity spot 4/4 byte-equal incl. daß): the atomic soll guard on
+  the new source reaches soll distance 85 → 80 with zero worse words
+  and a near-byte-neutral dev-19; **ratchet + zone 0.55 on the new
+  source — the K0-Z-R resubmission — reaches 85 → 77 (7 better, 0
+  worse), a moved-words aiou median of +0.059, a dev-19 aiou median
+  gain of +0.0216 (the campaign's largest), worst per-word dtw loss
+  +0.0014, net crossing defects 22 → 19, marks/retrace unchanged —
+  and zwei's aug20 trade (+0.0142 dtw for ink) inverts to −0.0100
+  dtw WITH ink gains: its magnets were the foreign ink v4 has been
+  dropping since.** Both aug20 tears are thereby measured as
+  resolved, not waived; adoption of the winning rung as the Kette v5
+  stack awaits the author's go (everything stays declared-off until
+  then). Ledger row on the Verfahrensseite, §7.9 rows updated.
+
 - **Chain K-E, per-stroke ink assignment stage 1 (the mark-claim
   separation): implemented, pre-registered, and measured to two honest
   negatives that heal the named target and refute the width hypothesis

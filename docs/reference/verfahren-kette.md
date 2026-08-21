@@ -82,6 +82,7 @@ rückwirkend nummeriert (Konvention Nr. 3).
 | aug20/21 | **K-C Tinten-Evidenz-Maske** (Autor-Fund „Flecken") | `ink_evidence` — papiergraue Nicht-Haupt-Komponenten (rel > 0,5 auf der Grau-Skala, gemessene Lücke 0,38–0,74) raus aus `skel`/`width_map`, bevor irgendetwas den Fit zieht; Lineal eingefroren | **ADOPTIERT als v4** (`aug20`: alle sechs Gates — Soll 107 → 86 bei 0 schlechter, null aiou-Verlierer, dev-dtw-Median 0,0494 → 0,0453 = Bestwert, Galoppieren −83 %, beide zwei-Nadeln weg, 40 fremdtintenfreie Wörter byte-gleich, Hand-Claim 0; `aug21` Autor-Go + Flip beider Defaults, Re-Baseline in zweiter Umgebung reproduziert das Muster: Soll 103 → 85, dev 0,0491 → 0,0448, kein Verlierer über +0,0004; die-2 bleibt vorhersagegemäß ungeheilt — der Magnet ist die EIGENE Marke) | „Kette K-C `aug20`“ + „Kette v4 `aug21`“ |
 | aug21 | K-E1 Marken-Claim-Trennung (Tinten-Zuweisung per Strecke, Stufe 1) | `mark_claim` — Marken-Strecke claimt ihre dunkle Komponente (0,6-xh-Lineal-Radius); der Claim trennt Distanzfeld, Breitenfeld UND Coverage-Topf je Strecken-Klasse | verworfen per Gate (3) an vier diffusen aiou-Rissen (auch/schießen/Einen/muß-2, −0,013 … −0,027; Körper-Deckung über die ganze Wortbreite, Basin-Umverteilung) — die benannten Ziele heilen spektakulär: **die-2 Soll 4 → 1, dtw −0,0281, die V-Nadel weg im Augenschein**, die −0,016, netto-Kreuzungen 22 → 18, Retrace 14 → 12, dev-Median exakt gehalten; Rettungswege §7.9 (K-E2-Konversion · humanbench · Bogen-Claim-Schärfung) | „Kette K-E `aug21`“ |
 | aug21 | K-E2 Marken-Claim ohne Breitenfeld-Split (Ein-Faktor-Konversion) | derselbe `mark_claim`, die Breitenfelder bleiben ungeteilt (Breite = Messziel, kein Anziehungsfeld) | verworfen per Gate (3) — **die Breiten-Hypothese sauber widerlegt**: 55/63 Kandidaten byte-gleich zu K-E1, darunter auch/muß-2 (zwei der vier Verlierer — der Breiten-Kanal war für sie inert); die Heilungen bleiben (die-2 Soll 4 → 2, dtw −0,0282, netto-Kreuzungen 22 → 19, 63er-Soll 85 → 81), die Risse bleiben in gleicher Höhe. Treiber = die Distanzfeld-/Coverage-Umverteilung selbst — Gewinn und Verlust dieser Formulierung untrennbar (das Arm-⑨-Muster eine Schicht tiefer); Familie geschlossen nach eigener Pre-Reg, Stufe 2 (Kringel) nicht eröffnet; Wege: humanbench-Tie-Breaker · Distanzfeld-NUR-Claim (frische Pre-Reg) | „Kette K-E2 `aug21`“ |
+| aug21 | **K0-S EINE Soll-Pipeline + K0-Z-R-Wiedervorlage** | `soll_source` — das Wächter-Soll aus dem geteilten Kompositions-Builder (`composition_strokes` aus `ductus_soll` faktorisiert, je Run); Leiter Divergenz-Karte → Soll-Stack → Ratsche+0,55 | **ALLE GATES bestehen auf beiden Sprossen; Adoption wartet auf Autor-Go (v5-Stack).** Die daß-Autopsie fand den Wurzel-Fund: das aug19-Wächter-Soll las die Init-Nachbildung statt der kanonischen Komposition — ein plattgezogener Init-Splitter am d-Kopf zählte als Duktus-Wahrheit, und die Divergenz-Karte zeigt das Muster in 40/63 Runs (jedes d-Wort). Ratsche+0,55 auf Kompositions-Soll: **Soll 85 → 77 bei 0 schlechter, dev-aiou-Median +0,0216 (größter dev-Tintengewinn der Kampagne), schlechtester dtw +0,0014, netto-Kreuzungen 22 → 19, Marken/Retrace unverändert; der aug20-zwei-Trade INVERTIERT (−0,0100 dtw)** — beide K0-Z-R-Risse als gelöst gemessen | „Kette K0-S `aug21`“ |
 
 ## Stehende v5-Anwärter (Formulierungsänderungen, tintenfolger.md §7.3)
 
@@ -95,10 +96,9 @@ NICHT muß/unter) · A3 (Kreuzungen als explizite Variablen — jetzt mit
 der das/die-Höhenstapel-Evidenz aus §7.10) · A5 (Zwei-Pass-Zwang aus
 Breiten-Evidenz) · A4 (Barriere statt Veto) · A6 (GNC-Schedule) ·
 ~~zonale Rückweisung des K0-Wächters~~ (gemessen `aug20`: K0-Z/K0-Z-R —
-beide per Gate verworfen, aber die Ratsche+0,55-Sprosse ist die
-stärkste der Routen-Geschichte; der stehende Weg ist die
-**Soll-Quellen-Autopsie** (Guard-`structure_zones` vs.
-Metrik-`ductus_soll` divergieren an daß um eine Retrace-Zone) und
-danach die Wiedervorlage mit EINER Soll-Pipeline, §7.9). NICHT wieder
+beide per Gate verworfen; **Wiedervorlage `aug21` als K0-S mit EINER
+Soll-Pipeline: ALLE Gates bestehen** — Soll 85 → 77 bei 0 schlechter,
+dev-aiou +0,0216, der zwei-Trade invertiert; **Adoption als v5-Stack
+wartet auf das Autor-Go**, §14 „Kette K0-S"). NICHT wieder
 aufgenommen werden Gewichts-Sweeps der alten Formulierung — durch
 ①⑤⑥⑥b⑨ erschöpfend negativ beantwortet.
