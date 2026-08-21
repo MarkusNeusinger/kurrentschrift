@@ -78,6 +78,7 @@ from tools.pairlab.analyze import TRACE_WINDOW_MARGIN, _body_items, _fit_letter,
 from tools.pairlab.anchors import repair_stranded_anchors
 from tools.pairlab.chain import chain_runs, fit_word_chain
 from tools.pairlab.connector_qc import connector_degenerate, connector_signals
+from tools.pairlab.ink_evidence import InkEvidenceOptions, ink_evidence_case
 from tools.pairlab.marks import mark_refit_summary, refit_word_marks
 
 # The word-trace assembly lives in `tools.pairlab.trace` so the ink-follower can
@@ -248,6 +249,16 @@ class HarvestOptions:
     # toward the hand, no word moves beyond +0.0016. True is the v3
     # baseline; False shows the raw needles for inspection archaeology.
     trace_repair: bool = True
+    # K-C (§14 `aug20`, the author's "Flecken" find): drop paper-grey non-main
+    # ink components (specks, show-through) from the evidence the CHAIN is
+    # pulled by — `tools.pairlab.ink_evidence`, applied once at the top of
+    # `chain_word_strokes`, after `derive_word` took ruler and registration on
+    # the full ink. Unlike A1/K-A/K-B this changes what the harvest MEASURES
+    # (the solve sees different ink), which is why it is declared-off on the
+    # harvest and measured on the follower first (`tools.pairlab.follow
+    # --ink-evidence`); adoption into the stored trace is its own decision.
+    # False = the case object passes through untouched, byte-identical.
+    ink_evidence: bool = False
 
 
 @dataclass
@@ -809,6 +820,8 @@ def chain_word_strokes(case, result: WordDeriveResult, opts: HarvestOptions) -> 
         "ty": result.registration["ty"],
         "baseline_row": result.baseline_row,
     }
+    # K-C: one evidence for seed windows, solve and mark refit — off → identity.
+    case, ink_report = ink_evidence_case(case, InkEvidenceOptions() if opts.ink_evidence else None)
     grids = _grid_fits(case, result)
     restart_slots = {i for i, s in enumerate(case.slots) if s.key and _key_base(s.key, s.position) in CAP_RESTART_BASES}
 
@@ -899,6 +912,7 @@ def chain_word_strokes(case, result: WordDeriveResult, opts: HarvestOptions) -> 
         "seconds": round(seconds, 3),
         "mark_refit": mark_meta,
         **({"trace_repaired": trace_repaired} if opts.trace_repair else {}),
+        **({"ink_evidence": ink_report.as_dict()} if ink_report is not None else {}),
     }
     return cap_word_strokes(word_strokes, label=f"{case.id} (chain)"), meta
 

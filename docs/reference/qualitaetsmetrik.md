@@ -7557,3 +7557,219 @@ EINE Pipeline); (2) der zwei-dtw-Trade als eigene Frage
 humanbench-Tie-Breaker, §7.9 Methodik-Zeile). Implementierung
 bleibt deklariert-off (`zone 0` byte-identisch bewiesen,
 Ratsche default False). Artefakte: `temp/tb-aug20/k0z*`.
+
+### Kette K-C `aug20` — Vorregistrierung: die Tinten-Evidenz-Maske (Autor-Fund „Flecken")
+
+Geschrieben und committet VOR der ersten Zahl. **Anlass:** der
+Autor sah sich am Abend die K0-Z-R-Augenschein-Seite (Hand ·
+Kette-Basis · Ratsche 0,55/1,0, 19 Dev-Wörter) an und meldete
+vier Stellen: zwei (w-Fuß: „riesiger Ausschlag weit weg von der
+Tinte", w-Eck oben Richtung Papier — „sind Flecken
+verantwortlich?"), die-2 (Kreuzung: „Punkte werden zum i-Punkt
+gezogen"), Galoppieren (i-Punkt-Ausreißer Richtung Fleck),
+unter (e→r „total falsch"). Hypothese des Autors: Fremdtinte
+zieht den Folger an → eine Maske/„weiße Zone" um die Schrift,
+außerhalb derer nichts mehr zieht.
+
+**Autopsie (aug20 spät, vier Wort-Agenten + Code-Karte,
+Skripte/Bilder im Scratchpad `flecken/`): drei von vier
+bestätigt, die vierte ist ein anderer Fund.** (a) zwei w-Fuß
+= GLOBALES Maximum (0,374 xh Kette / 0,480 Ratsche; 45 bzw.
+107 absorbierte Kandidatenpunkte): eine Nadel 19/29 px
+senkrecht ins Papier, Spitze 0,084/0,044 xh von Komponente C4
+(36 px, Grau 171–210, nie so dunkel wie Tinte); der komponierte
+Seed kreuzt die Grundlinie nirgends — der Fit erzeugt die
+Nadel; Prox-Kosten MIT Fleck im Feld 2,9× (Kette) / 9,8×
+(Ratsche) billiger als ohne; 6 der 300 Coverage-Ziele gehören
+C4. w-Eck: zweite Nadel 9 px aufwärts, Spitze 0,085 xh von C2
+(27 px). (b) die-2: V-Nadel aus der d-Schleife, Spitze
+0,051 xh von der i-Punkt-MASKE, Achse 3,2° parallel zum
+Punkt-Strich, ohne den Punkt im Feld 4,2× teurer — der Magnet
+ist die EIGENE Marke, kein Papierfleck (die fremde Komponente
+des Crops, 41 px, bewegt 0,00 px). (c) Galoppieren: kein
+Fleck, **Durchschein der Rückseite** — sechs Fragmente (26–44
+px, Grau 0,75–0,81 gegen 0,40 Tinte) überleben Schwelle und
+24-px-Despeckle; DREI von vier Exkursionen > 0,25 xh enden auf
+einem Fragment (0,02 / 0,05 / 0,12 xh; kontrafaktische EDT ohne
+Fremdtinte: +0,83 / +0,52 / +0,42 xh), die vierte (p→p-Naht)
+ist ketteneigen (Δ 0,00). EIN Punkt des i-Punkt-Strichs springt
+auf Fragment #2 → Strichbogen 0,53 → 1,82 xh > 0,8 → als KÖRPER
+klassifiziert (marks_missing 1) und 75 % des dtw (0,2329 →
+0,0573 ohne diese Paare). (d) **unter: KEINE Fremdtinte** (genau
+2 Komponenten: Körper + u-Bogen), die Bahn verlässt die
+Tinte nie um > 0,19 xh — sie liegt auf der FALSCHEN Tinte: das
+komponierte e ist 1,32 xh breit, das der Hand 0,65 xh; der
+Seed-Fehler am e-Ausgang (0,81 xh) übersteigt `max_delta`
+(0,75 xh), kein Abstieg holt das e zurück, es wird auf
+Verbinder + r-Abstrich geknautscht, der e→r-Verbinder läuft
+RÜCKWÄRTS (−7,6 px), das r startet 10 px zu früh und endet
+14 px (0,46 xh) zu kurz; in Wer (e der Hand 0,81 xh, Überschuss
+0,17 xh, im Budget) fittet dasselbe Paar sauber — obwohl Wers
+Crop einen echten Fleck trägt, der nichts bewegt (nächster
+Kandidatenpunkt 0,52 xh). Nebenfunde unter, beide LINEAL-Fragen:
+81 % der 0,45 sind Strich-REIHENFOLGE (Hand schreibt den
+u-Bogen zuletzt, Kette in der Mitte; Bogenlänge 1,10 xh >
+`MARK_MAX_ARC_UNITS` 0,8 → Körper statt Marke, monotone DTW
+paart Bogen gegen e/r: nur Reihenfolge korrigiert 0,450 →
+0,084); r-Auslauf in unter UND Wer 0,46–0,49 xh zu kurz
+(komponierter r-Auslauf). → Composer-Auftrag e-Breite (§7.2),
+Autor-Entscheid zur Bogen-Klassifikation (eingefrorenes Lineal,
+hier NICHT angefasst).
+
+**Mechanik (Code-Karte).** Kette und Folger lesen die Tinte an
+je EINER Stelle über `case.skel`/`case.width_map`
+(`tools/pairlab/chain.py` `_prepare_fields`: Spaltenband in x,
+keine Zeilen-, keine Komponentenbeschränkung) — Zugfeld,
+Coverage-Ziele (alle Skelettpixel, 300/Segment), Breitenfeld
+(nächste Tinte propagiert) und Landmark-Kandidaten kommen von
+dort; `_grid_fits` (Seed-Fenster) liest denselben Skelett-EDT.
+Der COVERAGE-Term ist der Zieher (jeder Fremdpixel zieht die
+nächste Probe zu sich, 25 Pixel = 8 % des Terms, ohne
+Gegenkraft); das Abstandsfeld hält nur fest, was schon da ist.
+Einzige Filter heute, beide beim Export und komposition-blind:
+`despeckle` (< 24 px) und die handgesetzten `exclude`-Rechtecke.
+**Messung über alle 63 Fixtures: 90 Nicht-Haupt-Komponenten —
+FLÄCHE trennt nicht (echte Marken 62–250 px, Fremdtinte 24–55
+px, Wers Marke 62 vs schwers Fleck 55), DUNKELHEIT trennt
+vollständig:** auf der Skala `rel = (Median-Grau Komponente −
+Median-Grau Hauptinte) / (Median-Grau Papier − Median-Grau
+Haupttinte)` liegen die 46 echten (i-Punkte, u-Bögen, ß-Paare,
+die 800-px-Bruchstücke in han/Sporn) bei 0,01–0,38 und die 44
+fremden bei 0,74–0,92 — eine Lücke von 0,36, nichts darin; alle
+hand-beanspruchten Komponenten der 28 authored-Wörter (Abstand
+zur Hand ≤ 0,01 xh) liegen ≤ 0,12.
+
+**Maßnahme K-C.** `tools/pairlab/ink_evidence.py`: Komponenten
+von `width_map > 0` (≡ `ref_mask.png`, kein neuer Dateizugriff),
+größte Komponente = das Wort, immer behalten; jede andere mit
+`rel > 0,5` wird aus `skel` UND `width_map` gelöscht
+(`paper_fraction` ist KEIN Knopf, sondern die Mitte der
+gemessenen Lücke — jeder Wert in (0,38 · 0,74) wählt dieselben
+Komponenten; Kontrast < 0,05 → nichts wird beurteilt).
+Einsatzpunkt je Route genau EINER: `follow_derived`
+(+ Kalibrierpfad) bzw. `harvest.chain_word_strokes`, NACH
+`derive_word` (das eingefrorene wordbench-Lineal und die
+Registrierung entstehen auf der vollen Tinte) und VOR
+`_grid_fits` — Seed-Fenster, Solve-Felder, Coverage und
+Marken-Nachfit sehen EINE Evidenz. Aus = Objekt-Identität
+(derselbe `WordCase`), ebenso „an, aber nichts gedroppt" →
+Wörter ohne Fremdtinte sind konstruktionsbedingt
+BYTE-IDENTISCH (testbare Vorhersage, unten). Flags:
+`FollowWeights.ink_evidence` (`--ink-evidence`),
+`HarvestOptions.ink_evidence` (declared-off; erste Option auf
+dem Harvest, die das MESSEN ändert — Adoption in den Speicher-
+Trace ist eine eigene Entscheidung). Drop-Liste je Wort im
+Report (`meta.ink_evidence`: Fläche, Skelettpixel, Zentroid,
+Grau, `rel`) — ein stiller Drop wäre der Fehlermodus, der ein
+späteres Negativ unlesbar macht. Der Lineal-Maskenstand
+(`ref_mask`/`ref_skel`, AIoU, Zähler) bleibt unverändert: die
+Torpfosten stehen (§1), nur das, was den FIT zieht, ändert sich.
+Lotse hat dieselbe Exposition (`pilot.py` `PilotGraph(case.skel)`)
+mit anderer Fehlerform (Fleck = Kandidaten-Schiene, durch den
+Bridge-Preis strukturell robuster; die Zähler lesen aber
+Fremdknoten mit) — eigene Sprosse, eigene Pre-Reg.
+
+**Messanordnung.** 63 Wörter (`--all`), Stack
+`--structure-guard-soll` (= K0-Z-Basis), BLAS gepinnt, Basis =
+`temp/tb-aug20/k0z-ident-cand.json` (≡ aug19-K0-soll); Läufe:
+Identität (Flag aus, neuer Code) und K-C (`--ink-evidence`).
+Bewertung: k0-Protokoll (Soll-Abstand + aiou je Wort, 63) +
+dev-19-Referenzbench (Basis NEU gescored, siehe Lineal-Notiz)
++ Drop-Liste + Hand-Claim-Prüfung (28 authored: keine
+gedroppte Komponente näher als 0,1 xh an einem Hand-Strich).
+
+**Gates:** (1) Identität: Flag aus = byte-gleich zur Basis;
+(2) Wörter OHNE Drops byte-gleich (Konstruktions-Vorhersage —
+reißt sie, ist die Messkette falsch, nicht die Maßnahme);
+(3) 63er: Soll-Abstand je Wort NIRGENDS schlechter, aiou je
+Wort ≥ −0,003; (4) dev-19: kein Wort verliert > 0,003 dtw,
+`marks_missing + marks_spurious` je Wort nicht schlechter,
+reversed 0, Netto-Kreuzungsdefekte ≤ Basis; (5) Hand-Claim
+0 Treffer; (6) Laufzeit-Report. **Adoption: alle Gates → Autor-
+Go → Kette v4 (`ink_evidence=True` als Folger-Default, datierte
+Re-Baseline) und derselbe Default auf dem Harvest.**
+
+**Ehrliche Erwartung.** zwei: beide Nadeln verschwinden (2
+unechte Retrace-Zonen weg, dtw 0,076 → Größenordnung 0,05);
+Galoppieren: i-Punkt-Strich bleibt kompakt → Marke 1/1, E1/E3
+weg, dtw 0,233 → um 0,06; Wer: byte-identisch? NEIN — Wers
+Fleck wird gedroppt, also ein neuer Solve, erwartet ≈ gleich
+(der Fleck bewegte nichts); unter, mit, und, will, laden,
+linken, das, die, muß-Familie: byte-identisch (keine
+Fremdtinte). **die-2 wird von K-C NICHT geheilt** — der Magnet
+ist die eigene, dunkle Marke; der benannte Nachfolger ist die
+**Marken-Claim-Trennung** (Körper-Evidenz ohne Marken-
+Komponenten, Marken-Striche mit ihrer eigenen), ein Eingriff
+in `_prepare_fields` je Segment, eigene Pre-Reg. Zweiter
+benannter Nachfolger, Autor-Idee vom selben Abend: **K-D
+Tinten-Korridor** — eine Sperrzone um die erweiterte Tinte,
+die die Bahn nicht durchstoßen darf (Barriere auf
+`dist_raw > r`), gegen Schräg-Abkürzungen durch Gegenschleifen
+(unters e) und gegen Nadeln ins Papier unabhängig von der
+Maske; benanntes Risiko: ein versetzter Seed (unter: 0,65 xh)
+kann die Tinte dann nicht mehr über Papier erreichen und wird
+auf der falschen Tinte eingesperrt — unters Wurzel ist die
+Composer-e-Breite, die kein Korridor heilt. Risiken von K-C:
+eine echte Komponente in der Lücke (nie beobachtet; Drop-Liste
++ Hand-Gate decken es); die Coverage-Dichte steigt auf der
+behaltenen Tinte (300 Ziele auf weniger Pixel) — Teil der
+Maßnahme, aber `cov_rmse`-Diagnosen sind über das Flag hinweg
+nicht vergleichbar.
+
+**Lineal-Notiz (aug20 Abend):** der Autor hat den beim
+Nachfahren vergessenen i-Punkt von zwei nachgeholt (live: 2
+Striche, 1161 + 34 Punkte). Refill ohne Re-Baseline per
+`fetch_fixtures --set words --only word-instances`
+(`werkzeuge.md`, der erste Akt einer Runde): 63 Bahnen, 28
+authored, 0 frame-stale; ändert für zwei `marks_expected`
+0 → 1, keine Körperbahn. Alle dev-19-Zahlen dieses Eintrags
+sind gegen den Refill-Stand gescored, die K0-Z-R-Zahlen oben
+gegen den Vor-Stand (zwei-Marken-Spalte nicht vergleichbar).
+
+**Gemessen `aug20` nacht — ALLE SECHS GATES BESTANDEN; die
+größte Struktur- UND Tintenbewegung der Ketten-Geschichte, bei
+null Verlierern.** Artefakte `temp/tb-aug20/kc-*`
+(`kc-ident*` · `kc-on*` · `kc-eval.txt` · `kc-*-dev*`), BLAS
+gepinnt, 4 Worker, 63 Wörter in 958 s (Identität) / 969 s
+(K-C, +1 %). **(1) Identität:** Flag aus = 63/63 Wörter
+byte-gleich zur K0-Z-Basis. **(2) Konstruktions-Vorhersage:**
+23 Wörter tragen Fremdtinte (44 Komponenten, exakt die 44 der
+Vorab-Messung), die 40 anderen sind unter dem Flag 40/40
+byte-gleich. **(3) 63er, k0-Protokoll: Gesamt-Soll-Abstand
+107 → 86** (11 besser · 52 gleich · 0 schlechter — K0-Z-R
+erreichte 99 und riss dabei Gates): Galoppieren 7 → 2, kann
+5 → 3, regieren 4 → 2, zwei 4 → 2, Einen 2 → 0, Zaum 2 → 0,
+schwer 2 → 0, wenn-2 1 → 0, Soldaten/die-2/schießen je −1.
+**aiou: kein einziges Wort unter ±0, Median der 23 bewegten
++0,02, Maximum Wer +0,0991** (macht +0,078, Einen +0,081,
+wenn-2 +0,081, und-4 +0,068, er-3 +0,040). **(4) dev-19:**
+dtw-Median 0,0494 → **0,0453** (Bestwert der Route; K0-Z-R:
+0,0472), aiou-Median 0,717 → **0,747**, schlechtester
+dtw-Verlust **+0,0002** (die-2), Marken `missing` 1 → 0 (der
+Galoppieren-Punkt), `spurious` 0 = 0, reversed 0, Netto-
+Kreuzungsdefekte 21 → 19, **unechte Retrace-Zonen 13 → 7**,
+Lifts Δ 7 → 6. Je Wort: **Galoppieren 0,2329 → 0,0383**
+(−83 %, i-Punkt-Strich kompakt, E1/E3-Nadeln weg, Retrace
+0/4 → 0/0), **zwei 0,0726 → 0,0558** (beide w-Nadeln weg:
+Retrace 0/2 → 0/0, aiou +0,027), Wer 0,0435 → 0,0363 (aiou
++0,099), und-4 0,0433 → 0,0393 (aiou +0,068), die-2
+0,0746 → 0,0748 (aiou +0,008, Kreuzung 2/0 → 1/0 — die
+V-Nadel bleibt, wie vorhergesagt: ihr Magnet ist die eigene
+Marke). **(5) Hand-Claim:** 0 Treffer — die nächste gedroppte
+Komponente liegt 0,53 xh von einer Hand-Bahn (zweis C2), alle
+anderen ≥ 0,76 xh. **(6)** Laufzeit +1 %.
+
+Die Vorhersagen der Pre-Reg hielten wörtlich: Wörter ohne
+Fremdtinte byte-gleich, zwei/Galoppieren geheilt, Wer „≈
+gleich" war zu vorsichtig (+0,099 aiou — der Fleck HATTE
+gezogen, nur nicht die nächste Bahn, sondern die Coverage),
+die-2 ungeheilt. **Status: alle Gates bestanden → Adoption
+wartet auf das Autor-Go (Kette v4 = `ink_evidence=True` als
+Folger-Default, datierte Re-Baseline aller Ketten-Zahlen;
+derselbe Default auf dem Harvest).** Bis dahin declared-off.
+Lesart für die Kampagne: die Fremdtinte war eine
+Störquelle UNTER allen bisherigen Kettenarmen — K0-Z-R, die
+λ-Leiter, die Wächter-Runden haben gegen sie gemessen; die
+Wiedervorlage der stärksten verworfenen Sprosse (K0-Z-R 0,55)
+auf K-C-Evidenz ist der naheliegende nächste Arm, NACH der
+Soll-Quellen-Autopsie, die K0-Z-R ohnehin braucht.

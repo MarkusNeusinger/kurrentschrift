@@ -14,6 +14,38 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Chain K-C: the ink-evidence mask — pre-registered from the author's
+  "Flecken" find and measured to a pass on all six gates** (§14 `aug20`
+  evening/night; soll distance 107 → **86** over 63 words with 11 better
+  and 0 worse, ZERO aiou losers and gains up to +0.099, dev-19 dtw
+  median 0.0494 → **0.0453** and aiou median 0.717 → 0.747, worst
+  per-word dtw loss +0.0002, Galoppieren 0.233 → 0.038, zwei 0.073 →
+  0.056, spurious retrace zones 13 → 7, the 40 words without foreign
+  ink byte-identical as predicted, hand-claim check 0 hits; stays
+  declared-off until the author's go). The author read the K0-Z-R
+  duel page and asked whether paper specks pull the follower off the
+  letters; a four-word autopsy plus a code map confirmed it for three of
+  the four complaints with numbers (zwei: both w needles terminate
+  inside a faint 27/36-px blob, the ratchet's tip INSIDE it;
+  Galoppieren: show-through of the sheet's reverse, three of four
+  excursions end on a fragment and one point of the i-dot stroke costs
+  75 % of the word's dtw and the mark gate; die-2: the attractor is the
+  word's OWN i-dot) and found something else for the fourth (unter: no
+  foreign ink — the composed e is twice the hand's width, the seed error
+  exceeds the anchor budget, and 81 % of the headline is u-bow stroke
+  ORDER bookkeeping). The fit sees every component of the frozen mask
+  as attractor and coverage target; over all 63 fixtures AREA does not
+  separate real marks from foreign ink, DARKNESS does completely (gap
+  0.38–0.74). New `tools/pairlab/ink_evidence.py` drops paper-grey
+  non-main components from the case's `skel`/`width_map` at ONE point
+  per route (after `derive_word`, before the grid fits), identity when
+  off or when nothing is foreign; `FollowWeights.ink_evidence`
+  (`--ink-evidence`) and `HarvestOptions.ink_evidence`, both
+  declared-off; the bench's own mask stays frozen. Glossary:
+  „Fremdtinte", „Tinten-Evidenz-Maske"; plan rows A7/K-C and the
+  author's corridor idea A8/K-D in `tintenfolger.md` §7.3. The zwei
+  fixture's hand trace was refilled (`--only word-instances`) after the
+  author added the forgotten i-dot.
 - **Chain K0-Z and K0-Z-R: the zonal rejection and the ratchet budget,
   measured to two honest negatives that carry the route's strongest
   numbers — and a two-soll-sources find** (§14 `aug20` night,
