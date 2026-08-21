@@ -133,6 +133,7 @@ from tools.pairlab.ink_evidence import INK_EVIDENCE_PAPER_FRACTION, InkEvidenceO
 from tools.pairlab.landmarks import LANDMARK_MIN_ANGLE_DEG
 from tools.pairlab.trace import assemble_word_strokes, cap_word_strokes
 from tools.tracebench.counters import crossing_points, structure_zones
+from tools.tracebench.soll import composition_strokes
 from tools.wordlab.cases import DEFAULT_FIXTURES_DIR, WordCase, iter_fixture_word_cases
 from tools.wordlab.derive import WordDeriveResult, derive_word
 
@@ -488,6 +489,15 @@ class FollowWeights:
     the diffuse body-coverage loss. No claim → nothing changes; words
     without a firing claim stay byte-identical by construction. Default
     False = declared-off until the measured adoption."""
+    soll_source: str = "init"
+    """K0-S (§14 `aug21`): where the soll guard's TARGET counts come from.
+    `"init"` (default) = the aug19 behaviour, byte-identical — the chain init
+    at x0 = 0 through the assembler and counters. `"composition"` = the
+    canonical source: the composed items through the SHARED builder
+    (`tools.tracebench.soll.composition_strokes`, restricted to the run) —
+    the daß autopsy proved the init reading counts a flattened init sliver
+    at the d head as ductus truth. Budget and round counts stay what they
+    are; only the TARGET moves to the composition."""
     provisional: bool = True
 
 
@@ -1841,10 +1851,19 @@ def follow_word_chain(
         )
         guard_budget = structure_class_counts(init_strokes)
         if weights.structure_guard_soll:
-            # aug19, rescue path (c): the soll is the COMPOSED init geometry —
-            # the trace at x0 = 0 through the very assembler and counters the
-            # budget and every round go through (no second implementation).
-            guard_soll = _assembled_counts(fit.problem, np.zeros_like(fit.params))
+            if weights.soll_source not in ("init", "composition"):
+                raise ValueError(f"unknown soll_source {weights.soll_source!r}; known: init, composition")
+            if weights.soll_source == "composition":
+                # K0-S (§14 `aug21`): the soll from the CANONICAL composition,
+                # run-restricted, through the builder the metric's ductus_soll
+                # shares — one pipeline, so guard and ruler cannot diverge (the
+                # daß find: the init reading counted its own flattened sliver).
+                guard_soll = structure_class_counts(composition_strokes(result.composed["items"], slots=set(fit.slots)))
+            else:
+                # aug19, rescue path (c): the soll is the composed INIT geometry
+                # — the trace at x0 = 0 through the very assembler and counters
+                # the budget and every round go through.
+                guard_soll = _assembled_counts(fit.problem, np.zeros_like(fit.params))
 
     for index in range(1, int(weights.rounds) + 1):
         prev_problem, prev_params = problem, params
@@ -2562,6 +2581,14 @@ def build_parser() -> argparse.ArgumentParser:
         help=f"K-C class boundary on the main-ink→paper grey scale (default {INK_EVIDENCE_PAPER_FRACTION})",
     )
     parser.add_argument(
+        "--soll-source",
+        choices=["init", "composition"],
+        default="init",
+        help="K0-S (aug21): where the soll guard's target counts come from — the chain init through "
+        "the assembler (default, the aug19 behaviour) or the canonical composition through the "
+        "shared ductus_soll builder (one pipeline with the metric)",
+    )
+    parser.add_argument(
         "--mark-claim",
         action="store_true",
         help="K-E stage 1 (aug21): a composed mark stroke claims its dark ink component within the "
@@ -2605,6 +2632,7 @@ def weights_from_args(args: argparse.Namespace) -> FollowWeights:
         ink_evidence=not args.no_ink_evidence,
         ink_evidence_paper_fraction=float(args.ink_evidence_paper_fraction),
         mark_claim=bool(args.mark_claim),
+        soll_source=str(args.soll_source),
     )
 
 
