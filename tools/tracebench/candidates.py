@@ -334,6 +334,12 @@ def chain_provider(
     (`tools.pairlab.marks`). Default False, because with it the candidate is no
     longer the stored baseline but a variant of it; a run that switches it on is
     its OWN pre-registered measurement and says so in its label.
+
+    `marks_last`, `trace_repair` and `ink_evidence` mirror the dated adoptions
+    (Kette v2/K-A, v3/K-B, v4/K-C) and default to the CURRENT baseline;
+    `ink_evidence=False` is the pre-v4 archaeology run — the solve sees the
+    frozen mask's every component again, foreign ink included — exactly as
+    `marks_last=False`/`trace_repair=False` restore the older candidate shapes.
     """
     root = Path(fixtures_root) if fixtures_root is not None else DEFAULT_FIXTURES_DIR
 

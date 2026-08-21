@@ -273,13 +273,10 @@ def test_the_chain_candidate_is_the_baseline_until_a1_is_asked_for(
     assert with_a1.strokes == baseline.strokes
 
 
-def test_marks_last_is_the_v2_baseline_and_reorders_only(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """`marks_last` (§14 K-A, adopted as Kette v2) defaults ON; on a word
-    without diacritics v2 and the v1 ordering are byte-identical — the measure
-    is a pure ORDER change and may never move a point."""
-    from tests.test_laufform_harvest import _synthetic_word  # noqa: PLC0415
-    from tools.pairlab.trace import diacritic_stroke_units  # noqa: PLC0415
-    from tools.tracebench import candidates as candidates_mod  # noqa: PLC0415
+def test_the_adopted_version_defaults_are_pinned() -> None:
+    """The chain provider builds the ADOPTED baseline by default — one pin per
+    dated adoption (`marks_last` v2/K-A, `trace_repair` v3/K-B, `ink_evidence`
+    v4/K-C) — and each measure keeps its archaeology override."""
     from tools.tracebench.candidates import _chain_options  # noqa: PLC0415
 
     assert _chain_options("suetterlin", "composed").marks_last is True  # the v2 baseline
@@ -288,6 +285,16 @@ def test_marks_last_is_the_v2_baseline_and_reorders_only(tmp_path: Path, monkeyp
     assert _chain_options("suetterlin", "composed", trace_repair=False).trace_repair is False  # needle archaeology
     assert _chain_options("suetterlin", "composed").ink_evidence is True  # the v4 baseline (K-C)
     assert _chain_options("suetterlin", "composed", ink_evidence=False).ink_evidence is False  # pre-v4 archaeology
+
+
+def test_marks_last_is_the_v2_baseline_and_reorders_only(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`marks_last` (§14 K-A, adopted as Kette v2) defaults ON; on a word
+    without diacritics v2 and the v1 ordering are byte-identical — the measure
+    is a pure ORDER change and may never move a point."""
+    from tests.test_laufform_harvest import _synthetic_word  # noqa: PLC0415
+    from tools.pairlab.trace import diacritic_stroke_units  # noqa: PLC0415
+    from tools.tracebench import candidates as candidates_mod  # noqa: PLC0415
+
     # The assembler's own criterion, read off word-units strokes.
     assert diacritic_stroke_units([[0.1, 1.4], [0.3, 1.6]]) is True
     assert diacritic_stroke_units([[0.1, 0.2], [0.3, 1.6]]) is False
