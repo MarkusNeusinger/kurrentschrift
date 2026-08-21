@@ -28,7 +28,7 @@ import numpy as np
 from scipy.ndimage import distance_transform_edt
 
 from tools.tracebench.candidates import file_provider
-from tools.tracebench.counters import resampled_strokes
+from tools.tracebench.counters import RESAMPLE_STEP_UNITS, resampled_strokes
 from tools.tracebench.reference import DEFAULT_FIXTURES_DIR, Reference, load_reference
 from tools.tracebench.run import find_fixture_root
 
@@ -37,9 +37,9 @@ from tools.tracebench.run import find_fixture_root
 # x-heights: the aug20 needle class sat at 0.5–0.83 xh, ordinary on-ink
 # riding stays well under 0.35.
 EXCURSION_THRESHOLDS = (0.35, 0.5)
-# The ruler's own resample step (counters.RESAMPLE_STEP_UNITS is the scoring
-# default); the inventory samples the path at the same granularity.
-INVENTORY_STEP_UNITS = 0.02
+# The ruler's own resample step, imported so the sensor can never drift from
+# the counters/DTW discretisation.
+INVENTORY_STEP_UNITS = RESAMPLE_STEP_UNITS
 
 
 def _cleaned_ink_distance_px(specimen_id: str, reference: Reference) -> np.ndarray | None:
@@ -54,15 +54,25 @@ def _cleaned_ink_distance_px(specimen_id: str, reference: Reference) -> np.ndarr
     return distance_transform_edt(~np.asarray(clean.width_map > 0))
 
 
-def inventory(candidate_path: Path, reference: Reference) -> dict[str, dict[str, float]]:
-    """`{specimen_id: {max, arc_<t>...}}` — excursions in xh for one candidate file."""
+def inventory(
+    candidate_path: Path, reference: Reference, dist_cache: dict[str, np.ndarray | None] | None = None
+) -> dict[str, dict[str, float]]:
+    """`{specimen_id: {max, arc_<t>...}}` — excursions in xh for one candidate file.
+
+    `dist_cache` carries the per-specimen evidence EDTs across candidate files
+    (they depend on the fixtures only, never on the candidate) — a
+    multi-candidate run pays the fixture I/O and distance transforms once.
+    """
     cands = file_provider(str(candidate_path))(reference, reference.order)
+    cache = dist_cache if dist_cache is not None else {}
     rows: dict[str, dict[str, float]] = {}
     for sid in reference.order:
         cand, entry = cands.get(sid), reference.entries[sid]
         if cand is None or not cand.ok:
             continue
-        dist_px = _cleaned_ink_distance_px(sid, reference)
+        if sid not in cache:
+            cache[sid] = _cleaned_ink_distance_px(sid, reference)
+        dist_px = cache[sid]
         if dist_px is None:
             continue
         strokes = entry.frame.trace_to_bench(cand.strokes, cand.registration_px, cand.xh_px)
@@ -89,9 +99,10 @@ def main() -> None:
 
     root = find_fixture_root(DEFAULT_FIXTURES_DIR, "suetterlin", "words")
     reference = load_reference(root)
+    dist_cache: dict[str, np.ndarray | None] = {}
     out: dict[str, dict[str, dict[str, float]]] = {}
     for path in args.candidates:
-        rows = inventory(path, reference)
+        rows = inventory(path, reference, dist_cache)
         out[path.name] = rows
         print(f"== {path.name} ({len(rows)} words)")
         for sid, row in sorted(rows.items(), key=lambda kv: -kv[1]["max"])[: args.top]:
