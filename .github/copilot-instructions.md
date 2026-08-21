@@ -317,8 +317,9 @@ the gate reject every value for two months). Cloud sessions have no `.env`
 and no Cloud SQL egress — the deployed API is the only admin path there;
 the gitignored wordbench fixture roots rebuild over HTTPS via
 `uv run python -m tools.wordbench.fetch_fixtures --set all --verify` —
-run `uv sync --all-extras` first, the verify path imports matplotlib from
-the `viz` extra (details: `docs/reference/frontend-stack.md` and
+run `uv sync --all-extras` first: the verify path imports matplotlib from
+the `viz` extra and fails with `ModuleNotFoundError` on a fresh cloud venv
+without it (details: `docs/reference/frontend-stack.md` and
 `docs/reference/werkzeuge.md`).
 
 `http://localhost:3000/admin` opens the workbench: first the Vorlage
