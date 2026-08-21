@@ -20,7 +20,7 @@ import pytest
 
 from tests.test_tracebench_reference import STROKES, row, write_root
 from tools.tracebench.candidates import CANDIDATE_FRAME
-from tools.tracebench.k0eval import AIOU_LOSER_GATE, eval_candidate, pair_rows, report_rows
+from tools.tracebench.k0eval import AIOU_LOSER_GATE, eval_candidate, pair_rows, report_rows, scoring_ids
 from tools.tracebench.reference import load_reference
 from tools.tracebench.soll import SollRow
 
@@ -101,6 +101,17 @@ def test_identity_is_the_parsed_strokes_not_their_serialization() -> None:
     base = {"w": ok_row(1, 0.5, [[[1, 1], [2, 0]]])}
     cand = {"w": ok_row(1, 0.5, [[[1.0, 1.0], [2.0, 0.0]]])}
     assert pair_rows(base, cand, ["w"])["identical"] == ["w"]
+
+
+# ------------------------------------------------------------------ scoring_ids
+
+
+def test_an_empty_soll_set_is_a_hard_error_not_a_quiet_zero() -> None:
+    """The soll distance is the core metric — without targets the run is
+    meaningless and must refuse, not print '0 words' and continue."""
+    assert scoring_ids(["die", "mit"], {"mit": soll("mit", 1, 0)}) == ["mit"]
+    with pytest.raises(SystemExit, match="no words with a composition soll"):
+        scoring_ids(["die", "mit"], {})
 
 
 # ------------------------------------------------------------------ report_rows
