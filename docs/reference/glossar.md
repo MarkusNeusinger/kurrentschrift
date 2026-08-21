@@ -46,7 +46,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
-- **K** — Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
+- **K** — k0-Protokoll §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4
 - **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4 · Nullprobe §4
@@ -1238,6 +1238,23 @@ Kriterien sind vorregistriert (qualitaetsmetrik.md §14), ein
 Strukturdefekt vetot jeden Distanzgewinn. *Technisch:* die Mess-Module
 `tools/tracebench/{metric,frames,counters,sets}.py` (Stufe B); Harness +
 Provider folgen als Stufe C → proposals/tintenfolger.md §2
+
+**k0-Protokoll** — die referenzfreie 63er-Auswertung der Ketten-Arme
+(seit K0-Z `aug20`), das Gegenstück zum dev-19-Scoring: je Wort der
+**Soll-Abstand** |Kreuzungen − Kompositions-Soll| + |Retrace-Zonen −
+Zonen-Soll| (Soll aus `ductus_soll`, seit K0-S die EINE Soll-Pipeline
+mit dem Wächter) plus `aiou` gegen die eingefrorene Maske; gepaart
+über eine Basis mit Strich-Identitäts-Klassen (welche Zeilen sich
+zwischen zwei Kandidaten überhaupt bewegten — verglichen werden die
+geparsten Strichzüge, nicht die Datei-Bytes; in den §14-Einträgen
+bis `aug21` „byte-identisch“ genannt — die Grundlage der
+Identitäts- und Konstruktions-Vorhersage-Gates). Die stehende
+aiou-Verlierer-Schwelle je Wort ist −0,003 (Messrauschen). Bis
+`aug21` je Runde als Scratch-Skript neu gebaut, seither
+`tools/tracebench/k0eval.py`. *Technisch:* Zähler aus
+`tools/tracebench/counters.py`, Soll aus `soll.py` →
+qualitaetsmetrik.md §14 „Kette K0-Z" (Erstform), werkzeuge.md
+(Mess-Liturgie)
 
 **`dtw_xh`** — die Headline-Distanz des tracebench: unconstrained DTW
 (euklidisch, in xh, symmetric-1-Schritte, beide Enden verankert, kein
