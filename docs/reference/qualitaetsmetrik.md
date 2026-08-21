@@ -8269,9 +8269,9 @@ gesonderter Beobachtung und ein unter-Riss wäre ein
 erwartetes, benanntes Negativ, kein Überraschungsfund.
 
 **Gemessen `aug21` — Sprosse 0 schließt den Arm:
-GEGENSTANDSLOS NACH v4.** Inventar (Skript
-`tb-aug21/kd_inventory.py`, 63 Wörter, Lineal-Schritt 0,02,
-gegen die K-C-bereinigte Evidenz): **kein einziges Wort
+GEGENSTANDSLOS NACH v4.** Inventar (als stehender Sensor ins
+Repo übernommen: `tools/tracebench/excursions.py`; 63 Wörter,
+Lineal-Schritt 0,02, gegen die K-C-bereinigte Evidenz): **kein einziges Wort
 erreicht eine der Schwellen — auf KEINEM der beiden
 Kandidaten.** Maximum des gesamten Sets: zum 0,332 xh
 (v4-Basis) bzw. 0,312 (v5-Anwärter), zweitgrößter Wert han
@@ -8286,7 +8286,7 @@ Implementierung** — kein Negativ der Mechanik, ein positiver
 Befund über den Zustand der Route. Rettungsweg/
 Wiedervorlage-Auslöser (§7.9-Zeile im selben PR): ein
 künftiges Inventar oder ein neuer Arm zeigt eine neue
-Papier-Nadel-Klasse (das Inventar-Skript ist der stehende
-Sensor und läuft in Minuten auf jedem Kandidaten); erst dann
-lohnt die Barriere, mit frischer Pre-Reg und dem unveränderten
-unter-Risiko.
+Papier-Nadel-Klasse (`tools/tracebench/excursions.py` ist der
+stehende Sensor und läuft in Minuten auf jedem Kandidaten);
+erst dann lohnt die Barriere, mit frischer Pre-Reg und dem
+unveränderten unter-Risiko.

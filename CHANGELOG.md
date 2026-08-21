@@ -26,10 +26,13 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   0.33 xh), while the autopsied aug20 needle class sat at 0.5–0.83 xh.
   The root treatment (K-C dropping the foreign-ink magnets from the
   evidence) outran the symptom ban. The decision rule was declared
-  before the number; the inventory script stays as a standing sensor,
-  and the revival trigger (a future inventory or arm showing a new
-  paper-needle class → the barrier with a fresh pre-registration and
-  the author's named unter lock-in risk) is registered in §7.9.
+  before the number; the inventory ships as a standing repo sensor
+  (`tools/tracebench/excursions.py` — per word, the candidate path
+  resampled at the ruler's step against the K-C-cleaned evidence ink;
+  no DB, no solve), and the revival trigger (a future inventory or arm
+  showing a new paper-needle class → the barrier with a fresh
+  pre-registration and the author's named unter lock-in risk) is
+  registered in §7.9.
 
 - **Chain K0-S: the soll-source autopsy vindicates the metric, ONE
   soll pipeline is built, and the K0-Z-R resubmission passes every
