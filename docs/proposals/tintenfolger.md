@@ -676,8 +676,15 @@ Aufwand/Risiko:
   Papier unabhängig von der Maske. Benanntes Risiko: ein versetzter
   Seed (unter: 0,65 xh) erreicht seine Tinte dann nicht mehr über
   Papier und wird auf der falschen eingesperrt — unters Wurzel ist
-  die komponierte e-Breite (§7.2), die kein Korridor heilt. Eigene
-  Pre-Reg NACH K-C.
+  die komponierte e-Breite (§7.2), die kein Korridor heilt.
+  **GEMESSEN `aug21` (§14 „Kette K-D"): GEGENSTANDSLOS NACH v4
+  geschlossen, ohne Implementierung** — das vorregistrierte
+  Exkursions-Inventar (Sprosse 0, kein Solve) findet auf v4-Basis
+  UND v5-Anwärter kein einziges Wort über 0,35 xh Papier-Exkursion
+  (Set-Maximum 0,33): die Nadel-Klasse, für die der Korridor
+  erfunden wurde, ist von K-C an der Wurzel geheilt.
+  Wiedervorlage-Auslöser: ein künftiges Inventar zeigt eine neue
+  Papier-Nadel-Klasse (das Inventar-Skript ist der stehende Sensor).
 
 Reihenfolge (Autor-Auftrag `aug21`): K-C ✓ (v4) → K-E Stufe 1 →
 (K-E Stufe 2 nur bei haltender Stufe 1) → Soll-Quellen-Autopsie
@@ -900,6 +907,7 @@ Disziplin verhindert).
 | Laufform LF2 Topologie-Wächter, Voll-Entfernung (`aug19`) | Kern-Erwartung erfüllt (Galoppieren-Soll 6 → 8 = Hand-Übereinstimmung, netto 4), aber die volle Breiten-Entfernung kostet Tinte (+0,00136, schießen +0,034) und kippt den Galoppieren-i-Punkt aus dem Ritt (Marken-Gate) | Reparatur statt Entfernung (→ LF3); der Wächter selbst bleibt als Write-Path-Prinzip (nie eine Zeile speichern, die Topologie verliert) | eigene Pre-Reg, gemessen in derselben Runde |
 | Laufform LF3 Buchstaben-Orakel (`aug19`) | Mechanismus richtig (Marken bleiben, aiou +0,007), Orakel zu schwach: das minimale Zellen-t überlebt den Kompositions-Kontext nicht (Galoppieren Buchstaben-Soll 7, Kompositions-Soll bleibt 6) | Kompositions-Orakel → **UMGESETZT als LF3b, alle Gates bestanden, als Kandidaten-Karte adoptiert** | erledigt |
 | K-E1/K-E2 Marken-Claim-Trennung (`aug21`) | die benannten Ziele heilen spektakulär (die-2: Soll 4 → 1 bzw. 2, dtw −0,028, V-Nadel weg; netto-Kreuzungen 22 → 18/19, Retrace 14 → 12, dev-Median exakt gehalten), aber vier DIFFUSE aiou-Risse (auch/schießen/Einen/muß-2, −0,013 bis −0,027): Körper-Deckung über die ganze Wortbreite. **K-E2 (Ein-Faktor: Breitenfelder ungeteilt) widerlegt die Breiten-Hypothese sauber** — 55/63 Kandidaten byte-gleich zu K-E1, darunter auch und muß-2 (zwei der vier Verlierer: der Breiten-Kanal war für sie inert); der Treiber ist die Distanzfeld-/Coverage-UMVERTEILUNG selbst, dieselben Kanäle tragen die Heilung — Gewinn und Verlust in DIESER Formulierung untrennbar (das Arm-⑨-Muster eine Schicht tiefer). Stufe 2 (Kringel) nicht eröffnet (Autor-Bedingung) | (1) **humanbench-Tie-Breaker** — der vorregistrierte Methodik-Fall in Reinform (aiou-Median der bewegten −0,0002 = Lineal-Indifferenz; lokale aiou-Verluste gegen die-2-Heilung + Struktur-Gewinne); (2) **Distanzfeld-NUR-Claim** (Coverage-Topf bleibt v4-Ökonomie, nur das Anziehungsfeld trennt je Klasse; die die-2-Nadel war 4,2× distanzfeld-getrieben; frische Pre-Reg); (3) Claim-Schärfung für Bogen-Strecken (unter/Seiten-Soll-Risse; nachrangig) | (1) Autor-Entscheid/Runde; (2) eigene Pre-Reg; (3) danach |
+| K-D Tinten-Korridor (`aug21`) | GEGENSTANDSLOS NACH v4 — das vorregistrierte Exkursions-Inventar (Sprosse 0, ohne Solve) findet auf v4-Basis und v5-Anwärter KEIN Wort über 0,35 xh Papier-Exkursion (Set-Maximum zum 0,33; die aug20-Nadel-Klasse lag bei 0,5–0,83 xh): K-C hat die Wurzel (Fremdtinten-Magneten) geheilt, bevor das Symptom-Verbot gebaut war; kein Negativ der Mechanik | Wiedervorlage-Auslöser: ein künftiges Inventar (`tools/tracebench/excursions.py`, Minuten je Kandidat) oder ein neuer Arm zeigt eine neue Papier-Nadel-Klasse → Barriere mit frischer Pre-Reg, unter-Risiko unverändert benannt | Sensor steht; kein Anlauf ohne neue Klasse |
 
 ### 7.10 Runde aug17: die Befund-Matrix des 19er-Dev-Satzes und der Maßnahmenplan
 

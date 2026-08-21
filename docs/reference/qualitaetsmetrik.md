@@ -8214,3 +8214,79 @@ beste Sprosse, die alle Gates hält → wartet auf das Autor-Go
 Zone 0,55 als Duell-/Folger-Konfiguration, datierte
 Re-Baseline).** Bis dahin bleibt alles declared-off
 (`soll_source` Default `init`, Ratsche/Zone Default aus).
+
+### Kette K-D `aug21` — Vorregistrierung: der Tinten-Korridor, mit dem Gegenstands-Test zuerst
+
+Geschrieben und committet VOR der ersten Zahl. **Anlass
+(Autor-Idee 2026-08-20, §7.3 A8):** eine Sperrzone um die
+erweiterte Tinte, die die Bahn nicht durchstoßen darf —
+Barriere auf dem Abstandsfeld statt weichem Zug: verbietet
+Schräg-Abkürzungen durch Gegenschleifen (unters e) und Nadeln
+ins Papier unabhängig von der Maske. **Die Idee entstand VOR
+der K-C-Messung** — und v4 hat die autopsierte Nadel-Klasse
+(zwei-w-Füße, Galoppieren-Exkursionen: alles
+Fremdtinten-Magneten) seither an der Wurzel geheilt, K0-S hat
+die Bahnen weiter bewegt. Ob der Korridor noch einen
+GEGENSTAND hat, ist darum die erste Frage, nicht die
+Implementierung.
+
+**Sprosse 0 — das Exkursions-Inventar (kein Solve, keine neue
+Mechanik).** Auf den EXISTIERENDEN Kandidaten dieser Umgebung
+(v4-Basis `kc-v4-cand` und v5-Anwärter `k0s-r2-cand`): je Wort
+die auf den Lineal-Schritt resampelte Bahn gegen die
+v4-Evidenz-Tinte (die K-C-bereinigte Maske — Fremdtinte zählt
+nicht als Tinte), Messgrößen je Wort: maximale Exkursion (xh)
+und Bogenlänge der Samples jenseits {0,35 · 0,5} xh.
+**Entscheidungsregel, VOR der Zahl:** eine substanzielle
+Ziel-Klasse liegt vor, wenn mindestens EIN Wort eine
+Papier-Exkursion ≥ 0,5 xh trägt ODER mindestens DREI Wörter
+≥ 0,35 xh (auf dem v5-Anwärter gezählt — der Stack, auf dem
+der Korridor leben würde). Darunter wird K-D als
+**GEGENSTANDSLOS NACH v4** geschlossen (kein Negativ der
+Mechanik — die Wurzelbehandlung K-C/K0-S war schneller als das
+Symptom-Verbot; Wiedervorlage-Auslöser: ein künftiges
+Inventar oder ein neuer Arm zeigt eine neue
+Papier-Nadel-Klasse; §7.9-Zeile im selben PR).
+
+**Sprosse 1 (NUR bei substanzieller Klasse):** die Barriere
+als glattes Hinge-Potential im Solve — je Sample
+`max(0, d_smooth − r)²`, gemittelt, Gewicht fest 10× des
+Geo-Terms (deklariert provisorisch), EIN Knopf
+`corridor_units` (0 = aus = byte-identisch; Leiter
+{0,5 · 0,35}), Einsatz in `build_chain_problem` neben dem
+Geo-Term (analytischer Gradient aus demselben Feld-Lookup).
+Gates: Identität (0 byte-gleich) · kein aiou-Verlierer je Wort
+≥ −0,003 · dev-19 kein Wort über +0,003 dtw · Marken nicht
+schlechter, reversed 0, Netto-Kreuzungsdefekte ≤ Basis ·
+Soll-Abstand je Wort nirgends schlechter · ZIEL-Gate: die
+maximale Exkursion sinkt strikt an den Inventar-Wörtern ·
+Laufzeit-Report. **Benanntes Risiko (Autor, wörtlich aus der
+K-C-Pre-Reg):** ein versetzter Seed (unter: 0,65 xh) erreicht
+seine Tinte nicht mehr über Papier und wird auf der falschen
+Tinte eingesperrt — unters Wurzel ist die Composer-e-Breite
+(§7.2), die kein Korridor heilt; unter steht darum unter
+gesonderter Beobachtung und ein unter-Riss wäre ein
+erwartetes, benanntes Negativ, kein Überraschungsfund.
+
+**Gemessen `aug21` — Sprosse 0 schließt den Arm:
+GEGENSTANDSLOS NACH v4.** Inventar (als stehender Sensor ins
+Repo übernommen: `tools/tracebench/excursions.py`; 63 Wörter,
+Lineal-Schritt 0,02, gegen die K-C-bereinigte Evidenz): **kein einziges Wort
+erreicht eine der Schwellen — auf KEINEM der beiden
+Kandidaten.** Maximum des gesamten Sets: zum 0,332 xh
+(v4-Basis) bzw. 0,312 (v5-Anwärter), zweitgrößter Wert han
+0,269, alles Weitere ≤ 0,25; `arc>0,35` durchgehend 0,00.
+Die autopsierte aug20-Nadel-Klasse (zwei-w-Fuß 0,5–0,75 xh
+ins Papier, Galoppieren-Exkursionen bis 0,83 xh
+kontrafaktisch) existiert nicht mehr: die WURZELBEHANDLUNG
+(K-C: die Magneten aus der Evidenz) hat das Symptom
+beseitigt, bevor sein Verbot (der Korridor) gebaut war. Die
+Entscheidungsregel feuert eindeutig → **K-D geschlossen ohne
+Implementierung** — kein Negativ der Mechanik, ein positiver
+Befund über den Zustand der Route. Rettungsweg/
+Wiedervorlage-Auslöser (§7.9-Zeile im selben PR): ein
+künftiges Inventar oder ein neuer Arm zeigt eine neue
+Papier-Nadel-Klasse (`tools/tracebench/excursions.py` ist der
+stehende Sensor und läuft in Minuten auf jedem Kandidaten);
+erst dann lohnt die Barriere, mit frischer Pre-Reg und dem
+unveränderten unter-Risiko.
