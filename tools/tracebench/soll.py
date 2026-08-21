@@ -49,6 +49,55 @@ class SollRow:
     overlaps: int = 0
 
 
+def composition_strokes(items: Sequence[dict[str, Any]], slots: set[int] | None = None) -> list[np.ndarray]:
+    """The composed word's pen strokes, exactly as `ductus_soll` counts them.
+
+    One polyline per pen-down run: items concatenate until an item carries
+    `lift`, consecutive duplicate points are dropped. Factored out of
+    `ductus_soll` so the structure guard's SOLL can come from the SAME
+    builder as the metric's (K0-S, §14 `aug21`) — one pipeline, byte-identical
+    for the full-word case.
+
+    `slots` restricts to one RUN: kept are the items whose `slot_index` is in
+    the set (the run's letters and their deferred marks, wherever they sit in
+    the stream) plus every gap between two kept items that holds ONLY
+    slot-less items (the generated connectors) — a gap crossing a foreign
+    letter is never bridged, so a deferred mark cannot drag another slot's
+    body into the run. A skipped item closes the current stroke — a gap in
+    the restricted view is pen-up, never an invented line.
+    """
+    keep: list[bool]
+    if slots is None:
+        keep = [True] * len(items)
+    else:
+        keep = [item.get("slot_index") in slots for item in items]
+        member = [i for i, m in enumerate(keep) if m]
+        for a, b in zip(member[:-1], member[1:], strict=True):
+            gap = range(a + 1, b)
+            if gap and all(items[i].get("slot_index") is None for i in gap):
+                for i in gap:
+                    keep[i] = True
+    comp: list[np.ndarray] = []
+    current: list[tuple[float, float]] = []
+    for item, kept in zip(items, keep, strict=True):
+        if not kept:
+            if current:
+                comp.append(np.asarray(current, dtype=float))
+                current = []
+            continue
+        pts = [(float(x), float(y)) for x, y in item["centerline"]]
+        if item.get("lift") and current:
+            comp.append(np.asarray(current, dtype=float))
+            current = []
+        for p in pts:
+            if current and abs(current[-1][0] - p[0]) < 1e-12 and abs(current[-1][1] - p[1]) < 1e-12:
+                continue
+            current.append(p)
+    if current:
+        comp.append(np.asarray(current, dtype=float))
+    return comp
+
+
 def ductus_soll(
     ids: Sequence[str], *, which: str, style: str, fixtures_root: Path
 ) -> tuple[dict[str, tuple[SollRow, ...]], list[str]]:
@@ -76,8 +125,6 @@ def ductus_soll(
             warnings.append(f"{specimen_id}: derive failed ({type(exc).__name__}) — Duktus-Soll omitted")
             continue
         slots: dict[int, dict[str, Any]] = {}
-        comp: list[np.ndarray] = []
-        current: list[tuple[float, float]] = []
         for item in items:
             pts = [(float(x), float(y)) for x, y in item["centerline"]]
             slot = item.get("slot_index")
@@ -86,15 +133,10 @@ def ductus_soll(
                 if item.get("glyph_key") and not item.get("diacritic"):
                     info["key"] = item["glyph_key"]
                 info["strokes"].append(np.asarray(pts, dtype=float))
-            if item.get("lift") and current:
-                comp.append(np.asarray(current, dtype=float))
-                current = []
-            for p in pts:
-                if current and abs(current[-1][0] - p[0]) < 1e-12 and abs(current[-1][1] - p[1]) < 1e-12:
-                    continue
-                current.append(p)
-        if current:
-            comp.append(np.asarray(current, dtype=float))
+        # The composed strokes come from the SHARED builder (K0-S, §14
+        # `aug21`): the same code the structure guard's soll reads, so the
+        # metric's soll and the guard's can never drift again.
+        comp = composition_strokes(items)
         sum_cross = sum_zones = sum_touch = sum_overlap = 0
         cells: list[str] = []
         for slot in sorted(slots):
@@ -142,4 +184,4 @@ def soll_row_fields(rows: tuple[SollRow, ...]) -> dict[str, int]:
     }
 
 
-__all__ = ["SollRow", "ductus_soll", "soll_row_fields"]
+__all__ = ["SollRow", "composition_strokes", "ductus_soll", "soll_row_fields"]
