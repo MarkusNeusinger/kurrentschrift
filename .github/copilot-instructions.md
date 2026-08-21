@@ -93,10 +93,11 @@ agent working in this repo:
     refuses a URL equal to `DATABASE_URL`, refuses an occupied target
     without `--replace`, and writes nothing without `--apply`.
 - **Do not mutate tracked files via shell heredocs/`sed`** that bypass
-  normal review; edit through the editor. When a command legitimately
-  rewrites a tracked file (formatter, codegen), re-read it before the next
-  edit. A failed edit anchor ("string not found") means re-read and
-  re-anchor — never fall back to a script-driven rewrite.
+  normal review — appending with `>>` counts; edit through the editor.
+  When a command legitimately rewrites a tracked file (formatter,
+  codegen), re-read it before the next edit. A failed edit anchor
+  ("string not found") means re-read and re-anchor — never fall back to a
+  script-driven rewrite.
 - **Manual author tasks are tracked in the owner's Todoist** (project
   "kurrentschrift", owner directive 2026-08-07): an agent that identifies a
   step only the human can do (wizard re-trace, rendering-affecting DB apply,
@@ -315,8 +316,9 @@ secret version with `echo` (the trailing newline no header can carry made
 the gate reject every value for two months). Cloud sessions have no `.env`
 and no Cloud SQL egress — the deployed API is the only admin path there;
 the gitignored wordbench fixture roots rebuild over HTTPS via
-`uv run python -m tools.wordbench.fetch_fixtures --set all --verify`
-(details: `docs/reference/frontend-stack.md` and
+`uv run python -m tools.wordbench.fetch_fixtures --set all --verify` —
+run `uv sync --all-extras` first, the verify path imports matplotlib from
+the `viz` extra (details: `docs/reference/frontend-stack.md` and
 `docs/reference/werkzeuge.md`).
 
 `http://localhost:3000/admin` opens the workbench: first the Vorlage

@@ -221,6 +221,13 @@ already be gone.
   threads on the changed lines; that's the loop working, not noise —
   but don't chase it more than a couple of rounds for cosmetic nits;
   surface stalemates to the user.
+- **Copilot runs can die silently.** The
+  `copilot-pull-request-reviewer` check can end `cancelled` without
+  delivering a review, and a re-request may spawn no new run at all
+  (PR #400, 2026-08-21: cancelled after 20 min, the re-request stayed
+  silent). Re-request exactly ONCE; if that also delivers nothing,
+  report the PR as green and review-clean by absence — never loop
+  requests waiting for a review that is not coming.
 - **Never pipe a gate command** — without `set -o pipefail` a pipeline
   reports the LAST command's exit status, so
   `ruff format --check | tail -1` let an unformatted file reach a
