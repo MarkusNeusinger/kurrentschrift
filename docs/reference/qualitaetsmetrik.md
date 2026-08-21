@@ -7973,3 +7973,81 @@ beider erledigen); braucht den Duktus-Prior als
 VERBRAUCHS-ZUORDNUNG (jeder Tinten-Punkt wird von genau einer
 Strecke verbraucht); Messgröße: unechte Retrace-Zonen an
 Schleifenbuchstaben.
+
+**Gemessen `aug21` — per Gate (3) VERWORFEN in dieser Form, an
+vier diffusen aiou-Rissen; die benannten Ziele heilen
+spektakulär, und die Autopsie benennt den Konversions-Weg.**
+Artefakte Scratchpad `tb-aug21/ke-*`, BLAS gepinnt, 4 Worker,
+Identität 844 s · K-E 905 s (+7 %). **(1) Identität:** Flag aus
+= 63/63 byte-gleich zur v4-Basis. **(2)
+Konstruktions-Vorhersage:** 37 Wörter feuern Claims (i-Punkte,
+u-Bögen, Umlaut-Doppelstriche je zwei; alle Abstände ≤ 0,50 xh),
+die 26 claimfreien sind 26/26 byte-gleich — die Klassen decken
+sich EXAKT mit der Claim-Liste. **(5) die-2 — das benannte
+Ziel — heilt auf JEDER Achse: Soll-Abstand 4 → 1, dtw
+0,0750 → 0,0469 (−0,0281), aiou +0,0229, die V-Nadel im
+Augenschein WEG** (übrig ein kleiner Zickzack am
+d-Schleifenschluss — die Kringel-Klasse). Dazu die
+0,0745 → 0,0586, `cross_spurious` 8 → 5, `cross_missing`
+14 → 13 (netto 22 → 18), **Retrace 7+7 → 6+6**, Marken 0+0,
+reversed 0, 63er-Soll 85 → 82 (4 besser · 56 gleich · 3
+schlechter: unter/Seiten/Sprünge je +1 — Seiten und Sprünge
+tragen die beiden WEITESTEN Claims, 0,30/0,50 xh). **(4)
+dev-19: Median EXAKT gehalten** (0,044785 = 0,044785, das
+Median-Wort byte-gleich), schlechtester Verlust muß-2 +0,0026
+(unter der Schwelle). **ABER (3): vier aiou-Verlierer unter
+−0,003** — auch −0,0270, schießen −0,0269, Einen −0,0146,
+muß-2 −0,0131 (15 weitere Verlierer sind ≤ 0,003 =
+Messrauschen; über die 37 bewegten: min −0,0270 · Median
+−0,0002 · max +0,0229). **Autopsie (Deckungs-Differenz je
+Pixel, klassifiziert nach geclaimter Komponente):** verloren
+geht in allen vier Fällen KÖRPER-Tinte (64–184 px), diffus
+über die GANZE Wortbreite (bbox = Wort), die Marken-Komponenten
+selbst bleiben gedeckt — kein lokaler Marken-Effekt, sondern
+eine Basin-Umverteilung des Körper-Solves nach dem Entzug.
+Verdächtige Kanäle, in Reichweite EINER Formulierungs-Frage:
+(a) der BREITENFELD-Split — der einzige Kanal, der Messziele
+(nicht Anziehung) über die gesamte Voronoi-Region der Marke
+umschreibt (v4 propagierte die Marken-Breite auf
+Körper-Samples: eine Korruption, aber eine, gegen die der Fit
+kalibriert war); (b) die Coverage-NORMIERUNG (die Marken-Ziele
+verwässern jeden Körper-Zug um 1–3 %). Die Gates werden nicht
+aufgeweicht: NICHT adoptiert; `mark_claim` bleibt declared-off.
+Rettungswege (§7.9-Zeile im selben PR): (1) **K-E2** — der
+Ein-Faktor-Konversionsarm direkt darunter; (2) der
+humanbench-Tie-Breaker für den Rest-Trade, falls K-E2 die
+diffuse Klasse nicht schließt (Median −0,0002 über die
+bewegten = Lineal-Indifferenz bei starken Struktur-Gewinnen);
+(3) Claim-Schärfung für Bogen-Strecken (die
+Seiten/Sprünge-Soll-Risse korrelieren mit Claim-Distanz ≥ 0,3
+xh) — erst NACH K-E2, eigene Pre-Reg.
+
+### Kette K-E2 `aug21` — Vorregistrierung: die Marken-Claim-Trennung ohne Breitenfeld-Split (Ein-Faktor-Konversion)
+
+Geschrieben und committet VOR der ersten Zahl. Die K-E1-Autopsie
+(oben) verortet den diffusen Körper-Deckungsverlust NICHT an den
+Marken, sondern in der Basin-Umverteilung des Körper-Solves;
+der verdächtigste Kanal ist der Breitenfeld-Split, weil die
+Breite ein MESSZIEL ist (Soll-Ist-Vergleich je Sample), kein
+Anziehungsfeld: sein Split ändert Ziele über die gesamte
+Voronoi-Region jeder Marke, auch weit weg von jeder Nadel.
+
+**Maßnahme (EIN Faktor gegenüber K-E1):** die Breitenfelder
+bleiben UNGETEILT — Körper- wie Marken-Samples lesen das
+historische, aus ALLER behaltenen Tinte propagierte
+`width_raw`/`width_smooth`; Distanzfeld und Coverage-Topf
+bleiben exakt wie in K-E1 getrennt (die beiden Kanäle, die
+die-2s Nadel-Magneten trugen). Derselbe Knopf `mark_claim`
+(der K-E1-Mechanismus ist nie adoptiert worden und bleibt als
+Archäologie in der Git-Historie); Claim-Regel, Radius und
+Claim-Liste unverändert.
+
+**Messanordnung:** unverändert K-E1 (Basis = v4-Kandidat
+dieser Umgebung, Soll-Stack, BLAS gepinnt, `--jobs 4`; 63er
+k0-Protokoll + dev-19-File-Provider gepaart + Augenschein
+die-2). **Gates: IDENTISCH zu K-E1, keines weicher.** Ehrliche
+Erwartung: die vier Risse schließen sich, wenn die Breite der
+Treiber war; die-2/die/Struktur-Gewinne bleiben (sie hängen an
+Distanz+Coverage). Bleiben die Risse, ist der Treiber die
+Coverage-Umverteilung selbst → K-E-Familie schließt, der
+Rest-Trade geht den humanbench-Weg (§7.9).
