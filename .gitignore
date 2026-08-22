@@ -219,6 +219,15 @@ cython_debug/
 # plates, not learned geometry. Committing the judgements without it would file
 # two hours of human work in a form nothing can ever read back.
 !/data/humanbench/*-vorkommen.json
+# Eigenhand-Erfassung: the own-hand strips ARE the reserved dataset (owner
+# decision 2026-08-22 — a deliberate deviation from datenablage §4's
+# "committable"; rationale in data/samples/own-hand/SOURCE.md, backup lives
+# in the private archive via tools/eigenhand/snapshot.py). Committed are only
+# the scheme-level provenance and the operating README; scans, Fassungen, the
+# Kartei and the local Übergangsraum weight table never are.
+/data/samples/own-hand/**
+!/data/samples/own-hand/SOURCE.md
+!/data/samples/own-hand/README.md
 
 # Glyph bench: DB fixture snapshots + per-run artifacts (regenerate via
 # tools/glyphbench/export_fixtures.py; see tools/glyphbench/README.md).

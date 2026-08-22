@@ -12,6 +12,48 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **Eigenhand-Erfassung: the complete tool chain for collecting the
+  author's own hand as training data** (`tools/eigenhand/`, proposal
+  `docs/proposals/eigenhand-erfassung.md`, glossary section
+  „Eigenhand-Erfassung"). A curated, wave-growing word pool of real
+  words (`corpus.py`, seeded from the §9 MVP words, the 63 Abb.-19
+  bench words, the full quiz bank plus hunted rare-join, high-frequency
+  German and tagged English layers) is partitioned deterministically
+  and append-never into row-sized strips (`pool.py`: weighted set-cover
+  start coverage, deficit-driven even build-out, repetition damping —
+  breadth before repetition), weighted against the local Übergangsraum
+  built from consult-only frequency corpora
+  (`data/corpora/frequencywords-2018/`, bytes gitignored, SHA256-pinned
+  fetch script; `universe.py`, `gaps.py` for curation candidates).
+  `sheet.py` prints A4 Bogen PDFs (dependency-free PDF writer twin of
+  `app/src/lib/pdf.ts`; lineature presets pinned against
+  `app/src/lib/lineatur.ts`; corner fiducials with an orientation
+  donut; per-row strip ids; multi-attempt rows via `--repeat`) plus a
+  `layout.json` sidecar as the importer's sole geometry contract.
+  `ingest.py` rectifies scanner or phone captures (scikit-image-only
+  fiducial detection and homography, 300 DPI working space, QC flags as
+  warnings only), `page.py` renders the offline Siebung review page
+  (humanbench pattern: data URIs, resume state, uid-keyed result), and
+  `apply.py` files ONLY accepted rows as self-attributing strip
+  recordings (printed strip id and word labels inside the crop,
+  `meta.json` with words, geometry, session and checksums; rejections
+  are recorded pixel-free in the Kartei). `kartei.py` keeps the local
+  manifest with derived strip states, `report.py` reports Soll/Ist
+  (weighted Erstbeleg/Ausbau quotas, print queue by weighted repetition
+  gain), `redo.py` queues re-recordings (`--retire` withdraws), and
+  `snapshot.py` backs everything up incrementally and create-only into
+  the private archive clone (dbsnapshot discipline, shrink refusal).
+  Wave 0 of the strip plan (60 strips, 253 distinct words) ships
+  committed; five new test files pin the preset port, the PDF bytes,
+  the shaped-coverage facts, a synthetic render→distort→rectify round
+  trip (±0.5 mm) and the Kartei state machine. Own-hand bytes stay out
+  of git by owner decision (open-core reservation) — documented in
+  `data/samples/own-hand/SOURCE.md` and reconciled across
+  `datenablage.md`, `mvp-roadmap.md` (M1/M2 superseded) and
+  `handmodell-stufenplan.md` §H5.
+
 ### Fixed
 
 - **`k0eval` refuses an empty scoring set instead of quietly reporting

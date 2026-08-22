@@ -1,11 +1,16 @@
 # MVP-Roadmap
 
-> **Status (2026-08-12): teil-umgesetzt.** M0 · M-Admin · M3 · M4 sind
+> **Status (2026-08-22): teil-umgesetzt.** M0 · M-Admin · M3 · M4 sind
 > umgesetzt, M7 ist als `WrittenGlyph` ausgeliefert (Gate-4-Abnahme weiterhin
-> offen); M1/M2 haben nie stattgefunden — `data/samples/own-hand/` existiert
-> nicht, M5/M6 laufen stattdessen über die gleichhändigen PD-Wortproben und
-> das Handmodell H1/H2 (PR #250 · #259 · #260 · #265), Gate 3 ist in der hier
-> beschriebenen Form nie durchgeführt worden.
+> offen); M1/M2 haben nie stattgefunden, M5/M6 laufen stattdessen über die
+> gleichhändigen PD-Wortproben und das Handmodell H1/H2 (PR #250 · #259 ·
+> #260 · #265), Gate 3 ist in der hier beschriebenen Form nie durchgeführt
+> worden. Der M1/M2-Erfassungsweg (Blöcke je Wort, Commit der Scans,
+> JSON-Segmentindex) ist von
+> [`../proposals/eigenhand-erfassung.md`](../proposals/eigenhand-erfassung.md)
+> abgelöst (Streifen/Bögen/Siebung, Ablage gitignored + privates Archiv);
+> weiter gültig aus M1/M2 sind die dort übernommenen Zahlen (≥300 DPI,
+> Soll je Glyph-Position) und die Sieb-Disziplin.
 > Die Positions-Schlüsselung (`(glyph, position, variant)`,
 > 11-Template-Tabelle) ist seit Redesign R2 überholt (PR #214, Migration
 > `0017`), und ebenso der frühe `/mvp/`-Ordner, den M0/M3 und die

@@ -1,6 +1,6 @@
 # Werkzeuge — die Dev-Tools unter `tools/`
 
-> **Status (2026-08-12): lebend.** Index über die Dev-Tools unter `tools/`;
+> **Status (2026-08-22): lebend.** Index über die Dev-Tools unter `tools/`;
 > jedes neue, umbenannte oder entfernte Werkzeug und jede geänderte CLI
 > (Flags, Modulpfade, `viz`-Extra, `--live`) gehört hier hinein.
 
@@ -18,10 +18,15 @@ beiden **Ernte-Werkzeuge** weiter unten — und auch die schreiben nicht
 selbst, sondern über die admin-gegateten Endpunkte, damit deren Validierung
 greift.
 
-Aus diesem Rahmen fällt allein der **Urteils-Durchgang** ganz unten: er
-braucht kein `viz`-Extra, weil seine Ausgabe eine HTML-Seite statt eines
-matplotlib-PNGs ist, und er kennt kein `--live` — was er überhaupt liest,
-liest er über die deployte Lese-API. Geschrieben wird auch dort nichts.
+Aus diesem Rahmen fallen zwei Familien: der **Urteils-Durchgang** (kein
+`viz`-Extra, weil seine Ausgabe eine HTML-Seite statt eines
+matplotlib-PNGs ist; kein `--live` — was er überhaupt liest, liest er über
+die deployte Lese-API; geschrieben wird nichts) und die
+**Eigenhand-Erfassung** weiter unten (kein `viz`-Extra — PDF und
+HTML-Seite entstehen dependency-frei, Bildarbeit läuft über
+Pillow/scikit-image aus den Runtime-Deps; keine DB in beiden Richtungen —
+geschrieben werden ausschließlich lokale Dateien unter dem gitignorten
+`data/samples/own-hand/`).
 
 ## Die drei Inspektions-Labs (sehen, nicht nur messen)
 
@@ -222,6 +227,41 @@ ausdrückliche Freigabe des Autors in derselben Sitzung.
 uv run python -m tools.dbsnapshot.fetch [--archive <privater-klon>] [--push]
 uv run python -m tools.dbsnapshot.restore <snapshot-dir> --database-url postgresql://… [--apply] [--replace]
 ```
+
+## Die Eigenhand-Erfassung (`tools/eigenhand`)
+
+Die Werkzeugkette, mit der der Autor seine eigene Hand als Trainingsdaten
+erfasst — Konzept, Begriffe und Doktrin in
+[`proposals/eigenhand-erfassung.md`](../proposals/eigenhand-erfassung.md),
+Betrieb in `data/samples/own-hand/README.md`. Jedes Modul ist ein eigener
+CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
+
+- **`universe`** — baut den lokalen Übergangsraum (Soll-Gewichte) aus den
+  Konsultationskorpora unter `data/corpora/frequencywords-2018/` (vorher
+  deren `fetch_frequencywords.py` laufen lassen; Bytes bleiben gitignored).
+- **`pool`** — baut/erweitert den committeten Streifenplan
+  (`tools/eigenhand/streifen.json`), deterministisch und append-never;
+  **`gaps`** listet unerreichbare Übergänge samt echter
+  Trägerwort-Kandidaten für die nächste Kurationsrunde in `corpus.py`.
+- **`sheet`** — druckt einen Bogen (PDF + `layout.json`-Sidecar) aus der
+  Warteschlange (Redo > nie belegt > gewichteter Wiederholungs-Gewinn);
+  `--repeat N` für Mehrfach-Versuche, `--strips` für gezielte Streifen.
+- **`ingest` → `page` → `apply`** — Scan/Foto entzerren (Passmarken,
+  scikit-image, 300 DPI Arbeitsauflösung), Siebung auf der
+  Offline-HTML-Seite, Ergebnis einspielen: nur angenommene Zeilen werden
+  als Fassungen abgelegt (idempotent).
+- **`report`** — Bestandsbericht (Erstbeleg-/Ausbau-Quote, Fehlstellen,
+  Druckvorschlag); **`redo`** stellt Streifen neu an (`--retire` zieht
+  alte Fassungen zurück); **`snapshot`** sichert inkrementell und
+  create-only ins private Archiv (`KURRENTSCHRIFT_ARCHIVE`, dieselbe
+  Clone wie die DB-Snapshots; dbsnapshot-Disziplin inkl.
+  Schrumpf-Verweigerung).
+
+Invarianten wie überall: kein DB-Schreibpfad, eingefrorene Mess-Sätze
+bleiben unberührt (der Streifenplan ist Trainingsdaten, kein Mess-Satz),
+und die abgelegten Streifen sind Teil des reservierten Datensatzes
+(Open-Core) — sie verlassen `data/samples/own-hand/` bzw. das private
+Archiv nicht.
 
 ## Benches und Generator (Verweise)
 

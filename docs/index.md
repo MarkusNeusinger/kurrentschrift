@@ -64,6 +64,7 @@ gemessene Hand-Parameter.
 | Den Handmodell-Stufenplan (Duktus-Prior · Laufformen · Statistik · eigene Hand) nachschlagen | [Handmodell-Stufenplan](proposals/handmodell-stufenplan.md) |
 | Die Werkbank-Doktrin (wer liefert welche Stufe · Auftragskorb-Protokoll) nachschlagen | [Optimierungs-Werkbank](proposals/optimierungs-werkbank.md) |
 | Den Tintenfolger-Plan (Prüfstand · Referenzsatz · Routen-Duell) nachschlagen | [Tintenfolger](proposals/tintenfolger.md) |
+| Die eigene Hand erfassen (Wortvorrat · Bögen · Siebung · Streifenkartei) | [Eigenhand-Erfassung](proposals/eigenhand-erfassung.md) |
 | Ein Duell-Verfahren (Kette · Lotse · InkSight · Nullprobe) mit Steckbrief und Versions-Ledger nachschlagen | [Verfahrensseiten](reference/verfahren.md) |
 | Ideen-Recherche lesen (Graves-Writer → Recognizer · Synthese-Verfahren · Bildsynthese/Offline-HTG · Plotter-Pipeline) | [Research](#research) |
 
@@ -376,6 +377,19 @@ auseinanderfallen.
   persistieren, H2 Paar-Statistik, H3 Konstanten → Hand-Parameter
   (Vereinfachungs-Gate), H4 zweite historische Hand, H5 eigene Hand —
   *Status: teil-umgesetzt (H0–H2 in v0.22.0 ausgeliefert, H3–H5 offen)*
+- **[Eigenhand-Erfassung](proposals/eigenhand-erfassung.md)** — Vorschlag
+  2026-08-22 (H5-Erfassungsweg): die eigene Hand als Trainingsdaten mit
+  echter Feder — kuratierter **Wortvorrat** (nur echte Wörter, alt +
+  modern, Englisch getaggt) → deterministischer, append-never
+  **Streifenplan** (Set-Cover-Startdeckung, dann gleichmäßiger Ausbau
+  häufig UND selten, Breite vor Wiederholung) → gedruckte **Bögen** mit
+  Wortkästen, Lineatur und **Passmarken** (Scanner UND Handyfoto) →
+  **Siebung** je Zeile (Sieb-Disziplin aus M2) → selbst-zuordenbare
+  **Fassungen** in der lokalen **Streifenkartei**, Soll/Ist im
+  **Bestandsbericht** (Übergangsraum-gewichtet), Sicherung ins private
+  Archiv (create-only, inkrementell); Werkzeuge `tools/eigenhand/` —
+  *Status: teil-umgesetzt (Phasen 1–4 gebaut, Phase 5 Ernte-Anschluss
+  offen)*
 - **[Tintenfolger](proposals/tintenfolger.md)** — Plan 2026-08-14 zum
   §6-Nachtrag des Bildsynthese-Journals: das automatische Nachfahren der
   Wortproben messbar machen und verbessern — eingefrorener
