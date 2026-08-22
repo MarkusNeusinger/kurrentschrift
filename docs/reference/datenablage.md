@@ -1,13 +1,20 @@
 # Datenablage und Quellen-Verlinkung im Repo
 
-> **Status (2026-08-12): bindend.** Commit-Klassen (§1) und
+> **Status (2026-08-22): bindend.** Commit-Klassen (§1) und
 > `SOURCE.md`-Pflichtfelder (§2) gelten unverändert und werden von
 > `/audit-licenses` geprüft; neue Quellen kommen mit eigenem `SOURCE.md`
 > dazu, ohne dass dieses Doc sich ändert.
 > Der Baum in §1 ist Soll-Layout — befüllt sind `sources/` (7 Quellen),
-> `variants/` und `humanbench/` (Urteile + Slim-Keys der blinden
-> Bewertungsrunden); der Eigenhand-Plan aus §4 ist von den
-> Sütterlin-Specimen-Platten überholt.
+> `variants/`, `humanbench/` (Urteile + Slim-Keys der blinden
+> Bewertungsrunden), `corpora/` (Konsultations-Frequenzlisten, nur
+> Metadaten committet) und `samples/own-hand/` (nur `SOURCE.md` +
+> `README.md`). Der Eigenhand-Plan aus §4 ist zweifach überholt: fürs MVP
+> von den Sütterlin-Specimen-Platten, als Erfassungsweg von
+> [`proposals/eigenhand-erfassung.md`](../proposals/eigenhand-erfassung.md) —
+> die dort entschiedene Ablage weicht BEWUSST von §1/§4 ab (Streifen-Scans
+> bleiben trotz eigenen Urheberrechts gitignored: Open-Core-Reservat,
+> Sicherung im privaten Archiv; Begründung in
+> `data/samples/own-hand/SOURCE.md`).
 
 Kurzspezifikation zu [`quellen-und-rechte.md`](quellen-und-rechte.md): *wo* Quellen
 und Varianten physisch liegen und *wie* verlinkt wird. Variante 0
@@ -39,8 +46,10 @@ eigene Lizenz (Quellen-Rechte §5).
       README.md               # welche Quelle, welcher Scope
     # spätere Hände: /v1-... (eigener Varianten-Auswahlvektor, Referenz §10)
   /samples
-    /own-hand                 # eigene Schreibvorlagen (dein Copyright)
-      lesen.png  das.png      # Testwörter §9
+    /own-hand                 # eigene Schreibvorlagen (dein Copyright);
+      SOURCE.md  README.md    # seit 2026-08-22 sind NUR diese beiden
+                              # committet — die Streifen-Scans bleiben
+                              # bewusst lokal (eigenhand-erfassung.md §8)
   /derived                    # extrahierte Statistik
     /from-cc-by               # committet OK (CC-BY/CC0-Anteil + Attribution)
     /from-nc-sa               # GITIGNORED — lokal/look-only, nie committen
@@ -53,6 +62,10 @@ eigene Lizenz (Quellen-Rechte §5).
 Drei Committ-Klassen, scharf getrennt:
 
 - `/sources`, `/samples/own-hand` → committet (PD bzw. eigenes Copyright).
+  Ausnahme seit 2026-08-22: die Eigenhand-STREIFEN bleiben trotz eigenen
+  Copyrights draußen (Open-Core-Reservat, privates Archiv) — nur
+  `SOURCE.md` + `README.md` sind committet
+  ([eigenhand-erfassung.md §8](../proposals/eigenhand-erfassung.md)).
 - `/corpora` → **gitignored**. Nur `SOURCE.md` + `fetch_corpus.py`
   committet, nie das 7,8-GB-Datenfile. Skript-Download ändert keine
   Lizenz (Quellen-Rechte §7) — der Grund ist Größe + Reproduzierbarkeit
