@@ -10,6 +10,10 @@ The page opens with the header crop next to the EXPECTED sheet id: the
 human confirms the match before any verdict (the guard against misfiling a
 whole sheet). The Sieb-Disziplin is printed verbatim above the rows.
 
+Every payload string is HTML-escaped and the page uses delegated event
+listeners instead of inline handlers, so no word, id or note can break the
+markup or smuggle script into the offline page.
+
     uv run python -m tools.eigenhand.page --hand mn-suetterlin --sheet B0001
 """
 
@@ -18,6 +22,7 @@ from __future__ import annotations
 import argparse
 import base64
 import hashlib
+import html
 import json
 from pathlib import Path
 
@@ -52,6 +57,9 @@ textarea { width: 100%; height: 140px; font-family: ui-monospace, monospace; fon
 .count { font-weight: 600; }
 """
 
+# No inline handlers: verdict/reason clicks and note edits are delegated and
+# read their uid from the surrounding row's data attribute — the Python side
+# never interpolates strings into JavaScript.
 _JS = """
 const FP = document.body.dataset.fingerprint;
 const KEY = "eigenhand-siebung-" + FP;
@@ -109,6 +117,23 @@ function download() {
   a.download = "siebung-" + document.body.dataset.sheet + ".txt";
   a.click();
 }
+document.addEventListener("click", (ev) => {
+  const target = ev.target;
+  if (!(target instanceof Element)) return;
+  if (target.closest("#download")) { download(); return; }
+  const button = target.closest("button[data-verdict], button[data-reason]");
+  if (!button) return;
+  const row = button.closest(".row");
+  if (!row) return;
+  if (button.dataset.verdict) setVerdict(row.dataset.uid, button.dataset.verdict);
+  else setReason(row.dataset.uid, button.dataset.reason);
+});
+document.addEventListener("input", (ev) => {
+  const target = ev.target;
+  if (!(target instanceof Element) || !target.classList.contains("note")) return;
+  const row = target.closest(".row");
+  if (row) setNote(row.dataset.uid, target.value);
+});
 document.addEventListener("DOMContentLoaded", render);
 """
 
@@ -118,35 +143,37 @@ def _data_uri(path: Path) -> str:
 
 
 def build_page(payload: dict, import_dir: Path) -> str:
+    esc = html.escape  # escapes quotes too — safe for text AND attribute contexts
     fingerprint = hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()[:16]
-    machine_id = f"{payload['hand']}-{payload['sheet']}"
+    machine_id = esc(f"{payload['hand']}-{payload['sheet']}")
 
     rows_html = []
     for row in payload["rows"]:
         attempt = f" · Versuch {row['attempt']}/{row['attempts']}" if row["attempts"] > 1 else ""
-        qc = f'<span class="qc">⚠ {", ".join(row["qc"])}</span>' if row["qc"] else ""
-        reason_buttons = "".join(
-            f'<button type="button" data-reason="{r}" onclick="setReason(\'{row["uid"]}\', \'{r}\')">{r}</button>'
-            for r in REASONS
-        )
+        qc = f'<span class="qc">⚠ {esc(", ".join(row["qc"]))}</span>' if row["qc"] else ""
+        reason_buttons = "".join(f'<button type="button" data-reason="{esc(r)}">{esc(r)}</button>' for r in REASONS)
         rows_html.append(f"""
-<div class="row" data-uid="{row["uid"]}">
-  <div class="rowhead"><b>{row["strip"]}{attempt}</b> <span>{" · ".join(row["words"])}</span> {qc}</div>
-  <img src="{_data_uri(import_dir / row["crop"])}" alt="{row["strip"]}">
+<div class="row" data-uid="{esc(row["uid"])}">
+  <div class="rowhead"><b>{esc(row["strip"])}{attempt}</b> <span>{esc(" · ".join(row["words"]))}</span> {qc}</div>
+  <img src="{_data_uri(import_dir / row["crop"])}" alt="{esc(row["strip"])}">
   <div class="verdicts">
-    <button type="button" data-verdict="angenommen" onclick="setVerdict('{row["uid"]}', 'angenommen')">Annehmen</button>
-    <button type="button" data-verdict="verworfen" onclick="setVerdict('{row["uid"]}', 'verworfen')">Verwerfen</button>
-    <button type="button" data-verdict="spaeter" onclick="setVerdict('{row["uid"]}', 'spaeter')">Später</button>
+    <button type="button" data-verdict="angenommen">Annehmen</button>
+    <button type="button" data-verdict="verworfen">Verwerfen</button>
+    <button type="button" data-verdict="spaeter">Später</button>
     <div class="reasons">{reason_buttons}</div>
-    <input class="note" placeholder="Anmerkung (optional)" oninput="setNote('{row["uid"]}', this.value)">
+    <input class="note" placeholder="Anmerkung (optional)">
   </div>
 </div>""")
 
+    apply_cmd = esc(
+        f"uv run python -m tools.eigenhand.apply --hand {payload['hand']} "
+        f"--sheet {payload['sheet']} siebung-{payload['sheet']}.txt"
+    )
     return f"""<!DOCTYPE html>
 <html lang="de">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Siebung {machine_id}</title><style>{_CSS}</style></head>
-<body data-sheet="{payload["sheet"]}" data-fingerprint="{fingerprint}">
+<body data-sheet="{esc(payload["sheet"])}" data-fingerprint="{fingerprint}">
 <header>
   <h1>Siebung · {machine_id}</h1>
   <div class="confirm">
@@ -162,8 +189,8 @@ Müll. Ausfälle müssen zufällig sein, nicht selektiv.</div>
 <footer>
   <div>Beurteilt: <span id="count" class="count">0 / 0</span></div>
   <p>Ergebnis herunterladen und einspielen mit:<br>
-  <code>uv run python -m tools.eigenhand.apply --hand {payload["hand"]} --sheet {payload["sheet"]} siebung-{payload["sheet"]}.txt</code></p>
-  <button type="button" onclick="download()">Ergebnis herunterladen</button>
+  <code>{apply_cmd}</code></p>
+  <button type="button" id="download">Ergebnis herunterladen</button>
   <textarea id="result" readonly></textarea>
 </footer>
 <script>{_JS}</script>

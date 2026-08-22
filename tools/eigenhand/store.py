@@ -42,4 +42,7 @@ def style_of_hand(hand: str) -> str:
     for style in STYLE_IDS:
         if hand.endswith(f"-{style}"):
             return style
-    raise SystemExit(f"hand id {hand!r} does not end in a known style ({', '.join(STYLE_IDS)}); pass --style")
+    raise SystemExit(
+        f"hand id {hand!r} must follow the `<schreiber>-<stil>` convention with a known style suffix "
+        f"({', '.join(STYLE_IDS)}), e.g. mn-suetterlin — sheet.py additionally accepts --style as an override"
+    )

@@ -14,6 +14,7 @@ Coordinates: mm, origin top-left, y downwards (lineatur.ts convention).
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import lru_cache
 
 from core.shaping import shape_word
 
@@ -123,9 +124,23 @@ def _advance_of(key: str) -> float:
     return ADVANCE_DEFAULT_XH
 
 
+@lru_cache(maxsize=1)
+def _fugen_forms() -> dict[str, str]:
+    """word → fugen-marked shaping form, for the pool words that carry one.
+
+    Width estimation must shape the form the writer is asked to WRITE: a
+    fugen marker can force the round s and block the ſt ligature, which
+    changes the advance sum. Resolved centrally here so packing (pool.py)
+    and box generation (sheet.py) can never disagree.
+    """
+    from tools.eigenhand.corpus import pool_entries  # noqa: PLC0415 — avoid import cost for non-pool callers
+
+    return {e["word"]: e["fugen"] for e in pool_entries() if e.get("fugen")}
+
+
 def estimate_word_width_mm(word: str, x_height_mm: float) -> float:
     """Estimated box width for one word at a given x-height (see ADVANCE_XH)."""
-    slots = shape_word(word)
+    slots = shape_word(_fugen_forms().get(word, word))
     advance = sum(_advance_of(slot.key) for slot in slots if slot.key is not None)
     return BOX_LEAD_MM + advance * x_height_mm
 
