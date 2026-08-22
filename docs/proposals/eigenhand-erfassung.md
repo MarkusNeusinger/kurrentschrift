@@ -218,10 +218,12 @@ der **Druckvorschlag**: dieselbe Warteschlange, die `sheet.py --next`
 druckt — Redo zuerst, dann nie Belegtes in Planreihenfolge, dann
 Wiederholungs-Kandidaten **nach gewichtetem Soll-Gewinn einer weiteren
 Fassung** (Owner-Wunsch: sichtbar, welche Streifen wegen häufiger
-Wörter öfter geschrieben werden sollten). Zweistufiges Soll je Item:
-Grundziel 1 Beleg, Aufbauziel `clamp(3 + 17·√(w/wmax), 3, 20)` —
-Spiegel von M1 („Kern ≥10, Rest ≥3“) und der Vorkommensschranke
-(`LAUFFORM_MIN_OCCURRENCES = 3`).
+Wörter öfter geschrieben werden sollten). Zweistufiges Soll je Item: die
+Erstbeleg-Stufe (≥1 Beleg — sie misst die Erstbeleg-Quote und treibt
+Phase A) und das Aufbauziel `clamp(3 + 17·√(w/wmax), 3, 20)`
+(`coverage.target_for_weight`, Untergrenze 3 — es misst die
+Ausbau-Quote) — Spiegel von M1 („Kern ≥10, Rest ≥3”) und der
+Vorkommensschranke (`LAUFFORM_MIN_OCCURRENCES = 3`).
 
 Rauchtest der ganzen Schleife (synthetisch beschriebener Bogen,
 perspektivisch verzerrt + 180° gedreht): nach 6 angenommenen Fassungen

@@ -10,8 +10,8 @@ Headlines:
   down faster than its real-text relevance warrants.
 * **Ausbau-Quote** — Σ min(Ist, Soll) / Σ Soll, weighted the same way.
 
-The print recommendation reuses sheet.py's queue so „was als Nächstes
-drucken?“ and „was druckt --next wirklich?“ can never diverge.
+The print recommendation reuses sheet.py's queue so "what to print next"
+and "what --next actually prints" can never diverge.
 
     uv run python -m tools.eigenhand.report --hand mn-suetterlin
 """

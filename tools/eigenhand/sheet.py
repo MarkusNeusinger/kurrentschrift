@@ -66,10 +66,10 @@ def hint_label(word: str, fugen: str | None) -> str:
 def _repetition_ranking(plan: dict, kartei: dict, ordered: list[str]) -> list[str]:
     """Already-recorded strips ranked by the weighted Soll gain of one more Fassung.
 
-    „Welche Streifen sollten öfter geschrieben werden, weil die Wörter so
-    häufig sind“ (owner, 2026-08-22): a strip whose words carry frequent
-    items with open Soll outranks one whose items are already saturated.
-    Falls back to fewest-Fassungen order when no Übergangsraum table exists.
+    "Which strips should be written more often because their words are so
+    frequent" (owner, 2026-08-22): a strip whose words carry frequent items
+    with open Soll outranks one whose items are already saturated. Falls
+    back to fewest-Fassungen order when no Übergangsraum table exists.
     """
     forms = {e["word"]: e.get("fugen") or e["word"] for e in pool_entries()}
     accepted_count = {

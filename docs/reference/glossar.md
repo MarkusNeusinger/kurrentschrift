@@ -1974,8 +1974,11 @@ Glyph-Position und Übergang, mit zwei Kopfzahlen: **Erstbeleg-Quote**
 Σ Soll), beide ungewichtet UND übergangsraum-gewichtet (die gewichtete
 Zahl ist die ehrliche Kopfzeile). Dazu der Druckvorschlag — dieselbe
 Warteschlange, die `sheet.py --next` druckt: Redo > nie belegt >
-Wiederholung nach gewichtetem Soll-Gewinn. Zweistufiges Soll:
-Grundziel 1 Beleg, Aufbauziel `clamp(3 + 17·√(w/wmax), 3, 20)`.
+Wiederholung nach gewichtetem Soll-Gewinn. Zweistufiges Soll: die
+Erstbeleg-Stufe (≥1 Beleg je Item — sie misst die Erstbeleg-Quote und
+treibt Phase A des Streifenplans) und das Aufbauziel
+`clamp(3 + 17·√(w/wmax), 3, 20)` (`coverage.target_for_weight`,
+Untergrenze 3 — es misst die Ausbau-Quote).
 *Technisch:* `tools/eigenhand/report.py`,
 `tools/eigenhand/pool.py::soll_model`.
 → proposals/eigenhand-erfassung.md §7

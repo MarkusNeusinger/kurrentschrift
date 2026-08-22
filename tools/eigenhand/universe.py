@@ -27,7 +27,6 @@ import argparse
 import hashlib
 import json
 import re
-from collections import Counter
 from pathlib import Path
 
 from tools.eigenhand.coverage import word_items
@@ -61,7 +60,7 @@ def _read_list(path: Path, pattern: re.Pattern[str]) -> list[tuple[str, int]]:
     return out
 
 
-def accumulate(rows: list[tuple[str, int]], factor: float, into: Counter[str]) -> int:
+def accumulate(rows: list[tuple[str, int]], factor: float, into: dict[str, float]) -> int:
     used = 0
     for word, count in rows:
         items = word_items(word)
@@ -70,14 +69,14 @@ def accumulate(rows: list[tuple[str, int]], factor: float, into: Counter[str]) -
         used += 1
         weight = count * factor
         for item in items:
-            into[item] += weight
+            into[item] = into.get(item, 0.0) + weight
     return used
 
 
 def build(corpora: Path, en_weight: float) -> dict:
     de_rows = _read_list(corpora / "de_50k.txt", _DE_WORD)
     en_rows = _read_list(corpora / "en_50k.txt", _EN_WORD)
-    weights: Counter[str] = Counter()
+    weights: dict[str, float] = {}
     de_used = accumulate(de_rows, 1.0, weights)
     en_used = accumulate(en_rows, en_weight, weights)
     checksums = {

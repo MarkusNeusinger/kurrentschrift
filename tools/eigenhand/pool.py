@@ -42,11 +42,11 @@ PACKING_STYLE = "suetterlin"  # widest preset: what fits here fits every script
 MAX_REPEAT_PER_WAVE = 4
 FLOOR_GAIN = 0.05  # additive floor so rare items keep pulling in Phase A
 DEFICIT_FLOOR = 0.01
-# Breadth before repetition (owner wish 2026-08-22: „möglichst wenig
-# wiederholen — irgendwann nahezu alle wichtigen Wörter mal geschrieben“):
-# a word already planned anywhere in the plan re-enters Phase B only when no
-# fresh word delivers comparable benefit — its benefit is damped by this
-# factor per prior planning, across ALL waves.
+# Breadth before repetition (owner wish 2026-08-22: repeat words as little
+# as possible, so that eventually nearly every important word has been
+# written at least once): a word already planned anywhere in the plan
+# re-enters Phase B only when no fresh word delivers comparable benefit —
+# its benefit is damped by this factor per prior planning, across ALL waves.
 REPEAT_DAMPING = 0.3
 
 

@@ -142,9 +142,8 @@ def main(argv: list[str] | None = None) -> int:
         shutil.copytree(path, target / rel, ignore=shutil.ignore_patterns("import"))
         copied += 1
 
-    print(
-        f"filed snapshot {target.relative_to(archive)}: {copied} new directorie(s), {total_fassungen} Fassungen total"
-    )
+    noun = "directory" if copied == 1 else "directories"
+    print(f"filed snapshot {target.relative_to(archive)}: {copied} new {noun}, {total_fassungen} Fassungen total")
     if args.push:
         _git(archive, "add", "-A", str(target.relative_to(archive)))
         _git(archive, "commit", "-m", f"own-hand snapshot {args.hand} {stamp}")

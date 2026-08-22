@@ -9,8 +9,8 @@ via order), and files one Fassung per judged row under
 * ``meta.json``   — words, geometry, verdict, QC flags, Schreibsitzung,
   scan checksum, provenance
 
-Only ACCEPTED rows get files — „abgelegt werden nur die relevanten
-Streifen“ (owner decision 2026-08-22). A rejected row is recorded in the
+Only ACCEPTED rows get files — "only the relevant strips are filed"
+(owner decision 2026-08-22). A rejected row is recorded in the
 Kartei only (verdict + reason + QC flags, no pixels), which keeps the
 Sieb-Disziplin auditable by counts without hoarding discarded ink. Rows
 judged ``spaeter`` stay open for a later apply of an updated result.

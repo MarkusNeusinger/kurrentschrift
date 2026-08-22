@@ -1,4 +1,4 @@
-"""Queue strips for re-recording — „Streifen 37 und 55 nochmal“.
+"""Queue strips for re-recording — "strips 37 and 55 once more".
 
 Adds redo entries to the Kartei; the print queue serves them FIRST on the
 next ``sheet.py`` run. By default the new Fassung ADDS to the existing ones
