@@ -123,6 +123,16 @@ def report_rows(rows: dict[str, dict[str, object]]) -> dict[str, dict[str, objec
     return {sid: {k: v for k, v in r.items() if k != "strokes"} for sid, r in rows.items()}
 
 
+def scoring_ids(order: list[str], soll_rows: dict[str, tuple[SollRow, ...]]) -> list[str]:
+    """The words with a composition soll, in reference order — empty is a hard
+    error: the soll distance is the core metric, so a run without soll targets
+    would be a meaningless evaluation that LOOKS like a quiet one."""
+    ids = [i for i in order if i in soll_rows]
+    if not ids:
+        raise SystemExit("no words with a composition soll — ductus_soll returned nothing; refusing to score")
+    return ids
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="tracebench.k0eval", description=__doc__)
     parser.add_argument("base", type=Path, help="tracebench file-provider candidate JSON (the paired base)")
@@ -135,7 +145,7 @@ def main() -> None:
     soll_rows, warnings = ductus_soll(reference.order, which=WHICH, style=STYLE, fixtures_root=DEFAULT_FIXTURES_DIR)
     for warning in warnings:
         print(f"WARN {warning}")
-    ids = [i for i in reference.order if i in soll_rows]
+    ids = scoring_ids(reference.order, soll_rows)
     print(f"{len(ids)} words in the k0 scoring set")
 
     base = eval_candidate(args.base, reference, soll_rows, ids)
