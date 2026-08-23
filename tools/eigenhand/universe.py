@@ -3,8 +3,13 @@
 Reads the consult-only frequency lists under ``data/corpora/
 frequencywords-2018/`` (fetched by its ``fetch_frequencywords.py``; bytes
 gitignored) and accumulates, per shaped coverage item (join or glyph
-position, see ``coverage.py``), the summed corpus frequency of every real
-word that carries it. The result is the LOCAL weight table
+position, see ``coverage.py``), the summed corpus frequency of every
+OCCURRENCE of that item in real words — a word carrying an item twice
+contributes its frequency twice. That is deliberate: the weight feeds the
+Aufbauziel ("how often should this be written"), and an item appearing
+twice per word does appear twice as often in text. Measured on the German
+list, the two readings barely differ (largest gap 0.004 on the normalised
+scale), so this is a definition, not a tuning knob. The result is the LOCAL weight table
 ``data/samples/own-hand/universe/uebergangsraum.json`` — a mechanical
 derivative of a protectable frequency database, therefore never committed
 (quiz-wortbank.md §4); the committed ``streifen.json`` is the frozen output.
