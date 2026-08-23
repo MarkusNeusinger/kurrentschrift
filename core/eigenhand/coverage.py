@@ -20,6 +20,7 @@ from __future__ import annotations
 
 from collections import Counter
 
+from core.eigenhand.plan import shaping_form_of
 from core.shaping import GlyphSlot, shape_word
 
 
@@ -73,6 +74,57 @@ def count_items(words: list[str]) -> Counter[str]:
     for word in words:
         counts.update(word_items(word))
     return counts
+
+
+def plan_items(plan: dict) -> Counter[str]:
+    """Item counts the whole strip plan carries — shaped through the plan's forms.
+
+    The denominator of everything: what a hand will hold once every planned
+    strip is written. Reads the plan's own ``forms`` map, so it needs no
+    curation source (that lives in ``tools/eigenhand/corpus.py``, which the
+    API does not have).
+    """
+    counts: Counter[str] = Counter()
+    for strip in plan["strips"].values():
+        for word in strip["words"]:
+            counts.update(word_items(shaping_form_of(plan, word)))
+    return counts
+
+
+_LIGATURES = {"ch", "ck", "tz", "longst", "qu", "sz"}
+_LOWER_EXTRA = {"ae", "oe", "ue", "longs"}
+_UPPER_EXTRA = {"Ae", "Oe", "Ue"}
+
+
+def classify_key(key: str) -> str:
+    """Bucket a glyph_key: klein · gross · ligatur · ziffer · zeichen."""
+    if key in _LIGATURES:
+        return "ligatur"
+    if key.isdigit():
+        return "ziffer"
+    if key in _LOWER_EXTRA or (len(key) == 1 and key.islower()):
+        return "klein"
+    if key in _UPPER_EXTRA or (len(key) == 1 and key.isupper()):
+        return "gross"
+    return "zeichen"
+
+
+def split_items(items: Counter[str]) -> tuple[Counter[str], Counter[str]]:
+    """Split coverage items into (per glyph_key counts, per join counts).
+
+    Glyph-position items (``e@medial``) collapse onto their key: the question
+    a Bestand answers is "has this letter been written", not "in which of its
+    three positions" — the positions are render context, not separate library
+    units (architektur.md §3).
+    """
+    glyphs: Counter[str] = Counter()
+    joins: Counter[str] = Counter()
+    for item, count in items.items():
+        if JOIN_SEP in item:
+            joins[item] += count
+        else:
+            glyphs[item.split(POSITION_SEP)[0]] += count
+    return glyphs, joins
 
 
 def target_for_weight(weight: float, max_weight: float) -> int:

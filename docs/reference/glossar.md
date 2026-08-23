@@ -40,7 +40,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · bogengleich §3 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
-- **E** — EDT §3 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Entdrillung §4 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
+- **E** — EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Entdrillung §4 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
 - **F** — Fassung (Eigenhand) §5 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
@@ -1905,8 +1905,11 @@ Fassungen. *Technisch:* IDs `S0037`; Wächter
 **Streifenplan** — das committete, append-only Verzeichnis
 Streifen → Wörter, deterministisch gebaut (Phase A gewichtetes
 Set-Cover für die Startdeckung, Phase B defizitgetriebener Ausbau mit
-Wiederholungs-Dämpfung `REPEAT_DAMPING`). *Technisch:*
-`tools/eigenhand/streifen.json`, Builder `tools/eigenhand/pool.py`.
+Wiederholungs-Dämpfung `REPEAT_DAMPING`). Seit Format 2 trägt er neben
+den Streifen die Tabelle `forms` (Wort → Fugen-Form), damit auch ein
+Leser ohne die Kurationsquelle richtig formen kann — der Server tut
+genau das. *Technisch:* `core/eigenhand/streifen.json`, Builder
+`tools/eigenhand/pool.py`, Leser `core/eigenhand/plan.py`.
 → proposals/eigenhand-erfassung.md §4
 
 **Fassung** — EINE konkrete Aufnahme eines Streifens (eine gesiebte
@@ -1924,8 +1927,10 @@ Klartext-Labels, Streifen-IDs am Rand und Passmarken; derselbe Streifen
 darf mehrfach daraufstehen (Versuche, `--repeat`). Jeder Bogen schreibt
 neben sein PDF die `layout.json` — den einzigen Geometrie-Vertrag des
 Importers (Registrierung statt Erkennung). *Technisch:* IDs `B0012`;
-`tools/eigenhand/sheet.py`.
-→ proposals/eigenhand-erfassung.md §5
+komponiert in `core/eigenhand/bogen.py::compose_sheet` (Auswahl, Layout,
+PDF), abgelegt entweder lokal durch `tools/eigenhand/sheet.py` oder als
+Zeile `eigenhand_sheets` durch `POST /eigenhand/sheets`.
+→ proposals/eigenhand-erfassung.md §5, §7.1
 
 **Passmarken** — die vier gedruckten schwarzen 8-mm-Eckquadrate eines
 Bogens, links oben mit 3-mm-Lochung (Donut) zur Orientierung: darüber
@@ -1944,7 +1949,7 @@ Schrift dieselbe Höhe und Breite. Die Streifen-ID sitzt im oberen
 Polster, also auf dem Streifen (Zuordenbarkeit); die Stiftmarke bleibt
 draußen. Der Import schneidet digital am selben Rechteck, damit
 Papierstreifen und `streifen.png` dasselbe Objekt sind. *Technisch:*
-`tools/eigenhand/geometry.py::cut_box`/`cut_size_mm`, je Zeile in
+`core/eigenhand/geometry.py::cut_box`/`cut_size_mm`, je Zeile in
 `layout.json` unter `cut_mm`.
 → proposals/eigenhand-erfassung.md §5
 
@@ -1955,7 +1960,7 @@ Streifen. Nie innerhalb des Schnittbands — gedruckte Tinte auf dem
 Streifen wäre Tinte in den Trainingsdaten — und nie am Blattkopf, wo eine
 Haarlinie auf dem Scan in eine Passmarke verlaufen und deren Schwerpunkt
 verziehen könnte. *Technisch:*
-`tools/eigenhand/geometry.py::cut_ticks`/`page_cut_ticks`.
+`core/eigenhand/geometry.py::cut_ticks`/`page_cut_ticks`.
 → proposals/eigenhand-erfassung.md §5
 
 **Stiftmarke** — das eine gedruckte Kästchen am rechten Rand JEDER
@@ -1969,7 +1974,7 @@ Menschenurteil im besten Moment, nicht eine Maschinenvermutung —
 2026-08-23): **Haken oder Kreuz = angenommen, leeres Kästchen =
 verworfen**; eine vergessene Marke schickt den Streifen also zurück in
 die Warteschlange, statt ihn ungeprüft abzulegen. *Technisch:*
-`tools/eigenhand/geometry.py::mark_box`,
+`core/eigenhand/geometry.py::mark_box`,
 `tools/eigenhand/ingest.py::read_pen_mark`, je Zeile in `layout.json`
 unter `mark_mm`. → proposals/eigenhand-erfassung.md §5–§6
 
@@ -2000,7 +2005,7 @@ Konsultationskorpora (Klasse 2), die Gewichtstabelle bleibt lokal
 (Übergang) und `e@medial` (Glyph-Position). Bewusst nicht „Abdeckung“
 genannt — der Begriff gehört der Humanbench-Abdeckungsmatrix (§4).
 *Technisch:* `tools/eigenhand/universe.py`,
-`tools/eigenhand/coverage.py`.
+`core/eigenhand/coverage.py`.
 → proposals/eigenhand-erfassung.md §4
 
 **Mindestbelegung (Eigenhand)** — die harte Untergrenze des
@@ -2031,9 +2036,22 @@ Erstbeleg-Stufe (≥1 Beleg je Item — sie misst die Erstbeleg-Quote und
 treibt Phase A des Streifenplans) und das Aufbauziel
 `clamp(3 + 17·√(w/wmax), 3, 20)` (`coverage.target_for_weight`,
 Untergrenze 3 — es misst die Ausbau-Quote).
-*Technisch:* `tools/eigenhand/report.py`,
-`tools/eigenhand/pool.py::soll_model`.
+*Technisch:* `core/eigenhand/bestand.py` (die Rechnung),
+`tools/eigenhand/report.py` (Terminal), `GET /eigenhand/bestand/{hand}`
++ `/admin/eigenhand` (Werkbank), `tools/eigenhand/pool.py::soll_model`.
 → proposals/eigenhand-erfassung.md §7
+
+**Eigenhand-Buchführung** — die Hälfte der Streifenkartei, die in der
+GETEILTEN Datenbank liegt: welche Bögen gedruckt sind (mit ihrem Layout)
+und welche Streifen wie oft angenommen wurden (`eigenhand_sheets` ·
+`eigenhand_fassungen`, Migration `0024`, Owner-Entscheidung 2026-08-23).
+Sie enthält keine Pixel — die Wörter folgen aus Streifen-ID plus
+committetem Plan, die Streifenbilder bleiben im lokalen Reservat.
+Nahtstelle ist die Kartei-FORM: lokal `kartei.json`, serverseitig
+`EigenhandRepository.kartei` — dahinter rechnet dieselbe Schicht.
+*Technisch:* `core/database/models.py`, `api/routers/eigenhand.py`,
+hoch/runter mit `tools/eigenhand/sync.py` ↔ `pull.py`.
+→ proposals/eigenhand-erfassung.md §7.1
 
 ---
 

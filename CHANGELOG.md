@@ -14,6 +14,39 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The own-hand Bestand in the workbench, and the Bogen printer with
+  it.** The capture chain's bookkeeping moves into the shared DB (owner,
+  2026-08-23: the DB may hold which Streifen exist how often — the crop
+  is not needed for that), which is what makes an admin view possible at
+  all: the strips themselves are the reserved dataset and never leave the
+  author's machine, but a strip id plus the committed plan already names
+  the words. Two tables (`eigenhand_sheets`, `eigenhand_fassungen`,
+  migration `0024`) hold printed Bögen with their layout and one verdict
+  per printed row — no pixels, `png_sha256` names a local file without
+  containing it. `/admin/eigenhand` shows what a hand holds: strips
+  belegt/unterwegs/geplant, Fassungen, Bögen, and which glyphs and joins
+  are written out of how many the plan can produce — capitals, digits and
+  signs each in their own class — plus a printer that composes the next
+  Bögen and hands back their PDFs. Six admin-gated endpoints under
+  `/eigenhand/*`; uploading a scan deliberately stays a local step.
+
+- **One compute layer for the capture chain, two persistences.** The pure
+  half moved from `tools/eigenhand` to `core/eigenhand` — the frozen strip
+  plan, the page geometry, the PDF writer, the coverage bookkeeping, the
+  Bestand and the Bogen composition — because the API serves it now. The
+  seam between server and terminal is the KARTEI SHAPE: `tools/eigenhand`
+  reads it as `kartei.json`, `EigenhandRepository.kartei` builds the same
+  dict from the two tables, and everything behind it cannot tell them
+  apart. So `python -m tools.eigenhand.report` and the admin view cannot
+  disagree about one hand, and both print Bögen through the same
+  `compose_sheet`. `streifen.json` gained format 2: it now carries the
+  shaping form of every planned word whose spelling differs
+  (`Amtszeit` → `Amts|zeit`), append-never like the strips, so the plan is
+  readable without the curation source. Two new local tools close the
+  loop: `sync` pushes the counts up over the admin API (never a DB
+  connection, never an image), `pull` fetches a Bogen printed in the
+  workbench down to disk so `ingest` can register a scan against it.
+
 - **One guarded helper for every Bogen path, and guards that mean what
   they say.** `--sheet` reaches four Eigenhand CLIs and is interpolated
   into a path in each of them, so it now passes `store.check_sheet_id`

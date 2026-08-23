@@ -187,7 +187,7 @@ class TestCaptureChannel:
     @staticmethod
     def _sheet(tmp_path):
         """A 3-band strip: paper, a cyan ruling, black ink."""
-        from tools.eigenhand import geometry
+        from core.eigenhand import geometry
 
         def rgb(hexc):
             return tuple(int(hexc[i : i + 2], 16) for i in (1, 3, 5))

@@ -8,8 +8,8 @@ import re
 
 import pytest
 
-from tools.eigenhand import geometry, pdfgen
-from tools.eigenhand.sheet import render_pdf
+from core.eigenhand import geometry, pdfgen
+from core.eigenhand.bogen import render_pdf
 
 
 def _fixed_layout() -> dict:

@@ -17,6 +17,8 @@ from sqlalchemy.orm import defer
 from core.database.models import (
     Aggregate,
     Bbox,
+    EigenhandFassung,
+    EigenhandSheet,
     GlyphPair,
     Hand,
     Instance,
@@ -707,3 +709,100 @@ class PairAggregateRepository:
     async def delete_for_hand(self, hand_id: str) -> int:
         result = await self.session.execute(delete(PairAggregate).where(PairAggregate.hand_id == hand_id))
         return result.rowcount or 0
+
+
+class EigenhandRepository:
+    """The own-hand bookkeeping: printed Bögen and judged rows, per hand.
+
+    Its one job beyond plain CRUD is `kartei`: the two tables collapse into
+    exactly the dict shape `core.eigenhand.kartei` describes, so the print
+    queue and the Bestand run on server rows and on the local `kartei.json`
+    without knowing which they got.
+    """
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def hands(self) -> "list[str]":
+        sheets = await self.session.execute(select(EigenhandSheet.hand).distinct())
+        fassungen = await self.session.execute(select(EigenhandFassung.hand).distinct())
+        return sorted(set(sheets.scalars().all()) | set(fassungen.scalars().all()))
+
+    async def sheets_of(self, hand: str) -> "list[EigenhandSheet]":
+        result = await self.session.execute(
+            select(EigenhandSheet).where(EigenhandSheet.hand == hand).order_by(EigenhandSheet.sheet)
+        )
+        return list(result.scalars().all())
+
+    async def sheet(self, hand: str, sheet: str) -> EigenhandSheet | None:
+        result = await self.session.execute(
+            select(EigenhandSheet).where(EigenhandSheet.hand == hand, EigenhandSheet.sheet == sheet)
+        )
+        return result.scalar_one_or_none()
+
+    async def fassungen_of(self, hand: str) -> "list[EigenhandFassung]":
+        result = await self.session.execute(
+            select(EigenhandFassung)
+            .where(EigenhandFassung.hand == hand)
+            .order_by(EigenhandFassung.strip, EigenhandFassung.fassung)
+        )
+        return list(result.scalars().all())
+
+    async def kartei(self, hand: str, style: str) -> dict:
+        """The hand's rows as a Kartei-shaped dict — the seam to the compute layer."""
+        kartei = {"format": 1, "hand": hand, "style": style, "sheets": {}, "strips": {}, "redo": []}
+        for row in await self.sheets_of(hand):
+            kartei["sheets"][row.sheet] = {
+                "printed": row.printed_on,
+                "strips": list(row.strips),
+                "layout_sha256": row.layout_sha256,
+                "scans": [],
+            }
+        for row in await self.fassungen_of(hand):
+            record = kartei["strips"].setdefault(row.strip, {"fassungen": []})
+            record["fassungen"].append(
+                {
+                    "id": row.fassung,
+                    "sheet": row.sheet,
+                    "row_index": row.row_index,
+                    "attempt": row.attempt,
+                    "attempts": row.attempts,
+                    "status": row.status,
+                    "reason": row.reason,
+                    "note": row.note,
+                    "png_sha256": row.png_sha256,
+                    "filed": row.filed_on,
+                }
+            )
+        return kartei
+
+    async def add_sheet(
+        self, hand: str, style: str, sheet: str, printed_on: str, strips: "list[str]", layout: dict, sha256: str
+    ) -> EigenhandSheet:
+        row = EigenhandSheet(
+            hand=hand,
+            style=style,
+            sheet=sheet,
+            printed_on=printed_on,
+            strips=list(strips),
+            layout=layout,
+            layout_sha256=sha256,
+        )
+        self.session.add(row)
+        await self.session.flush()
+        return row
+
+    async def record_fassung(self, **values: Any) -> EigenhandFassung:
+        row = EigenhandFassung(**values)
+        self.session.add(row)
+        await self.session.flush()
+        return row
+
+    async def fassung_for_row(self, hand: str, sheet: str, row_index: int) -> EigenhandFassung | None:
+        """The verdict already recorded for one printed row, if any (idempotency)."""
+        result = await self.session.execute(
+            select(EigenhandFassung).where(
+                EigenhandFassung.hand == hand, EigenhandFassung.sheet == sheet, EigenhandFassung.row_index == row_index
+            )
+        )
+        return result.scalar_one_or_none()

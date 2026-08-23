@@ -856,3 +856,73 @@ export interface FitData {
   fitted_outline_px?: Array<Array<Array<[number, number]>>>;
   placement: { x_origin_px: number; baseline_y_px: number; unit_px: number };
 }
+
+// ------------------------------------------------------------------ Eigenhand
+//
+// The own-hand capture chain's bookkeeping (api/routers/eigenhand.py). German
+// field names appear where the project's own counting units do (`belege`,
+// `erstbeleg`, `ausbau`, `quoten`) and where a value is Kartei data rather
+// than an invented identifier (`belegt` · `unterwegs` · `geplant`).
+
+export interface EigenhandHands {
+  hands: string[];
+  styles: string[];
+}
+
+export interface EigenhandKey {
+  key: string;
+  belege: number;
+  planned: number;
+}
+
+export interface EigenhandBucket {
+  covered: number;
+  possible: number;
+  belege: number;
+  keys: EigenhandKey[];
+}
+
+export interface EigenhandJoin {
+  item: string;
+  belege: number;
+  planned: number;
+}
+
+export interface EigenhandBestand {
+  hand: string;
+  style: string;
+  strips: { total: number; belegt: number; unterwegs: number; geplant: number };
+  fassungen: { angenommen: number; verworfen: number; zurueckgezogen: number };
+  sheets: { printed: number; last: string | null };
+  glyphs: Record<string, EigenhandBucket>;
+  joins: { covered: number; possible: number; belege: number; rows: EigenhandJoin[] };
+  quoten: {
+    items: number;
+    erstbeleg: number;
+    erstbeleg_share: number;
+    erstbeleg_weighted: number;
+    soll_belege: number;
+    ausbau: number;
+    ausbau_share: number;
+    ausbau_weighted: number;
+  } | null;
+  queue: string[];
+  redo: string[];
+}
+
+export interface EigenhandPrintRequest {
+  hand: string;
+  style?: string;
+  sheets?: number;
+  rows?: number;
+  repeat?: number;
+  strips?: string[];
+  hints?: boolean;
+  date?: string;
+}
+
+export interface EigenhandPrinted {
+  hand: string;
+  style: string;
+  sheets: Array<{ sheet: string; strips: string[]; bytes: number }>;
+}

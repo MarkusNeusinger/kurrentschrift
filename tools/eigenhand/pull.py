@@ -1,0 +1,90 @@
+"""Fetch a Bogen printed in the admin view down to this machine.
+
+The admin view mints and stores the Bogen; the ingest chain needs it on disk —
+``layout.json`` (the geometry contract a scan is registered against) and
+``bogen.pdf`` (what the printer gets). This writes both into
+``<dataroot>/<hand>/blaetter/<B>/`` and records the print in the local Kartei,
+so ``ingest`` → Siebung → ``apply`` then run exactly as for a locally printed
+sheet.
+
+Never overwrites: a Bogen already on disk is only verified (the layout hash
+must match), because a scan may already have been registered against it.
+
+    ADMIN_TOKEN=… uv run python -m tools.eigenhand.pull --hand mn-suetterlin --sheet B0007
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import urllib.error
+import urllib.request
+
+from core.eigenhand.bogen import layout_text
+from tools.eigenhand.kartei import load_kartei, save_kartei
+from tools.eigenhand.store import check_hand_id, check_sheet_id, sheet_dir
+
+
+DEFAULT_API = "https://api.kurrentschrift.ink"
+
+
+def _get(url: str, token: str) -> bytes:
+    req = urllib.request.Request(url, headers={"X-Admin-Token": token})  # noqa: S310 — https URL from argv
+    try:
+        with urllib.request.urlopen(req, timeout=60) as res:  # noqa: S310
+            return res.read()
+    except urllib.error.HTTPError as exc:
+        raise SystemExit(f"GET {url} → {exc.code}: {exc.read().decode()[:400]}") from exc
+
+
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
+    ap.add_argument("--hand", required=True)
+    ap.add_argument("--sheet", required=True, help="Bogen id, e.g. B0007")
+    ap.add_argument("--api", default=os.environ.get("EIGENHAND_API", DEFAULT_API), help="API base URL")
+    ap.add_argument("--token", default=os.environ.get("ADMIN_TOKEN"), help="admin token (default: $ADMIN_TOKEN)")
+    args = ap.parse_args(argv)
+
+    hand, sheet = check_hand_id(args.hand), check_sheet_id(args.sheet)
+    if not args.token:
+        raise SystemExit("no admin token — set ADMIN_TOKEN or pass --token")
+    base = args.api.rstrip("/")
+
+    layout = json.loads(_get(f"{base}/eigenhand/sheets/{hand}/{sheet}/layout", args.token).decode())
+    text = layout_text(layout)
+    digest = hashlib.sha256(text.encode()).hexdigest()
+
+    out_dir = sheet_dir(hand, sheet)
+    existing = out_dir / "layout.json"
+    if existing.exists():
+        local = hashlib.sha256(existing.read_text(encoding="utf-8").encode()).hexdigest()
+        if local != digest:
+            raise SystemExit(
+                f"{existing} differs from the stored Bogen — refusing to overwrite a layout a scan may reference"
+            )
+        print(f"{sheet}: already on disk and identical")
+        return 0
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    existing.write_text(text, encoding="utf-8")
+    (out_dir / "bogen.pdf").write_bytes(_get(f"{base}/eigenhand/sheets/{hand}/{sheet}/pdf", args.token))
+
+    kartei = load_kartei(hand, layout["style"])
+    kartei["sheets"].setdefault(
+        sheet,
+        {
+            "printed": layout["provenance"]["date"],
+            "strips": [row["strip"] for row in layout["rows"]],
+            "layout_sha256": digest,
+            "scans": [],
+        },
+    )
+    save_kartei(hand, kartei)
+    print(f"wrote {out_dir / 'bogen.pdf'} and layout.json, {len(layout['rows'])} rows — ingest can register against it")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from PIL import Image, ImageDraw
 
-from tools.eigenhand import geometry
+from core.eigenhand import geometry
 
 
 def mm_to_px(mm: float, dpi: float) -> float:

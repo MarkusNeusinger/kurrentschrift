@@ -255,6 +255,9 @@ updates its owning doc in the same PR.
   `word_metric.py` (the FROZEN wordbench ruler — never edited during an
   optimization run), `aggregate.py` (hand statistics H1/H2), `quality*.py`
   (per-script metrics — two scripts, two metrics, never combined),
+  `eigenhand/` (the PURE half of the own-hand capture chain — frozen strip
+  plan, page geometry, PDF writer, coverage, Bestand; it lives here because
+  the API serves it, `docs/proposals/eigenhand-erfassung.md` §7.1),
   `database/` (SQLAlchemy models + repositories). Architecture: `docs/concepts/
   architektur.md` §3–§6; the pipeline walk-through incl. per-module roles:
   `docs/concepts/vom-scan-zum-schreiben.md`; metric rules: `docs/reference/
@@ -266,11 +269,14 @@ updates its owning doc in the same PR.
   `docs/reference/quellen-und-rechte.md` §5). Renderers: `/write/glyphs` +
   `/write/word` (contract in `docs/reference/write-api.md` — anyone changing a
   `/write/*` route updates it). Occurrence/statistics/work-item routers and
-  their doctrine: `docs/proposals/optimierungs-werkbank.md`. All data lives in
+  their doctrine: `docs/proposals/optimierungs-werkbank.md`. `/eigenhand/*` is
+  the own-hand Bestand + Bogen printer (bookkeeping only — never a scan;
+  `docs/proposals/eigenhand-erfassung.md` §7.1). All data lives in
   the SHARED Cloud SQL DB — local dev writes prod data.
 - **`/app`** — React 19 + Vite + MUI SPA. Public: three areas (Schriftkunde ·
   Lesen · Schreiben) + landing; admin: ONE workbench in three views
-  (`/admin/buchstaben` · `/uebergaenge` · `/woerter`) over one chosen Vorlage.
+  (`/admin/buchstaben` · `/uebergaenge` · `/woerter`) over one chosen Vorlage,
+  plus `/admin/eigenhand` beside them (hand-scoped, not Vorlage-scoped).
   Build spec: `docs/concepts/design-system.md` (BINDING for public styling);
   stack/deploy/routes: `docs/reference/frontend-stack.md`; workbench doctrine:
   `docs/proposals/optimierungs-werkbank.md`. UI terminology is German per
@@ -284,9 +290,10 @@ updates its owning doc in the same PR.
   `docs/reference/quellen-und-rechte.md` (see "Data & licensing" below).
 - **Measurement tools** (`tools/`) — the bench/lab family (wordbench,
   glyphbench, tracebench, glyphlab/wordlab/pairlab, humanbench, inksight,
-  routeg, inkpilot) plus the own-hand capture chain `tools/eigenhand`
-  (word pool → printed Bogen sheets → scan Siebung → local strip store;
-  doctrine in `docs/proposals/eigenhand-erfassung.md`; its
+  routeg, inkpilot) plus the LOCAL half of the own-hand capture chain
+  `tools/eigenhand` (word pool → printed Bogen sheets → scan Siebung → local
+  strip store → `sync` pushes the counts up; the pure compute is
+  `core/eigenhand`, doctrine in `docs/proposals/eigenhand-erfassung.md`; its
   `data/samples/own-hand/` bytes stay gitignored — reserved dataset,
   backed up to the private archive): inventory + operation in
   `docs/reference/werkzeuge.md`,

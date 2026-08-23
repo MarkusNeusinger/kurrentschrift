@@ -16,6 +16,10 @@ import type {
   BboxStatusOut,
   ComposedWordOut,
   DiagnosticData,
+  EigenhandBestand,
+  EigenhandHands,
+  EigenhandPrinted,
+  EigenhandPrintRequest,
   FitData,
   GlyphOut,
   GlyphSummary,
@@ -69,6 +73,36 @@ export const getQuizWords = (retry?: RetryOptions): Promise<QuizWordOut[]> =>
 
 export const getSources = (retry?: RetryOptions): Promise<SourceOut[]> =>
   apiFetch(`${apiRoot()}/sources`, {}, retry).then(asJson<SourceOut[]>);
+
+// The own-hand capture chain (admin-gated, hand-scoped rather than
+// source-scoped): what a hand already holds, and the Bogen printer.
+export const getEigenhandHands = (retry?: RetryOptions): Promise<EigenhandHands> =>
+  apiFetch(`${apiRoot()}/eigenhand/hands`, {}, retry).then(asJson<EigenhandHands>);
+
+export const getEigenhandBestand = (hand: string, retry?: RetryOptions): Promise<EigenhandBestand> =>
+  apiFetch(`${apiRoot()}/eigenhand/bestand/${encodeURIComponent(hand)}`, {}, retry).then(
+    asJson<EigenhandBestand>,
+  );
+
+export const printEigenhandSheets = (body: EigenhandPrintRequest): Promise<EigenhandPrinted> =>
+  apiFetch(`${apiRoot()}/eigenhand/sheets`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }).then(asJson<EigenhandPrinted>);
+
+// The Bogen PDF. Fetched rather than linked: the admin token travels as a
+// HEADER in dev, which a plain <a href> would not send — so the caller gets
+// bytes and makes its own object URL.
+export const fetchEigenhandSheetPdf = async (hand: string, sheet: string): Promise<Blob> => {
+  const res = await apiFetch(
+    `${apiRoot()}/eigenhand/sheets/${encodeURIComponent(hand)}/${encodeURIComponent(sheet)}/pdf`,
+  );
+  if (!res.ok) {
+    await asJson<never>(res); // raises the typed ApiError with the server's detail
+  }
+  return res.blob();
+};
 
 export const getSource = (sourceId: string, retry?: RetryOptions): Promise<SourceOut> =>
   apiFetch(src(sourceId, ''), {}, retry).then(asJson<SourceOut>);

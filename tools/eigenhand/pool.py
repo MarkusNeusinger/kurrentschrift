@@ -30,14 +30,13 @@ import json
 from collections import Counter
 from pathlib import Path
 
-from tools.eigenhand import coverage
+from core.eigenhand import coverage
+from core.eigenhand.geometry import PRESETS, pack_words_into_rows
+from core.eigenhand.plan import STREIFEN_JSON, dump_plan, empty_plan, load_plan, strip_id
 from tools.eigenhand.corpus import pool_entries, shaping_form
-from tools.eigenhand.geometry import PRESETS, pack_words_into_rows
-from tools.eigenhand.store import STREIFEN_JSON
 from tools.eigenhand.universe import load_universe
 
 
-PLAN_FORMAT = 1
 PACKING_STYLE = "suetterlin"  # widest preset: what fits here fits every script
 MAX_REPEAT_PER_WAVE = 4
 FLOOR_GAIN = 0.05  # additive floor so rare items keep pulling in Phase A
@@ -55,30 +54,6 @@ REPEAT_DAMPING = 0.3
 # damping does not apply here; only MAX_REPEAT_PER_WAVE and the wave
 # capacity bound it, and unmet leftovers are reported, never silent.
 GLYPH_MIN_PLANNED = 3
-
-
-def load_plan(path: Path) -> dict:
-    plan = json.loads(path.read_text(encoding="utf-8"))
-    if plan.get("format") != PLAN_FORMAT:
-        raise SystemExit(f"{path}: unsupported format {plan.get('format')!r}")
-    return plan
-
-
-def _empty_plan() -> dict:
-    return {"format": PLAN_FORMAT, "waves": [], "strips": {}}
-
-
-def strip_id(number: int) -> str:
-    return f"S{number:04d}"
-
-
-def _planned_counts(plan: dict, forms: dict[str, str]) -> Counter[str]:
-    """Item counts already planned by the existing strips (any wave)."""
-    counts: Counter[str] = Counter()
-    for strip in plan["strips"].values():
-        for word in strip["words"]:
-            counts.update(coverage.word_items(forms.get(word, word)))
-    return counts
 
 
 def _planned_word_uses(plan: dict) -> Counter[str]:
@@ -116,7 +91,7 @@ def build_wave(plan: dict, target_strips: int, universe_items: dict[str, float])
     norm = {item: w / max_weight for item, w in weights.items()}
     targets = {item: coverage.target_for_weight(w, max_weight) for item, w in weights.items()}
 
-    planned = _planned_counts(plan, forms)
+    planned = coverage.plan_items(plan)
     word_uses = _planned_word_uses(plan)
     usage_this_wave: Counter[str] = Counter()
     stream: list[str] = []
@@ -228,6 +203,18 @@ def build_wave(plan: dict, target_strips: int, universe_items: dict[str, float])
         ids.append(sid)
     plan["waves"].append({"wave": wave_no, "strips": ids})
 
+    # The plan must be shapeable WITHOUT the curation source: `forms` carries
+    # every planned word whose shaping form differs from its spelling, so a
+    # reader that only has streifen.json (the API) still shapes `Amtszeit` as
+    # `Amts|zeit`. Append-never like the strips — an existing entry is never
+    # rewritten, so a later corpus edit cannot silently reshape frozen rows.
+    frozen_forms = dict(plan.get("forms", {}))
+    for strip in plan["strips"].values():
+        for word in strip["words"]:
+            if forms.get(word, word) != word:
+                frozen_forms.setdefault(word, forms[word])
+    plan["forms"] = dict(sorted(frozen_forms.items()))
+
     stats = {
         "wave": wave_no,
         "strips": len(ids),
@@ -238,10 +225,6 @@ def build_wave(plan: dict, target_strips: int, universe_items: dict[str, float])
         "floor_unmet": floor_unmet,
     }
     return plan, stats
-
-
-def dump_plan(plan: dict) -> str:
-    return json.dumps(plan, ensure_ascii=False, indent=1) + "\n"
 
 
 def verify_immutable(before: dict, after: dict) -> None:
@@ -261,7 +244,7 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
 
     universe = load_universe(args.universe)
-    plan = load_plan(args.out) if args.out.exists() else _empty_plan()
+    plan = load_plan(args.out) if args.out.exists() else empty_plan()
     before = json.loads(json.dumps(plan))
     plan, stats = build_wave(plan, args.strips, universe["items"])
     verify_immutable(before, plan)

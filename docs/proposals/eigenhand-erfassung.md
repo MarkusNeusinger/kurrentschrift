@@ -102,7 +102,7 @@ verfehlen den seltenen Schwanz systematisch. Drill-Übergänge OHNE echtes
 Trägerwort bleiben bewusst außerhalb des Solls (Ziel ist echter Text;
 §10 „Fantasiesilben-Drills“).
 
-**Der Streifenplan** (`tools/eigenhand/streifen.json`, committet) ist der
+**Der Streifenplan** (`core/eigenhand/streifen.json`, committet) ist der
 deterministisch gebaute, **append-never** Output: `pool.py build` wählt in
 Phase A per gewichtetem Set-Cover die Startdeckung (maximale
 Abdeckungsgeschwindigkeit — die ersten Bögen tragen fast das ganze
@@ -123,6 +123,16 @@ Welle 0: 60 Streifen, 253 distinkte Wörter, 726/1265 Items mit geplantem
 Erstbeleg. Welle 1 (Streifen 61–120) bringt Ziffern, Zeichen und die
 Mindestbelegung: nach 120 geplanten Streifen trägt JEDE Registerglyphe
 mindestens drei Belege, 666 verschiedene Übergänge sind geplant.
+
+**Format 2: der Plan trägt seine Schreibformen selbst.** Seit die
+Bestands- und Druckrechnung auch serverseitig läuft (§7.1), führt
+`streifen.json` neben `strips` eine Tabelle `forms` — Wort → Fugen-Form,
+wo beide auseinanderfallen (`Amtszeit` → `Amts|zeit`). Ohne sie könnte
+nur ein Leser mit der Kurationsquelle (`tools/eigenhand/corpus.py`)
+richtig formen; mit ihr ist der committete Plan allein vollständig. Die
+Tabelle ist append-never wie die Streifen: ein einmal eingetragener Wert
+wird nie überschrieben, damit eine spätere Kurationsänderung keine
+eingefrorene Zeile umformt.
 
 **Trainingsdaten, kein Mess-Satz.** Der Wortvorrat und der Streifenplan
 wachsen; KEINE Bench-Kopfzahl liest je aus ihnen. Sollte je eine Messung
@@ -357,6 +367,59 @@ perspektivisch verzerrt + 180° gedreht): nach 6 angenommenen Fassungen
 lag die gewichtete Erstbeleg-Quote bei 67,8 % — die gewünschte
 Abdeckungsgeschwindigkeit der Phase A.
 
+### 7.1 Zweite Persistenz: die Buchführung in der DB
+
+**Owner-Entscheidung 2026-08-23:** „der weg über die db ist doch gut, da
+darf drin stehen welche streifen bereits wie oft vorhanden sind … damit
+weisst du ja die wörter … und kann auch neue pdf vorlagen generieren zum
+ausdrucken, den crop braucht man da ja erstmal garnicht.“ Damit
+bekommt die Kartei eine zweite Persistenz — und der Admin-Bereich eine
+Ansicht, die auf der deployten Seite echte Zahlen zeigt statt einer
+leeren Seite.
+
+Was in die geteilte DB geht (Migration `0024`, zwei Tabellen):
+
+- `eigenhand_sheets` — je gedrucktem Bogen: Hand, Stil, Bogen-ID,
+  Druckdatum, die Streifen-Zeilen und das **Layout** (der
+  Geometrie-Vertrag). Gespeichert wird das Layout, nicht das PDF: die
+  Bytes folgen aus der Geometrie, die Geometrie nicht aus den Bytes.
+- `eigenhand_fassungen` — je beurteilter Zeile: Streifen, Fassung, Bogen,
+  Zeilenindex, Verdikt, Grund, SHA256 der lokalen Datei. Zwei
+  Unique-Constraints tragen die Regeln: eine Fassungs-ID je Streifen, ein
+  Verdikt je gedruckter Zeile (dieselbe Idempotenz wie `apply.py`).
+
+Was NICHT hineingeht: Scans, Crops, Streifenbilder. Der reservierte
+Datensatz (§8) bleibt lokal; `png_sha256` benennt die Datei, ohne sie zu
+enthalten. Aus Streifen-ID plus committetem Plan folgen die Wörter — für
+die Statistik braucht es kein einziges Pixel.
+
+**Eine Rechenschicht, zwei Persistenzen.** Der Nahtpunkt ist die
+Kartei-FORM: `tools/eigenhand` liest sie als `kartei.json`, die API baut
+denselben Dict aus den beiden Tabellen (`EigenhandRepository.kartei`).
+Alles dahinter — Druck-Warteschlange, Layout, PDF, Bestand — liegt in
+`core/eigenhand` und kann die beiden nicht unterscheiden. Deshalb sind
+Terminal und Werkbank per Konstruktion einig über dieselbe Hand.
+
+Ein Unterschied bleibt und ist gewollt: die
+**Übergangsraum-Gewichte** stammen aus Konsult-Korpora und bleiben auf
+dem Rechner, der sie gebaut hat (§4, quiz-wortbank.md §4). Der Server
+zeigt darum keine Quoten und ordnet Wiederholungs-Kandidaten nach
+wenigsten Fassungen statt nach gewichtetem Soll-Gewinn. Wollte man das
+ändern, wäre es eine eigene Entscheidung über eine abgeleitete
+Gewichtstabelle in der DB — nicht ein Nebeneffekt dieser Ansicht.
+
+**Die Schleife mit Admin-Druck.** Werkbank → `Bögen erzeugen` (Auswahl
+und Layout wie im Terminal, jeder Bogen vor der nächsten Auswahl
+verbucht) → PDF öffnen und drucken → schreiben → lokal
+`tools.eigenhand.pull --sheet B0007` holt Layout und PDF auf die eigene
+Platte → `ingest` → Siebung → `apply` → `tools.eigenhand.sync` schiebt
+Bögen und Verdikte zurück. Wer im Terminal druckt, schiebt seine Bögen
+mit demselben `sync` hoch: beide Seiten münzen ihre IDs aus derselben
+Kartei-Sicht, und ein registrierter Bogen nimmt seine ID aus dem
+Verkehr. Ein bereits registriertes Layout wird nie überschrieben — ein
+abweichendes unter derselben ID ist ein Konflikt (409), weil ein Scan
+dagegen registriert sein kann.
+
 ## 8 Ablage und Archiv
 
 `data/samples/own-hand/` ist komplett gitignored bis auf `SOURCE.md` +
@@ -404,9 +467,14 @@ die menschliche Kopf-Bestätigung je fehleranfällig wird.
   Kurrent bestimmen Federwinkel und Druck die Strichdicke — das liefert
   nur die echte Feder auf Papier. Die S-Pen-Erfassung bleibt, was sie
   heute ist: Nachfahr-Werkzeug über Crops (W3), nicht Schreib-Ersatz.
-- **Admin-SPA/API-Import** (Owner, 2026-08-22): lokale Werkzeuge unter
-  `tools/` genügen; kein Upload-Pfad, kein Deployment, Scans bleiben
-  lokal. Die Werkbank-Doktrin bleibt unberührt.
+- **Admin-SPA/API-Import** (Owner, 2026-08-22) — **teilweise überholt am
+  2026-08-23** (§7.1): Der SCAN-Upload bleibt verworfen (ingest braucht
+  die Datei auf der Platte, die Siebung ist bereits eine lokale
+  HTML-Seite, und die Streifen bleiben im Reservat). Verworfen war
+  ursprünglich auch die Ansicht selbst; der Owner hat das umgedreht: die
+  BUCHFÜHRUNG (welche Streifen wie oft, welche Bögen gedruckt) liegt in
+  der DB, und die Werkbank zeigt den Bestand und erzeugt die Druck-PDFs.
+  Was rein muss, damit das ohne Pixel geht, steht in §7.1.
 - **Streifen-Scans ins Repo committen** (Owner, 2026-08-22): siehe §8 —
   Open-Core-Reservat statt Klasse-1-Commit.
 - **Fantasiesilben-Drills im Wortvorrat**: nur echte Wörter; Übergänge
@@ -425,12 +493,13 @@ die menschliche Kopf-Bestätigung je fehleranfällig wird.
 
 ## 11 Phasen und Umsetzungsstand
 
-| Phase | Inhalt | Stand 2026-08-22 |
+| Phase | Inhalt | Stand 2026-08-23 |
 |---|---|---|
-| 1 | Wortvorrat, Übergangsraum, Streifenplan (`corpus` · `coverage` · `universe` · `gaps` · `pool`) | umgesetzt; Wave 0 committet |
-| 2 | Blattgenerator (`geometry` · `pdfgen` · `sheet` · `rasterize`) | umgesetzt; Beispiel-Bogen erzeugt |
+| 1 | Wortvorrat, Übergangsraum, Streifenplan (`corpus` · `coverage` · `universe` · `gaps` · `pool`) | umgesetzt; Wave 0+1 committet, Plan-Format 2 |
+| 2 | Blattgenerator (`geometry` · `pdfgen` · `bogen` · `sheet` · `rasterize`) | umgesetzt; Beispiel-Bogen erzeugt |
 | 3 | Einlesen + Siebung (`fiducial` · `ingest` · `page` · `apply` · `kartei`) | umgesetzt; synthetischer E2E-Rauchtest grün |
 | 4 | Bericht, Redo, Archiv (`report` · `redo` · `snapshot`) + Ablage-Skelett | umgesetzt |
+| 4a | DB-Buchführung + Werkbank-Ansicht (`0024` · `/eigenhand/*` · `sync` · `pull`) | umgesetzt (§7.1) |
 | 5 | Ernte-Anschluss, Kurrent/Offenbacher-Betrieb, optionaler Bogen-Code | aufgeschoben (§9) |
 
 Dazu je Schreibsitzung wiederkehrend: Kalibrier-Schleife der
@@ -448,8 +517,10 @@ advance-Tabelle, `gaps`-Kuration neuer Selten-Join-Wörter, neue Wellen.
    Versuche desselben Streifens ist erlaubt.
 4. **Append-never** — Streifen werden nie umnummeriert oder umgeschrieben;
    Wellen hängen an.
-5. **Kein DB-Schreibpfad** in der ganzen Werkzeugkette; die Ernte (Phase 5)
-   läuft, wenn sie kommt, über die Admin-API wie heute.
+5. **Kein DB-Schreibpfad** in der ganzen Werkzeugkette: `sync.py` schiebt
+   die Buchführung über die admin-gesicherte HTTP-Schnittstelle hoch, nie
+   über eine Verbindung zur Datenbank; die Ernte (Phase 5) läuft ebenso.
+   Und was hochgeht, sind Zahlen — nie ein Streifenbild.
 6. **Archiv create-only** — Snapshots nach jeder Sitzung, nie aufräumen,
    Schrumpfung ist ein Fehler.
 7. **Duktus-Prior bleibt die Tafel** — die eigene Hand liefert Vorkommen

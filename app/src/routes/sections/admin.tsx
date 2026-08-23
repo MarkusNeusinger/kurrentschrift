@@ -12,6 +12,7 @@ const StartPage = lazy(() => import('@/pages/admin/StartPage'));
 const LettersPage = lazy(() => import('@/pages/admin/LettersPage'));
 const JoinsPage = lazy(() => import('@/pages/admin/JoinsPage'));
 const WordsPage = lazy(() => import('@/pages/admin/WordsPage'));
+const EigenhandPage = lazy(() => import('@/pages/admin/EigenhandPage'));
 
 export const adminRoutes: RouteObject[] = [
   {
@@ -31,6 +32,8 @@ export const adminRoutes: RouteObject[] = [
       { path: 'buchstaben', element: <LettersPage /> },
       { path: 'uebergaenge', element: <JoinsPage /> },
       { path: 'woerter', element: <WordsPage /> },
+      // Hand-scoped, not Vorlage-scoped: the own-hand Bestand and Bogen printer.
+      { path: 'eigenhand', element: <EigenhandPage /> },
       // Retired URLs → the view that absorbed each of them, so older bookmarks,
       // notes and work-item links keep working. The chart editor and the
       // Diagnose modal live inside the Buchstaben view now; the Belege list and
