@@ -1937,8 +1937,10 @@ gedrehte Aufnahmen. *Technisch:* `tools/eigenhand/fiducial.py`
 **Schnittband** — das Rechteck, zu dem eine Bogenzeile geschnitten wird:
 feste Spalten (x = 12 … 197 mm) plus feste Polster über der Oberlinie und
 unter der Klartext-Zeile. Für jede Zeile eines Stils identisch (Sütterlin
-185 × 29 mm), unabhängig von der Wortzahl — deshalb haben am Ende ALLE
-Streifen dieselbe Höhe und Breite. Die Streifen-ID sitzt im oberen
+185 × 29 mm; Kurrent und Offenbacher 185 × 28 mm, weil `CUT_MIN_HEIGHT_MM`
+ihren flacheren Zeilen mehr Polster über und unter der Lineatur gibt),
+unabhängig von der Wortzahl — deshalb haben am Ende ALLE Streifen EINER
+Schrift dieselbe Höhe und Breite. Die Streifen-ID sitzt im oberen
 Polster, also auf dem Streifen (Zuordenbarkeit); die Stiftmarke bleibt
 draußen. Der Import schneidet digital am selben Rechteck, damit
 Papierstreifen und `streifen.png` dasselbe Objekt sind. *Technisch:*

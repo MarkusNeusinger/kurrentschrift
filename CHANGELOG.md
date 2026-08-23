@@ -14,6 +14,22 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Cyan rulings that a colour scan can drop, and more air for the flat
+  scripts.** The guide lines print in pale cyan instead of grey: cyan's
+  blue component sits at paper level, so `ingest --channel auto` reads a
+  colour capture through its blue channel and the lines are gone rather
+  than merely faint (baseline 0.91 in the blue channel, 0.75 as greyscale
+  — better than the grey in both capture modes). Black and iron-gall ink
+  come through at 0.10/0.14; blue ink lands on the 0.55 threshold, so the
+  operator README asks for black or brown. Strips are never shorter than
+  28 mm, the surplus split above and below the row block, which gives
+  Kurrent 6.2/5.2 mm of padding instead of 4/3 — and the row pitch now
+  derives from the strip height plus a fixed 5 mm gap, so the paper
+  between two strips is the same for every script. The printed strip id
+  and word label moved further from the writing band without the strip
+  growing: the three vertical zones were shifted against each other, their
+  sum unchanged.
+
 - **Buffer in every box, faint rulings, a printed legend, and stacks of
   sheets.** Five corrections from writing practice (owner, 2026-08-23):
   the packing filled rows to 180.0 of 180 mm, so a word could run out of

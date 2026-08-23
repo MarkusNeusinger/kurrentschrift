@@ -38,7 +38,7 @@ FIDUCIAL_DONUT = "tl"
 # Sheet layout constants (proposal §5): the label zone carries the clear-text
 # words under the boxes, the footer zone keeps the last row off the bottom
 # fiducials and leaves room for the provenance footer ("10 fits, 9 breathes").
-LABEL_ZONE_MM = 4.0
+LABEL_ZONE_MM = 5.0
 # The free paper BETWEEN two Schnittbänder — what the scissors get (owner,
 # 2026-08-23: more room between the rows, and mark where to cut). 5 mm means
 # a cut that wanders by 2 mm still misses both strips. The row pitch is
@@ -49,8 +49,13 @@ STRIP_GAP_MM = 5.0
 # one height and one width: the width is fixed columns, never the words' extent,
 # and the height is the row block plus these two paddings. The top pad is the
 # wider one because it carries the printed strip id.
-CUT_PAD_TOP_MM = 4.0
-CUT_PAD_BOTTOM_MM = 3.0
+# Top pad, label zone and bottom pad were shifted against each other on
+# 2026-08-23 (owner: "push the S0001 and the Galoppieren a bit away, not
+# much, but without making the strips taller") — their SUM is unchanged, so
+# the strip format stays exactly what it was. The top pad grew because it
+# carries the strip id, the label zone because it carries the word.
+CUT_PAD_TOP_MM = 4.5
+CUT_PAD_BOTTOM_MM = 1.5
 # A strip is never shorter than this, whatever the script's lineature ratio
 # (owner, 2026-08-23: "for the other scripts there is maybe room for a bit
 # more air above and below the lineature"). Kurrent at 2.5 mm x-height and

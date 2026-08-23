@@ -40,8 +40,14 @@ from tools.eigenhand.universe import load_universe
 
 LAYOUT_FORMAT = 1
 MARGIN_MM = 15.0
-ROW_ID_SIZE_MM = 2.5
+ROW_ID_SIZE_MM = 2.2
 LABEL_SIZE_MM = 3.0
+# Distance of the two printed captions from the writing band. Both moved away
+# from it on 2026-08-23 without the strip growing (see geometry's pads): the
+# id from 1.2 to 1.7 mm above the ascender line, the word from 4.0 to 4.6 mm
+# below the descender line, so neither crowds the letters that reach for them.
+ROW_ID_GAP_MM = 1.7
+LABEL_GAP_MM = 4.6
 HEADER_SIZE_MM = 3.5
 FOOTER_SIZE_MM = 2.8
 MARK_CAPTION_SIZE_MM = 2.4
@@ -234,7 +240,7 @@ def render_pdf(layout: dict) -> bytes:
         # The id rides in the Schnittband's top pad, INSIDE the strip: a cut
         # strip has to stay attributable on its own (proposal §7).
         cut = row.get("cut_mm")
-        id_x, id_y = (cut[0] + 1.0, band["asc_top"] - 1.2) if cut else (2.0, band["baseline"])
+        id_x, id_y = (cut[0] + 1.5, band["asc_top"] - ROW_ID_GAP_MM) if cut else (2.0, band["baseline"])
         texts.append(pdfgen.Text(id_x, id_y, ROW_ID_SIZE_MM, row_id, style["meta"][0]))
         for box in row["boxes"]:
             x0, x1 = box["x0_mm"], box["x1_mm"]
@@ -263,7 +269,8 @@ def render_pdf(layout: dict) -> bytes:
                         lines["slant"].append(pdfgen.Line(*clipped, s_color, s_width, s_dash))
                     xb += preset.slant_spacing_mm
             label_x = (x0 + x1) / 2 - pdfgen.helv_width_mm(box["label"], LABEL_SIZE_MM) / 2
-            texts.append(pdfgen.Text(label_x, band["desc_bot"] + 4.0, LABEL_SIZE_MM, box["label"], style["label"][0]))
+            label_y = band["desc_bot"] + LABEL_GAP_MM
+            texts.append(pdfgen.Text(label_x, label_y, LABEL_SIZE_MM, box["label"], style["label"][0]))
         # Schnittmarken: four ticks in the margins, never inside the strip.
         cut_color, cut_width, _cut_dash = style["cut"]
         for tx0, ty0, tx1, ty1 in geometry.cut_ticks(tuple(cut)) if cut else ():

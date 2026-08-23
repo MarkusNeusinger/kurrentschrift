@@ -137,8 +137,11 @@ Bogen 12“ + Maschinen-ID `mn-suetterlin-B0012` + Datum), vier
 **Passmarken** (8×8-mm-Quadrate, Zentren 7/203 × 7/290 mm; links oben mit
 3-mm-Lochung als Orientierungs-Donut), je Zeile die Streifen-ID und pro
 Wort ein **Kasten mit Lineatur** — Bandlinien nur im Kastenbereich, die
-Gassen bleiben tintenfrei (16 mm zwischen den Zeilen: 4 mm
-Beschriftungszone + 12 mm Abstand). Presets aus
+Gassen bleiben tintenfrei. Unter dem Schreibband liegt die 5-mm-Zone mit
+dem Klartext-Wort, darüber und darunter die Polster des Schnittbands, und
+zwischen zwei Streifen exakt `STRIP_GAP_MM` = 5 mm freies Papier — der
+Zeilenabstand wird aus Streifenhöhe + Lücke ABGELEITET, nicht gesetzt, und
+gilt damit für jede Schrift gleich. Presets aus
 `app/src/lib/lineatur.ts` portiert und per Test gepinnt (Sütterlin 1:1:1
 bei 6 mm x-Höhe senkrecht; Offenbacher 2:3:2/5 mm/77°; Kurrent
 2:1:2/2,5 mm/65° mit Schräglagen-Hilfslinien im Kasten). Sütterlin-Pitch
@@ -170,7 +173,9 @@ kleiner. Zu breit kostet ein Wort je Zeile, zu schmal kostet die Zeile.
 **Schnittband** — das Rechteck, zu dem der Streifen geschnitten wird.
 Feste Spalten (x = 12 … 197 mm) und feste Polster (4 mm über der
 Oberlinie, 3 mm unter der Klartext-Zeile), also **für jede Zeile eines
-Stils dieselbe Höhe und dieselbe Breite** (Sütterlin: 185 × 29 mm),
+Stils dieselbe Höhe und dieselbe Breite** (Sütterlin 185 × 29 mm, Kurrent
+und Offenbacher 185 × 28 mm — `CUT_MIN_HEIGHT_MM` gibt ihren flacheren
+Zeilen 6–7 mm Polster statt 4,5/1,5),
 unabhängig davon, wie viele Wörter die Zeile trägt. Zwischen zwei
 Schnittbändern bleiben 5 mm freies Papier: ein Schnitt, der 2 mm
 wandert, verfehlt beide Streifen immer noch.

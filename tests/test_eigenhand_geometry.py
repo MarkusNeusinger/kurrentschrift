@@ -167,6 +167,21 @@ class TestCutBand:
         assert x0 < min(b[0] for b in boxes) and max(b[1] for b in boxes) < x1
         assert y0 < band.asc_top and band.desc_bot + geometry.LABEL_ZONE_MM <= y1
 
+    def test_both_captions_sit_inside_the_strip_with_room_to_spare(self):
+        # Owner, 2026-08-23: push the id and the word away from the lineature
+        # "a bit, but without making the strips taller". The pads were shifted
+        # against each other, so this checks BOTH: the captions clear the
+        # writing band, and they still fit between the cut lines.
+        from tools.eigenhand import sheet
+
+        for style in ("kurrent", "suetterlin", "offenbacher"):
+            band = geometry.row_band(geometry.PRESETS[style], geometry.TOP_MARGIN_MM)
+            _x0, cut_top, _x1, cut_bottom = geometry.cut_box(band)
+            id_top = band.asc_top - sheet.ROW_ID_GAP_MM - sheet.ROW_ID_SIZE_MM
+            label_bottom = band.desc_bot + sheet.LABEL_GAP_MM + 0.25 * sheet.LABEL_SIZE_MM
+            assert cut_top < id_top < band.asc_top, f"{style}: the strip id leaves the Schnittband"
+            assert band.desc_bot < label_bottom < cut_bottom, f"{style}: the word label leaves the Schnittband"
+
     def test_the_verdict_box_stays_off_the_strip(self):
         # The pen tick is bookkeeping, not training data.
         band = geometry.row_band(geometry.PRESETS["suetterlin"], 15.0)
