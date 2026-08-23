@@ -152,7 +152,19 @@ def build_layout(
             }
         )
 
-    config = {"preset": asdict(preset), "margin_mm": MARGIN_MM, "advances": dict(sorted(geometry.ADVANCE_XH.items()))}
+    # The fingerprint has to cover EVERY constant that moves a printed box —
+    # the per-key advances plus the fallbacks they fall back to and the two
+    # spacings — otherwise a changed width model prints different geometry
+    # under an unchanged `cfg` stamp.
+    config = {
+        "preset": asdict(preset),
+        "margin_mm": MARGIN_MM,
+        "advances": dict(sorted(geometry.ADVANCE_XH.items())),
+        "advance_default_xh": geometry.ADVANCE_DEFAULT_XH,
+        "advance_capital_xh": geometry.ADVANCE_CAPITAL_XH,
+        "box_lead_mm": geometry.BOX_LEAD_MM,
+        "box_gap_mm": geometry.BOX_GAP_MM,
+    }
     config_hash = hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest()[:10]
     return {
         "format": LAYOUT_FORMAT,

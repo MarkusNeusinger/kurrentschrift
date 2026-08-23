@@ -7,6 +7,7 @@ import json
 import pytest
 
 from tools.eigenhand import coverage, pool, progression, universe
+from tools.eigenhand.corpus import pool_entries, shaping_form
 from tools.eigenhand.store import STREIFEN_JSON
 
 
@@ -143,11 +144,26 @@ class TestProgression:
 class TestGlyphFloor:
     """Every glyph key is planned at least GLYPH_MIN_PLANNED times (owner rule)."""
 
+    @staticmethod
+    def _reachable_keys() -> set[str]:
+        """Every glyph key any Wortvorrat word can supply — the honest universe."""
+        keys: set[str] = set()
+        for entry in pool_entries():
+            for item in coverage.word_items(shaping_form(entry)):
+                if coverage.JOIN_SEP not in item:
+                    keys.add(item.split(coverage.POSITION_SEP)[0])
+        return keys
+
     def test_committed_plan_meets_the_floor(self):
         plan = json.loads(STREIFEN_JSON.read_text(encoding="utf-8"))
         points = progression.checkpoints(plan, step=10_000, universe_items=None)
         totals = {key: count for bucket in points[-1]["glyphs"].values() for key, count in bucket.items()}
-        under = {key: count for key, count in totals.items() if count < pool.GLYPH_MIN_PLANNED}
+        # Counted over the reachable keys, not over what the plan happens to
+        # contain: a key missing from the plan entirely is the silent failure
+        # this floor exists to prevent.
+        missing = sorted(self._reachable_keys() - set(totals))
+        assert not missing, f"reachable glyphs never planned: {missing}"
+        under = {key: totals[key] for key in self._reachable_keys() if totals[key] < pool.GLYPH_MIN_PLANNED}
         assert not under, f"glyphs under the floor: {under}"
 
     def test_builder_tops_up_starved_glyphs(self):
@@ -158,6 +174,9 @@ class TestGlyphFloor:
         assert stats["floor_unmet"] == []
         points = progression.checkpoints(plan, step=10_000, universe_items=None)
         totals = {key: count for bucket in points[-1]["glyphs"].values() for key, count in bucket.items()}
+        # Every reachable key, again — "floor met" must not mean "met among the
+        # keys that happened to make it into the plan".
+        assert not self._reachable_keys() - set(totals)
         assert min(totals.values()) >= pool.GLYPH_MIN_PLANNED
 
     def test_unreachable_floor_is_reported_not_silent(self):

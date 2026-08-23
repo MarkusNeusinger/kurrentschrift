@@ -164,10 +164,15 @@ def build_wave(plan: dict, target_strips: int, universe_items: dict[str, float])
         w: Counter(i.split(coverage.POSITION_SEP)[0] for i in items if coverage.JOIN_SEP not in i)
         for w, items in word_items.items()
     }
+    # The deficit runs over every REACHABLE key — every glyph any pool word can
+    # supply — not just the ones phase A already planned. A key still at zero is
+    # exactly the case the floor exists for (the owner's "q must not appear
+    # once"); counting only planned keys would make it invisible instead.
+    reachable = {key for keys in word_glyphs.values() for key in keys}
     floor_unmet: list[str] = []
     while True:
         totals = glyph_totals()
-        under = {key: GLYPH_MIN_PLANNED - totals[key] for key in totals if totals[key] < GLYPH_MIN_PLANNED}
+        under = {key: GLYPH_MIN_PLANNED - totals[key] for key in reachable if totals[key] < GLYPH_MIN_PLANNED}
         if not under:
             break
         best_floor: tuple[float, int, str] | None = None
