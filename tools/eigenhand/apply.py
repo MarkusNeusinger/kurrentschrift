@@ -89,7 +89,8 @@ def main(argv: list[str] | None = None) -> int:
 
     sheet_dir = hand_dir(args.hand) / "blaetter" / args.sheet
     payload = json.loads((sheet_dir / "import" / "payload.json").read_text(encoding="utf-8"))
-    layout = json.loads((sheet_dir / "layout.json").read_text(encoding="utf-8"))
+    layout_text = (sheet_dir / "layout.json").read_text(encoding="utf-8")
+    layout = json.loads(layout_text)
     verdicts = parse_result(args.result.read_text(encoding="utf-8"), args.sheet)
 
     # The result file already names its Bogen (parse_result); the payload and
@@ -190,9 +191,22 @@ def main(argv: list[str] | None = None) -> int:
         else:
             recorded += 1
 
-    scans = kartei["sheets"].setdefault(args.sheet, {"printed": "", "strips": [], "layout_sha256": "", "scans": []})
-    if payload["scan"]["file"] not in scans["scans"]:
-        scans["scans"].append(payload["scan"]["file"])
+    # A Kartei that lost its print record (a restored snapshot, a sheet printed
+    # against another data root) must not get an empty stub: "printed" and
+    # "strips" drive the derived strip states, and the layout hash is what makes
+    # the record auditable at all. The layout is right here and carries all of
+    # it — reconstruct rather than default to blanks.
+    sheet_record = kartei["sheets"].get(args.sheet)
+    if sheet_record is None:
+        sheet_record = {
+            "printed": layout["provenance"]["date"],
+            "strips": [row["strip"] for row in layout["rows"]],
+            "layout_sha256": hashlib.sha256(layout_text.encode()).hexdigest(),
+            "scans": [],
+        }
+        kartei["sheets"][args.sheet] = sheet_record
+    if payload["scan"]["file"] not in sheet_record["scans"]:
+        sheet_record["scans"].append(payload["scan"]["file"])
     save_kartei(args.hand, kartei)
 
     open_rows = sum(

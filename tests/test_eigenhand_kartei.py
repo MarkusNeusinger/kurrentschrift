@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -160,6 +161,23 @@ class TestApply:
         apply_mod.main([str(result), "--hand", HAND, "--sheet", "B0001"])
         apply_mod.main([str(result), "--hand", HAND, "--sheet", "B0001"])
         assert [f["id"] for f in load_kartei(HAND)["strips"]["S0001"]["fassungen"]] == ["F01"]
+
+    def test_a_lost_print_record_is_rebuilt_from_the_layout(self, dataroot):
+        # Without this, a Kartei restored from an older snapshot would get an
+        # empty sheet stub: no print date, no strips (both drive the derived
+        # states) and no layout hash to audit against.
+        _make_sheet()
+        kartei = load_kartei(HAND)
+        del kartei["sheets"]["B0001"]
+        save_kartei(HAND, kartei)
+        apply_mod.main([str(_result("B0001", ["B0001-r00:angenommen"])), "--hand", HAND, "--sheet", "B0001"])
+
+        record = load_kartei(HAND)["sheets"]["B0001"]
+        layout_text = (hand_dir(HAND) / "blaetter" / "B0001" / "layout.json").read_text(encoding="utf-8")
+        assert record["printed"] == "2026-08-22"
+        assert record["strips"] == ["S0001", "S0002"]
+        assert record["layout_sha256"] == hashlib.sha256(layout_text.encode()).hexdigest()
+        assert record["scans"] == ["scan.jpg"]
 
     def test_a_payload_for_another_hand_is_refused(self, dataroot):
         # A stale or copied payload must not file rows into the wrong hand's
