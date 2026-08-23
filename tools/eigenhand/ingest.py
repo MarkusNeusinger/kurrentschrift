@@ -48,6 +48,13 @@ STRIP_X0_MM = 1.0
 STRIP_LABEL_BELOW_MM = 5.0
 LINE_MASK_MM = 0.4  # printed-geometry mask half-width for the QC ink measure
 INK_THRESHOLD = 0.55  # grayscale below this counts as ink for the QC flags
+# The rulings are printed in pale cyan (geometry.CAPTURE_STYLES). Cyan's blue
+# component is nearly paper (0.93), so reading a COLOUR capture through its
+# blue channel drops the guide lines out of the image altogether — no
+# threshold, no masking, nothing left to subtract later. Ink survives it:
+# black 0.10, iron-gall brown 0.14, even blue ink 0.55 at the very edge —
+# which is why the sheet asks for black or brown ink, not blue.
+CHANNELS = {"blau": 2, "gruen": 1, "rot": 0}
 MIN_DPI_WARN = 250.0
 LEER_MIN_INK_PX = 40
 # Verdict box (geometry.mark_box): a tick covers a good part of the box, a
@@ -63,6 +70,22 @@ def _mm(px_value: float) -> float:
 
 def _px(mm_value: float) -> int:
     return round(mm_value * PX_PER_MM)
+
+
+def load_capture(path: Path, channel: str = "auto") -> tuple[np.ndarray, str]:
+    """Load a capture as float32 [0,1], dropping the cyan rulings when possible.
+
+    ``auto`` takes the blue channel of a colour capture — where the pale cyan
+    rulings sit at paper level — and falls back to plain grayscale for a
+    greyscale scan, where the channels no longer exist. Returns the plane and
+    the name of what was used, so the payload can record it.
+    """
+    image = Image.open(path)
+    if channel != "grau" and image.mode not in ("L", "1", "I;16"):
+        index = CHANNELS["blau"] if channel == "auto" else CHANNELS[channel]
+        plane = np.asarray(image.convert("RGB"), dtype=np.float32)[:, :, index] / 255.0
+        return plane, ("blau" if channel == "auto" else channel)
+    return load_grayscale(str(path)), "grau"
 
 
 def rectify(gray: np.ndarray, layout: dict) -> tuple[np.ndarray, float, dict[str, tuple[float, float]]]:
@@ -159,6 +182,7 @@ def build_payload(
     session: dict,
     dpi: float,
     keep_scan: bool = False,
+    channel: str = "grau",
 ) -> dict:
     sheet_dir = hand_dir(hand) / "blaetter" / sheet
     import_dir = sheet_dir / "import"
@@ -233,6 +257,7 @@ def build_payload(
             "file": scan.name,
             "sha256": hashlib.sha256(scan.read_bytes()).hexdigest(),
             "dpi_estimate": round(dpi, 1),
+            "channel": channel,  # which plane the strips were cut from
         },
         "layout_provenance": layout["provenance"],
     }
@@ -253,6 +278,12 @@ def main(argv: list[str] | None = None) -> int:
         "--date", "--datum", dest="date", default="", help="session date, ISO (default: the sheet's print date)"
     )
     ap.add_argument("--keep-scan", action="store_true", help="also keep the full-page scan under scans/")
+    ap.add_argument(
+        "--channel",
+        choices=["auto", "blau", "gruen", "rot", "grau"],
+        default="auto",
+        help="colour plane to read (default: blue for a colour capture — drops the cyan rulings)",
+    )
     args = ap.parse_args(argv)
 
     layout_path = hand_dir(args.hand) / "blaetter" / args.sheet / "layout.json"
@@ -260,7 +291,9 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(f"{layout_path} missing — was sheet {args.sheet} generated for hand {args.hand}?")
     layout = json.loads(layout_path.read_text(encoding="utf-8"))
 
-    gray = load_grayscale(str(args.scan))
+    gray, channel_used = load_capture(args.scan, args.channel)
+    if channel_used == "grau":
+        print("note: greyscale capture — the cyan rulings stay in the image (scan in colour to drop them)")
     try:
         warped, dpi, _marks = rectify(gray, layout)
     except FiducialError:
@@ -275,7 +308,9 @@ def main(argv: list[str] | None = None) -> int:
         "papier": args.papier,
         "geraet": args.geraet,
     }
-    payload = build_payload(args.hand, args.sheet, layout, warped, args.scan, session, dpi, keep_scan=args.keep_scan)
+    payload = build_payload(
+        args.hand, args.sheet, layout, warped, args.scan, session, dpi, args.keep_scan, channel_used
+    )
     import_dir = hand_dir(args.hand) / "blaetter" / args.sheet / "import"
     (import_dir / "payload.json").write_text(json.dumps(payload, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     ticked = sum(1 for row in payload["rows"] if row.get("pen_mark") == "angenommen")

@@ -61,8 +61,16 @@ class TestBandMath:
         # gap has to carry two cut lines), footer zone reserved: 7 rows.
         assert geometry.max_rows(geometry.PRESETS["suetterlin"]) == 7
 
-    def test_kurrent_fits_more_rows(self):
-        assert geometry.max_rows(geometry.PRESETS["kurrent"]) > 7
+    def test_a_flat_script_spends_its_surplus_on_padding_not_on_rows(self):
+        # Owner, 2026-08-23: "for the other scripts there is maybe room for a
+        # bit more air above and below the lineature." Kurrent builds a 12.5 mm
+        # row where Sütterlin builds 18 — that difference goes into the strip's
+        # padding until CUT_MIN_HEIGHT_MM is reached, not into a taller stack.
+        kurrent, suetterlin = geometry.PRESETS["kurrent"], geometry.PRESETS["suetterlin"]
+        assert geometry.row_height_mm(kurrent) < geometry.row_height_mm(suetterlin)
+        assert geometry.cut_size_mm(kurrent)[1] >= geometry.CUT_MIN_HEIGHT_MM
+        assert geometry._cut_surplus_mm(geometry.row_height_mm(kurrent)) > 0
+        assert geometry._cut_surplus_mm(geometry.row_height_mm(suetterlin)) == 0
 
     def test_row_band_ordering(self):
         band = geometry.row_band(geometry.PRESETS["offenbacher"], 20.0)

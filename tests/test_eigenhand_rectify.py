@@ -181,6 +181,52 @@ class TestDetection:
         assert marks["tl"].has_hole and not marks["br"].has_hole
 
 
+class TestCaptureChannel:
+    """Pale cyan rulings drop out of a colour capture's blue channel."""
+
+    @staticmethod
+    def _sheet(tmp_path):
+        """A 3-band strip: paper, a cyan ruling, black ink."""
+        from tools.eigenhand import geometry
+
+        def rgb(hexc):
+            return tuple(int(hexc[i : i + 2], 16) for i in (1, 3, 5))
+
+        pixels = np.zeros((3, 4, 3), dtype=np.uint8)
+        pixels[0] = (250, 250, 246)  # paper
+        pixels[1] = rgb(geometry.CAPTURE_STYLES["baseline"][0])  # printed line
+        pixels[2] = (25, 25, 25)  # black ink
+        path = tmp_path / "capture.png"
+        Image.fromarray(pixels, mode="RGB").save(path)
+        return path
+
+    def test_the_blue_channel_keeps_ink_and_loses_the_rulings(self, tmp_path):
+        plane, channel = ingest.load_capture(self._sheet(tmp_path))
+        assert channel == "blau"
+        paper, ruling, ink = plane[0].mean(), plane[1].mean(), plane[2].mean()
+        assert ruling > ingest.INK_THRESHOLD, "the ruling would be read as ink"
+        assert abs(ruling - paper) < 0.12, "the ruling should sit near paper, not merely above the threshold"
+        assert ink < ingest.INK_THRESHOLD, "the ink has to survive the channel pick"
+
+    def test_a_greyscale_capture_still_works_and_says_so(self, tmp_path):
+        colour = Image.open(self._sheet(tmp_path)).convert("L")
+        path = tmp_path / "grey.png"
+        colour.save(path)
+        plane, channel = ingest.load_capture(path)
+        assert channel == "grau"
+        # Even flattened to grey the rulings stay clear of the ink threshold —
+        # cyan is the better choice in both capture modes, not a bet on one.
+        assert plane[1].mean() > ingest.INK_THRESHOLD
+        assert plane[2].mean() < ingest.INK_THRESHOLD
+
+    def test_an_explicit_channel_overrides_the_default(self, tmp_path):
+        plane, channel = ingest.load_capture(self._sheet(tmp_path), "rot")
+        assert channel == "rot"
+        # The red channel is exactly the wrong one for cyan — it is the darkest
+        # component there. Pinned so the default can never drift onto it.
+        assert plane[1].mean() < ingest.load_capture(self._sheet(tmp_path))[0][1].mean()
+
+
 class TestPenMark:
     """The writer's tick in the one verdict box, read off the rectified page."""
 

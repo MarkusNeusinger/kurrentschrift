@@ -54,6 +54,13 @@ uv run python -m tools.eigenhand.redo --hand mn-suetterlin S0037 S0055 --reason 
   Kreuz heißt angenommen, leer heißt verworfen. Dann steht das Urteil
   fest, solange du noch weißt, was schiefging. Am Bildschirm ist es
   vorbelegt und jederzeit überschreibbar.
+- **Schwarze oder braune Tinte, nicht blau:** die Lineatur ist in hellem
+  Cyan gedruckt und verschwindet beim Import im Blau-Kanal des Farbscans.
+  Schwarz (0,10) und Eisengallus-Braun (0,14) bleiben dort klar Tinte,
+  blaue Tinte (0,55) liegt genau auf der Schwelle und würde teilweise
+  mitverschwinden. **In Farbe scannen**, nicht in Graustufen — dann greift
+  der Kanaltrick (Graustufen geht auch, die Linien bleiben dann als sehr
+  helles Grau im Bild).
 - **Schneiden nach den Randmarken:** die Striche links und rechts auf Höhe
   jeder Zeile markieren die beiden Querschnitte, die Striche in den Lücken
   zwischen den Zeilen die beiden Längsschnitte. Wer daran schneidet,

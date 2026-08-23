@@ -215,20 +215,29 @@ bleibt nur, was der SCHREIBER lesen muss: Labels, Streifen-ID, Kopf,
 Stiftkästchen und Schnittmarken; alle liegen außerhalb des Schreibbands
 oder werden maskiert.
 
-Gemessen (Rec.709-Luminanz gegen `INK_THRESHOLD` = 0,55): Grundlinie
-0,10 → **0,65**, Mittellinie 0,41 → 0,75, Ober-/Unterlinie 0,82,
-Schräglagengitter 0,88. Grund- und Mittellinie lagen vorher UNTER der
-Schwelle, wären also als Tinte gezählt worden — das war ein echter Fehler,
-kein Schönheitsfehler. Restrisiko: die Grundlinie hat mit +0,10 den
-knappsten Abstand, und sie muss sichtbar bleiben, weil an ihr geschrieben
-wird; ein Scanner mit Auto-Kontrast oder ein Foto im Schatten kann diesen
-Abstand aufzehren. Für QC ist das doppelt abgesichert (Maskierung ±0,4 mm),
-für die spätere Tinten-Extraktion steht die Linie aber im `streifen.png`.
-**Rescue-Pfad, falls sich das als Problem zeigt:** Lineatur in hellem Cyan
-drucken, in FARBE scannen und den Kanal wegrechnen — dann verschwindet sie
-restlos, unabhängig von Kontrast und Belichtung (der Rot-Kanal einer
-cyanfarbenen Linie ist praktisch Papier). Das ist ein Druck- plus
-Kanal-Wahl-Umbau, kein neues Verfahren; erst messen, dann bauen.
+**Die Lineatur wird in hellem CYAN gedruckt** (Owner, 2026-08-23). Vorher
+lag sie im `druck`-Grau der App bei Luminanz 0,10 (Grundlinie) und 0,41
+(Mittellinie) — beide UNTER `INK_THRESHOLD` = 0,55, wären also als Tinte
+gezählt worden. Ein hellgraues Ersatz-Thema hätte das behoben, aber nur
+knapp (+0,10 auf der Grundlinie, die sichtbar bleiben muss); ein Scanner
+mit Auto-Kontrast oder ein Foto im Schatten frisst so einen Abstand.
+
+Cyan löst es strukturell statt knapp: der Blau-Anteil einer cyanfarbenen
+Linie liegt bei Papierniveau, ein **Farbscan durch den Blau-Kanal gelesen**
+verliert die Linien also vollständig — nicht „unter einer Schwelle",
+sondern weg. `ingest --channel auto` nimmt bei einer Farbaufnahme den
+Blau-Kanal und fällt bei einer Graustufenaufnahme auf Luminanz zurück;
+welcher Kanal genommen wurde, steht in `payload.json` unter `scan.channel`.
+
+Gemessen (Rolle: Blau-Kanal / Graustufe): Grundlinie **0,91 / 0,75**,
+Mittellinie 0,94 / 0,81, Ober-/Unterlinie 0,96 / 0,86, Schräglagengitter
+0,97 / 0,91. Cyan ist damit in BEIDEN Aufnahmearten besser als das Grau —
+keine Wette auf den Farbscan.
+
+Die Tinte übersteht den Kanalgriff: Schwarz 0,10 und Eisengallus-Braun
+0,14 im Blau-Kanal. **Blaue Tinte liegt mit 0,55 genau auf der Schwelle**
+und ist deshalb ausgeschlossen — der Bogen wird mit schwarzer oder brauner
+Tinte geschrieben (README „Regeln").
 
 Klartext-Labels stehen in normaler Latin-Type unter den Kästen
 (Leitsatz Lesbarkeit; WinAnsi hat ohnehin kein ſ). Als Schreib-Hinweis

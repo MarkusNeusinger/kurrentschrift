@@ -39,12 +39,11 @@ FIDUCIAL_DONUT = "tl"
 # words under the boxes, the footer zone keeps the last row off the bottom
 # fiducials and leaves room for the provenance footer ("10 fits, 9 breathes").
 LABEL_ZONE_MM = 4.0
-# The gap between two row blocks is what the scissors get (owner, 2026-08-23:
-# more room between the rows, and mark where to cut). It has to hold the two
-# cut lines of the neighbouring Schnittbänder plus tolerance on both sides —
-# 12 mm leaves 5 mm of free paper between them, so a cut that wanders by 2 mm
-# still misses both strips.
-ROW_GAP_MM = 12.0
+# The free paper BETWEEN two Schnittbänder — what the scissors get (owner,
+# 2026-08-23: more room between the rows, and mark where to cut). 5 mm means
+# a cut that wanders by 2 mm still misses both strips. The row pitch is
+# derived from it and the strip height, so this stays true for every script.
+STRIP_GAP_MM = 5.0
 # Schnittband — the rectangle one strip is cut to. Identical for EVERY row of a
 # sheet (and every sheet of a style), so the collection ends up with strips of
 # one height and one width: the width is fixed columns, never the words' extent,
@@ -52,6 +51,14 @@ ROW_GAP_MM = 12.0
 # wider one because it carries the printed strip id.
 CUT_PAD_TOP_MM = 4.0
 CUT_PAD_BOTTOM_MM = 3.0
+# A strip is never shorter than this, whatever the script's lineature ratio
+# (owner, 2026-08-23: "for the other scripts there is maybe room for a bit
+# more air above and below the lineature"). Kurrent at 2.5 mm x-height and
+# Offenbacher at 5 mm build much flatter rows than Sütterlin, and the space
+# they leave over is better spent on padding than on paper between strips:
+# ascenders and descenders overshoot, and a 23 mm strip is fiddly to handle.
+# The surplus is split evenly above and below the row block.
+CUT_MIN_HEIGHT_MM = 28.0
 CUT_X0_MM = 12.0  # 3 mm left of the writing area (margin 15 mm)
 CUT_X1_MM = 197.0  # 2 mm right of it, and clear of the verdict column
 # Cut marks sit in the page margins, never on the strip: ink inside the
@@ -135,14 +142,25 @@ ROLE_STYLES: dict[str, tuple[str, float, tuple[float, float] | None]] = {
 # if the masking missed it — the faintest, the Schräglage grid, sits near the
 # paper. Only what the WRITER must read stays dark: labels, ids, header, the
 # verdict box and the cut marks (all outside the writing band or masked).
+# Printed in pale CYAN, not grey (owner, 2026-08-23, asked for it after the
+# grey version): cyan's blue component is nearly paper, so a COLOUR capture
+# read through its blue channel loses the rulings completely — not "below a
+# threshold", gone. That beats any grey, however faint, because it survives a
+# scanner's auto-contrast and a photo taken in shade. Ink comes through: black
+# 0.10 and iron-gall brown 0.14 in the blue channel; blue ink at 0.55 sits on
+# the threshold, which is why the sheet asks for black or brown.
+#
+# The grey fallback still matters — a greyscale scan of these sheets reads the
+# rulings at 0.79-0.88 luminance, comfortably clear of INK_THRESHOLD (0.55).
+# So cyan is the better choice in BOTH capture modes, not a bet on one.
 CAPTURE_STYLES: dict[str, tuple[str, float, tuple[float, float] | None]] = {
     **ROLE_STYLES,
-    "baseline": ("#A8A6A0", 0.22, None),  # the one line the hand really needs
-    "waist": ("#C0BEB8", 0.15, None),
-    "ascender": ("#D2D0CA", 0.12, (1.6, 1.6)),
-    "descender": ("#D2D0CA", 0.12, (1.6, 1.6)),
-    "slant": ("#E2E0DA", 0.10, (1.0, 1.6)),
-    "box": ("#CFCDC7", 0.12, None),
+    "baseline": ("#7FCFE8", 0.22, None),  # the one line the hand really needs
+    "waist": ("#9BDBEF", 0.15, None),
+    "ascender": ("#B4E5F4", 0.12, (1.6, 1.6)),
+    "descender": ("#B4E5F4", 0.12, (1.6, 1.6)),
+    "slant": ("#CCEEF8", 0.10, (1.0, 1.6)),
+    "box": ("#A8E0F2", 0.12, None),
 }
 
 # Slot advances in x-height units — the physical width model of the packing
@@ -224,7 +242,13 @@ def row_height_mm(preset: ScriptPreset) -> float:
 
 
 def row_pitch_mm(preset: ScriptPreset) -> float:
-    return row_height_mm(preset) + LABEL_ZONE_MM + ROW_GAP_MM
+    """Row-top to row-top: one strip plus the paper the scissors need.
+
+    Derived from the Schnittband rather than from the row block, so the free
+    paper between two strips is STRIP_GAP_MM for every script — a flat
+    lineature spends its surplus on padding (cut_size_mm), not on a wider gap.
+    """
+    return cut_size_mm(preset)[1] + STRIP_GAP_MM
 
 
 def usable_row_width_mm(margin_mm: float = 15.0) -> float:
@@ -235,7 +259,7 @@ def max_rows(preset: ScriptPreset, margin_mm: float = 15.0) -> int:
     """How many rows fit between the margins, footer zone reserved."""
     usable = A4_HEIGHT_MM - TOP_MARGIN_MM - margin_mm - FOOTER_ZONE_MM
     pitch = row_pitch_mm(preset)
-    return max(0, int((usable + ROW_GAP_MM) // pitch))
+    return max(0, int((usable + STRIP_GAP_MM) // pitch))
 
 
 def clip_to_rect(
@@ -289,12 +313,25 @@ def cut_box(band: RowBand) -> tuple[float, float, float, float]:
     carries. It spans the writing band AND the clear-text label below it: the
     words under the boxes are what makes a cut strip attributable on its own.
     """
-    return (CUT_X0_MM, band.asc_top - CUT_PAD_TOP_MM, CUT_X1_MM, band.desc_bot + LABEL_ZONE_MM + CUT_PAD_BOTTOM_MM)
+    extra = _cut_surplus_mm(band.desc_bot - band.asc_top) / 2
+    return (
+        CUT_X0_MM,
+        band.asc_top - CUT_PAD_TOP_MM - extra,
+        CUT_X1_MM,
+        band.desc_bot + LABEL_ZONE_MM + CUT_PAD_BOTTOM_MM + extra,
+    )
+
+
+def _cut_surplus_mm(row_height: float) -> float:
+    """The extra padding a flat script's strip gets to reach CUT_MIN_HEIGHT_MM."""
+    packed = row_height + LABEL_ZONE_MM + CUT_PAD_TOP_MM + CUT_PAD_BOTTOM_MM
+    return max(0.0, CUT_MIN_HEIGHT_MM - packed)
 
 
 def cut_size_mm(preset: ScriptPreset) -> tuple[float, float]:
     """(width, height) of every Schnittband of this preset — the strip format."""
-    return (CUT_X1_MM - CUT_X0_MM, row_height_mm(preset) + LABEL_ZONE_MM + CUT_PAD_TOP_MM + CUT_PAD_BOTTOM_MM)
+    packed = row_height_mm(preset) + LABEL_ZONE_MM + CUT_PAD_TOP_MM + CUT_PAD_BOTTOM_MM
+    return (CUT_X1_MM - CUT_X0_MM, max(packed, CUT_MIN_HEIGHT_MM))
 
 
 def cut_ticks(cut: tuple[float, float, float, float]) -> list[tuple[float, float, float, float]]:
