@@ -135,6 +135,7 @@ def main(argv: list[str] | None = None) -> int:
                 "reason": judgement["reason"],
                 "note": judgement["note"],
                 "qc": row["qc"],
+                "pen_mark": row.get("pen_mark"),
                 "band_mm": layout_row["band_mm"],
                 "boxes": layout_row["boxes"],
                 "crop_origin_mm": row["crop_origin_mm"],

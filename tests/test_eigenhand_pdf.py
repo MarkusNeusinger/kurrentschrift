@@ -31,6 +31,7 @@ def _fixed_layout() -> dict:
                 "attempt": 1,
                 "attempts": 2,
                 "band_mm": {"asc_top": 15.0, "waist": 21.0, "baseline": 27.0, "desc_bot": 33.0},
+                "marks_mm": {"ok": [196.0, 21.5, 201.0, 26.5], "nein": [202.0, 21.5, 207.0, 26.5]},
                 "boxes": [
                     {"word": "lesen", "label": "lesen", "x0_mm": 15.0, "x1_mm": 40.0},
                     {"word": "Haustür", "label": "Haus*|tür", "x0_mm": 43.0, "x1_mm": 80.0},
@@ -41,6 +42,7 @@ def _fixed_layout() -> dict:
                 "attempt": 2,
                 "attempts": 2,
                 "band_mm": {"asc_top": 42.0, "waist": 48.0, "baseline": 54.0, "desc_bot": 60.0},
+                "marks_mm": {"ok": [196.0, 48.5, 201.0, 53.5], "nein": [202.0, 48.5, 207.0, 53.5]},
                 "boxes": [{"word": "das", "label": "das", "x0_mm": 15.0, "x1_mm": 38.0}],
             },
         ],
@@ -51,7 +53,7 @@ def _fixed_layout() -> dict:
 # Pinned bytes of _fixed_layout() — deterministic by construction (no clock,
 # no git, no repo state). A change here is a REAL output change: re-pin only
 # deliberately, with the diff understood.
-GOLDEN_SHA256 = "d1d3ea15acc4dbb8a5ac36cdb0a2f36a7abe9285261137d1cff46cab912ff9ba"
+GOLDEN_SHA256 = "9e94ea95e5b017b3582a68bdf66fdfca7bb0b261bc189b396830479209cdfb79"
 
 
 class TestRenderedPdf:
@@ -73,6 +75,13 @@ class TestRenderedPdf:
         match = re.search(r"/Length (\d+) >>\nstream\n", text)
         assert match is not None
         assert text[match.end() + int(match.group(1)) :].startswith("\nendstream")
+
+    def test_verdict_boxes_and_captions_are_drawn(self):
+        text = render_pdf(_fixed_layout()).decode("latin-1")
+        assert "(ok) Tj" in text and "(nein) Tj" in text  # column captions, once
+        assert text.count("(ok) Tj") == 1
+        # four edges per box, two boxes per row, two rows
+        assert text.count(" l S") >= 16
 
     def test_attempt_labels_and_umlauts_survive_winansi(self):
         text = render_pdf(_fixed_layout()).decode("latin-1")

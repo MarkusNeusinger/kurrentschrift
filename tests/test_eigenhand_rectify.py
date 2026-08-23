@@ -30,6 +30,7 @@ def _layout() -> dict:
                 "attempt": 1,
                 "attempts": 1,
                 "band_mm": {"asc_top": 15.0, "waist": 21.0, "baseline": 27.0, "desc_bot": 33.0},
+                "marks_mm": {"ok": [196.0, 21.5, 201.0, 26.5], "nein": [202.0, 21.5, 207.0, 26.5]},
                 "boxes": [{"word": "lesen", "label": "lesen", "x0_mm": 15.0, "x1_mm": 120.0}],
             },
             {
@@ -37,6 +38,7 @@ def _layout() -> dict:
                 "attempt": 1,
                 "attempts": 1,
                 "band_mm": {"asc_top": 42.0, "waist": 48.0, "baseline": 54.0, "desc_bot": 60.0},
+                "marks_mm": {"ok": [196.0, 48.5, 201.0, 53.5], "nein": [202.0, 48.5, 207.0, 53.5]},
                 "boxes": [{"word": "das", "label": "das", "x0_mm": 15.0, "x1_mm": 100.0}],
             },
         ],
@@ -137,3 +139,49 @@ class TestDetection:
         marks = detect_fiducials(image)
         assert set(marks) == {"tl", "tr", "bl", "br"}
         assert marks["tl"].has_hole and not marks["br"].has_hole
+
+
+class TestPenMark:
+    """The writer's ok/nein tick, read off the rectified page."""
+
+    @staticmethod
+    def _page_with_ticks(ticks: dict[int, str]) -> tuple[np.ndarray, dict]:
+        """Rasterize the layout, ink the named box of the named rows, rectify."""
+        layout = _layout()
+        image = np.asarray(rasterize_layout(layout, dpi=300.0), dtype=np.float64) / 255.0
+        for row_index, key in ticks.items():
+            x0, y0, x1, y1 = layout["rows"][row_index]["marks_mm"][key]
+            top, bottom = int(mm_to_px(y0 + 1.2, 300.0)), int(mm_to_px(y1 - 1.2, 300.0))
+            left, right = int(mm_to_px(x0 + 1.2, 300.0)), int(mm_to_px(x1 - 1.2, 300.0))
+            image[top:bottom, left:right] = 0.05
+        return image.astype(np.float32), layout
+
+    def test_ok_tick_reads_as_accepted(self):
+        page, layout = self._page_with_ticks({0: "ok"})
+        verdict, flags = ingest.read_pen_mark(page, layout["rows"][0])
+        assert (verdict, flags) == ("angenommen", [])
+
+    def test_nein_tick_reads_as_rejected(self):
+        page, layout = self._page_with_ticks({0: "nein"})
+        assert ingest.read_pen_mark(page, layout["rows"][0])[0] == "verworfen"
+
+    def test_unmarked_row_stays_undecided(self):
+        page, layout = self._page_with_ticks({})
+        assert ingest.read_pen_mark(page, layout["rows"][0]) == (None, [])
+
+    def test_both_boxes_ticked_is_ambiguous_and_says_so(self):
+        page, layout = self._page_with_ticks({0: "ok"})
+        x0, y0, x1, y1 = layout["rows"][0]["marks_mm"]["nein"]
+        page[
+            int(mm_to_px(y0 + 1.2, 300.0)) : int(mm_to_px(y1 - 1.2, 300.0)),
+            int(mm_to_px(x0 + 1.2, 300.0)) : int(mm_to_px(x1 - 1.2, 300.0)),
+        ] = 0.05
+        verdict, flags = ingest.read_pen_mark(page, layout["rows"][0])
+        assert verdict is None
+        assert "marke-mehrdeutig" in flags
+
+    def test_layout_without_marks_is_tolerated(self):
+        page, layout = self._page_with_ticks({})
+        row = dict(layout["rows"][0])
+        del row["marks_mm"]
+        assert ingest.read_pen_mark(page, row) == (None, [])

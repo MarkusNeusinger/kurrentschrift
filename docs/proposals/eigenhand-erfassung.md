@@ -148,6 +148,14 @@ x-Höhen (`geometry.py::ADVANCE_XH`, Startwerte; **Kalibrier-Schleife**:
 nach dem ersten beschriebenen Blatt werden die Konstanten gegen die
 gemessenen Tintenbreiten nachgezogen).
 
+**Stiftmarke je Zeile:** rechts neben dem Schreibfeld trägt jede Zeile
+zwei 5-mm-Kästchen („ok“ / „nein“, Spalten ab x = 196 mm, einmalig im
+Kopf beschriftet). Dort ist die Hand am Zeilenende ohnehin, und die
+Passmarken belegen nur die Seitenecken — die Spalte kostet also keine
+Schreibbreite (die eingefrorenen Streifen füllen die 180 mm voll aus).
+Zwei Kästchen statt einem, damit „unmarkiert“ ehrlich unentschieden
+bleibt und nicht mit „vergessen“ verwechselt wird.
+
 Klartext-Labels stehen in normaler Latin-Type unter den Kästen
 (Leitsatz Lesbarkeit; WinAnsi hat ohnehin kein ſ). Als Schreib-Hinweis
 zeigt das Label die Fugen-Form, wo eine existiert (`Amts*|zeit`, `*` =
@@ -181,8 +189,16 @@ lauter Abbruch. Danach schneidet der Import jede Zeile aus dem
 entzerrten Bild — **digital, millimetergenau, ohne das Blatt zu
 zerschneiden**.
 
-QC-Flags (`leer` · `beschnitten` · `blass`, gedruckte Geometrie ±0,4 mm
-maskiert) sind WARNUNGEN, nie Auto-Verdikte. Die **Siebung** läuft auf
+Die **Stiftmarke** wird dabei aus den bekannten Kästchen-mm gelesen
+(Tintenanteil in der Innenfläche, gedruckter Rahmen ausgespart): ein
+Kreuz → `angenommen` bzw. `verworfen`, keins oder beide → unentschieden
+mit Flag `marke-mehrdeutig`. Sie ist der EINZIGE Eingang, der die Siebung
+vorbelegen darf — weil sie ein Menschenurteil im besten Moment ist
+(direkt nach dem Schreiben), nicht eine Maschinenvermutung; die
+Review-Seite zeigt sie als Chip „Stift auf dem Blatt“ und lässt sie
+jederzeit überschreiben. QC-Flags (`leer` · `beschnitten` · `blass`,
+gedruckte Geometrie ±0,4 mm maskiert) sind dagegen WARNUNGEN, nie
+Auto-Verdikte. Die **Siebung** läuft auf
 EINER selbstständigen HTML-Seite (`page.py`, humanbench-Muster: Crops als
 data-URIs, offline, Resume nach jedem Klick, uid-verschlüsseltes
 Ergebnis, nie über Reihenfolge gejoint); der Kopf-Crop wird gegen die

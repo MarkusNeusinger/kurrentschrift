@@ -105,3 +105,36 @@ class TestClip:
     def test_crossing_segment_is_clipped_to_the_rect(self):
         clipped = geometry.clip_to_rect(-1, 1, 4, 1, 0, 0, 3, 3)
         assert clipped == (0, 1, 3, 1)
+
+
+class TestMarkBoxes:
+    """The per-row verdict boxes live in the right margin, clear of everything."""
+
+    def test_right_of_the_writing_area_and_on_the_page(self):
+        band = geometry.row_band(geometry.PRESETS["suetterlin"], 15.0)
+        boxes = geometry.mark_boxes(band)
+        assert set(boxes) == {"ok", "nein"}
+        writing_right = 15.0 + geometry.usable_row_width_mm()
+        for x0, _y0, x1, _y1 in boxes.values():
+            assert x0 >= writing_right  # never steals writing width
+            assert x1 <= geometry.A4_WIDTH_MM - 3.0  # stays printable
+
+    def test_boxes_do_not_overlap_each_other(self):
+        band = geometry.row_band(geometry.PRESETS["suetterlin"], 15.0)
+        ok, nein = geometry.mark_boxes(band)["ok"], geometry.mark_boxes(band)["nein"]
+        assert ok[2] < nein[0]
+
+    def test_boxes_stay_inside_the_row_block_for_every_preset(self):
+        for preset in geometry.PRESETS.values():
+            band = geometry.row_band(preset, 15.0)
+            for _key, (_x0, y0, _x1, y1) in geometry.mark_boxes(band).items():
+                assert y0 >= band.asc_top - 1e-9
+                assert y1 <= band.desc_bot + 1e-9
+
+    def test_column_clears_the_corner_fiducials_horizontally_only(self):
+        # The fiducials sit at the page corners; the mark column shares their
+        # x band on purpose (printable there) but never their y band.
+        band = geometry.row_band(geometry.PRESETS["suetterlin"], 15.0)
+        top_fiducial_bottom = geometry.FIDUCIAL_CENTERS["tr"][1] + geometry.FIDUCIAL_SIZE_MM / 2
+        for _key, (_x0, y0, _x1, _y1) in geometry.mark_boxes(band).items():
+            assert y0 > top_fiducial_bottom

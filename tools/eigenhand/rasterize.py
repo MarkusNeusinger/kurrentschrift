@@ -46,4 +46,7 @@ def rasterize_layout(layout: dict, dpi: float = 300.0, ink: int = 40, paper: int
                 draw.line([px(x0), px(y), px(x1), px(y)], fill=ink, width=max(1, round(px(0.25))))
             for x in (x0, x1):
                 draw.line([px(x), px(top), px(x), px(bot)], fill=ink, width=max(1, round(px(0.18))))
+        for rect in row.get("marks_mm", {}).values():
+            mx0, my0, mx1, my1 = rect
+            draw.rectangle([px(mx0), px(my0), px(mx1), px(my1)], outline=ink, width=max(1, round(px(0.18))))
     return image

@@ -14,6 +14,22 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Per-row verdict boxes on the sheet ("Stiftmarke"), read back at
+  import.** Every printed row now carries two 5 mm boxes in the right
+  margin — "ok" and "nein" — so a row can be judged with the pen the
+  moment it is written, instead of from memory at the screen. The column
+  sits at x = 196 mm, clear of the writing area (the frozen strips fill
+  its full 180 mm) and clear of the corner fiducials, which only occupy
+  the page corners. `ingest` reads the boxes off the rectified page (ink
+  fraction of the inner area, printed outline excluded) and the Siebung
+  page pre-selects the verdict, marked with a "Stift auf dem Blatt" chip
+  and overridable at any time; a stored click always wins over the seed.
+  Two boxes rather than one so an unmarked row stays honestly undecided,
+  and both boxes ticked reports `marke-mehrdeutig` instead of guessing.
+  This is the only input allowed to pre-fill a verdict — it is a human
+  judgement, unlike the QC flags, which stay warnings. The mark rides
+  along in each Fassung's `meta.json` for the audit trail.
+
 - **Eigenhand coverage progression, a digits-and-punctuation pool layer,
   and strip-plan wave 1.** `tools/eigenhand/progression.py` answers "after
   10, 20, … strips, how often has every glyph and join been planned?" with

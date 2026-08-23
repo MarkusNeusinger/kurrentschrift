@@ -43,6 +43,8 @@ h1 { font-size: 18px; margin: 0 0 6px; }
 .rowhead { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; margin-bottom: 6px; }
 .rowhead b { font-size: 15px; }
 .qc { color: #a05a00; font-size: 13px; }
+.pen { font-size: 12.5px; color: #2c5a2c; background: #eaf3ea; border: 1px solid #cadfca;
+  border-radius: 999px; padding: 1px 9px; }
 .verdicts { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 button { font-size: 14px; padding: 6px 12px; border: 1px solid #999; background: #fafafa; border-radius: 4px; cursor: pointer; }
 button.on-angenommen { background: #2c7a2c; color: #fff; border-color: #2c7a2c; }
@@ -134,7 +136,22 @@ document.addEventListener("input", (ev) => {
   const row = target.closest(".row");
   if (row) setNote(row.dataset.uid, target.value);
 });
-document.addEventListener("DOMContentLoaded", render);
+// The pen mark on the sheet IS the writer's own judgement, made right after
+// row was written — it seeds the verdict. A stored (clicked) verdict always
+// wins, so a correction on screen is never overwritten by a reload.
+function seedFromPen() {
+  for (const row of document.querySelectorAll(".row")) {
+    const uid = row.dataset.uid;
+    const pen = row.dataset.pen;
+    if (!pen) continue;
+    const s = state[uid] || {};
+    if (!s.verdict && !s.seeded) {
+      s.verdict = pen; s.seeded = true; state[uid] = s;
+    }
+  }
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+}
+document.addEventListener("DOMContentLoaded", () => { seedFromPen(); render(); });
 """
 
 
@@ -157,10 +174,14 @@ def build_page(payload: dict, import_dir: Path) -> str:
             raise SystemExit(f"payload crop {crop_name!r} carries path components — refusing")
         attempt = f" · Versuch {row['attempt']}/{row['attempts']}" if row["attempts"] > 1 else ""
         qc = f'<span class="qc">⚠ {esc(", ".join(row["qc"]))}</span>' if row["qc"] else ""
+        pen = row.get("pen_mark") or ""
+        pen_chip = (
+            f'<span class="pen">Stift auf dem Blatt: {"ok" if pen == "angenommen" else "nein"}</span>' if pen else ""
+        )
         reason_buttons = "".join(f'<button type="button" data-reason="{esc(r)}">{esc(r)}</button>' for r in REASONS)
         rows_html.append(f"""
-<div class="row" data-uid="{esc(row["uid"])}">
-  <div class="rowhead"><b>{esc(row["strip"])}{attempt}</b> <span>{esc(" · ".join(row["words"]))}</span> {qc}</div>
+<div class="row" data-uid="{esc(row["uid"])}" data-pen="{esc(pen)}">
+  <div class="rowhead"><b>{esc(row["strip"])}{attempt}</b> <span>{esc(" · ".join(row["words"]))}</span> {pen_chip} {qc}</div>
   <img src="{_data_uri(import_dir / crop_name)}" alt="{esc(row["strip"])}">
   <div class="verdicts">
     <button type="button" data-verdict="angenommen">Annehmen</button>
@@ -188,7 +209,9 @@ def build_page(payload: dict, import_dir: Path) -> str:
     richtigen Bogen mit <code>--sheet</code> angeben.</div>
   </div>
 </header>
-<div class="sieb"><b>Sieb-Disziplin:</b> Verworfen wird nur nach Schreibqualität (verschrieben,
+<div class="sieb"><b>Vom Blatt übernommen:</b> Zeilen mit gesetzter Stiftmarke (ok / nein am
+rechten Rand) sind bereits vorbelegt — prüfen und bei Bedarf hier überschreiben.<br>
+<b>Sieb-Disziplin:</b> Verworfen wird nur nach Schreibqualität (verschrieben,
 verrutscht) — nie, weil Buchstaben eng am Nachbarn sitzen. Enge Verbindung ist Signal, nicht
 Müll. Ausfälle müssen zufällig sein, nicht selektiv.</div>
 {"".join(rows_html)}

@@ -19,7 +19,10 @@ uv run python -m tools.eigenhand.sheet --hand mn-suetterlin --date 2026-08-22
 #    Mehrfach-Versuche derselben Streifen:  --repeat 3
 #    gezielte Streifen:                     --strips S0037 S0037 S0055
 
-# 2. schreiben, dann einscannen/fotografieren (Passmarken müssen drauf sein)
+# 2. schreiben — und JEDE Zeile gleich rechts ankreuzen: „ok“ oder „nein“.
+#    Der Import liest die Marken und belegt die Siebung damit vor.
+#    Nicht angekreuzt = unentschieden, wird am Bildschirm gefragt.
+#    Dann einscannen/fotografieren (Passmarken müssen mit drauf sein)
 
 # 3. einlesen (entzerrt, schneidet Zeilen, prüft QC)
 uv run python -m tools.eigenhand.ingest --hand mn-suetterlin --sheet B0001 scan.jpg \
@@ -44,6 +47,10 @@ uv run python -m tools.eigenhand.redo --hand mn-suetterlin S0037 S0055 --reason 
 
 ## Regeln
 
+- **Stiftmarke schlägt Gedächtnis:** die beiden Kästchen am rechten
+  Zeilenrand direkt nach dem Schreiben ankreuzen — dann steht das Urteil
+  fest, solange du noch weißt, was schiefging. Am Bildschirm ist es
+  vorbelegt und jederzeit überschreibbar.
 - **Sieb-Disziplin (mvp-roadmap M2, wörtlich übernommen):** Verworfen wird
   nur nach Schreibqualität (verschrieben, verrutscht) — nie, weil
   Buchstaben eng am Nachbarn sitzen. Enge Verbindung ist Signal, nicht
