@@ -1,0 +1,1136 @@
+{
+ "format": 1,
+ "waves": [
+  {
+   "wave": 0,
+   "strips": [
+    "S0001",
+    "S0002",
+    "S0003",
+    "S0004",
+    "S0005",
+    "S0006",
+    "S0007",
+    "S0008",
+    "S0009",
+    "S0010",
+    "S0011",
+    "S0012",
+    "S0013",
+    "S0014",
+    "S0015",
+    "S0016",
+    "S0017",
+    "S0018",
+    "S0019",
+    "S0020",
+    "S0021",
+    "S0022",
+    "S0023",
+    "S0024",
+    "S0025",
+    "S0026",
+    "S0027",
+    "S0028",
+    "S0029",
+    "S0030",
+    "S0031",
+    "S0032",
+    "S0033",
+    "S0034",
+    "S0035",
+    "S0036",
+    "S0037",
+    "S0038",
+    "S0039",
+    "S0040",
+    "S0041",
+    "S0042",
+    "S0043",
+    "S0044",
+    "S0045",
+    "S0046",
+    "S0047",
+    "S0048",
+    "S0049",
+    "S0050",
+    "S0051",
+    "S0052",
+    "S0053",
+    "S0054",
+    "S0055",
+    "S0056",
+    "S0057",
+    "S0058",
+    "S0059",
+    "S0060"
+   ]
+  },
+  {
+   "wave": 1,
+   "strips": [
+    "S0061",
+    "S0062",
+    "S0063",
+    "S0064",
+    "S0065",
+    "S0066",
+    "S0067",
+    "S0068",
+    "S0069",
+    "S0070",
+    "S0071",
+    "S0072",
+    "S0073",
+    "S0074",
+    "S0075",
+    "S0076",
+    "S0077",
+    "S0078",
+    "S0079",
+    "S0080",
+    "S0081",
+    "S0082",
+    "S0083",
+    "S0084",
+    "S0085",
+    "S0086",
+    "S0087",
+    "S0088",
+    "S0089",
+    "S0090",
+    "S0091",
+    "S0092",
+    "S0093",
+    "S0094",
+    "S0095",
+    "S0096",
+    "S0097",
+    "S0098",
+    "S0099",
+    "S0100",
+    "S0101",
+    "S0102",
+    "S0103",
+    "S0104",
+    "S0105",
+    "S0106",
+    "S0107",
+    "S0108",
+    "S0109",
+    "S0110",
+    "S0111",
+    "S0112",
+    "S0113",
+    "S0114",
+    "S0115",
+    "S0116",
+    "S0117",
+    "S0118",
+    "S0119",
+    "S0120"
+   ]
+  }
+ ],
+ "strips": {
+  "S0001": {
+   "wave": 0,
+   "words": [
+    "Galoppieren",
+    "Schwindsucht"
+   ]
+  },
+  "S0002": {
+   "wave": 0,
+   "words": [
+    "immediately",
+    "things",
+    "doctor"
+   ]
+  },
+  "S0003": {
+   "wave": 0,
+   "words": [
+    "verbleibe",
+    "gefährlich",
+    "ehedem"
+   ]
+  },
+  "S0004": {
+   "wave": 0,
+   "words": [
+    "awkward",
+    "Donnerstag",
+    "habt"
+   ]
+  },
+  "S0005": {
+   "wave": 0,
+   "words": [
+    "untertänigst",
+    "beautiful"
+   ]
+  },
+  "S0006": {
+   "wave": 0,
+   "words": [
+    "weiland",
+    "service",
+    "Pyjama"
+   ]
+  },
+  "S0007": {
+   "wave": 0,
+   "words": [
+    "müsste",
+    "Liebesbrief",
+    "obvious"
+   ]
+  },
+  "S0008": {
+   "wave": 0,
+   "words": [
+    "Amtszeit",
+    "newspaper",
+    "Iraqi"
+   ]
+  },
+  "S0009": {
+   "wave": 0,
+   "words": [
+    "yellow",
+    "Volksschule",
+    "Physik"
+   ]
+  },
+  "S0010": {
+   "wave": 0,
+   "words": [
+    "Kurpfalz",
+    "Begräbnis",
+    "keep"
+   ]
+  },
+  "S0011": {
+   "wave": 0,
+   "words": [
+    "Marxismus",
+    "plötzlich",
+    "Efeu"
+   ]
+  },
+  "S0012": {
+   "wave": 0,
+   "words": [
+    "früh",
+    "Bahnhof",
+    "Adjektiv"
+   ]
+  },
+  "S0013": {
+   "wave": 0,
+   "words": [
+    "Sakko",
+    "somebody",
+    "midnight"
+   ]
+  },
+  "S0014": {
+   "wave": 0,
+   "words": [
+    "Hochachtung",
+    "31.12.1900"
+   ]
+  },
+  "S0015": {
+   "wave": 0,
+   "words": [
+    "Feldpost",
+    "Gesangbuch",
+    "road"
+   ]
+  },
+  "S0016": {
+   "wave": 0,
+   "words": [
+    "Webstuhl",
+    "Strumpf",
+    "Kirsche"
+   ]
+  },
+  "S0017": {
+   "wave": 0,
+   "words": [
+    "pretty",
+    "cowboy",
+    "Umzug"
+   ]
+  },
+  "S0018": {
+   "wave": 0,
+   "words": [
+    "überhaupt",
+    "lassen",
+    "Zucker"
+   ]
+  },
+  "S0019": {
+   "wave": 0,
+   "words": [
+    "Niqab",
+    "Erdnuss",
+    "goodbye"
+   ]
+  },
+  "S0020": {
+   "wave": 0,
+   "words": [
+    "days",
+    "difficult",
+    "„wohl“"
+   ]
+  },
+  "S0021": {
+   "wave": 0,
+   "words": [
+    "question",
+    "Anschrift",
+    "schießen"
+   ]
+  },
+  "S0022": {
+   "wave": 0,
+   "words": [
+    "Jahrmarkt",
+    "Skizze",
+    "Rock"
+   ]
+  },
+  "S0023": {
+   "wave": 0,
+   "words": [
+    "Ausflug",
+    "just",
+    "abzüglich"
+   ]
+  },
+  "S0024": {
+   "wave": 0,
+   "words": [
+    "Herzog",
+    "history",
+    "Pfote"
+   ]
+  },
+  "S0025": {
+   "wave": 0,
+   "words": [
+    "Dienstmagd",
+    "Xylophon"
+   ]
+  },
+  "S0026": {
+   "wave": 0,
+   "words": [
+    "1866",
+    "morgens",
+    "natürlich"
+   ]
+  },
+  "S0027": {
+   "wave": 0,
+   "words": [
+    "anyone",
+    "ziemlich",
+    "vodka"
+   ]
+  },
+  "S0028": {
+   "wave": 0,
+   "words": [
+    "husband",
+    "etwas",
+    "expect"
+   ]
+  },
+  "S0029": {
+   "wave": 0,
+   "words": [
+    "verrückt",
+    "Taufe",
+    "Mitgift"
+   ]
+  },
+  "S0030": {
+   "wave": 0,
+   "words": [
+    "know",
+    "Rhythmus",
+    "Quelle"
+   ]
+  },
+  "S0031": {
+   "wave": 0,
+   "words": [
+    "crazy",
+    "putzen",
+    "Subjekt"
+   ]
+  },
+  "S0032": {
+   "wave": 0,
+   "words": [
+    "Kanzlei",
+    "nächste",
+    "Blitz"
+   ]
+  },
+  "S0033": {
+   "wave": 0,
+   "words": [
+    "Häusler",
+    "Fremdwort",
+    "Ochse"
+   ]
+  },
+  "S0034": {
+   "wave": 0,
+   "words": [
+    "Büttner",
+    "oxygen",
+    "durch"
+   ]
+  },
+  "S0035": {
+   "wave": 0,
+   "words": [
+    "stay",
+    "escape",
+    "drink",
+    "Sklave"
+   ]
+  },
+  "S0036": {
+   "wave": 0,
+   "words": [
+    "ship",
+    "chance",
+    "Gevatter",
+    "guys"
+   ]
+  },
+  "S0037": {
+   "wave": 0,
+   "words": [
+    "myself",
+    "wundern",
+    "Waise"
+   ]
+  },
+  "S0038": {
+   "wave": 0,
+   "words": [
+    "Mokka",
+    "Vogtland",
+    "close"
+   ]
+  },
+  "S0039": {
+   "wave": 0,
+   "words": [
+    "versteckt",
+    "Ausgang",
+    "jetzt"
+   ]
+  },
+  "S0040": {
+   "wave": 0,
+   "words": [
+    "schlafen",
+    "join",
+    "heiß",
+    "können"
+   ]
+  },
+  "S0041": {
+   "wave": 0,
+   "words": [
+    "hören",
+    "alsdann",
+    "kriechen"
+   ]
+  },
+  "S0042": {
+   "wave": 0,
+   "words": [
+    "hätte",
+    "wäre",
+    "unlängst",
+    "sky"
+   ]
+  },
+  "S0043": {
+   "wave": 0,
+   "words": [
+    "also:",
+    "middle",
+    "Bruder"
+   ]
+  },
+  "S0044": {
+   "wave": 0,
+   "words": [
+    "gnädig",
+    "möglich",
+    "Silber"
+   ]
+  },
+  "S0045": {
+   "wave": 0,
+   "words": [
+    "system",
+    "Leichnam",
+    "hübsch"
+   ]
+  },
+  "S0046": {
+   "wave": 0,
+   "words": [
+    "Rezept",
+    "jüngst",
+    "Egge",
+    "pixel"
+   ]
+  },
+  "S0047": {
+   "wave": 0,
+   "words": [
+    "Schäfer",
+    "Pizza",
+    "Kelch"
+   ]
+  },
+  "S0048": {
+   "wave": 0,
+   "words": [
+    "Pulver",
+    "Wohlgeboren",
+    "Käse"
+   ]
+  },
+  "S0049": {
+   "wave": 0,
+   "words": [
+    "Spinnrad",
+    "Stadtplan",
+    "Arzt"
+   ]
+  },
+  "S0050": {
+   "wave": 0,
+   "words": [
+    "Krämer",
+    "Föhn",
+    "Widmung"
+   ]
+  },
+  "S0051": {
+   "wave": 0,
+   "words": [
+    "Erdöl",
+    "Obrigkeit",
+    "Injektion"
+   ]
+  },
+  "S0052": {
+   "wave": 0,
+   "words": [
+    "trotzdem",
+    "Häcksel",
+    "Fuchs"
+   ]
+  },
+  "S0053": {
+   "wave": 0,
+   "words": [
+    "Süden",
+    "Küfer",
+    "Papst",
+    "47"
+   ]
+  },
+  "S0054": {
+   "wave": 0,
+   "words": [
+    "Radfahrer",
+    "Postkarte",
+    "§12"
+   ]
+  },
+  "S0055": {
+   "wave": 0,
+   "words": [
+    "Löwe",
+    "Grundzug",
+    "3,50"
+   ]
+  },
+  "S0056": {
+   "wave": 0,
+   "words": [
+    "Chef",
+    "Ähre",
+    "Öfen",
+    "Ende."
+   ]
+  },
+  "S0057": {
+   "wave": 0,
+   "words": [
+    "Yacht",
+    "Übung",
+    "(1922)"
+   ]
+  },
+  "S0058": {
+   "wave": 0,
+   "words": [
+    "Gutshof",
+    "who",
+    "bieten",
+    "ihm"
+   ]
+  },
+  "S0059": {
+   "wave": 0,
+   "words": [
+    "money",
+    "fühlen",
+    "hast",
+    "place"
+   ]
+  },
+  "S0060": {
+   "wave": 0,
+   "words": [
+    "love",
+    "backen",
+    "schon",
+    "city"
+   ]
+  },
+  "S0061": {
+   "wave": 1,
+   "words": [
+    "Zunft",
+    "Blick",
+    "abends",
+    "own"
+   ]
+  },
+  "S0062": {
+   "wave": 1,
+   "words": [
+    "people",
+    "Dorf",
+    "streben",
+    "does"
+   ]
+  },
+  "S0063": {
+   "wave": 1,
+   "words": [
+    "Kutscher",
+    "snow",
+    "number"
+   ]
+  },
+  "S0064": {
+   "wave": 1,
+   "words": [
+    "los",
+    "würdig",
+    "music",
+    "slow"
+   ]
+  },
+  "S0065": {
+   "wave": 1,
+   "words": [
+    "saying",
+    "zwei",
+    "catch",
+    "Quarz"
+   ]
+  },
+  "S0066": {
+   "wave": 1,
+   "words": [
+    "erwartet",
+    "kurz",
+    "heißt",
+    "help"
+   ]
+  },
+  "S0067": {
+   "wave": 1,
+   "words": [
+    "swear",
+    "build",
+    "maybe",
+    "sollst"
+   ]
+  },
+  "S0068": {
+   "wave": 1,
+   "words": [
+    "groß",
+    "write",
+    "Schlüssel",
+    "quiz"
+   ]
+  },
+  "S0069": {
+   "wave": 1,
+   "words": [
+    "Samstag",
+    "schön",
+    "perhaps"
+   ]
+  },
+  "S0070": {
+   "wave": 1,
+   "words": [
+    "Schulmeister",
+    "hält",
+    "quengeln"
+   ]
+  },
+  "S0071": {
+   "wave": 1,
+   "words": [
+    "schmal",
+    "news",
+    "muß",
+    "zählen"
+   ]
+  },
+  "S0072": {
+   "wave": 1,
+   "words": [
+    "always",
+    "excuse",
+    "already"
+   ]
+  },
+  "S0073": {
+   "wave": 1,
+   "words": [
+    "Katze",
+    "Amtmann",
+    "daß"
+   ]
+  },
+  "S0074": {
+   "wave": 1,
+   "words": [
+    "gehorsamst",
+    "Taxi",
+    "spät"
+   ]
+  },
+  "S0075": {
+   "wave": 1,
+   "words": [
+    "Kajak",
+    "Amsel",
+    "welcome"
+   ]
+  },
+  "S0076": {
+   "wave": 1,
+   "words": [
+    "Puzzle",
+    "style",
+    "Hochzeit"
+   ]
+  },
+  "S0077": {
+   "wave": 1,
+   "words": [
+    "hochgeehrt",
+    "Friedhof",
+    "Küster"
+   ]
+  },
+  "S0078": {
+   "wave": 1,
+   "words": [
+    "obwohl",
+    "Dogma",
+    "update"
+   ]
+  },
+  "S0079": {
+   "wave": 1,
+   "words": [
+    "Iraq",
+    "Arznei",
+    "Hut",
+    "Ohr"
+   ]
+  },
+  "S0080": {
+   "wave": 1,
+   "words": [
+    "Tür",
+    "Uhr",
+    "ja!",
+    "2026",
+    "Bild"
+   ]
+  },
+  "S0081": {
+   "wave": 1,
+   "words": [
+    "Ahne",
+    "Buch",
+    "Dame",
+    "Gold"
+   ]
+  },
+  "S0082": {
+   "wave": 1,
+   "words": [
+    "Hahn",
+    "Kopf",
+    "Luft",
+    "Lärm"
+   ]
+  },
+  "S0083": {
+   "wave": 1,
+   "words": [
+    "Mehl",
+    "Mund",
+    "Möwe",
+    "Ofen"
+   ]
+  },
+  "S0084": {
+   "wave": 1,
+   "words": [
+    "Name",
+    "Sofa",
+    "Topf",
+    "Turm"
+   ]
+  },
+  "S0085": {
+   "wave": 1,
+   "words": [
+    "Ufer",
+    "Vase",
+    "Vieh",
+    "Zahn"
+   ]
+  },
+  "S0086": {
+   "wave": 1,
+   "words": [
+    "Zeit",
+    "Zins",
+    "Zopf",
+    "Abend"
+   ]
+  },
+  "S0087": {
+   "wave": 1,
+   "words": [
+    "Acker",
+    "Altar",
+    "Apfel",
+    "Boden"
+   ]
+  },
+  "S0088": {
+   "wave": 1,
+   "words": [
+    "Eiche",
+    "Faden",
+    "Fibel",
+    "Hilfe"
+   ]
+  },
+  "S0089": {
+   "wave": 1,
+   "words": [
+    "Knopf",
+    "Laden",
+    "Mühle"
+   ]
+  },
+  "S0090": {
+   "wave": 1,
+   "words": [
+    "Nebel",
+    "Segen",
+    "Säbel",
+    "nein?"
+   ]
+  },
+  "S0091": {
+   "wave": 1,
+   "words": [
+    "Tinte",
+    "Truhe",
+    "Zügel"
+   ]
+  },
+  "S0092": {
+   "wave": 1,
+   "words": [
+    "don’t",
+    "Bäcker",
+    "E-Mail"
+   ]
+  },
+  "S0093": {
+   "wave": 1,
+   "words": [
+    "Europa",
+    "Fliege",
+    "Fohlen"
+   ]
+  },
+  "S0094": {
+   "wave": 1,
+   "words": [
+    "Glocke",
+    "Teller",
+    "Vesper"
+   ]
+  },
+  "S0095": {
+   "wave": 1,
+   "words": [
+    "Vulkan",
+    "Wurzel",
+    "Camping"
+   ]
+  },
+  "S0096": {
+   "wave": 1,
+   "words": [
+    "Klavier",
+    "Nordpol",
+    "Näherin"
+   ]
+  },
+  "S0097": {
+   "wave": 1,
+   "words": [
+    "Computer",
+    "Depesche",
+    "3,50"
+   ]
+  },
+  "S0098": {
+   "wave": 1,
+   "words": [
+    "erstens;",
+    "Aussteuer",
+    "(1922)"
+   ]
+  },
+  "S0099": {
+   "wave": 1,
+   "words": [
+    "Arbeitsamt",
+    "47",
+    "47",
+    "3,50"
+   ]
+  },
+  "S0100": {
+   "wave": 1,
+   "words": [
+    "(1922)",
+    "„wohl“",
+    "„wohl“"
+   ]
+  },
+  "S0101": {
+   "wave": 1,
+   "words": [
+    "ja!",
+    "ja!",
+    "§12",
+    "§12",
+    "1866"
+   ]
+  },
+  "S0102": {
+   "wave": 1,
+   "words": [
+    "1866",
+    "Jagd",
+    "Jagd",
+    "Ähre"
+   ]
+  },
+  "S0103": {
+   "wave": 1,
+   "words": [
+    "Ähre",
+    "Öfen",
+    "Öfen",
+    "Quarz"
+   ]
+  },
+  "S0104": {
+   "wave": 1,
+   "words": [
+    "Yacht",
+    "Yacht",
+    "also:",
+    "also:"
+   ]
+  },
+  "S0105": {
+   "wave": 1,
+   "words": [
+    "don’t",
+    "don’t",
+    "nein?",
+    "nein?"
+   ]
+  },
+  "S0106": {
+   "wave": 1,
+   "words": [
+    "Übung",
+    "Übung",
+    "E-Mail"
+   ]
+  },
+  "S0107": {
+   "wave": 1,
+   "words": [
+    "E-Mail",
+    "Xylophon",
+    "erstens;"
+   ]
+  },
+  "S0108": {
+   "wave": 1,
+   "words": [
+    "Xylophon",
+    "erstens;",
+    "that"
+   ]
+  },
+  "S0109": {
+   "wave": 1,
+   "words": [
+    "then",
+    "wirklich",
+    "this",
+    "deshalb"
+   ]
+  },
+  "S0110": {
+   "wave": 1,
+   "words": [
+    "Schultheiß",
+    "took",
+    "immer"
+   ]
+  },
+  "S0111": {
+   "wave": 1,
+   "words": [
+    "tragen",
+    "trinken",
+    "gehen",
+    "boat"
+   ]
+  },
+  "S0112": {
+   "wave": 1,
+   "words": [
+    "Wirtshaus",
+    "young",
+    "brauchen"
+   ]
+  },
+  "S0113": {
+   "wave": 1,
+   "words": [
+    "nervous",
+    "rhythm",
+    "gefällt"
+   ]
+  },
+  "S0114": {
+   "wave": 1,
+   "words": [
+    "because",
+    "could",
+    "what",
+    "ledig"
+   ]
+  },
+  "S0115": {
+   "wave": 1,
+   "words": [
+    "about",
+    "im",
+    "unterwegs",
+    "ihn"
+   ]
+  },
+  "S0116": {
+   "wave": 1,
+   "words": [
+    "ihr",
+    "ihnen",
+    "brachte",
+    "goes"
+   ]
+  },
+  "S0117": {
+   "wave": 1,
+   "words": [
+    "office",
+    "really",
+    "anno",
+    "baby"
+   ]
+  },
+  "S0118": {
+   "wave": 1,
+   "words": [
+    "vielleicht",
+    "voll",
+    "family",
+    "laut"
+   ]
+  },
+  "S0119": {
+   "wave": 1,
+   "words": [
+    "years",
+    "zu",
+    "kommt",
+    "over"
+   ]
+  },
+  "S0120": {
+   "wave": 1,
+   "words": [
+    "also"
+   ]
+  }
+ }
+}

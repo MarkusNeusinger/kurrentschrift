@@ -12,6 +12,139 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **Cyan rulings that a colour scan can drop, and more air for the flat
+  scripts.** The guide lines print in pale cyan instead of grey: cyan's
+  blue component sits at paper level, so `ingest --channel auto` reads a
+  colour capture through its blue channel and the lines are gone rather
+  than merely faint (baseline 0.91 in the blue channel, 0.75 as greyscale
+  — better than the grey in both capture modes). Black and iron-gall ink
+  come through at 0.10/0.14; blue ink lands on the 0.55 threshold, so the
+  operator README asks for black or brown. Strips are never shorter than
+  28 mm, the surplus split above and below the row block, which gives
+  Kurrent 6.2/5.2 mm of padding instead of 4/3 — and the row pitch now
+  derives from the strip height plus a fixed 5 mm gap, so the paper
+  between two strips is the same for every script. The printed strip id
+  and word label moved further from the writing band without the strip
+  growing: the three vertical zones were shifted against each other, their
+  sum unchanged.
+
+- **Buffer in every box, faint rulings, a printed legend, and stacks of
+  sheets.** Five corrections from writing practice (owner, 2026-08-23):
+  the packing filled rows to 180.0 of 180 mm, so a word could run out of
+  room mid-stroke — it now keeps 15 mm in reserve and `boxes_for_row`
+  hands that reserve back to the boxes in proportion to word length, so
+  every word gets 10–44 % over its estimate rather than only the last one
+  on the line. The advance model was raised with it (a Sütterlin lowercase
+  is a full x-height, not 0.85), which re-baked the strip plan — nothing
+  had been written yet, so this was the last moment for it. The sheet now
+  prints its own faint `CAPTURE_STYLES` ruling theme instead of the app's
+  reading theme, every value well above the importer's ink threshold, so a
+  printed line can never count as ink; the page is marked identically at
+  both ends (a vertical tick above the first strip, mirroring the one
+  below the last); the verdict caption moved above the first cut line
+  instead of sitting level with the first strip; the label hints `|` and
+  `*` are spelled out in a footer legend; and `sheet.py --sheets N` prints
+  a whole session's stack in one call, with no strip on two sheets.
+
+- **A cut format for the strips: wider row gaps plus cut marks in the
+  margins ("Schnittband" · "Schnittmarken").** Every row now carries a cut
+  rectangle of fixed columns and fixed paddings, so the strips of a style
+  all come out at one height and one width (Sütterlin 185 × 29 mm) no
+  matter how many words a row holds. The row gap grows from 5 mm to 12 mm
+  — it has to carry two cut lines now — which puts 5 mm of free paper
+  between neighbouring strips and 7 rows on a Sütterlin sheet instead of 9.
+  Marks are printed in the page margins only: ink inside the cut rectangle
+  would end up in the training data. The vertical cuts are marked in the
+  gaps between strips rather than at the page head, where a hairline
+  blurring into a Passmarke on a scan would drag its centroid and with it
+  every millimetre the importer computes; for the same reason the first row
+  starts at y = 22 mm. The strip id moved into the cut rectangle's top pad
+  so a cut strip stays attributable on its own, while the verdict box stays
+  outside it. `ingest` crops exactly at the cut rectangle, so the paper
+  strip and the filed `streifen.png` are the same object.
+
+- **A per-row verdict box on the sheet ("Stiftmarke"), read back at
+  import.** Every printed row now carries one 5 mm box in the right
+  margin, captioned "ok" once above the first row, so a row can be judged
+  with the pen the moment it is written instead of from memory at the
+  screen: a cross or check means accepted, an empty box means rejected.
+  The column sits at x = 199 mm, clear of the writing area (the frozen
+  strips fill its full 180 mm) and clear of the corner fiducials, which
+  only occupy the page corners. `ingest` reads the box off the rectified
+  page (ink fraction of the inner area, printed outline excluded, a stray
+  speck stays below the threshold) and the Siebung page pre-selects the
+  verdict, marked with a "Stift auf dem Blatt" chip and overridable at any
+  time; a stored click always wins over the seed. One box rather than two
+  keeps the sheet to a single pen movement, and a forgotten tick fails
+  towards re-writing the strip rather than filing an unreviewed row. This
+  is the only input allowed to pre-fill a verdict — it is a human
+  judgement, unlike the QC flags, which stay warnings. The mark rides
+  along in each Fassung's `meta.json` for the audit trail.
+
+- **Eigenhand coverage progression, a digits-and-punctuation pool layer,
+  and strip-plan wave 1.** `tools/eigenhand/progression.py` answers "after
+  10, 20, … strips, how often has every glyph and join been planned?" with
+  cumulative per-checkpoint counts (bucketed klein · gross · ligatur ·
+  ziffer · zeichen), quotas against the shared Soll model and a `--json`
+  export for repeatable optimisation loops. Coverage now counts detached
+  glyphs (digits, punctuation) as glyph-position items, and the pool gains
+  a `zeichen` layer of real-text carriers (years, a date, a price, signs
+  at words) plus capital-C and bare-q carriers the progression run
+  surfaced as gaps. A hard per-glyph floor (`pool.GLYPH_MIN_PLANNED = 3`,
+  phase A2) now guarantees that EVERY glyph — letter, ligature, digit,
+  sign — is planned at least three times regardless of its text frequency,
+  before the frequency-driven build-out starts; a wave too small to satisfy
+  it names the leftovers instead of failing silently, and every
+  `progression` run closes with the check line. Wave 1 of the strip plan
+  (strips 61–120) ships committed: after 120 planned strips every registry
+  glyph — all capitals, all ten digits, all thirteen signs — carries at
+  least three planned recordings (666 distinct joins, 99.5 % weighted
+  Erstbeleg quota). The PDF writer's
+  literal-string escape is now WinAnsi-aware so German quotes, dashes and
+  the typographic apostrophe survive onto printed labels.
+
+- **Eigenhand-Erfassung: the complete tool chain for collecting the
+  author's own hand as training data** (`tools/eigenhand/`, proposal
+  `docs/proposals/eigenhand-erfassung.md`, glossary section
+  „Eigenhand-Erfassung"). A curated, wave-growing word pool of real
+  words (`corpus.py`, seeded from the §9 MVP words, the 63 Abb.-19
+  bench words, the full quiz bank plus hunted rare-join, high-frequency
+  German and tagged English layers) is partitioned deterministically
+  and append-never into row-sized strips (`pool.py`: weighted set-cover
+  start coverage, deficit-driven even build-out, repetition damping —
+  breadth before repetition), weighted against the local Übergangsraum
+  built from consult-only frequency corpora
+  (`data/corpora/frequencywords-2018/`, bytes gitignored, SHA256-pinned
+  fetch script; `universe.py`, `gaps.py` for curation candidates).
+  `sheet.py` prints A4 Bogen PDFs (dependency-free PDF writer twin of
+  `app/src/lib/pdf.ts`; lineature presets pinned against
+  `app/src/lib/lineatur.ts`; corner fiducials with an orientation
+  donut; per-row strip ids; multi-attempt rows via `--repeat`) plus a
+  `layout.json` sidecar as the importer's sole geometry contract.
+  `ingest.py` rectifies scanner or phone captures (scikit-image-only
+  fiducial detection and homography, 300 DPI working space, QC flags as
+  warnings only), `page.py` renders the offline Siebung review page
+  (humanbench pattern: data URIs, resume state, uid-keyed result), and
+  `apply.py` files ONLY accepted rows as self-attributing strip
+  recordings (printed strip id and word labels inside the crop,
+  `meta.json` with words, geometry, session and checksums; rejections
+  are recorded pixel-free in the Kartei). `kartei.py` keeps the local
+  manifest with derived strip states, `report.py` reports Soll/Ist
+  (weighted Erstbeleg/Ausbau quotas, print queue by weighted repetition
+  gain), `redo.py` queues re-recordings (`--retire` withdraws), and
+  `snapshot.py` backs everything up incrementally and create-only into
+  the private archive clone (dbsnapshot discipline, shrink refusal).
+  Wave 0 of the strip plan (60 strips, 253 distinct words) ships
+  committed; five new test files pin the preset port, the PDF bytes,
+  the shaped-coverage facts, a synthetic render→distort→rectify round
+  trip (±0.5 mm) and the Kartei state machine. Own-hand bytes stay out
+  of git by owner decision (open-core reservation) — documented in
+  `data/samples/own-hand/SOURCE.md` and reconciled across
+  `datenablage.md`, `mvp-roadmap.md` (M1/M2 superseded) and
+  `handmodell-stufenplan.md` §H5.
+
 ### Fixed
 
 - **`k0eval` refuses an empty scoring set instead of quietly reporting

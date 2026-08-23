@@ -36,29 +36,29 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
 **§6** Extern/Forschung.
 
-- **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausgangsschrift §1 · Ausreißer §4
-- **B** — Bandzugfeder §1 · Bbox §2 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · bogengleich §3 · Bowl-Exit-Tuck §2
+- **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4
+- **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · bogengleich §3 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
-- **E** — EDT §3 · Einrichtungs-Wizard §5 · Entdrillung §4 · Ernte §2 · extrapoliertes Landmark-Ziel §3
-- **F** — Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1
+- **E** — EDT §3 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Entdrillung §4 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
+- **F** — Fassung (Eigenhand) §5 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — k0-Protokoll §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
-- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4
+- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Mindestbelegung (Eigenhand) §5
 - **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
-- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Plateau-Anker §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
+- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
-- **Ü** — Übergang §2 · Übergangs-Generator §2 · Überlappungsterm §3 · understanding §5
+- **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · understanding §5
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4
-- **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Editor §5 · Wort-Trace §2
+- **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Editor §5 · Wort-Trace §2 · Wortvorrat §5
 - **X** — x-Höhe (`xh`) §1
 - **Z** — Zelle einsetzen §5 · zirkuläres Kriterium §4 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
 
@@ -1876,6 +1876,164 @@ Status mit absolutem Datum: **bindend** (entschieden) · **lebend**
 **Befund-Journal** (datierte Momentaufnahme, wird nie fortgeschrieben, nur
 abgelöst) · **statisch** (quellenbelegtes Nachschlagematerial).
 → docs/index.md § Dokument-Status
+
+### Eigenhand-Erfassung
+
+**Eigenhand-Erfassung** — die Werkzeugkette, mit der der Autor seine
+eigene Hand als Trainingsdaten erfasst: Wortvorrat → Streifenplan →
+Bogen drucken → mit echter Feder schreiben → einlesen → Siebung →
+Fassungen in der Streifenkartei → Bestandsbericht → nächster Bogen.
+*Technisch:* `tools/eigenhand/`, Datenwurzel `data/samples/own-hand/`
+(gitignored, Archiv via `tools/eigenhand/snapshot.py`).
+→ proposals/eigenhand-erfassung.md
+
+**Wortvorrat** — der committete, kuratierte, in Wellen wachsende Bestand
+ECHTER Wörter der Eigenhand-Erfassung (alt und modern, hauptsächlich
+Deutsch, Englisch getaggt); Kurationsschichten per Tag (`mvp9` ·
+`bench-abb19` · `quizbank` · `rare-join` · `haeufig` · `english`).
+Trainingsdaten, kein Mess-Satz — keine Bench-Kopfzahl liest daraus.
+*Technisch:* `tools/eigenhand/corpus.py::pool_entries`.
+→ proposals/eigenhand-erfassung.md §4
+
+**Streifen (Eigenhand)** — die stabile Inhaltseinheit der
+Eigenhand-Erfassung: eine feste Wortgruppe, die genau eine Bogenzeile
+füllt. Einmal vergeben, nie umnummeriert (append-never); Aufnahmen sind
+Fassungen. *Technisch:* IDs `S0037`; Wächter
+`tools/eigenhand/pool.py::verify_immutable`.
+→ proposals/eigenhand-erfassung.md §4
+
+**Streifenplan** — das committete, append-only Verzeichnis
+Streifen → Wörter, deterministisch gebaut (Phase A gewichtetes
+Set-Cover für die Startdeckung, Phase B defizitgetriebener Ausbau mit
+Wiederholungs-Dämpfung `REPEAT_DAMPING`). *Technisch:*
+`tools/eigenhand/streifen.json`, Builder `tools/eigenhand/pool.py`.
+→ proposals/eigenhand-erfassung.md §4
+
+**Fassung** — EINE konkrete Aufnahme eines Streifens (eine gesiebte
+Bogenzeile). Status `angenommen` · `verworfen` (nur Kartei-Protokoll,
+keine Datei) · `zurückgezogen` (explizit per `redo --retire`);
+Neuaufnahme ERGÄNZT, sie ersetzt nicht. Nur angenommene Fassungen
+zählen als Trainingsmaterial. *Technisch:*
+`fassungen/S0037/F02/{streifen.png, meta.json}`; der PNG ist
+selbst-zuordenbar (gedruckte Streifen-ID + Wortlabels im Ausschnitt).
+→ proposals/eigenhand-erfassung.md §6–§7
+
+**Bogen** — ein gedrucktes A4-Blatt der Eigenhand-Erfassung: dynamische
+Zusammenstellung offener Streifen mit Wortkästen samt Lineatur,
+Klartext-Labels, Streifen-IDs am Rand und Passmarken; derselbe Streifen
+darf mehrfach daraufstehen (Versuche, `--repeat`). Jeder Bogen schreibt
+neben sein PDF die `layout.json` — den einzigen Geometrie-Vertrag des
+Importers (Registrierung statt Erkennung). *Technisch:* IDs `B0012`;
+`tools/eigenhand/sheet.py`.
+→ proposals/eigenhand-erfassung.md §5
+
+**Passmarken** — die vier gedruckten schwarzen 8-mm-Eckquadrate eines
+Bogens, links oben mit 3-mm-Lochung (Donut) zur Orientierung: darüber
+entzerrt der Import Scan wie Handyfoto (Homographie) und erkennt
+gedrehte Aufnahmen. *Technisch:* `tools/eigenhand/fiducial.py`
+(scikit-image, bewusst ohne OpenCV).
+→ proposals/eigenhand-erfassung.md §6
+
+**Schnittband** — das Rechteck, zu dem eine Bogenzeile geschnitten wird:
+feste Spalten (x = 12 … 197 mm) plus feste Polster über der Oberlinie und
+unter der Klartext-Zeile. Für jede Zeile eines Stils identisch (Sütterlin
+185 × 29 mm; Kurrent und Offenbacher 185 × 28 mm, weil `CUT_MIN_HEIGHT_MM`
+ihren flacheren Zeilen mehr Polster über und unter der Lineatur gibt),
+unabhängig von der Wortzahl — deshalb haben am Ende ALLE Streifen EINER
+Schrift dieselbe Höhe und Breite. Die Streifen-ID sitzt im oberen
+Polster, also auf dem Streifen (Zuordenbarkeit); die Stiftmarke bleibt
+draußen. Der Import schneidet digital am selben Rechteck, damit
+Papierstreifen und `streifen.png` dasselbe Objekt sind. *Technisch:*
+`tools/eigenhand/geometry.py::cut_box`/`cut_size_mm`, je Zeile in
+`layout.json` unter `cut_mm`.
+→ proposals/eigenhand-erfassung.md §5
+
+**Schnittmarken** — die kurzen Striche in den Blatträndern, die zeigen, wo
+geschnitten wird: je Zeile vier auf Höhe der Querschnitte (links und
+rechts), dazu die beiden Längsschnitte in den Lücken ZWISCHEN den
+Streifen. Nie innerhalb des Schnittbands — gedruckte Tinte auf dem
+Streifen wäre Tinte in den Trainingsdaten — und nie am Blattkopf, wo eine
+Haarlinie auf dem Scan in eine Passmarke verlaufen und deren Schwerpunkt
+verziehen könnte. *Technisch:*
+`tools/eigenhand/geometry.py::cut_ticks`/`page_cut_ticks`.
+→ proposals/eigenhand-erfassung.md §5
+
+**Stiftmarke** — das eine gedruckte Kästchen am rechten Rand JEDER
+Bogenzeile (5 mm, ab x = 199 mm, im Kopf einmal mit „ok“ beschriftet —
+außerhalb des Schreibfelds, in Reichweite der Hand am Zeilenende). Der
+Schreiber hakt direkt nach dem Schreiben ab, ob die Zeile taugt; der
+Import liest die Marke aus dem entzerrten Bild und belegt die Siebung
+damit vor. Anders als die QC-Flags DARF sie vorbelegen: sie ist ein
+Menschenurteil im besten Moment, nicht eine Maschinenvermutung —
+überschreibbar bleibt sie trotzdem. Die Regel ist binär (Owner,
+2026-08-23): **Haken oder Kreuz = angenommen, leeres Kästchen =
+verworfen**; eine vergessene Marke schickt den Streifen also zurück in
+die Warteschlange, statt ihn ungeprüft abzulegen. *Technisch:*
+`tools/eigenhand/geometry.py::mark_box`,
+`tools/eigenhand/ingest.py::read_pen_mark`, je Zeile in `layout.json`
+unter `mark_mm`. → proposals/eigenhand-erfassung.md §5–§6
+
+**Siebung** — der Annehmen/Verwerfen-Schritt je Bogenzeile auf einer
+selbstständigen Offline-HTML-Seite (humanbench-Muster: data-URIs,
+Resume, uid-verschlüsseltes Ergebnis). Regel ist die **Sieb-Disziplin**
+(aus mvp-roadmap M2): verworfen wird nur nach Schreibqualität
+(verschrieben, verrutscht) — nie wegen Verbindungsenge; Ausfälle müssen
+zufällig sein, nicht selektiv; best-of über Mehrfach-Versuche desselben
+Streifens ist erlaubt. *Technisch:* `tools/eigenhand/page.py` →
+`apply.py`.
+→ proposals/eigenhand-erfassung.md §6
+
+**Streifenkartei** *(kurz: Kartei)* — das lokale Manifest einer Hand und
+ihre EINZIGE Zustandsquelle: Bögen, Fassungen, Schreibsitzungen
+(Datum · Feder · Tinte · Papier · Gerät), Redo-Liste. Streifen-Zustände
+(`geplant` · `unterwegs` · `belegt`) werden ABGELEITET, nie gespeichert.
+Nie committet, nie von Hand editiert. *Technisch:*
+`data/samples/own-hand/<hand>/kartei.json`,
+`tools/eigenhand/kartei.py::strip_state`.
+→ proposals/eigenhand-erfassung.md §7
+
+**Übergangsraum** — die Soll-Grundgesamtheit der Eigenhand-Erfassung:
+alle GEFORMTEN glyph_key-Übergänge und Glyph-Positionen, die in echtem
+Wortschatz vorkommen, korpusfrequenz-gewichtet; berechnet aus
+Konsultationskorpora (Klasse 2), die Gewichtstabelle bleibt lokal
+(Frequenzlisten-Doktrin, quiz-wortbank.md §4). Item-Notation `l>e`
+(Übergang) und `e@medial` (Glyph-Position). Bewusst nicht „Abdeckung“
+genannt — der Begriff gehört der Humanbench-Abdeckungsmatrix (§4).
+*Technisch:* `tools/eigenhand/universe.py`,
+`tools/eigenhand/coverage.py`.
+→ proposals/eigenhand-erfassung.md §4
+
+**Mindestbelegung (Eigenhand)** — die harte Untergrenze des
+Streifenplans: JEDE Glyphe — Buchstabe, Ligatur, Ziffer, Zeichen — wird
+mindestens dreimal eingeplant, unabhängig von ihrer Textfrequenz
+(Owner-Regel 2026-08-23: „sowas wie q nur 1× darf nicht sein“). Eine
+Garantie, keine Präferenz: Phase A2 des Builders hebt jede unterbelegte
+Glyphe auf, bevor der frequenzgetriebene Ausbau beginnt, und meldet
+namentlich, wenn die Wellenkapazität nicht reicht. Nicht zu verwechseln
+mit dem gewichteten Aufbauziel (→ Bestandsbericht), das je nach Frequenz
+zwischen 3 und 20 liegt. *Technisch:*
+`tools/eigenhand/pool.py::GLYPH_MIN_PLANNED`, Prüfzeile am Ende jedes
+`tools.eigenhand.progression`-Laufs.
+→ proposals/eigenhand-erfassung.md §4
+
+**Beleg (Eigenhand)** — ein Vorkommen eines Übergangsraum-Items in den
+angenommenen Fassungen einer Hand; die Zähleinheit des
+Bestandsberichts. → proposals/eigenhand-erfassung.md §7
+
+**Bestandsbericht** — der Soll/Ist-Bericht der Eigenhand-Erfassung je
+Glyph-Position und Übergang, mit zwei Kopfzahlen: **Erstbeleg-Quote**
+(Anteil Items mit ≥1 Beleg) und **Ausbau-Quote** (Σ min(Ist, Soll)/
+Σ Soll), beide ungewichtet UND übergangsraum-gewichtet (die gewichtete
+Zahl ist die ehrliche Kopfzeile). Dazu der Druckvorschlag — dieselbe
+Warteschlange, die `sheet.py --next` druckt: Redo > nie belegt >
+Wiederholung nach gewichtetem Soll-Gewinn. Zweistufiges Soll: die
+Erstbeleg-Stufe (≥1 Beleg je Item — sie misst die Erstbeleg-Quote und
+treibt Phase A des Streifenplans) und das Aufbauziel
+`clamp(3 + 17·√(w/wmax), 3, 20)` (`coverage.target_for_weight`,
+Untergrenze 3 — es misst die Ausbau-Quote).
+*Technisch:* `tools/eigenhand/report.py`,
+`tools/eigenhand/pool.py::soll_model`.
+→ proposals/eigenhand-erfassung.md §7
 
 ---
 

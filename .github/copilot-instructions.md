@@ -121,6 +121,15 @@ agent working in this repo:
   `qualitaetsmetrik.md` §14): the chain solve is not bit-reproducible across
   thread environments, so cross-run comparisons are only valid within one
   pinned setting.
+- **Don't re-request a Copilot review after every push** (owner,
+  2026-08-23; PR #406 collected ~15 requests in a day). Each request is a
+  full re-read of the whole diff, and the bot then surfaces „previously
+  missed" findings in files the push never touched — a one-line docstring
+  fix draws a finding elsewhere, which draws another push, which draws
+  another request. Request a fresh review only after a SUBSTANTIVE change
+  (new behaviour, a reworked mechanism), and stop once a round yields no
+  new inline comments but only carried-over suppressed items. A PR that is
+  green with no open threads needs no further round.
 - **No AI-development disclosure on the public site** (owner directive):
   legal/about pages carry no „KI-gestützt entwickelt" notices.
 - **Legibility over period authenticity in UI** (owner Leitsatz): no broken
@@ -275,7 +284,12 @@ updates its owning doc in the same PR.
   `docs/reference/quellen-und-rechte.md` (see "Data & licensing" below).
 - **Measurement tools** (`tools/`) — the bench/lab family (wordbench,
   glyphbench, tracebench, glyphlab/wordlab/pairlab, humanbench, inksight,
-  routeg, inkpilot): inventory + operation in `docs/reference/werkzeuge.md`,
+  routeg, inkpilot) plus the own-hand capture chain `tools/eigenhand`
+  (word pool → printed Bogen sheets → scan Siebung → local strip store;
+  doctrine in `docs/proposals/eigenhand-erfassung.md`; its
+  `data/samples/own-hand/` bytes stay gitignored — reserved dataset,
+  backed up to the private archive): inventory + operation in
+  `docs/reference/werkzeuge.md`,
   method + numbers in `docs/reference/qualitaetsmetrik.md` (esp. §14) and
   `docs/reference/menschliche-bewertung.md`, vocabulary in
   `docs/reference/glossar.md`. Invariants: measurement layer only — no DB
@@ -479,6 +493,10 @@ Three commit classes, kept strictly separate (see
    cross-hand material, never a same-hand bench reference) and
    `/data/samples/own-hand/` (author's own copyright). Each gets
    a `SOURCE.md` with permalink, license, attribution, retrieval date.
+   Exception (owner decision 2026-08-22): the own-hand STRIP SCANS stay
+   gitignored despite the owner's copyright — reserved dataset, backed up
+   to the private archive; only `SOURCE.md` + `README.md` are committed
+   (`docs/proposals/eigenhand-erfassung.md` §8).
 2. **Gitignored:** `/data/corpora/` — only `SOURCE.md` + `fetch_corpus.py`
    are committed, never the data files. Pin DOI versions.
 3. **Mixed:** `/data/derived/from-cc-by/` is committable;

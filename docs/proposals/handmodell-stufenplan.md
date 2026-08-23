@@ -307,15 +307,24 @@ nur nach eigenem Entscheid, siehe Recherche-Notiz.)
 ### H5 — Die eigene Hand
 
 Der Vision-Ziel-6-Pfad („Neuer Stil als Basis", §12) auf dem dann
-geübten Weg: eigene Proben (S-Pen-Erfassung existiert; Wortliste =
-Bench-Wörter + paardichte Sätze), committebar als
-`data/samples/own-hand/`, eigene `hands`-Zeile → Fits → Aggregate →
+geübten Weg: eigene Proben, eigene `hands`-Zeile → Fits → Aggregate →
 „meine Version" als drittes wählbares Modell. Der strukturelle
 Vorteil gegenüber jeder historischen Hand: **beliebig viel
 Nachschub** — die Statistik-Tiefe (Varianz pro Anker, seltene Paare),
 die Abb. 19/20 mit n = 4–39 pro Buchstabe (die meisten ≤ 20, Seltenes
 fällt ganz unters n-≥-4-Gate) nie liefern können, ist hier nur eine
 Schreibsitzung entfernt.
+
+**Erfassungsweg seit 2026-08-22:**
+[`eigenhand-erfassung.md`](eigenhand-erfassung.md) — echte Feder auf
+gedruckten Bögen mit Passmarken, Siebung je Zeile, Streifen-Ablage
+lokal + privates Archiv (die frühere Formulierung „S-Pen-Erfassung;
+committebar als `data/samples/own-hand/`" ist damit überholt: Tablet
+als Primärweg und Scan-Commit sind dort Verworfen-Einträge). Die
+Wortliste ist der dortige **Wortvorrat** (Benchwörter enthalten,
+paardichte Deckung über den Übergangsraum statt gebauter Sätze). Der
+Fit-/Ernte-Anschluss an H1/H2 ist dort Phase 5 mit benannter offener
+`chart_path`-Frage.
 
 ## 5. Prüfsteine (bindend über alle Stufen)
 

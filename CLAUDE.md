@@ -54,7 +54,12 @@ updates its owning doc in the same PR.
   `docs/reference/quellen-und-rechte.md` (see "Data & licensing" below).
 - **Measurement tools** (`tools/`) — the bench/lab family (wordbench,
   glyphbench, tracebench, glyphlab/wordlab/pairlab, humanbench, inksight,
-  routeg, inkpilot): inventory + operation in `docs/reference/werkzeuge.md`,
+  routeg, inkpilot) plus the own-hand capture chain `tools/eigenhand`
+  (word pool → printed Bogen sheets → scan Siebung → local strip store;
+  doctrine in `docs/proposals/eigenhand-erfassung.md`; its
+  `data/samples/own-hand/` bytes stay gitignored — reserved dataset,
+  backed up to the private archive): inventory + operation in
+  `docs/reference/werkzeuge.md`,
   method + numbers in `docs/reference/qualitaetsmetrik.md` (esp. §14) and
   `docs/reference/menschliche-bewertung.md`, vocabulary in
   `docs/reference/glossar.md`. Invariants: measurement layer only — no DB
@@ -128,6 +133,7 @@ cover them on SQLite; see `admin-write-repro-harness` pattern). Dev tools
 - **Never commit on `main`** — branch first, even for a quick "commit and push" outside `/open-pr`.
 - **Every PR updates `CHANGELOG.md`** (`[Unreleased]`, Keep-a-Changelog categories, English, bold-titled bullets like the existing entries) — that file is how releases get posted; a PR without its entry is incomplete. Data-only commits (chart sources, authored templates) are exempt — their provenance lives in `SOURCE.md`.
 - **New terms coined by a PR get a glossary entry in the same PR** — any new Fachbegriff, metric, named failure mode or repo idiom (`gen_chamfer`, „Cusp-Connector“, „like-for-like Gate“) is added to `docs/reference/glossar.md`, themed section plus alphabetical Schnellindex, so the vocabulary never outruns the place people look it up. Format and scope: `/write-docs` § "New terms go in the glossary".
+- **Don't re-request a Copilot review after every push** (owner, 2026-08-23; PR #406 collected ~15 requests in a day). Each request is a full re-read of the whole diff, and the bot then surfaces „previously missed" findings in files the push never touched — a one-line docstring fix draws a finding somewhere else, which draws another push, which draws another request. Request a fresh review only after a SUBSTANTIVE change (new behaviour, a reworked mechanism), and stop re-requesting once a round yields no new inline comments but only carried-over suppressed items: the field is grazed. A PR that is green with no open threads needs no further round — say so and let the owner merge.
 - **Prod-touching actions need explicit in-session confirmation first** (Cloud SQL DDL/queries, Secret Manager access, Cloudflare Access policies): name the exact action, resource, and any email/secret id, and ask before acting.
 - **Archive snapshots: create freely, never destroy** (`tools/dbsnapshot`, owner directive 2026-08-08). The archive holds the only copy of what no recomputation brings back — `bboxes` and `templates.raw_path`. Cloud SQL's own backups are instance-wide and keep 7 days; this project's failure mode is slower (a bad apply noticed weeks later), so the archive is what covers it.
   - **Take one freely, and DO take one before anything that can overwrite geometry**: `apply-laufform`, a migration with DROP/rewrite, a harvest with `replace`, any DDL — and after an authoring session in which letters were traced.
@@ -181,7 +187,7 @@ Code is MIT. **Data is not covered by the code license** — each source carries
 
 Three commit classes, kept strictly separate (see `docs/reference/datenablage.md` §1):
 
-1. **Committable:** `/data/sources/` (public-domain only, e.g. Loth 1866 SVG) and `/data/samples/own-hand/` (author's own copyright). Each gets a `SOURCE.md` with permalink, license, attribution, retrieval date.
+1. **Committable:** `/data/sources/` (public-domain only, e.g. Loth 1866 SVG) and `/data/samples/own-hand/` (author's own copyright). Each gets a `SOURCE.md` with permalink, license, attribution, retrieval date. Exception (owner decision 2026-08-22): the own-hand STRIP SCANS stay gitignored despite the owner's copyright — they are part of the reserved dataset, backed up to the private archive; only `SOURCE.md` + `README.md` are committed (`docs/proposals/eigenhand-erfassung.md` §8).
 2. **Gitignored:** `/data/corpora/` — only `SOURCE.md` + `fetch_corpus.py` are committed, never the data files. Pin DOI versions.
 3. **Mixed:** `/data/derived/from-cc-by/` is committable; `/data/derived/from-nc-sa/` is gitignored (NC-SA collides with MIT).
 

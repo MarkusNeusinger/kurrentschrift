@@ -151,8 +151,16 @@ minutes after push; the bot's login is exactly
   `gh pr view <num> --json reviews --jq '.reviews[] | "\(.author.login): \(.state)"'`
 - **Cloud:** the same `mcp__github__subscribe_pr_activity`
   subscription delivers the review as a webhook event — don't poll. To force a fresh pass
-  after a fix-push, call `mcp__github__request_copilot_review`; to
+  after a SUBSTANTIVE fix-push, call `mcp__github__request_copilot_review`; to
   read the current reviews use `mcp__github__pull_request_read`.
+
+**Do not request a review after every push** (owner, 2026-08-23; PR #406
+collected ~15 requests in a day). Each request re-reads the whole diff and
+the bot then raises „previously missed" findings in files the push never
+touched — a docstring fix draws a finding elsewhere, which draws a push,
+which draws a request. Request only after a substantive change, and stop
+once a round brings no new inline comments but only carried-over suppressed
+items. Green plus no open threads = done; report that and let the owner merge.
 
 **b2. Read the Codecov patch report** (arrives as a PR comment from the
 `codecov` bot once the backend coverage upload lands; only the backend
@@ -220,7 +228,8 @@ already be gone.
 - **Copilot reviews every push round.** A fix-push can spawn new
   threads on the changed lines; that's the loop working, not noise —
   but don't chase it more than a couple of rounds for cosmetic nits;
-  surface stalemates to the user.
+  surface stalemates to the user. And don't feed the loop by
+  re-requesting after every push (see §3b).
 - **Copilot runs can die silently.** The
   `copilot-pull-request-reviewer` check can end `cancelled` without
   delivering a review, and a re-request may spawn no new run at all
