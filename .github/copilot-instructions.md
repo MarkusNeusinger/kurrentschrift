@@ -121,6 +121,15 @@ agent working in this repo:
   `qualitaetsmetrik.md` §14): the chain solve is not bit-reproducible across
   thread environments, so cross-run comparisons are only valid within one
   pinned setting.
+- **Don't re-request a Copilot review after every push** (owner,
+  2026-08-23; PR #406 collected ~15 requests in a day). Each request is a
+  full re-read of the whole diff, and the bot then surfaces „previously
+  missed" findings in files the push never touched — a one-line docstring
+  fix draws a finding elsewhere, which draws another push, which draws
+  another request. Request a fresh review only after a SUBSTANTIVE change
+  (new behaviour, a reworked mechanism), and stop once a round yields no
+  new inline comments but only carried-over suppressed items. A PR that is
+  green with no open threads needs no further round.
 - **No AI-development disclosure on the public site** (owner directive):
   legal/about pages carry no „KI-gestützt entwickelt" notices.
 - **Legibility over period authenticity in UI** (owner Leitsatz): no broken
