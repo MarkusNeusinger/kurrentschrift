@@ -21,6 +21,9 @@ docs/proposals/eigenhand-erfassung.md). Four curation layers, merged by
 * ``english``     — a common-English layer beyond the rare-join hunting, so
                     modern mixed-language text stays writable (owner goal);
                     all ``lang: en``, filterable
+* ``zeichen``     — digits and punctuation in real text use (years, a date,
+                    a price, signs at words); detached glyphs, so they carry
+                    glyph-position Soll but no joins
 
 Frequency LISTS are never committed (quiz-wortbank.md §4 — protectable
 databases, often NC); this pool is an own, merely *informed* curation and
@@ -260,6 +263,11 @@ _RARE_JOIN_EN: list[PoolEntry] = [
     {"word": "welcome", "lang": "en", "note": "joins l>c, c>o"},
     {"word": "obvious", "lang": "en", "note": "joins b>v, v>i"},
     {"word": "awkward", "lang": "en", "note": "joins w>k, k>w"},
+    {
+        "word": "Iraq",
+        "lang": "en",
+        "note": "bare q without u — the only real-text carrier of the q glyph outside the qu ligature",
+    },
 ]
 
 _RARE_JOIN_ENTRIES = _RARE_JOIN_DE + _RARE_JOIN_EN
@@ -348,6 +356,12 @@ _COMMON_DE_WORDS = [
     "gefährlich",
     "fährt",
     "Gefängnis",
+    # capital-C carriers — no other pool word starts with C (progression
+    # finding 2026-08-22); the capital blocks the ch ligature, so these
+    # also cover the C>h and C>o joins.
+    "Computer",
+    "Chef",
+    "Camping",
 ]
 
 # --- common English beyond the rare-join hunting (lang: en, filterable) ------
@@ -511,6 +525,32 @@ _COMMON_EN_WORDS = [
     "perhaps",
 ]
 
+# --- digits and punctuation in REAL text use (owner, 2026-08-22: "Zahlen und
+# Sonderzeichen brauchen wir am Ende auch") — never fantasy sequences: years,
+# a date, a price, signs as they appear in letters and newspapers. Digits and
+# punctuation are detached glyphs (no joins), so they carry glyph-position
+# Soll only. Together the number entries cover every digit 0-9.
+_ZEICHEN_ENTRIES: list[PoolEntry] = [
+    {"word": "1866", "note": "Jahreszahl der Loth-Tafel; Ziffern 1 8 6"},
+    {"word": "1922", "note": "Jahreszahl der Sütterlin-Platten; Ziffern 1 9 2"},
+    {"word": "2026", "note": "Jahreszahl; Ziffern 2 0 6"},
+    {"word": "47", "note": "Ziffern 4 7"},
+    {"word": "3,50", "note": "Preisangabe; Komma zwischen Ziffern, Ziffern 3 5 0"},
+    {"word": "31.12.1900", "note": "Datum; Punkt zwischen Ziffern", "era": "historic"},
+    {"word": "§12", "note": "Paragraphenzeichen mit Zahl"},
+    {"word": "(1922)", "note": "Klammern um eine Jahreszahl"},
+    {"word": "ja!", "note": "Ausrufezeichen am Wort"},
+    {"word": "nein?", "note": "Fragezeichen am Wort"},
+    {"word": "also:", "note": "Doppelpunkt am Wort"},
+    {"word": "erstens;", "note": "Semikolon am Wort"},
+    {"word": "Ende.", "note": "Punkt am Satzende"},
+    {"word": "„wohl“", "note": "deutsche Anführungszeichen"},
+    # Apostrophe carrier is English on purpose: German elisions ("geht's")
+    # end in s, and the positional rule would print a wrong final ſ hint.
+    {"word": "don’t", "lang": "en", "note": "Apostroph in der Verkürzung"},
+    {"word": "E-Mail", "note": "Bindestrich (geschrieben als historischer Doppelstrich)"},
+]
+
 
 def pool_entries() -> list[PoolEntry]:
     """The merged pool: one entry per distinct word (case-sensitive), tags unioned.
@@ -553,6 +593,8 @@ def pool_entries() -> list[PoolEntry]:
         add(word, "haeufig")
     for word in _COMMON_EN_WORDS:
         add(word, "english", {"lang": "en"})
+    for entry in _ZEICHEN_ENTRIES:
+        add(entry["word"], "zeichen", entry)
 
     out: list[PoolEntry] = []
     for entry in sorted(merged.values(), key=lambda e: e["word"]):

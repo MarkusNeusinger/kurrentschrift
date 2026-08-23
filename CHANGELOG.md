@@ -14,6 +14,22 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Eigenhand coverage progression, a digits-and-punctuation pool layer,
+  and strip-plan wave 1.** `tools/eigenhand/progression.py` answers "after
+  10, 20, … strips, how often has every glyph and join been planned?" with
+  cumulative per-checkpoint counts (bucketed klein · gross · ligatur ·
+  ziffer · zeichen), quotas against the shared Soll model and a `--json`
+  export for repeatable optimisation loops. Coverage now counts detached
+  glyphs (digits, punctuation) as glyph-position items, and the pool gains
+  a `zeichen` layer of real-text carriers (years, a date, a price, signs
+  at words) plus capital-C and bare-q carriers the progression run
+  surfaced as gaps. Wave 1 of the strip plan (strips 61–120) ships
+  committed: after 120 planned strips every registry glyph — all capitals,
+  all ten digits, all thirteen signs — has at least one planned recording
+  (662 distinct joins, 99.5 % weighted Erstbeleg quota). The PDF writer's
+  literal-string escape is now WinAnsi-aware so German quotes, dashes and
+  the typographic apostrophe survive onto printed labels.
+
 - **Eigenhand-Erfassung: the complete tool chain for collecting the
   author's own hand as training data** (`tools/eigenhand/`, proposal
   `docs/proposals/eigenhand-erfassung.md`, glossary section

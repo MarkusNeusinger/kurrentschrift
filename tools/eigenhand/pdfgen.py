@@ -164,11 +164,22 @@ def _rgb(hex_color: str) -> tuple[float, float, float]:
 
 
 def _escape(text: str) -> str:
+    """PDF literal-string escape, WinAnsi-aware.
+
+    The font is WinAnsi (cp1252), so the German quotes „ “ , the dashes – —
+    and the typographic apostrophe ’ DO have byte encodings — map them via
+    cp1252 instead of dropping everything above 0xFF (the pdf.ts twin only
+    ever prints ASCII+umlauts and never needed this).
+    """
     out = []
     for ch in text:
         if ord(ch) > 0xFF:
-            out.append("?")
-        elif ch in ("\\", "(", ")"):
+            try:
+                ch = chr(ch.encode("cp1252")[0])
+            except UnicodeEncodeError:
+                out.append("?")
+                continue
+        if ch in ("\\", "(", ")"):
             out.append("\\" + ch)
         else:
             out.append(ch)

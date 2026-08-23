@@ -48,11 +48,17 @@ def join_items(word: str) -> list[str]:
 
 
 def glyph_position_items(word: str) -> list[str]:
-    """The ordered glyph-position items of one shaped word (letters only)."""
+    """The ordered glyph-position items of one shaped word — EVERY keyed slot.
+
+    Letters and ligatures, but also the detached glyph classes (digits,
+    punctuation, ``joins=False``): the hand has to learn ``7`` and ``§`` too
+    (owner, 2026-08-22), so they carry Soll like any glyph. They still
+    contribute no JOIN items — the composer places them by ink clearance.
+    """
     return [
         f"{slot.key}{POSITION_SEP}{slot.position}"
         for slot in shape_word(word)
-        if slot.key is not None and slot.joins and slot.position is not None
+        if slot.key is not None and slot.position is not None
     ]
 
 

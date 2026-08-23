@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from tools.eigenhand import coverage, pool
+from tools.eigenhand import coverage, pool, progression
 from tools.eigenhand.store import STREIFEN_JSON
 
 
@@ -88,3 +88,53 @@ class TestStripPlan:
         assert all(plan["strips"][sid]["words"] for sid in ids)
         listed = [sid for wave in plan["waves"] for sid in wave["strips"]]
         assert sorted(listed) == sorted(ids)
+
+
+class TestDetachedGlyphs:
+    """Digits and punctuation carry glyph-position Soll but never joins."""
+
+    def test_digits_carry_positions_but_no_joins(self):
+        assert coverage.join_items("1922") == []
+        assert coverage.glyph_position_items("1922") == ["1@initial", "9@medial", "2@medial", "2@final"]
+
+    def test_punctuation_at_a_word(self):
+        items = coverage.glyph_position_items("ja!")
+        assert "exclam@initial" in items
+        assert coverage.join_items("ja!") == ["j>a"]
+
+
+class TestProgression:
+    PLAN = {
+        "format": 1,
+        "waves": [{"wave": 0, "strips": ["S0001", "S0002", "S0003"]}],
+        "strips": {
+            "S0001": {"wave": 0, "words": ["lesen"]},
+            "S0002": {"wave": 0, "words": ["1922"]},
+            "S0003": {"wave": 0, "words": ["Wer"]},
+        },
+    }
+
+    def test_classify_buckets(self):
+        assert progression.classify_key("a") == "klein"
+        assert progression.classify_key("longs") == "klein"
+        assert progression.classify_key("W") == "gross"
+        assert progression.classify_key("Ue") == "gross"
+        assert progression.classify_key("ch") == "ligatur"
+        assert progression.classify_key("7") == "ziffer"
+        assert progression.classify_key("quote-low") == "zeichen"
+
+    def test_checkpoints_are_cumulative_and_include_the_final_partial(self):
+        points = progression.checkpoints(self.PLAN, step=2, universe_items=None)
+        assert [p["strips"] for p in points] == [2, 3]
+        first, last = points
+        assert first["glyphs"]["ziffer"] == {"1": 1, "2": 2, "9": 1}
+        assert first["glyphs"]["gross"] == {}
+        assert last["glyphs"]["gross"] == {"W": 1}
+        assert last["glyphs"]["klein"]["e"] == 3  # lesen + Wer
+        assert last["joins_distinct"] >= first["joins_distinct"]
+
+    def test_quotas_appear_with_a_universe(self):
+        points = progression.checkpoints(self.PLAN, step=3, universe_items={"l>e": 10.0, "x>y": 5.0})
+        quotas = points[-1]["quotas"]
+        assert 0.0 < quotas["erstbeleg_weighted"] < 1.0  # l>e covered, x>y not
+        assert quotas["erstbeleg"] <= 1.0

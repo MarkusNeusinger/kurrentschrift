@@ -251,7 +251,11 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   Offline-HTML-Seite, Ergebnis einspielen: nur angenommene Zeilen werden
   als Fassungen abgelegt (idempotent).
 - **`report`** — Bestandsbericht (Erstbeleg-/Ausbau-Quote, Fehlstellen,
-  Druckvorschlag); **`redo`** stellt Streifen neu an (`--retire` zieht
+  Druckvorschlag); **`progression`** — die Plan-Sicht dazu: kumulierte
+  Zählungen je Glyphe (klein · groß · Ligatur · Ziffer · Zeichen) und je
+  Übergang an Checkpoints alle N Streifen, mit `--json` für Auswertungen
+  („nach 10, 20, … Streifen — wie oft ist jede Glyphe dran?“);
+  **`redo`** stellt Streifen neu an (`--retire` zieht
   alte Fassungen zurück); **`snapshot`** sichert inkrementell und
   create-only ins private Archiv (`KURRENTSCHRIFT_ARCHIVE`, dieselbe
   Clone wie die DB-Snapshots; dbsnapshot-Disziplin inkl.

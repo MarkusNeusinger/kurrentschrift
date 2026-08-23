@@ -111,6 +111,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--stamp", default=None, help="snapshot directory name (default: UTC now; explicit for tests)")
     args = ap.parse_args(argv)
 
+    kartei_file = hand_dir(args.hand) / "kartei.json"
+    if not kartei_file.exists():
+        # load_kartei would hand back an empty in-memory default — a snapshot
+        # of nothing must not look like a backup (Copilot finding, PR #406).
+        raise SystemExit(f"{kartei_file} missing — nothing recorded for this hand yet (run sheet/ingest/apply first)")
     kartei = load_kartei(args.hand)
     total_fassungen = _verify_checksums(args.hand, kartei)
 
@@ -131,7 +136,7 @@ def main(argv: list[str] | None = None) -> int:
     target.mkdir(parents=True)
 
     source = hand_dir(args.hand)
-    shutil.copy2(source / "kartei.json", target / "kartei.json")
+    shutil.copy2(kartei_file, target / "kartei.json")
     shutil.copy2(STREIFEN_JSON, target / "streifenplan.json")
 
     copied = 0

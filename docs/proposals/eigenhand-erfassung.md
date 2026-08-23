@@ -73,7 +73,13 @@ Selten-Join-Wörter (`rare-join`: Komposita, Lehnwörter, Englisch) plus
 zwei Nachschichten aus dem ersten `gaps`-Lauf (`haeufig`:
 Hochfrequenz-Funktionswörter, die eine Lese-Quiz-Kuration systematisch
 auslässt — du, jetzt, schon, über, hätte, wäre, müssen …; `english`:
-Alltags-Englisch für das Zeitungs-Ziel, alles `lang: en` und filterbar).
+Alltags-Englisch für das Zeitungs-Ziel, alles `lang: en` und filterbar;
+`zeichen`: Ziffern und Interpunktion im echten Textgebrauch —
+Jahreszahlen, ein Datum, ein Preis, Zeichen am Wort — als abgesetzte
+Glyphen mit Positions-Soll, ohne Übergänge). Die Plan-Sicht „wie oft ist
+jede Glyphe nach N Streifen dran“ liefert
+`tools/eigenhand/progression.py` (Checkpoints alle 10 Streifen, `--json`
+für Auswertungen).
 
 **Der Übergangsraum ist das Soll-Universum:** alle geformten
 glyph_key-Übergänge und Glyph-Positionen, die in echtem Wortschatz
