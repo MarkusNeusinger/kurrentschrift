@@ -56,7 +56,7 @@ def _fixed_layout() -> dict:
 # Pinned bytes of _fixed_layout() — deterministic by construction (no clock,
 # no git, no repo state). A change here is a REAL output change: re-pin only
 # deliberately, with the diff understood.
-GOLDEN_SHA256 = "8497acef0d753a5a02a605da3dea871e205b517c5177fc0bf85f2e0673d56de8"
+GOLDEN_SHA256 = "08a8c4df643147f206268cc985c85490f4d12faf4ad6cf124c0a91c0a2b1da56"
 
 
 class TestRenderedPdf:

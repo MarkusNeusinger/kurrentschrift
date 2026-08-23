@@ -328,6 +328,29 @@ class TestSiebungPage:
         assert "Stift auf dem Blatt: Haken" in html
 
 
+class TestPrintingAStack:
+    """A writing session prints several Bögen at once (owner, 2026-08-23)."""
+
+    def test_no_strip_is_printed_twice_across_the_stack(self, dataroot):
+        from tools.eigenhand import sheet
+
+        sheet.main(["--hand", "mn-suetterlin", "--sheets", "4", "--date", "2026-08-23"])
+        blaetter = hand_dir("mn-suetterlin") / "blaetter"
+        printed = [
+            row["strip"]
+            for folder in sorted(blaetter.iterdir())
+            for row in json.loads((folder / "layout.json").read_text(encoding="utf-8"))["rows"]
+        ]
+        assert len(sorted(blaetter.iterdir())) == 4
+        assert len(printed) == len(set(printed)), "a strip was printed on two sheets of one stack"
+
+    def test_strips_and_sheets_together_are_refused(self, dataroot):
+        from tools.eigenhand import sheet
+
+        with pytest.raises(SystemExit):
+            sheet.main(["--hand", "mn-suetterlin", "--sheets", "2", "--strips", "S0001", "--date", "2026-08-23"])
+
+
 class TestCropName:
     """The crop name from payload.json becomes a path in page.py AND apply.py."""
 

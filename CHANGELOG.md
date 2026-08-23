@@ -14,6 +14,24 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Buffer in every box, faint rulings, a printed legend, and stacks of
+  sheets.** Five corrections from writing practice (owner, 2026-08-23):
+  the packing filled rows to 180.0 of 180 mm, so a word could run out of
+  room mid-stroke — it now keeps 15 mm in reserve and `boxes_for_row`
+  hands that reserve back to the boxes in proportion to word length, so
+  every word gets 10–44 % over its estimate rather than only the last one
+  on the line. The advance model was raised with it (a Sütterlin lowercase
+  is a full x-height, not 0.85), which re-baked the strip plan — nothing
+  had been written yet, so this was the last moment for it. The sheet now
+  prints its own faint `CAPTURE_STYLES` ruling theme instead of the app's
+  reading theme, every value well above the importer's ink threshold, so a
+  printed line can never count as ink; the page is marked identically at
+  both ends (a vertical tick above the first strip, mirroring the one
+  below the last); the verdict caption moved above the first cut line
+  instead of sitting level with the first strip; the label hints `|` and
+  `*` are spelled out in a footer legend; and `sheet.py --sheets N` prints
+  a whole session's stack in one call, with no strip on two sheets.
+
 - **A cut format for the strips: wider row gaps plus cut marks in the
   margins ("Schnittband" · "Schnittmarken").** Every row now carries a cut
   rectangle of fixed columns and fixed paddings, so the strips of a style

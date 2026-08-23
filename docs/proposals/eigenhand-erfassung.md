@@ -142,11 +142,29 @@ Beschriftungszone + 12 mm Abstand). Presets aus
 `app/src/lib/lineatur.ts` portiert und per Test gepinnt (Sütterlin 1:1:1
 bei 6 mm x-Höhe senkrecht; Offenbacher 2:3:2/5 mm/77°; Kurrent
 2:1:2/2,5 mm/65° mit Schräglagen-Hilfslinien im Kasten). Sütterlin-Pitch
-34 mm → **Default 7 Zeilen** (`--rows` konfigurierbar). Kastenbreite =
-8 mm Vorlauf + Σ advance(glyph_key) in
-x-Höhen (`geometry.py::ADVANCE_XH`, Startwerte; **Kalibrier-Schleife**:
-nach dem ersten beschriebenen Blatt werden die Konstanten gegen die
-gemessenen Tintenbreiten nachgezogen).
+34 mm → **Default 7 Zeilen** (`--rows` konfigurierbar); die erste Zeile
+beginnt bei y = 26 mm, damit die obere Schnittmarke Abstand zu den
+Passmarken hält.
+
+**Kastenbreite mit Puffer überall** (Owner, 2026-08-23: „ich will nicht
+das Wort ruinieren, weil ich am Ende nicht mehr hingekommen bin").
+Grundbreite = 10 mm Vorlauf + Σ advance(glyph_key) in x-Höhen
+(`geometry.py::ADVANCE_XH`, Startwerte; **Kalibrier-Schleife**: nach dem
+ersten beschriebenen Blatt werden die Konstanten gegen die gemessenen
+Tintenbreiten nachgezogen). Zwei Reserven darüber:
+
+* Die **Packung** hält `PACK_SLACK_MM` = 15 mm der Zeile frei. Der erste
+  Plan packte bis 180,0 von 180 mm — bei einer Schätzung, die noch keine
+  echte Tinte gesehen hat, ist das keine Reserve, sondern keine.
+* `boxes_for_row` gibt diesen Rest an die **Kästen zurück**, verteilt
+  proportional zur Wortlänge. Jedes Wort bekommt also Luft (10–44 % über
+  der Schätzung), nicht nur das letzte der Zeile; das lange Wort, bei dem
+  die Schätzung am meisten danebenliegen kann, bekommt den größten Anteil.
+
+Die Advance-Startwerte wurden am 2026-08-23 angehoben (Standard-Kleinbuchstabe
+0,85 → 1,00 x-Höhe): bei 6 mm x-Höhe misst ein rundes senkrechtes `n` mit
+Auslauf eher 6 mm als 5,1 — und eine ungeübte Hand schreibt größer, nicht
+kleiner. Zu breit kostet ein Wort je Zeile, zu schmal kostet die Zeile.
 
 **Schnittband und Schnittmarken (Owner, 2026-08-23):** jede Zeile hat ein
 **Schnittband** — das Rechteck, zu dem der Streifen geschnitten wird.
@@ -186,11 +204,40 @@ Stiftbewegung; der Preis ist, dass eine vergessene Marke als „nicht ok“
 liest — die harmlose Richtung, denn der Streifen wandert dann nur zurück
 in die Druck-Warteschlange, statt ungeprüft abgelegt zu werden.
 
+**Sehr schwache Lineatur** (Owner, 2026-08-23): der Bogen druckt nicht
+das `druck`-Thema der App, sondern ein eigenes Erfassungs-Thema
+(`geometry.py::CAPTURE_STYLES`) — Grundlinie hellgrau statt fast schwarz,
+Ober-/Unterlinie noch heller, das Schräglagengitter fast Papier. Jeder
+Linienwert liegt deutlich über der Tintenschwelle des Imports
+(`ingest.INK_THRESHOLD`), eine gedruckte Linie kann also nie als Tinte
+gezählt werden — auch dann nicht, wenn die Maskierung sie verfehlt. Dunkel
+bleibt nur, was der SCHREIBER lesen muss: Labels, Streifen-ID, Kopf,
+Stiftkästchen und Schnittmarken; alle liegen außerhalb des Schreibbands
+oder werden maskiert.
+
+Gemessen (Rec.709-Luminanz gegen `INK_THRESHOLD` = 0,55): Grundlinie
+0,10 → **0,65**, Mittellinie 0,41 → 0,75, Ober-/Unterlinie 0,82,
+Schräglagengitter 0,88. Grund- und Mittellinie lagen vorher UNTER der
+Schwelle, wären also als Tinte gezählt worden — das war ein echter Fehler,
+kein Schönheitsfehler. Restrisiko: die Grundlinie hat mit +0,10 den
+knappsten Abstand, und sie muss sichtbar bleiben, weil an ihr geschrieben
+wird; ein Scanner mit Auto-Kontrast oder ein Foto im Schatten kann diesen
+Abstand aufzehren. Für QC ist das doppelt abgesichert (Maskierung ±0,4 mm),
+für die spätere Tinten-Extraktion steht die Linie aber im `streifen.png`.
+**Rescue-Pfad, falls sich das als Problem zeigt:** Lineatur in hellem Cyan
+drucken, in FARBE scannen und den Kanal wegrechnen — dann verschwindet sie
+restlos, unabhängig von Kontrast und Belichtung (der Rot-Kanal einer
+cyanfarbenen Linie ist praktisch Papier). Das ist ein Druck- plus
+Kanal-Wahl-Umbau, kein neues Verfahren; erst messen, dann bauen.
+
 Klartext-Labels stehen in normaler Latin-Type unter den Kästen
 (Leitsatz Lesbarkeit; WinAnsi hat ohnehin kein ſ). Als Schreib-Hinweis
-zeigt das Label die Fugen-Form, wo eine existiert (`Amts*|zeit`, `*` =
-erzwungenes Schluss-s) — der eine Fall, in dem das Shaping von den
-einmal gelernten Standardregeln abweicht; `--no-hints` schaltet ab.
+zeigt das Label die Fugen-Form, wo eine existiert (`Donners*|tag`: `|` =
+Wortfuge, `*` = rundes Schluss-s statt langem ſ) — der eine Fall, in dem
+das Shaping von den einmal gelernten Standardregeln abweicht;
+`--no-hints` schaltet ab. Die beiden Zeichen stehen als **Legende in der
+Fußzeile** jedes Bogens, der sie verwendet (Owner fragte 2026-08-23, was
+`Donners*|tag` bedeutet — was erklärt werden muss, gehört gedruckt).
 
 **Mehrfach-Zeilen (Versuche):** derselbe Streifen darf mehrfach auf einem
 Bogen stehen (`--repeat N` oder explizit `--strips S0037 S0037 …`);

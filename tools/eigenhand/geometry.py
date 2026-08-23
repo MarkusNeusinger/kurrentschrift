@@ -62,7 +62,7 @@ CUT_TICK_GAP_MM = 1.5
 # mark would otherwise sit level with the top Passmarken, and a hairline that
 # blurs into a Passmarke on a scan drags its centroid — and with it every
 # millimetre the importer computes.
-TOP_MARGIN_MM = 22.0
+TOP_MARGIN_MM = 26.0
 # Per-row verdict box in the RIGHT margin (owner, 2026-08-23: mark each
 # strip ok/not-ok with the pen right away), OUTSIDE the Schnittband: the tick
 # is bookkeeping, not training data, so it must not end up on the strip. The
@@ -77,7 +77,12 @@ MARK_BOX_MM = 5.0
 MARK_COL_X0_MM = 202.0
 FOOTER_ZONE_MM = 12.0
 BOX_GAP_MM = 3.0
-BOX_LEAD_MM = 8.0  # entry room before the first letter (Anstrich) + slack
+BOX_LEAD_MM = 10.0  # entry room before the first letter (Anstrich) + slack
+# The packing never fills a row to the edge: the width model is an ESTIMATE
+# until the Kalibrier-Schleife has seen real ink, and a row packed to
+# 180.0 of 180 mm (as the first plan was) has nothing left when the estimate
+# is 5 % low. This reserve is what a hand writing larger than the model gets.
+PACK_SLACK_MM = 15.0
 BOX_OVERHANG_MM = 1.0  # box edges extend past ascender/descender lines
 
 
@@ -118,38 +123,68 @@ ROLE_STYLES: dict[str, tuple[str, float, tuple[float, float] | None]] = {
     "meta": ("#6B6A63", 0.0, None),  # header/footer/row-id text (color only)
 }
 
+# What a CAPTURE sheet prints instead (owner, 2026-08-23: "the guide lines
+# matter, but they can be very faint — easy to remove from the scan, no
+# influence on the word statistics or the ink fitting"). The app's `druck`
+# theme above is tuned for reading on screen and paper; a training sheet is
+# read once, by a hand that already knows where the lines are, and then has
+# to disappear.
+#
+# Every ruling value here is well above ingest.INK_THRESHOLD (0.55, i.e.
+# #8C8C8C) in luminance, so no printed line can ever be counted as ink even
+# if the masking missed it — the faintest, the Schräglage grid, sits near the
+# paper. Only what the WRITER must read stays dark: labels, ids, header, the
+# verdict box and the cut marks (all outside the writing band or masked).
+CAPTURE_STYLES: dict[str, tuple[str, float, tuple[float, float] | None]] = {
+    **ROLE_STYLES,
+    "baseline": ("#A8A6A0", 0.22, None),  # the one line the hand really needs
+    "waist": ("#C0BEB8", 0.15, None),
+    "ascender": ("#D2D0CA", 0.12, (1.6, 1.6)),
+    "descender": ("#D2D0CA", 0.12, (1.6, 1.6)),
+    "slant": ("#E2E0DA", 0.10, (1.0, 1.6)),
+    "box": ("#CFCDC7", 0.12, None),
+}
+
 # Slot advances in x-height units — the physical width model of the packing
 # and the box generator: box = BOX_LEAD_MM + sum(advance) * x_height. Start
 # values, refined by the Kalibrier-Schleife against the first written sheet
-# (report --calibrate); deliberately generous so early boxes never squeeze.
-ADVANCE_DEFAULT_XH = 0.85
+# (report --calibrate).
+#
+# Raised across the board on 2026-08-23 (owner: "is that enough room for a
+# word like Galoppieren?"). It was not: at the old values a Sütterlin
+# lowercase came to 0.85 x-height ≈ 5.1 mm, but at 6 mm x-height a round
+# upright `n` with its exit stroke measures nearer 6 mm — and an unpractised
+# hand writes larger, not smaller. The default is now a full x-height, and
+# the packing keeps PACK_SLACK_MM in reserve on top. Too wide costs a word
+# per row; too narrow costs the row.
+ADVANCE_DEFAULT_XH = 1.00
 ADVANCE_XH: dict[str, float] = {
     # narrow lowercase
-    "i": 0.50,
-    "j": 0.50,
-    "l": 0.55,
-    "longs": 0.55,
-    "t": 0.60,
-    "f": 0.60,
-    "r": 0.65,
-    "e": 0.65,
-    "s": 0.65,
-    "c": 0.70,
+    "i": 0.55,
+    "j": 0.55,
+    "l": 0.60,
+    "longs": 0.60,
+    "t": 0.70,
+    "f": 0.70,
+    "r": 0.75,
+    "e": 0.75,
+    "s": 0.75,
+    "c": 0.80,
     # wide lowercase
-    "m": 1.50,
-    "w": 1.45,
+    "m": 1.75,
+    "w": 1.70,
     # ligatures
-    "ch": 1.35,
-    "ck": 1.35,
-    "tz": 1.25,
-    "longst": 1.15,
-    "qu": 1.50,
-    "sz": 1.10,
+    "ch": 1.55,
+    "ck": 1.55,
+    "tz": 1.45,
+    "longst": 1.35,
+    "qu": 1.75,
+    "sz": 1.30,
     # capitals (defaults for the rest via _advance_of)
-    "M": 1.70,
-    "W": 1.70,
+    "M": 2.00,
+    "W": 2.00,
 }
-ADVANCE_CAPITAL_XH = 1.30
+ADVANCE_CAPITAL_XH = 1.60
 
 
 def _advance_of(key: str) -> float:
@@ -276,18 +311,23 @@ def cut_ticks(cut: tuple[float, float, float, float]) -> list[tuple[float, float
 
 
 def page_cut_ticks(cuts: list[tuple[float, float, float, float]]) -> list[tuple[float, float, float, float]]:
-    """Ticks for the two vertical cut lines, in the free paper BETWEEN strips.
+    """Ticks for the two vertical cut lines: above the first strip, in every
+    gap, and below the last.
 
-    The vertical cuts are the same x for every row, so they are marked in the
-    gaps rather than per row — and deliberately not at the page top, where a
-    hairline 1 mm from a Passmarke could blur into it on a scan and drag the
-    fiducial's centroid (and with it the whole rectification) sideways.
+    The vertical cuts are the same x for every row, so they are marked between
+    the strips rather than per row. Both ends of the page carry a pair, so it
+    reads the same top and bottom (owner, 2026-08-23) — TOP_MARGIN_MM is set
+    so the top pair keeps clear of the Passmarken: a hairline that blurs into
+    one on a scan drags its centroid, and with it the rectification.
     """
     if not cuts:
         return []
     ordered = sorted(cuts, key=lambda c: c[1])
     half = CUT_TICK_MM / 2
-    ticks: list[tuple[float, float, float, float]] = []
+    top = ordered[0][1]
+    ticks: list[tuple[float, float, float, float]] = [
+        (x, top - CUT_TICK_GAP_MM - CUT_TICK_MM, x, top - CUT_TICK_GAP_MM) for x in (CUT_X0_MM, CUT_X1_MM)
+    ]
     for upper, lower in zip(ordered, ordered[1:], strict=False):
         middle = (upper[3] + lower[1]) / 2
         ticks += [(x, middle - half, x, middle + half) for x in (CUT_X0_MM, CUT_X1_MM)]
@@ -318,7 +358,7 @@ def pack_words_into_rows(words: list[str], preset: ScriptPreset, margin_mm: floa
     later word forward when it still fits — deterministic, order-stable
     otherwise.
     """
-    usable = usable_row_width_mm(margin_mm)
+    usable = usable_row_width_mm(margin_mm) - PACK_SLACK_MM
     remaining = list(words)
     rows: list[list[str]] = []
     while remaining:
@@ -347,14 +387,27 @@ def pack_words_into_rows(words: list[str], preset: ScriptPreset, margin_mm: floa
 
 
 def boxes_for_row(words: list[str], preset: ScriptPreset, margin_mm: float = 15.0) -> list[tuple[float, float]]:
-    """Left/right x (mm) of each word box in one row, clamped to the margins."""
+    """Left/right x (mm) of each word box in one row, clamped to the margins.
+
+    The packing left PACK_SLACK_MM unused; that reserve is handed BACK here,
+    spread over the boxes in proportion to their estimated width, so every
+    word gets room rather than only the last one on the line (owner,
+    2026-08-23: "there has to be buffer everywhere — I don't want to ruin a
+    word because I ran out of space at the end"). A long word gets the larger
+    share of it, which is where the estimate can be off the most.
+    """
     usable = usable_row_width_mm(margin_mm)
+    widths = [min(estimate_word_width_mm(word, preset.x_height_mm), usable) for word in words]
+    gaps = BOX_GAP_MM * (len(words) - 1)
+    spare = usable - gaps - sum(widths)
+    if spare > 0 and sum(widths) > 0:
+        widths = [w + spare * w / sum(widths) for w in widths]
+
     x = margin_mm
     out: list[tuple[float, float]] = []
-    for i, word in enumerate(words):
-        if i:
+    for index, width in enumerate(widths):
+        if index:
             x += BOX_GAP_MM
-        width = min(estimate_word_width_mm(word, preset.x_height_mm), usable)
         x1 = min(x + width, margin_mm + usable)
         out.append((x, x1))
         x = x1

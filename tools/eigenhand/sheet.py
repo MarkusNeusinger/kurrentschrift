@@ -46,6 +46,9 @@ HEADER_SIZE_MM = 3.5
 FOOTER_SIZE_MM = 2.8
 MARK_CAPTION_SIZE_MM = 2.4
 MARK_CAPTION = "ok"  # one box per row: ticked = ok, empty = not ok
+# The label hints, spelled out on the sheet (owner asked what Donners*|tag
+# means — if it needs asking, it needs printing).
+LEGEND = "| = Wortfuge (zusammengesetztes Wort)   * = rundes s statt langem ſ"
 
 
 def _git_commit() -> str:
@@ -191,7 +194,7 @@ def build_layout(
 
 def render_pdf(layout: dict) -> bytes:
     """The printable Bogen from its layout sidecar (same numbers, one source)."""
-    style = geometry.ROLE_STYLES
+    style = geometry.CAPTURE_STYLES  # faint rulings, not the app's reading theme
     preset = geometry.PRESETS[layout["style"]]
     rects: list[pdfgen.Rect] = []
     lines: dict[str, list[pdfgen.Line]] = {
@@ -215,9 +218,12 @@ def render_pdf(layout: dict) -> bytes:
     right_header = f"{machine_id} · {layout['provenance']['date']}"
     header_x = geometry.A4_WIDTH_MM - MARGIN_MM - pdfgen.helv_width_mm(right_header, HEADER_SIZE_MM)
     texts.append(pdfgen.Text(header_x, 11.0, HEADER_SIZE_MM, right_header, style["meta"][0]))
-    # Column caption for the verdict boxes, printed once above the first row.
+    # Column caption for the verdict boxes, printed once ABOVE the first cut
+    # line (owner, 2026-08-23) — sitting below it would put the caption level
+    # with the first strip, where it reads as belonging to that row.
     if layout["rows"]:
-        caption_y = layout["rows"][0]["band_mm"]["asc_top"] - 1.5
+        first = layout["rows"][0]
+        caption_y = (first["cut_mm"][1] if first.get("cut_mm") else first["band_mm"]["asc_top"]) - 1.5
         rect = layout["rows"][0]["mark_mm"]
         centre = (rect[0] + rect[2]) / 2 - pdfgen.helv_width_mm(MARK_CAPTION, MARK_CAPTION_SIZE_MM) / 2
         texts.append(pdfgen.Text(centre, caption_y, MARK_CAPTION_SIZE_MM, MARK_CAPTION, style["meta"][0]))
@@ -281,6 +287,12 @@ def render_pdf(layout: dict) -> bytes:
     for tx0, ty0, tx1, ty1 in geometry.page_cut_ticks(page_cuts):
         lines["cut"].append(pdfgen.Line(tx0, ty0, tx1, ty1, cut_color, cut_width, None))
 
+    # Legend for the two hint marks in the labels — they are the ONE place the
+    # sheet asks for something the default shaping rules do not give, so the
+    # sheet has to say what they mean rather than assume the writer remembers.
+    if any(any(mark in box["label"] for mark in ("*", "|")) for row in layout["rows"] for box in row["boxes"]):
+        texts.append(pdfgen.Text(MARGIN_MM, geometry.A4_HEIGHT_MM - 14.0, FOOTER_SIZE_MM, LEGEND, style["meta"][0]))
+
     prov = layout["provenance"]
     footer_left = f"kurrentschrift eigenhand · {prov['commit'] or 'no-commit'} · cfg {prov['config_hash']}"
     texts.append(pdfgen.Text(MARGIN_MM, geometry.A4_HEIGHT_MM - 9.0, FOOTER_SIZE_MM, footer_left, style["meta"][0]))
@@ -303,11 +315,27 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--strips", nargs="*", default=None, help="explicit strip ids (override the queue; may repeat)")
     ap.add_argument("--date", required=True, help="print date, ISO (explicit for deterministic output)")
     ap.add_argument("--no-hints", action="store_true", help="plain word labels without the Fugen hint form")
+    ap.add_argument("--sheets", type=int, default=1, help="print this many Bögen in one go (default: %(default)s)")
     args = ap.parse_args(argv)
 
     style = args.style or style_of_hand(args.hand)
     if style not in geometry.PRESETS:
         raise SystemExit(f"unknown style {style!r}")
+    if args.sheets < 1:
+        ap.error("--sheets must be at least 1")
+    if args.sheets > 1 and args.strips:
+        ap.error("--strips names the rows of ONE sheet; use it without --sheets")
+
+    # A writing session is a stack of sheets, not one (owner, 2026-08-23).
+    # Each pass records its Bogen in the Kartei before the next one selects,
+    # so the queue moves on and no strip is printed twice in the same stack.
+    printed = [_print_one_sheet(args, style) for _ in range(args.sheets)]
+    if args.sheets > 1:
+        print(f"{len(printed)} Bögen: {', '.join(printed)}")
+    return 0
+
+
+def _print_one_sheet(args: argparse.Namespace, style: str) -> str:
     plan = load_plan(STREIFEN_JSON)
     kartei = load_kartei(args.hand, style)
     rows = args.rows or geometry.max_rows(geometry.PRESETS[style], MARGIN_MM)
@@ -340,7 +368,7 @@ def main(argv: list[str] | None = None) -> int:
     }
     save_kartei(args.hand, kartei)
     print(f"wrote {out_dir / 'bogen.pdf'} ({len(pdf):,} bytes), {len(layout['rows'])} rows: {' '.join(strip_rows)}")
-    return 0
+    return sheet_id
 
 
 if __name__ == "__main__":

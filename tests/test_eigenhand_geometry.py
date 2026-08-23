@@ -82,6 +82,29 @@ class TestPacking:
             width += geometry.BOX_GAP_MM * (len(row) - 1)
             assert width <= usable + 1e-9
 
+    def test_packing_keeps_the_reserve_free(self):
+        # The first plan packed rows to 180.0 of 180 mm. The width model is an
+        # estimate until real ink calibrates it, so the packing now stops
+        # PACK_SLACK_MM short (owner, 2026-08-23: "there has to be buffer").
+        preset = geometry.PRESETS["suetterlin"]
+        words = ["Galoppieren", "das", "unter", "Schwindsucht", "zu", "regieren", "im", "haben"] * 3
+        budget = geometry.usable_row_width_mm() - geometry.PACK_SLACK_MM
+        for row in geometry.pack_words_into_rows(list(words), preset):
+            width = sum(geometry.estimate_word_width_mm(w, preset.x_height_mm) for w in row)
+            width += geometry.BOX_GAP_MM * (len(row) - 1)
+            assert width <= budget + 1e-9 or len(row) == 1  # a lone over-wide word gets its own row
+
+    def test_every_box_is_wider_than_its_estimate(self):
+        # The reserve is handed back to the BOXES, not left at the line end:
+        # a word must not be ruined because the room ran out mid-word.
+        preset = geometry.PRESETS["suetterlin"]
+        # A row as the packing hands it over — one that fits with the reserve.
+        words = geometry.pack_words_into_rows(["Galoppieren", "das", "Schwindsucht"], preset)[0]
+        boxes = geometry.boxes_for_row(words, preset)
+        for word, (x0, x1) in zip(words, boxes, strict=True):
+            assert x1 - x0 > geometry.estimate_word_width_mm(word, preset.x_height_mm)
+        assert boxes[-1][1] - boxes[0][0] == pytest.approx(geometry.usable_row_width_mm())
+
     def test_packing_preserves_multiset(self):
         words = ["lesen", "das", "denen", "lesen"]
         rows = geometry.pack_words_into_rows(list(words), geometry.PRESETS["suetterlin"])
@@ -140,6 +163,16 @@ class TestCutBand:
         # The pen tick is bookkeeping, not training data.
         band = geometry.row_band(geometry.PRESETS["suetterlin"], 15.0)
         assert geometry.mark_box(band)[0] > geometry.cut_box(band)[2]
+
+    def test_the_page_is_marked_the_same_at_both_ends(self):
+        # Owner, 2026-08-23: below the last strip a vertical tick follows the
+        # horizontal one — above the first strip it has to read the same.
+        cuts = self._sheet_cuts()
+        ticks = geometry.page_cut_ticks(cuts)
+        above = [t for t in ticks if t[3] < cuts[0][1]]
+        below = [t for t in ticks if t[1] > cuts[-1][3]]
+        assert len(above) == 2 and len(below) == 2  # one per vertical cut line
+        assert {round(t[0], 3) for t in above} == {geometry.CUT_X0_MM, geometry.CUT_X1_MM}
 
     def test_strips_never_touch_and_leave_room_for_the_blade(self):
         cuts = self._sheet_cuts()
