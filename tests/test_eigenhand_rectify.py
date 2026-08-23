@@ -161,9 +161,9 @@ class TestPenMark:
         assert ingest.read_pen_mark(page, layout["rows"][0]) == "angenommen"
 
     def test_an_empty_box_reads_as_rejected(self):
-        # Owner rule 2026-08-23: "wenn da ein Kreuz oder Haken drin ist ok,
-        # sonst nicht" — an unticked row is not accepted, and the strip simply
-        # returns to the print queue.
+        # Owner rule 2026-08-23: a cross or check in the box means ok, and
+        # nothing in it means not ok. An unticked row is not accepted, and the
+        # strip simply returns to the print queue.
         page, layout = self._page_with_ticks(set())
         assert ingest.read_pen_mark(page, layout["rows"][0]) == "verworfen"
 

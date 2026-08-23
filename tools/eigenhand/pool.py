@@ -48,8 +48,8 @@ DEFICIT_FLOOR = 0.01
 # re-enters Phase B only when no fresh word delivers comparable benefit —
 # its benefit is damped by this factor per prior planning, across ALL waves.
 REPEAT_DAMPING = 0.3
-# Hard per-GLYPH floor (owner, 2026-08-23: "sowas wie q nur 1× darf nicht
-# sein — jeder Buchstabe oder Zeichen mindestens 3×"): before the
+# Hard per-GLYPH floor (owner, 2026-08-23: a glyph like q appearing once is
+# unacceptable — every letter and sign at least three times): before the
 # frequency-driven build-out, phase A2 tops every glyph key (summed over
 # positions) up to this count. A guarantee, not a preference — repeat
 # damping does not apply here; only MAX_REPEAT_PER_WAVE and the wave
@@ -166,8 +166,8 @@ def build_wave(plan: dict, target_strips: int, universe_items: dict[str, float])
     }
     # The deficit runs over every REACHABLE key — every glyph any pool word can
     # supply — not just the ones phase A already planned. A key still at zero is
-    # exactly the case the floor exists for (the owner's "q must not appear
-    # once"); counting only planned keys would make it invisible instead.
+    # exactly the case the floor exists for; counting only the planned keys
+    # would make it invisible instead.
     reachable = {key for keys in word_glyphs.values() for key in keys}
     floor_unmet: list[str] = []
     while True:

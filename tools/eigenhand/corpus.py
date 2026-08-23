@@ -523,8 +523,8 @@ _COMMON_EN_WORDS = [
     "perhaps",
 ]
 
-# --- digits and punctuation in REAL text use (owner, 2026-08-22: "Zahlen und
-# Sonderzeichen brauchen wir am Ende auch") — never fantasy sequences: years,
+# --- digits and punctuation in REAL text use (owner, 2026-08-22: digits and
+# signs are needed in the end too) — never fantasy sequences: years,
 # a date, a price, signs as they appear in letters and newspapers. Digits and
 # punctuation are detached glyphs (no joins), so they carry glyph-position
 # Soll only. Together the number entries cover every digit 0-9.

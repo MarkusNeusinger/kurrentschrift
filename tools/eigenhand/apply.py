@@ -86,6 +86,16 @@ def main(argv: list[str] | None = None) -> int:
     layout = json.loads((sheet_dir / "layout.json").read_text(encoding="utf-8"))
     verdicts = parse_result(args.result.read_text(encoding="utf-8"), args.sheet)
 
+    # The result file already names its Bogen (parse_result); the payload and
+    # the layout have to name the same hand and sheet, or a stale copy would
+    # file rows into someone else's dataset without a word of warning.
+    for name, document in (("payload", payload), ("layout", layout)):
+        if (document.get("hand"), document.get("sheet")) != (args.hand, args.sheet):
+            raise SystemExit(
+                f"{name}.json is for {document.get('hand')}/{document.get('sheet')}, "
+                f"not {args.hand}/{args.sheet} — refusing to file into the wrong hand"
+            )
+
     unknown = set(verdicts) - {row["uid"] for row in payload["rows"]}
     if unknown:
         raise SystemExit(f"result names unknown uids: {', '.join(sorted(unknown))}")

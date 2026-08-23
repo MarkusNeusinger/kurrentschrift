@@ -135,8 +135,8 @@ class TestApply:
         assert meta["status"] == "angenommen"
         assert meta["words"] == ["lesen"]  # the strip attributes itself, sidecar-free
         assert (hand_dir(HAND) / "fassungen" / "S0001" / "F01" / "streifen.png").exists()
-        # Rejected rows are Kartei records only — no files ("abgelegt werden
-        # nur die relevanten Streifen").
+        # Rejected rows are Kartei records only — no files (owner: file just
+        # the strips that are relevant).
         assert not (hand_dir(HAND) / "fassungen" / "S0002").exists()
         rejected = kartei["strips"]["S0002"]["fassungen"][0]
         assert (rejected["status"], rejected["reason"], rejected["png_sha256"]) == ("verworfen", "verschrieben", None)
@@ -147,6 +147,19 @@ class TestApply:
         apply_mod.main([str(result), "--hand", HAND, "--sheet", "B0001"])
         apply_mod.main([str(result), "--hand", HAND, "--sheet", "B0001"])
         assert [f["id"] for f in load_kartei(HAND)["strips"]["S0001"]["fassungen"]] == ["F01"]
+
+    def test_a_payload_for_another_hand_is_refused(self, dataroot):
+        # A stale or copied payload must not file rows into the wrong hand's
+        # reserved dataset just because the CLI was pointed at it.
+        _make_sheet()
+        import_dir = hand_dir(HAND) / "blaetter" / "B0001" / "import"
+        payload = json.loads((import_dir / "payload.json").read_text(encoding="utf-8"))
+        payload["hand"] = "other-suetterlin"
+        (import_dir / "payload.json").write_text(json.dumps(payload), encoding="utf-8")
+        result = _result("B0001", ["B0001-r00:angenommen"])
+        with pytest.raises(SystemExit, match="wrong hand"):
+            apply_mod.main([str(result), "--hand", HAND, "--sheet", "B0001"])
+        assert not (hand_dir(HAND) / "fassungen").exists()
 
     def test_conflicting_reverdict_is_refused(self, dataroot):
         _make_sheet()
