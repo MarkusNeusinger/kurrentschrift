@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import re
 
 import pytest
 
-from tools.eigenhand import pdfgen
+from tools.eigenhand import geometry, pdfgen
 from tools.eigenhand.sheet import render_pdf
 
 
@@ -31,7 +32,8 @@ def _fixed_layout() -> dict:
                 "attempt": 1,
                 "attempts": 2,
                 "band_mm": {"asc_top": 15.0, "waist": 21.0, "baseline": 27.0, "desc_bot": 33.0},
-                "mark_mm": [199.0, 21.5, 204.0, 26.5],
+                "mark_mm": [202.0, 21.5, 207.0, 26.5],
+                "cut_mm": [12.0, 11.0, 197.0, 40.0],
                 "boxes": [
                     {"word": "lesen", "label": "lesen", "x0_mm": 15.0, "x1_mm": 40.0},
                     {"word": "Haustür", "label": "Haus*|tür", "x0_mm": 43.0, "x1_mm": 80.0},
@@ -42,7 +44,8 @@ def _fixed_layout() -> dict:
                 "attempt": 2,
                 "attempts": 2,
                 "band_mm": {"asc_top": 42.0, "waist": 48.0, "baseline": 54.0, "desc_bot": 60.0},
-                "mark_mm": [199.0, 48.5, 204.0, 53.5],
+                "mark_mm": [202.0, 48.5, 207.0, 53.5],
+                "cut_mm": [12.0, 38.0, 197.0, 67.0],
                 "boxes": [{"word": "das", "label": "das", "x0_mm": 15.0, "x1_mm": 38.0}],
             },
         ],
@@ -53,7 +56,7 @@ def _fixed_layout() -> dict:
 # Pinned bytes of _fixed_layout() — deterministic by construction (no clock,
 # no git, no repo state). A change here is a REAL output change: re-pin only
 # deliberately, with the diff understood.
-GOLDEN_SHA256 = "1c5deb4c30a54b806e69cf291cdc8822a946be6f0956ccf586cb978af6601764"
+GOLDEN_SHA256 = "8497acef0d753a5a02a605da3dea871e205b517c5177fc0bf85f2e0673d56de8"
 
 
 class TestRenderedPdf:
@@ -81,6 +84,16 @@ class TestRenderedPdf:
         assert text.count("(ok) Tj") == 1  # one column caption, above the first row
         assert "(nein) Tj" not in text  # one box only: ticked = ok, empty = not
         assert text.count(" l S") >= 8  # four edges per box, one box per row, two rows
+
+    def test_cut_marks_add_exactly_the_expected_segments(self):
+        layout = _fixed_layout()
+        marked = render_pdf(layout).decode("latin-1").count(" l S")
+        bare = copy.deepcopy(layout)
+        for row in bare["rows"]:
+            del row["cut_mm"]  # a sheet printed before the Schnittband existed
+        cuts = [tuple(row["cut_mm"]) for row in layout["rows"]]
+        expected = sum(len(geometry.cut_ticks(cut)) for cut in cuts) + len(geometry.page_cut_ticks(cuts))
+        assert marked - render_pdf(bare).decode("latin-1").count(" l S") == expected
 
     def test_attempt_labels_and_umlauts_survive_winansi(self):
         text = render_pdf(_fixed_layout()).decode("latin-1")

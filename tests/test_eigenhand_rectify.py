@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from PIL import Image
 from skimage import transform
 
 from tools.eigenhand import ingest
@@ -30,7 +31,8 @@ def _layout() -> dict:
                 "attempt": 1,
                 "attempts": 1,
                 "band_mm": {"asc_top": 15.0, "waist": 21.0, "baseline": 27.0, "desc_bot": 33.0},
-                "mark_mm": [199.0, 21.5, 204.0, 26.5],
+                "mark_mm": [202.0, 21.5, 207.0, 26.5],
+                "cut_mm": [12.0, 11.0, 197.0, 40.0],
                 "boxes": [{"word": "lesen", "label": "lesen", "x0_mm": 15.0, "x1_mm": 120.0}],
             },
             {
@@ -38,7 +40,8 @@ def _layout() -> dict:
                 "attempt": 1,
                 "attempts": 1,
                 "band_mm": {"asc_top": 42.0, "waist": 48.0, "baseline": 54.0, "desc_bot": 60.0},
-                "mark_mm": [199.0, 48.5, 204.0, 53.5],
+                "mark_mm": [202.0, 48.5, 207.0, 53.5],
+                "cut_mm": [12.0, 38.0, 197.0, 67.0],
                 "boxes": [{"word": "das", "label": "das", "x0_mm": 15.0, "x1_mm": 100.0}],
             },
         ],
@@ -85,6 +88,26 @@ class TestRectify:
                 darkest = int(np.argmin(strip.mean(axis=1)))
                 deviation_mm = abs(darkest - half) / ingest.PX_PER_MM
                 assert deviation_mm <= 0.5, f"line {y_mm} mm off by {deviation_mm:.2f} mm"
+
+    def test_every_crop_comes_out_at_the_strip_format(self, tmp_path, monkeypatch):
+        # The point of the Schnittband: what the scissors produce and what the
+        # importer files are the same rectangle, identical for every row —
+        # rows carrying different words must not yield different crops.
+        monkeypatch.setenv("EIGENHAND_DATA", str(tmp_path / "own-hand"))
+        layout = _layout()
+        warped, dpi, _marks = ingest.rectify(_distorted_capture(layout), layout)
+        scan = tmp_path / "scan.png"
+        Image.fromarray(np.zeros((4, 4), dtype=np.uint8)).save(scan)
+        session = {"date": "2026-08-23", "feder": "", "tinte": "", "papier": "", "geraet": "scanner"}
+        payload = ingest.build_payload("test-suetterlin", "B0001", layout, warped, scan, session, dpi)
+
+        import_dir = ingest.hand_dir("test-suetterlin") / "blaetter" / "B0001" / "import"
+        sizes = {Image.open(import_dir / row["crop"]).size for row in payload["rows"]}
+        assert len(sizes) == 1, f"strips differ in size: {sizes}"
+        width_px, height_px = sizes.pop()
+        cut = layout["rows"][0]["cut_mm"]
+        assert abs(width_px / ingest.PX_PER_MM - (cut[2] - cut[0])) < 0.5
+        assert abs(height_px / ingest.PX_PER_MM - (cut[3] - cut[1])) < 0.5
 
     def test_upside_down_capture_lands_upright(self):
         # Rectified without rotation must equal rectified with rotation — the

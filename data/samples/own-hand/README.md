@@ -54,6 +54,14 @@ uv run python -m tools.eigenhand.redo --hand mn-suetterlin S0037 S0055 --reason 
   Kreuz heißt angenommen, leer heißt verworfen. Dann steht das Urteil
   fest, solange du noch weißt, was schiefging. Am Bildschirm ist es
   vorbelegt und jederzeit überschreibbar.
+- **Schneiden nach den Randmarken:** die Striche links und rechts auf Höhe
+  jeder Zeile markieren die beiden Querschnitte, die Striche in den Lücken
+  zwischen den Zeilen die beiden Längsschnitte. Wer daran schneidet,
+  bekommt Streifen mit exakt gleicher Höhe und Breite (Sütterlin
+  185 × 29 mm) — dieselben Maße, die der Import digital ausschneidet.
+  Zwischen zwei Streifen liegen 5 mm freies Papier: ein Schnitt darf
+  wandern. Die Streifen-ID steht oben AUF dem Streifen, das Stift-Kästchen
+  bleibt außerhalb.
 - **Sieb-Disziplin (mvp-roadmap M2, wörtlich übernommen):** Verworfen wird
   nur nach Schreibqualität (verschrieben, verrutscht) — nie, weil
   Buchstaben eng am Nachbarn sitzen. Enge Verbindung ist Signal, nicht

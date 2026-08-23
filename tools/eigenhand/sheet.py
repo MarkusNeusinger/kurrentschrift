@@ -126,7 +126,7 @@ def build_layout(
     for index, sid in enumerate(strip_rows):
         seen[sid] = seen.get(sid, 0) + 1
         words = plan["strips"][sid]["words"]
-        band = geometry.row_band(preset, MARGIN_MM + index * pitch)
+        band = geometry.row_band(preset, geometry.TOP_MARGIN_MM + index * pitch)
         boxes = [
             {
                 "word": word,
@@ -142,6 +142,7 @@ def build_layout(
                 "attempt": seen[sid],
                 "attempts": attempts_total[sid],
                 "mark_mm": [round(v, 3) for v in geometry.mark_box(band)],
+                "cut_mm": [round(v, 3) for v in geometry.cut_box(band)],
                 "band_mm": {
                     "asc_top": round(band.asc_top, 3),
                     "waist": round(band.waist, 3),
@@ -194,7 +195,7 @@ def render_pdf(layout: dict) -> bytes:
     preset = geometry.PRESETS[layout["style"]]
     rects: list[pdfgen.Rect] = []
     lines: dict[str, list[pdfgen.Line]] = {
-        role: [] for role in ("slant", "ascender", "descender", "waist", "baseline", "box")
+        role: [] for role in ("slant", "ascender", "descender", "waist", "baseline", "box", "cut")
     }
     texts: list[pdfgen.Text] = []
 
@@ -224,7 +225,11 @@ def render_pdf(layout: dict) -> bytes:
     for row in layout["rows"]:
         band = row["band_mm"]
         row_id = row["strip"] if row["attempts"] == 1 else f"{row['strip']} ({row['attempt']}/{row['attempts']})"
-        texts.append(pdfgen.Text(2.0, band["baseline"], ROW_ID_SIZE_MM, row_id, style["meta"][0]))
+        # The id rides in the Schnittband's top pad, INSIDE the strip: a cut
+        # strip has to stay attributable on its own (proposal §7).
+        cut = row.get("cut_mm")
+        id_x, id_y = (cut[0] + 1.0, band["asc_top"] - 1.2) if cut else (2.0, band["baseline"])
+        texts.append(pdfgen.Text(id_x, id_y, ROW_ID_SIZE_MM, row_id, style["meta"][0]))
         for box in row["boxes"]:
             x0, x1 = box["x0_mm"], box["x1_mm"]
             top = band["asc_top"] - geometry.BOX_OVERHANG_MM
@@ -253,6 +258,11 @@ def render_pdf(layout: dict) -> bytes:
                     xb += preset.slant_spacing_mm
             label_x = (x0 + x1) / 2 - pdfgen.helv_width_mm(box["label"], LABEL_SIZE_MM) / 2
             texts.append(pdfgen.Text(label_x, band["desc_bot"] + 4.0, LABEL_SIZE_MM, box["label"], style["label"][0]))
+        # Schnittmarken: four ticks in the margins, never inside the strip.
+        cut_color, cut_width, _cut_dash = style["cut"]
+        for tx0, ty0, tx1, ty1 in geometry.cut_ticks(tuple(cut)) if cut else ():
+            lines["cut"].append(pdfgen.Line(tx0, ty0, tx1, ty1, cut_color, cut_width, None))
+
         # Verdict box in the right margin — tick it with the pen right after
         # writing the row; the importer reads it at Siebung time.
         mark_color, mark_width, _mark_dash = style["box"]
@@ -264,6 +274,13 @@ def render_pdf(layout: dict) -> bytes:
             pdfgen.Line(mx0, my1, mx0, my0, mark_color, mark_width, None),
         ]
 
+    # The two vertical cut lines are the same for every row, so they are marked
+    # once above the first and once below the last strip.
+    cut_color, cut_width, _cut_dash = style["cut"]
+    page_cuts = [tuple(row["cut_mm"]) for row in layout["rows"] if row.get("cut_mm")]
+    for tx0, ty0, tx1, ty1 in geometry.page_cut_ticks(page_cuts):
+        lines["cut"].append(pdfgen.Line(tx0, ty0, tx1, ty1, cut_color, cut_width, None))
+
     prov = layout["provenance"]
     footer_left = f"kurrentschrift eigenhand · {prov['commit'] or 'no-commit'} · cfg {prov['config_hash']}"
     texts.append(pdfgen.Text(MARGIN_MM, geometry.A4_HEIGHT_MM - 9.0, FOOTER_SIZE_MM, footer_left, style["meta"][0]))
@@ -272,7 +289,7 @@ def render_pdf(layout: dict) -> bytes:
     texts.append(pdfgen.Text(footer_x, geometry.A4_HEIGHT_MM - 9.0, FOOTER_SIZE_MM, footer_right, style["meta"][0]))
 
     ordered_lines = [
-        line for role in ("slant", "ascender", "descender", "waist", "baseline", "box") for line in lines[role]
+        line for role in ("slant", "ascender", "descender", "waist", "baseline", "box", "cut") for line in lines[role]
     ]
     return pdfgen.build_pdf(rects, ordered_lines, texts)
 

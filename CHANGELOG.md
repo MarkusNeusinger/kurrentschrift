@@ -14,6 +14,23 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **A cut format for the strips: wider row gaps plus cut marks in the
+  margins ("Schnittband" · "Schnittmarken").** Every row now carries a cut
+  rectangle of fixed columns and fixed paddings, so the strips of a style
+  all come out at one height and one width (Sütterlin 185 × 29 mm) no
+  matter how many words a row holds. The row gap grows from 5 mm to 12 mm
+  — it has to carry two cut lines now — which puts 5 mm of free paper
+  between neighbouring strips and 7 rows on a Sütterlin sheet instead of 9.
+  Marks are printed in the page margins only: ink inside the cut rectangle
+  would end up in the training data. The vertical cuts are marked in the
+  gaps between strips rather than at the page head, where a hairline
+  blurring into a Passmarke on a scan would drag its centroid and with it
+  every millimetre the importer computes; for the same reason the first row
+  starts at y = 22 mm. The strip id moved into the cut rectangle's top pad
+  so a cut strip stays attributable on its own, while the verdict box stays
+  outside it. `ingest` crops exactly at the cut rectangle, so the paper
+  strip and the filed `streifen.png` are the same object.
+
 - **A per-row verdict box on the sheet ("Stiftmarke"), read back at
   import.** Every printed row now carries one 5 mm box in the right
   margin, captioned "ok" once above the first row, so a row can be judged

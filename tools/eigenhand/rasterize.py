@@ -54,4 +54,10 @@ def rasterize_layout(layout: dict, dpi: float = 300.0, ink: int = 40, paper: int
         if row.get("mark_mm"):
             mx0, my0, mx1, my1 = row["mark_mm"]
             draw.rectangle([px(mx0), px(my0), px(mx1), px(my1)], outline=ink, width=max(1, round(px(0.18))))
+        if row.get("cut_mm"):
+            for tx0, ty0, tx1, ty1 in geometry.cut_ticks(tuple(row["cut_mm"])):
+                draw.line([px(tx0), px(ty0), px(tx1), px(ty1)], fill=ink, width=max(1, round(px(0.25))))
+    cuts = [tuple(row["cut_mm"]) for row in layout["rows"] if row.get("cut_mm")]
+    for tx0, ty0, tx1, ty1 in geometry.page_cut_ticks(cuts):
+        draw.line([px(tx0), px(ty0), px(tx1), px(ty1)], fill=ink, width=max(1, round(px(0.25))))
     return image

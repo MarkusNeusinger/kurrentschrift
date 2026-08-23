@@ -161,16 +161,21 @@ def build_payload(
     rows_out = []
     for index, row in enumerate(layout["rows"]):
         band = row["band_mm"]
-        # Crop bounds come from the row's boxes — layout.json is the SOLE
+        # Crop bounds come from the row's Schnittband — layout.json is the SOLE
         # geometry contract, no margin constant duplicated here (Copilot
-        # finding, PR #406). Only the left strip edge stays fixed at
-        # STRIP_X0_MM so the printed row id rides along in the pixels.
+        # finding, PR #406). Cropping exactly where the scissors go makes the
+        # digital strip and the paper strip the same object, and every filed
+        # streifen.png of a style comes out at identical pixel dimensions.
         boxes_x0 = min(box["x0_mm"] for box in row["boxes"])
         boxes_x1 = max(box["x1_mm"] for box in row["boxes"])
-        x0_px = _px(STRIP_X0_MM)
-        x1_px = _px(boxes_x1 + ROW_PAD_MM)
-        y0_px = _px(band["asc_top"] - ROW_PAD_MM)
-        y1_px = _px(band["desc_bot"] + STRIP_LABEL_BELOW_MM)
+        cut = row.get("cut_mm")
+        if cut:
+            x0_px, y0_px, x1_px, y1_px = (_px(cut[0]), _px(cut[1]), _px(cut[2]), _px(cut[3]))
+        else:  # a sheet printed before the Schnittband existed
+            x0_px = _px(STRIP_X0_MM)
+            x1_px = _px(boxes_x1 + ROW_PAD_MM)
+            y0_px = _px(band["asc_top"] - ROW_PAD_MM)
+            y1_px = _px(band["desc_bot"] + STRIP_LABEL_BELOW_MM)
         crop = warped[y0_px:y1_px, x0_px:x1_px]
         # QC runs on the writing band only — the printed row id and labels in
         # the wider strip must not fake ink flags.

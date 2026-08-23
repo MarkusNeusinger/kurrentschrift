@@ -57,11 +57,12 @@ class TestBandMath:
         assert geometry.row_height_mm(geometry.PRESETS["suetterlin"]) == 18.0
 
     def test_suetterlin_default_rows_breathe(self):
-        # 27 mm pitch, footer zone reserved: 9 rows, not the 10 that would cram.
-        assert geometry.max_rows(geometry.PRESETS["suetterlin"]) == 9
+        # 34 mm pitch (owner 2026-08-23: more room between the rows, and the
+        # gap has to carry two cut lines), footer zone reserved: 7 rows.
+        assert geometry.max_rows(geometry.PRESETS["suetterlin"]) == 7
 
     def test_kurrent_fits_more_rows(self):
-        assert geometry.max_rows(geometry.PRESETS["kurrent"]) > 9
+        assert geometry.max_rows(geometry.PRESETS["kurrent"]) > 7
 
     def test_row_band_ordering(self):
         band = geometry.row_band(geometry.PRESETS["offenbacher"], 20.0)
@@ -107,6 +108,65 @@ class TestClip:
     def test_crossing_segment_is_clipped_to_the_rect(self):
         clipped = geometry.clip_to_rect(-1, 1, 4, 1, 0, 0, 3, 3)
         assert clipped == (0, 1, 3, 1)
+
+
+class TestCutBand:
+    """Every strip is cut to the same rectangle — that is the whole point."""
+
+    @staticmethod
+    def _sheet_cuts(style: str = "suetterlin") -> list[tuple[float, float, float, float]]:
+        preset = geometry.PRESETS[style]
+        pitch = geometry.row_pitch_mm(preset)
+        rows = geometry.max_rows(preset)
+        return [
+            geometry.cut_box(geometry.row_band(preset, geometry.TOP_MARGIN_MM + index * pitch)) for index in range(rows)
+        ]
+
+    @pytest.mark.parametrize("style", ["kurrent", "suetterlin", "offenbacher"])
+    def test_every_strip_of_a_sheet_has_the_same_size(self, style):
+        sizes = {(round(c[2] - c[0], 6), round(c[3] - c[1], 6)) for c in self._sheet_cuts(style)}
+        assert len(sizes) == 1
+        assert sizes.pop() == tuple(round(v, 6) for v in geometry.cut_size_mm(geometry.PRESETS[style]))
+
+    def test_the_writing_area_and_the_labels_are_inside_the_cut(self):
+        preset = geometry.PRESETS["suetterlin"]
+        band = geometry.row_band(preset, 15.0)
+        x0, y0, x1, y1 = geometry.cut_box(band)
+        boxes = geometry.boxes_for_row(["Handschrift", "lesen"], preset, 15.0)
+        assert x0 < min(b[0] for b in boxes) and max(b[1] for b in boxes) < x1
+        assert y0 < band.asc_top and band.desc_bot + geometry.LABEL_ZONE_MM <= y1
+
+    def test_the_verdict_box_stays_off_the_strip(self):
+        # The pen tick is bookkeeping, not training data.
+        band = geometry.row_band(geometry.PRESETS["suetterlin"], 15.0)
+        assert geometry.mark_box(band)[0] > geometry.cut_box(band)[2]
+
+    def test_strips_never_touch_and_leave_room_for_the_blade(self):
+        cuts = self._sheet_cuts()
+        gaps = {round(lower[1] - upper[3], 6) for upper, lower in zip(cuts, cuts[1:], strict=False)}
+        assert gaps and min(gaps) >= 4.0
+
+    def test_marks_sit_in_the_margins_never_on_a_strip(self):
+        cuts = self._sheet_cuts()
+        ticks = [t for cut in cuts for t in geometry.cut_ticks(cut)] + geometry.page_cut_ticks(cuts)
+        for tx0, ty0, tx1, ty1 in ticks:
+            for cx0, cy0, cx1, cy1 in cuts:
+                inside_x = cx0 < tx0 < cx1 or cx0 < tx1 < cx1
+                inside_y = cy0 < ty0 < cy1 or cy0 < ty1 < cy1
+                assert not (inside_x and inside_y), "a cut mark would print on the strip"
+
+    @pytest.mark.parametrize("style", ["kurrent", "suetterlin", "offenbacher"])
+    def test_no_cut_mark_comes_near_a_fiducial(self, style):
+        # A hairline blurring into a Passmarke would drag its centroid — and
+        # with it every millimetre the importer computes.
+        cuts = self._sheet_cuts(style)
+        ticks = [t for cut in cuts for t in geometry.cut_ticks(cut)] + geometry.page_cut_ticks(cuts)
+        keep_out = geometry.FIDUCIAL_SIZE_MM / 2 + 2.0
+        for tx0, ty0, tx1, ty1 in ticks:
+            for cx, cy in geometry.FIDUCIAL_CENTERS.values():
+                clear_x = max(tx0, tx1) < cx - keep_out or min(tx0, tx1) > cx + keep_out
+                clear_y = max(ty0, ty1) < cy - keep_out or min(ty0, ty1) > cy + keep_out
+                assert clear_x or clear_y, f"cut mark {tx0, ty0, tx1, ty1} crowds the fiducial at {cx, cy}"
 
 
 class TestMarkBox:

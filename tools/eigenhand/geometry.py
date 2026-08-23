@@ -39,18 +39,42 @@ FIDUCIAL_DONUT = "tl"
 # words under the boxes, the footer zone keeps the last row off the bottom
 # fiducials and leaves room for the provenance footer ("10 fits, 9 breathes").
 LABEL_ZONE_MM = 4.0
-ROW_GAP_MM = 5.0
+# The gap between two row blocks is what the scissors get (owner, 2026-08-23:
+# more room between the rows, and mark where to cut). It has to hold the two
+# cut lines of the neighbouring Schnittbänder plus tolerance on both sides —
+# 12 mm leaves 5 mm of free paper between them, so a cut that wanders by 2 mm
+# still misses both strips.
+ROW_GAP_MM = 12.0
+# Schnittband — the rectangle one strip is cut to. Identical for EVERY row of a
+# sheet (and every sheet of a style), so the collection ends up with strips of
+# one height and one width: the width is fixed columns, never the words' extent,
+# and the height is the row block plus these two paddings. The top pad is the
+# wider one because it carries the printed strip id.
+CUT_PAD_TOP_MM = 4.0
+CUT_PAD_BOTTOM_MM = 3.0
+CUT_X0_MM = 12.0  # 3 mm left of the writing area (margin 15 mm)
+CUT_X1_MM = 197.0  # 2 mm right of it, and clear of the verdict column
+# Cut marks sit in the page margins, never on the strip: ink inside the
+# Schnittband would end up in the training data.
+CUT_TICK_MM = 2.5
+CUT_TICK_GAP_MM = 1.5
+# The first row starts lower than the side margin: its Schnittband's top cut
+# mark would otherwise sit level with the top Passmarken, and a hairline that
+# blurs into a Passmarke on a scan drags its centroid — and with it every
+# millimetre the importer computes.
+TOP_MARGIN_MM = 22.0
 # Per-row verdict box in the RIGHT margin (owner, 2026-08-23: mark each
-# strip ok/not-ok with the pen right away). The writing area ends at
-# 195 mm and the corner Passmarken only occupy the top and bottom of the
-# page, so the band around 199-204 mm is free at every row height — and it
-# is where the hand already is when a row is finished. ONE box (owner,
+# strip ok/not-ok with the pen right away), OUTSIDE the Schnittband: the tick
+# is bookkeeping, not training data, so it must not end up on the strip. The
+# writing area ends at 195 mm and the corner Passmarken only occupy the top
+# and bottom of the page, so the band beyond the cut line is free at every row
+# height — and it is where the hand already is. ONE box (owner,
 # 2026-08-23): a cross or check in it means the row is good, an empty box
 # means it is not. That keeps the sheet to a single pen movement, and the
 # failure mode of a forgotten tick is the harmless one — the strip goes
 # back into the print queue instead of being filed unreviewed.
 MARK_BOX_MM = 5.0
-MARK_COL_X0_MM = 199.0
+MARK_COL_X0_MM = 202.0
 FOOTER_ZONE_MM = 12.0
 BOX_GAP_MM = 3.0
 BOX_LEAD_MM = 8.0  # entry room before the first letter (Anstrich) + slack
@@ -89,6 +113,7 @@ ROLE_STYLES: dict[str, tuple[str, float, tuple[float, float] | None]] = {
     "descender": ("#B8B6AE", 0.18, (1.6, 1.6)),
     "slant": ("#D6D4CB", 0.15, (1.0, 1.6)),
     "box": ("#B8B6AE", 0.18, None),  # box edges + corner ticks (sheet-only role)
+    "cut": ("#1A1A17", 0.25, None),  # Schnittmarken in the margins (sheet-only role)
     "label": ("#4A4944", 0.0, None),  # clear-text word labels (color only)
     "meta": ("#6B6A63", 0.0, None),  # header/footer/row-id text (color only)
 }
@@ -173,7 +198,7 @@ def usable_row_width_mm(margin_mm: float = 15.0) -> float:
 
 def max_rows(preset: ScriptPreset, margin_mm: float = 15.0) -> int:
     """How many rows fit between the margins, footer zone reserved."""
-    usable = A4_HEIGHT_MM - 2 * margin_mm - FOOTER_ZONE_MM
+    usable = A4_HEIGHT_MM - TOP_MARGIN_MM - margin_mm - FOOTER_ZONE_MM
     pitch = row_pitch_mm(preset)
     return max(0, int((usable + ROW_GAP_MM) // pitch))
 
@@ -219,6 +244,56 @@ def row_band(preset: ScriptPreset, row_top_mm: float) -> RowBand:
     waist = row_top_mm + asc * unit
     baseline = waist + preset.x_height_mm
     return RowBand(row_top_mm, waist, baseline, baseline + desc * unit)
+
+
+def cut_box(band: RowBand) -> tuple[float, float, float, float]:
+    """The Schnittband of one row: (x0, y0, x1, y1) in mm — where to cut.
+
+    Fixed columns and fixed paddings, so every strip of a style comes out at
+    the same width and the same height no matter how many words its row
+    carries. It spans the writing band AND the clear-text label below it: the
+    words under the boxes are what makes a cut strip attributable on its own.
+    """
+    return (CUT_X0_MM, band.asc_top - CUT_PAD_TOP_MM, CUT_X1_MM, band.desc_bot + LABEL_ZONE_MM + CUT_PAD_BOTTOM_MM)
+
+
+def cut_size_mm(preset: ScriptPreset) -> tuple[float, float]:
+    """(width, height) of every Schnittband of this preset — the strip format."""
+    return (CUT_X1_MM - CUT_X0_MM, row_height_mm(preset) + LABEL_ZONE_MM + CUT_PAD_TOP_MM + CUT_PAD_BOTTOM_MM)
+
+
+def cut_ticks(cut: tuple[float, float, float, float]) -> list[tuple[float, float, float, float]]:
+    """The four margin ticks of one Schnittband: (x1, y1, x2, y2) segments in mm.
+
+    Two per cut line, left and right of the strip and never inside it. The
+    vertical cut lines are the same for every row, so those are marked once per
+    page (page_cut_ticks), not here.
+    """
+    x0, y0, x1, y1 = cut
+    left_outer, left_inner = x0 - CUT_TICK_GAP_MM - CUT_TICK_MM, x0 - CUT_TICK_GAP_MM
+    right_inner, right_outer = x1 + CUT_TICK_GAP_MM, x1 + CUT_TICK_GAP_MM + CUT_TICK_MM
+    return [(left_outer, y, left_inner, y) for y in (y0, y1)] + [(right_inner, y, right_outer, y) for y in (y0, y1)]
+
+
+def page_cut_ticks(cuts: list[tuple[float, float, float, float]]) -> list[tuple[float, float, float, float]]:
+    """Ticks for the two vertical cut lines, in the free paper BETWEEN strips.
+
+    The vertical cuts are the same x for every row, so they are marked in the
+    gaps rather than per row — and deliberately not at the page top, where a
+    hairline 1 mm from a Passmarke could blur into it on a scan and drag the
+    fiducial's centroid (and with it the whole rectification) sideways.
+    """
+    if not cuts:
+        return []
+    ordered = sorted(cuts, key=lambda c: c[1])
+    half = CUT_TICK_MM / 2
+    ticks: list[tuple[float, float, float, float]] = []
+    for upper, lower in zip(ordered, ordered[1:], strict=False):
+        middle = (upper[3] + lower[1]) / 2
+        ticks += [(x, middle - half, x, middle + half) for x in (CUT_X0_MM, CUT_X1_MM)]
+    bottom = ordered[-1][3]
+    ticks += [(x, bottom + CUT_TICK_GAP_MM, x, bottom + CUT_TICK_GAP_MM + CUT_TICK_MM) for x in (CUT_X0_MM, CUT_X1_MM)]
+    return ticks
 
 
 def mark_box(band: RowBand) -> tuple[float, float, float, float]:

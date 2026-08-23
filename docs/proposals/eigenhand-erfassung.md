@@ -135,22 +135,49 @@ qualitaetsmetrik.md).
 Ein Bogen ist ein A4-Blatt aus offenen Streifen: Kopf („Sütterlin ·
 Bogen 12“ + Maschinen-ID `mn-suetterlin-B0012` + Datum), vier
 **Passmarken** (8×8-mm-Quadrate, Zentren 7/203 × 7/290 mm; links oben mit
-3-mm-Lochung als Orientierungs-Donut), je Zeile die Streifen-ID am
-linken Rand und pro Wort ein **Kasten mit Lineatur** — Bandlinien nur im
-Kastenbereich, die Gassen bleiben tintenfrei (9 mm zwischen den Zeilen:
-4 mm Beschriftungszone + 5 mm Abstand). Presets aus
+3-mm-Lochung als Orientierungs-Donut), je Zeile die Streifen-ID und pro
+Wort ein **Kasten mit Lineatur** — Bandlinien nur im Kastenbereich, die
+Gassen bleiben tintenfrei (16 mm zwischen den Zeilen: 4 mm
+Beschriftungszone + 12 mm Abstand). Presets aus
 `app/src/lib/lineatur.ts` portiert und per Test gepinnt (Sütterlin 1:1:1
 bei 6 mm x-Höhe senkrecht; Offenbacher 2:3:2/5 mm/77°; Kurrent
 2:1:2/2,5 mm/65° mit Schräglagen-Hilfslinien im Kasten). Sütterlin-Pitch
-27 mm → **Default 9 Zeilen** („10 passen, 9 atmen“; `--rows`
-konfigurierbar). Kastenbreite = 8 mm Vorlauf + Σ advance(glyph_key) in
+34 mm → **Default 7 Zeilen** (`--rows` konfigurierbar). Kastenbreite =
+8 mm Vorlauf + Σ advance(glyph_key) in
 x-Höhen (`geometry.py::ADVANCE_XH`, Startwerte; **Kalibrier-Schleife**:
 nach dem ersten beschriebenen Blatt werden die Konstanten gegen die
 gemessenen Tintenbreiten nachgezogen).
 
+**Schnittband und Schnittmarken (Owner, 2026-08-23):** jede Zeile hat ein
+**Schnittband** — das Rechteck, zu dem der Streifen geschnitten wird.
+Feste Spalten (x = 12 … 197 mm) und feste Polster (4 mm über der
+Oberlinie, 3 mm unter der Klartext-Zeile), also **für jede Zeile eines
+Stils dieselbe Höhe und dieselbe Breite** (Sütterlin: 185 × 29 mm),
+unabhängig davon, wie viele Wörter die Zeile trägt. Zwischen zwei
+Schnittbändern bleiben 5 mm freies Papier: ein Schnitt, der 2 mm
+wandert, verfehlt beide Streifen immer noch.
+
+Markiert wird an den **Rändern**, nie auf dem Streifen — Tinte innerhalb
+des Schnittbands landete sonst in den Trainingsdaten. Je Zeile vier
+2,5-mm-Striche links und rechts auf Höhe der beiden Querschnitte; die
+beiden Längsschnitte sind für alle Zeilen dieselben und werden deshalb
+in den Lücken ZWISCHEN den Streifen markiert (nicht am Blattkopf: eine
+Haarlinie, die auf dem Scan in eine Passmarke verläuft, zöge deren
+Schwerpunkt mit — und damit jeden Millimeter, den der Import rechnet;
+aus demselben Grund beginnt die erste Zeile bei y = 22 mm). Die
+Streifen-ID steht im oberen Polster INNERHALB des Schnittbands, damit
+ein geschnittener Streifen für sich zuordenbar bleibt (§7); die
+Stiftmarke steht bewusst außerhalb.
+
+Der Import schneidet digital genau am Schnittband (`layout.json`-Feld
+`cut_mm`): Papierstreifen und `streifen.png` sind damit dasselbe
+Rechteck, und jede abgelegte Fassung eines Stils hat identische
+Pixelmaße.
+
 **Stiftmarke je Zeile:** rechts neben dem Schreibfeld trägt jede Zeile
-EIN 5-mm-Kästchen (Spalte ab x = 199 mm, einmalig im Kopf mit „ok“
-beschriftet). Dort ist die Hand am Zeilenende ohnehin, und die Passmarken
+EIN 5-mm-Kästchen (Spalte ab x = 202 mm, jenseits des Schnittbands,
+einmalig im Kopf mit „ok“ beschriftet). Dort ist die Hand am Zeilenende
+ohnehin, und die Passmarken
 belegen nur die Seitenecken — die Spalte kostet also keine Schreibbreite
 (die eingefrorenen Streifen füllen die 180 mm voll aus). Die Regel ist
 bewusst binär (Owner, 2026-08-23): **Kreuz oder Haken drin = ok, leer =

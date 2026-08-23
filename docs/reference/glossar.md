@@ -54,7 +54,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · understanding §5
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4
@@ -1933,6 +1933,28 @@ entzerrt der Import Scan wie Handyfoto (Homographie) und erkennt
 gedrehte Aufnahmen. *Technisch:* `tools/eigenhand/fiducial.py`
 (scikit-image, bewusst ohne OpenCV).
 → proposals/eigenhand-erfassung.md §6
+
+**Schnittband** — das Rechteck, zu dem eine Bogenzeile geschnitten wird:
+feste Spalten (x = 12 … 197 mm) plus feste Polster über der Oberlinie und
+unter der Klartext-Zeile. Für jede Zeile eines Stils identisch (Sütterlin
+185 × 29 mm), unabhängig von der Wortzahl — deshalb haben am Ende ALLE
+Streifen dieselbe Höhe und Breite. Die Streifen-ID sitzt im oberen
+Polster, also auf dem Streifen (Zuordenbarkeit); die Stiftmarke bleibt
+draußen. Der Import schneidet digital am selben Rechteck, damit
+Papierstreifen und `streifen.png` dasselbe Objekt sind. *Technisch:*
+`tools/eigenhand/geometry.py::cut_box`/`cut_size_mm`, je Zeile in
+`layout.json` unter `cut_mm`.
+→ proposals/eigenhand-erfassung.md §5
+
+**Schnittmarken** — die kurzen Striche in den Blatträndern, die zeigen, wo
+geschnitten wird: je Zeile vier auf Höhe der Querschnitte (links und
+rechts), dazu die beiden Längsschnitte in den Lücken ZWISCHEN den
+Streifen. Nie innerhalb des Schnittbands — gedruckte Tinte auf dem
+Streifen wäre Tinte in den Trainingsdaten — und nie am Blattkopf, wo eine
+Haarlinie auf dem Scan in eine Passmarke verlaufen und deren Schwerpunkt
+verziehen könnte. *Technisch:*
+`tools/eigenhand/geometry.py::cut_ticks`/`page_cut_ticks`.
+→ proposals/eigenhand-erfassung.md §5
 
 **Stiftmarke** — das eine gedruckte Kästchen am rechten Rand JEDER
 Bogenzeile (5 mm, ab x = 199 mm, im Kopf einmal mit „ok“ beschriftet —
