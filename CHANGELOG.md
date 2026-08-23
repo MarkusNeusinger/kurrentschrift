@@ -14,6 +14,17 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **One guarded helper for every Bogen path, and guards that mean what
+  they say.** `--sheet` reaches four Eigenhand CLIs and is interpolated
+  into a path in each of them, so it now passes `store.check_sheet_id`
+  (plain `B<nnnn>`) and every `<hand>/blaetter/<sheet>/` is built by
+  `store.sheet_dir` — the hand id and the sheet id are checked in one
+  place instead of four. All three guards in the module match with
+  `fullmatch` rather than `match`, because `$` also matches BEFORE a
+  trailing newline: `mn-suetterlin\n` passed the hand-id guard until now.
+  The sheet id spells its digits `[0-9]` instead of `\d`, which takes
+  non-ASCII digits (Copilot review, PR #407).
+
 - **Cyan rulings that a colour scan can drop, and more air for the flat
   scripts.** The guide lines print in pale cyan instead of grey: cyan's
   blue component sits at paper level, so `ingest --channel auto` reads a

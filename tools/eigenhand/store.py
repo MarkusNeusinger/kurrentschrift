@@ -40,12 +40,16 @@ def data_root() -> Path:
 # tree. Requiring the style suffix here also stops a misspelled style
 # (`mn-suetterln`) from silently creating a directory for a hand that
 # style_of_hand() will later refuse to interpret.
-_HAND_ID = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*-(?:" + "|".join(STYLE_IDS) + r")$")
+#
+# All three guards in this module match with `fullmatch`: `$` also matches
+# BEFORE a trailing newline, so `re.match("...$", "mn-suetterlin\n")` succeeds
+# and a value read from a file with its line ending still attached would pass.
+_HAND_ID = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*-(?:" + "|".join(STYLE_IDS) + r")")
 
 
 def check_hand_id(hand: str) -> str:
     """Return the hand id, or refuse it if it is not a plain `<schreiber>-<stil>` name."""
-    if not _HAND_ID.match(hand):
+    if not _HAND_ID.fullmatch(hand):
         raise SystemExit(
             f"hand id {hand!r} must be a plain `<schreiber>-<stil>` name (lowercase ASCII, "
             f"digits and dashes) ending in a known style ({', '.join(STYLE_IDS)}), e.g. mn-suetterlin"
@@ -70,13 +74,15 @@ def crop_name(row_index: int) -> str:
 # number. It reaches the CLIs as `--sheet` and is interpolated into paths in
 # ingest, page and apply, so it needs the same guard as the hand id and the
 # crop name — a mistyped or tampered value with path components would read and
-# write outside `<hand>/blaetter/`.
-_SHEET_ID = re.compile(r"^B\d{4,}$")
+# write outside `<hand>/blaetter/`. `[0-9]` rather than `\d`, which also
+# matches non-ASCII digits — `B٠٠٠١` is not a path escape, but it is not an id
+# next_sheet_id() can ever count on either.
+_SHEET_ID = re.compile(r"B[0-9]{4,}")
 
 
 def check_sheet_id(sheet: str) -> str:
     """Return the sheet id, or refuse anything that is not a plain `B<nnnn>`."""
-    if not _SHEET_ID.match(sheet):
+    if not _SHEET_ID.fullmatch(sheet):
         raise SystemExit(f"sheet id {sheet!r} must be a plain `B<nnnn>` name, e.g. B0001")
     return sheet
 
