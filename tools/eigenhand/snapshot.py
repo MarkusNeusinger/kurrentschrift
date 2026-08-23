@@ -55,7 +55,11 @@ def _units(root: Path) -> list[tuple[str, Path]]:
     if fassungen.is_dir():
         for strip in sorted(fassungen.iterdir()):
             for fassung in sorted(strip.iterdir()) if strip.is_dir() else ():
-                units.append((f"fassungen/{strip.name}/{fassung.name}", fassung))
+                # Only directories are copy units: a stray file (.DS_Store,
+                # a scratch note) would break shutil.copytree at the worst
+                # possible moment — mid-archive.
+                if fassung.is_dir():
+                    units.append((f"fassungen/{strip.name}/{fassung.name}", fassung))
     blaetter = root / "blaetter"
     if blaetter.is_dir():
         for sheet in sorted(blaetter.iterdir()):

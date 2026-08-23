@@ -9,7 +9,7 @@ import pytest
 from PIL import Image
 
 from tools.eigenhand import apply as apply_mod
-from tools.eigenhand import redo, snapshot
+from tools.eigenhand import redo, snapshot, store
 from tools.eigenhand.kartei import load_kartei, save_kartei, strip_state
 from tools.eigenhand.store import hand_dir
 
@@ -212,3 +212,16 @@ class TestSnapshot:
         save_kartei(HAND, load_kartei(HAND, "suetterlin"))
         with pytest.raises(SystemExit, match="shrinking"):
             snapshot.main(["--hand", HAND, "--archive", str(archive), "--stamp", "0002"])
+
+
+class TestHandId:
+    """A hand id addresses the whole reserved tree — it must stay a plain name."""
+
+    @pytest.mark.parametrize("bad", ["../escape", "mn/suetterlin", "/abs-suetterlin", "MN-Suetterlin", "plain"])
+    def test_path_like_or_malformed_ids_are_refused(self, bad):
+        with pytest.raises(SystemExit, match="plain"):
+            store.check_hand_id(bad)
+
+    def test_a_plain_id_passes_and_stays_under_the_data_root(self, dataroot):
+        assert store.check_hand_id("mn-suetterlin") == "mn-suetterlin"
+        assert store.hand_dir("mn-suetterlin").parent == store.data_root()

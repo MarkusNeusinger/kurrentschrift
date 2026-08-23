@@ -23,7 +23,7 @@ import json
 from collections import Counter
 from pathlib import Path
 
-from tools.eigenhand import coverage
+from tools.eigenhand import coverage, pool
 from tools.eigenhand.corpus import pool_entries, shaping_form
 from tools.eigenhand.pool import load_plan, soll_model
 from tools.eigenhand.store import STREIFEN_JSON
@@ -139,11 +139,12 @@ def main(argv: list[str] | None = None) -> int:
     # under it at the end of the plan — silence must mean "all covered".
     final = points[-1]
     totals = {key: count for bucket in final["glyphs"].values() for key, count in bucket.items()}
-    under = sorted(key for key, count in totals.items() if count < 3)
+    floor = pool.GLYPH_MIN_PLANNED
+    under = sorted(key for key, count in totals.items() if count < floor)
     if under:
-        print(f"unter Mindestbelegung (3): {', '.join(under)}")
+        print(f"unter Mindestbelegung ({floor}): {', '.join(under)}")
     else:
-        print("Mindestbelegung 3 je Glyphe: erfüllt")
+        print(f"Mindestbelegung {floor} je Glyphe: erfüllt")
 
     if args.json:
         args.json.parent.mkdir(parents=True, exist_ok=True)
