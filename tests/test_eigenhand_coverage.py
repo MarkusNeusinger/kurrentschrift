@@ -186,6 +186,13 @@ class TestGlyphFloor:
         assert stats["floor_unmet"], "a wave too small to meet the floor must report it"
 
 
+class TestProgressionCli:
+    def test_a_step_of_zero_is_refused_before_it_reaches_range(self):
+        # range(step, n, 0) raises deep inside checkpoints(); the CLI says so.
+        with pytest.raises(SystemExit):
+            progression.main(["--step", "0", "--no-universe"])
+
+
 class TestUniverseFormat:
     """The weight table is a local artefact — a format bump must be loud."""
 

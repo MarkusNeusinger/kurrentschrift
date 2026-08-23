@@ -11,7 +11,7 @@ derivative of a protectable frequency database, therefore never committed
 
 Two deliberate properties:
 
-* The subtitle lists are all-lowercase, so capital-initial joins cannot come
+* The OpenSubtitles frequency lists are all-lowercase, so capital-initial joins cannot come
   from the corpus: they enter the Übergangsraum through the curated pool
   words (real case) via ``pool.py``'s membership union. The corpus supplies
   weights, the pool supplies existence.

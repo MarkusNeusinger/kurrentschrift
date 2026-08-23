@@ -1,9 +1,13 @@
 """Shared paths and constants of the Eigenhand tool family.
 
-Everything the tools produce lives under the gitignored data root
+The captured material — sheets, scans, Fassungen, the Kartei, the local
+weight table — lives under the gitignored data root
 ``data/samples/own-hand/`` (bytes are the reserved own-hand dataset,
-docs/proposals/eigenhand-erfassung.md §8) — overridable with the
-``EIGENHAND_DATA`` environment variable so tests run against a tmp dir.
+docs/proposals/eigenhand-erfassung.md §8), overridable with the
+``EIGENHAND_DATA`` environment variable so tests run against a tmp dir. The
+one produced artefact that is COMMITTED is the strip plan
+(``STREIFEN_JSON``), which sits next to this code: it is the frozen,
+append-only output the whole chain reproduces against.
 """
 
 from __future__ import annotations

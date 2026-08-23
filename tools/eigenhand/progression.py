@@ -110,6 +110,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--json", type=Path, default=None, help="write the full structure to this path")
     ap.add_argument("--no-universe", action="store_true", help="skip the quota columns (no Übergangsraum needed)")
     args = ap.parse_args(argv)
+    if args.step < 1:
+        ap.error("--step must be at least 1 strip")
 
     plan = load_plan(STREIFEN_JSON)
     universe_items = None
