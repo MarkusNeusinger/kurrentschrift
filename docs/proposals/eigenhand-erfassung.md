@@ -420,6 +420,21 @@ Verkehr. Ein bereits registriertes Layout wird nie überschrieben — ein
 abweichendes unter derselben ID ist ein Konflikt (409), weil ein Scan
 dagegen registriert sein kann.
 
+**Was die Schnittstelle nachrechnet, statt es zu glauben** (Copilot-Review
+zu PR #407, beides echte Lücken): Ein hochgeschobenes Layout muss DIESEN
+Bogen benennen — Hand, Bogen-ID und Stil müssen zur Route passen, die
+Zeilen zur Streifenliste —, denn aus ihm wird später das PDF gerendert und
+gegen es ein Scan registriert; dieselbe Prüfung macht `apply.py` lokal,
+bevor es eine Zeile in eine Hand einsortiert. Und der Layout-Hash wird
+serverseitig gebildet, nicht übernommen: an ihm hängen Idempotenz und
+Konflikt, ein selbstdeklarierter Wert könnte zwei verschiedene Layouts für
+identisch erklären. Ebenso muss jedes Verdikt eine tatsächlich GEDRUCKTE
+Zeile benennen (Bogen registriert, Zeilenindex vorhanden, Streifen der
+dieser Zeile) — eine Fassung IST ein Beleg, sie macht einen Streifen
+`belegt`; ein Verdikt auf einen nie gedruckten Bogen erfände
+Trainingsdaten. `sync.py` hält darum die Verdikte eines Bogens zurück, den
+es (mangels `layout.json`) nicht registrieren konnte.
+
 ## 8 Ablage und Archiv
 
 `data/samples/own-hand/` ist komplett gitignored bis auf `SOURCE.md` +

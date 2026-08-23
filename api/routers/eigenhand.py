@@ -39,6 +39,7 @@ dataset's inventory.
 
 from __future__ import annotations
 
+import hashlib
 from datetime import date as date_cls
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
@@ -174,10 +175,40 @@ async def import_sheet(
     """
     _checked_hand(hand)
     _checked_sheet(sheet)
+    # The layout arrives from the client and then BECOMES the record: the PDF
+    # is re-rendered from it and a scan is registered against it. So it has to
+    # be the layout of THIS Bogen — same check tools/eigenhand/apply.py makes
+    # locally before it files a row into a hand ("refusing to file into the
+    # wrong hand"). Without it a PUT on B0001 could store a layout claiming
+    # another hand, and every later read would answer with that.
+    named = (body.layout.get("hand"), body.layout.get("sheet"), body.layout.get("style"))
+    if named != (hand, sheet, body.style):
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            detail=(
+                f"layout is for {named[0]}/{named[1]} ({named[2]}), not {hand}/{sheet} ({body.style}) — "
+                "refusing to record a Bogen under the wrong id"
+            ),
+        )
+    rows = [row.get("strip") for row in body.layout.get("rows", [])]
+    if rows != list(body.strips):
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, detail=f"strips {body.strips} do not match the layout's rows {rows}"
+        )
+    # Derived, never trusted: the hash is what the idempotency and the conflict
+    # below turn on, so a client could otherwise declare two different layouts
+    # identical (or one layout different from itself).
+    digest = hashlib.sha256(bogen.layout_text(body.layout).encode()).hexdigest()
+    if digest != body.layout_sha256:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            detail=f"layout_sha256 {body.layout_sha256[:10]}… does not match the layout ({digest[:10]}…)",
+        )
+
     repo = EigenhandRepository(db)
     existing = await repo.sheet(hand, sheet)
     if existing is not None:
-        if existing.layout_sha256 != body.layout_sha256:
+        if existing.layout_sha256 != digest:
             raise HTTPException(
                 status.HTTP_409_CONFLICT,
                 detail=f"{sheet} is already recorded with a different layout ({existing.layout_sha256[:10]}…)",
@@ -190,7 +221,7 @@ async def import_sheet(
         printed_on=body.printed_on,
         strips=body.strips,
         layout=body.layout,
-        sha256=body.layout_sha256,
+        sha256=digest,
     )
     await db.commit()
     return {"sheet": sheet, "imported": True}
@@ -238,14 +269,44 @@ async def record_fassungen(body: EigenhandSyncIn, db: AsyncSession = Depends(req
     skipped when the verdict matches and refused when it conflicts — the same
     rule as `tools/eigenhand/apply.py`, so a re-run of a sync is safe and a
     contradiction is loud.
+
+    Every verdict has to name a row that was actually PRINTED: the Bogen must
+    be recorded for this hand, the row index must exist on it, and the strip
+    must be the one that row carried. A Fassung IS a Beleg — it moves the
+    Bestand and marks a Streifen `belegt` — so a verdict for a Bogen nobody
+    printed would inflate the counts out of thin air. Push the sheets first
+    (`tools.eigenhand.sync` does, in that order).
     """
     hand = _checked_hand(body.hand)
     repo = EigenhandRepository(db)
     recorded = skipped = 0
+    sheets: dict[str, list[str]] = {}
     for item in body.fassungen:
         if not is_strip_id(item.strip) or not is_fassung_id(item.fassung) or not is_sheet_id(item.sheet):
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST, detail=f"malformed ids in {item.strip}/{item.fassung} on {item.sheet}"
+            )
+        if item.sheet not in sheets:
+            row = await repo.sheet(hand, item.sheet)
+            if row is None:
+                raise HTTPException(
+                    status.HTTP_404_NOT_FOUND,
+                    detail=(
+                        f"Bogen {item.sheet} is not recorded for {hand} — register the printed sheet first "
+                        "(PUT /eigenhand/sheets/{hand}/{sheet}), then push its verdicts"
+                    ),
+                )
+            sheets[item.sheet] = list(row.strips)
+        printed = sheets[item.sheet]
+        if item.row_index >= len(printed):
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                detail=f"{item.sheet} has {len(printed)} rows — there is no row {item.row_index}",
+            )
+        if printed[item.row_index] != item.strip:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                detail=f"{item.sheet} row {item.row_index} carried {printed[item.row_index]}, not {item.strip}",
             )
         existing = await repo.fassung_for_row(hand, item.sheet, item.row_index)
         if existing is not None:

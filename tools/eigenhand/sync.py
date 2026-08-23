@@ -13,6 +13,11 @@ Idempotent on both sides: a Bogen with the same layout is a no-op, a row whose
 verdict already matches is skipped, and a CONTRADICTING verdict is refused
 rather than overwritten (the API answers 409). Run it as often as you like.
 
+The order matters and is enforced on the server: a verdict has to name a row
+that was actually printed, so a Bogen whose `layout.json` is missing here
+cannot be registered — and its verdicts are held back rather than sent into a
+404. They go up on a later run, once the layout is back.
+
     ADMIN_TOKEN=… uv run python -m tools.eigenhand.sync --hand mn-suetterlin
 """
 
@@ -81,6 +86,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     imported = 0
+    known: set[str] = set()
     for sheet_id, sheet in sorted(kartei["sheets"].items()):
         # The layout is the geometry contract; without it the server would hold
         # a Bogen it could neither re-render nor hand back to an ingest run.
@@ -100,12 +106,19 @@ def main(argv: list[str] | None = None) -> int:
                 "layout_sha256": sheet["layout_sha256"],
             },
         )
+        known.add(sheet_id)
         imported += 1 if result.get("imported") else 0
 
-    pushed = _request("POST", f"{base}/eigenhand/fassungen", args.token, {"hand": hand, "fassungen": fassungen})
+    # Hold back the verdicts of a Bogen the server does not know: it would
+    # refuse them anyway (a Fassung has to name a printed row), and one 404
+    # would abort an otherwise fine sync.
+    sendable = [f for f in fassungen if f["sheet"] in known]
+    held = len(fassungen) - len(sendable)
+    pushed = _request("POST", f"{base}/eigenhand/fassungen", args.token, {"hand": hand, "fassungen": sendable})
     print(
         f"{hand}: {imported} new Bögen registered ({len(kartei['sheets'])} known), "
         f"{pushed['recorded']} Fassungen recorded, {pushed['skipped']} already there"
+        + (f", {held} held back (Bogen not registered)" if held else "")
     )
     return 0
 

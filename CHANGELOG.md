@@ -28,7 +28,14 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   are written out of how many the plan can produce — capitals, digits and
   signs each in their own class — plus a printer that composes the next
   Bögen and hands back their PDFs. Six admin-gated endpoints under
-  `/eigenhand/*`; uploading a scan deliberately stays a local step.
+  `/eigenhand/*`; uploading a scan deliberately stays a local step. What
+  the API is handed, it re-checks: an uploaded layout must name the Bogen
+  its route names (the PDF is re-rendered from it and a scan registered
+  against it — the same check `apply.py` makes locally), its hash is
+  derived rather than believed, and every verdict must name a row that was
+  actually printed. A Fassung is a Beleg: without that last check a
+  verdict for a Bogen nobody printed would have inflated the counts
+  (Copilot review).
 
 - **One compute layer for the capture chain, two persistences.** The pure
   half moved from `tools/eigenhand` to `core/eigenhand` — the frozen strip

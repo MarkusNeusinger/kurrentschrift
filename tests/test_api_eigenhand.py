@@ -196,13 +196,23 @@ class TestLocalPrints:
     """A Bogen printed in the terminal, pushed up by `tools.eigenhand.sync`."""
 
     @staticmethod
-    def _body(strips: list[str], sha: str = "a" * 64) -> dict:
+    def _body(strips: list[str], sheet: str = "B0001", hand: str = HAND, date: str = "2026-08-23") -> dict:
+        """A real local print: composed exactly the way `tools.eigenhand.sheet` would."""
+        composed = bogen.compose_sheet(
+            plan=load_plan(),
+            kartei={"format": 1, "hand": hand, "style": "suetterlin", "sheets": {}, "strips": {}, "redo": []},
+            hand=hand,
+            style="suetterlin",
+            date=date,
+            strips=strips,
+        )
+        assert composed["sheet"] == sheet  # the empty Kartei mints B0001
         return {
             "style": "suetterlin",
-            "printed_on": "2026-08-23",
-            "strips": strips,
-            "layout": {"format": 1, "sheet": "B0001", "hand": HAND, "style": "suetterlin", "rows": []},
-            "layout_sha256": sha,
+            "printed_on": date,
+            "strips": composed["strips"],
+            "layout": composed["layout"],
+            "layout_sha256": composed["layout_sha256"],
         }
 
     @pytest.mark.asyncio
@@ -224,13 +234,45 @@ class TestLocalPrints:
             "PUT", f"/eigenhand/sheets/{HAND}/B0001", json_body=self._body(["S0001"]), headers=api.admin_headers()
         )
         assert again.status == 201 and again.json()["imported"] is False
+        # Same id, genuinely different Bogen (other rows → other layout).
         clash = await api.client.request(
-            "PUT",
-            f"/eigenhand/sheets/{HAND}/B0001",
-            json_body=self._body(["S0001"], sha="b" * 64),
-            headers=api.admin_headers(),
+            "PUT", f"/eigenhand/sheets/{HAND}/B0001", json_body=self._body(["S0002"]), headers=api.admin_headers()
         )
         assert clash.status == 409
+
+    @pytest.mark.asyncio
+    async def test_a_layout_naming_another_bogen_is_refused(self, api: Harness):
+        # The layout BECOMES the record: the PDF is re-rendered from it and a
+        # scan is registered against it, so it has to be this Bogen's.
+        body = self._body(["S0001"])
+        wrong_sheet = await api.client.request(
+            "PUT", f"/eigenhand/sheets/{HAND}/B0002", json_body=body, headers=api.admin_headers()
+        )
+        assert wrong_sheet.status == 400
+        body["layout"] = {**body["layout"], "hand": "xx-kurrent"}
+        wrong_hand = await api.client.request(
+            "PUT", f"/eigenhand/sheets/{HAND}/B0001", json_body=body, headers=api.admin_headers()
+        )
+        assert wrong_hand.status == 400
+        assert (await _bestand(api))["sheets"]["printed"] == 0
+
+    @pytest.mark.asyncio
+    async def test_a_declared_hash_that_does_not_match_the_layout_is_refused(self, api: Harness):
+        # The hash decides idempotency vs. conflict, so it is derived here,
+        # never taken on the client's word.
+        body = self._body(["S0001"]) | {"layout_sha256": "b" * 64}
+        res = await api.client.request(
+            "PUT", f"/eigenhand/sheets/{HAND}/B0001", json_body=body, headers=api.admin_headers()
+        )
+        assert res.status == 400
+
+    @pytest.mark.asyncio
+    async def test_strips_must_match_the_layouts_rows(self, api: Harness):
+        body = self._body(["S0001"]) | {"strips": ["S0002"]}
+        res = await api.client.request(
+            "PUT", f"/eigenhand/sheets/{HAND}/B0001", json_body=body, headers=api.admin_headers()
+        )
+        assert res.status == 400
 
 
 class TestVerdicts:
@@ -258,6 +300,24 @@ class TestVerdicts:
     async def test_a_malformed_id_is_refused(self, api: Harness):
         res = await _record(api, [_accepted("strip-1", "B0001", 0)])
         assert res.status == 400
+
+    @pytest.mark.asyncio
+    async def test_a_verdict_for_a_bogen_nobody_printed_is_refused(self, api: Harness):
+        # A Fassung IS a Beleg: it marks a Streifen `belegt` and moves the
+        # coverage. A ghost row would conjure training data out of nothing.
+        res = await _record(api, [_accepted("S0001", "B0042", 0)])
+        assert res.status == 404
+        data = await _bestand(api)
+        assert data["fassungen"]["angenommen"] == 0 and data["strips"]["belegt"] == 0
+
+    @pytest.mark.asyncio
+    async def test_a_verdict_must_name_the_strip_that_row_carried(self, api: Harness):
+        await _print(api, strips=["S0001", "S0002"], date="2026-08-23")
+        wrong_strip = await _record(api, [_accepted("S0002", "B0001", 0)])
+        assert wrong_strip.status == 400
+        beyond = await _record(api, [_accepted("S0001", "B0001", 7)])
+        assert beyond.status == 400
+        assert (await _bestand(api))["fassungen"]["angenommen"] == 0
 
 
 class TestAdminGate:
