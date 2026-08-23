@@ -50,6 +50,20 @@ def hand_dir(hand: str) -> Path:
     return data_root() / check_hand_id(hand)
 
 
+def check_crop_name(crop: str) -> str:
+    """Return the crop file name, or refuse it if it carries path components.
+
+    ``payload.json`` names the row crops, and both readers of that field turn
+    the name into a path — page.py embeds the file, apply.py copies it into
+    the reserved dataset. A tampered (or simply buggy) payload must not be
+    able to reach outside the sheet's own import directory. Same guard as the
+    public crop endpoint's `page` field (core/chart.py::load_word_samples).
+    """
+    if Path(crop).name != crop:
+        raise SystemExit(f"payload crop {crop!r} carries path components — refusing")
+    return crop
+
+
 def universe_path() -> Path:
     """The local Übergangsraum weight table (derived from consult-only corpora)."""
     return data_root() / "universe" / "uebergangsraum.json"

@@ -95,7 +95,10 @@ def load_universe(path: Path | None = None) -> dict:
     target = path or universe_path()
     if not target.exists():
         raise SystemExit(f"{target} missing — run: uv run python -m tools.eigenhand.universe")
-    return json.loads(target.read_text(encoding="utf-8"))
+    table = json.loads(target.read_text(encoding="utf-8"))
+    if table.get("format") != UNIVERSE_FORMAT:
+        raise SystemExit(f"{target}: unsupported format {table.get('format')!r}")
+    return table
 
 
 def main(argv: list[str] | None = None) -> int:

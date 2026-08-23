@@ -33,7 +33,7 @@ import shutil
 from pathlib import Path
 
 from tools.eigenhand.kartei import load_kartei, next_fassung_id, save_kartei
-from tools.eigenhand.store import hand_dir
+from tools.eigenhand.store import check_crop_name, hand_dir
 
 
 META_FORMAT = 1
@@ -89,6 +89,10 @@ def main(argv: list[str] | None = None) -> int:
     unknown = set(verdicts) - {row["uid"] for row in payload["rows"]}
     if unknown:
         raise SystemExit(f"result names unknown uids: {', '.join(sorted(unknown))}")
+    # Every crop name is turned into a path below. Check them all up front, so
+    # a tampered payload fails before a single directory has been created.
+    for row in payload["rows"]:
+        check_crop_name(row["crop"])
 
     kartei = load_kartei(args.hand, payload["style"])
     filed = recorded = skipped = 0

@@ -242,6 +242,26 @@ class TestSiebungPage:
         assert "Stift auf dem Blatt: Haken" in html
 
 
+class TestCropName:
+    """The crop name from payload.json becomes a path in page.py AND apply.py."""
+
+    @pytest.mark.parametrize("bad", ["../../etc/passwd.png", "sub/row-00.png", "/abs/row-00.png"])
+    def test_path_components_are_refused(self, bad):
+        with pytest.raises(SystemExit, match="path components"):
+            store.check_crop_name(bad)
+
+    def test_apply_refuses_before_it_creates_anything(self, dataroot):
+        _make_sheet()
+        import_dir = hand_dir(HAND) / "blaetter" / "B0001" / "import"
+        payload = json.loads((import_dir / "payload.json").read_text(encoding="utf-8"))
+        payload["rows"][0]["crop"] = "../../../row-00.png"
+        (import_dir / "payload.json").write_text(json.dumps(payload), encoding="utf-8")
+        result = _result("B0001", ["B0001-r00:angenommen"])
+        with pytest.raises(SystemExit, match="path components"):
+            apply_mod.main([str(result), "--hand", HAND, "--sheet", "B0001"])
+        assert not (hand_dir(HAND) / "fassungen").exists()  # no half-filed Fassung
+
+
 class TestHandId:
     """A hand id addresses the whole reserved tree — it must stay a plain name."""
 

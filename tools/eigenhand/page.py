@@ -26,7 +26,7 @@ import html
 import json
 from pathlib import Path
 
-from tools.eigenhand.store import hand_dir
+from tools.eigenhand.store import check_crop_name, hand_dir
 
 
 REASONS = ("verschrieben", "verrutscht", "Klecks", "sonstiges")
@@ -171,11 +171,8 @@ def build_page(payload: dict, import_dir: Path) -> str:
     rows_html = []
     for row in payload["rows"]:
         # A crop name with path components would let a tampered payload embed
-        # arbitrary local files into the page — same guard as the public crop
-        # endpoint's `page` field (core/chart.py::load_word_samples).
-        crop_name = row["crop"]
-        if Path(crop_name).name != crop_name:
-            raise SystemExit(f"payload crop {crop_name!r} carries path components — refusing")
+        # arbitrary local files into the page.
+        crop_name = check_crop_name(row["crop"])
         attempt = f" · Versuch {row['attempt']}/{row['attempts']}" if row["attempts"] > 1 else ""
         qc = f'<span class="qc">⚠ {esc(", ".join(row["qc"]))}</span>' if row["qc"] else ""
         pen = row.get("pen_mark") or ""

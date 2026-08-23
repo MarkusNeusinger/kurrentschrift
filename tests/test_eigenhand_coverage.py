@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from tools.eigenhand import coverage, pool, progression
+from tools.eigenhand import coverage, pool, progression, universe
 from tools.eigenhand.store import STREIFEN_JSON
 
 
@@ -165,3 +165,18 @@ class TestGlyphFloor:
         # the stats (and warned about), never quietly dropped.
         _plan, stats = pool.build_wave({"format": 1, "waves": [], "strips": {}}, 12, {"l>e": 100.0})
         assert stats["floor_unmet"], "a wave too small to meet the floor must report it"
+
+
+class TestUniverseFormat:
+    """The weight table is a local artefact — a format bump must be loud."""
+
+    def test_a_foreign_format_is_refused(self, tmp_path):
+        path = tmp_path / "uebergangsraum.json"
+        path.write_text(json.dumps({"format": 99, "items": {}}), encoding="utf-8")
+        with pytest.raises(SystemExit, match="unsupported format"):
+            universe.load_universe(path)
+
+    def test_the_current_format_loads(self, tmp_path):
+        path = tmp_path / "uebergangsraum.json"
+        path.write_text(json.dumps({"format": universe.UNIVERSE_FORMAT, "items": {"l>e": 1.0}}), encoding="utf-8")
+        assert universe.load_universe(path)["items"] == {"l>e": 1.0}
