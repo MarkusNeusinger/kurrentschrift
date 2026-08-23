@@ -94,10 +94,16 @@ def rectify(gray: np.ndarray, layout: dict) -> tuple[np.ndarray, float, dict[str
 
 
 def _printed_mask(shape: tuple[int, int], row: dict, x0_px: int, y0_px: int) -> np.ndarray:
-    """True where the crop shows PRINTED geometry (guide lines, box edges)."""
+    """True where the crop shows PRINTED geometry (guide lines, box edges, row id)."""
     mask = np.zeros(shape, dtype=bool)
     band = row["band_mm"]
     half = _px(LINE_MASK_MM)
+    # Everything above the ascender line is printed matter, not handwriting:
+    # that frame carries the strip id sheet.py prints in the Schnittband's top
+    # pad. Counting its pixels would fake ink and suppress the `leer` flag.
+    above_band = _px(band["asc_top"]) - y0_px - half
+    if above_band > 0:
+        mask[:above_band, :] = True
     for box in row["boxes"]:
         bx0, bx1 = _px(box["x0_mm"]) - x0_px, _px(box["x1_mm"]) - x0_px
         for y_mm in (band["asc_top"], band["waist"], band["baseline"], band["desc_bot"]):
@@ -178,10 +184,12 @@ def build_payload(
             y1_px = _px(band["desc_bot"] + STRIP_LABEL_BELOW_MM)
         crop = warped[y0_px:y1_px, x0_px:x1_px]
         # QC runs on the writing band only — the printed row id and labels in
-        # the wider strip must not fake ink flags.
+        # the wider strip must not fake ink flags. It therefore has its OWN
+        # origin: the Schnittband reaches further up and down than this.
         qx0_px = _px(boxes_x0 - ROW_PAD_MM)
+        qy0_px = _px(band["asc_top"] - ROW_PAD_MM)
         qy1_px = _px(band["desc_bot"] + ROW_PAD_MM)
-        qc_crop = warped[y0_px:qy1_px, qx0_px:x1_px]
+        qc_crop = warped[qy0_px:qy1_px, qx0_px : _px(boxes_x1 + ROW_PAD_MM)]
         pen_mark = read_pen_mark(warped, row)
         crop_name = row_crop_name(index)
         Image.fromarray((np.clip(crop, 0.0, 1.0) * 255).astype(np.uint8), mode="L").save(import_dir / crop_name)
@@ -193,7 +201,7 @@ def build_payload(
                 "attempt": row["attempt"],
                 "attempts": row["attempts"],
                 "words": [box["word"] for box in row["boxes"]],
-                "qc": qc_flags(qc_crop, row, qx0_px, y0_px),
+                "qc": qc_flags(qc_crop, row, qx0_px, qy0_px),
                 "pen_mark": pen_mark,
                 "crop": crop_name,
                 "crop_origin_mm": [round(_mm(x0_px), 3), round(_mm(y0_px), 3)],

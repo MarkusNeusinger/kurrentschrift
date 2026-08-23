@@ -109,6 +109,23 @@ class TestRectify:
         assert abs(width_px / ingest.PX_PER_MM - (cut[2] - cut[0])) < 0.5
         assert abs(height_px / ingest.PX_PER_MM - (cut[3] - cut[1])) < 0.5
 
+    def test_the_printed_strip_id_does_not_fake_ink(self, tmp_path, monkeypatch):
+        # The id is printed INSIDE the Schnittband's top pad. QC must still see
+        # an unwritten row as `leer` — otherwise every empty row looks written.
+        monkeypatch.setenv("EIGENHAND_DATA", str(tmp_path / "own-hand"))
+        layout = _layout()
+        warped, dpi, _marks = ingest.rectify(_distorted_capture(layout, rotate=False), layout)
+        cut, band = layout["rows"][0]["cut_mm"], layout["rows"][0]["band_mm"]
+        top, bottom = int(mm_to_px(cut[1] + 0.5, 300.0)), int(mm_to_px(band["asc_top"] - 1.0, 300.0))
+        left, right = int(mm_to_px(cut[0] + 1.0, 300.0)), int(mm_to_px(cut[0] + 15.0, 300.0))
+        warped[top:bottom, left:right] = 0.05  # a fat stand-in for "S0001"
+
+        scan = tmp_path / "scan.png"
+        Image.fromarray(np.zeros((4, 4), dtype=np.uint8)).save(scan)
+        session = {"date": "2026-08-23", "feder": "", "tinte": "", "papier": "", "geraet": "scanner"}
+        payload = ingest.build_payload("test-suetterlin", "B0001", layout, warped, scan, session, dpi)
+        assert "leer" in payload["rows"][0]["qc"]
+
     def test_upside_down_capture_lands_upright(self):
         # Rectified without rotation must equal rectified with rotation — the
         # donut anchors orientation either way.
