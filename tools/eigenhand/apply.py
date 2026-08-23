@@ -88,8 +88,14 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
 
     sheet_dir = hand_dir(args.hand) / "blaetter" / args.sheet
-    payload = json.loads((sheet_dir / "import" / "payload.json").read_text(encoding="utf-8"))
-    layout_text = (sheet_dir / "layout.json").read_text(encoding="utf-8")
+    payload_file = sheet_dir / "import" / "payload.json"
+    layout_file = sheet_dir / "layout.json"
+    for missing in (path for path in (payload_file, layout_file) if not path.exists()):
+        # Running apply before ingest, or against the wrong hand/sheet, is a
+        # normal operator slip — it deserves a sentence, not a traceback.
+        raise SystemExit(f"{missing} missing — run ingest for {args.hand}/{args.sheet} first")
+    payload = json.loads(payload_file.read_text(encoding="utf-8"))
+    layout_text = layout_file.read_text(encoding="utf-8")
     layout = json.loads(layout_text)
     verdicts = parse_result(args.result.read_text(encoding="utf-8"), args.sheet)
 

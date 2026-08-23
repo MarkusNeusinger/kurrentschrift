@@ -162,6 +162,12 @@ class TestApply:
         apply_mod.main([str(result), "--hand", HAND, "--sheet", "B0001"])
         assert [f["id"] for f in load_kartei(HAND)["strips"]["S0001"]["fassungen"]] == ["F01"]
 
+    def test_apply_before_ingest_says_so_instead_of_tracing_back(self, dataroot):
+        hand_dir(HAND).mkdir(parents=True)  # a hand that has never been ingested
+        result = _result("B0001", ["B0001-r00:angenommen"])
+        with pytest.raises(SystemExit, match="run ingest"):
+            apply_mod.main([str(result), "--hand", HAND, "--sheet", "B0001"])
+
     def test_a_lost_print_record_is_rebuilt_from_the_layout(self, dataroot):
         # Without this, a Kartei restored from an older snapshot would get an
         # empty sheet stub: no print date, no strips (both drive the derived
