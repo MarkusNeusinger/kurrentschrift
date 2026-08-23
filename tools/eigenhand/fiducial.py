@@ -22,8 +22,11 @@ from skimage import filters, measure
 
 # A fiducial candidate must look like a filled square and be big enough to be
 # printed geometry rather than ink: bounds relative to the image so no DPI
-# knowledge is needed (the sheet fills most of any reasonable capture).
-MIN_AREA_FRACTION = 0.2e-4  # of the image area (8 mm square on A4 ≈ 1e-3)
+# knowledge is needed. A frame-filling capture puts the 8 mm square at
+# (8/210)·(8/297) ≈ 1.5e-3 of the image area; the floor sits ~70× below that
+# ON PURPOSE, tolerating photos where the sheet covers only a fraction of the
+# frame. The ceiling rejects sheet-sized dark blobs (shadows, covers).
+MIN_AREA_FRACTION = 0.2e-4
 MAX_AREA_FRACTION = 60e-4
 MIN_EXTENT = 0.55  # filled area / bbox area (donut hole lowers it below a solid square's)
 MAX_ASPECT = 1.8

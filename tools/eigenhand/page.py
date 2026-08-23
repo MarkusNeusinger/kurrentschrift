@@ -149,13 +149,19 @@ def build_page(payload: dict, import_dir: Path) -> str:
 
     rows_html = []
     for row in payload["rows"]:
+        # A crop name with path components would let a tampered payload embed
+        # arbitrary local files into the page — same guard as the public crop
+        # endpoint's `page` field (core/chart.py::load_word_samples).
+        crop_name = row["crop"]
+        if Path(crop_name).name != crop_name:
+            raise SystemExit(f"payload crop {crop_name!r} carries path components — refusing")
         attempt = f" · Versuch {row['attempt']}/{row['attempts']}" if row["attempts"] > 1 else ""
         qc = f'<span class="qc">⚠ {esc(", ".join(row["qc"]))}</span>' if row["qc"] else ""
         reason_buttons = "".join(f'<button type="button" data-reason="{esc(r)}">{esc(r)}</button>' for r in REASONS)
         rows_html.append(f"""
 <div class="row" data-uid="{esc(row["uid"])}">
   <div class="rowhead"><b>{esc(row["strip"])}{attempt}</b> <span>{esc(" · ".join(row["words"]))}</span> {qc}</div>
-  <img src="{_data_uri(import_dir / row["crop"])}" alt="{esc(row["strip"])}">
+  <img src="{_data_uri(import_dir / crop_name)}" alt="{esc(row["strip"])}">
   <div class="verdicts">
     <button type="button" data-verdict="angenommen">Annehmen</button>
     <button type="button" data-verdict="verworfen">Verwerfen</button>
