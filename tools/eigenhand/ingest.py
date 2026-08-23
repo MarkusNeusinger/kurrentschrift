@@ -33,7 +33,7 @@ from skimage import transform
 from core.extract import load_grayscale
 from tools.eigenhand.fiducial import FiducialError, detect_fiducials, orient_corners
 from tools.eigenhand.store import crop_name as row_crop_name
-from tools.eigenhand.store import hand_dir
+from tools.eigenhand.store import sheet_dir as store_sheet_dir
 
 
 PAYLOAD_FORMAT = 1
@@ -184,7 +184,7 @@ def build_payload(
     keep_scan: bool = False,
     channel: str = "grau",
 ) -> dict:
-    sheet_dir = hand_dir(hand) / "blaetter" / sheet
+    sheet_dir = store_sheet_dir(hand, sheet)
     import_dir = sheet_dir / "import"
     import_dir.mkdir(parents=True, exist_ok=True)
 
@@ -286,7 +286,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = ap.parse_args(argv)
 
-    layout_path = hand_dir(args.hand) / "blaetter" / args.sheet / "layout.json"
+    layout_path = store_sheet_dir(args.hand, args.sheet) / "layout.json"
     if not layout_path.exists():
         raise SystemExit(f"{layout_path} missing — was sheet {args.sheet} generated for hand {args.hand}?")
     layout = json.loads(layout_path.read_text(encoding="utf-8"))
@@ -311,7 +311,7 @@ def main(argv: list[str] | None = None) -> int:
     payload = build_payload(
         args.hand, args.sheet, layout, warped, args.scan, session, dpi, args.keep_scan, channel_used
     )
-    import_dir = hand_dir(args.hand) / "blaetter" / args.sheet / "import"
+    import_dir = store_sheet_dir(args.hand, args.sheet) / "import"
     (import_dir / "payload.json").write_text(json.dumps(payload, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     ticked = sum(1 for row in payload["rows"] if row.get("pen_mark") == "angenommen")
     flagged = sum(1 for row in payload["rows"] if row["qc"])

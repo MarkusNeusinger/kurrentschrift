@@ -66,6 +66,26 @@ def crop_name(row_index: int) -> str:
     return f"row-{row_index:02d}.png"
 
 
+# A Bogen id is what kartei.next_sheet_id() mints: `B` plus a zero-padded
+# number. It reaches the CLIs as `--sheet` and is interpolated into paths in
+# ingest, page and apply, so it needs the same guard as the hand id and the
+# crop name — a mistyped or tampered value with path components would read and
+# write outside `<hand>/blaetter/`.
+_SHEET_ID = re.compile(r"^B\d{4,}$")
+
+
+def check_sheet_id(sheet: str) -> str:
+    """Return the sheet id, or refuse anything that is not a plain `B<nnnn>`."""
+    if not _SHEET_ID.match(sheet):
+        raise SystemExit(f"sheet id {sheet!r} must be a plain `B<nnnn>` name, e.g. B0001")
+    return sheet
+
+
+def sheet_dir(hand: str, sheet: str) -> Path:
+    """The Bogen directory — both parts of the path checked in one place."""
+    return hand_dir(hand) / "blaetter" / check_sheet_id(sheet)
+
+
 def check_crop_name(crop: str, row_index: int) -> str:
     """Return the crop name, or refuse anything that is not THIS row's crop.
 

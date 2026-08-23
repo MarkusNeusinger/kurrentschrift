@@ -101,7 +101,7 @@ class TestRectify:
         session = {"date": "2026-08-23", "feder": "", "tinte": "", "papier": "", "geraet": "scanner"}
         payload = ingest.build_payload("test-suetterlin", "B0001", layout, warped, scan, session, dpi)
 
-        import_dir = ingest.hand_dir("test-suetterlin") / "blaetter" / "B0001" / "import"
+        import_dir = ingest.store_sheet_dir("test-suetterlin", "B0001") / "import"
         sizes = {Image.open(import_dir / row["crop"]).size for row in payload["rows"]}
         assert len(sizes) == 1, f"strips differ in size: {sizes}"
         width_px, height_px = sizes.pop()

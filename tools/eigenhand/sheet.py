@@ -34,7 +34,8 @@ from tools.eigenhand import coverage, geometry, pdfgen
 from tools.eigenhand.corpus import pool_entries
 from tools.eigenhand.kartei import accepted_fassungen, load_kartei, next_sheet_id, save_kartei, strip_state
 from tools.eigenhand.pool import load_plan, soll_model
-from tools.eigenhand.store import STREIFEN_JSON, hand_dir, style_of_hand
+from tools.eigenhand.store import STREIFEN_JSON, style_of_hand
+from tools.eigenhand.store import sheet_dir as store_sheet_dir
 from tools.eigenhand.universe import load_universe
 
 
@@ -361,7 +362,7 @@ def _print_one_sheet(args: argparse.Namespace, style: str) -> str:
     layout = build_layout(sheet_id, args.hand, style, strip_rows, plan, args.date, not args.no_hints)
     pdf = render_pdf(layout)
 
-    out_dir = hand_dir(args.hand) / "blaetter" / sheet_id
+    out_dir = store_sheet_dir(args.hand, sheet_id)
     out_dir.mkdir(parents=True, exist_ok=True)
     layout_text = json.dumps(layout, ensure_ascii=False, indent=1) + "\n"
     (out_dir / "layout.json").write_text(layout_text, encoding="utf-8")

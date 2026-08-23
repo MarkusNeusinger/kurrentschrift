@@ -26,7 +26,8 @@ import html
 import json
 from pathlib import Path
 
-from tools.eigenhand.store import check_crop_name, hand_dir
+from tools.eigenhand.store import check_crop_name
+from tools.eigenhand.store import sheet_dir as store_sheet_dir
 
 
 REASONS = ("verschrieben", "verrutscht", "Klecks", "sonstiges")
@@ -237,7 +238,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--out", type=Path, default=None, help="output HTML (default: <sheet>/import/siebung.html)")
     args = ap.parse_args(argv)
 
-    import_dir = hand_dir(args.hand) / "blaetter" / args.sheet / "import"
+    import_dir = store_sheet_dir(args.hand, args.sheet) / "import"
     payload_path = import_dir / "payload.json"
     if not payload_path.exists():
         raise SystemExit(f"{payload_path} missing — run tools.eigenhand.ingest first")
