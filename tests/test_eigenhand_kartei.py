@@ -9,6 +9,7 @@ import pytest
 from PIL import Image
 
 from tools.eigenhand import apply as apply_mod
+from tools.eigenhand import page as page_mod
 from tools.eigenhand import redo, snapshot, store
 from tools.eigenhand.kartei import load_kartei, save_kartei, strip_state
 from tools.eigenhand.store import hand_dir
@@ -212,6 +213,33 @@ class TestSnapshot:
         save_kartei(HAND, load_kartei(HAND, "suetterlin"))
         with pytest.raises(SystemExit, match="shrinking"):
             snapshot.main(["--hand", HAND, "--archive", str(archive), "--stamp", "0002"])
+
+
+class TestSiebungPage:
+    """The page's result file must BE the one-row-per-line format apply reads."""
+
+    def _page(self, dataroot) -> str:
+        _make_sheet()
+        import_dir = hand_dir(HAND) / "blaetter" / "B0001" / "import"
+        Image.new("L", (40, 8), 235).save(import_dir / "header.png")
+        payload = json.loads((import_dir / "payload.json").read_text(encoding="utf-8"))
+        payload["rows"][0]["pen_mark"] = "angenommen"
+        return page_mod.build_page(payload, import_dir)
+
+    def test_notes_are_flattened_before_they_reach_the_result_line(self, dataroot):
+        # A pasted line break in a remark would make the whole Siebung
+        # unparseable — after the sheet has already been judged.
+        assert 's.note.replace(/\\s+/g, " ")' in self._page(dataroot)
+
+    def test_a_flattened_note_round_trips_through_apply(self, dataroot):
+        self._page(dataroot)
+        text = 'SIEBUNG/1 bogen=B0001 geprueft=1 von 1\nB0001-r00:verworfen#Klecks "zwei Zeilen zu einer"\n'
+        assert apply_mod.parse_result(text, "B0001")["B0001-r00"]["note"] == "zwei Zeilen zu einer"
+
+    def test_the_pen_mark_seeds_the_verdict_and_is_named_on_screen(self, dataroot):
+        html = self._page(dataroot)
+        assert 'data-pen="angenommen"' in html  # seedFromPen() reads this
+        assert "Stift auf dem Blatt: Haken" in html
 
 
 class TestHandId:

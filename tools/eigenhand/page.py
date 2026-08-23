@@ -87,7 +87,11 @@ function resultText() {
     done += 1;
     let line = uid + ":" + s.verdict;
     if (s.verdict === "verworfen") line += "#" + (s.reason || "sonstiges");
-    if (s.note) line += ' "' + s.note.replace(/"/g, "'") + '"';
+    // Flattened here rather than in the parser (humanbench page.py does the
+    // same): the emitted file has to BE the one-row-per-line format it claims
+    // to be. A pasted line break in a remark would otherwise make the whole
+    // Siebung unparseable — after the sheet has already been judged.
+    if (s.note) line += ' "' + s.note.replace(/\\s+/g, " ").replace(/"/g, "'").trim() + '"';
     lines.push(line);
   }
   const head = "SIEBUNG/1 bogen=" + document.body.dataset.sheet + " geprueft=" + done + " von " + rows.length;

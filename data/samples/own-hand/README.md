@@ -19,9 +19,11 @@ uv run python -m tools.eigenhand.sheet --hand mn-suetterlin --date 2026-08-22
 #    Mehrfach-Versuche derselben Streifen:  --repeat 3
 #    gezielte Streifen:                     --strips S0037 S0037 S0055
 
-# 2. schreiben — und JEDE Zeile gleich rechts ankreuzen: „ok“ oder „nein“.
+# 2. schreiben — und JEDE gelungene Zeile gleich rechts abhaken (ein Kästchen).
 #    Der Import liest die Marken und belegt die Siebung damit vor.
-#    Nicht angekreuzt = unentschieden, wird am Bildschirm gefragt.
+#    Haken/Kreuz = angenommen, leeres Kästchen = verworfen (am Bildschirm
+#    jederzeit überschreibbar — ein vergessener Haken kostet nur den Streifen,
+#    der dann wieder in der Druck-Warteschlange steht).
 #    Dann einscannen/fotografieren (Passmarken müssen mit drauf sein)
 
 # 3. einlesen (entzerrt, schneidet Zeilen, prüft QC)
