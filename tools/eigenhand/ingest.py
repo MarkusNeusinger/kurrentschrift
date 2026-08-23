@@ -233,7 +233,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--tinte", default="", help="ink")
     ap.add_argument("--papier", default="", help="paper")
     ap.add_argument("--geraet", default="scanner", choices=("scanner", "kamera"), help="capture device")
-    ap.add_argument("--datum", default="", help="session date, ISO (default: the sheet's print date)")
+    # --datum stays as an alias: the family's other tools were written with it,
+    # and the English spelling is the one the language rules ask for.
+    ap.add_argument(
+        "--date", "--datum", dest="date", default="", help="session date, ISO (default: the sheet's print date)"
+    )
     ap.add_argument("--keep-scan", action="store_true", help="also keep the full-page scan under scans/")
     args = ap.parse_args(argv)
 
@@ -251,7 +255,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"WARNING: effective capture resolution ~{dpi:.0f} DPI is under {MIN_DPI_WARN:.0f} — rescan if possible")
 
     session = {
-        "date": args.datum or layout["provenance"]["date"],
+        "date": args.date or layout["provenance"]["date"],
         "feder": args.feder,
         "tinte": args.tinte,
         "papier": args.papier,

@@ -42,11 +42,11 @@ MIN_WORD_LEN = 2
 # (pool.py unions pool-word items into the universe at weight 0).
 MIN_COUNT = 100
 
-_DE_WORD = re.compile(r"^[a-zäöüß]+$")
-_EN_WORD = re.compile(r"^[a-z]+$")
+DE_WORD = re.compile(r"^[a-zäöüß]+$")
+EN_WORD = re.compile(r"^[a-z]+$")
 
 
-def _read_list(path: Path, pattern: re.Pattern[str]) -> list[tuple[str, int]]:
+def read_list(path: Path, pattern: re.Pattern[str]) -> list[tuple[str, int]]:
     if not path.exists():
         raise SystemExit(f"{path} missing — run: uv run python {path.parent / 'fetch_frequencywords.py'}")
     out: list[tuple[str, int]] = []
@@ -74,8 +74,8 @@ def accumulate(rows: list[tuple[str, int]], factor: float, into: dict[str, float
 
 
 def build(corpora: Path, en_weight: float) -> dict:
-    de_rows = _read_list(corpora / "de_50k.txt", _DE_WORD)
-    en_rows = _read_list(corpora / "en_50k.txt", _EN_WORD)
+    de_rows = read_list(corpora / "de_50k.txt", DE_WORD)
+    en_rows = read_list(corpora / "en_50k.txt", EN_WORD)
     weights: dict[str, float] = {}
     de_used = accumulate(de_rows, 1.0, weights)
     en_used = accumulate(en_rows, en_weight, weights)

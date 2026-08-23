@@ -54,8 +54,15 @@ def hand_dir(hand: str) -> Path:
     return data_root() / check_hand_id(hand)
 
 
+# A row crop is what ingest.py writes: `row-<NN>.png`, never anything else.
+# Matching the producer's shape rather than merely banning separators also
+# rules out `..` (which `Path.name` hands back unchanged) and a directory
+# passed as a file name.
+_CROP_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*\.png$")
+
+
 def check_crop_name(crop: str) -> str:
-    """Return the crop file name, or refuse it if it carries path components.
+    """Return the crop file name, or refuse anything that is not a plain PNG name.
 
     ``payload.json`` names the row crops, and both readers of that field turn
     the name into a path — page.py embeds the file, apply.py copies it into
@@ -63,8 +70,8 @@ def check_crop_name(crop: str) -> str:
     able to reach outside the sheet's own import directory. Same guard as the
     public crop endpoint's `page` field (core/chart.py::load_word_samples).
     """
-    if Path(crop).name != crop:
-        raise SystemExit(f"payload crop {crop!r} carries path components — refusing")
+    if Path(crop).name != crop or not _CROP_NAME.match(crop):
+        raise SystemExit(f"payload crop {crop!r} is not a plain PNG file name (no path components) — refusing")
     return crop
 
 

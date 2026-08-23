@@ -27,7 +27,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--hand", required=True)
     ap.add_argument("--reason", default="", help="why (lands in the Kartei entry)")
     ap.add_argument("--retire", action="store_true", help="also withdraw the strips' accepted Fassungen")
-    ap.add_argument("--datum", default=None, help="ISO date (default: today; explicit for tests)")
+    ap.add_argument(
+        "--date", "--datum", dest="date", default=None, help="ISO date (default: today; explicit for tests)"
+    )
     args = ap.parse_args(argv)
 
     plan = load_plan(STREIFEN_JSON)
@@ -35,7 +37,7 @@ def main(argv: list[str] | None = None) -> int:
     if unknown:
         raise SystemExit(f"unknown strips: {', '.join(unknown)}")
 
-    date = args.datum or datetime.date.today().isoformat()
+    date = args.date or datetime.date.today().isoformat()
     kartei = load_kartei(args.hand)
     retired = 0
     for sid in args.strips:

@@ -182,10 +182,18 @@ class TestApply:
 
 
 class TestRedoRetire:
+    def test_the_german_date_spelling_stays_accepted(self, dataroot):
+        # --date is the English spelling the language rules ask for; --datum
+        # was the original flag and must keep working for anyone's notes.
+        _make_sheet()
+        apply_mod.main([str(_result("B0001", ["B0001-r00:angenommen"])), "--hand", HAND, "--sheet", "B0001"])
+        redo.main(["S0001", "--hand", HAND, "--reason", "unruhig", "--datum", "2026-08-23"])
+        assert load_kartei(HAND)["redo"][0]["queued"] == "2026-08-23"
+
     def test_redo_queues_and_retire_withdraws(self, dataroot):
         _make_sheet()
         apply_mod.main([str(_result("B0001", ["B0001-r00:angenommen"])), "--hand", HAND, "--sheet", "B0001"])
-        redo.main(["S0001", "--hand", HAND, "--reason", "nicht optimal", "--retire", "--datum", "2026-08-23"])
+        redo.main(["S0001", "--hand", HAND, "--reason", "nicht optimal", "--retire", "--date", "2026-08-23"])
         kartei = load_kartei(HAND)
         assert kartei["redo"][0]["strip"] == "S0001"
         fassung = kartei["strips"]["S0001"]["fassungen"][0]
@@ -286,10 +294,17 @@ class TestSiebungPage:
 class TestCropName:
     """The crop name from payload.json becomes a path in page.py AND apply.py."""
 
-    @pytest.mark.parametrize("bad", ["../../etc/passwd.png", "sub/row-00.png", "/abs/row-00.png"])
-    def test_path_components_are_refused(self, bad):
-        with pytest.raises(SystemExit, match="path components"):
+    @pytest.mark.parametrize(
+        "bad", ["../../etc/passwd.png", "sub/row-00.png", "/abs/row-00.png", "..", ".", "row-00.txt", "", "..png"]
+    )
+    def test_anything_but_a_plain_png_name_is_refused(self, bad):
+        # `..` is the subtle one: Path("..").name hands it back unchanged, so
+        # banning separators alone would let a directory through.
+        with pytest.raises(SystemExit, match="plain PNG file name"):
             store.check_crop_name(bad)
+
+    def test_the_name_ingest_writes_passes(self):
+        assert store.check_crop_name("row-00.png") == "row-00.png"
 
     def test_apply_refuses_before_it_creates_anything(self, dataroot):
         _make_sheet()

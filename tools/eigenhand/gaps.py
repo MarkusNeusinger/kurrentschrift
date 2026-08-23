@@ -17,7 +17,7 @@ from collections import defaultdict
 from tools.eigenhand.corpus import pool_entries, shaping_form
 from tools.eigenhand.coverage import word_items
 from tools.eigenhand.store import CORPORA_DIR
-from tools.eigenhand.universe import _DE_WORD, _EN_WORD, _read_list, load_universe
+from tools.eigenhand.universe import DE_WORD, EN_WORD, load_universe, read_list
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -41,8 +41,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     carriers: dict[str, list[tuple[int, str]]] = defaultdict(list)
-    lexicon = [(w, c, "de") for w, c in _read_list(CORPORA_DIR / "de_50k.txt", _DE_WORD)] + [
-        (w, c, "en") for w, c in _read_list(CORPORA_DIR / "en_50k.txt", _EN_WORD)
+    lexicon = [(w, c, "de") for w, c in read_list(CORPORA_DIR / "de_50k.txt", DE_WORD)] + [
+        (w, c, "en") for w, c in read_list(CORPORA_DIR / "en_50k.txt", EN_WORD)
     ]
     for word, count, lang in lexicon:
         for item in set(word_items(word)):
