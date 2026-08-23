@@ -109,7 +109,23 @@ class TestHelvWidth:
     def test_digits_use_the_uniform_advance(self):
         assert pdfgen.helv_width_mm("1", 10.0) == pdfgen.helv_width_mm("9", 10.0) == pytest.approx(5.56)
 
-    def test_a_non_ascii_digit_is_measured_as_the_char_that_gets_emitted(self):
-        # _escape() writes "?" for anything outside WinAnsi, so the metric must
-        # measure "?" — not the digit advance the character never gets.
+    def test_a_non_ascii_digit_is_measured_as_the_char_that_gets_drawn(self):
+        # Anything outside cp1252 is drawn as "?", so the metric must measure
+        # "?" — not the digit advance the character never gets.
+        assert pdfgen.winansi("١") == "?"
         assert pdfgen.helv_width_mm("١", 10.0) == pdfgen.helv_width_mm("?", 10.0)
+
+    def test_escaping_never_inflates_the_measured_width(self):
+        # The literal escape puts a backslash before "(" and ")" that the
+        # reader does not draw. Measuring the ESCAPED string would widen every
+        # row id ("S0001 (1/3)") and push it off centre — so the metric runs
+        # over the WinAnsi mapping, which keeps the parens single.
+        assert pdfgen.winansi("(1/2)") == "(1/2)"
+        parts = sum(pdfgen.helv_width_mm(ch, 10.0) for ch in "(1/2)")
+        assert pdfgen.helv_width_mm("(1/2)", 10.0) == pytest.approx(parts)
+
+    def test_cp1252_punctuation_is_measured_as_its_mapped_byte(self):
+        # The German quotes and dashes DO have WinAnsi bytes — they must not
+        # collapse to "?" in the metric either.
+        for char in ("„", "“", "–", "—", "’"):
+            assert pdfgen.winansi(char) != "?"

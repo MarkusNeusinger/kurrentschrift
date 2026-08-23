@@ -123,11 +123,10 @@ _HELV_WIDTH: dict[str, int] = {
 
 def helv_width_mm(text: str, size_mm: float) -> float:
     """Rendered width of Helvetica text at a given cap size in mm."""
-    # ASCII digits only: _escape() turns every other "digit" (Arabic-Indic and
-    # friends) into "?", so the metric has to measure the "?" the PDF actually
-    # receives. Both advances are 556 today, so nothing moves — but the rule
-    # now says what it means and cannot drift apart from the emitted bytes.
-    units = sum(556 if ch in "0123456789" else _HELV_WIDTH.get(ch, 556) for ch in text)
+    # Measured over the WinAnsi mapping, i.e. the characters the reader draws:
+    # a non-cp1252 "digit" arrives as "?" and must be measured as one. ASCII
+    # digits keep the uniform Helvetica figure advance.
+    units = sum(556 if ch in "0123456789" else _HELV_WIDTH.get(ch, 556) for ch in winansi(text))
     return units / 1000 * size_mm
 
 
@@ -167,22 +166,36 @@ def _rgb(hex_color: str) -> tuple[float, float, float]:
     return ((value >> 16 & 0xFF) / 255, (value >> 8 & 0xFF) / 255, (value & 0xFF) / 255)
 
 
-def _escape(text: str) -> str:
-    """PDF literal-string escape, WinAnsi-aware.
+def winansi(text: str) -> str:
+    """The characters the PDF will actually DRAW — the metric's ground truth.
 
     The font is WinAnsi (cp1252), so the German quotes „ “ , the dashes – —
     and the typographic apostrophe ’ DO have byte encodings — map them via
     cp1252 instead of dropping everything above 0xFF (the pdf.ts twin only
-    ever prints ASCII+umlauts and never needed this).
+    ever prints ASCII+umlauts and never needed this). Anything cp1252 cannot
+    encode is drawn as "?".
+
+    Deliberately NOT the escaped literal: escaping adds a backslash before
+    ``( ) \\`` that the reader never draws, so measuring the escaped string
+    would overstate the width of every text containing a parenthesis — and
+    the row ids do ("S0001 (1/3)").
     """
     out = []
     for ch in text:
         if ord(ch) > 0xFF:
             try:
-                ch = chr(ch.encode("cp1252")[0])
+                out.append(chr(ch.encode("cp1252")[0]))
             except UnicodeEncodeError:
                 out.append("?")
-                continue
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
+def _escape(text: str) -> str:
+    """PDF literal-string escape, on top of the WinAnsi mapping."""
+    out = []
+    for ch in winansi(text):
         if ch in ("\\", "(", ")"):
             out.append("\\" + ch)
         else:
