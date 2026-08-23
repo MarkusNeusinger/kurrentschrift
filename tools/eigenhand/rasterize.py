@@ -30,8 +30,13 @@ def rasterize_layout(layout: dict, dpi: float = 300.0, ink: int = 40, paper: int
 
     fid = layout["fiducials"]
     half = fid["size_mm"] / 2
+    # Fiducials are solid black regardless of `ink`: the detector thresholds
+    # them out of the page (Otsu), so a synthetic sheet must not make them as
+    # faint as the printed lineature. Named rather than inlined, because that
+    # independence is an assumption the rectification tests rely on.
+    fiducial_ink = 0
     for corner, (cx, cy) in fid["centers_mm"].items():
-        draw.rectangle([px(cx - half), px(cy - half), px(cx + half), px(cy + half)], fill=0)
+        draw.rectangle([px(cx - half), px(cy - half), px(cx + half), px(cy + half)], fill=fiducial_ink)
         if corner == fid["donut"]:
             hole = fid["hole_mm"] / 2
             draw.rectangle([px(cx - hole), px(cy - hole), px(cx + hole), px(cy + hole)], fill=paper)

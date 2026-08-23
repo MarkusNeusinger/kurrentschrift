@@ -111,6 +111,19 @@ class TestParseResult:
         with pytest.raises(SystemExit, match="duplicate uid"):
             apply_mod.parse_result(text, "B0001")
 
+    @pytest.mark.parametrize("verdict", ["angenommen", "spaeter"])
+    def test_rejects_a_reason_on_a_non_rejection(self, verdict):
+        # The reason chips are the rejection taxonomy; on any other verdict the
+        # line was hand-edited, and a silently kept reason nobody can interpret
+        # is worse than a refusal.
+        text = f"SIEBUNG/1 bogen=B0001 geprueft=1 von 1\nB0001-r00:{verdict}#Klecks\n"
+        with pytest.raises(SystemExit, match="belong to verworfen"):
+            apply_mod.parse_result(text, "B0001")
+
+    def test_a_note_without_a_reason_is_fine_on_an_accepted_row(self):
+        text = 'SIEBUNG/1 bogen=B0001 geprueft=1 von 1\nB0001-r00:angenommen "Feder lief gut"\n'
+        assert apply_mod.parse_result(text, "B0001")["B0001-r00"]["note"] == "Feder lief gut"
+
     def test_parses_reason_and_note(self):
         text = 'SIEBUNG/1 bogen=B0001 geprueft=1 von 1\nB0001-r00:verworfen#verschrieben "zu eng? nein: daneben"\n'
         verdicts = apply_mod.parse_result(text, "B0001")

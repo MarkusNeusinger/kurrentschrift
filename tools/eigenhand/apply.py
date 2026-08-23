@@ -59,11 +59,17 @@ def parse_result(text: str, sheet: str) -> dict[str, dict]:
         uid = parsed.group("uid")
         if uid in verdicts:
             raise SystemExit(f"duplicate uid in result: {uid}")
-        verdicts[uid] = {
-            "verdict": parsed.group("verdict"),
-            "reason": parsed.group("reason"),
-            "note": parsed.group("note") or "",
-        }
+        verdict, reason = parsed.group("verdict"), parsed.group("reason")
+        if reason and verdict != "verworfen":
+            # The reason chips ARE the rejection taxonomy (verschrieben ·
+            # verrutscht · Klecks · sonstiges); the page only emits them with a
+            # rejection. On any other verdict this is a hand-edited mistake —
+            # say so rather than storing a reason nobody can interpret. Free
+            # remarks on an accepted row belong in the note field.
+            raise SystemExit(
+                f"{uid}: reason {reason!r} on verdict {verdict!r} — reasons belong to verworfen (use a note)"
+            )
+        verdicts[uid] = {"verdict": verdict, "reason": reason, "note": parsed.group("note") or ""}
     return verdicts
 
 
