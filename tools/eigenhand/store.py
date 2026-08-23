@@ -34,10 +34,13 @@ def data_root() -> Path:
 
 
 # A hand id is a plain `<schreiber>-<stil>` name: lowercase ASCII, digits and
-# dashes. Everything under the data root is addressed through it, so a value
-# carrying path components (or an absolute path) would let a typo — or a
-# tampered Kartei — write outside the gitignored reserved tree.
-_HAND_ID = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)+$")
+# dashes, ending in a KNOWN style. Everything under the data root is addressed
+# through it, so a value carrying path components (or an absolute path) would
+# let a typo — or a tampered Kartei — write outside the gitignored reserved
+# tree. Requiring the style suffix here also stops a misspelled style
+# (`mn-suetterln`) from silently creating a directory for a hand that
+# style_of_hand() will later refuse to interpret.
+_HAND_ID = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*-(?:" + "|".join(STYLE_IDS) + r")$")
 
 
 def check_hand_id(hand: str) -> str:
@@ -45,7 +48,7 @@ def check_hand_id(hand: str) -> str:
     if not _HAND_ID.match(hand):
         raise SystemExit(
             f"hand id {hand!r} must be a plain `<schreiber>-<stil>` name (lowercase ASCII, "
-            "digits and dashes), e.g. mn-suetterlin"
+            f"digits and dashes) ending in a known style ({', '.join(STYLE_IDS)}), e.g. mn-suetterlin"
         )
     return hand
 

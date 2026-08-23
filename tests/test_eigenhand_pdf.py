@@ -124,8 +124,14 @@ class TestHelvWidth:
         parts = sum(pdfgen.helv_width_mm(ch, 10.0) for ch in "(1/2)")
         assert pdfgen.helv_width_mm("(1/2)", 10.0) == pytest.approx(parts)
 
-    def test_cp1252_punctuation_is_measured_as_its_mapped_byte(self):
-        # The German quotes and dashes DO have WinAnsi bytes — they must not
-        # collapse to "?" in the metric either.
-        for char in ("„", "“", "–", "—", "’"):
+    def test_cp1252_punctuation_carries_its_real_helvetica_width(self):
+        # The German quotes and dashes DO have WinAnsi bytes — and real widths.
+        # Words like „wohl“ and don’t are in the committed strip plan, so a
+        # 556 fallback here would push their printed labels off centre.
+        for char, units in (("„", 333), ("“", 333), ("’", 222), ("–", 556), ("—", 1000), ("…", 1000)):
             assert pdfgen.winansi(char) != "?"
+            assert pdfgen.helv_width_mm(char, 1000.0) == pytest.approx(units)
+
+    def test_a_quoted_word_is_narrower_than_the_flat_fallback(self):
+        quoted = pdfgen.helv_width_mm("„wohl“", 3.0)
+        assert quoted < pdfgen.helv_width_mm("Xwohl X", 3.0)  # 556-per-quote fallback

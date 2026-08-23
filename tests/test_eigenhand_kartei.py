@@ -371,10 +371,27 @@ class TestCropName:
 class TestHandId:
     """A hand id addresses the whole reserved tree — it must stay a plain name."""
 
-    @pytest.mark.parametrize("bad", ["../escape", "mn/suetterlin", "/abs-suetterlin", "MN-Suetterlin", "plain"])
+    @pytest.mark.parametrize(
+        "bad",
+        [
+            "../escape",
+            "mn/suetterlin",
+            "/abs-suetterlin",
+            "MN-Suetterlin",
+            "plain",
+            "mn-suetterln",  # a misspelled style must not create a directory
+            "mn-sütterlin",
+            "mn-",
+        ],
+    )
     def test_path_like_or_malformed_ids_are_refused(self, bad):
         with pytest.raises(SystemExit, match="plain"):
             store.check_hand_id(bad)
+
+    @pytest.mark.parametrize("good", ["mn-suetterlin", "mn-kurrent", "mn-offenbacher", "test-suetterlin"])
+    def test_a_known_style_suffix_passes(self, good):
+        assert store.check_hand_id(good) == good
+        assert store.style_of_hand(good) == good.rsplit("-", 1)[1]
 
     def test_a_plain_id_passes_and_stays_under_the_data_root(self, dataroot):
         assert store.check_hand_id("mn-suetterlin") == "mn-suetterlin"

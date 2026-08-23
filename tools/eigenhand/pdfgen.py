@@ -118,6 +118,20 @@ _HELV_WIDTH: dict[str, int] = {
     "Ä": 667,
     "Ö": 778,
     "Ü": 722,
+    # cp1252 punctuation, keyed by the code point winansi() maps it to — that
+    # is what the reader draws. The pool really contains these (`„wohl“`,
+    # `don’t`, `1866–1900`), and without the entries they would all fall back
+    # to the 556 default and push their labels off centre.
+    "\x82": 222,  # ‚ quotesinglbase
+    "\x84": 333,  # „ quotedblbase
+    "\x85": 1000,  # … ellipsis
+    "\x91": 222,  # ‘ quoteleft
+    "\x92": 222,  # ’ quoteright
+    "\x93": 333,  # “ quotedblleft
+    "\x94": 333,  # ” quotedblright
+    "\x95": 350,  # • bullet
+    "\x96": 556,  # – endash
+    "\x97": 1000,  # — emdash
 }
 
 
