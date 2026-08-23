@@ -176,7 +176,9 @@ def build_page(payload: dict, import_dir: Path) -> str:
         qc = f'<span class="qc">⚠ {esc(", ".join(row["qc"]))}</span>' if row["qc"] else ""
         pen = row.get("pen_mark") or ""
         pen_chip = (
-            f'<span class="pen">Stift auf dem Blatt: {"ok" if pen == "angenommen" else "nein"}</span>' if pen else ""
+            f'<span class="pen">Stift auf dem Blatt: {"Haken" if pen == "angenommen" else "Kästchen leer"}</span>'
+            if pen
+            else ""
         )
         reason_buttons = "".join(f'<button type="button" data-reason="{esc(r)}">{esc(r)}</button>' for r in REASONS)
         rows_html.append(f"""
@@ -209,8 +211,8 @@ def build_page(payload: dict, import_dir: Path) -> str:
     richtigen Bogen mit <code>--sheet</code> angeben.</div>
   </div>
 </header>
-<div class="sieb"><b>Vom Blatt übernommen:</b> Zeilen mit gesetzter Stiftmarke (ok / nein am
-rechten Rand) sind bereits vorbelegt — prüfen und bei Bedarf hier überschreiben.<br>
+<div class="sieb"><b>Vom Blatt übernommen:</b> Haken im Kästchen am rechten Rand → angenommen,
+leeres Kästchen → verworfen; beides ist hier vorbelegt und jederzeit überschreibbar.<br>
 <b>Sieb-Disziplin:</b> Verworfen wird nur nach Schreibqualität (verschrieben,
 verrutscht) — nie, weil Buchstaben eng am Nachbarn sitzen. Enge Verbindung ist Signal, nicht
 Müll. Ausfälle müssen zufällig sein, nicht selektiv.</div>

@@ -149,12 +149,15 @@ nach dem ersten beschriebenen Blatt werden die Konstanten gegen die
 gemessenen Tintenbreiten nachgezogen).
 
 **Stiftmarke je Zeile:** rechts neben dem Schreibfeld trägt jede Zeile
-zwei 5-mm-Kästchen („ok“ / „nein“, Spalten ab x = 196 mm, einmalig im
-Kopf beschriftet). Dort ist die Hand am Zeilenende ohnehin, und die
-Passmarken belegen nur die Seitenecken — die Spalte kostet also keine
-Schreibbreite (die eingefrorenen Streifen füllen die 180 mm voll aus).
-Zwei Kästchen statt einem, damit „unmarkiert“ ehrlich unentschieden
-bleibt und nicht mit „vergessen“ verwechselt wird.
+EIN 5-mm-Kästchen (Spalte ab x = 199 mm, einmalig im Kopf mit „ok“
+beschriftet). Dort ist die Hand am Zeilenende ohnehin, und die Passmarken
+belegen nur die Seitenecken — die Spalte kostet also keine Schreibbreite
+(die eingefrorenen Streifen füllen die 180 mm voll aus). Die Regel ist
+bewusst binär (Owner, 2026-08-23): **Kreuz oder Haken drin = ok, leer =
+nicht ok.** Ein Kästchen statt zweier hält den Bogen bei einer einzigen
+Stiftbewegung; der Preis ist, dass eine vergessene Marke als „nicht ok“
+liest — die harmlose Richtung, denn der Streifen wandert dann nur zurück
+in die Druck-Warteschlange, statt ungeprüft abgelegt zu werden.
 
 Klartext-Labels stehen in normaler Latin-Type unter den Kästen
 (Leitsatz Lesbarkeit; WinAnsi hat ohnehin kein ſ). Als Schreib-Hinweis
@@ -190,9 +193,11 @@ entzerrten Bild — **digital, millimetergenau, ohne das Blatt zu
 zerschneiden**.
 
 Die **Stiftmarke** wird dabei aus den bekannten Kästchen-mm gelesen
-(Tintenanteil in der Innenfläche, gedruckter Rahmen ausgespart): ein
-Kreuz → `angenommen` bzw. `verworfen`, keins oder beide → unentschieden
-mit Flag `marke-mehrdeutig`. Sie ist der EINZIGE Eingang, der die Siebung
+(Tintenanteil in der Innenfläche, gedruckter Rahmen ausgespart): Haken
+oder Kreuz → `angenommen`, leeres Kästchen → `verworfen`. Ein Fleck
+bleibt unter der Schwelle und zählt nicht als Marke; nur ein Bogen ohne
+Kästchen-mm (vor Einführung gedruckt) bleibt unentschieden. Sie ist der
+EINZIGE Eingang, der die Siebung
 vorbelegen darf — weil sie ein Menschenurteil im besten Moment ist
 (direkt nach dem Schreiben), nicht eine Maschinenvermutung; die
 Review-Seite zeigt sie als Chip „Stift auf dem Blatt“ und lässt sie

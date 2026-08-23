@@ -1934,18 +1934,20 @@ gedrehte Aufnahmen. *Technisch:* `tools/eigenhand/fiducial.py`
 (scikit-image, bewusst ohne OpenCV).
 → proposals/eigenhand-erfassung.md §6
 
-**Stiftmarke** — die beiden gedruckten Kästchen am rechten Rand JEDER
-Bogenzeile (Spalten „ok“ und „nein“, 5 mm, ab x = 196 mm — außerhalb des
-Schreibfelds, in Reichweite der Hand am Zeilenende). Der Schreiber kreuzt
-direkt nach dem Schreiben an, ob die Zeile taugt; der Import liest die
-Marke aus dem entzerrten Bild und belegt die Siebung damit vor. Anders als
-die QC-Flags DARF sie vorbelegen: sie ist ein Menschenurteil im besten
-Moment, nicht eine Maschinenvermutung — überschreibbar bleibt sie
-trotzdem. Unmarkiert heißt „unentschieden“, beide Kästchen angekreuzt
-ebenso (Flag `marke-mehrdeutig`). *Technisch:*
-`tools/eigenhand/geometry.py::mark_boxes`,
+**Stiftmarke** — das eine gedruckte Kästchen am rechten Rand JEDER
+Bogenzeile (5 mm, ab x = 199 mm, im Kopf einmal mit „ok“ beschriftet —
+außerhalb des Schreibfelds, in Reichweite der Hand am Zeilenende). Der
+Schreiber hakt direkt nach dem Schreiben ab, ob die Zeile taugt; der
+Import liest die Marke aus dem entzerrten Bild und belegt die Siebung
+damit vor. Anders als die QC-Flags DARF sie vorbelegen: sie ist ein
+Menschenurteil im besten Moment, nicht eine Maschinenvermutung —
+überschreibbar bleibt sie trotzdem. Die Regel ist binär (Owner,
+2026-08-23): **Haken oder Kreuz = angenommen, leeres Kästchen =
+verworfen**; eine vergessene Marke schickt den Streifen also zurück in
+die Warteschlange, statt ihn ungeprüft abzulegen. *Technisch:*
+`tools/eigenhand/geometry.py::mark_box`,
 `tools/eigenhand/ingest.py::read_pen_mark`, je Zeile in `layout.json`
-unter `marks_mm`. → proposals/eigenhand-erfassung.md §5–§6
+unter `mark_mm`. → proposals/eigenhand-erfassung.md §5–§6
 
 **Siebung** — der Annehmen/Verwerfen-Schritt je Bogenzeile auf einer
 selbstständigen Offline-HTML-Seite (humanbench-Muster: data-URIs,

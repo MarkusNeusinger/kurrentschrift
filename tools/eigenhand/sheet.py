@@ -45,6 +45,7 @@ LABEL_SIZE_MM = 3.0
 HEADER_SIZE_MM = 3.5
 FOOTER_SIZE_MM = 2.8
 MARK_CAPTION_SIZE_MM = 2.4
+MARK_CAPTION = "ok"  # one box per row: ticked = ok, empty = not ok
 
 
 def _git_commit() -> str:
@@ -135,13 +136,12 @@ def build_layout(
             }
             for word, (x0, x1) in zip(words, geometry.boxes_for_row(words, preset, MARGIN_MM), strict=True)
         ]
-        marks = geometry.mark_boxes(band)
         rows.append(
             {
                 "strip": sid,
                 "attempt": seen[sid],
                 "attempts": attempts_total[sid],
-                "marks_mm": {key: [round(v, 3) for v in rect] for key, rect in marks.items()},
+                "mark_mm": [round(v, 3) for v in geometry.mark_box(band)],
                 "band_mm": {
                     "asc_top": round(band.asc_top, 3),
                     "waist": round(band.waist, 3),
@@ -202,13 +202,12 @@ def render_pdf(layout: dict) -> bytes:
     right_header = f"{machine_id} · {layout['provenance']['date']}"
     header_x = geometry.A4_WIDTH_MM - MARGIN_MM - pdfgen.helv_width_mm(right_header, HEADER_SIZE_MM)
     texts.append(pdfgen.Text(header_x, 11.0, HEADER_SIZE_MM, right_header, style["meta"][0]))
-    # Column captions for the verdict boxes, printed once above the first row.
+    # Column caption for the verdict boxes, printed once above the first row.
     if layout["rows"]:
         caption_y = layout["rows"][0]["band_mm"]["asc_top"] - 1.5
-        for key, rect in layout["rows"][0]["marks_mm"].items():
-            caption = "ok" if key == "ok" else "nein"
-            centre = (rect[0] + rect[2]) / 2 - pdfgen.helv_width_mm(caption, MARK_CAPTION_SIZE_MM) / 2
-            texts.append(pdfgen.Text(centre, caption_y, MARK_CAPTION_SIZE_MM, caption, style["meta"][0]))
+        rect = layout["rows"][0]["mark_mm"]
+        centre = (rect[0] + rect[2]) / 2 - pdfgen.helv_width_mm(MARK_CAPTION, MARK_CAPTION_SIZE_MM) / 2
+        texts.append(pdfgen.Text(centre, caption_y, MARK_CAPTION_SIZE_MM, MARK_CAPTION, style["meta"][0]))
 
     for row in layout["rows"]:
         band = row["band_mm"]
@@ -242,17 +241,16 @@ def render_pdf(layout: dict) -> bytes:
                     xb += preset.slant_spacing_mm
             label_x = (x0 + x1) / 2 - pdfgen.helv_width_mm(box["label"], LABEL_SIZE_MM) / 2
             texts.append(pdfgen.Text(label_x, band["desc_bot"] + 4.0, LABEL_SIZE_MM, box["label"], style["label"][0]))
-        # Verdict boxes in the right margin — tick one with the pen right
-        # after writing the row; the importer reads them at Siebung time.
+        # Verdict box in the right margin — tick it with the pen right after
+        # writing the row; the importer reads it at Siebung time.
         mark_color, mark_width, _mark_dash = style["box"]
-        for rect in row["marks_mm"].values():
-            mx0, my0, mx1, my1 = rect
-            lines["box"] += [
-                pdfgen.Line(mx0, my0, mx1, my0, mark_color, mark_width, None),
-                pdfgen.Line(mx1, my0, mx1, my1, mark_color, mark_width, None),
-                pdfgen.Line(mx1, my1, mx0, my1, mark_color, mark_width, None),
-                pdfgen.Line(mx0, my1, mx0, my0, mark_color, mark_width, None),
-            ]
+        mx0, my0, mx1, my1 = row["mark_mm"]
+        lines["box"] += [
+            pdfgen.Line(mx0, my0, mx1, my0, mark_color, mark_width, None),
+            pdfgen.Line(mx1, my0, mx1, my1, mark_color, mark_width, None),
+            pdfgen.Line(mx1, my1, mx0, my1, mark_color, mark_width, None),
+            pdfgen.Line(mx0, my1, mx0, my0, mark_color, mark_width, None),
+        ]
 
     prov = layout["provenance"]
     footer_left = f"kurrentschrift eigenhand · {prov['commit'] or 'no-commit'} · cfg {prov['config_hash']}"

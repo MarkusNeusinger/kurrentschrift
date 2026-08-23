@@ -49,8 +49,8 @@ LINE_MASK_MM = 0.4  # printed-geometry mask half-width for the QC ink measure
 INK_THRESHOLD = 0.55  # grayscale below this counts as ink for the QC flags
 MIN_DPI_WARN = 250.0
 LEER_MIN_INK_PX = 40
-# Verdict boxes (geometry.mark_boxes): a tick covers a good part of the box,
-# a stray speck does not. Measured on the INNER area only, so the printed
+# Verdict box (geometry.mark_box): a tick covers a good part of the box, a
+# stray speck does not. Measured on the INNER area only, so the printed
 # outline itself can never read as a mark.
 MARK_INSET_MM = 0.9
 MARK_MIN_FRACTION = 0.04
@@ -123,27 +123,24 @@ def qc_flags(crop: np.ndarray, row: dict, x0_px: int, y0_px: int) -> list[str]:
     return flags
 
 
-def read_pen_mark(warped: np.ndarray, row: dict) -> tuple[str | None, list[str]]:
-    """The writer's own ok/nein tick for one row, read off the rectified page.
+def read_pen_mark(warped: np.ndarray, row: dict) -> str | None:
+    """The writer's own tick for one row, read off the rectified page.
 
-    Returns ``(verdict, flags)`` with verdict ``angenommen`` / ``verworfen``
-    / ``None``. Unlike the QC flags this DOES pre-fill the Siebung: the tick
-    is a human judgement, made at the best possible moment — right after the
-    row was written — and the review page still lets it be overridden. An
-    unmarked row stays undecided, both boxes ticked stay undecided and say so.
+    One box per row (owner, 2026-08-23): a cross or check in it means
+    ``angenommen``, an empty box ``verworfen``. Unlike the QC flags this DOES
+    pre-fill the Siebung — the tick is a human judgement made at the best
+    possible moment, right after the row was written — and the review page
+    still lets it be overridden. A layout without a mark box (a sheet printed
+    before the boxes existed) yields ``None``: undecided, as before.
     """
-    marks = row.get("marks_mm")
-    if not marks:
-        return None, []
+    rect = row.get("mark_mm")
+    if not rect:
+        return None
+    x0, y0, x1, y1 = rect
     inset = _px(MARK_INSET_MM)
-    fractions: dict[str, float] = {}
-    for key, (x0, y0, x1, y1) in marks.items():
-        patch = warped[_px(y0) + inset : _px(y1) - inset, _px(x0) + inset : _px(x1) - inset]
-        fractions[key] = float((patch < INK_THRESHOLD).mean()) if patch.size else 0.0
-    ticked = [key for key, value in fractions.items() if value >= MARK_MIN_FRACTION]
-    if len(ticked) != 1:
-        return None, ["marke-mehrdeutig"] if ticked else []
-    return ("angenommen" if ticked[0] == "ok" else "verworfen"), []
+    patch = warped[_px(y0) + inset : _px(y1) - inset, _px(x0) + inset : _px(x1) - inset]
+    fraction = float((patch < INK_THRESHOLD).mean()) if patch.size else 0.0
+    return "angenommen" if fraction >= MARK_MIN_FRACTION else "verworfen"
 
 
 def build_payload(
@@ -179,7 +176,7 @@ def build_payload(
         qx0_px = _px(boxes_x0 - ROW_PAD_MM)
         qy1_px = _px(band["desc_bot"] + ROW_PAD_MM)
         qc_crop = warped[y0_px:qy1_px, qx0_px:x1_px]
-        pen_mark, pen_flags = read_pen_mark(warped, row)
+        pen_mark = read_pen_mark(warped, row)
         crop_name = f"row-{index:02d}.png"
         Image.fromarray((np.clip(crop, 0.0, 1.0) * 255).astype(np.uint8), mode="L").save(import_dir / crop_name)
         rows_out.append(
@@ -190,7 +187,7 @@ def build_payload(
                 "attempt": row["attempt"],
                 "attempts": row["attempts"],
                 "words": [box["word"] for box in row["boxes"]],
-                "qc": qc_flags(qc_crop, row, qx0_px, y0_px) + pen_flags,
+                "qc": qc_flags(qc_crop, row, qx0_px, y0_px),
                 "pen_mark": pen_mark,
                 "crop": crop_name,
                 "crop_origin_mm": [round(_mm(x0_px), 3), round(_mm(y0_px), 3)],
@@ -263,10 +260,10 @@ def main(argv: list[str] | None = None) -> int:
     payload = build_payload(args.hand, args.sheet, layout, warped, args.scan, session, dpi, keep_scan=args.keep_scan)
     import_dir = hand_dir(args.hand) / "blaetter" / args.sheet / "import"
     (import_dir / "payload.json").write_text(json.dumps(payload, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    marked = sum(1 for row in payload["rows"] if row.get("pen_mark"))
+    ticked = sum(1 for row in payload["rows"] if row.get("pen_mark") == "angenommen")
     flagged = sum(1 for row in payload["rows"] if row["qc"])
     print(
-        f"wrote {import_dir / 'payload.json'}: {len(payload['rows'])} rows, {marked} with a pen mark, "
+        f"wrote {import_dir / 'payload.json'}: {len(payload['rows'])} rows, {ticked} ticked ok on the sheet, "
         f"{flagged} with QC flags (~{dpi:.0f} DPI)"
     )
     print(f"next: uv run python -m tools.eigenhand.page --hand {args.hand} --sheet {args.sheet}")

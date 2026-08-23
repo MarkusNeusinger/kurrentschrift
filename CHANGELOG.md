@@ -14,19 +14,21 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
-- **Per-row verdict boxes on the sheet ("Stiftmarke"), read back at
-  import.** Every printed row now carries two 5 mm boxes in the right
-  margin — "ok" and "nein" — so a row can be judged with the pen the
-  moment it is written, instead of from memory at the screen. The column
-  sits at x = 196 mm, clear of the writing area (the frozen strips fill
-  its full 180 mm) and clear of the corner fiducials, which only occupy
-  the page corners. `ingest` reads the boxes off the rectified page (ink
-  fraction of the inner area, printed outline excluded) and the Siebung
-  page pre-selects the verdict, marked with a "Stift auf dem Blatt" chip
-  and overridable at any time; a stored click always wins over the seed.
-  Two boxes rather than one so an unmarked row stays honestly undecided,
-  and both boxes ticked reports `marke-mehrdeutig` instead of guessing.
-  This is the only input allowed to pre-fill a verdict — it is a human
+- **A per-row verdict box on the sheet ("Stiftmarke"), read back at
+  import.** Every printed row now carries one 5 mm box in the right
+  margin, captioned "ok" once above the first row, so a row can be judged
+  with the pen the moment it is written instead of from memory at the
+  screen: a cross or check means accepted, an empty box means rejected.
+  The column sits at x = 199 mm, clear of the writing area (the frozen
+  strips fill its full 180 mm) and clear of the corner fiducials, which
+  only occupy the page corners. `ingest` reads the box off the rectified
+  page (ink fraction of the inner area, printed outline excluded, a stray
+  speck stays below the threshold) and the Siebung page pre-selects the
+  verdict, marked with a "Stift auf dem Blatt" chip and overridable at any
+  time; a stored click always wins over the seed. One box rather than two
+  keeps the sheet to a single pen movement, and a forgotten tick fails
+  towards re-writing the strip rather than filing an unreviewed row. This
+  is the only input allowed to pre-fill a verdict — it is a human
   judgement, unlike the QC flags, which stay warnings. The mark rides
   along in each Fassung's `meta.json` for the audit trail.
 

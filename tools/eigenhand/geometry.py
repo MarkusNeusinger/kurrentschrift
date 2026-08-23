@@ -40,16 +40,17 @@ FIDUCIAL_DONUT = "tl"
 # fiducials and leaves room for the provenance footer ("10 fits, 9 breathes").
 LABEL_ZONE_MM = 4.0
 ROW_GAP_MM = 5.0
-# Per-row verdict boxes in the RIGHT margin (owner, 2026-08-23: mark each
+# Per-row verdict box in the RIGHT margin (owner, 2026-08-23: mark each
 # strip ok/not-ok with the pen right away). The writing area ends at
 # 195 mm and the corner Passmarken only occupy the top and bottom of the
-# page, so the band 196-207 mm is free at every row height — and it is
-# where the hand already is when a row is finished. Two boxes, because an
-# unmarked row must stay genuinely undecided: a single box could not tell
-# "fine" from "forgot to mark".
+# page, so the band around 199-204 mm is free at every row height — and it
+# is where the hand already is when a row is finished. ONE box (owner,
+# 2026-08-23): a cross or check in it means the row is good, an empty box
+# means it is not. That keeps the sheet to a single pen movement, and the
+# failure mode of a forgotten tick is the harmless one — the strip goes
+# back into the print queue instead of being filed unreviewed.
 MARK_BOX_MM = 5.0
-MARK_COL_X0_MM = 196.0
-MARK_GAP_MM = 1.0
+MARK_COL_X0_MM = 199.0
 FOOTER_ZONE_MM = 12.0
 BOX_GAP_MM = 3.0
 BOX_LEAD_MM = 8.0  # entry room before the first letter (Anstrich) + slack
@@ -220,21 +221,17 @@ def row_band(preset: ScriptPreset, row_top_mm: float) -> RowBand:
     return RowBand(row_top_mm, waist, baseline, baseline + desc * unit)
 
 
-def mark_boxes(band: RowBand) -> dict[str, tuple[float, float, float, float]]:
-    """The two verdict boxes of one row: (x0, y0, x1, y1) in mm, keyed ok/nein.
+def mark_box(band: RowBand) -> tuple[float, float, float, float]:
+    """The verdict box of one row: (x0, y0, x1, y1) in mm.
 
     Vertically centred on the x-height band — where the pen rests at the
     end of a row — and clamped into the row block so a script with a tiny
-    x-height (Kurrent, 2.5 mm) keeps the boxes inside its own row.
+    x-height (Kurrent, 2.5 mm) keeps the box inside its own row.
     """
     centre = (band.waist + band.baseline) / 2
     half = MARK_BOX_MM / 2
     top = min(max(centre - half, band.asc_top), band.desc_bot - MARK_BOX_MM)
-    out: dict[str, tuple[float, float, float, float]] = {}
-    for index, key in enumerate(("ok", "nein")):
-        x0 = MARK_COL_X0_MM + index * (MARK_BOX_MM + MARK_GAP_MM)
-        out[key] = (x0, top, x0 + MARK_BOX_MM, top + MARK_BOX_MM)
-    return out
+    return (MARK_COL_X0_MM, top, MARK_COL_X0_MM + MARK_BOX_MM, top + MARK_BOX_MM)
 
 
 def pack_words_into_rows(words: list[str], preset: ScriptPreset, margin_mm: float = 15.0) -> list[list[str]]:

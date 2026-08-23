@@ -31,7 +31,7 @@ def _fixed_layout() -> dict:
                 "attempt": 1,
                 "attempts": 2,
                 "band_mm": {"asc_top": 15.0, "waist": 21.0, "baseline": 27.0, "desc_bot": 33.0},
-                "marks_mm": {"ok": [196.0, 21.5, 201.0, 26.5], "nein": [202.0, 21.5, 207.0, 26.5]},
+                "mark_mm": [199.0, 21.5, 204.0, 26.5],
                 "boxes": [
                     {"word": "lesen", "label": "lesen", "x0_mm": 15.0, "x1_mm": 40.0},
                     {"word": "Haustür", "label": "Haus*|tür", "x0_mm": 43.0, "x1_mm": 80.0},
@@ -42,7 +42,7 @@ def _fixed_layout() -> dict:
                 "attempt": 2,
                 "attempts": 2,
                 "band_mm": {"asc_top": 42.0, "waist": 48.0, "baseline": 54.0, "desc_bot": 60.0},
-                "marks_mm": {"ok": [196.0, 48.5, 201.0, 53.5], "nein": [202.0, 48.5, 207.0, 53.5]},
+                "mark_mm": [199.0, 48.5, 204.0, 53.5],
                 "boxes": [{"word": "das", "label": "das", "x0_mm": 15.0, "x1_mm": 38.0}],
             },
         ],
@@ -53,7 +53,7 @@ def _fixed_layout() -> dict:
 # Pinned bytes of _fixed_layout() — deterministic by construction (no clock,
 # no git, no repo state). A change here is a REAL output change: re-pin only
 # deliberately, with the diff understood.
-GOLDEN_SHA256 = "9e94ea95e5b017b3582a68bdf66fdfca7bb0b261bc189b396830479209cdfb79"
+GOLDEN_SHA256 = "1c5deb4c30a54b806e69cf291cdc8822a946be6f0956ccf586cb978af6601764"
 
 
 class TestRenderedPdf:
@@ -76,12 +76,11 @@ class TestRenderedPdf:
         assert match is not None
         assert text[match.end() + int(match.group(1)) :].startswith("\nendstream")
 
-    def test_verdict_boxes_and_captions_are_drawn(self):
+    def test_verdict_boxes_and_caption_are_drawn(self):
         text = render_pdf(_fixed_layout()).decode("latin-1")
-        assert "(ok) Tj" in text and "(nein) Tj" in text  # column captions, once
-        assert text.count("(ok) Tj") == 1
-        # four edges per box, two boxes per row, two rows
-        assert text.count(" l S") >= 16
+        assert text.count("(ok) Tj") == 1  # one column caption, above the first row
+        assert "(nein) Tj" not in text  # one box only: ticked = ok, empty = not
+        assert text.count(" l S") >= 8  # four edges per box, one box per row, two rows
 
     def test_attempt_labels_and_umlauts_survive_winansi(self):
         text = render_pdf(_fixed_layout()).decode("latin-1")

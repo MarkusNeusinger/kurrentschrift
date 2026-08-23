@@ -47,8 +47,9 @@ uv run python -m tools.eigenhand.redo --hand mn-suetterlin S0037 S0055 --reason 
 
 ## Regeln
 
-- **Stiftmarke schlägt Gedächtnis:** die beiden Kästchen am rechten
-  Zeilenrand direkt nach dem Schreiben ankreuzen — dann steht das Urteil
+- **Stiftmarke schlägt Gedächtnis:** das Kästchen am rechten Zeilenrand
+  direkt nach dem Schreiben abhaken, wenn die Zeile taugt — Haken oder
+  Kreuz heißt angenommen, leer heißt verworfen. Dann steht das Urteil
   fest, solange du noch weißt, was schiefging. Am Bildschirm ist es
   vorbelegt und jederzeit überschreibbar.
 - **Sieb-Disziplin (mvp-roadmap M2, wörtlich übernommen):** Verworfen wird
