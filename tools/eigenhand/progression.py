@@ -135,6 +135,16 @@ def main(argv: list[str] | None = None) -> int:
             row += f" {point['quotas']['erstbeleg_weighted']:>9.1%}"
         print(row)
 
+    # The hard per-glyph floor (pool.GLYPH_MIN_PLANNED): name every key still
+    # under it at the end of the plan — silence must mean "all covered".
+    final = points[-1]
+    totals = {key: count for bucket in final["glyphs"].values() for key, count in bucket.items()}
+    under = sorted(key for key, count in totals.items() if count < 3)
+    if under:
+        print(f"unter Mindestbelegung (3): {', '.join(under)}")
+    else:
+        print("Mindestbelegung 3 je Glyphe: erfüllt")
+
     if args.json:
         args.json.parent.mkdir(parents=True, exist_ok=True)
         args.json.write_text(

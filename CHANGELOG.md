@@ -23,10 +23,16 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   glyphs (digits, punctuation) as glyph-position items, and the pool gains
   a `zeichen` layer of real-text carriers (years, a date, a price, signs
   at words) plus capital-C and bare-q carriers the progression run
-  surfaced as gaps. Wave 1 of the strip plan (strips 61–120) ships
-  committed: after 120 planned strips every registry glyph — all capitals,
-  all ten digits, all thirteen signs — has at least one planned recording
-  (662 distinct joins, 99.5 % weighted Erstbeleg quota). The PDF writer's
+  surfaced as gaps. A hard per-glyph floor (`pool.GLYPH_MIN_PLANNED = 3`,
+  phase A2) now guarantees that EVERY glyph — letter, ligature, digit,
+  sign — is planned at least three times regardless of its text frequency,
+  before the frequency-driven build-out starts; a wave too small to satisfy
+  it names the leftovers instead of failing silently, and every
+  `progression` run closes with the check line. Wave 1 of the strip plan
+  (strips 61–120) ships committed: after 120 planned strips every registry
+  glyph — all capitals, all ten digits, all thirteen signs — carries at
+  least three planned recordings (666 distinct joins, 99.5 % weighted
+  Erstbeleg quota). The PDF writer's
   literal-string escape is now WinAnsi-aware so German quotes, dashes and
   the typographic apostrophe survive onto printed labels.
 

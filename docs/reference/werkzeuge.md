@@ -1,6 +1,6 @@
 # Werkzeuge — die Dev-Tools unter `tools/`
 
-> **Status (2026-08-22): lebend.** Index über die Dev-Tools unter `tools/`;
+> **Status (2026-08-23): lebend.** Index über die Dev-Tools unter `tools/`;
 > jedes neue, umbenannte oder entfernte Werkzeug und jede geänderte CLI
 > (Flags, Modulpfade, `viz`-Extra, `--live`) gehört hier hinein.
 
@@ -254,7 +254,8 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   Druckvorschlag); **`progression`** — die Plan-Sicht dazu: kumulierte
   Zählungen je Glyphe (klein · groß · Ligatur · Ziffer · Zeichen) und je
   Übergang an Checkpoints alle N Streifen, mit `--json` für Auswertungen
-  („nach 10, 20, … Streifen — wie oft ist jede Glyphe dran?“);
+  („nach 10, 20, … Streifen — wie oft ist jede Glyphe dran?“), und
+  schließt mit der Prüfzeile zur Mindestbelegung (≥3 je Glyphe);
   **`redo`** stellt Streifen neu an (`--retire` zieht
   alte Fassungen zurück); **`snapshot`** sichert inkrementell und
   create-only ins private Archiv (`KURRENTSCHRIFT_ARCHIVE`, dieselbe

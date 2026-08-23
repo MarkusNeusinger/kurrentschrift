@@ -48,6 +48,13 @@ DEFICIT_FLOOR = 0.01
 # re-enters Phase B only when no fresh word delivers comparable benefit —
 # its benefit is damped by this factor per prior planning, across ALL waves.
 REPEAT_DAMPING = 0.3
+# Hard per-GLYPH floor (owner, 2026-08-23: "sowas wie q nur 1× darf nicht
+# sein — jeder Buchstabe oder Zeichen mindestens 3×"): before the
+# frequency-driven build-out, phase A2 tops every glyph key (summed over
+# positions) up to this count. A guarantee, not a preference — repeat
+# damping does not apply here; only MAX_REPEAT_PER_WAVE and the wave
+# capacity bound it, and unmet leftovers are reported, never silent.
+GLYPH_MIN_PLANNED = 3
 
 
 def load_plan(path: Path) -> dict:
@@ -145,6 +152,42 @@ def build_wave(plan: dict, target_strips: int, universe_items: dict[str, float])
         if not try_add(best[2]):
             break
 
+    # --- Phase A2: hard glyph floor — every glyph key planned >= GLYPH_MIN ----
+    def glyph_totals() -> Counter[str]:
+        totals: Counter[str] = Counter()
+        for item, count in planned.items():
+            if coverage.POSITION_SEP in item and coverage.JOIN_SEP not in item:
+                totals[item.split(coverage.POSITION_SEP)[0]] += count
+        return totals
+
+    word_glyphs: dict[str, Counter[str]] = {
+        w: Counter(i.split(coverage.POSITION_SEP)[0] for i in items if coverage.JOIN_SEP not in i)
+        for w, items in word_items.items()
+    }
+    floor_unmet: list[str] = []
+    while True:
+        totals = glyph_totals()
+        under = {key: GLYPH_MIN_PLANNED - totals[key] for key in totals if totals[key] < GLYPH_MIN_PLANNED}
+        if not under:
+            break
+        best_floor: tuple[float, int, str] | None = None
+        for word, keys in word_glyphs.items():
+            if usage_this_wave[word] >= MAX_REPEAT_PER_WAVE:
+                continue
+            fills = sum(min(need, keys[key]) for key, need in under.items())
+            if fills <= 0:
+                continue
+            rank = (-float(fills), len(word), word)
+            if best_floor is None or rank < best_floor:
+                best_floor = rank
+        if best_floor is None or not try_add(best_floor[2]):
+            floor_unmet = sorted(under)
+            break
+    if floor_unmet:
+        print(
+            f"WARNING: glyph floor {GLYPH_MIN_PLANNED} unmet for {', '.join(floor_unmet)} — add carrier words or strips"
+        )
+
     # --- Phase B: even build-out toward the two-tier targets ------------------
     exhausted = False
     while not exhausted and packed_rows() < target_strips:
@@ -189,6 +232,7 @@ def build_wave(plan: dict, target_strips: int, universe_items: dict[str, float])
         "distinct_words": len(set(stream)),
         "items_covered": sum(1 for item in weights if planned[item] > 0),
         "items_total": len(weights),
+        "floor_unmet": floor_unmet,
     }
     return plan, stats
 

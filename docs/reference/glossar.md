@@ -48,7 +48,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — k0-Protokoll §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
-- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4
+- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Mindestbelegung (Eigenhand) §5
 - **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
@@ -1962,6 +1962,19 @@ Konsultationskorpora (Klasse 2), die Gewichtstabelle bleibt lokal
 genannt — der Begriff gehört der Humanbench-Abdeckungsmatrix (§4).
 *Technisch:* `tools/eigenhand/universe.py`,
 `tools/eigenhand/coverage.py`.
+→ proposals/eigenhand-erfassung.md §4
+
+**Mindestbelegung (Eigenhand)** — die harte Untergrenze des
+Streifenplans: JEDE Glyphe — Buchstabe, Ligatur, Ziffer, Zeichen — wird
+mindestens dreimal eingeplant, unabhängig von ihrer Textfrequenz
+(Owner-Regel 2026-08-23: „sowas wie q nur 1× darf nicht sein“). Eine
+Garantie, keine Präferenz: Phase A2 des Builders hebt jede unterbelegte
+Glyphe auf, bevor der frequenzgetriebene Ausbau beginnt, und meldet
+namentlich, wenn die Wellenkapazität nicht reicht. Nicht zu verwechseln
+mit dem gewichteten Aufbauziel (→ Bestandsbericht), das je nach Frequenz
+zwischen 3 und 20 liegt. *Technisch:*
+`tools/eigenhand/pool.py::GLYPH_MIN_PLANNED`, Prüfzeile am Ende jedes
+`tools.eigenhand.progression`-Laufs.
 → proposals/eigenhand-erfassung.md §4
 
 **Beleg (Eigenhand)** — ein Vorkommen eines Übergangsraum-Items in den

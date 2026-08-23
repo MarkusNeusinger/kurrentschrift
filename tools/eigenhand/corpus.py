@@ -263,11 +263,9 @@ _RARE_JOIN_EN: list[PoolEntry] = [
     {"word": "welcome", "lang": "en", "note": "joins l>c, c>o"},
     {"word": "obvious", "lang": "en", "note": "joins b>v, v>i"},
     {"word": "awkward", "lang": "en", "note": "joins w>k, k>w"},
-    {
-        "word": "Iraq",
-        "lang": "en",
-        "note": "bare q without u — the only real-text carrier of the q glyph outside the qu ligature",
-    },
+    {"word": "Iraq", "lang": "en", "note": "bare q without u (blocks the qu ligature), q word-final"},
+    {"word": "Niqab", "note": "bare q medial — Duden-listed loanword; second real q carrier"},
+    {"word": "Iraqi", "lang": "en", "note": "bare q medial before i"},
 ]
 
 _RARE_JOIN_ENTRIES = _RARE_JOIN_DE + _RARE_JOIN_EN

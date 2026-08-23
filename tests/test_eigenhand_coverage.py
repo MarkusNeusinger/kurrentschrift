@@ -138,3 +138,30 @@ class TestProgression:
         quotas = points[-1]["quotas"]
         assert 0.0 < quotas["erstbeleg_weighted"] < 1.0  # l>e covered, x>y not
         assert quotas["erstbeleg"] <= 1.0
+
+
+class TestGlyphFloor:
+    """Every glyph key is planned at least GLYPH_MIN_PLANNED times (owner rule)."""
+
+    def test_committed_plan_meets_the_floor(self):
+        plan = json.loads(STREIFEN_JSON.read_text(encoding="utf-8"))
+        points = progression.checkpoints(plan, step=10_000, universe_items=None)
+        totals = {key: count for bucket in points[-1]["glyphs"].values() for key, count in bucket.items()}
+        under = {key: count for key, count in totals.items() if count < pool.GLYPH_MIN_PLANNED}
+        assert not under, f"glyphs under the floor: {under}"
+
+    def test_builder_tops_up_starved_glyphs(self):
+        # A universe that only rewards l>e would leave rare carriers at one
+        # occurrence; phase A2 lifts every glyph to the floor regardless of
+        # weight, given enough strips.
+        plan, stats = pool.build_wave({"format": 1, "waves": [], "strips": {}}, 120, {"l>e": 100.0})
+        assert stats["floor_unmet"] == []
+        points = progression.checkpoints(plan, step=10_000, universe_items=None)
+        totals = {key: count for bucket in points[-1]["glyphs"].values() for key, count in bucket.items()}
+        assert min(totals.values()) >= pool.GLYPH_MIN_PLANNED
+
+    def test_unreachable_floor_is_reported_not_silent(self):
+        # Too few strips to satisfy the floor: the leftovers must be NAMED in
+        # the stats (and warned about), never quietly dropped.
+        _plan, stats = pool.build_wave({"format": 1, "waves": [], "strips": {}}, 12, {"l>e": 100.0})
+        assert stats["floor_unmet"], "a wave too small to meet the floor must report it"

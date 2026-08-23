@@ -1,11 +1,12 @@
 # Eigenhand-Erfassung: Wortvorrat, Streifen, Bögen
 
-> **Status (2026-08-22): teil-umgesetzt.** Die Werkzeugkette der Phasen 1–4
+> **Status (2026-08-23): teil-umgesetzt.** Die Werkzeugkette der Phasen 1–4
 > (`tools/eigenhand/`: Wortvorrat + Streifenplan · Bogen-Druck · Einlesen +
 > Siebung · Kartei/Bericht/Archiv) ist mit diesem Proposal im selben PR
-> gebaut und getestet (`tests/test_eigenhand_*.py`); Wave 0 des
-> Streifenplans ist committet. Zukunft ist Phase 5 (§9: Anschluss an
-> Fit/Ernte) sowie die ersten echten Schreibsitzungen samt
+> gebaut und getestet (`tests/test_eigenhand_*.py`); Welle 0 und Welle 1
+> des Streifenplans sind committet (Streifen 1–120: Buchstaben, Ziffern,
+> Zeichen, Mindestbelegung ≥3 je Glyphe). Zukunft ist Phase 5 (§9:
+> Anschluss an Fit/Ernte) sowie die ersten echten Schreibsitzungen samt
 > Kalibrier-Schleife der Kastenbreiten (§5).
 
 ## 1 Anlass
@@ -105,7 +106,11 @@ Trägerwort bleiben bewusst außerhalb des Solls (Ziel ist echter Text;
 deterministisch gebaute, **append-never** Output: `pool.py build` wählt in
 Phase A per gewichtetem Set-Cover die Startdeckung (maximale
 Abdeckungsgeschwindigkeit — die ersten Bögen tragen fast das ganze
-erreichbare Soll), in Phase B defizitgetrieben den gleichmäßigen Ausbau
+erreichbare Soll), hebt in **Phase A2** jede Glyphe auf die
+**Mindestbelegung** (`GLYPH_MIN_PLANNED = 3`, Owner-Regel 2026-08-23:
+„sowas wie q nur 1× darf nicht sein“) — eine Garantie, keine Präferenz,
+frequenzunabhängig, mit benannter Meldung, falls die Wellenkapazität
+nicht reicht —, und baut in Phase B defizitgetrieben gleichmäßig aus,
 häufig UND selten; gepackt wird nach geschätzter physischer Breite gegen
 das breiteste Preset (Sütterlin), sodass ein Streifen in jede Schrift
 passt. **Breite vor Wiederholung:** ein bereits geplantes Wort wird je
@@ -114,8 +119,10 @@ wieder, wenn kein neues Wort vergleichbaren Nutzen bringt; dominante
 Hochfrequenz-Wörter setzen sich trotzdem durch. Wachstum in **Wellen**
 (`--wave` implizit über den Dateizustand): neue Streifen werden
 angehängt, bestehende sind unantastbar (Wächter `verify_immutable`).
-Wave 0: 60 Streifen, 253 distinkte Wörter, 726/1265 Items mit geplantem
-Erstbeleg.
+Welle 0: 60 Streifen, 253 distinkte Wörter, 726/1265 Items mit geplantem
+Erstbeleg. Welle 1 (Streifen 61–120) bringt Ziffern, Zeichen und die
+Mindestbelegung: nach 120 geplanten Streifen trägt JEDE Registerglyphe
+mindestens drei Belege, 666 verschiedene Übergänge sind geplant.
 
 **Trainingsdaten, kein Mess-Satz.** Der Wortvorrat und der Streifenplan
 wachsen; KEINE Bench-Kopfzahl liest je aus ihnen. Sollte je eine Messung
@@ -229,7 +236,12 @@ Erstbeleg-Stufe (≥1 Beleg — sie misst die Erstbeleg-Quote und treibt
 Phase A) und das Aufbauziel `clamp(3 + 17·√(w/wmax), 3, 20)`
 (`coverage.target_for_weight`, Untergrenze 3 — es misst die
 Ausbau-Quote) — Spiegel von M1 („Kern ≥10, Rest ≥3”) und der
-Vorkommensschranke (`LAUFFORM_MIN_OCCURRENCES = 3`).
+Vorkommensschranke (`LAUFFORM_MIN_OCCURRENCES = 3`). Quer dazu steht die
+**Mindestbelegung** je GLYPHE (Phase A2, §4): kein Buchstabe, keine
+Ziffer, kein Zeichen darf mit weniger als drei geplanten Belegen
+dastehen, egal wie selten das Item im Text ist —
+`tools.eigenhand.progression` schließt jeden Lauf mit der Zeile, ob sie
+erfüllt ist, und nennt sonst die betroffenen Glyphen.
 
 Rauchtest der ganzen Schleife (synthetisch beschriebener Bogen,
 perspektivisch verzerrt + 180° gedreht): nach 6 angenommenen Fassungen
