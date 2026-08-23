@@ -172,7 +172,7 @@ def build_page(payload: dict, import_dir: Path) -> str:
     for row in payload["rows"]:
         # A crop name with path components would let a tampered payload embed
         # arbitrary local files into the page.
-        crop_name = check_crop_name(row["crop"])
+        crop_name = check_crop_name(row["crop"], row["row_index"])
         attempt = f" · Versuch {row['attempt']}/{row['attempts']}" if row["attempts"] > 1 else ""
         qc = f'<span class="qc">⚠ {esc(", ".join(row["qc"]))}</span>' if row["qc"] else ""
         pen = row.get("pen_mark") or ""

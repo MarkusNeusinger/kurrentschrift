@@ -188,10 +188,8 @@ def build_wave(plan: dict, target_strips: int, universe_items: dict[str, float])
         if best_floor is None or not try_add(best_floor[2]):
             floor_unmet = sorted(under)
             break
-    if floor_unmet:
-        print(
-            f"WARNING: glyph floor {GLYPH_MIN_PLANNED} unmet for {', '.join(floor_unmet)} — add carrier words or strips"
-        )
+    # Not printed here — the leftovers travel in stats["floor_unmet"] and main()
+    # warns, so this stays a pure function that a caller can run in a loop.
 
     # --- Phase B: even build-out toward the two-tier targets ------------------
     exhausted = False
@@ -273,6 +271,11 @@ def main(argv: list[str] | None = None) -> int:
         f"{stats['words']} words ({stats['distinct_words']} distinct); "
         f"coverage {stats['items_covered']}/{stats['items_total']} items"
     )
+    if stats["floor_unmet"]:
+        print(
+            f"WARNING: glyph floor {GLYPH_MIN_PLANNED} unmet for {', '.join(stats['floor_unmet'])} — "
+            "add carrier words or strips"
+        )
     return 0
 
 

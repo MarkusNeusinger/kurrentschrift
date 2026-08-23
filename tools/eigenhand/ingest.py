@@ -32,6 +32,7 @@ from skimage import transform
 
 from core.extract import load_grayscale
 from tools.eigenhand.fiducial import FiducialError, detect_fiducials, orient_corners
+from tools.eigenhand.store import crop_name as row_crop_name
 from tools.eigenhand.store import hand_dir
 
 
@@ -177,7 +178,7 @@ def build_payload(
         qy1_px = _px(band["desc_bot"] + ROW_PAD_MM)
         qc_crop = warped[y0_px:qy1_px, qx0_px:x1_px]
         pen_mark = read_pen_mark(warped, row)
-        crop_name = f"row-{index:02d}.png"
+        crop_name = row_crop_name(index)
         Image.fromarray((np.clip(crop, 0.0, 1.0) * 255).astype(np.uint8), mode="L").save(import_dir / crop_name)
         rows_out.append(
             {

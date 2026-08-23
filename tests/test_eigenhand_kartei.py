@@ -295,25 +295,38 @@ class TestCropName:
     """The crop name from payload.json becomes a path in page.py AND apply.py."""
 
     @pytest.mark.parametrize(
-        "bad", ["../../etc/passwd.png", "sub/row-00.png", "/abs/row-00.png", "..", ".", "row-00.txt", "", "..png"]
+        "bad",
+        [
+            "../../etc/passwd.png",  # traversal
+            "sub/row-00.png",
+            "/abs/row-00.png",
+            "..",  # Path("..").name hands it back unchanged — a name test alone misses it
+            "page.png",  # the sheet's own preview and header: never dataset files
+            "header.png",
+            "row-01.png",  # another row's crop
+            "row-0.png",  # not the spelling ingest writes
+            "",
+        ],
     )
-    def test_anything_but_a_plain_png_name_is_refused(self, bad):
-        # `..` is the subtle one: Path("..").name hands it back unchanged, so
-        # banning separators alone would let a directory through.
-        with pytest.raises(SystemExit, match="plain PNG file name"):
-            store.check_crop_name(bad)
+    def test_anything_but_this_rows_own_crop_is_refused(self, bad):
+        with pytest.raises(SystemExit, match="refusing"):
+            store.check_crop_name(bad, 0)
 
     def test_the_name_ingest_writes_passes(self):
-        assert store.check_crop_name("row-00.png") == "row-00.png"
+        assert store.check_crop_name(store.crop_name(0), 0) == "row-00.png"
+        assert store.check_crop_name(store.crop_name(12), 12) == "row-12.png"
 
     def test_apply_refuses_before_it_creates_anything(self, dataroot):
         _make_sheet()
         import_dir = hand_dir(HAND) / "blaetter" / "B0001" / "import"
         payload = json.loads((import_dir / "payload.json").read_text(encoding="utf-8"))
-        payload["rows"][0]["crop"] = "../../../row-00.png"
+        # page.png exists in every import directory — a tampered payload must
+        # not be able to file the whole-sheet preview as a strip recording.
+        Image.new("L", (20, 30), 210).save(import_dir / "page.png")
+        payload["rows"][0]["crop"] = "page.png"
         (import_dir / "payload.json").write_text(json.dumps(payload), encoding="utf-8")
         result = _result("B0001", ["B0001-r00:angenommen"])
-        with pytest.raises(SystemExit, match="path components"):
+        with pytest.raises(SystemExit, match="refusing"):
             apply_mod.main([str(result), "--hand", HAND, "--sheet", "B0001"])
         assert not (hand_dir(HAND) / "fassungen").exists()  # no half-filed Fassung
 

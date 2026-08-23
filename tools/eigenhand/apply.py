@@ -102,7 +102,7 @@ def main(argv: list[str] | None = None) -> int:
     # Every crop name is turned into a path below. Check them all up front, so
     # a tampered payload fails before a single directory has been created.
     for row in payload["rows"]:
-        check_crop_name(row["crop"])
+        check_crop_name(row["crop"], row["row_index"])
 
     kartei = load_kartei(args.hand, payload["style"])
     filed = recorded = skipped = 0
