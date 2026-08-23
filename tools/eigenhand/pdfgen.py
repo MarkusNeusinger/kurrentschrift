@@ -123,7 +123,11 @@ _HELV_WIDTH: dict[str, int] = {
 
 def helv_width_mm(text: str, size_mm: float) -> float:
     """Rendered width of Helvetica text at a given cap size in mm."""
-    units = sum(556 if ch.isdigit() else _HELV_WIDTH.get(ch, 556) for ch in text)
+    # ASCII digits only: _escape() turns every other "digit" (Arabic-Indic and
+    # friends) into "?", so the metric has to measure the "?" the PDF actually
+    # receives. Both advances are 556 today, so nothing moves — but the rule
+    # now says what it means and cannot drift apart from the emitted bytes.
+    units = sum(556 if ch in "0123456789" else _HELV_WIDTH.get(ch, 556) for ch in text)
     return units / 1000 * size_mm
 
 

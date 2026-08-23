@@ -95,3 +95,8 @@ class TestHelvWidth:
 
     def test_digits_use_the_uniform_advance(self):
         assert pdfgen.helv_width_mm("1", 10.0) == pdfgen.helv_width_mm("9", 10.0) == pytest.approx(5.56)
+
+    def test_a_non_ascii_digit_is_measured_as_the_char_that_gets_emitted(self):
+        # _escape() writes "?" for anything outside WinAnsi, so the metric must
+        # measure "?" — not the digit advance the character never gets.
+        assert pdfgen.helv_width_mm("١", 10.0) == pdfgen.helv_width_mm("?", 10.0)

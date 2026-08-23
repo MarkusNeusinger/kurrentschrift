@@ -8,11 +8,13 @@ in the SAME reserved place. Safety properties, in the order they matter:
 * **Create-only.** Every run writes a new timestamped directory under
   ``<archive>/own-hand/<hand>/``. Existing directories are never opened for
   writing, never overwritten, never removed — no delete path exists.
-* **Incremental without duplicates.** A Fassung or Bogen directory already
-  present in ANY earlier snapshot is skipped (matched by its relative path;
-  Fassungen additionally verified by the Kartei's SHA256). ``kartei.json``
-  and the strip-plan copy ride along in full each time — they are small and
-  make every snapshot self-describing.
+* **Incremental without duplicates — and without gaps.** A Fassung directory
+  already present in ANY earlier snapshot is skipped (matched by its relative
+  path, and verified against the Kartei's SHA256): a filed Fassung never
+  changes. Bogen contents are compared FILE by file instead, because a sheet
+  directory does grow — a second capture files another scan under ``scans/``.
+  ``kartei.json`` and the strip-plan copy ride along in full each time — they
+  are small and make every snapshot self-describing.
 * **A shrinking snapshot is an error.** If the Kartei holds fewer Fassungen
   than the archive already knows, the run fails — a wrong ``EIGENHAND_DATA``
   or a half-restored working copy must not look like a successful backup.
@@ -48,9 +50,17 @@ def _archive_root(cli_value: str | None) -> Path:
     return root
 
 
-def _units(root: Path) -> list[tuple[str, Path]]:
-    """The copy units under one tree: Fassung dirs (two levels) + Bogen dirs (one)."""
-    units: list[tuple[str, Path]] = []
+def _units(root: Path) -> list[tuple[str, Path, bool]]:
+    """The copy units under one tree: Fassung dirs, Bogen FILES. (rel, path, is_dir)
+
+    A Fassung is immutable once filed — apply.py refuses to overwrite one — so
+    the whole directory is a single unit, matched by relative path. A Bogen
+    directory is NOT immutable: ``ingest --keep-scan`` files another scan under
+    ``scans/`` every time the sheet is captured again. Skipping such a sheet by
+    path alone would leave the later scan out of the archive while the run
+    still printed success, so its files are units of their own.
+    """
+    units: list[tuple[str, Path, bool]] = []
     fassungen = root / "fassungen"
     if fassungen.is_dir():
         for strip in sorted(fassungen.iterdir()):
@@ -59,12 +69,19 @@ def _units(root: Path) -> list[tuple[str, Path]]:
                 # a scratch note) would break shutil.copytree at the worst
                 # possible moment — mid-archive.
                 if fassung.is_dir():
-                    units.append((f"fassungen/{strip.name}/{fassung.name}", fassung))
+                    units.append((f"fassungen/{strip.name}/{fassung.name}", fassung, True))
     blaetter = root / "blaetter"
     if blaetter.is_dir():
         for sheet in sorted(blaetter.iterdir()):
-            if sheet.is_dir():
-                units.append((f"blaetter/{sheet.name}", sheet))
+            if not sheet.is_dir():
+                continue
+            for path in sorted(sheet.rglob("*")):
+                relative = path.relative_to(sheet)
+                # Crops and payload under import/ are regenerable from the scan
+                # plus layout.json — the archive keeps what cannot be recomputed.
+                if not path.is_file() or "import" in relative.parts:
+                    continue
+                units.append((f"blaetter/{sheet.name}/{relative.as_posix()}", path, False))
     return units
 
 
@@ -75,7 +92,7 @@ def _known_relpaths(hand_archive: Path) -> set[str]:
         return known
     for snapshot in hand_archive.iterdir():
         if snapshot.is_dir():
-            known.update(rel for rel, _ in _units(snapshot))
+            known.update(rel for rel, _path, _is_dir in _units(snapshot))
     return known
 
 
@@ -143,16 +160,22 @@ def main(argv: list[str] | None = None) -> int:
     shutil.copy2(kartei_file, target / "kartei.json")
     shutil.copy2(STREIFEN_JSON, target / "streifenplan.json")
 
-    copied = 0
-    for rel, path in _units(source):
+    copied_fassungen = copied_files = 0
+    for rel, path, is_dir in _units(source):
         if rel in known:
             continue
-        # Bogen import/ crops are regenerable from scan + layout — skip them.
-        shutil.copytree(path, target / rel, ignore=shutil.ignore_patterns("import"))
-        copied += 1
+        if is_dir:
+            shutil.copytree(path, target / rel)
+            copied_fassungen += 1
+        else:
+            (target / rel).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(path, target / rel)
+            copied_files += 1
 
-    noun = "directory" if copied == 1 else "directories"
-    print(f"filed snapshot {target.relative_to(archive)}: {copied} new {noun}, {total_fassungen} Fassungen total")
+    print(
+        f"filed snapshot {target.relative_to(archive)}: {copied_fassungen} new Fassungen, "
+        f"{copied_files} new Bogen files, {total_fassungen} Fassungen total"
+    )
     if args.push:
         _git(archive, "add", "-A", str(target.relative_to(archive)))
         _git(archive, "commit", "-m", f"own-hand snapshot {args.hand} {stamp}")

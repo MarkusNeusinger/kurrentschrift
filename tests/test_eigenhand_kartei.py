@@ -202,6 +202,34 @@ class TestSnapshot:
         with pytest.raises(SystemExit, match="create-only"):
             snapshot.main(["--hand", HAND, "--archive", str(archive), "--stamp", "0001"])
 
+    def test_a_later_scan_under_a_known_sheet_still_reaches_the_archive(self, dataroot, tmp_path):
+        # The sheet directory grows: `ingest --keep-scan` files another scan
+        # every time the Bogen is captured. Skipping the sheet by path alone
+        # would lose it silently — and the archive is the only copy.
+        self._accept_one()
+        archive = tmp_path / "archive"
+        archive.mkdir()
+        scans = hand_dir(HAND) / "blaetter" / "B0001" / "scans"
+        scans.mkdir(parents=True)
+        Image.new("L", (8, 8), 200).save(scans / "scan-1.png")
+        snapshot.main(["--hand", HAND, "--archive", str(archive), "--stamp", "0001"])
+        assert (archive / "own-hand" / HAND / "0001" / "blaetter" / "B0001" / "scans" / "scan-1.png").exists()
+
+        Image.new("L", (8, 8), 180).save(scans / "scan-2.png")
+        snapshot.main(["--hand", HAND, "--archive", str(archive), "--stamp", "0002"])
+        second = archive / "own-hand" / HAND / "0002" / "blaetter" / "B0001" / "scans"
+        assert (second / "scan-2.png").exists()  # the new one is filed
+        assert not (second / "scan-1.png").exists()  # the known one is not duplicated
+
+    def test_regenerable_import_crops_stay_out_of_the_archive(self, dataroot, tmp_path):
+        self._accept_one()
+        archive = tmp_path / "archive"
+        archive.mkdir()
+        snapshot.main(["--hand", HAND, "--archive", str(archive), "--stamp", "0001"])
+        sheet = archive / "own-hand" / HAND / "0001" / "blaetter" / "B0001"
+        assert (sheet / "layout.json").exists()
+        assert not (sheet / "import").exists()
+
     def test_shrinking_snapshot_is_refused(self, dataroot, tmp_path, monkeypatch):
         self._accept_one()
         archive = tmp_path / "archive"
