@@ -27,6 +27,9 @@ const AREAS = [
   { to: paths.admin.letters, label: de.admin.shell.areaLetters },
   { to: paths.admin.joins, label: de.admin.shell.areaJoins },
   { to: paths.admin.words, label: de.admin.shell.areaWords },
+  // Beside the three Vorlage views rather than inside them: Eigenhand belongs
+  // to a hand, and the Vorlage chip does not apply to it.
+  { to: paths.admin.eigenhand, label: de.admin.shell.areaEigenhand },
 ] as const;
 
 export function AdminHeader({ openCount, onOpenKorb }: { openCount: number | null; onOpenKorb: () => void }) {

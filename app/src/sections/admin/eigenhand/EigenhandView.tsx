@@ -1,0 +1,395 @@
+// Eigenhand — the fourth view, and the only one that belongs to a HAND rather
+// than to a Vorlage. It answers the two questions the capture chain could
+// otherwise only answer in a terminal: what does my own hand already hold, and
+// give me the next sheets to write.
+//
+// The numbers come from the shared compute in `core/eigenhand` (same module the
+// terminal report prints), measured against the committed strip plan — so
+// „belegt" means the same here and there, and the denominators are honest:
+// how many glyphs and joins the plan can produce at all, capitals, digits and
+// signs included.
+//
+// What is NOT here, on purpose: the scans. The strip images are the reserved
+// own-hand dataset and stay on the author's machine; only the bookkeeping (how
+// often a Streifen was accepted, which Bögen were printed) lives in the DB.
+// Uploading a scan therefore stays a local step — the hint under the printer
+// names the command that continues the loop.
+
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  FormControlLabel,
+  MenuItem,
+  Stack,
+  Switch,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
+import {
+  ApiError,
+  fetchEigenhandSheetPdf,
+  getEigenhandBestand,
+  getEigenhandHands,
+  printEigenhandSheets,
+} from '@/lib/api';
+import type { EigenhandBestand, EigenhandBucket } from '@/lib/api';
+import { de, fmt } from '@/locales/admin';
+import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
+import { paper } from '@/styles/paper';
+
+const BUCKET_LABELS: Record<string, string> = {
+  klein: de.admin.eigenhand.bucketKlein,
+  gross: de.admin.eigenhand.bucketGross,
+  ligatur: de.admin.eigenhand.bucketLigatur,
+  ziffer: de.admin.eigenhand.bucketZiffer,
+  zeichen: de.admin.eigenhand.bucketZeichen,
+};
+
+// The glyph_keys the shaping layer spells out (`longs`, `paren-open`) get their
+// character back for the grid — a wall of words would hide the shape of the
+// coverage, which is the whole point of showing every key.
+const KEY_GLYPHS: Record<string, string> = {
+  longs: 'ſ',
+  longst: 'ſt',
+  sz: 'ß',
+  ae: 'ä',
+  oe: 'ö',
+  ue: 'ü',
+  Ae: 'Ä',
+  Oe: 'Ö',
+  Ue: 'Ü',
+  period: '.',
+  comma: ',',
+  colon: ':',
+  hyphen: '-',
+  exclam: '!',
+  question: '?',
+  apostrophe: '’',
+  'quote-low': '„',
+  'quote-high': '“',
+  'paren-open': '(',
+  'paren-close': ')',
+  section: '§',
+};
+
+const glyphOf = (key: string): string => KEY_GLYPHS[key] ?? key;
+
+function Stat({ value, label }: { value: number | string; label: string }) {
+  return (
+    <Box sx={{ minWidth: '5.5rem' }}>
+      <Typography variant="h5" sx={{ color: paper.ink, lineHeight: 1.1 }}>
+        {value}
+      </Typography>
+      <Typography variant="caption" sx={{ color: paper.inkSoft }}>
+        {label}
+      </Typography>
+    </Box>
+  );
+}
+
+/** One glyph class as a grid of its keys — written ones inked, open ones pale. */
+function BucketGrid({ name, bucket }: { name: string; bucket: EigenhandBucket }) {
+  const t = de.admin.eigenhand;
+  return (
+    <Box sx={{ mb: 2 }}>
+      <Stack direction="row" spacing={1} sx={{ mb: 0.5, flexWrap: 'wrap', alignItems: 'baseline' }}>
+        <Typography variant="subtitle2" sx={{ color: paper.ink }}>
+          {BUCKET_LABELS[name] ?? name}
+        </Typography>
+        <Typography variant="caption" sx={{ color: paper.inkSoft }}>
+          {fmt(t.coverageOf, { covered: bucket.covered, possible: bucket.possible })} ·{' '}
+          {fmt(t.coverageBelege, { belege: bucket.belege })}
+        </Typography>
+      </Stack>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+        {bucket.keys.map((row) => (
+          <Tooltip
+            key={row.key}
+            describeChild
+            title={fmt(t.keyTooltip, { key: row.key, belege: row.belege, planned: row.planned })}
+          >
+            <Box
+              sx={{
+                minWidth: '2.1rem',
+                px: 0.5,
+                py: 0.25,
+                textAlign: 'center',
+                border: 1,
+                borderRadius: 1,
+                borderColor: row.belege ? paper.sepia : 'divider',
+                bgcolor: row.belege ? 'action.hover' : 'transparent',
+                color: row.belege ? paper.ink : 'text.disabled',
+              }}
+            >
+              <Typography variant="body2" sx={{ lineHeight: 1.2 }}>
+                {glyphOf(row.key)}
+              </Typography>
+              <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'inherit' }}>
+                {row.belege}
+              </Typography>
+            </Box>
+          </Tooltip>
+        ))}
+      </Box>
+    </Box>
+  );
+}
+
+export function EigenhandView() {
+  const t = de.admin.eigenhand;
+  const [hands, setHands] = useState<string[]>([]);
+  const [hand, setHand] = useState('');
+  const [bestand, setBestand] = useState<EigenhandBestand | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [sheets, setSheets] = useState(1);
+  const [repeat, setRepeat] = useState(1);
+  const [printing, setPrinting] = useState(false);
+  const [printed, setPrinted] = useState<string[]>([]);
+  const [printError, setPrintError] = useState<string | null>(null);
+  const [openOnly, setOpenOnly] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    getEigenhandHands({ retries: 2 })
+      .then((data) => {
+        if (cancelled) return;
+        setHands(data.hands);
+        // A first-run admin has no hand yet; the styles tell us what a legal
+        // one looks like, so the field starts on a usable default instead of
+        // empty.
+        setHand((current) => current || data.hands[0] || `mn-${data.styles[1] ?? 'suetterlin'}`);
+      })
+      .catch((err: unknown) => !cancelled && setLoadError(String(err)));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const reload = useCallback(
+    (target: string) => {
+      if (!target) return;
+      setLoading(true);
+      setLoadError(null);
+      getEigenhandBestand(target, { retries: 2 })
+        .then((data) => setBestand(data))
+        .catch((err: unknown) => {
+          setBestand(null);
+          // A hand that has never been printed for simply has no rows — that is
+          // an empty Bestand, not an error worth an alert.
+          setLoadError(err instanceof ApiError && err.status === 400 ? String(err) : String(err));
+        })
+        .finally(() => setLoading(false));
+    },
+    [],
+  );
+
+  useEffect(() => {
+    reload(hand);
+  }, [hand, reload]);
+
+  const openJoins = useMemo(
+    () => (bestand ? bestand.joins.rows.filter((row) => !openOnly || row.belege === 0) : []),
+    [bestand, openOnly],
+  );
+
+  const print = () => {
+    setPrinting(true);
+    setPrintError(null);
+    printEigenhandSheets({ hand, sheets, repeat })
+      .then((res) => {
+        setPrinted(res.sheets.map((s) => s.sheet));
+        reload(hand);
+      })
+      .catch((err: unknown) => setPrintError(String(err)))
+      .finally(() => setPrinting(false));
+  };
+
+  const openPdf = async (sheet: string) => {
+    try {
+      const blob = await fetchEigenhandSheetPdf(hand, sheet);
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank', 'noopener');
+      // The tab keeps its own reference; releasing ours right away would race
+      // the open in some browsers, so give it a beat.
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (err: unknown) {
+      setPrintError(`${t.pdfError} ${String(err)}`);
+    }
+  };
+
+  return (
+    <Box sx={{ p: { xs: 2, md: 3 }, overflowY: 'auto' }}>
+      <ViewHeader eyebrow={de.admin.shell.startEyebrow} title={t.title} intro={t.intro} />
+
+      <Stack direction="row" spacing={2} sx={{ mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
+        <TextField
+          select={hands.length > 0}
+          size="small"
+          label={t.hand}
+          value={hand}
+          helperText={hands.length ? undefined : t.handHelp}
+          onChange={(e) => setHand(e.target.value)}
+          sx={{ minWidth: '14rem' }}
+        >
+          {hands.map((id) => (
+            <MenuItem key={id} value={id}>
+              {id}
+            </MenuItem>
+          ))}
+        </TextField>
+        {loading && <CircularProgress size={16} />}
+        {!hands.length && (
+          <Typography variant="caption" sx={{ color: paper.inkSoft }}>
+            {t.noHands}
+          </Typography>
+        )}
+      </Stack>
+
+      {loadError && !bestand && (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          {t.loadError} {loadError}
+        </Alert>
+      )}
+
+      {bestand && (
+        <Stack spacing={3}>
+          <Panel title={t.stripsTitle} caption={t.queueTitle}>
+            <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', rowGap: 2 }}>
+              <Stat value={bestand.strips.belegt} label={t.stripsBelegt} />
+              <Stat value={bestand.strips.unterwegs} label={t.stripsUnterwegs} />
+              <Stat value={bestand.strips.geplant} label={t.stripsGeplant} />
+              <Stat value={bestand.strips.total} label={t.stripsTotal} />
+              <Stat value={bestand.fassungen.angenommen} label={t.fassungenAngenommen} />
+              <Stat value={bestand.fassungen.verworfen} label={t.fassungenVerworfen} />
+              <Stat value={bestand.sheets.printed} label={t.sheetsPrinted} />
+            </Stack>
+            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 2 }}>
+              {bestand.queue.map((sid) => (
+                <Chip key={sid} size="small" variant="outlined" label={sid} />
+              ))}
+            </Box>
+          </Panel>
+
+          <Panel
+            title={t.coverageTitle}
+            caption={fmt(t.coverageOf, {
+              covered: Object.values(bestand.glyphs).reduce((sum, b) => sum + b.covered, 0),
+              possible: Object.values(bestand.glyphs).reduce((sum, b) => sum + b.possible, 0),
+            })}
+          >
+            {Object.entries(bestand.glyphs).map(([name, bucket]) => (
+              <BucketGrid key={name} name={name} bucket={bucket} />
+            ))}
+          </Panel>
+
+          <Panel
+            title={t.coverageJoins}
+            caption={`${fmt(t.coverageOf, {
+              covered: bestand.joins.covered,
+              possible: bestand.joins.possible,
+            })} — ${t.joinsIntro}`}
+            actions={
+              <FormControlLabel
+                control={<Switch size="small" checked={openOnly} onChange={(e) => setOpenOnly(e.target.checked)} />}
+                label={<Typography variant="caption">{t.joinsShowOpen}</Typography>}
+              />
+            }
+          >
+            {openJoins.length === 0 ? (
+              <Typography variant="caption" sx={{ color: paper.inkSoft }}>
+                {t.joinsEmpty}
+              </Typography>
+            ) : (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, maxHeight: '20rem', overflowY: 'auto' }}>
+                {openJoins.map((row) => (
+                  <Chip
+                    key={row.item}
+                    size="small"
+                    variant={row.belege ? 'filled' : 'outlined'}
+                    label={`${row.item.split('>').map(glyphOf).join(' › ')}${
+                      row.belege ? ` · ${row.belege}` : ''
+                    }`}
+                  />
+                ))}
+              </Box>
+            )}
+          </Panel>
+
+          <Panel title={t.printTitle} caption={t.printIntro}>
+            <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap', rowGap: 2, alignItems: 'center' }}>
+              <TextField
+                type="number"
+                size="small"
+                label={t.printSheets}
+                value={sheets}
+                onChange={(e) => setSheets(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
+                sx={{ width: '8rem' }}
+              />
+              <TextField
+                type="number"
+                size="small"
+                label={t.printRepeat}
+                value={repeat}
+                onChange={(e) => setRepeat(Math.max(1, Math.min(8, Number(e.target.value) || 1)))}
+                sx={{ width: '11rem' }}
+              />
+              <Button variant="contained" onClick={print} disabled={printing || !hand}>
+                {printing ? t.printing : t.printAction}
+              </Button>
+            </Stack>
+
+            {printError && (
+              <Alert severity="warning" sx={{ mt: 2 }}>
+                {t.printError} {printError}
+              </Alert>
+            )}
+
+            {printed.length > 0 && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  {fmt(t.printed, { count: printed.length, sheets: printed.join(', ') })}
+                </Typography>
+                <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+                  {printed.map((sheet) => (
+                    <Button key={sheet} size="small" variant="outlined" onClick={() => openPdf(sheet)}>
+                      {sheet} · {t.openPdf}
+                    </Button>
+                  ))}
+                </Stack>
+                <Typography variant="caption" sx={{ display: 'block', mt: 1.5, color: paper.inkSoft }}>
+                  {fmt(t.localHint, { hand, sheet: printed[0] })}
+                </Typography>
+              </Box>
+            )}
+          </Panel>
+
+          <Panel title={t.quotenTitle} caption={bestand.quoten ? undefined : t.quotenTitle}>
+            {bestand.quoten ? (
+              <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', rowGap: 2 }}>
+                <Stat
+                  value={`${(bestand.quoten.erstbeleg_weighted * 100).toFixed(1)} %`}
+                  label={`Erstbeleg (gewichtet) · ${bestand.quoten.erstbeleg}/${bestand.quoten.items}`}
+                />
+                <Stat
+                  value={`${(bestand.quoten.ausbau_weighted * 100).toFixed(1)} %`}
+                  label={`Ausbau (gewichtet) · ${bestand.quoten.ausbau}/${bestand.quoten.soll_belege}`}
+                />
+              </Stack>
+            ) : (
+              <Typography variant="caption" sx={{ color: paper.inkSoft }}>
+                {fmt(t.quotenNone, { hand })}
+              </Typography>
+            )}
+          </Panel>
+        </Stack>
+      )}
+    </Box>
+  );
+}

@@ -643,3 +643,69 @@ class QuizWord(Base):
     note: Mapped[str | None] = mapped_column(Text, nullable=True)
     fugen: Mapped[str | None] = mapped_column(String(80), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class EigenhandSheet(Base):
+    """One printed Bogen of the own-hand capture chain — bookkeeping, no pixels.
+
+    The DB holds what the admin view needs to answer "which strips exist, how
+    often" and to print the next sheet without repeating one (owner,
+    2026-08-23): the rows a Bogen carried and the layout that was printed. The
+    scans, crops and Fassung images stay on the author's machine — the reserved
+    dataset (docs/proposals/eigenhand-erfassung.md §8) does not move here.
+
+    `layout` is the importer's geometry contract (mm coordinates of Passmarken,
+    rows and boxes). Storing it rather than the PDF is deliberate: the bytes are
+    reproducible from the layout, the geometry is not reproducible from the
+    bytes, and it is what a local ingest run has to register against.
+    """
+
+    __tablename__ = "eigenhand_sheets"
+    __table_args__ = (UniqueConstraint("hand", "sheet", name="uq_eigenhand_sheet"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    hand: Mapped[str] = mapped_column(String(HAND_ID_MAX), nullable=False, index=True)
+    style: Mapped[str] = mapped_column(String(STYLE_ID_MAX), nullable=False)
+    sheet: Mapped[str] = mapped_column(String(16), nullable=False)
+    # The date PRINTED on the sheet, as a string: it is a provenance stamp that
+    # has to match the layout byte for byte, not a queryable timestamp.
+    printed_on: Mapped[str] = mapped_column(String(10), nullable=False)
+    strips: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False, server_default="[]")
+    layout: Mapped[dict] = mapped_column(PORTABLE_JSON, nullable=False)
+    layout_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class EigenhandFassung(Base):
+    """One judged row of a Bogen — the Siebung verdict, without the strip image.
+
+    A Fassung is one recording of one Streifen. `angenommen` rows ARE the
+    training data (their pixels live locally); `verworfen` and
+    `zurueckgezogen` rows are recorded so the Sieb-Disziplin stays auditable
+    by counts. `png_sha256` names the local file without containing it.
+
+    Two unique constraints, both load-bearing: a Fassung id is unique per
+    strip, and a printed ROW can only ever carry one verdict — which is the
+    same idempotency rule the local `apply` enforces.
+    """
+
+    __tablename__ = "eigenhand_fassungen"
+    __table_args__ = (
+        UniqueConstraint("hand", "strip", "fassung", name="uq_eigenhand_fassung"),
+        UniqueConstraint("hand", "sheet", "row_index", name="uq_eigenhand_row"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    hand: Mapped[str] = mapped_column(String(HAND_ID_MAX), nullable=False, index=True)
+    strip: Mapped[str] = mapped_column(String(16), nullable=False, index=True)
+    fassung: Mapped[str] = mapped_column(String(8), nullable=False)
+    sheet: Mapped[str] = mapped_column(String(16), nullable=False)
+    row_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    attempt: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    reason: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    png_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    filed_on: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

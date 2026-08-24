@@ -6,9 +6,11 @@ import json
 
 import pytest
 
-from tools.eigenhand import coverage, pool, progression, universe
+from core.eigenhand import coverage
+from core.eigenhand import plan as plan_mod
+from core.eigenhand.plan import STREIFEN_JSON
+from tools.eigenhand import pool, progression, universe
 from tools.eigenhand.corpus import pool_entries, shaping_form
-from tools.eigenhand.store import STREIFEN_JSON
 
 
 class TestShapedJoins:
@@ -82,13 +84,22 @@ class TestStripPlan:
 
     def test_committed_wave0_is_wellformed(self):
         plan = json.loads(STREIFEN_JSON.read_text(encoding="utf-8"))
-        assert plan["format"] == pool.PLAN_FORMAT
+        assert plan["format"] == plan_mod.PLAN_FORMAT
         ids = sorted(plan["strips"], key=lambda s: int(s[1:]))
         assert ids[0] == "S0001"
         assert [int(s[1:]) for s in ids] == list(range(1, len(ids) + 1))  # dense numbering
         assert all(plan["strips"][sid]["words"] for sid in ids)
         listed = [sid for wave in plan["waves"] for sid in wave["strips"]]
         assert sorted(listed) == sorted(ids)
+
+    def test_the_plan_carries_every_shaping_form_it_needs(self):
+        # The plan is the API's ONLY word source: a reader without the
+        # curation module must still shape `Amtszeit` as `Amts|zeit`.
+        plan = plan_mod.load_plan()
+        curated = {entry["word"]: shaping_form(entry) for entry in pool_entries()}
+        for sid, strip in plan["strips"].items():
+            for word in strip["words"]:
+                assert plan_mod.shaping_form_of(plan, word) == curated[word], f"{sid}: {word} shapes differently"
 
 
 class TestDetachedGlyphs:

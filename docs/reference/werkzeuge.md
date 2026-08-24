@@ -240,12 +240,20 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   Konsultationskorpora unter `data/corpora/frequencywords-2018/` (vorher
   deren `fetch_frequencywords.py` laufen lassen; Bytes bleiben gitignored).
 - **`pool`** — baut/erweitert den committeten Streifenplan
-  (`tools/eigenhand/streifen.json`), deterministisch und append-never;
+  (`core/eigenhand/streifen.json`), deterministisch und append-never;
   **`gaps`** listet unerreichbare Übergänge samt echter
   Trägerwort-Kandidaten für die nächste Kurationsrunde in `corpus.py`.
 - **`sheet`** — druckt einen Bogen (PDF + `layout.json`-Sidecar) aus der
   Warteschlange (Redo > nie belegt > gewichteter Wiederholungs-Gewinn);
   `--repeat N` für Mehrfach-Versuche, `--strips` für gezielte Streifen.
+  Die Auswahl-, Layout- und PDF-Rechnung selbst liegt in
+  `core/eigenhand/bogen.py`, weil die Werkbank dieselben Bögen druckt.
+- **`sync` ↔ `pull`** — die Brücke zur Werkbank-Ansicht (Proposal §7.1):
+  `sync` schiebt die lokale Buchführung (Bögen samt Layout, Fassungen samt
+  Verdikt) über die admin-gesicherte HTTP-Schnittstelle hoch — Zahlen, nie
+  Bilder —, `pull --sheet B0007` holt einen im Admin gedruckten Bogen
+  (Layout + PDF) auf die Platte, damit `ingest` dagegen registrieren kann.
+  Beide brauchen `ADMIN_TOKEN`; `--api` zeigt auf eine andere Instanz.
 - **`ingest` → `page` → `apply`** — Scan/Foto entzerren (Passmarken,
   scikit-image, 300 DPI Arbeitsauflösung), Siebung auf der
   Offline-HTML-Seite, Ergebnis einspielen: nur angenommene Zeilen werden
@@ -262,7 +270,8 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   Clone wie die DB-Snapshots; dbsnapshot-Disziplin inkl.
   Schrumpf-Verweigerung).
 
-Invarianten wie überall: kein DB-Schreibpfad, eingefrorene Mess-Sätze
+Invarianten wie überall: kein DB-Schreibpfad — `sync` spricht die
+Admin-API, nie die Datenbank —, eingefrorene Mess-Sätze
 bleiben unberührt (der Streifenplan ist Trainingsdaten, kein Mess-Satz),
 und die abgelegten Streifen sind Teil des reservierten Datensatzes
 (Open-Core) — sie verlassen `data/samples/own-hand/` bzw. das private

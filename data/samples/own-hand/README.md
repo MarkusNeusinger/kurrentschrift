@@ -18,6 +18,9 @@ uv run python -m tools.eigenhand.universe
 uv run python -m tools.eigenhand.sheet --hand mn-suetterlin --date 2026-08-22
 #    Mehrfach-Versuche derselben Streifen:  --repeat 3
 #    gezielte Streifen:                     --strips S0037 S0037 S0055
+#    ODER im Admin: /admin/eigenhand → „Bögen erzeugen" → PDF öffnen; danach
+#    den Bogen einmal herunterholen, damit ingest dagegen registrieren kann:
+#    ADMIN_TOKEN=… uv run python -m tools.eigenhand.pull --hand mn-suetterlin --sheet B0007
 
 # 2. schreiben — und JEDE gelungene Zeile gleich rechts abhaken (ein Kästchen).
 #    Der Import liest die Marken und belegt die Siebung damit vor.
@@ -38,6 +41,10 @@ uv run python -m tools.eigenhand.apply --hand mn-suetterlin --sheet B0001 siebun
 
 # 6. NACH JEDER SITZUNG: ins private Archiv sichern (create-only, inkrementell)
 uv run python -m tools.eigenhand.snapshot --hand mn-suetterlin --push
+
+# 7. Zahlen hochschieben, damit /admin/eigenhand den Bestand zeigt (Bögen +
+#    Verdikte, NIE ein Streifenbild; idempotent, beliebig oft wiederholbar)
+ADMIN_TOKEN=… uv run python -m tools.eigenhand.sync --hand mn-suetterlin
 
 # Stand & nächster Druck
 uv run python -m tools.eigenhand.report --hand mn-suetterlin

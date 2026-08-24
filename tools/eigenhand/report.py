@@ -19,25 +19,13 @@ and "what --next actually prints" can never diverge.
 from __future__ import annotations
 
 import argparse
-from collections import Counter
 
-from tools.eigenhand import coverage
-from tools.eigenhand.corpus import pool_entries
+from core.eigenhand.bestand import ist_counts, quoten
+from core.eigenhand.bogen import select_strips
+from core.eigenhand.plan import load_plan
 from tools.eigenhand.kartei import accepted_fassungen, load_kartei
-from tools.eigenhand.pool import load_plan, soll_model
-from tools.eigenhand.sheet import select_strips
-from tools.eigenhand.store import STREIFEN_JSON
+from tools.eigenhand.pool import soll_model
 from tools.eigenhand.universe import load_universe
-
-
-def ist_counts(kartei: dict, plan: dict) -> Counter[str]:
-    """Item → Beleg count over the hand's accepted Fassungen (shaped forms)."""
-    forms = {e["word"]: e.get("fugen") or e["word"] for e in pool_entries()}
-    counts: Counter[str] = Counter()
-    for strip, _fassung in accepted_fassungen(kartei):
-        for word in plan["strips"][strip]["words"]:
-            counts.update(coverage.word_items(forms.get(word, word)))
-    return counts
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -47,29 +35,24 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--next", type=int, default=9, dest="next_rows", help="print-queue preview length")
     args = ap.parse_args(argv)
 
-    plan = load_plan(STREIFEN_JSON)
+    plan = load_plan()
     kartei = load_kartei(args.hand)
     universe = load_universe()
     weights, targets = soll_model(universe["items"])
     ist = ist_counts(kartei, plan)
 
-    total_weight = sum(weights.values()) or 1.0
-    erstbeleg = sum(1 for item in weights if ist[item] > 0)
-    erstbeleg_weighted = sum(w for item, w in weights.items() if ist[item] > 0) / total_weight
-    soll_sum = sum(targets.values())
-    ausbau = sum(min(ist[item], targets[item]) for item in targets)
-    ausbau_weighted_num = sum(min(ist[item], targets[item]) * (weights[item] / total_weight) for item in targets)
-    ausbau_weighted_den = sum(targets[item] * (weights[item] / total_weight) for item in targets) or 1.0
+    # The same numbers the admin view shows — one definition, two surfaces.
+    q = quoten(ist, weights, targets)
 
     n_fassungen = len(accepted_fassungen(kartei))
     print(f"Bestandsbericht {args.hand} — {n_fassungen} angenommene Fassungen")
     print(
-        f"  Erstbeleg-Quote: {erstbeleg}/{len(weights)} items "
-        f"({erstbeleg / max(1, len(weights)):.1%} ungewichtet · {erstbeleg_weighted:.1%} gewichtet)"
+        f"  Erstbeleg-Quote: {q['erstbeleg']}/{q['items']} items "
+        f"({q['erstbeleg_share']:.1%} ungewichtet · {q['erstbeleg_weighted']:.1%} gewichtet)"
     )
     print(
-        f"  Ausbau-Quote:    {ausbau}/{soll_sum} Belege "
-        f"({ausbau / max(1, soll_sum):.1%} ungewichtet · {ausbau_weighted_num / ausbau_weighted_den:.1%} gewichtet)"
+        f"  Ausbau-Quote:    {q['ausbau']}/{q['soll_belege']} Belege "
+        f"({q['ausbau_share']:.1%} ungewichtet · {q['ausbau_weighted']:.1%} gewichtet)"
     )
 
     deficits = sorted(
@@ -81,7 +64,7 @@ def main(argv: list[str] | None = None) -> int:
     for _deficit, weight, item in deficits[: args.top]:
         print(f"  {item:<18} {ist[item]:>4} {targets[item]:>5} {weight:>12.1f}")
 
-    queue = select_strips(plan, kartei, args.next_rows, 1)
+    queue = select_strips(plan, kartei, args.next_rows, 1, (weights, targets))
     print(f"\n  Druckvorschlag (nächste {args.next_rows} Zeilen): {' '.join(queue)}")
     return 0
 

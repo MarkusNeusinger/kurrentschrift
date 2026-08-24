@@ -34,6 +34,7 @@ from pathlib import Path
 
 from tools.eigenhand.kartei import load_kartei, next_fassung_id, save_kartei
 from tools.eigenhand.store import check_crop_name, hand_dir
+from tools.eigenhand.store import sheet_dir as store_sheet_dir
 
 
 META_FORMAT = 1
@@ -87,7 +88,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--sheet", required=True)
     args = ap.parse_args(argv)
 
-    sheet_dir = hand_dir(args.hand) / "blaetter" / args.sheet
+    sheet_dir = store_sheet_dir(args.hand, args.sheet)
     payload_file = sheet_dir / "import" / "payload.json"
     layout_file = sheet_dir / "layout.json"
     for missing in (path for path in (payload_file, layout_file) if not path.exists()):

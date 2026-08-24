@@ -34,7 +34,7 @@ import json
 import re
 from pathlib import Path
 
-from tools.eigenhand.coverage import word_items
+from core.eigenhand.coverage import word_items
 from tools.eigenhand.store import CORPORA_DIR, universe_path
 
 

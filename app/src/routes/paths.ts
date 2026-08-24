@@ -21,11 +21,14 @@ export const paths = {
   // Wörter — over one chosen Vorlage; /admin itself is the Vorlage picker the
   // area is entered through. Each view carries its subject in the query string
   // (sections/admin/shell/focus.ts), so every link between them is a plain URL.
+  // Eigenhand sits beside them rather than inside: it belongs to a HAND, not
+  // to a Vorlage — the own-hand capture chain's Bestand and its Bogen printer.
   admin: {
     root: '/admin',
     letters: '/admin/buchstaben',
     joins: '/admin/uebergaenge',
     words: '/admin/woerter',
+    eigenhand: '/admin/eigenhand',
   },
   // Retired admin URLs, kept only as redirect sources so older bookmarks,
   // notes and work-item links still land on the view that absorbed them.

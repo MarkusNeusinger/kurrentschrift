@@ -877,3 +877,157 @@ class TemplateOut(BaseModel):
     raw_path: list[StrokePoint]
     trace_meta: dict[str, Any]
     measurements: dict[str, Any]
+
+
+# ----------------------------------------------------------------------- Eigenhand
+#
+# The own-hand capture chain's admin surface. German field names appear where
+# the project's own counting units do (`belege`, `erstbeleg`, `ausbau`,
+# `quoten`) and where a value is Kartei DATA rather than an invented
+# identifier (`belegt` · `unterwegs` · `geplant`, `angenommen` · `verworfen` ·
+# `zurueckgezogen`) — glossar.md holds all of them.
+
+
+class EigenhandHandsOut(BaseModel):
+    """Which hands already have rows, and which styles a new one may use."""
+
+    hands: list[str]
+    styles: list[str]
+
+
+class EigenhandKeyOut(BaseModel):
+    """One glyph_key of the plan: how often written, how often planned."""
+
+    key: str
+    belege: int
+    planned: int
+
+
+class EigenhandBucketOut(BaseModel):
+    """One glyph class (klein · gross · ligatur · ziffer · zeichen)."""
+
+    covered: int
+    possible: int
+    belege: int
+    keys: list[EigenhandKeyOut]
+
+
+class EigenhandJoinOut(BaseModel):
+    item: str
+    belege: int
+    planned: int
+
+
+class EigenhandJoinsOut(BaseModel):
+    covered: int
+    possible: int
+    belege: int
+    rows: list[EigenhandJoinOut]
+
+
+class EigenhandQuotenOut(BaseModel):
+    """Erstbeleg- and Ausbau-Quote — only where an Übergangsraum table exists."""
+
+    items: int
+    erstbeleg: int
+    erstbeleg_share: float
+    erstbeleg_weighted: float
+    soll_belege: int
+    ausbau: int
+    ausbau_share: float
+    ausbau_weighted: float
+
+
+class EigenhandStripsOut(BaseModel):
+    total: int
+    belegt: int
+    unterwegs: int
+    geplant: int
+
+
+class EigenhandFassungenOut(BaseModel):
+    angenommen: int
+    verworfen: int
+    zurueckgezogen: int
+
+
+class EigenhandSheetsCountOut(BaseModel):
+    printed: int
+    last: str | None = None
+
+
+class EigenhandBestandOut(BaseModel):
+    """Everything one hand holds — Ist against what the strip plan can produce."""
+
+    hand: str
+    style: str
+    strips: EigenhandStripsOut
+    fassungen: EigenhandFassungenOut
+    sheets: EigenhandSheetsCountOut
+    glyphs: dict[str, EigenhandBucketOut]
+    joins: EigenhandJoinsOut
+    quoten: EigenhandQuotenOut | None = None
+    queue: list[str]
+    redo: list[str]
+
+
+class EigenhandSheetIn(BaseModel):
+    """Print request — the CLI's flags, with the same meaning."""
+
+    hand: str
+    style: str | None = None
+    sheets: Annotated[int, Field(ge=1, le=20)] = 1
+    rows: Annotated[int, Field(ge=1, le=20)] | None = None
+    repeat: Annotated[int, Field(ge=1, le=8)] = 1
+    strips: list[str] | None = None
+    hints: bool = True
+    date: str | None = None
+
+
+class EigenhandSheetOut(BaseModel):
+    sheet: str
+    strips: list[str]
+    bytes: int
+
+
+class EigenhandSheetsOut(BaseModel):
+    hand: str
+    style: str
+    sheets: list[EigenhandSheetOut]
+
+
+class EigenhandSheetImportIn(BaseModel):
+    """A Bogen printed LOCALLY, registered so the server stops re-minting its id."""
+
+    style: str
+    printed_on: str
+    strips: list[str]
+    layout: dict[str, Any]
+    layout_sha256: str
+
+
+class EigenhandFassungIn(BaseModel):
+    """One judged row, pushed up by the local Siebung — verdict only, no pixels."""
+
+    strip: str
+    fassung: str
+    sheet: str
+    row_index: Annotated[int, Field(ge=0, le=99)]
+    attempt: Annotated[int, Field(ge=1, le=99)] = 1
+    attempts: Annotated[int, Field(ge=1, le=99)] = 1
+    status: Literal["angenommen", "verworfen", "zurueckgezogen"]
+    reason: str | None = None
+    note: str | None = None
+    png_sha256: str | None = None
+    filed_on: str | None = None
+
+
+class EigenhandSyncIn(BaseModel):
+    hand: str
+    fassungen: list[EigenhandFassungIn]
+
+
+class EigenhandSyncOut(BaseModel):
+    hand: str
+    recorded: int
+    skipped: int

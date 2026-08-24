@@ -23,33 +23,17 @@ import json
 from collections import Counter
 from pathlib import Path
 
-from tools.eigenhand import coverage, pool
+from core.eigenhand import coverage
+from core.eigenhand.plan import load_plan, ordered_strips
+from tools.eigenhand import pool
 from tools.eigenhand.corpus import pool_entries, shaping_form
-from tools.eigenhand.pool import load_plan, soll_model
-from tools.eigenhand.store import STREIFEN_JSON
+from tools.eigenhand.pool import soll_model
 from tools.eigenhand.universe import load_universe
 
 
-_LIGATURES = {"ch", "ck", "tz", "longst", "qu", "sz"}
-_LOWER_EXTRA = {"ae", "oe", "ue", "longs"}
-_UPPER_EXTRA = {"Ae", "Oe", "Ue"}
-
-
-def classify_key(key: str) -> str:
-    """Bucket a glyph_key: klein · gross · ligatur · ziffer · zeichen."""
-    if key in _LIGATURES:
-        return "ligatur"
-    if key.isdigit():
-        return "ziffer"
-    if key in _LOWER_EXTRA or (len(key) == 1 and key.islower()):
-        return "klein"
-    if key in _UPPER_EXTRA or (len(key) == 1 and key.isupper()):
-        return "gross"
-    return "zeichen"
-
-
-def ordered_strips(plan: dict) -> list[str]:
-    return sorted(plan["strips"], key=lambda sid: int(sid[1:]))
+# The bucketing lives in core with the rest of the coverage vocabulary — the
+# Bestand groups its glyph layer by exactly these classes.
+classify_key = coverage.classify_key
 
 
 def checkpoints(plan: dict, step: int, universe_items: dict[str, float] | None) -> list[dict]:
@@ -113,7 +97,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.step < 1:
         ap.error("--step must be at least 1 strip")
 
-    plan = load_plan(STREIFEN_JSON)
+    plan = load_plan()
     universe_items = None
     if not args.no_universe:
         try:

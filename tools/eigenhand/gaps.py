@@ -14,8 +14,8 @@ from __future__ import annotations
 import argparse
 from collections import defaultdict
 
+from core.eigenhand.coverage import word_items
 from tools.eigenhand.corpus import pool_entries, shaping_form
-from tools.eigenhand.coverage import word_items
 from tools.eigenhand.store import CORPORA_DIR
 from tools.eigenhand.universe import DE_WORD, EN_WORD, load_universe, read_list
 

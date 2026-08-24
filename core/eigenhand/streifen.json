@@ -1,5 +1,5 @@
 {
- "format": 1,
+ "format": 2,
  "waves": [
   {
    "wave": 0,
@@ -1132,5 +1132,20 @@
     "also"
    ]
   }
+ },
+ "forms": {
+  "Amtszeit": "Amts|zeit",
+  "Arbeitsamt": "Arbeits|amt",
+  "Ausflug": "Aus|flug",
+  "Ausgang": "Aus|gang",
+  "Aussteuer": "Aus|steuer",
+  "Donnerstag": "Donners|tag",
+  "Gutshof": "Guts|hof",
+  "Häusler": "Häus|ler",
+  "Liebesbrief": "Liebes|brief",
+  "Samstag": "Sams|tag",
+  "Volksschule": "Volks|schule",
+  "Wirtshaus": "Wirts|haus",
+  "alsdann": "als|dann"
  }
 }

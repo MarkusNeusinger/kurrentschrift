@@ -351,6 +351,41 @@ class TestPrintingAStack:
             sheet.main(["--hand", "mn-suetterlin", "--sheets", "2", "--strips", "S0001", "--date", "2026-08-23"])
 
 
+class TestSheetId:
+    """`--sheet` becomes a path in ingest, page and apply — same guard class."""
+
+    @pytest.mark.parametrize(
+        "bad",
+        [
+            "../../etc",
+            "B0001/../..",
+            "/abs",
+            "b0001",
+            "B1",
+            "Bogen1",
+            "",
+            "B0001\n",  # `$` matches before a trailing newline — fullmatch does not
+            "B٠٠٠١",  # `\d` would take Arabic-Indic digits; next_sheet_id never mints them
+        ],
+    )
+    def test_path_like_or_malformed_sheet_ids_are_refused(self, bad):
+        with pytest.raises(SystemExit, match="plain"):
+            store.check_sheet_id(bad)
+
+    def test_the_id_the_kartei_mints_passes(self, dataroot):
+        from tools.eigenhand.kartei import next_sheet_id
+
+        minted = next_sheet_id({"sheets": {}})
+        assert store.check_sheet_id(minted) == minted == "B0001"
+        assert store.sheet_dir(HAND, minted).parent == hand_dir(HAND) / "blaetter"
+
+    def test_a_traversing_sheet_never_reaches_the_filesystem(self, dataroot):
+        hand_dir(HAND).mkdir(parents=True, exist_ok=True)
+        result = _result("B0001", ["B0001-r00:angenommen"])
+        with pytest.raises(SystemExit, match="plain"):
+            apply_mod.main([str(result), "--hand", HAND, "--sheet", "../../escape"])
+
+
 class TestCropName:
     """The crop name from payload.json becomes a path in page.py AND apply.py."""
 
@@ -405,6 +440,7 @@ class TestHandId:
             "mn-suetterln",  # a misspelled style must not create a directory
             "mn-sütterlin",
             "mn-",
+            "mn-suetterlin\n",  # same trailing-newline hole as the sheet id had
         ],
     )
     def test_path_like_or_malformed_ids_are_refused(self, bad):

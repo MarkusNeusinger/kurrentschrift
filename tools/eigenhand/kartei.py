@@ -1,18 +1,16 @@
-"""The Streifenkartei — the local manifest of one hand, single state source.
+"""The local Streifenkartei — one hand's manifest as a file.
 
 ``data/samples/own-hand/<hand>/kartei.json`` records what happened
 physically: which Bogen were printed (with their layout hashes), which
 Fassungen exist per Streifen (with verdicts, sessions and checksums), and
-the redo queue. It is NEVER committed (reserved dataset) and NEVER holds a
-stored strip status — a strip's state is derived from the facts so it
-cannot drift:
+the redo queue. It is NEVER committed (reserved dataset).
 
-* ``belegt``    — at least one ``angenommen`` Fassung (not withdrawn)
-* ``unterwegs`` — printed more often than reviewed (a sheet is out)
-* ``geplant``   — everything else (never printed, or all attempts rejected)
-
-Writes are atomic (tmp file + ``os.replace``); apply.py is idempotent on
-top of this.
+The SHAPE and the rules read off it live in ``core.eigenhand.kartei`` —
+derived strip states, id minting, accepted-Fassung selection — because the
+API builds the same dict out of the ``eigenhand_*`` tables. This module is
+only the file half: where it lives, and how it is read and written (atomic
+tmp file + ``os.replace``; apply.py is idempotent on top of that). The pure
+helpers are re-exported so the tool family keeps importing them from here.
 """
 
 from __future__ import annotations
@@ -21,10 +19,34 @@ import json
 import os
 from pathlib import Path
 
+from core.eigenhand.kartei import (
+    KARTEI_FORMAT,
+    accepted_count,
+    accepted_fassungen,
+    empty_kartei,
+    fassungen_of,
+    next_fassung_id,
+    next_sheet_id,
+    printed_count,
+    strip_state,
+)
 from tools.eigenhand.store import hand_dir, style_of_hand
 
 
-KARTEI_FORMAT = 1
+__all__ = [
+    "KARTEI_FORMAT",
+    "accepted_count",
+    "accepted_fassungen",
+    "empty_kartei",
+    "fassungen_of",
+    "kartei_path",
+    "load_kartei",
+    "next_fassung_id",
+    "next_sheet_id",
+    "printed_count",
+    "save_kartei",
+    "strip_state",
+]
 
 
 def kartei_path(hand: str) -> Path:
@@ -39,14 +61,7 @@ def load_kartei(hand: str, style: str | None = None) -> dict:
         if kartei.get("format") != KARTEI_FORMAT:
             raise SystemExit(f"{path}: unsupported format {kartei.get('format')!r}")
         return kartei
-    return {
-        "format": KARTEI_FORMAT,
-        "hand": hand,
-        "style": style or style_of_hand(hand),
-        "sheets": {},
-        "strips": {},
-        "redo": [],
-    }
+    return empty_kartei(hand, style or style_of_hand(hand))
 
 
 def save_kartei(hand: str, kartei: dict) -> Path:
@@ -56,39 +71,3 @@ def save_kartei(hand: str, kartei: dict) -> Path:
     tmp.write_text(json.dumps(kartei, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     os.replace(tmp, path)
     return path
-
-
-def next_sheet_id(kartei: dict) -> str:
-    number = max((int(sid[1:]) for sid in kartei["sheets"]), default=0) + 1
-    return f"B{number:04d}"
-
-
-def next_fassung_id(kartei: dict, strip: str) -> str:
-    fassungen = kartei["strips"].get(strip, {}).get("fassungen", [])
-    number = max((int(f["id"][1:]) for f in fassungen), default=0) + 1
-    return f"F{number:02d}"
-
-
-def fassungen_of(kartei: dict, strip: str) -> list[dict]:
-    return kartei["strips"].get(strip, {}).get("fassungen", [])
-
-
-def printed_count(kartei: dict, strip: str) -> int:
-    return sum(sheet["strips"].count(strip) for sheet in kartei["sheets"].values())
-
-
-def strip_state(kartei: dict, strip: str) -> str:
-    """Derived state — see module docstring; never stored."""
-    if any(f["status"] == "angenommen" for f in fassungen_of(kartei, strip)):
-        return "belegt"
-    if printed_count(kartei, strip) > len(fassungen_of(kartei, strip)):
-        return "unterwegs"
-    return "geplant"
-
-
-def accepted_fassungen(kartei: dict) -> list[tuple[str, dict]]:
-    """Every (strip, fassung) that counts as training data right now."""
-    out: list[tuple[str, dict]] = []
-    for strip, record in sorted(kartei["strips"].items()):
-        out.extend((strip, f) for f in record.get("fassungen", []) if f["status"] == "angenommen")
-    return out
