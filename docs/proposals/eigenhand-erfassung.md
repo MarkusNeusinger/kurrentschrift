@@ -243,6 +243,22 @@ Streifen-ID steht im oberen Polster INNERHALB des Schnittbands, damit
 ein geschnittener Streifen für sich zuordenbar bleibt (§7); die
 Stiftmarke steht bewusst außerhalb.
 
+**Der Streifen sagt, woher er stammt** (Autor-Entscheid 2026-08-25). Die
+ID allein leistete das nicht: EIN Plan bedient alle drei Stile, `S0001`
+existiert also für `mn-suetterlin`, `mn-kurrent` und `mn-offenbacher`
+gleichermaßen, und ein Redo druckt sie auf einem späteren Bogen erneut —
+der Versuchszähler `(1/3)` zählt nur innerhalb EINES Bogens. Eine
+Schublade voller geschnittener Streifen enthielte damit Dutzende optisch
+gleich beschrifteter Zettel, deren Zuordnung zu Bogen, Sitzung und
+Fassung ausschließlich in der lokalen Kartei und in der DB steht — genau
+den beiden Dingen, die der Schubladenfall nicht mehr hat. Deshalb trägt
+dieselbe Zeile am ANDEREN Ende, rechtsbündig im Schnittband, Hand, Bogen
+und Druckdatum. Zwei kurze Läufe an den Enden statt eines langen: die
+Mitte des Polsters bleibt frei, wo eine überschießende Oberlänge sonst
+auf 40 mm gedruckten Text im Trainingsbild träfe. Kostenlos für den
+Import — `_printed_mask` stellt alles oberhalb der Oberlinie ohnehin
+frei, und dort steht die Zeile bereits.
+
 Der Import schneidet digital genau am Schnittband (`layout.json`-Feld
 `cut_mm`): Papierstreifen und `streifen.png` sind damit dasselbe
 Rechteck, und jede abgelegte Fassung eines Stils hat identische
