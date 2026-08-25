@@ -8458,15 +8458,22 @@ Autor-Go + `dbsnapshot`.
 Gemessen am 2026-08-26, dev-19, alle Läufe in derselben Umgebung mit
 `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1` und
 `--jobs 4`; Artefakte im Scratchpad `lu/`. Der Knopf ist
-`--mark-arc-cap` (Default war 0,8, gemessen bei 1,5).
+`--mark-arc-cap`. **Sprachregelung für diesen Eintrag**, weil die
+Adoption den Default verschoben hat: „0,8" heißt das Lineal VOR der
+Änderung (heute mit `--mark-arc-cap 0.8` reproduzierbar), „1,5" heißt
+das Lineal danach — und das ist seit der Adoption der Default.
+„Default" ohne Zusatz meint hier immer den jeweils gemessenen Zustand,
+nie einen Zeitpunkt.
 
 **Die Gates, alle sechs:**
 
-1. **Identität — PASS.** Der Code vor der Änderung (`main`,
-   eigener Worktree, dieselben Fixtures) und der Zweig bei
-   Default liefern über alle **19 Zeilen jedes Feld byte-gleich**
-   (ohne die Laufzeitspalte). Der Knopf ist im Aus-Zustand
-   wirklich aus.
+1. **Identität — PASS.** Der Code VOR der Änderung (`main`,
+   eigener Worktree, dieselben Fixtures) und der Zweig **bei
+   Kappe 0,8** liefern über alle **19 Zeilen jedes Feld
+   byte-gleich** (ohne die Laufzeitspalte). Gemessen wurde das,
+   bevor der Default umgestellt war; heute ist derselbe Lauf
+   `--mark-arc-cap 0.8`. Der Knopf ist im Aus-Zustand wirklich
+   aus — er fügt nur einen Parameter hinzu, er rechnet nichts um.
 2. **Klasse — PASS.** Bei 1,5 wechseln GENAU die vorregistrierten
    Striche: 9 auf der Referenz (`muß` ×3, `und` ×4, `unter`,
    `Kugel`) und 5 auf der Kandidatenseite (`Gaul`, `Pulver`,

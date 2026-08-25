@@ -113,11 +113,12 @@ MARK_BODY_CLAIM_UNITS = float(os.environ.get(MARK_BODY_CLAIM_UNITS_ENV) or 0.15)
 # declared re-measurement, and a derived value would have moved the CANDIDATE
 # side along with it — the identity gate would then have failed for a reason
 # having nothing to do with the ruler, and the refit would have changed without
-# anyone deciding it should. The value is unchanged (1.6 = the old 2 × 0.8) and
-# now stands on its own reasoning: twice the arc of the largest diacritic the
-# reference hand actually writes (1,313 xh for a u-Bogen, §14 census), rounded
-# down — loose enough to never clip a real mark, tight enough to refuse a
-# letter-sized cluster.
+# anyone deciding it should. The value is unchanged (1.6, which is what the old
+# 2 x 0.8 came to) and now stands on its own reasoning: about 1.2x the arc of
+# the largest diacritic the reference hand actually writes (1.313 xh for a
+# u-Bogen, the §14 census) — loose enough that measurement noise around a real
+# mark can never clip it, tight enough to refuse a letter-sized cluster, whose
+# arc starts near 2 xh.
 MARK_MAX_INK_ARC_UNITS_ENV = "KS_MARK_MAX_INK_ARC_UNITS"
 MARK_MAX_INK_ARC_UNITS = float(os.environ.get(MARK_MAX_INK_ARC_UNITS_ENV) or 1.6)
 

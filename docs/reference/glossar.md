@@ -1297,8 +1297,10 @@ begründet (ein Kleinbuchstabe ist eine x-Höhe breit, ein Diakritikum
 steht über EINEM Buchstaben), nicht aus der Verteilung; **angehoben und
 nicht gestrichen**, weil die Kappe sonst ihren eigentlichen Zweck
 verlöre. `--mark-arc-cap` reproduziert jeden alten Wert. *Technisch:*
-`tools/tracebench/frames.py`; abgeleitet in
-`tools/pairlab/marks.py::MARK_MAX_INK_ARC_UNITS`.
+`tools/tracebench/frames.py`. Der Marken-Nachfit hat seit `aug26` eine
+EIGENE Kappe (`tools/pairlab/marks.py::MARK_MAX_INK_ARC_UNITS`, 1,6) —
+früher davon abgeleitet, entkoppelt, damit eine Lineal-Änderung nicht
+still die Kandidatenseite mitbewegt.
 → qualitaetsmetrik.md §14 „Lineal L-U"
 
 **Retrace-Segment** — zweimal beschriebene Tinte als GEZÄHLTE Zone:

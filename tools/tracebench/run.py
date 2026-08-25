@@ -262,9 +262,10 @@ def build_parser() -> argparse.ArgumentParser:
         default=MARK_MAX_ARC_UNITS,
         metavar="XH",
         help="arc length up to which a floating stroke counts as a MARK rather than body "
-        f"(default {MARK_MAX_ARC_UNITS}, the frozen ruler). The declared re-measurement of §14 "
-        '„Lineal L-U" runs it at 1.5, where the u-Bogen becomes a mark on both sides; at the '
-        "default every number is byte-identical to the standing baseline",
+        f"(default {MARK_MAX_ARC_UNITS}, the frozen ruler as it stands since §14 "
+        '„Lineal L-U"). Pass 0.8 to reproduce a number recorded before aug26, when the '
+        "u-Bogen was still classified as body; any other value is a ruler change and the "
+        "run says so",
     )
     parser.add_argument("--label", help="name of this candidate in the rows (default: the provider's name)")
     parser.add_argument("--jobs", type=int, default=1, help="parallel scoring workers (order-preserving)")

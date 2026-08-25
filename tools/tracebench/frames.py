@@ -42,8 +42,8 @@ from tools.pairlab.landmarks import nearest_unique_point
 # silently; once the trace module is merged, this becomes a direct import.
 DIACRITIC_MIN_Y = 1.0
 # Arc length caps the mark class: a long stroke that happens to stay in the
-# Oberlänge (a capital's ornament, an ascender loop, a fit defect whose path
-# leaves the ink) is body, not a mark.
+# Oberlänge (the ascender zone above the midband) — a capital's ornament, an
+# ascender loop, a fit defect whose path leaves the ink — is body, not a mark.
 #
 # Raised from 0.8 to 1.5 on 2026-08-26 — a DECLARED re-baseline of a frozen
 # ruler, pre-registered and measured as §14 „Lineal L-U". 0.8 sat INSIDE the
@@ -180,12 +180,11 @@ def classify_strokes(
     body sequences then compare in writing order without an i-dot appended at
     the end of one side and in the middle of the other.
 
-    `arc_cap` defaults to `MARK_MAX_ARC_UNITS`, so an unchanged caller measures
-    exactly what it measured before. It is a parameter because the cap is under
-    a declared re-measurement (§14 „Lineal L-U"): a frozen ruler is changed by
-    measuring the change against itself, which needs both values available in
-    one run — not by editing the constant and hoping the old numbers are
-    remembered.
+    `arc_cap` defaults to `MARK_MAX_ARC_UNITS`, i.e. the ruler as it stands
+    today (1.5 since §14 „Lineal L-U"). It is a parameter so that a declared
+    re-baseline can measure a cap change against itself in one run rather than
+    by editing the constant and hoping the old numbers are remembered — and so
+    that any number from before `aug26` stays reproducible: pass `0.8`.
     """
     body: list[np.ndarray] = []
     marks: list[np.ndarray] = []

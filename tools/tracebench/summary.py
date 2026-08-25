@@ -140,9 +140,9 @@ def score_word(
     with the reference side filled in and every measured column `None` — so the
     report can never lose a word to a provider failure.
 
-    `mark_arc_cap` reaches both sides of the classification and nothing else;
-    at its default the row is byte-identical to the standing baseline (§14
-    „Lineal L-U", Gate 1).
+    `mark_arc_cap` reaches both sides of the classification and nothing else.
+    Its default is the ruler as it stands (1.5 since §14 „Lineal L-U"); pass
+    0.8 to reproduce any number recorded before `aug26`.
     """
     started = time.perf_counter()
     entry = reference_entry
