@@ -54,7 +54,9 @@ import base64
 import binascii
 import hashlib
 import io
+import unicodedata
 from datetime import date as date_cls
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.concurrency import run_in_threadpool
@@ -553,7 +555,7 @@ async def read_strip(
         rect = _guard(
             crop.word_box_px,
             word_box,
-            row.crop_origin_mm or [0.0, 0.0],
+            row.crop_origin_mm or [],
             row.width_px,
             row.height_px,
             layout_row.get("cut_mm") or [],
@@ -566,8 +568,22 @@ async def read_strip(
     return Response(
         content=png,
         media_type="image/png",
-        headers={"Content-Disposition": f'inline; filename="{filename}.png"', "Cache-Control": STRIP_CACHE_CONTROL},
+        headers={"Content-Disposition": _disposition(f"{filename}.png"), "Cache-Control": STRIP_CACHE_CONTROL},
     )
+
+
+def _disposition(name: str) -> str:
+    """`Content-Disposition` for a filename that may not be Latin-1.
+
+    Header values are encoded as Latin-1, so a word carrying a typographic
+    quote or apostrophe would raise UnicodeEncodeError and turn the crop into a
+    500 — and the frozen strip plan carries exactly those (`„wohl“`, `don’t`).
+    So the plain `filename=` gets an ASCII fallback and the real name travels in
+    RFC 5987 `filename*=`, which every current browser prefers.
+    """
+    ascii_name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode() or "streifen.png"
+    ascii_name = ascii_name.replace('"', "").replace("\\", "")
+    return f"inline; filename=\"{ascii_name}\"; filename*=UTF-8''{quote(name, safe='')}"
 
 
 @router.put("/strips/{hand}/{strip}/{fassung}", status_code=status.HTTP_201_CREATED)

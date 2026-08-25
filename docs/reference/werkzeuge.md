@@ -274,9 +274,14 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   damit `ingest` dagegen registrieren kann. Beide brauchen `ADMIN_TOKEN`;
   `--api` zeigt auf eine andere Instanz.
   **`sync --from <Archiv-Snapshot>`** ist der Wiederherstellungsweg: dieselbe
-  Push-Logik, nur aus einem Archivverzeichnis statt aus der Arbeitskopie —
-  damit bringt Repo + Archiv die `eigenhand_*`-Tabellen samt Bildern
-  zurück (Rezept und Drill: Proposal §8.1).
+  Push-Logik, nur aus dem Archiv statt aus der Arbeitskopie — damit bringt
+  Repo + Archiv die vier `eigenhand_*`-Tabellen samt Bildern zurück (Rezept
+  und Drill: Proposal §8.1). Genannt wird IRGENDEIN Schnappschuss der Hand;
+  seine Geschwister im selben Verzeichnis kommen automatisch dazu (neuester
+  gewinnt), weil `snapshot.py` inkrementell ablegt und nur der erste
+  Schnappschuss vollständig ist. Das stehende Setup wird dabei nur gesetzt,
+  wenn der Server keines hat, und der Lauf bricht mit Namen ab, wenn eine
+  angenommene Fassung oder ein Bogen-Layout im Archiv fehlt.
 - **`ingest` → `page` → `apply`** — Scan/Foto entzerren (Passmarken,
   scikit-image, 300 DPI Arbeitsauflösung), Siebung auf der
   Offline-HTML-Seite, Ergebnis einspielen: nur angenommene Zeilen werden
@@ -291,7 +296,10 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   alte Fassungen zurück); **`snapshot`** sichert inkrementell und
   create-only ins private Archiv (`KURRENTSCHRIFT_ARCHIVE`, dieselbe
   Clone wie die DB-Snapshots; dbsnapshot-Disziplin inkl.
-  Schrumpf-Verweigerung).
+  Schrumpf-Verweigerung). Kartei, Streifenplan und das stehende Setup
+  fahren in jedem Schnappschuss vollständig mit; Fassungen und Bögen nur
+  als Zuwachs — wer aus dem Archiv liest, muss die Schnappschüsse deshalb
+  als einen geschichteten Baum lesen, so wie `sync --from` es tut.
 
 Invarianten wie überall: kein DB-Schreibpfad — `sync` spricht die
 Admin-API, nie die Datenbank —, eingefrorene Mess-Sätze

@@ -26,8 +26,15 @@ from core.eigenhand.plan import STREIFEN_JSON
 
 CORPORA_DIR = REPO_ROOT / "data" / "corpora" / "frequencywords-2018"
 
+# The resolution `ingest` rectifies every capture to, and therefore the
+# resolution of EVERY filed streifen.png — regardless of what the scanner or
+# phone delivered. It lives here rather than in ingest.py because `sync` needs
+# it to label an uploaded strip and must not import the image stack to get it.
+WORK_DPI = 300.0
+
 __all__ = [
     "CORPORA_DIR",
+    "WORK_DPI",
     "STREIFEN_JSON",
     "STYLE_IDS",
     "check_crop_name",

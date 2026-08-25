@@ -525,11 +525,19 @@ der DB — also muss diese Zusage nachprüfbar sein und nicht bloß plausibel.
 
 Die Arbeitsteilung dafür ist eindeutig:
 
-- Das **Archiv ist der Master**. `own-hand/<hand>/<stempel>/` enthält
-  `kartei.json` (Bögen, Fassungen, Verdikte, Sitzungen), je Bogen
-  `layout.json` (den Geometrie-Vertrag) und je Fassung `streifen.png` +
-  `meta.json`. Das ist alles, was die vier `eigenhand_*`-Tabellen
-  ausmachen.
+- Das **Archiv ist der Master** — und zwar der Archiv-BAUM, nicht ein
+  einzelner Schnappschuss. `own-hand/<hand>/<stempel>/` enthält
+  `kartei.json` (Bögen, Fassungen, Verdikte, Sitzungen), `setup.json`
+  (das stehende Setup, `eigenhand_hands`), je Bogen `layout.json` (den
+  Geometrie-Vertrag) und je Fassung `streifen.png` + `meta.json`.
+  Zusammen ist das alles, was die vier `eigenhand_*`-Tabellen ausmachen.
+  **Wichtig für jeden Leser:** `snapshot.py` legt INKREMENTELL ab — was
+  in einem früheren Schnappschuss schon liegt, wird übersprungen. Nur der
+  erste ist also vollständig; jeder spätere trägt eine komplette Kartei
+  neben bloß seinem Zuwachs. Ein Wiederherstellungsweg, der ein
+  Verzeichnis liest, bringt genau diesen Zuwachs zurück und meldet Erfolg
+  (in der Review zu PR #410 gefunden). Deshalb liest `--from` die
+  Schnappschüsse als EINEN geschichteten Baum, neuester zuerst.
 - Das **Repo** liefert den Rest: Streifenplan, Geometrie, Migrationen,
   Werkzeuge.
 - Der **DB-Snapshot** (`tools/dbsnapshot`) nimmt die Eigenhand-Tabellen
@@ -548,10 +556,20 @@ ADMIN_TOKEN=… uv run python -m tools.eigenhand.sync \
     --mit-streifen
 ```
 
-`--from` liest Kartei, Layouts und Fassungen aus dem Snapshot statt aus
-der Arbeitskopie; alles danach ist der normale Push (Bögen zuerst, dann
-Verdikte, dann Bilder). Die Wiederholung ist gefahrlos: gleiche Layouts,
-gleiche Verdikte und gleiche Bytes sind No-ops.
+`--from` nimmt IRGENDEINEN Schnappschuss der Hand: die Geschwister im
+selben Archivverzeichnis kommen automatisch dazu (neuester gewinnt), damit
+die Inkrementalität oben keine Lücke reißt. Gelesen werden Kartei, Setup,
+Layouts und Fassungen daraus statt aus der Arbeitskopie; alles danach ist
+der normale Push (Bögen zuerst, dann Verdikte, dann das Setup, dann die
+Bilder). Die Wiederholung ist gefahrlos: gleiche Layouts, gleiche Verdikte
+und gleiche Bytes sind No-ops.
+
+Und der Lauf meldet Erfolg nur, wenn er einer ist: fehlt zu einer
+angenommenen Fassung die Datei oder zu einem Bogen der Kartei sein
+`layout.json`, wird erst alles Vorhandene hochgeschoben und dann mit Namen
+abgebrochen. Das stehende Setup wird nur gesetzt, wenn der Server KEINES
+hat — eine Wiederherstellung darf eine Feder, die anderswo gewechselt
+wurde, nicht mit einer alten Kopie überschreiben.
 
 **Drill 2026-08-25**, gegen ein Wegwerf-PostgreSQL, die Arbeitskopie
 zwischendurch gelöscht: 1 Bogen, 3 Fassungen, 3 Streifen wiederhergestellt;
@@ -560,7 +578,10 @@ die drei SHA256 stimmen mit den Archivdateien überein, `octet_length(png)
 aus einem wiederhergestellten Streifen schneiden; der zweite Lauf schrieb
 nichts. Ein Befund aus dem Drill: Feder/Tinte/Papier bleiben auf den
 Fassungen leer, wenn das stehende Setup ERST NACH dem `ingest` erklärt
-wurde — die Reihenfolge ist `setup` vor der ersten Sitzung. Der Weg ist
+wurde — die Reihenfolge ist `setup` vor der ersten Sitzung. Was der Drill
+NICHT zeigte, weil er den ersten Schnappschuss benutzte: die
+Inkrementalitäts-Lücke oben; sie kam aus der anschließenden Review und ist
+seither ein eigener Test. Der Weg ist
 zusätzlich als Test festgenagelt (`tests/test_eigenhand_restore.py`, ganze
 Kette gegen die echte API).
 

@@ -111,8 +111,11 @@ uv run python -m tools.eigenhand.redo --hand mn-suetterlin S0037 S0055 --reason 
   betroffenen Fassungen steht.
 - **Wiederherstellung:** ist die Datenbank weg, bringt Repo + Archiv sie
   zurück — `alembic upgrade head`, dann
-  `sync --from <Archiv-Snapshot> --mit-streifen`. Rezept und Drill:
-  Proposal §8.1.
+  `sync --from <Archiv-Snapshot> --mit-streifen`. Irgendein Schnappschuss
+  der Hand genügt: die Geschwister daneben werden mitgelesen, weil
+  `snapshot` inkrementell ablegt. Der Lauf bricht mit Namen ab, wenn im
+  Archiv etwas fehlt — Erfolg meldet er nur, wenn die Hand wirklich ganz
+  zurück ist. Rezept und Drill: Proposal §8.1.
 - **Scan-Qualität:** ≥300 DPI anstreben (`ingest` warnt unter ~250
   effektiv); Handyfotos gehen dank Passmarken, das Blatt möglichst
   formatfüllend und gleichmäßig beleuchtet aufnehmen. HEIC vorher als

@@ -44,7 +44,13 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   bytes no longer match its Kartei record, and — after pushing everything
   that is there — failing loudly when an accepted Fassung has no filed
   strip at all: on the restore path a silent skip would report success
-  while leaving strips out of the DB (Copilot review). `tools/dbsnapshot` takes the
+  while leaving strips out of the DB (Copilot review). `--from` reads the
+  archive as one LAYERED tree — the named snapshot plus its siblings,
+  newest first — because `snapshot.py` files incrementally and only the
+  first snapshot is ever self-contained; reading one directory restored
+  one increment and called it done. The standing setup rides along in
+  every snapshot now and is pushed when the server has none, so all four
+  `eigenhand_*` tables really do come back. `tools/dbsnapshot` takes the
   `eigenhand_*` tables along WITHOUT the blobs plus a `strip_hashes`
   manifest — the mechanical check that DB and archive have not drifted
   apart. Drilled 2026-08-25 against a throwaway PostgreSQL with the
@@ -67,9 +73,10 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   it.** The capture chain's bookkeeping moves into the shared DB (owner,
   2026-08-23: the DB may hold which Streifen exist how often — the crop
   is not needed for that), which is what makes an admin view possible at
-  all: the strips themselves are the reserved dataset and never leave the
-  author's machine, but a strip id plus the committed plan already names
-  the words. Two tables (`eigenhand_sheets`, `eigenhand_fassungen`,
+  all: the counts need no pixels at all, because a strip id plus the
+  committed plan already names the words. (The strips themselves followed
+  a day later, admin-gated — see the strip entry above; when this landed
+  they were still local-only.) Two tables (`eigenhand_sheets`, `eigenhand_fassungen`,
   migration `0024`) hold printed Bögen with their layout and one verdict
   per printed row — no pixels, `png_sha256` names a local file without
   containing it. `/admin/eigenhand` shows what a hand holds: strips

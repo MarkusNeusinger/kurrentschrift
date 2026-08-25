@@ -32,13 +32,14 @@ from skimage import transform
 
 from core.extract import load_grayscale
 from tools.eigenhand.fiducial import FiducialError, detect_fiducials, orient_corners
+from tools.eigenhand.store import WORK_DPI, load_setup
 from tools.eigenhand.store import crop_name as row_crop_name
-from tools.eigenhand.store import load_setup
 from tools.eigenhand.store import sheet_dir as store_sheet_dir
 
 
 PAYLOAD_FORMAT = 1
-WORK_DPI = 300.0
+# The rectification resolution lives in store.py so `sync` can label an
+# uploaded strip with it without importing the image stack.
 PX_PER_MM = WORK_DPI / 25.4
 ROW_PAD_MM = 2.0
 # The stored strip is SELF-ATTRIBUTING pixels: it starts left of the printed

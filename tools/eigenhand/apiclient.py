@@ -12,6 +12,19 @@ dependency, and these are a handful of admin calls, not a transport layer.
 The direction of travel is fixed and stays fixed: tools never write to the DB
 themselves (`docs/reference/werkzeuge.md` — measurement layer, no DB writes).
 Every write goes through the admin-gated API, which is what validates it.
+
+Two properties are borrowed verbatim from the archive client
+(`tools/wordbench/fetch_fixtures.py`), because the admin token travels as a
+HEADER and both of them exist to keep it where it was sent:
+
+* **Redirects are refused, never followed.** urllib forwards custom headers to
+  the redirect target, so a 3xx would resend `X-Admin-Token` to another host —
+  and the apex `kurrentschrift.ink` really does 302 at the Cloudflare Access
+  edge, which makes this a plausible typo, not a theoretical one (found in
+  review, PR #410).
+* **The scheme must be https**, except against loopback, where the request
+  never leaves the machine — that is the local dev server and the restore
+  drills.
 """
 
 from __future__ import annotations
@@ -20,6 +33,7 @@ import json
 import os
 import urllib.error
 import urllib.request
+from urllib.parse import urlsplit
 
 
 DEFAULT_API = "https://api.kurrentschrift.ink"
@@ -28,10 +42,34 @@ DEFAULT_API = "https://api.kurrentschrift.ink"
 # are small. One generous timeout beats two constants nobody tunes.
 TIMEOUT_S = 120
 
+_LOOPBACK = ("localhost", "127.0.0.1", "::1")
+
+
+class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Turn every 3xx into an HTTPError instead of following it."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # noqa: ANN001, ANN201
+        return None
+
+
+_OPENER = urllib.request.build_opener(_NoRedirectHandler())
+
 
 def api_base(value: str | None = None) -> str:
-    """The API base URL: the flag, else $EIGENHAND_API, else production."""
-    return (value or os.environ.get("EIGENHAND_API") or DEFAULT_API).rstrip("/")
+    """The API base URL: the flag, else $EIGENHAND_API, else production.
+
+    Refuses a plaintext scheme unless the host is loopback: the admin token
+    rides in a header, and `http://` to anywhere else would put it on the wire
+    in the clear.
+    """
+    base = (value or os.environ.get("EIGENHAND_API") or DEFAULT_API).rstrip("/")
+    parts = urlsplit(base)
+    if parts.scheme != "https" and (parts.hostname or "") not in _LOOPBACK:
+        raise SystemExit(
+            f"API base must be https:// (or loopback for local dev), got {base!r} — "
+            "the admin token travels as a header and must not go out in the clear"
+        )
+    return base
 
 
 def admin_token(value: str | None = None) -> str:
@@ -53,9 +91,11 @@ def request_bytes(method: str, url: str, token: str, body: dict | None = None, a
     headers = {"X-Admin-Token": token}
     if data is not None:
         headers["Content-Type"] = "application/json"
-    req = urllib.request.Request(url, data=data, method=method, headers=headers)  # noqa: S310 — https URL from argv
+    req = urllib.request.Request(url, data=data, method=method, headers=headers)  # noqa: S310 — scheme checked above
     try:
-        with urllib.request.urlopen(req, timeout=TIMEOUT_S) as res:  # noqa: S310
+        # `_OPENER` refuses redirects, so the admin header can never be resent
+        # to a host other than the one it was addressed to.
+        with _OPENER.open(req, timeout=TIMEOUT_S) as res:
             return res.read()
     except urllib.error.HTTPError as exc:
         if allow_404 and exc.code == 404:

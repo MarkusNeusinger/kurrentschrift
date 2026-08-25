@@ -58,9 +58,13 @@ def upgrade() -> None:
         sa.Column("hand", sa.String(64), nullable=False),
         sa.Column("style", sa.String(32), nullable=False),
         sa.Column("label", sa.String(128), nullable=True),
-        # The standing setup: what this hand writes with unless a run says otherwise.
+        # The standing setup: what this hand writes with unless a run says
+        # otherwise. `geraet` is 128 like the rest and like its per-Fassung
+        # copy: it holds two words today (`scanner` · `kamera`) but a narrower
+        # column than the column it is copied into would turn a longer device
+        # name into a truncation error rather than a validation one.
         *(sa.Column(name, sa.String(128), nullable=True) for name in _SESSION_COLUMNS),
-        sa.Column("geraet", sa.String(16), nullable=True),
+        sa.Column("geraet", sa.String(128), nullable=True),
         sa.Column("note", sa.Text(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column(

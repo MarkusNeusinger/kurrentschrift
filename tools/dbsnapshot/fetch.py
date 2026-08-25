@@ -229,11 +229,21 @@ def collect_eigenhand(client: ApiClient, counts: dict[str, int]) -> tuple[dict[s
     Absent hands are not an error: a snapshot taken before the first Bogen is
     printed has nothing to say here, and the shrink guard is what notices if a
     later one loses rows it once had.
+
+    The hand list is the union of two reads. `/eigenhand/hands` is built from
+    the hands that have SHEETS or FASSUNGEN, so a hand that has only had its
+    standing setup declared is invisible there — and the operating recipe says
+    to declare the setup BEFORE the first session, which makes "setup but no
+    Bogen yet" a normal state rather than an odd one. Without the setups read,
+    a snapshot taken in that window would archive nothing for the hand (found
+    in review, PR #410).
     """
     hands = client.get("/eigenhand/hands", admin=True, allow_404=True) or {}
+    setups = client.get("/eigenhand/setups", admin=True, allow_404=True) or {}
+    named = set(hands.get("hands", [])) | {row["hand"] for row in setups.get("setups", [])}
     per_hand: dict[str, Any] = {}
     hashes: dict[str, str] = {}
-    for hand in sorted(hands.get("hands", [])):
+    for hand in sorted(named):
         archive = client.get(f"/eigenhand/archive/{hand}", admin=True, allow_404=True)
         if archive is None:
             continue

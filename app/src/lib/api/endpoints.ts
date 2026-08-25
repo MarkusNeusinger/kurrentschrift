@@ -134,13 +134,16 @@ export const getEigenhandStrips = (hand: string, retry?: RetryOptions): Promise<
 // admin header — and additionally because these pixels are the reserved
 // own-hand dataset: the response is `private, no-store`, so the blob lives
 // exactly as long as the object URL the caller makes.
+// `box` is the word's INDEX in the row, not its text: a row may carry the same
+// word twice, and the API resolves a repeated word to its first box by design —
+// the index is what tells the occurrences apart.
 export const fetchEigenhandStrip = async (
   hand: string,
   strip: string,
   fassung: string,
-  wort?: string,
+  box?: number,
 ): Promise<Blob> => {
-  const qs = wort ? `?${new URLSearchParams({ wort }).toString()}` : '';
+  const qs = box === undefined ? '' : `?${new URLSearchParams({ box: String(box) }).toString()}`;
   const res = await apiFetch(
     `${apiRoot()}/eigenhand/strips/${encodeURIComponent(hand)}/${encodeURIComponent(strip)}/${encodeURIComponent(
       fassung,

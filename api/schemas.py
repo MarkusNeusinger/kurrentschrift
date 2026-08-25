@@ -1047,14 +1047,18 @@ class EigenhandSetupIn(BaseModel):
     them in one place is what makes „identisch weiterschreiben" a lookup rather
     than a memory exercise. `geraet` is the capture device — the same two words
     `ingest` and the CLI take: `scanner` · `kamera`.
+
+    The lengths mirror the columns (`String(128)`): without them an over-long
+    value is a Postgres `StringDataRightTruncation` — a 500 the SQLite test
+    harness cannot even produce, because SQLite ignores varchar limits.
     """
 
     style: str | None = None
-    label: str | None = None
-    feder: str | None = None
-    tinte: str | None = None
-    papier: str | None = None
-    geraet: str | None = None
+    label: Annotated[str, Field(max_length=128)] | None = None
+    feder: Annotated[str, Field(max_length=128)] | None = None
+    tinte: Annotated[str, Field(max_length=128)] | None = None
+    papier: Annotated[str, Field(max_length=128)] | None = None
+    geraet: Annotated[str, Field(max_length=128)] | None = None
     note: str | None = None
 
 
@@ -1122,5 +1126,8 @@ class EigenhandStripIn(BaseModel):
     width_px: Annotated[int, Field(ge=1, le=20000)]
     height_px: Annotated[int, Field(ge=1, le=20000)]
     dpi: Annotated[float, Field(gt=0, le=4800)]
-    crop_origin_mm: list[float]
-    sha256: str
+    # Exactly [x, y] in millimetres. Bounded rather than free: the origin is
+    # half the crop arithmetic, so a missing or malformed one would serve a
+    # plausible-looking crop of the wrong part of the strip.
+    crop_origin_mm: Annotated[list[float], Field(min_length=2, max_length=2)]
+    sha256: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]

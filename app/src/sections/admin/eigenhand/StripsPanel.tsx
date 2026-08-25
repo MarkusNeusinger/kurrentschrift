@@ -28,12 +28,18 @@ import { paper } from '@/styles/paper';
 function StripTile({ hand, row }: { hand: string; row: EigenhandStrip }) {
   const t = de.admin.eigenhand;
   const [url, setUrl] = useState<string | null>(null);
-  const [word, setWord] = useState<string | null>(null);
+  // The box INDEX identifies the shown cut, not the word text: a row may carry
+  // the same word twice (the plan does — `ja!`, `„wohl“`), and addressing it by
+  // text would serve the first box under every later chip and light them all.
+  const [shown, setShown] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Object URLs are revoked by hand: the browser holds the blob until then,
   // and these are exactly the bytes that should not linger.
   const objectUrl = useRef<string | null>(null);
+  // Set on unmount so a fetch that resolves afterwards revokes its blob
+  // instead of parking it in a dead component's ref for the page's lifetime.
+  const alive = useRef(true);
 
   const release = useCallback(() => {
     if (objectUrl.current) {
@@ -42,26 +48,36 @@ function StripTile({ hand, row }: { hand: string; row: EigenhandStrip }) {
     }
   }, []);
 
-  useEffect(() => release, [release]);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+      release();
+    };
+  }, [release]);
 
-  const show = (wanted: string | null) => {
+  const show = (index: number | null) => {
     setLoading(true);
     setError(null);
-    fetchEigenhandStrip(hand, row.strip, row.fassung, wanted ?? undefined)
+    fetchEigenhandStrip(hand, row.strip, row.fassung, index ?? undefined)
       .then((blob) => {
+        if (!alive.current) {
+          URL.revokeObjectURL(URL.createObjectURL(blob));
+          return;
+        }
         release();
         objectUrl.current = URL.createObjectURL(blob);
         setUrl(objectUrl.current);
-        setWord(wanted);
+        setShown(index);
       })
-      .catch((err: unknown) => setError(String(err)))
-      .finally(() => setLoading(false));
+      .catch((err: unknown) => alive.current && setError(String(err)))
+      .finally(() => alive.current && setLoading(false));
   };
 
   const hide = () => {
     release();
     setUrl(null);
-    setWord(null);
+    setShown(null);
   };
 
   return (
@@ -98,7 +114,7 @@ function StripTile({ hand, row }: { hand: string; row: EigenhandStrip }) {
             <Box
               component="img"
               src={url}
-              alt={`${row.strip} ${row.fassung}${word ? ` — ${word}` : ''}`}
+              alt={`${row.strip} ${row.fassung}${shown === null ? '' : ` — ${row.words[shown] ?? ''}`}`}
               sx={{ display: 'block', maxWidth: 'none', height: '5.5rem' }}
             />
           </Box>
@@ -106,7 +122,7 @@ function StripTile({ hand, row }: { hand: string; row: EigenhandStrip }) {
             <Chip
               size="small"
               label={t.stripWhole}
-              variant={word === null ? 'filled' : 'outlined'}
+              variant={shown === null ? 'filled' : 'outlined'}
               onClick={() => show(null)}
             />
             {row.words.map((candidate, index) => (
@@ -114,8 +130,8 @@ function StripTile({ hand, row }: { hand: string; row: EigenhandStrip }) {
                 key={`${candidate}-${index}`}
                 size="small"
                 label={candidate}
-                variant={word === candidate ? 'filled' : 'outlined'}
-                onClick={() => show(candidate)}
+                variant={shown === index ? 'filled' : 'outlined'}
+                onClick={() => show(index)}
               />
             ))}
           </Stack>
@@ -166,8 +182,12 @@ export function StripsPanel({ hand, version }: { hand: string; version?: number 
           {fmt(t.stripImagesEmpty, { hand })}
         </Typography>
       )}
+      {/* The hand belongs in the key: strip ids come from the frozen,
+          hand-independent plan, so `S0001/F01` exists for every hand — without
+          it React reuses the tile across a hand switch and keeps the previous
+          hand's already-loaded pixels on screen. */}
       {strips.map((row) => (
-        <StripTile key={`${row.strip}/${row.fassung}`} hand={hand} row={row} />
+        <StripTile key={`${hand}/${row.strip}/${row.fassung}`} hand={hand} row={row} />
       ))}
     </Panel>
   );

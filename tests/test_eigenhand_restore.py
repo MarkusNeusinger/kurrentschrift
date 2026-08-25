@@ -106,7 +106,9 @@ def _archive_snapshot(tmp_path: Path) -> Path:
 
 def _bridge(api: Harness, loop: asyncio.AbstractEventLoop):
     """Route the sync client's calls into the in-process app from a worker thread."""
-    base = "http://testserver"
+    # Loopback, not the harness's `testserver`: the client refuses a plaintext
+    # scheme to anywhere else, and this test drives the REAL client.
+    base = "http://127.0.0.1"
 
     def request_json(method: str, url: str, token: str, body: dict | None = None, allow_404: bool = False):
         path = url[len(base) :] if url.startswith(base) else url
@@ -127,7 +129,7 @@ async def _restore(api: Harness, snapshot: Path, monkeypatch) -> None:
     monkeypatch.setattr(sync_mod, "request_json", _bridge(api, asyncio.get_running_loop()))
     monkeypatch.setenv("ADMIN_TOKEN", "irrelevant — the bridge carries the harness header")
     await asyncio.to_thread(
-        sync_mod.main, ["--hand", HAND, "--api", "http://testserver", "--from", str(snapshot), "--mit-streifen"]
+        sync_mod.main, ["--hand", HAND, "--api", "http://127.0.0.1", "--from", str(snapshot), "--mit-streifen"]
     )
 
 

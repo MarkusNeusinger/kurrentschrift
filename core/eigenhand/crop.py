@@ -22,7 +22,19 @@ import io
 
 
 def px_per_mm(width_px: int, cut_mm: list[float] | tuple[float, ...]) -> float:
-    """Scale of a stored strip: its pixel width over the cut rectangle's mm width."""
+    """Scale of a stored strip: its pixel width over the cut rectangle's mm width.
+
+    A row without a `cut_mm` is refused rather than indexed: a Bogen printed
+    before the Schnittband existed has none (`tools/eigenhand/ingest.py` still
+    carries the legacy branch that cuts such a row), and reaching past the end
+    of the list would be an IndexError where every other refusal here is a
+    SystemExit the callers turn into a 400.
+    """
+    if len(cut_mm) < 4:
+        raise SystemExit(
+            "this row has no Schnittband (`cut_mm`) — its Bogen was printed before the cut geometry "
+            "existed, so a word crop cannot be placed in it; reprint the Bogen to get one"
+        )
     span = float(cut_mm[2]) - float(cut_mm[0])
     if span <= 0 or width_px <= 0:
         raise SystemExit(f"strip has no usable width (cut span {span} mm, {width_px} px)")
@@ -43,7 +55,17 @@ def word_box_px(
     little past its box, and a crop that clips it looks like a broken glyph
     rather than a tight one. Clamped to the strip, so a word at either end
     keeps its padding on the side where there is room.
+
+    A strip without a recorded `crop_origin_mm` is refused rather than assumed
+    to start at 0: the origin is half the arithmetic, and guessing it would
+    serve a plausible-looking crop of the WRONG part of the strip — silently,
+    which is worse than a refusal.
     """
+    if len(crop_origin_mm) < 2:
+        raise SystemExit(
+            "this strip has no recorded crop origin — without it a word cannot be located in it; "
+            "re-push the strip with the `crop_origin_mm` its meta.json carries"
+        )
     scale = px_per_mm(width_px, cut_mm)
     origin = float(crop_origin_mm[0])
     x0 = (float(box["x0_mm"]) - pad_mm - origin) * scale

@@ -42,14 +42,24 @@ export function SetupPanel({ hand }: { hand: string }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // `loaded` gates the form on the hand it belongs to. Without it a failed or
+  // in-flight load left the PREVIOUS hand's values on screen under the new
+  // hand's name — and one click on „Setup sichern" would have written them
+  // into that hand's record, or blanked it with nulls.
+  const [loaded, setLoaded] = useState<string | null>(null);
+
   useEffect(() => {
     let cancelled = false;
     setError(null);
+    setLoaded(null);
+    setSetup(null);
+    setDraft(EMPTY);
     getEigenhandSetup(hand)
       .then((data) => {
         if (cancelled) return;
         setSetup(data);
         setDraft(toDraft(data));
+        setLoaded(hand);
       })
       .catch((err: unknown) => !cancelled && setError(String(err)));
     return () => {
@@ -87,7 +97,7 @@ export function SetupPanel({ hand }: { hand: string }) {
 
   return (
     <Panel title={t.setupTitle} caption={t.setupIntro}>
-      {!setup && (
+      {loaded === hand && !setup && (
         <Alert severity="info" sx={{ mb: 2 }}>
           {t.setupNone}
         </Alert>
@@ -109,7 +119,7 @@ export function SetupPanel({ hand }: { hand: string }) {
         </TextField>
         {field('label', t.setupLabel, '14rem')}
         {field('note', t.setupNote, '20rem')}
-        <Button variant="outlined" onClick={save} disabled={saving || !hand}>
+        <Button variant="outlined" onClick={save} disabled={saving || loaded !== hand}>
           {saving ? t.setupSaving : t.setupSave}
         </Button>
       </Stack>

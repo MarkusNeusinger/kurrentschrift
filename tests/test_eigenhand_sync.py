@@ -26,6 +26,7 @@ import pytest
 from PIL import Image
 
 from tools.eigenhand import setup as setup_mod
+from tools.eigenhand import snapshot as snapshot_mod
 from tools.eigenhand import sync as sync_mod
 from tools.eigenhand.kartei import load_kartei, save_kartei
 
@@ -99,14 +100,17 @@ def _build(root, sheet: str = "B0001", strip: str = "S0001", fassung: str = "F01
 
 
 class _FakeApi:
-    """Records every call and answers the two GETs the sync makes."""
+    """Records every call and answers the GETs the sync makes."""
 
-    def __init__(self, stored: dict | None = None):
+    def __init__(self, stored: dict | None = None, setup: dict | None = None):
         self.calls: list[tuple[str, str, dict | None]] = []
         self.stored = stored or {}
+        self.setup = setup
 
     def __call__(self, method: str, url: str, token: str, body: dict | None = None, allow_404: bool = False):
         self.calls.append((method, url, body))
+        if method == "GET" and "/setups/" in url:
+            return self.setup
         if method == "GET" and "/strips/" in url:
             return {
                 "hand": HAND,
@@ -240,6 +244,77 @@ class TestRestoreFromArchive:
         assert _run(monkeypatch, fake, "--mit-streifen", "--from", str(snapshot)) == 0
         assert len(fake.puts("sheets")) == 1
         assert fake.puts("strips")[0]["sha256"] == hashlib.sha256(png).hexdigest()
+
+    def test_a_later_snapshot_still_restores_the_whole_hand(self, dataroot, tmp_path, monkeypatch):
+        """The archive is layered, and only the FIRST snapshot is self-contained.
+
+        `snapshot.py` skips any unit already present in an earlier snapshot, so
+        snapshot 2 holds a complete Kartei beside just its increment. Reading
+        one directory would push snapshot 2's single strip and report success —
+        the exact silent-partial-restore the guarantee exists to rule out
+        (found in review, PR #410).
+        """
+        archive = tmp_path / "archive"
+        archive.mkdir()
+
+        _build(dataroot)  # session 1: S0001 on B0001
+        snapshot_mod.main(["--hand", HAND, "--archive", str(archive), "--stamp", "2026-08-24-1830"])
+        _build(dataroot, sheet="B0002", strip="S0002", shade=180)  # session 2
+        snapshot_mod.main(["--hand", HAND, "--archive", str(archive), "--stamp", "2026-08-25-1900"])
+
+        hand_archive = archive / "own-hand" / HAND
+        second = hand_archive / "2026-08-25-1900"
+        # Precondition of the whole test: the later snapshot really is partial.
+        assert not (second / "fassungen" / "S0001").exists()
+        assert not (second / "blaetter" / "B0001").exists()
+
+        # The working copy is gone; the operator points at the LATEST snapshot,
+        # which is the natural thing to do.
+        _wipe(dataroot / HAND)
+        fake = _FakeApi()
+        assert _run(monkeypatch, fake, "--mit-streifen", "--from", str(second)) == 0
+
+        registered = sorted(url.rsplit("/", 1)[-1] for m, url, _b in fake.calls if m == "PUT" and "/sheets/" in url)
+        assert registered == ["B0001", "B0002"], "both Bögen must be registered, not just the later one"
+        pushed = {
+            (url.split("/")[-2], url.split("/")[-1]) for m, url, _b in fake.calls if m == "PUT" and "/strips/" in url
+        }
+        assert pushed == {("S0001", "F01"), ("S0002", "F01")}
+
+    def test_the_standing_setup_comes_back_when_the_server_has_none(self, dataroot, tmp_path, monkeypatch):
+        # eigenhand_hands is the fourth own-hand table and §8.1 promises all
+        # four; nothing carried it before (found in review, PR #410).
+        from tools.eigenhand.store import save_setup
+
+        _build(dataroot)
+        save_setup(HAND, {"hand": HAND, "style": "suetterlin", "feder": "Brause 361", "tinte": "Carbon Black"})
+        archive = tmp_path / "archive"
+        archive.mkdir()
+        snapshot_mod.main(["--hand", HAND, "--archive", str(archive), "--stamp", "0001"])
+        snapshot = archive / "own-hand" / HAND / "0001"
+        assert (snapshot / "setup.json").exists(), "the snapshot must carry the setup at all"
+
+        _wipe(dataroot / HAND)
+        fake = _FakeApi()
+        _run(monkeypatch, fake, "--from", str(snapshot))
+        setups = [body for m, url, body in fake.calls if m == "PUT" and "/setups/" in url]
+        assert len(setups) == 1
+        assert setups[0]["feder"] == "Brause 361" and setups[0]["tinte"] == "Carbon Black"
+
+    def test_a_setup_already_on_the_server_is_never_overwritten(self, dataroot, tmp_path, monkeypatch):
+        # This is a restore, not a sync of the setup: a cached copy on an old
+        # machine must not silently replace a nib the author changed elsewhere.
+        from tools.eigenhand.store import save_setup
+
+        _build(dataroot)
+        save_setup(HAND, {"hand": HAND, "style": "suetterlin", "feder": "alt"})
+        archive = tmp_path / "archive"
+        archive.mkdir()
+        snapshot_mod.main(["--hand", HAND, "--archive", str(archive), "--stamp", "0001"])
+
+        fake = _FakeApi(setup={"hand": HAND, "style": "suetterlin", "feder": "neu"})
+        _run(monkeypatch, fake, "--from", str(archive / "own-hand" / HAND / "0001"))
+        assert [body for m, url, body in fake.calls if m == "PUT" and "/setups/" in url] == []
 
     def test_a_snapshot_of_another_hand_is_refused(self, dataroot, tmp_path, monkeypatch):
         _build(dataroot)

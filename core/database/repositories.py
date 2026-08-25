@@ -864,14 +864,13 @@ class EigenhandRepository:
         await self.session.flush()
         return row
 
-    async def strip_hashes(self, hand: str) -> "dict[str, str]":
-        """`strip/fassung` → sha256 — what a restore checks the archive against."""
-        result = await self.session.execute(
-            select(EigenhandStrip.strip, EigenhandStrip.fassung, EigenhandStrip.sha256).where(
-                EigenhandStrip.hand == hand
-            )
-        )
-        return {f"{strip}/{fassung}": digest for strip, fassung, digest in result.all()}
+    # There is deliberately no `strip_hashes()` here. It existed, had no caller,
+    # and keyed by `strip/fassung` while the only strip-hash manifest that is
+    # actually built (tools/dbsnapshot/fetch.py) keys by `hand/strip/fassung` —
+    # so its docstring promised a role it did not have, and wiring it up later
+    # would have missed every lookup (found in review, PR #410). The hashes come
+    # from `strips_of()`/`GET /eigenhand/archive/{hand}`, which carry them
+    # already and are what the manifest reads.
 
     async def fassung_for_row(self, hand: str, sheet: str, row_index: int) -> EigenhandFassung | None:
         """The verdict already recorded for one printed row, if any (idempotency)."""

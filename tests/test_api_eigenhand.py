@@ -18,6 +18,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import io
+from urllib.parse import quote
 
 import pytest
 from PIL import Image
@@ -69,6 +70,7 @@ def _png(width_px: int, height_px: int, shade: int = 235) -> bytes:
 
 
 async def _put_strip(api: Harness, png: bytes, stored: dict, **overrides) -> object:
+    strip = stored.get("strip", "S0001")
     body = {
         "sheet": "B0001",
         "row_index": 0,
@@ -80,31 +82,36 @@ async def _put_strip(api: Harness, png: bytes, stored: dict, **overrides) -> obj
         "sha256": hashlib.sha256(png).hexdigest(),
     } | overrides
     return await api.client.request(
-        "PUT", f"/eigenhand/strips/{HAND}/S0001/F01", json_body=body, headers=api.admin_headers()
+        "PUT", f"/eigenhand/strips/{HAND}/{strip}/F01", json_body=body, headers=api.admin_headers()
     )
 
 
-async def _store_strip(api: Harness, record: bool = True, upload: bool = True) -> dict:
+async def _store_strip(api: Harness, record: bool = True, upload: bool = True, strip: str = "S0001") -> dict:
     """Print a Bogen, judge its row, and push the strip image — the whole chain.
 
     The strip's geometry is derived from the STORED layout at 300 DPI, exactly
     the way `tools/eigenhand/ingest.py` cuts it, so the crop arithmetic in the
     endpoint is tested against the same numbers the paper carries.
+
+    `strip` picks which row of the frozen plan to use — the ones carrying a
+    non-Latin-1 word or a repeated word are real cases the endpoint has to
+    handle, and they only exist in specific strips.
     """
-    await _print(api, strips=["S0001"], date="2026-08-23")
+    await _print(api, strips=[strip], date="2026-08-23")
     layout = (
         await api.client.request("GET", f"/eigenhand/sheets/{HAND}/B0001/layout", headers=api.admin_headers())
     ).json()
     row = layout["rows"][0]
     x0, y0, x1, y1 = row["cut_mm"]
     stored = {
+        "strip": strip,
         "row": row,
         "crop_origin_mm": [round(x0, 3), round(y0, 3)],
         "width_px": int(round(x1 * PX_PER_MM)) - int(round(x0 * PX_PER_MM)),
         "height_px": int(round(y1 * PX_PER_MM)) - int(round(y0 * PX_PER_MM)),
     }
     if record:
-        assert (await _record(api, [_accepted("S0001", "B0001", 0)])).status == 200
+        assert (await _record(api, [_accepted(strip, "B0001", 0)])).status == 200
     stored["png"] = _png(stored["width_px"], stored["height_px"])
     if upload:
         stored["put"] = await _put_strip(api, stored["png"], stored)
@@ -453,6 +460,46 @@ class TestStrips:
             "GET", f"/eigenhand/strips/{HAND}/S0001/F01", params={"box": 1}, headers=api.admin_headers()
         )
         assert by_index.body == cut.body
+
+    @pytest.mark.asyncio
+    async def test_a_word_outside_latin_1_is_served_not_crashed(self, api: Harness):
+        """Header values are Latin-1, and the frozen plan is not.
+
+        `„wohl“` and `don’t` are in the committed strip plan, so this is the
+        normal path for four of its strips, not an edge case — and it used to
+        raise UnicodeEncodeError inside the response, i.e. a 500 (review, #410).
+        """
+        stored = await _store_strip(api, strip="S0020")
+        word = next(box["word"] for box in stored["row"]["boxes"] if any(ord(c) > 255 for c in box["word"]))
+        res = await api.client.request(
+            "GET", f"/eigenhand/strips/{HAND}/S0020/F01", params={"wort": word}, headers=api.admin_headers()
+        )
+        assert res.status == 200, res.body
+        disposition = res.headers["content-disposition"]
+        # The plain filename is ASCII so the header encodes at all; the real
+        # name rides along RFC 5987, which is what browsers actually use.
+        disposition.encode("latin-1")
+        assert "filename*=UTF-8''" in disposition
+        assert quote(word, safe="") in disposition
+
+    @pytest.mark.asyncio
+    async def test_a_word_that_appears_twice_is_reachable_by_index(self, api: Harness):
+        # `find_box` resolves a repeated word to its FIRST box by design — the
+        # index is the disambiguator, and eight strips of the plan need it.
+        stored = await _store_strip(api, strip="S0101")
+        words = [box["word"] for box in stored["row"]["boxes"]]
+        assert words[0] == words[1], "S0101 is expected to carry its first word twice"
+
+        async def cut(**params):
+            res = await api.client.request(
+                "GET", f"/eigenhand/strips/{HAND}/S0101/F01", params=params, headers=api.admin_headers()
+            )
+            assert res.status == 200, res.body
+            return res.body
+
+        first, second, by_word = await cut(box=0), await cut(box=1), await cut(wort=words[1])
+        assert first != second, "the two occurrences must be different rectangles"
+        assert by_word == first, "by text the API answers with the first box — that is the documented behaviour"
 
     @pytest.mark.asyncio
     async def test_a_word_the_row_does_not_carry_is_refused(self, api: Harness):
