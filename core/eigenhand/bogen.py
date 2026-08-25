@@ -228,9 +228,12 @@ def render_pdf(layout: dict) -> bytes:
     display = {"kurrent": "Kurrent", "suetterlin": "Sütterlin", "offenbacher": "Offenbacher"}[layout["style"]]
     sheet_no = int(layout["sheet"][1:])
     machine_id = f"{layout['hand']}-{layout['sheet']}"
-    texts.append(pdfgen.Text(MARGIN_MM, 11.0, HEADER_SIZE_MM, f"{display} · Bogen {sheet_no}", style["meta"][0]))
+    # Header, footer and legend are set from META_MARGIN_MM, not the writing
+    # margin: they sit level with the Passmarken and have to keep clear of them.
+    meta_margin = geometry.META_MARGIN_MM
+    texts.append(pdfgen.Text(meta_margin, 11.0, HEADER_SIZE_MM, f"{display} · Bogen {sheet_no}", style["meta"][0]))
     right_header = f"{machine_id} · {layout['provenance']['date']}"
-    header_x = geometry.A4_WIDTH_MM - MARGIN_MM - pdfgen.helv_width_mm(right_header, HEADER_SIZE_MM)
+    header_x = geometry.A4_WIDTH_MM - meta_margin - pdfgen.helv_width_mm(right_header, HEADER_SIZE_MM)
     texts.append(pdfgen.Text(header_x, 11.0, HEADER_SIZE_MM, right_header, style["meta"][0]))
     # Column caption for the verdict boxes, printed once ABOVE the first cut
     # line (owner, 2026-08-23) — sitting below it would put the caption level
@@ -306,13 +309,13 @@ def render_pdf(layout: dict) -> bytes:
     # sheet asks for something the default shaping rules do not give, so the
     # sheet has to say what they mean rather than assume the writer remembers.
     if any(any(mark in box["label"] for mark in ("*", "|")) for row in layout["rows"] for box in row["boxes"]):
-        texts.append(pdfgen.Text(MARGIN_MM, geometry.A4_HEIGHT_MM - 14.0, FOOTER_SIZE_MM, LEGEND, style["meta"][0]))
+        texts.append(pdfgen.Text(meta_margin, geometry.A4_HEIGHT_MM - 14.0, FOOTER_SIZE_MM, LEGEND, style["meta"][0]))
 
     prov = layout["provenance"]
     footer_left = f"kurrentschrift eigenhand · {prov['commit'] or 'no-commit'} · cfg {prov['config_hash']}"
-    texts.append(pdfgen.Text(MARGIN_MM, geometry.A4_HEIGHT_MM - 9.0, FOOTER_SIZE_MM, footer_left, style["meta"][0]))
+    texts.append(pdfgen.Text(meta_margin, geometry.A4_HEIGHT_MM - 9.0, FOOTER_SIZE_MM, footer_left, style["meta"][0]))
     footer_right = machine_id
-    footer_x = geometry.A4_WIDTH_MM - MARGIN_MM - pdfgen.helv_width_mm(footer_right, FOOTER_SIZE_MM)
+    footer_x = geometry.A4_WIDTH_MM - meta_margin - pdfgen.helv_width_mm(footer_right, FOOTER_SIZE_MM)
     texts.append(pdfgen.Text(footer_x, geometry.A4_HEIGHT_MM - 9.0, FOOTER_SIZE_MM, footer_right, style["meta"][0]))
 
     ordered_lines = [

@@ -31,7 +31,7 @@ from PIL import Image
 from skimage import transform
 
 from core.extract import load_grayscale
-from tools.eigenhand.fiducial import FiducialError, detect_fiducials, orient_corners
+from tools.eigenhand.fiducial import FiducialError, check_mark_size, detect_fiducials, orient_corners
 from tools.eigenhand.store import WORK_DPI, load_setup
 from tools.eigenhand.store import crop_name as row_crop_name
 from tools.eigenhand.store import sheet_dir as store_sheet_dir
@@ -108,6 +108,15 @@ def rectify(gray: np.ndarray, layout: dict) -> tuple[np.ndarray, float, dict[str
             pa, pb = corners[keys[i]].center, corners[keys[j]].center
             px_dist.append(float(np.hypot(pa[0] - pb[0], pa[1] - pb[1])))
     dpi_estimate = float(np.mean([p / m for p, m in zip(px_dist, mm_dist, strict=True)]) * 25.4)
+
+    # Was the sheet printed whole? The mark spacing just measured gives the
+    # capture's px-per-mm independently of any page scaling, so it says how
+    # large an 8 mm mark HAS to be in this image. A mark that comes out
+    # materially smaller was clipped by the printer's unprintable margin —
+    # invisible everywhere else, and worth a whole campaign of skew.
+    px_per_mm_here = dpi_estimate / 25.4
+    for complaint in check_mark_size(corners, layout["fiducials"]["size_mm"] * px_per_mm_here):
+        print(f"WARNING: {complaint}")
 
     tform = transform.ProjectiveTransform.from_estimate(src, dst)
     if not tform:

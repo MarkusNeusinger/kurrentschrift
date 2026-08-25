@@ -144,7 +144,7 @@ qualitaetsmetrik.md).
 
 Ein Bogen ist ein A4-Blatt aus offenen Streifen: Kopf („Sütterlin ·
 Bogen 12“ + Maschinen-ID `mn-suetterlin-B0012` + Datum), vier
-**Passmarken** (8×8-mm-Quadrate, Zentren 7/203 × 7/290 mm; links oben mit
+**Passmarken** (8×8-mm-Quadrate, Zentren 10/200 × 10/287 mm; links oben mit
 3-mm-Lochung als Orientierungs-Donut), je Zeile die Streifen-ID und pro
 Wort ein **Kasten mit Lineatur** — Bandlinien nur im Kastenbereich, die
 Gassen bleiben tintenfrei. Unter dem Schreibband liegt die 5-mm-Zone mit
@@ -156,8 +156,49 @@ gilt damit für jede Schrift gleich. Presets aus
 bei 6 mm x-Höhe senkrecht; Offenbacher 2:3:2/5 mm/77°; Kurrent
 2:1:2/2,5 mm/65° mit Schräglagen-Hilfslinien im Kasten). Sütterlin-Pitch
 34 mm → **Default 7 Zeilen** (`--rows` konfigurierbar); die erste Zeile
-beginnt bei y = 26 mm, damit die obere Schnittmarke Abstand zu den
+beginnt bei y = 29 mm, damit die obere Schnittmarke 6,4 mm Abstand zu den
 Passmarken hält.
+
+**Der bedruckbare Bereich ist eine Zusage an den Drucker**
+(`geometry.py::PRINT_SAFE_MM` = 6 mm, 2026-08-25). Vorher lagen die
+Passmarken 3 mm vom Blattrand — enger, als ein Bürolaser drucken kann:
+HP-LaserJets verweigern die äußeren 4,23 mm, gängige Geräte liegen
+zwischen 3,4 und 5. Der Preis dafür wäre keine Fehlermeldung gewesen,
+sondern eine stille Schieflage. Eine beschnittene Passmarke ist immer
+noch quadratisch und immer noch massiv, besteht also jeden Formtest des
+Detektors; nur ihr Schwerpunkt ist nach innen gewandert. Auf einem HP
+kämen die vier 8-mm-Quadrate als 6,77 mm heraus, jeder Schwerpunkt
+0,615 mm weiter innen, und die Entzerrung — die genau diese vier
+Schwerpunkte auf ihre Soll-Millimeter abbildet — streckt das Blatt dann
+um +0,63 % in x und +0,44 % in y. Anisotrop, systematisch und unsichtbar:
+jede Strichbreite, jede x-Höhe und jede Schräglage aus so einem Scan
+trüge das mit, die ganze Kampagne lang.
+
+Deshalb sitzt jetzt **nichts Gedrucktes näher als 6 mm am Blattrand** (ein
+Test prüft das am fertig komponierten Bogen, nicht an den Konstanten).
+Die Marken gehen so weit nach außen, wie das erlaubt — Zentren bei
+`PRINT_SAFE_MM + 4` = 10 mm —, denn ein größeres registriertes Viereck
+heißt weniger Winkelfehler je Pixel Schwerpunktrauschen; die Spannweite
+sinkt dabei von 196 × 283 auf 190 × 277 mm. Zwei Dinge folgen mit: Kopf,
+Fußzeile und Legende hängen nicht mehr am Schreibrand, sondern an
+`META_MARGIN_MM` = 18 mm (bei 15 mm hätten sie 1 mm neben der neuen Marke
+gestanden statt der 4 mm, die sie neben der alten hatten), und
+`TOP_MARGIN_MM` folgt den Marken um dieselben 3 mm nach unten, damit die
+obere Schnittmarke ihren Abstand behält. Sieben Zeilen passen weiter, die
+Schreibbreite bleibt 180 mm, und der Stiftkasten rückt auf x = 198,5 mm —
+in dieselbe Spalte wie die rechten Schnittmarken, die er nie trifft, weil
+sie an den ECKEN des Schnittbands sitzen und er in dessen Mitte (11–13 mm
+Abstand).
+
+**Was der Bogen selbst nicht sehen kann.** Ein gleichmäßig skalierter
+Druck („An Seite anpassen") schrumpft Marken UND Abstände zusammen; das
+Verhältnis bleibt, die Entzerrung rechnet es weg, und keine Kennzahl im
+Scan verrät es. Dagegen hilft nur das Lineal auf dem Papier — 190,0 mm
+zwischen den Markenzentren waagerecht, 277,0 mm senkrecht. Ein
+BESCHNITTENER Druck dagegen ist messbar, weil Markengröße und
+Markenabstand vom selben Gerät kommen: `fiducial.check_mark_size` liest
+die Größe, die der gemessene Abstand impliziert, und meldet jede Marke,
+die deutlich darunter bleibt.
 
 **Kastenbreite mit Puffer überall** (Owner, 2026-08-23: „ich will nicht
 das Wort ruinieren, weil ich am Ende nicht mehr hingekommen bin").
@@ -197,7 +238,7 @@ beiden Längsschnitte sind für alle Zeilen dieselben und werden deshalb
 in den Lücken ZWISCHEN den Streifen markiert (nicht am Blattkopf: eine
 Haarlinie, die auf dem Scan in eine Passmarke verläuft, zöge deren
 Schwerpunkt mit — und damit jeden Millimeter, den der Import rechnet;
-aus demselben Grund beginnt die erste Zeile bei y = 22 mm). Die
+aus demselben Grund beginnt die erste Zeile bei y = 29 mm). Die
 Streifen-ID steht im oberen Polster INNERHALB des Schnittbands, damit
 ein geschnittener Streifen für sich zuordenbar bleibt (§7); die
 Stiftmarke steht bewusst außerhalb.
@@ -208,7 +249,7 @@ Rechteck, und jede abgelegte Fassung eines Stils hat identische
 Pixelmaße.
 
 **Stiftmarke je Zeile:** rechts neben dem Schreibfeld trägt jede Zeile
-EIN 5-mm-Kästchen (Spalte ab x = 202 mm, jenseits des Schnittbands,
+EIN 5-mm-Kästchen (Spalte ab x = 198,5 mm, jenseits des Schnittbands,
 einmalig im Kopf mit „ok“ beschriftet). Dort ist die Hand am Zeilenende
 ohnehin, und die Passmarken
 belegen nur die Seitenecken — die Spalte kostet also keine Schreibbreite
@@ -651,7 +692,7 @@ die menschliche Kopf-Bestätigung je fehleranfällig wird.
 | 4 | Bericht, Redo, Archiv (`report` · `redo` · `snapshot`) + Ablage-Skelett | umgesetzt |
 | 4a | DB-Buchführung + Werkbank-Ansicht (`0024` · `/eigenhand/*` · `sync` · `pull`) | umgesetzt (§7.1) |
 | 4b | Streifen + stehendes Setup in der DB, Wort-Crops, Wiederherstellungsweg (`0025` · `crop` · `setup` · `sync --mit-streifen`/`--from`) | umgesetzt (§7.2, §8.1); Drill 2026-08-25 grün |
-| 4c | Die drei Blocker der ersten echten Sitzung (`apiclient`-Kennung · `.env` · `core`↛`tools`) | umgesetzt 2026-08-25 (siehe unten) |
+| 4c | Die drei Blocker der ersten echten Sitzung (`apiclient`-Kennung · `.env` · `core`↛`tools`) + der bedruckbare Bereich (§5) | umgesetzt 2026-08-25 (siehe unten) |
 | 5 | Ernte-Anschluss, Kurrent/Offenbacher-Betrieb, optionaler Bogen-Code | aufgeschoben (§9) |
 
 Dazu je Schreibsitzung wiederkehrend: Kalibrier-Schleife der

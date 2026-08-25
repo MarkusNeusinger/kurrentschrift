@@ -9,7 +9,30 @@ import re
 import pytest
 
 from core.eigenhand import geometry, pdfgen
-from core.eigenhand.bogen import render_pdf
+from core.eigenhand.bogen import build_layout, render_pdf, select_strips
+from core.eigenhand.plan import load_plan
+
+
+def _capture(layout: dict) -> dict[str, list]:
+    """Render one layout and return the primitives it drew, in millimetres.
+
+    Checking the composed sheet beats checking the constants: an element is
+    only safe if what lands on paper is safe, wherever its coordinates came
+    from.
+    """
+    captured: dict[str, list] = {}
+    real = pdfgen.build_pdf
+
+    def spy(rects, lines, texts):
+        captured["rects"], captured["lines"], captured["texts"] = rects, lines, texts
+        return real(rects, lines, texts)
+
+    pdfgen.build_pdf = spy
+    try:
+        render_pdf(layout)
+    finally:
+        pdfgen.build_pdf = real
+    return captured
 
 
 def _fixed_layout() -> dict:
@@ -24,7 +47,7 @@ def _fixed_layout() -> dict:
             "size_mm": 8.0,
             "hole_mm": 3.0,
             "donut": "tl",
-            "centers_mm": {"tl": [7.0, 7.0], "tr": [203.0, 7.0], "bl": [7.0, 290.0], "br": [203.0, 290.0]},
+            "centers_mm": {"tl": [10.0, 10.0], "tr": [200.0, 10.0], "bl": [10.0, 287.0], "br": [200.0, 287.0]},
         },
         "rows": [
             {
@@ -56,13 +79,67 @@ def _fixed_layout() -> dict:
 # Pinned bytes of _fixed_layout() — deterministic by construction (no clock,
 # no git, no repo state). A change here is a REAL output change: re-pin only
 # deliberately, with the diff understood.
-GOLDEN_SHA256 = "492e1f6124f7c4cfb31adbc527d56512c69752c69b75a951a493a415ba1d3bda"
+#
+# Re-baselined 2026-08-25 (printable-area pass): the Passmarken moved from
+# 7 mm to 10 mm off each edge so they clear PRINT_SAFE_MM, and header, footer
+# and legend moved from the writing margin to META_MARGIN_MM so they keep the
+# same 4 mm off the marks they had before. Rows, boxes and rulings are
+# untouched.
+GOLDEN_SHA256 = "685dfe9c27b6661ede08bd7312d0acc0375bbb12b6734f1b02ba103327151d0c"
 
 
 class TestRenderedPdf:
     def test_golden_bytes(self):
         pdf = render_pdf(_fixed_layout())
         assert hashlib.sha256(pdf).hexdigest() == GOLDEN_SHA256
+
+    def test_fiducials_come_from_the_layout_not_the_constants(self):
+        """An already-printed Bogen keeps ITS geometry when the constants move.
+
+        This is what makes a printable-area pass safe: the sidecar is the
+        contract, so sheets printed before it still re-render — and still
+        register — exactly as they were put on paper.
+        """
+        old = copy.deepcopy(_fixed_layout())
+        old["fiducials"]["centers_mm"] = {
+            "tl": [7.0, 7.0],
+            "tr": [203.0, 7.0],
+            "bl": [7.0, 290.0],
+            "br": [203.0, 290.0],
+        }
+        drawn = _capture(old)["rects"]
+        half = old["fiducials"]["size_mm"] / 2
+        corners = {(round(r.x + half, 3), round(r.y + half, 3)) for r in drawn if r.color == "#000000"}
+        assert corners == {(7.0, 7.0), (203.0, 7.0), (7.0, 290.0), (203.0, 290.0)}
+        assert render_pdf(old) != render_pdf(_fixed_layout())
+
+    def test_nothing_is_drawn_inside_the_declared_printable_area(self):
+        """The sheet must fit the printer it asks for — PRINT_SAFE_MM on every edge.
+
+        Checked on the real composed sheet rather than on the constants: the
+        failure this guards against (an HP LaserJet refuses to print within
+        4.23 mm and clips a Passmarke, whose centroid then silently biases the
+        whole rectification) comes from a DRAWN element, wherever it was
+        computed.
+        """
+        plan = load_plan()
+        lo = geometry.PRINT_SAFE_MM
+        hi_x, hi_y = geometry.A4_WIDTH_MM - lo, geometry.A4_HEIGHT_MM - lo
+        for style in geometry.PRESETS:
+            strips = select_strips(plan, {"strips": {}, "redo": [], "sheets": {}}, 7, 1)
+            layout = build_layout("B0001", f"t-{style}", style, strips, plan, "2026-08-25", True)
+            drawn = _capture(layout)
+            for rect in drawn["rects"]:
+                assert rect.x >= lo and rect.y >= lo, (style, rect)
+                assert rect.x + rect.w <= hi_x and rect.y + rect.h <= hi_y, (style, rect)
+            for line in drawn["lines"]:
+                pad = line.width_mm / 2
+                assert min(line.x1, line.x2) - pad >= lo and max(line.x1, line.x2) + pad <= hi_x, (style, line)
+                assert min(line.y1, line.y2) - pad >= lo and max(line.y1, line.y2) + pad <= hi_y, (style, line)
+            for item in drawn["texts"]:
+                width = pdfgen.helv_width_mm(item.text, item.size_mm)
+                assert item.x >= lo and item.x + width <= hi_x, (style, item.text)
+                assert item.y - item.size_mm >= lo and item.y <= hi_y, (style, item.text)
 
     def test_xref_offsets_point_at_their_objects(self):
         text = render_pdf(_fixed_layout()).decode("latin-1")

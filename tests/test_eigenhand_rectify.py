@@ -8,7 +8,7 @@ from PIL import Image
 from skimage import transform
 
 from tools.eigenhand import ingest
-from tools.eigenhand.fiducial import FiducialError, Mark, detect_fiducials, orient_corners
+from tools.eigenhand.fiducial import FiducialError, Mark, check_mark_size, detect_fiducials, orient_corners
 from tools.eigenhand.rasterize import mm_to_px, rasterize_layout
 
 
@@ -179,6 +179,38 @@ class TestDetection:
         marks = detect_fiducials(image)
         assert set(marks) == {"tl", "tr", "bl", "br"}
         assert marks["tl"].has_hole and not marks["br"].has_hole
+
+
+class TestClippedMarks:
+    """A printer's unprintable margin eats a Passmarke — the one silent failure.
+
+    A clipped mark stays square and solid, so every shape test passes and the
+    rectification simply maps the pulled-in centroids onto their nominal
+    millimetres, skewing the whole sheet. Only the mark's size relative to the
+    mark SPACING gives it away, and that ratio is what `check_mark_size` reads.
+    """
+
+    def _corners(self, side_px: float) -> dict[str, Mark]:
+        return {c: Mark((0.0, 0.0), side_px**2, c == "tl", side_px, side_px) for c in ("tl", "tr", "bl", "br")}
+
+    def test_an_intact_print_raises_nothing(self):
+        assert check_mark_size(self._corners(94.0), expected_px=94.0) == []
+
+    def test_edge_softening_alone_stays_quiet(self):
+        # Otsu on a blurred capture can shave a pixel or two per side.
+        assert check_mark_size(self._corners(90.0), expected_px=94.0) == []
+
+    def test_an_hp_laserjet_clip_is_named(self):
+        # 8.0 mm printed as 6.77 mm (4.23 mm unprintable margin).
+        complaints = check_mark_size(self._corners(94.0 * 6.77 / 8.0), expected_px=94.0)
+        assert len(complaints) == 8  # width and height of all four marks
+        assert "clipped" in complaints[0]
+
+    def test_a_uniformly_scaled_print_is_invisible_here_by_construction(self):
+        # "Fit to printable area" shrinks marks AND spacing together, so the
+        # ratio is unchanged. Nothing in the scan can catch it — the ruler can.
+        scale = 0.96
+        assert check_mark_size(self._corners(94.0 * scale), expected_px=94.0 * scale) == []
 
 
 class TestCaptureChannel:

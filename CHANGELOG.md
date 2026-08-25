@@ -14,6 +14,41 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Fixed
 
+- **The Bogen now fits the printer it is printed on.** Its Passmarken sat
+  3 mm from the page edge — closer than any office laser can print: HP
+  LaserJets refuse the outer 4.23 mm, consumer devices run 3.4 to 5. The
+  cost would not have been an error but a silent skew, because a clipped
+  mark is still square and still solid and passes every shape test the
+  detector has; only its centroid moves inward. On an HP the four 8 mm
+  squares come out at 6.77 mm, each centroid pulled 0.615 mm toward the
+  page centre, and the rectification — which maps exactly those centroids
+  onto their nominal millimetres — then stretches the sheet by +0.63 % in x
+  and +0.44 % in y. Anisotropic, systematic and campaign-wide. The sheet now
+  declares the printable area it needs (`PRINT_SAFE_MM` = 6.0) and nothing
+  is drawn closer, checked on the composed sheet for all three scripts
+  rather than on the constants. The marks go as far out as that allows
+  (centres at 10 mm, spans 190 × 277 instead of 196 × 283) because a larger
+  registered quad means less angular error per pixel of centroid noise; the
+  header, footer and legend move to their own `META_MARGIN_MM` so they keep
+  the 4 mm they had off the marks; `TOP_MARGIN_MM` follows the marks down by
+  the same 3 mm so the top cut ticks keep their 6.4 mm; and the verdict box
+  moves into the right cut-tick lane, which it never meets because the ticks
+  mark the Schnittband's corners and it sits in the middle of the row. Seven
+  rows still fit, the writing width is still 180 mm, and the golden PDF is
+  re-baselined. No sheet had been printed yet, so nothing splits into
+  cohorts — and a per-sheet layout means an already-printed one would keep
+  its own geometry anyway, which is now pinned by a test.
+
+- **A clipped print is reported instead of quietly absorbed.** Mark size and
+  mark spacing come off the same printer, so their ratio is fixed by the
+  layout and survives any uniform scaling: `fiducial.check_mark_size` reads
+  the size the measured spacing implies and `ingest` names every mark that
+  falls materially short. The other failure — a driver's "fit to printable
+  area" — is invisible to any measurement taken from the scan, since marks
+  and spacing shrink together; that one is a ruler on the paper, and both
+  the proposal and the operating README now say so instead of implying the
+  import would catch it.
+
 - **The three blockers between the eigenhand chain and the first real
   Bogen.** All of them were invisible to the synthetic smoke test, because
   that test neither crosses Cloudflare nor runs inside the deploy image.
