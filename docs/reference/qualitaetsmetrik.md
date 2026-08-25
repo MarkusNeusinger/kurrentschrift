@@ -8452,3 +8452,90 @@ Re-Baseline-Lauf umfasst alle vier stehenden Routen auf dev-19
 in einer Umgebung. Der PRODUKTIONS-Re-Harvest der
 `traced`-Zeilen bleibt davon unberührt und weiterhin hinter
 Autor-Go + `dbsnapshot`.
+
+### Lineal L-U `aug26` — gemessen: alle sechs Gates bestanden, der Gewinn liegt auf EINER Route
+
+Gemessen am 2026-08-26, dev-19, alle Läufe in derselben Umgebung mit
+`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1` und
+`--jobs 4`; Artefakte im Scratchpad `lu/`. Der Knopf ist
+`--mark-arc-cap` (Default war 0,8, gemessen bei 1,5).
+
+**Die Gates, alle sechs:**
+
+1. **Identität — PASS.** Der Code vor der Änderung (`main`,
+   eigener Worktree, dieselben Fixtures) und der Zweig bei
+   Default liefern über alle **19 Zeilen jedes Feld byte-gleich**
+   (ohne die Laufzeitspalte). Der Knopf ist im Aus-Zustand
+   wirklich aus.
+2. **Klasse — PASS.** Bei 1,5 wechseln GENAU die vorregistrierten
+   Striche: 9 auf der Referenz (`muß` ×3, `und` ×4, `unter`,
+   `Kugel`) und 5 auf der Kandidatenseite (`Gaul`, `Pulver`,
+   `auch` ×2, `zu`). Kein anderer Strich, auf keiner Seite.
+3. **Defekt — PASS.** `Zaum` (1,966 xh) bleibt Körper.
+4. **Widerspruch — PASS.** `marks_uncertain` fällt auf dev von
+   **8 auf 0**, auf jeder gemessenen Route.
+5. **Zähler — PASS.** `marks_ambiguous` bleibt 0, `marks_missing`
+   bleibt 0. Der Marken-Matcher fängt nicht an zu verweigern.
+6. **Unberührtheit — PASS.** 16 Spalten (`aiou`, `aiou_k`, beide
+   Chamfer-Hälften, `cross_*`, `retrace_*`, `retrace_arc_ratio`,
+   touch/overlap, `soll_*`) sind zwischen 0,8 und 1,5 **byte-gleich**.
+
+**Der Effekt je Route — und er ist nicht überall derselbe:**
+
+| Route | dtw Median | dtw p90 | dtw worst |
+|---|---|---|---|
+| **Kette** (`pairlab.follow`) | 0,0441 → 0,0441 | **0,2202 → 0,0912** | **unter 0,4396 → muß 0,1068** |
+| **Lotse** (`inkpilot`) | 0,0545 → 0,0545 | 0,1122 → 0,1164 | muß-2 0,1404 → 0,1457 |
+| **Nullprobe** (`routeg`, 10 von 19) | 0,8198 → 0,8198 | 1,0267 → 1,0267 | 3 Zeilen bewegt |
+| Ketten-Init (roher `chain`) | 0,0492 → 0,0494 | 0,0894 → 0,0912 | muß 0,1096 → 0,1108 |
+
+**Kette, je Wort** — vier große Gewinne, vier vernachlässigbare
+Verluste:
+
+| Wort | dtw 0,8 | dtw 1,5 | Δ |
+|---|---|---|---|
+| `unter` | 0,4396 | **0,0902** | **−0,3494** |
+| `muß` | 0,2394 | **0,1068** | **−0,1326** |
+| `muß-3` | 0,2154 | **0,0858** | **−0,1296** |
+| `muß-2` | 0,2032 | **0,0861** | **−0,1171** |
+| `und` ×4 | 0,0295–0,0419 | 0,0304–0,0436 | +0,0002 … +0,0017 |
+
+`unter` 0,4396 → 0,0902 bestätigt die K-C-Autopsie, die von Hand
+0,084 gerechnet hatte.
+
+**Der ehrliche Teil: auf JEDER anderen Route kostet die Änderung
+etwas.** Lotse +0,0002 … +0,0053 je Wort, der rohe Kettenfit
++0,0006 … +0,0024, die Nullprobe bis +0,374 (`und`). Der Grund ist
+strukturell und war so nicht vorhergesagt: den REIHENFOLGE-Fehler
+hatte nur die Kette. Der rohe Kettenfit schreibt Diakritika seit
+`marks_last` ohnehin endständig, Lotse fährt das Skelett direkt,
+und die Nullprobe hat keine Strichordnung, die kippen könnte. Wo
+der u-Bogen nie falsch einsortiert war, nimmt sein Herauslösen dem
+Körper-DTW nur einen Strich, der gut lag — der Rest richtet sich
+minimal schlechter aus.
+
+Dafür ist der Fehler jetzt **benannt statt verborgen**: die Spalte
+`mark_pos_err_xh` meldet für dieselben Wörter 0,015–0,134 xh, die
+vorher in keiner Zahl standen. Das ist der eigentliche Gewinn auf
+den anderen drei Routen — nicht ein besseres Ergebnis, sondern ein
+ehrlicheres.
+
+**Vorregistrierte Nebenwirkung, eingetreten:** `lift_ref` fällt auf
+dev referenzseitig weg, weil alle betroffenen Bahnen genau zwei
+Striche haben. Nicht als Kandidatengewinn lesen.
+
+**Verdikt: adoptiert.** `MARK_MAX_ARC_UNITS = 1.5` ist Default;
+`--mark-arc-cap 0.8` reproduziert jede alte Zahl. Keines der
+sechs Gates war ein Routen-Ergebnis, und das ist der Grund, warum
+die Adoption trägt: die Änderung ist als Instrumenten-Reparatur
+begründet (das Lineal widersprach seiner eigenen
+Erwartungstabelle) und wird nicht dadurch besser oder schlechter,
+dass eine Route gewinnt und drei ein wenig verlieren.
+
+**Offen: InkSight.** Die vierte stehende Route ist NICHT neu
+vermessen — ihre Inferenz läuft in einem isolierten
+Python-3.11-TF-venv (werkzeuge.md), das über Nacht
+unbeaufsichtigt aufzusetzen nicht seriös wäre. Ihre alten Zahlen
+sind damit **gültig, archiviert und NICHT vergleichbar**, bis der
+Lauf nachgeholt ist; dasselbe gilt für die neun dev-Wörter, die
+die gespeicherte Nullprobe nicht abdeckt.

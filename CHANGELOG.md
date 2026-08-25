@@ -12,6 +12,35 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Changed
+
+- **The frozen ruler's arc cap moves 0.8 → 1.5 xh: the u-Bogen is a mark
+  (L-U, measured, adopted).** All six pre-registered gates hold. Identity: the
+  pre-change code and the new one at the default produce all 19 dev rows
+  byte-identical. Class: exactly the enumerated strokes change — 9 on the
+  reference, 5 on the candidate side, every one a u-Bogen. Defect: the
+  defective `Zaum` arc (1.966 xh) stays in the body and is still paid for.
+  `marks_uncertain` falls 8 → 0 on every route, `marks_ambiguous` and
+  `marks_missing` stay 0, and 16 columns that read the full stroke list are
+  byte-identical between the two caps — so `aiou`, both chamfer halves,
+  crossings, retraces, touch/overlap and the soll columns keep their standing
+  numbers comparable.
+
+  The win lands on exactly one route, and the entry says so: **Kette** drops
+  its p90 from 0.2202 to 0.0912 and its worst word from `unter` 0.4396 to `muß`
+  0.1068 — `unter` alone goes 0.4396 → 0.0902, confirming the hand-computed
+  0.084 of the `aug20` autopsy. On Lotse, the raw chain fit and the Nullprobe
+  the change costs a little instead, because only the Kette ever had the
+  ordering fault: the others emit diacritics last, drive the skeleton directly,
+  or have no stroke order at all, so pulling the u-Bogen out only removes a
+  stroke that was aligning fine. What those routes gain is not a better number
+  but an honest one — `mark_pos_err_xh` now reports 0.015–0.134 xh that stood
+  in no column before. `--mark-arc-cap` reproduces any earlier value, and the
+  cap was raised rather than dropped precisely so a defective arc cannot escape
+  the primary measure into the mark column. **InkSight is not re-measured** —
+  its inference needs an isolated Python-3.11 TF venv — so its numbers stay
+  valid, archived and not comparable until that run is caught up.
+
 ### Added
 
 - **A cut strip says which hand, which sheet and which day it is from.**

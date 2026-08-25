@@ -67,7 +67,6 @@ from tools.pairlab.landmarks import nearest_unique_point
 from tools.pairlab.trace import _is_diacritic, _px_to_word_units
 from tools.tracebench.frames import MARK_MATCH_MARGIN_UNITS as _RULER_MARGIN
 from tools.tracebench.frames import MARK_MATCH_RADIUS_UNITS as _RULER_RADIUS
-from tools.tracebench.frames import MARK_MAX_ARC_UNITS as _RULER_MAX_ARC
 
 
 # ------------------------------------------------------------------ constants
@@ -105,12 +104,22 @@ MARK_BODY_CLAIM_UNITS = float(os.environ.get(MARK_BODY_CLAIM_UNITS_ENV) or 0.15)
 
 # **How big a mark's ink can be.** A skeleton is one pixel wide, so a cluster's
 # pixel count is its arc length in pixels; divided by the x-height it is the
-# same number the bench classifies marks with. The cap is 2x the bench's
-# `MARK_MAX_ARC_UNITS` (imported) — deliberately loose, because this one only
-# has to keep a mark off ink the bench would NEVER call a mark: a missed
+# same number the bench classifies marks with. Deliberately loose, because this
+# one only has to keep a mark off ink no reader would call a mark: a missed
 # ascender, an unfitted letter, a plate speck grown into a stroke.
+#
+# It used to be `2 * MARK_MAX_ARC_UNITS`, imported from the ruler. That
+# coupling was cut on 2026-08-25 (§14 „Lineal L-U"): the ruler's cap is under a
+# declared re-measurement, and a derived value would have moved the CANDIDATE
+# side along with it — the identity gate would then have failed for a reason
+# having nothing to do with the ruler, and the refit would have changed without
+# anyone deciding it should. The value is unchanged (1.6 = the old 2 × 0.8) and
+# now stands on its own reasoning: twice the arc of the largest diacritic the
+# reference hand actually writes (1,313 xh for a u-Bogen, §14 census), rounded
+# down — loose enough to never clip a real mark, tight enough to refuse a
+# letter-sized cluster.
 MARK_MAX_INK_ARC_UNITS_ENV = "KS_MARK_MAX_INK_ARC_UNITS"
-MARK_MAX_INK_ARC_UNITS = float(os.environ.get(MARK_MAX_INK_ARC_UNITS_ENV) or 2 * _RULER_MAX_ARC)
+MARK_MAX_INK_ARC_UNITS = float(os.environ.get(MARK_MAX_INK_ARC_UNITS_ENV) or 1.6)
 
 # Sampling step for the body path when the claim is computed. Half a pixel is
 # `tracebench.metric.RASTER_STEP_PX`'s reasoning: consecutive samples are then

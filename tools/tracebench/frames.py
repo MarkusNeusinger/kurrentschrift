@@ -42,8 +42,25 @@ from tools.pairlab.landmarks import nearest_unique_point
 # silently; once the trace module is merged, this becomes a direct import.
 DIACRITIC_MIN_Y = 1.0
 # Arc length caps the mark class: a long stroke that happens to stay in the
-# Oberlänge (a capital's ornament, an ascender loop) is body, not a mark.
-MARK_MAX_ARC_UNITS = 0.8  # tintenfolger.md §2.3 ("Bogenlänge <= 0,8 xh")
+# Oberlänge (a capital's ornament, an ascender loop, a fit defect whose path
+# leaves the ink) is body, not a mark.
+#
+# Raised from 0.8 to 1.5 on 2026-08-26 — a DECLARED re-baseline of a frozen
+# ruler, pre-registered and measured as §14 „Lineal L-U". 0.8 sat INSIDE the
+# mark population rather than between mark and body: on the frozen reference
+# the dots and umlauts end at 0.652 xh and the u-Bögen begin at 1.039, and on
+# the candidate side the old cap missed misclassifying a real umlaut by eleven
+# thousandths (`Sprünge`, 0.789). It also contradicted the ruler's own
+# expectation table, which has always carried `MARKS_PER_KEY["u"] = 1`.
+#
+# 1.5 comes from the width model, not from the observed distribution: a
+# standard lowercase is one x-height wide (`ADVANCE_DEFAULT_XH`), a diacritic
+# sits over ONE letter, so a floating stroke longer than one and a half letter
+# widths is no longer an accent. The cap is raised rather than dropped so it
+# keeps doing its job — a defective candidate arc (`Zaum`, 1.966 xh, a fit
+# whose path leaves the ink) stays in the body DTW and is paid for, instead of
+# escaping the primary measure into the mark column.
+MARK_MAX_ARC_UNITS = 1.5  # §14 „Lineal L-U" (was 0.8; tintenfolger.md §2.3)
 # Mark matching, centroid to centroid, with the refusal semantics of
 # `landmarks.nearest_unique_point`: nothing within the radius is a miss, a
 # second candidate within the margin of the nearest is a refusal, never a guess.
@@ -147,26 +164,35 @@ def arc_length(points: np.ndarray) -> float:
     return float(np.hypot(*np.diff(pts, axis=0).T).sum())
 
 
-def classify_strokes(strokes_bench: list[np.ndarray]) -> tuple[list[np.ndarray], list[np.ndarray]]:
+def classify_strokes(
+    strokes_bench: list[np.ndarray], arc_cap: float = MARK_MAX_ARC_UNITS
+) -> tuple[list[np.ndarray], list[np.ndarray]]:
     """Split a trace into `(body, marks)` — the delayed strokes come out.
 
     A stroke is a MARK when all three hold: it is not the first stroke (a word
     does not open with its own diacritic), every one of its points sits above
-    `DIACRITIC_MIN_Y`, and its arc is at most `MARK_MAX_ARC_UNITS`. Everything
-    else is body — a t-crossbar dips through the midband, an ascender loop is
-    too long, and both belong in the body DTW.
+    `DIACRITIC_MIN_Y`, and its arc is at most `arc_cap`. Everything else is
+    body — a t-crossbar dips through the midband, an ascender loop is too long,
+    and both belong in the body DTW.
 
     Pulling the marks out before the body DTW is standard delayed-stroke
     practice, and it defuses the engine's own deferred-diacritic ordering: the
     body sequences then compare in writing order without an i-dot appended at
     the end of one side and in the middle of the other.
+
+    `arc_cap` defaults to `MARK_MAX_ARC_UNITS`, so an unchanged caller measures
+    exactly what it measured before. It is a parameter because the cap is under
+    a declared re-measurement (§14 „Lineal L-U"): a frozen ruler is changed by
+    measuring the change against itself, which needs both values available in
+    one run — not by editing the constant and hoping the old numbers are
+    remembered.
     """
     body: list[np.ndarray] = []
     marks: list[np.ndarray] = []
     for index, stroke in enumerate(strokes_bench):
         pts = np.asarray(stroke, dtype=float).reshape(-1, 2)
         floating = len(pts) > 0 and bool((pts[:, 1] > DIACRITIC_MIN_Y).all())
-        is_mark = index > 0 and floating and arc_length(pts) <= MARK_MAX_ARC_UNITS
+        is_mark = index > 0 and floating and arc_length(pts) <= arc_cap
         (marks if is_mark else body).append(pts)
     return body, marks
 
