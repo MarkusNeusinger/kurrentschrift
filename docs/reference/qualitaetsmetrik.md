@@ -8392,7 +8392,7 @@ ganze Soll-Punkte wandert (`aug21`, „Umgebungs-Ehrlichkeit").
 Routen-Ergebnis:
 
 1. **Identität** — bei Kappe 0,8 ist jede Zahl byte-gleich zur
-   stehenden Baseline. Der Knopf ist aus wirklich aus.
+   stehenden Baseline. Der Knopf ist im Aus-Zustand wirklich aus.
 2. **Klasse** — bei 1,5 wechseln GENAU die oben aufgezählten
    Striche die Klasse: 9 Hand-u-Bögen, 5 Kandidaten-u-Bögen.
    Kein anderer Strich, auf keiner Seite.
@@ -8430,7 +8430,8 @@ Ergebnis.
 
 **Zirkularitäts-Gegenmittel** (das Kriterium, das weder in der
 Zielfunktion noch in einem Gate steht): das Lineal widerspricht
-sich heute selbst, und zwar seit lange vor dieser Entscheidung.
+sich heute selbst, und zwar seit Langem — lange vor dieser
+Entscheidung.
 `tools/tracebench/summary.py:55` führt `MARKS_PER_KEY["u"] = 1`
 mit dem Kommentar „u-Deckstrich (tintenfolger.md §2.3 names it a
 mark)" — die Erwartungstabelle des Benches sagt also, der
