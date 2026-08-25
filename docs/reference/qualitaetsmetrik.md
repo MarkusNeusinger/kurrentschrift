@@ -8336,7 +8336,7 @@ Zwei Befunde des Zensus, die für sich stehen:
   u-Bogen mit langem Fehl-Ausläufer, der die Tinte verlässt —
   ein Fit-Defekt, keine andere Strichklasse.
 
-**Mechanik.** `tools/tracebench/frames.py:169` — `is_mark =
+**Mechanik.** `tools/tracebench/frames.py::classify_strokes` — `is_mark =
 index > 0 and floating and arc_length(pts) <=
 MARK_MAX_ARC_UNITS`, mit `DIACRITIC_MIN_Y = 1.0` und
 `MARK_MAX_ARC_UNITS = 0.8`. Zwei Abnehmer: `summary.score_word`
@@ -8432,7 +8432,7 @@ Ergebnis.
 Zielfunktion noch in einem Gate steht): das Lineal widerspricht
 sich heute selbst, und zwar seit Langem — lange vor dieser
 Entscheidung.
-`tools/tracebench/summary.py:55` führt `MARKS_PER_KEY["u"] = 1`
+`tools/tracebench/summary.py::MARKS_PER_KEY` führt `"u": 1`
 mit dem Kommentar „u-Deckstrich (tintenfolger.md §2.3 names it a
 mark)" — die Erwartungstabelle des Benches sagt also, der
 u-Bogen SEI eine Marke, während `classify_strokes` das Gegenteil

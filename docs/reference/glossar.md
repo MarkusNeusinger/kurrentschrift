@@ -1273,9 +1273,9 @@ Body-Vergleich herauslöst und separat zählt: ein nicht-erster Strich,
 der komplett über `DIACRITIC_MIN_Y` (= 1 xh) schwebt und die
 **Bogen-Kappe** nicht überschreitet — i-Punkt/-Strich, Umlautzeichen
 und, dem Namen nach, der u-Deckstrich. Beim u-Deckstrich widerspricht
-sich das Lineal allerdings selbst: §2.3 und die Erwartungstabelle
-`MARKS_PER_KEY` führen ihn als Marke, die Kappe macht ihn zum Body
-(→ **Bogen-Kappe**).
+sich das Lineal allerdings selbst: proposals/tintenfolger.md §2.3 und
+die Erwartungstabelle `MARKS_PER_KEY` führen ihn als Marke, die Kappe
+macht ihn zum Body (→ **Bogen-Kappe**).
 Der t-Querstrich kreuzt das Mittelband und bleibt Body (ihn zählt der
 Kreuzungszähler). Gematcht per Zentroid mit Refusal; **fehlende Marken
 sind Co-Primär-Gate**, mit gutem Body-`dtw_xh` nicht rückkaufbar — der
@@ -1285,10 +1285,11 @@ Felds, den keine publizierte Metrik erfasst. *Technisch:*
 
 **Bogen-Kappe** *(arc cap)* — die dritte Bedingung der Marken-Klasse
 (`MARK_MAX_ARC_UNITS`): ein schwebender Strich zählt nur bis zu dieser
-Bogenlänge als **Marke**, darüber als Body. Ihr Zweck ist, was zufällig
-in der Oberlänge bleibt — ein abgesetztes Versalien-Ornament, eine
-Oberlängenschleife, ein Fit-Defekt, dessen Bahn die Tinte verlässt —
-nicht zur Marke zu erklären und damit aus dem Primärmaß zu nehmen.
+Bogenlänge als **Marke**, darüber als Body. Sie hält aus der
+Marken-Klasse heraus, was nur zufällig in der Oberlänge bleibt — ein
+abgesetztes Versalien-Ornament, eine Oberlängenschleife, ein
+Fit-Defekt, dessen Bahn die Tinte verlässt: solche Striche würden sonst
+zur Marke erklärt und verschwänden damit aus dem Primärmaß.
 Steht heute bei 0,8 xh und liegt damit INNERHALB der Marken-Population
 statt zwischen Marke und Body: auf der eingefrorenen Referenz enden
 Punkte und Umlaute bei 0,652 xh, die u-Bögen beginnen bei 1,039 xh.
