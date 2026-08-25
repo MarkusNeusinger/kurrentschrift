@@ -9,11 +9,14 @@
 // how many glyphs and joins the plan can produce at all, capitals, digits and
 // signs included.
 //
-// What is NOT here, on purpose: the scans. The strip images are the reserved
-// own-hand dataset and stay on the author's machine; only the bookkeeping (how
-// often a Streifen was accepted, which Bögen were printed) lives in the DB.
-// Uploading a scan therefore stays a local step — the hint under the printer
-// names the command that continues the loop.
+// What is NOT here, on purpose: the SCANS. Uploading a capture stays a local
+// step — ingest needs the file on disk and the Siebung is a local page — so the
+// hint under the printer names the command that continues the loop.
+//
+// The STRIPS themselves do appear (owner, 2026-08-24): they live in the DB so
+// the workbench can show a written Streifen the way it shows a chart crop.
+// They stay the reserved own-hand dataset — admin-gated, uncacheable, never in
+// the repository, and loaded only when asked for (StripsPanel).
 
 import {
   Alert,
@@ -40,6 +43,8 @@ import {
 } from '@/lib/api';
 import type { EigenhandBestand, EigenhandBucket } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
+import { SetupPanel } from '@/sections/admin/eigenhand/SetupPanel';
+import { StripsPanel } from '@/sections/admin/eigenhand/StripsPanel';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { paper } from '@/styles/paper';
 
@@ -260,6 +265,8 @@ export function EigenhandView() {
 
       {bestand && (
         <Stack spacing={3}>
+          <SetupPanel hand={hand} />
+
           <Panel title={t.stripsTitle} caption={t.queueTitle}>
             <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', rowGap: 2 }}>
               <Stat value={bestand.strips.belegt} label={t.stripsBelegt} />
@@ -276,6 +283,8 @@ export function EigenhandView() {
               ))}
             </Box>
           </Panel>
+
+          <StripsPanel hand={hand} version={bestand.fassungen.angenommen} />
 
           <Panel
             title={t.coverageTitle}

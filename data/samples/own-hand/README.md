@@ -14,6 +14,15 @@ sind committet — Begründung in der `SOURCE.md`).
 uv run python data/corpora/frequencywords-2018/fetch_frequencywords.py
 uv run python -m tools.eigenhand.universe
 
+# einmalig je Hand, VOR der ersten Sitzung: das stehende Setup erklären.
+# Danach liest ingest Feder/Tinte/Papier von hier; Fassungen, die davor
+# eingelesen werden, tragen diese Angaben nicht.
+ADMIN_TOKEN=… uv run python -m tools.eigenhand.setup --hand mn-suetterlin \
+    --feder "Brause 361 Steno" --tinte "Platinum Carbon Black" \
+    --papier "Clairefontaine Clairalfa 90 g" --geraet scanner
+#    auf einem zweiten Rechner nur holen:  --pull
+#    nachsehen, ohne Netz:                 --show
+
 # 1. Bogen drucken (Warteschlange: Redo > nie belegt > wenigste Fassungen)
 uv run python -m tools.eigenhand.sheet --hand mn-suetterlin --date 2026-08-22
 #    Mehrfach-Versuche derselben Streifen:  --repeat 3
@@ -29,9 +38,10 @@ uv run python -m tools.eigenhand.sheet --hand mn-suetterlin --date 2026-08-22
 #    der dann wieder in der Druck-Warteschlange steht).
 #    Dann einscannen/fotografieren (Passmarken müssen mit drauf sein)
 
-# 3. einlesen (entzerrt, schneidet Zeilen, prüft QC)
-uv run python -m tools.eigenhand.ingest --hand mn-suetterlin --sheet B0001 scan.jpg \
-    --feder "Brause 511" --tinte "Eisengallus" --papier "90g" --geraet scanner
+# 3. einlesen (entzerrt, schneidet Zeilen, prüft QC). Feder/Tinte/Papier
+#    kommen aus dem stehenden Setup; nur eine ABWEICHUNG dieser Sitzung
+#    ausdrücklich mitgeben:  --feder "Brause 511"
+uv run python -m tools.eigenhand.ingest --hand mn-suetterlin --sheet B0001 scan.jpg
 
 # 4. Siebung: Seite im Browser öffnen, je Zeile urteilen, Ergebnis laden
 uv run python -m tools.eigenhand.page --hand mn-suetterlin --sheet B0001
@@ -42,9 +52,12 @@ uv run python -m tools.eigenhand.apply --hand mn-suetterlin --sheet B0001 siebun
 # 6. NACH JEDER SITZUNG: ins private Archiv sichern (create-only, inkrementell)
 uv run python -m tools.eigenhand.snapshot --hand mn-suetterlin --push
 
-# 7. Zahlen hochschieben, damit /admin/eigenhand den Bestand zeigt (Bögen +
-#    Verdikte, NIE ein Streifenbild; idempotent, beliebig oft wiederholbar)
+# 7. hochschieben, damit /admin/eigenhand den Bestand zeigt (Bögen + Verdikte;
+#    idempotent, beliebig oft wiederholbar)
 ADMIN_TOKEN=… uv run python -m tools.eigenhand.sync --hand mn-suetterlin
+#    zusätzlich die Streifenbilder (opt-in — reservierter Datensatz; damit
+#    zeigt die Werkbank den geschriebenen Streifen und jedes einzelne Wort):
+ADMIN_TOKEN=… uv run python -m tools.eigenhand.sync --hand mn-suetterlin --mit-streifen
 
 # Stand & nächster Druck
 uv run python -m tools.eigenhand.report --hand mn-suetterlin
@@ -90,8 +103,19 @@ uv run python -m tools.eigenhand.redo --hand mn-suetterlin S0037 S0055 --reason 
 - **Snapshot nach jeder Sitzung.** Bis zum Snapshot sind die Streifen die
   einzige Kopie. Das Archiv ist dieselbe private Clone wie die
   DB-Snapshots (`KURRENTSCHRIFT_ARCHIVE`), create-only, nie aufräumen.
-- **Eine Sitzung, ein Setup:** gleiche Feder, gleiche Tinte, gleiches
-  Papier je Bogen; die Angaben gehören in den `ingest`-Aufruf.
+- **Eine Kampagne, ein Setup:** gleiche Feder, gleiche Tinte, gleiches
+  Papier — einmal mit `tools.eigenhand.setup` erklärt, danach von `ingest`
+  gelesen. Ein Wechsel mittendrin teilt das Korpus in Kohorten, die man auf
+  Strichbreite und Schwärzung nicht mehr vergleichen kann; wenn er sein
+  muss, gehört er als Abweichung in den `ingest`-Aufruf, damit er an den
+  betroffenen Fassungen steht.
+- **Wiederherstellung:** ist die Datenbank weg, bringt Repo + Archiv sie
+  zurück — `alembic upgrade head`, dann
+  `sync --from <Archiv-Snapshot> --mit-streifen`. Irgendein Schnappschuss
+  der Hand genügt: die Geschwister daneben werden mitgelesen, weil
+  `snapshot` inkrementell ablegt. Der Lauf bricht mit Namen ab, wenn im
+  Archiv etwas fehlt — Erfolg meldet er nur, wenn die Hand wirklich ganz
+  zurück ist. Rezept und Drill: Proposal §8.1.
 - **Scan-Qualität:** ≥300 DPI anstreben (`ingest` warnt unter ~250
   effektiv); Handyfotos gehen dank Passmarken, das Blatt möglichst
   formatfüllend und gleichmäßig beleuchtet aufnehmen. HEIC vorher als
@@ -106,6 +130,10 @@ uv run python -m tools.eigenhand.redo --hand mn-suetterlin S0037 S0055 --reason 
 
     mn-suetterlin/
       kartei.json                       Streifenkartei (Zustandsquelle)
+      setup.json                        lokale Kopie des stehenden Setups
+                                        (Feder/Tinte/Papier/Gerät; Vorgabe
+                                        für ingest, Datensatz liegt auf dem
+                                        Server)
       blaetter/B0001/
         bogen.pdf                       Druckdatei
         layout.json                     Geometrie-Vertrag des Importers

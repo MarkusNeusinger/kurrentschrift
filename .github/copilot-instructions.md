@@ -270,8 +270,10 @@ updates its owning doc in the same PR.
   `/write/word` (contract in `docs/reference/write-api.md` — anyone changing a
   `/write/*` route updates it). Occurrence/statistics/work-item routers and
   their doctrine: `docs/proposals/optimierungs-werkbank.md`. `/eigenhand/*` is
-  the own-hand Bestand + Bogen printer (bookkeeping only — never a scan;
-  `docs/proposals/eigenhand-erfassung.md` §7.1). All data lives in
+  the own-hand Bestand + Bogen printer + the stored STRIPS (bookkeeping and
+  strip images — never a whole scan; the strips are admin-gated, `private,
+  no-store`, never in the repo, and the private archive stays their master;
+  `docs/proposals/eigenhand-erfassung.md` §7.1–§7.2, §8.1). All data lives in
   the SHARED Cloud SQL DB — local dev writes prod data.
 - **`/app`** — React 19 + Vite + MUI SPA. Public: three areas (Schriftkunde ·
   Lesen · Schreiben) + landing; admin: ONE workbench in three views
@@ -292,7 +294,9 @@ updates its owning doc in the same PR.
   glyphbench, tracebench, glyphlab/wordlab/pairlab, humanbench, inksight,
   routeg, inkpilot) plus the LOCAL half of the own-hand capture chain
   `tools/eigenhand` (word pool → printed Bogen sheets → scan Siebung → local
-  strip store → `sync` pushes the counts up; the pure compute is
+  strip store → `sync` pushes the counts up, and the strips on
+  `--mit-streifen`; `sync --from <archive snapshot>` is the restore path;
+  the pure compute is
   `core/eigenhand`, doctrine in `docs/proposals/eigenhand-erfassung.md`; its
   `data/samples/own-hand/` bytes stay gitignored — reserved dataset,
   backed up to the private archive): inventory + operation in

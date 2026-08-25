@@ -13,8 +13,12 @@ in the SAME reserved place. Safety properties, in the order they matter:
   path, and verified against the Kartei's SHA256): a filed Fassung never
   changes. Bogen contents are compared FILE by file instead, because a sheet
   directory does grow — a second capture files another scan under ``scans/``.
-  ``kartei.json`` and the strip-plan copy ride along in full each time — they
-  are small and make every snapshot self-describing.
+  ``kartei.json``, the strip-plan copy and the standing setup ride along in
+  full each time — they are small and make every snapshot self-describing.
+  Note what this means for a READER: only the FIRST snapshot holds the whole
+  hand; every later one holds its increment beside a complete Kartei. Anything
+  restoring from the archive has to read the snapshots as one layered tree —
+  ``tools/eigenhand/sync.py --from`` does.
 * **A shrinking snapshot is an error.** If the Kartei holds fewer Fassungen
   than the archive already knows, the run fails — a wrong ``EIGENHAND_DATA``
   or a half-restored working copy must not look like a successful backup.
@@ -159,6 +163,14 @@ def main(argv: list[str] | None = None) -> int:
     source = hand_dir(args.hand)
     shutil.copy2(kartei_file, target / "kartei.json")
     shutil.copy2(STREIFEN_JSON, target / "streifenplan.json")
+    # The standing setup rides along in full like the Kartei: it is the fourth
+    # own-hand table (`eigenhand_hands`), it is two lines of JSON, and without
+    # it the restore recipe brings back sheets, verdicts and strips but not the
+    # nib/ink/paper the whole campaign is calibrated on (found in review, PR
+    # #410). `sync --from` pushes it when the server has none.
+    setup_file = source / "setup.json"
+    if setup_file.exists():
+        shutil.copy2(setup_file, target / "setup.json")
 
     copied_fassungen = copied_files = 0
     for rel, path, is_dir in _units(source):

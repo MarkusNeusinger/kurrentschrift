@@ -20,6 +20,8 @@ import type {
   EigenhandHands,
   EigenhandPrinted,
   EigenhandPrintRequest,
+  EigenhandSetup,
+  EigenhandStripList,
   FitData,
   GlyphOut,
   GlyphSummary,
@@ -97,6 +99,55 @@ export const printEigenhandSheets = (body: EigenhandPrintRequest): Promise<Eigen
 export const fetchEigenhandSheetPdf = async (hand: string, sheet: string): Promise<Blob> => {
   const res = await apiFetch(
     `${apiRoot()}/eigenhand/sheets/${encodeURIComponent(hand)}/${encodeURIComponent(sheet)}/pdf`,
+  );
+  if (!res.ok) {
+    await asJson<never>(res); // raises the typed ApiError with the server's detail
+  }
+  return res.blob();
+};
+
+export const getEigenhandSetup = (hand: string): Promise<EigenhandSetup | null> =>
+  apiFetch(`${apiRoot()}/eigenhand/setups/${encodeURIComponent(hand)}`).then(async (res) => {
+    // A hand that has never had a setup typed is the normal state before the
+    // first session — an answer, not an error.
+    if (res.status === 404) return null;
+    return asJson<EigenhandSetup>(res);
+  });
+
+export const putEigenhandSetup = (
+  hand: string,
+  body: Partial<Omit<EigenhandSetup, 'hand' | 'updated_at'>>,
+): Promise<EigenhandSetup> =>
+  apiFetch(`${apiRoot()}/eigenhand/setups/${encodeURIComponent(hand)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }).then(asJson<EigenhandSetup>);
+
+export const getEigenhandStrips = (hand: string, retry?: RetryOptions): Promise<EigenhandStripList> =>
+  apiFetch(`${apiRoot()}/eigenhand/strips/${encodeURIComponent(hand)}`, {}, retry).then(
+    asJson<EigenhandStripList>,
+  );
+
+// The strip image, whole or cut down to one word. Fetched rather than linked
+// for the same reason as the Bogen PDF — a plain <img src> cannot send the
+// admin header — and additionally because these pixels are the reserved
+// own-hand dataset: the response is `private, no-store`, so the blob lives
+// exactly as long as the object URL the caller makes.
+// `box` is the word's INDEX in the row, not its text: a row may carry the same
+// word twice, and the API resolves a repeated word to its first box by design —
+// the index is what tells the occurrences apart.
+export const fetchEigenhandStrip = async (
+  hand: string,
+  strip: string,
+  fassung: string,
+  box?: number,
+): Promise<Blob> => {
+  const qs = box === undefined ? '' : `?${new URLSearchParams({ box: String(box) }).toString()}`;
+  const res = await apiFetch(
+    `${apiRoot()}/eigenhand/strips/${encodeURIComponent(hand)}/${encodeURIComponent(strip)}/${encodeURIComponent(
+      fassung,
+    )}${qs}`,
   );
   if (!res.ok) {
     await asJson<never>(res); // raises the typed ApiError with the server's detail

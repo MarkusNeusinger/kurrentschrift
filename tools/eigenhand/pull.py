@@ -18,41 +18,26 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
-import urllib.error
-import urllib.request
 
 from core.eigenhand.bogen import layout_text
+from tools.eigenhand.apiclient import admin_token, api_base, request_bytes
 from tools.eigenhand.kartei import load_kartei, save_kartei
 from tools.eigenhand.store import check_hand_id, check_sheet_id, sheet_dir
-
-
-DEFAULT_API = "https://api.kurrentschrift.ink"
-
-
-def _get(url: str, token: str) -> bytes:
-    req = urllib.request.Request(url, headers={"X-Admin-Token": token})  # noqa: S310 — https URL from argv
-    try:
-        with urllib.request.urlopen(req, timeout=60) as res:  # noqa: S310
-            return res.read()
-    except urllib.error.HTTPError as exc:
-        raise SystemExit(f"GET {url} → {exc.code}: {exc.read().decode()[:400]}") from exc
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     ap.add_argument("--hand", required=True)
     ap.add_argument("--sheet", required=True, help="Bogen id, e.g. B0007")
-    ap.add_argument("--api", default=os.environ.get("EIGENHAND_API", DEFAULT_API), help="API base URL")
-    ap.add_argument("--token", default=os.environ.get("ADMIN_TOKEN"), help="admin token (default: $ADMIN_TOKEN)")
+    ap.add_argument("--api", default=None, help="API base URL (default: $EIGENHAND_API or production)")
+    ap.add_argument("--token", default=None, help="admin token (default: $ADMIN_TOKEN)")
     args = ap.parse_args(argv)
 
     hand, sheet = check_hand_id(args.hand), check_sheet_id(args.sheet)
-    if not args.token:
-        raise SystemExit("no admin token — set ADMIN_TOKEN or pass --token")
-    base = args.api.rstrip("/")
+    token = admin_token(args.token)
+    base = api_base(args.api)
 
-    layout = json.loads(_get(f"{base}/eigenhand/sheets/{hand}/{sheet}/layout", args.token).decode())
+    layout = json.loads(request_bytes("GET", f"{base}/eigenhand/sheets/{hand}/{sheet}/layout", token).decode())
     text = layout_text(layout)
     digest = hashlib.sha256(text.encode()).hexdigest()
 
@@ -69,7 +54,7 @@ def main(argv: list[str] | None = None) -> int:
 
     out_dir.mkdir(parents=True, exist_ok=True)
     existing.write_text(text, encoding="utf-8")
-    (out_dir / "bogen.pdf").write_bytes(_get(f"{base}/eigenhand/sheets/{hand}/{sheet}/pdf", args.token))
+    (out_dir / "bogen.pdf").write_bytes(request_bytes("GET", f"{base}/eigenhand/sheets/{hand}/{sheet}/pdf", token))
 
     kartei = load_kartei(hand, layout["style"])
     kartei["sheets"].setdefault(

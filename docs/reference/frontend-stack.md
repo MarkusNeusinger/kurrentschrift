@@ -102,7 +102,7 @@ Post-MVP-Phasen (architektur.md §10):
 | `/admin/buchstaben[?g=<key>]` | **Buchstaben.** Ohne `g` die Alphabet-Übersicht (ehemals `/admin/vergleich`-Tab): je Buchstabe VIER Flächen — Original (Chart-Crop) · Tafel-Form (Variante 0) · Laufform (Variante 100) · „Median & Vorkommen" (die H1-Aggregat-Skizze) — samt Kennzahlen und einem Sortier-Umschalter (Alphabet · Schlechteste zuerst), der das Raster zur Arbeitsliste macht (Details §7), mit `g` der einzelne Buchstabe mit allen Werkzeugen: Tafel-Ausschnitt + Einrichtungs-Wizard + Diagnose + aufklappbarem Chart-Editor (ehemals `/admin/chart`), Tafel-Form neben Laufform, die Vorkommen aus den Wörtern, die H1-Statistik samt Frische-Chip und Differenz-Skizze, die Absprünge zu Übergängen/Wörtern — und am Fuß, bewusst abgesetzt, der **Laufform-Übernahme-Block** mit Bestätigungsdialog (`sections/admin/letters/`, Issue #270) | existiert |
 | `/admin/uebergaenge[?l=<key>&r=<key>]` | **Übergänge.** Ohne Paar die Matrix aller Zweierkombinationen (ehemals `/admin/paare`) plus ein Freitextfeld für JEDE Kombination, mit Paar die komponierte Verbindung, die H2-Statistik „gemessen vs. komponiert", die dissezierten Vorkommen und — als letztes Mittel — der Paar-Editor (`sections/admin/joins/`) | existiert |
 | `/admin/woerter[?w=<text>&s=<specimen>]` | **Wörter.** Ohne `w` die Wortproben-Liste mit Scores (ehemals `/admin/vergleich`-Tabs Wörter/Andere Hand), mit `w` ein beliebiger Text: wie die Engine ihn schreibt, woraus er besteht (Buchstaben + Übergänge als Absprünge) und — wo eine Platte ihn enthält — die nachgefahrene Spur mit Vorkommens-Overlay, Score und Wort-Editor (ehemals `/admin/belege` + `/admin/werkbank`-Rückgrat; `sections/admin/words/`) | existiert |
-| `/admin/eigenhand` | **Eigenhand.** Die einzige Admin-Ansicht, die zu einer HAND gehört statt zu einer Vorlage: Bestand der eigenen Schreibprobe (Streifen belegt/unterwegs/geplant, Fassungen, Bögen; welche Zeichen und Übergänge belegt sind — gemessen an dem, was der Streifenplan hergibt, Groß-/Kleinbuchstaben, Ligaturen, Ziffern und Sonderzeichen getrennt) und der Bogendruck (Stapel erzeugen, PDF öffnen). Die Scans bleiben lokal; hochgeladen wird hier nichts (`sections/admin/eigenhand/`, [`../proposals/eigenhand-erfassung.md`](../proposals/eigenhand-erfassung.md) §7.1) | existiert |
+| `/admin/eigenhand` | **Eigenhand.** Die einzige Admin-Ansicht, die zu einer HAND gehört statt zu einer Vorlage: Bestand der eigenen Schreibprobe (Streifen belegt/unterwegs/geplant, Fassungen, Bögen; welche Zeichen und Übergänge belegt sind — gemessen an dem, was der Streifenplan hergibt, Groß-/Kleinbuchstaben, Ligaturen, Ziffern und Sonderzeichen getrennt) und der Bogendruck (Stapel erzeugen, PDF öffnen). Dazu das stehende Setup der Hand (Feder · Tinte · Papier · Gerät) und die GESCHRIEBENEN Streifen: jede gespeicherte Fassung auf Klick, samt Ausschnitt je Wort — admin-gesichert, `private, no-store`, nie im Repository. Die Scans bleiben lokal; hochgeladen wird hier nichts (`sections/admin/eigenhand/`, [`../proposals/eigenhand-erfassung.md`](../proposals/eigenhand-erfassung.md) §7.1–§7.2) | existiert |
 | `/admin/sources` | Source-Verwaltung | post-MVP |
 | `/admin/jobs` | HTR-Job-Monitor (Quote-Übersicht) | post-MVP |
 
@@ -483,7 +483,11 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
   kommen fertig aus `GET /eigenhand/bestand/{hand}` — dieselbe
   Rechenschicht, die das Terminal druckt —, das PDF wird geholt statt
   verlinkt, weil das Admin-Token in der Entwicklung ein HEADER ist, den ein
-  `<a href>` nicht mitschickt.
+  `<a href>` nicht mitschickt. Daneben `SetupPanel` (das stehende Setup der
+  Hand) und `StripsPanel` (die geschriebenen Streifen): dessen Bilder werden
+  aus demselben Grund als Blob geholt und zusätzlich erst auf Klick, weil
+  ein Streifen ~350 KB wiegt und zum reservierten Datensatz gehört; die
+  Object-URLs werden von Hand wieder freigegeben.
 - `sections/admin/chart/`, `setup-wizard/`, `diagnostics/`, `compare/`,
   `pairs/`, `belege/`, `quality/` bleiben die WERKZEUGE, die diese drei
   Ansichten einsetzen (Chart-Editor, Wizard, Diagnose, Vergleichsraster,

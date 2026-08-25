@@ -14,6 +14,7 @@ family addresses it through this module.
 
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 
@@ -25,8 +26,15 @@ from core.eigenhand.plan import STREIFEN_JSON
 
 CORPORA_DIR = REPO_ROOT / "data" / "corpora" / "frequencywords-2018"
 
+# The resolution `ingest` rectifies every capture to, and therefore the
+# resolution of EVERY filed streifen.png — regardless of what the scanner or
+# phone delivered. It lives here rather than in ingest.py because `sync` needs
+# it to label an uploaded strip and must not import the image stack to get it.
+WORK_DPI = 300.0
+
 __all__ = [
     "CORPORA_DIR",
+    "WORK_DPI",
     "STREIFEN_JSON",
     "STYLE_IDS",
     "check_crop_name",
@@ -35,6 +43,9 @@ __all__ = [
     "crop_name",
     "data_root",
     "hand_dir",
+    "load_setup",
+    "save_setup",
+    "setup_path",
     "sheet_dir",
     "style_of_hand",
     "universe_path",
@@ -115,6 +126,39 @@ def check_crop_name(crop: str, row_index: int) -> str:
 def universe_path() -> Path:
     """The local Übergangsraum weight table (derived from consult-only corpora)."""
     return data_root() / "universe" / "uebergangsraum.json"
+
+
+def setup_path(hand: str) -> Path:
+    """The local copy of the hand's standing setup (nib, ink, paper, device)."""
+    return hand_dir(hand) / "setup.json"
+
+
+def load_setup(hand: str) -> dict:
+    """The standing setup as this machine knows it — empty if never pulled.
+
+    A CACHE, not the record: the record is `eigenhand_hands` on the server. It
+    exists because `ingest` runs at a desk with a scanner and no reason to be
+    online, and because typing the same three strings on every import is how a
+    campaign quietly ends up with three spellings of one ink.
+    """
+    path = setup_path(hand)
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"{path} is not valid JSON ({exc}) — pull it again with `setup --pull`") from exc
+    return data if isinstance(data, dict) else {}
+
+
+def save_setup(hand: str, setup: dict) -> Path:
+    """Write the local setup cache atomically (tmp + replace, like the Kartei)."""
+    path = setup_path(hand)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(setup, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    os.replace(tmp, path)
+    return path
 
 
 def style_of_hand(hand: str) -> str:

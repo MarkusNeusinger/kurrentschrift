@@ -32,12 +32,14 @@ from skimage import transform
 
 from core.extract import load_grayscale
 from tools.eigenhand.fiducial import FiducialError, detect_fiducials, orient_corners
+from tools.eigenhand.store import WORK_DPI, load_setup
 from tools.eigenhand.store import crop_name as row_crop_name
 from tools.eigenhand.store import sheet_dir as store_sheet_dir
 
 
 PAYLOAD_FORMAT = 1
-WORK_DPI = 300.0
+# The rectification resolution lives in store.py so `sync` can label an
+# uploaded strip with it without importing the image stack.
 PX_PER_MM = WORK_DPI / 25.4
 ROW_PAD_MM = 2.0
 # The stored strip is SELF-ATTRIBUTING pixels: it starts left of the printed
@@ -268,10 +270,19 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("scan", type=Path, help="capture file (PNG/JPEG/TIFF; export HEIC as JPEG first)")
     ap.add_argument("--hand", required=True)
     ap.add_argument("--sheet", required=True, help="sheet id, e.g. B0001 (printed in the header)")
-    ap.add_argument("--feder", default="", help="nib used in this Schreibsitzung")
-    ap.add_argument("--tinte", default="", help="ink")
-    ap.add_argument("--papier", default="", help="paper")
-    ap.add_argument("--geraet", default="scanner", choices=("scanner", "kamera"), help="capture device")
+    # Left unset, these come from the hand's STANDING setup (the local cache of
+    # `eigenhand_hands`, filled by `tools.eigenhand.setup`). Naming one on the
+    # command line records a deviation for this session — which is exactly what
+    # a mid-campaign nib change is, and what has to stay visible per Fassung.
+    ap.add_argument("--feder", default=None, help="nib used in this Schreibsitzung (default: the hand's setup)")
+    ap.add_argument("--tinte", default=None, help="ink (default: the hand's setup)")
+    ap.add_argument("--papier", default=None, help="paper (default: the hand's setup)")
+    ap.add_argument(
+        "--geraet",
+        default=None,
+        choices=("scanner", "kamera"),
+        help="capture device (default: the hand's setup, else scanner)",
+    )
     # --datum stays as an alias: the family's other tools were written with it,
     # and the English spelling is the one the language rules ask for.
     ap.add_argument(
@@ -301,13 +312,23 @@ def main(argv: list[str] | None = None) -> int:
     if dpi < MIN_DPI_WARN:
         print(f"WARNING: effective capture resolution ~{dpi:.0f} DPI is under {MIN_DPI_WARN:.0f} — rescan if possible")
 
+    # The EFFECTIVE setup of this session: the standing one, with whatever this
+    # run names on top. Resolved here and written into every row's meta.json,
+    # so a Fassung says out of itself what it was written with — never "NULL
+    # means like the hand", which stops being true the day the hand changes.
+    standing = load_setup(args.hand)
     session = {
         "date": args.date or layout["provenance"]["date"],
-        "feder": args.feder,
-        "tinte": args.tinte,
-        "papier": args.papier,
-        "geraet": args.geraet,
+        "feder": args.feder if args.feder is not None else standing.get("feder") or "",
+        "tinte": args.tinte if args.tinte is not None else standing.get("tinte") or "",
+        "papier": args.papier if args.papier is not None else standing.get("papier") or "",
+        "geraet": args.geraet or standing.get("geraet") or "scanner",
     }
+    if not any(session[key] for key in ("feder", "tinte", "papier")):
+        print(
+            "note: no nib/ink/paper for this hand — declare the standing setup once with "
+            f"`uv run python -m tools.eigenhand.setup --hand {args.hand} --feder … --tinte … --papier …`"
+        )
     payload = build_payload(
         args.hand, args.sheet, layout, warped, args.scan, session, dpi, args.keep_scan, channel_used
     )

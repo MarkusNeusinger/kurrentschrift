@@ -18,7 +18,9 @@ from core.database.models import (
     Aggregate,
     Bbox,
     EigenhandFassung,
+    EigenhandHand,
     EigenhandSheet,
+    EigenhandStrip,
     GlyphPair,
     Hand,
     Instance,
@@ -797,6 +799,78 @@ class EigenhandRepository:
         self.session.add(row)
         await self.session.flush()
         return row
+
+    # ---- the hand's standing setup ------------------------------------------
+
+    async def hand_setup(self, hand: str) -> EigenhandHand | None:
+        result = await self.session.execute(select(EigenhandHand).where(EigenhandHand.hand == hand))
+        return result.scalar_one_or_none()
+
+    async def hand_setups(self) -> "list[EigenhandHand]":
+        result = await self.session.execute(select(EigenhandHand).order_by(EigenhandHand.hand))
+        return list(result.scalars().all())
+
+    async def upsert_hand_setup(self, hand: str, style: str, **fields: Any) -> EigenhandHand:
+        """Insert-or-update the standing nib/ink/paper — typed once, read back by every import."""
+        row = await self.hand_setup(hand)
+        if row is None:
+            row = EigenhandHand(hand=hand, style=style, **fields)
+            self.session.add(row)
+        else:
+            row.style = style
+            for key, value in fields.items():
+                setattr(row, key, value)
+        await self.session.flush()
+        return row
+
+    # ---- the strip images ----------------------------------------------------
+    #
+    # The PNG column is deferred everywhere except the one endpoint that serves
+    # the bytes. A Bestand read must never drag ~350 KB per Fassung along.
+
+    _STRIP_META_ONLY = (defer(EigenhandStrip.png),)
+
+    def _one_strip(self, hand: str, strip: str, fassung: str):
+        return select(EigenhandStrip).where(
+            EigenhandStrip.hand == hand, EigenhandStrip.strip == strip, EigenhandStrip.fassung == fassung
+        )
+
+    async def strip(self, hand: str, strip: str, fassung: str) -> EigenhandStrip | None:
+        """One strip WITH its bytes — only the image endpoint calls this."""
+        result = await self.session.execute(self._one_strip(hand, strip, fassung))
+        return result.scalar_one_or_none()
+
+    async def strip_meta(self, hand: str, strip: str, fassung: str) -> EigenhandStrip | None:
+        """The same row WITHOUT its bytes — for callers that only need the hash.
+
+        The upload's idempotency check compares sha256; reading the PNG to do
+        that would pull ~350 KB per already-stored strip off the wire on every
+        re-run of a sync (Copilot review, PR #410).
+        """
+        result = await self.session.execute(self._one_strip(hand, strip, fassung).options(*self._STRIP_META_ONLY))
+        return result.scalar_one_or_none()
+
+    async def strips_of(self, hand: str, strip: str | None = None) -> "list[EigenhandStrip]":
+        """Strip rows WITHOUT the bytes — listings, the admin grid, the manifest."""
+        stmt = select(EigenhandStrip).options(*self._STRIP_META_ONLY).where(EigenhandStrip.hand == hand)
+        if strip is not None:
+            stmt = stmt.where(EigenhandStrip.strip == strip)
+        result = await self.session.execute(stmt.order_by(EigenhandStrip.strip, EigenhandStrip.fassung))
+        return list(result.scalars().all())
+
+    async def add_strip(self, **values: Any) -> EigenhandStrip:
+        row = EigenhandStrip(**values)
+        self.session.add(row)
+        await self.session.flush()
+        return row
+
+    # There is deliberately no `strip_hashes()` here. It existed, had no caller,
+    # and keyed by `strip/fassung` while the only strip-hash manifest that is
+    # actually built (tools/dbsnapshot/fetch.py) keys by `hand/strip/fassung` —
+    # so its docstring promised a role it did not have, and wiring it up later
+    # would have missed every lookup (found in review, PR #410). The hashes come
+    # from `strips_of()`/`GET /eigenhand/archive/{hand}`, which carry them
+    # already and are what the manifest reads.
 
     async def fassung_for_row(self, hand: str, sheet: str, row_index: int) -> EigenhandFassung | None:
         """The verdict already recorded for one printed row, if any (idempotency)."""

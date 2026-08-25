@@ -216,6 +216,12 @@ Geometrie überschreiben kann (`apply-laufform`, Migrationen mit DROP,
 Ernte mit `replace`) sowie nach einer Autoring-Sitzung; nie in ein
 bestehendes Verzeichnis schreiben, nie eines löschen oder umbenennen
 (Regeln: `CLAUDE.md` § „Working guardrails").
+Die `eigenhand_*`-Tabellen fahren OHNE die PNG-Spalte mit, dazu ein
+`strip_hashes`-Manifest: der Master der Streifenbilder ist der
+`own-hand/`-Baum desselben Archivs, und die Hashes sind, woran ein
+Restore sie prüft — und woran auffällt, wenn DB und Archiv
+auseinandergelaufen sind, bevor der Tag kommt, an dem es zählt
+(Wiederherstellungsweg: proposals/eigenhand-erfassung.md §8.1).
 `restore.py` ist für Drills gegen eine Wegwerf-Postgres gebaut: verlangt
 die Ziel-URL explizit (`--database-url`, absichtlich nie aus der
 Umgebung), verweigert ein Ziel gleich `DATABASE_URL`, verweigert ein
@@ -248,12 +254,34 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   `--repeat N` für Mehrfach-Versuche, `--strips` für gezielte Streifen.
   Die Auswahl-, Layout- und PDF-Rechnung selbst liegt in
   `core/eigenhand/bogen.py`, weil die Werkbank dieselben Bögen druckt.
-- **`sync` ↔ `pull`** — die Brücke zur Werkbank-Ansicht (Proposal §7.1):
-  `sync` schiebt die lokale Buchführung (Bögen samt Layout, Fassungen samt
-  Verdikt) über die admin-gesicherte HTTP-Schnittstelle hoch — Zahlen, nie
-  Bilder —, `pull --sheet B0007` holt einen im Admin gedruckten Bogen
-  (Layout + PDF) auf die Platte, damit `ingest` dagegen registrieren kann.
-  Beide brauchen `ADMIN_TOKEN`; `--api` zeigt auf eine andere Instanz.
+- **`setup`** — erklärt das stehende Setup einer Hand (Feder, Tinte,
+  Papier, Aufnahmegerät) EINMAL: schreibt den Serverdatensatz und legt
+  eine lokale Kopie (`setup.json`) daneben, aus der `ingest` seine
+  Vorgaben liest. `--pull` holt es auf einen anderen Rechner, `--show`
+  zeigt die lokale Kopie ohne Netz. Vor der ersten Sitzung ausführen —
+  danach eingelesene Fassungen tragen sonst keine Feder/Tinte/Papier.
+- **`sync` ↔ `pull`** — die Brücke zur Werkbank-Ansicht (Proposal §7.1,
+  §7.2): `sync` schiebt die lokale Buchführung (Bögen samt Layout,
+  Fassungen samt Verdikt und effektivem Setup) über die admin-gesicherte
+  HTTP-Schnittstelle hoch; **`--mit-streifen`** nimmt zusätzlich die
+  Streifenbilder mit (opt-in — reservierter Datensatz, und schon
+  gespeicherte Bytes werden per SHA256 übersprungen). Fehlt zu einer
+  angenommenen Fassung die Datei, wird erst alles Vorhandene hochgeschoben
+  und der Lauf dann mit Namen der Fehlstellen abgebrochen: ein stiller
+  Übersprung würde gerade auf dem Wiederherstellungsweg Erfolg melden und
+  Streifen weglassen. `pull --sheet B0007`
+  holt einen im Admin gedruckten Bogen (Layout + PDF) auf die Platte,
+  damit `ingest` dagegen registrieren kann. Beide brauchen `ADMIN_TOKEN`;
+  `--api` zeigt auf eine andere Instanz.
+  **`sync --from <Archiv-Snapshot>`** ist der Wiederherstellungsweg: dieselbe
+  Push-Logik, nur aus dem Archiv statt aus der Arbeitskopie — damit bringt
+  Repo + Archiv die vier `eigenhand_*`-Tabellen samt Bildern zurück (Rezept
+  und Drill: Proposal §8.1). Genannt wird IRGENDEIN Schnappschuss der Hand;
+  seine Geschwister im selben Verzeichnis kommen automatisch dazu (neuester
+  gewinnt), weil `snapshot.py` inkrementell ablegt und nur der erste
+  Schnappschuss vollständig ist. Das stehende Setup wird dabei nur gesetzt,
+  wenn der Server keines hat, und der Lauf bricht mit Namen ab, wenn eine
+  angenommene Fassung oder ein Bogen-Layout im Archiv fehlt.
 - **`ingest` → `page` → `apply`** — Scan/Foto entzerren (Passmarken,
   scikit-image, 300 DPI Arbeitsauflösung), Siebung auf der
   Offline-HTML-Seite, Ergebnis einspielen: nur angenommene Zeilen werden
@@ -268,14 +296,17 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   alte Fassungen zurück); **`snapshot`** sichert inkrementell und
   create-only ins private Archiv (`KURRENTSCHRIFT_ARCHIVE`, dieselbe
   Clone wie die DB-Snapshots; dbsnapshot-Disziplin inkl.
-  Schrumpf-Verweigerung).
+  Schrumpf-Verweigerung). Kartei, Streifenplan und das stehende Setup
+  fahren in jedem Schnappschuss vollständig mit; Fassungen und Bögen nur
+  als Zuwachs — wer aus dem Archiv liest, muss die Schnappschüsse deshalb
+  als einen geschichteten Baum lesen, so wie `sync --from` es tut.
 
 Invarianten wie überall: kein DB-Schreibpfad — `sync` spricht die
 Admin-API, nie die Datenbank —, eingefrorene Mess-Sätze
 bleiben unberührt (der Streifenplan ist Trainingsdaten, kein Mess-Satz),
 und die abgelegten Streifen sind Teil des reservierten Datensatzes
-(Open-Core) — sie verlassen `data/samples/own-hand/` bzw. das private
-Archiv nicht.
+(Open-Core): sie liegen lokal, im privaten Archiv und — seit Migration
+`0025` — admin-gesichert in der DB, nie im Repository und nie öffentlich.
 
 ## Benches und Generator (Verweise)
 
