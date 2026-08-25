@@ -254,3 +254,34 @@ class TestMarkBox:
         band = geometry.row_band(geometry.PRESETS["suetterlin"], 15.0)
         top_fiducial_bottom = geometry.FIDUCIAL_CENTERS["tr"][1] + geometry.FIDUCIAL_SIZE_MM / 2
         assert geometry.mark_box(band)[1] > top_fiducial_bottom
+
+
+class TestFugenForms:
+    """The width model shapes the form the writer is ASKED to write."""
+
+    def test_the_form_table_is_passed_in_not_looked_up(self):
+        """`Donnerstag` shapes with a long ſ; `Donners*|tag` forces the round s.
+
+        Different shaping, different advance sum — so the table has to reach
+        the estimator. It comes from the CALLER (the plan's `forms` block, or
+        the curated pool), because `core` may not reach into `tools`: the API
+        image does not ship it.
+        """
+        preset = geometry.PRESETS["suetterlin"]
+        plain = geometry.estimate_word_width_mm("Donnerstag", preset.x_height_mm)
+        marked = geometry.estimate_word_width_mm("Donnerstag", preset.x_height_mm, {"Donnerstag": "Donners*|tag"})
+        assert plain != pytest.approx(marked)
+
+    def test_no_table_and_an_empty_table_agree(self):
+        preset = geometry.PRESETS["suetterlin"]
+        assert geometry.estimate_word_width_mm("Donnerstag", preset.x_height_mm) == pytest.approx(
+            geometry.estimate_word_width_mm("Donnerstag", preset.x_height_mm, {})
+        )
+
+    def test_boxes_and_packing_both_take_the_table(self):
+        preset = geometry.PRESETS["suetterlin"]
+        words = ["Donnerstag", "und"]
+        forms = {"Donnerstag": "Donners*|tag"}
+        assert geometry.boxes_for_row(words, preset) != geometry.boxes_for_row(words, preset, forms=forms)
+        # Packing accepts it on the same signature; a two-word row stays one row.
+        assert geometry.pack_words_into_rows(words, preset, forms=forms) == [words]

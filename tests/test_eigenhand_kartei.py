@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
+from core.eigenhand.ids import RETIRED, STATUSES
 from tools.eigenhand import apply as apply_mod
 from tools.eigenhand import page as page_mod
 from tools.eigenhand import redo, snapshot, store
@@ -234,7 +235,10 @@ class TestRedoRetire:
         kartei = load_kartei(HAND)
         assert kartei["redo"][0]["strip"] == "S0001"
         fassung = kartei["strips"]["S0001"]["fassungen"][0]
-        assert fassung["status"] == "zurückgezogen"
+        # ASCII, and the same token the API's Literal accepts — a German
+        # spelling here made `sync` refuse the hand's whole batch with a 422.
+        assert fassung["status"] == RETIRED
+        assert fassung["status"] in STATUSES
         assert fassung["retired"] == "2026-08-23"
         assert strip_state(kartei, "S0001") == "geplant"  # withdrawn no longer counts
 

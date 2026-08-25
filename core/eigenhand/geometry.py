@@ -13,8 +13,8 @@ Coordinates: mm, origin top-left, y downwards (lineatur.ts convention).
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
-from functools import lru_cache
 
 from core.shaping import shape_word
 
@@ -170,8 +170,16 @@ CAPTURE_STYLES: dict[str, tuple[str, float, tuple[float, float] | None]] = {
 
 # Slot advances in x-height units — the physical width model of the packing
 # and the box generator: box = BOX_LEAD_MM + sum(advance) * x_height. Start
-# values, refined by the Kalibrier-Schleife against the first written sheet
-# (report --calibrate).
+# values, to be refined by the Kalibrier-Schleife against the first written
+# sheet — by hand for now, by measuring the filed strips; there is no
+# `--calibrate` flag yet, and an earlier comment here promised one.
+#
+# Raising them does NOT widen the boxes of an existing Bogen's row: the box
+# generator hands the whole spare width back proportionally, so a row always
+# fills the usable 180 mm. What the advances decide is how many words a row
+# CARRIES — and that is frozen per wave in the committed plan (append-never).
+# A changed width model therefore reaches paper through a NEW wave
+# (`tools.eigenhand.pool build`), never through the strips already planned.
 #
 # Raised across the board on 2026-08-23 (owner: "is that enough room for a
 # word like Galoppieren?"). It was not: at the old values a Sütterlin
@@ -218,23 +226,20 @@ def _advance_of(key: str) -> float:
     return ADVANCE_DEFAULT_XH
 
 
-@lru_cache(maxsize=1)
-def _fugen_forms() -> dict[str, str]:
-    """word → fugen-marked shaping form, for the pool words that carry one.
+def estimate_word_width_mm(word: str, x_height_mm: float, forms: Mapping[str, str] | None = None) -> float:
+    """Estimated box width for one word at a given x-height (see ADVANCE_XH).
 
-    Width estimation must shape the form the writer is asked to WRITE: a
-    fugen marker can force the round s and block the ſt ligature, which
-    changes the advance sum. Resolved centrally here so packing (pool.py)
-    and box generation (sheet.py) can never disagree.
+    ``forms`` maps a word to the fugen-marked form it is actually asked to be
+    WRITTEN as: a fugen marker can force the round s and block the ſt ligature,
+    which changes the advance sum. It is passed in rather than looked up, so
+    that packing (``tools/eigenhand/pool.py``, from the curated pool) and box
+    generation (``core/eigenhand/bogen.py``, from the committed plan's
+    ``forms`` block) name the same table without ``core`` reaching into
+    ``tools`` — an import that raised ``ModuleNotFoundError`` on every Bogen
+    the deployed API tried to print, because the image ships ``core/`` and not
+    ``tools/`` (found 2026-08-25).
     """
-    from tools.eigenhand.corpus import pool_entries  # noqa: PLC0415 — avoid import cost for non-pool callers
-
-    return {e["word"]: e["fugen"] for e in pool_entries() if e.get("fugen")}
-
-
-def estimate_word_width_mm(word: str, x_height_mm: float) -> float:
-    """Estimated box width for one word at a given x-height (see ADVANCE_XH)."""
-    slots = shape_word(_fugen_forms().get(word, word))
+    slots = shape_word((forms or {}).get(word, word))
     advance = sum(_advance_of(slot.key) for slot in slots if slot.key is not None)
     return BOX_LEAD_MM + advance * x_height_mm
 
@@ -391,7 +396,9 @@ def mark_box(band: RowBand) -> tuple[float, float, float, float]:
     return (MARK_COL_X0_MM, top, MARK_COL_X0_MM + MARK_BOX_MM, top + MARK_BOX_MM)
 
 
-def pack_words_into_rows(words: list[str], preset: ScriptPreset, margin_mm: float = 15.0) -> list[list[str]]:
+def pack_words_into_rows(
+    words: list[str], preset: ScriptPreset, margin_mm: float = 15.0, forms: Mapping[str, str] | None = None
+) -> list[list[str]]:
     """Greedy width packing of an ordered word stream into row-sized groups.
 
     Used by pool.py to cut the planned word stream into Streifen. Packing runs
@@ -409,7 +416,7 @@ def pack_words_into_rows(words: list[str], preset: ScriptPreset, margin_mm: floa
         index = 0
         while index < len(remaining):
             candidate = remaining[index]
-            candidate_width = estimate_word_width_mm(candidate, preset.x_height_mm)
+            candidate_width = estimate_word_width_mm(candidate, preset.x_height_mm, forms)
             needed = candidate_width + (BOX_GAP_MM if row else 0.0)
             if width + needed <= usable:
                 row.append(candidate)
@@ -428,7 +435,9 @@ def pack_words_into_rows(words: list[str], preset: ScriptPreset, margin_mm: floa
     return rows
 
 
-def boxes_for_row(words: list[str], preset: ScriptPreset, margin_mm: float = 15.0) -> list[tuple[float, float]]:
+def boxes_for_row(
+    words: list[str], preset: ScriptPreset, margin_mm: float = 15.0, forms: Mapping[str, str] | None = None
+) -> list[tuple[float, float]]:
     """Left/right x (mm) of each word box in one row, clamped to the margins.
 
     The packing left PACK_SLACK_MM unused; that reserve is handed BACK here,
@@ -439,7 +448,7 @@ def boxes_for_row(words: list[str], preset: ScriptPreset, margin_mm: float = 15.
     share of it, which is where the estimate can be off the most.
     """
     usable = usable_row_width_mm(margin_mm)
-    widths = [min(estimate_word_width_mm(word, preset.x_height_mm), usable) for word in words]
+    widths = [min(estimate_word_width_mm(word, preset.x_height_mm, forms), usable) for word in words]
     gaps = BOX_GAP_MM * (len(words) - 1)
     spare = usable - gaps - sum(widths)
     if spare > 0 and sum(widths) > 0:

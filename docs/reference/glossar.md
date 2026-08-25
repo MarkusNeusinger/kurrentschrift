@@ -1914,7 +1914,9 @@ genau das. *Technisch:* `core/eigenhand/streifen.json`, Builder
 
 **Fassung** — EINE konkrete Aufnahme eines Streifens (eine gesiebte
 Bogenzeile). Status `angenommen` · `verworfen` (nur Kartei-Protokoll,
-keine Datei) · `zurückgezogen` (explizit per `redo --retire`);
+keine Datei) · `zurueckgezogen` (explizit per `redo --retire`; ASCII, wie
+alle drei Werte — `core/eigenhand/ids.py::STATUSES`, und die API nimmt
+kein zweites Schreibweise-Paar an);
 Neuaufnahme ERGÄNZT, sie ersetzt nicht. Nur angenommene Fassungen
 zählen als Trainingsmaterial. *Technisch:*
 `fassungen/S0037/F02/{streifen.png, meta.json}`; der PNG ist

@@ -4,9 +4,15 @@ Adds redo entries to the Kartei; the print queue serves them FIRST on the
 next ``sheet.py`` run. By default the new Fassung ADDS to the existing ones
 (more repetitions = better statistics — owner decision 2026-08-22);
 ``--retire`` additionally withdraws the strip's accepted Fassungen
-(status ``zurückgezogen``: file kept, excluded from Ist counts and training
+(status ``zurueckgezogen``: file kept, excluded from Ist counts and training
 exports). A redo entry clears automatically once a new Fassung of its strip
 is accepted.
+
+The status value is the ASCII one from ``core.eigenhand.ids.STATUSES``, not the
+German spelling this file used until 2026-08-25. ``sync`` posts every Fassung's
+status verbatim in ONE request, so a single umlaut made the API refuse the
+whole batch with a 422 — and no verdict of that hand could ever be pushed
+again, since the Kartei is not meant to be edited by hand.
 
     uv run python -m tools.eigenhand.redo --hand mn-suetterlin S0037 S0055 --reason "nicht optimal"
 """
@@ -16,6 +22,7 @@ from __future__ import annotations
 import argparse
 import datetime
 
+from core.eigenhand.ids import ACCEPTED, RETIRED
 from core.eigenhand.plan import STREIFEN_JSON, load_plan
 from tools.eigenhand.kartei import load_kartei, save_kartei
 
@@ -44,8 +51,8 @@ def main(argv: list[str] | None = None) -> int:
             kartei["redo"].append({"strip": sid, "reason": args.reason, "queued": date})
         if args.retire:
             for fassung in kartei["strips"].get(sid, {}).get("fassungen", []):
-                if fassung["status"] == "angenommen":
-                    fassung["status"] = "zurückgezogen"
+                if fassung["status"] == ACCEPTED:
+                    fassung["status"] = RETIRED
                     fassung["retired"] = date
                     retired += 1
     save_kartei(args.hand, kartei)

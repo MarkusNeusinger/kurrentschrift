@@ -9,6 +9,10 @@ sind committet — Begründung in der `SOURCE.md`).
 
 ## Der Kreislauf
 
+`ADMIN_TOKEN` und `KURRENTSCHRIFT_ARCHIVE` liest die Werkzeugfamilie selbst
+aus `.env` (seit 2026-08-25) — kein `set -a; . .env` mehr davor. Eine im
+Terminal gesetzte Variable gewinnt weiterhin.
+
 ```bash
 # einmalig: Konsultationskorpora holen und den Übergangsraum bauen
 uv run python data/corpora/frequencywords-2018/fetch_frequencywords.py
@@ -17,11 +21,14 @@ uv run python -m tools.eigenhand.universe
 # einmalig je Hand, VOR der ersten Sitzung: das stehende Setup erklären.
 # Danach liest ingest Feder/Tinte/Papier von hier; Fassungen, die davor
 # eingelesen werden, tragen diese Angaben nicht.
-ADMIN_TOKEN=… uv run python -m tools.eigenhand.setup --hand mn-suetterlin \
-    --feder "Brause 361 Steno" --tinte "Platinum Carbon Black" \
-    --papier "Clairefontaine Clairalfa 90 g" --geraet scanner
+uv run python -m tools.eigenhand.setup --hand mn-suetterlin \
+    --feder "Kaweco Classic Sport, Stahlfeder M" \
+    --tinte "Platinum Carbon Ink Black (Karbonpigment)" \
+    --papier "Clairefontaine Clairalfa A4 90 g/m²" --geraet scanner
 #    auf einem zweiten Rechner nur holen:  --pull
 #    nachsehen, ohne Netz:                 --show
+#    Im Admin gesetzt? Dann hier trotzdem einmal --pull: der Browser-PUT
+#    schreibt den Server, nicht die lokale setup.json, aus der ingest liest.
 
 # 1. Bogen drucken (Warteschlange: Redo > nie belegt > wenigste Fassungen)
 uv run python -m tools.eigenhand.sheet --hand mn-suetterlin --date 2026-08-22
@@ -29,7 +36,9 @@ uv run python -m tools.eigenhand.sheet --hand mn-suetterlin --date 2026-08-22
 #    gezielte Streifen:                     --strips S0037 S0037 S0055
 #    ODER im Admin: /admin/eigenhand → „Bögen erzeugen" → PDF öffnen; danach
 #    den Bogen einmal herunterholen, damit ingest dagegen registrieren kann:
-#    ADMIN_TOKEN=… uv run python -m tools.eigenhand.pull --hand mn-suetterlin --sheet B0007
+#    uv run python -m tools.eigenhand.pull --hand mn-suetterlin --sheet B0007
+#    Drucken: FARBdrucker (die Lineatur ist Cyan), A4, „Tatsächliche Größe“ —
+#    NIE „An Seite anpassen“, siehe „Regeln“.
 
 # 2. schreiben — und JEDE gelungene Zeile gleich rechts abhaken (ein Kästchen).
 #    Der Import liest die Marken und belegt die Siebung damit vor.
@@ -41,23 +50,32 @@ uv run python -m tools.eigenhand.sheet --hand mn-suetterlin --date 2026-08-22
 # 3. einlesen (entzerrt, schneidet Zeilen, prüft QC). Feder/Tinte/Papier
 #    kommen aus dem stehenden Setup; nur eine ABWEICHUNG dieser Sitzung
 #    ausdrücklich mitgeben:  --feder "Brause 511"
-uv run python -m tools.eigenhand.ingest --hand mn-suetterlin --sheet B0001 scan.jpg
+uv run python -m tools.eigenhand.ingest --hand mn-suetterlin --sheet B0001 scan.jpg \
+    --date 2026-08-25 --keep-scan
+#    --date: OHNE ihn erben alle Fassungen das DRUCKdatum des Bogens — falsch,
+#            sobald Druck- und Schreibtag auseinanderfallen, und nichts
+#            korrigiert es später (Kartei, Archiv und DB tragen es).
+#    --keep-scan: legt den Ganzseiten-Scan unter scans/ ab. Ohne ihn ist er
+#            NIRGENDS gesichert — das Archiv überspringt import/ grundsätzlich.
 
-# 4. Siebung: Seite im Browser öffnen, je Zeile urteilen, Ergebnis laden
+# 4. Siebung: Seite im Browser öffnen, je Zeile urteilen, Ergebnis laden.
+#    Erst zu Ende sieben, dann erst denselben Bogen wieder einlesen: ingest
+#    überschreibt payload.json und alle Zeilen-Crops.
 uv run python -m tools.eigenhand.page --hand mn-suetterlin --sheet B0001
 
-# 5. Ergebnis einspielen (legt Fassungen an, aktualisiert die Kartei)
-uv run python -m tools.eigenhand.apply --hand mn-suetterlin --sheet B0001 siebung-B0001.txt
+# 5. Ergebnis einspielen (legt Fassungen an, aktualisiert die Kartei).
+#    Der Browser lädt die Datei in sein Download-Verzeichnis, nicht ins Repo.
+uv run python -m tools.eigenhand.apply --hand mn-suetterlin --sheet B0001 ~/Downloads/siebung-B0001.txt
 
 # 6. NACH JEDER SITZUNG: ins private Archiv sichern (create-only, inkrementell)
 uv run python -m tools.eigenhand.snapshot --hand mn-suetterlin --push
 
 # 7. hochschieben, damit /admin/eigenhand den Bestand zeigt (Bögen + Verdikte;
 #    idempotent, beliebig oft wiederholbar)
-ADMIN_TOKEN=… uv run python -m tools.eigenhand.sync --hand mn-suetterlin
+uv run python -m tools.eigenhand.sync --hand mn-suetterlin
 #    zusätzlich die Streifenbilder (opt-in — reservierter Datensatz; damit
 #    zeigt die Werkbank den geschriebenen Streifen und jedes einzelne Wort):
-ADMIN_TOKEN=… uv run python -m tools.eigenhand.sync --hand mn-suetterlin --mit-streifen
+uv run python -m tools.eigenhand.sync --hand mn-suetterlin --mit-streifen
 
 # Stand & nächster Druck
 uv run python -m tools.eigenhand.report --hand mn-suetterlin
@@ -69,6 +87,27 @@ uv run python -m tools.eigenhand.redo --hand mn-suetterlin S0037 S0055 --reason 
 
 ## Regeln
 
+- **Farbdrucker, 100 %, und einmal nachmessen.** Die Lineatur ist Cyan —
+  ein Mono-Laser druckt daraus Grau unbekannter Luminanz, und die Zusage
+  „eine gedruckte Linie kann nie als Tinte zählen" gilt dann nicht mehr.
+  Und: ein skalierter Druck („An Seite anpassen") wird von der Entzerrung
+  STILL weggerechnet — die Passmarken werden ja auf ihre Soll-Millimeter
+  abgebildet. Es gibt keine Fehlermeldung, nur ein um denselben Faktor
+  verzogenes Verhältnis von Strichbreite zu x-Höhe, für die ganze
+  Kampagne. Einziger Prüfstein ist das Lineal auf dem ersten Blatt:
+  Passmarken-Zentren **196,0 mm** waagerecht (7,0 → 203,0) und
+  **283,0 mm** senkrecht (7,0 → 290,0). Die Quadrate reichen bis 3 mm an
+  den Blattrand — ein Drucker mit größerem unbedruckbarem Rand beschneidet
+  sie, und dann bricht der Import laut ab.
+- **Ein Bogen lässt sich nicht zurücknehmen.** `sheet` vergibt bei jedem
+  Lauf eine neue Bogen-ID und nimmt Streifen aus der Warteschlange; es
+  gibt kein Un-Drucken, und die Kartei wird nicht von Hand editiert. Der
+  Probedruck für den Skalierungstest ist also ein Bogen, den du auch
+  beschreiben solltest.
+- **Ein Verwurf ist endgültig.** `--retire` fasst nur ANGENOMMENE
+  Fassungen an. Eine irrtümlich verworfene Zeile — ein vergessener Haken,
+  ein Fehlklick in der Siebung — lässt sich nicht nachträglich annehmen;
+  der Streifen muss neu gedruckt und neu geschrieben werden.
 - **Stiftmarke schlägt Gedächtnis:** das Kästchen am rechten Zeilenrand
   direkt nach dem Schreiben abhaken, wenn die Zeile taugt — Haken oder
   Kreuz heißt angenommen, leer heißt verworfen. Dann steht das Urteil
