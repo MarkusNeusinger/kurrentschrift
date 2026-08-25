@@ -104,12 +104,21 @@ def _push_strips(base: str, token: str, hand: str, root: Path, kartei: dict, sen
     the same file, and re-sending it would be bytes over the wire for nothing.
     A file whose hash disagrees with the Kartei is not sent at all — that is a
     local corruption, and the server is not the place to discover it.
+
+    An accepted Fassung whose ``streifen.png``/``meta.json`` is MISSING is not
+    skipped quietly (Copilot review, PR #410): `apply.py` files both for every
+    accepted row, so their absence means a damaged data root or a snapshot that
+    was filed incomplete — and on the restore path that is exactly the case
+    where a silent skip would report success while leaving strips out of the
+    DB. Everything that IS there still goes up (a single gap must not hide the
+    rest), then the run fails naming what was missing.
     """
     stored = {
         f"{row['strip']}/{row['fassung']}": row["sha256"]
         for row in request_json("GET", f"{base}/eigenhand/strips/{hand}", token).get("strips", [])
     }
     sent = skipped = 0
+    missing: list[str] = []
     for strip, record in sorted(kartei["strips"].items()):
         for f in record.get("fassungen", []):
             if f["status"] != "angenommen" or f["sheet"] not in sendable:
@@ -117,6 +126,8 @@ def _push_strips(base: str, token: str, hand: str, root: Path, kartei: dict, sen
             png_file = root / "fassungen" / strip / f["id"] / "streifen.png"
             meta_file = png_file.with_name("meta.json")
             if not png_file.exists() or not meta_file.exists():
+                absent = [p.name for p in (png_file, meta_file) if not p.exists()]
+                missing.append(f"{strip}/{f['id']} ({', '.join(absent)})")
                 continue
             png = png_file.read_bytes()
             digest = hashlib.sha256(png).hexdigest()
@@ -146,6 +157,14 @@ def _push_strips(base: str, token: str, hand: str, root: Path, kartei: dict, sen
                 },
             )
             sent += 1
+    if missing:
+        raise SystemExit(
+            f"{len(missing)} accepted Fassung(en) of {hand} have no filed strip: {', '.join(missing)}\n"
+            f"{sent} strip(s) were uploaded before this; the run is INCOMPLETE. `apply.py` files "
+            "streifen.png and meta.json for every accepted row, so this is a damaged data root or an "
+            "archive snapshot that was filed incomplete — check the source before treating the DB copy "
+            "as whole."
+        )
     return sent, skipped
 
 

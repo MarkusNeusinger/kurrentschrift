@@ -21,7 +21,9 @@ import io
 
 import pytest
 from PIL import Image
+from sqlalchemy import inspect
 
+from core.database import EigenhandRepository
 from core.eigenhand import bogen
 from core.eigenhand.plan import load_plan
 from tests.api_harness import Harness
@@ -471,6 +473,25 @@ class TestStrips:
         assert clash.status == 409
         served = await api.client.request("GET", f"/eigenhand/strips/{HAND}/S0001/F01", headers=api.admin_headers())
         assert served.body == stored["png"]
+
+    @pytest.mark.asyncio
+    async def test_the_no_op_check_never_reads_the_stored_bytes(self, api: Harness):
+        """A re-run of a sync must not pull every stored PNG back out of the DB.
+
+        The check compares hashes, so it has no use for the pixels — and a hand
+        with a few waves behind it would otherwise move tens of megabytes for
+        nothing on every repeat push (Copilot review, PR #410).
+        """
+        stored = await _store_strip(api)
+        async with api.session_maker() as session:
+            row = await EigenhandRepository(session).strip_meta(HAND, "S0001", "F01")
+            assert row is not None and row.sha256 == hashlib.sha256(stored["png"]).hexdigest()
+            # The blob is deferred: it is not in the loaded state, and touching
+            # it in this async session would have to lazy-load (which raises).
+            assert "png" not in inspect(row).dict
+
+        again = await _put_strip(api, stored["png"], stored)
+        assert again.status == 201 and again.json()["stored"] is False
 
     @pytest.mark.asyncio
     async def test_pixels_without_a_recorded_fassung_are_refused(self, api: Harness):

@@ -621,7 +621,9 @@ async def write_strip(
             ),
         )
 
-    existing = await repo.strip(hand, strip, fassung)
+    # Metadata only: this compares hashes, and reading the PNG to do it would
+    # pull ~350 KB off the DB for every already-stored strip on a sync re-run.
+    existing = await repo.strip_meta(hand, strip, fassung)
     if existing is not None:
         if existing.sha256 != digest:
             raise HTTPException(

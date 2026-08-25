@@ -40,8 +40,11 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   stays the master, and `sync --from <archive snapshot>` replays it —
   the SAME push code as the everyday sync, so the restore path cannot rot
   unnoticed. `sync --mit-streifen` (opt-in) carries the images, skipping
-  by sha256 what the server already holds and refusing a filed strip whose
-  bytes no longer match its Kartei record. `tools/dbsnapshot` takes the
+  by sha256 what the server already holds, refusing a filed strip whose
+  bytes no longer match its Kartei record, and — after pushing everything
+  that is there — failing loudly when an accepted Fassung has no filed
+  strip at all: on the restore path a silent skip would report success
+  while leaving strips out of the DB (Copilot review). `tools/dbsnapshot` takes the
   `eigenhand_*` tables along WITHOUT the blobs plus a `strip_hashes`
   manifest — the mechanical check that DB and archive have not drifted
   apart. Drilled 2026-08-25 against a throwaway PostgreSQL with the

@@ -198,6 +198,28 @@ class TestStripUpload:
         _run(monkeypatch, fake, "--mit-streifen")
         assert fake.puts("strips") == []
 
+    def test_an_accepted_fassung_without_its_file_fails_the_run(self, dataroot, monkeypatch):
+        # A silent skip here is the dangerous case: on the restore path it would
+        # report success while leaving strips out of the DB. `apply.py` files a
+        # PNG for every accepted row, so a missing one is a damaged source.
+        _build(dataroot)
+        (dataroot / HAND / "fassungen" / "S0001" / "F01" / "streifen.png").unlink()
+        with pytest.raises(SystemExit, match="have no filed strip"):
+            _run(monkeypatch, _FakeApi(), "--mit-streifen")
+
+    def test_what_is_there_still_goes_up_before_the_run_fails(self, dataroot, monkeypatch):
+        # One gap must not hide the rest — the strips that exist are pushed,
+        # and only then does the run report itself incomplete.
+        _build(dataroot)
+        _build(dataroot, strip="S0002", shade=180)
+        (dataroot / HAND / "fassungen" / "S0002" / "F01" / "meta.json").unlink()
+        fake = _FakeApi()
+        with pytest.raises(SystemExit, match="S0002/F01"):
+            _run(monkeypatch, fake, "--mit-streifen")
+        assert [body["sha256"] for body in fake.puts("strips")] == [
+            hashlib.sha256(_png()).hexdigest()  # S0001's, the one that was complete
+        ]
+
 
 class TestRestoreFromArchive:
     def test_a_snapshot_directory_is_read_exactly_like_the_working_root(self, dataroot, tmp_path, monkeypatch):

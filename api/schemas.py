@@ -1045,7 +1045,8 @@ class EigenhandSetupIn(BaseModel):
 
     Nib, ink and paper are photometric parameters of a whole campaign: keeping
     them in one place is what makes „identisch weiterschreiben" a lookup rather
-    than a memory exercise. `geraet` is the capture device (`scanner` · `foto`).
+    than a memory exercise. `geraet` is the capture device — the same two words
+    `ingest` and the CLI take: `scanner` · `kamera`.
     """
 
     style: str | None = None

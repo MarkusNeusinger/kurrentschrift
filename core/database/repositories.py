@@ -830,13 +830,24 @@ class EigenhandRepository:
 
     _STRIP_META_ONLY = (defer(EigenhandStrip.png),)
 
+    def _one_strip(self, hand: str, strip: str, fassung: str):
+        return select(EigenhandStrip).where(
+            EigenhandStrip.hand == hand, EigenhandStrip.strip == strip, EigenhandStrip.fassung == fassung
+        )
+
     async def strip(self, hand: str, strip: str, fassung: str) -> EigenhandStrip | None:
         """One strip WITH its bytes — only the image endpoint calls this."""
-        result = await self.session.execute(
-            select(EigenhandStrip).where(
-                EigenhandStrip.hand == hand, EigenhandStrip.strip == strip, EigenhandStrip.fassung == fassung
-            )
-        )
+        result = await self.session.execute(self._one_strip(hand, strip, fassung))
+        return result.scalar_one_or_none()
+
+    async def strip_meta(self, hand: str, strip: str, fassung: str) -> EigenhandStrip | None:
+        """The same row WITHOUT its bytes — for callers that only need the hash.
+
+        The upload's idempotency check compares sha256; reading the PNG to do
+        that would pull ~350 KB per already-stored strip off the wire on every
+        re-run of a sync (Copilot review, PR #410).
+        """
+        result = await self.session.execute(self._one_strip(hand, strip, fassung).options(*self._STRIP_META_ONLY))
         return result.scalar_one_or_none()
 
     async def strips_of(self, hand: str, strip: str | None = None) -> "list[EigenhandStrip]":

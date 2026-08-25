@@ -265,7 +265,11 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   Fassungen samt Verdikt und effektivem Setup) über die admin-gesicherte
   HTTP-Schnittstelle hoch; **`--mit-streifen`** nimmt zusätzlich die
   Streifenbilder mit (opt-in — reservierter Datensatz, und schon
-  gespeicherte Bytes werden per SHA256 übersprungen). `pull --sheet B0007`
+  gespeicherte Bytes werden per SHA256 übersprungen). Fehlt zu einer
+  angenommenen Fassung die Datei, wird erst alles Vorhandene hochgeschoben
+  und der Lauf dann mit Namen der Fehlstellen abgebrochen: ein stiller
+  Übersprung würde gerade auf dem Wiederherstellungsweg Erfolg melden und
+  Streifen weglassen. `pull --sheet B0007`
   holt einen im Admin gedruckten Bogen (Layout + PDF) auf die Platte,
   damit `ingest` dagegen registrieren kann. Beide brauchen `ADMIN_TOKEN`;
   `--api` zeigt auf eine andere Instanz.
