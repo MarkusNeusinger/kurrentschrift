@@ -151,7 +151,7 @@ def build_layout(
                 "x0_mm": round(x0, 3),
                 "x1_mm": round(x1, 3),
             }
-            for word, (x0, x1) in zip(words, geometry.boxes_for_row(words, preset, MARGIN_MM, forms), strict=True)
+            for word, (x0, x1) in zip(words, geometry.boxes_for_row(words, preset, MARGIN_MM, forms=forms), strict=True)
         ]
         rows.append(
             {
