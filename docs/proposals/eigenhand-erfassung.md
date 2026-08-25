@@ -295,6 +295,48 @@ Die Tinte übersteht den Kanalgriff: Schwarz 0,10 und Eisengallus-Braun
 und ist deshalb ausgeschlossen — der Bogen wird mit schwarzer oder brauner
 Tinte geschrieben (README „Regeln").
 
+**Was am Fuß des Bogens steht — und warum** (überarbeitet 2026-08-25, nach
+dem ersten Probedruck). Die Fußzeile trug bis dahin drei Felder, von denen
+zwei nichts leisteten: die Maschinen-ID ein zweites Mal wörtlich (gelesen
+wird nur die im KOPF — `ingest` schneidet die oberen 14 mm als
+Fehlablage-Wächter) und einen Commit, der auf jedem über die deployte API
+gedruckten Bogen leer ist (`.git` steht in `.dockerignore`, `git` ist im
+Image nicht installiert). Gleichzeitig stand von den Regeln, die der
+Schreiber UNWIEDERBRINGLICH verletzen kann, keine einzige auf dem Papier —
+sie standen in `data/samples/own-hand/README.md`, also in einer Datei, die
+beim Eintauchen der Feder niemand offen hat. Jetzt drucken zwei Zeilen über
+der Legende genau diese drei:
+
+- **Tinte schwarz oder braun, nie blau** — Blau liegt mit 0,55 exakt auf
+  `INK_THRESHOLD`; ein blauer Haken liest als leeres Kästchen.
+- **In Farbe scannen, mind. 300 dpi** — sonst greift der Kanaltrick nicht.
+- **Erst scannen, dann schneiden** — ein geschnittener Streifen trägt keine
+  Passmarke mehr, also ist danach KEIN Import mehr möglich, und der Bogen
+  lässt sich nicht neu drucken (neue ID, Streifen aus der Warteschlange).
+- dazu die Verdikt-Regel: **Kästchen rechts ankreuzen, leer = verworfen.**
+
+Rechts unten steht seither die **Lineal-Probe** („Markenmitten 190,0 ×
+277,0 mm — ohne Skalierung drucken"), aus `FIDUCIAL_CENTERS` abgeleitet
+statt ausgeschrieben: die einzige Abwehr gegen den skalierten Druck gehört
+auf das Blatt, das der Mensch mit dem Lineal in der Hand hält.
+
+**Der `cfg`-Stempel ist jetzt der Geometrie-Fingerabdruck des Blattes.** Er
+war vorher ein Hash über eine handgepflegte Konstantenliste unter einem
+Kommentar, der versprach, „JEDE Konstante, die einen gedruckten Kasten
+bewegt" zu erfassen. Das tat er nicht, und er scheiterte so, wie solche
+Listen immer scheitern: der Umzug in den bedruckbaren Bereich verschob alle
+vier Passmarken um 3 mm, jede Zeile um 3 mm nach unten und die
+Stiftkasten-Spalte — und der gedruckte Stempel blieb durchweg
+`aa9f6a5566`. Zwei Bögen, deren Bezugsrahmen sich um 3 mm unterscheidet,
+waren an genau der Marke nicht unterscheidbar, die dafür da ist. Gehasht
+wird deshalb jetzt das `layout` selbst ohne seinen `provenance`-Block: es
+trägt die Passmarken-Zentren, jedes `cut_mm`, `band_mm`, `mark_mm` und jede
+Kastenkante, kann also konstruktiv nichts vergessen — und reagiert nicht
+mehr auf Dinge, die dieses Blatt gar nicht druckt (eine geänderte Advance
+für eine Glyphe, die nicht darauf steht, bewegte vorher den Stempel jedes
+Bogens). Kein voller Reproduktionsschlüssel: Farben, Schriftgrößen und der
+Legendenwortlaut liegen in Modulkonstanten und stehen nicht im Layout.
+
 Klartext-Labels stehen in normaler Latin-Type unter den Kästen
 (Leitsatz Lesbarkeit; WinAnsi hat ohnehin kein ſ). Als Schreib-Hinweis
 zeigt das Label die Fugen-Form, wo eine existiert (`Donners*|tag`: `|` =

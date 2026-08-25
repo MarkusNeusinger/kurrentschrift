@@ -31,7 +31,6 @@ import hashlib
 import json
 import math
 import subprocess
-from dataclasses import asdict
 
 from core.config import REPO_ROOT
 from core.eigenhand import coverage, geometry, pdfgen
@@ -52,10 +51,35 @@ LABEL_GAP_MM = 4.6
 HEADER_SIZE_MM = 3.5
 FOOTER_SIZE_MM = 2.8
 MARK_CAPTION_SIZE_MM = 2.4
-MARK_CAPTION = "ok"  # one box per row: ticked = ok, empty = not ok
+MARK_CAPTION = "ok?"  # one box per row: ticked = ok, empty = not — the rule is in RULES ok
 # The label hints, spelled out on the sheet (owner asked what Donners*|tag
 # means — if it needs asking, it needs printing).
-LEGEND = "| = Wortfuge (zusammengesetztes Wort)   * = rundes s statt langem ſ"
+#
+# The wording carries the long s WITHOUT printing it. It used to read "statt
+# langem ſ" and came out of the printer as "statt langem ?" (found on the
+# first proof sheet, 2026-08-25): WinAnsi has no ſ, and the note about that
+# sits four lines above in this very file — written about the word labels,
+# never applied to the legend that was added later. The one character the
+# sentence exists to explain was the one the font cannot draw.
+# Both halves in the imperative now. The "|" half used to be a gloss ("| =
+# Wortfuge") — a definition, which leaves open whether the mark gets written.
+# It must not: a stroke or a gap drawn at the Fuge is ink inside the
+# Schnittband that is not part of the word, and the meta.json beside it goes on
+# claiming "Donnerstag".
+LEGEND = "| nur Hinweis, nicht mitschreiben (zusammengesetztes Wort)   * = hier rundes s, nicht das lange"
+
+# Printed above the legend on every sheet. Not a summary of the README — only
+# the failures that cannot be undone once they have happened.
+RULES = (
+    "Tinte schwarz oder braun, nie blau · in Farbe scannen, mind. 300 dpi",
+    "Erst scannen, dann schneiden · Zeile gelungen: Kästchen rechts ankreuzen (leer = verworfen)",
+)
+
+# The baselines of the sheet's foot, mm from the page top: the rules first, the
+# legend under them, the provenance last and smallest in meaning.
+FOOTER_BASELINE_MM = geometry.A4_HEIGHT_MM - 9.0
+LEGEND_BASELINE_MM = geometry.A4_HEIGHT_MM - 14.0
+RULES_BASELINE_MM = LEGEND_BASELINE_MM - 5.0 * len(RULES)
 
 
 def _git_commit() -> str:
@@ -66,6 +90,33 @@ def _git_commit() -> str:
         return done.stdout.strip() if done.returncode == 0 else ""
     except (OSError, subprocess.SubprocessError):
         return ""
+
+
+def geometry_digest(layout: dict) -> str:
+    """The `cfg` stamp: a fingerprint of every millimetre THIS sheet prints.
+
+    Taken over the layout itself, minus its provenance block. That is not a
+    detail of implementation but the whole point: the previous version hashed a
+    hand-kept list of constants (`preset`, `MARGIN_MM`, the advances, the two
+    box spacings) under a comment promising it covered "EVERY constant that
+    moves a printed box". It did not, and the way it failed is the way such
+    lists always fail — PR #412 moved all four Passmarken by 3 mm, pushed every
+    row 3 mm down and shifted the verdict column, and the printed stamp stayed
+    `aa9f6a5566` through all of it. Two sheets whose registration frame differs
+    by 3 mm were indistinguishable by the mark that exists to distinguish them.
+
+    The layout already carries what the stamp is for: the fiducial centres the
+    rectification maps onto, every `cut_mm`, `band_mm` and `mark_mm`, and every
+    box edge. Hashing it can forget nothing, and it stops reacting to things
+    this sheet does not print — an advance for a glyph that is not on it used to
+    move the stamp of every Bogen.
+
+    It is not a full reproduction key: colours, text sizes and the legend
+    wording live in module constants and are not in the layout (see
+    `eigenhand-erfassung.md` §5). It is a geometry fingerprint, and it says so.
+    """
+    without_provenance = {k: v for k, v in layout.items() if k != "provenance"}
+    return hashlib.sha256(json.dumps(without_provenance, sort_keys=True).encode()).hexdigest()[:10]
 
 
 def hint_label(word: str, fugen: str | None) -> str:
@@ -170,21 +221,7 @@ def build_layout(
             }
         )
 
-    # The fingerprint has to cover EVERY constant that moves a printed box —
-    # the per-key advances plus the fallbacks they fall back to and the two
-    # spacings — otherwise a changed width model prints different geometry
-    # under an unchanged `cfg` stamp.
-    config = {
-        "preset": asdict(preset),
-        "margin_mm": MARGIN_MM,
-        "advances": dict(sorted(geometry.ADVANCE_XH.items())),
-        "advance_default_xh": geometry.ADVANCE_DEFAULT_XH,
-        "advance_capital_xh": geometry.ADVANCE_CAPITAL_XH,
-        "box_lead_mm": geometry.BOX_LEAD_MM,
-        "box_gap_mm": geometry.BOX_GAP_MM,
-    }
-    config_hash = hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest()[:10]
-    return {
+    layout = {
         "format": LAYOUT_FORMAT,
         "sheet": sheet_id,
         "hand": hand,
@@ -197,13 +234,14 @@ def build_layout(
             "centers_mm": {k: list(v) for k, v in geometry.FIDUCIAL_CENTERS.items()},
         },
         "rows": rows,
-        "provenance": {
-            "date": date,
-            "commit": _git_commit(),
-            "config_hash": config_hash,
-            "streifen_sha256": hashlib.sha256(STREIFEN_JSON.read_bytes()).hexdigest(),
-        },
     }
+    layout["provenance"] = {
+        "date": date,
+        "commit": _git_commit(),
+        "config_hash": geometry_digest(layout),
+        "streifen_sha256": hashlib.sha256(STREIFEN_JSON.read_bytes()).hexdigest(),
+    }
+    return layout
 
 
 def render_pdf(layout: dict) -> bytes:
@@ -305,22 +343,58 @@ def render_pdf(layout: dict) -> bytes:
     for tx0, ty0, tx1, ty1 in geometry.page_cut_ticks(page_cuts):
         lines["cut"].append(pdfgen.Line(tx0, ty0, tx1, ty1, cut_color, cut_width, None))
 
+    # The three rules the writer can break IRREVERSIBLY, printed on the one
+    # object that is in front of him when he dips the pen. They used to live
+    # only in data/samples/own-hand/README.md — a file nobody has open at that
+    # moment. Blue ink sits exactly on the ink threshold; a sheet scanned after
+    # cutting cannot be registered at all, because the strips carry no
+    # Passmarke; and a forgotten tick discards the row for good.
+    for index, rule in enumerate(RULES):
+        texts.append(pdfgen.Text(meta_margin, RULES_BASELINE_MM + 5.0 * index, FOOTER_SIZE_MM, rule, style["meta"][0]))
+
     # Legend for the two hint marks in the labels — they are the ONE place the
     # sheet asks for something the default shaping rules do not give, so the
     # sheet has to say what they mean rather than assume the writer remembers.
     if any(any(mark in box["label"] for mark in ("*", "|")) for row in layout["rows"] for box in row["boxes"]):
-        texts.append(pdfgen.Text(meta_margin, geometry.A4_HEIGHT_MM - 14.0, FOOTER_SIZE_MM, LEGEND, style["meta"][0]))
+        texts.append(pdfgen.Text(meta_margin, LEGEND_BASELINE_MM, FOOTER_SIZE_MM, LEGEND, style["meta"][0]))
 
     prov = layout["provenance"]
-    footer_left = f"kurrentschrift eigenhand · {prov['commit'] or 'no-commit'} · cfg {prov['config_hash']}"
-    texts.append(pdfgen.Text(meta_margin, geometry.A4_HEIGHT_MM - 9.0, FOOTER_SIZE_MM, footer_left, style["meta"][0]))
-    footer_right = machine_id
+    built = f" · {prov['commit']}" if prov["commit"] else ""
+    footer_left = f"kurrentschrift.ink · eigenhand{built} · cfg {prov['config_hash']}"
+    texts.append(pdfgen.Text(meta_margin, FOOTER_BASELINE_MM, FOOTER_SIZE_MM, footer_left, style["meta"][0]))
+    # The ruler check, right where the ruler is. A uniformly scaled print is the
+    # one failure nothing in the scan can see (geometry.py::PRINT_SAFE_MM), and
+    # its only defence is these two numbers — which until now were printed
+    # nowhere and lived in a README. The machine id used to stand here instead,
+    # a second verbatim copy of the header, read by nobody: `ingest` crops the
+    # top 14 mm for the misfiling guard, never the foot.
+    centers = layout["fiducials"]["centers_mm"]
+    span_x = centers["tr"][0] - centers["tl"][0]
+    span_y = centers["bl"][1] - centers["tl"][1]
+    # German decimal comma, applied to the numbers only — a blanket replace on
+    # the whole line would eat any full stop the wording later gains.
+    span = f"{span_x:.1f} × {span_y:.1f}".replace(".", ",")
+    footer_right = f"Markenmitten {span} mm — ohne Skalierung drucken"
     footer_x = geometry.A4_WIDTH_MM - meta_margin - pdfgen.helv_width_mm(footer_right, FOOTER_SIZE_MM)
-    texts.append(pdfgen.Text(footer_x, geometry.A4_HEIGHT_MM - 9.0, FOOTER_SIZE_MM, footer_right, style["meta"][0]))
+    texts.append(pdfgen.Text(footer_x, FOOTER_BASELINE_MM, FOOTER_SIZE_MM, footer_right, style["meta"][0]))
 
     ordered_lines = [
         line for role in ("slant", "ascender", "descender", "waist", "baseline", "box", "cut") for line in lines[role]
     ]
+    # Refuse rather than print a "?". The writer substitutes one for anything
+    # WinAnsi cannot encode, which is the right call for a general PDF writer
+    # and the wrong one for THIS page: a sheet is read once, by someone holding
+    # a pen, and a "?" where a word or a hint belongs is a defect that reaches
+    # paper silently. Checked over the composed page, so it covers the strip
+    # ids and the word labels — which come from the plan — as well as the
+    # constants in this file.
+    for item in texts:
+        missing = pdfgen.undrawable(item.text)
+        if missing:
+            raise SystemExit(
+                f"cannot print {item.text!r}: the sheet font (WinAnsi) has no "
+                f"{', '.join(repr(c) for c in dict.fromkeys(missing))} — reword it, or spell the word plainly"
+            )
     return pdfgen.build_pdf(rects, ordered_lines, texts)
 
 
