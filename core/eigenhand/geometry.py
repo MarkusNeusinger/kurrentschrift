@@ -22,16 +22,36 @@ from core.shaping import shape_word
 A4_WIDTH_MM = 210.0
 A4_HEIGHT_MM = 297.0
 
-# Corner fiducials: solid black squares centered inside typical printer
-# margins; the top-left one carries a white hole (donut) so the importer can
-# recover page orientation from any rotation.
+# The printable area the sheet REQUIRES of the printer — nothing is drawn
+# closer to a page edge than this (pinned by a test over the composed PDF).
+#
+# Raised from an undeclared 3.0 to 6.0 on 2026-08-25, because 3.0 mm is not a
+# margin any office laser can hold: HP LaserJets refuse to print within
+# 4.23 mm of the edge, and consumer devices sit between roughly 3.4 and 5 mm.
+# What that cost was not a warning but a silent bias. A clipped Passmarke is
+# still square and still solid, so it passes every shape test the detector
+# has; only its centroid has moved inward. On an HP the four 8 mm squares
+# come out 6.77 mm, each centroid shifts 0.615 mm toward the page centre, and
+# the rectification — which maps the four centroids onto their nominal
+# millimetres — then stretches the whole sheet by +0.63 % in x and +0.44 % in
+# y. Anisotropic, systematic, and invisible: every stroke width, x-height and
+# slant measured from that scan would carry it, for the whole campaign.
+#
+# 6.0 clears the HP number by 1.77 mm and the worst consumer margin by 1.0.
+PRINT_SAFE_MM = 6.0
+
+# Corner fiducials: solid black squares, as far out as the safe area allows so
+# the registered quad is as large as possible (a bigger quad means a smaller
+# angular error per pixel of centroid noise); the top-left one carries a white
+# hole (donut) so the importer can recover page orientation from any rotation.
 FIDUCIAL_SIZE_MM = 8.0
 FIDUCIAL_HOLE_MM = 3.0
+FIDUCIAL_INSET_MM = PRINT_SAFE_MM + FIDUCIAL_SIZE_MM / 2  # centre distance from each edge
 FIDUCIAL_CENTERS: dict[str, tuple[float, float]] = {
-    "tl": (7.0, 7.0),
-    "tr": (203.0, 7.0),
-    "bl": (7.0, 290.0),
-    "br": (203.0, 290.0),
+    "tl": (FIDUCIAL_INSET_MM, FIDUCIAL_INSET_MM),
+    "tr": (A4_WIDTH_MM - FIDUCIAL_INSET_MM, FIDUCIAL_INSET_MM),
+    "bl": (FIDUCIAL_INSET_MM, A4_HEIGHT_MM - FIDUCIAL_INSET_MM),
+    "br": (A4_WIDTH_MM - FIDUCIAL_INSET_MM, A4_HEIGHT_MM - FIDUCIAL_INSET_MM),
 }
 FIDUCIAL_DONUT = "tl"
 
@@ -73,8 +93,17 @@ CUT_TICK_GAP_MM = 1.5
 # The first row starts lower than the side margin: its Schnittband's top cut
 # mark would otherwise sit level with the top Passmarken, and a hairline that
 # blurs into a Passmarke on a scan drags its centroid — and with it every
-# millimetre the importer computes.
-TOP_MARGIN_MM = 26.0
+# millimetre the importer computes. 26.0 kept 6.4 mm between the top cut ticks
+# and the marks; when the marks moved down to clear PRINT_SAFE_MM that fell to
+# 3.4, so this follows them down by the same 3 mm and the clearance is what it
+# was. It costs no row: seven still fit (`max_rows`, pinned by a test).
+TOP_MARGIN_MM = 29.0
+# Header, footer and legend keep this much clear of a Passmarke. They share the
+# marks' y band, so the distance is horizontal — which is why they are NOT set
+# from the writing margin: at 15.0 mm they cleared the old marks by exactly
+# this much, and would have ended up 1.0 mm from the new ones.
+META_CLEAR_MM = 4.0
+META_MARGIN_MM = FIDUCIAL_INSET_MM + FIDUCIAL_SIZE_MM / 2 + META_CLEAR_MM
 # Per-row verdict box in the RIGHT margin (owner, 2026-08-23: mark each
 # strip ok/not-ok with the pen right away), OUTSIDE the Schnittband: the tick
 # is bookkeeping, not training data, so it must not end up on the strip. The
@@ -86,7 +115,14 @@ TOP_MARGIN_MM = 26.0
 # failure mode of a forgotten tick is the harmless one — the strip goes
 # back into the print queue instead of being filed unreviewed.
 MARK_BOX_MM = 5.0
-MARK_COL_X0_MM = 202.0
+# The column starts where the right cut ticks start, not beyond them (moved in
+# from 202.0 on 2026-08-25): past the ticks there is no room left inside
+# PRINT_SAFE_MM, and there does not need to be — the ticks mark the two
+# CORNERS of the Schnittband while the box sits in the middle of the row, so
+# they share a lane in x and never meet in y (pinned by a test, and by the
+# clearance `read_pen_mark` needs around the box interior). Everything right
+# of the cut line is margin furniture either way.
+MARK_COL_X0_MM = CUT_X1_MM + CUT_TICK_GAP_MM
 FOOTER_ZONE_MM = 12.0
 BOX_GAP_MM = 3.0
 BOX_LEAD_MM = 10.0  # entry room before the first letter (Anstrich) + slack

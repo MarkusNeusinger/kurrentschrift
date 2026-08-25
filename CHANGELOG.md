@@ -14,6 +14,79 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Fixed
 
+- **The sheet's legend printed a "?" where the long s belonged.** It read
+  "rundes s statt langem ſ" and came off the printer as "statt langem ?":
+  WinAnsi has no ſ, and the note saying exactly that sat four lines above the
+  legend in the same file, written about the word labels and never applied to
+  the legend added later. The one character the sentence exists to explain was
+  the one the font cannot draw. Reworded so it needs no special glyph, and the
+  substitution can no longer reach paper: the writer still maps an
+  unencodable character to "?" — right for a general PDF writer — but
+  `render_pdf` now refuses the page instead, checked over the composed sheet so
+  it covers the strip ids and word labels from the plan as well as the
+  constants. Both halves of the legend are imperative now; the "|" half was a
+  gloss that never said the mark is not to be written.
+
+- **The `cfg` stamp is a geometry fingerprint again, not a promise.** It hashed
+  a hand-kept list of constants under a comment claiming it covered "EVERY
+  constant that moves a printed box" — and it failed the way such lists always
+  do: the printable-area pass moved all four Passmarken by 3 mm, pushed every
+  row down and shifted the verdict column, and the printed stamp stayed
+  `aa9f6a5566` throughout. Two sheets whose registration frame differs by 3 mm
+  were indistinguishable by the mark that exists to distinguish them. It now
+  hashes the layout minus its provenance block: the layout already carries the
+  fiducial centres, every `cut_mm`, `band_mm` and `mark_mm` and every box edge,
+  so it can forget nothing — and it no longer reacts to things the sheet does
+  not print, such as an advance for a glyph that is not on it.
+
+- **The Bogen prints the rules that cannot be undone, and its own ruler
+  check.** Ink colour, colour scan, scan-before-cut and the verdict-box rule
+  lived only in `data/samples/own-hand/README.md` — a file nobody has open when
+  the pen goes into the ink, and each of them costs a sheet that cannot be
+  reprinted. They are two lines above the legend now. The ruler check
+  ("Markenmitten 190,0 × 277,0 mm — ohne Skalierung drucken", derived from
+  `FIDUCIAL_CENTERS` rather than spelled out) took the place of the machine id,
+  which stood in the footer as a second verbatim copy of the header and was
+  read by nobody: `ingest` crops the top 14 mm for the misfiling guard, never
+  the foot. The footer also stops printing "no-commit" — every sheet printed
+  through the deployed API said that, since `.git` is in `.dockerignore` and
+  the image has no `git`.
+
+- **The Bogen now fits the printer it is printed on.** Its Passmarken sat
+  3 mm from the page edge — closer than any office laser can print: HP
+  LaserJets refuse the outer 4.23 mm, consumer devices run 3.4 to 5. The
+  cost would not have been an error but a silent skew, because a clipped
+  mark is still square and still solid and passes every shape test the
+  detector has; only its centroid moves inward. On an HP the four 8 mm
+  squares come out at 6.77 mm, each centroid pulled 0.615 mm toward the
+  page centre, and the rectification — which maps exactly those centroids
+  onto their nominal millimetres — then stretches the sheet by +0.63 % in x
+  and +0.44 % in y. Anisotropic, systematic and campaign-wide. The sheet now
+  declares the printable area it needs (`PRINT_SAFE_MM` = 6.0) and nothing
+  is drawn closer, checked on the composed sheet for all three scripts
+  rather than on the constants. The marks go as far out as that allows
+  (centres at 10 mm, spans 190 × 277 instead of 196 × 283) because a larger
+  registered quad means less angular error per pixel of centroid noise; the
+  header, footer and legend move to their own `META_MARGIN_MM` so they keep
+  the 4 mm they had off the marks; `TOP_MARGIN_MM` follows the marks down by
+  the same 3 mm so the top cut ticks keep their 6.4 mm; and the verdict box
+  moves into the right cut-tick lane, which it never meets because the ticks
+  mark the Schnittband's corners and it sits in the middle of the row. Seven
+  rows still fit, the writing width is still 180 mm, and the golden PDF is
+  re-baselined. No sheet had been printed yet, so nothing splits into
+  cohorts — and a per-sheet layout means an already-printed one would keep
+  its own geometry anyway, which is now pinned by a test.
+
+- **A clipped print is reported instead of quietly absorbed.** Mark size and
+  mark spacing come off the same printer, so their ratio is fixed by the
+  layout and survives any uniform scaling: `fiducial.check_mark_size` reads
+  the size the measured spacing implies and `ingest` names every mark that
+  falls materially short. The other failure — a driver's "fit to printable
+  area" — is invisible to any measurement taken from the scan, since marks
+  and spacing shrink together; that one is a ruler on the paper, and both
+  the proposal and the operating README now say so instead of implying the
+  import would catch it.
+
 - **The three blockers between the eigenhand chain and the first real
   Bogen.** All of them were invisible to the synthetic smoke test, because
   that test neither crosses Cloudflare nor runs inside the deploy image.

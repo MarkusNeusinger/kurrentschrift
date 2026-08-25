@@ -206,6 +206,24 @@ def winansi(text: str) -> str:
     return "".join(out)
 
 
+def undrawable(text: str) -> list[str]:
+    """The characters of ``text`` this font cannot draw, in order of appearance.
+
+    ``winansi`` substitutes "?" for them, which keeps the writer total but is
+    exactly wrong for a sheet: a "?" where meaning belongs is worse than no
+    sheet, and nobody proofreads a page of faint rulings. So the writer stays
+    forgiving and the CALLER gets a way to refuse — see
+    ``bogen.render_pdf``, which does.
+    """
+    missing = []
+    for ch in text:
+        try:
+            ch.encode("cp1252")
+        except UnicodeEncodeError:
+            missing.append(ch)
+    return missing
+
+
 def _escape(text: str) -> str:
     """PDF literal-string escape, on top of the WinAnsi mapping."""
     out = []

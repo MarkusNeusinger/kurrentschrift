@@ -95,10 +95,13 @@ uv run python -m tools.eigenhand.redo --hand mn-suetterlin S0037 S0055 --reason 
   abgebildet. Es gibt keine Fehlermeldung, nur ein um denselben Faktor
   verzogenes Verhältnis von Strichbreite zu x-Höhe, für die ganze
   Kampagne. Einziger Prüfstein ist das Lineal auf dem ersten Blatt:
-  Passmarken-Zentren **196,0 mm** waagerecht (7,0 → 203,0) und
-  **283,0 mm** senkrecht (7,0 → 290,0). Die Quadrate reichen bis 3 mm an
-  den Blattrand — ein Drucker mit größerem unbedruckbarem Rand beschneidet
-  sie, und dann bricht der Import laut ab.
+  Passmarken-Zentren **190,0 mm** waagerecht (10,0 → 200,0) und
+  **277,0 mm** senkrecht (10,0 → 287,0). Ein gleichmäßig skalierter Druck
+  ist das eine, was der Scan selbst NICHT sehen kann — Marken und Abstände
+  schrumpfen zusammen, das Verhältnis bleibt.
+  Ein BESCHNITTENER Druck dagegen wird gemeldet: der Bogen verlangt 6 mm
+  bedruckbaren Rand (`PRINT_SAFE_MM`), und `ingest` warnt, wenn eine
+  Passmarke kleiner herauskommt, als ihr gemessener Abstand es zulässt.
 - **Ein Bogen lässt sich nicht zurücknehmen.** `sheet` vergibt bei jedem
   Lauf eine neue Bogen-ID und nimmt Streifen aus der Warteschlange; es
   gibt kein Un-Drucken, und die Kartei wird nicht von Hand editiert. Der

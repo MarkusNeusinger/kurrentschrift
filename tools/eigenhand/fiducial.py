@@ -37,6 +37,8 @@ class Mark:
     center: tuple[float, float]  # (x, y) image pixels, intensity-weighted
     area: float
     has_hole: bool
+    width: float = 0.0  # bounding box, image pixels
+    height: float = 0.0
 
 
 class FiducialError(SystemExit):
@@ -59,8 +61,43 @@ def _candidates(gray: np.ndarray) -> list[Mark]:
         if aspect > MAX_ASPECT or region.extent < MIN_EXTENT:
             continue
         cy, cx = region.centroid_weighted
-        marks.append(Mark((float(cx), float(cy)), float(region.area), region.euler_number <= 0))
+        marks.append(
+            Mark((float(cx), float(cy)), float(region.area), region.euler_number <= 0, float(width), float(height))
+        )
     return marks
+
+
+def check_mark_size(corners: dict[str, Mark], expected_px: float, tolerance: float = 0.08) -> list[str]:
+    """Complaints about marks that are not the size they were printed at.
+
+    The one printer failure the rest of the chain cannot see. A page printed on
+    a device whose unprintable margin eats into a Passmarke yields a mark that
+    is still square and still solid — it passes every shape test above — but
+    smaller, with its centroid pulled toward the page centre. The rectification
+    then maps four pulled-in centroids onto their nominal millimetres and
+    stretches the whole sheet, silently, for as long as that printer is used.
+
+    What makes it detectable is that the mark SIZE and the mark SPACING are
+    printed by the same device: their ratio is fixed by the layout and survives
+    any uniform scaling of the page. So `expected_px` is derived from the
+    measured spacing, and a mark that comes out materially smaller than that
+    was clipped rather than merely photographed small.
+
+    A uniformly scaled print (a driver's "fit to printable area") is NOT
+    visible here and cannot be — every distance shrinks together. Only a ruler
+    on the paper catches that one, which is why the sheet's README asks for it.
+    """
+    complaints = []
+    for corner, mark in sorted(corners.items()):
+        for axis, measured in (("width", mark.width), ("height", mark.height)):
+            ratio = measured / expected_px if expected_px else 1.0
+            if ratio < 1 - tolerance:
+                complaints.append(
+                    f"{corner} Passmarke {axis} {measured:.0f} px is {100 * (1 - ratio):.0f}% under the "
+                    f"{expected_px:.0f} px its spacing implies — the print was probably clipped by the "
+                    "printer's unprintable margin"
+                )
+    return complaints
 
 
 def _quadrant(mark: Mark, shape: tuple[int, ...]) -> str:

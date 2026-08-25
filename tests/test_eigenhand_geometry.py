@@ -233,7 +233,8 @@ class TestMarkBox:
         x0, _y0, x1, _y1 = geometry.mark_box(band)
         writing_right = 15.0 + geometry.usable_row_width_mm()
         assert x0 >= writing_right  # never steals writing width
-        assert x1 <= geometry.A4_WIDTH_MM - 3.0  # stays printable
+        assert x0 >= geometry.CUT_X1_MM  # and never sits on the strip
+        assert x1 <= geometry.A4_WIDTH_MM - geometry.PRINT_SAFE_MM  # stays printable
 
     def test_box_is_square_and_sized_as_declared(self):
         band = geometry.row_band(geometry.PRESETS["suetterlin"], 15.0)
@@ -254,6 +255,38 @@ class TestMarkBox:
         band = geometry.row_band(geometry.PRESETS["suetterlin"], 15.0)
         top_fiducial_bottom = geometry.FIDUCIAL_CENTERS["tr"][1] + geometry.FIDUCIAL_SIZE_MM / 2
         assert geometry.mark_box(band)[1] > top_fiducial_bottom
+
+
+class TestPrintableArea:
+    """The sheet has to fit the printer it asks for (PRINT_SAFE_MM)."""
+
+    def test_every_fiducial_clears_the_safe_margin(self):
+        half = geometry.FIDUCIAL_SIZE_MM / 2
+        for corner, (cx, cy) in geometry.FIDUCIAL_CENTERS.items():
+            assert cx - half >= geometry.PRINT_SAFE_MM, corner
+            assert cy - half >= geometry.PRINT_SAFE_MM, corner
+            assert cx + half <= geometry.A4_WIDTH_MM - geometry.PRINT_SAFE_MM, corner
+            assert cy + half <= geometry.A4_HEIGHT_MM - geometry.PRINT_SAFE_MM, corner
+
+    def test_the_safe_margin_covers_the_office_lasers_it_was_chosen_for(self):
+        # HP LaserJets refuse to print within 4.23 mm of the edge; consumer
+        # devices reach about 5. A clipped mark is still square, so nothing
+        # catches it at print time — only this constant does.
+        assert geometry.PRINT_SAFE_MM >= 5.0
+
+    def test_marks_sit_as_far_out_as_the_safe_area_allows(self):
+        # A larger registered quad means less angular error per pixel of
+        # centroid noise, so the marks belong at the edge of what prints —
+        # not further in "to be safe".
+        assert geometry.FIDUCIAL_INSET_MM == geometry.PRINT_SAFE_MM + geometry.FIDUCIAL_SIZE_MM / 2
+
+    def test_header_and_footer_keep_their_distance_from_the_marks(self):
+        # They share the marks' y band, so only x separates them; a hairline
+        # that blurs into a mark on a scan drags its centroid.
+        assert geometry.META_MARGIN_MM - (geometry.FIDUCIAL_INSET_MM + geometry.FIDUCIAL_SIZE_MM / 2) >= 4.0
+
+    def test_seven_rows_still_fit_after_the_top_margin_moved(self):
+        assert geometry.max_rows(geometry.PRESETS["suetterlin"]) == 7
 
 
 class TestFugenForms:

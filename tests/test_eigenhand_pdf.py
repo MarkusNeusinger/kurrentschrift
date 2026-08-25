@@ -9,7 +9,30 @@ import re
 import pytest
 
 from core.eigenhand import geometry, pdfgen
-from core.eigenhand.bogen import render_pdf
+from core.eigenhand.bogen import MARK_CAPTION, build_layout, geometry_digest, render_pdf, select_strips
+from core.eigenhand.plan import load_plan
+
+
+def _capture(layout: dict) -> dict[str, list]:
+    """Render one layout and return the primitives it drew, in millimetres.
+
+    Checking the composed sheet beats checking the constants: an element is
+    only safe if what lands on paper is safe, wherever its coordinates came
+    from.
+    """
+    captured: dict[str, list] = {}
+    real = pdfgen.build_pdf
+
+    def spy(rects, lines, texts):
+        captured["rects"], captured["lines"], captured["texts"] = rects, lines, texts
+        return real(rects, lines, texts)
+
+    pdfgen.build_pdf = spy
+    try:
+        render_pdf(layout)
+    finally:
+        pdfgen.build_pdf = real
+    return captured
 
 
 def _fixed_layout() -> dict:
@@ -24,7 +47,7 @@ def _fixed_layout() -> dict:
             "size_mm": 8.0,
             "hole_mm": 3.0,
             "donut": "tl",
-            "centers_mm": {"tl": [7.0, 7.0], "tr": [203.0, 7.0], "bl": [7.0, 290.0], "br": [203.0, 290.0]},
+            "centers_mm": {"tl": [10.0, 10.0], "tr": [200.0, 10.0], "bl": [10.0, 287.0], "br": [200.0, 287.0]},
         },
         "rows": [
             {
@@ -56,13 +79,139 @@ def _fixed_layout() -> dict:
 # Pinned bytes of _fixed_layout() — deterministic by construction (no clock,
 # no git, no repo state). A change here is a REAL output change: re-pin only
 # deliberately, with the diff understood.
-GOLDEN_SHA256 = "492e1f6124f7c4cfb31adbc527d56512c69752c69b75a951a493a415ba1d3bda"
+#
+# Re-baselined 2026-08-25 (printable-area pass): the Passmarken moved from
+# 7 mm to 10 mm off each edge so they clear PRINT_SAFE_MM, and header, footer
+# and legend moved from the writing margin to META_MARGIN_MM so they keep the
+# same 4 mm off the marks they had before. Rows, boxes and rulings are
+# untouched.
+# Re-baselined again the same day, twice: the legend was reworded so it no
+# longer needs the long s it could not print, and then the foot of the sheet
+# was rebuilt — the writer's irreversible rules and the ruler check took the
+# place the duplicated machine id had held.
+GOLDEN_SHA256 = "db4c948712cd38573f1345565849254ecfdd25f98eff7a8bdae7199ee62f60a4"
 
 
 class TestRenderedPdf:
     def test_golden_bytes(self):
         pdf = render_pdf(_fixed_layout())
         assert hashlib.sha256(pdf).hexdigest() == GOLDEN_SHA256
+
+    def test_fiducials_come_from_the_layout_not_the_constants(self):
+        """An already-printed Bogen keeps ITS geometry when the constants move.
+
+        This is what makes a printable-area pass safe: the sidecar is the
+        contract, so sheets printed before it still re-render — and still
+        register — exactly as they were put on paper.
+        """
+        old = copy.deepcopy(_fixed_layout())
+        old["fiducials"]["centers_mm"] = {
+            "tl": [7.0, 7.0],
+            "tr": [203.0, 7.0],
+            "bl": [7.0, 290.0],
+            "br": [203.0, 290.0],
+        }
+        drawn = _capture(old)["rects"]
+        half = old["fiducials"]["size_mm"] / 2
+        corners = {(round(r.x + half, 3), round(r.y + half, 3)) for r in drawn if r.color == "#000000"}
+        assert corners == {(7.0, 7.0), (203.0, 7.0), (7.0, 290.0), (203.0, 290.0)}
+        assert render_pdf(old) != render_pdf(_fixed_layout())
+
+    def test_nothing_is_drawn_inside_the_declared_printable_area(self):
+        """The sheet must fit the printer it asks for — PRINT_SAFE_MM on every edge.
+
+        Checked on the real composed sheet rather than on the constants: the
+        failure this guards against (an HP LaserJet refuses to print within
+        4.23 mm and clips a Passmarke, whose centroid then silently biases the
+        whole rectification) comes from a DRAWN element, wherever it was
+        computed.
+        """
+        plan = load_plan()
+        lo = geometry.PRINT_SAFE_MM
+        hi_x, hi_y = geometry.A4_WIDTH_MM - lo, geometry.A4_HEIGHT_MM - lo
+        for style in geometry.PRESETS:
+            strips = select_strips(plan, {"strips": {}, "redo": [], "sheets": {}}, 7, 1)
+            layout = build_layout("B0001", f"t-{style}", style, strips, plan, "2026-08-25", True)
+            drawn = _capture(layout)
+            for rect in drawn["rects"]:
+                assert rect.x >= lo and rect.y >= lo, (style, rect)
+                assert rect.x + rect.w <= hi_x and rect.y + rect.h <= hi_y, (style, rect)
+            for line in drawn["lines"]:
+                pad = line.width_mm / 2
+                assert min(line.x1, line.x2) - pad >= lo and max(line.x1, line.x2) + pad <= hi_x, (style, line)
+                assert min(line.y1, line.y2) - pad >= lo and max(line.y1, line.y2) + pad <= hi_y, (style, line)
+            for item in drawn["texts"]:
+                width = pdfgen.helv_width_mm(item.text, item.size_mm)
+                assert item.x >= lo and item.x + width <= hi_x, (style, item.text)
+                assert item.y - item.size_mm >= lo and item.y <= hi_y, (style, item.text)
+
+    def test_no_text_on_the_sheet_needs_a_glyph_the_font_lacks(self):
+        """A "?" on the sheet is a defect that reaches paper without a warning.
+
+        The legend shipped as "rundes s statt langem ſ" and printed "statt
+        langem ?" — WinAnsi has no long s, and the note saying so sat four
+        lines above the legend in the same file. Checked over the COMPOSED
+        page for every script, so it covers the word labels and strip ids from
+        the plan as well as the constants.
+        """
+        plan = load_plan()
+        for style in geometry.PRESETS:
+            strips = select_strips(plan, {"strips": {}, "redo": [], "sheets": {}}, 7, 1)
+            layout = build_layout("B0001", f"t-{style}", style, strips, plan, "2026-08-25", True)
+            for item in _capture(layout)["texts"]:
+                assert pdfgen.undrawable(item.text) == [], (style, item.text)
+
+    def test_an_undrawable_character_is_refused_not_substituted(self):
+        layout = copy.deepcopy(_fixed_layout())
+        layout["rows"][0]["boxes"][0]["label"] = "laſſen"
+        with pytest.raises(SystemExit, match="WinAnsi"):
+            render_pdf(layout)
+
+    def test_the_cfg_stamp_moves_when_the_registration_frame_moves(self):
+        """The failure the old stamp had: it hashed a hand-kept constant list.
+
+        PR #412 moved all four Passmarken by 3 mm — the very frame every scan is
+        mapped onto — and the printed `cfg` stayed byte-identical, because
+        FIDUCIAL_CENTERS was not on the list. Hashing the layout minus its
+        provenance cannot forget a millimetre it prints.
+        """
+        base = _fixed_layout()
+        for mutate in (
+            lambda lo: lo["fiducials"]["centers_mm"].__setitem__("tl", [7.0, 7.0]),
+            lambda lo: lo["rows"][0]["boxes"][0].__setitem__("x1_mm", 99.0),
+            lambda lo: lo["rows"][0].__setitem__("mark_mm", [1.0, 2.0, 3.0, 4.0]),
+            lambda lo: lo["rows"][0]["band_mm"].__setitem__("baseline", 42.0),
+        ):
+            moved = copy.deepcopy(base)
+            mutate(moved)
+            assert geometry_digest(moved) != geometry_digest(base)
+
+    def test_the_cfg_stamp_ignores_its_own_provenance(self):
+        # Otherwise it could not live inside the block it is computed for.
+        base = _fixed_layout()
+        other = copy.deepcopy(base)
+        other["provenance"] = {"date": "1999-01-01", "commit": "deadbee", "config_hash": "x", "streifen_sha256": "y"}
+        assert geometry_digest(other) == geometry_digest(base)
+
+    def test_the_sheet_prints_the_rules_that_cannot_be_undone(self):
+        """Ink, colour scan, scan-before-cut and the verdict box — on the paper.
+
+        They lived only in the operating README, which is not open when the pen
+        goes into the ink; and each of them costs a sheet that cannot be
+        reprinted (`sheet.py` mints a new id and consumes the queue).
+        """
+        printed = " ".join(item.text for item in _capture(_fixed_layout())["texts"])
+        for fragment in ("nie blau", "in Farbe scannen", "Erst scannen, dann schneiden", "leer = verworfen"):
+            assert fragment in printed, fragment
+
+    def test_the_sheet_prints_its_own_ruler_check(self):
+        # The only defence against a uniformly scaled print, and it has to be
+        # ON the sheet: whoever holds the ruler does not hold the README. The
+        # numbers follow the layout's own marks rather than being spelled out,
+        # so they cannot drift away from the geometry they check.
+        printed = " ".join(item.text for item in _capture(_fixed_layout())["texts"])
+        assert "Markenmitten 190,0 × 277,0 mm" in printed
+        assert "ohne Skalierung" in printed
 
     def test_xref_offsets_point_at_their_objects(self):
         text = render_pdf(_fixed_layout()).decode("latin-1")
@@ -81,7 +230,9 @@ class TestRenderedPdf:
 
     def test_verdict_boxes_and_caption_are_drawn(self):
         text = render_pdf(_fixed_layout()).decode("latin-1")
-        assert text.count("(ok) Tj") == 1  # one column caption, above the first row
+        # From the constant, not a literal: the caption gained its question mark
+        # in the same pass that put the verdict rule into the footer.
+        assert text.count(f"({MARK_CAPTION}) Tj") == 1  # one column caption, above the first row
         assert "(nein) Tj" not in text  # one box only: ticked = ok, empty = not
         assert text.count(" l S") >= 8  # four edges per box, one box per row, two rows
 
