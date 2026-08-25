@@ -8290,3 +8290,165 @@ Papier-Nadel-Klasse (`tools/tracebench/excursions.py` ist der
 stehende Sensor und läuft in Minuten auf jedem Kandidaten);
 erst dann lohnt die Barriere, mit frischer Pre-Reg und dem
 unveränderten unter-Risiko.
+
+### Lineal L-U `aug25` — Vorregistrierung: der u-Bogen als Marke (Autor-Entscheid zur Bogen-Klassifikation)
+
+Geschrieben und committet VOR der ersten Zahl. **Anlass:** die
+K-C-Autopsie (`aug20`) legte den Befund offen und ließ die
+Konsequenz ausdrücklich offen — „81 % der 0,45 sind
+Strich-REIHENFOLGE (Hand schreibt den u-Bogen zuletzt, Kette in
+der Mitte; Bogenlänge 1,10 xh > `MARK_MAX_ARC_UNITS` 0,8 →
+Körper statt Marke) … Autor-Entscheid zur Bogen-Klassifikation
+(eingefrorenes Lineal, hier NICHT angefasst)". Die Kette-v4-
+Re-Baseline führt denselben Posten als offen (p90 0,2354 /
+unter 0,4503). Der Autor hat am **2026-08-25** entschieden: das
+Lineal wird geändert. Nach dem Klassen-Zensus unten hat er die
+Entscheidung präzisiert — die Kappe wird **angehoben, nicht
+gestrichen** (Begründung unter „Warum nicht streichen").
+
+**Zensus (deskriptiv, VOR jeder Routen-Zahl; Skript im
+Scratchpad, Root `tools/wordbench/fixtures/suetterlin/
+suetterlin-1922`, Export 2026-08-14 / word_instances 2026-08-20).**
+Erhoben wurde ausschließlich die KLASSE jedes Strichs, keine
+Metrik. Über alle schwebenden Nicht-Erst-Striche (das sind die
+einzigen Kandidaten für die Marken-Klasse):
+
+| Seite | Punkte/Umlaute | u-Bögen |
+|---|---|---|
+| authored (Hand), 28 Wörter | 13 Striche, 0,449–**0,652** xh | 9 Striche, **1,039**–1,313 xh |
+| traced (Kette), 35 Wörter | 12 Striche, 0,281–**0,789** xh | 6 Striche, **0,897**–1,966 xh |
+
+Die neun Hand-u-Bögen sind `muß` ×3, `und` ×4, `unter` (dev)
+und `Kugel` (confirm) — je einer pro Wort, immer der letzte von
+zwei Strichen, y-Minimum 1,41–1,60 xh. **Es wechselt nichts
+außer u-Bögen die Klasse:** kein Versalien-Ornament, keine
+Oberlängenschleife, kein Umlaut. Die einzigen weiteren
+Nicht-Erst-Striche der Hand (`Säbel`, `Einen`) tauchen unter
+1,0 xh ab und bleiben unabhängig von jeder Kappe Körper.
+
+Zwei Befunde des Zensus, die für sich stehen:
+
+- Die heutige Kappe 0,8 liegt **innerhalb der Marken-Population**,
+  nicht zwischen Marke und Körper. Auf der Kandidatenseite fehlen
+  ihr **elf Tausendstel** zum Fehlklassifizieren eines echten
+  Umlauts (`Sprünge` Strich 2: 0,789 xh).
+- Der Kandidaten-Ausreißer `Zaum` (1,966 xh) ist per Overlay ein
+  u-Bogen mit langem Fehl-Ausläufer, der die Tinte verlässt —
+  ein Fit-Defekt, keine andere Strichklasse.
+
+**Mechanik.** `tools/tracebench/frames.py::classify_strokes` — `is_mark =
+index > 0 and floating and arc_length(pts) <=
+MARK_MAX_ARC_UNITS`, mit `DIACRITIC_MIN_Y = 1.0` und
+`MARK_MAX_ARC_UNITS = 0.8`. Zwei Abnehmer: `summary.score_word`
+und der Duell-Viewer. Betroffen sind damit `dtw_xh` (+
+`dtw_path_len` / `dtw_max_absorption` / `dtw_reversed_better`),
+die ganze Marken-Familie inkl. des Co-Primär-Gates
+`marks_missing` und `mark_pos_err_xh`, `marks_uncertain`, die
+Lift-Spalten und der Richtungs-Audit. **Nicht** betroffen, weil
+sie die VOLLE Strichliste lesen: `aiou`, beide Chamfer-Hälften,
+Kreuzungen, Retraces inkl. `retrace_arc_ratio`, touch/overlap,
+die `soll_*`-Spalten sowie `k0eval` und `excursions`.
+
+**Maßnahme L-U — ein Knopf.** `--mark-arc-cap <xh>`, Default
+0,8 = heutiges Verhalten = byte-gleich. Gemessen wird bei
+**1,5 xh**. Die Höhe ist aus dem BREITENMODELL abgeleitet, nicht
+aus der beobachteten Verteilung und schon gar nicht aus einem
+Routen-Ergebnis: ein Standard-Kleinbuchstabe misst laut
+`geometry.ADVANCE_DEFAULT_XH` eine x-Höhe in der Breite; ein
+Diakritikum steht über EINEM Buchstaben; ein schwebender Strich
+von mehr als anderthalb Buchstabenbreiten ist deshalb kein
+Akzent mehr. Dass 1,5 zwischen 1,313 (größter Hand-u-Bogen) und
+1,966 (`Zaum`-Defekt) fällt, ist Folge, nicht Begründung — jeder
+Wert in (1,313 · 1,966) verhält sich auf dieser Population
+identisch.
+
+**Warum nicht streichen.** Ohne Kappe wanderte der `Zaum`-Defekt
+aus der Körper-DTW in die Markenspalte: ein Kandidat könnte
+einen groben Formfehler aus dem Primärmaß herausschieben. Der
+Galoppieren-Fall der K-C-Autopsie ist derselbe Mechanismus (ein
+i-Punkt-Strich springt auf ein Durchschein-Fragment, Bogen
+0,53 → 1,82 xh). Beide bleiben bei 1,5 im Körper und werden
+bezahlt — das ist der Zweck der Kappe, und er bleibt erhalten.
+
+**Kopplung, die im selben PR aufgelöst wird.**
+`tools/pairlab/marks.py:70` importiert `MARK_MAX_ARC_UNITS` als
+`_RULER_MAX_ARC` und leitet `MARK_MAX_INK_ARC_UNITS = 2 ×`
+daraus ab (heute 1,6). Bliebe der Import stehen, änderte die
+Lineal-Anhebung still die KANDIDATEN-Seite und das
+Identitäts-Gate risse aus einem Grund, der nichts mit dem Lineal
+zu tun hat. Der Marken-Nachfit bekommt deshalb eine eigene,
+eigenständig begründete Konstante.
+
+**Messanordnung.** Nur der **dev-Satz (19 Wörter)** — die
+Bestätigungswörter (`Kugel`, `Zaum`, `Gaul`, `auch`, `auch-2`,
+`zu`, `Pulver`) bleiben versiegelt (§2.5, Autor-Entscheid
+2026-08-25); der Klassen-Zensus oben ist ein Strukturfakt und
+kein Messlauf. Vorher- und Nachher-Lauf in DERSELBEN Umgebung
+mit gepinnten BLAS-Threads (`OPENBLAS_NUM_THREADS` /
+`OMP_NUM_THREADS`), weil der Ketten-Solve zwischen Umgebungen um
+ganze Soll-Punkte wandert (`aug21`, „Umgebungs-Ehrlichkeit").
+
+**Gates.** Alle sechs müssen halten; keines davon ist ein
+Routen-Ergebnis:
+
+1. **Identität** — bei Kappe 0,8 ist jede Zahl byte-gleich zur
+   stehenden Baseline. Der Knopf ist im Aus-Zustand wirklich aus.
+2. **Klasse** — bei 1,5 wechseln GENAU die oben aufgezählten
+   Striche die Klasse: 9 Hand-u-Bögen, 5 Kandidaten-u-Bögen.
+   Kein anderer Strich, auf keiner Seite.
+3. **Defekt** — `Zaum` (1,966) und der Galoppieren-Sprungstrich
+   (1,82) bleiben KÖRPER. Ein Fit-Defekt entkommt dem Primärmaß
+   nicht.
+4. **Widerspruch** — `marks_uncertain` fällt auf dev von 8 auf 0.
+   Das Lineal stimmt danach mit seiner eigenen
+   Erwartungstabelle überein.
+5. **Zähler** — kein neues `marks_ambiguous` auf dev. Der
+   Marken-Matcher (Zentroid, Radius 0,6, Marge 0,25) fängt nicht
+   an zu verweigern, weil er jetzt 1,0–1,3 xh lange Bögen über
+   ihren Schwerpunkt paart.
+6. **Unberührtheit** — `aiou`, beide Chamfer-Hälften,
+   Kreuzungen, Retraces, touch/overlap und die `soll_*`-Spalten
+   sind zwischen 0,8 und 1,5 byte-gleich. Bewegt sich eine
+   davon, ist etwas anderes mitgeändert worden.
+
+**Kill-Kriterien.** Ein Strich außerhalb der u-Bogen-Klasse
+wechselt die Klasse · ein Defekt (`Zaum`, Galoppieren) wird zur
+Marke · neues `marks_ambiguous` · eine „unberührte" Spalte
+bewegt sich. Jedes einzelne killt die Maßnahme, unabhängig
+davon, wie die Routen-Zahlen aussehen.
+
+**Erwartete Nebenwirkung, vorregistriert, damit sie später nicht
+als Kandidatengewinn gelesen wird:** die Pen-Lift-Population der
+REFERENZ bricht auf dem dev-Split von 8 auf **0** ein. Alle neun
+betroffenen Bahnen bestehen aus genau zwei Strichen; nach dem
+Herauslösen der Marke bleibt ein einziger Körperstrich und damit
+kein Lift. `lift_ref` / `lift_delta` / `lift_unmatched_ref` /
+`lift_pos_err_xh` werden auf dev referenzseitig blind — ein
+fragmentierender Kandidat wird weiter erkannt, ein
+verschweißender nicht mehr. Das ist ein Preis der Maßnahme, kein
+Ergebnis.
+
+**Zirkularitäts-Gegenmittel** (das Kriterium, das weder in der
+Zielfunktion noch in einem Gate steht): das Lineal widerspricht
+sich heute selbst, und zwar seit Langem — lange vor dieser
+Entscheidung.
+`tools/tracebench/summary.py::MARKS_PER_KEY` führt `"u": 1`
+mit dem Kommentar „u-Deckstrich (tintenfolger.md §2.3 names it a
+mark)" — die Erwartungstabelle des Benches sagt also, der
+u-Bogen SEI eine Marke, während `classify_strokes` das Gegenteil
+tut. Dieselbe Regel ohne Kappe steht auf der ENGINE-Seite
+(`tools/pairlab/trace.py::diacritic_stroke_units`,
+`chain._letter_cut_anchors`) und in drei Doku-Stellen, die den
+u-Deckstrich in derselben Aufzählung als Marke führen. Die
+Maßnahme repariert eine Inkonsistenz des Instruments; welche
+Route davon profitiert, spielt für ihre Begründung keine Rolle.
+
+**Deklarierte Re-Baseline.** Nach bestandenen Gates gilt: alle
+stehenden `dtw_xh`-, Marken- und Lift-Zahlen (Kette v1–v5, Lotse
+v0.1–v0.19, InkSight, Nullprobe, Fusions-Orakel) sind **gültig,
+archiviert und NICHT vergleichbar** mit den neuen; die
+Struktur- und Deckungsspalten bleiben vergleichbar (Gate 6). Der
+Re-Baseline-Lauf umfasst alle vier stehenden Routen auf dev-19
+in einer Umgebung. Der PRODUKTIONS-Re-Harvest der
+`traced`-Zeilen bleibt davon unberührt und weiterhin hinter
+Autor-Go + `dbsnapshot`.
