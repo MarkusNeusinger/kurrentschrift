@@ -337,8 +337,11 @@ als beurteilt) · `geplant` (sonst — auch nach reinem Verwurf).
 **Neuaufnahme ergänzt** (Owner-Entscheidung): `redo.py S0037 S0055`
 stellt Streifen wieder in die Warteschlange; alte angenommene Fassungen
 bleiben Trainingsmaterial, sofern nicht ausdrücklich `--retire`
-(Status `zurückgezogen`, Datei bleibt, zählt nicht mehr). Ein
-Redo-Eintrag erlischt mit der nächsten angenommenen Fassung.
+(Status `zurueckgezogen` — ASCII wie alle Statuswerte, Datei bleibt,
+zählt nicht mehr). Ein Redo-Eintrag erlischt mit der nächsten
+angenommenen Fassung. `--retire` greift nur an ANGENOMMENE Fassungen:
+eine irrtümlich verworfene Zeile lässt sich nicht nachträglich annehmen,
+der Streifen muss neu gedruckt und neu geschrieben werden.
 
 Der **Bestandsbericht** (`report.py`) stellt Soll/Ist je Item:
 **Erstbeleg-Quote** (Anteil Items mit ≥1 Beleg) und **Ausbau-Quote**
@@ -648,10 +651,41 @@ die menschliche Kopf-Bestätigung je fehleranfällig wird.
 | 4 | Bericht, Redo, Archiv (`report` · `redo` · `snapshot`) + Ablage-Skelett | umgesetzt |
 | 4a | DB-Buchführung + Werkbank-Ansicht (`0024` · `/eigenhand/*` · `sync` · `pull`) | umgesetzt (§7.1) |
 | 4b | Streifen + stehendes Setup in der DB, Wort-Crops, Wiederherstellungsweg (`0025` · `crop` · `setup` · `sync --mit-streifen`/`--from`) | umgesetzt (§7.2, §8.1); Drill 2026-08-25 grün |
+| 4c | Die drei Blocker der ersten echten Sitzung (`apiclient`-Kennung · `.env` · `core`↛`tools`) | umgesetzt 2026-08-25 (siehe unten) |
 | 5 | Ernte-Anschluss, Kurrent/Offenbacher-Betrieb, optionaler Bogen-Code | aufgeschoben (§9) |
 
 Dazu je Schreibsitzung wiederkehrend: Kalibrier-Schleife der
 advance-Tabelle, `gaps`-Kuration neuer Selten-Join-Wörter, neue Wellen.
+
+**Phase 4c — was der erste Anlauf zum echten Bogen zutage förderte.** Alle
+drei Fehler waren im synthetischen Rauchtest unsichtbar, weil dieser weder
+über Cloudflare geht noch im Deploy-Abbild läuft:
+
+1. **`tools/eigenhand/apiclient.py` schickte keine `User-Agent`-Kennung.**
+   urllibs Vorgabe `Python-urllib/3.x` beantwortet Cloudflare vor der API
+   mit 403 (Fehler 1010) — `setup`, `sync` und `pull` konnten die
+   Produktion also nie erreichen. Der Archiv-Client
+   (`tools/wordbench/fetch_fixtures.py`) trägt seit jeher eine Kennung;
+   dieser hier hatte keine geerbt. Gemessen: identische Anfrage, nur die
+   Kennung getauscht → 403 gegen 401.
+2. **Die Werkzeugfamilie las `.env` nicht.** `ADMIN_TOKEN` und
+   `KURRENTSCHRIFT_ARCHIVE` stehen dort, aber kein Modul rief
+   `load_dotenv` — also brach der Snapshot mit „no archive" ab und die
+   API-Aufrufe mit „no admin token", solange die Umgebung nicht von Hand
+   gesourct war. Eine Sicherung, die nur nach einem gemerkten Vorspann
+   läuft, ist eine Sicherung, die ausfällt. Jetzt lädt jedes der beiden
+   Pakete (`tools/eigenhand`, `tools/dbsnapshot`) die Datei beim Import;
+   eine gesetzte Variable gewinnt weiterhin.
+3. **`core/eigenhand/geometry.py` importierte `tools`** — die
+   Fugen-Formen-Tabelle, verzögert innerhalb der Breitenschätzung. Das
+   API-Abbild enthält `core/`, aber nicht `tools/`: jeder im Admin
+   gedruckte Bogen endete in `ModuleNotFoundError` → 500, und `_guard`
+   fängt nur `SystemExit`. Die Tabelle steht ohnehin schon im
+   committeten Plan (`forms`, §4 — genau dafür eingeführt), sie wird jetzt
+   von dort durchgereicht; `core` greift nicht mehr nach `tools`, und ein
+   Test über `core/`, `api/` und `alembic/` hält das fest. Die Geometrie
+   ändert sich nicht: über alle 120 Streifen (13 mit Fugen-Wort) sind die
+   Kästen bytegleich.
 
 ## 12 Prüfsteine
 

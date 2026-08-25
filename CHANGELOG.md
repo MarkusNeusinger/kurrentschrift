@@ -12,6 +12,43 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Fixed
+
+- **The three blockers between the eigenhand chain and the first real
+  Bogen.** All of them were invisible to the synthetic smoke test, because
+  that test neither crosses Cloudflare nor runs inside the deploy image.
+  (1) `tools/eigenhand/apiclient.py` sent no `User-Agent`, so Cloudflare
+  answered urllib's default with a 403 (error 1010) in front of the API
+  and `setup`, `sync` and `pull` could not reach production at all —
+  measured as 403 against 401 with nothing changed but the header; the
+  archive client has carried a name since it was written. (2) Neither
+  `tools/eigenhand` nor `tools/dbsnapshot` read `.env`, so the archive
+  snapshot refused with "no archive" and every admin call with "no admin
+  token" unless the environment had been sourced by hand (author,
+  2026-08-25: the tools should take it from `.env`, that is where it is);
+  both packages now load it on import, and an already-set variable still
+  wins. (3) `core/eigenhand/geometry.py` imported the fugen-form table
+  from `tools`, which the API image does not ship — every Bogen printed
+  from `/admin/eigenhand` ended in a `ModuleNotFoundError` 500, since
+  `_guard` only catches `SystemExit`. The table already lives in the
+  committed plan's `forms` block, put there for exactly this reason, so it
+  is passed in from the caller now; boxes stay byte-identical across all
+  120 strips, 13 of which carry a fugen word. `tests/test_imports.py`
+  keeps `core/`, `api/` and `alembic/` free of `tools` imports from here
+  on, deferred ones included.
+
+- **`redo --retire` no longer bricks a hand's `sync`.** It wrote the
+  status as `zurückgezogen` while `core/eigenhand/ids.py`, the Bestand
+  count and the API's `Literal` all use ASCII `zurueckgezogen`. Since
+  `sync` posts every Fassung of a hand in one request, a single retired
+  Fassung turned each later run into a 422 abort — and the Kartei is not
+  meant to be edited by hand. The three status values are named constants
+  now, the test that pinned the German spelling pins the ASCII one, and
+  the glossary and the proposal agree with the code. Also documented, in
+  both places a reader looks: `--retire` only touches ACCEPTED Fassungen,
+  so a row rejected by mistake cannot be accepted later — that strip has
+  to be printed and written again.
+
 ### Added
 
 - **The written strips themselves, in the DB and in the workbench.** The

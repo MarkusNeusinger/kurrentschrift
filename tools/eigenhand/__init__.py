@@ -29,4 +29,18 @@ Module map (each CLI module is its own entrypoint, humanbench-style):
 Invariants (docs/reference/werkzeuge.md): measurement/authoring layer only —
 these tools never write to the database; everything they produce lives under
 the gitignored data root ``data/samples/own-hand/`` or ``temp/``.
+
+``.env`` is read here, once, for the whole family: every entrypoint is
+``python -m tools.eigenhand.<module>``, so the package is imported before any
+of them runs. ``ADMIN_TOKEN`` (the admin API) and ``KURRENTSCHRIFT_ARCHIVE``
+(the private archive clone) live in that file and nowhere else, and a chain
+that only works after the author remembers to ``set -a; . .env`` is a chain
+that silently files a Fassung without its nib and ink (author, 2026-08-25).
+``load_dotenv`` never overrides a variable that is already set, so an explicit
+export and the test harness both still win.
 """
+
+from dotenv import load_dotenv
+
+
+load_dotenv()

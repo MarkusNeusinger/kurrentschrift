@@ -26,8 +26,14 @@ FASSUNG_ID = re.compile(r"F[0-9]{2,}")
 
 # The Siebung's verdicts. `angenommen` is training data, `verworfen` is
 # recorded but never filed, `zurueckgezogen` is an explicit withdrawal
-# (tools/eigenhand/redo.py --retire).
-STATUSES = ("angenommen", "verworfen", "zurueckgezogen")
+# (tools/eigenhand/redo.py --retire). ASCII throughout, because the value
+# travels through a URL-free JSON body into a `Literal` on the API side and
+# any second spelling is a 422 for the whole batch — named here so no writer
+# has to retype it.
+ACCEPTED = "angenommen"
+REJECTED = "verworfen"
+RETIRED = "zurueckgezogen"
+STATUSES = (ACCEPTED, REJECTED, RETIRED)
 
 
 def is_hand_id(value: str) -> bool:

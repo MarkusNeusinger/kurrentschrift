@@ -26,4 +26,15 @@ derivation.
 The snapshot itself never enters the public repository (open-core reservation,
 docs/reference/quellen-und-rechte.md §5). The TOOL is public; its output is
 not — the same split the bench fixtures already use.
+
+``.env`` is read here for the same reason as in ``tools/eigenhand``: both the
+admin read (``ADMIN_TOKEN``) and the destination (``KURRENTSCHRIFT_ARCHIVE``)
+are recorded there, and a backup that only runs when the environment was
+sourced by hand is a backup that gets skipped. ``load_dotenv`` leaves an
+already-set variable alone.
 """
+
+from dotenv import load_dotenv
+
+
+load_dotenv()

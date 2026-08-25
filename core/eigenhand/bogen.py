@@ -134,6 +134,11 @@ def build_layout(
     attempts_total = {sid: strip_rows.count(sid) for sid in strip_rows}
     seen: dict[str, int] = {}
 
+    # The plan's own fugen table: the form each word is asked to be written as,
+    # which is what the box has to be wide enough for. It is the same table the
+    # label is built from two lines below — one source, no drift.
+    forms = plan.get("forms", {})
+
     rows = []
     for index, sid in enumerate(strip_rows):
         seen[sid] = seen.get(sid, 0) + 1
@@ -142,11 +147,11 @@ def build_layout(
         boxes = [
             {
                 "word": word,
-                "label": hint_label(word, plan.get("forms", {}).get(word)) if hints else word,
+                "label": hint_label(word, forms.get(word)) if hints else word,
                 "x0_mm": round(x0, 3),
                 "x1_mm": round(x1, 3),
             }
-            for word, (x0, x1) in zip(words, geometry.boxes_for_row(words, preset, MARGIN_MM), strict=True)
+            for word, (x0, x1) in zip(words, geometry.boxes_for_row(words, preset, MARGIN_MM, forms=forms), strict=True)
         ]
         rows.append(
             {

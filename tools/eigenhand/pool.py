@@ -99,7 +99,7 @@ def build_wave(plan: dict, target_strips: int, universe_items: dict[str, float])
 
     def packed_rows(extra: str | None = None) -> int:
         words = stream + ([extra] if extra else [])
-        return len(pack_words_into_rows(words, preset))
+        return len(pack_words_into_rows(words, preset, forms=forms))
 
     def try_add(word: str) -> bool:
         if packed_rows(word) > target_strips:
@@ -192,7 +192,7 @@ def build_wave(plan: dict, target_strips: int, universe_items: dict[str, float])
         else:
             exhausted = True
 
-    strips = pack_words_into_rows(stream, preset)
+    strips = pack_words_into_rows(stream, preset, forms=forms)
     wave_no = len(plan["waves"])
     next_number = max((int(s[1:]) for s in plan["strips"]), default=0) + 1
     ids: list[str] = []

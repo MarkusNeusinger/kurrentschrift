@@ -74,8 +74,12 @@ updates its owning doc in the same PR.
   method + numbers in `docs/reference/qualitaetsmetrik.md` (esp. §14) and
   `docs/reference/menschliche-bewertung.md`, vocabulary in
   `docs/reference/glossar.md`. Invariants: measurement layer only — no DB
-  writes, no `core/` edits from tools; frozen rulers and fixture roots stay
-  frozen during optimization runs; solver comparisons pin BLAS threads.
+  writes, no `core/` edits from tools; **and never the reverse import —
+  `core/`, `api/` and `alembic/` must not import `tools`, because the API
+  image does not ship it** (pinned by `tests/test_imports.py`; a deferred
+  import inside a function is the same bug, just later); frozen rulers and
+  fixture roots stay frozen during optimization runs; solver comparisons pin
+  BLAS threads.
 
 **Local dev** (three steps): `uv run alembic upgrade head` · `uv run uvicorn
 api.main:app --reload --port 8000` · `cd app && npm install && npm run dev`

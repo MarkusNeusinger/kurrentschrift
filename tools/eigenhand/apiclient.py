@@ -25,6 +25,12 @@ HEADER and both of them exist to keep it where it was sent:
 * **The scheme must be https**, except against loopback, where the request
   never leaves the machine — that is the local dev server and the restore
   drills.
+* **Every request names itself** in a `User-Agent`. urllib's default is
+  `Python-urllib/3.x`, and Cloudflare answers that in front of the API with a
+  403 (error 1010) before FastAPI ever sees the call — so `setup`, `sync` and
+  `pull` could not reach production at all (found 2026-08-25, on the way to the
+  first real Bogen). The archive client has carried a name since it was
+  written; this one had not.
 """
 
 from __future__ import annotations
@@ -37,6 +43,10 @@ from urllib.parse import urlsplit
 
 
 DEFAULT_API = "https://api.kurrentschrift.ink"
+
+# Sent on every call. An anonymous urllib request is refused by the edge, not
+# by the API — see the module docstring.
+USER_AGENT = "kurrentschrift-eigenhand/1.0"
 
 # Strip uploads carry ~350 KB base64 over a home uplink; the bookkeeping calls
 # are small. One generous timeout beats two constants nobody tunes.
@@ -88,7 +98,7 @@ def request_bytes(method: str, url: str, token: str, body: dict | None = None, a
     is the normal state before the first one is typed.
     """
     data = json.dumps(body).encode() if body is not None else None
-    headers = {"X-Admin-Token": token}
+    headers = {"X-Admin-Token": token, "User-Agent": USER_AGENT}
     if data is not None:
         headers["Content-Type"] = "application/json"
     req = urllib.request.Request(url, data=data, method=method, headers=headers)  # noqa: S310 — scheme checked above
