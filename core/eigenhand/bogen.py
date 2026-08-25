@@ -288,9 +288,27 @@ def render_pdf(layout: dict) -> bytes:
         row_id = row["strip"] if row["attempts"] == 1 else f"{row['strip']} ({row['attempt']}/{row['attempts']})"
         # The id rides in the Schnittband's top pad, INSIDE the strip: a cut
         # strip has to stay attributable on its own (proposal §7).
+        #
+        # `S0001` alone did not achieve that (owner, 2026-08-25). One plan
+        # serves all three scripts, so S0001 exists for mn-suetterlin,
+        # mn-kurrent and mn-offenbacher alike, and a redo prints it again on a
+        # later sheet; the attempt suffix only counts WITHIN one sheet. A
+        # drawer of cut strips would hold a dozen identically labelled slips
+        # whose sheet, session and Fassung live in the Kartei and the DB — the
+        # two things the drawer case no longer has. So the strip carries the
+        # rest of its own provenance at the other end of the same line: hand,
+        # sheet and print date, right-aligned inside the cut band.
         cut = row.get("cut_mm")
         id_x, id_y = (cut[0] + 1.5, band["asc_top"] - ROW_ID_GAP_MM) if cut else (2.0, band["baseline"])
         texts.append(pdfgen.Text(id_x, id_y, ROW_ID_SIZE_MM, row_id, style["meta"][0]))
+        if cut:
+            # Right-aligned rather than appended: two short runs at opposite
+            # ends leave the middle of the pad clear, where an overshooting
+            # ascender would otherwise meet 40 mm of printed text inside the
+            # training image.
+            origin = f"{machine_id} · {layout['provenance']['date']}"
+            origin_x = cut[2] - 1.5 - pdfgen.helv_width_mm(origin, ROW_ID_SIZE_MM)
+            texts.append(pdfgen.Text(origin_x, id_y, ROW_ID_SIZE_MM, origin, style["meta"][0]))
         for box in row["boxes"]:
             x0, x1 = box["x0_mm"], box["x1_mm"]
             top = band["asc_top"] - geometry.BOX_OVERHANG_MM

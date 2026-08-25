@@ -37,7 +37,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§6** Extern/Forschung.
 
 - **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4
-- **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · bogengleich §3 · Bowl-Exit-Tuck §2
+- **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Entdrillung §4 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
@@ -1270,14 +1270,35 @@ Singularitäts-Wächter). *Technisch:* `tools/tracebench/metric.py::dtw`
 
 **Marke** *(mark)* — die Strichklasse, die der tracebench VOR dem
 Body-Vergleich herauslöst und separat zählt: ein nicht-erster Strich,
-der komplett über `DIACRITIC_MIN_Y` (= 1 xh) schwebt und höchstens
-0,8 xh Bogenlänge hat — i-Punkt/-Strich, Umlautzeichen, u-Deckstrich.
+der komplett über `DIACRITIC_MIN_Y` (= 1 xh) schwebt und die
+**Bogen-Kappe** nicht überschreitet — i-Punkt/-Strich, Umlautzeichen
+und, dem Namen nach, der u-Deckstrich. Beim u-Deckstrich widerspricht
+sich das Lineal allerdings selbst: §2.3 und die Erwartungstabelle
+`MARKS_PER_KEY` führen ihn als Marke, die Kappe macht ihn zum Body
+(→ **Bogen-Kappe**).
 Der t-Querstrich kreuzt das Mittelband und bleibt Body (ihn zählt der
 Kreuzungszähler). Gematcht per Zentroid mit Refusal; **fehlende Marken
 sind Co-Primär-Gate**, mit gutem Body-`dtw_xh` nicht rückkaufbar — der
 verschluckte i-Punkt ist der dokumentierte Fehlermodus des ganzen
 Felds, den keine publizierte Metrik erfasst. *Technisch:*
 `tools/tracebench/frames.py::classify_strokes`/`match_marks`
+
+**Bogen-Kappe** *(arc cap)* — die dritte Bedingung der Marken-Klasse
+(`MARK_MAX_ARC_UNITS`): ein schwebender Strich zählt nur bis zu dieser
+Bogenlänge als **Marke**, darüber als Body. Ihr Zweck ist, was zufällig
+in der Oberlänge bleibt — ein abgesetztes Versalien-Ornament, eine
+Oberlängenschleife, ein Fit-Defekt, dessen Bahn die Tinte verlässt —
+nicht zur Marke zu erklären und damit aus dem Primärmaß zu nehmen.
+Steht heute bei 0,8 xh und liegt damit INNERHALB der Marken-Population
+statt zwischen Marke und Body: auf der eingefrorenen Referenz enden
+Punkte und Umlaute bei 0,652 xh, die u-Bögen beginnen bei 1,039 xh.
+Vorregistriert ist die Anhebung auf 1,5 xh, aus dem Breitenmodell
+begründet (ein Kleinbuchstabe ist eine x-Höhe breit, ein Diakritikum
+steht über EINEM Buchstaben) — nicht das Streichen, weil die Kappe
+sonst ihren eigentlichen Zweck verlöre. *Technisch:*
+`tools/tracebench/frames.py`; abgeleitet in
+`tools/pairlab/marks.py::MARK_MAX_INK_ARC_UNITS`.
+→ qualitaetsmetrik.md §14 „Lineal L-U"
 
 **Retrace-Segment** — zweimal beschriebene Tinte als GEZÄHLTE Zone:
 zusammenhängende antiparallele Sample-Paare (Detektor

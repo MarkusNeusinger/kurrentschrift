@@ -12,6 +12,21 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **A cut strip says which hand, which sheet and which day it is from.**
+  `S0001` alone did not identify one: a single plan serves all three scripts,
+  so that id exists for every hand, and a redo prints it again on a later
+  sheet — the attempt suffix only counts within one sheet. A drawer of cut
+  slips was therefore resolvable only through the Kartei and the DB, which is
+  exactly what the drawer case has lost. The same line now carries hand, sheet
+  and print date right-aligned at the other end of the Schnittband. Two short
+  runs at opposite ends rather than one long one, so the middle of the top pad
+  stays clear of an overshooting ascender; and it costs the import nothing,
+  because `_printed_mask` already blanks everything above the ascender line,
+  which is where the line sits. Tests pin that both ends stay inside the cut
+  band, never overlap even for a long hand id, and stay in the masked zone.
+
 ### Changed
 
 - **Pre-registered: the u-Bogen becomes a mark in the frozen ruler (L-U).**

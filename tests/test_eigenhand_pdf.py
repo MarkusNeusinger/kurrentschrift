@@ -9,7 +9,7 @@ import re
 import pytest
 
 from core.eigenhand import geometry, pdfgen
-from core.eigenhand.bogen import MARK_CAPTION, build_layout, geometry_digest, render_pdf, select_strips
+from core.eigenhand.bogen import MARK_CAPTION, ROW_ID_GAP_MM, build_layout, geometry_digest, render_pdf, select_strips
 from core.eigenhand.plan import load_plan
 
 
@@ -89,7 +89,10 @@ def _fixed_layout() -> dict:
 # longer needs the long s it could not print, and then the foot of the sheet
 # was rebuilt — the writer's irreversible rules and the ruler check took the
 # place the duplicated machine id had held.
-GOLDEN_SHA256 = "db4c948712cd38573f1345565849254ecfdd25f98eff7a8bdae7199ee62f60a4"
+# Re-baselined 2026-08-25 (strip self-identification): each row's top pad now
+# carries hand, sheet and print date right-aligned beside its strip id, so a
+# CUT strip says where it is from without the Kartei.
+GOLDEN_SHA256 = "150e14625e61ca2b7e2eb90f2ff777aa9a4857379f7df5388e8e116e7c285f1b"
 
 
 class TestRenderedPdf:
@@ -212,6 +215,52 @@ class TestRenderedPdf:
         printed = " ".join(item.text for item in _capture(_fixed_layout())["texts"])
         assert "Markenmitten 190,0 × 277,0 mm" in printed
         assert "ohne Skalierung" in printed
+
+    def test_a_cut_strip_says_which_hand_sheet_and_day_it_is_from(self):
+        """`S0001` alone does not identify a strip.
+
+        One plan serves all three scripts, so S0001 exists for every hand, and a
+        redo prints it again on a later sheet — the attempt suffix only counts
+        within one sheet. Without hand, sheet and date on the strip itself, a
+        drawer of cut slips is only resolvable through the Kartei and the DB,
+        which is exactly what the drawer case has lost.
+        """
+        layout = _fixed_layout()
+        printed = _capture(layout)["texts"]
+        for row in layout["rows"]:
+            origin = f"{layout['hand']}-{layout['sheet']} · {layout['provenance']['date']}"
+            at_row = [
+                t for t in printed if t.text == origin and abs(t.y - (row["band_mm"]["asc_top"] - ROW_ID_GAP_MM)) < 1e-6
+            ]
+            assert at_row, row["strip"]
+
+    def test_both_ends_of_the_strip_line_stay_inside_the_cut_band(self):
+        # Outside it the text would be cut away; overlapping each other they
+        # would be unreadable. A long hand id is the case that would do it.
+        layout = copy.deepcopy(_fixed_layout())
+        layout["hand"] = "ein-sehr-langer-schreibername-suetterlin"
+        row = layout["rows"][0]
+        x0, x1 = row["cut_mm"][0], row["cut_mm"][2]
+        runs = sorted(
+            (
+                (item.x, item.x + pdfgen.helv_width_mm(item.text, item.size_mm))
+                for item in _capture(layout)["texts"]
+                if abs(item.y - (row["band_mm"]["asc_top"] - ROW_ID_GAP_MM)) < 1e-6
+            )
+        )
+        assert runs[0][0] >= x0 and runs[-1][1] <= x1
+        for left, right in zip(runs, runs[1:], strict=False):
+            assert left[1] <= right[0], (left, right)
+
+    def test_the_strip_line_stays_in_the_zone_the_qc_masks(self):
+        # It is printed matter inside the training image, so it must sit where
+        # `ingest._printed_mask` blanks everything: above the ascender line.
+        layout = _fixed_layout()
+        row = layout["rows"][0]
+        for item in _capture(layout)["texts"]:
+            if abs(item.y - (row["band_mm"]["asc_top"] - ROW_ID_GAP_MM)) < 1e-6:
+                assert item.y <= row["band_mm"]["asc_top"]
+                assert item.y - item.size_mm >= row["cut_mm"][1]
 
     def test_xref_offsets_point_at_their_objects(self):
         text = render_pdf(_fixed_layout()).decode("latin-1")
