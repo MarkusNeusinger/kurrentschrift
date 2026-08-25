@@ -375,6 +375,11 @@ def main() -> None:
         "split": args.split,
         "candidate": label,
         "resample_step": args.resample_step,
+        # Unconditionally, even at the default: a saved report has to say which
+        # RULER produced it, or a later comparison has to recover that from a
+        # shell history. The cap moved once already (§14 „Lineal L-U", 0.8 ->
+        # 1.5), so "the default" is not a value a stored file can rely on.
+        "mark_arc_cap": args.mark_arc_cap,
         "hand_id": reference.hand_id,
         "summary": summary,
         "rows": rows,
