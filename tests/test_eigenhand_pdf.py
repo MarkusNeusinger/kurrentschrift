@@ -9,7 +9,7 @@ import re
 import pytest
 
 from core.eigenhand import geometry, pdfgen
-from core.eigenhand.bogen import MARK_CAPTION, build_layout, geometry_digest, render_pdf, select_strips
+from core.eigenhand.bogen import MARK_CAPTION, ROW_ID_GAP_MM, build_layout, geometry_digest, render_pdf, select_strips
 from core.eigenhand.plan import load_plan
 
 
@@ -229,7 +229,9 @@ class TestRenderedPdf:
         printed = _capture(layout)["texts"]
         for row in layout["rows"]:
             origin = f"{layout['hand']}-{layout['sheet']} · {layout['provenance']['date']}"
-            at_row = [t for t in printed if t.text == origin and abs(t.y - (row["band_mm"]["asc_top"] - 1.7)) < 1e-6]
+            at_row = [
+                t for t in printed if t.text == origin and abs(t.y - (row["band_mm"]["asc_top"] - ROW_ID_GAP_MM)) < 1e-6
+            ]
             assert at_row, row["strip"]
 
     def test_both_ends_of_the_strip_line_stay_inside_the_cut_band(self):
@@ -243,7 +245,7 @@ class TestRenderedPdf:
             (
                 (item.x, item.x + pdfgen.helv_width_mm(item.text, item.size_mm))
                 for item in _capture(layout)["texts"]
-                if abs(item.y - (row["band_mm"]["asc_top"] - 1.7)) < 1e-6
+                if abs(item.y - (row["band_mm"]["asc_top"] - ROW_ID_GAP_MM)) < 1e-6
             )
         )
         assert runs[0][0] >= x0 and runs[-1][1] <= x1
@@ -256,7 +258,7 @@ class TestRenderedPdf:
         layout = _fixed_layout()
         row = layout["rows"][0]
         for item in _capture(layout)["texts"]:
-            if abs(item.y - (row["band_mm"]["asc_top"] - 1.7)) < 1e-6:
+            if abs(item.y - (row["band_mm"]["asc_top"] - ROW_ID_GAP_MM)) < 1e-6:
                 assert item.y <= row["band_mm"]["asc_top"]
                 assert item.y - item.size_mm >= row["cut_mm"][1]
 
