@@ -51,7 +51,7 @@ LABEL_GAP_MM = 4.6
 HEADER_SIZE_MM = 3.5
 FOOTER_SIZE_MM = 2.8
 MARK_CAPTION_SIZE_MM = 2.4
-MARK_CAPTION = "ok?"  # one box per row: ticked = ok, empty = not — the rule is in RULES ok
+MARK_CAPTION = "ok?"  # one box per row: ticked = ok, empty = not — the rule is in RULES
 # The label hints, spelled out on the sheet (owner asked what Donners*|tag
 # means — if it needs asking, it needs printing).
 #

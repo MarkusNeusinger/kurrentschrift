@@ -12,6 +12,30 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Changed
+
+- **Pre-registered: the u-Bogen becomes a mark in the frozen ruler (L-U).**
+  The `aug20` chain autopsy found that 81 % of the `unter` distance is pure
+  stroke ORDER — the hand writes the u-Bogen last, the chain in the middle —
+  and that the ruler forces it into the body DTW because its arc (1.10 xh)
+  exceeds `MARK_MAX_ARC_UNITS` = 0.8. It left the consequence to the author,
+  who decided on 2026-08-25 to change the ruler, and after the class census
+  refined that to raising the cap rather than dropping it. A descriptive census
+  over the frozen root, taken before any route number: exactly nine reference
+  strokes change class, all of them u-Bögen, one per word — no capital
+  ornament, no ascender loop, no umlaut. The current cap sits INSIDE the mark
+  population rather than between mark and body, and on the candidate side it
+  misses misclassifying a real umlaut by eleven thousandths (`Sprünge`,
+  0.789 xh). The measure raises it to 1.5 xh, derived from the width model — a
+  standard lowercase is one x-height wide, so a floating stroke longer than one
+  and a half letter widths is no accent — rather than from the observed
+  distribution, which keeps a defective candidate arc (`Zaum`, 1.966 xh) in the
+  body where it is paid for instead of letting it escape into the mark column.
+  Written and committed BEFORE the first number, with six gates, the kill
+  criteria, the expected pen-lift side effect and the circularity antidote (the
+  ruler's own expectation table has said `"u": 1` all along). Details:
+  `docs/reference/qualitaetsmetrik.md` §14 „Lineal L-U".
+
 ### Fixed
 
 - **The sheet's legend printed a "?" where the long s belonged.** It read
