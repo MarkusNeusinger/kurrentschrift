@@ -843,5 +843,33 @@ export const admin = {
     pdfError: 'Das PDF konnte nicht geladen werden.',
     localHint:
       'Nach dem Schreiben lokal weiter: uv run python -m tools.eigenhand.pull --hand {{hand}} --sheet {{sheet}} holt Layout und PDF, danach ingest → Siebung → apply → sync.',
+    setupTitle: 'Stehendes Setup',
+    setupIntro:
+      'Feder, Tinte und Papier sind Parameter der ganzen Kampagne, nicht Angaben eines einzelnen Imports — einmal hier eintragen, dann liest ingest sie als Vorgabe. Was eine Sitzung wirklich benutzt hat, steht zusätzlich an jeder Fassung.',
+    setupFeder: 'Feder',
+    setupTinte: 'Tinte',
+    setupPapier: 'Papier',
+    setupGeraet: 'Aufnahmegerät',
+    setupLabel: 'Bezeichnung',
+    setupNote: 'Notiz',
+    setupSave: 'Setup sichern',
+    setupSaving: 'wird gesichert …',
+    setupSaved: 'Gesichert, Stand {{stand}}.',
+    setupNone:
+      'Für diese Hand ist noch kein Setup hinterlegt. Vor der ersten Sitzung eintragen — Fassungen, die davor eingelesen werden, tragen keine Feder-, Tinten- und Papierangabe.',
+    setupError: 'Das Setup konnte nicht gesichert werden.',
+    setupLocal:
+      'Auf dem Schreib-Rechner einmal holen: uv run python -m tools.eigenhand.setup --hand {{hand}} --pull',
+    stripImagesTitle: 'Geschriebene Streifen',
+    stripImagesIntro:
+      'Die eingelesenen Streifen, wie sie in der Datenbank liegen — admin-geschützt, nie öffentlich, nie im Repository. Der Wort-Ausschnitt wird aus dem Bogen-Layout berechnet und braucht keinen eigenen Speicher.',
+    stripImagesEmpty:
+      'Noch keine Streifenbilder hochgeschoben. Lokal: uv run python -m tools.eigenhand.sync --hand {{hand}} --mit-streifen',
+    stripImagesError: 'Der Streifen konnte nicht geladen werden.',
+    stripShow: 'Streifen zeigen',
+    stripHide: 'einklappen',
+    stripWhole: 'ganzer Streifen',
+    stripMeta: '{{sheet}} · Zeile {{row}} · {{width}}×{{height}} px · {{dpi}} dpi',
+    stripCount: '{{count}} Streifen gespeichert',
   },
 } as const;

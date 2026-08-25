@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from tools.dbsnapshot.fetch import _git, _restore_inheritance, check_plausible
+from tools.dbsnapshot.fetch import _git, _restore_inheritance, check_plausible, collect_eigenhand
 
 
 def test_a_failed_required_git_call_stops_the_run(tmp_path: Path) -> None:
@@ -84,3 +84,59 @@ def test_a_growing_snapshot_passes() -> None:
     previous = {"counts": {"bboxes": 77, "templates": 106, "templates_with_raw_path": 86}}
     counts = {"bboxes": 78, "templates": 107, "templates_with_raw_path": 87}
     assert check_plausible(counts, previous) == []
+
+
+class _FakeClient:
+    """Answers the two eigenhand reads; anything else is not asked for here."""
+
+    def __init__(self, hands: list[str], archives: dict[str, dict]):
+        self.hands = hands
+        self.archives = archives
+        self.seen: list[str] = []
+
+    def get(self, path: str, params=None, *, admin: bool = False, allow_404: bool = False):
+        self.seen.append(path)
+        assert admin, f"{path} must be read with the admin header — the Bestand is reserved data"
+        if path == "/eigenhand/hands":
+            return {"hands": self.hands, "styles": []}
+        return self.archives.get(path.rsplit("/", 1)[-1])
+
+
+def _archive(hand: str, strips: list[tuple[str, str, str]]) -> dict:
+    return {
+        "hand": hand,
+        "style": "suetterlin",
+        "setup": None,
+        "sheets": [{"sheet": "B0001", "strips": ["S0001"], "layout": {}, "layout_sha256": "a" * 64}],
+        "fassungen": [{"strip": "S0001", "fassung": "F01", "sheet": "B0001", "row_index": 0}],
+        "strips": [{"strip": s, "fassung": f, "sha256": d, "bytes": 1} for s, f, d in strips],
+    }
+
+
+def test_the_eigenhand_tables_ride_along_with_their_strip_hashes() -> None:
+    """The hashes are the restore's check against the own-hand archive tree."""
+    client = _FakeClient(["mn-suetterlin"], {"mn-suetterlin": _archive("mn-suetterlin", [("S0001", "F01", "b" * 64)])})
+    counts: dict[str, int] = {}
+    per_hand, hashes = collect_eigenhand(client, counts)
+
+    assert set(per_hand) == {"mn-suetterlin"}
+    assert hashes == {"mn-suetterlin/S0001/F01": "b" * 64}
+    assert counts["eigenhand_sheets"] == 1
+    assert counts["eigenhand_fassungen"] == 1
+    assert counts["eigenhand_strips"] == 1
+    # The PNG bytes are never asked for: their master copy is the own-hand
+    # archive tree, and a second copy per snapshot would bloat it for nothing.
+    assert not any("/strips/" in path for path in client.seen)
+
+
+def test_a_hand_without_rows_is_not_an_error() -> None:
+    """A snapshot taken before the first Bogen has nothing to say here."""
+    counts: dict[str, int] = {}
+    assert collect_eigenhand(_FakeClient([], {}), counts) == ({}, {})
+    assert counts == {}
+
+
+def test_losing_a_strip_row_trips_the_shrink_guard() -> None:
+    previous = {"counts": {"bboxes": 1, "templates": 1, "eigenhand_strips": 12}}
+    problems = check_plausible({"bboxes": 1, "templates": 1, "eigenhand_strips": 11}, previous)
+    assert any("shrinking" in p and "eigenhand_strips" in p for p in problems)

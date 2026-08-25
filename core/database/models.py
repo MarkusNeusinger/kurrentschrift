@@ -27,7 +27,19 @@ width resolver, §12 for the statistics layers):
 
 from datetime import date, datetime
 
-from sqlalchemy import JSON, Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    LargeBinary,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
@@ -708,4 +720,83 @@ class EigenhandFassung(Base):
     note: Mapped[str | None] = mapped_column(Text, nullable=True)
     png_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
     filed_on: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    # The EFFECTIVE session material, denormalised from the hand's standing
+    # setup (0025). A Fassung says out of itself what it was written with — no
+    # join, and no implicit "NULL means like the hand": the day the nib really
+    # changes, the break is visible in the data instead of reconstructed.
+    feder: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    tinte: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    papier: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    geraet: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class EigenhandHand(Base):
+    """One writing hand's STANDING setup — nib, ink, paper, capture device.
+
+    Ink, paper and nib are photometric parameters of a whole campaign, not
+    per-import details: a change mid-campaign splits the corpus into cohorts
+    that cannot be compared. So they are typed once here, `ingest` reads them
+    back as its defaults, and every Fassung records the effective values it was
+    actually written with.
+
+    Separate from `hands` (the harvest-side writer row) on purpose: a Bogen can
+    be printed and written long before that writer has a single fit in the DB,
+    and the capture chain must not wait on the harvest having started.
+    """
+
+    __tablename__ = "eigenhand_hands"
+    __table_args__ = (UniqueConstraint("hand", name="uq_eigenhand_hand"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    hand: Mapped[str] = mapped_column(String(HAND_ID_MAX), nullable=False)
+    style: Mapped[str] = mapped_column(String(STYLE_ID_MAX), nullable=False)
+    label: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    feder: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    tinte: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    papier: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    geraet: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class EigenhandStrip(Base):
+    """The written strip itself — the one place own-hand PIXELS live in the DB.
+
+    Everything else about the capture chain is bookkeeping; this is the image.
+    It is here so the workbench can show a written Streifen the way it shows a
+    chart crop — and it cannot follow the chart's model, because
+    `sources.chart_path` points at committed bytes on disk, which the reserved
+    own-hand dataset can never be.
+
+    Its own table so the PNG never rides along on a Bestand query (same motive
+    as the deferred `templates.raw_path` in the render path). The ARCHIVE stays
+    the master: `tools/eigenhand/snapshot.py` files the same bytes as files, so
+    every row here is reconstructible from repo + archive alone, and `sha256`
+    is what makes that check mechanical.
+
+    `crop_origin_mm` plus `width_px` give the mm→px scale; the word's box comes
+    from the sheet's stored layout. A word crop therefore needs no extra
+    storage at all — the server cuts it out of the strip.
+    """
+
+    __tablename__ = "eigenhand_strips"
+    __table_args__ = (UniqueConstraint("hand", "strip", "fassung", name="uq_eigenhand_strip"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    hand: Mapped[str] = mapped_column(String(HAND_ID_MAX), nullable=False, index=True)
+    strip: Mapped[str] = mapped_column(String(16), nullable=False, index=True)
+    fassung: Mapped[str] = mapped_column(String(8), nullable=False)
+    sheet: Mapped[str] = mapped_column(String(16), nullable=False)
+    row_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    png: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    width_px: Mapped[int] = mapped_column(Integer, nullable=False)
+    height_px: Mapped[int] = mapped_column(Integer, nullable=False)
+    dpi: Mapped[float] = mapped_column(Float, nullable=False)
+    crop_origin_mm: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False, server_default="[]")
+    sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    bytes: Mapped[int] = mapped_column(Integer, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

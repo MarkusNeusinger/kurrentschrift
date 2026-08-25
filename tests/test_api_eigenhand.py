@@ -15,7 +15,12 @@ per printed row and refuse a contradiction; and every route is admin-gated.
 
 from __future__ import annotations
 
+import base64
+import hashlib
+import io
+
 import pytest
+from PIL import Image
 
 from core.eigenhand import bogen
 from core.eigenhand.plan import load_plan
@@ -23,6 +28,7 @@ from tests.api_harness import Harness
 
 
 HAND = "mn-suetterlin"
+PX_PER_MM = 300.0 / 25.4
 
 
 async def _print(api: Harness, **body) -> dict:
@@ -47,6 +53,60 @@ async def _record(api: Harness, fassungen: list[dict]):
 
 def _accepted(strip: str, sheet: str, row_index: int, fassung: str = "F01") -> dict:
     return {"strip": strip, "fassung": fassung, "sheet": sheet, "row_index": row_index, "status": "angenommen"}
+
+
+async def _put_setup(api: Harness, **fields) -> object:
+    return await api.client.request("PUT", f"/eigenhand/setups/{HAND}", json_body=fields, headers=api.admin_headers())
+
+
+def _png(width_px: int, height_px: int, shade: int = 235) -> bytes:
+    """A stand-in for a scanned strip — grayscale, the mode ingest files."""
+    buffer = io.BytesIO()
+    Image.new("L", (width_px, height_px), color=shade).save(buffer, format="PNG")
+    return buffer.getvalue()
+
+
+async def _put_strip(api: Harness, png: bytes, stored: dict, **overrides) -> object:
+    body = {
+        "sheet": "B0001",
+        "row_index": 0,
+        "png_base64": base64.b64encode(png).decode(),
+        "width_px": stored["width_px"],
+        "height_px": stored["height_px"],
+        "dpi": 300.0,
+        "crop_origin_mm": stored["crop_origin_mm"],
+        "sha256": hashlib.sha256(png).hexdigest(),
+    } | overrides
+    return await api.client.request(
+        "PUT", f"/eigenhand/strips/{HAND}/S0001/F01", json_body=body, headers=api.admin_headers()
+    )
+
+
+async def _store_strip(api: Harness, record: bool = True, upload: bool = True) -> dict:
+    """Print a Bogen, judge its row, and push the strip image — the whole chain.
+
+    The strip's geometry is derived from the STORED layout at 300 DPI, exactly
+    the way `tools/eigenhand/ingest.py` cuts it, so the crop arithmetic in the
+    endpoint is tested against the same numbers the paper carries.
+    """
+    await _print(api, strips=["S0001"], date="2026-08-23")
+    layout = (
+        await api.client.request("GET", f"/eigenhand/sheets/{HAND}/B0001/layout", headers=api.admin_headers())
+    ).json()
+    row = layout["rows"][0]
+    x0, y0, x1, y1 = row["cut_mm"]
+    stored = {
+        "row": row,
+        "crop_origin_mm": [round(x0, 3), round(y0, 3)],
+        "width_px": int(round(x1 * PX_PER_MM)) - int(round(x0 * PX_PER_MM)),
+        "height_px": int(round(y1 * PX_PER_MM)) - int(round(y0 * PX_PER_MM)),
+    }
+    if record:
+        assert (await _record(api, [_accepted("S0001", "B0001", 0)])).status == 200
+    stored["png"] = _png(stored["width_px"], stored["height_px"])
+    if upload:
+        stored["put"] = await _put_strip(api, stored["png"], stored)
+    return stored
 
 
 class TestBestand:
@@ -320,6 +380,139 @@ class TestVerdicts:
         assert (await _bestand(api))["fassungen"]["angenommen"] == 0
 
 
+class TestSetup:
+    """The standing nib/ink/paper — typed once, read back by every import."""
+
+    @pytest.mark.asyncio
+    async def test_a_setup_is_written_read_back_and_updated_in_place(self, api: Harness):
+        written = await _put_setup(api, feder="Brause 361 Steno", tinte="Platinum Carbon Black", papier="Clairalfa 90")
+        assert written.status == 200, written.body
+        assert written.json()["style"] == "suetterlin"
+        assert written.json()["tinte"] == "Platinum Carbon Black"
+
+        read = await api.client.request("GET", f"/eigenhand/setups/{HAND}", headers=api.admin_headers())
+        assert read.json()["feder"] == "Brause 361 Steno"
+
+        # An update overwrites: the standing setup answers „what do I reach for
+        # now"; the historical truth lives per Fassung.
+        await _put_setup(api, feder="Brause Rose", tinte="Platinum Carbon Black")
+        again = await api.client.request("GET", f"/eigenhand/setups/{HAND}", headers=api.admin_headers())
+        assert again.json()["feder"] == "Brause Rose" and again.json()["papier"] is None
+        listed = await api.client.request("GET", "/eigenhand/setups", headers=api.admin_headers())
+        assert [row["hand"] for row in listed.json()["setups"]] == [HAND]
+
+    @pytest.mark.asyncio
+    async def test_an_unset_hand_says_so_rather_than_inventing_a_setup(self, api: Harness):
+        res = await api.client.request("GET", f"/eigenhand/setups/{HAND}", headers=api.admin_headers())
+        assert res.status == 404
+
+    @pytest.mark.asyncio
+    async def test_a_malformed_hand_id_is_refused(self, api: Harness):
+        res = await api.client.request("GET", "/eigenhand/setups/mn-fraktur", headers=api.admin_headers())
+        assert res.status == 400
+
+
+class TestStrips:
+    """The written strip in the DB — and any word cut out of it on demand."""
+
+    @pytest.mark.asyncio
+    async def test_a_strip_is_stored_listed_and_served_back_byte_identically(self, api: Harness):
+        stored = await _store_strip(api)
+        assert stored["put"].status == 201, stored["put"].body
+        assert stored["put"].json() == {"strip": "S0001", "fassung": "F01", "stored": True}
+
+        listing = await api.client.request("GET", f"/eigenhand/strips/{HAND}", headers=api.admin_headers())
+        row = listing.json()["strips"][0]
+        assert (row["strip"], row["fassung"], row["sheet"], row["row_index"]) == ("S0001", "F01", "B0001", 0)
+        assert row["sha256"] == hashlib.sha256(stored["png"]).hexdigest()
+        # The words come from the committed plan — a listing costs no pixels.
+        assert row["words"] == load_plan()["strips"]["S0001"]["words"]
+
+        served = await api.client.request("GET", f"/eigenhand/strips/{HAND}/S0001/F01", headers=api.admin_headers())
+        assert served.status == 200
+        assert served.body == stored["png"]
+        assert served.headers["content-type"] == "image/png"
+        # Reserved dataset: never in a shared cache, never on the viewer's disk.
+        assert served.headers["cache-control"] == "private, no-store"
+
+    @pytest.mark.asyncio
+    async def test_a_word_crop_is_cut_from_the_layout_without_extra_storage(self, api: Harness):
+        stored = await _store_strip(api)
+        word = stored["row"]["boxes"][1]["word"]
+        cut = await api.client.request(
+            "GET", f"/eigenhand/strips/{HAND}/S0001/F01", params={"wort": word}, headers=api.admin_headers()
+        )
+        assert cut.status == 200, cut.body
+        with Image.open(io.BytesIO(cut.body)) as image:
+            width, height = image.size
+        assert height == stored["height_px"]  # full strip height, on purpose
+        assert 0 < width < stored["width_px"]
+        by_index = await api.client.request(
+            "GET", f"/eigenhand/strips/{HAND}/S0001/F01", params={"box": 1}, headers=api.admin_headers()
+        )
+        assert by_index.body == cut.body
+
+    @pytest.mark.asyncio
+    async def test_a_word_the_row_does_not_carry_is_refused(self, api: Harness):
+        await _store_strip(api)
+        res = await api.client.request(
+            "GET", f"/eigenhand/strips/{HAND}/S0001/F01", params={"wort": "nichtdrin"}, headers=api.admin_headers()
+        )
+        assert res.status == 400
+
+    @pytest.mark.asyncio
+    async def test_the_same_bytes_again_are_a_no_op_and_different_bytes_a_conflict(self, api: Harness):
+        stored = await _store_strip(api)
+        again = await _put_strip(api, stored["png"], stored)
+        assert again.status == 201 and again.json()["stored"] is False
+
+        other = _png(stored["width_px"], stored["height_px"], shade=120)
+        clash = await _put_strip(api, other, stored)
+        assert clash.status == 409
+        served = await api.client.request("GET", f"/eigenhand/strips/{HAND}/S0001/F01", headers=api.admin_headers())
+        assert served.body == stored["png"]
+
+    @pytest.mark.asyncio
+    async def test_pixels_without_a_recorded_fassung_are_refused(self, api: Harness):
+        # Same „no ghost rows" rule as the verdicts, one step further: an image
+        # nothing in the Bestand accounts for would be evidence out of nowhere.
+        stored = await _store_strip(api, record=False)
+        assert stored["put"].status == 404
+        listing = await api.client.request("GET", f"/eigenhand/strips/{HAND}", headers=api.admin_headers())
+        assert listing.json()["strips"] == []
+
+    @pytest.mark.asyncio
+    async def test_a_declared_hash_that_does_not_match_the_bytes_is_refused(self, api: Harness):
+        # sha256 is the archive's identity for this file — a wrong one would
+        # break the restore check silently.
+        stored = await _store_strip(api, record=True, upload=False)
+        res = await _put_strip(api, stored["png"], stored, sha256="c" * 64)
+        assert res.status == 400
+
+    @pytest.mark.asyncio
+    async def test_a_hash_that_contradicts_the_recorded_fassung_is_refused(self, api: Harness):
+        await _print(api, strips=["S0001"], date="2026-08-23")
+        verdict = _accepted("S0001", "B0001", 0) | {"png_sha256": "d" * 64}
+        assert (await _record(api, [verdict])).status == 200
+        stored = await _store_strip(api, record=False, upload=False)
+        res = await _put_strip(api, stored["png"], stored)
+        assert res.status == 409
+
+    @pytest.mark.asyncio
+    async def test_bytes_that_are_not_a_png_are_refused(self, api: Harness):
+        stored = await _store_strip(api, record=True, upload=False)
+        res = await _put_strip(api, b"this is not a PNG", stored)
+        assert res.status == 400
+
+    @pytest.mark.asyncio
+    async def test_declared_dimensions_must_match_the_image(self, api: Harness):
+        # The stored size IS the crop's scale — a listing that disagrees with
+        # the pixels would cut every word crop in the wrong place, silently.
+        stored = await _store_strip(api, record=True, upload=False)
+        res = await _put_strip(api, stored["png"], {**stored, "width_px": stored["width_px"] + 17})
+        assert res.status == 400
+
+
 class TestAdminGate:
     """The Bestand is the reserved dataset's inventory — reads are gated too."""
 
@@ -333,10 +526,16 @@ class TestAdminGate:
             ("GET", f"/eigenhand/sheets/{HAND}/B0001/pdf"),
             ("GET", f"/eigenhand/sheets/{HAND}/B0001/layout"),
             ("POST", "/eigenhand/fassungen"),
+            ("GET", "/eigenhand/setups"),
+            ("GET", f"/eigenhand/setups/{HAND}"),
+            ("PUT", f"/eigenhand/setups/{HAND}"),
+            ("GET", f"/eigenhand/strips/{HAND}"),
+            ("GET", f"/eigenhand/strips/{HAND}/S0001/F01"),
+            ("PUT", f"/eigenhand/strips/{HAND}/S0001/F01"),
         ],
     )
     async def test_every_route_needs_the_admin_header(self, api: Harness, method: str, path: str):
-        res = await api.client.request(method, path, json_body={} if method == "POST" else None)
+        res = await api.client.request(method, path, json_body={} if method in ("POST", "PUT") else None)
         assert res.status == 401, (path, res.status)
 
     @pytest.mark.asyncio

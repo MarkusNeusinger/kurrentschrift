@@ -1020,6 +1020,13 @@ class EigenhandFassungIn(BaseModel):
     note: str | None = None
     png_sha256: str | None = None
     filed_on: str | None = None
+    # The EFFECTIVE setup of this row, denormalised on purpose: a Fassung has
+    # to say out of itself what it was written with, and the day the nib really
+    # changes, the break is visible in the data instead of reconstructed.
+    feder: str | None = None
+    tinte: str | None = None
+    papier: str | None = None
+    geraet: str | None = None
 
 
 class EigenhandSyncIn(BaseModel):
@@ -1031,3 +1038,88 @@ class EigenhandSyncOut(BaseModel):
     hand: str
     recorded: int
     skipped: int
+
+
+class EigenhandSetupIn(BaseModel):
+    """A hand's STANDING setup — typed once, read back by every import.
+
+    Nib, ink and paper are photometric parameters of a whole campaign: keeping
+    them in one place is what makes „identisch weiterschreiben" a lookup rather
+    than a memory exercise. `geraet` is the capture device (`scanner` · `foto`).
+    """
+
+    style: str | None = None
+    label: str | None = None
+    feder: str | None = None
+    tinte: str | None = None
+    papier: str | None = None
+    geraet: str | None = None
+    note: str | None = None
+
+
+class EigenhandSetupOut(EigenhandSetupIn):
+    hand: str
+    style: str
+    updated_at: str | None = None
+
+
+class EigenhandSetupsOut(BaseModel):
+    setups: list[EigenhandSetupOut]
+
+
+class EigenhandStripOut(BaseModel):
+    """One stored strip — metadata only; the pixels come from the image route."""
+
+    strip: str
+    fassung: str
+    sheet: str
+    row_index: int
+    width_px: int
+    height_px: int
+    dpi: float
+    crop_origin_mm: list[float]
+    sha256: str
+    bytes: int
+    words: list[str] = []
+
+
+class EigenhandStripListOut(BaseModel):
+    hand: str
+    strips: list[EigenhandStripOut]
+
+
+class EigenhandArchiveOut(BaseModel):
+    """One hand's complete bookkeeping as ROWS — what an archive run files.
+
+    The Bestand answers „how far am I"; this answers „what exactly is in the
+    tables", which is a different question and the only one a restore check can
+    be built on. Strips appear with their sha256 and without their bytes: the
+    private archive holds the images, and matching the hashes is what turns
+    „repo + archive restores everything" into something mechanical.
+    """
+
+    hand: str
+    style: str
+    setup: EigenhandSetupOut | None = None
+    sheets: list[dict[str, Any]]
+    fassungen: list[dict[str, Any]]
+    strips: list[EigenhandStripOut]
+
+
+class EigenhandStripIn(BaseModel):
+    """A strip image pushed up by `tools.eigenhand.sync --mit-streifen`.
+
+    The PNG travels base64-encoded in JSON rather than as multipart: the whole
+    capture chain speaks JSON to this API, and one encoding beats a second
+    upload path for ~350 KB. `sha256` is the archive's identity for these
+    bytes — the server verifies it instead of trusting it.
+    """
+
+    sheet: str
+    row_index: Annotated[int, Field(ge=0, le=99)]
+    png_base64: str
+    width_px: Annotated[int, Field(ge=1, le=20000)]
+    height_px: Annotated[int, Field(ge=1, le=20000)]
+    dpi: Annotated[float, Field(gt=0, le=4800)]
+    crop_origin_mm: list[float]
+    sha256: str

@@ -25,6 +25,11 @@ Safety properties, in the order they matter:
 * **Contents never reach stdout.** The archive holds the reserved data; the
   tool prints counts and paths only.
 
+The own-hand tables ride along without their images (`EIGENHAND_TABLES`): the
+strips' master copy is the `own-hand/` archive tree, and what is filed here is
+the DB's side of the same facts plus a `strip_hashes` manifest — which is what
+turns „repo + archive restores everything" from a hope into a check.
+
 Restoring is deliberately NOT implemented here. Writing to the database is a
 production action that needs a human decision each time, not a flag on a
 backup tool.
@@ -73,6 +78,17 @@ GLOBAL_READS: tuple[tuple[str, str, bool], ...] = (
     ("hands", "/hands", False),
     ("work_items", "/work-items", True),
 )
+
+# The own-hand capture chain's tables. Their master copy is the OTHER archive
+# tree (`own-hand/`, filed by tools/eigenhand/snapshot.py with the Kartei and
+# the strip images), so what rides along here is the DB's side of the same
+# facts — every row except the strip BYTES, which would bloat a snapshot by
+# ~350 KB apiece for a second copy of files the archive already holds.
+#
+# It earns its place as the CHECK: `strip_hashes` in the manifest is what a
+# restore compares the archive's files against, and a divergence between the
+# two trees becomes visible here instead of on the day someone needs it.
+EIGENHAND_TABLES = ("eigenhand_sheets", "eigenhand_fassungen", "eigenhand_strips")
 
 
 def _git(*args: str, cwd: Path, required: bool = False) -> str:
@@ -202,7 +218,32 @@ def collect(client: ApiClient) -> tuple[dict[str, Any], dict[str, int]]:
     per_style = Counter(s["style_id"] for s in payload["global"]["sources"])
     payload["templates_read_via"] = read_via
     payload["ambiguous_styles"] = sorted(style for style, n in per_style.items() if n > 1)
+
+    payload["eigenhand"], payload["strip_hashes"] = collect_eigenhand(client, counts)
     return payload, counts
+
+
+def collect_eigenhand(client: ApiClient, counts: dict[str, int]) -> tuple[dict[str, Any], dict[str, str]]:
+    """Every own-hand row per hand, plus the strip hashes the restore checks.
+
+    Absent hands are not an error: a snapshot taken before the first Bogen is
+    printed has nothing to say here, and the shrink guard is what notices if a
+    later one loses rows it once had.
+    """
+    hands = client.get("/eigenhand/hands", admin=True, allow_404=True) or {}
+    per_hand: dict[str, Any] = {}
+    hashes: dict[str, str] = {}
+    for hand in sorted(hands.get("hands", [])):
+        archive = client.get(f"/eigenhand/archive/{hand}", admin=True, allow_404=True)
+        if archive is None:
+            continue
+        per_hand[hand] = archive
+        counts["eigenhand_sheets"] = counts.get("eigenhand_sheets", 0) + len(archive.get("sheets", []))
+        counts["eigenhand_fassungen"] = counts.get("eigenhand_fassungen", 0) + len(archive.get("fassungen", []))
+        counts["eigenhand_strips"] = counts.get("eigenhand_strips", 0) + len(archive.get("strips", []))
+        for row in archive.get("strips", []):
+            hashes[f"{hand}/{row['strip']}/{row['fassung']}"] = row["sha256"]
+    return per_hand, hashes
 
 
 def latest_manifest(archive: Path) -> dict[str, Any] | None:
@@ -246,6 +287,10 @@ def write_snapshot(out: Path, payload: dict[str, Any], manifest: dict[str, Any])
             per.mkdir(parents=True)
             for name, rows in tables.items():
                 (per / f"{name}.json").write_text(json.dumps(rows, indent=1, ensure_ascii=False) + "\n")
+    for hand, archive in (payload.get("eigenhand") or {}).items():
+        per = out / "eigenhand" / hand
+        per.mkdir(parents=True)
+        (per / "archive.json").write_text(json.dumps(archive, indent=1, ensure_ascii=False) + "\n")
 
 
 def file_into_archive(snapshot: Path, archive: Path, stamp: str, counts: dict[str, int], *, push: bool) -> str:
@@ -316,6 +361,12 @@ def main(argv: list[str] | None = None) -> int:
         "code_branch": _git("rev-parse", "--abbrev-ref", "HEAD", cwd=REPO_ROOT),
         "counts": counts,
         "primary_tables": list(PRIMARY_TABLES),
+        "eigenhand_tables": list(EIGENHAND_TABLES),
+        # `hand/strip/fassung` → sha256 of the stored PNG. The bytes live in
+        # the own-hand archive tree, not here; this is what a restore matches
+        # them against, and what makes a divergence between the two trees
+        # visible before the day someone needs them.
+        "strip_hashes": payload.get("strip_hashes") or {},
         # Stated rather than silently lost: what the read endpoints do not
         # serve, so a restore from this archive is known to be incomplete here.
         "templates_read_via": payload["templates_read_via"],
@@ -334,6 +385,10 @@ def main(argv: list[str] | None = None) -> int:
             " equal to its default is archived as null (inherit). An explicit override that happens"
             " to equal the default is indistinguishable through this API and becomes inherit",
             "aggregates / pair_aggregates are not archived — derived, rebuild them from the occurrences",
+            "eigenhand_strips.png is NOT archived here — the images live in the own-hand archive"
+            " tree; strip_hashes is what a restore matches them against"
+            " (`tools.eigenhand.sync --from <snapshot> --mit-streifen`)",
+            "eigenhand_hands rides along inside each hand's archive.json as `setup`, not as a table of its own",
         ],
     }
     staged = Path(args.out).expanduser().resolve() / stamp

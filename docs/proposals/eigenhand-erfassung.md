@@ -435,6 +435,64 @@ dieser Zeile) — eine Fassung IST ein Beleg, sie macht einen Streifen
 Trainingsdaten. `sync.py` hält darum die Verdikte eines Bogens zurück, den
 es (mangels `layout.json`) nicht registrieren konnte.
 
+### 7.2 Die Streifen selbst — Bilder in der DB
+
+**Owner-Entscheidung 2026-08-24:** „ich glaube auch, dass ich die
+Streifen gerne in der Datenbank hätte, damit der Admin-Bereich wie jetzt
+bei Sütterlin auch den Crop anzeigen kann, ohne dass sie im Repository
+landen.“ Das kehrt den engeren Satz aus §7.1 („was hochgeht, sind Zahlen
+— nie ein Streifenbild“) für genau einen Weg um: die DB, nicht das Repo.
+Migration `0025` bringt dafür drei Dinge.
+
+- **`eigenhand_hands`** — das STEHENDE Setup einer Hand: Feder, Tinte,
+  Papier, Aufnahmegerät. Diese drei sind photometrische Parameter einer
+  ganzen Kampagne, keine Detailangabe eines Imports: wechseln sie
+  mittendrin, zerfällt das Korpus in Kohorten, die man auf Breite und
+  Schwärzung nicht mehr vergleichen kann. Einmal getippt
+  (`tools.eigenhand.setup`), lokal zwischengespeichert (`setup.json`),
+  von `ingest` als Vorgabe gelesen.
+- **Sitzungsspalten auf `eigenhand_fassungen`** — die EFFEKTIVEN Werte je
+  Zeile. Bewusst denormalisiert: eine Fassung muss aus sich heraus sagen,
+  womit sie geschrieben wurde — ohne Join und ohne die stille Regel „NULL
+  heißt wie die Hand“, die genau an dem Tag falsch wird, an dem die Hand
+  wechselt. Der Bruch soll in den Daten sichtbar sein, nicht
+  rekonstruiert werden müssen.
+- **`eigenhand_strips`** — das Streifenbild. Eigene Tabelle, PNG-Spalte
+  überall deferred (`defer(EigenhandStrip.png)`), damit kein
+  Bestands-Query je ~350 KB pro Fassung mitschleppt — dasselbe Motiv wie
+  beim deferred `templates.raw_path` im Render-Pfad.
+
+Das Chart-Vorbild trägt hier nicht: `sources.chart_path` zeigt auf
+committete Bytes auf der Platte, was für Loth 1866 (gemeinfrei) geht. Der
+reservierte Eigenhand-Datensatz kann das nie sein, also müssen die Bytes
+den anderen Weg nehmen — in die DB, admin-gesichert, `private, no-store`,
+nie öffentlich. Das ist keine Aufweichung von §8: das REPO bleibt frei von
+Streifen, und das Archiv bleibt der Master (§8.1).
+
+**Wort-Crops brauchen keinen eigenen Speicher.** Die Streifenzeile merkt
+sich, wo ihr Crop in Millimetern begann (`crop_origin_mm`), das Layout des
+Bogens sagt, wo jede Wortkiste sitzt, und `width_px` über der Breite des
+Schnittbands liefert den Maßstab. Damit schneidet `core/eigenhand/crop.py`
+jedes Wort aus jeder Fassung heraus — dieselbe Überlegung, mit der der
+Chart-Endpunkt Glyph-Crops aus einem Tafelbild bedient, nur in mm statt in
+Tafelpixeln. Senkrecht bleibt der Crop auf voller Streifenhöhe: das
+Interessante an einem Wort ist, wie weit es über die Mittellinie reicht
+und unter die Grundlinie.
+
+**Was die Schnittstelle auch hier nachrechnet:** Jedes gespeicherte Bild
+muss zu einer Fassung gehören, die auf einer gedruckten Zeile beurteilt
+wurde — dieselbe „keine Geisterzeilen“-Regel wie bei den Verdikten, einen
+Schritt weiter, denn Pixel ohne Verdikt wären ein Bild, das im Bestand
+nirgends vorkommt. Der SHA256 wird gegen die Bytes geprüft statt geglaubt
+(er ist die Identität der Datei im Archiv), die deklarierten Maße gegen
+das Bild (sie SIND der Maßstab des Crops), und wo die Fassung bereits
+einen Hash trägt, müssen beide dieselbe Datei benennen. Dieselben Bytes
+noch einmal sind ein No-op, andere Bytes unter derselben ID ein Konflikt —
+überschrieben wird nie.
+
+Hochgeschoben wird nur auf Verlangen: `sync --mit-streifen`. Die Bilder
+sind der reservierte Datensatz, und der Master bleibt das Archiv.
+
 ## 8 Ablage und Archiv
 
 `data/samples/own-hand/` ist komplett gitignored bis auf `SOURCE.md` +
@@ -457,6 +515,54 @@ verweigert schrumpfende Läufe. Damit liegen DB-Snapshots (inkl. der
 authored Wort-Traces) und Eigenhand-Streifen im SELBEN Reservat — der
 gesamte gelernte Datensatz an einem Ort. Regel: **Snapshot nach jeder
 Import-Sitzung** (bis dahin sind die Streifen die einzige Kopie).
+
+### 8.1 Wiederherstellung: Repo + Archiv genügen
+
+**Owner-Vorgabe 2026-08-24:** „wenn die DB weg ist, muss man mit normalem
+Repo plus Archiv-Repo die wichtigen Tabelleninhalte sowie die Streifen als
+Bilder wieder voll herstellen können.“ Seit §7.2 liegen Streifenbilder in
+der DB — also muss diese Zusage nachprüfbar sein und nicht bloß plausibel.
+
+Die Arbeitsteilung dafür ist eindeutig:
+
+- Das **Archiv ist der Master**. `own-hand/<hand>/<stempel>/` enthält
+  `kartei.json` (Bögen, Fassungen, Verdikte, Sitzungen), je Bogen
+  `layout.json` (den Geometrie-Vertrag) und je Fassung `streifen.png` +
+  `meta.json`. Das ist alles, was die vier `eigenhand_*`-Tabellen
+  ausmachen.
+- Das **Repo** liefert den Rest: Streifenplan, Geometrie, Migrationen,
+  Werkzeuge.
+- Der **DB-Snapshot** (`tools/dbsnapshot`) nimmt die Eigenhand-Tabellen
+  ohne die PNG-Spalte mit und schreibt ein `strip_hashes`-Manifest. Er ist
+  hier nicht die Quelle, sondern die PRÜFUNG: an ihm sieht man, ob DB und
+  Archiv auseinandergelaufen sind, bevor der Tag kommt, an dem es zählt.
+
+Das Rezept — dasselbe `sync`, nur mit anderer Quelle, damit der
+Wiederherstellungsweg keine zweite, ungeprüfte Implementierung ist:
+
+```bash
+uv run alembic upgrade head                       # leere DB, aktuelles Schema
+ADMIN_TOKEN=… uv run python -m tools.eigenhand.sync \
+    --hand mn-suetterlin \
+    --from $KURRENTSCHRIFT_ARCHIVE/own-hand/mn-suetterlin/<stempel> \
+    --mit-streifen
+```
+
+`--from` liest Kartei, Layouts und Fassungen aus dem Snapshot statt aus
+der Arbeitskopie; alles danach ist der normale Push (Bögen zuerst, dann
+Verdikte, dann Bilder). Die Wiederholung ist gefahrlos: gleiche Layouts,
+gleiche Verdikte und gleiche Bytes sind No-ops.
+
+**Drill 2026-08-25**, gegen ein Wegwerf-PostgreSQL, die Arbeitskopie
+zwischendurch gelöscht: 1 Bogen, 3 Fassungen, 3 Streifen wiederhergestellt;
+die drei SHA256 stimmen mit den Archivdateien überein, `octet_length(png)
+= bytes`; ein Wort-Crop („Galoppieren“, 1016×342 aus 2185×342) ließ sich
+aus einem wiederhergestellten Streifen schneiden; der zweite Lauf schrieb
+nichts. Ein Befund aus dem Drill: Feder/Tinte/Papier bleiben auf den
+Fassungen leer, wenn das stehende Setup ERST NACH dem `ingest` erklärt
+wurde — die Reihenfolge ist `setup` vor der ersten Sitzung. Der Weg ist
+zusätzlich als Test festgenagelt (`tests/test_eigenhand_restore.py`, ganze
+Kette gegen die echte API).
 
 ## 9 Anschluss an die Ernte (Phase 5, aufgeschoben)
 
@@ -491,7 +597,12 @@ die menschliche Kopf-Bestätigung je fehleranfällig wird.
   der DB, und die Werkbank zeigt den Bestand und erzeugt die Druck-PDFs.
   Was rein muss, damit das ohne Pixel geht, steht in §7.1.
 - **Streifen-Scans ins Repo committen** (Owner, 2026-08-22): siehe §8 —
-  Open-Core-Reservat statt Klasse-1-Commit.
+  Open-Core-Reservat statt Klasse-1-Commit. Gilt unverändert; die
+  Streifen liegen seit 2026-08-24 in der DB (§7.2) und im Archiv, nie im
+  Repo.
+- **Ganzseiten-Scans in die DB**: hochgeschoben wird der Streifen, nicht
+  die Seite. Der Scan ist Zwischenmaterial (`--keep-scan` legt ihn lokal
+  ab), der Streifen ist das Belegstück.
 - **Fantasiesilben-Drills im Wortvorrat**: nur echte Wörter; Übergänge
   ohne echtes Trägerwort sind für echten Text irrelevant. (Die
   historischen Abb.-20-Drills bleiben, was sie sind: Mess-Specimen der
@@ -515,6 +626,7 @@ die menschliche Kopf-Bestätigung je fehleranfällig wird.
 | 3 | Einlesen + Siebung (`fiducial` · `ingest` · `page` · `apply` · `kartei`) | umgesetzt; synthetischer E2E-Rauchtest grün |
 | 4 | Bericht, Redo, Archiv (`report` · `redo` · `snapshot`) + Ablage-Skelett | umgesetzt |
 | 4a | DB-Buchführung + Werkbank-Ansicht (`0024` · `/eigenhand/*` · `sync` · `pull`) | umgesetzt (§7.1) |
+| 4b | Streifen + stehendes Setup in der DB, Wort-Crops, Wiederherstellungsweg (`0025` · `crop` · `setup` · `sync --mit-streifen`/`--from`) | umgesetzt (§7.2, §8.1); Drill 2026-08-25 grün |
 | 5 | Ernte-Anschluss, Kurrent/Offenbacher-Betrieb, optionaler Bogen-Code | aufgeschoben (§9) |
 
 Dazu je Schreibsitzung wiederkehrend: Kalibrier-Schleife der
@@ -535,7 +647,9 @@ advance-Tabelle, `gaps`-Kuration neuer Selten-Join-Wörter, neue Wellen.
 5. **Kein DB-Schreibpfad** in der ganzen Werkzeugkette: `sync.py` schiebt
    die Buchführung über die admin-gesicherte HTTP-Schnittstelle hoch, nie
    über eine Verbindung zur Datenbank; die Ernte (Phase 5) läuft ebenso.
-   Und was hochgeht, sind Zahlen — nie ein Streifenbild.
+   Seit §7.2 gehen auch Streifenbilder diesen Weg — aber nur auf
+   ausdrückliches `--mit-streifen`, nur admin-gesichert und nie
+   öffentlich; das Repo bleibt frei von ihnen, das Archiv bleibt Master.
 6. **Archiv create-only** — Snapshots nach jeder Sitzung, nie aufräumen,
    Schrumpfung ist ein Fehler.
 7. **Duktus-Prior bleibt die Tafel** — die eigene Hand liefert Vorkommen

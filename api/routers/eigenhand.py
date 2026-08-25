@@ -22,6 +22,17 @@ count what a hand already covers.
 * ``GET /eigenhand/sheets/{hand}/{sheet}/layout`` — that layout, for the local
   ingest run that registers a scan against it.
 * ``POST /eigenhand/fassungen`` — the local Siebung pushing its verdicts up.
+* ``GET /eigenhand/archive/{hand}`` — the hand's bookkeeping as rows, for the
+  archive run and the restore check (strip hashes, never strip bytes).
+* ``GET|PUT /eigenhand/setups[/{hand}]`` — the hand's standing nib/ink/paper.
+* ``GET|PUT /eigenhand/strips/…`` — the written strip itself, and any single
+  word cut out of it.
+
+The strips are the one place where own-hand PIXELS do travel (owner, 2026-08-24)
+— so that the workbench can show a written Streifen the way it shows a chart
+crop. They stay admin-gated and uncacheable, and the private ARCHIVE stays the
+master copy: every stored row carries the sha256 its archived file has, which is
+what makes „repo + archive restores everything" a check rather than a hope.
 
 Compute is shared with the terminal chain (``core/eigenhand``), so the admin
 view and ``python -m tools.eigenhand.report`` cannot disagree about one hand.
@@ -39,31 +50,52 @@ dataset's inventory.
 
 from __future__ import annotations
 
+import base64
+import binascii
 import hashlib
+import io
 from datetime import date as date_cls
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_admin
 from api.dependencies import require_db
 from api.schemas import (
+    EigenhandArchiveOut,
     EigenhandBestandOut,
     EigenhandHandsOut,
+    EigenhandSetupIn,
+    EigenhandSetupOut,
+    EigenhandSetupsOut,
     EigenhandSheetImportIn,
     EigenhandSheetIn,
     EigenhandSheetsOut,
+    EigenhandStripIn,
+    EigenhandStripListOut,
+    EigenhandStripOut,
     EigenhandSyncIn,
     EigenhandSyncOut,
 )
 from core.database import EigenhandRepository
-from core.eigenhand import bogen, geometry
+from core.eigenhand import bogen, crop, geometry
 from core.eigenhand.bestand import bestand as build_bestand
 from core.eigenhand.ids import STYLE_IDS, is_fassung_id, is_hand_id, is_sheet_id, is_strip_id, style_of_hand
-from core.eigenhand.plan import load_plan
+from core.eigenhand.plan import load_plan, words_of
 
 
 router = APIRouter(prefix="/eigenhand", tags=["eigenhand"], dependencies=[Depends(require_admin)])
+
+# A strip is one A4 row at 300 DPI — measured ~200–370 KB. The cap is generous
+# enough for 600 DPI Kurrent (Schwellzug hairlines, proposal §6) and small
+# enough that a mis-pointed upload cannot push a scan of a whole page into a
+# row that is supposed to hold one strip.
+MAX_STRIP_BYTES = 8 * 1024 * 1024
+
+# The pixels are the reserved dataset: no shared cache, no disk cache, no
+# revalidation. `private` alone would still let the browser keep a copy.
+STRIP_CACHE_CONTROL = "private, no-store"
 
 
 def _checked_hand(hand: str) -> str:
@@ -333,7 +365,345 @@ async def record_fassungen(body: EigenhandSyncIn, db: AsyncSession = Depends(req
             note=item.note,
             png_sha256=item.png_sha256,
             filed_on=item.filed_on,
+            feder=item.feder,
+            tinte=item.tinte,
+            papier=item.papier,
+            geraet=item.geraet,
         )
         recorded += 1
     await db.commit()
     return EigenhandSyncOut(hand=hand, recorded=recorded, skipped=skipped)
+
+
+@router.get("/archive/{hand}", response_model=EigenhandArchiveOut)
+async def read_archive(hand: str, db: AsyncSession = Depends(require_db)) -> EigenhandArchiveOut:
+    """One hand's bookkeeping as rows — for the archive run and its restore check.
+
+    Everything the `eigenhand_*` tables hold for this hand except the strip
+    BYTES: the setup, every Bogen with its layout, every verdict, and every
+    stored strip's metadata with its sha256. The images stay where they belong
+    — in the private archive — and the hashes here are what a restore compares
+    against, so „repo + archive brings it all back" is a check and not a hope.
+    """
+    _checked_hand(hand)
+    repo = EigenhandRepository(db)
+    setup = await repo.hand_setup(hand)
+    sheets = await repo.sheets_of(hand)
+    style = setup.style if setup else (sheets[0].style if sheets else style_of_hand(hand) or "")
+    return EigenhandArchiveOut(
+        hand=hand,
+        style=style,
+        setup=_setup_out(setup) if setup else None,
+        sheets=[
+            {
+                "sheet": row.sheet,
+                "style": row.style,
+                "printed_on": row.printed_on,
+                "strips": list(row.strips),
+                "layout": row.layout,
+                "layout_sha256": row.layout_sha256,
+            }
+            for row in sheets
+        ],
+        fassungen=[
+            {
+                "strip": row.strip,
+                "fassung": row.fassung,
+                "sheet": row.sheet,
+                "row_index": row.row_index,
+                "attempt": row.attempt,
+                "attempts": row.attempts,
+                "status": row.status,
+                "reason": row.reason,
+                "note": row.note,
+                "png_sha256": row.png_sha256,
+                "filed_on": row.filed_on,
+                "feder": row.feder,
+                "tinte": row.tinte,
+                "papier": row.papier,
+                "geraet": row.geraet,
+            }
+            for row in await repo.fassungen_of(hand)
+        ],
+        strips=[_strip_out(row) for row in await repo.strips_of(hand)],
+    )
+
+
+# --------------------------------------------------------------- standing setup
+
+
+@router.get("/setups", response_model=EigenhandSetupsOut)
+async def list_setups(db: AsyncSession = Depends(require_db)) -> EigenhandSetupsOut:
+    """Every hand's standing nib/ink/paper — what a new session writes with."""
+    return EigenhandSetupsOut(setups=[_setup_out(row) for row in await EigenhandRepository(db).hand_setups()])
+
+
+@router.get("/setups/{hand}", response_model=EigenhandSetupOut)
+async def read_setup(hand: str, db: AsyncSession = Depends(require_db)) -> EigenhandSetupOut:
+    """One hand's standing setup — `ingest` reads it instead of asking again."""
+    _checked_hand(hand)
+    row = await EigenhandRepository(db).hand_setup(hand)
+    if row is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{hand} has no standing setup recorded yet")
+    return _setup_out(row)
+
+
+@router.put("/setups/{hand}", response_model=EigenhandSetupOut)
+async def write_setup(hand: str, body: EigenhandSetupIn, db: AsyncSession = Depends(require_db)) -> EigenhandSetupOut:
+    """Type the setup once. Every later Fassung records the values it really used.
+
+    An update is deliberately a plain overwrite rather than a new cohort row:
+    the standing setup answers „what do I reach for now", and the historical
+    truth lives per Fassung, where a mid-campaign change shows up as a visible
+    break in the data instead of a reconstruction.
+    """
+    _checked_hand(hand)
+    style = body.style or style_of_hand(hand)
+    if style not in geometry.PRESETS:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"unknown style {style!r}")
+    repo = EigenhandRepository(db)
+    await repo.upsert_hand_setup(hand, style, **body.model_dump(exclude={"style"}))
+    await db.commit()
+    # Re-read rather than serialise the committed instance: `created_at` and
+    # `updated_at` are server-side defaults, so the in-session object would have
+    # to lazy-load them — which is exactly the IO an async session refuses to
+    # do implicitly.
+    return _setup_out(await repo.hand_setup(hand))
+
+
+def _setup_out(row) -> EigenhandSetupOut:
+    return EigenhandSetupOut(
+        hand=row.hand,
+        style=row.style,
+        label=row.label,
+        feder=row.feder,
+        tinte=row.tinte,
+        papier=row.papier,
+        geraet=row.geraet,
+        note=row.note,
+        updated_at=row.updated_at.isoformat() if row.updated_at else None,
+    )
+
+
+# ---------------------------------------------------------------- strip images
+
+
+@router.get("/strips/{hand}", response_model=EigenhandStripListOut)
+async def list_strips(
+    hand: str, strip: str | None = None, db: AsyncSession = Depends(require_db)
+) -> EigenhandStripListOut:
+    """Which strips a hand has stored — metadata only, never the pixels.
+
+    The words come from the committed plan rather than from the row, so a
+    listing says what is on a strip without loading a single byte of image.
+    """
+    _checked_hand(hand)
+    if strip is not None and not is_strip_id(strip):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"strip id {strip!r} must be a plain `S<nnnn>`")
+    plan = load_plan()
+    rows = await EigenhandRepository(db).strips_of(hand, strip)
+    return EigenhandStripListOut(hand=hand, strips=[_strip_out(row, plan) for row in rows])
+
+
+def _strip_out(row, plan: dict | None = None) -> EigenhandStripOut:
+    """One strip row as the API states it — metadata, words, never the bytes."""
+    return EigenhandStripOut(
+        strip=row.strip,
+        fassung=row.fassung,
+        sheet=row.sheet,
+        row_index=row.row_index,
+        width_px=row.width_px,
+        height_px=row.height_px,
+        dpi=row.dpi,
+        crop_origin_mm=list(row.crop_origin_mm or []),
+        sha256=row.sha256,
+        bytes=row.bytes,
+        words=words_of(plan, row.strip) if plan and row.strip in plan["strips"] else [],
+    )
+
+
+@router.get("/strips/{hand}/{strip}/{fassung}")
+async def read_strip(
+    hand: str,
+    strip: str,
+    fassung: str,
+    wort: str | None = None,
+    box: int | None = None,
+    pad_mm: float = 1.0,
+    db: AsyncSession = Depends(require_db),
+) -> Response:
+    """The stored strip as PNG — whole, or cut down to one word.
+
+    A word crop needs no storage of its own: the row remembers where its crop
+    started in mm, the sheet's layout says where the word's box sits, and the
+    pixel width gives the scale. `wort` names the word, `box` its index in the
+    row — the index is what disambiguates a word that appears twice.
+    """
+    _checked_hand(hand)
+    _checked_strip(strip)
+    _checked_fassung(fassung)
+    row = await EigenhandRepository(db).strip(hand, strip, fassung)
+    if row is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{hand} has no stored strip {strip}/{fassung}")
+    png = row.png
+    filename = f"{hand}-{strip}-{fassung}"
+    if wort is not None or box is not None:
+        layout_row = await _layout_row(hand, row.sheet, row.row_index, db)
+        word_box = _guard(crop.find_box, layout_row, wort, box)
+        rect = _guard(
+            crop.word_box_px,
+            word_box,
+            row.crop_origin_mm or [0.0, 0.0],
+            row.width_px,
+            row.height_px,
+            layout_row.get("cut_mm") or [],
+            max(0.0, min(pad_mm, 10.0)),
+        )
+        # Decode + re-encode is CPU-bound — off the event loop, like the chart
+        # crops (api/routers/chart.py).
+        png = await run_in_threadpool(crop.cut_png, png, rect)
+        filename = f"{filename}-{word_box.get('word', 'wort')}"
+    return Response(
+        content=png,
+        media_type="image/png",
+        headers={"Content-Disposition": f'inline; filename="{filename}.png"', "Cache-Control": STRIP_CACHE_CONTROL},
+    )
+
+
+@router.put("/strips/{hand}/{strip}/{fassung}", status_code=status.HTTP_201_CREATED)
+async def write_strip(
+    hand: str, strip: str, fassung: str, body: EigenhandStripIn, db: AsyncSession = Depends(require_db)
+) -> dict:
+    """Store one strip image — pushed by `tools.eigenhand.sync --mit-streifen`.
+
+    Every stored strip has to belong to a Fassung that was judged on a Bogen
+    that was printed: same „no ghost rows" rule as the verdicts above, one step
+    further, because pixels without a verdict would be an image nothing in the
+    Bestand accounts for. The declared sha256 is VERIFIED against the bytes
+    (it is the archive's identity for this file — a wrong one would break the
+    restore check silently), and where the Fassung already recorded a hash, the
+    two must be the same file.
+
+    Idempotent: the same bytes again are a no-op, different bytes under the
+    same id are a conflict. Overwriting is never right — the strip is the
+    reserved dataset's primary evidence.
+    """
+    _checked_hand(hand)
+    _checked_strip(strip)
+    _checked_fassung(fassung)
+    if not is_sheet_id(body.sheet):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"sheet id {body.sheet!r} must be a plain `B<nnnn>`")
+
+    png = _decoded_png(body.png_base64)
+    digest = hashlib.sha256(png).hexdigest()
+    if digest != body.sha256:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            detail=f"sha256 {body.sha256[:10]}… does not match the uploaded bytes ({digest[:10]}…)",
+        )
+
+    repo = EigenhandRepository(db)
+    verdict = await repo.fassung_for_row(hand, body.sheet, body.row_index)
+    if verdict is None or (verdict.strip, verdict.fassung) != (strip, fassung):
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail=(
+                f"no Fassung {strip}/{fassung} recorded for {hand} on {body.sheet} row {body.row_index} — "
+                "push the Siebung's verdicts first (POST /eigenhand/fassungen), then the strips"
+            ),
+        )
+    if verdict.png_sha256 and verdict.png_sha256 != digest:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail=(
+                f"{strip}/{fassung} was recorded with png_sha256 {verdict.png_sha256[:10]}… — "
+                f"these bytes are a different file ({digest[:10]}…)"
+            ),
+        )
+
+    existing = await repo.strip(hand, strip, fassung)
+    if existing is not None:
+        if existing.sha256 != digest:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT,
+                detail=f"{strip}/{fassung} is already stored with different bytes ({existing.sha256[:10]}…)",
+            )
+        return {"strip": strip, "fassung": fassung, "stored": False}
+
+    # The stored dimensions are the crop's scale — a listing that disagrees
+    # with the pixels would cut word crops in the wrong place, silently.
+    width_px, height_px = await run_in_threadpool(_png_size, png)
+    if (width_px, height_px) != (body.width_px, body.height_px):
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            detail=f"declared {body.width_px}×{body.height_px} px, image is {width_px}×{height_px}",
+        )
+
+    await repo.add_strip(
+        hand=hand,
+        strip=strip,
+        fassung=fassung,
+        sheet=body.sheet,
+        row_index=body.row_index,
+        png=png,
+        width_px=width_px,
+        height_px=height_px,
+        dpi=body.dpi,
+        crop_origin_mm=[float(v) for v in body.crop_origin_mm],
+        sha256=digest,
+        bytes=len(png),
+    )
+    await db.commit()
+    return {"strip": strip, "fassung": fassung, "stored": True}
+
+
+def _checked_strip(strip: str) -> str:
+    if not is_strip_id(strip):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"strip id {strip!r} must be a plain `S<nnnn>`")
+    return strip
+
+
+def _checked_fassung(fassung: str) -> str:
+    if not is_fassung_id(fassung):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"Fassung id {fassung!r} must be a plain `F<nn>`")
+    return fassung
+
+
+def _decoded_png(encoded: str) -> bytes:
+    """Base64 in, PNG bytes out — refusing anything that is not one."""
+    try:
+        png = base64.b64decode(encoded, validate=True)
+    except (binascii.Error, ValueError) as exc:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="png_base64 is not valid base64") from exc
+    if len(png) > MAX_STRIP_BYTES:
+        raise HTTPException(
+            status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"strip is {len(png)} bytes — the limit is {MAX_STRIP_BYTES}",
+        )
+    if not png.startswith(b"\x89PNG\r\n\x1a\n"):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="the uploaded bytes are not a PNG")
+    return png
+
+
+def _png_size(png: bytes) -> tuple[int, int]:
+    from PIL import Image, UnidentifiedImageError
+
+    try:
+        with Image.open(io.BytesIO(png)) as image:
+            return image.size
+    except (UnidentifiedImageError, OSError) as exc:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="the uploaded PNG could not be read") from exc
+
+
+async def _layout_row(hand: str, sheet: str, row_index: int, db: AsyncSession) -> dict:
+    """The layout row a strip was cut from — the word boxes a crop needs."""
+    row = await EigenhandRepository(db).sheet(hand, sheet)
+    if row is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail=f"Bogen {sheet} of {hand} is not recorded — its layout is what a word crop is cut against",
+        )
+    rows = row.layout.get("rows", [])
+    if not 0 <= row_index < len(rows):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{sheet} has no row {row_index}")
+    return rows[row_index]

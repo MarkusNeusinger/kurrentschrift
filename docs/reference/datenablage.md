@@ -66,6 +66,10 @@ Drei Committ-Klassen, scharf getrennt:
   Copyrights draußen (Open-Core-Reservat, privates Archiv) — nur
   `SOURCE.md` + `README.md` sind committet
   ([eigenhand-erfassung.md §8](../proposals/eigenhand-erfassung.md)).
+  Seit 2026-08-24 liegen sie zusätzlich in der DB (`eigenhand_strips`,
+  admin-gegatet, `private, no-store`), damit die Werkbank sie zeigen kann —
+  das ändert nichts am Repo-Verbot und nichts daran, dass das private
+  Archiv ihr Master ist (§7.2, §8.1 desselben Proposals).
 - `/corpora` → **gitignored**. Nur `SOURCE.md` + `fetch_corpus.py`
   committet, nie das 7,8-GB-Datenfile. Skript-Download ändert keine
   Lizenz (Quellen-Rechte §7) — der Grund ist Größe + Reproduzierbarkeit

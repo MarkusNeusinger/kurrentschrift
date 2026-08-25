@@ -196,6 +196,16 @@ losschreiben" kann, gilt technisch:
   `…/rebuild`-Endpunkten, v0.22.0) verlangen `require_admin` — ein
   Aggregat ist gelernte Geometrie und damit derselbe reservierte Bestand
   wie die autorierten Templates, auch wenn der Read nichts rendert.
+- **Der ganze Eigenhand-Zweig ist admin-gegatet, Lesen eingeschlossen:**
+  `/eigenhand/*` — Bestand, Bögen, Layouts, das stehende Setup und seit
+  Migration `0025` die STREIFENBILDER selbst
+  (`GET /eigenhand/strips/{hand}/{strip}/{fassung}`, wahlweise auf ein Wort
+  zugeschnitten). Ein Bestand ist das Inventar des reservierten Datensatzes,
+  ein Streifen ist er selbst; die Bild-Antworten tragen zusätzlich
+  `Cache-Control: private, no-store`, damit sie in keinem geteilten Cache
+  und auf keiner fremden Platte liegen bleiben. Ins Repo kommen sie nie
+  (datenablage.md §1); ihr Master bleibt das private Archiv
+  ([eigenhand-erfassung.md §7.2, §8.1](../proposals/eigenhand-erfassung.md)).
 - **Öffentliche `/write`-Payloads sind bewusste Produkt-Oberfläche**
   (die SPA rendert clientseitig): gerenderte Geometrie, unter dem
   README-Nutzungsvorbehalt + [`crawler-richtlinie.md`](crawler-richtlinie.md)

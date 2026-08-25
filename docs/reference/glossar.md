@@ -54,11 +54,11 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · understanding §5
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4
-- **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Editor §5 · Wort-Trace §2 · Wortvorrat §5
+- **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wort-Trace §2 · Wortvorrat §5
 - **X** — x-Höhe (`xh`) §1
 - **Z** — Zelle einsetzen §5 · zirkuläres Kriterium §4 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
 
@@ -2045,13 +2045,45 @@ Untergrenze 3 — es misst die Ausbau-Quote).
 GETEILTEN Datenbank liegt: welche Bögen gedruckt sind (mit ihrem Layout)
 und welche Streifen wie oft angenommen wurden (`eigenhand_sheets` ·
 `eigenhand_fassungen`, Migration `0024`, Owner-Entscheidung 2026-08-23).
-Sie enthält keine Pixel — die Wörter folgen aus Streifen-ID plus
-committetem Plan, die Streifenbilder bleiben im lokalen Reservat.
-Nahtstelle ist die Kartei-FORM: lokal `kartei.json`, serverseitig
+Die Zahlen brauchen keine Pixel — die Wörter folgen aus Streifen-ID plus
+committetem Plan. Seit `0025` liegen die Streifenbilder trotzdem
+daneben (`eigenhand_strips`, Owner 2026-08-24), damit die Werkbank einen
+geschriebenen Streifen zeigen kann wie einen Tafel-Crop: eigene Tabelle,
+PNG-Spalte überall deferred, admin-gesichert, `private, no-store`, nie im
+Repository — der Master bleibt das private Archiv. Nahtstelle ist die
+Kartei-FORM: lokal `kartei.json`, serverseitig
 `EigenhandRepository.kartei` — dahinter rechnet dieselbe Schicht.
 *Technisch:* `core/database/models.py`, `api/routers/eigenhand.py`,
-hoch/runter mit `tools/eigenhand/sync.py` ↔ `pull.py`.
-→ proposals/eigenhand-erfassung.md §7.1
+hoch/runter mit `tools/eigenhand/sync.py` ↔ `pull.py`
+(Bilder nur auf `--mit-streifen`).
+→ proposals/eigenhand-erfassung.md §7.1, §7.2
+
+**Stehendes Setup** — Feder, Tinte, Papier und Aufnahmegerät einer Hand,
+EINMAL erklärt statt bei jedem Import getippt (`eigenhand_hands`,
+Migration `0025`). Begründung ist photometrisch, nicht ergonomisch:
+diese vier sind Parameter der ganzen Kampagne — wechseln sie mittendrin,
+zerfällt das Korpus in Kohorten, die man auf Strichbreite und Schwärzung
+nicht mehr vergleichen kann. `ingest` liest sie als Vorgabe aus einem
+lokalen Zwischenspeicher; die EFFEKTIVEN Werte stehen zusätzlich an jeder
+Fassung (bewusst denormalisiert — ein echter Wechsel soll als Bruch in
+den Daten sichtbar sein, nicht rekonstruiert werden müssen). Reihenfolge:
+vor der ersten Sitzung erklären, sonst bleiben die Felder der davor
+eingelesenen Fassungen leer. *Technisch:* `tools/eigenhand/setup.py`
+(CLI, lokaler Cache `setup.json`), `GET|PUT /eigenhand/setups/{hand}`,
+Panel „Stehendes Setup“ in `/admin/eigenhand`.
+→ proposals/eigenhand-erfassung.md §7.2
+
+**Wort-Ausschnitt (Eigenhand)** — ein einzelnes Wort, aus einem
+gespeicherten Streifen HERAUSGERECHNET statt zusätzlich abgelegt: der
+Streifen merkt sich seinen Crop-Anfang in Millimetern
+(`crop_origin_mm`), das `layout.json` des Bogens sagt, wo die Wortkiste
+sitzt, und die Pixelbreite über der Schnittband-Breite gibt den Maßstab.
+Senkrecht bleibt der Ausschnitt auf VOLLER Streifenhöhe — Ober- und
+Unterlängen sind das Interessante an einem Wort. Dieselbe Überlegung wie
+beim Tafel-Crop-Endpunkt, nur in mm statt in Tafelpixeln.
+*Technisch:* `core/eigenhand/crop.py`,
+`GET /eigenhand/strips/{hand}/{strip}/{fassung}?wort=…`.
+→ proposals/eigenhand-erfassung.md §7.2
 
 ---
 

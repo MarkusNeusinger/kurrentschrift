@@ -14,6 +14,52 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The written strips themselves, in the DB and in the workbench.** The
+  bookkeeping made the admin view possible; this makes it show the actual
+  writing (owner, 2026-08-24: the strips should be visible in the admin
+  area like a chart crop, without landing in the repository). Migration
+  `0025` adds `eigenhand_strips` — its own table, PNG column deferred
+  everywhere, so a Bestand query never drags ~350 KB per Fassung along —
+  plus `eigenhand_hands` for a hand's STANDING setup (nib, ink, paper,
+  device) and the effective per-row copy of it on `eigenhand_fassungen`.
+  The chart's model could not be followed: `sources.chart_path` points at
+  committed bytes on disk, which the reserved own-hand dataset can never
+  be, so the bytes travel the other way — admin-gated, `private,
+  no-store`, never public, never in the repo. Word crops need no storage
+  of their own: the strip remembers where its crop started in millimetres,
+  the sheet's layout says where each word box sits, and `core/eigenhand/
+  crop.py` cuts it out on demand (full strip height, on purpose — the
+  ascenders and descenders are the point). `/admin/eigenhand` gained the
+  standing setup and a Streifen panel that loads a Fassung on click and
+  any word of it with one more.
+
+- **Repo plus archive restore the own-hand tables — as a check, not a
+  hope.** The owner's requirement (2026-08-24) after the strips moved into
+  the DB: a lost database must be recoverable from the public repo and the
+  private archive alone, table contents and strip images. The archive
+  stays the master, and `sync --from <archive snapshot>` replays it —
+  the SAME push code as the everyday sync, so the restore path cannot rot
+  unnoticed. `sync --mit-streifen` (opt-in) carries the images, skipping
+  by sha256 what the server already holds and refusing a filed strip whose
+  bytes no longer match its Kartei record. `tools/dbsnapshot` takes the
+  `eigenhand_*` tables along WITHOUT the blobs plus a `strip_hashes`
+  manifest — the mechanical check that DB and archive have not drifted
+  apart. Drilled 2026-08-25 against a throwaway PostgreSQL with the
+  working copy deleted in between (1 Bogen, 3 Fassungen, 3 strips back;
+  hashes identical; a word crop cut from a restored strip; the second run
+  wrote nothing), and pinned as a test that runs the whole chain against
+  the real API.
+
+- **`tools.eigenhand.setup` — the standing nib/ink/paper, typed once.**
+  Ink, paper and nib are photometric parameters of a whole campaign, not
+  details of one import: change them mid-campaign and the corpus splits
+  into cohorts that cannot be compared on stroke width or darkness. The
+  tool writes the server record and caches it next to the local data root,
+  so `ingest` defaults to it at a desk with a scanner and no reason to be
+  online, and only a deviation has to be typed. Every Fassung still
+  records the effective values it was written with — a real change should
+  be a visible break in the data, not something to reconstruct.
+
 - **The own-hand Bestand in the workbench, and the Bogen printer with
   it.** The capture chain's bookkeeping moves into the shared DB (owner,
   2026-08-23: the DB may hold which Streifen exist how often — the crop

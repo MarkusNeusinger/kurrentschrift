@@ -926,3 +926,39 @@ export interface EigenhandPrinted {
   style: string;
   sheets: Array<{ sheet: string; strips: string[]; bytes: number }>;
 }
+
+// A hand's STANDING setup — nib, ink, paper, capture device. Typed once and
+// read back by every import: they are photometric parameters of a whole
+// campaign, and a change mid-campaign splits the corpus into cohorts.
+export interface EigenhandSetup {
+  hand: string;
+  style: string;
+  label: string | null;
+  feder: string | null;
+  tinte: string | null;
+  papier: string | null;
+  geraet: string | null;
+  note: string | null;
+  updated_at: string | null;
+}
+
+// One stored strip — metadata only. The pixels come from the image route,
+// which is admin-gated and uncacheable (reserved own-hand dataset).
+export interface EigenhandStrip {
+  strip: string;
+  fassung: string;
+  sheet: string;
+  row_index: number;
+  width_px: number;
+  height_px: number;
+  dpi: number;
+  crop_origin_mm: number[];
+  sha256: string;
+  bytes: number;
+  words: string[];
+}
+
+export interface EigenhandStripList {
+  hand: string;
+  strips: EigenhandStrip[];
+}
