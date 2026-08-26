@@ -349,15 +349,24 @@ und die abgelegten Streifen sind Teil des reservierten Datensatzes
   1. **Erster Akt** (Cloud-Session): `uv sync --all-extras`, dann
      `uv run python -m tools.wordbench.fetch_fixtures --set all
      --verify` (bit-exakte Abnahme der Fixture-Roots).
-  2. **Folger-Lauf** (der Duell-Kette-Kandidat; Mess-Stack-Konvention
-     seit K0-Z ist `--structure-guard-soll`): BLAS gepinnt und
-     `--jobs 4`, z. B. `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
-     uv run python -m tools.pairlab.follow --all --set words
-     --structure-guard-soll --jobs 4 --json … --candidate-out …` —
-     `--candidate-out` schreibt den File-Provider-Kandidaten, die
-     Arm-Flags (`--mark-claim`, `--soll-source`,
-     `--structure-guard-ratchet` …) stehen im `--help` und je Arm in
-     seinem §14-Eintrag.
+  2. **Folger-Lauf** (der Duell-Kette-Kandidat). **Seit Kette v5
+     (`aug26`) ist der Duell-Stack der DEFAULT** — Kompositions-Soll,
+     Ratsche, Zone 0,55 —, ein Lauf ohne Flags IST die Kette: BLAS
+     gepinnt und `--jobs 4`, z. B. `OPENBLAS_NUM_THREADS=1
+     OMP_NUM_THREADS=1 uv run python -m tools.pairlab.follow --all
+     --set words --jobs 4 --json … --candidate-out …`. Die
+     Archäologie-Flags reproduzieren jede ältere Basis:
+     `--no-structure-guard-ratchet --structure-guard-zone 0
+     --soll-source init` = der K0-Z-Soll-Stack (Basis von K0-S und
+     L-U), `--no-structure-guard` = der Folger ohne Wächter
+     („Kette-frei", NUR Diagnose-Arm — er deckt mehr Tinte, indem er
+     Struktur zerstört, Init 86 → frei 125 Soll-Punkte). **Basis und
+     Arm müssen bis auf den EINEN vorregistrierten Knopf derselbe
+     Stack sein**; `k0eval` druckt beide Stacks und warnt bei
+     Abweichung — zweimal in zwei Tagen (`aug25` L-U, `aug26` v5)
+     wurde sonst gegen den falschen Folger gemessen. Die Arm-Flags
+     (`--mark-claim` …) stehen im `--help` und je Arm in seinem
+     §14-Eintrag.
   3. **dev-19-Scoring**: `uv run python -m tools.tracebench --split dev
      --candidate file --candidate-file <cand.json> --json …
      --compare <basis-report.json>` — gepaarte Deltas, Zähler, Gates.

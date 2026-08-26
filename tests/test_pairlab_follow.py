@@ -200,12 +200,21 @@ def test_the_round_loop_stops_when_nothing_moved(synthetic) -> None:
 # ----------------------------------------------------------- the structure guard
 
 
-def test_the_structure_guard_defaults_off_and_records_nothing(synthetic) -> None:
-    """Arm ⑨'s inertness rule: without the flag the follower is untouched."""
-    assert FollowWeights().structure_guard is False
+def test_the_structure_guard_is_the_default_stack_since_v5_and_off_records_nothing(synthetic) -> None:
+    """Kette v5 (§14 `aug26`): the whole guard stack is the follower's default.
+
+    Arm ⑨'s inertness rule survives as the archaeology path: with the guard
+    switched OFF the follower is untouched and records nothing.
+    """
+    defaults = FollowWeights()
+    assert defaults.structure_guard is True
+    assert defaults.structure_guard_soll is True
+    assert defaults.structure_guard_ratchet is True
+    assert defaults.structure_guard_zone_units == 0.55
+    assert defaults.soll_source == "composition"
     case, result, windows, fit = synthetic
     followed = follow_word_chain(
-        case, [0, 1], result=result, windows_px=windows, fit=fit, weights=FollowWeights(rounds=1)
+        case, [0, 1], result=result, windows_px=windows, fit=fit, weights=FollowWeights(rounds=1, structure_guard=False)
     )
     assert followed is not None
     assert "structure_counts" not in followed.rounds[0]
@@ -286,11 +295,30 @@ def test_a_violating_round_is_rejected_back_to_the_previous_geometry(synthetic, 
         return {"cross": 1, "retrace": 0, "touch": 0, "overlap": 0}
 
     monkeypatch.setattr("tools.pairlab.follow.structure_class_counts", fake_counts)
+    # Guard OFF on the identity arm: since Kette v5 the guard is on by default
+    # and would count the init here, eating the fake counter's first call —
+    # the guarded run's budget would then read "cross 1" and nothing violates.
     identity = follow_word_chain(
-        case, [0, 1], result=result, windows_px=windows, fit=fit, weights=FollowWeights(rounds=0)
+        case, [0, 1], result=result, windows_px=windows, fit=fit, weights=FollowWeights(rounds=0, structure_guard=False)
     )
+    # Arm 9 in isolation — the one-sided budget with round-atomic rejection.
+    # Since Kette v5 the defaults carry the soll guard, the ratchet and the
+    # zonal re-solve on top; under those the fake counter's "invented
+    # crossing" would sit inside a soll interval and be ACCEPTED, which is
+    # v5's point, not this test's.
     guarded = follow_word_chain(
-        case, [0, 1], result=result, windows_px=windows, fit=fit, weights=FollowWeights(rounds=2, structure_guard=True)
+        case,
+        [0, 1],
+        result=result,
+        windows_px=windows,
+        fit=fit,
+        weights=FollowWeights(
+            rounds=2,
+            structure_guard=True,
+            structure_guard_soll=False,
+            structure_guard_ratchet=False,
+            structure_guard_zone_units=0.0,
+        ),
     )
     assert identity is not None and guarded is not None
     record = guarded.rounds[0]

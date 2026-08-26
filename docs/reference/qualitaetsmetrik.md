@@ -8491,23 +8491,33 @@ nie einen Zeitpunkt.
 
 | Route | dtw Median | dtw p90 | dtw worst |
 |---|---|---|---|
-| **Kette** (`pairlab.follow`) | 0,0441 → 0,0441 | **0,2202 → 0,0912** | **unter 0,4396 → muß 0,1068** |
+| **Kette** (`pairlab.follow --structure-guard-soll`, der Duell-Stack) | 0,0453 → 0,0453 | **0,2355 → 0,0896** | **unter 0,4503 → muß 0,1108** |
+| Kette-frei (`pairlab.follow` OHNE Wächter, Diagnose-Arm) | 0,0441 → 0,0441 | 0,2202 → 0,0912 | unter 0,4396 → muß 0,1068 |
 | **Lotse** (`inkpilot`) | 0,0545 → 0,0545 | 0,1122 → 0,1164 | muß-2 0,1404 → 0,1457 |
 | **Nullprobe** (`routeg`, 10 von 19) | 0,8198 → 0,8198 | 1,0267 → 1,0267 | 3 Zeilen bewegt |
 | Ketten-Init (roher `chain`) | 0,0492 → 0,0494 | 0,0894 → 0,0912 | muß 0,1096 → 0,1108 |
 
-**Kette, je Wort** — vier große Gewinne, vier vernachlässigbare
-Verluste:
+*Korrektur `aug26`:* die Zeile „Kette" trug am `aug26` früh den
+Folger OHNE Struktur-Wächter — nicht die Duell-Kette, die seit K0-Z
+per Mess-Liturgie (werkzeuge.md) `--structure-guard-soll` ist. Der
+Fehler fiel erst auf, als derselbe ungewächterte Folger als Basis der
+v5-Messung 36 Scheinverlierer produzierte (§14 „Kette v5"); seither
+druckt `k0eval` die Stacks beider Dateien und warnt bei Abweichung.
+Der Befund von L-U ändert sich nicht: der Gewinn liegt auf der Kette,
+auf der richtigen wie auf der freien.
+
+**Kette (Soll-Stack), je Wort** — vier große Gewinne, vier
+vernachlässigbare Verluste:
 
 | Wort | dtw 0,8 | dtw 1,5 | Δ |
 |---|---|---|---|
-| `unter` | 0,4396 | **0,0902** | **−0,3494** |
-| `muß` | 0,2394 | **0,1068** | **−0,1326** |
-| `muß-3` | 0,2154 | **0,0858** | **−0,1296** |
-| `muß-2` | 0,2032 | **0,0861** | **−0,1171** |
-| `und` ×4 | 0,0295–0,0419 | 0,0304–0,0436 | +0,0002 … +0,0017 |
+| `unter` | 0,4503 | **0,0877** | **−0,3626** |
+| `muß-3` | 0,2339 | **0,0972** | **−0,1367** |
+| `muß` | 0,2419 | **0,1108** | **−0,1311** |
+| `muß-2` | 0,2019 | **0,0857** | **−0,1163** |
+| `und` ×4 | 0,0279–0,0419 | 0,0286–0,0436 | +0,0002 … +0,0017 |
 
-`unter` 0,4396 → 0,0902 bestätigt die K-C-Autopsie, die von Hand
+`unter` 0,4503 → 0,0877 bestätigt die K-C-Autopsie, die von Hand
 0,084 gerechnet hatte.
 
 **Der ehrliche Teil: auf JEDER anderen Route kostet die Änderung
@@ -8546,3 +8556,116 @@ unbeaufsichtigt aufzusetzen nicht seriös wäre. Ihre alten Zahlen
 sind damit **gültig, archiviert und NICHT vergleichbar**, bis der
 Lauf nachgeholt ist; dasselbe gilt für die neun dev-Wörter, die
 die gespeicherte Nullprobe nicht abdeckt.
+
+### Kette v5 `aug26` — Adoption K0-S Sprosse 2: Kompositions-Soll + Ratsche + Zone 0,55 wird Default (datierte Re-Baseline)
+
+**Anlass.** Autor-Go vom 2026-08-25 für den K0-S-Stack Sprosse 2
+(`--soll-source composition --structure-guard-soll
+--structure-guard-ratchet --structure-guard-zone 0.55`), der am
+`aug21` alle Gates bestand. Bewusst NACH der L-U-Re-Baseline
+sequenziert, damit eine Re-Baseline beide Änderungen trägt.
+
+**Die falsche Messung zuerst — und warum sie hier steht.** Der erste
+Lauf am Morgen paarte v5 gegen den Folger OHNE Struktur-Wächter
+(`pairlab.follow` ohne Flags) und las drei Gates als verletzt: Soll
+`die-2` 1 → 2, **36 aiou-Verlierer** unter 48 bewegten (Median
+−0,027, `Zorn` −0,135), `das` +0,0055 dtw. Der Autor lehnte das
+Verwerfen ab („32 besser, 2 schlechter — auf keinen Fall einfach
+verwerfen") und bat um eine Zweitmeinung (Fable). Deren Kernbefund:
+**die Basis war der falsche Stack.** Die K0-S-Vorregistrierung nennt
+„Basis = v4-Stand, Soll-Stack", die Mess-Liturgie (werkzeuge.md) seit
+K0-Z `--structure-guard-soll`; der ungewächterte Folger ist keine
+Basis, sondern ein Diagnose-Arm, der mehr Tinte deckt, indem er
+Struktur zerstört — **Init 86 → frei 125 Soll-Punkte** über die 63
+Wörter (29 schlechter, 4 besser). Und v5 selbst reproduzierte
+`aug21` fast exakt (63er-Soll 79 gegen 77, dev-dtw 0,0446 gegen
+0,0448, Netto-Kreuzungen 19 = 19): gewandert war nur die Basis.
+Meine Hypothese „die Tinten-Maske hat die Basis bewegt" war falsch —
+K0-S lief schon auf v4, und Maske und Wächter berühren sich im Code
+nicht. Derselbe Basis-Fehler steckte in der L-U-Zeile „Kette" vom
+Vortag (dort korrigiert). Zweimal in zwei Tagen → Sensor:
+`k0eval` liest seither die Stack-Flags beider Dateien, druckt sie vor
+der ersten Zahl und warnt bei Abweichung (auf dem Morgen-Paar mit
+fünf Flags).
+
+**RP-0 — die vorregistrierte Basis, in DERSELBEN Umgebung** (BLAS
+gepinnt, `--jobs 4`, Basis = Soll-Stack `--structure-guard-soll`
+mit `soll_source=init`, Zone 0, keine Ratsche; Artefakte Scratchpad
+`v5/`):
+
+| | dev-19 | alle 63 |
+|---|---|---|
+| Soll-Abstand | 23 → 22 (1 besser · 18 gleich · **0 schlechter**) | **86 → 79** (7 besser · 56 gleich · **0 schlechter**) |
+| aiou, bewegte Wörter | 10 bewegt: min **+0,010** · Median **+0,039** · max +0,125 | 31 bewegt: min **−0,0004** · Median **+0,073** · max +0,131 |
+| aiou-Verlierer (< −0,003) | **0** | **0** |
+| strich-identisch | 9/19 | 32/63 |
+
+Auf dem Lineal (dev-19, Kappe 1,5, L-U-Stand): dtw-Median 0,0453 →
+**0,0446**, p90 0,0896 → **0,0861**, worst muß 0,1108 → **0,1059**,
+aiou-Median 0,7468 → **0,7608**. Schlechtestes dtw-Delta je Wort
++0,0016 (`und-2`); Marken 0/0/0 unverändert; `reversed` 0;
+Netto-Kreuzungsdefekte 13+6 = 19 auf beiden Seiten;
+`retrace_missing` 6 → 7 (eine Zone mehr verfehlt — außerhalb der
+Gates, notiert). Laufzeit 63 Wörter: Basis 281 s → v5 703 s (2,5×;
+die Basis wirft die meisten Wörter in Runde 1 weg und rechnet
+entsprechend weniger).
+
+**Gates (K0-S, unverändert): alle bestanden.** (1) Identität —
+`--no-structure-guard-ratchet --structure-guard-zone 0 --soll-source
+init` reproduziert die Basis strich-identisch, und die neuen
+Defaults ohne Flag reproduzieren v5 strich-identisch (dev-19, siehe
+Gate-1-Lauf). (2) Soll sinkt bei 7 Wörtern strikt, steigt nirgends.
+(3) aiou ≥ −0,003 je Wort. (4) dev-19 kein Wort über +0,003 dtw,
+Marken nicht schlechter, reversed 0, Kreuzungsdefekte ≤ Basis.
+(5) Laufzeit oben.
+
+**Der Mechanismus, erstmals je Wort sichtbar** (`guard_outcome`,
+neue k0eval-Spalte aus den Runden-Protokollen):
+
+| Ausgang in der BASIS → in v5 | Wörter |
+|---|---|
+| `revert-init` → `zonal` | 22 |
+| `revert-init` → `revert-r1` | 6 |
+| `revert-r1` → `zonal` | 3 |
+
+Der rundenatomare Soll-Wächter wirft bei **26 der 31 bewegten
+Wörter Runde 1 komplett weg** — das Wort behält den Ketten-Init und
+wird gar nicht gefolgt. Die Zone rettet genau diese: Anker um die
+Verletzung pinnen, Rest neu lösen, akzeptieren. Das war die Absicht
+von K0-Z; hier ist sie gemessen. Nebenbefund Sprosse 1 (Kompositions-
+Soll OHNE Ratsche/Zone): 86 → 84, aber **37 Rollbacks auf Init** —
+das Kompositions-Soll ist strenger als das Init-Soll, erst die Zone
+macht es nutzbar.
+
+**Was v5 NICHT löst — die 13.** Auch v5 wirft 13 der 63 Wörter in
+Runde 1 auf den Init zurück (`Zorn`, `Feinde`, `wenn`, `kann`,
+`Pulver`, `haben`, `Seiten`, `die`, …). Fable hat die Endzustände
+des freien Folgers dieser Wörter gegen v5s Intervall geprüft: **24
+von 25 sind auch am Ende strukturell illegal** (`Feinde` verliert
+alle fünf Kreuzungen, `regieren` erfindet sechs Berührungen, `kann`
+touch 2 → 7). Die Rückweisung ist also korrekt; der Preis ist real
+und auf diese Klasse konzentriert. Geprüft und verworfen: „Fallback
+auf das ungewächterte Ergebnis" (= Abschaffung des Wächters genau
+dort, wo er beißt; Soll ~107 läge über dem Init 86 und risse das
+Produktions-Ketten-Kill-Kriterium) und „Bewährung" (Runden
+provisorisch annehmen, am Ende urteilen — 1/25 freie Enden legal).
+Stehende Rettungswege, je eigene Pre-Reg, als PRÄVENTIVE Terme im
+Abstieg statt Annahme-Regeln: **Abstandsterm** gegen erfundene
+Berührungen (7 der 13, Hinge-Repulsion nicht-benachbarter Pässe
+unter 0,15 xh, ausgenommen die Soll-Zonen der Komposition),
+**Schleifen-Halteterm** gegen Kreuzungskollaps (5 der 13), und der
+humanbench-Tie-Breaker für den Rest-Preis der zonalen Klasse.
+
+**Adoption.** `FollowWeights`-Defaults: `structure_guard=True`,
+`structure_guard_soll=True`, `structure_guard_ratchet=True`,
+`structure_guard_zone_units=0.55`, `soll_source="composition"`. Ein
+Lauf ohne Flags IST die Kette. Archäologie:
+`--no-structure-guard-ratchet --structure-guard-zone 0 --soll-source
+init` = K0-Z-Soll-Stack (Basis von K0-S und L-U);
+`--no-structure-guard` = Kette-frei (Diagnose-Arm, nie Duell). Die
+Mess-Liturgie in werkzeuge.md ist entsprechend umgeschrieben. **Neue
+Kette-Basis** (dev-19, Lineal 1,5): dtw 0,0446 / p90 0,0861 / worst
+0,1059 / aiou 0,7608; 63er-Soll 79. Alle stehenden Kette-Zahlen davor
+sind **gültig, archiviert und NICHT vergleichbar**. Der
+PRODUKTIONS-Re-Harvest der `traced`-Zeilen bleibt hinter Autor-Go +
+`dbsnapshot`. InkSight weiterhin unvermessen (siehe L-U).

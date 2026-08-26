@@ -41,12 +41,79 @@ WHICH = "words"
 # below this delta is a loser, anything above is measurement noise.
 AIOU_LOSER_GATE = -0.003
 
+# The follower weights that define a candidate's STACK — which guard it ran
+# under, where its soll came from, whether the ink mask was on. Two files that
+# differ here are not a base and its arm; they are two different instruments,
+# and every paired number below is then a comparison between instruments, not
+# between candidates. That mistake was made twice in two days (the L-U
+# "Kette" row on aug25 and the v5 measurement on aug26 both paired the
+# UNGUARDED follower against a guarded arm — 36 "aiou losers" that were the
+# base's structure destruction, not the arm's cost), which is why the pairing
+# now reads the flags off both files and says so before the first number.
+STACK_FLAGS = (
+    "structure_guard",
+    "structure_guard_soll",
+    "structure_guard_ratchet",
+    "structure_guard_zone_units",
+    "soll_source",
+    "ink_evidence",
+)
+
+
+def guard_stack(path: Path) -> dict[str, object]:
+    """The stack a candidate file was produced under, read off its first row's weights.
+
+    Empty when the file carries no follower meta (a stored `traced` row, an
+    InkSight or routeg candidate) — those are not follower stacks, and the
+    caller prints them as such rather than as "unguarded".
+    """
+    payload = json.loads(path.read_text())
+    for entry in payload.get("rows") or []:
+        weights = (entry.get("meta") or {}).get("weights")
+        if weights:
+            return {flag: weights.get(flag) for flag in STACK_FLAGS}
+    return {}
+
+
+def guard_outcome(meta: dict | None) -> str:
+    """What the structure guard did to ONE word, from the follower's round records.
+
+    `revert-init` — round 1 rejected, the word keeps the chain init and was
+    never followed; `revert-r<n>` — a later round rejected, the word keeps round
+    n; `zonal` — a round was accepted only after the K0-Z zonal re-solve pinned
+    anchors; `halved` — accepted after `max_delta` was halved; `clean` — every
+    round accepted at its first attempt; `unguarded` — the rounds carry no
+    guard records at all. These are the tiers the aug26 autopsy sorted the
+    aiou losses into (§14 „Kette v5"); the column exists so that sorting is
+    read off the file instead of re-derived by hand.
+    """
+    rounds = [record for run in (meta or {}).get("rounds") or [] for record in run]
+    if not rounds:
+        return "no-rounds"
+    if not any("structure_rejected" in record for record in rounds):
+        return "unguarded"
+    for record in rounds:
+        if record.get("structure_rejected"):
+            number = int(record.get("round") or 0)
+            return "revert-init" if number <= 1 else f"revert-r{number - 1}"
+    if any((record.get("structure_zonal") or {}).get("pinned") for record in rounds):
+        return "zonal"
+    if any(record.get("structure_retries") for record in rounds):
+        return "halved"
+    return "clean"
+
+
+def _row_meta(path: Path) -> dict[str, dict]:
+    payload = json.loads(path.read_text())
+    return {entry.get("specimen_id"): entry.get("meta") or {} for entry in payload.get("rows") or []}
+
 
 def eval_candidate(
     path: Path, reference: Reference, soll_rows: dict[str, tuple[SollRow, ...]], ids: list[str]
 ) -> dict[str, dict[str, object]]:
     """Per word: candidate counts, soll distance, aiou, and the strokes for identity."""
     cands = file_provider(str(path))(reference, ids)
+    metas = _row_meta(path)
     rows: dict[str, dict[str, object]] = {}
     for sid in ids:
         cand = cands.get(sid)
@@ -66,6 +133,7 @@ def eval_candidate(
             "soll_zones": comp.zones,
             "soll_dist": abs(n_cross - comp.crossings) + abs(n_zones - comp.zones),
             "aiou": aiou([entry.frame.bench_to_crop_px(s) for s in strokes], entry.ink_mask()).value,
+            "guard": guard_outcome(metas.get(sid)),
             "strokes": cand.strokes,
         }
     return rows
@@ -148,6 +216,21 @@ def main() -> None:
     ids = scoring_ids(reference.order, soll_rows)
     print(f"{len(ids)} words in the k0 scoring set")
 
+    base_stack = guard_stack(args.base)
+    print(f"stack {args.base.name}: {base_stack or 'no follower meta'}")
+    stack_warning = ""
+    if args.candidate is not None:
+        cand_stack = guard_stack(args.candidate)
+        print(f"stack {args.candidate.name}: {cand_stack or 'no follower meta'}")
+        if base_stack and cand_stack and base_stack != cand_stack:
+            differing = sorted(flag for flag in STACK_FLAGS if base_stack.get(flag) != cand_stack.get(flag))
+            stack_warning = (
+                f"WARN stacks differ on {', '.join(differing)} — check these against the pre-registration: "
+                "a §14 gate reads only when every differing flag IS the knob under test. Anything else here "
+                "means the pairing compares instruments, not candidates (werkzeuge.md, Mess-Liturgie)."
+            )
+            print(stack_warning)
+
     base = eval_candidate(args.base, reference, soll_rows, ids)
     print(f"== {args.base.name}: total soll distance {_total(base)}")
     if args.candidate is None:
@@ -188,7 +271,7 @@ def main() -> None:
             print(
                 f"  {sid:14s} dist {a['soll_dist']} -> {b['soll_dist']}  "
                 f"aiou {a['aiou']:.4f} -> {b['aiou']:.4f} ({d_aiou:+.4f})  "
-                f"{'identical' if sid in identical else 'moved'}"
+                f"{'identical' if sid in identical else 'moved'}  guard {a.get('guard')} -> {b.get('guard')}"
             )
     unscored = pairing["unscored"]
     if unscored:
@@ -216,10 +299,26 @@ def main() -> None:
         f"stroke-identical rows: {len(identical)}/{len(identical) + len(pairing['moved'])}; "
         f"moved: {sorted(pairing['moved'])}"
     )
+    # The guard's per-word outcome, tallied on the arm — the tiers of the
+    # aug26 autopsy, read off the file: how many words the guard never touched,
+    # how many it bent, how many it reverted to the init and never followed.
+    outcomes = Counter(str(cand[sid].get("guard")) for sid in ids if cand[sid]["status"] == "ok")
+    print(f"guard outcomes on {args.candidate.name}: " + ", ".join(f"{k} {n}" for k, n in sorted(outcomes.items())))
+    if stack_warning:
+        # Last, next to the verdict lines, so it is the thing the eye lands on.
+        print(stack_warning)
     if args.json:
         args.json.parent.mkdir(parents=True, exist_ok=True)
         args.json.write_text(
-            json.dumps({args.base.name: report_rows(base), args.candidate.name: report_rows(cand)}, indent=1)
+            json.dumps(
+                {
+                    "stacks": {args.base.name: base_stack, args.candidate.name: cand_stack},
+                    "stack_mismatch": bool(stack_warning),
+                    args.base.name: report_rows(base),
+                    args.candidate.name: report_rows(cand),
+                },
+                indent=1,
+            )
         )
         print(f"wrote {args.json}")
 

@@ -21,7 +21,7 @@
   ist er die prior-geführte Referenz-Route (Route A) und in der
   Produktion die Quelle der `traced`-Zeilen.
 
-## Aktueller Stand: v4 (2026-08-21) — Tinten-Evidenz-Maske als Default
+## Aktueller Stand: v5 (2026-08-26) — der K0-S-Wächter-Stack als Default
 
 Formulierung: EDT-Punktdatenterm + Landmark-/Width-Operatoren +
 Budget-Veto; als Folger-Aufsatz der re-linearisierende Restart
@@ -47,19 +47,40 @@ Erste adoptierte Änderung dessen, was der Fit MISST: Soll-Abstand
 bleibt **opt-in** (`--mark-refit`). Zahlen (dev-19, §14-Re-Baseline
 v4 `aug21`, `chain`-Provider): **dtw 0,0491 med · p90 0,0891 · worst
 muß 0,110 · marks 0 fehlend · aiou 0,7021**; Folger-Soll-Stack:
-dtw-Median 0,0448 · aiou 0,7481 · 63er-Soll-Abstand 85. Bekannte
-Klassen-Defekte: das er-Gekritzel in unter als echter Rest (~0,087,
-versetzter Karten-Init + Composer-e-Breite §7.2), die
-Reihenfolge-Lineal-Frage (u-Bogen/Deckbogen als Körper — Folger-p90
-0,235), Kreuzungs-Höhen-Drift (das/die, §13a), die-2s V-Nadel in die
-EIGENE Marke (benannter Nachfolger: Marken-Claim-Trennung),
-Struktur-Erfindungen (netto 21–22 Kreuzungsdefekte gegen 7 beim
-Lotsen).
+dtw-Median 0,0448 · aiou 0,7481 · 63er-Soll-Abstand 85. **v5 (K0-S
+Sprosse 2, §14 `aug21` Messung + `aug26` Adoption):** der ganze
+Wächter-Stack ist der Default des Folgers — das Wächter-Soll aus dem
+KOMPOSITIONS-Builder (`soll_source="composition"`, dieselbe Pipeline
+wie das Lineal), die Ratsche (das Budget zieht nach jeder
+akzeptierten Runde Richtung Soll nach) und die zonale Rückweisung mit
+Radius 0,55 xh (Anker um die Verletzung pinnen, Rest neu lösen, statt
+die ganze Runde zu verwerfen). Erste adoptierte Änderung der
+WÄCHTER-Schicht: gegen die Soll-Stack-Basis 63er-Soll **86 → 79** bei
+0 schlechter, aiou-Median der bewegten Wörter **+0,073**, null
+Verlierer — weil der rundenatomare Wächter 26 von 31 bewegten Wörtern
+in Runde 1 auf den Init zurückwarf und die Zone genau diese rettet.
+Zahlen (dev-19, Lineal Kappe 1,5 seit L-U): **dtw 0,0446 med · p90
+0,0861 · worst muß 0,106 · marks 0 fehlend · aiou 0,7608**;
+63er-Soll-Abstand 79. Archäologie: `--no-structure-guard-ratchet
+--structure-guard-zone 0 --soll-source init` = die v4-Soll-Stack-Basis
+(strich-identisch), `--no-structure-guard` = Kette-frei (Diagnose-Arm:
+Init 86 → frei 125 Soll-Punkte, nie Duell). Bekannte Klassen-Defekte:
+das er-Gekritzel in unter als echter Rest (~0,087, versetzter
+Karten-Init + Composer-e-Breite §7.2), Kreuzungs-Höhen-Drift (das/die,
+§13a), die-2s V-Nadel in die EIGENE Marke (benannter Nachfolger:
+Marken-Claim-Trennung), **die 13 Wörter, die auch v5 in Runde 1 auf
+den Init zurückwirft** (Zorn, Feinde, wenn, kann, Pulver, haben,
+Seiten, die … — 24 von 25 freie Endzustände strukturell illegal;
+Rettungswege: Abstandsterm gegen erfundene Berührungen, Schleifen-
+Halteterm gegen Kreuzungskollaps, je eigene Pre-Reg). Die
+Reihenfolge-Lineal-Frage (u-Bogen als Körper, Folger-p90 0,235) ist
+seit L-U (`aug26`) gelöst — Lineal-Kappe 1,5, p90 0,090.
 
 **Versionierung:** v2 und v3 seit 2026-08-19 (Kandidaten-Schicht),
 v4 seit 2026-08-21 (Evidenz-Schicht — was der Fit sehen darf; kein
-Fit-Parameter bewegt). Die abgeschlossenen Gewichts-Arme werden nicht
-rückwirkend nummeriert (Konvention Nr. 3).
+Fit-Parameter bewegt), v5 seit 2026-08-26 (Wächter-Schicht — was der
+Fit BEHALTEN darf; Soll-Quelle, Ratsche, Zone). Die abgeschlossenen
+Gewichts-Arme werden nicht rückwirkend nummeriert (Konvention Nr. 3).
 
 ## Ledger (datierte Arme und Entscheide; Belege in §14)
 
@@ -85,7 +106,9 @@ rückwirkend nummeriert (Konvention Nr. 3).
 | aug21 | **K0-S EINE Soll-Pipeline + K0-Z-R-Wiedervorlage** | `soll_source` — das Wächter-Soll aus dem geteilten Kompositions-Builder (`composition_strokes` aus `ductus_soll` faktorisiert, je Run); Leiter Divergenz-Karte → Soll-Stack → Ratsche+0,55 | **ALLE GATES bestehen auf beiden Sprossen; Adoption wartet auf Autor-Go (v5-Stack).** Die daß-Autopsie fand den Wurzel-Fund: das aug19-Wächter-Soll las die Init-Nachbildung statt der kanonischen Komposition — ein plattgezogener Init-Splitter am d-Kopf zählte als Duktus-Wahrheit, und die Divergenz-Karte zeigt das Muster in 40/63 Runs (jedes d-Wort). Ratsche+0,55 auf Kompositions-Soll: **Soll 85 → 77 bei 0 schlechter, dev-aiou-Median +0,0216 (größter dev-Tintengewinn der Kampagne), schlechtester dtw +0,0014, netto-Kreuzungen 22 → 19, Marken/Retrace unverändert; der aug20-zwei-Trade INVERTIERT (−0,0100 dtw)** — beide K0-Z-R-Risse als gelöst gemessen | „Kette K0-S `aug21`“ |
 | aug21 | K-D Tinten-Korridor (A8, Autor-Idee aug20) | vorregistrierter Gegenstands-Test ZUERST: Exkursions-Inventar auf den existierenden Kandidaten (kein Solve), Barriere nur bei substanzieller Ziel-Klasse | **GEGENSTANDSLOS NACH v4 geschlossen, ohne Implementierung** — kein Wort über 0,35 xh Papier-Exkursion auf v4-Basis oder v5-Anwärter (Set-Maximum 0,33; die aug20-Nadel-Klasse lag bei 0,5–0,83 xh): die Wurzelbehandlung K-C war schneller als das Symptom-Verbot; Wiedervorlage-Auslöser in §7.9, das Inventar-Skript bleibt als Sensor | „Kette K-D `aug21`“ |
 
-## Stehende v5-Anwärter (Formulierungsänderungen, tintenfolger.md §7.3)
+| aug26 | **Kette v5 — Adoption K0-S Sprosse 2** (Autor-Go 25.08., nach der L-U-Re-Baseline sequenziert) | Defaults geflippt: `soll_source="composition"`, `structure_guard_soll`, `structure_guard_ratchet`, `structure_guard_zone_units=0.55`; Archäologie `--no-structure-guard-ratchet --structure-guard-zone 0 --soll-source init` = Soll-Stack-Basis (strich-identisch), `--no-structure-guard` = Kette-frei | **ADOPTIERT.** Gegen die vorregistrierte Soll-Stack-Basis in EINER Umgebung: 63er-Soll **86 → 79** (7 besser · 0 schlechter), aiou der 31 bewegten min −0,0004 / Median **+0,073**, null Verlierer; dev-19-Lineal dtw 0,0453 → 0,0446, aiou 0,7468 → 0,7608, schlechtestes Wort-Delta +0,0016, Marken 0/0/0, Kreuzungsdefekte 19 = 19. Mechanismus je Wort (`guard_outcome`): 26 von 31 bewegten waren in der Basis `revert-init`, v5 macht sie `zonal`. **Der Umweg:** die erste Messung des Tages paarte gegen den Folger OHNE Wächter — 36 Scheinverlierer, drei Gates scheinbar verletzt; der Autor lehnte das Verwerfen ab, Fables Zweitmeinung fand den Basis-Fehler, seither Stack-Sensor in `k0eval`. Offen: 13 Wörter, die auch v5 auf den Init zurückwirft (24/25 freie Endzustände strukturell illegal) — Rettungswege als präventive Terme im Abstieg, nie Annahme-Regeln | „Kette v5 `aug26`“ |
+
+## Stehende v6-Anwärter (Formulierungsänderungen, tintenfolger.md §7.3)
 
 ~~Marken-Claim-Trennung~~ (A9/K-E: `aug21` als K-E1 UND
 Ein-Faktor-Konversion K-E2 per aiou-Gate verworfen — die-2 heilt
