@@ -1048,9 +1048,13 @@ class EigenhandUebergangsraumIn(BaseModel):
     the server has no pool to union in. The rest is provenance: which corpus
     bytes (`corpora` checksums), which damping and filters, and which pool
     (`pool_sha256`) this build stands on.
+
+    `name` is pinned: the API knows ONE universe. The column exists so a
+    second corpus mix could sit beside it one day — that day brings its own
+    routes; until then a different name would be a row nothing can read.
     """
 
-    name: Annotated[str, Field(max_length=32, pattern=r"^[a-z][a-z0-9-]*$")] = "uebergangsraum"
+    name: Literal["uebergangsraum"] = "uebergangsraum"
     format: Annotated[int, Field(ge=1)]
     en_weight: Annotated[float, Field(ge=0.0, le=1.0)]
     min_count: Annotated[int, Field(ge=0)]

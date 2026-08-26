@@ -194,6 +194,9 @@ class TestUebergangsraum:
         assert bad.status == 400 and "coverage item key" in bad.json()["detail"]
         empty = await _put_universe(api, _universe({}))
         assert empty.status == 422
+        # One universe only: a row under another name would be unreachable.
+        other = await _put_universe(api, _universe(name="other"))
+        assert other.status == 422
 
     @pytest.mark.asyncio
     async def test_the_stored_weights_light_up_the_quoten_and_weight_the_queue(self, api: Harness):
