@@ -15,7 +15,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 ### Changed
 
 - **The `d` exit: the hand shortens it, the chain's cut does not — §12's last
-  open limit is closed.** The pairlab counter-check the autopsy asked for,
+  open limit is closed.** The `pairlab` counter-check that the autopsy asked for,
   over all 14 `d` occurrences of the frozen Abb.-19 words plus the eight
   Abb.-20 `d` drills of the same hand. The decisive reading has no
   letter/connector cut at all: the chart row placed RIGIDLY at its best

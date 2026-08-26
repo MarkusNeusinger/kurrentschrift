@@ -3265,7 +3265,8 @@ das nicht finden; es ist kein Fehler der Metrik, sondern ihre Zuständigkeit.
 Die letzte Grenze oben ist geschlossen. Gemessen wurden **alle** 14
 `d`-Vorkommen der eingefrorenen Abb.-19-Wörter (dieselben 10 + 4 wie
 oben) und als Zweitsatz die acht Abb.-20-Paar-Drills derselben Hand
-(`ds df do dp dt dk dx dz`; `Du` ist ein Versal-`D`), BLAS gepinnt,
+(`ds df do dp dt dk dx dz`; `Du` ist ein Versal-`D`), alle Läufe mit
+`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1`,
 Artefakte Scratchpad `dauslauf/` (Skripte, JSON, Overlays).
 
 **Die tragende Lesung kennt keinen Schnitt.** Die Tafelzeile `d`
