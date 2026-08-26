@@ -51,6 +51,7 @@ from tools.tracebench.candidates import (
     traced_provider,
 )
 from tools.tracebench.counters import RESAMPLE_STEP_UNITS
+from tools.tracebench.frames import MARK_MAX_ARC_UNITS
 from tools.tracebench.reference import (
     DEFAULT_FIXTURES_DIR,
     EXCLUDED_FRAME_STALE,
@@ -175,10 +176,10 @@ def build_provider(args: argparse.Namespace) -> tuple[Provider, str]:
     return traced_provider, args.label or "traced"
 
 
-def _score_job(payload: tuple[ReferenceEntry, Candidate, str, str, float]) -> dict[str, Any]:
+def _score_job(payload: tuple[ReferenceEntry, Candidate, str, str, float, float]) -> dict[str, Any]:
     """One word's scoring — module level so `--jobs` can pickle it."""
-    entry, candidate, label, split, step = payload
-    return score_word(entry, candidate, label=label, split=split, resample_step=step)
+    entry, candidate, label, split, step, arc_cap = payload
+    return score_word(entry, candidate, label=label, split=split, resample_step=step, mark_arc_cap=arc_cap)
 
 
 def score_all(
@@ -189,6 +190,7 @@ def score_all(
     label: str,
     split: str,
     resample_step: float,
+    mark_arc_cap: float = MARK_MAX_ARC_UNITS,
     jobs: int = 1,
 ) -> list[dict[str, Any]]:
     """Every selected word scored, in the input (= manifest) order.
@@ -204,6 +206,7 @@ def score_all(
             label,
             split,
             resample_step,
+            mark_arc_cap,
         )
         for i in ids
     ]
@@ -252,6 +255,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="measure A1 (tintenfolger.md §7.3): refit the marks (i-dot, umlaut, u-bow) onto the ink the "
         "body did not claim after the chain solve. --candidate chain only; the run is labelled chain+marks "
         "because it is a variant of the baseline, not the baseline",
+    )
+    parser.add_argument(
+        "--mark-arc-cap",
+        type=float,
+        default=MARK_MAX_ARC_UNITS,
+        metavar="XH",
+        help="arc length up to which a floating stroke counts as a MARK rather than body "
+        f"(default {MARK_MAX_ARC_UNITS}, the frozen ruler as it stands since §14 "
+        '„Lineal L-U"). Pass 0.8 to reproduce a number recorded before aug26, when the '
+        "u-Bogen was still classified as body; any other value is a ruler change and the "
+        "run says so",
     )
     parser.add_argument("--label", help="name of this candidate in the rows (default: the provider's name)")
     parser.add_argument("--jobs", type=int, default=1, help="parallel scoring workers (order-preserving)")
@@ -306,6 +320,7 @@ def main() -> None:
         label=label,
         split=args.split,
         resample_step=args.resample_step,
+        mark_arc_cap=args.mark_arc_cap,
         jobs=max(1, args.jobs),
     )
 
@@ -348,6 +363,10 @@ def main() -> None:
         else:
             print("soll_zones_agree: n/a (no scored row carries a target)")
     print(f"resample_step:   {args.resample_step}")
+    if args.mark_arc_cap != MARK_MAX_ARC_UNITS:
+        print(
+            f'mark_arc_cap:    {args.mark_arc_cap} (RULER CHANGED — §14 „Lineal L-U", not the frozen {MARK_MAX_ARC_UNITS})'
+        )
     print(f"runtime_s:       {time.perf_counter() - started:.1f}")
 
     result = {
@@ -356,6 +375,11 @@ def main() -> None:
         "split": args.split,
         "candidate": label,
         "resample_step": args.resample_step,
+        # Unconditionally, even at the default: a saved report has to say which
+        # RULER produced it, or a later comparison has to recover that from a
+        # shell history. The cap moved once already (§14 „Lineal L-U", 0.8 ->
+        # 1.5), so "the default" is not a value a stored file can rely on.
+        "mark_arc_cap": args.mark_arc_cap,
         "hand_id": reference.hand_id,
         "summary": summary,
         "rows": rows,

@@ -32,7 +32,14 @@ from tools.tracebench.counters import (
     resampled_strokes,
     structure_zones,
 )
-from tools.tracebench.frames import classify_strokes, concat_body, concat_strokes, lift_stats, match_marks
+from tools.tracebench.frames import (
+    MARK_MAX_ARC_UNITS,
+    classify_strokes,
+    concat_body,
+    concat_strokes,
+    lift_stats,
+    match_marks,
+)
 from tools.tracebench.metric import aiou, chamfer, dtw
 from tools.tracebench.reference import ReferenceEntry
 
@@ -125,18 +132,23 @@ def score_word(
     label: str = "",
     split: str = "",
     resample_step: float = RESAMPLE_STEP_UNITS,
+    mark_arc_cap: float = MARK_MAX_ARC_UNITS,
 ) -> dict[str, Any]:
     """One word: the flat §14 row for this candidate against its reference.
 
     A candidate that never arrived (`status != "ok"`) still produces a row —
     with the reference side filled in and every measured column `None` — so the
     report can never lose a word to a provider failure.
+
+    `mark_arc_cap` reaches both sides of the classification and nothing else.
+    Its default is the ruler as it stands (1.5 since §14 „Lineal L-U"); pass
+    0.8 to reproduce any number recorded before `aug26`.
     """
     started = time.perf_counter()
     entry = reference_entry
     frame = entry.frame
     ref_strokes = frame.trace_to_bench(entry.row.strokes, entry.row.registration_px, entry.row.xh_px)
-    ref_body, ref_marks = classify_strokes(ref_strokes)
+    ref_body, ref_marks = classify_strokes(ref_strokes, mark_arc_cap)
     expected = expected_marks(entry.slots)
 
     row: dict[str, Any] = {
@@ -177,7 +189,7 @@ def score_word(
         return row
 
     cand_strokes = frame.trace_to_bench(candidate.strokes, candidate.registration_px, candidate.xh_px)
-    cand_body, cand_marks = classify_strokes(cand_strokes)
+    cand_body, cand_marks = classify_strokes(cand_strokes, mark_arc_cap)
     row.update(cand_strokes=len(cand_strokes), cand_points=_point_count(cand_strokes), cand_marks=len(cand_marks))
     if not ref_body or not cand_body:
         side = "reference" if not ref_body else "candidate"

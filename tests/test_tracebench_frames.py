@@ -116,11 +116,39 @@ def test_a_crossbar_that_dips_through_the_midband_is_body() -> None:
 
 
 def test_a_long_floating_stroke_is_body_however_high_it_sits() -> None:
-    """A capital's ornament lives in the Oberlänge and is still a written form."""
-    ornament = np.column_stack([np.linspace(0.0, 1.2, 40), 1.4 + 0.3 * np.sin(np.linspace(0.0, 3.0, 40))])
+    """A capital's ornament lives in the Oberlänge and is still a written form.
+
+    Lengthened when the cap moved 0.8 -> 1.5 (§14 „Lineal L-U"): the old
+    synthetic ornament measured 1.35 xh and would now pass as a mark. It has to
+    be what the cap is actually for — a stroke too long to be an accent over
+    one letter — so it spans two letter widths.
+    """
+    ornament = np.column_stack([np.linspace(0.0, 2.0, 60), 1.4 + 0.3 * np.sin(np.linspace(0.0, 3.0, 60))])
     assert arc_length(ornament) > MARK_MAX_ARC_UNITS
     body, marks = classify_strokes([np.array([[0.0, 0.0], [0.0, 1.0]]), ornament])
     assert marks == [] and len(body) == 2
+
+
+def test_a_u_bow_sized_floating_stroke_is_a_mark() -> None:
+    """The other side of the same boundary — the reason the cap moved.
+
+    A u-Bogen of the reference hand measures 1.04-1.31 xh and floats entirely
+    above the midband. Under the old 0.8 cap it was body, which forced the
+    monotone body DTW to pair it against the following letters; the ruler's own
+    `MARKS_PER_KEY` has always called it a mark.
+    """
+    bow = np.column_stack([np.linspace(0.0, 1.1, 40), 1.5 + 0.12 * np.sin(np.linspace(0.0, 3.14, 40))])
+    assert 1.0 < arc_length(bow) <= MARK_MAX_ARC_UNITS
+    body, marks = classify_strokes([np.array([[0.5, 0.0], [0.5, 1.0]]), bow])
+    assert len(marks) == 1 and len(body) == 1
+
+
+def test_the_cap_is_a_parameter_so_a_re_baseline_can_measure_both_values() -> None:
+    """A frozen ruler is changed by measuring the change against itself."""
+    bow = np.column_stack([np.linspace(0.0, 1.1, 40), 1.5 + 0.12 * np.sin(np.linspace(0.0, 3.14, 40))])
+    strokes = [np.array([[0.5, 0.0], [0.5, 1.0]]), bow]
+    assert classify_strokes(strokes, 0.8)[1] == []
+    assert len(classify_strokes(strokes, 1.5)[1]) == 1
 
 
 # ------------------------------------------------------- concatenation + lifts

@@ -129,7 +129,9 @@ referenziert publizierte Zahlen**.
   ein fehlender i-Punkt bläht NUR diese Hälfte). Kein symmetrisches
   Mittel als Headline.
 - **Strich-Behandlung:** Marken (i-Punkt/-Strich, Umlaut, u-Deckstrich —
-  Klassifikation via `DIACRITIC_MIN_Y` + Bogenlänge ≤ 0,8 xh) werden vor
+  Klassifikation via `DIACRITIC_MIN_Y` + Bogen-Kappe ≤ 1,5 xh; bis
+  `aug26` 0,8, was den u-Deckstrich entgegen dieser Aufzählung zum
+  Körper machte, siehe qualitaetsmetrik.md §14 „Lineal L-U") werden vor
   dem Body-DTW herausgelöst (Delayed-Strokes-Praxis; entschärft zugleich
   die Deferred-Diakritika-Ordnungsfalle der Engine) und per Zentroid mit
   Refusal gematcht: **`marks_missing` ist Co-Primär-Gate**, mit gutem

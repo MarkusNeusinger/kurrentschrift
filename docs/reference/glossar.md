@@ -1272,10 +1272,9 @@ Singularitäts-Wächter). *Technisch:* `tools/tracebench/metric.py::dtw`
 Body-Vergleich herauslöst und separat zählt: ein nicht-erster Strich,
 der komplett über `DIACRITIC_MIN_Y` (= 1 xh) schwebt und die
 **Bogen-Kappe** nicht überschreitet — i-Punkt/-Strich, Umlautzeichen
-und, dem Namen nach, der u-Deckstrich. Beim u-Deckstrich widerspricht
-sich das Lineal allerdings selbst: proposals/tintenfolger.md §2.3 und
-die Erwartungstabelle `MARKS_PER_KEY` führen ihn als Marke, die Kappe
-macht ihn zum Body (→ **Bogen-Kappe**).
+und der u-Deckstrich. Letzterer erst seit `aug26`: bis dahin machte
+ihn die Kappe zum Body, entgegen dieser Aufzählung und entgegen der
+Erwartungstabelle `MARKS_PER_KEY` (→ **Bogen-Kappe**).
 Der t-Querstrich kreuzt das Mittelband und bleibt Body (ihn zählt der
 Kreuzungszähler). Gematcht per Zentroid mit Refusal; **fehlende Marken
 sind Co-Primär-Gate**, mit gutem Body-`dtw_xh` nicht rückkaufbar — der
@@ -1290,15 +1289,18 @@ Marken-Klasse heraus, was nur zufällig in der Oberlänge bleibt — ein
 abgesetztes Versalien-Ornament, eine Oberlängenschleife, ein
 Fit-Defekt, dessen Bahn die Tinte verlässt: solche Striche würden sonst
 zur Marke erklärt und verschwänden damit aus dem Primärmaß.
-Steht heute bei 0,8 xh und liegt damit INNERHALB der Marken-Population
-statt zwischen Marke und Body: auf der eingefrorenen Referenz enden
-Punkte und Umlaute bei 0,652 xh, die u-Bögen beginnen bei 1,039 xh.
-Vorregistriert ist die Anhebung auf 1,5 xh, aus dem Breitenmodell
+Steht seit `aug26` bei **1,5 xh**, davor bei 0,8 — und 0,8 lag
+INNERHALB der Marken-Population statt zwischen Marke und Body: auf der
+eingefrorenen Referenz enden Punkte und Umlaute bei 0,652 xh, die
+u-Bögen beginnen bei 1,039 xh. Die Höhe ist aus dem Breitenmodell
 begründet (ein Kleinbuchstabe ist eine x-Höhe breit, ein Diakritikum
-steht über EINEM Buchstaben) — nicht das Streichen, weil die Kappe
-sonst ihren eigentlichen Zweck verlöre. *Technisch:*
-`tools/tracebench/frames.py`; abgeleitet in
-`tools/pairlab/marks.py::MARK_MAX_INK_ARC_UNITS`.
+steht über EINEM Buchstaben), nicht aus der Verteilung; **angehoben und
+nicht gestrichen**, weil die Kappe sonst ihren eigentlichen Zweck
+verlöre. `--mark-arc-cap` reproduziert jeden alten Wert. *Technisch:*
+`tools/tracebench/frames.py`. Der Marken-Nachfit hat seit `aug26` eine
+EIGENE Kappe (`tools/pairlab/marks.py::MARK_MAX_INK_ARC_UNITS`, 1,6) —
+früher davon abgeleitet, entkoppelt, damit eine Lineal-Änderung nicht
+still die Kandidatenseite mitbewegt.
 → qualitaetsmetrik.md §14 „Lineal L-U"
 
 **Retrace-Segment** — zweimal beschriebene Tinte als GEZÄHLTE Zone:
