@@ -3260,6 +3260,79 @@ das nicht finden; es ist kein Fehler der Metrik, sondern ihre Zuständigkeit.
   Trennen lässt sich das nur mit `tools/pairlab` an einem `d`-Übergang.
 * **n = 14.** Eine Glyphe, eine Hand, eine Vorlage.
 
+### Nachtrag `aug26` — die pairlab-Gegenprobe: es ist die Hand, nicht der Schnitt
+
+Die letzte Grenze oben ist geschlossen. Gemessen wurden **alle** 14
+`d`-Vorkommen der eingefrorenen Abb.-19-Wörter (dieselben 10 + 4 wie
+oben) und als Zweitsatz die acht Abb.-20-Paar-Drills derselben Hand
+(`ds df do dp dt dk dx dz`; `Du` ist ein Versal-`D`), alle Läufe mit
+`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1`,
+Artefakte Scratchpad `dauslauf/` (Skripte, JSON, Overlays).
+
+**Die tragende Lesung kennt keinen Schnitt.** Die Tafelzeile `d`
+(Variante 0, 120 Anker) wird STARR an ihrer besten beschränkten
+Verschiebung (`analyze._fit_letter`-Gitter) auf das eingefrorene
+Skelett gelegt — keine Verformung, kein Fenster, kein
+Verbindergenerator — und gelesen als einseitiger Abstand
+Tafelform → nächste Tinte über die letzten 0,40 xh Bogenlänge:
+
+| Gruppe | n | Auslauf 0–0,40 xh (Median / Spanne) | Körper 0,60–1,20 xh |
+|---|---|---|---|
+| `d` verbunden, Abb.-19 | 10 | **0,166** / 0,107–0,206 | 0,073 |
+| `d` verbunden, Abb.-20-Drills | 8 | **0,160** / 0,084–0,207 | 0,083 |
+| `d` am Wortende (`und…`) | 4 | **0,025** / 0,015–0,051 | 0,088 |
+
+**18 von 18 verbundenen über 0,084 · 4 von 4 unverbundenen unter
+0,052** — vollständige Trennung, exakter Permutationswert p = 0,00014
+(nur Wörter: p = 0,001), Verhältnis der Mediane 6,4. Der
+Buchstabenkörper trennt NICHT (0,073 gegen 0,088 — die Kontrolle sitzt
+dort sogar minimal schlechter): der Unterschied lebt allein im Auslauf,
+kein Platzierungs- oder Fitgüte-Artefakt. Richtung des Fehlbetrags:
+der nächste Tintenpunkt zur Tafel-Auslaufspitze liegt in 8 von 10
+verbundenen Wortfällen 0,241–0,370 xh **weiter links auf derselben
+Höhe** (Δy ≈ 0,005) — reine Kürzung, keine Drehung (`Soldaten`, der
+Dreh-Fall oben, liegt mit −0,360 trotzdem in der Kürzungsgruppe); am
+Wortende 0,016–0,089, die Spitze liegt auf der Tinte. Der von pairlab
+verfolgte reale Verbindungsstrich verlässt die `d`-Tintensäule bei
+y = **0,824–1,118 xh** (Median 0,961, 17 Vorkommen, elf verschiedene
+Folger i · a · e · s · f · o · p · t · k · x · z); die
+Tafel-Auslaufspitze liegt bei y = 1,359. Der Duktus-Trace
+(`trace_letter_ductus`, Fenster 0,15 xh) reproduziert §12: Bogen
+110–119 verbunden Median **−31,8 %** (−37,8 … +12,4) gegen Wortende
+−6,0 % (−8,0 … −4,3), Endpunkt-Δx −0,099 … −0,160 gegen −0,013 …
+−0,021 — er hält den Auslauf oben (y 1,25–1,39) und knickt ihn in x
+zurück, saugt also den Kopplungsstumpf in die Schlingenflanke, statt
+ihn auf die Verbindungstinte zu legen. Damit sind die −17 … −33 % der
+gespeicherten Fits **keine Folge davon, wo die Kette schneidet**.
+
+**Was pairlab NICHT entscheidet, offen gesagt.** Der verformbare Fit
+allein trennt die Lesarten nicht: ein Fenster-Sweep (Rand 0,15 / 0,35
+/ 0,60 xh) treibt die Auslaufanker verbunden von −31,8 % auf
+**+114 %** (−28 … +194) und auch die Kontrolle auf +23 % — die letzten
+zehn Anker folgen in verbundener Stellung schlicht der Tinte, die man
+ihnen zeigt (die Schnitt-Lesart sagte eine Rückkehr auf ≈ 0 % voraus,
+nicht ein Überschießen). Das Urteil trägt darum die starre Lesung.
+Wortfinales `d` ist für pairlab kein Paar; die Kontrolle wurde mit
+derselben Nicht-Paar-Messung neu erhoben, nicht aus den Zahlen oben
+übernommen. Nicht gemessen: welcher Anker der letzte Buchstabenanker
+sein soll (y ≈ 0,96 liegt interpoliert bei Anker ≈ 105–110), und ob
+ein Generator ab y ≈ 0,96 alle Folger erreicht (`gen_chamfer` bei
+unabhängiger Platzierung 0,034–0,133, Median 0,091 Wörter / 0,053
+Drills — auf der Grenze 0,07/0,10). Die Kontrolle bleibt n = 4.
+
+**Für die Modellfrage (Autor-Entscheid, Todoist):** belegt ist, dass
+der volle Tafel-Auslauf verbunden nicht geschrieben wird — beide
+Optionen müssen das abbilden, ein Median über beide Grundgesamtheiten
+kann es nicht. Für (b), Auslauf im Übergangsgenerator, sprechen
+zusätzlich: der Abgangspunkt ist über elf Folger konstant (eine
+Eigenschaft des Buchstabenendes; was danach kommt, variiert — die
+Zuständigkeit des Generators), und die Anker 110–119 tragen verbunden
+keine Sollform (Sweep −34 … +194 %). (a), die Variantentrennung
+verbunden/terminal, bleibt der legitime Rückfall, falls ein Generator
+ab y ≈ 0,96 nicht alle Folger erreicht — je eigene Vorregistrierung.
+Unberührt: die Schlingenflanke (Körper 0,073/0,088 in beiden Gruppen)
+bleibt der `chart_ductus`-Fall für den Wizard.
+
 ---
 
 ## 13. Die Kreuzung als Landmarke — und die Drift (`aug11`)
