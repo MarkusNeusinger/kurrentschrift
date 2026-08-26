@@ -90,8 +90,10 @@ keinerlei s-Übergang, Ziffern/Interpunktion (`joins: false`) tragen
 nichts. Quelle sind Konsultationskorpora unter
 `data/corpora/frequencywords-2018/` (Klasse 2: Bytes gitignored, nur
 SOURCE.md + Fetch-Skript committet; Rauschgate `MIN_COUNT` gegen den
-Untertitel-Junk-Schwanz). Die Gewichtstabelle bleibt LOKAL
-(quiz-wortbank.md §4: Frequenzlisten nie committen); Versal-Übergänge
+Untertitel-Junk-Schwanz). Die Gewichtstabelle wird nie committet
+(quiz-wortbank.md §4: Frequenzlisten nie committen); sie liegt lokal
+und — seit dem Autor-Entscheid 2026-08-25 — als eine Zeile in der
+privaten, geteilten DB (§7.1). Versal-Übergänge
 betreten den Raum über die kuratierten Poolwörter, weil die Korpora
 kleingeschrieben sind. Messstand 2026-08-22: 1090 Korpus-Items (987
 Übergänge); ∪ Pool-Items 1265.
@@ -502,13 +504,27 @@ Alles dahinter — Druck-Warteschlange, Layout, PDF, Bestand — liegt in
 `core/eigenhand` und kann die beiden nicht unterscheiden. Deshalb sind
 Terminal und Werkbank per Konstruktion einig über dieselbe Hand.
 
-Ein Unterschied bleibt und ist gewollt: die
-**Übergangsraum-Gewichte** stammen aus Konsult-Korpora und bleiben auf
-dem Rechner, der sie gebaut hat (§4, quiz-wortbank.md §4). Der Server
-zeigt darum keine Quoten und ordnet Wiederholungs-Kandidaten nach
-wenigsten Fassungen statt nach gewichtetem Soll-Gewinn. Wollte man das
-ändern, wäre es eine eigene Entscheidung über eine abgeleitete
-Gewichtstabelle in der DB — nicht ein Nebeneffekt dieser Ansicht.
+Auch das Soll ist seit dem **Autor-Entscheid vom 2026-08-25** auf beiden
+Seiten dasselbe: die **Übergangsraum-Gewichte** liegen als EINE Zeile
+in der geteilten DB (`eigenhand_uebergangsraum`, Migration `0026`) —
+die ABGELEITETE Tabelle Item → Summengewicht mit Provenienz (Listen-
+Prüfsummen, `en_weight`, Filterkonstanten, Prüfsumme des Pools), nie
+die Korpus-Bytes, die gitignored bleiben (§4, quiz-wortbank.md §4).
+Hochgeschoben wird sie mit `tools.eigenhand.universe --push`
+(`PUT /eigenhand/uebergangsraum`): gespeichert wird das VOLLSTÄNDIGE
+Soll-Universum, also Korpus-Items ∪ Pool-Items zu Gewicht 0 — genau die
+Menge, über die `pool.soll_model` lokal rechnet —, damit der Server
+ohne den Wortvorrat (der in `tools/` liegt, das die API nie importiert)
+dieselben Ziele ableitet (`coverage.soll_from_weights`, die EINE
+Ableitung für beide Seiten). Der Push ist über eine Inhalts-Prüfsumme
+idempotent; ein anderer Bau ERSETZT die Zeile ganz — die einzige
+eigenhand-Schreibung, die überschreibt, weil die Tabelle ein unteilbarer
+Bau ist (jedes Ziel skaliert gegen ihr Maximum) und der alte Bau aus
+Korpus + Pool reproduzierbar und im DB-Snapshot davor archiviert ist.
+Damit zeigt die Werkbank Erstbeleg- und Ausbau-Quote wie das Terminal
+und ordnet Wiederholungs-Kandidaten nach gewichtetem Soll-Gewinn —
+Bestand UND Bogendruck lesen dieselbe Zeile. Ohne die Zeile (frische
+DB) fehlt nur die Quoten-Tafel, und die Ansicht sagt es.
 
 **Die Schleife mit Admin-Druck.** Werkbank → `Bögen erzeugen` (Auswahl
 und Layout wie im Terminal, jeder Bogen vor der nächsten Auswahl
@@ -658,6 +674,11 @@ ADMIN_TOKEN=… uv run python -m tools.eigenhand.sync \
     --mit-streifen
 ```
 
+Die fünfte Tabelle, `eigenhand_uebergangsraum` (§7.1), kommt nicht aus
+dem Eigenhand-Archiv, sondern aus ihrer eigenen Quelle zurück: Korpora
+holen, `tools.eigenhand.universe --push` — der DB-Snapshot trägt sie als
+`eigenhand/uebergangsraum.json` nur als Prüfung mit.
+
 `--from` nimmt IRGENDEINEN Schnappschuss der Hand: die Geschwister im
 selben Archivverzeichnis kommen automatisch dazu (neuester gewinnt), damit
 die Inkrementalität oben keine Lücke reißt. Gelesen werden Kartei, Setup,
@@ -751,6 +772,7 @@ die menschliche Kopf-Bestätigung je fehleranfällig wird.
 | 4a | DB-Buchführung + Werkbank-Ansicht (`0024` · `/eigenhand/*` · `sync` · `pull`) | umgesetzt (§7.1) |
 | 4b | Streifen + stehendes Setup in der DB, Wort-Crops, Wiederherstellungsweg (`0025` · `crop` · `setup` · `sync --mit-streifen`/`--from`) | umgesetzt (§7.2, §8.1); Drill 2026-08-25 grün |
 | 4c | Die drei Blocker der ersten echten Sitzung (`apiclient`-Kennung · `.env` · `core`↛`tools`) + der bedruckbare Bereich (§5) | umgesetzt 2026-08-25 (siehe unten) |
+| 4d | Übergangsraum-Gewichte in der DB (`0026` · `GET|PUT /eigenhand/uebergangsraum` · `universe --push`): Quoten und gewichtete Warteschlange auf beiden Seiten (§7.1) | umgesetzt 2026-08-26 (Autor-Entscheid 2026-08-25) |
 | 5 | Ernte-Anschluss, Kurrent/Offenbacher-Betrieb, optionaler Bogen-Code | aufgeschoben (§9) |
 
 Dazu je Schreibsitzung wiederkehrend: Kalibrier-Schleife der

@@ -14,13 +14,27 @@
              Untertitel-Quelle ist nicht restlos klärbar. Darum
              KONSULTATIONS-QUELLE: die Bytes bleiben gitignored
              (`/data/corpora/**`), die daraus berechnete Gewichtstabelle
-             (Übergangsraum) bleibt lokal unter `data/samples/own-hand/`
-             und wird nie committet. Committet ist nur der eigene,
-             lediglich informierte Wortvorrat (eigene Auswahl, eigene
-             Glossen) in `tools/eigenhand/corpus.py` — eigene Schöpfung
-             unter Repo-Lizenz. Gleiches Vertrauensmodell wie
+             (Übergangsraum) wird nie committet. Committet ist nur der
+             eigene, lediglich informierte Wortvorrat (eigene Auswahl,
+             eigene Glossen) in `tools/eigenhand/corpus.py` — eigene
+             Schöpfung unter Repo-Lizenz. Gleiches Vertrauensmodell wie
              `quiz_words.json` (eingefrorener Output ohne committete
              Ableitungs-Inputs).
+- Nachtrag 2026-08-26 (Autor-Entscheid 2026-08-25): die Gewichtstabelle
+             darf neben der lokalen Kopie (`data/samples/own-hand/
+             universe/uebergangsraum.json`) auch in der PRIVATEN, geteilten
+             Datenbank liegen (`eigenhand_uebergangsraum`, Push mit
+             `tools.eigenhand.universe --push`). „Nie committet" war eine
+             Aussage über das REPO, nicht über den Speicherort: Repo und
+             DB sind beide nicht öffentlich, der Unterschied ist der Ort,
+             nicht die Rechtslage. Was sich bewegt, ist ein abgeleitetes
+             Aggregat (~1 300 Zahlen Item → Summengewicht, mit den
+             Listen-Prüfsummen als Provenienz), keine wesentliche
+             Entnahme der Liste; es bleibt admin-gesichert, hat keinen
+             öffentlichen Endpunkt und gehört NICHT zu einer späteren
+             Ziel-7-Veröffentlichung (quellen-und-rechte.md §5). Die
+             Korpus-Bytes selbst bleiben, wo sie sind: gitignored, nie in
+             der DB.
 - Retrieved: 2026-08-22 (erhoben = per Skript abrufbar; Abrufdatum des
              jeweiligen lokalen Stands steht im Fetch-Log)
 
