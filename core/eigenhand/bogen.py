@@ -7,11 +7,18 @@ result — the local CLI under ``tools/eigenhand/sheet.py`` writing
 sheet row into ``eigenhand_sheets`` — is the caller's business.
 
 Selection order of the print queue (proposal §5): redo-queue entries first,
-then never-recorded strips in plan order (preserving the wave's coverage
-velocity), then repetition candidates. With Übergangsraum weights the
-repetition candidates are ranked by the Soll gain of one more Fassung;
-without them (the server has no local weight table) by fewest Fassungen —
-the same order, minus the frequency preference.
+then every strip that is not yet ``belegt`` in plan order (preserving the
+wave's coverage velocity), then repetition candidates. With Übergangsraum
+weights the repetition candidates are ranked by the Soll gain of one more
+Fassung; without them (the server has no local weight table) by fewest
+Fassungen — the same order, minus the frequency preference.
+
+A print job always starts at the FRONT of that queue (owner, 2026-08-26): a
+Bogen that was printed but never written does not hold its strips back — a
+new print is requested precisely because the old sheet is gone, and counting
+"sheets in circulation" would only make the queue drift away from the plan.
+Within one job the pages continue the queue (``compose_stack``), so a stack
+never carries a strip twice and comes out as ONE PDF with one page per Bogen.
 
 The ``layout`` this builds is the importer's SOLE geometry contract (mm
 coordinates of Passmarken, rows and boxes; registration instead of
@@ -166,10 +173,15 @@ def _repetition_ranking(
 def select_strips(
     plan: dict, kartei: dict, rows: int, repeat: int, soll: tuple[dict[str, float], dict[str, int]] | None = None
 ) -> list[str]:
-    """The print queue: redo > never recorded (plan order) > repetition gain."""
+    """The print queue: redo > not yet belegt (plan order) > repetition gain.
+
+    ``unterwegs`` (printed more often than judged) is a display state, not a
+    queue criterion: the strips of a printed-but-unwritten Bogen are printed
+    again on the next job (module docstring).
+    """
     queue: list[str] = [entry["strip"] for entry in kartei["redo"] if entry["strip"] in plan["strips"]]
     ordered = ordered_strips(plan)
-    queue += [sid for sid in ordered if sid not in queue and strip_state(kartei, sid) == "geplant"]
+    queue += [sid for sid in ordered if sid not in queue and strip_state(kartei, sid) != "belegt"]
     queue += [sid for sid in _repetition_ranking(plan, kartei, ordered, soll) if sid not in queue]
     distinct = max(1, rows // repeat)
     picked = queue[:distinct]
@@ -244,8 +256,8 @@ def build_layout(
     return layout
 
 
-def render_pdf(layout: dict) -> bytes:
-    """The printable Bogen from its layout sidecar (same numbers, one source)."""
+def page_primitives(layout: dict) -> pdfgen.Page:
+    """Everything one Bogen draws, from its layout sidecar (same numbers, one source)."""
     style = geometry.CAPTURE_STYLES  # faint rulings, not the app's reading theme
     preset = geometry.PRESETS[layout["style"]]
     rects: list[pdfgen.Rect] = []
@@ -413,7 +425,18 @@ def render_pdf(layout: dict) -> bytes:
                 f"cannot print {item.text!r}: the sheet font (WinAnsi) has no "
                 f"{', '.join(repr(c) for c in dict.fromkeys(missing))} — reword it, or spell the word plainly"
             )
-    return pdfgen.build_pdf(rects, ordered_lines, texts)
+    return rects, ordered_lines, texts
+
+
+def render_pdf(layout: dict) -> bytes:
+    """The printable Bogen — one page."""
+    rects, lines, texts = page_primitives(layout)
+    return pdfgen.build_pdf(rects, lines, texts)
+
+
+def render_stack_pdf(layouts: list[dict]) -> bytes:
+    """A whole Stapel as ONE PDF, one page per Bogen, in the given order."""
+    return pdfgen.build_pdf_pages([page_primitives(layout) for layout in layouts])
 
 
 def layout_text(layout: dict) -> str:
@@ -441,27 +464,89 @@ def compose_sheet(
     composition path, or the two surfaces would drift apart in the one place
     where drift means paper that the importer cannot read.
     """
+    return compose_stack(
+        plan=plan,
+        kartei=kartei,
+        hand=hand,
+        style=style,
+        date=date,
+        sheets=1,
+        rows=rows,
+        repeat=repeat,
+        strips=strips,
+        hints=hints,
+        soll=soll,
+    )["sheets"][0]
+
+
+def compose_stack(
+    *,
+    plan: dict,
+    kartei: dict,
+    hand: str,
+    style: str,
+    date: str,
+    sheets: int = 1,
+    rows: int | None = None,
+    repeat: int = 1,
+    strips: list[str] | None = None,
+    hints: bool = True,
+    soll: tuple[dict[str, float], dict[str, int]] | None = None,
+) -> dict:
+    """Compose a Stapel of ``sheets`` Bögen in ONE selection, and ONE PDF.
+
+    The queue is walked once for the whole job: page two starts where page one
+    ended, so no strip lands on two sheets of the same stack — and the next job
+    starts at the front again (module docstring). Ids are minted consecutively
+    from the Kartei this call sees. Returns ``{"sheets": [per-Bogen dicts as
+    ``compose_sheet`` returns them], "pdf": the multi-page bytes}``; a stack
+    shorter than asked (the plan ran out) is returned as is, never padded.
+    ``strips`` names the rows of exactly one Bogen and is refused for a stack.
+    """
     if style not in geometry.PRESETS:
         raise SystemExit(f"unknown style {style!r}")
+    if sheets < 1:
+        raise SystemExit("a stack needs at least one Bogen")
+    if strips and sheets > 1:
+        raise SystemExit("`strips` names the rows of ONE Bogen — print a stack without it")
     rows = rows or geometry.max_rows(geometry.PRESETS[style], MARGIN_MM)
+    # More attempts than rows cannot fit on a page: cap, so `per_page` below
+    # never exceeds the rows the geometry has (a page then carries ONE strip,
+    # repeated `rows` times — what the single-sheet path always produced).
+    repeat = max(1, min(repeat, rows))
 
     if strips:
         unknown = [sid for sid in strips if sid not in plan["strips"]]
         if unknown:
             raise SystemExit(f"unknown strips: {', '.join(unknown)}")
-        strip_rows = strips[:rows]
+        pages = [strips[:rows]]
     else:
-        strip_rows = select_strips(plan, kartei, rows, max(1, repeat), soll)
-    if not strip_rows:
+        # One walk of the queue for the whole stack. `select_strips` lays a
+        # strip's attempts side by side, so slicing at multiples of `repeat`
+        # keeps every attempt group on one page (its "1/2 · 2/2" labels count
+        # per page).
+        per_page = max(1, rows // repeat) * repeat
+        picked = select_strips(plan, kartei, per_page * sheets, repeat, soll)
+        pages = [picked[start : start + per_page] for start in range(0, len(picked), per_page)]
+    pages = [page for page in pages if page]
+    if not pages:
         raise SystemExit("nothing to print — the plan has no strips")
 
-    sheet_id = next_sheet_id(kartei)
-    layout = build_layout(sheet_id, hand, style, strip_rows, plan, date, hints)
-    pdf = render_pdf(layout)
-    return {
-        "sheet": sheet_id,
-        "layout": layout,
-        "pdf": pdf,
-        "strips": strip_rows,
-        "layout_sha256": hashlib.sha256(layout_text(layout).encode()).hexdigest(),
-    }
+    # Mint ids against a working copy: the Kartei itself is not written here,
+    # but the second page must see the first one's id taken.
+    minted = {"sheets": dict(kartei["sheets"])}
+    composed: list[dict] = []
+    for strip_rows in pages:
+        sheet_id = next_sheet_id(minted)
+        minted["sheets"][sheet_id] = {"strips": strip_rows}
+        layout = build_layout(sheet_id, hand, style, strip_rows, plan, date, hints)
+        composed.append(
+            {
+                "sheet": sheet_id,
+                "layout": layout,
+                "pdf": render_pdf(layout),
+                "strips": strip_rows,
+                "layout_sha256": hashlib.sha256(layout_text(layout).encode()).hexdigest(),
+            }
+        )
+    return {"sheets": composed, "pdf": render_stack_pdf([entry["layout"] for entry in composed])}

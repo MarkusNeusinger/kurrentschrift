@@ -195,6 +195,47 @@ class TestPrinting:
         assert (await _bestand(api))["strips"]["unterwegs"] == len(all_strips)
 
     @pytest.mark.asyncio
+    async def test_a_new_job_starts_at_the_front_again(self, api: Harness):
+        # Printed, never written: the next job prints the same strips on new
+        # Bögen — "sheets in circulation" is not a queue criterion (owner,
+        # 2026-08-26). Only what is belegt drops out.
+        first = await _print(api, sheets=2, date="2026-08-26")
+        again = await _print(api, sheets=2, date="2026-08-26")
+        assert [s["strips"] for s in again["sheets"]] == [s["strips"] for s in first["sheets"]]
+        assert [s["sheet"] for s in again["sheets"]] == ["B0003", "B0004"]
+        rows = first["sheets"][0]["strips"]
+        await _record(api, [_accepted(rows[0], "B0001", 0)])
+        third = await _print(api, sheets=1, date="2026-08-26")
+        assert third["sheets"][0]["strips"][0] == rows[1], "the belegt strip dropped out, nothing else did"
+
+    @pytest.mark.asyncio
+    async def test_a_stack_is_served_as_one_pdf(self, api: Harness):
+        printed = await _print(api, sheets=3, date="2026-08-26")
+        ids = [s["sheet"] for s in printed["sheets"]]
+        res = await api.client.request(
+            "GET", f"/eigenhand/stacks/{HAND}/pdf", params={"sheets": ",".join(ids)}, headers=api.admin_headers()
+        )
+        assert res.status == 200, res.body
+        assert res.body.startswith(b"%PDF-1.4") and b"/Count 3 >>" in res.body
+        assert res.headers.get("cache-control") == "no-store"
+        assert f"{HAND}-{ids[0]}-{ids[-1]}.pdf" in res.headers.get("content-disposition", "")
+        layouts = [
+            (
+                await api.client.request("GET", f"/eigenhand/sheets/{HAND}/{sheet}/layout", headers=api.admin_headers())
+            ).json()
+            for sheet in ids
+        ]
+        assert bogen.render_stack_pdf(layouts) == res.body
+        missing = await api.client.request(
+            "GET", f"/eigenhand/stacks/{HAND}/pdf", params={"sheets": f"{ids[0]},B0099"}, headers=api.admin_headers()
+        )
+        assert missing.status == 404
+        empty = await api.client.request(
+            "GET", f"/eigenhand/stacks/{HAND}/pdf", params={"sheets": ""}, headers=api.admin_headers()
+        )
+        assert empty.status == 400
+
+    @pytest.mark.asyncio
     async def test_the_queue_leads_with_what_was_rejected(self, api: Harness):
         first = await _print(api, sheets=1, date="2026-08-23")
         sheet = first["sheets"][0]["sheet"]

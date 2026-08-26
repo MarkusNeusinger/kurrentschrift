@@ -432,6 +432,15 @@ die einzige Zustandsquelle: Bögen, Fassungen, Sitzungen, Redo-Liste.
 Streifen-Zustände werden ABGELEITET, nie gespeichert: `belegt` (≥1
 angenommene, nicht zurückgezogene Fassung) · `unterwegs` (öfter gedruckt
 als beurteilt) · `geplant` (sonst — auch nach reinem Verwurf).
+`unterwegs` ist ein Anzeige-Zustand, KEIN Kriterium der Warteschlange
+(Autor-Entscheid 2026-08-26): ein Druckauftrag beginnt immer vorn im
+Plan, minus die belegten Streifen — ein gedruckter, aber nie
+geschriebener Bogen hält nichts zurück, denn ein neuer Druck wird
+gerade deshalb verlangt, weil der alte weg ist; „Bögen im Umlauf" zu
+zählen ließe die Warteschlange nur vom Plan wegdriften. Innerhalb EINES
+Auftrags setzen die Seiten die Warteschlange fort (kein Streifen auf
+zwei Bögen desselben Stapels), und der Stapel kommt als EIN PDF mit
+einer Seite je Bogen heraus (`core/eigenhand/bogen.py::compose_stack`).
 
 **Neuaufnahme ergänzt** (Owner-Entscheidung): `redo.py S0037 S0055`
 stellt Streifen wieder in die Warteschlange; alte angenommene Fassungen
@@ -511,8 +520,9 @@ wenigsten Fassungen statt nach gewichtetem Soll-Gewinn. Wollte man das
 Gewichtstabelle in der DB — nicht ein Nebeneffekt dieser Ansicht.
 
 **Die Schleife mit Admin-Druck.** Werkbank → `Bögen erzeugen` (Auswahl
-und Layout wie im Terminal, jeder Bogen vor der nächsten Auswahl
-verbucht) → PDF öffnen und drucken → schreiben → lokal
+und Layout wie im Terminal; ein Stapel wird in EINEM Zug ausgewählt,
+jeder Bogen als eigene Zeile verbucht und alle zusammen als ein
+mehrseitiges PDF ausgegeben, §7) → PDF öffnen und drucken → schreiben → lokal
 `tools.eigenhand.pull --sheet B0007` holt Layout und PDF auf die eigene
 Platte → `ingest` → Siebung → `apply` → `tools.eigenhand.sync` schiebt
 Bögen und Verdikte zurück. Wer im Terminal druckt, schiebt seine Bögen

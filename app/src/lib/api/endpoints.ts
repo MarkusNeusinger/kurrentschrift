@@ -106,6 +106,18 @@ export const fetchEigenhandSheetPdf = async (hand: string, sheet: string): Promi
   return res.blob();
 };
 
+// A whole print job as ONE document, one page per Bogen, in the order the job
+// returned them — what actually goes to the printer.
+export const fetchEigenhandStackPdf = async (hand: string, sheets: string[]): Promise<Blob> => {
+  const res = await apiFetch(
+    `${apiRoot()}/eigenhand/stacks/${encodeURIComponent(hand)}/pdf?sheets=${encodeURIComponent(sheets.join(','))}`,
+  );
+  if (!res.ok) {
+    await asJson<never>(res);
+  }
+  return res.blob();
+};
+
 export const getEigenhandSetup = (hand: string): Promise<EigenhandSetup | null> =>
   apiFetch(`${apiRoot()}/eigenhand/setups/${encodeURIComponent(hand)}`).then(async (res) => {
     // A hand that has never had a setup typed is the normal state before the
