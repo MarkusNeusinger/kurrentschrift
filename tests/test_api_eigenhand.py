@@ -351,6 +351,48 @@ class TestLocalPrints:
         assert clash.status == 409
 
     @pytest.mark.asyncio
+    async def test_a_server_printed_bogen_pulled_and_pushed_back_is_the_same_bogen(self, api: Harness):
+        # The documented loop: Admin-Druck → `pull` → `ingest` → `sync`. What
+        # `pull` gets back is the stored layout re-serialised by JSONB with its
+        # keys REORDERED; `sync` hashes THAT and pushes it back. Same geometry,
+        # same Bogen — the first real photo of 2026-08-26 died on a 409 here.
+        await _print(api, strips=["S0001"], date="2026-08-26")
+        served = (
+            await api.client.request("GET", f"/eigenhand/sheets/{HAND}/B0001/layout", headers=api.admin_headers())
+        ).json()
+
+        def reordered(value):
+            if isinstance(value, dict):
+                return {k: reordered(value[k]) for k in reversed(list(value))}
+            if isinstance(value, list):
+                return [reordered(v) for v in value]
+            return value
+
+        layout = reordered(served)
+        body = {
+            "style": "suetterlin",
+            "printed_on": "2026-08-26",
+            "strips": ["S0001"],
+            "layout": layout,
+            "layout_sha256": bogen.layout_digest(layout),
+        }
+        back = await api.client.request(
+            "PUT", f"/eigenhand/sheets/{HAND}/B0001", json_body=body, headers=api.admin_headers()
+        )
+        assert back.status == 201 and back.json()["imported"] is False, back.body
+
+        # A row written before the digest was order-independent carries the
+        # old spelling's hash in its column; the compare must not read it.
+        async with api.session_maker() as session:
+            row = await EigenhandRepository(session).sheet(HAND, "B0001")
+            row.layout_sha256 = "0" * 64
+            await session.commit()
+        legacy = await api.client.request(
+            "PUT", f"/eigenhand/sheets/{HAND}/B0001", json_body=body, headers=api.admin_headers()
+        )
+        assert legacy.status == 201 and legacy.json()["imported"] is False, legacy.body
+
+    @pytest.mark.asyncio
     async def test_a_layout_naming_another_bogen_is_refused(self, api: Harness):
         # The layout BECOMES the record: the PDF is re-rendered from it and a
         # scan is registered against it, so it has to be this Bogen's.

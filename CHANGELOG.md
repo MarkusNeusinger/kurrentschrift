@@ -12,6 +12,22 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Fixed
+
+- **A Bogen printed in the Werkbank, pulled and pushed back by `sync` was
+  refused as „a different layout" — the documented Admin-Druck → `pull` →
+  `ingest` → `sync` loop could not close.** Found on the first real photo
+  (2026-08-26, B0006): the layout digest ran over the JSON text in insertion
+  order, and JSONB hands the stored layout back with its keys reordered, so
+  `pull` hashed the same geometry to a different SHA256 and `PUT
+  /eigenhand/sheets/{hand}/{sheet}` answered 409. `bogen.layout_text` is now
+  canonical (sorted keys; `bogen.layout_digest` is the one identity of a
+  Bogen's geometry), and the import compares against the digest of the
+  STORED layout re-serialised the same way — not against the
+  `layout_sha256` column, which older rows carry in the old spelling. Pinned
+  by a test that pushes a server-printed Bogen back with every key reordered
+  and with a stale column value.
+
 ### Changed
 
 - **Bogen printing: a job always starts at the front of the plan, and a stack

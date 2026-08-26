@@ -265,7 +265,7 @@ async def import_sheet(
     # Derived, never trusted: the hash is what the idempotency and the conflict
     # below turn on, so a client could otherwise declare two different layouts
     # identical (or one layout different from itself).
-    digest = hashlib.sha256(bogen.layout_text(body.layout).encode()).hexdigest()
+    digest = bogen.layout_digest(body.layout)
     if digest != body.layout_sha256:
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST,
@@ -275,10 +275,14 @@ async def import_sheet(
     repo = EigenhandRepository(db)
     existing = await repo.sheet(hand, sheet)
     if existing is not None:
-        if existing.layout_sha256 != digest:
+        # Compared over the STORED layout re-serialised canonically, not over
+        # the `layout_sha256` column: rows written before the digest was made
+        # order-independent carry the old spelling's hash, and JSONB hands the
+        # layout back with its keys reordered anyway. Same geometry = same Bogen.
+        stored = bogen.layout_digest(existing.layout)
+        if stored != digest:
             raise HTTPException(
-                status.HTTP_409_CONFLICT,
-                detail=f"{sheet} is already recorded with a different layout ({existing.layout_sha256[:10]}…)",
+                status.HTTP_409_CONFLICT, detail=f"{sheet} is already recorded with a different layout ({stored[:10]}…)"
             )
         return {"sheet": sheet, "imported": False}
     await repo.add_sheet(
