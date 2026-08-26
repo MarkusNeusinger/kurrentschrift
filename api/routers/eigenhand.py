@@ -663,13 +663,16 @@ async def list_strips(
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST, detail=f"item {item!r} must be a glyph key, `key@position` or `key>key`"
         )
-    needle = wort.casefold() if wort else None
+    # Plain lower(), not casefold(): the view does the same simple mapping
+    # (`toLowerCase()`) on its side, and a folding variant (ß → ss) would let
+    # the server list a strip in which the view then finds no matching box.
+    needle = wort.lower() if wort else None
     plan = load_plan()
     rows = await EigenhandRepository(db).strips_of(hand, strip)
     out = []
     for row in rows:
         stated = _strip_out(row, plan)
-        if needle is not None and not any(needle in box.word.casefold() for box in stated.boxes):
+        if needle is not None and not any(needle in box.word.lower() for box in stated.boxes):
             continue
         if item is not None and not any(coverage.matches_item(item, box.items) for box in stated.boxes):
             continue

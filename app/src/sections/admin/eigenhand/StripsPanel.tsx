@@ -55,9 +55,14 @@ const ZOOM_LABELS: Record<Zoom, string> = { 0.25: '¼', 0.5: '½', 1: '1:1', 2: 
 const LUPE_ZOOMS = { min: 0.5, max: 4, step: 0.25 };
 const PAGE = 24;
 
-/** Does one box hold the filter — the client half of the server's strip-level match (`coverage.matches_item`). */
+/**
+ * Does one box hold the filter — the client half of the server's strip-level
+ * match (`coverage.matches_item`). Plain `toLowerCase()`, the same simple
+ * mapping as the server's `str.lower()`: a locale-aware or folding variant
+ * (ß → ss, the Turkish i) would let the two halves disagree.
+ */
 export function boxMatches(box: EigenhandStripBox, filter: EigenhandStripFilter): boolean {
-  if (filter.wort && !box.word.toLocaleLowerCase().includes(filter.wort.toLocaleLowerCase())) return false;
+  if (filter.wort && !box.word.toLowerCase().includes(filter.wort.toLowerCase())) return false;
   if (filter.item) {
     const wanted = filter.item;
     if (wanted.includes('>') || wanted.includes('@')) return box.items.includes(wanted);
@@ -333,6 +338,14 @@ export function StripsPanel({
     return () => window.clearTimeout(handle);
   }, [query, filter, onFilter]);
 
+  // A word filter cleared from OUTSIDE (the parent resets on a hand switch)
+  // empties the box too — otherwise the debounce above would put the old
+  // term straight back. Only the transition to „no word" is mirrored, so
+  // typing is never overwritten by a lagging filter value.
+  useEffect(() => {
+    if (filter.wort === undefined) setQuery('');
+  }, [filter.wort]);
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -347,11 +360,17 @@ export function StripsPanel({
     };
   }, [hand, version, filter.wort, filter.item]);
 
-  // The gallery: every (strip, box) that holds the filter, in plan order.
+  // The gallery: every (strip, box) that holds the filter, in plan order. A
+  // strip the server listed always contributes — should the two halves of
+  // the match ever disagree on a box, the whole row is shown rather than
+  // nothing, because hiding evidence the server found is the worse error.
   const belege = useMemo(
     () =>
       filtered
-        ? strips.flatMap((row) => row.boxes.filter((box) => boxMatches(box, filter)).map((box) => ({ row, box })))
+        ? strips.flatMap((row) => {
+            const matching = row.boxes.filter((box) => boxMatches(box, filter));
+            return (matching.length ? matching : row.boxes).map((box) => ({ row, box }));
+          })
         : [],
     [strips, filter, filtered],
   );
@@ -457,7 +476,8 @@ export function StripsPanel({
         ))
       )}
 
-      <Lupe target={lupe} onClose={() => setLupe(null)} />
+      {/* Keyed by image, so every opening starts at the default scale. */}
+      <Lupe key={lupe?.url ?? 'none'} target={lupe} onClose={() => setLupe(null)} />
     </Panel>
   );
 }

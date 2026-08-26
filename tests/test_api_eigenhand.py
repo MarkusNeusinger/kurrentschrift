@@ -601,7 +601,7 @@ class TestStrips:
     """The written strip in the DB — and any word cut out of it on demand."""
 
     @pytest.mark.asyncio
-    async def test_the_listing_states_every_boxs_items_and_filters_by_word_and_item(self, api: Harness):
+    async def test_the_listing_states_each_box_with_its_items_and_filters_by_word_and_item(self, api: Harness):
         from core.eigenhand import coverage
         from core.eigenhand.plan import shaping_form_of
 

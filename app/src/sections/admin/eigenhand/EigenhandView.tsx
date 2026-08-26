@@ -145,7 +145,15 @@ function BucketGrid({
               role={row.belege ? 'button' : undefined}
               tabIndex={row.belege ? 0 : undefined}
               onClick={row.belege ? () => onSelect(row.key) : undefined}
-              onKeyDown={row.belege ? (e) => (e.key === 'Enter' || e.key === ' ') && onSelect(row.key) : undefined}
+              onKeyDown={
+                row.belege
+                  ? (e) => {
+                      if (e.key !== 'Enter' && e.key !== ' ') return;
+                      e.preventDefault(); // Space would scroll the page as well
+                      onSelect(row.key);
+                    }
+                  : undefined
+              }
               sx={{
                 minWidth: '2.1rem',
                 px: 0.5,
@@ -336,7 +344,10 @@ export function EigenhandView() {
           </Panel>
 
           <Box ref={stripsRef}>
+            {/* Keyed by hand: a switch remounts the panel, so no search term,
+                page count or loaded pixels of the previous hand survive. */}
             <StripsPanel
+              key={hand}
               hand={hand}
               version={bestand.fassungen.angenommen}
               filter={stripFilter}
