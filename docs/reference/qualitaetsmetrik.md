@@ -8870,3 +8870,20 @@ kein Karten-Eingriff. (3) **Ring-Regel-Sensor** —
 messen, nicht zu drehen. §7.9-Zeile im selben PR. Sichtprüfung (e):
 Overlays der Schreib-Karte unauffällig (Galoppieren-p reitet die
 Durchstöße, S in Sprünge und Schluss-s in das liegen auf der Tinte).
+
+**Geschrieben `aug26` — Autor-Go „weiter mit den 13", Protokoll wie
+vorregistriert.** Archiv-Snapshot `2026-08-26T11-13-38Z` (106
+Templates · 96 Wortspuren · 245 Vorkommen · 77 bboxes, gepusht) →
+Abgleich: die 19 gespeicherten Variante-100-Zeilen der DB sind
+anker-gleich mit der eingefrorenen Root, die 13 Lücken-Glyphen haben
+keine Zeile → `PUT …/sources/suetterlin-1922/templates/{key}/laufform`
+für E · F · K · P · S · Z · ae · b · f · k · s · ue · v (je 120 Anker,
+n wie gemessen: 1 · 1 · 1 · 1 · 3 · 3 · 1 · 1 · 2 · 1 · 1 · 1 · 2) →
+GET-Verify: alle 13 anker-gleich, n gespeichert. Damit ist die
+Laufform-Lücke der Sütterlin-1922-Root von 15 auf 2 Glyphen
+geschrumpft (G: unreparierbar, W: Autor-Ausschluss); p behält seine
+gespeicherte Zeile bis zum LF4-Arm. **Die eingefrorene Fixture-Root
+bleibt eingefroren** (Wordbench/Tracebench messen weiter gegen den
+Stand VOR dem Write — das ist die Basis jeder laufenden
+Vorregistrierung); ein Neuexport der Root ist eine deklarierte
+Re-Baseline und ein eigener Schritt, nicht die Folge dieses Writes.

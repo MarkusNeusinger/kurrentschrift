@@ -39,8 +39,13 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   named rescue paths (init guard against the composition soll, stem
   release at the bowl return, ring-rule sensor). `k0eval` gains
   `--fixtures` so a candidate solved on a patched root is scored against
-  that root's own soll. Details: `qualitaetsmetrik.md` §14 „Laufform
-  LF3b-W", `tintenfolger.md` §7.9, glossary „Schreib-Karte".
+  that root's own soll. **Written on the author's go of 2026-08-26:** archive
+  snapshot `2026-08-26T11-13-38Z` first, DB base checked anchor-equal to
+  the frozen root, then the 13 rows via `PUT …/templates/{key}/laufform`
+  and verified by GET — the Sütterlin-1922 Laufform gap shrinks from 15 to
+  2 glyphs (G unrepairable, W excluded); the frozen fixture root stays
+  frozen. Details: `qualitaetsmetrik.md` §14 „Laufform LF3b-W",
+  `tintenfolger.md` §7.9, glossary „Schreib-Karte".
 
 - **Kette v5: the K0-S stack — composition soll, ratchet, zone 0.55 — is the
   follower's default.** Author's go of 2026-08-25, measured against the
