@@ -61,7 +61,7 @@ const PAGE = 24;
  * mapping as the server's `str.lower()`: a locale-aware or folding variant
  * (ß → ss, the Turkish i) would let the two halves disagree.
  */
-export function boxMatches(box: EigenhandStripBox, filter: EigenhandStripFilter): boolean {
+function boxMatches(box: EigenhandStripBox, filter: EigenhandStripFilter): boolean {
   if (filter.wort && !box.word.toLowerCase().includes(filter.wort.toLowerCase())) return false;
   if (filter.item) {
     const wanted = filter.item;
