@@ -169,8 +169,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--corpora", type=Path, default=CORPORA_DIR, help="corpus directory (default: %(default)s)")
     ap.add_argument("--out", type=Path, default=None, help="output path (default: the local universe path)")
     ap.add_argument("--en-weight", type=float, default=EN_WEIGHT, help="damping factor for English counts")
-    ap.add_argument("--push", action="store_true", help="after building, push the Soll universe to the shared DB")
-    ap.add_argument("--push-only", action="store_true", help="push the existing local table without rebuilding it")
+    # Two push modes, never both: `--push` rebuilds from the corpora and then
+    # pushes; `--push-only` pushes the local table as it is.
+    mode = ap.add_mutually_exclusive_group()
+    mode.add_argument("--push", action="store_true", help="after building, push the Soll universe to the shared DB")
+    mode.add_argument("--push-only", action="store_true", help="push the existing local table without rebuilding it")
     ap.add_argument("--api", default=None, help="API base URL (default: $EIGENHAND_API or production)")
     ap.add_argument("--token", default=None, help="admin token (default: $ADMIN_TOKEN)")
     ap.add_argument("--dry-run", action="store_true", help="with --push/--push-only: report what would be pushed")
