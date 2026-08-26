@@ -364,6 +364,19 @@ class TestSiebungPage:
         assert 'data-pen="angenommen"' in html  # seedFromPen() reads this
         assert "Stift auf dem Blatt: Haken" in html
 
+    def test_only_a_tick_seeds_a_legacy_rejection_mark_does_not(self, dataroot):
+        # A payload written by the older ingest carries `pen_mark: "verworfen"`
+        # for an empty box; under the Haken rule that must seed nothing.
+        _make_sheet()
+        import_dir = hand_dir(HAND) / "blaetter" / "B0001" / "import"
+        Image.new("L", (40, 8), 235).save(import_dir / "header.png")
+        payload = json.loads((import_dir / "payload.json").read_text(encoding="utf-8"))
+        payload["rows"][0]["pen_mark"] = "verworfen"
+        payload["rows"][1]["pen_mark"] = None
+        html = page_mod.build_page(payload, import_dir)
+        assert 'data-pen="verworfen"' not in html and html.count('data-pen=""') == 2
+        assert "Stift auf dem Blatt" not in html
+
 
 class TestPrintingAStack:
     """A writing session prints several Bögen at once (owner, 2026-08-23)."""

@@ -176,10 +176,12 @@ def build_page(payload: dict, import_dir: Path) -> str:
         crop_name = check_crop_name(row["crop"], row["row_index"])
         attempt = f" · Versuch {row['attempt']}/{row['attempts']}" if row["attempts"] > 1 else ""
         qc = f'<span class="qc">⚠ {esc(", ".join(row["qc"]))}</span>' if row["qc"] else ""
-        pen = row.get("pen_mark") or ""
         # Only a tick is a statement from the sheet; an empty box says nothing
-        # and seeds nothing (owner, 2026-08-26).
-        pen_chip = '<span class="pen">Stift auf dem Blatt: Haken</span>' if pen == "angenommen" else ""
+        # and seeds nothing (owner, 2026-08-26). Normalised here, so a payload
+        # written by the older ingest (`pen_mark: "verworfen"`) can never
+        # auto-reject a row through `seedFromPen()`.
+        pen = "angenommen" if row.get("pen_mark") == "angenommen" else ""
+        pen_chip = '<span class="pen">Stift auf dem Blatt: Haken</span>' if pen else ""
         reason_buttons = "".join(f'<button type="button" data-reason="{esc(r)}">{esc(r)}</button>' for r in REASONS)
         rows_html.append(f"""
 <div class="row" data-uid="{esc(row["uid"])}" data-pen="{esc(pen)}">
