@@ -832,7 +832,7 @@ export const admin = {
     queueTitle: 'Nächste Streifen',
     printTitle: 'Bogen drucken',
     printIntro:
-      'Erzeugt die nächsten Bögen aus der Warteschlange und schreibt sie mit — dieselbe Auswahl wie im Terminal. Kein Streifen landet zweimal in einem Stapel.',
+      'Erzeugt die nächsten Bögen aus der Warteschlange und schreibt sie mit — dieselbe Auswahl wie im Terminal. Jeder Auftrag beginnt vorn im Plan, ohne die schon belegten Streifen (ein gedruckter, aber nicht geschriebener Bogen hält nichts zurück); die Seiten eines Stapels setzen die Reihe fort, und der Stapel kommt als ein PDF.',
     printSheets: 'Bögen',
     printRepeat: 'Versuche je Streifen',
     printAction: 'Bögen erzeugen',
@@ -840,6 +840,7 @@ export const admin = {
     printError: 'Der Bogen konnte nicht erzeugt werden.',
     printed: '{{count}} Bogen erzeugt: {{sheets}}',
     openPdf: 'PDF öffnen',
+    openStackPdf: 'Stapel als ein PDF öffnen ({{count}} Seiten)',
     pdfError: 'Das PDF konnte nicht geladen werden.',
     localHint:
       'Nach dem Schreiben lokal weiter: uv run python -m tools.eigenhand.pull --hand {{hand}} --sheet {{sheet}} holt Layout und PDF, danach ingest → Siebung → apply → sync.',

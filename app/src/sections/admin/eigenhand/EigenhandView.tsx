@@ -37,6 +37,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ApiError,
   fetchEigenhandSheetPdf,
+  fetchEigenhandStackPdf,
   getEigenhandBestand,
   getEigenhandHands,
   printEigenhandSheets,
@@ -216,14 +217,27 @@ export function EigenhandView() {
       .finally(() => setPrinting(false));
   };
 
+  const showPdf = (blob: Blob) => {
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank', 'noopener');
+    // The tab keeps its own reference; releasing ours right away would race
+    // the open in some browsers, so give it a beat.
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  };
+
   const openPdf = async (sheet: string) => {
     try {
-      const blob = await fetchEigenhandSheetPdf(hand, sheet);
-      const url = URL.createObjectURL(blob);
-      window.open(url, '_blank', 'noopener');
-      // The tab keeps its own reference; releasing ours right away would race
-      // the open in some browsers, so give it a beat.
-      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      showPdf(await fetchEigenhandSheetPdf(hand, sheet));
+    } catch (err: unknown) {
+      setPrintError(`${t.pdfError} ${String(err)}`);
+    }
+  };
+
+  // The whole job as ONE document — what goes to the printer. The per-Bogen
+  // buttons stay for reprinting a single page.
+  const openStackPdf = async () => {
+    try {
+      showPdf(await fetchEigenhandStackPdf(hand, printed));
     } catch (err: unknown) {
       setPrintError(`${t.pdfError} ${String(err)}`);
     }
@@ -365,12 +379,16 @@ export function EigenhandView() {
                 <Typography variant="body2" sx={{ mb: 1 }}>
                   {fmt(t.printed, { count: printed.length, sheets: printed.join(', ') })}
                 </Typography>
-                <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
-                  {printed.map((sheet) => (
-                    <Button key={sheet} size="small" variant="outlined" onClick={() => openPdf(sheet)}>
-                      {sheet} · {t.openPdf}
-                    </Button>
-                  ))}
+                <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1, alignItems: 'center' }}>
+                  <Button size="small" variant="contained" onClick={openStackPdf}>
+                    {fmt(t.openStackPdf, { count: printed.length })}
+                  </Button>
+                  {printed.length > 1 &&
+                    printed.map((sheet) => (
+                      <Button key={sheet} size="small" variant="outlined" onClick={() => openPdf(sheet)}>
+                        {sheet} · {t.openPdf}
+                      </Button>
+                    ))}
                 </Stack>
                 <Typography variant="caption" sx={{ display: 'block', mt: 1.5, color: paper.inkSoft }}>
                   {fmt(t.localHint, { hand, sheet: printed[0] })}

@@ -9,9 +9,11 @@ persistence: every Bogen writes ``bogen.pdf`` (what the printer gets) and
 ``--repeat K`` prints every selected strip K times in a row — several attempts
 of the same content on one sheet, any subset acceptable at the Siebung.
 ``--strips`` overrides the queue entirely (ids may repeat). ``--sheets N``
-prints a whole session's stack, each Bogen recorded before the next selects,
-so no strip lands on two sheets. ``--no-hints`` drops the Fugen hint form from
-the labels.
+prints a whole session's stack in ONE selection (the pages continue the queue,
+so no strip lands on two sheets) and, besides every Bogen's own files, ONE
+multi-page ``stapel-<first>-<last>.pdf`` for the printer. A job always starts
+at the front of the queue: a Bogen printed earlier but never written holds
+nothing back. ``--no-hints`` drops the Fugen hint form from the labels.
 
 Bogen ids are minted from the Kartei this CLI sees. The admin view mints from
 the DB, so print from ONE of the two at a time (or push the local prints up
@@ -28,8 +30,8 @@ from core.eigenhand import bogen, geometry
 from core.eigenhand.plan import load_plan
 from tools.eigenhand.kartei import load_kartei, save_kartei
 from tools.eigenhand.pool import soll_model
+from tools.eigenhand.store import hand_dir, style_of_hand, universe_path
 from tools.eigenhand.store import sheet_dir as store_sheet_dir
-from tools.eigenhand.store import style_of_hand, universe_path
 from tools.eigenhand.universe import load_universe
 
 
@@ -64,24 +66,90 @@ def main(argv: list[str] | None = None) -> int:
     if args.sheets > 1 and args.strips:
         ap.error("--strips names the rows of ONE sheet; use it without --sheets")
 
-    printed = []
-    for _ in range(args.sheets):
-        sheet = print_sheet(
-            hand=args.hand,
-            style=style,
-            date=args.date,
-            rows=args.rows,
-            repeat=args.repeat,
-            strips=args.strips,
-            hints=not args.no_hints,
-        )
-        printed.append(sheet)
+    stack = print_stack(
+        hand=args.hand,
+        style=style,
+        date=args.date,
+        sheets=args.sheets,
+        rows=args.rows,
+        repeat=args.repeat,
+        strips=args.strips,
+        hints=not args.no_hints,
+    )
+    for sheet in stack["sheets"]:
         print(
             f"wrote {sheet['pdf']} ({sheet['bytes']:,} bytes), {len(sheet['strips'])} rows: {' '.join(sheet['strips'])}"
         )
-    if args.sheets > 1:
-        print(f"{len(printed)} Bögen: {', '.join(row['sheet'] for row in printed)}")
+    if stack["stack_pdf"] is not None:
+        print(
+            f"{len(stack['sheets'])} Bögen in one document: {stack['stack_pdf']} "
+            f"({', '.join(row['sheet'] for row in stack['sheets'])})"
+        )
     return 0
+
+
+def print_stack(
+    *,
+    hand: str,
+    style: str,
+    date: str,
+    sheets: int = 1,
+    rows: int | None = None,
+    repeat: int = 1,
+    strips: list[str] | None = None,
+    hints: bool = True,
+) -> dict:
+    """Compose a stack in one selection and file every Bogen in the data root + Kartei.
+
+    Each Bogen keeps its own ``bogen.pdf`` + ``layout.json`` (what ``pull``,
+    ``ingest`` and the archive work with); a stack of more than one also gets
+    the multi-page ``stapel-<first>-<last>.pdf`` beside the Bogen folders.
+    """
+    plan = load_plan()
+    kartei = load_kartei(hand, style)
+    stack = bogen.compose_stack(
+        plan=plan,
+        kartei=kartei,
+        hand=hand,
+        style=style,
+        date=date,
+        sheets=sheets,
+        rows=rows,
+        repeat=repeat,
+        strips=strips,
+        hints=hints,
+        soll=local_soll(),
+    )
+
+    filed = []
+    for composed in stack["sheets"]:
+        out_dir = store_sheet_dir(hand, composed["sheet"])
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "layout.json").write_text(bogen.layout_text(composed["layout"]), encoding="utf-8")
+        (out_dir / "bogen.pdf").write_bytes(composed["pdf"])
+        kartei["sheets"][composed["sheet"]] = {
+            "printed": date,
+            "strips": composed["strips"],
+            "layout_sha256": composed["layout_sha256"],
+            "scans": [],
+        }
+        filed.append(
+            {
+                "sheet": composed["sheet"],
+                "pdf": out_dir / "bogen.pdf",
+                "bytes": len(composed["pdf"]),
+                "strips": composed["strips"],
+            }
+        )
+    save_kartei(hand, kartei)
+
+    stack_pdf = None
+    if len(filed) > 1:
+        # Beside the Kartei, NOT inside `blaetter/`: everything under that
+        # folder is read as a Bogen directory (snapshot, sync, restore).
+        stack_pdf = hand_dir(hand) / f"stapel-{filed[0]['sheet']}-{filed[-1]['sheet']}.pdf"
+        stack_pdf.write_bytes(stack["pdf"])
+    return {"sheets": filed, "stack_pdf": stack_pdf}
 
 
 def print_sheet(
@@ -94,40 +162,10 @@ def print_sheet(
     strips: list[str] | None = None,
     hints: bool = True,
 ) -> dict:
-    """Compose one Bogen and file it in the local data root + Kartei."""
-    plan = load_plan()
-    kartei = load_kartei(hand, style)
-    composed = bogen.compose_sheet(
-        plan=plan,
-        kartei=kartei,
-        hand=hand,
-        style=style,
-        date=date,
-        rows=rows,
-        repeat=repeat,
-        strips=strips,
-        hints=hints,
-        soll=local_soll(),
-    )
-
-    out_dir = store_sheet_dir(hand, composed["sheet"])
-    out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "layout.json").write_text(bogen.layout_text(composed["layout"]), encoding="utf-8")
-    (out_dir / "bogen.pdf").write_bytes(composed["pdf"])
-
-    kartei["sheets"][composed["sheet"]] = {
-        "printed": date,
-        "strips": composed["strips"],
-        "layout_sha256": composed["layout_sha256"],
-        "scans": [],
-    }
-    save_kartei(hand, kartei)
-    return {
-        "sheet": composed["sheet"],
-        "pdf": out_dir / "bogen.pdf",
-        "bytes": len(composed["pdf"]),
-        "strips": composed["strips"],
-    }
+    """Compose one Bogen and file it — the stack of one."""
+    return print_stack(
+        hand=hand, style=style, date=date, sheets=1, rows=rows, repeat=repeat, strips=strips, hints=hints
+    )["sheets"][0]
 
 
 if __name__ == "__main__":

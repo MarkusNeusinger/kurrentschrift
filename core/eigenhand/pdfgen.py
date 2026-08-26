@@ -243,8 +243,16 @@ def _py(mm: float) -> str:
     return f"{(297 - mm) * PT_PER_MM:.2f}"
 
 
+Page = tuple[list[Rect], list[Line], list[Text]]
+
+
 def build_pdf(rects: list[Rect], lines: list[Line], texts: list[Text]) -> bytes:
     """One A4 page from pre-ordered primitives (rects under lines under text)."""
+    return build_pdf_pages([(rects, lines, texts)])
+
+
+def _page_content(rects: list[Rect], lines: list[Line], texts: list[Text]) -> str:
+    """The content stream of one page."""
     ops: list[str] = ["1 J"]  # round line caps, as in pdf.ts
 
     for rect in rects:
@@ -269,17 +277,37 @@ def build_pdf(rects: list[Rect], lines: list[Line], texts: list[Text]) -> bytes:
         size_pt = text.size_mm * PT_PER_MM
         ops.append(f"BT /F1 {size_pt:.2f} Tf {_px(text.x)} {_py(text.y)} Td ({_escape(text.text)}) Tj ET")
 
-    content = "\n".join(ops)
-    objects = [
-        "<< /Type /Catalog /Pages 2 0 R >>",
-        "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-        f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {A4_W_PT:.2f} {A4_H_PT:.2f}] "
-        "/Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>",
+    return "\n".join(ops)
+
+
+def build_pdf_pages(pages: list[Page]) -> bytes:
+    """One PDF with one A4 page per entry — a whole Stapel in one file.
+
+    Object layout keeps the single-page file byte-identical to what
+    ``build_pdf`` always wrote (catalog 1, pages 2, page 3, its content 4, the
+    font 5); every further page appends its page object and content stream
+    after the font, all sharing font object 5. A stack prints as ONE document
+    (owner, 2026-08-26): five Bögen are five pages, not five files.
+    """
+    if not pages:
+        raise ValueError("a PDF needs at least one page")
+    font_ref = 5
+    page_refs: list[int] = [3] + [font_ref + 1 + 2 * index for index in range(len(pages) - 1)]
+    kids = " ".join(f"{ref} 0 R" for ref in page_refs)
+    objects = ["<< /Type /Catalog /Pages 2 0 R >>", f"<< /Type /Pages /Kids [{kids}] /Count {len(pages)} >>"]
+    font = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>"
+    for index, (rects, lines, texts) in enumerate(pages):
+        content = _page_content(rects, lines, texts)
+        page_ref = page_refs[index]
+        objects.append(
+            f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {A4_W_PT:.2f} {A4_H_PT:.2f}] "
+            f"/Resources << /Font << /F1 {font_ref} 0 R >> >> /Contents {page_ref + 1} 0 R >>"
+        )
         # /Length counts only the stream data (ISO 32000-1 §7.3.8.1) — the EOL
         # before `endstream` is excluded, as in pdf.ts.
-        f"<< /Length {len(content)} >>\nstream\n{content}\nendstream",
-        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
-    ]
+        objects.append(f"<< /Length {len(content)} >>\nstream\n{content}\nendstream")
+        if index == 0:
+            objects.append(font)
 
     body = "%PDF-1.4\n%\xe2\xe3\xcf\xd3\n"
     offsets: list[int] = []
