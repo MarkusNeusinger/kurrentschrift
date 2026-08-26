@@ -8669,3 +8669,83 @@ Kette-Basis** (dev-19, Lineal 1,5): dtw 0,0446 / p90 0,0861 / worst
 sind **gültig, archiviert und NICHT vergleichbar**. Der
 PRODUKTIONS-Re-Harvest der `traced`-Zeilen bleibt hinter Autor-Go +
 `dbsnapshot`. InkSight weiterhin unvermessen (siehe L-U).
+
+### Laufform LF3b-W `aug26` — Vorregistrierung: die Schreib-Karte (Neuableitung unter Kette v4 und Lineal 1,5)
+
+Geschrieben und committet VOR der ersten Zahl. Einlösung des
+Autor-Go vom 2026-08-25 („p durch die reparierte Zeile ersetzen,
+die Lücken-Drafts übernehmen außer W, h unangetastet lassen") — und
+des dabei gefundenen Blockers: die LF3b-Kandidaten-Karte vom
+`aug19` liegt nicht mehr auf der Platte (erhalten sind nur die
+Wordbench-/Lotse-Berichte und die Overlays), das Bauskript wurde nie
+committet. Aus dem Sitzungsprotokoll vom 19./20.08. rekonstruiert:
+der LF1-Harvest (`tools.laufform.harvest --path chain --sets words
+--min-n 1`), das LF3b-Bauskript (0,5-xh-Fenster, lineare Abblendung
+zum Fensterrand, Bisektion in sieben Schritten am
+KOMPOSITIONS-Soll des Repräsentanten-Wortes, Chart-Fallback als
+Restfall) und die Lotse-Treiber — mechanisch identisch, nur die
+Pfade neu.
+
+**Warum das eine NEUE Ableitung ist, nicht die alte.** Seit dem
+`aug19` läuft der Harvest mit der Tinten-Evidenz-Maske (Kette v4,
+§14 `aug21`; `ink_evidence=True` als Default der Ernte) — die
+Lücken-Drafts kommen also aus anderen Fits als damals. Die
+p-Reparatur hängt dagegen nur an der gespeicherten p-Zeile, dem
+Chart und dem Kompositions-Orakel (`counters.crossing_points`), alle
+drei unverändert — **Erwartung: p repariert exakt bei t = 0,578**;
+alles andere wird je Glyph mit t und n neben den `aug19`-Werten
+berichtet. Eine heute neu gerechnete Karte ist nicht automatisch
+die, die freigegeben wurde; darum wird DIE KARTE gemessen, DIE
+GESCHRIEBEN WIRD.
+
+**Die Schreib-Karte, definiert.** Die LF3b-Karte mit zwei
+Autor-Abweichungen: (1) **h behält die gespeicherte Zeile** (die
+LF3b-Karte hatte h auf Chart-Fallback — die LF2-Kreuzungsverluste
+des gespeicherten h bleiben damit stehen, bewusst, bis eine
+topologie-erhaltende Aggregation existiert); (2) **W bekommt keine
+Zeile** (der n=1-Draft ist verrauscht: Wer wordbench +0,027 am
+`aug19`). G fällt als unreparierbar auf das Chart zurück, was für
+den Write „keine Zeile" heißt (`PUT …/laufform` verlangt n ≥ 1) und
+für die Komposition byte-gleich ist, weil G in `LAUFFORM_SX` nicht
+vorkommt — dieselbe Identität gilt für W. **Schreibmenge: p
+(ersetzt) + {E, F, K, P, S, Z, ae, b, f, k, s, ue, v} (13
+Lücken-Glyphen, repariert, wo der Detektor anschlägt).** Jede Zeile
+trägt ihr n aus dem Harvest; n=1-Zeilen sind die ausdrückliche
+Autor-Aussage (LF1-Regel) und werden im Nachtrag je Glyph genannt.
+
+**Messung (alles TROCKEN, BLAS gepinnt, `--jobs 4`, Lineal 1,5 =
+Default; Basis = die eingefrorene Root, in DERSELBEN Umgebung frisch
+gerechnet).**
+0. **Identität:** p t = 0,578; Lotse und Kette auf der eingefrorenen
+   Root reproduzieren die stehenden Basen (Lotse L-U: dtw 0,0545 /
+   p90 0,1164; Kette v5: dtw 0,0446 / aiou 0,7608 / dev-Soll 22).
+(a) **wordbench** `--set all --laufform <Schreib-Payload>` gegen die
+   frische Basis: `word_loss`/`pair_loss` ≤ +0,002; bewegen dürfen
+   sich nur Wörter/Paare mit Schreib-Glyphen.
+(b) **Soll je Wort** (Komposition, alle 63 Wörter, Schreib-Root
+   gegen eingefrorene Root, gezählt gegen die Hand): Galoppieren →
+   8 = Hand; kein Wort verliert Übereinstimmung.
+(c) **Lotse** (adoptierter Stand, kein Knopf) dev-19, Schreib-Root
+   gegen eingefrorene Root: `cross_missing` ≤ Basis · Netto-Defekte
+   ≤ Basis · Marken unverändert · aiou-Median-Δ ≥ −0,02 · dtw je
+   Wort ±0,003 außer Wörtern mit Schreib-Glyphen · reversed 0.
+(d) **Kette v5** (Default-Folger, kein Knopf) dev-19, dieselben
+   Kriterien wie (c); der Soll-Abstand (`k0eval`, je Lauf gegen das
+   Soll SEINER Root — dafür lernt `k0eval` `--fixtures`) wird
+   BERICHTET, nicht gegatet: das Kompositions-Soll selbst wandert mit
+   der Karte (Galoppieren 6 → 8), ein größerer Abstand dort ist ein
+   Befund über den Folger, kein Urteil über die Karte.
+(e) **Sichtprüfung** der Schreib-Glyph-Wörter (Overlays).
+
+**Kill-Kriterium:** ein verletztes Gate = kein Write. Rettungsweg
+ist dann allein die Glyph-Auswahl des Autors (LF1-Regel: Stufen-/
+Glyphen-Auswahl je Glyph), nie ein weicheres Gate.
+
+**Write-Protokoll, erst nach grünen Gates:** `dbsnapshot --push`
+(neues Verzeichnis, Plausibilität) → GET der 19 gespeicherten
+Variante-100-Zeilen und Abgleich mit der eingefrorenen Root (die
+DB-Basis muss die gemessene Basis SEIN) → `PUT
+…/templates/{key}/laufform` je Schreib-Glyph mit `{anchors,
+n_occurrences}` (Kanonisierung serverseitig durch
+`build_laufform_canonical`, dieselbe wie im Bauskript) → GET-Verify
+→ Nachtrag hier mit den Zahlen neben `aug19`.
