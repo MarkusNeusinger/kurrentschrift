@@ -153,6 +153,34 @@ def soll_from_weights(weights: dict[str, float]) -> tuple[dict[str, float], dict
 _ITEM_KEY = re.compile(r"^[A-Za-z0-9-]+(?:>[A-Za-z0-9-]+|@(?:initial|medial|final))$")
 
 
+def matches_item(wanted: str, items: list[str]) -> bool:
+    """Whether a word's items hold `wanted` — an item key, or a bare glyph key.
+
+    A bare key (`a`, `longs`) stands for the glyph in EVERY position: the
+    coverage grid shows one cell per glyph, and clicking it should bring up
+    every written word that holds the letter, wherever it sits. A join
+    (`a>b`) and a positioned glyph (`a@medial`) match exactly. A bare key
+    never matches a join — `a` is not `a>b`, the join has its own cell.
+    """
+    if JOIN_SEP in wanted or POSITION_SEP in wanted:
+        return wanted in items
+    prefix = f"{wanted}{POSITION_SEP}"
+    return any(item.startswith(prefix) for item in items)
+
+
+_GLYPH_KEY = re.compile(r"^[A-Za-z0-9-]+$")
+
+
+def is_item_filter(text: str) -> bool:
+    """Whether `text` may narrow a listing: an item key, or a bare glyph key.
+
+    The Soll universe holds only joins and positioned glyphs (`is_item_key`);
+    a filter additionally takes the bare key the coverage grid shows one cell
+    for, so that cell can ask for its glyph in every position at once.
+    """
+    return is_item_key(text) or bool(_GLYPH_KEY.match(text))
+
+
 def is_item_key(item: str) -> bool:
     """Whether a string is spelled like a coverage item (`l>e` or `e@medial`).
 

@@ -601,6 +601,54 @@ class TestStrips:
     """The written strip in the DB — and any word cut out of it on demand."""
 
     @pytest.mark.asyncio
+    async def test_the_listing_states_every_boxs_items_and_filters_by_word_and_item(self, api: Harness):
+        from core.eigenhand import coverage
+        from core.eigenhand.plan import shaping_form_of
+
+        await _store_strip(api)
+        plan = load_plan()
+        words = plan["strips"]["S0001"]["words"]
+
+        async def listed(**params) -> list[str]:
+            res = await api.client.request(
+                "GET", f"/eigenhand/strips/{HAND}", params=params, headers=api.admin_headers()
+            )
+            assert res.status == 200, res.body
+            return [row["strip"] for row in res.json()["strips"]]
+
+        listing = await api.client.request("GET", f"/eigenhand/strips/{HAND}", headers=api.admin_headers())
+        boxes = listing.json()["strips"][0]["boxes"]
+        # Every box: its index (the crop's address), its word, and the SAME
+        # items the Bestand counts for it.
+        assert boxes == [
+            {"index": i, "word": w, "items": coverage.word_items(shaping_form_of(plan, w))} for i, w in enumerate(words)
+        ]
+
+        # A word: case-insensitive substring — the search box's contract.
+        fragment = words[1][1:3]
+        assert await listed(wort=fragment.upper()) == ["S0001"]
+        assert await listed(wort="qqqqqq") == []
+
+        # An item: a bare glyph key stands for every position; a positioned
+        # key and a join match exactly; a bare key never matches a join.
+        items = [item for box in boxes for item in box["items"]]
+        positioned = next(item for item in items if "@" in item)
+        join = next(item for item in items if ">" in item)
+        assert await listed(item=positioned.split("@")[0]) == ["S0001"]
+        assert await listed(item=positioned) == ["S0001"]
+        assert await listed(item=join) == ["S0001"]
+        assert await listed(item=join.split(">")[0].replace("-", "") + "0x0") == []
+        assert await listed(item="x0x0@final") == []
+        # Both at once narrow, never widen.
+        assert await listed(wort=fragment, item=join) == ["S0001"]
+        assert await listed(wort="qqqqqq", item=join) == []
+
+        bad = await api.client.request(
+            "GET", f"/eigenhand/strips/{HAND}", params={"item": "a b"}, headers=api.admin_headers()
+        )
+        assert bad.status == 400
+
+    @pytest.mark.asyncio
     async def test_a_strip_is_stored_listed_and_served_back_byte_identically(self, api: Harness):
         stored = await _store_strip(api)
         assert stored["put"].status == 201, stored["put"].body

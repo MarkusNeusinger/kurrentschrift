@@ -85,6 +85,7 @@ from api.schemas import (
     EigenhandSheetImportIn,
     EigenhandSheetIn,
     EigenhandSheetsOut,
+    EigenhandStripBoxOut,
     EigenhandStripIn,
     EigenhandStripListOut,
     EigenhandStripOut,
@@ -98,7 +99,7 @@ from core.database import EigenhandRepository
 from core.eigenhand import bogen, coverage, crop, geometry
 from core.eigenhand.bestand import bestand as build_bestand
 from core.eigenhand.ids import STYLE_IDS, is_fassung_id, is_hand_id, is_sheet_id, is_strip_id, style_of_hand
-from core.eigenhand.plan import load_plan, words_of
+from core.eigenhand.plan import load_plan, shaping_form_of, words_of
 
 
 router = APIRouter(prefix="/eigenhand", tags=["eigenhand"], dependencies=[Depends(require_admin)])
@@ -638,23 +639,47 @@ def _setup_out(row) -> EigenhandSetupOut:
 
 @router.get("/strips/{hand}", response_model=EigenhandStripListOut)
 async def list_strips(
-    hand: str, strip: str | None = None, db: AsyncSession = Depends(require_db)
+    hand: str,
+    strip: str | None = None,
+    wort: str | None = None,
+    item: str | None = None,
+    db: AsyncSession = Depends(require_db),
 ) -> EigenhandStripListOut:
     """Which strips a hand has stored — metadata only, never the pixels.
 
     The words come from the committed plan rather than from the row, so a
     listing says what is on a strip without loading a single byte of image.
+    Every box carries its coverage items, and the listing can be narrowed to
+    the strips that hold a word (`wort`, case-insensitive substring) or an
+    item (`item`: a bare glyph key for every position, `a@medial`, `a>b`) —
+    the view's way from a cell of the coverage grid to the written evidence.
+    The match is at strip level; which boxes match is left to the caller,
+    who has every box's items.
     """
     _checked_hand(hand)
     if strip is not None and not is_strip_id(strip):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"strip id {strip!r} must be a plain `S<nnnn>`")
+    if item is not None and not coverage.is_item_filter(item):
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, detail=f"item {item!r} must be a glyph key, `key@position` or `key>key`"
+        )
+    needle = wort.casefold() if wort else None
     plan = load_plan()
     rows = await EigenhandRepository(db).strips_of(hand, strip)
-    return EigenhandStripListOut(hand=hand, strips=[_strip_out(row, plan) for row in rows])
+    out = []
+    for row in rows:
+        stated = _strip_out(row, plan)
+        if needle is not None and not any(needle in box.word.casefold() for box in stated.boxes):
+            continue
+        if item is not None and not any(coverage.matches_item(item, box.items) for box in stated.boxes):
+            continue
+        out.append(stated)
+    return EigenhandStripListOut(hand=hand, strips=out)
 
 
 def _strip_out(row, plan: dict | None = None) -> EigenhandStripOut:
     """One strip row as the API states it — metadata, words, never the bytes."""
+    words = words_of(plan, row.strip) if plan and row.strip in plan["strips"] else []
     return EigenhandStripOut(
         strip=row.strip,
         fassung=row.fassung,
@@ -666,7 +691,11 @@ def _strip_out(row, plan: dict | None = None) -> EigenhandStripOut:
         crop_origin_mm=list(row.crop_origin_mm or []),
         sha256=row.sha256,
         bytes=row.bytes,
-        words=words_of(plan, row.strip) if plan and row.strip in plan["strips"] else [],
+        words=words,
+        boxes=[
+            EigenhandStripBoxOut(index=index, word=word, items=coverage.word_items(shaping_form_of(plan, word)))
+            for index, word in enumerate(words)
+        ],
     )
 
 

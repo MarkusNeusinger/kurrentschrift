@@ -942,6 +942,15 @@ export interface EigenhandSetup {
   updated_at: string | null;
 }
 
+// One word box of a strip with the coverage items its word carries — what
+// lets the view walk from a glyph or join cell to the written words holding
+// it. `index` is the box's position in the row, the address of a word crop.
+export interface EigenhandStripBox {
+  index: number;
+  word: string;
+  items: string[];
+}
+
 // One stored strip — metadata only. The pixels come from the image route,
 // which is admin-gated and uncacheable (reserved own-hand dataset).
 export interface EigenhandStrip {
@@ -956,9 +965,18 @@ export interface EigenhandStrip {
   sha256: string;
   bytes: number;
   words: string[];
+  boxes: EigenhandStripBox[];
 }
 
 export interface EigenhandStripList {
   hand: string;
   strips: EigenhandStrip[];
+}
+
+// The listing's filter: a word (case-insensitive substring) and/or an item —
+// a bare glyph key (`a`, every position), a positioned one (`a@medial`) or a
+// join (`a>b`). Mirrors the query parameters of GET /eigenhand/strips/{hand}.
+export interface EigenhandStripFilter {
+  wort?: string;
+  item?: string;
 }

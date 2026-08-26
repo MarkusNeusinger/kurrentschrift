@@ -637,6 +637,29 @@ noch einmal sind ein No-op, andere Bytes unter derselben ID ein Konflikt —
 Hochgeschoben wird nur auf Verlangen: `sync --mit-streifen`. Die Bilder
 sind der reservierte Datensatz, und der Master bleibt das Archiv.
 
+**Vom Bestand zum Beleg (Autor-Wunsch 2026-08-26).** Die Ansicht führt in
+beide Richtungen: eine **Wortsuche** (Teilwort, Groß/Klein egal) über die
+gespeicherten Streifen, und die **Zeichen-Tafel selbst als Einstieg** — eine
+belegte Zelle oder ein belegter Übergangs-Chip ist anklickbar und stellt
+die Streifentafel auf genau dieses Item um. Dann zeigt sie statt Kacheln
+eine **Galerie der geschriebenen Wörter**, die das Item tragen, jedes als
+Wort-Crop (in 24er-Seiten nachgeladen). Dafür trägt das Listing
+(`GET /eigenhand/strips/{hand}?wort=…&item=…`) je Wortkiste die
+Abdeckungs-Items — dieselben `coverage.word_items`, die der Bestand zählt,
+darum stimmen „belegt" in der Tafel und „hier zu sehen" in der Galerie
+überein. `item` nimmt einen Join (`a>b`), eine positionierte Glyphe
+(`a@medial`) oder den **nackten Glyph-Schlüssel** der Tafel-Zelle, der für
+jede Position steht (`coverage.matches_item`; ein nackter Schlüssel trifft
+nie einen Join — der hat seine eigene Zelle). Der Server filtert auf
+Streifen-Ebene, welche Kisten treffen entscheidet die Ansicht, die alle
+Items kennt. Die Crops sind **Wort-Crops**: das Zeichen sitzt darin, die
+Zerlegung in einzelne Buchstaben ist Aufgabe des Tintenfolgers (§9), nicht
+der Kartei. Jedes Bild nimmt eine gemeinsame Vergrößerung (¼ · ½ · 1:1 ·
+2× je gespeichertem Pixel) und öffnet per Klick eine **Lupe** mit
+stufenlosem Maßstab — dieselben Bytes, nur größer, kein zweiter Abruf.
+Die Galerie zeigt naturgemäß nur, was hochgeschoben ist; die Tafel zählt
+alle angenommenen Fassungen, und die Leermeldung nennt den Unterschied.
+
 ## 8 Ablage und Archiv
 
 `data/samples/own-hand/` ist komplett gitignored bis auf `SOURCE.md` +
@@ -799,6 +822,7 @@ die menschliche Kopf-Bestätigung je fehleranfällig wird.
 | 4b | Streifen + stehendes Setup in der DB, Wort-Crops, Wiederherstellungsweg (`0025` · `crop` · `setup` · `sync --mit-streifen`/`--from`) | umgesetzt (§7.2, §8.1); Drill 2026-08-25 grün |
 | 4c | Die drei Blocker der ersten echten Sitzung (`apiclient`-Kennung · `.env` · `core`↛`tools`) + der bedruckbare Bereich (§5) | umgesetzt 2026-08-25 (siehe unten) |
 | 4d | Übergangsraum-Gewichte in der DB (`0026` · `GET|PUT /eigenhand/uebergangsraum` · `universe --push`): Quoten und gewichtete Warteschlange auf beiden Seiten (§7.1) | umgesetzt 2026-08-26 (Autor-Entscheid 2026-08-25) |
+| 4e | Vom Bestand zum Beleg: Wortsuche, Tafel-Zellen und Übergangs-Chips als Einstieg in die Wort-Crop-Galerie, Vergrößerung + Lupe (`strips?wort=&item=`, `coverage.matches_item`) | umgesetzt 2026-08-26 (§7.2) |
 | 5 | Ernte-Anschluss, Kurrent/Offenbacher-Betrieb, optionaler Bogen-Code | aufgeschoben (§9) |
 
 Dazu je Schreibsitzung wiederkehrend: Kalibrier-Schleife der
