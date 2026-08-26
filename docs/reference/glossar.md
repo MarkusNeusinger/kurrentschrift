@@ -1537,7 +1537,11 @@ Methoden-Seite (Owner-Entscheid 2026-08-16), je ↔ technischer Name:
 **Hand** (die eigene S-Pen-Nachfahrung, die Referenz) · **Kette** (der
 Kettenfit MIT Struktur-Wächter — seit dem Entscheid die EINZIGE Kette:
 fit-erfundene Kreuzungen sind nie richtig, join-gebildete stecken im
-Soll-Budget) · **InkSight** (Small-p, derender-Prompt; der text-Prompt
+Soll-Budget; seit Kette v5 `aug26` ist der ganze Wächter-Stack —
+Kompositions-Soll, Ratsche, Zone 0,55 — der Default von
+`pairlab.follow`, ein Lauf ohne Flags IST die Kette; der Folger OHNE
+Wächter heißt **Kette-frei** und ist ein Diagnose-Arm, nie Duell-
+Kandidat, weil er Tinte deckt, indem er Struktur zerstört) · **InkSight** (Small-p, derender-Prompt; der text-Prompt
 war Diagnose und ist von der Seite genommen) · **Nullprobe** (die
 prior-freie Kontrolle, technisch Route G/`tools/routeg` — die Probe
 ohne Wirkstoff). Geplant: **Zögling** (eigenes Trajektorien-Modell auf
@@ -1549,6 +1553,22 @@ Namen bleiben in Code und datierten §14-Einträgen unverändert — dieser
 Eintrag ist die Übersetzungstabelle. *Technisch:* Label-Marker in
 `tools/tracebench/view.py` (`CHAIN_MARKERS`/`CONTROL_MARKERS`)
 → proposals/tintenfolger.md §7.8
+
+**Wächter-Ausgang** *(guard outcome)* — was der Struktur-Wächter mit
+EINEM Wort getan hat, aus den Runden-Protokollen des Folgers gelesen
+und seit `aug26` eine Spalte des k0-Protokolls: `clean` (jede Runde
+im ersten Anlauf angenommen) · `halved` (angenommen nach halbiertem
+`max_delta`) · `zonal` (angenommen erst nach der zonalen Neu-Lösung
+mit gepinnten Ankern) · `revert-r<n>` (spätere Runde verworfen, das
+Wort behält Runde n) · `revert-init` (Runde 1 verworfen — das Wort
+behält den Ketten-Init und wurde GAR NICHT gefolgt). Die Stufen der
+v5-Autopsie: gegen den rundenatomaren Soll-Wächter waren 26 von 31
+bewegten Wörtern `revert-init`, v5 macht daraus `zonal`. Daneben der
+**Stack-Sensor**: `k0eval` liest die Wächter-Flags beider Dateien und
+warnt bei Abweichung — zweimal in zwei Tagen wurde sonst gegen den
+falschen Folger gemessen. *Technisch:*
+`tools/tracebench/k0eval.py::guard_outcome`/`guard_stack`
+→ qualitaetsmetrik.md §14 „Kette v5"
 
 **Verfahrensseite** — die Register-Seite eines Duell-Verfahrens unter
 `docs/reference/` (`verfahren-kette.md` · `verfahren-lotse.md` ·

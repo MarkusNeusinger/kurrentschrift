@@ -421,27 +421,33 @@ class FollowWeights:
     max_iter: int = FOLLOW_MAX_ITER
     retrace_prox_units: float = FOLLOW_RETRACE_PROX_UNITS
     retrace_guard: bool = True
-    structure_guard: bool = False
+    structure_guard: bool = True
     """Arm ⑨ (§14 `aug16`): a round-level ACCEPTANCE rule, not a force — a
     solved round whose assembled trace exceeds the initialisation's own v2.1
     structure class counts (crossings · retrace zones · touches · overlaps,
     counted by the bench's own `tools.tracebench.counters`) is re-solved with
     halved travel bounds, at most `STRUCTURE_GUARD_MAX_RETRIES` times, and
-    otherwise rejected back to the previous geometry. Default False = the
-    follower is byte-identical to before the arm existed."""
+    otherwise rejected back to the previous geometry. Default True since Kette
+    v5 (§14 `aug26`) together with the four fields below — the whole guard
+    stack is the follower now. False (`--no-structure-guard`) is the
+    archaeology path, byte-identical to the follower before the arm existed;
+    it is a DIAGNOSTIC arm („Kette-frei"), never the duel candidate: freed of
+    the guard it covers more ink by destroying structure (init 86 → free 125
+    soll points over the 63 words, `aug26`)."""
     structure_guard_two_sided: bool = False
     """§14 „Wächter als Produktions-Kette" (`aug16`): the K0-invariant guard —
     the same acceptance rule, but the initialisation's counts bind in BOTH
     directions: a round that LOSES init structure (the ink pull collapsing a
     small loop) is rejected exactly like one that invents it. Implies the
     one-sided guard on the CLI; here it only sharpens the comparison."""
-    structure_guard_ratchet: bool = False
+    structure_guard_ratchet: bool = True
     """K0-Z-R (§14 `aug20`): after every ACCEPTED round the guard budget
     snaps to that round's class counts, so the soll interval only ever
     tightens — movement continues toward the soll and can never legally
     fall back toward the original budget (the daß class of K0-Z). Only
-    meaningful with the soll guard."""
-    structure_guard_zone_units: float = 0.0
+    meaningful with the soll guard. Default True since Kette v5 (§14
+    `aug26`); `--no-structure-guard-ratchet` is the K0-S Sprosse-1 rung."""
+    structure_guard_zone_units: float = 0.55
     """K0-Z (§14 `aug20`): the ZONAL rejection radius, in x-heights. After
     the halving retries and before the full revert, the budget violations
     are localised (`_zone_violation_sites`), every free anchor within this
@@ -450,8 +456,12 @@ class FollowWeights:
     free — word-wide parameters have no zone), and the round is re-solved
     ONCE with the round's original bounds for the rest. Holds the budget →
     the round is accepted with its non-zonal repairs intact; otherwise the
-    full revert stands. 0.0 = today's round-atomic behaviour."""
-    structure_guard_soll: bool = False
+    full revert stands. Default 0.55 since Kette v5 (§14 `aug26`) — it is
+    the mechanism that carries the adoption: against the round-atomic soll
+    guard, 26 of 31 moved words were a round-1 revert to the chain init,
+    never followed at all; the zone rescues them (aiou median +0,073 over the
+    moved words, zero losers). 0.0 = the round-atomic behaviour."""
+    structure_guard_soll: bool = True
     """§14 „Wächter als Produktions-Kette" (`aug19`), rescue path (c): the
     soll-aware K0 guard. Every structure class of a round must lie in the
     closed interval between the chain optimum's count (the rounds' init,
@@ -488,16 +498,17 @@ class FollowWeights:
     measurement target, and K-E1 measured its split as the suspect behind
     the diffuse body-coverage loss. No claim → nothing changes; words
     without a firing claim stay byte-identical by construction. Default
-    False = declared-off until the measured adoption."""
-    soll_source: str = "init"
+    True since Kette v5 (§14 `aug26`, the measured adoption)."""
+    soll_source: str = "composition"
     """K0-S (§14 `aug21`): where the soll guard's TARGET counts come from.
-    `"init"` (default) = the aug19 behaviour, byte-identical — the chain init
-    at x0 = 0 through the assembler and counters. `"composition"` = the
-    canonical source: the composed items through the SHARED builder
+    `"composition"` (default since Kette v5, §14 `aug26`) = the canonical
+    source: the composed items through the SHARED builder
     (`tools.tracebench.soll.composition_strokes`, restricted to the run) —
     the daß autopsy proved the init reading counts a flattened init sliver
-    at the d head as ductus truth. Budget and round counts stay what they
-    are; only the TARGET moves to the composition."""
+    at the d head as ductus truth. `"init"` = the aug19 behaviour — the chain
+    init at x0 = 0 through the assembler and counters; the K0-S ladder's
+    base. Budget and round counts stay what they are; only the TARGET moves
+    to the composition."""
     provisional: bool = True
 
 
@@ -2563,9 +2574,22 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--structure-guard-zone",
         type=float,
-        default=0.0,
+        default=FollowWeights.structure_guard_zone_units,
         help="K0-Z (aug20): zonal rejection radius in x-heights — pin only the anchors around the "
-        "violating zone and re-solve once instead of rejecting the whole round (0 = round-atomic)",
+        "violating zone and re-solve once instead of rejecting the whole round (0 = round-atomic; "
+        "default 0.55 since Kette v5)",
+    )
+    parser.add_argument(
+        "--no-structure-guard",
+        action="store_true",
+        help="switch the whole structure guard OFF — the follower before arm 9 existed, byte-identical. "
+        'A DIAGNOSTIC arm („Kette-frei"), never the duel candidate: freed of the guard it covers more '
+        "ink by destroying structure (init 86 -> free 125 soll points over 63 words, aug26)",
+    )
+    parser.add_argument(
+        "--no-structure-guard-ratchet",
+        action="store_true",
+        help="K0-S Sprosse 1: the soll guard without the ratchet (the round-atomic interval)",
     )
     parser.add_argument(
         "--no-ink-evidence",
@@ -2583,10 +2607,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--soll-source",
         choices=["init", "composition"],
-        default="init",
-        help="K0-S (aug21): where the soll guard's target counts come from — the chain init through "
-        "the assembler (default, the aug19 behaviour) or the canonical composition through the "
-        "shared ductus_soll builder (one pipeline with the metric)",
+        default=FollowWeights.soll_source,
+        help="K0-S (aug21): where the soll guard's target counts come from — the canonical composition "
+        "through the shared ductus_soll builder (default since Kette v5; one pipeline with the metric) "
+        "or the chain init through the assembler (the aug19 behaviour, the K0-S ladder's base)",
     )
     parser.add_argument(
         "--mark-claim",
@@ -2618,17 +2642,15 @@ def weights_from_args(args: argparse.Namespace) -> FollowWeights:
     return replace(
         weights,
         retrace_guard=not args.no_retrace_guard,
-        structure_guard=bool(
-            args.structure_guard
-            or args.structure_guard_two_sided
-            or args.structure_guard_soll
-            or args.structure_guard_ratchet
-            or float(args.structure_guard_zone) > 0.0
-        ),
-        structure_guard_two_sided=bool(args.structure_guard_two_sided),
-        structure_guard_soll=bool(args.structure_guard_soll),
-        structure_guard_zone_units=float(args.structure_guard_zone),
-        structure_guard_ratchet=bool(args.structure_guard_ratchet),
+        # Since Kette v5 the guard stack IS the follower: the positive flags
+        # are kept so every script and §14 command line from the K0 ladder
+        # still parses, and `--no-structure-guard` is the one archaeology
+        # switch that turns the whole stack off (the „Kette-frei" arm).
+        structure_guard=not args.no_structure_guard,
+        structure_guard_two_sided=bool(args.structure_guard_two_sided) and not args.no_structure_guard,
+        structure_guard_soll=not args.no_structure_guard,
+        structure_guard_zone_units=0.0 if args.no_structure_guard else float(args.structure_guard_zone),
+        structure_guard_ratchet=not (args.no_structure_guard or args.no_structure_guard_ratchet),
         ink_evidence=not args.no_ink_evidence,
         ink_evidence_paper_fraction=float(args.ink_evidence_paper_fraction),
         mark_claim=bool(args.mark_claim),

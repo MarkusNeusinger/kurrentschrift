@@ -14,6 +14,36 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **Kette v5: the K0-S stack — composition soll, ratchet, zone 0.55 — is the
+  follower's default.** Author's go of 2026-08-25, measured against the
+  pre-registered Soll-Stack base in one pinned environment: 63-word soll
+  distance 86 → 79 (7 better, 0 worse), aiou over the 31 moved words min
+  −0.0004 / median +0.073, zero losers; on the dev-19 ruler dtw median 0.0453
+  → 0.0446, p90 0.0896 → 0.0861, aiou 0.7468 → 0.7608, worst per-word dtw
+  delta +0.0016. Every K0-S gate holds. The mechanism is visible per word for
+  the first time: the round-atomic soll guard reverts 26 of the 31 moved words
+  to the chain init in round 1 — they were never followed — and the zonal
+  re-solve rescues exactly those. A run with no flags is now the Kette;
+  `--no-structure-guard-ratchet --structure-guard-zone 0 --soll-source init`
+  reproduces the old Soll-Stack base stroke-identically and
+  `--no-structure-guard` the unguarded follower, which is a diagnostic arm and
+  never the duel candidate. Thirteen words v5 still reverts to the init are
+  named with their rescue paths — preventive terms in the descent, never
+  acceptance rules; "fall back to the unguarded result" was examined and
+  rejected as the abolition of the guard. Details: `qualitaetsmetrik.md` §14
+  „Kette v5".
+
+- **`k0eval` refuses to let a base and an arm from different stacks pass as a
+  pair unnoticed.** The first v5 measurement paired the arm against the
+  follower WITHOUT the structure guard and read three gates as violated — 36
+  aiou losers that were the base's own structure destruction (init 86 → free
+  125 soll points), not the arm's cost; the L-U "Kette" row of the day before
+  carried the same base. `k0eval` now reads the follower flags off both files,
+  prints both stacks before the first number, warns loudly with the differing
+  flags, and names each word's guard outcome (`clean / halved / zonal /
+  revert-r1 / revert-init`) so the tier autopsy that took an hour by hand is
+  one column. The L-U row is corrected in place; its finding is unchanged.
+
 - **The frozen ruler's arc cap moves 0.8 → 1.5 xh: the u-Bogen is a mark
   (L-U, measured, adopted).** All six pre-registered gates hold. Identity: the
   pre-change code and the new one at the default produce all 19 dev rows

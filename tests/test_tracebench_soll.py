@@ -72,10 +72,12 @@ def test_the_full_word_needs_no_slots_and_a_gapless_restriction_matches_it() -> 
     assert np.array_equal(full[0], restricted[0])
 
 
-def test_the_follow_knob_defaults_to_the_init_source() -> None:
+def test_the_follow_knob_defaults_to_the_composition_source() -> None:
+    # Kette v5 (§14 `aug26`): the canonical source is the default; "init" is
+    # the K0-S ladder's base and stays selectable.
     from tools.pairlab.follow import FollowWeights  # noqa: PLC0415
 
-    assert FollowWeights().soll_source == "init"
+    assert FollowWeights().soll_source == "composition"
 
 
 def test_soll_row_fields_keep_letters_and_composition_apart() -> None:
