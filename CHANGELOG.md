@@ -14,6 +14,23 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **The `d` exit: the hand shortens it, the chain's cut does not — §12's last
+  open limit is closed.** The pairlab counter-check the autopsy asked for,
+  over all 14 `d` occurrences of the frozen Abb.-19 words plus the eight
+  Abb.-20 `d` drills of the same hand. The decisive reading has no
+  letter/connector cut at all: the chart row placed RIGIDLY at its best
+  bounded translation and read as distance to the nearest ink over the last
+  0.40 xh of arc — joined `d` 0.166 xh (words) / 0.160 (drills) vs word-final
+  0.025, 18 of 18 above 0.084 and 4 of 4 below 0.052 (p = 0.00014), while
+  the letter body does not separate (0.073 vs 0.088). Pure truncation, not
+  rotation; the real connecting stroke leaves the `d` at y = 0.82–1.12 xh
+  (median 0.96, invariant over eleven followers) against the chart tip at
+  1.36. The deformable fit alone cannot separate the readings (a window
+  sweep drives the exit anchors to +114 %), which is said plainly. The model
+  decision (a) variant split vs (b) exit in the transition generator stays
+  the author's; the evidence leans (b). `qualitaetsmetrik.md` §12 „Nachtrag
+  aug26".
+
 - **Laufform LF3b-W: the write map re-derived and measured as it would be
   written — the 14-row map fails one gate by one crossing, the 13-row map
   without p passes every gate and now waits for the author's go.** The
