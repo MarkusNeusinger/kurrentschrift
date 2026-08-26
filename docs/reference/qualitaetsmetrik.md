@@ -8491,23 +8491,33 @@ nie einen Zeitpunkt.
 
 | Route | dtw Median | dtw p90 | dtw worst |
 |---|---|---|---|
-| **Kette** (`pairlab.follow`) | 0,0441 → 0,0441 | **0,2202 → 0,0912** | **unter 0,4396 → muß 0,1068** |
+| **Kette** (`pairlab.follow --structure-guard-soll`, der Duell-Stack) | 0,0453 → 0,0453 | **0,2355 → 0,0896** | **unter 0,4503 → muß 0,1108** |
+| Kette-frei (`pairlab.follow` OHNE Wächter, Diagnose-Arm) | 0,0441 → 0,0441 | 0,2202 → 0,0912 | unter 0,4396 → muß 0,1068 |
 | **Lotse** (`inkpilot`) | 0,0545 → 0,0545 | 0,1122 → 0,1164 | muß-2 0,1404 → 0,1457 |
 | **Nullprobe** (`routeg`, 10 von 19) | 0,8198 → 0,8198 | 1,0267 → 1,0267 | 3 Zeilen bewegt |
 | Ketten-Init (roher `chain`) | 0,0492 → 0,0494 | 0,0894 → 0,0912 | muß 0,1096 → 0,1108 |
 
-**Kette, je Wort** — vier große Gewinne, vier vernachlässigbare
-Verluste:
+*Korrektur `aug26`:* die Zeile „Kette" trug am `aug26` früh den
+Folger OHNE Struktur-Wächter — nicht die Duell-Kette, die seit K0-Z
+per Mess-Liturgie (werkzeuge.md) `--structure-guard-soll` ist. Der
+Fehler fiel erst auf, als derselbe ungewächterte Folger als Basis der
+v5-Messung 36 Scheinverlierer produzierte (§14 „Kette v5"); seither
+druckt `k0eval` die Stacks beider Dateien und warnt bei Abweichung.
+Der Befund von L-U ändert sich nicht: der Gewinn liegt auf der Kette,
+auf der richtigen wie auf der freien.
+
+**Kette (Soll-Stack), je Wort** — vier große Gewinne, vier
+vernachlässigbare Verluste:
 
 | Wort | dtw 0,8 | dtw 1,5 | Δ |
 |---|---|---|---|
-| `unter` | 0,4396 | **0,0902** | **−0,3494** |
-| `muß` | 0,2394 | **0,1068** | **−0,1326** |
-| `muß-3` | 0,2154 | **0,0858** | **−0,1296** |
-| `muß-2` | 0,2032 | **0,0861** | **−0,1171** |
-| `und` ×4 | 0,0295–0,0419 | 0,0304–0,0436 | +0,0002 … +0,0017 |
+| `unter` | 0,4503 | **0,0877** | **−0,3626** |
+| `muß-3` | 0,2339 | **0,0972** | **−0,1367** |
+| `muß` | 0,2419 | **0,1108** | **−0,1311** |
+| `muß-2` | 0,2019 | **0,0857** | **−0,1163** |
+| `und` ×4 | 0,0279–0,0419 | 0,0286–0,0436 | +0,0002 … +0,0017 |
 
-`unter` 0,4396 → 0,0902 bestätigt die K-C-Autopsie, die von Hand
+`unter` 0,4503 → 0,0877 bestätigt die K-C-Autopsie, die von Hand
 0,084 gerechnet hatte.
 
 **Der ehrliche Teil: auf JEDER anderen Route kostet die Änderung

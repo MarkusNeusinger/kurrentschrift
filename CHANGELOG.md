@@ -26,10 +26,14 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   crossings, retraces, touch/overlap and the soll columns keep their standing
   numbers comparable.
 
-  The win lands on exactly one route, and the entry says so: **Kette** drops
-  its p90 from 0.2202 to 0.0912 and its worst word from `unter` 0.4396 to `muß`
-  0.1068 — `unter` alone goes 0.4396 → 0.0902, confirming the hand-computed
-  0.084 of the `aug20` autopsy. On Lotse, the raw chain fit and the Nullprobe
+  The win lands on exactly one route, and the entry says so: **Kette** (the
+  duel stack, `--structure-guard-soll`) drops its p90 from 0.2355 to 0.0896
+  and its worst word from `unter` 0.4503 to `muß` 0.1108 — `unter` alone goes
+  0.4503 → 0.0877, confirming the hand-computed 0.084 of the `aug20` autopsy.
+  (The entry's first version measured this row on the follower WITHOUT the
+  structure guard; corrected on `aug26`, the finding is unchanged, and the
+  unguarded follower stays in the table as a diagnostic arm.) On Lotse, the
+  raw chain fit and the Nullprobe
   the change costs a little instead, because only the Kette ever had the
   ordering fault: the others emit diacritics last, drive the skeleton directly,
   or have no stroke order at all, so pulling the u-Bogen out only removes a
