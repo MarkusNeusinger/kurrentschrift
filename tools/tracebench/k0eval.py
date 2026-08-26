@@ -206,11 +206,19 @@ def main() -> None:
     parser.add_argument("base", type=Path, help="tracebench file-provider candidate JSON (the paired base)")
     parser.add_argument("candidate", type=Path, nargs="?", help="second candidate to pair against the base")
     parser.add_argument("--json", type=Path, help="write the full per-word report here")
+    parser.add_argument(
+        "--fixtures",
+        type=Path,
+        default=DEFAULT_FIXTURES_DIR,
+        help="fixture root the reference AND the composition soll are read from (default: the frozen set). "
+        "A candidate solved on a patched root (a Laufform candidate map, §14 LF3b-W) is scored against "
+        "THAT root's soll — the soll moves with the map, so the frozen root's would be the wrong ruler.",
+    )
     args = parser.parse_args()
 
-    root = find_fixture_root(DEFAULT_FIXTURES_DIR, STYLE, WHICH)
+    root = find_fixture_root(args.fixtures, STYLE, WHICH)
     reference = load_reference(root)
-    soll_rows, warnings = ductus_soll(reference.order, which=WHICH, style=STYLE, fixtures_root=DEFAULT_FIXTURES_DIR)
+    soll_rows, warnings = ductus_soll(reference.order, which=WHICH, style=STYLE, fixtures_root=args.fixtures)
     for warning in warnings:
         print(f"WARN {warning}")
     ids = scoring_ids(reference.order, soll_rows)

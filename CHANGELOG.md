@@ -14,6 +14,34 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **Laufform LF3b-W: the write map re-derived and measured as it would be
+  written — the 14-row map fails one gate by one crossing, the 13-row map
+  without p passes every gate and now waits for the author's go.** The
+  aug19 candidate map was gone from disk and its build script never
+  committed; the recipe was reconstructed from the session log and rerun
+  under the current harvest (ink-evidence mask) and ruler (cap 1.5). All
+  seven repair parameters reproduce aug19 to three decimals (p t=0.578).
+  Gates re-anchored to fresh bases in one pinned environment: wordbench
+  0.108091 → 0.105607 (pair byte-identical, 16 words better / 5 worse, only
+  write-glyph words move), Galoppieren's composition soll 6 → 8 = hand,
+  Lotse aiou 0.7398 → 0.7484 with spurious 5 → 4 and no losing word — but
+  the Kette v5 route loses ONE hand crossing in Galoppieren (missing 13 →
+  14) while gaining aiou +0.071 there. The autopsy (with a second opinion)
+  puts it in the fit/init layer and the counter's ring rule, not in the
+  map: the composition prescribes the lost crossing identically on both
+  roots, the chain init draws it at the same place, and the v2.1 ring rule
+  drops it on the write root by partner hits (2/11 vs the base's 2/1) —
+  and the base for that word is the guard's reverted init. The gate stands
+  as pre-registered: no write of the 14-row map. The pre-registered
+  rescue — the author's glyph selection — was measured in the same round:
+  the 13-row map (E F K P S Z ae b f k s ue v) passes (a)–(d) with the
+  Kette stroke-identical to its base; p goes to its own arm with three
+  named rescue paths (init guard against the composition soll, stem
+  release at the bowl return, ring-rule sensor). `k0eval` gains
+  `--fixtures` so a candidate solved on a patched root is scored against
+  that root's own soll. Details: `qualitaetsmetrik.md` §14 „Laufform
+  LF3b-W", `tintenfolger.md` §7.9, glossary „Schreib-Karte".
+
 - **Kette v5: the K0-S stack — composition soll, ratchet, zone 0.55 — is the
   follower's default.** Author's go of 2026-08-25, measured against the
   pre-registered Soll-Stack base in one pinned environment: 63-word soll

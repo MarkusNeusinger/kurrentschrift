@@ -8669,3 +8669,204 @@ Kette-Basis** (dev-19, Lineal 1,5): dtw 0,0446 / p90 0,0861 / worst
 sind **gültig, archiviert und NICHT vergleichbar**. Der
 PRODUKTIONS-Re-Harvest der `traced`-Zeilen bleibt hinter Autor-Go +
 `dbsnapshot`. InkSight weiterhin unvermessen (siehe L-U).
+
+### Laufform LF3b-W `aug26` — Vorregistrierung: die Schreib-Karte (Neuableitung unter Kette v4 und Lineal 1,5)
+
+Geschrieben und committet VOR der ersten Zahl. Einlösung des
+Autor-Go vom 2026-08-25 („p durch die reparierte Zeile ersetzen,
+die Lücken-Drafts übernehmen außer W, h unangetastet lassen") — und
+des dabei gefundenen Blockers: die LF3b-Kandidaten-Karte vom
+`aug19` liegt nicht mehr auf der Platte (erhalten sind nur die
+Wordbench-/Lotse-Berichte und die Overlays), das Bauskript wurde nie
+committet. Aus dem Sitzungsprotokoll vom 19./20.08. rekonstruiert:
+der LF1-Harvest (`tools.laufform.harvest --path chain --sets words
+--min-n 1`), das LF3b-Bauskript (0,5-xh-Fenster, lineare Abblendung
+zum Fensterrand, Bisektion in sieben Schritten am
+KOMPOSITIONS-Soll des Repräsentanten-Wortes, Chart-Fallback als
+Restfall) und die Lotse-Treiber — mechanisch identisch, nur die
+Pfade neu.
+
+**Warum das eine NEUE Ableitung ist, nicht die alte.** Seit dem
+`aug19` läuft der Harvest mit der Tinten-Evidenz-Maske (Kette v4,
+§14 `aug21`; `ink_evidence=True` als Default der Ernte) — die
+Lücken-Drafts kommen also aus anderen Fits als damals. Die
+p-Reparatur hängt dagegen nur an der gespeicherten p-Zeile, dem
+Chart und dem Kompositions-Orakel (`counters.crossing_points`), alle
+drei unverändert — **Erwartung: p repariert exakt bei t = 0,578**;
+alles andere wird je Glyph mit t und n neben den `aug19`-Werten
+berichtet. Eine heute neu gerechnete Karte ist nicht automatisch
+die, die freigegeben wurde; darum wird DIE KARTE gemessen, DIE
+GESCHRIEBEN WIRD.
+
+**Die Schreib-Karte, definiert.** Die LF3b-Karte mit zwei
+Autor-Abweichungen: (1) **h behält die gespeicherte Zeile** (die
+LF3b-Karte hatte h auf Chart-Fallback — die LF2-Kreuzungsverluste
+des gespeicherten h bleiben damit stehen, bewusst, bis eine
+topologie-erhaltende Aggregation existiert); (2) **W bekommt keine
+Zeile** (der n=1-Draft ist verrauscht: Wer wordbench +0,027 am
+`aug19`). G fällt als unreparierbar auf das Chart zurück, was für
+den Write „keine Zeile" heißt (`PUT …/laufform` verlangt n ≥ 1) und
+für die Komposition byte-gleich ist, weil G in `LAUFFORM_SX` nicht
+vorkommt — dieselbe Identität gilt für W. **Schreibmenge: p
+(ersetzt) + {E, F, K, P, S, Z, ae, b, f, k, s, ue, v} (13
+Lücken-Glyphen, repariert, wo der Detektor anschlägt).** Jede Zeile
+trägt ihr n aus dem Harvest; n=1-Zeilen sind die ausdrückliche
+Autor-Aussage (LF1-Regel) und werden im Nachtrag je Glyph genannt.
+
+**Messung (alles TROCKEN, BLAS gepinnt, `--jobs 4`, Lineal 1,5 =
+Default; Basis = die eingefrorene Root, in DERSELBEN Umgebung frisch
+gerechnet).**
+0. **Identität:** p t = 0,578; Lotse und Kette auf der eingefrorenen
+   Root reproduzieren die stehenden Basen (Lotse L-U: dtw 0,0545 /
+   p90 0,1164; Kette v5: dtw 0,0446 / aiou 0,7608 / dev-Soll 22).
+(a) **wordbench** `--set all --laufform <Schreib-Payload>` gegen die
+   frische Basis: `word_loss`/`pair_loss` ≤ +0,002; bewegen dürfen
+   sich nur Wörter/Paare mit Schreib-Glyphen.
+(b) **Soll je Wort** (Komposition, alle 63 Wörter, Schreib-Root
+   gegen eingefrorene Root, gezählt gegen die Hand): Galoppieren →
+   8 = Hand; kein Wort verliert Übereinstimmung.
+(c) **Lotse** (adoptierter Stand, kein Knopf) dev-19, Schreib-Root
+   gegen eingefrorene Root: `cross_missing` ≤ Basis · Netto-Defekte
+   ≤ Basis · Marken unverändert · aiou-Median-Δ ≥ −0,02 · dtw je
+   Wort ±0,003 außer Wörtern mit Schreib-Glyphen · reversed 0.
+(d) **Kette v5** (Default-Folger, kein Knopf) dev-19, dieselben
+   Kriterien wie (c); der Soll-Abstand (`k0eval`, je Lauf gegen das
+   Soll SEINER Root — dafür lernt `k0eval` `--fixtures`) wird
+   BERICHTET, nicht gegatet: das Kompositions-Soll selbst wandert mit
+   der Karte (Galoppieren 6 → 8), ein größerer Abstand dort ist ein
+   Befund über den Folger, kein Urteil über die Karte.
+(e) **Sichtprüfung** der Schreib-Glyph-Wörter (Overlays).
+
+**Kill-Kriterium:** ein verletztes Gate = kein Write. Rettungsweg
+ist dann allein die Glyph-Auswahl des Autors (LF1-Regel: Stufen-/
+Glyphen-Auswahl je Glyph), nie ein weicheres Gate.
+
+**Write-Protokoll, erst nach grünen Gates:** `dbsnapshot --push`
+(neues Verzeichnis, Plausibilität) → GET der 19 gespeicherten
+Variante-100-Zeilen und Abgleich mit der eingefrorenen Root (die
+DB-Basis muss die gemessene Basis SEIN) → `PUT
+…/templates/{key}/laufform` je Schreib-Glyph mit `{anchors,
+n_occurrences}` (Kanonisierung serverseitig durch
+`build_laufform_canonical`, dieselbe wie im Bauskript) → GET-Verify
+→ Nachtrag hier mit den Zahlen neben `aug19`.
+
+**Gemessen `aug26` — die 14-Zeilen-Schreib-Karte scheitert an EINEM
+Gate um EINE Kreuzung; die 13-Zeilen-Karte ohne p besteht alle Gates;
+p wandert in einen eigenen Arm.** Umgebung wie vorregistriert
+(`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1`,
+`--jobs 4`, Lineal 1,5); Artefakte Scratchpad `lf3bw/` (Bauskript
+`lf3bw_build.py`, Gate-Skript `gates.py`, Overlays,
+`galopp-kette.png`, `galopp-seam-zoom.png`).
+
+**Identität (0) — PASS.** Harvest 277 Slot-Zeilen, jedes Lücken-Glyph
+≥ 1 Fit (n: E 1 · F 1 · K 1 · P 1 · S 3 · Z 3 · ae 1 · b 1 · f 2 ·
+k 1 · s 1 · ue 1 · v 2; G 3 und W 1 werden nicht geschrieben; p trägt
+das n=4 seiner gespeicherten Zeile). Reparatur-t auf drei Stellen
+identisch mit `aug19`: p **0,578** · F 0,391 · K 0,328 · k 0,250 ·
+f 0,477 · b 0,672 · P 0,008; E/S/Z/ae/s/ue/v/W passieren unberührt,
+G/h Chart-Fallback. Die frischen Basen reproduzieren: wordbench
+0,108091 / 0,146602 exakt, Lotse dtw 0,0545 / p90 0,1164 (L-U), Kette
+dtw 0,0446 / aiou 0,7608 / dev-Soll 22 (v5). Die Schreib-Root ist
+byte-gleich zur eingefrorenen bis auf `templates_laufform.json`
+(`diff -rq`) — Referenz und Tintenmaske sind dieselben.
+
+**(a) wordbench — PASS.** 0,108091 → **0,105607** (−0,0025), pair
+byte-gleich; 21 bewegte Wörter, alle mit Schreib-Glyph: 16 besser
+(Sprünge −0,041, Zügel −0,018, Säbel −0,017, Zorn −0,015, Pulver
+−0,014, Einen −0,014, linken −0,013, Kugel −0,010, Seiten −0,010 …)
+gegen 5 schlechter (das +0,009 — das n=1-s, scharfen +0,004, Feinde
++0,003, Galoppieren +0,001, von +0,000). Tiefer als LF3b `aug19`
+(0,107105), weil h seine Zeile behält (kein LF2-Preis) und W fehlt
+(kein Wer-Preis).
+
+**(b) Soll — PASS.** Die Hand gibt es nur für die 28 Referenzwörter
+(die Vorregistrierung sagte „alle 63"; über die 35 ohne Hand wird nur
+die Soll-Bewegung berichtet): Galoppieren 6 → **8 = Hand**,
+`soll_cross_agree` 21 → 22/28, kein Wort verliert. Über alle 63
+bewegen sechs Wörter ihr Kompositions-Soll (Galoppieren X 6 → 8,
+Silber X 5 → 4, Sporn X 3 → 4, Sprünge X 3 → 4, Pulver Zonen 3 → 2,
+Kugel Zonen 2 → 1).
+
+**(c) Lotse — PASS.** dtw 0,0545 / p90 0,1164 unverändert, aiou
+0,7398 → **0,7484**, spurious 5 → 4 (Galoppieren 3 → 2), missing 1 =
+1, retrace_missing 5 → 3, Marken unverändert, reversed 0; bewegt nur
+das (dtw −0,0017, aiou +0,018), linken (−0,0032, aiou +0,029),
+Galoppieren (+0,0006, aiou +0,003) — alle Schreib-Glyph-Wörter.
+Zahlengleich mit LF3b `aug19` (aiou 0,7484, Netto 5).
+
+**(d) Kette v5 — FAIL um eine Kreuzung.** dtw 0,0446 / p90 0,0861
+unverändert, aiou 0,7608 → 0,7667, Marken unverändert, reversed 0,
+kein dtw-Verlierer, das aiou +0,021, Galoppieren dtw 0,0383 → 0,0337
+und aiou 0,710 → **0,781** — aber `cross_missing` 13 → **14**, Netto
+19 → 20: Galoppieren zählt 3 statt 4 der 8 Hand-Kreuzungen.
+Soll-Abstand (`k0eval --fixtures`, je Root gegen ihr eigenes Soll,
+berichtet): 22 → 25, ganz Galoppieren (|3 − 8| statt |4 − 6|).
+
+**Autopsie der einen Kreuzung** (mit Fable-Zweitmeinung — die Regel
+vor jedem Negativ). Verloren geht das o-Schließen vor dem ersten p
+(Hand bei 6,75 / −0,8 xh). (1) Die KOMPOSITION schreibt diese
+Kreuzung auf beiden Roots an derselben Stelle vor (6,78 / 0,77 auf
+beiden); die Reparatur fügt nur die beiden p-Kopf-Kreuzungen hinzu
+(7,33 und 8,81, je 0,16–0,19 xh neben Hand #5/#6) — **die Karte ist
+nicht die Ursache.** (2) Der Ketten-INIT zeichnet den Saum-Schnitt
+auf beiden Roots am selben Ort (6,607 / 0,727 gegen 6,605 / 0,726,
+beide durchstoßend, `chaininit-*.log`: 4/8 gegen 3/8); der Zähler
+unterscheidet sie allein über die v2.1-Ring-Regel
+(`CROSS_PARTNER_MIN_HITS = 2`, retrace-intern): Basis 2/1
+Partner-Treffer → gezählt, Schreib-Root 2/11 → verworfen, weil der
+o-Ausgangsstrang nach dem Schnitt ~0,2 xh antiparallel am o-Körper
+klebt (der reparierte p-Slot schiebt den Ketten-Solve des Laufs in
+ein anderes Becken, 3372 statt 6052 Iterationen). Die Basis hängt an
+EINEM Partner-Treffer. (3) Der Folger verhält sich auf beiden Roots
+gleich: auch die Basis-Runde 1 landet bei 3 (`kette-base-run.json`:
+counts 3, Intervall [4, 6] → abgelehnt, zonal 0 Stellen) — die Basis
+behält 4 nur, weil der Wächter auf den Init zurückfällt; auf der
+Schreib-Root ist das Intervall [3, 8], 3 wird angenommen, der Folger
+folgt (aiou +0,071). (4) Die p-Reparatur erreicht die Kette ohnehin
+nicht: die p-Kopf-Schnitte existieren und durchstoßen in JEDEM
+Kandidaten, werden aber mit 8/7, 9/6, 8/7 Treffern als retrace-intern
+verworfen — der Ketten-Solve zieht das Stamm-Retrace wieder zu. Die
+Schreib-KOMPOSITION zählt sie nur, weil die t=0,578-Blendung ihre
+p-Kopf-Chords aus der Ring-Regel schiebt (1/2 Treffer statt 8/7 im
+Basis-Chart) — das Bisektions-Orakel IST `crossing_points`, die
+Reparatur sucht also die Schwelle dieser Regel: LF2s
+„Schwellen-Kipp"-Klasse, jetzt an der Ring-Regel statt am
+Durchstoß-Rand. Ehrlich benannt, nicht wegdiskutiert.
+
+**Urteil, strikt.** (d) ist vorregistriert als „dieselben Kriterien
+wie (c)", der Wächter-Rückfall IST der Default-Folger, und die Hand
+wandert nicht mit der Karte: 14 > 13 = Gate verletzt, **die
+14-Zeilen-Karte wird NICHT geschrieben.** Die Lesart „Init gegen
+Gefolgt" ist eine Diagnose der Zahl, kein anderes Messergebnis — sie
+nach der Zahl zum Gate zu machen wäre Weichspülen.
+
+**Rettungsweg, wie vorregistriert: die Glyph-Auswahl.** Galoppieren
+enthält als einziges Schreib-Glyph p (G = Chart-Fallback); die
+**13-Zeilen-Karte ohne p** wurde auf denselben Gates in derselben
+Umgebung gemessen (Artefakte `*-w13-*`): (a) 0,108091 →
+**0,105587**, pair byte-gleich, 20 bewegte Wörter, alle mit
+Schreib-Glyph; (b) 21/28 → 21/28, kein Verlust — die Klausel
+„Galoppieren → 8" ist ohne p KONSTRUKTIONSBEDINGT leer (Soll bleibt
+6): eine Scope-Aussage, kein Weichspülen, und sie steht hier
+ausdrücklich; (c) Lotse aiou +0,0086, dtw/p90/missing/Netto/Marken
+unverändert; (d) Kette **strich-identisch zur Basis** bis auf das
+(aiou +0,021, dtw +0,0002) und linken (aiou −0,0002), cross 13/6,
+Netto 19, `k0eval` 22 = Basis. **Alle Gates bestehen.** Messseitig
+ist der Write der 13 Zeilen damit frei — aber das Autor-Go galt der
+14er-Menge; **die 13er-Menge braucht sein ausdrückliches Go**
+(Todoist), erst dann `dbsnapshot` + PUT nach dem Protokoll oben.
+
+**p → eigener Arm (LF4), je eigene Pre-Reg, nie derselbe Knopf
+weicher:** (1) **Init-Wächter** — ein Struktur-Wächter auf dem
+Ketten-INIT gegen sein Kompositions-Soll; der Init ist die einzige
+ungewächterte Stufe und verliert 5 von 8 vorgeschriebenen Kreuzungen
+auf der Schreib-Root (2 von 6 auf der eingefrorenen). (2)
+**Stamm-Freigabe** (K1-Platzierungs-Familie) — die p-Kopf-Kreuzungen
+der Hand zählen, weil der Rückstrang den Stamm VOR der Kreuzung
+verlässt; ein Solve-Term, der das Retrace am Bogen-Rücklauf löst,
+kein Karten-Eingriff. (3) **Ring-Regel-Sensor** —
+`CROSS_PARTNER_MIN_HITS = 2` entscheidet Galoppierens Basis-Zählung
+über einen einzigen Sample (2/1); ein Befund über das Lineal, zu
+messen, nicht zu drehen. §7.9-Zeile im selben PR. Sichtprüfung (e):
+Overlays der Schreib-Karte unauffällig (Galoppieren-p reitet die
+Durchstöße, S in Sprünge und Schluss-s in das liegen auf der Tinte).
