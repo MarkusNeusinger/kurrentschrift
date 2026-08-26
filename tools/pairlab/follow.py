@@ -2552,7 +2552,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--structure-guard",
         action="store_true",
-        help="arm 9: reject rounds whose assembled trace exceeds the initialisation's structure class counts",
+        help="LEGACY NO-OP since Kette v5: the guard is on by default (arm 9 — reject rounds whose assembled "
+        "trace exceeds the initialisation's structure class counts). Kept so the K0-ladder command lines in "
+        "§14 still parse; to switch the guard OFF use --no-structure-guard",
     )
     parser.add_argument(
         "--structure-guard-two-sided",
@@ -2562,14 +2564,16 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--structure-guard-soll",
         action="store_true",
-        help="the soll-aware K0 guard (aug19): every class may move only TOWARD the composed init's "
-        "structure count, never past it, never away (implies --structure-guard)",
+        help="LEGACY NO-OP since Kette v5: the soll-aware K0 guard (aug19 — every class may move only "
+        "TOWARD the soll count, never past it, never away) is on by default. Kept so older command lines "
+        "parse; --no-structure-guard switches the whole stack off",
     )
     parser.add_argument(
         "--structure-guard-ratchet",
         action="store_true",
-        help="K0-Z-R (aug20): after every accepted round the budget snaps to its class counts — "
-        "the soll interval only tightens, movement never falls back (use with --structure-guard-soll)",
+        help="LEGACY NO-OP since Kette v5: the K0-Z-R ratchet (aug20 — after every accepted round the "
+        "budget snaps to its class counts, the soll interval only tightens) is on by default. Kept so "
+        "older command lines parse; --no-structure-guard-ratchet is the K0-S Sprosse-1 rung without it",
     )
     parser.add_argument(
         "--structure-guard-zone",
