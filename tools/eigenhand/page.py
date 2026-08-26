@@ -200,6 +200,9 @@ def build_page(payload: dict, import_dir: Path) -> str:
         f"uv run python -m tools.eigenhand.apply --hand {payload['hand']} "
         f"--sheet {payload['sheet']} siebung-{payload['sheet']}.txt"
     )
+    haken_cmd = esc(
+        f"uv run python -m tools.eigenhand.apply --hand {payload['hand']} --sheet {payload['sheet']} --haken"
+    )
     return f"""<!DOCTYPE html>
 <html lang="de">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -222,7 +225,10 @@ Müll. Ausfälle müssen zufällig sein, nicht selektiv.</div>
 {"".join(rows_html)}
 <footer>
   <div>Beurteilt: <span id="count" class="count">0 / 0</span></div>
-  <p>Ergebnis herunterladen und einspielen mit:<br>
+  <p>Normalfall — nur die Haken vom Blatt verbuchen, ohne diese Seite:<br>
+  <code>{haken_cmd}</code></p>
+  <p>Nur wenn du hier ausdrücklich verworfen oder Anmerkungen gesetzt hast: Ergebnis herunterladen
+  und einspielen mit:<br>
   <code>{apply_cmd}</code></p>
   <button type="button" id="download">Ergebnis herunterladen</button>
   <textarea id="result" readonly></textarea>

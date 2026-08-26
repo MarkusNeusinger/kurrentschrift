@@ -107,6 +107,12 @@ def main(argv: list[str] | None = None) -> int:
     payload = json.loads(payload_file.read_text(encoding="utf-8"))
     layout_text = layout_file.read_text(encoding="utf-8")
     layout = json.loads(layout_text)
+    # Under the Haken rule a pen mark is either a tick or nothing. A payload
+    # written by the older ingest still carries `"verworfen"` for an empty
+    # box — normalised here, so neither the verdicts nor the filed meta.json
+    # ever see that value again (mirrors the Siebung page).
+    for row in payload["rows"]:
+        row["pen_mark"] = "angenommen" if row.get("pen_mark") == "angenommen" else None
     if args.haken:
         # The Haken rule (owner, 2026-08-26): the sheet's own ticks ARE the
         # verdicts — ticked → angenommen, untouched → nothing recorded. An

@@ -187,6 +187,22 @@ class TestApply:
         assert [f["id"] for f in load_kartei(HAND)["strips"]["S0001"]["fassungen"]] == ["F01"]
         assert load_kartei(HAND)["strips"]["S0002"]["fassungen"][0]["status"] == "verworfen"
 
+    def test_a_legacy_rejection_mark_never_reaches_the_filed_meta(self, dataroot):
+        # The older ingest wrote `pen_mark: "verworfen"` for an empty box; the
+        # Haken rule knows only a tick or nothing, and the filed record must
+        # not carry the retired value.
+        _make_sheet()
+        import_dir = hand_dir(HAND) / "blaetter" / "B0001" / "import"
+        payload = json.loads((import_dir / "payload.json").read_text(encoding="utf-8"))
+        payload["rows"][0]["pen_mark"] = "verworfen"
+        (import_dir / "payload.json").write_text(json.dumps(payload), encoding="utf-8")
+        apply_mod.main([str(_result("B0001", ["B0001-r00:angenommen"])), "--hand", HAND, "--sheet", "B0001"])
+        meta = json.loads((hand_dir(HAND) / "fassungen" / "S0001" / "F01" / "meta.json").read_text())
+        assert meta.get("pen_mark") is None
+        # And --haken on the same legacy payload files nothing for that row.
+        apply_mod.main(["--haken", "--hand", HAND, "--sheet", "B0001"])
+        assert "S0002" not in load_kartei(HAND)["strips"]
+
     def test_apply_needs_exactly_one_of_result_and_haken(self, dataroot):
         _make_sheet()
         with pytest.raises(SystemExit):
