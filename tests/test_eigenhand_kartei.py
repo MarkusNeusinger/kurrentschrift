@@ -163,6 +163,55 @@ class TestApply:
         apply_mod.main([str(result), "--hand", HAND, "--sheet", "B0001"])
         assert [f["id"] for f in load_kartei(HAND)["strips"]["S0001"]["fassungen"]] == ["F01"]
 
+    def test_haken_files_the_ticks_and_leaves_the_rest_open(self, dataroot):
+        # The Haken rule (owner, 2026-08-26): the sheet's ticks are the
+        # verdicts — ticked → angenommen, untouched → no record at all, so the
+        # strip stays `unterwegs`/open instead of becoming `verworfen`.
+        _make_sheet()
+        import_dir = hand_dir(HAND) / "blaetter" / "B0001" / "import"
+        payload = json.loads((import_dir / "payload.json").read_text(encoding="utf-8"))
+        payload["rows"][0]["pen_mark"] = "angenommen"
+        payload["rows"][1]["pen_mark"] = None
+        (import_dir / "payload.json").write_text(json.dumps(payload), encoding="utf-8")
+        apply_mod.main(["--haken", "--hand", HAND, "--sheet", "B0001"])
+
+        kartei = load_kartei(HAND)
+        assert strip_state(kartei, "S0001") == "belegt"
+        assert strip_state(kartei, "S0002") == "unterwegs"  # nothing recorded, still open
+        assert "S0002" not in kartei["strips"]
+        assert (hand_dir(HAND) / "fassungen" / "S0001" / "F01" / "streifen.png").exists()
+        # Idempotent like the result path, and a later explicit Siebung result
+        # for the open row still files normally.
+        apply_mod.main(["--haken", "--hand", HAND, "--sheet", "B0001"])
+        apply_mod.main([str(_result("B0001", ["B0001-r01:verworfen#Klecks"])), "--hand", HAND, "--sheet", "B0001"])
+        assert [f["id"] for f in load_kartei(HAND)["strips"]["S0001"]["fassungen"]] == ["F01"]
+        assert load_kartei(HAND)["strips"]["S0002"]["fassungen"][0]["status"] == "verworfen"
+
+    def test_a_legacy_rejection_mark_never_reaches_the_filed_meta(self, dataroot):
+        # The older ingest wrote `pen_mark: "verworfen"` for an empty box; the
+        # Haken rule knows only a tick or nothing, and the filed record must
+        # not carry the retired value.
+        _make_sheet()
+        import_dir = hand_dir(HAND) / "blaetter" / "B0001" / "import"
+        payload = json.loads((import_dir / "payload.json").read_text(encoding="utf-8"))
+        payload["rows"][0]["pen_mark"] = "verworfen"
+        (import_dir / "payload.json").write_text(json.dumps(payload), encoding="utf-8")
+        apply_mod.main([str(_result("B0001", ["B0001-r00:angenommen"])), "--hand", HAND, "--sheet", "B0001"])
+        meta = json.loads((hand_dir(HAND) / "fassungen" / "S0001" / "F01" / "meta.json").read_text())
+        assert meta.get("pen_mark") is None
+        # And --haken on the same legacy payload files nothing for that row.
+        apply_mod.main(["--haken", "--hand", HAND, "--sheet", "B0001"])
+        assert "S0002" not in load_kartei(HAND)["strips"]
+
+    def test_apply_needs_exactly_one_of_result_and_haken(self, dataroot):
+        _make_sheet()
+        with pytest.raises(SystemExit):
+            apply_mod.main(["--hand", HAND, "--sheet", "B0001"])
+        with pytest.raises(SystemExit):
+            apply_mod.main(
+                ["--haken", str(_result("B0001", ["B0001-r00:angenommen"])), "--hand", HAND, "--sheet", "B0001"]
+            )
+
     def test_apply_before_ingest_says_so_instead_of_tracing_back(self, dataroot):
         hand_dir(HAND).mkdir(parents=True)  # a hand that has never been ingested
         result = _result("B0001", ["B0001-r00:angenommen"])
@@ -331,6 +380,19 @@ class TestSiebungPage:
         html = self._page(dataroot)
         assert 'data-pen="angenommen"' in html  # seedFromPen() reads this
         assert "Stift auf dem Blatt: Haken" in html
+
+    def test_only_a_tick_seeds_a_legacy_rejection_mark_does_not(self, dataroot):
+        # A payload written by the older ingest carries `pen_mark: "verworfen"`
+        # for an empty box; under the Haken rule that must seed nothing.
+        _make_sheet()
+        import_dir = hand_dir(HAND) / "blaetter" / "B0001" / "import"
+        Image.new("L", (40, 8), 235).save(import_dir / "header.png")
+        payload = json.loads((import_dir / "payload.json").read_text(encoding="utf-8"))
+        payload["rows"][0]["pen_mark"] = "verworfen"
+        payload["rows"][1]["pen_mark"] = None
+        html = page_mod.build_page(payload, import_dir)
+        assert 'data-pen="verworfen"' not in html and html.count('data-pen=""') == 2
+        assert "Stift auf dem Blatt" not in html
 
 
 class TestPrintingAStack:

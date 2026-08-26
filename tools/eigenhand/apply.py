@@ -84,10 +84,18 @@ def _existing_fassung(kartei: dict, strip: str, sheet: str, row_index: int) -> d
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
-    ap.add_argument("result", type=Path, help="the downloaded siebung-<sheet>.txt")
+    ap.add_argument("result", type=Path, nargs="?", help="the downloaded siebung-<sheet>.txt")
     ap.add_argument("--hand", required=True)
     ap.add_argument("--sheet", required=True)
+    ap.add_argument(
+        "--haken",
+        action="store_true",
+        help="file the ticks straight from the sheet: ticked rows are accepted, every other row stays open "
+        "(no Siebung result needed; the page remains for explicit rejections and notes)",
+    )
     args = ap.parse_args(argv)
+    if bool(args.result) == args.haken:
+        ap.error("give either the Siebung result file or --haken")
 
     sheet_dir = store_sheet_dir(args.hand, args.sheet)
     payload_file = sheet_dir / "import" / "payload.json"
@@ -99,7 +107,23 @@ def main(argv: list[str] | None = None) -> int:
     payload = json.loads(payload_file.read_text(encoding="utf-8"))
     layout_text = layout_file.read_text(encoding="utf-8")
     layout = json.loads(layout_text)
-    verdicts = parse_result(args.result.read_text(encoding="utf-8"), args.sheet)
+    # Under the Haken rule a pen mark is either a tick or nothing. A payload
+    # written by the older ingest still carries `"verworfen"` for an empty
+    # box — normalised here, so neither the verdicts nor the filed meta.json
+    # ever see that value again (mirrors the Siebung page).
+    for row in payload["rows"]:
+        row["pen_mark"] = "angenommen" if row.get("pen_mark") == "angenommen" else None
+    if args.haken:
+        # The Haken rule (owner, 2026-08-26): the sheet's own ticks ARE the
+        # verdicts — ticked → angenommen, untouched → nothing recorded. An
+        # explicit `verworfen` with a reason stays a Siebung-page decision.
+        verdicts = {
+            row["uid"]: {"verdict": "angenommen", "reason": None, "note": ""}
+            for row in payload["rows"]
+            if row.get("pen_mark") == "angenommen"
+        }
+    else:
+        verdicts = parse_result(args.result.read_text(encoding="utf-8"), args.sheet)
 
     # The result file already names its Bogen (parse_result); the payload and
     # the layout have to name the same hand and sheet, or a stale copy would

@@ -92,7 +92,9 @@ def _fixed_layout() -> dict:
 # Re-baselined 2026-08-25 (strip self-identification): each row's top pad now
 # carries hand, sheet and print date right-aligned beside its strip id, so a
 # CUT strip says where it is from without the Kartei.
-GOLDEN_SHA256 = "150e14625e61ca2b7e2eb90f2ff777aa9a4857379f7df5388e8e116e7c285f1b"
+# Re-baselined 2026-08-26: the printed verdict rule changed its wording (Haken
+# rule — „ohne Haken zählt sie nicht"); geometry untouched.
+GOLDEN_SHA256 = "7fbf5238af1ee7aacf111534af5fbc7b2669b5319038a898d36c88b16a2f7d7c"
 
 
 class TestRenderedPdf:
@@ -204,7 +206,7 @@ class TestRenderedPdf:
         reprinted (`sheet.py` mints a new id and consumes the queue).
         """
         printed = " ".join(item.text for item in _capture(_fixed_layout())["texts"])
-        for fragment in ("nie blau", "in Farbe scannen", "Erst scannen, dann schneiden", "leer = verworfen"):
+        for fragment in ("nie blau", "in Farbe scannen", "Erst scannen, dann schneiden", "ohne Haken zählt sie nicht"):
             assert fragment in printed, fragment
 
     def test_the_sheet_prints_its_own_ruler_check(self):

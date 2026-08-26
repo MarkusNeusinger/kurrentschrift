@@ -56,6 +56,20 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **The Haken rule: a tick accepts a row, an empty box says nothing.** Author's
+  decision 2026-08-26 after the first real photo: `ingest` reads only ticks
+  (an empty box is no verdict — the row stays unjudged and its strip returns
+  to the queue, whether it was skipped, spoiled or forgotten), the Siebung
+  page pre-fills only ticks, and `apply --haken` files the ticks straight
+  from the import without a Siebung result — the page remains for an
+  explicit `verworfen` with a reason or a note — the page now names
+  `--haken` as the normal path and the result file as the exception. A
+  payload from the older `ingest` (empty box = `verworfen`) is normalised
+  on load, so the retired value never reaches a filed `meta.json`. The
+  sheet's printed rule now reads „ohne Haken zählt sie nicht" (golden PDF
+  re-baselined for the text), doctrine in `eigenhand-erfassung.md` §5/§6,
+  glossary „Stiftmarke", the own-hand README.
+
 - **The `d` exit: the hand shortens it, the chain's cut does not — §12's last
   open limit is closed.** The `pairlab` counter-check that the autopsy asked for,
   over all 14 `d` occurrences of the frozen Abb.-19 words plus the eight

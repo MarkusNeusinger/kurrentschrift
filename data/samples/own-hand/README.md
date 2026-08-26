@@ -43,10 +43,10 @@ uv run python -m tools.eigenhand.sheet --hand mn-suetterlin --date 2026-08-22
 #    NIE „An Seite anpassen“, siehe „Regeln“.
 
 # 2. schreiben — und JEDE gelungene Zeile gleich rechts abhaken (ein Kästchen).
-#    Der Import liest die Marken und belegt die Siebung damit vor.
-#    Haken/Kreuz = angenommen, leeres Kästchen = verworfen (am Bildschirm
-#    jederzeit überschreibbar — ein vergessener Haken kostet nur den Streifen,
-#    der dann wieder in der Druck-Warteschlange steht).
+#    Der Import liest die Haken. Haken/Kreuz = angenommen; ohne Haken zählt
+#    die Zeile nicht (sie bleibt offen und steht wieder in der Warteschlange).
+#    Normalfall danach: `apply --haken` — die Siebungsseite brauchst du nur,
+#    wenn du eine Zeile ausdrücklich verwerfen oder kommentieren willst.
 #    Dann einscannen/fotografieren (Passmarken müssen mit drauf sein)
 
 # 3. einlesen (entzerrt, schneidet Zeilen, prüft QC). Feder/Tinte/Papier

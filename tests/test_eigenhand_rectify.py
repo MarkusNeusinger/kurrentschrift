@@ -278,16 +278,16 @@ class TestPenMark:
         page, layout = self._page_with_ticks({0})
         assert ingest.read_pen_mark(page, layout["rows"][0]) == "angenommen"
 
-    def test_an_empty_box_reads_as_rejected(self):
-        # Owner rule 2026-08-23: a cross or check in the box means ok, and
-        # nothing in it means not ok. An unticked row is not accepted, and the
+    def test_an_empty_box_says_nothing(self):
+        # Owner rule 2026-08-26: a cross or check in the box means ok; an
+        # empty box is no verdict at all — the row stays unjudged and the
         # strip simply returns to the print queue.
         page, layout = self._page_with_ticks(set())
-        assert ingest.read_pen_mark(page, layout["rows"][0]) == "verworfen"
+        assert ingest.read_pen_mark(page, layout["rows"][0]) is None
 
     def test_rows_are_read_independently(self):
         page, layout = self._page_with_ticks({1})
-        assert ingest.read_pen_mark(page, layout["rows"][0]) == "verworfen"
+        assert ingest.read_pen_mark(page, layout["rows"][0]) is None
         assert ingest.read_pen_mark(page, layout["rows"][1]) == "angenommen"
 
     def test_a_stray_speck_is_not_a_tick(self):
@@ -297,7 +297,7 @@ class TestPenMark:
         x0, y0, _x1, _y1 = layout["rows"][0]["mark_mm"]
         top, left = int(mm_to_px(y0 + 2.4, 300.0)), int(mm_to_px(x0 + 2.4, 300.0))
         page[top : top + 2, left : left + 2] = 0.05
-        assert ingest.read_pen_mark(page, layout["rows"][0]) == "verworfen"
+        assert ingest.read_pen_mark(page, layout["rows"][0]) is None
 
     def test_layout_without_a_mark_box_is_tolerated(self):
         page, layout = self._page_with_ticks(set())
