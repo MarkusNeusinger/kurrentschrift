@@ -884,6 +884,9 @@ export const admin = {
     stripBelegeIntro:
       'Gezeigt wird der Wort-Ausschnitt; das Zeichen sitzt darin. Die Zerlegung in einzelne Buchstaben ist Sache des Tintenfolgers (Phase 5), nicht der Kartei.',
     stripMore: 'weitere {{count}} laden',
+    stripNoRulings: 'Lineatur ausblenden',
+    stripNoRulingsHint:
+      'Abgeleitete Ansicht: Blau-Kanal plus Cyan-Maske, berechnet beim Abruf. Wirkt nur bei farbig eingelesenen Streifen — ein Graustufen-Streifen bleibt, wie er ist. Gespeichert wird immer das Rohbild.',
     keyTooltipShow: ' · anklicken zeigt die Belege',
   },
 } as const;

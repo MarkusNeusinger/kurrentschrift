@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import io
 
+import numpy as np
 import pytest
 from PIL import Image
 
@@ -133,3 +134,56 @@ class TestCutPng:
             # stored grayscale IS the darkness channel.
             assert image.mode == "L"
             assert image.getpixel((0, 0)) == 200
+
+    def test_a_colour_strip_is_cut_in_colour(self):
+        source = Image.new("RGB", (400, 60), color=(230, 235, 240))
+        buffer = io.BytesIO()
+        source.save(buffer, format="PNG")
+        cut = crop.cut_png(buffer.getvalue(), (100, 0, 220, 60))
+        with Image.open(io.BytesIO(cut)) as image:
+            assert image.mode == "RGB" and image.size == (120, 60)
+            assert image.getpixel((0, 0)) == (230, 235, 240)
+
+
+def _colour_strip(width: int = 300, height: int = 80) -> tuple[bytes, np.ndarray]:
+    """Neutral paper, two pale-cyan ruling rows, one black stroke crossing them."""
+    pixels = np.full((height, width, 3), 235, dtype=np.uint8)
+    for row in (height // 3, height // 2):
+        pixels[row : row + 3, :, :] = (150, 225, 235)  # cyan: red low, blue at paper
+    pixels[:, 100:106, :] = (30, 30, 30)  # ink, crossing both rulings
+    buffer = io.BytesIO()
+    Image.fromarray(pixels, mode="RGB").save(buffer, format="PNG")
+    return buffer.getvalue(), pixels
+
+
+class TestWithoutRulings:
+    """The derived view: rulings lifted to paper by their chroma, ink kept, stored bytes untouched."""
+
+    def test_the_rulings_go_and_the_ink_stays(self):
+        png, pixels = _colour_strip()
+        out = crop.without_rulings(png)
+        with Image.open(io.BytesIO(out)) as image:
+            assert image.mode == "L" and image.size == (300, 80)
+            view = np.asarray(image, dtype=np.int32)
+        ruling_row = 80 // 3 + 1
+        # A ruling pixel away from the ink is paper now …
+        assert view[ruling_row, 20] >= 230
+        # … the ink crossing it is still ink …
+        assert view[ruling_row, 103] <= 40
+        # … and plain paper is what it was (the blue plane of it).
+        assert view[5, 20] == int(pixels[5, 20, 2])
+
+    def test_a_greyscale_strip_comes_back_byte_identical(self):
+        buffer = io.BytesIO()
+        Image.new("L", (120, 40), color=210).save(buffer, format="PNG")
+        png = buffer.getvalue()
+        # Nothing to separate on — and nothing re-encoded either.
+        assert crop.without_rulings(png) is png
+
+    def test_the_view_never_reaches_back_into_the_stored_bytes(self):
+        png, _pixels = _colour_strip()
+        before = bytes(png)
+        crop.without_rulings(png)
+        assert png == before
+        with Image.open(io.BytesIO(png)) as image:
+            assert image.mode == "RGB"

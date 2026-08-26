@@ -308,6 +308,30 @@ Mittellinie 0,94 / 0,81, Ober-/Unterlinie 0,96 / 0,86, Schräglagengitter
 0,97 / 0,91. Cyan ist damit in BEIDEN Aufnahmearten besser als das Grau —
 keine Wette auf den Farbscan.
 
+**Der Streifen behält seine Farbe** (Autor-Entscheid 2026-08-27: „wenn wir
+schon Farben haben, sollten wir die auch mitnehmen"). Bis dahin wählte
+`ingest` EINEN Kanal und legte nur den ab — die Methode war damit zum
+Aufnahmezeitpunkt festgelegt und zwei Drittel der Evidenz weg. Der erste
+echte Durchlauf (Handyfoto, 2026-08-26) zeigte den Preis: im gespeicherten
+Blau-Kanal standen die Linien bei **0,72** gegen 0,90 Papier, also da,
+nur blasser; im Foto selbst war die Lineatur fast farblos (Blau minus Rot
+0,06–0,10, Papier 0,00, Helligkeit ≈ 0,6 — ein Schwarzweißdruck druckt
+Cyan als Grau), und trotzdem trennte die **Farbdifferenz** noch, was der
+einzelne Kanal nicht mehr trennte (schwarze Tinte: Blau minus Rot −0,004,
+nur 4 % ihrer Pixel über 0,06). Seither gilt: eine Farbaufnahme ergibt
+einen **RGB-Streifen** (`streifen.png`, verlustfrei, ~3× Bytes; `scan.mode`
+in Payload und Meta sagt `rgb` oder `grau`), der Blau-Kanal bleibt die
+**Arbeitsebene** für Passmarken, QC und Vorschau (`scan.channel`), und das
+Ausblenden der Lineatur ist eine **abgeleitete Ansicht**, die der Server
+auf Verlangen rechnet (`core/eigenhand/crop.py::without_rulings`:
+Blau-Kanal, jedes noch erkennbar cyanfarbene Pixel — blauer als rot um
+≥ 0,05 und heller als Tinte — auf Papierniveau gehoben;
+`GET …/strips/{hand}/{strip}/{fassung}?lineatur=ohne`, §7.2). Das
+gespeicherte Bild wird nie angefasst — dieselbe Zwei-Kanal-Doktrin, die
+schon die Binarisierung stromabwärts hält. Ein Graustufen-Scan liefert
+weiter Graustufen, und die Ansicht gibt ihn unverändert zurück: da ist
+keine Farbe, an der sich etwas trennen ließe.
+
 Die Tinte übersteht den Kanalgriff: Schwarz 0,10 und Eisengallus-Braun
 0,14 im Blau-Kanal. **Blaue Tinte liegt mit 0,55 genau auf der Schwelle**
 und ist deshalb ausgeschlossen — der Bogen wird mit schwarzer oder brauner
@@ -426,8 +450,9 @@ ist der Zweck der Versuche).
 `apply.py` legt aus dem Ergebnis die **Fassungen** an — und zwar nur für
 angenommene Zeilen („abgelegt werden nur die relevanten Streifen“):
 `fassungen/S0037/F02/{streifen.png, meta.json}`. Der Streifen-PNG ist der
-unveränderte Graustufen-Crop (Zwei-Kanal-Doktrin: Binarisierung ist
-nachgelagerte Ableitung) und **selbst-zuordenbar**: gedruckte
+unveränderte Crop — in Farbe, wenn die Aufnahme Farbe hat, sonst
+Graustufen (Zwei-Kanal-Doktrin: Binarisierung wie Linienentfernung sind
+nachgelagerte Ableitung, §6) — und **selbst-zuordenbar**: gedruckte
 Streifen-ID und Wortlabels stehen mit im Ausschnitt, die `meta.json`
 daneben trägt Wörter, Kasten-Geometrie, Urteil, QC, Schreibsitzung
 (Datum · Feder · Tinte · Papier · Gerät), Prüfsummen und Provenienz.
@@ -659,6 +684,14 @@ der Kartei. Jedes Bild nimmt eine gemeinsame Vergrößerung (¼ · ½ · 1:1 ·
 stufenlosem Maßstab — dieselben Bytes, nur größer, kein zweiter Abruf.
 Die Galerie zeigt naturgemäß nur, was hochgeschoben ist; die Tafel zählt
 alle angenommenen Fassungen, und die Leermeldung nennt den Unterschied.
+
+**Lineatur ausblenden** (Autor-Entscheid 2026-08-27, §6): jedes Bild der
+Tafel und der Galerie kommt auf Wunsch als abgeleitete Ansicht ohne die
+gedruckten Linien — `?lineatur=ohne` auf der Bildroute, in der Ansicht ein
+Schalter, standardmäßig an, denn anschauen will man die Hand, nicht den
+Druck. Gerechnet wird beim Abruf aus dem RGB-Streifen; ein Graustufen-
+Streifen (die vor dem Entscheid eingelesenen, oder ein Graustufen-Scan)
+bleibt, wie er ist. Gespeichert und archiviert ist immer das Rohbild.
 
 ## 8 Ablage und Archiv
 

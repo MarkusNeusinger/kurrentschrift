@@ -11,9 +11,11 @@ Vertically a word crop keeps the FULL strip height. The interesting part of a
 word is how far it reaches above the waist and below the baseline, so cropping
 to the band would throw away exactly what one wants to look at.
 
-Everything but `cut_png` is arithmetic on millimetres and pixels; `cut_png` is
-the one place that touches the image, and it re-encodes the grayscale unchanged
-(two-channel doctrine: no binarisation baked into what gets served).
+Everything but `cut_png` and `without_rulings` is arithmetic on millimetres and
+pixels. `cut_png` re-encodes the stored pixels unchanged — grayscale or colour,
+whatever was filed (two-channel doctrine: no binarisation baked into what gets
+served). `without_rulings` is the one DERIVED view: a colour strip with its
+cyan rulings lifted to paper, computed on request and never stored.
 """
 
 from __future__ import annotations
@@ -97,8 +99,51 @@ def find_box(layout_row: dict, word: str | None, index: int | None) -> dict:
     raise SystemExit(f"{word!r} is not in this row — it carries: {known}")
 
 
+# The rulings are printed in pale cyan (geometry.CAPTURE_STYLES): blue near
+# paper level, red well below it. A ruling pixel is therefore the one kind of
+# pixel that is BLUER than it is red — paper is neutral, black ink is neutral
+# and dark, brown ink is redder than blue. Measured on the first phone capture
+# (2026-08-26, a test sheet that came out of the wrong printer almost grey):
+# rulings B−R 0.06–0.10 at luminance ~0.6, paper 0.00, black ink −0.004 with
+# only 4 % of ink pixels above 0.06 — the chroma still separates even where a
+# single plane no longer does (blue plane there: rulings 0.72, paper 0.90).
+RULING_CHROMA_MIN = 0.05  # B − R above this is a ruling, never paper or ink
+RULING_LUM_MIN = 0.45  # below this it is ink, whatever its tint
+PAPER_PERCENTILE = 90
+
+
+def without_rulings(png: bytes) -> bytes:
+    """A strip with its cyan rulings dropped — a DERIVED view of a colour strip.
+
+    Serves the blue plane (where cyan sits nearest to paper) and lifts every
+    pixel that is still recognisably cyan — bluer than red by
+    `RULING_CHROMA_MIN` and not dark enough to be ink — to the strip's paper
+    level. Ink crossing a ruling keeps its dark core; only its anti-aliased rim
+    inside the ruling rows can lose a shade, which is why this is a view for
+    the eye and never the image a measurement runs on. A greyscale strip comes
+    back byte-identical: there is no colour to separate on. The stored bytes
+    are never touched — derivation stays downstream (two-channel doctrine).
+    """
+    import numpy as np
+    from PIL import Image
+
+    with Image.open(io.BytesIO(png)) as image:
+        if image.mode not in ("RGB", "RGBA"):
+            return png
+        rgb = np.asarray(image.convert("RGB"), dtype=np.float32) / 255.0
+    red, blue = rgb[..., 0], rgb[..., 2]
+    ruling = (blue - red > RULING_CHROMA_MIN) & (rgb.mean(axis=2) > RULING_LUM_MIN)
+    plane = blue.copy()
+    plane[ruling] = float(np.percentile(blue, PAPER_PERCENTILE))
+    buffer = io.BytesIO()
+    Image.fromarray((np.clip(plane, 0.0, 1.0) * 255).astype(np.uint8), mode="L").save(
+        buffer, format="PNG", optimize=True
+    )
+    return buffer.getvalue()
+
+
 def cut_png(png: bytes, box: tuple[int, int, int, int]) -> bytes:
-    """Cut a pixel rectangle out of stored PNG bytes, grayscale kept as it is.
+    """Cut a pixel rectangle out of stored PNG bytes, the pixels kept as they are.
 
     Imported lazily so the arithmetic above stays usable where Pillow is not —
     and so a Bestand read never pays for the image stack it does not use.

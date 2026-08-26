@@ -162,13 +162,21 @@ export const getEigenhandStrips = (
 // `box` is the word's INDEX in the row, not its text: a row may carry the same
 // word twice, and the API resolves a repeated word to its first box by design —
 // the index is what tells the occurrences apart.
+// `ohneLineatur` asks for the DERIVED view — a colour strip with its cyan
+// rulings lifted to paper, computed on request; a greyscale strip comes back
+// unchanged.
 export const fetchEigenhandStrip = async (
   hand: string,
   strip: string,
   fassung: string,
   box?: number,
+  ohneLineatur = false,
 ): Promise<Blob> => {
-  const qs = box === undefined ? '' : `?${new URLSearchParams({ box: String(box) }).toString()}`;
+  const params = new URLSearchParams();
+  if (box !== undefined) params.set('box', String(box));
+  if (ohneLineatur) params.set('lineatur', 'ohne');
+  const query = params.toString();
+  const qs = query ? `?${query}` : '';
   const res = await apiFetch(
     `${apiRoot()}/eigenhand/strips/${encodeURIComponent(hand)}/${encodeURIComponent(strip)}/${encodeURIComponent(
       fassung,

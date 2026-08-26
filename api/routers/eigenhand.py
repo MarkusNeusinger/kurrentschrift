@@ -710,6 +710,7 @@ async def read_strip(
     wort: str | None = None,
     box: int | None = None,
     pad_mm: float = 1.0,
+    lineatur: str = "mit",
     db: AsyncSession = Depends(require_db),
 ) -> Response:
     """The stored strip as PNG — whole, or cut down to one word.
@@ -718,10 +719,18 @@ async def read_strip(
     started in mm, the sheet's layout says where the word's box sits, and the
     pixel width gives the scale. `wort` names the word, `box` its index in the
     row — the index is what disambiguates a word that appears twice.
+
+    `lineatur=ohne` serves a DERIVED view: a strip filed in colour comes back
+    as its blue plane with every still-cyan pixel lifted to paper
+    (`crop.without_rulings`) — the printed rulings gone, the ink kept. A
+    greyscale strip comes back as it is: there is no colour to separate on.
+    The stored bytes are never touched; the view is computed on request.
     """
     _checked_hand(hand)
     _checked_strip(strip)
     _checked_fassung(fassung)
+    if lineatur not in ("mit", "ohne"):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="lineatur must be `mit` or `ohne`")
     row = await EigenhandRepository(db).strip(hand, strip, fassung)
     if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{hand} has no stored strip {strip}/{fassung}")
@@ -743,6 +752,9 @@ async def read_strip(
         # crops (api/routers/chart.py).
         png = await run_in_threadpool(crop.cut_png, png, rect)
         filename = f"{filename}-{word_box.get('word', 'wort')}"
+    if lineatur == "ohne":
+        png = await run_in_threadpool(crop.without_rulings, png)
+        filename = f"{filename}-ohne-lineatur"
     return Response(
         content=png,
         media_type="image/png",
