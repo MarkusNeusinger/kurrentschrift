@@ -32,6 +32,7 @@ import re
 import shutil
 from pathlib import Path
 
+from core.eigenhand.bogen import layout_digest
 from tools.eigenhand.kartei import load_kartei, next_fassung_id, save_kartei
 from tools.eigenhand.store import check_crop_name, hand_dir
 from tools.eigenhand.store import sheet_dir as store_sheet_dir
@@ -226,7 +227,10 @@ def main(argv: list[str] | None = None) -> int:
         sheet_record = {
             "printed": layout["provenance"]["date"],
             "strips": [row["strip"] for row in layout["rows"]],
-            "layout_sha256": hashlib.sha256(layout_text.encode()).hexdigest(),
+            # The canonical digest, never the file's bytes: `layout.json` may
+            # have been written in an older key order, and the server compares
+            # geometry, not spelling.
+            "layout_sha256": layout_digest(layout),
             "scans": [],
         }
         kartei["sheets"][args.sheet] = sheet_record
