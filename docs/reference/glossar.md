@@ -2051,7 +2051,10 @@ Streifens ist erlaubt. *Technisch:* `tools/eigenhand/page.py` →
 **Streifenkartei** *(kurz: Kartei)* — das lokale Manifest einer Hand und
 ihre EINZIGE Zustandsquelle: Bögen, Fassungen, Schreibsitzungen
 (Datum · Feder · Tinte · Papier · Gerät), Redo-Liste. Streifen-Zustände
-(`geplant` · `unterwegs` · `belegt`) werden ABGELEITET, nie gespeichert.
+(`geplant` · `unterwegs` · `belegt`) werden ABGELEITET, nie gespeichert;
+`unterwegs` ist reine Anzeige — die Druck-Warteschlange beginnt immer
+vorn im Plan minus `belegt` (Autor-Entscheid 2026-08-26, proposals
+§7), ein Stapel setzt sie seitenweise fort und wird EIN PDF.
 Nie committet, nie von Hand editiert. *Technisch:*
 `data/samples/own-hand/<hand>/kartei.json`,
 `tools/eigenhand/kartei.py::strip_state`.
