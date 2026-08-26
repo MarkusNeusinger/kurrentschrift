@@ -153,7 +153,12 @@ async def read_bestand(hand: str, queue: int = 9, db: AsyncSession = Depends(req
 
 @router.post("/sheets", response_model=EigenhandSheetsOut, status_code=status.HTTP_201_CREATED)
 async def print_sheets(body: EigenhandSheetIn, db: AsyncSession = Depends(require_db)) -> EigenhandSheetsOut:
-    """Compose the next Bogen (or a stack) and record each one before the next selects."""
+    """Compose the next Bogen or a whole stack in ONE selection, then record every Bogen as its own row.
+
+    The queue is walked once for the job (`compose_stack`): the pages continue
+    it among themselves, ids are minted consecutively, and the job starts at
+    the queue's front — a printed-but-unwritten Bogen holds nothing back.
+    """
     hand = _checked_hand(body.hand)
     style = body.style or style_of_hand(hand)
     if style not in geometry.PRESETS:
