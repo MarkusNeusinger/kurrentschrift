@@ -376,7 +376,12 @@ und die abgelegten Streifen sind Teil des reservierten Datensatzes
      `ductus_soll`), `aiou` gegen die eingefrorene Maske,
      Strich-Identitäts-Klassen (verglichen werden die geparsten
      Strichzüge, nicht die Datei-Bytes); ersetzt die bis `aug21` je
-     Runde neu geschriebenen Scratch-Skripte.
+     Runde neu geschriebenen Scratch-Skripte. Ein Kandidat, der auf
+     einer GEPATCHTEN Root gelöst wurde (Laufform-Kandidaten-Karte,
+     §14 LF3b-W), wird mit `--fixtures <root>` gegen das Soll DIESER
+     Root gewertet — das Kompositions-Soll wandert mit der Karte, das
+     der eingefrorenen Root wäre dort das falsche Lineal; je Root ein
+     eigener Aufruf, der Abstand wird von Hand nebeneinandergelegt.
   5. **Sensoren/Augenschein nach Bedarf**:
      `uv run python -m tools.tracebench.excursions <cand.json>` (das
      Papier-Exkursions-Inventar, der stehende K-D-Sensor) und
