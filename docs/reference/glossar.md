@@ -2030,10 +2030,12 @@ Schreiber hakt direkt nach dem Schreiben ab, ob die Zeile taugt; der
 Import liest die Marke aus dem entzerrten Bild und belegt die Siebung
 damit vor. Anders als die QC-Flags DARF sie vorbelegen: sie ist ein
 Menschenurteil im besten Moment, nicht eine Maschinenvermutung —
-überschreibbar bleibt sie trotzdem. Die Regel ist binär (Owner,
-2026-08-23): **Haken oder Kreuz = angenommen, leeres Kästchen =
-verworfen**; eine vergessene Marke schickt den Streifen also zurück in
-die Warteschlange, statt ihn ungeprüft abzulegen. *Technisch:*
+überschreibbar bleibt sie trotzdem. Die Regel (Autor, 2026-08-26, löst
+das „leer = verworfen" vom 23.08. ab): **Haken oder Kreuz = angenommen;
+ohne Haken zählt die Zeile nicht** — sie bleibt unbeurteilt, der
+Streifen steht wieder in der Warteschlange; `verworfen` mit Grund ist
+eine ausdrückliche Wahl auf der Siebungsseite, keine Vorgabe.
+`apply --haken` verbucht die Haken direkt. *Technisch:*
 `core/eigenhand/geometry.py::mark_box`,
 `tools/eigenhand/ingest.py::read_pen_mark`, je Zeile in `layout.json`
 unter `mark_mm`. → proposals/eigenhand-erfassung.md §5–§6

@@ -177,11 +177,9 @@ def build_page(payload: dict, import_dir: Path) -> str:
         attempt = f" · Versuch {row['attempt']}/{row['attempts']}" if row["attempts"] > 1 else ""
         qc = f'<span class="qc">⚠ {esc(", ".join(row["qc"]))}</span>' if row["qc"] else ""
         pen = row.get("pen_mark") or ""
-        pen_chip = (
-            f'<span class="pen">Stift auf dem Blatt: {"Haken" if pen == "angenommen" else "Kästchen leer"}</span>'
-            if pen
-            else ""
-        )
+        # Only a tick is a statement from the sheet; an empty box says nothing
+        # and seeds nothing (owner, 2026-08-26).
+        pen_chip = '<span class="pen">Stift auf dem Blatt: Haken</span>' if pen == "angenommen" else ""
         reason_buttons = "".join(f'<button type="button" data-reason="{esc(r)}">{esc(r)}</button>' for r in REASONS)
         rows_html.append(f"""
 <div class="row" data-uid="{esc(row["uid"])}" data-pen="{esc(pen)}">
@@ -213,8 +211,9 @@ def build_page(payload: dict, import_dir: Path) -> str:
     richtigen Bogen mit <code>--sheet</code> angeben.</div>
   </div>
 </header>
-<div class="sieb"><b>Vom Blatt übernommen:</b> Haken im Kästchen am rechten Rand → angenommen,
-leeres Kästchen → verworfen; beides ist hier vorbelegt und jederzeit überschreibbar.<br>
+<div class="sieb"><b>Vom Blatt übernommen:</b> Haken im Kästchen am rechten Rand → angenommen
+(vorbelegt, überschreibbar). Ohne Haken zählt die Zeile nicht — sie bleibt offen und kommt auf dem
+nächsten Bogen wieder; <i>Verwerfen</i> nur, wenn du einen Fehler festhalten willst.<br>
 <b>Sieb-Disziplin:</b> Verworfen wird nur nach Schreibqualität (verschrieben,
 verrutscht) — nie, weil Buchstaben eng am Nachbarn sitzen. Enge Verbindung ist Signal, nicht
 Müll. Ausfälle müssen zufällig sein, nicht selektiv.</div>

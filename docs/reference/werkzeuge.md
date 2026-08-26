@@ -289,10 +289,14 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   Schnappschuss vollständig ist. Das stehende Setup wird dabei nur gesetzt,
   wenn der Server keines hat, und der Lauf bricht mit Namen ab, wenn eine
   angenommene Fassung oder ein Bogen-Layout im Archiv fehlt.
-- **`ingest` → `page` → `apply`** — Scan/Foto entzerren (Passmarken,
-  scikit-image, 300 DPI Arbeitsauflösung), Siebung auf der
-  Offline-HTML-Seite, Ergebnis einspielen: nur angenommene Zeilen werden
-  als Fassungen abgelegt (idempotent).
+- **`ingest` → `apply --haken`** (Normalfall) bzw. **`ingest` → `page` →
+  `apply <Ergebnis>`** — Scan/Foto entzerren (Passmarken, scikit-image,
+  300 DPI Arbeitsauflösung) und die Haken vom Blatt lesen; `apply --haken`
+  verbucht sie direkt (Haken = angenommen, ohne Haken zählt die Zeile nicht
+  und bleibt offen — Autor-Regel 2026-08-26); die Siebung auf der
+  Offline-HTML-Seite braucht es nur für ein ausdrückliches `verworfen` mit
+  Grund oder eine Anmerkung. Nur angenommene Zeilen werden als Fassungen
+  abgelegt (idempotent).
 - **`report`** — Bestandsbericht (Erstbeleg-/Ausbau-Quote, Fehlstellen,
   Druckvorschlag); **`progression`** — die Plan-Sicht dazu: kumulierte
   Zählungen je Glyphe (klein · groß · Ligatur · Ziffer · Zeichen) und je

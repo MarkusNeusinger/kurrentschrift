@@ -12,6 +12,19 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Changed
+
+- **The Haken rule: a tick accepts a row, an empty box says nothing.** Author's
+  decision 2026-08-26 after the first real photo: `ingest` reads only ticks
+  (an empty box is no verdict — the row stays unjudged and its strip returns
+  to the queue, whether it was skipped, spoiled or forgotten), the Siebung
+  page pre-fills only ticks, and `apply --haken` files the ticks straight
+  from the import without a Siebung result — the page remains for an
+  explicit `verworfen` with a reason or a note. The sheet's printed rule
+  now reads „ohne Haken zählt sie nicht" (golden PDF re-baselined for the
+  text), doctrine in `eigenhand-erfassung.md` §5/§6, glossary „Stiftmarke",
+  the own-hand README.
+
 ### Added
 
 - **The Übergangsraum weight table lives in the shared DB — the Werkbank shows

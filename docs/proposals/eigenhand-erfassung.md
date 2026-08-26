@@ -326,12 +326,14 @@ beim Eintauchen der Feder niemand offen hat. Jetzt drucken zwei Zeilen über
 der Legende genau diese drei:
 
 - **Tinte schwarz oder braun, nie blau** — Blau liegt mit 0,55 exakt auf
-  `INK_THRESHOLD`; ein blauer Haken liest als leeres Kästchen.
+  `INK_THRESHOLD`; ein blauer Haken liest als leeres Kästchen, die Zeile
+  zählte dann nicht.
 - **In Farbe scannen, mind. 300 dpi** — sonst greift der Kanaltrick nicht.
 - **Erst scannen, dann schneiden** — ein geschnittener Streifen trägt keine
   Passmarke mehr, also ist danach KEIN Import mehr möglich, und der Bogen
   lässt sich nicht neu drucken (neue ID, Streifen aus der Warteschlange).
-- dazu die Verdikt-Regel: **Kästchen rechts ankreuzen, leer = verworfen.**
+- dazu die Verdikt-Regel: **Kästchen rechts ankreuzen — ohne Haken zählt
+  die Zeile nicht** (Autor-Entscheid 2026-08-26, siehe §6).
 
 Rechts unten steht seither die **Lineal-Probe** („Markenmitten 190,0 ×
 277,0 mm — ohne Skalierung drucken"), aus `FIDUCIAL_CENTERS` abgeleitet
@@ -393,10 +395,17 @@ zerschneiden**.
 
 Die **Stiftmarke** wird dabei aus den bekannten Kästchen-mm gelesen
 (Tintenanteil in der Innenfläche, gedruckter Rahmen ausgespart): Haken
-oder Kreuz → `angenommen`, leeres Kästchen → `verworfen`. Ein Fleck
-bleibt unter der Schwelle und zählt nicht als Marke; nur ein Bogen ohne
-Kästchen-mm (vor Einführung gedruckt) bleibt unentschieden. Sie ist der
-EINZIGE Eingang, der die Siebung
+oder Kreuz → `angenommen`; ein leeres Kästchen sagt NICHTS — die Zeile
+wird nicht beurteilt, der Streifen bleibt offen und kommt auf dem
+nächsten Bogen wieder (Autor-Entscheid 2026-08-26 nach dem ersten
+echten Foto: „ohne Haken einfach weglassen", statt jede unbehakte Zeile
+als `verworfen` zu verbuchen). `verworfen` mit Grund bleibt eine
+ausdrückliche Wahl auf der Siebungsseite, wenn ein Fehler festgehalten
+werden soll; für den Normalfall reicht `apply --haken`, das die Haken
+direkt aus dem Import verbucht und die Siebungsseite überspringt. Ein
+Fleck bleibt unter der Schwelle und zählt nicht als Marke; ein Bogen
+ohne Kästchen-mm (vor Einführung gedruckt) liest ebenfalls nichts. Sie
+ist der EINZIGE Eingang, der die Siebung
 vorbelegen darf — weil sie ein Menschenurteil im besten Moment ist
 (direkt nach dem Schreiben), nicht eine Maschinenvermutung; die
 Review-Seite zeigt sie als Chip „Stift auf dem Blatt“ und lässt sie

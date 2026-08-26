@@ -79,7 +79,7 @@ LEGEND = "| nur Hinweis, nicht mitschreiben (zusammengesetztes Wort)   * = hier 
 # the failures that cannot be undone once they have happened.
 RULES = (
     "Tinte schwarz oder braun, nie blau · in Farbe scannen, mind. 300 dpi",
-    "Erst scannen, dann schneiden · Zeile gelungen: Kästchen rechts ankreuzen (leer = verworfen)",
+    "Erst scannen, dann schneiden · Zeile gelungen: Kästchen rechts ankreuzen (ohne Haken zählt sie nicht)",
 )
 
 # The baselines of the sheet's foot, mm from the page top: the rules first, the

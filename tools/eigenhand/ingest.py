@@ -167,12 +167,16 @@ def qc_flags(crop: np.ndarray, row: dict, x0_px: int, y0_px: int) -> list[str]:
 def read_pen_mark(warped: np.ndarray, row: dict) -> str | None:
     """The writer's own tick for one row, read off the rectified page.
 
-    One box per row (owner, 2026-08-23): a cross or check in it means
-    ``angenommen``, an empty box ``verworfen``. Unlike the QC flags this DOES
-    pre-fill the Siebung — the tick is a human judgement made at the best
-    possible moment, right after the row was written — and the review page
-    still lets it be overridden. A layout without a mark box (a sheet printed
-    before the boxes existed) yields ``None``: undecided, as before.
+    One box per row: a cross or check in it means ``angenommen``. An EMPTY box
+    means nothing — not a rejection (owner, 2026-08-26: "ohne Haken zählt die
+    Zeile nicht"): whether the row was skipped, spoiled or simply forgotten,
+    it is left unjudged and its strip stays open for the next Bogen. Unlike
+    the QC flags the tick DOES pre-fill the Siebung — it is a human judgement
+    made at the best possible moment, right after the row was written — and
+    the review page still lets it be overridden, including an explicit
+    ``verworfen`` with a reason where a defect is worth recording. A layout
+    without a mark box (a sheet printed before the boxes existed) yields
+    ``None`` as well.
     """
     rect = row.get("mark_mm")
     if not rect:
@@ -181,7 +185,7 @@ def read_pen_mark(warped: np.ndarray, row: dict) -> str | None:
     inset = _px(MARK_INSET_MM)
     patch = warped[_px(y0) + inset : _px(y1) - inset, _px(x0) + inset : _px(x1) - inset]
     fraction = float((patch < INK_THRESHOLD).mean()) if patch.size else 0.0
-    return "angenommen" if fraction >= MARK_MIN_FRACTION else "verworfen"
+    return "angenommen" if fraction >= MARK_MIN_FRACTION else None
 
 
 def build_payload(
