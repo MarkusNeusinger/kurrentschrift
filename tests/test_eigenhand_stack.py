@@ -110,6 +110,18 @@ class TestStack:
         assert [s["sheet"] for s in stack["sheets"]] == ["B0008", "B0009"]
         assert next_sheet_id(kartei) == "B0008", "composing must not mutate the caller's Kartei"
 
+    def test_more_attempts_than_rows_never_overfill_a_page(self):
+        # repeat > rows used to be harmless because the single-sheet path cut
+        # the queue at `rows`; the stack's page size must respect it too.
+        plan = load_plan()
+        stack = compose_stack(
+            plan=plan, kartei=_kartei(), hand=HAND, style=STYLE, date=DATE, sheets=2, rows=3, repeat=5
+        )
+        for sheet in stack["sheets"]:
+            assert len(sheet["strips"]) == 3 and len(set(sheet["strips"])) == 1
+            assert len(sheet["layout"]["rows"]) == 3
+        assert stack["sheets"][0]["strips"][0] != stack["sheets"][1]["strips"][0]
+
 
 class TestStackPdf:
     def _layouts(self, n: int) -> list[dict]:

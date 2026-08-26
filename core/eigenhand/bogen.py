@@ -510,7 +510,10 @@ def compose_stack(
     if strips and sheets > 1:
         raise SystemExit("`strips` names the rows of ONE Bogen — print a stack without it")
     rows = rows or geometry.max_rows(geometry.PRESETS[style], MARGIN_MM)
-    repeat = max(1, repeat)
+    # More attempts than rows cannot fit on a page: cap, so `per_page` below
+    # never exceeds the rows the geometry has (a page then carries ONE strip,
+    # repeated `rows` times — what the single-sheet path always produced).
+    repeat = max(1, min(repeat, rows))
 
     if strips:
         unknown = [sid for sid in strips if sid not in plan["strips"]]
