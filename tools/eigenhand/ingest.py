@@ -95,10 +95,10 @@ def load_capture(path: Path, channel: str = "auto") -> tuple[np.ndarray, str, np
     2026-08-27), and which plane or combination best drops the rulings is a
     derivation made downstream. ``None`` for a greyscale capture.
     """
-    image = Image.open(path)
-    if image.mode in ("L", "1", "I;16"):
-        return load_grayscale(str(path)), "grau", None
-    colour = np.asarray(image.convert("RGB"), dtype=np.float32) / 255.0
+    with Image.open(path) as image:
+        if image.mode in ("L", "1", "I;16"):
+            return load_grayscale(str(path)), "grau", None
+        colour = np.asarray(image.convert("RGB"), dtype=np.float32) / 255.0
     if channel == "grau":
         return load_grayscale(str(path)), "grau", colour
     index = CHANNELS["blau"] if channel == "auto" else CHANNELS[channel]
