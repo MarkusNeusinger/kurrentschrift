@@ -109,6 +109,55 @@ class TestRectify:
         assert abs(width_px / ingest.PX_PER_MM - (cut[2] - cut[0])) < 0.5
         assert abs(height_px / ingest.PX_PER_MM - (cut[3] - cut[1])) < 0.5
 
+    def test_a_colour_capture_files_colour_strips_on_the_planes_geometry(self, tmp_path, monkeypatch):
+        # Author's decision 2026-08-27: the filed strip keeps the capture's
+        # colour; the working plane only drives detection and QC. ONE
+        # transform for both, so the colour strip and the plane the QC saw
+        # are the same geometry to the pixel.
+        monkeypatch.setenv("EIGENHAND_DATA", str(tmp_path / "own-hand"))
+        layout = _layout()
+        plane = _distorted_capture(layout)
+        tform, out_shape, dpi, _marks = ingest.estimate_warp(plane, layout)
+        # A tinted twin: red = the plane, green = solid, blue = the plane.
+        colour = np.stack([plane, np.ones_like(plane), plane], axis=-1)
+        warped = ingest.warp(plane, tform, out_shape)
+        warped_colour = ingest.warp(colour, tform, out_shape)
+        assert warped_colour.shape == (*warped.shape, 3)
+        assert float(np.abs(warped_colour[..., 0] - warped).max()) < 1e-5
+
+        scan = tmp_path / "scan.png"
+        Image.fromarray(np.zeros((4, 4), dtype=np.uint8)).save(scan)
+        session = {"date": "2026-08-23", "feder": "", "tinte": "", "papier": "", "geraet": "scanner"}
+        in_colour = ingest.build_payload(
+            "test-suetterlin", "B0001", layout, warped, scan, session, dpi, colour=warped_colour
+        )
+        import_dir = ingest.store_sheet_dir("test-suetterlin", "B0001") / "import"
+        with Image.open(import_dir / in_colour["rows"][0]["crop"]) as image:
+            assert image.mode == "RGB"
+            assert np.asarray(image)[..., 1].min() >= 254  # the solid green plane survived the cut
+        assert in_colour["scan"]["mode"] == "rgb"
+
+        # The plane alone files greyscale — and the QC, which runs on the
+        # plane either way, says the same about every row.
+        as_plane = ingest.build_payload("test-suetterlin", "B0001", layout, warped, scan, session, dpi)
+        with Image.open(import_dir / as_plane["rows"][0]["crop"]) as image:
+            assert image.mode == "L"
+        assert as_plane["scan"]["mode"] == "grau"
+        assert [row["qc"] for row in in_colour["rows"]] == [row["qc"] for row in as_plane["rows"]]
+
+    def test_load_capture_hands_back_the_colour_whatever_plane_was_asked_for(self, tmp_path):
+        colour_file = tmp_path / "colour.png"
+        Image.fromarray(np.full((10, 12, 3), (200, 150, 240), dtype=np.uint8), mode="RGB").save(colour_file)
+        plane, name, colour = ingest.load_capture(colour_file)
+        assert name == "blau" and colour is not None and colour.shape == (10, 12, 3)
+        assert abs(float(plane[0, 0]) - 240 / 255) < 1e-6
+        plane, name, colour = ingest.load_capture(colour_file, "grau")
+        assert name == "grau" and colour is not None  # the plane is luminance, the colour still comes along
+        grey_file = tmp_path / "grey.png"
+        Image.fromarray(np.full((10, 12), 200, dtype=np.uint8), mode="L").save(grey_file)
+        plane, name, colour = ingest.load_capture(grey_file)
+        assert name == "grau" and colour is None and plane.shape == (10, 12)
+
     def test_the_printed_strip_id_does_not_fake_ink(self, tmp_path, monkeypatch):
         # The id is printed INSIDE the Schnittband's top pad. QC must still see
         # an unwritten row as `leer` — otherwise every empty row looks written.
@@ -233,7 +282,7 @@ class TestCaptureChannel:
         return path
 
     def test_the_blue_channel_keeps_ink_and_loses_the_rulings(self, tmp_path):
-        plane, channel = ingest.load_capture(self._sheet(tmp_path))
+        plane, channel, _colour = ingest.load_capture(self._sheet(tmp_path))
         assert channel == "blau"
         paper, ruling, ink = plane[0].mean(), plane[1].mean(), plane[2].mean()
         assert ruling > ingest.INK_THRESHOLD, "the ruling would be read as ink"
@@ -244,7 +293,7 @@ class TestCaptureChannel:
         colour = Image.open(self._sheet(tmp_path)).convert("L")
         path = tmp_path / "grey.png"
         colour.save(path)
-        plane, channel = ingest.load_capture(path)
+        plane, channel, _colour = ingest.load_capture(path)
         assert channel == "grau"
         # Even flattened to grey the rulings stay clear of the ink threshold —
         # cyan is the better choice in both capture modes, not a bet on one.
@@ -252,7 +301,7 @@ class TestCaptureChannel:
         assert plane[2].mean() < ingest.INK_THRESHOLD
 
     def test_an_explicit_channel_overrides_the_default(self, tmp_path):
-        plane, channel = ingest.load_capture(self._sheet(tmp_path), "rot")
+        plane, channel, _colour = ingest.load_capture(self._sheet(tmp_path), "rot")
         assert channel == "rot"
         # The red channel is exactly the wrong one for cyan — it is the darkest
         # component there. Pinned so the default can never drift onto it.

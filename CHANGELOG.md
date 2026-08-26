@@ -14,6 +14,19 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Own-hand strips keep their colour; the rulings are dropped on request.**
+  Author's decision 2026-08-27 after the first phone capture showed the
+  blue-plane trick alone does not hold (rulings at 0.72 against 0.90 paper in
+  the stored plane; the test sheet had come out of a monochrome printer, and
+  only the colour difference still separated them). `ingest` now files an
+  RGB strip for a colour capture (`scan.mode: rgb`), keeps the blue plane as
+  the working plane for fiducials, QC and previews (`estimate_warp` +
+  `warp`: one transform for plane and colour), and the strip image route
+  gains `?lineatur=ohne` — a DERIVED view (`crop.without_rulings`: blue plane,
+  every still-cyan pixel lifted to paper), computed on request; greyscale
+  strips come back unchanged. The Eigenhand view shows that view by default
+  („Lineatur ausblenden", switchable). Stored bytes are never touched.
+  Doctrine in `eigenhand-erfassung.md` §6/§7.2.
 - **Eigenhand view: from the Bestand to the evidence.** Author's request
   2026-08-26 after the first strips went online: the strip panel gets a
   word search (substring, case-insensitive), and the coverage grid becomes

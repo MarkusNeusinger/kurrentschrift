@@ -1,18 +1,25 @@
 """Ingest one capture of a printed Bogen: rectify, cut rows, build the payload.
 
-Pipeline (proposal §6): load the scan/photo (grayscale) → detect the four
-Passmarken (fiducial.py) → orient by the donut → estimate the homography
-against the layout sidecar's mm centers → warp into mm-space at the working
-resolution (300 DPI: a 6 mm x-height lands at ~71 px, the mvp-roadmap M1
-floor) → cut one strip crop per row plus per-box QC flags → write the
-review payload the Siebung page renders.
+Pipeline (proposal §6): load the scan/photo → detect the four Passmarken
+(fiducial.py) on the working plane → orient by the donut → estimate the
+homography against the layout sidecar's mm centers → warp into mm-space at
+the working resolution (300 DPI: a 6 mm x-height lands at ~71 px, the
+mvp-roadmap M1 floor) → cut one strip crop per row plus per-box QC flags →
+write the review payload the Siebung page renders.
 
 QC flags (``leer`` · ``beschnitten`` · ``blass``) are WARNINGS, never
 auto-verdicts — auto-rejecting would be exactly the selective drop the
 Sieb-Disziplin forbids; the human decides on the page.
 
-The crops stay unmodified grayscale (two-channel doctrine: binarisation is
-downstream derivation, never baked into the stored strip).
+The crops stay unmodified — and since the author's decision of 2026-08-27
+they keep the capture's COLOUR: a colour capture files RGB strips, a
+greyscale scan files greyscale. The working plane (blue by default, where the
+cyan rulings sit nearest to paper) drives detection, QC and the previews; it
+is no longer what gets filed. Dropping the rulings is a derivation the server
+makes on request (``core.eigenhand.crop.without_rulings``), never a choice
+baked into the stored bytes (two-channel doctrine) — the first phone capture
+showed why: its blue plane still carried the rulings at 0.72 against 0.90
+paper, and only the colour difference separated them at all.
 
     uv run python -m tools.eigenhand.ingest --hand mn-suetterlin --sheet B0001 scan.jpg \
         --feder "Brause 511" --tinte "Eisengallus" --papier "90g" --geraet scanner
@@ -51,11 +58,13 @@ STRIP_LABEL_BELOW_MM = 5.0
 LINE_MASK_MM = 0.4  # printed-geometry mask half-width for the QC ink measure
 INK_THRESHOLD = 0.55  # grayscale below this counts as ink for the QC flags
 # The rulings are printed in pale cyan (geometry.CAPTURE_STYLES). Cyan's blue
-# component is nearly paper (0.93), so reading a COLOUR capture through its
-# blue channel drops the guide lines out of the image altogether — no
-# threshold, no masking, nothing left to subtract later. Ink survives it:
-# black 0.10, iron-gall brown 0.14, even blue ink 0.55 at the very edge —
-# which is why the sheet asks for black or brown ink, not blue.
+# component is nearly paper (0.93), so the blue channel of a COLOUR capture is
+# the plane on which the guide lines are faintest — the right plane for
+# finding the Passmarken and measuring ink. Ink survives it: black 0.10,
+# iron-gall brown 0.14, even blue ink 0.55 at the very edge — which is why the
+# sheet asks for black or brown ink, not blue. Faint is not gone, though (a
+# phone capture kept them at 0.72), so the filed strip keeps the colour and
+# the rulings are dropped downstream by their chroma (crop.without_rulings).
 CHANNELS = {"blau": 2, "gruen": 1, "rot": 0}
 MIN_DPI_WARN = 250.0
 LEER_MIN_INK_PX = 40
@@ -74,24 +83,38 @@ def _px(mm_value: float) -> int:
     return round(mm_value * PX_PER_MM)
 
 
-def load_capture(path: Path, channel: str = "auto") -> tuple[np.ndarray, str]:
-    """Load a capture as float32 [0,1], dropping the cyan rulings when possible.
+def load_capture(path: Path, channel: str = "auto") -> tuple[np.ndarray, str, np.ndarray | None]:
+    """Load a capture: the working plane (float32 [0,1]), its name, and the colour image.
 
+    The working plane drives fiducial detection, QC and the Siebung previews.
     ``auto`` takes the blue channel of a colour capture — where the pale cyan
-    rulings sit at paper level — and falls back to plain grayscale for a
-    greyscale scan, where the channels no longer exist. Returns the plane and
-    the name of what was used, so the payload can record it.
+    rulings sit nearest to paper — and falls back to plain grayscale for a
+    greyscale scan, where the channels no longer exist. The colour image
+    itself (float32 H×W×3) comes back alongside whenever the capture has one,
+    whatever plane was asked for: the filed strip keeps ALL of it (author,
+    2026-08-27), and which plane or combination best drops the rulings is a
+    derivation made downstream. ``None`` for a greyscale capture.
     """
-    image = Image.open(path)
-    if channel != "grau" and image.mode not in ("L", "1", "I;16"):
-        index = CHANNELS["blau"] if channel == "auto" else CHANNELS[channel]
-        plane = np.asarray(image.convert("RGB"), dtype=np.float32)[:, :, index] / 255.0
-        return plane, ("blau" if channel == "auto" else channel)
-    return load_grayscale(str(path)), "grau"
+    with Image.open(path) as image:
+        if image.mode in ("L", "1", "I;16"):
+            return load_grayscale(str(path)), "grau", None
+        colour = np.asarray(image.convert("RGB"), dtype=np.float32) / 255.0
+    if channel == "grau":
+        return load_grayscale(str(path)), "grau", colour
+    index = CHANNELS["blau"] if channel == "auto" else CHANNELS[channel]
+    return colour[:, :, index], ("blau" if channel == "auto" else channel), colour
 
 
-def rectify(gray: np.ndarray, layout: dict) -> tuple[np.ndarray, float, dict[str, tuple[float, float]]]:
-    """Warp the capture into mm-space at WORK_DPI; returns (image, dpi_estimate, marks)."""
+def estimate_warp(
+    gray: np.ndarray, layout: dict
+) -> tuple[transform.ProjectiveTransform, tuple[int, int], float, dict[str, tuple[float, float]]]:
+    """Find the Passmarken on the working plane and estimate the warp into mm-space.
+
+    Returns (transform, output shape, dpi_estimate, mark centers). Estimated
+    ONCE on the working plane and then applied to every image of the capture
+    (`warp`), so the colour strip and the plane the QC ran on are the same
+    geometry to the pixel.
+    """
     corners = orient_corners(detect_fiducials(gray))
     centers_mm = layout["fiducials"]["centers_mm"]
     src = np.array([[centers_mm[c][0] * PX_PER_MM, centers_mm[c][1] * PX_PER_MM] for c in ("tl", "tr", "bl", "br")])
@@ -122,9 +145,20 @@ def rectify(gray: np.ndarray, layout: dict) -> tuple[np.ndarray, float, dict[str
     if not tform:
         raise FiducialError("homography estimation failed on the detected fiducials")
     out_shape = (_px(layout["page_mm"]["height"]), _px(layout["page_mm"]["width"]))
-    warped = transform.warp(gray, tform, output_shape=out_shape, order=3, mode="constant", cval=1.0)
     marks = {k: corners[k].center for k in keys}
-    return warped.astype(np.float32), dpi_estimate, marks
+    return tform, out_shape, dpi_estimate, marks
+
+
+def warp(image: np.ndarray, tform: transform.ProjectiveTransform, out_shape: tuple[int, int]) -> np.ndarray:
+    """Warp one image — a plane or an H×W×3 colour image — into mm-space at WORK_DPI."""
+    warped = transform.warp(image, tform, output_shape=out_shape, order=3, mode="constant", cval=1.0)
+    return warped.astype(np.float32)
+
+
+def rectify(gray: np.ndarray, layout: dict) -> tuple[np.ndarray, float, dict[str, tuple[float, float]]]:
+    """Warp the working plane into mm-space at WORK_DPI; returns (image, dpi_estimate, marks)."""
+    tform, out_shape, dpi_estimate, marks = estimate_warp(gray, layout)
+    return warp(gray, tform, out_shape), dpi_estimate, marks
 
 
 def _printed_mask(shape: tuple[int, int], row: dict, x0_px: int, y0_px: int) -> np.ndarray:
@@ -198,7 +232,14 @@ def build_payload(
     dpi: float,
     keep_scan: bool = False,
     channel: str = "grau",
+    colour: np.ndarray | None = None,
 ) -> dict:
+    """Cut the strips, run the QC, write the review payload.
+
+    `warped` is the working plane (QC, pen marks, previews); `colour` — the
+    capture's warped colour image, when it has one — is what the strip crops
+    are cut from, so the filed strip keeps the whole capture.
+    """
     sheet_dir = store_sheet_dir(hand, sheet)
     import_dir = sheet_dir / "import"
     import_dir.mkdir(parents=True, exist_ok=True)
@@ -221,7 +262,9 @@ def build_payload(
             x1_px = _px(boxes_x1 + ROW_PAD_MM)
             y0_px = _px(band["asc_top"] - ROW_PAD_MM)
             y1_px = _px(band["desc_bot"] + STRIP_LABEL_BELOW_MM)
-        crop = warped[y0_px:y1_px, x0_px:x1_px]
+        # The strip: in colour when the capture has it, otherwise the plane.
+        source = colour if colour is not None else warped
+        crop = source[y0_px:y1_px, x0_px:x1_px]
         # QC runs on the writing band only — the printed row id and labels in
         # the wider strip must not fake ink flags. It therefore has its OWN
         # origin: the Schnittband reaches further up and down than this.
@@ -231,7 +274,9 @@ def build_payload(
         qc_crop = warped[qy0_px:qy1_px, qx0_px : _px(boxes_x1 + ROW_PAD_MM)]
         pen_mark = read_pen_mark(warped, row)
         crop_name = row_crop_name(index)
-        Image.fromarray((np.clip(crop, 0.0, 1.0) * 255).astype(np.uint8), mode="L").save(import_dir / crop_name)
+        Image.fromarray(
+            (np.clip(crop, 0.0, 1.0) * 255).astype(np.uint8), mode="RGB" if colour is not None else "L"
+        ).save(import_dir / crop_name)
         rows_out.append(
             {
                 "uid": f"{sheet}-r{index:02d}",
@@ -272,7 +317,8 @@ def build_payload(
             "file": scan.name,
             "sha256": hashlib.sha256(scan.read_bytes()).hexdigest(),
             "dpi_estimate": round(dpi, 1),
-            "channel": channel,  # which plane the strips were cut from
+            "channel": channel,  # the working plane: detection, QC, previews
+            "mode": "rgb" if colour is not None else "grau",  # what the filed strip holds
         },
         "layout_provenance": layout["provenance"],
     }
@@ -306,7 +352,7 @@ def main(argv: list[str] | None = None) -> int:
         "--channel",
         choices=["auto", "blau", "gruen", "rot", "grau"],
         default="auto",
-        help="colour plane to read (default: blue for a colour capture — drops the cyan rulings)",
+        help="working plane for detection, QC and previews (default: blue for a colour capture); the filed strip keeps the colour either way",
     )
     args = ap.parse_args(argv)
 
@@ -315,13 +361,12 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(f"{layout_path} missing — was sheet {args.sheet} generated for hand {args.hand}?")
     layout = json.loads(layout_path.read_text(encoding="utf-8"))
 
-    gray, channel_used = load_capture(args.scan, args.channel)
-    if channel_used == "grau":
-        print("note: greyscale capture — the cyan rulings stay in the image (scan in colour to drop them)")
-    try:
-        warped, dpi, _marks = rectify(gray, layout)
-    except FiducialError:
-        raise
+    gray, channel_used, colour = load_capture(args.scan, args.channel)
+    if colour is None:
+        print("note: greyscale capture — the strips keep the rulings, there is no colour to drop them by")
+    tform, out_shape, dpi, _marks = estimate_warp(gray, layout)
+    warped = warp(gray, tform, out_shape)
+    warped_colour = warp(colour, tform, out_shape) if colour is not None else None
     if dpi < MIN_DPI_WARN:
         print(f"WARNING: effective capture resolution ~{dpi:.0f} DPI is under {MIN_DPI_WARN:.0f} — rescan if possible")
 
@@ -343,7 +388,7 @@ def main(argv: list[str] | None = None) -> int:
             f"`uv run python -m tools.eigenhand.setup --hand {args.hand} --feder … --tinte … --papier …`"
         )
     payload = build_payload(
-        args.hand, args.sheet, layout, warped, args.scan, session, dpi, args.keep_scan, channel_used
+        args.hand, args.sheet, layout, warped, args.scan, session, dpi, args.keep_scan, channel_used, warped_colour
     )
     import_dir = store_sheet_dir(args.hand, args.sheet) / "import"
     (import_dir / "payload.json").write_text(json.dumps(payload, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")

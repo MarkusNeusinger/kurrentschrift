@@ -296,7 +296,11 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   und bleibt offen — Autor-Regel 2026-08-26); die Siebung auf der
   Offline-HTML-Seite braucht es nur für ein ausdrückliches `verworfen` mit
   Grund oder eine Anmerkung. Nur angenommene Zeilen werden als Fassungen
-  abgelegt (idempotent).
+  abgelegt (idempotent). Eine Farbaufnahme ergibt seit dem 2026-08-27 einen
+  **RGB-Streifen** (`scan.mode: rgb`); `--channel` wählt nur noch die
+  Arbeitsebene für Passmarken, QC und Vorschau (Vorgabe: Blau), nicht mehr,
+  was abgelegt wird. Die Lineatur verschwindet nicht beim Einlesen, sondern
+  als abgeleitete Ansicht beim Abruf (`?lineatur=ohne`, Werkbank-Schalter).
 - **`report`** — Bestandsbericht (Erstbeleg-/Ausbau-Quote, Fehlstellen,
   Druckvorschlag); **`progression`** — die Plan-Sicht dazu: kumulierte
   Zählungen je Glyphe (klein · groß · Ligatur · Ziffer · Zeichen) und je

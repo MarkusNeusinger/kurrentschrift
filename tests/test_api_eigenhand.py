@@ -21,6 +21,7 @@ import io
 import json
 from urllib.parse import quote
 
+import numpy as np
 import pytest
 from PIL import Image
 from sqlalchemy import inspect
@@ -647,6 +648,60 @@ class TestStrips:
             "GET", f"/eigenhand/strips/{HAND}", params={"item": "a b"}, headers=api.admin_headers()
         )
         assert bad.status == 400
+
+    @pytest.mark.asyncio
+    async def test_a_colour_strip_is_stored_as_it_is_and_served_without_its_rulings_on_request(self, api: Harness):
+        # Author's decision 2026-08-27: strips keep their colour; dropping the
+        # rulings is a view computed on request, never what gets stored.
+        stored = await _store_strip(api, upload=False)
+        width, height = stored["width_px"], stored["height_px"]
+        pixels = np.full((height, width, 3), 235, dtype=np.uint8)
+        ruling_rows = (height // 3, height // 2)
+        for row in ruling_rows:
+            pixels[row : row + 3, :, :] = (150, 225, 235)  # pale cyan
+        pixels[:, 200:206, :] = (30, 30, 30)  # a stroke crossing both rulings
+        buffer = io.BytesIO()
+        Image.fromarray(pixels, mode="RGB").save(buffer, format="PNG")
+        rgb = buffer.getvalue()
+        put = await _put_strip(api, rgb, stored)
+        assert put.status == 201, put.body
+
+        whole = await api.client.request("GET", f"/eigenhand/strips/{HAND}/S0001/F01", headers=api.admin_headers())
+        assert whole.body == rgb  # stored and served as uploaded — colour included
+
+        view = await api.client.request(
+            "GET", f"/eigenhand/strips/{HAND}/S0001/F01", params={"lineatur": "ohne"}, headers=api.admin_headers()
+        )
+        assert view.status == 200, view.body
+        assert view.headers["cache-control"] == "private, no-store"
+        with Image.open(io.BytesIO(view.body)) as image:
+            assert image.mode == "L" and image.size == (width, height)
+            plane = np.asarray(image, dtype=np.int32)
+        assert plane[ruling_rows[0] + 1, 20] >= 230  # the ruling is paper now
+        assert plane[ruling_rows[0] + 1, 203] <= 40  # the ink crossing it is still ink
+        assert plane[5, 20] == 235  # paper untouched
+
+        # The view composes with a word cut, and a malformed value is refused.
+        cut = await api.client.request(
+            "GET",
+            f"/eigenhand/strips/{HAND}/S0001/F01",
+            params={"lineatur": "ohne", "box": 1},
+            headers=api.admin_headers(),
+        )
+        with Image.open(io.BytesIO(cut.body)) as image:
+            assert image.mode == "L" and image.size[1] == height and image.size[0] < width
+        bad = await api.client.request(
+            "GET", f"/eigenhand/strips/{HAND}/S0001/F01", params={"lineatur": "weg"}, headers=api.admin_headers()
+        )
+        assert bad.status == 400
+
+    @pytest.mark.asyncio
+    async def test_a_greyscale_strip_has_no_rulings_to_drop_and_comes_back_as_it_is(self, api: Harness):
+        stored = await _store_strip(api)
+        view = await api.client.request(
+            "GET", f"/eigenhand/strips/{HAND}/S0001/F01", params={"lineatur": "ohne"}, headers=api.admin_headers()
+        )
+        assert view.status == 200 and view.body == stored["png"]
 
     @pytest.mark.asyncio
     async def test_a_strip_is_stored_listed_and_served_back_byte_identically(self, api: Harness):

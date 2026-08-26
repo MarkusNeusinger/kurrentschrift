@@ -32,11 +32,14 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   Slider,
   Stack,
+  Switch,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -78,7 +81,14 @@ function boxMatches(box: EigenhandStripBox, filter: EigenhandStripFilter): boole
  * holds the blob until then, and these are exactly the bytes that should not
  * linger. A fetch resolving after the cleanup makes no URL at all.
  */
-function useStripImage(hand: string, strip: string, fassung: string, box: number | null, enabled: boolean) {
+function useStripImage(
+  hand: string,
+  strip: string,
+  fassung: string,
+  box: number | null,
+  enabled: boolean,
+  ohneLineatur: boolean,
+) {
   const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -89,7 +99,7 @@ function useStripImage(hand: string, strip: string, fassung: string, box: number
     let objectUrl: string | null = null;
     setLoading(true);
     setError(null);
-    fetchEigenhandStrip(hand, strip, fassung, box ?? undefined)
+    fetchEigenhandStrip(hand, strip, fassung, box ?? undefined, ohneLineatur)
       .then((blob) => {
         if (!alive) return;
         objectUrl = URL.createObjectURL(blob);
@@ -102,7 +112,7 @@ function useStripImage(hand: string, strip: string, fassung: string, box: number
       if (objectUrl) URL.revokeObjectURL(objectUrl);
       setUrl(null);
     };
-  }, [hand, strip, fassung, box, enabled]);
+  }, [hand, strip, fassung, box, enabled, ohneLineatur]);
 
   return { url, loading, error };
 }
@@ -177,11 +187,13 @@ function StripTile({
   hand,
   row,
   zoom,
+  ohneLineatur,
   onLupe,
 }: {
   hand: string;
   row: EigenhandStrip;
   zoom: Zoom;
+  ohneLineatur: boolean;
   onLupe: (target: LupeTarget) => void;
 }) {
   const t = de.admin.eigenhand;
@@ -191,7 +203,7 @@ function StripTile({
   // would serve the first box under every later chip and light them all.
   const [open, setOpen] = useState(false);
   const [shown, setShown] = useState<number | null>(null);
-  const { url, loading, error } = useStripImage(hand, row.strip, row.fassung, shown, open);
+  const { url, loading, error } = useStripImage(hand, row.strip, row.fassung, shown, open, ohneLineatur);
   const title = `${row.strip} · ${row.fassung}${shown === null ? '' : ` · ${row.words[shown] ?? ''}`}`;
 
   return (
@@ -264,18 +276,20 @@ function CropTile({
   row,
   box,
   zoom,
+  ohneLineatur,
   onLupe,
 }: {
   hand: string;
   row: EigenhandStrip;
   box: EigenhandStripBox;
   zoom: Zoom;
+  ohneLineatur: boolean;
   onLupe: (target: LupeTarget) => void;
 }) {
   const t = de.admin.eigenhand;
   const ref = useRef<HTMLDivElement | null>(null);
   const near = useNearViewport(ref);
-  const { url, loading, error } = useStripImage(hand, row.strip, row.fassung, box.index, near);
+  const { url, loading, error } = useStripImage(hand, row.strip, row.fassung, box.index, near, ohneLineatur);
   const title = `${row.strip} · ${row.fassung} · ${box.word}`;
   return (
     <Box
@@ -369,6 +383,9 @@ export function StripsPanel({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [zoom, setZoom] = useState<Zoom>(0.25);
+  // The rulings are dropped by default — what one wants to look at is the
+  // hand, not the print. The stored strip keeps them (and its colour).
+  const [ohneLineatur, setOhneLineatur] = useState(true);
   const [lupe, setLupe] = useState<LupeTarget | null>(null);
   const [query, setQuery] = useState(filter.wort ?? '');
   const [shownCount, setShownCount] = useState(PAGE);
@@ -431,19 +448,30 @@ export function StripsPanel({
       title={t.stripImagesTitle}
       caption={caption}
       actions={
-        <ToggleButtonGroup
-          size="small"
-          exclusive
-          value={zoom}
-          aria-label={t.stripZoom}
-          onChange={(_e, value: Zoom | null) => value && setZoom(value)}
-        >
-          {ZOOMS.map((level) => (
-            <ToggleButton key={level} value={level} sx={{ px: 1, py: 0.25, textTransform: 'none' }}>
-              {ZOOM_LABELS[level]}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 0.5 }}>
+          <Tooltip title={t.stripNoRulingsHint}>
+            <FormControlLabel
+              control={
+                <Switch size="small" checked={ohneLineatur} onChange={(e) => setOhneLineatur(e.target.checked)} />
+              }
+              label={<Typography variant="caption">{t.stripNoRulings}</Typography>}
+              sx={{ mr: 0 }}
+            />
+          </Tooltip>
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={zoom}
+            aria-label={t.stripZoom}
+            onChange={(_e, value: Zoom | null) => value && setZoom(value)}
+          >
+            {ZOOMS.map((level) => (
+              <ToggleButton key={level} value={level} sx={{ px: 1, py: 0.25, textTransform: 'none' }}>
+                {ZOOM_LABELS[level]}
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+        </Stack>
       }
     >
       <Stack direction="row" spacing={1.5} sx={{ mb: 2, flexWrap: 'wrap', rowGap: 1, alignItems: 'center' }}>
@@ -505,6 +533,7 @@ export function StripsPanel({
                 row={row}
                 box={box}
                 zoom={zoom}
+                ohneLineatur={ohneLineatur}
                 onLupe={setLupe}
               />
             ))}
@@ -517,7 +546,14 @@ export function StripsPanel({
         </>
       ) : (
         strips.map((row) => (
-          <StripTile key={`${hand}/${row.strip}/${row.fassung}`} hand={hand} row={row} zoom={zoom} onLupe={setLupe} />
+          <StripTile
+            key={`${hand}/${row.strip}/${row.fassung}`}
+            hand={hand}
+            row={row}
+            zoom={zoom}
+            ohneLineatur={ohneLineatur}
+            onLupe={setLupe}
+          />
         ))
       )}
 
