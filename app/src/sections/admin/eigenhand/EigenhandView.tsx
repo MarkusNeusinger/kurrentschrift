@@ -32,7 +32,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   ApiError,
@@ -42,7 +42,7 @@ import {
   getEigenhandHands,
   printEigenhandSheets,
 } from '@/lib/api';
-import type { EigenhandBestand, EigenhandBucket } from '@/lib/api';
+import type { EigenhandBestand, EigenhandBucket, EigenhandStripFilter } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { SetupPanel } from '@/sections/admin/eigenhand/SetupPanel';
 import { StripsPanel } from '@/sections/admin/eigenhand/StripsPanel';
@@ -86,6 +86,14 @@ const KEY_GLYPHS: Record<string, string> = {
 
 const glyphOf = (key: string): string => KEY_GLYPHS[key] ?? key;
 
+// A coverage item as the view names it: `a>b` → „a › b", `a@medial` → „a
+// (medial)", a bare key → its glyph.
+const itemLabel = (item: string): string => {
+  if (item.includes('>')) return item.split('>').map(glyphOf).join(' › ');
+  const [key, position] = item.split('@');
+  return position ? `${glyphOf(key)} (${position})` : glyphOf(key);
+};
+
 function Stat({ value, label }: { value: number | string; label: string }) {
   return (
     <Box sx={{ minWidth: '5.5rem' }}>
@@ -99,8 +107,19 @@ function Stat({ value, label }: { value: number | string; label: string }) {
   );
 }
 
-/** One glyph class as a grid of its keys — written ones inked, open ones pale. */
-function BucketGrid({ name, bucket }: { name: string; bucket: EigenhandBucket }) {
+/**
+ * One glyph class as a grid of its keys — written ones inked, open ones pale.
+ * A written key is a button: it brings up the words that hold the glyph.
+ */
+function BucketGrid({
+  name,
+  bucket,
+  onSelect,
+}: {
+  name: string;
+  bucket: EigenhandBucket;
+  onSelect: (key: string) => void;
+}) {
   const t = de.admin.eigenhand;
   return (
     <Box sx={{ mb: 2 }}>
@@ -118,19 +137,29 @@ function BucketGrid({ name, bucket }: { name: string; bucket: EigenhandBucket })
           <Tooltip
             key={row.key}
             describeChild
-            title={fmt(t.keyTooltip, { key: row.key, belege: row.belege, planned: row.planned })}
+            title={`${fmt(t.keyTooltip, { key: row.key, belege: row.belege, planned: row.planned })}${
+              row.belege ? t.keyTooltipShow : ''
+            }`}
           >
+            {/* A written key is a real <button> (native keyboard + semantics);
+                an unwritten one has nothing to show and stays a plain cell. */}
             <Box
+              component={row.belege ? 'button' : 'div'}
+              type={row.belege ? 'button' : undefined}
+              onClick={row.belege ? () => onSelect(row.key) : undefined}
               sx={{
                 minWidth: '2.1rem',
                 px: 0.5,
                 py: 0.25,
                 textAlign: 'center',
+                font: 'inherit',
+                appearance: 'none',
                 border: 1,
                 borderRadius: 1,
                 borderColor: row.belege ? paper.sepia : 'divider',
                 bgcolor: row.belege ? 'action.hover' : 'transparent',
                 color: row.belege ? paper.ink : 'text.disabled',
+                cursor: row.belege ? 'pointer' : 'default',
               }}
             >
               <Typography variant="body2" sx={{ lineHeight: 1.2 }}>
@@ -160,6 +189,17 @@ export function EigenhandView() {
   const [printed, setPrinted] = useState<string[]>([]);
   const [printError, setPrintError] = useState<string | null>(null);
   const [openOnly, setOpenOnly] = useState(true);
+  // What the strips panel shows: a word, an item, or everything. A cell of
+  // the coverage grid sets the item and brings the panel into view.
+  const [stripFilter, setStripFilter] = useState<EigenhandStripFilter>({});
+  const stripsRef = useRef<HTMLDivElement | null>(null);
+  const showBelege = useCallback((item: string) => {
+    setStripFilter((current) => ({ ...current, item }));
+    // An instant jump, not a smooth scroll: the grid sits below the panel, so
+    // a smooth scroll would sweep the viewport across the whole gallery on its
+    // way up and every crop tile would count as seen — and load at once.
+    stripsRef.current?.scrollIntoView({ block: 'start' });
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -254,7 +294,10 @@ export function EigenhandView() {
           label={t.hand}
           value={hand}
           helperText={hands.length ? undefined : t.handHelp}
-          onChange={(e) => setHand(e.target.value)}
+          onChange={(e) => {
+            setHand(e.target.value);
+            setStripFilter({});
+          }}
           sx={{ minWidth: '14rem' }}
         >
           {hands.map((id) => (
@@ -298,7 +341,18 @@ export function EigenhandView() {
             </Box>
           </Panel>
 
-          <StripsPanel hand={hand} version={bestand.fassungen.angenommen} />
+          <Box ref={stripsRef}>
+            {/* Keyed by hand: a switch remounts the panel, so no search term,
+                page count or loaded pixels of the previous hand survive. */}
+            <StripsPanel
+              key={hand}
+              hand={hand}
+              version={bestand.fassungen.angenommen}
+              filter={stripFilter}
+              onFilter={setStripFilter}
+              labelOf={itemLabel}
+            />
+          </Box>
 
           <Panel
             title={t.coverageTitle}
@@ -308,7 +362,7 @@ export function EigenhandView() {
             })}
           >
             {Object.entries(bestand.glyphs).map(([name, bucket]) => (
-              <BucketGrid key={name} name={name} bucket={bucket} />
+              <BucketGrid key={name} name={name} bucket={bucket} onSelect={showBelege} />
             ))}
           </Panel>
 
@@ -336,9 +390,8 @@ export function EigenhandView() {
                     key={row.item}
                     size="small"
                     variant={row.belege ? 'filled' : 'outlined'}
-                    label={`${row.item.split('>').map(glyphOf).join(' › ')}${
-                      row.belege ? ` · ${row.belege}` : ''
-                    }`}
+                    label={`${itemLabel(row.item)}${row.belege ? ` · ${row.belege}` : ''}`}
+                    onClick={row.belege ? () => showBelege(row.item) : undefined}
                   />
                 ))}
               </Box>

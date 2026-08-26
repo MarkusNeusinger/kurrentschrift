@@ -21,6 +21,7 @@ import type {
   EigenhandPrinted,
   EigenhandPrintRequest,
   EigenhandSetup,
+  EigenhandStripFilter,
   EigenhandStripList,
   FitData,
   GlyphOut,
@@ -136,10 +137,22 @@ export const putEigenhandSetup = (
     body: JSON.stringify(body),
   }).then(asJson<EigenhandSetup>);
 
-export const getEigenhandStrips = (hand: string, retry?: RetryOptions): Promise<EigenhandStripList> =>
-  apiFetch(`${apiRoot()}/eigenhand/strips/${encodeURIComponent(hand)}`, {}, retry).then(
+// The strip listing, optionally narrowed to the strips carrying a word or an
+// item. The server filters at strip level (any box matches); which BOXES of a
+// listed strip match is the view's call — it has every box's items.
+export const getEigenhandStrips = (
+  hand: string,
+  filter: EigenhandStripFilter = {},
+  retry?: RetryOptions,
+): Promise<EigenhandStripList> => {
+  const params = new URLSearchParams();
+  if (filter.wort) params.set('wort', filter.wort);
+  if (filter.item) params.set('item', filter.item);
+  const qs = params.toString();
+  return apiFetch(`${apiRoot()}/eigenhand/strips/${encodeURIComponent(hand)}${qs ? `?${qs}` : ''}`, {}, retry).then(
     asJson<EigenhandStripList>,
   );
+};
 
 // The strip image, whole or cut down to one word. Fetched rather than linked
 // for the same reason as the Bogen PDF — a plain <img src> cannot send the

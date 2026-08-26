@@ -12,6 +12,22 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **Eigenhand view: from the Bestand to the evidence.** Author's request
+  2026-08-26 after the first strips went online: the strip panel gets a
+  word search (substring, case-insensitive), and the coverage grid becomes
+  the way in — a written glyph cell or join chip is clickable and turns
+  the panel into a gallery of the written words holding that item (word
+  crops, paged by 24). The listing (`GET /eigenhand/strips/{hand}`) now
+  states every box's coverage items — the same `coverage.word_items` the
+  Bestand counts — and takes `?wort=` / `?item=` filters; `item` accepts a
+  join, a positioned glyph, or the bare glyph key of a grid cell, which
+  stands for every position (`coverage.matches_item`, `is_item_filter`).
+  Every image takes a shared zoom (¼ · ½ · 1:1 · 2× per stored pixel) and
+  opens in a Lupe with a free scale on click. Doctrine in
+  `eigenhand-erfassung.md` §7.2, phase 4e in §11.
+
 ### Fixed
 
 - **A Bogen printed in the Werkbank, pulled and pushed back by `sync` was

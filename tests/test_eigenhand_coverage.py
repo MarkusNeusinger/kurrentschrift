@@ -217,3 +217,35 @@ class TestUniverseFormat:
         path = tmp_path / "uebergangsraum.json"
         path.write_text(json.dumps({"format": universe.UNIVERSE_FORMAT, "items": {"l>e": 1.0}}), encoding="utf-8")
         assert universe.load_universe(path)["items"] == {"l>e": 1.0}
+
+
+class TestMatchesItem:
+    """The way from a coverage cell to the written words that hold it."""
+
+    ITEMS = ["l>e", "e>s", "l@initial", "e@medial", "s@final"]
+
+    def test_a_bare_key_stands_for_the_glyph_in_every_position(self):
+        assert coverage.matches_item("e", self.ITEMS)
+        assert coverage.matches_item("s", self.ITEMS)
+        assert not coverage.matches_item("a", self.ITEMS)
+
+    def test_a_positioned_key_and_a_join_match_exactly(self):
+        assert coverage.matches_item("e@medial", self.ITEMS)
+        assert not coverage.matches_item("e@final", self.ITEMS)
+        assert coverage.matches_item("l>e", self.ITEMS)
+        assert not coverage.matches_item("e>l", self.ITEMS)
+
+    def test_a_bare_key_never_matches_a_join_and_a_prefix_is_not_a_key(self):
+        # `l` is in `l>e`, but the join has its own cell; and `longs` must
+        # not light up for `l` just because it starts with it.
+        assert not coverage.matches_item("l", ["l>e"])
+        assert not coverage.matches_item("l", ["longs@medial"])
+        assert coverage.matches_item("longs", ["longs@medial"])
+
+    def test_a_filter_takes_bare_keys_the_soll_universe_never_holds(self):
+        assert not coverage.is_item_key("e")
+        assert coverage.is_item_filter("e")
+        assert coverage.is_item_filter("quote-low")
+        assert coverage.is_item_filter("e@medial") and coverage.is_item_filter("l>e")
+        for bad in ("a b", "", "e@", "l>", "ä", "e@somewhere"):
+            assert not coverage.is_item_filter(bad), bad

@@ -872,5 +872,18 @@ export const admin = {
     stripWhole: 'ganzer Streifen',
     stripMeta: '{{sheet}} · Zeile {{row}} · {{width}}×{{height}} px · {{dpi}} dpi',
     stripCount: '{{count}} Streifen gespeichert',
+    stripSearch: 'Wort suchen',
+    stripSearchHelp: 'Teilwort genügt, Groß/Klein egal',
+    stripFilterItem: 'Belege für {{item}}',
+    stripFilterClear: 'Filter aufheben',
+    stripZoom: 'Vergrößerung',
+    stripLupeClose: 'schließen',
+    stripBelegeCount: 'Belege: {{count}} in {{strips}} Streifen',
+    stripBelegeEmpty:
+      'Kein gespeicherter Streifen trägt das. Die Zeichen-Tafel zählt auch Fassungen, deren Bild noch nicht hochgeschoben ist — lokal: uv run python -m tools.eigenhand.sync --hand {{hand}} --mit-streifen',
+    stripBelegeIntro:
+      'Gezeigt wird der Wort-Ausschnitt; das Zeichen sitzt darin. Die Zerlegung in einzelne Buchstaben ist Sache des Tintenfolgers (Phase 5), nicht der Kartei.',
+    stripMore: 'weitere {{count}} laden',
+    keyTooltipShow: ' · anklicken zeigt die Belege',
   },
 } as const;

@@ -1111,6 +1111,20 @@ class EigenhandSetupsOut(BaseModel):
     setups: list[EigenhandSetupOut]
 
 
+class EigenhandStripBoxOut(BaseModel):
+    """One word box of a strip, with the coverage items its word carries.
+
+    The items are what lets the admin view walk from a glyph or a join to the
+    written words that hold it — the same `coverage.word_items` the Bestand
+    counts, so „belegt" in the grid and „hier zu sehen" in the gallery agree.
+    `index` is the box's position in the row, the address a word crop takes.
+    """
+
+    index: int
+    word: str
+    items: list[str]
+
+
 class EigenhandStripOut(BaseModel):
     """One stored strip — metadata only; the pixels come from the image route."""
 
@@ -1125,6 +1139,7 @@ class EigenhandStripOut(BaseModel):
     sha256: str
     bytes: int
     words: list[str] = []
+    boxes: list[EigenhandStripBoxOut] = []
 
 
 class EigenhandStripListOut(BaseModel):
